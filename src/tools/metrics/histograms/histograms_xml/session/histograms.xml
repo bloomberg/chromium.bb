@@ -36,7 +36,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Session.ClosedTabCounts" units="operations"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>rohitrao@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <summary>
@@ -60,7 +60,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Session.OpenedTabCounts" units="operations"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>rohitrao@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <summary>
@@ -303,7 +303,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Session.TotalDuration.TouchMode" units="times"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>collinbaker@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -454,7 +454,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Session.WebStates.NavigationItem" units="KB"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>djean@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
   <summary>
@@ -535,9 +535,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SessionRestore.ForegroundTabFirstPaint4" units="ms"
-    expires_after="never">
-<!-- expires-never: "heartbeat" metric (internal: go/uma-heartbeats) -->
-
+    expires_after="2022-04-20">
   <owner>chrisha@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -550,9 +548,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SessionRestore.ForegroundTabFirstPaint4.FinishReason"
-    enum="SessionRestoreFinishReason" expires_after="never">
-<!-- expires-never: "heartbeat" metric (internal: go/uma-heartbeats) -->
-
+    enum="SessionRestoreFinishReason" expires_after="2022-04-20">
   <owner>chrisha@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -576,7 +572,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SessionRestore.UnrecoverableWriteErrorCount"
-    units="operations" expires_after="M93">
+    units="operations" expires_after="2021-09-19">
   <owner>sky@chromium.org</owner>
   <owner>davidbienvenu@chromium.org</owner>
   <summary>

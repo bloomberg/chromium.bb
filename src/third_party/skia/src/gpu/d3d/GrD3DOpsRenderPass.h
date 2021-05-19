@@ -38,7 +38,8 @@ private:
 
     bool onBindPipeline(const GrProgramInfo&, const SkRect& drawBounds) override;
     void onSetScissorRect(const SkIRect&) override;
-    bool onBindTextures(const GrPrimitiveProcessor&, const GrSurfaceProxy* const primProcTextures[],
+    bool onBindTextures(const GrGeometryProcessor&,
+                        const GrSurfaceProxy* const geomProcTextures[],
                         const GrPipeline&) override;
     void onBindBuffers(sk_sp<const GrBuffer> indexBuffer, sk_sp<const GrBuffer> instanceBuffer,
                        sk_sp<const GrBuffer> vertexBuffer, GrPrimitiveRestart) override;
@@ -62,7 +63,7 @@ private:
 
     GrD3DGpu* fGpu;
 
-    sk_sp<GrD3DPipelineState> fCurrentPipelineState;
+    GrD3DPipelineState* fCurrentPipelineState = nullptr;
 
     SkIRect fBounds;
     SkIRect fCurrentPipelineBounds;

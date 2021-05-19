@@ -79,14 +79,14 @@ class SubresourceRenderAttachmentTest : public DawnTest {
         switch (type) {
             case Type::Color: {
                 std::vector<RGBA8> expected(renderTargetSize * renderTargetSize, expectedColor);
-                EXPECT_TEXTURE_RGBA8_EQ(expected.data(), renderTarget, 0, 0, renderTargetSize,
-                                        renderTargetSize, baseMipLevel, baseArrayLayer);
+                EXPECT_TEXTURE_EQ(expected.data(), renderTarget, {0, 0, baseArrayLayer},
+                                  {renderTargetSize, renderTargetSize}, baseMipLevel);
                 break;
             }
             case Type::Depth: {
                 std::vector<float> expected(renderTargetSize * renderTargetSize, expectedDepth);
-                EXPECT_TEXTURE_FLOAT_EQ(expected.data(), renderTarget, 0, 0, renderTargetSize,
-                                        renderTargetSize, baseMipLevel, baseArrayLayer);
+                EXPECT_TEXTURE_EQ(expected.data(), renderTarget, {0, 0, baseArrayLayer},
+                                  {renderTargetSize, renderTargetSize}, baseMipLevel);
                 break;
             }
             case Type::Stencil:
@@ -121,7 +121,7 @@ class SubresourceRenderAttachmentTest : public DawnTest {
         renderTargetDesc.dimension = wgpu::TextureDimension::e2D;
         renderTargetDesc.size.width = kTextureSize;
         renderTargetDesc.size.height = kTextureSize;
-        renderTargetDesc.size.depth = kArrayLayerCount;
+        renderTargetDesc.size.depthOrArrayLayers = kArrayLayerCount;
         renderTargetDesc.sampleCount = 1;
         renderTargetDesc.format = format;
         renderTargetDesc.mipLevelCount = kMipLevelCount;

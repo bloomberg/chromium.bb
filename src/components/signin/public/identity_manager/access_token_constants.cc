@@ -49,8 +49,9 @@ const std::set<std::string> GetUnconsentedOAuth2Scopes() {
       // Required by cloud policy.
       GaiaConstants::kDeviceManagementServiceOAuth,
 
-      // Required by CRoS.
+      // Required by GCM account tracker.
       GaiaConstants::kGCMGroupServerOAuth2Scope,
+      GaiaConstants::kGCMCheckinServerOAuth2Scope,
 
       // Required by Suggestions.
       GaiaConstants::kDriveReadOnlyOAuth2Scope,
@@ -71,6 +72,7 @@ const std::set<std::string> GetUnconsentedOAuth2Scopes() {
       GaiaConstants::kCloudTranslationOAuth2Scope,
       GaiaConstants::kDriveOAuth2Scope,
       GaiaConstants::kKidFamilyReadonlyOAuth2Scope,
+      GaiaConstants::kKidManagementOAuth2Scope,
       GaiaConstants::kKidManagementPrivilegedOAuth2Scope,
       GaiaConstants::kKidsSupervisionSetupChildOAuth2Scope,
       GaiaConstants::kNearbyShareOAuth2Scope,

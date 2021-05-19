@@ -5,28 +5,32 @@
 from recipe_engine import recipe_test_api
 
 
-# Exemplary change. Note: This contains only a subset of the key/value pairs
-# present in production to limit recipe simulation output.
-EXAMPLE_CHANGE = {
-  'status': 'NEW',
-  'created': '2017-01-30 13:11:20.000000000',
-  '_number': '91827',
-  'change_id': 'Ideadbeef',
-  'project': 'chromium/src',
-  'has_review_started': False,
-  'branch': 'main',
-  'subject': 'Change title',
-  'revisions': {
-    '184ebe53805e102605d11f6b143486d15c23a09c': {
-      '_number': '1',
-      'commit': {
-        'message': 'Change commit message',
-      },
-    },
-  },
-}
-
 class GerritTestApi(recipe_test_api.RecipeTestApi):
+
+  @staticmethod
+  def _gerrit_change_data(change_number=91827, patchset=1, **kwargs):
+    # Exemplary change. Note: This contains only a subset of the key/value pairs
+    # present in production to limit recipe simulation output.
+    data = {
+        'status': 'NEW',
+        'created': '2017-01-30 13:11:20.000000000',
+        '_number': str(change_number),
+        'change_id': 'Ideadbeef',
+        'project': 'chromium/src',
+        'has_review_started': False,
+        'branch': 'main',
+        'subject': 'Change title',
+        'revisions': {
+            '184ebe53805e102605d11f6b143486d15c23a09c': {
+                '_number': str(patchset),
+                'commit': {
+                    'message': 'Change commit message',
+                },
+            },
+        },
+    }
+    data.update(kwargs)
+    return data
 
   def _make_gerrit_response_json(self, data):
     return self.m.json.output(data)
@@ -45,14 +49,10 @@ class GerritTestApi(recipe_test_api.RecipeTestApi):
     })
 
   def get_one_change_response_data(self, **kwargs):
-    change = EXAMPLE_CHANGE.copy()
-    change.update(kwargs)
-    return self._make_gerrit_response_json([change])
+    return self._make_gerrit_response_json([self._gerrit_change_data(**kwargs)])
 
   def get_empty_changes_response_data(self):
     return self._make_gerrit_response_json([])
 
   def get_move_change_response_data(self, **kwargs):
-    change = EXAMPLE_CHANGE.copy()
-    change.update(kwargs)
-    return self._make_gerrit_response_json([change])
+    return self._make_gerrit_response_json([self._gerrit_change_data(**kwargs)])

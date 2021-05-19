@@ -6,8 +6,9 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 
-#include "base/strings/string16.h"
+#include "base/notreached.h"
 #include "base/strings/string_util_win.h"
 #include "ui/base/cursor/win/win_cursor.h"
 #include "ui/base/win/shell.h"
@@ -101,7 +102,7 @@ gfx::Rect WinWindow::GetBounds() const {
   return gfx::Rect(cr);
 }
 
-void WinWindow::SetTitle(const base::string16& title) {
+void WinWindow::SetTitle(const std::u16string& title) {
   SetWindowText(hwnd(), base::as_wcstr(title));
 }
 

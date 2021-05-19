@@ -13,7 +13,8 @@
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
@@ -33,6 +34,7 @@ class OSExchangeData;
 class WaylandConnection;
 class WaylandSubsurface;
 class WaylandWindowDragController;
+class WaylandOutput;
 
 using WidgetSubsurfaceSet = base::flat_set<std::unique_ptr<WaylandSubsurface>>;
 
@@ -104,8 +106,14 @@ class WaylandWindow : public PlatformWindow,
   int32_t buffer_scale() const { return root_surface_->buffer_scale(); }
   int32_t ui_scale() const { return ui_scale_; }
 
-  const base::flat_set<uint32_t>& entered_outputs_ids() const {
-    return entered_outputs_ids_;
+  // A preferred output is the one with the largest scale. This is needed to
+  // properly render contents as it seems like an expectation of Wayland.
+  // However, if all the outputs the window is located at have the same scale
+  // factor, the very first entered output is chosen as there is no way to
+  // figure out what output the window occupies the most.
+  uint32_t GetPreferredEnteredOutputId();
+  const std::vector<WaylandOutput*>& entered_outputs() const {
+    return entered_outputs_;
   }
 
   // Returns current type of the window.
@@ -134,7 +142,7 @@ class WaylandWindow : public PlatformWindow,
   void PrepareForShutdown() override;
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetBounds() const override;
-  void SetTitle(const base::string16& title) override;
+  void SetTitle(const std::u16string& title) override;
   void SetCapture() override;
   void ReleaseCapture() override;
   bool HasCapture() const override;
@@ -210,6 +218,10 @@ class WaylandWindow : public PlatformWindow,
   // only applies to toplevel surfaces (surfaces such as popups, subsurfaces do
   // not support that).
   virtual bool IsActive() const;
+
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner() {
+    return ui_task_runner_;
+  }
 
  protected:
   WaylandWindow(PlatformWindowDelegate* delegate,
@@ -307,15 +319,15 @@ class WaylandWindow : public PlatformWindow,
   // Stores current opacity of the window. Set on ::Initialize call.
   ui::PlatformWindowOpacity opacity_;
 
-  // For top level window, stores IDs of outputs that the window is currently
-  // rendered at.
+  // For top level window, stores outputs that the window is currently rendered
+  // at.
   //
   // Not used by popups.  When sub-menus are hidden and shown again, Wayland
   // 'repositions' them to wrong outputs by sending them leave and enter
   // events so their list of entered outputs becomes meaningless after they have
   // been hidden at least once.  To determine which output the popup belongs to,
   // we ask its parent.
-  base::flat_set<uint32_t> entered_outputs_ids_;
+  std::vector<WaylandOutput*> entered_outputs_;
 
   // The type of the current WaylandWindow object.
   ui::PlatformWindowType type_ = ui::PlatformWindowType::kWindow;
@@ -335,6 +347,8 @@ class WaylandWindow : public PlatformWindow,
   WmDragHandler::Delegate* drag_handler_delegate_ = nullptr;
 
   base::OnceClosure drag_loop_quit_closure_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   base::WeakPtrFactory<WaylandWindow> weak_ptr_factory_{this};
 

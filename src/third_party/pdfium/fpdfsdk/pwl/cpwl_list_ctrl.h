@@ -17,7 +17,6 @@
 
 class CPWL_EditImpl;
 class CPWL_EditImpl_Iterator;
-class CPWL_List_Notify;
 class IPVT_FontMap;
 
 class CPWL_ListCtrl {
@@ -56,7 +55,6 @@ class CPWL_ListCtrl {
   int32_t GetCaret() const { return m_nCaretIndex; }
   int32_t GetSelect() const { return m_nSelItem; }
   int32_t GetTopItem() const;
-  void SetContentRect(const CFX_FloatRect& rect) { m_rcContent = rect; }
   CFX_FloatRect GetContentRect() const;
 
   int32_t GetItemIndex(const CFX_PointF& point) const;

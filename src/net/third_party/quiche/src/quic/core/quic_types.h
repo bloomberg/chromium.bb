@@ -7,6 +7,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <ostream>
 #include <vector>
@@ -42,6 +43,12 @@ using QuicPublicResetNonceProof = uint64_t;
 using QuicStreamOffset = uint64_t;
 using DiversificationNonce = std::array<char, 32>;
 using PacketTimeVector = std::vector<std::pair<QuicPacketNumber, QuicTime>>;
+
+enum : size_t { kStatelessResetTokenLength = 16 };
+using StatelessResetToken = std::array<char, kStatelessResetTokenLength>;
+
+// WebTransport session IDs are stream IDs.
+using WebTransportSessionId = uint64_t;
 
 enum : size_t { kQuicPathFrameBufferSize = 8 };
 using QuicPathFrameBuffer = std::array<uint8_t, kQuicPathFrameBufferSize>;
@@ -278,7 +285,7 @@ QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
 // byte, with the two most significant bits being 0. Thus, the following
 // enumerations are valid as both the numeric values of frame types AND their
 // encodings.
-enum QuicIetfFrameType : uint8_t {
+enum QuicIetfFrameType : uint64_t {
   IETF_PADDING = 0x00,
   IETF_PING = 0x01,
   IETF_ACK = 0x02,
@@ -708,10 +715,10 @@ enum AckResult {
 
 // Indicates the fate of a serialized packet in WritePacket().
 enum SerializedPacketFate : uint8_t {
-  DISCARD,         // Discard the packet.
-  COALESCE,        // Try to coalesce packet.
-  BUFFER,          // Buffer packet in buffered_packets_.
-  SEND_TO_WRITER,  // Send packet to writer.
+  DISCARD,                     // Discard the packet.
+  COALESCE,                    // Try to coalesce packet.
+  BUFFER,                      // Buffer packet in buffered_packets_.
+  SEND_TO_WRITER,              // Send packet to writer.
   LEGACY_VERSION_ENCAPSULATE,  // Perform Legacy Version Encapsulation on this
                                // packet.
 };

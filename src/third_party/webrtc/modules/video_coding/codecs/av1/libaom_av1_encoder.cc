@@ -41,7 +41,7 @@ namespace {
 
 // Encoder configuration parameters
 constexpr int kQpMin = 10;
-constexpr int kUsageProfile = 1;  // 0 = good quality; 1 = real-time.
+constexpr int kUsageProfile = AOM_USAGE_REALTIME;
 constexpr int kMinQindex = 145;   // Min qindex threshold for QP scaling.
 constexpr int kMaxQindex = 205;   // Max qindex threshold for QP scaling.
 constexpr int kBitDepth = 8;
@@ -195,7 +195,7 @@ int LibaomAv1Encoder::InitEncode(const VideoCodec* codec_settings,
 
   // Initialize encoder configuration structure with default values
   aom_codec_err_t ret =
-      aom_codec_enc_config_default(aom_codec_av1_cx(), &cfg_, 0);
+      aom_codec_enc_config_default(aom_codec_av1_cx(), &cfg_, kUsageProfile);
   if (ret != AOM_CODEC_OK) {
     RTC_LOG(LS_WARNING) << "LibaomAv1Encoder::EncodeInit returned " << ret
                         << " on aom_codec_enc_config_default.";
@@ -382,6 +382,42 @@ int LibaomAv1Encoder::InitEncode(const VideoCodec* codec_settings,
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
 
+  ret = aom_codec_control(&ctx_, AV1E_SET_ENABLE_CFL_INTRA, 0);
+  if (ret != AOM_CODEC_OK) {
+    RTC_LOG(LS_WARNING) << "LibaomAv1Encoder::EncodeInit returned " << ret
+                        << " on control AV1E_SET_ENABLE_CFL_INTRA.";
+    return WEBRTC_VIDEO_CODEC_ERROR;
+  }
+
+  ret = aom_codec_control(&ctx_, AV1E_SET_ENABLE_SMOOTH_INTRA, 0);
+  if (ret != AOM_CODEC_OK) {
+    RTC_LOG(LS_WARNING) << "LibaomAv1Encoder::EncodeInit returned " << ret
+                        << " on control AV1E_SET_ENABLE_SMOOTH_INTRA.";
+    return WEBRTC_VIDEO_CODEC_ERROR;
+  }
+
+  ret = aom_codec_control(&ctx_, AV1E_SET_ENABLE_ANGLE_DELTA, 0);
+  if (ret != AOM_CODEC_OK) {
+    RTC_LOG(LS_WARNING) << "LibaomAv1Encoder::EncodeInit returned " << ret
+                        << " on control AV1E_SET_ENABLE_ANGLE_DELTA.";
+    return WEBRTC_VIDEO_CODEC_ERROR;
+  }
+
+  ret = aom_codec_control(&ctx_, AV1E_SET_ENABLE_FILTER_INTRA, 0);
+  if (ret != AOM_CODEC_OK) {
+    RTC_LOG(LS_WARNING) << "LibaomAv1Encoder::EncodeInit returned " << ret
+                        << " on control AV1E_SET_ENABLE_FILTER_INTRA.";
+    return WEBRTC_VIDEO_CODEC_ERROR;
+  }
+
+  ret = aom_codec_control(&ctx_, AV1E_SET_INTRA_DEFAULT_TX_ONLY, 1);
+  if (ret != AOM_CODEC_OK) {
+    RTC_LOG(LS_WARNING)
+        << "LibaomAv1Encoder::EncodeInit returned " << ret
+        << " on control AOM_CTRL_AV1E_SET_INTRA_DEFAULT_TX_ONLY.";
+    return WEBRTC_VIDEO_CODEC_ERROR;
+  }
+
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -542,9 +578,22 @@ int32_t LibaomAv1Encoder::Encode(
   // Convert input frame to I420, if needed.
   VideoFrame prepped_input_frame = frame;
   if (prepped_input_frame.video_frame_buffer()->type() !=
-      VideoFrameBuffer::Type::kI420) {
+          VideoFrameBuffer::Type::kI420 &&
+      prepped_input_frame.video_frame_buffer()->type() !=
+          VideoFrameBuffer::Type::kI420A) {
     rtc::scoped_refptr<I420BufferInterface> converted_buffer(
         prepped_input_frame.video_frame_buffer()->ToI420());
+    // The buffer should now be a mapped I420 or I420A format, but some buffer
+    // implementations incorrectly return the wrong buffer format, such as
+    // kNative. As a workaround to this, we perform ToI420() a second time.
+    // TODO(https://crbug.com/webrtc/12602): When Android buffers have a correct
+    // ToI420() implementaion, remove his workaround.
+    if (converted_buffer->type() != VideoFrameBuffer::Type::kI420 &&
+        converted_buffer->type() != VideoFrameBuffer::Type::kI420A) {
+      converted_buffer = converted_buffer->ToI420();
+      RTC_CHECK(converted_buffer->type() == VideoFrameBuffer::Type::kI420 ||
+                converted_buffer->type() == VideoFrameBuffer::Type::kI420A);
+    }
     prepped_input_frame = VideoFrame(converted_buffer, frame.timestamp(),
                                      frame.render_time_ms(), frame.rotation());
   }
@@ -686,15 +735,8 @@ void LibaomAv1Encoder::SetRates(const RateControlParameters& parameters) {
     return;
   }
 
-  // Check input target bit rate value.
-  uint32_t rc_target_bitrate_kbps = parameters.bitrate.get_sum_kbps();
-  if (encoder_settings_.maxBitrate > 0)
-    RTC_DCHECK_LE(rc_target_bitrate_kbps, encoder_settings_.maxBitrate);
-  RTC_DCHECK_GE(rc_target_bitrate_kbps, encoder_settings_.minBitrate);
-
   svc_controller_->OnRatesUpdated(parameters.bitrate);
-  // Set target bit rate.
-  cfg_.rc_target_bitrate = rc_target_bitrate_kbps;
+  cfg_.rc_target_bitrate = parameters.bitrate.get_sum_kbps();
 
   if (SvcEnabled()) {
     for (int sid = 0; sid < svc_params_->number_spatial_layers; ++sid) {

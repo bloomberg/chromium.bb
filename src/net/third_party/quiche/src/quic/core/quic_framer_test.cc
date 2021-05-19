@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
@@ -29,7 +30,6 @@
 #include "quic/platform/api/quic_expect_bug.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
-#include "quic/platform/api/quic_ptr_util.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/test_tools/quic_framer_peer.h"
 #include "quic/test_tools/quic_test_utils.h"
@@ -47,7 +47,9 @@ namespace {
 const uint64_t kEpoch = UINT64_C(1) << 32;
 const uint64_t kMask = kEpoch - 1;
 
-const QuicUint128 kTestStatelessResetToken = 1010101;  // 0x0F69B5
+const StatelessResetToken kTestStatelessResetToken{
+    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+    0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f};
 
 // Use fields in which each byte is distinct to ensure that every byte is
 // framed correctly. The values are otherwise arbitrary.
@@ -153,7 +155,7 @@ class TestDecrypter : public QuicDecrypter {
     return true;
   }
   bool SetPreliminaryKey(absl::string_view /*key*/) override {
-    QUIC_BUG << "should not be called";
+    QUIC_BUG(quic_bug_10486_1) << "should not be called";
     return false;
   }
   bool SetDiversificationNonce(const DiversificationNonce& /*key*/) override {
@@ -319,7 +321,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     // Save a copy of the data so it is valid after the packet is processed.
     std::string* string_data =
         new std::string(frame.data_buffer, frame.data_length);
-    stream_data_.push_back(QuicWrapUnique(string_data));
+    stream_data_.push_back(absl::WrapUnique(string_data));
     stream_frames_.push_back(std::make_unique<QuicStreamFrame>(
         frame.stream_id, frame.fin, frame.offset, *string_data));
     if (VersionHasIetfQuicFrames(transport_version_)) {
@@ -336,7 +338,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     // Save a copy of the data so it is valid after the packet is processed.
     std::string* string_data =
         new std::string(frame.data_buffer, frame.data_length);
-    crypto_data_.push_back(QuicWrapUnique(string_data));
+    crypto_data_.push_back(absl::WrapUnique(string_data));
     crypto_frames_.push_back(std::make_unique<QuicCryptoFrame>(
         frame.level, frame.offset, *string_data));
     if (VersionHasIetfQuicFrames(transport_version_)) {
@@ -571,7 +573,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
-  bool IsValidStatelessResetToken(QuicUint128 token) const override {
+  bool IsValidStatelessResetToken(
+      const StatelessResetToken& token) const override {
     EXPECT_EQ(0u, framer_->current_received_frame_type());
     return token == kTestStatelessResetToken;
   }
@@ -1476,7 +1479,9 @@ TEST_P(QuicFramerTest, ClientConnectionIdFromShortHeaderToClient) {
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(FramerTestConnectionId(),
             visitor_.header_->destination_connection_id);
-  EXPECT_EQ(TestConnectionId(0x33), visitor_.header_->source_connection_id);
+  if (!framer_.do_not_synthesize_source_cid_for_short_header()) {
+    EXPECT_EQ(TestConnectionId(0x33), visitor_.header_->source_connection_id);
+  }
 }
 
 // In short header packets from client to server, the client connection ID
@@ -1510,7 +1515,9 @@ TEST_P(QuicFramerTest, ClientConnectionIdFromShortHeaderToServer) {
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(FramerTestConnectionId(),
             visitor_.header_->destination_connection_id);
-  EXPECT_EQ(TestConnectionId(0x33), visitor_.header_->source_connection_id);
+  if (!framer_.do_not_synthesize_source_cid_for_short_header()) {
+    EXPECT_EQ(TestConnectionId(0x33), visitor_.header_->source_connection_id);
+  }
 }
 
 TEST_P(QuicFramerTest, PacketHeaderWith0ByteConnectionId) {
@@ -1560,7 +1567,9 @@ TEST_P(QuicFramerTest, PacketHeaderWith0ByteConnectionId) {
   EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
   EXPECT_THAT(framer_.error(), IsError(QUIC_MISSING_PAYLOAD));
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(FramerTestConnectionId(), visitor_.header_->source_connection_id);
+  if (!framer_.do_not_synthesize_source_cid_for_short_header()) {
+    EXPECT_EQ(FramerTestConnectionId(), visitor_.header_->source_connection_id);
+  }
   EXPECT_FALSE(visitor_.header_->reset_flag);
   EXPECT_FALSE(visitor_.header_->version_flag);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
@@ -5746,8 +5755,8 @@ TEST_P(QuicFramerTest, IetfStatelessResetPacket) {
       0x01, 0x11, 0x02, 0x22, 0x03, 0x33, 0x04, 0x44,
       0x01, 0x11, 0x02, 0x22, 0x03, 0x33, 0x04, 0x44,
       // stateless reset token
-      0xB5, 0x69, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+      0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
   };
   // clang-format on
   if (!framer_.version().HasIetfInvariantHeader()) {
@@ -9239,6 +9248,59 @@ TEST_P(QuicFramerTest, BuildPublicResetPacketWithEndpointId) {
 }
 
 TEST_P(QuicFramerTest, BuildIetfStatelessResetPacket) {
+  if (GetQuicReloadableFlag(quic_fix_stateless_reset)) {
+    // clang-format off
+    unsigned char packet[] = {
+      // 1st byte 01XX XXXX
+      0x40,
+      // At least 4 bytes of random bytes.
+      0x00, 0x00, 0x00, 0x00,
+      // stateless reset token
+      0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+      0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f
+    };
+    // clang-format on
+
+    // Build the minimal stateless reset packet.
+    std::unique_ptr<QuicEncryptedPacket> data(
+        framer_.BuildIetfStatelessResetPacket(
+            FramerTestConnectionId(),
+            QuicFramer::GetMinStatelessResetPacketLength() + 1,
+            kTestStatelessResetToken));
+    ASSERT_TRUE(data);
+    EXPECT_EQ(QuicFramer::GetMinStatelessResetPacketLength(), data->length());
+    // Verify the first 2 bits are 01.
+    EXPECT_FALSE(data->data()[0] & FLAGS_LONG_HEADER);
+    EXPECT_TRUE(data->data()[0] & FLAGS_FIXED_BIT);
+    // Verify stateless reset token.
+    quiche::test::CompareCharArraysWithHexError(
+        "constructed packet",
+        data->data() + data->length() - kStatelessResetTokenLength,
+        kStatelessResetTokenLength,
+        AsChars(packet) + ABSL_ARRAYSIZE(packet) - kStatelessResetTokenLength,
+        kStatelessResetTokenLength);
+
+    // Packets with length <= minimal stateless reset does not trigger stateless
+    // reset.
+    EXPECT_QUIC_BUG(
+        std::unique_ptr<QuicEncryptedPacket> data2(
+            framer_.BuildIetfStatelessResetPacket(
+                FramerTestConnectionId(),
+                QuicFramer::GetMinStatelessResetPacketLength(),
+                kTestStatelessResetToken)),
+        "Tried to build stateless reset packet with received packet length");
+
+    // Do not send stateless reset >= minimal stateless reset + 1 + max
+    // connection ID length.
+    std::unique_ptr<QuicEncryptedPacket> data3(
+        framer_.BuildIetfStatelessResetPacket(FramerTestConnectionId(), 1000,
+                                              kTestStatelessResetToken));
+    ASSERT_TRUE(data3);
+    EXPECT_EQ(QuicFramer::GetMinStatelessResetPacketLength() + 1 +
+                  kQuicMaxConnectionIdWithLengthPrefixLength,
+              data3->length());
+    return;
+  }
   // clang-format off
   unsigned char packet[] = {
     // type (short header, 1 byte packet number)
@@ -9246,29 +9308,28 @@ TEST_P(QuicFramerTest, BuildIetfStatelessResetPacket) {
     // random packet number
     0xFE,
     // stateless reset token
-    0xB5, 0x69, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+    0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
   };
   // clang-format on
 
   std::unique_ptr<QuicEncryptedPacket> data(
-      framer_.BuildIetfStatelessResetPacket(FramerTestConnectionId(),
+      framer_.BuildIetfStatelessResetPacket(FramerTestConnectionId(), 0,
                                             kTestStatelessResetToken));
   ASSERT_TRUE(data != nullptr);
   // Skip packet number byte which is random in stateless reset packet.
   quiche::test::CompareCharArraysWithHexError(
       "constructed packet", data->data(), 1, AsChars(packet), 1);
   const size_t random_bytes_length =
-      data->length() - kPacketHeaderTypeSize - sizeof(kTestStatelessResetToken);
+      data->length() - kPacketHeaderTypeSize - kStatelessResetTokenLength;
   EXPECT_EQ(kMinRandomBytesLengthInStatelessReset, random_bytes_length);
   // Verify stateless reset token is correct.
   quiche::test::CompareCharArraysWithHexError(
       "constructed packet",
-      data->data() + data->length() - sizeof(kTestStatelessResetToken),
-      sizeof(kTestStatelessResetToken),
-      AsChars(packet) + ABSL_ARRAYSIZE(packet) -
-          sizeof(kTestStatelessResetToken),
-      sizeof(kTestStatelessResetToken));
+      data->data() + data->length() - kStatelessResetTokenLength,
+      kStatelessResetTokenLength,
+      AsChars(packet) + ABSL_ARRAYSIZE(packet) - kStatelessResetTokenLength,
+      kStatelessResetTokenLength);
 }
 
 TEST_P(QuicFramerTest, EncryptPacket) {
@@ -10852,8 +10913,8 @@ TEST_P(QuicFramerTest, NewConnectionIdFrame) {
       {"Unable to read new connection ID frame connection id.",
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x11}},
       {"Can not read new connection ID frame reset token.",
-       {0xb5, 0x69, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}}
+       {0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+        0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f}}
   };
   // clang-format on
 
@@ -10911,8 +10972,8 @@ TEST_P(QuicFramerTest, NewConnectionIdFrameVariableLength) {
       {"Unable to read new connection ID frame connection id.",
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10, 0x42}},
       {"Can not read new connection ID frame reset token.",
-       {0xb5, 0x69, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}}
+       {0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+        0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f}}
   };
   // clang-format on
 
@@ -11078,8 +11139,8 @@ TEST_P(QuicFramerTest, BuildNewConnectionIdFramePacket) {
     // new connection id
     0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x11,
     // stateless reset token
-    0xb5, 0x69, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+    0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
   };
   // clang-format on
 
@@ -11485,8 +11546,8 @@ TEST_P(QuicFramerTest, GetRetransmittableControlFrameSize) {
     return;
   }
 
-  QuicNewConnectionIdFrame new_connection_id(5, TestConnectionId(), 1, 101111,
-                                             1);
+  QuicNewConnectionIdFrame new_connection_id(5, TestConnectionId(), 1,
+                                             kTestStatelessResetToken, 1);
   EXPECT_EQ(QuicFramer::GetNewConnectionIdFrameSize(new_connection_id),
             QuicFramer::GetRetransmittableControlFrameSize(
                 framer_.transport_version(), QuicFrame(&new_connection_id)));
@@ -15162,6 +15223,85 @@ TEST_P(QuicFramerTest, KeyUpdateLocallyInitiatedReceivedOldPacket) {
   EXPECT_EQ(1u, visitor_.key_update_count());
   EXPECT_EQ(2, visitor_.derive_next_key_count_);
   EXPECT_EQ(1, visitor_.decrypted_first_packet_in_key_phase_count_);
+}
+
+TEST_P(QuicFramerTest, KeyUpdateOnFirstReceivedPacket) {
+  if (!framer_.version().UsesTls()) {
+    // Key update is only used in QUIC+TLS.
+    return;
+  }
+  SetQuicReloadableFlag(quic_fix_key_update_on_first_packet, true);
+  ASSERT_TRUE(framer_.version().KnowsWhichDecrypterToUse());
+  // Doesn't use SetDecrypterLevel since we want to use StrictTaggingDecrypter
+  // instead of TestDecrypter.
+  framer_.InstallDecrypter(ENCRYPTION_FORWARD_SECURE,
+                           std::make_unique<StrictTaggingDecrypter>(/*key=*/0));
+  framer_.SetKeyUpdateSupportForConnection(true);
+
+  QuicPacketHeader header;
+  header.destination_connection_id = FramerTestConnectionId();
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = QuicPacketNumber(123);
+
+  QuicFrames frames = {QuicFrame(QuicPaddingFrame())};
+
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      EncryptPacketWithTagAndPhase(*data, /*tag=*/1, /*phase=*/true));
+  ASSERT_TRUE(encrypted);
+
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_SERVER);
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+  // Processed valid packet with phase=1, key=1: do key update.
+  EXPECT_EQ(1u, visitor_.key_update_count());
+  EXPECT_EQ(1, visitor_.derive_next_key_count_);
+  EXPECT_EQ(1, visitor_.decrypted_first_packet_in_key_phase_count_);
+}
+
+TEST_P(QuicFramerTest, ErrorWhenUnexpectedFrameTypeEncountered) {
+  if (!GetQuicReloadableFlag(quic_reject_unexpected_ietf_frame_types) ||
+      !VersionHasIetfQuicFrames(framer_.transport_version()) ||
+      !QuicVersionHasLongHeaderLengths(framer_.transport_version()) ||
+      !framer_.version().HasLongHeaderLengths()) {
+    return;
+  }
+  SetDecrypterLevel(ENCRYPTION_ZERO_RTT);
+  // clang-format off
+  unsigned char packet[] = {
+    // public flags (long header with packet type ZERO_RTT_PROTECTED and
+    // 4-byte packet number)
+    0xD3,
+    // version
+    QUIC_VERSION_BYTES,
+    // destination connection ID length
+    0x08,
+    // destination connection ID
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // source connection ID length
+    0x08,
+    // source connection ID
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x11,
+    // long header packet length
+    0x05,
+    // packet number
+    0x12, 0x34, 0x56, 0x00,
+    // unexpected ietf ack frame type in 0-RTT packet
+    0x02,
+  };
+  // clang-format on
+
+  QuicEncryptedPacket encrypted(AsChars(packet), ABSL_ARRAYSIZE(packet), false);
+
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
+
+  EXPECT_THAT(framer_.error(), IsError(IETF_QUIC_PROTOCOL_VIOLATION));
+  EXPECT_EQ(
+      "IETF frame type IETF_ACK is unexpected at encryption level "
+      "ENCRYPTION_ZERO_RTT",
+      framer_.detailed_error());
 }
 
 }  // namespace

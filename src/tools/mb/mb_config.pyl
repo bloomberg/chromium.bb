@@ -118,21 +118,27 @@
       # on the chromium.gpu waterfall, which it mirrors via trybots.pyl.
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild',
 
-      'android-marshmallow-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting_webview_google',
-      'android-marshmallow-x86-rel-non-cq': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting_webview_google',
+      'android-marshmallow-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_webview_google',
+      'android-marshmallow-x86-rel-non-cq': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_webview_google',
       'android-nougat-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_google',
+      # TODO(crbug/1182468) Remove android coverage bots after coverage is
+      # running on CQ.
+      'android-pie-arm64-coverage-experimental-rel': 'android_release_bot_arm64_webview_google_expectations',
       'android-pie-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-pie-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
+      'android-weblayer-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_disable_proguard_webview_google',
       'android-10-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_google',
     },
 
     'chromium.android.fyi': {
+      'Android ASAN (dbg) (reclient)': 'android_clang_asan_debug_bot_reclient',
+      'Android arm64 Builder (dbg) (reclient)': 'android_webview_google_debug_static_bot_arm64_reclient',
       'Android WebView P FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-11-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
       'android-pie-arm64-wpt-rel-non-cq': 'android_release_bot_minimal_symbols_arm64_webview_google',
-      'android-weblayer-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
+      'android-web-platform-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
       'android-weblayer-pie-x86-wpt-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
-      'android-weblayer-with-aosp-webview-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild',
+      'android-weblayer-with-aosp-webview-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard',
     },
 
     'chromium.angle': {
@@ -167,6 +173,7 @@
       'chromeos-kevin-rel': 'chromeos_kevin',
       'lacros-amd64-generic-binary-size-rel': 'chromeos_amd64-generic_lacros_rel',
       'lacros-amd64-generic-rel': 'chromeos_amd64-generic_lacros_rel',
+      'linux-ash-chromium-generator-rel': 'chromeos_with_codecs_release_bot',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-lacros-builder-rel': 'lacros_on_linux_release_bot',
@@ -189,6 +196,8 @@
       'ToTAndroidOfficial': 'android_clang_tot_official_arm64',
       'ToTAndroid64': 'android_clang_tot_release_arm64',
       'ToTAndroid x64': 'android_clang_tot_x64',
+      'ToTFuchsia x64': 'fuchsia_clang_tot_release_x64',
+      'ToTFuchsiaOfficial': 'fuchsia_clang_tot_official_arm64',
       'ToTLinuxOfficial': 'clang_tot_official',
       'ToTLinux': 'clang_tot_linux_full_symbols_shared_release',
       'ToTLinuxCoverage': 'clang_tot_coverage_minimal_symbols_release',
@@ -275,7 +284,7 @@
 
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'afl_asan_shared_release_bot',
-
+      'ASAN Debug (reclient)': 'asan_lsan_debug_bot_reclient',
       'Libfuzzer Upload Chrome OS ASan': 'libfuzzer_chromeos_asan_release_bot',
       'Libfuzzer Upload Linux ASan': 'libfuzzer_asan_release_bot',
       'Libfuzzer Upload Linux ASan (reclient)': 'libfuzzer_asan_release_bot_reclient',
@@ -284,11 +293,10 @@
       'Libfuzzer Upload Linux UBSan': 'libfuzzer_ubsan_release_bot',
       'Libfuzzer Upload Mac ASan': 'libfuzzer_mac_asan_shared_release_bot',
       'Libfuzzer Upload Windows ASan': 'libfuzzer_windows_asan_release_bot',
-
+      'Linux Builder (goma cache silo)': 'gpu_tests_release_bot',
       'Linux Builder (reclient)': 'gpu_tests_release_bot_reclient',
       'Linux TSan Builder (goma cache silo)': 'tsan_disable_nacl_release_bot',
       'Linux TSan Builder (reclient)': 'tsan_disable_nacl_release_bot_reclient',
-      
       'Linux Viz': 'release_trybot',
       'lacros-amd64-generic-rel-fyi': 'chromeos_amd64-generic_lacros_rel',
       'linux-ash-chromium-builder-fyi-rel': 'chromeos_with_codecs_release_bot',
@@ -300,19 +308,25 @@
 
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
       'TSAN Debug (reclient)': 'tsan_disable_nacl_debug_bot_reclient',
+      'TSAN Release (j-100) (reclient)':  'tsan_disable_nacl_release_bot_reclient',
+      'TSAN Release (j-250) (reclient)':  'tsan_disable_nacl_release_bot_reclient',
       'TSAN Release (reclient)':  'tsan_disable_nacl_release_bot_reclient',
+      'TSAN Release (runsc-exp) (reclient)':  'tsan_disable_nacl_release_bot_reclient',
+      'UBSan Release (reclient)': 'ubsan_release_bot_reclient',
       'VR Linux': 'vr_release_bot',
+      'VR Linux (reclient)': 'vr_release_bot_reclient',
       'Win 10 Fast Ring': 'release_trybot',
+      'Win x64 Builder (reclient)': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'android-code-coverage': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_java_coverage',
       'android-code-coverage-native': 'gpu_tests_android_release_bot_no_symbols_arm64_fastbuild_native_coverage',
       'android-paeverywhere-arm-fyi-dbg': 'debug_bot_paeverywhere_arm',
       'android-paeverywhere-arm-fyi-rel': 'release_trybot_paeverywhere_arm',
       'android-paeverywhere-arm64-fyi-dbg': 'debug_bot_paeverywhere_arm64',
       'android-paeverywhere-arm64-fyi-rel': 'release_trybot_paeverywhere_arm64',
+      'chromeos-amd64-generic-rel-dchecks': 'chromeos_amd64-generic_use_fake_dbus_clients_dchecks',
       'fuchsia-code-coverage': 'fuchsia_clang_code_coverage',
       'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
-      'fuchsia-fyi-arm64-size': 'fuchsia_official_arm64_size',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
       'ios13-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
@@ -325,7 +339,7 @@
       'ios-simulator-code-coverage': 'clang_code_coverage_ios_xctest',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
       'ios-simulator-cronet': 'ios_cronet_xctest',
-      'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_multi_window_xctest',
+      'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_xctest',
       'ios-webkit-tot': 'ios_simulator_debug_static_bot_xctest',
       'linux-annotator-rel': 'release_bot',
       'linux-blink-animation-use-time-delta': 'debug_bot_enable_blink_animation_use_time_delta',
@@ -368,6 +382,8 @@
       'Linux Builder Goma RBE Canary': 'gpu_tests_release_bot',
       'Linux Builder Goma RBE Latest Client': 'gpu_tests_release_bot',
 
+      'Win Builder (dbg) Goma RBE Canary Client': 'gpu_tests_debug_bot_x86_no_symbols',
+      'Win Builder Goma RBE Canary Client': 'gpu_tests_release_bot_x86_minimal_symbols',
       'Win Builder (dbg) Goma RBE Latest Client': 'gpu_tests_debug_bot_x86_no_symbols',
       'Win Builder Goma RBE Latest Client': 'gpu_tests_release_bot_x86_minimal_symbols',
 
@@ -394,9 +410,6 @@
     },
 
     'chromium.goma': {
-      'Chromium Linux Goma Staging': 'release_bot',
-      'Chromium Mac Goma Staging': 'release_bot',
-      'CrWinGomaStaging': 'release_bot_x86_minimal_symbols',
       'Chromium iOS Goma RBE ToT': 'ios_device_release_compile_only',
       'Chromium Linux Goma RBE ToT': 'release_bot',
       'Chromium Linux Goma RBE ToT (ATS)': 'release_bot',
@@ -409,7 +422,6 @@
       'Chromium Mac Goma RBE Staging': 'release_bot',
       'Chromium Mac Goma RBE Staging (dbg)': 'debug_bot',
 
-      # Same as CrWinGomaStaging.
       'Chromium Win Goma RBE ToT': 'release_bot_x86_minimal_symbols',
       'Chromium Win Goma RBE Staging': 'release_bot_x86_minimal_symbols',
       'Chromium Win Goma RBE Staging (clobber)': 'release_bot_x86_minimal_symbols',
@@ -429,8 +441,8 @@
       'GPU Mac Builder (dbg)': 'gpu_tests_debug_bot',
       'GPU Linux Builder': 'gpu_tests_release_trybot',
       'GPU Linux Builder (dbg)': 'gpu_tests_debug_bot',
-      'GPU Win x64 Builder': 'gpu_tests_release_trybot_resource_whitelisting',
-      'GPU Win x64 Builder Code Coverage': 'gpu_tests_release_trybot_resource_whitelisting_code_coverage',
+      'GPU Win x64 Builder': 'gpu_tests_release_trybot_resource_allowlisting',
+      'GPU Win x64 Builder Code Coverage': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
       'GPU Win x64 Builder (dbg)': 'gpu_tests_debug_bot',
       'Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64_fastbuild',
     },
@@ -461,14 +473,11 @@
       'GPU FYI Linux dEQP Builder': 'angle_deqp_release_trybot',
       'GPU FYI Mac Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Mac Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
-      'GPU FYI Mac dEQP Builder': 'angle_deqp_release_trybot',
       'GPU FYI Perf Android 64 Builder': 'gpu_fyi_tests_android_vulkan_ndk_release_trybot_dcheck_off_arm64',
       'GPU FYI Win Builder': 'gpu_fyi_tests_release_trybot_x86',
       'GPU FYI Win Builder (dbg)': 'gpu_fyi_tests_debug_trybot_x86',
-      'GPU FYI Win dEQP Builder': 'angle_deqp_release_trybot_x86',
       'GPU FYI Win x64 Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Win x64 Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
-      'GPU FYI Win x64 dEQP Builder': 'angle_deqp_release_trybot',
       'GPU FYI Win x64 DX12 Vulkan Builder': 'gpu_fyi_tests_dx12vk_release_trybot',
       'GPU FYI Win x64 DX12 Vulkan Builder (dbg)': 'gpu_fyi_tests_dx12vk_debug_trybot',
       'GPU FYI XR Win x64 Builder': 'gpu_fyi_tests_release_trybot',
@@ -555,6 +564,7 @@
       'Android arm64 Builder Perf': 'official_goma_minimal_symbols_android_arm64',
       'android_arm64-builder-perf': 'official_goma_minimal_symbols_android_arm64',
       'android-builder-perf': 'official_goma_minimal_symbols_android',
+      'chromecast-linux-builder-perf': 'cast_binary_size',
       'chromeos-amd64-generic-lacros-builder-perf': 'chromeos_amd64-generic_lacros_official',
       'linux-builder-perf': 'official_goma_linux_perf',
       'linux-builder-perf-rel': 'official_goma_linux_perf',
@@ -562,6 +572,10 @@
       'mac-arm-builder-perf': 'official_goma_mac_arm_perf',
       'win32-builder-perf': 'official_goma_x86_perf',
       'win64-builder-perf': 'official_goma_perf',
+    },
+
+    'chromium.perf.calibration': {
+      'linux-perf-calibration': 'official_goma_linux_perf',
     },
 
     'chromium.perf.fyi': {
@@ -574,13 +588,10 @@
     'chromium.swangle': {
       'linux-swangle-chromium-x64': 'gpu_tests_release_trybot',
       'linux-swangle-tot-angle-x64': 'angle_deqp_release_trybot',
-      'linux-swangle-tot-angle-x86': 'angle_deqp_release_trybot_x86',
       'linux-swangle-tot-swiftshader-x64': 'angle_deqp_release_trybot',
-      'linux-swangle-tot-swiftshader-x86': 'angle_deqp_release_trybot_x86',
       'linux-swangle-x64': 'angle_deqp_release_trybot',
-      'linux-swangle-x86': 'angle_deqp_release_trybot_x86',
       'mac-swangle-chromium-x64': 'gpu_tests_release_trybot_deterministic_mac',
-      'win-swangle-chromium-x86': 'gpu_tests_release_trybot_x86_resource_whitelisting',
+      'win-swangle-chromium-x86': 'gpu_tests_release_trybot_x86_resource_allowlisting',
       'win-swangle-tot-angle-x64': 'angle_deqp_release_trybot',
       'win-swangle-tot-angle-x86': 'angle_deqp_release_trybot_x86',
       'win-swangle-tot-swiftshader-x64': 'angle_deqp_release_trybot',
@@ -648,7 +659,7 @@
       'V8 Blink Mac': 'release_bot_blink',
       'V8 Blink Win': 'release_bot_blink',
       'V8 Linux GN': 'release_bot',
-      'Win V8 FYI Release (NVIDIA)': 'gpu_tests_release_trybot_x86_resource_whitelisting',
+      'Win V8 FYI Release (NVIDIA)': 'gpu_tests_release_trybot_x86_resource_allowlisting',
     },
 
     'chromium.updater': {
@@ -776,15 +787,20 @@
       'android-cronet-marshmallow-arm64-rel': 'android_cronet_release_trybot_arm64',
       'android-inverse-fieldtrials-pie-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google_invert_fieldtrials',
       'android-lollipop-arm-rel': 'android_release_trybot_webview_google',
-      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage',
-      'android-marshmallow-x86-rel': 'android_release_trybot_x86_fastbuild_resource_whitelisting_webview_google',
-      'android-marshmallow-x86-rel-non-cq': 'android_release_trybot_x86_fastbuild_resource_whitelisting_webview_google',
+      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_allowlisting_fastbuild_java_coverage',
+      'android-marshmallow-x86-rel': 'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google',
+      'android-marshmallow-x86-rel-non-cq': 'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google',
       'android-nougat-arm64-rel': 'android_release_trybot_arm64_fastbuild_webview_google',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
+      # TODO(crbug/1182468) Remove android coverage bots after coverage is
+      # running on CQ.
       'android-pie-arm64-coverage-rel': 'android_release_trybot_arm64_webview_google_native_coverage',
+      'android-pie-arm64-coverage-experimental-rel': 'android_release_trybot_arm64_webview_google_expectations_native_coverage',
       'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google_expectations',
       'android-pie-arm64-wpt-rel-non-cq': 'android_release_trybot_arm64_webview_google',
       'android-pie-x86-rel': 'android_release_trybot_x86_fastbuild_webview_google',
+      'android-web-platform-pie-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google',
+      'android-weblayer-pie-x86-rel-tests': 'android_release_trybot_minimal_symbols_x86_fastbuild_webview_google',
       'android-weblayer-pie-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google',
       'android-weblayer-pie-x86-wpt-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google',
       'android-webview-pie-arm64-fyi-rel': 'android_release_trybot_arm64_webview_google',
@@ -842,19 +858,20 @@
       'android_angle_vk32_deqp_rel_ng': 'angle_deqp_android_vulkan_ndk_release_trybot',
       'android_angle_vk64_deqp_rel_ng': 'angle_deqp_android_vulkan_ndk_release_trybot_arm64',
       'fuchsia-angle-rel': 'gpu_fyi_tests_release_trybot_fuchsia',
+      'fuchsia-angle-try': 'angle_specific_release_trybot_fuchsia',
       'ios-angle-try-intel': 'angle_specific_release_trybot_ios',
       'linux-angle-rel': 'gpu_fyi_tests_release_trybot',
+      'linux-angle-chromium-try': 'gpu_tests_release_trybot',
       'linux_angle_ozone_rel_ng': 'angle_ozone_linux_system_gbm_libdrm_release_trybot',
       'linux_angle_deqp_rel_ng': 'angle_deqp_release_trybot',
+      'linux-angle-try': 'angle_specific_release_trybot',
+      'linux-ozone-angle-try': 'angle_specific_ozone_linux_system_gbm_libdrm_release_trybot',
       'mac-angle-chromium-try': 'gpu_tests_release_trybot_deterministic_mac',
-      'mac-angle-rel': 'gpu_fyi_tests_release_trybot',
       'mac-angle-try': 'angle_specific_release_trybot',
-      'win-angle-rel-32': 'gpu_fyi_tests_release_trybot_x86',
-      'win-angle-rel-64': 'gpu_fyi_tests_release_trybot',
-      'win-angle-deqp-rel-32': 'angle_deqp_release_trybot_x86',
-      'win-angle-deqp-rel-64': 'angle_deqp_release_trybot',
       'win-angle-chromium-x64-try': 'gpu_tests_release_trybot',
+      'win-angle-chromium-x86-try': 'gpu_tests_release_trybot_x86',
       'win-angle-x64-try': 'angle_specific_release_trybot',
+      'win-angle-x86-try': 'angle_specific_release_trybot_x86',
     },
 
     'tryserver.chrome': {
@@ -898,6 +915,7 @@
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'chromeos_amd64-generic_cfi_thin_lto',
       'chromeos-amd64-generic-dbg': 'chromeos_amd64-generic_dbg',
       'chromeos-amd64-generic-rel': 'chromeos_amd64-generic_use_fake_dbus_clients',
+      'chromeos-amd64-generic-rel-dchecks': 'chromeos_amd64-generic_use_fake_dbus_clients_dchecks',
       'chromeos-arm-generic-dbg': 'chromeos_arm-generic_dbg',
       'chromeos-arm-generic-rel': 'chromeos_arm-generic_dcheck_always_on',
       'chromeos-kevin-compile-rel': 'chromeos_kevin',
@@ -988,6 +1006,8 @@
       'linux-ozone-rel': 'ozone_linux_release_trybot',
       'linux-perfetto-rel': 'perfetto_release_trybot',
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
+      'linux-rel-reclient': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_reclient',
+      'linux-rel-rts': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-trusty-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange',
       'linux-viz-rel': 'release_trybot',
       'linux-wpt-fyi-rel': 'release_trybot',
@@ -1030,7 +1050,6 @@
     },
 
     'tryserver.chromium.mac': {
-      'gpu-fyi-try-mac-amd-dqp': 'angle_deqp_release_trybot',
       'gpu-fyi-try-mac-amd-pro-rel': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-mac-amd-retina-dbg': 'gpu_fyi_tests_debug_trybot',
       'gpu-fyi-try-mac-amd-retina-exp': 'gpu_fyi_tests_release_trybot',
@@ -1038,7 +1057,6 @@
       'gpu-fyi-try-mac-arm64-apple-dtk-rel': 'gpu_fyi_tests_release_trybot_arm64',
       'gpu-fyi-try-mac-asan': 'gpu_fyi_tests_release_trybot_asan',
       'gpu-fyi-try-mac-intel-dbg': 'gpu_fyi_tests_debug_trybot',
-      'gpu-fyi-try-mac-intel-dqp': 'angle_deqp_release_trybot',
       'gpu-fyi-try-mac-intel-exp': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-mac-intel-rel': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-mac-intel-uhd-630-rel': 'gpu_fyi_tests_release_trybot',
@@ -1058,7 +1076,7 @@
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
       'ios-simulator-inverse-fieldtrials-fyi': 'ios_simulator_debug_static_bot_invert_fieldtrials_xctest',
       'ios-simulator-noncq': 'ios_simulator_debug_static_bot_xctest',
-      'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_multi_window_xctest',
+      'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_xctest',
       'mac-osxbeta-rel': 'gpu_tests_release_trybot_deterministic_mac',
       'mac_chromium_10.11_rel_ng': 'gpu_tests_release_trybot_deterministic_mac',
       'mac_chromium_10.12_rel_ng': 'gpu_tests_release_trybot_deterministic_mac',
@@ -1073,14 +1091,16 @@
       'mac_chromium_dbg_ng': 'gpu_tests_debug_bot',
       'mac_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
       'mac_upload_clang': 'release_bot',
+      'mac_upload_clang_arm': 'release_bot',
       'mac-inverse-fieldtrials-fyi-rel': 'gpu_tests_release_trybot_deterministic_mac_invert_fieldtrials',
-      'mac-rel': 'gpu_tests_release_trybot_deterministic_mac_code_coverage',
+      'mac-rel': 'gpu_tests_release_trybot_deterministic_mac',
       'mac-arm64-rel': 'mac_arm64_release_trybot',
     },
 
     'tryserver.chromium.perf': {
       'Android Compile Perf': 'official_goma_minimal_symbols_android',
       'Android arm64 Compile Perf': 'official_goma_minimal_symbols_android_arm64',
+      'Chromeos Amd64 Generic Lacros Builder Perf': 'chromeos_amd64-generic_lacros_official',
       'Fuchsia Builder Perf': 'official_goma_fuchsia_arm64_perf',
       'Linux Builder Perf': 'official_goma_linux_perf',
       'Mac Builder Perf': 'official_goma_mac_perf',
@@ -1092,13 +1112,10 @@
     'tryserver.chromium.swangle': {
       'linux-swangle-chromium-try-x64': 'gpu_tests_release_trybot',
       'linux-swangle-try-tot-angle-x64': 'angle_deqp_release_trybot',
-      'linux-swangle-try-tot-angle-x86': 'angle_deqp_release_trybot_x86',
       'linux-swangle-try-tot-swiftshader-x64': 'angle_deqp_release_trybot',
-      'linux-swangle-try-tot-swiftshader-x86': 'angle_deqp_release_trybot_x86',
       'linux-swangle-try-x64': 'angle_deqp_release_trybot',
-      'linux-swangle-try-x86': 'angle_deqp_release_trybot_x86',
       'mac-swangle-chromium-try-x64': 'gpu_tests_release_trybot_deterministic_mac',
-      'win-swangle-chromium-try-x86': 'gpu_tests_release_trybot_x86_resource_whitelisting',
+      'win-swangle-chromium-try-x86': 'gpu_tests_release_trybot_x86_resource_allowlisting',
       'win-swangle-try-tot-angle-x64': 'angle_deqp_release_trybot',
       'win-swangle-try-tot-angle-x86': 'angle_deqp_release_trybot_x86',
       'win-swangle-try-tot-swiftshader-x64': 'angle_deqp_release_trybot',
@@ -1116,36 +1133,32 @@
 
     'tryserver.chromium.win': {
       'gpu-fyi-try-win7-amd-dbg-32': 'gpu_fyi_tests_debug_trybot_x86',
-      'gpu-fyi-try-win7-amd-dqp-32': 'angle_deqp_release_trybot_x86',
       'gpu-fyi-try-win7-amd-rel-32': 'gpu_fyi_tests_release_trybot_x86',
-      'gpu-fyi-try-win7-nvidia-dqp-64': 'angle_deqp_release_trybot',
       'gpu-fyi-try-win7-nvidia-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win7-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win10-amd-rel-64': 'gpu_fyi_tests_release_trybot',
-      'gpu-fyi-try-win10-intel-dqp-64': 'angle_deqp_release_trybot',
       'gpu-fyi-try-win10-intel-exp-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win10-intel-rel-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win10-nvidia-dbg-64': 'gpu_fyi_tests_debug_trybot',
-      'gpu-fyi-try-win10-nvidia-dqp-64': 'angle_deqp_release_trybot',
       'gpu-fyi-try-win10-nvidia-dx12vk-dbg-64': 'gpu_fyi_tests_dx12vk_debug_trybot',
       'gpu-fyi-try-win10-nvidia-dx12vk-rel-64': 'gpu_fyi_tests_dx12vk_release_trybot',
       'gpu-fyi-try-win10-nvidia-exp-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win10-nvidia-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win10-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win10-nvidia-sk-dawn-rel-64': 'gpu_tests_sk_dawn_release_trybot',
-      'win10_chromium_inverse_fieldtrials_x64_fyi_rel_ng': 'gpu_tests_release_trybot_resource_whitelisting_invert_fieldtrials',
+      'win10_chromium_inverse_fieldtrials_x64_fyi_rel_ng': 'gpu_tests_release_trybot_resource_allowlisting_invert_fieldtrials',
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_bot',
-      'win10_chromium_x64_rel_ng': 'gpu_tests_release_trybot_resource_whitelisting_code_coverage',
+      'win10_chromium_x64_rel_ng': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
       'win-annotator-rel': 'release_trybot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
       'win-celab-try-rel': 'release_bot_minimal_symbols',
       'win-libfuzzer-asan-rel': 'libfuzzer_windows_asan_release_trybot',
-      'win7-rel': 'gpu_tests_release_trybot_x86_resource_whitelisting',
+      'win7-rel': 'gpu_tests_release_trybot_x86_resource_allowlisting',
       'win_x64_archive': 'release_trybot',
       'win_archive': 'release_trybot_x86',
       'win_chromium_compile_dbg_ng': 'gpu_tests_debug_bot_x86_no_symbols',
-      'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_resource_whitelisting',
+      'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_resource_allowlisting',
       'win_chromium_dbg_ng': 'gpu_tests_debug_bot_x86_no_symbols',
       'win_chromium_x64_rel_ng': 'gpu_tests_release_trybot',
       'win_mojo': 'release_trybot_x86',
@@ -1165,7 +1178,7 @@
     },
 
     'tryserver.webrtc': {
-      'win_chromium_compile': 'gpu_tests_release_trybot_resource_whitelisting',
+      'win_chromium_compile': 'gpu_tests_release_trybot_resource_allowlisting',
       'win_chromium_compile_dbg': 'gpu_tests_debug_bot_x86_no_symbols',
       'mac_chromium_compile': 'gpu_tests_release_trybot',
       'linux_chromium_compile': 'release_trybot',
@@ -1205,6 +1218,10 @@
 
     'android_clang_asan_debug_bot': [
       'android', 'clang', 'asan', 'debug_bot', 'strip_debug_info',
+    ],
+
+    'android_clang_asan_debug_bot_reclient': [
+      'android', 'clang', 'asan', 'debug_bot_reclient', 'strip_debug_info',
     ],
 
     'android_clang_asan_debug_trybot_compile_only_fastbuild': [
@@ -1372,11 +1389,6 @@
       'strip_debug_info', 'android_fastbuild', 'webview_google',
     ],
 
-    'android_release_bot_minimal_symbols_x86_fastbuild': [
-      'android', 'release_bot', 'minimal_symbols', 'strip_debug_info',
-      'android_fastbuild', 'x86',
-    ],
-
     'android_release_bot_minimal_symbols_arm64_webview_google': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
       'strip_debug_info', 'webview_google',
@@ -1387,14 +1399,25 @@
       'webview_google',
     ],
 
-    'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting_webview_google': [
+    'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard': [
+      'android', 'release_bot', 'minimal_symbols',
+      'android_fastbuild', 'x86', 'resource_allowlisting', 'disable_proguard'
+    ],
+
+    'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_webview_google': [
       'android', 'release_bot', 'minimal_symbols', 'x86',
-      'android_fastbuild', 'resource_whitelisting', 'webview_google',
+      'android_fastbuild', 'resource_allowlisting', 'webview_google',
     ],
 
     'android_release_bot_minimal_symbols_x86_fastbuild_webview_google': [
       'android', 'release_bot', 'minimal_symbols', 'x86',
       'strip_debug_info', 'android_fastbuild', 'webview_google',
+    ],
+
+    'android_release_bot_minimal_symbols_x86_fastbuild_disable_proguard_webview_google': [
+      'android', 'release_bot', 'minimal_symbols', 'x86',
+      'strip_debug_info', 'android_fastbuild', 'webview_google',
+      'disable_proguard'
     ],
 
     'android_release_trybot': [
@@ -1420,6 +1443,21 @@
       'webview_google', 'fail_on_android_expectations',
     ],
 
+    # TODO(crbug/1182468) Remove these android coverage expectations after
+    # existing CQ bot is running them.
+    'android_release_bot_arm64_webview_google_expectations': [
+      'android', 'release_bot', 'arm64', 'strip_debug_info',
+      'webview_google', 'fail_on_android_expectations',
+    ],
+
+    # TODO(crbug/1182468) Remove these android coverage expectations after
+    # existing CQ bot is running them.
+    'android_release_trybot_arm64_webview_google_expectations_native_coverage': [
+      'android', 'release_trybot', 'arm64', 'strip_debug_info',
+      'webview_google', 'fail_on_android_expectations',
+      'use_clang_coverage', 'partial_code_coverage_instrumentation',
+    ],
+
     'android_release_trybot_arm64_webview_google_native_coverage': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
       'webview_google',
@@ -1431,9 +1469,14 @@
       'webview_google',
     ],
 
-    'android_release_trybot_x86_fastbuild_resource_whitelisting_webview_google': [
+    'android_release_trybot_minimal_symbols_x86_fastbuild_webview_google': [
+      'android', 'release_trybot', 'minimal_symbols', 'x86',
+      'strip_debug_info', 'android_fastbuild', 'webview_google',
+    ],
+
+    'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google': [
       'android', 'release_trybot', 'x86', 'android_fastbuild',
-      'resource_whitelisting', 'webview_google',
+      'resource_allowlisting', 'webview_google',
     ],
 
     'android_release_trybot_x86_fastbuild_webview_google': [
@@ -1452,6 +1495,10 @@
 
     'android_webview_google_debug_static_bot_arm64': [
       'android', 'debug_static_bot', 'arm64', 'webview_google',
+    ],
+
+    'android_webview_google_debug_static_bot_arm64_reclient': [
+      'android', 'debug_static_bot_reclient', 'arm64', 'webview_google',
     ],
 
     'android_without_codecs_debug_bot': [
@@ -1591,6 +1638,10 @@
       'asan', 'lsan', 'debug_bot',
     ],
 
+    'asan_lsan_debug_bot_reclient': [
+      'asan', 'lsan', 'debug_bot_reclient',
+    ],
+
     'asan_lsan_fuzzer_v8_heap_chromeos_codecs_release_bot': [
       'asan', 'lsan', 'v8_heap', 'chromeos_codecs', 'release_bot',
     ],
@@ -1626,7 +1677,7 @@
     ],
 
     'cast_binary_size': [
-      'cast', 'goma', 'minimal_symbols', 'official_optimize',
+      'cast', 'minimal_symbols', 'release_bot',
     ],
 
     'cast_audio_release_bot': [
@@ -1675,6 +1726,10 @@
 
     'chromeos_amd64-generic_use_fake_dbus_clients': [
       'chromeos_amd64-generic', 'use_fake_dbus_clients',
+    ],
+
+    'chromeos_amd64-generic_use_fake_dbus_clients_dchecks': [
+      'chromeos_amd64-generic', 'use_fake_dbus_clients', 'dcheck_always_on',
     ],
 
     'chromeos_arm-generic': [
@@ -1964,8 +2019,12 @@
       'fuchsia', 'release_bot', 'clang', 'use_clang_coverage', 'no_symbols'
     ],
 
-    'fuchsia_official_arm64_size': [
-      'official_optimize_goma', 'fuchsia', 'arm64', 'release_bot'
+    'fuchsia_clang_tot_official_arm64': [
+      'official_optimize', 'fuchsia', 'arm64', 'clang_tot', 'static',
+    ],
+
+    'fuchsia_clang_tot_release_x64': [
+      'fuchsia', 'release', 'clang_tot', 'static',
     ],
 
     'fuchsia_official_optimize_goma': [
@@ -2032,21 +2091,21 @@
 
     'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild': [
       'gpu_tests', 'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'resource_whitelisting', 'static_angle', 'android_fastbuild',
+      'resource_allowlisting', 'static_angle', 'android_fastbuild',
       'webview_google',
     ],
 
     'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_java_coverage': [
       'gpu_tests', 'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'resource_whitelisting', 'static_angle', 'android_fastbuild', 'webview_google',
+      'resource_allowlisting', 'static_angle', 'android_fastbuild', 'webview_google',
       'android_no_proguard', 'use_java_coverage',
     ],
 
-    # TODO(crbug/1018431): Add 'resource_whitelisting' back once bug fixed.
-    # No symbols to prevent linker file too large error.
+    # No symbols to prevent linker file too large error on
+    # android_webview_unittests target.
     'gpu_tests_android_release_bot_no_symbols_arm64_fastbuild_native_coverage': [
       'gpu_tests', 'android', 'release_bot', 'arm64',
-      'static_angle', 'android_fastbuild', 'webview_google',
+      'resource_allowlisting', 'static_angle', 'android_fastbuild', 'webview_google',
       'android_no_proguard', 'use_clang_coverage',
     ],
 
@@ -2063,9 +2122,9 @@
       'android_fastbuild',
     ],
 
-    'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage': [
+    'gpu_tests_android_release_trybot_arm64_resource_allowlisting_fastbuild_java_coverage': [
       'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
-      'resource_whitelisting', 'android_fastbuild', 'webview_google',
+      'resource_allowlisting', 'android_fastbuild', 'webview_google',
       'use_java_coverage', 'partial_code_coverage_instrumentation',
     ],
 
@@ -2096,6 +2155,10 @@
 
     'gpu_tests_release_bot_minimal_symbols': [
       'gpu_tests', 'release_bot', 'minimal_symbols',
+    ],
+
+    'gpu_tests_release_bot_minimal_symbols_reclient': [
+      'gpu_tests', 'release_bot_reclient', 'minimal_symbols',
     ],
 
     'gpu_tests_release_bot_minimal_symbols_code_coverage': [
@@ -2137,29 +2200,24 @@
       'gpu_tests', 'release_trybot', 'mac_deterministic_build',
     ],
 
-    'gpu_tests_release_trybot_deterministic_mac_code_coverage': [
-      'gpu_tests', 'release_trybot', 'mac_deterministic_build',
-      'use_clang_coverage', 'partial_code_coverage_instrumentation',
-    ],
-
     'gpu_tests_release_trybot_deterministic_mac_invert_fieldtrials': [
       'gpu_tests', 'release_trybot', 'mac_deterministic_build', 'invert_fieldtrials',
     ],
 
-    'gpu_tests_release_trybot_resource_whitelisting': [
-      'gpu_tests', 'release_trybot', 'resource_whitelisting',
+    'gpu_tests_release_trybot_resource_allowlisting': [
+      'gpu_tests', 'release_trybot', 'resource_allowlisting',
     ],
 
     # TODO(crbug.com/1004523) Delete this once coverage mode is enabled on the
     # standard Windows trybot and the dedicated coverage trybot is no longer
     # needed.
-    'gpu_tests_release_trybot_resource_whitelisting_code_coverage': [
-      'gpu_tests', 'release_trybot', 'resource_whitelisting',
+    'gpu_tests_release_trybot_resource_allowlisting_code_coverage': [
+      'gpu_tests', 'release_trybot', 'resource_allowlisting',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
-    'gpu_tests_release_trybot_resource_whitelisting_invert_fieldtrials': [
-      'gpu_tests', 'release_trybot', 'resource_whitelisting', 'invert_fieldtrials',
+    'gpu_tests_release_trybot_resource_allowlisting_invert_fieldtrials': [
+      'gpu_tests', 'release_trybot', 'resource_allowlisting', 'invert_fieldtrials',
     ],
 
     'gpu_tests_release_trybot_x86': [
@@ -2177,6 +2235,11 @@
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
+    'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_reclient': [
+      'gpu_tests', 'release_trybot_reclient', 'no_symbols', 'use_dummy_lastchange',
+      'use_clang_coverage', 'partial_code_coverage_instrumentation',
+    ],
+
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_invert_fieldtrials': [
       'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
       'invert_fieldtrials',
@@ -2186,8 +2249,8 @@
       'gpu_tests', 'release_trybot', 'v8_pointer_compression',
     ],
 
-    'gpu_tests_release_trybot_x86_resource_whitelisting': [
-      'gpu_tests', 'release_trybot', 'x86', 'resource_whitelisting',
+    'gpu_tests_release_trybot_x86_resource_allowlisting': [
+      'gpu_tests', 'release_trybot', 'x86', 'resource_allowlisting',
     ],
 
     'gpu_tests_sk_dawn_release_trybot': [
@@ -2232,10 +2295,6 @@
 
     'ios_simulator_debug_static_bot_invert_fieldtrials_xctest': [
         'debug_static_bot', 'ios', 'ios_simulator', 'ios_cpu_x64', 'invert_fieldtrials', 'xctest', 'ios_disable_xcode_project_generation',
-    ],
-
-    'ios_simulator_debug_static_bot_multi_window_xctest': [
-        'debug_static_bot', 'ios_enable_multi_window', 'ios', 'ios_simulator', 'ios_cpu_x64', 'xctest', 'ios_disable_xcode_project_generation',
     ],
 
     'ios_simulator_release_static_asan_bot_xctest': [
@@ -2291,7 +2350,7 @@
     ],
 
     'libfuzzer_asan_release_trybot': [
-      'libfuzzer', 'asan', 'shared_release_trybot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'mojo_fuzzer',
+      'libfuzzer', 'asan', 'shared_release_trybot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'mojo_fuzzer', 'skip_generate_fuzzer_owners',
     ],
 
     'libfuzzer_asan_clang_tot_release': [
@@ -2322,7 +2381,7 @@
     ],
 
     'libfuzzer_windows_asan_release_trybot': [
-      'libfuzzer', 'asan', 'release_trybot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'mojo_fuzzer',
+      'libfuzzer', 'asan', 'release_trybot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'mojo_fuzzer', 'skip_generate_fuzzer_owners',
     ],
 
     'linux_cfm_release_bot': [
@@ -2430,7 +2489,7 @@
     ],
 
     'official_goma_x64_pgo': [
-      'official', 'goma', 'x64', 'static', 'no_symbols', 'pgo_phase_1', 'no_resource_whitelisting',
+      'official', 'goma', 'x64', 'static', 'no_symbols', 'pgo_phase_1', 'no_resource_allowlisting',
     ],
 
     'official_goma_x86': [
@@ -2442,7 +2501,7 @@
     ],
 
     'official_goma_x86_pgo': [
-      'official', 'goma', 'x86', 'static', 'no_symbols', 'pgo_phase_1', 'no_resource_whitelisting',
+      'official', 'goma', 'x86', 'static', 'no_symbols', 'pgo_phase_1', 'no_resource_allowlisting',
     ],
 
     'official_optimize_goma': [
@@ -2678,6 +2737,10 @@
       'ubsan', 'release_bot',
     ],
 
+    'ubsan_release_bot_reclient': [
+      'ubsan', 'release_bot_reclient',
+    ],
+
     'ubsan_vptr_release_bot': [
       'ubsan_vptr', 'release_bot',
     ],
@@ -2696,6 +2759,10 @@
 
     'vr_release_bot': [
       'vr', 'release_bot', 'ozone',
+    ],
+
+    'vr_release_bot_reclient': [
+      'vr', 'release_bot_reclient', 'ozone',
     ],
 
     'vr_release_trybot': [
@@ -2725,7 +2792,7 @@
     },
 
     'amd64-lacros': {
-      'gn_args': 'use_ozone=true ozone_platform_wayland=true ozone_platform_x11=false target_os="chromeos" use_evdev_gestures=false use_vaapi=false use_gtk=false use_glib=false enable_linux_installer=false rtc_use_pipewire=false use_gio=false use_v8_context_snapshot=false use_custom_libcxx=false use_pulseaudio=false use_pangocairo=false chromeos_is_browser_only=true use_system_libsync=false cros_host_sysroot="//build/linux/debian_sid_amd64-sysroot" cros_v8_snapshot_sysroot="//build/linux/debian_sid_amd64-sysroot" use_custom_libcxx_for_host=true'
+      'gn_args': 'use_ozone=true ozone_platform_wayland=true ozone_platform_x11=false target_os="chromeos" use_evdev_gestures=false use_vaapi=true use_gtk=false use_glib=false enable_linux_installer=false rtc_use_pipewire=false use_gio=false use_v8_context_snapshot=false use_custom_libcxx=false use_pulseaudio=false use_pangocairo=false chromeos_is_browser_only=true use_system_libsync=false cros_host_sysroot="//build/linux/debian_sid_amd64-sysroot" cros_v8_snapshot_sysroot="//build/linux/debian_sid_amd64-sysroot" use_custom_libcxx_for_host=true'
     },
 
     # We build Android with codecs on most bots to ensure maximum test
@@ -2903,6 +2970,7 @@
       'mixins': ['no_symbols'],
     },
 
+    # Keep in sync with //infra/build/recipes/recipe_modules/chromium_android/chromium_config.py
     'cronet_common': {
       'gn_args': ('disable_file_support=true disable_ftp_support=true '
                   'enable_websockets=false '
@@ -2910,13 +2978,15 @@
                   'use_crash_key_stubs=true use_platform_icu_alternatives=true')
     },
 
+    # Keep in sync with //infra/build/recipes/recipe_modules/chromium_android/chromium_config.py
     'cronet_android': {
       'mixins': ['cronet_common'],
       'gn_args': ('use_partition_alloc=false enable_reporting=true '
                   'use_hashed_jni_names=true '
                   'default_min_sdk_version=16 '
                   'clang_use_default_sample_profile=false '
-                  'use_thin_lto=false '
+                  'media_use_ffmpeg = false'
+                  'use_thin_lto=false '  # https://crbug.com/1136963
                   'enable_resource_allowlist_generation=false '
                   'enable_jdk_library_desugaring=false'),
     },
@@ -2966,8 +3036,16 @@
       'mixins': ['debug', 'static', 'minimal_symbols', 'goma'],
     },
 
+    'debug_static_bot_reclient': {
+      'mixins': ['debug', 'static', 'minimal_symbols', 'reclient'],
+    },
+
     'disable_nacl': {
       'gn_args': 'enable_nacl=false',
+    },
+
+    'disable_proguard': {
+      'gn_args': 'enable_proguard_obfuscation = false',
     },
 
     'disable_seed_corpus': {
@@ -3140,10 +3218,6 @@
       'gn_args': 'ios_enable_code_signing=false'
     },
 
-    'ios_enable_multi_window': {
-      'gn_args': 'ios_enable_multi_window=true'
-    },
-
     'ios_disable_xcode_project_generation': {
       # defaults to true under build/config/ios/rules.gni
       'gn_args': 'ios_set_attributes_for_xcode_project_generation=false',
@@ -3227,7 +3301,7 @@
       'gn_args': 'optimize_webui=false',
     },
 
-    'no_resource_whitelisting': {
+    'no_resource_allowlisting': {
       'gn_args': 'enable_resource_allowlist_generation=false',
     },
 
@@ -3357,7 +3431,11 @@
       'mixins': ['release_trybot', 'dcheck_off',],
     },
 
-    'resource_whitelisting': {
+    'release_trybot_reclient': {
+      'mixins': ['release_bot_reclient', 'minimal_symbols', 'dcheck_always_on'],
+    },
+
+    'resource_allowlisting': {
       'gn_args': 'enable_resource_allowlist_generation=true',
     },
 
@@ -3385,6 +3463,10 @@
       'gn_args': 'skia_use_dawn=true enable_skia_dawn_gtests=true',
     },
 
+    'skip_generate_fuzzer_owners': {
+      'gn_args': 'generate_fuzzer_owners=false',
+    },
+
     'stable_channel': {
       'gn_args': 'android_channel="stable"',
     },
@@ -3406,7 +3488,7 @@
     },
 
     'system_gbm_libdrm': {
-      'gn_args': 'use_system_libdrm=true use_system_minigbm=true',
+      'gn_args': 'use_system_libdrm=true use_system_minigbm=true ozone_platform_gbm=true',
     },
 
     'thin_lto': {

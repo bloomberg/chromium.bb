@@ -130,7 +130,6 @@ class CORE_EXPORT HTMLVideoElement final
                                   ExceptionState&) override;
 
   // WebMediaPlayerClient implementation.
-  void OnBecamePersistentVideo(bool) final;
   void OnRequestVideoFrameCallback() final;
 
   bool IsPersistent() const;
@@ -143,6 +142,7 @@ class CORE_EXPORT HTMLVideoElement final
   DisplayType GetDisplayType() const final;
   bool IsInAutoPIP() const final;
   void OnPictureInPictureStateChange() final;
+  void SetPersistentState(bool persistent) final;
 
   // Used by the PictureInPictureController as callback when the video element
   // enters or exits Picture-in-Picture state.
@@ -201,6 +201,8 @@ class CORE_EXPORT HTMLVideoElement final
 
   void OnIntersectionChangedForLazyLoad(
       const HeapVector<Member<IntersectionObserverEntry>>& entries);
+
+  void SetPersistentStateInternal(bool persistent);
 
   Member<HTMLImageLoader> image_loader_;
   Member<MediaCustomControlsFullscreenDetector>

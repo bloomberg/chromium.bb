@@ -56,8 +56,8 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    https_embedded_test_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_embedded_test_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     // Serve both a.com and b.com (and any other domain).
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(https_embedded_test_server_->InitializeAndListen());
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
-                       DeviceOrientationFeaturePolicyWarning) {
+                       DeviceOrientationPermissionsPolicyWarning) {
   // Main frame is on a.com, iframe is on b.com.
   GURL main_frame_url =
       https_embedded_test_server_->GetURL("a.com", "/cross_origin_iframe.html");

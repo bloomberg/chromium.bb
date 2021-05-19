@@ -38,6 +38,7 @@
 <translation id="1662989795263954667">Detívose (esgotouse a tinta)</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Presenza do solucionador de DNS</translation>
+<translation id="1715359911173058521">Produciuse un erro ao establecer comunicación co escáner. Comproba a conexión USB ou de rede e téntao de novo.</translation>
 <translation id="1717874160321062422">Dispositivo xestionado por <ph name="FIRST_MANAGER" /> e por <ph name="SECOND_MANAGER" /></translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1792647875738159689">Cancelando escaneo</translation>
@@ -95,6 +96,7 @@
 <translation id="3226405216343213872">Buscando escáneres</translation>
 <translation id="3246869037381808805">Quitaranse os traballos de impresión de máis de 1 día</translation>
 <translation id="3268178239013324452">Produciuse un erro: a tapa da impresora está aberta</translation>
+<translation id="3283504360622356314">{0,plural, =1{Editar ficheiro}other{Editar ficheiros}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3310640316857623290">A latencia do DNS supera considerablemente o límite permitido</translation>
 <translation id="3328783797891415197">Proba en curso</translation>
@@ -135,6 +137,7 @@
 <translation id="4227825898293920515">O contrasinal caduca en <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Non hai ningunha tarefa de impresión en curso</translation>
 <translation id="4297501883039923494">Detívose (produciuse un erro descoñecido)</translation>
+<translation id="4344214025510306853">Anexar APN</translation>
 <translation id="4378373042927530923">Non se executou</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">A miña unidade</translation>
@@ -162,7 +165,9 @@
 <translation id="4707579418881001319">L2TP/IPsec + certificado de usuario</translation>
 <translation id="4731797938093519117">Acceso parental</translation>
 <translation id="4773299976671772492">Detido</translation>
+<translation id="4794140124556169553">A execución de probas de CPU pódelle afectar ao rendemento do sistema</translation>
 <translation id="4808449224298348341">Cancelouse o traballo de impresión <ph name="DOCUMENT_TITLE" /></translation>
+<translation id="4813345808229079766">Conexión</translation>
 <translation id="4832079907277790330">Seleccionar cartafol na aplicación Ficheiros…</translation>
 <translation id="4835901797422965222">Non hai ningunha rede activa</translation>
 <translation id="4848429997038228357">EN CURSO</translation>
@@ -177,6 +182,7 @@
 <translation id="4932733599132424254">Data</translation>
 <translation id="498186245079027698">Comproba o escáner e téntao de novo. Asegúrate de que exista espazo local suficiente para gardar os ficheiros escaneados.</translation>
 <translation id="4985509611418653372">Executar</translation>
+<translation id="4987769320337599931">Firewall</translation>
 <translation id="4999333166442584738">Ocultar informe</translation>
 <translation id="500920857929044050">Deter proba</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -211,6 +217,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="54609108002486618">Dispositivo xestionado</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Queda {0} intento}other{Quedan {0} intentos}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
+<translation id="5499114900554609492">Non se puido completar o escaneamento</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -225,6 +232,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="5916084858004523819">Prohibida</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{O teu ficheiro escaneouse e gardouse correctamente en <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Os teus ficheiros escaneáronse e gardáronse correctamente en <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Non se encontrou o ficheiro</translation>
+<translation id="6037291330010597344">O alimentador de documentos do escáner está baleiro. Engade algún documento e téntao de novo.</translation>
 <translation id="6040143037577758943">Pechar</translation>
 <translation id="6040852767465482106">Identidade anónima</translation>
 <translation id="604124094241169006">Automático</translation>
@@ -247,6 +255,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="6302401976930124515">Cancelouse a proba de <ph name="TEST_NAME" /></translation>
 <translation id="6325525973963619867">Produciuse un erro</translation>
 <translation id="636850387210749493">Inscrición corporativa</translation>
+<translation id="6388847657025262518">O alimentador de documentos do escáner está atascado. Revísao e téntao de novo.</translation>
 <translation id="641081527798843608">Coincidencia do asunto</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6456394469623773452">Bo</translation>
@@ -268,7 +277,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="6766275201586212568">Produciuse un erro coas resolucións de DNS</translation>
 <translation id="6768237774506518020">Hai un alto índice de erros relacionados coas resolucións de DNS</translation>
 <translation id="6853312040151791195">Taxa de descarga</translation>
-<translation id="6898743098396957679">Non se puido completar o escaneado</translation>
+<translation id="6910312834584889076">A tapa do escáner está aberta. Péchaa e téntao de novo.</translation>
 <translation id="6911383237894364323">Non se puido establecer conexión cos servidores multimedia</translation>
 <translation id="6957231940976260713">Nome do servizo</translation>
 <translation id="6977381486153291903">Revisión do firmware</translation>
@@ -276,12 +285,14 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7059230779847288458">Cargando (<ph name="TIME_VALUE" /> para completar a carga)</translation>
 <translation id="708426984172631313">PROBA DETIDA</translation>
+<translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7144878232160441200">Volver tentar</translation>
 <translation id="714876143603641390">Conectividade LAN</translation>
 <translation id="7162487448488904999">Galería</translation>
 <translation id="7177485034254901881"><ph name="MANAGER" /> xestiona este dispositivo (<ph name="DEVICE_TYPE" />). Os administradores poden configuralo de forma remota.</translation>
 <translation id="7216409898977639127">Provedor de rede móbil</translation>
+<translation id="7271040990581020067">Nestes momentos, o escáner está en uso. Téntao de novo máis tarde.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7343649194310845056">Dispositivos de rede</translation>
 <translation id="7359657277149375382">Tipo de ficheiro</translation>
@@ -307,6 +318,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="7769672763586021400">ID do modelo</translation>
 <translation id="7805768142964895445">Estado</translation>
 <translation id="7819857487979277519">PSK (WPA ou RSN)</translation>
+<translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Tipo de fornecedor</translation>
 <translation id="7936303884198020182">Non se atoparon servidores de nomes</translation>
 <translation id="7960831585769876809">Temperatura</translation>
@@ -336,6 +348,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="8483248364096924578">Enderezo IP</translation>
 <translation id="8503813439785031346">Nome de usuario</translation>
 <translation id="8503836310948963452">Só faltan uns minutos…</translation>
+<translation id="8575298406870537639">É posible que sexa obrigatorio activar esta opción para conectarte á rede do teu operador. Para obter máis detalles, ponte en contacto con el.</translation>
 <translation id="8576249514688522074">Non iniciada</translation>
 <translation id="8620617069779373398">Estado de itinerancia</translation>
 <translation id="8675354002693747642">Clave compartida previamente</translation>
@@ -348,6 +361,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8798441408945964110">Nome do fornecedor</translation>
 <translation id="8814190375133053267">Wifi</translation>
+<translation id="8818152010000655963">Fondo de pantalla</translation>
 <translation id="8845001906332463065">Obter axuda</translation>
 <translation id="8881098542468797602">Superouse a proba</translation>
 <translation id="8898840733695078011">Intensidade do sinal</translation>
@@ -365,6 +379,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="910415269708673980">Actualiza o tícket de <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Escaneando páxina <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Desbloquear</translation>
+<translation id="9137526406337347448">Servizos de Google</translation>
 <translation id="9149391708638971077">Realizar proba de memoria</translation>
 <translation id="9173638680043580060">Queda menos dun minuto</translation>
 <translation id="9190063653747922532">L2TP/IPsec + clave precompartida</translation>

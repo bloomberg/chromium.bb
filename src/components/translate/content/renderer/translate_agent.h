@@ -11,7 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/translate/content/common/translate.mojom.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -39,8 +38,11 @@ class TranslateAgent : public content::RenderFrameObserver,
                  const std::string& extension_scheme);
   ~TranslateAgent() override;
 
+  // content::RenderFrameObserver implementation.
+  void WasShown() override;
+
   // Informs us that the page's text has been extracted.
-  void PageCaptured(const base::string16& contents);
+  void PageCaptured(const std::u16string& contents);
 
   // Lets the translation system know that we are preparing to navigate to
   // the specified URL. If there is anything that can or should be done before
@@ -163,7 +165,7 @@ class TranslateAgent : public content::RenderFrameObserver,
   std::string source_lang_;
   std::string target_lang_;
 
-  // Time when a page langauge is determined. This is used to know a duration
+  // Time when a page language is determined. This is used to know a duration
   // time from showing infobar to requesting translation.
   base::TimeTicks language_determined_time_;
 
@@ -176,6 +178,10 @@ class TranslateAgent : public content::RenderFrameObserver,
   // The task runner responsible for the translation task, freezing it
   // when the frame is backgrounded.
   scoped_refptr<base::SingleThreadTaskRunner> translate_task_runner_;
+
+  // Whether the render frame observed by |this| was initially hidden and
+  // the request for a model is delayed until the frame is in the foreground.
+  bool waiting_for_first_foreground_ = false;
 
   // The Mojo pipe for communication with the browser process. Due to a
   // refactor, the other end of the pipe is now attached to a

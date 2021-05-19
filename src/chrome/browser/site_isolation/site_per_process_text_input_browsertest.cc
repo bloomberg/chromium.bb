@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -34,6 +35,7 @@
 #include "content/public/test/text_input_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
@@ -257,6 +259,10 @@ class SitePerProcessTextInputManagerTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     content::IsolateAllSitesForTesting(command_line);
+    // Some builders are flaky due to slower loading interacting with
+    // deferred commits, and this test suite sometimes uses content
+    // that paints nothing upon load.
+    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
   }
 
   void SetUpOnMainThread() override {
@@ -446,9 +452,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
       content::GetRegisteredViewsCountFromTextInputManager(active_contents()));
 
   // Now crash the second <iframe> which has an active view.
-  destruction_observer.reset(
-      new content::TestRenderWidgetHostViewDestructionObserver(
-          frames[1]->GetView()));
+  destruction_observer =
+      std::make_unique<content::TestRenderWidgetHostViewDestructionObserver>(
+
+          frames[1]->GetView());
   {
     content::ScopedAllowRendererCrashes allow_renderer_crashes(frames[1]);
     frames[1]->GetProcess()->Shutdown(0);
@@ -1221,7 +1228,7 @@ class ShowDefinitionForWordObserver
     if (did_receive_string_)
       return word_;
 
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
     return word_;
   }

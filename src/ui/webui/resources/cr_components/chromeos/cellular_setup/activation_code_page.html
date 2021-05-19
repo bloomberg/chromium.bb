@@ -1,5 +1,6 @@
 <link rel="import" href="../../../html/polymer.html">
 
+<link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
@@ -16,6 +17,9 @@
         height: 300px;
         margin-top: -20px;
       }
+      :host {
+        --activation-page-qr-code-detection-height: 155px;
+      }
 
       :host cr-button {
         --ripple-opacity: 0;
@@ -24,8 +28,8 @@
       #esimQrCodeDetection {
         background-color: var(--google-grey-refresh-100);
         border-radius: 4px;
-        height: 130px;
-        margin: 20px 0 30px 0;
+        height: var(--activation-page-qr-code-detection-height);
+        margin: 20px 0 20px 0;
         overflow: hidden;
         position: relative;
       }
@@ -75,6 +79,14 @@
         cursor: default;
       }
 
+      .scan-error-header {
+        --iron-icon-fill-color: #D93025;
+      }
+
+      .scan-error-message {
+        color: var(--google-red-600);
+      }
+
       .blue-icon {
         --iron-icon-fill-color: #1A73E8;
       }
@@ -90,12 +102,7 @@
       }
 
       #scanFailureHeader {
-        --iron-icon-fill-color: #D93025;
         margin-bottom: 4px;
-      }
-
-      #scanFailureMessage {
-        color: var(--google-red-600);
       }
 
       #useCameraAgainButton {
@@ -141,6 +148,11 @@
         line-height: var(--cr-form-field-label-line-height);
         position: absolute;
       }
+
+      #video {
+        height: var(--activation-page-qr-code-detection-height);
+        transform: rotateY(180deg);
+      }
     </style>
     <base-page>
       <div slot="page-body">
@@ -157,7 +169,7 @@
               <iron-icon class="button-image" icon="cellular-setup:switch-camera"></iron-icon>
               [[i18n('switchCamera')]]
             </cr-button>
-            <video id="video"
+            <video id="video" autoplay muted
                 hidden$="[[isUiElementHidden_(UiElement.VIDEO, state_)]]">
             </video>
             <div class="center" id="startScanningContainer" class="blue-icon"
@@ -176,10 +188,18 @@
               <div>
                 <div id="scanSuccessContainer"
                     hidden$="[[isUiElementHidden_(UiElement.SCAN_SUCCESS, state_)]]">
-                  <div id=scanSucessHeader>
+                  <div id=scanSucessHeader
+                      hidden$="[[isUiElementHidden_(UiElement.CODE_DETECTED, state_)]]">
                     <iron-icon class="scan-finish-image" icon="cellular-setup:checked"></iron-icon>
                     <span class="label scan-finish-message" id="scanSuccessMessage">
                       [[i18n('scanQRCodeSuccess')]]
+                    </span>
+                  </div>
+                  <div id="scanInstallFailureHeader" class="scan-error-header"
+                      hidden$="[[isUiElementHidden_(UiElement.SCAN_INSTALL_FAILURE, state_)]]">
+                    <iron-icon class="scan-finish-image" icon="cellular-setup:error"></iron-icon>
+                    <span class="label scan-finish-message scan-error-message">
+                      [[i18n('scanQrCodeInvalid')]]
                     </span>
                   </div>
                   <cr-button id="useCameraAgainButton" class="blue-icon"
@@ -191,9 +211,9 @@
                 </div>
                 <div id="scanFailureContainer"
                     hidden$="[[isUiElementHidden_(UiElement.SCAN_FAILURE, state_)]]">
-                  <div id="scanFailureHeader" class="blue-icon">
+                  <div id="scanFailureHeader" class="scan-error-header">
                     <iron-icon class="scan-finish-image" icon="cellular-setup:error"></iron-icon>
-                    <span class="label scan-finish-message" id="scanFailureMessage">
+                    <span class="label scan-finish-message scan-error-message">
                       [[i18n('scanQrCodeError')]]
                     </span>
                   </div>
@@ -208,11 +228,15 @@
             </div>
           </div>
         </template>
-        <div id="activationCodeContainer" class$="[[computeActivationCodeClass_(cameraCount_)]]">
+        <div id="activationCodeContainer" class$="[[computeActivationCodeClass_(
+              cameraCount_, qrCodeDetector_.*)]]">
           <cr-input id="activationCode"
             label="[[i18n('activationCode')]]"
             value="{{activationCode}}"
-            disabled="[[showBusy]]">
+            disabled="[[showBusy]]"
+            on-keydown="onKeyDown_"
+            invalid="[[shouldActivationCodeInputBeInvalid_(state_)]]"
+            error-message="[[i18n('scanQrCodeInvalid')]]">
           </cr-input>
           <paper-spinner-lite active
               hidden$="[[!showBusy]]">

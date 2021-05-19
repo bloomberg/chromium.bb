@@ -23,8 +23,8 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -40,6 +40,8 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -84,7 +86,6 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
-#include "chrome/browser/ash/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -92,6 +93,10 @@
 #else
 #include "chrome/browser/extensions/api/messaging/native_messaging_launch_from_native.h"
 #include "chrome/browser/ui/profile_picker.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS) && defined(USE_X11)
@@ -117,6 +122,13 @@
 
 #if defined(USE_X11)
 #include "ui/base/ui_base_features.h"
+#endif
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#include "chrome/browser/web_applications/components/url_handler_launch_params.h"
+#include "chrome/browser/web_applications/components/url_handler_manager_impl.h"
+#include "third_party/blink/public/common/features.h"
 #endif
 
 using content::BrowserThread;
@@ -374,6 +386,55 @@ void FinalizeWebAppLaunch(
   StartupBrowserCreatorImpl::MaybeToggleFullscreen(browser);
 }
 
+// Tries to get the protocol url from the command line.
+// If the protocol app url switch doesnt exist, checks if the passed in url
+// is a potential protocol url, if it is, check the protocol handler registry
+// for an entry. Return the protocol url if there are handlers for this scheme.
+bool MaybeLaunchProtocolHandlerWebApp(
+    const base::CommandLine& command_line,
+    const base::FilePath& cur_dir,
+    Profile* profile,
+    std::unique_ptr<LaunchModeRecorder> launch_mode_recorder) {
+  // Maybe the URL passed in is a protocol URL.
+  GURL protocol_url;
+  base::CommandLine::StringVector args = command_line.GetArgs();
+  for (const auto& arg : args) {
+#if defined(OS_WIN)
+    GURL potential_protocol(base::WideToUTF16(arg));
+#else
+    GURL potential_protocol(arg);
+#endif  // defined(OS_WIN)
+    if (potential_protocol.is_valid() && !potential_protocol.IsStandard()) {
+      protocol_url = potential_protocol;
+      break;
+    }
+  }
+  if (protocol_url.is_empty())
+    return false;
+
+  ProtocolHandlerRegistry* handler_registry =
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
+  const std::vector<ProtocolHandler> handlers =
+      handler_registry->GetHandlersFor(protocol_url.scheme());
+
+  // Check that there is at least one handler with web_app_id.
+  // TODO(crbug/1019239): Display intent picker if there are multiple handlers.
+  for (const auto& handler : handlers) {
+    if (handler.web_app_id().has_value()) {
+      apps::AppServiceProxyFactory::GetForProfile(profile)
+          ->BrowserAppLauncher()
+          ->LaunchAppWithCallback(
+              handler.web_app_id().value(), command_line, cur_dir,
+              /*url_handler_launch_url=*/base::nullopt, protocol_url,
+              base::BindOnce(&FinalizeWebAppLaunch,
+                             std::move(launch_mode_recorder)));
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // If the process was launched with the web application command line flags,
 // e.g. --app=http://www.google.com/ or --app_id=... return true.
 // In this case |app_url| or |app_id| are populated if they're non-null.
@@ -413,6 +474,8 @@ bool MaybeLaunchApplication(
         ->BrowserAppLauncher()
         ->LaunchAppWithCallback(
             app_id, command_line, cur_dir,
+            /*url_handler_launch_url=*/base::nullopt,
+            /*protocol_handler_launch_url=*/base::nullopt,
             base::BindOnce(&FinalizeWebAppLaunch,
                            std::move(launch_mode_recorder)));
     return true;
@@ -445,6 +508,50 @@ bool MaybeLaunchApplication(
   }
   return false;
 }
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+// If |command_line| contains a single URL argument and that URL matches URL
+// handling registration from installed web apps, show app options to user and
+// launch one if accepted.
+// Returns true if launching an app, false otherwise.
+bool MaybeLaunchUrlHandlerWebApp(
+    const base::CommandLine& command_line,
+    const base::FilePath& cur_dir,
+    std::unique_ptr<LaunchModeRecorder> launch_mode_recorder) {
+  if (!base::FeatureList::IsEnabled(blink::features::kWebAppEnableUrlHandlers))
+    return false;
+
+  const std::vector<web_app::UrlHandlerLaunchParams> url_handler_matches =
+      web_app::UrlHandlerManagerImpl::GetUrlHandlerMatches(command_line);
+
+  // Launch the first match for which a Profile can be loaded.
+  // TODO(crbug/1072058): Use WebAppUiManagerImpl and WebAppDialogManager
+  // to display the intent picker dialog. Use the first match here for testing.
+  // TODO(crbug/1072058): Check user preferences before showing intent picker.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  for (const auto& match : url_handler_matches) {
+    // Do not load profile if profile path is not valid.
+    if (!profile_manager->GetProfileAttributesStorage()
+             .GetProfileAttributesWithPath(match.profile_path)) {
+      continue;
+    }
+    Profile* const profile = profile_manager->GetProfile(match.profile_path);
+    if (profile == nullptr)
+      continue;
+
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->BrowserAppLauncher()
+        ->LaunchAppWithCallback(
+            match.app_id, command_line, cur_dir, match.url,
+            /*protocol_handler_launch_url=*/base::nullopt,
+            base::BindOnce(&FinalizeWebAppLaunch,
+                           std::move(launch_mode_recorder)));
+    return true;
+  }
+  return false;
+}
+#endif
 
 }  // namespace
 
@@ -493,9 +600,19 @@ Profile* StartupBrowserCreator::GetPrivateProfileIfRequested(
   if (IncognitoModePrefs::ShouldLaunchIncognito(command_line,
                                                 profile->GetPrefs())) {
     return profile->GetPrimaryOTRProfile();
-  } else if (command_line.HasSwitch(switches::kIncognito)) {
-    LOG(WARNING) << "Incognito mode disabled by policy, launching a normal "
-                 << "browser session.";
+  } else {
+    bool expect_incognito = command_line.HasSwitch(switches::kIncognito);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    auto* init_params = chromeos::LacrosChromeServiceImpl::Get()->init_params();
+    // TODO(https://crbug.com/1194304): Remove in M93.
+    expect_incognito |= init_params->is_incognito_deprecated;
+    expect_incognito |=
+        init_params->initial_browser_action ==
+        crosapi::mojom::InitialBrowserAction::kOpenIncognitoWindow;
+#endif
+    LOG_IF(WARNING, expect_incognito)
+        << "Incognito mode disabled by policy, launching a normal "
+        << "browser session.";
   }
 
   return profile;
@@ -593,8 +710,17 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
   // However, new profiles can be created from a browser process that has this
   // switch so do not set the session pref to SessionStartupPref::LAST for
   // those as there is nothing to restore.
-  if ((command_line.HasSwitch(switches::kRestoreLastSession) || did_restart) &&
-      !profile->IsNewProfile()) {
+  bool restore_last_session =
+      command_line.HasSwitch(switches::kRestoreLastSession);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* init_params = chromeos::LacrosChromeServiceImpl::Get()->init_params();
+  // TODO(https://crbug.com/1194304): Remove in M93.
+  restore_last_session |= init_params->restore_last_session_deprecated;
+  restore_last_session |=
+      init_params->initial_browser_action ==
+      crosapi::mojom::InitialBrowserAction::kRestoreLastSession;
+#endif
+  if ((restore_last_session || did_restart) && !profile->IsNewProfile()) {
     pref.type = SessionStartupPref::LAST;
   }
 
@@ -736,17 +862,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     // Skip browser launch since app mode launches its app window.
     silent_launch = true;
   }
-
-  // If we are a demo app session and we crashed, there is no safe recovery
-  // possible. We should instead cleanly exit and go back to the OOBE screen,
-  // where we will launch again after the timeout has expired.
-  if (chromeos::DemoAppLauncher::IsDemoAppSession(
-          cryptohome::Identification::FromString(
-              command_line.GetSwitchValueASCII(chromeos::switches::kLoginUser))
-              .GetAccountId())) {
-    chrome::AttemptUserExit();
-    return false;
-  }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(TOOLKIT_VIEWS) && defined(USE_X11)
@@ -777,7 +892,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     silent_launch = true;
   }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   if (base::FeatureList::IsEnabled(features::kOnConnectNative) &&
       command_line.HasSwitch(switches::kNativeMessagingConnectHost) &&
       command_line.HasSwitch(switches::kNativeMessagingConnectExtension)) {
@@ -914,6 +1029,13 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     }
   }
 
+  // Web app Protocol handling.
+  if (MaybeLaunchProtocolHandlerWebApp(
+          command_line, cur_dir, last_used_profile,
+          std::make_unique<LaunchModeRecorder>())) {
+    return true;
+  }
+
   // If we're being run as an application window or application tab, don't
   // restore tabs or open initial URLs as the user has directly launched an app
   // shortcut. In the first case, the user should see a standlone app window. In
@@ -928,6 +1050,15 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
                              std::make_unique<LaunchModeRecorder>())) {
     return true;
   }
+
+  // Web app URL handling.
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+  if (MaybeLaunchUrlHandlerWebApp(command_line, cur_dir,
+                                  std::make_unique<LaunchModeRecorder>())) {
+    return true;
+  }
+#endif
 
   return LaunchBrowserForLastProfiles(command_line, cur_dir, process_startup,
                                       last_used_profile, last_opened_profiles);
@@ -1145,10 +1276,8 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
   // The profile isn't loaded yet and so needs to be loaded asynchronously.
   if (!profile) {
     profile_manager->CreateProfileAsync(
-        profile_path,
-        base::BindRepeating(&ProcessCommandLineOnProfileCreated, command_line,
-                            cur_dir),
-        base::string16(), std::string());
+        profile_path, base::BindRepeating(&ProcessCommandLineOnProfileCreated,
+                                          command_line, cur_dir));
     return;
   }
   StartupBrowserCreator startup_browser_creator;

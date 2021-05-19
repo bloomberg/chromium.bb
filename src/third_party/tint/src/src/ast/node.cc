@@ -14,9 +14,7 @@
 
 #include "src/ast/node.h"
 
-#include <sstream>
-
-TINT_INSTANTIATE_CLASS_ID(tint::ast::Node);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::Node);
 
 namespace tint {
 namespace ast {

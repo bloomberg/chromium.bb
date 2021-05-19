@@ -13,13 +13,12 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1125124144982679672">Wie gebruikt Chrome?</translation>
 <translation id="1142745911746664600">Kan Chrome niet updaten</translation>
 <translation id="1154147086299354128">&amp;Openen in Chrome</translation>
-<translation id="123620459398936149">Chrome OS kan je gegevens niet synchroniseren. Update je wachtwoordzin voor synchronisatie.</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> vereist dat je de volgende Servicevoorwaarden leest en accepteert voordat je dit apparaat gebruikt. Deze voorwaarden zijn geen uitbreiding, aanpassing of beperking van de Voorwaarden van Google Chrome OS.</translation>
 <translation id="1302523850133262269">Wacht terwijl Chrome de nieuwste systeemupdates installeert.</translation>
 <translation id="137466361146087520">Google Chrome Bèta</translation>
 <translation id="1399397803214730675">Deze computer beschikt al over een nieuwere versie van Google Chrome. Als de software niet werkt, verwijder je Google Chrome en probeer je het opnieuw.</translation>
 <translation id="1434626383986940139">Chrome Canary-apps</translation>
-<translation id="147727933880789532">Chrome raadt je aan om deze extensie uit te zetten omdat deze op dit moment niet voldoet aan de standaard van de uitgebreide versie van Safe Browsing.</translation>
+<translation id="1507198376417198979">Je nieuwe Chrome-profiel aanpassen</translation>
 <translation id="1516530951338665275">Google Chrome heeft bluetooth-toegang nodig om door te gaan met koppelen. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1553358976309200471">Chrome updaten</translation>
 <translation id="1583073672411044740"><ph name="EXISTING_USER" /> is al ingelogd bij dit Chrome-profiel. Hiermee maak je een nieuw Chrome-profiel voor <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -27,7 +26,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is gevaarlijk en is daarom door Chrome geblokkeerd.</translation>
 <translation id="1597911401261118146">Als je wilt checken of je wachtwoorden zijn beveiligd tegen gegevenslekken en andere beveiligingsproblemen, <ph name="BEGIN_LINK" />log je in bij Chrome<ph name="END_LINK" />.</translation>
 <translation id="1619887657840448962">We hebben de volgende extensie uitgezet die niet wordt vermeld in de <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> en mogelijk zonder je medeweten is toegevoegd. We doen dit om Chrome veiliger te maken.</translation>
-<translation id="162629503687514352">Chrome OS kan je wachtwoorden niet synchroniseren.</translation>
 <translation id="1628000112320670027">Hulp bij Chrome</translation>
 <translation id="1666409074978194368">Bijna klaar met updaten. Start Google Chrome opnieuw om de update te voltooien. De incognitovensters kunnen niet opnieuw worden geopend.</translation>
 <translation id="1674870198290878346">Link openen in een Chrome-inco&amp;gnitovenster</translation>
@@ -94,14 +92,12 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3089968997497233615">Er is een nieuwere, veiligere versie van Google Chrome beschikbaar.</translation>
 <translation id="3100998948628680988">Je Chrome-profiel een naam geven</translation>
 <translation id="3114643501466072395">Als je wilt checken of je andere wachtwoorden zijn beveiligd tegen gegevenslekken en andere beveiligingsproblemen, <ph name="BEGIN_LINK" />log je in bij Chrome<ph name="END_LINK" />.</translation>
-<translation id="3127818369811890733">Chrome OS kan je gegevens niet synchroniseren.</translation>
 <translation id="3140883423282498090">Je wijzigingen worden toegepast als je Google Chrome opnieuw start.</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome wordt nu opnieuw gestart}=1{Chrome wordt over één seconde opnieuw gestart}other{Chrome wordt over # seconden opnieuw gestart}}</translation>
 <translation id="3395323229510056640">Hulp bij Chrome OS</translation>
 <translation id="3396977131400919238">Er is tijdens de installatie een probleem opgetreden met het besturingssysteem. Download Google Chrome opnieuw.</translation>
-<translation id="3398288718845740432">Verbergen in Chrome-menu</translation>
 <translation id="3434246496373299699">Chrome kan je wachtwoorden checken als je inlogt met je Google-account</translation>
 <translation id="3451115285585441894">Toevoegen aan Chrome...</translation>
 <translation id="345171907106878721">Jezelf toevoegen aan Chrome</translation>
@@ -149,7 +145,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4571503333518166079">Ga naar instellingen voor Chrome-meldingen</translation>
 <translation id="459622048091363950">Zodra Chrome toegang heeft, kunnen websites je om toegang vragen.</translation>
 <translation id="4600710005438004015">Chrome kan niet worden geüpdatet naar de nieuwste versie, dus je loopt nieuwe functies en beveiligingsoplossingen mis.</translation>
-<translation id="4631713731678262610">Verbergen in Chrome-menu</translation>
 <translation id="4633000520311261472">Om Chrome veiliger te maken, hebben we een aantal extensies uitgezet die niet worden vermeld in de <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> en mogelijk zonder je medeweten zijn geïnstalleerd.</translation>
 <translation id="4666328473657283332">Log in en zet synchronisatie aan voor toegang tot je Chromium-gegevens op al je apparaten.</translation>
 <translation id="4728575227883772061">De installatie is mislukt wegens een onbekende fout. Als Google Chrome momenteel actief is, sluit je het programma af en probeer je het opnieuw.</translation>
@@ -197,6 +192,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6070348360322141662">Je gegevens worden voor extra beveiliging door Google Chrome versleuteld</translation>
 <translation id="608006075545470555">Werkprofiel toevoegen aan deze browser</translation>
 <translation id="6113794647360055231">Chrome is nu nog beter</translation>
+<translation id="6145313976051292476">Pdf's openen in Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Bèta</translation>
 <translation id="61852838583753520">&amp;Chrome OS updaten</translation>
@@ -209,7 +205,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome updaten (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">Chrome OS-systeem</translation>
-<translation id="6650333065969705433">Start Chrome opnieuw op als je Rosetta wilt gebruiken om beveiligde media af te spelen.</translation>
 <translation id="6676384891291319759">Verbinding maken met internet</translation>
 <translation id="6679975945624592337">Google Chrome op de achtergrond laten uitvoeren</translation>
 <translation id="6739177684496155661">Doorgaan met een nieuw Chrome-profiel?</translation>
@@ -221,7 +216,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6943584222992551122">De browsegegevens van deze persoon worden verwijderd van dit apparaat. Als je de gegevens wilt herstellen, log je in bij Chrome als <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Inkomende regel zodat Google Chrome Bèta mDNS-verkeer toestaat.</translation>
 <translation id="6989339256997917931">Google Chrome is bijgewerkt, maar je hebt het programma minstens 30 dagen niet gebruikt.</translation>
-<translation id="7054640471403081847">Deze computer ontvangt binnenkort geen Google Chrome-updates meer omdat de hardware van de computer niet meer wordt ondersteund.</translation>
+<translation id="7025800014283535195">Je kunt hier schakelen tussen verschillende Chrome-profielen</translation>
 <translation id="7062128746136194023">Je ouder heeft Rechten voor sites, apps en extensies uitgezet voor Chrome. Je mag deze <ph name="EXTENSION_TYPE_PARAMETER" /> niet toevoegen.</translation>
 <translation id="7098166902387133879">Google Chrome gebruikt je microfoon.</translation>
 <translation id="7106741999175697885">Taakbeheer - Google Chrome</translation>
@@ -274,7 +269,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">Dit werkprofiel is volledig gescheiden van je persoonlijke profiel.</translation>
 <translation id="8556340503434111824">Er is een nieuwe versie van Google Chrome en deze is sneller dan ooit.</translation>
-<translation id="861359755029082151">Met Rosetta kan Chrome de beveiligde media op deze pagina afspelen.</translation>
 <translation id="8614913330719544658">Google Chrome reageert niet meer. Nu opnieuw starten?</translation>
 <translation id="861702415419836452">Chrome heeft toegangsrechten voor de camera nodig om een 3D-kaart van je omgeving te maken.</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome wordt over één minuut opnieuw gestart}other{Chrome wordt over # minuten opnieuw gestart}}</translation>
@@ -288,7 +282,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="8834965163890861871">Google Chrome probeert wachtwoorden te bewerken. Geef je Windows-wachtwoord op om dit toe te staan.</translation>
 <translation id="884296878221830158">Hiermee wordt ook gecontroleerd welke pagina wordt getoond wanneer je Chrome start of op de Homepage-knop klikt.</translation>
 <translation id="8862326446509486874">Je hebt geen rechten om op systeemniveau te installeren. Meld je aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
-<translation id="8907709077090383765">Installeer Rosetta als je wilt dat Chrome beveiligde media kan afspelen. Wil je dit nu installeren?</translation>
 <translation id="8914504000324227558">Chrome opnieuw starten</translation>
 <translation id="8922193594870374009">Als je een nummer vanaf <ph name="ORIGIN" /> naar je Android-telefoon wilt sturen, log je in bij Chrome op beide apparaten.</translation>
 <translation id="8986207147630327271">Je voegt een werkprofiel toe aan deze browser en geeft je beheerder alleen de controle over het werkprofiel.</translation>
@@ -298,6 +291,8 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="9138603949443464873">Als je de wijzigingen wilt toepassen, start je Chrome opnieuw</translation>
 <translation id="919706545465235479">Chrome updaten om de synchronisatie te starten</translation>
+<translation id="922152298093051471">Chrome aanpassen</translation>
 <translation id="940313311831216333">Log in en zet synchronisatie aan voor toegang tot je Chromium-gegevens op al je apparaten.</translation>
 <translation id="989369509083708165">Google Chrome is je standaardbrowser</translation>
+<translation id="989816563149873169"><ph name="SHORTCUT" /> kan schakelen tussen Chrome-profielen</translation>
 </translationbundle>

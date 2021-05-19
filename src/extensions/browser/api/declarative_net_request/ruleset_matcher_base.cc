@@ -8,6 +8,7 @@
 
 #include "base/strings/strcat.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
@@ -245,13 +246,16 @@ void RulesetMatcherBase::OnRenderFrameDeleted(content::RenderFrameHost* host) {
       host->GetProcess()->GetID(), host->GetRoutingID()));
 }
 
-void RulesetMatcherBase::OnDidFinishNavigation(content::RenderFrameHost* host) {
+void RulesetMatcherBase::OnDidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  content::RenderFrameHost* host = navigation_handle->GetRenderFrameHost();
+
   // Note: we only start tracking frames on navigation, since a document only
   // issues network requests after the corresponding navigation is committed.
   // Hence we need not listen to OnRenderFrameCreated.
   DCHECK(host);
 
-  RequestParams params(host);
+  RequestParams params(host, navigation_handle->IsPost());
 
   // Find the highest priority allowAllRequests action corresponding to this
   // frame.

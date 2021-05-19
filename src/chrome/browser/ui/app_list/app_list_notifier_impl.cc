@@ -61,7 +61,7 @@ void AppListNotifierImpl::NotifyResultsUpdated(
 }
 
 void AppListNotifierImpl::NotifySearchQueryChanged(
-    const base::string16& query) {
+    const std::u16string& query) {
   // In some cases the query can change after the launcher is closed, in
   // particular this happens when abandoning the launcher with a non-empty
   // query. Only do a state transition if the launcher is open.
@@ -74,6 +74,10 @@ void AppListNotifierImpl::NotifySearchQueryChanged(
   // an abandon triggered by the query change correctly uses the pre-abandon
   // query.
   query_ = query;
+
+  for (auto& observer : observers_) {
+    observer.OnQueryChanged(query);
+  }
 }
 
 void AppListNotifierImpl::NotifyUIStateChanged(ash::AppListViewState view) {

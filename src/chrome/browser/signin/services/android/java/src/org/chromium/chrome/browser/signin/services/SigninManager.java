@@ -195,16 +195,9 @@ public interface SigninManager {
             @SigninAccessPoint int accessPoint, Account account, @Nullable SignInCallback callback);
 
     /**
-     * Returns true if a sign-in or sign-out operation is in progress. See also
-     * {@link SigninManager#runAfterOperationInProgress}.
-     */
-    @MainThread
-    boolean isOperationInProgress();
-
-    /**
      * Schedules the runnable to be invoked after currently ongoing a sign-in or sign-out operation
      * is finished. If there's no operation is progress, posts the callback to the UI thread right
-     * away. See also {@link SigninManager#isOperationInProgress}.
+     * away.
      */
     @MainThread
     void runAfterOperationInProgress(Runnable runnable);
@@ -232,13 +225,6 @@ public interface SigninManager {
      * Returns the management domain if the signed in account is managed, otherwise returns null.
      */
     String getManagementDomain();
-
-    /**
-     * Reloads accounts from system within IdentityManager.
-     * TODO(crbug.com/1152460): Move the caller of this method to SigninManager and remove this
-     * method.
-     */
-    void reloadAllAccountsFromSystem();
 
     /**
      * Verifies if the account is managed. Callback may be called either

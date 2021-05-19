@@ -77,6 +77,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchImageControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchQuickActionControl;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.ContextualSearchTestHost;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.FakeResolveSearch;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.FakeSlowResolveSearch;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
@@ -119,6 +120,7 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.ui.touch_selection.SelectionEventType;
+import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -221,6 +223,7 @@ public class ContextualSearchManagerTest {
     private ContextualSearchPolicy mPolicy;
     private ContextualSearchSelectionController mSelectionController;
     private EmbeddedTestServer mTestServer;
+    private ContextualSearchManagerTestHost mTestHost;
 
     private float mDpToPx;
 
@@ -257,6 +260,7 @@ public class ContextualSearchManagerTest {
         sActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
 
         mManager = sActivityTestRule.getActivity().getContextualSearchManager();
+        mTestHost = new ContextualSearchManagerTestHost();
 
         Assert.assertNotNull(mManager);
         mPanel = (ContextualSearchPanel) mManager.getContextualSearchPanel();
@@ -267,7 +271,7 @@ public class ContextualSearchManagerTest {
         mSelectionController.setPolicy(mPolicy);
         resetCounters();
 
-        mFakeServer = new ContextualSearchFakeServer(mPolicy, this, mManager,
+        mFakeServer = new ContextualSearchFakeServer(mPolicy, mTestHost, mManager,
                 mManager.getOverlayContentDelegate(), new OverlayContentProgressObserver(),
                 sActivityTestRule.getActivity());
 
@@ -316,11 +320,56 @@ public class ContextualSearchManagerTest {
         mLatestSlowResolveSearch = null;
     }
 
-    /**
-     * @return The {@link ContextualSearchPanel}.
-     */
-    ContextualSearchPanel getPanel() {
-        return mPanel;
+    private class ContextualSearchManagerTestHost implements ContextualSearchTestHost {
+        @Override
+        public void triggerNonResolve(String nodeId) throws TimeoutException {
+            if (mPolicy.isLiteralSearchTapEnabled()) {
+                clickWordNode(nodeId);
+            } else if (!mPolicy.canResolveLongpress()) {
+                longPressNode(nodeId);
+            } else {
+                Assert.fail(
+                        "Cannot trigger a non-resolving gesture with literal tap or non-resolve!");
+            }
+        }
+
+        @Override
+        public void triggerResolve(String nodeId) throws TimeoutException {
+            if (mPolicy.canResolveLongpress()) {
+                longPressNode(nodeId);
+            } else {
+                // When tap can trigger a resolve, we use a tap (aka click).
+                clickWordNode(nodeId);
+            }
+        }
+
+        @Override
+        public void waitForSelectionToBe(final String text) {
+            CriteriaHelper.pollInstrumentationThread(() -> {
+                Criteria.checkThat(getSelectedText(), Matchers.is(text));
+            }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+        }
+
+        @Override
+        public void waitForSearchTermResolutionToStart(final FakeResolveSearch search) {
+            CriteriaHelper.pollInstrumentationThread(
+                    ()
+                            -> { return search.didStartSearchTermResolution(); },
+                    "Fake Search Term Resolution never started.", TEST_TIMEOUT,
+                    DEFAULT_POLLING_INTERVAL);
+        }
+
+        @Override
+        public void waitForSearchTermResolutionToFinish(final FakeResolveSearch search) {
+            CriteriaHelper.pollInstrumentationThread(() -> {
+                return search.didFinishSearchTermResolution();
+            }, "Fake Search was never ready.", TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+        }
+
+        @Override
+        public ContextualSearchPanel getPanel() {
+            return mPanel;
+        }
     }
 
     /**
@@ -441,27 +490,16 @@ public class ContextualSearchManagerTest {
      * Simulates a resolving trigger on the given node but does not wait for the panel to peek.
      * @param nodeId A string containing the node ID.
      */
-    public void triggerResolve(String nodeId) throws TimeoutException {
-        if (mPolicy.canResolveLongpress()) {
-            longPressNode(nodeId);
-        } else {
-            // When tap can trigger a resolve, we use a tap (aka click).
-            clickWordNode(nodeId);
-        }
+    private void triggerResolve(String nodeId) throws TimeoutException {
+        mTestHost.triggerResolve(nodeId);
     }
 
     /**
      * Simulates a non-resolve trigger on the given node and waits for the panel to peek.
      * @param nodeId A string containing the node ID.
      */
-    public void triggerNonResolve(String nodeId) throws TimeoutException {
-        if (mPolicy.isLiteralSearchTapEnabled()) {
-            clickWordNode(nodeId);
-        } else if (!mPolicy.canResolveLongpress()) {
-            longPressNode(nodeId);
-        } else {
-            Assert.fail("Cannot trigger a non-resolving gesture with literal tap or non-resolve!");
-        }
+    private void triggerNonResolve(String nodeId) throws TimeoutException {
+        mTestHost.triggerNonResolve(nodeId);
     }
 
     /**
@@ -524,30 +562,24 @@ public class ContextualSearchManagerTest {
      * Waits for the selected text string to be the given string, and asserts.
      * @param text The string to wait for the selection to become.
      */
-    public void waitForSelectionToBe(final String text) {
-        CriteriaHelper.pollInstrumentationThread(() -> {
-            Criteria.checkThat(getSelectedText(), Matchers.is(text));
-        }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+    private void waitForSelectionToBe(final String text) {
+        mTestHost.waitForSelectionToBe(text);
     }
 
     /**
      * Waits for the Search Term Resolution to become ready.
      * @param search A given FakeResolveSearch.
      */
-    public void waitForSearchTermResolutionToStart(final FakeResolveSearch search) {
-        CriteriaHelper.pollInstrumentationThread(() -> {
-            return search.didStartSearchTermResolution();
-        }, "Fake Search Term Resolution never started.", TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+    private void waitForSearchTermResolutionToStart(final FakeResolveSearch search) {
+        mTestHost.waitForSearchTermResolutionToStart(search);
     }
 
     /**
      * Waits for the Search Term Resolution to finish.
      * @param search A given FakeResolveSearch.
      */
-    public void waitForSearchTermResolutionToFinish(final FakeResolveSearch search) {
-        CriteriaHelper.pollInstrumentationThread(() -> {
-            return search.didFinishSearchTermResolution();
-        }, "Fake Search was never ready.", TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+    private void waitForSearchTermResolutionToFinish(final FakeResolveSearch search) {
+        mTestHost.waitForSearchTermResolutionToFinish(search);
     }
 
     /**
@@ -1603,6 +1635,7 @@ public class ContextualSearchManagerTest {
 
         mFakeServer.reset();
         mFakeServer.setLowPriorityPathInvalid();
+        mFakeServer.setActuallyLoadALiveSerp();
         simulateResolveSearch("search");
         assertLoadedLowPriorityInvalidUrl();
         Assert.assertTrue(mFakeServer.didAttemptLoadInvalidUrl());
@@ -2478,6 +2511,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.Q, message = "crbug.com/1037667")
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testExternalNavigationWithUserGesture(@EnabledFeature int enabledFeature) {
         final ExternalNavigationDelegateImpl delegate =
@@ -2488,11 +2522,12 @@ public class ContextualSearchManagerTest {
         final ExternalNavigationHandler externalNavHandler =
                 new ExternalNavigationHandler(delegate);
         final NavigationParams navigationParams = new NavigationParams(
-                "intent://test/#Intent;scheme=test;package=com.chrome.test;end", "",
-                0 /* navigationId */, false /* isPost */, true /* hasUserGesture */,
-                PageTransition.LINK, false /* isRedirect */, true /* isExternalProtocol */,
-                true /* isMainFrame */, true /* isRendererInitiated */,
-                false /* hasUserGestureCarryover */, null /* initiatorOrigin */);
+                new GURL("intent://test/#Intent;scheme=test;package=com.chrome.test;end"),
+                GURL.emptyGURL(), 0 /* navigationId */, false /* isPost */,
+                true /* hasUserGesture */, PageTransition.LINK, false /* isRedirect */,
+                true /* isExternalProtocol */, true /* isMainFrame */,
+                true /* isRendererInitiated */, false /* hasUserGestureCarryover */,
+                null /* initiatorOrigin */);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -2511,6 +2546,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.Q, message = "crbug.com/1037667")
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testRedirectedExternalNavigationWithUserGesture(
             @EnabledFeature int enabledFeature) {
@@ -2522,17 +2558,19 @@ public class ContextualSearchManagerTest {
         final ExternalNavigationHandler externalNavHandler =
                 new ExternalNavigationHandler(delegate);
 
-        final NavigationParams initialNavigationParams = new NavigationParams("http://test.com", "",
-                0 /* navigationId */, false /* isPost */, true /* hasUserGesture */,
-                PageTransition.LINK, false /* isRedirect */, false /* isExternalProtocol */,
-                true /* isMainFrame */, true /* isRendererInitiated */,
-                false /* hasUserGestureCarryover */, null /* initiatorOrigin */);
+        final NavigationParams initialNavigationParams =
+                new NavigationParams(new GURL("http://test.com"), GURL.emptyGURL(),
+                        0 /* navigationId */, false /* isPost */, true /* hasUserGesture */,
+                        PageTransition.LINK, false /* isRedirect */, false /* isExternalProtocol */,
+                        true /* isMainFrame */, true /* isRendererInitiated */,
+                        false /* hasUserGestureCarryover */, null /* initiatorOrigin */);
         final NavigationParams redirectedNavigationParams = new NavigationParams(
-                "intent://test/#Intent;scheme=test;package=com.chrome.test;end", "",
-                0 /* navigationId */, false /* isPost */, false /* hasUserGesture */,
-                PageTransition.LINK, true /* isRedirect */, true /* isExternalProtocol */,
-                true /* isMainFrame */, true /* isRendererInitiated */,
-                false /* hasUserGestureCarryover */, null /* initiatorOrigin */);
+                new GURL("intent://test/#Intent;scheme=test;package=com.chrome.test;end"),
+                GURL.emptyGURL(), 0 /* navigationId */, false /* isPost */,
+                false /* hasUserGesture */, PageTransition.LINK, true /* isRedirect */,
+                true /* isExternalProtocol */, true /* isMainFrame */,
+                true /* isRendererInitiated */, false /* hasUserGestureCarryover */,
+                null /* initiatorOrigin */);
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -2565,11 +2603,12 @@ public class ContextualSearchManagerTest {
         final ExternalNavigationHandler externalNavHandler =
                 new ExternalNavigationHandler(delegate);
         final NavigationParams navigationParams = new NavigationParams(
-                "intent://test/#Intent;scheme=test;package=com.chrome.test;end", "",
-                0 /* navigationId */, false /* isPost */, false /* hasUserGesture */,
-                PageTransition.LINK, false /* isRedirect */, true /* isExternalProtocol */,
-                true /* isMainFrame */, true /* isRendererInitiated */,
-                false /* hasUserGestureCarryover */, null /* initiatorOrigin */);
+                new GURL("intent://test/#Intent;scheme=test;package=com.chrome.test;end"),
+                GURL.emptyGURL(), 0 /* navigationId */, false /* isPost */,
+                false /* hasUserGesture */, PageTransition.LINK, false /* isRedirect */,
+                true /* isExternalProtocol */, true /* isMainFrame */,
+                true /* isRendererInitiated */, false /* hasUserGestureCarryover */,
+                null /* initiatorOrigin */);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -2888,6 +2927,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1184410")
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testTapExpandNotRemovedFromHistory(@EnabledFeature int enabledFeature)
             throws Exception {
@@ -3184,7 +3224,7 @@ public class ContextualSearchManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
-                                QuickActionCategory.PHONE, CardTag.CT_CONTACT));
+                                QuickActionCategory.PHONE, CardTag.CT_CONTACT, null));
 
         ContextualSearchBarControl barControl = mPanel.getSearchBarControl();
         ContextualSearchQuickActionControl quickActionControl = barControl.getQuickActionControl();
@@ -3248,7 +3288,7 @@ public class ContextualSearchManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
-                                QuickActionCategory.PHONE, CardTag.CT_CONTACT));
+                                QuickActionCategory.PHONE, CardTag.CT_CONTACT, null));
 
         sActivityTestRule.getActivity().onUserInteraction();
         retryPanelBarInteractions(() -> {
@@ -3285,7 +3325,7 @@ public class ContextualSearchManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> mPanel.onSearchTermResolved("search", null, testUrl,
-                                QuickActionCategory.WEBSITE, CardTag.CT_URL));
+                                QuickActionCategory.WEBSITE, CardTag.CT_URL, null));
         retryPanelBarInteractions(() -> {
             // Tap on the portion of the bar that should trigger the quick action.
             clickPanelBar();
@@ -3302,7 +3342,7 @@ public class ContextualSearchManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> mPanel.onSearchTermResolved("obscure · əbˈskyo͝or", null, null,
-                                QuickActionCategory.NONE, cardTag));
+                                QuickActionCategory.NONE, cardTag, null));
 
         tapPeekingBarToExpandAndAssert();
     }
@@ -3729,6 +3769,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1182040")
     public void testRelatedSearchesResponseWhenEnabled() throws Exception {
         FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_UI);
         mFakeServer.reset();

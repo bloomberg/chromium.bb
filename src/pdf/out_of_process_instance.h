@@ -16,7 +16,6 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
-#include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "pdf/pdf_view_plugin_base.h"
 #include "pdf/preview_mode_client.h"
@@ -26,18 +25,16 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/find_private.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 class Size;
-class Vector2d;
 }  // namespace gfx
 
 namespace pp {
 class Size;
 class TextInput_Dev;
-class VarArray;
 class VarDictionary;
 }  // namespace pp
 
@@ -45,7 +42,6 @@ namespace chrome_pdf {
 
 class Graphics;
 class PDFiumEngine;
-class Thumbnail;
 class UrlLoader;
 
 class OutOfProcessInstance : public PdfViewPluginBase,
@@ -99,65 +95,35 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void FlushCallback(int32_t result);
 
   // PdfViewPluginBase:
-  void ProposeDocumentLayout(const DocumentLayout& layout) override;
-  void DidScroll(const gfx::Vector2d& offset) override;
-  void ScrollToX(int x_in_screen_coords) override;
-  void ScrollToY(int y_in_screen_coords) override;
-  void ScrollBy(const gfx::Vector2d& scroll_delta) override;
-  void ScrollToPage(int page) override;
-  void NavigateTo(const std::string& url,
-                  WindowOpenDisposition disposition) override;
-  void NavigateToDestination(int page,
-                             const float* x,
-                             const float* y,
-                             const float* zoom) override;
-  void UpdateCursor(PP_CursorType_Dev cursor) override;
+  void UpdateCursor(ui::mojom::CursorType cursor_type) override;
   void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
-  void NotifyTouchSelectionOccurred() override;
-  void GetDocumentPassword(
-      base::OnceCallback<void(const std::string&)> callback) override;
-  void Beep() override;
   void Alert(const std::string& message) override;
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
-  std::string GetURL() override;
-  void Email(const std::string& to,
-             const std::string& cc,
-             const std::string& bcc,
-             const std::string& subject,
-             const std::string& body) override;
   void Print() override;
   void SubmitForm(const std::string& url,
                   const void* data,
                   int length) override;
-  std::unique_ptr<UrlLoader> CreateUrlLoader() override;
-  std::vector<SearchStringResult> SearchString(const base::char16* string,
-                                               const base::char16* term,
+  std::vector<SearchStringResult> SearchString(const char16_t* string,
+                                               const char16_t* term,
                                                bool case_sensitive) override;
-  void DocumentLoadComplete() override;
-  void DocumentLoadFailed() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
-  void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
-  void FormTextFieldFocusChange(bool in_focus) override;
   bool IsPrintPreview() override;
-  void IsSelectingChanged(bool is_selecting) override;
   void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
   void EnteredEditMode() override;
-  void DocumentFocusChanged(bool document_has_focus) override;
   void SetSelectedText(const std::string& selected_text) override;
   void SetLinkUnderCursor(const std::string& link_under_cursor) override;
   bool IsValidLink(const std::string& url) override;
   std::unique_ptr<Graphics> CreatePaintGraphics(const gfx::Size& size) override;
   bool BindPaintGraphics(Graphics& graphics) override;
-  void ScheduleTaskOnMainThread(
-      base::TimeDelta delay,
-      ResultCallback callback,
-      int32_t result,
-      const base::Location& from_here = base::Location::Current()) override;
+  void ScheduleTaskOnMainThread(const base::Location& from_here,
+                                ResultCallback callback,
+                                int32_t result,
+                                base::TimeDelta delay) override;
 
   // PreviewModeClient::Client:
   void PreviewDocumentLoadComplete() override;
@@ -166,10 +132,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // Helper functions for implementing PPP_PDF.
   void RotateClockwise();
   void RotateCounterclockwise();
-
-  // Creates a file name for saving a PDF file, given the source URL. Exposed
-  // for testing.
-  static std::string GetFileNameFromUrl(const std::string& url);
 
  protected:
   // PdfViewPluginBase:
@@ -181,6 +143,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void SendMessage(base::Value message) override;
   void InitImageData(const gfx::Size& size) override;
   Image GetPluginImageData() const override;
+  void SetFormFieldInFocus(bool in_focus) override;
   void SetAccessibilityDocInfo(const AccessibilityDocInfo& doc_info) override;
   void SetAccessibilityPageInfo(AccessibilityPageInfo page_info,
                                 std::vector<AccessibilityTextRunInfo> text_runs,
@@ -188,39 +151,25 @@ class OutOfProcessInstance : public PdfViewPluginBase,
                                 AccessibilityPageObjects page_objects) override;
   void SetAccessibilityViewportInfo(
       const AccessibilityViewportInfo& viewport_info) override;
+  void SetContentRestrictions(int content_restrictions) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
+  void OnPrintPreviewLoaded() override;
+  void UserMetricsRecordAction(const std::string& action) override;
 
  private:
   // Message handlers.
-  void HandleGetPasswordCompleteMessage(const pp::VarDictionary& dict);
-  void HandleGetThumbnailMessage(const pp::VarDictionary& dict);
   void HandleLoadPreviewPageMessage(const pp::VarDictionary& dict);
   void HandleResetPrintPreviewModeMessage(const pp::VarDictionary& dict);
   void HandleSaveAttachmentMessage(const pp::VarDictionary& dict);
   void HandleSaveMessage(const pp::VarDictionary& dict);
-  void HandleUpdateScrollMessage(const pp::VarDictionary& dict);
-
-  // Repaints plugin contents based on the current scroll position.
-  void UpdateScroll();
 
   void ResetRecentlySentFindUpdate(int32_t);
 
-  // Returns a VarArray of Attachments. Each Attachment is a VarDictionary
-  // which contains the following key/values:
-  // - "name" - a string Var.
-  // - "size" - an int Var (-1 indicates the attachment file is too big to be
-  // downloaded).
-  // - "readable" a bool Var.
-  pp::VarArray GetDocumentAttachments();
-
   bool CanSaveEdits() const;
   void SaveToFile(const std::string& token);
-  void SaveToBuffer(const std::string& token);
-  void ConsumeSaveToken(const std::string& token);
 
   void FormDidOpen(int32_t result);
-
-  void RecordDocumentMetrics();
-  void UserMetricsRecordAction(const std::string& action);
 
   // Must match SaveRequestType in chrome/browser/resources/pdf/constants.js.
   enum class SaveRequestType {
@@ -245,53 +194,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // Called after a preview page has loaded or failed to load.
   void LoadNextPreviewPage();
 
-  // Send a notification that the print preview has loaded.
-  void SendPrintPreviewLoadedNotification();
-
-  // Send attachments.
-  void SendAttachments();
-
-  // Send bookmarks.
-  void SendBookmarks();
-
-  // Send document metadata.
-  void SendMetadata();
-
-  // Send the loading progress, where |percentage| represents the progress, or
-  // -1 for loading error.
-  void SendLoadingProgress(double percentage);
-
-  // Sends the thumbnail image data.
-  void SendThumbnail(const std::string& message_id, Thumbnail thumbnail);
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class PdfHasAttachment {
-    kNo = 0,
-    kYes = 1,
-    kMaxValue = kYes,
-  };
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class PdfIsTagged {
-    kNo = 0,
-    kYes = 1,
-    kMaxValue = kYes,
-  };
-
-  // Add a sample to an enumerated histogram and filter out print preview usage.
-  template <typename T>
-  void HistogramEnumeration(const char* name, T sample);
-
-  // Add a sample to a custom counts histogram and filter out print preview
-  // usage.
-  void HistogramCustomCounts(const char* name,
-                             int32_t sample,
-                             int32_t min,
-                             int32_t max,
-                             uint32_t bucket_count);
-
   // Callback to print without re-entrancy issues.
   void OnPrint(int32_t /*unused_but_required*/);
 
@@ -299,14 +201,11 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // or not.
   bool SendInputEventToEngine(const pp::InputEvent& event);
 
-  // The Pepper image data that is in sync with image_data().
+  // The Pepper image data that is in sync with mutable_image_data().
   pp::ImageData pepper_image_data_;
 
-  // The current cursor.
-  PP_CursorType_Dev cursor_ = PP_CURSORTYPE_POINTER;
-
-  // The scroll position in CSS pixels.
-  gfx::Point scroll_position_;
+  // The current cursor type.
+  ui::mojom::CursorType cursor_type_ = ui::mojom::CursorType::kPointer;
 
   // True if the plugin is full-page.
   bool full_ = false;
@@ -342,13 +241,8 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // interface which has very limited access to the pp::Instance.
   std::unique_ptr<PDFiumEngine> preview_engine_;
 
-  std::string url_;
-
   // Used for submitting forms.
   std::unique_ptr<UrlLoader> form_loader_;
-
-  // The callback for receiving the password from the page.
-  base::OnceCallback<void(const std::string&)> password_callback_;
 
   DocumentLoadState preview_document_load_state_ = DocumentLoadState::kComplete;
 
@@ -385,9 +279,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // http://crbug.com/132565
   std::unique_ptr<pp::TextInput_Dev> text_input_;
 
-  // The last document load progress value sent to the web page.
-  double last_progress_sent_ = 0.0;
-
   // Whether an update to the number of find results found was sent less than
   // |kFindResultCooldownMs| milliseconds ago.
   bool recently_sent_find_update_ = false;
@@ -399,8 +290,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // request so that it can start the throbber. We will tell it again once the
   // document finishes loading.
   bool did_call_start_loading_ = false;
-
-  bool edit_mode_ = false;
 
   base::WeakPtrFactory<OutOfProcessInstance> weak_factory_{this};
 };

@@ -122,6 +122,10 @@ struct DataSourceStaticState {
   std::atomic<uint32_t> valid_instances{};
   std::array<DataSourceStateStorage, kMaxDataSourceInstances> instances{};
 
+  // Incremented whenever incremental state should be reset for any instance of
+  // this data source.
+  std::atomic<uint32_t> incremental_state_generation{};
+
   // Can be used with a cached |valid_instances| bitmap.
   DataSourceState* TryGetCached(uint32_t cached_bitmap, size_t n) {
     return cached_bitmap & (1 << n)
@@ -150,16 +154,20 @@ struct DataSourceInstanceThreadLocalState {
     backend_connection_id = 0;
     buffer_id = 0;
     data_source_instance_id = 0;
+    incremental_state_generation = 0;
     is_intercepted = false;
+    is_in_trace_point = false;
   }
 
   std::unique_ptr<TraceWriterBase> trace_writer;
   IncrementalStatePointer incremental_state = {nullptr, [](void*) {}};
+  uint32_t incremental_state_generation;
   TracingBackendId backend_id;
   uint32_t backend_connection_id;
   BufferId buffer_id;
   uint64_t data_source_instance_id;
   bool is_intercepted;
+  bool is_in_trace_point;
 };
 
 // Per-DataSource-type thread-local state.

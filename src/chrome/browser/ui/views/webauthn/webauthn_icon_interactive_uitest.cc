@@ -19,6 +19,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/authenticator_environment.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "device/fido/virtual_ctap2_device.h"
@@ -108,10 +109,13 @@ IN_PROC_BROWSER_TEST_F(WebAuthUITest, ConditionalUI) {
       });
 
   constexpr char kGetAssertion[] =
-      "navigator.credentials.get({conditionalPublicKey: {"
-      "  challenge: new Uint8Array([1,2,3,4]),"
-      "  timeout: 1000,"
-      "}}).then(c => window.domAutomationController.send(c ? 'OK' : 'c null'),"
+      "navigator.credentials.get({"
+      "  publicKey: {"
+      "    challenge: new Uint8Array([1,2,3,4]),"
+      "    timeout: 1000,"
+      "  },"
+      "  mediation: 'conditional'"
+      "}).then(c => window.domAutomationController.send(c ? 'OK' : 'c null'),"
       "         e => window.domAutomationController.send(e.toString()));";
   content::WebContents* const web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
@@ -61,11 +60,11 @@ class BrowsingHistoryService : public HistoryServiceObserver,
 
     HistoryEntry(EntryType type,
                  const GURL& url,
-                 const base::string16& title,
+                 const std::u16string& title,
                  base::Time time,
                  const std::string& client_id,
                  bool is_search_result,
-                 const base::string16& snippet,
+                 const std::u16string& snippet,
                  bool blocked_visit,
                  const GURL& remote_icon_url_for_uma,
                  int visit_count,
@@ -83,7 +82,7 @@ class BrowsingHistoryService : public HistoryServiceObserver,
 
     GURL url;
 
-    base::string16 title;  // Title of the entry. May be empty.
+    std::u16string title;  // Title of the entry. May be empty.
 
     // The time of the entry. Usually this will be the time of the most recent
     // visit to |url| on a particular day as defined in the local timezone.
@@ -100,7 +99,7 @@ class BrowsingHistoryService : public HistoryServiceObserver,
     bool is_search_result;
 
     // The entry's search snippet, if this entry is a search result.
-    base::string16 snippet;
+    std::u16string snippet;
 
     // Whether this entry was blocked when it was attempted.
     bool blocked_visit;
@@ -120,7 +119,7 @@ class BrowsingHistoryService : public HistoryServiceObserver,
     ~QueryResultsInfo();
 
     // The query search text.
-    base::string16 search_text;
+    std::u16string search_text;
 
     // Whether this query reached the end of all results, or if there are more
     // history entries that can be fetched through paging.
@@ -142,7 +141,7 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   ~BrowsingHistoryService() override;
 
   // Start a new query with the given parameters.
-  void QueryHistory(const base::string16& search_text,
+  void QueryHistory(const std::u16string& search_text,
                     const QueryOptions& options);
 
   // Removes |items| from history.

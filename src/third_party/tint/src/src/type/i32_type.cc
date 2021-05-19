@@ -14,10 +14,9 @@
 
 #include "src/type/i32_type.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::I32);
+TINT_INSTANTIATE_TYPEINFO(tint::type::I32);
 
 namespace tint {
 namespace type {
@@ -34,14 +33,6 @@ std::string I32::type_name() const {
 
 std::string I32::FriendlyName(const SymbolTable&) const {
   return "i32";
-}
-
-uint64_t I32::MinBufferBindingSize(MemoryLayout) const {
-  return 4;
-}
-
-uint64_t I32::BaseAlignment(MemoryLayout) const {
-  return 4;
 }
 
 I32* I32::Clone(CloneContext* ctx) const {

@@ -10,19 +10,6 @@
 namespace mojo {
 
 // static
-bool StructTraits<blink::mojom::ImpressionDataView, blink::Impression>::Read(
-    blink::mojom::ImpressionDataView data,
-    blink::Impression* out) {
-  if (!data.ReadConversionDestination(&out->conversion_destination) ||
-      !data.ReadReportingOrigin(&out->reporting_origin) ||
-      !data.ReadExpiry(&out->expiry))
-    return false;
-
-  out->impression_data = data.impression_data();
-  return true;
-}
-
-// static
 bool StructTraits<blink::mojom::UntrustworthyContextMenuParamsDataView,
                   blink::UntrustworthyContextMenuParams>::
     Read(blink::mojom::UntrustworthyContextMenuParamsDataView data,
@@ -59,6 +46,7 @@ bool StructTraits<blink::mojom::UntrustworthyContextMenuParamsDataView,
   out->writing_direction_right_to_left = data.writing_direction_right_to_left();
   out->edit_flags = data.edit_flags();
   out->selection_start_offset = data.selection_start_offset();
+  out->opened_from_highlight = data.opened_from_highlight();
   return true;
 }
 

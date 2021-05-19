@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -26,8 +28,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::DoDefault;
 using ::testing::InvokeWithoutArgs;
-using ::testing::Return;
 
 class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
  public:
@@ -37,10 +39,12 @@ class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
     return weak_factory_.GetWeakPtr();
   }
 
-  MOCK_METHOD3(OnSpeechResult,
-               void(const base::string16& text,
-                    bool is_final,
-                    base::Optional<std::vector<base::TimeDelta>> word_offsets));
+  MOCK_METHOD3(
+      OnSpeechResult,
+      void(const std::u16string& text,
+           bool is_final,
+           const base::Optional<SpeechRecognizerDelegate::TranscriptTiming>&
+               timing));
   MOCK_METHOD1(OnSpeechSoundLevelChanged, void(int16_t));
   MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(SpeechRecognizerStatus));
 
@@ -48,22 +52,22 @@ class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
   base::WeakPtrFactory<MockSpeechRecognizerDelegate> weak_factory_{this};
 };
 
-class AppListNetworkSpeechRecognizerBrowserTest : public InProcessBrowserTest {
+class NetworkSpeechRecognizerBrowserTest : public InProcessBrowserTest {
  public:
-  AppListNetworkSpeechRecognizerBrowserTest() {}
-
-  AppListNetworkSpeechRecognizerBrowserTest(
-      const AppListNetworkSpeechRecognizerBrowserTest&) = delete;
-  AppListNetworkSpeechRecognizerBrowserTest& operator=(
-      const AppListNetworkSpeechRecognizerBrowserTest&) = delete;
+  NetworkSpeechRecognizerBrowserTest() = default;
+  ~NetworkSpeechRecognizerBrowserTest() override = default;
+  NetworkSpeechRecognizerBrowserTest(
+      const NetworkSpeechRecognizerBrowserTest&) = delete;
+  NetworkSpeechRecognizerBrowserTest& operator=(
+      const NetworkSpeechRecognizerBrowserTest&) = delete;
 
   void SetUpOnMainThread() override {
-    fake_speech_recognition_manager_.reset(
-        new content::FakeSpeechRecognitionManager());
-    fake_speech_recognition_manager_->set_should_send_fake_response(true);
+    fake_speech_recognition_manager_ =
+        std::make_unique<content::FakeSpeechRecognitionManager>();
+    fake_speech_recognition_manager_->set_should_send_fake_response(false);
     content::SpeechRecognitionManager::SetManagerForTesting(
         fake_speech_recognition_manager_.get());
-    mock_speech_delegate_.reset(new MockSpeechRecognizerDelegate());
+    mock_speech_delegate_ = std::make_unique<MockSpeechRecognizerDelegate>();
   }
 
   void TearDownOnMainThread() override {
@@ -76,22 +80,53 @@ class AppListNetworkSpeechRecognizerBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<MockSpeechRecognizerDelegate> mock_speech_delegate_;
 };
 
-IN_PROC_BROWSER_TEST_F(AppListNetworkSpeechRecognizerBrowserTest,
-                       RecognizeSpeech) {
+IN_PROC_BROWSER_TEST_F(NetworkSpeechRecognizerBrowserTest, RecognizeSpeech) {
   NetworkSpeechRecognizer recognizer(
       mock_speech_delegate_->GetWeakPtr(),
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
           ->GetURLLoaderFactoryForBrowserProcessIOThread(),
       "en" /* accept_language */, "en" /* locale */);
 
-  base::RunLoop run_loop;
-  base::Optional<std::vector<base::TimeDelta>> timings = base::nullopt;
-  EXPECT_CALL(*mock_speech_delegate_,
-              OnSpeechResult(base::ASCIIToUTF16("Pictures of the moon"), true,
-                             timings));
+  testing::InSequence seq;
   EXPECT_CALL(*mock_speech_delegate_,
               OnSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_READY))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_speech_delegate_,
+              OnSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_RECOGNIZING))
+      .Times(1);
   recognizer.Start();
-  run_loop.Run();
+  fake_speech_recognition_manager_->WaitForRecognitionStarted();
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop first_response_loop;
+  EXPECT_CALL(*mock_speech_delegate_,
+              OnSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_IN_SPEECH))
+      .Times(1);
+  EXPECT_CALL(*mock_speech_delegate_,
+              OnSpeechResult(base::ASCIIToUTF16("Pictures of the moon"), true,
+                             testing::_))
+      .WillOnce(InvokeWithoutArgs(&first_response_loop, &base::RunLoop::Quit))
+      .RetiresOnSaturation();
+  fake_speech_recognition_manager_->SendFakeResponse(
+      false /* end recognition */, base::DoNothing());
+  first_response_loop.Run();
+
+  // Try another speech response.
+  fake_speech_recognition_manager_->SetFakeResult("Pictures of mars!");
+  base::RunLoop second_response_loop;
+  EXPECT_CALL(
+      *mock_speech_delegate_,
+      OnSpeechResult(base::ASCIIToUTF16("Pictures of mars!"), true, testing::_))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_speech_delegate_,
+              OnSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_READY))
+      .WillOnce(InvokeWithoutArgs(&second_response_loop, &base::RunLoop::Quit));
+  fake_speech_recognition_manager_->SendFakeResponse(true /* end recognition */,
+                                                     base::DoNothing());
+  second_response_loop.Run();
+
+  // Stop listening, no more callbacks expected.
+  recognizer.Stop();
 }

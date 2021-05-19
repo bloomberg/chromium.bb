@@ -43,7 +43,7 @@ class ESimProfile : public mojom::ESimProfile {
   void UninstallProfile(UninstallProfileCallback callback) override;
   void EnableProfile(EnableProfileCallback callback) override;
   void DisableProfile(DisableProfileCallback callback) override;
-  void SetProfileNickname(const base::string16& nickname,
+  void SetProfileNickname(const std::u16string& nickname,
                           SetProfileNicknameCallback callback) override;
 
   // Update properties for this ESimProfile from D-Bus.
@@ -78,21 +78,33 @@ class ESimProfile : public mojom::ESimProfile {
   void EnsureProfileExistsOnEuicc(
       EnsureProfileExistsOnEuiccCallback callback,
       std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock);
-  void OnRequestProfiles(
+  void OnRequestInstalledProfiles(
+      EnsureProfileExistsOnEuiccCallback callback,
+      std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock);
+  void OnRequestPendingProfiles(
       EnsureProfileExistsOnEuiccCallback callback,
       std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock,
       HermesResponseStatus status);
+  void OnRequestProfiles(
+      EnsureProfileExistsOnEuiccCallback callback,
+      std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock,
+      bool success);
   void PerformInstallProfile(
       const std::string& confirmation_code,
       bool request_profile_success,
       std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock);
   void PerformSetProfileNickname(
-      const base::string16& nickname,
+      const std::u16string& nickname,
       bool request_profile_success,
       std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock);
   void OnPendingProfileInstallResult(
       std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock,
       HermesResponseStatus status);
+  void OnNewProfileEnableSuccess(const std::string& service_path);
+  void OnNewProfileConnectSuccess();
+  void OnNewProfileConnectFailure(
+      const std::string& error_name,
+      std::unique_ptr<base::DictionaryValue> error_data);
   void OnProfileUninstallResult(bool success);
   void OnESimOperationResult(ESimOperationResultCallback callback,
                              HermesResponseStatus status);

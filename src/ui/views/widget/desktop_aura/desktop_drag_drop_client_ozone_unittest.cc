@@ -14,6 +14,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/platform_window/platform_window.h"
@@ -44,7 +45,7 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
   void PrepareForShutdown() override {}
   void SetBounds(const gfx::Rect& bounds) override {}
   gfx::Rect GetBounds() const override { return gfx::Rect(); }
-  void SetTitle(const base::string16& title) override {}
+  void SetTitle(const std::u16string& title) override {}
   void SetCapture() override {}
   void ReleaseCapture() override {}
   bool HasCapture() const override { return false; }
@@ -225,7 +226,7 @@ class DesktopDragDropClientOzoneTest : public ViewsTestBase {
 
   int StartDragAndDrop(int operation) {
     auto data = std::make_unique<ui::OSExchangeData>();
-    data->SetString(base::ASCIIToUTF16("Test"));
+    data->SetString(u"Test");
     SkBitmap drag_bitmap;
     drag_bitmap.allocN32Pixels(10, 10);
     drag_bitmap.eraseARGB(0xFF, 0, 0, 0);
@@ -328,7 +329,7 @@ TEST_F(DesktopDragDropClientOzoneTest, ReceiveDrag) {
   dragdrop_delegate_->SetOperation(operation);
 
   // Set the data which will be delivered.
-  const base::string16 sample_data = base::ASCIIToUTF16("ReceiveDrag");
+  const std::u16string sample_data = u"ReceiveDrag";
   std::unique_ptr<ui::OSExchangeData> data =
       std::make_unique<ui::OSExchangeData>();
   data->SetString(sample_data);
@@ -348,7 +349,7 @@ TEST_F(DesktopDragDropClientOzoneTest, ReceiveDrag) {
   // 'ui::DragDropTypes::DRAG_MOVE'.
   EXPECT_EQ(static_cast<int>(operation), updated_operation);
 
-  base::string16 string_data;
+  std::u16string string_data;
   dragdrop_delegate_->received_data()->GetString(&string_data);
   EXPECT_EQ(sample_data, string_data);
 
@@ -366,7 +367,7 @@ TEST_F(DesktopDragDropClientOzoneTest, TargetDestroyedDuringDrag) {
   dragdrop_delegate_->SetOperation(DragOperation::kMove);
 
   // Set the data which will be delivered.
-  const base::string16 sample_data = base::ASCIIToUTF16("ReceiveDrag");
+  const std::u16string sample_data = u"ReceiveDrag";
   std::unique_ptr<ui::OSExchangeData> data =
       std::make_unique<ui::OSExchangeData>();
   data->SetString(sample_data);

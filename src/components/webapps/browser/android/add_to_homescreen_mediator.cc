@@ -111,6 +111,11 @@ void AddToHomescreenMediator::AddToHomescreen(
   if (params_->app_type == AddToHomescreenParams::AppType::SHORTCUT) {
     params_->shortcut_info->user_title =
         base::android::ConvertJavaStringToUTF16(env, j_user_title);
+  } else if (params_->app_type == AddToHomescreenParams::AppType::WEBAPK) {
+    AppBannerManager* app_banner_manager =
+        AppBannerManager::FromWebContents(GetWebContents());
+    app_banner_manager->TrackInstallPath(/* bottom_sheet= */ false,
+                                         params_->install_source);
   }
 
   AddToHomescreenInstaller::Install(GetWebContents(), *params_,
@@ -146,7 +151,7 @@ void AddToHomescreenMediator::SetIcon(const SkBitmap& display_icon,
                                        need_to_add_padding);
 }
 
-void AddToHomescreenMediator::SetWebAppInfo(const base::string16& user_title,
+void AddToHomescreenMediator::SetWebAppInfo(const std::u16string& user_title,
                                             const GURL& url,
                                             bool is_webapk) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -162,7 +167,7 @@ void AddToHomescreenMediator::SetWebAppInfo(const base::string16& user_title,
 }
 
 void AddToHomescreenMediator::OnUserTitleAvailable(
-    const base::string16& user_title,
+    const std::u16string& user_title,
     const GURL& url,
     bool is_webapk_compatible) {
   SetWebAppInfo(user_title, url, is_webapk_compatible);

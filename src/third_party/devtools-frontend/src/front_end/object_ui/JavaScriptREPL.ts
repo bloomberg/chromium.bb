@@ -4,9 +4,9 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Platform from '../platform/platform.js';
-import * as SDK from '../sdk/sdk.js';
-import * as UI from '../ui/ui.js';
+import * as Platform from '../core/platform/platform.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import {RemoteObjectPreviewFormatter} from './RemoteObjectPreviewFormatter.js';
 
@@ -17,8 +17,6 @@ export class JavaScriptREPL {
       return code;
     }
 
-    // TODO: Remove next line once crbug.com/1177242 is solved.
-    // eslint-disable-next-line @typescript-eslint/space-before-function-paren
     const parse = (async(): Promise<number> => 0).constructor;
     try {
       // Check if the code can be interpreted as an expression.
@@ -44,15 +42,8 @@ export class JavaScriptREPL {
     preview: DocumentFragment,
     result: SDK.RuntimeModel.EvaluationResult|null,
   }> {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const globalObject = (window as any);
-    const replInstance = globalObject.ObjectUI.JavaScriptREPL;
     const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
-    const maxLength = typeof replInstance._MaxLengthForEvaluation !== 'undefined' ?
-        replInstance._MaxLengthForEvaluation as number :
-        MaxLengthForEvaluation;
-    const isTextLong = text.length > maxLength;
+    const isTextLong = text.length > maxLengthForEvaluation;
     if (!text || !executionContext || (throwOnSideEffect && isTextLong)) {
       return {preview: document.createDocumentFragment(), result: null};
     }
@@ -103,7 +94,12 @@ export class JavaScriptREPL {
   }
 }
 
-/**
- * @const
- */
-export const MaxLengthForEvaluation: number = 2000;
+let maxLengthForEvaluation: number = 2000;
+
+export function setMaxLengthForEvaluation(value: number): void {
+  maxLengthForEvaluation = value;
+}
+
+export function getMaxLengthForEvaluation(): number {
+  return maxLengthForEvaluation;
+}

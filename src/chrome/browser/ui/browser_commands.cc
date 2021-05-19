@@ -29,7 +29,10 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_base.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/session_service_lookup.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/accelerator_utils.h"
@@ -123,6 +126,7 @@
 #include "rlz/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/models/list_selection_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
@@ -217,7 +221,7 @@ void CreateAndShowNewWindowWithContents(
 
 bool GetTabURLAndTitleToSave(content::WebContents* web_contents,
                              GURL* url,
-                             base::string16* title) {
+                             std::u16string* title) {
   // |web_contents| can be nullptr if the last tab in the browser was closed
   // but the browser wasn't closed yet. https://crbug.com/799668
   if (!web_contents)
@@ -453,7 +457,8 @@ void NewEmptyWindow(Profile* profile) {
         SessionServiceFactory::GetForProfileForSessionRestore(
             profile->GetOriginalProfile());
     if (!session_service ||
-        !session_service->RestoreIfNecessary(std::vector<GURL>())) {
+        !session_service->RestoreIfNecessary(std::vector<GURL>(),
+                                             /* restore_apps */ false)) {
       OpenEmptyWindow(profile->GetOriginalProfile());
     }
   }
@@ -764,16 +769,29 @@ void MoveTabPrevious(Browser* browser) {
 void SelectNumberedTab(Browser* browser,
                        int index,
                        TabStripModel::UserGestureDetails gesture_detail) {
-  if (index < browser->tab_strip_model()->count()) {
-    base::RecordAction(UserMetricsAction("SelectNumberedTab"));
-    browser->tab_strip_model()->ActivateTabAt(index, gesture_detail);
+  int visible_count = 0;
+  for (int i = 0; i < browser->tab_strip_model()->count(); i++) {
+    if (browser->tab_strip_model()->IsTabCollapsed(i)) {
+      continue;
+    }
+    if (visible_count == index) {
+      base::RecordAction(UserMetricsAction("SelectNumberedTab"));
+      browser->tab_strip_model()->ActivateTabAt(i, gesture_detail);
+      break;
+    }
+    visible_count += 1;
   }
 }
 
 void SelectLastTab(Browser* browser,
                    TabStripModel::UserGestureDetails gesture_detail) {
-  base::RecordAction(UserMetricsAction("SelectLastTab"));
-  browser->tab_strip_model()->SelectLastTab(gesture_detail);
+  for (int i = browser->tab_strip_model()->count() - 1; i >= 0; i--) {
+    if (!browser->tab_strip_model()->IsTabCollapsed(i)) {
+      base::RecordAction(UserMetricsAction("SelectLastTab"));
+      browser->tab_strip_model()->ActivateTabAt(i, gesture_detail);
+      break;
+    }
+  }
 }
 
 void DuplicateTab(Browser* browser) {
@@ -792,12 +810,17 @@ bool CanDuplicateKeyboardFocusedTab(const Browser* browser) {
 }
 
 bool CanMoveActiveTabToNewWindow(Browser* browser) {
-  return CanMoveTabsToNewWindow(browser,
-                                {browser->tab_strip_model()->active_index()});
+  const ui::ListSelectionModel::SelectedIndices& selection =
+      browser->tab_strip_model()->selection_model().selected_indices();
+  return CanMoveTabsToNewWindow(
+      browser, std::vector<int>(selection.begin(), selection.end()));
 }
 
 void MoveActiveTabToNewWindow(Browser* browser) {
-  MoveTabsToNewWindow(browser, {browser->tab_strip_model()->active_index()});
+  const ui::ListSelectionModel::SelectedIndices& selection =
+      browser->tab_strip_model()->selection_model().selected_indices();
+  MoveTabsToNewWindow(browser,
+                      std::vector<int>(selection.begin(), selection.end()));
 }
 bool CanMoveTabsToNewWindow(Browser* browser,
                             const std::vector<int>& tab_indices) {
@@ -886,8 +909,8 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
     CreateAndShowNewWindowWithContents(std::move(contents_dupe), browser);
   }
 
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfileIfExisting(browser->profile());
+  SessionServiceBase* session_service =
+      GetAppropriateSessionServiceIfExisting(browser);
   if (session_service)
     session_service->TabRestored(raw_contents_dupe, pinned);
   return raw_contents_dupe;
@@ -1007,7 +1030,7 @@ void BookmarkCurrentTab(Browser* browser) {
     return;  // Ignore requests until bookmarks are loaded.
 
   GURL url;
-  base::string16 title;
+  std::u16string title;
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   // |web_contents| can be nullptr if the last tab in the browser was closed
@@ -1079,7 +1102,7 @@ bool MoveCurrentTabToReadLater(Browser* browser) {
 
 bool MoveTabToReadLater(Browser* browser, content::WebContents* web_contents) {
   GURL url;
-  base::string16 title;
+  std::u16string title;
   ReadingListModel* model = GetReadingListModel(browser);
   if (!model || !GetTabURLAndTitleToSave(web_contents, &url, &title) ||
       !model->IsUrlSupported(url))
@@ -1097,7 +1120,7 @@ bool MoveTabToReadLater(Browser* browser, content::WebContents* web_contents) {
 
 bool MarkCurrentTabAsReadInReadLater(Browser* browser) {
   GURL url;
-  base::string16 title;
+  std::u16string title;
   ReadingListModel* model = GetReadingListModel(browser);
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
@@ -1112,7 +1135,7 @@ bool MarkCurrentTabAsReadInReadLater(Browser* browser) {
 
 bool IsCurrentTabUnreadInReadLater(Browser* browser) {
   GURL url;
-  base::string16 title;
+  std::u16string title;
   ReadingListModel* model = GetReadingListModel(browser);
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();

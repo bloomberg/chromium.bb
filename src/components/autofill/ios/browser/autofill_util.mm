@@ -32,6 +32,31 @@ using base::StringToUint;
 namespace {
 // The timeout for any JavaScript call in this file.
 const int64_t kJavaScriptExecutionTimeoutInSeconds = 5;
+
+// Runs |callback| with the NSString value of |res|.
+// |callback| must be non-null.
+void ConvertValueToNSString(base::OnceCallback<void(NSString*)> callback,
+                            const base::Value* res) {
+  DCHECK(!callback.is_null());
+
+  NSString* result = nil;
+  if (res && res->is_string()) {
+    result = base::SysUTF8ToNSString(res->GetString());
+  }
+  std::move(callback).Run(result);
+}
+
+// Runs |callback| with the BOOL value of |res|. |callback| must be non-null.
+void ConvertValueToBool(base::OnceCallback<void(BOOL)> callback,
+                        const base::Value* res) {
+  DCHECK(!callback.is_null());
+
+  BOOL result = NO;
+  if (res && res->is_bool()) {
+    result = res->GetBool();
+  }
+  std::move(callback).Run(result);
+}
 }
 
 namespace autofill {
@@ -61,7 +86,7 @@ std::unique_ptr<base::Value> ParseJson(NSString* json_string) {
 
 bool ExtractFormsData(NSString* forms_json,
                       bool filtered,
-                      const base::string16& form_name,
+                      const std::u16string& form_name,
                       const GURL& main_frame_url,
                       const GURL& frame_origin,
                       std::vector<FormData>* forms_data) {
@@ -88,7 +113,7 @@ bool ExtractFormsData(NSString* forms_json,
 
 bool ExtractFormData(const base::Value& form_value,
                      bool filtered,
-                     const base::string16& form_name,
+                     const std::u16string& form_name,
                      const GURL& main_frame_url,
                      const GURL& form_frame_origin,
                      autofill::FormData* form_data) {
@@ -105,7 +130,7 @@ bool ExtractFormData(const base::Value& form_value,
     return false;
 
   // Origin is mandatory.
-  base::string16 origin;
+  std::u16string origin;
   if (!form_dictionary->GetString("origin", &origin))
     return false;
 
@@ -119,15 +144,14 @@ bool ExtractFormData(const base::Value& form_value,
 
   std::string unique_renderer_id;
   form_dictionary->GetString("unique_renderer_id", &unique_renderer_id);
-  if (!unique_renderer_id.empty() &&
-      unique_renderer_id != NumberToString(kNotSetRendererID)) {
+  if (!unique_renderer_id.empty()) {
     StringToUint(unique_renderer_id, &form_data->unique_renderer_id.value());
   } else {
     form_data->unique_renderer_id = FormRendererId();
   }
 
   // Action is optional.
-  base::string16 action;
+  std::u16string action;
   form_dictionary->GetString("action", &action);
   form_data->action = GURL(action);
 
@@ -135,8 +159,6 @@ bool ExtractFormData(const base::Value& form_value,
   form_dictionary->GetString("name_attribute", &form_data->name_attribute);
   form_dictionary->GetString("id_attribute", &form_data->id_attribute);
   form_dictionary->GetBoolean("is_form_tag", &form_data->is_form_tag);
-  form_dictionary->GetBoolean("is_formless_checkout",
-                              &form_data->is_formless_checkout);
   form_dictionary->GetString("frame_id", &form_data->frame_id);
 
   // Field list (mandatory) is extracted.
@@ -166,8 +188,7 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
 
   std::string unique_renderer_id;
   field.GetString("unique_renderer_id", &unique_renderer_id);
-  if (!unique_renderer_id.empty() &&
-      unique_renderer_id != NumberToString(kNotSetRendererID)) {
+  if (!unique_renderer_id.empty()) {
     StringToUint(unique_renderer_id, &field_data->unique_renderer_id.value());
   } else {
     field_data->unique_renderer_id = FieldRendererId();
@@ -208,7 +229,7 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
   const base::ListValue* option_values = nullptr;
   if (field.GetList("option_values", &option_values)) {
     for (const auto& optionValue : *option_values) {
-      base::string16 value;
+      std::u16string value;
       if (optionValue.GetAsString(&value))
         field_data->option_values.push_back(std::move(value));
     }
@@ -218,7 +239,7 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
   const base::ListValue* option_contents = nullptr;
   if (field.GetList("option_contents", &option_contents)) {
     for (const auto& option_content : *option_contents) {
-      base::string16 content;
+      std::u16string content;
       if (option_content.GetAsString(&content))
         field_data->option_contents.push_back(std::move(content));
     }
@@ -229,23 +250,21 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
 
 JavaScriptResultCallback CreateStringCallback(
     void (^completionHandler)(NSString*)) {
-  return base::BindOnce(^(const base::Value* res) {
-    NSString* result = nil;
-    if (res && res->is_string()) {
-      result = base::SysUTF8ToNSString(res->GetString());
-    }
-    completionHandler(result);
-  });
+  return CreateStringCallback(base::BindOnce(completionHandler));
+}
+
+JavaScriptResultCallback CreateStringCallback(
+    base::OnceCallback<void(NSString*)> callback) {
+  return base::BindOnce(&ConvertValueToNSString, std::move(callback));
 }
 
 JavaScriptResultCallback CreateBoolCallback(void (^completionHandler)(BOOL)) {
-  return base::BindOnce(^(const base::Value* res) {
-    BOOL result = NO;
-    if (res && res->is_bool()) {
-      result = res->GetBool();
-    }
-    completionHandler(result);
-  });
+  return CreateBoolCallback(base::BindOnce(completionHandler));
+}
+
+JavaScriptResultCallback CreateBoolCallback(
+    base::OnceCallback<void(BOOL)> callback) {
+  return base::BindOnce(&ConvertValueToBool, std::move(callback));
 }
 
 void ExecuteJavaScriptFunction(const std::string& name,
@@ -298,7 +317,7 @@ bool ExtractIDs(NSString* json_string, std::vector<uint32_t>* ids) {
 
 bool ExtractFillingResults(
     NSString* json_string,
-    std::map<uint32_t, base::string16>* filling_results) {
+    std::map<uint32_t, std::u16string>* filling_results) {
   DCHECK(filling_results);
   std::unique_ptr<base::Value> ids_value = ParseJson(json_string);
   if (!ids_value)
@@ -313,7 +332,7 @@ bool ExtractFillingResults(
     std::string id_string = result.first;
     uint32_t id_num = 0;
     StringToUint(id_string, &id_num);
-    base::string16 value;
+    std::u16string value;
     result.second.GetAsString(&value);
     (*filling_results)[id_num] = value;
   }

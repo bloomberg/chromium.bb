@@ -28,12 +28,13 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.IntentHandler.IncognitoCCTCallerId;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
-import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.bottomsheet.BookmarkBottomSheetCoordinator;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.IncognitoCustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
@@ -91,13 +92,7 @@ public class BookmarkUtils {
             return;
         }
 
-        boolean isAddToOptionVariation =
-                CachedFeatureFlags.isEnabled(
-                        ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_THREE_BUTTON_ACTIONBAR)
-                && AppMenuPropertiesDelegateImpl.THREE_BUTTON_ACTION_BAR_VARIATION.getValue()
-                           .equals("add_to_option");
-        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.BOOKMARK_BOTTOM_SHEET)
-                && !isAddToOptionVariation) {
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.READ_LATER)) {
             // Show a bottom sheet to let the user select target bookmark folder.
             showBookmarkBottomSheet(bookmarkModel, tab, snackbarManager, bottomSheetController,
                     activity, fromCustomTab, callback);
@@ -273,9 +268,10 @@ public class BookmarkUtils {
     /**
      * Shows bookmark main UI.
      * @param activity An activity to start the manager with.
+     * @param isIncognito Whether the bookmark manager is opened in incognito mode.
      */
-    public static void showBookmarkManager(Activity activity) {
-        showBookmarkManager(activity, null);
+    public static void showBookmarkManager(Activity activity, boolean isIncognito) {
+        showBookmarkManager(activity, null, isIncognito);
     }
 
     /**
@@ -284,9 +280,10 @@ public class BookmarkUtils {
      *         started as a new task.
      * @param folderId The bookmark folder to open. If null, the bookmark manager will open the most
      *         recent folder.
+     * @param isIncognito Whether the bookmark UI is opened in incognito mode.
      */
     public static void showBookmarkManager(
-            @Nullable Activity activity, @Nullable BookmarkId folderId) {
+            @Nullable Activity activity, @Nullable BookmarkId folderId, boolean isIncognito) {
         ThreadUtils.assertOnUiThread();
         Context context = activity == null ? ContextUtils.getApplicationContext() : activity;
         String url = getFirstUrlToLoad(context, folderId);
@@ -299,6 +296,7 @@ public class BookmarkUtils {
 
         // Phone.
         Intent intent = new Intent(context, BookmarkActivity.class);
+        intent.putExtra(IntentHandler.EXTRA_INCOGNITO_MODE, isIncognito);
         intent.setData(Uri.parse(url));
         if (activity != null) {
             // Start from an existing activity.
@@ -384,10 +382,11 @@ public class BookmarkUtils {
      * @param openBookmarkComponentName The component to use when opening a bookmark.
      * @param model Bookmarks model to manage the bookmark.
      * @param bookmarkId ID of the bookmark to be opened.
+     * @param isIncognito Whether the bookmark manager is opened in incognito mode.
      * @return Whether the bookmark was successfully opened.
      */
     public static boolean openBookmark(Context context, ComponentName openBookmarkComponentName,
-            BookmarkModel model, BookmarkId bookmarkId) {
+            BookmarkModel model, BookmarkId bookmarkId, boolean isIncognito) {
         if (model.getBookmarkById(bookmarkId) == null) return false;
 
         RecordUserAction.record("MobileBookmarkManagerEntryOpened");
@@ -396,7 +395,7 @@ public class BookmarkUtils {
 
         BookmarkItem bookmarkItem = model.getBookmarkById(bookmarkId);
         assert bookmarkItem != null;
-        RecordHistogram.recordCustomTimesHistogram("Bookmarks.OpenBookmarkTimeInterval."
+        RecordHistogram.recordCustomTimesHistogram("Bookmarks.OpenBookmarkTimeInterval2."
                         + bookmarkTypeToHistogramSuffix(bookmarkId.getType()),
                 System.currentTimeMillis() - bookmarkItem.getDateAdded(), 1,
                 DateUtils.DAY_IN_MILLIS * 30, 50);
@@ -404,7 +403,7 @@ public class BookmarkUtils {
         if (bookmarkItem.getId().getType() == BookmarkType.READING_LIST
                 && !bookmarkItem.isFolder()) {
             model.setReadStatusForReadingList(bookmarkItem.getUrl(), true);
-            openUrlInCustomTab(context, bookmarkItem.getUrl().getSpec());
+            openReadingListInCustomTab(context, bookmarkItem.getUrl().getSpec(), isIncognito);
         } else {
             openUrl(context, bookmarkItem.getUrl().getSpec(), openBookmarkComponentName);
         }
@@ -466,7 +465,8 @@ public class BookmarkUtils {
         IntentHandler.startActivityForTrustedIntent(intent);
     }
 
-    private static void openUrlInCustomTab(Context context, String url) {
+    private static void openReadingListInCustomTab(
+            Context context, String url, boolean isOffTheRecord) {
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         builder.setShowTitle(true);
         builder.setShareState(CustomTabsIntent.SHARE_STATE_ON);
@@ -478,8 +478,13 @@ public class BookmarkUtils {
         intent.setPackage(context.getPackageName());
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.READ_LATER);
-        intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB,
-                Profile.getLastUsedRegularProfile().isOffTheRecord());
+
+        // Extras for incognito CCT.
+        if (isOffTheRecord) {
+            IncognitoCustomTabIntentDataProvider.addIncongitoExtrasForChromeFeatures(
+                    intent, IncognitoCCTCallerId.READ_LATER);
+        }
+
         IntentHandler.addTrustedIntentExtras(intent);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         IntentHandler.startActivityForTrustedIntent(intent);

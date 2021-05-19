@@ -25,6 +25,7 @@ namespace web_app {
 
 class WebAppUiManager;
 class InstallManager;
+class OsIntegrationManager;
 class SystemWebAppManager;
 
 // Checks for updates to a web app's manifest and triggers a reinstall if the
@@ -47,13 +48,15 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
                      AppIconManager* icon_manager,
                      WebAppUiManager* ui_manager,
                      InstallManager* install_manager,
-                     SystemWebAppManager* system_web_app_manager);
+                     SystemWebAppManager* system_web_app_manager,
+                     OsIntegrationManager* os_integration_manager);
   void Start();
   void Shutdown();
 
   void MaybeUpdate(const GURL& url,
                    const AppId& app_id,
                    content::WebContents* web_contents);
+  bool IsUpdateConsumed(const AppId& app_id);
 
   // AppRegistrarObserver:
   void OnWebAppWillBeUninstalled(const AppId& app_id) override;
@@ -72,8 +75,7 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
 
  private:
   bool MaybeConsumeUpdateCheck(const GURL& origin, const AppId& app_id);
-  base::Optional<base::Time> GetLastUpdateCheckTime(const GURL& origin,
-                                                    const AppId& app_id) const;
+  base::Optional<base::Time> GetLastUpdateCheckTime(const AppId& app_id) const;
   void SetLastUpdateCheckTime(const GURL& origin,
                               const AppId& app_id,
                               base::Time time);
@@ -88,6 +90,7 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
   WebAppUiManager* ui_manager_ = nullptr;
   InstallManager* install_manager_ = nullptr;
   SystemWebAppManager* system_web_app_manager_ = nullptr;
+  OsIntegrationManager* os_integration_manager_ = nullptr;
 
   ScopedObserver<AppRegistrar, AppRegistrarObserver> registrar_observer_{this};
 

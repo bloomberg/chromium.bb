@@ -44,7 +44,7 @@
 #include "src/gpu/GrWaitRenderTask.h"
 #include "src/gpu/GrWritePixelsRenderTask.h"
 #include "src/gpu/ccpr/GrCoverageCountingPathRenderer.h"
-#include "src/gpu/text/GrSDFTOptions.h"
+#include "src/gpu/text/GrSDFTControl.h"
 #include "src/image/SkSurface_Gpu.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -211,38 +211,9 @@ bool GrDrawingManager::flush(
             task->gatherProxyIntervals(&alloc);
         }
 
-        GrResourceAllocator::AssignError error = GrResourceAllocator::AssignError::kNoError;
-        alloc.assign(&error);
-        if (GrResourceAllocator::AssignError::kFailedProxyInstantiation == error) {
-            for (const auto& renderTask : fDAG) {
-                SkASSERT(renderTask);
-                if (!renderTask->isInstantiated()) {
-                    // No need to call the renderTask's handleInternalAllocationFailure
-                    // since we will already skip executing the renderTask since it is not
-                    // instantiated.
-                    continue;
-                }
-                // TODO: If we're going to remove all the render tasks do we really need this call?
-                renderTask->handleInternalAllocationFailure();
-            }
-            this->removeRenderTasks();
-        }
-
-        if (this->executeRenderTasks(&flushState)) {
-            flushed = true;
-        }
+        flushed = alloc.assign() && this->executeRenderTasks(&flushState);
     }
-
-    SkASSERT(fDAG.empty());
-
-#ifdef SK_DEBUG
-    // In non-DDL mode this checks that all the flushed ops have been freed from the memory pool.
-    // When we move to partial flushes this assert will no longer be valid.
-    // In DDL mode this check is somewhat superfluous since the memory for most of the ops/opsTasks
-    // will be stored in the DDL's GrOpMemoryPools.
-    GrMemoryPool* opMemoryPool = fContext->priv().opMemoryPool();
-    opMemoryPool->isEmpty();
-#endif
+    this->removeRenderTasks();
 
     gpu->executeFlushInfo(proxies, access, info, newState);
 
@@ -351,8 +322,6 @@ bool GrDrawingManager::executeRenderTasks(GrOpFlushState* flushState) {
     // resources are the last to be purged by the resource cache.
     flushState->reset();
 
-    this->removeRenderTasks();
-
     return anyRenderTasksExecuted;
 }
 
@@ -369,6 +338,10 @@ void GrDrawingManager::removeRenderTasks() {
     }
     fDAG.reset();
     fLastRenderTasks.reset();
+    for (const sk_sp<GrRenderTask>& onFlushRenderTask : fOnFlushRenderTasks) {
+        onFlushRenderTask->disown(this);
+    }
+    fOnFlushRenderTasks.reset();
 }
 
 void GrDrawingManager::sortTasks() {
@@ -692,8 +665,7 @@ sk_sp<GrOpsTask> GrDrawingManager::newOpsTask(GrSurfaceProxyView surfaceView,
 
     this->closeActiveOpsTask();
 
-    sk_sp<GrOpsTask> opsTask(new GrOpsTask(this, fContext->priv().arenas(),
-                                           std::move(surfaceView),
+    sk_sp<GrOpsTask> opsTask(new GrOpsTask(this, std::move(surfaceView),
                                            fContext->priv().auditTrail()));
     SkASSERT(this->getLastRenderTask(opsTask->target(0)) == opsTask.get());
 
@@ -798,11 +770,11 @@ void GrDrawingManager::newTransferFromRenderTask(sk_sp<GrSurfaceProxy> srcProxy,
     SkDEBUGCODE(this->validate());
 }
 
-bool GrDrawingManager::newCopyRenderTask(sk_sp<GrSurfaceProxy> src,
-                                         SkIRect srcRect,
-                                         sk_sp<GrSurfaceProxy> dst,
-                                         SkIPoint dstPoint,
-                                         GrSurfaceOrigin origin) {
+sk_sp<GrRenderTask> GrDrawingManager::newCopyRenderTask(sk_sp<GrSurfaceProxy> src,
+                                                        SkIRect srcRect,
+                                                        sk_sp<GrSurfaceProxy> dst,
+                                                        SkIPoint dstPoint,
+                                                        GrSurfaceOrigin origin) {
     SkDEBUGCODE(this->validate());
     SkASSERT(fContext);
 
@@ -813,20 +785,22 @@ bool GrDrawingManager::newCopyRenderTask(sk_sp<GrSurfaceProxy> src,
     // task, then fail to make a copy task, the next active ops task may target the same proxy. This
     // will trip an assert related to unnecessary ops task splitting.
     if (src->framebufferOnly()) {
-        return false;
+        return nullptr;
     }
 
     this->closeActiveOpsTask();
 
-    GrRenderTask* task = this->appendTask(GrCopyRenderTask::Make(this,
-                                                                 src,
-                                                                 srcRect,
-                                                                 std::move(dst),
-                                                                 dstPoint,
-                                                                 origin));
+    sk_sp<GrRenderTask> task = GrCopyRenderTask::Make(this,
+                                                      src,
+                                                      srcRect,
+                                                      std::move(dst),
+                                                      dstPoint,
+                                                      origin);
     if (!task) {
-        return false;
+        return nullptr;
     }
+
+    this->appendTask(task);
 
     const GrCaps& caps = *fContext->priv().caps();
     // We always say GrMipmapped::kNo here since we are always just copying from the base layer to
@@ -838,7 +812,7 @@ bool GrDrawingManager::newCopyRenderTask(sk_sp<GrSurfaceProxy> src,
     // shouldn't be an active one.
     SkASSERT(!fActiveOpsTask);
     SkDEBUGCODE(this->validate());
-    return true;
+    return task;
 }
 
 bool GrDrawingManager::newWritePixelsTask(sk_sp<GrSurfaceProxy> dst,
@@ -846,8 +820,7 @@ bool GrDrawingManager::newWritePixelsTask(sk_sp<GrSurfaceProxy> dst,
                                           GrColorType srcColorType,
                                           GrColorType dstColorType,
                                           const GrMipLevel levels[],
-                                          int levelCount,
-                                          sk_sp<SkData> owner) {
+                                          int levelCount) {
     SkDEBUGCODE(this->validate());
     SkASSERT(fContext);
 
@@ -869,8 +842,7 @@ bool GrDrawingManager::newWritePixelsTask(sk_sp<GrSurfaceProxy> dst,
                                                                   srcColorType,
                                                                   dstColorType,
                                                                   levels,
-                                                                  levelCount,
-                                                                  std::move(owner)));
+                                                                  levelCount));
     if (!task) {
         return false;
     }

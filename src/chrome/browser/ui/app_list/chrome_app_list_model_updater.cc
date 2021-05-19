@@ -90,9 +90,12 @@ void ChromeAppListModelUpdater::AddItemToFolder(
 }
 
 void ChromeAppListModelUpdater::RemoveItem(const std::string& id) {
+  // Copy the ID to the stack since it may to be destroyed in
+  // RemoveChromeItem(). See crbug.com/1190347.
+  std::string id_copy = id;
+  RemoveChromeItem(id_copy);
   if (app_list_controller_)
-    app_list_controller_->RemoveItem(id);
-  RemoveChromeItem(id);
+    app_list_controller_->RemoveItem(id_copy);
 }
 
 void ChromeAppListModelUpdater::RemoveUninstalledItem(const std::string& id) {
@@ -124,7 +127,7 @@ void ChromeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {
     app_list_controller_->SetSearchEngineIsGoogle(is_google);
 }
 
-void ChromeAppListModelUpdater::UpdateSearchBox(const base::string16& text,
+void ChromeAppListModelUpdater::UpdateSearchBox(const std::u16string& text,
                                                 bool initiated_by_user) {
   if (!app_list_controller_)
     return;

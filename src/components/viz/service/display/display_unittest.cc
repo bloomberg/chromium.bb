@@ -6,18 +6,23 @@
 
 #include <limits>
 #include <map>
+#include <memory>
+#include <string>
 #include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "cc/base/math_util.h"
 #include "cc/test/scheduler_test_common.h"
-#include "components/viz/common/delegated_ink_metadata.h"
-#include "components/viz/common/delegated_ink_point.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -31,6 +36,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/subtree_capture_id.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/service/display/aggregated_frame.h"
 #include "components/viz/service/display/delegated_ink_point_renderer_skia.h"
 #include "components/viz/service/display/delegated_ink_trail_data.h"
@@ -44,6 +50,7 @@
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/compositor_frame_helpers.h"
+#include "components/viz/test/delegated_ink_point_renderer_skia_for_test.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/fake_skia_output_surface.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
@@ -52,6 +59,8 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/delegated_ink_metadata.h"
+#include "ui/gfx/delegated_ink_point.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/presentation_feedback.h"
 
@@ -188,7 +197,7 @@ class DisplayTest : public testing::Test {
       const RendererSettings& settings,
       const FrameSinkId& frame_sink_id,
       std::unique_ptr<OutputSurface> output_surface) {
-    begin_frame_source_.reset(new StubBeginFrameSource);
+    begin_frame_source_ = std::make_unique<StubBeginFrameSource>();
     auto scheduler = std::make_unique<TestDisplayScheduler>(
         begin_frame_source_.get(), task_runner_.get());
     scheduler_ = scheduler.get();
@@ -4523,19 +4532,26 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
 class SkiaDelegatedInkRendererTest : public DisplayTest {
  public:
   void SetUpRenderers() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kDrawPredictedInkPoint, switches::kDraw1Point12Ms);
     // First set up the display to use the Skia renderer.
     RendererSettings settings;
     settings.use_skia_renderer = true;
     SetUpGpuDisplaySkia(settings);
 
     // Initialize the renderer and create an ink renderer.
-    StubDisplayClient client;
-    display_->Initialize(&client, manager_.surface_manager());
-    display_->renderer_for_testing()->CreateDelegatedInkPointRenderer();
+    display_->Initialize(&client_, manager_.surface_manager());
+
+    auto renderer = std::make_unique<DelegatedInkPointRendererSkiaForTest>();
+    ink_renderer_ = renderer.get();
+    display_->renderer_for_testing()->SetDelegatedInkPointRendererSkiaForTest(
+        std::move(renderer));
   }
 
   DelegatedInkPointRendererBase* ink_renderer() {
-    return display_->renderer_for_testing()->GetDelegatedInkPointRenderer();
+    return display_->renderer_for_testing()
+        ->GetDelegatedInkPointRenderer(/*create_if_necessary=*/
+                                       false);
   }
 
   int UniqueStoredPointerIds() {
@@ -4582,16 +4598,16 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
 
   void StoreAlreadyCreatedDelegatedInkPoints(int32_t pointer_id) {
     DCHECK(ink_points_.find(pointer_id) != ink_points_.end());
-    for (DelegatedInkPoint ink_point : ink_points_[pointer_id])
+    for (gfx::DelegatedInkPoint ink_point : ink_points_[pointer_id])
       ink_renderer()->StoreDelegatedInkPoint(ink_point);
   }
 
-  void SendMetadata(DelegatedInkMetadata metadata) {
+  void SendMetadata(gfx::DelegatedInkMetadata metadata) {
     ink_renderer()->SetDelegatedInkMetadata(
-        std::make_unique<DelegatedInkMetadata>(metadata));
+        std::make_unique<gfx::DelegatedInkMetadata>(metadata));
   }
 
-  DelegatedInkMetadata MakeAndSendMetadataFromStoredInkPoint(
+  gfx::DelegatedInkMetadata MakeAndSendMetadataFromStoredInkPoint(
       int index,
       float diameter,
       SkColor color,
@@ -4601,7 +4617,7 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
         ink_points_.begin()->first, index, diameter, color, presentation_area);
   }
 
-  DelegatedInkMetadata MakeAndSendMetadataFromStoredInkPoint(
+  gfx::DelegatedInkMetadata MakeAndSendMetadataFromStoredInkPoint(
       int32_t pointer_id,
       int index,
       float diameter,
@@ -4611,11 +4627,11 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
     EXPECT_GE(index, 0);
     EXPECT_LT(index, ink_points_size(pointer_id));
 
-    DelegatedInkMetadata metadata(ink_points_[pointer_id][index].point(),
-                                  diameter, color,
-                                  ink_points_[pointer_id][index].timestamp(),
-                                  presentation_area, base::TimeTicks::Now(),
-                                  /*hovering*/ false);
+    gfx::DelegatedInkMetadata metadata(
+        ink_points_[pointer_id][index].point(), diameter, color,
+        ink_points_[pointer_id][index].timestamp(), presentation_area,
+        base::TimeTicks::Now(),
+        /*hovering*/ false);
     SendMetadata(metadata);
     return metadata;
   }
@@ -4643,15 +4659,10 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
         "Renderer.DelegatedInkTrail.LatencyImprovement.Skia.WithoutPrediction");
     HistogramCheck(
         histograms, expected_bucket_with_prediction,
-        "Renderer.DelegatedInkTrail.LatencyImprovement.Skia.WithPrediction");
-
-    // Either both histograms should be populated, or neither. But never just
-    // one of them.
-    if (expected_bucket_without_prediction == base::TimeDelta::Min() ||
-        expected_bucket_with_prediction == base::TimeDelta::Min()) {
-      EXPECT_EQ(expected_bucket_without_prediction,
-                expected_bucket_with_prediction);
-    }
+        base::StrCat({"Renderer.DelegatedInkTrail."
+                      "LatencyImprovementWithPrediction.Experiment",
+                      base::NumberToString(PredictionConfig::k1Point12Ms)})
+            .c_str());
   }
 
   void DrawDelegatedInkTrail() {
@@ -4663,23 +4674,23 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
   int GetPathPointCount() { return ink_renderer()->GetPathPointCountForTest(); }
 
   // Explicitly get the metadata that is stored on the renderer.
-  const DelegatedInkMetadata* GetMetadataFromRenderer() {
+  const gfx::DelegatedInkMetadata* GetMetadataFromRenderer() {
     return ink_renderer()->GetMetadataForTest();
   }
 
-  const DelegatedInkPoint& ink_point(int index) {
+  const gfx::DelegatedInkPoint& ink_point(int index) {
     DCHECK_EQ(static_cast<int>(ink_points_.size()), 1);
     return ink_point(ink_points_.begin()->first, index);
   }
 
-  const DelegatedInkPoint& ink_point(int32_t pointer_id, int index) {
+  const gfx::DelegatedInkPoint& ink_point(int32_t pointer_id, int index) {
     DCHECK(ink_points_.find(pointer_id) != ink_points_.end());
     EXPECT_GE(index, 0);
     EXPECT_LT(index, ink_points_size(pointer_id));
     return ink_points_[pointer_id][index];
   }
 
-  const DelegatedInkPoint& last_ink_point(int32_t pointer_id) {
+  const gfx::DelegatedInkPoint& last_ink_point(int32_t pointer_id) {
     DCHECK(ink_points_.find(pointer_id) != ink_points_.end());
     return ink_points_[pointer_id].back();
   }
@@ -4694,8 +4705,14 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
     return ink_points_[pointer_id].size();
   }
 
+ protected:
+  DelegatedInkPointRendererSkiaForTest* ink_renderer_ = nullptr;
+
+  // Stub client kept in scope to prevent access violations during DrawAndSwap.
+  StubDisplayClient client_;
+
  private:
-  std::unordered_map<int32_t, std::vector<DelegatedInkPoint>> ink_points_;
+  std::unordered_map<int32_t, std::vector<gfx::DelegatedInkPoint>> ink_points_;
 };
 
 // Testing filtering points in the the delegated ink renderer when the skia
@@ -4733,17 +4750,18 @@ TEST_F(SkiaDelegatedInkRendererTest, SkiaDelegatedInkRendererFilteringPoints) {
   // confirm that earlier points are removed and later points remain.
   const int kInkPointForMetadata = 1;
   const float kDiameter = 1.f;
-  DelegatedInkMetadata metadata = MakeAndSendMetadataFromStoredInkPoint(
+  gfx::DelegatedInkMetadata metadata = MakeAndSendMetadataFromStoredInkPoint(
       kInkPointForMetadata, kDiameter, SK_ColorBLACK, gfx::RectF());
 
   // The histogram should count one in the bucket that is the difference between
   // the latest point stored and the metadata. No prediction should occur with
-  // 3 provided points, so the *WithPrediction histogram should count 1 in the
-  // same bucket as the *WithoutPrediction histogram.
+  // 3 provided points, so the *WithoutPrediction histogram should count
+  // the difference between the last point and the metadata, while the
+  // *WithPrediction* histogram should count 1 in the 0 bucket.
   base::TimeDelta bucket_without_prediction =
       last_ink_point(kPointerId).timestamp() - metadata.timestamp();
   FinalizePathAndCheckHistograms(bucket_without_prediction,
-                                 bucket_without_prediction);
+                                 base::TimeDelta::FromMilliseconds(0));
 
   EXPECT_EQ(kInitialDelegatedPoints - kInkPointForMetadata,
             StoredPointsForPointerId(kPointerId));
@@ -4776,11 +4794,13 @@ TEST_F(SkiaDelegatedInkRendererTest, SkiaDelegatedInkRendererFilteringPoints) {
 
   // Now send metadata with a timestamp before all of the points that are
   // currently stored to confirm that no points are filtered out and the number
-  // stored remains the same while both histograms records 0 improvement.
+  // stored remains the same. The *WithoutPrediction histogram should record 0
+  // improvement, but the *WithPrediction* one should not record anything at all
+  // due to not finding a matching pointer ID to predict with.
   const int kExpectedPoints = StoredPointsForPointerId(kPointerId);
   SendMetadata(metadata);
   FinalizePathAndCheckHistograms(base::TimeDelta::FromMilliseconds(0),
-                                 base::TimeDelta::FromMilliseconds(0));
+                                 base::TimeDelta::Min());
   EXPECT_EQ(kExpectedPoints, StoredPointsForPointerId(kPointerId));
 }
 
@@ -4826,7 +4846,7 @@ TEST_F(SkiaDelegatedInkRendererTest,
   // later points remain.
   const int kInkPointForMetadata = 1;
   const float kDiameter = 1.f;
-  DelegatedInkMetadata metadata = MakeAndSendMetadataFromStoredInkPoint(
+  gfx::DelegatedInkMetadata metadata = MakeAndSendMetadataFromStoredInkPoint(
       kPointerIds[0], kInkPointForMetadata, kDiameter, SK_ColorBLACK,
       gfx::RectF());
 
@@ -4841,8 +4861,10 @@ TEST_F(SkiaDelegatedInkRendererTest,
       bucket_without_prediction,
       bucket_without_prediction +
           base::TimeDelta::FromMilliseconds(
-              kNumberOfMillisecondsIntoFutureToPredictPerPoint *
-              kNumberOfPointsToPredict));
+              kPredictionConfigs[PredictionConfig::k1Point12Ms]
+                  .milliseconds_into_future_per_point *
+              kPredictionConfigs[PredictionConfig::k1Point12Ms]
+                  .points_to_predict));
 
   // Confirm the size, first, and last points of the first pointer ID are what
   // we expect.
@@ -4861,13 +4883,13 @@ TEST_F(SkiaDelegatedInkRendererTest,
 
   // Send a metadata whose point and timestamp doesn't match any stored
   // DelegatedInkPoint and confirm that it doesn't cause any changes to the
-  // stored values. Histograms should have 1 in both 0 buckets since no points
-  // will be drawn.
-  SendMetadata(DelegatedInkMetadata(
+  // stored values. *WithoutPrediction histogram should record 0 improvement,
+  // *WithPrediction* shouldn't record anything due to no valid pointer id.
+  SendMetadata(gfx::DelegatedInkMetadata(
       gfx::PointF(100, 100), 5.6f, SK_ColorBLACK, base::TimeTicks::Min(),
       gfx::RectF(), base::TimeTicks::Min(), /*hovering*/ false));
   FinalizePathAndCheckHistograms(base::TimeDelta::FromMilliseconds(0),
-                                 base::TimeDelta::FromMilliseconds(0));
+                                 base::TimeDelta::Min());
   EXPECT_EQ(kNumPointsForPointerId0 - kInkPointForMetadata,
             StoredPointsForPointerId(kPointerIds[0]));
   for (uint64_t i = 1; i < kPointerIds.size(); ++i) {
@@ -4878,12 +4900,12 @@ TEST_F(SkiaDelegatedInkRendererTest,
   // Finally, send a metadata with a timestamp beyond all of the stored points.
   // This should result in all of the points being erased, but the pointer ids
   // will still exist as they contains the predictors as well.
-  SendMetadata(DelegatedInkMetadata(
+  SendMetadata(gfx::DelegatedInkMetadata(
       gfx::PointF(100, 100), 5.6f, SK_ColorBLACK,
       base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(1000),
       gfx::RectF(), base::TimeTicks::Now(), /*hovering*/ false));
   FinalizePathAndCheckHistograms(base::TimeDelta::FromMilliseconds(0),
-                                 base::TimeDelta::FromMilliseconds(0));
+                                 base::TimeDelta::Min());
   for (int i : kPointerIds)
     EXPECT_EQ(0, StoredPointsForPointerId(i));
 }
@@ -4928,8 +4950,10 @@ TEST_F(SkiaDelegatedInkRendererTest, LatencyHistograms) {
       bucket_without_prediction,
       bucket_without_prediction +
           base::TimeDelta::FromMilliseconds(
-              kNumberOfMillisecondsIntoFutureToPredictPerPoint *
-              kNumberOfPointsToPredict));
+              kPredictionConfigs[PredictionConfig::k1Point12Ms]
+                  .milliseconds_into_future_per_point *
+              kPredictionConfigs[PredictionConfig::k1Point12Ms]
+                  .points_to_predict));
 
   // Now provide metadata that matches the final ink point provided, so that
   // everything earlier is filtered out. Then the *WithoutPrediction histogram
@@ -4941,8 +4965,9 @@ TEST_F(SkiaDelegatedInkRendererTest, LatencyHistograms) {
   FinalizePathAndCheckHistograms(
       bucket_without_prediction,
       base::TimeDelta::FromMilliseconds(
-          kNumberOfMillisecondsIntoFutureToPredictPerPoint *
-          kNumberOfPointsToPredict));
+          kPredictionConfigs[PredictionConfig::k1Point12Ms]
+              .milliseconds_into_future_per_point *
+          kPredictionConfigs[PredictionConfig::k1Point12Ms].points_to_predict));
 
   // DrawDelegatedInkTrail should clear the metadata, so finalizing the path
   // shouldn't record anything in the histograms.
@@ -4961,6 +4986,126 @@ TEST_F(SkiaDelegatedInkRendererTest, LatencyHistograms) {
       kPointerId);
   FinalizePathAndCheckHistograms(base::TimeDelta::Min(),
                                  base::TimeDelta::Min());
+}
+
+enum class DelegatedInkType { kPlatformInk, kSkiaInk };
+
+class DelegatedInkDisplayTest
+    : public SkiaDelegatedInkRendererTest,
+      public testing::WithParamInterface<DelegatedInkType> {
+ public:
+  void SetUpGpuDisplaySkiaWithPlatformInk(const RendererSettings& settings) {
+    scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
+    provider->BindToCurrentThread();
+    std::unique_ptr<FakeSkiaOutputSurface> skia_output_surface =
+        FakeSkiaOutputSurface::Create3d(std::move(provider));
+    // Set the delegated ink capability on the output surface to true so that
+    // path can be tested in Display::DrawAndSwap
+    skia_output_surface->UsePlatformDelegatedInkForTesting();
+    skia_output_surface_ = skia_output_surface.get();
+
+    CreateDisplaySchedulerAndDisplay(settings, kArbitraryFrameSinkId,
+                                     std::move(skia_output_surface));
+  }
+
+  void SetUpGpuDisplay() {
+    if (GetParam() == DelegatedInkType::kSkiaInk) {
+      SetUpRenderers();
+    } else {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kUsePlatformDelegatedInk);
+
+      // Set up the display to use the Skia renderer.
+      RendererSettings settings;
+      settings.use_skia_renderer = true;
+      SetUpGpuDisplaySkiaWithPlatformInk(settings);
+
+      display_->Initialize(&client_, manager_.surface_manager());
+    }
+  }
+
+  void SubmitCompositorFrameWithInkMetadata(
+      CompositorRenderPassList* pass_list,
+      const LocalSurfaceId& local_surface_id,
+      const gfx::DelegatedInkMetadata& metadata) {
+    CompositorFrame frame = CompositorFrameBuilder()
+                                .SetRenderPassList(std::move(*pass_list))
+                                .AddDelegatedInkMetadata(metadata)
+                                .Build();
+    pass_list->clear();
+
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  }
+
+  const gfx::DelegatedInkMetadata* GetMetadataFromTestRenderer() {
+    return ink_renderer_->last_metadata();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+struct DelegatedInkDisplayTestPassToString {
+  std::string operator()(
+      const testing::TestParamInfo<DelegatedInkType> type) const {
+    return type.param == DelegatedInkType::kPlatformInk ? "PlatformInk"
+                                                        : "SkiaInk";
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(DelegatedInkTrails,
+                         DelegatedInkDisplayTest,
+                         testing::Values(DelegatedInkType::kPlatformInk,
+                                         DelegatedInkType::kSkiaInk),
+                         DelegatedInkDisplayTestPassToString());
+
+// Confirm that delegated ink metadata is not ever sent to both the delegated
+// ink renderer and the output surface (for platform delegated ink), only one
+// or the other.
+TEST_P(DelegatedInkDisplayTest, MetadataOnlySentToSkiaRendererOrOutputSurface) {
+  SetUpGpuDisplay();
+
+  id_allocator_.GenerateId();
+  display_->SetLocalSurfaceId(id_allocator_.GetCurrentLocalSurfaceId(), 1.f);
+  display_->Resize(gfx::Size(100, 100));
+
+  CompositorRenderPassList pass_list;
+  auto pass = CompositorRenderPass::Create();
+  pass->output_rect = gfx::Rect(0, 0, 100, 100);
+  pass->damage_rect = gfx::Rect(10, 10, 1, 1);
+  pass->id = CompositorRenderPassId{1u};
+  pass_list.push_back(std::move(pass));
+
+  gfx::DelegatedInkMetadata metadata(
+      gfx::PointF(5, 5), 3.5f, SK_ColorBLACK, base::TimeTicks::Now(),
+      gfx::RectF(0, 0, 20, 20), base::TimeTicks::Now(), false);
+
+  SubmitCompositorFrameWithInkMetadata(
+      &pass_list, id_allocator_.GetCurrentLocalSurfaceId(), metadata);
+  display_->DrawAndSwap(base::TimeTicks::Now());
+
+  // Confirm that the metadata correctly made it to either the skia output
+  // surface, or the delegated ink renderer.
+  const gfx::DelegatedInkMetadata* retrieved_metadata =
+      GetParam() == DelegatedInkType::kPlatformInk
+          ? skia_output_surface_->last_delegated_ink_metadata()
+          : GetMetadataFromTestRenderer();
+  EXPECT_TRUE(retrieved_metadata);
+  EXPECT_EQ(retrieved_metadata->point(), metadata.point());
+  EXPECT_EQ(retrieved_metadata->diameter(), metadata.diameter());
+  EXPECT_EQ(retrieved_metadata->color(), metadata.color());
+  EXPECT_EQ(retrieved_metadata->timestamp(), metadata.timestamp());
+  EXPECT_EQ(retrieved_metadata->presentation_area(),
+            metadata.presentation_area());
+  EXPECT_EQ(retrieved_metadata->is_hovering(), metadata.is_hovering());
+
+  // Confirm that metadata wasn't sent to the SkiaOutputSurface if Skia was
+  // used for drawing, or confirm that the DelegatedInkPointRenderer wasn't
+  // created if platform ink is being used.
+  if (GetParam() == DelegatedInkType::kPlatformInk)
+    EXPECT_FALSE(ink_renderer());
+  else
+    EXPECT_FALSE(skia_output_surface_->last_delegated_ink_metadata());
 }
 
 }  // namespace viz

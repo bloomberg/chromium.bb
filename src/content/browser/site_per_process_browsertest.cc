@@ -79,7 +79,6 @@
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom-test-utils.h"
 #include "content/common/frame_messages.h"
-#include "content/common/frame_proxy.mojom-test-utils.h"
 #include "content/common/input/actions_parser.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/renderer.mojom.h"
@@ -132,13 +131,14 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/feature_policy/policy_value.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
+#include "third_party/blink/public/common/permissions_policy/policy_value.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_replication_state.mojom.h"
 #include "third_party/blink/public/mojom/leak_detector/leak_detector.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/leak_detector/leak_detector.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
@@ -340,54 +340,6 @@ void RedirectNotificationObserver::Observe(
   running_ = false;
 }
 
-// This observer keeps track of the number of created RenderFrameHosts.  Tests
-// can use this to ensure that a certain number of child frames has been
-// created after navigating.
-class RenderFrameHostCreatedObserver : public WebContentsObserver {
- public:
-  RenderFrameHostCreatedObserver(WebContents* web_contents,
-                                 int expected_frame_count)
-      : WebContentsObserver(web_contents),
-        expected_frame_count_(expected_frame_count),
-        frames_created_(0) {}
-
-  ~RenderFrameHostCreatedObserver() override;
-
-  // Runs a nested run loop and blocks until the expected number of
-  // RenderFrameHosts is created.
-  void Wait();
-
- private:
-  // WebContentsObserver
-  void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
-
-  // The number of RenderFrameHosts to wait for.
-  int expected_frame_count_;
-
-  // The number of RenderFrameHosts that have been created.
-  int frames_created_;
-
-  // The RunLoop used to spin the message loop.
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostCreatedObserver);
-};
-
-RenderFrameHostCreatedObserver::~RenderFrameHostCreatedObserver() {
-}
-
-void RenderFrameHostCreatedObserver::Wait() {
-  run_loop_.Run();
-}
-
-void RenderFrameHostCreatedObserver::RenderFrameCreated(
-    RenderFrameHost* render_frame_host) {
-  frames_created_++;
-  if (frames_created_ == expected_frame_count_) {
-    run_loop_.Quit();
-  }
-}
-
 // This observer detects when WebContents receives notification of a user
 // gesture having occurred, following a user input event targeted to
 // a RenderWidgetHost under that WebContents.
@@ -528,16 +480,16 @@ bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
   return true;
 }
 
-// Helper function to generate a feature policy for a single feature and a list
-// of origins.
-// (Equivalent to the declared policy "feature origin1 origin2 ...".)
-// If the origins list is empty, it's treated as matches all origins
+// Helper function to generate a permissions policy for a single feature and a
+// list of origins. (Equivalent to the declared policy "feature origin1 origin2
+// ...".) If the origins list is empty, it's treated as matches all origins
 // (Equivalent to the declared policy "feature *")
-blink::ParsedFeaturePolicyDeclaration CreateParsedFeaturePolicyDeclaration(
-    blink::mojom::FeaturePolicyFeature feature,
+blink::ParsedPermissionsPolicyDeclaration
+CreateParsedPermissionsPolicyDeclaration(
+    blink::mojom::PermissionsPolicyFeature feature,
     const std::vector<GURL>& origins,
     bool match_all_origins = false) {
-  blink::ParsedFeaturePolicyDeclaration declaration;
+  blink::ParsedPermissionsPolicyDeclaration declaration;
 
   declaration.feature = feature;
   declaration.matches_all_origins = match_all_origins;
@@ -552,26 +504,26 @@ blink::ParsedFeaturePolicyDeclaration CreateParsedFeaturePolicyDeclaration(
   return declaration;
 }
 
-blink::ParsedFeaturePolicy CreateParsedFeaturePolicy(
-    const std::vector<blink::mojom::FeaturePolicyFeature>& features,
+blink::ParsedPermissionsPolicy CreateParsedPermissionsPolicy(
+    const std::vector<blink::mojom::PermissionsPolicyFeature>& features,
     const std::vector<GURL>& origins,
     bool match_all_origins = false) {
-  blink::ParsedFeaturePolicy result;
+  blink::ParsedPermissionsPolicy result;
   result.reserve(features.size());
   for (const auto& feature : features)
-    result.push_back(CreateParsedFeaturePolicyDeclaration(feature, origins,
-                                                          match_all_origins));
+    result.push_back(CreateParsedPermissionsPolicyDeclaration(
+        feature, origins, match_all_origins));
   return result;
 }
 
-blink::ParsedFeaturePolicy CreateParsedFeaturePolicyMatchesAll(
-    const std::vector<blink::mojom::FeaturePolicyFeature>& features) {
-  return CreateParsedFeaturePolicy(features, {}, true);
+blink::ParsedPermissionsPolicy CreateParsedPermissionsPolicyMatchesAll(
+    const std::vector<blink::mojom::PermissionsPolicyFeature>& features) {
+  return CreateParsedPermissionsPolicy(features, {}, true);
 }
 
-blink::ParsedFeaturePolicy CreateParsedFeaturePolicyMatchesNone(
-    const std::vector<blink::mojom::FeaturePolicyFeature>& features) {
-  return CreateParsedFeaturePolicy(features, {});
+blink::ParsedPermissionsPolicy CreateParsedPermissionsPolicyMatchesNone(
+    const std::vector<blink::mojom::PermissionsPolicyFeature>& features) {
+  return CreateParsedPermissionsPolicy(features, {});
 }
 
 // Check frame depth on node, widget, and process all match expected depth.
@@ -1464,7 +1416,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TitleAfterCrossSiteIframe) {
                             "    function() { document.title = 'loaded'; };"));
   EXPECT_TRUE(
       ExecuteScript(shell()->web_contents(), "document.title = 'not loaded';"));
-  base::string16 expected_title(base::UTF8ToUTF16("loaded"));
+  std::u16string expected_title(u"loaded");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
 
   // Navigate the iframe cross-site.
@@ -4228,36 +4180,42 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       EvalJs(root, "document.getElementById('child-1').getAttribute('csp');"));
 
   // Run the test over variety of parent/child cases.
-  GURL urls[] = {// Remote to remote.
-                 embedded_test_server()->GetURL("c.com", "/title2.html"),
-                 // Remote to local.
-                 embedded_test_server()->GetURL("a.com", "/title1.html"),
-                 // Local to remote.
-                 embedded_test_server()->GetURL("b.com", "/title2.html")};
-
-  std::vector<std::string> csp_values = {"default-src a.com",
-                                         "default-src b.com", "img-src c.com"};
+  struct {
+    std::string csp_value;
+    GURL url;
+    bool should_block;
+  } testCases[]{
+      // Remote to remote.
+      {"default-src a.com",
+       embedded_test_server()->GetURL("c.com", "/title2.html"), true},
+      // Remote to local.
+      {"default-src b.com",
+       embedded_test_server()->GetURL("a.com", "/title1.html"), false},
+      // Local to remote.
+      {"img-src c.com", embedded_test_server()->GetURL("b.com", "/title2.html"),
+       true},
+  };
 
   // Before each navigation, we change the csp property of the frame.
   // We then check whether that property is applied
   // correctly after the navigation has completed.
-  for (size_t i = 0; i < base::size(urls); ++i) {
+  for (const auto& testCase : testCases) {
     // Change csp before navigating.
     EXPECT_TRUE(ExecuteScript(
         root,
         base::StringPrintf("document.getElementById('child-1').setAttribute("
                            "    'csp', '%s');",
-                           csp_values[i].c_str())));
+                           testCase.csp_value.c_str())));
 
-    NavigateFrameToURL(child, urls[i]);
-    EXPECT_EQ(csp_values[i], child->csp_attribute()->header->header_value);
+    NavigateFrameToURL(child, testCase.url);
+    EXPECT_EQ(testCase.csp_value, child->csp_attribute()->header->header_value);
     // TODO(amalika): add checks that the CSP replication takes effect
 
     const url::Origin child_origin =
         child->current_frame_host()->GetLastCommittedOrigin();
-    // TODO(https://crbug.com/1000804): Enable check once bug is fixed.
-    // EXPECT_TRUE(child_origin.opaque());
-    EXPECT_EQ(url::Origin::Create(urls[i].GetOrigin())
+
+    EXPECT_EQ(testCase.should_block, child_origin.opaque());
+    EXPECT_EQ(url::Origin::Create(testCase.url.GetOrigin())
                   .GetTupleOrPrecursorTupleIfOpaque(),
               child_origin.GetTupleOrPrecursorTupleIfOpaque());
   }
@@ -4839,11 +4797,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, DynamicWindowName) {
   // The proxy in the parent process should also receive the updated name.
   // Now iframe's name and the content window's name differ, so it shouldn't
   // be possible to access to the content window with the updated name.
-  //
-  // TODO(yukishiino): The following expectation should be |true|, but we're
-  // intentionally disabling the name and origin check of the named access on
-  // window.  See also crbug.com/538562 and crbug.com/701489.
-  EXPECT_EQ(false, EvalJs(shell(), "frames['updated-name'] === undefined;"));
+  EXPECT_EQ(true, EvalJs(shell(), "frames['updated-name'] === undefined;"));
   // Change iframe's name to match the content window's name so that it can
   // reference the child frame by its new name in case of cross origin.
   EXPECT_TRUE(ExecuteScript(root, "window['3-1-id'].name = 'updated-name';"));
@@ -5025,7 +4979,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, LoadEventForwarding) {
   {
     GURL main_url(
         embedded_test_server()->GetURL("/frame_with_load_event.html"));
-    base::string16 expected_title(base::UTF8ToUTF16("LOADED"));
+    std::u16string expected_title(u"LOADED");
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
     EXPECT_TRUE(NavigateToURL(shell(), main_url));
     EXPECT_EQ(title_watcher.WaitAndGetTitle(), expected_title);
@@ -5038,7 +4992,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, LoadEventForwarding) {
   // is fired.
   {
     GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
-    base::string16 expected_title(base::UTF8ToUTF16("LOADEDLOADED"));
+    std::u16string expected_title(u"LOADEDLOADED");
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
     TestNavigationObserver observer(shell()->web_contents());
     EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), foo_url));
@@ -5076,7 +5030,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, SubframePostMessage) {
 
   // Send a postMessage from second, cross-site frame to its parent.  Expect
   // parent to send a reply to the frame.
-  base::string16 expected_title(base::ASCIIToUTF16("subframe-msg"));
+  std::u16string expected_title(u"subframe-msg");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   PostMessageAndWaitForReply(root->child_at(1), "postToParent('subframe-msg')",
                              "\"done-subframe2\"");
@@ -5613,7 +5567,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // parent by sending a postMessage to subframe's parent.opener.
   EXPECT_EQ(true, EvalJs(popup_root->child_at(0), "!!parent.opener;"));
 
-  base::string16 expected_title = base::ASCIIToUTF16("msg");
+  std::u16string expected_title = u"msg";
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   EXPECT_EQ(true, EvalJs(popup_root->child_at(0),
                          "postToOpenerOfParent('msg','*');"));
@@ -5718,7 +5672,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                    "parent.frames['subframe2'].opener && "
                    "    parent.frames['subframe2'].opener === parent.opener;"));
 
-  base::string16 expected_title = base::ASCIIToUTF16("msg");
+  std::u16string expected_title = u"msg";
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   EXPECT_EQ(true, EvalJs(popup_root->child_at(0),
                          "postToOpenerOfSibling('subframe2', 'msg', '*');"));
@@ -5775,9 +5729,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       rfh->lifecycle_state(),
       testing::AnyOf(
           testing::Eq(
-              RenderFrameHostImpl::LifecycleState::kRunningUnloadHandlers),
+              RenderFrameHostImpl::LifecycleStateImpl::kRunningUnloadHandlers),
           testing::Eq(
-              RenderFrameHostImpl::LifecycleState::kInBackForwardCache)));
+              RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache)));
 
   // Without the mojo::AgentSchedulingGroupHost::DidUnloadRenderFrame and timer,
   // the process A will never shutdown. Simulate the process being killed now.
@@ -6290,7 +6244,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // anymore.
   agent_scheduling_group_a->CreateFrameProxy(
       blink::RemoteFrameToken(), new_routing_id, base::nullopt, view_routing_id,
-      parent_routing_id, mojom::FrameReplicationState::New(),
+      parent_routing_id, blink::mojom::FrameReplicationState::New(),
       base::UnguessableToken::Create());
 
   // Ensure the subframe is detached in the browser process.
@@ -6367,7 +6321,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
     params->token = frame_token;
     params->devtools_frame_token = base::UnguessableToken::Create();
     params->policy_container = CreateStubPolicyContainer();
-    params->replication_state = mojom::FrameReplicationState::New();
+    params->replication_state = blink::mojom::FrameReplicationState::New();
     agent_scheduling_group->CreateFrame(std::move(params));
   }
 
@@ -6456,7 +6410,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
                       .InitWithNewEndpointAndPassReceiver());
     ignore_result(params->widget_params->widget_host
                       .InitWithNewEndpointAndPassReceiver());
-    params->replication_state = mojom::FrameReplicationState::New();
+    params->widget_params->visual_properties.screen_infos =
+        blink::ScreenInfos(blink::ScreenInfo());
+    params->replication_state = blink::mojom::FrameReplicationState::New();
     params->replication_state->name = "name";
     params->replication_state->unique_name = "name";
     params->token = frame_token;
@@ -6574,9 +6530,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CSSVisibilityChanged) {
   std::vector<std::unique_ptr<RenderWidgetHostVisibilityObserver>>
       hide_widget_host_observers(child_widget_hosts.size());
   for (size_t index = 0U; index < child_widget_hosts.size(); ++index) {
-    hide_widget_host_observers[index].reset(
-        new RenderWidgetHostVisibilityObserver(child_widget_hosts[index],
-                                               false));
+    hide_widget_host_observers[index] =
+        std::make_unique<RenderWidgetHostVisibilityObserver>(
+            child_widget_hosts[index], false);
   }
 
   EXPECT_TRUE(ExecuteScript(shell(), hide_script));
@@ -6590,9 +6546,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CSSVisibilityChanged) {
   std::vector<std::unique_ptr<RenderWidgetHostVisibilityObserver>>
       show_widget_host_observers(child_widget_hosts.size());
   for (size_t index = 0U; index < child_widget_hosts.size(); ++index) {
-    show_widget_host_observers[index].reset(
-        new RenderWidgetHostVisibilityObserver(child_widget_hosts[index],
-                                               true));
+    show_widget_host_observers[index] =
+        std::make_unique<RenderWidgetHostVisibilityObserver>(
+            child_widget_hosts[index], true);
   }
 
   EXPECT_TRUE(ExecuteScript(shell(), show_script));
@@ -7347,7 +7303,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   for (const auto& test : kTestCases) {
     GURL blocked_url = embedded_test_server()->GetURL("b.com", test.url);
     EXPECT_TRUE(ExecuteScript(shell(), "document.title = 'not loaded';"));
-    base::string16 expected_title(base::UTF8ToUTF16("loaded"));
+    std::u16string expected_title(u"loaded");
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
 
     WebContentsConsoleObserver console_observer(shell()->web_contents());
@@ -7420,7 +7376,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_FALSE(root->child_at(0)->HasSameOrigin(*root));
   EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
   const std::vector<network::mojom::ContentSecurityPolicyPtr>& root_csp =
-      root->current_replication_state().accumulated_csps;
+      root->current_frame_host()
+          ->policy_container_host()
+          ->policies()
+          .content_security_policies;
   EXPECT_EQ(1u, root_csp.size());
   EXPECT_EQ("frame-src 'self' http://b.com:*",
             root_csp[0]->header->header_value);
@@ -7430,7 +7389,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                             "document.querySelector('iframe').onload = "
                             "    function() { document.title = 'loaded'; };"));
   EXPECT_TRUE(ExecuteScript(shell(), "document.title = 'not loaded';"));
-  base::string16 expected_title(base::UTF8ToUTF16("loaded"));
+  std::u16string expected_title(u"loaded");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
 
   // Try to navigate the subframe to a blocked URL.
@@ -7492,7 +7451,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_FALSE(root->child_at(0)->HasSameOrigin(*root));
   EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
   const std::vector<network::mojom::ContentSecurityPolicyPtr>& root_csp =
-      root->current_replication_state().accumulated_csps;
+      root->current_frame_host()
+          ->policy_container_host()
+          ->policies()
+          .content_security_policies;
   EXPECT_EQ(1u, root_csp.size());
   EXPECT_EQ("frame-src https://a.com:*", root_csp[0]->header->header_value);
 
@@ -7501,7 +7463,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                      "document.querySelector('iframe').onload = "
                      "    function() { document.title = 'loaded'; };"));
   EXPECT_TRUE(ExecJs(shell(), "document.title = 'not loaded';"));
-  base::string16 expected_title(base::UTF8ToUTF16("loaded"));
+  std::u16string expected_title(u"loaded");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
 
   // Try to navigate the subframe to a blocked URL.
@@ -7554,7 +7516,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_FALSE(srcdoc_frame->HasSameOrigin(*navigating_frame));
   EXPECT_EQ(old_subframe_url, navigating_frame->current_url());
   const std::vector<network::mojom::ContentSecurityPolicyPtr>& srcdoc_csp =
-      srcdoc_frame->current_replication_state().accumulated_csps;
+      srcdoc_frame->current_frame_host()
+          ->policy_container_host()
+          ->policies()
+          .content_security_policies;
   EXPECT_EQ(1u, srcdoc_csp.size());
   EXPECT_EQ("frame-src 'self' http://b.com:*",
             srcdoc_csp[0]->header->header_value);
@@ -7570,7 +7535,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
              "document.querySelector('iframe').onload = "
              "    function() { window.top.postMessage('loaded', '*'); };"));
   EXPECT_TRUE(ExecJs(shell(), "document.title = 'not loaded';"));
-  base::string16 expected_title(base::UTF8ToUTF16("loaded"));
+  std::u16string expected_title(u"loaded");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
 
   // Try to navigate the subframe to a blocked URL.
@@ -7603,8 +7568,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       srcdoc_frame, embedded_test_server()->GetURL("a.com", "/title1.html")));
 
   // Verify that the frame's CSP got correctly reset to an empty set.
-  EXPECT_EQ(0u,
-            srcdoc_frame->current_replication_state().accumulated_csps.size());
+  EXPECT_EQ(0u, srcdoc_frame->current_frame_host()
+                    ->policy_container_host()
+                    ->policies()
+                    .content_security_policies.size());
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ScreenCoordinates) {
@@ -8738,7 +8705,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Send a postMessage from the child to its parent.  This verifies that the
   // parent's proxy in the child's SiteInstance was also restored.
-  base::string16 expected_title(base::UTF8ToUTF16("I am alive!"));
+  std::u16string expected_title(u"I am alive!");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   EXPECT_TRUE(ExecuteScript(child->current_frame_host(),
                             "parent.postMessage('I am alive!', '*');"));
@@ -9090,7 +9057,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // |popup2|. This is allowed since the main tab is |popup2|'s opener.
   EXPECT_TRUE(NavigateToURLFromRenderer(shell(), b_url));
 
-  base::string16 expected_title(base::UTF8ToUTF16("foo"));
+  std::u16string expected_title(u"foo");
   TitleWatcher title_watcher(popup2->web_contents(), expected_title);
   EXPECT_TRUE(ExecuteScript(
       shell(), "window.open('','popup2').postMessage('foo', '*');"));
@@ -9104,152 +9071,155 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateParsedFeaturePolicy(
-                {blink::mojom::FeaturePolicyFeature::kGeolocation},
+  EXPECT_EQ(CreateParsedPermissionsPolicy(
+                {blink::mojom::PermissionsPolicyFeature::kGeolocation},
                 {url.GetOrigin()}),
-            root->current_replication_state().feature_policy_header);
+            root->current_replication_state().permissions_policy_header);
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TestPolicyReplicationOnSameOriginNavigation) {
   GURL start_url(
-      embedded_test_server()->GetURL("a.com", "/feature-policy1.html"));
+      embedded_test_server()->GetURL("a.com", "/permissions-policy1.html"));
   GURL first_nav_url(
-      embedded_test_server()->GetURL("a.com", "/feature-policy2.html"));
+      embedded_test_server()->GetURL("a.com", "/permissions-policy2.html"));
   GURL second_nav_url(embedded_test_server()->GetURL("a.com", "/title2.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateParsedFeaturePolicy(
-                {blink::mojom::FeaturePolicyFeature::kGeolocation,
-                 blink::mojom::FeaturePolicyFeature::kPayment},
+  EXPECT_EQ(CreateParsedPermissionsPolicy(
+                {blink::mojom::PermissionsPolicyFeature::kGeolocation,
+                 blink::mojom::PermissionsPolicyFeature::kPayment},
                 {start_url.GetOrigin()}),
-            root->current_replication_state().feature_policy_header);
+            root->current_replication_state().permissions_policy_header);
 
   // When the main frame navigates to a page with a new policy, it should
   // overwrite the old one.
   EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
-  EXPECT_EQ(CreateParsedFeaturePolicyMatchesAll(
-                {blink::mojom::FeaturePolicyFeature::kGeolocation,
-                 blink::mojom::FeaturePolicyFeature::kPayment}),
-            root->current_replication_state().feature_policy_header);
+  EXPECT_EQ(CreateParsedPermissionsPolicyMatchesAll(
+                {blink::mojom::PermissionsPolicyFeature::kGeolocation,
+                 blink::mojom::PermissionsPolicyFeature::kPayment}),
+            root->current_replication_state().permissions_policy_header);
 
   // When the main frame navigates to a page without a policy, the replicated
   // policy header should be cleared.
   EXPECT_TRUE(NavigateToURL(shell(), second_nav_url));
-  EXPECT_TRUE(root->current_replication_state().feature_policy_header.empty());
+  EXPECT_TRUE(
+      root->current_replication_state().permissions_policy_header.empty());
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TestPolicyReplicationOnCrossOriginNavigation) {
   GURL start_url(
-      embedded_test_server()->GetURL("a.com", "/feature-policy1.html"));
+      embedded_test_server()->GetURL("a.com", "/permissions-policy1.html"));
   GURL first_nav_url(
-      embedded_test_server()->GetURL("b.com", "/feature-policy2.html"));
+      embedded_test_server()->GetURL("b.com", "/permissions-policy2.html"));
   GURL second_nav_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateParsedFeaturePolicy(
-                {blink::mojom::FeaturePolicyFeature::kGeolocation,
-                 blink::mojom::FeaturePolicyFeature::kPayment},
+  EXPECT_EQ(CreateParsedPermissionsPolicy(
+                {blink::mojom::PermissionsPolicyFeature::kGeolocation,
+                 blink::mojom::PermissionsPolicyFeature::kPayment},
                 {start_url.GetOrigin()}),
-            root->current_replication_state().feature_policy_header);
+            root->current_replication_state().permissions_policy_header);
 
   // When the main frame navigates to a page with a new policy, it should
   // overwrite the old one.
   EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
-  EXPECT_EQ(CreateParsedFeaturePolicyMatchesAll(
-                {blink::mojom::FeaturePolicyFeature::kGeolocation,
-                 blink::mojom::FeaturePolicyFeature::kPayment}),
-            root->current_replication_state().feature_policy_header);
+  EXPECT_EQ(CreateParsedPermissionsPolicyMatchesAll(
+                {blink::mojom::PermissionsPolicyFeature::kGeolocation,
+                 blink::mojom::PermissionsPolicyFeature::kPayment}),
+            root->current_replication_state().permissions_policy_header);
 
   // When the main frame navigates to a page without a policy, the replicated
   // policy header should be cleared.
   EXPECT_TRUE(NavigateToURL(shell(), second_nav_url));
-  EXPECT_TRUE(root->current_replication_state().feature_policy_header.empty());
+  EXPECT_TRUE(
+      root->current_replication_state().permissions_policy_header.empty());
 }
 
-// Test that the replicated feature policy header is correct in subframes as
+// Test that the replicated permissions policy header is correct in subframes as
 // they navigate.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TestPolicyReplicationFromRemoteFrames) {
   GURL main_url(
-      embedded_test_server()->GetURL("a.com", "/feature-policy-main.html"));
+      embedded_test_server()->GetURL("a.com", "/permissions-policy-main.html"));
   GURL first_nav_url(
-      embedded_test_server()->GetURL("b.com", "/feature-policy2.html"));
+      embedded_test_server()->GetURL("b.com", "/permissions-policy2.html"));
   GURL second_nav_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateParsedFeaturePolicy(
-                {blink::mojom::FeaturePolicyFeature::kGeolocation,
-                 blink::mojom::FeaturePolicyFeature::kPayment},
+  EXPECT_EQ(CreateParsedPermissionsPolicy(
+                {blink::mojom::PermissionsPolicyFeature::kGeolocation,
+                 blink::mojom::PermissionsPolicyFeature::kPayment},
                 {main_url.GetOrigin(), GURL("http://example.com/")}),
-            root->current_replication_state().feature_policy_header);
+            root->current_replication_state().permissions_policy_header);
   EXPECT_EQ(1UL, root->child_count());
   EXPECT_EQ(
-      CreateParsedFeaturePolicy(
-          {blink::mojom::FeaturePolicyFeature::kGeolocation,
-           blink::mojom::FeaturePolicyFeature::kPayment},
+      CreateParsedPermissionsPolicy(
+          {blink::mojom::PermissionsPolicyFeature::kGeolocation,
+           blink::mojom::PermissionsPolicyFeature::kPayment},
           {main_url.GetOrigin()}),
-      root->child_at(0)->current_replication_state().feature_policy_header);
+      root->child_at(0)->current_replication_state().permissions_policy_header);
 
   // Navigate the iframe cross-site.
   EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), first_nav_url));
   EXPECT_EQ(
-      CreateParsedFeaturePolicyMatchesAll(
-          {blink::mojom::FeaturePolicyFeature::kGeolocation,
-           blink::mojom::FeaturePolicyFeature::kPayment}),
-      root->child_at(0)->current_replication_state().feature_policy_header);
+      CreateParsedPermissionsPolicyMatchesAll(
+          {blink::mojom::PermissionsPolicyFeature::kGeolocation,
+           blink::mojom::PermissionsPolicyFeature::kPayment}),
+      root->child_at(0)->current_replication_state().permissions_policy_header);
 
   // Navigate the iframe to another location, this one with no policy header
   EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), second_nav_url));
   EXPECT_TRUE(root->child_at(0)
                   ->current_replication_state()
-                  .feature_policy_header.empty());
+                  .permissions_policy_header.empty());
 
   // Navigate the iframe back to a page with a policy
   EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(0), first_nav_url));
   EXPECT_EQ(
-      CreateParsedFeaturePolicyMatchesAll(
-          {blink::mojom::FeaturePolicyFeature::kGeolocation,
-           blink::mojom::FeaturePolicyFeature::kPayment}),
-      root->child_at(0)->current_replication_state().feature_policy_header);
+      CreateParsedPermissionsPolicyMatchesAll(
+          {blink::mojom::PermissionsPolicyFeature::kGeolocation,
+           blink::mojom::PermissionsPolicyFeature::kPayment}),
+      root->child_at(0)->current_replication_state().permissions_policy_header);
 }
 
-// Test that the replicated feature policy header is correct in remote proxies
-// after the local frame has navigated.
+// Test that the replicated permissions policy header is correct in remote
+// proxies after the local frame has navigated.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       TestFeaturePolicyReplicationToProxyOnNavigation) {
+                       TestPermissionsPolicyReplicationToProxyOnNavigation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_two_frames.html"));
   GURL first_nav_url(
-      embedded_test_server()->GetURL("a.com", "/feature-policy3.html"));
+      embedded_test_server()->GetURL("a.com", "/permissions-policy3.html"));
   GURL second_nav_url(
-      embedded_test_server()->GetURL("a.com", "/feature-policy4.html"));
+      embedded_test_server()->GetURL("a.com", "/permissions-policy4.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_TRUE(root->current_replication_state().feature_policy_header.empty());
+  EXPECT_TRUE(
+      root->current_replication_state().permissions_policy_header.empty());
   EXPECT_EQ(2UL, root->child_count());
   EXPECT_TRUE(root->child_at(1)
                   ->current_replication_state()
-                  .feature_policy_header.empty());
+                  .permissions_policy_header.empty());
 
   // Navigate the iframe to a page with a policy, and a nested cross-site iframe
   // (to the same site as a root->child_at(1) so that the render process already
   // exists.)
   EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(1), first_nav_url));
   EXPECT_EQ(
-      CreateParsedFeaturePolicyMatchesNone(
-          {blink::mojom::FeaturePolicyFeature::kGeolocation,
-           blink::mojom::FeaturePolicyFeature::kPayment}),
-      root->child_at(1)->current_replication_state().feature_policy_header);
+      CreateParsedPermissionsPolicyMatchesNone(
+          {blink::mojom::PermissionsPolicyFeature::kGeolocation,
+           blink::mojom::PermissionsPolicyFeature::kPayment}),
+      root->child_at(1)->current_replication_state().permissions_policy_header);
 
   EXPECT_EQ(1UL, root->child_at(1)->child_count());
 
@@ -9268,7 +9238,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(1), second_nav_url));
   EXPECT_TRUE(root->child_at(1)
                   ->current_replication_state()
-                  .feature_policy_header.empty());
+                  .permissions_policy_header.empty());
   EXPECT_EQ(1UL, root->child_at(1)->child_count());
 
   // Ask the deepest iframe to report the enabled state of the geolocation
@@ -9279,7 +9249,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                    "document.featurePolicy.allowsFeature('geolocation')"));
 }
 
-// Test that the constructed feature policy is correct in sandboxed
+// Test that the constructed permissions policy is correct in sandboxed
 // frames. Sandboxed frames have an opaque origin, and if the frame policy,
 // which is constructed in the parent frame, cannot send that origin through
 // the browser process to the sandboxed frame, then the sandboxed frame's
@@ -9297,7 +9267,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_TRUE(root->current_replication_state().feature_policy_header.empty());
+  EXPECT_TRUE(
+      root->current_replication_state().permissions_policy_header.empty());
   EXPECT_EQ(1UL, root->child_count());
   // Verify that the child frame is sandboxed with an opaque origin.
   EXPECT_TRUE(root->child_at(0)
@@ -9342,7 +9313,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_TRUE(success);
 }
 
-// Test that the constructed feature policy is correct in sandboxed
+// Test that the constructed permissions policy is correct in sandboxed
 // frames. Sandboxed frames have an opaque origin, and if the frame policy,
 // which is constructed in the parent frame, cannot send that origin through
 // the browser process to the sandboxed frame, then the sandboxed frame's
@@ -9358,7 +9329,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_TRUE(root->current_replication_state().feature_policy_header.empty());
+  EXPECT_TRUE(
+      root->current_replication_state().permissions_policy_header.empty());
   EXPECT_EQ(1UL, root->child_count());
   // Verify that the child frame has an opaque origin.
   EXPECT_TRUE(root->child_at(0)
@@ -9529,7 +9501,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ContainerPolicy) {
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ContainerPolicyDynamic) {
   GURL main_url(embedded_test_server()->GetURL("/allowed_frames.html"));
   GURL nav_url(
-      embedded_test_server()->GetURL("b.com", "/feature-policy2.html"));
+      embedded_test_server()->GetURL("b.com", "/permissions-policy2.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
@@ -9602,14 +9574,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ContainerPolicySandboxDynamic) {
   GURL main_url(embedded_test_server()->GetURL("/allowed_frames.html"));
   GURL nav_url(
-      embedded_test_server()->GetURL("b.com", "/feature-policy2.html"));
+      embedded_test_server()->GetURL("b.com", "/permissions-policy2.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Validate that the effective container policy contains a single non-unique
   // origin.
-  const blink::ParsedFeaturePolicy initial_effective_policy =
+  const blink::ParsedPermissionsPolicy initial_effective_policy =
       root->child_at(2)->effective_frame_policy().container_policy;
   EXPECT_EQ(1UL, initial_effective_policy[0].allowed_origins.size());
   EXPECT_FALSE(initial_effective_policy[0].allowed_origins.begin()->opaque());
@@ -9620,9 +9592,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // origin yet) but the effective policy should remain unchanged.
   EXPECT_TRUE(ExecuteScript(
       root, "document.getElementById('child-2').setAttribute('sandbox','')"));
-  const blink::ParsedFeaturePolicy updated_effective_policy =
+  const blink::ParsedPermissionsPolicy updated_effective_policy =
       root->child_at(2)->effective_frame_policy().container_policy;
-  const blink::ParsedFeaturePolicy updated_pending_policy =
+  const blink::ParsedPermissionsPolicy updated_pending_policy =
       root->child_at(2)->pending_frame_policy().container_policy;
   EXPECT_EQ(1UL, updated_effective_policy[0].allowed_origins.size());
   EXPECT_FALSE(updated_effective_policy[0].allowed_origins.begin()->opaque());
@@ -9631,17 +9603,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Navigate the frame; pending policy should now be committed.
   EXPECT_TRUE(NavigateToURLFromRenderer(root->child_at(2), nav_url));
-  const blink::ParsedFeaturePolicy final_effective_policy =
+  const blink::ParsedPermissionsPolicy final_effective_policy =
       root->child_at(2)->effective_frame_policy().container_policy;
   EXPECT_TRUE(final_effective_policy[0].matches_opaque_src);
   EXPECT_EQ(0UL, final_effective_policy[0].allowed_origins.size());
 }
 
 // Test that creating a new remote frame at the same origin as its parent
-// results in the correct feature policy in the RemoteSecurityContext.
+// results in the correct permissions policy in the RemoteSecurityContext.
 // https://crbug.com/852102
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       FeaturePolicyConstructionInExistingProxy) {
+                       PermissionsPolicyConstructionInExistingProxy) {
   WebContentsImpl* contents = web_contents();
   FrameTreeNode* root = contents->GetFrameTree()->root();
 
@@ -10202,8 +10174,8 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(foo_url, web_contents()->GetMainFrame()->GetLastCommittedURL());
 }
 
-// The test is flaky on lacros, cf https://crbug.com/1170583.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// The test is flaky on Linux, Chrome OS, etc; cf https://crbug.com/1170583.
+#if defined(OS_POSIX)
 #define MAYBE_CrossProcessInertSubframe DISABLED_CrossProcessInertSubframe
 #else
 #define MAYBE_CrossProcessInertSubframe CrossProcessInertSubframe
@@ -11590,9 +11562,8 @@ class TouchEventObserver : public RenderWidgetHost::InputEventObserver {
 //
 // This test is disabled due to flakiness on all platforms, but especially on
 // Android.  See https://crbug.com/945025.
-// Note: temporarily re-enabled to collect data on the try-bots ... it will be
-// disabled again once we have some data.
-IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TouchEventAckQueueOrdering) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
+                       DISABLED_TouchEventAckQueueOrdering) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -11955,9 +11926,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       rfh->lifecycle_state(),
       testing::AnyOf(
           testing::Eq(
-              RenderFrameHostImpl::LifecycleState::kRunningUnloadHandlers),
+              RenderFrameHostImpl::LifecycleStateImpl::kRunningUnloadHandlers),
           testing::Eq(
-              RenderFrameHostImpl::LifecycleState::kInBackForwardCache)));
+              RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache)));
 
   ASSERT_FALSE(rfh_observer.deleted());
 
@@ -13749,7 +13720,7 @@ class ClosePageBeforeCommitHelper : public DidCommitNavigationInterceptor {
       : DidCommitNavigationInterceptor(web_contents) {}
 
   void Wait() {
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
     run_loop_.reset();
   }
@@ -13984,6 +13955,31 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
 
   SetBrowserClientForTesting(old_client);
 }
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
+                       CheckForceEnableZoomValue) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("foo.com", "/title1.html")));
+  EXPECT_FALSE(GetTouchActionForceEnableZoom(
+      web_contents()->GetMainFrame()->GetRenderViewHost()->GetWidget()));
+
+  EnableForceZoomContentClient new_client;
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
+  new_client.set_old_client(old_client);
+
+  web_contents()->OnWebPreferencesChanged();
+
+  EXPECT_TRUE(GetTouchActionForceEnableZoom(
+      web_contents()->GetMainFrame()->GetRenderViewHost()->GetWidget()));
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("bar.com", "/title2.html")));
+
+  EXPECT_TRUE(GetTouchActionForceEnableZoom(
+      web_contents()->GetMainFrame()->GetRenderViewHost()->GetWidget()));
+  SetBrowserClientForTesting(old_client);
+}
+
 #endif  // defined(OS_ANDROID)
 
 // Flaky on every platform, failing most of the time on Android.
@@ -14216,8 +14212,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
   WaitForHitTestData(child->current_frame_host());
   // Navigation destroys the previous RenderWidgetHost, so we need to begin
   // observing the new renderer main thread associated with the child frame.
-  child_thread_observer.reset(new MainThreadFrameObserver(
-      child->current_frame_host()->GetRenderWidgetHost()));
+  child_thread_observer = std::make_unique<MainThreadFrameObserver>(
+      child->current_frame_host()->GetRenderWidgetHost());
 
   rwhv_child = static_cast<RenderWidgetHostViewBase*>(
       child->current_frame_host()->GetRenderWidgetHost()->GetView());
@@ -15875,11 +15871,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   RenderFrameHostImpl* rfh_c =
       rfh_b->frame_tree_node()->render_manager()->speculative_frame_host();
 
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kActive,
             rfh_a->lifecycle_state());
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kActive,
             rfh_b->lifecycle_state());
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kSpeculative,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kSpeculative,
             rfh_c->lifecycle_state());
 
   // 3) Deletion of B. The unload handler takes times to execute.
@@ -15888,9 +15884,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       ExecJs(rfh_a, JsReplace("document.querySelector('iframe').remove();")));
   EXPECT_FALSE(delete_b.deleted());
   EXPECT_TRUE(delete_c.deleted());  // The speculative RFH is deleted.
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kActive,
             rfh_a->lifecycle_state());
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kRunningUnloadHandlers,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kRunningUnloadHandlers,
             rfh_b->lifecycle_state());
 
   // The navigation has been canceled.
@@ -15930,13 +15926,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   RenderFrameHostImpl* rfh_d =
       rfh_c->frame_tree_node()->render_manager()->speculative_frame_host();
 
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kActive,
             rfh_a->lifecycle_state());
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kActive,
             rfh_b->lifecycle_state());
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kActive,
             rfh_c->lifecycle_state());
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kSpeculative,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kSpeculative,
             rfh_d->lifecycle_state());
 
   // 3) Deletion of D. The unload handler takes times to execute.
@@ -15946,12 +15942,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_FALSE(delete_b.deleted());
   EXPECT_FALSE(delete_c.deleted());
   EXPECT_TRUE(delete_d.deleted());  // The speculative RFH is deleted.
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kActive,
             rfh_a->lifecycle_state());
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kReadyToBeDeleted,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kReadyToBeDeleted,
             rfh_b->lifecycle_state());
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kRunningUnloadHandlers,
+  EXPECT_EQ(RenderFrameHost::LifecycleState::kPendingDeletion,
+            rfh_b->GetLifecycleState());
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kRunningUnloadHandlers,
             rfh_c->lifecycle_state());
+  EXPECT_EQ(RenderFrameHost::LifecycleState::kPendingDeletion,
+            rfh_c->GetLifecycleState());
 
   // The navigation has been canceled.
   navigation_observer.WaitForNavigationFinished();
@@ -16736,7 +16736,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessWebBundleBrowserTest, SameSiteBundle) {
   GURL main_url(https_server()->GetURL(
       "foo.test", "/web_bundle/frame_parent.html?wbn=" + bundle_url.spec()));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
-  base::string16 expected_title(base::UTF8ToUTF16("OK"));
+  std::u16string expected_title(u"OK");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
@@ -16757,7 +16757,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessWebBundleBrowserTest, CrossSiteBundle) {
   GURL main_url(https_server()->GetURL(
       "foo.test", "/web_bundle/frame_parent.html?wbn=" + bundle_url.spec()));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
-  base::string16 expected_title(base::UTF8ToUTF16("OK"));
+  std::u16string expected_title(u"OK");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 

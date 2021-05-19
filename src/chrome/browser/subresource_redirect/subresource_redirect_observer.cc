@@ -15,6 +15,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/proto/public_image_metadata.pb.h"
 #include "components/subresource_redirect/common/subresource_redirect_features.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -100,7 +101,7 @@ void ImageCompressionAppliedDocument::GetAndUpdateRobotsRules(
 void SubresourceRedirectObserver::MaybeCreateForWebContents(
     content::WebContents* web_contents) {
   if ((ShouldEnablePublicImageHintsBasedCompression() ||
-       ShouldEnableLoginRobotsCheckedCompression()) &&
+       ShouldEnableRobotsRulesFetching()) &&
       IsLiteModeEnabled(web_contents)) {
     SubresourceRedirectObserver::CreateForWebContents(web_contents);
   }
@@ -122,7 +123,7 @@ SubresourceRedirectObserver::SubresourceRedirectObserver(
     : content::WebContentsObserver(web_contents),
       receivers_(web_contents, this) {
   DCHECK(ShouldEnablePublicImageHintsBasedCompression() ||
-         ShouldEnableLoginRobotsCheckedCompression());
+         ShouldEnableRobotsRulesFetching());
   if (ShouldEnablePublicImageHintsBasedCompression()) {
     if (auto* optimization_guide_decider =
             GetOptimizationGuideDeciderFromWebContents(web_contents)) {
@@ -143,7 +144,7 @@ void SubresourceRedirectObserver::DidFinishNavigation(
     return;
   }
   if (!navigation_handle->IsInMainFrame() &&
-      !ShouldEnableLoginRobotsCheckedCompression()) {
+      !ShouldEnableRobotsRulesFetching()) {
     return;
   }
   if (!IsLiteModeEnabled(web_contents()))
@@ -156,7 +157,12 @@ void SubresourceRedirectObserver::DidFinishNavigation(
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
     return;
 
-  if (!ShowInfoBarAndGetImageCompressionState(web_contents(),
+  // Check and show the one-time infobar when image compression is enabled. This
+  // needs to be done for src video compressed navigations too when that gets
+  // enabled.
+  if ((ShouldEnablePublicImageHintsBasedCompression() ||
+       ShouldEnableLoginRobotsCheckedImageCompression()) &&
+      !ShowInfoBarAndGetImageCompressionState(web_contents(),
                                               navigation_handle)) {
     return;
   }
@@ -164,7 +170,7 @@ void SubresourceRedirectObserver::DidFinishNavigation(
       navigation_handle->GetRenderFrameHost();
 
   // Handle login robots based compression mode.
-  if (ShouldEnableLoginRobotsCheckedCompression()) {
+  if (ShouldEnableRobotsRulesFetching()) {
     mojo::AssociatedRemote<mojom::SubresourceRedirectHintsReceiver>
         hints_receiver;
     render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
@@ -172,8 +178,10 @@ void SubresourceRedirectObserver::DidFinishNavigation(
     bool is_compression_allowed =
         IsAllowedForCurrentLoginState(navigation_handle);
     hints_receiver->SetLoggedInState(!is_compression_allowed);
-    if (navigation_handle->IsInMainFrame())
+    if (ShouldEnableLoginRobotsCheckedImageCompression() &&
+        navigation_handle->IsInMainFrame()) {
       is_mainframe_https_image_compression_applied_ = is_compression_allowed;
+    }
 
     if (!is_compression_allowed)
       return;
@@ -251,7 +259,7 @@ void SubresourceRedirectObserver::NotifyCompressedImageFetchFailed(
 void SubresourceRedirectObserver::GetRobotsRules(
     const url::Origin& origin,
     mojom::SubresourceRedirectService::GetRobotsRulesCallback callback) {
-  DCHECK(ShouldEnableLoginRobotsCheckedCompression());
+  DCHECK(ShouldEnableRobotsRulesFetching());
   DCHECK(!origin.opaque());
   if (!web_contents()) {
     std::move(callback).Run(base::nullopt);
@@ -274,7 +282,7 @@ void SubresourceRedirectObserver::GetRobotsRules(
 
 bool SubresourceRedirectObserver::IsAllowedForCurrentLoginState(
     content::NavigationHandle* navigation_handle) {
-  DCHECK(ShouldEnableLoginRobotsCheckedCompression());
+  DCHECK(ShouldEnableRobotsRulesFetching());
 
   auto* login_detection_keyed_service =
       login_detection::LoginDetectionKeyedServiceFactory::GetForProfile(

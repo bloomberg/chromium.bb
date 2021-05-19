@@ -101,8 +101,8 @@ public:
 
     /**
      * Returns a fragment processor that composes two fragment processors `f` and `g` into f(g(x)).
-     * This is equivalent to running them in series. This is not the same as transfer-mode
-     * composition; there is no blending step.
+     * This is equivalent to running them in series (`g`, then `f`). This is not the same as
+     * transfer-mode composition; there is no blending step.
      */
     static std::unique_ptr<GrFragmentProcessor> Compose(std::unique_ptr<GrFragmentProcessor> f,
                                                         std::unique_ptr<GrFragmentProcessor> g);
@@ -381,6 +381,11 @@ protected:
     // emitCode() function uses the EmitArgs::fSampleCoord variable in generated SkSL.
     void setUsesSampleCoordsDirectly() {
         fFlags |= kUsesSampleCoordsDirectly_Flag;
+    }
+
+    void mergeOptimizationFlags(OptimizationFlags flags) {
+        SkASSERT((flags & ~kAll_OptimizationFlags) == 0);
+        fFlags &= (flags | ~kAll_OptimizationFlags);
     }
 
 private:

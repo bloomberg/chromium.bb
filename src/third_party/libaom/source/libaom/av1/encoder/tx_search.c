@@ -1995,10 +1995,14 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
           ? fimode_to_intradir[mbmi->filter_intra_mode_info.filter_intra_mode]
           : mbmi->mode;
   uint16_t ext_tx_used_flag =
-      cpi->sf.tx_sf.tx_type_search.use_reduced_intra_txset &&
+      cpi->sf.tx_sf.tx_type_search.use_reduced_intra_txset != 0 &&
               tx_set_type == EXT_TX_SET_DTT4_IDTX_1DDCT
           ? av1_reduced_intra_tx_used_flag[intra_dir]
           : av1_ext_tx_used_flag[tx_set_type];
+
+  if (cpi->sf.tx_sf.tx_type_search.use_reduced_intra_txset == 2)
+    ext_tx_used_flag &= av1_derived_intra_tx_used_flag[intra_dir];
+
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_up_map[tx_size] > TX_32X32 ||
       ext_tx_used_flag == 0x0001 ||
       (is_inter && cpi->oxcf.txfm_cfg.use_inter_dct_only) ||
@@ -2020,7 +2024,8 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
     assert(plane == 0);
     allowed_tx_mask = ext_tx_used_flag;
     int num_allowed = 0;
-    const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
+    const FRAME_UPDATE_TYPE update_type =
+        get_frame_update_type(&cpi->gf_group, cpi->gf_frame_index);
     const int *tx_type_probs =
         cpi->frame_probs.tx_type_probs[update_type][tx_size];
     int i;
@@ -2093,25 +2098,8 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
 
 #if CONFIG_RD_DEBUG
 static INLINE void update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
-                                         TX_SIZE tx_size, int blk_row,
-                                         int blk_col, int txb_coeff_cost) {
-  (void)blk_row;
-  (void)blk_col;
-  (void)tx_size;
+                                         int txb_coeff_cost) {
   rd_stats->txb_coeff_cost[plane] += txb_coeff_cost;
-
-  {
-    const int txb_h = tx_size_high_unit[tx_size];
-    const int txb_w = tx_size_wide_unit[tx_size];
-    int idx, idy;
-    for (idy = 0; idy < txb_h; ++idy)
-      for (idx = 0; idx < txb_w; ++idx)
-        rd_stats->txb_coeff_cost_map[plane][blk_row + idy][blk_col + idx] = 0;
-
-    rd_stats->txb_coeff_cost_map[plane][blk_row][blk_col] = txb_coeff_cost;
-  }
-  assert(blk_row < TXB_COEFF_COST_MAP_SIZE);
-  assert(blk_col < TXB_COEFF_COST_MAP_SIZE);
 }
 #endif
 
@@ -2670,8 +2658,7 @@ static AOM_INLINE void try_tx_block_no_split(
            RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse));
   if (pick_skip_txfm) {
 #if CONFIG_RD_DEBUG
-    update_txb_coeff_cost(rd_stats, 0, tx_size, blk_row, blk_col,
-                          zero_blk_rate - rd_stats->rate);
+    update_txb_coeff_cost(rd_stats, 0, zero_blk_rate - rd_stats->rate);
 #endif  // CONFIG_RD_DEBUG
     rd_stats->rate = zero_blk_rate;
     rd_stats->dist = rd_stats->sse;
@@ -2716,11 +2703,12 @@ static AOM_INLINE void try_tx_block_split(
       x->mode_costs.txfm_partition_cost[txfm_partition_ctx][1];
 
   for (int r = 0, blk_idx = 0; r < txb_height; r += sub_txb_height) {
+    const int offsetr = blk_row + r;
+    if (offsetr >= max_blocks_high) break;
     for (int c = 0; c < txb_width; c += sub_txb_width, ++blk_idx) {
       assert(blk_idx < 4);
-      const int offsetr = blk_row + r;
       const int offsetc = blk_col + c;
-      if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
+      if (offsetc >= max_blocks_wide) continue;
 
       RD_STATS this_rd_stats;
       int this_cost_valid = 1;
@@ -3169,8 +3157,7 @@ static AOM_INLINE void block_rd_txfm(int plane, int block, int blk_row,
   }
 
 #if CONFIG_RD_DEBUG
-  update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
-                        this_rd_stats.rate);
+  update_txb_coeff_cost(&this_rd_stats, plane, this_rd_stats.rate);
 #endif  // CONFIG_RD_DEBUG
   av1_set_txb_context(x, plane, block, tx_size, a, l);
 
@@ -3448,15 +3435,18 @@ static AOM_INLINE void tx_block_yrd(
     const int txb_width = tx_size_wide_unit[sub_txs];
     const int txb_height = tx_size_high_unit[sub_txs];
     const int step = txb_height * txb_width;
+    const int row_end =
+        AOMMIN(tx_size_high_unit[tx_size], max_blocks_high - blk_row);
+    const int col_end =
+        AOMMIN(tx_size_wide_unit[tx_size], max_blocks_wide - blk_col);
     RD_STATS pn_rd_stats;
     int64_t this_rd = 0;
     assert(txb_width > 0 && txb_height > 0);
 
-    for (int row = 0; row < tx_size_high_unit[tx_size]; row += txb_height) {
-      for (int col = 0; col < tx_size_wide_unit[tx_size]; col += txb_width) {
-        const int offsetr = blk_row + row;
+    for (int row = 0; row < row_end; row += txb_height) {
+      const int offsetr = blk_row + row;
+      for (int col = 0; col < col_end; col += txb_width) {
         const int offsetc = blk_col + col;
-        if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
         av1_init_rd_stats(&pn_rd_stats);
         tx_block_yrd(cpi, x, offsetr, offsetc, block, sub_txs, plane_bsize,

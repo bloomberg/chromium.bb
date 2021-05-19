@@ -1,3 +1,206 @@
+2021-04-02  Ben Wagner  <bungeman@chromium.org>
+
+	[base] Complete `ft_glyphslot_clear`.
+
+	* src/base/ftobjs.c (ft_glyphslot_clear): This function is intended
+	to reset all the values of a glyph slot.  However, it was not
+	resetting the values of the advances and `glyph_index`.  Reset the
+	advances and `glyph_index` to zero.
+
+2021-04-02  Ben Wagner  <bungeman@chromium.org>
+
+	[truetype] Prevent glyph program state from persisting.
+
+	`FDEF` instructions are specified as allowed only in 'prep' or
+	'fpgm'.  FreeType has attempted to prevent their use in the glyph
+	program, but they were still allowed in glyph programs if defined in
+	a function defined in 'prep' or 'fpgm' and called from the glyph
+	program.
+
+	Similarly, `IDEF` instructions are specified not to be able to
+	modify any existing instruction.  FreeType has attempted to prevent
+	their use in the glyph program, but they can still be used like
+	`FDEF`.
+
+	This change stores the initial bytecode range type and disallows the
+	use of `FDEF` and `IDEF` while running the glyph program.
+
+	Most other state is copied from the `TT_Size` into the execution
+	context.  However, it is possible for a glyph program to use `WS` to
+	write to the storage area or `WCVTP`, `WCVTF`, and `DELTAC[123]` to
+	write to the control value table.
+
+	Allowing any change to the global state from the glyph program is
+	problematic as the outlines of any given glyph may change based on
+	the order the glyphs are loaded or even how many times they are
+	loaded.  There exist fonts that write to the storage area or the
+	control value table in the glyph program, so their use should not be
+	an error.
+
+	Possible solutions to using these in the glyph program are
+
+	  * ignore the writes;
+	  * value-level copy on write, discard modified values when finished;
+	  * array-level copy on write, discard the copy when finished;
+	  * array-level copy up-front.
+
+	Ignoring the writes may break otherwise good uses.  A full copy
+	up-front was implemented, but was quite heavy as even well behaved
+	fonts required a full copy and the memory management that goes along
+	with it.  Value-level copy on write could use less memory but
+	requires a great deal more record keeping and complexity.  This
+	change implements array-level copy on write.  If any attempt is made
+	to write to the control value table or the storage area when the
+	initial bytecode range was in a glyph program, the relevant array
+	will be copied to a designated storage area and the copy used for
+	the rest of the glyph program's execution.
+
+	* src/truetype/ttinterp.h (TT_ExecContextRec): New fields
+	`iniRange`, `glyfCvtSize`, `glyfCvt`, `origCvt`, `glyfStoreSize`,
+	`glyfStorage`, and `origStorage`.
+
+	* src/truetype/ttinterp.c (Modify_CVT_Check): New function to handle
+	`exc->glyfCvt`.
+	(Write_CVT, Write_CVT_Stretched, Move_CVT, Move_CVT_Stretched): Use
+	it.
+	(Ins_WS): Handle `exc->glyfStorage`.
+	(Ins_FDEF, Ins_IDEF): Updated.
+	(TT_RunIns): Updated.
+	(TT_Done_Context): Free 'glyf' CVT working and storage area.
+	(TT_Load_Context): Fix/add casts.
+
+	* src/truetype/ttgload.c (TT_Load_Simple_Glyph): Fix cast.
+
+2021-03-30  Dominik Röttsches  <drott@chromium.org>
+
+	[sfnt] Check validity of pointer location of `read_color_line`.
+
+	* src/sfnt/ttcolr.c (get_child_table_pointer): New function to fetch
+	child table pointer early for all paint formats that compute a child
+	table pointer.
+	(read_color_line, read_paint): Updated.
+	(tt_face_get_colorline_stops): Check `colr->table`.
+
+2021-03-28  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[docs] Update docwriter stylesheet for 1.3.1.
+
+	This change is required to support docwriter 1.3.1.
+
+	See
+
+	  https://gitlab.freedesktop.org/freetype/docwriter/-/merge_requests/101
+
+	for more information.
+
+	* docs/markdown/stylesheets/extra.css:
+	(.wy-nav-content, .md-sidebar--secondary): Remove.
+
+2021-03-16  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/sfnt/pngshim.c (Load_SBit_Png): Free `rows` once later.
+
+2021-03-16  Ben Wagner  <bungeman@google.com>
+
+	[sfnt] Fix memory leak in png loading.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/chromium/issues/detail?id=1182552
+
+	Memory is allocated and the pointer assigned to `rows` inside a
+	'setjmp' scope.  This memory must be freed outside the 'setjmp'
+	scope after a 'longjmp'.  Since `rows` is a local and modified
+	inside the 'setjmp' scope it must be marked volatile or it will have
+	an indeterminate value after the 'longjmp'.
+
+	* src/sfnt/pngshim.c (Load_SBit_Png): Fix memory leak of `rows`.
+
+2021-03-16  Christopher Degawa  <ccom@randomderp.com>
+
+	* CMakeLists.txt: Don't limit generation of 'pkg-config' file to UNIX.
+
+	mingw-w64 uses the 'pkg-config' files but does not set UNIX.
+
+2021-03-11  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/smooth/ftgrays.c (gray_set_cell): Refactor to fix VC++ warning.
+
+2021-03-13  Werner Lemberg  <wl@gnu.org>
+
+	Handle various VC++ compiler warnings.
+
+	Fixes #1039.
+
+	* src/base/ftstroke.c (ft_stroker_inside, ft_stroker_outside):
+	Initialize `sigma`.
+
+	* src/sdf/ftsdf.c (sdf_generate_with_overlaps): Exit immediately if
+	function arguments are invalid.
+	* src/sdf/ftsdfrend.c (sdf_property_set) <"overlaps">: Fix cast.
+
+	* src/sfnt/sfwoff2.c (woff2_decompress)
+	[!FT_CONFIG_OPTION_USE_BROTLI]: Use `FT_UNUSED`.
+
+	* src/truetype/ttgxvar.c (TT_Get_MM_Var): Initialize `fvar_head`.
+
+2021-03-11  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[smooth] Reduce copying during integration phase.
+
+	We now record `cover' and `area' directly into the linked list. This
+	makes rendering faster by 10% or even more at larger sizes.
+
+	* src/smooth/ftgrays.c (FT_INTEGRATE): Write directly.
+	(gray_TWorker): Add direct cell reference and remove unused fields.
+	(gray_set_cell): Consolidate the linked list management and pointers.
+	(gray_convert_glyph, gray_convert_glyph_inner): Updated.
+
+2021-03-10  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/smooth/ftgrays.c (FT_INTEGRATE): New convenience macro.
+	(gray_render_line, gray_render_scanline): Use it.
+
+2021-03-09  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/smooth/ftgrays.c (gray_render_line): Rearrange conditionals.
+
+	These produce faster or more optimizable code.
+
+2021-03-08  Tim-Philipp Müller  <tim@centricular.com>
+
+	[meson] Fix 'mmap' handling on Windows.
+
+	* meson.build (ft2_sources): Always use `windows/ftsystem.c` on
+	Windows unless mmap has been disabled.
+
+	  https://gitlab.freedesktop.org/freetype/freetype/-/merge_requests/5#note_829289
+
+2021-03-07  Tim-Philipp Müller  <tim@centricular.com>
+
+	[ci] Add basic support for Meson builds with MSVC on Windows.
+
+	This adds meson jobs for VS2017 (x86 and x86_64).
+
+	* .gitlab-ci.yml: New file.
+
+2021-03-07  Tim-Philipp Müller  <tim@centricular.com>
+
+	[meson] Add subproject fallbacks for 'libpng' and 'zlib'.
+
+	* subprojects/libpng.wrap, subprojects/zlib.wrap: New files.
+
+	* meson.build: Updated.
+
+2021-03-07  Xavier Claessens  <xavier.claessens@collabora.com>
+
+	[meson] Make it work with Windows.
+
+	* meson.build: Do not process `ftconfig.h` when not using
+	`ftconfig.h.in`.
+
+	Fixes #1029.
+
 2021-02-25  Werner Lemberg  <wl@gnu.org>
 
 	[woff2] Fix memory leak.
@@ -147,7 +350,7 @@
 
 	[sfnt] Provide optional root transform for 'COLR' v1 glyph graph.
 
-        * include/freetype/freetype.h (FT_Get_Color_Glyph_Paint):
+	* include/freetype/freetype.h (FT_Get_Color_Glyph_Paint):
 	Additional function argument `root_transform` to control whether
 	root transform should be returned.
 	(FT_OpaquePaint): Additional tracking field to denote whether

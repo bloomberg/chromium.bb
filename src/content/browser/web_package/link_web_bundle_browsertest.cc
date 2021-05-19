@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/content_client.h"
@@ -28,6 +29,7 @@ namespace content {
 namespace {
 
 const char kUrnUuidURL[] = "urn:uuid:429fcc4e-0696-4bad-b099-ee9175f023ae";
+const char kUrnUuidURL2[] = "urn:uuid:e219d992-b7f7-4da7-9722-481bc40cfda1";
 
 class TestBrowserClient : public ContentBrowserClient {
  public:
@@ -37,6 +39,7 @@ class TestBrowserClient : public ContentBrowserClient {
       const GURL& url,
       base::OnceCallback<WebContents*()> web_contents_getter,
       int child_id,
+      int frame_tree_node_id,
       NavigationUIData* navigation_data,
       bool is_main_frame,
       ui::PageTransition page_transition,
@@ -89,6 +92,13 @@ int64_t GetTestDataFileSize(const base::FilePath::CharType* file_path) {
   CHECK(base::GetFileSize(test_data_dir.Append(base::FilePath(file_path)),
                           &file_size));
   return file_size;
+}
+
+FrameTreeNode* GetFirstChild(WebContents* web_contents) {
+  return static_cast<WebContentsImpl*>(web_contents)
+      ->GetFrameTree()
+      ->root()
+      ->child_at(0);
 }
 
 }  // namespace
@@ -319,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(LinkWebBundleBrowserTest, NetworkIsolationKey) {
   GURL page_url(https_server()->GetURL(
       "page.test", "/web_bundle/frame_parent.html?wbn=" + bundle_url.spec()));
   EXPECT_TRUE(NavigateToURL(shell(), page_url));
-  base::string16 expected_title(base::UTF8ToUTF16("OK"));
+  std::u16string expected_title(u"OK");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
@@ -327,6 +337,152 @@ IN_PROC_BROWSER_TEST_F(LinkWebBundleBrowserTest, NetworkIsolationKey) {
   RenderFrameHost* urn_frame = ChildFrameAt(main_frame, 0);
   EXPECT_EQ("https://page.test https://bundle.test",
             urn_frame->GetNetworkIsolationKey().ToString());
+}
+
+IN_PROC_BROWSER_TEST_F(LinkWebBundleBrowserTest, ReloadSubframe) {
+  GURL url(https_server()->GetURL("/web_bundle/link_web_bundle.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Create an iframe with a urn:uuid resource in a bundle.
+  {
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(
+        shell()->web_contents(), GURL(kUrnUuidURL), run_loop.QuitClosure());
+    ExecuteScriptAsync(
+        shell(),
+        "let iframe = document.createElement('iframe');"
+        "iframe.src = 'urn:uuid:429fcc4e-0696-4bad-b099-ee9175f023ae';"
+        "document.body.appendChild(iframe);");
+    run_loop.Run();
+    EXPECT_EQ(net::OK, *finish_navigation_observer.error_code());
+  }
+  FrameTreeNode* iframe_node = GetFirstChild(shell()->web_contents());
+  EXPECT_EQ(iframe_node->current_url(), GURL(kUrnUuidURL));
+
+  // Reload the iframe.
+  {
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(
+        shell()->web_contents(), GURL(kUrnUuidURL), run_loop.QuitClosure());
+    iframe_node->current_frame_host()->Reload();
+    run_loop.Run();
+    EXPECT_EQ(net::OK, *finish_navigation_observer.error_code());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(LinkWebBundleBrowserTest, SubframeHistoryNavigation) {
+  GURL url(https_server()->GetURL("/web_bundle/link_web_bundle.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Create an iframe with a urn:uuid resource in a bundle.
+  {
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(
+        shell()->web_contents(), GURL(kUrnUuidURL), run_loop.QuitClosure());
+    ExecuteScriptAsync(
+        shell(),
+        "let iframe = document.createElement('iframe');"
+        "iframe.src = 'urn:uuid:429fcc4e-0696-4bad-b099-ee9175f023ae';"
+        "document.body.appendChild(iframe);");
+    run_loop.Run();
+    EXPECT_EQ(net::OK, *finish_navigation_observer.error_code());
+  }
+  FrameTreeNode* iframe_node = GetFirstChild(shell()->web_contents());
+  EXPECT_EQ(iframe_node->current_url(), GURL(kUrnUuidURL));
+
+  // Navigate the iframe to a page outside the bundle.
+  {
+    GURL another_page_url(https_server()->GetURL("/simple_page.html"));
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(
+        shell()->web_contents(), another_page_url, run_loop.QuitClosure());
+    EXPECT_TRUE(ExecJs(iframe_node,
+                       base::StringPrintf("location.href = '%s';",
+                                          another_page_url.spec().c_str())));
+    run_loop.Run();
+    EXPECT_EQ(net::OK, *finish_navigation_observer.error_code());
+    EXPECT_EQ(iframe_node->current_url(), another_page_url);
+  }
+
+  // Back navigate the iframe to the urn:uuid resource in the bundle.
+  {
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(
+        shell()->web_contents(), GURL(kUrnUuidURL), run_loop.QuitClosure());
+    EXPECT_TRUE(ExecJs(iframe_node, "history.back()"));
+    run_loop.Run();
+    EXPECT_EQ(net::OK, *finish_navigation_observer.error_code());
+    EXPECT_EQ(iframe_node->current_url(), GURL(kUrnUuidURL));
+  }
+
+  // Navigate the iframe to another urn:uuid resource in the bundle, by changing
+  // iframe.src attribute.
+  {
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(
+        shell()->web_contents(), GURL(kUrnUuidURL2), run_loop.QuitClosure());
+    ExecuteScriptAsync(shell(),
+                       base::StringPrintf("iframe.src = '%s';", kUrnUuidURL2));
+    run_loop.Run();
+    EXPECT_EQ(net::OK, *finish_navigation_observer.error_code());
+    EXPECT_EQ(iframe_node->current_url(), GURL(kUrnUuidURL2));
+  }
+
+  // Back navigate the iframe to the first urn:uuid resource.
+  {
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(
+        shell()->web_contents(), GURL(kUrnUuidURL), run_loop.QuitClosure());
+    EXPECT_TRUE(ExecJs(iframe_node, "history.back()"));
+    run_loop.Run();
+    EXPECT_EQ(net::OK, *finish_navigation_observer.error_code());
+    EXPECT_EQ(iframe_node->current_url(), GURL(kUrnUuidURL));
+  }
+
+  // Forward navigate the iframe to the second urn:uuid resource.
+  {
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(
+        shell()->web_contents(), GURL(kUrnUuidURL2), run_loop.QuitClosure());
+    EXPECT_TRUE(ExecJs(iframe_node, "history.forward()"));
+    run_loop.Run();
+    EXPECT_EQ(net::OK, *finish_navigation_observer.error_code());
+    EXPECT_EQ(iframe_node->current_url(), GURL(kUrnUuidURL2));
+  }
+
+  GURL url_with_hash(std::string(kUrnUuidURL2) + "#hash");
+  // Same document navigation.
+  {
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(
+        shell()->web_contents(), url_with_hash, run_loop.QuitClosure());
+    EXPECT_TRUE(ExecJs(iframe_node, "location.href = '#hash';"));
+    run_loop.Run();
+    EXPECT_EQ(net::OK, *finish_navigation_observer.error_code());
+    EXPECT_EQ(iframe_node->current_url(), url_with_hash);
+  }
+
+  // Back from same document navigation.
+  {
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(
+        shell()->web_contents(), GURL(kUrnUuidURL2), run_loop.QuitClosure());
+    EXPECT_TRUE(ExecJs(iframe_node, "history.back()"));
+    run_loop.Run();
+    EXPECT_EQ(net::OK, *finish_navigation_observer.error_code());
+    EXPECT_EQ(iframe_node->current_url(), GURL(kUrnUuidURL2));
+  }
+
+  // Forward navigate to #hash.
+  {
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(
+        shell()->web_contents(), url_with_hash, run_loop.QuitClosure());
+    EXPECT_TRUE(ExecJs(iframe_node, "history.forward()"));
+    run_loop.Run();
+    EXPECT_EQ(net::OK, *finish_navigation_observer.error_code());
+    EXPECT_EQ(iframe_node->current_url(), url_with_hash);
+  }
 }
 
 }  // namespace content

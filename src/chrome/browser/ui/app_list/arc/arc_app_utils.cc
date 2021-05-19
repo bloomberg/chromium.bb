@@ -24,12 +24,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/arc/arc_migration_guide_notification.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
+#include "chrome/browser/ash/arc/notification/arc_supervision_transition_notification.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
-#include "chrome/browser/chromeos/arc/notification/arc_supervision_transition_notification.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
@@ -89,7 +89,6 @@ constexpr char kSetInTouchModeIntent[] =
 constexpr char kAction[] = "action";
 constexpr char kActionMain[] = "android.intent.action.MAIN";
 constexpr char kCategory[] = "category";
-constexpr char kCategoryLauncher[] = "android.intent.category.LAUNCHER";
 constexpr char kComponent[] = "component";
 constexpr char kEndSuffix[] = "end";
 constexpr char kIntentPrefix[] = "#Intent";
@@ -134,7 +133,7 @@ bool Launch(content::BrowserContext* context,
             const std::string& app_id,
             const base::Optional<std::string>& intent,
             int event_flags,
-            int64_t display_id) {
+            arc::mojom::WindowInfoPtr window_info) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   CHECK(prefs);
 
@@ -166,11 +165,15 @@ bool Launch(content::BrowserContext* context,
   // to minimize lag on an app launch.
   NotifyAppLaunchObservers(context, *app_info);
 
+  int64_t display_id = display::kDefaultDisplayId;
+  if (window_info)
+    display_id = window_info->display_id;
+
   if (app_info->shortcut || intent.has_value()) {
     const std::string intent_uri = intent.value_or(app_info->intent_uri);
     if (auto* app_instance = GET_APP_INSTANCE(LaunchIntentWithWindowInfo)) {
       app_instance->LaunchIntentWithWindowInfo(intent_uri,
-                                               MakeWindowInfo(display_id));
+                                               std::move(window_info));
     } else if (auto* app_instance = GET_APP_INSTANCE(LaunchIntent)) {
       app_instance->LaunchIntent(intent_uri, display_id);
     } else if (auto* app_instance = GET_APP_INSTANCE(LaunchIntentDeprecated)) {
@@ -180,9 +183,8 @@ bool Launch(content::BrowserContext* context,
     }
   } else {
     if (auto* app_instance = GET_APP_INSTANCE(LaunchAppWithWindowInfo)) {
-      app_instance->LaunchAppWithWindowInfo(app_info->package_name,
-                                            app_info->activity,
-                                            MakeWindowInfo(display_id));
+      app_instance->LaunchAppWithWindowInfo(
+          app_info->package_name, app_info->activity, std::move(window_info));
     } else if (auto* app_instance = GET_APP_INSTANCE(LaunchApp)) {
       app_instance->LaunchApp(app_info->package_name, app_info->activity,
                               display_id);
@@ -218,7 +220,8 @@ std::string ConstructArcAppShortcutUrl(const std::string& app_id,
 }  // namespace
 
 // Package names, kept in sorted order.
-const char kInitialStartParam[] = "S.org.chromium.arc.start_type=initialStart";
+const char kInitialStartParam[] = "initialStart";
+const char kCategoryLauncher[] = "android.intent.category.LAUNCHER";
 const char kRequestStartTimeParamTemplate[] =
     "S.org.chromium.arc.request.start=%" PRId64;
 const char kPlayStoreActivity[] = "com.android.vending.AssetBrowserActivity";
@@ -262,7 +265,7 @@ bool LaunchApp(content::BrowserContext* context,
                arc::UserInteractionType user_action) {
   return LaunchAppWithIntent(context, app_id, base::nullopt /* launch_intent */,
                              event_flags, user_action,
-                             display::kInvalidDisplayId);
+                             MakeWindowInfo(display::kInvalidDisplayId));
 }
 
 bool LaunchApp(content::BrowserContext* context,
@@ -270,10 +273,8 @@ bool LaunchApp(content::BrowserContext* context,
                int event_flags,
                arc::UserInteractionType user_action,
                arc::mojom::WindowInfoPtr window_info) {
-  int64_t display_id =
-      window_info ? window_info->display_id : display::kInvalidDisplayId;
   return LaunchAppWithIntent(context, app_id, base::nullopt /* launch_intent */,
-                             event_flags, user_action, display_id);
+                             event_flags, user_action, std::move(window_info));
 }
 
 bool LaunchAppWithIntent(content::BrowserContext* context,
@@ -281,7 +282,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
                          const base::Optional<std::string>& launch_intent,
                          int event_flags,
                          arc::UserInteractionType user_action,
-                         int64_t display_id) {
+                         arc::mojom::WindowInfoPtr window_info) {
   DCHECK(!launch_intent.has_value() || !launch_intent->empty());
   if (user_action != UserInteractionType::NOT_USER_INITIATED)
     UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction", user_action);
@@ -321,6 +322,10 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
     arc::ShowSupervisionTransitionNotification(profile);
     return false;
   }
+
+  // Update display id.
+  if (window_info)
+    window_info->display_id = GetValidDisplayId(window_info->display_id);
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
@@ -372,7 +377,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
       chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
           app_id,
           std::make_unique<ArcShelfSpinnerItemController>(
-              app_id, event_flags, user_action, GetValidDisplayId(display_id)));
+              app_id, event_flags, user_action, std::move(window_info)));
 
       // On some boards, ARC is booted with a restricted set of resources by
       // default to avoid slowing down Chrome's user session restoration.
@@ -394,7 +399,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
 
   arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
   return Launch(context, app_id, launch_intent_to_send, event_flags,
-                GetValidDisplayId(display_id));
+                std::move(window_info));
 }
 
 bool LaunchAppShortcutItem(content::BrowserContext* context,
@@ -424,6 +429,16 @@ bool LaunchAppShortcutItem(content::BrowserContext* context,
   app_instance->LaunchAppShortcutItem(app_info->package_name, shortcut_id,
                                       GetValidDisplayId(display_id));
   return true;
+}
+
+void UpdateWindowInfo(arc::mojom::WindowInfoPtr window_info) {
+  arc::mojom::AppInstance* app_instance = GET_APP_INSTANCE(UpdateWindowInfo);
+  if (!app_instance) {
+    LOG(ERROR) << "Cannot find a mojo instance, ARC is unreachable or mojom"
+               << " version mismatch.";
+    return;
+  }
+  app_instance->UpdateWindowInfo(std::move(window_info));
 }
 
 void SetTaskActive(int task_id) {

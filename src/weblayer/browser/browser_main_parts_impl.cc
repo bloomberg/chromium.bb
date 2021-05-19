@@ -6,6 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/task/current_thread.h"
 #include "base/task/task_traits.h"
@@ -33,6 +34,7 @@
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/cookie_settings_factory.h"
 #include "weblayer/browser/feature_list_creator.h"
+#include "weblayer/browser/heavy_ad_service_factory.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/no_state_prefetch/no_state_prefetch_link_manager_factory.h"
@@ -115,6 +117,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalServiceFactory::GetInstance();
 #endif
+  HeavyAdServiceFactory::GetInstance();
   HostContentSettingsMapFactory::GetInstance();
   StatefulSSLHostStateDelegateFactory::GetInstance();
   CookieSettingsFactory::GetInstance();
@@ -217,7 +220,7 @@ void BrowserMainPartsImpl::PostCreateThreads() {
           performance_manager::Decorators::kMinimal, base::DoNothing());
 }
 
-void BrowserMainPartsImpl::PreMainMessageLoopRun() {
+int BrowserMainPartsImpl::PreMainMessageLoopRun() {
   FeatureListCreator::GetInstance()->PerformPreMainMessageLoopStartup();
 
   // It's necessary to have a complete dependency graph of
@@ -278,18 +281,20 @@ void BrowserMainPartsImpl::PreMainMessageLoopRun() {
   Java_MojoInterfaceRegistrar_registerMojoInterfaces(
       base::android::AttachCurrentThread());
 #endif
+
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
-bool BrowserMainPartsImpl::MainMessageLoopRun(int* result_code) {
-  return !run_message_loop_;
-}
-
-void BrowserMainPartsImpl::PreDefaultMainMessageLoopRun(
-    base::OnceClosure quit_closure) {
-  // Wrap the method that stops the message loop so we can do other shutdown
-  // cleanup inside content.
-  params_->delegate->SetMainMessageLoopQuitClosure(
-      base::BindOnce(StopMessageLoop, std::move(quit_closure)));
+void BrowserMainPartsImpl::WillRunMainMessageLoop(
+    std::unique_ptr<base::RunLoop>& run_loop) {
+  if (run_message_loop_) {
+    // Wrap the method that stops the message loop so we can do other shutdown
+    // cleanup inside content.
+    params_->delegate->SetMainMessageLoopQuitClosure(
+        base::BindOnce(StopMessageLoop, run_loop->QuitClosure()));
+  } else {
+    run_loop.reset();
+  }
 }
 
 void BrowserMainPartsImpl::PostMainMessageLoopRun() {
@@ -298,4 +303,5 @@ void BrowserMainPartsImpl::PostMainMessageLoopRun() {
 
   performance_manager_lifetime_.reset();
 }
+
 }  // namespace weblayer

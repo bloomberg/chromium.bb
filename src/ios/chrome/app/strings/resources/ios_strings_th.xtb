@@ -52,7 +52,6 @@
 <translation id="1400642268715879018">4 สัปดาห์ที่ผ่านมา</translation>
 <translation id="1407135791313364759">เปิดทั้งหมด</translation>
 <translation id="1430915738399379752">พิมพ์</translation>
-<translation id="1436290164580597469">ป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="1449835205994625556">ซ่อนรหัสผ่าน</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> รายการ</translation>
 <translation id="1491277525950327607">แตะ 2 ครั้งเพื่อสลับการตั้งค่า</translation>
@@ -97,6 +96,7 @@
 <translation id="1870148520156231997">แสดงรหัสผ่าน</translation>
 <translation id="1872096359983322073">แฟลช</translation>
 <translation id="1911619930368729126">อัปโหลดไปยัง Google ไดรฟ์</translation>
+<translation id="1919130412786645364">อนุญาตให้ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="1923342640370224680">ชั่วโมงล่าสุด</translation>
 <translation id="1941314575388338491">แตะสองครั้งเพื่อคัดลอก</translation>
 <translation id="1952172573699511566">เมื่อเป็นไปได้ เว็บไซต์จะแสดงในภาษาที่คุณต้องการ</translation>
@@ -106,14 +106,12 @@
 <translation id="1974060860693918893">ขั้นสูง</translation>
 <translation id="1989112275319619282">เปิดดู</translation>
 <translation id="2015722694326466240">หากต้องการดูรหัสผ่าน คุณต้องตั้งพาสโค้ดในอุปกรณ์ก่อน</translation>
-<translation id="2047933465321076474">องค์กรปิดการเรียกดูแบบส่วนตัวไว้ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="2073572773299281212">ใช้งานเมื่อ <ph name="DAYS" /> วันที่ผ่านมา</translation>
 <translation id="2074131957428911366">คุณเลือกสิ่งที่ต้องการซิงค์ได้เสมอใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="209018056901015185">ขอไซต์สำหรับเดสก์ท็อป</translation>
 <translation id="2103075008456228677">เปิด history.google.com</translation>
 <translation id="2116625576999540962">ย้ายแล้ว <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
-<translation id="2118594521750010466">แก้ไขเลย</translation>
 <translation id="213900355088104901">หากต้องการท่องเว็บแบบส่วนตัว ให้เปิดแท็บไม่ระบุตัวตน</translation>
 <translation id="2139867232736819575">ค้นหาข้อความที่คุณคัดลอก</translation>
 <translation id="2149973817440762519">แก้ไขบุ๊กมาร์ก</translation>
@@ -124,7 +122,6 @@
 <translation id="2239626343334228536">กำลังล้างข้อมูลการท่องเว็บ...</translation>
 <translation id="2257567812274161158">การซิงค์ไม่ทำงาน</translation>
 <translation id="225943865679747347">รหัสข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>
-<translation id="2262397157440718954">องค์กรกำหนดให้คุณเรียกดูแบบส่วนตัว <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="2267753748892043616">เพิ่มบัญชี</translation>
 <translation id="2268044343513325586">ปรับแต่ง</translation>
 <translation id="2273327106802955778">เมนูเพิ่มเติม</translation>
@@ -141,7 +138,6 @@
 เว็บไซต์ไม่อาจใช้คุกกี้เพื่อดูกิจกรรมการท่องเว็บของคุณในเว็บไซต์และดำเนินการต่างๆ เช่น เพื่อปรับโฆษณาตามโปรไฟล์ของคุณได้อีก</translation>
 <translation id="2381405137052800939">พื้นฐาน</translation>
 <translation id="2386793615875593361">เลือก 1 รูป</translation>
-<translation id="2419661687355878017">องค์กรปิดโหมดไม่ระบุตัวตนไว้</translation>
 <translation id="2421004566762153674">การบล็อกคุกกี้ของบุคคลที่สาม</translation>
 <translation id="2421044535038393232">แก้ไขต่อไป</translation>
 <translation id="2435457462613246316">แสดงรหัสผ่าน</translation>
@@ -193,6 +189,7 @@
 <translation id="2921219216347069551">ไม่สามารถแชร์เว็บ</translation>
 <translation id="2923448633003185837">วางแล้วไป</translation>
 <translation id="292639812446257861">ทำเครื่องหมายว่ายังไม่ได้อ่าน</translation>
+<translation id="2932085390869194046">แนะนำรหัสผ่าน...</translation>
 <translation id="2952581218264071393">1. เปิดการตั้งค่า Chrome</translation>
 <translation id="2958718410589002129">รหัสผ่าน</translation>
 <translation id="2964349545761222050">บล็อกคุกกี้ของบุคคลที่สาม</translation>
@@ -218,6 +215,7 @@
 
 ขณะอยู่ในโหมดไม่ระบุตัวตน เว็บไซต์จะไม่อาจใช้คุกกี้เพื่อดูกิจกรรมการท่องเว็บของคุณในเว็บไซต์ต่างๆ เช่น เพื่อปรับโฆษณาตามโปรไฟล์ของคุณได้อีก</translation>
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
+<translation id="3222343486469566063">ไม่ได้ลงชื่อเข้าใช้</translation>
 <translation id="3224641773458703735">หากต้องการส่งออกรหัสผ่าน คุณต้องตั้งรหัสผ่านในอุปกรณ์ก่อน</translation>
 <translation id="3240426699337459095">คัดลอกลิงก์แล้ว</translation>
 <translation id="3244271242291266297">ดด</translation>
@@ -271,7 +269,6 @@
 <translation id="3670030362669914947">หมายเลข</translation>
 <translation id="3691593122358196899">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_TITLE" /> แล้ว</translation>
 <translation id="3709582977625132201">ทำเครื่องหมายว่ายังไม่อ่าน</translation>
-<translation id="3720541637541300822">ล็อกแท็บที่ไม่ระบุตัวตนเมื่อปิด Chrome</translation>
 <translation id="3740397331642243698">เปิด URL ที่ป้อนใน Google Chrome ในโหมดไม่ระบุตัวตน</translation>
 <translation id="3771033907050503522">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="3775743491439407556">การซิงค์ไม่ทำงาน</translation>
@@ -288,10 +285,11 @@
 <translation id="3928666092801078803">รวมข้อมูลของฉัน</translation>
 <translation id="3929457972718048006">ที่อยู่</translation>
 <translation id="3943492037546055397">รหัสผ่าน</translation>
+<translation id="3943557322767080599">แสดงข้อความแจ้งให้ลงชื่อเข้าใช้ Chrome เมื่อคุณลงชื่อเข้าใช้บัญชี Google</translation>
+<translation id="3967266340354872733">ดูการตั้งค่าเพิ่มเติมเกี่ยวกับความเป็นส่วนตัว ความปลอดภัย และการรวบรวมข้อมูลได้ที่<ph name="BEGIN_LINK" />การซิงค์<ph name="END_LINK" />และ<ph name="BEGIN_LINK" />บริการของ Google<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="3968505803272650567">จัดการความสนใจ</translation>
 <translation id="3989635538409502728">ออกจากระบบ</translation>
-<translation id="399419089947468503">เกิดข้อผิดพลาดในการซิงค์รหัสผ่าน</translation>
 <translation id="3995521777587992544">แถบความคืบหน้าการโหลดหน้าเว็บ โหลดแล้ว <ph name="EMAIL" /></translation>
 <translation id="4002066346123236978">ชื่อ</translation>
 <translation id="4004204301268239848">ระบบจะบันทึกรหัสผ่านไว้ในบัญชี Google เพื่อให้คุณใช้ในอุปกรณ์เครื่องใดก็ได้</translation>
@@ -316,7 +314,6 @@
 <translation id="4263576668337963058">แสดงการทำงานของหน้าเว็บที่ใช้ได้</translation>
 <translation id="4267380167363222949">แท็บถัดไป</translation>
 <translation id="4272631900155121838">หากต้องการสแกนโค้ด QR ให้เปิดใช้กล้องถ่ายรูปจากการตั้งค่า</translation>
-<translation id="4276041135170112053">แก้ไขเลย</translation>
 <translation id="4277990410970811858">Google Safe Browsing</translation>
 <translation id="4281844954008187215">ข้อกำหนดในการให้บริการ</translation>
 <translation id="430793432425771671">ซิงค์ทุกอย่าง</translation>
@@ -341,6 +338,7 @@
 <translation id="457386861538956877">เพิ่มเติม...</translation>
 <translation id="4592368184551360546">แป้นพิมพ์</translation>
 <translation id="461440297010471931">กำลังค้นหาด้วย Google</translation>
+<translation id="4619564267100705184">ยืนยันว่าเป็นคุณ</translation>
 <translation id="4619615317237390068">แท็บจากอุปกรณ์อื่นๆ</translation>
 <translation id="4620246317052452550">หน้าที่คุณอ่านแล้ว</translation>
 <translation id="4630540211544979320">แปลหน้าเว็บ</translation>
@@ -422,10 +420,10 @@
 <translation id="54401264925851789">ข้อมูลเกี่ยวกับการรักษาความปลอดภัยของหน้าเว็บ</translation>
 <translation id="5443952882982198570">บัตรเครดิต</translation>
 <translation id="5457226814769348910">เปิดเวอร์ชันออฟไลน์</translation>
-<translation id="5457907402803865181">เกิดข้อผิดพลาดในการซิงค์รหัสผ่าน</translation>
 <translation id="5489208564673669003">ดู<ph name="BEGIN_LINK" />การตั้งค่าคุกกี้<ph name="END_LINK" />เพื่อจัดการคุกกี้สำหรับทุกเว็บไซต์</translation>
 <translation id="5490005495580364134">บล็อกคุกกี้ทั้งหมด (ไม่แนะนำ)</translation>
 <translation id="5508435575041083207">ออกจากระบบและล้างข้อมูลในอุปกรณ์นี้</translation>
+<translation id="5513681519188741830"><ph name="TIME" /> ชม. ที่ผ่านมา</translation>
 <translation id="5525269841082836315">สร้างข้อความรหัสผ่าน</translation>
 <translation id="5548760955356983418">Handoff ช่วยให้คุณสามารถเริ่มการท่องเว็บไซต์บนอุปกรณ์นี้และใช้งานต่อบน Mac ได้อย่างง่ายดาย เว็บไซต์ที่เปิดอยู่ในปัจจุบันจะปรากฏในแท่นชาร์จของ Mac
 
@@ -433,7 +431,6 @@
 <translation id="5551897871312988470">เสนอการแปล</translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5592679540098330836">เปิดการซิงค์สำหรับ <ph name="NAME" /></translation>
-<translation id="5597169624050330492">องค์กรกำหนดให้คุณเรียกดูแบบส่วนตัว ระบบจะไม่บันทึกแท็บในโหมดไม่ระบุตัวตน <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="5614553682702429503">บันทึกรหัสผ่านไหม</translation>
 <translation id="5626245204502895507">ไม่สามารถดาวน์โหลดไฟล์ได้ในขณะนี้</translation>
 <translation id="5631164295104953411">เพิ่มวิธีการชำระเงิน</translation>
@@ -460,6 +457,7 @@
 <translation id="5860033963881614850">ปิด</translation>
 <translation id="5869029295770560994">รับทราบ</translation>
 <translation id="5871497086027727873">ย้ายแล้ว 1 รายการ</translation>
+<translation id="5896576662943111387">สร้างขึ้นเพื่อ iOS</translation>
 <translation id="5897956970858271241">ไปที่ลิงก์ที่คัดลอก</translation>
 <translation id="5899314093904173337">ให้คนที่อยู่ใกล้ๆ สแกนคิวอาร์โค้ดนี้โดยใช้กล้องหรือแอปสแกนคิวอาร์โค้ดเพื่อแชร์</translation>
 <translation id="5911030830365207728">Google แปลภาษา</translation>
@@ -477,6 +475,7 @@
 <translation id="5988851877894965432">เปิด URL ใน Chrome</translation>
 <translation id="6012140227487808125">กำลังเข้ารหัส…</translation>
 <translation id="6021332621416007159">เปิดใน...</translation>
+<translation id="6036514205982097558">แท็บทั้งหมดของคุณในเบราว์เซอร์เดียว</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6042308850641462728">แสดงเพิ่ม</translation>
@@ -543,10 +542,13 @@
 <translation id="6524918542306337007">โหมดไม่ระบุตัวตนไม่พร้อมใช้งาน</translation>
 <translation id="6561262006871132942">ซูมเข้า</translation>
 <translation id="6585618849026997638">กลับไปที่หน้าที่สำคัญกับคุณได้โดยการเพิ่มบุ๊กมาร์ก</translation>
+<translation id="6603393121510733479">องค์กรปิดการเรียกดูแบบส่วนตัวไว้
+<ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="6610002944194042868">ตัวเลือกการแปลภาษา</translation>
 <translation id="6620279676667515405">ยกเลิก</translation>
 <translation id="6624219055418309072">บล็อกเมื่อใช้โหมดไม่ระบุตัวตน</translation>
 <translation id="6628106477656132239">วันที่หมดอายุไม่ถูกต้อง</translation>
+<translation id="6634432609054530164">องค์กรปิดโหมดไม่ระบุตัวตนไว้</translation>
 <translation id="6638511529934826365">ซูมข้อความ…</translation>
 <translation id="6639730758971422557">หากต้องการเปิด Google Safe Browsing ให้เปิด<ph name="BEGIN_LINK" />การซิงค์และบริการของ Google<ph name="END_LINK" /> จากนั้นแตะ Google Safe Browsing</translation>
 <translation id="6642362222295953972">เปลี่ยนไปใช้แท็บที่มีอยู่</translation>
@@ -555,12 +557,14 @@
 <translation id="6656103420185847513">แก้ไขโฟลเดอร์</translation>
 <translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="6668619169535738264">แก้ไขบุ๊กมาร์ก</translation>
+<translation id="6674571176963658787">หากต้องการเริ่มต้นการซิงค์ ให้ป้อนรหัสผ่านของคุณ</translation>
 <translation id="667999046851023355">เอกสาร</translation>
 <translation id="6691331417640343772">จัดการข้อมูลที่ซิงค์ใน Google แดชบอร์ด</translation>
 <translation id="6710079714193676716">จัดการโดยองค์กร ฟีเจอร์บางอย่างอาจไม่พร้อมใช้งาน <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">ส่งออกรหัสผ่านไม่ได้</translation>
 <translation id="6748108480210050150">จาก</translation>
+<translation id="6760509555861141183">กลับไปที่แท็บล่าสุด</translation>
 <translation id="6780034285637185932">รหัสไปรษณีย์</translation>
 <translation id="6785453220513215166">กำลังส่งรายงานข้อขัดข้อง...</translation>
 <translation id="679325081238418596">รับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
@@ -584,8 +588,11 @@
 <translation id="6973630695168034713">โฟลเดอร์</translation>
 <translation id="6979158407327259162">Google ไดรฟ์</translation>
 <translation id="6988572888918530647">จัดการบัญชี Google</translation>
+<translation id="6989674195860388998">เปลี่ยนในการตั้งค่า…</translation>
 <translation id="6995899638241819463">เตือนคุณในกรณีที่รหัสผ่านรั่วไหลจากการละเมิดข้อมูล</translation>
 <translation id="6998989275928107238">ถึง</translation>
+<translation id="7004032350256606903">องค์กรกำหนดให้คุณเรียกดูแบบส่วนตัว
+<ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="7004499039102548441">แท็บล่าสุด</translation>
 <translation id="7006788746334555276">การตั้งค่าเนื้อหา</translation>
 <translation id="7015203776128479407">ตั้งค่าการซิงค์เริ่มต้นไม่สำเร็จ การซิงค์ปิดอยู่</translation>
@@ -616,6 +623,7 @@
 <translation id="7346909386216857016">รับทราบ</translation>
 <translation id="734758817008927353">ตัวเลือกในการบันทึกการ์ด</translation>
 <translation id="7348502496356775519">บุ๊กมาร์ก</translation>
+<translation id="7353432112255316844">ยืนยันว่าเป็นคุณ</translation>
 <translation id="7383797227493018512">เรื่องรออ่าน</translation>
 <translation id="7398893703713203428">สร้างลิงก์</translation>
 <translation id="739941347996872055">แท็บก่อนหน้า</translation>
@@ -633,6 +641,7 @@
 <translation id="7481312909269577407">ส่งต่อ</translation>
 <translation id="7483467499335917849">ใช้ตำแหน่งปัจจุบันของคุณ</translation>
 <translation id="750493650310597496">เลือก 0 รายการ</translation>
+<translation id="7508728395076009983">หากต้องการล็อกแท็บที่ไม่ระบุตัวตน ให้ตั้งค่า Touch ID, Face ID หรือรหัสผ่าน</translation>
 <translation id="7514365320538308">ดาวน์โหลด</translation>
 <translation id="7537586195939242955">ขออภัย ไม่สามารถติดตั้ง Pass ของคุณใน Passbook ในขณะนี้</translation>
 <translation id="7554791636758816595">แท็บใหม่</translation>
@@ -642,6 +651,7 @@
 <translation id="7603852183842204213">ป๊อปอัปที่บล็อก (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7607521702806708809">ลบรหัสผ่าน</translation>
 <translation id="7638584964844754484">รหัสผ่านไม่ถูกต้อง</translation>
+<translation id="7646772052135772216">การซิงค์รหัสผ่านไม่ทำงาน</translation>
 <translation id="7649070708921625228">ความช่วยเหลือ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="766891008101699113">หากต้องการท่องเว็บแบบเป็นส่วนตัว ให้เพิ่มแท็บใหม่</translation>
@@ -693,12 +703,14 @@
 <translation id="8105368624971345109">ปิด</translation>
 <translation id="8114753159095730575">การดาวน์โหลดไฟล์พร้อมใช้งาน มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
 <translation id="8131740175452115882">ยืนยัน</translation>
+<translation id="8156478151976189188">Password Sync ไม่ทำงาน</translation>
 <translation id="8197543752516192074">แปลหน้าเว็บ</translation>
 <translation id="8205564605687841303">ยกเลิก</translation>
 <translation id="8206354486702514201">ผู้ดูแลระบบของคุณกำหนดให้ใช้การตั้งค่านี้</translation>
 <translation id="8225985093977202398">รูปภาพและไฟล์ที่แคชไว้</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8281781826761538115">ค่าเริ่มต้น - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8283172974887967105">ตั้งค่า…</translation>
 <translation id="8299417921174340354">หากต้องการใช้รหัสผ่าน คุณต้องตั้งรหัสผ่านในอุปกรณ์ก่อน</translation>
 <translation id="8319076807703933069">ค้นหาใหม่</translation>
 <translation id="8323906514956095947">แตะค้างไว้เพื่อดูตัวเลือกแท็บเพิ่มเติม</translation>
@@ -746,6 +758,8 @@
 <translation id="8756969031206844760">อัปเดตรหัสผ่านไหม</translation>
 <translation id="8775144690796719618">URL ไม่ถูกต้อง</translation>
 <translation id="8803639129939845298">ปลอดภัย</translation>
+<translation id="8806823403540278281">องค์กรกำหนดให้คุณเรียกดูแบบส่วนตัว ระบบจะไม่บันทึกแท็บในโหมดไม่ระบุตัวตน
+<ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
 <translation id="8840513115188359703">คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="8870413625673593573">เพิ่งปิด</translation>
@@ -774,6 +788,7 @@
 <translation id="9152539721251340337">สร้างคิวอาร์โค้ด</translation>
 <translation id="9157836665414082580">ระงับกล่องโต้ตอบ</translation>
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
+<translation id="9200875785104711666"><ph name="TIME" /> วันที่ผ่านมา</translation>
 <translation id="9203116392574189331">แฮนด์ออฟ</translation>
 <translation id="9223358826628549784">ส่งรายงานข้อขัดข้องแล้ว</translation>
 <translation id="952704832371081537">ยกเลิก</translation>

@@ -24,6 +24,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/blink/public/common/switches.h"
 
 namespace {
 
@@ -199,6 +200,10 @@ void WebAppNavigationBrowserTest::TearDownInProcessBrowserTestFixture() {
 
 void WebAppNavigationBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
+  // Allow pre-commit input because the content used in the test does not paint
+  // anything and relies on script execution to create links, and we do not want
+  // to wait for the commit timeout.
+  command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
   cert_verifier_.SetUpCommandLine(command_line);
 }
 
@@ -228,7 +233,7 @@ AppId WebAppNavigationBrowserTest::InstallTestWebApp(
   web_app_info->start_url = https_server_.GetURL(app_host, GetAppUrlPath());
   web_app_info->scope = https_server_.GetURL(app_host, app_scope);
   web_app_info->title = base::UTF8ToUTF16(GetAppName());
-  web_app_info->description = base::UTF8ToUTF16("Test description");
+  web_app_info->description = u"Test description";
   web_app_info->open_as_window = true;
 
   return InstallWebApp(profile(), std::move(web_app_info));

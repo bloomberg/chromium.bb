@@ -14,10 +14,9 @@
 
 #include "src/ast/type_constructor_expression.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::TypeConstructorExpression);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::TypeConstructorExpression);
 
 namespace tint {
 namespace ast {
@@ -25,7 +24,12 @@ namespace ast {
 TypeConstructorExpression::TypeConstructorExpression(const Source& source,
                                                      type::Type* type,
                                                      ExpressionList values)
-    : Base(source), type_(type), values_(std::move(values)) {}
+    : Base(source), type_(type), values_(std::move(values)) {
+  TINT_ASSERT(type);
+  for (auto* val : values_) {
+    TINT_ASSERT(val);
+  }
+}
 
 TypeConstructorExpression::TypeConstructorExpression(
     TypeConstructorExpression&&) = default;
@@ -39,21 +43,6 @@ TypeConstructorExpression* TypeConstructorExpression::Clone(
   auto* ty = ctx->Clone(type());
   auto vals = ctx->Clone(values());
   return ctx->dst->create<TypeConstructorExpression>(src, ty, vals);
-}
-
-bool TypeConstructorExpression::IsValid() const {
-  if (values_.empty()) {
-    return true;
-  }
-  if (type_ == nullptr) {
-    return false;
-  }
-  for (auto* val : values_) {
-    if (val == nullptr || !val->IsValid()) {
-      return false;
-    }
-  }
-  return true;
 }
 
 void TypeConstructorExpression::to_str(const semantic::Info& sem,

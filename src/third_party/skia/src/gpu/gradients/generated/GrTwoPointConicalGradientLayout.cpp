@@ -39,8 +39,8 @@ public:
         (void)isNativelyFocal;
         auto focalParams = _outer.focalParams;
         (void)focalParams;
-        focalParamsVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
-                                                          kHalf2_GrSLType, "focalParams");
+        focalParamsVar = args.fUniformHandler->addUniform(
+                &_outer, kFragment_GrShaderFlag, kHalf2_GrSLType, "focalParams");
         fragBuilder->codeAppendf(
                 R"SkSL(float t = -1.0;
 half v = 1.0;
@@ -111,21 +111,37 @@ half v = 1.0;
 }
 return half4(half(t), v, 0.0, 0.0);
 )SkSL",
-                (int)_outer.type, args.fUniformHandler->getUniformCStr(focalParamsVar),
-                args.fSampleCoord, args.fSampleCoord, args.fSampleCoord,
+                (int)_outer.type,
                 args.fUniformHandler->getUniformCStr(focalParamsVar),
-                (_outer.isRadiusIncreasing ? "true" : "false"), args.fSampleCoord,
-                args.fSampleCoord, args.fUniformHandler->getUniformCStr(focalParamsVar),
+                args.fSampleCoord,
+                args.fSampleCoord,
+                args.fSampleCoord,
                 args.fUniformHandler->getUniformCStr(focalParamsVar),
-                (_outer.isFocalOnCircle ? "true" : "false"), args.fSampleCoord, args.fSampleCoord,
-                args.fSampleCoord, (_outer.isWellBehaved ? "true" : "false"), args.fSampleCoord,
-                args.fSampleCoord, args.fSampleCoord, args.fSampleCoord, args.fSampleCoord,
-                args.fSampleCoord, (_outer.isSwapped ? "true" : "false"),
-                (_outer.isRadiusIncreasing ? "true" : "false"), args.fSampleCoord,
-                args.fSampleCoord, (_outer.isWellBehaved ? "true" : "false"),
+                (_outer.isRadiusIncreasing ? "true" : "false"),
+                args.fSampleCoord,
+                args.fSampleCoord,
+                args.fUniformHandler->getUniformCStr(focalParamsVar),
+                args.fUniformHandler->getUniformCStr(focalParamsVar),
+                (_outer.isFocalOnCircle ? "true" : "false"),
+                args.fSampleCoord,
+                args.fSampleCoord,
+                args.fSampleCoord,
+                (_outer.isWellBehaved ? "true" : "false"),
+                args.fSampleCoord,
+                args.fSampleCoord,
+                args.fSampleCoord,
+                args.fSampleCoord,
+                args.fSampleCoord,
+                args.fSampleCoord,
+                (_outer.isSwapped ? "true" : "false"),
+                (_outer.isRadiusIncreasing ? "true" : "false"),
+                args.fSampleCoord,
+                args.fSampleCoord,
+                (_outer.isWellBehaved ? "true" : "false"),
                 (_outer.isRadiusIncreasing ? "true" : "false"),
                 (_outer.isNativelyFocal ? "true" : "false"),
-                (_outer.isNativelyFocal ? "true" : "false"), (_outer.isSwapped ? "true" : "false"));
+                (_outer.isNativelyFocal ? "true" : "false"),
+                (_outer.isSwapped ? "true" : "false"));
     }
 
 private:
@@ -150,12 +166,12 @@ std::unique_ptr<GrGLSLFragmentProcessor> GrTwoPointConicalGradientLayout::onMake
 }
 void GrTwoPointConicalGradientLayout::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                             GrProcessorKeyBuilder* b) const {
-    b->add32((uint32_t)type);
-    b->add32((uint32_t)isRadiusIncreasing);
-    b->add32((uint32_t)isFocalOnCircle);
-    b->add32((uint32_t)isWellBehaved);
-    b->add32((uint32_t)isSwapped);
-    b->add32((uint32_t)isNativelyFocal);
+    b->addBits(2, (uint32_t)type, "type");
+    b->addBool(isRadiusIncreasing, "isRadiusIncreasing");
+    b->addBool(isFocalOnCircle, "isFocalOnCircle");
+    b->addBool(isWellBehaved, "isWellBehaved");
+    b->addBool(isSwapped, "isSwapped");
+    b->addBool(isNativelyFocal, "isNativelyFocal");
 }
 bool GrTwoPointConicalGradientLayout::onIsEqual(const GrFragmentProcessor& other) const {
     const GrTwoPointConicalGradientLayout& that = other.cast<GrTwoPointConicalGradientLayout>();
@@ -190,9 +206,13 @@ SkString GrTwoPointConicalGradientLayout::onDumpInfo() const {
     return SkStringPrintf(
             "(type=%d, isRadiusIncreasing=%s, isFocalOnCircle=%s, isWellBehaved=%s, isSwapped=%s, "
             "isNativelyFocal=%s, focalParams=half2(%f, %f))",
-            (int)type, (isRadiusIncreasing ? "true" : "false"),
-            (isFocalOnCircle ? "true" : "false"), (isWellBehaved ? "true" : "false"),
-            (isSwapped ? "true" : "false"), (isNativelyFocal ? "true" : "false"), focalParams.fX,
+            (int)type,
+            (isRadiusIncreasing ? "true" : "false"),
+            (isFocalOnCircle ? "true" : "false"),
+            (isWellBehaved ? "true" : "false"),
+            (isSwapped ? "true" : "false"),
+            (isNativelyFocal ? "true" : "false"),
+            focalParams.fX,
             focalParams.fY);
 }
 #endif
@@ -260,14 +280,23 @@ std::unique_ptr<GrFragmentProcessor> GrTwoPointConicalGradientLayout::TestCreate
     }
 
     GrGradientShader::RandomParams params(d->fRandom);
-    auto shader = params.fUseColors4f
-                          ? SkGradientShader::MakeTwoPointConical(
-                                    center1, radius1, center2, radius2, params.fColors4f,
-                                    params.fColorSpace, params.fStops, params.fColorCount,
-                                    params.fTileMode)
-                          : SkGradientShader::MakeTwoPointConical(
-                                    center1, radius1, center2, radius2, params.fColors,
-                                    params.fStops, params.fColorCount, params.fTileMode);
+    auto shader = params.fUseColors4f ? SkGradientShader::MakeTwoPointConical(center1,
+                                                                              radius1,
+                                                                              center2,
+                                                                              radius2,
+                                                                              params.fColors4f,
+                                                                              params.fColorSpace,
+                                                                              params.fStops,
+                                                                              params.fColorCount,
+                                                                              params.fTileMode)
+                                      : SkGradientShader::MakeTwoPointConical(center1,
+                                                                              radius1,
+                                                                              center2,
+                                                                              radius2,
+                                                                              params.fColors,
+                                                                              params.fStops,
+                                                                              params.fColorCount,
+                                                                              params.fTileMode);
     GrTest::TestAsFPArgs asFPArgs(d);
     std::unique_ptr<GrFragmentProcessor> fp = as_SB(shader)->asFragmentProcessor(asFPArgs.args());
 
@@ -347,8 +376,13 @@ std::unique_ptr<GrFragmentProcessor> GrTwoPointConicalGradientLayout::Make(
         matrix.postConcat(grad.getGradientMatrix());
     }
 
-    return GrMatrixEffect::Make(
-            matrix, std::unique_ptr<GrFragmentProcessor>(new GrTwoPointConicalGradientLayout(
-                            grType, isRadiusIncreasing, isFocalOnCircle, isWellBehaved, isSwapped,
-                            isNativelyFocal, focalParams)));
+    return GrMatrixEffect::Make(matrix,
+                                std::unique_ptr<GrFragmentProcessor>(
+                                        new GrTwoPointConicalGradientLayout(grType,
+                                                                            isRadiusIncreasing,
+                                                                            isFocalOnCircle,
+                                                                            isWellBehaved,
+                                                                            isSwapped,
+                                                                            isNativelyFocal,
+                                                                            focalParams)));
 }

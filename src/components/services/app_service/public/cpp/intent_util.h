@@ -50,6 +50,11 @@ apps::mojom::IntentPtr CreateShareIntentFromText(
     const std::string& share_text,
     const std::string& share_title);
 
+// Create an intent struct from activity and start type.
+apps::mojom::IntentPtr CreateIntentForActivity(const std::string& activity,
+                                               const std::string& start_type,
+                                               const std::string& category);
+
 // Return true if |value| matches with the |condition_value|, based on the
 // pattern match type in the |condition_value|.
 bool ConditionValueMatches(
@@ -98,6 +103,12 @@ base::Value ConvertIntentToValue(const apps::mojom::IntentPtr& intent);
 // Gets the string value from base::DictionaryValue, e.g. { "key": "value" }
 // returns "value".
 base::Optional<std::string> GetStringValueFromDict(
+    const base::DictionaryValue& dict,
+    const std::string& key_name);
+
+// Gets the apps::mojom::OptionalBool value from base::DictionaryValue, e.g. {
+// "key": "value" } returns "value".
+apps::mojom::OptionalBool GetBoolValueFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name);
 

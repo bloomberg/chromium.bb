@@ -26,6 +26,13 @@ component("lacros") {
     "lacros_chrome_service_delegate.h",
     "lacros_chrome_service_impl.cc",
     "lacros_chrome_service_impl.h",
+    "lacros_chrome_service_impl_never_blocking_state.cc",
+    "lacros_chrome_service_impl_never_blocking_state.h",
+    "lacros_service.h",
+    "scoped_lacros_chrome_service_test_helper.cc",
+    "scoped_lacros_chrome_service_test_helper.h",
+    "system_idle_cache.cc",
+    "system_idle_cache.h",
   ]
 }
 
@@ -33,30 +40,48 @@ lacros_resource_sizes_test("resource_sizes_lacros_chrome") {
   data_deps = [ "//chrome:chrome" ]
 }
 
-# "cros_board" set in the GN args defines the board used to build lacros-chrome,
-# while the "override_board" here defines the board on which to test the built
-# binary, for more details, please refer to the "generate_runner_script"
-# template in //build/config/chromeos/rules.gni.
-template("lacros_tast_test_helper") {
+# This template contains a list of tests that are known to work reliably.
+template("lacros_smoke_tast_tests") {
   forward_variables_from(invoker, [ "override_board" ])
   assert(defined(override_board), "override_board is required")
   lacros_tast_test(target_name) {
     # TODO(crbug.com/1158590): use --attr-expr instead of hard-coding the tests.
-    # TODO(crbug.com/1174896): Re-enable lacros.ShelfLaunch once it's fixed and
-    # becomes stable.
     tast_tests = [
       "lacros.AudioPlay",
       "lacros.AppLauncherLaunch",
       "lacros.Basic",
+      "lacros.ShelfLaunch",
     ]
   }
 }
 
-# On Chromium CI, only a very limited number of boards are supported:
-# amd64-generic, eve, kevin etc, so just hard-coding them for simplicity.
+template("lacros_all_tast_tests") {
+  forward_variables_from(invoker, [ "override_board" ])
+  assert(defined(override_board), "override_board is required")
+  lacros_tast_test(target_name) {
+    # The following expression filters out all non-critical tests. See the link
+    # below for more details:
+    # https://chromium.googlesource.com/chromiumos/platform/tast/+/master/docs/test_attributes.md
+    tast_attr_expr = "\"group:mainline\" && \"dep:lacros\""
+
+    tast_disabled_tests = [
+      # Chromium CI/CQ is meant to test the tip of the trunk or branch, but
+      # test tests again the live Lacros on Omaha, so it's not applicable here.
+      "lacros.ShelfLaunch.omaha",
+    ]
+  }
+}
+
+# "cros_board" set in the GN args defines the board used to build lacros-chrome,
+# while the "override_board" here defines the board on which to test the built
+# binary, for more details, please refer to the "generate_runner_script"
+# template in //build/config/chromeos/rules.gni.
 if (is_chromeos_device) {
   _boards = [ cros_board ] + string_split(cros_boards, ":") +
             string_split(cros_boards_with_qemu_images, ":")
+
+  # On Chromium CI, only a very limited number of boards are supported:
+  # amd64-generic, eve, kevin etc, so just hard-coding them for simplicity.
   foreach(b1,
           [
             "amd64-generic",
@@ -67,7 +92,10 @@ if (is_chromeos_device) {
     foreach(b2, _boards) {
       if (!matched && b1 == b2) {
         b1_underscore = string_replace(b1, "-", "_")
-        lacros_tast_test_helper("lacros_tast_tests_${b1_underscore}") {
+        lacros_smoke_tast_tests("lacros_smoke_tast_tests_${b1_underscore}") {
+          override_board = b1
+        }
+        lacros_all_tast_tests("lacros_all_tast_tests_${b1_underscore}") {
           override_board = b1
         }
         matched = true

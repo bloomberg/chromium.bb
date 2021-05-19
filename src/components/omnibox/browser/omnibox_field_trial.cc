@@ -687,6 +687,15 @@ bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
          base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions);
 }
 
+bool OmniboxFieldTrial::IsPedalsBatch2Enabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxPedalsBatch2);
+}
+
+bool OmniboxFieldTrial::IsPedalsDefaultIconColored() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxPedalsDefaultIconColored);
+}
+
 bool OmniboxFieldTrial::IsKeywordSearchButtonEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxSuggestionButtonRow) &&
          base::FeatureList::IsEnabled(omnibox::kOmniboxKeywordSearchButton);
@@ -710,6 +719,19 @@ bool OmniboxFieldTrial::RichAutocompletionAutocompleteTitles() {
       false);
 }
 
+bool OmniboxFieldTrial::RichAutocompletionAutocompleteTitlesShortcutProvider() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kRichAutocompletion,
+      kRichAutocompletionAutocompleteTitlesShortcutProviderParam, false);
+}
+
+bool OmniboxFieldTrial::
+    RichAutocompletionAutocompleteTitlesNoInputsWithSpaces() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kRichAutocompletion,
+      kRichAutocompletionAutocompleteTitlesNoInputsWithSpacesParam, false);
+}
+
 size_t OmniboxFieldTrial::RichAutocompletionAutocompleteTitlesMinChar() {
   return base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kRichAutocompletion,
@@ -727,6 +749,13 @@ bool OmniboxFieldTrial::
   return base::GetFieldTrialParamByFeatureAsBool(
       omnibox::kRichAutocompletion,
       kRichAutocompletionAutocompleteNonPrefixShortcutProviderParam, false);
+}
+
+bool OmniboxFieldTrial::
+    RichAutocompletionAutocompleteNonPrefixNoInputsWithSpaces() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kRichAutocompletion,
+      kRichAutocompletionAutocompleteNonPrefixNoInputsWithSpacesParam, false);
 }
 
 size_t OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefixMinChar() {
@@ -872,6 +901,18 @@ bool OmniboxFieldTrial::ShouldDisableCGIParamMatching() {
   return base::FeatureList::IsEnabled(omnibox::kDisableCGIParamMatching);
 }
 
+OmniboxFieldTrial::KeywordSpaceTrigger
+OmniboxFieldTrial::GetKeywordSpaceTrigger() {
+  if (base::GetFieldTrialParamByFeatureAsBool(
+          omnibox::kKeywordSpaceTriggering,
+          kKeywordSpaceTriggeringDoubleSpaceParam, false))
+    return DOUBLE_SPACE_TRIGGERS_KEYWORD;
+  else if (base::FeatureList::IsEnabled(omnibox::kKeywordSpaceTriggering))
+    return SINGLE_SPACE_TRIGGERS_KEYWORD;
+  else
+    return SPACE_TRIGGERING_DISABLED;
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -949,15 +990,6 @@ const char OmniboxFieldTrial::kDynamicMaxAutocompleteUrlCutoffParam[] =
 const char OmniboxFieldTrial::kDynamicMaxAutocompleteIncreasedLimitParam[] =
     "OmniboxDynamicMaxAutocompleteIncreasedLimit";
 
-const char OmniboxFieldTrial::kBubbleUrlSuggestionsAbsoluteGapParam[] =
-    "OmniboxBubbleUrlSuggestionsAbsoluteGap";
-const char OmniboxFieldTrial::kBubbleUrlSuggestionsRelativeGapParam[] =
-    "OmniboxBubbleUrlSuggestionsRelativeGap";
-const char OmniboxFieldTrial::kBubbleUrlSuggestionsAbsoluteBufferParam[] =
-    "OmniboxBubbleUrlSuggestionsAbsoluteBuffer";
-const char OmniboxFieldTrial::kBubbleUrlSuggestionsRelativeBufferParam[] =
-    "OmniboxBubbleUrlSuggestionsRelativeBuffer";
-
 const char OmniboxFieldTrial::kOnDeviceHeadModelLocaleConstraint[] =
     "ForceModelLocaleConstraint";
 const char OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput[] =
@@ -980,6 +1012,12 @@ const char OmniboxFieldTrial::
 
 const char OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesParam[] =
     "RichAutocompletionAutocompleteTitles";
+const char OmniboxFieldTrial::
+    kRichAutocompletionAutocompleteTitlesShortcutProviderParam[] =
+        "RichAutocompletionAutocompleteTitlesShortcutProvider";
+const char OmniboxFieldTrial::
+    kRichAutocompletionAutocompleteTitlesNoInputsWithSpacesParam[] =
+        "RichAutocompletionAutocompleteTitlesNoInputsWithSpaces";
 const char
     OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinCharParam[] =
         "RichAutocompletionAutocompleteTitlesMinChar";
@@ -989,6 +1027,9 @@ const char
 const char OmniboxFieldTrial::
     kRichAutocompletionAutocompleteNonPrefixShortcutProviderParam[] =
         "RichAutocompletionAutocompleteNonPrefixShortcutProvider";
+const char OmniboxFieldTrial::
+    kRichAutocompletionAutocompleteNonPrefixNoInputsWithSpacesParam[] =
+        "RichAutocompletionAutocompleteNonPrefixNoInputsWithSpaces";
 const char
     OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinCharParam[] =
         "RichAutocompletionAutocompleteNonPrefixMinChar";
@@ -1026,6 +1067,9 @@ extern const char OmniboxFieldTrial::kBookmarkPathsUiAppendAfterTitle[] =
     "OmniboxBookmarkPathsUiAppendAfterTitle";
 extern const char OmniboxFieldTrial::kBookmarkPathsUiDynamicReplaceUrl[] =
     "OmniboxBookmarkPathsUiDynamicReplaceUrl";
+
+extern const char OmniboxFieldTrial::kKeywordSpaceTriggeringDoubleSpaceParam[] =
+    "KeywordSpaceTriggeringDoubleSpace";
 
 std::string OmniboxFieldTrial::internal::GetValueForRuleInContext(
     const std::string& rule,

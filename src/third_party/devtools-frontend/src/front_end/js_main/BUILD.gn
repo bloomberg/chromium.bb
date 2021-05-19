@@ -9,10 +9,11 @@ devtools_module("js_main") {
   sources = [ "JsMain.js" ]
 
   deps = [
-    "../common:bundle",
     "../components:bundle",
-    "../host:bundle",
-    "../sdk:bundle",
+    "../core/common:bundle",
+    "../core/host:bundle",
+    "../core/i18n:bundle",
+    "../core/sdk:bundle",
   ]
 }
 
@@ -20,10 +21,4 @@ devtools_entrypoint("bundle") {
   entrypoint = "js_main.ts"
 
   deps = [ ":js_main" ]
-}
-
-devtools_entrypoint("legacy") {
-  entrypoint = "js_main-legacy.js"
-
-  deps = [ ":bundle" ]
 }

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/strings/string16.h"
 
 namespace chromeos {
 namespace phonehub {
@@ -95,8 +94,8 @@ class ASH_PUBLIC_EXPORT SystemTray {
   // |notification_body| the new notification body which overwrites the default.
   virtual void SetUpdateNotificationState(
       NotificationStyle style,
-      const base::string16& notification_title,
-      const base::string16& notification_body) = 0;
+      const std::u16string& notification_title,
+      const std::u16string& notification_body) = 0;
 
   // If |visible| is true, shows an icon in the system tray which indicates that
   // a software update is available but user's agreement is required as current
@@ -109,9 +108,8 @@ class ASH_PUBLIC_EXPORT SystemTray {
   virtual void ShowVolumeSliderBubble() = 0;
 
   // Shows the network detailed view bubble at the right bottom of the primary
-  // display. Set |show_by_click| to true if bubble is shown by mouse or gesture
-  // click (it is used e.g. for timing histograms).
-  virtual void ShowNetworkDetailedViewBubble(bool show_by_click) = 0;
+  // display.
+  virtual void ShowNetworkDetailedViewBubble() = 0;
 
   // Provides Phone Hub functionality to the system tray.
   virtual void SetPhoneHubManager(

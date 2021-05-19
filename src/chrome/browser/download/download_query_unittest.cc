@@ -15,7 +15,6 @@
 #include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -137,15 +136,17 @@ template<> void DownloadQueryTest::AddFilter(
   CHECK(query_.AddFilter(name, base::Value(cpp_value)));
 }
 
-template<> void DownloadQueryTest::AddFilter(
-    DownloadQuery::FilterType name, const base::char16* cpp_value) {
+template <>
+void DownloadQueryTest::AddFilter(DownloadQuery::FilterType name,
+                                  const char16_t* cpp_value) {
   CHECK(query_.AddFilter(name, base::Value(cpp_value)));
 }
 
-template<> void DownloadQueryTest::AddFilter(
-    DownloadQuery::FilterType name, std::vector<base::string16> cpp_value) {
+template <>
+void DownloadQueryTest::AddFilter(DownloadQuery::FilterType name,
+                                  std::vector<std::u16string> cpp_value) {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
-  for (std::vector<base::string16>::const_iterator it = cpp_value.begin();
+  for (std::vector<std::u16string>::const_iterator it = cpp_value.begin();
        it != cpp_value.end(); ++it) {
     list->AppendString(*it);
   }

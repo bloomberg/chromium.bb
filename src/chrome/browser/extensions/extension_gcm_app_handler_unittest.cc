@@ -66,8 +66,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
@@ -110,7 +110,7 @@ class Waiter {
 
   // Waits until the asynchronous operation finishes.
   void WaitUntilCompleted() {
-    run_loop_.reset(new base::RunLoop);
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
   }
 
@@ -257,12 +257,12 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Allow extension update to unpack crx in process.
-    in_process_utility_thread_helper_.reset(
-        new content::InProcessUtilityThreadHelper);
+    in_process_utility_thread_helper_ =
+        std::make_unique<content::InProcessUtilityThreadHelper>();
 
     // This is needed to create extension service under CrOS.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+    test_user_manager_ = std::make_unique<ash::ScopedTestUserManager>();
     // Creating a DBus thread manager setter has the side effect of
     // creating a DBusThreadManager, which is needed for testing.
     // We don't actually need the setter so we ignore the return value.
@@ -288,7 +288,8 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
                        &ExtensionGCMAppHandlerTest::BuildGCMProfileService));
 
     // Create a fake version of ExtensionGCMAppHandler.
-    gcm_app_handler_.reset(new FakeExtensionGCMAppHandler(profile(), &waiter_));
+    gcm_app_handler_ =
+        std::make_unique<FakeExtensionGCMAppHandler>(profile(), &waiter_);
   }
 
   void TearDown() override {
@@ -312,8 +313,8 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
             .SetPath(temp_dir_.GetPath())
             .SetID("ldnnhddmnhbkjipkidpdiheffobcpfmf")
             .Build();
-    EXPECT_TRUE(
-        extension->permissions_data()->HasAPIPermission(APIPermission::kGcm));
+    EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
+        mojom::APIPermissionID::kGcm));
 
     return extension;
   }
@@ -415,8 +416,8 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
   // This is needed to create extension service under CrOS.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
-  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  std::unique_ptr<ash::ScopedTestUserManager> test_user_manager_;
 #endif
 
   Waiter waiter_;

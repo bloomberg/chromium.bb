@@ -86,8 +86,10 @@ void FullscreenController::DidEnterFullscreen() {
   // |Browser::EnterFullscreenModeForTab()| can enter fullscreen without going
   // through |Fullscreen::RequestFullscreen()|, in which case there will be no
   // fullscreen element. Do nothing.
-  if (state_ != State::kEnteringFullscreen)
+  if (state_ != State::kEnteringFullscreen &&
+      state_ != State::kChangingFullscreenDisplays) {
     return;
+  }
 
   UpdatePageScaleConstraints(false);
 
@@ -142,13 +144,20 @@ void FullscreenController::DidExitFullscreen() {
 void FullscreenController::EnterFullscreen(LocalFrame& frame,
                                            const FullscreenOptions* options,
                                            FullscreenRequestType request_type) {
+  const auto& screen_info = frame.GetChromeClient().GetScreenInfo(frame);
+
+  bool requesting_other_screen =
+      options->hasScreen() &&
+      options->screen()->DisplayId() != Screen::kInvalidDisplayId &&
+      options->screen()->DisplayId() != screen_info.display_id;
   // TODO(dtapuska): If we are already in fullscreen. If the options are
   // different than the currently requested one we may wish to request
   // fullscreen mode again.
   // If already fullscreen or exiting fullscreen, synchronously call
   // |DidEnterFullscreen()|. When exiting, the coming |DidExitFullscreen()| call
   // will again notify all frames.
-  if (state_ == State::kFullscreen || state_ == State::kExitingFullscreen) {
+  if ((state_ == State::kFullscreen && !requesting_other_screen) ||
+      state_ == State::kExitingFullscreen) {
     State old_state = state_;
     state_ = State::kEnteringFullscreen;
     DidEnterFullscreen();
@@ -156,26 +165,22 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
     return;
   }
 
-  // We need to store these values here rather than in |DidEnterFullscreen()|
-  // since by the time the latter is called, a Resize has already occurred,
-  // clamping the scroll offset. Don't save values if we're still waiting to
-  // restore a previous set. This can happen if we exit and quickly reenter
-  // fullscreen without performing a layout.
-  if (state_ == State::kInitial) {
-    initial_background_color_override_enabled_ =
-        web_view_base_->BackgroundColorOverrideEnabled();
-    initial_background_color_override_ =
-        web_view_base_->BackgroundColorOverride();
-  }
-
   pending_frames_->insert(&frame);
 
-  // If already entering fullscreen, just wait.
-  if (state_ == State::kEnteringFullscreen)
+  // If already entering fullscreen, just wait until the first request settles.
+  // TODO(enne): currently, if you request fullscreen with different display ids
+  // (or one with and one without display ids), then only the first request will
+  // be considered, and all others will be ignored and be settled when the first
+  // is resolved.  One way to fix this might be to queue up requests in
+  // blink::Fullscreen such that we never have simultaneous requests with
+  // conflicting options.
+  if (state_ == State::kEnteringFullscreen ||
+      state_ == State::kChangingFullscreenDisplays) {
     return;
+  }
 
-  DCHECK(state_ == State::kInitial);
-
+  DCHECK(state_ == State::kInitial ||
+         state_ == State::kFullscreen && requesting_other_screen);
   auto fullscreen_options = ToMojoOptions(&frame, options, request_type);
 
 #if DCHECK_IS_ON()
@@ -196,7 +201,10 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
                   WTF::Unretained(this)));
   }
 
-  state_ = State::kEnteringFullscreen;
+  if (state_ == State::kInitial)
+    state_ = State::kEnteringFullscreen;
+  else  // if state_ == State::kFullscreen
+    state_ = State::kChangingFullscreenDisplays;
 }
 
 void FullscreenController::ExitFullscreen(LocalFrame& frame) {
@@ -233,8 +241,10 @@ void FullscreenController::FullscreenElementChanged(
 
       // If the video uses overlay fullscreen mode, make the background
       // transparent.
-      if (video_element->UsesOverlayFullscreenVideo())
-        web_view_base_->SetBackgroundColorOverride(Color::kTransparent);
+      if (video_element->UsesOverlayFullscreenVideo()) {
+        web_view_base_->SetBackgroundColorOverrideForFullscreenController(
+            Color::kTransparent);
+      }
     }
   }
 
@@ -265,17 +275,8 @@ void FullscreenController::FullscreenElementChanged(
 }
 
 void FullscreenController::RestoreBackgroundColorOverride() {
-  if (web_view_base_->BackgroundColorOverrideEnabled() !=
-          initial_background_color_override_enabled_ ||
-      web_view_base_->BackgroundColorOverride() !=
-          initial_background_color_override_) {
-    if (initial_background_color_override_enabled_) {
-      web_view_base_->SetBackgroundColorOverride(
-          initial_background_color_override_);
-    } else {
-      web_view_base_->ClearBackgroundColorOverride();
-    }
-  }
+  web_view_base_->SetBackgroundColorOverrideForFullscreenController(
+      base::nullopt);
 }
 
 void FullscreenController::NotifyFramesOfFullscreenEntry(bool granted) {
@@ -306,6 +307,14 @@ void FullscreenController::EnterFullscreenCallback(bool granted) {
   if (granted) {
     // If the fullscreen is granted, then the VisualPropertiesUpdated message
     // will later be fired and the state will be updated then.
+    //
+    // TODO(enne): the visual property updates *must* call DidEnterFullscreen
+    // in order for the requestFullscreen promise to be resolved.
+    // There are early outs in FullscreenController::EnterFullscreenModeForTab
+    // that may prevent this from happening, especially with stale display id
+    // differences, where a renderer might think the display id is changing
+    // but the browser thinks it is the same and early outs.  This communication
+    // needs to be more explicit in those cases to avoid hanging promises.
   } else {
     state_ = State::kInitial;
     NotifyFramesOfFullscreenEntry(false /* granted */);

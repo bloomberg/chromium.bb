@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_wrapper_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
@@ -102,6 +103,9 @@ const CGFloat kOffsetToPinOmnibox = 100;
   [super viewDidLoad];
 
   DCHECK(self.discoverFeedWrapperViewController);
+
+  // Prevent the NTP from spilling behind the toolbar and tab strip.
+  self.view.clipsToBounds = YES;
 
   UIView* discoverFeedView = self.discoverFeedWrapperViewController.view;
 
@@ -342,6 +346,7 @@ const CGFloat kOffsetToPinOmnibox = 100;
   }
 
   [self.overscrollActionsController scrollViewDidScroll:scrollView];
+  [self.panGestureHandler scrollViewDidScroll:scrollView];
   [self.headerSynchronizer updateFakeOmniboxForScrollPosition];
   self.scrolledToTop =
       scrollView.contentOffset.y >= [self.headerSynchronizer pinnedOffsetY];
@@ -364,6 +369,7 @@ const CGFloat kOffsetToPinOmnibox = 100;
 
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
   [self.overscrollActionsController scrollViewWillBeginDragging:scrollView];
+  [self.panGestureHandler scrollViewWillBeginDragging:scrollView];
   // TODO(crbug.com/1114792): Add metrics recorder.
 }
 
@@ -374,12 +380,17 @@ const CGFloat kOffsetToPinOmnibox = 100;
       scrollViewWillEndDragging:scrollView
                    withVelocity:velocity
             targetContentOffset:targetContentOffset];
+  [self.panGestureHandler scrollViewWillEndDragging:scrollView
+                                       withVelocity:velocity
+                                targetContentOffset:targetContentOffset];
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
                   willDecelerate:(BOOL)decelerate {
   [self.overscrollActionsController scrollViewDidEndDragging:scrollView
                                               willDecelerate:decelerate];
+  [self.panGestureHandler scrollViewDidEndDragging:scrollView
+                                    willDecelerate:decelerate];
 }
 
 - (void)scrollViewDidScrollToTop:(UIScrollView*)scrollView {
@@ -425,6 +436,23 @@ const CGFloat kOffsetToPinOmnibox = 100;
          ToolbarExpandedHeight(
              [UIApplication sharedApplication].preferredContentSizeCategory) -
          self.view.safeAreaInsets.top;
+}
+
+#pragma mark - ThumbStripSupporting
+
+- (BOOL)isThumbStripEnabled {
+  return self.panGestureHandler != nil;
+}
+
+- (void)thumbStripEnabledWithPanHandler:
+    (ViewRevealingVerticalPanHandler*)panHandler {
+  DCHECK(!self.thumbStripEnabled);
+  self.panGestureHandler = panHandler;
+}
+
+- (void)thumbStripDisabled {
+  DCHECK(self.thumbStripEnabled);
+  self.panGestureHandler = nil;
 }
 
 #pragma mark - UIGestureRecognizerDelegate

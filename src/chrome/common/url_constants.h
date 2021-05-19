@@ -80,7 +80,6 @@ extern const char kChromeNativeScheme[];
 
 // Pages under chrome-search.
 extern const char kChromeSearchLocalNtpHost[];
-extern const char kChromeSearchLocalNtpUrl[];
 
 // Host and URL for most visited iframes used on the Instant Extended NTP.
 extern const char kChromeSearchMostVisitedHost[];
@@ -88,8 +87,8 @@ extern const char kChromeSearchMostVisitedUrl[];
 
 // URL for NTP custom background image selected from the user's machine and
 // filename for the version of the file in the Profile directory
-extern const char kChromeSearchLocalNtpBackgroundUrl[];
-extern const char kChromeSearchLocalNtpBackgroundFilename[];
+extern const char kChromeUIUntrustedNewTabPageBackgroundUrl[];
+extern const char kChromeUIUntrustedNewTabPageBackgroundFilename[];
 
 // Page under chrome-search.
 extern const char kChromeSearchRemoteNtpHost[];
@@ -130,9 +129,6 @@ extern const char kContentSettingsExceptionsLearnMoreURL[];
 
 // "Learn more" URL for cookies.
 extern const char kCookiesSettingsHelpCenterURL[];
-
-// The URL for the "learn more" link on the SSE2 obsolescence infobar.
-extern const char kCpuX86Sse2ObsoleteURL[];
 
 // "Learn more" URL for "Aw snap" page when showing "Reload" button.
 extern const char kCrashReasonURL[];
@@ -249,6 +245,9 @@ extern const char kNearbyShareLearnMoreURL[];
 
 // Help center URL for who the account administrator is.
 extern const char kWhoIsMyAdministratorHelpURL[];
+
+// The URL for the "Learn more" link about CWS Enhanced Safe Browsing.
+extern const char kCwsEnhancedSafeBrowsingLearnMoreURL[];
 
 #if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 // "Learn more" URL for the enhanced playback notification dialog.
@@ -387,8 +386,14 @@ extern const char kTabletModeGesturesLearnMoreURL[];
 // The URL for the help center article about Wi-Fi sync.
 extern const char kWifiSyncLearnMoreURL[];
 
+// The URL for the help center article about hidden Wi-Fi networks.
+extern const char kWifiHiddenNetworkURL[];
+
 // The URL for contacts management in Nearby Share feature.
 extern const char kNearbyShareManageContactsURL[];
+
+// The URL for the help center article about fingerprint on Chrome OS devices.
+extern const char kFingerprintLearnMoreURL[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_MAC)

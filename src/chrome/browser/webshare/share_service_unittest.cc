@@ -139,13 +139,14 @@ class ShareServiceUnitTest : public ChromeRenderViewHostTestHarness {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  static void AcceptShareRequest(content::WebContents* web_contents,
-                                 const std::vector<base::FilePath>& file_paths,
-                                 const std::vector<std::string>& content_types,
-                                 const std::string& text,
-                                 const std::string& title,
-                                 sharesheet::CloseCallback close_callback) {
-    std::move(close_callback).Run(sharesheet::SharesheetResult::kSuccess);
+  static void AcceptShareRequest(
+      content::WebContents* web_contents,
+      const std::vector<base::FilePath>& file_paths,
+      const std::vector<std::string>& content_types,
+      const std::string& text,
+      const std::string& title,
+      sharesheet::DeliveredCallback delivered_callback) {
+    std::move(delivered_callback).Run(sharesheet::SharesheetResult::kSuccess);
   }
 #endif
 
@@ -155,6 +156,7 @@ class ShareServiceUnitTest : public ChromeRenderViewHostTestHarness {
       const std::vector<base::FilePath>& file_paths,
       const std::string& text,
       const std::string& title,
+      const GURL& url,
       blink::mojom::ShareService::ShareCallback close_callback) {
     std::move(close_callback).Run(blink::mojom::ShareError::OK);
   }
@@ -207,6 +209,9 @@ TEST_F(ShareServiceUnitTest, DangerousMimeType) {
 
   EXPECT_TRUE(ShareServiceImpl::IsDangerousMimeType("audio/Flac"));
   EXPECT_TRUE(ShareServiceImpl::IsDangerousMimeType("Video/webm"));
+
+  EXPECT_FALSE(ShareServiceImpl::IsDangerousMimeType("audio/mp3"));
+  EXPECT_FALSE(ShareServiceImpl::IsDangerousMimeType("audio/mpeg"));
 }
 
 TEST_F(ShareServiceUnitTest, Multimedia) {

@@ -461,8 +461,7 @@ egl::ConfigSet DisplayEGL::generateConfigs()
                                    &config.colorComponentType, "EGL_EXT_pixel_format_float",
                                    EGL_COLOR_COMPONENT_TYPE_FIXED_EXT);
 
-        // Pixmaps are not supported on EGL, make sure the config doesn't expose them.
-        config.surfaceType &= ~EGL_PIXMAP_BIT;
+        config.surfaceType = fixSurfaceType(config.surfaceType);
 
         if (config.colorBufferType == EGL_RGB_BUFFER)
         {
@@ -700,6 +699,8 @@ void DisplayEGL::generateExtensions(egl::DisplayExtensions *outExtensions) const
 
     outExtensions->robustnessVideoMemoryPurgeNV = mHasNVRobustnessVideoMemoryPurge;
 
+    outExtensions->bufferAgeEXT = mEGL->hasExtension("EGL_EXT_buffer_age");
+
     DisplayGL::generateExtensions(outExtensions);
 }
 
@@ -807,6 +808,12 @@ ExternalImageSiblingImpl *DisplayEGL::createExternalImageSibling(const gl::Conte
         default:
             return DisplayGL::createExternalImageSibling(context, target, buffer, attribs);
     }
+}
+
+EGLint DisplayEGL::fixSurfaceType(EGLint surfaceType) const
+{
+    // Pixmaps are not supported on EGL, make sure the config doesn't expose them.
+    return surfaceType & ~EGL_PIXMAP_BIT;
 }
 
 }  // namespace rx

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -197,7 +198,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   // Return the delegated ink point renderer from |renderer_|, creating it if
   // one doesn't exist. Should only be used when the delegated ink trails web
   // API has been used.
-  DelegatedInkPointRendererBase* GetDelegatedInkPointRenderer();
+  DelegatedInkPointRendererBase* GetDelegatedInkPointRenderer(
+      bool create_if_necessary);
 
  private:
   friend class DisplayTest;
@@ -216,7 +218,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
     void OnDraw(base::TimeTicks draw_start_timestamp);
     void OnSwap(gfx::SwapTimings timings);
     bool HasSwapped() const { return !swap_timings_.is_null(); }
-    void OnPresent(const gfx::PresentationFeedback& feedback);
+    void OnPresent(const gfx::PresentationFeedback& feedback,
+                   DisplaySchedulerBase* scheduler);
 
     base::TimeTicks draw_start_timestamp() const {
       return draw_start_timestamp_;

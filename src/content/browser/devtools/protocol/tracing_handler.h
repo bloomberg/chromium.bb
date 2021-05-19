@@ -23,6 +23,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/tracing_controller.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
+#include "third_party/perfetto/include/perfetto/tracing/tracing.h"
 
 namespace base {
 class RepeatingTimer;
@@ -71,6 +72,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
              Maybe<std::string> transfer_compression,
              Maybe<Tracing::TraceConfig> config,
              Maybe<Binary> perfetto_config,
+             Maybe<std::string> tracing_backend,
              std::unique_ptr<StartCallback> callback) override;
   Response End() override;
   void GetCategories(std::unique_ptr<GetCategoriesCallback> callback) override;
@@ -82,7 +84,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
 
   bool did_initiate_recording() { return did_initiate_recording_; }
   void ReadyToCommitNavigation(NavigationRequest* navigation_request);
-  void FrameDeleted(RenderFrameHostImpl* frame_host);
+  void FrameDeleted(int frame_tree_node_id);
 
  private:
   friend class TracingHandlerTest;
@@ -99,7 +101,8 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
     size_t offset = 0;
   };
 
-  void OnRecordingEnabled(std::unique_ptr<StartCallback> callback);
+  void OnRecordingEnabled(std::unique_ptr<StartCallback> callback,
+                          const std::string& error_msg);
   void OnBufferUsage(bool success,
                      float percent_full,
                      size_t approximate_event_count);
@@ -131,13 +134,15 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
       bool proto_format);
   void SetupProcessFilter(base::ProcessId gpu_pid, RenderFrameHost*);
   void StartTracingWithGpuPid(std::unique_ptr<StartCallback>,
+                              perfetto::BackendType tracing_backend,
                               base::ProcessId gpu_pid);
   void AppendProcessId(RenderFrameHost*,
                        std::unordered_set<base::ProcessId>* process_set);
   void OnProcessReady(RenderProcessHost*);
   void AttemptAdoptStartupSession(bool return_as_stream,
                                   bool gzip_compression,
-                                  bool proto_format);
+                                  bool proto_format,
+                                  perfetto::BackendType tracing_backend);
 
   std::unique_ptr<base::RepeatingTimer> buffer_usage_poll_timer_;
 

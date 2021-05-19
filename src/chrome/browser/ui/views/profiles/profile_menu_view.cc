@@ -261,8 +261,8 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() const {
   return ColoredImageForMenu(*icon, image_color);
 }
 
-base::string16 ProfileMenuView::GetAccessibleWindowTitle() const {
-  base::string16 title =
+std::u16string ProfileMenuView::GetAccessibleWindowTitle() const {
+  std::u16string title =
       l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_BUBBLE_ACCESSIBLE_TITLE);
 
   if (!menu_title_.empty()) {
@@ -284,12 +284,11 @@ void ProfileMenuView::OnManageGoogleAccountButtonClicked() {
   Profile* profile = browser()->profile();
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  DCHECK(
-      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired));
+  DCHECK(identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin));
   NavigateToGoogleAccountPage(
-      profile, identity_manager
-                   ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
-                   .email);
+      profile,
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
+          .email);
 }
 
 void ProfileMenuView::OnPasswordsButtonClicked() {
@@ -318,9 +317,7 @@ void ProfileMenuView::OnGuestProfileButtonClicked() {
   RecordClick(ActionableItem::kGuestProfileButton);
   if (!perform_menu_actions())
     return;
-  PrefService* service = g_browser_process->local_state();
-  DCHECK(service);
-  DCHECK(service->GetBoolean(prefs::kBrowserGuestModeEnabled));
+  DCHECK(profiles::IsGuestModeEnabled());
   profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
 }
 
@@ -360,7 +357,7 @@ void ProfileMenuView::OnSyncErrorButtonClicked(
                   ->GetPrimaryAccountMutator()) {
         account_mutator->RevokeSyncConsent(
             signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
-            signin_metrics::SignoutDelete::IGNORE_METRIC);
+            signin_metrics::SignoutDelete::kIgnoreMetric);
         Hide();
         browser()->signin_view_controller()->ShowSignin(
             profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
@@ -477,15 +474,15 @@ void ProfileMenuView::BuildIdentity() {
   Profile* profile = browser()->profile();
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  CoreAccountInfo account = identity_manager->GetPrimaryAccountInfo(
-      signin::ConsentLevel::kNotRequired);
+  CoreAccountInfo account =
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
   base::Optional<AccountInfo> account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           account);
   ProfileAttributesEntry* profile_attributes =
       GetProfileAttributesEntry(profile);
 
-  base::string16 profile_name;
+  std::u16string profile_name;
   base::Optional<EditButtonParams> edit_button_params;
 // Profile names are not supported on ChromeOS.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -517,7 +514,7 @@ void ProfileMenuView::BuildIdentity() {
         ui::ImageModel::FromImage(account_info.value().account_image),
         menu_title_, menu_subtitle_);
   } else {
-    menu_title_ = base::string16();
+    menu_title_ = std::u16string();
     menu_subtitle_ =
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE);
     SetProfileIdentityInfo(
@@ -532,7 +529,7 @@ void ProfileMenuView::BuildGuestIdentity() {
   int guest_window_count = BrowserList::GetGuestBrowserCount();
 
   menu_title_ = l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
-  menu_subtitle_ = base::string16();
+  menu_subtitle_ = std::u16string();
   if (guest_window_count > 1 &&
       base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
     menu_subtitle_ = l10n_util::GetPluralStringFUTF16(
@@ -542,7 +539,7 @@ void ProfileMenuView::BuildGuestIdentity() {
   ui::ThemedVectorIcon header_art_icon(
       &kGuestMenuArtIcon, ui::NativeTheme::kColorId_AvatarHeaderArt);
   SetProfileIdentityInfo(
-      /*profile_name=*/base::string16(),
+      /*profile_name=*/std::u16string(),
       /*background_color=*/SK_ColorTRANSPARENT,
       /*edit_button=*/base::nullopt, profiles::GetGuestAvatar(), menu_title_,
       menu_subtitle_, header_art_icon);
@@ -596,8 +593,8 @@ void ProfileMenuView::BuildSyncInfo() {
   }
 
   // Show sync promos.
-  CoreAccountInfo unconsented_account = identity_manager->GetPrimaryAccountInfo(
-      signin::ConsentLevel::kNotRequired);
+  CoreAccountInfo unconsented_account =
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
   base::Optional<AccountInfo> account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           unconsented_account);
@@ -629,7 +626,7 @@ void ProfileMenuView::BuildFeatureButtons() {
       IdentityManagerFactory::GetForProfile(profile);
   const bool has_unconsented_account =
       !IsGuest(profile) &&
-      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired);
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin);
 
   if (has_unconsented_account && !IsSyncPaused(profile)) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -716,10 +713,7 @@ void ProfileMenuView::BuildSelectableProfiles() {
   UMA_HISTOGRAM_BOOLEAN("ProfileChooser.HasProfilesShown",
                         profile_entries.size() > 1);
 
-  PrefService* service = g_browser_process->local_state();
-  DCHECK(service);
-  if (!IsGuest(browser()->profile()) &&
-      service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
+  if (!IsGuest(browser()->profile()) && profiles::IsGuestModeEnabled()) {
     AddSelectableProfile(
         profiles::GetGuestAvatar(),
         l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
@@ -739,9 +733,7 @@ void ProfileMenuView::BuildProfileManagementFeatureButtons() {
       base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
                           base::Unretained(this)));
 
-  PrefService* service = g_browser_process->local_state();
-  DCHECK(service);
-  if (service->GetBoolean(prefs::kBrowserAddPersonEnabled)) {
+  if (profiles::IsProfileCreationAllowed()) {
     AddProfileManagementFeatureButton(
         kAddIcon, l10n_util::GetStringUTF16(IDS_ADD),
         base::BindRepeating(&ProfileMenuView::OnAddNewProfileButtonClicked,

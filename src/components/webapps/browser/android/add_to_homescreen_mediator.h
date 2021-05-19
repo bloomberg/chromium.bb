@@ -6,11 +6,11 @@
 #define COMPONENTS_WEBAPPS_BROWSER_ANDROID_ADD_TO_HOMESCREEN_MEDIATOR_H_
 
 #include <memory>
+#include <string>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "components/webapps/browser/android/add_to_homescreen_data_fetcher.h"
 #include "components/webapps/browser/android/add_to_homescreen_installer.h"
 #include "components/webapps/browser/android/add_to_homescreen_params.h"
@@ -74,12 +74,12 @@ class AddToHomescreenMediator : public AddToHomescreenDataFetcher::Observer {
   void SetIcon(const SkBitmap& display_icon, bool need_to_add_padding);
 
   // Sends the Web App info to the Java side.
-  void SetWebAppInfo(const base::string16& user_title,
+  void SetWebAppInfo(const std::u16string& user_title,
                      const GURL& url,
                      bool is_webapk);
 
   // AddToHomescreenDataFetcher::Observer:
-  void OnUserTitleAvailable(const base::string16& user_title,
+  void OnUserTitleAvailable(const std::u16string& user_title,
                             const GURL& url,
                             bool is_webapk_compatible) override;
 

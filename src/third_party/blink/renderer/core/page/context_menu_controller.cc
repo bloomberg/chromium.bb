@@ -52,6 +52,8 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/selection_controller.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
@@ -79,7 +81,7 @@
 #include "third_party/blink/renderer/core/page/context_menu_provider.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector_generator.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_handler.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 
@@ -619,9 +621,27 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
                .ComputeVisibleSelectionInDOMTreeDeprecated();
 
     // Store text selection when it happens as it might be cleared when the
-    // browser will request |TextFragmentSelectorGenerator| to generate
+    // browser will request |TextFragmentHandler| to generate
     // selector.
-    UpdateTextFragmentSelectorGenerator(selected_frame);
+    UpdateTextFragmentHandler(selected_frame);
+  }
+
+  // If there is a text fragment at the same location as the click indicate that
+  // the context menu is being opened from an existing highlight.
+  DocumentMarkerController& marker_controller =
+      selected_frame->GetDocument()->Markers();
+  PositionWithAffinity pos_with_affinity = result.GetPosition();
+  const Position marker_position = pos_with_affinity.GetPosition();
+  auto markers = marker_controller.MarkersAroundPosition(
+      ToPositionInFlatTree(marker_position),
+      DocumentMarker::MarkerTypes::TextFragment());
+  if (!markers.IsEmpty()) {
+    for (const auto& marker : markers) {
+      if (marker.second->GetType() == DocumentMarker::kTextFragment) {
+        data.opened_from_highlight = true;
+        break;
+      }
+    }
   }
 
   if (result.IsContentEditable()) {
@@ -634,30 +654,39 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     // spelling marker on the word instead of spellchecking it.
     std::pair<String, String> misspelled_word_and_description =
         spell_checker.SelectMisspellingAsync();
-    data.misspelled_word =
-        WebString::FromUTF8(misspelled_word_and_description.first.Utf8())
-            .Utf16();
-    const String& description = misspelled_word_and_description.second;
-    if (description.length()) {
-      Vector<String> suggestions;
-      description.Split('\n', suggestions);
-      WebVector<base::string16> web_suggestions(suggestions.size());
-      std::transform(suggestions.begin(), suggestions.end(),
-                     web_suggestions.begin(), [](const String& s) {
-                       return WebString::FromUTF8(s.Utf8()).Utf16();
-                     });
-      data.dictionary_suggestions = web_suggestions.ReleaseVector();
-    } else if (spell_checker.GetTextCheckerClient()) {
-      size_t misspelled_offset, misspelled_length;
-      WebVector<WebString> web_suggestions;
-      spell_checker.GetTextCheckerClient()->CheckSpelling(
-          WebString::FromUTF16(data.misspelled_word), misspelled_offset,
-          misspelled_length, &web_suggestions);
-      WebVector<base::string16> suggestions(web_suggestions.size());
-      std::transform(web_suggestions.begin(), web_suggestions.end(),
-                     suggestions.begin(),
-                     [](const WebString& s) { return s.Utf16(); });
-      data.dictionary_suggestions = suggestions.ReleaseVector();
+    const String& misspelled_word = misspelled_word_and_description.first;
+    if (misspelled_word.length()) {
+      data.misspelled_word =
+          WebString::FromUTF8(misspelled_word.Utf8()).Utf16();
+      const String& description = misspelled_word_and_description.second;
+      if (description.length()) {
+        // Suggestions were cached for the misspelled word (won't be true for
+        // Hunspell, or Windows platform spellcheck if the
+        // kWinRetrieveSuggestionsOnlyOnDemand feature flag is set).
+        Vector<String> suggestions;
+        description.Split('\n', suggestions);
+        WebVector<std::u16string> web_suggestions(suggestions.size());
+        std::transform(suggestions.begin(), suggestions.end(),
+                       web_suggestions.begin(), [](const String& s) {
+                         return WebString::FromUTF8(s.Utf8()).Utf16();
+                       });
+        data.dictionary_suggestions = web_suggestions.ReleaseVector();
+      } else if (spell_checker.GetTextCheckerClient()) {
+        // No suggestions cached for the misspelled word. Retrieve suggestions
+        // for it (Windows platform spellchecker will do this later from
+        // SpellingMenuObserver::InitMenu on the browser process side to avoid a
+        // blocking IPC here).
+        size_t misspelled_offset, misspelled_length;
+        WebVector<WebString> web_suggestions;
+        spell_checker.GetTextCheckerClient()->CheckSpelling(
+            WebString::FromUTF16(data.misspelled_word), misspelled_offset,
+            misspelled_length, &web_suggestions);
+        WebVector<std::u16string> suggestions(web_suggestions.size());
+        std::transform(web_suggestions.begin(), web_suggestions.end(),
+                       suggestions.begin(),
+                       [](const WebString& s) { return s.Utf16(); });
+        data.dictionary_suggestions = suggestions.ReleaseVector();
+      }
     }
   }
 
@@ -739,16 +768,16 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   return true;
 }
 
-void ContextMenuController::UpdateTextFragmentSelectorGenerator(
+void ContextMenuController::UpdateTextFragmentHandler(
     LocalFrame* selected_frame) {
-  if (!selected_frame->GetTextFragmentSelectorGenerator())
+  if (!selected_frame->GetTextFragmentHandler())
     return;
 
   VisibleSelectionInFlatTree selection =
       selected_frame->Selection().ComputeVisibleSelectionInFlatTree();
   EphemeralRangeInFlatTree selection_range(selection.Start(), selection.End());
   selected_frame->GetTextFragmentSelectorGenerator()->UpdateSelection(
-      selected_frame, selection_range);
+      selection_range);
 }
 
 }  // namespace blink

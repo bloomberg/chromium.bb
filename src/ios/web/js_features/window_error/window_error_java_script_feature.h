@@ -9,8 +9,6 @@
 #include "ios/web/public/js_messaging/java_script_feature.h"
 #include "url/gurl.h"
 
-@class WKScriptMessage;
-
 namespace web {
 
 // A feature which listens for JavaScript errors in all frames and executes a
@@ -50,8 +48,8 @@ class WindowErrorJavaScriptFeature : public JavaScriptFeature {
  private:
   // JavaScriptFeature:
   base::Optional<std::string> GetScriptMessageHandlerName() const override;
-  void ScriptMessageReceived(BrowserState* browser_state,
-                             WKScriptMessage* message) override;
+  void ScriptMessageReceived(WebState* web_state,
+                             const ScriptMessage& message) override;
 
   base::RepeatingCallback<void(ErrorDetails)> callback_;
 };

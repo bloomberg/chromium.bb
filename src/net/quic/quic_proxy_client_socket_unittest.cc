@@ -221,8 +221,8 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
     EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, GetCongestionControlType())
         .Times(AnyNumber());
-    helper_.reset(
-        new QuicChromiumConnectionHelper(&clock_, &random_generator_));
+    helper_ = std::make_unique<QuicChromiumConnectionHelper>(
+        &clock_, &random_generator_);
     alarm_factory_ =
         std::make_unique<QuicChromiumAlarmFactory>(runner_.get(), &clock_);
 
@@ -258,7 +258,6 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
                        SocketTag(), NetworkIsolationKey(),
                        false /* disable_secure_dns */),
         /*require_confirmation=*/false,
-        /*max_allowed_push_id=*/0,
         /*migrate_session_early_v2=*/false,
         /*migrate_session_on_network_change_v2=*/false,
         /*default_network=*/NetworkChangeNotifier::kInvalidNetworkHandle,
@@ -747,8 +746,8 @@ TEST_P(QuicProxyClientSocketTest, ConnectWithAuthCredentials) {
   Initialize();
 
   // Add auth to cache
-  const base::string16 kFoo(base::ASCIIToUTF16("foo"));
-  const base::string16 kBar(base::ASCIIToUTF16("bar"));
+  const std::u16string kFoo(u"foo");
+  const std::u16string kBar(u"bar");
   http_auth_cache_.Add(GURL(kProxyUrl), HttpAuth::AUTH_PROXY, "MyRealm1",
                        HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
                        "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar),

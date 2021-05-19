@@ -4,7 +4,7 @@
 
 const {assert} = chai;
 
-import * as SDK from '../../../../front_end/sdk/sdk.js';
+import * as SDK from '../../../../front_end/core/sdk/sdk.js';
 import type * as BrowserSDKModule from '../../../../front_end/browser_sdk/browser_sdk.js';
 import {describeWithEnvironment} from '../helpers/EnvironmentHelpers.js';
 import {StubIssue} from '../sdk/StubIssue.js';
@@ -21,7 +21,7 @@ describeWithEnvironment('issuesAssociatedWith', () => {
   });
 
   it('should return no issues if issues dont affect any resources', () => {
-    const issue = new SDK.Issue.Issue('code');
+    const issue = new StubIssue('code', [], []);
     const request = new SDK.NetworkRequest.NetworkRequest('', '', '', '', '', null);
 
     assert.strictEqual(BrowserSDK.RelatedIssue.issuesAssociatedWith([issue], request).length, 0);

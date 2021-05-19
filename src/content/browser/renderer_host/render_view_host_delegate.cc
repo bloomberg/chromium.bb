@@ -20,25 +20,12 @@ WebContents* RenderViewHostDelegate::GetAsWebContents() {
   return nullptr;
 }
 
-SessionStorageNamespace* RenderViewHostDelegate::GetSessionStorageNamespace(
-    SiteInstance* instance) {
-  return nullptr;
-}
-
 SessionStorageNamespaceMap
 RenderViewHostDelegate::GetSessionStorageNamespaceMap() {
   return SessionStorageNamespaceMap();
 }
 
-bool RenderViewHostDelegate::IsWebPreferencesSet() const {
-  return false;
-}
-
 bool RenderViewHostDelegate::IsNeverComposited() {
-  return false;
-}
-
-bool RenderViewHostDelegate::IsOverridingUserAgent() {
   return false;
 }
 
@@ -47,18 +34,6 @@ bool RenderViewHostDelegate::IsJavaScriptDialogShowing() const {
 }
 
 bool RenderViewHostDelegate::ShouldIgnoreUnresponsiveRenderer() {
-  return false;
-}
-
-bool RenderViewHostDelegate::HideDownloadUI() const {
-  return false;
-}
-
-bool RenderViewHostDelegate::HasPersistentVideo() const {
-  return false;
-}
-
-bool RenderViewHostDelegate::IsSpatialNavigationDisabled() const {
   return false;
 }
 

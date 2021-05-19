@@ -20,17 +20,7 @@ using translate::testing::MockTranslateInfoBarDelegateFactory;
 
 namespace translate {
 namespace {
-const std::vector<base::string16> kLanguageNames = {
-    base::UTF8ToUTF16("English"), base::UTF8ToUTF16("German"),
-    base::UTF8ToUTF16("Polish")};
-const std::vector<base::string16> kNativeNames = {base::UTF8ToUTF16("English"),
-                                                  base::UTF8ToUTF16("Deutsch"),
-                                                  base::UTF8ToUTF16("polski")};
 const std::vector<std::string> kCodes = {"en", "de", "pl"};
-const std::vector<int> kHashCodes = {metrics::MetricsLog::Hash("en"),
-                                     metrics::MetricsLog::Hash("de"),
-                                     metrics::MetricsLog::Hash("pl")};
-
 }  // namespace
 class TranslateUtilsTest : public ::testing::Test {
  public:
@@ -52,66 +42,30 @@ class TranslateUtilsTest : public ::testing::Test {
 // empty).
 TEST_F(TranslateUtilsTest, GetJavaContentLangauges) {
   // Set up the mock delegate.
-  LanguageNameTriple en;
-  en.name = base::UTF8ToUTF16("English");
-  en.native_name = base::UTF8ToUTF16("English");
-  en.code = "en";
-  LanguageNameTriple de;
-  de.name = base::UTF8ToUTF16("German");
-  de.native_name = base::UTF8ToUTF16("Deutsch");
-  de.code = "de";
-  LanguageNameTriple pl;
-  pl.name = base::UTF8ToUTF16("Polish");
-  pl.native_name = base::UTF8ToUTF16("polski");
-  pl.code = "pl";
-  std::vector<LanguageNameTriple> test_languages = {en, de, pl};
-  delegate_->SetContentLanguagesForTest(test_languages);
+  std::vector<std::string> test_languages = {"en", "de", "pl"};
+  delegate_->SetContentLanguagesCodesForTest(test_languages);
 
-  JavaLanguageInfoWrapper contentLanguages =
+  base::android::ScopedJavaLocalRef<jobjectArray> contentLanguages =
       TranslateUtils::GetContentLanguagesInJavaFormat(env_, delegate_);
-
-  // Test language names are as expected.
-  std::vector<base::string16> actual_language_names;
-  base::android::AppendJavaStringArrayToStringVector(
-      env_, contentLanguages.java_languages, &actual_language_names);
-  EXPECT_THAT(actual_language_names, ::testing::ContainerEq(kLanguageNames));
-
-  // Test content language names are as expected.
-  std::vector<base::string16> actual_native_names;
-  base::android::AppendJavaStringArrayToStringVector(
-      env_, contentLanguages.java_native_languages, &actual_native_names);
-  EXPECT_THAT(actual_native_names, ::testing::ContainerEq(kNativeNames));
 
   // Test language codes are as expected.
   std::vector<std::string> actual_codes;
-  base::android::AppendJavaStringArrayToStringVector(
-      env_, contentLanguages.java_codes, &actual_codes);
+  base::android::AppendJavaStringArrayToStringVector(env_, contentLanguages,
+                                                     &actual_codes);
   EXPECT_THAT(actual_codes, ::testing::ContainerEq(kCodes));
 }
 
 // Tests that application handles empty content language data gracefully.
 TEST_F(TranslateUtilsTest, GetJavaContentLangaugesEmpty) {
-  std::vector<LanguageNameTriple> empty;
-  delegate_->SetContentLanguagesForTest(empty);
-  JavaLanguageInfoWrapper contentLanguages =
+  std::vector<std::string> empty;
+  delegate_->SetContentLanguagesCodesForTest(empty);
+  base::android::ScopedJavaLocalRef<jobjectArray> contentLanguages =
       TranslateUtils::GetContentLanguagesInJavaFormat(env_, delegate_);
-
-  // Test language names are empty.
-  std::vector<base::string16> actual_language_names;
-  base::android::AppendJavaStringArrayToStringVector(
-      env_, contentLanguages.java_languages, &actual_language_names);
-  ASSERT_TRUE(actual_language_names.empty());
-
-  // Test content language names are empty.
-  std::vector<base::string16> actual_native_names;
-  base::android::AppendJavaStringArrayToStringVector(
-      env_, contentLanguages.java_native_languages, &actual_native_names);
-  ASSERT_TRUE(actual_native_names.empty());
 
   // Test language codes are empty.
   std::vector<std::string> actual_codes;
-  base::android::AppendJavaStringArrayToStringVector(
-      env_, contentLanguages.java_codes, &actual_codes);
+  base::android::AppendJavaStringArrayToStringVector(env_, contentLanguages,
+                                                     &actual_codes);
   ASSERT_TRUE(actual_codes.empty());
 }
 
@@ -119,26 +73,25 @@ TEST_F(TranslateUtilsTest, GetJavaContentLangaugesEmpty) {
 // translate languages (names, codes and hashcodes are as expected, no native
 // names).
 TEST_F(TranslateUtilsTest, GetJavaLangauges) {
-  std::vector<std::pair<std::string, base::string16>> translate_languages = {
-      {"en", base::UTF8ToUTF16("English")},
-      {"de", base::UTF8ToUTF16("German")},
-      {"pl", base::UTF8ToUTF16("Polish")}};
+  std::vector<std::pair<std::string, std::u16string>> translate_languages = {
+      {"en", u"English"}, {"de", u"German"}, {"pl", u"Polish"}};
+  std::vector<std::u16string> expectedLanguageNames = {u"English", u"German",
+                                                       u"Polish"};
+  std::vector<int> expectedHashCodes = {metrics::MetricsLog::Hash("en"),
+                                        metrics::MetricsLog::Hash("de"),
+                                        metrics::MetricsLog::Hash("pl")};
+
   delegate_->SetTranslateLanguagesForTest(translate_languages);
   // Test that all languages in Java format are returned property.
   JavaLanguageInfoWrapper contentLanguages =
       TranslateUtils::GetTranslateLanguagesInJavaFormat(env_, delegate_);
 
   // Test language names are as expected.
-  std::vector<base::string16> actual_language_names;
+  std::vector<std::u16string> actual_language_names;
   base::android::AppendJavaStringArrayToStringVector(
       env_, contentLanguages.java_languages, &actual_language_names);
-  EXPECT_THAT(actual_language_names, ::testing::ContainerEq(kLanguageNames));
-
-  // Test native names are empty for all languages.
-  std::vector<base::string16> actual_native_names;
-  base::android::AppendJavaStringArrayToStringVector(
-      env_, contentLanguages.java_native_languages, &actual_native_names);
-  ASSERT_TRUE(actual_native_names.empty());
+  EXPECT_THAT(actual_language_names,
+              ::testing::ContainerEq(expectedLanguageNames));
 
   // Test language codes
   std::vector<std::string> actual_codes;
@@ -149,7 +102,7 @@ TEST_F(TranslateUtilsTest, GetJavaLangauges) {
   std::vector<int> actual_hash_codes;
   base::android::JavaIntArrayToIntVector(env_, contentLanguages.java_hash_codes,
                                          &actual_hash_codes);
-  EXPECT_THAT(actual_hash_codes, ::testing::ContainerEq(kHashCodes));
+  EXPECT_THAT(actual_hash_codes, ::testing::ContainerEq(expectedHashCodes));
 }
 
 }  // namespace translate

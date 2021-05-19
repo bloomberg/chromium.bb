@@ -95,23 +95,35 @@ vk::ImageOrBufferViewSubresourceSerial RenderTargetVk::getResolveSubresourceSeri
     return getSubresourceSerialImpl(mResolveImageViews);
 }
 
-void RenderTargetVk::onColorDraw(ContextVk *contextVk, uint32_t framebufferLayerCount)
+void RenderTargetVk::onColorDraw(ContextVk *contextVk,
+                                 uint32_t framebufferLayerCount,
+                                 vk::PackedAttachmentIndex packedAttachmentIndex)
 {
     ASSERT(!mImage->getFormat().actualImageFormat().hasDepthOrStencilBits());
     ASSERT(framebufferLayerCount <= mLayerCount);
 
-    contextVk->onImageRenderPassWrite(mLevelIndexGL, mLayerIndex, framebufferLayerCount,
-                                      VK_IMAGE_ASPECT_COLOR_BIT, vk::ImageLayout::ColorAttachment,
-                                      mImage);
+    contextVk->onColorDraw(mImage, mResolveImage, packedAttachmentIndex);
+    mImage->onWrite(mLevelIndexGL, 1, mLayerIndex, framebufferLayerCount,
+                    VK_IMAGE_ASPECT_COLOR_BIT);
     if (mResolveImage)
     {
         // Multisampled render to texture framebuffers cannot be layered.
         ASSERT(framebufferLayerCount == 1);
-
-        contextVk->onImageRenderPassWrite(mLevelIndexGL, mLayerIndex, framebufferLayerCount,
-                                          VK_IMAGE_ASPECT_COLOR_BIT,
-                                          vk::ImageLayout::ColorAttachment, mResolveImage);
+        mResolveImage->onWrite(mLevelIndexGL, 1, mLayerIndex, framebufferLayerCount,
+                               VK_IMAGE_ASPECT_COLOR_BIT);
     }
+    retainImageViews(contextVk);
+}
+
+void RenderTargetVk::onColorResolve(ContextVk *contextVk, uint32_t framebufferLayerCount)
+{
+    ASSERT(!mImage->getFormat().actualImageFormat().hasDepthOrStencilBits());
+    ASSERT(framebufferLayerCount <= mLayerCount);
+    ASSERT(mResolveImage == nullptr);
+
+    contextVk->onImageRenderPassWrite(mLevelIndexGL, mLayerIndex, framebufferLayerCount,
+                                      VK_IMAGE_ASPECT_COLOR_BIT, vk::ImageLayout::ColorAttachment,
+                                      mImage);
     retainImageViews(contextVk);
 }
 
@@ -152,6 +164,7 @@ const vk::ImageHelper &RenderTargetVk::getResolveImageForRenderPass() const
 
 angle::Result RenderTargetVk::getImageViewImpl(ContextVk *contextVk,
                                                const vk::ImageHelper &image,
+                                               gl::SrgbWriteControlMode mode,
                                                vk::ImageViewHelper *imageViews,
                                                const vk::ImageView **imageViewOut) const
 {
@@ -159,9 +172,11 @@ angle::Result RenderTargetVk::getImageViewImpl(ContextVk *contextVk,
     vk::LevelIndex levelVk = mImage->toVkLevel(mLevelIndexGL);
     if (mLayerCount == 1)
     {
-        return imageViews->getLevelLayerDrawImageView(contextVk, image, levelVk, mLayerIndex,
+        return imageViews->getLevelLayerDrawImageView(contextVk, image, levelVk, mLayerIndex, mode,
                                                       imageViewOut);
     }
+
+    ASSERT(mode == gl::SrgbWriteControlMode::Default);
 
     // Layered render targets view the whole level
     return imageViews->getLevelDrawImageView(contextVk, image, levelVk, imageViewOut);
@@ -171,14 +186,24 @@ angle::Result RenderTargetVk::getImageView(ContextVk *contextVk,
                                            const vk::ImageView **imageViewOut) const
 {
     ASSERT(mImage);
-    return getImageViewImpl(contextVk, *mImage, mImageViews, imageViewOut);
+    return getImageViewImpl(contextVk, *mImage, gl::SrgbWriteControlMode::Default, mImageViews,
+                            imageViewOut);
+}
+
+angle::Result RenderTargetVk::getImageViewWithColorspace(ContextVk *contextVk,
+                                                         gl::SrgbWriteControlMode mode,
+                                                         const vk::ImageView **imageViewOut) const
+{
+    ASSERT(mImage);
+    return getImageViewImpl(contextVk, *mImage, mode, mImageViews, imageViewOut);
 }
 
 angle::Result RenderTargetVk::getResolveImageView(ContextVk *contextVk,
                                                   const vk::ImageView **imageViewOut) const
 {
     ASSERT(mResolveImage);
-    return getImageViewImpl(contextVk, *mResolveImage, mResolveImageViews, imageViewOut);
+    return getImageViewImpl(contextVk, *mResolveImage, gl::SrgbWriteControlMode::Default,
+                            mResolveImageViews, imageViewOut);
 }
 
 bool RenderTargetVk::isResolveImageOwnerOfData() const

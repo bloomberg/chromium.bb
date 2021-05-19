@@ -9,10 +9,10 @@
 
 #include <memory>
 
-#include "ash/app_list/app_list_export.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_presenter_delegate.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/ash_export.h"
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/callback.h"
@@ -26,13 +26,14 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace ash {
+class AppListControllerImpl;
 class AppListView;
 enum class AppListViewState;
 
 // Manages app list UI. Creates AppListView and schedules showing/hiding
 // animation. While the UI is visible, it monitors things such as app list
 // activation state to auto dismiss the UI.
-class APP_LIST_EXPORT AppListPresenterImpl
+class ASH_EXPORT AppListPresenterImpl
     : public PaginationModelObserver,
       public aura::client::FocusChangeObserver,
       public ui::ImplicitAnimationObserver,
@@ -44,8 +45,9 @@ class APP_LIST_EXPORT AppListPresenterImpl
   using UpdateHomeLauncherAnimationSettingsCallback =
       base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings)>;
 
-  explicit AppListPresenterImpl(
-      std::unique_ptr<AppListPresenterDelegate> delegate);
+  // |controller| must outlive |this|.
+  AppListPresenterImpl(AppListControllerImpl* controller,
+                       std::unique_ptr<AppListPresenterDelegate> delegate);
   ~AppListPresenterImpl() override;
 
   // Returns app list window or nullptr if it is not visible.
@@ -125,9 +127,6 @@ class APP_LIST_EXPORT AppListPresenterImpl
   // Returns current visibility of the Assistant page.
   bool IsShowingEmbeddedAssistantUI() const;
 
-  // Show/hide the expand arrow view button.
-  void SetExpandArrowViewVisibility(bool show);
-
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
 
@@ -165,6 +164,9 @@ class APP_LIST_EXPORT AppListPresenterImpl
   // to the screen.
   void RequestPresentationTime(int64_t display_id,
                                base::TimeTicks event_time_stamp);
+
+  // Owns |this|.
+  AppListControllerImpl* const controller_;
 
   // Responsible for laying out the app list UI.
   std::unique_ptr<AppListPresenterDelegate> delegate_;

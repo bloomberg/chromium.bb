@@ -39,7 +39,7 @@
 
 namespace views {
 
-Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
+Tab::Tab(TabbedPane* tabbed_pane, const std::u16string& title, View* contents)
     : tabbed_pane_(tabbed_pane), contents_(contents) {
   // Calculate the size while the font list is bold.
   auto title_label = std::make_unique<Label>(title, style::CONTEXT_LABEL,
@@ -86,11 +86,11 @@ void Tab::SetSelected(bool selected) {
 #endif
 }
 
-const base::string16& Tab::GetTitleText() const {
+const std::u16string& Tab::GetTitleText() const {
   return title_->GetText();
 }
 
-void Tab::SetTitleText(const base::string16& text) {
+void Tab::SetTitleText(const std::u16string& text) {
   title_->SetText(text);
   UpdatePreferredTitleWidth();
   PreferredSizeChanged();
@@ -189,6 +189,11 @@ bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
          tabbed_pane_->MoveSelectionBy(key == ui::VKEY_DOWN ? 1 : -1);
 }
 
+void Tab::OnThemeChanged() {
+  View::OnThemeChanged();
+  UpdateTitleColor();
+}
+
 void Tab::SetState(State state) {
   if (state == state_)
     return;
@@ -198,11 +203,9 @@ void Tab::SetState(State state) {
 }
 
 void Tab::OnStateChanged() {
-  const SkColor font_color = GetNativeTheme()->GetSystemColor(
-      state_ == State::kActive
-          ? ui::NativeTheme::kColorId_TabTitleColorActive
-          : ui::NativeTheme::kColorId_TabTitleColorInactive);
-  title_->SetEnabledColor(font_color);
+  // Update colors that depend on state if present in a Widget hierarchy.
+  if (GetWidget())
+    UpdateTitleColor();
 
   // Tab design spec dictates special handling of font weight for the windows
   // platform when dealing with border style tabs.
@@ -270,6 +273,15 @@ void Tab::UpdatePreferredTitleWidth() {
   preferred_title_width_ =
       std::max(preferred_title_width_, title_->GetPreferredSize().width());
   SetState(old_state);
+}
+
+void Tab::UpdateTitleColor() {
+  DCHECK(GetWidget());
+  const SkColor font_color = GetNativeTheme()->GetSystemColor(
+      state_ == State::kActive
+          ? ui::NativeTheme::kColorId_TabTitleColorActive
+          : ui::NativeTheme::kColorId_TabTitleColorInactive);
+  title_->SetEnabledColor(font_color);
 }
 
 BEGIN_METADATA(Tab, View)
@@ -477,16 +489,12 @@ void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
 }
 
 DEFINE_ENUM_CONVERTERS(TabbedPane::Orientation,
-                       {TabbedPane::Orientation::kHorizontal,
-                        base::ASCIIToUTF16("HORIZONTAL")},
-                       {TabbedPane::Orientation::kVertical,
-                        base::ASCIIToUTF16("VERTICAL")})
+                       {TabbedPane::Orientation::kHorizontal, u"HORIZONTAL"},
+                       {TabbedPane::Orientation::kVertical, u"VERTICAL"})
 
 DEFINE_ENUM_CONVERTERS(TabbedPane::TabStripStyle,
-                       {TabbedPane::TabStripStyle::kBorder,
-                        base::ASCIIToUTF16("BORDER")},
-                       {TabbedPane::TabStripStyle::kHighlight,
-                        base::ASCIIToUTF16("HIGHLIGHT")})
+                       {TabbedPane::TabStripStyle::kBorder, u"BORDER"},
+                       {TabbedPane::TabStripStyle::kHighlight, u"HIGHLIGHT"})
 
 BEGIN_METADATA(TabStrip, View)
 ADD_READONLY_PROPERTY_METADATA(int, SelectedTabIndex)
@@ -527,7 +535,7 @@ size_t TabbedPane::GetTabCount() {
 }
 
 void TabbedPane::AddTabInternal(size_t index,
-                                const base::string16& title,
+                                const std::u16string& title,
                                 std::unique_ptr<View> contents) {
   DCHECK_LE(index, GetTabCount());
   contents->SetVisible(false);

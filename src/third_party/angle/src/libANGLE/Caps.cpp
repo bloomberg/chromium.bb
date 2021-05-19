@@ -34,6 +34,8 @@ TextureCaps::TextureCaps() = default;
 
 TextureCaps::TextureCaps(const TextureCaps &other) = default;
 
+TextureCaps &TextureCaps::operator=(const TextureCaps &other) = default;
+
 TextureCaps::~TextureCaps() = default;
 
 GLuint TextureCaps::getMaxSamples() const
@@ -397,6 +399,18 @@ static bool DetermineRGTextureSupport(const TextureCapsMap &textureCaps,
     }
 
     return GetFormatSupport(textureCaps, requiredFormats, true, true, true, true, false);
+}
+
+static bool DetermineTextureFormat2101010Support(const TextureCapsMap &textureCaps)
+{
+    // GL_EXT_texture_type_2_10_10_10_REV specifies both RGBA and RGB support whereas desktop GL
+    // only specifies RGBA support, so check both RGBA and RGB before marking as supported.
+    constexpr GLenum requiredFormats[] = {
+        GL_RGB10_A2,
+        GL_RGB10_UNORM_ANGLEX,
+    };
+
+    return GetFormatSupport(textureCaps, requiredFormats, true, true, false, false, false);
 }
 
 // Check for GL_EXT_texture_compression_dxt1 support
@@ -822,10 +836,11 @@ void Extensions::setTextureExtensionSupport(const TextureCapsMap &textureCaps)
     textureFloatOES       = DetermineFloatTextureSupport(textureCaps);
     textureFloatLinearOES = DetermineFloatTextureFilteringSupport(textureCaps, textureFloatOES);
     textureRG = DetermineRGTextureSupport(textureCaps, textureHalfFloat, textureFloatOES);
-    colorBufferHalfFloat   = textureHalfFloat && DetermineColorBufferHalfFloatSupport(textureCaps);
-    textureCompressionDXT1 = DetermineDXT1TextureSupport(textureCaps);
-    textureCompressionDXT3 = DetermineDXT3TextureSupport(textureCaps);
-    textureCompressionDXT5 = DetermineDXT5TextureSupport(textureCaps);
+    colorBufferHalfFloat    = textureHalfFloat && DetermineColorBufferHalfFloatSupport(textureCaps);
+    textureFormat2101010REV = DetermineTextureFormat2101010Support(textureCaps);
+    textureCompressionDXT1  = DetermineDXT1TextureSupport(textureCaps);
+    textureCompressionDXT3  = DetermineDXT3TextureSupport(textureCaps);
+    textureCompressionDXT5  = DetermineDXT5TextureSupport(textureCaps);
     textureCompressionS3TCsRGB    = DetermineS3TCsRGBTextureSupport(textureCaps);
     textureCompressionASTCLDRKHR  = DetermineASTCLDRTextureSupport(textureCaps);
     textureCompressionASTCOES     = DetermineASTCOESTExtureSupport(textureCaps);
@@ -1054,6 +1069,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_OES_shader_io_blocks"] = enableableExtension(&Extensions::shaderIoBlocksOES);
         map["GL_EXT_shader_io_blocks"] = enableableExtension(&Extensions::shaderIoBlocksEXT);
         map["GL_EXT_clip_cull_distance"] = enableableExtension(&Extensions::clipCullDistanceEXT);
+        map["GL_ANGLE_get_serialized_context_string"] = enableableExtension(&Extensions::getSerializedContextStringANGLE);
         // GLES1 extensions
         map["GL_OES_point_size_array"] = enableableExtension(&Extensions::pointSizeArrayOES);
         map["GL_OES_texture_cube_map"] = enableableExtension(&Extensions::textureCubeMapOES);
@@ -1123,6 +1139,7 @@ void TypePrecision::get(GLint *returnRange, GLint *returnPrecision) const
 Caps::Caps()                  = default;
 Caps::Caps(const Caps &other) = default;
 Caps::~Caps()                 = default;
+Caps &Caps::operator=(const Caps &other) = default;
 
 Caps GenerateMinimumCaps(const Version &clientVersion, const Extensions &extensions)
 {
@@ -1471,6 +1488,7 @@ std::vector<std::string> DisplayExtensions::getStrings() const
     InsertExtensionString("EGL_NV_robustness_video_memory_purge",                robustnessVideoMemoryPurgeNV,       &extensionStrings);
     InsertExtensionString("EGL_KHR_reusable_sync",                               reusableSyncKHR,                    &extensionStrings);
     InsertExtensionString("EGL_ANGLE_external_context_and_surface",              externalContextAndSurface,          &extensionStrings);
+    InsertExtensionString("EGL_EXT_buffer_age",                                  bufferAgeEXT,                       &extensionStrings);
     // clang-format on
 
     return extensionStrings;
@@ -1487,6 +1505,7 @@ std::vector<std::string> DeviceExtensions::getStrings() const
     InsertExtensionString("EGL_ANGLE_device_d3d",                          deviceD3D,                      &extensionStrings);
     InsertExtensionString("EGL_ANGLE_device_cgl",                          deviceCGL,                      &extensionStrings);
     InsertExtensionString("EGL_ANGLE_device_eagl",                         deviceEAGL,                     &extensionStrings);
+    InsertExtensionString("EGL_ANGLE_device_metal",                        deviceMetal,                    &extensionStrings);
 
     // clang-format on
 

@@ -18,6 +18,7 @@
 #include "content/browser/file_system_access/fixed_file_system_access_permission_grant.h"
 #include "content/browser/file_system_access/mock_file_system_access_permission_context.h"
 #include "content/browser/file_system_access/mock_file_system_access_permission_grant.h"
+#include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
@@ -690,10 +691,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
 
   ASSERT_EQ(3u,
             dialog_params.file_types->extension_description_overrides.size());
-  EXPECT_EQ(base::ASCIIToUTF16("foo"),
+  EXPECT_EQ(u"foo",
             dialog_params.file_types->extension_description_overrides[0]);
-  EXPECT_EQ(base::ASCIIToUTF16(""),
-            dialog_params.file_types->extension_description_overrides[1]);
+  EXPECT_EQ(u"", dialog_params.file_types->extension_description_overrides[1]);
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
@@ -715,7 +715,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
   EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
       shell()->web_contents()->GetMainFrame()->GetRoutingID(),
-      "FileSystemAccess"));
+      BackForwardCacheDisable::DisabledReason(
+          BackForwardCacheDisable::DisabledReasonId::kFileSystemAccess)));
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
@@ -1264,19 +1265,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
   EXPECT_EQ(ui::SelectFileDialog::SELECT_OPEN_FILE, dialog_params.type);
   // temp_dir_.GetPath() maps to kTestMountPoint.
   EXPECT_EQ(temp_dir_.GetPath(), dialog_params.default_path);
-}
-
-IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, StartIn_Nulled) {
-  SelectFileDialogParams dialog_params;
-  ui::SelectFileDialog::SetFactory(
-      new CancellingSelectFileDialogFactory(&dialog_params));
-  ASSERT_TRUE(
-      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  auto result = EvalJs(shell(), "self.showOpenFilePicker({ startIn: null })");
-  // Specifying |null| should not throw an exception.
-  EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
-      << result.error;
-  EXPECT_EQ(ui::SelectFileDialog::SELECT_OPEN_FILE, dialog_params.type);
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SuggestedName) {

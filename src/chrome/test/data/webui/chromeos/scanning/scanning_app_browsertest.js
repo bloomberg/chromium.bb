@@ -34,11 +34,7 @@ ScanningAppBrowserTest.prototype = {
   browsePreload: 'chrome://scanning/test_loader.html?module=chromeos/' +
       'scanning/scanning_app_unified_test.js',
 
-  featureList: {
-    enabled: [
-      'chromeos::features::kScanningUI',
-    ]
-  },
+  featureList: {enabled: ['chromeos::features::kScanAppMediaLink']},
 };
 
 // List of names of suites in unified test to register for individual debugging.

@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 
 namespace blink {
-class DOMTaskSignal;
+class ExceptionState;
 class ExecutionContext;
 
 class MODULES_EXPORT DOMTaskController final : public AbortController {
@@ -21,12 +21,9 @@ class MODULES_EXPORT DOMTaskController final : public AbortController {
  public:
   static DOMTaskController* Create(ExecutionContext*,
                                    const AtomicString& priority);
-  DOMTaskController(ExecutionContext*, WebSchedulingPriority);
+  DOMTaskController(ExecutionContext*, const AtomicString& priority);
 
-  void setPriority(const AtomicString& priority);
-
- private:
-  DOMTaskSignal* GetTaskSignal() const;
+  void setPriority(const AtomicString& priority, ExceptionState&);
 };
 
 }  // namespace blink

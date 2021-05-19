@@ -45,6 +45,7 @@ preprocess_if_expr("preprocess_src") {
     "cr.js",
     "cr.m.js",
     "cr/ui.js",
+    "custom_element.js",
     "event_tracker.js",
     "i18n_template_no_process.js",
     "icon.js",
@@ -62,7 +63,8 @@ preprocess_if_expr("preprocess_src") {
     in_files += [ "i18n_template_process.js" ]
   }
 
-  if (include_polymer) {
+  # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
+  if (is_chromeos_ash) {
     in_files += [
       "i18n_behavior.js",
       "list_property_update_behavior.js",
@@ -257,6 +259,7 @@ js_type_check("js_resources_modules") {
   deps = [
     ":assert.m",
     ":cr.m",
+    ":custom_element",
     ":event_tracker.m",
     ":i18n_behavior.m",
     ":icon.m",
@@ -282,6 +285,9 @@ js_library("cr.m") {
     ":promise_resolver.m",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("custom_element") {
 }
 
 js_library("event_tracker.m") {

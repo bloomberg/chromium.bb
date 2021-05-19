@@ -35,6 +35,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/test/button_test_api.h"
 
 namespace {
@@ -130,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(StarViewTest, InkDropHighlighted) {
     GURL url("http://test.com");
     bookmarks::BookmarkModel* model =
         BookmarkModelFactory::GetForBrowserContext(browser()->profile());
-    bookmarks::AddIfNotBookmarked(model, url, /*title=*/base::string16());
+    bookmarks::AddIfNotBookmarked(model, url, /*title=*/std::u16string());
     browser()->window()->ShowBookmarkBubble(url, false);
     EXPECT_EQ(ink_drop_test_api.GetInkDrop()->GetTargetInkDropState(),
               views::InkDropState::ACTIVATED);

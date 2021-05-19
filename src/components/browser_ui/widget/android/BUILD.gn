@@ -18,7 +18,6 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/widget/FadingShadow.java",
     "java/src/org/chromium/components/browser_ui/widget/FadingShadowView.java",
     "java/src/org/chromium/components/browser_ui/widget/InsetObserverView.java",
-    "java/src/org/chromium/components/browser_ui/widget/LoadingView.java",
     "java/src/org/chromium/components/browser_ui/widget/MaterialProgressBar.java",
     "java/src/org/chromium/components/browser_ui/widget/MenuOrKeyboardActionController.java",
     "java/src/org/chromium/components/browser_ui/widget/MoreProgressButton.java",
@@ -118,6 +117,7 @@ android_library("java") {
     "//components/embedder_support/android:util_java",
     "//third_party/android_deps:android_support_v4_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:material_design_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_coordinatorlayout_coordinatorlayout_java",
@@ -176,8 +176,10 @@ android_resources("java_resources") {
     "java/res/drawable-xxxhdpi/ic_drag_handle_grey600_24dp.png",
     "java/res/drawable-xxxhdpi/ic_more_vert_24dp_on_dark_bg.png",
     "java/res/drawable-xxxhdpi/ic_more_vert_24dp_on_light_bg.png",
+    "java/res/drawable/app_menu_bg.xml",
     "java/res/drawable/async_image_view_unavailable.xml",
     "java/res/drawable/async_image_view_waiting.xml",
+    "java/res/drawable/bottom_sheet_background.xml",
     "java/res/drawable/hairline_border_card_background.xml",
     "java/res/drawable/hairline_border_card_dark_transparent_bg.xml",
     "java/res/drawable/ic_check_googblue_24dp_animated.xml",
@@ -222,6 +224,7 @@ android_resources("java_resources") {
     "java/res/values-night/colors.xml",
     "java/res/values-night/drawables.xml",
     "java/res/values-sw600dp/dimens.xml",
+    "java/res/values-v23/dimens.xml",
     "java/res/values/attrs.xml",
     "java/res/values/colors.xml",
     "java/res/values/dimens.xml",
@@ -233,6 +236,7 @@ android_resources("java_resources") {
   deps = [
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
+    "//third_party/android_deps:material_design_java",
     "//ui/android:ui_java_resources",
   ]
 }
@@ -331,7 +335,6 @@ java_library("junit") {
   sources = [
     "java/src/org/chromium/components/browser_ui/widget/CompositeTouchDelegateUnitTest.java",
     "java/src/org/chromium/components/browser_ui/widget/InsetObserverViewTest.java",
-    "java/src/org/chromium/components/browser_ui/widget/LoadingViewTest.java",
     "java/src/org/chromium/components/browser_ui/widget/gesture/SwipeGestureListenerTest.java",
     "java/src/org/chromium/components/browser_ui/widget/selectable_list/SelectionDelegateTest.java",
   ]

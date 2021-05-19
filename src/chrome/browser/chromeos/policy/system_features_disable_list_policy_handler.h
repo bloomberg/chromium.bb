@@ -26,7 +26,9 @@ enum SystemFeature : int {
   kScanning = 4,         // The scan SWA on Chrome OS.
   kWebStore = 5,         // The web store chrome app on Chrome OS.
   kCanvas = 6,           // The canvas web app on Chrome OS.
-  kMaxValue = kCanvas
+  kGoogleNews = 7,       // The Google news web app on Chrome OS.
+  kExplore = 8,          // The explore web app on Chrome OS.
+  kMaxValue = kExplore
 };
 
 // A disabling mode that decides the user experience when a system feature is
@@ -44,6 +46,8 @@ extern const char kOsSettingsFeature[];
 extern const char kScanningFeature[];
 extern const char kWebStoreFeature[];
 extern const char kCanvasFeature[];
+extern const char kGoogleNewsFeature[];
+extern const char kExploreFeature[];
 
 extern const char kBlockedDisableMode[];
 extern const char kHiddenDisableMode[];
@@ -57,6 +61,7 @@ class SystemFeaturesDisableListPolicyHandler
   ~SystemFeaturesDisableListPolicyHandler() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
+  static SystemFeature GetSystemFeatureFromAppId(const std::string& app_id);
 
  protected:
   // ListPolicyHandler:

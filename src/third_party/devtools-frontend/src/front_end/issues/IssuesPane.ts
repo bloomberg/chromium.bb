@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 
 import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
-import * as Common from '../common/common.js';
-import * as i18n from '../i18n/i18n.js';
-import * as SDK from '../sdk/sdk.js';
-import * as WebComponents from '../ui/components/components.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as ConsoleCounters from '../panels/console_counters/console_counters.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import type {AggregatedIssue} from './IssueAggregator.js';
 import {Events as IssueAggregatorEvents, IssueAggregator} from './IssueAggregator.js';
 import {IssueView} from './IssueView.js';
 import {createIssueDescriptionFromMarkdown} from './MarkdownIssueDescription.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
    * @description Category title for a group of cross origin embedder policy (COEP) issues
    */
@@ -44,6 +44,17 @@ export const UIStrings = {
    */
   other: 'Other',
   /**
+   * @description Category title for the different 'low text contrast' issues. Low text contrast refers
+   *              to the difference between the color of a text and the background color where that text
+   *              appears.
+   */
+  lowTextContrast: 'Low Text Contrast',
+  /**
+   * @description Category title for the different 'Cross-Origin Resource Sharing' (CORS) issues. CORS
+   *              refers to one origin (e.g 'a.com') loading resources from another origin (e.g. 'b.com').
+   */
+  cors: 'Cross Origin Resource Sharing',
+  /**
    * @description Title for a checkbox which toggles grouping by category in the issues tab
    */
   groupDisplayedIssuesUnder: 'Group displayed issues under associated categories',
@@ -60,16 +71,6 @@ export const UIStrings = {
    */
   includeThirdpartyCookieIssues: 'Include third-party cookie issues',
   /**
-   * @description Tooltip shown for the issues count in several places of the UI
-   * @example {1} PH1
-   */
-  issuesPertainingToSOperation: 'Issues pertaining to {PH1} operation detected.',
-  /**
-   * @description Tooltip shown for the issues count in several places of the UI
-   * @example {13} PH1
-   */
-  issuesPertainingToSOperations: 'Issues pertaining to {PH1} operations detected.',
-  /**
    * @description Label on the issues tab
    */
   onlyThirdpartyCookieIssues: 'Only third-party cookie issues detected so far',
@@ -80,17 +81,6 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('issues/IssuesPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-
-/* * @type {!Map<!SDK.Issue.IssueCategory, string>}  */
-export const IssueCategoryNames = new Map([
-  [SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy, i18nString(UIStrings.crossOriginEmbedderPolicy)],
-  [SDK.Issue.IssueCategory.MixedContent, i18nString(UIStrings.mixedContent)],
-  [SDK.Issue.IssueCategory.SameSiteCookie, i18nString(UIStrings.samesiteCookie)],
-  [SDK.Issue.IssueCategory.HeavyAd, i18nString(UIStrings.heavyAds)],
-  [SDK.Issue.IssueCategory.ContentSecurityPolicy, i18nString(UIStrings.contentSecurityPolicy)],
-  [SDK.Issue.IssueCategory.TrustedWebActivity, i18nString(UIStrings.trustedWebActivity)],
-  [SDK.Issue.IssueCategory.Other, i18nString(UIStrings.other)],
-]);
 
 class IssueCategoryView extends UI.TreeOutline.TreeElement {
   private category: SDK.Issue.IssueCategory;
@@ -106,7 +96,26 @@ class IssueCategoryView extends UI.TreeOutline.TreeElement {
   }
 
   getCategoryName(): string {
-    return IssueCategoryNames.get(this.category) || i18nString(UIStrings.other);
+    switch (this.category) {
+      case SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy:
+        return i18nString(UIStrings.crossOriginEmbedderPolicy);
+      case SDK.Issue.IssueCategory.MixedContent:
+        return i18nString(UIStrings.mixedContent);
+      case SDK.Issue.IssueCategory.SameSiteCookie:
+        return i18nString(UIStrings.samesiteCookie);
+      case SDK.Issue.IssueCategory.HeavyAd:
+        return i18nString(UIStrings.heavyAds);
+      case SDK.Issue.IssueCategory.ContentSecurityPolicy:
+        return i18nString(UIStrings.contentSecurityPolicy);
+      case SDK.Issue.IssueCategory.TrustedWebActivity:
+        return i18nString(UIStrings.trustedWebActivity);
+      case SDK.Issue.IssueCategory.LowTextContrast:
+        return i18nString(UIStrings.lowTextContrast);
+      case SDK.Issue.IssueCategory.Cors:
+        return i18nString(UIStrings.cors);
+      case SDK.Issue.IssueCategory.Other:
+        return i18nString(UIStrings.other);
+    }
   }
 
   onattach(): void {
@@ -136,11 +145,11 @@ export class IssuesPane extends UI.Widget.VBox {
   private categoryViews: Map<SDK.Issue.IssueCategory, IssueCategoryView>;
   private issueViews: Map<string, IssueView>;
   private showThirdPartyCheckbox: UI.Toolbar.ToolbarSettingCheckbox|null;
-  private updateToolbarIssuesCount: (count: number) => void;
   private issuesTree: UI.TreeOutline.TreeOutlineInShadow;
   private noIssuesMessageDiv: HTMLDivElement;
   private issuesManager: BrowserSDK.IssuesManager.IssuesManager;
   private aggregator: IssueAggregator;
+  private issueViewUpdatePromise: Promise<void> = Promise.resolve();
 
   private constructor() {
     super(true);
@@ -151,11 +160,10 @@ export class IssuesPane extends UI.Widget.VBox {
     this.issueViews = new Map();
     this.showThirdPartyCheckbox = null;
 
-    const {updateToolbarIssuesCount} = this.createToolbars();
-    this.updateToolbarIssuesCount = updateToolbarIssuesCount;
+    this.createToolbars();
 
     this.issuesTree = new UI.TreeOutline.TreeOutlineInShadow();
-    this.issuesTree.registerRequiredCSS('issues/issuesTree.css', {enableLegacyPatching: true});
+    this.issuesTree.registerRequiredCSS('issues/issuesTree.css', {enableLegacyPatching: false});
     this.issuesTree.setShowSelectionOnKeyboardFocus(true);
     this.issuesTree.contentElement.classList.add('issues');
     this.contentElement.appendChild(this.issuesTree.element);
@@ -169,7 +177,7 @@ export class IssuesPane extends UI.Widget.VBox {
     this.aggregator.addEventListener(IssueAggregatorEvents.AggregatedIssueUpdated, this.issueUpdated, this);
     this.aggregator.addEventListener(IssueAggregatorEvents.FullUpdateRequired, this.fullUpdate, this);
     for (const issue of this.aggregator.aggregatedIssues()) {
-      this.updateIssueView(issue);
+      this.scheduleIssueViewUpdate(issue);
     }
     this.issuesManager.addEventListener(BrowserSDK.IssuesManager.Events.IssuesCountUpdated, this.updateCounts, this);
     this.updateCounts();
@@ -188,7 +196,7 @@ export class IssuesPane extends UI.Widget.VBox {
     return [this.issuesTree.element];
   }
 
-  private createToolbars(): {toolbarContainer: Element, updateToolbarIssuesCount: (issueCount: number) => void} {
+  private createToolbars(): {toolbarContainer: Element} {
     const toolbarContainer = this.contentElement.createChild('div', 'issues-toolbar-container');
     new UI.Toolbar.Toolbar('issues-toolbar-left', toolbarContainer);
     const rightToolbar = new UI.Toolbar.Toolbar('issues-toolbar-right', toolbarContainer);
@@ -211,32 +219,34 @@ export class IssuesPane extends UI.Widget.VBox {
     this.setDefaultFocusedElement(this.showThirdPartyCheckbox.inputElement);
 
     rightToolbar.appendSeparator();
-    const toolbarWarnings = document.createElement('div');
-    toolbarWarnings.classList.add('toolbar-warnings');
-    const breakingChangeIcon = new WebComponents.Icon.Icon();
-    breakingChangeIcon.data = {iconName: 'breaking_change_icon', color: '', width: '16px', height: '16px'};
-    breakingChangeIcon.classList.add('breaking-change');
-    toolbarWarnings.appendChild(breakingChangeIcon);
-    const toolbarIssuesCount = toolbarWarnings.createChild('span', 'warnings-count-label');
-    const toolbarIssuesItem = new UI.Toolbar.ToolbarItem(toolbarWarnings);
-    rightToolbar.appendToolbarItem(toolbarIssuesItem);
-    const updateToolbarIssuesCount = (count: number): void => {
-      toolbarIssuesCount.textContent = `${count}`;
-      if (count === 1) {
-        toolbarIssuesItem.setTitle(i18nString(UIStrings.issuesPertainingToSOperation, {PH1: count}));
-      } else {
-        toolbarIssuesItem.setTitle(i18nString(UIStrings.issuesPertainingToSOperations, {PH1: count}));
-      }
+    const issueCounter = new ConsoleCounters.IssueCounter.IssueCounter();
+    issueCounter.data = {
+      tooltipCallback: (): void => {
+        const issueEnumeration = ConsoleCounters.IssueCounter.getIssueCountsEnumeration(
+            BrowserSDK.IssuesManager.IssuesManager.instance(), false);
+        UI.Tooltip.Tooltip.install(issueCounter, issueEnumeration);
+      },
+      displayMode: ConsoleCounters.IssueCounter.DisplayMode.ShowAlways,
+      issuesManager: BrowserSDK.IssuesManager.IssuesManager.instance(),
     };
-    return {toolbarContainer, updateToolbarIssuesCount};
+    issueCounter.id = 'console-issues-counter';
+    const issuesToolbarItem = new UI.Toolbar.ToolbarItem(issueCounter);
+    rightToolbar.appendToolbarItem(issuesToolbarItem);
+
+    return {toolbarContainer};
   }
 
   private issueUpdated(event: Common.EventTarget.EventTargetEvent): void {
     const issue = event.data as AggregatedIssue;
-    this.updateIssueView(issue);
+    this.scheduleIssueViewUpdate(issue);
   }
 
-  private updateIssueView(issue: AggregatedIssue): void {
+  private scheduleIssueViewUpdate(issue: AggregatedIssue): void {
+    this.issueViewUpdatePromise = this.issueViewUpdatePromise.then(() => this.updateIssueView(issue));
+  }
+
+  /** Don't call directly. Use `scheduleIssueViewUpdate` instead. */
+  private async updateIssueView(issue: AggregatedIssue): Promise<void> {
     let issueView = this.issueViews.get(issue.code());
     if (!issueView) {
       const description = issue.getDescription();
@@ -244,7 +254,7 @@ export class IssuesPane extends UI.Widget.VBox {
         console.warn('Could not find description for issue code:', issue.code());
         return;
       }
-      const markdownDescription = createIssueDescriptionFromMarkdown(description);
+      const markdownDescription = await createIssueDescriptionFromMarkdown(description);
       issueView = new IssueView(this, issue, markdownDescription);
       this.issueViews.set(issue.code(), issueView);
       const parent = this.getIssueViewParent(issue);
@@ -294,16 +304,14 @@ export class IssuesPane extends UI.Widget.VBox {
     this.clearViews(this.issueViews);
     if (this.aggregator) {
       for (const issue of this.aggregator.aggregatedIssues()) {
-        this.updateIssueView(issue);
+        this.scheduleIssueViewUpdate(issue);
       }
     }
     this.updateCounts();
   }
 
   private updateCounts(): void {
-    const count = this.issuesManager.numberOfIssues();
-    this.updateToolbarIssuesCount(count);
-    this.showIssuesTreeOrNoIssuesDetectedMessage(count);
+    this.showIssuesTreeOrNoIssuesDetectedMessage(this.issuesManager.numberOfIssues());
   }
 
   private showIssuesTreeOrNoIssuesDetectedMessage(issuesCount: number): void {

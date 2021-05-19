@@ -8,13 +8,12 @@
 
 namespace extensions {
 
-ContentScriptLoadWaiter::ContentScriptLoadWaiter(UserScriptLoader* loader)
-    : scoped_observer_(this) {
-  scoped_observer_.Add(loader);
+ContentScriptLoadWaiter::ContentScriptLoadWaiter(UserScriptLoader* loader) {
+  scoped_observation_.Observe(loader);
 }
 ContentScriptLoadWaiter::~ContentScriptLoadWaiter() = default;
 
-void ContentScriptLoadWaiter::RestrictToHostID(const HostID& host_id) {
+void ContentScriptLoadWaiter::RestrictToHostID(const mojom::HostID& host_id) {
   host_id_ = host_id;
 }
 
@@ -25,7 +24,7 @@ void ContentScriptLoadWaiter::Wait() {
 void ContentScriptLoadWaiter::OnScriptsLoaded(
     UserScriptLoader* loader,
     content::BrowserContext* browser_context) {
-  if (host_id_.id().empty() || loader->HasLoadedScripts(host_id_)) {
+  if (host_id_.id.empty() || loader->HasLoadedScripts(host_id_)) {
     // Quit when idle in order to allow other observers to run.
     run_loop_.QuitWhenIdle();
   }

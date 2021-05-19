@@ -12,14 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/ast/else_statement.h"
-
-#include "src/ast/bool_literal.h"
+#include "gtest/gtest-spi.h"
 #include "src/ast/discard_statement.h"
 #include "src/ast/if_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/test_helper.h"
-#include "src/type/bool_type.h"
 
 namespace tint {
 namespace ast {
@@ -41,7 +37,7 @@ TEST_F(ElseStatementTest, Creation) {
 }
 
 TEST_F(ElseStatementTest, Creation_WithSource) {
-  auto* e = create<ElseStatement>(Source{Source::Location{20, 2}}, nullptr,
+  auto* e = create<ElseStatement>(Source{Source::Location{20, 2}}, Expr(true),
                                   create<BlockStatement>(StatementList{}));
   auto src = e->source();
   EXPECT_EQ(src.range.begin.line, 20u);
@@ -67,45 +63,13 @@ TEST_F(ElseStatementTest, HasContition_NullCondition) {
   EXPECT_FALSE(e->HasCondition());
 }
 
-TEST_F(ElseStatementTest, IsValid) {
-  auto* e =
-      create<ElseStatement>(nullptr, create<BlockStatement>(StatementList{}));
-  EXPECT_TRUE(e->IsValid());
-}
-
-TEST_F(ElseStatementTest, IsValid_WithBody) {
-  auto* body = create<BlockStatement>(StatementList{
-      create<DiscardStatement>(),
-  });
-  auto* e = create<ElseStatement>(nullptr, body);
-  EXPECT_TRUE(e->IsValid());
-}
-
-TEST_F(ElseStatementTest, IsValid_WithNullBodyStatement) {
-  auto* body = create<BlockStatement>(StatementList{
-      create<DiscardStatement>(),
-      nullptr,
-  });
-  auto* e = create<ElseStatement>(nullptr, body);
-  EXPECT_FALSE(e->IsValid());
-}
-
-TEST_F(ElseStatementTest, IsValid_InvalidCondition) {
-  auto* cond = create<ScalarConstructorExpression>(nullptr);
-  auto* e =
-      create<ElseStatement>(cond, create<BlockStatement>(StatementList{}));
-  EXPECT_FALSE(e->IsValid());
-}
-
-TEST_F(ElseStatementTest, IsValid_InvalidBodyStatement) {
-  auto* body = create<BlockStatement>(
-
-      StatementList{
-          create<IfStatement>(nullptr, create<BlockStatement>(StatementList{}),
-                              ElseStatementList{}),
-      });
-  auto* e = create<ElseStatement>(nullptr, body);
-  EXPECT_FALSE(e->IsValid());
+TEST_F(ElseStatementTest, Assert_NullBody) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.create<ElseStatement>(b.Expr(true), nullptr);
+      },
+      "internal compiler error");
 }
 
 TEST_F(ElseStatementTest, ToStr) {

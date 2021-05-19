@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gin/gin_features.h"
+#include "base/metrics/field_trial_params.h"
 
 namespace features {
 
@@ -16,7 +17,7 @@ const base::Feature kV8FlushBytecode{"V8FlushBytecode",
 
 // Enables finalizing streaming JS compilations on a background thread.
 const base::Feature kV8OffThreadFinalization{"V8OffThreadFinalization",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables lazy feedback allocation in V8.
 const base::Feature kV8LazyFeedbackAllocation{"V8LazyFeedbackAllocation",
@@ -62,8 +63,20 @@ const base::Feature kV8Turboprop{"V8Turboprop",
 const base::Feature kV8Sparkplug{"V8Sparkplug",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables short builtin calls feature.
+const base::Feature kV8ShortBuiltinCalls{"V8ShortBuiltinCalls",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables fast API calls in TurboFan.
 const base::Feature kV8TurboFastApiCalls{"V8TurboFastApiCalls",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Artificially delays script execution.
+const base::Feature kV8ScriptAblation{"V8ScriptAblation",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kV8ScriptRunDelayOnceMs{
+    &kV8ScriptAblation, "V8ScriptRunDelayOnceMs", 0};
+const base::FeatureParam<int> kV8ScriptRunDelayMs{&kV8ScriptAblation,
+                                                  "V8ScriptRunDelayMs", 0};
 
 }  // namespace features

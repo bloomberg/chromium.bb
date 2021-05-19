@@ -16,16 +16,16 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/ash/authpolicy/authpolicy_helper.h"
+#include "chrome/browser/ash/login/error_screens_histogram_helper.h"
+#include "chrome/browser/ash/login/help_app_launcher.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/network_error.h"
+#include "chrome/browser/ash/login/signin_partition_manager.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
-#include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
-#include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/signin_partition_manager.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
@@ -341,7 +341,7 @@ void EnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
 
 void EnrollmentScreenHandler::SetEnterpriseDomainInfo(
     const std::string& manager,
-    const base::string16& device_type) {
+    const std::u16string& device_type) {
   CallJS("login.OAuthEnrollmentScreen.setEnterpriseDomainInfo", manager,
          device_type);
 }
@@ -549,7 +549,12 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
                IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE);
   builder->Add("oauthEnrollNextBtn", IDS_OFFLINE_LOGIN_NEXT_BUTTON_TEXT);
   builder->Add("oauthEnrollSkip", IDS_ENTERPRISE_ENROLLMENT_SKIP);
-  builder->Add("oauthEnrollDone", IDS_ENTERPRISE_ENROLLMENT_DONE);
+  if (policy::EnrollmentRequisitionManager::IsRemoraRequisition()) {
+    // Use Next text since the setup is not finished.
+    builder->Add("oauthEnrollDone", IDS_EULA_NEXT_BUTTON);
+  } else {
+    builder->Add("oauthEnrollDone", IDS_ENTERPRISE_ENROLLMENT_DONE);
+  }
   builder->Add("oauthEnrollRetry", IDS_ENTERPRISE_ENROLLMENT_RETRY);
   builder->Add("oauthEnrollManualEnrollment",
                IDS_ENTERPRISE_ENROLLMENT_ENROLL_MANUALLY);

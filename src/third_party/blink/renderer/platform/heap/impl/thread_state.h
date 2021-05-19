@@ -188,6 +188,7 @@ class PLATFORM_EXPORT ThreadState final {
   }
 
   static ThreadState* AttachMainThread();
+  static ThreadState* AttachMainThreadForTesting(v8::Platform* platform);
 
   // Associate ThreadState object with the current thread. After this
   // call thread can start using the garbage collected heap infrastructure.
@@ -390,6 +391,8 @@ class PLATFORM_EXPORT ThreadState final {
     --disable_heap_verification_scope_;
   }
 
+  void EnableDetachedGarbageCollectionsForTesting() { CHECK(!isolate_); }
+
   void NotifyGarbageCollection(v8::GCType, v8::GCCallbackFlags);
 
   // Waits until sweeping is done and invokes the given callback with
@@ -397,6 +400,10 @@ class PLATFORM_EXPORT ThreadState final {
   void CollectNodeAndCssStatistics(
       base::OnceCallback<void(size_t allocated_node_bytes,
                               size_t allocated_css_bytes)>);
+
+  void ForceNoFollowupFullGCForTesting() {
+    no_followup_full_gc_for_testing_ = true;
+  }
 
  private:
   class IncrementalMarkingScheduler;
@@ -635,6 +642,8 @@ class PLATFORM_EXPORT ThreadState final {
   size_t last_concurrently_marked_bytes_ = 0;
   base::TimeTicks last_concurrently_marked_bytes_update_;
   bool concurrent_marking_priority_increased_ = false;
+
+  bool no_followup_full_gc_for_testing_ = false;
 
   friend class incremental_marking_test::IncrementalMarkingScope;
   friend class HeapPointersOnStackScope;

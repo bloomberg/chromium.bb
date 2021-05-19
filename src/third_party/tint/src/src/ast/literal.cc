@@ -14,7 +14,7 @@
 
 #include "src/ast/literal.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::Literal);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::Literal);
 
 namespace tint {
 namespace ast {
@@ -23,10 +23,6 @@ Literal::Literal(const Source& source, type::Type* type)
     : Base(source), type_(type) {}
 
 Literal::~Literal() = default;
-
-bool Literal::IsValid() const {
-  return true;
-}
 
 void Literal::to_str(const semantic::Info& sem,
                      std::ostream& out,

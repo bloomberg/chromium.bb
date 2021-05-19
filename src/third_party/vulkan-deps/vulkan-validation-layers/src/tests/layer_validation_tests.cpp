@@ -1386,14 +1386,14 @@ void OneOffDescriptorSet::Clear() {
     descriptor_writes.clear();
 }
 
-void OneOffDescriptorSet::WriteDescriptorBufferInfo(int blinding, VkBuffer buffer, VkDeviceSize size,
-                                                    VkDescriptorType descriptorType, uint32_t count) {
+void OneOffDescriptorSet::WriteDescriptorBufferInfo(int binding, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize range,
+                                                    VkDescriptorType descriptorType, uint32_t arrayElement, uint32_t count) {
     const auto index = buffer_infos.size();
 
     VkDescriptorBufferInfo buffer_info = {};
     buffer_info.buffer = buffer;
-    buffer_info.offset = 0;
-    buffer_info.range = size;
+    buffer_info.offset = offset;
+    buffer_info.range = range;
 
     for (uint32_t i = 0; i < count; ++i) {
         buffer_infos.emplace_back(buffer_info);
@@ -1403,7 +1403,8 @@ void OneOffDescriptorSet::WriteDescriptorBufferInfo(int blinding, VkBuffer buffe
     memset(&descriptor_write, 0, sizeof(descriptor_write));
     descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_write.dstSet = set_;
-    descriptor_write.dstBinding = blinding;
+    descriptor_write.dstBinding = binding;
+    descriptor_write.dstArrayElement = arrayElement;
     descriptor_write.descriptorCount = count;
     descriptor_write.descriptorType = descriptorType;
     descriptor_write.pBufferInfo = &buffer_infos[index];
@@ -1413,8 +1414,8 @@ void OneOffDescriptorSet::WriteDescriptorBufferInfo(int blinding, VkBuffer buffe
     descriptor_writes.emplace_back(descriptor_write);
 }
 
-void OneOffDescriptorSet::WriteDescriptorBufferView(int blinding, VkBufferView &buffer_view, VkDescriptorType descriptorType,
-                                                    uint32_t count) {
+void OneOffDescriptorSet::WriteDescriptorBufferView(int binding, VkBufferView &buffer_view, VkDescriptorType descriptorType,
+                                                    uint32_t arrayElement, uint32_t count) {
     const auto index = buffer_views.size();
 
     for (uint32_t i = 0; i < count; ++i) {
@@ -1425,7 +1426,8 @@ void OneOffDescriptorSet::WriteDescriptorBufferView(int blinding, VkBufferView &
     memset(&descriptor_write, 0, sizeof(descriptor_write));
     descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_write.dstSet = set_;
-    descriptor_write.dstBinding = blinding;
+    descriptor_write.dstBinding = binding;
+    descriptor_write.dstArrayElement = arrayElement;
     descriptor_write.descriptorCount = count;
     descriptor_write.descriptorType = descriptorType;
     descriptor_write.pTexelBufferView = &buffer_views[index];
@@ -1435,8 +1437,9 @@ void OneOffDescriptorSet::WriteDescriptorBufferView(int blinding, VkBufferView &
     descriptor_writes.emplace_back(descriptor_write);
 }
 
-void OneOffDescriptorSet::WriteDescriptorImageInfo(int blinding, VkImageView image_view, VkSampler sampler,
-                                                   VkDescriptorType descriptorType, VkImageLayout imageLayout, uint32_t count) {
+void OneOffDescriptorSet::WriteDescriptorImageInfo(int binding, VkImageView image_view, VkSampler sampler,
+                                                   VkDescriptorType descriptorType, VkImageLayout imageLayout,
+                                                   uint32_t arrayElement, uint32_t count) {
     const auto index = image_infos.size();
 
     VkDescriptorImageInfo image_info = {};
@@ -1452,7 +1455,8 @@ void OneOffDescriptorSet::WriteDescriptorImageInfo(int blinding, VkImageView ima
     memset(&descriptor_write, 0, sizeof(descriptor_write));
     descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_write.dstSet = set_;
-    descriptor_write.dstBinding = blinding;
+    descriptor_write.dstBinding = binding;
+    descriptor_write.dstArrayElement = arrayElement;
     descriptor_write.descriptorCount = count;
     descriptor_write.descriptorType = descriptorType;
     descriptor_write.pImageInfo = &image_infos[index];

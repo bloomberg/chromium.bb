@@ -349,13 +349,7 @@ TEST_F(FPDFEditEmbedderTest, RasterizePDF) {
   VerifySavedDocument(612, 792, kAllBlackMd5sum);
 }
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_AddPaths DISABLED_AddPaths
-#else
-#define MAYBE_AddPaths AddPaths
-#endif
-TEST_F(FPDFEditEmbedderTest, MAYBE_AddPaths) {
+TEST_F(FPDFEditEmbedderTest, AddPaths) {
   // Start with a blank page
   FPDF_PAGE page = FPDFPage_New(CreateNewDocument(), 0, 612, 792);
   ASSERT_TRUE(page);
@@ -515,10 +509,14 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_AddPaths) {
   EXPECT_TRUE(FPDFPath_BezierTo(blue_path, 375, 330, 390, 360, 400, 400));
   EXPECT_TRUE(FPDFPath_Close(blue_path));
   FPDFPage_InsertObject(page, blue_path);
-  const char kLastMD5[] = "9823e1a21bd9b72b6a442ba4f12af946";
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+  static constexpr char kLastChecksum[] = "ed14c60702b1489c597c7d46ece7f86d";
+#else
+  static constexpr char kLastChecksum[] = "9823e1a21bd9b72b6a442ba4f12af946";
+#endif
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
-    CompareBitmap(page_bitmap.get(), 612, 792, kLastMD5);
+    CompareBitmap(page_bitmap.get(), 612, 792, kLastChecksum);
   }
 
   // Now save the result, closing the page and document
@@ -527,7 +525,7 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_AddPaths) {
   FPDF_ClosePage(page);
 
   // Render the saved result
-  VerifySavedDocument(612, 792, kLastMD5);
+  VerifySavedDocument(612, 792, kLastChecksum);
 }
 
 TEST_F(FPDFEditEmbedderTest, ClipPath) {
@@ -2109,8 +2107,8 @@ TEST_F(FPDFEditEmbedderTest, EditOverExistingContent) {
   VerifySavedDocument(612, 792, kLastChecksum);
 }
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+// TODO(crbug.com/pdfium/1651): Fix this issue and enable the test for Skia.
+#if defined(_SKIA_SUPPORT_)
 #define MAYBE_AddStrokedPaths DISABLED_AddStrokedPaths
 #else
 #define MAYBE_AddStrokedPaths AddStrokedPaths
@@ -2133,8 +2131,12 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_AddStrokedPaths) {
   FPDFPage_InsertObject(page, rect);
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
-    CompareBitmap(page_bitmap.get(), 612, 792,
-                  "64bd31f862a89e0a9e505a5af6efd506");
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+    static constexpr char kChecksum_1[] = "1469acf60e7647ebeb8e1fb08c5d6c7a";
+#else
+    static constexpr char kChecksum_1[] = "64bd31f862a89e0a9e505a5af6efd506";
+#endif
+    CompareBitmap(page_bitmap.get(), 612, 792, kChecksum_1);
   }
 
   // Add crossed-checkmark
@@ -2149,8 +2151,12 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_AddStrokedPaths) {
   FPDFPage_InsertObject(page, check);
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
-    CompareBitmap(page_bitmap.get(), 612, 792,
-                  "4b6f3b9d25c4e194821217d5016c3724");
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+    static constexpr char kChecksum_2[] = "68b3194f74abd9d471695ce1415be43f";
+#else
+    static constexpr char kChecksum_2[] = "4b6f3b9d25c4e194821217d5016c3724";
+#endif
+    CompareBitmap(page_bitmap.get(), 612, 792, kChecksum_2);
   }
 
   // Add stroked and filled oval-ish path.
@@ -2166,8 +2172,12 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_AddStrokedPaths) {
   FPDFPage_InsertObject(page, path);
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
-    CompareBitmap(page_bitmap.get(), 612, 792,
-                  "ff3e6a22326754944cc6e56609acd73b");
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+    static constexpr char kChecksum_3[] = "ea784068651df2b9ba132ce9215e6780";
+#else
+    static constexpr char kChecksum_3[] = "ff3e6a22326754944cc6e56609acd73b";
+#endif
+    CompareBitmap(page_bitmap.get(), 612, 792, kChecksum_3);
   }
   FPDF_ClosePage(page);
 }
@@ -2927,23 +2937,27 @@ TEST_F(FPDFEditEmbedderTest, AddCIDFontText) {
 }
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+// TODO(crbug.com/pdfium/1651): Fix this issue and enable the test for Skia.
+#if defined(_SKIA_SUPPORT_)
 #define MAYBE_SaveAndRender DISABLED_SaveAndRender
 #else
 #define MAYBE_SaveAndRender SaveAndRender
 #endif
 TEST_F(FPDFEditEmbedderTest, MAYBE_SaveAndRender) {
-  const char md5[] = "3c20472b0552c0c22b88ab1ed8c6202b";
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+  static constexpr char kChecksum[] = "0e8b079e349e34f64211c495845a3529";
+#else
+  static constexpr char kChecksum[] = "3c20472b0552c0c22b88ab1ed8c6202b";
+#endif
   {
     ASSERT_TRUE(OpenDocument("bug_779.pdf"));
     FPDF_PAGE page = LoadPage(0);
     ASSERT_NE(nullptr, page);
 
-    // Now add a more complex blue path.
+    // Now add a more complex green path.
     FPDF_PAGEOBJECT green_path = FPDFPageObj_CreateNewPath(20, 20);
     EXPECT_TRUE(FPDFPageObj_SetFillColor(green_path, 0, 255, 0, 200));
-    // TODO(npm): stroking will cause the MD5s to differ.
+    // TODO(npm): stroking will cause the checksums to differ.
     EXPECT_TRUE(FPDFPath_SetDrawMode(green_path, FPDF_FILLMODE_WINDING, 0));
     EXPECT_TRUE(FPDFPath_LineTo(green_path, 20, 63));
     EXPECT_TRUE(FPDFPath_BezierTo(green_path, 55, 55, 78, 78, 90, 90));
@@ -2953,7 +2967,7 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_SaveAndRender) {
     EXPECT_TRUE(FPDFPath_Close(green_path));
     FPDFPage_InsertObject(page, green_path);
     ScopedFPDFBitmap page_bitmap = RenderLoadedPage(page);
-    CompareBitmap(page_bitmap.get(), 612, 792, md5);
+    CompareBitmap(page_bitmap.get(), 612, 792, kChecksum);
 
     // Now save the result, closing the page and document
     EXPECT_TRUE(FPDFPage_GenerateContent(page));
@@ -2961,7 +2975,7 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_SaveAndRender) {
     UnloadPage(page);
   }
 
-  VerifySavedDocument(612, 792, md5);
+  VerifySavedDocument(612, 792, kChecksum);
 }
 
 TEST_F(FPDFEditEmbedderTest, AddMark) {

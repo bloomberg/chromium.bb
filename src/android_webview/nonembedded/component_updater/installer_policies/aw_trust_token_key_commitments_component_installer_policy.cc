@@ -18,31 +18,26 @@
 namespace android_webview {
 
 AwTrustTokenKeyCommitmentsComponentInstallerPolicy::
-    AwTrustTokenKeyCommitmentsComponentInstallerPolicy(
-        std::unique_ptr<AwComponentInstallerPolicyDelegate> delegate)
+    AwTrustTokenKeyCommitmentsComponentInstallerPolicy()
     : component_updater::TrustTokenKeyCommitmentsComponentInstallerPolicy(
           /* on_commitments_ready= */ base::BindRepeating(
               [](const std::string& raw_commitments) {
                 // The inherited ComponentReady shouldn't be called because it
                 // assumes it runs in a browser context.
                 NOTREACHED();
-              })),
-      delegate_(std::move(delegate)) {}
+              })) {
+  std::vector<uint8_t> hash;
+  GetHash(&hash);
+  delegate_ = std::make_unique<AwComponentInstallerPolicyDelegate>(hash);
+}
 
 AwTrustTokenKeyCommitmentsComponentInstallerPolicy::
     ~AwTrustTokenKeyCommitmentsComponentInstallerPolicy() = default;
 
-update_client::CrxInstaller::Result
-AwTrustTokenKeyCommitmentsComponentInstallerPolicy::OnCustomInstall(
-    const base::DictionaryValue& manifest,
-    const base::FilePath& install_dir) {
-  std::vector<uint8_t> hash;
-  GetHash(&hash);
-  return delegate_->OnCustomInstall(manifest, install_dir, hash);
-}
 void AwTrustTokenKeyCommitmentsComponentInstallerPolicy::OnCustomUninstall() {
   delegate_->OnCustomUninstall();
 }
+
 void AwTrustTokenKeyCommitmentsComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
@@ -51,11 +46,13 @@ void AwTrustTokenKeyCommitmentsComponentInstallerPolicy::ComponentReady(
 }
 
 void RegisterTrustTokensComponent(
-    component_updater::ComponentUpdateService* update_service) {
+    base::OnceCallback<bool(const update_client::CrxComponent&)>
+        register_callback,
+    base::OnceClosure registration_finished) {
   base::MakeRefCounted<component_updater::ComponentInstaller>(
-      std::make_unique<AwTrustTokenKeyCommitmentsComponentInstallerPolicy>(
-          std::make_unique<AwComponentInstallerPolicyDelegate>()))
-      ->Register(update_service, base::OnceClosure());
+      std::make_unique<AwTrustTokenKeyCommitmentsComponentInstallerPolicy>())
+      ->Register(std::move(register_callback),
+                 std::move(registration_finished));
 }
 
 }  // namespace android_webview

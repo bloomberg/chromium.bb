@@ -64,59 +64,12 @@ void RemoteFrameClientImpl::Detached(FrameDetachType type) {
   web_frame_->SetCoreFrame(nullptr);
 }
 
-base::UnguessableToken RemoteFrameClientImpl::GetDevToolsFrameToken() const {
-  if (web_frame_->Client()) {
-    return web_frame_->Client()->GetDevToolsFrameToken();
-  }
-  return base::UnguessableToken::Create();
-}
-
-void RemoteFrameClientImpl::Navigate(
-    const ResourceRequest& request,
-    bool should_replace_current_entry,
-    bool is_opener_navigation,
-    bool initiator_frame_has_download_sandbox_flag,
-    bool initiator_frame_is_ad,
-    mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
-    const base::Optional<WebImpression>& impression,
-    const LocalFrameToken* initiator_frame_token,
-    mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
-        initiator_policy_container_keep_alive_handle) {
-  bool blocking_downloads_in_sandbox_enabled =
-      RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled();
-  if (web_frame_->Client()) {
-    web_frame_->Client()->Navigate(
-        WrappedResourceRequest(request), should_replace_current_entry,
-        is_opener_navigation, initiator_frame_has_download_sandbox_flag,
-        blocking_downloads_in_sandbox_enabled, initiator_frame_is_ad,
-        std::move(blob_url_token), impression, initiator_frame_token,
-        std::move(initiator_policy_container_keep_alive_handle));
-  }
-}
-
 unsigned RemoteFrameClientImpl::BackForwardLength() {
   // TODO(creis,japhet): This method should return the real value for the
   // session history length. For now, return static value for the initial
   // navigation and the subsequent one moving the frame out-of-process.
   // See https://crbug.com/501116.
   return 2;
-}
-
-void RemoteFrameClientImpl::WillSynchronizeVisualProperties(
-    bool capture_sequence_number_changed,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& compositor_viewport_size) {
-  web_frame_->Client()->WillSynchronizeVisualProperties(
-      capture_sequence_number_changed, surface_id,
-      compositor_viewport_size);
-}
-
-bool RemoteFrameClientImpl::RemoteProcessGone() const {
-  return web_frame_->Client()->RemoteProcessGone();
-}
-
-void RemoteFrameClientImpl::DidSetFrameSinkId() {
-  web_frame_->Client()->DidSetFrameSinkId();
 }
 
 AssociatedInterfaceProvider*

@@ -390,6 +390,9 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="prefetch_download"/>
       <traffic_annotation unique_id="prefetch_visuals"/>
     </sender>
+    <sender name="Early Hints">
+      <traffic_annotation unique_id="early_hints_preload"/>
+    </sender>
     <sender name="New Tab Page">
       <traffic_annotation unique_id="backdrop_collection_images_download"/>
       <traffic_annotation unique_id="backdrop_collection_names_download"/>
@@ -434,6 +437,9 @@ hidden="true" so that these annotations don't show up in the document.
     <sender name="Phone as a Security Key">
       <traffic_annotation unique_id="cablev2_websocket_from_client"/>
       <traffic_annotation unique_id="cablev2_websocket_from_authenticator"/>
+    </sender>
+    <sender name="Memories">
+      <traffic_annotation unique_id="memories_remote_model_request"/>
     </sender>
   </group>
 </groups>

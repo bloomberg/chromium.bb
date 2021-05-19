@@ -5,9 +5,7 @@
 package org.chromium.chrome.browser.profiles;
 
 import android.text.TextUtils;
-
 import androidx.annotation.Nullable;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 
@@ -16,6 +14,9 @@ import org.chromium.base.annotations.NativeMethods;
  */
 public class OTRProfileID {
     private final String mProfileID;
+    // OTRProfileID value should be same with Profile::OTRProfileID::PrimaryID in native.
+    private static final OTRProfileID sPrimaryOTRProfileID =
+            new OTRProfileID("profile::primary_otr");
 
     @CalledByNative
     public OTRProfileID(String profileID) {
@@ -58,6 +59,29 @@ public class OTRProfileID {
      *         available. The off-the-record profile should exist when OTRProfileId will be used.
      */
     public static OTRProfileID deserialize(String value) {
+        OTRProfileID otrProfileId = deserializeWithoutVerify(value);
+
+        // The off-the-record profile should exist for the given OTRProfileID, since OTRProfileID
+        // creation is completed just before the profile creation. So there should always be a
+        // profile for the id. If OTR profile is not available, deserialize function should not be
+        // called.
+        if (otrProfileId != null
+                && !Profile.getLastUsedRegularProfile().hasOffTheRecordProfile(otrProfileId)) {
+            throw new IllegalStateException("The OTR profile should exist for otr profile id.");
+        }
+
+        return otrProfileId;
+    }
+
+    /**
+     * Construct OTRProfileID from the string representation. It is possible this {@link
+     * OTRProfileID} does not correspond to a real profile.
+     * @param value The string representation of the OTRProfileID that is generated with {@link
+     *        OTRProfileID#serialize} function.
+     * @return An OTRProfileID instance.
+     */
+    @CalledByNative
+    public static OTRProfileID deserializeWithoutVerify(String value) {
         // The value might be null, if it represents the regular profile.
         if (TextUtils.isEmpty(value)) return null;
 
@@ -67,29 +91,20 @@ public class OTRProfileID {
         // Be careful when changing here. This should be consistent with |OTRProfileID#toString|
         // function.
         String id = value.substring("OTRProfileID{".length(), value.length() - 1);
-        OTRProfileID otrProfileID = new OTRProfileID(id);
+        OTRProfileID otrProfileId = new OTRProfileID(id);
 
-        // The off-the-record profile should exist for the given OTRProfileID, since OTRProfileID
-        // creation is completed just before the profile creation. So there should always be a
-        // profile for the id. If OTR profile is not available, deserialize function should not be
-        // called.
-        if (!Profile.getLastUsedRegularProfile().hasOffTheRecordProfile(otrProfileID)) {
-            throw new IllegalStateException("The OTR profile should exist for otr profile id.");
-        }
-
-        return otrProfileID;
+        return otrProfileId;
     }
 
     public boolean isPrimaryOTRId() {
-        OTRProfileID primaryId = OTRProfileIDJni.get().getPrimaryID();
-        return this.equals(primaryId);
+        return this.equals(sPrimaryOTRProfileID);
     }
 
     /**
      * @return The OTRProfileID of the primary off-the-record profile.
      */
     public static OTRProfileID getPrimaryOTRProfileID() {
-        return OTRProfileIDJni.get().getPrimaryID();
+        return sPrimaryOTRProfileID;
     }
 
     /**

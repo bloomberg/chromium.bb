@@ -10,7 +10,7 @@
 #include "chromecast/browser/cast_web_contents.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/accessibility/ax_tree_id_registry.h"
+#include "ui/accessibility/ax_action_handler_registry.h"
 
 using gallium::castos::ActionProperties;
 using gallium::castos::BooleanProperties;
@@ -73,6 +73,11 @@ bool FlutterSemanticsNodeWrapper::HasScopesRoute() const {
 bool FlutterSemanticsNodeWrapper::HasNamesRoute() const {
   const BooleanProperties& boolean_properties = node_ptr_->boolean_properties();
   return boolean_properties.names_route();
+}
+
+bool FlutterSemanticsNodeWrapper::IsKeyboardNode() const {
+  const BooleanProperties& boolean_properties = node_ptr_->boolean_properties();
+  return boolean_properties.is_lift_to_type();
 }
 
 bool FlutterSemanticsNodeWrapper::CanBeAccessibilityFocused() const {
@@ -412,17 +417,18 @@ void FlutterSemanticsNodeWrapper::Serialize(ui::AXNodeData* out_data) const {
       // There will likely only ever be one active at any time.
       for (CastWebContents* contents : all_contents) {
         if (contents->id() == web_contents_id) {
-          content::WebContents* web_contents = contents->web_contents();
-          out_data->AddStringAttribute(
-              ax::mojom::StringAttribute::kChildTreeId,
-              web_contents->GetMainFrame()->GetAXTreeID().ToString());
+          auto child_tree_id =
+              contents->web_contents()->GetMainFrame()->GetAXTreeID();
+          if (!child_tree_id.ToString().empty()) {
+            out_data->AddChildTreeId(child_tree_id);
+          }
           break;
         }
       }
     } else {
       // Use the value as a tree id.
-      out_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
-                                   ax_tree_id);
+      ui::AXTreeID child_ax_tree_id = ui::AXTreeID::FromString(ax_tree_id);
+      out_data->AddChildTreeId(child_ax_tree_id);
     }
   }
 

@@ -328,7 +328,6 @@ static const uint8_t mxf_apple_coll_prefix[]               = { 0x06,0x0e,0x2b,0x
 static const uint8_t mxf_crypto_source_container_ul[]      = { 0x06,0x0e,0x2b,0x34,0x01,0x01,0x01,0x09,0x06,0x01,0x01,0x02,0x02,0x00,0x00,0x00 };
 static const uint8_t mxf_encrypted_triplet_key[]           = { 0x06,0x0e,0x2b,0x34,0x02,0x04,0x01,0x07,0x0d,0x01,0x03,0x01,0x02,0x7e,0x01,0x00 };
 static const uint8_t mxf_encrypted_essence_container[]     = { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x07,0x0d,0x01,0x03,0x01,0x02,0x0b,0x01,0x00 };
-static const uint8_t mxf_random_index_pack_key[]           = { 0x06,0x0e,0x2b,0x34,0x02,0x05,0x01,0x01,0x0d,0x01,0x02,0x01,0x01,0x11,0x01,0x00 };
 static const uint8_t mxf_sony_mpeg4_extradata[]            = { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x01,0x0e,0x06,0x06,0x02,0x02,0x01,0x00,0x00 };
 static const uint8_t mxf_avid_project_name[]               = { 0xa5,0xfb,0x7b,0x25,0xf6,0x15,0x94,0xb9,0x62,0xfc,0x37,0x17,0x49,0x2d,0x42,0xbf };
 static const uint8_t mxf_jp2k_rsiz[]                       = { 0x06,0x0e,0x2b,0x34,0x02,0x05,0x01,0x01,0x0d,0x01,0x02,0x01,0x01,0x02,0x01,0x00 };
@@ -337,6 +336,14 @@ static const uint8_t mxf_indirect_value_utf16be[]          = { 0x42,0x01,0x10,0x
 static const uint8_t mxf_apple_coll_max_cll[]              = { 0x06,0x0e,0x2b,0x34,0x01,0x01,0x01,0x0e,0x0e,0x20,0x04,0x01,0x05,0x03,0x01,0x01 };
 static const uint8_t mxf_apple_coll_max_fall[]             = { 0x06,0x0e,0x2b,0x34,0x01,0x01,0x01,0x0e,0x0e,0x20,0x04,0x01,0x05,0x03,0x01,0x02 };
 
+static const uint8_t mxf_mastering_display_prefix[13]      = { FF_MXF_MasteringDisplay_PREFIX };
+static const uint8_t mxf_mastering_display_uls[4][16] = {
+    FF_MXF_MasteringDisplayPrimaries,
+    FF_MXF_MasteringDisplayWhitePointChromaticity,
+    FF_MXF_MasteringDisplayMaximumLuminance,
+    FF_MXF_MasteringDisplayMinimumLuminance,
+};
+
 #define IS_KLV_KEY(x, y) (!memcmp(x, y, sizeof(y)))
 
 static void mxf_free_metadataset(MXFMetadataSet **ctx, int freectx)
@@ -344,11 +351,10 @@ static void mxf_free_metadataset(MXFMetadataSet **ctx, int freectx)
     MXFIndexTableSegment *seg;
     switch ((*ctx)->type) {
     case Descriptor:
+    case MultipleDescriptor:
         av_freep(&((MXFDescriptor *)*ctx)->extradata);
         av_freep(&((MXFDescriptor *)*ctx)->mastering);
         av_freep(&((MXFDescriptor *)*ctx)->coll);
-        break;
-    case MultipleDescriptor:
         av_freep(&((MXFDescriptor *)*ctx)->sub_descriptors_refs);
         break;
     case Sequence:
@@ -1088,9 +1094,9 @@ static int mxf_read_index_entry_array(AVIOContext *pb, MXFIndexTableSegment *seg
     if(segment->nb_index_entries && length < 11)
         return AVERROR_INVALIDDATA;
 
-    if (!(segment->temporal_offset_entries=av_calloc(segment->nb_index_entries, sizeof(*segment->temporal_offset_entries))) ||
-        !(segment->flag_entries          = av_calloc(segment->nb_index_entries, sizeof(*segment->flag_entries))) ||
-        !(segment->stream_offset_entries = av_calloc(segment->nb_index_entries, sizeof(*segment->stream_offset_entries)))) {
+    if (!FF_ALLOC_TYPED_ARRAY(segment->temporal_offset_entries, segment->nb_index_entries) ||
+        !FF_ALLOC_TYPED_ARRAY(segment->flag_entries           , segment->nb_index_entries) ||
+        !FF_ALLOC_TYPED_ARRAY(segment->stream_offset_entries  , segment->nb_index_entries)) {
         av_freep(&segment->temporal_offset_entries);
         av_freep(&segment->flag_entries);
         return AVERROR(ENOMEM);
@@ -1282,13 +1288,13 @@ static int mxf_read_generic_descriptor(void *arg, AVIOContext *pb, int tag, int 
                 rsiz == FF_PROFILE_JPEG2000_DCINEMA_4K)
                 descriptor->pix_fmt = AV_PIX_FMT_XYZ12;
         }
-        if (IS_KLV_KEY(uid, ff_mxf_mastering_display_prefix)) {
+        if (IS_KLV_KEY(uid, mxf_mastering_display_prefix)) {
             if (!descriptor->mastering) {
                 descriptor->mastering = av_mastering_display_metadata_alloc();
                 if (!descriptor->mastering)
                     return AVERROR(ENOMEM);
             }
-            if (IS_KLV_KEY(uid, ff_mxf_mastering_display_local_tags[0].uid)) {
+            if (IS_KLV_KEY(uid, mxf_mastering_display_uls[0])) {
                 for (int i = 0; i < 3; i++) {
                     /* Order: large x, large y, other (i.e. RGB) */
                     descriptor->mastering->display_primaries[i][0] = av_make_q(avio_rb16(pb), FF_MXF_MASTERING_CHROMA_DEN);
@@ -1298,20 +1304,20 @@ static int mxf_read_generic_descriptor(void *arg, AVIOContext *pb, int tag, int 
                 if (descriptor->mastering->white_point[0].den != 0)
                     descriptor->mastering->has_primaries = 1;
             }
-            if (IS_KLV_KEY(uid, ff_mxf_mastering_display_local_tags[1].uid)) {
+            if (IS_KLV_KEY(uid, mxf_mastering_display_uls[1])) {
                 descriptor->mastering->white_point[0] = av_make_q(avio_rb16(pb), FF_MXF_MASTERING_CHROMA_DEN);
                 descriptor->mastering->white_point[1] = av_make_q(avio_rb16(pb), FF_MXF_MASTERING_CHROMA_DEN);
                 /* Check we have seen mxf_mastering_display_primaries */
                 if (descriptor->mastering->display_primaries[0][0].den != 0)
                     descriptor->mastering->has_primaries = 1;
             }
-            if (IS_KLV_KEY(uid, ff_mxf_mastering_display_local_tags[2].uid)) {
+            if (IS_KLV_KEY(uid, mxf_mastering_display_uls[2])) {
                 descriptor->mastering->max_luminance = av_make_q(avio_rb32(pb), FF_MXF_MASTERING_LUMA_DEN);
                 /* Check we have seen mxf_mastering_display_minimum_luminance */
                 if (descriptor->mastering->min_luminance.den != 0)
                     descriptor->mastering->has_luminance = 1;
             }
-            if (IS_KLV_KEY(uid, ff_mxf_mastering_display_local_tags[3].uid)) {
+            if (IS_KLV_KEY(uid, mxf_mastering_display_uls[3])) {
                 descriptor->mastering->min_luminance = av_make_q(avio_rb32(pb), FF_MXF_MASTERING_LUMA_DEN);
                 /* Check we have seen mxf_mastering_display_maximum_luminance */
                 if (descriptor->mastering->max_luminance.den != 0)
@@ -1969,6 +1975,15 @@ static int mxf_umid_to_str(UID ul, UID uid, char **str)
         snprintf(p, 2 + 1, "%.2X", uid[i]);
         p += 2;
     }
+    return 0;
+}
+
+static int mxf_version_to_str(uint16_t major, uint16_t minor, uint16_t tertiary,
+                              uint16_t patch, uint16_t release, char **str)
+{
+    *str = av_asprintf("%d.%d.%d.%d.%d", major, minor, tertiary, patch, release);
+    if (!*str)
+        return AVERROR(ENOMEM);
     return 0;
 }
 
@@ -2733,6 +2748,17 @@ static int64_t mxf_timestamp_to_int64(uint64_t timestamp)
     av_dict_set(&s->metadata, name, str, AV_DICT_DONT_STRDUP_VAL); \
 } while (0)
 
+#define SET_VERSION_METADATA(pb, name, major, minor, tertiary, patch, release, str) do { \
+    major = avio_rb16(pb); \
+    minor = avio_rb16(pb); \
+    tertiary = avio_rb16(pb); \
+    patch = avio_rb16(pb); \
+    release = avio_rb16(pb); \
+    if ((ret = mxf_version_to_str(major, minor, tertiary, patch, release, &str)) < 0) \
+        return ret; \
+    av_dict_set(&s->metadata, name, str, AV_DICT_DONT_STRDUP_VAL); \
+} while (0)
+
 #define SET_UID_METADATA(pb, name, var, str) do { \
     avio_read(pb, var, 16); \
     if ((ret = mxf_uid_to_str(var, &str)) < 0) \
@@ -2754,12 +2780,16 @@ static int mxf_read_identification_metadata(void *arg, AVIOContext *pb, int tag,
     UID uid = { 0 };
     char *str = NULL;
     uint64_t ts;
+    uint16_t major, minor, tertiary, patch, release;
     switch (tag) {
     case 0x3C01:
         SET_STR_METADATA(pb, "company_name", str);
         break;
     case 0x3C02:
         SET_STR_METADATA(pb, "product_name", str);
+        break;
+    case 0x3C03:
+        SET_VERSION_METADATA(pb, "product_version_num", major, minor, tertiary, patch, release, str);
         break;
     case 0x3C04:
         SET_STR_METADATA(pb, "product_version", str);
@@ -2769,6 +2799,9 @@ static int mxf_read_identification_metadata(void *arg, AVIOContext *pb, int tag,
         break;
     case 0x3C06:
         SET_TS_METADATA(pb, "modification_date", ts, str);
+        break;
+    case 0x3C07:
+        SET_VERSION_METADATA(pb, "toolkit_version_num", major, minor, tertiary, patch, release, str);
         break;
     case 0x3C08:
         SET_STR_METADATA(pb, "application_platform", str);
@@ -2867,8 +2900,11 @@ static int mxf_read_local_tags(MXFContext *mxf, KLVPacket *klv, MXFMetadataReadF
         int ret;
         int tag = avio_rb16(pb);
         int size = avio_rb16(pb); /* KLV specified by 0x53 */
-        uint64_t next = avio_tell(pb) + size;
+        int64_t next = avio_tell(pb);
         UID uid = {0};
+        if (next < 0 || next > INT64_MAX - size)
+            return next < 0 ? next : AVERROR_INVALIDDATA;
+        next += size;
 
         av_log(mxf->fc, AV_LOG_TRACE, "local tag %#04x size %d\n", tag, size);
         if (!size) { /* ignore empty tag, needed for some files with empty UMID tag */
@@ -3264,7 +3300,7 @@ static void mxf_read_random_index_pack(AVFormatContext *s)
         goto end;
     avio_seek(s->pb, file_size - length, SEEK_SET);
     if (klv_read_packet(&klv, s->pb) < 0 ||
-        !IS_KLV_KEY(klv.key, mxf_random_index_pack_key))
+        !IS_KLV_KEY(klv.key, ff_mxf_random_index_pack_key))
         goto end;
     if (klv.next_klv != file_size || klv.length <= 4 || (klv.length - 4) % 12) {
         av_log(s, AV_LOG_WARNING, "Invalid RIP KLV length\n");

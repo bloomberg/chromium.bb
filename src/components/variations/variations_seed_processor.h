@@ -15,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/variations/proto/study.pb.h"
@@ -34,7 +33,7 @@ struct ClientFilterableState;
 class VariationsSeedProcessor {
  public:
   using UIStringOverrideCallback =
-      base::RepeatingCallback<void(uint32_t, const base::string16&)>;
+      base::RepeatingCallback<void(uint32_t, const std::u16string&)>;
 
   VariationsSeedProcessor();
   virtual ~VariationsSeedProcessor();

@@ -9,7 +9,6 @@
 #define QUICHE_HTTP2_HPACK_DECODER_HPACK_DECODER_LISTENER_H_
 
 #include "absl/strings/string_view.h"
-#include "http2/hpack/hpack_string.h"
 #include "http2/hpack/http2_hpack_constants.h"
 #include "common/platform/api/quiche_export.h"
 
@@ -28,7 +27,7 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderListener {
   // Called for each header name-value pair that is decoded, in the order they
   // appear in the HPACK block. Multiple values for a given key will be emitted
   // as multiple calls to OnHeader.
-  virtual void OnHeader(const HpackString& name, const HpackString& value) = 0;
+  virtual void OnHeader(const std::string& name, const std::string& value) = 0;
 
   // OnHeaderListEnd is called after successfully decoding an HPACK block into
   // an HTTP/2 header list. Will only be called once per block, even if it
@@ -49,7 +48,7 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderNoOpListener
   ~HpackDecoderNoOpListener() override;
 
   void OnHeaderListStart() override;
-  void OnHeader(const HpackString& name, const HpackString& value) override;
+  void OnHeader(const std::string& name, const std::string& value) override;
   void OnHeaderListEnd() override;
   void OnHeaderErrorDetected(absl::string_view error_message) override;
 

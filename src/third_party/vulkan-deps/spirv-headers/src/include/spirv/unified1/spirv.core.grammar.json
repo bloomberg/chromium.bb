@@ -4552,7 +4552,7 @@
       "operands" : [
         { "kind" : "IdResultType" },
         { "kind" : "IdResult" },
-        { "kind" : "IdScope", "name" : "'Execution'" }
+        { "kind" : "IdScope", "name" : "'Scope'" }
       ],
       "capabilities" : [ "ShaderClockKHR" ],
       "extensions" : [ "SPV_KHR_shader_clock" ],
@@ -5186,6 +5186,61 @@
         { "kind" : "IdRef", "quantifier" : "*", "name" : "'Argument 0'" }
       ],
       "capabilities" : [ "AsmINTEL" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpAtomicFMinEXT",
+      "class"  : "Atomic",
+      "opcode" : 5614,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",             "name" : "'Pointer'" },
+        { "kind" : "IdScope",           "name" : "'Memory'" },
+        { "kind" : "IdMemorySemantics", "name" : "'Semantics'" },
+        { "kind" : "IdRef",             "name" : "'Value'" }
+      ],
+      "capabilities" : [ "AtomicFloat16MinMaxEXT", "AtomicFloat32MinMaxEXT", "AtomicFloat64MinMaxEXT" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpAtomicFMaxEXT",
+      "class"  : "Atomic",
+      "opcode" : 5615,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",             "name" : "'Pointer'" },
+        { "kind" : "IdScope",           "name" : "'Memory'" },
+        { "kind" : "IdMemorySemantics", "name" : "'Semantics'" },
+        { "kind" : "IdRef",             "name" : "'Value'" }
+      ],
+      "capabilities" : [ "AtomicFloat16MinMaxEXT", "AtomicFloat32MinMaxEXT", "AtomicFloat64MinMaxEXT" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpAssumeTrueKHR",
+      "class"  : "Miscellaneous",
+      "opcode" : 5630,
+      "operands" : [
+        { "kind" : "IdRef", "name" : "'Condition'" }
+      ],
+      "capabilities" : [ "ExpectAssumeKHR" ],
+      "extensions" : [ "SPV_KHR_expect_assume" ],
+      "version" : "None"
+    },
+    {
+      "opname" : "OpExpectKHR",
+      "class"  : "Miscellaneous",
+      "opcode" : 5631,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef", "name" : "'Value'" },
+        { "kind" : "IdRef", "name" : "'ExpectedValue'" }
+      ],
+      "capabilities" : [ "ExpectAssumeKHR" ],
+      "extensions" : [ "SPV_KHR_expect_assume" ],
       "version" : "None"
     },
     {
@@ -9381,6 +9436,13 @@
           "enumerant" : "Import",
           "value" : 1,
           "capabilities" : [ "Linkage" ]
+        },
+        {
+          "enumerant" : "LinkOnceODR",
+          "value" : 2,
+          "capabilities" : [ "Linkage" ],
+          "extensions" : [ "SPV_KHR_linkonce_odr" ],
+          "version" : "None"
         }
       ]
     },
@@ -10407,34 +10469,16 @@
           "version" : "1.3"
         },
         {
-          "enumerant" : "SubgroupGeMask",
-          "value" : 4417,
-          "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
-          "version" : "1.3"
-        },
-        {
-          "enumerant" : "SubgroupGtMask",
-          "value" : 4418,
-          "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
-          "version" : "1.3"
-        },
-        {
-          "enumerant" : "SubgroupLeMask",
-          "value" : 4419,
-          "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
-          "version" : "1.3"
-        },
-        {
-          "enumerant" : "SubgroupLtMask",
-          "value" : 4420,
-          "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
-          "version" : "1.3"
-        },
-        {
           "enumerant" : "SubgroupEqMaskKHR",
           "value" : 4416,
           "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
           "extensions" : [ "SPV_KHR_shader_ballot" ],
+          "version" : "1.3"
+        },
+        {
+          "enumerant" : "SubgroupGeMask",
+          "value" : 4417,
+          "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
           "version" : "1.3"
         },
         {
@@ -10445,6 +10489,12 @@
           "version" : "1.3"
         },
         {
+          "enumerant" : "SubgroupGtMask",
+          "value" : 4418,
+          "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
+          "version" : "1.3"
+        },
+        {
           "enumerant" : "SubgroupGtMaskKHR",
           "value" : 4418,
           "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
@@ -10452,10 +10502,22 @@
           "version" : "1.3"
         },
         {
+          "enumerant" : "SubgroupLeMask",
+          "value" : 4419,
+          "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
+          "version" : "1.3"
+        },
+        {
           "enumerant" : "SubgroupLeMaskKHR",
           "value" : 4419,
           "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
           "extensions" : [ "SPV_KHR_shader_ballot" ],
+          "version" : "1.3"
+        },
+        {
+          "enumerant" : "SubgroupLtMask",
+          "value" : 4420,
+          "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
           "version" : "1.3"
         },
         {
@@ -12063,6 +12125,24 @@
           "version" : "None"
         },
         {
+          "enumerant" : "AtomicFloat32MinMaxEXT",
+          "value" : 5612,
+          "extensions" : [ "SPV_EXT_shader_atomic_float_min_max" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "AtomicFloat64MinMaxEXT",
+          "value" : 5613,
+          "extensions" : [ "SPV_EXT_shader_atomic_float_min_max" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "AtomicFloat16MinMaxEXT",
+          "value" : 5616,
+          "extensions" : [ "SPV_EXT_shader_atomic_float_min_max" ],
+          "version" : "None"
+        },
+        {
           "enumerant" : "VectorComputeINTEL",
           "value" : 5617,
           "capabilities" : [ "VectorAnyINTEL" ],
@@ -12073,6 +12153,12 @@
           "enumerant" : "VectorAnyINTEL",
           "value" : 5619,
           "extensions" : [ "SPV_INTEL_vector_compute" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "ExpectAssumeKHR",
+          "value" : 5629,
+          "extensions" : [ "SPV_KHR_expect_assume" ],
           "version" : "None"
         },
         {

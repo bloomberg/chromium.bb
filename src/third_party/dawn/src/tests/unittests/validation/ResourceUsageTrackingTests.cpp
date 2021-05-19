@@ -46,22 +46,22 @@ namespace {
         // in the caller, so it is always correct for binding validation between bind groups and
         // pipeline. But those bind groups in caller can be used for validation for other purposes.
         wgpu::RenderPipeline CreateNoOpRenderPipeline() {
-            wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
                 [[stage(vertex)]] fn main() -> void {
                 })");
 
-            wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
                 [[stage(fragment)]] fn main() -> void {
                 })");
-            utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-            pipelineDescriptor.vertexStage.module = vsModule;
-            pipelineDescriptor.cFragmentStage.module = fsModule;
+            utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+            pipelineDescriptor.vertex.module = vsModule;
+            pipelineDescriptor.cFragment.module = fsModule;
             pipelineDescriptor.layout = utils::MakeBasicPipelineLayout(device, nullptr);
-            return device.CreateRenderPipeline(&pipelineDescriptor);
+            return device.CreateRenderPipeline2(&pipelineDescriptor);
         }
 
         wgpu::ComputePipeline CreateNoOpComputePipeline() {
-            wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
                 [[stage(compute)]] fn main() -> void {
                 })");
             wgpu::ComputePipelineDescriptor pipelineDescriptor;
@@ -771,22 +771,22 @@ namespace {
             wgpu::BindGroup bg1 = utils::MakeBindGroup(device, bgl1, {{0, buffer}});
 
             // Create a passthrough render pipeline with a readonly buffer
-            wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
                 [[stage(vertex)]] fn main() -> void {
                 })");
 
-            wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
                 [[block]] struct RBuffer {
-                    [[offset(0)]] value : f32;
+                    value : f32;
                 };
-                [[group(0), binding(0)]] var<storage_buffer> rBuffer : [[access(read)]] RBuffer;
+                [[group(0), binding(0)]] var<storage> rBuffer : [[access(read)]] RBuffer;
                 [[stage(fragment)]] fn main() -> void {
                 })");
-            utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-            pipelineDescriptor.vertexStage.module = vsModule;
-            pipelineDescriptor.cFragmentStage.module = fsModule;
+            utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+            pipelineDescriptor.vertex.module = vsModule;
+            pipelineDescriptor.cFragment.module = fsModule;
             pipelineDescriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl0);
-            wgpu::RenderPipeline rp = device.CreateRenderPipeline(&pipelineDescriptor);
+            wgpu::RenderPipeline rp = device.CreateRenderPipeline2(&pipelineDescriptor);
 
             // Resource in bg1 conflicts with resources used in bg0. However, bindings in bg1 is
             // not used in pipeline. But we still track this binding.
@@ -815,11 +815,11 @@ namespace {
             wgpu::BindGroup bg1 = utils::MakeBindGroup(device, bgl1, {{0, buffer}});
 
             // Create a passthrough compute pipeline with a readonly buffer
-            wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
                 [[block]] struct RBuffer {
-                    [[offset(0)]] value : f32;
+                    value : f32;
                 };
-                [[group(0), binding(0)]] var<storage_buffer> rBuffer : [[access(read)]] RBuffer;
+                [[group(0), binding(0)]] var<storage> rBuffer : [[access(read)]] RBuffer;
                 [[stage(compute)]] fn main() -> void {
                 })");
             wgpu::ComputePipelineDescriptor pipelineDescriptor;
@@ -1286,8 +1286,8 @@ namespace {
         wgpu::TextureView view0 = texture0.CreateView();
         wgpu::TextureView view1 = texture1.CreateView();
 
-        wgpu::TextureCopyView srcView = utils::CreateTextureCopyView(texture0, 0, {0, 0, 0});
-        wgpu::TextureCopyView dstView = utils::CreateTextureCopyView(texture1, 0, {0, 0, 0});
+        wgpu::ImageCopyTexture srcView = utils::CreateImageCopyTexture(texture0, 0, {0, 0, 0});
+        wgpu::ImageCopyTexture dstView = utils::CreateImageCopyTexture(texture1, 0, {0, 0, 0});
         wgpu::Extent3D copySize = {1, 1, 1};
 
         // Use the texture as both copy dst and render attachment in render pass
@@ -1549,19 +1549,19 @@ namespace {
         // Test render pass
         {
             // Create a passthrough render pipeline with a readonly storage texture
-            wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
                 [[stage(vertex)]] fn main() -> void {
                 })");
 
-            wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
                 [[group(0), binding(0)]] var tex : [[access(read)]] texture_storage_2d<rgba8unorm>;
                 [[stage(fragment)]] fn main() -> void {
                 })");
-            utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-            pipelineDescriptor.vertexStage.module = vsModule;
-            pipelineDescriptor.cFragmentStage.module = fsModule;
+            utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+            pipelineDescriptor.vertex.module = vsModule;
+            pipelineDescriptor.cFragment.module = fsModule;
             pipelineDescriptor.layout = utils::MakeBasicPipelineLayout(device, &readBGL);
-            wgpu::RenderPipeline rp = device.CreateRenderPipeline(&pipelineDescriptor);
+            wgpu::RenderPipeline rp = device.CreateRenderPipeline2(&pipelineDescriptor);
 
             // Texture binding in readBG conflicts with texture binding in writeBG. The binding
             // in writeBG is not used in pipeline. But we still track this binding.
@@ -1579,7 +1579,7 @@ namespace {
         // Test compute pass
         {
             // Create a passthrough compute pipeline with a readonly storage texture
-            wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+            wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
                 [[group(0), binding(0)]] var tex : [[access(read)]] texture_storage_2d<rgba8unorm>;
                 [[stage(compute)]] fn main() -> void {
                 })");

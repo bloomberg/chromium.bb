@@ -93,6 +93,7 @@ class WebAppIntegrationBrowserTestBase {
     virtual void AddBlankTabAndShow(Browser* browser) = 0;
     virtual net::EmbeddedTestServer* EmbeddedTestServer() = 0;
     virtual std::vector<Profile*> GetAllProfiles() = 0;
+    virtual bool IsSyncTest() = 0;
     virtual bool UserSigninInternal() = 0;
     virtual void TurnSyncOff() = 0;
     virtual void TurnSyncOn() = 0;
@@ -114,6 +115,16 @@ class WebAppIntegrationBrowserTestBase {
       StateSnapshot* state_snapshot,
       Profile* profile,
       web_app::AppId id);
+
+  // Supported scopes:
+  //  * site_a
+  //  * site_a/foo
+  //  * site_a/bar
+  //  * site_b
+  //  * site_c
+  base::Optional<AppState> GetAppByScope(StateSnapshot* state_snapshot,
+                                         Profile* profile,
+                                         const std::string& scope);
 
   static bool IsInspectionAction(const std::string& action);
   static std::string StripAllWhitespace(std::string line);
@@ -138,52 +149,79 @@ class WebAppIntegrationBrowserTestBase {
   void ExecuteAction(const std::string& action_string);
 
   // Automated Testing Actions
-  void AddPolicyAppInternal(base::Value default_launch_container);
+  void AddPolicyAppInternal(const std::string& action_param,
+                            base::Value default_launch_container);
   void ClosePWA();
-  void InstallCreateShortcutTabbed();
+  void InstallCreateShortcut(bool open_in_window);
   void InstallLocally();
   web_app::AppId InstallOmniboxOrMenu();
-  void LaunchInternal();
+  void LaunchInternal(const std::string& action_param);
   void ListAppsInternal();
   void NavigateTabbedBrowserToSite(const GURL& url);
-  void RemovePolicyApp();
-  void SetOpenInTabInternal();
-  void SetOpenInWindowInternal();
+  void RemovePolicyApp(const std::string& action_param);
+  void SetOpenInTabInternal(const std::string& action_param);
+  void SetOpenInWindowInternal(const std::string& action_param);
   void SwitchProfileClients();
   void TurnSyncOff();
   void TurnSyncOn();
   void UninstallFromMenu();
-  void UninstallInternal();
+  void UninstallInternal(const std::string& action_param);
+  void ManifestUpdateDisplay(const std::string& action_scope,
+                             DisplayMode display_mode);
   void UserSigninInternal();
 
   // Assert Actions
   void AssertAppNotLocallyInstalledInternal();
-  void AssertAppNotInList();
-  void AssertManifestDisplayModeInternal(DisplayMode display_mode);
-  void AssertUserDisplayModeInternal(DisplayMode display_mode);
+  void AssertAppNotInList(const std::string& action_param);
   void AssertInstallable();
   void AssertInstallIconShown();
   void AssertInstallIconNotShown();
   void AssertLaunchIconShown();
   void AssertLaunchIconNotShown();
+  void AssertManifestDisplayModeInternal(DisplayMode display_mode);
   void AssertTabCreated();
+  void AssertUserDisplayModeInternal(DisplayMode display_mode);
+  void AssertWindowClosed();
   void AssertWindowCreated();
+  void AssertWindowDisplayMode(blink::mojom::DisplayMode display_mode);
 
   // Helpers
   std::vector<std::string>& testing_actions() { return testing_actions_; }
   std::vector<AppId> GetAppIdsForProfile(Profile* profile);
-  GURL GetInstallableAppURL();
+
+  // Supported params:
+  //  * site_a
+  //  * site_a/foo
+  //  * site_a/bar
+  //  * site_b
+  //  * site_c
+  GURL GetInstallableAppURL(const std::string& action_param);
   WebAppProvider* GetProviderForProfile(Profile* profile);
 
  private:
   StateSnapshot ConstructStateSnapshot();
   const net::EmbeddedTestServer* embedded_test_server();
+
+  // Supported params:
+  //  * site_a
+  //  * site_a/foo
+  //  * site_a/bar
+  //  * site_b
+  //  * site_c
+  GURL GetAppURLForManifest(const std::string& action_scope,
+                            DisplayMode display_mode);
   GURL GetNonInstallableAppURL();
-  GURL GetInScopeURL();
-  GURL GetOutOfScopeURL();
+  GURL GetInScopeURL(const std::string& action_param);
+  GURL GetOutOfScopeURL(const std::string& action_param);
+  GURL GetURLForScope(const std::string& action_param);
 
   content::WebContents* GetCurrentTab(Browser* browser);
   WebAppProvider* GetProvider() { return WebAppProvider::Get(profile()); }
+  // This action only works if no navigations to the given app_url occur
+  // between app installation and calls to this action.
+  void ForceUpdateManifestContents(const std::string& app_scope,
+                                   GURL app_url_with_manifest_param);
+
   Browser* browser();
   Profile* profile() {
     if (!active_profile_) {

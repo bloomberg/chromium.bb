@@ -18,6 +18,8 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strconv"
+	"strings"
 
 	"github.com/google/wuffs/lib/interval"
 
@@ -195,6 +197,14 @@ func invert(tm *t.Map, n *a.Expr) (*a.Expr, error) {
 	return o, nil
 }
 
+func updateFactsForSuspension(x *a.Expr) (*a.Expr, error) {
+	if x.Mentions(exprArgs) || x.Mentions(exprThis) {
+		return nil, nil
+	}
+	// TODO: drop any facts involving ptr-typed local variables?
+	return x, nil
+}
+
 func (q *checker) bcheckBlock(block []*a.Node) error {
 	unreachable := false
 	for _, o := range block {
@@ -213,16 +223,9 @@ func (q *checker) bcheckBlock(block []*a.Node) error {
 			// No-op.
 		case a.KRet:
 			if o.AsRet().Keyword() == t.IDYield {
-				// Drop any facts involving args or this.
-				if err := q.facts.update(func(x *a.Expr) (*a.Expr, error) {
-					if x.Mentions(exprArgs) || x.Mentions(exprThis) {
-						return nil, nil
-					}
-					return x, nil
-				}); err != nil {
+				if err := q.facts.update(updateFactsForSuspension); err != nil {
 					return err
 				}
-				// TODO: drop any facts involving ptr-typed local variables?
 				continue
 			}
 		}
@@ -244,6 +247,9 @@ func (q *checker) bcheckStatement(n *a.Node) error {
 			return err
 		}
 
+	case a.KChoose:
+		// No-op.
+
 	case a.KIOBind:
 		n := n.AsIOBind()
 		if _, err := q.bcheckExpr(n.IO(), 0); err != nil {
@@ -264,6 +270,9 @@ func (q *checker) bcheckStatement(n *a.Node) error {
 
 	case a.KIterate:
 		n := n.AsIterate()
+		if _, err := q.bcheckExpr(n.UnrollAsExpr(), 0); err != nil {
+			return err
+		}
 		for _, o := range n.Assigns() {
 			o := o.AsAssign()
 			if err := q.bcheckAssignment(o.LHS(), o.Operator(), o.RHS()); err != nil {
@@ -276,10 +285,15 @@ func (q *checker) bcheckStatement(n *a.Node) error {
 
 		assigns := n.Assigns()
 		for ; n != nil; n = n.ElseIterate() {
+			if _, err := q.bcheckExpr(n.UnrollAsExpr(), 0); err != nil {
+				return err
+			}
 			q.facts = q.facts[:0]
 			for _, o := range assigns {
 				lhs := o.AsAssign().LHS()
-				q.facts = append(q.facts, makeSliceLengthEqEq(lhs.Ident(), lhs.MType(), n.Length()))
+				lhsExpr := a.NewExpr(0, 0, lhs.Ident(), nil, nil, nil, nil)
+				lhsExpr.SetMType(lhs.MType())
+				q.facts = append(q.facts, q.makeSliceLengthEqEq(lhsExpr, n.Length()))
 			}
 			if err := q.bcheckBlock(n.Body()); err != nil {
 				return err
@@ -358,6 +372,18 @@ func (q *checker) hasIsErrorFact(id t.ID) bool {
 	return false
 }
 
+func (q *checker) bcheckFuncAssert(n *a.Assert) error {
+	if n.IsChooseCPUArch() {
+		b := bounds{zero, one}
+		cond := n.Condition()
+		cond.SetMBounds(b)
+		cond.LHS().AsExpr().SetMBounds(b)
+		cond.RHS().AsExpr().SetMBounds(b)
+		return nil
+	}
+	return fmt.Errorf("check: function assertions are not supported yet")
+}
+
 func (q *checker) bcheckAssert(n *a.Assert) error {
 	if err := n.DropExprCachedMBounds(); err != nil {
 		return err
@@ -410,6 +436,14 @@ func (q *checker) bcheckAssert(n *a.Assert) error {
 }
 
 func (q *checker) bcheckAssignment(lhs *a.Expr, op t.ID, rhs *a.Expr) error {
+	oldFacts := (map[*a.Expr]struct{})(nil)
+	if (rhs.Operator() == t.IDOpenParen) && rhs.Effect().Impure() {
+		oldFacts = map[*a.Expr]struct{}{}
+		for _, x := range q.facts {
+			oldFacts[x] = struct{}{}
+		}
+	}
+
 	lTyp := (*a.TypeExpr)(nil)
 	if lhs != nil {
 		if _, err := q.bcheckExpr(lhs, 0); err != nil {
@@ -421,6 +455,43 @@ func (q *checker) bcheckAssignment(lhs *a.Expr, op t.ID, rhs *a.Expr) error {
 	nb, err := q.bcheckAssignment1(lhs, lTyp, op, rhs)
 	if err != nil {
 		return err
+	}
+
+	if (rhs.Operator() == t.IDOpenParen) && rhs.Effect().Impure() {
+		if rhs.Effect().Coroutine() && (op != t.IDEqQuestion) {
+			if err := q.facts.update(updateFactsForSuspension); err != nil {
+				return err
+			}
+		}
+
+		recv := rhs.LHS().AsExpr().LHS().AsExpr()
+		if err := q.facts.update(func(x *a.Expr) (*a.Expr, error) {
+			if _, ok := oldFacts[x]; !ok {
+				// No-op. Don't drop any newly minted facts.
+			} else {
+				// Drop any old facts involving the receiver.
+				if x.Mentions(recv) {
+					return nil, nil
+				}
+				// Drop any facts involving a pass-by-reference argument.
+				for _, arg := range rhs.Args() {
+					v := arg.AsArg().Value()
+					if typ := v.MType(); typ.IsBool() || typ.IsNullptr() ||
+						typ.IsNumTypeOrIdeal() || typ.IsStatus() {
+						continue
+					}
+					// TODO: take extra care if v is a slice? For example,
+					// facts involving "v.length()" aren't affected by passing
+					// v to an impure function.
+					if x.Mentions(v) {
+						return nil, nil
+					}
+				}
+			}
+			return x, nil
+		}); err != nil {
+			return err
+		}
 	}
 
 	if lhs == nil {
@@ -440,6 +511,42 @@ func (q *checker) bcheckAssignment(lhs *a.Expr, op t.ID, rhs *a.Expr) error {
 
 		if lhs.MType().IsNumType() && rhs.Effect().Pure() {
 			q.facts.appendBinaryOpFact(t.IDXBinaryEqEq, lhs, rhs)
+
+			if rhs.Operator() == t.IDOpenParen {
+				if lTyp := rhs.LHS().AsExpr().MType(); lTyp.IsFuncType() && lTyp.Receiver().IsNumType() {
+					switch fn := lTyp.FuncName(); fn {
+					case t.IDMax, t.IDMin:
+						if err := q.bcheckAssignmentMaxMin(lhs, fn, rhs); err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
+
+		// Look for "lhs = x[i .. j]" where i and j are constants.
+		if rhs.Operator() == t.IDDotDot {
+			icv := (*big.Int)(nil)
+			if i := rhs.MHS().AsExpr(); i == nil {
+				icv = zero
+			} else if i.ConstValue() != nil {
+				icv = i.ConstValue()
+			}
+
+			jcv := (*big.Int)(nil)
+			if j := rhs.RHS().AsExpr(); (j != nil) && (j.ConstValue() != nil) {
+				jcv = j.ConstValue()
+			}
+
+			if (icv != nil) && (jcv != nil) {
+				n := big.NewInt(0).Sub(jcv, icv)
+				id, err := q.tm.Insert(n.String())
+				if err != nil {
+					return err
+				}
+				// TODO: dupe lhs before making a new fact referencing it?
+				q.facts = append(q.facts, q.makeSliceLengthEqEq(lhs, id))
+			}
 		}
 
 	} else {
@@ -532,6 +639,36 @@ func (q *checker) bcheckAssignment1(lhs *a.Expr, lTyp *a.TypeExpr, op t.ID, rhs 
 		}
 	}
 	return rb, nil
+}
+
+func (q *checker) bcheckAssignmentMaxMin(lhs *a.Expr, funcName t.ID, rhs *a.Expr) error {
+	if len(rhs.Args()) != 1 {
+		return fmt.Errorf("check: internal error: max/min has unexpected arguments")
+	}
+	op := t.ID(0)
+	switch funcName {
+	case t.IDMax:
+		op = t.IDXBinaryGreaterEq
+	case t.IDMin:
+		op = t.IDXBinaryLessEq
+	default:
+		return fmt.Errorf("check: internal error: max/min has unexpected function name")
+	}
+
+	operands := [2]*a.Expr{
+		rhs.LHS().AsExpr().LHS().AsExpr(),
+		rhs.Args()[0].AsArg().Value(),
+	}
+	for _, operand := range operands {
+		if operand.Mentions(lhs) {
+			continue
+		}
+		o := a.NewExpr(0, op, 0, lhs.AsNode(), nil, operand.AsNode(), nil)
+		o.SetMBounds(bounds{zero, one})
+		o.SetMType(typeExprBool)
+		q.facts.appendFact(o)
+	}
+	return nil
 }
 
 func snapshot(facts []*a.Expr) []*a.Expr {
@@ -980,6 +1117,8 @@ func (q *checker) bcheckExprCallSpecialCases(n *a.Expr, depth uint32) (bounds, e
 	recv := lhs.LHS().AsExpr()
 	method := lhs.Ident()
 
+	advance, advanceExpr, update := (*big.Int)(nil), (*a.Expr)(nil), false
+
 	if recvTyp := recv.MType(); recvTyp == nil {
 		return bounds{}, errNotASpecialCase
 
@@ -1023,15 +1162,18 @@ func (q *checker) bcheckExprCallSpecialCases(n *a.Expr, depth uint32) (bounds, e
 		}
 
 	} else if recvTyp.IsIOTokenType() {
-		advance, advanceExpr, update := (*big.Int)(nil), (*a.Expr)(nil), false
-
 		if method == t.IDUndoByte {
 			if err := q.canUndoByte(recv); err != nil {
 				return bounds{}, err
 			}
 
+		} else if method == t.IDLimitedCopyU32FromHistory8ByteChunksFast {
+			if err := q.canLimitedCopyU32FromHistoryFast(recv, n.Args(), eight, eight); err != nil {
+				return bounds{}, err
+			}
+
 		} else if method == t.IDLimitedCopyU32FromHistoryFast {
-			if err := q.canLimitedCopyU32FromHistoryFast(recv, n.Args()); err != nil {
+			if err := q.canLimitedCopyU32FromHistoryFast(recv, n.Args(), nil, one); err != nil {
 				return bounds{}, err
 			}
 
@@ -1075,21 +1217,47 @@ func (q *checker) bcheckExprCallSpecialCases(n *a.Expr, depth uint32) (bounds, e
 			}
 		}
 
-		if (advance != nil) || (advanceExpr != nil) {
-			if ok, err := q.optimizeIOMethodAdvance(recv, advance, advanceExpr, update); err != nil {
-				return bounds{}, err
-			} else if !ok {
-				adv := ""
-				if advance != nil {
-					adv = advance.String()
-				} else {
-					adv = advanceExpr.Str(q.tm)
-				}
-				return bounds{}, fmt.Errorf("check: could not prove %s pre-condition: %s.length() >= %s",
-					method.Str(q.tm), recv.Str(q.tm), adv)
+	} else if recvTyp.Eq(typeExprSliceU8) {
+		if method >= t.IDPeekU8 {
+			if m := method - t.IDPeekU8; m < t.ID(len(ioMethodAdvances)) {
+				au := ioMethodAdvances[m]
+				advance, update = au.advance, au.update
 			}
-			// TODO: drop other recv-related facts?
 		}
+
+	} else if recvTyp.IsCPUArchType() {
+		if s := method.Str(q.tm); strings.HasPrefix(s, "make_") || strings.HasPrefix(s, "store_") {
+			switch {
+			case strings.HasSuffix(s, "_slice64"): //   64 bits is  8 bytes.
+				advance = eight
+			case strings.HasSuffix(s, "_slice128"): // 128 bits is 16 bytes.
+				advance = sixteen
+			case strings.HasSuffix(s, "_slice256"): // 256 bits is 32 bytes.
+				advance = thirtyTwo
+			case strings.HasSuffix(s, "_slice512"): // 512 bits is 64 bytes.
+				advance = sixtyFour
+			}
+		}
+	}
+
+	if (advance != nil) || (advanceExpr != nil) {
+		subject := recv
+		if recv.MType().IsCPUArchType() {
+			subject = n.Args()[0].AsArg().Value()
+		}
+		if ok, err := q.optimizeIOMethodAdvance(subject, advance, advanceExpr, update); err != nil {
+			return bounds{}, err
+		} else if !ok {
+			adv := ""
+			if advance != nil {
+				adv = advance.String()
+			} else {
+				adv = advanceExpr.Str(q.tm)
+			}
+			return bounds{}, fmt.Errorf("check: could not prove %s pre-condition: %s.length() >= %s",
+				method.Str(q.tm), subject.Str(q.tm), adv)
+		}
+		// TODO: drop other subject-related facts?
 	}
 
 	return bounds{}, errNotASpecialCase
@@ -1118,19 +1286,21 @@ func (q *checker) canUndoByte(recv *a.Expr) error {
 	return fmt.Errorf("check: could not prove %s.can_undo_byte()", recv.Str(q.tm))
 }
 
-func (q *checker) canLimitedCopyU32FromHistoryFast(recv *a.Expr, args []*a.Node) error {
+func (q *checker) canLimitedCopyU32FromHistoryFast(recv *a.Expr, args []*a.Node, adj *big.Int, minDistance *big.Int) error {
 	// As per cgen's io-private.h, there are three pre-conditions:
-	//  - n <= this.length()
-	//  - distance > 0
+	//  - (upTo + adj) <= this.length()
+	//  - distance >= minDistance
 	//  - distance <= this.history_length()
+	//
+	// adj may be nil, in which case (upTo + adj) is just upTo.
 
 	if len(args) != 2 {
-		return fmt.Errorf("check: internal error: inconsistent copy_n_from_history_fast arguments")
+		return fmt.Errorf("check: internal error: inconsistent limited_copy_u32_from_history_fast arguments")
 	}
-	n := args[0].AsArg().Value()
+	upTo := args[0].AsArg().Value()
 	distance := args[1].AsArg().Value()
 
-	// Check "n <= this.length()".
+	// Check "upTo <= this.length()".
 check0:
 	for {
 		for _, x := range q.facts {
@@ -1138,14 +1308,25 @@ check0:
 				continue
 			}
 
-			// Check that the LHS is "n as base.u64".
+			// Check that the LHS is "(upTo + adj) as base.u64".
 			lhs := x.LHS().AsExpr()
 			if lhs.Operator() != t.IDXBinaryAs {
 				continue
 			}
 			llhs, lrhs := lhs.LHS().AsExpr(), lhs.RHS().AsTypeExpr()
-			if !llhs.Eq(n) || !lrhs.Eq(typeExprU64) {
+			if !lrhs.Eq(typeExprU64) {
 				continue
+			}
+			if adj == nil {
+				if !llhs.Eq(upTo) {
+					continue
+				}
+			} else {
+				if (llhs.Operator() != t.IDXBinaryPlus) || !llhs.LHS().AsExpr().Eq(upTo) {
+					continue
+				} else if cv := llhs.RHS().AsExpr().ConstValue(); (cv == nil) || (cv.Cmp(adj) != 0) {
+					continue
+				}
 			}
 
 			// Check that the RHS is "recv.length()".
@@ -1159,25 +1340,30 @@ check0:
 
 			break check0
 		}
-		return fmt.Errorf("check: could not prove n <= %s.length()", recv.Str(q.tm))
+		if adj == nil {
+			return fmt.Errorf("check: could not prove (%s as base.u64) <= %s.length()",
+				upTo.Str(q.tm), recv.Str(q.tm))
+		}
+		return fmt.Errorf("check: could not prove ((%s + %v) as base.u64) <= %s.length()",
+			upTo.Str(q.tm), adj, recv.Str(q.tm))
 	}
 
-	// Check "distance > 0".
+	// Check "distance >= minDistance".
 check1:
 	for {
 		for _, x := range q.facts {
-			if x.Operator() != t.IDXBinaryGreaterThan {
+			if x.Operator() != t.IDXBinaryGreaterEq {
 				continue
 			}
 			if lhs := x.LHS().AsExpr(); !lhs.Eq(distance) {
 				continue
 			}
-			if rcv := x.RHS().AsExpr().ConstValue(); rcv == nil || rcv.Sign() != 0 {
+			if rcv := x.RHS().AsExpr().ConstValue(); (rcv == nil) || (rcv.Cmp(minDistance) < 0) {
 				continue
 			}
 			break check1
 		}
-		return fmt.Errorf("check: could not prove distance > 0")
+		return fmt.Errorf("check: could not prove %s >= %v", distance.Str(q.tm), minDistance)
 	}
 
 	// Check "distance <= this.history_length()".
@@ -1209,7 +1395,8 @@ check2:
 
 			break check2
 		}
-		return fmt.Errorf("check: could not prove distance <= %s.history_length()", recv.Str(q.tm))
+		return fmt.Errorf("check: could not prove %s <= %s.history_length()",
+			distance.Str(q.tm), recv.Str(q.tm))
 	}
 
 	return nil
@@ -1247,6 +1434,22 @@ var ioMethodAdvances = [...]struct {
 	t.IDPeekU56LEAsU64 - t.IDPeekU8: {seven, false},
 	t.IDPeekU64BE - t.IDPeekU8:      {eight, false},
 	t.IDPeekU64LE - t.IDPeekU8:      {eight, false},
+
+	t.IDPokeU8 - t.IDPeekU8:    {one, false},
+	t.IDPokeU16BE - t.IDPeekU8: {two, false},
+	t.IDPokeU16LE - t.IDPeekU8: {two, false},
+	t.IDPokeU24BE - t.IDPeekU8: {three, false},
+	t.IDPokeU24LE - t.IDPeekU8: {three, false},
+	t.IDPokeU32BE - t.IDPeekU8: {four, false},
+	t.IDPokeU32LE - t.IDPeekU8: {four, false},
+	t.IDPokeU40BE - t.IDPeekU8: {five, false},
+	t.IDPokeU40LE - t.IDPeekU8: {five, false},
+	t.IDPokeU48BE - t.IDPeekU8: {six, false},
+	t.IDPokeU48LE - t.IDPeekU8: {six, false},
+	t.IDPokeU56BE - t.IDPeekU8: {seven, false},
+	t.IDPokeU56LE - t.IDPeekU8: {seven, false},
+	t.IDPokeU64BE - t.IDPeekU8: {eight, false},
+	t.IDPokeU64LE - t.IDPeekU8: {eight, false},
 
 	t.IDWriteU8Fast - t.IDPeekU8:    {one, true},
 	t.IDWriteU16BEFast - t.IDPeekU8: {two, true},
@@ -1292,17 +1495,12 @@ func makeSliceLength(slice *a.Expr) *a.Expr {
 }
 
 // makeSliceLengthEqEq returns "x.length() == n".
-//
-// n must be the t.ID of a small power of 2.
-func makeSliceLengthEqEq(x t.ID, xTyp *a.TypeExpr, n t.ID) *a.Expr {
-	xExpr := a.NewExpr(0, 0, x, nil, nil, nil, nil)
-	xExpr.SetMType(xTyp)
+func (q *checker) makeSliceLengthEqEq(x *a.Expr, n t.ID) *a.Expr {
+	lhs := makeSliceLength(x)
 
-	lhs := makeSliceLength(xExpr)
-
-	nValue := n.SmallPowerOf2Value()
-	if nValue == 0 {
-		panic("check: internal error: makeSliceLengthEqEq called but not with a small power of 2")
+	nValue, err := strconv.Atoi(n.Str(q.tm))
+	if err != nil {
+		panic("check: internal error: makeSliceLengthEqEq called but not with a small integer")
 	}
 	cv := big.NewInt(int64(nValue))
 

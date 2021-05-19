@@ -257,17 +257,6 @@
   @org.chromium.base.annotations.RemovableInRelease *;
 }
 
-# File: ../../chrome/android/proguard/isolated_splits.flags
-# Copyright 2020 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
-# Isolated splits currently use DexSplitter for splitting out some DFMs.
-# DexSplitter has some issues with certain R8 optimizations, so we need to keep
-# ModuleInterface classes to make sure they aren't inlined.
--keep @interface org.chromium.components.module_installer.builder.ModuleInterface
--keep @org.chromium.components.module_installer.builder.ModuleInterface class ** {}
-
 # File: ../../chrome/android/proguard/main.flags
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -494,7 +483,9 @@
 
 # Ignore missing Kotlin meta-annotations so that this library can be used
 # without adding a compileOnly dependency on the Kotlin standard library.
+-dontwarn kotlin.Deprecated
 -dontwarn kotlin.Metadata
+-dontwarn kotlin.ReplaceWith
 -dontwarn kotlin.annotation.AnnotationRetention
 -dontwarn kotlin.annotation.AnnotationTarget
 -dontwarn kotlin.annotation.Retention
@@ -754,9 +745,6 @@
 
 -keep class * implements com.google.firebase.components.ComponentRegistrar
 
-# File: obj/third_party/android_deps/google_firebase_firebase_encoders_json_java/proguard.txt
-
-
 # File: obj/third_party/android_deps/google_firebase_firebase_messaging_java/proguard.txt
 # Analytics library is optional.
 # Access to this class is protected by try/catch(NoClassDefFoundError e)
@@ -788,12 +776,12 @@
 
 # Keep the classes/members we need for client functionality.
 -keep @interface android.support.annotation.Keep
--keep @androidx.annotation.Keep class *
+-keep @android.support.annotation.Keep class *
 -keepclasseswithmembers class * {
-  @androidx.annotation.Keep <fields>;
+  @android.support.annotation.Keep <fields>;
 }
 -keepclasseswithmembers class * {
-  @androidx.annotation.Keep <methods>;
+  @android.support.annotation.Keep <methods>;
 }
 
 # Keep androidX equivalent of above android.support to allow Jetification.
@@ -877,6 +865,7 @@
 }
 
 # File: //build/android/gyp/proguard.py (generated rules)
+-ignorewarnings
 # THIS LINE WAS OMITTED
 -repackageclasses ''
 -keep @interface org.chromium.base.annotations.VerifiesOnNMR1
@@ -938,4 +927,14 @@
 }
 -keepclassmembers,allowobfuscation class ** {
   @org.chromium.base.annotations.VerifiesOnR <methods>;
+}
+-keep @interface org.chromium.base.annotations.VerifiesOnS
+-if @org.chromium.base.annotations.VerifiesOnS class * {
+    *** *(...);
+}
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
+}
+-keepclassmembers,allowobfuscation class ** {
+  @org.chromium.base.annotations.VerifiesOnS <methods>;
 }

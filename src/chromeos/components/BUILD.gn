@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/args.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//testing/test.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
@@ -15,6 +17,8 @@ test("chromeos_components_unittests") {
     "run_all_unittests.cc",
   ]
 
+  # TODO(https://crbug.com/1164001): unit_tests deps should be moved to
+  # the appropriate place during the code migration project.
   deps = [
     "//base",
     "//base/test:test_support",
@@ -22,6 +26,8 @@ test("chromeos_components_unittests") {
     "//chromeos/components/cdm_factory_daemon:unit_tests",
     "//chromeos/components/diagnostics_ui/backend:unit_tests",
     "//chromeos/components/drivefs:unit_tests",
+    "//chromeos/components/eche_app_ui:unit_tests",
+    "//chromeos/components/feature_usage:unit_tests",
     "//chromeos/components/local_search_service:unit_tests",
     "//chromeos/components/local_search_service/public/mojom:unit_tests",
     "//chromeos/components/mojo_bootstrap:unit_tests",
@@ -30,7 +36,6 @@ test("chromeos_components_unittests") {
     "//chromeos/components/power:unit_tests",
     "//chromeos/components/proximity_auth:unit_tests",
     "//chromeos/components/quick_answers:unit_tests",
-    "//chromeos/components/scanning:unit_tests",
     "//chromeos/components/security_token_pin:unit_tests",
     "//chromeos/components/sensors:unit_tests",
     "//chromeos/components/smbfs:unit_tests",
@@ -40,7 +45,13 @@ test("chromeos_components_unittests") {
     "//chromeos/components/trial_group:unit_tests",
     "//mojo/core/embedder",
     "//ui/base:base",
+    "//ui/gl:test_support",
   ]
+
+  # Tests for Camera App only work on Chrome OS device but not linux-chromeos.
+  if (is_chromeos_ash && is_chromeos_device) {
+    deps += [ "//chromeos/components/camera_app_ui:unit_tests" ]
+  }
 
   if (!is_official_build) {
     deps += [ "//chromeos/components/telemetry_extension_ui:unit_tests" ]
@@ -54,6 +65,9 @@ test("chromeos_components_unittests") {
 
 group("closure_compile") {
   testonly = true
+
+  # TODO(https://crbug.com/1164001): closure_compile deps should be moved to
+  # the appropriate place during the code migration project.
   deps = [
     "//chromeos/components/camera_app_ui:closure_compile",
     "//chromeos/components/connectivity_diagnostics:closure_compile",
@@ -62,8 +76,8 @@ group("closure_compile") {
     "//chromeos/components/help_app_ui:closure_compile",
     "//chromeos/components/media_app_ui:closure_compile",
     "//chromeos/components/multidevice/debug_webui/resources:closure_compile",
+    "//chromeos/components/personalization_app:closure_compile",
     "//chromeos/components/print_management:closure_compile",
-    "//chromeos/components/scanning:closure_compile",
     "//chromeos/components/system_apps:closure_compile",
   ]
 

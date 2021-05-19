@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/test/scoped_feature_list.h"
@@ -58,10 +59,9 @@ class MockDedicatedWorker
           receiver_.BindNewPipeAndPassRemote());
     } else {
       factory_->CreateWorkerHost(
-          blink::DedicatedWorkerToken(),
+          blink::DedicatedWorkerToken(), /*script_url=*/GURL(),
           browser_interface_broker_.BindNewPipeAndPassReceiver(),
-          remote_host_.BindNewPipeAndPassReceiver(),
-          base::BindOnce([](const network::CrossOriginEmbedderPolicy&) {}));
+          remote_host_.BindNewPipeAndPassReceiver(), base::DoNothing());
     }
   }
 

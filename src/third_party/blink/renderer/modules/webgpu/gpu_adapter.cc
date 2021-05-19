@@ -20,10 +20,9 @@ namespace {
 WGPUDeviceProperties AsDawnType(const GPUDeviceDescriptor* descriptor) {
   DCHECK_NE(nullptr, descriptor);
 
-  const Vector<String>& feature_names = descriptor->hasExtensions()
-                                            ? descriptor->extensions()
-                                            :  // Deprecated path
-                                            descriptor->nonGuaranteedFeatures();
+  auto&& feature_names = descriptor->hasExtensions() ? descriptor->extensions()
+                                                     :  // Deprecated path
+                             descriptor->nonGuaranteedFeatures();
 
   HashSet<String> feature_set;
   for (auto& feature : feature_names)
@@ -40,6 +39,8 @@ WGPUDeviceProperties AsDawnType(const GPUDeviceDescriptor* descriptor) {
       feature_set.Contains("pipeline-statistics-query");
   requested_device_properties.timestampQuery =
       feature_set.Contains("timestamp-query");
+  requested_device_properties.depthClamping =
+      feature_set.Contains("depth-clamping");
 
   return requested_device_properties;
 }
@@ -125,6 +126,9 @@ void GPUAdapter::InitializeFeatureNameList() {
   }
   if (adapter_properties_.timestampQuery) {
     feature_name_list_.emplace_back("timestamp-query");
+  }
+  if (adapter_properties_.depthClamping) {
+    feature_name_list_.emplace_back("depth-clamping");
   }
 }
 

@@ -264,6 +264,9 @@ class TestPipelineHelpers(unittest.TestCase):
             mock.call(
                 '/$W/App Product.app/Contents/Frameworks/Product Framework.framework/Helpers/Product Helper (GPU).app'
             ),
+            mock.call(
+                '/$W/App Product.app/Contents/Frameworks/Product Framework.framework/Helpers/Product Helper (Alerts).app'
+            ),
             mock.call('/$W/App Product.app')
         ])
 
@@ -294,6 +297,9 @@ class TestPipelineHelpers(unittest.TestCase):
             ),
             mock.call(
                 '/$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework/Helpers/Product Helper (GPU).app'
+            ),
+            mock.call(
+                '/$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework/Helpers/Product Helper (Alerts).app'
             ),
             mock.call('/$W/App Product Canary.app')
         ])
@@ -350,7 +356,7 @@ framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framewor
             'BundleIsRelocatable': False
         }])
 
-    @mock.patch('signing.commands.plistlib.readPlist', _read_plist)
+    @mock.patch('signing.commands.read_plist', _read_plist)
     @mock.patch('signing.commands.run_command_output', _run_command_output_lipo)
     def test_productbuild_distribution_path(self, **kwargs):
         manager = mock.Mock()

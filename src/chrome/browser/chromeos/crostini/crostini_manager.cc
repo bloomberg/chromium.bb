@@ -27,6 +27,8 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/guest_os/guest_os_share_path.h"
+#include "chrome/browser/ash/guest_os/guest_os_stability_monitor.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
@@ -42,8 +44,6 @@
 #include "chrome/browser/chromeos/crostini/throttle/crostini_throttle.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_stability_monitor.h"
 #include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
@@ -245,7 +245,6 @@ class CrostiniManager::CrostiniRestarter
   }
 
   void AddObserver(CrostiniManager::RestartObserver* observer) {
-    observer->set_restart_id(restart_id_);
     observer_list_.AddObserver(observer);
   }
 
@@ -317,14 +316,29 @@ class CrostiniManager::CrostiniRestarter
     FinishRestart(result);
   }
 
-  void Abort(base::OnceClosure callback) {
+  void Abort(base::OnceClosure callback, CrostiniResult abort_result) {
     is_aborted_ = true;
     observer_list_.Clear();
     abort_callbacks_.push_back(std::move(callback));
-    result_ = CrostiniResult::RESTART_ABORTED;
+    result_ = abort_result;
     // Don't want to use FinishRestart here, because the next restarter in
     // line needs to run.
     RunCallback(result_);
+    if (stage_ == mojom::InstallerState::kInstallImageLoader) {
+      // TerminaInstaller offers a way to cancel installation, which also
+      // prevents any callback from running. In this case we can proceed
+      // directly to running the abort callbacks.
+      crostini_manager_->CancelInstallTermina();
+      // Callers may not expect their callback to be run within the same task.
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(
+                         [](base::WeakPtr<CrostiniRestarter> weak_this) {
+                           if (weak_this) {
+                             weak_this->ReturnEarlyIfAborted();
+                           }
+                         },
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
   }
 
   // If this method returns true, then |this| may have been deleted and it is
@@ -459,7 +473,9 @@ class CrostiniManager::CrostiniRestarter
       {mojom::InstallerState::kCreateContainer,
        base::TimeDelta::FromMinutes(5)},
       {mojom::InstallerState::kSetupContainer, base::TimeDelta::FromMinutes(5)},
-      {mojom::InstallerState::kStartContainer, base::TimeDelta::FromMinutes(5)},
+      // StartContainer might need to do a UID remapping, which in the worst
+      // case can take a very long time.
+      {mojom::InstallerState::kStartContainer, base::TimeDelta::FromDays(5)},
       {mojom::InstallerState::kFetchSshKeys, base::TimeDelta::FromMinutes(5)},
       {mojom::InstallerState::kMountContainer, base::TimeDelta::FromMinutes(5)},
       // ConfigureContainer is special, it's not part of the restarter flow, so
@@ -580,6 +596,13 @@ class CrostiniManager::CrostiniRestarter
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     for (auto& observer : observer_list_) {
       observer.OnVmStarted(success);
+    }
+    // Declare success now if |start_vm_only|.
+    if (options_.start_vm_only) {
+      Abort(base::BindOnce(&CrostiniManager::OnAbortRestartCrostini,
+                           crostini_manager_->weak_ptr_factory_.GetWeakPtr(),
+                           restart_id_, base::DoNothing::Once()),
+            CrostiniResult::SUCCESS);
     }
     if (ReturnEarlyIfAborted()) {
       return;
@@ -1073,6 +1096,7 @@ CrostiniManager::CrostiniManager(Profile* profile)
   guest_os_stability_monitor_ =
       std::make_unique<guest_os::GuestOsStabilityMonitor>(
           kCrostiniStabilityHistogram);
+  low_disk_notifier_ = std::make_unique<CrostiniLowDiskNotification>();
 }
 
 CrostiniManager::~CrostiniManager() {
@@ -1098,9 +1122,10 @@ void CrostiniManager::RemoveDBusObservers() {
   if (chromeos::PowerManagerClient::Get()) {
     chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   }
-  // GuestOsStabilityMonitor needs to be destructed here so it can unregister
-  // itself from the DBus clients that may no longer exist later.
+  // GuestOsStabilityMonitor and LowDiskNotifier need to be destructed here so
+  // they can unregister from DBus clients that may no longer exist later.
   guest_os_stability_monitor_.reset();
+  low_disk_notifier_.reset();
 }
 
 // static
@@ -1179,6 +1204,8 @@ void CrostiniManager::InstallTermina(CrostiniResultCallback callback,
               res = CrostiniResult::OFFLINE_WHEN_UPGRADE_REQUIRED;
             } else if (result == TerminaInstaller::InstallResult::Failure) {
               res = CrostiniResult::LOAD_COMPONENT_FAILED;
+            } else if (result == TerminaInstaller::InstallResult::NeedUpdate) {
+              res = CrostiniResult::NEED_UPDATE;
             } else {
               CHECK(false)
                   << "Got unexpected value of TerminaInstaller::InstallResult";
@@ -1188,6 +1215,10 @@ void CrostiniManager::InstallTermina(CrostiniResultCallback callback,
           },
           std::move(callback)),
       is_initial_install);
+}
+
+void CrostiniManager::CancelInstallTermina() {
+  termina_installer_.Cancel();
 }
 
 void CrostiniManager::UninstallTermina(BoolCallback callback) {
@@ -1706,23 +1737,6 @@ vm_tools::cicerone::UpgradeContainerRequest::Version ConvertVersion(
   }
 }
 
-// Watches the Crostini restarter until the VM started phase, then aborts the
-// sequence.
-class AbortOnVmStartObserver : public CrostiniManager::RestartObserver {
- public:
-  explicit AbortOnVmStartObserver(
-      base::WeakPtr<CrostiniManager> crostini_manager)
-      : crostini_manager_(crostini_manager) {}
-  void OnVmStarted(bool success) override {
-    if (crostini_manager_) {
-      crostini_manager_->AbortRestartCrostini(restart_id(), base::DoNothing());
-    }
-  }
-
- private:
-  base::WeakPtr<CrostiniManager> crostini_manager_;
-};
-
 }  // namespace
 
 void CrostiniManager::UpgradeContainer(const ContainerId& key,
@@ -1781,43 +1795,6 @@ void CrostiniManager::UpgradeContainer(const ContainerId& key,
     RestartCrostini(key, std::move(do_upgrade_container));
   } else {
     std::move(do_upgrade_container).Run(CrostiniResult::SUCCESS);
-  }
-}
-
-void CrostiniManager::EnsureVmRunning(const ContainerId& key,
-                                      CrostiniResultCallback callback) {
-  const auto& vm_name = key.vm_name;
-  const auto& container_name = key.container_name;
-  if (vm_name.empty()) {
-    LOG(ERROR) << "vm_name is required";
-    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
-    return;
-  }
-  if (container_name.empty()) {
-    LOG(ERROR) << "container_name is required";
-    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
-    return;
-  }
-
-  CrostiniResultCallback inner_callback = base::BindOnce(
-      [](CrostiniResultCallback final_callback, CrostiniResult result) {
-        if (result == CrostiniResult::SUCCESS ||
-            result == CrostiniResult::RESTART_ABORTED) {
-          // RESTART_ABORTED is expected when we successfully abort after
-          // launching the VM, turn it into a success since that's what we were
-          // asked for.
-          std::move(final_callback).Run(CrostiniResult::SUCCESS);
-        } else {
-          std::move(final_callback).Run(result);
-        }
-      },
-      std::move(callback));
-
-  if (!IsVmRunning(vm_name)) {
-    RestartCrostini(key, std::move(inner_callback),
-                    new AbortOnVmStartObserver(weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    std::move(inner_callback).Run(CrostiniResult::SUCCESS);
   }
 }
 
@@ -2169,16 +2146,23 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostiniWithOptions(
   auto restarter = std::make_unique<CrostiniRestarter>(
       profile_, this, container_id, std::move(options), std::move(callback));
   auto restart_id = restarter->restart_id();
-  if (observer)
-    restarter->AddObserver(observer);
   restarters_by_container_.emplace(container_id, restart_id);
   restarters_by_id_[restart_id] = std::move(restarter);
+
+  // Observers will watch this restarter and any others that run before it.
+  if (observer) {
+    auto range = restarters_by_container_.equal_range(container_id);
+    for (auto it = range.first; it != range.second; ++it) {
+      restarters_by_id_[it->second]->AddObserver(observer);
+    }
+  }
+
   if (restarters_by_container_.count(container_id) > 1) {
     VLOG(1) << "Already restarting " << container_id;
   } else {
-    // ::Restart needs to be called after the restarter is inserted into
+    // Restart() needs to be called after the restarter is inserted into
     // restarters_by_id_ because some tests will make the restart process
-    // complete before ::Restart returns.
+    // complete before Restart() returns.
     restarters_by_id_[restart_id]->Restart();
   }
 
@@ -2197,9 +2181,11 @@ void CrostiniManager::AbortRestartCrostini(
                                                  std::move(callback));
     return;
   }
-  restarter_it->second->Abort(base::BindOnce(
-      &CrostiniManager::OnAbortRestartCrostini, weak_ptr_factory_.GetWeakPtr(),
-      restart_id, std::move(callback)));
+  restarter_it->second->Abort(
+      base::BindOnce(&CrostiniManager::OnAbortRestartCrostini,
+                     weak_ptr_factory_.GetWeakPtr(), restart_id,
+                     std::move(callback)),
+      CrostiniResult::RESTART_ABORTED);
 }
 
 void CrostiniManager::OnAbortRestartCrostini(
@@ -2226,10 +2212,10 @@ void CrostiniManager::OnAbortRestartCrostini(
   // so those shouldn't be accessed after this.
   restarters_by_id_.erase(restarter_it);
 
-  // Kick off the "next" (in no order) pending Restart() if any.
-  auto pending_it = restarters_by_container_.find(key);
-  if (pending_it != restarters_by_container_.end()) {
-    restarters_by_id_[pending_it->second]->Restart();
+  // Kick off the "next" (in order of arrival) pending Restart() if any.
+  range = restarters_by_container_.equal_range(key);
+  if (range.first != range.second) {
+    restarters_by_id_[range.first->second]->Restart();
   }
   std::move(callback).Run();
 }

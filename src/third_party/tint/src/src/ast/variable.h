@@ -15,21 +15,18 @@
 #ifndef SRC_AST_VARIABLE_H_
 #define SRC_AST_VARIABLE_H_
 
-#include <memory>
-#include <ostream>
 #include <utility>
 #include <vector>
 
+#include "src/ast/decoration.h"
 #include "src/ast/expression.h"
-#include "src/ast/node.h"
 #include "src/ast/storage_class.h"
-#include "src/ast/variable_decoration.h"
-#include "src/symbol.h"
-#include "src/type/type.h"
 
 namespace tint {
 namespace ast {
 
+class BindingDecoration;
+class GroupDecoration;
 class LocationDecoration;
 
 /// A Variable statement.
@@ -81,21 +78,33 @@ class LocationDecoration;
 /// The storage class for a formal parameter is always StorageClass::kNone.
 class Variable : public Castable<Variable, Node> {
  public:
+  /// BindingPoint holds a group and binding decoration.
+  struct BindingPoint {
+    /// The `[[group]]` part of the binding point
+    GroupDecoration* group = nullptr;
+    /// The `[[binding]]` part of the binding point
+    BindingDecoration* binding = nullptr;
+
+    /// @returns true if the BindingPoint has a valid group and binding
+    /// decoration.
+    inline operator bool() const { return group && binding; }
+  };
+
   /// Create a variable
   /// @param source the variable source
   /// @param sym the variable symbol
-  /// @param sc the declared storage class
-  /// @param type the value type
+  /// @param declared_storage_class the declared storage class
+  /// @param declared_type the declared variable type
   /// @param is_const true if the variable is const
   /// @param constructor the constructor expression
   /// @param decorations the variable decorations
   Variable(const Source& source,
            const Symbol& sym,
-           StorageClass sc,
-           type::Type* type,
+           StorageClass declared_storage_class,
+           type::Type* declared_type,
            bool is_const,
            Expression* constructor,
-           VariableDecorationList decorations);
+           DecorationList decorations);
   /// Move constructor
   Variable(Variable&&);
 
@@ -104,8 +113,8 @@ class Variable : public Castable<Variable, Node> {
   /// @returns the variable symbol
   const Symbol& symbol() const { return symbol_; }
 
-  /// @returns the variable's type.
-  type::Type* type() const { return type_; }
+  /// @returns the declared type
+  type::Type* declared_type() const { return declared_type_; }
 
   /// @returns the declared storage class
   StorageClass declared_storage_class() const {
@@ -120,7 +129,10 @@ class Variable : public Castable<Variable, Node> {
   bool is_const() const { return is_const_; }
 
   /// @returns the decorations attached to this variable
-  const VariableDecorationList& decorations() const { return decorations_; }
+  const DecorationList& decorations() const { return decorations_; }
+
+  /// @returns the binding point information for the variable
+  BindingPoint binding_point() const;
 
   /// @returns true if the decorations include a LocationDecoration
   bool HasLocationDecoration() const;
@@ -141,9 +153,6 @@ class Variable : public Castable<Variable, Node> {
   /// @param ctx the clone context
   /// @return the newly cloned node
   Variable* Clone(CloneContext* ctx) const override;
-
-  /// @returns true if the variable is valid
-  bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
   /// @param sem the semantic info for the program
@@ -174,10 +183,10 @@ class Variable : public Castable<Variable, Node> {
 
   Symbol const symbol_;
   // The value type if a const or formal paramter, and the store type if a var
-  type::Type* const type_;
+  type::Type* const declared_type_;
   bool const is_const_;
   Expression* const constructor_;
-  VariableDecorationList const decorations_;
+  DecorationList const decorations_;
   StorageClass const declared_storage_class_;
 };
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
@@ -66,9 +67,7 @@ void SyntheticGestureController::QueueSyntheticGesture(
 
 void SyntheticGestureController::QueueSyntheticGestureCompleteImmediately(
     std::unique_ptr<SyntheticGesture> synthetic_gesture) {
-  QueueSyntheticGesture(std::move(synthetic_gesture),
-                        base::BindOnce([](SyntheticGesture::Result result) {}),
-                        true);
+  QueueSyntheticGesture(std::move(synthetic_gesture), base::DoNothing(), true);
 }
 
 void SyntheticGestureController::QueueSyntheticGesture(

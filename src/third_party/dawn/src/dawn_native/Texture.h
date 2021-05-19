@@ -38,6 +38,8 @@ namespace dawn_native {
 
     bool IsValidSampleCount(uint32_t sampleCount);
 
+    MaybeError FixUpDeprecatedGPUExtent3DDepth(DeviceBase* device, Extent3D* extent);
+
     static constexpr wgpu::TextureUsage kReadOnlyTextureUsages =
         wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::Sampled | kReadOnlyStorageTexture;
 
@@ -86,8 +88,8 @@ namespace dawn_native {
                                             const Extent3D& extent) const;
 
         // Dawn API
-        TextureViewBase* CreateView(const TextureViewDescriptor* descriptor = nullptr);
-        void Destroy();
+        TextureViewBase* APICreateView(const TextureViewDescriptor* descriptor = nullptr);
+        void APIDestroy();
 
       protected:
         void DestroyInternal();

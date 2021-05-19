@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/core/password_protection/metrics_util.h"
@@ -55,6 +54,28 @@ class ChromePasswordProtectionService
       safe_browsing::LoginReputationClientResponse::VerdictType verdict_type,
       const std::string& verdict_token,
       safe_browsing::ReusedPasswordAccountType password_type) override;
+
+  // Stores |verdict| in the cache based on its |trigger_type|, |url|,
+  // reused |password_type|, |verdict| and |receive_time|.
+  void CacheVerdict(
+      const GURL& url,
+      safe_browsing::LoginReputationClientRequest::TriggerType trigger_type,
+      safe_browsing::ReusedPasswordAccountType password_type,
+      const safe_browsing::LoginReputationClientResponse& verdict,
+      const base::Time& receive_time) override;
+
+  // Looks up the cached verdict response. If verdict is not available or is
+  // expired, return VERDICT_TYPE_UNSPECIFIED. Can be called on any thread.
+  safe_browsing::LoginReputationClientResponse::VerdictType GetCachedVerdict(
+      const GURL& url,
+      safe_browsing::LoginReputationClientRequest::TriggerType trigger_type,
+      safe_browsing::ReusedPasswordAccountType password_type,
+      safe_browsing::LoginReputationClientResponse* out_response) override;
+
+  // Returns the number of saved verdicts for the given |trigger_type|.
+  int GetStoredVerdictCount(
+      safe_browsing::LoginReputationClientRequest::TriggerType trigger_type)
+      override;
 
   void MaybeReportPasswordReuseDetected(
       safe_browsing::PasswordProtectionRequest* request,
@@ -171,26 +192,26 @@ class ChromePasswordProtectionService
   // dialog. |placeholder_offsets| are the start points/indices of the
   // placeholders that are passed into the resource string. It is only set for
   // saved passwords.
-  base::string16 GetWarningDetailText(
+  std::u16string GetWarningDetailText(
       safe_browsing::ReusedPasswordAccountType password_type,
       std::vector<size_t>* placeholder_offsets) const;
 
   // Gets the warning text for saved password reuse warnings.
   // |placeholder_offsets| are the start points/indices of the placeholders that
   // are passed into the resource string.
-  base::string16 GetWarningDetailTextForSavedPasswords(
+  std::u16string GetWarningDetailTextForSavedPasswords(
       std::vector<size_t>* placeholder_offsets) const;
 
   // Gets the warning text of the saved password reuse warnings that tells the
   // user to check their saved passwords. |placeholder_offsets| are the start
   // points/indices of the placeholders that are passed into the resource
   // string.
-  base::string16 GetWarningDetailTextToCheckSavedPasswords(
+  std::u16string GetWarningDetailTextToCheckSavedPasswords(
       std::vector<size_t>* placeholder_offsets) const;
 
   // Get placeholders for the warning detail text for saved password reuse
   // warnings.
-  std::vector<base::string16> GetPlaceholdersForSavedPasswordWarningText()
+  std::vector<std::u16string> GetPlaceholdersForSavedPasswordWarningText()
       const;
 
   // Creates, starts, and tracks a new request.

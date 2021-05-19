@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="NewTabPage.ActionAndroid2" enum="NewTabPageActionAndroid2"
-    expires_after="2021-07-01">
+    expires_after="2021-09-05">
   <owner>twellington@chromium.org</owner>
   <owner>finkm@chromium.org</owner>
   <summary>
@@ -91,7 +91,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Carts.CartCount" units="count"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>wychen@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -113,7 +113,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.ArticlesListVisible"
-    enum="BooleanVisible" expires_after="2021-07-01">
+    enum="BooleanVisible" expires_after="2021-09-05">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -179,7 +179,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.DismissedUnvisited"
-    units="index" expires_after="2021-07-18">
+    units="index" expires_after="2021-09-19">
   <owner>carlosk@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -209,7 +209,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.MenuOpened" units="index"
-    expires_after="2021-07-01">
+    expires_after="2021-09-05">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -244,7 +244,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.MoreButtonClicked" units="index"
-    expires_after="2021-07-01">
+    expires_after="2021-09-05">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -336,7 +336,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
-    Android: The position of the suggestion card on the NTP, that is clicked
+    Android: The position of the For-You card on the NTP, that is clicked
     through to the host website of the content. We track the position the card
     had in the list when it was first seen by the user. This tracked position
     can be different from the position observed by the user, e.g. when the user
@@ -430,12 +430,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
-    Android: The position of a suggestion card that was shown on the NTP. A card
-    is considered shown when at least 2/3 of its height is visible on the
-    screen. For each card, at most one impression is recorded per NTP instance.
-    We track the position the card had in the list when it was first seen by the
-    user. This tracked position can be different from the position observed by
-    the user, e.g. when the user dismissed some suggestions from the list or
+    Android: The position of a For-You card that was shown on the NTP. A card is
+    considered shown when at least 2/3 of its height is visible on the screen.
+    For each card, at most one impression is recorded per NTP instance. We track
+    the position the card had in the list when it was first seen by the user.
+    This tracked position can be different from the position observed by the
+    user, e.g. when the user dismissed some suggestions from the list or
     requested more that got inserted in the middle of the feed.
   </summary>
 </histogram>
@@ -461,7 +461,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.ShownAge" units="ms"
-    expires_after="2021-07-01">
+    expires_after="2021-09-05">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -591,7 +591,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.CryptidRenderResult" enum="CryptidRenderResult"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>tmartino@chromium.org</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
@@ -618,7 +618,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.CustomizeChromeBackgroundAction"
-    enum="NTPCustomizeChromeBackgroundAction" expires_after="2021-06-20">
+    enum="NTPCustomizeChromeBackgroundAction" expires_after="2021-08-29">
   <owner>dbeam@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <summary>
@@ -629,7 +629,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Customized" enum="NTPCustomizedFeatures"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -674,6 +674,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Drive.FileClick" units="index"
+    expires_after="2022-01-01">
+  <owner>tiborg@chromium.org</owner>
+  <owner>aee@chromium.org</owner>
+  <owner>andrevincent@google.com</owner>
+  <summary>
+    Logged when a user clicks on a file within the Drive Module. The index is
+    equal to the index of the file.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.Languages.UILanguageRatioInTwoTopLanguages"
     units="%" expires_after="M77">
   <owner>jkrcal@chromium.org</owner>
@@ -686,6 +697,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="NewTabPage.Lens.LensSupportStatus" enum="LensSupportStatus"
     expires_after="2021-11-18">
+  <obsolete>
+    Removed 2021-03. Switch to use NewTabPage.LensSupportStatus.
+  </obsolete>
   <owner>yusuyoutube@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>fgorski@chromium.org</owner>
@@ -700,6 +714,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="NewTabPage.Lens.TimeSpentInLens" units="ms"
     expires_after="M94">
+  <obsolete>
+    Removed 2021-03. Switch to use NewTabPage.TimeSpentBeforeDismissLens.
+  </obsolete>
   <owner>yusuyoutube@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>fgorski@chromium.org</owner>
@@ -711,9 +728,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.LoadTime" units="ms" expires_after="never">
-<!-- expires-never: "heartbeat" metric (internal: go/uma-heartbeats) -->
+<histogram name="NewTabPage.LensSupportStatus" enum="LensSupportStatus"
+    expires_after="2021-11-18">
+  <owner>yusuyoutube@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>fgorski@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
+  <owner>lens-chrome@google.com</owner>
+  <summary>
+    Whether the user supports the camera assisted search with Google Lens and if
+    not, the reason why. Recorded only if the feature is enabled when the New
+    Tab Page search box is loaded.
+  </summary>
+</histogram>
 
+<histogram name="NewTabPage.LoadTime" units="ms" expires_after="2022-01-01">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -775,7 +804,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.LogoShown" enum="NewTabPageLogoShown"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -895,7 +924,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Impression" units="ms"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -939,7 +968,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Loaded" units="ms"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1036,7 +1065,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfTiles" units="units"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1053,7 +1082,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.OneGoogleBar.RequestLatency" units="ms"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1064,7 +1093,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.OneGoogleBar.ShownTime" units="ms"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1075,7 +1104,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Promo.EnhancedProtectionPromo"
-    enum="AndroidEnhancedProtectionPromoAction" expires_after="2021-07-04">
+    enum="AndroidEnhancedProtectionPromoAction" expires_after="2021-09-05">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-core@google.com</owner>
   <summary>
@@ -1086,7 +1115,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="NewTabPage.Promo.EnhancedProtectionPromo.ImpressionUntilAction"
-    units="units" expires_after="2021-07-11">
+    units="units" expires_after="2021-09-12">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-core@google.com</owner>
   <summary>
@@ -1098,7 +1127,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="NewTabPage.Promo.EnhancedProtectionPromo.ImpressionUntilDismissal"
-    units="units" expires_after="2021-07-18">
+    units="units" expires_after="2021-09-19">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-core@google.com</owner>
   <summary>
@@ -1187,7 +1216,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Promos.ShownTime" units="ms"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1594,7 +1623,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.SuggestionsImpression" enum="MostVisitedTileIndex"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1617,6 +1646,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="NewTabPage.TasksSurface.Lens.LensSupportStatus"
     enum="LensSupportStatus" expires_after="2021-11-18">
+  <obsolete>
+    Removed 2021-03. Switch to use NewTabPage.TasksSurface.LensSupportStatus.
+  </obsolete>
   <owner>yusuyoutube@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>fgorski@chromium.org</owner>
@@ -1631,6 +1663,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="NewTabPage.TasksSurface.Lens.TimeSpentInLens" units="ms"
     expires_after="M94">
+  <obsolete>
+    Removed 2021-03. Switch to use
+    NewTabPage.TasksSurface.TimeSpentBeforeDismissLens.
+  </obsolete>
   <owner>yusuyoutube@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>fgorski@chromium.org</owner>
@@ -1639,6 +1675,34 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Logged the elapsed time between the time when user enters the Google Lens
     and the time when user returns to Chrome. Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.TasksSurface.LensSupportStatus"
+    enum="LensSupportStatus" expires_after="2021-11-18">
+  <owner>yusuyoutube@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>fgorski@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
+  <owner>lens-chrome@google.com</owner>
+  <summary>
+    Whether the user supports the camera assisted search with Google Lens and if
+    not, the reason why. Recorded only if the feature is enabled when the Task
+    Surface search box is loaded.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.TasksSurface.TimeSpentBeforeDismissLens" units="ms"
+    expires_after="M94">
+  <owner>yusuyoutube@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>fgorski@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
+  <owner>lens-chrome@google.com</owner>
+  <summary>
+    Logs the elapsed time between the time when user enters the Google Lens and
+    the time when user dismisses Lens and returns to Chrome. Only logged on
+    Android.
   </summary>
 </histogram>
 
@@ -1688,9 +1752,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.TileTitleClicked" enum="NTPTileTitleSource"
-    expires_after="2021-03-07">
+    expires_after="2022-01-01">
+  <owner>danielms@google.com</owner>
   <owner>tiborg@chromium.org</owner>
-  <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
   <summary>
     Records the source for the name a most visited tile showed when the user
@@ -1719,7 +1783,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.TimeSpent" units="ms" expires_after="2021-07-01">
+<histogram name="NewTabPage.TimeSpent" units="ms" expires_after="2021-09-05">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
@@ -1727,6 +1791,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     The time spent on the new tab page as measured from when it was loaded or
     last brought to the foreground until it was navigated away from or hidden.
     Only measured on Android and iOS.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.TimeSpentBeforeDismissLens" units="ms"
+    expires_after="M94">
+  <owner>yusuyoutube@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>fgorski@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
+  <owner>lens-chrome@google.com</owner>
+  <summary>
+    Logs the elapsed time between the time when user enters the Google Lens and
+    the time when user dismisses Lens and returns to Chrome. Only logged on
+    Android.
   </summary>
 </histogram>
 
@@ -1755,7 +1833,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.UserClassifier.AverageHoursToOpenNTP" units="hours"
-    expires_after="2021-07-01">
+    expires_after="2021-09-05">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1766,7 +1844,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.UserClassifier.AverageHoursToShowSuggestions"
-    units="hours" expires_after="2021-07-01">
+    units="hours" expires_after="2021-09-05">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1778,7 +1856,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.UserClassifier.AverageHoursToUseSuggestions"
-    units="hours" expires_after="2021-07-01">
+    units="hours" expires_after="2021-09-05">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1790,7 +1868,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.VoiceActions" enum="NewTabPageVoiceAction"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1803,9 +1881,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.VoiceErrors" enum="NewTabPageVoiceError"
-    expires_after="2021-03-07">
+    expires_after="2022-01-01">
+  <owner>danielms@google.com</owner>
   <owner>tiborg@chromium.org</owner>
-  <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
   <summary>
     Errors that occur during Voice Search use on the local New Tab Page on

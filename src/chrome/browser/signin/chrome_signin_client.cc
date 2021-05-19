@@ -55,6 +55,15 @@
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/optional.h"
+#include "chrome/browser/lacros/account_manager_util.h"
+#include "chromeos/crosapi/mojom/account_manager.mojom.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "components/account_manager_core/account.h"
+#include "components/account_manager_core/account_manager_util.h"
+#endif
+
 #if !defined(OS_ANDROID)
 #include "chrome/browser/profiles/profile_window.h"
 #endif
@@ -109,7 +118,6 @@ ChromeSigninClient::~ChromeSigninClient() {
 }
 
 void ChromeSigninClient::DoFinalInit() {
-  MaybeFetchSigninTokenHandle();
   VerifySyncToken();
 }
 
@@ -205,46 +213,6 @@ void ChromeSigninClient::PreSignOut(
   }
 }
 
-void ChromeSigninClient::OnGetTokenInfoResponse(
-    std::unique_ptr<base::DictionaryValue> token_info) {
-  if (!token_info->HasKey("error")) {
-    std::string handle;
-    if (token_info->GetString("token_handle", &handle)) {
-      ProfileAttributesEntry* entry =
-          g_browser_process->profile_manager()
-              ->GetProfileAttributesStorage()
-              .GetProfileAttributesWithPath(profile_->GetPath());
-      DCHECK(entry);
-      entry->SetPasswordChangeDetectionToken(handle);
-    }
-  }
-  access_token_fetcher_.reset();
-}
-
-void ChromeSigninClient::OnOAuthError() {
-  // Ignore the failure.  It's not essential and we'll try again next time.
-  access_token_fetcher_.reset();
-}
-
-void ChromeSigninClient::OnNetworkError(int response_code) {
-  // Ignore the failure.  It's not essential and we'll try again next time.
-  access_token_fetcher_.reset();
-}
-
-void ChromeSigninClient::OnAccessTokenAvailable(
-    GoogleServiceAuthError error,
-    signin::AccessTokenInfo access_token_info) {
-  access_token_fetcher_.reset();
-
-  // Exchange the access token for a handle that can be used for later
-  // verification that the token is still valid (i.e. the password has not
-  // been changed).
-  if (!oauth_client_) {
-    oauth_client_.reset(new gaia::GaiaOAuthClient(GetURLLoaderFactory()));
-  }
-  oauth_client_->GetTokenInfo(access_token_info.token, 3 /* retries */, this);
-}
-
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 void ChromeSigninClient::OnConnectionChanged(
     network::mojom::ConnectionType type) {
@@ -295,36 +263,6 @@ void ChromeSigninClient::VerifySyncToken() {
 #endif
 }
 
-void ChromeSigninClient::MaybeFetchSigninTokenHandle() {
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-  // We get a "handle" that can be used to reference the signin token on the
-  // server.  We fetch this if we don't have one so that later we can check
-  // it to know if the signin token to which it is attached has been revoked
-  // and thus distinguish between a password mismatch due to the password
-  // being changed and the user simply mis-typing it.
-  if (profiles::IsLockAvailable(profile_)) {
-    ProfileAttributesStorage& storage =
-        g_browser_process->profile_manager()->GetProfileAttributesStorage();
-    ProfileAttributesEntry* entry =
-        storage.GetProfileAttributesWithPath(profile_->GetPath());
-    // If we don't have a token for detecting a password change, create one.
-    if (entry && entry->GetPasswordChangeDetectionToken().empty() &&
-        !access_token_fetcher_) {
-      auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
-      if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
-        const signin::ScopeSet scopes{GaiaConstants::kGoogleUserInfoEmail};
-        access_token_fetcher_ =
-            std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
-                "chrome_signin_client", identity_manager, scopes,
-                base::BindOnce(&ChromeSigninClient::OnAccessTokenAvailable,
-                               base::Unretained(this)),
-                signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
-      }
-    }
-  }
-#endif
-}
-
 void ChromeSigninClient::SetDiceMigrationCompleted() {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   AccountConsistencyModeManager::GetForProfile(profile_)
@@ -337,6 +275,37 @@ void ChromeSigninClient::SetDiceMigrationCompleted() {
 bool ChromeSigninClient::IsNonEnterpriseUser(const std::string& username) {
   return policy::BrowserPolicyConnector::IsNonEnterpriseUser(username);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// Returns the account that must be auto-signed-in to the Main Profile in
+// Lacros.
+// This is, when available, the account used to sign into the Chrome OS
+// session. This may be a Gaia account or a Microsoft Active Directory
+// account. This field will be null for Guest sessions, Managed Guest
+// sessions, Demo mode, and Kiosks. Note that this is different from the
+// concept of a Primary Account in the browser. A user may not be signed into
+// a Lacros browser Profile, or may be signed into a browser Profile with an
+// account which is different from the account which they used to sign into
+// the device - aka Device Account.
+// Also note that this will be null for Secondary / non-Main Profiles in
+// Lacros, because they do not start with the Chrome OS Device Account
+// signed-in by default.
+base::Optional<account_manager::Account>
+ChromeSigninClient::GetInitialPrimaryAccount() {
+  if (!IsAccountManagerAvailable(profile_)) {
+    // Secondary Profiles in Lacros do not start with the Device Account signed
+    // in.
+    return base::nullopt;
+  }
+
+  const crosapi::mojom::AccountPtr& device_account =
+      chromeos::LacrosChromeServiceImpl::Get()->init_params()->device_account;
+  if (!device_account)
+    return base::nullopt;
+
+  return account_manager::FromMojoAccount(device_account);
+}
+#endif
 
 void ChromeSigninClient::SetURLLoaderFactoryForTest(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {

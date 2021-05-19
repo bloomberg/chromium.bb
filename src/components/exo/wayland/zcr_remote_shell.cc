@@ -56,21 +56,6 @@ constexpr char kForceRemoteShellScale[] = "force-remote-shell-scale";
 
 }  // namespace switches
 
-Surface* FindRootSurface(aura::Window* window) {
-  if (!window)
-    return nullptr;
-  Surface* root = GetShellRootSurface(window);
-  if (root)
-    return root;
-  root = Surface::AsSurface(window);
-  for (aura::Window* parent = window->parent();
-       root && parent && Surface::AsSurface(parent);
-       parent = parent->parent()) {
-    root = Surface::AsSurface(parent);
-  }
-  return root;
-}
-
 using chromeos::WindowStateType;
 
 // We don't send configure immediately after tablet mode switch
@@ -185,10 +170,10 @@ int SystemUiBehavior(const display::Display& display) {
   auto* shelf_layout_manager = GetShelfLayoutManagerForDisplay(display);
   switch (shelf_layout_manager->auto_hide_behavior()) {
     case ash::ShelfAutoHideBehavior::kNever:
-      return ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE;
+      return ZCR_REMOTE_OUTPUT_V1_SYSTEMUI_BEHAVIOR_VISIBLE;
     case ash::ShelfAutoHideBehavior::kAlways:
     case ash::ShelfAutoHideBehavior::kAlwaysHidden:
-      return ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_NON_STICKY;
+      return ZCR_REMOTE_OUTPUT_V1_SYSTEMUI_BEHAVIOR_HIDDEN;
   }
   NOTREACHED() << "Got unexpected shelf visibility behavior.";
   return 0;
@@ -332,7 +317,7 @@ void remote_surface_set_title(wl_client* client,
                               wl_resource* resource,
                               const char* title) {
   GetUserDataAs<ShellSurfaceBase>(resource)->SetTitle(
-      base::string16(base::UTF8ToUTF16(title)));
+      std::u16string(base::UTF8ToUTF16(title)));
 }
 
 void remote_surface_set_top_inset(wl_client* client,
@@ -559,7 +544,7 @@ void remote_surface_set_extra_title(wl_client* client,
                                     wl_resource* resource,
                                     const char* extra_title) {
   GetUserDataAs<ClientControlledShellSurface>(resource)->SetExtraTitle(
-      base::string16(base::UTF8ToUTF16(extra_title)));
+      std::u16string(base::UTF8ToUTF16(extra_title)));
 }
 
 ash::OrientationLockType OrientationLock(uint32_t orientation_lock) {
@@ -668,6 +653,15 @@ void remote_surface_set_system_gesture_exclusion(wl_client* client,
   }
 }
 
+void remote_surface_set_resize_lock(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetResizeLock(true);
+}
+
+void remote_surface_unset_resize_lock(wl_client* client,
+                                      wl_resource* resource) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetResizeLock(false);
+}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -717,7 +711,9 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_accessibility_id,
     remote_surface_set_pip_original_window,
     remote_surface_unset_pip_original_window,
-    remote_surface_set_system_gesture_exclusion};
+    remote_surface_set_system_gesture_exclusion,
+    remote_surface_set_resize_lock,
+    remote_surface_unset_resize_lock};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -864,9 +860,13 @@ class WaylandRemoteOutput : public WaylandDisplayObserver {
         resource_, stable_insets_in_pixel.left(), stable_insets_in_pixel.top(),
         stable_insets_in_pixel.right(), stable_insets_in_pixel.bottom());
 
-    int systemui_visibility = SystemUiBehavior(display);
-    zcr_remote_output_v1_send_systemui_visibility(resource_,
-                                                  systemui_visibility);
+    // Currently no client uses zcr_remote_output_v1 systemui_visibility.
+    // Only systemui_behavior is sent here.
+    if (wl_resource_get_version(resource_) >=
+        ZCR_REMOTE_OUTPUT_V1_SYSTEMUI_BEHAVIOR_SINCE_VERSION) {
+      int systemui_behavior = SystemUiBehavior(display);
+      zcr_remote_output_v1_send_systemui_behavior(resource_, systemui_behavior);
+    }
 
     return true;
   }
@@ -913,7 +913,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     }
 
     SendDisplayMetrics();
-    SendActivated(helper->GetActiveWindow(), nullptr);
+    SendFocused(helper->GetActiveWindow(), nullptr);
   }
   ~WaylandRemoteShell() override {
     WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
@@ -1014,7 +1014,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
   // Overridden from wm::ActivationChangeObserver:
   void OnWindowFocused(aura::Window* gained_active,
                        aura::Window* lost_active) override {
-    SendActivated(gained_active, lost_active);
+    SendFocused(gained_active, lost_active);
   }
 
  private:
@@ -1190,9 +1190,11 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
       wl_client_flush(client);
   }
 
-  void SendActivated(aura::Window* gained_active, aura::Window* lost_active) {
-    Surface* gained_active_surface = FindRootSurface(gained_active);
-    Surface* lost_active_surface = FindRootSurface(lost_active);
+  void SendFocused(aura::Window* gained_active, aura::Window* lost_active) {
+    Surface* gained_active_surface =
+        GetTargetSurfaceForKeyboardFocus(gained_active);
+    Surface* lost_active_surface =
+        GetTargetSurfaceForKeyboardFocus(lost_active);
     if (gained_active_surface == lost_active_surface)
       return;
 

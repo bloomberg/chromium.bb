@@ -69,7 +69,8 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
             EligibilityFailureReason.AGSA_NOT_GOOGLE_SIGNED,
             EligibilityFailureReason.NON_GOOGLE_SEARCH_ENGINE,
             EligibilityFailureReason.NO_CHROME_ACCOUNT, EligibilityFailureReason.LOW_END_DEVICE,
-            EligibilityFailureReason.MULTIPLE_ACCOUNTS_ON_DEVICE})
+            EligibilityFailureReason.MULTIPLE_ACCOUNTS_ON_DEVICE,
+            EligibilityFailureReason.AGSA_NOT_INSTALLED})
     @Retention(RetentionPolicy.SOURCE)
     @interface EligibilityFailureReason {
         int AGSA_CANT_HANDLE_INTENT = 0;
@@ -86,10 +87,11 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
         int NO_CHROME_ACCOUNT = 8;
         int LOW_END_DEVICE = 9;
         int MULTIPLE_ACCOUNTS_ON_DEVICE = 10;
+        int AGSA_NOT_INSTALLED = 11;
 
         // STOP: When updating this, also update values in enums.xml and make sure to update the
         // IntDef above.
-        int NUM_ENTRIES = 11;
+        int NUM_ENTRIES = 12;
     }
 
     /** Allows outside classes to listen for changes in this service. */
@@ -262,6 +264,11 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
             boolean returnImmediately, List<Integer> outList) {
         assert returnImmediately || outList != null;
 
+        if (!mGsaState.isGsaInstalled()) {
+            if (returnImmediately) return false;
+            outList.add(EligibilityFailureReason.AGSA_NOT_INSTALLED);
+        }
+
         if (!mGsaState.canAgsaHandleIntent(getAssistantVoiceSearchIntent())) {
             if (returnImmediately) return false;
             outList.add(EligibilityFailureReason.AGSA_CANT_HANDLE_INTENT);
@@ -332,6 +339,14 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
         boolean eligible = isDeviceEligibleForAssistant(
                 /* returnImmediately= */ false, /* outList */ failureReasons);
         RecordHistogram.recordBooleanHistogram(USER_ELIGIBILITY_HISTOGRAM, eligible);
+
+        // See notes in {@link GSAState#parseAgsaMajorMinorVersionAsInteger} for details about this
+        // number.
+        Integer versionNumber =
+                mGsaState.parseAgsaMajorMinorVersionAsInteger(mGsaState.getAgsaVersionName());
+        if (versionNumber != null) {
+            RecordHistogram.recordSparseHistogram(AGSA_VERSION_HISTOGRAM, (int) versionNumber);
+        }
 
         for (@EligibilityFailureReason int reason : failureReasons) {
             RecordHistogram.recordEnumeratedHistogram(USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,

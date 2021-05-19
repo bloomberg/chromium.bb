@@ -19,6 +19,8 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-forward.h"
+#include "third_party/blink/public/mojom/page/widget.mojom.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 
 class GURL;
 
@@ -64,9 +66,12 @@ class InspectorIssue;
 
 namespace devtools_instrumentation {
 
-void ApplyNetworkRequestOverrides(FrameTreeNode* frame_tree_node,
-                                  mojom::BeginNavigationParams* begin_params,
-                                  bool* report_raw_headers);
+void ApplyNetworkRequestOverrides(
+    FrameTreeNode* frame_tree_node,
+    mojom::BeginNavigationParams* begin_params,
+    bool* report_raw_headers,
+    base::Optional<std::vector<net::SourceStream::SourceType>>*
+        devtools_accepted_stream_types);
 
 // Returns true if devtools want |*override_out| to be used.
 // (A true return and |*override_out| being nullopt means no user agent client
@@ -142,55 +147,15 @@ void OnSignedExchangeCertificateRequestCompleted(
     const base::UnguessableToken& request_id,
     const network::URLLoaderCompletionStatus& status);
 
-void OnRequestWillBeSentExtraInfo(
-    int process_id,
-    int routing_id,
-    const std::string& devtools_request_id,
-    const net::CookieAccessResultList& request_cookie_list,
-    const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers,
-    const network::mojom::ClientSecurityStatePtr security_state);
-void OnResponseReceivedExtraInfo(
-    int process_id,
-    int routing_id,
-    const std::string& devtools_request_id,
-    const net::CookieAndLineAccessResultList& response_cookie_list,
-    const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
-    const base::Optional<std::string>& response_headers_text,
-    network::mojom::IPAddressSpace resource_address_space);
-void OnPrivateNetworkRequest(
-    int32_t process_id,
-    int32_t routing_id,
-    const base::Optional<std::string>& devtools_request_id,
-    const GURL& url,
-    bool is_warning,
-    network::mojom::IPAddressSpace resource_address_space,
-    const network::mojom::ClientSecurityStatePtr client_security_state);
-void OnCorsPreflightRequest(int32_t process_id,
-                            int32_t render_frame_id,
-                            const base::UnguessableToken& devtools_request_id,
-                            const network::ResourceRequest& request,
-                            const GURL& signed_exchange_url,
-                            const std::string& initiator_devtools_request_id);
-void OnCorsPreflightResponse(int32_t process_id,
-                             int32_t render_frame_id,
-                             const base::UnguessableToken& devtools_request_id,
-                             const GURL& url,
-                             network::mojom::URLResponseHeadPtr head);
-void OnCorsPreflightRequestCompleted(
-    int32_t process_id,
-    int32_t render_frame_id,
-    const base::UnguessableToken& devtools_request_id,
-    const network::URLLoaderCompletionStatus& status);
-void OnTrustTokenOperationDone(
-    int32_t process_id,
-    int32_t routing_id,
-    const std::string& devtools_request_id,
-    const network::mojom::TrustTokenOperationResultPtr result);
-
 std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
     NavigationHandle* navigation_handle);
 
 bool ShouldWaitForDebuggerInWindowOpen();
+
+void WillStartDragging(FrameTreeNode* main_frame_tree_node,
+                       const blink::mojom::DragDataPtr drag_data,
+                       blink::DragOperationsMask drag_operations_mask,
+                       bool* intercepted);
 
 // Asks any interested agents to handle the given certificate error. Returns
 // |true| if the error was handled, |false| otherwise.

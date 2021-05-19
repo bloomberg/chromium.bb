@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "chrome/browser/ash/notifications/adb_sideloading_policy_change_notification.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/ui/adb_sideloading_policy_change_notification.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 
@@ -49,14 +49,13 @@ class AdbSideloadingAllowanceModePolicyHandler
 
   // Defines which kind of notification should be displayed, affecting the
   // title, the message and whether or not the button is displayed
-  using NotificationType =
-      chromeos::AdbSideloadingPolicyChangeNotification::Type;
+  using NotificationType = ash::AdbSideloadingPolicyChangeNotification::Type;
 
   AdbSideloadingAllowanceModePolicyHandler(
-      chromeos::CrosSettings* cros_settings,
+      ash::CrosSettings* cros_settings,
       PrefService* local_state,
       chromeos::PowerManagerClient* power_manager_client,
-      chromeos::AdbSideloadingPolicyChangeNotification*
+      ash::AdbSideloadingPolicyChangeNotification*
           adb_sideloading_policy_change_notification);
 
   // Not copyable or movable
@@ -100,11 +99,11 @@ class AdbSideloadingAllowanceModePolicyHandler
   void MaybeShowPowerwashNotification(bool is_sideloading_enabled);
   void MaybeShowPowerwashUponRebootNotification();
 
-  chromeos::CrosSettings* const cros_settings_;
+  ash::CrosSettings* const cros_settings_;
 
   PrefService* const local_state_;
 
-  std::unique_ptr<chromeos::AdbSideloadingPolicyChangeNotification>
+  std::unique_ptr<ash::AdbSideloadingPolicyChangeNotification>
       adb_sideloading_policy_change_notification_;
 
   std::unique_ptr<base::OneShotTimer> notification_timer_;

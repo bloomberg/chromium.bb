@@ -44,7 +44,11 @@ struct SenderMessage {
   Type type = Type::kUnknown;
   int32_t sequence_number = -1;
   bool valid = false;
-  absl::variant<absl::monostate, Offer, std::string> body;
+  absl::variant<absl::monostate,
+                std::vector<uint8_t>,  // Binary-encoded RPC message.
+                Offer,
+                std::string>
+      body;
 };
 
 }  // namespace cast

@@ -479,7 +479,7 @@ CallCapture CaptureGetTexLevelParameterivANGLE(const State &glState,
 
     paramBuffer.addValueParam("targetPacked", ParamType::TTextureTarget, targetPacked);
     paramBuffer.addValueParam("level", ParamType::TGLint, level);
-    paramBuffer.addEnumParam("pname", GLenumGroup::DefaultGroup, ParamType::TGLenum, pname);
+    paramBuffer.addEnumParam("pname", GLenumGroup::GetTextureParameter, ParamType::TGLenum, pname);
 
     if (isCallValid)
     {
@@ -4781,7 +4781,7 @@ CallCapture CaptureDiscardFramebufferEXT(const State &glState,
 {
     ParamBuffer paramBuffer;
 
-    paramBuffer.addEnumParam("target", GLenumGroup::DefaultGroup, ParamType::TGLenum, target);
+    paramBuffer.addEnumParam("target", GLenumGroup::FramebufferTarget, ParamType::TGLenum, target);
     paramBuffer.addValueParam("numAttachments", ParamType::TGLsizei, numAttachments);
 
     if (isCallValid)

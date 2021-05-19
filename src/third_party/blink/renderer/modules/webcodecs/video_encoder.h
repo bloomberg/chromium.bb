@@ -12,8 +12,9 @@
 #include "media/base/video_color_space.h"
 #include "media/base/video_encoder.h"
 #include "media/base/video_frame_pool.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_output_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk_output_callback.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoder_base.h"
+#include "third_party/blink/renderer/modules/webcodecs/gpu_factories_retriever.h"
 #include "third_party/blink/renderer/modules/webcodecs/hardware_preference.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 
@@ -41,6 +42,7 @@ class MODULES_EXPORT VideoEncoderTraits {
 
     media::VideoEncoder::Options options;
     String codec_string;
+    base::Optional<gfx::Size> display_size;
 
     void Trace(Visitor*) const {}
   };
@@ -51,7 +53,7 @@ class MODULES_EXPORT VideoEncoderTraits {
   using Frame = VideoFrame;
   using EncodeOptions = VideoEncoderEncodeOptions;
   using OutputChunk = EncodedVideoChunk;
-  using OutputCallback = V8VideoEncoderOutputCallback;
+  using OutputCallback = V8EncodedVideoChunkOutputCallback;
   using MediaEncoder = media::VideoEncoder;
 
   // Can't be a virtual method, because it's used from base ctor.
@@ -69,6 +71,10 @@ class MODULES_EXPORT VideoEncoder final
   VideoEncoder(ScriptState*, const VideoEncoderInit*, ExceptionState&);
   ~VideoEncoder() override;
 
+  static ScriptPromise isConfigSupported(ScriptState*,
+                                         const VideoEncoderConfig*,
+                                         ExceptionState&);
+
  private:
   using Base = EncoderBase<VideoEncoderTraits>;
   using ParsedConfig = VideoEncoderTraits::ParsedConfig;
@@ -85,15 +91,13 @@ class MODULES_EXPORT VideoEncoder final
 
   void UpdateEncoderLog(std::string encoder_name, bool is_hw_accelerated);
 
-  void OnReceivedGpuFactories(Request*, media::GpuVideoAcceleratorFactories*);
 
   ParsedConfig* ParseConfig(const VideoEncoderConfig*,
                             ExceptionState&) override;
   bool VerifyCodecSupport(ParsedConfig*, ExceptionState&) override;
   VideoFrame* CloneFrame(VideoFrame*, ExecutionContext*) override;
 
-  void CreateAndInitializeEncoderWithoutAcceleration(Request* request);
-  void CreateAndInitializeEncoderOnEncoderSupportKnown(
+  void ContinueConfigureWithGpuFactories(
       Request* request,
       media::GpuVideoAcceleratorFactories* gpu_factories);
   std::unique_ptr<media::VideoEncoder> CreateMediaVideoEncoder(

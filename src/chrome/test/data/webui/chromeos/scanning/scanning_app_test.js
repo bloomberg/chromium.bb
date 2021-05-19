@@ -4,38 +4,43 @@
 
 import 'chrome://scanning/scanning_app.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {setScanServiceForTesting} from 'chrome://scanning/mojo_interface_provider.js';
 import {ScannerArr} from 'chrome://scanning/scanning_app_types.js';
 import {tokenToString} from 'chrome://scanning/scanning_app_util.js';
+import {ScanningBrowserProxyImpl} from 'chrome://scanning/scanning_browser_proxy.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks, isVisible} from '../../test_util.m.js';
 
 import {changeSelect, createScanner, createScannerSource} from './scanning_app_test_utils.js';
+import {TestScanningBrowserProxy} from './test_scanning_browser_proxy.js';
+
+const MY_FILES_PATH = '/home/chronos/user/MyFiles';
 
 const ColorMode = {
-  BLACK_AND_WHITE: chromeos.scanning.mojom.ColorMode.kBlackAndWhite,
-  GRAYSCALE: chromeos.scanning.mojom.ColorMode.kGrayscale,
-  COLOR: chromeos.scanning.mojom.ColorMode.kColor,
+  BLACK_AND_WHITE: ash.scanning.mojom.ColorMode.kBlackAndWhite,
+  GRAYSCALE: ash.scanning.mojom.ColorMode.kGrayscale,
+  COLOR: ash.scanning.mojom.ColorMode.kColor,
 };
 
 const FileType = {
-  JPG: chromeos.scanning.mojom.FileType.kJpg,
-  PDF: chromeos.scanning.mojom.FileType.kPdf,
-  PNG: chromeos.scanning.mojom.FileType.kPng,
+  JPG: ash.scanning.mojom.FileType.kJpg,
+  PDF: ash.scanning.mojom.FileType.kPdf,
+  PNG: ash.scanning.mojom.FileType.kPng,
 };
 
 const PageSize = {
-  A4: chromeos.scanning.mojom.PageSize.kIsoA4,
-  Letter: chromeos.scanning.mojom.PageSize.kNaLetter,
-  Max: chromeos.scanning.mojom.PageSize.kMax,
+  A4: ash.scanning.mojom.PageSize.kIsoA4,
+  Letter: ash.scanning.mojom.PageSize.kNaLetter,
+  Max: ash.scanning.mojom.PageSize.kMax,
 };
 
 const SourceType = {
-  FLATBED: chromeos.scanning.mojom.SourceType.kFlatbed,
-  ADF_SIMPLEX: chromeos.scanning.mojom.SourceType.kAdfSimplex,
-  ADF_DUPLEX: chromeos.scanning.mojom.SourceType.kAdfDuplex,
+  FLATBED: ash.scanning.mojom.SourceType.kFlatbed,
+  ADF_SIMPLEX: ash.scanning.mojom.SourceType.kAdfSimplex,
+  ADF_DUPLEX: ash.scanning.mojom.SourceType.kAdfDuplex,
 };
 
 const pageSizes = [PageSize.A4, PageSize.Letter, PageSize.Max];
@@ -64,7 +69,7 @@ const secondCapabilities = {
   resolutions: [150, 600]
 };
 
-/** @implements {chromeos.scanning.mojom.ScanServiceInterface} */
+/** @implements {ash.scanning.mojom.ScanServiceInterface} */
 class FakeScanService {
   constructor() {
     /** @private {!Map<string, !PromiseResolver>} */
@@ -75,11 +80,11 @@ class FakeScanService {
 
     /**
      * @private {!Map<!mojoBase.mojom.UnguessableToken,
-     *     !chromeos.scanning.mojom.ScannerCapabilities>}
+     *     !ash.scanning.mojom.ScannerCapabilities>}
      */
     this.capabilities_ = new Map();
 
-    /** @private {?chromeos.scanning.mojom.ScanJobObserverRemote} */
+    /** @private {?ash.scanning.mojom.ScanJobObserverRemote} */
     this.scanJobObserverRemote_ = null;
 
     /** @private {boolean} */
@@ -134,14 +139,14 @@ class FakeScanService {
     this.scanners_ = scanners;
   }
 
-  /** @param {chromeos.scanning.mojom.Scanner} scanner */
+  /** @param {ash.scanning.mojom.Scanner} scanner */
   addScanner(scanner) {
     this.scanners_ = this.scanners_.concat(scanner);
   }
 
   /**
    * @param {!Map<!mojoBase.mojom.UnguessableToken,
-   *     !chromeos.scanning.mojom.ScannerCapabilities>} capabilities
+   *     !ash.scanning.mojom.ScannerCapabilities>} capabilities
    */
   setCapabilities(capabilities) {
     this.capabilities_ = capabilities;
@@ -174,12 +179,12 @@ class FakeScanService {
   }
 
   /**
-   * @param {boolean} success
-   * @param {!mojoBase.mojom.FilePath} lastScannedFilePath
+   * @param {!ash.scanning.mojom.ScanResult} result
+   * @param {!Array<!mojoBase.mojom.FilePath>} scannedFilePaths
    * @return {!Promise}
    */
-  simulateScanComplete(success, lastScannedFilePath) {
-    this.scanJobObserverRemote_.onScanComplete(success, lastScannedFilePath);
+  simulateScanComplete(result, scannedFilePaths) {
+    this.scanJobObserverRemote_.onScanComplete(result, scannedFilePaths);
     return flushTasks();
   }
 
@@ -205,7 +210,7 @@ class FakeScanService {
   /**
    * @param {!mojoBase.mojom.UnguessableToken} scanner_id
    * @return {!Promise<{capabilities:
-   *    !chromeos.scanning.mojom.ScannerCapabilities}>}
+   *    !ash.scanning.mojom.ScannerCapabilities}>}
    */
   getScannerCapabilities(scanner_id) {
     return new Promise(resolve => {
@@ -216,8 +221,8 @@ class FakeScanService {
 
   /**
    * @param {!mojoBase.mojom.UnguessableToken} scanner_id
-   * @param {!chromeos.scanning.mojom.ScanSettings} settings
-   * @param {!chromeos.scanning.mojom.ScanJobObserverRemote} remote
+   * @param {!ash.scanning.mojom.ScanSettings} settings
+   * @param {!ash.scanning.mojom.ScanJobObserverRemote} remote
    * @return {!Promise<{success: boolean}>}
    */
   startScan(scanner_id, settings, remote) {
@@ -240,11 +245,17 @@ export function scanningAppTest() {
   /** @type {?FakeScanService} */
   let fakeScanService_ = null;
 
+  /** @type {?TestScanningBrowserProxy} */
+  let testBrowserProxy = null;
+
   /** @type {?HTMLSelectElement} */
   let scannerSelect = null;
 
   /** @type {?HTMLSelectElement} */
   let sourceSelect = null;
+
+  /** @type {?HTMLSelectElement} */
+  let scanToSelect = null;
 
   /** @type {?HTMLSelectElement} */
   let fileTypeSelect = null;
@@ -281,7 +292,7 @@ export function scanningAppTest() {
 
   /**
    * @type {!Map<!mojoBase.mojom.UnguessableToken,
-   *     !chromeos.scanning.mojom.ScannerCapabilities>}
+   *     !ash.scanning.mojom.ScannerCapabilities>}
    */
   const capabilities = new Map();
   capabilities.set(firstScannerId, firstCapabilities);
@@ -296,6 +307,9 @@ export function scanningAppTest() {
   suiteSetup(() => {
     fakeScanService_ = new FakeScanService();
     setScanServiceForTesting(fakeScanService_);
+    testBrowserProxy = new TestScanningBrowserProxy();
+    ScanningBrowserProxyImpl.instance_ = testBrowserProxy;
+    testBrowserProxy.setMyFilesPath(MY_FILES_PATH);
   });
 
   setup(function() {
@@ -308,6 +322,7 @@ export function scanningAppTest() {
     scanningApp = null;
     scannerSelect = null;
     sourceSelect = null;
+    scanToSelect = null;
     fileTypeSelect = null;
     colorModeSelect = null;
     pageSizeSelect = null;
@@ -324,7 +339,7 @@ export function scanningAppTest() {
   /**
    * @param {!ScannerArr} scanners
    * @param {!Map<!mojoBase.mojom.UnguessableToken,
-   *     !chromeos.scanning.mojom.ScannerCapabilities>} capabilities
+   *     !ash.scanning.mojom.ScannerCapabilities>} capabilities
    * @return {!Promise}
    */
   function initializeScanningApp(scanners, capabilities) {
@@ -390,9 +405,9 @@ export function scanningAppTest() {
   }
 
   test('Scan', () => {
-
-    /** @type {!mojoBase.mojom.FilePath} */
-    const lastScannedFilePath = {'path': '/test/path/scan.jpg'};
+    /** @type {!Array<!mojoBase.mojom.FilePath>} */
+    const scannedFilePaths =
+        [{'path': '/test/path/scan1.jpg'}, {'path': '/test/path/scan2.jpg'}];
 
     return initializeScanningApp(expectedScanners, capabilities)
         .then(() => {
@@ -401,6 +416,7 @@ export function scanningAppTest() {
 
           scannerSelect = scanningApp.$$('#scannerSelect').$$('select');
           sourceSelect = scanningApp.$$('#sourceSelect').$$('select');
+          scanToSelect = scanningApp.$$('#scanToSelect').$$('select');
           fileTypeSelect = scanningApp.$$('#fileTypeSelect').$$('select');
           colorModeSelect = scanningApp.$$('#colorModeSelect').$$('select');
           pageSizeSelect = scanningApp.$$('#pageSizeSelect').$$('select');
@@ -423,6 +439,7 @@ export function scanningAppTest() {
           // if it exists.
           assertEquals(
               firstCapabilities.sources[1].name, scanningApp.selectedSource);
+          assertEquals(MY_FILES_PATH, scanningApp.selectedFilePath);
           assertEquals(FileType.PDF.toString(), scanningApp.selectedFileType);
           assertEquals(
               ColorMode.COLOR.toString(), scanningApp.selectedColorMode);
@@ -437,6 +454,7 @@ export function scanningAppTest() {
           // should be enabled, and the helper text should be displayed.
           assertFalse(scannerSelect.disabled);
           assertFalse(sourceSelect.disabled);
+          assertFalse(scanToSelect.disabled);
           assertFalse(fileTypeSelect.disabled);
           assertFalse(colorModeSelect.disabled);
           assertFalse(pageSizeSelect.disabled);
@@ -462,6 +480,7 @@ export function scanningAppTest() {
           // progress.
           assertTrue(scannerSelect.disabled);
           assertTrue(sourceSelect.disabled);
+          assertTrue(scanToSelect.disabled);
           assertTrue(fileTypeSelect.disabled);
           assertTrue(colorModeSelect.disabled);
           assertTrue(pageSizeSelect.disabled);
@@ -507,7 +526,7 @@ export function scanningAppTest() {
         .then(() => {
           // Complete the scan.
           return fakeScanService_.simulateScanComplete(
-              true, lastScannedFilePath);
+              ash.scanning.mojom.ScanResult.kSuccess, scannedFilePaths);
         })
         .then(() => {
           assertTrue(isVisible(/** @type {!HTMLElement} */ (scannedImages)));
@@ -515,9 +534,9 @@ export function scanningAppTest() {
           assertTrue(isVisible(
               /** @type {!HTMLElement} */ (
                   scanningApp.$$('scan-done-section'))));
-          assertEquals(
-              lastScannedFilePath.path,
-              scanningApp.$$('scan-done-section').lastScannedFilePath.path);
+          assertArrayEquals(
+              scannedFilePaths,
+              scanningApp.$$('scan-done-section').scannedFilePaths);
 
           // Click the Done button to return to READY state.
           return clickDoneButton();
@@ -527,6 +546,7 @@ export function scanningAppTest() {
           // enabled. The progress bar and text should no longer be visible.
           assertFalse(scannerSelect.disabled);
           assertFalse(sourceSelect.disabled);
+          assertFalse(scanToSelect.disabled);
           assertFalse(fileTypeSelect.disabled);
           assertFalse(colorModeSelect.disabled);
           assertFalse(pageSizeSelect.disabled);
@@ -563,7 +583,8 @@ export function scanningAppTest() {
         })
         .then(() => {
           // Simulate the scan failing.
-          return fakeScanService_.simulateScanComplete(false, {'path': ''});
+          return fakeScanService_.simulateScanComplete(
+              ash.scanning.mojom.ScanResult.kIoError, []);
         })
         .then(() => {
           // The scan failed dialog should open.
@@ -577,6 +598,99 @@ export function scanningAppTest() {
           assertFalse(scanningApp.$$('#scanFailedDialog').open);
           assertFalse(scanButton.disabled);
           assertTrue(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+        });
+  });
+
+  test('ScanResults', () => {
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          scanButton =
+              /** @type {!CrButtonElement} */ (scanningApp.$$('#scanButton'));
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulateScanComplete(
+              ash.scanning.mojom.ScanResult.kUnknownError, []);
+        })
+        .then(() => {
+          assertEquals(
+              loadTimeData.getString('scanFailedDialogUnknownErrorText'),
+              scanningApp.$$('#scanFailedDialogText').textContent.trim());
+          return clickOkButton();
+        })
+        .then(() => {
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulateScanComplete(
+              ash.scanning.mojom.ScanResult.kDeviceBusy, []);
+        })
+        .then(() => {
+          assertEquals(
+              loadTimeData.getString('scanFailedDialogDeviceBusyText'),
+              scanningApp.$$('#scanFailedDialogText').textContent.trim());
+          return clickOkButton();
+        })
+        .then(() => {
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulateScanComplete(
+              ash.scanning.mojom.ScanResult.kAdfJammed, []);
+        })
+        .then(() => {
+          assertEquals(
+              loadTimeData.getString('scanFailedDialogAdfJammedText'),
+              scanningApp.$$('#scanFailedDialogText').textContent.trim());
+          return clickOkButton();
+        })
+        .then(() => {
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulateScanComplete(
+              ash.scanning.mojom.ScanResult.kAdfEmpty, []);
+        })
+        .then(() => {
+          assertEquals(
+              loadTimeData.getString('scanFailedDialogAdfEmptyText'),
+              scanningApp.$$('#scanFailedDialogText').textContent.trim());
+          return clickOkButton();
+        })
+        .then(() => {
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulateScanComplete(
+              ash.scanning.mojom.ScanResult.kFlatbedOpen, []);
+        })
+        .then(() => {
+          assertEquals(
+              loadTimeData.getString('scanFailedDialogFlatbedOpenText'),
+              scanningApp.$$('#scanFailedDialogText').textContent.trim());
+          return clickOkButton();
+        })
+        .then(() => {
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulateScanComplete(
+              ash.scanning.mojom.ScanResult.kIoError, []);
+        })
+        .then(() => {
+          assertEquals(
+              loadTimeData.getString('scanFailedDialogIoErrorText'),
+              scanningApp.$$('#scanFailedDialogText').textContent.trim());
+          return clickOkButton();
         });
   });
 
@@ -785,6 +899,69 @@ export function scanningAppTest() {
               /** @type {!HTMLElement} */ (scanningApp.$$('loading-page'))));
           assertTrue(isVisible(
               /** @type {!HTMLElement} */ (scanningApp.$$('#panelContainer'))));
+        });
+  });
+
+  test('RecordNoSettingChanges', () => {
+    testBrowserProxy.setExpectedNumScanSettingChanges(0);
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          scanningApp.$$('#scanButton').click();
+        });
+  });
+
+  test('RecordSomeSettingChanges', () => {
+    testBrowserProxy.setExpectedNumScanSettingChanges(2);
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          return changeSelect(
+              scanningApp.$$('#fileTypeSelect').$$('select'),
+              FileType.JPG.toString(), /* selectedIndex */ null);
+        })
+        .then(() => {
+          return changeSelect(
+              scanningApp.$$('#resolutionSelect').$$('select'), '75',
+              /* selectedIndex */ null);
+        })
+        .then(() => {
+          scanningApp.$$('#scanButton').click();
+        });
+  });
+
+  test('RecordSettingsWithScannerChange', () => {
+    testBrowserProxy.setExpectedNumScanSettingChanges(3);
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return fakeScanService_.whenCalled('getScannerCapabilities');
+        })
+        .then(() => {
+          return changeSelect(
+              scanningApp.$$('#colorModeSelect').$$('select'),
+              ColorMode.BLACK_AND_WHITE.toString(), /* selectedIndex */ null);
+        })
+        .then(() => {
+          return changeSelect(
+              scanningApp.$$('#scannerSelect').$$('select'), /* value */ null,
+              /* selectedIndex */ 1);
+        })
+        .then(() => {
+          return changeSelect(
+              scanningApp.$$('#fileTypeSelect').$$('select'),
+              FileType.JPG.toString(), /* selectedIndex */ null);
+        })
+        .then(() => {
+          return changeSelect(
+              scanningApp.$$('#resolutionSelect').$$('select'), '150',
+              /* selectedIndex */ null);
+        })
+        .then(() => {
+          scanningApp.$$('#scanButton').click();
         });
   });
 }

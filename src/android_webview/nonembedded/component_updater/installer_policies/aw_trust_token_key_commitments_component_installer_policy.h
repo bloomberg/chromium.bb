@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "components/component_updater/installer_policies/trust_token_key_commitments_component_installer_policy.h"
 
 namespace base {
@@ -16,10 +17,6 @@ class DictionaryValue;
 class FilePath;
 class Version;
 }  // namespace base
-
-namespace component_updater {
-class ComponentUpdateService;
-}  // namespace component_updater
 
 namespace android_webview {
 
@@ -33,8 +30,7 @@ class AwTrustTokenKeyCommitmentsComponentInstallerPolicy
     : public component_updater::
           TrustTokenKeyCommitmentsComponentInstallerPolicy {
  public:
-  explicit AwTrustTokenKeyCommitmentsComponentInstallerPolicy(
-      std::unique_ptr<AwComponentInstallerPolicyDelegate> delegate);
+  AwTrustTokenKeyCommitmentsComponentInstallerPolicy();
   ~AwTrustTokenKeyCommitmentsComponentInstallerPolicy() override;
 
   AwTrustTokenKeyCommitmentsComponentInstallerPolicy(
@@ -42,9 +38,6 @@ class AwTrustTokenKeyCommitmentsComponentInstallerPolicy
   AwTrustTokenKeyCommitmentsComponentInstallerPolicy& operator=(
       const AwTrustTokenKeyCommitmentsComponentInstallerPolicy&) = delete;
 
-  update_client::CrxInstaller::Result OnCustomInstall(
-      const base::DictionaryValue& manifest,
-      const base::FilePath& install_dir) override;
   void OnCustomUninstall() override;
   void ComponentReady(const base::Version& version,
                       const base::FilePath& install_dir,
@@ -57,7 +50,9 @@ class AwTrustTokenKeyCommitmentsComponentInstallerPolicy
 // Call once during startup to make the component update service aware of
 // the trust tokens update component.
 void RegisterTrustTokensComponent(
-    component_updater::ComponentUpdateService* update_service);
+    base::OnceCallback<bool(const update_client::CrxComponent&)>
+        register_callback,
+    base::OnceClosure registration_finished);
 
 }  // namespace android_webview
 

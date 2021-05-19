@@ -60,11 +60,9 @@ bool SandboxedProcessLauncherDelegate::DisclaimResponsibility() {
   return false;
 }
 
-#if defined(ARCH_CPU_ARM64)
-bool SandboxedProcessLauncherDelegate::LaunchX86_64() {
+bool SandboxedProcessLauncherDelegate::EnableCpuSecurityMitigations() {
   return false;
 }
-#endif  // ARCH_CPU_ARM64
 
 #endif  // OS_MAC
 

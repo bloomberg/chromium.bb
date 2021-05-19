@@ -23,6 +23,7 @@
 <translation id="1509960214886564027">Značajke na mnogim web-lokacijama mogu prestati funkcionirati</translation>
 <translation id="1620510694547887537">Fotoaparat</translation>
 <translation id="1644574205037202324">Povijest</translation>
+<translation id="1647582022260550163">Jeste li sigurni da želite poništiti dopuštenja i izbrisati kolačiće i podatke web-lokacije?</translation>
 <translation id="1660204651932907780">Web-lokacije mogu reproducirati zvuk (preporučeno)</translation>
 <translation id="1677097821151855053">Kolačići i drugi podaci web-lokacije koriste se kako bi vas web-lokacija zapamtila, na primjer kako bi vas prijavila na račun ili vam prilagodila oglase. Da biste upravljali kolačićima za sve web-lokacije, idite na <ph name="BEGIN_LINK" />Postavke<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Želite li izbrisati podatke web-lokacije?</translation>
@@ -92,7 +93,6 @@
 <translation id="3386292677130313581">Web-lokacije moraju tražiti dopuštenje za pristup lokaciji (preporučeno)</translation>
 <translation id="3538390592868664640">Blokirajte web-lokacije da izrađuju 3D kartu vašeg okruženja ili prate položaj kamere</translation>
 <translation id="3586500876634962664">Upotreba kamere i mikrofona</translation>
-<translation id="3587482841069643663">Sve</translation>
 <translation id="358794129225322306">Dopusti web-lokaciji automatsko preuzimanje više datoteka.</translation>
 <translation id="3594780231884063836">Isključi kameru</translation>
 <translation id="3596414637720633074">Blokiranje kolačića trećih strana u anonimnom načinu</translation>
@@ -104,6 +104,7 @@
 <translation id="385051799172605136">Natrag</translation>
 <translation id="3859306556332390985">Traži unaprijed</translation>
 <translation id="3955193568934677022">Web-lokacije mogu reproducirati zaštićeni sadržaj (preporučeno)</translation>
+<translation id="3967822245660637423">Preuzimanje dovršeno</translation>
 <translation id="3987993985790029246">Kopiraj vezu</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Naslov</translation>
@@ -177,6 +178,7 @@
 <translation id="5916664084637901428">Uključi</translation>
 <translation id="5922853908706496913">Dijeljenje zaslona</translation>
 <translation id="5939518447894949180">Ponovno postavi</translation>
+<translation id="5975083100439434680">Smanji</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Kontrolirajte pristup ove web-lokacije vašem uređaju</translation>
 <translation id="6040143037577758943">Zatvori</translation>
@@ -297,6 +299,7 @@
 <translation id="8801436777607969138">Blokiranje JavaScripta za određenu web-lokaciju.</translation>
 <translation id="8816026460808729765">Blokiranje pristupa senzorima za web-lokacije</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8903921497873541725">Povećaj</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC je isključen za ovaj uređaj. Uključite ga u <ph name="BEGIN_LINK" />postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Za većinu ljudi ova se web-lokacija brzo otvara i reagira</translation>
@@ -304,10 +307,12 @@
 <translation id="894871326938397531">Želite li napustiti anonimno?</translation>
 <translation id="8958424370300090006">Blokiraj kolačiće za određenu web-lokaciju.</translation>
 <translation id="8959122750345127698">Otvaranje je nedostupno: <ph name="URL" /></translation>
+<translation id="8986362086234534611">Zaboravi</translation>
 <translation id="9019902583201351841">Upravljaju tvoji roditelji</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> i još <ph name="NUM_MORE" />}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> i još <ph name="NUM_MORE" />}few{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> i još <ph name="NUM_MORE" />}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> i još <ph name="NUM_MORE" />}}</translation>
 <translation id="913657688200966289">Uključite dopuštenja za aplikaciju <ph name="APP_NAME" /> u <ph name="BEGIN_LINK" />Androidovim postavkama<ph name="END_LINK" />.</translation>
+<translation id="930525582205581608">Zaboraviti web-lokaciju?</translation>
 <translation id="965817943346481315">Blokiraj ako web-lokacija prikazuje ometajuće ili obmanjujuće oglase (preporučeno)</translation>
 <translation id="967624055006145463">Pohranjeni podaci</translation>
 </translationbundle>

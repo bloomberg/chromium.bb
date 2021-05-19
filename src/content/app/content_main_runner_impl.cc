@@ -52,7 +52,6 @@
 #include "components/power_scheduler/power_mode_arbiter.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/app/mojo_ipc_support.h"
-#include "content/app/partition_alloc_support.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
@@ -67,10 +66,12 @@
 #include "content/common/android/cpu_time_metrics.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/mojo_core_library_support.h"
+#include "content/common/partition_alloc_support.h"
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/tracing_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_descriptor_keys.h"
@@ -99,7 +100,9 @@
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
 #include "services/network/public/cpp/features.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/trace_startup.h"
+#include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -169,8 +172,9 @@
 
 #if defined(OS_ANDROID)
 #include "base/system/sys_info.h"
+#include "components/power_scheduler/power_scheduler.h"
+#include "content/browser/android/battery_metrics.h"
 #include "content/browser/android/browser_startup_controller.h"
-#include "content/common/android/cpu_affinity.h"
 #endif
 
 namespace content {
@@ -455,6 +459,19 @@ void InstallConsoleControlHandler(bool is_browser_process) {
 }
 #endif  // defined(OS_WIN)
 
+bool ShouldAllowSystemTracingConsumer() {
+// System tracing consumer support is currently only supported on ChromeOS.
+// TODO(crbug.com/1173395): Also enable for Lacros-Chrome.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // The consumer should only be enabled when the delegate allows it.
+  TracingDelegate* delegate =
+      GetContentClient()->browser()->GetTracingDelegate();
+  return delegate && delegate->IsSystemWideTracingEnabled();
+#else   // BUILDFLAG(IS_CHROMEOS_ASH)
+  return false;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
 }  // namespace
 
 class ContentClientCreator {
@@ -693,7 +710,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
     // When running browser tests, don't create a second AtExitManager as that
     // interfers with shutdown when objects created before ContentMain is
     // called are destructed when it returns.
-    exit_manager_.reset(new base::AtExitManager);
+    exit_manager_ = std::make_unique<base::AtExitManager>();
   }
 #endif  // !OS_ANDROID
 
@@ -859,15 +876,10 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
           params.sandbox_info))
     return TerminateForFatalInitializationError();
 #elif defined(OS_MAC)
-  // Only the GPU process still runs the V1 sandbox.
-  bool v2_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      sandbox::switches::kSeatbeltClientName);
-
-  if (!v2_enabled && process_type == switches::kGpuProcess) {
-    if (!InitializeSandbox()) {
-      return TerminateForFatalInitializationError();
-    }
-  } else if (v2_enabled) {
+  if (!sandbox::policy::IsUnsandboxedSandboxType(
+          sandbox::policy::SandboxTypeFromCommandLine(command_line))) {
+    // Verify that the sandbox was initialized prior to ContentMain using the
+    // SeatbeltExecServer.
     CHECK(sandbox::Seatbelt::IsSandboxed());
   }
 #endif
@@ -1004,14 +1016,26 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams& main_params,
 
     BrowserTaskExecutor::PostFeatureListSetup();
 
+    tracing::PerfettoTracedProcess::Get()
+        ->SetAllowSystemTracingConsumerCallback(
+            base::BindRepeating(&ShouldAllowSystemTracingConsumer));
     tracing::InitTracingPostThreadPoolStartAndFeatureList();
+
+    // PowerMonitor is needed in reduced mode. BrowserMainLoop will safely skip
+    // initializing it again if it has already been initialized.
+    base::PowerMonitor::Initialize(
+        std::make_unique<base::PowerMonitorDeviceSource>());
 
 #if defined(OS_ANDROID)
     SetupCpuTimeMetrics();
+
+    // Requires base::PowerMonitor to be initialized first.
+    AndroidBatteryMetrics::GetInstance();
+
     // For child processes, this requires allowing of the
     // sched_setaffinity() syscall in the sandbox (baseline_policy_android.cc).
     // When this call is removed, the sandbox allowlist should be updated too.
-    SetupCpuAffinityPollingOnce();
+    power_scheduler::PowerScheduler::GetInstance()->Setup();
 #endif
 
     if (should_start_minimal_browser)
@@ -1019,11 +1043,6 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams& main_params,
 
     discardable_shared_memory_manager_ =
         std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
-
-    // PowerMonitor is needed in reduced mode. BrowserMainLoop will safely skip
-    // initializing it again if it has already been initialized.
-    base::PowerMonitor::Initialize(
-        std::make_unique<base::PowerMonitorDeviceSource>());
 
     // Requires base::PowerMonitor to be initialized first.
     power_scheduler::PowerModeArbiter::GetInstance()->OnThreadPoolAvailable();
@@ -1048,7 +1067,7 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams& main_params,
 
   // No specified process type means this is the Browser process.
   internal::PartitionAllocSupport::Get()->ReconfigureAfterFeatureListInit("");
-  internal::PartitionAllocSupport::Get()->ReconfigureAfterThreadPoolInit("");
+  internal::PartitionAllocSupport::Get()->ReconfigureAfterTaskRunnerInit("");
 
   if (should_start_minimal_browser) {
     DVLOG(0) << "Chrome is running in minimal browser mode.";

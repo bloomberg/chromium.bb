@@ -13,7 +13,7 @@
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_screen.h"
-#include "ash/public/cpp/system_tray_focus_observer.h"
+#include "ash/public/cpp/system_tray_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -34,7 +34,7 @@ enum class SupervisedAction;
 // LoginScreen interface.
 class ASH_EXPORT LoginScreenController : public LoginScreen,
                                          public KioskAppMenu,
-                                         public SystemTrayFocusObserver {
+                                         public SystemTrayObserver {
  public:
   // The current authentication stage. Used to get more verbose logging.
   enum class AuthenticationStage {
@@ -123,7 +123,7 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
 
   void RequestSecurityTokenPin(SecurityTokenPinRequest request) override;
   void ClearSecurityTokenPinRequest() override;
-  bool SetLoginShelfGestureHandler(const base::string16& nudge_text,
+  bool SetLoginShelfGestureHandler(const std::u16string& nudge_text,
                                    const base::RepeatingClosure& fling_callback,
                                    base::OnceClosure exit_callback) override;
   void ClearLoginShelfGestureHandler() override;
@@ -138,6 +138,9 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
     return authentication_stage_;
   }
 
+  // Called when Login or Lock screen is destroyed.
+  void OnLockScreenDestroyed();
+
   LoginDataDispatcher* data_dispatcher() { return &login_data_dispatcher_; }
 
   void NotifyLoginScreenShown();
@@ -148,8 +151,9 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   // Common code that is called when the login/lock screen is shown.
   void OnShow();
 
-  // SystemTrayFocusObserver:
+  // SystemTrayObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
+  void OnSystemTrayBubbleShown() override;
 
   LoginDataDispatcher login_data_dispatcher_;
 

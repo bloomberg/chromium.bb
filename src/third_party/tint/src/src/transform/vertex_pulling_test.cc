@@ -24,19 +24,6 @@ namespace {
 
 using VertexPullingTest = TransformTest;
 
-TEST_F(VertexPullingTest, Error_NoVertexState) {
-  auto* src = R"(
-[[stage(vertex)]]
-fn main() -> void {}
-)";
-
-  auto* expect = "error: SetVertexState not called";
-
-  auto got = Transform<VertexPulling>(src);
-
-  EXPECT_EQ(expect, str(got));
-}
-
 TEST_F(VertexPullingTest, Error_NoEntryPoint) {
   auto* src = "";
 
@@ -46,7 +33,7 @@ TEST_F(VertexPullingTest, Error_NoEntryPoint) {
 
   auto transform = std::make_unique<VertexPulling>(cfg);
 
-  auto got = Transform(src, std::move(transform));
+  auto got = Run(src, std::move(transform));
 
   EXPECT_EQ(expect, str(got));
 }
@@ -64,7 +51,7 @@ fn main() -> void {}
 
   auto transform = std::make_unique<VertexPulling>(cfg);
 
-  auto got = Transform(src, std::move(transform));
+  auto got = Run(src, std::move(transform));
 
   EXPECT_EQ(expect, str(got));
 }
@@ -82,7 +69,7 @@ fn main() -> void {}
 
   auto transform = std::make_unique<VertexPulling>(cfg);
 
-  auto got = Transform(src, std::move(transform));
+  auto got = Run(src, std::move(transform));
 
   EXPECT_EQ(expect, str(got));
 }
@@ -96,14 +83,13 @@ fn main() -> void {}
   auto* expect = R"(
 [[block]]
 struct TintVertexData {
-  [[offset(0)]]
   _tint_vertex_data : [[stride(4)]] array<u32>;
 };
 
 [[stage(vertex)]]
 fn main() -> void {
   {
-    var _tint_pulling_pos : i32;
+    var _tint_pulling_pos : u32;
   }
 }
 )";
@@ -113,7 +99,7 @@ fn main() -> void {
 
   auto transform = std::make_unique<VertexPulling>(cfg);
 
-  auto got = Transform(src, std::move(transform));
+  auto got = Run(src, std::move(transform));
 
   EXPECT_EQ(expect, str(got));
 }
@@ -127,13 +113,12 @@ fn main() -> void {}
 )";
 
   auto* expect = R"(
-[[builtin(vertex_index)]] var<in> _tint_pulling_vertex_index : i32;
+[[builtin(vertex_index)]] var<in> _tint_pulling_vertex_index : u32;
 
 [[binding(0), group(4)]] var<storage> _tint_pulling_vertex_buffer_0 : TintVertexData;
 
 [[block]]
 struct TintVertexData {
-  [[offset(0)]]
   _tint_vertex_data : [[stride(4)]] array<u32>;
 };
 
@@ -142,7 +127,7 @@ var<private> var_a : f32;
 [[stage(vertex)]]
 fn main() -> void {
   {
-    var _tint_pulling_pos : i32;
+    var _tint_pulling_pos : u32;
     _tint_pulling_pos = ((_tint_pulling_vertex_index * 4u) + 0u);
     var_a = bitcast<f32>(_tint_pulling_vertex_buffer_0._tint_vertex_data[(_tint_pulling_pos / 4u)]);
   }
@@ -156,7 +141,7 @@ fn main() -> void {
 
   auto transform = std::make_unique<VertexPulling>(cfg);
 
-  auto got = Transform(src, std::move(transform));
+  auto got = Run(src, std::move(transform));
 
   EXPECT_EQ(expect, str(got));
 }
@@ -170,13 +155,12 @@ fn main() -> void {}
 )";
 
   auto* expect = R"(
-[[builtin(instance_index)]] var<in> _tint_pulling_instance_index : i32;
+[[builtin(instance_index)]] var<in> _tint_pulling_instance_index : u32;
 
 [[binding(0), group(4)]] var<storage> _tint_pulling_vertex_buffer_0 : TintVertexData;
 
 [[block]]
 struct TintVertexData {
-  [[offset(0)]]
   _tint_vertex_data : [[stride(4)]] array<u32>;
 };
 
@@ -185,7 +169,7 @@ var<private> var_a : f32;
 [[stage(vertex)]]
 fn main() -> void {
   {
-    var _tint_pulling_pos : i32;
+    var _tint_pulling_pos : u32;
     _tint_pulling_pos = ((_tint_pulling_instance_index * 4u) + 0u);
     var_a = bitcast<f32>(_tint_pulling_vertex_buffer_0._tint_vertex_data[(_tint_pulling_pos / 4u)]);
   }
@@ -199,7 +183,7 @@ fn main() -> void {
 
   auto transform = std::make_unique<VertexPulling>(cfg);
 
-  auto got = Transform(src, std::move(transform));
+  auto got = Run(src, std::move(transform));
 
   EXPECT_EQ(expect, str(got));
 }
@@ -213,13 +197,12 @@ fn main() -> void {}
 )";
 
   auto* expect = R"(
-[[builtin(vertex_index)]] var<in> _tint_pulling_vertex_index : i32;
+[[builtin(vertex_index)]] var<in> _tint_pulling_vertex_index : u32;
 
 [[binding(0), group(5)]] var<storage> _tint_pulling_vertex_buffer_0 : TintVertexData;
 
 [[block]]
 struct TintVertexData {
-  [[offset(0)]]
   _tint_vertex_data : [[stride(4)]] array<u32>;
 };
 
@@ -228,7 +211,7 @@ var<private> var_a : f32;
 [[stage(vertex)]]
 fn main() -> void {
   {
-    var _tint_pulling_pos : i32;
+    var _tint_pulling_pos : u32;
     _tint_pulling_pos = ((_tint_pulling_vertex_index * 4u) + 0u);
     var_a = bitcast<f32>(_tint_pulling_vertex_buffer_0._tint_vertex_data[(_tint_pulling_pos / 4u)]);
   }
@@ -243,7 +226,7 @@ fn main() -> void {
 
   auto transform = std::make_unique<VertexPulling>(cfg);
 
-  auto got = Transform(src, std::move(transform));
+  auto got = Run(src, std::move(transform));
 
   EXPECT_EQ(expect, str(got));
 }
@@ -253,8 +236,8 @@ TEST_F(VertexPullingTest, ExistingVertexIndexAndInstanceIndex) {
   auto* src = R"(
 [[location(0)]] var<in> var_a : f32;
 [[location(1)]] var<in> var_b : f32;
-[[builtin(vertex_index)]] var<in> custom_vertex_index : i32;
-[[builtin(instance_index)]] var<in> custom_instance_index : i32;
+[[builtin(vertex_index)]] var<in> custom_vertex_index : u32;
+[[builtin(instance_index)]] var<in> custom_instance_index : u32;
 
 [[stage(vertex)]]
 fn main() -> void {}
@@ -267,7 +250,6 @@ fn main() -> void {}
 
 [[block]]
 struct TintVertexData {
-  [[offset(0)]]
   _tint_vertex_data : [[stride(4)]] array<u32>;
 };
 
@@ -275,14 +257,14 @@ var<private> var_a : f32;
 
 var<private> var_b : f32;
 
-[[builtin(vertex_index)]] var<in> custom_vertex_index : i32;
+[[builtin(vertex_index)]] var<in> custom_vertex_index : u32;
 
-[[builtin(instance_index)]] var<in> custom_instance_index : i32;
+[[builtin(instance_index)]] var<in> custom_instance_index : u32;
 
 [[stage(vertex)]]
 fn main() -> void {
   {
-    var _tint_pulling_pos : i32;
+    var _tint_pulling_pos : u32;
     _tint_pulling_pos = ((custom_vertex_index * 4u) + 0u);
     var_a = bitcast<f32>(_tint_pulling_vertex_buffer_0._tint_vertex_data[(_tint_pulling_pos / 4u)]);
     _tint_pulling_pos = ((custom_instance_index * 4u) + 0u);
@@ -308,7 +290,7 @@ fn main() -> void {
 
   auto transform = std::make_unique<VertexPulling>(cfg);
 
-  auto got = Transform(src, std::move(transform));
+  auto got = Run(src, std::move(transform));
 
   EXPECT_EQ(expect, str(got));
 }
@@ -316,31 +298,30 @@ fn main() -> void {
 TEST_F(VertexPullingTest, TwoAttributesSameBuffer) {
   auto* src = R"(
 [[location(0)]] var<in> var_a : f32;
-[[location(1)]] var<in> var_b : array<f32, 4>;
+[[location(1)]] var<in> var_b : vec4<f32>;
 
 [[stage(vertex)]]
 fn main() -> void {}
 )";
 
   auto* expect = R"(
-[[builtin(vertex_index)]] var<in> _tint_pulling_vertex_index : i32;
+[[builtin(vertex_index)]] var<in> _tint_pulling_vertex_index : u32;
 
 [[binding(0), group(4)]] var<storage> _tint_pulling_vertex_buffer_0 : TintVertexData;
 
 [[block]]
 struct TintVertexData {
-  [[offset(0)]]
   _tint_vertex_data : [[stride(4)]] array<u32>;
 };
 
 var<private> var_a : f32;
 
-var<private> var_b : array<f32, 4>;
+var<private> var_b : vec4<f32>;
 
 [[stage(vertex)]]
 fn main() -> void {
   {
-    var _tint_pulling_pos : i32;
+    var _tint_pulling_pos : u32;
     _tint_pulling_pos = ((_tint_pulling_vertex_index * 16u) + 0u);
     var_a = bitcast<f32>(_tint_pulling_vertex_buffer_0._tint_vertex_data[(_tint_pulling_pos / 4u)]);
     _tint_pulling_pos = ((_tint_pulling_vertex_index * 16u) + 0u);
@@ -358,23 +339,23 @@ fn main() -> void {
 
   auto transform = std::make_unique<VertexPulling>(cfg);
 
-  auto got = Transform(src, std::move(transform));
+  auto got = Run(src, std::move(transform));
 
   EXPECT_EQ(expect, str(got));
 }
 
 TEST_F(VertexPullingTest, FloatVectorAttributes) {
   auto* src = R"(
-[[location(0)]] var<in> var_a : array<f32, 2>;
-[[location(1)]] var<in> var_b : array<f32, 3>;
-[[location(2)]] var<in> var_c : array<f32, 4>;
+[[location(0)]] var<in> var_a : vec2<f32>;
+[[location(1)]] var<in> var_b : vec3<f32>;
+[[location(2)]] var<in> var_c : vec4<f32>;
 
 [[stage(vertex)]]
 fn main() -> void {}
 )";
 
   auto* expect = R"(
-[[builtin(vertex_index)]] var<in> _tint_pulling_vertex_index : i32;
+[[builtin(vertex_index)]] var<in> _tint_pulling_vertex_index : u32;
 
 [[binding(0), group(4)]] var<storage> _tint_pulling_vertex_buffer_0 : TintVertexData;
 
@@ -384,20 +365,19 @@ fn main() -> void {}
 
 [[block]]
 struct TintVertexData {
-  [[offset(0)]]
   _tint_vertex_data : [[stride(4)]] array<u32>;
 };
 
-var<private> var_a : array<f32, 2>;
+var<private> var_a : vec2<f32>;
 
-var<private> var_b : array<f32, 3>;
+var<private> var_b : vec3<f32>;
 
-var<private> var_c : array<f32, 4>;
+var<private> var_c : vec4<f32>;
 
 [[stage(vertex)]]
 fn main() -> void {
   {
-    var _tint_pulling_pos : i32;
+    var _tint_pulling_pos : u32;
     _tint_pulling_pos = ((_tint_pulling_vertex_index * 8u) + 0u);
     var_a = vec2<f32>(bitcast<f32>(_tint_pulling_vertex_buffer_0._tint_vertex_data[((_tint_pulling_pos + 0u) / 4u)]), bitcast<f32>(_tint_pulling_vertex_buffer_0._tint_vertex_data[((_tint_pulling_pos + 4u) / 4u)]));
     _tint_pulling_pos = ((_tint_pulling_vertex_index * 12u) + 0u);
@@ -418,7 +398,7 @@ fn main() -> void {
 
   auto transform = std::make_unique<VertexPulling>(cfg);
 
-  auto got = Transform(src, std::move(transform));
+  auto got = Run(src, std::move(transform));
 
   EXPECT_EQ(expect, str(got));
 }

@@ -166,6 +166,8 @@ void FakeShillServiceClient::GetProperties(
     // Remove credentials that Shill wouldn't send.
     result_properties->RemoveKey(shill::kPassphraseProperty);
   } else {
+    DCHECK(!require_service_to_get_properties_);
+
     // This may happen if we remove services from the list.
     VLOG(2) << "Properties not found for: " << service_path.value();
   }
@@ -318,6 +320,7 @@ void FakeShillServiceClient::GetLoadableProfileEntries(
   profile_client->GetProfilePathsContainingService(service_path.value(),
                                                    &profiles);
 
+  DCHECK(profiles.size()) << "No profiles contain given service";
   // Provide a dictionary with  {profile_path: service_path} entries for
   // profile_paths that contain the service.
   base::Value result_properties(base::Value::Type::DICTIONARY);
@@ -556,7 +559,8 @@ bool FakeShillServiceClient::ClearConfiguredServiceProperties(
   const base::Value* service_type = service_dict->FindKeyOfType(
       shill::kTypeProperty, base::Value::Type::STRING);
   if (!visible_property || !visible_property->GetBool() || !service_type ||
-      (service_type->GetString() == shill::kTypeVPN)) {
+      (service_type->GetString() == shill::kTypeVPN) ||
+      (service_type->GetString() == shill::kTypeCellular)) {
     stub_services_.RemoveKey(service_path);
     RemoveService(service_path);
     return true;
@@ -644,6 +648,11 @@ void FakeShillServiceClient::SetHoldBackServicePropertyUpdates(bool hold_back) {
   for (auto& property_update : property_updates)
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(property_update));
+}
+
+void FakeShillServiceClient::SetRequireServiceToGetProperties(
+    bool require_service_to_get_properties) {
+  require_service_to_get_properties_ = require_service_to_get_properties;
 }
 
 void FakeShillServiceClient::NotifyObserversPropertyChanged(

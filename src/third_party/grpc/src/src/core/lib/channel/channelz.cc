@@ -20,6 +20,9 @@
 
 #include "src/core/lib/channel/channelz.h"
 
+#include "absl/strings/escaping.h"
+#include "absl/strings/strip.h"
+
 #include <grpc/grpc.h>
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
@@ -114,21 +117,21 @@ void CallCountingHelper::CollectData(CounterData* out) {
   }
 }
 
-void CallCountingHelper::PopulateCallCounts(Json::Object* object) {
+void CallCountingHelper::PopulateCallCounts(Json::Object* json) {
   CounterData data;
   CollectData(&data);
   if (data.calls_started != 0) {
-    (*object)["callsStarted"] = std::to_string(data.calls_started);
+    (*json)["callsStarted"] = std::to_string(data.calls_started);
     gpr_timespec ts = gpr_convert_clock_type(
         gpr_cycle_counter_to_time(data.last_call_started_cycle),
         GPR_CLOCK_REALTIME);
-    (*object)["lastCallStartedTimestamp"] = gpr_format_timespec(ts);
+    (*json)["lastCallStartedTimestamp"] = gpr_format_timespec(ts);
   }
   if (data.calls_succeeded != 0) {
-    (*object)["callsSucceeded"] = std::to_string(data.calls_succeeded);
+    (*json)["callsSucceeded"] = std::to_string(data.calls_succeeded);
   }
   if (data.calls_failed) {
-    (*object)["callsFailed"] = std::to_string(data.calls_failed);
+    (*json)["callsFailed"] = std::to_string(data.calls_failed);
   }
 }
 
@@ -335,6 +338,83 @@ Json ServerNode::RenderJson() {
 }
 
 //
+// SocketNode::Security::Tls
+//
+
+Json SocketNode::Security::Tls::RenderJson() {
+  Json::Object data;
+  if (type == NameType::kStandardName) {
+    data["standard_name"] = name;
+  } else if (type == NameType::kOtherName) {
+    data["other_name"] = name;
+  }
+  if (!local_certificate.empty()) {
+    data["local_certificate"] = absl::Base64Escape(local_certificate);
+  }
+  if (!remote_certificate.empty()) {
+    data["remote_certificate"] = absl::Base64Escape(remote_certificate);
+  }
+  return data;
+}
+
+//
+// SocketNode::Security
+//
+
+Json SocketNode::Security::RenderJson() {
+  Json::Object data;
+  switch (type) {
+    case ModelType::kUnset:
+      break;
+    case ModelType::kTls:
+      if (tls) {
+        data["tls"] = tls->RenderJson();
+      }
+      break;
+    case ModelType::kOther:
+      if (other) {
+        data["other"] = tls->RenderJson();
+      }
+      break;
+  }
+  return data;
+}
+
+namespace {
+
+void* SecurityArgCopy(void* p) {
+  SocketNode::Security* xds_certificate_provider =
+      static_cast<SocketNode::Security*>(p);
+  return xds_certificate_provider->Ref().release();
+}
+
+void SecurityArgDestroy(void* p) {
+  SocketNode::Security* xds_certificate_provider =
+      static_cast<SocketNode::Security*>(p);
+  xds_certificate_provider->Unref();
+}
+
+int SecurityArgCmp(void* p, void* q) { return GPR_ICMP(p, q); }
+
+const grpc_arg_pointer_vtable kChannelArgVtable = {
+    SecurityArgCopy, SecurityArgDestroy, SecurityArgCmp};
+
+}  // namespace
+
+grpc_arg SocketNode::Security::MakeChannelArg() const {
+  return grpc_channel_arg_pointer_create(
+      const_cast<char*>(GRPC_ARG_CHANNELZ_SECURITY),
+      const_cast<SocketNode::Security*>(this), &kChannelArgVtable);
+}
+
+RefCountedPtr<SocketNode::Security> SocketNode::Security::GetFromChannelArgs(
+    const grpc_channel_args* args) {
+  Security* security = grpc_channel_args_find_pointer<Security>(
+      args, GRPC_ARG_CHANNELZ_SECURITY);
+  return security != nullptr ? security->Ref() : nullptr;
+}
+
+//
 // SocketNode
 //
 
@@ -344,14 +424,12 @@ void PopulateSocketAddressJson(Json::Object* json, const char* name,
                                const char* addr_str) {
   if (addr_str == nullptr) return;
   Json::Object data;
-  grpc_uri* uri = grpc_uri_parse(addr_str, true);
-  if ((uri != nullptr) && ((strcmp(uri->scheme, "ipv4") == 0) ||
-                           (strcmp(uri->scheme, "ipv6") == 0))) {
-    const char* host_port = uri->path;
-    if (*host_port == '/') ++host_port;
+  absl::StatusOr<URI> uri = URI::Parse(addr_str);
+  if (uri.ok() && (uri->scheme() == "ipv4" || uri->scheme() == "ipv6")) {
     std::string host;
     std::string port;
-    GPR_ASSERT(SplitHostPort(host_port, &host, &port));
+    GPR_ASSERT(
+        SplitHostPort(absl::StripPrefix(uri->path(), "/"), &host, &port));
     int port_num = -1;
     if (!port.empty()) {
       port_num = atoi(port.data());
@@ -362,25 +440,26 @@ void PopulateSocketAddressJson(Json::Object* json, const char* name,
         {"ip_address", b64_host},
     };
     gpr_free(b64_host);
-  } else if (uri != nullptr && strcmp(uri->scheme, "unix") == 0) {
+  } else if (uri.ok() && uri->scheme() == "unix") {
     data["uds_address"] = Json::Object{
-        {"filename", uri->path},
+        {"filename", uri->path()},
     };
   } else {
     data["other_address"] = Json::Object{
         {"name", addr_str},
     };
   }
-  grpc_uri_destroy(uri);
   (*json)[name] = std::move(data);
 }
 
 }  // namespace
 
-SocketNode::SocketNode(std::string local, std::string remote, std::string name)
+SocketNode::SocketNode(std::string local, std::string remote, std::string name,
+                       RefCountedPtr<Security> security)
     : BaseNode(EntityType::kSocket, std::move(name)),
       local_(std::move(local)),
-      remote_(std::move(remote)) {}
+      remote_(std::move(remote)),
+      security_(std::move(security)) {}
 
 void SocketNode::RecordStreamStartedFromLocal() {
   streams_started_.FetchAdd(1, MemoryOrder::RELAXED);
@@ -468,6 +547,10 @@ Json SocketNode::RenderJson() {
        }},
       {"data", std::move(data)},
   };
+  if (security_ != nullptr &&
+      security_->type != SocketNode::Security::ModelType::kUnset) {
+    object["security"] = security_->RenderJson();
+  }
   PopulateSocketAddressJson(&object, "remote", remote_.c_str());
   PopulateSocketAddressJson(&object, "local", local_.c_str());
   return object;

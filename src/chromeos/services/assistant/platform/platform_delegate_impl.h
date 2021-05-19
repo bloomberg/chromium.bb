@@ -24,16 +24,17 @@ class PlatformDelegateImpl
 
   // chromeos::libassistant::mojom::PlatformDelegate implementation:
   void BindAudioStreamFactory(
-      mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) override;
+      mojo::PendingReceiver<media::mojom::AudioStreamFactory> receiver)
+      override;
   void BindAudioDecoderFactory(
       mojo::PendingReceiver<
-          ::chromeos::assistant::mojom::AssistantAudioDecoderFactory> receiver)
+          chromeos::assistant::mojom::AssistantAudioDecoderFactory> receiver)
       override;
   void BindBatteryMonitor(
       mojo::PendingReceiver<::device::mojom::BatteryMonitor> receiver) override;
-  void BindNetworkConfig(mojo::PendingReceiver<
-                         ::chromeos::network_config::mojom::CrosNetworkConfig>
-                             receiver) override;
+  void BindNetworkConfig(
+      mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+          receiver) override;
   void BindAssistantVolumeControl(
       mojo::PendingReceiver<::ash::mojom::AssistantVolumeControl> receiver)
       override;

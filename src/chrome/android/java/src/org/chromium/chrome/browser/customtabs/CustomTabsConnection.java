@@ -52,7 +52,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeApplicationImpl;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.SessionHandler;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.init.ChainedTasks;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
@@ -96,7 +97,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Implementation of the ICustomTabsService interface.
  *
  * Note: This class is meant to be package private, and is public to be
- * accessible from {@link ChromeApplication}.
+ * accessible from {@link ChromeApplicationImpl}.
  */
 @JNINamespace("customtabs")
 public class CustomTabsConnection {
@@ -216,14 +217,14 @@ public class CustomTabsConnection {
 
     /**
      * <strong>DO NOT CALL</strong>
-     * Public to be instanciable from {@link ChromeApplication}. This is however
+     * Public to be instanciable from {@link ChromeApplicationImpl}. This is however
      * intended to be private.
      */
     public CustomTabsConnection() {
         super();
         mClientManager = new ClientManager();
         mLogRequests = CommandLine.getInstance().hasSwitch(LOG_SERVICE_REQUESTS);
-        mSessionDataHolder = ChromeApplication.getComponent().resolveSessionDataHolder();
+        mSessionDataHolder = ChromeApplicationImpl.getComponent().resolveSessionDataHolder();
     }
 
     /**
@@ -334,7 +335,7 @@ public class CustomTabsConnection {
 
                 // TODO(pshmakov): invert this dependency by moving event dispatching to a separate
                 // class.
-                ChromeApplication.getComponent()
+                ChromeApplicationImpl.getComponent()
                         .resolveCustomTabsFileProcessor()
                         .onSessionDisconnected(session);
             }
@@ -491,7 +492,11 @@ public class CustomTabsConnection {
         }
 
         if (maySpeculate(session)) {
-            boolean canUseHiddenTab = mClientManager.getCanUseHiddenTab(session);
+            // Hidden tabs are created always with regular profile, so we need to block hidden tab
+            // creation in incognito mode not to have inconsistent modes between tab model and
+            // hidden tab. (crbug.com/1190971)
+            boolean canUseHiddenTab = mClientManager.getCanUseHiddenTab(session)
+                    && !IncognitoUtils.hasAnyIncognitoExtra(extras);
             startSpeculation(session, url, canUseHiddenTab, extras, uid);
         }
         preconnectUrls(otherLikelyBundles);
@@ -541,6 +546,11 @@ public class CustomTabsConnection {
 
     private boolean mayLaunchUrlInternal(final CustomTabsSessionToken session, final Uri url,
             final Bundle extras, final List<Bundle> otherLikelyBundles) {
+        // mayLaunchUrl should not be executed for Incognito CCT since all setup is created with
+        // regular profile. If we need to enable mayLaunchUrl for off-the-record profiles, we need
+        // to update the profile used. Please see crbug.com/1106757.
+        if (IncognitoUtils.hasAnyIncognitoExtra(extras)) return false;
+
         final boolean lowConfidence =
                 (url == null || TextUtils.isEmpty(url.toString())) && otherLikelyBundles != null;
         final String urlString = isValid(url) ? url.toString() : null;
@@ -670,8 +680,9 @@ public class CustomTabsConnection {
         if (actionButtonBundle != null) {
             int id = IntentUtils.safeGetInt(actionButtonBundle, CustomTabsIntent.KEY_ID,
                     CustomTabsIntent.TOOLBAR_ACTION_BUTTON_ID);
-            Bitmap bitmap = CustomButtonParams.parseBitmapFromBundle(actionButtonBundle);
-            String description = CustomButtonParams.parseDescriptionFromBundle(actionButtonBundle);
+            Bitmap bitmap = CustomButtonParamsImpl.parseBitmapFromBundle(actionButtonBundle);
+            String description =
+                    CustomButtonParamsImpl.parseDescriptionFromBundle(actionButtonBundle);
             if (bitmap != null && description != null) {
                 ids.add(id);
                 descriptions.add(description);
@@ -687,11 +698,11 @@ public class CustomTabsConnection {
                         CustomTabsIntent.TOOLBAR_ACTION_BUTTON_ID);
                 if (ids.contains(id)) continue;
 
-                Bitmap bitmap = CustomButtonParams.parseBitmapFromBundle(toolbarItemBundle);
+                Bitmap bitmap = CustomButtonParamsImpl.parseBitmapFromBundle(toolbarItemBundle);
                 if (bitmap == null) continue;
 
                 String description =
-                        CustomButtonParams.parseDescriptionFromBundle(toolbarItemBundle);
+                        CustomButtonParamsImpl.parseDescriptionFromBundle(toolbarItemBundle);
                 if (description == null) continue;
 
                 ids.add(id);
@@ -1451,7 +1462,7 @@ public class CustomTabsConnection {
     public static void onTrimMemory(int level) {
         if (!hasInstance()) return;
 
-        if (ChromeApplication.isSevereMemorySignal(level)) {
+        if (ChromeApplicationImpl.isSevereMemorySignal(level)) {
             getInstance().mClientManager.cleanupUnusedSessions();
         }
     }
@@ -1606,7 +1617,7 @@ public class CustomTabsConnection {
 
     public boolean receiveFile(
             CustomTabsSessionToken sessionToken, Uri uri, int purpose, Bundle extras) {
-        return ChromeApplication.getComponent().resolveCustomTabsFileProcessor().processFile(
+        return ChromeApplicationImpl.getComponent().resolveCustomTabsFileProcessor().processFile(
                 sessionToken, uri, purpose, extras);
     }
 

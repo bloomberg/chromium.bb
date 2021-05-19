@@ -15,7 +15,6 @@
 #include "base/containers/flat_map.h"
 #include "base/guid.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/strings/string16.h"
 
 // This class manages notification categories for a given NotificationCenter.
 // Notification categories on macOS describe all action buttons that should be
@@ -25,7 +24,7 @@
 // buttons.
 class API_AVAILABLE(macos(10.14)) NotificationCategoryManager {
  public:
-  using Buttons = std::vector<base::string16>;
+  using Buttons = std::vector<std::u16string>;
 
   explicit NotificationCategoryManager(
       UNUserNotificationCenter* notification_center);

@@ -6,19 +6,20 @@
 
 #include <algorithm>
 #include <limits>
+#include <string>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/win/conflicts/module_info.h"
 #include "chrome/browser/win/conflicts/module_info_util.h"
 #include "components/crash/core/common/crash_key.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/chrome_elf/third_party_dlls/public_api.h"
 #endif
 
@@ -26,10 +27,8 @@ namespace {
 
 // Returns true if the module is signed by Google.
 bool IsGoogleModule(base::StringPiece16 subject) {
-  static constexpr base::StringPiece16 kGoogleLlc(
-      STRING16_LITERAL("Google LLC"));
-  static constexpr base::StringPiece16 kGoogleInc(
-      STRING16_LITERAL("Google Inc"));
+  static constexpr base::StringPiece16 kGoogleLlc(u"Google LLC");
+  static constexpr base::StringPiece16 kGoogleInc(u"Google Inc");
   return subject == kGoogleLlc || subject == kGoogleInc;
 }
 
@@ -38,7 +37,7 @@ bool IsGoogleModule(base::StringPiece16 subject) {
 ThirdPartyMetricsRecorder::ThirdPartyMetricsRecorder() {
   current_value_.reserve(kCrashKeySize);
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // It is safe to use base::Unretained() since the timer is a member variable
   // of this class.
   heartbeat_metrics_timer_.Start(
@@ -160,7 +159,7 @@ void ThirdPartyMetricsRecorder::AddUnsignedModuleToCrashkeys(
   unsigned_modules_keys[current_key_index_].Set(current_value_);
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void ThirdPartyMetricsRecorder::RecordHeartbeatMetrics() {
   UMA_HISTOGRAM_COUNTS_1M(
       "ThirdPartyModules.Heartbeat.UniqueBlockedModulesCount",

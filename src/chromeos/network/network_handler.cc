@@ -30,6 +30,7 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/prohibited_technologies_handler.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
+#include "chromeos/network/stub_cellular_networks_provider.h"
 
 namespace chromeos {
 
@@ -40,8 +41,9 @@ NetworkHandler::NetworkHandler()
   network_state_handler_.reset(new NetworkStateHandler());
   network_device_handler_.reset(new NetworkDeviceHandlerImpl());
   if (features::IsCellularActivationUiEnabled()) {
-    cellular_esim_profile_handler_.reset(new CellularESimProfileHandlerImpl());
     cellular_inhibitor_.reset(new CellularInhibitor());
+    cellular_esim_profile_handler_.reset(new CellularESimProfileHandlerImpl());
+    stub_cellular_networks_provider_.reset(new StubCellularNetworksProvider());
     cellular_esim_connection_handler_.reset(
         new CellularESimConnectionHandler());
   }
@@ -74,11 +76,15 @@ void NetworkHandler::Init() {
   network_state_handler_->InitShillPropertyHandler();
   network_device_handler_->Init(network_state_handler_.get());
   if (features::IsCellularActivationUiEnabled()) {
-    cellular_esim_profile_handler_->Init();
     cellular_inhibitor_->Init(network_state_handler_.get(),
                               network_device_handler_.get());
-    cellular_esim_connection_handler_->Init(network_state_handler_.get(),
-                                            cellular_inhibitor_.get());
+    cellular_esim_profile_handler_->Init(network_state_handler_.get(),
+                                         cellular_inhibitor_.get());
+    stub_cellular_networks_provider_->Init(
+        network_state_handler_.get(), cellular_esim_profile_handler_.get());
+    cellular_esim_connection_handler_->Init(
+        network_state_handler_.get(), cellular_inhibitor_.get(),
+        cellular_esim_profile_handler_.get());
   }
   network_profile_handler_->Init();
   network_configuration_handler_->Init(network_state_handler_.get(),
@@ -93,11 +99,15 @@ void NetworkHandler::Init() {
       cellular_esim_connection_handler_.get());
   if (features::IsCellularActivationUiEnabled()) {
     cellular_esim_uninstall_handler_->Init(
-        cellular_inhibitor_.get(), network_configuration_handler_.get(),
-        network_connection_handler_.get(), network_state_handler_.get());
+        cellular_inhibitor_.get(), cellular_esim_profile_handler_.get(),
+        network_configuration_handler_.get(), network_connection_handler_.get(),
+        network_state_handler_.get());
   }
   cellular_metrics_logger_->Init(network_state_handler_.get(),
-                                 network_connection_handler_.get());
+                                 network_connection_handler_.get(),
+                                 features::IsCellularActivationUiEnabled()
+                                     ? cellular_esim_profile_handler_.get()
+                                     : nullptr);
   if (network_cert_migrator_)
     network_cert_migrator_->Init(network_state_handler_.get());
   if (client_cert_resolver_) {
@@ -146,8 +156,10 @@ bool NetworkHandler::IsInitialized() {
 void NetworkHandler::InitializePrefServices(
     PrefService* logged_in_profile_prefs,
     PrefService* device_prefs) {
-  if (features::IsCellularActivationUiEnabled())
+  if (features::IsCellularActivationUiEnabled()) {
     cellular_esim_profile_handler_->SetDevicePrefs(device_prefs);
+    cellular_metrics_logger_->SetDevicePrefs(device_prefs);
+  }
   ui_proxy_config_service_.reset(new UIProxyConfigService(
       logged_in_profile_prefs, device_prefs, network_state_handler_.get(),
       network_profile_handler_.get()));
@@ -160,8 +172,10 @@ void NetworkHandler::InitializePrefServices(
 }
 
 void NetworkHandler::ShutdownPrefServices() {
-  if (features::IsCellularActivationUiEnabled())
+  if (features::IsCellularActivationUiEnabled()) {
     cellular_esim_profile_handler_->SetDevicePrefs(nullptr);
+    cellular_metrics_logger_->SetDevicePrefs(nullptr);
+  }
   ui_proxy_config_service_.reset();
   network_metadata_store_.reset();
 }
@@ -181,6 +195,11 @@ NetworkStateHandler* NetworkHandler::network_state_handler() {
 
 AutoConnectHandler* NetworkHandler::auto_connect_handler() {
   return auto_connect_handler_.get();
+}
+
+CellularESimConnectionHandler*
+NetworkHandler::cellular_esim_connection_handler() {
+  return cellular_esim_connection_handler_.get();
 }
 
 CellularESimProfileHandler* NetworkHandler::cellular_esim_profile_handler() {

@@ -99,6 +99,8 @@ class WebApp {
   // using |sync_fallback_data| fields.
   bool is_in_sync_install() const { return is_in_sync_install_; }
 
+  // Represents the last time the Badging API was used.
+  const base::Time& last_badging_time() const { return last_badging_time_; }
   // Represents the last time this app is launched.
   const base::Time& last_launch_time() const { return last_launch_time_; }
   // Represents the time when this app is installed.
@@ -129,6 +131,13 @@ class WebApp {
 
   const std::vector<apps::ProtocolHandlerInfo>& protocol_handlers() const {
     return protocol_handlers_;
+  }
+
+  // URL within scope to launch for a "new note" action. Valid iff this is
+  // considered a note-taking app.
+  // TODO(crbug.com/1185678): Persist this in the database.
+  const GURL& note_taking_new_note_url() const {
+    return note_taking_new_note_url_;
   }
 
   const apps::UrlHandlers& url_handlers() const { return url_handlers_; }
@@ -166,14 +175,17 @@ class WebApp {
 
   // Represents which shortcuts menu icon sizes we successfully downloaded for
   // each WebAppShortcutsMenuItemInfo.shortcuts_menu_icon_infos.
-  const std::vector<std::vector<SquareSizePx>>&
-  downloaded_shortcuts_menu_icons_sizes() const {
+  const std::vector<IconSizes>& downloaded_shortcuts_menu_icons_sizes() const {
     return downloaded_shortcuts_menu_icons_sizes_;
   }
 
   blink::mojom::CaptureLinks capture_links() const { return capture_links_; }
 
   const GURL& manifest_url() const { return manifest_url_; }
+
+  const base::Optional<std::string>& manifest_id() const {
+    return manifest_id_;
+  }
 
   // A Web App can be installed from multiple sources simultaneously. Installs
   // add a source to the app. Uninstalls remove a source from the app.
@@ -194,7 +206,7 @@ class WebApp {
 
   void SetName(const std::string& name);
   void SetDescription(const std::string& description);
-  void SetStartUrl(const GURL& launch_url);
+  void SetStartUrl(const GURL& start_url);
   void SetLaunchQueryParams(base::Optional<std::string> launch_query_params);
   void SetScope(const GURL& scope);
   void SetThemeColor(base::Optional<SkColor> theme_color);
@@ -214,21 +226,23 @@ class WebApp {
   void SetShortcutsMenuItemInfos(
       std::vector<WebApplicationShortcutsMenuItemInfo>
           shortcuts_menu_item_infos);
-  void SetDownloadedShortcutsMenuIconsSizes(
-      std::vector<std::vector<SquareSizePx>> icon_sizes);
+  void SetDownloadedShortcutsMenuIconsSizes(std::vector<IconSizes> icon_sizes);
   void SetFileHandlers(apps::FileHandlers file_handlers);
   void SetShareTarget(base::Optional<apps::ShareTarget> share_target);
   void SetAdditionalSearchTerms(
       std::vector<std::string> additional_search_terms);
   void SetProtocolHandlers(
       std::vector<apps::ProtocolHandlerInfo> protocol_handlers);
+  void SetNoteTakingNewNoteUrl(const GURL& note_taking_new_note_url);
   void SetUrlHandlers(apps::UrlHandlers url_handlers);
+  void SetLastBadgingTime(const base::Time& time);
   void SetLastLaunchTime(const base::Time& time);
   void SetInstallTime(const base::Time& time);
   void SetRunOnOsLoginMode(RunOnOsLoginMode mode);
   void SetSyncFallbackData(SyncFallbackData sync_fallback_data);
   void SetCaptureLinks(blink::mojom::CaptureLinks capture_links);
   void SetManifestUrl(const GURL& manifest_url);
+  void SetManifestId(const base::Optional<std::string>& manifest_id);
 
   // For logging and debug purposes.
   bool operator==(const WebApp&) const;
@@ -270,11 +284,13 @@ class WebApp {
   SortedSizesPx downloaded_icon_sizes_maskable_;
   bool is_generated_icon_ = false;
   std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos_;
-  std::vector<std::vector<SquareSizePx>> downloaded_shortcuts_menu_icons_sizes_;
+  std::vector<IconSizes> downloaded_shortcuts_menu_icons_sizes_;
   apps::FileHandlers file_handlers_;
   base::Optional<apps::ShareTarget> share_target_;
   std::vector<std::string> additional_search_terms_;
   std::vector<apps::ProtocolHandlerInfo> protocol_handlers_;
+  GURL note_taking_new_note_url_;
+  base::Time last_badging_time_;
   base::Time last_launch_time_;
   base::Time install_time_;
   RunOnOsLoginMode run_on_os_login_mode_ = RunOnOsLoginMode::kNotRun;
@@ -284,6 +300,7 @@ class WebApp {
       blink::mojom::CaptureLinks::kUndefined;
   ClientData client_data_;
   GURL manifest_url_;
+  base::Optional<std::string> manifest_id_;
   // New fields must be added to |operator==| and |operator<<|.
 };
 

@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "build/chromeos_buildflags.h"
@@ -34,7 +35,8 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "ash/constants/ash_switches.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
@@ -69,7 +71,7 @@ class ExternalWebAppManagerTest : public testing::Test {
     testing::Test::SetUp();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
-        std::make_unique<chromeos::FakeChromeUserManager>());
+        std::make_unique<ash::FakeChromeUserManager>());
 #endif
   }
 
@@ -178,8 +180,8 @@ class ExternalWebAppManagerTest : public testing::Test {
 
  private:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::FakeChromeUserManager* user_manager() {
-    return static_cast<chromeos::FakeChromeUserManager*>(
+  ash::FakeChromeUserManager* user_manager() {
+    return static_cast<ash::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 
@@ -463,6 +465,30 @@ TEST_F(ExternalWebAppManagerTest, NonPrimaryProfile) {
   VerifySetOfApps(CreateProfile().get(),
                   {GURL(kAppAllUrl), GURL(kAppUnmanagedUrl)});
 }
+
+TEST_F(ExternalWebAppManagerTest, ExtraWebApps) {
+  // The extra_web_apps directory contains two JSON files in different named
+  // subdirectories. The --extra-web-apps-dir switch should control which
+  // directory apps are loaded from.
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      chromeos::switches::kExtraWebAppsDir, "model1");
+
+  const auto app_infos = LoadApps("extra_web_apps");
+  EXPECT_EQ(1u, app_infos.size());
+  ExpectHistograms(/*enabled=*/1, /*disabled=*/0, /*errors=*/0);
+}
+
+TEST_F(ExternalWebAppManagerTest, ExtraWebAppsNoMatchingDirectory) {
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      chromeos::switches::kExtraWebAppsDir, "model3");
+
+  const auto app_infos = LoadApps("extra_web_apps");
+  EXPECT_EQ(0u, app_infos.size());
+  ExpectHistograms(/*enabled=*/0, /*disabled=*/0, /*errors=*/0);
+}
+
 #else   // BUILDFLAG(IS_CHROMEOS_ASH)
 // No app is expected for non-ChromeOS builds.
 TEST_F(ExternalWebAppManagerTest, NoApp) {

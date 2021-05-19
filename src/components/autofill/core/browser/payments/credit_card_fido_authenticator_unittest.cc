@@ -20,7 +20,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -121,7 +120,7 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
                                 /*is_off_the_record=*/false);
     personal_data_manager_.SetPrefService(autofill_client_.GetPrefs());
 
-    requester_.reset(new TestAuthenticationRequester());
+    requester_ = std::make_unique<TestAuthenticationRequester>();
     autofill_driver_ =
         std::make_unique<testing::NiceMock<TestAutofillDriver>>();
     autofill_driver_->SetAuthenticator(new TestInternalAuthenticator());

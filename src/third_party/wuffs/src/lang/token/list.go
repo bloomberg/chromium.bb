@@ -114,6 +114,10 @@ func (x ID) IsTightLeft() bool  { return x < ID(len(isTightLeft)) && isTightLeft
 func (x ID) IsTightRight() bool { return x < ID(len(isTightRight)) && isTightRight[x] }
 
 func (x ID) IsAssign() bool         { return minAssign <= x && x <= maxAssign }
+func (x ID) IsBuiltInCPUArch() bool { return minBuiltInCPUArch <= x && x <= maxBuiltInCPUArch }
+func (x ID) IsBuiltInCPUArchARMNeon() bool {
+	return minBuiltInCPUArchARMNeon <= x && x <= maxBuiltInCPUArchARMNeon
+}
 func (x ID) IsCannotAssignTo() bool { return minCannotAssignTo <= x && x <= maxCannotAssignTo }
 func (x ID) IsClose() bool          { return minClose <= x && x <= maxClose }
 func (x ID) IsKeyword() bool        { return minKeyword <= x && x <= maxKeyword }
@@ -130,28 +134,17 @@ func (x ID) IsXUnaryOp() bool       { return minXOp <= x && x <= maxXOp && unary
 func (x ID) IsXBinaryOp() bool      { return minXOp <= x && x <= maxXOp && binaryForms[x] != 0 }
 func (x ID) IsXAssociativeOp() bool { return minXOp <= x && x <= maxXOp && associativeForms[x] != 0 }
 
-func (x ID) SmallPowerOf2Value() int {
-	switch x {
-	case ID1:
-		return 1
-	case ID2:
-		return 2
-	case ID4:
-		return 4
-	case ID8:
-		return 8
-	case ID16:
-		return 16
-	case ID32:
-		return 32
-	case ID64:
-		return 64
-	case ID128:
-		return 128
-	case ID256:
-		return 256
+func (x ID) IsEtcUtility() bool {
+	if (minBuiltInCPUArch <= x) && (x <= maxBuiltInCPUArch) {
+		switch x {
+		case IDARMCRC32Utility,
+			IDARMNeonUtility,
+			IDX86SSE42Utility,
+			IDX86AVX2Utility:
+			return true
+		}
 	}
-	return 0
+	return x == IDUtility
 }
 
 // QID is a qualified ID, such as "foo.bar". QID[0] is "foo"'s ID and QID[1] is
@@ -375,28 +368,30 @@ const (
 
 	IDAssert     = ID(0xB0)
 	IDBreak      = ID(0xB1)
-	IDConst      = ID(0xB2)
-	IDContinue   = ID(0xB3)
-	IDElse       = ID(0xB4)
-	IDEndwhile   = ID(0xB5)
-	IDFunc       = ID(0xB6)
-	IDIOBind     = ID(0xB7)
-	IDIOLimit    = ID(0xB8)
-	IDIf         = ID(0xB9)
-	IDImplements = ID(0xBA)
-	IDInv        = ID(0xBB)
-	IDIterate    = ID(0xBC)
-	IDPost       = ID(0xBD)
-	IDPre        = ID(0xBE)
-	IDPri        = ID(0xBF)
-	IDPub        = ID(0xC0)
-	IDReturn     = ID(0xC1)
-	IDStruct     = ID(0xC2)
-	IDUse        = ID(0xC3)
-	IDVar        = ID(0xC4)
-	IDVia        = ID(0xC5)
-	IDWhile      = ID(0xC6)
-	IDYield      = ID(0xC7)
+	IDChoose     = ID(0xB2)
+	IDChoosy     = ID(0xB3)
+	IDConst      = ID(0xB4)
+	IDContinue   = ID(0xB5)
+	IDElse       = ID(0xB6)
+	IDEndwhile   = ID(0xB7)
+	IDFunc       = ID(0xB8)
+	IDIOBind     = ID(0xB9)
+	IDIOLimit    = ID(0xBA)
+	IDIf         = ID(0xBB)
+	IDImplements = ID(0xBC)
+	IDInv        = ID(0xBD)
+	IDIterate    = ID(0xBE)
+	IDPost       = ID(0xBF)
+	IDPre        = ID(0xC0)
+	IDPri        = ID(0xC1)
+	IDPub        = ID(0xC2)
+	IDReturn     = ID(0xC3)
+	IDStruct     = ID(0xC4)
+	IDUse        = ID(0xC5)
+	IDVar        = ID(0xC6)
+	IDVia        = ID(0xC7)
+	IDWhile      = ID(0xC8)
+	IDYield      = ID(0xC9)
 )
 
 const (
@@ -422,16 +417,7 @@ const (
 	IDNullptr = ID(0xE3)
 	IDOk      = ID(0xE4)
 
-	ID0   = ID(0xF0)
-	ID1   = ID(0xF1)
-	ID2   = ID(0xF2)
-	ID4   = ID(0xF3)
-	ID8   = ID(0xF4)
-	ID16  = ID(0xF5)
-	ID32  = ID(0xF6)
-	ID64  = ID(0xF7)
-	ID128 = ID(0xF8)
-	ID256 = ID(0xF9)
+	ID0 = ID(0xF0)
 )
 
 const (
@@ -455,6 +441,7 @@ const (
 	IDDagger1 = ID(0x106)
 	IDDagger2 = ID(0x107)
 
+	IDQNonNullptr  = ID(0x10A)
 	IDQNullptr     = ID(0x10B)
 	IDQPackage     = ID(0x10C)
 	IDQPlaceholder = ID(0x10D)
@@ -517,12 +504,13 @@ const (
 	IDSkipU32       = ID(0x16B)
 	IDSkipU32Fast   = ID(0x16C)
 
-	IDCopyFromSlice                 = ID(0x170)
-	IDLimitedCopyU32FromHistory     = ID(0x171)
-	IDLimitedCopyU32FromHistoryFast = ID(0x172)
-	IDLimitedCopyU32FromReader      = ID(0x173)
-	IDLimitedCopyU32FromSlice       = ID(0x174)
-	IDLimitedCopyU32ToSlice         = ID(0x175)
+	IDCopyFromSlice                            = ID(0x170)
+	IDLimitedCopyU32FromHistory                = ID(0x171)
+	IDLimitedCopyU32FromHistory8ByteChunksFast = ID(0x172)
+	IDLimitedCopyU32FromHistoryFast            = ID(0x173)
+	IDLimitedCopyU32FromReader                 = ID(0x174)
+	IDLimitedCopyU32FromSlice                  = ID(0x175)
+	IDLimitedCopyU32ToSlice                    = ID(0x176)
 
 	// -------- 0x180 block.
 
@@ -611,6 +599,24 @@ const (
 
 	// --------
 
+	IDPokeU8    = ID(0x1D1)
+	IDPokeU16BE = ID(0x1D2)
+	IDPokeU16LE = ID(0x1D3)
+	IDPokeU24BE = ID(0x1D4)
+	IDPokeU24LE = ID(0x1D5)
+	IDPokeU32BE = ID(0x1D6)
+	IDPokeU32LE = ID(0x1D7)
+	IDPokeU40BE = ID(0x1D8)
+	IDPokeU40LE = ID(0x1D9)
+	IDPokeU48BE = ID(0x1DA)
+	IDPokeU48LE = ID(0x1DB)
+	IDPokeU56BE = ID(0x1DC)
+	IDPokeU56LE = ID(0x1DD)
+	IDPokeU64BE = ID(0x1DE)
+	IDPokeU64LE = ID(0x1DF)
+
+	// --------
+
 	IDWriteU8Fast    = ID(0x1E1)
 	IDWriteU16BEFast = ID(0x1E2)
 	IDWriteU16LEFast = ID(0x1E3)
@@ -634,11 +640,15 @@ const (
 
 	// -------- 0x200 block.
 
-	IDInitialize = ID(0x200)
-	IDReset      = ID(0x201)
-	IDSet        = ID(0x202)
-	IDUnroll     = ID(0x203)
-	IDUpdate     = ID(0x204)
+	IDAdvance        = ID(0x200)
+	IDCPUArch        = ID(0x201)
+	IDCPUArchIs32Bit = ID(0x202)
+	IDInitialize     = ID(0x203)
+	IDLength         = ID(0x204)
+	IDReset          = ID(0x205)
+	IDSet            = ID(0x206)
+	IDUnroll         = ID(0x207)
+	IDUpdate         = ID(0x208)
 
 	// TODO: range/rect methods like intersection and contains?
 
@@ -651,19 +661,56 @@ const (
 	IDIsOK         = ID(0x231)
 	IDIsSuspension = ID(0x232)
 
-	IDData            = ID(0x240)
-	IDHeight          = ID(0x241)
-	IDIO              = ID(0x242)
-	IDLength          = ID(0x243)
-	IDLimit           = ID(0x244)
-	IDPrefix          = ID(0x245)
-	IDRow             = ID(0x246)
-	IDStride          = ID(0x247)
-	IDSuffix          = ID(0x248)
-	IDValidUTF8Length = ID(0x249)
-	IDWidth           = ID(0x24A)
+	IDData             = ID(0x240)
+	IDHeight           = ID(0x241)
+	IDIO               = ID(0x242)
+	IDLimit            = ID(0x243)
+	IDPrefix           = ID(0x244)
+	IDRow              = ID(0x245)
+	IDStride           = ID(0x246)
+	IDSuffix           = ID(0x247)
+	IDUintptrLow12Bits = ID(0x248)
+	IDValidUTF8Length  = ID(0x249)
+	IDWidth            = ID(0x24A)
 
-	IDSwizzleInterleavedFromReader = ID(0x280)
+	IDLimitedSwizzleU32InterleavedFromReader = ID(0x280)
+	IDSwizzleInterleavedFromReader           = ID(0x281)
+
+	// -------- 0x300 block.
+
+	minBuiltInCPUArch        = 0x300
+	minBuiltInCPUArchARMNeon = 0x30E
+	maxBuiltInCPUArchARMNeon = 0x38F
+	maxBuiltInCPUArch        = 0x3AF
+
+	// If adding more CPUArch utility types, also update IsEtcUtility.
+
+	IDARMCRC32        = ID(0x300)
+	IDARMCRC32Utility = ID(0x301)
+
+	IDARMCRC32U32 = ID(0x302)
+
+	IDARMNeon        = ID(0x30E)
+	IDARMNeonUtility = ID(0x30F)
+
+	// ARM Neon D register (64-bit double-word) types.
+	IDARMNeonU8x8  = ID(0x310)
+	IDARMNeonU16x4 = ID(0x311)
+	IDARMNeonU32x2 = ID(0x312)
+	IDARMNeonU64x1 = ID(0x313)
+
+	// ARM Neon Q register (128-bit quad-word) types.
+	IDARMNeonU8x16 = ID(0x320)
+	IDARMNeonU16x8 = ID(0x321)
+	IDARMNeonU32x4 = ID(0x322)
+	IDARMNeonU64x2 = ID(0x323)
+
+	IDX86SSE42        = ID(0x390)
+	IDX86SSE42Utility = ID(0x391)
+	IDX86AVX2         = ID(0x392)
+	IDX86AVX2Utility  = ID(0x393)
+
+	IDX86M128I = ID(0x3A0)
 )
 
 var builtInsByID = [nBuiltInIDs]string{
@@ -742,6 +789,8 @@ var builtInsByID = [nBuiltInIDs]string{
 
 	IDAssert:     "assert",
 	IDBreak:      "break",
+	IDChoose:     "choose",
+	IDChoosy:     "choosy",
 	IDConst:      "const",
 	IDContinue:   "continue",
 	IDElse:       "else",
@@ -777,16 +826,7 @@ var builtInsByID = [nBuiltInIDs]string{
 	IDNullptr: "nullptr",
 	IDOk:      "ok",
 
-	ID0:   "0",
-	ID1:   "1",
-	ID2:   "2",
-	ID4:   "4",
-	ID8:   "8",
-	ID16:  "16",
-	ID32:  "32",
-	ID64:  "64",
-	ID128: "128",
-	ID256: "256",
+	ID0: "0",
 
 	// -------- 0x100 block.
 
@@ -799,12 +839,16 @@ var builtInsByID = [nBuiltInIDs]string{
 	// specifically non-ASCII so that no user-defined (non built-in) identifier
 	// will conflict with them.
 
-	// IDDaggerN is used by the type checker as a dummy-valued built-in ID to
+	// IDDaggerN is used by the type checker as a placeholder built-in ID to
 	// represent a generic type.
 	IDT1:      "T1",
 	IDT2:      "T2",
 	IDDagger1: "†", // U+2020 DAGGER
 	IDDagger2: "‡", // U+2021 DOUBLE DAGGER
+
+	// IDQNonNullptr is used by the type checker to build an artificial MType
+	// for function pointers.
+	IDQNonNullptr: "«NonNullptr»",
 
 	// IDQNullptr is used by the type checker to build an artificial MType for
 	// the nullptr literal.
@@ -884,12 +928,13 @@ var builtInsByID = [nBuiltInIDs]string{
 	IDSkipU32:       "skip_u32",
 	IDSkipU32Fast:   "skip_u32_fast",
 
-	IDCopyFromSlice:                 "copy_from_slice",
-	IDLimitedCopyU32FromHistory:     "limited_copy_u32_from_history",
-	IDLimitedCopyU32FromHistoryFast: "limited_copy_u32_from_history_fast",
-	IDLimitedCopyU32FromReader:      "limited_copy_u32_from_reader",
-	IDLimitedCopyU32FromSlice:       "limited_copy_u32_from_slice",
-	IDLimitedCopyU32ToSlice:         "limited_copy_u32_to_slice",
+	IDCopyFromSlice:                            "copy_from_slice",
+	IDLimitedCopyU32FromHistory:                "limited_copy_u32_from_history",
+	IDLimitedCopyU32FromHistory8ByteChunksFast: "limited_copy_u32_from_history_8_byte_chunks_fast",
+	IDLimitedCopyU32FromHistoryFast:            "limited_copy_u32_from_history_fast",
+	IDLimitedCopyU32FromReader:                 "limited_copy_u32_from_reader",
+	IDLimitedCopyU32FromSlice:                  "limited_copy_u32_from_slice",
+	IDLimitedCopyU32ToSlice:                    "limited_copy_u32_to_slice",
 
 	// -------- 0x180 block.
 
@@ -976,6 +1021,24 @@ var builtInsByID = [nBuiltInIDs]string{
 
 	// --------
 
+	IDPokeU8:    "poke_u8",
+	IDPokeU16BE: "poke_u16be",
+	IDPokeU16LE: "poke_u16le",
+	IDPokeU24BE: "poke_u24be",
+	IDPokeU24LE: "poke_u24le",
+	IDPokeU32BE: "poke_u32be",
+	IDPokeU32LE: "poke_u32le",
+	IDPokeU40BE: "poke_u40be",
+	IDPokeU40LE: "poke_u40le",
+	IDPokeU48BE: "poke_u48be",
+	IDPokeU48LE: "poke_u48le",
+	IDPokeU56BE: "poke_u56be",
+	IDPokeU56LE: "poke_u56le",
+	IDPokeU64BE: "poke_u64be",
+	IDPokeU64LE: "poke_u64le",
+
+	// --------
+
 	IDWriteU8Fast:    "write_u8_fast",
 	IDWriteU16BEFast: "write_u16be_fast",
 	IDWriteU16LEFast: "write_u16le_fast",
@@ -999,11 +1062,15 @@ var builtInsByID = [nBuiltInIDs]string{
 
 	// -------- 0x200 block.
 
-	IDInitialize: "initialize",
-	IDReset:      "reset",
-	IDSet:        "set",
-	IDUnroll:     "unroll",
-	IDUpdate:     "update",
+	IDAdvance:        "advance",
+	IDCPUArch:        "cpu_arch",
+	IDCPUArchIs32Bit: "cpu_arch_is_32_bit",
+	IDInitialize:     "initialize",
+	IDLength:         "length",
+	IDReset:          "reset",
+	IDSet:            "set",
+	IDUnroll:         "unroll",
+	IDUpdate:         "update",
 
 	IDHighBits: "high_bits",
 	IDLowBits:  "low_bits",
@@ -1014,19 +1081,47 @@ var builtInsByID = [nBuiltInIDs]string{
 	IDIsOK:         "is_ok",
 	IDIsSuspension: "is_suspension",
 
-	IDData:            "data",
-	IDHeight:          "height",
-	IDIO:              "io",
-	IDLength:          "length",
-	IDLimit:           "limit",
-	IDPrefix:          "prefix",
-	IDRow:             "row",
-	IDStride:          "stride",
-	IDSuffix:          "suffix",
-	IDValidUTF8Length: "valid_utf_8_length",
-	IDWidth:           "width",
+	IDData:             "data",
+	IDHeight:           "height",
+	IDIO:               "io",
+	IDLimit:            "limit",
+	IDPrefix:           "prefix",
+	IDRow:              "row",
+	IDStride:           "stride",
+	IDSuffix:           "suffix",
+	IDUintptrLow12Bits: "uintptr_low_12_bits",
+	IDValidUTF8Length:  "valid_utf_8_length",
+	IDWidth:            "width",
 
-	IDSwizzleInterleavedFromReader: "swizzle_interleaved_from_reader",
+	IDLimitedSwizzleU32InterleavedFromReader: "limited_swizzle_u32_interleaved_from_reader",
+	IDSwizzleInterleavedFromReader:           "swizzle_interleaved_from_reader",
+
+	// -------- 0x300 block.
+
+	IDARMCRC32:        "arm_crc32",
+	IDARMCRC32Utility: "arm_crc32_utility",
+
+	IDARMCRC32U32: "arm_crc32_u32",
+
+	IDARMNeon:        "arm_neon",
+	IDARMNeonUtility: "arm_neon_utility",
+
+	IDARMNeonU8x8:  "arm_neon_u8x8",
+	IDARMNeonU16x4: "arm_neon_u16x4",
+	IDARMNeonU32x2: "arm_neon_u32x2",
+	IDARMNeonU64x1: "arm_neon_u64x1",
+
+	IDARMNeonU8x16: "arm_neon_u8x16",
+	IDARMNeonU16x8: "arm_neon_u16x8",
+	IDARMNeonU32x4: "arm_neon_u32x4",
+	IDARMNeonU64x2: "arm_neon_u64x2",
+
+	IDX86SSE42:        "x86_sse42",
+	IDX86SSE42Utility: "x86_sse42_utility",
+	IDX86AVX2:         "x86_avx2",
+	IDX86AVX2Utility:  "x86_avx2_utility",
+
+	IDX86M128I: "x86_m128i",
 }
 
 var builtInsByName = map[string]ID{}

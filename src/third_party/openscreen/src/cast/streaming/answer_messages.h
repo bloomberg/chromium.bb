@@ -41,10 +41,9 @@ struct AudioConstraints {
 
   int max_sample_rate = 0;
   int max_channels = 0;
-  // Technically optional, sender will assume 32kbps if omitted.
-  int min_bit_rate = 0;
+  int min_bit_rate = 0;  // optional
   int max_bit_rate = 0;
-  std::chrono::milliseconds max_delay = {};
+  absl::optional<std::chrono::milliseconds> max_delay = {};
 };
 
 struct Dimensions {
@@ -62,13 +61,12 @@ struct VideoConstraints {
   Json::Value ToJson() const;
   bool IsValid() const;
 
-  double max_pixels_per_second = {};
+  absl::optional<double> max_pixels_per_second = {};
   absl::optional<Dimensions> min_dimensions = {};
   Dimensions max_dimensions = {};
-  // Technically optional, sender will assume 300kbps if omitted.
-  int min_bit_rate = 0;
+  int min_bit_rate = 0;  // optional
   int max_bit_rate = 0;
-  std::chrono::milliseconds max_delay = {};
+  absl::optional<std::chrono::milliseconds> max_delay = {};
 };
 
 struct Constraints {

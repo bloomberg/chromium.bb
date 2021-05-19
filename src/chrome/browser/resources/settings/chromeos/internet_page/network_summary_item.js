@@ -97,6 +97,11 @@ Polymer({
    * @private
    */
   getNetworkStateText_() {
+    // If SIM Locked, show warning message instead of connection state.
+    if (this.shouldShowLockedWarningMessage_(this.deviceState)) {
+      return this.i18n('networkSimLockedSubtitle');
+    }
+
     const stateText =
         this.getConnectionStateText_(this.activeNetworkState, this.deviceState);
     if (stateText) {
@@ -116,7 +121,7 @@ Polymer({
         if (deviceState.deviceState === mojom.DeviceStateType.kDisabling) {
           return this.i18n('internetDeviceDisabling');
         }
-        if (deviceState.deviceState === mojom.DeviceStateType.kInhibited) {
+        if (OncMojo.deviceIsInhibited(deviceState)) {
           return this.i18n('internetDeviceBusy');
         }
       } else if (deviceState.type === mojom.NetworkType.kTether) {
@@ -215,12 +220,39 @@ Polymer({
       return false;
     }
 
-    if (this.isUpdatedCellularUiEnabled_) {
-      // Do not show simInfo if |updatedCellularActivationUi| flag is enabled.
+    const {pSimSlots, eSimSlots} = getSimSlotCount(deviceState);
+    if (this.isUpdatedCellularUiEnabled_ && eSimSlots > 0) {
+      // Do not show simInfo if |updatedCellularActivationUi| flag is enabled
+      // and if we are using an eSIM enabled device.
+      return false;
+    }
+    return this.simLockedOrAbsent_(deviceState);
+  },
+
+  /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
+   * @return {string}
+   * @private
+   */
+  getNetworkStateClass_(deviceState) {
+    if (this.shouldShowLockedWarningMessage_(deviceState)) {
+      return 'locked-warning-message';
+    }
+    return 'network-state';
+  },
+
+  /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
+   * @return {boolean}
+   * @private
+   */
+  shouldShowLockedWarningMessage_(deviceState) {
+    if (!deviceState || deviceState.type !== mojom.NetworkType.kCellular ||
+        !deviceState.simLockStatus || !this.isUpdatedCellularUiEnabled_) {
       return false;
     }
 
-    return this.simLockedOrAbsent_(deviceState);
+    return !!deviceState.simLockStatus.lockType;
   },
 
   /**
@@ -244,7 +276,8 @@ Polymer({
 
   /**
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @return {boolean} True if the device is enabled or if it is a VPN. Note:
+   * @return {boolean} True if the device is enabled or if it is a VPN or if
+   *     we are in the state of inhibited. Note:
    *     This function will always return true for VPNs because VPNs can be
    *     disabled by policy only for built-in VPNs (OpenVPN & L2TP), but always
    *     enabled for other VPN providers. To know whether built-in VPNs are
@@ -254,7 +287,8 @@ Polymer({
   deviceIsEnabled_(deviceState) {
     return !!deviceState &&
         (deviceState.type === mojom.NetworkType.kVPN ||
-         deviceState.deviceState === mojom.DeviceStateType.kEnabled);
+         deviceState.deviceState === mojom.DeviceStateType.kEnabled ||
+         OncMojo.deviceIsInhibited(deviceState));
   },
 
   /**
@@ -275,9 +309,11 @@ Polymer({
       case mojom.NetworkType.kWiFi:
         return deviceState.deviceState !== mojom.DeviceStateType.kUninitialized;
       case mojom.NetworkType.kCellular:
-        return deviceState.deviceState !==
-            mojom.DeviceStateType.kUninitialized &&
-            !this.simLockedOrAbsent_(deviceState);
+        return (deviceState.deviceState !==
+                    mojom.DeviceStateType.kUninitialized &&
+                !this.simLockedOrAbsent_(deviceState)) ||
+            (this.isUpdatedCellularUiEnabled_ &&
+             this.simLockedOrAbsent_(deviceState));
     }
     assertNotReached();
     return false;
@@ -291,7 +327,7 @@ Polymer({
   enableToggleIsEnabled_(deviceState) {
     return this.enableToggleIsVisible_(deviceState) &&
         deviceState.deviceState !== mojom.DeviceStateType.kProhibited &&
-        deviceState.deviceState !== mojom.DeviceStateType.kInhibited &&
+        !OncMojo.deviceIsInhibited(deviceState) &&
         !OncMojo.deviceStateIsIntermediate(deviceState.deviceState);
   },
 
@@ -426,6 +462,11 @@ Polymer({
 
     if (type === mojom.NetworkType.kCellular) {
       if (this.isUpdatedCellularUiEnabled_) {
+        if (OncMojo.deviceIsInhibited(deviceState)) {
+          // The "Mobile data" subpage should be shown if the device state is
+          // inhibited and the flag is enabled.
+          return true;
+        }
         // When network type is Cellular and |updatedCellularActivationUi| is
         // enabled, always show "Mobile data" subpage, when eSim is available
         // or multiple pSimSlots are available

@@ -5,10 +5,11 @@
 #include "third_party/blink/renderer/modules/csspaint/background_color_paint_worklet.h"
 
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
 #include "third_party/blink/renderer/core/animation/css_color_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
-#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_deferred_image.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
@@ -33,19 +34,27 @@ class BackgroundColorPaintWorkletInput : public PaintWorkletInput {
       int worklet_id,
       const Vector<Color>& animated_colors,
       const Vector<double>& offsets,
+      const base::Optional<double>& progress,
       cc::PaintWorkletInput::PropertyKeys property_keys)
       : PaintWorkletInput(container_size, worklet_id, std::move(property_keys)),
         animated_colors_(animated_colors),
-        offsets_(offsets) {}
+        offsets_(offsets),
+        progress_(progress) {}
 
   ~BackgroundColorPaintWorkletInput() override = default;
 
   const Vector<Color>& AnimatedColors() const { return animated_colors_; }
   const Vector<double>& Offsets() const { return offsets_; }
+  const base::Optional<double>& MainThreadProgress() const { return progress_; }
 
  private:
+  // TODO(xidachen): wrap these 3 into a structure.
+  // animated_colors_: The colors extracted from animated keyframes.
+  // offsets_: the offsets of the animated keyframes.
+  // progress_: the progress obtained from the main thread animation.
   Vector<Color> animated_colors_;
   Vector<double> offsets_;
+  base::Optional<double> progress_;
 };
 
 class BackgroundColorPaintWorkletProxyClient
@@ -67,8 +76,6 @@ class BackgroundColorPaintWorkletProxyClient
       const CompositorPaintWorkletInput* compositor_input,
       const CompositorPaintWorkletJob::AnimatedPropertyValues&
           animated_property_values) override {
-    if (animated_property_values.empty())
-      return nullptr;
     const BackgroundColorPaintWorkletInput* input =
         static_cast<const BackgroundColorPaintWorkletInput*>(compositor_input);
     FloatSize container_size = input->ContainerSize();
@@ -77,9 +84,18 @@ class BackgroundColorPaintWorkletProxyClient
     DCHECK_GT(animated_colors.size(), 1u);
     DCHECK_EQ(animated_colors.size(), offsets.size());
 
-    DCHECK_EQ(animated_property_values.size(), 1u);
-    const auto& entry = animated_property_values.begin();
-    float progress = entry->second.float_value.value();
+    // TODO(crbug.com/1188760): We should handle the case when it is null, and
+    // paint the original background-color retrieved from its style.
+    float progress = input->MainThreadProgress().has_value()
+                         ? input->MainThreadProgress().value()
+                         : 0;
+    // This would mean that the animation started on compositor, so we override
+    // the progress that we obtained from the main thread.
+    if (!animated_property_values.empty()) {
+      DCHECK_EQ(animated_property_values.size(), 1u);
+      const auto& entry = animated_property_values.begin();
+      progress = entry->second.float_value.value();
+    }
 
     // Get the start and end color based on the progress and offsets.
     unsigned result_index = offsets.size() - 1;
@@ -140,8 +156,8 @@ bool GetColorsFromStringKeyframe(const PropertySpecificKeyframe* frame,
   const CSSValue* computed_value = StyleResolver::ComputeValue(
       const_cast<Element*>(element), property_name, *value);
   DCHECK(computed_value->IsColorValue());
-  const cssvalue::CSSColorValue* color_value =
-      static_cast<const cssvalue::CSSColorValue*>(computed_value);
+  const cssvalue::CSSColor* color_value =
+      static_cast<const cssvalue::CSSColor*>(computed_value);
   animated_colors->push_back(color_value->Value());
   return true;
 }
@@ -173,26 +189,26 @@ void GetCompositorKeyframeOffset(const PropertySpecificKeyframe* frame,
 
 bool GetBGColorPaintWorkletParamsInternal(Element* element,
                                           Vector<Color>* animated_colors,
-                                          Vector<double>* offsets) {
+                                          Vector<double>* offsets,
+                                          base::Optional<double>* progress) {
   if (!element->GetElementAnimations())
     return false;
-  // We composite the background color animation that has the highest composite
-  // order. Or if we have only one animation on background color and other
-  // animation(s) are on other properties, then we can also composite the
-  // background color animation.
+  element->GetLayoutObject()->GetMutableForPainting().EnsureId();
+  // We'd composite the background-color only if it is the only background color
+  // animation on this element.
   Animation* composited_animation = nullptr;
+  unsigned count = 0;
   for (const auto& animation : element->GetElementAnimations()->Animations()) {
     if (animation.key->CalculateAnimationPlayState() == Animation::kIdle ||
         !animation.key->Affects(*element, GetCSSPropertyBackgroundColor()))
       continue;
-    animation.key->ResetCanCompositeBGColorAnim();
-    if (!composited_animation ||
-        Animation::HasLowerCompositeOrdering(
-            composited_animation, animation.key,
-            Animation::CompareAnimationsOrdering::kPointerOrder))
-      composited_animation = animation.key;
+    count++;
+    // By default don't composite this background color animation.
+    animation.key->SetFailureReasons(
+        CompositorAnimations::kTargetHasInvalidCompositingState);
+    composited_animation = animation.key;
   }
-  if (!composited_animation)
+  if (!composited_animation || count > 1)
     return false;
 
   // If we are here, then this element must have one background color animation
@@ -217,7 +233,11 @@ bool GetBGColorPaintWorkletParamsInternal(Element* element,
     }
     GetCompositorKeyframeOffset(frame, offsets);
   }
-  composited_animation->SetCanCompositeBGColorAnim();
+  // If we get here, then we have collected all the artifacts to paint the
+  // element off the main thread. Moreover, this animation is eligible to run on
+  // the compositor thread as long as it pass the check on during compositing.
+  composited_animation->SetFailureReasons(CompositorAnimations::kNoFailure);
+  *progress = composited_animation->effect()->Progress();
   return true;
 }
 
@@ -243,8 +263,8 @@ scoped_refptr<Image> BackgroundColorPaintWorklet::Paint(
     const FloatSize& container_size,
     const Node* node,
     const Vector<Color>& animated_colors,
-    const Vector<double>& offsets) {
-  node->GetLayoutObject()->GetMutableForPainting().EnsureId();
+    const Vector<double>& offsets,
+    const base::Optional<double>& progress) {
   CompositorElementId element_id = CompositorElementIdFromUniqueObjectId(
       node->GetLayoutObject()->UniqueId(),
       CompositorAnimations::CompositorElementNamespaceForProperty(
@@ -255,7 +275,7 @@ scoped_refptr<Image> BackgroundColorPaintWorklet::Paint(
       element_id);
   scoped_refptr<BackgroundColorPaintWorkletInput> input =
       base::MakeRefCounted<BackgroundColorPaintWorkletInput>(
-          container_size, worklet_id_, animated_colors, offsets,
+          container_size, worklet_id_, animated_colors, offsets, progress,
           std::move(input_property_keys));
   return PaintWorkletDeferredImage::Create(std::move(input), container_size);
 }
@@ -263,11 +283,12 @@ scoped_refptr<Image> BackgroundColorPaintWorklet::Paint(
 bool BackgroundColorPaintWorklet::GetBGColorPaintWorkletParams(
     Node* node,
     Vector<Color>* animated_colors,
-    Vector<double>* offsets) {
+    Vector<double>* offsets,
+    base::Optional<double>* progress) {
   DCHECK(node->IsElementNode());
   Element* element = static_cast<Element*>(node);
-  return GetBGColorPaintWorkletParamsInternal(element, animated_colors,
-                                              offsets);
+  return GetBGColorPaintWorkletParamsInternal(element, animated_colors, offsets,
+                                              progress);
 }
 
 sk_sp<PaintRecord> BackgroundColorPaintWorklet::ProxyClientPaintForTest(
@@ -276,10 +297,12 @@ sk_sp<PaintRecord> BackgroundColorPaintWorklet::ProxyClientPaintForTest(
     const CompositorPaintWorkletJob::AnimatedPropertyValues&
         animated_property_values) {
   FloatSize container_size(100, 100);
+  base::Optional<double> progress = 0;
   CompositorPaintWorkletInput::PropertyKeys property_keys;
   scoped_refptr<BackgroundColorPaintWorkletInput> input =
       base::MakeRefCounted<BackgroundColorPaintWorkletInput>(
-          container_size, 1u, animated_colors, offsets, property_keys);
+          container_size, 1u, animated_colors, offsets, progress,
+          property_keys);
   BackgroundColorPaintWorkletProxyClient* client =
       BackgroundColorPaintWorkletProxyClient::Create(1u);
   return client->Paint(input.get(), animated_property_values);

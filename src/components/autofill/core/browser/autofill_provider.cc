@@ -33,8 +33,9 @@ void AutofillProvider::SendFormDataToRenderer(AutofillHandlerProxy* handler,
 
 void AutofillProvider::RendererShouldAcceptDataListSuggestion(
     AutofillHandlerProxy* handler,
-    const base::string16& value) {
-  handler->driver()->RendererShouldAcceptDataListSuggestion(value);
+    const FieldGlobalId& field_id,
+    const std::u16string& value) {
+  handler->driver()->RendererShouldAcceptDataListSuggestion(field_id, value);
 }
 
 }  // namespace autofill

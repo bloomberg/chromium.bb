@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/accessibility/dump_accessibility_tree_browsertest.h"
+
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,8 +27,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "ui/accessibility/accessibility_features.h"
-#include "ui/accessibility/accessibility_switches.h"
+#include "net/base/escape.h"
 
 #if defined(OS_MAC)
 #include "base/mac/mac_util.h"
@@ -46,191 +44,6 @@ namespace content {
 
 using ui::AXPropertyFilter;
 using ui::AXTreeFormatter;
-
-// See content/test/data/accessibility/readme.md for an overview.
-//
-// This test takes a snapshot of the platform BrowserAccessibility tree and
-// tests it against an expected baseline.
-//
-// The flow of the test is as outlined below.
-// 1. Load an html file from content/test/data/accessibility.
-// 2. Read the expectation.
-// 3. Browse to the page and serialize the platform specific tree into a human
-//    readable string.
-// 4. Perform a comparison between actual and expected and fail if they do not
-//    exactly match.
-class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
- public:
-  std::vector<ui::AXPropertyFilter> DefaultFilters() const override;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DumpAccessibilityTestBase::SetUpCommandLine(command_line);
-    // Enable <dialog>, which is used in some tests.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-    // Enable accessibility object model, used in other tests.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "AccessibilityObjectModel");
-    // Enable display locking, used in some tests.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "CSSContentVisibilityHiddenMatchable");
-    // LayoutNGTable table trees have an additional row GenericContainer.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "LayoutNGTable");
-    // kDisableAXMenuList is true on Chrome OS by default. Make it consistent
-    // for these cross-platform tests.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kDisableAXMenuList, "false");
-  }
-
-  void RunAriaTest(const base::FilePath::CharType* file_path) {
-    base::FilePath test_path = GetTestFilePath("accessibility", "aria");
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
-    }
-    base::FilePath aria_file = test_path.Append(base::FilePath(file_path));
-
-    RunTest(aria_file, "accessibility/aria");
-  }
-
-  void RunAomTest(const base::FilePath::CharType* file_path) {
-    base::FilePath test_path = GetTestFilePath("accessibility", "aom");
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
-    }
-    base::FilePath aom_file = test_path.Append(base::FilePath(file_path));
-
-    RunTest(aom_file, "accessibility/aom");
-  }
-
-  void RunCSSTest(const base::FilePath::CharType* file_path) {
-    base::FilePath test_path = GetTestFilePath("accessibility", "css");
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
-    }
-    base::FilePath css_file = test_path.Append(base::FilePath(file_path));
-
-    RunTest(css_file, "accessibility/css");
-  }
-
-  void RunHtmlTest(const base::FilePath::CharType* file_path) {
-    base::FilePath test_path = GetTestFilePath("accessibility", "html");
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
-    }
-    base::FilePath html_file = test_path.Append(base::FilePath(file_path));
-
-    RunTest(html_file, "accessibility/html");
-  }
-
-  void RunDisplayLockingTest(const base::FilePath::CharType* file_path) {
-    base::FilePath test_path =
-        GetTestFilePath("accessibility", "display-locking");
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
-    }
-    base::FilePath html_file = test_path.Append(base::FilePath(file_path));
-
-    RunTest(html_file, "accessibility/display-locking");
-  }
-
-  void RunRegressionTest(const base::FilePath::CharType* file_path) {
-    base::FilePath test_path = GetTestFilePath("accessibility", "regression");
-    base::FilePath test_file = test_path.Append(base::FilePath(file_path));
-
-    RunTest(test_file, "accessibility/regression");
-  }
-
-  std::vector<std::string> Dump(std::vector<std::string>& unused) override {
-    WebContentsImpl* web_contents =
-        static_cast<WebContentsImpl*>(shell()->web_contents());
-
-    // To make sure we've handled all accessibility events, add a sentinel by
-    // calling SignalEndOfTest and waiting for a kEndOfTest event in response.
-    AccessibilityNotificationWaiter waiter(web_contents, ui::kAXModeComplete,
-                                           ax::mojom::Event::kEndOfTest);
-    BrowserAccessibilityManager* manager =
-        web_contents->GetRootBrowserAccessibilityManager();
-    manager->SignalEndOfTest();
-    waiter.WaitForNotification();
-
-    std::unique_ptr<AXTreeFormatter> formatter(CreateFormatter());
-    formatter->SetPropertyFilters(scenario_.property_filters,
-                                  AXTreeFormatter::kFiltersDefaultSet);
-    formatter->SetNodeFilters(scenario_.node_filters);
-    std::string actual_contents =
-        formatter->Format(GetRootAccessibilityNode(web_contents));
-    return base::SplitString(actual_contents, "\n", base::KEEP_WHITESPACE,
-                             base::SPLIT_WANT_NONEMPTY);
-  }
-
-  void RunLanguageDetectionTest(const base::FilePath::CharType* file_path) {
-    base::FilePath test_path =
-        GetTestFilePath("accessibility", "language-detection");
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
-    }
-    base::FilePath language_detection_file =
-        test_path.Append(base::FilePath(file_path));
-
-    // Enable language detection for both static and dynamic content.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableExperimentalAccessibilityLanguageDetection);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableExperimentalAccessibilityLanguageDetectionDynamic);
-
-    RunTest(language_detection_file, "accessibility/language-detection");
-  }
-
-  // Testing of the Test Harness itself.
-  void RunTestHarnessTest(const base::FilePath::CharType* file_path) {
-    base::FilePath test_path = GetTestFilePath("accessibility", "test-harness");
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
-    }
-    base::FilePath test_harness_file =
-        test_path.Append(base::FilePath(file_path));
-
-    RunTest(test_harness_file, "accessibility/test-harness");
-  }
-
- protected:
-  // Override from DumpAccessibilityTestBase.
-  void ChooseFeatures(std::vector<base::Feature>* enabled_features,
-                      std::vector<base::Feature>* disabled_features) override {
-    // http://crbug.com/1063155 - temporary until this is enabled
-    // everywhere.
-    enabled_features->emplace_back(
-        features::kEnableAccessibilityExposeHTMLElement);
-    enabled_features->emplace_back(
-        features::kEnableAccessibilityAriaVirtualContent);
-    DumpAccessibilityTestBase::ChooseFeatures(enabled_features,
-                                              disabled_features);
-  }
-};
-
-// Subclass of DumpAccessibilityTreeTest that exposes ignored nodes.
-class DumpAccessibilityTreeTestWithIgnoredNodes
-    : public DumpAccessibilityTreeTest {
- protected:
-  // Override from DumpAccessibilityTreeTest.
-  void ChooseFeatures(std::vector<base::Feature>* enabled_features,
-                      std::vector<base::Feature>* disabled_features) override {
-    // http://crbug.com/1063155 - temporary until this is enabled
-    // everywhere.
-    enabled_features->emplace_back(
-        features::kEnableAccessibilityExposeIgnoredNodes);
-    DumpAccessibilityTreeTest::ChooseFeatures(enabled_features,
-                                              disabled_features);
-  }
-};
 
 std::vector<ui::AXPropertyFilter> DumpAccessibilityTreeTest::DefaultFilters()
     const {
@@ -257,6 +70,87 @@ std::vector<ui::AXPropertyFilter> DumpAccessibilityTreeTest::DefaultFilters()
   return property_filters;
 }
 
+void DumpAccessibilityTreeTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  DumpAccessibilityTestBase::SetUpCommandLine(command_line);
+  // Enable <dialog>, which is used in some tests.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalWebPlatformFeatures);
+  // Enable accessibility object model, used in other tests.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "AccessibilityObjectModel");
+  // Enable display locking, used in some tests.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "CSSContentVisibilityHiddenMatchable");
+  // LayoutNGTable table trees have an additional row GenericContainer.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "LayoutNGTable");
+  // kDisableAXMenuList is true on Chrome OS by default. Make it consistent
+  // for these cross-platform tests.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDisableAXMenuList, "false");
+}
+
+std::vector<std::string> DumpAccessibilityTreeTest::Dump(
+    std::vector<std::string>& unused) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // To make sure we've handled all accessibility events, add a sentinel by
+  // calling SignalEndOfTest and waiting for a kEndOfTest event in response.
+  AccessibilityNotificationWaiter waiter(web_contents, ui::kAXModeComplete,
+                                         ax::mojom::Event::kEndOfTest);
+  BrowserAccessibilityManager* manager =
+      web_contents->GetRootBrowserAccessibilityManager();
+  manager->SignalEndOfTest();
+  waiter.WaitForNotification();
+
+  std::unique_ptr<AXTreeFormatter> formatter(CreateFormatter());
+  formatter->SetPropertyFilters(scenario_.property_filters,
+                                AXTreeFormatter::kFiltersDefaultSet);
+  formatter->SetNodeFilters(scenario_.node_filters);
+  std::string actual_contents =
+      formatter->Format(GetRootAccessibilityNode(web_contents));
+  std::string escaped_contents = net::EscapeNonASCII(actual_contents);
+
+  return base::SplitString(escaped_contents, "\n", base::KEEP_WHITESPACE,
+                           base::SPLIT_WANT_NONEMPTY);
+}
+
+void DumpAccessibilityTreeTest::ChooseFeatures(
+    std::vector<base::Feature>* enabled_features,
+    std::vector<base::Feature>* disabled_features) {
+  // http://crbug.com/1063155 - temporary until this is enabled
+  // everywhere.
+  enabled_features->emplace_back(
+      features::kEnableAccessibilityExposeHTMLElement);
+  enabled_features->emplace_back(
+      features::kEnableAccessibilityAriaVirtualContent);
+  DumpAccessibilityTestBase::ChooseFeatures(enabled_features,
+                                            disabled_features);
+}
+
+void DumpAccessibilityTreeTestWithIgnoredNodes::ChooseFeatures(
+    std::vector<base::Feature>* enabled_features,
+    std::vector<base::Feature>* disabled_features) {
+  // http://crbug.com/1063155 - temporary until this is enabled
+  // everywhere.
+  enabled_features->emplace_back(
+      features::kEnableAccessibilityExposeIgnoredNodes);
+  DumpAccessibilityTreeTest::ChooseFeatures(enabled_features,
+                                            disabled_features);
+}
+
+class DumpAccessibilityTreeWithoutLayoutNGTest
+    : public DumpAccessibilityTreeTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DumpAccessibilityTreeTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kDisableBlinkFeatures,
+                                    "LayoutNG");
+  }
+};
+
 // Parameterize the tests so that each test-pass is run independently.
 struct DumpAccessibilityTreeTestPassToString {
   std::string operator()(
@@ -274,6 +168,12 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     All,
     DumpAccessibilityTreeTestWithIgnoredNodes,
+    ::testing::ValuesIn(DumpAccessibilityTestHelper::TreeTestPasses()),
+    DumpAccessibilityTreeTestPassToString());
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DumpAccessibilityTreeWithoutLayoutNGTest,
     ::testing::ValuesIn(DumpAccessibilityTestHelper::TreeTestPasses()),
     DumpAccessibilityTreeTestPassToString());
 
@@ -337,6 +237,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
       FILE_PATH_LITERAL("head-style-script-content-visibility-hidden.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCSSDisplayListItem) {
+  RunCSSTest(FILE_PATH_LITERAL("display-list-item.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSDisplayNone) {
   RunCSSTest(FILE_PATH_LITERAL("display-none.html"));
 }
@@ -398,6 +303,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunCSSTest(FILE_PATH_LITERAL("pseudo-element-alternative-text.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCSSPseudoElementPositioned) {
+  RunCSSTest(FILE_PATH_LITERAL("pseudo-element-positioned.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSDOMElements) {
   RunCSSTest(FILE_PATH_LITERAL("dom-element-css-alternative-text.html"));
 }
@@ -425,6 +335,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityCSSDataTableDisplayOther) {
   RunCSSTest(FILE_PATH_LITERAL("table-data-display-other.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCustomRowElement) {
+  RunCSSTest(FILE_PATH_LITERAL("table-custom-row-element.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSOverflow) {
@@ -646,9 +561,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaColAttr) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAriaColumnHeader) {
-  // TODO(crbug.com/1152126): Enable extra mac nodes in AXTree.
-  base::AutoReset<bool> disable_extra_mac_nodes(
-      &disable_extra_mac_nodes_for_testing_, true);
   RunAriaTest(FILE_PATH_LITERAL("aria-columnheader.html"));
 }
 
@@ -965,9 +877,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaLevel) {
-  // TODO(crbug.com/1152126): Enable extra mac nodes in AXTree.
-  base::AutoReset<bool> disable_extra_mac_nodes(
-      &disable_extra_mac_nodes_for_testing_, true);
   RunAriaTest(FILE_PATH_LITERAL("aria-level.html"));
 }
 
@@ -1235,7 +1144,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaRow) {
   RunAriaTest(FILE_PATH_LITERAL("aria-row.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaRowAttr) {
+// TODO(crbug.com/1191936) Disable the test due to its flakiness.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       DISABLED_AccessibilityAriaRowAttr) {
   RunAriaTest(FILE_PATH_LITERAL("aria-row-attr.html"));
 }
 
@@ -1244,9 +1155,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaRowGroup) {
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaRowHeader) {
-  // TODO(crbug.com/1152126): Enable extra mac nodes in AXTree.
-  base::AutoReset<bool> disable_extra_mac_nodes(
-      &disable_extra_mac_nodes_for_testing_, true);
   RunAriaTest(FILE_PATH_LITERAL("aria-rowheader.html"));
 }
 
@@ -1404,9 +1312,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaTree) {
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaTreeGrid) {
-  // TODO(crbug.com/1152126): Enable extra mac nodes in AXTree.
-  base::AutoReset<bool> disable_extra_mac_nodes(
-      &disable_extra_mac_nodes_for_testing_, true);
   RunAriaTest(FILE_PATH_LITERAL("aria-treegrid.html"));
 }
 
@@ -1615,6 +1520,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityDel) {
   RunHtmlTest(FILE_PATH_LITERAL("del.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityDesignMode) {
+  RunHtmlTest(FILE_PATH_LITERAL("design-mode.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityDetails) {
   RunHtmlTest(FILE_PATH_LITERAL("details.html"));
 }
@@ -1658,10 +1567,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-br.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
                        AccessibilityContenteditableBrDisableNGLayout) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDisableBlinkFeatures, "LayoutNG");
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-br-disable-ng-layout.html"));
 }
 
@@ -1686,10 +1593,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-docs-li.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityContenteditableDocsLiDisableNGLayout) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDisableBlinkFeatures, "LayoutNG");
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
+                       AccessibilityContenteditableDocsLi) {
   RunHtmlTest(
       FILE_PATH_LITERAL("contenteditable-docs-li-disable-ng-layout.html"));
 }
@@ -1701,12 +1606,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(
       FILE_PATH_LITERAL("contenteditable-li-contains-presentation.html"));
 }
-
-IN_PROC_BROWSER_TEST_P(
-    DumpAccessibilityTreeTest,
-    AccessibilityContenteditableLiContainsPresentationDisableNGLayout) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDisableBlinkFeatures, "LayoutNG");
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
+                       AccessibilityContenteditableLiContainsPresentation) {
   RunHtmlTest(FILE_PATH_LITERAL(
       "contenteditable-li-contains-presentation-disable-ng-layout.html"));
 }
@@ -1718,10 +1619,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-spans.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
                        AccessibilityContenteditableSpansDisableNGLayout) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDisableBlinkFeatures, "LayoutNG");
   RunHtmlTest(
       FILE_PATH_LITERAL("contenteditable-spans-disable-ng-layout.html"));
 }
@@ -1765,6 +1664,11 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityContenteditableWithNoDescendants) {
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-with-no-descendants.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityContenteditablePlaintextWithRole) {
+  RunHtmlTest(FILE_PATH_LITERAL("contenteditable-plaintext-with-role.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCustomElement) {
@@ -2043,8 +1947,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputColor) {
   RunHtmlTest(FILE_PATH_LITERAL("input-color.html"));
 }
 
+// https://crbug.com/1186138 - fails due to timing issues with focus
+// and aria-live announcement.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityInputColorWithPopupOpen) {
+                       DISABLED_AccessibilityInputColorWithPopupOpen) {
   RunHtmlTest(FILE_PATH_LITERAL("input-color-with-popup-open.html"));
 }
 
@@ -2678,14 +2584,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySvgG) {
   RunHtmlTest(AccessibilitySvgG_TestFile);
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityTabindexExposeChildren) {
+  RunHtmlTest(FILE_PATH_LITERAL("tabindex-expose-children.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityTableRowAdd) {
   RunHtmlTest(FILE_PATH_LITERAL("table-row-add.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityTableSimple) {
-  // TODO(crbug.com/1152126): Enable extra mac nodes in AXTree.
-  base::AutoReset<bool> disable_extra_mac_nodes(
-      &disable_extra_mac_nodes_for_testing_, true);
   RunHtmlTest(FILE_PATH_LITERAL("table-simple.html"));
 }
 
@@ -2700,40 +2608,25 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityTableThColHeader) {
-  // TODO(crbug.com/1152126): Enable extra mac nodes in AXTree.
-  base::AutoReset<bool> disable_extra_mac_nodes(
-      &disable_extra_mac_nodes_for_testing_, true);
   RunHtmlTest(FILE_PATH_LITERAL("table-th-colheader.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityTableThRowHeader) {
-  // TODO(crbug.com/1152126): Enable extra mac nodes in AXTree.
-  base::AutoReset<bool> disable_extra_mac_nodes(
-      &disable_extra_mac_nodes_for_testing_, true);
   RunHtmlTest(FILE_PATH_LITERAL("table-th-rowheader.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityTableTbodyTfoot) {
-  // TODO(crbug.com/1152126): Enable extra mac nodes in AXTree.
-  base::AutoReset<bool> disable_extra_mac_nodes(
-      &disable_extra_mac_nodes_for_testing_, true);
   RunHtmlTest(FILE_PATH_LITERAL("table-thead-tbody-tfoot.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityTableFocusableSections) {
-  // TODO(crbug.com/1152126): Enable extra mac nodes in AXTree.
-  base::AutoReset<bool> disable_extra_mac_nodes(
-      &disable_extra_mac_nodes_for_testing_, true);
   RunHtmlTest(FILE_PATH_LITERAL("table-focusable-sections.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityTableSpans) {
-  // TODO(crbug.com/1152126): Enable extra mac nodes in AXTree.
-  base::AutoReset<bool> disable_extra_mac_nodes(
-      &disable_extra_mac_nodes_for_testing_, true);
   RunHtmlTest(FILE_PATH_LITERAL("table-spans.html"));
 }
 
@@ -2956,8 +2849,18 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ActivedescendantCrash) {
   RunRegressionTest(FILE_PATH_LITERAL("activedescendant-crash.html"));
 }
 
+// TODO(crbug.com/1191098): Test is flaky on all platforms.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       DISABLED_AddClickIgnoredChanged) {
+  RunRegressionTest(FILE_PATH_LITERAL("add-click-ignored-changed.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, HiddenTable) {
   RunRegressionTest(FILE_PATH_LITERAL("hidden-table.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, RemovePseudoContent) {
+  RunRegressionTest(FILE_PATH_LITERAL("remove-pseudo-content.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMap) {
@@ -3023,6 +2926,13 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ComboboxItemVisibility) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MathNameFromContents) {
   RunHtmlTest(FILE_PATH_LITERAL("math-name-from-contents.html"));
+}
+
+//
+// AccName tests where having the full tree is desired.
+//
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, NameImgLabelledbyInputs) {
+  RunAccNameTest(FILE_PATH_LITERAL("name-img-labelledby-inputs.html"));
 }
 
 //

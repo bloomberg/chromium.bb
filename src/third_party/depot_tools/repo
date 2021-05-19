@@ -48,7 +48,7 @@ def main(argv):
   if argv and argv[0] == 'sync':
     _UpdateDepotTools()
 
-  os.execv(str(REPO), [sys.argv[0]] + argv)
+  os.execv(sys.executable, [sys.executable, str(REPO)] + argv)
 
 
 if __name__ == '__main__':

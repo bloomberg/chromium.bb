@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Host from '../host/host.js';
-import * as UI from '../ui/ui.js';
+import * as Host from '../core/host/host.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 export function reload() {
   if (UI.DockController.DockController.instance().canDock() &&

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/ash/network/network_state_notifier.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.h"
+#include "chrome/browser/ui/webui/chromeos/cellular_setup/mobile_setup_dialog.h"
 
 namespace {
 
@@ -53,6 +54,13 @@ void NetworkConnectDelegateChromeOS::ShowMobileSetupDialog(
   chromeos::cellular_setup::OpenCellularSetupDialog(network_id);
 }
 
+void NetworkConnectDelegateChromeOS::ShowCarrierAccountDetail(
+    const std::string& network_id) {
+  if (!IsUIAvailable())
+    return;
+  chromeos::cellular_setup::MobileSetupDialog::ShowByNetworkId(network_id);
+}
+
 void NetworkConnectDelegateChromeOS::ShowNetworkConnectError(
     const std::string& error_name,
     const std::string& network_id) {
@@ -63,4 +71,9 @@ void NetworkConnectDelegateChromeOS::ShowNetworkConnectError(
 void NetworkConnectDelegateChromeOS::ShowMobileActivationError(
     const std::string& network_id) {
   network_state_notifier_->ShowMobileActivationErrorForGuid(network_id);
+}
+
+void NetworkConnectDelegateChromeOS::SetSystemTrayClient(
+    ash::SystemTrayClient* system_tray_client) {
+  network_state_notifier_->set_system_tray_client(system_tray_client);
 }

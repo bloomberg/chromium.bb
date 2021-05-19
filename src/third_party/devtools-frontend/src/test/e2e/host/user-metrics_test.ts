@@ -715,7 +715,8 @@ describe('User Metrics for Issue Panel', () => {
     ]);
   });
 
-  it('dispatches an event when a SharedArrayBufferIssue is created', async () => {
+  // Skipped to allow chromium test binary to roll.
+  it.skip('[crbug.com/1196618] dispatches an event when a SharedArrayBufferIssue is created', async () => {
     await goToResource('issues/sab-issue.html');
     await waitFor('.issue');
 
@@ -765,9 +766,9 @@ describe('User Metrics for Issue Panel', () => {
     await waitFor('.issue');
     await click('.issue');
 
-    await waitFor('.link-list a');
-    await scrollElementIntoView('.link-list a');
-    await click('.link-list a');
+    await waitFor('.link-list x-link');
+    await scrollElementIntoView('.link-list x-link');
+    await click('.link-list x-link');
 
     await assertCapturedEvents([
       {

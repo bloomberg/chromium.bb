@@ -19,6 +19,7 @@
 #include "ash/shelf/shelf_container_view.h"
 #include "ash/shelf/shelf_tooltip_delegate.h"
 #include "ash/shelf/shelf_view.h"
+#include "base/callback_helpers.h"
 #include "base/cancelable_callback.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/animation/ink_drop_host_view.h"
@@ -263,7 +264,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   bool ShouldHideTooltip(const gfx::Point& cursor_location) const override;
   const std::vector<aura::Window*> GetOpenWindowsForView(
       views::View* view) override;
-  base::string16 GetTitleForView(const views::View* view) const override;
+  std::u16string GetTitleForView(const views::View* view) const override;
   views::View* GetViewForEvent(const ui::Event& event) override;
 
   // ApplicationDragAndDropHost:

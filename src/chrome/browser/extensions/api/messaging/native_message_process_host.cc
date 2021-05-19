@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -84,7 +85,7 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
 #if defined(OS_MAC)
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&base::EnsureProcessTerminated, Passed(&process_)));
+        base::BindOnce(&base::EnsureProcessTerminated, std::move(process_)));
 #else
     base::EnsureProcessTerminated(std::move(process_));
 #endif
@@ -168,8 +169,10 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
-  read_stream_.reset(new net::FileStream(std::move(read_file), task_runner));
-  write_stream_.reset(new net::FileStream(std::move(write_file), task_runner));
+  read_stream_ =
+      std::make_unique<net::FileStream>(std::move(read_file), task_runner);
+  write_stream_ =
+      std::make_unique<net::FileStream>(std::move(write_file), task_runner);
 
   WaitRead();
   DoWrite();

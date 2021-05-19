@@ -76,27 +76,6 @@ QuicByteCount HttpEncoder::SerializeHeadersFrameHeader(
 }
 
 // static
-QuicByteCount HttpEncoder::SerializeCancelPushFrame(
-    const CancelPushFrame& cancel_push,
-    std::unique_ptr<char[]>* output) {
-  QuicByteCount payload_length =
-      QuicDataWriter::GetVarInt62Len(cancel_push.push_id);
-  QuicByteCount total_length =
-      GetTotalLength(payload_length, HttpFrameType::CANCEL_PUSH);
-
-  output->reset(new char[total_length]);
-  QuicDataWriter writer(total_length, output->get());
-
-  if (WriteFrameHeader(payload_length, HttpFrameType::CANCEL_PUSH, &writer) &&
-      writer.WriteVarInt62(cancel_push.push_id)) {
-    return total_length;
-  }
-  QUIC_DLOG(ERROR)
-      << "Http encoder failed when attempting to serialize cancel push frame.";
-  return 0;
-}
-
-// static
 QuicByteCount HttpEncoder::SerializeSettingsFrame(
     const SettingsFrame& settings,
     std::unique_ptr<char[]>* output) {
@@ -134,32 +113,6 @@ QuicByteCount HttpEncoder::SerializeSettingsFrame(
 }
 
 // static
-QuicByteCount HttpEncoder::SerializePushPromiseFrameWithOnlyPushId(
-    const PushPromiseFrame& push_promise,
-    std::unique_ptr<char[]>* output) {
-  QuicByteCount payload_length =
-      QuicDataWriter::GetVarInt62Len(push_promise.push_id) +
-      push_promise.headers.length();
-  // GetTotalLength() is not used because headers will not be serialized.
-  QuicByteCount total_length =
-      QuicDataWriter::GetVarInt62Len(payload_length) +
-      QuicDataWriter::GetVarInt62Len(
-          static_cast<uint64_t>(HttpFrameType::PUSH_PROMISE)) +
-      QuicDataWriter::GetVarInt62Len(push_promise.push_id);
-
-  output->reset(new char[total_length]);
-  QuicDataWriter writer(total_length, output->get());
-
-  if (WriteFrameHeader(payload_length, HttpFrameType::PUSH_PROMISE, &writer) &&
-      writer.WriteVarInt62(push_promise.push_id)) {
-    return total_length;
-  }
-  QUIC_DLOG(ERROR)
-      << "Http encoder failed when attempting to serialize push promise frame.";
-  return 0;
-}
-
-// static
 QuicByteCount HttpEncoder::SerializeGoAwayFrame(
     const GoAwayFrame& goaway,
     std::unique_ptr<char[]>* output) {
@@ -180,32 +133,12 @@ QuicByteCount HttpEncoder::SerializeGoAwayFrame(
 }
 
 // static
-QuicByteCount HttpEncoder::SerializeMaxPushIdFrame(
-    const MaxPushIdFrame& max_push_id,
-    std::unique_ptr<char[]>* output) {
-  QuicByteCount payload_length =
-      QuicDataWriter::GetVarInt62Len(max_push_id.push_id);
-  QuicByteCount total_length =
-      GetTotalLength(payload_length, HttpFrameType::MAX_PUSH_ID);
-
-  output->reset(new char[total_length]);
-  QuicDataWriter writer(total_length, output->get());
-
-  if (WriteFrameHeader(payload_length, HttpFrameType::MAX_PUSH_ID, &writer) &&
-      writer.WriteVarInt62(max_push_id.push_id)) {
-    return total_length;
-  }
-  QUIC_DLOG(ERROR)
-      << "Http encoder failed when attempting to serialize max push id frame.";
-  return 0;
-}
-
-// static
 QuicByteCount HttpEncoder::SerializePriorityUpdateFrame(
     const PriorityUpdateFrame& priority_update,
     std::unique_ptr<char[]>* output) {
   if (priority_update.prioritized_element_type != REQUEST_STREAM) {
-    QUIC_BUG << "PRIORITY_UPDATE for push streams not implemented";
+    QUIC_BUG(quic_bug_10402_1)
+        << "PRIORITY_UPDATE for push streams not implemented";
     return 0;
   }
 
@@ -312,6 +245,27 @@ QuicByteCount HttpEncoder::SerializeGreasingFrame(
 
   QUIC_DLOG(ERROR) << "Http encoder failed when attempting to serialize "
                       "greasing frame.";
+  return 0;
+}
+
+QuicByteCount HttpEncoder::SerializeWebTransportStreamFrameHeader(
+    WebTransportSessionId session_id,
+    std::unique_ptr<char[]>* output) {
+  uint64_t stream_type =
+      static_cast<uint64_t>(HttpFrameType::WEBTRANSPORT_STREAM);
+  QuicByteCount header_length = QuicDataWriter::GetVarInt62Len(stream_type) +
+                                QuicDataWriter::GetVarInt62Len(session_id);
+
+  *output = std::make_unique<char[]>(header_length);
+  QuicDataWriter writer(header_length, output->get());
+  bool success =
+      writer.WriteVarInt62(stream_type) && writer.WriteVarInt62(session_id);
+  if (success && writer.remaining() == 0) {
+    return header_length;
+  }
+
+  QUIC_DLOG(ERROR) << "Http encoder failed when attempting to serialize "
+                      "WEBTRANSPORT_STREAM frame header.";
   return 0;
 }
 

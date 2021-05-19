@@ -1866,8 +1866,16 @@ constexpr int kOnlyLocalPorts = cricket::PORTALLOCATOR_DISABLE_STUN |
 
 // Use a mock resolver to resolve the hostname back to the original IP on both
 // sides and check that the ICE connection connects.
+// TODO(bugs.webrtc.org/12590): Flaky on Windows.
+#if defined(WEBRTC_WIN)
+#define MAYBE_IceStatesReachCompletionWithRemoteHostname \
+  DISABLED_IceStatesReachCompletionWithRemoteHostname
+#else
+#define MAYBE_IceStatesReachCompletionWithRemoteHostname \
+  IceStatesReachCompletionWithRemoteHostname
+#endif
 TEST_P(PeerConnectionIntegrationTest,
-       IceStatesReachCompletionWithRemoteHostname) {
+       MAYBE_IceStatesReachCompletionWithRemoteHostname) {
   auto caller_resolver_factory =
       std::make_unique<NiceMock<webrtc::MockAsyncResolverFactory>>();
   auto callee_resolver_factory =
@@ -2123,7 +2131,13 @@ TEST_P(PeerConnectionIntegrationIceStatesTestWithFakeClock,
 
 // Tests that the best connection is set to the appropriate IPv4/IPv6 connection
 // and that the statistics in the metric observers are updated correctly.
-TEST_P(PeerConnectionIntegrationIceStatesTest, VerifyBestConnection) {
+// TODO(bugs.webrtc.org/12591): Flaky on Windows.
+#if defined(WEBRTC_WIN)
+#define MAYBE_VerifyBestConnection DISABLED_VerifyBestConnection
+#else
+#define MAYBE_VerifyBestConnection VerifyBestConnection
+#endif
+TEST_P(PeerConnectionIntegrationIceStatesTest, MAYBE_VerifyBestConnection) {
   ASSERT_TRUE(CreatePeerConnectionWrappers());
   ConnectFakeSignaling();
   SetPortAllocatorFlags();
@@ -2297,8 +2311,16 @@ TEST_P(PeerConnectionIntegrationTest, EndToEndCallWithIceRenomination) {
 // With a max bundle policy and RTCP muxing, adding a new media description to
 // the connection should not affect ICE at all because the new media will use
 // the existing connection.
+// TODO(bugs.webrtc.org/12538): Fails on tsan.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_AddMediaToConnectedBundleDoesNotRestartIce \
+  DISABLED_AddMediaToConnectedBundleDoesNotRestartIce
+#else
+#define MAYBE_AddMediaToConnectedBundleDoesNotRestartIce \
+  AddMediaToConnectedBundleDoesNotRestartIce
+#endif
 TEST_P(PeerConnectionIntegrationTest,
-       AddMediaToConnectedBundleDoesNotRestartIce) {
+       MAYBE_AddMediaToConnectedBundleDoesNotRestartIce) {
   PeerConnectionInterface::RTCConfiguration config;
   config.bundle_policy = PeerConnectionInterface::kBundlePolicyMaxBundle;
   config.rtcp_mux_policy = PeerConnectionInterface::kRtcpMuxPolicyRequire;
@@ -3428,7 +3450,8 @@ TEST_F(PeerConnectionIntegrationTestUnifiedPlan,
   // - 96 on a Linux workstation
   // - 64 at win_x86_more_configs and win_x64_msvc_dbg
   // - 32 on android_arm64_rel and linux_dbg bots
-  while (current_size < 16) {
+  // - 16 on Android 64 (Nexus 5x)
+  while (current_size < 8) {
     // Double the number of tracks
     for (int i = 0; i < current_size; i++) {
       caller()->pc()->AddTransceiver(cricket::MEDIA_TYPE_VIDEO);

@@ -15,12 +15,10 @@
 #include "src/ast/float_literal.h"
 
 #include <limits>
-#include <sstream>
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::FloatLiteral);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::FloatLiteral);
 
 namespace tint {
 namespace ast {

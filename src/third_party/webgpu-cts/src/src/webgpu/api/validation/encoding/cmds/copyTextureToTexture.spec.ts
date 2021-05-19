@@ -1,7 +1,7 @@
 export const description = `
 copyTextureToTexture tests.
 
-Test Plan: (TODO(jiawei.shao@intel.com): add tests on aspects and 1D/3D textures)
+Test Plan: (TODO(jiawei.shao@intel.com): add tests on 1D/3D textures)
 * the source and destination texture
   - the {source, destination} texture is {invalid, valid}.
   - mipLevel {>, =, <} the mipmap level count of the {source, destination} texture.
@@ -23,13 +23,13 @@ Test Plan: (TODO(jiawei.shao@intel.com): add tests on aspects and 1D/3D textures
       textureCopyView.
     - (srcOrigin.y + copyExtent.height) {>, =, <} the height of the subresource size of source
       textureCopyView.
-    - (srcOrigin.z + copyExtent.depth) {>, =, <} the depth of the subresource size of source
+    - (srcOrigin.z + copyExtent.depthOrArrayLayers) {>, =, <} the depthOrArrayLayers of the subresource size of source
       textureCopyView.
     - (dstOrigin.x + copyExtent.width) {>, =, <} the width of the subresource size of destination
       textureCopyView.
     - (dstOrigin.y + copyExtent.height) {>, =, <} the height of the subresource size of destination
       textureCopyView.
-    - (dstOrigin.z + copyExtent.depth) {>, =, <} the depth of the subresource size of destination
+    - (dstOrigin.z + copyExtent.depthOrArrayLayers) {>, =, <} the depthOrArrayLayers of the subresource size of destination
       textureCopyView.
 * when the source and destination texture are the same one:
   - the set of source texture subresources {has, doesn't have} overlaps with the one of destination
@@ -65,10 +65,10 @@ class F extends ValidationTest {
   }
 
   GetPhysicalSubresourceSize(
-    textureSize: GPUExtent3DDict,
+    textureSize: Required<GPUExtent3DDict>,
     format: GPUTextureFormat,
     mipLevel: number
-  ): GPUExtent3DDict {
+  ): Required<GPUExtent3DDict> {
     const virtualWidthAtLevel = Math.max(textureSize.width >> mipLevel, 1);
     const virtualHeightAtLevel = Math.max(textureSize.height >> mipLevel, 1);
     const physicalWidthAtLevel = align(
@@ -79,7 +79,11 @@ class F extends ValidationTest {
       virtualHeightAtLevel,
       kAllTextureFormatInfo[format].blockHeight
     );
-    return { width: physicalWidthAtLevel, height: physicalHeightAtLevel, depth: textureSize.depth };
+    return {
+      width: physicalWidthAtLevel,
+      height: physicalHeightAtLevel,
+      depthOrArrayLayers: textureSize.depthOrArrayLayers,
+    };
   }
 }
 
@@ -87,7 +91,7 @@ export const g = makeTestGroup(F);
 
 g.test('copy_with_invalid_texture').fn(async t => {
   const validTexture = t.device.createTexture({
-    size: { width: 4, height: 4, depth: 1 },
+    size: { width: 4, height: 4, depthOrArrayLayers: 1 },
     format: 'rgba8unorm',
     usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,
   });
@@ -97,13 +101,13 @@ g.test('copy_with_invalid_texture').fn(async t => {
   t.TestCopyTextureToTexture(
     { texture: errorTexture },
     { texture: validTexture },
-    { width: 1, height: 1, depth: 1 },
+    { width: 1, height: 1, depthOrArrayLayers: 1 },
     false
   );
   t.TestCopyTextureToTexture(
     { texture: validTexture },
     { texture: errorTexture },
-    { width: 1, height: 1, depth: 1 },
+    { width: 1, height: 1, depthOrArrayLayers: 1 },
     false
   );
 });
@@ -123,13 +127,13 @@ g.test('mipmap_level')
     const { srcLevelCount, dstLevelCount, srcCopyLevel, dstCopyLevel } = t.params;
 
     const srcTexture = t.device.createTexture({
-      size: { width: 32, height: 32, depth: 1 },
+      size: { width: 32, height: 32, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
       usage: GPUTextureUsage.COPY_SRC,
       mipLevelCount: srcLevelCount,
     });
     const dstTexture = t.device.createTexture({
-      size: { width: 32, height: 32, depth: 1 },
+      size: { width: 32, height: 32, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
       usage: GPUTextureUsage.COPY_DST,
       mipLevelCount: dstLevelCount,
@@ -139,7 +143,7 @@ g.test('mipmap_level')
     t.TestCopyTextureToTexture(
       { texture: srcTexture, mipLevel: srcCopyLevel },
       { texture: dstTexture, mipLevel: dstCopyLevel },
-      { width: 1, height: 1, depth: 1 },
+      { width: 1, height: 1, depthOrArrayLayers: 1 },
       isSuccess
     );
   });
@@ -154,12 +158,12 @@ g.test('texture_usage')
     const { srcUsage, dstUsage } = t.params;
 
     const srcTexture = t.device.createTexture({
-      size: { width: 4, height: 4, depth: 1 },
+      size: { width: 4, height: 4, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
       usage: srcUsage,
     });
     const dstTexture = t.device.createTexture({
-      size: { width: 4, height: 4, depth: 1 },
+      size: { width: 4, height: 4, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
       usage: dstUsage,
     });
@@ -170,7 +174,7 @@ g.test('texture_usage')
     t.TestCopyTextureToTexture(
       { texture: srcTexture },
       { texture: dstTexture },
-      { width: 1, height: 1, depth: 1 },
+      { width: 1, height: 1, depthOrArrayLayers: 1 },
       isSuccess
     );
   });
@@ -185,13 +189,13 @@ g.test('sample_count')
     const { srcSampleCount, dstSampleCount } = t.params;
 
     const srcTexture = t.device.createTexture({
-      size: { width: 4, height: 4, depth: 1 },
+      size: { width: 4, height: 4, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
       usage: GPUTextureUsage.COPY_SRC,
       sampleCount: srcSampleCount,
     });
     const dstTexture = t.device.createTexture({
-      size: { width: 4, height: 4, depth: 1 },
+      size: { width: 4, height: 4, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
       usage: GPUTextureUsage.COPY_DST,
       sampleCount: dstSampleCount,
@@ -201,7 +205,7 @@ g.test('sample_count')
     t.TestCopyTextureToTexture(
       { texture: srcTexture },
       { texture: dstTexture },
-      { width: 4, height: 4, depth: 1 },
+      { width: 4, height: 4, depthOrArrayLayers: 1 },
       isSuccess
     );
   });
@@ -237,13 +241,13 @@ g.test('multisampled_copy_restrictions')
     // Currently we don't support multisampled 2D array textures and the mipmap level count of the
     // multisampled textures must be 1.
     const srcTexture = t.device.createTexture({
-      size: { width: kWidth, height: kHeight, depth: 1 },
+      size: { width: kWidth, height: kHeight, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
       usage: GPUTextureUsage.COPY_SRC,
       sampleCount: 4,
     });
     const dstTexture = t.device.createTexture({
-      size: { width: kWidth, height: kHeight, depth: 1 },
+      size: { width: kWidth, height: kHeight, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
       usage: GPUTextureUsage.COPY_DST,
       sampleCount: 4,
@@ -253,7 +257,7 @@ g.test('multisampled_copy_restrictions')
     t.TestCopyTextureToTexture(
       { texture: srcTexture, origin: srcCopyOrigin },
       { texture: dstTexture, origin: dstCopyOrigin },
-      { width: copyWidth, height: copyHeight, depth: 1 },
+      { width: copyWidth, height: copyHeight, depthOrArrayLayers: 1 },
       isSuccess
     );
   });
@@ -281,7 +285,7 @@ g.test('texture_format_equality')
       await t.selectDeviceOrSkipTestCase({ extensions });
     }
 
-    const kTextureSize = { width: 16, height: 16, depth: 1 };
+    const kTextureSize = { width: 16, height: 16, depthOrArrayLayers: 1 };
 
     const srcTexture = t.device.createTexture({
       size: kTextureSize,
@@ -319,16 +323,16 @@ g.test('depth_stencil_copy_restrictions')
       )
       .combine(
         poptions('srcTextureSize', [
-          { width: 64, height: 64, depth: 1 },
-          { width: 64, height: 32, depth: 1 },
-          { width: 32, height: 32, depth: 1 },
+          { width: 64, height: 64, depthOrArrayLayers: 1 },
+          { width: 64, height: 32, depthOrArrayLayers: 1 },
+          { width: 32, height: 32, depthOrArrayLayers: 1 },
         ])
       )
       .combine(
         poptions('dstTextureSize', [
-          { width: 64, height: 64, depth: 1 },
-          { width: 64, height: 32, depth: 1 },
-          { width: 32, height: 32, depth: 1 },
+          { width: 64, height: 64, depthOrArrayLayers: 1 },
+          { width: 64, height: 32, depthOrArrayLayers: 1 },
+          { width: 32, height: 32, depthOrArrayLayers: 1 },
         ])
       )
       .combine(poptions('srcCopyLevel', [1, 2]))
@@ -344,15 +348,18 @@ g.test('depth_stencil_copy_restrictions')
       dstCopyLevel,
     } = t.params;
 
+    await t.selectDeviceOrSkipTestCase(kAllTextureFormatInfo[format].extension);
+
     const kMipLevelCount = 3;
+
     const srcTexture = t.device.createTexture({
-      size: { width: srcTextureSize.width, height: srcTextureSize.height, depth: 1 },
+      size: { width: srcTextureSize.width, height: srcTextureSize.height, depthOrArrayLayers: 1 },
       format,
       mipLevelCount: kMipLevelCount,
       usage: GPUTextureUsage.COPY_SRC,
     });
     const dstTexture = t.device.createTexture({
-      size: { width: dstTextureSize.width, height: dstTextureSize.height, depth: 1 },
+      size: { width: dstTextureSize.width, height: dstTextureSize.height, depthOrArrayLayers: 1 },
       format,
       mipLevelCount: kMipLevelCount,
       usage: GPUTextureUsage.COPY_DST,
@@ -379,13 +386,13 @@ g.test('depth_stencil_copy_restrictions')
     t.TestCopyTextureToTexture(
       { texture: srcTexture, origin: { x: 0, y: 0, z: 0 }, mipLevel: srcCopyLevel },
       { texture: dstTexture, origin: copyOrigin, mipLevel: dstCopyLevel },
-      { width: copyWidth, height: copyHeight, depth: 1 },
+      { width: copyWidth, height: copyHeight, depthOrArrayLayers: 1 },
       isSuccess
     );
     t.TestCopyTextureToTexture(
       { texture: srcTexture, origin: copyOrigin, mipLevel: srcCopyLevel },
       { texture: dstTexture, origin: { x: 0, y: 0, z: 0 }, mipLevel: dstCopyLevel },
-      { width: copyWidth, height: copyHeight, depth: 1 },
+      { width: copyWidth, height: copyHeight, depthOrArrayLayers: 1 },
       isSuccess
     );
   });
@@ -395,19 +402,19 @@ g.test('copy_ranges')
     params()
       .combine(
         poptions('copyBoxOffsets', [
-          { x: 0, y: 0, z: 0, width: 0, height: 0, depth: -2 },
-          { x: 1, y: 0, z: 0, width: 0, height: 0, depth: -2 },
-          { x: 1, y: 0, z: 0, width: -1, height: 0, depth: -2 },
-          { x: 0, y: 1, z: 0, width: 0, height: 0, depth: -2 },
-          { x: 0, y: 1, z: 0, width: 0, height: -1, depth: -2 },
-          { x: 0, y: 0, z: 1, width: 0, height: 1, depth: -2 },
-          { x: 0, y: 0, z: 2, width: 0, height: 1, depth: 0 },
-          { x: 0, y: 0, z: 0, width: 1, height: 0, depth: -2 },
-          { x: 0, y: 0, z: 0, width: 0, height: 1, depth: -2 },
-          { x: 0, y: 0, z: 0, width: 0, height: 0, depth: 1 },
-          { x: 0, y: 0, z: 0, width: 0, height: 0, depth: 0 },
-          { x: 0, y: 0, z: 1, width: 0, height: 0, depth: -1 },
-          { x: 0, y: 0, z: 2, width: 0, height: 0, depth: -1 },
+          { x: 0, y: 0, z: 0, width: 0, height: 0, depthOrArrayLayers: -2 },
+          { x: 1, y: 0, z: 0, width: 0, height: 0, depthOrArrayLayers: -2 },
+          { x: 1, y: 0, z: 0, width: -1, height: 0, depthOrArrayLayers: -2 },
+          { x: 0, y: 1, z: 0, width: 0, height: 0, depthOrArrayLayers: -2 },
+          { x: 0, y: 1, z: 0, width: 0, height: -1, depthOrArrayLayers: -2 },
+          { x: 0, y: 0, z: 1, width: 0, height: 1, depthOrArrayLayers: -2 },
+          { x: 0, y: 0, z: 2, width: 0, height: 1, depthOrArrayLayers: 0 },
+          { x: 0, y: 0, z: 0, width: 1, height: 0, depthOrArrayLayers: -2 },
+          { x: 0, y: 0, z: 0, width: 0, height: 1, depthOrArrayLayers: -2 },
+          { x: 0, y: 0, z: 0, width: 0, height: 0, depthOrArrayLayers: 1 },
+          { x: 0, y: 0, z: 0, width: 0, height: 0, depthOrArrayLayers: 0 },
+          { x: 0, y: 0, z: 1, width: 0, height: 0, depthOrArrayLayers: -1 },
+          { x: 0, y: 0, z: 2, width: 0, height: 0, depthOrArrayLayers: -1 },
         ])
       )
       .combine(poptions('srcCopyLevel', [0, 1, 3]))
@@ -416,7 +423,7 @@ g.test('copy_ranges')
   .fn(async t => {
     const { copyBoxOffsets, srcCopyLevel, dstCopyLevel } = t.params;
 
-    const kTextureSize = { width: 16, height: 8, depth: 3 };
+    const kTextureSize = { width: 16, height: 8, depthOrArrayLayers: 3 };
     const kMipLevelCount = 4;
     const kFormat = 'rgba8unorm';
 
@@ -446,7 +453,8 @@ g.test('copy_ranges')
       Math.min(srcSizeAtLevel.height, dstSizeAtLevel.height) + copyBoxOffsets.height - copyOrigin.y,
       0
     );
-    const copyDepth = kTextureSize.depth + copyBoxOffsets.depth - copyOrigin.z;
+    const copyDepth =
+      kTextureSize.depthOrArrayLayers + copyBoxOffsets.depthOrArrayLayers - copyOrigin.z;
 
     {
       const isSuccess =
@@ -454,12 +462,12 @@ g.test('copy_ranges')
         copyHeight <= srcSizeAtLevel.height &&
         copyOrigin.x + copyWidth <= dstSizeAtLevel.width &&
         copyOrigin.y + copyHeight <= dstSizeAtLevel.height &&
-        copyOrigin.z + copyDepth <= kTextureSize.depth;
+        copyOrigin.z + copyDepth <= kTextureSize.depthOrArrayLayers;
 
       t.TestCopyTextureToTexture(
         { texture: srcTexture, origin: { x: 0, y: 0, z: 0 }, mipLevel: srcCopyLevel },
         { texture: dstTexture, origin: copyOrigin, mipLevel: dstCopyLevel },
-        { width: copyWidth, height: copyHeight, depth: copyDepth },
+        { width: copyWidth, height: copyHeight, depthOrArrayLayers: copyDepth },
         isSuccess
       );
     }
@@ -470,12 +478,12 @@ g.test('copy_ranges')
         copyOrigin.y + copyHeight <= srcSizeAtLevel.height &&
         copyWidth <= dstSizeAtLevel.width &&
         copyHeight <= dstSizeAtLevel.height &&
-        copyOrigin.z + copyDepth <= kTextureSize.depth;
+        copyOrigin.z + copyDepth <= kTextureSize.depthOrArrayLayers;
 
       t.TestCopyTextureToTexture(
         { texture: srcTexture, origin: copyOrigin, mipLevel: srcCopyLevel },
         { texture: dstTexture, origin: { x: 0, y: 0, z: 0 }, mipLevel: dstCopyLevel },
-        { width: copyWidth, height: copyHeight, depth: copyDepth },
+        { width: copyWidth, height: copyHeight, depthOrArrayLayers: copyDepth },
         isSuccess
       );
     }
@@ -494,7 +502,7 @@ g.test('copy_within_same_texture')
     const kArrayLayerCount = 7;
 
     const testTexture = t.device.createTexture({
-      size: { width: 16, height: 16, depth: kArrayLayerCount },
+      size: { width: 16, height: 16, depthOrArrayLayers: kArrayLayerCount },
       format: 'rgba8unorm',
       usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,
     });
@@ -505,8 +513,68 @@ g.test('copy_within_same_texture')
     t.TestCopyTextureToTexture(
       { texture: testTexture, origin: { x: 0, y: 0, z: srcCopyOriginZ } },
       { texture: testTexture, origin: { x: 0, y: 0, z: dstCopyOriginZ } },
-      { width: 16, height: 16, depth: copyExtentDepth },
+      { width: 16, height: 16, depthOrArrayLayers: copyExtentDepth },
       isSuccess
+    );
+  });
+
+g.test('copy_aspects')
+  .desc(
+    `
+Test the validations on the member 'aspect' of GPUTextureCopyView in CopyTextureToTexture().
+- for all the color and depth-stencil formats: the texture copy aspects must be both 'all'.
+- for all the depth-only formats: the texture copy aspects must be either 'all' or 'depth-only'.
+- for all the stencil-only formats: the texture copy aspects must be either 'all' or 'stencil-only'.
+`
+  )
+  .params(
+    params()
+      .combine(poptions('format', ['rgba8unorm', ...kDepthStencilFormats] as const))
+      .combine(poptions('sourceAspect', ['all', 'depth-only', 'stencil-only'] as const))
+      .combine(poptions('destinationAspect', ['all', 'depth-only', 'stencil-only'] as const))
+  )
+  .fn(async t => {
+    const { format, sourceAspect, destinationAspect } = t.params;
+
+    const kTextureSize = { width: 16, height: 8, depthOrArrayLayers: 1 };
+
+    await t.selectDeviceOrSkipTestCase(kAllTextureFormatInfo[format].extension);
+
+    const srcTexture = t.device.createTexture({
+      size: kTextureSize,
+      format,
+      usage: GPUTextureUsage.COPY_SRC,
+    });
+    const dstTexture = t.device.createTexture({
+      size: kTextureSize,
+      format,
+      usage: GPUTextureUsage.COPY_DST,
+    });
+
+    // TODO(jiawei.shao@intel.com): get the valid aspects from capability_info.ts.
+    const kValidAspectsForFormat = {
+      rgba8unorm: ['all'],
+
+      // kUnsizedDepthStencilFormats
+      depth24plus: ['all', 'depth-only'],
+      'depth24plus-stencil8': ['all'],
+      'depth24unorm-stencil8': ['all'],
+      'depth32float-stencil8': ['all'],
+
+      // kSizedDepthStencilFormats
+      depth32float: ['all', 'depth-only'],
+      stencil8: ['all', 'stencil-only'],
+      depth16unorm: ['all', 'depth-only'],
+    };
+
+    const isSourceAspectValid = kValidAspectsForFormat[format].includes(sourceAspect);
+    const isDestinationAspectValid = kValidAspectsForFormat[format].includes(destinationAspect);
+
+    t.TestCopyTextureToTexture(
+      { texture: srcTexture, origin: { x: 0, y: 0, z: 0 }, aspect: sourceAspect },
+      { texture: dstTexture, origin: { x: 0, y: 0, z: 0 }, aspect: destinationAspect },
+      kTextureSize,
+      isSourceAspectValid && isDestinationAspectValid
     );
   });
 
@@ -516,17 +584,17 @@ g.test('copy_ranges_with_compressed_texture_formats')
       .combine(poptions('format', kCompressedTextureFormats))
       .combine(
         poptions('copyBoxOffsets', [
-          { x: 0, y: 0, z: 0, width: 0, height: 0, depth: -2 },
-          { x: 1, y: 0, z: 0, width: 0, height: 0, depth: -2 },
-          { x: 4, y: 0, z: 0, width: 0, height: 0, depth: -2 },
-          { x: 0, y: 0, z: 0, width: -1, height: 0, depth: -2 },
-          { x: 0, y: 0, z: 0, width: -4, height: 0, depth: -2 },
-          { x: 0, y: 1, z: 0, width: 0, height: 0, depth: -2 },
-          { x: 0, y: 4, z: 0, width: 0, height: 0, depth: -2 },
-          { x: 0, y: 0, z: 0, width: 0, height: -1, depth: -2 },
-          { x: 0, y: 0, z: 0, width: 0, height: -4, depth: -2 },
-          { x: 0, y: 0, z: 0, width: 0, height: 0, depth: 0 },
-          { x: 0, y: 0, z: 1, width: 0, height: 0, depth: -1 },
+          { x: 0, y: 0, z: 0, width: 0, height: 0, depthOrArrayLayers: -2 },
+          { x: 1, y: 0, z: 0, width: 0, height: 0, depthOrArrayLayers: -2 },
+          { x: 4, y: 0, z: 0, width: 0, height: 0, depthOrArrayLayers: -2 },
+          { x: 0, y: 0, z: 0, width: -1, height: 0, depthOrArrayLayers: -2 },
+          { x: 0, y: 0, z: 0, width: -4, height: 0, depthOrArrayLayers: -2 },
+          { x: 0, y: 1, z: 0, width: 0, height: 0, depthOrArrayLayers: -2 },
+          { x: 0, y: 4, z: 0, width: 0, height: 0, depthOrArrayLayers: -2 },
+          { x: 0, y: 0, z: 0, width: 0, height: -1, depthOrArrayLayers: -2 },
+          { x: 0, y: 0, z: 0, width: 0, height: -4, depthOrArrayLayers: -2 },
+          { x: 0, y: 0, z: 0, width: 0, height: 0, depthOrArrayLayers: 0 },
+          { x: 0, y: 0, z: 1, width: 0, height: 0, depthOrArrayLayers: -1 },
         ])
       )
       .combine(poptions('srcCopyLevel', [0, 1, 2]))
@@ -539,7 +607,7 @@ g.test('copy_ranges_with_compressed_texture_formats')
     assert(extension !== undefined);
     await t.selectDeviceOrSkipTestCase({ extensions: [extension] });
 
-    const kTextureSize = { width: 60, height: 48, depth: 3 };
+    const kTextureSize = { width: 60, height: 48, depthOrArrayLayers: 3 };
     const kMipLevelCount = 4;
 
     const srcTexture = t.device.createTexture({
@@ -568,7 +636,8 @@ g.test('copy_ranges_with_compressed_texture_formats')
       Math.min(srcSizeAtLevel.height, dstSizeAtLevel.height) + copyBoxOffsets.height - copyOrigin.y,
       0
     );
-    const copyDepth = kTextureSize.depth + copyBoxOffsets.depth - copyOrigin.z;
+    const copyDepth =
+      kTextureSize.depthOrArrayLayers + copyBoxOffsets.depthOrArrayLayers - copyOrigin.z;
 
     const texelBlockWidth = kAllTextureFormatInfo[format].blockWidth;
     const texelBlockHeight = kAllTextureFormatInfo[format].blockHeight;
@@ -586,12 +655,12 @@ g.test('copy_ranges_with_compressed_texture_formats')
         copyHeight <= srcSizeAtLevel.height &&
         copyOrigin.x + copyWidth <= dstSizeAtLevel.width &&
         copyOrigin.y + copyHeight <= dstSizeAtLevel.height &&
-        copyOrigin.z + copyDepth <= kTextureSize.depth;
+        copyOrigin.z + copyDepth <= kTextureSize.depthOrArrayLayers;
 
       t.TestCopyTextureToTexture(
         { texture: srcTexture, origin: { x: 0, y: 0, z: 0 }, mipLevel: srcCopyLevel },
         { texture: dstTexture, origin: copyOrigin, mipLevel: dstCopyLevel },
-        { width: copyWidth, height: copyHeight, depth: copyDepth },
+        { width: copyWidth, height: copyHeight, depthOrArrayLayers: copyDepth },
         isSuccess
       );
     }
@@ -603,12 +672,12 @@ g.test('copy_ranges_with_compressed_texture_formats')
         copyOrigin.y + copyHeight <= srcSizeAtLevel.height &&
         copyWidth <= dstSizeAtLevel.width &&
         copyHeight <= dstSizeAtLevel.height &&
-        copyOrigin.z + copyDepth <= kTextureSize.depth;
+        copyOrigin.z + copyDepth <= kTextureSize.depthOrArrayLayers;
 
       t.TestCopyTextureToTexture(
         { texture: srcTexture, origin: copyOrigin, mipLevel: srcCopyLevel },
         { texture: dstTexture, origin: { x: 0, y: 0, z: 0 }, mipLevel: dstCopyLevel },
-        { width: copyWidth, height: copyHeight, depth: copyDepth },
+        { width: copyWidth, height: copyHeight, depthOrArrayLayers: copyDepth },
         isSuccess
       );
     }

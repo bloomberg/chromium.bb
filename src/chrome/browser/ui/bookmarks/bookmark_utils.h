@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_UTILS_H_
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_UTILS_H_
 
+#include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/models/image_model.h"
@@ -44,7 +44,7 @@ GURL GetURLToBookmark(content::WebContents* web_contents);
 // Fills in the URL and title for a bookmark of |web_contents|.
 void GetURLAndTitleToBookmark(content::WebContents* web_contents,
                               GURL* url,
-                              base::string16* title);
+                              std::u16string* title);
 
 // Toggles whether the bookmark bar is shown only on the new tab page or on
 // all tabs. This is a preference modifier, not a visual modifier.
@@ -52,7 +52,7 @@ void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context);
 
 // Returns a formatted version of |url| appropriate to display to a user.
 // When re-parsing this URL, clients should call url_formatter::FixupURL().
-base::string16 FormatBookmarkURLForDisplay(const GURL& url);
+std::u16string FormatBookmarkURLForDisplay(const GURL& url);
 
 // Returns whether the Apps shortcut is enabled. If true, then the visibility
 // of the Apps shortcut should be controllable via an item in the bookmark

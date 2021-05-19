@@ -7,15 +7,15 @@ import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/mwb_shared_icons.js';
 import 'chrome://resources/cr_elements/mwb_shared_vars.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import './strings.m.js';
 
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {highlight} from 'chrome://resources/js/search_highlight_utils.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {TabData} from './tab_data.js';
+import {ariaLabel, TabData, TabItemType} from './tab_data.js';
 import {Tab} from './tab_search.mojom-webui.js';
-import './strings.js';
 
 export class TabSearchItem extends PolymerElement {
   static get is() {
@@ -39,7 +39,18 @@ export class TabSearchItem extends PolymerElement {
         type: Boolean,
         value: () => loadTimeData.getBoolean('useRipples'),
       },
+
+      /** @type {number} */
+      index: Number,
     };
+  }
+
+  /**
+   * @param {!TabItemType} type
+   * @return {boolean} Whether a close action can be performed on the item.
+   */
+  isCloseable_(type) {
+    return type === TabItemType.OPEN;
   }
 
   /**
@@ -75,9 +86,19 @@ export class TabSearchItem extends PolymerElement {
         this.data.hostnameHighlightRanges);
 
     // Show chrome:// if it's a chrome internal url
-    if (new URL(this.data.tab.url).protocol === 'chrome:') {
+    let secondaryLabel = this.data.hostname;
+    let protocol = '';
+    try {
+      protocol = new URL(this.data.tab.url).protocol;
+    } catch (e) {
+      // TODO(crbug.com/1186409): Remove this after we root cause the issue
+      console.error(
+          `Error parsing URL on Tab Search: url=${this.data.tab.url}`);
+    }
+    if (protocol === 'chrome:') {
       /** @type {!HTMLElement} */ (this.$.secondaryText)
           .prepend(document.createTextNode('chrome://'));
+      secondaryLabel = `chrome://${secondaryLabel}`;
     }
   }
 
@@ -100,7 +121,21 @@ export class TabSearchItem extends PolymerElement {
     }
   }
 
-  ariaLabel_(title) {
+  /**
+   * @param {!TabData} tabData
+   * @return {string}
+   * @private
+   */
+  ariaLabelForText_(tabData) {
+    return ariaLabel(tabData);
+  }
+
+  /**
+   * @param {string} title
+   * @return {string}
+   * @private
+   */
+  ariaLabelForButton_(title) {
     return `${loadTimeData.getString('closeTab')} ${title}`;
   }
 }

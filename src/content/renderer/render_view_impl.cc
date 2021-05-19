@@ -114,10 +114,7 @@ RenderViewImpl::RenderViewImpl(AgentSchedulingGroup& agent_scheduling_group,
           params.renderer_wide_named_frame_lookup),
       widgets_never_composited_(params.never_composited),
       compositor_deps_(compositor_deps),
-      agent_scheduling_group_(agent_scheduling_group),
-      session_storage_namespace_id_(params.session_storage_namespace_id) {
-  DCHECK(!session_storage_namespace_id_.empty())
-      << "Session storage namespace must be populated.";
+      agent_scheduling_group_(agent_scheduling_group) {
   // Please put all logic in RenderViewImpl::Initialize().
 }
 
@@ -141,7 +138,8 @@ void RenderViewImpl::Initialize(
       /*compositing_enabled=*/true,
       opener_frame ? opener_frame->View() : nullptr,
       std::move(params->blink_page_broadcast),
-      agent_scheduling_group_.agent_group_scheduler());
+      agent_scheduling_group_.agent_group_scheduler(),
+      params->session_storage_namespace_id);
 
   g_view_map.Get().insert(std::make_pair(GetWebView(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -239,6 +237,8 @@ RenderViewImpl* RenderViewImpl::Create(
     bool was_created_by_renderer,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(params->view_id != MSG_ROUTING_NONE);
+  DCHECK(!params->session_storage_namespace_id.empty())
+      << "Session storage namespace must be populated.";
 
   RenderViewImpl* render_view =
       new RenderViewImpl(agent_scheduling_group, compositor_deps, *params);
@@ -258,21 +258,6 @@ void RenderViewImpl::Destroy() {
 
   delete this;
 }
-
-// IPC message handlers -----------------------------------------
-
-void RenderViewImpl::OnSetHistoryOffsetAndLength(int history_offset,
-                                                 int history_length) {
-  // -1 <= history_offset < history_length <= kMaxSessionHistoryEntries(50).
-  DCHECK_LE(-1, history_offset);
-  DCHECK_LT(history_offset, history_length);
-  DCHECK_LE(history_length, kMaxSessionHistoryEntries);
-
-  history_list_offset_ = history_offset;
-  history_list_length_ = history_length;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 
 void RenderViewImpl::SendFrameStateUpdates() {
   // Tell each frame with pending state to send its UpdateState message.
@@ -324,7 +309,7 @@ WebView* RenderViewImpl::CreateView(
       base::FeatureList::IsEnabled(
           blink::features::kCloneSessionStorageForNoOpener)) {
     params->clone_from_session_storage_namespace_id =
-        session_storage_namespace_id_;
+        GetWebView()->GetSessionStorageNamespaceId();
   }
 
   const std::string& frame_name_utf8 = frame_name.Utf8(
@@ -399,7 +384,7 @@ WebView* RenderViewImpl::CreateView(
   view_params->web_preferences = webview_->GetWebPreferences();
   view_params->view_id = reply->route_id;
 
-  view_params->replication_state = mojom::FrameReplicationState::New();
+  view_params->replication_state = blink::mojom::FrameReplicationState::New();
   view_params->replication_state->frame_policy.sandbox_flags = sandbox_flags;
   view_params->replication_state->name = frame_name_utf8;
   view_params->devtools_main_frame_token = reply->devtools_main_frame_token;
@@ -426,6 +411,7 @@ WebView* RenderViewImpl::CreateView(
       agent_scheduling_group_, compositor_deps_, std::move(view_params),
       /*was_created_by_renderer=*/true,
       creator->GetTaskRunner(blink::TaskType::kInternalDefault));
+  view->GetMainRenderFrame()->InheritLoaderFactoriesFrom(*creator_frame);
 
   if (reply->wait_for_debugger) {
     blink::WebFrameWidget* frame_widget =
@@ -467,15 +453,12 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
       agent_scheduling_group_.agent_group_scheduler().DefaultTaskRunner());
   popup->InitializeCompositing(agent_scheduling_group_.agent_group_scheduler(),
                                compositor_deps_->GetTaskGraphRunner(),
-                               opener_widget->GetOriginalScreenInfo(),
+                               opener_widget->GetOriginalScreenInfos(),
                                compositor_deps_->CreateUkmRecorderFactory(),
-                               /*settings=*/nullptr);
+                               /*settings=*/nullptr,
+                               compositor_deps_->GetMainThreadPipeline(),
+                               compositor_deps_->GetCompositorThreadPipeline());
   return popup;
-}
-
-base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
-  CHECK(!session_storage_namespace_id_.empty());
-  return session_storage_namespace_id_;
 }
 
 void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
@@ -533,14 +516,6 @@ void RenderViewImpl::RegisterRendererPreferenceWatcher(
 const blink::RendererPreferences& RenderViewImpl::GetRendererPreferences()
     const {
   return webview_->GetRendererPreferences();
-}
-
-int RenderViewImpl::HistoryBackListCount() {
-  return history_list_offset_ < 0 ? 0 : history_list_offset_;
-}
-
-int RenderViewImpl::HistoryForwardListCount() {
-  return history_list_length_ - HistoryBackListCount() - 1;
 }
 
 void RenderViewImpl::OnPageVisibilityChanged(PageVisibilityState visibility) {
@@ -613,9 +588,5 @@ void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
       video_devices, suspend);
 }
 #endif  // defined(OS_ANDROID)
-
-unsigned RenderViewImpl::GetLocalSessionHistoryLengthForTesting() const {
-  return history_list_length_;
-}
 
 }  // namespace content

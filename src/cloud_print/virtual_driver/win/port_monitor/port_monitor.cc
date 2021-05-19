@@ -14,6 +14,8 @@
 #include <userenv.h>
 #include <winspool.h>
 
+#include <string>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
@@ -22,7 +24,6 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"

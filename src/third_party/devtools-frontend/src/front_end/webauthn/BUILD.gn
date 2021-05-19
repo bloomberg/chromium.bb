@@ -9,12 +9,12 @@ devtools_module("webauthn") {
   sources = [ "WebauthnPane.ts" ]
 
   deps = [
-    "../common:bundle",
+    "../core/common:bundle",
+    "../core/host:bundle",
+    "../core/i18n:bundle",
+    "../core/sdk:bundle",
     "../data_grid:bundle",
-    "../host:bundle",
-    "../i18n:bundle",
-    "../sdk:bundle",
-    "../ui:bundle",
+    "../ui/legacy:bundle",
   ]
 }
 
@@ -22,12 +22,6 @@ devtools_entrypoint("bundle") {
   entrypoint = "webauthn.ts"
 
   deps = [ ":webauthn" ]
-}
-
-devtools_entrypoint("legacy") {
-  entrypoint = "webauthn-legacy.ts"
-
-  deps = [ ":bundle" ]
 }
 
 devtools_entrypoint("meta") {

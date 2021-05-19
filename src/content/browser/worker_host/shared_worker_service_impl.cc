@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -302,7 +303,7 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
     } else {
       site_instance = SiteInstanceImpl::CreateForUrlInfo(
           partition->browser_context(),
-          UrlInfo(instance.url(), /*origin_requests_isolation=*/false),
+          UrlInfo(instance.url(), UrlInfo::OriginIsolationRequest::kNone),
           CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated());
     }
   }

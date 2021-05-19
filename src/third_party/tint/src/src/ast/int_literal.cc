@@ -14,13 +14,13 @@
 
 #include "src/ast/int_literal.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::IntLiteral);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::IntLiteral);
 
 namespace tint {
 namespace ast {
 
-IntLiteral::IntLiteral(const Source& source, type::Type* type)
-    : Base(source, type) {}
+IntLiteral::IntLiteral(const Source& source, type::Type* type, uint32_t value)
+    : Base(source, type), value_(value) {}
 
 IntLiteral::~IntLiteral() = default;
 

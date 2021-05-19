@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
@@ -491,7 +491,7 @@ void AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse(
     if (ui_result.consent_flow_update_result().update_status() !=
         assistant::ConsentFlowUiUpdateResult::SUCCESS) {
       // TODO(updowndta): Handle consent update failure.
-      LOG(ERROR) << "Consent udpate error.";
+      LOG(ERROR) << "Consent update error.";
     } else if (activity_control_needed_) {
       activity_control_needed_ = false;
       PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
@@ -505,7 +505,7 @@ void AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse(
     if (ui_result.email_opt_in_update_result().update_status() !=
         assistant::EmailOptInUpdateResult::SUCCESS) {
       // TODO(updowndta): Handle email optin update failure.
-      LOG(ERROR) << "Email OptIn udpate error.";
+      LOG(ERROR) << "Email OptIn update error.";
     }
     return;
   }

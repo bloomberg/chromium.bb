@@ -63,7 +63,7 @@ third_party/blink/tools/run_web_tests.py -t Default
 ```
 
 *** promo
-* Windows users need to use `third_party/blink/tools/run_web_tests.bat` instead.
+* Windows users need to use `third_party\blink\tools\run_web_tests.bat` instead.
 * Linux users should not use `testing/xvfb.py`; `run_web_tests.py` manages Xvfb
   itself.
 ***
@@ -114,19 +114,19 @@ As a final quick-but-less-robust alternative, you can also just use the
 content_shell executable to run specific tests by using (example on Windows):
 
 ```bash
-out/Default/content_shell.exe --run-web-tests <url>|<full_test_source_path>|<relative_test_path>
+out\\Default\\content_shell.exe --run-web-tests <url>|<full_test_source_path>|<relative_test_path>
 ```
 
 as in:
 
 ```bash
-out/Default/content_shell.exe --run-web-tests \
-    c:/chrome/src/third_party/blink/web_tests/fast/forms/001.html
+out\\Default\\content_shell.exe --run-web-tests \
+    c:\\chrome\\src\\third_party\\blink\\web_tests\\fast\\forms\\001.html
 ```
 or
 
 ```bash
-out/Default/content_shell.exe --run-web-tests fast/forms/001.html
+out\\Default\\content_shell.exe --run-web-tests fast\\forms\\001.html
 ```
 
 but this requires a manual diff against expected results, because the shell
@@ -560,8 +560,8 @@ test is being re-baselined.
 
 ### Rebaselining flag-specific expectations
 
-Though we prefer the Rebaseline Tool to local rebaselining, the Rebaseline Tool
-doesn't support rebaselining flag-specific expectations.
+Though we prefer the [Rebaseline Tool](./web_test_expectations.md#How-to-rebaseline) to local rebaselining, the Rebaseline Tool
+doesn't support rebaselining flag-specific expectations except highdpi.
 
 ```bash
 third_party/blink/tools/run_web_tests.py --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html

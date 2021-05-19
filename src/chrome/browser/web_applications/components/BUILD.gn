@@ -6,6 +6,7 @@ import("//build/config/chromeos/ui_mode.gni")
 
 source_set("components") {
   sources = [
+    "../system_web_apps/system_web_app_types.h",
     "app_icon_manager.cc",
     "app_icon_manager.h",
     "app_registrar.cc",
@@ -37,9 +38,6 @@ source_set("components") {
     "policy/web_app_policy_constants.h",
     "protocol_handler_manager.cc",
     "protocol_handler_manager.h",
-    "system_web_app_background_task.cc",
-    "system_web_app_background_task.h",
-    "system_web_app_types.h",
     "url_handler_manager.cc",
     "url_handler_manager.h",
     "web_app_audio_focus_id_map.cc",
@@ -57,6 +55,7 @@ source_set("components") {
     "web_app_icon_generator.cc",
     "web_app_icon_generator.h",
     "web_app_id.h",
+    "web_app_id_constants.cc",
     "web_app_id_constants.h",
     "web_app_install_utils.cc",
     "web_app_install_utils.h",
@@ -112,10 +111,20 @@ source_set("components") {
     # Desktop linux, doesn't count ChromeOS.
     sources += [
       "web_app_file_handler_registration_linux.cc",
-      "web_app_run_on_os_login_linux.cc",
       "web_app_shortcut_linux.cc",
       "web_app_shortcut_linux.h",
     ]
+  }
+
+  if (is_linux) {
+    sources += [
+      "web_app_protocol_handler_registration_linux.cc",
+      "web_app_run_on_os_login_linux.cc",
+    ]
+  }
+
+  if (is_chromeos_ash || is_chromeos_lacros) {
+    sources += [ "web_app_run_on_os_login_chromeos.cc" ]
   }
 
   if (is_mac) {
@@ -123,6 +132,7 @@ source_set("components") {
       "app_shim_registry_mac.cc",
       "app_shim_registry_mac.h",
       "web_app_file_handler_registration_mac.cc",
+      "web_app_protocol_handler_registration_mac.cc",
       "web_app_run_on_os_login_mac.mm",
       "web_app_shortcut_mac.h",
       "web_app_shortcut_mac.mm",
@@ -146,6 +156,8 @@ source_set("components") {
 
   if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
     sources += [
+      "url_handler_launch_params.cc",
+      "url_handler_launch_params.h",
       "url_handler_manager_impl.cc",
       "url_handler_manager_impl.h",
       "url_handler_prefs.cc",
@@ -153,8 +165,10 @@ source_set("components") {
     ]
   }
 
-  public_deps =
-      [ "//components/services/app_service/public/cpp:app_share_target" ]
+  public_deps = [
+    "//components/services/app_service/public/cpp:app_share_target",
+    "//components/services/app_service/public/cpp:app_url_handling",
+  ]
 
   deps = [
     "//base",
@@ -168,7 +182,6 @@ source_set("components") {
     "//components/crx_file",
     "//components/keyed_service/content",
     "//components/pref_registry",
-    "//components/services/app_service/public/cpp:app_url_handling",
     "//components/services/app_service/public/cpp:protocol_handling",
     "//components/services/app_service/public/mojom",
     "//components/site_engagement/content",
@@ -194,10 +207,7 @@ source_set("components") {
   }
 
   if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
-    deps += [
-      "//base/util/values:values_util",
-      "//components/services/app_service/public/cpp:app_url_handling",
-    ]
+    deps += [ "//base/util/values:values_util" ]
   }
 }
 
@@ -228,12 +238,14 @@ source_set("unit_tests") {
       "web_app_handler_registration_utils_win_unittest.cc",
       "web_app_protocol_handler_registration_win_unittest.cc",
       "web_app_run_on_os_login_win_unittest.cc",
+      "web_app_shortcut_win_unittest.cc",
     ]
   }
 
   if (is_mac) {
     sources += [
       "app_shim_registry_mac_unittest.cc",
+      "web_app_protocol_handler_registration_mac_unittest.cc",
       "web_app_run_on_os_login_mac_unittest.mm",
       "web_app_shortcut_mac_unittest.mm",
     ]
@@ -243,8 +255,14 @@ source_set("unit_tests") {
     # Desktop linux, doesn't count ChromeOS.
     sources += [
       "web_app_file_handler_registration_linux_unittest.cc",
-      "web_app_run_on_os_login_linux_unittest.cc",
       "web_app_shortcut_linux_unittest.cc",
+    ]
+  }
+
+  if (is_linux) {
+    sources += [
+      "web_app_protocol_handler_registration_linux_unittest.cc",
+      "web_app_run_on_os_login_linux_unittest.cc",
     ]
   }
 

@@ -14,6 +14,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -26,7 +27,7 @@ namespace {
 
 const char kConversionInternalsUrl[] = "chrome://conversion-internals/";
 
-const base::string16 kCompleteTitle = base::ASCIIToUTF16("Complete");
+const std::u16string kCompleteTitle = u"Complete";
 
 }  // namespace
 
@@ -60,7 +61,7 @@ class ConversionInternalsWebUiBrowserTest : public ContentBrowserTest {
 
   // Registers a mutation observer that sets the window title to |title| when
   // the report table is empty.
-  void SetTitleOnReportsTableEmpty(const base::string16& title) {
+  void SetTitleOnReportsTableEmpty(const std::u16string& title) {
     const std::string kObserveEmptyReportsTableScript = R"(
     let table = document.getElementById("report-table-body");
     let obs = new MutationObserver(() => {
@@ -209,6 +210,59 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
+                       WebUIShownWithManager_DebugModeDisabled) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
+
+  TestConversionManager manager;
+  OverrideWebUIConversionManager(&manager);
+
+  // Create a mutation observer to wait for the content to render to the dom.
+  // Waiting on calls to TestConversionManager is not sufficient because the
+  // results are returned in promises.
+  std::string wait_script = R"(
+    let status = document.getElementById("debug-mode-content");
+    let obs = new MutationObserver(() => {
+      if (status.innerText.trim() === "") {
+        document.title = $1;
+      }
+    });
+    obs.observe(status, {'childList': true, 'characterData': true});)";
+  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+  ClickRefreshButton();
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
+                       WebUIShownWithManager_DebugModeEnabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kConversionsDebugMode);
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
+
+  TestConversionManager manager;
+  OverrideWebUIConversionManager(&manager);
+
+  // Create a mutation observer to wait for the content to render to the dom.
+  // Waiting on calls to TestConversionManager is not sufficient because the
+  // results are returned in promises.
+  std::string wait_script = R"(
+    let status = document.getElementById("debug-mode-content");
+    let obs = new MutationObserver(() => {
+      if (status.innerText.trim() !== "") {
+        document.title = $1;
+      }
+    });
+    obs.observe(status, {'childList': true, 'characterData': true});)";
+  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+  ClickRefreshButton();
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
                        WebUIShownWithPendingReports_ReportsDisplayed) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
 
@@ -265,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 
   // Click the clear storage button and expect that the report table is emptied.
-  const base::string16 kDeleteTitle = base::ASCIIToUTF16("Delete");
+  const std::u16string kDeleteTitle = u"Delete";
   TitleWatcher delete_title_watcher(shell()->web_contents(), kDeleteTitle);
   SetTitleOnReportsTableEmpty(kDeleteTitle);
 
@@ -305,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 
   // Click the send reports button and expect that the report table is emptied.
-  const base::string16 kSentTitle = base::ASCIIToUTF16("Sent");
+  const std::u16string kSentTitle = u"Sent";
   TitleWatcher sent_title_watcher(shell()->web_contents(), kSentTitle);
   SetTitleOnReportsTableEmpty(kSentTitle);
 
@@ -318,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
                        MojoJsBindingsCorrectlyScoped) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
 
-  const base::string16 passed_title = base::ASCIIToUTF16("passed");
+  const std::u16string passed_title = u"passed";
 
   {
     TitleWatcher sent_title_watcher(shell()->web_contents(), passed_title);

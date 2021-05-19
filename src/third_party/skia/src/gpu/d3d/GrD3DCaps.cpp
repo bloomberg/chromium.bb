@@ -1036,12 +1036,9 @@ GrProgramDesc GrD3DCaps::makeDesc(GrRenderTarget* rt,
                                   ProgramDescOverrideFlags overrideFlags) const {
     SkASSERT(overrideFlags == ProgramDescOverrideFlags::kNone);
     GrProgramDesc desc;
-    if (!GrProgramDesc::Build(&desc, rt, programInfo, *this)) {
-        SkASSERT(!desc.isValid());
-        return desc;
-    }
+    GrProgramDesc::Build(&desc, programInfo, *this);
 
-    GrProcessorKeyBuilder b(&desc.key());
+    GrProcessorKeyBuilder b(desc.key());
 
     GrD3DRenderTarget* d3dRT = (GrD3DRenderTarget*) rt;
     d3dRT->genKey(&b);
@@ -1058,6 +1055,7 @@ GrProgramDesc GrD3DCaps::makeDesc(GrRenderTarget* rt,
 
     SkASSERT(!this->mixedSamplesSupport());
 
+    b.flush();
     return desc;
 }
 

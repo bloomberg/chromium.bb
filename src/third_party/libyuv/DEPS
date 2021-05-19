@@ -1,3 +1,5 @@
+gclient_gn_args_file = 'src/build/config/gclient_args.gni'
+
 vars = {
   'chromium_git': 'https://chromium.googlesource.com',
   'chromium_revision': '64c8c30faaf969c15c028131dfcd0819208039c1',
@@ -46,7 +48,7 @@ deps = {
   },
 
   'src/buildtools/clang_format/script':
-    Var('chromium_git') + '/chromium/llvm-project/cfe/tools/clang-format.git' + '@' + '96636aa0e9f047f17447f2d45a094d0b59ed7917',
+    Var('chromium_git') + '/external/github.com/llvm/llvm-project/clang/tools/clang-format.git' + '@' + '99803d74e35962f63a775f29477882afd4d57d94',
   'src/buildtools/third_party/libc++/trunk':
     Var('chromium_git') + '/external/github.com/llvm/llvm-project/libcxx.git' + '@' + 'd9040c75cfea5928c804ab7c235fed06a63f743a',
   'src/buildtools/third_party/libc++abi/trunk':
@@ -78,10 +80,6 @@ deps = {
     Var('chromium_git') + '/infra/luci/client-py.git' + '@' + 'd46ea7635f2911208268170512cb611412488fd8',
 
   # libyuv-only dependencies (not present in Chromium).
-  'src/third_party/gflags':
-    Var('chromium_git') + '/external/webrtc/deps/third_party/gflags' + '@' + '892576179b45861b53e04a112996a738309cf364',
-  'src/third_party/gflags/src':
-    Var('chromium_git') + '/external/github.com/gflags/gflags' + '@' + '03bebcb065c83beff83d50ae025a55a4bf94dfca',
   'src/third_party/gtest-parallel':
     Var('chromium_git') + '/external/webrtc/deps/third_party/gtest-parallel' + '@' + '1dad0e9f6d82ff994130b529d7d814b40eb32b0e',
 
@@ -2942,9 +2940,6 @@ deps = {
 
   # === ANDROID_DEPS Generated Code End ===
 }
-
-# Define rules for which include paths are allowed in our source.
-include_rules = [ '+gflags' ]
 
 pre_deps_hooks = [
   {

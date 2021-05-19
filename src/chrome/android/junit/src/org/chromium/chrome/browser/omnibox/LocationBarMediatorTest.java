@@ -53,11 +53,11 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-import org.chromium.base.BuildConfig;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.gsa.GSAState;
@@ -85,6 +85,7 @@ import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -101,6 +102,10 @@ import java.util.List;
 public class LocationBarMediatorTest {
     @Implements(UrlUtilities.class)
     static class ShadowUrlUtilities {
+        @Implementation
+        public static boolean isNTPUrl(GURL url) {
+            return false;
+        }
         @Implementation
         public static boolean isNTPUrl(String url) {
             return false;
@@ -245,11 +250,12 @@ public class LocationBarMediatorTest {
         Profile.setLastUsedProfileForTesting(mProfile);
         doReturn(mIdentityManager).when(mIdentityServicesProvider).getIdentityManager(mProfile);
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
+        Runnable noAction = () -> {}; // launchAssistanceSettingsAction
         mMediator = new LocationBarMediator(/*context=*/RuntimeEnvironment.application,
                 mLocationBarLayout, mLocationBarDataProvider, mProfileSupplier,
                 mPrivacyPreferencesManager, mOverrideUrlLoadingDelegate, mLocaleManager,
                 mTemplateUrlServiceSupplier, mOverrideBackKeyBehaviorDelegate, mWindowAndroid,
-                /*isTablet=*/false, mSearchEngineLogoUtils, mLensController);
+                /*isTablet=*/false, mSearchEngineLogoUtils, mLensController, noAction);
         mMediator.setCoordinators(mUrlCoordinator, mAutocompleteCoordinator, mStatusCoordinator);
         ObjectAnimatorShadow.setUrlAnimator(mUrlAnimator);
         GSAStateShadow.setGSAState(mGSAState);
@@ -258,7 +264,7 @@ public class LocationBarMediatorTest {
                 mLocationBarTablet, mLocationBarDataProvider, mProfileSupplier,
                 mPrivacyPreferencesManager, mOverrideUrlLoadingDelegate, mLocaleManager,
                 mTemplateUrlServiceSupplier, mOverrideBackKeyBehaviorDelegate, mWindowAndroid,
-                /*isTablet=*/true, mSearchEngineLogoUtils, mLensController);
+                /*isTablet=*/true, mSearchEngineLogoUtils, mLensController, noAction);
         mTabletMediator.setCoordinators(
                 mUrlCoordinator, mAutocompleteCoordinator, mStatusCoordinator);
     }
@@ -367,7 +373,7 @@ public class LocationBarMediatorTest {
 
     @Test
     public void testLoadUrl_NativeNotInitialized() {
-        if (BuildConfig.DCHECK_IS_ON) {
+        if (BuildConfig.ENABLE_ASSERTS) {
             // clang-format off
             try {
                 mMediator.loadUrl(TEST_URL, PageTransition.TYPED, 0);

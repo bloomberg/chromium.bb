@@ -8,13 +8,13 @@
 #include <xcb/xcbext.h>
 
 #include <algorithm>
+#include <string>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
-#include "base/strings/string16.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/x/bigreq.h"
@@ -128,7 +128,8 @@ Connection::Connection(const std::string& address)
   DCHECK(connection_);
   if (Ready()) {
     auto buf = ReadBuffer(base::MakeRefCounted<UnretainedRefCountedMemory>(
-        xcb_get_setup(XcbConnection())));
+                              xcb_get_setup(XcbConnection())),
+                          true);
     setup_ = Read<Setup>(&buf);
     default_screen_ = &setup_.roots[DefaultScreenId()];
     InitRootDepthAndVisual();

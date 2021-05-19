@@ -17,7 +17,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -47,9 +46,9 @@ class ProfileAttributesStorage
 
   // Adds a new profile at |profile_path| to the attributes storage.
   virtual void AddProfile(const base::FilePath& profile_path,
-                          const base::string16& name,
+                          const std::u16string& name,
                           const std::string& gaia_id,
-                          const base::string16& user_name,
+                          const std::u16string& user_name,
                           bool is_consented_primary_account,
                           size_t icon_index,
                           const std::string& supervised_user_id,
@@ -87,7 +86,7 @@ class ProfileAttributesStorage
       bool include_guest_profile = false) const = 0;
 
   // Returns a unique name that can be assigned to a newly created profile.
-  base::string16 ChooseNameForNewProfile(size_t icon_index) const;
+  std::u16string ChooseNameForNewProfile(size_t icon_index) const;
 
   // Determines whether |name| is one of the default assigned names.
   // On Desktop, if |include_check_for_legacy_profile_name| is false,
@@ -97,7 +96,7 @@ class ProfileAttributesStorage
   // is one of the legacy profile names (e.g. Saratoga, Default user, ..).
   // For other platforms, so far |include_check_for_legacy_profile_name|
   // is not used.
-  bool IsDefaultProfileName(const base::string16& name,
+  bool IsDefaultProfileName(const std::u16string& name,
                             bool include_check_for_legacy_profile_name) const;
 
 #if !defined(OS_ANDROID)

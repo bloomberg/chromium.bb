@@ -96,7 +96,7 @@ void LinearMapSearch::AddOrUpdate(const std::vector<Data>& data,
     UpdateData(id, item.contents, &data_);
   }
 
-  MaybeLogIndexSize(data_.size());
+  MaybeLogIndexSize();
   std::move(callback).Run();
 }
 
@@ -108,7 +108,7 @@ void LinearMapSearch::Delete(const std::vector<std::string>& ids,
     num_deleted += data_.erase(id);
   }
 
-  MaybeLogIndexSize(data_.size());
+  MaybeLogIndexSize();
   std::move(callback).Run(num_deleted);
 }
 
@@ -126,11 +126,11 @@ void LinearMapSearch::UpdateDocuments(const std::vector<Data>& data,
     }
   }
 
-  MaybeLogIndexSize(data_.size());
+  MaybeLogIndexSize();
   std::move(callback).Run(num_deleted);
 }
 
-void LinearMapSearch::Find(const base::string16& query,
+void LinearMapSearch::Find(const std::u16string& query,
                            uint32_t max_results,
                            FindCallback callback) {
   const base::TimeTicks start = base::TimeTicks::Now();
@@ -162,8 +162,12 @@ void LinearMapSearch::ClearIndex(ClearIndexCallback callback) {
   std::move(callback).Run();
 }
 
+uint32_t LinearMapSearch::GetIndexSize() const {
+  return data_.size();
+}
+
 std::vector<Result> LinearMapSearch::GetSearchResults(
-    const base::string16& query,
+    const std::u16string& query,
     uint32_t max_results) const {
   std::vector<Result> results;
   const TokenizedString tokenized_query(query);

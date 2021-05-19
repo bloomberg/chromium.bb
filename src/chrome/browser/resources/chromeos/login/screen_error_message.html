@@ -1,10 +1,14 @@
-<link rel="import" href="chrome://oobe/custom_elements.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 
+<link rel="import" href="chrome://oobe/custom_elements.html">
+
 <link rel="import" href="/components/oobe_adaptive_dialog.html">
 <link rel="import" href="/components/oobe_i18n_behavior.html">
+<link rel="import" href="/components/login_screen_behavior.html">
 
 <dom-module id="error-message-element">
   <template>
@@ -46,7 +50,7 @@
       }
     </style>
     <oobe-adaptive-dialog role="dialog" id="dialog">
-      <iron-icon icon="oobe-24:perm-scan-wifi" slot="icon">
+      <iron-icon slot="icon" icon="oobe-32:wifi">
       </iron-icon>
       <h1 slot="title" aria-live="assertive">
         [[getDialogTitle_(locale, errorState_, uiState_)]]

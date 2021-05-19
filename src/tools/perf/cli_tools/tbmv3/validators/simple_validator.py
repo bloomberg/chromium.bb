@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """
-Validates the rendering/frame_times metric.
+Implementation for simple validators defined in simple_configs.pyl.
 """
 
 import sys
@@ -25,27 +25,19 @@ def CheckConfig(simple_config):
                     (name, CONFIG_FORMAT))
 
 
-def GetHistogram(histogram_set, name, metric, version):
+def OptionalGetHistogram(histogram_set, name, metric, version):
   hists = histogram_set.GetHistogramsNamed(name)
   if len(hists) == 0:
-    msg = ('List of histograms produced by TBM%s metric %s:\n' %
-           (version, metric))
-    msg += '\n'.join([h.name for h in histogram_set])
-    raise Exception('Histogram %s not found.\n%s' % (name, msg))
+    return None
   if len(hists) > 1:
     raise Exception('Multiple histograms named %s found for TBM%s metric %s' %
                     (name, version, metric))
   return hists[0]
 
 
-def CompareHistograms(test_ctx):
-  CheckConfig(test_ctx.simple_config)
-  config = test_ctx.simple_config.config
-
+def CompareSimpleHistograms(test_ctx, config, v2_histograms, v3_histograms):
   v2_metric = config['v2_metric']
   v3_metric = config['v3_metric']
-  v2_histograms = test_ctx.RunTBMv2(v2_metric)
-  v3_histograms = test_ctx.RunTBMv3(v3_metric)
 
   metric_precision = config['float_precision']
 
@@ -60,8 +52,21 @@ def CompareHistograms(test_ctx):
       raise Exception('v3_histogram must be either string of v3_histogram '
                       ' name of (v3_hist_name, precision) tuple.')
 
-    v2_hist = GetHistogram(v2_histograms, v2_hist_name, v2_metric, 'v2')
-    v3_hist = GetHistogram(v3_histograms, v3_hist_name, v3_metric, 'v3')
+    v2_hist = OptionalGetHistogram(v2_histograms, v2_hist_name, v2_metric, 'v2')
+    v3_hist = OptionalGetHistogram(v3_histograms, v3_hist_name, v3_metric, 'v3')
+
+    if (v2_hist is None) or (v2_hist.num_values == 0):
+      if (v3_hist is not None) and (v3_hist.num_values > 0):
+        raise Exception('v3 metric produced non-empty histogram %s, but '
+                        'equivalent histogram %s is not present or empty '
+                        'in v2 metric' % (v3_hist_name, v2_hist_name))
+      continue
+
+    if v3_hist is None:
+      msg = ('List of histograms produced by v3 metric %s:\n' % (v3_metric))
+      msg += '\n'.join([h.name for h in v3_histograms])
+      raise Exception('Histogram %s not produced by v3 metric\n%s' %
+                      (v3_hist_name, msg))
 
     try:
       utils.AssertHistogramStatsAlmostEqual(test_ctx, v2_hist, v3_hist,
@@ -73,3 +78,15 @@ def CompareHistograms(test_ctx):
           'Error comparing TBMv2 histogram %s with TBMv3 histogram %s: %s' %
           (v2_hist.name, v3_hist.name, err.message))
       raise AssertionError, message, sys.exc_info()[2]
+
+
+def CompareHistograms(test_ctx):
+  CheckConfig(test_ctx.simple_config)
+  config = test_ctx.simple_config.config
+
+  v2_metric = config['v2_metric']
+  v3_metric = config['v3_metric']
+  v2_histograms = test_ctx.RunTBMv2(v2_metric)
+  v3_histograms = test_ctx.RunTBMv3(v3_metric)
+
+  CompareSimpleHistograms(test_ctx, config, v2_histograms, v3_histograms)

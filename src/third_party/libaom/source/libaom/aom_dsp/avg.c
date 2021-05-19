@@ -90,10 +90,10 @@ void aom_highbd_minmax_8x8_c(const uint8_t *s8, int p, const uint8_t *d8,
 
 static void hadamard_col4(const int16_t *src_diff, ptrdiff_t src_stride,
                           int16_t *coeff) {
-  int16_t b0 = src_diff[0 * src_stride] + src_diff[1 * src_stride];
-  int16_t b1 = src_diff[0 * src_stride] - src_diff[1 * src_stride];
-  int16_t b2 = src_diff[2 * src_stride] + src_diff[3 * src_stride];
-  int16_t b3 = src_diff[2 * src_stride] - src_diff[3 * src_stride];
+  int16_t b0 = (src_diff[0 * src_stride] + src_diff[1 * src_stride]) >> 1;
+  int16_t b1 = (src_diff[0 * src_stride] - src_diff[1 * src_stride]) >> 1;
+  int16_t b2 = (src_diff[2 * src_stride] + src_diff[3 * src_stride]) >> 1;
+  int16_t b3 = (src_diff[2 * src_stride] - src_diff[3 * src_stride]) >> 1;
 
   coeff[0] = b0 + b2;
   coeff[1] = b1 + b3;

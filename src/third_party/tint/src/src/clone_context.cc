@@ -14,21 +14,30 @@
 
 #include "src/clone_context.h"
 
-#include "src/ast/function.h"
-#include "src/ast/module.h"
-#include "src/program.h"
 #include "src/program_builder.h"
+#include "src/utils/get_or_create.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::Cloneable);
+TINT_INSTANTIATE_TYPEINFO(tint::Cloneable);
 
 namespace tint {
+
+CloneContext::ListTransforms::ListTransforms() = default;
+CloneContext::ListTransforms::~ListTransforms() = default;
 
 CloneContext::CloneContext(ProgramBuilder* to, Program const* from)
     : dst(to), src(from) {}
 CloneContext::~CloneContext() = default;
 
-Symbol CloneContext::Clone(const Symbol& s) const {
-  return dst->Symbols().Register(src->Symbols().NameFor(s));
+Symbol CloneContext::Clone(Symbol s) {
+  return utils::GetOrCreate(cloned_symbols_, s, [&]() -> Symbol {
+    if (symbol_transform_) {
+      return symbol_transform_(s);
+    }
+    if (!src->Symbols().HasName(s)) {
+      return dst->Symbols().New();
+    }
+    return dst->Symbols().Register(src->Symbols().NameFor(s));
+  });
 }
 
 void CloneContext::Clone() {
@@ -47,5 +56,10 @@ ast::FunctionList CloneContext::Clone(const ast::FunctionList& v) {
 diag::List& CloneContext::Diagnostics() const {
   return dst->Diagnostics();
 }
+
+CloneContext::CloneableTransform::CloneableTransform() = default;
+CloneContext::CloneableTransform::CloneableTransform(
+    const CloneableTransform&) = default;
+CloneContext::CloneableTransform::~CloneableTransform() = default;
 
 }  // namespace tint

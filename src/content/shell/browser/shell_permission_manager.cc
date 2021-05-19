@@ -17,7 +17,7 @@ namespace content {
 
 namespace {
 
-bool IsWhitelistedPermissionType(PermissionType permission) {
+bool IsAllowlistedPermissionType(PermissionType permission) {
   switch (permission) {
     case PermissionType::GEOLOCATION:
     case PermissionType::MIDI:
@@ -56,6 +56,7 @@ bool IsWhitelistedPermissionType(PermissionType permission) {
     case PermissionType::WINDOW_PLACEMENT:
     case PermissionType::FONT_ACCESS:
     case PermissionType::DISPLAY_CAPTURE:
+    case PermissionType::FILE_HANDLING:
       return false;
   }
 
@@ -70,19 +71,18 @@ ShellPermissionManager::ShellPermissionManager() = default;
 ShellPermissionManager::~ShellPermissionManager() {
 }
 
-int ShellPermissionManager::RequestPermission(
+void ShellPermissionManager::RequestPermission(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
     base::OnceCallback<void(blink::mojom::PermissionStatus)> callback) {
-  std::move(callback).Run(IsWhitelistedPermissionType(permission)
+  std::move(callback).Run(IsAllowlistedPermissionType(permission)
                               ? blink::mojom::PermissionStatus::GRANTED
                               : blink::mojom::PermissionStatus::DENIED);
-  return PermissionController::kNoPendingOperation;
 }
 
-int ShellPermissionManager::RequestPermissions(
+void ShellPermissionManager::RequestPermissions(
     const std::vector<PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -91,12 +91,11 @@ int ShellPermissionManager::RequestPermissions(
         callback) {
   std::vector<blink::mojom::PermissionStatus> result;
   for (const auto& permission : permissions) {
-    result.push_back(IsWhitelistedPermissionType(permission)
+    result.push_back(IsAllowlistedPermissionType(permission)
                          ? blink::mojom::PermissionStatus::GRANTED
                          : blink::mojom::PermissionStatus::DENIED);
   }
   std::move(callback).Run(result);
-  return PermissionController::kNoPendingOperation;
 }
 
 void ShellPermissionManager::ResetPermission(
@@ -117,7 +116,7 @@ blink::mojom::PermissionStatus ShellPermissionManager::GetPermissionStatus(
     return blink::mojom::PermissionStatus::GRANTED;
   }
 
-  return IsWhitelistedPermissionType(permission)
+  return IsAllowlistedPermissionType(permission)
              ? blink::mojom::PermissionStatus::GRANTED
              : blink::mojom::PermissionStatus::DENIED;
 }

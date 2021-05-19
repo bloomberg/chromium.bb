@@ -4,9 +4,8 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as UI from '../ui/ui.js';
-
-import {TokenizerFactory} from './CodeMirrorUtils.js';
+import * as TextUtils from '../models/text_utils/text_utils.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 export class SyntaxHighlighter {
   _mimeType: string;
@@ -33,7 +32,7 @@ export class SyntaxHighlighter {
     let line: string;
 
     node.removeChildren();
-    const tokenize = TokenizerFactory.instance().createTokenizer(this._mimeType);
+    const tokenize = TextUtils.CodeMirrorUtils.TokenizerFactory.instance().createTokenizer(this._mimeType);
     for (let i = 0; i < lines.length; ++i) {
       line = lines[i];
       plainTextStart = 0;

@@ -64,14 +64,14 @@ class CompressedTextureBCFormatTest : public DawnTest {
             copyRowsPerImage = copyHeightInBlock;
         }
         uint32_t copyBytesPerImage = copyBytesPerRow * copyRowsPerImage;
-        uint32_t uploadBufferSize =
-            copyConfig.bufferOffset + copyBytesPerImage * copyConfig.copyExtent3D.depth;
+        uint32_t uploadBufferSize = copyConfig.bufferOffset +
+                                    copyBytesPerImage * copyConfig.copyExtent3D.depthOrArrayLayers;
 
         // Fill data with the pre-prepared one-block compressed texture data.
         std::vector<uint8_t> data(uploadBufferSize, 0);
         std::vector<uint8_t> oneBlockCompressedTextureData =
             GetOneBlockBCFormatTextureData(copyConfig.textureDescriptor.format);
-        for (uint32_t layer = 0; layer < copyConfig.copyExtent3D.depth; ++layer) {
+        for (uint32_t layer = 0; layer < copyConfig.copyExtent3D.depthOrArrayLayers; ++layer) {
             for (uint32_t h = 0; h < copyHeightInBlock; ++h) {
                 for (uint32_t w = 0; w < copyWidthInBlock; ++w) {
                     uint32_t uploadBufferOffset = copyConfig.bufferOffset +
@@ -96,15 +96,15 @@ class CompressedTextureBCFormatTest : public DawnTest {
         // Copy texture data from a staging buffer to the destination texture.
         wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(device, data.data(), data.size(),
                                                                  wgpu::BufferUsage::CopySrc);
-        wgpu::BufferCopyView bufferCopyView =
-            utils::CreateBufferCopyView(stagingBuffer, copyConfig.bufferOffset,
-                                        copyConfig.bytesPerRowAlignment, copyConfig.rowsPerImage);
+        wgpu::ImageCopyBuffer imageCopyBuffer =
+            utils::CreateImageCopyBuffer(stagingBuffer, copyConfig.bufferOffset,
+                                         copyConfig.bytesPerRowAlignment, copyConfig.rowsPerImage);
 
-        wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(
+        wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(
             bcCompressedTexture, copyConfig.viewMipmapLevel, copyConfig.copyOrigin3D);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copyConfig.copyExtent3D);
+        encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copyConfig.copyExtent3D);
         wgpu::CommandBuffer copy = encoder.Finish();
         queue.Submit(1, &copy);
     }
@@ -138,8 +138,8 @@ class CompressedTextureBCFormatTest : public DawnTest {
     wgpu::RenderPipeline CreateRenderPipelineForTest() {
         ASSERT(IsBCFormatSupported());
 
-        utils::ComboRenderPipelineDescriptor renderPipelineDescriptor(device);
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(position)]] var<out> Position : vec4<f32>;
             [[location(0)]] var<out> texCoord : vec2 <f32>;
 
@@ -155,7 +155,7 @@ class CompressedTextureBCFormatTest : public DawnTest {
                 texCoord = vec2<f32>(Position.x / 2.0, -Position.y / 2.0) + vec2<f32>(0.5, 0.5);
                 return;
             })");
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
             [[group(0), binding(0)]] var sampler0 : sampler;
             [[group(0), binding(1)]] var texture0 : texture_2d<f32>;
 
@@ -166,12 +166,11 @@ class CompressedTextureBCFormatTest : public DawnTest {
                 fragColor = textureSample(texture0, sampler0, texCoord);
                 return;
             })");
-        renderPipelineDescriptor.vertexStage.module = vsModule;
-        renderPipelineDescriptor.cFragmentStage.module = fsModule;
-        renderPipelineDescriptor.cColorStates[0].format =
-            utils::BasicRenderPass::kDefaultColorFormat;
+        renderPipelineDescriptor.vertex.module = vsModule;
+        renderPipelineDescriptor.cFragment.module = fsModule;
+        renderPipelineDescriptor.cTargets[0].format = utils::BasicRenderPass::kDefaultColorFormat;
 
-        return device.CreateRenderPipeline(&renderPipelineDescriptor);
+        return device.CreateRenderPipeline2(&renderPipelineDescriptor);
     }
 
     // Run the given render pipeline and bind group and verify the pixels in the render target.
@@ -198,9 +197,8 @@ class CompressedTextureBCFormatTest : public DawnTest {
         wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
 
-        EXPECT_TEXTURE_RGBA8_EQ(expected.data(), renderPass.color, expectedOrigin.x,
-                                expectedOrigin.y, expectedExtent.width, expectedExtent.height, 0,
-                                0);
+        EXPECT_TEXTURE_EQ(expected.data(), renderPass.color, {expectedOrigin.x, expectedOrigin.y},
+                          {expectedExtent.width, expectedExtent.height});
     }
 
     // Run the tests that copies pre-prepared BC format data into a BC texture and verifies if we
@@ -228,14 +226,14 @@ class CompressedTextureBCFormatTest : public DawnTest {
         if (config.copyOrigin3D.y + config.copyExtent3D.height > virtualSizeAtLevel.height) {
             noPaddingExtent3D.height = virtualSizeAtLevel.height - config.copyOrigin3D.y;
         }
-        noPaddingExtent3D.depth = 1u;
+        noPaddingExtent3D.depthOrArrayLayers = 1u;
 
         std::vector<RGBA8> expectedData =
             GetExpectedData(config.textureDescriptor.format, noPaddingExtent3D);
 
         wgpu::Origin3D firstLayerCopyOrigin = {config.copyOrigin3D.x, config.copyOrigin3D.y, 0};
         for (uint32_t layer = config.copyOrigin3D.z;
-             layer < config.copyOrigin3D.z + config.copyExtent3D.depth; ++layer) {
+             layer < config.copyOrigin3D.z + config.copyExtent3D.depthOrArrayLayers; ++layer) {
             wgpu::BindGroup bindGroup = CreateBindGroupForTest(
                 renderPipeline.GetBindGroupLayout(0), bcTexture, config.textureDescriptor.format,
                 layer, config.viewMipmapLevel);
@@ -258,11 +256,11 @@ class CompressedTextureBCFormatTest : public DawnTest {
                                     wgpu::Texture dstTexture,
                                     CopyConfig srcConfig,
                                     CopyConfig dstConfig) {
-        wgpu::TextureCopyView textureCopyViewSrc = utils::CreateTextureCopyView(
+        wgpu::ImageCopyTexture imageCopyTextureSrc = utils::CreateImageCopyTexture(
             srcTexture, srcConfig.viewMipmapLevel, srcConfig.copyOrigin3D);
-        wgpu::TextureCopyView textureCopyViewDst = utils::CreateTextureCopyView(
+        wgpu::ImageCopyTexture imageCopyTextureDst = utils::CreateImageCopyTexture(
             dstTexture, dstConfig.viewMipmapLevel, dstConfig.copyOrigin3D);
-        encoder.CopyTextureToTexture(&textureCopyViewSrc, &textureCopyViewDst,
+        encoder.CopyTextureToTexture(&imageCopyTextureSrc, &imageCopyTextureDst,
                                      &dstConfig.copyExtent3D);
     }
 
@@ -392,7 +390,7 @@ class CompressedTextureBCFormatTest : public DawnTest {
     static std::vector<RGBA8> FillExpectedData(const wgpu::Extent3D& testRegion,
                                                RGBA8 leftColorInBlock,
                                                RGBA8 rightColorInBlock) {
-        ASSERT(testRegion.depth == 1);
+        ASSERT(testRegion.depthOrArrayLayers == 1);
 
         std::vector<RGBA8> expectedData(testRegion.width * testRegion.height, leftColorInBlock);
         for (uint32_t y = 0; y < testRegion.height; ++y) {
@@ -410,7 +408,7 @@ class CompressedTextureBCFormatTest : public DawnTest {
     static wgpu::Extent3D GetVirtualSizeAtLevel(const CopyConfig& config) {
         return {config.textureDescriptor.size.width >> config.viewMipmapLevel,
                 config.textureDescriptor.size.height >> config.viewMipmapLevel,
-                config.textureDescriptor.size.depth};
+                config.textureDescriptor.size.depthOrArrayLayers};
     }
 
     static wgpu::Extent3D GetPhysicalSizeAtLevel(const CopyConfig& config) {
@@ -485,7 +483,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyIntoNonZeroArrayLayer) {
     config.copyExtent3D = config.textureDescriptor.size;
 
     constexpr uint32_t kArrayLayerCount = 3;
-    config.textureDescriptor.size.depth = kArrayLayerCount;
+    config.textureDescriptor.size.depthOrArrayLayers = kArrayLayerCount;
     config.copyOrigin3D.z = kArrayLayerCount - 1;
 
     for (wgpu::TextureFormat format : utils::kBCFormats) {
@@ -629,7 +627,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyIntoSubresourceWithPhysicalSizeNotEqua
         srcConfig.textureDescriptor.usage =
             wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
         wgpu::Texture bcTextureSrc = CreateTextureWithCompressedData(srcConfig);
-        wgpu::TextureCopyView textureCopyViewSrc = utils::CreateTextureCopyView(
+        wgpu::ImageCopyTexture imageCopyTextureSrc = utils::CreateImageCopyTexture(
             bcTextureSrc, srcConfig.viewMipmapLevel, srcConfig.copyOrigin3D);
 
         // Create bcTexture and copy from the content in bcTextureSrc into it.
@@ -974,8 +972,8 @@ TEST_P(CompressedTextureBCFormatTest, RowPitchEqualToSlicePitch) {
 }
 
 // Test the workaround in the B2T copies when (bufferSize - bufferOffset < bytesPerImage *
-// copyExtent.depth) on Metal backends. As copyExtent.depth can only be 1 for BC formats, on Metal
-// backend we will use two copies to implement such copy.
+// copyExtent.depthOrArrayLayers) on Metal backends. As copyExtent.depthOrArrayLayers can only be 1
+// for BC formats, on Metal backend we will use two copies to implement such copy.
 TEST_P(CompressedTextureBCFormatTest, LargeImageHeight) {
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
@@ -996,7 +994,7 @@ TEST_P(CompressedTextureBCFormatTest, LargeImageHeight) {
 }
 
 // Test the workaround in the B2T copies when (bufferSize - bufferOffset < bytesPerImage *
-// copyExtent.depth) and copyExtent needs to be clamped.
+// copyExtent.depthOrArrayLayers) and copyExtent needs to be clamped.
 TEST_P(CompressedTextureBCFormatTest, LargeImageHeightAndClampedCopyExtent) {
     // TODO(jiawei.shao@intel.com): find out why this test fails on Windows Intel OpenGL drivers.
     DAWN_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
@@ -1056,7 +1054,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyWhole2DArrayTexture) {
     config.rowsPerImage = 8;
 
     config.copyExtent3D = config.textureDescriptor.size;
-    config.copyExtent3D.depth = kArrayLayerCount;
+    config.copyExtent3D.depthOrArrayLayers = kArrayLayerCount;
 
     for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
@@ -1085,7 +1083,7 @@ TEST_P(CompressedTextureBCFormatTest, CopyMultiple2DArrayLayers) {
     constexpr uint32_t kCopyLayerCount = 2;
     config.copyOrigin3D = {0, 0, kCopyBaseArrayLayer};
     config.copyExtent3D = config.textureDescriptor.size;
-    config.copyExtent3D.depth = kCopyLayerCount;
+    config.copyExtent3D.depthOrArrayLayers = kCopyLayerCount;
 
     for (wgpu::TextureFormat format : utils::kBCFormats) {
         config.textureDescriptor.format = format;
@@ -1113,12 +1111,12 @@ TEST_P(CompressedTextureBCFormatTest, UnalignedDynamicUploader) {
     bufferDescriptor.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
     wgpu::Buffer buffer = device.CreateBuffer(&bufferDescriptor);
 
-    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
-    wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(buffer, 0, 256);
+    wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
+    wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(buffer, 0, 256);
     wgpu::Extent3D copyExtent = {4, 4, 1};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &copyExtent);
+    encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &copyExtent);
     wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 }
@@ -1148,10 +1146,10 @@ class CompressedTextureWriteTextureTest : public CompressedTextureBCFormatTest {
         wgpu::TextureDataLayout textureDataLayout = utils::CreateTextureDataLayout(
             copyConfig.bufferOffset, copyConfig.bytesPerRowAlignment, copyConfig.rowsPerImage);
 
-        wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(
+        wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(
             bcCompressedTexture, copyConfig.viewMipmapLevel, copyConfig.copyOrigin3D);
 
-        queue.WriteTexture(&textureCopyView, data.data(), data.size(), &textureDataLayout,
+        queue.WriteTexture(&imageCopyTexture, data.data(), data.size(), &textureDataLayout,
                            &copyConfig.copyExtent3D);
     }
 

@@ -43,6 +43,34 @@ size_t URLRow::EstimateMemoryUsage() const {
          base::trace_event::EstimateMemoryUsage(title_);
 }
 
+// Annotations
+// ----------------------------------------------------------
+VisitContentModelAnnotations::Category::Category(int id, int weight)
+    : id(id), weight(weight) {}
+VisitContentModelAnnotations::Category::Category() = default;
+
+bool VisitContentModelAnnotations::Category::operator==(
+    const VisitContentModelAnnotations::Category& other) const {
+  return id == other.id && weight == other.weight;
+}
+
+bool VisitContentModelAnnotations::Category::operator!=(
+    const VisitContentModelAnnotations::Category& other) const {
+  return !(*this == other);
+}
+
+VisitContentModelAnnotations::VisitContentModelAnnotations(
+    float floc_protected_score,
+    const std::vector<Category>& categories,
+    int64_t page_topics_model_version)
+    : floc_protected_score(floc_protected_score),
+      categories(categories),
+      page_topics_model_version(page_topics_model_version) {}
+VisitContentModelAnnotations::VisitContentModelAnnotations() = default;
+VisitContentModelAnnotations::VisitContentModelAnnotations(
+    const VisitContentModelAnnotations&) = default;
+VisitContentModelAnnotations::~VisitContentModelAnnotations() = default;
+
 URLResult::URLResult() {}
 
 URLResult::URLResult(const GURL& url, base::Time visit_time)
@@ -57,10 +85,11 @@ URLResult::URLResult(const URLResult& other) = default;
 URLResult::URLResult(URLResult&& other) noexcept
     : URLRow(std::move(other)),
       visit_time_(other.visit_time_),
-      floc_allowed_(other.floc_allowed_),
+      content_annotations_(other.content_annotations_),
       snippet_(std::move(other.snippet_)),
       title_match_positions_(std::move(other.title_match_positions_)),
-      blocked_visit_(other.blocked_visit_) {}
+      blocked_visit_(other.blocked_visit_) {
+}
 
 URLResult::~URLResult() {
 }
@@ -70,7 +99,7 @@ URLResult& URLResult::operator=(const URLResult&) = default;
 void URLResult::SwapResult(URLResult* other) {
   URLRow::Swap(other);
   std::swap(visit_time_, other->visit_time_);
-  std::swap(floc_allowed_, other->floc_allowed_);
+  std::swap(content_annotations_, other->content_annotations_);
   snippet_.Swap(&other->snippet_);
   title_match_positions_.swap(other->title_match_positions_);
   std::swap(blocked_visit_, other->blocked_visit_);

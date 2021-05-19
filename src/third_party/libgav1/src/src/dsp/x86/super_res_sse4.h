@@ -30,6 +30,10 @@ void SuperResInit_SSE4_1();
 }  // namespace libgav1
 
 #if LIBGAV1_TARGETING_SSE4_1
+#ifndef LIBGAV1_Dsp8bpp_SuperResCoefficients
+#define LIBGAV1_Dsp8bpp_SuperResCoefficients LIBGAV1_CPU_SSE4_1
+#endif
+
 #ifndef LIBGAV1_Dsp8bpp_SuperRes
 #define LIBGAV1_Dsp8bpp_SuperRes LIBGAV1_CPU_SSE4_1
 #endif

@@ -15,6 +15,8 @@
 #include "base/threading/thread_checker.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/mojom/api_permission_id.mojom-shared.h"
+#include "extensions/common/mojom/manifest.mojom-shared.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -76,16 +78,16 @@ class PermissionsData {
 
   PermissionsData(const ExtensionId& extension_id,
                   Manifest::Type manifest_type,
-                  Manifest::Location location,
+                  mojom::ManifestLocation location,
                   std::unique_ptr<const PermissionSet> initial_permissions);
   virtual ~PermissionsData();
 
   // Returns true if the extension is a COMPONENT extension or is on the
-  // whitelist of extensions that can script all pages.
+  // allowlist of extensions that can script all pages.
   // NOTE: This is static because it is used during extension initialization,
   // before the extension has an associated PermissionsData object.
   static bool CanExecuteScriptEverywhere(const ExtensionId& extension_id,
-                                         Manifest::Location location);
+                                         mojom::ManifestLocation location);
 
   // Returns true if the given |url| is restricted for the given |extension|,
   // as is commonly the case for chrome:// urls.
@@ -146,11 +148,12 @@ class PermissionsData {
   // Note this does not include APIs with no corresponding permission, like
   // "runtime" or "browserAction".
   // TODO(mpcomplete): drop the "API" from these names, it's confusing.
-  bool HasAPIPermission(APIPermission::ID permission) const;
+  bool HasAPIPermission(mojom::APIPermissionID permission) const;
   bool HasAPIPermission(const std::string& permission_name) const;
-  bool HasAPIPermissionForTab(int tab_id, APIPermission::ID permission) const;
+  bool HasAPIPermissionForTab(int tab_id,
+                              mojom::APIPermissionID permission) const;
   bool CheckAPIPermissionWithParam(
-      APIPermission::ID permission,
+      mojom::APIPermissionID permission,
       const APIPermission::CheckParam* param) const;
 
   // Returns the hosts this extension effectively has access to, including
@@ -310,7 +313,7 @@ class PermissionsData {
   Manifest::Type manifest_type_;
 
   // The associated extension's location.
-  Manifest::Location location_;
+  mojom::ManifestLocation location_;
 
   mutable base::Lock runtime_lock_;
 

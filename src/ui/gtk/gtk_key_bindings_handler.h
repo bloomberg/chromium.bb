@@ -12,6 +12,7 @@
 
 #include "ui/base/ime/linux/text_edit_command_auralinux.h"
 #include "ui/events/platform_event.h"
+#include "ui/gtk/gtk_types.h"
 
 namespace ui {
 class Event;
@@ -122,10 +123,8 @@ class GtkKeyBindingsHandler {
   // Handler of "toggle-overwrite" signal.
   static void ToggleOverwrite(GtkTextView* text_view);
 
-#if !GTK_CHECK_VERSION(3, 90, 0)
   // Handler of "show-help" signal.
   static gboolean ShowHelp(GtkWidget* widget, GtkWidgetHelpType arg1);
-#endif
 
   // Handler of "move-focus" signal.
   static void MoveFocus(GtkWidget* widget, GtkDirectionType arg1);

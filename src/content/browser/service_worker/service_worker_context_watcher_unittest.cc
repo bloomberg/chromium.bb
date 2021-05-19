@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_context_watcher.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -126,7 +128,7 @@ class ServiceWorkerContextWatcherTest : public testing::Test {
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -330,7 +332,7 @@ TEST_F(ServiceWorkerContextWatcherTest, ErrorReport) {
       watcher_callback.versions().at(registration_id).begin()->first;
   EXPECT_EQ(0u, watcher_callback.errors().size());
 
-  base::string16 message(base::ASCIIToUTF16("HELLO"));
+  std::u16string message(u"HELLO");
   ReportError(watcher, version_id, scope,
               ServiceWorkerContextObserver::ErrorInfo(message, 0, 0, script));
   base::RunLoop().RunUntilIdle();
@@ -381,7 +383,7 @@ TEST_F(ServiceWorkerContextWatcherTest, Race) {
   watcher->Stop();
 
   int callback_count = watcher_callback.callback_count();
-  base::string16 message(base::ASCIIToUTF16("HELLO"));
+  std::u16string message(u"HELLO");
   ReportError(watcher, 0 /*version_id*/, scope,
               ServiceWorkerContextObserver::ErrorInfo(message, 0, 0, script));
   base::RunLoop().RunUntilIdle();

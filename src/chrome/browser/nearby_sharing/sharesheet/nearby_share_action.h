@@ -15,7 +15,6 @@ class WebView;
 }  // namespace views
 
 class NearbyShareAction : public sharesheet::ShareAction,
-                          nearby_share::NearbyShareDialogUI::Observer,
                           content::WebContentsDelegate {
  public:
   NearbyShareAction();
@@ -24,17 +23,15 @@ class NearbyShareAction : public sharesheet::ShareAction,
   NearbyShareAction& operator=(const NearbyShareAction&) = delete;
 
   // sharesheet::ShareAction:
-  const base::string16 GetActionName() override;
+  const std::u16string GetActionName() override;
   const gfx::VectorIcon& GetActionIcon() override;
   void LaunchAction(sharesheet::SharesheetController* controller,
                     views::View* root_view,
                     apps::mojom::IntentPtr intent) override;
-  void OnClosing(sharesheet::SharesheetController* controller) override;
+  void OnClosing(sharesheet::SharesheetController* controller) override {}
   bool ShouldShowAction(const apps::mojom::IntentPtr& intent,
                         bool contains_hosted_document) override;
-
-  // nearby_share::NearbyShareDialogUI::Observer:
-  void OnClose() override;
+  bool OnAcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // content::WebContentsDelegate:
   bool HandleKeyboardEvent(
@@ -58,8 +55,6 @@ class NearbyShareAction : public sharesheet::ShareAction,
  private:
   bool IsNearbyShareDisabledByPolicy();
 
-  sharesheet::SharesheetController* controller_ = nullptr;
-  nearby_share::NearbyShareDialogUI* nearby_ui_ = nullptr;
   base::Optional<bool> nearby_share_disabled_by_policy_for_testing_ =
       base::nullopt;
   views::WebView* web_view_;

@@ -52,7 +52,7 @@ NSString* GetTitleString(TabGridPage page) {
 }
 
 // Creates an attribute string with link for the body message.
-NSMutableAttributedString* GetBodyString(TabGridPage page) {
+NSAttributedString* GetBodyString(TabGridPage page) {
   int messageID;
   switch (page) {
     case TabGridPageIncognitoTabs:
@@ -67,12 +67,8 @@ NSMutableAttributedString* GetBodyString(TabGridPage page) {
   }
 
   NSString* fullText = l10n_util::GetNSString(messageID);
-  NSRange range;
-  fullText = ParseStringWithLink(fullText, &range);
 
-  NSMutableAttributedString* attributedString =
-      [[NSMutableAttributedString alloc] initWithString:fullText];
-
+  // Sets the styling to mimic a link.
   NSDictionary* linkAttributes = @{
     NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor],
     NSLinkAttributeName :
@@ -81,9 +77,8 @@ NSMutableAttributedString* GetBodyString(TabGridPage page) {
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote],
     NSUnderlineStyleAttributeName : @(NSUnderlineStyleNone),
   };
-  [attributedString setAttributes:linkAttributes range:range];
 
-  return attributedString;
+  return AttributedStringFromStringWithLink(fullText, @{}, linkAttributes);
 }
 
 }  // namespace

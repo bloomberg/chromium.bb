@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -24,6 +25,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/history_clusters/history_clusters_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/reputation/url_elision_policy.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
@@ -48,8 +50,6 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
-#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
-#include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
@@ -71,6 +71,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
@@ -233,14 +234,13 @@ void OmniboxViewViews::ElideAnimation::Start(
   // consumers can query them.
   elide_to_bounds_ = elide_to_bounds;
 
-  animation_ = std::make_unique<gfx::MultiAnimation>(
-      gfx::MultiAnimation::Parts({
+  animation_ =
+      std::make_unique<gfx::MultiAnimation>(gfx::MultiAnimation::Parts({
           gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(delay_ms),
                                     gfx::Tween::ZERO),
           gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(300),
                                     gfx::Tween::FAST_OUT_SLOW_IN),
-      }),
-      gfx::MultiAnimation::kDefaultTimerInterval);
+      }));
   animation_->set_delegate(this);
   animation_->set_continuous(false);
 
@@ -383,6 +383,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       friendly_suggestion_text_prefix_length_(0) {
   SetID(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
+  set_force_text_directionality(true);
 
   // Unit tests may use a mock location bar that has no browser,
   // or use no location bar at all.
@@ -427,8 +428,8 @@ void OmniboxViewViews::Init() {
 
   if (location_bar_view_) {
     // Initialize the popup view using the same font.
-    popup_view_.reset(
-        new OmniboxPopupContentsView(this, model(), location_bar_view_));
+    popup_view_ = std::make_unique<OmniboxPopupContentsView>(
+        this, model(), location_bar_view_);
     if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() &&
         !model()->ShouldPreventElision()) {
       Observe(location_bar_view_->GetWebContents());
@@ -516,7 +517,7 @@ void OmniboxViewViews::InstallPlaceholderText() {
     SetPlaceholderText(l10n_util::GetStringFUTF16(
         IDS_OMNIBOX_PLACEHOLDER_TEXT, default_provider->short_name()));
   } else {
-    SetPlaceholderText(base::string16());
+    SetPlaceholderText(std::u16string());
   }
 }
 
@@ -539,7 +540,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
       text_is_url ? gfx::DIRECTIONALITY_AS_URL : gfx::DIRECTIONALITY_FROM_TEXT);
   SetStyle(gfx::TEXT_STYLE_STRIKE, false);
 
-  base::string16 text = GetText();
+  std::u16string text = GetText();
   UpdateTextStyle(text, text_is_url, model()->client()->GetSchemeClassifier());
 
   if (model()->ShouldPreventElision())
@@ -608,19 +609,19 @@ void OmniboxViewViews::Update() {
   }
 }
 
-base::string16 OmniboxViewViews::GetText() const {
+std::u16string OmniboxViewViews::GetText() const {
   // TODO(oshima): IME support
   return Textfield::GetText();
 }
 
-void OmniboxViewViews::SetUserText(const base::string16& text,
+void OmniboxViewViews::SetUserText(const std::u16string& text,
                                    bool update_popup) {
   saved_selection_for_focus_change_.clear();
   OmniboxView::SetUserText(text, update_popup);
 }
 
 void OmniboxViewViews::SetAdditionalText(
-    const base::string16& additional_text) {
+    const std::u16string& additional_text) {
   // TODO (manukh): Ideally, OmniboxView wouldn't be responsible for its sibling
   // label owned by LocationBarView. However, this is the only practical pathway
   // between the OmniboxEditModel, which handles setting the omnibox match, and
@@ -636,8 +637,8 @@ void OmniboxViewViews::EnterKeywordModeForDefaultSearchProvider() {
 }
 
 void OmniboxViewViews::GetSelectionBounds(
-    base::string16::size_type* start,
-    base::string16::size_type* end) const {
+    std::u16string::size_type* start,
+    std::u16string::size_type* end) const {
   const gfx::Range range = GetSelectedRange();
   *start = static_cast<size_t>(range.start());
   *end = static_cast<size_t>(range.end());
@@ -895,7 +896,7 @@ void OmniboxViewViews::ApplyColor(SkColor color, const gfx::Range& range) {
 }
 
 void OmniboxViewViews::SetTextAndSelectedRanges(
-    const base::string16& text,
+    const std::u16string& text,
     const std::vector<gfx::Range>& ranges) {
   DCHECK(!ranges.empty());
 
@@ -917,7 +918,7 @@ void OmniboxViewViews::SetTextAndSelectedRanges(
   SetSelectedRanges(ranges);
 
   // Clear the additional text.
-  SetAdditionalText(base::string16());
+  SetAdditionalText(std::u16string());
 }
 
 void OmniboxViewViews::SetSelectedRanges(
@@ -931,13 +932,13 @@ void OmniboxViewViews::SetSelectedRanges(
     AddSecondarySelectedRange(ranges[i]);
 }
 
-base::string16 OmniboxViewViews::GetSelectedText() const {
+std::u16string OmniboxViewViews::GetSelectedText() const {
   // TODO(oshima): Support IME.
   return views::Textfield::GetSelectedText();
 }
 
 void OmniboxViewViews::OnOmniboxPaste() {
-  const base::string16 text(GetClipboardText(/*notify_if_restricted=*/true));
+  const std::u16string text(GetClipboardText(/*notify_if_restricted=*/true));
 
   if (text.empty() ||
       // When the fakebox is focused, ignore pasted whitespace because if the
@@ -981,7 +982,7 @@ void OmniboxViewViews::AnnounceFriendlySuggestionText() {
 }
 #endif
 
-void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,
+void OmniboxViewViews::SetWindowTextAndCaretPos(const std::u16string& text,
                                                 size_t caret_pos,
                                                 bool update_popup,
                                                 bool notify_text_changed) {
@@ -1022,7 +1023,7 @@ void OmniboxViewViews::ApplyCaretVisibility() {
 }
 
 void OmniboxViewViews::OnTemporaryTextMaybeChanged(
-    const base::string16& display_text,
+    const std::u16string& display_text,
     const AutocompleteMatch& match,
     bool save_original_selection,
     bool notify_text_changed) {
@@ -1038,7 +1039,7 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
 }
 
 void OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
-    const base::string16& display_text,
+    const std::u16string& display_text,
     std::vector<gfx::Range> selections,
     size_t user_text_length) {
   if (display_text == GetText())
@@ -1060,10 +1061,10 @@ void OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
 void OmniboxViewViews::OnInlineAutocompleteTextCleared() {
   // Hide the inline autocompletion for IME users.
   if (location_bar_view_)
-    location_bar_view_->SetImeInlineAutocompletion(base::string16());
+    location_bar_view_->SetImeInlineAutocompletion(std::u16string());
 }
 
-void OmniboxViewViews::OnRevertTemporaryText(const base::string16& display_text,
+void OmniboxViewViews::OnRevertTemporaryText(const std::u16string& display_text,
                                              const AutocompleteMatch& match) {
   // We got here because the user hit the Escape key. We explicitly don't call
   // TextChanged(), since OmniboxPopupModel::ResetToDefaultMatch() has already
@@ -1083,7 +1084,7 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
   NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 }
 
-void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
+void OmniboxViewViews::SetAccessibilityLabel(const std::u16string& display_text,
                                              const AutocompleteMatch& match,
                                              bool notify_text_changed) {
   if (model()->popup_model()->selected_line() == OmniboxPopupModel::kNoMatch) {
@@ -1092,7 +1093,8 @@ void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
     // bypass OmniboxPopupModel and get the label from our synthetic |match|.
     friendly_suggestion_text_ = AutocompleteMatchType::ToAccessibilityLabel(
         match, display_text, OmniboxPopupModel::kNoMatch,
-        model()->result().size(), 0, &friendly_suggestion_text_prefix_length_);
+        model()->result().size(), std::u16string(),
+        &friendly_suggestion_text_prefix_length_);
   } else {
     friendly_suggestion_text_ =
         model()->popup_model()->GetAccessibilityLabelForCurrentSelection(
@@ -1127,8 +1129,8 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   GetSelectionBounds(&start, &end);
 
   // Try to unelide. Early exit if there's no unelisions to perform.
-  base::string16 original_text = GetText();
-  base::string16 original_selected_text = GetSelectedText();
+  std::u16string original_text = GetText();
+  std::u16string original_selected_text = GetSelectedText();
   if (!model()->Unelide())
     return false;
 
@@ -1143,12 +1145,12 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   // AutocompleteInput::FormattedStringWithEquivalentMeaning for details.
   //
   // In this special case, chop off the trailing slash and search again.
-  if (offset == base::string16::npos && !original_text.empty() &&
-      original_text.back() == base::char16('/')) {
+  if (offset == std::u16string::npos && !original_text.empty() &&
+      original_text.back() == u'/') {
     offset = GetText().find(original_text.substr(0, original_text.size() - 1));
   }
 
-  if (offset != base::string16::npos) {
+  if (offset != std::u16string::npos) {
     AutocompleteMatch match;
     model()->ClassifyString(original_selected_text, &match, nullptr);
     bool selection_classifes_as_search =
@@ -1445,7 +1447,7 @@ void OmniboxViewViews::OnMouseExited(const ui::MouseEvent& event) {
         ranges_surrounding_simplified_domain, starting_color,
         SK_ColorTRANSPARENT);
   } else {
-    base::string16 text = GetText();
+    std::u16string text = GetText();
     url::Component host = GetHostComponentAfterTrivialSubdomain();
     // If the hostname overflows the local bounds, then hover animations are
     // disabled for simplicity.
@@ -1464,20 +1466,20 @@ bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDC_PASTE_AND_GO;
 }
 
-base::string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
+std::u16string OmniboxViewViews::GetLabelForCommandId(int command_id) const {
   DCHECK_EQ(IDC_PASTE_AND_GO, command_id);
 
   // Don't paste-and-go data that was marked by its originator as confidential.
   constexpr size_t kMaxSelectionTextLength = 50;
-  const base::string16 clipboard_text =
+  const std::u16string clipboard_text =
       IsClipboardDataMarkedAsConfidential()
-          ? base::string16()
+          ? std::u16string()
           : GetClipboardText(/*notify_if_restricted=*/false);
 
   if (clipboard_text.empty())
     return l10n_util::GetStringUTF16(IDS_PASTE_AND_GO_EMPTY);
 
-  base::string16 selection_text = gfx::TruncateString(
+  std::u16string selection_text = gfx::TruncateString(
       clipboard_text, kMaxSelectionTextLength, gfx::WORD_BREAK);
 
   AutocompleteMatch match;
@@ -1491,7 +1493,7 @@ base::string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
   // a better way to do this.
   const float kMaxSelectionPixelWidth =
       GetStringWidthF(selection_text, Textfield::GetFontList());
-  base::string16 url = url_formatter::ElideUrl(
+  std::u16string url = url_formatter::ElideUrl(
       match.destination_url, Textfield::GetFontList(), kMaxSelectionPixelWidth);
 
   return l10n_util::GetStringFUTF16(IDS_PASTE_AND_GO, url);
@@ -1553,11 +1555,11 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
       // URL. See https://crbug.com/1084406.
       if (IsSelectAll()) {
         SelectWordAt(event.location());
-        base::string16 shown_url = GetText();
-        base::string16 full_url =
+        std::u16string shown_url = GetText();
+        std::u16string full_url =
             controller()->GetLocationBarModel()->GetFormattedFullURL();
         size_t offset = full_url.find(shown_url);
-        if (offset != base::string16::npos) {
+        if (offset != std::u16string::npos) {
           next_double_click_selection_len_ = GetSelectedText().length();
           next_double_click_selection_offset_ =
               offset + GetCursorPosition() - next_double_click_selection_len_;
@@ -1730,8 +1732,8 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     }
   }
 
-  base::string16::size_type entry_start;
-  base::string16::size_type entry_end;
+  std::u16string::size_type entry_start;
+  std::u16string::size_type entry_end;
   // Selection information is saved separately when focus is moved off the
   // current window - use that when there is no focus and it's valid.
   if (!saved_selection_for_focus_change_.empty()) {
@@ -2086,11 +2088,11 @@ void OmniboxViewViews::OnFocusChangedInPage(
   }
 }
 
-base::string16 OmniboxViewViews::GetSelectionClipboardText() const {
+std::u16string OmniboxViewViews::GetSelectionClipboardText() const {
   return SanitizeTextForPaste(Textfield::GetSelectionClipboardText());
 }
 
-void OmniboxViewViews::DoInsertChar(base::char16 ch) {
+void OmniboxViewViews::DoInsertChar(char16_t ch) {
   // When the fakebox is focused, ignore whitespace input because if the
   // fakebox is hidden and there's only whitespace in the omnibox, it's
   // difficult for the user to see that the focus moved to the omnibox.
@@ -2168,8 +2170,7 @@ void OmniboxViewViews::CandidateWindowClosed(
 #endif
 
 void OmniboxViewViews::ContentsChanged(views::Textfield* sender,
-                                       const base::string16& new_contents) {
-}
+                                       const std::u16string& new_contents) {}
 
 bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
                                       const ui::KeyEvent& event) {
@@ -2355,7 +2356,7 @@ void OmniboxViewViews::OnAfterUserAction(views::Textfield* sender) {
 
 void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardBuffer clipboard_buffer) {
   ui::Clipboard* cb = ui::Clipboard::GetForCurrentThread();
-  base::string16 selected_text;
+  std::u16string selected_text;
   ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
       ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
   cb->ReadText(clipboard_buffer, &data_dst, &selected_text);
@@ -2366,16 +2367,13 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardBuffer clipboard_buffer) {
   if (IsSelectAll()) {
     UMA_HISTOGRAM_COUNTS_1M(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
 
-    if (location_bar_view_) {
+    if (clipboard_buffer != ui::ClipboardBuffer::kSelection &&
+        location_bar_view_) {
       auto* web_contents = location_bar_view_->GetWebContents();
       if (web_contents) {
-        auto* metrics =
-            page_load_metrics::MetricsWebContentsObserver::FromWebContents(
-                web_contents);
-        if (metrics) {
-          metrics->BroadcastEventToObservers(
-              page_load_metrics::PageLoadMetricsEvent::
-                  OMNIBOX_URL_COPIED_TO_CLIPBOARD);
+        if (auto* clusters_helper =
+                HistoryClustersTabHelper::FromWebContents(web_contents)) {
+          clusters_helper->OnOmniboxUrlCopied();
         }
       }
     }
@@ -2391,13 +2389,13 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardBuffer clipboard_buffer) {
 void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
   GURL url;
   bool write_url;
-  base::string16 selected_text = GetSelectedText();
+  std::u16string selected_text = GetSelectedText();
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), &selected_text, &url,
                              &write_url);
   data->SetString(selected_text);
   if (write_url) {
     gfx::Image favicon;
-    base::string16 title = selected_text;
+    std::u16string title = selected_text;
     if (IsSelectAll())
       model()->GetDataForURLExport(&url, &title, &favicon);
     button_drag_utils::SetURLAndDragImage(url, title, favicon.AsImageSkia(),
@@ -2407,7 +2405,7 @@ void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
 }
 
 void OmniboxViewViews::OnGetDragOperationsForTextfield(int* drag_operations) {
-  base::string16 selected_text = GetSelectedText();
+  std::u16string selected_text = GetSelectedText();
   GURL url;
   bool write_url;
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), &selected_text, &url,
@@ -2426,10 +2424,10 @@ DragOperation OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
   if (HasTextBeingDragged())
     return DragOperation::kNone;
 
-  base::string16 text;
+  std::u16string text;
   if (data.HasURL(ui::FilenameToURLPolicy::CONVERT_FILENAMES)) {
     GURL url;
-    base::string16 title;
+    std::u16string title;
     if (data.GetURLAndTitle(ui::FilenameToURLPolicy::CONVERT_FILENAMES, &url,
                             &title)) {
       text = StripJavascriptSchemas(base::UTF8ToUTF16(url.spec()));
@@ -2556,7 +2554,7 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
   DCHECK(ranges_surrounding_simplified_domain);
   DCHECK(ranges_surrounding_simplified_domain->empty());
 
-  base::string16 text = GetText();
+  std::u16string text = GetText();
   url::Component host = GetHostComponentAfterTrivialSubdomain();
 
   GURL url = url_formatter::FixupURL(base::UTF16ToUTF8(text), std::string());
@@ -2568,7 +2566,7 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
   }
 
   // TODO(estark): push this inside ParseForEmphasizeComponents()?
-  base::string16 simplified_domain = url_formatter::IDNToUnicode(
+  std::u16string simplified_domain = url_formatter::IDNToUnicode(
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
 
@@ -2590,9 +2588,9 @@ bool OmniboxViewViews::GetURLEligibleForSimplifiedDomainEliding() const {
     return false;
   if (!model()->CurrentTextIsURL())
     return false;
-  base::string16 text = GetText();
+  std::u16string text = GetText();
   url::Parsed parts;
-  base::string16 scheme_str;
+  std::u16string scheme_str;
   // Call Parse() here instead of ParseForEmphasizeComponents() because the
   // latter parses the inner URL for blob:, filesystem:, and view-source: URLs.
   // For those schemes, we want the outer scheme so that we can disable elision
@@ -2604,7 +2602,7 @@ bool OmniboxViewViews::GetURLEligibleForSimplifiedDomainEliding() const {
   // TODO(crbug.com/1117631): Simplified domain elision can have bugs for some
   // URLs with bidirectional hosts, disable elision for those URLs while the
   // bugs are fixed.
-  const base::string16 url_host = text.substr(parts.host.begin, parts.host.len);
+  const std::u16string url_host = text.substr(parts.host.begin, parts.host.len);
   if (base::i18n::GetStringDirection(url_host) ==
       base::i18n::TextDirection::UNKNOWN_DIRECTION) {
     return false;
@@ -2848,7 +2846,7 @@ void OmniboxViewViews::ShowFullURLWithoutSchemeAndTrivialSubdomain() {
   // If the scheme and trivial subdomain should be elided, then we want to set
   // the display offset to where the hostname after the trivial subdomain (if
   // any) begins, relative to the current display rect.
-  base::string16 text = GetText();
+  std::u16string text = GetText();
   url::Component host = GetHostComponentAfterTrivialSubdomain();
 
   // First check if the full hostname can fit in the local bounds. If not, then
@@ -2904,7 +2902,7 @@ void OmniboxViewViews::ShowFullURLWithoutSchemeAndTrivialSubdomain() {
 url::Component OmniboxViewViews::GetHostComponentAfterTrivialSubdomain() const {
   url::Component host;
   url::Component unused_scheme;
-  base::string16 text = GetText();
+  std::u16string text = GetText();
   AutocompleteInput::ParseForEmphasizeComponents(
       text, model()->client()->GetSchemeClassifier(), &unused_scheme, &host);
   url_formatter::StripWWWFromHostComponent(base::UTF16ToUTF8(text), &host);
@@ -2916,7 +2914,7 @@ ADD_READONLY_PROPERTY_METADATA(bool, SelectionAtEnd)
 ADD_READONLY_PROPERTY_METADATA(int, TextWidth)
 ADD_READONLY_PROPERTY_METADATA(int, UnelidedTextWidth)
 ADD_READONLY_PROPERTY_METADATA(int, Width)
-ADD_READONLY_PROPERTY_METADATA(base::string16, SelectedText)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, SelectedText)
 ADD_READONLY_PROPERTY_METADATA(bool, URLEligibleForSimplifiedDomainEliding)
 ADD_READONLY_PROPERTY_METADATA(url::Component,
                                HostComponentAfterTrivialSubdomain)

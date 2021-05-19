@@ -1274,7 +1274,8 @@ void HTMLSelectElement::SetIndexToSelectOnCancel(int list_index) {
   select_type_->UpdateTextStyleAndContent();
 }
 
-HTMLOptionElement* HTMLSelectElement::OptionToBeShownForTesting() const {
+HTMLOptionElement* HTMLSelectElement::OptionToBeShown() const {
+  DCHECK(!IsMultiple());
   return select_type_->OptionToBeShown();
 }
 
@@ -1371,12 +1372,7 @@ void HTMLSelectElement::ChangeRendering() {
   }
   if (!InActiveDocument())
     return;
-  // TODO(futhark): SetForceReattachLayoutTree() should be the correct way to
-  // create a new layout tree, but the code for updating the selected index
-  // relies on the layout tree to be nuked.
-  DetachLayoutTree();
-  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                             style_change_reason::kControl));
+  GetDocument().GetStyleEngine().ChangeRenderingForHTMLSelect(*this);
 }
 
 const ComputedStyle* HTMLSelectElement::OptionStyle() const {

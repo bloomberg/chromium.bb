@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -28,7 +30,6 @@
 #include "components/optimization_guide/core/test_hints_component_creator.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_switches.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/variations/active_field_trials.h"
@@ -162,8 +163,8 @@ class OptimizationGuideKeyedServiceBrowserTest
   void SetUpOnMainThread() override {
     OptimizationGuideKeyedServiceDisabledBrowserTest::SetUpOnMainThread();
 
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     https_server_->RegisterRequestHandler(base::BindRepeating(
         &OptimizationGuideKeyedServiceBrowserTest::HandleRequest,
@@ -194,8 +195,8 @@ class OptimizationGuideKeyedServiceBrowserTest
             {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
     // Set up an OptimizationGuideKeyedService consumer.
-    consumer_.reset(new OptimizationGuideConsumerWebContentsObserver(
-        browser()->tab_strip_model()->GetActiveWebContents()));
+    consumer_ = std::make_unique<OptimizationGuideConsumerWebContentsObserver>(
+        browser()->tab_strip_model()->GetActiveWebContents());
   }
 
   optimization_guide::TopHostProvider* top_host_provider() {
@@ -280,7 +281,7 @@ class OptimizationGuideKeyedServiceBrowserTest
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     if (request.GetURL().spec().find("redirect") == std::string::npos) {
-      return std::unique_ptr<net::test_server::HttpResponse>();
+      return nullptr;
     }
 
     GURL request_url = request.GetURL();
@@ -614,8 +615,6 @@ class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
     OptimizationGuideKeyedServiceBrowserTest::SetUpCommandLine(cmd);
 
     cmd->AppendSwitch("enable-spdy-proxy-auth");
-    // Add switch to avoid having to see the infobar in the test.
-    cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);
     // Add switch to avoid racing navigations in the test.
     cmd->AppendSwitch(optimization_guide::switches::
                           kDisableFetchingHintsAtNavigationStartForTesting);

@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -78,6 +80,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/switches.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -796,7 +799,7 @@ HandleRequestAndSendRedirectResponse(
     const net::test_server::HttpRequest& request) {
   std::unique_ptr<net::test_server::BasicHttpResponse> response;
   if (request.relative_url == relative_url) {
-    response.reset(new net::test_server::BasicHttpResponse);
+    response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_code(net::HTTP_FOUND);
     response->AddCustomHeader("Location", target_url.spec());
   }
@@ -823,7 +826,7 @@ HandleRequestAndSendBasicResponse(
     const net::test_server::HttpRequest& request) {
   std::unique_ptr<net::test_server::BasicHttpResponse> response;
   if (request.relative_url == relative_url) {
-    response.reset(new net::test_server::BasicHttpResponse);
+    response = std::make_unique<net::test_server::BasicHttpResponse>();
     for (const auto& pair : headers)
       response->AddCustomHeader(pair.first, pair.second);
     response->set_content_type(content_type);
@@ -850,7 +853,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequestAndEchoCookies(
     const net::test_server::HttpRequest& request) {
   std::unique_ptr<net::test_server::BasicHttpResponse> response;
   if (request.relative_url == relative_url) {
-    response.reset(new net::test_server::BasicHttpResponse);
+    response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->AddCustomHeader("Content-Disposition", "attachment");
     response->AddCustomHeader("Vary", "");
     response->AddCustomHeader("Cache-Control", "no-cache");
@@ -927,7 +930,7 @@ class DownloadContentTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
 
-    test_delegate_.reset(new TestShellDownloadManagerDelegate());
+    test_delegate_ = std::make_unique<TestShellDownloadManagerDelegate>();
     test_delegate_->SetDownloadBehaviorForTesting(
         downloads_directory_.GetPath());
     DownloadManager* manager = DownloadManagerForShell(shell());
@@ -962,6 +965,9 @@ class DownloadContentTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
     IsolateAllSitesForTesting(command_line);
+    // Some tests are flaky due to slower loading interacting with deferred
+    // commits so allow early input.
+    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
   }
 
   TestShellDownloadManagerDelegate* GetDownloadManagerDelegate() {
@@ -3742,7 +3748,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   origin_one.StartAcceptingConnections();
   origin_two.StartAcceptingConnections();
 
-  base::string16 expected_title(base::UTF8ToUTF16("hello"));
+  std::u16string expected_title(u"hello");
   TitleWatcher observer(shell()->web_contents(), expected_title);
   EXPECT_TRUE(
       NavigateToURL(shell(), referrer_url,
@@ -4041,9 +4047,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameSiteCookie) {
   // should be sent along with the request.
   EXPECT_STREQ("B=C", file_contents.c_str());
 
-  // OriginOne redirects through OriginTwo.
+  // OriginOne redirects through OriginTwo. Because the redirect chain contains
+  // a cross-site redirect, SameSite=Strict cookies are not sent.
   //
   //  Initiator origin: kOriginOne
+  //  Redirect chain contains: kOriginTwo
   //  Resource origin: kOriginOne
   //  First-party origin: kOriginOne
   GURL redirect_url = test_server.GetURL(kOriginTwo, "/server-redirect");
@@ -4055,7 +4063,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameSiteCookie) {
 
   ASSERT_TRUE(
       base::ReadFileToString(download->GetTargetFilePath(), &file_contents));
-  EXPECT_STREQ("A=B; B=C", file_contents.c_str());
+  EXPECT_STREQ("B=C", file_contents.c_str());
 }
 
 // The file empty.bin is served with a MIME type of application/octet-stream.
@@ -4536,9 +4544,9 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
   DownloadManager* download_manager = DownloadManagerForShell(shell());
 
   std::unique_ptr<DownloadTestObserver> observer;
-  observer.reset(new content::DownloadTestObserverInterrupted(
+  observer = std::make_unique<content::DownloadTestObserverInterrupted>(
       download_manager, 1,
-      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   download_manager->DownloadUrl(std::move(download_parameters));
   observer->WaitForFinished();
   std::vector<download::DownloadItem*> items;

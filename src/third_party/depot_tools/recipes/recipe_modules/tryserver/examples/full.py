@@ -38,6 +38,7 @@ def RunSteps(api):
 
   if api.tryserver.is_gerrit_issue:
     api.tryserver.get_footers()
+    api.tryserver.get_footer('testfooter')
   api.tryserver.get_files_affected_by_patch(
       api.properties.get('test_patch_root'),
       report_files_via_property='affected_files',

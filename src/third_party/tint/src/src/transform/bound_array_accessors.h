@@ -15,13 +15,7 @@
 #ifndef SRC_TRANSFORM_BOUND_ARRAY_ACCESSORS_H_
 #define SRC_TRANSFORM_BOUND_ARRAY_ACCESSORS_H_
 
-#include <string>
-
 #include "src/ast/array_accessor_expression.h"
-#include "src/ast/expression.h"
-#include "src/ast/statement.h"
-#include "src/program.h"
-#include "src/scope_stack.h"
 #include "src/transform/transform.h"
 
 namespace tint {
@@ -40,8 +34,9 @@ class BoundArrayAccessors : public Transform {
 
   /// Runs the transform on `program`, returning the transformation result.
   /// @param program the source program to transform
+  /// @param data optional extra transform-specific input data
   /// @returns the transformation result
-  Output Run(const Program* program) override;
+  Output Run(const Program* program, const DataMap& data = {}) override;
 
  private:
   ast::ArrayAccessorExpression* Transform(ast::ArrayAccessorExpression* expr,

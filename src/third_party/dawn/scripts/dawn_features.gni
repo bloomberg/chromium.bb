@@ -75,10 +75,6 @@ declare_args() {
   # Enables error injection for faking failures to native API calls
   dawn_enable_error_injection =
       is_debug || (build_with_chromium && use_fuzzing_engine)
-
-  # Enable support WGSL for shaders.
-  # Turned off for Skia, because Tint is currently not part of its DEPS.
-  dawn_enable_wgsl = !defined(is_skia_standalone)
 }
 
 # GN does not allow reading a variable defined in the same declare_args().

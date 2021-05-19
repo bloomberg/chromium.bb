@@ -9,9 +9,7 @@
 
 #include "ui/base/hit_test.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -20,10 +18,8 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
-#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
-#include "ui/views/window/caption_button_layout_constants.h"
 #include "ui/views/window/hit_test_utils.h"
 
 namespace views {
@@ -70,11 +66,7 @@ FrameCaptionButton::FrameCaptionButton(PressedCallback callback,
                                        int hit_test_type)
     : Button(std::move(callback)),
       icon_(icon),
-      background_color_(SK_ColorWHITE),
-      paint_as_active_(false),
-      alpha_(255),
-      ink_drop_corner_radius_(kCaptionButtonInkDropDefaultCornerRadius),
-      swap_images_animation_(new gfx::SlideAnimation(this)) {
+      swap_images_animation_(std::make_unique<gfx::SlideAnimation>(this)) {
   views::SetHitTestComponent(this, hit_test_type);
   // Not focusable by default, only for accessibility.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -233,6 +225,17 @@ int FrameCaptionButton::GetInkDropCornerRadius() const {
   return ink_drop_corner_radius_;
 }
 
+void FrameCaptionButton::SetPaintAsActive(bool paint_as_active) {
+  if (paint_as_active == paint_as_active_)
+    return;
+  paint_as_active_ = paint_as_active;
+  OnPropertyChanged(&paint_as_active_, kPropertyEffectsPaint);
+}
+
+bool FrameCaptionButton::GetPaintAsActive() const {
+  return paint_as_active_;
+}
+
 void FrameCaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
   constexpr SkAlpha kHighlightVisibleOpacity = 0x14;
   SkAlpha highlight_alpha = SK_AlphaTRANSPARENT;
@@ -333,30 +336,31 @@ void FrameCaptionButton::UpdateInkDropBaseColor() {
 DEFINE_ENUM_CONVERTERS(
     views::CaptionButtonIcon,
     {{views::CaptionButtonIcon::CAPTION_BUTTON_ICON_MINIMIZE,
-      base::ASCIIToUTF16("CAPTION_BUTTON_ICON_MINIMIZE")},
+      u"CAPTION_BUTTON_ICON_MINIMIZE"},
      {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-      base::ASCIIToUTF16("CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE")},
+      u"CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE"},
      {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_CLOSE,
-      base::ASCIIToUTF16("CAPTION_BUTTON_ICON_CLOSE")},
+      u"CAPTION_BUTTON_ICON_CLOSE"},
      {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-      base::ASCIIToUTF16("CAPTION_BUTTON_ICON_LEFT_SNAPPED")},
+      u"CAPTION_BUTTON_ICON_LEFT_SNAPPED"},
      {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-      base::ASCIIToUTF16("CAPTION_BUTTON_ICON_RIGHT_SNAPPED")},
+      u"CAPTION_BUTTON_ICON_RIGHT_SNAPPED"},
      {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_BACK,
-      base::ASCIIToUTF16("CAPTION_BUTTON_ICON_BACK")},
+      u"CAPTION_BUTTON_ICON_BACK"},
      {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_LOCATION,
-      base::ASCIIToUTF16("CAPTION_BUTTON_ICON_LOCATION")},
+      u"CAPTION_BUTTON_ICON_LOCATION"},
      {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_MENU,
-      base::ASCIIToUTF16("CAPTION_BUTTON_ICON_MENU")},
+      u"CAPTION_BUTTON_ICON_MENU"},
      {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_ZOOM,
-      base::ASCIIToUTF16("CAPTION_BUTTON_ICON_ZOOM")},
+      u"CAPTION_BUTTON_ICON_ZOOM"},
      {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_COUNT,
-      base::ASCIIToUTF16("CAPTION_BUTTON_ICON_COUNT")}})
+      u"CAPTION_BUTTON_ICON_COUNT"}})
 
 BEGIN_METADATA(FrameCaptionButton, Button)
 ADD_PROPERTY_METADATA(SkColor, BackgroundColor, metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(int, InkDropCornerRadius)
 ADD_READONLY_PROPERTY_METADATA(CaptionButtonIcon, Icon)
+ADD_PROPERTY_METADATA(bool, PaintAsActive)
 END_METADATA
 
 }  // namespace views

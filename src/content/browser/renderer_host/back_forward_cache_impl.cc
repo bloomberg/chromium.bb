@@ -18,6 +18,8 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/visibility.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -27,6 +29,8 @@
 #endif
 
 namespace content {
+
+class RenderProcessHostInternalObserver;
 
 namespace {
 
@@ -39,6 +43,13 @@ const base::Feature kBackForwardCacheNoTimeEviction{
 
 // The default number of entries the BackForwardCache can hold per tab.
 static constexpr size_t kDefaultBackForwardCacheSize = 1;
+
+// The default number value for the "foreground_cache_size" field trial
+// parameter. This parameter controls the numbers of entries associated with
+// foregrounded process the BackForwardCache can hold per tab, when using the
+// foreground/background cache-limiting strategy. This strategy is enabled if
+// the parameter values is non-zero.
+static constexpr size_t kDefaultForegroundBackForwardCacheSize = 0;
 
 // The default time to live in seconds for documents in BackForwardCache.
 static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 15;
@@ -73,7 +84,7 @@ const base::FeatureParam<ChildProcessImportance> kChildProcessImportanceParam{
 #endif
 
 bool IsGeolocationSupported() {
-  if (!DeviceHasEnoughMemoryForBackForwardCache())
+  if (!IsBackForwardCacheEnabled())
     return false;
   static constexpr base::FeatureParam<bool> geolocation_supported(
       &features::kBackForwardCache, "geolocation_supported",
@@ -89,7 +100,7 @@ bool IsGeolocationSupported() {
 }
 
 bool IsFileSystemSupported() {
-  if (!DeviceHasEnoughMemoryForBackForwardCache())
+  if (!IsBackForwardCacheEnabled())
     return false;
   static constexpr base::FeatureParam<bool> file_system_api_supported(
       &features::kBackForwardCache, "file_system_api_supported", false);
@@ -97,7 +108,7 @@ bool IsFileSystemSupported() {
 }
 
 uint64_t SupportedFeaturesBitmaskImpl() {
-  if (!DeviceHasEnoughMemoryForBackForwardCache())
+  if (!IsBackForwardCacheEnabled())
     return 0;
 
   static constexpr base::FeatureParam<std::string> supported_features(
@@ -122,7 +133,7 @@ uint64_t SupportedFeaturesBitmask() {
 }
 
 bool IgnoresOutstandingNetworkRequestForTesting() {
-  if (!DeviceHasEnoughMemoryForBackForwardCache())
+  if (!IsBackForwardCacheEnabled())
     return false;
   static constexpr base::FeatureParam<bool>
       outstanding_network_request_supported(
@@ -135,7 +146,7 @@ bool IgnoresOutstandingNetworkRequestForTesting() {
 // calls and force all pages to be cached. Should be used only for local testing
 // and debugging -- things will break when this param is used.
 bool ShouldIgnoreBlocklists() {
-  if (!DeviceHasEnoughMemoryForBackForwardCache())
+  if (!IsBackForwardCacheEnabled())
     return false;
   static constexpr base::FeatureParam<bool> should_ignore_blocklists(
       &features::kBackForwardCache, "should_ignore_blocklists", false);
@@ -184,7 +195,9 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh,
       FeatureToBit(WebSchedulerTrackedFeature::kWebShare) |
       FeatureToBit(WebSchedulerTrackedFeature::kWebSocket) |
       FeatureToBit(WebSchedulerTrackedFeature::kWebVR) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWebXR);
+      FeatureToBit(WebSchedulerTrackedFeature::kWebXR) |
+      FeatureToBit(
+          WebSchedulerTrackedFeature::kMediaSessionImplOnServiceCreated);
 
   uint64_t result = kAlwaysDisallowedFeatures;
 
@@ -219,17 +232,19 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh,
 // The BackForwardCache feature is controlled via an experiment. This function
 // returns the allowed URL list where it is enabled.
 std::string GetAllowedURLList() {
-  if (!DeviceHasEnoughMemoryForBackForwardCache())
-    return "";
   // Avoid activating BackForwardCache trial for checking the parameters
   // associated with it.
-  if (base::FeatureList::IsEnabled(features::kBackForwardCache)) {
-    return base::GetFieldTrialParamValueByFeature(features::kBackForwardCache,
-                                                  "allowed_websites");
+  if (!IsBackForwardCacheEnabled()) {
+    if (base::FeatureList::IsEnabled(
+            kRecordBackForwardCacheMetricsWithoutEnabling)) {
+      return base::GetFieldTrialParamValueByFeature(
+          kRecordBackForwardCacheMetricsWithoutEnabling, "allowed_websites");
+    }
+    return "";
   }
 
-  return base::GetFieldTrialParamValueByFeature(
-      kRecordBackForwardCacheMetricsWithoutEnabling, "allowed_websites");
+  return base::GetFieldTrialParamValueByFeature(features::kBackForwardCache,
+                                                "allowed_websites");
 }
 
 // To enter the BackForwardCache the URL of a document must have a host and a
@@ -284,6 +299,17 @@ void RequestRecordTimeToVisible(RenderFrameHostImpl* rfh,
   }
 }
 
+// Returns true if any of the processes associated with the RenderViewHosts in
+// this Entry are foregrounded.
+bool HasForegroundedProcess(BackForwardCacheImpl::Entry& entry) {
+  for (auto* rvh : entry.render_view_hosts) {
+    if (!rvh->GetProcess()->IsProcessBackgrounded()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 // static
@@ -322,6 +348,11 @@ BackForwardCacheImpl::Entry::Entry(
 
 BackForwardCacheImpl::Entry::~Entry() = default;
 
+void BackForwardCacheImpl::RenderProcessBackgroundedChanged(
+    RenderProcessHostImpl* host) {
+  EnforceCacheSizeLimit();
+}
+
 BackForwardCacheTestDelegate::BackForwardCacheTestDelegate() {
   DCHECK(!g_bfcache_disabled_test_observer);
   g_bfcache_disabled_test_observer = this;
@@ -334,7 +365,10 @@ BackForwardCacheTestDelegate::~BackForwardCacheTestDelegate() {
 
 BackForwardCacheImpl::BackForwardCacheImpl()
     : allowed_urls_(GetAllowedURLs()), weak_factory_(this) {}
-BackForwardCacheImpl::~BackForwardCacheImpl() = default;
+
+BackForwardCacheImpl::~BackForwardCacheImpl() {
+  Shutdown();
+}
 
 base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {
   // We use the following order of priority if multiple values exist:
@@ -353,9 +387,26 @@ base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {
       kDefaultTimeToLiveInBackForwardCacheInSeconds));
 }
 
+// static
 size_t BackForwardCacheImpl::GetCacheSize() {
+  if (!IsBackForwardCacheEnabled())
+    return 0;
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kBackForwardCache, "cache_size", kDefaultBackForwardCacheSize);
+}
+
+// static
+size_t BackForwardCacheImpl::GetForegroundedEntriesCacheSize() {
+  if (!IsBackForwardCacheEnabled())
+    return 0;
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kBackForwardCache, "foreground_cache_size",
+      kDefaultForegroundBackForwardCacheSize);
+}
+
+// static
+bool BackForwardCacheImpl::UsingForegroundBackgroundCacheSizeLimit() {
+  return GetForegroundedEntriesCacheSize() > 0;
 }
 
 BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStorePageNow(
@@ -423,7 +474,10 @@ BackForwardCacheImpl::CanPotentiallyStorePageLater(RenderFrameHostImpl* rfh) {
   // to determine whether to do a proactive BrowsingInstance swap or not, which
   // should not be done if the page has related active contents.
   unsigned expected_related_active_contents_count = is_current_rfh ? 1 : 0;
-  if (rfh->GetSiteInstance()->GetRelatedActiveContentsCount() !=
+  // We should never have fewer than expected.
+  DCHECK_GE(rfh->GetSiteInstance()->GetRelatedActiveContentsCount(),
+            expected_related_active_contents_count);
+  if (rfh->GetSiteInstance()->GetRelatedActiveContentsCount() >
       expected_related_active_contents_count) {
     result.NoDueToRelatedActiveContents(
         rfh->browsing_instance_not_swapped_reason());
@@ -567,19 +621,45 @@ void BackForwardCacheImpl::StoreEntry(
 
   entry->render_frame_host->DidEnterBackForwardCache();
   entries_.push_front(std::move(entry));
+  AddProcessesForEntry(*entries_.front());
+  EnforceCacheSizeLimit();
+}
 
-  size_t size_limit = GetCacheSize();
-  // Evict the least recently used documents if the BackForwardCache list is
-  // full.
-  size_t available_count = 0;
+void BackForwardCacheImpl::EnforceCacheSizeLimit() {
+  if (!IsBackForwardCacheEnabled())
+    return;
+
+  if (UsingForegroundBackgroundCacheSizeLimit()) {
+    // First enforce the foregrounded limit. The idea is that we need to
+    // strictly enforce the limit on pages using foregrounded processes because
+    // Android will not kill a foregrounded process, however it will kill a
+    // backgrounded process if there is memory pressue, so we can allow more of
+    // those to be kept in the cache.
+    EnforceCacheSizeLimitInternal(GetForegroundedEntriesCacheSize(),
+                                  /*foregrounded_only=*/true);
+  }
+  EnforceCacheSizeLimitInternal(GetCacheSize(),
+                                /*foregrounded_only=*/false);
+}
+
+size_t BackForwardCacheImpl::EnforceCacheSizeLimitInternal(
+    size_t limit,
+    bool foregrounded_only) {
+  size_t count = 0;
   for (auto& stored_entry : entries_) {
     if (stored_entry->render_frame_host->is_evicted_from_back_forward_cache())
       continue;
-    if (++available_count > size_limit) {
+    if (foregrounded_only && !HasForegroundedProcess(*stored_entry))
+      continue;
+    if (++count > limit) {
       stored_entry->render_frame_host->EvictFromBackForwardCacheWithReason(
-          BackForwardCacheMetrics::NotRestoredReason::kCacheLimit);
+          foregrounded_only
+              ? BackForwardCacheMetrics::NotRestoredReason::
+                    kForegroundCacheLimit
+              : BackForwardCacheMetrics::NotRestoredReason::kCacheLimit);
     }
   }
+  return count;
 }
 
 std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
@@ -604,6 +684,7 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
 
   std::unique_ptr<Entry> entry = std::move(*matching_entry);
   entries_.erase(matching_entry);
+  RemoveProcessesForEntry(*entry);
   entry->page_restore_params = std::move(page_restore_params);
   RequestRecordTimeToVisible(entry->render_frame_host.get(),
                              entry->page_restore_params->navigation_start);
@@ -623,6 +704,10 @@ void BackForwardCacheImpl::Flush() {
 }
 
 void BackForwardCacheImpl::Shutdown() {
+  if (UsingForegroundBackgroundCacheSizeLimit()) {
+    for (auto& entry : entries_)
+      RemoveProcessesForEntry(*entry.get());
+  }
   entries_.clear();
 }
 
@@ -650,16 +735,18 @@ bool BackForwardCache::IsBackForwardCacheFeatureEnabled() {
 }
 
 // static
-void BackForwardCache::DisableForRenderFrameHost(RenderFrameHost* rfh,
-                                                 base::StringPiece reason) {
-  DisableForRenderFrameHost(
-      static_cast<RenderFrameHostImpl*>(rfh)->GetGlobalFrameRoutingId(),
-      reason);
+void BackForwardCache::DisableForRenderFrameHost(
+    RenderFrameHost* render_frame_host,
+    BackForwardCache::DisabledReason reason) {
+  DisableForRenderFrameHost(static_cast<RenderFrameHostImpl*>(render_frame_host)
+                                ->GetGlobalFrameRoutingId(),
+                            reason);
 }
 
 // static
-void BackForwardCache::DisableForRenderFrameHost(GlobalFrameRoutingId id,
-                                                 base::StringPiece reason) {
+void BackForwardCache::DisableForRenderFrameHost(
+    GlobalFrameRoutingId id,
+    BackForwardCache::DisabledReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (g_bfcache_disabled_test_observer)
     g_bfcache_disabled_test_observer->OnDisabledForFrameWithReason(id, reason);
@@ -700,16 +787,43 @@ BackForwardCacheImpl::Entry* BackForwardCacheImpl::GetEntry(
   return (*matching_entry).get();
 }
 
+void BackForwardCacheImpl::AddProcessesForEntry(Entry& entry) {
+  if (!UsingForegroundBackgroundCacheSizeLimit())
+    return;
+  for (auto* rvh : entry.render_view_hosts) {
+    RenderProcessHostImpl* process =
+        static_cast<RenderProcessHostImpl*>(rvh->GetProcess());
+    if (observed_processes_.find(process) == observed_processes_.end())
+      process->AddInternalObserver(this);
+    observed_processes_.insert(process);
+  }
+}
+
+void BackForwardCacheImpl::RemoveProcessesForEntry(Entry& entry) {
+  if (!UsingForegroundBackgroundCacheSizeLimit())
+    return;
+  for (auto* rvh : entry.render_view_hosts) {
+    RenderProcessHostImpl* process =
+        static_cast<RenderProcessHostImpl*>(rvh->GetProcess());
+    // Remove 1 instance of this process from the multiset.
+    observed_processes_.erase(observed_processes_.find(process));
+    if (observed_processes_.find(process) == observed_processes_.end())
+      process->RemoveInternalObserver(this);
+  }
+}
+
 void BackForwardCacheImpl::DestroyEvictedFrames() {
   TRACE_EVENT0("navigation", "BackForwardCache::DestroyEvictedFrames");
   if (entries_.empty())
     return;
-  entries_.erase(std::remove_if(entries_.begin(), entries_.end(),
-                                [](std::unique_ptr<Entry>& entry) {
-                                  return entry->render_frame_host
-                                      ->is_evicted_from_back_forward_cache();
-                                }),
-                 entries_.end());
+
+  base::EraseIf(entries_, [this](std::unique_ptr<Entry>& entry) {
+    if (entry->render_frame_host->is_evicted_from_back_forward_cache()) {
+      RemoveProcessesForEntry(*entry);
+      return true;
+    }
+    return false;
+  });
 }
 
 bool BackForwardCacheImpl::IsAllowed(const GURL& current_url) {
@@ -738,6 +852,26 @@ bool BackForwardCacheImpl::CheckFeatureUsageOnlyAfterAck() {
 
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kBackForwardCache, "check_eligibility_after_pagehide", false);
+}
+
+bool BackForwardCacheImpl::IsMediaSessionImplOnServiceCreatedAllowed() {
+  return (SupportedFeaturesBitmask() &
+          FeatureToBit(
+              WebSchedulerTrackedFeature::kMediaSessionImplOnServiceCreated)) !=
+         0;
+}
+
+bool BackForwardCache::DisabledReason::operator<(
+    const DisabledReason& other) const {
+  return std::tie(source, id) < std::tie(other.source, other.id);
+}
+bool BackForwardCache::DisabledReason::operator==(
+    const DisabledReason& other) const {
+  return std::tie(source, id) == std::tie(other.source, other.id);
+}
+bool BackForwardCache::DisabledReason::operator!=(
+    const DisabledReason& other) const {
+  return !(*this == other);
 }
 
 }  // namespace content

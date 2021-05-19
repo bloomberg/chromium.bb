@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/login/screens/reset_screen.h"
 
+#include <utility>
+
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/scoped_guest_button_blocker.h"
@@ -16,12 +18,12 @@
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ash/login/screens/network_error.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/reset/metrics.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
@@ -137,7 +139,7 @@ void ResetScreen::CheckIfPowerwashAllowed(
     // Check if powerwash is only allowed by the admin specifically for the
     // purpose of installing a TPM firmware update.
     tpm_firmware_update::GetAvailableUpdateModes(
-        base::BindOnce(&OnUpdateModesAvailable, base::Passed(&callback)),
+        base::BindOnce(&OnUpdateModesAvailable, std::move(callback)),
         base::TimeDelta());
     return;
   }

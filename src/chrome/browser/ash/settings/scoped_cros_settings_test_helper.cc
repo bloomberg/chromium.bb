@@ -7,13 +7,13 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/values.h"
+#include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_cache.h"
 #include "chrome/browser/ash/settings/device_settings_provider.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -22,7 +22,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 ScopedCrosSettingsTestHelper::ScopedCrosSettingsTestHelper(
     bool create_settings_service)
@@ -120,7 +120,7 @@ void ScopedCrosSettingsTestHelper::StoreCachedDeviceSetting(
                                         g_browser_process->local_state())) {
       CHECK(settings.ParseFromString(data.policy_value()));
     }
-    OwnerSettingsServiceChromeOS::UpdateDeviceSettings(path, *value, settings);
+    OwnerSettingsServiceAsh::UpdateDeviceSettings(path, *value, settings);
     CHECK(settings.SerializeToString(data.mutable_policy_value()));
     CHECK(device_settings_cache::Store(data, g_browser_process->local_state()));
     g_browser_process->local_state()->CommitPendingWrite(base::DoNothing(),
@@ -138,13 +138,14 @@ void ScopedCrosSettingsTestHelper::CopyStoredValue(const std::string& path) {
   }
 }
 
-StubInstallAttributes* ScopedCrosSettingsTestHelper::InstallAttributes() {
+chromeos::StubInstallAttributes*
+ScopedCrosSettingsTestHelper::InstallAttributes() {
   return test_install_attributes_->Get();
 }
 
 void ScopedCrosSettingsTestHelper::Initialize(bool create_settings_service) {
   if (create_settings_service) {
-    test_install_attributes_.reset(new ScopedStubInstallAttributes());
+    test_install_attributes_.reset(new chromeos::ScopedStubInstallAttributes());
     CHECK(!DeviceSettingsService::IsInitialized());
     test_device_settings_service_.reset(new ScopedTestDeviceSettingsService());
     test_cros_settings_.reset(
@@ -152,4 +153,4 @@ void ScopedCrosSettingsTestHelper::Initialize(bool create_settings_service) {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

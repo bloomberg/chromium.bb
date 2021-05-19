@@ -51,7 +51,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
@@ -64,7 +64,6 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
@@ -73,6 +72,7 @@
 #include "ui/base/resource/scale_factor.h"
 
 class SkCanvas;
+class SkBitmap;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -341,7 +341,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Appends throttles if the browser has sent a variations header to the
   // renderer.
   virtual void AppendVariationsThrottles(
-      int routing_id,
+      const url::Origin& top_origin,
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles) {}
 
   // Public Suffix List --------------------------------------------------
@@ -643,10 +643,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual bool IsWebRtcSrtpEncryptedHeadersEnabled() { return false; }
 
-  virtual base::Optional<WebString> WebRtcStunProbeTrialParameter() {
-    return base::nullopt;
-  }
-
   // TODO(qingsi): Consolidate the legacy |ip_handling_policy| with
   // |allow_mdns_obfuscation| following the latest spec on IP handling modes
   // with mDNS introduced
@@ -753,6 +749,8 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual void SetRenderingColorSpace(const gfx::ColorSpace& color_space) {}
 
+  virtual gfx::ColorSpace GetRenderingColorSpace() const { return {}; }
+
   // Renderer Memory Metrics ----------------------------------------------
 
   virtual void RecordMetricsForBackgroundedRendererPurge() {}
@@ -770,6 +768,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // keys and is usually set for the duration of processing an IPC message. To
   // unset pass an empty WebURL and WebString.
   virtual void SetActiveURL(const WebURL& url, const WebString& top_url) {}
+
+  // Sad Page -----------------------------------------------------
+
+  // Returns a sad page bitmap used when the child frame has crashed.
+  virtual SkBitmap* GetSadPageBitmap() { return nullptr; }
 
  private:
   static void InitializeMainThreadCommon(Platform* platform,

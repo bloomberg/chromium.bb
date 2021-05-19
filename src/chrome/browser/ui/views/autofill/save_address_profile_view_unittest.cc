@@ -21,12 +21,13 @@ namespace autofill {
 class MockSaveAddressProfileBubbleController
     : public SaveAddressProfileBubbleController {
  public:
-  MOCK_METHOD(base::string16, GetWindowTitle, (), (const, override));
+  MOCK_METHOD(std::u16string, GetWindowTitle, (), (const, override));
   MOCK_METHOD(const AutofillProfile&, GetProfileToSave, (), (const, override));
   MOCK_METHOD(void,
               OnUserDecision,
               (AutofillClient::SaveAddressProfileOfferUserDecision decision),
               (override));
+  MOCK_METHOD(void, OnEditButtonClicked, (), (override));
   MOCK_METHOD(void, OnBubbleClosed, (), (override));
 };
 
@@ -75,7 +76,7 @@ SaveAddressProfileViewTest::SaveAddressProfileViewTest() {
 
 void SaveAddressProfileViewTest::CreateViewAndShow() {
   ON_CALL(*mock_controller(), GetWindowTitle())
-      .WillByDefault(testing::Return(base::string16()));
+      .WillByDefault(testing::Return(std::u16string()));
   ON_CALL(*mock_controller(), GetProfileToSave())
       .WillByDefault(testing::ReturnRef(address_profile_to_save()));
 

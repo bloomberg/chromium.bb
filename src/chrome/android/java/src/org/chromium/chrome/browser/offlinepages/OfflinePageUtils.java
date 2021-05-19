@@ -26,7 +26,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.FileProviderHelper;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -88,19 +87,19 @@ public class OfflinePageUtils {
     private static Internal sInstance;
 
     /**
-     * Tracks the observers of ChromeActivity's TabModelSelectors. This is weak so the activity can
+     * Tracks the observers of each Activity's TabModelSelectors. This is weak so the activity can
      * be garbage collected without worrying about this map.  The RecentTabTracker is held here so
-     * that it can be destroyed when the ChromeActivity gets a new TabModelSelector.
+     * that it can be destroyed when the Activity gets a new TabModelSelector.
      */
-    private static Map<ChromeActivity, RecentTabTracker> sTabModelObservers = new HashMap<>();
+    private static Map<Activity, RecentTabTracker> sTabModelObservers = new HashMap<>();
 
     /**
      * Interface for implementation of offline page utilities, that can be implemented for testing.
      * We are using an internal interface, so that instance methods can have the same names as
      * static methods.
      */
-    @VisibleForTesting
-    interface Internal {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public interface Internal {
         /** Returns offline page bridge for specified profile. */
         OfflinePageBridge getOfflinePageBridge(Profile profile);
 
@@ -850,7 +849,7 @@ public class OfflinePageUtils {
      * destroying obsolete observers as necessary.
      */
     public static void observeTabModelSelector(
-            ChromeActivity activity, TabModelSelector tabModelSelector) {
+            Activity activity, TabModelSelector tabModelSelector) {
         RecentTabTracker previousObserver =
                 sTabModelObservers.put(activity, new RecentTabTracker(tabModelSelector));
         if (previousObserver != null) {
@@ -950,8 +949,8 @@ public class OfflinePageUtils {
                 "OfflinePages.TabRestore", tabRestoreType, TabRestoreType.NUM_ENTRIES);
     }
 
-    @VisibleForTesting
-    static void setInstanceForTesting(Internal instance) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public static void setInstanceForTesting(Internal instance) {
         sInstance = instance;
     }
 

@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/testing_profile.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/base_paths.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -82,6 +82,7 @@
 #include "components/policy/core/common/schema.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/testing_pref_store.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -128,8 +129,8 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/account_manager/account_manager.h"
 #include "ash/components/account_manager/account_manager_factory.h"
+#include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #endif
@@ -315,6 +316,7 @@ void TestingProfile::Init() {
                             profile_manager->GetSystemProfilePath());
     }
   }
+  UpdateBrowserProfileType();
 
   if (IsOffTheRecord()) {
     key_ = std::make_unique<TestingProfileKey>(
@@ -324,7 +326,7 @@ void TestingProfile::Init() {
   }
 
 #if defined(OS_ANDROID)
-  signin::DisableInteractionWithSystemAccounts();
+  signin::SetUpMockAccountManagerFacade();
 #endif
 
   // Normally this would happen during browser startup, but for tests
@@ -380,9 +382,9 @@ void TestingProfile::Init() {
   account_manager->Initialize(profile_path_, GetURLLoaderFactory(),
                               immediate_callback_runner);
   account_manager->SetPrefService(GetPrefs());
-  if (!chromeos::CrosSettings::IsInitialized()) {
+  if (!ash::CrosSettings::IsInitialized()) {
     scoped_cros_settings_test_helper_.reset(
-        new chromeos::ScopedCrosSettingsTestHelper);
+        new ash::ScopedCrosSettingsTestHelper);
   }
   arc::ArcServiceLauncher* launcher = arc::ArcServiceLauncher::Get();
   if (launcher)
@@ -446,6 +448,37 @@ void TestingProfile::Init() {
       this);
 }
 
+void TestingProfile::UpdateBrowserProfileType() {
+  if (IsGuestSession()) {
+    profile_metrics::SetBrowserContextType(
+        this, profile_metrics::BrowserProfileType::kGuest);
+    return;
+  }
+
+  if (IsEphemeralGuestProfile()) {
+    profile_metrics::SetBrowserContextType(
+        this, profile_metrics::BrowserProfileType::kEphemeralGuest);
+    return;
+  }
+
+  if (IsSystemProfile()) {
+    profile_metrics::SetBrowserContextType(
+        this, profile_metrics::BrowserProfileType::kSystem);
+    return;
+  }
+
+  if (IsOffTheRecord()) {
+    profile_metrics::SetBrowserContextType(
+        this,
+        (otr_profile_id_ == OTRProfileID::PrimaryID())
+            ? profile_metrics::BrowserProfileType::kIncognito
+            : profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile);
+    return;
+  }
+  profile_metrics::SetBrowserContextType(
+      this, profile_metrics::BrowserProfileType::kRegular);
+}
+
 void TestingProfile::FinishInit() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (profile_manager)
@@ -457,7 +490,8 @@ void TestingProfile::FinishInit() {
     // It is the role of the delegate to ensure that the signout allowed is
     // properly updated after the profile is create is initialized.
     // For testing profiles that do not have a delegate, the signout allowed
-    // must be initialized when the testing profile finishes its initialization.
+    // must be initialized when the testing profile finishes its
+    // initialization.
     signin_util::EnsureUserSignoutAllowedIsInitializedForProfile(this);
   }
 
@@ -480,9 +514,9 @@ TestingProfile::~TestingProfile() {
   FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
 
   // The SimpleDependencyManager should always be passed after the
-  // BrowserContextDependencyManager. This is because the KeyedService instances
-  // in the BrowserContextDependencyManager's dependency graph can depend on the
-  // ones in the SimpleDependencyManager's graph.
+  // BrowserContextDependencyManager. This is because the KeyedService
+  // instances in the BrowserContextDependencyManager's dependency graph can
+  // depend on the ones in the SimpleDependencyManager's graph.
   DependencyManager::PerformInterlockedTwoPhaseShutdown(
       browser_context_dependency_manager_, this, simple_dependency_manager_,
       key_.get());
@@ -547,6 +581,7 @@ void TestingProfile::CreateWebDataService() {
 
 void TestingProfile::SetGuestSession(bool guest) {
   guest_session_ = guest;
+  UpdateBrowserProfileType();
 }
 
 void TestingProfile::SetIsNewProfile(bool is_new_profile) {
@@ -621,18 +656,24 @@ void TestingProfile::SetOffTheRecordProfile(
 }
 
 Profile* TestingProfile::GetOffTheRecordProfile(
-    const OTRProfileID& otr_profile_id) {
+    const OTRProfileID& otr_profile_id,
+    bool create_if_needed) {
   if (IsOffTheRecord())
-    return original_profile_->GetOffTheRecordProfile(otr_profile_id);
+    return original_profile_->GetOffTheRecordProfile(otr_profile_id,
+                                                     create_if_needed);
 
   // Ephemeral Guest profiles do not support Incognito.
   if (IsEphemeralGuestProfile() && otr_profile_id == OTRProfileID::PrimaryID())
     return nullptr;
 
   if (!HasOffTheRecordProfile(otr_profile_id)) {
+    if (!create_if_needed)
+      return nullptr;
+
     TestingProfile::Builder builder;
     if (IsGuestSession() && otr_profile_id == OTRProfileID::PrimaryID())
       builder.SetGuestSession();
+    builder.SetPath(GetPath());
     builder.BuildOffTheRecord(this, otr_profile_id);
     DCHECK(HasOffTheRecordProfile(otr_profile_id));
   }
@@ -764,7 +805,8 @@ void TestingProfile::CreateProfilePolicyConnector() {
         std::make_unique<policy::PolicyServiceImpl>(std::move(providers));
     policy_service_ = std::move(policy_service);
   }
-  profile_policy_connector_.reset(new policy::ProfilePolicyConnector());
+  profile_policy_connector_ =
+      std::make_unique<policy::ProfilePolicyConnector>();
   profile_policy_connector_->InitForTesting(std::move(policy_service_));
   if (override_policy_connector_is_managed_.has_value())
     profile_policy_connector_->OverrideIsManagedForTesting(
@@ -879,7 +921,7 @@ void TestingProfile::ChangeAppLocale(const std::string& locale,
   requested_locale_ = locale;
 }
 
-chromeos::ScopedCrosSettingsTestHelper*
+ash::ScopedCrosSettingsTestHelper*
 TestingProfile::ScopedCrosSettingsTestHelper() {
   return scoped_cros_settings_test_helper_.get();
 }
@@ -954,17 +996,6 @@ TestingProfile::GetBrowsingDataRemoverDelegate() {
   // data backends, which are already mocked if considered too heavy-weight
   // for TestingProfile.
   return ChromeBrowsingDataRemoverDelegateFactory::GetForProfile(this);
-}
-
-void TestingProfile::SetCorsOriginAccessListForOrigin(
-    TargetBrowserContexts target_mode,
-    const url::Origin& source_origin,
-    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-    base::OnceClosure closure) {
-  // Extensions need to set the list, but just can be ignored unless they need
-  // to make actual network requests beyond the CORS policy.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
 }
 
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {

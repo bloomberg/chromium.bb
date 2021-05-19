@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/back_forward_cache_loader_helper.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
+#include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
@@ -742,8 +743,14 @@ bool ResourceLoader::WillFollowRedirect(
     bool& report_raw_headers,
     std::vector<std::string>* removed_headers) {
   DCHECK(!passed_redirect_response.IsNull());
+
+  if (passed_redirect_response.HasAuthorizationCoveredByWildcardOnPreflight()) {
+    fetcher_->GetUseCounter().CountUse(
+        mojom::WebFeature::kAuthorizationCoveredByWildcard);
+  }
+
   if (removed_headers) {
-    FindClientHintsToRemove(Context().GetFeaturePolicy(),
+    FindClientHintsToRemove(Context().GetPermissionsPolicy(),
                             GURL(new_url.GetString().Utf8()), removed_headers);
   }
 
@@ -844,9 +851,8 @@ bool ResourceLoader::WillFollowRedirect(
                            unused_virtual_time_pauser, resource_->GetType());
   DCHECK(!new_request->HttpBody());
   if (auto* observer = fetcher_->GetResourceLoadObserver()) {
-    observer->WillSendRequest(resource_->InspectorId(), *new_request,
-                              redirect_response, resource_->GetType(),
-                              options.initiator_info,
+    observer->WillSendRequest(*new_request, redirect_response,
+                              resource_->GetType(), options,
                               initial_request.GetRenderBlockingBehavior());
   }
 
@@ -920,6 +926,11 @@ void ResourceLoader::DidReceiveResponse(const WebURLResponse& response) {
 void ResourceLoader::DidReceiveResponseInternal(
     const ResourceResponse& response) {
   const ResourceRequestHead& request = resource_->GetResourceRequest();
+
+  if (response.HasAuthorizationCoveredByWildcardOnPreflight()) {
+    fetcher_->GetUseCounter().CountUse(
+        mojom::WebFeature::kAuthorizationCoveredByWildcard);
+  }
 
   if (request.IsAutomaticUpgrade()) {
     mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> pending_recorder;
@@ -1222,6 +1233,13 @@ void ResourceLoader::DidFail(const WebURLError& error,
 }
 
 void ResourceLoader::HandleError(const ResourceError& error) {
+  if (error.CorsErrorStatus() &&
+      error.CorsErrorStatus()
+          ->has_authorization_covered_by_wildcard_on_preflight) {
+    fetcher_->GetUseCounter().CountUse(
+        mojom::WebFeature::kAuthorizationCoveredByWildcard);
+  }
+
   if (response_body_loader_)
     response_body_loader_->Abort();
 

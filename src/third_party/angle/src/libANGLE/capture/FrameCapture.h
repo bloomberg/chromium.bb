@@ -407,7 +407,9 @@ class FrameCaptureShared final : angle::NonCopyable
     void setProgramSources(gl::ShaderProgramID id, ProgramSources sources);
 
     // Load data from a previously stored texture level
-    const std::vector<uint8_t> &retrieveCachedTextureLevel(gl::TextureID id, GLint level);
+    const std::vector<uint8_t> &retrieveCachedTextureLevel(gl::TextureID id,
+                                                           gl::TextureTarget target,
+                                                           GLint level);
 
     // Create new texture level data and copy the source into it
     void copyCachedTextureLevel(const gl::Context *context,
@@ -479,6 +481,10 @@ std::ostream &operator<<(std::ostream &os, const ParamCapture &capture);
 void CaptureMemory(const void *source, size_t size, ParamCapture *paramCapture);
 void CaptureString(const GLchar *str, ParamCapture *paramCapture);
 void CaptureStringLimit(const GLchar *str, uint32_t limit, ParamCapture *paramCapture);
+void CaptureVertexPointerGLES1(const gl::State &glState,
+                               gl::ClientVertexArrayType type,
+                               const void *pointer,
+                               ParamCapture *paramCapture);
 
 gl::Program *GetProgramForCapture(const gl::State &glState, gl::ShaderProgramID handle);
 

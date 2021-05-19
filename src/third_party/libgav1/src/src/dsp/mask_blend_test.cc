@@ -19,6 +19,7 @@
 #include <cstring>
 #include <ostream>
 #include <string>
+#include <type_traits>
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
@@ -40,29 +41,41 @@ namespace dsp {
 namespace {
 
 constexpr int kNumSpeedTests = 50000;
+// mask_blend is applied to compound prediction values when is_inter_intra is
+// false. This implies a range far exceeding that of pixel values. The ranges
+// include kCompoundOffset in 10bpp and 12bpp.
+// see: src/dsp/convolve.cc & src/dsp/warp.cc.
+constexpr int kCompoundPredictionRange[3][2] = {
+    // 8bpp
+    {-5132, 9212},
+    // 10bpp
+    {3988, 61532},
+    // 12bpp
+    {3974, 61559},
+};
 
 const char* GetDigest8bpp(int id) {
   static const char* const kDigest[] = {
-      "2dd91daba84f0375fa4e44de367f8b46", "55db73529f0df3bf4010e992dd8a5c86",
-      "d1ca1bd7071b1424a252e8cde151b7f4", "e08984aa08f33f59457b514e3d1a3561",
-      "4867911cf8b77be85c90930ec7639394", "a64e0898a07fc5b6fa0eb4c38dbae8a0",
-      "308b60ac3b4f39abef376532dbe8d74b", "1258aecd878e6631f3dc70e79c9e45ad",
-      "b6633f1590acd24388166db11f5aac25", "0bc90f4f5f985f7f6726ca9ee5628d22",
-      "668e5cc427b3d9a9291a79ecdab8da13", "cfcbd5951477be105538ec3386b374cb",
-      "281e6ff77b4d883c399f162219d5b7c9", "65ea38314ee61e5433b087d690a770e4",
-      "abfefb8cb4860c4cbf5e8231f4a6c933", "7af7a3d74e0b5c5241d3294cd506be32",
-      "a03e5ce8414b04870fa7f49fab428e6b", "89e80848db8e70adba77129c455c481f",
-      "9415252f054e5cb357b5b3737894af22", "2dcfe14af3bdb30efa235b423e63e404",
-      "46276a31e8f7f0ad360412a98eca8487", "a36fd522feb8da32def45883a8d03b50",
-      "a82475352dc23d2e0038e2737ccaa417", "15c130c26c6ea07c70a086bc82adfff6",
-      "1dc1ba6f9dd23bc3c86ea687436987e5", "77834da899998a970aea5ccaabae89fa",
-      "429d0e3f34b32c8cbbd885f79803e388", "0e18016afda6aa3a6b1d89e6f14dd731",
-      "70246aed8008bb3cfc2eca8f4c402fa0", "7e8d35f59825cf114ed36238563ef124",
-      "2386b1b89819acef49754b19e975483b", "a0b15dbea4821a133b0ad0f9d77d9f5e",
-      "d9858411ae3c0371d9041492159e4be3", "30ecc05cd7d82841a327c2fda07af877",
-      "73da76ef0ad534e2e432ddd9891fdc08", "dadb0b3d2a706a144748367988abb10f",
-      "67b25e85ff6d41488a42b87bb99a9c3e", "7c9288b35b6f90305a53a3b87889cfd0",
-      "659e28b852dd982762d1add0286f81ef", "af5e6c65ed48a0eb7d509f7036398728",
+      "4b70d5ef5ac7554b4b2660a4abe14a41", "64adb36f07e4a2c4ea4f05cfd715ff58",
+      "c490478208374a43765900ef7115c264", "b98f222eb70ef8589da2d6c839ca22b8",
+      "54752ca05f67b5af571bc311aa4e3de3", "344b2dab7accd8bd0a255bee16207336",
+      "0b2f6f755d1547eea7e0172f8133ea01", "310dc6364fdacba186c01f0e8ac4fcb7",
+      "b0c9f08b73d9e5c16eaf5abdbca1fdc0", "eaad805999d949fa1e1bbbb63b4b7827",
+      "6eb2a80d212df89403efb50db7a81b08", "c30730aa799dba78a2ebd3f729af82c7",
+      "4346c2860b23f0072b6b288f14c1df36", "8f8dd3eeed74ef115ca8a2f82ebff0ba",
+      "42e8872a81647767636f4c75609e0e2f", "1ff2526547d59557f7bb458249e34527",
+      "cd303d685268aebd2919dd468928d0ba", "254fb3ad990f9d408d252c70dd682e27",
+      "ba8d99c62853d14855f5d93e9574c97b", "e8ab744348681d6aa1043080efa86fc9",
+      "2fa919ca1f54b4336de878ff4015c352", "18e47c9809b909c2bfad08e00dffc635",
+      "9a90c843f06f0b662c509c26f5dd5054", "f89c608f884f37b064fc2b49eb2690a9",
+      "2448734d948ca6ddeb0ce8038a4ab2cf", "a3e0f86b7a5cb49716a424709c00b5a4",
+      "eb84dba768b54da10cded2f932f0aab7", "d6e8fdeb6875b70488f25d7f7ed9423f",
+      "1ca0822febce19c02ddc42a7b3331257", "a9259bb9b87ad002619eb47b907d7226",
+      "6408c5f327f1a9a390fb0046d4bc112b", "dba612489f87d00a82f2735fbcb98dcc",
+      "e8626a97699fbd247d6358ad5f766bee", "5e638a6897d7a2950f3512f871fa19e6",
+      "45a58708939779413f8e0e1de2ee5e6f", "079ae4682d398f0a7e4b66059589586d",
+      "6a06e617308409f9181b59bdd4f63d83", "b05ade2c1a572fc5fcca92b4163d9afb",
+      "30e955c3f86111207d5922575602e90a", "af5e6c65ed48a0eb7d509f7036398728",
       "f9da3310d7dc75910483dfdd2af6ee62", "a9423b4d67bee5e7c7bc3baa7a9c017a",
       "6b90a04333407013dd011c1af582e79f", "e658088a74bfb7cc57a2faa74a6f8689",
       "6eedf27126eba6915035f9f701a1b992", "89116a7c6ad3f70a5b3f3105d04ad1a8",
@@ -91,26 +104,26 @@ const char* GetDigest8bpp(int id) {
 #if LIBGAV1_MAX_BITDEPTH >= 10
 const char* GetDigest10bpp(int id) {
   static const char* const kDigest[] = {
-      "8196b9f210352077cc679e446759da78", "efe97b629240d3684ca42ab9b5d61b34",
-      "004a82797cc5def32c1790552c540051", "307a96332b52d8cd98dad8d317986ba2",
-      "2e1a7c36304a6cfacf39a2e214970a48", "55875ec75bdb3db4afcfc2566eee8acb",
-      "b55f12d10b3cb9d71b9c67fa1815bb17", "b5413338cc13d4dd040a188093f2871f",
-      "8fc31544ea7a4dcf54875cc758d9deca", "5a2d915e31b07d07834057a48eab1526",
-      "542a39b7abf911e43bdabb26994a2c6d", "ae2dca20ce113a6465d6db29f3a0c0b4",
-      "7933aa47fc4e73e742b36f94131060c4", "0e9511aebeda0d20a5379f1f6ade758a",
-      "1eb2e41f3b2875927694353c85eb46b2", "6a2c23d4753ae26bc12ee62aec28be2d",
-      "82c9a494a6bb9a8896a1a598208a1a8b", "98b253d1062509fd6930f5116a2122d0",
-      "382eea1848495702f3c7b249d0494984", "06e261d242bbccd58bfa3af94e75ff72",
-      "42b852cd19a1017123307b00c2c7dd3f", "796f3ffb9d7be7b4af1b5b2354f078de",
-      "31e728e592eeb4186e9c296cba14431b", "958e9225425973e0efb72b5631bb7567",
-      "665f04edc9eb7ecda8b6b3815b2ce70d", "f6c7bdb0f545b6bc21c8626b3ad281d9",
-      "2a99d2843237b4648e41cd97d6dc92fa", "1b2be5dd157056fb2be2f201fbc17c32",
-      "3f2ed4d6c80df46333e8ed93bf58faf3", "864de7e1d6c9b05b6461dd425911170a",
-      "5b1c0ce6558380162e3aa5ab652694b2", "c7c612a7ad16dd9b79c37c08e1595eb5",
-      "f0b71f665cfb75dc9f39f1e4e9c3ddd6", "f5066ab69b751ea7b5cd37cb94fe4122",
-      "7e7d7675bf768658b9cfe0b70e969475", "3993328e0d01129f2e35ca5462c1614b",
-      "bcb804c07f4affa8b33950f9b3942008", "84f597dfb56e9db5953b42eaa2c22c88",
-      "c8c1c7d314c5b0c0890ca8e4c91ce055", "c26e0a0e90a969d762edcab770bed3b7",
+      "1af3cbd1616941b59e6a3f6a417b6312", "1d8b3f4b9d5d2f4ff5be8e81b7243121",
+      "53a3a76bf2bcd5761cd15fc739a4f4e1", "7597f69dc19a584280be0d67911db6a6",
+      "e1221c172843dc6c1b345bcd370771cc", "2ccbe012ca167114b14c3ba70befa960",
+      "0f68632d7e5faddb4554ca430d1df822", "8caa0061a26e142b783951d5abd7bf5d",
+      "1cce6acdbd8ca8d2546ba937584730bf", "022913e87a3c1a86aaefe2c2d4f89882",
+      "48f8ab636ba15a06731d869b603cbe58", "ba1616c990d224c20de123c3ccf19952",
+      "346a797b7cb4de10759e329f8b49e077", "8f4aa102e9b1ac430bdb9ebd4ec4cfca",
+      "5886397456b15e504ad55d8e0ce71e0e", "2a78b52ce43dc28606e83521963c00fa",
+      "8d3ef5280063337b0df97f91251bb8fc", "81f0ceada000ce40586be828a2045430",
+      "edb7b70a473392148bc419a44385326b", "97abe2eecaf9158a0529b234a241a57a",
+      "65729d750aa1258e4a7eccef247ac8c2", "78cc995e81188b9e8b29fa58796a3313",
+      "a1eb6a8c2f7c77e30e739a1b3b07cc74", "805b0f2f4b9d80f118d800b5ab4f603e",
+      "12610c83533f7170149390ba581f70b2", "cba20deed43b49ada3f626c91510995d",
+      "ba7ea35410b746fcbcf56c24ccb56d59", "933b2235b9b943984607d87f0bce1067",
+      "7ae59015295db8983bc8472429076464", "c18cce63327b367c0a260e9cbf4222b9",
+      "7c9672a7dfa964cb3ed3f2b4b443d2b6", "b29bcf1cc5369702e0179db1198db531",
+      "412326aff6c89116240b5d3ef63fa5cc", "3d854589fd171e42d118be4627ec5330",
+      "9a157e51e39ed314031224f074193791", "c645cdc63d3112f27b90cc9080c6d071",
+      "3f360cc336a4ee9a9bd78bde1a6e9eb3", "37b40fa8674d03a7cd66afdee939b9bf",
+      "cd6c7b98fe71b533c6a06d6d9122a6d0", "c26e0a0e90a969d762edcab770bed3b7",
       "e517967d2cf4f1b0fff09d334475e2ae", "bc760a328a0a4b2d75593667adfa2a0e",
       "b6239fdeeccc462640047cb2e2c2be96", "bc01f6a232ef9f0d9e57301779edd67f",
       "cf6e8c1823c5498fa5589db40406a6ad", "2a9a4bd0bd84f0b85225a5b30f5eaa16",
@@ -241,14 +254,16 @@ class MaskBlendTest : public ::testing::TestWithParam<MaskBlendTestParam>,
   void Test(const char* digest, int num_runs);
 
  private:
+  using PredType =
+      typename std::conditional<bitdepth == 8, int16_t, uint16_t>::type;
   static constexpr int kStride = kMaxSuperBlockSizeInPixels;
   static constexpr int kDestStride = kMaxSuperBlockSizeInPixels * sizeof(Pixel);
   const MaskBlendTestParam param_ = GetParam();
-  alignas(kMaxAlignment) uint16_t
+  alignas(kMaxAlignment) PredType
       source1_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels] = {};
   uint8_t source1_8bpp_[kMaxSuperBlockSizeInPixels *
                         kMaxSuperBlockSizeInPixels] = {};
-  alignas(kMaxAlignment) uint16_t
+  alignas(kMaxAlignment) PredType
       source2_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels] = {};
   uint8_t source2_8bpp_[kMaxSuperBlockSizeInPixels *
                         kMaxSuperBlockSizeInPixels] = {};
@@ -274,29 +289,28 @@ void MaskBlendTest<bitdepth, Pixel>::Test(const char* const digest,
   // block is exactly the upper left half of the generated 16x16 block.
   libvpx_test::ACMRandom rnd(libvpx_test::ACMRandom::DeterministicSeed() +
                              GetDigestIdOffset());
-  uint16_t* src_1 = source1_;
+  PredType* src_1 = source1_;
   uint8_t* src_1_8bpp = source1_8bpp_;
-  uint16_t* src_2 = source2_;
+  PredType* src_2 = source2_;
   uint8_t* src_2_8bpp = source2_8bpp_;
   const ptrdiff_t src_2_stride = param_.is_inter_intra ? kStride : width;
   uint8_t* mask_row = mask_;
-  uint8_t round_bits[2] = {3, 7};
-  if (param_.is_inter_intra) round_bits[1] = 11;
-  const int inter_post_round_bits =
-      2 * kFilterBits - round_bits[0] - round_bits[1];
-  const int range_mask = (1 << (bitdepth + inter_post_round_bits)) - 1;
-  const int round_offset = (bitdepth == 8) ? 0 : kCompoundOffset;
+  const int range_mask = (1 << (bitdepth)) - 1;
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      src_1[x] = rnd.Rand16() & range_mask;
-      src_2[x] = rnd.Rand16() & range_mask;
+      src_1[x] = static_cast<PredType>(rnd.Rand16() & range_mask);
+      src_2[x] = static_cast<PredType>(rnd.Rand16() & range_mask);
       if (param_.is_inter_intra && bitdepth == 8) {
         src_1_8bpp[x] = src_1[x];
         src_2_8bpp[x] = src_2[x];
       }
       if (!param_.is_inter_intra) {
-        src_1[x] += round_offset;
-        src_2[x] += round_offset;
+        // Implies isCompound == true.
+        constexpr int bitdepth_index = (bitdepth - 8) >> 1;
+        const int min_val = kCompoundPredictionRange[bitdepth_index][0];
+        const int max_val = kCompoundPredictionRange[bitdepth_index][1];
+        src_1[x] = static_cast<PredType>(rnd(max_val - min_val) + min_val);
+        src_2[x] = static_cast<PredType>(rnd(max_val - min_val) + min_val);
       }
     }
     src_1 += width;

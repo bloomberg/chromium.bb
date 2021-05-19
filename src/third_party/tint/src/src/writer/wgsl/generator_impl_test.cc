@@ -12,16 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/writer/wgsl/generator_impl.h"
-
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/function.h"
-#include "src/ast/variable.h"
-#include "src/program.h"
 #include "src/semantic/variable.h"
-#include "src/type/void_type.h"
 #include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
@@ -33,7 +24,7 @@ using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, Generate) {
   Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   GeneratorImpl& gen = Build();
 
@@ -55,17 +46,17 @@ using WgslBuiltinConversionTest = TestParamHelper<WgslBuiltinData>;
 TEST_P(WgslBuiltinConversionTest, Emit) {
   auto params = GetParam();
 
-  auto* var = Global("a", ty.f32(), ast::StorageClass::kNone, nullptr,
-                     ast::VariableDecorationList{
+  auto* var = Global("a", ty.f32(), ast::StorageClass::kInput, nullptr,
+                     ast::DecorationList{
                          create<ast::BuiltinDecoration>(params.builtin),
                      });
 
   GeneratorImpl& gen = Build();
 
-  gen.EmitVariableDecorations(program->Sem().Get(var));
+  gen.EmitDecorations(var->decorations());
 
   EXPECT_EQ(gen.result(),
-            "[[builtin(" + std::string(params.attribute_name) + ")]] ");
+            "[[builtin(" + std::string(params.attribute_name) + ")]]");
 }
 INSTANTIATE_TEST_SUITE_P(
     WgslGeneratorImplTest,

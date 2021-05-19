@@ -76,6 +76,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     bool run_all_compositor_stages_before_draw = false;
     bool log_capture_pipeline_in_webrtc = false;
     DebugRendererSettings debug_renderer_settings;
+    gfx::RenderingPipeline* gpu_pipeline = nullptr;
   };
   explicit FrameSinkManagerImpl(const InitParams& params);
   // TODO(kylechar): Cleanup tests and remove this constructor.
@@ -139,9 +140,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                        EvictBackBufferCallback callback) override;
   void UpdateDebugRendererSettings(
       const DebugRendererSettings& debug_settings) override;
-  void StartThrottling(const std::vector<FrameSinkId>& frame_sink_ids,
-                       base::TimeDelta interval) override;
-  void EndThrottling() override;
   void Throttle(const std::vector<FrameSinkId>& ids,
                 base::TimeDelta interval) override;
 
@@ -344,9 +342,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   base::flat_map<uint32_t, base::ScopedClosureRunner> cached_back_buffers_;
 
-  // This tells if any frame sinks are currently throttled.
-  bool frame_sinks_throttled_ = false;
-
   THREAD_CHECKER(thread_checker_);
 
   // |video_detector_| is instantiated lazily in order to avoid overhead on
@@ -372,6 +367,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   mojo::Receiver<mojom::FrameSinkManager> receiver_{this};
 
   base::ObserverList<FrameSinkObserver>::Unchecked observer_list_;
+
+  gfx::RenderingPipeline* gpu_pipeline_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerImpl);
 };

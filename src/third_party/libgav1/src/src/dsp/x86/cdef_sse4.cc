@@ -349,8 +349,8 @@ inline uint32_t SumVector_S32(__m128i a) {
 inline uint32_t Cost0Or4(const __m128i a, const __m128i b,
                          const __m128i division_table[2]) {
   // Reverse and clear upper 2 bytes.
-  const __m128i reverser =
-      _mm_set_epi32(0x80800100, 0x03020504, 0x07060908, 0x0b0a0d0c);
+  const __m128i reverser = _mm_set_epi32(static_cast<int>(0x80800100),
+                                         0x03020504, 0x07060908, 0x0b0a0d0c);
   // 14 13 12 11 10 09 08 ZZ
   const __m128i b_reversed = _mm_shuffle_epi8(b, reverser);
   // 00 14 01 13 02 12 03 11
@@ -371,7 +371,8 @@ inline uint32_t CostOdd(const __m128i a, const __m128i b,
                         const __m128i division_table[2]) {
   // Reverse and clear upper 10 bytes.
   const __m128i reverser =
-      _mm_set_epi32(0x80808080, 0x80808080, 0x80800100, 0x03020504);
+      _mm_set_epi32(static_cast<int>(0x80808080), static_cast<int>(0x80808080),
+                    static_cast<int>(0x80800100), 0x03020504);
   // 10 09 08 ZZ ZZ ZZ ZZ ZZ
   const __m128i b_reversed = _mm_shuffle_epi8(b, reverser);
   // 00 10 01 09 02 08 03 ZZ

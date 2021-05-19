@@ -14,23 +14,10 @@
 
 #include "src/type/storage_texture_type.h"
 
-#include <memory>
-
-#include "src/ast/identifier_expression.h"
 #include "src/type/access_control_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
 #include "src/type/depth_texture_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/pointer_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/struct_type.h"
 #include "src/type/test_helper.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type_determiner.h"
 
 namespace tint {
 namespace type {
@@ -108,9 +95,10 @@ TEST_F(StorageTextureTest, F32) {
       type::StorageTexture::SubtypeFor(ImageFormat::kRgba32Float, Types());
   Type* s = create<StorageTexture>(TextureDimension::k2dArray,
                                    ImageFormat::kRgba32Float, subtype);
-  TypeDeterminer td(this);
 
-  ASSERT_TRUE(td.Determine()) << td.error();
+  auto program = Build();
+
+  ASSERT_TRUE(program.IsValid()) << program.Diagnostics().str();
   ASSERT_TRUE(s->Is<Texture>());
   ASSERT_TRUE(s->Is<StorageTexture>());
   EXPECT_TRUE(s->As<StorageTexture>()->type()->Is<F32>());
@@ -121,9 +109,10 @@ TEST_F(StorageTextureTest, U32) {
       type::StorageTexture::SubtypeFor(ImageFormat::kRg32Uint, Types());
   Type* s = create<StorageTexture>(TextureDimension::k2dArray,
                                    ImageFormat::kRg32Uint, subtype);
-  TypeDeterminer td(this);
 
-  ASSERT_TRUE(td.Determine()) << td.error();
+  auto program = Build();
+
+  ASSERT_TRUE(program.IsValid()) << program.Diagnostics().str();
   ASSERT_TRUE(s->Is<Texture>());
   ASSERT_TRUE(s->Is<StorageTexture>());
   EXPECT_TRUE(s->As<StorageTexture>()->type()->Is<U32>());
@@ -134,19 +123,13 @@ TEST_F(StorageTextureTest, I32) {
       type::StorageTexture::SubtypeFor(ImageFormat::kRgba32Sint, Types());
   Type* s = create<StorageTexture>(TextureDimension::k2dArray,
                                    ImageFormat::kRgba32Sint, subtype);
-  TypeDeterminer td(this);
 
-  ASSERT_TRUE(td.Determine()) << td.error();
+  auto program = Build();
+
+  ASSERT_TRUE(program.IsValid()) << program.Diagnostics().str();
   ASSERT_TRUE(s->Is<Texture>());
   ASSERT_TRUE(s->Is<StorageTexture>());
   EXPECT_TRUE(s->As<StorageTexture>()->type()->Is<I32>());
-}
-
-TEST_F(StorageTextureTest, MinBufferBindingSize) {
-  auto* subtype = StorageTexture::SubtypeFor(ImageFormat::kRgba32Sint, Types());
-  auto* s = create<StorageTexture>(TextureDimension::k2dArray,
-                                   ImageFormat::kRgba32Sint, subtype);
-  EXPECT_EQ(0u, s->MinBufferBindingSize(MemoryLayout::kUniformBuffer));
 }
 
 }  // namespace

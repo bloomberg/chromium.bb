@@ -38,6 +38,7 @@
 <translation id="1662989795263954667">ବନ୍ଦ ହୋଇଯାଇଛି - ସ୍ୟାହି ସରିଯାଇଛି</translation>
 <translation id="1703835215927279855">ଲେଟର୍</translation>
 <translation id="1706391837335750954">DNS ରିଜଲଭର୍ ଉପସ୍ଥିତ ଅଛି</translation>
+<translation id="1715359911173058521">ସ୍କାନର୍ ସହିତ ଯୋଗାଯୋଗ କରିବାରେ ସମସ୍ୟା ହେଉଛି। ନେଟୱାର୍କ କିମ୍ବା USB ସଂଯୋଗ ଯାଞ୍ଚ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" /> ଏବଂ <ph name="SECOND_MANAGER" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1792647875738159689">ସ୍କାନିଂ ବାତିଲ୍ କରାଯାଉଛି</translation>
@@ -95,6 +96,7 @@
 <translation id="3226405216343213872">ସ୍କାନରଗୁଡ଼ିକୁ ଖୋଜାଯାଉଛି</translation>
 <translation id="3246869037381808805">1ଦିନରୁ ଅଧିକ ପୁରୁଣା ପ୍ରିଣ୍ଟ କାର୍ଯ୍ୟଗୁଡ଼ିକୁ କାଢ଼ି ଦିଆଯିବ</translation>
 <translation id="3268178239013324452">ବିଫଳ ହୋଇଛି - ପ୍ରିଣ୍ଟରର କଭର୍ ଖୋଲା ଅଛି</translation>
+<translation id="3283504360622356314">{0,plural, =1{ଫାଇଲକୁ ଏଡିଟ୍ କରନ୍ତୁ}other{ଫାଇଲଗୁଡ଼ିକୁ ଏଡିଟ୍ କରନ୍ତୁ}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />GHz</translation>
 <translation id="3310640316857623290">DNS ଲାଟେନ୍ସି ଅନୁମୋଦିତ ସୀମା ଠାରୁ ଉଲ୍ଲେଖଯୋଗ୍ୟ ଭାବରେ ଉପରେ ଅଛି</translation>
 <translation id="3328783797891415197">ଟେଷ୍ଟ ଚାଲୁଛି</translation>
@@ -135,6 +137,7 @@
 <translation id="4227825898293920515"><ph name="TIME" />ରେ ପାସ୍‌ୱାର୍ଡର ମିଆଦ ଶେଷ ହେଉଛି</translation>
 <translation id="4238516577297848345">କୌଣସି ପ୍ରିଣ୍ଟ କାର୍ଯ୍ୟ ଚାଲୁ ନାହିଁ</translation>
 <translation id="4297501883039923494">ବନ୍ଦ ହୋଇଯାଇଛି - ଅଜଣା ତ୍ରୁଟି</translation>
+<translation id="4344214025510306853">APN ଆଟାଚ୍ କରନ୍ତୁ</translation>
 <translation id="4378373042927530923">ଚାଲୁନାହିଁ</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">ମୋ ଡ୍ରାଇଭ୍</translation>
@@ -162,7 +165,9 @@
 <translation id="4707579418881001319">L2TP/IPsec + ଉପଯୋଗକର୍ତ୍ତା ସାର୍ଟିଫିକେଟ୍</translation>
 <translation id="4731797938093519117">ମାତା-ପିତାଙ୍କର ଆକ୍ସେସ୍</translation>
 <translation id="4773299976671772492">ବନ୍ଦ ହୋଇଯାଇଛି</translation>
+<translation id="4794140124556169553">ଏକ CPU ଟେଷ୍ଟ ଚଲାଇବା ଫଳରେ ଏହା ଆପଣଙ୍କ ସିଷ୍ଟମର ପରଫରମାନ୍ସକୁ ପ୍ରଭାବିତ କରିପାରେ</translation>
 <translation id="4808449224298348341">ପ୍ରିଣ୍ଟ କାର୍ଯ୍ୟ <ph name="DOCUMENT_TITLE" /> ବାତିଲ୍ କରାଯାଇଛି</translation>
+<translation id="4813345808229079766">ସଂଯୋଜନ</translation>
 <translation id="4832079907277790330">Files ଆପରେ ଫୋଲ୍ଡର୍ ଚୟନ କରନ୍ତୁ...</translation>
 <translation id="4835901797422965222">କୌଣସି ସକ୍ରିୟ ନେଟୱାର୍କ ନାହିଁ</translation>
 <translation id="4848429997038228357">ଚାଲୁଛି</translation>
@@ -177,6 +182,7 @@
 <translation id="4932733599132424254">ତାରିଖ</translation>
 <translation id="498186245079027698">ସ୍କାନର୍ ଯାଞ୍ଚ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ। ସ୍କାନ୍ କରାଯାଇଥିବା ଫାଇଲଗୁଡ଼ିକୁ ସେଭ୍ କରିବାକୁ ଯଥେଷ୍ଟ ଲୋକାଲ୍ ସ୍ଥାନ ଥିବା ନିଶ୍ଚିତ କରନ୍ତୁ।</translation>
 <translation id="4985509611418653372">ଚଲାନ୍ତୁ</translation>
+<translation id="4987769320337599931">ଫାୟାରୱାଲ୍</translation>
 <translation id="4999333166442584738">ରିପୋର୍ଟ ଲୁଚାନ୍ତୁ</translation>
 <translation id="500920857929044050">ଟେଷ୍ଟ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -211,6 +217,7 @@
 <translation id="54609108002486618">ପରିଚାଳିତ ହେଉଛି</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0}ଟି ପ୍ରଚେଷ୍ଟା ବାକି ଅଛି}other{{0}ଟି ପ୍ରଚେଷ୍ଟା ବାକି ଅଛି}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
+<translation id="5499114900554609492">ସ୍କାନ୍ ସମ୍ପୂର୍ଣ୍ଣ କରାଯାଇପାରିଲା ନାହିଁ</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">ସକ୍ରିୟ ହେଉଛି</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -225,6 +232,7 @@
 <translation id="5916084858004523819">ନିଷିଦ୍ଧ</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{ଆପଣଙ୍କ ଫାଇଲକୁ ସଫଳତାପୂର୍ବକ ସ୍କାନ୍ କରାଯାଇ <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />ରେ ସେଭ୍ କରାଯାଇଛି।}other{ଆପଣଙ୍କ ଫାଇଲଗୁଡ଼ିକୁ ସଫଳତାପୂର୍ବକ ସ୍କାନ୍ କରାଯାଇ <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />ରେ ସେଭ୍ କରାଯାଇଛି।}}</translation>
 <translation id="5931523347251946569">ଫାଇଲ୍ ମିଳିଲା ନାହିଁ</translation>
+<translation id="6037291330010597344">ସ୍କାନରର ଡକ୍ୟୁମେଣ୍ଟ ଫିଡର୍ ଖାଲି ଅଛି। ଡକ୍ୟୁମେଣ୍ଟଗୁଡ଼ିକ ଯୋଗ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="6040143037577758943">ବନ୍ଦ</translation>
 <translation id="6040852767465482106">ବେନାମୀ ପରିଚୟ</translation>
 <translation id="604124094241169006">ସ୍ୱଚାଳିତ</translation>
@@ -247,6 +255,7 @@
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> ଟେଷ୍ଟକୁ ବାତିଲ୍ କରାଯାଇଛି</translation>
 <translation id="6325525973963619867">ବିଫଳ ହୋଇଛି</translation>
 <translation id="636850387210749493">ଏଣ୍ଟର୍‌ପ୍ରାଇଜ୍ ନାମାଙ୍କନ</translation>
+<translation id="6388847657025262518">ସ୍କାନରର ଡକ୍ୟୁମେଣ୍ଟ ଫିଡର୍ ଜାମ୍ ହୋଇଯାଇଛି। ଫିଡରକୁ ଯାଞ୍ଚ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="641081527798843608">ବିଷୟ ମେଳ</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6456394469623773452">ଉତ୍କୃଷ୍ଟ</translation>
@@ -268,7 +277,7 @@
 <translation id="6766275201586212568">ବିଫଳ ହୋଇଥିବା DNS ରିଜୋଲ୍ୟୁସନ୍</translation>
 <translation id="6768237774506518020">ଉଚ୍ଚ DNS ରିଜୋଲ୍ୟୁସନ୍ ବିଫଳତା ହାର</translation>
 <translation id="6853312040151791195">ଡିସଚାର୍ଜିଂ ରେଟ୍</translation>
-<translation id="6898743098396957679">ସ୍କାନିଂ ସମ୍ପୂର୍ଣ୍ଣ କରାଯାଇପାରିଲା ନାହିଁ</translation>
+<translation id="6910312834584889076">ସ୍କାନରର କଭର୍ ଖୋଲା ଅଛି। କଭର୍ ବନ୍ଦ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="6911383237894364323">ମିଡିଆ ସର୍ଭରଗୁଡ଼ିକ ସହ ସଂଯୋଗ କରିବାକୁ ଅସମର୍ଥ</translation>
 <translation id="6957231940976260713">ସେବାର ନାମ</translation>
 <translation id="6977381486153291903">ଫାର୍ମୱେର୍ ପୁନରାବୃତ୍ତି</translation>
@@ -276,12 +285,14 @@
 <translation id="7040230719604914234">ଅପରେଟର୍</translation>
 <translation id="7059230779847288458">ଚାର୍ଜ କରାଯାଉଛି, ପୂର୍ଣ୍ଣ ହେବାକୁ <ph name="TIME_VALUE" /> ବାକି ଅଛି</translation>
 <translation id="708426984172631313">ବନ୍ଦ ହୋଇଯାଇଛି</translation>
+<translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7143207342074048698">ସଂଯୋଗ କରୁଛି</translation>
 <translation id="7144878232160441200">ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ</translation>
 <translation id="714876143603641390">LAN ସଂଯୋଗ</translation>
 <translation id="7162487448488904999">ଗ୍ୟାଲେରୀ</translation>
 <translation id="7177485034254901881">ଏହି <ph name="DEVICE_TYPE" />, <ph name="MANAGER" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି। ଆଡମିନିଷ୍ଟ୍ରେଟରମାନେ ଡିଭାଇସଟିକୁ ରିମୋଟ୍ ଭାବେ କନଫିଗର୍ କରିପାରନ୍ତି।</translation>
 <translation id="7216409898977639127">ସେଲ୍ୟୁଲାର୍ ସେବା ପ୍ରଦାତା</translation>
+<translation id="7271040990581020067">ସ୍କାନରକୁ ବର୍ତ୍ତମାନ ବ୍ୟବହାର କରାଯାଉଛି। ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7343649194310845056">ନେଟୱାର୍କ ଡିଭାଇସଗୁଡ଼ିକ</translation>
 <translation id="7359657277149375382">ଫାଇଲର ପ୍ରକାର</translation>
@@ -307,6 +318,7 @@
 <translation id="7769672763586021400">ମଡେଲ୍ ID</translation>
 <translation id="7805768142964895445">ସ୍ଥିତି</translation>
 <translation id="7819857487979277519">PSK (WPA or RSN)</translation>
+<translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">ପ୍ରଦାତା ପ୍ରକାର</translation>
 <translation id="7936303884198020182">କୌଣସି ନେମ୍ ସର୍ଭର୍ ମିଳୁ ନାହିଁ</translation>
 <translation id="7960831585769876809">ତାପମାତ୍ରା</translation>
@@ -336,6 +348,7 @@
 <translation id="8483248364096924578">IP ଠିକଣା</translation>
 <translation id="8503813439785031346">ଉପଯୋଗକର୍ତ୍ତାନାମ</translation>
 <translation id="8503836310948963452">ଆଉ ଅଳ୍ପ କିଛି ମିନିଟ୍ ଅଛି…</translation>
+<translation id="8575298406870537639">ଆପଣଙ୍କ କ୍ୟାରିଅର୍ ଏହାର ନେଟୱାର୍କ ସହ ସଂଯୋଗ କରିବାକୁ ଏହି ବିକଳ୍ପ ଆବଶ୍ୟକ କରିପାରେ। ବିବରଣୀ ପାଇଁ ଆପଣଙ୍କ କ୍ୟାରିଅର୍ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ।</translation>
 <translation id="8576249514688522074">ଆରମ୍ଭ କରାଯାଇନାହିଁ</translation>
 <translation id="8620617069779373398">ରୋମିଂ ସ୍ଥିତି</translation>
 <translation id="8675354002693747642">ପୂର୍ବରୁ-ସେୟାର୍ କରାଯାଇଥିବା କୀ</translation>
@@ -348,6 +361,7 @@
 <translation id="8798099450830957504">ଡିଫଲ୍ଟ</translation>
 <translation id="8798441408945964110">ପ୍ରଦାତାଙ୍କ ନାମ</translation>
 <translation id="8814190375133053267">ୱାଇ-ଫାଇ</translation>
+<translation id="8818152010000655963">ୱାଲପେପର୍</translation>
 <translation id="8845001906332463065">ସାହାଯ୍ୟ ପାଆନ୍ତୁ</translation>
 <translation id="8881098542468797602">ଟେଷ୍ଟ ସଫଳ ହୋଇଛି</translation>
 <translation id="8898840733695078011">ସିଗନାଲ୍‌ ଦକ୍ଷତା</translation>
@@ -365,6 +379,7 @@
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> ପାଇଁ ଟିକେଟ୍ ରିଫ୍ରେଶ୍ କରନ୍ତୁ</translation>
 <translation id="9106415115617144481">ପୃଷ୍ଠା <ph name="PAGE_NUMBER" />କୁ ସ୍କାନ୍ କରାଯାଉଛି</translation>
 <translation id="9111102763498581341">ଅନ୍‌ଲକ୍ କରନ୍ତୁ</translation>
+<translation id="9137526406337347448">Google ସେବାଗୁଡ଼ିକ</translation>
 <translation id="9149391708638971077">ମେମୋରୀ ଟେଷ୍ଟ ଚଲାନ୍ତୁ</translation>
 <translation id="9173638680043580060">ଗୋଟିଏ ମିନିଟରୁ କମ୍ ସମୟ ବାକି ଅଛି</translation>
 <translation id="9190063653747922532">L2TP/IPsec + ପୂର୍ବରୁ-ସେୟାର୍ କରାଯାଇଥିବା କୀ</translation>

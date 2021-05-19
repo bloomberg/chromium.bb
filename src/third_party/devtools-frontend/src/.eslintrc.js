@@ -88,7 +88,6 @@ module.exports = {
     // spacing details
     'space-infix-ops': 2,
     'space-in-parens': [2, 'never'],
-    'space-before-function-paren': [2, {'anonymous': 'never', 'named': 'never', 'asyncArrow': 'always'}],
     'no-whitespace-before-property': 2,
     'keyword-spacing': [
       2, {
@@ -137,10 +136,12 @@ module.exports = {
     // Closure does not properly typecheck default exports
     'import/no-default-export': 2,
 
+    // Try to spot '// console.log()' left over from debugging
+    'rulesdir/commented_out_console': 2,
+
     // DevTools specific rules
     'rulesdir/es_modules_import': 2,
     'rulesdir/check_license_header': 2,
-    'rulesdir/l10n_filename_matches': 2,
   },
   'overrides': [{
     'files': ['*.ts'],
@@ -188,9 +189,6 @@ module.exports = {
       'rulesdir/const_enum': 2,
       'rulesdir/no_underscored_properties': 2,
       'rulesdir/prefer_readonly_keyword': 2,
-      'space-before-function-paren': 'off',
-      '@typescript-eslint/space-before-function-paren':
-          ['error', {'anonymous': 'never', 'named': 'never', 'asyncArrow': 'always'}]
     }
   }]
 };

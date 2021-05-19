@@ -20,11 +20,11 @@ extern "C" {
 // clang-format on
 
 #include <string>
+#include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "device/base/device_monitor_win.h"
 #include "services/device/hid/hid_service.h"
@@ -141,8 +141,9 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
   static void AddDeviceBlocking(
       base::WeakPtr<HidServiceWin> service,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const std::vector<std::wstring>& device_paths,
-      const std::string& physical_device_id);
+      const std::wstring& device_path,
+      const std::string& physical_device_id,
+      const std::wstring& interface_id);
 
   // DeviceMonitorWin::Observer implementation:
   void OnDeviceAdded(const GUID& class_guid,

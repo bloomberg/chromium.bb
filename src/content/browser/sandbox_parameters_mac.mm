@@ -224,15 +224,6 @@ void SetupGpuSandboxParameters(sandbox::SeatbeltExecClient* client,
       sandbox::policy::SandboxMac::kSandboxDisableMetalShaderCache,
       command_line.HasSwitch(
           sandbox::policy::switches::kDisableMetalShaderCache)));
-
-  // Temporary for https://crbug.com/1126350.
-  CHECK(client->SetParameter("PARENT_DIR",
-                             sandbox::policy::SandboxMac::GetCanonicalPath(
-                                 base::mac::OuterBundlePath().DirName())
-                                 .value()));
-  base::FilePath pwd;
-  CHECK(base::GetCurrentDirectory(&pwd));
-  CHECK(client->SetParameter("PWD", pwd.value()));
 }
 
 }  // namespace
@@ -243,6 +234,7 @@ void SetupSandboxParameters(sandbox::policy::SandboxType sandbox_type,
   switch (sandbox_type) {
     case sandbox::policy::SandboxType::kAudio:
     case sandbox::policy::SandboxType::kNaClLoader:
+    case sandbox::policy::SandboxType::kPrintBackend:
     case sandbox::policy::SandboxType::kPrintCompositor:
     case sandbox::policy::SandboxType::kRenderer:
       SetupCommonSandboxParameters(client);

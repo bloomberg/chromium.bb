@@ -10,7 +10,7 @@
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
-#include "services/network/public/mojom/content_security_policy.mojom-shared.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
@@ -625,8 +625,19 @@ bool CheckEval(const network::mojom::blink::CSPSourceList* directive) {
   return !directive || directive->allow_eval;
 }
 
-bool CheckWasmEval(const network::mojom::blink::CSPSourceList* directive) {
-  return !directive || directive->allow_wasm_eval;
+bool SupportsWasmEval(const network::mojom::blink::ContentSecurityPolicy& csp,
+                      const ContentSecurityPolicy* policy) {
+  return RuntimeEnabledFeatures::WebAssemblyCSPEnabled() ||
+         policy->SupportsWasmEval() ||
+         SchemeRegistry::SchemeSupportsWasmEvalCSP(csp.self_origin->scheme);
+}
+
+bool CheckWasmEval(const network::mojom::blink::ContentSecurityPolicy& csp,
+                   const ContentSecurityPolicy* policy) {
+  const network::mojom::blink::CSPSourceList* directive =
+      OperativeDirective(csp, CSPDirectiveName::ScriptSrc).source_list;
+  return !directive || directive->allow_eval ||
+         (SupportsWasmEval(csp, policy) && directive->allow_wasm_eval);
 }
 
 bool CheckHash(const network::mojom::blink::CSPSourceList* directive,
@@ -637,6 +648,21 @@ bool CheckHash(const network::mojom::blink::CSPSourceList* directive,
 bool CheckUnsafeHashesAllowed(
     const network::mojom::blink::CSPSourceList* directive) {
   return !directive || directive->allow_unsafe_hashes;
+}
+
+bool CheckUnsafeHashesAllowed(
+    ContentSecurityPolicy::InlineType inline_type,
+    const network::mojom::blink::CSPSourceList* directive) {
+  switch (inline_type) {
+    case ContentSecurityPolicy::InlineType::kNavigation:
+    case ContentSecurityPolicy::InlineType::kScriptAttribute:
+    case ContentSecurityPolicy::InlineType::kStyleAttribute:
+      return CheckUnsafeHashesAllowed(directive);
+
+    case ContentSecurityPolicy::InlineType::kScript:
+    case ContentSecurityPolicy::InlineType::kStyle:
+      return true;
+  }
 }
 
 bool CheckDynamic(const network::mojom::blink::CSPSourceList* directive,
@@ -730,11 +756,11 @@ bool CheckWasmEvalAndReportViolation(
     const String& console_message,
     ContentSecurityPolicy::ExceptionStatus exception_status,
     const String& content) {
-  CSPOperativeDirective directive =
-      OperativeDirective(csp, CSPDirectiveName::ScriptSrc);
-  if (CheckWasmEval(directive.source_list))
+  if (CheckWasmEval(csp, policy))
     return true;
 
+  CSPOperativeDirective directive =
+      OperativeDirective(csp, CSPDirectiveName::ScriptSrc);
   String suffix = String();
   if (directive.type == CSPDirectiveName::DefaultSrc) {
     suffix =
@@ -765,12 +791,14 @@ bool CheckInlineAndReportViolation(
     const String& source,
     const String& context_url,
     const WTF::OrdinalNumber& context_line,
-    bool is_script,
+    ContentSecurityPolicy::InlineType inline_type,
     const String& hash_value,
     CSPDirectiveName effective_type) {
   if (!directive.source_list ||
       CSPSourceListAllowAllInline(directive.type, *directive.source_list))
     return true;
+
+  bool is_script = ContentSecurityPolicy::IsScriptInlineType(inline_type);
 
   String suffix = String();
   if (directive.source_list->allow_inline &&
@@ -784,6 +812,14 @@ bool CheckInlineAndReportViolation(
     suffix =
         " Either the 'unsafe-inline' keyword, a hash ('" + hash_value +
         "'), or a nonce ('nonce-...') is required to enable inline execution.";
+
+    if (!CheckUnsafeHashesAllowed(inline_type, directive.source_list)) {
+      suffix = suffix +
+               " Note that hashes do not apply to event handlers, style "
+               "attributes and javascript: navigations unless the "
+               "'unsafe-hashes' keyword is present.";
+    }
+
     if (directive.type == CSPDirectiveName::DefaultSrc) {
       suffix = suffix + " Note also that '" +
                String(is_script ? "script" : "style") +
@@ -1024,8 +1060,7 @@ bool CSPDirectiveListAllowInline(
         "Refused to " + message +
             " because it violates the following Content Security Policy "
             "directive: ",
-        element, content, context_url, context_line,
-        ContentSecurityPolicy::IsScriptInlineType(inline_type), hash_value,
+        element, content, context_url, context_line, inline_type, hash_value,
         type);
   }
 
@@ -1058,23 +1093,26 @@ bool CSPDirectiveListAllowEval(
              OperativeDirective(csp, CSPDirectiveName::ScriptSrc).source_list);
 }
 
-bool CSPDirectiveListAllowWasmEval(
+// Complex conditional around infix is temp, until SupportsWasmEval goes away.
+bool CSPDirectiveListAllowWasmCodeGeneration(
     const network::mojom::blink::ContentSecurityPolicy& csp,
     ContentSecurityPolicy* policy,
     ReportingDisposition reporting_disposition,
     ContentSecurityPolicy::ExceptionStatus exception_status,
     const String& content) {
   if (reporting_disposition == ReportingDisposition::kReport) {
+    String infix = SupportsWasmEval(csp, policy)
+                       ? "neither 'wasm-eval' nor 'unsafe-eval' is"
+                       : "'unsafe-eval' is not";
     return CheckWasmEvalAndReportViolation(
         csp, policy,
-        "Refused to compile or instantiate WebAssembly module because "
-        "'wasm-eval' is not an allowed source of script in the following "
-        "Content Security Policy directive: ",
+        "Refused to compile or instantiate WebAssembly module because " +
+            infix +
+            " an allowed source of script in the following "
+            "Content Security Policy directive: ",
         exception_status, content);
   }
-  return CSPDirectiveListIsReportOnly(csp) ||
-         CheckWasmEval(
-             OperativeDirective(csp, CSPDirectiveName::ScriptSrc).source_list);
+  return CSPDirectiveListIsReportOnly(csp) || CheckWasmEval(csp, policy);
 }
 
 bool CSPDirectiveListShouldDisableEval(
@@ -1181,15 +1219,20 @@ bool CSPDirectiveListAllowTrustedTypePolicy(
   String raw_directive = GetRawDirectiveForMessage(
       csp.raw_directives,
       network::mojom::blink::CSPDirectiveName::TrustedTypes);
-  ReportViolation(
-      csp, policy, "trusted-types", CSPDirectiveName::TrustedTypes,
-      String::Format(
-          "Refused to create a TrustedTypePolicy named '%s' because "
-          "it violates the following Content Security Policy directive: "
-          "\"%s\".",
-          policy_name.Utf8().c_str(), raw_directive.Utf8().c_str()),
-      KURL(), RedirectStatus::kNoRedirect,
-      ContentSecurityPolicy::kTrustedTypesPolicyViolation, policy_name);
+  const char* message =
+      (violation_details == ContentSecurityPolicy::kDisallowedDuplicateName)
+          ? "Refused to create a TrustedTypePolicy named '%s' because a "
+            "policy with that name already exists and the Content Security "
+            "Policy directive does not 'allow-duplicates': \"%s\"."
+          : "Refused to create a TrustedTypePolicy named '%s' because "
+            "it violates the following Content Security Policy directive: "
+            "\"%s\".";
+  ReportViolation(csp, policy, "trusted-types", CSPDirectiveName::TrustedTypes,
+                  String::Format(message, policy_name.Utf8().c_str(),
+                                 raw_directive.Utf8().c_str()),
+                  KURL(), RedirectStatus::kNoRedirect,
+                  ContentSecurityPolicy::kTrustedTypesPolicyViolation,
+                  policy_name);
 
   return CSPDirectiveListIsReportOnly(csp);
 }
@@ -1206,25 +1249,14 @@ bool CSPDirectiveListAllowHash(
     const ContentSecurityPolicy::InlineType inline_type) {
   CSPDirectiveName directive_type =
       GetDirectiveTypeForAllowHashFromInlineType(inline_type);
+  const network::mojom::blink::CSPSourceList* operative_directive =
+      OperativeDirective(csp, directive_type).source_list;
 
   // https://w3c.github.io/webappsec-csp/#match-element-to-source-list
   // Step 5. If type is "script" or "style", or unsafe-hashes flag is true:
   // [spec text]
-  switch (inline_type) {
-    case ContentSecurityPolicy::InlineType::kNavigation:
-    case ContentSecurityPolicy::InlineType::kScriptAttribute:
-    case ContentSecurityPolicy::InlineType::kStyleAttribute:
-      if (!CheckUnsafeHashesAllowed(
-              OperativeDirective(csp, directive_type).source_list))
-        return false;
-      break;
-
-    case ContentSecurityPolicy::InlineType::kScript:
-    case ContentSecurityPolicy::InlineType::kStyle:
-      break;
-  }
-  return CheckHash(OperativeDirective(csp, directive_type).source_list,
-                   hash_value);
+  return CheckUnsafeHashesAllowed(inline_type, operative_directive) &&
+         CheckHash(operative_directive, hash_value);
 }
 
 bool CSPDirectiveListAllowDynamic(

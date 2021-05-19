@@ -37,8 +37,8 @@
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "ui/display/display.h"
@@ -382,7 +382,7 @@ std::string SerializeHeaderString(std::string str) {
       .value_or(std::string());
 }
 
-bool IsFeaturePolicyForClientHintsEnabled() {
+bool IsPermissionsPolicyForClientHintsEnabled() {
   return base::FeatureList::IsEnabled(features::kFeaturePolicyForClientHints);
 }
 
@@ -396,7 +396,7 @@ struct ClientHintsExtendedData {
     // in order to get the main frame URL, we should use the provided URL
     // instead. Otherwise, the current frame is an iframe and the main frame URL
     // was committed, so we can safely get it from it. Similarly, an
-    // in-navigation main frame doesn't yet have a feature policy.
+    // in-navigation main frame doesn't yet have a permissions policy.
     is_main_frame = !frame_tree_node || frame_tree_node->IsMainFrame();
     if (is_main_frame) {
       main_frame_url = url;
@@ -405,7 +405,8 @@ struct ClientHintsExtendedData {
       RenderFrameHostImpl* main_frame =
           frame_tree_node->frame_tree()->GetMainFrame();
       main_frame_url = main_frame->GetLastCommittedURL();
-      feature_policy = main_frame->feature_policy();
+      permissions_policy = blink::PermissionsPolicy::CopyStateFrom(
+          main_frame->permissions_policy());
       is_1p_origin = resource_origin.IsSameOriginWith(
           main_frame->GetLastCommittedOrigin());
     }
@@ -417,17 +418,18 @@ struct ClientHintsExtendedData {
   url::Origin resource_origin;
   bool is_main_frame = false;
   GURL main_frame_url;
-  const blink::FeaturePolicy* feature_policy = nullptr;
+  std::unique_ptr<blink::PermissionsPolicy> permissions_policy;
   bool is_1p_origin = false;
 };
 
 bool IsClientHintAllowed(const ClientHintsExtendedData& data,
                          network::mojom::WebClientHintsType type) {
-  if (!IsFeaturePolicyForClientHintsEnabled() || data.is_main_frame)
+  if (!IsPermissionsPolicyForClientHintsEnabled() || data.is_main_frame)
     return data.is_1p_origin;
-  return data.feature_policy &&
-         data.feature_policy->IsFeatureEnabledForOrigin(
-             blink::kClientHintsFeaturePolicyMapping[static_cast<int>(type)],
+  return data.permissions_policy &&
+         data.permissions_policy->IsFeatureEnabledForOrigin(
+             blink::kClientHintsPermissionsPolicyMapping[static_cast<int>(
+                 type)],
              data.resource_origin);
 }
 
@@ -491,7 +493,7 @@ void UpdateNavigationRequestClientUaHeadersImpl(
     // The `Sec-CH-UA` client hint is attached to all outgoing requests. This is
     // (intentionally) different than other client hints.
     // It's barred behind ShouldAddClientHints to make sure it's controlled by
-    // FeaturePolicy.
+    // Permissions Policy.
     //
     // https://wicg.github.io/client-hints-infrastructure/#abstract-opdef-append-client-hints-to-request
     if (ShouldAddClientHint(data, network::mojom::WebClientHintsType::kUA)) {
@@ -500,7 +502,7 @@ void UpdateNavigationRequestClientUaHeadersImpl(
     }
     // The `Sec-CH-UA-Mobile client hint was also deemed "low entropy" and can
     // safely be sent with every request. Similarly to UA, ShouldAddClientHints
-    // makes sure it's controlled by FeaturePolicy.
+    // makes sure it's controlled by Permissions Policy.
     if (ShouldAddClientHint(data,
                             network::mojom::WebClientHintsType::kUAMobile)) {
       AddUAHeader(headers, network::mojom::WebClientHintsType::kUAMobile,
@@ -597,13 +599,23 @@ void UpdateNavigationRequestClientUaHeaders(
 
 namespace {
 
-void AddRequestClientHintsHeaders(const GURL& url,
-                                  net::HttpRequestHeaders* headers,
-                                  BrowserContext* context,
-                                  ClientHintsControllerDelegate* delegate,
-                                  bool is_ua_override_on,
-                                  FrameTreeNode* frame_tree_node) {
-  const ClientHintsExtendedData data(url, frame_tree_node, delegate);
+void AddRequestClientHintsHeaders(
+    const GURL& url,
+    net::HttpRequestHeaders* headers,
+    BrowserContext* context,
+    ClientHintsControllerDelegate* delegate,
+    bool is_ua_override_on,
+    FrameTreeNode* frame_tree_node,
+    const blink::ParsedPermissionsPolicy& container_policy) {
+  ClientHintsExtendedData data(url, frame_tree_node, delegate);
+
+  // If there is a container policy, use the same logic as when a new frame is
+  // committed to combine with the parent policy.
+  if (!container_policy.empty()) {
+    data.permissions_policy = blink::PermissionsPolicy::CreateFromParentPolicy(
+        data.permissions_policy.get(), container_policy,
+        url::Origin::Create(url));
+  }
 
   // Add Headers
   if (ShouldAddClientHint(data,
@@ -678,7 +690,7 @@ void AddPrefetchNavigationRequestClientHintsHeaders(
   }
 
   AddRequestClientHintsHeaders(url, headers, context, delegate,
-                               is_ua_override_on, nullptr);
+                               is_ua_override_on, nullptr, {});
 }
 
 void AddNavigationRequestClientHintsHeaders(
@@ -687,7 +699,8 @@ void AddNavigationRequestClientHintsHeaders(
     BrowserContext* context,
     ClientHintsControllerDelegate* delegate,
     bool is_ua_override_on,
-    FrameTreeNode* frame_tree_node) {
+    FrameTreeNode* frame_tree_node,
+    const blink::ParsedPermissionsPolicy& container_policy) {
   DCHECK(frame_tree_node);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
@@ -701,7 +714,8 @@ void AddNavigationRequestClientHintsHeaders(
   }
 
   AddRequestClientHintsHeaders(url, headers, context, delegate,
-                               is_ua_override_on, frame_tree_node);
+                               is_ua_override_on, frame_tree_node,
+                               container_policy);
 }
 
 base::Optional<std::vector<network::mojom::WebClientHintsType>>
@@ -742,7 +756,7 @@ ParseAndPersistAcceptCHForNagivation(
     return base::nullopt;
 
   base::TimeDelta persist_duration;
-  if (IsFeaturePolicyForClientHintsEnabled()) {
+  if (IsPermissionsPolicyForClientHintsEnabled()) {
     // JSON cannot store "non-finite" values (i.e. NaN or infinite) so
     // base::TimeDelta::Max cannot be used. As this will be removed once
     // the FeaturePolicyForClientHints feature is shipped, a reasonably
@@ -787,7 +801,7 @@ bool AreCriticalHintsMissing(
     const std::vector<network::mojom::WebClientHintsType>& critical_hints) {
   ClientHintsExtendedData data(url, frame_tree_node, delegate);
 
-  // Note: these only check for per-hint origin/feature policy settings, not
+  // Note: these only check for per-hint origin/permissions policy settings, not
   // origin-level or "browser-level" policies like disabiling JS or other
   // features.
   for (auto hint : critical_hints) {

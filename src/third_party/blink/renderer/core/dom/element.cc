@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -471,7 +472,7 @@ bool IsElementReflectionAttribute(const QualifiedName& name) {
   return false;
 }
 
-HeapVector<Member<Element>>* GetExplicitlySetElementsForAttr(
+HeapLinkedHashSet<WeakMember<Element>>* GetExplicitlySetElementsForAttr(
     Element* element,
     const QualifiedName& name) {
   ExplicitlySetAttrElementsMap* element_attribute_map =
@@ -540,12 +541,12 @@ void EnqueueAutofocus(Element& element) {
     return;
   }
 
-  // 5. Let topDocument be the active document of target's browsing context's
-  // top-level browsing context.
-  // 6. If target's origin is not the same as the origin of topDocument,
-  // then return.
-  if (!doc.IsInMainFrame() &&
-      !doc.TopFrameOrigin()->CanAccess(window->GetSecurityOrigin())) {
+  // 5. For each ancestorBC of target's browsing context's ancestor browsing
+  // contexts: if ancestorBC's active document's origin is not same origin with
+  // target's origin, then return.
+  for (Frame* frame = doc.GetFrame(); frame; frame = frame->Parent()) {
+    if (!frame->IsCrossOriginToMainFrame())
+      continue;
     window->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
@@ -555,7 +556,11 @@ void EnqueueAutofocus(Element& element) {
     return;
   }
 
-  element.GetDocument().TopDocument().EnqueueAutofocusCandidate(element);
+  // 6. Let topDocument be the active document of target's browsing context's
+  // top-level browsing context.
+  Document& top_document = element.GetDocument().TopDocument();
+
+  top_document.EnqueueAutofocusCandidate(element);
 }
 
 }  // namespace
@@ -797,11 +802,11 @@ void Element::SetElementAttribute(const QualifiedName& name, Element* element) {
   auto result = explicitly_set_attr_elements_map->insert(name, nullptr);
   if (result.is_new_entry) {
     result.stored_value->value =
-        MakeGarbageCollected<HeapVector<Member<Element>>>();
+        MakeGarbageCollected<HeapLinkedHashSet<WeakMember<Element>>>();
   } else {
     result.stored_value->value->clear();
   }
-  result.stored_value->value->push_back(element);
+  result.stored_value->value->insert(element);
 
   if (isConnected()) {
     if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
@@ -810,13 +815,12 @@ void Element::SetElementAttribute(const QualifiedName& name, Element* element) {
 }
 
 Element* Element::GetElementAttribute(const QualifiedName& name) {
-  HeapVector<Member<Element>>* element_attribute_vector =
+  HeapLinkedHashSet<WeakMember<Element>>* element_attribute_vector =
       GetExplicitlySetElementsForAttr(this, name);
   if (element_attribute_vector) {
     DCHECK_EQ(element_attribute_vector->size(), 1u);
-    Element* explicitly_set_element = element_attribute_vector->at(0);
-    if (!explicitly_set_element)
-      return nullptr;
+    Element* explicitly_set_element = *(element_attribute_vector->begin());
+    DCHECK_NE(explicitly_set_element, nullptr);
 
     // Only return the explicit element if it still exists within a valid scope.
     if (!ElementIsDescendantOfShadowIncludingAncestor(*this,
@@ -849,27 +853,34 @@ void Element::SetElementArrayAttribute(
   }
 
   // Get or create element array, and remove any pre-existing elements.
-  // Note that this performs two look ups on |name| within the map, as
-  // modifying the content attribute will cause the synchronization steps to
-  // be run which with modifies the hash map, and can cause a rehash.
-  HeapVector<Member<Element>>* elements = element_attribute_map->at(name);
-  if (!elements)
-    elements = MakeGarbageCollected<HeapVector<Member<Element>>>();
-  else
-    elements->clear();
+  //
+  // Note that this code intentionally performs two look ups on |name| within
+  // the map (one here, and one below with a call to |Set|).
+  // This is needed as modifying the content attribute (|setAttribute|) will
+  // run the synchronization steps which modify the map invalidating any
+  // outstanding iterators.
+  HeapLinkedHashSet<WeakMember<Element>>* stored_elements =
+      element_attribute_map->at(name);
+  if (!stored_elements) {
+    stored_elements =
+        MakeGarbageCollected<HeapLinkedHashSet<WeakMember<Element>>>();
+  } else {
+    stored_elements->clear();
+  }
   SpaceSplitString value;
 
   for (auto element : given_elements.value()) {
-    // If |value| is null and |elements| is non-empty, then a previous element
-    // must have been invalid wrt. the content attribute string rules, and
-    // therefore the content attribute string should reflect the empty string.
-    // This means we can stop trying to compute the content attribute string.
-    if (value.IsNull() && !elements->IsEmpty()) {
-      elements->push_back(element);
+    // If |value| is null and |stored_elements| is non-empty, then a previous
+    // element must have been invalid wrt. the content attribute string rules,
+    // and therefore the content attribute string should reflect the empty
+    // string. This means we can stop trying to compute the content attribute
+    // string.
+    if (value.IsNull() && !stored_elements->IsEmpty()) {
+      stored_elements->insert(element);
       continue;
     }
 
-    elements->push_back(element);
+    stored_elements->insert(element);
     const AtomicString given_element_id = element->GetIdAttribute();
 
     // We compute the content attribute string as a space separated string of
@@ -893,13 +904,22 @@ void Element::SetElementArrayAttribute(
     if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
       cache->HandleAttributeChanged(name, this);
   }
-  element_attribute_map->Set(name, elements);
+
+  // This |Set| call must occur after our call to |setAttribute| above.
+  //
+  // |setAttribute| will call through to |AttributeChanged| which calls
+  // |SynchronizeContentAttributeAndElementReference| erasing the entry for
+  // |name| from the map.
+  element_attribute_map->Set(name, stored_elements);
 }
 
 base::Optional<HeapVector<Member<Element>>> Element::GetElementArrayAttribute(
     const QualifiedName& name) {
   HeapVector<Member<Element>> result_elements;
-  HeapVector<Member<Element>>* explicitly_set_elements =
+  // TODO(chrishall): this will fail to preserve `e1.ariaFoo === e1.ariaFoo`,
+  // need additional cache to preserve this invariant, add tests covering this
+  // case.
+  HeapLinkedHashSet<WeakMember<Element>>* explicitly_set_elements =
       GetExplicitlySetElementsForAttr(this, name);
 
   if (explicitly_set_elements) {
@@ -913,8 +933,6 @@ base::Optional<HeapVector<Member<Element>>> Element::GetElementArrayAttribute(
   QualifiedName attr = name;
 
   // Account for labelled vs labeled spelling
-  // TODO(chrishall): should this be refactored into a method?
-  // e.g. hasAttributeAccountForSpelling(...) ?
   if (attr == html_names::kAriaLabelledbyAttr) {
     attr = hasAttribute(html_names::kAriaLabeledbyAttr) &&
                    !hasAttribute(html_names::kAriaLabelledbyAttr)
@@ -1471,8 +1489,7 @@ int Element::clientHeight() {
 
 LayoutBox* Element::GetLayoutBoxForScrolling() const {
   LayoutBox* box = GetLayoutBox();
-  if (!box || (!box->IsScrollContainer() &&
-               !box->StyleRef().IsScrollbarGutterForce())) {
+  if (!box || !box->IsScrollContainer()) {
     return nullptr;
   }
   return box;
@@ -2802,7 +2819,7 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
   DCHECK(GetDocument().InStyleRecalc());
 
   // FIXME: Instead of clearing updates that may have been added from calls to
-  // StyleForElement outside RecalcStyle, we should just never set them if we're
+  // ResolveStyle outside RecalcStyle, we should just never set them if we're
   // not inside RecalcStyle.
   if (ElementAnimations* element_animations = GetElementAnimations())
     element_animations->CssAnimations().ClearPendingUpdate();
@@ -2816,7 +2833,7 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
     return nullptr;
   }
 
-  // StyleForElement() might add active animations so we need to get it again.
+  // ResolveStyle() might add active animations so we need to get it again.
   if (ElementAnimations* element_animations = GetElementAnimations()) {
     element_animations->CssAnimations().MaybeApplyPendingUpdate(this);
     element_animations->UpdateAnimationFlags(*style);
@@ -2831,8 +2848,8 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
 
 scoped_refptr<ComputedStyle> Element::OriginalStyleForLayoutObject(
     const StyleRecalcContext& style_recalc_context) {
-  return GetDocument().GetStyleResolver().StyleForElement(this,
-                                                          style_recalc_context);
+  return GetDocument().GetStyleResolver().ResolveStyle(this,
+                                                       style_recalc_context);
 }
 
 void Element::RecalcStyleForTraversalRootAncestor() {
@@ -3348,6 +3365,7 @@ void Element::SetNeedsCompositingUpdate() {
   LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject();
   if (!layout_object)
     return;
+  // TODO(pdr): Do not depend on PaintLayer for compositing decisions.
   if (!layout_object->HasLayer())
     return;
   layout_object->Layer()->SetNeedsCompositingInputsUpdate();
@@ -4799,6 +4817,11 @@ HeapVector<Member<Element>> CollectAncestorsToEnsure(Element& element) {
 
 const ComputedStyle* Element::EnsureComputedStyle(
     PseudoId pseudo_element_specifier) {
+  // Style computation should not be triggered when in a NoAllocationScope
+  // because there is always a possibility that it could allocate something on
+  // the V8 heap.
+  DCHECK(ThreadState::Current()->IsAllocationAllowed());
+
   if (PseudoElement* element = GetPseudoElement(pseudo_element_specifier))
     return element->EnsureComputedStyle();
 
@@ -4898,13 +4921,15 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
       layout_parent_style = parent_layout_object->Style();
   }
 
+  StyleRequest style_request;
+  style_request.pseudo_id = pseudo_element_specifier;
+  style_request.type = StyleRequest::kForComputedStyle;
+  style_request.parent_override = element_style;
+  style_request.layout_parent_override = layout_parent_style;
+
   scoped_refptr<ComputedStyle> result =
-      GetDocument().GetStyleResolver().PseudoStyleForElement(
-          this, style_recalc_context,
-          PseudoElementStyleRequest(
-              pseudo_element_specifier,
-              PseudoElementStyleRequest::kForComputedStyle),
-          element_style, layout_parent_style);
+      GetDocument().GetStyleResolver().ResolveStyle(this, style_recalc_context,
+                                                    style_request);
   DCHECK(result);
   result->SetIsEnsuredInDisplayNone();
   return element_style->AddCachedPseudoElementStyle(std::move(result));
@@ -5178,48 +5203,44 @@ bool Element::PseudoElementStylesDependOnFontMetrics() const {
   return false;
 }
 
-const ComputedStyle* Element::CachedStyleForPseudoElement(
-    const PseudoElementStyleRequest& request) {
+const ComputedStyle* Element::CachedStyleForPseudoElement(PseudoId pseudo_id) {
   const ComputedStyle* style = GetComputedStyle();
 
-  if (!style || (request.pseudo_id < kFirstInternalPseudoId &&
-                 !style->HasPseudoElementStyle(request.pseudo_id))) {
+  if (!style || (pseudo_id < kFirstInternalPseudoId &&
+                 !style->HasPseudoElementStyle(pseudo_id))) {
     return nullptr;
   }
 
   if (const ComputedStyle* cached =
-          style->GetCachedPseudoElementStyle(request.pseudo_id))
+          style->GetCachedPseudoElementStyle(pseudo_id))
     return cached;
 
   scoped_refptr<ComputedStyle> result =
-      UncachedStyleForPseudoElement(request, style);
+      UncachedStyleForPseudoElement(StyleRequest(pseudo_id, style));
   if (result)
     return style->AddCachedPseudoElementStyle(std::move(result));
   return nullptr;
 }
 
 scoped_refptr<ComputedStyle> Element::UncachedStyleForPseudoElement(
-    const PseudoElementStyleRequest& request,
-    const ComputedStyle* parent_style) {
+    const StyleRequest& request) {
   // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
   StyleRecalcContext style_recalc_context;
-  return StyleForPseudoElement(style_recalc_context, request, parent_style);
+  return StyleForPseudoElement(style_recalc_context, request);
 }
 
 scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
     const StyleRecalcContext& style_recalc_context,
-    const PseudoElementStyleRequest& request,
-    const ComputedStyle* parent_style) {
-  const ComputedStyle* style = GetComputedStyle();
+    const StyleRequest& request) {
   const bool is_before_or_after = request.pseudo_id == kPseudoIdBefore ||
                                   request.pseudo_id == kPseudoIdAfter;
 
-  DCHECK(style);
-  DCHECK(!parent_style || !is_before_or_after);
+  DCHECK(request.parent_override);
+  DCHECK(request.layout_parent_override);
 
   if (is_before_or_after) {
-    const ComputedStyle* layout_parent_style = style;
-    if (style->Display() == EDisplay::kContents) {
+    const ComputedStyle* layout_parent_style = request.parent_override;
+    if (layout_parent_style->Display() == EDisplay::kContents) {
       // TODO(futhark@chromium.org): Calling getComputedStyle for elements
       // outside the flat tree should return empty styles, but currently we do
       // not. See issue https://crbug.com/831568. We can replace the if-test
@@ -5229,31 +5250,28 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
         layout_parent_style = layout_parent->GetComputedStyle();
       }
     }
-    return GetDocument().GetStyleResolver().PseudoStyleForElement(
-        this, style_recalc_context, request, style, layout_parent_style);
+    StyleRequest before_after_request = request;
+    before_after_request.layout_parent_override = layout_parent_style;
+    return GetDocument().GetStyleResolver().ResolveStyle(
+        this, style_recalc_context, before_after_request);
   }
 
-  if (!parent_style)
-    parent_style = style;
-
   if (request.pseudo_id == kPseudoIdFirstLineInherited) {
-    scoped_refptr<ComputedStyle> result;
-    if (IsPseudoElement()) {
-      result = GetDocument().GetStyleResolver().PseudoStyleForElement(
-          parentElement(), style_recalc_context,
-          PseudoElementStyleRequest(To<PseudoElement>(this)->GetPseudoId()),
-          parent_style, parent_style);
-    } else {
-      result = GetDocument().GetStyleResolver().StyleForElement(
-          this, style_recalc_context, parent_style, parent_style);
-    }
+    StyleRequest first_line_inherited_request = request;
+    first_line_inherited_request.pseudo_id =
+        IsPseudoElement() ? To<PseudoElement>(this)->GetPseudoId()
+                          : kPseudoIdNone;
+    Element* target = IsPseudoElement() ? parentElement() : this;
+    scoped_refptr<ComputedStyle> result =
+        GetDocument().GetStyleResolver().ResolveStyle(
+            target, style_recalc_context, first_line_inherited_request);
     if (result)
       result->SetStyleType(kPseudoIdFirstLineInherited);
     return result;
   }
 
-  return GetDocument().GetStyleResolver().PseudoStyleForElement(
-      this, style_recalc_context, request, parent_style, parent_style);
+  return GetDocument().GetStyleResolver().ResolveStyle(
+      this, style_recalc_context, request);
 }
 
 bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
@@ -5619,10 +5637,10 @@ void Element::WillModifyAttribute(const QualifiedName& name,
 DISABLE_CFI_PERF
 void Element::DidAddAttribute(const QualifiedName& name,
                               const AtomicString& value) {
-  if (name == html_names::kIdAttr)
-    UpdateId(g_null_atom, value);
   AttributeChanged(AttributeModificationParams(
       name, g_null_atom, value, AttributeModificationReason::kDirectly));
+  if (name == html_names::kIdAttr)
+    UpdateId(g_null_atom, value);
   probe::DidModifyDOMAttr(this, name, value);
   DispatchSubtreeModifiedEvent();
 }
@@ -5937,6 +5955,13 @@ void Element::NotifyInlineStyleMutation() {
       GetDocument().GetPage()) {
     GetDocument().GetPage()->Animator().SetHasInlineStyleMutation();
   }
+}
+
+bool Element::ShouldCompositeForDocumentTransition() const {
+  auto* document_transition_supplement =
+      DocumentTransitionSupplement::FromIfExists(GetDocument());
+  return document_transition_supplement &&
+         document_transition_supplement->GetTransition()->IsActiveElement(this);
 }
 
 inline void Element::SetInlineStyleFromString(

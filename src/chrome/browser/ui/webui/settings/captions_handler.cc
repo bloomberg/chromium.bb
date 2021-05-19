@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
+#include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN) || defined(OS_MAC)
@@ -33,8 +34,8 @@ void CaptionsHandler::RegisterMessages() {
       base::BindRepeating(&CaptionsHandler::HandleOpenSystemCaptionsDialog,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "captionsSubpageReady",
-      base::BindRepeating(&CaptionsHandler::HandleCaptionsSubpageReady,
+      "liveCaptionSectionReady",
+      base::BindRepeating(&CaptionsHandler::HandleLiveCaptionSectionReady,
                           base::Unretained(this)));
 }
 
@@ -46,7 +47,8 @@ void CaptionsHandler::OnJavascriptDisallowed() {
   speech::SodaInstaller::GetInstance()->RemoveObserver(this);
 }
 
-void CaptionsHandler::HandleCaptionsSubpageReady(const base::ListValue* args) {
+void CaptionsHandler::HandleLiveCaptionSectionReady(
+    const base::ListValue* args) {
   AllowJavascript();
 }
 
@@ -59,21 +61,24 @@ void CaptionsHandler::HandleOpenSystemCaptionsDialog(
 
 void CaptionsHandler::OnSodaInstalled() {
   speech::SodaInstaller::GetInstance()->RemoveObserver(this);
-  FireWebUIListener("enable-live-caption-subtitle-changed",
+  FireWebUIListener("soda-download-progress-changed",
                     base::Value(l10n_util::GetStringUTF16(
                         IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_COMPLETE)));
 }
 
 void CaptionsHandler::OnSodaError() {
-  prefs_->SetBoolean(prefs::kLiveCaptionEnabled, false);
-  FireWebUIListener("enable-live-caption-subtitle-changed",
+  if (!base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage)) {
+    prefs_->SetBoolean(prefs::kLiveCaptionEnabled, false);
+  }
+
+  FireWebUIListener("soda-download-progress-changed",
                     base::Value(l10n_util::GetStringUTF16(
                         IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_ERROR)));
 }
 
 void CaptionsHandler::OnSodaProgress(int progress) {
   FireWebUIListener(
-      "enable-live-caption-subtitle-changed",
+      "soda-download-progress-changed",
       base::Value(l10n_util::GetStringFUTF16Int(
           IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_PROGRESS, progress)));
 }

@@ -78,9 +78,9 @@ public class ContinuousSearchTabHelperTest {
             mSearchUrl = url;
             mQuery = query;
             new Handler().postDelayed(() -> {
-                mListener.onResult(new SearchResultMetadata(
-                        mSearchUrl, mQuery, 0, new ArrayList<SearchResultGroup>()));
-            }, 250);
+                mListener.onResult(new ContinuousNavigationMetadata(
+                        mSearchUrl, mQuery, 0, new ArrayList<PageGroup>()));
+            }, 300);
         }
 
         @Override
@@ -88,13 +88,15 @@ public class ContinuousSearchTabHelperTest {
     }
 
     /**
-     * A {@link SearchResultUserDataObserver} used to wait on events.
+     * A {@link ContinuousNavigationUserDataObserver} used to wait on events.
      */
-    public class WaitableSearchResultUserDataObserver implements SearchResultUserDataObserver {
+    public class WaitableContinuousNavigationUserDataObserver
+            implements ContinuousNavigationUserDataObserver {
         public CallbackHelper mInvalidateCallbackHelper = new CallbackHelper();
         public CallbackHelper mOnUpdateCallbackHelper = new CallbackHelper();
-        public SearchResultMetadata mMetadata;
+        public ContinuousNavigationMetadata mMetadata;
         public GURL mUrl;
+        public boolean mOnSrp;
 
         @Override
         public void onInvalidate() {
@@ -102,15 +104,15 @@ public class ContinuousSearchTabHelperTest {
         }
 
         @Override
-        public void onUpdate(SearchResultMetadata metadata, GURL url) {
+        public void onUpdate(ContinuousNavigationMetadata metadata) {
             mMetadata = metadata;
-            mUrl = url;
             mOnUpdateCallbackHelper.notifyCalled();
         }
 
         @Override
-        public void onUrlChanged(GURL url) {
+        public void onUrlChanged(GURL url, boolean onSrp) {
             mUrl = url;
+            mOnSrp = onSrp;
         }
     }
 
@@ -206,14 +208,16 @@ public class ContinuousSearchTabHelperTest {
     @Test
     @MediumTest
     public void testContinuousSearchFakeResults() throws TimeoutException {
-        WaitableSearchResultUserDataObserver observer = new WaitableSearchResultUserDataObserver();
+        WaitableContinuousNavigationUserDataObserver observer =
+                new WaitableContinuousNavigationUserDataObserver();
 
         // Load a SRP URL.
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            SearchResultUserData searchResultUserData = SearchResultUserData.getForTab(tab);
-            Assert.assertNotNull(searchResultUserData);
-            searchResultUserData.addObserver(observer);
+            ContinuousNavigationUserDataImpl continuousNavigationUserData =
+                    ContinuousNavigationUserDataImpl.getOrCreateForTab(tab);
+            Assert.assertNotNull(continuousNavigationUserData);
+            continuousNavigationUserData.addObserver(observer);
         });
         loadUrl(tab,
                 new LoadUrlParams(
@@ -225,17 +229,19 @@ public class ContinuousSearchTabHelperTest {
         // Check the retuned data.
         Assert.assertEquals("cat dog", observer.mMetadata.getQuery());
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            SearchResultUserData searchResultUserData = SearchResultUserData.getForTab(tab);
-            Assert.assertTrue(searchResultUserData.isValid());
+            ContinuousNavigationUserDataImpl continuousNavigationUserData =
+                    ContinuousNavigationUserDataImpl.getOrCreateForTab(tab);
+            Assert.assertTrue(continuousNavigationUserData.isValid());
             String url = mServer.getURLWithHostName("www.google.com", TEST_URL + "?q=cat+dog");
-            Assert.assertTrue(observer.mMetadata.getResultUrl().getSpec().startsWith(url));
+            Assert.assertTrue(observer.mMetadata.getRootUrl().getSpec().startsWith(url));
             Assert.assertTrue(observer.mUrl.getSpec().startsWith(url));
+            Assert.assertTrue(observer.mOnSrp);
         });
 
         // Invalidate the data.
         loadUrl(tab, new LoadUrlParams(UrlConstants.ABOUT_URL));
         observer.mInvalidateCallbackHelper.waitForFirst(
-                "Timed out waiting for SearchResultUserDataObserver#onError", 5000,
+                "Timed out waiting for SearchResultUserDataObserver#onInvalidate", 5000,
                 TimeUnit.MILLISECONDS);
     }
 }

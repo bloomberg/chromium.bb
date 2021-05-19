@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/base/cast_decoder_buffer_impl.h"
+#include "chromecast/media/cma/backend/proxy/audio_channel_push_buffer_handler.h"
 #include "chromecast/media/cma/backend/proxy/cast_runtime_audio_channel_broker.h"
 #include "chromecast/media/cma/backend/proxy/cma_proxy_handler.h"
 #include "chromecast/public/media/decoder_config.h"
@@ -59,6 +60,16 @@ class MockDecoderChannel : public CastRuntimeAudioChannelBroker {
   MOCK_METHOD0(StopAsync, void());
   MOCK_METHOD0(PauseAsync, void());
   MOCK_METHOD1(ResumeAsync, void(CastRuntimeAudioChannelBroker::TimestampInfo));
+  MOCK_METHOD1(UpdateTimestampAsync,
+               void(CastRuntimeAudioChannelBroker::TimestampInfo));
+};
+
+class MockPushBufferHandler : public AudioChannelPushBufferHandler::Client {
+ public:
+  ~MockPushBufferHandler() override = default;
+
+  MOCK_METHOD1(OnAudioChannelPushBufferComplete,
+               void(CmaBackend::BufferStatus));
 };
 
 }  // namespace
@@ -73,6 +84,7 @@ class ProxyCallTranslatorTest : public testing::Test {
         decoder_channel_(decoder_channel_not_owned_.get()),
         translator_(&chromecast_task_runner_,
                     &translator_client_,
+                    &push_buffer_handler_,
                     std::move(decoder_channel_not_owned_)),
         translator_as_handler_(
             static_cast<CastRuntimeAudioChannelBroker::Handler*>(
@@ -87,6 +99,7 @@ class ProxyCallTranslatorTest : public testing::Test {
   std::unique_ptr<testing::StrictMock<MockDecoderChannel>>
       decoder_channel_not_owned_;
   testing::StrictMock<MockDecoderChannel>* decoder_channel_;
+  testing::StrictMock<MockPushBufferHandler> push_buffer_handler_;
 
   ProxyCallTranslator translator_;
   CastRuntimeAudioChannelBroker::Handler* translator_as_handler_;
@@ -123,12 +136,13 @@ TEST_F(ProxyCallTranslatorTest, TestExternalInitialize) {
 
 TEST_F(ProxyCallTranslatorTest, TestExternalStart) {
   constexpr int64_t start_pts = 42;
-  ProxyCallTranslator::TargetBufferInfo target_buffer_info;
+  BufferIdManager::TargetBufferInfo target_buffer_info;
   static constexpr int64_t timestamp = 112358;
   static constexpr BufferIdManager::BufferId buffer_id = 12481516;
   target_buffer_info.buffer_id = buffer_id;
   target_buffer_info.timestamp_micros = timestamp;
 
+  // TODO(rwkeane): Validate the duration in the StartAsync call.
   EXPECT_CALL(*decoder_channel_, StartAsync(start_pts, testing::_))
       .WillOnce(
           testing::WithArgs<1>(CompareTimestampInfos(buffer_id, timestamp)));
@@ -146,16 +160,30 @@ TEST_F(ProxyCallTranslatorTest, TestExternalPause) {
 }
 
 TEST_F(ProxyCallTranslatorTest, TestExternalResume) {
-  ProxyCallTranslator::TargetBufferInfo target_buffer_info;
+  BufferIdManager::TargetBufferInfo target_buffer_info;
   static constexpr int64_t timestamp = 112358;
   static constexpr BufferIdManager::BufferId buffer_id = 12481516;
   target_buffer_info.buffer_id = buffer_id;
   target_buffer_info.timestamp_micros = timestamp;
 
+  // TODO(rwkeane): Validate the duration in the ResumeAsync call.
   EXPECT_CALL(*decoder_channel_, ResumeAsync(testing::_))
       .WillOnce(
           testing::WithArgs<0>(CompareTimestampInfos(buffer_id, timestamp)));
   translator_.Resume(target_buffer_info);
+}
+
+TEST_F(ProxyCallTranslatorTest, TestExternalUpdateTimestamp) {
+  BufferIdManager::TargetBufferInfo target_buffer_info;
+  static constexpr int timestamp = 112358;
+  static constexpr int buffer_id = 12481516;
+  target_buffer_info.buffer_id = buffer_id;
+  target_buffer_info.timestamp_micros = timestamp;
+
+  EXPECT_CALL(*decoder_channel_, UpdateTimestampAsync(testing::_))
+      .WillOnce(
+          testing::WithArgs<0>(CompareTimestampInfos(buffer_id, timestamp)));
+  translator_.UpdateTimestamp(target_buffer_info);
 }
 
 TEST_F(ProxyCallTranslatorTest, TestExternalSetPlaybackRate) {
@@ -176,10 +204,11 @@ TEST_F(ProxyCallTranslatorTest, TestExternalPushBuffer) {
   buffer->writable_data()[0] = 1;
   buffer->writable_data()[1] = 2;
   buffer->writable_data()[2] = 3;
-  EXPECT_TRUE(translator_.PushBuffer(buffer, 1));
+  EXPECT_EQ(translator_.PushBuffer(buffer, 1),
+            CmaBackend::BufferStatus::kBufferSuccess);
 
-  EXPECT_TRUE(
-      translator_.PushBuffer(CastDecoderBufferImpl::CreateEOSBuffer(), 2));
+  EXPECT_EQ(translator_.PushBuffer(CastDecoderBufferImpl::CreateEOSBuffer(), 2),
+            CmaBackend::BufferStatus::kBufferSuccess);
 
   ASSERT_TRUE(translator_as_handler_->HasBufferedData());
   auto result = translator_as_handler_->GetBufferedData();

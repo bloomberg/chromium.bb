@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as i18n from '../i18n/i18n.js';
-import * as SDK from '../sdk/sdk.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as SDK from '../core/sdk/sdk.js';
 
 import {AffectedResourcesView} from './AffectedResourcesView.js';
 import {AggregatedIssue} from './IssueAggregator.js';
 import {IssueView} from './IssueView.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Label for number of affected resources indication in issue view
   */

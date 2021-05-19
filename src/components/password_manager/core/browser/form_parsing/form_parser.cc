@@ -16,26 +16,22 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 
 using autofill::FieldPropertiesFlags;
 using autofill::FormData;
 using autofill::FormFieldData;
-using base::string16;
 
 namespace password_manager {
 
@@ -82,27 +78,25 @@ AutocompleteFlag ExtractAutocompleteFlag(const std::string& attribute) {
 }
 
 // Returns true if the |str| contains words related to CVC fields.
-bool StringMatchesCVC(const base::string16& str) {
-  static const base::NoDestructor<base::string16> kCardCvcReCached(
-      base::UTF8ToUTF16(autofill::kCardCvcRe));
-
-  return autofill::MatchesPattern(str, *kCardCvcReCached);
+bool StringMatchesCVC(const std::u16string& str) {
+  return autofill::MatchesPattern(str, autofill::kCardCvcRe);
 }
 
 // Returns true if the |str| contains words related to SSN fields.
-bool StringMatchesSSN(const base::string16& str) {
-  static const base::NoDestructor<base::string16> kSSNReCached(
-      base::UTF8ToUTF16(autofill::kSocialSecurityRe));
-
-  return autofill::MatchesPattern(str, *kSSNReCached);
+bool StringMatchesSSN(const std::u16string& str) {
+  return autofill::MatchesPattern(str, autofill::kSocialSecurityRe);
 }
 
 // Returns true if the |str| contains words related to one time password fields.
-bool StringMatchesOTP(const base::string16& str) {
-  static const base::NoDestructor<base::string16> kOTPReCached(
-      base::UTF8ToUTF16(autofill::kOneTimePwdRe));
+bool StringMatchesOTP(const std::u16string& str) {
+  return autofill::MatchesPattern(str, autofill::kOneTimePwdRe);
+}
 
-  return autofill::MatchesPattern(str, *kOTPReCached);
+// Returns true if the |str| consists of one repeated non alphanumeric symbol.
+// This is likely a result of website modifying the value, and such value should
+// not be saved.
+bool StringMatchesHiddenValue(const std::u16string& str) {
+  return autofill::MatchesPattern(str, autofill::kHiddenValueRe);
 }
 
 // TODO(crbug.com/860700): Remove name and attribute checking once server-side
@@ -175,17 +169,17 @@ bool MatchesInteractability(const ProcessedField& processed_field,
            FieldPropertiesFlags::kAutofilled));
 }
 
-bool DoesStringContainOnlyDigits(const base::string16& s) {
-  return base::ranges::all_of(s, &base::IsAsciiDigit<base::char16>);
+bool DoesStringContainOnlyDigits(const std::u16string& s) {
+  return base::ranges::all_of(s, &base::IsAsciiDigit<char16_t>);
 }
 
 // Heuristics to determine that a string is very unlikely to be a username.
-bool IsProbablyNotUsername(const base::string16& s) {
+bool IsProbablyNotUsername(const std::u16string& s) {
   return s.empty() || (s.size() < 3 && DoesStringContainOnlyDigits(s));
 }
 
 // Returns |user_input| if it is not empty, |value| otherwise.
-const base::string16& GetFieldValue(const FormFieldData& field) {
+const std::u16string& GetFieldValue(const FormFieldData& field) {
   return field.user_input.empty() ? field.value : field.user_input;
 }
 
@@ -784,7 +778,7 @@ void ParseUsingBaseHeuristics(
 // manager refer to a field. The fuzzing infrastructure doed not run on iOS, so
 // the iOS specific parts of PasswordForm are also built on fuzzer enabled
 // platforms. See http://crbug.com/896594
-string16 GetPlatformSpecificIdentifier(const FormFieldData& field) {
+std::u16string GetPlatformSpecificIdentifier(const FormFieldData& field) {
 #if defined(OS_IOS)
   return field.unique_id;
 #else
@@ -859,9 +853,11 @@ std::vector<ProcessedField> ProcessFields(
     if (!field.IsTextInputElement())
       continue;
 
-    const base::string16& field_value = GetFieldValue(field);
-    if (consider_only_non_empty && field_value.empty())
+    const std::u16string& field_value = GetFieldValue(field);
+    if (consider_only_non_empty &&
+        (field_value.empty() || StringMatchesHiddenValue(field_value))) {
       continue;
+    }
 
     const bool is_password = field.form_control_type == "password";
 

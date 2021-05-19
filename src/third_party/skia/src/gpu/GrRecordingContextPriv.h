@@ -8,8 +8,9 @@
 #ifndef GrRecordingContextPriv_DEFINED
 #define GrRecordingContextPriv_DEFINED
 
+#include "include/core/SkPaint.h"
 #include "include/gpu/GrRecordingContext.h"
-#include "src/gpu/text/GrSDFTOptions.h"
+#include "src/gpu/text/GrSDFTControl.h"
 
 class SkDeferredDisplayList;
 
@@ -24,6 +25,16 @@ public:
     bool matches(GrContext_Base* candidate) const { return fContext->matches(candidate); }
 
     const GrContextOptions& options() const { return fContext->options(); }
+
+#if GR_TEST_UTILS
+    bool alwaysAntialias() const { return fContext->options().fAlwaysAntialias; }
+    GrAA chooseAA(const SkPaint& paint) const {
+        return GrAA(paint.isAntiAlias() || this->alwaysAntialias());
+    }
+#else
+    bool alwaysAntialias() const { return false; }
+    GrAA chooseAA(const SkPaint& paint) const { return GrAA(paint.isAntiAlias()); }
+#endif
 
     const GrCaps* caps() const { return fContext->caps(); }
     sk_sp<const GrCaps> refCaps() const;
@@ -41,8 +52,10 @@ public:
     // from GrRecordingContext
     GrDrawingManager* drawingManager() { return fContext->drawingManager(); }
 
-    GrMemoryPool* opMemoryPool() { return fContext->arenas().opMemoryPool(); }
     SkArenaAlloc* recordTimeAllocator() { return fContext->arenas().recordTimeAllocator(); }
+    GrSubRunAllocator* recordTimeSubRunAllocator() {
+        return fContext->arenas().recordTimeSubRunAllocator();
+    }
     GrRecordingContext::Arenas arenas() { return fContext->arenas(); }
 
     GrRecordingContext::OwnedArenas&& detachArenas() { return fContext->detachArenas(); }
@@ -102,9 +115,7 @@ public:
         return &fContext->fStats;
     }
 
-    GrSDFTOptions SDFTOptions() const {
-        return {this->options().fMinDistanceFieldFontSize, this->options().fGlyphsAsPathsFontSize};
-    }
+    GrSDFTControl getSDFTControl(bool useSDFTForSmallText) const;
 
     /**
      * Create a GrRecordingContext without a resource cache

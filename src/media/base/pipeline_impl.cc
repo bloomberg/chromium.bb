@@ -5,6 +5,7 @@
 #include "media/base/pipeline_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -944,6 +945,7 @@ void PipelineImpl::RendererWrapper::SetState(State next_state) {
 
 void PipelineImpl::RendererWrapper::CompleteSeek(base::TimeDelta seek_time,
                                                  PipelineStatus status) {
+  DVLOG(1) << __func__ << ": seek_time=" << seek_time << ", status=" << status;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kStarting || state_ == kSeeking || state_ == kResuming);
 
@@ -1047,6 +1049,7 @@ void PipelineImpl::RendererWrapper::OnRendererCreated(
 
 void PipelineImpl::RendererWrapper::InitializeRenderer(
     PipelineStatusCallback done_cb) {
+  DVLOG(1) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   switch (demuxer_->GetType()) {
@@ -1186,8 +1189,8 @@ PipelineImpl::PipelineImpl(
   DVLOG(2) << __func__;
   DCHECK(create_renderer_cb_);
 
-  renderer_wrapper_.reset(new RendererWrapper(
-      media_task_runner_, std::move(main_task_runner), media_log_));
+  renderer_wrapper_ = std::make_unique<RendererWrapper>(
+      media_task_runner_, std::move(main_task_runner), media_log_);
 }
 
 PipelineImpl::~PipelineImpl() {
@@ -1655,7 +1658,7 @@ void PipelineImpl::OnVideoDecoderChange(const VideoDecoderInfo& info) {
 }
 
 void PipelineImpl::OnSeekDone(bool is_suspended) {
-  DVLOG(3) << __func__;
+  DVLOG(3) << __func__ << ": is_suspended=" << is_suspended;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 

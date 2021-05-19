@@ -17,7 +17,7 @@ namespace feed {
 namespace {
 
 using DrawState = SurfaceUpdater::DrawState;
-using SurfaceInterface = FeedStreamApi::SurfaceInterface;
+using FeedStreamSurface = FeedStreamSurface;
 
 // Give each kind of zero state a unique name, so that the UI knows if it
 // changes.
@@ -156,8 +156,9 @@ feedui::ZeroStateSlice::Type GetZeroStateType(LoadStreamStatus status) {
     case LoadStreamStatus::kCannotLoadMoreNoNextPageToken:
     case LoadStreamStatus::kDataInStoreStaleMissedLastRefresh:
     case LoadStreamStatus::kLoadedStaleDataFromStoreDueToNetworkFailure:
-      break;
     case LoadStreamStatus::kDataInStoreIsExpired:
+    case LoadStreamStatus::kDataInStoreIsForAnotherUser:
+    case LoadStreamStatus::kAbortWithPendingClearAll:
       break;
   }
   return feedui::ZeroStateSlice::NO_CARDS_AVAILABLE;
@@ -205,7 +206,7 @@ void SurfaceUpdater::OnUiUpdate(const StreamModel::UiUpdate& update) {
   SendStreamUpdate(updated_shared_state_ids);
 }
 
-void SurfaceUpdater::SurfaceAdded(SurfaceInterface* surface) {
+void SurfaceUpdater::SurfaceAdded(FeedStreamSurface* surface) {
   SendUpdateToSurface(surface, GetUpdateForNewSurface(GetState(), model_));
 
   for (const auto& datastore_entry : xsurface_datastore_entries_) {
@@ -216,7 +217,7 @@ void SurfaceUpdater::SurfaceAdded(SurfaceInterface* surface) {
   surfaces_.AddObserver(surface);
 }
 
-void SurfaceUpdater::SurfaceRemoved(SurfaceInterface* surface) {
+void SurfaceUpdater::SurfaceRemoved(FeedStreamSurface* surface) {
   surfaces_.RemoveObserver(surface);
 }
 
@@ -281,7 +282,7 @@ void SurfaceUpdater::SendStreamUpdate(
   feedui::StreamUpdate stream_update =
       MakeStreamUpdate(updated_shared_state_ids, sent_content_, model_, state);
 
-  for (SurfaceInterface& surface : surfaces_) {
+  for (FeedStreamSurface& surface : surfaces_) {
     SendUpdateToSurface(&surface, stream_update);
   }
 
@@ -289,7 +290,7 @@ void SurfaceUpdater::SendStreamUpdate(
   last_draw_state_ = state;
 }
 
-void SurfaceUpdater::SendUpdateToSurface(SurfaceInterface* surface,
+void SurfaceUpdater::SendUpdateToSurface(FeedStreamSurface* surface,
                                          const feedui::StreamUpdate& update) {
   surface->StreamUpdate(update);
 
@@ -323,14 +324,14 @@ void SurfaceUpdater::SetOfflinePageAvailability(const std::string& badge_id,
 void SurfaceUpdater::InsertDatastoreEntry(const std::string& key,
                                           const std::string& value) {
   xsurface_datastore_entries_[key] = value;
-  for (SurfaceInterface& surface : surfaces_) {
+  for (FeedStreamSurface& surface : surfaces_) {
     surface.ReplaceDataStoreEntry(key, value);
   }
 }
 
 void SurfaceUpdater::RemoveDatastoreEntry(const std::string& key) {
   if (xsurface_datastore_entries_.erase(key) == 1) {
-    for (SurfaceInterface& surface : surfaces_) {
+    for (FeedStreamSurface& surface : surfaces_) {
       surface.RemoveDataStoreEntry(key);
     }
   }

@@ -277,19 +277,10 @@ class TabDragController::DraggedTabsClosedTracker
       TabStripModel* model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override {
-    switch (change.type()) {
-      case TabStripModelChange::Type::kRemoved:
-        for (const auto& contents : change.GetRemove()->contents)
-          parent_->OnActiveStripWebContentsRemoved(contents.contents);
-        break;
-      case TabStripModelChange::Type::kReplaced:
-        parent_->OnActiveStripWebContentsReplaced(
-            change.GetReplace()->old_contents,
-            change.GetReplace()->new_contents);
-        break;
-      default:
-        break;
-    }
+    if (change.type() != TabStripModelChange::Type::kRemoved)
+      return;
+    for (const auto& contents : change.GetRemove()->contents)
+      parent_->OnActiveStripWebContentsRemoved(contents.contents);
   }
 
  private:
@@ -717,20 +708,9 @@ void TabDragController::OnSourceTabStripEmpty() {
 void TabDragController::OnActiveStripWebContentsRemoved(
     content::WebContents* contents) {
   // Mark closed tabs as destroyed so we don't try to manipulate them later.
-  for (auto& drag_datum : drag_data_) {
-    if (drag_datum.contents == contents) {
-      drag_datum.contents = nullptr;
-      break;
-    }
-  }
-}
-
-void TabDragController::OnActiveStripWebContentsReplaced(
-    content::WebContents* previous,
-    content::WebContents* next) {
-  for (auto& drag_datum : drag_data_) {
-    if (drag_datum.contents == previous) {
-      drag_datum.contents = next;
+  for (auto it = drag_data_.begin(); it != drag_data_.end(); it++) {
+    if (it->contents == contents) {
+      it->contents = nullptr;
       break;
     }
   }
@@ -1211,9 +1191,9 @@ void TabDragController::Attach(TabDragContext* attached_context,
           source_view_drag_data()->tab_group_data.value().group_visual_data);
     }
 
-    // Insert at the beginning of the tabstrip. We'll fix up the insertion
+    // Insert at any valid index in the tabstrip. We'll fix up the insertion
     // index in MoveAttached() later.
-    int index = 0;
+    int index = attached_context_->GetPinnedTabCount();
     attach_index_ = index;
 
     gfx::Point tab_strip_point(point_in_screen);
@@ -1474,8 +1454,9 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
       return;
     tab_strip_to_attach_to_after_exit_ = nullptr;
   } else if (current_state_ == DragState::kWaitingToStop) {
-    EndDrag(result == views::Widget::MOVE_LOOP_CANCELED ? END_DRAG_CANCEL
-                                                        : END_DRAG_COMPLETE);
+    EndDrag(result == views::Widget::MoveLoopResult::kCanceled
+                ? END_DRAG_CANCEL
+                : END_DRAG_COMPLETE);
   }
 }
 
@@ -2078,9 +2059,16 @@ Browser* TabDragController::CreateBrowserForDrag(
   // window is a maximized or fullscreen window since it will prevent window
   // moving/resizing on Chrome OS. See crbug.com/1023871 for details.
   create_params.initial_show_state = ui::SHOW_STATE_DEFAULT;
+
   // Don't copy the initial workspace since the *current* workspace might be
   // different and copying the workspace will move the tab to the initial one.
   create_params.initial_workspace = "";
+
+  // Don't copy the window name - the user's deliberately creating a new window,
+  // which should default to its own auto-generated name, not the same name as
+  // the previous window.
+  create_params.user_title = "";
+
   Browser* browser = Browser::Create(create_params);
   is_dragging_new_browser_ = true;
   // If the window is created maximized then the bounds we supplied are ignored.

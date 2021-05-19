@@ -231,12 +231,12 @@ void FilterHorizontalWidth4(const uint8_t* src, const ptrdiff_t src_stride,
     int16x8_t sum;
     v_src[0] = vld1_u8(src);
     if (filter_index == 3) {
-      v_src[1] = RightShift<1 * 8>(v_src[0]);
+      v_src[1] = RightShiftVector<1 * 8>(v_src[0]);
       sum = SumOnePassTaps<filter_index, false>(v_src, v_tap + 3);
     } else {
-      v_src[1] = RightShift<1 * 8>(v_src[0]);
-      v_src[2] = RightShift<2 * 8>(v_src[0]);
-      v_src[3] = RightShift<3 * 8>(v_src[0]);
+      v_src[1] = RightShiftVector<1 * 8>(v_src[0]);
+      v_src[2] = RightShiftVector<2 * 8>(v_src[0]);
+      v_src[3] = RightShiftVector<3 * 8>(v_src[0]);
       sum = SumOnePassTaps<filter_index, false>(v_src, v_tap + 2);
     }
     if (is_2d || is_compound) {
@@ -274,15 +274,15 @@ void FilterHorizontalWidth2(const uint8_t* src, const ptrdiff_t src_stride,
       sum = vmlal_u8(sum, vext_u8(input.val[0], input.val[1], 2), v_tap[4]);
     } else if (filter_index == 4) {
       // tap signs : - + + -
-      sum = vmull_u8(RightShift<2 * 8>(input.val[0]), v_tap[3]);
+      sum = vmull_u8(RightShiftVector<2 * 8>(input.val[0]), v_tap[3]);
       sum = vmlsl_u8(sum, input.val[0], v_tap[2]);
-      sum = vmlal_u8(sum, RightShift<4 * 8>(input.val[0]), v_tap[4]);
+      sum = vmlal_u8(sum, RightShiftVector<4 * 8>(input.val[0]), v_tap[4]);
       sum = vmlsl_u8(sum, vext_u8(input.val[0], input.val[1], 6), v_tap[5]);
     } else {
       // tap signs : + + + +
       sum = vmull_u8(input.val[0], v_tap[2]);
-      sum = vmlal_u8(sum, RightShift<2 * 8>(input.val[0]), v_tap[3]);
-      sum = vmlal_u8(sum, RightShift<4 * 8>(input.val[0]), v_tap[4]);
+      sum = vmlal_u8(sum, RightShiftVector<2 * 8>(input.val[0]), v_tap[3]);
+      sum = vmlal_u8(sum, RightShiftVector<4 * 8>(input.val[0]), v_tap[4]);
       sum = vmlal_u8(sum, vext_u8(input.val[0], input.val[1], 6), v_tap[5]);
     }
     int16x8_t s = vreinterpretq_s16_u16(sum);
@@ -323,18 +323,18 @@ void FilterHorizontalWidth2(const uint8_t* src, const ptrdiff_t src_stride,
     uint16x8_t sum;
     if (filter_index == 3) {
       sum = vmull_u8(input, v_tap[3]);
-      sum = vmlal_u8(sum, RightShift<1 * 8>(input), v_tap[4]);
+      sum = vmlal_u8(sum, RightShiftVector<1 * 8>(input), v_tap[4]);
     } else if (filter_index == 4) {
-      sum = vmull_u8(RightShift<1 * 8>(input), v_tap[3]);
+      sum = vmull_u8(RightShiftVector<1 * 8>(input), v_tap[3]);
       sum = vmlsl_u8(sum, input, v_tap[2]);
-      sum = vmlal_u8(sum, RightShift<2 * 8>(input), v_tap[4]);
-      sum = vmlsl_u8(sum, RightShift<3 * 8>(input), v_tap[5]);
+      sum = vmlal_u8(sum, RightShiftVector<2 * 8>(input), v_tap[4]);
+      sum = vmlsl_u8(sum, RightShiftVector<3 * 8>(input), v_tap[5]);
     } else {
       assert(filter_index == 5);
       sum = vmull_u8(input, v_tap[2]);
-      sum = vmlal_u8(sum, RightShift<1 * 8>(input), v_tap[3]);
-      sum = vmlal_u8(sum, RightShift<2 * 8>(input), v_tap[4]);
-      sum = vmlal_u8(sum, RightShift<3 * 8>(input), v_tap[5]);
+      sum = vmlal_u8(sum, RightShiftVector<1 * 8>(input), v_tap[3]);
+      sum = vmlal_u8(sum, RightShiftVector<2 * 8>(input), v_tap[4]);
+      sum = vmlal_u8(sum, RightShiftVector<3 * 8>(input), v_tap[5]);
     }
     // |sum| contains an int16_t value.
     sum = vreinterpretq_u16_s16(vrshrq_n_s16(vreinterpretq_s16_u16(sum),

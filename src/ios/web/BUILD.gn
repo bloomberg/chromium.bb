@@ -438,7 +438,6 @@ source_set("ios_web_web_state_js_unittests") {
     "//ios/net",
     "//ios/testing:ocmock_support",
     "//ios/web/common:web_view_creation_util",
-    "//ios/web/find_in_page",
     "//ios/web/js_features/context_menu",
     "//ios/web/js_messaging",
     "//ios/web/public",
@@ -459,7 +458,6 @@ source_set("ios_web_web_state_js_unittests") {
 
   sources = [
     "web_state/js/common_js_unittest.mm",
-    "web_state/js/find_in_page_js_unittest.mm",
     "web_state/js/message_js_unittest.mm",
   ]
 }
@@ -559,8 +557,10 @@ test("ios_web_inttests") {
     "//ios/web/common:web_view_creation_util",
     "//ios/web/download:download_inttests",
     "//ios/web/favicon:inttests",
+    "//ios/web/find_in_page",
     "//ios/web/js_features/context_menu",
     "//ios/web/js_messaging:inttests",
+    "//ios/web/js_messaging:java_script_feature",
     "//ios/web/js_messaging:java_script_feature_util",
     "//ios/web/navigation",
     "//ios/web/navigation:core",
@@ -625,7 +625,6 @@ js_compile_bundle("main_frame_web_bundle") {
     "//third_party/text-fragments-polyfill/src/src/text-fragment-utils.js",
     "web_state/js/resources/main_frame_web_bundle.js",
     "web_state/js/resources/navigation.js",
-    "web_state/js/resources/scroll_workaround.js",
     "web_state/js/resources/text_fragments.js",
   ]
 }
@@ -637,7 +636,6 @@ js_compile_bundle("all_frames_web_bundle") {
   sources = [
     "web_state/js/resources/all_frames_web_bundle.js",
     "web_state/js/resources/cookie.js",
-    "web_state/js/resources/find_in_page.js",
     "web_state/js/resources/share_workaround.js",
   ]
 }
@@ -649,16 +647,6 @@ js_compile_bundle("all_frames_document_end_web_bundle") {
   sources = [
     "js_messaging/resources/setup_frame.js",
     "web_state/js/resources/all_frames_document_end_web_bundle.js",
-  ]
-}
-
-js_compile_bundle("main_frame_document_end_web_bundle") {
-  visibility = [ ":js_resources" ]
-  closure_entry_point = "__crWeb.mainFrameDocumentEndWebBundle"
-
-  sources = [
-    "favicon/resources/favicon.js",
-    "web_state/js/resources/main_frame_document_end_web_bundle.js",
   ]
 }
 
@@ -694,7 +682,6 @@ js_compile_checked("js_resources") {
   public_deps = [
     ":all_frames_document_end_web_bundle",
     ":all_frames_web_bundle",
-    ":main_frame_document_end_web_bundle",
     ":main_frame_web_bundle",
   ]
 

@@ -14,10 +14,9 @@
 
 #include "src/ast/fallthrough_statement.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::FallthroughStatement);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::FallthroughStatement);
 
 namespace tint {
 namespace ast {
@@ -33,10 +32,6 @@ FallthroughStatement* FallthroughStatement::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
   auto src = ctx->Clone(source());
   return ctx->dst->create<FallthroughStatement>(src);
-}
-
-bool FallthroughStatement::IsValid() const {
-  return true;
 }
 
 void FallthroughStatement::to_str(const semantic::Info&,

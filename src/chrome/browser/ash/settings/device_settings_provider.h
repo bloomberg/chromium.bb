@@ -29,14 +29,14 @@ namespace enterprise_management {
 class ChromeDeviceSettingsProto;
 }  // namespace enterprise_management
 
-namespace chromeos {
+namespace ash {
 
 // CrosSettingsProvider implementation that works with device settings.
 // Dependency: chromeos::InstallAttributes must be initialized while this class
 // is in use.
 //
 // Note that the write path is in the process of being migrated to
-// OwnerSettingsServiceChromeOS (crbug.com/230018).
+// OwnerSettingsServiceAsh (crbug.com/230018).
 class DeviceSettingsProvider
     : public CrosSettingsProvider,
       public DeviceSettingsService::Observer,
@@ -152,6 +152,12 @@ class DeviceSettingsProvider
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsProvider);
 };
 
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when Chrome OS code migration is
+// done.
+namespace chromeos {
+using ::ash::DeviceSettingsProvider;
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_SETTINGS_DEVICE_SETTINGS_PROVIDER_H_

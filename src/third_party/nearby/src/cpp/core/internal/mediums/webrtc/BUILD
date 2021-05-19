@@ -17,7 +17,6 @@ cc_library(
     srcs = [
         "connection_flow.cc",
         "data_channel_observer_impl.cc",
-        "peer_connection_observer_impl.cc",
         "peer_id.cc",
         "signaling_frames.cc",
         "webrtc_socket.cc",
@@ -27,7 +26,6 @@ cc_library(
         "data_channel_listener.h",
         "data_channel_observer_impl.h",
         "local_ice_candidate_listener.h",
-        "peer_connection_observer_impl.h",
         "peer_id.h",
         "session_description_wrapper.h",
         "signaling_frames.h",
@@ -54,6 +52,7 @@ cc_library(
 
 cc_test(
     name = "webrtc_test",
+    timeout = "short",
     srcs = [
         "connection_flow_test.cc",
         "peer_id_test.cc",

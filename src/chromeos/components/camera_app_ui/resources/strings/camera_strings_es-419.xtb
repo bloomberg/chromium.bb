@@ -4,10 +4,13 @@
 <translation id="1175958423215084756">Se detectó un vínculo. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Imágenes de la galería</translation>
 <translation id="1430915738399379752">Imprimir</translation>
+<translation id="1467231725790366244">La cámara <ph name="CAMERA" /> está desconectada.</translation>
 <translation id="1473110567575736769">Temporizador de 3 segundos</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1627744224761163218">4 × 4</translation>
 <translation id="1664224225747386870">No se grabaron datos</translation>
+<translation id="1838104802459806957">Inclinar hacia arriba</translation>
+<translation id="1851169887664797861">Controles adicionales de cámara disponibles</translation>
 <translation id="1851616744363735765">DETENIDA</translation>
 <translation id="1862930711583847113">No se puede exportar <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Resolución de foto</translation>
@@ -17,15 +20,18 @@
 <translation id="2064538373111010176"><ph name="CAMERA" /> activa</translation>
 <translation id="2144806332417375165">Parámetros de video personalizados</translation>
 <translation id="229579744168541441">Exportar al disco</translation>
+<translation id="2320741269052147773">Desplazarse a la izquierda</translation>
 <translation id="2501278716633472235">Ir atrás</translation>
 <translation id="2501853267655415902">Se detuvo la grabación</translation>
 <translation id="2501953888035679275">Toma fotos y graba videos con la cámara.</translation>
 <translation id="2549985041256363841">Comenzar grabación</translation>
 <translation id="2599796128805996109">Cámara posterior</translation>
+<translation id="2879583609344924966">La cámara <ph name="CAMERA" /> está conectada.</translation>
 <translation id="2912439424121107408">Este dispositivo no admite el modo experto</translation>
 <translation id="2968794441791257519">Las fotos y los videos que tomes con la cámara se moverán a la carpeta "Descargas", que puedes abrir con la app de Archivos.
 
 Las apps que tengan permiso de almacenamiento podrán acceder a tus fotos y videos.</translation>
+<translation id="3067436040345934772">Desplazarse a la derecha</translation>
 <translation id="3081586908890909590">Cambiar al modo para grabar video</translation>
 <translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">Cuadrícula</translation>
@@ -34,6 +40,7 @@ Las apps que tengan permiso de almacenamiento podrán acceder a tus fotos y vide
 <translation id="3259149966178251584">Resolución de la cámara</translation>
 <translation id="3517926952904427380">No es posible cambiar al modo vertical para tomar fotos.</translation>
 <translation id="3569311554794739032">¿Confirmas que quieres quitar <ph name="FILE" />?</translation>
+<translation id="3733597664308256288">Hay controles adicionales de cámara disponibles. Para acceder, presiona Búsqueda + flecha hacia la derecha.</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Escanear el código de barras</translation>
 <translation id="3892148308691398805">Copiar texto</translation>
@@ -56,6 +63,7 @@ Las apps que tengan permiso de almacenamiento podrán acceder a tus fotos y vide
 <translation id="5671277269877808209">Cuadrado</translation>
 <translation id="5775960006311140197">Modo experto</translation>
 <translation id="5869546221129391014">Cuadrícula</translation>
+<translation id="5975083100439434680">Alejar</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6073451960410192870">Detener grabación</translation>
 <translation id="6197807149213783179">Guardar metadatos</translation>
@@ -84,16 +92,19 @@ Si tus comentarios están relacionados con la calidad de imagen o video, adjunta
 <translation id="7974782136796202581">Mostrar opciones de desplazamiento lateral, inclinación y zoom</translation>
 <translation id="7983668134180549431">Se detectó texto.</translation>
 <translation id="8067883171444229417">Reproducir video</translation>
+<translation id="8120146556401698679">Desplazamiento inclinación ampliación</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8145038249676204903">Cambiar al modo para tomar fotos</translation>
 <translation id="8239780215768881278">Tomar una instantánea del video</translation>
 <translation id="8261506727792406068">Borrar</translation>
+<translation id="8425673304802773841">Inclinar hacia abajo</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" /> p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Obtener vista previa de metadatos</translation>
 <translation id="8815966864175525708">Cambiar al modo vertical para tomar fotos</translation>
 <translation id="8828441885228359828">Reanudar la grabación</translation>
 <translation id="8870695351537079478">No es posible comenzar a grabar</translation>
+<translation id="8903921497873541725">Acercar</translation>
 <translation id="9045155556724273246">10 segundos</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
 </translationbundle>

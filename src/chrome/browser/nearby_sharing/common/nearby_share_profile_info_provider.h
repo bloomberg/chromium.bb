@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/optional.h"
-#include "base/strings/string16.h"
 
 // A delegate class that returns the Profile information necessary for
 // browser-independent Nearby Share components, such as the local-device-data
@@ -20,7 +19,7 @@ class NearbyShareProfileInfoProvider {
 
   // Proxy for User::GetGivenName(). Returns base::nullopt if a valid given name
   // cannot be returned.
-  virtual base::Optional<base::string16> GetGivenName() const = 0;
+  virtual base::Optional<std::u16string> GetGivenName() const = 0;
 
   // Proxy for Profile::GetProfileUserName(). Returns base::nullopt if a valid
   // user name cannot be returned.

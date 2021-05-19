@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 /* eslint-disable rulesdir/no_underscored_properties */
-import * as Common from '../common/common.js';
+import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as SDK from '../core/sdk/sdk.js';
 import * as DataGrid from '../data_grid/data_grid.js';
-import * as Host from '../host/host.js';
-import * as i18n from '../i18n/i18n.js';
-import * as SDK from '../sdk/sdk.js';
-import * as UI from '../ui/ui.js';
+import * as UI from '../ui/legacy/legacy.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Label for button that allows user to download the private key related to a credential.
   */
@@ -41,7 +41,7 @@ export const UIStrings = {
   */
   rpId: 'RP ID',
   /**
-  *@description Label for credential field that represents the user a credential is mapped to
+  *@description Label for a column in a table. A field/unique ID that represents the user a credential is mapped to.
   */
   userHandle: 'User Handle',
   /**
@@ -230,7 +230,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
 
   constructor() {
     super(true);
-    this.registerRequiredCSS('webauthn/webauthnPane.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('webauthn/webauthnPane.css', {enableLegacyPatching: false});
     this.contentElement.classList.add('webauthn-pane');
     this._enabled = false;
     this._activeAuthId = null;

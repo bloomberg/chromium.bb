@@ -50,8 +50,8 @@ to parameterize tests), instead of making your own list. Use the info tables (su
 Since there are no synchronous operations in WebGPU, almost every test is asynchronous in some
 way. For example:
 
-  - Checking the result of a readback.
-  - Capturing the result of a `popErrorScope()`.
+- Checking the result of a readback.
+- Capturing the result of a `popErrorScope()`.
 
 That said, test functions don't always need to be `async`; see below.
 

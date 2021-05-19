@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 (async function() {
-  await TestRunner.loadModule('extensions_test_runner');
-  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.loadTestModule('extensions_test_runner');
+  await TestRunner.loadModule('timeline'); await TestRunner.loadTestModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
 
   TestRunner.enableTimelineExtensionAndStart = function(callback) {

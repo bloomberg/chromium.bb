@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_REGEXES_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_REGEXES_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "base/strings/string_piece.h"
 
 // Parsing utilities.
@@ -16,7 +17,7 @@ namespace autofill {
 // The |group_to_be_captured| numbered group is captured into |match|.
 bool MatchesPattern(const base::StringPiece16& input,
                     const base::StringPiece16& pattern,
-                    base::string16* match = nullptr,
+                    std::u16string* match = nullptr,
                     int32_t group_to_be_captured = 0);
 
 }  // namespace autofill

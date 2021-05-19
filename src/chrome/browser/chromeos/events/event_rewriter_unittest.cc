@@ -4,20 +4,20 @@
 
 #include <vector>
 
+#include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
+#include "ash/accessibility/sticky_keys/sticky_keys_overlay.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
-#include "ash/sticky_keys/sticky_keys_controller.h"
-#include "ash/sticky_keys/sticky_keys_overlay.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/notifications/deprecation_notification_controller.h"
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
@@ -171,7 +171,7 @@ namespace chromeos {
 class EventRewriterTest : public ChromeAshTestBase {
  public:
   EventRewriterTest()
-      : fake_user_manager_(new chromeos::FakeChromeUserManager),
+      : fake_user_manager_(new FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
   ~EventRewriterTest() override {}
 
@@ -252,7 +252,9 @@ class EventRewriterTest : public ChromeAshTestBase {
 
     fake_udev_.Reset();
     fake_udev_.AddFakeDevice(keyboard.name, keyboard.sys_path.value(),
-                             /*subsystem=*/"input", std::move(sysfs_attributes),
+                             /*subsystem=*/"input", /*devnode=*/base::nullopt,
+                             /*devtype=*/base::nullopt,
+                             std::move(sysfs_attributes),
                              std::move(sysfs_properties));
 
     // Reset the state of the device manager.
@@ -1868,57 +1870,78 @@ TEST_F(EventRewriterTest, TestRewriteSearchNumberToFunctionKey_Deprecated) {
   scoped_feature_list_.InitAndEnableFeature(
       ::features::kImprovedKeyboardShortcuts);
   TestNonAppleNonCustomLayoutKeyboardVariants({
-      // Search+Number should now have no effect.
+      // Search+Number should now have no effect but a notification will
+      // be shown the first time F1 to F10 is pressed.
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_1, ui::DomCode::DIGIT1, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'1'>::Character},
        {ui::VKEY_1, ui::DomCode::DIGIT1, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'1'>::Character}},
+        ui::DomKey::Constant<'1'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_2, ui::DomCode::DIGIT2, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'2'>::Character},
        {ui::VKEY_2, ui::DomCode::DIGIT2, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'2'>::Character}},
+        ui::DomKey::Constant<'2'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_3, ui::DomCode::DIGIT3, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'3'>::Character},
        {ui::VKEY_3, ui::DomCode::DIGIT3, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'3'>::Character}},
+        ui::DomKey::Constant<'3'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_4, ui::DomCode::DIGIT4, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'4'>::Character},
        {ui::VKEY_4, ui::DomCode::DIGIT4, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'4'>::Character}},
+        ui::DomKey::Constant<'4'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_5, ui::DomCode::DIGIT5, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'5'>::Character},
        {ui::VKEY_5, ui::DomCode::DIGIT5, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'5'>::Character}},
+        ui::DomKey::Constant<'5'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_6, ui::DomCode::DIGIT6, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'6'>::Character},
        {ui::VKEY_6, ui::DomCode::DIGIT6, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'6'>::Character}},
+        ui::DomKey::Constant<'6'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_7, ui::DomCode::DIGIT7, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'7'>::Character},
        {ui::VKEY_7, ui::DomCode::DIGIT7, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'7'>::Character}},
+        ui::DomKey::Constant<'7'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_8, ui::DomCode::DIGIT8, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'8'>::Character},
        {ui::VKEY_8, ui::DomCode::DIGIT8, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'8'>::Character}},
+        ui::DomKey::Constant<'8'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_9, ui::DomCode::DIGIT9, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'9'>::Character},
        {ui::VKEY_9, ui::DomCode::DIGIT9, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'9'>::Character}},
+        ui::DomKey::Constant<'9'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_0, ui::DomCode::DIGIT0, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'0'>::Character},
        {ui::VKEY_0, ui::DomCode::DIGIT0, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'0'>::Character}},
+        ui::DomKey::Constant<'0'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_OEM_MINUS, ui::DomCode::MINUS, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'-'>::Character},
@@ -3517,7 +3540,7 @@ class EventRewriterAshTest : public ChromeAshTestBase {
  public:
   EventRewriterAshTest()
       : source_(&buffer_),
-        fake_user_manager_(new chromeos::FakeChromeUserManager),
+        fake_user_manager_(new FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
   ~EventRewriterAshTest() override {}
 
@@ -3590,7 +3613,7 @@ class EventRewriterAshTest : public ChromeAshTestBase {
   EventBuffer buffer_;
   TestEventSource source_;
 
-  chromeos::FakeChromeUserManager* fake_user_manager_;  // Not owned.
+  FakeChromeUserManager* fake_user_manager_;  // Not owned.
   user_manager::ScopedUserManager user_manager_enabler_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
 
@@ -3766,6 +3789,15 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten_AltClickIsRightClick) {
   EXPECT_EQ(message_center_.NotificationCount(), 0);
 }
 
+TEST_F(EventRewriterTest, DontRewriteIfNotRewritten_AltClickIsRightClick_New) {
+  // Enabling the kImprovedKeyboardShortcuts feature does not change alt+click
+  // behavior or create a notification.
+  scoped_feature_list_.InitAndEnableFeature(
+      ::features::kImprovedKeyboardShortcuts);
+  DontRewriteIfNotRewritten(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN);
+  EXPECT_EQ(message_center_.NotificationCount(), 0);
+}
+
 TEST_F(EventRewriterTest, DontRewriteIfNotRewritten_SearchClickIsRightClick) {
   scoped_feature_list_.InitAndEnableFeature(
       chromeos::features::kUseSearchClickForRightClick);
@@ -3773,17 +3805,16 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten_SearchClickIsRightClick) {
   EXPECT_EQ(message_center_.NotificationCount(), 0);
 }
 
-TEST_F(EventRewriterTest,
-       DontRewriteIfNotRewritten_SearchClickIsRightClick_New) {
-  scoped_feature_list_.InitAndEnableFeature(
-      ::features::kImprovedKeyboardShortcuts);
+TEST_F(EventRewriterTest, DontRewriteIfNotRewritten_AltClickDeprecated) {
+  // Pressing search+click with alt+click deprecated works, but does not
+  // generate a notification.
+  scoped_feature_list_.InitAndEnableFeature(::features::kDeprecateAltClick);
   DontRewriteIfNotRewritten(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_COMMAND_DOWN);
   EXPECT_EQ(message_center_.NotificationCount(), 0);
 }
 
 TEST_F(EventRewriterTest, DeprecatedAltClickGeneratesNotification) {
-  scoped_feature_list_.InitAndEnableFeature(
-      ::features::kImprovedKeyboardShortcuts);
+  scoped_feature_list_.InitAndEnableFeature(::features::kDeprecateAltClick);
   ui::DeviceDataManager* device_data_manager =
       ui::DeviceDataManager::GetInstance();
   std::vector<ui::InputDevice> touchpad_devices(1);

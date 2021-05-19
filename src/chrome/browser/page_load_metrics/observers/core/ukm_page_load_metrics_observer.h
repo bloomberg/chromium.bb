@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/memories/core/visit_data.h"
 #include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "content/public/browser/site_instance_process_assignment.h"
@@ -29,6 +28,13 @@ namespace builders {
 class PageLoad;
 }
 }  // namespace ukm
+
+namespace internal {
+
+// Exposed for tests.
+int BucketWithOffsetAndUnit(int num, int offset, int unit);
+
+}  // namespace internal
 
 // This enum represents the type of page load: abort, non-abort, or neither.
 // A page is of type NEVER_FOREGROUND if it was never in the foreground.
@@ -108,8 +114,6 @@ class UkmPageLoadMetricsObserver
   void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
                                  int behavior_flags) override;
 
-  void OnEventOccurred(page_load_metrics::PageLoadMetricsEvent event) override;
-
   void DidActivatePortal(base::TimeTicks activation_time) override;
 
   void OnFirstContentfulPaintInPage(
@@ -156,7 +160,9 @@ class UkmPageLoadMetricsObserver
       base::TimeTicks page_end_time,
       ukm::builders::PageLoad* builder);
 
-  void RecordMemoriesMetrics(ukm::builders::PageLoad& builder);
+  void RecordMemoriesMetrics(
+      ukm::builders::PageLoad& builder,
+      const page_load_metrics::PageEndReason page_end_reason);
 
   void RecordInputTimingMetrics();
   void RecordSmoothnessMetrics();
@@ -196,6 +202,9 @@ class UkmPageLoadMetricsObserver
 
   // Guaranteed to be non-null during the lifetime of |this|.
   network::NetworkQualityTracker* network_quality_tracker_;
+
+  // The ID of this navigation, as recorded at each navigation start.
+  int64_t navigation_id_ = -1;
 
   // The number of body (not header) prefilter bytes consumed by requests for
   // the page.
@@ -289,13 +298,6 @@ class UkmPageLoadMetricsObserver
   base::Optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;
 
   base::ReadOnlySharedMemoryMapping ukm_smoothness_data_;
-
-  // Collected by this observer during the page lifetime. Shipped to UKM and
-  // History. Also save the URL and commit timestamp to align with History.
-  GURL committed_url_;
-  // Meant to correspond with the timestamp recorded in HistoryService.
-  base::Time committed_history_timestamp_;
-  memories::VisitContextSignals memories_signals_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };

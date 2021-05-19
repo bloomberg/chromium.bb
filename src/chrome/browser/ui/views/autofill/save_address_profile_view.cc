@@ -18,6 +18,8 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/color_tracking_icon_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
@@ -53,7 +55,7 @@ void AddAddressSection(views::View* parent_view,
 
 void AddAddressSection(views::View* parent_view,
                        const gfx::VectorIcon& icon,
-                       const base::string16& text) {
+                       const std::u16string& text) {
   auto text_label =
       std::make_unique<views::Label>(text, views::style::CONTEXT_LABEL);
   text_label->SetMultiLine(true);
@@ -77,7 +79,7 @@ std::unique_ptr<views::View> CreateAddressLineView() {
 }
 
 std::unique_ptr<views::Label> CreateAddressComponentLabel(
-    const base::string16& text) {
+    const std::u16string& text) {
   auto text_label =
       std::make_unique<views::Label>(text, views::style::CONTEXT_LABEL);
   text_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -99,7 +101,7 @@ std::unique_ptr<views::View> CreateStreetAddressView(
       .SetDefault(views::kMarginsKey, gfx::Insets());
 
   const AutofillType kCountryCode(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE);
-  const base::string16& country_code = profile.GetInfo(kCountryCode, locale);
+  const std::u16string& country_code = profile.GetInfo(kCountryCode, locale);
 
   base::ListValue components;
   // TODO(crbug.com/1167060): Update this implementation after
@@ -110,7 +112,7 @@ std::unique_ptr<views::View> CreateStreetAddressView(
 
   for (size_t line_index = 0; line_index < components.GetSize(); ++line_index) {
     std::unique_ptr<views::View> line_view = CreateAddressLineView();
-    std::vector<base::string16> components_str;
+    std::vector<std::u16string> components_str;
     const base::ListValue* line = nullptr;
     components.GetList(line_index, &line);
     DCHECK(line);
@@ -130,7 +132,7 @@ std::unique_ptr<views::View> CreateStreetAddressView(
 
       autofill::ServerFieldType server_field_type =
           autofill::GetFieldTypeFromString(field_type);
-      base::string16 component_str = profile.GetInfo(server_field_type, locale);
+      std::u16string component_str = profile.GetInfo(server_field_type, locale);
       if (!component_str.empty())
         line_view->AddChildView(CreateAddressComponentLabel(component_str));
     }
@@ -138,7 +140,7 @@ std::unique_ptr<views::View> CreateStreetAddressView(
       address_view->AddChildView(std::move(line_view));
   }
   // Append the country to the end.
-  base::string16 country = profile.GetInfo(ADDRESS_HOME_COUNTRY, locale);
+  std::u16string country = profile.GetInfo(ADDRESS_HOME_COUNTRY, locale);
   if (!country.empty()) {
     std::unique_ptr<views::View> line_view = CreateAddressLineView();
     line_view->AddChildView(CreateAddressComponentLabel(country));
@@ -168,9 +170,34 @@ SaveAddressProfileView::SaveAddressProfileView(
       base::Unretained(controller_),
       AutofillClient::SaveAddressProfileOfferUserDecision::kDeclined));
 
-  views::FlexLayout* flex_layout =
-      SetLayoutManager(std::make_unique<views::FlexLayout>());
-  flex_layout->SetOrientation(views::LayoutOrientation::kVertical)
+  SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+      .SetIgnoreDefaultMainAxisMargins(true)
+      .SetCollapseMargins(true);
+
+  views::View* address_components_view =
+      AddChildView(std::make_unique<views::View>());
+  address_components_view->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(
+          views::MinimumFlexSizeRule::kPreferredSnapToMinimum,
+          views::MaximumFlexSizeRule::kUnbounded));
+
+  // TODO(crbug.com/1167060): Update icons upon having final mocks
+  std::unique_ptr<views::ImageButton> edit_button =
+      views::CreateVectorImageButtonWithNativeTheme(
+          base::BindRepeating(
+              &SaveAddressProfileBubbleController::OnEditButtonClicked,
+              base::Unretained(controller_)),
+          vector_icons::kEditIcon, gfx::kFaviconSize);
+  // TODO(crbug.com/1167060): User internationlized string.
+  edit_button->SetAccessibleName(u"Edit Address");
+  AddChildView(std::move(edit_button));
+
+  address_components_view
+      ->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
       .SetIgnoreDefaultMainAxisMargins(true)
       .SetCollapseMargins(true)
@@ -184,28 +211,29 @@ SaveAddressProfileView::SaveAddressProfileView(
   const std::string locale = g_browser_process->GetApplicationLocale();
   const AutofillProfile& profile = controller_->GetProfileToSave();
 
-  // TODO(crbug.com/1167060): Update icons upon having final mocks
   std::unique_ptr<views::View> street_address_view =
       CreateStreetAddressView(profile, locale);
   if (street_address_view) {
-    AddAddressSection(/*parent_view=*/this, vector_icons::kLocationOnIcon,
+    AddAddressSection(/*parent_view=*/address_components_view,
+                      vector_icons::kLocationOnIcon,
                       std::move(street_address_view));
   }
 
-  base::string16 phone = profile.GetInfo(PHONE_HOME_WHOLE_NUMBER, locale);
+  std::u16string phone = profile.GetInfo(PHONE_HOME_WHOLE_NUMBER, locale);
   if (!phone.empty())
-    AddAddressSection(/*parent_view=*/this, vector_icons::kCallIcon, phone);
+    AddAddressSection(/*parent_view=*/address_components_view,
+                      vector_icons::kCallIcon, phone);
 
-  base::string16 email = profile.GetInfo(EMAIL_ADDRESS, locale);
+  std::u16string email = profile.GetInfo(EMAIL_ADDRESS, locale);
   if (!email.empty())
-    AddAddressSection(/*parent_view=*/this, kWebIcon, email);
+    AddAddressSection(/*parent_view=*/address_components_view, kWebIcon, email);
 }
 
 bool SaveAddressProfileView::ShouldShowCloseButton() const {
   return true;
 }
 
-base::string16 SaveAddressProfileView::GetWindowTitle() const {
+std::u16string SaveAddressProfileView::GetWindowTitle() const {
   return controller_->GetWindowTitle();
 }
 
@@ -240,11 +268,8 @@ void SaveAddressProfileView::AddedToWidget() {
   auto image_view = std::make_unique<ThemeTrackingNonAccessibleImageView>(
       *bundle.GetImageSkiaNamed(IDR_SAVE_PASSWORD_MULTI_DEVICE),
       *bundle.GetImageSkiaNamed(IDR_SAVE_PASSWORD_MULTI_DEVICE_DARK),
-      base::BindRepeating(
-          [](SaveAddressProfileView* view) {
-            return view->GetBubbleFrameView()->GetBackgroundColor();
-          },
-          this));
+      base::BindRepeating(&views::BubbleFrameView::GetBackgroundColor,
+                          base::Unretained(GetBubbleFrameView())));
   GetBubbleFrameView()->SetHeaderView(std::move(image_view));
 }
 

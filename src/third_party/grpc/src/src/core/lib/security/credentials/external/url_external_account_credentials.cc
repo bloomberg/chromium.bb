@@ -17,12 +17,14 @@
 
 #include "src/core/lib/security/credentials/external/url_external_account_credentials.h"
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_split.h"
 
 namespace grpc_core {
 
 RefCountedPtr<UrlExternalAccountCredentials>
-UrlExternalAccountCredentials::Create(ExternalAccountCredentialsOptions options,
+UrlExternalAccountCredentials::Create(Options options,
                                       std::vector<std::string> scopes,
                                       grpc_error** error) {
   auto creds = MakeRefCounted<UrlExternalAccountCredentials>(
@@ -35,8 +37,7 @@ UrlExternalAccountCredentials::Create(ExternalAccountCredentialsOptions options,
 }
 
 UrlExternalAccountCredentials::UrlExternalAccountCredentials(
-    ExternalAccountCredentialsOptions options, std::vector<std::string> scopes,
-    grpc_error** error)
+    Options options, std::vector<std::string> scopes, grpc_error** error)
     : ExternalAccountCredentials(options, std::move(scopes)) {
   auto it = options.credential_source.object_value().find("url");
   if (it == options.credential_source.object_value().end()) {
@@ -48,13 +49,19 @@ UrlExternalAccountCredentials::UrlExternalAccountCredentials(
         GRPC_ERROR_CREATE_FROM_STATIC_STRING("url field must be a string.");
     return;
   }
-  grpc_uri* url = grpc_uri_parse(it->second.string_value(), false);
-  if (url == nullptr) {
-    *error =
-        GRPC_ERROR_CREATE_FROM_STATIC_STRING("Invalid credential source url.");
+  absl::StatusOr<URI> tmp_url = URI::Parse(it->second.string_value());
+  if (!tmp_url.ok()) {
+    *error = GRPC_ERROR_CREATE_FROM_COPIED_STRING(
+        absl::StrFormat("Invalid credential source url. Error: %s",
+                        tmp_url.status().ToString())
+            .c_str());
     return;
   }
-  url_ = url;
+  url_ = *tmp_url;
+  // The url must follow the format of <scheme>://<authority>/<path>
+  std::vector<absl::string_view> v =
+      absl::StrSplit(it->second.string_value(), absl::MaxSplits('/', 3));
+  url_full_path_ = absl::StrCat("/", v[3]);
   it = options.credential_source.object_value().find("headers");
   if (it != options.credential_source.object_value().end()) {
     if (it->second.type() != Json::Type::OBJECT) {
@@ -104,12 +111,8 @@ UrlExternalAccountCredentials::UrlExternalAccountCredentials(
   }
 }
 
-UrlExternalAccountCredentials::~UrlExternalAccountCredentials() {
-  grpc_uri_destroy(url_);
-}
-
 void UrlExternalAccountCredentials::RetrieveSubjectToken(
-    HTTPRequestContext* ctx, const ExternalAccountCredentialsOptions& options,
+    HTTPRequestContext* ctx, const Options& /*options*/,
     std::function<void(std::string, grpc_error*)> cb) {
   if (ctx == nullptr) {
     FinishRetrieveSubjectToken(
@@ -122,8 +125,8 @@ void UrlExternalAccountCredentials::RetrieveSubjectToken(
   cb_ = cb;
   grpc_httpcli_request request;
   memset(&request, 0, sizeof(grpc_httpcli_request));
-  request.host = const_cast<char*>(url_->authority);
-  request.http.path = gpr_strdup(url_->path);
+  request.host = const_cast<char*>(url_.authority().c_str());
+  request.http.path = gpr_strdup(url_full_path_.c_str());
   grpc_http_header* headers = nullptr;
   request.http.hdr_count = headers_.size();
   headers = static_cast<grpc_http_header*>(
@@ -135,9 +138,8 @@ void UrlExternalAccountCredentials::RetrieveSubjectToken(
     ++i;
   }
   request.http.hdrs = headers;
-  request.handshaker = (strcmp(url_->scheme, "https") == 0)
-                           ? &grpc_httpcli_ssl
-                           : &grpc_httpcli_plaintext;
+  request.handshaker =
+      url_.scheme() == "https" ? &grpc_httpcli_ssl : &grpc_httpcli_plaintext;
   grpc_resource_quota* resource_quota =
       grpc_resource_quota_create("external_account_credentials");
   grpc_http_response_destroy(&ctx_->response);

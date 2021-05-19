@@ -11,15 +11,14 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_move_support.h"
+#include "chrome/browser/ash/plugin_vm/fake_plugin_vm_features.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
-#include "chrome/browser/chromeos/plugin_vm/fake_plugin_vm_features.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -260,14 +259,12 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  base::string16 connection_message(const char* product_name) {
+  std::u16string connection_message(const char* product_name) {
     return base::ASCIIToUTF16(base::StringPrintf(
         "Open Settings to connect %s to Linux", product_name));
   }
 
-  base::string16 expected_title() {
-    return base::ASCIIToUTF16("USB device detected");
-  }
+  std::u16string expected_title() { return u"USB device detected"; }
 
   device::FakeUsbDeviceManager device_manager_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;

@@ -67,10 +67,6 @@ const base::Feature kDisableSearchSuggestChips{
 extern const base::Feature kNtpHandleMostVisitedNavigationExplicitly{
     "HandleMostVisitedNavigationExplicitly", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// If enabled, the WebUI new tab page will load when a new tab is created
-// instead of the local NTP.
-const base::Feature kWebUI{"NtpWebUI", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, logo will be shown.
 const base::Feature kNtpLogo{"NtpLogo", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -84,6 +80,12 @@ const base::Feature kNtpMiddleSlotPromo{"NtpMiddleSlotPromo",
 
 // If enabled, modules will be shown.
 const base::Feature kModules{"NtpModules", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, modules will be loaded even if kModules is disabled. This is
+// useful to determine if a user would have seen modules in order to
+// counterfactually log or trigger.
+const base::Feature kNtpModulesLoad{"NtpModulesLoad",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, recipe tasks module will be shown.
 const base::Feature kNtpRecipeTasksModule{"NtpRecipeTasksModule",
@@ -115,6 +117,9 @@ const char kNtpModulesLoadTimeoutMillisecondsParam[] =
 const char kNtpStatefulTasksModuleDataParam[] =
     "NtpStatefulTasksModuleDataParam";
 const char kNtpChromeCartModuleDataParam[] = "NtpChromeCartModuleDataParam";
+
+const char kNtpChromeCartModuleAbandonedCartDiscountParam[] =
+    "NtpChromeCartModuleAbandonedCartDiscountParam";
 
 base::Time GetLocalHistoryRepeatableQueriesAgeThreshold() {
   const base::TimeDelta kLocalHistoryRepeatableQueriesAgeThreshold =

@@ -42,19 +42,12 @@ class WebEngineBrowserContext : public content::BrowserContext {
   content::BackgroundSyncController* GetBackgroundSyncController() override;
   content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()
       override;
-  media::VideoDecodePerfHistory* GetVideoDecodePerfHistory() override;
-
-  // Returns a comma-separated list of language codes, in preference order.
-  // This is suitable for direct use setting the "sec-ch-lang" header, or
-  // passed to net::HttpUtil::GenerateAcceptLanguageHeader() to generate a
-  // legacy "accept-language" header value.
-  std::string GetPreferredLanguages() const;
+  std::unique_ptr<media::VideoDecodePerfHistory> CreateVideoDecodePerfHistory()
+      override;
 
  private:
   // Contains URLRequestContextGetter required for resource loading.
   class ResourceContext;
-
-  media::VideoDecodePerfHistory* GetInMemoryVideoDecodePerfHistory();
 
   base::FilePath data_dir_path_;
 

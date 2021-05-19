@@ -20,6 +20,7 @@
 #include "base/check_op.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
+#include "base/location.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -62,6 +63,7 @@
 #include "third_party/pdfium/public/fpdf_ppo.h"
 #include "third_party/pdfium/public/fpdf_searchex.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -145,7 +147,7 @@ int CalculateCenterForZoom(int center, int length, double zoom) {
 // as Adobe Reader. When a hyphen is encountered, the next non-CR/LF whitespace
 // becomes CR+LF and the hyphen is erased. If there is no whitespace between
 // two hyphens, the latter hyphen is erased and ignored.
-void FormatStringWithHyphens(base::string16* text) {
+void FormatStringWithHyphens(std::u16string* text) {
   // First pass marks all the hyphen positions.
   struct HyphenPosition {
     HyphenPosition() : position(0), next_whitespace_position(0) {}
@@ -155,10 +157,10 @@ void FormatStringWithHyphens(base::string16* text) {
   std::vector<HyphenPosition> hyphen_positions;
   HyphenPosition current_hyphen_position;
   bool current_hyphen_position_is_valid = false;
-  constexpr base::char16 kPdfiumHyphenEOL = 0xfffe;
+  constexpr char16_t kPdfiumHyphenEOL = 0xfffe;
 
   for (size_t i = 0; i < text->size(); ++i) {
-    const base::char16& current_char = (*text)[i];
+    const char16_t& current_char = (*text)[i];
     if (current_char == kPdfiumHyphenEOL) {
       if (current_hyphen_position_is_valid)
         hyphen_positions.push_back(current_hyphen_position);
@@ -179,7 +181,7 @@ void FormatStringWithHyphens(base::string16* text) {
 
   // With all the hyphen positions, do the search and replace.
   while (!hyphen_positions.empty()) {
-    static constexpr base::char16 kCr[] = {L'\r', L'\0'};
+    static constexpr char16_t kCr[] = {L'\r', L'\0'};
     const HyphenPosition& position = hyphen_positions.back();
     if (position.next_whitespace_position != 0) {
       (*text)[position.next_whitespace_position] = L'\n';
@@ -190,16 +192,16 @@ void FormatStringWithHyphens(base::string16* text) {
   }
 
   // Adobe Reader also get rid of trailing spaces right before a CRLF.
-  static constexpr base::char16 kSpaceCrCn[] = {L' ', L'\r', L'\n', L'\0'};
-  static constexpr base::char16 kCrCn[] = {L'\r', L'\n', L'\0'};
+  static constexpr char16_t kSpaceCrCn[] = {L' ', L'\r', L'\n', L'\0'};
+  static constexpr char16_t kCrCn[] = {L'\r', L'\n', L'\0'};
   base::ReplaceSubstringsAfterOffset(text, 0, kSpaceCrCn, kCrCn);
 }
 
 // Replace CR/LF with just LF on POSIX.
-void FormatStringForOS(base::string16* text) {
+void FormatStringForOS(std::u16string* text) {
 #if defined(OS_POSIX)
-  static constexpr base::char16 kCr[] = {L'\r', L'\0'};
-  static constexpr base::char16 kBlank[] = {L'\0'};
+  static constexpr char16_t kCr[] = {L'\r', L'\0'};
+  static constexpr char16_t kBlank[] = {L'\0'};
   base::ReplaceChars(*text, kCr, kBlank, text);
 #elif defined(OS_WIN)
   // Do nothing
@@ -213,7 +215,7 @@ void FormatStringForOS(base::string16* text) {
 // For triple clicks, look for line breaks.
 // The actual algorithm used in Blink is much more complicated, so do a simple
 // approximation.
-bool FindMultipleClickBoundary(bool is_double_click, base::char16 cur) {
+bool FindMultipleClickBoundary(bool is_double_click, char16_t cur) {
   if (!is_double_click)
     return cur == '\n';
 
@@ -377,20 +379,21 @@ PP_PrivateFocusObjectType GetAnnotationFocusType(
   }
 }
 
-base::string16 GetAttachmentAttribute(FPDF_ATTACHMENT attachment,
+std::u16string GetAttachmentAttribute(FPDF_ATTACHMENT attachment,
                                       FPDF_BYTESTRING field) {
   return CallPDFiumWideStringBufferApi(
       base::BindRepeating(&FPDFAttachment_GetStringValue, attachment, field),
       /*check_expected_size=*/true);
 }
 
-base::string16 GetAttachmentName(FPDF_ATTACHMENT attachment) {
+std::u16string GetAttachmentName(FPDF_ATTACHMENT attachment) {
   return CallPDFiumWideStringBufferApi(
       base::BindRepeating(&FPDFAttachment_GetName, attachment),
       /*check_expected_size=*/true);
 }
 
 std::string GetXYZParamsString(FPDF_DEST dest, PDFiumPage* page) {
+  std::string xyz_params;
   FPDF_BOOL has_x_coord;
   FPDF_BOOL has_y_coord;
   FPDF_BOOL has_zoom;
@@ -399,28 +402,26 @@ std::string GetXYZParamsString(FPDF_DEST dest, PDFiumPage* page) {
   FS_FLOAT zoom;
   if (!FPDFDest_GetLocationInPage(dest, &has_x_coord, &has_y_coord, &has_zoom,
                                   &x, &y, &zoom)) {
-    return "";
+    return xyz_params;
   }
 
-  // Handle out-of-range page coordinates.
-  x = has_x_coord ? page->PreProcessInPageCoordX(x) : 0;
-  y = has_y_coord ? page->PreProcessInPageCoordY(y) : 0;
-
-  // Convert in-page coordinates to in-screen coordinates.
-  gfx::PointF xy(x, y);
-  gfx::PointF screen_coords = page->TransformPageToScreenXY(xy);
-
   // Generate a string of the parameters
-  std::string xyz_params;
-  if (has_x_coord)
-    xyz_params = base::NumberToString(screen_coords.x()) + ",";
-  else
+  if (has_x_coord) {
+    // Handle out-of-range page coordinates and convert in-page coordinates to
+    // in-screen coordinates.
+    xyz_params =
+        base::NumberToString(page->PreProcessAndTransformInPageCoordX(x)) + ",";
+  } else {
     xyz_params = "null,";
+  }
 
-  if (has_y_coord)
-    xyz_params += base::NumberToString(screen_coords.y()) + ",";
-  else
+  if (has_y_coord) {
+    // Same conversions as x coordinates above.
+    xyz_params +=
+        base::NumberToString(page->PreProcessAndTransformInPageCoordY(y)) + ",";
+  } else {
     xyz_params += "null,";
+  }
 
   if (has_zoom) {
     if (zoom == 0.0f)
@@ -1130,7 +1131,7 @@ bool PDFiumEngine::ReadLoadedBytes(uint32_t length, void* buffer) {
 
 void PDFiumEngine::SetFormSelectedText(FPDF_FORMHANDLE form_handle,
                                        FPDF_PAGE page) {
-  base::string16 selected_form_text16 = CallPDFiumWideStringBufferApi(
+  std::u16string selected_form_text16 = CallPDFiumWideStringBufferApi(
       base::BindRepeating(&FORM_GetSelectedText, form_handle, page),
       /*check_expected_size=*/false);
 
@@ -1213,7 +1214,7 @@ void PDFiumEngine::OnMultipleClick(int click_count,
   // now it doesn't.
   int start_index = char_index;
   do {
-    base::char16 cur = pages_[page_index]->GetCharAtIndex(start_index);
+    char16_t cur = pages_[page_index]->GetCharAtIndex(start_index);
     if (FindMultipleClickBoundary(is_double_click, cur))
       break;
   } while (--start_index >= 0);
@@ -1223,7 +1224,7 @@ void PDFiumEngine::OnMultipleClick(int click_count,
   int end_index = char_index;
   int total = pages_[page_index]->GetCharCount();
   while (end_index++ <= total) {
-    base::char16 cur = pages_[page_index]->GetCharAtIndex(end_index);
+    char16_t cur = pages_[page_index]->GetCharAtIndex(end_index);
     if (FindMultipleClickBoundary(is_double_click, cur))
       break;
   }
@@ -1324,7 +1325,7 @@ bool PDFiumEngine::OnMiddleMouseDown(const MouseInputEvent& event) {
 
   if (kViewerImplementedPanning) {
     // Switch to hand cursor when panning.
-    client_->UpdateCursor(PP_CURSORTYPE_HAND);
+    client_->UpdateCursor(ui::mojom::CursorType::kHand);
   }
 
   // Prevent middle mouse button from selecting texts.
@@ -1544,18 +1545,17 @@ bool PDFiumEngine::OnMouseMove(const MouseInputEvent& event) {
   return ExtendSelection(page_index, char_index);
 }
 
-PP_CursorType_Dev PDFiumEngine::DetermineCursorType(PDFiumPage::Area area,
-                                                    int form_type) const {
-  if (kViewerImplementedPanning && mouse_middle_button_down_) {
-    return PP_CURSORTYPE_HAND;
-  }
+ui::mojom::CursorType PDFiumEngine::DetermineCursorType(PDFiumPage::Area area,
+                                                        int form_type) const {
+  if (kViewerImplementedPanning && mouse_middle_button_down_)
+    return ui::mojom::CursorType::kHand;
 
   switch (area) {
     case PDFiumPage::TEXT_AREA:
-      return PP_CURSORTYPE_IBEAM;
+      return ui::mojom::CursorType::kIBeam;
     case PDFiumPage::WEBLINK_AREA:
     case PDFiumPage::DOCLINK_AREA:
-      return PP_CURSORTYPE_HAND;
+      return ui::mojom::CursorType::kHand;
     case PDFiumPage::NONSELECTABLE_AREA:
     case PDFiumPage::FORM_TEXT_AREA:
     default:
@@ -1565,9 +1565,9 @@ PP_CursorType_Dev PDFiumEngine::DetermineCursorType(PDFiumPage::Area area,
         case FPDF_FORMFIELD_RADIOBUTTON:
         case FPDF_FORMFIELD_COMBOBOX:
         case FPDF_FORMFIELD_LISTBOX:
-          return PP_CURSORTYPE_HAND;
+          return ui::mojom::CursorType::kHand;
         case FPDF_FORMFIELD_TEXTFIELD:
-          return PP_CURSORTYPE_IBEAM;
+          return ui::mojom::CursorType::kIBeam;
 #if defined(PDF_ENABLE_XFA)
         case FPDF_FORMFIELD_XFA_CHECKBOX:
         case FPDF_FORMFIELD_XFA_COMBOBOX:
@@ -1575,12 +1575,12 @@ PP_CursorType_Dev PDFiumEngine::DetermineCursorType(PDFiumPage::Area area,
         case FPDF_FORMFIELD_XFA_LISTBOX:
         case FPDF_FORMFIELD_XFA_PUSHBUTTON:
         case FPDF_FORMFIELD_XFA_SIGNATURE:
-          return PP_CURSORTYPE_HAND;
+          return ui::mojom::CursorType::kHand;
         case FPDF_FORMFIELD_XFA_TEXTFIELD:
-          return PP_CURSORTYPE_IBEAM;
+          return ui::mojom::CursorType::kIBeam;
 #endif
         default:
-          return PP_CURSORTYPE_POINTER;
+          return ui::mojom::CursorType::kPointer;
       }
   }
 }
@@ -1718,7 +1718,7 @@ bool PDFiumEngine::OnChar(const KeyboardInputEvent& event) {
   if (last_focused_page_ == -1)
     return false;
 
-  base::string16 str = base::UTF8ToUTF16(event.GetKeyChar());
+  std::u16string str = base::UTF8ToUTF16(event.GetKeyChar());
   bool rv = !!FORM_OnChar(form(), pages_[last_focused_page_]->GetPage(), str[0],
                           event.GetModifiers());
 
@@ -1770,7 +1770,7 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
   int current_page = next_page_to_search_;
 
   if (pages_[current_page]->available()) {
-    base::string16 str = base::UTF8ToUTF16(text);
+    std::u16string str = base::UTF8ToUTF16(text);
     // Don't use PDFium to search for now, since it doesn't support unicode
     // text. Leave the code for now to avoid bit-rot, in case it's fixed later.
     // The extra parens suppress a -Wunreachable-code warning.
@@ -1818,14 +1818,14 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
     ContinueFind(case_sensitive ? 1 : 0);
   } else {
     client_->ScheduleTaskOnMainThread(
-        base::TimeDelta(),
+        FROM_HERE,
         base::BindOnce(&PDFiumEngine::ContinueFind,
                        find_weak_factory_.GetWeakPtr()),
-        case_sensitive ? 1 : 0);
+        case_sensitive ? 1 : 0, base::TimeDelta());
   }
 }
 
-void PDFiumEngine::SearchUsingPDFium(const base::string16& term,
+void PDFiumEngine::SearchUsingPDFium(const std::u16string& term,
                                      bool case_sensitive,
                                      bool first_search,
                                      int character_to_start_searching_from,
@@ -1857,7 +1857,7 @@ void PDFiumEngine::SearchUsingPDFium(const base::string16& term,
   FPDFText_FindClose(find);
 }
 
-void PDFiumEngine::SearchUsingICU(const base::string16& term,
+void PDFiumEngine::SearchUsingICU(const std::u16string& term,
                                   bool case_sensitive,
                                   bool first_search,
                                   int character_to_start_searching_from,
@@ -1866,8 +1866,8 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
 
   // Various types of quotions marks need to be converted to the simple ASCII
   // version for searching to get better matching.
-  base::string16 adjusted_term = term;
-  for (base::char16& c : adjusted_term)
+  std::u16string adjusted_term = term;
+  for (char16_t& c : adjusted_term)
     c = SimplifyForSearch(c);
 
   const int original_text_length = pages_[current_page]->GetCharCount();
@@ -1881,8 +1881,8 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
   if (text_length <= 0)
     return;
 
-  base::string16 page_text;
-  PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
+  std::u16string page_text;
+  PDFiumAPIStringBufferAdapter<std::u16string> api_string_adapter(
       &page_text, text_length, false);
   unsigned short* data =
       reinterpret_cast<unsigned short*>(api_string_adapter.GetData());
@@ -1891,7 +1891,7 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
                        character_to_start_searching_from, text_length, data);
   api_string_adapter.Close(written);
 
-  base::string16 adjusted_page_text;
+  std::u16string adjusted_page_text;
   adjusted_page_text.reserve(page_text.size());
   // Values in |removed_indices| are in the adjusted text index space and
   // indicate a character was removed from the page text before the given
@@ -1905,7 +1905,7 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
   // whitespace characters. Calculating where the collapsed regions are after
   // the fact is as complex as collapsing them manually.
   for (size_t i = 0; i < page_text.size(); i++) {
-    base::char16 c = page_text[i];
+    char16_t c = page_text[i];
     // Collapse whitespace regions by inserting a ' ' into the
     // adjusted text and recording any removed whitespace indices as preceding
     // it.
@@ -2177,10 +2177,10 @@ std::string PDFiumEngine::GetSelectedText() {
   if (!HasPermission(PDFEngine::PERMISSION_COPY))
     return std::string();
 
-  base::string16 result;
+  std::u16string result;
   for (size_t i = 0; i < selection_.size(); ++i) {
-    static constexpr base::char16 kNewLineChar = L'\n';
-    base::string16 current_selection_text = selection_[i].GetText();
+    static constexpr char16_t kNewLineChar = L'\n';
+    std::u16string current_selection_text = selection_[i].GetText();
     if (i != 0) {
       if (selection_[i - 1].page_index() > selection_[i].page_index())
         std::swap(current_selection_text, result);
@@ -2210,7 +2210,7 @@ bool PDFiumEngine::HasEditableText() {
 void PDFiumEngine::ReplaceSelection(const std::string& text) {
   DCHECK(CanEditText());
   if (last_focused_page_ != -1) {
-    base::string16 text_wide = base::UTF8ToUTF16(text);
+    std::u16string text_wide = base::UTF8ToUTF16(text);
     FPDF_WIDESTRING text_pdf_wide =
         reinterpret_cast<FPDF_WIDESTRING>(text_wide.c_str());
 
@@ -2364,7 +2364,7 @@ base::Value PDFiumEngine::GetBookmarks() {
 base::Value PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
                                             unsigned int depth) {
   base::Value dict(base::Value::Type::DICTIONARY);
-  base::string16 title = CallPDFiumWideStringBufferApi(
+  std::u16string title = CallPDFiumWideStringBufferApi(
       base::BindRepeating(&FPDFBookmark_GetTitle, bookmark),
       /*check_expected_size=*/true);
   dict.SetStringKey("title", title);
@@ -2487,7 +2487,7 @@ base::Optional<PDFEngine::NamedDestination> PDFiumEngine::GetNamedDestination(
   FPDF_DEST dest = FPDF_GetNamedDestByName(doc(), destination.c_str());
   if (!dest) {
     // Look for a bookmark with the same name.
-    base::string16 destination_wide = base::UTF8ToUTF16(destination);
+    std::u16string destination_wide = base::UTF8ToUTF16(destination);
     FPDF_WIDESTRING destination_pdf_wide =
         reinterpret_cast<FPDF_WIDESTRING>(destination_wide.c_str());
     FPDF_BOOKMARK bookmark = FPDFBookmark_Find(doc(), destination_pdf_wide);
@@ -3761,7 +3761,7 @@ void PDFiumEngine::SetSelecting(bool selecting) {
   bool was_selecting = selecting_;
   selecting_ = selecting;
   if (selecting_ != was_selecting)
-    client_->IsSelectingChanged(selecting);
+    client_->SetIsSelecting(selecting);
 }
 
 void PDFiumEngine::EnteredEditMode() {
@@ -4055,7 +4055,7 @@ std::string PDFiumEngine::GetTrimmedMetadataByField(
     FPDF_BYTESTRING field) const {
   DCHECK(doc());
 
-  base::string16 metadata = CallPDFiumWideStringBufferApi(
+  std::u16string metadata = CallPDFiumWideStringBufferApi(
       base::BindRepeating(&FPDF_GetMetaText, doc(), field),
       /*check_expected_size=*/false);
 

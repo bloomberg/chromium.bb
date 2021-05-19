@@ -158,7 +158,7 @@ void FakeAppInstance::SendTaskCreated(int32_t taskId,
                                       const mojom::AppInfo& app,
                                       const std::string& intent) {
   app_host_->OnTaskCreated(taskId, app.package_name, app.activity, app.name,
-                           intent);
+                           intent, 0 /* session_id */);
 }
 
 void FakeAppInstance::SendTaskDescription(
@@ -550,6 +550,8 @@ void FakeAppInstance::LaunchIntentWithWindowInfo(
     arc::mojom::WindowInfoPtr window_info) {
   launch_intents_.push_back(intent_uri);
 }
+
+void FakeAppInstance::UpdateWindowInfo(arc::mojom::WindowInfoPtr window_info) {}
 
 void FakeAppInstance::RequestShortcutIcon(
     const std::string& icon_resource_id,

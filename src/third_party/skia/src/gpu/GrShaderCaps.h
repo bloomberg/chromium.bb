@@ -44,7 +44,6 @@ public:
     bool shaderDerivativeSupport() const { return fShaderDerivativeSupport; }
     bool geometryShaderSupport() const { return fGeometryShaderSupport; }
     bool gsInvocationsSupport() const { return fGSInvocationsSupport; }
-    bool pathRenderingSupport() const { return fPathRenderingSupport; }
     bool dstReadInShaderSupport() const { return fDstReadInShaderSupport; }
     bool dualSourceBlendingSupport() const { return fDualSourceBlendingSupport; }
     bool integerSupport() const { return fIntegerSupport; }
@@ -166,14 +165,18 @@ public:
         return fNoDefaultPrecisionForExternalSamplers;
     }
 
-    // The sample mask round rect op draws nothing on several Adreno and Radeon bots. Other ops that
-    // use sample mask while rendering to stencil seem to work fine.
-    // http://skbug.com/8921
-    bool canOnlyUseSampleMaskWithStencil() const { return fCanOnlyUseSampleMaskWithStencil; }
+    // ARM GPUs calculate `matrix * vector` in SPIR-V at full precision, even when the inputs are
+    // RelaxedPrecision. Rewriting the multiply as a sum of vector*scalar fixes this. (skia:11769)
+    bool rewriteMatrixVectorMultiply() const {
+        return fRewriteMatrixVectorMultiply;
+    }
 
     // ANGLE disallows do loops altogether, and we're seeing crashes on Tegra3 with do loops in at
     // least some cases.
     bool canUseDoLoops() const { return fCanUseDoLoops; }
+
+    // Some GPUs produce poor results when enabling Metal's fastmath option
+    bool canUseFastMath() const { return fCanUseFastMath; }
 
     // By default, SkSL pools IR nodes per-program. To debug memory corruption, it is sometimes
     // helpful to disable that feature.
@@ -263,7 +266,6 @@ private:
     bool fShaderDerivativeSupport           : 1;
     bool fGeometryShaderSupport             : 1;
     bool fGSInvocationsSupport              : 1;
-    bool fPathRenderingSupport              : 1;
     bool fDstReadInShaderSupport            : 1;
     bool fDualSourceBlendingSupport         : 1;
     bool fIntegerSupport                    : 1;
@@ -305,9 +307,10 @@ private:
     bool fRemovePowWithConstantExponent               : 1;
     bool fMustWriteToFragColor                        : 1;
     bool fNoDefaultPrecisionForExternalSamplers       : 1;
-    bool fCanOnlyUseSampleMaskWithStencil             : 1;
+    bool fRewriteMatrixVectorMultiply                 : 1;
     bool fColorSpaceMathNeedsFloat                    : 1;
     bool fCanUseDoLoops                               : 1;
+    bool fCanUseFastMath                              : 1;
 
     // This controls behavior of the SkSL compiler, not the code we generate
     bool fUseNodePools : 1;

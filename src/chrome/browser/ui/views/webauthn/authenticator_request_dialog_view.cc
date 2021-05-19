@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/views/webauthn/authenticator_request_dialog_view.h"
 
+#include <string>
+
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/md_text_button_with_down_arrow.h"
@@ -201,7 +202,7 @@ views::View* AuthenticatorRequestDialogView::GetInitiallyFocusedView() {
   return nullptr;
 }
 
-base::string16 AuthenticatorRequestDialogView::GetWindowTitle() const {
+std::u16string AuthenticatorRequestDialogView::GetWindowTitle() const {
   return sheet()->model()->GetStepTitle();
 }
 

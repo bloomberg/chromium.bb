@@ -381,11 +381,11 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, AdoptPredecessor) {
   {
     PortalActivatedObserver activated_observer(portal);
     PortalCreatedObserver adoption_observer(portal_frame);
-    EXPECT_TRUE(ExecJs(main_frame,
+    ExecuteScriptAsync(main_frame,
                        "let portal = document.querySelector('portal');"
                        "portal.activate().then(() => { "
                        "  document.body.removeChild(portal); "
-                       "});"));
+                       "});");
     EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWasAdopted,
               activated_observer.WaitForActivateResult());
     adoption_observer.WaitUntilPortalCreated();
@@ -675,11 +675,11 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest,
   // Activate the portal.
   {
     PortalActivatedObserver activated_observer(portal);
-    EXPECT_TRUE(ExecJs(main_frame,
+    ExecuteScriptAsync(main_frame,
                        "let portal = document.querySelector('portal');"
                        "portal.activate().then(() => { "
                        "  document.body.removeChild(portal); "
-                       "});"));
+                       "});");
     activated_observer.WaitForActivate();
 
     RenderWidgetHostViewBase* view =
@@ -969,8 +969,10 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndReactivate) {
 }
 
 // TODO(crbug.com/985078): Fix on Mac.
+// TODO(crbug.com/1191782): Test is flaky.
 #if !defined(OS_MAC)
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchStateClearedBeforeActivation) {
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
+                       DISABLED_TouchStateClearedBeforeActivation) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
@@ -1541,7 +1543,7 @@ class RenderFrameHostFactoryForLocalMainFrameInterceptor
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       bool renderer_initiated_creation,
-      RenderFrameHostImpl::LifecycleState lifecycle_state) override {
+      RenderFrameHostImpl::LifecycleStateImpl lifecycle_state) override {
     return base::WrapUnique(new RenderFrameHostImplForLocalMainFrameInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
@@ -1619,8 +1621,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, PortalHistoryWithActivation) {
   EXPECT_EQ(portal_url, portal_controller.GetLastCommittedEntry()->GetURL());
 
   PortalActivatedObserver activated_observer(portal);
-  ASSERT_TRUE(
-      ExecJs(main_frame, "document.querySelector('portal').activate();"));
+  ExecuteScriptAsync(main_frame,
+                     "document.querySelector('portal').activate();");
   activated_observer.WaitForActivate();
 
   NavigationControllerImpl& activated_controller = portal_controller;
@@ -1647,8 +1649,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   Portal* portal = CreatePortalToUrl(web_contents_impl, portal_url);
 
   PortalActivatedObserver activated_observer(portal);
-  ASSERT_TRUE(
-      ExecJs(main_frame, "document.querySelector('portal').activate();"));
+  ExecuteScriptAsync(main_frame,
+                     "document.querySelector('portal').activate();");
   activated_observer.WaitForActivate();
 
   web_contents_impl = static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -1711,8 +1713,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   ASSERT_TRUE(navigation_request);
 
   PortalActivatedObserver activated_observer(portal);
-  ASSERT_TRUE(
-      ExecJs(main_frame, "document.querySelector('portal').activate();"));
+  ExecuteScriptAsync(main_frame,
+                     "document.querySelector('portal').activate();");
   activated_observer.WaitForActivate();
 
   NavigationControllerImpl& activated_controller = portal_controller;
@@ -1842,10 +1844,13 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DidFocusIPCFromOrphanedPortal) {
   {
     PortalActivatedObserver activated_observer(portal);
     PortalCreatedObserver adoption_observer(portal_main_frame);
-    EXPECT_TRUE(ExecJs(main_frame,
-                       "let portal = document.querySelector('portal');"
-                       "portal.activate();"));
+    ExecuteScriptAsync(main_frame,
+                       "document.querySelector('portal').activate();");
     activated_observer.WaitForActivate();
+
+    // |web_contents_impl| should be owned by an orphaned portal.
+    EXPECT_TRUE(web_contents_impl->IsPortal());
+    EXPECT_EQ(web_contents_impl->GetOuterWebContents(), nullptr);
 
     // |web_contents_impl| is orphaned and therefore still points to itself
     // as the focused WebContents node in its tree. It shouldn't have a view
@@ -1937,11 +1942,11 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   {
     PortalActivatedObserver activated_observer(portal);
     PortalCreatedObserver adoption_observer(portal_frame);
-    EXPECT_TRUE(ExecJs(main_frame,
+    ExecuteScriptAsync(main_frame,
                        "let portal = document.querySelector('portal');"
                        "portal.activate().then(() => { "
                        "  document.body.removeChild(portal); "
-                       "});"));
+                       "});");
     EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWasAdopted,
               activated_observer.WaitForActivateResult());
     adoption_observer.WaitUntilPortalCreated();
@@ -1980,9 +1985,10 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, OrphanedPortalAccessibilityReset) {
                        TIME_IN_ORPHANED_STATE_MILLISECONDS)));
   {
     PortalActivatedObserver activated_observer(portal);
-    EXPECT_TRUE(ExecJs(main_frame,
-                       "let portal = document.querySelector('portal');"
-                       "portal.activate();"));
+    ExecuteScriptAsync(main_frame, R"(
+      let portal = document.querySelector('portal');
+      portal.activate();
+    )");
     activated_observer.WaitForActivate();
     // Forces an AXTree update to be sent while portal is orphaned.
     AccessibilityNotificationWaiter waiter(web_contents_impl,
@@ -2026,14 +2032,16 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   {
     PortalActivatedObserver activated_observer(portal);
     PortalCreatedObserver adoption_observer(main_frame);
-    EXPECT_TRUE(ExecJs(main_frame,
-                       "window.addEventListener('portalactivate',  e => {"
-                       "  document.body.appendChild(e.adoptPredecessor());"
-                       "});"
-                       "let portal = document.querySelector('portal');"
-                       "portal.activate().then(() => { "
-                       "  document.body.removeChild(portal); "
-                       "});"));
+    ExecuteScriptAsync(main_frame, R"(
+      window.addEventListener('portalactivate',  e => {
+        document.body.appendChild(e.adoptPredecessor());
+      });
+
+      let portal = document.querySelector('portal');
+      portal.activate().then(() => {
+        document.body.removeChild(portal);
+      });
+    )");
     activated_observer.WaitForActivate();
     // Forces an AXTree update to be sent while portal is orphaned.
     AccessibilityNotificationWaiter waiter(web_contents_impl,
@@ -2201,8 +2209,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RejectActivationOfCrashedPages) {
   CrashTab(portal_contents);
 
   PortalActivatedObserver activated_observer(portal);
-  EXPECT_TRUE(
-      ExecJs(main_frame, "document.querySelector('portal').activate();"));
+  ExecuteScriptAsync(main_frame,
+                     "document.querySelector('portal').activate();");
   EXPECT_EQ(blink::mojom::PortalActivateResult::kRejectedDueToErrorInPortal,
             activated_observer.WaitForActivateResult());
 }
@@ -2226,8 +2234,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivatePreviouslyCrashedPortal) {
   navigation_observer.Wait();
 
   PortalActivatedObserver activated_observer(portal);
-  EXPECT_TRUE(
-      ExecJs(main_frame, "document.querySelector('portal').activate();"));
+  ExecuteScriptAsync(main_frame,
+                     "document.querySelector('portal').activate();");
   EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWillUnload,
             activated_observer.WaitForActivateResult());
 }

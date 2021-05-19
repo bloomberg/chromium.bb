@@ -52,11 +52,11 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/back_forward_button.h"
-#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/chrome_labs_bubble_view_model.h"
 #include "chrome/browser/ui/views/toolbar/chrome_labs_button.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
+#include "chrome/browser/ui/views/toolbar/read_later_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
@@ -70,6 +70,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
+#include "components/reading_list/features/reading_list_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -84,6 +85,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
@@ -111,6 +113,10 @@
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 #include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
+#if defined(USE_AURA)
+#include "ui/aura/window_occlusion_tracker.h"
+#endif
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -179,6 +185,13 @@ ToolbarView::~ToolbarView() {
 }
 
 void ToolbarView::Init() {
+#if defined(USE_AURA)
+  // Avoid generating too many occlusion tracking calculation events before this
+  // function returns. The occlusion status will be computed only once once this
+  // function returns.
+  // See crbug.com/1183894#c2
+  aura::WindowOcclusionTracker::ScopedPause pause_occlusion;
+#endif
   auto location_bar = std::make_unique<LocationBarView>(
       browser_, browser_->profile(), browser_->command_controller(), this,
       display_mode_ != DisplayMode::NORMAL);
@@ -219,18 +232,12 @@ void ToolbarView::Init() {
       base::BindRepeating(callback, browser_, IDC_HOME), browser_);
 
   std::unique_ptr<ExtensionsToolbarContainer> extensions_container;
-  std::unique_ptr<BrowserActionsContainer> browser_actions;
 
   // Do not create the extensions or browser actions container if it is a guest
   // profile (only regular and incognito profiles host extensions).
   if (!browser_->profile()->IsGuestSession()) {
-    if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-      extensions_container =
-          std::make_unique<ExtensionsToolbarContainer>(browser_);
-    } else {
-      browser_actions =
-          std::make_unique<BrowserActionsContainer>(browser_, nullptr, this);
-    }
+    extensions_container =
+        std::make_unique<ExtensionsToolbarContainer>(browser_);
   }
   std::unique_ptr<media_router::CastToolbarButton> cast;
   if (media_router::MediaRouterEnabled(browser_->profile()))
@@ -257,7 +264,13 @@ void ToolbarView::Init() {
     // should not be created twice.
     show_avatar_toolbar_button = false;
     toolbar_account_icon_container =
-        std::make_unique<ToolbarAccountIconContainerView>(browser_);
+        std::make_unique<ToolbarAccountIconContainerView>(browser_view_);
+  }
+
+  std::unique_ptr<ReadLaterToolbarButton> read_later_button;
+  if (browser_view_->side_panel() &&
+      base::FeatureList::IsEnabled(reading_list::switches::kReadLater)) {
+    read_later_button = std::make_unique<ReadLaterToolbarButton>(browser_);
   }
 
   // Always add children in order from left to right, for accessibility.
@@ -266,8 +279,9 @@ void ToolbarView::Init() {
   reload_ = AddChildView(std::move(reload));
   home_ = AddChildView(std::move(home));
   location_bar_ = AddChildView(std::move(location_bar));
-  if (browser_actions)
-    browser_actions_ = AddChildView(std::move(browser_actions));
+
+  if (read_later_button)
+    read_later_button_ = AddChildView(std::move(read_later_button));
 
   if (extensions_container)
     extensions_container_ = AddChildView(std::move(extensions_container));
@@ -275,8 +289,8 @@ void ToolbarView::Init() {
   if (base::FeatureList::IsEnabled(features::kChromeLabs)) {
     chrome_labs_model_ = std::make_unique<ChromeLabsBubbleViewModel>();
     if (ChromeLabsButton::ShouldShowButton(chrome_labs_model_.get())) {
-      chrome_labs_button_ = AddChildView(
-          std::make_unique<ChromeLabsButton>(chrome_labs_model_.get()));
+      chrome_labs_button_ = AddChildView(std::make_unique<ChromeLabsButton>(
+          browser_, chrome_labs_model_.get()));
       profile_pref_service_ = browser_->profile()->GetPrefs();
       profile_registrar_ = std::make_unique<PrefChangeRegistrar>();
       profile_registrar_->Init(profile_pref_service_);
@@ -284,7 +298,11 @@ void ToolbarView::Init() {
           chrome_labs_prefs::kBrowserLabsEnabled,
           base::BindRepeating(&ToolbarView::OnChromeLabsPrefChanged,
                               base::Unretained(this)));
-      OnChromeLabsPrefChanged();
+      // Set the visibility for the button based on initial enterprise policy
+      // value. Only call OnChromeLabsPrefChanged if there is a change from the
+      // initial value.
+      chrome_labs_button_->SetVisible(profile_pref_service_->GetBoolean(
+          chrome_labs_prefs::kBrowserLabsEnabled));
     }
   }
 
@@ -301,7 +319,8 @@ void ToolbarView::Init() {
   } else {
     // TODO(crbug.com/932818): Remove this once the
     // |kAutofillEnableToolbarStatusChip| is fully launched.
-    avatar_ = AddChildView(std::make_unique<AvatarToolbarButton>(browser_));
+    avatar_ =
+        AddChildView(std::make_unique<AvatarToolbarButton>(browser_view_));
     avatar_->SetVisible(show_avatar_toolbar_button);
   }
 
@@ -364,9 +383,6 @@ void ToolbarView::AnimationProgressed(const gfx::Animation* animation) {
 void ToolbarView::Update(WebContents* tab) {
   if (location_bar_)
     location_bar_->Update(tab);
-
-  if (browser_actions_)
-    browser_actions_->RefreshToolbarActionViews();
 
   if (extensions_container_)
     extensions_container_->UpdateAllIcons();
@@ -490,31 +506,6 @@ const LocationBarModel* ToolbarView::GetLocationBarModel() const {
 ContentSettingBubbleModelDelegate*
 ToolbarView::GetContentSettingBubbleModelDelegate() {
   return browser_->content_setting_bubble_model_delegate();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, BrowserActionsContainer::Delegate implementation:
-
-views::LabelButton* ToolbarView::GetOverflowReferenceView() {
-  return app_menu_button_;
-}
-
-base::Optional<int> ToolbarView::GetMaxBrowserActionsWidth() const {
-  // The browser actions container is allowed to grow, but only up until the
-  // omnibox reaches its preferred size. So its maximum allowed width is its
-  // current size, plus any that the omnibox could give up.
-  return std::max(0, (browser_actions_ ? browser_actions_->width()
-                                       : extensions_container_->width()) +
-                         (location_bar_->width() -
-                          location_bar_->GetPreferredSize().width()));
-}
-
-std::unique_ptr<ToolbarActionsBar> ToolbarView::CreateToolbarActionsBar(
-    ToolbarActionsBarDelegate* delegate,
-    Browser* browser,
-    ToolbarActionsBar* main_bar) const {
-  DCHECK_EQ(browser_, browser);
-  return std::make_unique<ToolbarActionsBar>(delegate, browser, main_bar);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -700,17 +691,7 @@ void ToolbarView::InitLayout() {
   location_bar_->SetProperty(views::kMarginsKey,
                              gfx::Insets(0, location_bar_margin));
 
-  if (browser_actions_) {
-    const views::FlexSpecification browser_actions_flex_rule =
-        views::FlexSpecification(BrowserActionsContainer::GetFlexRule())
-            .WithOrder(kExtensionsFlexOrder);
-
-    browser_actions_->SetProperty(views::kFlexBehaviorKey,
-                                  browser_actions_flex_rule);
-    browser_actions_->SetProperty(views::kMarginsKey, gfx::Insets());
-    browser_actions_->SetProperty(views::kInternalPaddingKey,
-                                  gfx::Insets(0, location_bar_margin));
-  } else if (extensions_container_) {
+  if (extensions_container_) {
     const views::FlexSpecification extensions_flex_rule =
         views::FlexSpecification(
             extensions_container_->GetAnimatingLayoutManager()
@@ -755,7 +736,7 @@ void ToolbarView::UpdateTypeAndSeverity(
   if (!app_menu_button_)
     return;
 
-  base::string16 accname_app = l10n_util::GetStringUTF16(IDS_ACCNAME_APP);
+  std::u16string accname_app = l10n_util::GetStringUTF16(IDS_ACCNAME_APP);
   if (type_and_severity.type ==
       AppMenuIconController::IconType::UPGRADE_NOTIFICATION) {
     accname_app = l10n_util::GetStringFUTF16(
@@ -783,12 +764,6 @@ SkColor ToolbarView::GetDefaultColorForSeverity(
       break;
   }
   return GetNativeTheme()->GetSystemColor(color_id);
-}
-
-// ToolbarButtonProvider:
-BrowserActionsContainer* ToolbarView::GetBrowserActionsContainer() {
-  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
-  return browser_actions_;
 }
 
 ExtensionsToolbarContainer* ToolbarView::GetExtensionsToolbarContainer() {
@@ -897,15 +872,14 @@ views::View* ToolbarView::GetViewForDrop() {
 void ToolbarView::OnChromeLabsPrefChanged() {
   chrome_labs_button_->SetVisible(profile_pref_service_->GetBoolean(
       chrome_labs_prefs::kBrowserLabsEnabled));
+  GetViewAccessibility().AnnounceText(l10n_util::GetStringUTF16(
+      chrome_labs_button_->GetVisible()
+          ? IDS_ACCESSIBLE_TEXT_CHROMELABS_BUTTON_ADDED_BY_ENTERPRISE_POLICY
+          : IDS_ACCESSIBLE_TEXT_CHROMELABS_BUTTON_REMOVED_BY_ENTERPRISE_POLICY));
 }
 
 void ToolbarView::LoadImages() {
   DCHECK_EQ(display_mode_, DisplayMode::NORMAL);
-
-  if (browser_actions_) {
-    browser_actions_->SetSeparatorColor(GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
-  }
 
   if (extensions_container_)
     extensions_container_->UpdateAllIcons();
@@ -949,10 +923,6 @@ void ToolbarView::OnTouchUiChanged() {
                                 gfx::Insets(0, default_margin));
     location_bar_->SetProperty(views::kMarginsKey,
                                gfx::Insets(0, location_bar_margin));
-    if (browser_actions_) {
-      browser_actions_->SetProperty(views::kInternalPaddingKey,
-                                    gfx::Insets(0, location_bar_margin));
-    }
 
     LoadImages();
     PreferredSizeChanged();

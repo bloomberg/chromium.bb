@@ -197,12 +197,12 @@ TEST_F(ExternalWebAppUtilsTest, MAYBE_OfflineManifestValid) {
                                                      .value()
                                                      .Run();
   EXPECT_TRUE(app_info);
-  EXPECT_EQ(app_info->title, base::UTF8ToUTF16("Test App"));
+  EXPECT_EQ(app_info->title, u"Test App");
   EXPECT_EQ(app_info->start_url, GURL("https://test.org/start.html"));
   EXPECT_EQ(app_info->scope, GURL("https://test.org/"));
   EXPECT_EQ(app_info->display_mode, DisplayMode::kStandalone);
-  EXPECT_EQ(app_info->icon_bitmaps_any.size(), 1u);
-  EXPECT_EQ(app_info->icon_bitmaps_any.at(192).getColor(0, 0), SK_ColorBLUE);
+  EXPECT_EQ(app_info->icon_bitmaps.any.size(), 1u);
+  EXPECT_EQ(app_info->icon_bitmaps.any.at(192).getColor(0, 0), SK_ColorBLUE);
   EXPECT_EQ(app_info->theme_color, SkColorSetARGB(0xFF, 0xBB, 0xCC, 0xDD));
 }
 
@@ -488,6 +488,37 @@ TEST_F(ExternalWebAppUtilsTest, IsReinstallPastMilestoneNeeded) {
   EXPECT_FALSE(IsReinstallPastMilestoneNeeded("error", "90", 89));
   EXPECT_FALSE(IsReinstallPastMilestoneNeeded("88", "error", 89));
   EXPECT_FALSE(IsReinstallPastMilestoneNeeded("error", "error", 0));
+}
+
+TEST_F(ExternalWebAppUtilsTest, OemInstalled) {
+  base::Optional<ExternalInstallOptions> non_bool = ParseConfig(R"(
+        {
+          "app_url": "https://www.test.org",
+          "launch_container": "window",
+          "oem_installed": "some string",
+          "user_type": ["test"]
+        }
+    )");
+  EXPECT_FALSE(non_bool.has_value());
+
+  base::Optional<ExternalInstallOptions> no_oem = ParseConfig(R"(
+        {
+          "app_url": "https://www.test.org",
+          "launch_container": "window",
+          "user_type": ["test"]
+        }
+    )");
+  EXPECT_FALSE(no_oem->oem_installed);
+
+  base::Optional<ExternalInstallOptions> oem_set = ParseConfig(R"(
+        {
+          "app_url": "https://www.test.org",
+          "launch_container": "window",
+          "oem_installed": true,
+          "user_type": ["test"]
+        }
+    )");
+  EXPECT_TRUE(oem_set->oem_installed);
 }
 
 }  // namespace web_app

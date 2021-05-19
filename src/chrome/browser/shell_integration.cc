@@ -18,6 +18,7 @@
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/policy/policy_path_parser.h"
@@ -89,6 +90,27 @@ bool CanSetAsDefaultBrowser() {
 }
 
 #if !defined(OS_WIN)
+void AddAppProtocolClients(const AppProtocolMap& app_protocols,
+                           const base::FilePath& profile_path,
+                           AppProtocolWorkerCallback protocol_worker_callback) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(protocol_worker_callback), /*success=*/false));
+}
+
+void RemoveAppProtocolClients(const std::vector<std::string>& protocols,
+                              const base::FilePath& profile_path) {}
+
+void CheckAppIsProtocolClient(
+    const std::string& app_id,
+    const std::string& protocol,
+    const base::FilePath& profile_path,
+    AppProtocolWorkerCallback protocol_worker_callback) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(protocol_worker_callback), /*success=*/false));
+}
+
 bool IsElevationNeededForSettingDefaultProtocolClient() {
   return false;
 }
@@ -109,7 +131,8 @@ bool IsRunningInAppMode() {
 base::CommandLine CommandLineArgsForLauncher(
     const GURL& url,
     const std::string& extension_app_id,
-    const base::FilePath& profile_path) {
+    const base::FilePath& profile_path,
+    const std::string& run_on_os_login_mode) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   base::CommandLine new_cmd_line(base::CommandLine::NO_PROGRAM);
@@ -129,6 +152,12 @@ base::CommandLine CommandLineArgsForLauncher(
     // Note: Do not change this flag!  Old Gears shortcuts will break if you do!
     new_cmd_line.AppendSwitchASCII(switches::kApp, url.spec());
   }
+
+  if (!run_on_os_login_mode.empty()) {
+    new_cmd_line.AppendSwitchASCII(switches::kAppRunOnOsLoginMode,
+                                   run_on_os_login_mode);
+  }
+
   return new_cmd_line;
 }
 
@@ -163,7 +192,7 @@ void AppendProfileArgs(const base::FilePath& profile_path,
 }
 
 #if !defined(OS_WIN)
-base::string16 GetAppShortcutsSubdirName() {
+std::u16string GetAppShortcutsSubdirName() {
   if (chrome::GetChannel() == version_info::Channel::CANARY)
     return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY);
   return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);

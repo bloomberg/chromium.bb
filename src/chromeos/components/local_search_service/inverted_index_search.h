@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_COMPONENTS_LOCAL_SEARCH_SERVICE_INVERTED_INDEX_SEARCH_H_
 #define CHROMEOS_COMPONENTS_LOCAL_SEARCH_SERVICE_INVERTED_INDEX_SEARCH_H_
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -13,7 +14,6 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string16.h"
 #include "chromeos/components/local_search_service/index.h"
 #include "chromeos/components/local_search_service/shared_structs.h"
 
@@ -41,15 +41,16 @@ class InvertedIndexSearch : public Index {
               DeleteCallback callback) override;
   void UpdateDocuments(const std::vector<Data>& data,
                        UpdateDocumentsCallback callback) override;
-  void Find(const base::string16& query,
+  void Find(const std::u16string& query,
             uint32_t max_results,
             FindCallback callback) override;
   void ClearIndex(ClearIndexCallback callback) override;
+  uint32_t GetIndexSize() const override;
 
   // Returns document id and number of occurrences of |term|.
   // Document ids are sorted in alphabetical order.
   std::vector<std::pair<std::string, uint32_t>> FindTermForTesting(
-      const base::string16& term) const;
+      const std::u16string& term) const;
 
  private:
   void FinalizeAddOrUpdate(
@@ -65,18 +66,6 @@ class InvertedIndexSearch : public Index {
   void FinalizeUpdateDocuments(
       UpdateDocumentsCallback callback,
       const std::vector<std::pair<std::string, std::vector<Token>>>& documents);
-
-  // In order to reduce unnecessary inverted index building, we only build the
-  // index if there's no upcoming modification to the index's document list.
-  void MaybeBuildInvertedIndex();
-
-  // AddOrUpdate requires content extraction to be done before index is updated
-  // (tokens added, index built). As content extraction runs on another thread
-  // (|blocking_task_runner_|), we need to keep track of how many index-update
-  // operations are to be done (and queued). Delete may be queued as well if
-  // there is an AddOrUpdate before it. We need to ensure documents are added or
-  // modified or deleted in the same order as they're given by the index client.
-  int num_queued_index_updates_ = 0;
 
   std::unique_ptr<InvertedIndex> inverted_index_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

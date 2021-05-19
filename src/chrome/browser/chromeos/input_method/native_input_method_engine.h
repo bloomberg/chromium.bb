@@ -11,7 +11,10 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom-forward.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "ui/base/ime/character_composer.h"
 
 namespace chromeos {
 
@@ -59,8 +62,14 @@ class NativeInputMethodEngine
   }
 
   // Used to show special UI to user for interacting with autocorrected text.
-  void OnAutocorrect(std::string typed_word,
-                     std::string corrected_word,
+  // NOTE: Technically redundant to require client to supply `corrected_word` as
+  // it can be retrieved from current text editing state known to IMF. However,
+  // due to async situation between browser-process IMF and render-process
+  // TextInputClient, it may just be a stale value if obtained that way.
+  // TODO(crbug/1194424): Remove technically redundant `corrected_word` param to
+  // avoid situation with multiple conflicting sources of truth.
+  void OnAutocorrect(const std::u16string& typed_word,
+                     const std::u16string& corrected_word,
                      int start_index);
 
  private:
@@ -71,6 +80,7 @@ class NativeInputMethodEngine
     // migration. It will be removed when the official extension is completely
     // migrated.
     ImeObserver(
+        PrefService* prefs,
         std::unique_ptr<InputMethodEngineBase::Observer> ime_base_observer,
         std::unique_ptr<AssistiveSuggester> assistive_suggester,
         std::unique_ptr<AutocorrectManager> autocorrect_manager);
@@ -79,6 +89,7 @@ class NativeInputMethodEngine
     // InputMethodEngineBase::Observer:
     void OnActivate(const std::string& engine_id) override;
     void OnFocus(
+        int context_id,
         const IMEEngineHandlerInterface::InputContext& context) override;
     void OnBlur(int context_id) override;
     void OnKeyEvent(
@@ -90,7 +101,7 @@ class NativeInputMethodEngine
     void OnCompositionBoundsChanged(
         const std::vector<gfx::Rect>& bounds) override;
     void OnSurroundingTextChanged(const std::string& engine_id,
-                                  const base::string16& text,
+                                  const std::u16string& text,
                                   int cursor_pos,
                                   int anchor_pos,
                                   int offset_pos) override;
@@ -141,7 +152,7 @@ class NativeInputMethodEngine
     void FlushForTesting();
 
     // Returns whether this is connected to the input engine.
-    bool IsConnectedForTesting() const { return active_engine_id_.has_value(); }
+    bool IsConnectedForTesting() const { return remote_to_engine_.is_bound(); }
 
    private:
     // Called when this is connected to the input engine. |bound| indicates
@@ -157,6 +168,8 @@ class NativeInputMethodEngine
         ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback,
         ime::mojom::KeypressResponseForRulebasedPtr response);
 
+    PrefService* prefs_ = nullptr;
+
     std::unique_ptr<InputMethodEngineBase::Observer> ime_base_observer_;
     mojo::Remote<ime::mojom::InputEngineManager> remote_manager_;
     mojo::Receiver<ime::mojom::InputChannel> receiver_from_engine_;
@@ -165,15 +178,21 @@ class NativeInputMethodEngine
 
     std::unique_ptr<AssistiveSuggester> assistive_suggester_;
     std::unique_ptr<AutocorrectManager> autocorrect_manager_;
+
+    ui::CharacterComposer character_composer_;
   };
 
   ImeObserver* GetNativeObserver() const;
+
+  void OnInputMethodPrefsChanged();
 
   AssistiveSuggester* assistive_suggester_ = nullptr;
   AutocorrectManager* autocorrect_manager_ = nullptr;
   base::ScopedObservation<ChromeKeyboardControllerClient,
                           ChromeKeyboardControllerClient::Observer>
       chrome_keyboard_controller_client_observer_{this};
+
+  PrefChangeRegistrar pref_change_registrar_;
 };
 
 }  // namespace chromeos

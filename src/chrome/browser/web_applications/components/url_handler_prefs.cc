@@ -6,7 +6,9 @@
 
 #include <algorithm>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/util/values/values_util.h"
@@ -16,8 +18,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace web_app {
+namespace url_handler_prefs {
 namespace {
 
 constexpr const char* kAppId = "app_id";
@@ -76,18 +80,18 @@ bool UrlPathMatches(const std::string& url_path, const base::Value& paths) {
 }
 
 // Given a list of handlers that matched an origin, apply the rules in each
-// handler against |url| and return only handlers that match |url|.
+// handler against |url| and return only handlers that match |url| by appending
+// to |matches|.
 // |origin_trimmed| indicates if the input URL's origin had to be shortened to
 // find a matching key. If true, filter out and matches that did not allow an
 // origin prefix wildcard in their manifest.
-base::Optional<std::vector<UrlHandlerPrefs::Match>> FilterMatches(
-    const base::Value& all_handlers,
-    const GURL& url,
-    bool origin_trimmed) {
+void FilterAndAddMatches(const base::Value& all_handlers,
+                         const GURL& url,
+                         bool origin_trimmed,
+                         std::vector<UrlHandlerLaunchParams>& matches) {
   if (!all_handlers.is_list())
-    return base::nullopt;
+    return;
 
-  std::vector<UrlHandlerPrefs::Match> matches;
   for (auto& handler : all_handlers.GetList()) {
     if (!handler.is_dict())
       continue;
@@ -98,7 +102,7 @@ base::Optional<std::vector<UrlHandlerPrefs::Match>> FilterMatches(
 
     base::Optional<base::FilePath> profile_path =
         util::ValueToFilePath(handler.FindKey(kProfilePath));
-    if (!profile_path)
+    if (!profile_path || profile_path->empty())
       continue;
 
     if (origin_trimmed) {
@@ -131,40 +135,35 @@ base::Optional<std::vector<UrlHandlerPrefs::Match>> FilterMatches(
     }
 
     if (path_matches)
-      matches.emplace_back(*app_id, *profile_path);
+      matches.emplace_back(*profile_path, *app_id, url);
   }
-  return matches;
 }
 
 // Returns the URL handlers stored in |pref_value| that match |url|'s origin.
-base::Optional<std::vector<UrlHandlerPrefs::Match>> FindMatches(
-    const base::Value& pref_value,
-    const GURL& url) {
+std::vector<UrlHandlerLaunchParams> FindMatches(const base::Value& pref_value,
+                                                const GURL& url) {
+  std::vector<UrlHandlerLaunchParams> matches;
+
   if (!pref_value.is_dict())
-    return base::nullopt;
+    return matches;
 
   url::Origin origin = url::Origin::Create(url);
   if (origin.opaque())
-    return base::nullopt;
+    return matches;
 
-  if (origin.scheme() != "https")
-    return base::nullopt;
+  if (origin.scheme() != url::kHttpsScheme)
+    return matches;
 
   std::string origin_str = origin.Serialize();
   bool origin_trimmed(false);
-  std::vector<UrlHandlerPrefs::Match> matches;
-  for (;;) {
+
+  while (true) {
     const base::Value* const all_handlers = pref_value.FindListKey(origin_str);
     if (all_handlers) {
       DCHECK(UrlMatchesOrigin(url, origin_str, origin_trimmed));
-      base::Optional<std::vector<UrlHandlerPrefs::Match>> matches_local =
-          FilterMatches(*all_handlers, url, origin_trimmed);
-      if (matches_local) {
-        matches.insert(matches.end(),
-                       std::make_move_iterator(matches_local->begin()),
-                       std::make_move_iterator(matches_local->end()));
-      }
+      FilterAndAddMatches(*all_handlers, url, origin_trimmed, matches);
     }
+
     // If a key matching the input URL's origin is not found, shorten the origin
     // by sub-domain and try again. This enables matching against manifest
     // "url_handlers" origins that contain wildcard prefixes.
@@ -259,32 +258,19 @@ void RemoveEntries(base::Value& pref_value,
 }
 }  // namespace
 
-UrlHandlerPrefs::Match::Match(const AppId& app_id,
-                              const base::FilePath& profile_path)
-    : app_id(app_id), profile_path(profile_path) {
-  // Match should either be default constructed with both fields empty, or using
-  // this constructor with both fields non-empty.
-  DCHECK(!app_id.empty());
-  DCHECK(!profile_path.empty());
-}
-
-UrlHandlerPrefs::UrlHandlerPrefs(PrefService* pref_service)
-    : pref_service_(pref_service) {
-  DCHECK(pref_service_);
-}
-
-void UrlHandlerPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   DCHECK(registry);
   registry->RegisterDictionaryPref(prefs::kWebAppsUrlHandlerInfo);
 }
 
-void UrlHandlerPrefs::AddWebApp(const AppId& app_id,
-                                const base::FilePath& profile_path,
-                                const apps::UrlHandlers& url_handlers) {
+void AddWebApp(PrefService* local_state,
+               const AppId& app_id,
+               const base::FilePath& profile_path,
+               const apps::UrlHandlers& url_handlers) {
   if (profile_path.empty() || url_handlers.empty())
     return;
 
-  DictionaryPrefUpdate update(pref_service_, prefs::kWebAppsUrlHandlerInfo);
+  DictionaryPrefUpdate update(local_state, prefs::kWebAppsUrlHandlerInfo);
   base::Value* const pref_value = update.Get();
   if (!pref_value || !pref_value->is_dict())
     return;
@@ -322,21 +308,23 @@ void UrlHandlerPrefs::AddWebApp(const AppId& app_id,
   }
 }
 
-void UrlHandlerPrefs::UpdateWebApp(const AppId& app_id,
-                                   const base::FilePath& profile_path,
-                                   const apps::UrlHandlers& url_handlers) {
+void UpdateWebApp(PrefService* local_state,
+                  const AppId& app_id,
+                  const base::FilePath& profile_path,
+                  const apps::UrlHandlers& url_handlers) {
   // TODO(crbug/1072058): Handle "user_permission" field when it is
   // implemented.
-  RemoveWebApp(app_id, profile_path);
-  AddWebApp(app_id, profile_path, url_handlers);
+  RemoveWebApp(local_state, app_id, profile_path);
+  AddWebApp(local_state, app_id, profile_path, url_handlers);
 }
 
-void UrlHandlerPrefs::RemoveWebApp(const AppId& app_id,
-                                   const base::FilePath& profile_path) {
+void RemoveWebApp(PrefService* local_state,
+                  const AppId& app_id,
+                  const base::FilePath& profile_path) {
   if (app_id.empty() || profile_path.empty())
     return;
 
-  DictionaryPrefUpdate update(pref_service_, prefs::kWebAppsUrlHandlerInfo);
+  DictionaryPrefUpdate update(local_state, prefs::kWebAppsUrlHandlerInfo);
   base::Value* const pref_value = update.Get();
   if (!pref_value || !pref_value->is_dict())
     return;
@@ -344,11 +332,12 @@ void UrlHandlerPrefs::RemoveWebApp(const AppId& app_id,
   RemoveEntries(*pref_value, app_id, profile_path);
 }
 
-void UrlHandlerPrefs::RemoveProfile(const base::FilePath& profile_path) {
+void RemoveProfile(PrefService* local_state,
+                   const base::FilePath& profile_path) {
   if (profile_path.empty())
     return;
 
-  DictionaryPrefUpdate update(pref_service_, prefs::kWebAppsUrlHandlerInfo);
+  DictionaryPrefUpdate update(local_state, prefs::kWebAppsUrlHandlerInfo);
   base::Value* const pref_value = update.Get();
   if (!pref_value || !pref_value->is_dict())
     return;
@@ -356,23 +345,25 @@ void UrlHandlerPrefs::RemoveProfile(const base::FilePath& profile_path) {
   RemoveEntries(*pref_value, /*app_id*/ "", profile_path);
 }
 
-void UrlHandlerPrefs::Clear() {
-  DictionaryPrefUpdate update(pref_service_, prefs::kWebAppsUrlHandlerInfo);
+void Clear(PrefService* local_state) {
+  DictionaryPrefUpdate update(local_state, prefs::kWebAppsUrlHandlerInfo);
   base::Value* const pref_value = update.Get();
   pref_value->DictClear();
 }
 
-base::Optional<std::vector<UrlHandlerPrefs::Match>>
-UrlHandlerPrefs::FindMatchingUrlHandlers(const GURL& url) const {
+std::vector<UrlHandlerLaunchParams> FindMatchingUrlHandlers(
+    PrefService* local_state,
+    const GURL& url) {
   if (!url.is_valid())
-    return base::nullopt;
+    return {};
 
   const base::Value* const pref_value =
-      pref_service_->Get(prefs::kWebAppsUrlHandlerInfo);
+      local_state->Get(prefs::kWebAppsUrlHandlerInfo);
   if (!pref_value || !pref_value->is_dict())
-    return base::nullopt;
+    return {};
 
   return FindMatches(*pref_value, url);
 }
 
+}  // namespace url_handler_prefs
 }  // namespace web_app

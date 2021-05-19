@@ -1,28 +1,9 @@
 {
-  "extensions": [
-    {
-      "type": "@UI.TextEditorFactory",
-      "className": "TextEditor.CodeMirrorTextEditorFactory"
-    }
-  ],
   "dependencies": [
     "cm",
-    "ui"
+    "ui/legacy"
   ],
-  "modules": [
-    "text_editor.js",
-    "text_editor-legacy.js",
-    "../third_party/codemirror/package/mode/css/css.js",
-    "../third_party/codemirror/package/mode/javascript/javascript.js",
-    "../third_party/codemirror/package/mode/xml/xml.js",
-    "../third_party/codemirror/package/mode/htmlmixed/htmlmixed.js",
-    "../third_party/codemirror/package/mode/htmlembedded/htmlembedded.js",
-    "../third_party/codemirror/package/mode/wast/wast.js",
-    "CodeMirrorUtils.js",
-    "TextEditorAutocompleteController.js",
-    "CodeMirrorTextEditor.js"
-  ],
-  "resources": [
+    "resources": [
     "autocompleteTooltip.css",
     "cmdevtools.css",
     "cmdevtools.darkmode.css"

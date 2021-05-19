@@ -19,9 +19,6 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"
 #include "chrome/browser/chromeos/extensions/external_cache_delegate.h"
-// TODO(https://crbug.com/1164001): use forward declaration when moved to
-// chrome/browser/ash/.
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "extensions/common/extension_id.h"
@@ -47,6 +44,7 @@ namespace ash {
 
 class KioskAppData;
 class KioskExternalUpdater;
+class OwnerSettingsServiceAsh;
 
 // KioskAppManager manages cached app data.
 class KioskAppManager : public KioskAppManagerBase,
@@ -129,7 +127,7 @@ class KioskAppManager : public KioskAppManagerBase,
 
   // Sets |app_id| as the app to auto launch at start up.
   void SetAutoLaunchApp(const std::string& app_id,
-                        OwnerSettingsServiceChromeOS* service);
+                        OwnerSettingsServiceAsh* service);
 
   // Returns true if there is a pending auto-launch request.
   bool IsAutoLaunchRequested() const;
@@ -146,9 +144,8 @@ class KioskAppManager : public KioskAppManagerBase,
 
   // Adds/removes a kiosk app by id. When removed, all locally cached data
   // will be removed as well.
-  void AddApp(const std::string& app_id, OwnerSettingsServiceChromeOS* service);
-  void RemoveApp(const std::string& app_id,
-                 OwnerSettingsServiceChromeOS* service);
+  void AddApp(const std::string& app_id, OwnerSettingsServiceAsh* service);
+  void RemoveApp(const std::string& app_id, OwnerSettingsServiceAsh* service);
 
   // KioskAppManagerBase:
   // Gets info of all apps that have no meta data load error.

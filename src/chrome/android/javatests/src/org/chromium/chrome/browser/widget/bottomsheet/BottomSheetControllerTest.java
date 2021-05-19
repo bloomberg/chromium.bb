@@ -45,6 +45,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.components.browser_ui.bottomsheet.TestBottomSheetContent;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -218,7 +219,17 @@ public class BottomSheetControllerTest {
     @Feature({"BottomSheetController"})
     public void testSheetPeekAfterTabSwitcher() throws TimeoutException {
         requestContentInSheet(mLowPriorityContent, true);
+        CallbackHelper peekCallbackHelper = new CallbackHelper();
+        mSheetController.addObserver(new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetStateChanged(int newState) {
+                if (newState == BottomSheetController.SheetState.PEEK) {
+                    peekCallbackHelper.notifyCalled();
+                }
+            }
+        });
         enterAndExitTabSwitcher();
+        peekCallbackHelper.waitForCallback(0);
         assertEquals("The bottom sheet should be peeking.", BottomSheetController.SheetState.PEEK,
                 mSheetController.getSheetState());
         assertEquals("The bottom sheet is showing incorrect content.", mLowPriorityContent,
@@ -236,6 +247,14 @@ public class BottomSheetControllerTest {
 
         requestContentInSheet(mLowPriorityContent, true);
 
+        CallbackHelper contentChangeHelper = new CallbackHelper();
+        mSheetController.addObserver(new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetContentChanged(BottomSheetContent newContent) {
+                contentChangeHelper.notifyCalled();
+            }
+        });
+
         // Enter the tab switcher and select a different tab.
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mActivity.getLayoutManager().showOverview(false);
@@ -248,6 +267,7 @@ public class BottomSheetControllerTest {
             mTestSupport.endAllAnimations();
         });
 
+        contentChangeHelper.waitForCallback(0);
         assertEquals("The bottom sheet still should be hidden.",
                 BottomSheetController.SheetState.HIDDEN, mSheetController.getSheetState());
         assertEquals("The bottom sheet is showing incorrect content.", null,
@@ -455,8 +475,7 @@ public class BottomSheetControllerTest {
 
         expandSheet();
 
-        int computedOffset = (int) (customHalfHeight
-                * (mSheetController.getContainerHeight() + mSheetController.getTopShadowHeight()));
+        int computedOffset = (int) (customHalfHeight * mSheetController.getContainerHeight());
         assertEquals("Half height is incorrect for custom ratio.", computedOffset,
                 mSheetController.getCurrentOffset());
     }
@@ -470,8 +489,7 @@ public class BottomSheetControllerTest {
 
         maximizeSheet();
 
-        int computedOffset = (int) (customFullHeight
-                * (mSheetController.getContainerHeight() + mSheetController.getTopShadowHeight()));
+        int computedOffset = (int) (customFullHeight * mSheetController.getContainerHeight());
         assertEquals("Full height is incorrect for custom ratio.", computedOffset,
                 mSheetController.getCurrentOffset());
     }

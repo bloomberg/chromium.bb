@@ -8,7 +8,6 @@ import("../../scripts/build/ninja/devtools_module.gni")
 devtools_module("text_editor") {
   sources = [
     "CodeMirrorTextEditor.ts",
-    "CodeMirrorUtils.ts",
     "SyntaxHighlighter.ts",
     "TextEditorAutocompleteController.ts",
     "cm_modes.ts",
@@ -16,12 +15,12 @@ devtools_module("text_editor") {
 
   deps = [
     "../cm",
-    "../common:bundle",
-    "../host:bundle",
-    "../i18n:bundle",
-    "../platform:bundle",
-    "../text_utils:bundle",
-    "../ui:bundle",
+    "../core/common:bundle",
+    "../core/host:bundle",
+    "../core/i18n:bundle",
+    "../core/platform:bundle",
+    "../models/text_utils:bundle",
+    "../ui/legacy:bundle",
   ]
 }
 

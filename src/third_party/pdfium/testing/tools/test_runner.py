@@ -3,9 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+
+import argparse
 import functools
 import multiprocessing
-import optparse
 import os
 import re
 import shutil
@@ -14,9 +17,10 @@ import sys
 
 # pylint: disable=relative-import
 import common
-import gold
 import pngdiffer
 import suppressor
+from skia_gold import skia_gold
+
 
 # Arbitrary timestamp, expressed in seconds since the epoch, used to make sure
 # that tests that depend on the current time are stable. Happens to be the
@@ -48,6 +52,21 @@ def TestOneFileParallel(this, test_case):
     raise KeyboardInterruptError()
 
 
+def RunSkiaWrapper(this, input_chunk):
+  """Wrapper to call RunSkia() and redirect output to stdout"""
+  try:
+    results = []
+    for img_path_input_filename in input_chunk:
+      img_path, input_filename = img_path_input_filename
+      multiprocessing_name = multiprocessing.current_process().name
+
+      test_name, skia_success = this.RunSkia(img_path, multiprocessing_name)
+      results.append((test_name, skia_success, input_filename))
+    return results
+  except KeyboardInterrupt:
+    raise KeyboardInterruptError()
+
+
 def DeleteFiles(files):
   """Utility function to delete a list of files"""
   for f in files:
@@ -67,6 +86,25 @@ class TestRunner:
     self.delete_output_on_success = False
     self.enforce_expected_images = False
     self.oneshot_renderer = False
+    self.skia_tester = None
+
+  def GetSkiaGoldTester(self, process_name=None):
+    if not self.skia_tester:
+      self.skia_tester = skia_gold.SkiaGoldTester(
+          source_type=self.test_type,
+          skia_gold_args=self.options,
+          process_name=process_name)
+    return self.skia_tester
+
+  def RunSkia(self, img_path, process_name=None):
+    skia_tester = self.GetSkiaGoldTester(process_name=process_name)
+    # The output filename without image extension becomes the test name.
+    # For example, "/path/to/.../testing/corpus/example_005.pdf.0.png"
+    # becomes "example_005.pdf.0".
+    test_name = os.path.splitext(os.path.split(img_path)[1])[0]
+    skia_success = skia_tester.UploadTestResultToSkiaGold(test_name, img_path)
+    sys.stdout.flush()
+    return test_name, skia_success
 
   # GenerateAndTest returns a tuple <success, outputfiles> where
   # success is a boolean indicating whether the tests passed comparison
@@ -87,7 +125,7 @@ class TestRunner:
                                      pdf_path)
 
     if raised_exception is not None:
-      print 'FAILURE: %s; %s' % (input_filename, raised_exception)
+      print('FAILURE: {}; {}'.format(input_filename, raised_exception))
       return False, []
 
     results = []
@@ -100,7 +138,7 @@ class TestRunner:
       raised_exception, results = self.TestPixel(pdf_path, use_ahem)
 
     if raised_exception is not None:
-      print 'FAILURE: %s; %s' % (input_filename, raised_exception)
+      print('FAILURE: {}; {}'.format(input_filename, raised_exception))
       return False, results
 
     if actual_images:
@@ -112,7 +150,7 @@ class TestRunner:
       if (self.enforce_expected_images and
           not self.test_suppressor.IsImageDiffSuppressed(input_filename)):
         self.RegenerateIfNeeded_(input_filename, source_dir)
-        print 'FAILURE: %s; Missing expected images' % input_filename
+        print('FAILURE: {}; Missing expected images'.format(input_filename))
         return False, results
 
     if self.delete_output_on_success:
@@ -167,7 +205,10 @@ class TestRunner:
         cmd_to_run.append('--disable-xfa')
 
       cmd_to_run.append(pdf_path)
-      subprocess.check_call(cmd_to_run, stdout=outfile)
+      try:
+        subprocess.check_call(cmd_to_run, stdout=outfile)
+      except subprocess.CalledProcessError as e:
+        return e
 
     # If the expected file does not exist, the output is expected to be empty.
     if not os.path.exists(expected_txt_path):
@@ -196,6 +237,8 @@ class TestRunner:
     except Exception as e:
       return e
 
+  # TODO(crbug.com/pdfium/1656): Remove when ready to fully switch over to
+  # Skia Gold
   def TestPixel(self, pdf_path, use_ahem):
     cmd_to_run = [
         self.pdfium_test_path, '--send-events', '--png', '--md5',
@@ -221,26 +264,7 @@ class TestRunner:
     return common.RunCommandExtractHashedFiles(cmd_to_run)
 
   def HandleResult(self, input_filename, input_path, result):
-    success, image_paths = result
-
-    if image_paths:
-      for img_path, md5_hash in image_paths:
-        # The output filename without image extension becomes the test name.
-        # For example, "/path/to/.../testing/corpus/example_005.pdf.0.png"
-        # becomes "example_005.pdf.0".
-        test_name = os.path.splitext(os.path.split(img_path)[1])[0]
-
-        matched = "suppressed"
-        if not self.test_suppressor.IsResultSuppressed(input_filename):
-          matched = self.gold_baseline.MatchLocalResult(test_name, md5_hash)
-          if matched == gold.GoldBaseline.MISMATCH:
-            print 'Skia Gold hash mismatch for test case: %s' % test_name
-          elif matched == gold.GoldBaseline.NO_BASELINE:
-            print 'No Skia Gold baseline found for test case: %s' % test_name
-
-        if self.gold_results:
-          self.gold_results.AddTestResult(test_name, md5_hash, img_path,
-                                          matched)
+    success, _ = result
 
     if self.test_suppressor.IsResultSuppressed(input_filename):
       self.result_suppressed_cases.append(input_filename)
@@ -254,60 +278,54 @@ class TestRunner:
     # Running a test defines a number of attributes on the fly.
     # pylint: disable=attribute-defined-outside-init
 
-    parser = optparse.OptionParser()
+    parser = argparse.ArgumentParser()
 
-    parser.add_option(
+    parser.add_argument(
         '--build-dir',
         default=os.path.join('out', 'Debug'),
         help='relative path from the base source directory')
 
-    parser.add_option(
+    parser.add_argument(
         '-j',
         default=multiprocessing.cpu_count(),
         dest='num_workers',
-        type='int',
+        type=int,
         help='run NUM_WORKERS jobs in parallel')
 
-    parser.add_option(
+    parser.add_argument(
         '--disable-javascript',
         action="store_true",
         dest="disable_javascript",
         help='Prevents JavaScript from executing in PDF files.')
 
-    parser.add_option(
+    parser.add_argument(
         '--disable-xfa',
         action="store_true",
         dest="disable_xfa",
         help='Prevents processing XFA forms.')
 
-    parser.add_option(
+    parser.add_argument(
+        '--run-skia-gold',
+        action='store_true',
+        default=False,
+        help='When flag is on, skia gold tests will be run.')
+
+    # TODO: Remove when pdfium recipe stops passing this argument
+    parser.add_argument(
         '--gold_properties',
         default='',
         dest="gold_properties",
         help='Key value pairs that are written to the top level '
         'of the JSON file that is ingested by Gold.')
 
-    parser.add_option(
-        '--gold_key',
-        default='',
-        dest="gold_key",
-        help='Key value pairs that are added to the "key" field '
-        'of the JSON file that is ingested by Gold.')
-
-    parser.add_option(
-        '--gold_output_dir',
-        default='',
-        dest="gold_output_dir",
-        help='Path of where to write the JSON output to be '
-        'uploaded to Gold.')
-
-    parser.add_option(
+    # TODO: Remove when pdfium recipe stops passing this argument
+    parser.add_argument(
         '--gold_ignore_hashes',
         default='',
         dest="gold_ignore_hashes",
         help='Path to a file with MD5 hashes we wish to ignore.')
 
-    parser.add_option(
+    parser.add_argument(
         '--regenerate_expected',
         default='',
         dest="regenerate_expected",
@@ -316,24 +334,26 @@ class TestRunner:
         '"platform" to regenerate only platform-specific '
         'expected pngs.')
 
-    parser.add_option(
+    parser.add_argument(
         '--reverse-byte-order',
         action='store_true',
         dest="reverse_byte_order",
         help='Run image-based tests using --reverse-byte-order.')
 
-    parser.add_option(
+    parser.add_argument(
         '--ignore_errors',
         action="store_true",
         dest="ignore_errors",
         help='Prevents the return value from being non-zero '
         'when image comparison fails.')
 
-    self.options, self.args = parser.parse_args()
+    skia_gold.add_skia_gold_args(parser)
+
+    self.options, self.inputted_file_paths = parser.parse_known_args()
 
     if (self.options.regenerate_expected and
         self.options.regenerate_expected not in ['all', 'platform']):
-      print 'FAILURE: --regenerate_expected must be "all" or "platform"'
+      print('FAILURE: --regenerate_expected must be "all" or "platform"')
       return 1
 
     finder = common.DirectoryFinder(self.options.build_dir)
@@ -349,8 +369,9 @@ class TestRunner:
 
     self.pdfium_test_path = finder.ExecutablePath('pdfium_test')
     if not os.path.exists(self.pdfium_test_path):
-      print "FAILURE: Can't find test executable '%s'" % self.pdfium_test_path
-      print 'Use --build-dir to specify its location.'
+      print("FAILURE: Can't find test executable '{}'".format(
+          self.pdfium_test_path))
+      print('Use --build-dir to specify its location.')
       return 1
 
     self.working_dir = finder.WorkingDir(os.path.join('testing', self.test_dir))
@@ -367,22 +388,21 @@ class TestRunner:
     error_message = self.image_differ.CheckMissingTools(
         self.options.regenerate_expected)
     if error_message:
-      print "FAILURE: %s" % error_message
+      print('FAILURE:', error_message)
       return 1
 
-    self.gold_baseline = gold.GoldBaseline(self.options.gold_properties)
 
     walk_from_dir = finder.TestingDir(test_dir)
 
     self.test_cases = []
     self.execution_suppressed_cases = []
     input_file_re = re.compile('^.+[.](in|pdf)$')
-    if self.args:
-      for file_name in self.args:
+    if self.inputted_file_paths:
+      for file_name in self.inputted_file_paths:
         file_name.replace('.pdf', '.in')
         input_path = os.path.join(walk_from_dir, file_name)
         if not os.path.isfile(input_path):
-          print "Can't find test file '%s'" % file_name
+          print("Can't find test file '{}'".format(file_name))
           return 1
 
         self.test_cases.append((os.path.basename(input_path),
@@ -401,17 +421,19 @@ class TestRunner:
     self.test_cases.sort()
     self.failures = []
     self.surprises = []
+    self.skia_gold_successes = []
+    self.skia_gold_unexpected_successes = []
+    self.skia_gold_failures = []
     self.result_suppressed_cases = []
 
-    # Collect Gold results if an output directory was named.
-    self.gold_results = None
-    if self.options.gold_output_dir:
-      self.gold_results = gold.GoldResults(
-          self.test_type, self.options.gold_output_dir,
-          self.options.gold_properties, self.options.gold_key,
-          self.options.gold_ignore_hashes)
+    gold_results = []
+    if self.test_type not in TEXT_TESTS and self.options.run_skia_gold:
+      assert self.options.gold_output_dir
+      # Clear out and create top level gold output directory before starting
+      skia_gold.clear_gold_output_dir(self.options.gold_output_dir)
 
     if self.options.num_workers > 1 and len(self.test_cases) > 1:
+      skia_gold_parallel_inputs = []
       try:
         pool = multiprocessing.Pool(self.options.num_workers)
         worker_func = functools.partial(TestOneFileParallel, self)
@@ -423,11 +445,41 @@ class TestRunner:
 
           self.HandleResult(input_filename, input_path, result)
 
+          if self.test_type not in TEXT_TESTS and self.options.run_skia_gold:
+            _, image_paths = result
+            if image_paths:
+              path_filename_tuples = [
+                  (path, input_filename) for path, _ in image_paths
+              ]
+              skia_gold_parallel_inputs.extend(path_filename_tuples)
+
       except KeyboardInterrupt:
         pool.terminate()
       finally:
         pool.close()
         pool.join()
+
+      if skia_gold_parallel_inputs and self.test_type not in TEXT_TESTS:
+        try:
+          pool = multiprocessing.Pool(self.options.num_workers)
+          gold_worker_func = functools.partial(RunSkiaWrapper, self)
+
+          def chunk_input(whole_list):
+            chunked = []
+            size = len(whole_list) // self.options.num_workers
+            for i in range(0, len(whole_list), size):
+              chunked.append(whole_list[i:i + size])
+            return chunked
+
+          chunked_input = chunk_input(skia_gold_parallel_inputs)
+          pool_results = pool.imap(gold_worker_func, chunked_input)
+          for r in pool_results:
+            gold_results.extend(r)
+        except KeyboardInterrupt:
+          pool.terminate()
+        finally:
+          pool.close()
+          pool.join()
     else:
       for test_case in self.test_cases:
         input_filename, input_file_dir = test_case
@@ -435,22 +487,52 @@ class TestRunner:
         self.HandleResult(input_filename,
                           os.path.join(input_file_dir, input_filename), result)
 
-    if self.gold_results:
-      self.gold_results.WriteResults()
+        _, image_paths = result
+        if image_paths and self.test_type not in TEXT_TESTS and \
+            self.options.run_skia_gold:
+          for img_path, _ in image_paths:
+            test_name, skia_success = self.RunSkia(img_path)
+            gold_results.append((test_name, skia_success, input_filename))
+
+    for r in gold_results:
+      test_name, skia_success, input_filename = r
+      if skia_success:
+        if self.test_suppressor.IsResultSuppressed(input_filename):
+          self.skia_gold_unexpected_successes.append(test_name)
+        else:
+          self.skia_gold_successes.append(test_name)
+      else:
+        self.skia_gold_failures.append(test_name)
+
+    # For some reason, summary will be cut off from stdout on windows if
+    # _PrintSummary() is called at the end
+    # TODO(crbug.com/pdfium/1657): Once resolved, move _PrintSummary() back
+    # down to the end
+    self._PrintSummary()
 
     if self.surprises:
       self.surprises.sort()
-      print '\n\nUnexpected Successes:'
+      print('\nUnexpected Successes:')
       for surprise in self.surprises:
-        print surprise
+        print(surprise)
 
     if self.failures:
       self.failures.sort()
-      print '\n\nSummary of Failures:'
+      print('\nSummary of Failures:')
       for failure in self.failures:
-        print failure
+        print(failure)
 
-    self._PrintSummary()
+    if self.skia_gold_unexpected_successes:
+      self.skia_gold_unexpected_successes.sort()
+      print('\nUnexpected Skia Gold Successes:')
+      for surprise in self.skia_gold_unexpected_successes:
+        print(surprise)
+
+    if self.skia_gold_failures:
+      self.skia_gold_failures.sort()
+      print('\nSummary of Skia Gold Failures:')
+      for failure in self.skia_gold_failures:
+        print(failure)
 
     if self.failures:
       if not self.options.ignore_errors:
@@ -464,14 +546,28 @@ class TestRunner:
     number_suppressed = len(self.result_suppressed_cases)
     number_successes = number_test_cases - number_failures - number_suppressed
     number_surprises = len(self.surprises)
-    print
-    print 'Test cases executed: %d' % number_test_cases
-    print '  Successes: %d' % number_successes
-    print '  Suppressed: %d' % number_suppressed
-    print '    Surprises: %d' % number_surprises
-    print '  Failures: %d' % number_failures
-    print
-    print 'Test cases not executed: %d' % len(self.execution_suppressed_cases)
+    print('\nTest cases executed:', number_test_cases)
+    print('  Successes:', number_successes)
+    print('  Suppressed:', number_suppressed)
+    print('  Surprises:', number_surprises)
+    print('  Failures:', number_failures)
+    if self.test_type not in TEXT_TESTS and self.options.run_skia_gold:
+      number_gold_failures = len(self.skia_gold_failures)
+      number_gold_successes = len(self.skia_gold_successes)
+      number_gold_surprises = len(self.skia_gold_unexpected_successes)
+      number_total_gold_tests = sum(
+          [number_gold_failures, number_gold_successes, number_gold_surprises])
+      print('\nSkia Gold Test cases executed:', number_total_gold_tests)
+      print('  Skia Gold Successes:', number_gold_successes)
+      print('  Skia Gold Surprises:', number_gold_surprises)
+      print('  Skia Gold Failures:', number_gold_failures)
+      skia_tester = self.GetSkiaGoldTester()
+      if self.skia_gold_failures and skia_tester.IsTryjobRun():
+        cl_triage_link = skia_tester.GetCLTriageLink()
+        print('  Triage link for CL:', cl_triage_link)
+        skia_tester.WriteCLTriageLink(cl_triage_link)
+    print()
+    print('Test cases not executed:', len(self.execution_suppressed_cases))
 
   def SetDeleteOutputOnSuccess(self, new_value):
     """Set whether to delete generated output if the test passes."""

@@ -5,6 +5,7 @@
 #include "chromeos/components/diagnostics_ui/backend/session_log_handler.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -92,7 +92,7 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
 
  protected:
   void SelectFileImpl(Type type,
-                      const base::string16& title,
+                      const std::u16string& title,
                       const base::FilePath& default_path,
                       const FileTypeInfo* file_types,
                       int file_type_index,

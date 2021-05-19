@@ -40,8 +40,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #endif
 
 namespace extensions {
@@ -51,9 +51,9 @@ class CountingPolicyTest : public testing::Test {
   CountingPolicyTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+    test_user_manager_ = std::make_unique<ash::ScopedTestUserManager>();
 #endif
-    profile_.reset(new TestingProfile());
+    profile_ = std::make_unique<TestingProfile>();
     base::CommandLine::ForCurrentProcess()->
         AppendSwitch(switches::kEnableExtensionActivityLogging);
     base::CommandLine no_program_command_line(base::CommandLine::NO_PROGRAM);
@@ -388,8 +388,8 @@ class CountingPolicyTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
-  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  std::unique_ptr<ash::ScopedTestUserManager> test_user_manager_;
 #endif
 };
 

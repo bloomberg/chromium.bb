@@ -40,6 +40,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1252999807265626933">Trwa ładowanie z: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Jaka jest pogoda?</translation>
 <translation id="1267032506238418139">Zmiana skrótu klawiszowego</translation>
+<translation id="1269405891096105529">Urządzenia peryferyjnego nie można używać w trybie gościa</translation>
 <translation id="1270290102613614947">Klawiatura ekranowa wyłączona</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
 <translation id="1275285675049378717">Zasilanie przez <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Wpisz wiadomość</translation>
 <translation id="2018630726571919839">Opowiedz mi kawał</translation>
+<translation id="2021864487439853900">Kliknij, aby odblokować</translation>
 <translation id="2049240716062114887">Nazwa biurka została zmieniona na <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Pionowo</translation>
 <translation id="2067602449040652523">Jasność klawiatury</translation>
@@ -276,6 +278,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> nadal może się później zalogować.</translation>
 <translation id="3321628682574733415">Nieprawidłowy kod rodzica</translation>
 <translation id="332587331255250389">Wymień baterię</translation>
+<translation id="3333741161915951567">Modem właśnie się restartuje. Zaczekaj 30 sekund, zanim spróbujesz ponownie.</translation>
 <translation id="3341303451326249809">Wykonano zrzut ekranu</translation>
 <translation id="334252345105450327">Zrób zrzut ekranu</translation>
 <translation id="3351879221545518001">Obecnie przesyłasz ekran.</translation>
@@ -320,6 +323,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="366222428570480733">Użytkownik zarządzany <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3665889125180354336">Nagrywanie z mikrofonu</translation>
 <translation id="36813544980941320">Twój telefon i <ph name="DEVICE_NAME" /> będą wspólnie korzystać z sieci Wi-Fi</translation>
+<translation id="3702809606464356667">Pokazuję okna z aktualnego biurka, naciśnij klawisz strzałki w górę, aby wyświetlić okna ze wszystkich biurek</translation>
 <translation id="3702846122927433391">Populacja Nigerii</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Ładuję...</translation>
@@ -351,6 +355,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="394485226368336402">Ustawienia dźwięku</translation>
 <translation id="3945319193631853098">Kliknij, aby dokończyć konfigurację</translation>
 <translation id="3945867833895287237">Łączę z hotspotem...</translation>
+<translation id="3958465044488004317">Zobacz wynik w Asystencie</translation>
 <translation id="3962859241508114581">Poprzedni utwór</translation>
 <translation id="3969043077941541451">Wyłączone</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
@@ -407,10 +412,12 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="4421231901400348175">Udostępnianie sterowania ekranem użytkownikowi <ph name="HELPER_NAME" /> przy użyciu pomocy zdalnej.</translation>
 <translation id="4424159417645388645">Biurko 5</translation>
 <translation id="4430019312045809116">Głośność</translation>
+<translation id="4445159312344259901">Zaloguj się, aby odblokować</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 ważne powiadomienie}few{# ważne powiadomienia}many{# ważnych powiadomień}other{# ważnego powiadomienia}}</translation>
 <translation id="4450893287417543264">Nie pokazuj ponownie</translation>
 <translation id="445864333228800152">Dobry wieczór,</translation>
 <translation id="4458688154122353284">Zatrzymaj nagrywanie ekranu</translation>
+<translation id="4467143075433126295">Naciśnij i przytrzymaj [Esc], aby zamknąć pełny ekran</translation>
 <translation id="4472575034687746823">Rozpocznij</translation>
 <translation id="4477350412780666475">Następny utwór</translation>
 <translation id="4477892968187500306">Na tym urządzeniu mogą być zainstalowane aplikacje niezweryfikowane przez Google.</translation>
@@ -607,6 +614,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Asystent Google jest niedostępny w sesji gościa.</translation>
 <translation id="6137566720514957455">Otwórz okno usuwania konta <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Nieobsługiwane urządzenie peryferyjne</translation>
 <translation id="615957422585914272">Pokaż klawiaturę ekranową</translation>
 <translation id="6165508094623778733">Dowiedz się więcej</translation>
 <translation id="6179832488876878285">Tutaj możesz przypiąć ważne pliki. Aby rozpocząć, otwórz aplikację Pliki.</translation>
@@ -624,11 +632,11 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="6297287540776456956">Zaznacz obszar rysikiem</translation>
 <translation id="6310121235600822547">Wyświetlacz <ph name="DISPLAY_NAME" /> został obrócony na <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Głos</translation>
+<translation id="6330012934079202188">Pokazuję okna ze wszystkich biurek, naciśnij klawisz strzałki w górę, aby wyświetlić okna z aktualnego biurka</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> jest sesją zarządzaną, którą zarządza <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth jest włączony</translation>
 <translation id="6381109794406942707">Aby odblokować urządzenie, wpisz kod PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK jest wyłączony</translation>
-<translation id="6396835948284782440">Aby zamknąć, naciśnij i przytrzymaj [Esc].</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Wyczyść wszystkie powiadomienia</translation>
@@ -794,7 +802,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="7780159184141939021">Obróć ekran</translation>
 <translation id="7796353162336583443">Kliknij przycisk rysika na półce, by zrobić notatkę lub zrzut ekranu, skorzystać z Asystenta Google albo użyć wskaźnika laserowego lub lupy.</translation>
 <translation id="7798302898096527229">Aby anulować, naciśnij Szukaj lub Shift.</translation>
-<translation id="7807966291075028781">Ze względów bezpieczeństwa w trybie gościa urządzenie peryferyjne nie jest obsługiwane</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">silny sygnał</translation>
 <translation id="7837740436429729974">Czas minął</translation>
@@ -944,6 +951,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="8936501819958976551">dezaktywowana</translation>
 <translation id="8938800817013097409">Urządzenie USB-C (prawy port z tyłu)</translation>
 <translation id="8940956008527784070">Niski stan baterii (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Chromebook obsługuje tylko zatwierdzone urządzenia Thunderbolt</translation>
 <translation id="8982906748181120328">Widoczność w pobliżu</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">W użyciu jest <ph name="IME_NAME" /></translation>

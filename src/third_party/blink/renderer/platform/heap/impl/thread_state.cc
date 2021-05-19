@@ -200,6 +200,10 @@ ThreadState::~ThreadState() {
   **thread_specific_ = nullptr;
 }
 
+ThreadState* ThreadState::AttachMainThreadForTesting(v8::Platform*) {
+  return AttachMainThread();
+}
+
 ThreadState* ThreadState::AttachMainThread() {
   thread_specific_ = new WTF::ThreadSpecific<ThreadState*>();
   return new (main_thread_state_storage_) ThreadState();
@@ -1213,9 +1217,11 @@ void ThreadState::CollectGarbage(BlinkGC::CollectionType collection_type,
   // mentioned below. In this case we will follow up with a regular full
   // garbage collection.
   const bool should_do_full_gc =
-      !was_incremental_marking ||
-      reason == BlinkGC::GCReason::kForcedGCForTesting ||
-      reason == BlinkGC::GCReason::kThreadTerminationGC;
+      !no_followup_full_gc_for_testing_ &&
+      (!was_incremental_marking ||
+       reason == BlinkGC::GCReason::kForcedGCForTesting ||
+       reason == BlinkGC::GCReason::kThreadTerminationGC);
+  no_followup_full_gc_for_testing_ = false;
   if (should_do_full_gc) {
     CompleteSweep();
     SetGCState(kNoGCScheduled);
@@ -1631,7 +1637,7 @@ void ThreadState::ScheduleConcurrentMarking() {
       blink::features::kBlinkHeapConcurrentMarking));
 
   marker_handle_ = base::PostJob(
-      FROM_HERE, {base::ThreadPool(), base::TaskPriority::USER_VISIBLE},
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE},
       ConvertToBaseRepeatingCallback(
           WTF::CrossThreadBindRepeating(&ThreadState::PerformConcurrentMark,
                                         WTF::CrossThreadUnretained(this))),

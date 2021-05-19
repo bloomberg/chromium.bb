@@ -94,17 +94,6 @@ std::ostream& operator<<(std::ostream& os, PositionMoveType type) {
   return os << *it;
 }
 
-InputEvent::EventCancelable InputTypeIsCancelable(
-    InputEvent::InputType input_type) {
-  using InputType = InputEvent::InputType;
-  switch (input_type) {
-    case InputType::kInsertCompositionText:
-      return InputEvent::EventCancelable::kNotCancelable;
-    default:
-      return InputEvent::EventCancelable::kIsCancelable;
-  }
-}
-
 UChar WhitespaceRebalancingCharToAppend(const String& string,
                                         bool start_is_start_of_paragraph,
                                         bool should_emit_nbsp_before_end,
@@ -1342,6 +1331,26 @@ HTMLSpanElement* CreateTabSpanElement(Document& document) {
   return CreateTabSpanElement(document, nullptr);
 }
 
+// Returns user-select:contain boundary element of specified position.
+// Because of we've not yet implemented "user-select:contain", we consider
+// following elements having "user-select:contain"
+//  - root editable
+//  - inner editor of text control (<input> and <textarea>)
+// Note: inner editor of readonly text control isn't content editable.
+// TODO(yosin): We should handle elements with "user-select:contain".
+// See http:/crbug.com/658129
+static Element* UserSelectContainBoundaryOf(const Position& position) {
+  if (auto* text_control = EnclosingTextControl(position)) {
+    // for <input readonly>. See http://crbug.com/185089
+    return text_control->InnerEditorElement();
+  }
+  // Note: Until we implement "user-select:contain", we treat root editable
+  // element and text control as having "user-select:contain".
+  if (Element* editable = RootEditableElementOf(position))
+    return editable;
+  return nullptr;
+}
+
 PositionWithAffinity PositionRespectingEditingBoundary(
     const Position& position,
     const HitTestResult& hit_test_result) {
@@ -1351,7 +1360,7 @@ PositionWithAffinity PositionRespectingEditingBoundary(
   if (!target_object)
     return PositionWithAffinity();
 
-  Element* editable_element = RootEditableElementOf(position);
+  Element* editable_element = UserSelectContainBoundaryOf(position);
   if (!editable_element || editable_element->contains(target_node))
     return hit_test_result.GetPosition();
 
@@ -1659,6 +1668,17 @@ wtf_size_t ComputeDistanceToRightGraphemeBoundary(const Position& position) {
 
 FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
   return caret_rect.layout_object->LocalRectToAbsoluteQuad(caret_rect.rect);
+}
+
+InputEvent::EventCancelable InputTypeIsCancelable(
+    InputEvent::InputType input_type) {
+  using InputType = InputEvent::InputType;
+  switch (input_type) {
+    case InputType::kInsertCompositionText:
+      return InputEvent::EventCancelable::kNotCancelable;
+    default:
+      return InputEvent::EventCancelable::kIsCancelable;
+  }
 }
 
 const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {

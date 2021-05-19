@@ -52,7 +52,6 @@
 <translation id="1400642268715879018">Oxirgi 4 haftalik</translation>
 <translation id="1407135791313364759">Barchasini ochish</translation>
 <translation id="1430915738399379752">Chop etish</translation>
-<translation id="1436290164580597469">Sinxronizatsiyani boshlash uchun kodli iborani kiriting.</translation>
 <translation id="1449835205994625556">Parolni berkitish</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> ta xatcho‘p</translation>
 <translation id="1491277525950327607">Almashtirish uchun ikki marta bosing</translation>
@@ -97,6 +96,7 @@
 <translation id="1870148520156231997">Parolni ochish</translation>
 <translation id="1872096359983322073">Fonar</translation>
 <translation id="1911619930368729126">Google Drive’ga yuklash</translation>
+<translation id="1919130412786645364">Chrome hisobiga kirishga ruxsat berish</translation>
 <translation id="1923342640370224680">So‘nggi soat</translation>
 <translation id="1941314575388338491">Nusxalash uchun ikki marta bosing.</translation>
 <translation id="1952172573699511566">Imkoni bo‘lishi bilan sayt matni siz tanlagan tilda ko‘rinadi.</translation>
@@ -106,14 +106,12 @@
 <translation id="1974060860693918893">Qo‘shimcha</translation>
 <translation id="1989112275319619282">Tanlash</translation>
 <translation id="2015722694326466240">Parollarni ko‘rish uchun qurilmangizni maxfiy kod bilan qulflang.</translation>
-<translation id="2047933465321076474">Inkognito rejimi tashkilotingiz tomonidan faolsizlantirildi. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> kun oldin onlayn edi</translation>
 <translation id="2074131957428911366">Nimani sinxronlashni istalgan vaqtda <ph name="BEGIN_LINK" />sozlamalar<ph name="END_LINK" /> orqali tanlash mumkin.</translation>
 <translation id="2079545284768500474">Bekor qilish</translation>
 <translation id="209018056901015185">To‘liq versiya</translation>
 <translation id="2103075008456228677">history.google.com sahifasini ochish</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ta xatcho‘p ko‘chirildi</translation>
-<translation id="2118594521750010466">Tuzatish</translation>
 <translation id="213900355088104901">Yashirin kezish uchun inkognito rejimida varaq oching</translation>
 <translation id="2139867232736819575">Nusxalangan matnni qidirish</translation>
 <translation id="2149973817440762519">Xatcho‘p tahriri</translation>
@@ -124,7 +122,6 @@
 <translation id="2239626343334228536">Brauzer tarixini tozalash...</translation>
 <translation id="2257567812274161158">Sinxronizatsiya ishlamayapti.</translation>
 <translation id="225943865679747347">Xatolik kodi: <ph name="ERROR_CODE" /></translation>
-<translation id="2262397157440718954">Tashkilotingiz internetni pinhona kezishni talab qiladi. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="2267753748892043616">Hisob kiritish</translation>
 <translation id="2268044343513325586">Aniqlashtirish</translation>
 <translation id="2273327106802955778">Batafsil menyusi</translation>
@@ -141,7 +138,6 @@
 Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi.</translation>
 <translation id="2381405137052800939">Asosiy</translation>
 <translation id="2386793615875593361">1 ta belgilandi</translation>
-<translation id="2419661687355878017">Inkognito rejimi tashkilotingiz tomonidan faolsizlantirildi</translation>
 <translation id="2421004566762153674">Tashqi cookie fayllarni bloklash</translation>
 <translation id="2421044535038393232">Tahrirlashda davom etish</translation>
 <translation id="2435457462613246316">Parolni ko‘rsatish</translation>
@@ -193,6 +189,7 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 <translation id="2921219216347069551">Xatolik yuz berdi</translation>
 <translation id="2923448633003185837">Joylash va davom etish</translation>
 <translation id="292639812446257861">O‘qilmagan deb belgilash</translation>
+<translation id="2932085390869194046">Parol yaratish...</translation>
 <translation id="2952581218264071393">1. Chrome sozlamalarini oching</translation>
 <translation id="2958718410589002129">Parollar</translation>
 <translation id="2964349545761222050">Tashqi cookie fayllarni bloklash</translation>
@@ -218,6 +215,7 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 
 Inkognito rejimida cookie fayllaringiz yopiq boʻladi va saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi.</translation>
 <translation id="3207960819495026254">Xatcho‘plarga qo‘shildi</translation>
+<translation id="3222343486469566063">Hisobga kirmagansiz</translation>
 <translation id="3224641773458703735">Parollarni eksport qilish uchun qurilmangizni maxfiy kod bilan qulflang.</translation>
 <translation id="3240426699337459095">Nusxalandi</translation>
 <translation id="3244271242291266297">OO</translation>
@@ -271,7 +269,6 @@ Quyidagi amallarni bajaring:</translation>
 <translation id="3670030362669914947">Raqam</translation>
 <translation id="3691593122358196899">Xatcho‘p “<ph name="FOLDER_TITLE" />” jildiga saqlandi</translation>
 <translation id="3709582977625132201">Oʻqilmagan deb belgilash</translation>
-<translation id="3720541637541300822">Chrome yopilganda, Inkognito varaqlar qulflansin</translation>
 <translation id="3740397331642243698">Kiritilgan URL manzillar Google Chrome brauzerida Inkognito rejimda ochiladi.</translation>
 <translation id="3771033907050503522">Inkognito varaqlar</translation>
 <translation id="3775743491439407556">Sinxronizatsiya ishlamayapti</translation>
@@ -288,10 +285,11 @@ Quyidagi amallarni bajaring:</translation>
 <translation id="3928666092801078803">Ma’lumotlarni birlashtirish</translation>
 <translation id="3929457972718048006">Manzillar</translation>
 <translation id="3943492037546055397">Parollar</translation>
+<translation id="3943557322767080599">Google hisobingizga kirish vaqtida Chrome brauzeriga kirish oynasi chiqsin</translation>
+<translation id="3967266340354872733">Maxfiylik, xavfsizlik va axborotlar jamlanishi haqida batafsil axborot olish uchun <ph name="BEGIN_LINK" />Sinxronlash<ph name="END_LINK" /> va <ph name="BEGIN_LINK" />Google xizmatlari<ph name="END_LINK" /> bilan tanishing</translation>
 <translation id="3967822245660637423">Yuklab olindi</translation>
 <translation id="3968505803272650567">Qiziqishlarni sozlash</translation>
 <translation id="3989635538409502728">Chiqish</translation>
-<translation id="399419089947468503">Parollar sinxronlanmadi</translation>
 <translation id="3995521777587992544">Sahifa yuklanishidagi kutish qatori: <ph name="EMAIL" /> yuklandi.</translation>
 <translation id="4002066346123236978">Nomi</translation>
 <translation id="4004204301268239848">Google hisobingizga saqlangan parollardan har qanday qurilmada foydalanishingiz mumkin.</translation>
@@ -316,7 +314,6 @@ Quyidagi amallarni bajaring:</translation>
 <translation id="4263576668337963058">Sahifa amallarini chiqarish</translation>
 <translation id="4267380167363222949">Keyingi varaq</translation>
 <translation id="4272631900155121838">QR-kodni skanerlash uchun sozlamalar orqali kamerani yoqing.</translation>
-<translation id="4276041135170112053">Tuzatish.</translation>
 <translation id="4277990410970811858">Saytlarni xavfsiz kezish</translation>
 <translation id="4281844954008187215">Xizmat shartlari</translation>
 <translation id="430793432425771671">Barchasini sinxronlash</translation>
@@ -341,6 +338,7 @@ Quyidagi amallarni bajaring:</translation>
 <translation id="457386861538956877">Yana...</translation>
 <translation id="4592368184551360546">Klaviatura</translation>
 <translation id="461440297010471931">Google orqali qidiruv</translation>
+<translation id="4619564267100705184">Bu siz ekaningizni isbotlang</translation>
 <translation id="4619615317237390068">Boshqa qurilmalardan sinxronlangan varaqlar</translation>
 <translation id="4620246317052452550">Siz o‘qigan sahifalar</translation>
 <translation id="4630540211544979320">Sahifalarni tarjima qilish</translation>
@@ -422,10 +420,10 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="54401264925851789">Sahifa xavfsizligi haqida ma’lumot</translation>
 <translation id="5443952882982198570">Bank kartalari</translation>
 <translation id="5457226814769348910">Oflayn versiyasini ochish</translation>
-<translation id="5457907402803865181">Parollar sinxronlanmadi</translation>
 <translation id="5489208564673669003">Barcha saytlar uchun cookie fayllarni boshqarish uchun <ph name="BEGIN_LINK" />Cookie sozlamalari<ph name="END_LINK" /> sahifasini oching.</translation>
 <translation id="5490005495580364134">Barcha cookie fayllarni taqiqlash (tavsiya etilmaydi)</translation>
 <translation id="5508435575041083207">Hisobdan chiqish va bu qurilmadagi maʼlumotlarni tozalash</translation>
+<translation id="5513681519188741830"><ph name="TIME" /> soat oldin</translation>
 <translation id="5525269841082836315">Kodli ibora yaratish</translation>
 <translation id="5548760955356983418">Handoff funksiyasi veb-saytni bir qurilmada ochib, boshqasida davom etish imkoniyatini beradi. Ochilgan sayt Mac kompyuteringizning Dock panelida paydo bo‘ladi.
 
@@ -433,7 +431,6 @@ Handoff funksiyasini faqatgina Chrome sozlamalarida emas, balki qurilma sozlamal
 <translation id="5551897871312988470">Tarjima qilishni taklif qilish</translation>
 <translation id="5556459405103347317">Qayta yuklash</translation>
 <translation id="5592679540098330836"><ph name="NAME" /> hisobingizni sinxronlang</translation>
-<translation id="5597169624050330492">Tashkilotingiz internetni pinhona kezishni talab qiladi. Inkognito rejimidagi varaqlar saqlanmaydi. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="5614553682702429503">Parol saqlansinmi?</translation>
 <translation id="5626245204502895507">Faylni yuklab olishda xatolik yuz berdi.</translation>
 <translation id="5631164295104953411">To‘lov usulini qo‘shing</translation>
@@ -460,6 +457,7 @@ Handoff funksiyasini faqatgina Chrome sozlamalarida emas, balki qurilma sozlamal
 <translation id="5860033963881614850">O‘chiq</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 ta xatcho‘p ko‘chirildi</translation>
+<translation id="5896576662943111387">iOS uchun ishlab chiqilgan</translation>
 <translation id="5897956970858271241">Nusxalangan havolani ochish</translation>
 <translation id="5899314093904173337">Yaqin-atrofdagilarga ulashish uchun ular shu QR kodni kamera yoki QR ilovasi yordamida skanerlashi kerak</translation>
 <translation id="5911030830365207728">Google Tarjimon</translation>
@@ -477,6 +475,7 @@ Handoff funksiyasini faqatgina Chrome sozlamalarida emas, balki qurilma sozlamal
 <translation id="5988851877894965432">URL manzillarni Chrome orqali ochish</translation>
 <translation id="6012140227487808125">Shifrlanmoqda…</translation>
 <translation id="6021332621416007159">Bunda ochish...</translation>
+<translation id="6036514205982097558">Barcha varaqlarni bir brauzerda ochish</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">Yopish</translation>
 <translation id="6042308850641462728">Yana</translation>
@@ -543,10 +542,13 @@ Har bir sayt uchun alohida parol ishlating.</translation>
 <translation id="6524918542306337007">Inkognito rejimi ishlamayapti</translation>
 <translation id="6561262006871132942">Yaqinlashtirish</translation>
 <translation id="6585618849026997638">Siz uchun muhim sahifalarga bukmark kiritish orqali qaytish mumkin</translation>
+<translation id="6603393121510733479">Inkognito rejimi tashkilotingiz tomonidan faolsizlantirildi.
+<ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="6610002944194042868">Tarjima parametrlari</translation>
 <translation id="6620279676667515405">Bekor qilish</translation>
 <translation id="6624219055418309072">Inkognito rejimida bloklash</translation>
 <translation id="6628106477656132239">Amal qilish muddati xato kiritildi</translation>
+<translation id="6634432609054530164">Inkognito rejimi tashkilotingiz tomonidan faolsizlantirildi</translation>
 <translation id="6638511529934826365">Matn masshtabi…</translation>
 <translation id="6639730758971422557">Saytlarni xavfsiz kezish rejimini yoqish uchun <ph name="BEGIN_LINK" />Sinxronizatsiya va Google xizmatlari<ph name="END_LINK" /> bandini oching va Saytlarni xavfsiz kezish ustiga bosing.</translation>
 <translation id="6642362222295953972">Oldin ochilgan varaqqa oʻtish</translation>
@@ -555,12 +557,14 @@ Har bir sayt uchun alohida parol ishlating.</translation>
 <translation id="6656103420185847513">Jildni o‘zgartirish</translation>
 <translation id="6657585470893396449">Parol</translation>
 <translation id="6668619169535738264">Bukmarkni tahrirlash</translation>
+<translation id="6674571176963658787">Sinxronlashni boshlash uchun kodli iborani kiriting</translation>
 <translation id="667999046851023355">Hujjat</translation>
 <translation id="6691331417640343772">Google shaxsiy kabinetidagi sinxronlangan ma’lumotlarni boshqarish</translation>
 <translation id="6710079714193676716">Tashkilotingiz tomonidan boshqariladi. Ayrim funksiyalar ishlamasligi mumkin. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Parollar eksport qilinmadi</translation>
 <translation id="6748108480210050150">Kimdan:</translation>
+<translation id="6760509555861141183">Oxirgi varaqqa qaytish</translation>
 <translation id="6780034285637185932">Pochta indeksi</translation>
 <translation id="6785453220513215166">Ishdan chiqish hisoboti yuborilmoqda...</translation>
 <translation id="679325081238418596">Chrome brauzeriga kirganingizdan so‘ng xatcho‘plar, tarix, parollar va boshqa sozlamalaringiz barcha qurilmalaringizda sinxronlanadi</translation>
@@ -584,8 +588,11 @@ Har bir sayt uchun alohida parol ishlating.</translation>
 <translation id="6973630695168034713">Jildlar</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Google hisobingizni boshqaring</translation>
+<translation id="6989674195860388998">Sozlamalar orqali almashtirish…</translation>
 <translation id="6995899638241819463">Parolim oshkor etilganda ogohlantirilsin</translation>
 <translation id="6998989275928107238">Host</translation>
+<translation id="7004032350256606903">Tashkilotingiz internetni pinhona kezishni talab qiladi.
+<ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="7004499039102548441">Oxirgi varaqlar</translation>
 <translation id="7006788746334555276">Kontent sozlamalari</translation>
 <translation id="7015203776128479407">Dastlabki sinxronizatsiya sozlanishi oxiriga yetmagan. Sinxronizatsiya yoqilmagan.</translation>
@@ -616,6 +623,7 @@ Har bir sayt uchun alohida parol ishlating.</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="734758817008927353">Kartalarni saqlash parametrlari</translation>
 <translation id="7348502496356775519">Bukmark</translation>
+<translation id="7353432112255316844">Bu siz ekaningizni isbotlang</translation>
 <translation id="7383797227493018512">Mutolaa ro‘yxati</translation>
 <translation id="7398893703713203428">Havola yaratish</translation>
 <translation id="739941347996872055">Avvalgi varaq</translation>
@@ -633,6 +641,7 @@ Har bir sayt uchun alohida parol ishlating.</translation>
 <translation id="7481312909269577407">Oldinga</translation>
 <translation id="7483467499335917849">Atrofimdan qidirish</translation>
 <translation id="750493650310597496">Hech qanday xatcho‘p tanlanmadi</translation>
+<translation id="7508728395076009983">inkognito varaqlarni qulflash uchun Touch ID, Face ID yoki kirish kodini sozlang.</translation>
 <translation id="7514365320538308">Yuklab olish</translation>
 <translation id="7537586195939242955">Passbook ilovasiga ma’lumotlarni yozib bo‘lmadi.</translation>
 <translation id="7554791636758816595">Yangi varaq</translation>
@@ -642,6 +651,7 @@ Har bir sayt uchun alohida parol ishlating.</translation>
 <translation id="7603852183842204213">Qalqib chiquvchi oynalar bloklandi (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7607521702806708809">Parolni olib tashlash</translation>
 <translation id="7638584964844754484">Noto‘g‘ri kodli ibora</translation>
+<translation id="7646772052135772216">Parollar sinxronizatsiyasi ishlamadi</translation>
 <translation id="7649070708921625228">Yordam</translation>
 <translation id="7658239707568436148">Bekor qilish</translation>
 <translation id="766891008101699113">Internetni pinhona kezish uchun yangi varaq oching.</translation>
@@ -693,12 +703,14 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 <translation id="8105368624971345109">O‘chirib qo‘yish</translation>
 <translation id="8114753159095730575">Faylni yuklab olish mumkin. Qo‘shimcha amallar ekranning pastki qismida.</translation>
 <translation id="8131740175452115882">Tasdiqlash</translation>
+<translation id="8156478151976189188">Parollar sinxronizatsiyasi ishlamayapti</translation>
 <translation id="8197543752516192074">Sahifani tarjima qilish</translation>
 <translation id="8205564605687841303">Bekor qilish</translation>
 <translation id="8206354486702514201">Bu parametr administrator tomonidan yoqilgan.</translation>
 <translation id="8225985093977202398">Keshdagi tasvir va fayllar</translation>
 <translation id="8261506727792406068">O‘chirish</translation>
 <translation id="8281781826761538115">Standart - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8283172974887967105">Belgilash…</translation>
 <translation id="8299417921174340354">Parollarni ishlatish uchun qurilmangizni maxfiy kod bilan qulflang.</translation>
 <translation id="8319076807703933069">Yangi qidiruv</translation>
 <translation id="8323906514956095947">Varaqqa oid boshqa amallar uchun bosib turing</translation>
@@ -746,6 +758,8 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 <translation id="8756969031206844760">Parolni yangilash</translation>
 <translation id="8775144690796719618">URL manzil yaroqsiz</translation>
 <translation id="8803639129939845298">Xavfsiz</translation>
+<translation id="8806823403540278281">Tashkilotingiz internetni pinhona kezishni talab qiladi. Inkognito rejimidagi varaqlar saqlanmaydi.
+<ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="8820817407110198400">Bukmarklar</translation>
 <translation id="8840513115188359703">Google hisobingizdan chiqmaysiz.</translation>
 <translation id="8870413625673593573">Yaqinda yopilganlar</translation>
@@ -774,6 +788,7 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 <translation id="9152539721251340337">QR kod yaratish</translation>
 <translation id="9157836665414082580">Muloqot oynalarini bloklash</translation>
 <translation id="9188680907066685419">Boshqariladigan hisobdan chiqish</translation>
+<translation id="9200875785104711666"><ph name="TIME" /> kun oldin</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Ishdan chiqish hisoboti yuborildi.</translation>
 <translation id="952704832371081537">Bekor qilish</translation>

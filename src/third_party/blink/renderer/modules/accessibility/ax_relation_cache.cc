@@ -121,14 +121,16 @@ bool AXRelationCache::IsValidOwner(AXObject* owner) {
   if (!owner->CanHaveChildren())
     return false;
 
-  // No aria-owns in editable controlsm otherwise wreaks havoc.
-  if (owner->IsNativeTextControl() || owner->HasContentEditableAttributeSet())
+  // An aria-owns is disallowed on editable roots, such as <input>, <textarea>
+  // and content editables, otherwise the result would be unworkable and totally
+  // unexpected on the browser side.
+  if (owner->IsEditableRoot())
     return false;
 
-  // Image maps can only use <img usemap> to "own" <area> children.
+  // Images can only use <img usemap> to "own" <area> children.
   // This requires special parenting logic, and aria-owns is prevented here in
   // order to keep things from getting too complex.
-  if (owner->RoleValue() == ax::mojom::blink::Role::kImageMap)
+  if (owner->RoleValue() == ax::mojom::blink::Role::kImage)
     return false;
 
   // Similarly, do not allow <area> to own another object.
@@ -410,8 +412,10 @@ void AXRelationCache::UpdateRelatedText(Node* node) {
     HeapVector<Member<AXObject>> related_sources;
     GetReverseRelated(current_node, related_sources);
     for (AXObject* related : related_sources) {
-      if (related)
-        object_cache_->MarkAXObjectDirty(related, /*subtree=*/false);
+      if (related) {
+        object_cache_->MarkAXObjectDirtyWithCleanLayout(related,
+                                                        /*subtree=*/false);
+      }
     }
 
     // Ancestors that may derive their accessible name from descendant content
@@ -419,7 +423,7 @@ void AXRelationCache::UpdateRelatedText(Node* node) {
     if (current_node != node) {
       AXObject* obj = Get(current_node);
       if (obj && obj->SupportsNameFromContents(/*recursive=*/false))
-        object_cache_->MarkAXObjectDirty(obj, /*subtree=*/false);
+        object_cache_->MarkAXObjectDirtyWithCleanLayout(obj, /*subtree=*/false);
     }
 
     // Forward relation via <label for="[id]">.
@@ -481,7 +485,7 @@ void AXRelationCache::LabelChanged(Node* node) {
     all_previously_seen_label_target_ids_.insert(id);
     if (auto* control = To<HTMLLabelElement>(node)->control()) {
       if (AXObject* obj = Get(control))
-        object_cache_->MarkAXObjectDirty(obj, /*subtree=*/false);
+        object_cache_->MarkAXObjectDirtyWithCleanLayout(obj, /*subtree=*/false);
     }
   }
 }

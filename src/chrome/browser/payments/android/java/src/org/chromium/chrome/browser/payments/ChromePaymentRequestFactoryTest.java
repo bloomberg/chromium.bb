@@ -24,7 +24,7 @@ import org.chromium.components.payments.InvalidPaymentRequest;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.test_support.ShadowPaymentFeatureList;
 import org.chromium.components.payments.test_support.ShadowWebContentsStatics;
-import org.chromium.content_public.browser.FeaturePolicyFeature;
+import org.chromium.content_public.browser.PermissionsPolicyFeature;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 
@@ -55,13 +55,13 @@ public class ChromePaymentRequestFactoryTest {
         Mockito.doReturn(true).when(mProfile).isOffTheRecord();
         ShadowProfile.setProfile(mProfile);
 
-        setPaymentFeaturePolicy(true);
+        setPaymentPermissionsPolicy(true);
     }
 
-    private void setPaymentFeaturePolicy(boolean enabled) {
+    private void setPaymentPermissionsPolicy(boolean enabled) {
         Mockito.doReturn(enabled)
                 .when(mRenderFrameHost)
-                .isFeatureEnabled(FeaturePolicyFeature.PAYMENT);
+                .isFeatureEnabled(PermissionsPolicyFeature.PAYMENT);
     }
 
     private void setWebContentsDestroyed(boolean isDestroyed) {
@@ -82,7 +82,7 @@ public class ChromePaymentRequestFactoryTest {
     @Test
     @Feature({"Payments"})
     public void testDisabledPolicyCausesBadMessage() {
-        setPaymentFeaturePolicy(false);
+        setPaymentPermissionsPolicy(false);
         AtomicInteger isKilledReason = new AtomicInteger(0);
         Mockito.doAnswer(invocation -> {
                    isKilledReason.set((int) invocation.getArguments()[0]);

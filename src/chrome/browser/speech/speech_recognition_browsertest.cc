@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
@@ -28,8 +30,8 @@ class ChromeSpeechRecognitionTest : public InProcessBrowserTest {
 
   void SetUp() override {
     // SpeechRecognition test specific SetUp.
-    fake_speech_recognition_manager_.reset(
-        new content::FakeSpeechRecognitionManager());
+    fake_speech_recognition_manager_ =
+        std::make_unique<content::FakeSpeechRecognitionManager>();
     fake_speech_recognition_manager_->set_should_send_fake_response(true);
     // Inject the fake manager factory so that the test result is returned to
     // the web page.
@@ -102,8 +104,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSpeechRecognitionTest, BasicTearDown) {
   EXPECT_TRUE(web_contents);
   SpeechWebContentsObserver speech_contents_observer(web_contents);
 
-  base::string16 success_title(base::ASCIIToUTF16("PASS"));
-  base::string16 failure_title(base::ASCIIToUTF16("FAIL"));
+  std::u16string success_title(u"PASS");
+  std::u16string failure_title(u"FAIL");
 
   const char kRetriveTranscriptScript[] =
       "window.domAutomationController.send(window.getFirstTranscript())";

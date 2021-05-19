@@ -126,9 +126,10 @@ int player_number = 1;
 TRACE_EVENT("rendering", "DrawPlayer", "player_number", player_number);
 ```
 
-For more complex arguments, you can define [your own protobuf
-messages](/protos/perfetto/trace/track_event/track_event.proto) and emit
-them as a parameter for the event.
+See [below](#track-event-arguments) for the other types of supported track
+event arguments. For more complex arguments, you can define [your own
+protobuf messages](/protos/perfetto/trace/track_event/track_event.proto) and
+emit them as a parameter for the event.
 
 NOTE: Currently custom protobuf messages need to be added directly to the
       Perfetto repository under `protos/perfetto/trace`, and Perfetto itself
@@ -320,6 +321,106 @@ figures:
 
 ## Advanced topics
 
+### Track event arguments
+
+The following optional arguments can be passed to `TRACE_EVENT` to add extra
+information to events:
+
+```C++
+TRACE_EVENT("cat", "name"[, track][, timestamp]
+                         [, "debug_name1", debug_value1]
+                         [, "debug_name2", debug_value2]
+                         ...
+                         [, "debug_nameN", debug_valueN]
+                         [, lambda]);
+```
+
+Some examples of valid combinations:
+
+1. A lambda for writing custom TrackEvent fields:
+
+   ```C++
+     TRACE_EVENT("category", "Name", [&](perfetto::EventContext ctx) {
+       ctx.event()->set_custom_value(...);
+     });
+   ```
+
+2. A timestamp and a lambda:
+
+   ```C++
+     TRACE_EVENT("category", "Name", time_in_nanoseconds,
+         [&](perfetto::EventContext ctx) {
+       ctx.event()->set_custom_value(...);
+     });
+   ```
+
+   |time_in_nanoseconds| should be an uint64_t by default. To support custom
+   timestamp types, 
+   |perfetto::TraceTimestampTraits<MyTimestamp>::ConvertTimestampToTraceTimeNs|
+   should be defined. See |ConvertTimestampToTraceTimeNs| for more details.
+
+3. Arbitrary number of debug annotations:
+
+   ```C++
+     TRACE_EVENT("category", "Name", "arg", value);
+     TRACE_EVENT("category", "Name", "arg", value, "arg2", value2);
+     TRACE_EVENT("category", "Name", "arg", value, "arg2", value2, 
+                                     "arg3", value3);
+   ```
+
+   See |TracedValue| for recording custom types as debug annotations.
+
+4. Arbitrary number of debug annotations and a lambda:
+
+   ```C++
+     TRACE_EVENT("category", "Name", "arg", value,
+         [&](perfetto::EventContext ctx) {
+       ctx.event()->set_custom_value(...);
+     });
+   ```
+
+5. An overridden track:
+
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234));
+   ```
+
+   See |Track| for other types of tracks which may be used.
+
+6. A track and a lambda:
+
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+         [&](perfetto::EventContext ctx) {
+       ctx.event()->set_custom_value(...);
+     });
+   ```
+
+7. A track and a timestamp:
+
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+         time_in_nanoseconds);
+   ```
+
+8. A track, a timestamp and a lambda:
+
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+         time_in_nanoseconds, [&](perfetto::EventContext ctx) {
+       ctx.event()->set_custom_value(...);
+     });
+   ```
+
+9. A track and an arbitrary number of debug annotions:
+
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 "arg", value);
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 "arg", value, "arg2", value2);
+   ```
+
 ### Tracks
 
 Every track event is associated with a track, which specifies the timeline
@@ -392,6 +493,54 @@ track, call EraseTrackDescriptor:
 perfetto::TrackEvent::EraseTrackDescriptor(track);
 ```
 
+### Counters
+
+Time-varying numeric data can be recorded with the `TRACE_COUNTER` macro:
+
+```C++
+TRACE_COUNTER("category", "MyCounter", 1234.5);
+```
+
+This data is displayed as a counter track in the Perfetto UI:
+
+![A counter track shown in the Perfetto UI](
+  /docs/images/counter-events.png "A counter track shown in the Perfetto UI")
+
+Both integer and floating point counter values are supported. Counters can
+also be annotated with additional information such as units, for example, for
+tracking the rendering framerate in terms of frames per second or "fps":
+
+```C++
+TRACE_COUNTER("category", perfetto::CounterTrack("Framerate", "fps"), 120);
+```
+
+As another example, a memory counter that records bytes but accepts samples
+as kilobytes (to reduce trace binary size) can be defined like this:
+
+```C++
+perfetto::CounterTrack memory_track = perfetto::CounterTrack("Memory")
+    .set_unit("bytes")
+    .set_multiplier(1024);
+TRACE_COUNTER("category", memory_track, 4 /* = 4096 bytes */);
+```
+
+See
+[counter_descriptor.proto](
+/protos/perfetto/trace/track_event/counter_descriptor.proto) for the full set
+of attributes for a counter track.
+
+To record a counter value at a specific point in time (instead of the current
+time), you can pass in a custom timestamp:
+
+```C++
+// First record the current time and counter value.
+uint64_t timestamp = perfetto::TrackEvent::GetTraceTimeNs();
+int64_t value = 1234;
+
+// Later, emit a sample at that point in time.
+TRACE_COUNTER("category", "MyCounter", timestamp, value);
+```
+
 ### Interning
 
 Interning can be used to avoid repeating the same constant data (e.g., event
@@ -452,12 +601,12 @@ class Observer : public perfetto::TrackEventSessionObserver {
     // so track events emitted here won't be recorded.
   }
 
-  void OnStart(const DataSourceBase::SetupArgs&) override {
+  void OnStart(const perfetto::DataSourceBase::StartArgs&) override {
     // Called when a tracing session is started. It is possible to emit track
     // events from this callback.
   }
 
-  void OnStop(const DataSourceBase::StartArgs&) override {
+  void OnStop(const perfetto::DataSourceBase::StopArgs&) override {
     // Called when a tracing session is stopped. It is still possible to emit
     // track events from this callback.
   }

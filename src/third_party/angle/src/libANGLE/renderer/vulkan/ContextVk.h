@@ -37,6 +37,22 @@ class ShareGroupVk;
 static constexpr uint32_t kMaxGpuEventNameLen = 32;
 using EventName                               = std::array<char, kMaxGpuEventNameLen>;
 
+enum class PipelineType
+{
+    Graphics = 0,
+    Compute  = 1,
+
+    InvalidEnum = 2,
+    EnumCount   = 2,
+};
+
+using ContextVkDescriptorSetList = angle::PackedEnumMap<PipelineType, uint32_t>;
+
+struct ContextVkPerfCounters
+{
+    ContextVkDescriptorSetList descriptorSetsAllocated;
+};
+
 class ContextVk : public ContextImpl, public vk::Context, public MultisampleTextureInitializer
 {
   public:
@@ -462,6 +478,14 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
                                         imageLayout, vk::AliasingMode::Allowed, image);
     }
 
+    void onColorDraw(vk::ImageHelper *image,
+                     vk::ImageHelper *resolveImage,
+                     vk::PackedAttachmentIndex packedAttachmentIndex)
+    {
+        ASSERT(mRenderPassCommands->started());
+        mRenderPassCommands->colorImagesDraw(&mResourceUseList, image, resolveImage,
+                                             packedAttachmentIndex);
+    }
     void onDepthStencilDraw(gl::LevelIndex level,
                             uint32_t layerStart,
                             uint32_t layerCount,
@@ -473,11 +497,11 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
                                                     layerCount, image, resolveImage);
     }
 
-    void onImageHelperRelease(const vk::ImageHelper *image)
+    void finalizeImageLayout(const vk::ImageHelper *image)
     {
         if (mRenderPassCommands->started())
         {
-            mRenderPassCommands->onImageHelperRelease(this, image);
+            mRenderPassCommands->finalizeImageLayout(this, image);
         }
     }
 
@@ -494,6 +518,7 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
                                      const gl::Rectangle &renderArea,
                                      const vk::RenderPassDesc &renderPassDesc,
                                      const vk::AttachmentOpsArray &renderPassAttachmentOps,
+                                     const vk::PackedAttachmentCount colorAttachmentCount,
                                      const vk::PackedAttachmentIndex depthStencilAttachmentIndex,
                                      const vk::PackedClearValuesArray &clearValues,
                                      vk::CommandBuffer **commandBufferOut);
@@ -561,6 +586,7 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     // Used by QueryVk to share query helpers between transform feedback queries.
     QueryVk *getActiveRenderPassQuery(gl::QueryType queryType) const;
 
+    void syncObjectPerfCounters();
     void updateOverlayOnPresent();
     void addOverlayUsedBuffersCount(vk::CommandBufferHelper *commandBuffer);
 
@@ -648,15 +674,6 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
         void destroy(RendererVk *rendererVk);
     };
 
-    enum class PipelineType
-    {
-        Graphics = 0,
-        Compute  = 1,
-
-        InvalidEnum = 2,
-        EnumCount   = 2,
-    };
-
     // The GpuEventQuery struct holds together a timestamp query and enough data to create a
     // trace event based on that. Use traceGpuEvent to insert such queries.  They will be readback
     // when the results are available, without inserting a GPU bubble.
@@ -688,14 +705,6 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     {
         double gpuTimestampS;
         double cpuTimestampS;
-    };
-
-    // Performance Counters specific to this object type
-    using DescriptorSetList =
-        std::array<uint32_t, ToUnderlying(ContextVk::PipelineType::EnumCount)>;
-    struct PerfCounters
-    {
-        DescriptorSetList descriptorSetsAllocated;
     };
 
     class ScopedDescriptorSetUpdates;
@@ -783,7 +792,7 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     void invalidateDriverUniforms();
 
     // Handlers for graphics pipeline dirty bits.
-    angle::Result handleDirtyGraphicsMemorybarrier(DirtyBits::Iterator *dirtyBitsIterator,
+    angle::Result handleDirtyGraphicsMemoryBarrier(DirtyBits::Iterator *dirtyBitsIterator,
                                                    DirtyBits dirtyBitMask);
     angle::Result handleDirtyGraphicsEventLog(DirtyBits::Iterator *dirtyBitsIterator,
                                               DirtyBits dirtyBitMask);
@@ -832,7 +841,7 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     angle::Result handleDirtyComputeDescriptorSets();
 
     // Common parts of the common dirty bit handlers.
-    angle::Result handleDirtyMemorybarrierImpl(DirtyBits::Iterator *dirtyBitsIterator,
+    angle::Result handleDirtyMemoryBarrierImpl(DirtyBits::Iterator *dirtyBitsIterator,
                                                DirtyBits dirtyBitMask);
     angle::Result handleDirtyEventLogImpl(vk::CommandBuffer *commandBuffer);
     angle::Result handleDirtyTexturesImpl(vk::CommandBufferHelper *commandBufferHelper);
@@ -921,6 +930,8 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
 
     SpecConstUsageBits getCurrentProgramSpecConstUsageBits() const;
     void updateGraphicsPipelineDescWithSpecConstUsageBits(SpecConstUsageBits usageBits);
+
+    ContextVkPerfCounters getAndResetObjectPerfCounters();
 
     std::array<GraphicsDirtyBitHandler, DIRTY_BIT_MAX> mGraphicsDirtyBitHandlers;
     std::array<ComputeDirtyBitHandler, DIRTY_BIT_MAX> mComputeDirtyBitHandlers;
@@ -1077,7 +1088,8 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
 
     // A mix of per-frame and per-run counters.
     vk::PerfCounters mPerfCounters;
-    PerfCounters mObjectPerfCounters;
+    ContextVkPerfCounters mContextPerfCounters;
+    ContextVkPerfCounters mCumulativeContextPerfCounters;
 
     gl::State::DirtyBits mPipelineDirtyBitsMask;
 

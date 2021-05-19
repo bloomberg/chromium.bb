@@ -17,8 +17,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/feed/core/proto/v2/ui.pb.h"
+#include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/public/feed_service.h"
-#include "components/feed/core/v2/public/feed_stream_api.h"
 #include "components/variations/variations_ids_provider.h"
 
 using base::android::JavaParamRef;
@@ -28,6 +28,7 @@ using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaByteArray;
 
 namespace feed {
+namespace android {
 
 static jlong JNI_FeedStreamSurface_Init(JNIEnv* env,
                                         const JavaParamRef<jobject>& j_this) {
@@ -41,13 +42,11 @@ JNI_FeedStreamSurface_GetExperimentIds(JNIEnv* env) {
   DCHECK(variations_ids_provider != nullptr);
 
   return base::android::ToJavaIntArray(
-      env, variations_ids_provider
-               ->GetVariationsVectorForWebPropertiesKeys());
+      env, variations_ids_provider->GetVariationsVectorForWebPropertiesKeys());
 }
 
 FeedStreamSurface::FeedStreamSurface(const JavaRef<jobject>& j_this)
-    : FeedStreamApi::SurfaceInterface(kInterestStream),
-      feed_stream_api_(nullptr) {
+    : ::feed::FeedStreamSurface(kForYouStream), feed_stream_api_(nullptr) {
   java_ref_.Reset(j_this);
 
   FeedService* service = FeedServiceFactory::GetForBrowserContext(
@@ -172,7 +171,8 @@ void FeedStreamSurface::SurfaceClosed(JNIEnv* env,
 bool FeedStreamSurface::IsActivityLoggingEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return feed_stream_api_ && feed_stream_api_->IsActivityLoggingEnabled();
+  return feed_stream_api_ &&
+         feed_stream_api_->IsActivityLoggingEnabled(GetStreamType());
 }
 
 base::android::ScopedJavaLocalRef<jstring> FeedStreamSurface::GetSessionId(
@@ -234,7 +234,7 @@ void FeedStreamSurface::ReportStreamScrolled(JNIEnv* env,
                                              int distance_dp) {
   if (!feed_stream_api_)
     return;
-  feed_stream_api_->ReportStreamScrolled(distance_dp);
+  feed_stream_api_->ReportStreamScrolled(GetStreamType(), distance_dp);
 }
 
 void FeedStreamSurface::ReportStreamScrollStart(
@@ -249,7 +249,8 @@ void FeedStreamSurface::ReportOtherUserAction(JNIEnv* env,
                                               const JavaParamRef<jobject>& obj,
                                               int action_type) {
   feed_stream_api_->ReportOtherUserAction(
-      static_cast<FeedUserActionType>(action_type));
+      GetStreamType(), static_cast<FeedUserActionType>(action_type));
 }
 
+}  // namespace android
 }  // namespace feed

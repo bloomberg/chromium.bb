@@ -14,6 +14,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/containers/queue.h"
 #include "base/i18n/rtl.h"
@@ -95,6 +96,17 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
     return touch_selection_controller_.get();
   }
 
+  using SurfaceIdChangedCallbackType = void(const viz::SurfaceId& new_id);
+  using SurfaceIdChangedCallback =
+      base::RepeatingCallback<SurfaceIdChangedCallbackType>;
+  using SurfaceIdChangedCallbackList =
+      base::RepeatingCallbackList<SurfaceIdChangedCallbackType>;
+  base::CallbackListSubscription SubscribeToSurfaceIdChanges(
+      const SurfaceIdChangedCallback& callback) WARN_UNUSED_RESULT;
+
+  // Called by DelegatedFrameHostClientAndroid
+  void OnSurfaceIdChanged();
+
   // RenderWidgetHostView implementation.
   void InitAsChild(gfx::NativeView parent_view) override;
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -126,7 +138,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                           const gfx::Rect& node_bounds_in_screen) override;
   void RenderProcessGone() override;
   void Destroy() override;
-  void SetTooltipText(const base::string16& tooltip_text) override;
+  void SetTooltipText(const std::u16string& tooltip_text) override;
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void ProcessAckedTouchEvent(
@@ -582,6 +594,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   base::Optional<cc::RenderFrameMetadata> last_render_frame_metadata_;
 
   WebContentsAccessibilityAndroid* web_contents_accessibility_ = nullptr;
+
+  SurfaceIdChangedCallbackList surface_id_changed_callbacks_;
 
   base::android::ScopedJavaGlobalRef<jobject> obj_;
 

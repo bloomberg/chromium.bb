@@ -20,8 +20,7 @@ float2 prevRadii = float2(-1);
 // The last two terms can underflow when float != fp32, so we also provide a workaround.
 uniform float4 ellipse;
 
-bool medPrecision = !sk_Caps.floatIs32Bits;
-layout(when=medPrecision) uniform float2 scale;
+layout(when=!sk_Caps.floatIs32Bits) uniform float2 scale;
 
 @make {
     static GrFPResult Make(std::unique_ptr<GrFragmentProcessor> inputFP, GrClipEdgeType edgeType,
@@ -82,6 +81,7 @@ half4 main() {
     // that is normalized by the larger radius or 128, whichever is smaller. The scale uniform will
     // be scale, 1/scale. The inverse squared radii uniform values are already in this normalized space.
     // The center is not.
+    const bool medPrecision = !sk_Caps.floatIs32Bits;
     @if (medPrecision) {
         d *= scale.y;
     }

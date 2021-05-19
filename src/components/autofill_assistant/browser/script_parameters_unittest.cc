@@ -86,6 +86,9 @@ TEST(ScriptParametersTest, TriggerScriptAllowList) {
 TEST(ScriptParametersTest, SpecialScriptParameters) {
   ScriptParameters parameters = {
       {{"ENABLED", "true"},
+       {"USER_EMAIL", "example@chromium.org"},
+       {"ORIGINAL_DEEPLINK", "https://www.example.com"},
+       {"TRIGGER_SCRIPT_EXPERIMENT", "true"},
        {"START_IMMEDIATELY", "false"},
        {"REQUEST_TRIGGER_SCRIPT", "true"},
        {"TRIGGER_SCRIPTS_BASE64", "abc123"},
@@ -103,6 +106,9 @@ TEST(ScriptParametersTest, SpecialScriptParameters) {
        {"DETAILS_TOTAL_PRICE", "12"}}};
 
   EXPECT_THAT(parameters.GetEnabled(), Eq(true));
+  EXPECT_THAT(parameters.GetCallerEmail(), Eq("example@chromium.org"));
+  EXPECT_THAT(parameters.GetOriginalDeeplink(), Eq("https://www.example.com"));
+  EXPECT_THAT(parameters.GetTriggerScriptExperiment(), Eq(true));
   EXPECT_THAT(parameters.GetStartImmediately(), Eq(false));
   EXPECT_THAT(parameters.GetRequestsTriggerScript(), Eq(true));
   EXPECT_THAT(parameters.GetBase64TriggerScriptsResponseProto(), Eq("abc123"));
@@ -163,6 +169,17 @@ TEST(ScriptParametersTest, ScriptParameterMatch) {
 
   must_match_empty.set_value_equals("not_empty");
   EXPECT_FALSE(parameters.Matches(must_match_empty));
+}
+
+TEST(ScriptParametersTest, ToProtoRemovesEnabled) {
+  ScriptParameters parameters = {{{"key_a", "value_a"}, {"ENABLED", "true"}}};
+
+  EXPECT_THAT(parameters.ToProto(/* only_trigger_script_allowlisted = */ false),
+              UnorderedElementsAreArray(
+                  std::map<std::string, std::string>({{"key_a", "value_a"}})));
+
+  EXPECT_THAT(parameters.ToProto(/* only_trigger_script_allowlisted = */ true),
+              IsEmpty());
 }
 
 }  // namespace autofill_assistant

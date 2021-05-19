@@ -23,6 +23,7 @@
 <translation id="1509960214886564027">Des fonctionnalités sur de nombreux sites risquent de ne pas fonctionner</translation>
 <translation id="1620510694547887537">Caméra</translation>
 <translation id="1644574205037202324">Historique</translation>
+<translation id="1647582022260550163">Voulez-vous vraiment réinitialiser les autorisations, ainsi que supprimer les témoins et les données de ce site?</translation>
 <translation id="1660204651932907780">Autoriser les sites à faire jouer du son (recommandé)</translation>
 <translation id="1677097821151855053">Les témoins et les autres données de sites sont utilisés pour se souvenir de vous. Par exemple : pour vous connecter à votre compte ou pour personnaliser les annonces. Pour gérer les témoins pour tous les sites, reportez-vous au menu <ph name="BEGIN_LINK" />Paramètres<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Effacer les données du site?</translation>
@@ -92,7 +93,6 @@
 <translation id="3386292677130313581">Demander avant d'autoriser des sites à connaître votre emplacement (recommandé)</translation>
 <translation id="3538390592868664640">Empêcher les sites de créer une carte 3D de votre environnement et de faire le suivi de la position de l'appareil photo</translation>
 <translation id="3586500876634962664">Util. de la caméra et du micro</translation>
-<translation id="3587482841069643663">Tous</translation>
 <translation id="358794129225322306">Permet au site de télécharger plusieurs fichiers automatiquement.</translation>
 <translation id="3594780231884063836">Désactiver le son de la vidéo</translation>
 <translation id="3596414637720633074">Bloquer les témoins tiers en navigation privée</translation>
@@ -104,6 +104,7 @@
 <translation id="385051799172605136">Retour</translation>
 <translation id="3859306556332390985">Rechercher vers l'avant</translation>
 <translation id="3955193568934677022">Autoriser les sites à lire le contenu protégé (recommandé)</translation>
+<translation id="3967822245660637423">Téléchargement terminé</translation>
 <translation id="3987993985790029246">Copier lien</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Titre</translation>
@@ -177,6 +178,7 @@
 <translation id="5916664084637901428">Activé</translation>
 <translation id="5922853908706496913">Partage de votre écran en cours…</translation>
 <translation id="5939518447894949180">Recommencer</translation>
+<translation id="5975083100439434680">Zoom arrière</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> : <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Gérez l'accès de ce site à votre appareil</translation>
 <translation id="6040143037577758943">Fermer</translation>
@@ -297,6 +299,7 @@
 <translation id="8801436777607969138">Bloquez JavaScript sur un site en particulier.</translation>
 <translation id="8816026460808729765">Empêcher les sites d'accéder aux capteurs</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8903921497873541725">Zoom avant</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> sur <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">La NFC est désactivée pour cet appareil. Activez-la dans le menu <ph name="BEGIN_LINK" />Paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Ce site s'ouvre et répond rapidement pour la majorité des gens</translation>
@@ -304,10 +307,12 @@
 <translation id="894871326938397531">Désactiver mode de nav. privée?</translation>
 <translation id="8958424370300090006">Bloquer les témoins pour un site en particulier.</translation>
 <translation id="8959122750345127698">Navigation inaccessible : <ph name="URL" /></translation>
+<translation id="8986362086234534611">Supprimer</translation>
 <translation id="9019902583201351841">Géré par tes parents</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> et <ph name="NUM_MORE" /> autre}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> et <ph name="NUM_MORE" /> autre}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> et <ph name="NUM_MORE" /> autres}}</translation>
 <translation id="913657688200966289">Vous pouvez activer les autorisations pour <ph name="APP_NAME" /> dans les <ph name="BEGIN_LINK" />paramètres d'Android<ph name="END_LINK" />.</translation>
+<translation id="930525582205581608">Oublier ce site?</translation>
 <translation id="965817943346481315">Bloquer si le site diffuse des annonces intrusives ou trompeuses (recommandé)</translation>
 <translation id="967624055006145463">Données stockées</translation>
 </translationbundle>

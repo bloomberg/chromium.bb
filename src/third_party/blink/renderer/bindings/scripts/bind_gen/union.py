@@ -148,12 +148,25 @@ class _UnionMemberAlias(_UnionMember):
 def create_union_members(union):
     assert isinstance(union, web_idl.NewUnion)
 
-    union_members = map(
+    union_members = list(map(
         lambda member_type: _UnionMemberImpl(union, member_type),
-        union.flattened_member_types)
+        union.flattened_member_types))
     if union.does_include_nullable_type:
         union_members.append(_UnionMemberImpl(union, idl_type=None))
     return tuple(union_members)
+
+
+def make_check_assignment_value(cg_context, union_member, assignment_value):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(union_member, _UnionMember)
+    assert isinstance(assignment_value, str)
+
+    if union_member.idl_type and union_member.idl_type.is_object:
+        return TextNode("DCHECK({}.IsObject());".format(assignment_value))
+    if union_member.type_info.is_gc_type:
+        return TextNode("DCHECK({});".format(assignment_value))
+
+    return None
 
 
 def make_content_type_enum_class_def(cg_context):
@@ -364,6 +377,8 @@ def make_constructors(cg_context):
                     "content_type_({})".format(member.content_type()),
                     "{}(value)".format(member.var_name),
                 ])
+            func_def.body.append(
+                make_check_assignment_value(cg_context, member, "value"))
         decls.append(func_def)
 
     return decls, None
@@ -419,6 +434,7 @@ def make_accessor_functions(cg_context):
             return_type="void")
         func_def.set_base_template_vars(cg_context.template_bindings())
         func_def.body.extend([
+            make_check_assignment_value(cg_context, member, "value"),
             T("Clear();"),
             F("{} = value;", member.var_name),
             F("content_type_ = {};", member.content_type()),
@@ -555,12 +571,14 @@ def make_tov8value_function(cg_context):
     func_decl = CxxFuncDeclNode(name="ToV8Value",
                                 arg_decls=["ScriptState* script_state"],
                                 return_type="v8::MaybeLocal<v8::Value>",
+                                const=True,
                                 override=True)
 
     func_def = CxxFuncDefNode(name="ToV8Value",
                               arg_decls=["ScriptState* script_state"],
                               return_type="v8::MaybeLocal<v8::Value>",
-                              class_name=cg_context.class_name)
+                              class_name=cg_context.class_name,
+                              const=True)
     func_def.set_base_template_vars(cg_context.template_bindings())
     body = func_def.body
     body.add_template_vars({"script_state": "script_state"})

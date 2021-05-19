@@ -142,14 +142,16 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
   AppId app_id = GenerateAppIdFromURL(start_url);
   EXPECT_FALSE(registrar().IsInstalled(app_id));
 
-  EXPECT_EQ(SyncDefaultAppConfig(start_url, base::ReplaceStringPlaceholders(
-                                                R"({
-                "app_url": "$1",
-                "launch_container": "window",
-                "user_type": ["unmanaged"],
-                "launch_query_params": "test_launch_params"
-              })",
-                                                {start_url.spec()}, nullptr)),
+  constexpr char kAppConfigTemplate[] =
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"],
+        "launch_query_params": "test_launch_params"
+      })";
+  std::string app_config = base::ReplaceStringPlaceholders(
+      kAppConfigTemplate, {start_url.spec()}, nullptr);
+  EXPECT_EQ(SyncDefaultAppConfig(start_url, app_config),
             InstallResultCode::kSuccessNewInstall);
 
   EXPECT_TRUE(registrar().IsInstalled(app_id));
@@ -177,16 +179,17 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
   AppId app_id = GenerateAppIdFromURL(start_url);
   EXPECT_FALSE(registrar().IsInstalled(app_id));
 
-  EXPECT_EQ(
-      SyncDefaultAppConfig(install_url, base::ReplaceStringPlaceholders(
-                                            R"({
-                "app_url": "$1",
-                "launch_container": "window",
-                "user_type": ["unmanaged"],
-                "launch_query_params": "query_params=in"
-              })",
-                                            {install_url.spec()}, nullptr)),
-      InstallResultCode::kSuccessNewInstall);
+  constexpr char kAppConfigTemplate[] =
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"],
+        "launch_query_params": "query_params=in"
+      })";
+  std::string app_config = base::ReplaceStringPlaceholders(
+      kAppConfigTemplate, {install_url.spec()}, nullptr);
+  EXPECT_EQ(SyncDefaultAppConfig(install_url, app_config),
+            InstallResultCode::kSuccessNewInstall);
 
   EXPECT_TRUE(registrar().IsInstalled(app_id));
   EXPECT_EQ(registrar().GetAppStartUrl(app_id).spec(), start_url);
@@ -211,14 +214,16 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
   AppId app_id = GenerateAppIdFromURL(start_url);
   EXPECT_FALSE(registrar().IsInstalled(app_id));
 
-  EXPECT_EQ(SyncDefaultAppConfig(start_url, base::ReplaceStringPlaceholders(
-                                                R"({
-                "app_url": "$1",
-                "launch_container": "window",
-                "user_type": ["unmanaged"],
-                "launch_query_params": "more=than&one=query&param"
-              })",
-                                                {start_url.spec()}, nullptr)),
+  constexpr char kAppConfigTemplate[] =
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"],
+        "launch_query_params": "more=than&one=query&param"
+      })";
+  std::string app_config = base::ReplaceStringPlaceholders(
+      kAppConfigTemplate, {start_url.spec()}, nullptr);
+  EXPECT_EQ(SyncDefaultAppConfig(start_url, app_config),
             InstallResultCode::kSuccessNewInstall);
 
   EXPECT_TRUE(registrar().IsInstalled(app_id));
@@ -243,16 +248,17 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
   AppId app_id = GenerateAppIdFromURL(start_url);
   EXPECT_FALSE(registrar().IsInstalled(app_id));
 
-  EXPECT_EQ(
-      SyncDefaultAppConfig(install_url, base::ReplaceStringPlaceholders(
-                                            R"({
-                "app_url": "$1",
-                "launch_container": "window",
-                "user_type": ["unmanaged"],
-                "launch_query_params": "!@#$$%^*&)("
-              })",
-                                            {install_url.spec()}, nullptr)),
-      InstallResultCode::kSuccessNewInstall);
+  constexpr char kAppConfigTemplate[] =
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"],
+        "launch_query_params": "!@#$$%^*&)("
+      })";
+  std::string app_config = base::ReplaceStringPlaceholders(
+      kAppConfigTemplate, {install_url.spec()}, nullptr);
+  EXPECT_EQ(SyncDefaultAppConfig(install_url, app_config),
+            InstallResultCode::kSuccessNewInstall);
 
   EXPECT_TRUE(registrar().IsInstalled(app_id));
   EXPECT_EQ(registrar().GetAppStartUrl(app_id).spec(), start_url);
@@ -278,22 +284,24 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest, UninstallAndReplace) {
   const char kChromeAppName[] = "App Test";
   const extensions::Extension* app = InstallExtensionWithSourceAndFlags(
       test_data_dir_.AppendASCII(kChromeAppDirectory), 1,
-      extensions::Manifest::INTERNAL, extensions::Extension::NO_FLAGS);
+      extensions::mojom::ManifestLocation::kInternal,
+      extensions::Extension::NO_FLAGS);
   EXPECT_EQ(app->name(), kChromeAppName);
 
   // Start listening for Chrome app uninstall.
   extensions::TestExtensionRegistryObserver uninstall_observer(
       extensions::ExtensionRegistry::Get(profile));
 
-  EXPECT_EQ(SyncDefaultAppConfig(GetAppUrl(),
-                                 base::ReplaceStringPlaceholders(
-                                     R"({
-                "app_url": "$1",
-                "launch_container": "window",
-                "user_type": ["unmanaged"],
-                "uninstall_and_replace": ["$2"]
-              })",
-                                     {GetAppUrl().spec(), app->id()}, nullptr)),
+  constexpr char kAppConfigTemplate[] =
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"],
+        "uninstall_and_replace": ["$2"]
+      })";
+  std::string app_config = base::ReplaceStringPlaceholders(
+      kAppConfigTemplate, {GetAppUrl().spec(), app->id()}, nullptr);
+  EXPECT_EQ(SyncDefaultAppConfig(GetAppUrl(), app_config),
             InstallResultCode::kSuccessNewInstall);
 
   // Chrome app should get uninstalled.
@@ -308,15 +316,16 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   profile()->GetPrefs()->SetString(prefs::kDefaultApps, "install");
 
-  EXPECT_EQ(
-      SyncDefaultAppConfig(GetAppUrl(), base::ReplaceStringPlaceholders(
-                                            R"({
-                "app_url": "$1",
-                "launch_container": "window",
-                "user_type": ["unmanaged"]
-              })",
-                                            {GetAppUrl().spec()}, nullptr)),
-      InstallResultCode::kSuccessNewInstall);
+  constexpr char kAppConfigTemplate[] =
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"]
+      })";
+  std::string app_config = base::ReplaceStringPlaceholders(
+      kAppConfigTemplate, {GetAppUrl().spec()}, nullptr);
+  EXPECT_EQ(SyncDefaultAppConfig(GetAppUrl(), app_config),
+            InstallResultCode::kSuccessNewInstall);
 }
 
 IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
@@ -325,15 +334,15 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   profile()->GetPrefs()->SetString(prefs::kDefaultApps, "noinstall");
 
-  EXPECT_EQ(
-      SyncDefaultAppConfig(GetAppUrl(), base::ReplaceStringPlaceholders(
-                                            R"({
-                "app_url": "$1",
-                "launch_container": "window",
-                "user_type": ["unmanaged"]
-              })",
-                                            {GetAppUrl().spec()}, nullptr)),
-      base::nullopt);
+  constexpr char kAppConfigTemplate[] =
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"]
+      })";
+  std::string app_config = base::ReplaceStringPlaceholders(
+      kAppConfigTemplate, {GetAppUrl().spec()}, nullptr);
+  EXPECT_EQ(SyncDefaultAppConfig(GetAppUrl(), app_config), base::nullopt);
 }
 
 // The offline manifest JSON config functionality is only available on Chrome
@@ -351,25 +360,25 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
   AppId app_id = GenerateAppIdFromURL(GURL(kAppStartUrl));
   EXPECT_FALSE(registrar().IsInstalled(app_id));
 
-  EXPECT_EQ(
-      SyncDefaultAppConfig(
-          GURL(kAppInstallUrl),
-          base::ReplaceStringPlaceholders(
-              R"({
-                "app_url": "$1",
-                "launch_container": "window",
-                "user_type": ["unmanaged"],
-                "offline_manifest": {
-                  "name": "$2",
-                  "start_url": "$3",
-                  "scope": "$4",
-                  "display": "minimal-ui",
-                  "theme_color_argb_hex": "AABBCCDD",
-                  "icon_any_pngs": ["icon.png"]
-                }
-              })",
-              {kAppInstallUrl, kAppName, kAppStartUrl, kAppScope}, nullptr)),
-      InstallResultCode::kSuccessOfflineFallbackInstall);
+  constexpr char kAppConfigTemplate[] =
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"],
+        "offline_manifest": {
+          "name": "$2",
+          "start_url": "$3",
+          "scope": "$4",
+          "display": "minimal-ui",
+          "theme_color_argb_hex": "AABBCCDD",
+          "icon_any_pngs": ["icon.png"]
+        }
+      })";
+  std::string app_config = base::ReplaceStringPlaceholders(
+      kAppConfigTemplate, {kAppInstallUrl, kAppName, kAppStartUrl, kAppScope},
+      nullptr);
+  EXPECT_EQ(SyncDefaultAppConfig(GURL(kAppInstallUrl), app_config),
+            InstallResultCode::kSuccessOfflineFallbackInstall);
 
   EXPECT_TRUE(registrar().IsInstalled(app_id));
   EXPECT_EQ(registrar().GetAppShortName(app_id), kAppName);
@@ -402,24 +411,24 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
   AppId offline_app_id = GenerateAppIdFromURL(offline_start_url);
   EXPECT_FALSE(registrar().IsInstalled(offline_app_id));
 
-  EXPECT_EQ(SyncDefaultAppConfig(
-                install_url, base::ReplaceStringPlaceholders(
-                                 R"({
-                "app_url": "$1",
-                "launch_container": "window",
-                "user_type": ["unmanaged"],
-                "offline_manifest": {
-                  "name": "Offline only app name",
-                  "start_url": "$2",
-                  "scope": "$3",
-                  "display": "minimal-ui",
-                  "theme_color_argb_hex": "AABBCCDD",
-                  "icon_any_pngs": ["icon.png"]
-                }
-              })",
-                                 {install_url.spec(), offline_start_url.spec(),
-                                  scope.spec()},
-                                 nullptr)),
+  constexpr char kAppConfigTemplate[] =
+      R"({
+          "app_url": "$1",
+          "launch_container": "window",
+          "user_type": ["unmanaged"],
+          "offline_manifest": {
+            "name": "Offline only app name",
+            "start_url": "$2",
+            "scope": "$3",
+            "display": "minimal-ui",
+            "theme_color_argb_hex": "AABBCCDD",
+            "icon_any_pngs": ["icon.png"]
+          }
+        })";
+  std::string app_config = base::ReplaceStringPlaceholders(
+      kAppConfigTemplate,
+      {install_url.spec(), offline_start_url.spec(), scope.spec()}, nullptr);
+  EXPECT_EQ(SyncDefaultAppConfig(install_url, app_config),
             InstallResultCode::kSuccessNewInstall);
 
   EXPECT_FALSE(registrar().IsInstalled(offline_app_id));
@@ -446,26 +455,26 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
   AppId app_id = GenerateAppIdFromURL(GURL(kAppStartUrl));
   EXPECT_FALSE(registrar().IsInstalled(app_id));
 
-  EXPECT_EQ(
-      SyncDefaultAppConfig(
-          GURL(kAppInstallUrl),
-          base::ReplaceStringPlaceholders(
-              R"({
-                "app_url": "$1",
-                "launch_container": "window",
-                "user_type": ["unmanaged"],
-                "only_use_offline_manifest": true,
-                "offline_manifest": {
-                  "name": "$2",
-                  "start_url": "$3",
-                  "scope": "$4",
-                  "display": "minimal-ui",
-                  "theme_color_argb_hex": "AABBCCDD",
-                  "icon_any_pngs": ["icon.png"]
-                }
-              })",
-              {kAppInstallUrl, kAppName, kAppStartUrl, kAppScope}, nullptr)),
-      InstallResultCode::kSuccessOfflineOnlyInstall);
+  constexpr char kAppConfigTemplate[] =
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"],
+        "only_use_offline_manifest": true,
+        "offline_manifest": {
+          "name": "$2",
+          "start_url": "$3",
+          "scope": "$4",
+          "display": "minimal-ui",
+          "theme_color_argb_hex": "AABBCCDD",
+          "icon_any_pngs": ["icon.png"]
+        }
+      })";
+  std::string app_config = base::ReplaceStringPlaceholders(
+      kAppConfigTemplate, {kAppInstallUrl, kAppName, kAppStartUrl, kAppScope},
+      nullptr);
+  EXPECT_EQ(SyncDefaultAppConfig(GURL(kAppInstallUrl), app_config),
+            InstallResultCode::kSuccessOfflineOnlyInstall);
 
   EXPECT_TRUE(registrar().IsInstalled(app_id));
   EXPECT_EQ(registrar().GetAppShortName(app_id), kAppName);
@@ -498,26 +507,26 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
   AppId app_id = GenerateAppIdFromURL(start_url);
   EXPECT_FALSE(registrar().IsInstalled(app_id));
 
-  EXPECT_EQ(
-      SyncDefaultAppConfig(install_url, base::ReplaceStringPlaceholders(
-                                            R"({
-                "app_url": "$1",
-                "launch_container": "window",
-                "user_type": ["unmanaged"],
-                "only_use_offline_manifest": true,
-                "offline_manifest": {
-                  "name": "$2",
-                  "start_url": "$3",
-                  "scope": "$4",
-                  "display": "minimal-ui",
-                  "theme_color_argb_hex": "AABBCCDD",
-                  "icon_any_pngs": ["icon.png"]
-                }
-              })",
-                                            {install_url.spec(), kAppName,
-                                             start_url.spec(), scope.spec()},
-                                            nullptr)),
-      InstallResultCode::kSuccessOfflineOnlyInstall);
+  constexpr char kAppConfigTemplate[] =
+      R"({
+        "app_url": "$1",
+        "launch_container": "window",
+        "user_type": ["unmanaged"],
+        "only_use_offline_manifest": true,
+        "offline_manifest": {
+          "name": "$2",
+          "start_url": "$3",
+          "scope": "$4",
+          "display": "minimal-ui",
+          "theme_color_argb_hex": "AABBCCDD",
+          "icon_any_pngs": ["icon.png"]
+        }
+      })";
+  std::string app_config = base::ReplaceStringPlaceholders(
+      kAppConfigTemplate,
+      {install_url.spec(), kAppName, start_url.spec(), scope.spec()}, nullptr);
+  EXPECT_EQ(SyncDefaultAppConfig(install_url, app_config),
+            InstallResultCode::kSuccessOfflineOnlyInstall);
 
   EXPECT_TRUE(registrar().IsInstalled(app_id));
   EXPECT_EQ(registrar().GetAppShortName(app_id), kAppName);
@@ -580,12 +589,31 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
             base::nullopt);
 }
 
+IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest, OemInstalled) {
+  ExternalWebAppManager::BypassOfflineManifestRequirementForTesting();
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  EXPECT_EQ(
+      SyncDefaultAppConfig(GetAppUrl(), base::ReplaceStringPlaceholders(
+                                            R"({
+                "app_url": "$1",
+                "launch_container": "window",
+                "oem_installed": true,
+                "user_type": ["unmanaged"]
+              })",
+                                            {GetAppUrl().spec()}, nullptr)),
+      InstallResultCode::kSuccessNewInstall);
+
+  AppId app_id = GenerateAppIdFromURL(GetAppUrl());
+  EXPECT_TRUE(registrar().WasInstalledByOem(app_id));
+}
+
 IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
                        UninstallFromTwoItemAppListFolder) {
   GURL default_app_start_url("https://example.org/");
   GURL user_app_start_url("https://test.org/");
 
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
   AppListClientImpl::GetInstance()->UpdateProfile();
   ash::AppListTestApi app_list_test_api;
@@ -616,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppManagerBrowserTest,
   // Install user app.
   auto web_application_info = std::make_unique<WebApplicationInfo>();
   web_application_info->start_url = user_app_start_url;
-  web_application_info->title = base::UTF8ToUTF16("Test user app");
+  web_application_info->title = u"Test user app";
   AppId user_app_id = InstallWebApp(profile(), std::move(web_application_info));
 
   // Ensure the UI receives these apps.

@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/base_switches.h"
@@ -66,7 +68,7 @@ ExtensionApiTest::~ExtensionApiTest() = default;
 void ExtensionApiTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
   DCHECK(!test_config_.get()) << "Previous test did not clear config state.";
-  test_config_.reset(new base::DictionaryValue());
+  test_config_ = std::make_unique<base::DictionaryValue>();
   test_config_->SetString(kTestDataDirectory,
                           net::FilePathToFileURL(test_data_dir_).spec());
 
@@ -90,8 +92,8 @@ bool ExtensionApiTest::RunExtensionTest(const RunOptions& run_options) {
   return RunExtensionTest(run_options, {});
 }
 
-bool ExtensionApiTest::RunExtensionTest(const std::string& extension_name) {
-  return RunExtensionTest({.name = extension_name.c_str()}, {});
+bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
+  return RunExtensionTest({.name = extension_name}, {});
 }
 
 bool ExtensionApiTest::RunExtensionTest(const RunOptions& run_options,
@@ -170,91 +172,11 @@ bool ExtensionApiTest::RunExtensionTest(const RunOptions& run_options,
   return true;
 }
 
-bool ExtensionApiTest::RunComponentExtensionTest(
-    const std::string& extension_name) {
-  return RunExtensionTestImpl(extension_name, std::string(), nullptr, kFlagNone,
-                              kFlagLoadAsComponent);
-}
-
-bool ExtensionApiTest::RunComponentExtensionTestWithArg(
-    const std::string& extension_name,
-    const char* custom_arg) {
-  return RunExtensionTestImpl(extension_name, std::string(), custom_arg,
-                              kFlagNone, kFlagLoadAsComponent);
-}
-
 bool ExtensionApiTest::RunExtensionSubtest(const std::string& extension_name,
                                            const std::string& page_url) {
-  return RunExtensionSubtestWithArgAndFlags(extension_name, page_url, nullptr,
-                                            kFlagNone, kFlagNone);
-}
-
-bool ExtensionApiTest::RunExtensionSubtest(const std::string& extension_name,
-                                           const std::string& page_url,
-                                           int browser_test_flags,
-                                           int api_test_flags) {
-  return RunExtensionSubtestWithArgAndFlags(extension_name, page_url, nullptr,
-                                            browser_test_flags, api_test_flags);
-}
-
-bool ExtensionApiTest::RunExtensionSubtestWithArg(
-    const std::string& extension_name,
-    const std::string& page_url,
-    const char* custom_arg) {
-  return RunExtensionSubtestWithArgAndFlags(extension_name, page_url,
-                                            custom_arg, kFlagNone, kFlagNone);
-}
-
-bool ExtensionApiTest::RunExtensionSubtestWithArgAndFlags(
-    const std::string& extension_name,
-    const std::string& page_url,
-    const char* custom_arg,
-    int browser_test_flags,
-    int api_test_flags) {
   DCHECK(!page_url.empty()) << "Argument page_url is required.";
-  return RunExtensionTestImpl(extension_name, page_url, custom_arg,
-                              browser_test_flags, api_test_flags);
-}
-
-bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
-  return RunExtensionSubtest(std::string(), page_url);
-}
-
-bool ExtensionApiTest::RunPageTest(const std::string& page_url,
-                                   int browser_test_flags,
-                                   int api_test_flags) {
-  return RunExtensionSubtest(std::string(), page_url, browser_test_flags,
-                             api_test_flags);
-}
-
-bool ExtensionApiTest::RunPlatformAppTest(const std::string& extension_name) {
-  return RunExtensionTestImpl(extension_name, std::string(), nullptr, kFlagNone,
-                              kFlagLaunchPlatformApp);
-}
-
-bool ExtensionApiTest::RunPlatformAppTestWithArg(
-    const std::string& extension_name, const char* custom_arg) {
-  return RunPlatformAppTestWithFlags(extension_name, custom_arg, kFlagNone,
-                                     kFlagNone);
-}
-
-bool ExtensionApiTest::RunPlatformAppTestWithFlags(
-    const std::string& extension_name,
-    int browser_test_flags,
-    int api_test_flags) {
-  return RunExtensionTestImpl(extension_name, std::string(), nullptr,
-                              browser_test_flags,
-                              api_test_flags | kFlagLaunchPlatformApp);
-}
-
-bool ExtensionApiTest::RunPlatformAppTestWithFlags(
-    const std::string& extension_name,
-    const char* custom_arg,
-    int browser_test_flags,
-    int api_test_flags) {
-  return RunExtensionTestImpl(extension_name, std::string(), custom_arg,
-                              browser_test_flags,
-                              api_test_flags | kFlagLaunchPlatformApp);
+  return RunExtensionTestImpl(extension_name, page_url, nullptr, kFlagNone,
+                              kFlagNone);
 }
 
 bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
@@ -349,7 +271,7 @@ const Extension* ExtensionApiTest::GetSingleLoadedExtension() {
        registry->enabled_extensions()) {
     // Ignore any component extensions. They are automatically loaded into all
     // profiles and aren't the extension we're looking for here.
-    if (extension->location() == Manifest::COMPONENT)
+    if (extension->location() == mojom::ManifestLocation::kComponent)
       continue;
 
     if (result != NULL) {
@@ -402,8 +324,8 @@ void ExtensionApiTest::EmbeddedTestServerAcceptConnections() {
 bool ExtensionApiTest::StartWebSocketServer(
     const base::FilePath& root_directory,
     bool enable_basic_auth) {
-  websocket_server_.reset(new net::SpawnedTestServer(
-      net::SpawnedTestServer::TYPE_WS, root_directory));
+  websocket_server_ = std::make_unique<net::SpawnedTestServer>(
+      net::SpawnedTestServer::TYPE_WS, root_directory);
   websocket_server_->set_websocket_basic_auth(enable_basic_auth);
 
   if (!websocket_server_->Start())
@@ -416,8 +338,8 @@ bool ExtensionApiTest::StartWebSocketServer(
 }
 
 bool ExtensionApiTest::StartFTPServer(const base::FilePath& root_directory) {
-  ftp_server_.reset(new net::SpawnedTestServer(net::SpawnedTestServer::TYPE_FTP,
-                                               root_directory));
+  ftp_server_ = std::make_unique<net::SpawnedTestServer>(
+      net::SpawnedTestServer::TYPE_FTP, root_directory);
 
   if (!ftp_server_->Start())
     return false;

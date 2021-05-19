@@ -127,14 +127,16 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
     return debug_visitor_;
   }
 
-  // Set debug callbacks to be called from the HPACK decoder.
-  void SetDecoderHeaderTableDebugVisitor(
-      std::unique_ptr<spdy::HpackHeaderTable::DebugVisitorInterface> visitor);
-
   // Decode the |len| bytes of encoded HTTP/2 starting at |*data|. Returns
   // the number of bytes consumed. It is safe to pass more bytes in than
   // may be consumed. Should process (or otherwise buffer) as much as
   // available.
+  //
+  // If the input contains the entirety of a DATA frame payload, GOAWAY frame
+  // Additional Debug Data field, or unknown frame payload, then the
+  // corresponding SpdyFramerVisitorInterface::OnStreamFrameData(),
+  // OnGoAwayFrameData(), or ExtensionVisitorInterface::OnFramePayload() method
+  // is guaranteed to be called exactly once, with the entire payload or field.
   size_t ProcessInput(const char* data, size_t len);
 
   // Reset the decoder (used just for tests at this time).

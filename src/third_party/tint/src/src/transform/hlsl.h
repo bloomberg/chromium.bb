@@ -35,14 +35,17 @@ class Hlsl : public Transform {
 
   /// Runs the transform on `program`, returning the transformation result.
   /// @param program the source program to transform
+  /// @param data optional extra transform-specific data
   /// @returns the transformation result
-  Output Run(const Program* program) override;
+  Output Run(const Program* program, const DataMap& data = {}) override;
 
  private:
-  /// Hoists the array initializer to a constant variable, declared just before
-  /// the array usage statement.
-  /// See crbug.com/tint/406 for more details
-  void PromoteArrayInitializerToConstVar(CloneContext& ctx) const;
+  /// Hoists the array and structure initializers to a constant variable,
+  /// declared just before the statement of usage. See crbug.com/tint/406 for
+  /// more details
+  void PromoteInitializersToConstVar(CloneContext& ctx) const;
+  /// Add an empty shader entry point if none exist in the module.
+  void AddEmptyEntryPoint(CloneContext& ctx) const;
 };
 
 }  // namespace transform

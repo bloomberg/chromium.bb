@@ -22,14 +22,15 @@
 #include "ios/web/common/features.h"
 #import "ios/web/common/uikit_ui_util.h"
 #include "ios/web/common/url_util.h"
-#import "ios/web/favicon/favicon_manager.h"
 #import "ios/web/find_in_page/find_in_page_manager_impl.h"
 #include "ios/web/history_state_util.h"
+#include "ios/web/js_features/scroll_helper/scroll_helper_java_script_feature.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
+#include "ios/web/js_messaging/java_script_feature_util_impl.h"
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
-#import "ios/web/js_messaging/web_view_web_state_map_impl.h"
+#import "ios/web/js_messaging/web_view_web_state_map.h"
 #import "ios/web/navigation/crw_error_page_helper.h"
 #import "ios/web/navigation/crw_js_navigation_handler.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
@@ -147,9 +148,6 @@ NSString* const kSessionRestoreScriptMessageName = @"session_restore";
 
   // State of user interaction with web content.
   web::UserInteractionState _userInteractionState;
-
-  // Manager for favicon JavaScript messages.
-  std::unique_ptr<web::FaviconManager> _faviconManager;
 
   // Logger for cookie;.error message.
   std::unique_ptr<web::CookieBlockingErrorLogger> _cookieBlockingErrorLogger;
@@ -308,7 +306,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _certVerificationController = [[CRWCertVerificationController alloc]
         initWithBrowserState:browserState];
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
-    _faviconManager = std::make_unique<web::FaviconManager>(_webStateImpl);
     _cookieBlockingErrorLogger =
         std::make_unique<web::CookieBlockingErrorLogger>(_webStateImpl);
 
@@ -388,6 +385,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return self.navigationHandler.webProcessCrashed;
 }
 
+- (BOOL)isUserInteracting {
+  return _userInteractionState.IsUserInteracting(self.webView);
+}
+
 - (void)setAllowsBackForwardNavigationGestures:
     (BOOL)allowsBackForwardNavigationGestures {
   // Store it to an instance variable as well as
@@ -418,7 +419,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       [self webViewConfigurationProvider].GetScriptMessageRouter();
   self.webStateImpl->GetWebFramesManagerImpl().OnWebViewUpdated(
       _webView, webView, messageRouter);
-  web::WebViewWebStateMapImpl::FromBrowserState(
+  web::WebViewWebStateMap::FromBrowserState(
       self.webStateImpl->GetBrowserState())
       ->SetAssociatedWebViewForWebState(webView, self.webStateImpl);
 
@@ -765,30 +766,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       updateWebViewContentViewForContainerWindow:_containerView.window];
 }
 
-- (void)didFinishGoToIndexSameDocumentNavigationWithType:
-            (web::NavigationInitiationType)type
-                                          hasUserGesture:(BOOL)hasUserGesture {
-  web::NavigationItem* item =
-      self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();
-  GURL URL = item->GetVirtualURL();
-  std::unique_ptr<web::NavigationContextImpl> context =
-      web::NavigationContextImpl::CreateNavigationContext(
-          self.webStateImpl, URL, hasUserGesture,
-          static_cast<ui::PageTransition>(
-              item->GetTransitionType() |
-              ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK),
-          type == web::NavigationInitiationType::RENDERER_INITIATED);
-  context->SetIsSameDocument(true);
-  self.webStateImpl->OnNavigationStarted(context.get());
-  [self setDocumentURL:URL context:context.get()];
-  context->SetHasCommitted(true);
-  self.webStateImpl->OnNavigationFinished(context.get());
-  self.navigationHandler.navigationState = web::WKNavigationState::FINISHED;
-  [_requestController didFinishWithURL:URL
-                           loadSuccess:YES
-                               context:context.get()];
-}
-
 - (void)goToBackForwardListItem:(WKBackForwardListItem*)wk_item
                  navigationItem:(web::NavigationItem*)item
        navigationInitiationType:(web::NavigationInitiationType)type
@@ -1109,20 +1086,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                            loadSuccess:loadSuccess
                                context:context];
 
-  if (web::GetWebClient()->IsEmbedderBlockRestoreUrlEnabled()) {
-    if (@available(iOS 14, *)) {
-    } else {
-      if (@available(iOS 13.5, *)) {
-        // In some cases on iOS 13.5, when restoring about: URL, the load might
-        // never ends. Make sure to mark the load as done here. This is fixed in
-        // iOS 14. See crbug.com/1099235.
-        if (currentURL.SchemeIs(url::kAboutScheme)) {
-          self.webStateImpl->SetIsLoading(false);
-        }
-      }
-    }
-  }
-
   // Execute the pending LoadCompleteActions.
   for (ProceduralBlock action in _pendingLoadCompleteActions) {
     action();
@@ -1212,7 +1175,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   self.webStateImpl->OnScriptCommandReceived(
       command, *crwCommand, net::GURLWithNSURL(self.webView.URL),
-      _userInteractionState.IsUserInteracting(self.webView), senderFrame);
+      self.isUserInteracting, senderFrame);
   return YES;
 }
 
@@ -1265,17 +1228,15 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // window.scrollTo while user is scrolling. See crbug.com/554257
 - (void)webViewScrollViewWillBeginDragging:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
-  [_jsInjector
-      executeJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(true)"
-      completionHandler:nil];
+  web::java_script_features::GetScrollHelperJavaScriptFeature()
+      ->SetWebViewScrollViewIsDragging(self.webState, true);
 }
 
 - (void)webViewScrollViewDidEndDragging:
             (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
                          willDecelerate:(BOOL)decelerate {
-  [_jsInjector
-      executeJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(false)"
-      completionHandler:nil];
+  web::java_script_features::GetScrollHelperJavaScriptFeature()
+      ->SetWebViewScrollViewIsDragging(self.webState, false);
 }
 
 #pragma mark - Page State
@@ -2019,12 +1980,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)webRequestControllerDidStartLoading:
     (CRWWebRequestController*)requestController {
   [self didStartLoading];
-}
-
-- (void)webRequestController:(CRWWebRequestController*)requestController
-    didCompleteLoadWithSuccess:(BOOL)loadSuccess
-                    forContext:(web::NavigationContextImpl*)context {
-  [self loadCompleteWithSuccess:loadSuccess forContext:context];
 }
 
 - (void)webRequestControllerDisableNavigationGesturesUntilFinishNavigation:

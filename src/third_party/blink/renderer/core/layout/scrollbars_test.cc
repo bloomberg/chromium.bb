@@ -67,7 +67,8 @@ class StubWebThemeEngine : public WebThemeEngine {
              State,
              const gfx::Rect&,
              const ExtraParams*,
-             mojom::blink::ColorScheme color_scheme) override {
+             mojom::blink::ColorScheme color_scheme,
+             const base::Optional<SkColor>& accent_color) override {
     // Make  sure we don't overflow the array.
     DCHECK(part <= kPartProgressBar);
     painted_color_scheme_[part] = color_scheme;
@@ -440,7 +441,7 @@ TEST_F(ScrollbarsTest, TransparentBackgroundUsesDarkOverlayColorTheme) {
   ENABLE_OVERLAY_SCROLLBARS(true);
 
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
-  WebView().SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
+  WebView().SetBaseBackgroundColor(SK_ColorTRANSPARENT);
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(

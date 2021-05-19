@@ -70,7 +70,7 @@ static int read_desc_chunk(AVFormatContext *s)
 
     /* parse format description */
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
-    st->codecpar->sample_rate = av_int2double(avio_rb64(pb));
+    st->codecpar->sample_rate = av_clipd(av_int2double(avio_rb64(pb)), 0, INT_MAX);
     st->codecpar->codec_tag   = avio_rl32(pb);
     flags = avio_rb32(pb);
     caf->bytes_per_packet  = avio_rb32(pb);
@@ -460,5 +460,5 @@ AVInputFormat ff_caf_demuxer = {
     .read_header    = read_header,
     .read_packet    = read_packet,
     .read_seek      = read_seek,
-    .codec_tag      = (const AVCodecTag* const []){ ff_codec_caf_tags, 0 },
+    .codec_tag      = ff_caf_codec_tags_list,
 };

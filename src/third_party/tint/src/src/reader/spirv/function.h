@@ -15,36 +15,16 @@
 #ifndef SRC_READER_SPIRV_FUNCTION_H_
 #define SRC_READER_SPIRV_FUNCTION_H_
 
-#include <functional>
 #include <memory>
-#include <ostream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include "source/opt/basic_block.h"
-#include "source/opt/constants.h"
-#include "source/opt/function.h"
-#include "source/opt/instruction.h"
-#include "source/opt/ir_context.h"
-#include "source/opt/type_manager.h"
-#include "src/ast/case_statement.h"
-#include "src/ast/expression.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/module.h"
-#include "src/ast/statement.h"
-#include "src/ast/storage_class.h"
 #include "src/program_builder.h"
 #include "src/reader/spirv/construct.h"
-#include "src/reader/spirv/entry_point_info.h"
-#include "src/reader/spirv/fail_stream.h"
-#include "src/reader/spirv/namer.h"
 #include "src/reader/spirv/parser_impl.h"
-#include "src/type/i32_type.h"
-#include "src/type/texture_type.h"
-#include "src/type/u32_type.h"
 
 namespace tint {
 namespace reader {
@@ -388,7 +368,6 @@ class StatementBuilder : public Castable<StatementBuilder, ast::Statement> {
   virtual ast::Statement* Build(ProgramBuilder* builder) const = 0;
 
  private:
-  bool IsValid() const override;
   Node* Clone(CloneContext*) const override;
   void to_str(const semantic::Info& sem,
               std::ostream& out,
@@ -870,7 +849,7 @@ class FunctionEmitter {
     /// Function return type
     type::Type* return_type;
     /// Function decorations
-    ast::FunctionDecorationList decorations;
+    ast::DecorationList decorations;
   };
 
   /// Parse the function declaration, which comprises the name, parameters, and
@@ -903,6 +882,12 @@ class FunctionEmitter {
   /// @param inst the SPIR-V function call instruction
   /// @returns false if emission failed
   bool EmitFunctionCall(const spvtools::opt::Instruction& inst);
+
+  /// Emits a control barrier intrinsic.  On failure, emits a diagnostic and
+  /// returns false.
+  /// @param inst the SPIR-V control barrier instruction
+  /// @returns false if emission failed
+  bool EmitControlBarrier(const spvtools::opt::Instruction& inst);
 
   /// Returns an expression for a SPIR-V instruction that maps to a WGSL
   /// intrinsic function call.
@@ -1013,7 +998,7 @@ class FunctionEmitter {
   /// @return the built StatementBuilder
   template <typename T, typename... ARGS>
   T* AddStatementBuilder(ARGS&&... args) {
-    assert(!statements_stack_.empty());
+    TINT_ASSERT(!statements_stack_.empty());
     return statements_stack_.back().AddStatementBuilder<T>(
         std::forward<ARGS>(args)...);
   }

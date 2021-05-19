@@ -12,7 +12,6 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater_observer.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
@@ -61,7 +60,7 @@ class AppListModelUpdater {
   virtual void SetStatus(ash::AppListModelStatus status) {}
   // For SearchModel:
   virtual void SetSearchEngineIsGoogle(bool is_google) {}
-  virtual void UpdateSearchBox(const base::string16& text,
+  virtual void UpdateSearchBox(const std::u16string& text,
                                bool initiated_by_user) {}
   virtual void PublishSearchResults(
       const std::vector<ChromeSearchResult*>& results) {}

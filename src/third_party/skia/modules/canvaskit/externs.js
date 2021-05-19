@@ -207,6 +207,7 @@ var CanvasKit = {
     drawLine: function() {},
     drawPaint: function() {},
     drawParagraph: function() {},
+    drawPatch: function() {},
     drawPath: function() {},
     drawPicture: function() {},
     drawRect4f: function() {},
@@ -261,7 +262,8 @@ var CanvasKit = {
     _clipRect: function() {},
     _concat: function() {},
     _drawArc: function() {},
-    _drawAtlas: function() {},
+    _drawAtlasOptions: function() {},
+    _drawAtlasCubic: function() {},
     _drawColor: function() {},
     _drawDRRect:  function() {},
     _drawImageNine: function() {},
@@ -269,6 +271,7 @@ var CanvasKit = {
     _drawImageRectCubic: function() {},
     _drawImageRectOptions: function() {},
     _drawOval: function() {},
+    _drawPatch: function() {},
     _drawPoints: function() {},
     _drawRect: function() {},
     _drawRRect:  function() {},
@@ -433,6 +436,12 @@ var CanvasKit = {
 
   MaskFilter: {
     MakeBlur: function() {},
+  },
+
+  MipmapMode: {
+    None: {},
+    Nearest: {},
+    Linear: {},
   },
 
   Paint: {

@@ -10,7 +10,6 @@
 <translation id="1315551408014407711">‏إعداد ملفك الشخصي الجديد على Chromium</translation>
 <translation id="1396446129537741364">‏يحاول Chromium إظهار كلمات المرور.</translation>
 <translation id="1414495520565016063">‏تم تسجيل دخولك إلى Chromium!</translation>
-<translation id="1414973082589232775">‏يجب إعادة تشغيل متصفِّح Chromium لاستخدام برنامج Rosetta والسماح له بتشغيل الوسائط المحمية</translation>
 <translation id="151962892725702025">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
 <translation id="1524282610922162960">‏مشاركة علامة تبويب Chromium</translation>
 <translation id="1553461853655228091">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا من أجل إنشاء خريطة ثلاثية الأبعاد للبيئة المحيطة بك.</translation>
@@ -25,8 +24,8 @@
 <translation id="1966382378801805537">‏يتعذَّر على Chromium تحديد المتصفح التلقائي أو تعيينه</translation>
 <translation id="2008474315282236005">‏سيعمل هذا على حذف عنصر واحد من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="2020032459870799438">‏للتحقُّق مما إذا كانت كلمات المرور الأخرى آمنة من عمليات اختراق البيانات ومشاكل الأمان الأخرى، يُرجى <ph name="BEGIN_LINK" />تسجيل الدخول إلى Chromium<ph name="END_LINK" />.</translation>
+<translation id="2174178932569897599">‏تخصيص Chromium</translation>
 <translation id="2185166961232948079">‏Chromium - تسجيل الدخول إلى الشبكة - <ph name="PAGE_TITLE" /></translation>
-<translation id="2225696941839557119">‏تعذّر على نظام التشغيل Chromium مزامنة كلمات المرور.</translation>
 <translation id="2241627712206172106">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chromium على النحو الذي يريدونه.</translation>
 <translation id="2294245788148774212">‏اختياري: يمكنك المساعدة في تحسين ميزات نظام التشغيل Chromium وأدائه من خلال إرسال بيانات التشخيص والاستخدام تلقائيًا إلى Google.</translation>
 <translation id="2343156876103232566">‏لإرسال رقم من هذا الجهاز إلى جهازك الذي يعمل بنظام التشغيل Android، يُرجى تسجيل الدخول إلى Chromium على الجهازَين.</translation>
@@ -40,10 +39,8 @@
 <translation id="2577788541081224677">‏للوصول من خلال جميع أجهزتك إلى بياناتك في Chromium، عليك تسجيل الدخول كي تتمكّن من تفعيل المزامنة.</translation>
 <translation id="2583187216237139145">‏يمكن لمشرف الملف الشخصي للعمل إزالة أي بيانات مرتبطة بمتصفِّح Chromium والتي يتم إنشاؤها أثناء استخدام هذا الملف الشخصي (مثل إنشاء الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى).<ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">‏يلزم إعادة تشغيل نظام التشغيل Chromium حتى يتم تطبيق التحديث.</translation>
-<translation id="2615699638672665509">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقي تحديثات Chromium نظرًا لأن أجهزته لم تعد متوافقة.</translation>
 <translation id="2648074677641340862">‏حدث خطأ في نظام التشغيل أثناء عملية التثبيت. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="2661879430930417727">‏في حال مشاركة جهاز مع الأصدقاء والعائلة، يمكنهم الحصول على تجربة تصفّح منفصلة وإعداد Chromium على النحو المفضّل لديهم.</translation>
-<translation id="270245676623587882">‏ينصح Chromium بإيقاف هذه الإضافة لأنها لا تفي بمعايير "الحماية المُحسّنة للتصفّح الآمن" حاليًا.</translation>
 <translation id="2711502716910134313">‏علامة تبويب Chromium</translation>
 <translation id="2718390899429598676">‏لمزيد من الأمان، سيشفر Chromium بياناتك</translation>
 <translation id="2770231113462710648">تغيير المتصفح التلقائي إلى:</translation>
@@ -63,6 +60,7 @@
 <translation id="3130323860337406239">‏يستخدم Chromium الميكروفون.</translation>
 <translation id="3155163173539279776">‏إعادة تشغيل Chromium</translation>
 <translation id="3179665906251668410">‏فتح الرابط في نافذة تصفح متخفٍ في Chromium</translation>
+<translation id="3185330573522821672">‏يمكنك الآن تخصيص ملفك الشخصي الجديد على Chromium.</translation>
 <translation id="3190315855212034486">‏للأسف! تعطل Chromium. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="3229526316128325841">‏يرغب Chromium في تصدير كلمات المرور.</translation>
 <translation id="3258596308407688501">‏يتعذر على Chromium القراءة والكتابة في دليل البيانات الخاص به:
@@ -77,6 +75,7 @@
 <translation id="3430503420100763906">‏باستخدام الملفات الشخصية على Chromium، يمكنك الفصل بين جميع بيانات Chromium. ويمكنك إنشاء ملفات شخصية للأصدقاء والعائلة أو تقسيمها للعمل وأغراض الترفيه.</translation>
 <translation id="347328004046849135">‏في حال تسجيل الدخول باستخدام كلمة مرور محتمَل تعرّضها للاختراق، سيرسل Chromium إشعارًا إليك.</translation>
 <translation id="3474745554856756813">‏سيعمل هذا على حذف <ph name="ITEMS_COUNT" /> من العناصر من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium كـ <ph name="USER_EMAIL" />.</translation>
+<translation id="3497319089134299931">‏يعمل الاختصار <ph name="SHORTCUT" /> على التبديل بين الملفات الشخصية على Chromium.</translation>
 <translation id="3509308970982693815">‏يُرجى إغلاق جميع نوافذ Chromium وإعادة المحاولة.</translation>
 <translation id="3575459661164320785">‏هناك برنامج ضار على جهاز الكمبيوتر. ويمكن لمتصفِّح Chrome إزالته واستعادة إعداداتك وإيقاف الإضافات لكي يعمل متصفِّحك بشكلٍ طبيعي من جديد.</translation>
 <translation id="3639635944603682591">‏ستُحذَف بيانات تصفُّح هذا المستخدم من هذا الجهاز. ولاسترداد البيانات، سجّل الدخول إلى Chromium بصفتك <ph name="USER_EMAIL" />.</translation>
@@ -137,11 +136,11 @@
 <translation id="5480860683791598150">‏يحتاج Chromium للوصول إلى موقعك الجغرافي لمشاركته مع هذا الموقع.</translation>
 <translation id="549669000822060376">‏يُرجى الانتظار أثناء تثبيت Chromium لآخر تحديثات النظام.</translation>
 <translation id="5496810170689441661">‏يحاول Chromium تعديل كلمات المرور. للسماح بذلك، يُرجى كتابة كلمة مرور Windows الخاصة بك.</translation>
+<translation id="5527463683072221100">‏فتح ملفات PDF في Chromium</translation>
 <translation id="5623402015214259806">{0,plural, =0{‏يتوفر تحديث لمتصفح Chromium}=1{‏يتوفر تحديث لمتصفح Chromium}two{‏يتوفر تحديث لمتصفح Chromium منذ يومين}few{‏يتوفر تحديث لمتصفح Chromium منذ # أيام}many{‏يتوفر تحديث لمتصفح Chromium منذ # يومًا}other{‏يتوفر تحديث لمتصفح Chromium منذ # يوم}}</translation>
 <translation id="5634636535844844681">‏يتطلب Chromium نظام التشغيل Windows 7 أو إصدارًا أحدث.</translation>
 <translation id="5653831366781983928">‏يُرجى إعادة تشغيل Chromium الآن</translation>
 <translation id="5698481217667032250">‏عرض Chromium بهذه اللغة</translation>
-<translation id="5736967399513123100">‏للسماح لمتصفِّح Chromium بتشغيل الوسائط المحمية، يجب تثبيت برنامج Rosetta. هل تريد تنزيل البرنامج الآن؟</translation>
 <translation id="5820394555380036790">‏نظام التشغيل Chromium</translation>
 <translation id="5862307444128926510">‏مرحبًا بك في Chromium</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
@@ -157,10 +156,10 @@
 <translation id="6120345080069858279">‏سيحفظ Chromium كلمة المرور هذه في حسابك على Google ولن تحتاج تذكّرها.</translation>
 <translation id="6129621093834146363">‏ملف <ph name="FILE_NAME" /> ضار، لذلك فقد حظره Chromium.</translation>
 <translation id="6134968993075716475">‏تم إيقاف "التصفّح الآمن" ويقترح متصفّح Chrome تفعيله.</translation>
+<translation id="6145820983052037069">‏يمكنك من هنا التبديل بين الملفات الشخصية على Chromium.</translation>
 <translation id="6183079672144801177">‏يُرجى التأكُّد من تسجيل الدخول إلى متصفِّح Chromium على جهازك <ph name="TARGET_DEVICE_NAME" /> ثم محاولة الإرسال مرة أخرى.</translation>
 <translation id="6212496753309875659">‏يحتوي هذا الكمبيوتر فعلاً على إصدار أحدث من Chromium. إذا كان البرنامج لا يعمل، يُرجى إزالة Chromium وإعادة المحاولة.</translation>
 <translation id="6219195342503754812">{0,plural, =0{‏ستتم إعادة تشغيل Chromium الآن}=1{‏ستتم إعادة تشغيل Chromium في غضون ثانية واحدة}two{‏ستتم إعادة تشغيل Chromium في غضون ثانيتين}few{‏ستتم إعادة تشغيل Chromium في غضون # ثوان}many{‏ستتم إعادة تشغيل Chromium في غضون # ثانيةً}other{‏ستتم إعادة تشغيل Chromium في غضون # ثانية}}</translation>
-<translation id="623836266260425961">‏تعذّر على نظام التشغيل Chromium مزامنة بياناتك.</translation>
 <translation id="6248213926982192922">‏جعل Chromium المتصفح التلقائي</translation>
 <translation id="6266342355635466082">‏يتعذّر على Chromium البحث عن تحديثات. يُرجى التحقّق من اتصال الإنترنت.</translation>
 <translation id="6268381023930128611">‏هل تريد الخروج من Chromium؟</translation>
@@ -193,7 +192,6 @@
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (تم النسخ إلى Chromium)</translation>
 <translation id="6893813176749746474">‏تم تحديث متصفح Chromium، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
-<translation id="6897548120660295439">‏يسمح برنامج Rosetta لمتصفِّح Chromium بتشغيل الوسائط المحمية في هذه الصفحة.</translation>
 <translation id="691026815377248078">‏يجب منح Chromium الإذن بالوصول إلى البلوتوث لمواصلة عملية 
 الإقران. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="6964305034639999644">‏فتح الرابط في نافذة تصفح متخفٍ في Chromium</translation>
@@ -201,11 +199,9 @@
 <translation id="6990124437352146030">‏يحتاج Chromium إلى إذن للوصول إلى الميكروفون من أجل الموقع الإلكتروني هذا.</translation>
 <translation id="701244094609242530">‏يتعذّر على Chromium التحقّق من الإضافات. يُرجى إعادة المحاولة.</translation>
 <translation id="705851970750939768">‏تحديث Chromium</translation>
-<translation id="7066436765290594559">‏تعذر على نظام التشغيل Chromium مزامنة البيانات. يُرجى تحديث عبارة مرور المزامنة.</translation>
 <translation id="7067091210845072982">‏في حال لم تتضمن صورة ما وصفًا مفيدًا، سيحاول Chromium توفير وصف لك. لإنشاء الأوصاف، سيتم إرسال الصور إلى Google.</translation>
 <translation id="7196312274710523067">‏تعذَّر إطلاق Chromium. يُرجى إعادة المحاولة.</translation>
 <translation id="7197677400338048821">‏يتعذّر على Chromium التحقُّق من كلمات المرور. يُرجى إعادة المحاولة بعد 24 ساعة.</translation>
-<translation id="7205698830395646142">‏الإخفاء في قائمة Chromium</translation>
 <translation id="7223968959479464213">‏إدارة المهام - Chromium</translation>
 <translation id="731644333568559921">‏تحديث ن&amp;ظام التشغيل Chromium</translation>
 <translation id="731795002583552498">‏تحديث Chromium</translation>
@@ -242,7 +238,6 @@
 <translation id="7907774600618164274">‏لم يتم إيقاف "نظام التشغيل Chromium" بشكلٍ صحيح.</translation>
 <translation id="7937630085815544518">‏تم تسجيل دخولك إلى Chromium باعتبارك <ph name="USER_EMAIL_ADDRESS" />. يُرجى استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
 <translation id="7975919845073681630">‏هذا تثبيت ثانوي من Chromium، ولا يمكن جعله متصفحك التلقائي.</translation>
-<translation id="7979877361127045932">‏الإخفاء في قائمة Chromium</translation>
 <translation id="8013436988911883588">‏بعد حصول Chromium على إمكانية الوصول، ستتمكن المواقع الإلكترونية من مطالبتك بإمكانية الوصول.</translation>
 <translation id="81770708095080097">‏هذا الملف ضار، لذلك فقد حظره Chromium.</translation>
 <translation id="8248265253516264921">‏في حال لم تتضمن صورة ما وصفًا مفيدًا، سيحاول Chromium توفير وصف لك. لإنشاء الأوصاف، سيتم إرسال الصور إلى Google. ويمكنك إيقاف هذه الميزة في الإعدادات في أي وقت.</translation>

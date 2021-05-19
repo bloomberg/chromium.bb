@@ -26,7 +26,7 @@ public:
             , fLocalMatrix(SkMatrix::InvalidMatrix()) {}
 
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-        const GrBitmapTextGeoProc& btgp = args.fGP.cast<GrBitmapTextGeoProc>();
+        const GrBitmapTextGeoProc& btgp = args.fGeomProc.cast<GrBitmapTextGeoProc>();
 
         GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
         GrGLSLVaryingHandler* varyingHandler = args.fVaryingHandler;
@@ -45,6 +45,7 @@ public:
 
         GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
         // Setup pass through color
+        fragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
         if (btgp.hasVertexColor()) {
             varyingHandler->addPassThroughAttribute(btgp.inColor(), args.fOutputColor);
         } else {
@@ -64,14 +65,15 @@ public:
         if (btgp.maskFormat() == kARGB_GrMaskFormat) {
             // modulate by color
             fragBuilder->codeAppendf("%s = %s * texColor;", args.fOutputColor, args.fOutputColor);
-            fragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+            fragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
         } else {
-            fragBuilder->codeAppendf("%s = texColor;", args.fOutputCoverage);
+            fragBuilder->codeAppendf("half4 %s = texColor;", args.fOutputCoverage);
         }
     }
 
-    void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor& gp) override {
-        const GrBitmapTextGeoProc& btgp = gp.cast<GrBitmapTextGeoProc>();
+    void setData(const GrGLSLProgramDataManager& pdman,
+                 const GrGeometryProcessor& geomProc) override {
+        const GrBitmapTextGeoProc& btgp = geomProc.cast<GrBitmapTextGeoProc>();
         if (btgp.color() != fColor && !btgp.hasVertexColor()) {
             pdman.set4fv(fColorUniform, 1, btgp.color().vec());
             fColor = btgp.color();
@@ -94,12 +96,11 @@ public:
                               const GrShaderCaps&,
                               GrProcessorKeyBuilder* b) {
         const GrBitmapTextGeoProc& btgp = proc.cast<GrBitmapTextGeoProc>();
-        uint32_t key = 0;
-        key |= btgp.usesW() ? 0x1 : 0x0;
-        key |= btgp.maskFormat() << 1;
-        key |= ComputeMatrixKey(btgp.localMatrix()) << 2;
-        b->add32(key);
-        b->add32(btgp.numTextureSamplers());
+        b->addBool(btgp.usesW(), "usesW");
+        static_assert(kLast_GrMaskFormat < (1u << 2));
+        b->addBits(2, btgp.maskFormat(), "maskFormat");
+        b->addBits(kMatrixKeyBits, ComputeMatrixKey(btgp.localMatrix()), "localMatrixType");
+        b->add32(btgp.numTextureSamplers(),"numTextures");
     }
 
 private:
@@ -189,7 +190,7 @@ void GrBitmapTextGeoProc::getGLSLProcessorKey(const GrShaderCaps& caps,
     GrGLBitmapTextGeoProc::GenKey(*this, caps, b);
 }
 
-GrGLSLPrimitiveProcessor* GrBitmapTextGeoProc::createGLSLInstance(const GrShaderCaps& caps) const {
+GrGLSLGeometryProcessor* GrBitmapTextGeoProc::createGLSLInstance(const GrShaderCaps& caps) const {
     return new GrGLBitmapTextGeoProc();
 }
 

@@ -85,7 +85,7 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   // QuicSession methods:
   QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override;
   QuicSpdyStream* CreateIncomingStream(PendingStream* pending) override;
-  QuicSimpleServerStream* CreateOutgoingBidirectionalStream() override;
+  QuicSpdyStream* CreateOutgoingBidirectionalStream() override;
   QuicSimpleServerStream* CreateOutgoingUnidirectionalStream() override;
   // Override to return true for locally preserved server push stream.
   void HandleFrameOnNonexistentOutgoingStream(QuicStreamId stream_id) override;
@@ -103,6 +103,14 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   }
 
   void MaybeInitializeHttp3UnidirectionalStreams() override;
+
+  bool ShouldNegotiateWebTransport() override {
+    return quic_simple_server_backend_->SupportsWebTransport();
+  }
+  bool ShouldNegotiateHttp3Datagram() override {
+    return QuicServerSessionBase::ShouldNegotiateHttp3Datagram() ||
+           ShouldNegotiateWebTransport();
+  }
 
  private:
   friend class test::QuicSimpleServerSessionPeer;

@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
+# Copyright 2021 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -42,7 +42,6 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavcodec/dirac.c",
     "libavcodec/dv_profile.c",
     "libavcodec/encode.c",
-    "libavcodec/fft_fixed.c",
     "libavcodec/fft_fixed_32.c",
     "libavcodec/fft_float.c",
     "libavcodec/fft_init_table.c",
@@ -55,11 +54,9 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavcodec/libopus.c",
     "libavcodec/libopusdec.c",
     "libavcodec/mathtables.c",
-    "libavcodec/mdct_fixed.c",
     "libavcodec/mdct_fixed_32.c",
     "libavcodec/mdct_float.c",
     "libavcodec/mediacodec.c",
-    "libavcodec/mjpegenc_huffman.c",
     "libavcodec/mpeg12framerate.c",
     "libavcodec/mpeg4audio.c",
     "libavcodec/mpegaudio.c",
@@ -99,7 +96,6 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavformat/autorename_libavformat_utils.c",
     "libavformat/avio.c",
     "libavformat/aviobuf.c",
-    "libavformat/cutils.c",
     "libavformat/dump.c",
     "libavformat/flac_picture.c",
     "libavformat/flacdec.c",
@@ -107,6 +103,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavformat/id3v1.c",
     "libavformat/id3v2.c",
     "libavformat/isom.c",
+    "libavformat/isom_tags.c",
     "libavformat/matroska.c",
     "libavformat/matroskadec.c",
     "libavformat/metadata.c",
@@ -216,6 +213,7 @@ if ((current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (current_cpu == "
   ffmpeg_c_sources += [
     "libavcodec/aac_ac3_parser.c",
     "libavcodec/aac_parser.c",
+    "libavcodec/aacps_common.c",
     "libavcodec/aacps_float.c",
     "libavcodec/aacpsdsp_float.c",
     "libavcodec/aacsbr.c",
@@ -227,7 +225,6 @@ if ((current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (current_cpu == "
     "libavcodec/cbrt_data.c",
     "libavcodec/kbdwin.c",
     "libavcodec/sinewin.c",
-    "libavcodec/sinewin_fixed.c",
     "libavformat/aacdec.c",
     "libavformat/apetag.c",
     "libavformat/img2.c",
@@ -296,7 +293,6 @@ if ((is_android && current_cpu == "arm64") || (is_mac && current_cpu == "arm64")
 
 if ((is_android && current_cpu == "arm" && arm_use_neon) || (use_linux_config && current_cpu == "arm" && arm_use_neon) || (use_linux_config && current_cpu == "arm")) {
   ffmpeg_c_sources += [
-    "libavcodec/arm/fft_fixed_init_arm.c",
     "libavcodec/arm/fft_init_arm.c",
     "libavcodec/arm/flacdsp_init_arm.c",
     "libavcodec/arm/mpegaudiodsp_init_arm.c",
@@ -395,7 +391,6 @@ if (use_linux_config && ffmpeg_branding == "ChromeOS") {
     "libavcodec/error_resilience.c",
     "libavcodec/exif.c",
     "libavcodec/fdctdsp.c",
-    "libavcodec/flvdec.c",
     "libavcodec/gsm_parser.c",
     "libavcodec/gsmdec.c",
     "libavcodec/gsmdec_data.c",
@@ -404,7 +399,6 @@ if (use_linux_config && ffmpeg_branding == "ChromeOS") {
     "libavcodec/h263data.c",
     "libavcodec/h263dec.c",
     "libavcodec/h263dsp.c",
-    "libavcodec/intelh263dec.c",
     "libavcodec/ituh263dec.c",
     "libavcodec/jfdctfst.c",
     "libavcodec/jfdctint.c",
@@ -510,9 +504,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (use_linux_config &&
     "libavutil/arm/float_dsp_init_neon.c",
   ]
   ffmpeg_gas_sources += [
-    "libavcodec/arm/fft_fixed_neon.S",
     "libavcodec/arm/fft_neon.S",
-    "libavcodec/arm/mdct_fixed_neon.S",
     "libavcodec/arm/mdct_neon.S",
     "libavcodec/arm/rdft_neon.S",
     "libavcodec/arm/vorbisdsp_neon.S",

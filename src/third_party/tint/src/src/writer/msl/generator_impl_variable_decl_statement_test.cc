@@ -12,25 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-#include <vector>
-
-#include "gtest/gtest.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/struct.h"
-#include "src/ast/struct_decoration.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_decoration.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/program.h"
-#include "src/type/array_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/vector_type.h"
-#include "src/writer/msl/generator_impl.h"
 #include "src/writer/msl/test_helper.h"
 
 namespace tint {
@@ -67,7 +49,7 @@ TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Const) {
 }
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Array) {
-  type::Array ary(ty.f32(), 5, ast::ArrayDecorationList{});
+  type::Array ary(ty.f32(), 5, ast::DecorationList{});
 
   auto* var = Var("a", &ary, ast::StorageClass::kNone);
   auto* stmt = create<ast::VariableDeclStatement>(var);
@@ -82,12 +64,11 @@ TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Array) {
 }
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Struct) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.f32()),
-                            Member("b", ty.f32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
+  auto* s = Structure("S", {
+                               Member("a", ty.f32()),
+                               Member("b", ty.f32()),
+                           });
 
-  auto* s = ty.struct_("S", str);
   auto* var = Var("a", s, ast::StorageClass::kNone);
   auto* stmt = create<ast::VariableDeclStatement>(var);
   WrapInFunction(stmt);
@@ -141,7 +122,7 @@ TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Private) {
 }
 
 TEST_F(MslGeneratorImplTest, Emit_VariableDeclStatement_Initializer_Private) {
-  Global("initializer", ty.f32(), ast::StorageClass::kNone);
+  Global("initializer", ty.f32(), ast::StorageClass::kInput);
   auto* var =
       Global("a", ty.f32(), ast::StorageClass::kPrivate, Expr("initializer"));
   auto* stmt = create<ast::VariableDeclStatement>(var);

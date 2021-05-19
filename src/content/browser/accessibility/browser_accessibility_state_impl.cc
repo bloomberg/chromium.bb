@@ -11,6 +11,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -18,11 +19,21 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 
 namespace content {
+
+// Auto-disable accessibility if this many seconds elapse with user input
+// events but no accessibility API usage.
+constexpr int kAutoDisableAccessibilityTimeSecs = 30;
+
+// Minimum number of user input events with no accessibility API usage
+// before auto-disabling accessibility.
+constexpr int kAutoDisableAccessibilityEventCount = 3;
 
 // IMPORTANT!
 // These values are written to logs.  Do not renumber or delete
@@ -53,27 +64,30 @@ BrowserAccessibilityState* BrowserAccessibilityState::GetInstance() {
   return BrowserAccessibilityStateImpl::GetInstance();
 }
 
+// On Android, Mac, and Windows there are platform-specific subclasses.
+#if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_MAC)
 // static
 BrowserAccessibilityStateImpl* BrowserAccessibilityStateImpl::GetInstance() {
-  return base::Singleton<
-      BrowserAccessibilityStateImpl,
-      base::LeakySingletonTraits<BrowserAccessibilityStateImpl>>::get();
+  static base::NoDestructor<BrowserAccessibilityStateImpl> instance;
+  return &*instance;
 }
+#endif
 
 BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
-    : BrowserAccessibilityState(), disable_hot_tracking_(false) {
-  ResetAccessibilityModeValue();
+    : BrowserAccessibilityState(),
+      histogram_delay_(
+          base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS)) {
+  force_renderer_accessibility_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceRendererAccessibility);
 
-  // We need to AddRef() the leaky singleton so that Bind doesn't
-  // delete it prematurely.
-  AddRef();
+  ResetAccessibilityModeValue();
 
   // Hook ourselves up to observe ax mode changes.
   ui::AXPlatformNode::AddAXModeObserver(this);
+}
 
-  // Let each platform do its own initialization.
-  PlatformInitialize();
-
+void BrowserAccessibilityStateImpl::InitBackgroundTasks() {
   // Schedule calls to update histograms after a delay.
   //
   // The delay is necessary because assistive technology sometimes isn't
@@ -84,15 +98,16 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   base::ThreadPool::PostDelayedTask(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
-          &BrowserAccessibilityStateImpl::UpdateHistogramsOnOtherThread, this),
-      base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
+          &BrowserAccessibilityStateImpl::UpdateHistogramsOnOtherThread,
+          base::Unretained(this)),
+      histogram_delay_);
 
   // Other things must be done on the UI thread (e.g. to access PrefService).
   GetUIThreadTaskRunner({})->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread,
-                     this),
-      base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
+                     base::Unretained(this)),
+      histogram_delay_);
 }
 
 BrowserAccessibilityStateImpl::~BrowserAccessibilityStateImpl() {
@@ -123,10 +138,8 @@ bool BrowserAccessibilityStateImpl::IsRendererAccessibilityEnabled() {
 
 void BrowserAccessibilityStateImpl::ResetAccessibilityModeValue() {
   accessibility_mode_ = ui::AXMode();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceRendererAccessibility)) {
+  if (force_renderer_accessibility_)
     AddAccessibilityModeFlags(ui::kAXModeComplete);
-  }
 }
 
 void BrowserAccessibilityStateImpl::ResetAccessibilityMode() {
@@ -166,15 +179,12 @@ bool BrowserAccessibilityStateImpl::IsCaretBrowsingEnabled() const {
 }
 
 void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
-  UpdatePlatformSpecificHistogramsOnUIThread();
-
   for (auto& callback : ui_thread_histogram_callbacks_)
     std::move(callback).Run();
   ui_thread_histogram_callbacks_.clear();
 
   UMA_HISTOGRAM_BOOLEAN("Accessibility.ManuallyEnabled",
-                        base::CommandLine::ForCurrentProcess()->HasSwitch(
-                            switches::kForceRendererAccessibility));
+                        force_renderer_accessibility_);
 #if defined(OS_WIN)
   UMA_HISTOGRAM_ENUMERATION(
       "Accessibility.WinHighContrastTheme",
@@ -182,14 +192,27 @@ void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
           ->GetPlatformHighContrastColorScheme(),
       ui::NativeTheme::PlatformHighContrastColorScheme::kMaxValue);
 #endif
+
+  ui_thread_done_ = true;
+  if (other_thread_done_ && background_thread_done_callback_)
+    std::move(background_thread_done_callback_).Run();
 }
 
 void BrowserAccessibilityStateImpl::UpdateHistogramsOnOtherThread() {
-  UpdatePlatformSpecificHistogramsOnOtherThread();
-
   for (auto& callback : other_thread_histogram_callbacks_)
     std::move(callback).Run();
   other_thread_histogram_callbacks_.clear();
+
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&BrowserAccessibilityStateImpl::OnOtherThreadDone,
+                     base::Unretained(this)));
+}
+
+void BrowserAccessibilityStateImpl::OnOtherThreadDone() {
+  other_thread_done_ = true;
+  if (ui_thread_done_ && background_thread_done_callback_)
+    std::move(background_thread_done_callback_).Run();
 }
 
 void BrowserAccessibilityStateImpl::OnAXModeAdded(ui::AXMode mode) {
@@ -200,14 +223,52 @@ ui::AXMode BrowserAccessibilityStateImpl::GetAccessibilityMode() {
   return accessibility_mode_;
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_MAC)
-void BrowserAccessibilityStateImpl::PlatformInitialize() {}
+void BrowserAccessibilityStateImpl::OnUserInputEvent() {
+  // No need to do anything if accessibility is off, or if it was forced on.
+  if (accessibility_mode_.is_mode_off() || force_renderer_accessibility_)
+    return;
 
-void BrowserAccessibilityStateImpl::
-    UpdatePlatformSpecificHistogramsOnUIThread() {}
-void BrowserAccessibilityStateImpl::
-    UpdatePlatformSpecificHistogramsOnOtherThread() {}
+  // Check if the feature to auto-disable accessibility is even enabled.
+  if (!features::IsAutoDisableAccessibilityEnabled())
+    return;
+
+  // If we get at least kAutoDisableAccessibilityEventCount user input
+  // events, more than kAutoDisableAccessibilityTimeSecs apart, with
+  // no accessibility API usage in-between disable accessibility.
+  // (See also OnAccessibilityApiUsage()).
+  base::TimeTicks now = ui::EventTimeForNow();
+  user_input_event_count_++;
+  if (user_input_event_count_ == 1) {
+    first_user_input_event_time_ = now;
+    return;
+  }
+
+  if (user_input_event_count_ < kAutoDisableAccessibilityEventCount)
+    return;
+
+  if (now - first_user_input_event_time_ >
+      base::TimeDelta::FromSeconds(kAutoDisableAccessibilityTimeSecs)) {
+    base::UmaHistogramCounts1000("Accessibility.AutoDisabled.EventCount",
+                                 user_input_event_count_);
+    DCHECK(!accessibility_enabled_time_.is_null());
+    base::UmaHistogramLongTimes("Accessibility.AutoDisabled.EnabledTime",
+                                now - accessibility_enabled_time_);
+    accessibility_disabled_time_ = now;
+    DisableAccessibility();
+  }
+}
+
+void BrowserAccessibilityStateImpl::OnAccessibilityApiUsage() {
+  // See OnUserInputEvent for how this is used to disable accessibility.
+  user_input_event_count_ = 0;
+}
+
 void BrowserAccessibilityStateImpl::UpdateUniqueUserHistograms() {}
+
+#if defined(OS_ANDROID)
+void BrowserAccessibilityStateImpl::SetImageLabelsModeForProfile(
+    bool enabled,
+    BrowserContext* profile) {}
 #endif
 
 void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {
@@ -220,6 +281,17 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {
   accessibility_mode_ |= mode;
   if (accessibility_mode_ == previous_mode)
     return;
+
+  // Keep track of the total time accessibility is enabled, and the time
+  // it was previously disabled.
+  if (accessibility_enabled_time_.is_null()) {
+    base::TimeTicks now = ui::EventTimeForNow();
+    accessibility_enabled_time_ = now;
+    if (!accessibility_disabled_time_.is_null()) {
+      base::UmaHistogramLongTimes("Accessibility.AutoDisabled.DisabledTime",
+                                  now - accessibility_disabled_time_);
+    }
+  }
 
   // Proxy the AXMode to AXPlatformNode to enable accessibility.
   ui::AXPlatformNode::NotifyAddAXModeFlags(accessibility_mode_);
@@ -255,11 +327,8 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {
 
 void BrowserAccessibilityStateImpl::RemoveAccessibilityModeFlags(
     ui::AXMode mode) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceRendererAccessibility) &&
-      mode == ui::kAXModeComplete) {
+  if (force_renderer_accessibility_ && mode == ui::kAXModeComplete)
     return;
-  }
 
   int raw_flags =
       accessibility_mode_.mode() ^ (mode.mode() & accessibility_mode_.mode());
@@ -269,6 +338,26 @@ void BrowserAccessibilityStateImpl::RemoveAccessibilityModeFlags(
       WebContentsImpl::GetAllWebContents();
   for (size_t i = 0; i < web_contents_vector.size(); ++i)
     web_contents_vector[i]->SetAccessibilityMode(accessibility_mode_);
+}
+
+base::CallbackListSubscription
+BrowserAccessibilityStateImpl::RegisterFocusChangedCallback(
+    FocusChangedCallback callback) {
+  return focus_changed_callbacks_.Add(std::move(callback));
+}
+
+void BrowserAccessibilityStateImpl::CallInitBackgroundTasksForTesting(
+    base::RepeatingClosure done_callback) {
+  // Set the delay to 1 second, that ensures that we actually test having
+  // a nonzero delay but the test still runs quickly.
+  histogram_delay_ = base::TimeDelta::FromSeconds(1);
+  background_thread_done_callback_ = done_callback;
+  InitBackgroundTasks();
+}
+
+void BrowserAccessibilityStateImpl::OnFocusChangedInPage(
+    const FocusedNodeDetails& details) {
+  focus_changed_callbacks_.Notify(details);
 }
 
 }  // namespace content

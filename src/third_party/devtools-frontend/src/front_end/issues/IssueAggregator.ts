@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
-import * as Common from '../common/common.js';
-import * as SDK from '../sdk/sdk.js';
+import * as Common from '../core/common/common.js';
+import * as SDK from '../core/sdk/sdk.js';
 
 /**
  * An `AggregatedIssue` representes a number of `SDK.Issue.Issue` objects that are displayed together.
@@ -17,10 +17,11 @@ export class AggregatedIssue extends SDK.Issue.Issue {
     hasRequest: boolean,
   }>;
   private affectedRequests: Map<string, Protocol.Audits.AffectedRequest>;
-  private heavyAdIssueDetails: Map<string, Protocol.Audits.HeavyAdIssueDetails>;
+  private heavyAdIssues: Set<SDK.HeavyAdIssue.HeavyAdIssue>;
   private blockedByResponseDetails: Map<string, Protocol.Audits.BlockedByResponseIssueDetails>;
   private corsIssues: Set<SDK.CorsIssue.CorsIssue>;
   private cspIssues: Set<SDK.ContentSecurityPolicyIssue.ContentSecurityPolicyIssue>;
+  private issueKind: SDK.Issue.IssueKind;
   private lowContrastIssues: Set<SDK.LowTextContrastIssue.LowTextContrastIssue>;
   private mixedContentIssues: Set<SDK.MixedContentIssue.MixedContentIssue>;
   private sharedArrayBufferIssues: Set<SDK.SharedArrayBufferIssue.SharedArrayBufferIssue>;
@@ -32,10 +33,11 @@ export class AggregatedIssue extends SDK.Issue.Issue {
     super(code);
     this.affectedCookies = new Map();
     this.affectedRequests = new Map();
-    this.heavyAdIssueDetails = new Map();
+    this.heavyAdIssues = new Set();
     this.blockedByResponseDetails = new Map();
     this.corsIssues = new Set();
     this.cspIssues = new Set();
+    this.issueKind = SDK.Issue.IssueKind.Improvement;
     this.lowContrastIssues = new Set();
     this.mixedContentIssues = new Set();
     this.sharedArrayBufferIssues = new Set();
@@ -63,12 +65,12 @@ export class AggregatedIssue extends SDK.Issue.Issue {
     return this.affectedCookies.values();
   }
 
-  heavyAds(): Iterable<Protocol.Audits.HeavyAdIssueDetails> {
-    return this.heavyAdIssueDetails.values();
+  getHeavyAdIssues(): Iterable<SDK.HeavyAdIssue.HeavyAdIssue> {
+    return this.heavyAdIssues;
   }
 
   getMixedContentIssues(): Iterable<SDK.MixedContentIssue.MixedContentIssue> {
-    return this.mixedContentIssues.values();
+    return this.mixedContentIssues;
   }
 
   getTrustedWebActivityIssues(): Iterable<SDK.TrustedWebActivityIssue.TrustedWebActivityIssue> {
@@ -102,7 +104,7 @@ export class AggregatedIssue extends SDK.Issue.Issue {
     return null;
   }
 
-  getCategory(): symbol {
+  getCategory(): SDK.Issue.IssueCategory {
     if (this.representative) {
       return this.representative.getCategory();
     }
@@ -127,6 +129,7 @@ export class AggregatedIssue extends SDK.Issue.Issue {
     if (!this.representative) {
       this.representative = issue;
     }
+    this.issueKind = SDK.Issue.unionIssueKind(this.issueKind, issue.getKind());
     let hasRequest = false;
     for (const request of issue.requests()) {
       hasRequest = true;
@@ -143,9 +146,8 @@ export class AggregatedIssue extends SDK.Issue.Issue {
     if (issue instanceof SDK.MixedContentIssue.MixedContentIssue) {
       this.mixedContentIssues.add(issue);
     }
-    for (const heavyAds of issue.heavyAds()) {
-      const key = JSON.stringify(heavyAds);
-      this.heavyAdIssueDetails.set(key, heavyAds);
+    if (issue instanceof SDK.HeavyAdIssue.HeavyAdIssue) {
+      this.heavyAdIssues.add(issue);
     }
     for (const details of issue.getBlockedByResponseDetails()) {
       const key = JSON.stringify(details, ['parentFrame', 'blockedFrame', 'requestId', 'frameId', 'reason', 'request']);
@@ -166,6 +168,10 @@ export class AggregatedIssue extends SDK.Issue.Issue {
     if (issue instanceof SDK.CorsIssue.CorsIssue) {
       this.corsIssues.add(issue);
     }
+  }
+
+  getKind(): SDK.Issue.IssueKind {
+    return this.issueKind;
   }
 }
 

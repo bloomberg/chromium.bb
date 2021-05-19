@@ -83,7 +83,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -176,6 +175,7 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/ui/apps/chrome_app_window_client.h"
+#include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/initialize_extensions_client.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -451,6 +451,10 @@ void BrowserProcessImpl::StartTearDown() {
     webrtc_log_uploader_->Shutdown();
 
   sessions::SessionIdGenerator::GetInstance()->Shutdown();
+
+  // Resetting the status tray will result in calls to
+  // |g_browser_process->local_state()|. See crbug.com/1187418
+  status_tray_.reset();
 
   if (local_state_)
     local_state_->CommitPendingWrite();

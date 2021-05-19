@@ -11,9 +11,10 @@
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -215,6 +216,11 @@ std::vector<GURL> HoldingSpaceKeyedService::GetPinnedFiles() const {
 
 void HoldingSpaceKeyedService::AddScreenshot(
     const base::FilePath& screenshot_file) {
+  const bool already_exists = holding_space_model_.ContainsItem(
+      HoldingSpaceItem::Type::kScreenshot, screenshot_file);
+  if (already_exists)
+    return;
+
   GURL file_system_url =
       holding_space_util::ResolveFileSystemUrl(profile_, screenshot_file);
   if (file_system_url.is_empty())
@@ -261,6 +267,11 @@ void HoldingSpaceKeyedService::AddNearbyShare(
 
 void HoldingSpaceKeyedService::AddScreenRecording(
     const base::FilePath& screen_recording_file) {
+  const bool already_exists = holding_space_model_.ContainsItem(
+      HoldingSpaceItem::Type::kScreenRecording, screen_recording_file);
+  if (already_exists)
+    return;
+
   GURL file_system_url =
       holding_space_util::ResolveFileSystemUrl(profile_, screen_recording_file);
   if (file_system_url.is_empty())

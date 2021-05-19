@@ -4,14 +4,15 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
-import * as Host from '../host/host.js';
-import * as i18n from '../i18n/i18n.js';
-import type * as ProtocolClient from '../protocol_client/protocol_client.js';
-import * as SDK from '../sdk/sdk.js';
+import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
 
-export const UIStrings = {
+import type * as ProtocolClient from '../core/protocol_client/protocol_client.js';
+import * as SDK from '../core/sdk/sdk.js';
+
+const UIStrings = {
   /**
   *@description Text that refers to the main target
   */
@@ -24,7 +25,16 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('node_main/NodeMain.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+let nodeMainImplInstance: NodeMainImpl;
+
 export class NodeMainImpl extends Common.ObjectWrapper.ObjectWrapper implements Common.Runnable.Runnable {
+  static instance(opts: {forceNew: boolean|null} = {forceNew: null}): NodeMainImpl {
+    const {forceNew} = opts;
+    if (!nodeMainImplInstance || forceNew) {
+      nodeMainImplInstance = new NodeMainImpl();
+    }
+    return nodeMainImplInstance;
+  }
   async run(): Promise<void> {
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConnectToNodeJSFromFrontend);
     SDK.Connections.initMainConnection(async () => {
@@ -34,6 +44,8 @@ export class NodeMainImpl extends Common.ObjectWrapper.ObjectWrapper implements 
     }, Components.TargetDetachedDialog.TargetDetachedDialog.webSocketConnectionLost);
   }
 }
+
+Common.Runnable.registerEarlyInitializationRunnable(NodeMainImpl.instance);
 
 export class NodeChildTargetManager extends SDK.SDKModel.SDKModel implements ProtocolProxyApi.TargetDispatcher {
   _targetManager: SDK.SDKModel.TargetManager;

@@ -854,7 +854,6 @@ def CreateMetadata(args, linker_name, build_config):
     if args.split_name and args.split_name != 'base':
       metadata[models.METADATA_APK_SIZE] = os.path.getsize(args.apk_file)
       metadata[models.METADATA_APK_SPLIT_NAME] = args.split_name
-      metadata[models.METADATA_APK_SPLIT_ON_DEMAND] = _IsOnDemand(args.apk_file)
     else:
       sizes_by_module = _CollectModuleSizes(args.minimal_apks_file)
       for name, size in sizes_by_module.items():
@@ -2008,12 +2007,8 @@ def ParseSsargs(lines):
   return sub_args_list
 
 
-def _DeduceNativeInfo(tentative_output_dir,
-                      apk_path,
-                      elf_path,
-                      map_path,
-                      on_config_error,
-                      allow_missing_linker_map=False):
+def _DeduceNativeInfo(tentative_output_dir, apk_path, elf_path, map_path,
+                      on_config_error):
   apk_so_path = None
   if apk_path:
     with zipfile.ZipFile(apk_path) as z:
@@ -2041,7 +2036,7 @@ def _DeduceNativeInfo(tentative_output_dir,
     # TODO(agrieve): Support breaking down partitions.
     is_partition = elf_path.endswith('_partition.so')
     if is_partition:
-      return None, None, None
+      on_config_error('Found unexpected _partition.so: ' + elf_path)
 
     if _ElfIsMainPartition(elf_path, ''):
       map_path = elf_path.replace('.so', '__combined.so') + '.map'
@@ -2053,10 +2048,6 @@ def _DeduceNativeInfo(tentative_output_dir,
   if not os.path.exists(map_path):
     # Consider a missing linker map fatal only for the base module. For .so
     # files in feature modules, allow skipping breakdowns.
-    if allow_missing_linker_map:
-      logging.warning('No linker map found for %s. Skipping native breakdown.',
-                      elf_path)
-      return None, None, None
     on_config_error(
         'Could not find .map(.gz)? file. Ensure you have built with '
         'is_official_build=true and generate_linker_map=true, or use '
@@ -2127,15 +2118,14 @@ def _ProcessContainerArgs(top_args, sub_args, container_name, on_config_error):
   linker_name = None
   if opts.analyze_native:
     is_base_module = sub_args.split_name in (None, 'base')
-    sub_args.elf_file, sub_args.map_file, apk_so_path = _DeduceNativeInfo(
-        top_args.output_directory,
-        sub_args.apk_file,
-        sub_args.elf_file or sub_args.aux_elf_file,
-        sub_args.map_file,
-        on_config_error,
-        allow_missing_linker_map=not is_base_module)
-    if not (sub_args.elf_file or sub_args.map_file or apk_so_path):
+    # We don't yet support analyzing .so files outside of base modules.
+    if not is_base_module:
       opts.analyze_native = False
+    else:
+      sub_args.elf_file, sub_args.map_file, apk_so_path = _DeduceNativeInfo(
+          top_args.output_directory, sub_args.apk_file, sub_args.elf_file
+          or sub_args.aux_elf_file, sub_args.map_file, on_config_error)
+
   if opts.analyze_native:
     if sub_args.map_file:
       linker_name = _DetectLinkerName(sub_args.map_file)
@@ -2156,6 +2146,10 @@ def _ProcessContainerArgs(top_args, sub_args, container_name, on_config_error):
   if top_args.output_directory and apk_prefix:
     size_info_prefix = os.path.join(top_args.output_directory, 'size-info',
                                     os.path.basename(apk_prefix))
+
+  # Need one or the other to have native symbols.
+  if not sub_args.elf_file and not sub_args.map_file:
+    opts.analyze_native = False
 
   container_args = {k: v for k, v in sub_args.__dict__.items()}
   container_args.update(opts.__dict__)
@@ -2225,8 +2219,8 @@ def _IterSubArgs(top_args, on_config_error):
       container_name = sub_args.name
     else:
       container_name = os.path.basename(main_file)
-    if set(container_name) & set('<>'):
-      parser.error('Container name cannot have characters in "<>"')
+    if set(container_name) & set('<>?'):
+      parser.error('Container name cannot have characters in "<>?"')
 
 
     # If needed, extract .apk file to a temp file and process that instead.
@@ -2239,6 +2233,11 @@ def _IterSubArgs(top_args, on_config_error):
           module_sub_args.apk_file = temp
           module_sub_args.split_name = module_name
           module_sub_args.name = '{}/{}.apk'.format(container_name, module_name)
+          # Make on-demand a part of the name so that:
+          # * It's obvious from the name which DFMs are on-demand.
+          # * Diffs that change an on-demand status show as adds/removes.
+          if _IsOnDemand(temp):
+            module_sub_args.name += '?'
           if module_name != 'base':
             # TODO(crbug.com/1143690): Fix native analysis for split APKs.
             module_sub_args.map_file = None

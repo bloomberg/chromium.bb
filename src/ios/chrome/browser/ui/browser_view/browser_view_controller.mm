@@ -29,6 +29,7 @@
 #import "components/signin/ios/browser/manage_accounts_delegate.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -195,6 +196,7 @@
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state_observer_bridge.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -609,6 +611,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // displaying a new web state.
 @property(nonatomic, assign) BOOL viewTranslatedForSmoothScrolling;
 
+// A gesture recognizer to track the last tapped window and the coordinates of
+// the last tap.
+@property(nonatomic, strong) UIGestureRecognizer* contentAreaGestureRecognizer;
+
 // BVC initialization
 // ------------------
 // If the BVC is initialized with a valid browser state & tab model immediately,
@@ -717,6 +723,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @end
 
 @implementation BrowserViewController
+
+@synthesize thumbStripEnabled = _thumbStripEnabled;
 
 #pragma mark - Object lifecycle
 
@@ -841,6 +849,27 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 #pragma mark - Private Properties
+
+- (void)ensureBrowserViewHiderCoordinatorStarted {
+  if (self.browserViewHiderCoordinator) {
+    return;
+  }
+
+  DCHECK(self.locationBarModel);
+  DCHECK(self.isThumbStripEnabled);
+  DCHECK(self.thumbStripPanHandler);
+
+  ViewRevealingVerticalPanHandler* panHandler = self.thumbStripPanHandler;
+  BrowserViewHiderCoordinator* browserViewHiderCoordinator =
+      [[BrowserViewHiderCoordinator alloc]
+          initWithBaseViewController:self
+                             browser:self.browser];
+  browserViewHiderCoordinator.locationBarModel = self.locationBarModel;
+  [browserViewHiderCoordinator start];
+  [panHandler addAnimatee:browserViewHiderCoordinator.animatee];
+  browserViewHiderCoordinator.panGestureHandler = panHandler;
+  self.browserViewHiderCoordinator = browserViewHiderCoordinator;
+}
 
 - (SideSwipeController*)sideSwipeController {
   if (!_sideSwipeController) {
@@ -1329,6 +1358,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.browser->GetWebStateList()->RemoveObserver(_webStateListObserver.get());
   self.browser = nullptr;
 
+  [self.contentArea removeGestureRecognizer:self.contentAreaGestureRecognizer];
+
   [self.primaryToolbarCoordinator stop];
   self.primaryToolbarCoordinator = nil;
   [self.secondaryToolbarContainerCoordinator stop];
@@ -1417,11 +1448,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   UIViewAutoresizing initialViewAutoresizing =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
-  // Clip the content to the bounds of the view. This prevents the WebView to
-  // overflow outside of the BVC, which is particularly visible during rotation.
-  // The WebView is overflowing its bounds to be displayed below the toolbars.
-  self.view.clipsToBounds = YES;
-
   self.contentArea.frame = initialViewsRect;
 
   // Create the typing shield.  It is initially hidden, and is made visible when
@@ -1455,12 +1481,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Add a tap gesture recognizer to save the last tap location for the source
   // location of the new tab animation.
-  UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
+  self.contentAreaGestureRecognizer = [[UITapGestureRecognizer alloc]
       initWithTarget:self
               action:@selector(saveContentAreaTapLocation:)];
-  [tapRecognizer setDelegate:self];
-  [tapRecognizer setCancelsTouchesInView:NO];
-  [self.contentArea addGestureRecognizer:tapRecognizer];
+  [self.contentAreaGestureRecognizer setDelegate:self];
+  [self.contentAreaGestureRecognizer setCancelsTouchesInView:NO];
+  [self.contentArea addGestureRecognizer:self.contentAreaGestureRecognizer];
+
+  if (self.isThumbStripEnabled) {
+    [self ensureBrowserViewHiderCoordinatorStarted];
+  } else {
+    self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  }
 }
 
 - (void)viewSafeAreaInsetsDidChange {
@@ -1692,17 +1724,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           }
         }
       }];
-
-  if (self.thumbStripEnabled) {
-    DCHECK(self.thumbStripPanHandler);
-    CGFloat baseViewHeight = size.height;
-    self.thumbStripPanHandler.baseViewHeight = baseViewHeight;
-    // On rotation, reposition the BVC container if positioned at the bottom.
-    if (self.bottomPosition) {
-      self.view.superview.transform = CGAffineTransformMakeTranslation(
-          0, self.thumbStripPanHandler.revealedHeight);
-    }
-  }
 
   id<CRWWebViewProxy> webViewProxy = self.currentWebState->GetWebViewProxy();
   [webViewProxy surfaceSizeChanged];
@@ -2679,6 +2700,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)saveContentAreaTapLocation:(UIGestureRecognizer*)gestureRecognizer {
+  if (_isShutdown) {
+    return;
+  }
   UIView* view = gestureRecognizer.view;
   CGPoint viewCoordinate = [gestureRecognizer locationInView:view];
   _lastTapPoint = [[view superview] convertPoint:viewCoordinate
@@ -2829,10 +2853,21 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - Private Methods: Reading List
 
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title {
-  base::RecordAction(UserMetricsAction("MobileReadingListAdd"));
-
   ReadingListModel* readingModel =
       ReadingListModelFactory::GetForBrowserState(self.browserState);
+  if (self.currentWebState &&
+      self.currentWebState->GetVisibleURL().spec() == URL.spec()) {
+    // Log UKM if the current page is being added to Reading List.
+    ukm::SourceId sourceID =
+        ukm::GetSourceIdForWebStateDocument(self.currentWebState);
+    if (sourceID != ukm::kInvalidSourceId) {
+      ukm::builders::IOS_PageAddedToReadingList(sourceID)
+          .SetAddedFromMessages(false)
+          .Record(ukm::UkmRecorder::Get());
+    }
+  }
+  base::RecordAction(UserMetricsAction("MobileReadingListAdd"));
+
   readingModel->AddEntry(URL, base::SysNSStringToUTF8(title),
                          reading_list::ADDED_VIA_CURRENT_APP);
 
@@ -2847,14 +2882,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - ThumbStripSupporting
 
-- (BOOL)isThumbStripEnabled {
-  return self.browserViewHiderCoordinator != nil;
-}
-
 - (void)thumbStripEnabledWithPanHandler:
     (ViewRevealingVerticalPanHandler*)panHandler {
   DCHECK(![self isThumbStripEnabled]);
   DCHECK(panHandler);
+  _thumbStripEnabled = YES;
+
   self.thumbStripPanHandler = panHandler;
 
   // Add self as animatee first to make sure that the BVC's view is loaded for
@@ -2862,17 +2895,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [panHandler addAnimatee:self];
 
   DCHECK([self isViewLoaded]);
-  DCHECK(self.locationBarModel);
   DCHECK(self.primaryToolbarCoordinator.animatee);
 
-  BrowserViewHiderCoordinator* browserViewHiderCoordinator =
-      [[BrowserViewHiderCoordinator alloc]
-          initWithBaseViewController:self
-                             browser:self.browser];
-  browserViewHiderCoordinator.locationBarModel = self.locationBarModel;
-  [browserViewHiderCoordinator start];
-  [panHandler addAnimatee:browserViewHiderCoordinator.animatee];
-  self.browserViewHiderCoordinator = browserViewHiderCoordinator;
+  [self ensureBrowserViewHiderCoordinatorStarted];
 
   [panHandler addAnimatee:self.primaryToolbarCoordinator.animatee];
 
@@ -2880,7 +2905,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!base::FeatureList::IsEnabled(kModernTabStrip)) {
     self.legacyTabStripCoordinator.panGestureHandler = panHandler;
   }
-  self.browserViewHiderCoordinator.panGestureHandler = panHandler;
 
   self.view.backgroundColor = UIColor.clearColor;
 
@@ -2892,6 +2916,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
   UIView* webStateView = [self viewForWebState:self.currentWebState];
   webStateView.frame = webStateViewFrame;
+
+  for (const auto& element : _ntpCoordinatorsForWebStates) {
+    [element.second.thumbStripSupporting
+        thumbStripEnabledWithPanHandler:panHandler];
+  }
 }
 
 - (void)thumbStripDisabled {
@@ -2923,6 +2952,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
   UIView* webStateView = [self viewForWebState:self.currentWebState];
   webStateView.frame = webStateViewFrame;
+
+  for (const auto& element : _ntpCoordinatorsForWebStates) {
+    [element.second.thumbStripSupporting thumbStripDisabled];
+  }
+
+  _thumbStripEnabled = NO;
 }
 
 #pragma mark - WebNavigationNTPDelegate
@@ -3039,9 +3074,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)animateViewReveal:(ViewRevealState)nextViewRevealState {
-  if (!self.view.superview) {
-    return;
-  }
   CGFloat tabStripHeight = self.tabStripView.frame.size.height;
   CGFloat hideHeight = tabStripHeight + self.headerOffset;
   switch (nextViewRevealState) {
@@ -4880,11 +4912,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       self.blockingView.translatesAutoresizingMaskIntoConstraints = NO;
       self.blockingView.layer.zPosition = FLT_MAX;
 
+      DCHECK(self.reauthHandler);
       [self.blockingView.authenticateButton
                  addTarget:self.reauthHandler
                     action:@selector(authenticateIncognitoContent)
           forControlEvents:UIControlEventTouchUpInside];
 
+      DCHECK(self.dispatcher);
       [self.blockingView.tabSwitcherButton
                  addTarget:self.dispatcher
                     action:@selector(displayRegularTabSwitcherInGridLayout)
@@ -5191,10 +5225,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)onAddAccount {
-  signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
-      ios::AccountReconcilorFactory::GetForBrowserState(self.browserState)
-          ->GetState());
-  [self.dispatcher showAddAccountFromViewController:self];
+  ShowSigninCommand* command = [[ShowSigninCommand alloc]
+      initWithOperation:AUTHENTICATION_OPERATION_ADD_ACCOUNT
+            accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN];
+  DCHECK(self.dispatcher);
+  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 - (void)onGoIncognito:(const GURL&)url {
@@ -5243,6 +5278,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)showGoogleServicesSettings {
   [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+}
+
+- (void)showAccountSettings {
+  [self.dispatcher showAccountsSettingsFromViewController:self];
 }
 
 - (void)showTrustedVaultReauthenticationWithRetrievalTrigger:

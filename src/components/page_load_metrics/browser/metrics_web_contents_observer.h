@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -78,8 +79,9 @@ class MetricsWebContentsObserver
     virtual void OnRestoredFromBackForwardCache(PageLoadTracker* tracker) {}
 
     // Returns the observer delegate for the committed load associated with
-    // the MetricsWebContentsObserver.
-    const PageLoadMetricsObserverDelegate& GetDelegateForCommittedLoad();
+    // the MetricsWebContentsObserver, or null if the observer has gone away
+    // (via MetricsWebContentsObserver::WebContentsDestroyed).
+    const PageLoadMetricsObserverDelegate* GetDelegateForCommittedLoad();
 
    private:
     page_load_metrics::MetricsWebContentsObserver* observer_;
@@ -116,7 +118,7 @@ class MetricsWebContentsObserver
   void RenderProcessGone(base::TerminationStatus status) override;
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
-  void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void FrameDeleted(int frame_tree_node_id) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
@@ -126,7 +128,7 @@ class MetricsWebContentsObserver
       content::RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
       const blink::mojom::ResourceLoadInfo& resource_load_info) override;
-  void FrameReceivedFirstUserActivation(
+  void FrameReceivedUserActivation(
       content::RenderFrameHost* render_frame_host) override;
   void FrameDisplayStateChanged(content::RenderFrameHost* render_frame_host,
                                 bool is_display_none) override;
@@ -299,6 +301,14 @@ class MetricsWebContentsObserver
   // valid until commit time, when we remove it from the map.
   std::map<content::NavigationHandle*, std::unique_ptr<PageLoadTracker>>
       provisional_loads_;
+
+  // Loads we are not interested in tracking (e.g. because they are happening in
+  // the Prerender). Note that a sub frame navigation might start in the
+  // prerender but finish in the primary FrameTree so we need to remember
+  // somewhere that we are not interested in the navigation. Hence this member.
+  // TODO(https://crbug.com/1190112): Add proper support for prerendering when
+  // there are better content APIs
+  std::set<content::NavigationHandle*> uninteresting_loads_;
 
   // Tracks aborted provisional loads for a little bit longer than usual (one
   // more navigation commit at the max), in order to better understand how the

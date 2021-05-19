@@ -316,11 +316,11 @@ bool WebAXObject::IsModal() const {
   return private_->IsModal();
 }
 
-bool WebAXObject::IsNativeTextControl() const {
+bool WebAXObject::IsNativeTextField() const {
   if (IsDetached())
     return false;
 
-  return private_->IsNativeTextControl();
+  return private_->IsNativeTextField();
 }
 
 bool WebAXObject::IsOffScreen() const {
@@ -539,6 +539,9 @@ WebAXObject WebAXObject::HitTest(const gfx::Point& point) const {
     return WebAXObject();
   }
 
+  if (IsDetached())
+    return WebAXObject();  // Updating lifecycle could detach object.
+
   AXObject* hit = private_->AccessibilityHitTest(contents_point);
 
   if (hit)
@@ -594,6 +597,16 @@ WebString WebAXObject::Language() const {
 bool WebAXObject::PerformAction(const ui::AXActionData& action_data) const {
   if (IsDetached())
     return false;
+
+  Document* document = private_->GetDocument();
+  if (!document)
+    return false;
+
+  document->View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kAccessibility);
+
+  if (IsDetached())
+    return false;  // Updating lifecycle could detach object.
 
   ScopedActionAnnotator annotater(private_.Get(), action_data.action);
   return private_->PerformAction(action_data);
@@ -682,7 +695,7 @@ void WebAXObject::Selection(bool& is_selection_backward,
     return;
 
   const auto ax_selection =
-      focus.private_->IsNativeTextControl()
+      focus.private_->IsNativeTextField()
           ? AXSelection::FromCurrentSelection(
                 ToTextControl(*focus.private_->GetNode()))
           : AXSelection::FromCurrentSelection(*focus.private_->GetDocument());
@@ -730,7 +743,7 @@ bool WebAXObject::SetSelection(const WebAXObject& anchor_object,
                                   ax::mojom::blink::Action::kSetSelection);
   AXPosition ax_base, ax_extent;
   if (static_cast<const AXObject*>(anchor_object)->IsTextObject() ||
-      static_cast<const AXObject*>(anchor_object)->IsNativeTextControl()) {
+      static_cast<const AXObject*>(anchor_object)->IsNativeTextField()) {
     ax_base =
         AXPosition::CreatePositionInTextObject(*anchor_object, anchor_offset);
   } else if (anchor_offset <= 0) {
@@ -744,7 +757,7 @@ bool WebAXObject::SetSelection(const WebAXObject& anchor_object,
   }
 
   if (static_cast<const AXObject*>(focus_object)->IsTextObject() ||
-      static_cast<const AXObject*>(focus_object)->IsNativeTextControl()) {
+      static_cast<const AXObject*>(focus_object)->IsNativeTextField()) {
     ax_extent =
         AXPosition::CreatePositionInTextObject(*focus_object, focus_offset);
   } else if (focus_offset <= 0) {
@@ -763,11 +776,13 @@ bool WebAXObject::SetSelection(const WebAXObject& anchor_object,
   return ax_selection.Select();
 }
 
-WebString WebAXObject::StringValue() const {
+WebString WebAXObject::GetValueForControl() const {
   if (IsDetached())
     return WebString();
 
-  return private_->StringValue();
+  // TODO(nektar): Switch to `GetValueForControl()` once browser changes have
+  // landed.
+  return private_->SlowGetValueForControlIncludingContentEditable();
 }
 
 ax::mojom::blink::WritingDirection WebAXObject::GetTextDirection() const {
@@ -1390,6 +1405,17 @@ bool WebAXObject::MaybeUpdateLayoutAndCheckValidity(
   }
 
   return true;
+}
+
+// static
+bool WebAXObject::IsDirty(const WebDocument& web_document) {
+  const Document* document = web_document.ConstUnwrap<Document>();
+  if (!document || !document->View())
+    return false;
+  if (!document->ExistingAXObjectCache())
+    return false;
+
+  return document->ExistingAXObjectCache()->IsDirty();
 }
 
 // static

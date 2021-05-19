@@ -118,8 +118,8 @@ void SetIsIncognitoEnabled(const std::string& extension_id,
       return;
 
     // TODO(treib,kalman): Should this be Manifest::IsComponentLocation(..)?
-    // (which also checks for EXTERNAL_COMPONENT).
-    if (extension->location() == Manifest::COMPONENT) {
+    // (which also checks for kExternalComponent).
+    if (extension->location() == mojom::ManifestLocation::kComponent) {
       // This shouldn't be called for component extensions unless it is called
       // by sync, for syncable component extensions.
       // See http://crbug.com/112290 and associated CLs for the sordid history.
@@ -309,6 +309,19 @@ std::unique_ptr<const PermissionSet> GetInstallPromptPermissionSetForExtension(
                                                         optional_permissions);
   }
   return permissions_to_display;
+}
+
+std::vector<content::BrowserContext*> GetAllRelatedProfiles(Profile* profile) {
+  std::vector<Profile*> off_the_record_profiles =
+      profile->GetAllOffTheRecordProfiles();
+
+  std::vector<content::BrowserContext*> related_contexts;
+  related_contexts.reserve(1 + off_the_record_profiles.size());
+  related_contexts.push_back(profile->GetOriginalProfile());
+  for (Profile* off_the_record_profile : off_the_record_profiles)
+    related_contexts.push_back(off_the_record_profile);
+
+  return related_contexts;
 }
 
 }  // namespace util

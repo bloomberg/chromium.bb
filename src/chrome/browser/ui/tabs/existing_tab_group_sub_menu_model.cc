@@ -38,8 +38,8 @@ ExistingTabGroupSubMenuModel::ExistingTabGroupSubMenuModel(
 
   for (tab_groups::TabGroupId group : GetOrderedTabGroupsInSubMenu()) {
     const TabGroup* tab_group = model->group_model()->GetTabGroup(group);
-    const base::string16 group_title = tab_group->visual_data()->title();
-    const base::string16 displayed_title =
+    const std::u16string group_title = tab_group->visual_data()->title();
+    const std::u16string displayed_title =
         group_title.empty() ? tab_group->GetContentString() : group_title;
     const int color_id =
         GetTabGroupContextMenuColorId(tab_group->visual_data()->color());
@@ -86,10 +86,10 @@ void ExistingTabGroupSubMenuModel::ExecuteNewCommand(int event_flags) {
 }
 
 void ExistingTabGroupSubMenuModel::ExecuteExistingCommand(int command_index) {
+  DCHECK_LT(size_t{command_index},
+            model()->group_model()->ListTabGroups().size());
   base::RecordAction(base::UserMetricsAction("TabContextMenu_NewTabInGroup"));
 
-  if (size_t{command_index} >= model()->group_model()->ListTabGroups().size())
-    return;
   if (!model()->ContainsIndex(GetContextIndex()))
     return;
   model()->ExecuteAddToExistingGroupCommand(

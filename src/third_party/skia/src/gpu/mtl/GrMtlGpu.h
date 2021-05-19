@@ -38,6 +38,9 @@ public:
 
     void disconnect(DisconnectType) override;
 
+    GrThreadSafePipelineBuilder* pipelineBuilder() override;
+    sk_sp<GrThreadSafePipelineBuilder> refPipelineBuilder() override;
+
     const GrMtlCaps& mtlCaps() const { return *fMtlCaps.get(); }
 
     id<MTLDevice> device() const { return fDevice; }
@@ -54,6 +57,8 @@ public:
     void deleteBackendTexture(const GrBackendTexture&) override;
 
     bool compile(const GrProgramDesc&, const GrProgramInfo&) override;
+
+    bool precompileShader(const SkData& key, const SkData& data) override;
 
 #if GR_TEST_UTILS
     bool isTestingOnlyBackendTexture(const GrBackendTexture&) const override;
@@ -114,11 +119,6 @@ private:
              id<MTLCommandQueue>, GrMTLHandle binaryArchive, MTLFeatureSet);
 
     void destroyResources();
-
-    void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>*) override {
-        SkASSERT(!this->caps()->sampleLocationsSupport());
-        SK_ABORT("Sample locations not yet implemented for Metal.");
-    }
 
     void xferBarrier(GrRenderTarget*, GrXferBarrierType) override {}
 

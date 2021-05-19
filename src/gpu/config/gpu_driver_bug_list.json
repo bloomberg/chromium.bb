@@ -523,8 +523,8 @@
       "os": {
         "type": "android"
       },
-      "gl_vendor": "Imagination.*",
-      "gl_renderer": "PowerVR SGX 5.*",
+      "gl_vendor": ".*Imagination.*",
+      "gl_renderer": ".*PowerVR SGX 5.*",
       "features": [
         "etc1_power_of_two_only"
       ]
@@ -859,23 +859,6 @@
       "gl_renderer": ".*4\\d\\d",
       "features": [
         "disable_blend_equation_advanced"
-      ]
-    },
-    {
-      "id": 118,
-      "cr_bugs": [477306],
-      "description": "NVIDIA 331 series drivers shader compiler may crash when attempting to optimize pow()",
-      "os": {
-        "type": "linux"
-      },
-      "driver_version": {
-        "op": "<=",
-        "value": "331"
-      },
-      "vendor_id": "0x10de",
-      "gl_vendor": "NVIDIA.*",
-      "features": [
-        "remove_pow_with_constant_exponent"
       ]
     },
     {
@@ -1709,19 +1692,6 @@
       "vendor_id": "0x1002",
       "features": [
         "adjust_src_dst_region_for_blitframebuffer"
-      ]
-    },
-    {
-      "id": 201,
-      "cr_bugs": [659326,639760],
-      "description": "AMD drivers in Linux require invariant qualifier to match between vertex and fragment shaders",
-      "os": {
-        "type": "linux"
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "dont_remove_invariant_for_fragment_input",
-        "remove_invariant_and_centroid_for_essl3"
       ]
     },
     {
@@ -3655,19 +3625,6 @@
       ]
     },
     {
-      "id": 366,
-      "cr_bugs": [1179557],
-      "description": "The hardware video encoder on the SC7180 SoC has poor quality.",
-      "os": {
-        "type": "chromeos"
-      },
-      "gl_vendor": "freedreno",
-      "features": [
-          "disable_accelerated_h264_encode",
-          "disable_accelerated_vp8_encode"
-        ]
-    },
-    {
       "id": 367,
       "cr_bugs": [1180962],
       "description": "ANGLE cannot recover from context lost",
@@ -3727,6 +3684,22 @@
       "vendor_id": "0x8086",
       "features": [
         "disable_direct_composition_sw_video_overlays"
+      ]
+    },
+    {
+      "id": 372,
+      "cr_bugs": [1103852],
+      "description": "Check YCbCr_Studio_G22_Left_P709 color space for NV12 overlay support on Intel",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "intel_gpu_generation": {
+        "op": "=",
+        "value": "9"
+      },
+      "features": [
+        "check_ycbcr_studio_g22_left_p709_for_nv12_support"
       ]
     }
   ]

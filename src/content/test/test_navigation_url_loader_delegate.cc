@@ -4,7 +4,10 @@
 
 #include "content/test/test_navigation_url_loader_delegate.h"
 
+#include <memory>
+
 #include "base/run_loop.h"
+#include "content/browser/loader/navigation_early_hints_manager.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/global_request_id.h"
@@ -19,19 +22,19 @@ TestNavigationURLLoaderDelegate::TestNavigationURLLoaderDelegate()
 TestNavigationURLLoaderDelegate::~TestNavigationURLLoaderDelegate() {}
 
 void TestNavigationURLLoaderDelegate::WaitForRequestRedirected() {
-  request_redirected_.reset(new base::RunLoop);
+  request_redirected_ = std::make_unique<base::RunLoop>();
   request_redirected_->Run();
   request_redirected_.reset();
 }
 
 void TestNavigationURLLoaderDelegate::WaitForResponseStarted() {
-  response_started_.reset(new base::RunLoop);
+  response_started_ = std::make_unique<base::RunLoop>();
   response_started_->Run();
   response_started_.reset();
 }
 
 void TestNavigationURLLoaderDelegate::WaitForRequestFailed() {
-  request_failed_.reset(new base::RunLoop);
+  request_failed_ = std::make_unique<base::RunLoop>();
   request_failed_->Run();
   request_failed_.reset();
 }
@@ -59,7 +62,8 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
     bool is_download,
     blink::NavigationDownloadPolicy download_policy,
     net::NetworkIsolationKey network_isolation_key,
-    base::Optional<SubresourceLoaderParams> subresource_loader_params) {
+    base::Optional<SubresourceLoaderParams> subresource_loader_params,
+    EarlyHints early_hints) {
   on_request_handled_counter_++;
   response_head_ = std::move(response_head);
   response_body_ = std::move(response_body);

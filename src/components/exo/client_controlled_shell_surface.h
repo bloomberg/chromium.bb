@@ -172,7 +172,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
                        uint32_t frame_enabled_button_mask);
 
   // Set the extra title for the surface.
-  void SetExtraTitle(const base::string16& extra_title);
+  void SetExtraTitle(const std::u16string& extra_title);
 
   // Set specific orientation lock for this surface. When this surface is in
   // foreground and the display can be rotated (e.g. tablet mode), apply the
@@ -234,6 +234,12 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   // Used to scale incoming coordinates from the client to DP.
   float GetClientToDpScale() const;
+
+  // Sets the resize lock state to the surface.
+  void SetResizeLock(bool resize_lock);
+
+  // Update the resizability based on the resize lock state.
+  void UpdateCanResize() override;
 
  protected:
   // Overridden from ShellSurfaceBase:
@@ -331,7 +337,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   ash::OrientationLockType initial_orientation_lock_ =
       ash::OrientationLockType::kAny;
   // The extra title to be applied when widget is being created.
-  base::string16 initial_extra_title_ = base::string16();
+  std::u16string initial_extra_title_ = std::u16string();
 
   bool preserve_widget_bounds_ = false;
 
@@ -363,6 +369,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   // Accessibility ID provided by client.
   base::Optional<int32_t> client_accessibility_id_;
+
+  bool pending_resize_lock_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };

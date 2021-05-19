@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_SAFE_BROWSING_PASSWORD_PROTECTION_JAVA_SCRIPT_FEATURE_H_
 #define IOS_CHROME_BROWSER_SAFE_BROWSING_PASSWORD_PROTECTION_JAVA_SCRIPT_FEATURE_H_
 
+#include <map>
+
 #include "ios/web/public/js_messaging/java_script_feature.h"
 
 class InputEventObserver;
@@ -26,8 +28,8 @@ class PasswordProtectionJavaScriptFeature : public web::JavaScriptFeature {
 
   // JavaScriptFeature:
   base::Optional<std::string> GetScriptMessageHandlerName() const override;
-  void ScriptMessageReceived(web::BrowserState* browser_state,
-                             WKScriptMessage* message) override;
+  void ScriptMessageReceived(web::WebState* web_state,
+                             const web::ScriptMessage& message) override;
 
   // Adds observer for key presses and paste actions, only for the WebState
   // specified in |observer|. It is an error to add more than one observer per

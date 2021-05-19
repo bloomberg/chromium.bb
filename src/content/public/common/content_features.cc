@@ -165,9 +165,6 @@ const base::Feature kClickPointerEvent{"ClickPointerEvent",
 const base::Feature kCompositeBGColorAnimation{
     "CompositeBGColorAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kCompositeRelativeKeyframes{
-    "CompositeRelativeKeyframes", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, code cache does not use a browsing_data filter for deletions.
 extern const base::Feature kCodeCacheDeletionWithoutFilter{
     "CodeCacheDeletionWithoutFilter", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -176,14 +173,9 @@ extern const base::Feature kCodeCacheDeletionWithoutFilter{
 const base::Feature kConsolidatedMovementXY{"ConsolidatedMovementXY",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether the Conversion Measurement API is enabled.
+// Controls whether the Conversion Measurement API infrastructure is enabled.
 const base::Feature kConversionMeasurement{"ConversionMeasurement",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Show messages in DevTools about upcoming deprecations that would affect
-// sent/received cookies.
-const base::Feature kCookieDeprecationMessages{
-    "CookieDeprecationMessages", base::FEATURE_ENABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables Blink cooperative scheduling.
 const base::Feature kCooperativeScheduling{"CooperativeScheduling",
@@ -216,6 +208,10 @@ const base::Feature kDocumentPolicy{"DocumentPolicy",
 const base::Feature kDocumentPolicyNegotiation{
     "DocumentPolicyNegotiation", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable Early Hints subresource preloads for navigation.
+const base::Feature kEarlyHintsPreloadForNavigation{
+    "EarlyHintsPreloadForNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Requires documents embedded via <iframe>, etc, to explicitly opt-into the
 // embedding: https://github.com/mikewest/embedding-requires-opt-in.
 const base::Feature kEmbeddingRequiresOptIn{"EmbeddingRequiresOptIn",
@@ -230,7 +226,7 @@ const base::Feature kEnableNewCanvas2DAPI{"EnableNewCanvas2DAPI",
 // media-device enumeration will provide at most one device per type and the
 // device IDs will not be available.
 // TODO(crbug.com/1019176): remove the feature in M89.
-const base::Feature kEnumerateDevicesHideDeviceIDs{
+const base::Feature kEnumerateDevicesHideDeviceIDs {
   "EnumerateDevicesHideDeviceIDs",
 #if defined(OS_ANDROID)
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -244,6 +240,14 @@ const base::Feature kEnumerateDevicesHideDeviceIDs{
 const base::Feature kExperimentalAccessibilityLabels{
     "ExperimentalAccessibilityLabels", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Content counterpart of ExperimentalContentSecurityPolicyFeatures in
+// third_party/blink/renderer/platform/runtime_enabled_features.json5. Enables
+// experimental Content Security Policy features ('navigate-to' and
+// 'prefetch-src').
+const base::Feature kExperimentalContentSecurityPolicyFeatures{
+    "ExperimentalContentSecurityPolicyFeatures",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Throttle tasks in Blink background timer queues based on CPU budgets
 // for the background tab. Bug: https://crbug.com/639852.
 const base::Feature kExpensiveBackgroundTimerThrottling{
@@ -254,9 +258,13 @@ const base::Feature kExtraSafelistedRequestHeadersForOutOfBlinkCors{
     "ExtraSafelistedRequestHeadersForOutOfBlinkCors",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether Client Hints are guarded by FeaturePolicy.
+// Controls whether Client Hints are guarded by Permissions Policy.
 const base::Feature kFeaturePolicyForClientHints{
     "FeaturePolicyForClientHints", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables FLEDGE implementation. See https://crbug.com/1186444.
+const base::Feature kFledgeInterestGroups{"FledgeInterestGroups",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
@@ -393,7 +401,7 @@ const base::FeatureParam<MBIMode>::Option mbi_mode_types[] = {
     {MBIMode::kLegacy, "legacy"},
     {MBIMode::kEnabledPerRenderProcessHost, "per_render_process_host"},
     {MBIMode::kEnabledPerSiteInstance, "per_site_instance"}};
-const base::FeatureParam<MBIMode> kMBIModeParam{
+const base::FeatureParam<MBIMode> kMBIModeParam {
   &kMBIMode, "mode",
 #if BUILDFLAG(MBI_MODE_PER_RENDER_PROCESS_HOST)
       MBIMode::kEnabledPerRenderProcessHost,
@@ -487,10 +495,6 @@ const base::Feature kOverscrollHistoryNavigation{
 const base::Feature kPeriodicBackgroundSync{"PeriodicBackgroundSync",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable permission policy for configuring and restricting feature behavior.
-const base::Feature kPermissionsPolicyHeader{"PermissionsPolicyHeader",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If Pepper 3D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kPepper3DImageChromium {
@@ -505,6 +509,11 @@ const base::Feature kPepper3DImageChromium {
 // Kill-switch to introduce a compatibility breaking restriction.
 const base::Feature kPepperCrossOriginRedirectRestriction{
     "PepperCrossOriginRedirectRestriction", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// All ProcessHost objects live on UI thread.
+// https://crbug.com/904556
+const base::Feature kProcessHostOnUI{"ProcessHostOnUI",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable in-browser script loading for a brand new service worker.
 const base::Feature kPlzServiceWorker{"PlzServiceWorker",
@@ -601,8 +610,14 @@ const base::Feature kSavePageAsWebBundle{"SavePageAsWebBundle",
 // actually enable the feature by default. The feature is also controlled by the
 // Blink runtime feature "SecurePaymentConfirmation". Both have to be enabled
 // for SecurePaymentConfirmation to be available.
-const base::Feature kSecurePaymentConfirmation{
-    "SecurePaymentConfirmationBrowser", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSecurePaymentConfirmation {
+  "SecurePaymentConfirmationBrowser",
+#if defined(OS_MAC) || defined(OS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Used to control whether to remove the restriction that PaymentCredential in
 // WebAuthn and secure payment confirmation method in PaymentRequest API must
@@ -638,20 +653,13 @@ const base::Feature kServiceWorkerTerminationOnNoControllee{
 // http://tc39.github.io/ecmascript_sharedmem/shmem.html
 // This feature is also enabled independently of this flag for cross-origin
 // isolated renderers.
-const base::Feature kSharedArrayBuffer {
-  "SharedArrayBuffer",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-// Convenience feature for developers testing SABs and Cross-origin Isolation.
-// Disables both SharedArrayBuffer and WebAssemblyThreads features, so SABs
-// require COOP+COEP isolation.
-// TODO(bbudge) Remove after reverse origin trial. See https://crbug.com/923807
-const base::Feature kRestrictSharedArrayBuffer{
-    "RestrictSharedArrayBuffer", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+// If enabled, SharedArrayBuffer is present and can be transferred on desktop
+// platforms. This flag is used only as a "kill switch" as we migrate towards
+// requiring 'crossOriginIsolated'.
+const base::Feature kSharedArrayBufferOnDesktop{
+    "SharedArrayBufferOnDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Signed HTTP Exchange prefetch cache for navigations
 // https://crbug.com/968427
@@ -687,6 +695,14 @@ const base::Feature kWebOTP{"WebOTP", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kWebOTPAssertionFeaturePolicy{
     "WebOTPAssertionFeaturePolicy", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to isolate sites of documents that specify an eligible
+// Cross-Origin-Opener-Policy header.  Note that this is only intended to be
+// used on Android, which does not use strict site isolation. See
+// https://crbug.com/1018656.
+const base::Feature kSiteIsolationForCrossOriginOpenerPolicy{
+    "SiteIsolationForCrossOriginOpenerPolicy",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether SpareRenderProcessHostManager tries to always have a warm
 // spare renderer process around for the most recently requested BrowserContext.
 // This feature is only consulted in site-per-process mode.
@@ -710,7 +726,7 @@ const base::Feature kSubresourceWebBundles{"SubresourceWebBundles",
 // is not same origin with the main frame.
 const base::Feature kSuppressDifferentOriginSubframeJSDialogs{
     "SuppressDifferentOriginSubframeJSDialogs",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Dispatch touch events to "SyntheticGestureController" for events from
 // Devtool Protocol Input.dispatchTouchEvent to simulate touch events close to
@@ -778,10 +794,6 @@ const base::Feature kVideoPlaybackQuality{"VideoPlaybackQuality",
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable display_override manifest entry for web applications.
-const base::Feature kWebAppManifestDisplayOverride{
-    "WebAppManifestDisplayOverride", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable window controls overlays for desktop PWAs
 const base::Feature kWebAppWindowControlsOverlay{
     "WebAppWindowControlsOverlay", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -797,7 +809,7 @@ const base::Feature kWebAssemblyLazyCompilation{
 // Enable WebAssembly SIMD.
 // https://github.com/WebAssembly/Simd
 const base::Feature kWebAssemblySimd{"WebAssemblySimd",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable WebAssembly tiering (Liftoff -> TurboFan).
 const base::Feature kWebAssemblyTiering{"WebAssemblyTiering",
@@ -809,11 +821,7 @@ const base::Feature kWebAssemblyTiering{"WebAssemblyTiering",
 // isolated renderers.
 const base::Feature kWebAssemblyThreads {
   "WebAssemblyThreads",
-#if defined(OS_ANDROID)
       base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
 };
 
 // Enable WebAssembly trap handler.
@@ -965,9 +973,6 @@ const base::Feature kIOSurfaceCapturer{"IOSurfaceCapturer",
 const base::Feature kMacSyscallSandbox{"MacSyscallSandbox",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kMacV2GPUSandbox{"MacV2GPUSandbox",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables retrying to obtain list of available cameras on Macbooks after
 // restarting the video capture service if a previous attempt delivered zero
 // cameras.
@@ -975,7 +980,10 @@ const base::Feature kRetryGetVideoCaptureDeviceInfos{
     "RetryGetVideoCaptureDeviceInfos", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDesktopCaptureMacV2{"DesktopCaptureMacV2",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kWindowCaptureMacV2{"WindowCaptureMacV2",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 #endif  // defined(OS_MAC)
 
@@ -1021,7 +1029,8 @@ VideoCaptureServiceConfiguration GetVideoCaptureServiceConfiguration() {
 // On ChromeOS the service must run in the browser process, because parts of the
 // code depend on global objects that are only available in the Browser process.
 // See https://crbug.com/891961.
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
   return VideoCaptureServiceConfiguration::kEnabledForBrowserProcess;
 #else
 #if defined(OS_WIN)

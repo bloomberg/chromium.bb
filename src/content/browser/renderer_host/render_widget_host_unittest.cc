@@ -31,6 +31,7 @@
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/data_transfer_util.h"
 #include "content/browser/renderer_host/display_feature.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/mock_input_router.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
@@ -309,9 +310,9 @@ class MockInputEventObserver : public RenderWidgetHost::InputEventObserver {
  public:
   MOCK_METHOD1(OnInputEvent, void(const blink::WebInputEvent&));
 #if defined(OS_ANDROID)
-  MOCK_METHOD1(OnImeTextCommittedEvent, void(const base::string16& text_str));
+  MOCK_METHOD1(OnImeTextCommittedEvent, void(const std::u16string& text_str));
   MOCK_METHOD1(OnImeSetComposingTextEvent,
-               void(const base::string16& text_str));
+               void(const std::u16string& text_str));
   MOCK_METHOD0(OnImeFinishComposingTextEvent, void());
 #endif
 };
@@ -444,7 +445,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   void ExecuteEditCommand(
       const std::string& command,
-      const base::Optional<base::string16>& value) override {}
+      const base::Optional<std::u16string>& value) override {}
 
   void Undo() override {}
   void Redo() override {}
@@ -1065,8 +1066,8 @@ TEST_F(RenderWidgetHostTest, OverrideScreenInfoDuringFullscreenMode) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, widget_.ReceivedVisualProperties().size());
   blink::VisualProperties props = widget_.ReceivedVisualProperties().at(0);
-  EXPECT_EQ(kScreenBounds, props.screen_info.rect);
-  EXPECT_EQ(kScreenBounds, props.screen_info.available_rect);
+  EXPECT_EQ(kScreenBounds, props.screen_infos.current().rect);
+  EXPECT_EQ(kScreenBounds, props.screen_infos.current().available_rect);
 
   // Enter fullscreen and do another VisualProperties sync.
   delegate_->set_is_fullscreen(true);
@@ -1075,8 +1076,9 @@ TEST_F(RenderWidgetHostTest, OverrideScreenInfoDuringFullscreenMode) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, widget_.ReceivedVisualProperties().size());
   props = widget_.ReceivedVisualProperties().at(1);
-  EXPECT_EQ(kViewBounds.size(), props.screen_info.rect.size());
-  EXPECT_EQ(kViewBounds.size(), props.screen_info.available_rect.size());
+  EXPECT_EQ(kViewBounds.size(), props.screen_infos.current().rect.size());
+  EXPECT_EQ(kViewBounds.size(),
+            props.screen_infos.current().available_rect.size());
 
   // Exit fullscreen and do another VisualProperties sync.
   delegate_->set_is_fullscreen(false);
@@ -1085,8 +1087,8 @@ TEST_F(RenderWidgetHostTest, OverrideScreenInfoDuringFullscreenMode) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, widget_.ReceivedVisualProperties().size());
   props = widget_.ReceivedVisualProperties().at(2);
-  EXPECT_EQ(kScreenBounds, props.screen_info.rect);
-  EXPECT_EQ(kScreenBounds, props.screen_info.available_rect);
+  EXPECT_EQ(kScreenBounds, props.screen_infos.current().rect);
+  EXPECT_EQ(kScreenBounds, props.screen_infos.current().available_rect);
 }
 
 TEST_F(RenderWidgetHostTest, RootWindowSegments) {
@@ -2287,7 +2289,7 @@ TEST_F(RenderWidgetHostTest, OnVerticalScrollDirectionChanged) {
 }
 
 TEST_F(RenderWidgetHostTest, SetCursorWithBitmap) {
-  ui::Cursor cursor;
+  ui::Cursor cursor(ui::mojom::CursorType::kCustom);
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(1, 1);

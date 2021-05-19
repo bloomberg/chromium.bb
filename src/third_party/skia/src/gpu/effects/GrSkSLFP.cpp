@@ -9,6 +9,7 @@
 
 #include "include/effects/SkRuntimeEffect.h"
 #include "include/private/GrContext_Base.h"
+#include "src/core/SkVM.h"
 #include "src/gpu/GrBaseContextPriv.h"
 #include "src/gpu/GrColorInfo.h"
 #include "src/gpu/GrTexture.h"
@@ -44,9 +45,9 @@ public:
             String declareUniform(const SkSL::VarDeclaration* decl) override {
                 const SkSL::Variable& var = decl->var();
                 if (var.type().isOpaque()) {
-                    // Nothing to do. The only opaque type we should see is fragmentProcessor, and
-                    // those (children) are handled specially, above.
-                    SkASSERT(var.type() == *fContext.fTypes.fFragmentProcessor);
+                    // Nothing to do. The only opaque types we should see are children, and those
+                    // are handled specially, above.
+                    SkASSERT(var.type().isEffectChild());
                     return String(var.name());
                 }
 
@@ -127,33 +128,29 @@ public:
 
     void onSetData(const GrGLSLProgramDataManager& pdman,
                    const GrFragmentProcessor& _proc) override {
+        using Type = SkRuntimeEffect::Uniform::Type;
         size_t uniIndex = 0;
         const GrSkSLFP& outer = _proc.cast<GrSkSLFP>();
         const uint8_t* uniformData = outer.fUniforms->bytes();
         for (const auto& v : outer.fEffect->uniforms()) {
-            const float* data = reinterpret_cast<const float*>(uniformData + v.offset);
+            const UniformHandle handle = fUniformHandles[uniIndex++];
+            auto floatData = [=] { return SkTAddOffset<const float>(uniformData, v.offset); };
+            auto intData = [=] { return SkTAddOffset<const int>(uniformData, v.offset); };
             switch (v.type) {
-                case SkRuntimeEffect::Uniform::Type::kFloat:
-                    pdman.set1fv(fUniformHandles[uniIndex++], v.count, data);
-                    break;
-                case SkRuntimeEffect::Uniform::Type::kFloat2:
-                    pdman.set2fv(fUniformHandles[uniIndex++], v.count, data);
-                    break;
-                case SkRuntimeEffect::Uniform::Type::kFloat3:
-                    pdman.set3fv(fUniformHandles[uniIndex++], v.count, data);
-                    break;
-                case SkRuntimeEffect::Uniform::Type::kFloat4:
-                    pdman.set4fv(fUniformHandles[uniIndex++], v.count, data);
-                    break;
-                case SkRuntimeEffect::Uniform::Type::kFloat2x2:
-                    pdman.setMatrix2fv(fUniformHandles[uniIndex++], v.count, data);
-                    break;
-                case SkRuntimeEffect::Uniform::Type::kFloat3x3:
-                    pdman.setMatrix3fv(fUniformHandles[uniIndex++], v.count, data);
-                    break;
-                case SkRuntimeEffect::Uniform::Type::kFloat4x4:
-                    pdman.setMatrix4fv(fUniformHandles[uniIndex++], v.count, data);
-                    break;
+                case Type::kFloat:  pdman.set1fv(handle, v.count, floatData()); break;
+                case Type::kFloat2: pdman.set2fv(handle, v.count, floatData()); break;
+                case Type::kFloat3: pdman.set3fv(handle, v.count, floatData()); break;
+                case Type::kFloat4: pdman.set4fv(handle, v.count, floatData()); break;
+
+                case Type::kFloat2x2: pdman.setMatrix2fv(handle, v.count, floatData()); break;
+                case Type::kFloat3x3: pdman.setMatrix3fv(handle, v.count, floatData()); break;
+                case Type::kFloat4x4: pdman.setMatrix4fv(handle, v.count, floatData()); break;
+
+                case Type::kInt:  pdman.set1iv(handle, v.count, intData()); break;
+                case Type::kInt2: pdman.set2iv(handle, v.count, intData()); break;
+                case Type::kInt3: pdman.set3iv(handle, v.count, intData()); break;
+                case Type::kInt4: pdman.set4iv(handle, v.count, intData()); break;
+
                 default:
                     SkDEBUGFAIL("Unsupported uniform type");
                     break;
@@ -173,9 +170,13 @@ std::unique_ptr<GrSkSLFP> GrSkSLFP::Make(GrContext_Base* context, sk_sp<SkRuntim
                                                   std::move(effect), name, std::move(uniforms)));
 }
 
-GrSkSLFP::GrSkSLFP(ShaderErrorHandler* shaderErrorHandler, sk_sp<SkRuntimeEffect> effect,
-                   const char* name, sk_sp<SkData> uniforms)
-        : INHERITED(kGrSkSLFP_ClassID, kNone_OptimizationFlags)
+GrSkSLFP::GrSkSLFP(ShaderErrorHandler* shaderErrorHandler,
+                   sk_sp<SkRuntimeEffect> effect,
+                   const char* name,
+                   sk_sp<SkData> uniforms)
+        : INHERITED(kGrSkSLFP_ClassID,
+                    effect->fAllowColorFilter ? kConstantOutputForConstantInput_OptimizationFlag
+                                              : kNone_OptimizationFlags)
         , fShaderErrorHandler(shaderErrorHandler)
         , fEffect(std::move(effect))
         , fName(name)
@@ -186,7 +187,7 @@ GrSkSLFP::GrSkSLFP(ShaderErrorHandler* shaderErrorHandler, sk_sp<SkRuntimeEffect
 }
 
 GrSkSLFP::GrSkSLFP(const GrSkSLFP& other)
-        : INHERITED(kGrSkSLFP_ClassID, kNone_OptimizationFlags)
+        : INHERITED(kGrSkSLFP_ClassID, other.optimizationFlags())
         , fShaderErrorHandler(other.fShaderErrorHandler)
         , fEffect(other.fEffect)
         , fName(other.fName)
@@ -205,6 +206,7 @@ const char* GrSkSLFP::name() const {
 void GrSkSLFP::addChild(std::unique_ptr<GrFragmentProcessor> child) {
     int childIndex = this->numChildProcessors();
     SkASSERT((size_t)childIndex < fEffect->fSampleUsages.size());
+    this->mergeOptimizationFlags(ProcessorOptimizationFlags(child.get()));
     this->registerChild(std::move(child), fEffect->fSampleUsages[childIndex]);
 }
 
@@ -227,6 +229,20 @@ bool GrSkSLFP::onIsEqual(const GrFragmentProcessor& other) const {
 
 std::unique_ptr<GrFragmentProcessor> GrSkSLFP::clone() const {
     return std::unique_ptr<GrFragmentProcessor>(new GrSkSLFP(*this));
+}
+
+SkPMColor4f GrSkSLFP::constantOutputForConstantInput(const SkPMColor4f& inputColor) const {
+    const skvm::Program* program = fEffect->getFilterColorProgram();
+    SkASSERT(program);
+
+    SkSTArray<2, SkPMColor4f, true> childColors;
+    for (int i = 0; i < this->numChildProcessors(); ++i) {
+        childColors.push_back(ConstantOutputForConstantInput(this->childProcessor(i), inputColor));
+    }
+
+    SkPMColor4f result;
+    program->eval(1, childColors.begin(), fUniforms->data(), result.vec());
+    return result;
 }
 
 /**************************************************************************************************/
@@ -254,3 +270,18 @@ std::unique_ptr<GrFragmentProcessor> GrSkSLFP::TestCreate(GrProcessorTestData* d
 }
 
 #endif
+
+/**************************************************************************************************/
+
+GrRuntimeFPBuilder::GrRuntimeFPBuilder(sk_sp<SkRuntimeEffect> effect)
+        : INHERITED(std::move(effect)) {}
+
+GrRuntimeFPBuilder::~GrRuntimeFPBuilder() = default;
+
+std::unique_ptr<GrFragmentProcessor> GrRuntimeFPBuilder::makeFP(
+        GrRecordingContext* recordingContext) {
+    return this->effect()->makeFP(recordingContext,
+                                  this->uniforms(),
+                                  this->children(),
+                                  this->numChildren());
+}

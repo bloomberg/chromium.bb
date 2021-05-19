@@ -75,6 +75,8 @@ class PLATFORM_EXPORT ThreadState final {
 
   // Attaches a ThreadState to the main-thread.
   static ThreadState* AttachMainThread();
+  // Attaches a ThreadState to the main-thread using the given platform.
+  static ThreadState* AttachMainThreadForTesting(v8::Platform*);
   // Attaches a ThreadState to the currently running thread. Must not be the
   // main thread and must be called after AttachMainThread().
   static ThreadState* AttachCurrentThread();
@@ -121,6 +123,10 @@ class PLATFORM_EXPORT ThreadState final {
       base::OnceCallback<void(size_t allocated_node_bytes,
                               size_t allocated_css_bytes)>);
 
+  void EnableDetachedGarbageCollectionsForTesting();
+
+  bool IsIncrementalMarking();
+
  private:
   // Main-thread ThreadState avoids TLS completely by using a regular global.
   // The object is manually managed and should not rely on global ctor/dtor.
@@ -130,7 +136,7 @@ class PLATFORM_EXPORT ThreadState final {
   static base::LazyInstance<WTF::ThreadSpecific<ThreadState*>>::Leaky
       thread_specific_;
 
-  explicit ThreadState();
+  explicit ThreadState(v8::Platform*);
   ~ThreadState();
 
   std::unique_ptr<v8::CppHeap> cpp_heap_;

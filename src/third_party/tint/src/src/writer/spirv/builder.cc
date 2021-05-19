@@ -14,73 +14,22 @@
 #include "src/writer/spirv/builder.h"
 
 #include <algorithm>
-#include <iostream>
 #include <limits>
-#include <sstream>
 #include <utility>
 
 #include "spirv/unified1/GLSL.std.450.h"
-#include "spirv/unified1/spirv.h"
-#include "src/ast/array_accessor_expression.h"
-#include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/binding_decoration.h"
-#include "src/ast/bitcast_expression.h"
-#include "src/ast/block_statement.h"
-#include "src/ast/bool_literal.h"
-#include "src/ast/builtin_decoration.h"
-#include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
-#include "src/ast/case_statement.h"
 #include "src/ast/constant_id_decoration.h"
-#include "src/ast/constructor_expression.h"
-#include "src/ast/else_statement.h"
 #include "src/ast/fallthrough_statement.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/group_decoration.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/if_statement.h"
-#include "src/ast/location_decoration.h"
-#include "src/ast/loop_statement.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/module.h"
-#include "src/ast/null_literal.h"
-#include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
-#include "src/ast/struct.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/switch_statement.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/uint_literal.h"
-#include "src/ast/unary_op_expression.h"
-#include "src/ast/variable.h"
-#include "src/ast/variable_decl_statement.h"
-#include "src/debug.h"
-#include "src/program.h"
+#include "src/semantic/array.h"
 #include "src/semantic/call.h"
-#include "src/semantic/expression.h"
 #include "src/semantic/function.h"
 #include "src/semantic/intrinsic.h"
+#include "src/semantic/struct.h"
 #include "src/semantic/variable.h"
-#include "src/type/access_control_type.h"
-#include "src/type/alias_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
 #include "src/type/depth_texture_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
 #include "src/type/multisampled_texture_type.h"
-#include "src/type/pointer_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/storage_texture_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/texture_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type/void_type.h"
 #include "src/writer/append_vector.h"
 
 namespace tint {
@@ -415,12 +364,6 @@ bool Builder::GenerateLabel(uint32_t id) {
   return true;
 }
 
-uint32_t Builder::GenerateU32Literal(uint32_t val) {
-  type::U32 u32;
-  ast::SintLiteral lit(Source{}, &u32, val);
-  return GenerateLiteralIfNeeded(nullptr, &lit);
-}
-
 bool Builder::GenerateAssignStatement(ast::AssignmentStatement* assign) {
   auto lhs_id = GenerateExpression(assign->lhs());
   if (lhs_id == 0) {
@@ -595,7 +538,8 @@ bool Builder::GenerateFunction(ast::Function* func) {
     auto param_op = result_op();
     auto param_id = param_op.to_i();
 
-    auto param_type_id = GenerateTypeIfNeeded(param->type());
+    auto param_type_id =
+        GenerateTypeIfNeeded(builder_.Sem().Get(param)->Type());
     if (param_type_id == 0) {
       return false;
     }
@@ -649,7 +593,8 @@ uint32_t Builder::GenerateFunctionTypeIfNeeded(ast::Function* func) {
 
   OperandList ops = {func_op, Operand::Int(ret_id)};
   for (auto* param : func->params()) {
-    auto param_type_id = GenerateTypeIfNeeded(param->type());
+    auto param_type_id =
+        GenerateTypeIfNeeded(builder_.Sem().Get(param)->Type());
     if (param_type_id == 0) {
       return 0;
     }
@@ -686,7 +631,8 @@ bool Builder::GenerateFunctionVariable(ast::Variable* var) {
   auto result = result_op();
   auto var_id = result.to_i();
   auto sc = ast::StorageClass::kFunction;
-  type::Pointer pt(var->type(), sc);
+  auto* type = builder_.Sem().Get(var)->Type();
+  type::Pointer pt(type, sc);
   auto type_id = GenerateTypeIfNeeded(&pt);
   if (type_id == 0) {
     return false;
@@ -698,8 +644,7 @@ bool Builder::GenerateFunctionVariable(ast::Variable* var) {
 
   // TODO(dsinclair) We could detect if the constructor is fully const and emit
   // an initializer value for the variable instead of doing the OpLoad.
-  ast::NullLiteral nl(Source{}, var->type()->UnwrapPtrIfNeeded());
-  auto null_id = GenerateLiteralIfNeeded(var, &nl);
+  auto null_id = GenerateConstantNullIfNeeded(type->UnwrapPtrIfNeeded());
   if (null_id == 0) {
     return 0;
   }
@@ -762,7 +707,7 @@ bool Builder::GenerateGlobalVariable(ast::Variable* var) {
                 ? ast::StorageClass::kPrivate
                 : sem->StorageClass();
 
-  type::Pointer pt(var->type(), sc);
+  type::Pointer pt(sem->Type(), sc);
   auto type_id = GenerateTypeIfNeeded(&pt);
   if (type_id == 0) {
     return false;
@@ -777,11 +722,11 @@ bool Builder::GenerateGlobalVariable(ast::Variable* var) {
 
   // Unwrap after emitting the access control as unwrap all removes access
   // control types.
-  auto* type = var->type()->UnwrapAll();
+  auto* type_no_ac = sem->Type()->UnwrapAll();
   if (var->has_constructor()) {
     ops.push_back(Operand::Int(init_id));
-  } else if (type->Is<type::Texture>()) {
-    if (auto* ac = var->type()->As<type::AccessControl>()) {
+  } else if (type_no_ac->Is<type::Texture>()) {
+    if (auto* ac = sem->Type()->As<type::AccessControl>()) {
       switch (ac->access_control()) {
         case ast::AccessControl::kWriteOnly:
           push_annot(
@@ -797,7 +742,7 @@ bool Builder::GenerateGlobalVariable(ast::Variable* var) {
           break;
       }
     }
-  } else if (!type->Is<type::Sampler>()) {
+  } else if (!type_no_ac->Is<type::Sampler>()) {
     // Certain cases require us to generate a constructor value.
     //
     // 1- ConstantId's must be attached to the OpConstant, if we have a
@@ -806,17 +751,17 @@ bool Builder::GenerateGlobalVariable(ast::Variable* var) {
     // 2- If we don't have a constructor and we're an Output or Private variable
     //    then WGSL requires an initializer.
     if (var->HasConstantIdDecoration()) {
-      if (type->Is<type::F32>()) {
-        ast::FloatLiteral l(Source{}, type, 0.0f);
+      if (type_no_ac->Is<type::F32>()) {
+        ast::FloatLiteral l(Source{}, type_no_ac, 0.0f);
         init_id = GenerateLiteralIfNeeded(var, &l);
-      } else if (type->Is<type::U32>()) {
-        ast::UintLiteral l(Source{}, type, 0);
+      } else if (type_no_ac->Is<type::U32>()) {
+        ast::UintLiteral l(Source{}, type_no_ac, 0);
         init_id = GenerateLiteralIfNeeded(var, &l);
-      } else if (type->Is<type::I32>()) {
-        ast::SintLiteral l(Source{}, type, 0);
+      } else if (type_no_ac->Is<type::I32>()) {
+        ast::SintLiteral l(Source{}, type_no_ac, 0);
         init_id = GenerateLiteralIfNeeded(var, &l);
-      } else if (type->Is<type::Bool>()) {
-        ast::BoolLiteral l(Source{}, type, false);
+      } else if (type_no_ac->Is<type::Bool>()) {
+        ast::BoolLiteral l(Source{}, type_no_ac, false);
         init_id = GenerateLiteralIfNeeded(var, &l);
       } else {
         error_ = "invalid type for constant_id, must be scalar";
@@ -829,8 +774,7 @@ bool Builder::GenerateGlobalVariable(ast::Variable* var) {
     } else if (sem->StorageClass() == ast::StorageClass::kPrivate ||
                sem->StorageClass() == ast::StorageClass::kNone ||
                sem->StorageClass() == ast::StorageClass::kOutput) {
-      ast::NullLiteral nl(Source{}, type);
-      init_id = GenerateLiteralIfNeeded(var, &nl);
+      init_id = GenerateConstantNullIfNeeded(type_no_ac);
       if (init_id == 0) {
         return 0;
       }
@@ -920,30 +864,43 @@ bool Builder::GenerateMemberAccessor(ast::MemberAccessorExpression* expr,
   // If the data_type is a structure we're accessing a member, if it's a
   // vector we're accessing a swizzle.
   if (data_type->Is<type::Struct>()) {
-    if (!info->source_type->Is<type::Pointer>()) {
-      error_ =
-          "Attempting to access a struct member on a non-pointer. Something is "
-          "wrong";
-      return false;
-    }
-
     auto* strct = data_type->As<type::Struct>()->impl();
     auto symbol = expr->member()->symbol();
 
-    uint32_t i = 0;
-    for (; i < strct->members().size(); ++i) {
-      auto* member = strct->members()[i];
+    uint32_t idx = 0;
+    for (; idx < strct->members().size(); ++idx) {
+      auto* member = strct->members()[idx];
       if (member->symbol() == symbol) {
         break;
       }
     }
 
-    auto idx_id = GenerateU32Literal(i);
-    if (idx_id == 0) {
-      return 0;
+    if (info->source_type->Is<type::Pointer>()) {
+      auto idx_id = GenerateConstantIfNeeded(ScalarConstant::U32(idx));
+      if (idx_id == 0) {
+        return 0;
+      }
+      info->access_chain_indices.push_back(idx_id);
+      info->source_type = expr_type;
+    } else {
+      auto result_type_id = GenerateTypeIfNeeded(expr_type);
+      if (result_type_id == 0) {
+        return false;
+      }
+
+      auto extract = result_op();
+      auto extract_id = extract.to_i();
+      if (!push_function_inst(
+              spv::Op::OpCompositeExtract,
+              {Operand::Int(result_type_id), extract,
+               Operand::Int(info->source_id), Operand::Int(idx)})) {
+        return false;
+      }
+
+      info->source_id = extract_id;
+      info->source_type = expr_type;
     }
-    info->access_chain_indices.push_back(idx_id);
-    info->source_type = expr_type;
+
     return true;
   }
 
@@ -963,7 +920,7 @@ bool Builder::GenerateMemberAccessor(ast::MemberAccessorExpression* expr,
     }
 
     if (info->source_type->Is<type::Pointer>()) {
-      auto idx_id = GenerateU32Literal(val);
+      auto idx_id = GenerateConstantIfNeeded(ScalarConstant::U32(val));
       if (idx_id == 0) {
         return 0;
       }
@@ -1050,8 +1007,11 @@ bool Builder::GenerateMemberAccessor(ast::MemberAccessorExpression* expr,
 }
 
 uint32_t Builder::GenerateAccessorExpression(ast::Expression* expr) {
-  assert(expr->Is<ast::ArrayAccessorExpression>() ||
-         expr->Is<ast::MemberAccessorExpression>());
+  if (!expr->IsAnyOf<ast::ArrayAccessorExpression,
+                     ast::MemberAccessorExpression>()) {
+    TINT_ICE(builder_.Diagnostics()) << "expression is not an accessor";
+    return 0;
+  }
 
   // Gather a list of all the member and array accessors that are in this chain.
   // The list is built in reverse order as that's the order we need to access
@@ -1094,8 +1054,7 @@ uint32_t Builder::GenerateAccessorExpression(ast::Expression* expr) {
 
       auto ary_result = result_op();
 
-      ast::NullLiteral nl(Source{}, ary_res_type);
-      auto init = GenerateLiteralIfNeeded(nullptr, &nl);
+      auto init = GenerateConstantNullIfNeeded(ary_res_type);
 
       // If we're access chaining into an array then we must be in a function
       push_function_var(
@@ -1309,8 +1268,7 @@ uint32_t Builder::GenerateTypeConstructorExpression(
 
   // Generate the zero initializer if there are no values provided.
   if (values.empty()) {
-    ast::NullLiteral nl(Source{}, init->type()->UnwrapPtrIfNeeded());
-    return GenerateLiteralIfNeeded(nullptr, &nl);
+    return GenerateConstantNullIfNeeded(init->type()->UnwrapPtrIfNeeded());
   }
 
   std::ostringstream out;
@@ -1420,7 +1378,7 @@ uint32_t Builder::GenerateTypeConstructorExpression(
           result_is_constant_composite = false;
         } else {
           // A global initializer, must use OpSpecConstantOp. Case 1.
-          auto idx_id = GenerateU32Literal(i);
+          auto idx_id = GenerateConstantIfNeeded(ScalarConstant::U32(i));
           if (idx_id == 0) {
             return 0;
           }
@@ -1442,8 +1400,8 @@ uint32_t Builder::GenerateTypeConstructorExpression(
   }
 
   auto str = out.str();
-  auto val = const_to_id_.find(str);
-  if (val != const_to_id_.end()) {
+  auto val = type_constructor_to_id_.find(str);
+  if (val != type_constructor_to_id_.end()) {
     return val->second;
   }
 
@@ -1451,7 +1409,7 @@ uint32_t Builder::GenerateTypeConstructorExpression(
   ops.insert(ops.begin(), result);
   ops.insert(ops.begin(), Operand::Int(type_id));
 
-  const_to_id_[str] = result.to_i();
+  type_constructor_to_id_[str] = result.to_i();
 
   if (result_is_spec_composite) {
     push_type(spv::Op::OpSpecConstantComposite, ops);
@@ -1530,59 +1488,133 @@ uint32_t Builder::GenerateCastOrCopyOrPassthrough(type::Type* to_type,
 
 uint32_t Builder::GenerateLiteralIfNeeded(ast::Variable* var,
                                           ast::Literal* lit) {
-  auto type_id = GenerateTypeIfNeeded(lit->type());
-  if (type_id == 0) {
-    return 0;
-  }
+  ScalarConstant constant;
 
-  auto name = lit->name();
-  bool is_spec_constant = false;
   if (var && var->HasConstantIdDecoration()) {
-    name = "__spec" + name;
-    is_spec_constant = true;
-  }
-
-  auto val = const_to_id_.find(name);
-  if (val != const_to_id_.end()) {
-    return val->second;
-  }
-
-  auto result = result_op();
-  auto result_id = result.to_i();
-
-  if (is_spec_constant) {
-    push_annot(spv::Op::OpDecorate,
-               {Operand::Int(result_id), Operand::Int(SpvDecorationSpecId),
-                Operand::Int(var->constant_id())});
+    constant.is_spec_op = true;
+    constant.constant_id = var->constant_id();
   }
 
   if (auto* l = lit->As<ast::BoolLiteral>()) {
-    if (l->IsTrue()) {
-      push_type(is_spec_constant ? spv::Op::OpSpecConstantTrue
-                                 : spv::Op::OpConstantTrue,
-                {Operand::Int(type_id), result});
-    } else {
-      push_type(is_spec_constant ? spv::Op::OpSpecConstantFalse
-                                 : spv::Op::OpConstantFalse,
-                {Operand::Int(type_id), result});
-    }
+    constant.kind = ScalarConstant::Kind::kBool;
+    constant.value.b = l->IsTrue();
   } else if (auto* sl = lit->As<ast::SintLiteral>()) {
-    push_type(is_spec_constant ? spv::Op::OpSpecConstant : spv::Op::OpConstant,
-              {Operand::Int(type_id), result, Operand::Int(sl->value())});
+    constant.kind = ScalarConstant::Kind::kI32;
+    constant.value.i32 = sl->value();
   } else if (auto* ul = lit->As<ast::UintLiteral>()) {
-    push_type(is_spec_constant ? spv::Op::OpSpecConstant : spv::Op::OpConstant,
-              {Operand::Int(type_id), result, Operand::Int(ul->value())});
+    constant.kind = ScalarConstant::Kind::kU32;
+    constant.value.u32 = ul->value();
   } else if (auto* fl = lit->As<ast::FloatLiteral>()) {
-    push_type(is_spec_constant ? spv::Op::OpSpecConstant : spv::Op::OpConstant,
-              {Operand::Int(type_id), result, Operand::Float(fl->value())});
-  } else if (lit->Is<ast::NullLiteral>()) {
-    push_type(spv::Op::OpConstantNull, {Operand::Int(type_id), result});
+    constant.kind = ScalarConstant::Kind::kF32;
+    constant.value.f32 = fl->value();
   } else {
     error_ = "unknown literal type";
     return 0;
   }
 
-  const_to_id_[name] = result_id;
+  return GenerateConstantIfNeeded(constant);
+}
+
+uint32_t Builder::GenerateConstantIfNeeded(const ScalarConstant& constant) {
+  auto it = const_to_id_.find(constant);
+  if (it != const_to_id_.end()) {
+    return it->second;
+  }
+
+  uint32_t type_id = 0;
+
+  switch (constant.kind) {
+    case ScalarConstant::Kind::kU32: {
+      type::U32 u32;
+      type_id = GenerateTypeIfNeeded(&u32);
+      break;
+    }
+    case ScalarConstant::Kind::kI32: {
+      type::I32 i32;
+      type_id = GenerateTypeIfNeeded(&i32);
+      break;
+    }
+    case ScalarConstant::Kind::kF32: {
+      type::F32 f32;
+      type_id = GenerateTypeIfNeeded(&f32);
+      break;
+    }
+    case ScalarConstant::Kind::kBool: {
+      type::Bool bool_;
+      type_id = GenerateTypeIfNeeded(&bool_);
+      break;
+    }
+  }
+
+  if (type_id == 0) {
+    return 0;
+  }
+
+  auto result = result_op();
+  auto result_id = result.to_i();
+
+  if (constant.is_spec_op) {
+    push_annot(spv::Op::OpDecorate,
+               {Operand::Int(result_id), Operand::Int(SpvDecorationSpecId),
+                Operand::Int(constant.constant_id)});
+  }
+
+  switch (constant.kind) {
+    case ScalarConstant::Kind::kU32: {
+      push_type(
+          constant.is_spec_op ? spv::Op::OpSpecConstant : spv::Op::OpConstant,
+          {Operand::Int(type_id), result, Operand::Int(constant.value.u32)});
+      break;
+    }
+    case ScalarConstant::Kind::kI32: {
+      push_type(
+          constant.is_spec_op ? spv::Op::OpSpecConstant : spv::Op::OpConstant,
+          {Operand::Int(type_id), result, Operand::Int(constant.value.i32)});
+      break;
+    }
+    case ScalarConstant::Kind::kF32: {
+      push_type(
+          constant.is_spec_op ? spv::Op::OpSpecConstant : spv::Op::OpConstant,
+          {Operand::Int(type_id), result, Operand::Float(constant.value.f32)});
+      break;
+    }
+    case ScalarConstant::Kind::kBool: {
+      if (constant.value.b) {
+        push_type(constant.is_spec_op ? spv::Op::OpSpecConstantTrue
+                                      : spv::Op::OpConstantTrue,
+                  {Operand::Int(type_id), result});
+      } else {
+        push_type(constant.is_spec_op ? spv::Op::OpSpecConstantFalse
+                                      : spv::Op::OpConstantFalse,
+                  {Operand::Int(type_id), result});
+      }
+      break;
+    }
+  }
+
+  const_to_id_[constant] = result_id;
+  return result_id;
+}
+
+uint32_t Builder::GenerateConstantNullIfNeeded(type::Type* type) {
+  auto type_id = GenerateTypeIfNeeded(type);
+  if (type_id == 0) {
+    return 0;
+  }
+
+  auto name = type->type_name();
+
+  auto it = const_null_to_id_.find(name);
+  if (it != const_null_to_id_.end()) {
+    return it->second;
+  }
+
+  auto result = result_op();
+  auto result_id = result.to_i();
+
+  push_type(spv::Op::OpConstantNull, {Operand::Int(type_id), result});
+
+  const_null_to_id_[name] = result_id;
   return result_id;
 }
 
@@ -1691,8 +1723,8 @@ uint32_t Builder::GenerateBinaryExpression(ast::BinaryExpression* expr) {
 
   // Handle int and float and the vectors of those types. Other types
   // should have been rejected by validation.
-  auto* lhs_type = TypeOf(expr->lhs())->UnwrapPtrIfNeeded();
-  auto* rhs_type = TypeOf(expr->rhs())->UnwrapPtrIfNeeded();
+  auto* lhs_type = TypeOf(expr->lhs())->UnwrapAll();
+  auto* rhs_type = TypeOf(expr->rhs())->UnwrapAll();
   bool lhs_is_float_or_vec = lhs_type->is_float_scalar_or_vector();
   bool lhs_is_unsigned = lhs_type->is_unsigned_scalar_or_vector();
 
@@ -1788,6 +1820,7 @@ uint32_t Builder::GenerateBinaryExpression(ast::BinaryExpression* expr) {
       // float matrix * matrix
       op = spv::Op::OpMatrixTimesMatrix;
     } else {
+      error_ = "invalid multiply expression";
       return 0;
     }
   } else if (expr->IsNotEqual()) {
@@ -1819,13 +1852,18 @@ uint32_t Builder::GenerateBinaryExpression(ast::BinaryExpression* expr) {
 
 bool Builder::GenerateBlockStatement(const ast::BlockStatement* stmt) {
   scope_stack_.push_scope();
+  auto result = GenerateBlockStatementWithoutScoping(stmt);
+  scope_stack_.pop_scope();
+  return result;
+}
+
+bool Builder::GenerateBlockStatementWithoutScoping(
+    const ast::BlockStatement* stmt) {
   for (auto* block_stmt : *stmt) {
     if (!GenerateStatement(block_stmt)) {
       return false;
     }
   }
-  scope_stack_.pop_scope();
-
   return true;
 }
 
@@ -1898,6 +1936,13 @@ uint32_t Builder::GenerateIntrinsic(ast::CallExpression* call,
   if (intrinsic->IsTexture()) {
     if (!GenerateTextureIntrinsic(call, intrinsic, Operand::Int(result_type_id),
                                   result)) {
+      return 0;
+    }
+    return result_id;
+  }
+
+  if (intrinsic->IsBarrier()) {
+    if (!GenerateControlBarrierIntrinsic(intrinsic)) {
       return 0;
     }
     return result_id;
@@ -2072,12 +2117,17 @@ bool Builder::GenerateTextureIntrinsic(ast::CallExpression* call,
   // Generates the argument with the given usage, returning the operand ID
   auto gen_arg = [&](Usage usage) {
     auto* argument = arg(usage);
-    assert(argument);
+    if (!argument) {
+      TINT_ICE(builder_.Diagnostics())
+          << "missing argument " << static_cast<int>(usage);
+    }
     return gen(argument);
   };
 
   auto* texture = arg(Usage::kTexture);
-  assert(texture);
+  if (!texture) {
+    TINT_ICE(builder_.Diagnostics()) << "missing texture argument";
+  }
 
   auto* texture_type = TypeOf(texture)->UnwrapAll()->As<type::Texture>();
 
@@ -2437,6 +2487,47 @@ bool Builder::GenerateTextureIntrinsic(ast::CallExpression* call,
   return post_emission();
 }
 
+bool Builder::GenerateControlBarrierIntrinsic(
+    const semantic::Intrinsic* intrinsic) {
+  auto const op = spv::Op::OpControlBarrier;
+  uint32_t execution = 0;
+  uint32_t memory = 0;
+  uint32_t semantics = 0;
+
+  // TODO(crbug.com/tint/661): Combine sequential barriers to a single
+  // instruction.
+  if (intrinsic->Type() == semantic::IntrinsicType::kWorkgroupBarrier) {
+    execution = static_cast<uint32_t>(spv::Scope::Workgroup);
+    memory = static_cast<uint32_t>(spv::Scope::Workgroup);
+    semantics =
+        static_cast<uint32_t>(spv::MemorySemanticsMask::AcquireRelease) |
+        static_cast<uint32_t>(spv::MemorySemanticsMask::WorkgroupMemory);
+  } else if (intrinsic->Type() == semantic::IntrinsicType::kStorageBarrier) {
+    execution = static_cast<uint32_t>(spv::Scope::Workgroup);
+    memory = static_cast<uint32_t>(spv::Scope::Device);
+    semantics =
+        static_cast<uint32_t>(spv::MemorySemanticsMask::AcquireRelease) |
+        static_cast<uint32_t>(spv::MemorySemanticsMask::UniformMemory);
+  } else {
+    error_ = "unexpected barrier intrinsic type ";
+    error_ += semantic::str(intrinsic->Type());
+    return false;
+  }
+
+  auto execution_id = GenerateConstantIfNeeded(ScalarConstant::U32(execution));
+  auto memory_id = GenerateConstantIfNeeded(ScalarConstant::U32(memory));
+  auto semantics_id = GenerateConstantIfNeeded(ScalarConstant::U32(semantics));
+  if (execution_id == 0 || memory_id == 0 || semantics_id == 0) {
+    return false;
+  }
+
+  return push_function_inst(op, {
+                                    Operand::Int(execution_id),
+                                    Operand::Int(memory_id),
+                                    Operand::Int(semantics_id),
+                                });
+}
+
 uint32_t Builder::GenerateSampledImage(type::Type* texture_type,
                                        Operand texture_operand,
                                        Operand sampler_operand) {
@@ -2618,12 +2709,13 @@ bool Builder::GenerateSwitchStatement(ast::SwitchStatement* stmt) {
 
     case_ids.push_back(block_id);
     for (auto* selector : item->selectors()) {
-      if (!selector->Is<ast::SintLiteral>()) {
+      auto* int_literal = selector->As<ast::IntLiteral>();
+      if (!int_literal) {
         error_ = "expected integer literal for switch case label";
         return false;
       }
 
-      params.push_back(Operand::Int(selector->As<ast::SintLiteral>()->value()));
+      params.push_back(Operand::Int(int_literal->value_as_u32()));
       params.push_back(Operand::Int(block_id));
     }
   }
@@ -2659,7 +2751,8 @@ bool Builder::GenerateSwitchStatement(ast::SwitchStatement* stmt) {
 
     if (LastIsFallthrough(item->body())) {
       if (i == (body.size() - 1)) {
-        error_ = "fallthrough of last case statement is disallowed";
+        // This case is caught by Resolver validation
+        TINT_UNREACHABLE(builder_.Diagnostics());
         return false;
       }
       if (!push_function_inst(spv::Op::OpBranch,
@@ -2742,7 +2835,12 @@ bool Builder::GenerateLoopStatement(ast::LoopStatement* stmt) {
   if (!GenerateLabel(body_block_id)) {
     return false;
   }
-  if (!GenerateBlockStatement(stmt->body())) {
+
+  // We need variables from the body to be visible in the continuing block, so
+  // manage scope outside of GenerateBlockStatement.
+  scope_stack_.push_scope();
+
+  if (!GenerateBlockStatementWithoutScoping(stmt->body())) {
     return false;
   }
 
@@ -2757,9 +2855,14 @@ bool Builder::GenerateLoopStatement(ast::LoopStatement* stmt) {
   if (!GenerateLabel(continue_block_id)) {
     return false;
   }
-  if (!GenerateBlockStatement(stmt->continuing())) {
-    return false;
+  if (stmt->has_continuing()) {
+    if (!GenerateBlockStatementWithoutScoping(stmt->continuing())) {
+      return false;
+    }
   }
+
+  scope_stack_.pop_scope();
+
   if (!push_function_inst(spv::Op::OpBranch, {Operand::Int(loop_header_id)})) {
     return false;
   }
@@ -2913,8 +3016,7 @@ bool Builder::GenerateTextureType(type::Texture* texture,
     dim_literal = SpvDim1D;
     if (texture->Is<type::SampledTexture>()) {
       push_capability(SpvCapabilitySampled1D);
-    } else {
-      assert(texture->Is<type::StorageTexture>());
+    } else if (texture->Is<type::StorageTexture>()) {
       push_capability(SpvCapabilityImage1D);
     }
   }
@@ -2989,7 +3091,7 @@ bool Builder::GenerateArrayType(type::Array* ary, const Operand& result) {
   if (ary->IsRuntimeArray()) {
     push_type(spv::Op::OpTypeRuntimeArray, {result, Operand::Int(elem_type)});
   } else {
-    auto len_id = GenerateU32Literal(ary->size());
+    auto len_id = GenerateConstantIfNeeded(ScalarConstant::U32(ary->size()));
     if (len_id == 0) {
       return false;
     }
@@ -2998,11 +3100,14 @@ bool Builder::GenerateArrayType(type::Array* ary, const Operand& result) {
               {result, Operand::Int(elem_type), Operand::Int(len_id)});
   }
 
-  if (ary->has_array_stride()) {
-    push_annot(spv::Op::OpDecorate,
-               {Operand::Int(result_id), Operand::Int(SpvDecorationArrayStride),
-                Operand::Int(ary->array_stride())});
+  auto* sem_arr = builder_.Sem().Get(ary);
+  if (!sem_arr) {
+    error_ = "array type missing semantic info";
+    return false;
   }
+  push_annot(spv::Op::OpDecorate,
+             {Operand::Int(result_id), Operand::Int(SpvDecorationArrayStride),
+              Operand::Int(sem_arr->Stride())});
   return true;
 }
 
@@ -3091,38 +3196,39 @@ uint32_t Builder::GenerateStructMember(uint32_t struct_id,
              {Operand::Int(struct_id), Operand::Int(idx),
               Operand::String(builder_.Symbols().NameFor(member->symbol()))});
 
-  bool has_layout = false;
-  for (auto* deco : member->decorations()) {
-    if (auto* offset = deco->As<ast::StructMemberOffsetDecoration>()) {
-      push_annot(
-          spv::Op::OpMemberDecorate,
-          {Operand::Int(struct_id), Operand::Int(idx),
-           Operand::Int(SpvDecorationOffset), Operand::Int(offset->offset())});
-      has_layout = true;
-    } else {
-      error_ = "unknown struct member decoration";
-      return 0;
-    }
+  // Note: This will generate layout annotations for *all* structs, whether or
+  // not they are used in host-shareable variables. This is officially ok in
+  // SPIR-V 1.0 through 1.3. If / when we migrate to using SPIR-V 1.4 we'll have
+  // to only generate the layout info for structs used for certain storage
+  // classes.
+
+  auto* sem_member = builder_.Sem().Get(member);
+  if (!sem_member) {
+    error_ = "Struct member has no semantic information";
+    return 0;
   }
 
-  if (has_layout) {
-    // Infer and emit matrix layout.
-    auto* matrix_type = GetNestedMatrixType(member->type());
-    if (matrix_type) {
-      push_annot(spv::Op::OpMemberDecorate,
-                 {Operand::Int(struct_id), Operand::Int(idx),
-                  Operand::Int(SpvDecorationColMajor)});
-      if (!matrix_type->type()->Is<type::F32>()) {
-        error_ = "matrix scalar element type must be f32";
-        return 0;
-      }
-      const auto scalar_elem_size = 4;
-      const auto effective_row_count = (matrix_type->rows() == 2) ? 2 : 4;
-      push_annot(spv::Op::OpMemberDecorate,
-                 {Operand::Int(struct_id), Operand::Int(idx),
-                  Operand::Int(SpvDecorationMatrixStride),
-                  Operand::Int(effective_row_count * scalar_elem_size)});
+  push_annot(
+      spv::Op::OpMemberDecorate,
+      {Operand::Int(struct_id), Operand::Int(idx),
+       Operand::Int(SpvDecorationOffset), Operand::Int(sem_member->Offset())});
+
+  // Infer and emit matrix layout.
+  auto* matrix_type = GetNestedMatrixType(member->type());
+  if (matrix_type) {
+    push_annot(spv::Op::OpMemberDecorate,
+               {Operand::Int(struct_id), Operand::Int(idx),
+                Operand::Int(SpvDecorationColMajor)});
+    if (!matrix_type->type()->Is<type::F32>()) {
+      error_ = "matrix scalar element type must be f32";
+      return 0;
     }
+    const auto scalar_elem_size = 4;
+    const auto effective_row_count = (matrix_type->rows() == 2) ? 2 : 4;
+    push_annot(spv::Op::OpMemberDecorate,
+               {Operand::Int(struct_id), Operand::Int(idx),
+                Operand::Int(SpvDecorationMatrixStride),
+                Operand::Int(effective_row_count * scalar_elem_size)});
   }
 
   return GenerateTypeIfNeeded(member->type());

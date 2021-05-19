@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "extensions/common/mojom/api_permission_id.mojom-shared.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/manifest_permission.h"
@@ -79,7 +80,7 @@ class PermissionSet {
   bool IsEmpty() const;
 
   // Returns true if the set has the specified API permission.
-  bool HasAPIPermission(APIPermission::ID permission) const;
+  bool HasAPIPermission(mojom::APIPermissionID permission) const;
 
   // Returns true if the |extension| explicitly requests access to the given
   // |permission_name|. Note this does not include APIs without no corresponding
@@ -88,10 +89,11 @@ class PermissionSet {
 
   // Returns true if the set allows the given permission with the default
   // permission detal.
-  bool CheckAPIPermission(APIPermission::ID permission) const;
+  bool CheckAPIPermission(mojom::APIPermissionID permission) const;
 
   // Returns true if the set allows the given permission and permission param.
-  bool CheckAPIPermissionWithParam(APIPermission::ID permission,
+  bool CheckAPIPermissionWithParam(
+      mojom::APIPermissionID permission,
       const APIPermission::CheckParam* param) const;
 
   // Returns true if this includes permission to access |origin|.

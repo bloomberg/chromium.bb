@@ -46,6 +46,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom-forward.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/mojom/ip_address_space.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
@@ -90,6 +91,7 @@ namespace blink {
 namespace mojom {
 class DeviceAPIService;
 class BadgeService;
+class ManagedConfigurationService;
 class RendererPreferenceWatcher;
 class WebUsbService;
 class WindowFeatures;
@@ -187,6 +189,7 @@ class FileSystemBackend;
 
 namespace content {
 enum class PermissionType;
+enum class SmsFetchFailureType;
 class AuthenticatorRequestClientDelegate;
 class BluetoothDelegate;
 class BrowserChildProcessHost;
@@ -221,6 +224,7 @@ class TracingDelegate;
 class TtsPlatform;
 class URLLoaderRequestInterceptor;
 class VpnServiceProxy;
+class WebAuthenticationDelegate;
 class WebContents;
 class WebContentsViewDelegate;
 class XrIntegrationClient;
@@ -451,12 +455,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GetAdditionalViewSourceSchemes(
       std::vector<std::string>* additional_schemes);
 
-  // Returns a list of additional schemes that the content layer should
-  // interpret as having a local address space for the purpose of blocking
-  // insecure private network requests.
-  // See https://wicg.github.io/private-network-access/ for details.
-  virtual void GetAdditionalLocalAddressSpaceSchemes(
-      std::vector<std::string>* additional_schemes) {}
+  // Computes the IPAddressSpace of the given URL with embedder knowledge.
+  // This is used to assign values to special schemes recognized only by the
+  // embedders of content/. Returns kUnknown if no such scheme was found.
+  // See https://wicg.github.io/private-network-access/ for details on what
+  // the IPAddressSpace represents.
+  virtual network::mojom::IPAddressSpace DetermineAddressSpaceFromURL(
+      const GURL& url);
 
   // Called when WebUI objects are created to get aggregate usage data (i.e. is
   // chrome://downloads used more than chrome://bookmarks?). Only internal (e.g.
@@ -826,15 +831,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allow the embedder to specify a string version of the storage partition
   // config with a site.
-  virtual std::string GetStoragePartitionIdForSite(
+  virtual StoragePartitionId GetStoragePartitionIdForSite(
       BrowserContext* browser_context,
       const GURL& site);
-
-  // Allows the embedder to provide a validation check for |partition_id|s.
-  // This domain of valid entries should match the range of outputs for
-  // GetStoragePartitionIdForChildProcess().
-  virtual bool IsValidStoragePartitionId(BrowserContext* browser_context,
-                                         const std::string& partition_id);
 
   // Allows the embedder to provide a storage partition configuration for a
   // site. A storage partition configuration includes a domain of the embedder's
@@ -1029,9 +1028,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       std::vector<std::unique_ptr<storage::FileSystemBackend>>*
           additional_backends) {}
 
-  // Creates a new DevToolsManagerDelegate. The caller owns the returned value.
-  // It's valid to return nullptr.
-  virtual DevToolsManagerDelegate* GetDevToolsManagerDelegate();
+  // Creates a new DevToolsManagerDelegate. It's valid to return nullptr.
+  virtual std::unique_ptr<content::DevToolsManagerDelegate>
+  CreateDevToolsManagerDelegate();
 
   // Stores the new expiration time up until which events related to |service|
   // can still be logged. |service| is the int value of the
@@ -1098,12 +1097,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   // bind Mojo interfaces. See content/browser/prerender/README.md for more
   // about capability control.
   //
+  // The embedder can add entries to `policy_map` for interfaces that it
+  // registers in `RegisterBrowserInterfaceBindersForFrame()`. It should not
+  // change or remove existing entries.
+  //
   // This function is called at most once, when the first RenderFrameHost is
-  // created that does a prerender. The embedder can add entries to `policy_map`
-  // for interfaces that it registers in
-  // `RegisterBrowserInterfaceBindersForFrame()`. It should not change or remove
-  // existing entries.
-  virtual void RegisterMojoBinderPoliciesForPrerendering(
+  // created for prerendering a page that is same-origin to the page that
+  // triggered the prerender.
+  virtual void RegisterMojoBinderPoliciesForSameOriginPrerendering(
       MojoBinderPolicyMap& policy_map) {}
 
   // Content was unable to bind a receiver for this associated interface, so the
@@ -1625,6 +1626,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::DeviceAPIService> receiver);
 
+  virtual void CreateManagedConfigurationService(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::ManagedConfigurationService>
+          receiver);
+
 #if !defined(OS_ANDROID)
   // Allows the embedder to provide an implementation of the Serial API.
   virtual SerialDelegate* GetSerialDelegate();
@@ -1661,13 +1667,18 @@ class CONTENT_EXPORT ContentBrowserClient {
   // BrowserMainLoop, BrowserMainLoop itself is responsible for that.
   virtual bool CreateThreadPool(base::StringPiece name);
 
+#if !defined(OS_ANDROID)
+  // Returns an embedder-provided subclass of WebAuthenticationDelegate. This
+  // allows the embedder to customize the implementation of the Web
+  // Authentication API.
+  virtual WebAuthenticationDelegate* GetWebAuthenticationDelegate();
+
   // Returns an AuthenticatorRequestClientDelegate subclass instance to provide
   // embedder-specific configuration for a single Web Authentication API request
   // being serviced in a given RenderFrame. The instance is guaranteed to be
   // destroyed before the RenderFrame goes out of scope. The embedder may choose
   // to return nullptr to indicate that the request cannot be serviced right
   // now.
-#if !defined(OS_ANDROID)
   virtual std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(RenderFrameHost* render_frame_host);
 #endif
@@ -1728,6 +1739,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& url,
       base::OnceCallback<WebContents*()> web_contents_getter,
       int child_id,
+      int frame_tree_node_id,
       NavigationUIData* navigation_data,
       bool is_main_frame,
       ui::PageTransition page_transition,
@@ -1763,6 +1775,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Called on every request completion to update the data use when network
   // service is enabled.
   virtual void OnNetworkServiceDataUseUpdate(
+      int process_id,
+      int route_id,
       int32_t network_traffic_annotation_id_hash,
       int64_t recv_bytes,
       int64_t sent_bytes);
@@ -1891,11 +1905,18 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Requests an SMS from |origin| from a remote device with telephony
   // capabilities, for example the user's mobile phone. Callbacks |callback|
-  // with the contents of the SMS upon success or an empty response on error.
-  virtual void FetchRemoteSms(
-      content::BrowserContext* browser_context,
+  // with the origins and one-time-code from the SMS upon success or a failure
+  // type on error. The returned callback cancels receiving of the response.
+  // Calling it will run |callback| if it hasn't been executed yet, otherwise it
+  // will be a no-op. Returns a null callback if fetching from a remote device
+  // is disabled.
+  virtual base::OnceClosure FetchRemoteSms(
+      content::WebContents* web_contents,
       const url::Origin& origin,
-      base::OnceCallback<void(base::Optional<std::string>)> callback);
+      base::OnceCallback<void(base::Optional<std::vector<url::Origin>>,
+                              base::Optional<std::string>,
+                              base::Optional<content::SmsFetchFailureType>)>
+          callback);
 
   // Check whether paste is allowed. To paste, an implementation may require a
   // `render_frame_host` to have user activation or various permissions.

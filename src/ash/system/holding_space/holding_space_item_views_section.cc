@@ -11,9 +11,11 @@
 #include "ash/system/holding_space/holding_space_item_view_delegate.h"
 #include "ash/system/holding_space/holding_space_util.h"
 #include "base/auto_reset.h"
+#include "base/callback_helpers.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/platform_style.h"
@@ -162,6 +164,10 @@ void HoldingSpaceItemViewsSection::Init() {
 
   InitLayerForAnimations(container_);
   container_->SetVisible(false);
+
+  // The `container_`'s children should be announced "List item X of Y", where
+  // X is the 1-based child index and Y is the count of children.
+  container_->GetViewAccessibility().OverrideRole(ax::mojom::Role::kList);
 
   // Placeholder.
   auto placeholder = CreatePlaceholder();

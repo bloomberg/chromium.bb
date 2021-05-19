@@ -50,6 +50,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/win/mf_helpers.h"
+#include "media/base/win/mf_initializer.h"
 #include "media/filters/vp9_parser.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/windows/d3d11_video_device_format_support.h"
@@ -784,8 +785,8 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
   RETURN_ON_FAILURE((state == kUninitialized),
                     "Initialize: invalid state: " << state, false);
 
-  RETURN_ON_FAILURE(session_ = InitializeMediaFoundation(),
-                    "Could not initialize Media Foundartion", false);
+  RETURN_ON_FAILURE(InitializeMediaFoundation(),
+                    "Could not initialize Media Foundation", false);
 
   config_ = config;
 
@@ -1478,10 +1479,9 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
         FileVersionInfo::CreateFileVersionInfoForModule(decoder_dll));
     RETURN_ON_FAILURE(version_info, "unable to get version of msmpeg2vdec.dll",
                       false);
-    base::string16 file_version = version_info->file_version();
-    RETURN_ON_FAILURE(
-        file_version.find(STRING16_LITERAL("6.1.7140")) == base::string16::npos,
-        "blocked version of msmpeg2vdec.dll 6.1.7140", false);
+    std::u16string file_version = version_info->file_version();
+    RETURN_ON_FAILURE(file_version.find(u"6.1.7140") == std::u16string::npos,
+                      "blocked version of msmpeg2vdec.dll 6.1.7140", false);
     codec_ = kCodecH264;
     clsid = __uuidof(CMSH264DecoderMFT);
   } else if ((profile >= VP9PROFILE_PROFILE0 &&

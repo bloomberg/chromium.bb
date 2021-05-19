@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
+#include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "content/browser/renderer_host/navigator.h"
@@ -105,7 +106,7 @@ class CONTENT_EXPORT FrameTree {
     virtual void DidStartLoading(FrameTreeNode* frame_tree_node,
                                  bool to_different_document) = 0;
 
-    // This is called when all nodes in the FrameTreestoppedloading. This
+    // This is called when all nodes in the FrameTree stopped loading. This
     // corresponds to the browser UI stop showing a spinner or other visual
     // indicator for loading.
     virtual void DidStopLoading() = 0;
@@ -129,6 +130,18 @@ class CONTENT_EXPORT FrameTree {
             RenderFrameHostManager::Delegate* manager_delegate);
   ~FrameTree();
 
+  // Type of FrameTree instance.
+  enum class Type {
+    // This FrameTree is the primary frame tree for the WebContents, whose main
+    // document URL is shown in the Omnibox.
+    kPrimary,
+
+    // This FrameTree is used to prerender a page in the background which is
+    // invisible to the user.
+    kPrerender
+  };
+  Type type() { return type_; }
+
   // Initializes the main frame for this FrameTree. That is it creates the
   // initial RenderFrameHost in the root node's RenderFrameHostManager. This
   // method will call back into the delegates so it should only be called once
@@ -138,14 +151,17 @@ class CONTENT_EXPORT FrameTree {
   void Init(SiteInstance* main_frame_site_instance,
             bool renderer_initiated_creation,
             const std::string& main_frame_name,
-            bool is_prerendering);
+            Type type);
 
   FrameTreeNode* root() const { return root_; }
 
-  // Sets |is_prerendering_| to false and activates the Prerendered page.
+  // Sets |type_| to FrameTree::Type::kPrimary and activates the Prerendered
+  // page.
+  // TODO(https://crbug.com/1154501): Remove once MPArch is enabled, as this is
+  // only used in the multiple WebContents implementation of prerendering.
   void ActivatePrerenderedFrameTree();
 
-  bool is_prerendering() const { return is_prerendering_; }
+  bool is_prerendering() const { return type_ == FrameTree::Type::kPrerender; }
 
   Delegate* delegate() { return delegate_; }
 
@@ -165,8 +181,12 @@ class CONTENT_EXPORT FrameTree {
   RenderFrameHostManager::Delegate* manager_delegate() {
     return manager_delegate_;
   }
-  const std::unordered_map<int /* SiteInstance ID */, RenderViewHostImpl*>&
-  render_view_hosts() const {
+
+  using RenderViewHostMapId = util::IdType32<class RenderViewHostMap>;
+  using RenderViewHostMap = std::unordered_map<RenderViewHostMapId,
+                                               RenderViewHostImpl*,
+                                               RenderViewHostMapId::Hasher>;
+  const RenderViewHostMap& render_view_hosts() const {
     return render_view_host_map_;
   }
 
@@ -265,8 +285,14 @@ class CONTENT_EXPORT FrameTree {
   scoped_refptr<RenderViewHostImpl> GetRenderViewHost(
       SiteInstance* site_instance);
 
+  // Returns the ID used for the RenderViewHost associated with |site_instance|.
+  // Note: Callers should not assume that there is a 1:1 mapping between
+  // SiteInstances and IDs returned by this function, since several
+  // SiteInstances may share a RenderViewHost.
+  RenderViewHostMapId GetRenderViewHostMapId(SiteInstance* site_instance) const;
+
   // Registers a RenderViewHost so that it can be reused by other frames
-  // belonging to the same SiteInstance.
+  // whose SiteInstance maps to the same RenderViewHostMapId.
   //
   // This method does not take ownership of|rvh|.
   //
@@ -277,13 +303,12 @@ class CONTENT_EXPORT FrameTree {
   // *must* be called for |rvh| when it is destroyed or put into the
   // BackForwardCache, to prevent FrameTree::CreateRenderViewHost from trying to
   // reuse it.
-  void RegisterRenderViewHost(SiteInstance* site_instance,
-                              RenderViewHostImpl* rvh);
+  void RegisterRenderViewHost(RenderViewHostMapId id, RenderViewHostImpl* rvh);
 
   // Unregisters the RenderViewHostImpl that's available for reuse for a
-  // particular SiteInstance. NOTE: This method CHECK fails if it is called for
-  // a |render_view_host| that is not currently set for reuse.
-  void UnregisterRenderViewHost(SiteInstance* site_instance,
+  // particular RenderViewHostMapId. NOTE: This method CHECK fails if it is
+  // called for a |render_view_host| that is not currently set for reuse.
+  void UnregisterRenderViewHost(RenderViewHostMapId id,
                                 RenderViewHostImpl* render_view_host);
 
   // This is called when the frame is about to be removed and started to run
@@ -348,6 +373,11 @@ class CONTENT_EXPORT FrameTree {
   // Stops all ongoing navigations in each of the nodes of this FrameTree.
   void StopLoading();
 
+  // Prepares this frame tree for destruction, cleaning up the internal state
+  // and firing the appropriate events like FrameDeleted.
+  // Must be called before FrameTree is destroyed.
+  void Shutdown();
+
  private:
   friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
@@ -381,12 +411,11 @@ class CONTENT_EXPORT FrameTree {
   // the frame.
   Navigator navigator_;
 
-  // Map of SiteInstance ID to RenderViewHost. This allows us to look up the
+  // Map of RenderViewHostMapId to RenderViewHost. This allows us to look up the
   // RenderViewHost for a given SiteInstance when creating RenderFrameHosts.
   // Each RenderViewHost maintains a refcount and is deleted when there are no
   // more RenderFrameHosts or RenderFrameProxyHosts using it.
-  std::unordered_map<int /* SiteInstance ID */, RenderViewHostImpl*>
-      render_view_host_map_;
+  RenderViewHostMap render_view_host_map_;
 
   // This is an owned ptr to the root FrameTreeNode, which never changes over
   // the lifetime of the FrameTree. It is not a scoped_ptr because we need the
@@ -403,6 +432,17 @@ class CONTENT_EXPORT FrameTree {
   // unsafe to show the pending URL. Usually false unless another window tries
   // to modify the blank page.  Always false after the first commit.
   bool has_accessed_initial_main_document_ = false;
+
+  // Indicates type of frame tree. The default value is set to kPrimary until
+  // the initialization is moved to the constructor.
+  // TODO(https://crbug.com/1174926): Make FrameTree::Type const once
+  // WebContents-swap-based activation logic is removed.
+  Type type_ = Type::kPrimary;
+
+#if DCHECK_IS_ON()
+  // Whether Shutdown() was called.
+  bool was_shut_down_ = false;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(FrameTree);
 };

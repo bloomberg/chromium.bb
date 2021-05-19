@@ -14,71 +14,18 @@
 
 #include "src/reader/spirv/parser_impl.h"
 
-#include <cassert>
-#include <cstring>
 #include <limits>
 #include <locale>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
 
-#include "source/opt/basic_block.h"
 #include "source/opt/build_module.h"
-#include "source/opt/constants.h"
-#include "source/opt/decoration_manager.h"
-#include "source/opt/function.h"
-#include "source/opt/instruction.h"
-#include "source/opt/module.h"
-#include "source/opt/type_manager.h"
-#include "source/opt/types.h"
-#include "spirv-tools/libspirv.hpp"
-#include "src/ast/binary_expression.h"
-#include "src/ast/binding_decoration.h"
 #include "src/ast/bitcast_expression.h"
-#include "src/ast/bool_literal.h"
-#include "src/ast/builtin.h"
-#include "src/ast/builtin_decoration.h"
 #include "src/ast/constant_id_decoration.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/group_decoration.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
-#include "src/ast/stride_decoration.h"
-#include "src/ast/struct.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/ast/struct_decoration.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_decoration.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/uint_literal.h"
-#include "src/ast/unary_op_expression.h"
-#include "src/ast/variable.h"
-#include "src/ast/variable_decl_statement.h"
-#include "src/ast/variable_decoration.h"
-#include "src/reader/spirv/enum_converter.h"
 #include "src/reader/spirv/function.h"
-#include "src/reader/spirv/usage.h"
 #include "src/type/access_control_type.h"
-#include "src/type/alias_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
 #include "src/type/depth_texture_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
 #include "src/type/multisampled_texture_type.h"
-#include "src/type/pointer_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/sampler_type.h"
-#include "src/type/storage_texture_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type/void_type.h"
 
 namespace tint {
 namespace reader {
@@ -209,6 +156,29 @@ bool AssumesUnsignedOperands(GLSLstd450 extended_opcode) {
 }
 
 // Returns true if the corresponding WGSL operation requires
+// the signedness of the second operand to match the signedness of the
+// first operand, and it's not one of the OpU* or OpS* instructions.
+// (Those are handled via MakeOperand.)
+bool AssumesSecondOperandSignednessMatchesFirstOperand(SpvOp opcode) {
+  switch (opcode) {
+    // All the OpI* integer binary operations.
+    case SpvOpIAdd:
+    case SpvOpISub:
+    case SpvOpIMul:
+    case SpvOpIEqual:
+    case SpvOpINotEqual:
+    // All the bitwise integer binary operations.
+    case SpvOpBitwiseAnd:
+    case SpvOpBitwiseOr:
+    case SpvOpBitwiseXor:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
+// Returns true if the corresponding WGSL operation requires
 // the signedness of the result to match the signedness of the first operand.
 bool AssumesResultSignednessMatchesFirstOperand(SpvOp opcode) {
   switch (opcode) {
@@ -219,6 +189,12 @@ bool AssumesResultSignednessMatchesFirstOperand(SpvOp opcode) {
     case SpvOpSDiv:
     case SpvOpSMod:
     case SpvOpSRem:
+    case SpvOpIAdd:
+    case SpvOpISub:
+    case SpvOpIMul:
+    case SpvOpBitwiseAnd:
+    case SpvOpBitwiseOr:
+    case SpvOpBitwiseXor:
       return true;
     default:
       break;
@@ -430,7 +406,7 @@ std::string ParserImpl::ShowType(uint32_t type_id) {
   return "SPIR-V type " + std::to_string(type_id);
 }
 
-ast::StructMemberDecoration* ParserImpl::ConvertMemberDecoration(
+ast::Decoration* ParserImpl::ConvertMemberDecoration(
     uint32_t struct_type_id,
     uint32_t member_index,
     const Decoration& decoration) {
@@ -575,7 +551,7 @@ Source ParserImpl::GetSourceForInst(
   if (where == inst_source_.end()) {
     return {};
   }
-  return Source{where->second};
+  return Source{where->second };
 }
 
 bool ParserImpl::ParseInternalModuleExceptFunctions() {
@@ -782,7 +758,7 @@ type::Type* ParserImpl::ConvertType(
   if (ast_elem_ty == nullptr) {
     return nullptr;
   }
-  ast::ArrayDecorationList decorations;
+  ast::DecorationList decorations;
   if (!ParseArrayDecorations(rtarr_ty, &decorations)) {
     return nullptr;
   }
@@ -823,7 +799,7 @@ type::Type* ParserImpl::ConvertType(
            << num_elem;
     return nullptr;
   }
-  ast::ArrayDecorationList decorations;
+  ast::DecorationList decorations;
   if (!ParseArrayDecorations(arr_ty, &decorations)) {
     return nullptr;
   }
@@ -837,7 +813,7 @@ type::Type* ParserImpl::ConvertType(
 
 bool ParserImpl::ParseArrayDecorations(
     const spvtools::opt::analysis::Type* spv_type,
-    ast::ArrayDecorationList* decorations) {
+    ast::DecorationList* decorations) {
   bool has_array_stride = false;
   const auto type_id = type_mgr_->GetId(spv_type);
   for (auto& decoration : this->GetDecorationsFor(type_id)) {
@@ -869,7 +845,7 @@ type::Type* ParserImpl::ConvertType(
     const spvtools::opt::analysis::Struct* struct_ty) {
   // Compute the struct decoration.
   auto struct_decorations = this->GetDecorationsFor(type_id);
-  ast::StructDecorationList ast_struct_decorations;
+  ast::DecorationList ast_struct_decorations;
   if (struct_decorations.size() == 1) {
     const auto decoration = struct_decorations[0][0];
     if (decoration == SpvDecorationBlock) {
@@ -902,7 +878,7 @@ type::Type* ParserImpl::ConvertType(
       // Already emitted diagnostics.
       return nullptr;
     }
-    ast::StructMemberDecorationList ast_member_decorations;
+    ast::DecorationList ast_member_decorations;
     bool is_non_writable = false;
     for (auto& decoration : GetDecorationsForMember(type_id, member_index)) {
       if (decoration.empty()) {
@@ -1087,7 +1063,7 @@ bool ParserImpl::EmitScalarSpecConstants() {
         break;
     }
     if (ast_type && ast_expr) {
-      ast::VariableDecorationList spec_id_decos;
+      ast::DecorationList spec_id_decos;
       for (const auto& deco : GetDecorationsFor(inst.result_id())) {
         if ((deco.size() == 2) && (deco[0] == SpvDecorationSpecId)) {
           auto* cid = create<ast::ConstantIdDecoration>(Source{}, deco[1]);
@@ -1214,7 +1190,7 @@ bool ParserImpl::EmitModuleScopeVariables() {
     }
     auto* ast_var =
         MakeVariable(var.result_id(), ast_storage_class, ast_store_type, false,
-                     ast_constructor, ast::VariableDecorationList{});
+                     ast_constructor, ast::DecorationList{});
     // TODO(dneto): initializers (a.k.a. constructor expression)
     if (ast_var) {
       builder_.AST().AddGlobalVariable(ast_var);
@@ -1230,7 +1206,7 @@ bool ParserImpl::EmitModuleScopeVariables() {
         builtin_position_.per_vertex_var_id,
         enum_converter_.ToStorageClass(builtin_position_.storage_class),
         ConvertType(builtin_position_.position_member_type_id), false, nullptr,
-        ast::VariableDecorationList{
+        ast::DecorationList{
             create<ast::BuiltinDecoration>(Source{}, ast::Builtin::kPosition),
         });
 
@@ -1264,13 +1240,12 @@ const spvtools::opt::analysis::IntConstant* ParserImpl::GetArraySize(
   return size->AsIntConstant();
 }
 
-ast::Variable* ParserImpl::MakeVariable(
-    uint32_t id,
-    ast::StorageClass sc,
-    type::Type* type,
-    bool is_const,
-    ast::Expression* constructor,
-    ast::VariableDecorationList decorations) {
+ast::Variable* ParserImpl::MakeVariable(uint32_t id,
+                                        ast::StorageClass sc,
+                                        type::Type* type,
+                                        bool is_const,
+                                        ast::Expression* constructor,
+                                        ast::DecorationList decorations) {
   if (type == nullptr) {
     Fail() << "internal error: can't make ast::Variable for null type";
     return nullptr;
@@ -1538,6 +1513,10 @@ ast::Expression* ParserImpl::MakeNullValue(type::Type* type) {
   return nullptr;
 }
 
+TypedExpression ParserImpl::MakeNullExpression(type::Type* type) {
+  return {type, MakeNullValue(type)};
+}
+
 TypedExpression ParserImpl::RectifyOperandSignedness(
     const spvtools::opt::Instruction& inst,
     TypedExpression&& expr) {
@@ -1584,6 +1563,21 @@ TypedExpression ParserImpl::RectifyOperandSignedness(
   }
   // We should not reach here.
   return std::move(expr);
+}
+
+TypedExpression ParserImpl::RectifySecondOperandSignedness(
+    const spvtools::opt::Instruction& inst,
+    type::Type* first_operand_type,
+    TypedExpression&& second_operand_expr) {
+  if ((first_operand_type != second_operand_expr.type) &&
+      AssumesSecondOperandSignednessMatchesFirstOperand(inst.opcode())) {
+    // Conversion is required.
+    return {first_operand_type,
+            create<ast::BitcastExpression>(Source{}, first_operand_type,
+                                           second_operand_expr.expr)};
+  }
+  // No conversion necessary.
+  return std::move(second_operand_expr);
 }
 
 type::Type* ParserImpl::ForcedResultType(const spvtools::opt::Instruction& inst,

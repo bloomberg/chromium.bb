@@ -48,7 +48,7 @@ void SpellCheckHostMetrics::RecordEnabledStats(bool enabled) {
     RecordCustomWordCountStats(static_cast<size_t>(-1));
 }
 
-void SpellCheckHostMetrics::RecordCheckedWordStats(const base::string16& word,
+void SpellCheckHostMetrics::RecordCheckedWordStats(const std::u16string& word,
                                                    bool misspell) {
   spellchecked_word_count_++;
   if (misspell) {
@@ -63,7 +63,7 @@ void SpellCheckHostMetrics::RecordCheckedWordStats(const base::string16& word,
   // Collects actual number of checked words, excluding duplication.
   base::MD5Digest digest;
   base::MD5Sum(reinterpret_cast<const unsigned char*>(word.c_str()),
-         word.size() * sizeof(base::char16), &digest);
+               word.size() * sizeof(char16_t), &digest);
   checked_word_hashes_.insert(base::MD5DigestToBase16(digest));
 
   RecordWordCounts();

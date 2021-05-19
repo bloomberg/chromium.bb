@@ -55,7 +55,7 @@ class ManageProfileHandlerTest : public testing::Test {
 
   void SetSignedInProfile() {
     gfx::Image gaia_image(gfx::test::CreateImage(256, 256));
-    entry()->SetAuthInfo("gaia_id", base::UTF8ToUTF16("user@gmail.com"), false);
+    entry()->SetAuthInfo("gaia_id", u"user@gmail.com", false);
     entry()->SetGAIAPicture("GAIA_IMAGE_URL_WITH_SIZE", gaia_image);
     EXPECT_TRUE(entry()->IsUsingDefaultAvatar());
     EXPECT_TRUE(entry()->IsUsingGAIAPicture());
@@ -271,7 +271,7 @@ TEST_F(ManageProfileHandlerTest, GetAvailableIconsSignedInProfile) {
                  /*gaia_selected=*/false);
 
   // Sign out.
-  entry()->SetAuthInfo("", base::string16(), false);
+  entry()->SetAuthInfo("", std::u16string(), false);
   entry()->SetGAIAPicture(std::string(), gfx::Image());
 
   const content::TestWebUI::CallData& data_2 = *web_ui()->call_data().back();

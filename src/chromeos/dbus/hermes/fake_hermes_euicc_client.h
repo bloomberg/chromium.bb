@@ -55,9 +55,14 @@ class COMPONENT_EXPORT(HERMES_CLIENT) FakeHermesEuiccClient
                          const std::string& activation_code,
                          const std::string& network_service_path,
                          hermes::profile::State state,
+                         hermes::profile::ProfileClass profile_class,
                          bool service_only) override;
+  bool RemoveCarrierProfile(
+      const dbus::ObjectPath& euicc_path,
+      const dbus::ObjectPath& carrier_profile_path) override;
   void QueueHermesErrorStatus(HermesResponseStatus status) override;
   void SetInteractiveDelay(base::TimeDelta delay) override;
+  std::string GenerateFakeActivationCode() override;
 
   // HermesEuiccClient:
   void InstallProfileFromActivationCode(

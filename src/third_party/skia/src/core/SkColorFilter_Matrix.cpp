@@ -9,34 +9,31 @@
 #include "include/core/SkString.h"
 #include "include/core/SkUnPreMultiply.h"
 #include "include/effects/SkColorMatrix.h"
+#include "include/effects/SkRuntimeEffect.h"
 #include "include/private/SkColorData.h"
 #include "include/private/SkNx.h"
 #include "src/core/SkColorFilter_Matrix.h"
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkRasterPipeline.h"
 #include "src/core/SkReadBuffer.h"
+#include "src/core/SkRuntimeEffectPriv.h"
 #include "src/core/SkVM.h"
 #include "src/core/SkWriteBuffer.h"
 
-static uint16_t ComputeFlags(const float matrix[20]) {
+static bool is_alpha_unchanged(const float matrix[20]) {
     const float* srcA = matrix + 15;
 
     return SkScalarNearlyZero (srcA[0])
         && SkScalarNearlyZero (srcA[1])
         && SkScalarNearlyZero (srcA[2])
         && SkScalarNearlyEqual(srcA[3], 1)
-        && SkScalarNearlyZero (srcA[4])
-            ? SkColorFilter::kAlphaUnchanged_Flag : 0;
+        && SkScalarNearlyZero (srcA[4]);
 }
 
 SkColorFilter_Matrix::SkColorFilter_Matrix(const float array[20], Domain domain)
-    : fFlags(ComputeFlags(array))
+    : fAlphaIsUnchanged(is_alpha_unchanged(array))
     , fDomain(domain) {
     memcpy(fMatrix, array, 20 * sizeof(float));
-}
-
-uint32_t SkColorFilter_Matrix::onGetFlags() const {
-    return this->INHERITED::onGetFlags() | fFlags;
 }
 
 void SkColorFilter_Matrix::flatten(SkWriteBuffer& buffer) const {
@@ -66,7 +63,7 @@ bool SkColorFilter_Matrix::onAsAColorMatrix(float matrix[20]) const {
 }
 
 bool SkColorFilter_Matrix::onAppendStages(const SkStageRec& rec, bool shaderIsOpaque) const {
-    const bool willStayOpaque = shaderIsOpaque && (fFlags & kAlphaUnchanged_Flag),
+    const bool willStayOpaque = shaderIsOpaque && fAlphaIsUnchanged,
                          hsla = fDomain == Domain::kHSLA;
 
     SkRasterPipeline* p = rec.fPipeline;
@@ -156,9 +153,69 @@ GrFPResult SkColorFilter_Matrix::asFragmentProcessor(std::unique_ptr<GrFragmentP
 
 static sk_sp<SkColorFilter> MakeMatrix(const float array[20],
                                        SkColorFilter_Matrix::Domain domain) {
-    return sk_floats_are_finite(array, 20)
-        ? sk_make_sp<SkColorFilter_Matrix>(array, domain)
-        : nullptr;
+    if (!sk_floats_are_finite(array, 20)) {
+        return nullptr;
+    }
+#if defined(SK_SUPPORT_LEGACY_RUNTIME_EFFECTS)
+    return sk_make_sp<SkColorFilter_Matrix>(array, domain);
+#else
+    const bool alphaUnchanged = SkScalarNearlyEqual(array[15], 0)
+                             && SkScalarNearlyEqual(array[16], 0)
+                             && SkScalarNearlyEqual(array[17], 0)
+                             && SkScalarNearlyEqual(array[18], 1)
+                             && SkScalarNearlyEqual(array[19], 0);
+
+    struct { SkM44 m; SkV4 b; } uniforms;
+    SkString code {
+        "uniform shader  input;"
+        "uniform half4x4 m;"
+        "uniform half4   b;"
+    };
+    if (domain == SkColorFilter_Matrix::Domain::kHSLA) {
+        code += kRGB_to_HSL_sksl;
+        code += kHSL_to_RGB_sksl;
+    }
+
+    code += "half4 main() {";
+    if (true) {
+        code += "half4 c = sample(input);";  // unpremul
+    }
+    if (alphaUnchanged) {
+        code += "half a = c.a;";
+    }
+    if (domain == SkColorFilter_Matrix::Domain::kHSLA) {
+        code += "c.rgb = rgb_to_hsl(c.rgb);";
+    }
+    if (true) {
+        uniforms.m = SkM44{array[ 0], array[ 1], array[ 2], array[ 3],
+                           array[ 5], array[ 6], array[ 7], array[ 8],
+                           array[10], array[11], array[12], array[13],
+                           array[15], array[16], array[17], array[18]};
+        uniforms.b = SkV4{array[4], array[9], array[14], array[19]};
+        code += "c = m*c + b;";
+    }
+    if (domain == SkColorFilter_Matrix::Domain::kHSLA) {
+        code += "c.rgb = hsl_to_rgb(c.rgb);";
+    }
+    if (alphaUnchanged) {
+        code += "return half4(saturate(c.rgb), a);";
+    } else {
+        code += "return saturate(c);";
+    }
+    code += "}";
+
+    sk_sp<SkRuntimeEffect> effect = SkMakeCachedRuntimeEffect(std::move(code));
+    SkASSERT(effect);
+
+    sk_sp<SkColorFilter> input = nullptr;
+    SkAlphaType       unpremul = kUnpremul_SkAlphaType;
+    return SkColorFilters::WithWorkingFormat(
+            effect->makeColorFilter(SkData::MakeWithCopy(&uniforms,sizeof(uniforms)), &input, 1),
+            nullptr/*keep dst TF encoding*/,
+            nullptr/*stay in dst gamut*/,
+            &unpremul);
+
+#endif
 }
 
 sk_sp<SkColorFilter> SkColorFilters::Matrix(const float array[20]) {

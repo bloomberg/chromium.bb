@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -127,30 +129,6 @@ class WebContentsImplBrowserTest : public ContentBrowserTest {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
     return web_contents->current_fullscreen_frame_;
-  }
-
- protected:
-  // Gets script to create subframe.
-  std::string GetSubframeScript(const GURL& sub_frame) {
-    const char kLoadIframeScript[] = R"(
-        let iframe = document.createElement('iframe');
-        iframe.src = $1;
-        document.body.appendChild(iframe);
-      )";
-    return JsReplace(kLoadIframeScript, sub_frame);
-  }
-
-  // Creates and loads subframe, waits for load to stop, and then returns
-  // subframe from the web contents frame tree.
-  RenderFrameHost* CreateSubframe(const GURL& sub_frame) {
-    EXPECT_TRUE(ExecuteScript(shell(), GetSubframeScript(sub_frame)));
-    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-
-    return static_cast<WebContentsImpl*>(shell()->web_contents())
-        ->GetFrameTree()
-        ->root()
-        ->child_at(0)
-        ->current_frame_host();
   }
 
  private:
@@ -532,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SetTitleOnUnload) {
   NavigationEntryImpl* entry1 = NavigationEntryImpl::FromNavigationEntry(
       shell()->web_contents()->GetController().GetLastCommittedEntry());
   SiteInstance* site_instance1 = entry1->site_instance();
-  EXPECT_EQ(base::ASCIIToUTF16("A"), entry1->GetTitle());
+  EXPECT_EQ(u"A", entry1->GetTitle());
 
   // Force a process switch by going to a privileged page.
   GURL web_ui_page(std::string(kChromeUIScheme) + "://" +
@@ -544,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SetTitleOnUnload) {
   EXPECT_NE(site_instance1, site_instance2);
 
   EXPECT_EQ(2, shell()->web_contents()->GetController().GetEntryCount());
-  EXPECT_EQ(base::ASCIIToUTF16("B"), entry1->GetTitle());
+  EXPECT_EQ(u"B", entry1->GetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
@@ -585,24 +563,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(content::ExecuteScript(shell(), kJSCodeForAppendingFrame));
 }
 
-// Observer class to track the creation of RenderFrameHost objects. It is used
-// in subsequent tests.
-class RenderFrameCreatedObserver : public WebContentsObserver {
- public:
-  explicit RenderFrameCreatedObserver(Shell* shell)
-      : WebContentsObserver(shell->web_contents()), last_rfh_(nullptr) {}
-
-  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
-    last_rfh_ = render_frame_host;
-  }
-
-  RenderFrameHost* last_rfh() const { return last_rfh_; }
-
- private:
-  RenderFrameHost* last_rfh_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameCreatedObserver);
-};
 
 // Test that creation of new RenderFrameHost objects sends the correct object
 // to the WebContentObservers. See http://crbug.com/347339.
@@ -630,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   RenderFrameHost* orig_rfh = shell()->web_contents()->GetMainFrame();
 
   // Install the observer and navigate cross-site.
-  RenderFrameCreatedObserver observer(shell());
+  RenderFrameHostCreatedObserver observer(shell()->web_contents());
   EXPECT_TRUE(NavigateToURL(shell(), cross_site_url));
 
   // The observer should've seen a RenderFrameCreated call for the new frame
@@ -648,13 +608,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   LoadStopNotificationObserver load_observer(
       &shell()->web_contents()->GetController());
-  TitleWatcher title_watcher(shell()->web_contents(),
-                             base::ASCIIToUTF16("pushState"));
+  TitleWatcher title_watcher(shell()->web_contents(), u"pushState");
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("/push_state.html")));
   load_observer.Wait();
-  base::string16 title = title_watcher.WaitAndGetTitle();
-  ASSERT_EQ(title, base::ASCIIToUTF16("pushState"));
+  std::u16string title = title_watcher.WaitAndGetTitle();
+  ASSERT_EQ(title, u"pushState");
 
   // LoadingStateChanged should be called 5 times: start and stop for the
   // initial load of push_state.html, once for the switch from
@@ -1123,7 +1082,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
                             "document.title = "
                             " window.matchMedia('(display-mode:"
                             " minimal-ui)').matches"));
-  EXPECT_EQ(base::ASCIIToUTF16("true"), shell()->web_contents()->GetTitle());
+  EXPECT_EQ(u"true", shell()->web_contents()->GetTitle());
 
   delegate.set_mode(blink::mojom::DisplayMode::kFullscreen);
   // Simulate widget is entering fullscreen (changing size is enough).
@@ -1138,7 +1097,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
                             "document.title = "
                             " window.matchMedia('(display-mode:"
                             " fullscreen)').matches"));
-  EXPECT_EQ(base::ASCIIToUTF16("true"), shell()->web_contents()->GetTitle());
+  EXPECT_EQ(u"true", shell()->web_contents()->GetTitle());
 }
 
 // Observer class used to verify that WebContentsObservers are notified
@@ -1703,8 +1662,8 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
   void RunJavaScriptDialog(WebContents* web_contents,
                            RenderFrameHost* render_frame_host,
                            JavaScriptDialogType dialog_type,
-                           const base::string16& message_text,
-                           const base::string16& default_prompt_text,
+                           const std::u16string& message_text,
+                           const std::u16string& default_prompt_text,
                            DialogClosedCallback callback,
                            bool* did_suppress_message) override {
     last_message_ = base::UTF16ToUTF8(message_text);
@@ -1720,7 +1679,7 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
                              RenderFrameHost* render_frame_host,
                              bool is_reload,
                              DialogClosedCallback callback) override {
-    std::move(callback).Run(true, base::string16());
+    std::move(callback).Run(true, std::u16string());
 
     if (waiting_for_ == kDialog) {
       waiting_for_ = kNothing;
@@ -1730,7 +1689,7 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
 
   bool HandleJavaScriptDialog(WebContents* web_contents,
                               bool accept,
-                              const base::string16* prompt_override) override {
+                              const std::u16string* prompt_override) override {
     return true;
   }
 
@@ -1810,25 +1769,45 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_EQ(GURL("http://a.com/title1.html"),
             GURL(test_delegate.last_message()).ReplaceComponents(clear_port));
 
-  // A dialog from the subframe.
   test_delegate.WillWaitForDialog();
   EXPECT_TRUE(
       content::ExecuteScript(frame->current_frame_host(), alert_location));
   test_delegate.Wait();
   EXPECT_EQ("about:blank", test_delegate.last_message());
 
+  // These is a different origin iframe, so alerts won't work if the feature
+  // is enabled. Ideally we would test they don't show, but there is no way
+  // to check for a lack of dialog window.
+  if (!base::FeatureList::IsEnabled(
+          features::kSuppressDifferentOriginSubframeJSDialogs)) {
+    // A dialog from the subframe.
+    // Navigate the subframe cross-site.
+    EXPECT_TRUE(NavigateToURLFromRenderer(
+        frame, embedded_test_server()->GetURL("b.com", "/title2.html")));
+    EXPECT_TRUE(WaitForLoadStop(wc));
+
+    // A dialog from the subframe.
+    test_delegate.WillWaitForDialog();
+    EXPECT_TRUE(
+        content::ExecuteScript(frame->current_frame_host(), alert_location));
+    test_delegate.Wait();
+    EXPECT_EQ(GURL("http://b.com/title2.html"),
+              GURL(test_delegate.last_message()).ReplaceComponents(clear_port));
+  }
+
+  // Navigate the subframe to the same origin as the main frame; ensure
+  // dialogs work.
   // Navigate the subframe cross-site.
-  EXPECT_TRUE(NavigateToURLFromRenderer(
-      frame, embedded_test_server()->GetURL("b.com", "/title2.html")));
+  GURL same_origin_url =
+      embedded_test_server()->GetURL("a.com", "/title2.html");
+  EXPECT_TRUE(NavigateToURLFromRenderer(frame, same_origin_url));
   EXPECT_TRUE(WaitForLoadStop(wc));
 
-  // A dialog from the subframe.
   test_delegate.WillWaitForDialog();
   EXPECT_TRUE(
       content::ExecuteScript(frame->current_frame_host(), alert_location));
   test_delegate.Wait();
-  EXPECT_EQ(GURL("http://b.com/title2.html"),
-            GURL(test_delegate.last_message()).ReplaceComponents(clear_port));
+  EXPECT_EQ(same_origin_url.spec(), test_delegate.last_message());
 
   // A dialog from the main frame.
   test_delegate.WillWaitForDialog();
@@ -2335,34 +2314,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
   EXPECT_EQ(kUserAgentOverride, header_value);
 }
 
-// Changes the WebContents and active entry user agent override from
-// DidStartNavigation().
-// in WebContentsObserver::DidStartNavigation().
-class UserAgentInjector : public WebContentsObserver {
- public:
-  UserAgentInjector(WebContents* web_contents, const std::string& user_agent)
-      : UserAgentInjector(web_contents,
-                          blink::UserAgentOverride::UserAgentOnly(user_agent),
-                          true) {}
-
-  UserAgentInjector(WebContents* web_contents,
-                    const blink::UserAgentOverride& ua_override,
-                    bool is_overriding_user_agent = true)
-      : WebContentsObserver(web_contents),
-        user_agent_override_(ua_override),
-        is_overriding_user_agent_(is_overriding_user_agent) {}
-
-  // WebContentsObserver:
-  void DidStartNavigation(NavigationHandle* navigation_handle) override {
-    web_contents()->SetUserAgentOverride(user_agent_override_, false);
-    navigation_handle->SetIsOverridingUserAgent(is_overriding_user_agent_);
-  }
-
- private:
-  const blink::UserAgentOverride user_agent_override_;
-  const bool is_overriding_user_agent_ = true;
-};
-
 // Verifies the user-agent string may be changed in DidStartNavigation().
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        SetUserAgentOverrideFromDidStartNavigation) {
@@ -2562,7 +2513,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // gesture to allow dialogs.
   wc->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
   wc->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
-      base::string16());
+      std::u16string());
   script = "window.onbeforeunload=function(e){ return 'x' };";
   EXPECT_TRUE(content::ExecuteScript(wc, script));
   test_delegate.WillWaitForDialog();
@@ -2751,9 +2702,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_EQ(root->child_at(0), frame_tree->GetFocusedFrame());
   shell()->web_contents()->Copy();
 
-  TitleWatcher title_watcher(web_contents, base::ASCIIToUTF16("done"));
-  base::string16 title = title_watcher.WaitAndGetTitle();
-  ASSERT_EQ(title, base::ASCIIToUTF16("done"));
+  TitleWatcher title_watcher(web_contents, u"done");
+  std::u16string title = title_watcher.WaitAndGetTitle();
+  ASSERT_EQ(title, u"done");
 }
 
 class UpdateTargetURLWaiter : public WebContentsDelegate {
@@ -2819,7 +2770,7 @@ class LoadStateWaiter : public WebContentsDelegate {
   ~LoadStateWaiter() override = default;
 
   // Waits until the WebContents changes its LoadStateHost to |host|.
-  void Wait(net::LoadState load_state, const base::string16& host) {
+  void Wait(net::LoadState load_state, const std::u16string& host) {
     waiting_host_ = host;
     waiting_state_ = load_state;
     if (!LoadStateMatches(web_contents_)) {
@@ -2849,7 +2800,7 @@ class LoadStateWaiter : public WebContentsDelegate {
   }
   base::OnceClosure quit_closure_;
   content::WebContents* web_contents_ = nullptr;
-  base::string16 waiting_host_;
+  std::u16string waiting_host_;
   net::LoadState waiting_state_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadStateWaiter);
@@ -2860,9 +2811,9 @@ class LoadStateWaiter : public WebContentsDelegate {
 // TODO(csharrison,mmenke):  Beef up testing of LoadState a little. In
 // particular, check upload progress and check the LoadState param.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DISABLED_UpdateLoadState) {
-  base::string16 a_host = url_formatter::IDNToUnicode("a.com");
-  base::string16 b_host = url_formatter::IDNToUnicode("b.com");
-  base::string16 paused_host = url_formatter::IDNToUnicode("paused.com");
+  std::u16string a_host = url_formatter::IDNToUnicode("a.com");
+  std::u16string b_host = url_formatter::IDNToUnicode("b.com");
+  std::u16string paused_host = url_formatter::IDNToUnicode("paused.com");
 
   // Controlled responses for image requests made in the test. They will
   // alternate being the "most interesting" for the purposes of notifying the
@@ -2897,7 +2848,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DISABLED_UpdateLoadState) {
   };
 
   // There should be no outgoing requests, so the load state should be empty.
-  waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
+  waiter.Wait(net::LOAD_STATE_IDLE, std::u16string());
 
   // The |frame_pauser| pauses the navigation after every step. It will only
   // finish by calling WaitForNavigationFinished or ResumeNavigation.
@@ -2917,7 +2868,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DISABLED_UpdateLoadState) {
   EXPECT_FALSE(frame_pauser.was_successful());
   // Note: the pausing only works for the non-network service path because of
   // http://crbug.com/791049.
-  waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
+  waiter.Wait(net::LOAD_STATE_IDLE, std::u16string());
 
   load_resource(a_frame, "/a_img");
   a_response->WaitForRequest();
@@ -3298,9 +3249,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, RejectFullscreenIfBlocked) {
       "document.body.onfullscreenerror = "
       "function (event) { document.title = 'onfullscreenerror' };"));
 
-  TitleWatcher title_watcher(web_contents,
-                             base::ASCIIToUTF16("onfullscreenchange"));
-  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("onfullscreenerror"));
+  TitleWatcher title_watcher(web_contents, u"onfullscreenchange");
+  title_watcher.AlsoWaitForTitle(u"onfullscreenerror");
 
   // While the |fullscreen_block| is in scope, fullscreen should fail with an
   // error.
@@ -3309,8 +3259,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, RejectFullscreenIfBlocked) {
 
   EXPECT_TRUE(ExecuteScript(main_frame, "document.body.requestFullscreen();"));
 
-  base::string16 title = title_watcher.WaitAndGetTitle();
-  ASSERT_EQ(title, base::ASCIIToUTF16("onfullscreenerror"));
+  std::u16string title = title_watcher.WaitAndGetTitle();
+  ASSERT_EQ(title, u"onfullscreenerror");
 }
 
 // Regression test for https://crbug.com/855018.
@@ -3469,15 +3419,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // Make the top page fullscreen with system navigation ui.
   {
-    TitleWatcher title_watcher(web_contents,
-                               base::ASCIIToUTF16("main_fullscreen_fulfilled"));
+    TitleWatcher title_watcher(web_contents, u"main_fullscreen_fulfilled");
     EXPECT_TRUE(ExecuteScript(
         main_frame,
         "document.body.requestFullscreen({ navigationUI: 'show' }).then(() => "
         "{document.title = 'main_fullscreen_fulfilled'});"));
 
-    base::string16 title = title_watcher.WaitAndGetTitle();
-    ASSERT_EQ(title, base::ASCIIToUTF16("main_fullscreen_fulfilled"));
+    std::u16string title = title_watcher.WaitAndGetTitle();
+    ASSERT_EQ(title, u"main_fullscreen_fulfilled");
   }
 
   EXPECT_TRUE(test_delegate.fullscreen_options().prefers_navigation_bar);
@@ -3486,15 +3435,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       static_cast<RenderFrameHostImpl*>(ChildFrameAt(main_frame, 0));
   // Make the child frame fullscreen without system navigation ui.
   {
-    TitleWatcher title_watcher(
-        web_contents, base::ASCIIToUTF16("child_fullscreen_fulfilled"));
+    TitleWatcher title_watcher(web_contents, u"child_fullscreen_fulfilled");
     EXPECT_TRUE(ExecuteScript(
         child_frame,
         "document.body.requestFullscreen({ navigationUI: 'hide' }).then(() => "
         "{parent.document.title = 'child_fullscreen_fulfilled'});"));
 
-    base::string16 title = title_watcher.WaitAndGetTitle();
-    ASSERT_EQ(title, base::ASCIIToUTF16("child_fullscreen_fulfilled"));
+    std::u16string title = title_watcher.WaitAndGetTitle();
+    ASSERT_EQ(title, u"child_fullscreen_fulfilled");
   }
 
   EXPECT_FALSE(test_delegate.fullscreen_options().prefers_navigation_bar);
@@ -3506,11 +3454,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
         main_frame,
         "document.body.onfullscreenchange = "
         "function (event) { document.title = 'main_in_fullscreen_again' };"));
-    TitleWatcher title_watcher(web_contents,
-                               base::ASCIIToUTF16("main_in_fullscreen_again"));
+    TitleWatcher title_watcher(web_contents, u"main_in_fullscreen_again");
     EXPECT_TRUE(ExecuteScript(child_frame, "document.exitFullscreen();"));
-    base::string16 title = title_watcher.WaitAndGetTitle();
-    ASSERT_EQ(title, base::ASCIIToUTF16("main_in_fullscreen_again"));
+    std::u16string title = title_watcher.WaitAndGetTitle();
+    ASSERT_EQ(title, u"main_in_fullscreen_again");
   }
 
   EXPECT_TRUE(test_delegate.fullscreen_options().prefers_navigation_bar);
@@ -3880,8 +3827,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // |url_with_iframes| contains another iframe inside it. This means that we
   // have 4 iframes inside.
-  auto* rfh =
-      static_cast<RenderFrameHostImpl*>(CreateSubframe(url_with_iframes));
+  auto* rfh = static_cast<RenderFrameHostImpl*>(
+      CreateSubframe(web_contents, "" /* frame_id */, url_with_iframes,
+                     true /* wait_for_navigation */));
 
   EXPECT_EQ(web_contents->max_loaded_frame_count_, 4u);
   ASSERT_NE(rfh, nullptr);
@@ -3912,7 +3860,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_EQ(web_contents->max_loaded_frame_count_, 2u);
 
   GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
-  auto* rfh = static_cast<RenderFrameHostImpl*>(CreateSubframe(url));
+  auto* rfh = static_cast<RenderFrameHostImpl*>(CreateSubframe(
+      web_contents, "" /* frame_id */, url, true /* wait_for_navigation */));
+  ;
   ASSERT_NE(rfh, nullptr);
   EXPECT_EQ(web_contents->max_loaded_frame_count_, 3u);
 
@@ -3974,11 +3924,13 @@ class LoadingObserver : public WebContentsObserver {
     run_loop_.Quit();
   }
 
-  void DocumentAvailableInMainFrame() override {
+  void DocumentAvailableInMainFrame(
+      RenderFrameHost* render_frame_host) override {
     events_.push_back("DocumentAvailableInMainFrame");
   }
 
-  void DocumentOnLoadCompletedInMainFrame() override {
+  void DocumentOnLoadCompletedInMainFrame(
+      RenderFrameHost* render_frame_host) override {
     events_.push_back("DocumentOnLoadCompletedInMainFrame");
   }
 
@@ -4201,9 +4153,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(
       shell(), GURL(server->GetURL("/scrollable_page_with_content.html"))));
 
-  // Size our view so that we can scroll both horizontally and vertically while
-  // the content is visible.
-  ResizeWebContentsView(shell(), gfx::Size(20, 20), /*set_start_page=*/false);
+  // Size our view so that we can scroll both horizontally and vertically.
+  ResizeWebContentsView(shell(), gfx::Size(10, 10), /*set_start_page=*/false);
 
   // Set up observers to watch the web contents and render frame submissions.
   auto* web_contents = shell()->web_contents();
@@ -4488,8 +4439,8 @@ class WebContentsImplBrowserTestWindowControlsOverlay
     WebContentsImplBrowserTest::SetUp();
   }
 
-  void ValidateTitlebarAreaInsetValue(const std::string& name,
-                                      const std::string& expected_result) {
+  void ValidateTitlebarAreaCSSValue(const std::string& name,
+                                    const std::string& expected_result) {
     SCOPED_TRACE(name);
 
     EXPECT_EQ(
@@ -4511,86 +4462,119 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestWindowControlsOverlay,
   auto* web_contents = shell()->web_contents();
 
   GURL url(
-      "data:text/html,<body><div id=target style=\"margin-left: "
-      "env(titlebar-area-inset-left);margin-right: "
-      "env(titlebar-area-inset-right);margin-top: "
-      "env(titlebar-area-inset-top);margin-bottom: "
-      "env(titlebar-area-inset-bottom);\"></div></body>");
+      "data:text/html,<body><div id=target style=\"position=absolute;"
+      "left: env(titlebar-area-x, 50px);"
+      "top: env(titlebar-area-y, 50px);"
+      "width: env(titlebar-area-width, 50px);"
+      "height: env(titlebar-area-height, 50px);\"></div></body>");
 
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
-  // initial state with no visible bounds and empty rect
+  // In the initial state, the overlay is not visible and the bounding rect is
+  // empty.
   int empty_rect_value = 0;
 
   EXPECT_EQ(false,
             EvalJs(web_contents, "navigator.windowControlsOverlay.visible"));
-
   EXPECT_EQ(
       empty_rect_value,
       EvalJs(web_contents,
              "navigator.windowControlsOverlay.getBoundingClientRect().x"));
-
   EXPECT_EQ(
       empty_rect_value,
       EvalJs(web_contents,
              "navigator.windowControlsOverlay.getBoundingClientRect().y"));
-
   EXPECT_EQ(
       empty_rect_value,
       EvalJs(web_contents,
              "navigator.windowControlsOverlay.getBoundingClientRect().width"));
-
   EXPECT_EQ(
       empty_rect_value,
       EvalJs(web_contents,
              "navigator.windowControlsOverlay.getBoundingClientRect().height"));
 
-  ValidateTitlebarAreaInsetValue("margin-left", "0px");
-  ValidateTitlebarAreaInsetValue("margin-right", "0px");
-  ValidateTitlebarAreaInsetValue("margin-top", "0px");
-  ValidateTitlebarAreaInsetValue("margin-bottom", "0px");
+  // When the overlay is not visble, the environment variables should be
+  // undefined, and the the fallback value of 50px should be used.
+  ValidateTitlebarAreaCSSValue("left", "50px");
+  ValidateTitlebarAreaCSSValue("top", "50px");
+  ValidateTitlebarAreaCSSValue("width", "50px");
+  ValidateTitlebarAreaCSSValue("height", "50px");
+
+  // Update bounds and ensure that JS APIs and CSS variables are updated.
+  const int new_x = 1;
+  const int new_y = 2;
+  const int new_width = 3;
+  const int new_height = 4;
 
   gfx::Rect bounding_client_rect =
-      gfx::Rect(2 /*x*/, 2 /*y*/, 2 /*width*/, 2 /*height*/);
+      gfx::Rect(new_x, new_y, new_width, new_height);
 
-  gfx::Insets insets =
-      gfx::Insets(2 /*top*/, 2 /*left*/, 2 /*bottom*/, 2 /*right*/);
-
-  web_contents->UpdateWindowControlsOverlay(bounding_client_rect, insets);
-
-  // information about the bounds should be updated
-  int new_x = 2;
-  int new_y = 2;
-  int new_width = 2;
-  int new_height = 2;
+  web_contents->UpdateWindowControlsOverlay(bounding_client_rect);
 
   EXPECT_EQ(true,
             EvalJs(web_contents, "navigator.windowControlsOverlay.visible"));
-
   EXPECT_EQ(
       new_x,
       EvalJs(web_contents,
              "navigator.windowControlsOverlay.getBoundingClientRect().x"));
-
   EXPECT_EQ(
       new_y,
       EvalJs(web_contents,
              "navigator.windowControlsOverlay.getBoundingClientRect().y"));
-
   EXPECT_EQ(
       new_width,
       EvalJs(web_contents,
              "navigator.windowControlsOverlay.getBoundingClientRect().width"));
-
   EXPECT_EQ(
       new_height,
       EvalJs(web_contents,
              "navigator.windowControlsOverlay.getBoundingClientRect().height"));
 
-  // check if the css environment variables were updated with the inset values
-  ValidateTitlebarAreaInsetValue("margin-left", "2px");
-  ValidateTitlebarAreaInsetValue("margin-right", "2px");
-  ValidateTitlebarAreaInsetValue("margin-top", "2px");
-  ValidateTitlebarAreaInsetValue("margin-bottom", "2px");
+  ValidateTitlebarAreaCSSValue("left", "1px");
+  ValidateTitlebarAreaCSSValue("top", "2px");
+  ValidateTitlebarAreaCSSValue("width", "3px");
+  ValidateTitlebarAreaCSSValue("height", "4px");
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestWindowControlsOverlay,
+                       GeometryChangeEvent) {
+  auto* web_contents = shell()->web_contents();
+
+  GURL url(url::kAboutBlankURL);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(ExecuteScript(
+      web_contents->GetMainFrame(),
+      "geometrychangeCount = 0;"
+      "navigator.windowControlsOverlay.ongeometrychange = (e) => {"
+      "  geometrychangeCount++;"
+      "  rect = e.boundingRect;"
+      "  visible = e.visible;"
+      "}"));
+
+  WaitForLoadStop(web_contents);
+
+  // Ensure the "geometrychange" event is only fired when the the window
+  // controls overlay bounds are updated.
+  EXPECT_EQ(0, EvalJs(web_contents, "geometrychangeCount"));
+
+  // Information about the bounds should be updated.
+  const int x = 2;
+  const int y = 2;
+  const int width = 2;
+  const int height = 2;
+
+  gfx::Rect bounding_client_rect = gfx::Rect(x, y, width, height);
+
+  web_contents->UpdateWindowControlsOverlay(bounding_client_rect);
+
+  // Expect the "geometrychange" event to have fired once.
+  EXPECT_EQ(1, EvalJs(web_contents, "geometrychangeCount"));
+
+  // Validate the event payload.
+  EXPECT_EQ(true, EvalJs(web_contents, "visible"));
+  EXPECT_EQ(x, EvalJs(web_contents, "rect.x;"));
+  EXPECT_EQ(y, EvalJs(web_contents, "rect.y"));
+  EXPECT_EQ(width, EvalJs(web_contents, "rect.width"));
+  EXPECT_EQ(height, EvalJs(web_contents, "rect.height"));
 }
 }  // namespace content

@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -98,8 +99,8 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
 
   std::string error;
   scoped_refptr<Extension> extension(
-      Extension::Create(path, Manifest::INTERNAL, manifest, Extension::NO_FLAGS,
-                        extension_id, &error));
+      Extension::Create(path, mojom::ManifestLocation::kInternal, manifest,
+                        Extension::NO_FLAGS, extension_id, &error));
   EXPECT_TRUE(extension.get()) << error;
   return extension;
 }
@@ -126,8 +127,9 @@ scoped_refptr<Extension> CreateWebStoreExtension() {
   path = path.AppendASCII("web_store");
 
   std::string error;
-  scoped_refptr<Extension> extension(Extension::Create(
-      path, Manifest::COMPONENT, *manifest, Extension::NO_FLAGS, &error));
+  scoped_refptr<Extension> extension(
+      Extension::Create(path, mojom::ManifestLocation::kComponent, *manifest,
+                        Extension::NO_FLAGS, &error));
   EXPECT_TRUE(extension.get()) << error;
   return extension;
 }
@@ -291,10 +293,8 @@ class ExtensionProtocolsTestBase : public testing::Test {
                             : testing_profile_.get();
   }
 
-  void SimulateSystemSuspendForRequests() {
-    power_monitor_source_ = new base::PowerMonitorTestSource();
-    base::PowerMonitor::Initialize(
-        std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_));
+  void EnableSimulationOfSystemSuspendForRequests() {
+    power_monitor_source_.emplace();
   }
 
   void AddExtensionAndPerformResourceLoad(const ExtensionId& extension_id) {
@@ -338,20 +338,22 @@ class ExtensionProtocolsTestBase : public testing::Test {
  private:
   GetResult LoadURL(const GURL& url,
                     network::mojom::RequestDestination destination) {
-    constexpr int32_t kRoutingId = 81;
     constexpr int32_t kRequestId = 28;
 
     mojo::PendingRemote<network::mojom::URLLoader> loader;
     network::TestURLLoaderClient client;
     loader_factory_->CreateLoaderAndStart(
-        loader.InitWithNewPipeAndPassReceiver(), kRoutingId, kRequestId,
+        loader.InitWithNewPipeAndPassReceiver(), kRequestId,
         network::mojom::kURLLoadOptionNone,
         CreateResourceRequest("GET", destination, url), client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
+    // If `power_monitor_source_` is set, simulates power suspend and resume
+    // notifications. These notifications are posted tasks that will be executed
+    // by `client.RunUntilComplete()`.
     if (power_monitor_source_) {
-      power_monitor_source_->GenerateSuspendEvent();
-      power_monitor_source_->GenerateResumeEvent();
+      power_monitor_source_->Suspend();
+      power_monitor_source_->Resume();
     }
 
     client.RunUntilComplete();
@@ -379,8 +381,8 @@ class ExtensionProtocolsTestBase : public testing::Test {
   const bool force_incognito_;
   const ukm::SourceIdObj test_ukm_id_;
 
-  // |power_monitor_source_| is owned by the global PowerMonitor.
-  base::PowerMonitorTestSource* power_monitor_source_ = nullptr;
+  base::Optional<base::test::ScopedPowerMonitorTestSource>
+      power_monitor_source_;
 };
 
 class ExtensionProtocolsTest : public ExtensionProtocolsTestBase {
@@ -586,7 +588,8 @@ TEST_F(ExtensionProtocolsTest, MetadataFolder) {
   base::FilePath extension_dir = GetTestPath("metadata_folder");
   std::string error;
   scoped_refptr<Extension> extension = file_util::LoadExtension(
-      extension_dir, Manifest::INTERNAL, Extension::NO_FLAGS, &error);
+      extension_dir, mojom::ManifestLocation::kInternal, Extension::NO_FLAGS,
+      &error);
   ASSERT_NE(extension.get(), nullptr) << "error: " << error;
 
   // Loading "/test.html" should succeed.
@@ -804,7 +807,7 @@ TEST_F(ExtensionProtocolsTest, MimeTypesForKnownFiles) {
       ExtensionBuilder()
           .SetManifest(std::move(manifest))
           .SetPath(unpacked_path)
-          .SetLocation(Manifest::INTERNAL)
+          .SetLocation(mojom::ManifestLocation::kInternal)
           .Build();
   ASSERT_TRUE(extension);
 
@@ -829,17 +832,9 @@ TEST_F(ExtensionProtocolsTest, MimeTypesForKnownFiles) {
   }
 }
 
-#if defined(OS_WIN)
-#define MAYBE_ExtensionRequestsNotAborted DISABLED_ExtensionRequestsNotAborted
-#else
-#define MAYBE_ExtensionRequestsNotAborted ExtensionRequestsNotAborted
-#endif
 // Tests that requests for extension resources (including the generated
 // background page) are not aborted on system suspend.
-//
-// Flaky on Windows.
-// TODO(https://crbug.com/921687): Investigate and fix.
-TEST_F(ExtensionProtocolsTest, MAYBE_ExtensionRequestsNotAborted) {
+TEST_F(ExtensionProtocolsTest, ExtensionRequestsNotAborted) {
   // Register a non-incognito extension protocol handler.
   SetProtocolHandler(false);
 
@@ -847,10 +842,11 @@ TEST_F(ExtensionProtocolsTest, MAYBE_ExtensionRequestsNotAborted) {
       GetTestPath("common").AppendASCII("background_script");
   std::string error;
   scoped_refptr<Extension> extension = file_util::LoadExtension(
-      extension_dir, Manifest::INTERNAL, Extension::NO_FLAGS, &error);
+      extension_dir, mojom::ManifestLocation::kInternal, Extension::NO_FLAGS,
+      &error);
   ASSERT_TRUE(extension.get()) << error;
 
-  SimulateSystemSuspendForRequests();
+  EnableSimulationOfSystemSuspendForRequests();
 
   // Request the generated background page. Ensure the request completes
   // successfully.

@@ -12,8 +12,7 @@
         "maxSampleRate": 96000,
         "maxChannels": 5,
         "minBitRate": 32000,
-        "maxBitRate": 320000,
-        "maxDelay": 4000
+        "maxBitRate": 320000
       },
       "video": {
         "maxPixelsPerSecond": 62208000,

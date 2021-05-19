@@ -220,7 +220,6 @@
         "chrome://extensions/*",
         "chrome://home/*",
         "chrome://chrome-signin/*",
-        "chrome://hats/*",
         "chrome://mobilesetup/*",
         "chrome://oobe/*",
         "chrome://os-settings/*",
@@ -243,7 +242,7 @@
     "contexts": ["blessed_extension"]
   },
   "idle.getAutoLockDelay": {
-    "platforms": ["chromeos"]
+    "platforms": ["chromeos", "lacros"]
   },
   "lockScreen.data": {
     "dependencies": ["permission:lockScreen"],
@@ -522,7 +521,8 @@
   },{
     "contexts": ["webui"],
     "matches": [
-      "chrome://password-change/*"
+      "chrome://password-change/*",
+      "chrome://file-manager/*"
     ]
   }],
   "runtime.sendNativeMessage": {
@@ -640,7 +640,6 @@
       "chrome://assistant-optin/*",
       "chrome://chrome-signin/*",
       "chrome://discards/*",
-      "chrome://hats/*",
       "chrome://home/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
@@ -662,7 +661,6 @@
       "chrome://assistant-optin/*",
       "chrome://chrome-signin/*",
       "chrome://discards/*",
-      "chrome://hats/*",
       "chrome://home/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
@@ -682,7 +680,6 @@
       "chrome://assistant-optin/*",
       "chrome://chrome-signin/*",
       "chrome://discards/*",
-      "chrome://hats/*",
       "chrome://home/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",

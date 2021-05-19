@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/ash/notifications/tpm_auto_update_notification.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/ui/tpm_auto_update_notification.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -50,9 +50,9 @@ class TPMAutoUpdateModePolicyHandler {
   // informing the user that a TPM update which will clear user data is planned
   // in 24 hours or at next reboot, depending on |notification_type|.
   using ShowNotificationCallback = base::RepeatingCallback<void(
-      chromeos::TpmAutoUpdateUserNotification notification_type)>;
+      ash::TpmAutoUpdateUserNotification notification_type)>;
 
-  TPMAutoUpdateModePolicyHandler(chromeos::CrosSettings* cros_settings,
+  TPMAutoUpdateModePolicyHandler(ash::CrosSettings* cros_settings,
                                  PrefService* local_state);
   ~TPMAutoUpdateModePolicyHandler();
 
@@ -96,7 +96,7 @@ class TPMAutoUpdateModePolicyHandler {
 
   void ShowTPMUpdateOnNextRebootNotification();
 
-  chromeos::CrosSettings* cros_settings_;
+  ash::CrosSettings* cros_settings_;
 
   PrefService* local_state_;
 

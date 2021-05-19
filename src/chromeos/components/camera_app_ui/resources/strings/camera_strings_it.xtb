@@ -4,10 +4,13 @@
 <translation id="1175958423215084756">Link rilevato. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Immagini della galleria</translation>
 <translation id="1430915738399379752">Stampa</translation>
+<translation id="1467231725790366244">Videocamera <ph name="CAMERA" /> scollegata.</translation>
 <translation id="1473110567575736769">Timer di 3 secondi</translation>
 <translation id="1620510694547887537">Fotocamera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Nessun dato registrato</translation>
+<translation id="1838104802459806957">Inclinazione verso l'alto</translation>
+<translation id="1851169887664797861">Disponibili controlli della videocamera aggiuntivi</translation>
 <translation id="1851616744363735765">IN PAUSA</translation>
 <translation id="1862930711583847113">Impossibile esportare <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Risoluzione foto</translation>
@@ -17,15 +20,18 @@
 <translation id="2064538373111010176">Fotocamera <ph name="CAMERA" /> attiva</translation>
 <translation id="2144806332417375165">Parametri video personalizzati</translation>
 <translation id="229579744168541441">Esporta su disco</translation>
+<translation id="2320741269052147773">Esegui una panoramica a sinistra</translation>
 <translation id="2501278716633472235">Indietro</translation>
 <translation id="2501853267655415902">Registrazione interrotta</translation>
 <translation id="2501953888035679275">Realizza foto e video con la tua fotocamera.</translation>
 <translation id="2549985041256363841">Avvia registrazione</translation>
 <translation id="2599796128805996109">Fotocamera posteriore</translation>
+<translation id="2879583609344924966">Videocamera <ph name="CAMERA" /> collegata.</translation>
 <translation id="2912439424121107408">La modalità Esperto non è supportata su questo dispositivo</translation>
 <translation id="2968794441791257519">Le foto e i video acquisiti con la fotocamera verranno spostati nella cartella Download e potrai accedervi dall'app File.
 
 Le app con autorizzazioni di accesso allo spazio di archiviazione potranno accedere alle foto e ai video.</translation>
+<translation id="3067436040345934772">Panoramica a destra</translation>
 <translation id="3081586908890909590">Passa alla modalità video</translation>
 <translation id="313467653172006084">30 f/s</translation>
 <translation id="3183731565330012717">Tipo di griglia</translation>
@@ -34,6 +40,7 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="3259149966178251584">Risoluzione della fotocamera</translation>
 <translation id="3517926952904427380">Impossibile scattare foto verticale</translation>
 <translation id="3569311554794739032">Vuoi rimuovere <ph name="FILE" />?</translation>
+<translation id="3733597664308256288">Disponibili controlli della videocamera aggiuntivi. Tasto per la ricerca + Freccia destra per accedere.</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Scansiona il codice a barre</translation>
 <translation id="3892148308691398805">Copia testo</translation>
@@ -56,6 +63,7 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="5671277269877808209">Quadrato</translation>
 <translation id="5775960006311140197">Modalità Esperto</translation>
 <translation id="5869546221129391014">Griglia</translation>
+<translation id="5975083100439434680">Diminuisci lo zoom</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="6073451960410192870">Interrompi registrazione</translation>
 <translation id="6197807149213783179">Salva metadati</translation>
@@ -84,16 +92,19 @@ Se il feedback riguarda la qualità di immagini o video, allega una foto o un vi
 <translation id="7974782136796202581">Mostra opzioni panoramica/inclinazione/zoom</translation>
 <translation id="7983668134180549431">Testo rilevato.</translation>
 <translation id="8067883171444229417">Guarda il video</translation>
+<translation id="8120146556401698679">Panoramica Inclinazione Zoom</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8145038249676204903">Passa alla modalità foto</translation>
 <translation id="8239780215768881278">Scatta istantanea video</translation>
 <translation id="8261506727792406068">Elimina</translation>
+<translation id="8425673304802773841">Inclinazione verso il basso</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Anteprima metadati</translation>
 <translation id="8815966864175525708">Passa alla modalità foto verticale</translation>
 <translation id="8828441885228359828">Riprendi la registrazione</translation>
 <translation id="8870695351537079478">Impossibile avviare la registrazione</translation>
+<translation id="8903921497873541725">Aumenta lo zoom</translation>
 <translation id="9045155556724273246">10 secondi</translation>
 <translation id="945522503751344254">Invia feedback</translation>
 </translationbundle>

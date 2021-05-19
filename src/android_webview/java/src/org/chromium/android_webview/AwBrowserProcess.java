@@ -46,6 +46,8 @@ import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.components.component_updater.ComponentLoaderPolicyBridge;
+import org.chromium.components.component_updater.EmbeddedComponentLoader;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.policy.CombinedPolicyProvider;
 import org.chromium.content_public.browser.BrowserStartupController;
@@ -57,6 +59,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -286,20 +289,21 @@ public final class AwBrowserProcess {
         // again if anything goes wrong. This makes sense given that a failure
         // to copy a file usually means that retrying won't succeed either,
         // because e.g. the disk is full, or the file system is corrupted.
-        final ParcelFileDescriptor[] minidumpFds = new ParcelFileDescriptor[minidumpFiles.length];
+        final List<ParcelFileDescriptor> minidumpFds = new ArrayList<>(minidumpFiles.length);
         try {
             for (int i = 0; i < minidumpFiles.length; ++i) {
                 try {
-                    minidumpFds[i] = ParcelFileDescriptor.open(
-                            minidumpFiles[i], ParcelFileDescriptor.MODE_READ_ONLY);
+                    minidumpFds.add(ParcelFileDescriptor.open(
+                            minidumpFiles[i], ParcelFileDescriptor.MODE_READ_ONLY));
                 } catch (FileNotFoundException e) {
-                    minidumpFds[i] = null; // This is slightly ugly :)
+                    // Don't add null file descriptors to the array.
                 }
             }
             try {
                 List<Map<String, String>> crashesInfoList =
                         getCrashKeysForCrashFiles(minidumpFiles, crashesInfoMap);
-                service.transmitCrashes(minidumpFds, crashesInfoList);
+                service.transmitCrashes(
+                        minidumpFds.toArray(new ParcelFileDescriptor[0]), crashesInfoList);
             } catch (RemoteException e) {
                 // TODO(gsennton): add a UMA metric here to ensure we aren't losing
                 // too many minidumps because of this.
@@ -307,9 +311,9 @@ public final class AwBrowserProcess {
         } finally {
             deleteMinidumps(minidumpFiles);
             // Close FDs
-            for (int i = 0; i < minidumpFds.length; ++i) {
+            for (ParcelFileDescriptor fd : minidumpFds) {
                 try {
-                    if (minidumpFds[i] != null) minidumpFds[i].close();
+                    fd.close();
                 } catch (IOException e) {
                 }
             }
@@ -483,11 +487,30 @@ public final class AwBrowserProcess {
         }
     }
 
+    /**
+     * Load components files from {@link
+     * org.chromium.android_webview.services.ComponentsProviderService}.
+     */
+    public static void loadComponents() {
+        ComponentLoaderPolicyBridge[] componentPolicies =
+                AwBrowserProcessJni.get().getComponentLoaderPolicies();
+        // Don't connect to the service if there are no components to load.
+        if (componentPolicies.length == 0) {
+            return;
+        }
+        EmbeddedComponentLoader loader =
+                new EmbeddedComponentLoader(Arrays.asList(componentPolicies));
+        final Intent intent = new Intent();
+        intent.setClassName(getWebViewPackageName(), ServiceNames.COMPONENTS_PROVIDER_SERVICE);
+        loader.connect(intent);
+    }
+
     // Do not instantiate this class.
     private AwBrowserProcess() {}
 
     @NativeMethods
     interface Natives {
         void setProcessNameCrashKey(String processName);
+        ComponentLoaderPolicyBridge[] getComponentLoaderPolicies();
     }
 }

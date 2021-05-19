@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -34,6 +35,7 @@ import java.util.HashSet;
 @JNINamespace("paint_preview")
 public class PaintPreviewTabService implements NativePaintPreviewServiceProvider {
     private static final long AUDIT_START_DELAY_MS = 2 * 60 * 1000; // Two minutes;
+    private static boolean sIsAccessibilityEnabledForTesting;
 
     private Runnable mAuditRunnable;
     private long mNativePaintPreviewBaseService;
@@ -87,7 +89,7 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
             String scheme = tab.getUrl().getScheme();
             boolean schemeAllowed = scheme.equals("http") || scheme.equals("https");
             return !tab.isIncognito() && !tab.isNativePage() && !tab.isShowingErrorPage()
-                    && tab.getWebContents() != null && schemeAllowed;
+                    && tab.getWebContents() != null && !tab.isLoading() && schemeAllowed;
         }
     }
 
@@ -211,8 +213,10 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
             return;
         }
 
-        PaintPreviewTabServiceJni.get().captureTabAndroid(
-                mNativePaintPreviewTabService, tab.getId(), tab.getWebContents(), successCallback);
+        boolean isAccessibilityEnabled = sIsAccessibilityEnabledForTesting
+                || ChromeAccessibilityUtil.get().isAccessibilityEnabled();
+        PaintPreviewTabServiceJni.get().captureTabAndroid(mNativePaintPreviewTabService,
+                tab.getId(), tab.getWebContents(), isAccessibilityEnabled, successCallback);
     }
 
     private void tabClosed(Tab tab) {
@@ -229,10 +233,16 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
                 mNativePaintPreviewTabService, activeTabIds);
     }
 
+    @VisibleForTesting
+    public static void setAccessibilityEnabledForTesting(boolean isAccessibilityEnabled) {
+        sIsAccessibilityEnabledForTesting = isAccessibilityEnabled;
+    }
+
     @NativeMethods
     interface Natives {
         void captureTabAndroid(long nativePaintPreviewTabService, int tabId,
-                WebContents webContents, Callback<Boolean> successCallback);
+                WebContents webContents, boolean accessibilityEnabled,
+                Callback<Boolean> successCallback);
         void tabClosedAndroid(long nativePaintPreviewTabService, int tabId);
         boolean hasCaptureForTabAndroid(long nativePaintPreviewTabService, int tabId);
         void auditArtifactsAndroid(long nativePaintPreviewTabService, int[] activeTabIds);

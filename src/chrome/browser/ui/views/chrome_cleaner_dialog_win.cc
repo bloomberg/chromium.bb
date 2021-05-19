@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/views/chrome_cleaner_dialog_win.h"
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_dialog_controller_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"

@@ -32,7 +32,7 @@ QuicHeaderList& QuicHeaderList::operator=(QuicHeaderList&& other) = default;
 QuicHeaderList::~QuicHeaderList() {}
 
 void QuicHeaderList::OnHeaderBlockStart() {
-  QUIC_BUG_IF(current_header_list_size_ != 0)
+  QUIC_BUG_IF(quic_bug_12518_1, current_header_list_size_ != 0)
       << "OnHeaderBlockStart called more than once!";
 }
 
@@ -42,7 +42,7 @@ void QuicHeaderList::OnHeader(absl::string_view name, absl::string_view value) {
   if (current_header_list_size_ < max_header_list_size_) {
     current_header_list_size_ += name.size();
     current_header_list_size_ += value.size();
-    current_header_list_size_ += QpackEntry::kSizeOverhead;
+    current_header_list_size_ += kQpackEntrySizeOverhead;
     header_list_.emplace_back(std::string(name), std::string(value));
   }
 }

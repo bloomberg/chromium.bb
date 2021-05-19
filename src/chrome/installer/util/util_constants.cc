@@ -38,6 +38,10 @@ const char kDeleteOldVersions[] = "delete-old-versions";
 // kUninstall, otherwise it is silently ignored.
 const char kDeleteProfile[] = "delete-profile";
 
+// Specifies a comma-separated list of protocols to remove from the browser's
+// protocol associations list.
+const char kDeregisterURLProtocol[] = "deregister-url-protocol";
+
 // Disable logging
 const char kDisableLogging[] = "disable-logging";
 
@@ -212,6 +216,13 @@ const wchar_t kInstallTempDir[] = L"Temp";
 const wchar_t kLnkExt[] = L".lnk";
 const wchar_t kNaClExe[] = L"nacl64.exe";
 const wchar_t kNotificationHelperExe[] = L"notification_helper.exe";
+
+// DowngradeVersion holds the version from which Chrome was downgraded. In case
+// of multiple downgrades (e.g., 75->74->73), it retains the highest version
+// installed prior to any downgrades. DowngradeVersion is deleted on upgrade
+// once Chrome reaches the version from which it was downgraded.
+const wchar_t kRegDowngradeVersion[] = L"DowngradeVersion";
+
 const wchar_t kSetupExe[] = L"setup.exe";
 const wchar_t kUninstallStringField[] = L"UninstallString";
 const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";

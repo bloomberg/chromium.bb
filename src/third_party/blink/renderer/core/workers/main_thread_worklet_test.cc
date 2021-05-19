@@ -57,7 +57,7 @@ class MainThreadWorkletTest : public PageTestBase {
     csp->DidReceiveHeader(csp_header, *(self_origin),
                           network::mojom::ContentSecurityPolicyType::kEnforce,
                           network::mojom::ContentSecurityPolicySource::kHTTP);
-    window->GetSecurityContext().SetContentSecurityPolicy(csp);
+    window->SetContentSecurityPolicy(csp);
 
     reporting_proxy_ =
         std::make_unique<MainThreadWorkletReportingProxyForTest>(window);
@@ -74,7 +74,7 @@ class MainThreadWorkletTest : public PageTestBase {
         mojom::blink::V8CacheOptions::kDefault,
         MakeGarbageCollected<WorkletModuleResponsesMap>(),
         mojo::NullRemote() /* browser_interface_broker */,
-        BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
+        BeginFrameProviderParams(), nullptr /* parent_permissions_policy */,
         window->GetAgentClusterID(), ukm::kInvalidSourceId,
         window->GetExecutionContextToken());
     global_scope_ = MakeGarbageCollected<FakeWorkletGlobalScope>(

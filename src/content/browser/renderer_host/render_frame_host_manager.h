@@ -26,7 +26,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/referrer.h"
-#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
@@ -135,14 +134,14 @@ class CONTENT_EXPORT RenderFrameHostManager
         const base::TimeTicks& proceed_time,
         bool* proceed_to_fire_unload) = 0;
     virtual void CancelModalDialogsForRenderManager() = 0;
-    virtual void NotifySwappedFromRenderManager(RenderFrameHost* old_frame,
-                                                RenderFrameHost* new_frame,
+    virtual void NotifySwappedFromRenderManager(RenderFrameHostImpl* old_frame,
+                                                RenderFrameHostImpl* new_frame,
                                                 bool is_main_frame) = 0;
     // TODO(nasko): This should be removed once extensions no longer use
     // NotificationService. See https://crbug.com/462682.
     virtual void NotifyMainFrameSwappedFromRenderManager(
-        RenderFrameHost* old_frame,
-        RenderFrameHost* new_frame) = 0;
+        RenderFrameHostImpl* old_frame,
+        RenderFrameHostImpl* new_frame) = 0;
 
     // Returns true if the location bar should be focused by default rather than
     // the page contents. The view calls this function when the tab is focused
@@ -298,6 +297,14 @@ class CONTENT_EXPORT RenderFrameHostManager
   void RestoreFromBackForwardCache(
       std::unique_ptr<BackForwardCacheImpl::Entry>);
 
+  // Temporary method to allow reusing back-forward cache activation for
+  // prerender activation. Similar to RestoreFromBackForwardCache(), but cleans
+  // up the speculative RFH prior to activation.
+  // TODO(https://crbug.com/1190197). This method might not be needed if we do
+  // not create the speculative RFH in the first place for Prerender
+  // activations.
+  void ActivatePrerender(std::unique_ptr<BackForwardCacheImpl::Entry>);
+
   // Deletes any proxy hosts associated with this node. Used during destruction
   // of WebContentsImpl.
   void ResetProxyHosts();
@@ -361,13 +368,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // frame proxies.
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
 
-  // Sends the newly added Content Security Policies to all the proxies.
-  void OnDidAddContentSecurityPolicies(
-      std::vector<network::mojom::ContentSecurityPolicyPtr> csps);
-
-  // Resets Content Security Policy in all the proxies.
-  void OnDidResetContentSecurityPolicy();
-
   // Sends updated enforcement of insecure request policy to all frame proxies
   // when the frame changes its setting.
   void OnEnforceInsecureRequestPolicy(
@@ -391,9 +391,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   void OnDidUpdateFrameOwnerProperties(
       const blink::mojom::FrameOwnerProperties& properties);
 
-  // Notify the proxies that the active sandbox flags or feature policy header
-  // on the frame have been changed during page load. Sandbox flags can change
-  // when set by a CSP header.
+  // Notify the proxies that the active sandbox flags or permissions policy
+  // header on the frame have been changed during page load. Sandbox flags can
+  // change when set by a CSP header.
   void OnDidSetFramePolicyHeaders();
 
   // Send updated origin to all frame proxies when the frame navigates to a new
@@ -552,6 +552,17 @@ class CONTENT_EXPORT RenderFrameHostManager
       NavigationRequest* navigation_request);
 
   Delegate* delegate() { return delegate_; }
+
+  // Collects the current page into BackForwardCacheImpl::Entry in preparation
+  // for it to be moved to another FrameTree for prerender activation. After
+  // this call, |current_frame_host_| will become null, which breaks many
+  // invariants in the code, so the caller is responsible for destroying the
+  // FrameTree immediately after this call.
+  //
+  // TODO(https://crbug.com/1183523): Rename BackForwardCacheImpl::Entry to make
+  // clear that it is also used to transfer pages between FrameTrees for
+  // prerendering.
+  std::unique_ptr<BackForwardCacheImpl::Entry> TakePrerenderedPage();
 
  private:
   friend class NavigatorTest;
@@ -925,6 +936,13 @@ class CONTENT_EXPORT RenderFrameHostManager
   void NotifyPrepareForInnerDelegateAttachComplete(bool success);
 
   NavigationControllerImpl& GetNavigationController();
+
+  // Collects all of the page-related state currently owned by
+  // RenderFrameHostManager (including relevant RenderViewHosts and
+  // RenderFrameProxyHosts) into a BackForwardCacheImpl::Entry object to be
+  // stored in back-forward cache or to activate the prerenderer.
+  std::unique_ptr<BackForwardCacheImpl::Entry> CollectPage(
+      std::unique_ptr<RenderFrameHostImpl> main_render_frame_host);
 
   // For use in creating RenderFrameHosts.
   FrameTreeNode* frame_tree_node_;

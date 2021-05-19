@@ -79,6 +79,10 @@ class COMPONENT_EXPORT(FULL_RESTORE) RestoreData {
   // }
   base::Value ConvertToValue() const;
 
+  // Returns true if there is a AppRestoreData for the given |app_id| and
+  // |window_id|. Otherwise, returns false.
+  bool HasAppRestoreData(const std::string& app_id, int32_t window_id);
+
   // Adds |app_launch_info| to |app_id_to_launch_list_|.
   void AddAppLaunchInfo(std::unique_ptr<AppLaunchInfo> app_launch_info);
 
@@ -103,6 +107,9 @@ class COMPONENT_EXPORT(FULL_RESTORE) RestoreData {
 
   // Removes a AppRestoreData with |window_id| for |app_id|.
   void RemoveAppRestoreData(const std::string& app_id, int window_id);
+
+  // Clears the window info for |app_id| and |window_id|.
+  void RemoveWindowInfo(const std::string& app_id, int window_id);
 
   // Removes the launch list for |app_id|.
   void RemoveApp(const std::string& app_id);
@@ -147,6 +154,10 @@ class COMPONENT_EXPORT(FULL_RESTORE) RestoreData {
   }
 
  private:
+  // Returns the pointer to AppRestoreData for the given |app_id| and
+  // |window_id|. Returns null if there is no AppRestoreData.
+  AppRestoreData* GetAppRestoreData(const std::string& app_id, int window_id);
+
   AppIdToLaunchList app_id_to_launch_list_;
 
   // Saves the next restore window_id to be handled for each chrome app.

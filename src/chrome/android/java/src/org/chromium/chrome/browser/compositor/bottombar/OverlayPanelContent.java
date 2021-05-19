@@ -412,8 +412,6 @@ public class OverlayPanelContent {
             mDidStartLoadingUrl = false;
             mIsProcessingPendingNavigation = false;
             mShouldReuseWebContents = false;
-
-            setVisibility(false);
         }
     }
 

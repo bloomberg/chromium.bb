@@ -61,7 +61,7 @@ void TranslateInternalsHandler::GetLanguages(base::DictionaryValue* dict) {
 
   for (auto it = language_codes.begin(); it != language_codes.end(); ++it) {
     const std::string& lang_code = *it;
-    base::string16 lang_name =
+    std::u16string lang_name =
         l10n_util::GetDisplayNameForLocale(lang_code, app_locale, false);
     dict->SetString(lang_code, lang_name);
   }
@@ -228,7 +228,7 @@ void TranslateInternalsHandler::OnRequestInfo(const base::ListValue* /*args*/) {
 
 void TranslateInternalsHandler::SendMessageToJs(const std::string& message,
                                                 const base::Value& value) {
-  const char func[] = "cr.translateInternals.messageHandler";
+  const char func[] = "cr.webUIListenerCallback";
   base::Value message_data(message);
   std::vector<const base::Value*> args{&message_data, &value};
   CallJavascriptFunction(func, args);
@@ -245,7 +245,7 @@ void TranslateInternalsHandler::SendPrefsToJs() {
       translate::TranslatePrefs::kPrefTranslateRecentTarget,
       translate::TranslatePrefs::kPrefNeverPromptSitesDeprecated,
       translate::TranslatePrefs::kPrefNeverPromptSitesWithTime,
-      translate::TranslatePrefs::kPrefAlwaysTranslateLists,
+      prefs::kPrefAlwaysTranslateList,
       translate::TranslatePrefs::kPrefTranslateDeniedCount,
       translate::TranslatePrefs::kPrefTranslateIgnoredCount,
       translate::TranslatePrefs::kPrefTranslateAcceptedCount,

@@ -4,17 +4,17 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../common/common.js';
-import * as Host from '../host/host.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Network from '../network/network.js';
-import * as SDK from '../sdk/sdk.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as Network from '../panels/network/network.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import type {PageSecurityState, PageVisibleSecurityState} from './SecurityModel.js';
 import {Events, SecurityModel, SecurityStyleExplanation, SummaryMessages} from './SecurityModel.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Title text content in Security Panel of the Security panel
   */
@@ -315,17 +315,12 @@ export const UIStrings = {
   */
   reloadThePageToRecordRequestsFor: 'Reload the page to record requests for HTTP resources.',
   /**
-  *@description Link text in the Security Panel. Clicking the link navigates the user to the Network panel. Request refers to a
-                network request. A piece of data transmitted from the current user's browser to a remote server.
+  * @description Link text in the Security Panel. Clicking the link navigates the user to the
+  * Network panel. Requests refers to network requests. Each request is a piece of data transmitted
+  * from the current user's browser to a remote server.
   */
-  viewDRequestInNetworkPanel: 'View 1 request in Network Panel',
-  /**
-  *@description Link text in the Security Panel. Clicking the link navigates the user to the Network panel. Requests refers to
-                network requests. Each request is a piece of data transmitted from the current user's browser to a remote server.
-                The place holder is a number, declaring how many requests will be shown to the user.
-  *@example {2} PH1
-  */
-  viewDRequestsInNetworkPanel: 'View {PH1} requests in Network Panel',
+  viewDRequestsInNetworkPanel:
+      '{n, plural, =1 {View # request in Network Panel} other {View # requests in Network Panel}}',
   /**
   *@description Text for the origin of something
   */
@@ -358,10 +353,6 @@ export const UIStrings = {
   *@description Text that refers to the subject of a security certificate
   */
   subject: 'Subject',
-  /**
-  *@description Text in Security Panel of the Security panel. Subject Alternative Name.
-  */
-  san: '`SAN`',
   /**
   *@description Text to show since when an item is valid
   */
@@ -810,7 +801,7 @@ export class SecurityPanelSidebarTree extends UI.TreeOutline.TreeOutlineInShadow
   constructor(mainViewElement: SecurityPanelSidebarTreeElement, showOriginInPanel: (arg0: Origin) => void) {
     super();
     this.registerRequiredCSS('security/sidebar.css', {enableLegacyPatching: true});
-    this.registerRequiredCSS('security/lockIcon.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('security/lockIcon.css', {enableLegacyPatching: false});
     this.appendChild(mainViewElement);
 
     this._showOriginInPanel = showOriginInPanel;
@@ -992,8 +983,8 @@ export class SecurityMainView extends UI.Widget.VBox {
   _securityState: Protocol.Security.SecurityState|null;
   constructor(panel: SecurityPanel) {
     super(true);
-    this.registerRequiredCSS('security/mainView.css', {enableLegacyPatching: true});
-    this.registerRequiredCSS('security/lockIcon.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('security/mainView.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('security/lockIcon.css', {enableLegacyPatching: false});
     this.setMinimumSize(200, 100);
 
     this.contentElement.classList.add('security-main-view');
@@ -1146,7 +1137,7 @@ export class SecurityMainView extends UI.Widget.VBox {
 
     const {summary, explanations} = this._getSecuritySummaryAndExplanations(visibleSecurityState);
     // Use override summary if present, otherwise use base explanation
-    this._summaryText.textContent = summary || SummaryMessages[this._securityState];
+    this._summaryText.textContent = summary || SummaryMessages[this._securityState]();
 
     this._explanations = this._orderExplanations(explanations);
 
@@ -1461,11 +1452,7 @@ export class SecurityMainView extends UI.Widget.VBox {
     const requestsAnchor = element.createChild('div', 'security-mixed-content devtools-link') as HTMLElement;
     UI.ARIAUtils.markAsLink(requestsAnchor);
     requestsAnchor.tabIndex = 0;
-    if (filterRequestCount === 1) {
-      requestsAnchor.textContent = i18nString(UIStrings.viewDRequestInNetworkPanel);
-    } else {
-      requestsAnchor.textContent = i18nString(UIStrings.viewDRequestsInNetworkPanel, {PH1: filterRequestCount});
-    }
+    requestsAnchor.textContent = i18nString(UIStrings.viewDRequestsInNetworkPanel, {n: filterRequestCount});
 
     requestsAnchor.addEventListener('click', this.showNetworkFilter.bind(this, filterKey));
     requestsAnchor.addEventListener('keydown', event => {
@@ -1492,7 +1479,7 @@ export class SecurityOriginView extends UI.Widget.VBox {
 
     this.element.classList.add('security-origin-view');
     this.registerRequiredCSS('security/originView.css', {enableLegacyPatching: true});
-    this.registerRequiredCSS('security/lockIcon.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('security/lockIcon.css', {enableLegacyPatching: false});
 
     const titleSection = this.element.createChild('div', 'title-section');
     const titleDiv = titleSection.createChild('div', 'title-section-header');
@@ -1561,7 +1548,7 @@ export class SecurityOriginView extends UI.Widget.VBox {
       table = new SecurityDetailsTable();
       certificateSection.appendChild(table.element());
       table.addRow(i18nString(UIStrings.subject), originState.securityDetails.subjectName);
-      table.addRow(i18nString(UIStrings.san), sanDiv);
+      table.addRow(i18n.i18n.lockedString('SAN'), sanDiv);
       table.addRow(i18nString(UIStrings.validFrom), validFromString);
       table.addRow(i18nString(UIStrings.validUntil), validUntilString);
       table.addRow(i18nString(UIStrings.issuer), originState.securityDetails.issuer);

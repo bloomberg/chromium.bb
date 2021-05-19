@@ -62,6 +62,8 @@ void MediumEnvironment::Reset() {
     webrtc_signaling_message_callback_.clear();
     webrtc_signaling_complete_callback_.clear();
     wifi_lan_mediums_.clear();
+    use_valid_peer_connection_ = true;
+    peer_connection_latency_ = absl::ZeroDuration();
   });
   Sync();
 }
@@ -509,6 +511,15 @@ void MediumEnvironment::SetUseValidPeerConnection(
 
 bool MediumEnvironment::GetUseValidPeerConnection() {
   return use_valid_peer_connection_;
+}
+
+void MediumEnvironment::SetPeerConnectionLatency(
+    absl::Duration peer_connection_latency) {
+  peer_connection_latency_ = peer_connection_latency;
+}
+
+absl::Duration MediumEnvironment::GetPeerConnectionLatency() {
+  return peer_connection_latency_;
 }
 
 void MediumEnvironment::RegisterWifiLanMedium(api::WifiLanMedium& medium) {

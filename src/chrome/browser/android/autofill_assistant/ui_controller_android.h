@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
@@ -45,7 +46,7 @@ class UiControllerAndroid : public ControllerObserver {
  public:
   static std::unique_ptr<UiControllerAndroid> CreateFromWebContents(
       content::WebContents* web_contents,
-      const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
+      const base::android::JavaParamRef<jobject>& joverlay_coordinator);
 
   // pointers to |web_contents|, |client| must remain valid for the lifetime of
   // this instance.
@@ -55,7 +56,7 @@ class UiControllerAndroid : public ControllerObserver {
   UiControllerAndroid(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jactivity,
-      const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
+      const base::android::JavaParamRef<jobject>& joverlay_coordinator);
   ~UiControllerAndroid() override;
 
   // Attaches the UI to the given client, its web contents and delegate.
@@ -86,6 +87,10 @@ class UiControllerAndroid : public ControllerObserver {
   void CloseOrCancel(int action_index,
                      std::unique_ptr<TriggerContext> trigger_context,
                      Metrics::DropOutReason dropout_reason);
+  // Returns the size of the window.
+  base::Optional<std::pair<int, int>> GetWindowSize() const;
+  // Returns the screen's orientation.
+  ClientContextProto::ScreenOrientation GetScreenOrientation() const;
 
   // Overrides ControllerObserver:
   void OnStateChanged(AutofillAssistantState new_state) override;

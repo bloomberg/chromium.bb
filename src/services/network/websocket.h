@@ -66,13 +66,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       net::NetworkTrafficAnnotationTag traffic_annotation,
       HasRawHeadersAccess has_raw_cookie_access,
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
-      mojo::PendingRemote<mojom::AuthenticationAndCertificateObserver>
-          auth_cert_observer,
+      mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
+          url_loader_network_observer,
       mojo::PendingRemote<mojom::WebSocketAuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
       base::Optional<WebSocketThrottler::PendingConnection>
           pending_connection_tracker,
-      DataPipeUseTracker,
       base::TimeDelta delay);
   ~WebSocket() override;
 
@@ -179,7 +178,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   WebSocketFactory* const factory_;
   mojo::Receiver<mojom::WebSocket> receiver_{this};
 
-  mojo::Remote<mojom::AuthenticationAndCertificateObserver> auth_cert_observer_;
+  mojo::Remote<mojom::URLLoaderNetworkServiceObserver>
+      url_loader_network_observer_;
   mojo::Remote<mojom::WebSocketHandshakeClient> handshake_client_;
   mojo::Remote<mojom::WebSocketClient> client_;
   mojo::Remote<mojom::WebSocketAuthenticationHandler> auth_handler_;
@@ -219,8 +219,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   base::queue<DataFrame> pending_send_data_frames_;
   bool wait_for_readable_ = false;
   bool blocked_on_websocket_channel_ = false;
-
-  DataPipeUseTracker data_pipe_use_tracker_;
 
   // True if we should preserve the old behaviour where <=64KB messages were
   // never fragmented.

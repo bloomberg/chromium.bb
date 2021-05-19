@@ -7,7 +7,7 @@
 // #import {MetadataItem} from './metadata/metadata_item.m.js';
 // #import {FileTasks} from './file_tasks.m.js';
 // #import {FilesQuickView} from '../elements/files_quick_view.m.js';
-// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
+// #import {VolumeManager} from '../../externs/volume_manager.m.js';
 // #import {MetadataBoxController} from './metadata_box_controller.m.js';
 // #import {FileListSelectionModel} from './ui/file_list_selection_model.m.js';
 // #import {TaskController} from './task_controller.m.js';
@@ -15,11 +15,11 @@
 // #import {MultiMenuButton} from './ui/multi_menu_button.m.js';
 // #import {ListContainer} from './ui/list_container.m.js';
 // #import {MetadataModel} from './metadata/metadata_model.m.js';
-// #import {CommandHandlerDeps} from '../../../externs/command_handler_deps.m.js';
-// #import {VolumeManagerCommon} from '../../../base/js/volume_manager_types.m.js';
+// #import {CommandHandlerDeps} from '../../externs/command_handler_deps.m.js';
+// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
 // #import {ThumbnailLoader} from './thumbnail_loader.m.js';
-// #import {ImageLoaderClient} from '../../../image_loader/image_loader_client.m.js';
-// #import {LoadImageResponseStatus, LoadImageRequest} from '../../../image_loader/load_image_request.m.js';
+// #import {ImageLoaderClient} from 'chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/image_loader_client.m.js';
+// #import {LoadImageResponseStatus, LoadImageRequest} from 'chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/load_image_request.m.js';
 // #import {FileType} from '../../common/js/file_type.m.js';
 // #import {CommandHandler} from './file_manager_commands.m.js';
 // #import {FilesConfirmDialog} from './ui/files_confirm_dialog.m.js';
@@ -341,6 +341,7 @@
 
       this.deleteConfirmDialog_ = new FilesConfirmDialog(dialogElement);
       this.deleteConfirmDialog_.setOkLabel(str('DELETE_BUTTON_LABEL'));
+      this.deleteConfirmDialog_.focusCancelButton = true;
 
       dialogElement.addEventListener('keydown', event => {
         event.stopPropagation();
@@ -359,7 +360,8 @@
 
     // Delete the entry if the entry can be deleted.
     CommandHandler.getCommand('delete').deleteEntries(
-        [entry], this.fileManager_, this.deleteConfirmDialog_);
+        [entry], this.fileManager_, /*permanentlyDelete=*/ false,
+        this.deleteConfirmDialog_);
   }
 
   /**

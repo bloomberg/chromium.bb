@@ -254,6 +254,9 @@ private:
 //        space.
 //      * SDFTSubRun - scaled distance field text handles largish single color glyphs that still
 //        can fit in the atlas; the sizes between direct SubRun, and path SubRun. The destination
+
+class GrAtlasSubRun;
+using GrAtlasSubRunOwner = std::unique_ptr<GrAtlasSubRun, GrSubRunAllocator::Destroyer>;
 class GrAtlasSubRun  {
 public:
     static constexpr int kVerticesPerGlyph = 4;
@@ -264,10 +267,13 @@ public:
     virtual int glyphCount() const = 0;
 
     virtual std::tuple<const GrClip*, GrOp::Owner>
-    makeAtlasTextOp(const GrClip* clip,
-                    const SkMatrixProvider& viewMatrix,
-                    const SkGlyphRunList& glyphRunList,
-                    GrSurfaceDrawContext* rtc) const = 0;
+    makeAtlasTextOp(
+            const GrClip* clip,
+            const SkMatrixProvider& viewMatrix,
+            const SkGlyphRunList& glyphRunList,
+            const SkPaint& paint,
+            GrSurfaceDrawContext* rtc,
+            GrAtlasSubRunOwner subRun) const = 0;
     virtual void fillVertexData(
             void* vertexDst, int offset, int count,
             GrColor color, const SkMatrix& positionMatrix,
@@ -290,6 +296,8 @@ public:
 //   * TransformedMaskSubRun - handle large bitmap/argb glyphs that need to be scaled to the screen.
 //   * SDFTSubRun - use signed distance fields to draw largish glyphs to the screen.
 //   * GrAtlasSubRun - this is an abstract class used for atlas drawing.
+class GrSubRun;
+using GrSubRunOwner = std::unique_ptr<GrSubRun, GrSubRunAllocator::Destroyer>;
 class GrSubRun {
 public:
     virtual ~GrSubRun() = default;
@@ -298,6 +306,7 @@ public:
     virtual void draw(const GrClip* clip,
                       const SkMatrixProvider& viewMatrix,
                       const SkGlyphRunList& glyphRunList,
+                      const SkPaint& paint,
                       GrSurfaceDrawContext* rtc) const = 0;
 
     // Given an already cached subRun, can this subRun handle this combination paint, matrix, and
@@ -308,7 +317,7 @@ public:
     // * Don't use this API. It is only to support testing.
     virtual GrAtlasSubRun* testingOnly_atlasSubRun() = 0;
 
-    std::unique_ptr<GrSubRun, GrSubRunAllocator::Destroyer> fNext;
+    GrSubRunOwner fNext;
 };
 
 struct GrSubRunList {
@@ -330,8 +339,8 @@ struct GrSubRunList {
         GrSubRun* fPtr;
     };
 
-    void append(std::unique_ptr<GrSubRun, GrSubRunAllocator::Destroyer> subRun) {
-        std::unique_ptr<GrSubRun, GrSubRunAllocator::Destroyer>* newTail = &subRun->fNext;
+    void append(GrSubRunOwner subRun) {
+        GrSubRunOwner* newTail = &subRun->fNext;
         *fTail = std::move(subRun);
         fTail = newTail;
     }
@@ -342,8 +351,8 @@ struct GrSubRunList {
     Iterator end() const { return Iterator{nullptr}; }
     GrSubRun& front() const {return *fHead; }
 
-    std::unique_ptr<GrSubRun, GrSubRunAllocator::Destroyer> fHead{nullptr};
-    std::unique_ptr<GrSubRun, GrSubRunAllocator::Destroyer>* fTail{&fHead};
+    GrSubRunOwner fHead{nullptr};
+    GrSubRunOwner* fTail{&fHead};
 };
 
 // A GrTextBlob contains a fully processed SkTextBlob, suitable for nearly immediate drawing
@@ -364,32 +373,45 @@ struct GrSubRunList {
 //
 class GrTextBlob final : public SkNVRefCnt<GrTextBlob>, public SkGlyphRunPainterInterface {
 public:
+
+    // Key is not used as part of a hash map, so the hash is never taken. It's only used in a
+    // list search using operator =().
     struct Key {
-        Key();
+        static std::tuple<bool, Key> Make(const SkGlyphRunList& glyphRunList,
+                                          const SkPaint& paint,
+                                          const SkSurfaceProps& surfaceProps,
+                                          const GrColorInfo& colorInfo,
+                                          const SkMatrix& drawMatrix,
+                                          const GrSDFTControl& control);
         uint32_t fUniqueID;
         // Color may affect the gamma of the mask we generate, but in a fairly limited way.
         // Each color is assigned to on of a fixed number of buckets based on its
         // luminance. For each luminance bucket there is a "canonical color" that
         // represents the bucket.  This functionality is currently only supported for A8
         SkColor fCanonicalColor;
-        SkPaint::Style fStyle;
         SkScalar fFrameWidth;
         SkScalar fMiterLimit;
-        SkPaint::Join fJoin;
         SkPixelGeometry fPixelGeometry;
-        bool fHasBlur;
         SkMaskFilterBase::BlurRec fBlurRec;
         uint32_t fScalerContextFlags;
+        SkMatrix fDrawMatrix;
+        // Below here fields are of size 1 byte.
+        uint8_t fSetOfDrawingTypes;
+        bool fHasBlur;
+        SkPaint::Style fStyle;
+        SkPaint::Join fJoin;
 
         bool operator==(const Key& other) const;
     };
 
     SK_DECLARE_INTERNAL_LLIST_INTERFACE(GrTextBlob);
 
-    // Make an empty GrTextBlob, with all the invariants set to make the right decisions when
-    // adding SubRuns.
+    // Make a GrTextBlob and its sub runs.
     static sk_sp<GrTextBlob> Make(const SkGlyphRunList& glyphRunList,
-                                  const SkMatrix& drawMatrix);
+                                  const SkPaint& paint,
+                                  const SkMatrix& drawMatrix,
+                                  const GrSDFTControl& control,
+                                  SkGlyphRunListPainter* painter);
 
     ~GrTextBlob() override;
 
@@ -399,18 +421,7 @@ public:
     void* operator new(size_t);
     void* operator new(size_t, void* p);
 
-    void makeSubRuns(
-            SkGlyphRunListPainter* painter,
-            const SkGlyphRunList& glyphRunList,
-            const SkMatrix& drawMatrix,
-            SkPoint drawOrigin,
-            const SkPaint& runPaint,
-            const SkSurfaceProps& props,
-            bool contextSupportsDistanceFieldText,
-            const GrSDFTOptions& options) SK_EXCLUDES(fSpinLock);
-
-    static const Key& GetKey(const GrTextBlob& blob);
-    static uint32_t Hash(const Key& key);
+    const Key& key() { return fKey; }
 
     void addKey(const Key& key);
     bool hasPerspective() const;
@@ -452,14 +463,6 @@ private:
     void processSourceMasks(const SkZip<SkGlyphVariant, SkPoint>& drawables,
                             const SkStrikeSpec& strikeSpec) override;
 
-    // The run must be created only once.
-    bool fSubRunsCreated SK_GUARDED_BY(fSpinLock) {false};
-
-    // This lock guards makeSubRuns, but also guards addMultiMaskFormat, processDeviceMasks,
-    // processSourcePaths, processSourceSDFT, and processSourceMasks. These are callbacks, and
-    // there is no way for the annotation system to track the lock through processGlyphRun.
-    mutable SkSpinlock fSpinLock;
-
     // The allocator must come first because it needs to be destroyed last. Other fields of this
     // structure may have pointers into it.
     GrSubRunAllocator fAlloc;
@@ -486,4 +489,34 @@ private:
 
     bool fSomeGlyphsExcluded{false};
 };
+
+class GrSubRunNoCachePainter : public SkGlyphRunPainterInterface {
+public:
+    GrSubRunNoCachePainter(GrSurfaceDrawContext* sdc,
+                           GrSubRunAllocator* alloc,
+                           const GrClip* clip,
+                           const SkMatrixProvider& viewMatrix,
+                           const SkGlyphRunList& glyphRunList,
+                           const SkPaint& paint);
+    void processDeviceMasks(const SkZip<SkGlyphVariant, SkPoint>& drawables,
+                            const SkStrikeSpec& strikeSpec) override;
+    void processSourceMasks(const SkZip<SkGlyphVariant, SkPoint>& drawables,
+                            const SkStrikeSpec& strikeSpec) override;
+    void processSourcePaths(const SkZip<SkGlyphVariant, SkPoint>& drawables,
+                            const SkFont& runFont, const SkStrikeSpec& strikeSpec) override;
+    void processSourceSDFT(const SkZip<SkGlyphVariant, SkPoint>& drawables,
+                           const SkStrikeSpec& strikeSpec, const SkFont& runFont,
+                           SkScalar minScale, SkScalar maxScale) override;
+private:
+    // Draw passes ownership of the sub run to the op.
+    void draw(GrAtlasSubRunOwner subRun);
+
+    GrSurfaceDrawContext* const fSDC;
+    GrSubRunAllocator* const fAlloc;
+    const GrClip* const fClip;
+    const SkMatrixProvider& fViewMatrix;
+    const SkGlyphRunList& fGlyphRunList;
+    const SkPaint& fPaint;
+};
+
 #endif  // GrTextBlob_DEFINED

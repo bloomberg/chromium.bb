@@ -5,7 +5,7 @@
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {pageVisibility} from './page_visibility.js';
-import {Route, Router} from './router.m.js';
+import {Route, Router} from './router.js';
 import {SettingsRoutes} from './settings_routes.js';
 
 /**
@@ -83,6 +83,9 @@ function addPrivacyChildRoutes(r) {
   r.SITE_SETTINGS_FILE_SYSTEM_WRITE = r.SITE_SETTINGS.createChild('filesystem');
   if (loadTimeData.getBoolean('enableFontAccessContentSetting')) {
     r.SITE_SETTINGS_FONT_ACCESS = r.SITE_SETTINGS.createChild('fontAccess');
+  }
+  if (loadTimeData.getBoolean('enableFileHandlingContentSetting')) {
+    r.SITE_SETTINGS_FILE_HANDLING = r.SITE_SETTINGS.createChild('fileHandlers');
   }
 }
 
@@ -167,6 +170,11 @@ function createBrowserSettingsRoutes() {
     r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
     // <if expr="not is_macosx">
     r.EDIT_DICTIONARY = r.LANGUAGES.createChild('/editDictionary');
+    // </if>
+    // <if expr="not chromeos and not lacros">
+    if (loadTimeData.getBoolean('enableDesktopRestructuredLanguageSettings')) {
+      r.LANGUAGE_SETTINGS = r.LANGUAGES.createChild('/languageSettings');
+    }
     // </if>
 
     if (visibility.downloads !== false) {

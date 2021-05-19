@@ -12,21 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/variable.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -84,7 +69,7 @@ TEST_F(BuilderTest, IdentifierExpression_GlobalVar) {
 TEST_F(BuilderTest, IdentifierExpression_FunctionConst) {
   auto* init = vec3<f32>(1.f, 1.f, 3.f);
 
-  auto* v = Const("var", ty.f32(), init);
+  auto* v = Const("var", ty.vec3<f32>(), init);
 
   auto* expr = Expr("var");
   WrapInFunction(v, expr);

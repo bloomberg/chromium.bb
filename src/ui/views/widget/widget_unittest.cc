@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1143,36 +1142,29 @@ TEST_F(DesktopWidgetObserverTest, OnWidgetMovedWhenOriginChangesNative) {
 
   const int moves_during_init = delegate.move_count();
 
-#if defined(OS_WIN)
-  // Windows reliably notifies twice per origin change. https://crbug.com/864938
-  constexpr int kDeltaPerMove = 2;
-#else
-  constexpr int kDeltaPerMove = 1;
-#endif
-
   // Resize without changing origin. No move.
   widget->SetBounds(gfx::Rect(100, 100, 310, 210));
   EXPECT_EQ(moves_during_init, delegate.move_count());
 
   // Move without changing size. Moves.
   widget->SetBounds(gfx::Rect(110, 110, 310, 210));
-  EXPECT_EQ(moves_during_init + kDeltaPerMove, delegate.move_count());
+  EXPECT_EQ(moves_during_init + 1, delegate.move_count());
 
   // Changing both moves.
   widget->SetBounds(gfx::Rect(90, 90, 330, 230));
-  EXPECT_EQ(moves_during_init + 2 * kDeltaPerMove, delegate.move_count());
+  EXPECT_EQ(moves_during_init + 2, delegate.move_count());
 
   // Just grow vertically. On Mac, this changes the AppKit origin since it is
   // from the bottom left of the screen, but there is no move as far as views is
   // concerned.
   widget->SetBounds(gfx::Rect(90, 90, 330, 240));
   // No change.
-  EXPECT_EQ(moves_during_init + 2 * kDeltaPerMove, delegate.move_count());
+  EXPECT_EQ(moves_during_init + 2, delegate.move_count());
 
   // For a similar reason, move the widget down by the same amount that it grows
   // vertically. The AppKit origin does not change, but it is a move.
   widget->SetBounds(gfx::Rect(90, 100, 330, 250));
-  EXPECT_EQ(moves_during_init + 3 * kDeltaPerMove, delegate.move_count());
+  EXPECT_EQ(moves_during_init + 3, delegate.move_count());
 }
 
 // Test correct behavior when widgets close themselves in response to visibility
@@ -1435,7 +1427,7 @@ TEST_F(WidgetTest, KeyboardInputEvent) {
   View* container = toplevel->client_view();
 
   Textfield* textfield = new Textfield();
-  textfield->SetText(base::ASCIIToUTF16("some text"));
+  textfield->SetText(u"some text");
   container->AddChildView(textfield);
   toplevel->Show();
   textfield->RequestFocus();
@@ -2185,10 +2177,10 @@ class WidgetWindowTitleTest : public DesktopWidgetTest {
     internal::NativeWidgetPrivate* native_widget =
         widget->native_widget_private();
 
-    base::string16 empty;
-    base::string16 s1(base::UTF8ToUTF16("Title1"));
-    base::string16 s2(base::UTF8ToUTF16("Title2"));
-    base::string16 s3(base::UTF8ToUTF16("TitleLong"));
+    std::u16string empty;
+    std::u16string s1(u"Title1");
+    std::u16string s2(u"Title2");
+    std::u16string s3(u"TitleLong");
 
     // The widget starts with no title, setting empty should not change
     // anything.
@@ -3272,41 +3264,6 @@ TEST_F(DesktopWidgetTest, FullscreenStatePropagated_DesktopWidget) {
   top_level_widget->SetFullscreen(true);
   EXPECT_EQ(top_level_widget->IsVisible(),
             IsNativeWindowVisible(top_level_widget->GetNativeWindow()));
-}
-
-// Used to delete the widget when the supplied bounds changes.
-class DestroyingWidgetBoundsObserver : public WidgetObserver {
- public:
-  explicit DestroyingWidgetBoundsObserver(std::unique_ptr<Widget> widget)
-      : widget_(std::move(widget)) {
-    widget_->AddObserver(this);
-  }
-
-  // There are no assertions here as not all platforms call
-  // OnWidgetBoundsChanged() when going fullscreen.
-  ~DestroyingWidgetBoundsObserver() override = default;
-
-  // WidgetObserver:
-  void OnWidgetBoundsChanged(Widget* widget,
-                             const gfx::Rect& new_bounds) override {
-    widget_->RemoveObserver(this);
-    widget_.reset();
-  }
-
- private:
-  std::unique_ptr<Widget> widget_;
-};
-
-// Deletes a Widget when the bounds change as part of toggling fullscreen.
-// This is a regression test for https://crbug.com/1197436 .
-TEST_F(DesktopWidgetTest, DeleteInSetFullscreen) {
-  std::unique_ptr<Widget> widget = std::make_unique<Widget>();
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(std::move(params));
-  Widget* w = widget.get();
-  DestroyingWidgetBoundsObserver destroyer(std::move(widget));
-  w->SetFullscreen(true);
 }
 
 namespace {

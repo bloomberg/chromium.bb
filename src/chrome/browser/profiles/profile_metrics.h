@@ -72,7 +72,8 @@ class ProfileMetrics {
     kSAML = 9,
     kAbortedBeforeSignIn = 10,
     kAbortedAfterSignIn = 11,
-    kMaxValue = kAbortedAfterSignIn,
+    kAbortedOnEnterpriseWelcome = 12,
+    kMaxValue = kAbortedOnEnterpriseWelcome,
   };
 
   enum ProfileDelete {
@@ -163,6 +164,7 @@ class ProfileMetrics {
                                       profile_metrics::Counts* counts);
 
   // Returns profile type for logging.
+  // TODO(https://crbug.com/1169142): Deprecated, remove.
   static profile_metrics::BrowserProfileType GetBrowserProfileType(
       Profile* profile);
 

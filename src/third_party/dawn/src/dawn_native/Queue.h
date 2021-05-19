@@ -37,23 +37,30 @@ namespace dawn_native {
         ~QueueBase() override;
 
         // Dawn API
-        void Submit(uint32_t commandCount, CommandBufferBase* const* commands);
-        void Signal(Fence* fence, uint64_t signalValue);
-        Fence* CreateFence(const FenceDescriptor* descriptor);
-        void OnSubmittedWorkDone(uint64_t signalValue,
-                                 WGPUQueueWorkDoneCallback callback,
-                                 void* userdata);
-        void WriteBuffer(BufferBase* buffer, uint64_t bufferOffset, const void* data, size_t size);
-        void WriteTexture(const TextureCopyView* destination,
-                          const void* data,
-                          size_t dataSize,
-                          const TextureDataLayout* dataLayout,
-                          const Extent3D* writeSize);
-        void CopyTextureForBrowser(const TextureCopyView* source,
-                                   const TextureCopyView* destination,
-                                   const Extent3D* copySize,
-                                   const CopyTextureForBrowserOptions* options);
+        void APISubmit(uint32_t commandCount, CommandBufferBase* const* commands);
+        void APISignal(Fence* fence, uint64_t signalValue);
+        Fence* APICreateFence(const FenceDescriptor* descriptor);
+        void APIOnSubmittedWorkDone(uint64_t signalValue,
+                                    WGPUQueueWorkDoneCallback callback,
+                                    void* userdata);
+        void APIWriteBuffer(BufferBase* buffer,
+                            uint64_t bufferOffset,
+                            const void* data,
+                            size_t size);
+        void APIWriteTexture(const ImageCopyTexture* destination,
+                             const void* data,
+                             size_t dataSize,
+                             const TextureDataLayout* dataLayout,
+                             const Extent3D* writeSize);
+        void APICopyTextureForBrowser(const ImageCopyTexture* source,
+                                      const ImageCopyTexture* destination,
+                                      const Extent3D* copySize,
+                                      const CopyTextureForBrowserOptions* options);
 
+        MaybeError WriteBuffer(BufferBase* buffer,
+                               uint64_t bufferOffset,
+                               const void* data,
+                               size_t size);
         void TrackTask(std::unique_ptr<TaskInFlight> task, ExecutionSerial serial);
         void Tick(ExecutionSerial finishedSerial);
         void HandleDeviceLoss();
@@ -63,17 +70,13 @@ namespace dawn_native {
         QueueBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
       private:
-        MaybeError WriteBufferInternal(BufferBase* buffer,
-                                       uint64_t bufferOffset,
-                                       const void* data,
-                                       size_t size);
-        MaybeError WriteTextureInternal(const TextureCopyView* destination,
+        MaybeError WriteTextureInternal(const ImageCopyTexture* destination,
                                         const void* data,
                                         size_t dataSize,
                                         const TextureDataLayout* dataLayout,
                                         const Extent3D* writeSize);
-        MaybeError CopyTextureForBrowserInternal(const TextureCopyView* source,
-                                                 const TextureCopyView* destination,
+        MaybeError CopyTextureForBrowserInternal(const ImageCopyTexture* source,
+                                                 const ImageCopyTexture* destination,
                                                  const Extent3D* copySize,
                                                  const CopyTextureForBrowserOptions* options);
 
@@ -83,7 +86,7 @@ namespace dawn_native {
                                            uint64_t bufferOffset,
                                            const void* data,
                                            size_t size);
-        virtual MaybeError WriteTextureImpl(const TextureCopyView& destination,
+        virtual MaybeError WriteTextureImpl(const ImageCopyTexture& destination,
                                             const void* data,
                                             const TextureDataLayout& dataLayout,
                                             const Extent3D& writeSize);
@@ -96,7 +99,7 @@ namespace dawn_native {
         MaybeError ValidateWriteBuffer(const BufferBase* buffer,
                                        uint64_t bufferOffset,
                                        size_t size) const;
-        MaybeError ValidateWriteTexture(const TextureCopyView* destination,
+        MaybeError ValidateWriteTexture(const ImageCopyTexture* destination,
                                         size_t dataSize,
                                         const TextureDataLayout* dataLayout,
                                         const Extent3D* writeSize) const;

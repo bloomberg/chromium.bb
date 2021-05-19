@@ -4,6 +4,8 @@
 //
 // MediaGalleries gallery watch API browser tests.
 
+#include <memory>
+
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
@@ -88,7 +90,8 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
   }
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
-    ensure_media_directories_exists_.reset(new EnsureMediaDirectoriesExists);
+    ensure_media_directories_exists_ =
+        std::make_unique<EnsureMediaDirectoriesExists>();
     extension_ = LoadExtension(test_data_dir_.AppendASCII(kTestExtensionPath));
     GetBackgroundHostForTestExtension();
     CreateTestGallery();
@@ -180,7 +183,14 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
   content::RenderFrameHost* background_main_frame_ = nullptr;
 };
 
-IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest, BasicGalleryWatch) {
+// TODO(crbug.com/1177103): Re-enable. Flaky on Linux and Windows.
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_BasicGalleryWatch DISABLED_BasicGalleryWatch
+#else
+#define MAYBE_BasicGalleryWatch BasicGalleryWatch
+#endif
+IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
+                       MAYBE_BasicGalleryWatch) {
   // Add gallery watch listener.
   ExecuteCmdAndCheckReply(kAddGalleryChangedListenerCmd,
                           kAddGalleryChangedListenerOK);

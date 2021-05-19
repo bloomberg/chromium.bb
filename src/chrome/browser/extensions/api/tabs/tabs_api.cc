@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -23,7 +24,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -92,10 +92,10 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/host_id.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
 #include "extensions/common/message_bundle.h"
+#include "extensions/common/mojom/host_id.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
 #include "net/base/escape.h"
@@ -275,7 +275,7 @@ bool IsValidStateForWindowsCreateFunction(
 
 bool ExtensionHasLockedFullscreenPermission(const Extension* extension) {
   return extension->permissions_data()->HasAPIPermission(
-      APIPermission::kLockWindowFullscreenPrivate);
+      mojom::APIPermissionID::kLockWindowFullscreenPrivate);
 }
 
 std::unique_ptr<api::tabs::Tab> CreateTabObjectHelper(
@@ -1115,7 +1115,7 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
         // not matched.
         if (!extension_->permissions_data()->HasAPIPermissionForTab(
                 ExtensionTabUtil::GetTabId(web_contents),
-                APIPermission::kTab) &&
+                mojom::APIPermissionID::kTab) &&
             !extension_->permissions_data()->HasHostPermission(
                 web_contents->GetURL())) {
           continue;
@@ -1299,13 +1299,6 @@ bool TabsHighlightFunction::HighlightTab(TabStripModel* tabstrip,
                                          int* active_index,
                                          int index,
                                          std::string* error) {
-  // Cannot change tab highlight. This may for instance be due to user dragging
-  // in progress.
-  if (!tabstrip->delegate()->CanHighlightTabs()) {
-    *error = tabs_constants::kCannotHighlightTabs;
-    return false;
-  }
-
   // Make sure the index is in range.
   if (!tabstrip->ContainsIndex(index)) {
     *error = ErrorUtils::FormatErrorMessage(
@@ -1391,10 +1384,8 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
 
   if (params->update_properties.highlighted.get()) {
     bool highlighted = *params->update_properties.highlighted;
-    if (highlighted != tab_strip->IsTabSelected(tab_index)) {
-      if (!tab_strip->ToggleSelectionAt(tab_index))
-        return RespondNow(Error(tabs_constants::kCannotHighlightTabs));
-    }
+    if (highlighted != tab_strip->IsTabSelected(tab_index))
+      tab_strip->ToggleSelectionAt(tab_index);
   }
 
   if (params->update_properties.pinned.get()) {
@@ -1907,13 +1898,18 @@ TabsCaptureVisibleTabFunction::TabsCaptureVisibleTabFunction()
     : chrome_details_(this) {
 }
 
-bool TabsCaptureVisibleTabFunction::IsScreenshotEnabled(
+WebContentsCaptureClient::ScreenshotAccess
+TabsCaptureVisibleTabFunction::GetScreenshotAccess(
     content::WebContents* web_contents) const {
-  PrefService* service = chrome_details_.GetProfile()->GetPrefs();
-  if (service->GetBoolean(prefs::kDisableScreenshots)) {
-    return false;
-  }
-  return !tabs_util::IsScreenshotRestricted(web_contents);
+  PrefService* service =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  if (service->GetBoolean(prefs::kDisableScreenshots))
+    return ScreenshotAccess::kDisabledByPreferences;
+
+  if (tabs_util::IsScreenshotRestricted(web_contents))
+    return ScreenshotAccess::kDisabledByDlp;
+
+  return ScreenshotAccess::kEnabled;
 }
 
 bool TabsCaptureVisibleTabFunction::ClientAllowsTransparency() {
@@ -2004,6 +2000,8 @@ std::string TabsCaptureVisibleTabFunction::CaptureResultToErrorMessage(
       break;
     case FAILURE_REASON_SCREEN_SHOTS_DISABLED:
       return tabs_constants::kScreenshotsDisabled;
+    case FAILURE_REASON_SCREEN_SHOTS_DISABLED_BY_DLP:
+      return tabs_constants::kScreenshotsDisabledByDlp;
     case OK:
       NOTREACHED() << "CaptureResultToErrorMessage should not be called"
                       " with a successful result";
@@ -2155,7 +2153,8 @@ ExecuteCodeFunction::InitResult ExecuteCodeInTabFunction::Init() {
 
   execute_tab_id_ = tab_id;
   details_ = std::move(details);
-  set_host_id(HostID(HostID::EXTENSIONS, extension()->id()));
+  set_host_id(
+      mojom::HostID(mojom::HostID::HostType::kExtensions, extension()->id()));
   return set_init_result(SUCCESS);
 }
 
@@ -2214,7 +2213,7 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage(std::string* error) {
                                                       execute_tab_id_, error)) {
     if (is_about_url &&
         extension()->permissions_data()->active_permissions().HasAPIPermission(
-            APIPermission::kTab)) {
+            mojom::APIPermissionID::kTab)) {
       *error = ErrorUtils::FormatErrorMessage(
           manifest_errors::kCannotAccessAboutUrl,
           rfh->GetLastCommittedURL().spec(),
@@ -2378,9 +2377,8 @@ ExtensionFunction::ResponseAction TabsGetZoomSettingsFunction::Run() {
   ZoomController::ZoomMode zoom_mode = zoom_controller->zoom_mode();
   api::tabs::ZoomSettings zoom_settings;
   ZoomModeToZoomSettings(zoom_mode, &zoom_settings);
-  zoom_settings.default_zoom_factor.reset(
-      new double(blink::PageZoomLevelToZoomFactor(
-          zoom_controller->GetDefaultZoomLevel())));
+  zoom_settings.default_zoom_factor = std::make_unique<double>(
+      blink::PageZoomLevelToZoomFactor(zoom_controller->GetDefaultZoomLevel()));
 
   return RespondNow(
       ArgumentList(api::tabs::GetZoomSettings::Results::Create(zoom_settings)));

@@ -170,11 +170,13 @@ void WebOTPService::Receive(ReceiveCallback callback) {
   fetcher_->Subscribe(origin_list_, this, render_frame_host());
 }
 
-void WebOTPService::OnReceive(const std::string& one_time_code,
+void WebOTPService::OnReceive(const OriginList& origin_list,
+                              const std::string& one_time_code,
                               UserConsent consent_requirement) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!one_time_code_);
   DCHECK(!start_time_.is_null());
+  DCHECK(!origin_list.empty());
 
   receive_time_ = base::TimeTicks::Now();
   RecordSmsReceiveTime(receive_time_ - start_time_,
@@ -207,7 +209,11 @@ void WebOTPService::OnFailure(FailureType failure_type) {
       // could use such information for targeting. By using a timeout in all
       // cases, it is not possible to distinguish between sms not being received
       // and received but not shared.
+      // Note that we still unsubscribe it from the fetcher and |Unsubscribe|
+      // will be called again during the normal |CompleteRequest| process but it
+      // should be no-op.
       prompt_failure_ = failure_type;
+      fetcher_->Unsubscribe(origin_list_, this);
       return;
     case FailureType::kBackendNotAvailable:
       CompleteRequest(SmsStatus::kBackendNotAvailable);
@@ -231,6 +237,7 @@ void WebOTPService::OnFailure(FailureType failure_type) {
     case FailureType::kPromptTimeout:
     case FailureType::kPromptCancelled:
     case FailureType::kBackendNotAvailable:
+    case FailureType::kNoFailure:
       NOTREACHED();
       break;
   }

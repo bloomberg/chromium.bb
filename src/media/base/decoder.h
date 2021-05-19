@@ -23,8 +23,10 @@ enum class AudioDecoderType : int {
   kDecrypting = 3,  // DecryptingAudioDecoder
   kMediaCodec = 4,  // MediaCodecAudioDecoder (Android)
   kBroker = 5,      // AudioDecoderBroker
+  kTesting = 6,     // Never send this to UKM, for tests only.
 
-  kMaxValue = kBroker  // Keep this at the end and equal to the last entry.
+  // Keep this at the end and equal to the last entry.
+  kMaxValue = kTesting,
 };
 
 // List of known VideoDecoder implementations; recorded to UKM, always add new
@@ -42,18 +44,22 @@ enum class VideoDecoderType : int {
   kMediaCodec = 9,  // MediaCodecVideoDecoder (Android)
   kGav1 = 10,       // Gav1VideoDecoder
   kD3D11 = 11,      // D3D11VideoDecoder
-  kVaapi = 12,      // VaapiVideoDecodeAccelerator
+  kVaapi = 12,      // VaapiVideoDecoder
   kBroker = 13,     // VideoDecoderBroker (Webcodecs)
   kVda = 14,        // VDAVideoDecoder
+  // kChromeOs = 15,  // DEPRECATED, should be kVaapi or kV4L2 instead.
+  kV4L2 = 16,       // V4L2VideoDecoder
 
-  // Chromeos uses VideoDecoderPipeline. This could potentially become more
-  // granulated in the future.
-  kChromeOs = 15,
-  kMaxValue = kChromeOs  // Keep this at the end and equal to the last entry.
+  kTesting = 17,  // Never send this to UKM, for tests only.
+
+  // Keep this at the end and equal to the last entry.
+  kMaxValue = kTesting
 };
 
 MEDIA_EXPORT std::string GetDecoderName(AudioDecoderType type);
 MEDIA_EXPORT std::string GetDecoderName(VideoDecoderType type);
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& out, AudioDecoderType type);
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& out, VideoDecoderType type);
 
 class MEDIA_EXPORT Decoder {
  public:
@@ -71,12 +77,6 @@ class MEDIA_EXPORT Decoder {
   // problems, it does allow incompatible decoders to pass the filtering step in
   // |DecoderSelector| potentially slowing down the selection process.
   virtual bool SupportsDecryption() const;
-
-  // Returns the name of the decoder for logging and decoder selection purposes.
-  // This name should be available immediately after construction, and should
-  // also be stable in the sense that the name does not change across multiple
-  // constructions.
-  virtual std::string GetDisplayName() const = 0;
 
  protected:
   Decoder();

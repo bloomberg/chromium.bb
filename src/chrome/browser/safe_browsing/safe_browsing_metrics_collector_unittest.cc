@@ -254,17 +254,17 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
   FastForwardAndAddEvent(base::TimeDelta::FromHours(1),
                          EventType::DATABASE_INTERSTITIAL_BYPASS);
   FastForwardAndAddEvent(base::TimeDelta::FromHours(1),
-                         EventType::CSD_INTERSITITAL_BYPASS);
+                         EventType::CSD_INTERSTITIAL_BYPASS);
   FastForwardAndAddEvent(base::TimeDelta::FromHours(1),
                          EventType::DATABASE_INTERSTITIAL_BYPASS);
   FastForwardAndAddEvent(base::TimeDelta::FromHours(1),
-                         EventType::CSD_INTERSITITAL_BYPASS);
+                         EventType::CSD_INTERSTITIAL_BYPASS);
 
   task_environment_->FastForwardBy(base::TimeDelta::FromHours(1));
   // Changing enhanced protection to standard protection should log the metric.
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::STANDARD_PROTECTION);
   histograms.ExpectUniqueSample("SafeBrowsing.EsbDisabled.LastBypassEventType",
-                                /* sample */ EventType::CSD_INTERSITITAL_BYPASS,
+                                /* sample */ EventType::CSD_INTERSTITIAL_BYPASS,
                                 /* expected_count */ 1);
   histograms.ExpectUniqueTimeSample(
       "SafeBrowsing.EsbDisabled.LastBypassEventInterval.CsdInterstitialBypass",
@@ -290,7 +290,7 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
   // metric.
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
   histograms.ExpectUniqueSample("SafeBrowsing.EsbDisabled.LastBypassEventType",
-                                /* sample */ EventType::CSD_INTERSITITAL_BYPASS,
+                                /* sample */ EventType::CSD_INTERSTITIAL_BYPASS,
                                 /* expected_count */ 1);
 
   // Changing enhanced protection to no protection should log the metric.
@@ -329,6 +329,42 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
   histograms.ExpectTotalCount("SafeBrowsing.EsbDisabled.LastBypassEventType",
                               /* expected_count */ 2);
+}
+
+TEST_F(SafeBrowsingMetricsCollectorTest,
+       LogEnhancedProtectionDisabledMetrics_GetLastEnabledInterval) {
+  base::HistogramTester histograms;
+  SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
+
+  task_environment_->FastForwardBy(base::TimeDelta::FromHours(1));
+  SetSafeBrowsingState(&pref_service_, SafeBrowsingState::STANDARD_PROTECTION);
+  histograms.ExpectBucketCount("SafeBrowsing.EsbDisabled.LastEnabledInterval",
+                               /* sample */ 0,
+                               /* expected count */ 1);
+
+  SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
+  histograms.ExpectTotalCount("SafeBrowsing.EsbDisabled.LastEnabledInterval",
+                              /* expected_count */ 1);
+
+  task_environment_->FastForwardBy(base::TimeDelta::FromDays(1));
+  SetSafeBrowsingState(&pref_service_, SafeBrowsingState::NO_SAFE_BROWSING);
+  histograms.ExpectBucketCount("SafeBrowsing.EsbDisabled.LastEnabledInterval",
+                               /* sample */ 1,
+                               /* expected count */ 1);
+  histograms.ExpectTotalCount("SafeBrowsing.EsbDisabled.LastEnabledInterval",
+                              /* expected_count */ 2);
+
+  SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
+  histograms.ExpectTotalCount("SafeBrowsing.EsbDisabled.LastEnabledInterval",
+                              /* expected_count */ 2);
+
+  task_environment_->FastForwardBy(base::TimeDelta::FromDays(7));
+  SetSafeBrowsingState(&pref_service_, SafeBrowsingState::STANDARD_PROTECTION);
+  histograms.ExpectBucketCount("SafeBrowsing.EsbDisabled.LastEnabledInterval",
+                               /* sample */ 7,
+                               /* expected count */ 1);
+  histograms.ExpectTotalCount("SafeBrowsing.EsbDisabled.LastEnabledInterval",
+                              /* expected_count */ 3);
 }
 
 TEST_F(SafeBrowsingMetricsCollectorTest,
@@ -403,7 +439,7 @@ TEST_F(SafeBrowsingMetricsCollectorTest, LogDailyEventMetrics_LoggedDaily) {
   FastForwardAndAddEvent(base::TimeDelta::FromHours(1),
                          EventType::DATABASE_INTERSTITIAL_BYPASS);
   FastForwardAndAddEvent(base::TimeDelta::FromHours(1),
-                         EventType::CSD_INTERSITITAL_BYPASS);
+                         EventType::CSD_INTERSTITIAL_BYPASS);
   FastForwardAndAddEvent(base::TimeDelta::FromHours(1),
                          EventType::REAL_TIME_INTERSTITIAL_BYPASS);
 
@@ -432,7 +468,7 @@ TEST_F(SafeBrowsingMetricsCollectorTest, LogDailyEventMetrics_LoggedDaily) {
       /* expected_count */ 1);
 
   FastForwardAndAddEvent(base::TimeDelta::FromHours(1),
-                         EventType::CSD_INTERSITITAL_BYPASS);
+                         EventType::CSD_INTERSTITIAL_BYPASS);
   task_environment_->FastForwardBy(base::TimeDelta::FromDays(1));
   histograms.ExpectTotalCount(
       "SafeBrowsing.Daily.BypassCountLast28Days.EnhancedProtection.AllEvents",
@@ -541,7 +577,7 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
   FastForwardAndAddEvent(base::TimeDelta::FromHours(1),
                          EventType::DATABASE_INTERSTITIAL_BYPASS);
   FastForwardAndAddEvent(base::TimeDelta::FromDays(1),
-                         EventType::CSD_INTERSITITAL_BYPASS);
+                         EventType::CSD_INTERSTITIAL_BYPASS);
 
   task_environment_->FastForwardBy(base::TimeDelta::FromDays(30));
   const base::Value* db_timestamps = GetTsFromUserStateAndEventType(
@@ -549,7 +585,7 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
   // The event is removed from pref because it was logged more than 30 days.
   EXPECT_EQ(0u, db_timestamps->GetList().size());
   const base::Value* csd_timestamps = GetTsFromUserStateAndEventType(
-      UserState::STANDARD_PROTECTION, EventType::CSD_INTERSITITAL_BYPASS);
+      UserState::STANDARD_PROTECTION, EventType::CSD_INTERSTITIAL_BYPASS);
   // The CSD event is still in pref because it was logged less than 30 days.
   EXPECT_EQ(1u, csd_timestamps->GetList().size());
 

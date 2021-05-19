@@ -11,19 +11,39 @@
 #include "third_party/blink/renderer/core/execution_context/navigator_base.h"
 #include "third_party/blink/renderer/modules/buckets/storage_bucket.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 
 namespace blink {
 
 namespace {
 
+bool IsValidName(const String& name) {
+  if (!name.IsLowerASCII())
+    return false;
+
+  if (!name.ContainsOnlyASCIIOrEmpty())
+    return false;
+
+  if (name.IsEmpty() || name.length() >= 64)
+    return false;
+
+  // | name | must only contain lowercase latin letters, digits 0-9, or special
+  // characters '-' & '_' in the middle of the name, but not at the beginning.
+  for (wtf_size_t i = 0; i < name.length(); i++) {
+    if (!IsASCIIAlphanumeric(name[i]) &&
+        (i == 0 || (name[i] != '_' && name[i] != '-'))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 mojom::blink::BucketPoliciesPtr ToMojoBucketPolicies(
     const StorageBucketOptions* options) {
   auto policies = mojom::blink::BucketPolicies::New();
   policies->persisted = options->persisted();
-  policies->title = (options->hasTitle() && !options->title().IsEmpty())
-                        ? options->title()
-                        : "";
   policies->quota = options->hasQuotaNonNull()
                         ? options->quotaNonNull()
                         : mojom::blink::kNoQuotaPolicyValue;
@@ -43,16 +63,10 @@ mojom::blink::BucketPoliciesPtr ToMojoBucketPolicies(
 
 const char StorageBucketManager::kSupplementName[] = "StorageBucketManager";
 
-StorageBucketManager::StorageBucketManager(NavigatorBase& navigator,
-                                           ExecutionContext* context)
+StorageBucketManager::StorageBucketManager(NavigatorBase& navigator)
     : Supplement<NavigatorBase>(navigator),
-      ExecutionContextClient(context),
-      manager_remote_(context) {
-  context->GetBrowserInterfaceBroker().GetInterface(
-      manager_remote_.BindNewPipeAndPassReceiver(
-          context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-  DCHECK(manager_remote_.is_bound());
-}
+      ExecutionContextClient(navigator.GetExecutionContext()),
+      manager_remote_(navigator.GetExecutionContext()) {}
 
 StorageBucketManager* StorageBucketManager::storageBuckets(
     ScriptState* script_state,
@@ -61,8 +75,7 @@ StorageBucketManager* StorageBucketManager::storageBuckets(
   auto* supplement =
       Supplement<NavigatorBase>::From<StorageBucketManager>(navigator);
   if (!supplement) {
-    auto* context = ExecutionContext::From(script_state);
-    supplement = MakeGarbageCollected<StorageBucketManager>(navigator, context);
+    supplement = MakeGarbageCollected<StorageBucketManager>(navigator);
     Supplement<NavigatorBase>::ProvideTo(navigator, supplement);
   }
   return supplement;
@@ -75,13 +88,26 @@ ScriptPromise StorageBucketManager::open(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  if (!context->GetSecurityOrigin()->CanAccessStorageBuckets()) {
+    exception_state.ThrowSecurityError(
+        "Access to Storage Buckets API is denied in this context.");
+    return promise;
+  }
+
+  if (!IsValidName(name)) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidCharacterError,
+        "The bucket name '" + name + "' is not a valid name."));
+    return promise;
+  }
+
   mojom::blink::BucketPoliciesPtr bucket_policies =
       ToMojoBucketPolicies(options);
-
-  manager_remote_->OpenBucket(
-      name, std::move(bucket_policies),
-      WTF::Bind(&StorageBucketManager::DidOpen, WrapPersistent(this),
-                WrapPersistent(resolver)));
+  GetBucketManager(script_state)
+      ->OpenBucket(name, std::move(bucket_policies),
+                   WTF::Bind(&StorageBucketManager::DidOpen,
+                             WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
 }
 
@@ -90,9 +116,16 @@ ScriptPromise StorageBucketManager::keys(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  manager_remote_->Keys(WTF::Bind(&StorageBucketManager::DidGetKeys,
-                                  WrapPersistent(this),
-                                  WrapPersistent(resolver)));
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  if (!context->GetSecurityOrigin()->CanAccessStorageBuckets()) {
+    exception_state.ThrowSecurityError(
+        "Access to Storage Buckets API is denied in this context.");
+    return promise;
+  }
+
+  GetBucketManager(script_state)
+      ->Keys(WTF::Bind(&StorageBucketManager::DidGetKeys, WrapPersistent(this),
+                       WrapPersistent(resolver)));
   return promise;
 }
 
@@ -102,10 +135,38 @@ ScriptPromise StorageBucketManager::Delete(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  manager_remote_->DeleteBucket(
-      name, WTF::Bind(&StorageBucketManager::DidDelete, WrapPersistent(this),
-                      WrapPersistent(resolver)));
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  if (!context->GetSecurityOrigin()->CanAccessStorageBuckets()) {
+    exception_state.ThrowSecurityError(
+        "Access to Storage Buckets API is denied in this context.");
+    return promise;
+  }
+
+  if (!IsValidName(name)) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidCharacterError,
+        "The bucket name " + name + " is not a valid name."));
+    return promise;
+  }
+
+  GetBucketManager(script_state)
+      ->DeleteBucket(name,
+                     WTF::Bind(&StorageBucketManager::DidDelete,
+                               WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
+}
+
+mojom::blink::BucketManagerHost* StorageBucketManager::GetBucketManager(
+    ScriptState* script_state) {
+  if (!manager_remote_.is_bound()) {
+    ExecutionContext* context = ExecutionContext::From(script_state);
+    mojo::PendingReceiver<mojom::blink::BucketManagerHost> receiver =
+        manager_remote_.BindNewPipeAndPassReceiver(
+            context->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
+    context->GetBrowserInterfaceBroker().GetInterface(std::move(receiver));
+  }
+  DCHECK(manager_remote_.is_bound());
+  return manager_remote_.get();
 }
 
 void StorageBucketManager::DidOpen(

@@ -6,6 +6,7 @@ ts_library("components") {
     "DataGridController_test.ts",
     "DataGridHelpers.ts",
     "DataGrid_test.ts",
+    "ExpandableList_test.ts",
     "IconButton_test.ts",
     "Linkifier_test.ts",
     "ReportView_test.ts",
@@ -14,7 +15,7 @@ ts_library("components") {
   ]
 
   deps = [
-    "../../../../../front_end/platform:bundle",
+    "../../../../../front_end/core/platform:bundle",
     "../../../../../front_end/render_coordinator:bundle",
     "../../../../../front_end/third_party/lit-html",
     "../../../../../front_end/ui/components:bundle",

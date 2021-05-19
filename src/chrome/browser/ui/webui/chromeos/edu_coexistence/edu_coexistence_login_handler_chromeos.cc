@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -18,10 +19,10 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/child_accounts/edu_coexistence_tos_store_utils.h"
-#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -159,7 +160,7 @@ EduCoexistenceLoginHandler::EduCoexistenceLoginHandler(
               &EduCoexistenceLoginHandler::OnOAuthAccessTokensFetched,
               base::Unretained(this)),
           signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable,
-          signin::ConsentLevel::kNotRequired);
+          signin::ConsentLevel::kSignin);
 }
 
 EduCoexistenceLoginHandler::~EduCoexistenceLoginHandler() {
@@ -285,10 +286,13 @@ void EduCoexistenceLoginHandler::SendInitializeEduArgs() {
   params.SetStringKey("eduCoexistenceId", GetOrCreateEduCoexistenceUserId());
   params.SetStringKey("platformVersion",
                       base::SysInfo::OperatingSystemVersion());
-  params.SetStringKey("releaseChannel", chrome::GetChannelName());
+  // Extended stable channel is not supported on Chrome OS Ash.
+  params.SetStringKey("releaseChannel", chrome::GetChannelName(
+                                            chrome::WithExtendedStable(false)));
   params.SetStringKey("deviceId", GetDeviceIdForActiveUserProfile());
 
   params.SetDoubleKey("signinTime", GetSigninTime().ToJsTimeIgnoringNull());
+  params.SetBoolKey("newOobeLayoutEnabled", features::IsNewOobeLayoutEnabled());
 
   // If the secondary edu account is being reauthenticated, the email address
   // will be provided via the url of the webcontent. Example
@@ -333,11 +337,9 @@ void EduCoexistenceLoginHandler::ConsentLogged(const base::ListValue* args) {
   edu_account_email_ = arguments[0].GetString();
   terms_of_service_version_number_ = arguments[1].GetString();
 
+  // Notify EduCoexistenceStateTracker that consent has been logged.
   EduCoexistenceStateTracker::Get()->OnConsentLogged(web_ui(),
                                                      edu_account_email_);
-
-  EduCoexistenceStateTracker::Get()->OnWebUiStateChanged(
-      web_ui(), EduCoexistenceStateTracker::FlowResult::kConsentLogged);
 }
 
 void EduCoexistenceLoginHandler::OnError(const base::ListValue* args) {

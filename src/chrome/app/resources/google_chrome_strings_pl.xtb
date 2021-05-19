@@ -11,13 +11,12 @@
 <translation id="1125124144982679672">Kto używa Chrome?</translation>
 <translation id="1142745911746664600">Nie można zaktualizować Chrome</translation>
 <translation id="1154147086299354128">&amp;Otwórz w Chrome</translation>
-<translation id="123620459398936149">System operacyjny Chrome nie może zsynchronizować danych. Zaktualizuj hasło synchronizacji.</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> wymaga, by przed korzystaniem z tego urządzenia przeczytać i zaakceptować Warunki korzystania z usługi. Nie rozszerzają, nie zmieniają ani nie ograniczają one Warunków korzystania z Google Chrome OS.</translation>
 <translation id="1302523850133262269">Poczekaj, aż Chrome zainstaluje najnowsze aktualizacje systemu.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Na tym komputerze jest już zainstalowana nowsza wersja Google Chrome. Jeśli oprogramowanie nie działa, odinstaluj Google Chrome, a następnie spróbuj ponownie.</translation>
 <translation id="1434626383986940139">Aplikacje Chrome w wersji poglądowej</translation>
-<translation id="147727933880789532">Chrome zaleca wyłączenie tego rozszerzenia, ponieważ obecnie nie spełnia ono standardów Ulepszonego Bezpiecznego przeglądania.</translation>
+<translation id="1507198376417198979">Dostosowywanie nowego profilu Chrome</translation>
 <translation id="1516530951338665275">Aby kontynuować parowanie, Google Chrome potrzebuje dostępu do Bluetootha. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1553358976309200471">Zaktualizuj Chrome</translation>
 <translation id="1583073672411044740">W tym profilu Chrome jest już zalogowany użytkownik <ph name="EXISTING_USER" />. Spowoduje to utworzenie nowego profilu Chrome dla użytkownika <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -25,7 +24,6 @@
 <translation id="1587325591171447154">Plik <ph name="FILE_NAME" /> jest niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
 <translation id="1597911401261118146">Aby sprawdzić, czy Twoje hasła są chronione przed naruszeniami bezpieczeństwa danych i innymi zagrożeniami tego typu, <ph name="BEGIN_LINK" />zaloguj się w Chrome<ph name="END_LINK" />.</translation>
 <translation id="1619887657840448962">Aby poprawić bezpieczeństwo Chrome, wyłączyliśmy to rozszerzenie. Nie jest ono dostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i mogło zostać dodane bez Twojej wiedzy.</translation>
-<translation id="162629503687514352">System operacyjny Chrome nie może zsynchronizować haseł.</translation>
 <translation id="1628000112320670027">Pomoc do Chrome</translation>
 <translation id="1666409074978194368">Prawie gotowe! Uruchom ponownie Google Chrome, by zakończyć aktualizację. Okna incognito nie otworzą się ponownie.</translation>
 <translation id="1674870198290878346">Otwórz link w oknie inco&amp;gnito Chrome</translation>
@@ -90,14 +88,12 @@
 <translation id="3089968997497233615">Dostępna jest nowa, bezpieczniejsza wersja przeglądarki Google Chrome.</translation>
 <translation id="3100998948628680988">Nadaj nazwę swojemu profilowi Chrome</translation>
 <translation id="3114643501466072395">Aby sprawdzić, czy Twoje pozostałe hasła są chronione przed naruszeniami bezpieczeństwa danych i innymi zagrożeniami tego typu, <ph name="BEGIN_LINK" />zaloguj się w Chrome<ph name="END_LINK" />.</translation>
-<translation id="3127818369811890733">System operacyjny Chrome nie może zsynchronizować danych.</translation>
 <translation id="3140883423282498090">Zmiany zaczną obowiązywać po ponownym uruchomieniu Google Chrome.</translation>
 <translation id="3149510190863420837">Aplikacje Chrome</translation>
 <translation id="3360895254066713204">Pomoc Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome uruchomi się ponownie teraz}=1{Chrome uruchomi się ponownie za 1 sekundę}few{Chrome uruchomi się ponownie za # sekundy}many{Chrome uruchomi się ponownie za # sekund}other{Chrome uruchomi się ponownie za # sekundy}}</translation>
 <translation id="3395323229510056640">Pomoc do Chrome OS</translation>
 <translation id="3396977131400919238">Podczas instalacji wystąpił błąd systemu operacyjnego. Pobierz Google Chrome ponownie.</translation>
-<translation id="3398288718845740432">Ukryj w menu Chrome</translation>
 <translation id="3434246496373299699">Chrome może sprawdzić Twoje hasła, gdy zalogujesz się na swoje konto Google.</translation>
 <translation id="3451115285585441894">Dodaję do Chrome...</translation>
 <translation id="345171907106878721">Dodaj siebie do Chrome</translation>
@@ -145,7 +141,6 @@
 <translation id="4571503333518166079">Otwórz ustawienia powiadomień Chrome</translation>
 <translation id="459622048091363950">Gdy Chrome będzie mieć dostęp, strony będą mogły prosić Cię o dostęp.</translation>
 <translation id="4600710005438004015">Aktualizacja Chrome do najnowszej wersji nie udała się, więc nie masz dostępu do najnowszych funkcji i poprawek zabezpieczeń.</translation>
-<translation id="4631713731678262610">Ukryj w menu Chrome</translation>
 <translation id="4633000520311261472">Aby poprawić bezpieczeństwo Chrome, wyłączyliśmy niektóre rozszerzenia niedostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, które mogły zostać dodane bez Twojej wiedzy.</translation>
 <translation id="4666328473657283332">Aby mieć dostęp do danych z Chrome na wszystkich swoich urządzeniach, zaloguj się, co umożliwi włączenie synchronizacji.</translation>
 <translation id="4728575227883772061">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Google Chrome jest aktualnie uruchomiony, zamknij aplikację i spróbuj ponownie.</translation>
@@ -191,6 +186,7 @@
 <translation id="6070348360322141662">Dla większego bezpieczeństwa Google Chrome szyfruje dane</translation>
 <translation id="608006075545470555">Dodaj profil służbowy w tej przeglądarce</translation>
 <translation id="6113794647360055231">Chrome jest jeszcze lepszy</translation>
+<translation id="6145313976051292476">Otwieranie plików PDF w Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Beta</translation>
 <translation id="61852838583753520">Aktualizuj system operacyjny &amp;Chrome</translation>
@@ -203,7 +199,6 @@
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Aktualizuję Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">System operacyjny Chrome</translation>
-<translation id="6650333065969705433">Aby używać Rosetty do odtwarzania chronionych treści multimedialnych, musisz ponownie uruchomić Chrome.</translation>
 <translation id="6676384891291319759">Skorzystaj z internetu</translation>
 <translation id="6679975945624592337">Zezwalaj Google Chrome na działanie w tle</translation>
 <translation id="6739177684496155661">Kontynuować w nowym profilu Chrome?</translation>
@@ -215,7 +210,7 @@
 <translation id="6943584222992551122">Dane przeglądania tej osoby zostaną usunięte z tego urządzenia. Aby je odzyskać, zaloguj się w Chrome jako <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Reguła dla ruchu przychodzącego w Google Chrome Beta zezwalająca na ruch mDNS.</translation>
 <translation id="6989339256997917931">Przeglądarka Google Chrome została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
-<translation id="7054640471403081847">Ten komputer wkrótce przestanie otrzymywać aktualizacje Google Chrome, ponieważ zawiera sprzęt, który nie jest już obsługiwany.</translation>
+<translation id="7025800014283535195">Tu możesz przełączać się między profilami Chrome</translation>
 <translation id="7062128746136194023">Rodzic wyłączył „Uprawnienia stron, aplikacji i rozszerzeń” dla Chrome. Dodanie elementu <ph name="EXTENSION_TYPE_PARAMETER" /> jest niedozwolone.</translation>
 <translation id="7098166902387133879">Google Chrome używa Twojego mikrofonu.</translation>
 <translation id="7106741999175697885">Menedżer zadań – Google Chrome</translation>
@@ -268,7 +263,6 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">Ten profil służbowy jest całkowicie oddzielony od Twojego profilu osobistego.</translation>
 <translation id="8556340503434111824">Dostępna jest nowa, szybsza niż kiedykolwiek wersja przeglądarki Google Chrome.</translation>
-<translation id="861359755029082151">Rosetta umożliwia odtwarzanie w Chrome chronionych treści multimedialnych na tej stronie.</translation>
 <translation id="8614913330719544658">Przeglądarka Google Chrome nie odpowiada. Uruchomić ją teraz ponownie?</translation>
 <translation id="861702415419836452">Aby utworzyć mapę 3D Twojego otoczenia, Chrome potrzebuje uprawnień dostępu do kamery</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome uruchomi się ponownie za minutę}few{Chrome uruchomi się ponownie za # minuty}many{Chrome uruchomi się ponownie za # minut}other{Chrome uruchomi się ponownie za # minuty}}</translation>
@@ -282,7 +276,6 @@
 <translation id="8834965163890861871">Google Chrome próbuje edytować hasła. Aby na to zezwolić, podaj swoje hasło do systemu Windows.</translation>
 <translation id="884296878221830158">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome lub kliknięciu przycisku strony głównej.</translation>
 <translation id="8862326446509486874">Nie masz odpowiednich uprawnień do przeprowadzenia instalacji na poziomie systemowym. Uruchom ponownie program instalacyjny jako administrator.</translation>
-<translation id="8907709077090383765">Aby umożliwić odtwarzanie chronionych treści multimedialnych w Chrome, musisz zainstalować Rosettę. Czy chcesz to teraz zrobić?</translation>
 <translation id="8914504000324227558">Uruchom Chrome ponownie</translation>
 <translation id="8922193594870374009">Aby wysłać numer z <ph name="ORIGIN" /> na swój telefon z Androidem, zaloguj się w Chrome na obu urządzeniach.</translation>
 <translation id="8986207147630327271">Dodajesz profil służbowy w tej przeglądarce i dajesz swojemu administratorowi kontrolę tylko nad tym profilem.</translation>
@@ -292,6 +285,8 @@
 <translation id="911206726377975832">Czy usunąć także dane przeglądania?</translation>
 <translation id="9138603949443464873">Aby zastosować zmiany, uruchom ponownie Chrome</translation>
 <translation id="919706545465235479">Aby rozpocząć synchronizację, zaktualizuj Chrome</translation>
+<translation id="922152298093051471">Dostosuj Chrome</translation>
 <translation id="940313311831216333">Aby mieć dostęp do danych z Chrome na wszystkich swoich urządzeniach, zaloguj się i włącz synchronizację.</translation>
 <translation id="989369509083708165">Google Chrome jest domyślną przeglądarką</translation>
+<translation id="989816563149873169">Profile Chrome przełącza skrót <ph name="SHORTCUT" /></translation>
 </translationbundle>

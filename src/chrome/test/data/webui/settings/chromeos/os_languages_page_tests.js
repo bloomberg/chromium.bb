@@ -7,8 +7,8 @@
 // #import {CrSettingsPrefs, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {getFakeLanguagePrefs} from '../fake_language_settings_private.m.js'
-// #import {FakeSettingsPrivate} from '../fake_settings_private.m.js';
+// #import {getFakeLanguagePrefs} from '../fake_language_settings_private.js'
+// #import {FakeSettingsPrivate} from '../fake_settings_private.js';
 // #import {TestLanguagesBrowserProxy} from './test_os_languages_browser_proxy.m.js';
 // #import {TestLanguagesMetricsProxy} from './test_os_languages_metrics_proxy.m.js';
 // #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
@@ -17,6 +17,7 @@
 // #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
 // clang-format on
 
+// TODO(crbug/1109431): Remove these tests.
 cr.define('os_languages_page_tests', function() {
   /** @enum {string} */
   const TestNames = {
@@ -352,39 +353,11 @@ cr.define('os_languages_page_tests', function() {
       });
     });
 
-    suite(TestNames.DetailsPage, function() {
-      test('Deep link to show input options in shelf', async () => {
-        loadTimeData.overrideValues({
-          isDeepLinkingEnabled: true,
-        });
-
-        const params = new URLSearchParams;
-        params.append('settingId', '1201');
-        settings.Router.getInstance().navigateTo(
-            settings.routes.OS_LANGUAGES_DETAILS, params);
-
-        Polymer.dom.flush();
-
-        const deepLinkElement =
-            languagesPage.$$('#showImeMenu').$$('cr-toggle');
-        await test_util.waitAfterNextRender(deepLinkElement);
-        assertEquals(
-            deepLinkElement, getDeepActiveElement(),
-            'Show input options toggle should be focused for settingId=1201.');
-      });
-    });
-
     suite(TestNames.RecordMetrics, function() {
       test('when adding languages', async () => {
         languagesPage.$$('#addLanguages').click();
         Polymer.dom.flush();
         await metricsProxy.whenCalled('recordAddLanguages');
-      });
-
-      test('when managing input methods', async () => {
-        languagesPage.$$('#manageInputMethods').click();
-        Polymer.dom.flush();
-        await metricsProxy.whenCalled('recordManageInputMethods');
       });
 
       test('when deactivating show ime menu', async () => {

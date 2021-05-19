@@ -17,6 +17,7 @@
 #include "device/vr/android/arcore/arcore_impl.h"
 #include "device/vr/android/arcore/arcore_session_utils.h"
 #include "device/vr/android/mailbox_to_surface_bridge.h"
+#include "device/vr/public/cpp/xr_frame_sink_client.h"
 #include "ui/display/display.h"
 
 using base::android::JavaRef;
@@ -62,13 +63,15 @@ ArCoreDevice::ArCoreDevice(
     std::unique_ptr<ArImageTransportFactory> ar_image_transport_factory,
     std::unique_ptr<MailboxToSurfaceBridgeFactory>
         mailbox_to_surface_bridge_factory,
-    std::unique_ptr<ArCoreSessionUtils> arcore_session_utils)
+    std::unique_ptr<ArCoreSessionUtils> arcore_session_utils,
+    XrFrameSinkClientFactory xr_frame_sink_client_factory)
     : VRDeviceBase(mojom::XRDeviceId::ARCORE_DEVICE_ID),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       arcore_factory_(std::move(arcore_factory)),
       ar_image_transport_factory_(std::move(ar_image_transport_factory)),
       mailbox_bridge_factory_(std::move(mailbox_to_surface_bridge_factory)),
       arcore_session_utils_(std::move(arcore_session_utils)),
+      xr_frame_sink_client_factory_(std::move(xr_frame_sink_client_factory)),
       mailbox_bridge_(mailbox_bridge_factory_->Create()),
       session_state_(std::make_unique<ArCoreDevice::SessionState>()) {
   // Ensure display_info_ is set to avoid crash in CallDeferredSessionCallback
@@ -136,6 +139,12 @@ void ArCoreDevice::RequestSession(
   // OnSessionEnded().
   DCHECK(mailbox_bridge_);
 
+  // We create the FrameSinkClient here and clear it in OnSessionEnded.
+  DCHECK(!frame_sink_client_);
+  frame_sink_client_ = xr_frame_sink_client_factory_.Run(
+      options->render_process_id, options->render_frame_id);
+  DCHECK(frame_sink_client_);
+
   for (auto& image : options->tracked_images) {
     DVLOG(3) << __func__ << ": tracked image size_in_pixels="
              << image->size_in_pixels.ToString();
@@ -161,13 +170,18 @@ void ArCoreDevice::OnGlThreadReady(int render_process_id,
   auto destroyed_callback =
       base::BindOnce(&ArCoreDevice::OnDrawingSurfaceDestroyed, GetWeakPtr());
 
+  bool can_render_dom_content =
+      session_state_->arcore_gl_thread_->GetArCoreGl()->CanRenderDOMContent();
+
   arcore_session_utils_->RequestArSession(
-      render_process_id, render_frame_id, use_overlay,
+      render_process_id, render_frame_id, use_overlay, can_render_dom_content,
       std::move(ready_callback), std::move(touch_callback),
       std::move(destroyed_callback));
 }
 
 void ArCoreDevice::OnDrawingSurfaceReady(gfx::AcceleratedWidget window,
+                                         gpu::SurfaceHandle surface_handle,
+                                         ui::WindowAndroid* root_window,
                                          display::Display::Rotation rotation,
                                          const gfx::Size& frame_size) {
   DVLOG(1) << __func__ << ": size=" << frame_size.width() << "x"
@@ -177,7 +191,8 @@ void ArCoreDevice::OnDrawingSurfaceReady(gfx::AcceleratedWidget window,
   auto display_info = CreateVRDisplayInfo(frame_size);
   SetVRDisplayInfo(std::move(display_info));
 
-  RequestArCoreGlInitialization(window, rotation, frame_size);
+  RequestArCoreGlInitialization(window, surface_handle, root_window, rotation,
+                                frame_size);
 }
 
 void ArCoreDevice::OnDrawingSurfaceTouch(bool is_primary,
@@ -232,8 +247,20 @@ void ArCoreDevice::OnSessionEnded() {
   // of this class between construction and RequestSession, perform all the
   // initialization at once on the first successful RequestSession call.
 
+  // If we have a frame sink client, notify it that it's surface has been
+  // destroyed. While this is required in the case of the surface actually being
+  // destroyed, it's a good idea to do it before we actually end the session.
+  // Note that this may trigger the bindings on the session to disconnect.
+  if (frame_sink_client_)
+    frame_sink_client_->SurfaceDestroyed();
+
   // Reset per-session members to initial values.
   session_state_ = std::make_unique<ArCoreDevice::SessionState>();
+
+  // The frame sink client is re-requested when we start a new session, but once
+  // a session has ended it should be destroyed. However, it needs to outlive
+  // the gl thread.
+  frame_sink_client_.reset();
 
   // The image transport factory should be reusable, but we've std::moved it
   // to the GL thread. Make a new one for next time. (This is cheap, it's
@@ -328,6 +355,8 @@ bool ArCoreDevice::IsOnMainThread() {
 
 void ArCoreDevice::RequestArCoreGlInitialization(
     gfx::AcceleratedWidget drawing_widget,
+    gpu::SurfaceHandle surface_handle,
+    ui::WindowAndroid* root_window,
     int drawing_rotation,
     const gfx::Size& frame_size) {
   DVLOG(1) << __func__;
@@ -348,7 +377,8 @@ void ArCoreDevice::RequestArCoreGlInitialization(
     PostTaskToGlThread(base::BindOnce(
         &ArCoreGl::Initialize,
         session_state_->arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(),
-        arcore_session_utils_.get(), arcore_factory_.get(), drawing_widget,
+        arcore_session_utils_.get(), arcore_factory_.get(),
+        frame_sink_client_.get(), drawing_widget, surface_handle, root_window,
         frame_size, rotation, session_state_->required_features_,
         session_state_->optional_features_,
         std::move(session_state_->tracked_images_),

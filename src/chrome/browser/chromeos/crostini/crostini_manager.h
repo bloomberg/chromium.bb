@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/chromeos/crostini/crostini_low_disk_notification.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom-forward.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -200,16 +201,10 @@ class CrostiniManager : public KeyedService,
     virtual void OnContainerStarted(CrostiniResult result) {}
     virtual void OnSshKeysFetched(bool success) {}
     virtual void OnContainerMounted(bool success) {}
-
-    RestartId restart_id() const { return restart_id_; }
-
-   protected:
-    friend class CrostiniManager;
-    void set_restart_id(RestartId restart_id) { restart_id_ = restart_id; }
-    RestartId restart_id_ = kUninitializedRestartId;
   };
 
   struct RestartOptions {
+    bool start_vm_only = false;
     // These two options only affect new containers.
     base::Optional<std::string> container_username;
     base::Optional<int64_t> disk_size_bytes;
@@ -239,6 +234,11 @@ class CrostiniManager : public KeyedService,
   // Installs termina using either component updater or the DLC service
   // depending on the value of chromeos::features::kCrostiniUseDlc
   void InstallTermina(CrostiniResultCallback callback, bool is_initial_install);
+
+  // Try to cancel a previous InstallTermina call. This is done on a best-effort
+  // basis, and we cannot signal if/when it succeeds, but once called the
+  // callback passed to InstallTermina will never be run.
+  void CancelInstallTermina();
 
   // Unloads and removes termina.
   void UninstallTermina(BoolCallback callback);
@@ -930,6 +930,8 @@ class CrostiniManager : public KeyedService,
 
   std::unique_ptr<guest_os::GuestOsStabilityMonitor>
       guest_os_stability_monitor_;
+
+  std::unique_ptr<CrostiniLowDiskNotification> low_disk_notifier_;
 
   std::unique_ptr<CrostiniUpgradeAvailableNotification>
       upgrade_available_notification_;

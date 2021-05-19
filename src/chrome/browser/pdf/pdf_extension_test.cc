@@ -101,6 +101,7 @@
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
+#include "ui/accessibility/platform/inspect/ax_inspect_scenario.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_observer.h"
@@ -566,6 +567,30 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   EXPECT_EQ(embedder_rect, guest_rect);
 }
 
+// This test verifies that when a PDF is served with
+// Content-Security-Policy: sandbox, this is ignored and the PDF is displayed.
+// Regression test for https://crbug.com/1187122.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+                       CSPWithSandboxDoesNotBlockPDF) {
+  GURL main_url(embedded_test_server()->GetURL("/pdf/test-csp-sandbox.pdf"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  auto* embedder_web_contents = GetActiveWebContents();
+  ASSERT_TRUE(embedder_web_contents);
+
+  // Verify the pdf has loaded.
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  ASSERT_TRUE(guest_web_contents);
+  EXPECT_NE(embedder_web_contents, guest_web_contents);
+  WaitForLoadStart(guest_web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(guest_web_contents));
+
+  // Verify the extension was loaded.
+  const GURL extension_url(
+      "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html");
+  EXPECT_EQ(extension_url, guest_web_contents->GetURL());
+  EXPECT_EQ(main_url, embedder_web_contents->GetURL());
+}
+
 // This test verifies that Content-Security-Policy's frame-ancestors 'none'
 // directive is effective on a PDF response.
 // Regression test for https://crbug.com/1107535.
@@ -856,37 +881,6 @@ class PDFExtensionJSTestBase : public PDFExtensionTest {
   }
 };
 
-class PDFExtensionJSUpdatesEnabledTest : public PDFExtensionJSTestBase {
- public:
-  ~PDFExtensionJSUpdatesEnabledTest() override = default;
-};
-
-// The following tests verify behavior of elements that are only used when the
-// PDFViewerUpdate flag is enabled.
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSUpdatesEnabledTest, ViewerPdfToolbarNew) {
-  // Although this test file does not require a PDF to be loaded, loading the
-  // elements without loading a PDF is difficult.
-  RunTestsInJsModule("viewer_pdf_toolbar_new_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSUpdatesEnabledTest, ViewerPdfSidenav) {
-  // Although this test file does not require a PDF to be loaded, loading the
-  // elements without loading a PDF is difficult.
-  RunTestsInJsModule("viewer_pdf_sidenav_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSUpdatesEnabledTest, ViewerThumbnailBar) {
-  // Although this test file does not require a PDF to be loaded, loading the
-  // elements without loading a PDF is difficult.
-  RunTestsInJsModule("viewer_thumbnail_bar_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSUpdatesEnabledTest, ViewerThumbnail) {
-  // Although this test file does not require a PDF to be loaded, loading the
-  // elements without loading a PDF is difficult.
-  RunTestsInJsModule("viewer_thumbnail_test.js", "test.pdf");
-}
-
 class PDFExtensionDocumentPropertiesEnabledTest
     : public PDFExtensionJSTestBase {
  public:
@@ -900,6 +894,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionDocumentPropertiesEnabledTest,
                        ViewerPropertiesDialog) {
   // The properties dialog formats some values based on locale.
   base::test::ScopedRestoreICUDefaultLocale scoped_locale{"en_US"};
+  base::test::ScopedRestoreDefaultTimezone
+      scoped_timezone{"America/Los_Angeles"};
   RunTestsInJsModule("viewer_properties_dialog_test.js", "document_info.pdf");
 }
 
@@ -1021,6 +1017,30 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ArrayBufferAllocator) {
 // the redirect, which can have security implications. https://crbug.com/653749.
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, RedirectsFailInPlugin) {
   RunTestsInJsModule("redirects_fail_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPdfToolbar) {
+  // Although this test file does not require a PDF to be loaded, loading the
+  // elements without loading a PDF is difficult.
+  RunTestsInJsModule("viewer_pdf_toolbar_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPdfSidenav) {
+  // Although this test file does not require a PDF to be loaded, loading the
+  // elements without loading a PDF is difficult.
+  RunTestsInJsModule("viewer_pdf_sidenav_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerThumbnailBar) {
+  // Although this test file does not require a PDF to be loaded, loading the
+  // elements without loading a PDF is difficult.
+  RunTestsInJsModule("viewer_thumbnail_bar_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerThumbnail) {
+  // Although this test file does not require a PDF to be loaded, loading the
+  // elements without loading a PDF is difficult.
+  RunTestsInJsModule("viewer_thumbnail_test.js", "test.pdf");
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1281,8 +1301,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabTitleWithNoTitle) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
-  EXPECT_EQ(base::ASCIIToUTF16("test.pdf"), guest_contents->GetTitle());
-  EXPECT_EQ(base::ASCIIToUTF16("test.pdf"), GetActiveWebContents()->GetTitle());
+  EXPECT_EQ(u"test.pdf", guest_contents->GetTitle());
+  EXPECT_EQ(u"test.pdf", GetActiveWebContents()->GetTitle());
 }
 
 // This test ensures that titles are set properly for PDFs with /Title.
@@ -1290,9 +1310,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabTitleWithTitle) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-title.pdf"));
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
-  EXPECT_EQ(base::ASCIIToUTF16("PDF title test"), guest_contents->GetTitle());
-  EXPECT_EQ(base::ASCIIToUTF16("PDF title test"),
-            GetActiveWebContents()->GetTitle());
+  EXPECT_EQ(u"PDF title test", guest_contents->GetTitle());
+  EXPECT_EQ(u"PDF title test", GetActiveWebContents()->GetTitle());
 }
 
 // This test ensures that titles are set properly for embedded PDFs with /Title.
@@ -1306,8 +1325,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabTitleWithEmbeddedPdf) {
       url +
       "\"></body></html>";
   ASSERT_TRUE(LoadPdf(GURL(data_url)));
-  EXPECT_EQ(base::ASCIIToUTF16("TabTitleWithEmbeddedPdf"),
-            GetActiveWebContents()->GetTitle());
+  EXPECT_EQ(u"TabTitleWithEmbeddedPdf", GetActiveWebContents()->GetTitle());
 }
 
 // Flaky, http://crbug.com/767427
@@ -2591,6 +2609,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest,
   const GURL url = embedded_test_server()->GetURL("/pdf/text_large.pdf");
   WebContents* const guest_contents = LoadPdfGetGuestContents(url);
   ASSERT_TRUE(guest_contents);
+  content::WaitForHitTestData(guest_contents);
 
   views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
                                        "TouchSelectionMenuViews");
@@ -3141,7 +3160,7 @@ class PDFExtensionAccessibilityTreeDumpTest
   using AXPropertyFilter = ui::AXPropertyFilter;
 
   //  See chrome/test/data/pdf/accessibility/readme.md for more info.
-  content::DumpAccessibilityTestHelper::Scenario ParsePdfForExtraDirectives(
+  ui::AXInspectScenario ParsePdfForExtraDirectives(
       const std::string& pdf_contents) {
     const char kCommentMark = '%';
 
@@ -3166,8 +3185,7 @@ class PDFExtensionAccessibilityTreeDumpTest
 
     // Set up the tree formatter. Parse filters and other directives in the test
     // file.
-    content::DumpAccessibilityTestHelper::Scenario scenario =
-        ParsePdfForExtraDirectives(pdf_contents);
+    ui::AXInspectScenario scenario = ParsePdfForExtraDirectives(pdf_contents);
 
     std::unique_ptr<AXTreeFormatter> formatter =
         AXInspectFactory::CreateFormatter(GetParam());

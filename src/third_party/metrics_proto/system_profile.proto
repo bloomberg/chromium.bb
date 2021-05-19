@@ -17,7 +17,7 @@ import "extension_install.proto";
 // Almost all the fields should be populated on every upload. (The only
 // exception is some fields in the stability section that are only uploaded
 // once per browsing session, usually shortly after startup.)
-// Next tag: 36
+// Next tag: 38
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -61,6 +61,10 @@ message SystemProfileProto {
   }
   optional Channel channel = 10;
 
+  // True for a client following updates on the extended stable channel;
+  // see go/chrome-extended-dd.
+  optional bool is_extended_stable_channel = 36 [default = false];
+
   // True if Chrome build is instrumented (e.g. built with ASAN instrumentation
   // or with DCHECKs enabled).
   // This field was renamed from |is_asan_build| to reflect its actual meaning.
@@ -86,6 +90,16 @@ message SystemProfileProto {
   // source, to avoid changing those group assignments. New clients only have
   // the new source.
   optional int32 old_low_entropy_source = 32;
+
+  // A pseudo low entropy value. The actual low_entropy_source value is used for
+  // assignment to experiment arms, and this use may cause drift over time (for
+  // example, if a bad experiment arm drives away some users permanently.) This
+  // pseudo low entropy value is generated identically to low_entropy_source,
+  // but it is generated with a different randomization seed and is not used for
+  // experiment randomization. Consequently, it can be used in statistical
+  // validation to answer the question of how our data would be distributed if
+  // we didn't have to worry about low entropy source drift.
+  optional int32 pseudo_low_entropy_source = 37;
 
   // The user's selected application locale, i.e. the user interface language.
   // The locale includes a language code and, possibly, also a country code,
@@ -206,18 +220,6 @@ message SystemProfileProto {
     // Max DPI for any attached screen. (Windows only)
     optional float max_dpi_x = 9;
     optional float max_dpi_y = 10;
-
-    // Device form factors.
-    enum FormFactor {
-      FORM_FACTOR_UNKNOWN = 0;
-      FORM_FACTOR_DESKTOP = 1;
-      FORM_FACTOR_PHONE = 2;
-      FORM_FACTOR_TABLET = 3;
-      FORM_FACTOR_KIOSK = 4;
-    }
-
-    // The device form factor.
-    optional FormFactor form_factor = 19;
 
     // Information on the CPU obtained by CPUID.
     message CPU {

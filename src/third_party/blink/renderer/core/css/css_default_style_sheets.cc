@@ -75,7 +75,8 @@ static const MediaQueryEvaluator& ForcedColorsEval() {
   return *forced_colors_eval;
 }
 
-static StyleSheetContents* ParseUASheet(const String& str) {
+// static
+StyleSheetContents* CSSDefaultStyleSheets::ParseUASheet(const String& str) {
   // UA stylesheets always parse in the insecure context mode.
   auto* sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(
@@ -89,16 +90,9 @@ static StyleSheetContents* ParseUASheet(const String& str) {
 
 CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     : media_controls_style_sheet_loader_(nullptr) {
-  // Predefined @counter-style rules
-  String predefined_counter_styles_sheet =
-      RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()
-          ? UncompressResourceAsASCIIString(
-                IDR_UASTYLE_PREDEFINED_COUNTER_STYLES_CSS)
-          : String();
   // Strict-mode rules.
   String default_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_HTML_CSS) +
-                         LayoutTheme::GetTheme().ExtraDefaultStyleSheet() +
-                         predefined_counter_styles_sheet;
+                         LayoutTheme::GetTheme().ExtraDefaultStyleSheet();
 
   default_style_sheet_ = ParseUASheet(default_rules);
 

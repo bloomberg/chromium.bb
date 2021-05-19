@@ -12,38 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/binding_decoration.h"
-#include "src/ast/call_expression.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/function.h"
-#include "src/ast/group_decoration.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/if_statement.h"
-#include "src/ast/location_decoration.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/pipeline_stage.h"
-#include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
+#include "gmock/gmock.h"
 #include "src/ast/stage_decoration.h"
-#include "src/ast/struct.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
 #include "src/ast/workgroup_decoration.h"
-#include "src/program.h"
 #include "src/type/access_control_type.h"
-#include "src/type/array_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/vector_type.h"
-#include "src/type/void_type.h"
-#include "src/type_determiner.h"
 #include "src/writer/hlsl/test_helper.h"
+
+using ::testing::HasSubstr;
 
 namespace tint {
 namespace writer {
@@ -57,7 +34,7 @@ TEST_F(HlslGeneratorImplTest_Function, Emit_Function) {
        ast::StatementList{
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   GeneratorImpl& gen = Build();
 
@@ -76,7 +53,7 @@ TEST_F(HlslGeneratorImplTest_Function, Emit_Function_Name_Collision) {
        ast::StatementList{
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   GeneratorImpl& gen = Build();
 
@@ -98,7 +75,7 @@ TEST_F(HlslGeneratorImplTest_Function, Emit_Function_WithParams) {
        ast::StatementList{
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   GeneratorImpl& gen = Build();
 
@@ -113,10 +90,10 @@ TEST_F(HlslGeneratorImplTest_Function, Emit_Function_WithParams) {
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_NoReturn_Void) {
+       Emit_Decoration_EntryPoint_NoReturn_Void) {
   Func("main", ast::VariableList{}, ty.void_(),
        ast::StatementList{/* no explicit return */},
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
@@ -128,135 +105,217 @@ TEST_F(HlslGeneratorImplTest_Function,
 }
 
 )");
+
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_NoReturn_InOut) {
-  Global("foo", ty.f32(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{
-             create<ast::LocationDecoration>(0),
-         });
+       Emit_Decoration_EntryPoint_WithInOutVars) {
+  // fn frag_main([[location(0)]] foo : f32) -> [[location(1)]] f32 {
+  //   return foo;
+  // }
+  auto* foo_in =
+      Const("foo", ty.f32(), nullptr, {create<ast::LocationDecoration>(0)});
+  Func("frag_main", ast::VariableList{foo_in}, ty.f32(),
+       {create<ast::ReturnStatement>(Expr("foo"))},
+       {create<ast::StageDecoration>(ast::PipelineStage::kFragment)},
+       {create<ast::LocationDecoration>(1)});
 
-  Global("bar", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{
-             create<ast::LocationDecoration>(1),
-         });
-
-  Func("main", ast::VariableList{}, ty.void_(),
-       ast::StatementList{
-           create<ast::AssignmentStatement>(Expr("bar"), Expr("foo")),
-           /* no explicit return */},
-       ast::FunctionDecorationList{
-           create<ast::StageDecoration>(ast::PipelineStage::kFragment),
-       });
-
-  GeneratorImpl& gen = Build();
+  GeneratorImpl& gen = SanitizeAndBuild();
 
   ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(struct main_in {
+  EXPECT_EQ(result(), R"(struct tint_symbol_5 {
   float foo : TEXCOORD0;
 };
-
-struct main_out {
-  float bar : SV_Target1;
+struct tint_symbol_2 {
+  float value : SV_Target1;
 };
 
-main_out main(main_in tint_in) {
-  main_out tint_out;
-  tint_out.bar = tint_in.foo;
-  return tint_out;
+tint_symbol_2 frag_main(tint_symbol_5 tint_symbol_7) {
+  const float foo = tint_symbol_7.foo;
+  const tint_symbol_2 tint_symbol_1 = {foo};
+  return tint_symbol_1;
 }
 
 )");
+
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_WithInOutVars) {
-  Global("foo", ty.f32(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{
-             create<ast::LocationDecoration>(0),
-         });
+       Emit_Decoration_EntryPoint_WithInOut_Builtins) {
+  // fn frag_main([[position(0)]] coord : vec4<f32>) -> [[frag_depth]] f32 {
+  //   return coord.x;
+  // }
+  auto* coord_in =
+      Const("coord", ty.vec4<f32>(), nullptr,
+            {create<ast::BuiltinDecoration>(ast::Builtin::kFragCoord)});
+  Func("frag_main", ast::VariableList{coord_in}, ty.f32(),
+       {create<ast::ReturnStatement>(MemberAccessor("coord", "x"))},
+       {create<ast::StageDecoration>(ast::PipelineStage::kFragment)},
+       {create<ast::BuiltinDecoration>(ast::Builtin::kFragDepth)});
 
-  Global("bar", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{
-             create<ast::LocationDecoration>(1),
-         });
-
-  Func("frag_main", ast::VariableList{}, ty.void_(),
-       ast::StatementList{
-           create<ast::AssignmentStatement>(Expr("bar"), Expr("foo")),
-           create<ast::ReturnStatement>(),
-       },
-       ast::FunctionDecorationList{
-           create<ast::StageDecoration>(ast::PipelineStage::kFragment),
-       });
-
-  GeneratorImpl& gen = Build();
+  GeneratorImpl& gen = SanitizeAndBuild();
 
   ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(struct frag_main_in {
-  float foo : TEXCOORD0;
-};
-
-struct frag_main_out {
-  float bar : SV_Target1;
-};
-
-frag_main_out frag_main(frag_main_in tint_in) {
-  frag_main_out tint_out;
-  tint_out.bar = tint_in.foo;
-  return tint_out;
-}
-
-)");
-}
-
-TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_WithInOut_Builtins) {
-  Global("coord", ty.vec4<f32>(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{
-             create<ast::BuiltinDecoration>(ast::Builtin::kFragCoord),
-         });
-
-  Global("depth", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{
-             create<ast::BuiltinDecoration>(ast::Builtin::kFragDepth),
-         });
-
-  Func("frag_main", ast::VariableList{}, ty.void_(),
-       ast::StatementList{
-           create<ast::AssignmentStatement>(Expr("depth"),
-                                            MemberAccessor("coord", "x")),
-           create<ast::ReturnStatement>(),
-       },
-       ast::FunctionDecorationList{
-           create<ast::StageDecoration>(ast::PipelineStage::kFragment),
-       });
-
-  GeneratorImpl& gen = Build();
-
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(struct frag_main_in {
+  EXPECT_EQ(result(), R"(struct tint_symbol_6 {
   float4 coord : SV_Position;
 };
-
-struct frag_main_out {
-  float depth : SV_Depth;
+struct tint_symbol_2 {
+  float value : SV_Depth;
 };
 
-frag_main_out frag_main(frag_main_in tint_in) {
-  frag_main_out tint_out;
-  tint_out.depth = tint_in.coord.x;
-  return tint_out;
+tint_symbol_2 frag_main(tint_symbol_6 tint_symbol_8) {
+  const float4 coord = tint_symbol_8.coord;
+  const tint_symbol_2 tint_symbol_1 = {coord.x};
+  return tint_symbol_1;
 }
 
 )");
+
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_With_Uniform) {
+       Emit_Decoration_EntryPoint_SharedStruct_DifferentStages) {
+  // struct Interface {
+  //   [[location(1)]] col1 : f32;
+  //   [[location(2)]] col2 : f32;
+  // };
+  // fn vert_main() -> Interface {
+  //   return Interface(0.4, 0.6);
+  // }
+  // fn frag_main(colors : Interface) -> void {
+  //   const r = colors.col1;
+  //   const g = colors.col2;
+  // }
+  auto* interface_struct = Structure(
+      "Interface",
+      {Member("col1", ty.f32(), {create<ast::LocationDecoration>(1)}),
+       Member("col2", ty.f32(), {create<ast::LocationDecoration>(2)})});
+
+  Func("vert_main", {}, interface_struct,
+       {create<ast::ReturnStatement>(
+           Construct(interface_struct, Expr(0.5f), Expr(0.25f)))},
+       {create<ast::StageDecoration>(ast::PipelineStage::kVertex)});
+
+  Func("frag_main", {Const("colors", interface_struct)}, ty.void_(),
+       {
+           WrapInStatement(
+               Const("r", ty.f32(), MemberAccessor(Expr("colors"), "col1"))),
+           WrapInStatement(
+               Const("g", ty.f32(), MemberAccessor(Expr("colors"), "col2"))),
+       },
+       {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  EXPECT_EQ(result(), R"(struct Interface {
+  float col1;
+  float col2;
+};
+struct tint_symbol_2 {
+  float col1 : TEXCOORD1;
+  float col2 : TEXCOORD2;
+};
+struct tint_symbol_8 {
+  float col1 : TEXCOORD1;
+  float col2 : TEXCOORD2;
+};
+
+tint_symbol_2 vert_main() {
+  const Interface tint_symbol_5 = {0.5f, 0.25f};
+  const tint_symbol_2 tint_symbol_1 = {tint_symbol_5.col1, tint_symbol_5.col2};
+  return tint_symbol_1;
+}
+
+void frag_main(tint_symbol_8 tint_symbol_10) {
+  const Interface colors = {tint_symbol_10.col1, tint_symbol_10.col2};
+  const float r = colors.col1;
+  const float g = colors.col2;
+  return;
+}
+
+)");
+
+  Validate();
+}
+
+TEST_F(HlslGeneratorImplTest_Function,
+       Emit_Decoration_EntryPoint_SharedStruct_HelperFunction) {
+  // struct VertexOutput {
+  //   [[builtin(position)]] pos : vec4<f32>;
+  // };
+  // fn foo(x : f32) -> VertexOutput {
+  //   return VertexOutput(vec4<f32>(x, x, x, 1.0));
+  // }
+  // fn vert_main1() -> VertexOutput {
+  //   return foo(0.5);
+  // }
+  // fn vert_main2() -> VertexOutput {
+  //   return foo(0.25);
+  // }
+  auto* vertex_output_struct = Structure(
+      "VertexOutput",
+      {Member("pos", ty.vec4<f32>(),
+              {create<ast::BuiltinDecoration>(ast::Builtin::kPosition)})});
+
+  Func("foo", {Const("x", ty.f32())}, vertex_output_struct,
+       {create<ast::ReturnStatement>(Construct(
+           vertex_output_struct, Construct(ty.vec4<f32>(), Expr("x"), Expr("x"),
+                                           Expr("x"), Expr(1.f))))},
+       {});
+
+  Func("vert_main1", {}, vertex_output_struct,
+       {create<ast::ReturnStatement>(
+           Construct(vertex_output_struct, Expr(Call("foo", Expr(0.5f)))))},
+       {create<ast::StageDecoration>(ast::PipelineStage::kVertex)});
+
+  Func("vert_main2", {}, vertex_output_struct,
+       {create<ast::ReturnStatement>(
+           Construct(vertex_output_struct, Expr(Call("foo", Expr(0.25f)))))},
+       {create<ast::StageDecoration>(ast::PipelineStage::kVertex)});
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  EXPECT_EQ(result(), R"(struct VertexOutput {
+  float4 pos;
+};
+struct tint_symbol_2 {
+  float4 pos : SV_Position;
+};
+struct tint_symbol_6 {
+  float4 pos : SV_Position;
+};
+
+VertexOutput foo(float x) {
+  const VertexOutput tint_symbol_8 = {float4(x, x, x, 1.0f)};
+  return tint_symbol_8;
+}
+
+tint_symbol_2 vert_main1() {
+  const VertexOutput tint_symbol_4 = {foo(0.5f)};
+  const tint_symbol_2 tint_symbol_1 = {tint_symbol_4.pos};
+  return tint_symbol_1;
+}
+
+tint_symbol_6 vert_main2() {
+  const VertexOutput tint_symbol_7 = {foo(0.25f)};
+  const tint_symbol_6 tint_symbol_5 = {tint_symbol_7.pos};
+  return tint_symbol_5;
+}
+
+)");
+
+  Validate();
+}
+
+TEST_F(HlslGeneratorImplTest_Function,
+       Emit_Decoration_EntryPoint_With_Uniform) {
   Global("coord", ty.vec4<f32>(), ast::StorageClass::kUniform, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(1),
          });
@@ -269,14 +328,14 @@ TEST_F(HlslGeneratorImplTest_Function,
            create<ast::VariableDeclStatement>(var),
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(cbuffer cbuffer_coord : register(b0) {
+  EXPECT_EQ(result(), R"(cbuffer cbuffer_coord : register(b0, space1) {
   float4 coord;
 };
 
@@ -286,23 +345,19 @@ void frag_main() {
 }
 
 )");
+
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_With_UniformStruct) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("coord", ty.vec4<f32>())},
-      ast::StructDecorationList{});
-
-  auto* s = ty.struct_("Uniforms", str);
+       Emit_Decoration_EntryPoint_With_UniformStruct) {
+  auto* s = Structure("Uniforms", {Member("coord", ty.vec4<f32>())});
 
   Global("uniforms", s, ast::StorageClass::kUniform, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(1),
          });
-
-  AST().AddConstructedType(s);
 
   auto* var = Var("v", ty.f32(), ast::StorageClass::kFunction,
                   create<ast::MemberAccessorExpression>(
@@ -313,7 +368,7 @@ TEST_F(HlslGeneratorImplTest_Function,
            create<ast::VariableDeclStatement>(var),
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
@@ -324,7 +379,7 @@ TEST_F(HlslGeneratorImplTest_Function,
   float4 coord;
 };
 
-ConstantBuffer<Uniforms> uniforms : register(b0);
+ConstantBuffer<Uniforms> uniforms : register(b0, space1);
 
 void frag_main() {
   float v = uniforms.coord.x;
@@ -332,20 +387,21 @@ void frag_main() {
 }
 
 )");
+
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_With_RW_StorageBuffer_Read) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.i32(), {MemberOffset(0)}),
-                            Member("b", ty.f32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
+       Emit_Decoration_EntryPoint_With_RW_StorageBuffer_Read) {
+  auto* s = Structure("Data", {
+                                  Member("a", ty.i32()),
+                                  Member("b", ty.f32()),
+                              });
 
-  auto* s = ty.struct_("Data", str);
   type::AccessControl ac(ast::AccessControl::kReadWrite, s);
 
   Global("coord", &ac, ast::StorageClass::kStorage, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(1),
          });
@@ -358,35 +414,35 @@ TEST_F(HlslGeneratorImplTest_Function,
            create<ast::VariableDeclStatement>(var),
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(RWByteAddressBuffer coord : register(u0);
+  EXPECT_THAT(result(),
+              HasSubstr(R"(RWByteAddressBuffer coord : register(u0, space1);
 
 void frag_main() {
   float v = asfloat(coord.Load(4));
   return;
-}
+})"));
 
-)");
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_With_RO_StorageBuffer_Read) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.i32(), {MemberOffset(0)}),
-                            Member("b", ty.f32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
+       Emit_Decoration_EntryPoint_With_RO_StorageBuffer_Read) {
+  auto* s = Structure("Data", {
+                                  Member("a", ty.i32()),
+                                  Member("b", ty.f32()),
+                              });
 
-  auto* s = ty.struct_("Data", str);
   type::AccessControl ac(ast::AccessControl::kReadOnly, s);
 
   Global("coord", &ac, ast::StorageClass::kStorage, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(1),
          });
@@ -399,35 +455,35 @@ TEST_F(HlslGeneratorImplTest_Function,
            create<ast::VariableDeclStatement>(var),
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(ByteAddressBuffer coord : register(t0);
+  EXPECT_THAT(result(),
+              HasSubstr(R"(ByteAddressBuffer coord : register(t0, space1);
 
 void frag_main() {
   float v = asfloat(coord.Load(4));
   return;
-}
+})"));
 
-)");
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_With_WO_StorageBuffer_Store) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.i32(), {MemberOffset(0)}),
-                            Member("b", ty.f32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
+       Emit_Decoration_EntryPoint_With_WO_StorageBuffer_Store) {
+  auto* s = Structure("Data", {
+                                  Member("a", ty.i32()),
+                                  Member("b", ty.f32()),
+                              });
 
-  auto* s = ty.struct_("Data", str);
   type::AccessControl ac(ast::AccessControl::kWriteOnly, s);
 
   Global("coord", &ac, ast::StorageClass::kStorage, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(1),
          });
@@ -438,35 +494,35 @@ TEST_F(HlslGeneratorImplTest_Function,
                                             Expr(2.0f)),
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(RWByteAddressBuffer coord : register(u0);
+  EXPECT_THAT(result(),
+              HasSubstr(R"(RWByteAddressBuffer coord : register(u0, space1);
 
 void frag_main() {
   coord.Store(4, asuint(2.0f));
   return;
-}
+})"));
 
-)");
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_With_StorageBuffer_Store) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.i32(), {MemberOffset(0)}),
-                            Member("b", ty.f32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
+       Emit_Decoration_EntryPoint_With_StorageBuffer_Store) {
+  auto* s = Structure("Data", {
+                                  Member("a", ty.i32()),
+                                  Member("b", ty.f32()),
+                              });
 
-  auto* s = ty.struct_("Data", str);
   type::AccessControl ac(ast::AccessControl::kReadWrite, s);
 
   Global("coord", &ac, ast::StorageClass::kStorage, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(1),
          });
@@ -477,50 +533,52 @@ TEST_F(HlslGeneratorImplTest_Function,
                                             Expr(2.0f)),
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(RWByteAddressBuffer coord : register(u0);
+  EXPECT_THAT(result(),
+              HasSubstr(R"(RWByteAddressBuffer coord : register(u0, space1);
 
 void frag_main() {
   coord.Store(4, asuint(2.0f));
   return;
+})"));
+
+  Validate();
 }
 
-)");
-}
-
+// TODO(crbug.com/tint/697): Remove this test
 TEST_F(
     HlslGeneratorImplTest_Function,
-    Emit_FunctionDecoration_Called_By_EntryPoints_WithLocationGlobals_And_Params) {  // NOLINT
+    Emit_Decoration_Called_By_EntryPoints_WithLocationGlobals_And_Params) {  // NOLINT
   Global("foo", ty.f32(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::LocationDecoration>(0),
          });
 
   Global("bar", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::LocationDecoration>(1),
          });
 
   Global("val", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::LocationDecoration>(0),
          });
 
   Func("sub_func",
-       ast::VariableList{Var("param", ty.f32(), ast::StorageClass::kFunction)},
+       ast::VariableList{Var("param", ty.f32(), ast::StorageClass::kNone)},
        ty.f32(),
        ast::StatementList{
            create<ast::AssignmentStatement>(Expr("bar"), Expr("foo")),
            create<ast::AssignmentStatement>(Expr("val"), Expr("param")),
            create<ast::ReturnStatement>(Expr("foo")),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   Func(
       "ep_1", ast::VariableList{}, ty.void_(),
@@ -528,7 +586,7 @@ TEST_F(
           create<ast::AssignmentStatement>(Expr("bar"), Call("sub_func", 1.0f)),
           create<ast::ReturnStatement>(),
       },
-      ast::FunctionDecorationList{
+      ast::DecorationList{
           create<ast::StageDecoration>(ast::PipelineStage::kFragment),
       });
 
@@ -551,18 +609,20 @@ float sub_func_ep_1(in ep_1_in tint_in, out ep_1_out tint_out, float param) {
 }
 
 ep_1_out ep_1(ep_1_in tint_in) {
-  ep_1_out tint_out;
+  ep_1_out tint_out = (ep_1_out)0;
   tint_out.bar = sub_func_ep_1(tint_in, tint_out, 1.0f);
   return tint_out;
 }
 
 )");
+
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_Called_By_EntryPoints_NoUsedGlobals) {
+       Emit_Decoration_Called_By_EntryPoints_NoUsedGlobals) {
   Global("depth", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BuiltinDecoration>(ast::Builtin::kFragDepth),
          });
 
@@ -572,7 +632,7 @@ TEST_F(HlslGeneratorImplTest_Function,
        ast::StatementList{
            create<ast::ReturnStatement>(Expr("param")),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   Func("ep_1", ast::VariableList{}, ty.void_(),
        ast::StatementList{
@@ -580,7 +640,7 @@ TEST_F(HlslGeneratorImplTest_Function,
                                             Call("sub_func", 1.0f)),
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
@@ -596,36 +656,39 @@ float sub_func(float param) {
 }
 
 ep_1_out ep_1() {
-  ep_1_out tint_out;
+  ep_1_out tint_out = (ep_1_out)0;
   tint_out.depth = sub_func(1.0f);
   return tint_out;
 }
 
 )");
+
+  Validate();
 }
 
+// TODO(crbug.com/tint/697): Remove this test
 TEST_F(
     HlslGeneratorImplTest_Function,
-    Emit_FunctionDecoration_Called_By_EntryPoints_WithBuiltinGlobals_And_Params) {  // NOLINT
+    Emit_Decoration_Called_By_EntryPoints_WithBuiltinGlobals_And_Params) {  // NOLINT
   Global("coord", ty.vec4<f32>(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BuiltinDecoration>(ast::Builtin::kFragCoord),
          });
 
   Global("depth", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BuiltinDecoration>(ast::Builtin::kFragDepth),
          });
 
   Func("sub_func",
-       ast::VariableList{Var("param", ty.f32(), ast::StorageClass::kFunction)},
+       ast::VariableList{Var("param", ty.f32(), ast::StorageClass::kNone)},
        ty.f32(),
        ast::StatementList{
            create<ast::AssignmentStatement>(Expr("depth"),
                                             MemberAccessor("coord", "x")),
            create<ast::ReturnStatement>(Expr("param")),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   Func("ep_1", ast::VariableList{}, ty.void_(),
        ast::StatementList{
@@ -633,11 +696,11 @@ TEST_F(
                                             Call("sub_func", 1.0f)),
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
-  GeneratorImpl& gen = Build();
+  GeneratorImpl& gen = SanitizeAndBuild();
 
   ASSERT_TRUE(gen.Generate(out)) << gen.error();
   EXPECT_EQ(result(), R"(struct ep_1_in {
@@ -654,18 +717,20 @@ float sub_func_ep_1(in ep_1_in tint_in, out ep_1_out tint_out, float param) {
 }
 
 ep_1_out ep_1(ep_1_in tint_in) {
-  ep_1_out tint_out;
+  ep_1_out tint_out = (ep_1_out)0;
   tint_out.depth = sub_func_ep_1(tint_in, tint_out, 1.0f);
   return tint_out;
 }
 
 )");
+
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_Called_By_EntryPoint_With_Uniform) {
+       Emit_Decoration_Called_By_EntryPoint_With_Uniform) {
   Global("coord", ty.vec4<f32>(), ast::StorageClass::kUniform, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(1),
          });
@@ -676,7 +741,7 @@ TEST_F(HlslGeneratorImplTest_Function,
        ast::StatementList{
            create<ast::ReturnStatement>(MemberAccessor("coord", "x")),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   auto* var =
       Var("v", ty.f32(), ast::StorageClass::kFunction, Call("sub_func", 1.0f));
@@ -686,14 +751,14 @@ TEST_F(HlslGeneratorImplTest_Function,
            create<ast::VariableDeclStatement>(var),
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(cbuffer cbuffer_coord : register(b0) {
+  EXPECT_EQ(result(), R"(cbuffer cbuffer_coord : register(b0, space1) {
   float4 coord;
 };
 
@@ -707,13 +772,15 @@ void frag_main() {
 }
 
 )");
+
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_Called_By_EntryPoint_With_StorageBuffer) {
+       Emit_Decoration_Called_By_EntryPoint_With_StorageBuffer) {
   type::AccessControl ac(ast::AccessControl::kReadWrite, ty.vec4<f32>());
   Global("coord", &ac, ast::StorageClass::kStorage, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(1),
          });
@@ -724,7 +791,7 @@ TEST_F(HlslGeneratorImplTest_Function,
        ast::StatementList{
            create<ast::ReturnStatement>(MemberAccessor("coord", "x")),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   auto* var =
       Var("v", ty.f32(), ast::StorageClass::kFunction, Call("sub_func", 1.0f));
@@ -734,14 +801,15 @@ TEST_F(HlslGeneratorImplTest_Function,
            create<ast::VariableDeclStatement>(var),
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(RWByteAddressBuffer coord : register(u0);
+  EXPECT_THAT(result(),
+              HasSubstr(R"(RWByteAddressBuffer coord : register(u0, space1);
 
 float sub_func(float param) {
   return asfloat(coord.Load((4 * 0)));
@@ -750,15 +818,15 @@ float sub_func(float param) {
 void frag_main() {
   float v = sub_func(1.0f);
   return;
-}
+})"));
 
-)");
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoints_WithGlobal_Nested_Return) {
+       Emit_Decoration_EntryPoints_WithGlobal_Nested_Return) {
   Global("bar", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::LocationDecoration>(1),
          });
 
@@ -775,7 +843,7 @@ TEST_F(HlslGeneratorImplTest_Function,
                                    list, ast::ElseStatementList{}),
           create<ast::ReturnStatement>(),
       },
-      ast::FunctionDecorationList{
+      ast::DecorationList{
           create<ast::StageDecoration>(ast::PipelineStage::kFragment),
       });
 
@@ -787,7 +855,7 @@ TEST_F(HlslGeneratorImplTest_Function,
 };
 
 ep_1_out ep_1() {
-  ep_1_out tint_out;
+  ep_1_out tint_out = (ep_1_out)0;
   tint_out.bar = 1.0f;
   if ((1 == 1)) {
     return tint_out;
@@ -796,12 +864,14 @@ ep_1_out ep_1() {
 }
 
 )");
+
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_WithNameCollision) {
+       Emit_Decoration_EntryPoint_WithNameCollision) {
   Func("GeometryShader", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
@@ -815,13 +885,12 @@ TEST_F(HlslGeneratorImplTest_Function,
 )");
 }
 
-TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_Compute) {
+TEST_F(HlslGeneratorImplTest_Function, Emit_Decoration_EntryPoint_Compute) {
   Func("main", ast::VariableList{}, ty.void_(),
        ast::StatementList{
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kCompute),
        });
 
@@ -834,15 +903,17 @@ void main() {
 }
 
 )");
+
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function,
-       Emit_FunctionDecoration_EntryPoint_Compute_WithWorkgroup) {
+       Emit_Decoration_EntryPoint_Compute_WithWorkgroup) {
   Func("main", ast::VariableList{}, ty.void_(),
        ast::StatementList{
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kCompute),
            create<ast::WorkgroupDecoration>(2u, 4u, 6u),
        });
@@ -856,6 +927,8 @@ void main() {
 }
 
 )");
+
+  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Function, Emit_Function_WithArrayParams) {
@@ -865,8 +938,7 @@ TEST_F(HlslGeneratorImplTest_Function, Emit_Function_WithArrayParams) {
       ty.void_(),
       ast::StatementList{
           create<ast::ReturnStatement>(),
-      },
-      ast::FunctionDecorationList{});
+      });
 
   GeneratorImpl& gen = Build();
 
@@ -884,7 +956,7 @@ TEST_F(HlslGeneratorImplTest_Function, Emit_Function_WithArrayParams) {
 TEST_F(HlslGeneratorImplTest_Function,
        Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
   // [[block]] struct Data {
-  //   [[offset(0)]] d : f32;
+  //   d : f32;
   // };
   // [[binding(0), group(0)]] var<storage> data : Data;
   //
@@ -898,17 +970,14 @@ TEST_F(HlslGeneratorImplTest_Function,
   //   return;
   // }
 
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("d", ty.f32(), {MemberOffset(0)})},
-      ast::StructDecorationList{create<ast::StructBlockDecoration>()});
-
-  auto* s = ty.struct_("Data", str);
-  AST().AddConstructedType(s);
+  auto* s =
+      Structure("Data", {Member("d", ty.f32())},
+                ast::DecorationList{create<ast::StructBlockDecoration>()});
 
   type::AccessControl ac(ast::AccessControl::kReadWrite, s);
 
   Global("data", &ac, ast::StorageClass::kStorage, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
@@ -922,7 +991,7 @@ TEST_F(HlslGeneratorImplTest_Function,
              create<ast::VariableDeclStatement>(var),
              create<ast::ReturnStatement>(),
          },
-         ast::FunctionDecorationList{
+         ast::DecorationList{
              create<ast::StageDecoration>(ast::PipelineStage::kCompute),
          });
   }
@@ -936,7 +1005,7 @@ TEST_F(HlslGeneratorImplTest_Function,
              create<ast::VariableDeclStatement>(var),
              create<ast::ReturnStatement>(),
          },
-         ast::FunctionDecorationList{
+         ast::DecorationList{
              create<ast::StageDecoration>(ast::PipelineStage::kCompute),
          });
   }
@@ -944,11 +1013,8 @@ TEST_F(HlslGeneratorImplTest_Function,
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(struct Data {
-  float d;
-};
-
-RWByteAddressBuffer data : register(u0);
+  EXPECT_EQ(result(), R"(
+RWByteAddressBuffer data : register(u0, space0);
 
 [numthreads(1, 1, 1)]
 void a() {
@@ -963,6 +1029,8 @@ void b() {
 }
 
 )");
+
+  Validate();
 }
 
 }  // namespace

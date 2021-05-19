@@ -11,14 +11,8 @@
 // Feature to open tab switcher after sliding down the toolbar.
 extern const base::Feature kExpandedTabStrip;
 
-// Feature to take snapshots using |-drawViewHierarchy:|.
-extern const base::Feature kSnapshotDrawView;
-
 // Feature to apply UI Refresh theme to the settings.
 extern const base::Feature kSettingsRefresh;
-
-// Feature flag for embedders to block restore urls.
-extern const base::Feature kEmbedderBlockRestoreUrl;
 
 // Feature flag to use the unstacked tabstrip when voiceover is enabled.
 extern const base::Feature kVoiceOverUnstackedTabstrip;
@@ -35,15 +29,15 @@ extern const base::Feature kTestFeature;
 // an enterprise policy.
 extern const base::Feature kEnableIOSManagedSettingsUI;
 
-// Enables the safety check in settings on iOS.
-extern const base::Feature kSafetyCheckIOS;
-
 // Feature flag to enable new illustrations and UI on empty states.
 extern const base::Feature kIllustratedEmptyStates;
 
 // Feature flag to enable Shared Highlighting (Link to Text). Also enable
 // kScrollToTextIOS to successfully open these links.
 extern const base::Feature kSharedHighlightingIOS;
+
+// Feature flag that enables using the FRE UI module to show first run screens.
+extern const base::Feature kEnableFREUIModuleIOS;
 
 // Feature flag that enables taking fullpage screenshots of a webpage.
 extern const base::Feature kEnableFullPageScreenshot;
@@ -68,11 +62,20 @@ extern const base::Feature kDefaultBrowserFullscreenPromoExperiment;
 // Feature flag that experiments with the default browser fullscreen promo UI.
 extern const base::Feature kDefaultBrowserFullscreenPromoCTAExperiment;
 
+// Feature flag that enables non-modal default browser promos.
+extern const base::Feature kDefaultPromoNonModal;
+
+// Feature flag that enables tailored fullscreen browser promos.
+extern const base::Feature kDefaultPromoTailored;
+
 // Feature flag that swaps the omnibox textfield implementation.
 extern const base::Feature kIOSNewOmniboxImplementation;
 
 // Feature flag that enables persisting the Crash Restore Infobar across
 // navigations.
 extern const base::Feature kIOSPersistCrashRestore;
+
+// Enables the Search History Link in Clear Browsing Data for iOS.
+extern const base::Feature kSearchHistoryLinkIOS;
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

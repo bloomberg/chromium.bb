@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -52,6 +53,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "extensions/common/mojom/run_location.mojom-shared.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,10 +69,13 @@
 namespace extensions {
 
 using display::test::ScopedScreenOverride;
+using mojom::ManifestLocation;
 
 namespace {
 
-void Increment(int* i) {
+void Increment(int* i, bool granted) {
+  if (!granted)
+    return;
   CHECK(i);
   ++(*i);
 }
@@ -180,11 +185,11 @@ class MenuBuilder {
 // For this test, all the extension items have same label
 // |kTestExtensionItemLabel|.
 int CountExtensionItems(const ExtensionContextMenuModel& model) {
-  base::string16 expected_label = base::ASCIIToUTF16(kTestExtensionItemLabel);
+  std::u16string expected_label = base::ASCIIToUTF16(kTestExtensionItemLabel);
   int num_items_found = 0;
   int num_custom_found = 0;
   for (int i = 0; i < model.GetItemCount(); ++i) {
-    base::string16 actual_label = model.GetLabelAt(i);
+    std::u16string actual_label = model.GetLabelAt(i);
     int command_id = model.GetCommandIdAt(i);
     // If the command id is not visible, it should not be counted.
     if (model.IsCommandIdVisible(command_id)) {
@@ -239,11 +244,11 @@ class ExtensionContextMenuModelTest : public ExtensionServiceTestBase {
   // specified by |action_key|.
   const Extension* AddExtension(const std::string& name,
                                 const char* action_key,
-                                Manifest::Location location);
+                                ManifestLocation location);
   const Extension* AddExtensionWithHostPermission(
       const std::string& name,
       const char* action_key,
-      Manifest::Location location,
+      ManifestLocation location,
       const std::string& host_permission);
   // TODO(devlin): Consolidate this with the methods above.
   void InitializeAndAddExtension(const Extension& extension);
@@ -284,7 +289,7 @@ ExtensionContextMenuModelTest::ExtensionContextMenuModelTest() {}
 const Extension* ExtensionContextMenuModelTest::AddExtension(
     const std::string& name,
     const char* action_key,
-    Manifest::Location location) {
+    ManifestLocation location) {
   return AddExtensionWithHostPermission(name, action_key, location,
                                         std::string());
 }
@@ -292,7 +297,7 @@ const Extension* ExtensionContextMenuModelTest::AddExtension(
 const Extension* ExtensionContextMenuModelTest::AddExtensionWithHostPermission(
     const std::string& name,
     const char* action_key,
-    Manifest::Location location,
+    ManifestLocation location,
     const std::string& host_permission) {
   DictionaryBuilder manifest;
   manifest.Set("name", name)
@@ -326,7 +331,7 @@ void ExtensionContextMenuModelTest::InitializeAndAddExtension(
 Browser* ExtensionContextMenuModelTest::GetBrowser() {
   if (!browser_) {
     Browser::CreateParams params(profile(), true);
-    test_window_.reset(new TestBrowserWindow());
+    test_window_ = std::make_unique<TestBrowserWindow>();
     params.window = test_window_.get();
     browser_.reset(Browser::Create(params));
   }
@@ -426,8 +431,9 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
 
   // Test that management policy can determine whether or not policy-installed
   // extensions can be installed/uninstalled.
-  const Extension* extension = AddExtension(
-      "extension", manifest_keys::kPageAction, Manifest::EXTERNAL_POLICY);
+  const Extension* extension =
+      AddExtension("extension", manifest_keys::kPageAction,
+                   ManifestLocation::kExternalPolicy);
 
   ExtensionContextMenuModel menu(extension, GetBrowser(),
                                  ExtensionContextMenuModel::PINNED, nullptr,
@@ -477,7 +483,7 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
         ExtensionBuilder()
             .SetManifest(base::WrapUnique(manifest->DeepCopy()))
             .SetID(crx_file::id_util::GenerateId("component"))
-            .SetLocation(Manifest::COMPONENT)
+            .SetLocation(ManifestLocation::kComponent)
             .Build();
     service()->AddExtension(extension.get());
 
@@ -509,7 +515,7 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
         ExtensionBuilder()
             .SetManifest(std::move(manifest))
             .SetID(crx_file::id_util::GenerateId("component_opts"))
-            .SetLocation(Manifest::COMPONENT)
+            .SetLocation(ManifestLocation::kComponent)
             .Build();
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
@@ -526,8 +532,8 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
 TEST_F(ExtensionContextMenuModelTest,
        ExtensionContextMenuStandardItemsAlwaysVisible) {
   InitializeEmptyExtensionService();
-  const Extension* extension =
-      AddExtension("extension", manifest_keys::kPageAction, Manifest::INTERNAL);
+  const Extension* extension = AddExtension(
+      "extension", manifest_keys::kPageAction, ManifestLocation::kInternal);
 
   ExtensionContextMenuModel menu(extension, GetBrowser(),
                                  ExtensionContextMenuModel::PINNED, nullptr,
@@ -556,20 +562,18 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   Browser* browser = GetBrowser();
   extension_action_test_util::CreateToolbarModelForProfile(profile());
   const Extension* page_action =
-      AddExtension("page_action_extension",
-                     manifest_keys::kPageAction,
-                     Manifest::INTERNAL);
+      AddExtension("page_action_extension", manifest_keys::kPageAction,
+                   ManifestLocation::kInternal);
   const Extension* browser_action =
-      AddExtension("browser_action_extension",
-                     manifest_keys::kBrowserAction,
-                     Manifest::INTERNAL);
+      AddExtension("browser_action_extension", manifest_keys::kBrowserAction,
+                   ManifestLocation::kInternal);
 
   // For laziness.
   const ExtensionContextMenuModel::MenuEntries visibility_command =
       ExtensionContextMenuModel::TOGGLE_VISIBILITY;
-  const base::string16 pin_string =
+  const std::u16string pin_string =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_PIN_TO_TOOLBAR);
-  const base::string16 unpin_string =
+  const std::u16string unpin_string =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNPIN_FROM_TOOLBAR);
 
   {
@@ -624,10 +628,10 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuForcePinned) {
   Browser* browser = GetBrowser();
   extension_action_test_util::CreateToolbarModelForProfile(profile());
   const Extension* extension = AddExtension(
-      "extension", manifest_keys::kBrowserAction, Manifest::INTERNAL);
+      "extension", manifest_keys::kBrowserAction, ManifestLocation::kInternal);
   const Extension* force_pinned_extension =
       AddExtension("force_pinned_extension", manifest_keys::kBrowserAction,
-                   Manifest::INTERNAL);
+                   ManifestLocation::kInternal);
 
   std::string json = base::StringPrintf(
       R"({
@@ -646,9 +650,9 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuForcePinned) {
   // For laziness.
   const ExtensionContextMenuModel::MenuEntries visibility_command =
       ExtensionContextMenuModel::TOGGLE_VISIBILITY;
-  const base::string16 unpin_string =
+  const std::u16string unpin_string =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNPIN_FROM_TOOLBAR);
-  const base::string16 force_pinned_string =
+  const std::u16string force_pinned_string =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_PINNED_BY_ADMIN);
 
   {
@@ -677,7 +681,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextUninstall) {
   InitializeEmptyExtensionService();
 
   const Extension* extension = AddExtension(
-      "extension", manifest_keys::kBrowserAction, Manifest::INTERNAL);
+      "extension", manifest_keys::kBrowserAction, ManifestLocation::kInternal);
   const std::string extension_id = extension->id();
   ASSERT_TRUE(registry()->enabled_extensions().GetByID(extension_id));
 
@@ -710,7 +714,7 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   // Add an extension with all urls, and withhold permission.
   const Extension* extension =
       AddExtensionWithHostPermission("extension", manifest_keys::kBrowserAction,
-                                     Manifest::INTERNAL, "*://*/*");
+                                     ManifestLocation::kInternal, "*://*/*");
   ScriptingPermissionsModifier(profile(), extension)
       .SetWithholdHostPermissions(true);
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
@@ -727,10 +731,10 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
 
   // Pretend the extension wants to run.
   int run_count = 0;
-  base::RepeatingClosure increment_run_count(
-      base::BindRepeating(&Increment, &run_count));
+  auto increment_run_count_1 = base::BindOnce(&Increment, &run_count);
   action_runner->RequestScriptInjectionForTesting(
-      extension, UserScript::DOCUMENT_IDLE, increment_run_count);
+      extension, mojom::RunLocation::kDocumentIdle,
+      std::move(increment_run_count_1));
 
   ExtensionContextMenuModel menu(extension, GetBrowser(),
                                  ExtensionContextMenuModel::PINNED, nullptr,
@@ -799,8 +803,10 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   EXPECT_FALSE(menu.IsCommandIdChecked(kRunOnAllSites));
 
   // Request another run.
+  auto increment_run_count_2 = base::BindOnce(&Increment, &run_count);
   action_runner->RequestScriptInjectionForTesting(
-      extension, UserScript::DOCUMENT_IDLE, increment_run_count);
+      extension, mojom::RunLocation::kDocumentIdle,
+      std::move(increment_run_count_2));
 
   // Change the mode to be "Run on all sites".
   menu.ExecuteCommand(kRunOnAllSites, 0);
@@ -832,8 +838,10 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   EXPECT_FALSE(menu.IsCommandIdChecked(kRunOnSite));
   EXPECT_TRUE(menu.IsCommandIdChecked(kRunOnAllSites));
 
+  auto increment_run_count_3 = base::BindOnce(&Increment, &run_count);
   action_runner->RequestScriptInjectionForTesting(
-      extension, UserScript::DOCUMENT_IDLE, increment_run_count);
+      extension, mojom::RunLocation::kDocumentIdle,
+      std::move(increment_run_count_3));
 
   // Return the mode to "Run on click".
   menu.ExecuteCommand(kRunOnClick, 0);
@@ -857,7 +865,7 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   // should still be present.
   const Extension* single_host_extension = AddExtensionWithHostPermission(
       "single_host_extension", manifest_keys::kBrowserAction,
-      Manifest::INTERNAL, "http://www.example.com/*");
+      ManifestLocation::kInternal, "http://www.example.com/*");
   ExtensionContextMenuModel single_host_menu(
       single_host_extension, GetBrowser(), ExtensionContextMenuModel::PINNED,
       nullptr, true);
@@ -869,7 +877,7 @@ TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {
   InitializeEmptyExtensionService();
   {
     const Extension* page_action = AddExtension(
-        "page_action", manifest_keys::kPageAction, Manifest::INTERNAL);
+        "page_action", manifest_keys::kPageAction, ManifestLocation::kInternal);
     ASSERT_TRUE(page_action);
     ExtensionContextMenuModel menu(page_action, GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
@@ -879,8 +887,9 @@ TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {
     EXPECT_GE(0, inspect_popup_index);
   }
   {
-    const Extension* browser_action = AddExtension(
-        "browser_action", manifest_keys::kBrowserAction, Manifest::INTERNAL);
+    const Extension* browser_action =
+        AddExtension("browser_action", manifest_keys::kBrowserAction,
+                     ManifestLocation::kInternal);
     ExtensionContextMenuModel menu(browser_action, GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
                                    true);
@@ -891,8 +900,8 @@ TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {
   {
     // An extension with no specified action has one synthesized. However,
     // there will never be a popup to inspect, so we shouldn't add a menu item.
-    const Extension* no_action = AddExtension(
-        "no_action", nullptr, Manifest::INTERNAL);
+    const Extension* no_action =
+        AddExtension("no_action", nullptr, ManifestLocation::kInternal);
     ExtensionContextMenuModel menu(no_action, GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
                                    true);
@@ -1150,7 +1159,7 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
     }
 
     // Uninstall the extension so as not to conflict with more additions.
-    base::string16 error;
+    std::u16string error;
     EXPECT_TRUE(service()->UninstallExtension(
         extension->id(), UNINSTALL_REASON_FOR_TESTING, &error));
     EXPECT_TRUE(error.empty()) << error;
@@ -1172,7 +1181,7 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessSubmenu_OnSiteWithAllURLs) {
   // Add an extension with all urls, and withhold permissions.
   const Extension* extension =
       AddExtensionWithHostPermission("extension", manifest_keys::kBrowserAction,
-                                     Manifest::INTERNAL, "<all_urls>");
+                                     ManifestLocation::kInternal, "<all_urls>");
   ScriptingPermissionsModifier(profile(), extension)
       .SetWithholdHostPermissions(true);
 
@@ -1236,7 +1245,7 @@ TEST_F(ExtensionContextMenuModelTest,
   // Add an extension with all urls, and withhold permissions.
   const Extension* extension =
       AddExtensionWithHostPermission("extension", manifest_keys::kBrowserAction,
-                                     Manifest::INTERNAL, "<all_urls>");
+                                     ManifestLocation::kInternal, "<all_urls>");
   ScriptingPermissionsModifier modifier(profile(), extension);
   modifier.SetWithholdHostPermissions(true);
 

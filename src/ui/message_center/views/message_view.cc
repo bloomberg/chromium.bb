@@ -40,14 +40,14 @@ namespace {
 
 // Creates a text for spoken feedback from the data contained in the
 // notification.
-base::string16 CreateAccessibleName(const Notification& notification) {
+std::u16string CreateAccessibleName(const Notification& notification) {
   if (!notification.accessible_name().empty())
     return notification.accessible_name();
 
   // Fall back to a text constructed from the notification.
   // Add non-empty elements.
 
-  std::vector<base::string16> accessible_lines;
+  std::vector<std::u16string> accessible_lines;
   if (!notification.title().empty())
     accessible_lines.push_back(notification.title());
 
@@ -58,10 +58,9 @@ base::string16 CreateAccessibleName(const Notification& notification) {
     accessible_lines.push_back(notification.context_message());
   std::vector<NotificationItem> items = notification.items();
   for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
-    accessible_lines.push_back(items[i].title + base::ASCIIToUTF16(" ") +
-                               items[i].message);
+    accessible_lines.push_back(items[i].title + u" " + items[i].message);
   }
-  return base::JoinString(accessible_lines, base::ASCIIToUTF16("\n"));
+  return base::JoinString(accessible_lines, u"\n");
 }
 
 bool ShouldShowAeroShadowBorder() {
@@ -116,7 +115,7 @@ MessageView::~MessageView() {
 
 void MessageView::UpdateWithNotification(const Notification& notification) {
   pinned_ = notification.pinned();
-  base::string16 new_accessible_name = CreateAccessibleName(notification);
+  std::u16string new_accessible_name = CreateAccessibleName(notification);
   if (new_accessible_name != accessible_name_) {
     accessible_name_ = new_accessible_name;
     NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
@@ -473,8 +472,11 @@ bool MessageView::ShouldShowControlButtons() const {
 }
 
 void MessageView::UpdateBackgroundPainter() {
-  SkColor background_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_NotificationDefaultBackground);
+  auto* theme = GetNativeTheme();
+  SkColor background_color = theme->GetSystemColor(
+      is_active_ ? ui::NativeTheme::kColorId_NotificationBackgroundActive
+                 : ui::NativeTheme::kColorId_NotificationBackground);
+
   SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<NotificationBackgroundPainter>(
           top_radius_, bottom_radius_, background_color)));
@@ -487,9 +489,8 @@ void MessageView::UpdateControlButtonsVisibility() {
 }
 
 void MessageView::SetDrawBackgroundAsActive(bool active) {
-  background()->SetNativeControlColor(active ? kHoveredButtonBackgroundColor
-                                             : kNotificationBackgroundColor);
-  SchedulePaint();
+  is_active_ = active;
+  UpdateBackgroundPainter();
 }
 
 }  // namespace message_center

@@ -55,6 +55,7 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
 #include "content/browser/gpu/shader_cache_factory.h"
+#include "content/browser/interest_group/interest_group_manager.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/native_io/native_io_context_impl.h"
 #include "content/browser/network_context_client_base_impl.h"
@@ -296,7 +297,9 @@ void ClearShaderCacheOnIOThread(const base::FilePath& path,
                                 const base::Time begin,
                                 const base::Time end,
                                 base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   gpu::ShaderCacheFactory* shader_cache_factory =
       GetShaderCacheFactorySingleton();
 
@@ -418,14 +421,6 @@ void ClearSessionStorageOnUIThread(
   dom_storage_context->GetSessionStorageUsage(base::BindOnce(
       &OnSessionStorageUsageInfo, dom_storage_context, special_storage_policy,
       std::move(origin_matcher), perform_storage_cleanup, std::move(callback)));
-}
-
-WebContents* GetWebContentsForStoragePartition(uint32_t process_id,
-                                               uint32_t routing_id) {
-  if (process_id != network::mojom::kBrowserProcessId) {
-    return WebContentsImpl::FromRenderFrameHostID(process_id, routing_id);
-  }
-  return WebContents::FromFrameTreeNodeId(routing_id);
 }
 
 BrowserContext* GetBrowserContextFromStoragePartition(
@@ -663,9 +658,8 @@ void OnCertificateRequestedContinuation(
 
 class SSLErrorDelegate : public SSLErrorHandler::Delegate {
  public:
-  explicit SSLErrorDelegate(
-      network::mojom::AuthenticationAndCertificateObserver::
-          OnSSLCertificateErrorCallback response)
+  explicit SSLErrorDelegate(network::mojom::URLLoaderNetworkServiceObserver::
+                                OnSSLCertificateErrorCallback response)
       : response_(std::move(response)) {}
   ~SSLErrorDelegate() override = default;
   void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) override {
@@ -681,8 +675,8 @@ class SSLErrorDelegate : public SSLErrorHandler::Delegate {
   }
 
  private:
-  network::mojom::AuthenticationAndCertificateObserver::
-      OnSSLCertificateErrorCallback response_;
+  network::mojom::URLLoaderNetworkServiceObserver::OnSSLCertificateErrorCallback
+      response_;
   base::WeakPtrFactory<SSLErrorDelegate> weak_factory_{this};
 };
 
@@ -750,7 +744,6 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
 
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
@@ -762,8 +755,8 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
       return;
     storage_partition_
         ->GetURLLoaderFactoryForBrowserProcessInternal(corb_enabled_)
-        ->CreateLoaderAndStart(std::move(receiver), routing_id, request_id,
-                               options, url_request, std::move(client),
+        ->CreateLoaderAndStart(std::move(receiver), request_id, options,
+                               url_request, std::move(client),
                                traffic_annotation);
   }
 
@@ -922,6 +915,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       storage::SpecialStoragePolicy* special_storage_policy,
       storage::FileSystemContext* filesystem_context,
       network::mojom::CookieManager* cookie_manager,
+      InterestGroupManager* interest_group_manager,
       ConversionManagerImpl* conversion_manager,
       bool perform_storage_cleanup,
       const base::Time begin,
@@ -1303,6 +1297,11 @@ void StoragePartitionImpl::Initialize(
         this, path, special_storage_policy_);
   }
 
+  if (base::FeatureList::IsEnabled(features::kFledgeInterestGroups)) {
+    interest_group_manager_ =
+        std::make_unique<InterestGroupManager>(path, is_in_memory_);
+  }
+
   GeneratedCodeCacheSettings settings =
       GetContentClient()->browser()->GetGeneratedCodeCacheSettings(
           browser_context_);
@@ -1597,6 +1596,11 @@ FontAccessManagerImpl* StoragePartitionImpl::GetFontAccessManager() {
   return font_access_manager_.get();
 }
 
+InterestGroupManager* StoragePartitionImpl::GetInterestGroupStorage() {
+  DCHECK(initialized_);
+  return interest_group_manager_.get();
+}
+
 PrerenderHostRegistry* StoragePartitionImpl::GetPrerenderHostRegistry() {
   DCHECK(blink::features::IsPrerender2Enabled());
   DCHECK(initialized_);
@@ -1680,8 +1684,8 @@ void StoragePartitionImpl::OnAuthRequired(
         auth_challenge_responder) {
   bool is_main_frame = false;
   base::RepeatingCallback<WebContents*(void)> web_contents_getter;
-  int process_id = auth_cert_observers_.current_context().process_id;
-  int routing_id = auth_cert_observers_.current_context().routing_id;
+  int process_id = url_loader_network_observers_.current_context().process_id;
+  int routing_id = url_loader_network_observers_.current_context().routing_id;
   if (window_id) {
     DCHECK_EQ(network::mojom::kBrowserProcessId, process_id);
     DCHECK_EQ(routing_id, RenderFrameHost::kNoFrameTreeNodeId);
@@ -1716,8 +1720,8 @@ void StoragePartitionImpl::OnCertificateRequested(
     mojo::PendingRemote<network::mojom::ClientCertificateResponder>
         cert_responder) {
   base::RepeatingCallback<WebContents*(void)> web_contents_getter;
-  int process_id = auth_cert_observers_.current_context().process_id;
-  int routing_id = auth_cert_observers_.current_context().routing_id;
+  int process_id = url_loader_network_observers_.current_context().process_id;
+  int routing_id = url_loader_network_observers_.current_context().routing_id;
   // Use |window_id| if it's provided.
   if (window_id) {
     DCHECK_EQ(process_id, network::mojom::kBrowserProcessId);
@@ -1746,8 +1750,8 @@ void StoragePartitionImpl::OnSSLCertificateError(
     const net::SSLInfo& ssl_info,
     bool fatal,
     OnSSLCertificateErrorCallback response) {
-  int process_id = auth_cert_observers_.current_context().process_id;
-  int routing_id = auth_cert_observers_.current_context().routing_id;
+  int process_id = url_loader_network_observers_.current_context().process_id;
+  int routing_id = url_loader_network_observers_.current_context().routing_id;
 
   SSLErrorDelegate* delegate =
       new SSLErrorDelegate(std::move(response));  // deletes self
@@ -1757,38 +1761,62 @@ void StoragePartitionImpl::OnSSLCertificateError(
       GetWebContents(process_id, routing_id), net_error, ssl_info, fatal);
 }
 
+void StoragePartitionImpl::OnLoadingStateUpdate(
+    network::mojom::LoadInfoPtr info,
+    OnLoadingStateUpdateCallback callback) {
+  int process_id = url_loader_network_observers_.current_context().process_id;
+  int routing_id = url_loader_network_observers_.current_context().routing_id;
+
+  auto* web_contents = GetWebContents(process_id, routing_id);
+  if (web_contents) {
+    static_cast<WebContentsImpl*>(web_contents)
+        ->LoadStateChanged(std::move(info));
+  }
+  std::move(callback).Run();
+}
+
+void StoragePartitionImpl::OnDataUseUpdate(
+    int32_t network_traffic_annotation_id_hash,
+    int64_t recv_bytes,
+    int64_t sent_bytes) {
+  int process_id = url_loader_network_observers_.current_context().process_id;
+  int routing_id = url_loader_network_observers_.current_context().routing_id;
+  GetContentClient()->browser()->OnNetworkServiceDataUseUpdate(
+      process_id, routing_id, network_traffic_annotation_id_hash, recv_bytes,
+      sent_bytes);
+}
+
 void StoragePartitionImpl::Clone(
-    mojo::PendingReceiver<network::mojom::AuthenticationAndCertificateObserver>
+    mojo::PendingReceiver<network::mojom::URLLoaderNetworkServiceObserver>
         observer) {
-  auth_cert_observers_.Add(this, std::move(observer),
-                           auth_cert_observers_.current_context());
+  url_loader_network_observers_.Add(
+      this, std::move(observer),
+      url_loader_network_observers_.current_context());
 }
 
-mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
-StoragePartitionImpl::CreateAuthAndCertObserverForFrame(int process_id,
-                                                        int routing_id) {
-  mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
-      remote;
-  auth_cert_observers_.Add(this, remote.InitWithNewPipeAndPassReceiver(),
-                           {process_id, routing_id});
+mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
+StoragePartitionImpl::CreateURLLoaderNetworkObserverForFrame(int process_id,
+                                                             int routing_id) {
+  mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver> remote;
+  url_loader_network_observers_.Add(
+      this, remote.InitWithNewPipeAndPassReceiver(), {process_id, routing_id});
   return remote;
 }
 
-mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
-StoragePartitionImpl::CreateAuthAndCertObserverForNavigationRequest(
+mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
+StoragePartitionImpl::CreateURLLoaderNetworkObserverForNavigationRequest(
     int frame_tree_id) {
-  mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
-      remote;
-  auth_cert_observers_.Add(this, remote.InitWithNewPipeAndPassReceiver(),
-                           {network::mojom::kBrowserProcessId, frame_tree_id});
+  mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver> remote;
+  url_loader_network_observers_.Add(
+      this, remote.InitWithNewPipeAndPassReceiver(),
+      {network::mojom::kBrowserProcessId, frame_tree_id});
   return remote;
 }
 
-mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
+mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
 StoragePartitionImpl::CreateAuthCertObserverForServiceWorker() {
-  mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
-      remote;
-  auth_cert_observers_.Add(
+  mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver> remote;
+  url_loader_network_observers_.Add(
       this, remote.InitWithNewPipeAndPassReceiver(),
       {network::mojom::kBrowserProcessId, RenderFrameHost::kNoFrameTreeNodeId});
   return remote;
@@ -1836,17 +1864,17 @@ void StoragePartitionImpl::OnCanSendDomainReliabilityUpload(
       blink::mojom::PermissionStatus::GRANTED);
 }
 
-void StoragePartitionImpl::OnClearSiteData(int32_t process_id,
-                                           int32_t routing_id,
-                                           const GURL& url,
+void StoragePartitionImpl::OnClearSiteData(const GURL& url,
                                            const std::string& header_value,
                                            int load_flags,
                                            OnClearSiteDataCallback callback) {
   DCHECK(initialized_);
+  int process_id = url_loader_network_observers_.current_context().process_id;
+  int routing_id = url_loader_network_observers_.current_context().routing_id;
   auto browser_context_getter = base::BindRepeating(
       GetBrowserContextFromStoragePartition, weak_factory_.GetWeakPtr());
-  auto web_contents_getter = base::BindRepeating(
-      GetWebContentsForStoragePartition, process_id, routing_id);
+  auto web_contents_getter =
+      base::BindRepeating(GetWebContents, process_id, routing_id);
   ClearSiteDataHandler::HandleHeader(browser_context_getter,
                                      web_contents_getter, url, header_value,
                                      load_flags, std::move(callback));
@@ -1961,7 +1989,8 @@ void StoragePartitionImpl::ClearDataImpl(
       std::move(cookie_deletion_filter), GetPath(), dom_storage_context_.get(),
       quota_manager_.get(), special_storage_policy_.get(),
       filesystem_context_.get(), GetCookieManagerForBrowserProcess(),
-      conversion_manager_.get(), perform_storage_cleanup, begin, end);
+      interest_group_manager_.get(), conversion_manager_.get(),
+      perform_storage_cleanup, begin, end);
 }
 
 void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
@@ -2152,6 +2181,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     storage::SpecialStoragePolicy* special_storage_policy,
     storage::FileSystemContext* filesystem_context,
     network::mojom::CookieManager* cookie_manager,
+    InterestGroupManager* interest_group_manager,
     ConversionManagerImpl* conversion_manager,
     bool perform_storage_cleanup,
     const base::Time begin,
@@ -2195,6 +2225,11 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
             // being called.
             mojo::WrapCallbackWithDefaultInvokeIfNotRun(
                 CreateTaskCompletionClosure(TracingDataType::kCookies))));
+
+    if (interest_group_manager) {
+      interest_group_manager->DeleteInterestGroupData(
+          url::Origin::Create(storage_origin));
+    }
   }
 
   if (remove_mask_ & REMOVE_DATA_MASK_INDEXEDDB ||
@@ -2235,10 +2270,17 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   }
 
   if (remove_mask_ & REMOVE_DATA_MASK_SHADER_CACHE) {
-    GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&ClearShaderCacheOnIOThread, path, begin, end,
-                                  CreateTaskCompletionClosure(
-                                      TracingDataType::kShaderCache)));
+    if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
+      ClearShaderCacheOnIOThread(
+          path, begin, end,
+          CreateTaskCompletionClosure(TracingDataType::kShaderCache));
+    } else {
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &ClearShaderCacheOnIOThread, path, begin, end,
+              CreateTaskCompletionClosure(TracingDataType::kShaderCache)));
+    }
   }
 
   auto filter = CreateGenericOriginMatcher(storage_origin, origin_matcher,
@@ -2551,6 +2593,8 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal(
   // Corb requests are likely made on behalf of untrusted renderers.
   if (!corb_enabled)
     params->is_trusted = true;
+  params->url_loader_network_observer =
+      CreateAuthCertObserverForServiceWorker();
   params->disable_web_security =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity);

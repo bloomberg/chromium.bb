@@ -16,15 +16,15 @@
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/login/login_wizard.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
-#include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/version_updater/version_updater.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ash/login/test/js_checker.h"
+#include "chrome/browser/ash/login/test/network_portal_detector_mixin.h"
+#include "chrome/browser/ash/login/test/oobe_base_test.h"
+#include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/version_updater/version_updater.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -70,7 +70,7 @@ const char kTimeFinalize[] = "OOBE.UpdateScreen.StageTime.Finalize";
 const char kTimeVerify[] = "OOBE.UpdateScreen.StageTime.Verify";
 
 // These values should be kept in sync with the progress bar values in
-// chrome/browser/chromeos/login/version_updater/version_updater.cc.
+// chrome/browser/ash/login/version_updater/version_updater.cc.
 const int kUpdateCheckProgress = 14;
 const int kVerifyingProgress = 74;
 const int kFinalizingProgress = 81;
@@ -281,10 +281,10 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, TestUpdateAvailable) {
-  update_screen_->set_ignore_update_deadlines_for_testing(true);
+  update_engine::StatusResult status;
+  status.set_update_urgency(update_engine::UpdateUrgency::CRITICAL);
   ShowUpdateScreen();
 
-  update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
   status.set_new_version("latest and greatest");
   status.set_new_size(1'000'000'000);
@@ -648,9 +648,8 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, TestAPReselection) {
 }
 
 IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, UpdateOverCellularAccepted) {
-  update_screen_->set_ignore_update_deadlines_for_testing(true);
-
   update_engine::StatusResult status;
+  status.set_update_urgency(update_engine::UpdateUrgency::CRITICAL);
   status.set_current_operation(
       update_engine::Operation::NEED_PERMISSION_TO_UPDATE);
   status.set_new_version("latest and greatest");
@@ -695,9 +694,8 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, UpdateOverCellularAccepted) {
 }
 
 IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, UpdateOverCellularRejected) {
-  update_screen_->set_ignore_update_deadlines_for_testing(true);
-
   update_engine::StatusResult status;
+  status.set_update_urgency(update_engine::UpdateUrgency::CRITICAL);
   status.set_current_operation(
       update_engine::Operation::NEED_PERMISSION_TO_UPDATE);
   status.set_new_version("latest and greatest");
@@ -730,7 +728,8 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, UpdateOverCellularRejected) {
 }
 
 IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, TestInitialLowBatteryStatus) {
-  update_screen_->set_ignore_update_deadlines_for_testing(true);
+  update_engine::StatusResult status;
+  status.set_update_urgency(update_engine::UpdateUrgency::CRITICAL);
   // Set low battery and discharging status before oobe-update screen is shown.
   power_manager::PowerSupplyProperties props;
   props.set_battery_percent(49);
@@ -742,7 +741,6 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, TestInitialLowBatteryStatus) {
   EXPECT_TRUE(power_manager_client()->HasObserver(update_screen_));
   test::OobeJS().ExpectHiddenPath(kLowBatteryWarningMessage);
 
-  update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::DOWNLOADING);
   status.set_new_version("latest and greatest");
   status.set_new_size(1'000'000'000);
@@ -759,7 +757,8 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
   base::ScopedMockTimeMessageLoopTaskRunner mocked_task_runner;
   SetTickClockAndDefaultDelaysForTesting(
       mocked_task_runner->GetMockTickClock());
-  update_screen_->set_ignore_update_deadlines_for_testing(true);
+  update_engine::StatusResult status;
+  status.set_update_urgency(update_engine::UpdateUrgency::CRITICAL);
   ShowUpdateScreen();
   EXPECT_TRUE(power_manager_client()->HasObserver(update_screen_));
 
@@ -771,7 +770,6 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
 
   test::OobeJS().ExpectHiddenPath(kLowBatteryWarningMessage);
 
-  update_engine::StatusResult status;
   // Warning message is hidden before DOWNLOADING stage.
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
   update_engine_client()->set_default_status(status);
@@ -824,11 +822,11 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
 
 IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
                        TestBatteryWarningOnDifferentBatteryStatus) {
-  update_screen_->set_ignore_update_deadlines_for_testing(true);
+  update_engine::StatusResult status;
+  status.set_update_urgency(update_engine::UpdateUrgency::CRITICAL);
   ShowUpdateScreen();
   EXPECT_TRUE(power_manager_client()->HasObserver(update_screen_));
 
-  update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::DOWNLOADING);
   status.set_new_version("latest and greatest");
   status.set_new_size(1'000'000'000);
@@ -874,10 +872,10 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
   base::ScopedMockTimeMessageLoopTaskRunner mocked_task_runner;
   SetTickClockAndDefaultDelaysForTesting(
       mocked_task_runner->GetMockTickClock());
-  update_screen_->set_ignore_update_deadlines_for_testing(true);
+  update_engine::StatusResult status;
+  status.set_update_urgency(update_engine::UpdateUrgency::CRITICAL);
   ShowUpdateScreen();
 
-  update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
   status.set_new_version("latest and greatest");
   status.set_new_size(1'000'000'000);
@@ -907,10 +905,10 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, UpdateScreenSteps) {
   base::ScopedMockTimeMessageLoopTaskRunner mocked_task_runner;
   SetTickClockAndDefaultDelaysForTesting(
       mocked_task_runner->GetMockTickClock());
-  update_screen_->set_ignore_update_deadlines_for_testing(true);
+  update_engine::StatusResult status;
+  status.set_update_urgency(update_engine::UpdateUrgency::CRITICAL);
   ShowUpdateScreen();
 
-  update_engine::StatusResult status;
   // CHECKING_FOR_UPDATE:
   status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
   status.set_new_version("latest and greatest");
@@ -1003,10 +1001,10 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, UpdateOverCellularShown) {
   base::ScopedMockTimeMessageLoopTaskRunner mocked_task_runner;
   SetTickClockAndDefaultDelaysForTesting(
       mocked_task_runner->GetMockTickClock());
-  update_screen_->set_ignore_update_deadlines_for_testing(true);
+  update_engine::StatusResult status;
+  status.set_update_urgency(update_engine::UpdateUrgency::CRITICAL);
   ShowUpdateScreen();
 
-  update_engine::StatusResult status;
   status.set_current_operation(
       update_engine::Operation::NEED_PERMISSION_TO_UPDATE);
   status.set_new_version("latest and greatest");

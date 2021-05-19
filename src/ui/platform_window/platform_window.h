@@ -9,9 +9,7 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "base/strings/string16.h"
 #include "ui/base/class_property.h"
-#include "ui/base/cursor/cursor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -25,6 +23,7 @@ class Transform;
 }  // namespace gfx
 
 namespace ui {
+using PlatformCursor = void*;
 
 // Generic PlatformWindow interface.
 class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindow
@@ -52,7 +51,7 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindow
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual gfx::Rect GetBounds() const = 0;
 
-  virtual void SetTitle(const base::string16& title) = 0;
+  virtual void SetTitle(const std::u16string& title) = 0;
 
   virtual void SetCapture() = 0;
   virtual void ReleaseCapture() = 0;

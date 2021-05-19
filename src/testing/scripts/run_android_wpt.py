@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -111,6 +111,8 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
     # Arguments from add_extra_argumentsparse were added so
     # its safe to parse the arguments and set self._options
     self.parse_args()
+    self.output_directory = os.path.join(SRC_DIR, 'out', self.options.target)
+    self.mojo_js_directory = os.path.join(self.output_directory, 'gen')
 
   @property
   def rest_args(self):
@@ -119,11 +121,12 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
     # Here we add all of the arguments required to run WPT tests on Android.
     rest_args.extend([self.options.wpt_path])
 
-    # TODO(crbug.com/1166741): We should be running WPT under Python 3.
-    rest_args.extend(["--py2"])
+    # By default, WPT will treat unexpected passes as errors, so we disable
+    # that to be consistent with Chromium CI.
+    rest_args.extend(["--no-fail-on-unexpected-pass"])
 
     # vpython has packages needed by wpt, so force it to skip the setup
-    rest_args.extend(["--venv=../../", "--skip-venv-setup"])
+    rest_args.extend(["--venv=" + SRC_DIR, "--skip-venv-setup"])
 
     rest_args.extend(["run",
       "--tests=" + wpt_common.EXTERNAL_WPT_TESTS_DIR,
@@ -135,6 +138,11 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
       "--no-pause-after-test",
       "--no-capture-stdio",
       "--no-manifest-download",
+      "--binary-arg=--enable-blink-features=MojoJS,MojoJSTest",
+      "--binary-arg=--enable-blink-test-features",
+      "--binary-arg=--disable-field-trial-config",
+      "--enable-mojojs",
+      "--mojojs-path=" + self.mojo_js_directory,
     ])
     # if metadata was created then add the metadata directory
     # to the list of wpt arguments
@@ -153,8 +161,18 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
 
     return rest_args
 
-  def _extra_metadata_builder_args(self):
+  @property
+  def browser_specific_expectations_path(self):
     raise NotImplementedError
+
+  def _extra_metadata_builder_args(self):
+    args = ['--additional-expectations=%s' % path
+            for path in self.options.additional_expectations]
+    if not self.options.ignore_browser_specific_expectations:
+      args.extend(['--additional-expectations',
+                   self.browser_specific_expectations_path])
+
+    return args
 
   def _maybe_build_metadata(self):
     metadata_builder_cmd = [
@@ -162,20 +180,28 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
          os.path.join(wpt_common.BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
          '--android-product',
          self.options.product,
-         '--ignore-default-expectations',
          '--metadata-output-dir',
          self._metadata_dir,
          '--additional-expectations',
          ANDROID_DISABLED_TESTS,
+         '--use-subtest-results',
     ]
+    if self.options.ignore_default_expectations:
+        metadata_builder_cmd += [ '--ignore-default-expectations' ]
     metadata_builder_cmd.extend(self._extra_metadata_builder_args())
     return common.run_command(metadata_builder_cmd)
 
   def run_test(self):
-    with NamedTemporaryDirectory() as self._metadata_dir, self._install_apks():
+    with NamedTemporaryDirectory() as tmp_dir, self._install_apks():
+      self._metadata_dir = os.path.join(tmp_dir, 'metadata_dir')
       metadata_command_ret = self._maybe_build_metadata()
       if metadata_command_ret != 0:
           return metadata_command_ret
+
+      # If there is no metadata then we need to create an
+      # empty directory to pass to wptrunner
+      if not os.path.exists(self._metadata_dir):
+        os.makedirs(self._metadata_dir)
       return super(WPTAndroidAdapter, self).run_test()
 
   def _install_apks(self):
@@ -196,6 +222,9 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
 
     # Add this so that product argument does not go in self._rest_args
     # when self.parse_args() is called
+    parser.add_argument('--target', '-t', default='Release',
+                        help='Specify the target build subdirectory under'
+                        ' src/out/.')
     parser.add_argument('--product', help=argparse.SUPPRESS)
     parser.add_argument('--webdriver-binary', required=True,
                         help='Path of the webdriver binary.  It needs to have'
@@ -204,10 +233,19 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
                         help='Controls the path of the WPT runner to use'
                         ' (therefore tests).  Defaults the revision rolled into'
                         ' Chromium.')
+    parser.add_argument('--additional-expectations',
+                        action='append', default=[],
+                        help='Paths to additional test expectations files.')
+    parser.add_argument('--ignore-default-expectations', action='store_true',
+                        help='Do not use the default set of'
+                        ' TestExpectations files.')
+    parser.add_argument('--ignore-browser-specific-expectations',
+                        action='store_true', default=False,
+                        help='Ignore browser specific expectation files.')
     parser.add_argument('--test-type', default='testharness',
                         help='Specify to experiment with other test types.'
                         ' Currently only the default is expected to work.')
-    parser.add_argument('--verbose', '-v', action='count',
+    parser.add_argument('--verbose', '-v', action='count', default=0,
                         help='Verbosity level.')
     parser.add_argument('--repeat',
                         action=WPTPassThroughArgs, type=int,
@@ -269,10 +307,9 @@ class WPTWeblayerAdapter(WPTAndroidAdapter):
          install_webview_provider_as_needed:
       yield
 
-  def _extra_metadata_builder_args(self):
-    return [
-      '--additional-expectations',
-      PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBLAYER]]
+  @property
+  def browser_specific_expectations_path(self):
+    return PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBLAYER]
 
   def add_extra_arguments(self, parser):
     super(WPTWeblayerAdapter, self).add_extra_arguments(parser)
@@ -310,10 +347,9 @@ class WPTWebviewAdapter(WPTAndroidAdapter):
     with install_shell_as_needed, install_webview_provider_as_needed:
       yield
 
-  def _extra_metadata_builder_args(self):
-    return [
-      '--additional-expectations',
-      PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBVIEW]]
+  @property
+  def browser_specific_expectations_path(self):
+    return PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBVIEW]
 
   def add_extra_arguments(self, parser):
     super(WPTWebviewAdapter, self).add_extra_arguments(parser)
@@ -340,10 +376,9 @@ class WPTClankAdapter(WPTAndroidAdapter):
     with install_clank_as_needed:
       yield
 
-  def _extra_metadata_builder_args(self):
-    return [
-      '--additional-expectations',
-      PRODUCTS_TO_EXPECTATION_FILE_PATHS[CHROME_ANDROID]]
+  @property
+  def browser_specific_expectations_path(self):
+    return PRODUCTS_TO_EXPECTATION_FILE_PATHS[CHROME_ANDROID]
 
   def add_extra_arguments(self, parser):
     super(WPTClankAdapter, self).add_extra_arguments(parser)

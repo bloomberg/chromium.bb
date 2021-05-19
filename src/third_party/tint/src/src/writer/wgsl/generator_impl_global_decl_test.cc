@@ -12,14 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/assignment_statement.h"
-#include "src/ast/call_statement.h"
 #include "src/ast/stage_decoration.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/type/f32_type.h"
-#include "src/writer/wgsl/generator_impl.h"
 #include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
@@ -41,7 +35,8 @@ TEST_F(WgslGeneratorImplTest, Emit_GlobalDeclAfterFunction) {
   gen.increment_indent();
 
   ASSERT_TRUE(gen.Generate(nullptr)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(  fn test_function() -> void {
+  EXPECT_EQ(gen.result(), R"(  [[stage(compute)]]
+  fn test_function() -> void {
     var a : f32;
   }
 
@@ -54,7 +49,7 @@ TEST_F(WgslGeneratorImplTest, Emit_GlobalsInterleaved) {
   create<ast::VariableDeclStatement>(global0);
 
   auto* str0 = create<ast::Struct>(ast::StructMemberList{Member("a", ty.i32())},
-                                   ast::StructDecorationList{});
+                                   ast::DecorationList{});
   auto* s0 = ty.struct_("S0", str0);
   AST().AddConstructedType(s0);
 
@@ -62,13 +57,13 @@ TEST_F(WgslGeneratorImplTest, Emit_GlobalsInterleaved) {
        ast::StatementList{
            create<ast::ReturnStatement>(Expr("a0")),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   auto* global1 = Global("a1", ty.f32(), ast::StorageClass::kOutput);
   create<ast::VariableDeclStatement>(global1);
 
   auto* str1 = create<ast::Struct>(ast::StructMemberList{Member("a", ty.i32())},
-                                   ast::StructDecorationList{});
+                                   ast::DecorationList{});
   auto* s1 = ty.struct_("S1", str1);
   AST().AddConstructedType(s1);
 
@@ -82,7 +77,7 @@ TEST_F(WgslGeneratorImplTest, Emit_GlobalsInterleaved) {
                Var("s1", s1, ast::StorageClass::kFunction)),
            create<ast::AssignmentStatement>(Expr("a1"), Expr(call_func)),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kCompute),
        });
 

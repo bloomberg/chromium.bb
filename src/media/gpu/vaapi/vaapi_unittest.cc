@@ -13,6 +13,7 @@
 #include <va/va.h>
 #include <va/va_str.h>
 
+#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -73,6 +74,9 @@ base::Optional<VAProfile> StringToVAProfile(const std::string& va_profile) {
     {"VAProfileHEVCMain", VAProfileHEVCMain},
     {"VAProfileHEVCMain10", VAProfileHEVCMain10},
 #endif
+#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+    {"VAProfileProtected", VAProfileProtected},
+#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
   };
 
   auto it = kStringToVAProfile.find(va_profile);
@@ -81,15 +85,19 @@ base::Optional<VAProfile> StringToVAProfile(const std::string& va_profile) {
              : base::nullopt;
 }
 
-// Converts the given string to VAProfile
+// Converts the given string to VAEntrypoint
 base::Optional<VAEntrypoint> StringToVAEntrypoint(
     const std::string& va_entrypoint) {
   const std::map<std::string, VAEntrypoint> kStringToVAEntrypoint = {
-      {"VAEntrypointVLD", VAEntrypointVLD},
-      {"VAEntrypointEncSlice", VAEntrypointEncSlice},
-      {"VAEntrypointEncPicture", VAEntrypointEncPicture},
-      {"VAEntrypointEncSliceLP", VAEntrypointEncSliceLP},
-      {"VAEntrypointVideoProc", VAEntrypointVideoProc}};
+    {"VAEntrypointVLD", VAEntrypointVLD},
+    {"VAEntrypointEncSlice", VAEntrypointEncSlice},
+    {"VAEntrypointEncPicture", VAEntrypointEncPicture},
+    {"VAEntrypointEncSliceLP", VAEntrypointEncSliceLP},
+    {"VAEntrypointVideoProc", VAEntrypointVideoProc},
+#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+    {"VAEntrypointProtectedContent", VAEntrypointProtectedContent},
+#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+  };
 
   auto it = kStringToVAEntrypoint.find(va_entrypoint);
   return it != kStringToVAEntrypoint.end()
@@ -217,6 +225,18 @@ TEST_F(VaapiTest, GetSupportedEncodeProfiles) {
         << ", va profile: " << vaProfileStr(*va_profile);
   }
 }
+
+#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+// Verifies that VAProfileProtected is indeed supported by the command line
+// vainfo utility.
+TEST_F(VaapiTest, VaapiProfileProtected) {
+  const auto va_info = RetrieveVAInfoOutput();
+
+  EXPECT_TRUE(base::Contains(va_info.at(VAProfileProtected),
+                             VAEntrypointProtectedContent))
+      << ", va profile: " << vaProfileStr(VAProfileProtected);
+}
+#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
 
 // Verifies that if JPEG decoding and encoding are supported by VaapiWrapper,
 // they are also supported by by the command line vainfo utility.

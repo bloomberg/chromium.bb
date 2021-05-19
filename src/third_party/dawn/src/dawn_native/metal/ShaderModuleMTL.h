@@ -34,9 +34,9 @@ namespace dawn_native { namespace metal {
 
     class ShaderModule final : public ShaderModuleBase {
       public:
-        static ResultOrError<ShaderModule*> Create(Device* device,
-                                                   const ShaderModuleDescriptor* descriptor,
-                                                   ShaderModuleParseResult* parseResult);
+        static ResultOrError<Ref<ShaderModule>> Create(Device* device,
+                                                       const ShaderModuleDescriptor* descriptor,
+                                                       ShaderModuleParseResult* parseResult);
 
         struct MetalFunctionData {
             NSPRef<id<MTLFunction>> function;
@@ -47,7 +47,8 @@ namespace dawn_native { namespace metal {
                                   const PipelineLayout* layout,
                                   MetalFunctionData* out,
                                   uint32_t sampleMask = 0xFFFFFFFF,
-                                  const RenderPipeline* renderPipeline = nullptr);
+                                  const RenderPipeline* renderPipeline = nullptr,
+                                  const VertexState* vertexState = nullptr);
 
       private:
         ResultOrError<std::string> TranslateToMSLWithTint(const char* entryPointName,
@@ -55,6 +56,7 @@ namespace dawn_native { namespace metal {
                                                           const PipelineLayout* layout,
                                                           uint32_t sampleMask,
                                                           const RenderPipeline* renderPipeline,
+                                                          const VertexState* vertexState,
                                                           std::string* remappedEntryPointName,
                                                           bool* needsStorageBufferLength);
         ResultOrError<std::string> TranslateToMSLWithSPIRVCross(
@@ -63,16 +65,13 @@ namespace dawn_native { namespace metal {
             const PipelineLayout* layout,
             uint32_t sampleMask,
             const RenderPipeline* renderPipeline,
+            const VertexState* vertexState,
             std::string* remappedEntryPointName,
             bool* needsStorageBufferLength);
 
         ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModule() override = default;
         MaybeError Initialize(ShaderModuleParseResult* parseResult);
-
-#ifdef DAWN_ENABLE_WGSL
-        std::unique_ptr<tint::Program> mTintProgram;
-#endif
     };
 
 }}  // namespace dawn_native::metal

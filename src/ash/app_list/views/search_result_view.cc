@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/app_list_main_view.h"
@@ -23,6 +24,7 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/bind.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
@@ -31,6 +33,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/image_model_utils.h"
 
 namespace ash {
 
@@ -135,7 +138,8 @@ void SearchResultView::CreateTitleRenderText() {
   render_text->SetText(result()->title());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(
-      rb.GetFontList(AppListConfig::instance().search_result_title_font_style())
+      rb.GetFontList(
+            SharedAppListConfig::instance().search_result_title_font_style())
           .DeriveWithSizeDelta(kSearchResultTitleTextSizeDelta));
   // When result is an omnibox non-url search, the matched tag indicates
   // proposed query. For all other cases, the matched tag indicates typed search
@@ -223,7 +227,7 @@ void SearchResultView::Layout() {
   gfx::Rect badge_icon_bounds;
 
   const int badge_icon_dimension =
-      AppListConfig::instance().search_list_badge_icon_dimension();
+      SharedAppListConfig::instance().search_list_badge_icon_dimension();
   badge_icon_bounds = gfx::Rect(icon_bounds.right() - badge_icon_dimension / 2,
                                 icon_bounds.bottom() - badge_icon_dimension / 2,
                                 badge_icon_dimension, badge_icon_dimension);
@@ -402,7 +406,7 @@ void SearchResultView::OnMetadataChanged() {
 
       // Images could be rectangular, and we should preserve the aspect ratio.
       const int dimension =
-          AppListConfig::instance().search_list_image_icon_dimension();
+          SharedAppListConfig::instance().search_list_image_icon_dimension();
       int width = image.width();
       int height = image.height();
       if (width != height) {
@@ -419,8 +423,9 @@ void SearchResultView::OnMetadataChanged() {
     } else {
       const int dimension =
           IsAnswer()
-              ? AppListConfig::instance().search_list_answer_icon_dimension()
-              : AppListConfig::instance().search_list_icon_dimension();
+              ? SharedAppListConfig::instance()
+                    .search_list_answer_icon_dimension()
+              : SharedAppListConfig::instance().search_list_icon_dimension();
       SetIconImage(result()->icon(), icon_, gfx::Size(dimension, dimension));
       icon_->SetVisible(true);
       image_icon_->SetVisible(false);
@@ -428,14 +433,23 @@ void SearchResultView::OnMetadataChanged() {
   }
 
   // Updates |badge_icon_|.
-  const gfx::ImageSkia badge_icon(result() ? result()->badge_icon()
-                                           : gfx::ImageSkia());
-  if (badge_icon.isNull()) {
+  gfx::ImageSkia badge_icon_skia;
+  if (result() && !result()->badge_icon().IsEmpty()) {
+    const ui::ImageModel& badge_icon = result()->badge_icon();
+    gfx::ImageSkia badge_icon_skia =
+        views::GetImageSkiaFromImageModel(badge_icon, GetNativeTheme());
+
+    if (result()->use_badge_icon_background())
+      badge_icon_skia =
+          CreateIconWithCircleBackground(badge_icon_skia, SK_ColorWHITE);
+  }
+
+  if (badge_icon_skia.isNull()) {
     badge_icon_->SetVisible(false);
   } else {
     const int dimension =
-        AppListConfig::instance().search_list_badge_icon_dimension();
-    SetIconImage(badge_icon, badge_icon_, gfx::Size(dimension, dimension));
+        SharedAppListConfig::instance().search_list_badge_icon_dimension();
+    SetIconImage(badge_icon_skia, badge_icon_, gfx::Size(dimension, dimension));
     badge_icon_->SetVisible(true);
   }
 
@@ -539,7 +553,9 @@ void SearchResultView::OnGetContextMenu(
 
 bool SearchResultView::IsAnswer() const {
   return app_list_features::IsOmniboxRichEntitiesEnabled() && result() &&
-         result()->omnibox_type() == SearchResultOmniboxType::kAnswer;
+         (result()->omnibox_type() == SearchResultOmniboxType::kAnswer ||
+          result()->omnibox_type() ==
+              SearchResultOmniboxType::kCalculatorAnswer);
 }
 
 bool SearchResultView::IsRichImage() const {

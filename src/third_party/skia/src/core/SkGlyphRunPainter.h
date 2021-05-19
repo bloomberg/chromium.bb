@@ -16,7 +16,7 @@
 #include "src/core/SkTextBlobPriv.h"
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/text/GrSDFTOptions.h"
+#include "src/gpu/text/GrSDFTControl.h"
 class GrColorInfo;
 class GrSurfaceDrawContext;
 #endif
@@ -77,7 +77,7 @@ public:
     };
 
     void drawForBitmapDevice(
-            const SkGlyphRunList& glyphRunList, const SkMatrix& deviceMatrix,
+            const SkGlyphRunList& glyphRunList, const SkPaint& paint, const SkMatrix& deviceMatrix,
             const BitmapDevicePainter* bitmapDevice);
 
 #if SK_SUPPORT_GPU
@@ -85,12 +85,10 @@ public:
     // callbacks will be called.
     void processGlyphRun(const SkGlyphRun& glyphRun,
                          const SkMatrix& drawMatrix,
-                         SkPoint drawOrigin,
                          const SkPaint& drawPaint,
-                         const SkSurfaceProps& props,
-                         bool contextSupportsDistanceFieldText,
-                         const GrSDFTOptions& options,
-                         SkGlyphRunPainterInterface* process);
+                         const GrSDFTControl& control,
+                         SkGlyphRunPainterInterface* process,
+                         const char* tag = nullptr);
 #endif  // SK_SUPPORT_GPU
 
 private:

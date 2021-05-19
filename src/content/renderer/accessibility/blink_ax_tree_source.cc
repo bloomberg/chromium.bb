@@ -24,7 +24,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -201,6 +201,8 @@ void BlinkAXTreeSource::SetRoot(WebAXObject root) {
   explicit_root_ = root;
 }
 
+#if defined(AX_FAIL_FAST_BUILD)
+// TODO(accessibility) Remove once it's clear this never triggers.
 bool BlinkAXTreeSource::IsInTree(WebAXObject node) const {
   CHECK(frozen_);
   while (IsValid(node)) {
@@ -210,6 +212,7 @@ bool BlinkAXTreeSource::IsInTree(WebAXObject node) const {
   }
   return false;
 }
+#endif
 
 void BlinkAXTreeSource::SetAccessibilityMode(ui::AXMode new_mode) {
   if (accessibility_mode_ == new_mode)
@@ -482,15 +485,30 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   TRACE_EVENT2("accessibility", "BlinkAXTreeSource::SerializeNode", "role",
                ui::ToString(dst->role), "id", dst->id);
 
-  SerializeNameAndDescriptionAttributes(src, dst);
-
   if (accessibility_mode_.has_mode(ui::AXMode::kPDF)) {
+    SerializeNameAndDescriptionAttributes(src, dst);
     // Return early. None of the following attributes are needed for PDFs.
     return;
   }
 
+  // Bounding boxes are needed on all nodes, including ignored, for hit testing.
   SerializeBoundingBoxAttributes(src, dst);
   cached_bounding_boxes_[dst->id] = dst->relative_bounds;
+
+  // Return early. The following attributes are unnecessary for ignored nodes.
+  // Exception: focusable ignored nodes are fully serialized, so that reasonable
+  // verbalizations can be made if they actually receive focus.
+  if (src.AccessibilityIsIgnored() &&
+      !dst->HasState(ax::mojom::State::kFocusable)) {
+    // The name is important for exposing the selection around ignored nodes.
+    // TODO(accessibility) Remove this and still pass this content_browsertest:
+    // All/DumpAccessibilityTreeTest.AccessibilityIgnoredSelection/blink
+    if (src.Role() == ax::mojom::Role::kStaticText)
+      SerializeNameAndDescriptionAttributes(src, dst);
+    return;
+  }
+
+  SerializeNameAndDescriptionAttributes(src, dst);
 
   if (accessibility_mode_.has_mode(ui::AXMode::kScreenReader)) {
     if (src.IsInLiveRegion())
@@ -759,11 +777,6 @@ void BlinkAXTreeSource::SerializeOtherScreenReaderAttributes(
 
   if (ui::IsDialog(dst->role)) {
     dst->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, src.IsModal());
-  }
-
-  if (ui::IsPlatformDocument(dst->role)) {
-    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kHtmlTag,
-                                  "#document");
   }
 
   if (ui::IsImage(dst->role))

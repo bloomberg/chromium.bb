@@ -21,6 +21,7 @@
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
+#include "services/network/public/mojom/url_request.mojom.h"
 #include "services/network/public/mojom/web_bundle_handle.mojom.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
@@ -147,6 +148,50 @@ bool EnumTraits<network::mojom::URLRequestReferrerPolicy, net::ReferrerPolicy>::
   return false;
 }
 
+network::mojom::SourceType
+EnumTraits<network::mojom::SourceType, net::SourceStream::SourceType>::ToMojom(
+    net::SourceStream::SourceType type) {
+  switch (type) {
+    case net::SourceStream::SourceType::TYPE_BROTLI:
+      return network::mojom::SourceType::kBrotli;
+    case net::SourceStream::SourceType::TYPE_DEFLATE:
+      return network::mojom::SourceType::kDeflate;
+    case net::SourceStream::SourceType::TYPE_GZIP:
+      return network::mojom::SourceType::kGzip;
+    case net::SourceStream::SourceType::TYPE_NONE:
+      return network::mojom::SourceType::kNone;
+    case net::SourceStream::SourceType::TYPE_UNKNOWN:
+      return network::mojom::SourceType::kUnknown;
+  }
+  NOTREACHED();
+  return static_cast<network::mojom::SourceType>(type);
+}
+
+bool EnumTraits<network::mojom::SourceType, net::SourceStream::SourceType>::
+    FromMojom(network::mojom::SourceType in,
+              net::SourceStream::SourceType* out) {
+  switch (in) {
+    case network::mojom::SourceType::kBrotli:
+      *out = net::SourceStream::SourceType::TYPE_BROTLI;
+      return true;
+    case network::mojom::SourceType::kDeflate:
+      *out = net::SourceStream::SourceType::TYPE_DEFLATE;
+      return true;
+    case network::mojom::SourceType::kGzip:
+      *out = net::SourceStream::SourceType::TYPE_GZIP;
+      return true;
+    case network::mojom::SourceType::kNone:
+      *out = net::SourceStream::SourceType::TYPE_NONE;
+      return true;
+    case network::mojom::SourceType::kUnknown:
+      *out = net::SourceStream::SourceType::TYPE_UNKNOWN;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 bool StructTraits<network::mojom::TrustedUrlRequestParamsDataView,
                   network::ResourceRequest::TrustedParams>::
     Read(network::mojom::TrustedUrlRequestParamsDataView data,
@@ -158,11 +203,15 @@ bool StructTraits<network::mojom::TrustedUrlRequestParamsDataView,
   out->has_user_activation = data.has_user_activation();
   out->cookie_observer = data.TakeCookieObserver<
       mojo::PendingRemote<network::mojom::CookieAccessObserver>>();
-  out->auth_cert_observer = data.TakeAuthCertObserver<mojo::PendingRemote<
-      network::mojom::AuthenticationAndCertificateObserver>>();
+  out->url_loader_network_observer = data.TakeUrlLoaderNetworkObserver<
+      mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>>();
+  out->devtools_observer = data.TakeDevtoolsObserver<
+      mojo::PendingRemote<network::mojom::DevToolsObserver>>();
   if (!data.ReadClientSecurityState(&out->client_security_state)) {
     return false;
   }
+  out->accept_ch_frame_observer = data.TakeAcceptChFrameObserver<
+      mojo::PendingRemote<network::mojom::AcceptCHFrameObserver>>();
   return true;
 }
 
@@ -224,7 +273,9 @@ bool StructTraits<
       !data.ReadDevtoolsRequestId(&out->devtools_request_id) ||
       !data.ReadDevtoolsStackId(&out->devtools_stack_id) ||
       !data.ReadRecursivePrefetchToken(&out->recursive_prefetch_token) ||
-      !data.ReadWebBundleTokenParams(&out->web_bundle_token_params)) {
+      !data.ReadWebBundleTokenParams(&out->web_bundle_token_params) ||
+      !data.ReadDevtoolsAcceptedStreamTypes(
+          &out->devtools_accepted_stream_types)) {
     // Note that data.ReadTrustTokenParams is temporarily handled below.
     return false;
   }
@@ -252,7 +303,6 @@ bool StructTraits<
   out->enable_load_timing = data.enable_load_timing();
   out->enable_upload_progress = data.enable_upload_progress();
   out->do_not_prompt_for_login = data.do_not_prompt_for_login();
-  out->render_frame_id = data.render_frame_id();
   out->is_main_frame = data.is_main_frame();
   out->transition_type = data.transition_type();
   out->report_raw_headers = data.report_raw_headers();
@@ -311,8 +361,6 @@ bool StructTraits<network::mojom::DataElementChunkedDataPipeDataView,
          network::DataElementChunkedDataPipe* out) {
   auto data_pipe_getter = data.TakeDataPipeGetter<
       mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>>();
-  UMA_HISTOGRAM_BOOLEAN("NetworkService.StreamingUploadDataPipeGetterValidity",
-                        data_pipe_getter.is_valid());
   *out = network::DataElementChunkedDataPipe(
       std::move(data_pipe_getter),
       network::DataElementChunkedDataPipe::ReadOnlyOnce(data.read_only_once()));

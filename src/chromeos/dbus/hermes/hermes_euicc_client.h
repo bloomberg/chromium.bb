@@ -57,7 +57,14 @@ class COMPONENT_EXPORT(HERMES_CLIENT) HermesEuiccClient {
                                    const std::string& activation_code,
                                    const std::string& network_service_path,
                                    hermes::profile::State state,
+                                   hermes::profile::ProfileClass profile_class,
                                    bool service_only) = 0;
+
+    // Remove a carrier profile with path |carrier_profile_path| from EUICC with
+    // given |euicc_path|. Return true if successful.
+    virtual bool RemoveCarrierProfile(
+        const dbus::ObjectPath& euicc_path,
+        const dbus::ObjectPath& carrier_profile_path) = 0;
 
     // Queues an error code that will be returned from a subsequent
     // method call.
@@ -65,6 +72,10 @@ class COMPONENT_EXPORT(HERMES_CLIENT) HermesEuiccClient {
 
     // Set delay for interactive methods.
     virtual void SetInteractiveDelay(base::TimeDelta delay) = 0;
+
+    // Returns a valid fake activation code that can be used to install
+    // a new fake carrier profile.
+    virtual std::string GenerateFakeActivationCode() = 0;
   };
 
   // Hermes Euicc properties.

@@ -103,14 +103,13 @@ HomePageUndoBubble::~HomePageUndoBubble() = default;
 void HomePageUndoBubble::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  base::string16 undo_string =
+  std::u16string undo_string =
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_BUBBLE_UNDO);
-  std::vector<base::string16> message = {
+  std::vector<std::u16string> message = {
       l10n_util::GetStringUTF16(IDS_TOOLBAR_INFORM_SET_HOME_PAGE), undo_string};
   views::StyledLabel* label =
       AddChildView(std::make_unique<views::StyledLabel>());
-  label->SetText(
-      base::JoinString(message, base::StringPiece16(base::ASCIIToUTF16(" "))));
+  label->SetText(base::JoinString(message, base::StringPiece16(u" ")));
 
   gfx::Range undo_range(label->GetText().length() - undo_string.length(),
                         label->GetText().length());
@@ -153,6 +152,7 @@ HomeButton::HomeButton(PressedCallback callback, Browser* browser)
     : ToolbarButton(std::move(callback)), browser_(browser) {
   SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
                            ui::EF_MIDDLE_MOUSE_BUTTON);
+  SetVectorIcons(kNavigateHomeIcon, kNavigateHomeTouchIcon);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME));
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME));
   SetID(VIEW_ID_HOME_BUTTON);
@@ -183,7 +183,7 @@ ui::mojom::DragOperation HomeButton::OnPerformDrop(
     return ui::mojom::DragOperation::kNone;
 
   GURL new_homepage_url;
-  base::string16 title;
+  std::u16string title;
   if (event.data().GetURLAndTitle(ui::FilenameToURLPolicy::CONVERT_FILENAMES,
                                   &new_homepage_url, &title) &&
       new_homepage_url.is_valid()) {
@@ -197,13 +197,6 @@ ui::mojom::DragOperation HomeButton::OnPerformDrop(
     HomePageUndoBubble::ShowBubble(browser_, old_is_ntp, old_homepage, this);
   }
   return ui::mojom::DragOperation::kNone;
-}
-
-void HomeButton::UpdateIcon() {
-  const gfx::VectorIcon& home_image = ui::TouchUiController::Get()->touch_ui()
-                                          ? kNavigateHomeTouchIcon
-                                          : kNavigateHomeIcon;
-  UpdateIconsWithStandardColors(home_image);
 }
 
 BEGIN_METADATA(HomeButton, ToolbarButton)

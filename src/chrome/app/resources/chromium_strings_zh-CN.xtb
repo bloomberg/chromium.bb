@@ -10,7 +10,6 @@
 <translation id="1315551408014407711">设置您的新 Chromium 个人资料</translation>
 <translation id="1396446129537741364">Chromium 正尝试显示密码。</translation>
 <translation id="1414495520565016063">您已登录 Chromium！</translation>
-<translation id="1414973082589232775">您必须重启 Chromium，才能使用 Rosetta 播放受保护的媒体内容。</translation>
 <translation id="151962892725702025">由于您的网域停用了同步功能，Chromium操作系统无法同步您的数据。</translation>
 <translation id="1524282610922162960">共享 Chromium 标签页</translation>
 <translation id="1553461853655228091">Chromium 需要获得相应权限，才能使用您的摄像头为您的周边环境创建 3D 地图</translation>
@@ -25,8 +24,8 @@
 <translation id="1966382378801805537">Chromium 无法确定或设置默认浏览器</translation>
 <translation id="2008474315282236005">这会从这台设备上删除 1 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
 <translation id="2020032459870799438">若要检查您的其他密码是否未曾遭遇数据泄露和其他安全问题，请<ph name="BEGIN_LINK" />登录 Chromium<ph name="END_LINK" />。</translation>
+<translation id="2174178932569897599">自定义 Chromium</translation>
 <translation id="2185166961232948079">Chromium - 网络登录 - <ph name="PAGE_TITLE" /></translation>
-<translation id="2225696941839557119">Chromium 操作系统无法同步您的密码。</translation>
 <translation id="2241627712206172106">如果您与亲朋好友共用计算机，他们将能够使用单独的帐号进行浏览，并可随心所欲地设置Chromium。</translation>
 <translation id="2294245788148774212">（可选）自动向 Google 发送诊断数据和使用情况数据，协助改进 Chromium 操作系统的功能和性能。</translation>
 <translation id="2343156876103232566">若要从此处向您的 Android 手机发送电话号码，请在这两部设备上分别登录 Chromium。</translation>
@@ -40,10 +39,8 @@
 <translation id="2577788541081224677">如需在您的所有设备上访问自己的 Chromium 信息，请登录您的帐号以便开启同步功能。</translation>
 <translation id="2583187216237139145">在使用此工作资料（例如创建书签、历史记录、密码和其他设置）时生成的任何 Chromium 数据都可由工作资料管理员移除。<ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">需要重新启动 Chromium 操作系统以应用更新。</translation>
-<translation id="2615699638672665509">此计算机很快将停止接收Chromium更新，因为其硬件不再受支持。</translation>
 <translation id="2648074677641340862">安装过程中出现操作系统错误。请重新下载 Chromium。</translation>
 <translation id="2661879430930417727">如果您是与亲朋好友共用一部设备，他们将能够使用单独的帐号进行浏览，并可随心所欲地设置 Chromium</translation>
-<translation id="270245676623587882">Chromium 建议您停用此扩展程序，因为它目前不符合“增强型安全浏览”标准。</translation>
 <translation id="2711502716910134313">Chromium 标签页</translation>
 <translation id="2718390899429598676">为了提高安全性，Chromium 将对您的数据进行加密。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
@@ -63,6 +60,7 @@
 <translation id="3130323860337406239">Chromium 正在使用您的麦克风。</translation>
 <translation id="3155163173539279776">重新启动 Chromium</translation>
 <translation id="3179665906251668410">在 Chromium 无痕式窗口中打开链接(&amp;G)</translation>
+<translation id="3185330573522821672">自定义您的新 Chromium 个人资料</translation>
 <translation id="3190315855212034486">哎呀！Chromium 崩溃了。要立即重新启动吗？</translation>
 <translation id="3229526316128325841">Chromium 想导出您的密码。</translation>
 <translation id="3258596308407688501">Chromium 无法读写其数据目录：
@@ -77,6 +75,7 @@
 <translation id="3430503420100763906">借助 Chromium 个人资料，您可将自己的所有 Chromium 内容分门别类。比如，您可为朋友和家人创建专属个人资料，或者将工作内容和娱乐内容分开。</translation>
 <translation id="347328004046849135">当您使用已泄露的密码登录时，Chromium 会通知您</translation>
 <translation id="3474745554856756813">这会从这台设备上删除 <ph name="ITEMS_COUNT" /> 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
+<translation id="3497319089134299931"><ph name="SHORTCUT" /> 可用于切换 Chromium 个人资料</translation>
 <translation id="3509308970982693815">请关闭所有 Chromium 窗口并重试。</translation>
 <translation id="3575459661164320785">您的计算机上存在有害软件。Chromium 可以移除该软件、恢复您的设置并停用扩展程序，以确保您的浏览器能够重新正常运行。</translation>
 <translation id="3639635944603682591">系统将会从此设备上删除该用户的浏览数据。要想恢复这些数据，请以“<ph name="USER_EMAIL" />”的身份登录 Chromium。</translation>
@@ -137,11 +136,11 @@
 <translation id="5480860683791598150">Chromium 需要获得位置权限，才能将您的位置信息共享给此网站</translation>
 <translation id="549669000822060376">Chromium正在安装最新的系统更新，请稍候。</translation>
 <translation id="5496810170689441661">Chromium 正在尝试修改密码。请输入您的 Windows 密码以允许此操作。</translation>
+<translation id="5527463683072221100">在 Chromium 中打开 PDF 文件</translation>
 <translation id="5623402015214259806">{0,plural, =0{有一项可用的 Chromium 更新}=1{有一项可用的 Chromium 更新}other{有一项可用的 Chromium 更新（已发布 # 天）}}</translation>
 <translation id="5634636535844844681">Chromium 仅支持 Windows 7 或更高版本的操作系统。</translation>
 <translation id="5653831366781983928">请立即重启 Chromium</translation>
 <translation id="5698481217667032250">以这种语言显示 Chromium</translation>
-<translation id="5736967399513123100">您需要安装 Rosetta，Chromium 才能播放受保护的媒体内容。您想现在就安装吗？</translation>
 <translation id="5820394555380036790">Chromium 操作系统</translation>
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
 <translation id="5895138241574237353">重新启动</translation>
@@ -157,10 +156,10 @@
 <translation id="6120345080069858279">Chromium 会将此密码保存在您的 Google 帐号中，因此您不必记住它。</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> 存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="6134968993075716475">“安全浏览”功能已关闭。Chromium 建议开启此功能。</translation>
+<translation id="6145820983052037069">您可在此处切换 Chromium 个人资料</translation>
 <translation id="6183079672144801177">请确保您已在“<ph name="TARGET_DEVICE_NAME" />”上登录 Chromium，然后再次尝试发送。</translation>
 <translation id="6212496753309875659">此计算机已安装了更高版本的 Chromium。如果软件无法正常运行，请卸载 Chromium 并重试。</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium 将立即重新启动}=1{Chromium 将在 1 秒后重新启动}other{Chromium 将在 # 秒后重新启动}}</translation>
-<translation id="623836266260425961">Chromium 操作系统无法同步您的数据。</translation>
 <translation id="6248213926982192922">将 Chromium 设置为默认浏览器</translation>
 <translation id="6266342355635466082">Chromium 无法检查是否有更新。请检查您的互联网连接。</translation>
 <translation id="6268381023930128611">退出 Chromium？</translation>
@@ -193,18 +192,15 @@
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay（已复制到 Chromium）</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
-<translation id="6897548120660295439">待您安装 Rosetta 之后，Chromium 才能播放此页上受保护的媒体内容。</translation>
 <translation id="691026815377248078">Chromium 需获得蓝牙使用权限才能继续配对。<ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="6964305034639999644">在 Chromium 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="6978145336957848883">安全系数低的密码容易被人猜到。不妨让 Chromium <ph name="BEGIN_LINK" />为您创建并记住安全系数高的密码<ph name="END_LINK" />。</translation>
 <translation id="6990124437352146030">Chromium 需要获得相应权限，才能允许此网站使用您的麦克风</translation>
 <translation id="701244094609242530">Chromium 无法检查您的扩展程序。请稍后重试。</translation>
 <translation id="705851970750939768">更新 Chromium</translation>
-<translation id="7066436765290594559">Chromium操作系统无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="7067091210845072982">如果图片缺少有用的说明，则 Chromium 会尝试为您提供一条说明。为便于创建说明，系统会将图片发送给 Google。</translation>
 <translation id="7196312274710523067">无法启动 Chromium。请重试。</translation>
 <translation id="7197677400338048821">Chromium 无法检查您的密码。请过 24 小时再试。</translation>
-<translation id="7205698830395646142">在 Chromium 菜单中隐藏</translation>
 <translation id="7223968959479464213">任务管理器 - Chromium</translation>
 <translation id="731644333568559921">更新 Chromium 操作系统(&amp;C)</translation>
 <translation id="731795002583552498">正在更新 Chromium</translation>
@@ -241,7 +237,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7907774600618164274">Chromium 操作系统未正确关闭。</translation>
 <translation id="7937630085815544518">您之前登录 Chromium 时使用的帐号为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐号再次登录。</translation>
 <translation id="7975919845073681630">这是 Chromium 的并行安装，您无法将此浏览器设为默认浏览器。</translation>
-<translation id="7979877361127045932">在 Chromium 菜单中隐藏</translation>
 <translation id="8013436988911883588">一旦 Chromium 获得了使用权限，网站便能请求您向其授予使用权限。</translation>
 <translation id="81770708095080097">此文件存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="8248265253516264921">如果图片缺少有用的说明，则 Chromium 会尝试为您提供一条说明。为便于创建说明，系统会将图片发送给 Google。您可以随时在“设置”中关闭此功能。</translation>

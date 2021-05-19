@@ -17,6 +17,7 @@
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/range/range.h"
@@ -43,7 +44,7 @@ base::Optional<size_t> OffsetFromUTF8Offset(const base::StringPiece& text,
   if (offset > text.length())
     return base::nullopt;
 
-  base::string16 converted;
+  std::u16string converted;
   if (!base::UTF8ToUTF16(text.data(), offset, &converted))
     return base::nullopt;
 
@@ -85,6 +86,18 @@ bool IsImeEnabled() {
   return false;
 }
 
+// Returns true if this event comes from extended_keyboard::peek_key.
+// See also WaylandEventSource::OnKeyboardKeyEvent about how the flag is set.
+bool IsPeekKeyEvent(const ui::KeyEvent& key_event) {
+  const auto* properties = key_event.properties();
+  if (!properties)
+    return true;
+  auto it = properties->find(kPropertyKeyboardImeFlag);
+  if (it == properties->end())
+    return true;
+  return !(it->second[0] & kPropertyKeyboardImeIgnoredFlag);
+}
+
 }  // namespace
 
 WaylandInputMethodContext::WaylandInputMethodContext(
@@ -123,8 +136,16 @@ void WaylandInputMethodContext::Init(bool initialize_for_testing) {
 
 bool WaylandInputMethodContext::DispatchKeyEvent(
     const ui::KeyEvent& key_event) {
-  if (key_event.type() != ET_KEY_PRESSED ||
-      !character_composer_.FilterKeyPress(key_event))
+  if (key_event.type() != ET_KEY_PRESSED)
+    return false;
+
+  // Consume all peek key event.
+  if (IsPeekKeyEvent(key_event))
+    return true;
+
+  // This is the fallback key event which was not consumed by IME.
+  // So, process it inside Chrome.
+  if (!character_composer_.FilterKeyPress(key_event))
     return false;
 
   // CharacterComposer consumed the key event. Update the composition text.
@@ -136,7 +157,7 @@ bool WaylandInputMethodContext::DispatchKeyEvent(
 }
 
 void WaylandInputMethodContext::UpdatePreeditText(
-    const base::string16& preedit_text) {
+    const std::u16string& preedit_text) {
   CompositionText preedit;
   preedit.text = preedit_text;
   auto length = preedit.text.size();
@@ -177,7 +198,7 @@ void WaylandInputMethodContext::SetCursorLocation(const gfx::Rect& rect) {
 }
 
 void WaylandInputMethodContext::SetSurroundingText(
-    const base::string16& text,
+    const std::u16string& text,
     const gfx::Range& selection_range) {
   if (text_input_)
     text_input_->SetSurroundingText(text, selection_range);
@@ -273,7 +294,8 @@ void WaylandInputMethodContext::OnKeysym(uint32_t keysym,
   EventType type =
       state == WL_KEYBOARD_KEY_STATE_PRESSED ? ET_KEY_PRESSED : ET_KEY_RELEASED;
   key_delegate_->OnKeyboardKeyEvent(type, dom_code, /*repeat=*/false,
-                                    EventTimeForNow(), device_id);
+                                    EventTimeForNow(), device_id,
+                                    WaylandKeyboard::KeyEventKind::kKey);
 #else
   NOTIMPLEMENTED();
 #endif

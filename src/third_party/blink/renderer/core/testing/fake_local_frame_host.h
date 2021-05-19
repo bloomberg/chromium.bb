@@ -39,8 +39,6 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
                                  const ::blink::KURL& url,
                                  bool user_gesture) override;
   void DidDisplayInsecureContent() override;
-  void DidAddContentSecurityPolicies(
-      WTF::Vector<::network::mojom::blink::ContentSecurityPolicyPtr>) override;
   void DidContainInsecureFormAction() override;
   void DocumentAvailableInMainFrame(bool uses_temporary_zoom_level) override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
@@ -150,6 +148,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       const WTF::String& source_id,
       const WTF::String& untrusted_stack_trace) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
+  void DidActivateForPrerendering() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

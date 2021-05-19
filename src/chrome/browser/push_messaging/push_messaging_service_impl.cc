@@ -61,6 +61,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1620,7 +1621,7 @@ instance_id::InstanceIDDriver* PushMessagingServiceImpl::GetInstanceIDDriver()
 content::DevToolsBackgroundServicesContext*
 PushMessagingServiceImpl::GetDevToolsContext(const GURL& origin) const {
   auto* storage_partition =
-      content::BrowserContext::GetStoragePartitionForSite(profile_, origin);
+      content::BrowserContext::GetStoragePartitionForUrl(profile_, origin);
   if (!storage_partition)
     return nullptr;
 

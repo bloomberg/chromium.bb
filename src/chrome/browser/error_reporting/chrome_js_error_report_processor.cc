@@ -17,6 +17,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/crash/content/browser/error_reporting/javascript_error_report.h"
 #include "components/crash/core/app/client_upload_info.h"
@@ -195,6 +196,8 @@ void ChromeJsErrorReportProcessor::OnConsentCheckCompleted(
   }
   if (error_report->app_locale)
     params["app_locale"] = std::move(*error_report->app_locale);
+  if (error_report->page_url)
+    params["page_url"] = std::move(*error_report->page_url);
 
   SendReport(std::move(params), std::move(error_report->stack_trace),
              error_report->send_to_production_servers,
@@ -266,7 +269,7 @@ void ChromeJsErrorReportProcessor::CheckAndUpdateRecentErrorReports(
 void ChromeJsErrorReportProcessor::Create() {
   // Google only wants error reports from official builds. Don't install a
   // processor for other builds.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   DCHECK(JsErrorReportProcessor::Get() == nullptr)
       << "Attempted to create multiple ChromeJsErrorReportProcessors";
   VLOG(3) << "Installing ChromeJsErrorReportProcessor as JavaScript error "
@@ -276,7 +279,7 @@ void ChromeJsErrorReportProcessor::Create() {
 #else
   VLOG(3) << "Not installing ChromeJsErrorReportProcessor as JavaScript error "
           << "processor; not a Google Chrome build";
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void ChromeJsErrorReportProcessor::SendErrorReport(

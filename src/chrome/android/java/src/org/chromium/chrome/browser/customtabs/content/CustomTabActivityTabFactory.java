@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
 import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
 import org.chromium.chrome.browser.app.tabmodel.CustomTabsTabModelOrchestrator;
 import org.chromium.chrome.browser.app.tabmodel.TabModelOrchestrator;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -122,7 +122,9 @@ public class CustomTabActivityTabFactory {
     private ChromeTabCreator createTabCreator(boolean incognito) {
         return new ChromeTabCreator(mActivity, mActivityWindowAndroid.get(), mStartupTabPreloader,
                 mCustomTabDelegateFactory::get, incognito, null,
-                AsyncTabParamsManagerSingleton.getInstance());
+                AsyncTabParamsManagerSingleton.getInstance(),
+                mActivity.getTabModelSelectorSupplier(),
+                mActivity.getCompositorViewHolderSupplier());
     }
 
     /** Creates a new tab for a Custom Tab activity */

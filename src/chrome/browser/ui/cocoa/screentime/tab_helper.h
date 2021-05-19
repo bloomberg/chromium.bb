@@ -10,6 +10,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+class Profile;
+
 namespace content {
 class WebContents;
 }
@@ -25,13 +27,17 @@ class TabHelper : public content::WebContentsObserver,
                   public content::WebContentsUserData<TabHelper> {
  public:
   static void UseFakeWebpageControllerForTesting();
-  static bool IsScreentimeEnabled();
+  static bool IsScreentimeEnabledForProfile(Profile* profile);
 
   TabHelper(content::WebContents* contents);
   ~TabHelper() override;
 
   // WebContentsObserver:
   void DidFinishNavigation(content::NavigationHandle* handle) override;
+
+  WebpageController* page_controller_for_testing() const {
+    return page_controller_.get();
+  }
 
  private:
   friend class content::WebContentsUserData<TabHelper>;

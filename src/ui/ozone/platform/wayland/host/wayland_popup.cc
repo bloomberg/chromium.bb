@@ -16,8 +16,11 @@
 namespace ui {
 
 WaylandPopup::WaylandPopup(PlatformWindowDelegate* delegate,
-                           WaylandConnection* connection)
-    : WaylandWindow(delegate, connection) {}
+                           WaylandConnection* connection,
+                           WaylandWindow* parent)
+    : WaylandWindow(delegate, connection) {
+  set_parent_window(parent);
+}
 
 WaylandPopup::~WaylandPopup() = default;
 
@@ -56,6 +59,12 @@ void WaylandPopup::Show(bool inactive) {
   if (shell_popup_)
     return;
 
+  // Map parent window as WaylandPopup cannot become a visible child of a
+  // window that is not mapped.
+  DCHECK(parent_window());
+  if (!parent_window()->IsVisible())
+    parent_window()->Show(false);
+
   if (!CreateShellPopup()) {
     Close();
     return;
@@ -72,6 +81,7 @@ void WaylandPopup::Hide() {
 
   if (child_window())
     child_window()->Hide();
+  WaylandWindow::Hide();
 
   if (shell_popup_) {
     parent_window()->set_child_window(nullptr);

@@ -45,24 +45,32 @@ void av1_lookahead_destroy(struct lookahead_ctx *ctx) {
 struct lookahead_ctx *av1_lookahead_init(
     unsigned int width, unsigned int height, unsigned int subsampling_x,
     unsigned int subsampling_y, int use_highbitdepth, unsigned int depth,
-    const int border_in_pixels, int byte_alignment, int num_lap_buffers) {
-  struct lookahead_ctx *ctx = NULL;
+    const int border_in_pixels, int byte_alignment, int num_lap_buffers,
+    bool is_all_intra, int enable_global_motion) {
   int lag_in_frames = AOMMAX(1, depth);
+
+  // For all-intra frame encoding, previous source frames are not required.
+  // Hence max_pre_frames is set to 0 in this case. As previous source frames
+  // are accessed using a negative index to av1_lookahead_peek(), setting
+  // max_pre_frames to 0 will cause av1_lookahead_peek() to return NULL for a
+  // negative index.
+  const uint8_t max_pre_frames = is_all_intra ? 0 : MAX_PRE_FRAMES;
 
   // Add the lags to depth and clamp
   depth += num_lap_buffers;
   depth = clamp(depth, 1, MAX_TOTAL_BUFFERS);
 
   // Allocate memory to keep previous source frames available.
-  depth += MAX_PRE_FRAMES;
+  depth += max_pre_frames;
 
   // Allocate the lookahead structures
-  ctx = calloc(1, sizeof(*ctx));
+  struct lookahead_ctx *ctx = calloc(1, sizeof(*ctx));
   if (ctx) {
     unsigned int i;
     ctx->max_sz = depth;
     ctx->push_frame_count = 0;
-    ctx->read_ctxs[ENCODE_STAGE].pop_sz = ctx->max_sz - MAX_PRE_FRAMES;
+    ctx->max_pre_frames = max_pre_frames;
+    ctx->read_ctxs[ENCODE_STAGE].pop_sz = ctx->max_sz - ctx->max_pre_frames;
     ctx->read_ctxs[ENCODE_STAGE].valid = 1;
     if (num_lap_buffers) {
       ctx->read_ctxs[LAP_STAGE].pop_sz = lag_in_frames;
@@ -71,11 +79,10 @@ struct lookahead_ctx *av1_lookahead_init(
     ctx->buf = calloc(depth, sizeof(*ctx->buf));
     if (!ctx->buf) goto fail;
     for (i = 0; i < depth; i++) {
-      aom_free_frame_buffer(&ctx->buf[i].img);
-      if (aom_realloc_frame_buffer(&ctx->buf[i].img, width, height,
-                                   subsampling_x, subsampling_y,
-                                   use_highbitdepth, border_in_pixels,
-                                   byte_alignment, NULL, NULL, NULL))
+      if (aom_realloc_frame_buffer(
+              &ctx->buf[i].img, width, height, subsampling_x, subsampling_y,
+              use_highbitdepth, border_in_pixels, byte_alignment, NULL, NULL,
+              NULL, enable_global_motion))
         goto fail;
     }
   }
@@ -88,7 +95,6 @@ fail:
 int av1_lookahead_push(struct lookahead_ctx *ctx, const YV12_BUFFER_CONFIG *src,
                        int64_t ts_start, int64_t ts_end, int use_highbitdepth,
                        aom_enc_frame_flags_t flags) {
-  struct lookahead_entry *buf;
   int width = src->y_crop_width;
   int height = src->y_crop_height;
   int uv_width = src->uv_crop_width;
@@ -98,13 +104,13 @@ int av1_lookahead_push(struct lookahead_ctx *ctx, const YV12_BUFFER_CONFIG *src,
   int larger_dimensions, new_dimensions;
 
   assert(ctx->read_ctxs[ENCODE_STAGE].valid == 1);
-  if (ctx->read_ctxs[ENCODE_STAGE].sz + 1 + MAX_PRE_FRAMES > ctx->max_sz)
+  if (ctx->read_ctxs[ENCODE_STAGE].sz + 1 + ctx->max_pre_frames > ctx->max_sz)
     return 1;
   ctx->read_ctxs[ENCODE_STAGE].sz++;
   if (ctx->read_ctxs[LAP_STAGE].valid) {
     ctx->read_ctxs[LAP_STAGE].sz++;
   }
-  buf = pop(ctx, &ctx->write_idx);
+  struct lookahead_entry *buf = pop(ctx, &ctx->write_idx);
 
   new_dimensions = width != buf->img.y_crop_width ||
                    height != buf->img.y_crop_height ||
@@ -162,12 +168,11 @@ struct lookahead_entry *av1_lookahead_pop(struct lookahead_ctx *ctx, int drain,
 struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx, int index,
                                            COMPRESSOR_STAGE stage) {
   struct lookahead_entry *buf = NULL;
-  struct read_ctx *read_ctx = NULL;
   if (ctx == NULL) {
     return buf;
   }
 
-  read_ctx = &ctx->read_ctxs[stage];
+  struct read_ctx *read_ctx = &ctx->read_ctxs[stage];
   assert(read_ctx->valid == 1);
   if (index >= 0) {
     // Forward peek
@@ -178,7 +183,7 @@ struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx, int index,
     }
   } else if (index < 0) {
     // Backward peek
-    if (-index <= MAX_PRE_FRAMES) {
+    if (-index <= ctx->max_pre_frames) {
       index += (int)(read_ctx->read_idx);
       if (index < 0) index += (int)(ctx->max_sz);
       buf = ctx->buf + index;
@@ -190,19 +195,17 @@ struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx, int index,
 
 unsigned int av1_lookahead_depth(struct lookahead_ctx *ctx,
                                  COMPRESSOR_STAGE stage) {
-  struct read_ctx *read_ctx = NULL;
   assert(ctx != NULL);
 
-  read_ctx = &ctx->read_ctxs[stage];
+  struct read_ctx *read_ctx = &ctx->read_ctxs[stage];
   assert(read_ctx->valid == 1);
   return read_ctx->sz;
 }
 
 int av1_lookahead_pop_sz(struct lookahead_ctx *ctx, COMPRESSOR_STAGE stage) {
-  struct read_ctx *read_ctx = NULL;
   assert(ctx != NULL);
 
-  read_ctx = &ctx->read_ctxs[stage];
+  struct read_ctx *read_ctx = &ctx->read_ctxs[stage];
   assert(read_ctx->valid == 1);
   return read_ctx->pop_sz;
 }

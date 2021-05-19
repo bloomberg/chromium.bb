@@ -7,12 +7,16 @@
 #include "ash/projector/projector_metadata_controller.h"
 #include "ash/projector/projector_ui_controller.h"
 #include "ash/public/cpp/projector/projector_client.h"
+#include "ash/public/cpp/projector/projector_session.h"
 #include "ash/shell.h"
+#include "base/strings/utf_string_conversions.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
 ProjectorControllerImpl::ProjectorControllerImpl()
-    : ui_controller_(std::make_unique<ash::ProjectorUiController>()),
+    : projector_session_(std::make_unique<ash::ProjectorSessionImpl>()),
+      ui_controller_(std::make_unique<ash::ProjectorUiController>(this)),
       metadata_controller_(
           std::make_unique<ash::ProjectorMetadataController>()) {}
 
@@ -22,8 +26,49 @@ void ProjectorControllerImpl::SetClient(ProjectorClient* client) {
   client_ = client;
 }
 
-void ProjectorControllerImpl::ShowToolbar() {
-  ui_controller_->ShowToolbar();
+void ProjectorControllerImpl::OnSpeechRecognitionAvailable(bool available) {
+  if (available == is_speech_recognition_available_)
+    return;
+
+  is_speech_recognition_available_ = available;
+}
+
+void ProjectorControllerImpl::OnTranscription(
+    const std::u16string& text,
+    base::TimeDelta audio_start_time,
+    base::TimeDelta audio_end_time,
+    const std::vector<base::TimeDelta>& word_offsets,
+    bool is_final) {
+  std::string transcript = base::UTF16ToUTF8(text);
+
+  if (is_final) {
+    // Records final transcript.
+    metadata_controller_->RecordTranscription(transcript, audio_start_time,
+                                              audio_end_time, word_offsets);
+  }
+
+  // Render transcription.
+  if (is_caption_on_) {
+    ui_controller_->OnTranscription(transcript, is_final);
+  }
+}
+
+void ProjectorControllerImpl::SetProjectorToolsVisible(bool is_visible) {
+  // TODO(yilkal): Projector toolbar shouldn't be shown if soda is not
+  // available.
+  if (is_visible)
+    ui_controller_->ShowToolbar();
+  else
+    ui_controller_->CloseToolbar();
+}
+
+void ProjectorControllerImpl::StartProjectorSession(SourceType scope,
+                                                    aura::Window* window) {
+  // TODO(https://crbug.com/1185262): Start projector session.
+}
+
+bool ProjectorControllerImpl::IsEligible() const {
+  return is_speech_recognition_available_;
 }
 
 void ProjectorControllerImpl::SetCaptionState(bool is_on) {
@@ -31,6 +76,11 @@ void ProjectorControllerImpl::SetCaptionState(bool is_on) {
     return;
 
   is_caption_on_ = is_on;
+}
+
+void ProjectorControllerImpl::MarkKeyIdea() {
+  metadata_controller_->RecordKeyIdea();
+  ui_controller_->OnKeyIdeaMarked();
 }
 
 void ProjectorControllerImpl::OnRecordingStarted() {
@@ -43,41 +93,12 @@ void ProjectorControllerImpl::SaveScreencast(
   metadata_controller_->SaveMetadata(saved_video_path);
 }
 
-void ProjectorControllerImpl::OnTranscription(
-    chromeos::machine_learning::mojom::SpeechRecognizerEventPtr
-        speech_recognizer_event) {
-  bool is_final = speech_recognizer_event->is_final_result();
-  std::string transcript;
+void ProjectorControllerImpl::OnLaserPointerPressed() {
+  ui_controller_->OnLaserPointerPressed();
+}
 
-  if (is_final) {
-    auto& final_result = speech_recognizer_event->get_final_result();
-
-    if (final_result->final_hypotheses.size() > 0) {
-      // Get the first result which is the most likely.
-      transcript = final_result->final_hypotheses.at(0);
-    }
-
-    // Records final transcript.
-    metadata_controller_->RecordTranscription(
-        transcript, final_result->timing_event->audio_start_time,
-        final_result->timing_event->event_end_time,
-        final_result->timing_event->word_alignments);
-  } else if (speech_recognizer_event->is_partial_result()) {
-    auto& partial_text =
-        speech_recognizer_event->get_partial_result()->partial_text;
-    if (partial_text.size() > 0) {
-      // Get the first result which is the most likely.
-      transcript = partial_text.at(0);
-    }
-  } else {
-    LOG(ERROR) << "No valid speech recognition result.";
-    return;
-  }
-
-  // Render transcription.
-  if (is_caption_on_) {
-    ui_controller_->OnTranscription(transcript, is_final);
-  }
+void ProjectorControllerImpl::OnMarkerPressed() {
+  ui_controller_->OnMarkerPressed();
 }
 
 void ProjectorControllerImpl::SetProjectorUiControllerForTest(
@@ -90,12 +111,8 @@ void ProjectorControllerImpl::SetProjectorMetadataControllerForTest(
   metadata_controller_ = std::move(metadata_controller);
 }
 
-void ProjectorControllerImpl::MarkKeyIdea() {
-  metadata_controller_->RecordKeyIdea();
-  ui_controller_->OnKeyIdeaMarked();
-}
-
 void ProjectorControllerImpl::StartSpeechRecognition() {
+  DCHECK(is_speech_recognition_available_);
   DCHECK(!is_speech_recognition_on_);
   DCHECK_NE(client_, nullptr);
   client_->StartSpeechRecognition();
@@ -103,6 +120,7 @@ void ProjectorControllerImpl::StartSpeechRecognition() {
 }
 
 void ProjectorControllerImpl::StopSpeechRecognition() {
+  DCHECK(is_speech_recognition_available_);
   DCHECK(is_speech_recognition_on_);
   DCHECK_NE(client_, nullptr);
   client_->StopSpeechRecognition();

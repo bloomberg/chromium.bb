@@ -9,10 +9,10 @@
  */
 
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
-import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
-import '../settings_shared_css.m.js';
+import '../settings_shared_css.js';
 import './recent_site_permissions.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -21,7 +21,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {loadTimeData} from '../i18n_setup.js';
 import {routes} from '../route.js';
-import {Route, Router} from '../router.m.js';
+import {Route, Router} from '../router.js';
 import {ContentSettingsTypes} from '../site_settings/constants.js';
 
 import {CategoryListItem} from './site_settings_list.js';
@@ -93,8 +93,10 @@ function getCategoryItemMap() {
       id: Id.BLUETOOTH_DEVICES,
       label: 'siteSettingsBluetoothDevices',
       icon: 'settings:bluetooth',
-      enabledLabel: 'siteSettingsBluetoothDevicesAsk',
-      disabledLabel: 'siteSettingsBluetoothDevicesBlock',
+      enabledLabel: redesignEnabled ? 'siteSettingsBluetoothDevicesAllowed' :
+                                      'siteSettingsBluetoothDevicesAsk',
+      disabledLabel: redesignEnabled ? 'siteSettingsBluetoothDevicesBlocked' :
+                                       'siteSettingsBluetoothDevicesBlock',
       shouldShow: () =>
           loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
     },
@@ -160,8 +162,10 @@ function getCategoryItemMap() {
       id: Id.IDLE_DETECTION,
       label: 'siteSettingsIdleDetection',
       icon: 'settings:devices',
-      enabledLabel: 'siteSettingsIdleDetectionAsk',
-      disabledLabel: 'siteSettingsIdleDetectionBlock',
+      enabledLabel: redesignEnabled ? 'siteSettingsDeviceUseAllowed' :
+                                      'siteSettingsIdleDetectionAsk',
+      disabledLabel: redesignEnabled ? 'siteSettingsDeviceUseBlocked' :
+                                       'siteSettingsIdleDetectionBlock',
     },
     {
       route: routes.SITE_SETTINGS_IMAGES,
@@ -211,6 +215,16 @@ function getCategoryItemMap() {
       disabledLabel: 'siteSettingsInsecureContentBlock',
     },
     {
+      route: routes.SITE_SETTINGS_FILE_HANDLING,
+      id: Id.FILE_HANDLING,
+      label: 'siteSettingsFileHandling',
+      icon: 'settings:file-handling',
+      enabledLabel: 'siteSettingsFileHandlingAsk',
+      disabledLabel: 'siteSettingsFileHandlingBlock',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enableFileHandlingContentSetting'),
+    },
+    {
       route: routes.SITE_SETTINGS_FILE_SYSTEM_WRITE,
       id: Id.FILE_SYSTEM_WRITE,
       label: 'siteSettingsFileSystemWrite',
@@ -225,8 +239,10 @@ function getCategoryItemMap() {
       id: Id.FONT_ACCESS,
       label: 'fonts',
       icon: 'settings:font-access',
-      enabledLabel: 'siteSettingsFontAccessAsk',
-      disabledLabel: 'siteSettingsFontAccessBlock',
+      enabledLabel: redesignEnabled ? 'siteSettingsFontsAllowed' :
+                                      'siteSettingsFontAccessAsk',
+      disabledLabel: redesignEnabled ? 'siteSettingsFontsBlocked' :
+                                       'siteSettingsFontAccessBlock',
       shouldShow: () =>
           loadTimeData.getBoolean('enableFontAccessContentSetting'),
     },
@@ -255,6 +271,8 @@ function getCategoryItemMap() {
       id: 'pdfDocuments',
       label: 'siteSettingsPdfDocuments',
       icon: 'settings:pdf',
+      enabledLabel: redesignEnabled ? 'siteSettingsPdfsAllowed' : '',
+      disabledLabel: redesignEnabled ? 'siteSettingsPdfsBlocked' : '',
     },
     {
       route: routes.SITE_SETTINGS_POPUPS,
@@ -271,14 +289,20 @@ function getCategoryItemMap() {
       id: Id.PROTECTED_CONTENT,
       label: 'siteSettingsProtectedContent',
       icon: 'settings:protected-content',
+      enabledLabel: redesignEnabled ? 'siteSettingsProtectedContentAllowed' :
+                                      '',
+      disabledLabel: redesignEnabled ? 'siteSettingsProtectedContentBlocked' :
+                                       '',
     },
     {
       route: routes.SITE_SETTINGS_HANDLERS,
       id: Id.PROTOCOL_HANDLERS,
       label: 'siteSettingsHandlers',
       icon: 'settings:protocol-handler',
-      enabledLabel: 'siteSettingsHandlersAsk',
-      disabledLabel: 'siteSettingsHandlersBlocked',
+      enabledLabel: redesignEnabled ? 'siteSettingsProtocolHandlersAllowed' :
+                                      'siteSettingsHandlersAsk',
+      disabledLabel: redesignEnabled ? 'siteSettingsProtocolHandlersBlocked' :
+                                       'siteSettingsHandlersBlocked',
       shouldShow: () => !loadTimeData.getBoolean('isGuest'),
     },
     {
@@ -376,6 +400,14 @@ Polymer({
 
   properties: {
     /**
+     * Preferences state.
+     */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
+    /**
      * @private {{
      *   all: (!Array<!CategoryListItem>|undefined),
      *   permissionsBasic: (!Array<!CategoryListItem>|undefined),
@@ -413,6 +445,7 @@ Polymer({
             Id.IDLE_DETECTION,
             Id.WINDOW_PLACEMENT,
             Id.FONT_ACCESS,
+            Id.FILE_HANDLING,
           ]),
           contentBasic: buildItemListFromIds([
             Id.COOKIES,

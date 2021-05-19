@@ -48,8 +48,8 @@ the first "./a.out" with "./a.out -bench". Combine these changes with the
 #define WUFFS_IMPLEMENTATION
 
 // Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
-// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
-// the entire Wuffs standard library, implementing a variety of codecs and file
+// release/c/etc.c choose which parts of Wuffs to build. That file contains the
+// entire Wuffs standard library, implementing a variety of codecs and file
 // formats. Without this macro definition, an optimizing compiler or linker may
 // very well discard Wuffs code for unused codecs, but listing the Wuffs
 // modules we use makes that process explicit. Preprocessing means that such
@@ -74,6 +74,8 @@ wuffs_bmp_decode(uint64_t* n_bytes_out,
                  wuffs_base__io_buffer* dst,
                  uint32_t wuffs_initialize_flags,
                  wuffs_base__pixel_format pixfmt,
+                 uint32_t* quirks_ptr,
+                 size_t quirks_len,
                  wuffs_base__io_buffer* src) {
   wuffs_bmp__decoder dec;
   CHECK_STATUS("initialize",
@@ -81,7 +83,7 @@ wuffs_bmp_decode(uint64_t* n_bytes_out,
                                               wuffs_initialize_flags));
   return do_run__wuffs_base__image_decoder(
       wuffs_bmp__decoder__upcast_as__wuffs_base__image_decoder(&dec),
-      n_bytes_out, dst, pixfmt, src);
+      n_bytes_out, dst, pixfmt, quirks_ptr, quirks_len, src);
 }
 
 // --------
@@ -121,10 +123,6 @@ test_wuffs_bmp_decode_frame_config() {
   if (status.repr != wuffs_base__note__end_of_data) {
     RETURN_FAIL("decode_frame_config #1: have \"%s\", want \"%s\"", status.repr,
                 wuffs_base__note__end_of_data);
-  }
-  if (src.meta.ri != src.meta.wi) {
-    RETURN_FAIL("at end of data: ri (%zu) doesn't equal wi (%zu)", src.meta.ri,
-                src.meta.wi);
   }
   return NULL;
 }
@@ -197,7 +195,7 @@ bench_wuffs_bmp_decode_40k() {
   return do_bench_image_decode(
       &wuffs_bmp_decode, WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED,
       wuffs_base__make_pixel_format(WUFFS_BASE__PIXEL_FORMAT__BGRA_NONPREMUL),
-      "test/data/hat.bmp", 0, SIZE_MAX, 1000);
+      NULL, 0, "test/data/hat.bmp", 0, SIZE_MAX, 1000);
 }
 
 // ---------------- Mimic Benches

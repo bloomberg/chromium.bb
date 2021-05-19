@@ -465,7 +465,9 @@ using DebugObjectCache = std::vector<Handle<HeapObject>>;
   V(bool, detailed_source_positions_for_profiling, FLAG_detailed_line_info)   \
   V(int, embedder_wrapper_type_index, -1)                                     \
   V(int, embedder_wrapper_object_index, -1)                                   \
-  V(compiler::NodeObserver*, node_observer, nullptr)
+  V(compiler::NodeObserver*, node_observer, nullptr)                          \
+  /* Used in combination with --script-run-delay-once */                      \
+  V(bool, did_run_script_delay, false)
 
 #define THREAD_LOCAL_TOP_ACCESSOR(type, name)                         \
   inline void set_##name(type v) { thread_local_top()->name##_ = v; } \
@@ -631,23 +633,30 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   // Mutex for serializing access to break control structures.
   base::RecursiveMutex* break_access() { return &break_access_; }
 
-  // Shared mutex for allowing concurrent read/writes to FeedbackVectors.
+  // Shared mutex for allowing thread-safe concurrent reads of FeedbackVectors.
   base::SharedMutex* feedback_vector_access() {
     return &feedback_vector_access_;
   }
 
-  // Shared mutex for allowing concurrent read/writes to Strings.
-  base::SharedMutex* string_access() { return &string_access_; }
-
-  // Shared mutex for allowing concurrent read/writes to TransitionArrays.
-  base::SharedMutex* transition_array_access() {
-    return &transition_array_access_;
+  // Shared mutex for allowing thread-safe concurrent reads of
+  // InternalizedStrings.
+  base::SharedMutex* internalized_string_access() {
+    return &internalized_string_access_;
   }
 
-  // Shared mutex for allowing concurrent read/writes to SharedFunctionInfos.
+  // Shared mutex for allowing thread-safe concurrent reads of TransitionArrays
+  // of kind kFullTransitionArray.
+  base::SharedMutex* full_transition_array_access() {
+    return &full_transition_array_access_;
+  }
+
+  // Shared mutex for allowing thread-safe concurrent reads of
+  // SharedFunctionInfos.
   base::SharedMutex* shared_function_info_access() {
     return &shared_function_info_access_;
   }
+
+  base::SharedMutex* map_updater_access() { return &map_updater_access_; }
 
   // The isolate's string table.
   StringTable* string_table() { return string_table_.get(); }
@@ -1369,6 +1378,22 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
     return id;
   }
 
+  // https://github.com/tc39/proposal-top-level-await/pull/159
+  // TODO(syg): Update to actual spec link once merged.
+  //
+  // According to the spec, modules that depend on async modules (i.e. modules
+  // with top-level await) must be evaluated in order in which their
+  // [[AsyncEvaluating]] flags were set to true. V8 tracks this global total
+  // order with next_module_async_evaluating_ordinal_. Each module that sets its
+  // [[AsyncEvaluating]] to true grabs the next ordinal.
+  unsigned NextModuleAsyncEvaluatingOrdinal() {
+    unsigned ordinal = next_module_async_evaluating_ordinal_++;
+    CHECK_LT(ordinal, kMaxModuleAsyncEvaluatingOrdinal);
+    return ordinal;
+  }
+
+  inline void DidFinishModuleAsyncEvaluation(unsigned ordinal);
+
   void AddNearHeapLimitCallback(v8::NearHeapLimitCallback, void* data);
   void RemoveNearHeapLimitCallback(v8::NearHeapLimitCallback callback,
                                    size_t heap_limit);
@@ -1449,8 +1474,6 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   void AddDetachedContext(Handle<Context> context);
   void CheckDetachedContextsAfterGC();
 
-  void AddSharedWasmMemory(Handle<WasmMemoryObject> memory_object);
-
   std::vector<Object>* startup_object_cache() { return &startup_object_cache_; }
 
   bool IsGeneratingEmbeddedBuiltins() const {
@@ -1478,6 +1501,11 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   uint32_t embedded_blob_code_size() const;
   const uint8_t* embedded_blob_data() const;
   uint32_t embedded_blob_data_size() const;
+
+  // Returns true if short bultin calls optimization is enabled for the Isolate.
+  bool is_short_builtin_calls_enabled() const {
+    return V8_SHORT_BUILTIN_CALLS_BOOL && is_short_builtin_calls_enabled_;
+  }
 
   void set_array_buffer_allocator(v8::ArrayBuffer::Allocator* allocator) {
     array_buffer_allocator_ = allocator;
@@ -1598,6 +1626,8 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
 
   double LoadStartTimeMs();
 
+  void UpdateLoadStartTime();
+
   void IsolateInForegroundNotification();
 
   void IsolateInBackgroundNotification();
@@ -1626,8 +1656,12 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
     elements_deletion_counter_ = value;
   }
 
+#if V8_ENABLE_WEBASSEMBLY
   wasm::WasmEngine* wasm_engine() const { return wasm_engine_.get(); }
   void SetWasmEngine(std::shared_ptr<wasm::WasmEngine> engine);
+
+  void AddSharedWasmMemory(Handle<WasmMemoryObject> memory_object);
+#endif  // V8_ENABLE_WEBASSEMBLY
 
   const v8::Context::BackupIncumbentScope* top_backup_incumbent_scope() const {
     return top_backup_incumbent_scope_;
@@ -1805,9 +1839,10 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   std::shared_ptr<Counters> async_counters_;
   base::RecursiveMutex break_access_;
   base::SharedMutex feedback_vector_access_;
-  base::SharedMutex string_access_;
-  base::SharedMutex transition_array_access_;
+  base::SharedMutex internalized_string_access_;
+  base::SharedMutex full_transition_array_access_;
   base::SharedMutex shared_function_info_access_;
+  base::SharedMutex map_updater_access_;
   Logger* logger_ = nullptr;
   StubCache* load_stub_cache_ = nullptr;
   StubCache* store_stub_cache_ = nullptr;
@@ -1895,9 +1930,8 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   // True if this isolate was initialized from a snapshot.
   bool initialized_from_snapshot_ = false;
 
-  // TODO(ishell): remove
-  // True if ES2015 tail call elimination feature is enabled.
-  bool is_tail_call_elimination_enabled_ = true;
+  // True if short bultin calls optimization is enabled.
+  bool is_short_builtin_calls_enabled_ = false;
 
   // True if the isolate is in background. This flag is used
   // to prioritize between memory usage and latency.
@@ -1970,6 +2004,8 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   std::atomic<int> next_unique_sfi_id_;
 #endif
 
+  unsigned next_module_async_evaluating_ordinal_;
+
   // Vector of callbacks before a Call starts execution.
   std::vector<BeforeCallEnteredCallback> before_call_entered_callbacks_;
 
@@ -1993,8 +2029,8 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
 
   void InitializeDefaultEmbeddedBlob();
   void CreateAndSetEmbeddedBlob();
+  void MaybeRemapEmbeddedBuiltinsIntoCodeRange();
   void TearDownEmbeddedBlob();
-
   void SetEmbeddedBlob(const uint8_t* code, uint32_t code_size,
                        const uint8_t* data, uint32_t data_size);
   void ClearEmbeddedBlob();
@@ -2032,7 +2068,9 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
 
   size_t elements_deletion_counter_ = 0;
 
+#if V8_ENABLE_WEBASSEMBLY
   std::shared_ptr<wasm::WasmEngine> wasm_engine_;
+#endif  // V8_ENABLE_WEBASSEMBLY
 
   std::unique_ptr<TracingCpuProfilerImpl> tracing_cpu_profiler_;
 
@@ -2176,13 +2214,21 @@ class StackLimitCheck {
   Isolate* isolate_;
 };
 
-#define STACK_CHECK(isolate, result_value) \
-  do {                                     \
-    StackLimitCheck stack_check(isolate);  \
-    if (stack_check.HasOverflowed()) {     \
-      isolate->StackOverflow();            \
-      return result_value;                 \
-    }                                      \
+// This macro may be used in context that disallows JS execution.
+// That is why it checks only for a stack overflow and termination.
+#define STACK_CHECK(isolate, result_value)                   \
+  do {                                                       \
+    StackLimitCheck stack_check(isolate);                    \
+    if (stack_check.InterruptRequested()) {                  \
+      if (stack_check.HasOverflowed()) {                     \
+        isolate->StackOverflow();                            \
+        return result_value;                                 \
+      }                                                      \
+      if (isolate->stack_guard()->HasTerminationRequest()) { \
+        isolate->TerminateExecution();                       \
+        return result_value;                                 \
+      }                                                      \
+    }                                                        \
   } while (false)
 
 class StackTraceFailureMessage {

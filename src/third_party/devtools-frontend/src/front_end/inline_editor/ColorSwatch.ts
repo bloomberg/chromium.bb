@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
 import * as ComponentHelpers from '../component_helpers/component_helpers.js';
-import * as i18n from '../i18n/i18n.js';
+import * as Common from '../core/common/common.js';
+import * as i18n from '../core/i18n/i18n.js';
 import * as LitHtml from '../third_party/lit-html/lit-html.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Icon element title in Color Swatch of the inline editor in the Styles tab
   */

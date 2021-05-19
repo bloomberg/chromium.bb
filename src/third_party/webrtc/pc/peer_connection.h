@@ -271,7 +271,6 @@ class PeerConnection : public PeerConnectionInternal,
   rtc::Thread* worker_thread() const final { return context_->worker_thread(); }
 
   std::string session_id() const override {
-    RTC_DCHECK_RUN_ON(signaling_thread());
     return session_id_;
   }
 
@@ -324,7 +323,8 @@ class PeerConnection : public PeerConnectionInternal,
   PeerConnectionObserver* Observer() const;
   bool IsClosed() const {
     RTC_DCHECK_RUN_ON(signaling_thread());
-    return sdp_handler_->signaling_state() == PeerConnectionInterface::kClosed;
+    return !sdp_handler_ ||
+           sdp_handler_->signaling_state() == PeerConnectionInterface::kClosed;
   }
   // Get current SSL role used by SCTP's underlying transport.
   bool GetSctpSslRole(rtc::SSLRole* role);
@@ -436,11 +436,13 @@ class PeerConnection : public PeerConnectionInternal,
 
   // Returns true if SRTP (either using DTLS-SRTP or SDES) is required by
   // this session.
-  bool SrtpRequired() const RTC_RUN_ON(signaling_thread());
+  bool SrtpRequired() const;
 
   void OnSentPacket_w(const rtc::SentPacket& sent_packet);
 
   bool SetupDataChannelTransport_n(const std::string& mid)
+      RTC_RUN_ON(network_thread());
+  void SetupRtpDataChannelTransport_n(cricket::RtpDataChannel* data_channel)
       RTC_RUN_ON(network_thread());
   void TeardownDataChannelTransport_n() RTC_RUN_ON(network_thread());
   cricket::ChannelInterface* GetChannel(const std::string& content_name);
@@ -577,7 +579,7 @@ class PeerConnection : public PeerConnectionInternal,
 
   // Invoked when TransportController connection completion is signaled.
   // Reports stats for all transports in use.
-  void ReportTransportStats() RTC_RUN_ON(signaling_thread());
+  void ReportTransportStats() RTC_RUN_ON(network_thread());
 
   // Gather the usage of IPv4/IPv6 as best connection.
   static void ReportBestConnectionState(const cricket::TransportStats& stats);
@@ -670,7 +672,7 @@ class PeerConnection : public PeerConnectionInternal,
   rtc::scoped_refptr<RTCStatsCollector> stats_collector_
       RTC_GUARDED_BY(signaling_thread());
 
-  std::string session_id_ RTC_GUARDED_BY(signaling_thread());
+  const std::string session_id_;
 
   std::unique_ptr<JsepTransportController>
       transport_controller_;  // TODO(bugs.webrtc.org/9987): Accessed on both

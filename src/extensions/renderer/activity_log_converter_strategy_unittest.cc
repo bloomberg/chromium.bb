@@ -23,7 +23,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
  protected:
   void SetUp() override {
     converter_ = content::V8ValueConverter::Create();
-    strategy_.reset(new ActivityLogConverterStrategy());
+    strategy_ = std::make_unique<ActivityLogConverterStrategy>();
     converter_->SetFunctionAllowed(true);
     converter_->SetStrategy(strategy_.get());
   }
@@ -38,10 +38,9 @@ class ActivityLogConverterStrategyTest : public testing::Test {
 
   testing::AssertionResult VerifyBoolean(v8::Local<v8::Value> v8_value,
                                          bool expected) {
-    bool out;
     std::unique_ptr<base::Value> value(
         converter_->FromV8Value(v8_value, context()));
-    if (value->is_bool() && value->GetAsBoolean(&out) && out == expected)
+    if (value->is_bool() && value->GetBool() == expected)
       return testing::AssertionSuccess();
     return testing::AssertionFailure();
   }

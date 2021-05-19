@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/protocol/target_handler.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -25,6 +27,7 @@
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "url/url_constants.h"
 
 namespace content {
 namespace protocol {
@@ -582,7 +585,7 @@ std::vector<TargetHandler*> TargetHandler::ForAgentHost(
 }
 
 void TargetHandler::Wire(UberDispatcher* dispatcher) {
-  frontend_.reset(new Target::Frontend(dispatcher->channel()));
+  frontend_ = std::make_unique<Target::Frontend>(dispatcher->channel());
   Target::Dispatcher::wire(dispatcher, this);
 }
 
@@ -606,9 +609,7 @@ Response TargetHandler::Disable() {
     for (auto* context : delegate->GetBrowserContexts()) {
       if (!dispose_on_detach_context_ids_.contains(context->UniqueId()))
         continue;
-      delegate->DisposeBrowserContext(
-          context,
-          base::BindOnce([](bool success, const std::string& error) {}));
+      delegate->DisposeBrowserContext(context, base::DoNothing());
     }
     dispose_on_detach_context_ids_.clear();
   }
@@ -912,8 +913,12 @@ Response TargetHandler::CreateTarget(const std::string& url,
       DevToolsManager::GetInstance()->delegate();
   if (!delegate)
     return Response::ServerError("Not supported");
+  GURL gurl(url);
+  if (gurl.is_empty()) {
+    gurl = GURL(url::kAboutBlankURL);
+  }
   scoped_refptr<content::DevToolsAgentHost> agent_host =
-      delegate->CreateNewTarget(GURL(url));
+      delegate->CreateNewTarget(gurl);
   if (!agent_host)
     return Response::ServerError("Not supported");
   *out_target_id = agent_host->GetId();

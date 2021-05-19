@@ -138,7 +138,7 @@ TEST_F(FileManagerFileAPIUtilTest,
 
   // Obtain the file system context.
   content::StoragePartition* const partition =
-      content::BrowserContext::GetStoragePartitionForSite(
+      content::BrowserContext::GetStoragePartitionForUrl(
           profile, GURL("http://example.com"));
   ASSERT_TRUE(partition);
   storage::FileSystemContext* const context = partition->GetFileSystemContext();
@@ -187,14 +187,12 @@ TEST_F(FileManagerFileAPIUtilTest,
   EXPECT_TRUE(result[0]->is_native_file());
   EXPECT_EQ(FILE_PATH_LITERAL("/native/File 1.txt"),
             result[0]->get_native_file()->file_path.value());
-  EXPECT_EQ(base::ASCIIToUTF16("display_name"),
-            result[0]->get_native_file()->display_name);
+  EXPECT_EQ(u"display_name", result[0]->get_native_file()->display_name);
 
   EXPECT_TRUE(result[1]->is_native_file());
   EXPECT_EQ(FILE_PATH_LITERAL("/native/cache/xxx"),
             result[1]->get_native_file()->file_path.value());
-  EXPECT_EQ(base::ASCIIToUTF16("display_name"),
-            result[1]->get_native_file()->display_name);
+  EXPECT_EQ(u"display_name", result[1]->get_native_file()->display_name);
 
   EXPECT_TRUE(result[2]->is_file_system());
   EXPECT_TRUE(result[2]->get_file_system()->url.is_valid());

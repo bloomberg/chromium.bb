@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_clipping_behavior.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_offscreen_result.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -36,6 +36,7 @@ class AXRangeRectDelegate {
       AXNodeID node_id,
       int start_offset,
       int end_offset,
+      ui::AXClippingBehavior clipping_behavior,
       AXOffscreenResult* offscreen_result) = 0;
   virtual gfx::Rect GetBoundsRect(AXTreeID tree_id,
                                   AXNodeID node_id,
@@ -274,18 +275,18 @@ class AXRange {
   // Pass a |max_count| of -1 to retrieve all text in the AXRange.
   // Note that if this AXRange has its anchor or focus located at an ignored
   // position, we shrink the range to the closest unignored positions.
-  base::string16 GetText(AXTextConcatenationBehavior concatenation_behavior =
+  std::u16string GetText(AXTextConcatenationBehavior concatenation_behavior =
                              AXTextConcatenationBehavior::kAsTextContent,
                          int max_count = -1,
                          bool include_ignored = false,
                          size_t* appended_newlines_count = nullptr) const {
     if (max_count == 0 || IsNull())
-      return base::string16();
+      return std::u16string();
 
     base::Optional<int> endpoint_comparison =
         CompareEndpoints(anchor(), focus());
     if (!endpoint_comparison)
-      return base::string16();
+      return std::u16string();
 
     AXPositionInstance start = (endpoint_comparison.value() < 0)
                                    ? anchor_->AsLeafTextPosition()
@@ -294,7 +295,7 @@ class AXRange {
                                  ? focus_->AsLeafTextPosition()
                                  : anchor_->AsLeafTextPosition();
 
-    base::string16 range_text;
+    std::u16string range_text;
     size_t computed_newlines_count = 0;
     bool is_first_non_whitespace_leaf = true;
     bool crossed_paragraph_boundary = false;
@@ -321,7 +322,7 @@ class AXRange {
           // When preserving layout line breaks, don't append `\n` next if the
           // previous leaf position was a <br> (already ending with a newline).
           if (crossed_paragraph_boundary && !found_trailing_newline) {
-            range_text += base::ASCIIToUTF16("\n");
+            range_text += u"\n";
             computed_newlines_count++;
           }
 
@@ -376,10 +377,42 @@ class AXRange {
   std::vector<gfx::Rect> GetRects(AXRangeRectDelegate* delegate) const {
     std::vector<gfx::Rect> rects;
 
+    AXPositionInstance range_start = anchor()->AsLeafTextPosition();
+    AXPositionInstance range_end = focus()->AsLeafTextPosition();
+
+    // For a degenerate range, we want to fetch unclipped bounding rect, because
+    // text with the same start and end off set (i.e. degenerate) will have an
+    // inner text bounding rect with height of the character and width of 0,
+    // which the browser platform will consider as an empty rect and ends up
+    // clipping it, resulting in size 0x1 rect.
+    // After we retrieve the unclipped bounding rect, we want to set its width
+    // to 1 to represent a caret/insertion point.
+    //
+    // Note: The caller of this function is only UIA TextPattern, so displaying
+    // bounding rects for degenerate range is only limited for UIA currently.
+    if (IsCollapsed() && range_start->IsInTextObject()) {
+      AXOffscreenResult offscreen_result;
+      gfx::Rect degenerate_range_rect = delegate->GetInnerTextRangeBoundsRect(
+          range_start->tree_id(), range_start->anchor_id(),
+          range_start->text_offset(), range_end->text_offset(),
+          ui::AXClippingBehavior::kUnclipped, &offscreen_result);
+      if (offscreen_result == AXOffscreenResult::kOnscreen) {
+        DCHECK(degenerate_range_rect.width() == 0);
+        degenerate_range_rect.set_width(1);
+        rects.push_back(degenerate_range_rect);
+      }
+
+      return rects;
+    }
+
     for (const AXRange& leaf_text_range : *this) {
       DCHECK(leaf_text_range.IsLeafTextRange());
       AXPositionType* current_line_start = leaf_text_range.anchor();
       AXPositionType* current_line_end = leaf_text_range.focus();
+
+      // We want to skip ranges from ignored nodes.
+      if (current_line_start->IsIgnored())
+        continue;
 
       // For text anchors, we retrieve the bounding rectangles of its text
       // content. For non-text anchors (such as checkboxes, images, etc.), we
@@ -392,7 +425,8 @@ class AXRange {
                     current_line_start->tree_id(),
                     current_line_start->anchor_id(),
                     current_line_start->text_offset(),
-                    current_line_end->text_offset(), &offscreen_result)
+                    current_line_end->text_offset(),
+                    ui::AXClippingBehavior::kClipped, &offscreen_result)
               : delegate->GetBoundsRect(current_line_start->tree_id(),
                                         current_line_start->anchor_id(),
                                         &offscreen_result);

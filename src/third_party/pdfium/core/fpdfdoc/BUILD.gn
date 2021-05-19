@@ -9,8 +9,6 @@ source_set("fpdfdoc") {
   sources = [
     "cba_fontmap.cpp",
     "cba_fontmap.h",
-    "cline.cpp",
-    "cline.h",
     "cpdf_aaction.cpp",
     "cpdf_aaction.h",
     "cpdf_action.cpp",
@@ -70,15 +68,13 @@ source_set("fpdfdoc") {
     "cpvt_generateap.h",
     "cpvt_line.h",
     "cpvt_lineinfo.h",
+    "cpvt_section.cpp",
+    "cpvt_section.h",
     "cpvt_word.h",
     "cpvt_wordinfo.cpp",
     "cpvt_wordinfo.h",
     "cpvt_wordplace.h",
     "cpvt_wordrange.h",
-    "csection.cpp",
-    "csection.h",
-    "ctypeset.cpp",
-    "ctypeset.h",
     "ipvt_fontmap.h",
   ]
   configs += [ "../../:pdfium_core_config" ]

@@ -349,11 +349,10 @@ void PageTimingMetricsSender::SendNow() {
   }
   std::sort(render_data_.input_timestamps.begin(),
             render_data_.input_timestamps.end());
-  sender_->SendTiming(
-      last_timing_, metadata_, std::move(new_features_), std::move(resources),
-      render_data_, last_cpu_timing_, std::move(new_deferred_resource_data_),
-      std::move(input_timing_delta_), std::move(mobile_friendliness_));
-  mobile_friendliness_ = blink::MobileFriendliness();
+  sender_->SendTiming(last_timing_, metadata_, std::move(new_features_),
+                      std::move(resources), render_data_, last_cpu_timing_,
+                      std::move(new_deferred_resource_data_),
+                      std::move(input_timing_delta_), mobile_friendliness_);
   input_timing_delta_ = mojom::InputTiming::New();
   new_deferred_resource_data_ = mojom::DeferredResourceCounts::New();
   new_features_ = mojom::PageLoadFeatures::New();

@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/containers/span.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
@@ -55,7 +54,7 @@ class WebUIDataSource {
 
   // Adds a string keyed to its name to our dictionary.
   virtual void AddString(base::StringPiece name,
-                         const base::string16& value) = 0;
+                         const std::u16string& value) = 0;
 
   // Adds a string keyed to its name to our dictionary.
   virtual void AddString(base::StringPiece name, const std::string& value) = 0;
@@ -137,6 +136,11 @@ class WebUIDataSource {
   virtual void OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName directive,
       const std::string& value) = 0;
+
+  // Adds cross origin opener, embedder, and resource policy headers.
+  virtual void OverrideCrossOriginOpenerPolicy(const std::string& value) = 0;
+  virtual void OverrideCrossOriginEmbedderPolicy(const std::string& value) = 0;
+  virtual void OverrideCrossOriginResourcePolicy(const std::string& value) = 0;
 
   // Removes directives related to Trusted Types from the CSP header.
   virtual void DisableTrustedTypesCSP() = 0;

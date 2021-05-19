@@ -21,6 +21,7 @@
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/utils.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/safe_browsing/ios/password_protection/password_protection_request_ios.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
@@ -35,6 +36,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/safe_browsing/user_population.h"
+#import "ios/chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -74,6 +76,14 @@ using ShowWarningCallback =
     safe_browsing::PasswordProtectionService::ShowWarningCallback;
 
 namespace {
+
+// Returns true if the command line has an artificial unsafe cached verdict.
+bool HasArtificialCachedVerdict() {
+  std::string phishing_url_string =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          safe_browsing::kArtificialCachedPhishGuardVerdictFlag);
+  return !phishing_url_string.empty();
+}
 
 // Given a |web_state|, returns a timestamp of its last committed
 // navigation.
@@ -124,7 +134,12 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
           sb_service->GetURLLoaderFactory(),
           ios::HistoryServiceFactory::GetForBrowserState(
               browser_state,
-              ServiceAccessType::EXPLICIT_ACCESS)),
+              ServiceAccessType::EXPLICIT_ACCESS),
+          /*pref_service=*/nullptr,
+          /*token_fetcher=*/nullptr,
+          browser_state->IsOffTheRecord(),
+          /*identity_manager=*/nullptr,
+          /*try_token_fetch=*/false),
       browser_state_(browser_state) {}
 
 ChromePasswordProtectionService::~ChromePasswordProtectionService() = default;
@@ -158,7 +173,7 @@ void ChromePasswordProtectionService::ShowModalWarning(
         GetPasswordProtectionReusedPasswordAccountType(request->password_type(),
                                                        request->username());
     std::vector<size_t> placeholder_offsets;
-    const base::string16 warning_text = GetWarningDetailText(
+    const std::u16string warning_text = GetWarningDetailText(
         reused_password_account_type, &placeholder_offsets);
     // Partial bind WebState and password_type.
     auto completion_callback = base::BindOnce(
@@ -166,6 +181,40 @@ void ChromePasswordProtectionService::ShowModalWarning(
         weak_factory_.GetWeakPtr(), request_ios->web_state(), password_type);
     std::move(callback).Run(warning_text, std::move(completion_callback));
   }
+}
+
+void ChromePasswordProtectionService::CacheVerdict(
+    const GURL& url,
+    LoginReputationClientRequest::TriggerType trigger_type,
+    ReusedPasswordAccountType password_type,
+    const LoginReputationClientResponse& verdict,
+    const base::Time& receive_time) {
+  if (!CanGetReputationOfURL(url) || IsIncognito())
+    return;
+  VerdictCacheManagerFactory::GetForBrowserState(browser_state_)
+      ->CachePhishGuardVerdict(trigger_type, password_type, verdict,
+                               receive_time);
+}
+
+LoginReputationClientResponse::VerdictType
+ChromePasswordProtectionService::GetCachedVerdict(
+    const GURL& url,
+    LoginReputationClientRequest::TriggerType trigger_type,
+    ReusedPasswordAccountType password_type,
+    LoginReputationClientResponse* out_response) {
+  if (HasArtificialCachedVerdict() ||
+      (url.is_valid() && CanGetReputationOfURL(url))) {
+    return VerdictCacheManagerFactory::GetForBrowserState(browser_state_)
+        ->GetCachedPhishGuardVerdict(url, trigger_type, password_type,
+                                     out_response);
+  }
+  return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
+}
+
+int ChromePasswordProtectionService::GetStoredVerdictCount(
+    LoginReputationClientRequest::TriggerType trigger_type) {
+  return VerdictCacheManagerFactory::GetForBrowserState(browser_state_)
+      ->GetStoredPhishGuardVerdictCount(trigger_type);
 }
 
 void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
@@ -286,10 +335,7 @@ bool ChromePasswordProtectionService::UserClickedThroughSBInterstitial(
 PasswordProtectionTrigger
 ChromePasswordProtectionService::GetPasswordProtectionWarningTriggerPref(
     ReusedPasswordAccountType password_type) const {
-  if (password_type.account_type() ==
-          ReusedPasswordAccountType::SAVED_PASSWORD &&
-      base::FeatureList::IsEnabled(
-          safe_browsing::kPasswordProtectionForSavedPasswords))
+  if (password_type.account_type() == ReusedPasswordAccountType::SAVED_PASSWORD)
     return safe_browsing::PHISHING_REUSE;
 
   bool is_policy_managed =
@@ -551,19 +597,17 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDialogInteraction(
   user_event_service->RecordUserEvent(std::move(specifics));
 }
 
-base::string16 ChromePasswordProtectionService::GetWarningDetailText(
+std::u16string ChromePasswordProtectionService::GetWarningDetailText(
     ReusedPasswordAccountType password_type,
     std::vector<size_t>* placeholder_offsets) const {
   DCHECK(password_type.account_type() ==
          ReusedPasswordAccountType::SAVED_PASSWORD);
-  DCHECK(base::FeatureList::IsEnabled(
-      safe_browsing::kPasswordProtectionForSavedPasswords));
   return GetWarningDetailTextForSavedPasswords(placeholder_offsets);
 }
-base::string16
+std::u16string
 ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords(
     std::vector<size_t>* placeholder_offsets) const {
-  std::vector<base::string16> placeholders =
+  std::vector<std::u16string> placeholders =
       GetPlaceholdersForSavedPasswordWarningText();
   // The default text is a complete sentence without placeholders.
   return placeholders.empty()
@@ -572,10 +616,10 @@ ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords(
              : GetWarningDetailTextToCheckSavedPasswords(placeholder_offsets);
 }
 
-base::string16
+std::u16string
 ChromePasswordProtectionService::GetWarningDetailTextToCheckSavedPasswords(
     std::vector<size_t>* placeholder_offsets) const {
-  std::vector<base::string16> placeholders =
+  std::vector<std::u16string> placeholders =
       GetPlaceholdersForSavedPasswordWarningText();
   if (placeholders.size() == 1) {
     return l10n_util::GetStringFUTF16(
@@ -592,7 +636,7 @@ ChromePasswordProtectionService::GetWarningDetailTextToCheckSavedPasswords(
   }
 }
 
-std::vector<base::string16>
+std::vector<std::u16string>
 ChromePasswordProtectionService::GetPlaceholdersForSavedPasswordWarningText()
     const {
   const std::vector<std::string>& matching_domains =
@@ -602,7 +646,7 @@ ChromePasswordProtectionService::GetPlaceholdersForSavedPasswordWarningText()
   // Show most commonly spoofed domains first.
   // This looks through the top priority spoofed domains and then checks to see
   // if it's in the matching domains.
-  std::vector<base::string16> placeholders;
+  std::vector<std::u16string> placeholders;
   for (auto priority_domain_iter = spoofed_domains.begin();
        priority_domain_iter != spoofed_domains.end(); ++priority_domain_iter) {
     std::string matching_domain;

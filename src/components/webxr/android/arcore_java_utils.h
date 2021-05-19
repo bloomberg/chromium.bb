@@ -27,6 +27,7 @@ class ArCoreJavaUtils : public device::ArCoreSessionUtils {
       int render_process_id,
       int render_frame_id,
       bool use_overlay,
+      bool can_render_dom_content,
       device::SurfaceReadyCallback ready_callback,
       device::SurfaceTouchCallback touch_callback,
       device::SurfaceDestroyedCallback destroyed_callback) override;
@@ -39,6 +40,7 @@ class ArCoreJavaUtils : public device::ArCoreSessionUtils {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& surface,
+      const base::android::JavaParamRef<jobject>& root_window,
       int rotation,
       int width,
       int height);

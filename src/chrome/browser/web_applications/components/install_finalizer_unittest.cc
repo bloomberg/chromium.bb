@@ -106,25 +106,24 @@ class InstallFinalizerUnitTest : public WebAppTest {
 TEST_F(InstallFinalizerUnitTest, BasicInstallSucceeds) {
   auto info = std::make_unique<WebApplicationInfo>();
   info->start_url = GURL("https://foo.example");
-  info->title = base::ASCIIToUTF16("Foo Title");
+  info->title = u"Foo Title";
   InstallFinalizer::FinalizeOptions options;
   options.install_source = webapps::WebappInstallSource::INTERNAL_DEFAULT;
 
   FinalizeInstallResult result = AwaitFinalizeInstall(*info, options);
 
   EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
-  EXPECT_EQ(result.installed_app_id,
-            web_app::GenerateAppIdFromURL(info->start_url));
+  EXPECT_EQ(result.installed_app_id, GenerateAppIdFromURL(info->start_url));
 }
 
 TEST_F(InstallFinalizerUnitTest, ConcurrentInstallSucceeds) {
   auto info1 = std::make_unique<WebApplicationInfo>();
   info1->start_url = GURL("https://foo1.example");
-  info1->title = base::ASCIIToUTF16("Foo1 Title");
+  info1->title = u"Foo1 Title";
 
   auto info2 = std::make_unique<WebApplicationInfo>();
   info2->start_url = GURL("https://foo2.example");
-  info2->title = base::ASCIIToUTF16("Foo2 Title");
+  info2->title = u"Foo2 Title";
 
   InstallFinalizer::FinalizeOptions options;
   options.install_source = webapps::WebappInstallSource::INTERNAL_DEFAULT;
@@ -137,11 +136,10 @@ TEST_F(InstallFinalizerUnitTest, ConcurrentInstallSucceeds) {
   {
     finalizer().FinalizeInstall(
         *info1, options,
-        base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
-                                       web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
-          EXPECT_EQ(installed_app_id,
-                    web_app::GenerateAppIdFromURL(info1->start_url));
+        base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                       InstallResultCode code) {
+          EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+          EXPECT_EQ(installed_app_id, GenerateAppIdFromURL(info1->start_url));
           callback1_called = true;
           if (callback2_called)
             run_loop.Quit();
@@ -152,11 +150,10 @@ TEST_F(InstallFinalizerUnitTest, ConcurrentInstallSucceeds) {
   {
     finalizer().FinalizeInstall(
         *info2, options,
-        base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
-                                       web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
-          EXPECT_EQ(installed_app_id,
-                    web_app::GenerateAppIdFromURL(info2->start_url));
+        base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                       InstallResultCode code) {
+          EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+          EXPECT_EQ(installed_app_id, GenerateAppIdFromURL(info2->start_url));
           callback2_called = true;
           if (callback1_called)
             run_loop.Quit();
@@ -172,7 +169,7 @@ TEST_F(InstallFinalizerUnitTest, ConcurrentInstallSucceeds) {
 TEST_F(InstallFinalizerUnitTest, InstallStoresLatestWebAppInstallSource) {
   auto info = std::make_unique<WebApplicationInfo>();
   info->start_url = GURL("https://foo.example");
-  info->title = base::ASCIIToUTF16("Foo Title");
+  info->title = u"Foo Title";
   InstallFinalizer::FinalizeOptions options;
   options.install_source = webapps::WebappInstallSource::INTERNAL_DEFAULT;
 

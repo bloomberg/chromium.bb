@@ -10,8 +10,7 @@
 #
 list(APPEND AOM_INSTALL_INCS "${AOM_ROOT}/aom/aom.h"
             "${AOM_ROOT}/aom/aom_codec.h" "${AOM_ROOT}/aom/aom_frame_buffer.h"
-            "${AOM_ROOT}/aom/aom_image.h" "${AOM_ROOT}/aom/aom_integer.h"
-            "${AOM_ROOT}/aom/aom.h")
+            "${AOM_ROOT}/aom/aom_image.h" "${AOM_ROOT}/aom/aom_integer.h")
 
 if(CONFIG_AV1_DECODER)
   list(APPEND AOM_INSTALL_INCS "${AOM_ROOT}/aom/aom_decoder.h"

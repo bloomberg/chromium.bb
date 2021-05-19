@@ -34,7 +34,6 @@
 #include <string>
 #include <utility>
 
-#include "base/i18n/uchar.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
@@ -684,6 +683,23 @@ bool SecurityOrigin::IsSameOriginDomainWith(
   return can_access;
 }
 
+bool SecurityOrigin::IsSameSiteWith(const SecurityOrigin* other) const {
+  // "A and B are either both opaque origins, or both tuple origins with the
+  // same scheme"
+  if (IsOpaque() != other->IsOpaque())
+    return false;
+  if (!IsOpaque() && Protocol() != other->Protocol())
+    return false;
+
+  // Schemelessly same site check.
+  // https://html.spec.whatwg.org/#schemelessly-same-site
+  if (IsOpaque())
+    return IsSameOriginWith(other);
+  if (RegistrableDomain().IsNull())
+    return Host() == other->Host();
+  return RegistrableDomain() == other->RegistrableDomain();
+}
+
 const KURL& SecurityOrigin::UrlWithUniqueOpaqueOrigin() {
   DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(const KURL, url, ("data:,"));
@@ -738,9 +754,9 @@ String SecurityOrigin::CanonicalizeHost(const String& host, bool* success) {
     *success = url::CanonicalizeHost(
         utf8.data(), url::Component(0, utf8.size()), &canon_output, &out_host);
   } else {
-    *success = url::CanonicalizeHost(
-        base::i18n::ToChar16Ptr(host.Characters16()),
-        url::Component(0, host.length()), &canon_output, &out_host);
+    *success = url::CanonicalizeHost(host.Characters16(),
+                                     url::Component(0, host.length()),
+                                     &canon_output, &out_host);
   }
   return String::FromUTF8(canon_output.data(), canon_output.length());
 }

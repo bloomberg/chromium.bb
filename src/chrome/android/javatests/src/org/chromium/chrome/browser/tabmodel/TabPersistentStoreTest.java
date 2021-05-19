@@ -87,6 +87,10 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group"})
 public class TabPersistentStoreTest {
+    // Test activity type that does not restore tab on cold restart.
+    // Any type other than ActivityType.TABBED works.
+    private static final @ActivityType int NO_RESTORE_TYPE = ActivityType.CUSTOM_TAB;
+
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
@@ -149,10 +153,10 @@ public class TabPersistentStoreTest {
             Callable<TabModelImpl> callable = new Callable<TabModelImpl>() {
                 @Override
                 public TabModelImpl call() {
-                    return new TabModelImpl(Profile.getLastUsedRegularProfile(), false,
+                    return new TabModelImpl(Profile.getLastUsedRegularProfile(), NO_RESTORE_TYPE,
                             getTabCreatorManager().getTabCreator(false),
                             getTabCreatorManager().getTabCreator(true), mTabModelOrderController,
-                            null, mTabPersistentStore, nextTabPolicySupplier,
+                            null, nextTabPolicySupplier,
                             AsyncTabParamsManagerSingleton.getInstance(), TestTabModelSelector.this,
                             true);
                 }
@@ -162,8 +166,8 @@ public class TabPersistentStoreTest {
                     new IncognitoTabModelImpl(new IncognitoTabModelImplCreator(null,
                             getTabCreatorManager().getTabCreator(false),
                             getTabCreatorManager().getTabCreator(true), mTabModelOrderController,
-                            null, mTabPersistentStore, nextTabPolicySupplier,
-                            AsyncTabParamsManagerSingleton.getInstance(), this));
+                            null, nextTabPolicySupplier,
+                            AsyncTabParamsManagerSingleton.getInstance(), NO_RESTORE_TYPE, this));
             initialize(regularTabModel, incognitoTabModel);
         }
 
@@ -715,34 +719,6 @@ public class TabPersistentStoreTest {
 
         Assert.assertEquals(info.selectedTabId,
                 mPreferences.readInt(ChromePreferenceKeys.TABMODEL_ACTIVE_TAB_ID, -1));
-    }
-
-    /**
-     * Tests that a real {@link TabModelImpl} will use the {@link TabPersistentStore} to write out
-     * an updated metadata file when a closure is undone.
-     */
-    @Test
-    @SmallTest
-    @Feature({"TabPersistentStore"})
-    @ParameterAnnotations.UseMethodParameter(StoreParamProvider.class)
-    public void testUndoSingleTabClosureWritesTabListFile(boolean isCriticalPersistedTabDataEnabled)
-            throws Exception {
-        CachedFeatureFlags.setForTesting(
-                ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA, isCriticalPersistedTabDataEnabled);
-        TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_NO_M18;
-        mMockDirectory.writeTabModelFiles(info, true);
-
-        // Start closing one tab, then undo it.  Make sure the tab list metadata is saved out.
-        TestTabModelSelector selector = createAndRestoreRealTabModelImpls(info);
-        MockTabPersistentStoreObserver mockObserver = selector.mTabPersistentStoreObserver;
-        final TabModel regularModel = selector.getModel(false);
-        int currentWrittenCallbackCount = mockObserver.listWrittenCallback.getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Tab tabToClose = regularModel.getTabAt(2);
-            regularModel.closeTab(tabToClose, false, false, true);
-            regularModel.cancelTabClosure(tabToClose.getId());
-        });
-        mockObserver.listWrittenCallback.waitForCallback(currentWrittenCallbackCount, 1);
     }
 
     /**

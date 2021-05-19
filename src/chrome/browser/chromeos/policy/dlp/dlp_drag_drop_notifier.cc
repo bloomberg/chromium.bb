@@ -23,17 +23,10 @@ void DlpDragDropNotifier::NotifyBlockedAction(
     const ui::DataTransferEndpoint* const data_dst) {
   DCHECK(data_src);
   DCHECK(data_src->origin());
-  const base::string16 host_name =
+  const std::u16string host_name =
       base::UTF8ToUTF16(data_src->origin()->host());
 
   ShowBlockBubble(l10n_util::GetStringFUTF16(
       IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_PASTE, host_name));
 }
-
-void DlpDragDropNotifier::WarnOnAction(
-    const ui::DataTransferEndpoint* const data_src,
-    const ui::DataTransferEndpoint* const data_dst) {
-  NOTREACHED();
-}
-
 }  // namespace policy

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/check.h"
-#include "base/i18n/uchar.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -109,8 +108,8 @@ bool ConvertFromUTF16(UConverter* converter,
 
   // ucnv_fromUChars returns size not including terminating null
   int actual_size =
-      ucnv_fromUChars(converter, &(*encoded)[0], encoded_max_length,
-                      i18n::ToUCharPtr(src.data()), src.length(), &status);
+      ucnv_fromUChars(converter, &(*encoded)[0], encoded_max_length, src.data(),
+                      src.length(), &status);
   encoded->resize(actual_size);
   ucnv_close(converter);
   if (U_SUCCESS(status))
@@ -161,7 +160,7 @@ bool UTF16ToCodepage(base::StringPiece16 utf16,
 bool CodepageToUTF16(base::StringPiece encoded,
                      const char* codepage_name,
                      OnStringConversionError::Type on_error,
-                     string16* utf16) {
+                     std::u16string* utf16) {
   utf16->clear();
 
   UErrorCode status = U_ZERO_ERROR;
@@ -180,11 +179,10 @@ bool CodepageToUTF16(base::StringPiece encoded,
   size_t uchar_max_length = encoded.length() + 1;
 
   SetUpErrorHandlerForToUChars(on_error, converter, &status);
-  std::unique_ptr<char16[]> buffer(new char16[uchar_max_length]);
-  int actual_size =
-      ucnv_toUChars(converter, i18n::ToUCharPtr(buffer.get()),
-                    static_cast<int>(uchar_max_length), encoded.data(),
-                    static_cast<int>(encoded.length()), &status);
+  std::unique_ptr<char16_t[]> buffer(new char16_t[uchar_max_length]);
+  int actual_size = ucnv_toUChars(
+      converter, buffer.get(), static_cast<int>(uchar_max_length),
+      encoded.data(), static_cast<int>(encoded.length()), &status);
   ucnv_close(converter);
   if (!U_SUCCESS(status)) {
     utf16->clear();  // Make sure the output is empty on error.
@@ -199,7 +197,7 @@ bool ConvertToUtf8AndNormalize(base::StringPiece text,
                                const std::string& charset,
                                std::string* result) {
   result->clear();
-  string16 utf16;
+  std::u16string utf16;
   if (!CodepageToUTF16(text, charset.c_str(), OnStringConversionError::FAIL,
                        &utf16))
     return false;

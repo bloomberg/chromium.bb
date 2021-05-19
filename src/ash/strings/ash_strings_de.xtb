@@ -40,6 +40,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1252999807265626933">Wird über ein <ph name="POWER_SOURCE" /> aufgeladen</translation>
 <translation id="1255033239764210633">Wie ist das Wetter?</translation>
 <translation id="1267032506238418139">Änderung der Tastenkombination</translation>
+<translation id="1269405891096105529">Peripheriegerät wird im Gastmodus nicht unterstützt</translation>
 <translation id="1270290102613614947">Bildschirmtastatur deaktiviert</translation>
 <translation id="1272079795634619415">Stoppen</translation>
 <translation id="1275285675049378717">Stromversorgung für <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="2012624427112548395">Strg + Suche + H</translation>
 <translation id="2016340657076538683">Nachricht eingeben</translation>
 <translation id="2018630726571919839">Erzähl mir einen Witz</translation>
+<translation id="2021864487439853900">Zum Entsperren klicken</translation>
 <translation id="2049240716062114887">Der Name des Desktops wurde zu "<ph name="DESK_NAME" />" geändert</translation>
 <translation id="2050339315714019657">Hochformat</translation>
 <translation id="2067602449040652523">Tastaturhelligkeit</translation>
@@ -276,6 +278,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kann sich später weiterhin anmelden.</translation>
 <translation id="3321628682574733415">Falscher Elterncode</translation>
 <translation id="332587331255250389">Bitte tauschen Sie die Batterien aus</translation>
+<translation id="3333741161915951567">Modem wird neu gestartet. Warten Sie 30 Sekunden und versuchen Sie es dann noch einmal.</translation>
 <translation id="3341303451326249809">Screenshot aufgenommen</translation>
 <translation id="334252345105450327">Screenshot erstellen</translation>
 <translation id="3351879221545518001">Sie streamen gerade den Bildschirm.</translation>
@@ -320,6 +323,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Verwalteter Nutzer</translation>
 <translation id="3665889125180354336">Ton über Mikrofon aufnehmen</translation>
 <translation id="36813544980941320">WLANs werden zwischen Ihrem Smartphone und <ph name="DEVICE_NAME" /> geteilt</translation>
+<translation id="3702809606464356667">Fenster vom aktuellen Desktop werden angezeigt – drücken Sie den Aufwärtspfeil, um die Fenster von allen Desktops anzuzeigen</translation>
 <translation id="3702846122927433391">Einwohnerzahl von Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Wird geladen...</translation>
@@ -351,6 +355,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="394485226368336402">Audioeinstellungen</translation>
 <translation id="3945319193631853098">Zum Abschließen tippen</translation>
 <translation id="3945867833895287237">Verbindung zum Hotspot wird hergestellt…</translation>
+<translation id="3958465044488004317">Ergebnis in Assistant anzeigen</translation>
 <translation id="3962859241508114581">Vorheriger Titel</translation>
 <translation id="3969043077941541451">Aus</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
@@ -407,10 +412,12 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4424159417645388645">Desktop 5</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
+<translation id="4445159312344259901">Zum Entsperren anmelden</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 wichtige Benachrichtigung}other{# wichtige Benachrichtigungen}}</translation>
 <translation id="4450893287417543264">Nicht mehr anzeigen</translation>
 <translation id="445864333228800152">Guten Abend,</translation>
 <translation id="4458688154122353284">Bildschirmaufzeichnung beenden</translation>
+<translation id="4467143075433126295">Halten Sie die Esc-Taste gedrückt, um den Vollbildmodus zu verlassen</translation>
 <translation id="4472575034687746823">Jetzt starten</translation>
 <translation id="4477350412780666475">Nächster Titel</translation>
 <translation id="4477892968187500306">Auf diesem Gerät befinden sich möglicherweise Apps, die nicht von Google geprüft wurden.</translation>
@@ -436,7 +443,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="4628757576491864469">Geräte</translation>
 <translation id="4642092649622328492">Screenshot eines Bildschirmausschnitts erstellen</translation>
 <translation id="4659419629803378708">ChromeVox aktiviert</translation>
-<translation id="4665114317261903604">"Bitte nicht stören" an/aus. <ph name="STATE_TEXT" /></translation>
+<translation id="4665114317261903604">„Bitte nicht stören“ an/aus. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Gerät mit Elterncode entsperren</translation>
 <translation id="4702647871202761252">Der Datenschutzbildschirm ist momentan deaktiviert</translation>
 <translation id="4705716602320768426">Feedback geben</translation>
@@ -607,6 +614,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" />.</translation>
 <translation id="612734058257491180">In Gastsitzungen ist Google Assistant nicht verfügbar.</translation>
 <translation id="6137566720514957455">Dialog „Entfernen“ für <ph name="USER_EMAIL_ADDRESS" /> öffnen</translation>
+<translation id="6154006699632741460">Peripheriegerät wird nicht unterstützt</translation>
 <translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6179832488876878285">Sie können wichtige Dateien hier anpinnen. Öffnen Sie die Dateien App, um zu starten.</translation>
@@ -624,11 +632,11 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="6297287540776456956">Eingabestift verwenden, um einen Bereich auszuwählen</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> wurde zu <ph name="ROTATION" /> gedreht.</translation>
 <translation id="6315170314923504164">Sprache</translation>
+<translation id="6330012934079202188">Fenster von allen Desktops werden angezeigt – drücken Sie den Aufwärtspfeil, um die Fenster vom aktuellen Desktop anzuzeigen</translation>
 <translation id="6338485349199627913">„<ph name="DISPLAY_NAME" />“ ist eine verwaltete Sitzung, die von <ph name="MANAGER" /> verwaltet wird</translation>
 <translation id="6376931439017688372">Bluetooth ist aktiviert</translation>
 <translation id="6381109794406942707">Geben Sie Ihre PIN ein, um das Gerät zu entsperren.</translation>
 <translation id="639644700271529076">Feststelltaste Aus</translation>
-<translation id="6396835948284782440">[Esc] zum Beenden gedrückt halten.</translation>
 <translation id="6406704438230478924">AltGr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Alle Benachrichtigungen löschen</translation>
@@ -794,7 +802,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="7780159184141939021">Bildschirm drehen</translation>
 <translation id="7796353162336583443">Tippen Sie auf die Eingabestift-Schaltfläche in der Ablage, um Notizen oder Screenshots zu erstellen, Google Assistant zu aktivieren oder den Laserpointer oder die Lupe zu verwenden.</translation>
 <translation id="7798302898096527229">Drücken Sie die Such-Taste oder Umschalttaste, um die Aktivierung aufzuheben.</translation>
-<translation id="7807966291075028781">Das Peripheriegerät wird aus Sicherheitsgründen im Gastmodus nicht unterstützt</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> und <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Starkes Signal</translation>
 <translation id="7837740436429729974">Die Zeit ist um</translation>
@@ -944,6 +951,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="8936501819958976551">deaktiviert</translation>
 <translation id="8938800817013097409">USB-C-Gerät (rechter Port hinten)</translation>
 <translation id="8940956008527784070">Niedriger Akkustand (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8951539504029375108">Nur zugelassene Thunderbolt-Geräte sind mit Chromebook kompatibel</translation>
 <translation id="8982906748181120328">Nearby-Sichtbarkeit</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> aktiv</translation>

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
-import * as Root from '../root/root.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as Root from '../core/root/root.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 // eslint-disable-next-line rulesdir/es_modules_import
 import type * as Screencast from './screencast.js';

@@ -17,6 +17,7 @@
 #include "remoting/protocol/host_video_stats_dispatcher.h"
 #include "remoting/protocol/webrtc_frame_scheduler_simple.h"
 #include "remoting/protocol/webrtc_transport.h"
+#include "remoting/protocol/webrtc_video_track_source.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/api/notifier.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -48,27 +49,6 @@ std::string EncodeResultToString(WebrtcVideoEncoder::EncodeResult result) {
   NOTREACHED();
   return "";
 }
-
-class DummyVideoTrackSource
-    : public webrtc::Notifier<webrtc::VideoTrackSourceInterface> {
- public:
-  SourceState state() const override { return kLive; }
-  bool remote() const override { return false; }
-  bool is_screencast() const override { return true; }
-  absl::optional<bool> needs_denoising() const override {
-    return absl::nullopt;
-  }
-  bool GetStats(Stats* stats) override { return false; }
-  void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink,
-                       const rtc::VideoSinkWants& wants) override {}
-  void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override {}
-  bool SupportsEncodedOutput() const override { return false; }
-  void GenerateKeyFrame() override {}
-  void AddEncodedSink(
-      rtc::VideoSinkInterface<webrtc::RecordableEncodedFrame>* sink) override {}
-  void RemoveEncodedSink(
-      rtc::VideoSinkInterface<webrtc::RecordableEncodedFrame>* sink) override {}
-};
 
 }  // namespace
 
@@ -144,7 +124,7 @@ void WebrtcVideoStream::Start(
   capturer_->Start(this);
 
   rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> src =
-      new rtc::RefCountedObject<DummyVideoTrackSource>();
+      new rtc::RefCountedObject<WebrtcVideoTrackSource>();
   rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track =
       peer_connection_factory->CreateVideoTrack(kVideoLabel, src);
 
@@ -158,7 +138,7 @@ void WebrtcVideoStream::Start(
 
   webrtc_transport_->OnVideoTransceiverCreated(transceiver);
 
-  scheduler_.reset(new WebrtcFrameSchedulerSimple(session_options_));
+  scheduler_ = std::make_unique<WebrtcFrameSchedulerSimple>(session_options_);
   scheduler_->Start(webrtc_transport_->video_encoder_factory(),
                     base::BindRepeating(&WebrtcVideoStream::CaptureNextFrame,
                                         base::Unretained(this)));
@@ -267,7 +247,7 @@ void WebrtcVideoStream::OnChannelClosed(
 void WebrtcVideoStream::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  current_frame_stats_.reset(new FrameStats());
+  current_frame_stats_ = std::make_unique<FrameStats>();
   current_frame_stats_->capture_started_time = base::TimeTicks::Now();
   current_frame_stats_->input_event_timestamps =
       event_timestamps_source_->TakeLastEventTimestamps();

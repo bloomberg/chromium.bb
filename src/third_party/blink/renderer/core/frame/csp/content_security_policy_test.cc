@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -131,7 +132,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
   }
 }
 
-TEST_F(ContentSecurityPolicyTest, CopyStateFrom) {
+TEST_F(ContentSecurityPolicyTest, AddPolicies) {
   csp->DidReceiveHeader("script-src 'none'", *secure_origin,
                         ContentSecurityPolicyType::kReport,
                         ContentSecurityPolicySource::kHTTP);
@@ -143,7 +144,7 @@ TEST_F(ContentSecurityPolicyTest, CopyStateFrom) {
   const KURL not_example_url("http://not-example.com");
 
   auto* csp2 = MakeGarbageCollected<ContentSecurityPolicy>();
-  csp2->CopyStateFrom(csp.Get());
+  csp2->AddPolicies(mojo::Clone(csp->GetParsedPolicies()));
   EXPECT_FALSE(csp2->AllowScriptFromSource(
       example_url, String(), IntegrityMetadataSet(), kParserInserted,
       example_url, ResourceRequest::RedirectStatus::kNoRedirect,
@@ -339,7 +340,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
   String context_url;
   String content;
-  WTF::OrdinalNumber context_line;
+  OrdinalNumber context_line = OrdinalNumber::First();
 
   // We need document for HTMLScriptElement tests.
   auto dummy = std::make_unique<DummyPageHolder>();
@@ -1070,7 +1071,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypeReportAndNonTTEnforce) {
 }
 
 TEST_F(ContentSecurityPolicyTest, RequireTrustedTypeForEnforce) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
+  execution_context->SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("require-trusted-types-for ''", *secure_origin,
                         ContentSecurityPolicyType::kEnforce,
@@ -1084,7 +1085,7 @@ TEST_F(ContentSecurityPolicyTest, RequireTrustedTypeForEnforce) {
 }
 
 TEST_F(ContentSecurityPolicyTest, RequireTrustedTypeForReport) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
+  execution_context->SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("require-trusted-types-for 'script'", *secure_origin,
                         ContentSecurityPolicyType::kReport,
@@ -1154,7 +1155,7 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   String source;
   String context_url;
   String nonce;
-  OrdinalNumber ordinal_number;
+  OrdinalNumber ordinal_number = OrdinalNumber::First();
   auto* element =
       MakeGarbageCollected<HTMLScriptElement>(*document, CreateElementFlags());
 
@@ -1167,9 +1168,9 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_TRUE(csp->AllowEval(ReportingDisposition::kReport,
                              ContentSecurityPolicy::kWillNotThrowException,
                              g_empty_string));
-  EXPECT_TRUE(csp->AllowWasmEval(ReportingDisposition::kReport,
-                                 ContentSecurityPolicy::kWillNotThrowException,
-                                 g_empty_string));
+  EXPECT_TRUE(csp->AllowWasmCodeGeneration(
+      ReportingDisposition::kReport,
+      ContentSecurityPolicy::kWillNotThrowException, g_empty_string));
 
   CSPDirectiveName types_to_test[] = {
       CSPDirectiveName::BaseURI,       CSPDirectiveName::ConnectSrc,
@@ -1229,6 +1230,28 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_EQ(network::mojom::blink::WebSandboxFlags::kNone,
             csp->GetSandboxMask());
   EXPECT_FALSE(csp->HasPolicyFromSource(ContentSecurityPolicySource::kHTTP));
+}
+
+// Tests that WasmCSP runtime feature properly governs support for WasmEval.
+TEST_F(ContentSecurityPolicyTest, WasmEvalCSPEnable) {
+  auto test_wasm_eval_enabled = [&](bool enabled) {
+    ScopedWebAssemblyCSPForTest enable_wasp(enabled);
+
+    csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+
+    csp->DidReceiveHeader("script-src 'wasm-eval'", *secure_origin,
+                          ContentSecurityPolicyType::kEnforce,
+                          ContentSecurityPolicySource::kHTTP);
+
+    EXPECT_EQ(enabled, csp->AllowWasmCodeGeneration(
+                           ReportingDisposition::kReport,
+                           ContentSecurityPolicy::kWillNotThrowException,
+                           g_empty_string));
+  };
+
+  test_wasm_eval_enabled(true);
+  test_wasm_eval_enabled(false);
 }
 
 TEST_F(ContentSecurityPolicyTest, OpaqueOriginBeforeBind) {

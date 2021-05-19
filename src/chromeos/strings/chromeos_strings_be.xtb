@@ -38,6 +38,7 @@
 <translation id="1662989795263954667">Спынена: скончылася чарніла</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Наяўнасць DNS-рэзолвера</translation>
+<translation id="1715359911173058521">Узнікла праблема пры абмене даных са сканерам. Праверце падключэнне да сеткі або USB-падключэнне і паўтарыце спробу.</translation>
 <translation id="1717874160321062422">Прыладай кіруюць <ph name="FIRST_MANAGER" /> і <ph name="SECOND_MANAGER" /></translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1792647875738159689">Сканіраванне скасоўваецца</translation>
@@ -95,6 +96,7 @@
 <translation id="3226405216343213872">Ідзе пошук сканераў</translation>
 <translation id="3246869037381808805">Заданні друку, старэйшыя за 1 дзень, будуць выдалены</translation>
 <translation id="3268178239013324452">Збой: дзверцы прынтара адкрыты</translation>
+<translation id="3283504360622356314">{0,plural, =1{Змяніць файл}one{Змяніць файлы}few{Змяніць файлы}many{Змяніць файлы}other{Змяніць файлы}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> ГГц</translation>
 <translation id="3310640316857623290">Затрымка DNS значна перавышае дапушчальнае парогавае значэнне</translation>
 <translation id="3328783797891415197">Выконваецца праверка</translation>
@@ -135,6 +137,7 @@
 <translation id="4227825898293920515">Тэрмін дзеяння пароля заканчваецца праз <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Няма дзеючых заданняў друку</translation>
 <translation id="4297501883039923494">Спынена: невядомая памылка</translation>
+<translation id="4344214025510306853">Далучыць APN</translation>
 <translation id="4378373042927530923">Паслядоўнасць дзеянняў не запускалася</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Мой Дыск</translation>
@@ -162,7 +165,9 @@
 <translation id="4707579418881001319">L2TP/IPsec + сертыфікат карыстальніка</translation>
 <translation id="4731797938093519117">Бацькоўскі доступ</translation>
 <translation id="4773299976671772492">Спынена</translation>
+<translation id="4794140124556169553">Выкананне праверкі ЦП можа паўплываць на прадукцыйнасць сістэмы</translation>
 <translation id="4808449224298348341">Заданне друку "<ph name="DOCUMENT_TITLE" />" скасавана</translation>
+<translation id="4813345808229079766">Падключэнне</translation>
 <translation id="4832079907277790330">Выбраць папку ў праграме "Файлы"...</translation>
 <translation id="4835901797422965222">Няма актыўных сетак</translation>
 <translation id="4848429997038228357">ВЫКОНВАЕЦЦА</translation>
@@ -177,6 +182,7 @@
 <translation id="4932733599132424254">Дата</translation>
 <translation id="498186245079027698">Праверце сканер і паўтарыце спробу. Упэўніцеся, што на прыладзе дастаткова месца для захавання файлаў адсканіраваных відарысаў.</translation>
 <translation id="4985509611418653372">Запусціць</translation>
+<translation id="4987769320337599931">Брандмаўар</translation>
 <translation id="4999333166442584738">Схаваць справаздачу</translation>
 <translation id="500920857929044050">Спыніць праверку</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -211,6 +217,7 @@
 <translation id="54609108002486618">Пад кіраваннем</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Засталася {0} спроба}one{Засталася {0} спроба}few{Засталося {0} спробы}many{Засталося {0} спроб}other{Засталося {0} спробы}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
+<translation id="5499114900554609492">Не ўдалося завяршыць сканіраванне</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Ідзе актывацыя</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -225,6 +232,7 @@
 <translation id="5916084858004523819">Забароненая</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Сканіраванне завершана. Файл захаваны ў папку <ph name="LINK_BEGIN" />"<ph name="FOLDER_NAME" />"<ph name="LINK_END" />.}one{Сканіраванне завершана. Файлы захаваны ў папку <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}few{Сканіраванне завершана. Файлы захаваны ў папку <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}many{Сканіраванне завершана. Файлы захаваны ў папку <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Сканіраванне завершана. Файлы захаваны ў папку <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Файл не знойдзены</translation>
+<translation id="6037291330010597344">Прыстасаванне сканера для падачы дакументаў не загружана. Пакладзіце ў яго дакументы і паўтарыце спробу.</translation>
 <translation id="6040143037577758943">Закрыць</translation>
 <translation id="6040852767465482106">Ананімны ідэнтыфікатар</translation>
 <translation id="604124094241169006">Аўтаматычна</translation>
@@ -247,6 +255,7 @@
 <translation id="6302401976930124515"><ph name="TEST_NAME" />: тэст скасаваны</translation>
 <translation id="6325525973963619867">Збой</translation>
 <translation id="636850387210749493">Рэгістрацыя для арганізацый</translation>
+<translation id="6388847657025262518">Заела прыстасаванне сканера для падачы дакументаў. Праверце прыстасаванне і паўтарыце спробу.</translation>
 <translation id="641081527798843608">Супадзенне суб'екта</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6456394469623773452">Добры</translation>
@@ -268,7 +277,7 @@
 <translation id="6766275201586212568">Збой супастаўленняў імён DNS</translation>
 <translation id="6768237774506518020">Высокі працэнт збояў супастаўленняў імён DNS</translation>
 <translation id="6853312040151791195">Хуткасць разрадкі</translation>
-<translation id="6898743098396957679">Не ўдалося завяршыць сканіраванне</translation>
+<translation id="6910312834584889076">Вечка сканера адкрыта. Закрыйце вечка і паўтарыце спробу.</translation>
 <translation id="6911383237894364323">Не ўдалося падключыцца да сервераў мультымедыя</translation>
 <translation id="6957231940976260713">Імя сэрвісу</translation>
 <translation id="6977381486153291903">Версія ўбудаванага ПЗ</translation>
@@ -276,12 +285,14 @@
 <translation id="7040230719604914234">Аператар</translation>
 <translation id="7059230779847288458">Ідзе зарадка, <ph name="TIME_VALUE" /> да поўнай зарадкі</translation>
 <translation id="708426984172631313">СПЫНЕНА</translation>
+<translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7143207342074048698">Падключэнне</translation>
 <translation id="7144878232160441200">Паўтарыць</translation>
 <translation id="714876143603641390">Магчымасць падключэння LAN</translation>
 <translation id="7162487448488904999">Галерэя</translation>
 <translation id="7177485034254901881">Гэтай прыладай <ph name="DEVICE_TYPE" /> кіруе <ph name="MANAGER" />. Адміністратары могуць аддалена задаваць налады прылады.</translation>
 <translation id="7216409898977639127">Сотавы аператар</translation>
+<translation id="7271040990581020067">Сканер зараз выкарыстоўваецца. Паўтарыце спробу пазней.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7343649194310845056">Сеткавыя прылады</translation>
 <translation id="7359657277149375382">Тып файла</translation>
@@ -307,6 +318,7 @@
 <translation id="7769672763586021400">Ідэнтыфікатар мадэлі</translation>
 <translation id="7805768142964895445">Стан</translation>
 <translation id="7819857487979277519">PSK (WPA або RSN)</translation>
+<translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Тып пастаўшчыка</translation>
 <translation id="7936303884198020182">Серверы даменных імён не знойдзены</translation>
 <translation id="7960831585769876809">Тэмпература</translation>
@@ -336,6 +348,7 @@
 <translation id="8483248364096924578">IP-адрас</translation>
 <translation id="8503813439785031346">Імя карыстальніка</translation>
 <translation id="8503836310948963452">Яшчэ пару хвілін…</translation>
+<translation id="8575298406870537639">Магчыма, вам спатрэбіцца ўключыць гэту наладу, каб падключыцца да сеткі вашага аператара. Звяжыцеся з аператарам, каб даведацца больш.</translation>
 <translation id="8576249514688522074">Неініцыялізаваная</translation>
 <translation id="8620617069779373398">Стан роўмінгу</translation>
 <translation id="8675354002693747642">Папярэдне абагулены ключ</translation>
@@ -348,6 +361,7 @@
 <translation id="8798099450830957504">Стандартна</translation>
 <translation id="8798441408945964110">Назва пастаўшчыка</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8818152010000655963">Шпалеры</translation>
 <translation id="8845001906332463065">Атрымаць даведку</translation>
 <translation id="8881098542468797602">Праверка пройдзена</translation>
 <translation id="8898840733695078011">Сіла сігналу</translation>
@@ -365,6 +379,7 @@
 <translation id="910415269708673980">Абнавіце білет для <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Сканіруецца старонка <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Разблакіраваць</translation>
+<translation id="9137526406337347448">Сэрвісы Google</translation>
 <translation id="9149391708638971077">Выканаць праверку памяці</translation>
 <translation id="9173638680043580060">Застаецца менш за хвіліну</translation>
 <translation id="9190063653747922532">L2TP/IPsec з папярэдне абагуленым ключом</translation>

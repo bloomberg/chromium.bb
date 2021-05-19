@@ -4,11 +4,13 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
@@ -72,7 +74,7 @@ namespace {
 class LoadedIncognitoObserver : public ExtensionRegistryObserver {
  public:
   explicit LoadedIncognitoObserver(Profile* profile) : profile_(profile) {
-    extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+    extension_registry_observation_.Observe(ExtensionRegistry::Get(profile_));
   }
 
   void Wait() {
@@ -85,14 +87,14 @@ class LoadedIncognitoObserver : public ExtensionRegistryObserver {
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override {
-    original_complete_.reset(new LazyBackgroundObserver(profile_));
-    incognito_complete_.reset(
-        new LazyBackgroundObserver(profile_->GetPrimaryOTRProfile()));
+    original_complete_ = std::make_unique<LazyBackgroundObserver>(profile_);
+    incognito_complete_ = std::make_unique<LazyBackgroundObserver>(
+        profile_->GetPrimaryOTRProfile());
   }
 
   Profile* profile_;
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_{this};
+  base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observation_{this};
   std::unique_ptr<LazyBackgroundObserver> original_complete_;
   std::unique_ptr<LazyBackgroundObserver> incognito_complete_;
 };
@@ -549,8 +551,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, DISABLED_IncognitoSplitMode) {
         BookmarkModelFactory::GetForBrowserContext(browser()->profile());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
     const BookmarkNode* parent = bookmark_model->bookmark_bar_node();
-    bookmark_model->AddURL(
-        parent, 0, base::ASCIIToUTF16("Title"), GURL("about:blank"));
+    bookmark_model->AddURL(parent, 0, u"Title", GURL("about:blank"));
     page_complete.Wait();
     page2_complete.Wait();
 
@@ -637,9 +638,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventDispatchToTab) {
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(browser()->profile());
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
-  bookmarks::AddIfNotBookmarked(bookmark_model,
-                                GURL("http://www.google.com"),
-                                base::UTF8ToUTF16("Google"));
+  bookmarks::AddIfNotBookmarked(bookmark_model, GURL("http://www.google.com"),
+                                u"Google");
 
   EXPECT_TRUE(event_page_ready.WaitUntilSatisfied());
 

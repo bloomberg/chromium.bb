@@ -44,10 +44,6 @@ const char kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled[] =
     "cros.accounts.deviceLocalAccountAutoLoginBailoutEnabled";
 const char kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline[] =
     "cros.accounts.deviceLocalAccountPromptForNetworkWhenOffline";
-// TODO(crbug/1155729): Check it is not used anymore for deprecated supervised
-// users and remove it.
-const char kAccountsPrefSupervisedUsersEnabled[] =
-    "cros.accounts.supervisedUsersEnabled";
 const char kAccountsPrefTransferSAMLCookies[] =
     "cros.accounts.transferSAMLCookies";
 
@@ -212,6 +208,10 @@ const char kReportDeviceVpdInfo[] = "cros.device_status.report_device_vpd_info";
 // be included in status reports to the device management server.
 const char kReportDeviceSystemInfo[] =
     "cros.device_status.report_device_system_info";
+
+// A boolean pref that determines whether the user's print job history is
+// reported.
+const char kReportDevicePrintJobs[] = "cros.device_status.report_print_jobs";
 
 // Determines whether heartbeats should be sent to the policy service via
 // the GCM channel.
@@ -438,6 +438,10 @@ const char kPluginVmAllowed[] = "cros.device.plugin_vm_allowed";
 // A string pref that specifies PluginVm license key for this device.
 const char kPluginVmLicenseKey[] = "cros.device.plugin_vm_license_key";
 
+// A boolean pref that indicates whether Borealis is allowed to run on this
+// device.
+const char kBorealisAllowedForDevice[] = "cros.device.borealis_allowed";
+
 // An enum pref specifying the case when device needs to reboot on user sign
 // out.
 const char kDeviceRebootOnUserSignout[] = "cros.device.reboot_on_user_signout";
@@ -500,4 +504,9 @@ const char kDevicePeripheralDataAccessEnabled[] =
 const char kUsbDetachableAllowlist[] = "cros.device.usb_detachable_allowlist";
 const char kUsbDetachableAllowlistKeyVid[] = "vid";
 const char kUsbDetachableAllowlistKeyPid[] = "pid";
+
+// A list pref storing bluetooth service UUIDs allowed to connect.
+const char kDeviceAllowedBluetoothServices[] =
+    "cros.device.allowed_bluetooth_services";
+
 }  // namespace chromeos

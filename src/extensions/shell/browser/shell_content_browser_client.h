@@ -60,7 +60,8 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       int plugin_process_id) override;
   void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) override;
-  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  std::unique_ptr<content::DevToolsManagerDelegate>
+  CreateDevToolsManagerDelegate() override;
   std::vector<std::unique_ptr<content::NavigationThrottle>>
   CreateThrottlesForNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -98,6 +99,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url,
       content::WebContents::OnceGetter web_contents_getter,
       int child_id,
+      int frame_tree_node_id,
       content::NavigationUIData* navigation_data,
       bool is_main_frame,
       ui::PageTransition page_transition,

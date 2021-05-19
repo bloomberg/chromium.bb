@@ -14,20 +14,17 @@
 
 #include "src/transform/manager.h"
 
-#include "src/program_builder.h"
-#include "src/type_determiner.h"
-
 namespace tint {
 namespace transform {
 
 Manager::Manager() = default;
 Manager::~Manager() = default;
 
-Transform::Output Manager::Run(const Program* program) {
+Transform::Output Manager::Run(const Program* program, const DataMap& data) {
   Output out;
   if (!transforms_.empty()) {
     for (auto& transform : transforms_) {
-      auto res = transform->Run(program);
+      auto res = transform->Run(program, data);
       out.program = std::move(res.program);
       out.data.Add(std::move(res.data));
       if (!out.program.IsValid()) {

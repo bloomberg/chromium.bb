@@ -13,10 +13,10 @@ import android.text.TextUtils;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.gsa.GSAState;
-import org.chromium.chrome.browser.lens.LensController;
 import org.chromium.chrome.browser.lens.LensEntryPoint;
 import org.chromium.chrome.browser.lens.LensIntentParams;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -52,8 +52,6 @@ public class LensUtils {
             "minAgsaVersionForDirectIntent";
     private static final String MIN_AGSA_VERSION_DIRECT_INTENT_SDK_FEATURE_PARAM_NAME =
             "minAgsaVersionForDirectIntentSdk";
-    private static final String USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME =
-            "useSearchByImageText";
     private static final String LENS_SHOPPING_ALLOWLIST_ENTRIES_FEATURE_PARAM_NAME =
             "allowlistEntries";
     private static final String LENS_SHOPPING_URL_PATTERNS_FEATURE_PARAM_NAME =
@@ -392,7 +390,7 @@ public class LensUtils {
     public static void startLensConnectionIfNecessary(boolean isIncognito) {
         // TODO(crbug/1157543): Pass isIncognito through to LensController.
         if (!isIncognito) {
-            LensController.getInstance().startLensConnection();
+            AppHooks.get().getLensController().startLensConnection();
         }
     }
 
@@ -405,7 +403,7 @@ public class LensUtils {
     public static void terminateLensConnectionsIfNecessary(boolean isIncognito) {
         // TODO(crbug/1157543): Pass isIncognito through to LensController.
         if (!isIncognito) {
-            LensController.getInstance().terminateLensConnections();
+            AppHooks.get().getLensController().terminateLensConnections();
         }
     }
 
@@ -500,15 +498,6 @@ public class LensUtils {
                        USE_DIRECT_INTENT_SDK_INTEGRATION_PARAM_NAME, false)
                 && !GSAState.getInstance(context).isAgsaVersionBelowMinimum(
                         agsaVersionName, getMinimumAgsaVersionForDirectIntentSdkSupport());
-    }
-
-    /**
-     * Whether to display the lens menu item with the search by image text
-     */
-    public static boolean useLensWithSearchByImageText() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
-                USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME, false);
     }
 
     /**

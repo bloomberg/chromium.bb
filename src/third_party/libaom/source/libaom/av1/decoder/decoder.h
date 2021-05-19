@@ -112,6 +112,8 @@ typedef struct ThreadData {
   // Motion compensation buffer used to get a prediction buffer with extended
   // borders. One buffer for each of the two possible references.
   uint8_t *mc_buf[2];
+  // Mask for this block used for compound prediction.
+  uint8_t *seg_mask;
   // Allocated size of 'mc_buf'.
   int32_t mc_buf_size;
   // If true, the pointers in 'mc_buf' were converted from highbd pointers.

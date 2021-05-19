@@ -8,6 +8,7 @@
 #include "services/device/usb/usb_service.h"
 
 #include <list>
+#include <string>
 #include <unordered_map>
 
 #include "base/containers/flat_map.h"
@@ -15,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string16.h"
 #include "device/base/device_monitor_win.h"
 #include "services/device/usb/usb_device_win.h"
 

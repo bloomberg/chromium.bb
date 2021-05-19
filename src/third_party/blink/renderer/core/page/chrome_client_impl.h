@@ -138,6 +138,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                            const LocalFrameView*) const override;
   float WindowToViewportScalar(LocalFrame*, const float) const override;
   const ScreenInfo& GetScreenInfo(LocalFrame&) const override;
+  const ScreenInfos& GetScreenInfos(LocalFrame&) const override;
   void OverrideVisibleRectForMainFrame(LocalFrame& frame,
                                        IntRect* paint_rect) const override;
   float InputEventsScaleForEmulation() const override;
@@ -209,7 +210,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void SetCursorForPlugin(const ui::Cursor&, LocalFrame*) override;
   void SetDelegatedInkMetadata(
       LocalFrame* frame,
-      std::unique_ptr<viz::DelegatedInkMetadata> metadata) override;
+      std::unique_ptr<gfx::DelegatedInkMetadata> metadata) override;
 
   // ChromeClientImpl:
   void SetNewWindowNavigationPolicy(WebNavigationPolicy);

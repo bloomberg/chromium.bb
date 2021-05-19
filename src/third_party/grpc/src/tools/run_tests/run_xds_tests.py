@@ -27,6 +27,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import uuid
 
 from oauth2client.client import GoogleCredentials
 
@@ -51,6 +52,7 @@ _TEST_CASES = [
     'backends_restart',
     'change_backend_service',
     'gentle_failover',
+    'load_report_based_failover',
     'ping_pong',
     'remove_instance_group',
     'round_robin',
@@ -62,7 +64,18 @@ _TEST_CASES = [
 # aren't enabled automatically for all languages.
 #
 # TODO: Move them into _TEST_CASES when support is ready in all languages.
-_ADDITIONAL_TEST_CASES = ['path_matching', 'header_matching']
+_ADDITIONAL_TEST_CASES = [
+    'path_matching',
+    'header_matching',
+    'circuit_breaking',
+    'timeout',
+]
+
+# Test cases that require the V3 API.  Skipped in older runs.
+_V3_TEST_CASES = frozenset(['timeout'])
+
+# Test cases that require the alpha API.  Skipped for stable API runs.
+_ALPHA_TEST_CASES = frozenset(['timeout'])
 
 
 def parse_test_cases(arg):
@@ -92,7 +105,11 @@ def parse_port_range(port_arg):
 
 
 argp = argparse.ArgumentParser(description='Run xDS interop tests on GCP')
-argp.add_argument('--project_id', help='GCP project id')
+# TODO(zdapeng): remove default value of project_id and project_num
+argp.add_argument('--project_id', default='grpc-testing', help='GCP project id')
+argp.add_argument('--project_num',
+                  default='830293263384',
+                  help='GCP project number')
 argp.add_argument(
     '--gcp_suffix',
     default='',
@@ -273,7 +290,11 @@ _TESTS_TO_RUN_MULTIPLE_RPCS = ['path_matching', 'header_matching']
 # Tests that make UnaryCall with test metadata.
 _TESTS_TO_SEND_METADATA = ['header_matching']
 _TEST_METADATA_KEY = 'xds_md'
-_TEST_METADATA_VALUE = 'exact_match'
+_TEST_METADATA_VALUE_UNARY = 'unary_yranu'
+_TEST_METADATA_VALUE_EMPTY = 'empty_ytpme'
+# Extra RPC metadata whose value is a number, sent with UnaryCall only.
+_TEST_METADATA_NUMERIC_KEY = 'xds_md_numeric'
+_TEST_METADATA_NUMERIC_VALUE = '159'
 _PATH_MATCHER_NAME = 'path-matcher'
 _BASE_TEMPLATE_NAME = 'test-template'
 _BASE_INSTANCE_GROUP_NAME = 'test-ig'
@@ -310,6 +331,53 @@ def get_client_stats(num_rpcs, timeout_sec):
                                            timeout=rpc_timeout)
             logger.debug('Invoked GetClientStats RPC to %s: %s', host, response)
             return response
+
+
+def get_client_accumulated_stats():
+    if CLIENT_HOSTS:
+        hosts = CLIENT_HOSTS
+    else:
+        hosts = ['localhost']
+    for host in hosts:
+        with grpc.insecure_channel('%s:%d' %
+                                   (host, args.stats_port)) as channel:
+            stub = test_pb2_grpc.LoadBalancerStatsServiceStub(channel)
+            request = messages_pb2.LoadBalancerAccumulatedStatsRequest()
+            logger.debug('Invoking GetClientAccumulatedStats RPC to %s:%d:',
+                         host, args.stats_port)
+            response = stub.GetClientAccumulatedStats(
+                request, wait_for_ready=True, timeout=_CONNECTION_TIMEOUT_SEC)
+            logger.debug('Invoked GetClientAccumulatedStats RPC to %s: %s',
+                         host, response)
+            return response
+
+
+def configure_client(rpc_types, metadata=[], timeout_sec=None):
+    if CLIENT_HOSTS:
+        hosts = CLIENT_HOSTS
+    else:
+        hosts = ['localhost']
+    for host in hosts:
+        with grpc.insecure_channel('%s:%d' %
+                                   (host, args.stats_port)) as channel:
+            stub = test_pb2_grpc.XdsUpdateClientConfigureServiceStub(channel)
+            request = messages_pb2.ClientConfigureRequest()
+            request.types.extend(rpc_types)
+            for rpc_type, md_key, md_value in metadata:
+                md = request.metadata.add()
+                md.type = rpc_type
+                md.key = md_key
+                md.value = md_value
+            if timeout_sec:
+                request.timeout_sec = timeout_sec
+            logger.debug(
+                'Invoking XdsUpdateClientConfigureService RPC to %s:%d: %s',
+                host, args.stats_port, request)
+            stub.Configure(request,
+                           wait_for_ready=True,
+                           timeout=_CONNECTION_TIMEOUT_SEC)
+            logger.debug('Invoked XdsUpdateClientConfigureService RPC to %s',
+                         host)
 
 
 class RpcDistributionError(Exception):
@@ -355,6 +423,61 @@ def wait_until_all_rpcs_go_to_given_backends(backends,
                                    timeout_sec,
                                    num_rpcs,
                                    allow_failures=False)
+
+
+def wait_until_rpcs_in_flight(rpc_type, timeout_sec, num_rpcs, threshold):
+    '''Block until the test client reaches the state with the given number
+    of RPCs being outstanding stably.
+
+    Args:
+      rpc_type: A string indicating the RPC method to check for. Either
+        'UnaryCall' or 'EmptyCall'.
+      timeout_sec: Maximum number of seconds to wait until the desired state
+        is reached.
+      num_rpcs: Expected number of RPCs to be in-flight.
+      threshold: Number within [0,100], the tolerable percentage by which
+        the actual number of RPCs in-flight can differ from the expected number.
+    '''
+    if threshold < 0 or threshold > 100:
+        raise ValueError('Value error: Threshold should be between 0 to 100')
+    threshold_fraction = threshold / 100.0
+    start_time = time.time()
+    error_msg = None
+    logger.debug(
+        'Waiting for %d sec until %d %s RPCs (with %d%% tolerance) in-flight' %
+        (timeout_sec, num_rpcs, rpc_type, threshold))
+    while time.time() - start_time <= timeout_sec:
+        error_msg = _check_rpcs_in_flight(rpc_type, num_rpcs, threshold,
+                                          threshold_fraction)
+        if error_msg:
+            logger.debug('Progress: %s', error_msg)
+            time.sleep(2)
+        else:
+            break
+    # Ensure the number of outstanding RPCs is stable.
+    if not error_msg:
+        time.sleep(5)
+        error_msg = _check_rpcs_in_flight(rpc_type, num_rpcs, threshold,
+                                          threshold_fraction)
+    if error_msg:
+        raise Exception("Wrong number of %s RPCs in-flight: %s" %
+                        (rpc_type, error_msg))
+
+
+def _check_rpcs_in_flight(rpc_type, num_rpcs, threshold, threshold_fraction):
+    error_msg = None
+    stats = get_client_accumulated_stats()
+    rpcs_started = stats.num_rpcs_started_by_method[rpc_type]
+    rpcs_succeeded = stats.num_rpcs_succeeded_by_method[rpc_type]
+    rpcs_failed = stats.num_rpcs_failed_by_method[rpc_type]
+    rpcs_in_flight = rpcs_started - rpcs_succeeded - rpcs_failed
+    if rpcs_in_flight < (num_rpcs * (1 - threshold_fraction)):
+        error_msg = ('actual(%d) < expected(%d - %d%%)' %
+                     (rpcs_in_flight, num_rpcs, threshold))
+    elif rpcs_in_flight > (num_rpcs * (1 + threshold_fraction)):
+        error_msg = ('actual(%d) > expected(%d + %d%%)' %
+                     (rpcs_in_flight, num_rpcs, threshold))
+    return error_msg
 
 
 def compare_distributions(actual_distribution, expected_distribution,
@@ -442,8 +565,8 @@ def test_change_backend_service(gcp, original_backend_service, instance_group,
     original_backend_instances = get_instance_names(gcp, instance_group)
     alternate_backend_instances = get_instance_names(gcp,
                                                      same_zone_instance_group)
-    patch_backend_instances(gcp, alternate_backend_service,
-                            [same_zone_instance_group])
+    patch_backend_service(gcp, alternate_backend_service,
+                          [same_zone_instance_group])
     wait_for_healthy_backends(gcp, original_backend_service, instance_group)
     wait_for_healthy_backends(gcp, alternate_backend_service,
                               same_zone_instance_group)
@@ -455,7 +578,7 @@ def test_change_backend_service(gcp, original_backend_service, instance_group,
                                                  _WAIT_FOR_URL_MAP_PATCH_SEC)
     finally:
         patch_url_map_backend_service(gcp, original_backend_service)
-        patch_backend_instances(gcp, alternate_backend_service, [])
+        patch_backend_service(gcp, alternate_backend_service, [])
 
 
 def test_gentle_failover(gcp,
@@ -470,7 +593,7 @@ def test_gentle_failover(gcp,
         if num_primary_instances < min_instances_for_gentle_failover:
             resize_instance_group(gcp, primary_instance_group,
                                   min_instances_for_gentle_failover)
-        patch_backend_instances(
+        patch_backend_service(
             gcp, backend_service,
             [primary_instance_group, secondary_instance_group])
         primary_instance_names = get_instance_names(gcp, primary_instance_group)
@@ -506,9 +629,59 @@ def test_gentle_failover(gcp,
         else:
             raise e
     finally:
-        patch_backend_instances(gcp, backend_service, [primary_instance_group])
+        patch_backend_service(gcp, backend_service, [primary_instance_group])
         resize_instance_group(gcp, primary_instance_group,
                               num_primary_instances)
+        instance_names = get_instance_names(gcp, primary_instance_group)
+        wait_until_all_rpcs_go_to_given_backends(instance_names,
+                                                 _WAIT_FOR_BACKEND_SEC)
+
+
+def test_load_report_based_failover(gcp, backend_service,
+                                    primary_instance_group,
+                                    secondary_instance_group):
+    logger.info('Running test_load_report_based_failover')
+    try:
+        patch_backend_service(
+            gcp, backend_service,
+            [primary_instance_group, secondary_instance_group])
+        primary_instance_names = get_instance_names(gcp, primary_instance_group)
+        secondary_instance_names = get_instance_names(gcp,
+                                                      secondary_instance_group)
+        wait_for_healthy_backends(gcp, backend_service, primary_instance_group)
+        wait_for_healthy_backends(gcp, backend_service,
+                                  secondary_instance_group)
+        wait_until_all_rpcs_go_to_given_backends(primary_instance_names,
+                                                 _WAIT_FOR_STATS_SEC)
+        # Set primary locality's balance mode to RATE, and RPS to 20% of the
+        # client's QPS. The secondary locality will be used.
+        max_rate = int(args.qps * 1 / 5)
+        logger.info('Patching backend service to RATE with %d max_rate',
+                    max_rate)
+        patch_backend_service(
+            gcp,
+            backend_service, [primary_instance_group, secondary_instance_group],
+            balancing_mode='RATE',
+            max_rate=max_rate)
+        wait_until_all_rpcs_go_to_given_backends(
+            primary_instance_names + secondary_instance_names,
+            _WAIT_FOR_BACKEND_SEC)
+
+        # Set primary locality's balance mode to RATE, and RPS to 120% of the
+        # client's QPS. Only the primary locality will be used.
+        max_rate = int(args.qps * 6 / 5)
+        logger.info('Patching backend service to RATE with %d max_rate',
+                    max_rate)
+        patch_backend_service(
+            gcp,
+            backend_service, [primary_instance_group, secondary_instance_group],
+            balancing_mode='RATE',
+            max_rate=max_rate)
+        wait_until_all_rpcs_go_to_given_backends(primary_instance_names,
+                                                 _WAIT_FOR_BACKEND_SEC)
+        logger.info("success")
+    finally:
+        patch_backend_service(gcp, backend_service, [primary_instance_group])
         instance_names = get_instance_names(gcp, primary_instance_group)
         wait_until_all_rpcs_go_to_given_backends(instance_names,
                                                  _WAIT_FOR_BACKEND_SEC)
@@ -526,10 +699,10 @@ def test_remove_instance_group(gcp, backend_service, instance_group,
                                same_zone_instance_group):
     logger.info('Running test_remove_instance_group')
     try:
-        patch_backend_instances(gcp,
-                                backend_service,
-                                [instance_group, same_zone_instance_group],
-                                balancing_mode='RATE')
+        patch_backend_service(gcp,
+                              backend_service,
+                              [instance_group, same_zone_instance_group],
+                              balancing_mode='RATE')
         wait_for_healthy_backends(gcp, backend_service, instance_group)
         wait_for_healthy_backends(gcp, backend_service,
                                   same_zone_instance_group)
@@ -556,13 +729,13 @@ def test_remove_instance_group(gcp, backend_service, instance_group,
                     same_zone_instance_names, _WAIT_FOR_STATS_SEC)
                 remaining_instance_group = instance_group
                 remaining_instance_names = instance_names
-        patch_backend_instances(gcp,
-                                backend_service, [remaining_instance_group],
-                                balancing_mode='RATE')
+        patch_backend_service(gcp,
+                              backend_service, [remaining_instance_group],
+                              balancing_mode='RATE')
         wait_until_all_rpcs_go_to_given_backends(remaining_instance_names,
                                                  _WAIT_FOR_BACKEND_SEC)
     finally:
-        patch_backend_instances(gcp, backend_service, [instance_group])
+        patch_backend_service(gcp, backend_service, [instance_group])
         wait_until_all_rpcs_go_to_given_backends(instance_names,
                                                  _WAIT_FOR_BACKEND_SEC)
 
@@ -609,7 +782,7 @@ def test_secondary_locality_gets_no_requests_on_partial_primary_failure(
         'Running secondary_locality_gets_no_requests_on_partial_primary_failure'
     )
     try:
-        patch_backend_instances(
+        patch_backend_service(
             gcp, backend_service,
             [primary_instance_group, secondary_instance_group])
         wait_for_healthy_backends(gcp, backend_service, primary_instance_group)
@@ -643,7 +816,7 @@ def test_secondary_locality_gets_no_requests_on_partial_primary_failure(
         else:
             raise e
     finally:
-        patch_backend_instances(gcp, backend_service, [primary_instance_group])
+        patch_backend_service(gcp, backend_service, [primary_instance_group])
 
 
 def test_secondary_locality_gets_requests_on_primary_failure(
@@ -654,7 +827,7 @@ def test_secondary_locality_gets_requests_on_primary_failure(
         swapped_primary_and_secondary=False):
     logger.info('Running secondary_locality_gets_requests_on_primary_failure')
     try:
-        patch_backend_instances(
+        patch_backend_service(
             gcp, backend_service,
             [primary_instance_group, secondary_instance_group])
         wait_for_healthy_backends(gcp, backend_service, primary_instance_group)
@@ -688,7 +861,7 @@ def test_secondary_locality_gets_requests_on_primary_failure(
         else:
             raise e
     finally:
-        patch_backend_instances(gcp, backend_service, [primary_instance_group])
+        patch_backend_service(gcp, backend_service, [primary_instance_group])
 
 
 def prepare_services_for_urlmap_tests(gcp, original_backend_service,
@@ -704,8 +877,8 @@ def prepare_services_for_urlmap_tests(gcp, original_backend_service,
     logger.info('waiting for original backends to become healthy')
     wait_for_healthy_backends(gcp, original_backend_service, instance_group)
 
-    patch_backend_instances(gcp, alternate_backend_service,
-                            [same_zone_instance_group])
+    patch_backend_service(gcp, alternate_backend_service,
+                          [same_zone_instance_group])
     logger.info('waiting for alternate to become healthy')
     wait_for_healthy_backends(gcp, alternate_backend_service,
                               same_zone_instance_group)
@@ -794,7 +967,7 @@ def test_traffic_splitting(gcp, original_backend_service, instance_group,
                 break
     finally:
         patch_url_map_backend_service(gcp, original_backend_service)
-        patch_backend_instances(gcp, alternate_backend_service, [])
+        patch_backend_service(gcp, alternate_backend_service, [])
 
 
 def test_path_matching(gcp, original_backend_service, instance_group,
@@ -869,7 +1042,36 @@ def test_path_matching(gcp, original_backend_service, instance_group,
                 {
                     "UnaryCall": original_backend_instances,
                     "EmptyCall": alternate_backend_instances
-                })
+                }),
+            (
+                [{
+                    'priority': 0,
+                    # Regex UnaryCall -> alternate_backend_service.
+                    'matchRules': [{
+                        'regexMatch':
+                            '^\/.*\/UnaryCall$'  # Unary methods with any services.
+                    }],
+                    'service': alternate_backend_service.url
+                }],
+                {
+                    "UnaryCall": alternate_backend_instances,
+                    "EmptyCall": original_backend_instances
+                }),
+            (
+                [{
+                    'priority': 0,
+                    # ignoreCase EmptyCall -> alternate_backend_service.
+                    'matchRules': [{
+                        # Case insensitive matching.
+                        'fullPathMatch': '/gRpC.tEsTinG.tEstseRvice/empTycaLl',
+                        'ignoreCase': True,
+                    }],
+                    'service': alternate_backend_service.url
+                }],
+                {
+                    "UnaryCall": original_backend_instances,
+                    "EmptyCall": alternate_backend_instances
+                }),
         ]
 
         for (route_rules, expected_instances) in test_cases:
@@ -886,8 +1088,8 @@ def test_path_matching(gcp, original_backend_service, instance_group,
                 original_backend_instances + alternate_backend_instances,
                 _WAIT_FOR_STATS_SEC)
 
-            retry_count = 20
-            # Each attempt takes about 10 seconds, 20 retries is equivalent to 200
+            retry_count = 80
+            # Each attempt takes about 5 seconds, 80 retries is equivalent to 400
             # seconds timeout.
             for i in range(retry_count):
                 stats = get_client_stats(_NUM_TEST_RPCS, _WAIT_FOR_STATS_SEC)
@@ -899,9 +1101,13 @@ def test_path_matching(gcp, original_backend_service, instance_group,
                 if compare_expected_instances(stats, expected_instances):
                     logger.info("success")
                     break
+                elif i == retry_count - 1:
+                    raise Exception(
+                        'timeout waiting for RPCs to the expected instances: %s'
+                        % expected_instances)
     finally:
         patch_url_map_backend_service(gcp, original_backend_service)
-        patch_backend_instances(gcp, alternate_backend_service, [])
+        patch_backend_service(gcp, alternate_backend_service, [])
 
 
 def test_header_matching(gcp, original_backend_service, instance_group,
@@ -921,25 +1127,149 @@ def test_header_matching(gcp, original_backend_service, instance_group,
 
     try:
         # A list of tuples (route_rules, expected_instances).
-        test_cases = [(
-            [{
-                'priority': 0,
-                # Header ExactMatch -> alternate_backend_service.
-                # EmptyCall is sent with the metadata.
-                'matchRules': [{
-                    'prefixMatch':
-                        '/',
-                    'headerMatches': [{
-                        'headerName': _TEST_METADATA_KEY,
-                        'exactMatch': _TEST_METADATA_VALUE
-                    }]
+        test_cases = [
+            (
+                [{
+                    'priority': 0,
+                    # Header ExactMatch -> alternate_backend_service.
+                    # EmptyCall is sent with the metadata.
+                    'matchRules': [{
+                        'prefixMatch':
+                            '/',
+                        'headerMatches': [{
+                            'headerName': _TEST_METADATA_KEY,
+                            'exactMatch': _TEST_METADATA_VALUE_EMPTY
+                        }]
+                    }],
+                    'service': alternate_backend_service.url
                 }],
-                'service': alternate_backend_service.url
-            }],
-            {
-                "EmptyCall": alternate_backend_instances,
-                "UnaryCall": original_backend_instances
-            })]
+                {
+                    "EmptyCall": alternate_backend_instances,
+                    "UnaryCall": original_backend_instances
+                }),
+            (
+                [{
+                    'priority': 0,
+                    # Header PrefixMatch -> alternate_backend_service.
+                    # UnaryCall is sent with the metadata.
+                    'matchRules': [{
+                        'prefixMatch':
+                            '/',
+                        'headerMatches': [{
+                            'headerName': _TEST_METADATA_KEY,
+                            'prefixMatch': _TEST_METADATA_VALUE_UNARY[:2]
+                        }]
+                    }],
+                    'service': alternate_backend_service.url
+                }],
+                {
+                    "EmptyCall": original_backend_instances,
+                    "UnaryCall": alternate_backend_instances
+                }),
+            (
+                [{
+                    'priority': 0,
+                    # Header SuffixMatch -> alternate_backend_service.
+                    # EmptyCall is sent with the metadata.
+                    'matchRules': [{
+                        'prefixMatch':
+                            '/',
+                        'headerMatches': [{
+                            'headerName': _TEST_METADATA_KEY,
+                            'suffixMatch': _TEST_METADATA_VALUE_EMPTY[-2:]
+                        }]
+                    }],
+                    'service': alternate_backend_service.url
+                }],
+                {
+                    "EmptyCall": alternate_backend_instances,
+                    "UnaryCall": original_backend_instances
+                }),
+            (
+                [{
+                    'priority': 0,
+                    # Header 'xds_md_numeric' present -> alternate_backend_service.
+                    # UnaryCall is sent with the metadata, so will be sent to alternative.
+                    'matchRules': [{
+                        'prefixMatch':
+                            '/',
+                        'headerMatches': [{
+                            'headerName': _TEST_METADATA_NUMERIC_KEY,
+                            'presentMatch': True
+                        }]
+                    }],
+                    'service': alternate_backend_service.url
+                }],
+                {
+                    "EmptyCall": original_backend_instances,
+                    "UnaryCall": alternate_backend_instances
+                }),
+            (
+                [{
+                    'priority': 0,
+                    # Header invert ExactMatch -> alternate_backend_service.
+                    # UnaryCall is sent with the metadata, so will be sent to
+                    # original. EmptyCall will be sent to alternative.
+                    'matchRules': [{
+                        'prefixMatch':
+                            '/',
+                        'headerMatches': [{
+                            'headerName': _TEST_METADATA_KEY,
+                            'exactMatch': _TEST_METADATA_VALUE_UNARY,
+                            'invertMatch': True
+                        }]
+                    }],
+                    'service': alternate_backend_service.url
+                }],
+                {
+                    "EmptyCall": alternate_backend_instances,
+                    "UnaryCall": original_backend_instances
+                }),
+            (
+                [{
+                    'priority': 0,
+                    # Header 'xds_md_numeric' range [100,200] -> alternate_backend_service.
+                    # UnaryCall is sent with the metadata in range.
+                    'matchRules': [{
+                        'prefixMatch':
+                            '/',
+                        'headerMatches': [{
+                            'headerName': _TEST_METADATA_NUMERIC_KEY,
+                            'rangeMatch': {
+                                'rangeStart': '100',
+                                'rangeEnd': '200'
+                            }
+                        }]
+                    }],
+                    'service': alternate_backend_service.url
+                }],
+                {
+                    "EmptyCall": original_backend_instances,
+                    "UnaryCall": alternate_backend_instances
+                }),
+            (
+                [{
+                    'priority': 0,
+                    # Header RegexMatch -> alternate_backend_service.
+                    # EmptyCall is sent with the metadata.
+                    'matchRules': [{
+                        'prefixMatch':
+                            '/',
+                        'headerMatches': [{
+                            'headerName':
+                                _TEST_METADATA_KEY,
+                            'regexMatch':
+                                "^%s.*%s$" % (_TEST_METADATA_VALUE_EMPTY[:2],
+                                              _TEST_METADATA_VALUE_EMPTY[-2:])
+                        }]
+                    }],
+                    'service': alternate_backend_service.url
+                }],
+                {
+                    "EmptyCall": alternate_backend_instances,
+                    "UnaryCall": original_backend_instances
+                }),
+        ]
 
         for (route_rules, expected_instances) in test_cases:
             logger.info('patching url map with %s -> alternative',
@@ -956,8 +1286,8 @@ def test_header_matching(gcp, original_backend_service, instance_group,
                 original_backend_instances + alternate_backend_instances,
                 _WAIT_FOR_STATS_SEC)
 
-            retry_count = 10
-            # Each attempt takes about 10 seconds, 10 retries is equivalent to 100
+            retry_count = 80
+            # Each attempt takes about 5 seconds, 80 retries is equivalent to 400
             # seconds timeout.
             for i in range(retry_count):
                 stats = get_client_stats(_NUM_TEST_RPCS, _WAIT_FOR_STATS_SEC)
@@ -969,9 +1299,306 @@ def test_header_matching(gcp, original_backend_service, instance_group,
                 if compare_expected_instances(stats, expected_instances):
                     logger.info("success")
                     break
+                elif i == retry_count - 1:
+                    raise Exception(
+                        'timeout waiting for RPCs to the expected instances: %s'
+                        % expected_instances)
     finally:
         patch_url_map_backend_service(gcp, original_backend_service)
-        patch_backend_instances(gcp, alternate_backend_service, [])
+        patch_backend_service(gcp, alternate_backend_service, [])
+
+
+def test_circuit_breaking(gcp, original_backend_service, instance_group,
+                          same_zone_instance_group):
+    '''
+    Since backend service circuit_breakers configuration cannot be unset,
+    which causes trouble for restoring validate_for_proxy flag in target
+    proxy/global forwarding rule. This test uses dedicated backend sevices.
+    The url_map and backend services undergoes the following state changes:
+
+    Before test:
+       original_backend_service -> [instance_group]
+       extra_backend_service -> []
+       more_extra_backend_service -> []
+
+       url_map -> [original_backend_service]
+
+    In test:
+       extra_backend_service (with circuit_breakers) -> [instance_group]
+       more_extra_backend_service (with circuit_breakers) -> [same_zone_instance_group]
+
+       url_map -> [extra_backend_service, more_extra_backend_service]
+
+    After test:
+       original_backend_service -> [instance_group]
+       extra_backend_service (with circuit_breakers) -> []
+       more_extra_backend_service (with circuit_breakers) -> []
+
+       url_map -> [original_backend_service]
+    '''
+    logger.info('Running test_circuit_breaking')
+    additional_backend_services = []
+    try:
+        # TODO(chengyuanzhang): Dedicated backend services created for circuit
+        # breaking test. Once the issue for unsetting backend service circuit
+        # breakers is resolved or configuring backend service circuit breakers is
+        # enabled for config validation, these dedicated backend services can be
+        # eliminated.
+        extra_backend_service_name = _BASE_BACKEND_SERVICE_NAME + '-extra' + gcp_suffix
+        more_extra_backend_service_name = _BASE_BACKEND_SERVICE_NAME + '-more-extra' + gcp_suffix
+        extra_backend_service = add_backend_service(gcp,
+                                                    extra_backend_service_name)
+        additional_backend_services.append(extra_backend_service)
+        more_extra_backend_service = add_backend_service(
+            gcp, more_extra_backend_service_name)
+        additional_backend_services.append(more_extra_backend_service)
+        # The config validation for proxyless doesn't allow setting
+        # circuit_breakers. Disable validate validate_for_proxyless
+        # for this test. This can be removed when validation
+        # accepts circuit_breakers.
+        logger.info('disabling validate_for_proxyless in target proxy')
+        set_validate_for_proxyless(gcp, False)
+        extra_backend_service_max_requests = 500
+        more_extra_backend_service_max_requests = 1000
+        patch_backend_service(gcp,
+                              extra_backend_service, [instance_group],
+                              circuit_breakers={
+                                  'maxRequests':
+                                      extra_backend_service_max_requests
+                              })
+        logger.info('Waiting for extra backends to become healthy')
+        wait_for_healthy_backends(gcp, extra_backend_service, instance_group)
+        patch_backend_service(gcp,
+                              more_extra_backend_service,
+                              [same_zone_instance_group],
+                              circuit_breakers={
+                                  'maxRequests':
+                                      more_extra_backend_service_max_requests
+                              })
+        logger.info('Waiting for more extra backend to become healthy')
+        wait_for_healthy_backends(gcp, more_extra_backend_service,
+                                  same_zone_instance_group)
+        extra_backend_instances = get_instance_names(gcp, instance_group)
+        more_extra_backend_instances = get_instance_names(
+            gcp, same_zone_instance_group)
+        route_rules = [
+            {
+                'priority': 0,
+                # UnaryCall -> extra_backend_service
+                'matchRules': [{
+                    'fullPathMatch': '/grpc.testing.TestService/UnaryCall'
+                }],
+                'service': extra_backend_service.url
+            },
+            {
+                'priority': 1,
+                # EmptyCall -> more_extra_backend_service
+                'matchRules': [{
+                    'fullPathMatch': '/grpc.testing.TestService/EmptyCall'
+                }],
+                'service': more_extra_backend_service.url
+            },
+        ]
+
+        # Make client send UNARY_CALL and EMPTY_CALL.
+        configure_client([
+            messages_pb2.ClientConfigureRequest.RpcType.UNARY_CALL,
+            messages_pb2.ClientConfigureRequest.RpcType.EMPTY_CALL
+        ])
+        logger.info('Patching url map with %s', route_rules)
+        patch_url_map_backend_service(gcp,
+                                      extra_backend_service,
+                                      route_rules=route_rules)
+        logger.info('Waiting for traffic to go to all backends')
+        wait_until_all_rpcs_go_to_given_backends(
+            extra_backend_instances + more_extra_backend_instances,
+            _WAIT_FOR_STATS_SEC)
+
+        # Make all calls keep-open.
+        configure_client([
+            messages_pb2.ClientConfigureRequest.RpcType.UNARY_CALL,
+            messages_pb2.ClientConfigureRequest.RpcType.EMPTY_CALL
+        ], [(messages_pb2.ClientConfigureRequest.RpcType.UNARY_CALL,
+             'rpc-behavior', 'keep-open'),
+            (messages_pb2.ClientConfigureRequest.RpcType.EMPTY_CALL,
+             'rpc-behavior', 'keep-open')])
+        wait_until_rpcs_in_flight(
+            'UNARY_CALL', (_WAIT_FOR_BACKEND_SEC +
+                           int(extra_backend_service_max_requests / args.qps)),
+            extra_backend_service_max_requests, 1)
+        logger.info('UNARY_CALL reached stable state (%d)',
+                    extra_backend_service_max_requests)
+        wait_until_rpcs_in_flight(
+            'EMPTY_CALL',
+            (_WAIT_FOR_BACKEND_SEC +
+             int(more_extra_backend_service_max_requests / args.qps)),
+            more_extra_backend_service_max_requests, 1)
+        logger.info('EMPTY_CALL reached stable state (%d)',
+                    more_extra_backend_service_max_requests)
+
+        # Increment circuit breakers max_requests threshold.
+        extra_backend_service_max_requests = 800
+        patch_backend_service(gcp,
+                              extra_backend_service, [instance_group],
+                              circuit_breakers={
+                                  'maxRequests':
+                                      extra_backend_service_max_requests
+                              })
+        wait_until_rpcs_in_flight(
+            'UNARY_CALL', (_WAIT_FOR_BACKEND_SEC +
+                           int(extra_backend_service_max_requests / args.qps)),
+            extra_backend_service_max_requests, 1)
+        logger.info('UNARY_CALL reached stable state after increase (%d)',
+                    extra_backend_service_max_requests)
+        logger.info('success')
+        # Avoid new RPCs being outstanding (some test clients create threads
+        # for sending RPCs) after restoring backend services.
+        configure_client(
+            [messages_pb2.ClientConfigureRequest.RpcType.UNARY_CALL])
+    finally:
+        patch_url_map_backend_service(gcp, original_backend_service)
+        patch_backend_service(gcp, original_backend_service, [instance_group])
+        for backend_service in additional_backend_services:
+            delete_backend_service(gcp, backend_service)
+        set_validate_for_proxyless(gcp, True)
+
+
+def test_timeout(gcp, original_backend_service, instance_group):
+    logger.info('Running test_timeout')
+
+    logger.info('waiting for original backends to become healthy')
+    wait_for_healthy_backends(gcp, original_backend_service, instance_group)
+
+    # UnaryCall -> maxStreamDuration:3s
+    route_rules = [{
+        'priority': 0,
+        'matchRules': [{
+            'fullPathMatch': '/grpc.testing.TestService/UnaryCall'
+        }],
+        'service': original_backend_service.url,
+        'routeAction': {
+            'maxStreamDuration': {
+                'seconds': 3,
+            },
+        },
+    }]
+    patch_url_map_backend_service(gcp,
+                                  original_backend_service,
+                                  route_rules=route_rules)
+    # A list of tuples (testcase_name, {client_config}, {expected_results})
+    test_cases = [
+        (
+            'app_timeout_exceeded',
+            # UnaryCall only with sleep-2; timeout=1s; calls timeout.
+            {
+                'rpc_types': [
+                    messages_pb2.ClientConfigureRequest.RpcType.UNARY_CALL,
+                ],
+                'metadata': [
+                    (messages_pb2.ClientConfigureRequest.RpcType.UNARY_CALL,
+                     'rpc-behavior', 'sleep-2'),
+                ],
+                'timeout_sec': 1,
+            },
+            {
+                'UNARY_CALL': 4,  # DEADLINE_EXCEEDED
+            },
+        ),
+        (
+            'timeout_not_exceeded',
+            # UnaryCall only with no sleep; calls succeed.
+            {
+                'rpc_types': [
+                    messages_pb2.ClientConfigureRequest.RpcType.UNARY_CALL,
+                ],
+            },
+            {
+                'UNARY_CALL': 0,
+            },
+        ),
+        (
+            'timeout_exceeded (UNARY_CALL), timeout_different_route (EMPTY_CALL)',
+            # UnaryCall and EmptyCall both sleep-4.
+            # UnaryCall timeouts, EmptyCall succeeds.
+            {
+                'rpc_types': [
+                    messages_pb2.ClientConfigureRequest.RpcType.UNARY_CALL,
+                    messages_pb2.ClientConfigureRequest.RpcType.EMPTY_CALL,
+                ],
+                'metadata': [
+                    (messages_pb2.ClientConfigureRequest.RpcType.UNARY_CALL,
+                     'rpc-behavior', 'sleep-4'),
+                    (messages_pb2.ClientConfigureRequest.RpcType.EMPTY_CALL,
+                     'rpc-behavior', 'sleep-4'),
+                ],
+            },
+            {
+                'UNARY_CALL': 4,  # DEADLINE_EXCEEDED
+                'EMPTY_CALL': 0,
+            },
+        ),
+    ]
+
+    try:
+        for (testcase_name, client_config, expected_results) in test_cases:
+            logger.info('starting case %s', testcase_name)
+            configure_client(**client_config)
+            # wait a second to help ensure the client stops sending RPCs with
+            # the old config.  We will make multiple attempts if it is failing,
+            # but this improves confidence that the test is valid if the
+            # previous client_config would lead to the same results.
+            time.sleep(1)
+            # Each attempt takes 10 seconds; 20 attempts is equivalent to 200
+            # second timeout.
+            attempt_count = 20
+            before_stats = get_client_accumulated_stats()
+            if not before_stats.stats_per_method:
+                raise ValueError(
+                    'stats.stats_per_method is None, the interop client stats service does not support this test case'
+                )
+            for i in range(attempt_count):
+                logger.info('%s: attempt %d', testcase_name, i)
+
+                test_runtime_secs = 10
+                time.sleep(test_runtime_secs)
+                after_stats = get_client_accumulated_stats()
+
+                success = True
+                for rpc, status in expected_results.items():
+                    qty = (after_stats.stats_per_method[rpc].result[status] -
+                           before_stats.stats_per_method[rpc].result[status])
+                    want = test_runtime_secs * args.qps
+                    # Allow 10% deviation from expectation to reduce flakiness
+                    if qty < (want * .9) or qty > (want * 1.1):
+                        logger.info('%s: failed due to %s[%s]: got %d want ~%d',
+                                    testcase_name, rpc, status, qty, want)
+                        success = False
+                if success:
+                    break
+                logger.info('%s attempt %d failed', testcase_name, i)
+                before_stats = after_stats
+            else:
+                raise Exception(
+                    '%s: timeout waiting for expected results: %s; got %s' %
+                    (testcase_name, expected_results,
+                     after_stats.stats_per_method))
+    finally:
+        patch_url_map_backend_service(gcp, original_backend_service)
+
+
+def set_validate_for_proxyless(gcp, validate_for_proxyless):
+    if not gcp.alpha_compute:
+        logger.debug(
+            'Not setting validateForProxy because alpha is not enabled')
+        return
+    # This function deletes global_forwarding_rule and target_proxy, then
+    # recreate target_proxy with validateForProxyless=False. This is necessary
+    # because patching target_grpc_proxy isn't supported.
+    delete_global_forwarding_rule(gcp)
+    delete_target_proxy(gcp)
+    create_target_proxy(gcp, gcp.target_proxy.name, validate_for_proxyless)
+    create_global_forwarding_rule(gcp, gcp.global_forwarding_rule.name,
+                                  [gcp.service_port])
 
 
 def get_serving_status(instance, service_port):
@@ -1202,12 +1829,12 @@ def patch_url_map_host_rule_with_port(gcp, name, backend_service, host_name):
     wait_for_global_operation(gcp, result['name'])
 
 
-def create_target_proxy(gcp, name):
+def create_target_proxy(gcp, name, validate_for_proxyless=True):
     if gcp.alpha_compute:
         config = {
             'name': name,
             'url_map': gcp.url_map.url,
-            'validate_for_proxyless': True,
+            'validate_for_proxyless': validate_for_proxyless
         }
         logger.debug('Sending GCP request with body=%s', config)
         result = gcp.alpha_compute.targetGrpcProxies().insert(
@@ -1355,16 +1982,19 @@ def delete_url_map(gcp):
         logger.info('Delete failed: %s', http_error)
 
 
+def delete_backend_service(gcp, backend_service):
+    try:
+        result = gcp.compute.backendServices().delete(
+            project=gcp.project, backendService=backend_service.name).execute(
+                num_retries=_GCP_API_RETRIES)
+        wait_for_global_operation(gcp, result['name'])
+    except googleapiclient.errors.HttpError as http_error:
+        logger.info('Delete failed: %s', http_error)
+
+
 def delete_backend_services(gcp):
     for backend_service in gcp.backend_services:
-        try:
-            result = gcp.compute.backendServices().delete(
-                project=gcp.project,
-                backendService=backend_service.name).execute(
-                    num_retries=_GCP_API_RETRIES)
-            wait_for_global_operation(gcp, result['name'])
-        except googleapiclient.errors.HttpError as http_error:
-            logger.info('Delete failed: %s', http_error)
+        delete_backend_service(gcp, backend_service)
 
 
 def delete_firewall(gcp):
@@ -1415,10 +2045,12 @@ def delete_instance_template(gcp):
         logger.info('Delete failed: %s', http_error)
 
 
-def patch_backend_instances(gcp,
-                            backend_service,
-                            instance_groups,
-                            balancing_mode='UTILIZATION'):
+def patch_backend_service(gcp,
+                          backend_service,
+                          instance_groups,
+                          balancing_mode='UTILIZATION',
+                          max_rate=1,
+                          circuit_breakers=None):
     if gcp.alpha_compute:
         compute_to_use = gcp.alpha_compute
     else:
@@ -1427,8 +2059,9 @@ def patch_backend_instances(gcp,
         'backends': [{
             'group': instance_group.url,
             'balancingMode': balancing_mode,
-            'maxRate': 1 if balancing_mode == 'RATE' else None
+            'maxRate': max_rate if balancing_mode == 'RATE' else None
         } for instance_group in instance_groups],
+        'circuitBreakers': circuit_breakers,
     }
     logger.debug('Sending GCP request with body=%s', config)
     result = compute_to_use.backendServices().patch(
@@ -1464,6 +2097,11 @@ def patch_url_map_backend_service(gcp,
 
     Only one of backend_service and service_with_weights can be not None.
     '''
+    if gcp.alpha_compute:
+        compute_to_use = gcp.alpha_compute
+    else:
+        compute_to_use = gcp.compute
+
     if backend_service and services_with_weights:
         raise ValueError(
             'both backend_service and service_with_weights are not None.')
@@ -1485,7 +2123,7 @@ def patch_url_map_backend_service(gcp,
         }]
     }
     logger.debug('Sending GCP request with body=%s', config)
-    result = gcp.compute.urlMaps().patch(
+    result = compute_to_use.urlMaps().patch(
         project=gcp.project, urlMap=gcp.url_map.name,
         body=config).execute(num_retries=_GCP_API_RETRIES)
     wait_for_global_operation(gcp, result['name'])
@@ -1633,10 +2271,11 @@ class GcpResource(object):
 
 class GcpState(object):
 
-    def __init__(self, compute, alpha_compute, project):
+    def __init__(self, compute, alpha_compute, project, project_num):
         self.compute = compute
         self.alpha_compute = alpha_compute
         self.project = project
+        self.project_num = project_num
         self.health_check = None
         self.health_check_firewall_rule = None
         self.backend_services = []
@@ -1663,15 +2302,17 @@ else:
         alpha_compute = googleapiclient.discovery.build('compute', 'alpha')
 
 try:
-    gcp = GcpState(compute, alpha_compute, args.project_id)
+    gcp = GcpState(compute, alpha_compute, args.project_id, args.project_num)
     gcp_suffix = args.gcp_suffix
     health_check_name = _BASE_HEALTH_CHECK_NAME + gcp_suffix
     if not args.use_existing_gcp_resources:
-        if gcp_suffix:
-            num_attempts = 5
-        else:
-            # If not given a suffix, do not retry if already in use.
+        if args.keep_gcp_resources:
+            # Auto-generating a unique suffix in case of conflict should not be
+            # combined with --keep_gcp_resources, as the suffix actually used
+            # for GCP resources will not match the provided --gcp_suffix value.
             num_attempts = 1
+        else:
+            num_attempts = 5
         for i in range(num_attempts):
             try:
                 logger.info('Using GCP suffix %s', gcp_suffix)
@@ -1742,7 +2383,7 @@ try:
                                  startup_script)
         instance_group = add_instance_group(gcp, args.zone, instance_group_name,
                                             _INSTANCE_GROUP_SIZE)
-        patch_backend_instances(gcp, backend_service, [instance_group])
+        patch_backend_service(gcp, backend_service, [instance_group])
         same_zone_instance_group = add_instance_group(
             gcp, args.zone, same_zone_instance_group_name, _INSTANCE_GROUP_SIZE)
         secondary_zone_instance_group = add_instance_group(
@@ -1767,14 +2408,26 @@ try:
             with tempfile.NamedTemporaryFile(delete=False) as bootstrap_file:
                 bootstrap_file.write(
                     _BOOTSTRAP_TEMPLATE.format(
-                        node_id=socket.gethostname(),
+                        node_id='projects/%s/networks/%s/nodes/%s' %
+                        (gcp.project_num, args.network.split('/')[-1],
+                         uuid.uuid1()),
                         server_features=json.dumps(
                             bootstrap_server_features)).encode('utf-8'))
                 bootstrap_path = bootstrap_file.name
         client_env['GRPC_XDS_BOOTSTRAP'] = bootstrap_path
+        client_env['GRPC_XDS_EXPERIMENTAL_CIRCUIT_BREAKING'] = 'true'
+        client_env['GRPC_XDS_EXPERIMENTAL_ENABLE_TIMEOUT'] = 'true'
         test_results = {}
         failed_tests = []
         for test_case in args.test_case:
+            if test_case in _V3_TEST_CASES and not args.xds_v3_support:
+                logger.info('skipping test %s due to missing v3 support',
+                            test_case)
+                continue
+            if test_case in _ALPHA_TEST_CASES and not gcp.alpha_compute:
+                logger.info('skipping test %s due to missing alpha support',
+                            test_case)
+                continue
             result = jobset.JobResult()
             log_dir = os.path.join(_TEST_LOG_BASE_DIR, test_case)
             if not os.path.exists(log_dir):
@@ -1789,8 +2442,13 @@ try:
                 rpcs_to_send = '--rpc="UnaryCall"'
 
             if test_case in _TESTS_TO_SEND_METADATA:
-                metadata_to_send = '--metadata="EmptyCall:{key}:{value}"'.format(
-                    key=_TEST_METADATA_KEY, value=_TEST_METADATA_VALUE)
+                metadata_to_send = '--metadata="EmptyCall:{keyE}:{valueE},UnaryCall:{keyU}:{valueU},UnaryCall:{keyNU}:{valueNU}"'.format(
+                    keyE=_TEST_METADATA_KEY,
+                    valueE=_TEST_METADATA_VALUE_EMPTY,
+                    keyU=_TEST_METADATA_KEY,
+                    valueU=_TEST_METADATA_VALUE_UNARY,
+                    keyNU=_TEST_METADATA_NUMERIC_KEY,
+                    valueNU=_TEST_METADATA_NUMERIC_VALUE)
             else:
                 # Setting the arg explicitly to empty with '--metadata=""'
                 # makes C# client fail
@@ -1839,6 +2497,10 @@ try:
                 elif test_case == 'gentle_failover':
                     test_gentle_failover(gcp, backend_service, instance_group,
                                          secondary_zone_instance_group)
+                elif test_case == 'load_report_based_failover':
+                    test_load_report_based_failover(
+                        gcp, backend_service, instance_group,
+                        secondary_zone_instance_group)
                 elif test_case == 'ping_pong':
                     test_ping_pong(gcp, backend_service, instance_group)
                 elif test_case == 'remove_instance_group':
@@ -1867,6 +2529,11 @@ try:
                     test_header_matching(gcp, backend_service, instance_group,
                                          alternate_backend_service,
                                          same_zone_instance_group)
+                elif test_case == 'circuit_breaking':
+                    test_circuit_breaking(gcp, backend_service, instance_group,
+                                          same_zone_instance_group)
+                elif test_case == 'timeout':
+                    test_timeout(gcp, backend_service, instance_group)
                 else:
                     logger.error('Unknown test case: %s', test_case)
                     sys.exit(1)

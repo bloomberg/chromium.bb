@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/storage_class.h"
-#include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
 
 namespace tint {
@@ -55,8 +52,6 @@ INSTANTIATE_TEST_SUITE_P(
         VariableStorageData{"out", ast::StorageClass::kOutput},
         VariableStorageData{"uniform", ast::StorageClass::kUniform},
         VariableStorageData{"workgroup", ast::StorageClass::kWorkgroup},
-        VariableStorageData{"uniform_constant",
-                            ast::StorageClass::kUniformConstant},
         VariableStorageData{"storage", ast::StorageClass::kStorage},
         VariableStorageData{"storage_buffer", ast::StorageClass::kStorage},
         VariableStorageData{"image", ast::StorageClass::kImage},

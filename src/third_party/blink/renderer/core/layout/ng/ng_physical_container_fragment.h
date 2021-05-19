@@ -133,6 +133,9 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     return depends_on_percentage_block_size_;
   }
 
+  void SetChildrenInvalid() const;
+  bool ChildrenValid() const { return children_valid_; }
+
   bool HasOutOfFlowPositionedDescendants() const {
     DCHECK(!oof_positioned_descendants_ ||
            !oof_positioned_descendants_->IsEmpty());

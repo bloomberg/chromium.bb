@@ -20,7 +20,7 @@
 $ResolvedVersions cipd_manifest.versions
 
 # Fully supported platforms.
-$VerifiedPlatform linux-amd64 mac-amd64 mac-arm64 windows-amd64 windows-386
+$VerifiedPlatform linux-amd64 mac-amd64 mac-arm64 windows-amd64
 
 # Platform with best-effort support: we have some binaries cross-compiled for
 # them, but we do not test they work. They also may not have all necessary
@@ -36,7 +36,7 @@ infra/tools/luci/vpython/${platform} git_revision:e75c9bf286fbb31347379cb478df2a
 infra/tools/luci/led/${platform} git_revision:e75c9bf286fbb31347379cb478df2a556ab185b1
 
 # LUCI config generator
-infra/tools/luci/lucicfg/${platform} git_revision:e75c9bf286fbb31347379cb478df2a556ab185b1
+infra/tools/luci/lucicfg/${platform} git_revision:d759c61ccfabc12e0da549ccc25aa8bfdaf37615
 
 # Mac toolchain installer
 infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:e75c9bf286fbb31347379cb478df2a556ab185b1
@@ -45,10 +45,10 @@ infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:e75c9bf286fbb31347379cb
 infra/tools/prpc/${platform} git_revision:e75c9bf286fbb31347379cb478df2a556ab185b1
 
 # LUCI authentication command line tool
-infra/tools/luci-auth/${platform} git_revision:e75c9bf286fbb31347379cb478df2a556ab185b1
+infra/tools/luci-auth/${platform} git_revision:297491c0babda68d84d8240c9d4504be671bc804
 
 # LUCI Buildbucket CLI
-infra/tools/bb/${platform} git_revision:e75c9bf286fbb31347379cb478df2a556ab185b1
+infra/tools/bb/${platform} git_revision:1563088c23532d1e45b8c3041afb9458c1788fc3
 
 # LUCI ResultDB CLI
 infra/tools/rdb/${platform} git_revision:e75c9bf286fbb31347379cb478df2a556ab185b1
@@ -57,10 +57,10 @@ infra/tools/rdb/${platform} git_revision:e75c9bf286fbb31347379cb478df2a556ab185b
 chromiumos/infra/crosjobs/${platform=linux-amd64} git_revision:ed616d595eb7241d39d34907050d2949121d6ae8
 
 # goma client
-infra/goma/client/${os}-amd64 git_revision:be1b7f4547023e809b636dc9572c976ccb33dcac
+infra/goma/client/${os}-amd64 git_revision:f5efece09286e7fab5fe52a77a6f3bd515718ae6
 
 # dirmd, a tool to work with DIR_METADATA files
-infra/tools/dirmd/${platform} git_revision:e75c9bf286fbb31347379cb478df2a556ab185b1
+infra/tools/dirmd/${platform} git_revision:9279002e230abdc26e4f482d44f543dddc087d38
 
 # Pinpoint CLI
-infra/chromeperf/pinpoint/${platform} git_revision:e75c9bf286fbb31347379cb478df2a556ab185b1
+infra/chromeperf/pinpoint/${platform} git_revision:97ee9cecaac4d99be09278169f987e61b8116672

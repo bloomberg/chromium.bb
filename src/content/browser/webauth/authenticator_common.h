@@ -19,7 +19,7 @@
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/global_routing_id.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_selection_criteria.h"
@@ -85,6 +85,8 @@ CONTENT_EXPORT std::string SerializeWebAuthnCollectedClientDataToJson(
 // Common code for any WebAuthn Authenticator interfaces.
 class CONTENT_EXPORT AuthenticatorCommon {
  public:
+  // Creates a new AuthenticatorCommon. Callers must ensure that this instance
+  // outlives the RenderFrameHost.
   explicit AuthenticatorCommon(RenderFrameHost* render_frame_host);
   virtual ~AuthenticatorCommon();
 
@@ -107,9 +109,25 @@ class CONTENT_EXPORT AuthenticatorCommon {
 
   void DisableUI();
 
+  // GetRenderFrameHost returns a pointer to the RenderFrameHost that was given
+  // to the constructor. Use this rather than keeping a copy of the
+  // RenderFrameHost* that was passed in.
+  //
+  // This object assumes that the RenderFrameHost overlives it but, in case it
+  // doesn't, this avoids holding a raw pointer and creating a use-after-free.
+  // If the RenderFrameHost has been destroyed then this function will return
+  // nullptr and the process will crash when it tries to use it.
+  RenderFrameHost* GetRenderFrameHost() const;
+
  protected:
+  // MaybeCreateRequestDelegate returns the embedder-provided implementation of
+  // AuthenticatorRequestClientDelegate, which encapsulates per-request state
+  // relevant to the embedder, e.g. because it is used to display browser UI.
+  //
+  // Chrome may return nullptr here in order to ensure that at most one request
+  // per WebContents is ongoing at once.
   virtual std::unique_ptr<AuthenticatorRequestClientDelegate>
-  CreateRequestDelegate();
+  MaybeCreateRequestDelegate();
 
   std::unique_ptr<AuthenticatorRequestClientDelegate> request_delegate_;
 
@@ -182,17 +200,18 @@ class CONTENT_EXPORT AuthenticatorCommon {
       AuthenticatorRequestClientDelegate::InterestingFailureReason reason,
       blink::mojom::AuthenticatorStatus status);
 
-  void InvokeCallbackAndCleanup(
-      blink::mojom::Authenticator::MakeCredentialCallback callback,
+  // Runs |make_credential_response_callback_| and then Cleanup().
+  void CompleteMakeCredentialRequest(
       blink::mojom::AuthenticatorStatus status,
       blink::mojom::MakeCredentialAuthenticatorResponsePtr response = nullptr,
       Focus focus_check = Focus::kDontCheck);
-  void InvokeCallbackAndCleanup(
-      blink::mojom::Authenticator::GetAssertionCallback callback,
+
+  // Runs |get_assertion_callback_| and then Cleanup().
+  void CompleteGetAssertionRequest(
       blink::mojom::AuthenticatorStatus status,
       blink::mojom::GetAssertionAuthenticatorResponsePtr response = nullptr);
 
-  BrowserContext* browser_context() const;
+  BrowserContext* GetBrowserContext() const;
 
   // Returns the FidoDiscoveryFactory for the current request. This may be a
   // real instance, or one injected by the Virtual Authenticator environment, or
@@ -201,7 +220,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   device::FidoDiscoveryFactory* discovery_factory();
   void InitDiscoveryFactory();
 
-  RenderFrameHost* const render_frame_host_;
+  const GlobalFrameRoutingId render_frame_host_id_;
   std::unique_ptr<device::FidoRequestHandlerBase> request_;
   std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
   device::FidoDiscoveryFactory* discovery_factory_testing_override_ = nullptr;

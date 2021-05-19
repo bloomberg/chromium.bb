@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #include "src/trace_processor/importers/json/json_trace_tokenizer.h"
 
 #include <memory>
@@ -27,6 +26,7 @@
 #include "src/trace_processor/storage/stats.h"
 #include "src/trace_processor/trace_blob_view.h"
 #include "src/trace_processor/trace_sorter.h"
+#include "src/trace_processor/util/status_macros.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -34,6 +34,7 @@ namespace trace_processor {
 namespace {
 
 #if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
+
 util::Status AppendUnescapedCharacter(char c,
                                       bool is_escaping,
                                       std::string* key) {
@@ -101,14 +102,15 @@ ReadStringRes ReadOneJsonString(const char* start,
   }
   return ReadStringRes::kNeedsMoreData;
 }
-#endif
+
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
 
 }  // namespace
 
 #if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
 ReadDictRes ReadOneJsonDict(const char* start,
                             const char* end,
-                            Json::Value* value,
+                            base::StringView* value,
                             const char** next) {
   int braces = 0;
   int square_brackets = 0;
@@ -142,12 +144,7 @@ ReadDictRes ReadOneJsonDict(const char* start,
       if (--braces > 0)
         continue;
       size_t len = static_cast<size_t>((s + 1) - dict_begin);
-      auto opt_value = json::ParseJsonString(base::StringView(dict_begin, len));
-      if (!opt_value) {
-        PERFETTO_ELOG("Error while parsing JSON string during tokenization");
-        return ReadDictRes::kFatalError;
-      }
-      *value = std::move(*opt_value);
+      *value = base::StringView(dict_begin, len);
       *next = s + 1;
       return ReadDictRes::kFoundDict;
     }
@@ -180,7 +177,6 @@ ReadKeyRes ReadOneJsonKey(const char* start,
   };
 
   NextToken next_token = NextToken::kStringOrEndOfDict;
-  bool seen_comma = false;
   for (const char* s = start; s < end; s++) {
     // Whitespace characters anywhere can be skipped.
     if (isspace(*s))
@@ -196,13 +192,8 @@ ReadKeyRes ReadOneJsonKey(const char* start,
         }
 
         // If we see a comma separator, just ignore it.
-        if (*s == ',') {
-          if (!seen_comma)
-            continue;
-
-          seen_comma = true;
+        if (*s == ',')
           continue;
-        }
 
         // If we see anything else but a quote character here, this cannot be a
         // valid key.
@@ -227,11 +218,121 @@ ReadKeyRes ReadOneJsonKey(const char* start,
         next_token = NextToken::kValue;
         break;
       case NextToken::kValue:
-        *next = s;
-        return ReadKeyRes::kFoundKey;
+        // Allowed value starting chars: [ { digit - "
+        // Also allowed: true, false, null. For simplicities sake, we only check
+        // against the first character as we're not trying to be super accurate.
+        if (*s == '[' || *s == '{' || isdigit(*s) || *s == '-' || *s == '"' ||
+            *s == 't' || *s == 'f' || *s == 'n') {
+          *next = s;
+          return ReadKeyRes::kFoundKey;
+        }
+        return ReadKeyRes::kFatalError;
     }
   }
   return ReadKeyRes::kNeedsMoreData;
+}
+
+util::Status ExtractValueForJsonKey(base::StringView dict,
+                                    const std::string& key,
+                                    base::Optional<std::string>* value) {
+  PERFETTO_DCHECK(dict.size() >= 2);
+
+  const char* start = dict.data();
+  const char* end = dict.data() + dict.size();
+
+  enum ExtractValueState {
+    kBeforeDict,
+    kInsideDict,
+    kAfterDict,
+  };
+
+  ExtractValueState state = kBeforeDict;
+  for (const char* s = start; s < end;) {
+    if (isspace(*s)) {
+      ++s;
+      continue;
+    }
+
+    if (state == kBeforeDict) {
+      if (*s == '{') {
+        ++s;
+        state = kInsideDict;
+        continue;
+      }
+      return util::ErrStatus("Unexpected character before JSON dict");
+    }
+
+    if (state == kAfterDict)
+      return util::ErrStatus("Unexpected character after JSON dict");
+
+    PERFETTO_DCHECK(state == kInsideDict);
+    PERFETTO_DCHECK(s < end);
+
+    if (*s == '}') {
+      ++s;
+      state = kAfterDict;
+      continue;
+    }
+
+    std::string current_key;
+    auto res = ReadOneJsonKey(s, end, &current_key, &s);
+    if (res == ReadKeyRes::kEndOfDictionary)
+      break;
+
+    if (res == ReadKeyRes::kFatalError)
+      return util::ErrStatus("Failure parsing JSON: encountered fatal error");
+
+    if (res == ReadKeyRes::kNeedsMoreData) {
+      return util::ErrStatus("Failure parsing JSON: partial JSON dictionary");
+    }
+
+    PERFETTO_DCHECK(res == ReadKeyRes::kFoundKey);
+
+    if (*s == '[') {
+      return util::ErrStatus(
+          "Failure parsing JSON: unsupported JSON dictionary with array");
+    }
+
+    std::string value_str;
+    if (*s == '{') {
+      base::StringView dict_str;
+      ReadDictRes dict_res = ReadOneJsonDict(s, end, &dict_str, &s);
+      if (dict_res == ReadDictRes::kNeedsMoreData ||
+          dict_res == ReadDictRes::kEndOfArray ||
+          dict_res == ReadDictRes::kEndOfTrace) {
+        return util::ErrStatus(
+            "Failure parsing JSON: unable to parse dictionary");
+      }
+      value_str = dict_str.ToStdString();
+    } else if (*s == '"') {
+      auto str_res = ReadOneJsonString(s + 1, end, &value_str, &s);
+      if (str_res == ReadStringRes::kNeedsMoreData ||
+          str_res == ReadStringRes::kFatalError) {
+        return util::ErrStatus("Failure parsing JSON: unable to parse string");
+      }
+    } else {
+      const char* value_start = s;
+      const char* value_end = end;
+      for (; s < end; ++s) {
+        if (*s == ',' || isspace(*s) || *s == '}') {
+          value_end = s;
+          break;
+        }
+      }
+      value_str = std::string(value_start, value_end);
+    }
+
+    if (key == current_key) {
+      *value = value_str;
+      return util::OkStatus();
+    }
+  }
+
+  if (state != kAfterDict)
+    return util::ErrStatus("Failure parsing JSON: malformed dictionary");
+
+  *value = base::nullopt;
+  return util::OkStatus();
 }
 
 ReadSystemLineRes ReadOneSystemTraceLine(const char* start,
@@ -264,7 +365,7 @@ ReadSystemLineRes ReadOneSystemTraceLine(const char* start,
   }
   return ReadSystemLineRes::kNeedsMoreData;
 }
-#endif
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
 
 JsonTraceTokenizer::JsonTraceTokenizer(TraceProcessorContext* ctx)
     : context_(ctx) {}
@@ -302,7 +403,7 @@ util::Status JsonTraceTokenizer::Parse(std::unique_ptr<uint8_t[]> data,
     }
     if (next == end) {
       return util::ErrStatus(
-          "Failed to parse: first chunk has only whitespace");
+          "Failure parsing JSON: first chunk has only whitespace");
     }
 
     // Trace could begin in any of these ways:
@@ -311,7 +412,7 @@ util::Status JsonTraceTokenizer::Parse(std::unique_ptr<uint8_t[]> data,
     // [{
     if (*next != '{' && *next != '[') {
       return util::ErrStatus(
-          "Failed to parse: first non-whitespace character is not [ or {");
+          "Failure parsing JSON: first non-whitespace character is not [ or {");
     }
 
     // Figure out the format of the JSON file based on the first non-whitespace
@@ -343,7 +444,7 @@ util::Status JsonTraceTokenizer::Parse(std::unique_ptr<uint8_t[]> data,
   perfetto::base::ignore_result(position_);
   perfetto::base::ignore_result(offset_);
   return util::ErrStatus("Cannot parse JSON trace due to missing JSON support");
-#endif
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
 }
 
 #if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
@@ -359,13 +460,13 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
     case TracePosition::kDictionaryKey: {
       if (format_ != TraceFormat::kOuterDictionary) {
         return util::ErrStatus(
-            "Failed to parse: illegal JSON format when parsing dictionary key");
+            "Failure parsing JSON: illegal format when parsing dictionary key");
       }
 
       std::string key;
       auto res = ReadOneJsonKey(start, end, &key, &next);
       if (res == ReadKeyRes::kFatalError)
-        return util::ErrStatus("Encountered fatal error while parsing JSON");
+        return util::ErrStatus("Failure parsing JSON: encountered fatal error");
 
       if (res == ReadKeyRes::kEndOfDictionary ||
           res == ReadKeyRes::kNeedsMoreData) {
@@ -402,14 +503,15 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
     case TracePosition::kSystemTraceEventsString: {
       if (format_ != TraceFormat::kOuterDictionary) {
         return util::ErrStatus(
-            "Failed to parse: illegal JSON format when parsing system events");
+            "Failure parsing JSON: illegal format when parsing system events");
       }
 
       while (next < end) {
         std::string raw_line;
         auto res = ReadOneSystemTraceLine(next, end, &raw_line, &next);
         if (res == ReadSystemLineRes::kFatalError)
-          return util::ErrStatus("Encountered fatal error while parsing JSON");
+          return util::ErrStatus(
+              "Failure parsing JSON: encountered fatal error");
 
         if (res == ReadSystemLineRes::kNeedsMoreData)
           break;
@@ -434,13 +536,13 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
     case TracePosition::kWaitingForMetadataDictionary: {
       if (format_ != TraceFormat::kOuterDictionary) {
         return util::ErrStatus(
-            "Failed to parse: illegal JSON format when parsing metadata");
+            "Failure parsing JSON: illegal format when parsing metadata");
       }
 
-      auto value = std::unique_ptr<Json::Value>(new Json::Value());
-      const auto res = ReadOneJsonDict(next, end, value.get(), &next);
-      if (res == ReadDictRes::kFatalError || res == ReadDictRes::kEndOfArray)
-        return util::ErrStatus("Encountered fatal error while parsing JSON");
+      base::StringView unparsed;
+      const auto res = ReadOneJsonDict(next, end, &unparsed, &next);
+      if (res == ReadDictRes::kEndOfArray)
+        return util::ErrStatus("Failure parsing JSON: encountered fatal error");
       if (res == ReadDictRes::kEndOfTrace ||
           res == ReadDictRes::kNeedsMoreData) {
         break;
@@ -452,10 +554,8 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
     }
     case TracePosition::kTraceEventsArray: {
       while (next < end) {
-        auto value = std::unique_ptr<Json::Value>(new Json::Value());
-        const auto res = ReadOneJsonDict(next, end, value.get(), &next);
-        if (res == ReadDictRes::kFatalError)
-          return util::ErrStatus("Encountered fatal error while parsing JSON");
+        base::StringView unparsed;
+        const auto res = ReadOneJsonDict(next, end, &unparsed, &next);
         if (res == ReadDictRes::kEndOfTrace ||
             res == ReadDictRes::kNeedsMoreData) {
           break;
@@ -468,20 +568,23 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
           break;
         }
 
+        base::Optional<std::string> opt_raw_ts;
+        RETURN_IF_ERROR(ExtractValueForJsonKey(unparsed, "ts", &opt_raw_ts));
         base::Optional<int64_t> opt_ts =
-            json_tracker->CoerceToTs((*value)["ts"]);
+            opt_raw_ts ? json_tracker->CoerceToTs(*opt_raw_ts) : base::nullopt;
         int64_t ts = 0;
         if (opt_ts.has_value()) {
           ts = opt_ts.value();
         } else {
           // Metadata events may omit ts. In all other cases error:
-          auto& ph = (*value)["ph"];
-          if (!ph.isString() || *ph.asCString() != 'M') {
+          base::Optional<std::string> opt_raw_ph;
+          RETURN_IF_ERROR(ExtractValueForJsonKey(unparsed, "ph", &opt_raw_ph));
+          if (!opt_raw_ph || *opt_raw_ph != "M") {
             context_->storage->IncrementStats(stats::json_tokenizer_failure);
             continue;
           }
         }
-        trace_sorter->PushJsonValue(ts, std::move(value));
+        trace_sorter->PushJsonValue(ts, unparsed.ToStdString());
       }
       break;
     }
@@ -492,10 +595,9 @@ util::Status JsonTraceTokenizer::ParseInternal(const char* start,
   *out = next;
   return util::OkStatus();
 }
-#endif
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
 
 void JsonTraceTokenizer::NotifyEndOfFile() {}
 
 }  // namespace trace_processor
 }  // namespace perfetto
-

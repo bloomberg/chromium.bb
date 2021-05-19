@@ -170,6 +170,11 @@ FrameSchedulerImpl::FrameSchedulerImpl(
           "FrameScheduler.OptedOutFromBackForwardCache",
           &tracing_controller_,
           YesNoStateToString),
+      is_freeze_while_keep_active_enabled_(
+          IsFreezeWhileKeepActiveBackForwardCacheSupportEnabled(),
+          "FrameScheduler.FreezeWhileKeepActive",
+          &tracing_controller_,
+          YesNoStateToString),
       page_frozen_for_tracing_(
           parent_page_scheduler_ ? parent_page_scheduler_->IsFrozen() : true,
           "FrameScheduler.PageFrozen",
@@ -335,8 +340,8 @@ void FrameSchedulerImpl::SetCrossOriginToMainFrame(bool cross_origin) {
   UpdatePolicy();
 }
 
-void FrameSchedulerImpl::SetIsAdFrame() {
-  is_ad_frame_ = true;
+void FrameSchedulerImpl::SetIsAdFrame(bool is_ad_frame) {
+  is_ad_frame_ = is_ad_frame;
   UpdatePolicy();
 }
 
@@ -467,6 +472,8 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
       }
     case TaskType::kInternalNavigationAssociated:
       return FreezableTaskQueueTraits();
+    case TaskType::kInternalInputBlocking:
+      return InputBlockingQueueTraits();
     // Some tasks in the tests need to run when objects are paused e.g. to hook
     // when recovering from debugger JavaScript statetment.
     case TaskType::kInternalTest:
@@ -880,14 +887,28 @@ void FrameSchedulerImpl::UpdateQueuePolicy(
   // will be resumed when the page is visible.
   bool queue_frozen =
       parent_page_scheduler_->IsFrozen() && queue->CanBeFrozen();
-  // Override freezing if keep-active is true.
-  if (queue_frozen && !queue->FreezeWhenKeepActive())
-    queue_frozen = !parent_page_scheduler_->KeepActive();
+  // Check if we need to override freezing because of KeepActive.
+  if (queue_frozen && parent_page_scheduler_->KeepActive()) {
+    // When KeepActive is true, we can only freeze if the queue allows
+    // FreezeWhenKeepActive(), or the "FreezeWhileKeepActive" feature flag is
+    // enabled.
+    bool can_freeze =
+        queue->FreezeWhenKeepActive() || is_freeze_while_keep_active_enabled_;
+    if (!can_freeze)
+      queue_frozen = false;
+  }
   queue_disabled |= queue_frozen;
   // Per-frame freezable queues of tasks which are specified as getting frozen
   // immediately when their frame becomes invisible get frozen. They will be
   // resumed when the frame becomes visible again.
   queue_disabled |= !frame_visible_ && !queue->CanRunInBackground();
+  if (queue_disabled) {
+    TRACE_EVENT_INSTANT("renderer.scheduler",
+                        "FrameSchedulerImpl::UpdateQueuePolicy_QueueDisabled");
+  } else {
+    TRACE_EVENT_INSTANT("renderer.scheduler",
+                        "FrameSchedulerImpl::UpdateQueuePolicy_QueueEnabled");
+  }
   voter->SetVoteToEnable(!queue_disabled);
 }
 
@@ -1134,6 +1155,13 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   if (task_queue->GetPrioritisationType() ==
       MainThreadTaskQueue::QueueTraits::PrioritisationType::
           kHighPriorityLocalFrame) {
+    return TaskQueue::QueuePriority::kHighestPriority;
+  }
+
+  if (task_queue->GetPrioritisationType() ==
+          MainThreadTaskQueue::QueueTraits::PrioritisationType::kInput &&
+      base::FeatureList::IsEnabled(
+          ::blink::features::kInputTargetClientHighPriority)) {
     return TaskQueue::QueuePriority::kHighestPriority;
   }
 
@@ -1423,6 +1451,12 @@ MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::FindInPageTaskQueueTraits() {
   return PausableTaskQueueTraits().SetPrioritisationType(
       QueueTraits::PrioritisationType::kFindInPage);
+}
+
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::InputBlockingQueueTraits() {
+  return QueueTraits().SetPrioritisationType(
+      QueueTraits::PrioritisationType::kInput);
 }
 }  // namespace scheduler
 }  // namespace blink

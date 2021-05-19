@@ -4,14 +4,16 @@
 
 #include "third_party/blink/renderer/modules/manifest/manifest_parser.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "net/base/mime_util.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_uma_util.h"
@@ -23,10 +25,13 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/url_constants.h"
+#include "url/url_util.h"
 
 namespace blink {
 
 namespace {
+
+static constexpr char kUrlHandlerWildcardPrefix[] = "%2A.";
 
 bool IsValidMimeType(const String& mime_type) {
   if (mime_type.StartsWith('.'))
@@ -50,18 +55,41 @@ bool URLIsWithinScope(const KURL& url, const KURL& scope) {
          url.GetPath().StartsWith(scope.GetPath());
 }
 
-static bool IsCrLfOrTabChar(UChar c) {
-  return c == '\n' || c == '\r' || c == '\t';
+// This function should be kept in sync with IsHostValidForUrlHandler in
+// manifest_mojom_traits.cc.
+bool IsHostValidForUrlHandler(String host) {
+  if (url::HostIsIPAddress(host.Utf8()))
+    return true;
+
+  const size_t registry_length =
+      net::registry_controlled_domains::PermissiveGetHostRegistryLength(
+          host.Utf8(),
+          // Reject unknown registries (registries that don't have any matches
+          // in effective TLD names).
+          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+          // Skip matching private registries that allow external users to
+          // specify sub-domains, e.g. glitch.me, as this is allowed.
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+
+  // Host cannot be a TLD or invalid.
+  if (registry_length == 0 || registry_length == std::string::npos ||
+      registry_length >= host.length()) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // anonymous namespace
 
 ManifestParser::ManifestParser(const String& data,
                                const KURL& manifest_url,
-                               const KURL& document_url)
+                               const KURL& document_url,
+                               const FeatureContext* feature_context)
     : data_(data),
       manifest_url_(manifest_url),
       document_url_(document_url),
+      feature_context_(feature_context),
       failed_(false) {}
 
 ManifestParser::~ManifestParser() {}
@@ -267,21 +295,11 @@ KURL ManifestParser::ParseURL(const JSONObject* object,
 
 String ManifestParser::ParseName(const JSONObject* object) {
   base::Optional<String> name = ParseString(object, "name", Trim);
-  if (name.has_value()) {
-    name = name->RemoveCharacters(IsCrLfOrTabChar);
-    if (name->length() == 0)
-      name = base::nullopt;
-  }
   return name.has_value() ? *name : String();
 }
 
 String ManifestParser::ParseShortName(const JSONObject* object) {
   base::Optional<String> short_name = ParseString(object, "short_name", Trim);
-  if (short_name.has_value()) {
-    short_name = short_name->RemoveCharacters(IsCrLfOrTabChar);
-    if (short_name->length() == 0)
-      short_name = base::nullopt;
-  }
   return short_name.has_value() ? *short_name : String();
 }
 
@@ -346,8 +364,6 @@ blink::mojom::DisplayMode ManifestParser::ParseDisplay(
 Vector<mojom::blink::DisplayMode> ManifestParser::ParseDisplayOverride(
     const JSONObject* object) {
   Vector<mojom::blink::DisplayMode> display_override;
-  if (!RuntimeEnabledFeatures::WebAppManifestDisplayOverrideEnabled())
-    return display_override;
 
   JSONValue* json_value = object->Get("display_override");
   if (!json_value)
@@ -1091,11 +1107,6 @@ ManifestParser::ParseUrlHandler(const JSONObject* object) {
     return base::nullopt;
   }
 
-  // TODO(crbug.com/1072058): pre-process for sub-domain wildcard
-  // prefix before parsing as origin. Add a boolean value to indicate the
-  // presence of a sub-domain wildcard prefix so the browser process does not
-  // have to parse it.
-
   // TODO(crbug.com/1072058): pre-process for input without scheme.
   // (eg. example.com instead of https://example.com) because we can always
   // assume the use of https for URL handling. Remove this TODO if we decide
@@ -1113,7 +1124,37 @@ ManifestParser::ParseUrlHandler(const JSONObject* object) {
         "https scheme.");
     return base::nullopt;
   }
+
+  String host = origin->Host();
   auto url_handler = mojom::blink::ManifestUrlHandler::New();
+  // Check for wildcard *.
+  if (host.StartsWith(kUrlHandlerWildcardPrefix)) {
+    url_handler->has_origin_wildcard = true;
+    // Trim the wildcard prefix to get the effective host. Minus one to exclude
+    // the length of the null terminator.
+    host = host.Substring(sizeof(kUrlHandlerWildcardPrefix) - 1);
+  } else {
+    url_handler->has_origin_wildcard = false;
+  }
+
+  bool host_valid = IsHostValidForUrlHandler(host);
+  if (!host_valid) {
+    AddErrorInfo(
+        "url_handlers entry ignored, domain of required property 'origin' is "
+        "invalid.");
+    return base::nullopt;
+  }
+
+  if (url_handler->has_origin_wildcard) {
+    origin = SecurityOrigin::CreateFromValidTuple(origin->Protocol(), host,
+                                                  origin->Port());
+    if (!origin_string.has_value()) {
+      AddErrorInfo(
+          "url_handlers entry ignored, required property 'origin' is invalid.");
+      return base::nullopt;
+    }
+  }
+
   url_handler->origin = origin;
   return std::move(url_handler);
 }
@@ -1211,7 +1252,7 @@ mojom::blink::CaptureLinks ManifestParser::ParseCaptureLinks(
   // Parse if either the command line flag is passed (for about:flags) or the
   // runtime enabled feature is turned on (for origin trial).
   if (!base::FeatureList::IsEnabled(features::kWebAppEnableLinkCapturing) &&
-      !RuntimeEnabledFeatures::WebAppLinkCapturingEnabled()) {
+      !RuntimeEnabledFeatures::WebAppLinkCapturingEnabled(feature_context_)) {
     return mojom::blink::CaptureLinks::kUndefined;
   }
 

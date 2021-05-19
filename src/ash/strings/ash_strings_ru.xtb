@@ -40,6 +40,7 @@
 <translation id="1252999807265626933">Подключен источник питания: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какая сейчас погода?</translation>
 <translation id="1267032506238418139">Изменение сочетания клавиш</translation>
+<translation id="1269405891096105529">Периферийные устройства в гостевом режиме не поддерживаются.</translation>
 <translation id="1270290102613614947">Экранная клавиатура отключена</translation>
 <translation id="1272079795634619415">Остановить</translation>
 <translation id="1275285675049378717">Питание устройства: <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">CTRL + ПОИСК + H</translation>
 <translation id="2016340657076538683">Введите сообщение</translation>
 <translation id="2018630726571919839">Расскажи анекдот</translation>
+<translation id="2021864487439853900">Нажать, чтобы разблокировать</translation>
 <translation id="2049240716062114887">Название рабочего стола изменилось на "<ph name="DESK_NAME" />"</translation>
 <translation id="2050339315714019657">Книжная</translation>
 <translation id="2067602449040652523">Яркость клавиатуры</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101">Пользователь <ph name="USER_EMAIL_ADDRESS" /> сможет войти в аккаунт позже.</translation>
 <translation id="3321628682574733415">Неверный родительский код доступа</translation>
 <translation id="332587331255250389">Замените батарею в стилусе.</translation>
+<translation id="3333741161915951567">Модем перезагружается. Подождите 30 секунд и повторите попытку.</translation>
 <translation id="3341303451326249809">Скриншот сохранен</translation>
 <translation id="334252345105450327">Сделай скриншот</translation>
 <translation id="3351879221545518001">Вы транслируете изображение своего экрана.</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733">Управляемый пользователь <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3665889125180354336">Запись микрофона</translation>
 <translation id="36813544980941320">На вашем телефоне и устройстве <ph name="DEVICE_NAME" /> будут использоваться одинаковые сети Wi-Fi.</translation>
+<translation id="3702809606464356667">Показаны окна текущего рабочего стола. Чтобы показать окна со всех рабочих столов, нажмите на стрелку вверх.</translation>
 <translation id="3702846122927433391">Население Нигерии</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Загрузка...</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">Настройки звука</translation>
 <translation id="3945319193631853098">Нажмите, чтобы завершить настройку.</translation>
 <translation id="3945867833895287237">Подключение к точке доступа…</translation>
+<translation id="3958465044488004317">Посмотрите результат в Ассистенте.</translation>
 <translation id="3962859241508114581">Предыдущий трек</translation>
 <translation id="3969043077941541451">Отключен</translation>
 <translation id="397105322502079400">Вычисление…</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175">Доступ к экрану для <ph name="HELPER_NAME" /> с помощью удаленного помощника</translation>
 <translation id="4424159417645388645">Рабочий стол 5</translation>
 <translation id="4430019312045809116">Объем</translation>
+<translation id="4445159312344259901">Войти, чтобы разблокировать</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 важное уведомление}one{# важное уведомление}few{# важных уведомления}many{# важных уведомлений}other{# важного уведомления}}</translation>
 <translation id="4450893287417543264">Больше не показывать</translation>
 <translation id="445864333228800152">Добрый вечер!</translation>
 <translation id="4458688154122353284">Остановить запись с экрана</translation>
+<translation id="4467143075433126295">Чтобы выйти из полноэкранного режима, нажмите и удерживайте клавишу Esc.</translation>
 <translation id="4472575034687746823">Начало работы</translation>
 <translation id="4477350412780666475">Следующий трек</translation>
 <translation id="4477892968187500306">На устройстве могут быть приложения, не проверенные Google.</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" />.</translation>
 <translation id="612734058257491180">В рамках гостевого сеанса Google Ассистент недоступен.</translation>
 <translation id="6137566720514957455">Открыть диалоговое окно удаления аккаунта <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Периферийное устройство не поддерживается</translation>
 <translation id="615957422585914272">Показывать экранную клавиатуру</translation>
 <translation id="6165508094623778733">Подробнее</translation>
 <translation id="6179832488876878285">Вы можете закрепить здесь важные документы. Чтобы начать, откройте приложение "Файлы".</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">Чтобы выбрать регион, используйте стилус</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />: положение изменено на <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Микрофон</translation>
+<translation id="6330012934079202188">Показаны окна со всех рабочих столов. Чтобы показать окна текущего рабочего стола, нажмите на стрелку вверх.</translation>
 <translation id="6338485349199627913">Сеансом "<ph name="DISPLAY_NAME" />" управляет <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth включен</translation>
 <translation id="6381109794406942707">Чтобы разблокировать устройство, введите PIN-код.</translation>
 <translation id="639644700271529076">CAPS LOCK отключен</translation>
-<translation id="6396835948284782440">Чтобы выйти, нажмите и удерживайте [Esc]</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617">Статус защиты – "<ph name="SECURITY_STATUS" />", уровень сигнала – <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Удалить все уведомления</translation>
@@ -794,7 +802,6 @@
 <translation id="7780159184141939021">Поворот экрана</translation>
 <translation id="7796353162336583443">Нажмите кнопку стилуса на панели запуска, чтобы создать заметку, запустить Ассистента либо использовать стилус в качестве лупы или лазерной указки.</translation>
 <translation id="7798302898096527229">Для отмены нажмите SEARCH или SHIFT.</translation>
-<translation id="7807966291075028781">В целях безопасности периферийное устройство не поддерживается в гостевом режиме.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">хороший сигнал</translation>
 <translation id="7837740436429729974">Время истекло</translation>
@@ -944,6 +951,7 @@
 <translation id="8936501819958976551">отключила</translation>
 <translation id="8938800817013097409">Устройство USB-C (порт справа на задней панели)</translation>
 <translation id="8940956008527784070">Низкий заряд батареи (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Chromebook совместим только с одобренными устройствами Thunderbolt.</translation>
 <translation id="8982906748181120328">Широкий доступ</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Используется <ph name="IME_NAME" /></translation>

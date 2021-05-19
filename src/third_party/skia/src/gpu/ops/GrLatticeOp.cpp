@@ -45,19 +45,19 @@ public:
         b->add32(GrColorSpaceXform::XformKey(fColorSpaceXform.get()));
     }
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps& caps) const override {
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps& caps) const override {
         class GLSLProcessor : public GrGLSLGeometryProcessor {
         public:
             void setData(const GrGLSLProgramDataManager& pdman,
-                         const GrPrimitiveProcessor& proc) override {
-                const auto& latticeGP = proc.cast<LatticeGP>();
+                         const GrGeometryProcessor& geomProc) override {
+                const auto& latticeGP = geomProc.cast<LatticeGP>();
                 fColorSpaceXformHelper.setData(pdman, latticeGP.fColorSpaceXform.get());
             }
 
         private:
             void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
                 using Interpolation = GrGLSLVaryingHandler::Interpolation;
-                const auto& latticeGP = args.fGP.cast<LatticeGP>();
+                const auto& latticeGP = args.fGeomProc.cast<LatticeGP>();
                 fColorSpaceXformHelper.emitCode(args.fUniformHandler,
                                                 latticeGP.fColorSpaceXform.get());
 
@@ -71,6 +71,7 @@ public:
                 args.fFragBuilder->codeAppend("float4 textureDomain;");
                 args.fVaryingHandler->addPassThroughAttribute(
                         latticeGP.fInTextureDomain, "textureDomain", Interpolation::kCanBeFlat);
+                args.fFragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
                 args.fVaryingHandler->addPassThroughAttribute(latticeGP.fInColor,
                                                               args.fOutputColor,
                                                               Interpolation::kCanBeFlat);
@@ -82,7 +83,7 @@ public:
                         "clamp(textureCoords, textureDomain.xy, textureDomain.zw)",
                         &fColorSpaceXformHelper);
                 args.fFragBuilder->codeAppend(";");
-                args.fFragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+                args.fFragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
             }
             GrGLSLColorSpaceXformHelper fColorSpaceXformHelper;
         };
@@ -235,7 +236,7 @@ private:
             return;
         }
 
-        const size_t kVertexStride = fProgramInfo->primProc().vertexStride();
+        const size_t kVertexStride = fProgramInfo->geomProc().vertexStride();
 
         QuadHelper helper(target, kVertexStride, numRects);
 
@@ -321,7 +322,8 @@ private:
         }
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-        flushState->bindTextures(fProgramInfo->primProc(), *fView.proxy(),
+        flushState->bindTextures(fProgramInfo->geomProc(),
+                                 *fView.proxy(),
                                  fProgramInfo->pipeline());
         flushState->drawMesh(*fMesh);
     }

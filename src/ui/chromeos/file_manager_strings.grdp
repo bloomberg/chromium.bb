@@ -541,8 +541,14 @@
   <message name="IDS_FILE_BROWSER_DELETE_BUTTON_LABEL" desc="Context menu item that deletes the currently-selected file(s).">
     Delete
   </message>
+  <message name="IDS_FILE_BROWSER_MOVE_TO_TRASH_BUTTON_LABEL" desc="Context menu item that moves the currently-selected file(s) to the trash / recycle bin.">
+    Move to Trash
+  </message>
   <message name="IDS_FILE_BROWSER_RESTORE_FROM_TRASH_BUTTON_LABEL" desc="Context menu item that restores the currently-selected file(s) from the trash / recycle bin.">
     Restore from trash
+  </message>
+  <message name="IDS_FILE_BROWSER_EMPTY_TRASH_BUTTON_LABEL" desc="Context menu item that empties (permanently deletes all items in) the trash / recycle bin.">
+    Empty Trash
   </message>
   <message name="IDS_FILE_BROWSER_PASTE_BUTTON_LABEL" desc="Context menu item that pastes the file(s) in the clipboard.">
     Paste
@@ -855,6 +861,9 @@
   <message name="IDS_FILE_BROWSER_RESTORE_FROM_TRASH_ITEMS_REMAINING" desc="File Manager status message shown when restoring items from trash / recycle bin. 'Item' is used here as a generic term for file or directory.">
     Restoring <ph name="COUNT">$1<ex>10</ex></ph> items...
   </message>
+  <message name="IDS_FILE_BROWSER_TRASH_DELETED_FOREVER" desc="Message informing that items in the trash / recycle bin are deleted forever after 30 days.">
+    Items in the trash are deleted forever after 30 days.
+  </message>
   <message name="IDS_FILE_BROWSER_RESTORE_FROM_TRASH_ERROR" desc="Message informing about error while restoring an item or items from the trash / recycle bin.">
     An error occurred. Some items may not have been restored.
   </message>
@@ -940,6 +949,9 @@
  </message>
  <message name="IDS_FILE_BROWSER_UNDO_DELETE_ACTION_LABEL" desc="Undo label shown on toast to undo delete operation">
    Undo
+ </message>
+ <message name="IDS_FILE_BROWSER_CONFIRM_EMPTY_TRASH" desc="Asks the user if they are sure they want to empty the trash / recylce bin.">
+   Are you sure you want to empty Trash?
  </message>
 
   <message name="IDS_FILE_BROWSER_UNKNOWN_FILESYSTEM_WARNING" desc="Displayed when device contents cannot be read because filesystem is unknown.">
@@ -1264,6 +1276,15 @@
   </message>
   <message name="IDS_FILE_BROWSER_HOLDING_SPACE_WELCOME_TEXT" desc="In the Holding Space welcome banner, text of the welcome message.">
     Right-click a file, and select "Pin to shelf" for quick access to your files in shelf.
+  </message>
+  <message name="IDS_FILE_BROWSER_PHOTOS_WELCOME_TITLE" desc="In the Google Photos welcome banner, title of banner.">
+    Easily access Google Photos
+  </message>
+  <message name="IDS_FILE_BROWSER_PHOTOS_WELCOME_TEXT" desc="In the Google Photos welcome banner, text of the welcome message.">
+    Choose from your recent photos.
+  </message>
+  <message name="IDS_FILE_BROWSER_PHOTOS_WELCOME_DISMISS" desc="In the Google Photos welcome banner, a text on the button to dismiss the banner.">
+    Got it
   </message>
   <message name="IDS_FILE_BROWSER_HOLDING_SPACE_WELCOME_TEXT_IN_TABLET_MODE" desc="In the Holding Space welcome banner, text of the welcome message in tablet mode.">
     Touch &amp; hold a file and tap <ph name="ICON">$1</ph>, and select "Pin to shelf" for quick access to your files in shelf.

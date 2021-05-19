@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_display_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
@@ -853,9 +852,8 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("isDemoSession",
                           chromeos::DemoSession::IsDeviceInDemoMode());
-  html_source->AddBoolean("enableLanguageSettingsV2",
-                          base::FeatureList::IsEnabled(
-                              ::chromeos::features::kLanguageSettingsUpdate));
+  // TODO(crbug.com/1097328): Delete this.
+  html_source->AddBoolean("enableLanguageSettingsV2", true);
 
   AddDevicePointersStrings(html_source);
   AddDeviceKeyboardStrings(html_source);
@@ -1228,9 +1226,6 @@ void DeviceSection::AddDevicePointersStrings(
       "allowDisableMouseAcceleration",
       base::FeatureList::IsEnabled(::features::kAllowDisableMouseAcceleration));
   html_source->AddBoolean("allowScrollSettings", AreScrollSettingsAllowed());
-  html_source->AddBoolean(
-      "separatePointingStickSettings",
-      base::FeatureList::IsEnabled(::features::kSeparatePointingStickSettings));
 }
 
 }  // namespace settings

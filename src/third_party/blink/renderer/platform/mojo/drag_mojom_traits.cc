@@ -4,13 +4,14 @@
 
 #include "third_party/blink/renderer/platform/mojo/drag_mojom_traits.h"
 
+#include <string>
+
 #include "base/check.h"
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"

@@ -100,7 +100,7 @@ class D3D12CachingTests : public DawnTest {
 TEST_P(D3D12CachingTests, SameShaderNoCache) {
     mPersistentCache.mIsDisabled = true;
 
-    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[builtin(position)]] var<out> Position : vec4<f32>;
 
         [[stage(vertex)]] fn vertex_main() -> void {
@@ -118,26 +118,26 @@ TEST_P(D3D12CachingTests, SameShaderNoCache) {
 
     // Store the WGSL shader into the cache.
     {
-        utils::ComboRenderPipelineDescriptor desc(device);
-        desc.vertexStage.module = module;
-        desc.vertexStage.entryPoint = "vertex_main";
-        desc.cFragmentStage.module = module;
-        desc.cFragmentStage.entryPoint = "fragment_main";
+        utils::ComboRenderPipelineDescriptor2 desc;
+        desc.vertex.module = module;
+        desc.vertex.entryPoint = "vertex_main";
+        desc.cFragment.module = module;
+        desc.cFragment.entryPoint = "fragment_main";
 
-        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline(&desc));
+        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline2(&desc));
     }
 
     EXPECT_EQ(mPersistentCache.mCache.size(), 0u);
 
     // Load the same WGSL shader from the cache.
     {
-        utils::ComboRenderPipelineDescriptor desc(device);
-        desc.vertexStage.module = module;
-        desc.vertexStage.entryPoint = "vertex_main";
-        desc.cFragmentStage.module = module;
-        desc.cFragmentStage.entryPoint = "fragment_main";
+        utils::ComboRenderPipelineDescriptor2 desc;
+        desc.vertex.module = module;
+        desc.vertex.entryPoint = "vertex_main";
+        desc.cFragment.module = module;
+        desc.cFragment.entryPoint = "fragment_main";
 
-        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline(&desc));
+        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline2(&desc));
     }
 
     EXPECT_EQ(mPersistentCache.mCache.size(), 0u);
@@ -147,7 +147,7 @@ TEST_P(D3D12CachingTests, SameShaderNoCache) {
 // of HLSL shaders. WGSL shader should result into caching 2 HLSL shaders (stage x
 // entrypoints)
 TEST_P(D3D12CachingTests, ReuseShaderWithMultipleEntryPointsPerStage) {
-    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[builtin(position)]] var<out> Position : vec4<f32>;
 
         [[stage(vertex)]] fn vertex_main() -> void {
@@ -165,34 +165,34 @@ TEST_P(D3D12CachingTests, ReuseShaderWithMultipleEntryPointsPerStage) {
 
     // Store the WGSL shader into the cache.
     {
-        utils::ComboRenderPipelineDescriptor desc(device);
-        desc.vertexStage.module = module;
-        desc.vertexStage.entryPoint = "vertex_main";
-        desc.cFragmentStage.module = module;
-        desc.cFragmentStage.entryPoint = "fragment_main";
+        utils::ComboRenderPipelineDescriptor2 desc;
+        desc.vertex.module = module;
+        desc.vertex.entryPoint = "vertex_main";
+        desc.cFragment.module = module;
+        desc.cFragment.entryPoint = "fragment_main";
 
-        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline(&desc));
+        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline2(&desc));
     }
 
     EXPECT_EQ(mPersistentCache.mCache.size(), 2u);
 
     // Load the same WGSL shader from the cache.
     {
-        utils::ComboRenderPipelineDescriptor desc(device);
-        desc.vertexStage.module = module;
-        desc.vertexStage.entryPoint = "vertex_main";
-        desc.cFragmentStage.module = module;
-        desc.cFragmentStage.entryPoint = "fragment_main";
+        utils::ComboRenderPipelineDescriptor2 desc;
+        desc.vertex.module = module;
+        desc.vertex.entryPoint = "vertex_main";
+        desc.cFragment.module = module;
+        desc.cFragment.entryPoint = "fragment_main";
 
         // Cached HLSL shader calls LoadData twice (once to peek, again to get), so check 2 x
         // kNumOfShaders hits.
-        EXPECT_CACHE_HIT(4u, device.CreateRenderPipeline(&desc));
+        EXPECT_CACHE_HIT(4u, device.CreateRenderPipeline2(&desc));
     }
 
     EXPECT_EQ(mPersistentCache.mCache.size(), 2u);
 
     // Modify the WGSL shader functions and make sure it doesn't hit.
-    wgpu::ShaderModule newModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule newModule = utils::CreateShaderModule(device, R"(
       [[builtin(position)]] var<out> Position : vec4<f32>;
 
       [[stage(vertex)]] fn vertex_main() -> void {
@@ -209,12 +209,12 @@ TEST_P(D3D12CachingTests, ReuseShaderWithMultipleEntryPointsPerStage) {
   )");
 
     {
-        utils::ComboRenderPipelineDescriptor desc(device);
-        desc.vertexStage.module = newModule;
-        desc.vertexStage.entryPoint = "vertex_main";
-        desc.cFragmentStage.module = newModule;
-        desc.cFragmentStage.entryPoint = "fragment_main";
-        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline(&desc));
+        utils::ComboRenderPipelineDescriptor2 desc;
+        desc.vertex.module = newModule;
+        desc.vertex.entryPoint = "vertex_main";
+        desc.cFragment.module = newModule;
+        desc.cFragment.entryPoint = "fragment_main";
+        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline2(&desc));
     }
 
     // Cached HLSL shader calls LoadData twice (once to peek, again to get), so check 2 x
@@ -225,11 +225,11 @@ TEST_P(D3D12CachingTests, ReuseShaderWithMultipleEntryPointsPerStage) {
 // Test creating a WGSL shader with two entrypoints in the same stage will cache the correct number
 // of HLSL shaders. WGSL shader should result into caching 1 HLSL shader (stage x entrypoints)
 TEST_P(D3D12CachingTests, ReuseShaderWithMultipleEntryPoints) {
-    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[block]] struct Data {
-            [[offset(0)]] data : u32;
+            data : u32;
         };
-        [[binding(0), group(0)]] var<storage_buffer> data : Data;
+        [[binding(0), group(0)]] var<storage> data : [[access(read_write)]] Data;
 
         [[stage(compute)]] fn write1() -> void {
             data.data = 1u;

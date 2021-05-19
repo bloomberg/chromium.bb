@@ -42,11 +42,9 @@ class ChromeWebViewPermissionHelperDelegate
       bool last_unlocked_by_target,
       base::OnceCallback<void(bool)> callback) override;
   void RequestGeolocationPermission(
-      int bridge_id,
       const GURL& requesting_frame,
       bool user_gesture,
       base::OnceCallback<void(bool)> callback) override;
-  void CancelGeolocationPermissionRequest(int bridge_id) override;
   void RequestFileSystemPermission(
       const GURL& url,
       bool allowed_by_default,
@@ -55,7 +53,7 @@ class ChromeWebViewPermissionHelperDelegate
  private:
 #if BUILDFLAG(ENABLE_PLUGINS)
   // chrome::mojom::PluginAuthHost methods.
-  void BlockedUnauthorizedPlugin(const base::string16& name,
+  void BlockedUnauthorizedPlugin(const std::u16string& name,
                                  const std::string& identifier) override;
 
   content::WebContentsFrameReceiverSet<chrome::mojom::PluginAuthHost>
@@ -67,7 +65,6 @@ class ChromeWebViewPermissionHelperDelegate
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
   void OnGeolocationPermissionResponse(
-      int bridge_id,
       bool user_gesture,
       base::OnceCallback<void(ContentSetting)> callback,
       bool allow,
@@ -85,11 +82,6 @@ class ChromeWebViewPermissionHelperDelegate
                                        bool allow,
                                        const std::string& user_input);
 
-  // Bridge IDs correspond to a geolocation request. This method will remove
-  // the bookkeeping for a particular geolocation request associated with the
-  // provided |bridge_id|. It returns the request ID of the geolocation request.
-  int RemoveBridgeID(int bridge_id);
-
   void FileSystemAccessedAsyncResponse(int render_process_id,
                                        int render_frame_id,
                                        int request_id,
@@ -99,8 +91,6 @@ class ChromeWebViewPermissionHelperDelegate
   WebViewGuest* web_view_guest() {
     return web_view_permission_helper()->web_view_guest();
   }
-
-  std::map<int, int> bridge_id_to_request_id_map_;
 
   base::WeakPtrFactory<ChromeWebViewPermissionHelperDelegate> weak_factory_{
       this};

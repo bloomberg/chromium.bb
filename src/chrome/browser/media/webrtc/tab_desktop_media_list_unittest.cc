@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -33,8 +35,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using content::WebContents;
@@ -135,7 +137,7 @@ class TabDesktopMediaListTest : public testing::Test {
       entry = contents->GetController().GetLastCommittedEntry();
     }
 
-    contents->UpdateTitleForEntry(entry, base::ASCIIToUTF16("Test tab"));
+    contents->UpdateTitleForEntry(entry, u"Test tab");
 
     content::FaviconStatus favicon_info;
     favicon_info.image =
@@ -147,7 +149,7 @@ class TabDesktopMediaListTest : public testing::Test {
   }
 
   void SetUp() override {
-    rvh_test_enabler_.reset(new content::RenderViewHostTestEnabler());
+    rvh_test_enabler_ = std::make_unique<content::RenderViewHostTestEnabler>();
     // Create a new temporary directory, and store the path.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
@@ -192,7 +194,7 @@ class TabDesktopMediaListTest : public testing::Test {
   }
 
   void CreateDefaultList() {
-    list_.reset(new TabDesktopMediaList());
+    list_ = std::make_unique<TabDesktopMediaList>();
     list_->SetThumbnailSize(gfx::Size(kThumbnailSize, kThumbnailSize));
 
     // Set update period to reduce the time it takes to run tests.
@@ -249,8 +251,8 @@ class TabDesktopMediaListTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  ash::ScopedTestUserManager test_user_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(TabDesktopMediaListTest);
@@ -327,14 +329,14 @@ TEST_F(TabDesktopMediaListTest, UpdateTitle) {
   ASSERT_TRUE(contents);
   content::NavigationController& controller = contents->GetController();
   contents->UpdateTitleForEntry(controller.GetLastCommittedEntry(),
-                                base::ASCIIToUTF16("New test tab"));
+                                u"New test tab");
 
   EXPECT_CALL(observer_, OnSourceNameChanged(list_.get(), 0))
       .WillOnce(QuitMessageLoop());
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(list_->GetSource(0).name, base::UTF8ToUTF16("New test tab"));
+  EXPECT_EQ(list_->GetSource(0).name, u"New test tab");
 
   list_.reset();
 }

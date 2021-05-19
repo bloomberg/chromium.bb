@@ -12,18 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/binding_decoration.h"
-#include "src/ast/builtin_decoration.h"
 #include "src/ast/constant_id_decoration.h"
-#include "src/ast/group_decoration.h"
-#include "src/ast/location_decoration.h"
-#include "src/ast/variable.h"
-#include "src/ast/variable_decoration.h"
-#include "src/type/f32_type.h"
-#include "src/writer/wgsl/generator_impl.h"
 #include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
@@ -34,12 +23,12 @@ namespace {
 using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, EmitVariable) {
-  auto* v = Global("a", ty.f32(), ast::StorageClass::kNone);
+  auto* v = Global("a", ty.f32(), ast::StorageClass::kInput);
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.EmitVariable(v)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(var a : f32;
+  EXPECT_EQ(gen.result(), R"(var<in> a : f32;
 )");
 }
 
@@ -54,21 +43,21 @@ TEST_F(WgslGeneratorImplTest, EmitVariable_StorageClass) {
 }
 
 TEST_F(WgslGeneratorImplTest, EmitVariable_Decorated) {
-  auto* v = Global("a", ty.f32(), ast::StorageClass::kNone, nullptr,
-                   ast::VariableDecorationList{
+  auto* v = Global("a", ty.f32(), ast::StorageClass::kInput, nullptr,
+                   ast::DecorationList{
                        create<ast::LocationDecoration>(2),
                    });
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.EmitVariable(v)) << gen.error();
-  EXPECT_EQ(gen.result(), R"([[location(2)]] var a : f32;
+  EXPECT_EQ(gen.result(), R"([[location(2)]] var<in> a : f32;
 )");
 }
 
 TEST_F(WgslGeneratorImplTest, EmitVariable_Decorated_Multiple) {
-  auto* v = Global("a", ty.f32(), ast::StorageClass::kNone, nullptr,
-                   ast::VariableDecorationList{
+  auto* v = Global("a", ty.f32(), ast::StorageClass::kInput, nullptr,
+                   ast::DecorationList{
                        create<ast::BuiltinDecoration>(ast::Builtin::kPosition),
                        create<ast::BindingDecoration>(0),
                        create<ast::GroupDecoration>(1),
@@ -81,28 +70,29 @@ TEST_F(WgslGeneratorImplTest, EmitVariable_Decorated_Multiple) {
   ASSERT_TRUE(gen.EmitVariable(v)) << gen.error();
   EXPECT_EQ(
       gen.result(),
-      R"([[builtin(position), binding(0), group(1), location(2), constant_id(42)]] var a : f32;
+      R"([[builtin(position), binding(0), group(1), location(2), constant_id(42)]] var<in> a : f32;
 )");
 }
 
 TEST_F(WgslGeneratorImplTest, EmitVariable_Constructor) {
-  auto* v =
-      Global("a", ty.f32(), ast::StorageClass::kNone, Expr("initializer"));
+  auto* v = Global("a", ty.f32(), ast::StorageClass::kInput, Expr(1.0f));
+  WrapInFunction(Decl(v));
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.EmitVariable(v)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(var a : f32 = initializer;
+  EXPECT_EQ(gen.result(), R"(var<in> a : f32 = 1.0;
 )");
 }
 
 TEST_F(WgslGeneratorImplTest, EmitVariable_Const) {
-  auto* v = Const("a", ty.f32(), Expr("initializer"));
+  auto* v = Const("a", ty.f32(), Expr(1.0f));
+  WrapInFunction(Decl(v));
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.EmitVariable(v)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(const a : f32 = initializer;
+  EXPECT_EQ(gen.result(), R"(const a : f32 = 1.0;
 )");
 }
 

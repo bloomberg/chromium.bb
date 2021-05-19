@@ -11,6 +11,7 @@
 #include <sys/mman.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <sys/utsname.h>
 
 #include <algorithm>
 #include <atomic>
@@ -31,14 +32,46 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
+#include "base/system/sys_info.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/core/core.h"
 #include "mojo/core/embedder/features.h"
 
+#ifndef EFD_ZERO_ON_WAKE
+#define EFD_ZERO_ON_WAKE O_NOFOLLOW
+#endif
+
 namespace mojo {
 namespace core {
+
+namespace {
+
+// On Android base::SysInfo::OperatingSystemVersionNumbers actually returns the
+// build numbers and not the kernel version as the other posix OSes would.
+void KernelVersionNumbers(int32_t* major_version,
+                          int32_t* minor_version,
+                          int32_t* bugfix_version) {
+  struct utsname info;
+  if (uname(&info) < 0) {
+    NOTREACHED();
+    *major_version = 0;
+    *minor_version = 0;
+    *bugfix_version = 0;
+    return;
+  }
+  int num_read = sscanf(info.release, "%d.%d.%d", major_version, minor_version,
+                        bugfix_version);
+  if (num_read < 1)
+    *major_version = 0;
+  if (num_read < 2)
+    *minor_version = 0;
+  if (num_read < 3)
+    *bugfix_version = 0;
+}
+
+}  // namespace
 
 // DataAvailableNotifier is a simple interface which allows us to
 // substitute how we notify the reader that we've made data available,
@@ -77,15 +110,21 @@ constexpr int kMemFDSeals = F_SEAL_SEAL | F_SEAL_SHRINK | F_SEAL_GROW;
 
 std::atomic_bool g_params_set{false};
 std::atomic_bool g_use_shared_mem{false};
+std::atomic_bool g_use_zero_on_wake{false};
 std::atomic_uint32_t g_shared_mem_pages{4};
 
 struct UpgradeOfferMessage {
   constexpr static int kEventFdNotifier = 1;
-  constexpr static int kSupportedVersion = kEventFdNotifier;
+  constexpr static int kEventFdZeroWakeNotifier = 2;
 
+  constexpr static int kDefaultVersion = kEventFdNotifier;
   constexpr static int kDefaultPages = 4;
 
-  int version = kSupportedVersion;
+  static bool IsValidVersion(int version) {
+    return (version == kEventFdNotifier || version == kEventFdZeroWakeNotifier);
+  }
+
+  int version = kDefaultVersion;
   int num_pages = kDefaultPages;
 };
 
@@ -142,13 +181,21 @@ class EventFDNotifier : public DataAvailableNotifier,
   static constexpr int kEfdFlags = EFD_CLOEXEC | EFD_NONBLOCK;
 
   static std::unique_ptr<EventFDNotifier> CreateWriteNotifier() {
-    int fd = eventfd(0, kEfdFlags);
+    static bool zero_on_wake_supported = []() -> bool {
+      base::ScopedFD fd(
+          syscall(__NR_eventfd2, 0, kEfdFlags | EFD_ZERO_ON_WAKE));
+      return fd.is_valid();
+    }();
+
+    bool use_zero_on_wake = zero_on_wake_supported && g_use_zero_on_wake;
+    int extra_flags = use_zero_on_wake ? EFD_ZERO_ON_WAKE : 0;
+    int fd = syscall(__NR_eventfd2, 0, kEfdFlags | extra_flags);
     if (fd < 0) {
       PLOG(ERROR) << "Unable to create an eventfd";
       return nullptr;
     }
 
-    return WrapFD(base::ScopedFD(fd));
+    return WrapFD(base::ScopedFD(fd), use_zero_on_wake);
   }
 
   // The EventFD read notifier MUST be created on the IOThread. Luckily you're
@@ -157,24 +204,31 @@ class EventFDNotifier : public DataAvailableNotifier,
   static std::unique_ptr<EventFDNotifier> CreateReadNotifier(
       base::ScopedFD efd,
       base::RepeatingClosure cb,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      bool zero_on_wake) {
     DCHECK(io_task_runner->RunsTasksInCurrentSequence());
     DCHECK(cb);
 
-    return WrapFDWithCallback(std::move(efd), std::move(cb), io_task_runner);
+    return WrapFDWithCallback(std::move(efd), std::move(cb), io_task_runner,
+                              zero_on_wake);
   }
 
   static bool KernelSupported() {
     // Try to create an eventfd with bad flags if we get -EINVAL it's supported
     // if we get -ENOSYS it's not, we also support -EPERM because seccomp
     // policies can cause it to be returned.
-    int ret = eventfd(0, ~0);
+    int ret = syscall(__NR_eventfd2, 0, ~0);
     PCHECK(ret < 0 && (errno == EINVAL || errno == ENOSYS || errno == EPERM));
     return (ret < 0 && errno == EINVAL);
   }
 
   // DataAvailableNotifier impl:
   bool Clear() override {
+    // When using EFD_ZERO_ON_WAKE we don't have to do anything.
+    if (zero_on_wake_) {
+      return true;
+    }
+
     uint64_t value = 0;
     ssize_t res = HANDLE_EINTR(
         read(fd_.get(), reinterpret_cast<void*>(&value), sizeof(value)));
@@ -214,13 +268,18 @@ class EventFDNotifier : public DataAvailableNotifier,
 
   int fd() { return fd_.get(); }
 
+  bool zero_on_wake() const { return zero_on_wake_; }
+
  private:
-  explicit EventFDNotifier(base::ScopedFD fd) : fd_(std::move(fd)) {}
+  explicit EventFDNotifier(base::ScopedFD fd, bool zero_on_wake)
+      : zero_on_wake_(zero_on_wake), fd_(std::move(fd)) {}
   explicit EventFDNotifier(
       base::ScopedFD fd,
       base::RepeatingClosure cb,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      bool zero_on_wake)
       : DataAvailableNotifier(std::move(cb)),
+        zero_on_wake_(zero_on_wake),
         fd_(std::move(fd)),
         io_task_runner_(io_task_runner) {
     watcher_ =
@@ -228,17 +287,19 @@ class EventFDNotifier : public DataAvailableNotifier,
     WaitForEventFDOnIOThread();
   }
 
-  static std::unique_ptr<EventFDNotifier> WrapFD(base::ScopedFD fd) {
+  static std::unique_ptr<EventFDNotifier> WrapFD(base::ScopedFD fd,
+                                                 bool zero_on_wake) {
     return base::WrapUnique<EventFDNotifier>(
-        new EventFDNotifier(std::move(fd)));
+        new EventFDNotifier(std::move(fd), zero_on_wake));
   }
 
   static std::unique_ptr<EventFDNotifier> WrapFDWithCallback(
       base::ScopedFD fd,
       base::RepeatingClosure cb,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-    return base::WrapUnique<EventFDNotifier>(
-        new EventFDNotifier(std::move(fd), std::move(cb), io_task_runner));
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      bool zero_on_wake) {
+    return base::WrapUnique<EventFDNotifier>(new EventFDNotifier(
+        std::move(fd), std::move(cb), io_task_runner, zero_on_wake));
   }
 
   void WaitForEventFDOnIOThread() {
@@ -248,6 +309,7 @@ class EventFDNotifier : public DataAvailableNotifier,
         this);
   }
 
+  bool zero_on_wake_ = false;
   base::ScopedFD fd_;
   std::unique_ptr<base::MessagePumpForIO::FdWatchController> watcher_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -579,8 +641,6 @@ void ChannelLinux::Write(MessagePtr message) {
   }
 
   //  The write with shared memory was successful.
-  UMA_HISTOGRAM_COUNTS_100000("Mojo.Channel.Linux.SharedMemWriteBytes",
-                              message->data_num_bytes());
   write_notifier_->Notify();
 }
 
@@ -607,7 +667,7 @@ bool ChannelLinux::OnControlMessage(Message::MessageType message_type,
 
       const UpgradeOfferMessage* msg =
           reinterpret_cast<const UpgradeOfferMessage*>(payload);
-      if (msg->version != UpgradeOfferMessage::kSupportedVersion) {
+      if (!UpgradeOfferMessage::IsValidVersion(msg->version)) {
         LOG(ERROR) << "Reject shared mem upgrade unexpected version: "
                    << msg->version;
         RejectUpgradeOffer();
@@ -645,11 +705,14 @@ bool ChannelLinux::OnControlMessage(Message::MessageType message_type,
       }
 
       std::unique_ptr<DataAvailableNotifier> read_notifier;
-      if (msg->version == UpgradeOfferMessage::kEventFdNotifier) {
+      if (msg->version == UpgradeOfferMessage::kEventFdNotifier ||
+          msg->version == UpgradeOfferMessage::kEventFdZeroWakeNotifier) {
+        bool zero_on_wake =
+            msg->version == UpgradeOfferMessage::kEventFdZeroWakeNotifier;
         read_notifier = EventFDNotifier::CreateReadNotifier(
             handles[1].TakeFD(),
             base::BindRepeating(&ChannelLinux::SharedMemReadReady, this),
-            io_task_runner_);
+            io_task_runner_, zero_on_wake);
       }
 
       if (!read_notifier) {
@@ -725,9 +788,6 @@ void ChannelLinux::SharedMemReadReady() {
       if (bytes_read == 0) {
         break;
       }
-
-      UMA_HISTOGRAM_COUNTS_100000("Mojo.Channel.Linux.SharedMemReadBytes",
-                                  bytes_read);
 
       // Now dispatch the message, we KNOW it's at least one full message
       // because we checked the message size before putting it into the
@@ -810,11 +870,17 @@ void ChannelLinux::OfferSharedMemUpgradeInternal() {
 
   write_buffer->Initialize();
 
+  auto notifier_version = UpgradeOfferMessage::kEventFdNotifier;
   std::unique_ptr<EventFDNotifier> write_notifier =
       EventFDNotifier::CreateWriteNotifier();
   if (!write_notifier) {
     PLOG(ERROR) << "Failed to create eventfd write notifier";
     return;
+  }
+
+  if (write_notifier->zero_on_wake()) {
+    // The notifier was created using EFD_ZERO_ON_WAKE
+    notifier_version = UpgradeOfferMessage::kEventFdZeroWakeNotifier;
   }
 
   std::vector<PlatformHandle> fds;
@@ -826,6 +892,7 @@ void ChannelLinux::OfferSharedMemUpgradeInternal() {
 
   UpgradeOfferMessage offer_msg;
   offer_msg.num_pages = num_pages_;
+  offer_msg.version = notifier_version;
   MessagePtr msg(new Channel::Message(sizeof(UpgradeOfferMessage),
                                       /*num handles=*/fds.size(),
                                       Message::MessageType::UPGRADE_OFFER));
@@ -838,6 +905,24 @@ void ChannelLinux::OfferSharedMemUpgradeInternal() {
 // static
 bool ChannelLinux::KernelSupportsUpgradeRequirements() {
   static bool supported = []() -> bool {
+    // See https://crbug.com/1192696 for more context, but some Android vendor
+    // kernels pre-3.17 would use higher undefined syscall numbers for private
+    // syscalls. To start we'll validate the kernel version is greater than or
+    // equal to 3.17 before even bothering to call memfd_create.
+    //
+    // Additionally, the behavior of eventfd prior to the 4.0 kernel could be
+    // racy.
+    int os_major_version = 0;
+    int os_minor_version = 0;
+    int os_bugfix_version = 0;
+    KernelVersionNumbers(&os_major_version, &os_minor_version,
+                         &os_bugfix_version);
+    if (os_major_version < 4) {
+      // Due to the potentially races in 3.17/3.18 kernels with eventfd,
+      // explicitly require a 4.x+ kernel.
+      return false;
+    }
+
     // Do we have memfd_create support, we check by seeing if we get an -ENOSYS
     // or an -EINVAL. We also support -EPERM because of seccomp rules this is
     // another possible outcome.
@@ -858,10 +943,13 @@ bool ChannelLinux::UpgradesEnabled() {
 }
 
 // static
-void ChannelLinux::SetSharedMemParameters(bool enabled, uint32_t num_pages) {
+void ChannelLinux::SetSharedMemParameters(bool enabled,
+                                          uint32_t num_pages,
+                                          bool use_zero_on_wake) {
   g_params_set.store(true);
   g_use_shared_mem.store(enabled);
   g_shared_mem_pages.store(num_pages);
+  g_use_zero_on_wake.store(use_zero_on_wake);
 }
 
 }  // namespace core

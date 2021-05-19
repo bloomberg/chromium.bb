@@ -6,6 +6,7 @@
  * @fileoverview 'settings-languages-page' is the settings page
  * for language and input method settings.
  */
+import 'chrome://resources/cr_components/managed_dialog/managed_dialog.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
@@ -20,11 +21,11 @@ import 'chrome://resources/cr_elements/action_link_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './add_languages_dialog.js';
-import './languages.m.js';
-import '../controls/settings_toggle_button.m.js';
-import '../icons.m.js';
-import '../settings_shared_css.m.js';
-import '../settings_vars_css.m.js';
+import './languages.js';
+import '../controls/settings_toggle_button.js';
+import '../icons.js';
+import '../settings_shared_css.js';
+import '../settings_vars_css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS, isWindows} from 'chrome://resources/js/cr.m.js';
@@ -33,8 +34,8 @@ import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
-import {LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.m.js';
-import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.js';
 
 // <if expr="chromeos">
 import {LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './languages_metrics_proxy.js';
@@ -90,6 +91,9 @@ Polymer({
     /** @private */
     showAddLanguagesDialog_: Boolean,
 
+    /** @private {?Array<!chrome.languageSettingsPrivate.Language>} */
+    addLanguagesDialogLanguages_: Array,
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -116,6 +120,12 @@ Polymer({
       },
     },
     // </if>
+
+    /** @private */
+    showManagedLanguageDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   // <if expr="chromeos">
@@ -162,13 +172,30 @@ Polymer({
     // </if>
     this.languageSettingsMetricsProxy_.recordPageImpressionMetric(
         LanguageSettingsPageImpressionType.ADD_LANGUAGE);
+
+    this.addLanguagesDialogLanguages_ = this.languages.supported.filter(
+        language => this.languageHelper.canEnableLanguage(language));
     this.showAddLanguagesDialog_ = true;
   },
 
   /** @private */
   onAddLanguagesDialogClose_() {
     this.showAddLanguagesDialog_ = false;
+    this.addLanguagesDialogLanguages_ = null;
     focusWithoutInk(assert(this.$$('#addLanguages')));
+  },
+
+  /**
+   * @param {!CustomEvent<!Array<string>>} e
+   * @private
+   */
+  onLanguagesAdded_(e) {
+    const languagesToAdd = e.detail;
+    languagesToAdd.forEach(languageCode => {
+      this.languageHelper.enableLanguage(languageCode);
+      LanguageSettingsMetricsProxyImpl.getInstance().recordSettingsMetric(
+          LanguageSettingsActionType.LANGUAGE_ADDED);
+    });
   },
 
   /**
@@ -492,6 +519,11 @@ Polymer({
    */
   onMoveToTopTap_() {
     /** @type {!CrActionMenuElement} */ (this.$$('#menu').get()).close();
+    if (this.detailLanguage_.isForced) {
+      // If language is managed, show dialog to inform user it can't be modified
+      this.showManagedLanguageDialog_ = true;
+      return;
+    }
     this.languageHelper.moveLanguageToFront(this.detailLanguage_.language.code);
     this.languageSettingsMetricsProxy_.recordSettingsMetric(
         LanguageSettingsActionType.LANGUAGE_LIST_REORDERED);
@@ -503,6 +535,11 @@ Polymer({
    */
   onMoveUpTap_() {
     /** @type {!CrActionMenuElement} */ (this.$$('#menu').get()).close();
+    if (this.detailLanguage_.isForced) {
+      // If language is managed, show dialog to inform user it can't be modified
+      this.showManagedLanguageDialog_ = true;
+      return;
+    }
     this.languageHelper.moveLanguage(
         this.detailLanguage_.language.code, true /* upDirection */);
     this.languageSettingsMetricsProxy_.recordSettingsMetric(
@@ -515,6 +552,11 @@ Polymer({
    */
   onMoveDownTap_() {
     /** @type {!CrActionMenuElement} */ (this.$$('#menu').get()).close();
+    if (this.detailLanguage_.isForced) {
+      // If language is managed, show dialog to inform user it can't be modified
+      this.showManagedLanguageDialog_ = true;
+      return;
+    }
     this.languageHelper.moveLanguage(
         this.detailLanguage_.language.code, false /* upDirection */);
     this.languageSettingsMetricsProxy_.recordSettingsMetric(
@@ -527,6 +569,11 @@ Polymer({
    */
   onRemoveLanguageTap_() {
     /** @type {!CrActionMenuElement} */ (this.$$('#menu').get()).close();
+    if (this.detailLanguage_.isForced) {
+      // If language is managed, show dialog to inform user it can't be modified
+      this.showManagedLanguageDialog_ = true;
+      return;
+    }
     this.languageHelper.disableLanguage(this.detailLanguage_.language.code);
     this.languageSettingsMetricsProxy_.recordSettingsMetric(
         LanguageSettingsActionType.LANGUAGE_REMOVED);
@@ -587,4 +634,12 @@ Polymer({
       }
     }, kMenuCloseDelay);
   },
+
+  /**
+   * Triggered when the managed language dialog is dismissed.
+   * @private
+   */
+  onManagedLanguageDialogClosed_() {
+    this.showManagedLanguageDialog_ = false;
+  }
 });

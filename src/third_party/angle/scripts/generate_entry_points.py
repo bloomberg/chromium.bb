@@ -246,20 +246,18 @@ TEMPLATE_EGL_ENTRY_POINT_WITH_RETURN = """\
 """
 
 TEMPLATE_CL_ENTRY_POINT_NO_RETURN = """\
-void CL_API_ENTRY CL_{name}({params})
+void CL_API_CALL CL_{name}({params})
 {{
-    // TODO: CL_EVENT
-    // CL_EVENT({name}, "{format_params}"{comma_if_needed}{pass_params});
+    CL_EVENT({name}, "{format_params}"{comma_if_needed}{pass_params});
 
     // TODO: {name}
 }}
 """
 
 TEMPLATE_CL_ENTRY_POINT_WITH_RETURN = """\
-{return_type}CL_API_ENTRY CL_{name}({params})
+{return_type}CL_API_CALL CL_{name}({params})
 {{
-    // TODO: CL_EVENT
-    // CL_EVENT({name}, "{format_params}"{comma_if_needed}{pass_params});
+    CL_EVENT({name}, "{format_params}"{comma_if_needed}{pass_params});
 
     // TODO: {name}
 
@@ -327,6 +325,14 @@ CONTEXT_HEADER = """\
 """
 
 CONTEXT_DECL_FORMAT = """    {return_type} {name_lower_no_suffix}({internal_params}){maybe_const}; \\"""
+
+TEMPLATE_CL_ENTRY_POINT_EXPORT = """\
+{return_type} CL_API_CALL cl{name}({params})
+{{
+    EnsureCLLoaded();
+    return cl_loader.cl{name}({internal_params});
+}}
+"""
 
 TEMPLATE_GL_ENTRY_POINT_EXPORT = """\
 {return_type}GL_APIENTRY gl{name}{explicit_context_suffix}({explicit_context_param}{explicit_context_comma}{params})
@@ -622,18 +628,18 @@ FORMAT_DICT = {
     "LPGLYPHMETRICSFLOAT": POINTER_FORMAT,
     "UINT": "%u",
     # CL-specific types
-    "size_t": "%u",
-    "cl_char": "%d",
-    "cl_uchar": "%u",
-    "cl_short": "%d",
-    "cl_ushort": "%u",
+    "size_t": "%zu",
+    "cl_char": "%hhd",
+    "cl_uchar": "%hhu",
+    "cl_short": "%hd",
+    "cl_ushort": "%hu",
     "cl_int": "%d",
     "cl_uint": "%u",
-    "cl_long": "%d",
-    "cl_ulong": "%u",
-    "cl_half": "%lf",
-    "cl_float": "%lf",
-    "cl_double": "%lf",
+    "cl_long": "%ld",
+    "cl_ulong": "%lu",
+    "cl_half": "%hu",
+    "cl_float": "%f",
+    "cl_double": "%f",
     "cl_platform_id": POINTER_FORMAT,
     "cl_device_id": POINTER_FORMAT,
     "cl_context": POINTER_FORMAT,
@@ -642,63 +648,61 @@ FORMAT_DICT = {
     "cl_program": POINTER_FORMAT,
     "cl_kernel": POINTER_FORMAT,
     "cl_event": POINTER_FORMAT,
-    "cl_program": POINTER_FORMAT,
     "cl_sampler": POINTER_FORMAT,
     "cl_bool": "%u",
-    "cl_bitfield": "%u",
-    "cl_properties": "%u",
-    "cl_device_type": "%u",
+    "cl_bitfield": "%lu",
+    "cl_properties": "%lu",
+    "cl_device_type": "%lu",
     "cl_platform_info": "%u",
     "cl_device_info": "%u",
-    "cl_platform_info": "%u",
-    "cl_device_fp_config": "%u",
+    "cl_device_fp_config": "%lu",
     "cl_device_mem_cache_type": "%u",
     "cl_device_local_mem_type": "%u",
-    "cl_device_exec_capabilities": "%u",
-    "cl_device_svm_capabilities": "%u",
-    "cl_command_queue_properties": "%u",
-    "cl_device_partition_property": "%u",
-    "cl_device_affinity_domain": "%u",
-    "cl_context_properties": "%u",
+    "cl_device_exec_capabilities": "%lu",
+    "cl_device_svm_capabilities": "%lu",
+    "cl_command_queue_properties": "%lu",
+    "cl_device_partition_property": "%zu",
+    "cl_device_affinity_domain": "%lu",
+    "cl_context_properties": "%zu",
     "cl_context_info": "%u",
-    "cl_queue_properties": "%u",
+    "cl_queue_properties": "%lu",
     "cl_command_queue_info": "%u",
     "cl_channel_order": "%u",
     "cl_channel_type": "%u",
-    "cl_mem_flags": "%u",
-    "cl_svm_mem_flags": "%u",
+    "cl_mem_flags": "%lu",
+    "cl_svm_mem_flags": "%lu",
     "cl_mem_object_type": "%u",
     "cl_mem_info": "%u",
-    "cl_mem_migration_flags": "%u",
+    "cl_mem_migration_flags": "%lu",
+    "cl_mem_properties": "%lu",
     "cl_image_info": "%u",
     "cl_buffer_create_type": "%u",
     "cl_addressing_mode": "%u",
     "cl_filter_mode": "%u",
     "cl_sampler_info": "%u",
-    "cl_map_flags": "%u",
-    "cl_pipe_properties": "%u",
+    "cl_map_flags": "%lu",
+    "cl_pipe_properties": "%zu",
     "cl_pipe_info": "%u",
     "cl_program_info": "%u",
     "cl_program_build_info": "%u",
     "cl_program_binary_type": "%u",
-    "cl_build_status": "%u",
+    "cl_build_status": "%d",
     "cl_kernel_info": "%u",
     "cl_kernel_arg_info": "%u",
     "cl_kernel_arg_address_qualifier": "%u",
     "cl_kernel_arg_access_qualifier": "%u",
-    "cl_kernel_arg_type_qualifier": "%u",
+    "cl_kernel_arg_type_qualifier": "%lu",
     "cl_kernel_work_group_info": "%u",
     "cl_kernel_sub_group_info": "%u",
     "cl_event_info": "%u",
     "cl_command_type": "%u",
     "cl_profiling_info": "%u",
-    "cl_sampler_properties": "%u",
+    "cl_sampler_properties": "%lu",
     "cl_kernel_exec_info": "%u",
-    "cl_device_atomic_capabilities": "%u",
-    "cl_device_device_enqueue_capabilities": "%u",
+    "cl_device_atomic_capabilities": "%lu",
     "cl_khronos_vendor_id": "%u",
-    "cl_mem_properties": "%u",
     "cl_version": "%u",
+    "cl_device_device_enqueue_capabilities": "%lu",
 }
 
 TEMPLATE_HEADER_INCLUDES = """\
@@ -803,6 +807,55 @@ EGL_EXT_SOURCE_INCLUDES = """\
 using namespace egl;
 """
 
+LIBCL_EXPORT_INCLUDES_AND_PREAMBLE = """
+//#include "anglebase/no_destructor.h"
+//#include "common/system_utils.h"
+
+#include <iostream>
+//#include <memory>
+
+#include "cl_loader.h"
+
+namespace
+{
+bool gLoaded = false;
+
+/* TODO(jplate): uncomment after entry points moved to GLESV2 lib http://anglebug.com/5759
+std::unique_ptr<angle::Library> &EntryPointsLib()
+{
+    static angle::base::NoDestructor<std::unique_ptr<angle::Library>> sEntryPointsLib;
+    return *sEntryPointsLib;
+}
+
+angle::GenericProc CL_API_CALL GlobalLoad(const char *symbol)
+{
+    return reinterpret_cast<angle::GenericProc>(EntryPointsLib()->getSymbol(symbol));
+}
+*/
+
+void EnsureCLLoaded()
+{
+    if (gLoaded)
+    {
+        return;
+    }
+
+    // EntryPointsLib().reset(
+    //    angle::OpenSharedLibrary(ANGLE_GLESV2_LIBRARY_NAME, angle::SearchType::ApplicationDir));
+    // angle::LoadCL(GlobalLoad);
+    angle::LoadCL(nullptr);
+    if (!cl_loader.clGetDeviceIDs)
+    {
+        std::cerr << "Error loading CL entry points." << std::endl;
+    }
+    else
+    {
+        gLoaded = true;
+    }
+}
+}  // anonymous namespace
+"""
+
 LIBGLESV2_EXPORT_INCLUDES = """
 #include "angle_gl.h"
 
@@ -884,11 +937,15 @@ void EnsureEGLLoaded() {}
 LIBCL_HEADER_INCLUDES = """\
 #include "export.h"
 
+#ifndef CL_API_ENTRY
+#    define CL_API_ENTRY ANGLE_EXPORT
+#endif
 #include <CL/cl.h>
 """
 
 LIBCL_SOURCE_INCLUDES = """\
 #include "entry_points_cl_autogen.h"
+#include "entry_points_cl_utils.h"
 """
 
 TEMPLATE_EVENT_COMMENT = """\
@@ -1132,7 +1189,7 @@ def get_api_entry_def(api):
     if api == apis.EGL:
         return "EGLAPIENTRY"
     elif api == apis.CL:
-        return "CL_API_ENTRY"
+        return "CL_API_CALL"
     else:
         return "GL_APIENTRY"
 
@@ -1164,7 +1221,19 @@ def just_the_type(param):
 
 
 def just_the_name(param):
-    return param[type_name_sep_index(param) + 1:].strip()
+
+    def get_name(param_string):
+        return param_string[type_name_sep_index(param_string) + 1:].strip()
+
+    if param.find("[]") != -1:
+        param = param.replace("[]", "")
+
+    left_paren = param.find("(")
+    if left_paren == -1:
+        return get_name(param)
+    right_paren = param.index(")")
+    paren_content = param[left_paren + 1:right_paren]
+    return get_name(paren_content)
 
 
 def make_param(param_type, param_name):
@@ -1697,8 +1766,13 @@ class CLEntryPoints(ANGLEEntryPoints):
     all_param_types = set()
 
     def __init__(self, xml, commands):
-        super().__init__(apis.CL, xml, commands, CLEntryPoints.all_param_types,
-                         CLEntryPoints.get_packed_enums())
+        super().__init__(
+            apis.CL,
+            xml,
+            commands,
+            CLEntryPoints.all_param_types,
+            CLEntryPoints.get_packed_enums(),
+            export_template=TEMPLATE_CL_ENTRY_POINT_EXPORT)
 
     @classmethod
     def get_packed_enums(cls):
@@ -2339,6 +2413,7 @@ def main():
         outputs = [
             EGL_STUBS_HEADER_PATH,
             EGL_EXT_STUBS_HEADER_PATH,
+            '../src/libOpenCL/libOpenCL_autogen.cpp',
             '../src/libOpenCL/entry_points_cl_autogen.cpp',
             '../src/libOpenCL/entry_points_cl_autogen.h',
             '../src/common/entry_points_enum_autogen.cpp',
@@ -2683,6 +2758,49 @@ def main():
         # Validation files
         write_gl_validation_header("GL%s" % major_version, name, validation_protos, "gl.xml")
 
+    # OpenCL
+    clxml = registry_xml.RegistryXML('cl.xml')
+
+    cl_validation_protos = []
+    cl_decls = []
+    cl_defs = []
+    libcl_ep_defs = []
+    libcl_windows_def_exports = []
+    cl_commands = []
+
+    for major_version, minor_version in registry_xml.CL_VERSIONS:
+        version = "%d_%d" % (major_version, minor_version)
+        annotation = "CL_%s" % version
+        name_prefix = "CL_VERSION_"
+
+        comment = version.replace("_", ".")
+        feature_name = "%s%s" % (name_prefix, version)
+
+        clxml.AddCommands(feature_name, version)
+
+        cl_version_commands = clxml.commands[version]
+        cl_commands += cl_version_commands
+
+        # Spec revs may have no new commands.
+        if not cl_version_commands:
+            continue
+
+        eps = CLEntryPoints(clxml, cl_version_commands)
+
+        comment = "\n// CL %d.%d" % (major_version, minor_version)
+        win_def_comment = "\n    ; CL %d.%d" % (major_version, minor_version)
+
+        cl_decls += [comment] + eps.decls
+        cl_defs += [comment] + eps.defs
+        libcl_ep_defs += [comment] + eps.export_defs
+        cl_validation_protos += [comment] + eps.validation_protos
+        libcl_windows_def_exports += [win_def_comment] + get_exports(clxml.commands[version])
+
+    write_file("cl", "CL", TEMPLATE_ENTRY_POINT_HEADER, "\n".join(cl_decls), "h",
+               LIBCL_HEADER_INCLUDES, "libOpenCL", "cl.xml")
+    write_file("cl", "CL", TEMPLATE_ENTRY_POINT_SOURCE, "\n".join(cl_defs), "cpp",
+               LIBCL_SOURCE_INCLUDES, "libOpenCL", "cl.xml")
+
     # EGL
     eglxml = registry_xml.RegistryXML('egl.xml', 'egl_angle_ext.xml')
 
@@ -2847,6 +2965,8 @@ def main():
     write_export_files("\n".join([item for item in libegl_ep_defs]),
                        LIBEGL_EXPORT_INCLUDES_AND_PREAMBLE, "egl.xml and egl_angle_ext.xml",
                        "libEGL", "EGL")
+    write_export_files("\n".join([item for item in libcl_ep_defs]),
+                       LIBCL_EXPORT_INCLUDES_AND_PREAMBLE, "cl.xml", "libOpenCL", "CL")
 
     libgles_ep_exports += get_egl_exports()
 
@@ -2863,49 +2983,6 @@ def main():
     write_capture_helper_source(all_gles_param_types)
     write_capture_replay_source(apis.GLES, xml.all_commands, all_commands_no_suffix,
                                 GLEntryPoints.get_packed_enums(), [])
-
-    # OpenCL
-    clxml = registry_xml.RegistryXML('cl.xml')
-
-    cl_validation_protos = []
-    cl_decls = []
-    cl_defs = []
-    libcl_ep_defs = []
-    libcl_windows_def_exports = []
-    cl_commands = []
-
-    for major_version, minor_version in registry_xml.CL_VERSIONS:
-        version = "%d_%d" % (major_version, minor_version)
-        annotation = "CL_%s" % version
-        name_prefix = "CL_VERSION_"
-
-        comment = version.replace("_", ".")
-        feature_name = "%s%s" % (name_prefix, version)
-
-        clxml.AddCommands(feature_name, version)
-
-        cl_version_commands = clxml.commands[version]
-        cl_commands += cl_version_commands
-
-        # Spec revs may have no new commands.
-        if not cl_version_commands:
-            continue
-
-        eps = CLEntryPoints(clxml, cl_version_commands)
-
-        comment = "\n// CL %d.%d" % (major_version, minor_version)
-        win_def_comment = "\n    ; CL %d.%d" % (major_version, minor_version)
-
-        cl_decls += [comment] + eps.decls
-        cl_defs += [comment] + eps.defs
-        libcl_ep_defs += [comment] + eps.export_defs
-        cl_validation_protos += [comment] + eps.validation_protos
-        libcl_windows_def_exports += [win_def_comment] + get_exports(clxml.commands[version])
-
-    write_file("cl", "CL", TEMPLATE_ENTRY_POINT_HEADER, "\n".join(cl_decls), "h",
-               LIBCL_HEADER_INCLUDES, "libOpenCL", "cl.xml")
-    write_file("cl", "CL", TEMPLATE_ENTRY_POINT_SOURCE, "\n".join(cl_defs), "cpp",
-               LIBCL_SOURCE_INCLUDES, "libOpenCL", "cl.xml")
 
 
 if __name__ == '__main__':

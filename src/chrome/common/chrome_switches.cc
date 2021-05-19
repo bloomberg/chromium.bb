@@ -65,6 +65,10 @@ const char kAppModeAuthCode[]               = "app-mode-auth-code";
 // Value of OAuth2 refresh token for --force-app-mode.
 const char kAppModeOAuth2Token[]            = "app-mode-oauth-token";
 
+// This is used along with kAppId to indicate an app was launched during
+// OS login, and which mode the app was launched in.
+const char kAppRunOnOsLoginMode[] = "app-run-on-os-login-mode";
+
 // The URL that the webstore APIs download extensions from.
 // Note: the URL must contain one '%s' for the extension ID.
 const char kAppsGalleryDownloadURL[]        = "apps-gallery-download-url";
@@ -161,6 +165,8 @@ const char kDebugPackedApps[]               = "debug-packed-apps";
 // Values for the enable-desktop-pwas-attention-badging-cros flag.
 const char kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[] =
     "api-and-notifications";
+const char kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications[] =
+    "api-overrides-notifications";
 const char kDesktopPWAsAttentionBadgingCrOSApiOnly[] = "api-only";
 const char kDesktopPWAsAttentionBadgingCrOSNotificationsOnly[] =
     "notifications-only";
@@ -176,9 +182,6 @@ const char kDiagnosticsFormat[]             = "diagnostics-format";
 
 // Tells the diagnostics mode to do the requested recovery step(s).
 const char kDiagnosticsRecovery[]           = "diagnostics-recovery";
-
-// Disable auto-reload of error pages.
-const char kDisableAutoReload[] = "disable-auto-reload";
 
 // Disable several subsystems which run network requests in the background.
 // This is for use when doing network performance testing to avoid noise in the
@@ -225,6 +228,11 @@ const char kDisablePrintPreview[]           = "disable-print-preview";
 // disable that check. This switch is used during automated testing.
 const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 
+// Disable stack profiling. Stack profiling may change performance. Disabling
+// stack profiling is beneficial when comparing performance metrics with a
+// build that has it disabled by default.
+const char kDisableStackProfiler[] = "disable-stack-profiler";
+
 // Some tests seem to require the application to close when the last
 // browser window is closed. Thus, we need a switch to force this behavior
 // for ChromeOS Aura, disable "zero window mode".
@@ -243,9 +251,6 @@ const char kDiskCacheSize[]                 = "disk-cache-size";
 // Requests that a running browser process dump its collected histograms to a
 // given file. The file is overwritten if it exists.
 const char kDumpBrowserHistograms[]         = "dump-browser-histograms";
-
-// Enable auto-reload of error pages.
-const char kEnableAutoReload[] = "enable-auto-reload";
 
 // If the WebRTC logging private API is active, enables audio debug recordings.
 const char kEnableAudioDebugRecordingsFromExtension[] =
@@ -287,6 +292,10 @@ const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";
 // content mode, powerful feature restrictions, etc.)
 const char kEnablePotentiallyAnnoyingSecurityFeatures[] =
     "enable-potentially-annoying-security-features";
+
+// Allows overriding the list of restricted ports by passing a comma-separated
+// list of port numbers.
+const char kExplicitlyAllowedPorts[] = "explicitly-allowed-ports";
 
 // Name of the command line flag to force content verification to be on in one
 // of various modes.
@@ -473,9 +482,6 @@ const char kRestoreLastSession[]            = "restore-last-session";
 // See http://crbug.com/120416 for how to remove this switch.
 const char kSavePageAsMHTML[]               = "save-page-as-mhtml";
 
-// Sets the Reporting API delay to under a second to allow much quicker reports.
-const char kShortReportingDelay[] = "short-reporting-delay";
-
 // Does not show an infobar when an extension attaches to a page using
 // chrome.debugger page. Required to attach to extension background pages.
 const char kSilentDebuggerExtensionAPI[]    = "silent-debugger-extension-api";
@@ -502,15 +508,8 @@ const char kSimulateUpgrade[]               = "simulate-upgrade";
 // Specifies the maximum SSL/TLS version ("tls1.2" or "tls1.3").
 const char kSSLVersionMax[] = "ssl-version-max";
 
-// Specifies the minimum SSL/TLS version ("tls1", "tls1.1", "tls1.2", or
-// "tls1.3").
+// Specifies the minimum SSL/TLS version ("tls1.2" or "tls1.3").
 const char kSSLVersionMin[] = "ssl-version-min";
-
-// TLS 1.0 mode for the |kSSLVersionMin| switch.
-const char kSSLVersionTLSv1[] = "tls1";
-
-// TLS 1.1 mode for the |kSSLVersionMin| switch.
-const char kSSLVersionTLSv11[] = "tls1.1";
 
 // TLS 1.2 mode for |kSSLVersionMax| and |kSSLVersionMin| switches.
 const char kSSLVersionTLSv12[] = "tls1.2";

@@ -475,6 +475,9 @@ class MdnsRecord {
   bool operator<=(const MdnsRecord& other) const;
   bool operator>=(const MdnsRecord& other) const;
 
+  // While not being "equivalent", a record could be said to be an update of
+  // a different record if it is the same, excepting TTL.
+  bool IsReannouncementOf(const MdnsRecord& other) const;
   size_t MaxWireSize() const;
   const DomainName& name() const { return name_; }
   DnsType dns_type() const { return dns_type_; }

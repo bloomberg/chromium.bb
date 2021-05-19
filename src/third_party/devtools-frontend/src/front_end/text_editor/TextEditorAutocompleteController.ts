@@ -5,13 +5,12 @@
 /* eslint-disable rulesdir/no_underscored_properties */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import * as Common from '../common/common.js';
-import * as Platform from '../platform/platform.js';
-import * as TextUtils from '../text_utils/text_utils.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as Platform from '../core/platform/platform.js';
+import * as TextUtils from '../models/text_utils/text_utils.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import type {CodeMirrorTextEditor} from './CodeMirrorTextEditor.js';
-import {changeObjectToEditOperation} from './CodeMirrorUtils.js';
 
 export class TextEditorAutocompleteController implements UI.SuggestBox.SuggestBoxDelegate {
   _textEditor: CodeMirrorTextEditor;
@@ -30,6 +29,7 @@ export class TextEditorAutocompleteController implements UI.SuggestBox.SuggestBo
   _updatedLines?: any;
   _hintMarker?: any|null;
   _anchorBox?: AnchorBox|null;
+
   // https://crbug.com/1151919 * = CodeMirror.Editor
   constructor(textEditor: CodeMirrorTextEditor, codeMirror: any, config: UI.TextEditor.AutocompleteConfig) {
     this._textEditor = textEditor;
@@ -61,7 +61,7 @@ export class TextEditorAutocompleteController implements UI.SuggestBox.SuggestBo
     this._tooltipElement.classList.add('autocomplete-tooltip');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
         this._tooltipGlassPane.contentElement,
-        {cssFile: 'text_editor/autocompleteTooltip.css', enableLegacyPatching: true, delegatesFocus: undefined});
+        {cssFile: 'text_editor/autocompleteTooltip.css', enableLegacyPatching: false, delegatesFocus: undefined});
     shadowRoot.appendChild(this._tooltipElement);
 
     this._queryRange = null;
@@ -87,6 +87,8 @@ export class TextEditorAutocompleteController implements UI.SuggestBox.SuggestBo
       // @ts-ignore CodeMirror types are wrong.
       this._addWordsFromText(this._codeMirror.getValue());
     }
+    UI.ARIAUtils.setAutocomplete(this._textEditor.element, UI.ARIAUtils.AutocompleteInteractionModel.both);
+    UI.ARIAUtils.setHasPopup(this._textEditor.element, UI.ARIAUtils.PopupRole.ListBox);
   }
 
   dispose(): void {
@@ -107,6 +109,8 @@ export class TextEditorAutocompleteController implements UI.SuggestBox.SuggestBo
       this._codeMirror.off('beforeChange', this._beforeChange);
       this._dictionary.reset();
     }
+    UI.ARIAUtils.clearAutocomplete(this._textEditor.element);
+    UI.ARIAUtils.setHasPopup(this._textEditor.element, UI.ARIAUtils.PopupRole.False);
   }
 
   _beforeChange(codeMirror: typeof CodeMirror, changeObject: any): void {
@@ -195,7 +199,7 @@ export class TextEditorAutocompleteController implements UI.SuggestBox.SuggestBo
       } = {};
       for (let changeIndex = 0; changeIndex < changes.length; ++changeIndex) {
         const changeObject = changes[changeIndex];
-        const editInfo = changeObjectToEditOperation(changeObject);
+        const editInfo = TextUtils.CodeMirrorUtils.changeObjectToEditOperation(changeObject);
         for (let i = editInfo.newRange.startLine; i <= editInfo.newRange.endLine; ++i) {
           // @ts-ignore CodeMirror types are wrong.
           linesToUpdate[String(i)] = this._codeMirror.getLine(i);
@@ -458,6 +462,10 @@ export class TextEditorAutocompleteController implements UI.SuggestBox.SuggestBo
         this._codeMirror.replaceRange(suggestion, start, end, '+autocomplete');
       }
     });
+  }
+
+  ariaControlledBy(): Element {
+    return this._textEditor.element;
   }
 
   textWithCurrentSuggestion(): string {

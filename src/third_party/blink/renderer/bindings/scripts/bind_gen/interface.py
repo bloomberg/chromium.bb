@@ -11,6 +11,7 @@ from .blink_v8_bridge import blink_class_name
 from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_v8_to_blink_value
 from .blink_v8_bridge import make_v8_to_blink_value_variadic
+from .blink_v8_bridge import native_value_tag
 from .blink_v8_bridge import v8_bridge_class_name
 from .code_node import EmptyNode
 from .code_node import ListNode
@@ -434,6 +435,23 @@ def bind_callback_local_vars(code_node, cg_context):
         local_vars.append(
             S("v8_receiver",
               "v8::Local<v8::Object> ${v8_receiver} = ${info}.Holder();"))
+
+    def create_definition_of_v8_return_value(symbol_node):
+        # TODO(crbug.com/1186968): Write condition directly in cond=T()
+        condition = _format(
+            "!ToV8Traits<{}>::ToV8(${script_state}, ${return_value})"
+            ".ToLocal(&${v8_return_value})",
+            native_value_tag(cg_context.return_type))
+        return SymbolDefinitionNode(symbol_node, [
+            T("v8::Local<v8::Value> ${v8_return_value};"),
+            CxxUnlikelyIfNode(cond=T(condition), body=T("return;"))
+        ])
+
+    # v8_return_value
+    if cg_context.return_type and not cg_context.return_type.unwrap().is_void:
+        local_vars.append(
+            S("v8_return_value",
+              definition_constructor=create_definition_of_v8_return_value))
 
     # throw_security_error
     template_vars["throw_security_error"] = T(
@@ -1557,16 +1575,24 @@ def make_v8_set_return_value(cg_context):
     # pass the creation context to ToV8.
     if (cg_context.member_like.extended_attributes.value_of("CheckSecurity") ==
             "ReturnValue"):
-        return T("""\
-// [CheckSecurity=ReturnValue]
-bindings::V8SetReturnValue(
-    ${info},
-    ToV8(${return_value},
-         ToV8(${blink_receiver}->contentWindow(),
-              v8::Local<v8::Object>(),
-              ${isolate}).As<v8::Object>(),
-         ${isolate}));\
-""")
+        condition = F(
+            "!ToV8Traits<{}>::ToV8(ToScriptState(To<LocalFrame>("
+            "${blink_receiver}->contentWindow()->GetFrame()), "
+            "${script_state}->World()), ${return_value})"
+            ".ToLocal(&v8_value)", native_value_tag(return_type))
+        node = CxxBlockNode([
+            T("// [CheckSecurity=ReturnValue]"),
+            T("DCHECK(IsA<LocalFrame>("
+              "${blink_receiver}->contentWindow()->GetFrame()));"),
+            T("v8::Local<v8::Value> v8_value;"),
+            CxxUnlikelyIfNode(cond=condition, body=T("return;")),
+            T("bindings::V8SetReturnValue(${info}, v8_value);"),
+        ])
+        node.accumulate(
+            CodeGenAccumulator.require_include_headers([
+                "third_party/blink/renderer/core/frame/local_frame.h",
+            ]))
+        return node
 
     return_type = return_type.unwrap(typedef=True)
     return_type_body = return_type.unwrap()
@@ -1606,27 +1632,34 @@ bindings::V8SetReturnValue(
 
     if return_type_body.is_interface:
         args = ["${info}", "${return_value}"]
-        if cg_context.for_world == cg_context.MAIN_WORLD:
-            args.append("bindings::V8ReturnValue::kMainWorld")
+        if return_type_body.identifier == "Window":
+            args.append("${blink_receiver}")
+            args.append("bindings::V8ReturnValue::kMaybeCrossOriginWindow")
         elif cg_context.constructor or cg_context.member_like.is_static:
             args.append("${creation_context}")
+        elif cg_context.for_world == cg_context.MAIN_WORLD:
+            args.append("bindings::V8ReturnValue::kMainWorld")
         else:
             args.append("${blink_receiver}")
         return T("bindings::V8SetReturnValue({});".format(", ".join(args)))
 
-    if return_type.is_frozen_array:
-        return T(
-            "bindings::V8SetReturnValue("
-            "${info}, "
-            "ToV8(${return_value}, ${creation_context_object}, ${isolate}), "
-            "bindings::V8ReturnValue::kFrozen);")
+    if return_type.is_any:
+        return T("bindings::V8SetReturnValue(${info}, ${return_value});")
+
+    if return_type.is_object:
+        return T("bindings::V8SetReturnValue("
+                 "${info}, "
+                 "${return_value}, "
+                 "bindings::V8ReturnValue::kIDLObject);")
+
+    if return_type.is_dictionary:
+        return T("bindings::V8SetReturnValue(${info}, ${return_value});")
 
     if return_type.is_promise:
         return T("bindings::V8SetReturnValue"
                  "(${info}, ${return_value}.V8Value());")
 
-    return T("bindings::V8SetReturnValue(${info}, "
-             "ToV8(${return_value}, ${creation_context_object}, ${isolate}));")
+    return T("bindings::V8SetReturnValue(${info}, ${v8_return_value});")
 
 
 def _make_empty_callback_def(cg_context, function_name):
@@ -2134,7 +2167,7 @@ def make_no_alloc_direct_call_callback_def(cg_context, function_name):
     body = func_def.body
 
     pattern = """\
-ThreadState::NoAllocationScope no_alloc_scope(ThreadState::Current());
+ThreadState::NoAllocationScope thread_no_alloc_scope(ThreadState::Current());
 v8::Object* v8_receiver = reinterpret_cast<v8::Object*>(&arg0_receiver);
 v8::Isolate* isolate = v8_receiver->GetIsolate();
 v8::Isolate::DisallowJavascriptExecutionScope no_js_exec_scope(
@@ -2142,20 +2175,54 @@ v8::Isolate::DisallowJavascriptExecutionScope no_js_exec_scope(
     v8::Isolate::DisallowJavascriptExecutionScope::CRASH_ON_FAILURE);
 {blink_class}* blink_receiver =
     ToScriptWrappable(v8_receiver)->ToImpl<{blink_class}>();
-return blink_receiver->{member_func}({blink_arguments}, arg_callback_options);\
+blink::NoAllocDirectCallScope no_alloc_direct_call_scope(
+    blink_receiver, &arg_callback_options);\
 """
     blink_class = blink_class_name(cg_context.interface)
+    body.append(TextNode(_format(pattern, blink_class=blink_class)))
+
+    blink_arguments = [arg_name for arg_type, arg_name in arg_type_and_names]
+
+    if cg_context.may_throw_exception:
+        pattern = """\
+NoAllocDirectCallExceptionState no_alloc_exception_state(
+    blink_receiver,
+    isolate,
+    ExceptionState::kExecutionContext,
+    "{interface_name}",
+    "{property_name}");\
+"""
+        body.append(
+            TextNode(
+                _format(pattern,
+                        interface_name=cg_context.class_like.identifier,
+                        property_name=func_like.identifier)))
+        blink_arguments.append("no_alloc_exception_state")
+        body.accumulate(
+            CodeGenAccumulator.require_include_headers([
+                "third_party/blink/renderer/platform/bindings/no_alloc_direct_call_exception_state.h"
+            ]))
+
     member_func = backward_compatible_api_func(cg_context)
-    blink_arguments = ", ".join(
-        [arg_name for arg_type, arg_name in arg_type_and_names])
     body.append(
         TextNode(
-            _format(pattern,
-                    blink_class=blink_class,
+            _format("return blink_receiver->{member_func}({blink_arguments});",
                     member_func=member_func,
-                    blink_arguments=blink_arguments)))
+                    blink_arguments=", ".join(blink_arguments))))
 
     return func_def
+
+
+def make_no_alloc_direct_call_flush_deferred_actions(cg_context):
+    if "NoAllocDirectCall" not in cg_context.operation.extended_attributes:
+        return None
+
+    return CxxUnlikelyIfNode(
+        cond="UNLIKELY(${blink_receiver}->HasDeferredActions())",
+        body=[
+            TextNode("${blink_receiver}->FlushDeferredActions();"),
+            TextNode("return;"),
+        ])
 
 
 def make_operation_entry(cg_context):
@@ -2185,6 +2252,8 @@ def make_operation_function_def(cg_context, function_name):
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
+        EmptyNode(),
+        make_no_alloc_direct_call_flush_deferred_actions(cg_context),
         EmptyNode(),
     ])
 
@@ -3196,6 +3265,38 @@ NamedPropsObjNamedGetterCallback(property_name, ${info});
     return func_def
 
 
+def make_named_props_obj_indexed_setter_callback(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    arg_decls = [
+        "uint32_t index",
+        "v8::Local<v8::Value> v8_property_value",
+        "const v8::PropertyCallbackInfo<v8::Value>& info",
+    ]
+    arg_names = ["index", "v8_property_value", "info"]
+
+    func_def = _make_interceptor_callback_def(
+        cg_context, function_name, arg_decls, arg_names, None,
+        "NamedPropertiesObject_IndexedPropertySetter")
+    body = func_def.body
+
+    body.append(
+        TextNode("""\
+// 3.6.4.2. [[DefineOwnProperty]]
+// https://heycam.github.io/webidl/#named-properties-object-defineownproperty
+bindings::V8SetReturnValue(${info}, nullptr);
+if (${info}.ShouldThrowOnError()) {
+  ExceptionState exception_state(${info}.GetIsolate(),
+                                 ExceptionState::kIndexedSetterContext,
+                                 "${interface.identifier}");
+  exception_state.ThrowTypeError("Named property setter is not supported.");
+}
+"""))
+
+    return func_def
+
+
 def make_named_props_obj_indexed_deleter_callback(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
     assert isinstance(function_name, str)
@@ -3250,7 +3351,7 @@ if (${info}.ShouldThrowOnError()) {
   ExceptionState exception_state(${info}.GetIsolate(),
                                  ExceptionState::kIndexedSetterContext,
                                  "${interface.identifier}");
-  exception_state.ThrowTypeError("Named property deleter is not supported.");
+  exception_state.ThrowTypeError("Named property setter is not supported.");
 }
 """))
 
@@ -3306,6 +3407,38 @@ def make_named_props_obj_named_getter_callback(cg_context, function_name):
 // TODO(yukishiino): Update the following hard-coded call to an appropriate
 // one.
 V8Window::NamedPropertyGetterCustom(${blink_property_name}, ${info});
+"""))
+
+    return func_def
+
+
+def make_named_props_obj_named_setter_callback(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    arg_decls = [
+        "v8::Local<v8::Name> v8_property_name",
+        "v8::Local<v8::Value> v8_property_value",
+        "const v8::PropertyCallbackInfo<v8::Value>& info",
+    ]
+    arg_names = ["v8_property_name", "v8_property_value", "info"]
+
+    func_def = _make_interceptor_callback_def(
+        cg_context, function_name, arg_decls, arg_names, None,
+        "NamedPropertiesObject_NamedPropertySetter")
+    body = func_def.body
+
+    body.append(
+        TextNode("""\
+// 3.6.4.2. [[DefineOwnProperty]]
+// https://heycam.github.io/webidl/#named-properties-object-defineownproperty
+bindings::V8SetReturnValue(${info}, nullptr);
+if (${info}.ShouldThrowOnError()) {
+  ExceptionState exception_state(${info}.GetIsolate(),
+                                 ExceptionState::kNamedSetterContext,
+                                 "${interface.identifier}");
+  exception_state.ThrowTypeError("Named property setter is not supported.");
+}
 """))
 
     return func_def
@@ -5821,6 +5954,8 @@ def make_named_properties_object_callbacks_and_install_node(cg_context):
     func_defs = [
         make_named_props_obj_named_getter_callback(
             cg_context, "NamedPropsObjNamedGetterCallback"),
+        make_named_props_obj_named_setter_callback(
+            cg_context, "NamedPropsObjNamedSetterCallback"),
         make_named_props_obj_named_deleter_callback(
             cg_context, "NamedPropsObjNamedDeleterCallback"),
         make_named_props_obj_named_definer_callback(
@@ -5829,6 +5964,8 @@ def make_named_properties_object_callbacks_and_install_node(cg_context):
             cg_context, "NamedPropsObjNamedDescriptorCallback"),
         make_named_props_obj_indexed_getter_callback(
             cg_context, "NamedPropsObjIndexedGetterCallback"),
+        make_named_props_obj_indexed_setter_callback(
+            cg_context, "NamedPropsObjIndexedSetterCallback"),
         make_named_props_obj_indexed_deleter_callback(
             cg_context, "NamedPropsObjIndexedDeleterCallback"),
         make_named_props_obj_indexed_definer_callback(
@@ -5845,7 +5982,7 @@ def make_named_properties_object_callbacks_and_install_node(cg_context):
 ${npo_prototype_template}->SetHandler(
     v8::NamedPropertyHandlerConfiguration(
         NamedPropsObjNamedGetterCallback,
-        nullptr,  // setter
+        NamedPropsObjNamedSetterCallback,
         nullptr,  // query
         NamedPropsObjNamedDeleterCallback,
         nullptr,  // enumerator
@@ -5859,7 +5996,7 @@ ${npo_prototype_template}->SetHandler(
 ${npo_prototype_template}->SetHandler(
     v8::IndexedPropertyHandlerConfiguration(
         NamedPropsObjIndexedGetterCallback,
-        nullptr,  // setter
+        NamedPropsObjIndexedSetterCallback,
         nullptr,  // query
         NamedPropsObjIndexedDeleterCallback,
         nullptr,  // enumerator
@@ -6971,6 +7108,7 @@ def generate_class_like(class_like):
     impl_source_node.accumulator.add_include_headers([
         "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h",
         "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h",
+        "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h",
         "third_party/blink/renderer/bindings/core/v8/v8_set_return_value_for_core.h",
         "third_party/blink/renderer/platform/bindings/exception_messages.h",
         "third_party/blink/renderer/platform/bindings/idl_member_installer.h",
@@ -7048,8 +7186,24 @@ def generate_class_like(class_like):
             EmptyNode(),
         ])
 
+    debugging_namespace_name = name_style.namespace("v8",
+                                                    class_like.identifier)
     impl_source_blink_ns.body.extend([
-        CxxNamespaceNode(name="", body=callback_defs),
+        CxxNamespaceNode(
+            name="",
+            body=[
+                # Enclose the implementations with a namespace just in order to
+                # include the class_like name in a stacktrace, such as
+                #
+                #   blink::(anonymous namespace)::v8_class_like::XxxCallback
+                #
+                # Note that XxxCallback doesn't include the class_like name.
+                CxxNamespaceNode(name=debugging_namespace_name,
+                                 body=callback_defs),
+                EmptyNode(),
+                TextNode(
+                    "using namespace {};".format(debugging_namespace_name)),
+            ]),
         EmptyNode(),
         installer_function_defs,
         EmptyNode(),

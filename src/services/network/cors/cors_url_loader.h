@@ -40,7 +40,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   CorsURLLoader(
       mojo::PendingReceiver<mojom::URLLoader> loader_receiver,
       int32_t process_id,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       DeleteCallback delete_callback,
@@ -54,7 +53,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       PreflightController* preflight_controller,
       const base::flat_set<std::string>* allowed_exempt_headers,
       bool allow_any_cors_exempt_header,
-      const net::IsolationInfo& isolation_info);
+      const net::IsolationInfo& isolation_info,
+      mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer);
 
   ~CorsURLLoader() override;
 
@@ -74,6 +74,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   void ResumeReadingBodyFromNet() override;
 
   // mojom::URLLoaderClient overrides:
+  void OnReceiveEarlyHints(mojom::EarlyHintsPtr early_hints) override;
   void OnReceiveResponse(mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          mojom::URLResponseHeadPtr head) override;
@@ -104,7 +105,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
  private:
   void StartRequest();
   void StartNetworkRequest(int net_error,
-                           base::Optional<CorsErrorStatus> status);
+                           base::Optional<CorsErrorStatus> status,
+                           bool has_authorization_covered_by_wildcard);
 
   // Called when there is a connection error on the upstream pipe used for the
   // actual request.
@@ -132,7 +134,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   // We need to save these for redirect, and DevTools.
   const int32_t process_id_;
-  const int32_t routing_id_;
   const int32_t request_id_;
   const uint32_t options_;
 
@@ -194,6 +195,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   net::IsolationInfo isolation_info_;
 
   bool has_cors_been_affected_by_isolated_world_origin_ = false;
+  bool has_authorization_covered_by_wildcard_ = false;
+
+  mojo::Remote<mojom::DevToolsObserver> devtools_observer_;
 
   // Used to run asynchronous class instance bound callbacks safely.
   base::WeakPtrFactory<CorsURLLoader> weak_factory_{this};

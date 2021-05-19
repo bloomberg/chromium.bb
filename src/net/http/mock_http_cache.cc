@@ -55,13 +55,10 @@ int GetTestModeForEntry(const std::string& key) {
   // If we split the cache by top frame origin, then the origin is prepended to
   // the key. Skip to the second url in the key.
   if (base::StartsWith(url, "_dk_", base::CompareCase::SENSITIVE)) {
-    auto const pos = url.find(" http");
+    auto pos = url.find(" http");
     url = url.substr(pos + 1);
-    if (base::FeatureList::IsEnabled(
-            net::features::kAppendFrameOriginToNetworkIsolationKey)) {
-      auto const pos = url.find(" http");
-      url = url.substr(pos + 1);
-    }
+    pos = url.find(" http");
+    url = url.substr(pos + 1);
   }
 
   const MockTransaction* t = FindMockTransaction(GURL(url));
@@ -703,7 +700,7 @@ int MockBackendFactory::CreateBackend(
     NetLog* net_log,
     std::unique_ptr<disk_cache::Backend>* backend,
     CompletionOnceCallback callback) {
-  backend->reset(new MockDiskCache());
+  *backend = std::make_unique<MockDiskCache>();
   return OK;
 }
 
@@ -873,7 +870,7 @@ int MockBackendNoCbFactory::CreateBackend(
     NetLog* net_log,
     std::unique_ptr<disk_cache::Backend>* backend,
     CompletionOnceCallback callback) {
-  backend->reset(new MockDiskCacheNoCB());
+  *backend = std::make_unique<MockDiskCacheNoCB>();
   return OK;
 }
 
@@ -890,7 +887,7 @@ int MockBlockingBackendFactory::CreateBackend(
     CompletionOnceCallback callback) {
   if (!block_) {
     if (!fail_)
-      backend->reset(new MockDiskCache());
+      *backend = std::make_unique<MockDiskCache>();
     return Result();
   }
 
@@ -903,7 +900,7 @@ void MockBlockingBackendFactory::FinishCreation() {
   block_ = false;
   if (!callback_.is_null()) {
     if (!fail_)
-      backend_->reset(new MockDiskCache());
+      *backend_ = std::make_unique<MockDiskCache>();
     // Running the callback might delete |this|.
     std::move(callback_).Run(Result());
   }

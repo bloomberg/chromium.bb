@@ -61,8 +61,6 @@ target(tracing_lib_type, "cpp") {
       "perfetto/interning_index.h",
       "perfetto/perfetto_config.cc",
       "perfetto/perfetto_config.h",
-      "perfetto/perfetto_platform.cc",
-      "perfetto/perfetto_platform.h",
       "perfetto/perfetto_producer.cc",
       "perfetto/perfetto_producer.h",
       "perfetto/perfetto_session.cc",
@@ -78,12 +76,12 @@ target(tracing_lib_type, "cpp") {
       "perfetto/system_producer.cc",
       "perfetto/system_producer.h",
       "perfetto/system_trace_writer.h",
-      "perfetto/task_runner.cc",
-      "perfetto/task_runner.h",
       "perfetto/trace_event_data_source.cc",
       "perfetto/trace_event_data_source.h",
       "perfetto/trace_packet_tokenizer.cc",
       "perfetto/trace_packet_tokenizer.h",
+      "perfetto/trace_string_lookup.cc",
+      "perfetto/trace_string_lookup.h",
       "perfetto/trace_time.cc",
       "perfetto/trace_time.h",
       "perfetto/traced_value_proto_writer.cc",
@@ -159,6 +157,10 @@ target(tracing_lib_type, "cpp") {
           "system_tracing_service.h",
         ]
       }
+    }
+
+    if (is_chromeos_ash) {
+      deps += [ "//chromeos/dbus/constants" ]
     }
 
     if (is_android && can_unwind_with_cfi_table && is_official_build) {

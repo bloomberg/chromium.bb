@@ -14,60 +14,25 @@
 
 #include "src/writer/hlsl/generator_impl.h"
 
-#include <limits>
-#include <sstream>
 #include <utility>
 #include <vector>
 
-#include "src/ast/array_accessor_expression.h"
-#include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/bitcast_expression.h"
-#include "src/ast/bool_literal.h"
-#include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
-#include "src/ast/case_statement.h"
 #include "src/ast/constant_id_decoration.h"
-#include "src/ast/else_statement.h"
 #include "src/ast/fallthrough_statement.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/if_statement.h"
-#include "src/ast/loop_statement.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/module.h"
-#include "src/ast/return_statement.h"
-#include "src/ast/sint_literal.h"
-#include "src/ast/struct.h"
-#include "src/ast/switch_statement.h"
-#include "src/ast/uint_literal.h"
-#include "src/ast/unary_op_expression.h"
-#include "src/ast/variable.h"
+#include "src/ast/internal_decoration.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/debug.h"
-#include "src/program_builder.h"
+#include "src/semantic/array.h"
 #include "src/semantic/call.h"
-#include "src/semantic/expression.h"
 #include "src/semantic/function.h"
 #include "src/semantic/member_accessor_expression.h"
+#include "src/semantic/struct.h"
 #include "src/semantic/variable.h"
 #include "src/type/access_control_type.h"
-#include "src/type/alias_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
+#include "src/type/depth_texture_type.h"
 #include "src/type/multisampled_texture_type.h"
-#include "src/type/pointer_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/sampler_type.h"
 #include "src/type/storage_texture_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/texture_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type/void_type.h"
 #include "src/writer/append_vector.h"
 #include "src/writer/float_to_string.h"
 
@@ -116,6 +81,29 @@ const char* image_format_to_rwtexture_type(type::ImageFormat image_format) {
       return nullptr;
   }
 }
+
+// Helper for writing " : register(RX, spaceY)", where R is the register, X is
+// the binding point binding value, and Y is the binding point group value.
+struct RegisterAndSpace {
+  RegisterAndSpace(char r, ast::Variable::BindingPoint bp)
+      : reg(r), binding_point(bp) {}
+
+  char const reg;
+  ast::Variable::BindingPoint const binding_point;
+};
+
+std::ostream& operator<<(std::ostream& s, const RegisterAndSpace& rs) {
+  s << " : register(" << rs.reg << rs.binding_point.binding->value()
+    << ", space" << rs.binding_point.group->value() << ")";
+  return s;
+}
+
+// Helper for writting a '(' on construction and a ')' destruction.
+struct ScopedParen {
+  std::ostream& s_;
+  explicit ScopedParen(std::ostream& s) : s_(s) { s << "("; }
+  ~ScopedParen() { s_ << ")"; }
+};
 
 }  // namespace
 
@@ -382,12 +370,13 @@ bool GeneratorImpl::EmitBinary(std::ostream& pre,
       ((lhs_type->Is<type::Vector>() && rhs_type->Is<type::Matrix>()) ||
        (lhs_type->Is<type::Matrix>() && rhs_type->Is<type::Vector>()) ||
        (lhs_type->Is<type::Matrix>() && rhs_type->Is<type::Matrix>()))) {
+    // Matrices are transposed, so swap LHS and RHS.
     out << "mul(";
-    if (!EmitExpression(pre, out, expr->lhs())) {
+    if (!EmitExpression(pre, out, expr->rhs())) {
       return false;
     }
     out << ", ";
-    if (!EmitExpression(pre, out, expr->rhs())) {
+    if (!EmitExpression(pre, out, expr->lhs())) {
       return false;
     }
     out << ")";
@@ -543,6 +532,8 @@ bool GeneratorImpl::EmitCall(std::ostream& pre,
       return EmitDataPackingCall(pre, out, expr, intrinsic);
     } else if (intrinsic->IsDataUnpacking()) {
       return EmitDataUnpackingCall(pre, out, expr, intrinsic);
+    } else if (intrinsic->IsBarrier()) {
+      return EmitBarrierCall(pre, out, intrinsic);
     }
     auto name = generate_builtin_name(intrinsic);
     if (name.empty()) {
@@ -754,6 +745,23 @@ bool GeneratorImpl::EmitDataUnpackingCall(
   return true;
 }
 
+bool GeneratorImpl::EmitBarrierCall(std::ostream&,
+                                    std::ostream& out,
+                                    const semantic::Intrinsic* intrinsic) {
+  // TODO(crbug.com/tint/661): Combine sequential barriers to a single
+  // instruction.
+  if (intrinsic->Type() == semantic::IntrinsicType::kWorkgroupBarrier) {
+    out << "GroupMemoryBarrierWithGroupSync()";
+  } else if (intrinsic->Type() == semantic::IntrinsicType::kStorageBarrier) {
+    out << "DeviceMemoryBarrierWithGroupSync()";
+  } else {
+    TINT_UNREACHABLE(diagnostics_) << "unexpected barrier intrinsic type "
+                                   << semantic::str(intrinsic->Type());
+    return false;
+  }
+  return true;
+}
+
 bool GeneratorImpl::EmitTextureCall(std::ostream& pre,
                                     std::ostream& out,
                                     ast::CallExpression* expr,
@@ -770,7 +778,10 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& pre,
   };
 
   auto* texture = arg(Usage::kTexture);
-  assert(texture);
+  if (!texture) {
+    TINT_ICE(diagnostics_) << "missing texture argument";
+    return false;
+  }
 
   auto* texture_type = TypeOf(texture)->UnwrapAll()->As<type::Texture>();
 
@@ -928,8 +939,10 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& pre,
         pre << dims;
       } else {
         static constexpr char xyzw[] = {'x', 'y', 'z', 'w'};
-        assert(num_dimensions > 0);
-        assert(num_dimensions <= 4);
+        if (num_dimensions < 0 || num_dimensions > 4) {
+          TINT_ICE(diagnostics_) << "vector dimensions are " << num_dimensions;
+          return false;
+        }
         for (int i = 0; i < num_dimensions; i++) {
           if (i > 0) {
             pre << ", ";
@@ -974,9 +987,7 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& pre,
       break;
     case semantic::IntrinsicType::kTextureLoad:
       out << ".Load(";
-      if (!texture_type->Is<type::StorageTexture>()) {
-        pack_mip_in_coords = true;
-      }
+      pack_mip_in_coords = true;
       break;
     case semantic::IntrinsicType::kTextureStore:
       out << "[";
@@ -995,7 +1006,10 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& pre,
   }
 
   auto* param_coords = arg(Usage::kCoords);
-  assert(param_coords);
+  if (!param_coords) {
+    TINT_ICE(diagnostics_) << "missing coords argument";
+    return false;
+  }
 
   auto emit_vector_appended_with_i32_zero = [&](tint::ast::Expression* vector) {
     auto* i32 = builder_.create<type::I32>();
@@ -1215,7 +1229,16 @@ bool GeneratorImpl::EmitScalarConstructor(
 bool GeneratorImpl::EmitTypeConstructor(std::ostream& pre,
                                         std::ostream& out,
                                         ast::TypeConstructorExpression* expr) {
-  if (expr->type()->Is<type::Array>()) {
+  // If the type constructor is empty then we need to construct with the zero
+  // value for all components.
+  if (expr->values().empty()) {
+    return EmitZeroValue(out, expr->type());
+  }
+
+  bool brackets =
+      expr->type()->UnwrapAliasIfNeeded()->IsAnyOf<type::Array, type::Struct>();
+
+  if (brackets) {
     out << "{";
   } else {
     if (!EmitType(out, expr->type(), "")) {
@@ -1224,31 +1247,19 @@ bool GeneratorImpl::EmitTypeConstructor(std::ostream& pre,
     out << "(";
   }
 
-  // If the type constructor is empty then we need to construct with the zero
-  // value for all components.
-  if (expr->values().empty()) {
-    if (!EmitZeroValue(out, expr->type())) {
+  bool first = true;
+  for (auto* e : expr->values()) {
+    if (!first) {
+      out << ", ";
+    }
+    first = false;
+
+    if (!EmitExpression(pre, out, e)) {
       return false;
     }
-  } else {
-    bool first = true;
-    for (auto* e : expr->values()) {
-      if (!first) {
-        out << ", ";
-      }
-      first = false;
-
-      if (!EmitExpression(pre, out, e)) {
-        return false;
-      }
-    }
   }
 
-  if (expr->type()->Is<type::Array>()) {
-    out << "}";
-  } else {
-    out << ")";
-  }
+  out << (brackets ? "}" : ")");
   return true;
 }
 
@@ -1452,6 +1463,11 @@ bool GeneratorImpl::EmitFunction(std::ostream& out, ast::Function* func) {
 
   auto* func_sem = builder_.Sem().Get(func);
 
+  if (func->find_decoration<ast::InternalDecoration>()) {
+    // An internal function. Do not emit.
+    return true;
+  }
+
   // TODO(dsinclair): This could be smarter. If the input/outputs for multiple
   // entry points are the same we could generate a single struct and then have
   // this determine it's the same struct and just emit once.
@@ -1534,11 +1550,13 @@ bool GeneratorImpl::EmitFunctionInternal(std::ostream& out,
     }
     first = false;
 
-    if (!EmitType(out, v->type(), builder_.Symbols().NameFor(v->symbol()))) {
+    auto* type = builder_.Sem().Get(v)->Type();
+
+    if (!EmitType(out, type, builder_.Symbols().NameFor(v->symbol()))) {
       return false;
     }
     // Array name is output as part of the type
-    if (!v->type()->Is<type::Array>()) {
+    if (!type->Is<type::Array>()) {
       out << " " << builder_.Symbols().NameFor(v->symbol());
     }
   }
@@ -1560,11 +1578,12 @@ bool GeneratorImpl::EmitEntryPointData(
     std::ostream& out,
     ast::Function* func,
     std::unordered_set<Symbol>& emitted_globals) {
-  std::vector<std::pair<ast::Variable*, ast::VariableDecoration*>> in_variables;
-  std::vector<std::pair<ast::Variable*, ast::VariableDecoration*>> outvariables;
+  std::vector<std::pair<const ast::Variable*, ast::Decoration*>> in_variables;
+  std::vector<std::pair<const ast::Variable*, ast::Decoration*>> outvariables;
   auto* func_sem = builder_.Sem().Get(func);
   auto func_sym = func->symbol();
 
+  // TODO(crbug.com/tint/697): Remove this.
   for (auto data : func_sem->ReferencedLocationVariables()) {
     auto* var = data.first;
     auto* decl = var->Declaration();
@@ -1577,6 +1596,7 @@ bool GeneratorImpl::EmitEntryPointData(
     }
   }
 
+  // TODO(crbug.com/tint/697): Remove this.
   for (auto data : func_sem->ReferencedBuiltinVariables()) {
     auto* var = data.first;
     auto* decl = var->Declaration();
@@ -1592,29 +1612,18 @@ bool GeneratorImpl::EmitEntryPointData(
   bool emitted_uniform = false;
   for (auto data : func_sem->ReferencedUniformVariables()) {
     auto* var = data.first;
+    auto& binding_point = data.second;
     auto* decl = var->Declaration();
 
     if (!emitted_globals.emplace(decl->symbol()).second) {
       continue;  // Global already emitted
     }
 
-    // TODO(dsinclair): We're using the binding to make up the buffer number but
-    // we should instead be using a provided mapping that uses both buffer and
-    // set. https://bugs.chromium.org/p/tint/issues/detail?id=104
-    auto* binding = data.second.binding;
-    if (binding == nullptr) {
-      diagnostics_.add_error(
-          "unable to find binding information for uniform: " +
-          builder_.Symbols().NameFor(decl->symbol()));
-      return false;
-    }
-    // auto* set = data.second.set;
-
-    auto* type = decl->type()->UnwrapIfNeeded();
+    auto* type = var->Type()->UnwrapIfNeeded();
     if (auto* strct = type->As<type::Struct>()) {
       out << "ConstantBuffer<" << builder_.Symbols().NameFor(strct->symbol())
           << "> " << builder_.Symbols().NameFor(decl->symbol())
-          << " : register(b" << binding->value() << ");" << std::endl;
+          << RegisterAndSpace('b', binding_point) << ";" << std::endl;
     } else {
       // TODO(dsinclair): There is outstanding spec work to require all uniform
       // buffers to be [[block]] decorated, which means structs. This is
@@ -1623,7 +1632,7 @@ bool GeneratorImpl::EmitEntryPointData(
       // Relevant: https://github.com/gpuweb/gpuweb/issues/1004
       //           https://github.com/gpuweb/gpuweb/issues/1008
       auto name = "cbuffer_" + builder_.Symbols().NameFor(decl->symbol());
-      out << "cbuffer " << name << " : register(b" << binding->value() << ") {"
+      out << "cbuffer " << name << RegisterAndSpace('b', binding_point) << " {"
           << std::endl;
 
       increment_indent();
@@ -1646,14 +1655,14 @@ bool GeneratorImpl::EmitEntryPointData(
   bool emitted_storagebuffer = false;
   for (auto data : func_sem->ReferencedStorageBufferVariables()) {
     auto* var = data.first;
+    auto& binding_point = data.second;
     auto* decl = var->Declaration();
 
     if (!emitted_globals.emplace(decl->symbol()).second) {
       continue;  // Global already emitted
     }
 
-    auto* binding = data.second.binding;
-    auto* ac = decl->type()->As<type::AccessControl>();
+    auto* ac = var->Type()->As<type::AccessControl>();
     if (ac == nullptr) {
       diagnostics_.add_error("access control type required for storage buffer");
       return false;
@@ -1663,14 +1672,15 @@ bool GeneratorImpl::EmitEntryPointData(
       out << "RW";
     }
     out << "ByteAddressBuffer " << builder_.Symbols().NameFor(decl->symbol())
-        << " : register(" << (ac->IsReadOnly() ? "t" : "u") << binding->value()
-        << ");" << std::endl;
+        << RegisterAndSpace(ac->IsReadOnly() ? 't' : 'u', binding_point) << ";"
+        << std::endl;
     emitted_storagebuffer = true;
   }
   if (emitted_storagebuffer) {
     out << std::endl;
   }
 
+  // TODO(crbug.com/tint/697): Remove this.
   if (!in_variables.empty()) {
     auto in_struct_name = generate_name(builder_.Symbols().NameFor(func_sym) +
                                         "_" + kInStructNameSuffix);
@@ -1685,10 +1695,10 @@ bool GeneratorImpl::EmitEntryPointData(
     for (auto& data : in_variables) {
       auto* var = data.first;
       auto* deco = data.second;
+      auto* type = builder_.Sem().Get(var)->Type();
 
       make_indent(out);
-      if (!EmitType(out, var->type(),
-                    builder_.Symbols().NameFor(var->symbol()))) {
+      if (!EmitType(out, type, builder_.Symbols().NameFor(var->symbol()))) {
         return false;
       }
 
@@ -1720,6 +1730,7 @@ bool GeneratorImpl::EmitEntryPointData(
     out << "};" << std::endl << std::endl;
   }
 
+  // TODO(crbug.com/tint/697): Remove this.
   if (!outvariables.empty()) {
     auto outstruct_name = generate_name(builder_.Symbols().NameFor(func_sym) +
                                         "_" + kOutStructNameSuffix);
@@ -1733,10 +1744,10 @@ bool GeneratorImpl::EmitEntryPointData(
     for (auto& data : outvariables) {
       auto* var = data.first;
       auto* deco = data.second;
+      auto* type = builder_.Sem().Get(var)->Type();
 
       make_indent(out);
-      if (!EmitType(out, var->type(),
-                    builder_.Symbols().NameFor(var->symbol()))) {
+      if (!EmitType(out, type, builder_.Symbols().NameFor(var->symbol()))) {
         return false;
       }
 
@@ -1777,21 +1788,46 @@ bool GeneratorImpl::EmitEntryPointData(
     for (auto* var : func_sem->ReferencedModuleVariables()) {
       auto* decl = var->Declaration();
 
-      auto* unwrapped_type = decl->type()->UnwrapAll();
-      if (!unwrapped_type->Is<type::Texture>() &&
-          !unwrapped_type->Is<type::Sampler>()) {
-        continue;  // Not interested in this type
-      }
-
+      auto* unwrapped_type = var->Type()->UnwrapAll();
       if (!emitted_globals.emplace(decl->symbol()).second) {
         continue;  // Global already emitted
       }
 
-      if (!EmitType(out, decl->type(), "")) {
+      if (var->StorageClass() == ast::StorageClass::kWorkgroup) {
+        out << "groupshared ";
+      } else if (!unwrapped_type->IsAnyOf<type::Texture, type::Sampler>()) {
+        continue;  // Not interested in this type
+      }
+
+      if (!EmitType(out, var->Type(), "")) {
         return false;
       }
-      out << " " << namer_.NameFor(builder_.Symbols().NameFor(decl->symbol()))
-          << ";" << std::endl;
+      out << " " << namer_.NameFor(builder_.Symbols().NameFor(decl->symbol()));
+
+      const char* register_space = nullptr;
+
+      if (unwrapped_type->Is<type::Texture>()) {
+        register_space = "t";
+        if (unwrapped_type->Is<type::StorageTexture>()) {
+          if (auto* ac = var->Type()
+                             ->UnwrapAliasIfNeeded()
+                             ->As<type::AccessControl>()) {
+            if (!ac->IsReadOnly()) {
+              register_space = "u";
+            }
+          }
+        }
+      } else if (unwrapped_type->Is<type::Sampler>()) {
+        register_space = "s";
+      }
+
+      if (register_space) {
+        auto bp = decl->binding_point();
+        out << " : register(" << register_space << bp.binding->value()
+            << ", space" << bp.group->value() << ")";
+      }
+
+      out << ";" << std::endl;
 
       add_newline = true;
     }
@@ -1854,26 +1890,54 @@ bool GeneratorImpl::EmitEntryPointFunction(std::ostream& out,
   auto outdata = ep_sym_to_out_data_.find(current_ep_sym_);
   bool has_outdata = outdata != ep_sym_to_out_data_.end();
   if (has_outdata) {
+    // TODO(crbug.com/tint/697): Remove this.
+    if (!func->return_type()->Is<type::Void>()) {
+      TINT_ICE(diagnostics_) << "Mixing module-scope variables and return "
+                                "types for shader outputs";
+    }
     out << outdata->second.struct_name;
   } else {
-    out << "void";
+    out << func->return_type()->FriendlyName(builder_.Symbols());
   }
   // TODO(dsinclair): This should output the remapped name
   out << " " << namer_.NameFor(builder_.Symbols().NameFor(current_ep_sym_))
       << "(";
 
+  bool first = true;
+  // TODO(crbug.com/tint/697): Remove this.
   auto in_data = ep_sym_to_in_data_.find(current_ep_sym_);
   if (in_data != ep_sym_to_in_data_.end()) {
     out << in_data->second.struct_name << " " << in_data->second.var_name;
+    first = false;
   }
+
+  // Emit entry point parameters.
+  for (auto* var : func->params()) {
+    auto* type = builder_.Sem().Get(var)->Type();
+    if (!type->Is<type::Struct>()) {
+      TINT_ICE(diagnostics_) << "Unsupported non-struct entry point parameter";
+    }
+
+    if (!first) {
+      out << ", ";
+    }
+    first = false;
+
+    if (!EmitType(out, type, "")) {
+      return false;
+    }
+
+    out << " " << builder_.Symbols().NameFor(var->symbol());
+  }
+
   out << ") {" << std::endl;
 
   increment_indent();
 
   if (has_outdata) {
     make_indent(out);
-    out << outdata->second.struct_name << " " << outdata->second.var_name << ";"
-        << std::endl;
+    out << outdata->second.struct_name << " " << outdata->second.var_name
+        << " = (" << outdata->second.struct_name << ")0;" << std::endl;
   }
 
   generating_entry_point_ = true;
@@ -1927,8 +1991,23 @@ bool GeneratorImpl::EmitZeroValue(std::ostream& out, type::Type* type) {
   } else if (type->Is<type::U32>()) {
     out << "0u";
   } else if (auto* vec = type->As<type::Vector>()) {
-    return EmitZeroValue(out, vec->type());
+    if (!EmitType(out, type, "")) {
+      return false;
+    }
+    ScopedParen sp(out);
+    for (uint32_t i = 0; i < vec->size(); i++) {
+      if (i != 0) {
+        out << ", ";
+      }
+      if (!EmitZeroValue(out, vec->type())) {
+        return false;
+      }
+    }
   } else if (auto* mat = type->As<type::Matrix>()) {
+    if (!EmitType(out, type, "")) {
+      return false;
+    }
+    ScopedParen sp(out);
     for (uint32_t i = 0; i < (mat->rows() * mat->columns()); i++) {
       if (i != 0) {
         out << ", ";
@@ -1937,6 +2016,19 @@ bool GeneratorImpl::EmitZeroValue(std::ostream& out, type::Type* type) {
         return false;
       }
     }
+  } else if (auto* str = type->As<type::Struct>()) {
+    out << "{";
+    bool first = true;
+    for (auto* member : str->impl()->members()) {
+      if (!first) {
+        out << ", ";
+      }
+      first = false;
+      if (!EmitZeroValue(out, member->type())) {
+        return false;
+      }
+    }
+    out << "}";
   } else {
     diagnostics_.add_error("Invalid type for zero emission: " +
                            type->type_name());
@@ -2013,7 +2105,7 @@ bool GeneratorImpl::EmitLoop(std::ostream& out, ast::LoopStatement* stmt) {
         if (var->constructor() != nullptr) {
           out << constructor_out.str();
         } else {
-          if (!EmitZeroValue(out, var->type())) {
+          if (!EmitZeroValue(out, builder_.Sem().Get(var)->Type())) {
             return false;
           }
         }
@@ -2061,11 +2153,13 @@ std::string GeneratorImpl::generate_storage_buffer_index_expression(
         auto* str_type = str->impl();
         auto* str_member = str_type->get_member(mem->member()->symbol());
 
-        if (!str_member->has_offset_decoration()) {
-          diagnostics_.add_error("missing offset decoration for struct member");
+        auto* sem_mem = builder_.Sem().Get(str_member);
+        if (!sem_mem) {
+          TINT_ICE(diagnostics_) << "struct member missing semantic info";
           return "";
         }
-        out << str_member->offset();
+
+        out << sem_mem->Offset();
 
       } else if (res_type->Is<type::Vector>()) {
         auto swizzle = builder_.Sem().Get(mem)->Swizzle();
@@ -2075,9 +2169,9 @@ std::string GeneratorImpl::generate_storage_buffer_index_expression(
         // This must be a single element swizzle if we've got a vector at this
         // point.
         if (swizzle.size() != 1) {
-          diagnostics_.add_error(
-              "Encountered multi-element swizzle when should have only one "
-              "level");
+          TINT_ICE(diagnostics_)
+              << "Encountered multi-element swizzle when should have only one "
+                 "level";
           return "";
         }
 
@@ -2086,8 +2180,8 @@ std::string GeneratorImpl::generate_storage_buffer_index_expression(
         // f64 types.
         out << "(4 * " << swizzle[0] << ")";
       } else {
-        diagnostics_.add_error("Invalid result type for member accessor: " +
-                               res_type->type_name());
+        TINT_ICE(diagnostics_) << "Invalid result type for member accessor: "
+                               << res_type->type_name();
         return "";
       }
 
@@ -2097,7 +2191,12 @@ std::string GeneratorImpl::generate_storage_buffer_index_expression(
 
       out << "(";
       if (auto* arr = ary_type->As<type::Array>()) {
-        out << arr->array_stride();
+        auto* sem_arr = builder_.Sem().Get(arr);
+        if (!sem_arr) {
+          TINT_ICE(diagnostics_) << "array type missing semantic info";
+          return "";
+        }
+        out << sem_arr->Stride();
       } else if (ary_type->Is<type::Vector>()) {
         // TODO(dsinclair): This is a hack. Our vectors can only be f32, i32
         // or u32 which are all 4 bytes. When we get f16 or other types we'll
@@ -2159,6 +2258,10 @@ bool GeneratorImpl::EmitStorageBufferAccessor(std::ostream& pre,
       out << "asint(";
     } else if (result_type->is_unsigned_scalar_or_vector()) {
       out << "asuint(";
+    } else {
+      TINT_UNIMPLEMENTED(diagnostics_)
+          << result_type->FriendlyName(builder_.Symbols());
+      return false;
     }
   }
 
@@ -2203,8 +2306,8 @@ bool GeneratorImpl::EmitStorageBufferAccessor(std::ostream& pre,
       return true;
     }
 
-    out << "uint" << mat->rows() << "x" << mat->columns() << "(";
-
+    out << "uint" << mat->rows() << "x" << mat->columns();
+    ScopedParen p(out);
     for (uint32_t i = 0; i < mat->columns(); i++) {
       if (i != 0) {
         out << ", ";
@@ -2213,29 +2316,22 @@ bool GeneratorImpl::EmitStorageBufferAccessor(std::ostream& pre,
       out << buffer_name << "." << access_method << "(" << idx << " + "
           << (i * stride) << ")";
     }
-
-    // Close the matrix type and outer cast
-    out << "))";
-
-    return true;
-  }
-
-  out << buffer_name << "." << access_method << "(" << idx;
-  if (is_store) {
-    out << ", asuint(";
-    if (!EmitExpression(pre, out, rhs)) {
-      return false;
+  } else {
+    out << buffer_name << "." << access_method;
+    ScopedParen p(out);
+    out << idx;
+    if (is_store) {
+      out << ", asuint";
+      ScopedParen p2(out);
+      if (!EmitExpression(pre, out, rhs)) {
+        return false;
+      }
     }
-    out << ")";
   }
 
-  out << ")";
-
-  // Close the outer cast.
   if (!is_store) {
     out << ")";
   }
-
   return true;
 }
 
@@ -2312,13 +2408,7 @@ bool GeneratorImpl::EmitMemberAccessor(std::ostream& pre,
 bool GeneratorImpl::EmitReturn(std::ostream& out, ast::ReturnStatement* stmt) {
   make_indent(out);
 
-  if (generating_entry_point_) {
-    out << "return";
-    auto outdata = ep_sym_to_out_data_.find(current_ep_sym_);
-    if (outdata != ep_sym_to_out_data_.end()) {
-      out << " " << outdata->second.var_name;
-    }
-  } else if (stmt->has_value()) {
+  if (stmt->has_value()) {
     std::ostringstream pre;
     std::ostringstream ret_out;
     if (!EmitExpression(pre, ret_out, stmt->value())) {
@@ -2326,6 +2416,13 @@ bool GeneratorImpl::EmitReturn(std::ostream& out, ast::ReturnStatement* stmt) {
     }
     out << pre.str();
     out << "return " << ret_out.str();
+  } else if (generating_entry_point_) {
+    // TODO(crbug.com/tint/697): Remove this (and generating_entry_point_)
+    out << "return";
+    auto outdata = ep_sym_to_out_data_.find(current_ep_sym_);
+    if (outdata != ep_sym_to_out_data_.end()) {
+      out << " " << outdata->second.var_name;
+    }
   } else {
     out << "return";
   }
@@ -2418,10 +2515,9 @@ bool GeneratorImpl::EmitSwitch(std::ostream& out, ast::SwitchStatement* stmt) {
 bool GeneratorImpl::EmitType(std::ostream& out,
                              type::Type* type,
                              const std::string& name) {
-  // HLSL doesn't have the read/write only markings so just unwrap the access
-  // control type.
-  if (auto* ac = type->As<type::AccessControl>()) {
-    return EmitType(out, ac->type(), name);
+  auto* access = type->As<type::AccessControl>();
+  if (access) {
+    type = access->type();
   }
 
   if (auto* alias = type->As<type::Alias>()) {
@@ -2459,7 +2555,14 @@ bool GeneratorImpl::EmitType(std::ostream& out,
     if (!EmitType(out, mat->type(), "")) {
       return false;
     }
-    out << mat->rows() << "x" << mat->columns();
+    // Note: HLSL's matrices are declared as <type>NxM, where N is the number of
+    // rows and M is the number of columns. Despite HLSL's matrices being
+    // column-major by default, the index operator and constructors actually
+    // operate on row-vectors, where as WGSL operates on column vectors.
+    // To simplify everything we use the transpose of the matrices.
+    // See:
+    // https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-per-component-math#matrix-ordering
+    out << mat->columns() << "x" << mat->rows();
   } else if (type->Is<type::Pointer>()) {
     // TODO(dsinclair): What do we do with pointers in HLSL?
     // https://bugs.chromium.org/p/tint/issues/detail?id=183
@@ -2475,7 +2578,9 @@ bool GeneratorImpl::EmitType(std::ostream& out,
     out << builder_.Symbols().NameFor(str->symbol());
   } else if (auto* tex = type->As<type::Texture>()) {
     if (tex->Is<type::StorageTexture>()) {
-      out << "RW";
+      if (access && !access->IsReadOnly()) {
+        out << "RW";
+      }
     }
     out << "Texture";
 
@@ -2564,9 +2669,17 @@ bool GeneratorImpl::EmitType(std::ostream& out,
 bool GeneratorImpl::EmitStructType(std::ostream& out,
                                    const type::Struct* str,
                                    const std::string& name) {
-  // TODO(dsinclair): Block decoration?
-  // if (str->impl()->decoration() != ast::StructDecoration::kNone) {
-  // }
+  auto* sem_str = builder_.Sem().Get(str);
+
+  auto storage_class_uses = sem_str->StorageClassUsage();
+  if (storage_class_uses.size() ==
+      storage_class_uses.count(ast::StorageClass::kStorage)) {
+    // The only use of the structure is as a storage buffer.
+    // Structures used as storage buffer are read and written to via a
+    // ByteAddressBuffer instead of true structure.
+    return true;
+  }
+
   out << "struct " << name << " {" << std::endl;
 
   increment_indent();
@@ -2583,6 +2696,40 @@ bool GeneratorImpl::EmitStructType(std::ostream& out,
     if (!mem->type()->Is<type::Array>()) {
       out << " " << namer_.NameFor(builder_.Symbols().NameFor(mem->symbol()));
     }
+
+    for (auto* deco : mem->decorations()) {
+      if (auto* location = deco->As<ast::LocationDecoration>()) {
+        auto& pipeline_stage_uses =
+            builder_.Sem().Get(str)->PipelineStageUses();
+        if (pipeline_stage_uses.size() != 1) {
+          TINT_ICE(diagnostics_) << "invalid entry point IO struct uses";
+        }
+
+        if (pipeline_stage_uses.count(
+                semantic::PipelineStageUsage::kVertexInput)) {
+          out << " : TEXCOORD" + std::to_string(location->value());
+        } else if (pipeline_stage_uses.count(
+                       semantic::PipelineStageUsage::kVertexOutput)) {
+          out << " : TEXCOORD" + std::to_string(location->value());
+        } else if (pipeline_stage_uses.count(
+                       semantic::PipelineStageUsage::kFragmentInput)) {
+          out << " : TEXCOORD" + std::to_string(location->value());
+        } else if (pipeline_stage_uses.count(
+                       semantic::PipelineStageUsage::kFragmentOutput)) {
+          out << " : SV_Target" + std::to_string(location->value());
+        } else {
+          TINT_ICE(diagnostics_) << "invalid use of location decoration";
+        }
+      } else if (auto* builtin = deco->As<ast::BuiltinDecoration>()) {
+        auto attr = builtin_to_attribute(builtin->value());
+        if (attr.empty()) {
+          diagnostics_.add_error("unsupported builtin");
+          return false;
+        }
+        out << " : " << attr;
+      }
+    }
+
     out << ";" << std::endl;
   }
   decrement_indent();
@@ -2640,10 +2787,11 @@ bool GeneratorImpl::EmitVariable(std::ostream& out,
   if (var->is_const()) {
     out << "const ";
   }
-  if (!EmitType(out, var->type(), builder_.Symbols().NameFor(var->symbol()))) {
+  auto* type = builder_.Sem().Get(var)->Type();
+  if (!EmitType(out, type, builder_.Symbols().NameFor(var->symbol()))) {
     return false;
   }
-  if (!var->type()->Is<type::Array>()) {
+  if (!type->Is<type::Array>()) {
     out << " " << builder_.Symbols().NameFor(var->symbol());
   }
   out << constructor_out.str() << ";" << std::endl;
@@ -2675,6 +2823,8 @@ bool GeneratorImpl::EmitProgramConstVariable(std::ostream& out,
     out << pre.str();
   }
 
+  auto* type = builder_.Sem().Get(var)->Type();
+
   if (var->HasConstantIdDecoration()) {
     auto const_id = var->constant_id();
 
@@ -2689,8 +2839,7 @@ bool GeneratorImpl::EmitProgramConstVariable(std::ostream& out,
     }
     out << "#endif" << std::endl;
     out << "static const ";
-    if (!EmitType(out, var->type(),
-                  builder_.Symbols().NameFor(var->symbol()))) {
+    if (!EmitType(out, type, builder_.Symbols().NameFor(var->symbol()))) {
       return false;
     }
     out << " " << builder_.Symbols().NameFor(var->symbol())
@@ -2698,11 +2847,10 @@ bool GeneratorImpl::EmitProgramConstVariable(std::ostream& out,
     out << "#undef WGSL_SPEC_CONSTANT_" << const_id << std::endl;
   } else {
     out << "static const ";
-    if (!EmitType(out, var->type(),
-                  builder_.Symbols().NameFor(var->symbol()))) {
+    if (!EmitType(out, type, builder_.Symbols().NameFor(var->symbol()))) {
       return false;
     }
-    if (!var->type()->Is<type::Array>()) {
+    if (!type->Is<type::Array>()) {
       out << " " << builder_.Symbols().NameFor(var->symbol());
     }
 

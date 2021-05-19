@@ -64,6 +64,8 @@ source_set("test_utils") {
 
   deps = [
     ":lib",
+    "//base",
+    "//base/test:test_support",
     "//testing/gtest",
     "//third_party/perfetto/protos/perfetto/common:lite",
     "//third_party/perfetto/protos/perfetto/trace:lite",
@@ -86,7 +88,6 @@ source_set("tests") {
     "perfetto/privacy_filtering_check_unittest.cc",
     "public/cpp/perfetto/producer_test_utils.cc",
     "public/cpp/perfetto/producer_test_utils.h",
-    "public/cpp/perfetto/task_runner_unittest.cc",
     "public/cpp/perfetto/trace_event_data_source_unittest.cc",
     "public/cpp/perfetto/trace_packet_tokenizer_unittest.cc",
     "public/cpp/perfetto/traced_value_proto_writer_unittest.cc",
@@ -132,7 +133,10 @@ source_set("tests") {
   ]
 
   if (is_posix) {
-    sources += [ "perfetto/system_perfetto_unittest.cc" ]
+    # TODO(crbug.com/1184180): System perfetto tests are flaky on Mac.
+    if (!is_mac) {
+      sources += [ "perfetto/system_perfetto_unittest.cc" ]
+    }
 
     if (!is_android) {
       sources += [ "public/cpp/system_tracing_service_unittest.cc" ]

@@ -7,7 +7,6 @@
 #include <set>
 #include <utility>
 
-#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
-#include "chrome/browser/chromeos/printing/print_management/print_management_uma.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
@@ -44,7 +42,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/server_printer_url_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/components/scanning/scanning_uma.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/printing/ppd_line_reader.h"
@@ -86,7 +83,8 @@ void OnRemovedPrinter(const Printer::PrinterProtocol& protocol, bool success) {
 
 // Log if the IPP attributes request was succesful.
 void RecordIppQueryResult(const PrinterQueryResult& result) {
-  bool reachable = (result != PrinterQueryResult::kUnreachable);
+  bool reachable = result != PrinterQueryResult::kHostnameResolution &&
+                   result != PrinterQueryResult::kUnreachable;
   UMA_HISTOGRAM_BOOLEAN("Printing.CUPS.IppDeviceReachable", reachable);
 
   if (reachable) {
@@ -128,8 +126,6 @@ std::unique_ptr<chromeos::Printer> DictToPrinter(
   std::string printer_id;
   std::string printer_name;
   std::string printer_description;
-  std::string printer_manufacturer;
-  std::string printer_model;
   std::string printer_make_and_model;
   std::string printer_address;
   std::string printer_protocol;
@@ -138,8 +134,6 @@ std::unique_ptr<chromeos::Printer> DictToPrinter(
   if (!printer_dict.GetString("printerId", &printer_id) ||
       !printer_dict.GetString("printerName", &printer_name) ||
       !printer_dict.GetString("printerDescription", &printer_description) ||
-      !printer_dict.GetString("printerManufacturer", &printer_manufacturer) ||
-      !printer_dict.GetString("printerModel", &printer_model) ||
       !printer_dict.GetString("printerMakeAndModel", &printer_make_and_model) ||
       !printer_dict.GetString("printerAddress", &printer_address) ||
       !printer_dict.GetString("printerProtocol", &printer_protocol) ||
@@ -159,8 +153,6 @@ std::unique_ptr<chromeos::Printer> DictToPrinter(
   auto printer = std::make_unique<chromeos::Printer>(printer_id);
   printer->set_display_name(printer_name);
   printer->set_description(printer_description);
-  printer->set_manufacturer(printer_manufacturer);
-  printer->set_model(printer_model);
   printer->set_make_and_model(printer_make_and_model);
   printer->set_print_server_uri(print_server_uri);
 
@@ -355,12 +347,10 @@ void CupsPrintersHandler::RegisterMessages() {
       "openPrintManagementApp",
       base::BindRepeating(&CupsPrintersHandler::HandleOpenPrintManagementApp,
                           base::Unretained(this)));
-  if (base::FeatureList::IsEnabled(chromeos::features::kScanningUI)) {
-    web_ui()->RegisterMessageCallback(
-        "openScanningApp",
-        base::BindRepeating(&CupsPrintersHandler::HandleOpenScanningApp,
-                            base::Unretained(this)));
-  }
+  web_ui()->RegisterMessageCallback(
+      "openScanningApp",
+      base::BindRepeating(&CupsPrintersHandler::HandleOpenScanningApp,
+                          base::Unretained(this)));
 }
 
 void CupsPrintersHandler::OnJavascriptAllowed() {
@@ -487,7 +477,7 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
       !IsValidPrinterUri(uri)) {
     // Run the failure callback.
     OnAutoconfQueried(callback_id, PrinterQueryResult::kUnknownFailure,
-                      printing::PrinterStatus(), "", "", "", {}, false);
+                      printing::PrinterStatus(), "", {}, false);
     return;
   }
 
@@ -501,8 +491,6 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
     Printer printer,
     PrinterQueryResult result,
     const printing::PrinterStatus& printer_status,
-    const std::string& make,
-    const std::string& model,
     const std::string& make_and_model,
     const std::vector<std::string>& document_formats,
     bool ipp_everywhere) {
@@ -514,11 +502,6 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
     // guaranteed to have it.  However, don't overwrite it if the printer
     // advertises an empty value through printer-make-and-model.
     if (!make_and_model.empty()) {
-      // manufacturer and model are set with make_and_model because they are
-      // derived from make_and_model for compatability and are slated for
-      // removal.
-      printer.set_manufacturer(make);
-      printer.set_model(model);
       printer.set_make_and_model(make_and_model);
       PRINTER_LOG(DEBUG) << "Printer queried for make and model "
                          << make_and_model;
@@ -548,15 +531,14 @@ void CupsPrintersHandler::OnAutoconfQueried(
     const std::string& callback_id,
     PrinterQueryResult result,
     const printing::PrinterStatus& printer_status,
-    const std::string& make,
-    const std::string& model,
     const std::string& make_and_model,
     const std::vector<std::string>& document_formats,
     bool ipp_everywhere) {
   RecordIppQueryResult(result);
   const bool success = result == PrinterQueryResult::kSuccess;
 
-  if (result == PrinterQueryResult::kUnreachable) {
+  if (result == PrinterQueryResult::kHostnameResolution ||
+      result == PrinterQueryResult::kUnreachable) {
     PRINTER_LOG(DEBUG) << "Could not reach printer";
     RejectJavascriptCallback(
         base::Value(callback_id),
@@ -579,8 +561,6 @@ void CupsPrintersHandler::OnAutoconfQueried(
 
   // Bundle printer metadata
   base::Value info(base::Value::Type::DICTIONARY);
-  info.SetKey("manufacturer", base::Value(make));
-  info.SetKey("model", base::Value(model));
   info.SetKey("makeAndModel", base::Value(make_and_model));
   info.SetKey("autoconf", base::Value(ipp_everywhere));
 
@@ -717,10 +697,6 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::ListValue* args,
     }
 
     if (printer->make_and_model().empty()) {
-      // In lieu of more accurate information, populate the make and model
-      // fields with the PPD information.
-      printer->set_manufacturer(ppd_manufacturer);
-      printer->set_model(ppd_model);
       // PPD Model names are actually make and model.
       printer->set_make_and_model(ppd_model);
     }
@@ -899,7 +875,7 @@ void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
   file_type_info.extensions.push_back({"ppd"});
   file_type_info.extensions.push_back({"ppd.gz"});
   select_file_dialog_->SelectFile(
-      ui::SelectFileDialog::SELECT_OPEN_FILE, base::string16(), downloads_path,
+      ui::SelectFileDialog::SELECT_OPEN_FILE, std::u16string(), downloads_path,
       &file_type_info, 0, FILE_PATH_LITERAL(""), owning_window, nullptr);
 }
 
@@ -1313,15 +1289,12 @@ void CupsPrintersHandler::OnQueryPrintServerCompleted(
 void CupsPrintersHandler::HandleOpenPrintManagementApp(
     const base::ListValue* args) {
   DCHECK(args->empty());
-  chrome::ShowPrintManagementApp(profile_,
-                                 PrintManagementAppEntryPoint::kSettings);
+  chrome::ShowPrintManagementApp(profile_);
 }
 
 void CupsPrintersHandler::HandleOpenScanningApp(const base::ListValue* args) {
   DCHECK(args->empty());
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kScanningUI));
-  chrome::ShowScanningApp(profile_,
-                          chromeos::scanning::ScanAppEntryPoint::kSettings);
+  chrome::ShowScanningApp(profile_);
 }
 
 }  // namespace settings

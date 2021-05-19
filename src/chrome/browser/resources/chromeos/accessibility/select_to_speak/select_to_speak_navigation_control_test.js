@@ -31,14 +31,11 @@ SelectToSpeakNavigationControlTest = class extends SelectToSpeakE2ETest {
         this.updateSelectToSpeakPanel;
 
     (async function() {
-      let module = await import('/select_to_speak/select_to_speak_main.js');
-      window.selectToSpeak = module.selectToSpeak;
-
-      module = await import('/select_to_speak/select_to_speak.js');
-
-      module = await import('/select_to_speak/select_to_speak_constants.js');
-      window.SelectToSpeakConstants = module.SelectToSpeakConstants;
-
+      await importModule(
+          'selectToSpeak', '/select_to_speak/select_to_speak_main.js');
+      await importModule(
+          'SelectToSpeakConstants',
+          '/select_to_speak/select_to_speak_constants.js');
       runTest();
     })();
   }
@@ -106,9 +103,7 @@ TEST_F(
             // TODO(joelriley@google.com): Figure out a better way to trigger
             // the actual floating panel button rather than calling private
             // method directly.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .NEXT_PARAGRAPH);
+            selectToSpeak.onNextParagraphRequested();
 
             // Speaks second paragraph
             this.waitOneEventLoop(() => {
@@ -140,9 +135,7 @@ TEST_F(
             // TODO(joelriley@google.com): Figure out a better way to trigger
             // the actual floating panel button rather than calling private
             // method directly.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .PREVIOUS_PARAGRAPH);
+            selectToSpeak.onPreviousParagraphRequested();
 
             // Speaks second paragraph
             this.waitOneEventLoop(() => {
@@ -215,15 +208,13 @@ TEST_F(
                 'First sentence. Second sentence. Third sentence.');
 
             // Hitting pause will stop the current TTS.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.PAUSE);
+            selectToSpeak.onPauseRequested();
             assertFalse(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 0);
 
             // Hitting resume will start from the remaining content of the
             // second sentence.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.RESUME);
+            selectToSpeak.onResumeRequested();
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
@@ -251,15 +242,13 @@ TEST_F(
                 'First sentence. Second sentence. Third sentence.');
 
             // Hitting pause will stop the current TTS.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.PAUSE);
+            selectToSpeak.onPauseRequested();
             assertFalse(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 0);
 
             // Hitting resume will start from the beginning of the third
             // sentence.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.RESUME);
+            selectToSpeak.onResumeRequested();
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
@@ -285,15 +274,13 @@ TEST_F(
                 this.mockTts.pendingUtterances()[0], 'first sentence.');
 
             // Hitting pause will stop the current TTS.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.PAUSE);
+            selectToSpeak.onPauseRequested();
             assertFalse(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 0);
 
             // Hitting resume will start from the remaining content of the
             // paragraph.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.RESUME);
+            selectToSpeak.onResumeRequested();
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
@@ -323,15 +310,13 @@ TEST_F(
                 this.mockTts.pendingUtterances()[0], 'Paragraph one.');
 
             // Hitting pause will stop the current TTS.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.PAUSE);
+            selectToSpeak.onPauseRequested();
             assertFalse(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 0);
 
             // Hitting resume will start from the remaining content of the
             // paragraph.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.RESUME);
+            selectToSpeak.onResumeRequested();
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
@@ -367,9 +352,7 @@ TEST_F(
             this.triggerReadSelectedText();
 
             // Navigates to the next paragraph and speaks until the second word.
-            await selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .NEXT_PARAGRAPH);
+            await selectToSpeak.onNextParagraphRequested();
             this.mockTts.speakUntilCharIndex(10);
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
@@ -378,12 +361,10 @@ TEST_F(
 
             // Hitting pause and resume will start reading the remaining content
             // in the second paragraph.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.PAUSE);
+            selectToSpeak.onPauseRequested();
             assertFalse(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 0);
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.RESUME);
+            selectToSpeak.onResumeRequested();
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
@@ -411,9 +392,7 @@ TEST_F(
             this.triggerReadSelectedText();
             // Navigates to the next sentence and speaks until the last word
             // (i.e., "two") in the first pargraph.
-            await selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .NEXT_SENTENCE);
+            await selectToSpeak.onNextSentenceRequested();
             this.mockTts.speakUntilCharIndex(23);
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
@@ -422,12 +401,10 @@ TEST_F(
 
             // Hitting pause and resume will start reading the remaining content
             // in the first paragraph.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.PAUSE);
+            selectToSpeak.onPauseRequested();
             assertFalse(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 0);
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.RESUME);
+            selectToSpeak.onResumeRequested();
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
@@ -459,15 +436,13 @@ TEST_F(
                 'Sentence one . Sentence two.');
 
             // Hitting pause will stop the current TTS.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.PAUSE);
+            selectToSpeak.onPauseRequested();
             assertFalse(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 0);
 
             // Hitting resume will start from the remaining content of the
             // paragraph.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.RESUME);
+            selectToSpeak.onResumeRequested();
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
@@ -505,15 +480,13 @@ TEST_F(
                   this.mockTts.pendingUtterances()[0], 'is some bold text');
 
               // Hitting pause will stop the current TTS.
-              selectToSpeak.onSelectToSpeakPanelAction_(
-                  chrome.accessibilityPrivate.SelectToSpeakPanelAction.PAUSE);
+              selectToSpeak.onPauseRequested();
               assertFalse(this.mockTts.currentlySpeaking());
               assertEquals(this.mockTts.pendingUtterances().length, 0);
 
               // Hitting resume will start from the remaining content of the
               // paragraph.
-              selectToSpeak.onSelectToSpeakPanelAction_(
-                  chrome.accessibilityPrivate.SelectToSpeakPanelAction.RESUME);
+              selectToSpeak.onResumeRequested();
               assertTrue(this.mockTts.currentlySpeaking());
               assertEquals(this.mockTts.pendingUtterances().length, 1);
               this.assertEqualsCollapseWhitespace(
@@ -548,8 +521,7 @@ TEST_F('SelectToSpeakNavigationControlTest', 'NextSentence', function() {
             'This is the first. This is the second.');
 
         // Hitting next sentence will start another TTS.
-        await selectToSpeak.onSelectToSpeakPanelAction_(
-            chrome.accessibilityPrivate.SelectToSpeakPanelAction.NEXT_SENTENCE);
+        await selectToSpeak.onNextSentenceRequested();
         assertTrue(this.mockTts.currentlySpeaking());
         assertEquals(this.mockTts.pendingUtterances().length, 1);
         this.assertEqualsCollapseWhitespace(
@@ -575,9 +547,7 @@ TEST_F(
                 this.mockTts.pendingUtterances()[0], 'Sent 2.');
 
             // Hitting next sentence will start from the next sentence.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .NEXT_SENTENCE);
+            selectToSpeak.onNextSentenceRequested();
             this.waitOneEventLoop(() => {
               assertTrue(this.mockTts.currentlySpeaking());
               assertEquals(this.mockTts.pendingUtterances().length, 1);
@@ -607,9 +577,7 @@ TEST_F(
 
             // Hitting next sentence will star from the next paragraph as there
             // is no more sentence in the current paragraph.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .NEXT_SENTENCE);
+            selectToSpeak.onNextSentenceRequested();
             this.waitOneEventLoop(() => {
               assertTrue(this.mockTts.currentlySpeaking());
               assertEquals(this.mockTts.pendingUtterances().length, 1);
@@ -636,9 +604,7 @@ TEST_F('SelectToSpeakNavigationControlTest', 'PrevSentence', function() {
             'First sentence. Second sentence. Third sentence.');
 
         // Hitting prev sentence will start another TTS.
-        await selectToSpeak.onSelectToSpeakPanelAction_(
-            chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                .PREVIOUS_SENTENCE);
+        await selectToSpeak.onPreviousSentenceRequested();
         assertTrue(this.mockTts.currentlySpeaking());
         assertEquals(this.mockTts.pendingUtterances().length, 1);
         this.assertEqualsCollapseWhitespace(
@@ -667,9 +633,7 @@ TEST_F(
                 'First sentence. Second sentence. Third sentence.');
 
             // Hitting prev sentence will start another TTS.
-            await selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .PREVIOUS_SENTENCE);
+            await selectToSpeak.onPreviousSentenceRequested();
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
@@ -695,9 +659,7 @@ TEST_F(
                 this.mockTts.pendingUtterances()[0], 'Sent 2.');
 
             // Hitting previous sentence will start from the previous sentence.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .PREVIOUS_SENTENCE);
+            selectToSpeak.onPreviousSentenceRequested();
             this.waitOneEventLoop(() => {
               assertTrue(this.mockTts.currentlySpeaking());
               assertEquals(this.mockTts.pendingUtterances().length, 1);
@@ -728,9 +690,7 @@ TEST_F(
             // Hitting previous sentence will start from the last sentence in
             // the previous paragraph as there is no more sentence in the
             // current paragraph.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .PREVIOUS_SENTENCE);
+            selectToSpeak.onPreviousSentenceRequested();
             this.waitOneEventLoop(() => {
               assertTrue(this.mockTts.currentlySpeaking());
               assertEquals(this.mockTts.pendingUtterances().length, 1);
@@ -761,10 +721,7 @@ TEST_F(
 
             // Changing speed will resume with the remaining content of the
             // current sentence.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .CHANGE_SPEED,
-                1.5);
+            selectToSpeak.onChangeSpeedRequested(1.5);
             assertFalse(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 0);
 
@@ -794,11 +751,8 @@ TEST_F('SelectToSpeakNavigationControlTest', 'RetainsSpeedChange', function() {
         this.triggerReadSelectedText();
 
         // Changing speed then exit.
-        selectToSpeak.onSelectToSpeakPanelAction_(
-            chrome.accessibilityPrivate.SelectToSpeakPanelAction.CHANGE_SPEED,
-            1.5);
-        selectToSpeak.onSelectToSpeakPanelAction_(
-            chrome.accessibilityPrivate.SelectToSpeakPanelAction.EXIT);
+        selectToSpeak.onChangeSpeedRequested(1.5);
+        selectToSpeak.onExitRequested();
         assertFalse(this.mockTts.currentlySpeaking());
         assertEquals(this.mockTts.pendingUtterances().length, 0);
 
@@ -828,16 +782,12 @@ TEST_F(
             assertEquals(this.mockTts.getOptions().rate, 1.2);
 
             // User-intiated pause.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.PAUSE);
+            selectToSpeak.onPauseRequested();
             assertFalse(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 0);
 
             // Changing speed will remain paused.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .CHANGE_SPEED,
-                1.5);
+            selectToSpeak.onChangeSpeedRequested(1.5);
 
             // Wait an event loop so all pending promises are resolved prior to
             // asserting that TTS remains paused.
@@ -863,8 +813,7 @@ TEST_F(
             this.mockTts.finishPendingUtterance();
 
             // Hitting resume will start the next paragraph.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.RESUME);
+            selectToSpeak.onResumeRequested();
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
@@ -887,8 +836,7 @@ TEST_F(
             this.mockTts.finishPendingUtterance();
 
             // Hitting resume will start the remaining content.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction.RESUME);
+            selectToSpeak.onResumeRequested();
             assertTrue(this.mockTts.currentlySpeaking());
             assertEquals(this.mockTts.pendingUtterances().length, 1);
             this.assertEqualsCollapseWhitespace(
@@ -925,8 +873,7 @@ TEST_F(
 
               // Hitting resume will start from the remaining content of the
               // paragraph.
-              selectToSpeak.onSelectToSpeakPanelAction_(
-                  chrome.accessibilityPrivate.SelectToSpeakPanelAction.RESUME);
+              selectToSpeak.onResumeRequested();
               assertTrue(this.mockTts.currentlySpeaking());
               assertEquals(this.mockTts.pendingUtterances().length, 1);
               this.assertEqualsCollapseWhitespace(
@@ -1036,9 +983,7 @@ TEST_F(
             const speakOptions = this.mockTts.getOptions();
 
             // Navigate to next paragraph before speech begins.
-            selectToSpeak.onSelectToSpeakPanelAction_(
-                chrome.accessibilityPrivate.SelectToSpeakPanelAction
-                    .NEXT_PARAGRAPH);
+            selectToSpeak.onNextParagraphRequested();
 
             this.waitOneEventLoop(() => {
               // Manually triggered delayed events.

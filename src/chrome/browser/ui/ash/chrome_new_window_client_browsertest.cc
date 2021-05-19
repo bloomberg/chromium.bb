@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 
+#include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_navigation_browsertest.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -240,9 +240,12 @@ void TestOpenChromePage(ChromePage page, const GURL& expected_url) {
 
 class TestSettingsWindowManager : public chrome::SettingsWindowManager {
  public:
-  void ShowChromePageForProfile(Profile* profile, const GURL& gurl) override {
+  void ShowChromePageForProfile(Profile* profile,
+                                const GURL& gurl,
+                                int64_t display_id) override {
     last_navigation_url_ = gurl;
-    chrome::SettingsWindowManager::ShowChromePageForProfile(profile, gurl);
+    chrome::SettingsWindowManager::ShowChromePageForProfile(profile, gurl,
+                                                            display_id);
   }
   const GURL& last_navigation_url() { return last_navigation_url_; }
 

@@ -323,7 +323,7 @@ TEST_P(EXTClipCullDistanceForVertexShaderTest, CompileSucceedsVulkan)
     mResources.MaxCullDistances                = 8;
     mResources.MaxCombinedClipAndCullDistances = 8;
 
-    InitializeCompiler(SH_GLSL_VULKAN_OUTPUT);
+    InitializeCompiler(SH_SPIRV_VULKAN_OUTPUT);
     EXPECT_TRUE(TestShaderCompile(EXTPragma));
     EXPECT_FALSE(TestShaderCompile(""));
     EXPECT_TRUE(TestShaderCompile(EXTPragma));
@@ -350,7 +350,9 @@ TEST_P(EXTClipCullDistanceForFragmentShaderTest, CompileFailsWithExtensionWithou
 
 #if defined(ANGLE_ENABLE_VULKAN)
 // With extension flag and extension directive, compiling using TranslatorVulkan succeeds.
-TEST_P(EXTClipCullDistanceForFragmentShaderTest, CompileSucceedsVulkan)
+//
+// Test is disabled due to translation bug.  http://anglebug.com/5747
+TEST_P(EXTClipCullDistanceForFragmentShaderTest, DISABLED_CompileSucceedsVulkan)
 {
     SetExtensionEnable(true);
 
@@ -358,7 +360,7 @@ TEST_P(EXTClipCullDistanceForFragmentShaderTest, CompileSucceedsVulkan)
     mResources.MaxCullDistances                = 8;
     mResources.MaxCombinedClipAndCullDistances = 8;
 
-    InitializeCompiler(SH_GLSL_VULKAN_OUTPUT);
+    InitializeCompiler(SH_SPIRV_VULKAN_OUTPUT);
     EXPECT_TRUE(TestShaderCompile(EXTPragma));
     EXPECT_FALSE(TestShaderCompile(""));
     EXPECT_TRUE(TestShaderCompile(EXTPragma));
@@ -380,7 +382,7 @@ TEST_P(EXTClipCullDistanceForVertexShaderCompileFailureTest, CompileFails)
     mResources.MaxCullDistances                = 8;
     mResources.MaxCombinedClipAndCullDistances = 8;
 
-    InitializeCompiler(SH_GLSL_VULKAN_OUTPUT);
+    InitializeCompiler(SH_SPIRV_VULKAN_OUTPUT);
     EXPECT_FALSE(TestShaderCompile(EXTPragma));
 }
 
@@ -392,7 +394,7 @@ TEST_P(EXTClipCullDistanceForFragmentShaderCompileFailureTest, CompileFails)
     mResources.MaxCullDistances                = 8;
     mResources.MaxCombinedClipAndCullDistances = 8;
 
-    InitializeCompiler(SH_GLSL_VULKAN_OUTPUT);
+    InitializeCompiler(SH_SPIRV_VULKAN_OUTPUT);
     EXPECT_FALSE(TestShaderCompile(EXTPragma));
 }
 #endif

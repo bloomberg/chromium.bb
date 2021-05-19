@@ -12,8 +12,10 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
+#include "media/base/win/mf_helpers.h"
 #include "ui/gfx/color_space_win.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/dc_layer_tree.h"
@@ -168,6 +170,32 @@ void UpdateSwapChainTransform(const gfx::Size& quad_size,
   transform->Scale(swap_chain_scale_x, swap_chain_scale_y);
 }
 
+void LabelSwapChainBuffers(IDXGISwapChain* swap_chain) {
+  DXGI_SWAP_CHAIN_DESC desc;
+  HRESULT hr = swap_chain->GetDesc(&desc);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to GetDesc from swap chain: "
+                << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+  for (unsigned int i = 0; i < desc.BufferCount; i++) {
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> swap_chain_buffer;
+    hr = swap_chain->GetBuffer(i, IID_PPV_ARGS(&swap_chain_buffer));
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "GetBuffer on swap chain buffer " << i
+                  << "failed: " << logging::SystemErrorCodeToString(hr);
+      return;
+    }
+    hr = media::SetDebugName(
+        swap_chain_buffer.Get(),
+        base::StringPrintf("SwapChainPresenter_Buffer_%d", i).c_str());
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Failed to label swap chain buffer " << i << ": "
+                  << logging::SystemErrorCodeToString(hr);
+    }
+  }
+}
+
 }  // namespace
 
 SwapChainPresenter::PresentationHistory::PresentationHistory() = default;
@@ -209,34 +237,29 @@ SwapChainPresenter::SwapChainPresenter(
       window_(window),
       d3d11_device_(d3d11_device),
       dcomp_device_(dcomp_device),
-      is_on_battery_power_(true) {
-  if (base::PowerMonitor::IsInitialized()) {
-    is_on_battery_power_ = base::PowerMonitor::IsOnBatteryPower();
-    base::PowerMonitor::AddObserver(this);
-  }
-}
+      is_on_battery_power_(
+          base::PowerMonitor::AddPowerStateObserverAndReturnOnBatteryState(
+              this)) {}
 
 SwapChainPresenter::~SwapChainPresenter() {
-  base::PowerMonitor::RemoveObserver(this);
+  base::PowerMonitor::RemovePowerStateObserver(this);
 }
 
 DXGI_FORMAT SwapChainPresenter::GetSwapChainFormat(
     gfx::ProtectedVideoType protected_video_type,
     bool content_is_hdr) {
-  DXGI_FORMAT yuv_overlay_format =
-      DirectCompositionSurfaceWin::GetOverlayFormatUsedForSDR();
-  // TODO(crbug.com/850799): Assess power/perf impact when protected video
-  // swap chain is composited by DWM.
-
-  // Always prefer YUV swap chain for hardware protected video for now.
-  if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
-    return yuv_overlay_format;
-
   // Prefer RGB10A2 swapchain when playing HDR content.
   if (content_is_hdr)
     return DXGI_FORMAT_R10G10B10A2_UNORM;
 
-  if (failed_to_create_yuv_swapchain_)
+  DXGI_FORMAT yuv_overlay_format =
+      DirectCompositionSurfaceWin::GetOverlayFormatUsedForSDR();
+  // Always prefer YUV swap chain for hardware protected video for now.
+  if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
+    return yuv_overlay_format;
+
+  if (failed_to_create_yuv_swapchain_ ||
+      !DirectCompositionSurfaceWin::AreHardwareOverlaysSupported())
     return DXGI_FORMAT_B8G8R8A8_UNORM;
 
   // Start out as YUV.
@@ -309,6 +332,11 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> SwapChainPresenter::UploadVideoImages(
     }
     DCHECK(staging_texture_);
     staging_texture_size_ = texture_size;
+    hr = media::SetDebugName(staging_texture_.Get(),
+                             "SwapChainPresenter_Staging");
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Failed to label D3D11 texture: " << std::hex << hr;
+    }
   }
 
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
@@ -363,6 +391,10 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> SwapChainPresenter::UploadVideoImages(
       return nullptr;
     }
     DCHECK(copy_texture_);
+    hr = media::SetDebugName(copy_texture_.Get(), "SwapChainPresenter_Copy");
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Failed to label D3D11 texture: " << std::hex << hr;
+    }
   }
   TRACE_EVENT0("gpu", "SwapChainPresenter::UploadVideoImages::CopyResource");
   context->CopyResource(copy_texture_.Get(), staging_texture_.Get());
@@ -1349,7 +1381,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
     TRACE_EVENT0("gpu", trace_event_stream.str().c_str());
 
     desc.Format = swap_chain_format;
-    desc.Flags = 0;
+    desc.Flags = DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO;
     if (IsProtectedVideo(protected_video_type))
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
     if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
@@ -1380,6 +1412,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
       return false;
     }
   }
+  LabelSwapChainBuffers(swap_chain_.Get());
   swap_chain_format_ = swap_chain_format;
   SetSwapChainPresentDuration();
   return true;

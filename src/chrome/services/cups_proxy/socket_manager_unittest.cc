@@ -13,6 +13,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/services/cups_proxy/fake_cups_proxy_service_delegate.h"
 #include "chrome/services/cups_proxy/public/cpp/type_conversions.h"

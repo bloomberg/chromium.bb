@@ -51,6 +51,7 @@
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
@@ -62,10 +63,15 @@ const int kAnimationDurationForBubblePopupMs = 200;
 constexpr base::TimeDelta kAnimationDurationForVisibilityMs =
     base::TimeDelta::FromMilliseconds(250);
 
+// Duration of opacity animation for hide animation.
+constexpr base::TimeDelta kAnimationDurationForHideMs =
+    base::TimeDelta::FromMilliseconds(100);
+
 // Bounce animation constants
 const base::TimeDelta kAnimationDurationForBounceElement =
     base::TimeDelta::FromMilliseconds(250);
-const int kAnimationBounceDistance = 16;
+const int kAnimationBounceUpDistance = 16;
+const int kAnimationBounceDownDistance = 8;
 const float kAnimationBounceScaleFactor = 0.5;
 
 // When becoming visible delay the animation so that StatusAreaWidgetDelegate
@@ -231,16 +237,17 @@ void TrayBackgroundView::SetVisiblePreferred(bool visible_preferred) {
   StartVisibilityAnimation(GetEffectiveVisibility());
 
   // We need to update which trays overflow after showing or hiding a tray.
-  auto* status_area_widget = shelf_->GetStatusAreaWidget();
-  if (status_area_widget) {
-    status_area_widget->UpdateCollapseState();
-    status_area_widget->LogVisiblePodCountMetric();
-  }
+  // If the hide animation is still playing, we do the `UpdateStatusArea(bool
+  // should_log_visible_pod_count)` when the animation is finished.
+  if (!layer()->GetAnimator()->is_animating() || visible_preferred_)
+    UpdateStatusArea(true /*should_log_visible_pod_count*/);
 }
 
 void TrayBackgroundView::StartVisibilityAnimation(bool visible) {
   if (visible == layer()->GetTargetVisibility())
     return;
+
+  base::AutoReset<bool> is_starting_animation(&is_starting_animation_, true);
 
   if (visible) {
     views::View::SetVisible(true);
@@ -259,6 +266,26 @@ void TrayBackgroundView::StartVisibilityAnimation(bool visible) {
       FadeInAnimation();
   } else {
     HideAnimation();
+  }
+}
+
+void TrayBackgroundView::UpdateStatusArea(bool should_log_visible_pod_count) {
+  auto* status_area_widget = shelf_->GetStatusAreaWidget();
+  if (status_area_widget) {
+    status_area_widget->UpdateCollapseState();
+    if (should_log_visible_pod_count)
+      status_area_widget->LogVisiblePodCountMetric();
+  }
+}
+
+void TrayBackgroundView::OnVisibilityAnimationFinished(
+    bool should_log_visible_pod_count,
+    bool aborted) {
+  if (aborted && is_starting_animation_)
+    return;
+  if (!visible_preferred_) {
+    views::View::SetVisible(false);
+    UpdateStatusArea(should_log_visible_pod_count);
   }
 }
 
@@ -288,6 +315,14 @@ void TrayBackgroundView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
+}
+
+std::unique_ptr<ui::Layer> TrayBackgroundView::RecreateLayer() {
+  if (layer()->GetAnimator()->is_animating())
+    OnVisibilityAnimationFinished(/*should_log_visible_pod_count=*/false,
+                                  /*aborted=*/false);
+
+  return views::View::RecreateLayer();
 }
 
 std::unique_ptr<views::InkDropRipple> TrayBackgroundView::CreateInkDropRipple()
@@ -329,9 +364,13 @@ TrayBubbleView* TrayBackgroundView::GetBubbleView() {
   return nullptr;
 }
 
+views::Widget* TrayBackgroundView::GetBubbleWidget() const {
+  return nullptr;
+}
+
 void TrayBackgroundView::CloseBubble() {}
 
-void TrayBackgroundView::ShowBubble(bool show_by_click) {}
+void TrayBackgroundView::ShowBubble() {}
 
 void TrayBackgroundView::CalculateTargetBounds() {
   tray_container_->CalculateTargetBounds();
@@ -365,13 +404,20 @@ void TrayBackgroundView::UpdateBackground() {
 
 void TrayBackgroundView::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* sequence) {
-  if (!visible_preferred_)
-    views::View::SetVisible(false);
+  OnVisibilityAnimationFinished(/*should_log_visible_pod_count=*/true,
+                                /*aborted=*/false);
+}
+
+void TrayBackgroundView::OnLayerAnimationAborted(
+    ui::LayerAnimationSequence* sequence) {
+  OnVisibilityAnimationFinished(/*should_log_visible_pod_count=*/true,
+                                /*aborted=*/true);
 }
 
 void TrayBackgroundView::FadeInAnimation() {
   std::unique_ptr<ui::LayerAnimationSequence> fade_sequence =
       std::make_unique<ui::LayerAnimationSequence>();
+  fade_sequence->AddObserver(this);
   std::unique_ptr<ui::LayerAnimationElement> fade_in =
       ui::LayerAnimationElement::CreateOpacityElement(
           1.0f, kAnimationDurationForVisibilityMs);
@@ -397,6 +443,9 @@ void TrayBackgroundView::FadeInAnimation() {
   translate_sequence->AddElement(
       ui::LayerAnimationElement::CreateTransformElement(
           gfx::Transform(), kAnimationDurationForVisibilityMs));
+
+  layer()->GetAnimator()->set_preemption_strategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   layer()->GetAnimator()->StartTogether(
       {fade_sequence.release(), translate_sequence.release()});
 }
@@ -408,13 +457,32 @@ void TrayBackgroundView::BounceInAnimation() {
                        1),
           gfx::Point3F(1, 1, 1));
 
+  gfx::PointF start_point = gfx::PointF(0, 0);
+  gfx::PointF bounce_up_point;
+  gfx::PointF bounce_down_point;
+
+  switch (shelf_->alignment()) {
+    case ShelfAlignment::kLeft:
+      bounce_up_point = gfx::PointF(kAnimationBounceUpDistance, 0);
+      bounce_down_point = gfx::PointF(-kAnimationBounceDownDistance, 0);
+      break;
+    case ShelfAlignment::kRight:
+      bounce_up_point = gfx::PointF(-kAnimationBounceUpDistance, 0);
+      bounce_down_point = gfx::PointF(kAnimationBounceDownDistance, 0);
+      break;
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
+    default:
+      bounce_up_point = gfx::PointF(0, -kAnimationBounceUpDistance);
+      bounce_down_point = gfx::PointF(0, kAnimationBounceDownDistance);
+  }
+
   std::unique_ptr<ui::InterpolatedTransform> scale_about_pivot =
       std::make_unique<ui::InterpolatedTransformAboutPivot>(
           GetLocalBounds().CenterPoint(), std::move(scale));
 
   scale_about_pivot->SetChild(std::make_unique<ui::InterpolatedTranslation>(
-      gfx::PointF(0, kAnimationBounceDistance),
-      gfx::PointF(0, -kAnimationBounceDistance)));
+      start_point, bounce_up_point));
 
   std::unique_ptr<ui::LayerAnimationElement> scale_and_move_up =
       ui::LayerAnimationElement::CreateInterpolatedTransformElement(
@@ -423,16 +491,15 @@ void TrayBackgroundView::BounceInAnimation() {
 
   std::unique_ptr<ui::LayerAnimationElement> move_down =
       ui::LayerAnimationElement::CreateInterpolatedTransformElement(
-          std::make_unique<ui::InterpolatedTranslation>(
-              gfx::PointF(0, -kAnimationBounceDistance),
-              gfx::PointF(0, kAnimationBounceDistance)),
+          std::make_unique<ui::InterpolatedTranslation>(bounce_up_point,
+                                                        bounce_down_point),
           kAnimationDurationForBounceElement);
   move_down->set_tween_type(gfx::Tween::EASE_OUT_4);
 
   std::unique_ptr<ui::LayerAnimationElement> move_up =
       ui::LayerAnimationElement::CreateInterpolatedTransformElement(
-          std::make_unique<ui::InterpolatedTranslation>(
-              gfx::PointF(0, kAnimationBounceDistance), gfx::PointF(0, 0)),
+          std::make_unique<ui::InterpolatedTranslation>(bounce_down_point,
+                                                        start_point),
           kAnimationDurationForBounceElement);
   move_up->set_tween_type(gfx::Tween::FAST_OUT_SLOW_IN_3);
 
@@ -446,31 +513,50 @@ void TrayBackgroundView::BounceInAnimation() {
   sequence->AddElement(std::move(move_up));
   sequence->AddObserver(this);
 
+  layer()->GetAnimator()->set_preemption_strategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   layer()->GetAnimator()->StartAnimation(sequence.release());
 }
 
+// Any visibility updates should be called after the hide animation is
+// finished, otherwise the view will disappear immediately without animation
+// once the view's visibility is set to false.
 void TrayBackgroundView::HideAnimation() {
+  std::unique_ptr<ui::LayerAnimationSequence> visible_sequence =
+      std::make_unique<ui::LayerAnimationSequence>();
+  // Sets animator's target visibility to false.
+  std::unique_ptr<ui::LayerAnimationElement> visible_element =
+      ui::LayerAnimationElement::CreateVisibilityElement(
+          false, kAnimationDurationForHideMs);
+  visible_sequence->AddElement(std::move(visible_element));
+
+  std::unique_ptr<ui::InterpolatedTransform> scale =
+      std::make_unique<ui::InterpolatedScale>(
+          gfx::Point3F(1, 1, 1), gfx::Point3F(kAnimationBounceScaleFactor,
+                                              kAnimationBounceScaleFactor, 1));
+  std::unique_ptr<ui::InterpolatedTransform> scale_about_pivot =
+      std::make_unique<ui::InterpolatedTransformAboutPivot>(
+          GetLocalBounds().CenterPoint(), std::move(scale));
+  std::unique_ptr<ui::LayerAnimationElement> scale_down =
+      ui::LayerAnimationElement::CreateInterpolatedTransformElement(
+          std::move(scale_about_pivot), kAnimationDurationForHideMs);
+  std::unique_ptr<ui::LayerAnimationSequence> scale_sequence =
+      std::make_unique<ui::LayerAnimationSequence>();
+  scale_sequence->AddElement(std::move(scale_down));
+
   std::unique_ptr<ui::LayerAnimationSequence> fade_sequence =
       std::make_unique<ui::LayerAnimationSequence>();
   std::unique_ptr<ui::LayerAnimationElement> fade_out =
       ui::LayerAnimationElement::CreateOpacityElement(
-          0.0f, kAnimationDurationForVisibilityMs);
+          0.0f, kAnimationDurationForHideMs);
   fade_sequence->AddElement(std::move(fade_out));
-
-  gfx::Transform transform;
-  if (shelf_->IsHorizontalAlignment())
-    transform.Translate(width(), 0.0f);
-  else
-    transform.Translate(0.0f, height());
-
-  std::unique_ptr<ui::LayerAnimationSequence> translate_sequence =
-      std::make_unique<ui::LayerAnimationSequence>();
-  translate_sequence->AddElement(
-      ui::LayerAnimationElement::CreateTransformElement(
-          transform, kAnimationDurationForVisibilityMs));
   fade_sequence->AddObserver(this);
-  layer()->GetAnimator()->StartTogether(
-      {fade_sequence.release(), translate_sequence.release()});
+
+  layer()->GetAnimator()->set_preemption_strategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  layer()->GetAnimator()->StartTogether({visible_sequence.release(),
+                                         fade_sequence.release(),
+                                         scale_sequence.release()});
 }
 
 void TrayBackgroundView::SetIsActive(bool is_active) {
@@ -515,6 +601,14 @@ gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
   return bounds;
 }
 
+bool TrayBackgroundView::PerformAction(const ui::Event& event) {
+  if (GetBubbleWidget())
+    CloseBubble();
+  else
+    ShowBubble();
+  return true;
+}
+
 void TrayBackgroundView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   UpdateBackground();
 
@@ -526,10 +620,6 @@ bool TrayBackgroundView::ShouldEnterPushedState(const ui::Event& event) {
     return false;
 
   return ActionableView::ShouldEnterPushedState(event);
-}
-
-bool TrayBackgroundView::PerformAction(const ui::Event& event) {
-  return false;
 }
 
 void TrayBackgroundView::HandlePerformActionResult(bool action_performed,

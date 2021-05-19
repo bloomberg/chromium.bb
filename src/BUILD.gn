@@ -36,6 +36,10 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
+if (is_linux) {
+  import("build/config/linux/gtk/gtk.gni")
+}
+
 declare_args() {
   # A list of extra dependencies to add to the root target. This allows a
   # checkout to add additional targets without explicitly changing any checked-
@@ -438,12 +442,10 @@ group("gn_all") {
   if (is_chromeos_ash) {
     deps += [
       "//ash:ash_unittests",
-      "//ash/app_list:app_list_demo",
-      "//ash/app_list:app_list_unittests",
+      "//ash/content:ash_content_unittests",
       "//ash/keyboard/ui:keyboard_unittests",
       "//chrome/browser/metrics/perf:profile_provider_unittest",
       "//chrome/test:usage_time_limit_unittests",
-      "//chromeos:chromeos_unittests",
       "//chromeos/components:chromeos_components_unittests",
       "//chromeos/components/proximity_auth:proximity_auth_unittests",
       "//components/exo/wayland:wayland_client_compatibility_tests",
@@ -451,6 +453,10 @@ group("gn_all") {
       "//third_party/shell-encryption:shell_encryption_unittests",
       "//ui/chromeos:ui_chromeos_unittests",
     ]
+  }
+
+  if (is_chromeos_ash || is_chromeos_lacros) {
+    deps += [ "//chromeos:chromeos_unittests" ]
   }
 
   if (is_chromeos_ash || is_mac || is_win) {
@@ -756,6 +762,10 @@ group("gn_all") {
     }
   }
 
+  if (is_linux && !is_chromecast && use_gtk) {
+    deps += [ "//ui/gtk:gtk_unittests" ]
+  }
+
   if (((is_linux || is_chromeos) && !is_chromecast) ||
       (is_win && use_libfuzzer) || (use_libfuzzer && is_mac)) {
     deps += [
@@ -816,6 +826,8 @@ group("gn_all") {
       "//third_party/dawn/src/fuzzers:dawn_fuzzers",
       "//third_party/dawn/src/tests:dawn_end2end_tests",
       "//third_party/dawn/src/tests:dawn_unittests",
+      "//third_party/tint/src/fuzzers",
+      "//third_party/tint/src/test:tint_unittests",
     ]
   }
 
@@ -857,7 +869,7 @@ if (is_fuchsia) {
   cr_fuchsia_package("d8_fuchsia_pkg") {
     testonly = true
     binary = "//v8:d8"
-    manifest = "//build/config/fuchsia/tests-with-exec.cmx"
+    manifest = "//v8/gni/v8.cmx"
     package_name_override = "d8"
   }
 
@@ -1007,14 +1019,16 @@ if (!is_ios) {
   if (!is_chromeos_ash && !is_ios && !is_fuchsia && !is_android) {
     # WPT Webdriver tests runner
     # chrome/test/chromedriver/test/run_webdriver_tests.py
-    group("webdriver_wpt_tests") {
-      testonly = true
+    script_test("webdriver_wpt_tests") {
+      # The script is wrapped in testing/xvfb.py; the actual
+      # run_webdriver_tests.py script is passed as an arg in gn_isolate_map.pyl
+      script = "//testing/xvfb.py"
+
       data = [
         "//chrome/test/chromedriver/chrome_paths.py",
         "//chrome/test/chromedriver/server/server.py",
         "//chrome/test/chromedriver/test/run_webdriver_tests.py",
         "//chrome/test/chromedriver/util.py",
-        "//testing/xvfb.py",
         "//third_party/blink/tools/blinkpy/",
         "//third_party/blink/web_tests/external/wpt/webdriver/",
         "//third_party/blink/web_tests/VirtualTestSuites",
@@ -1025,19 +1039,21 @@ if (!is_ios) {
       data_deps = [
         "//chrome:chrome",
         "//chrome/test/chromedriver",
+        "//testing:test_scripts_shared",
         "//third_party/catapult/third_party/typ",
       ]
       if (is_win) {
         data_deps += [ "//build/win:copy_cdb_to_output" ]
       }
     }
-    group("wpt_tests_isolate") {
-      testonly = true
+    script_test("wpt_tests_isolate") {
+      script = "//testing/scripts/run_wpt_tests.py"
       data_deps = [
         "//chrome:chrome",
         "//chrome/test/chromedriver",
+        "//third_party/blink/tools:wpt_tests_isolate",
+        "//tools/imagediff",
       ]
-      deps = [ "//third_party/blink/tools:wpt_tests_isolate" ]
     }
   }
 
@@ -1174,6 +1190,7 @@ if (!is_ios) {
 
   # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_tests.md
   script_test("blink_web_tests") {
+    run_under_python2 = true
     script = _common_web_test_script
 
     args = _common_web_test_args
@@ -1186,6 +1203,8 @@ if (!is_ios) {
   }
 
   script_test("devtools_web_tests") {
+    run_under_python2 = true
+
     # This target differs from :blink_web_tests in that it uses the
     # same test harness but runs an entirely different set of tests
     # and doesn't have a dependency on the web_test directory at all.
@@ -1203,24 +1222,39 @@ if (!is_ios) {
   }
 
   script_test("webgpu_blink_web_tests") {
+    run_under_python2 = true
+
     # This target differs from :blink_web_tests in that it uses the same
     # test harness and a few additional flags but, more importantly, only runs
     # the web_tests/wpt_internal/webgpu tests, so it doesn't have a data
-    # dependency on the whole web_test directory.
+    # dependency on the whole web_test directory. run_webgpu_cts.py is a wrapper
+    # script around run_web_tests.py which performs additional setup for running
+    # the WebGPU CTS.
     script = _common_web_test_script
-    args =
-        _common_web_test_args + [
-          "--additional-driver-flag=--enable-unsafe-webgpu",
-          "--ignore-default-expectations",
-          "--additional-expectations",
-          "@WrappedPath(../../third_party/blink/web_tests/WebGPUExpectations)",
-          "--isolated-script-test-filter=wpt_internal/webgpu/*",
-        ]
 
-    data_deps = [ ":blink_web_tests_support_data" ]
+    # Add run_webgpu_cts.py and remove run_web_tests.py from _common_web_test_args
+    args = [ "@WrappedPath(" +
+             rebase_path("//third_party/blink/tools/run_webgpu_cts.py",
+                         root_build_dir) + ")" ] + _common_web_test_args -
+           [ _common_web_test_args[0] ]
+    if (is_asan) {
+      args += [ "--time-out-ms=30000" ]
+    }
+    args += [
+      "--webgpu-cts-expectations",
+      "@WrappedPath(../../third_party/blink/web_tests/WebGPUExpectations)",
+      "--additional-driver-flag=--enable-unsafe-webgpu",
+      "--isolated-script-test-filter=wpt_internal/webgpu/*",
+    ]
+
+    data_deps = [
+      ":blink_web_tests_support_data",
+      "//third_party/webgpu-cts",
+    ]
     data = [
       "//third_party/blink/web_tests/WebGPUExpectations",
       "//third_party/blink/web_tests/external/wpt/webgpu/",
+      "//third_party/webgpu-cts/scripts/",
     ]
   }
 
@@ -1248,6 +1282,7 @@ if (!is_ios) {
   }
 
   script_test("blink_python_tests") {
+    run_under_python2 = true
     script = "//testing/scripts/run_isolated_script_test.py"
     args = [ "@WrappedPath(" +
              rebase_path("//third_party/blink/tools/run_blinkpy_tests.py",
@@ -1274,7 +1309,6 @@ if (!is_ios) {
       "//third_party/catapult/common/py_utils/",
       "//third_party/catapult/devil/",
       "//third_party/catapult/dependency_manager/",
-      "//third_party/catapult/third_party/zipfile/",
       "//third_party/catapult/third_party/typ/",
       "//third_party/depot_tools/pylint",
       "//third_party/depot_tools/pylint-1.5",
@@ -1401,6 +1435,7 @@ if (enable_js_type_check) {
     ]
     if (is_chromeos_ash) {
       data_deps += [
+        "ash/content:closure_compile",
         "chromeos/components:closure_compile",
         "ui/file_manager:closure_compile",
       ]
@@ -1410,24 +1445,6 @@ if (enable_js_type_check) {
     }
   }
 }
-
-# Because of the source assignment filter, many targets end up over-filtering
-# their sources if the output directory contains a platform name. Assert that
-# this doesn't happen. http://crbug.com/548283
-assert(
-    filter_exclude([ "$root_build_dir/foo" ],
-                   # List copied from //build/config/BUILDCONFIG.gn.
-                   [
-                     "*\bandroid/*",
-                     "*\bchromeos/*",
-                     "*\bcocoa/*",
-                     "*\bios/*",
-                     "*\blinux/*",
-                     "*\bmac/*",
-                     "*\bposix/*",
-                     "*\bwin/*",
-                   ]) != [],
-    "Do not use a platform name in your output directory (found \"$root_build_dir\"). http://crbug.com/548283")
 
 # Write debug logs to gn_logs.txt.
 _lines = [

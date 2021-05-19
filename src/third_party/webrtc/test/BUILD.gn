@@ -56,7 +56,6 @@ rtc_library("frame_generator_impl") {
     "../api/video:encoded_image",
     "../api/video:video_frame",
     "../api/video:video_frame_i010",
-    "../api/video:video_frame_nv12",
     "../api/video:video_rtp_headers",
     "../api/video_codecs:video_codecs_api",
     "../common_video",
@@ -101,6 +100,8 @@ rtc_library("video_test_common") {
     "frame_forwarder.h",
     "frame_generator_capturer.cc",
     "frame_generator_capturer.h",
+    "mappable_native_buffer.cc",
+    "mappable_native_buffer.h",
     "test_video_capturer.cc",
     "test_video_capturer.h",
     "video_codec_settings.h",
@@ -109,6 +110,7 @@ rtc_library("video_test_common") {
   deps = [
     ":fileutils",
     ":frame_utils",
+    "../api:array_view",
     "../api:create_frame_generator",
     "../api:frame_generator_api",
     "../api:scoped_refptr",
@@ -130,7 +132,10 @@ rtc_library("video_test_common") {
     "../rtc_base/task_utils:repeating_task",
     "../system_wrappers",
   ]
-  absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/algorithm:container",
+    "//third_party/abseil-cpp/absl/strings",
+  ]
 }
 
 if (!build_with_chromium) {

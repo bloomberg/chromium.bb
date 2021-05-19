@@ -7,8 +7,8 @@
 #include "ash/public/cpp/media_notification_provider_observer.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service_factory.h"
 #include "chrome/browser/ui/global_media_controls/media_session_notification_producer.h"
@@ -120,8 +120,7 @@ class MediaNotificationProviderImplTest : public testing::Test {
 
  private:
   session_manager::SessionManager session_manager_;
-  chromeos::FakeChromeUserManager* user_manager_{
-      new chromeos::FakeChromeUserManager()};
+  ash::FakeChromeUserManager* user_manager_{new ash::FakeChromeUserManager()};
   TestingProfileManager testing_profile_manager_{
       TestingBrowserProcess::GetGlobal()};
   views::LayoutProvider layout_provider_;

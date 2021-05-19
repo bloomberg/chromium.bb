@@ -20,6 +20,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/platform_apps/install_chrome_app.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/buildflags.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -78,16 +79,45 @@
 #include "components/rlz/rlz_tracker.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/crosapi/browser_util.h"
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/lacros_prefs.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/lacros/lacros_service.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
+#endif
+
+#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+#include "chrome/browser/sessions/app_session_service.h"
+#include "chrome/browser/sessions/app_session_service_factory.h"
 #endif
 
 namespace {
 
 // Utility functions ----------------------------------------------------------
+
+#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+// ChromeOS always restores apps unconditionally. Other platforms restore apps
+// only when the browser is automatically restarted.
+bool ShouldRestoreApps(bool is_post_restart) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return true;
+#elif defined(OS_MAC) || defined(OS_LINUX)
+  // TODO(stahon@microsoft.com)
+  // Even when app restores are enabled on mac, don't actually restore apps
+  // because they do not restore correctly. http://crbug.com/1194201
+  // On linux, apps can be restored without the proper app frame,
+  // disabling restorations on linux for now. http://crbug.com/1199109
+  return false;
+#else
+  return is_post_restart;
+#endif
+}
+#endif
 
 void UrlsToTabs(const std::vector<GURL>& urls, StartupTabs* tabs) {
   for (const GURL& url : urls) {
@@ -229,6 +259,14 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
     profile_ = browser->profile();
 
   if (!browser || !browser->is_type_normal()) {
+    // In some conditions a new browser object cannot be created. The most
+    // common reason for not being able to create browser is having this call
+    // when the browser process is shutting down. This can also fail if the
+    // passed profile is of a type that is not suitable for browser creation.
+    if (Browser::GetCreationStatusForProfile(profile_) !=
+        Browser::CreationStatus::kOk) {
+      return nullptr;
+    }
     // Startup browsers are not counted as being created by a user_gesture
     // because of historical accident, even though the startup browser was
     // created in response to the user clicking on chrome. There was an
@@ -290,8 +328,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
 void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
     bool process_startup,
     const std::vector<GURL>& cmd_line_urls) {
-  // Don't open any browser windows if starting up in "background mode".
-  if (command_line_.HasSwitch(switches::kNoStartupWindow))
+  if (!ShouldLaunch(command_line_))
     return;
 
   StartupTabs cmd_line_tabs;
@@ -490,10 +527,18 @@ bool StartupBrowserCreatorImpl::MaybeAsyncRestore(const StartupTabs& tabs,
     return false;
 
   // Note: there's no session service in incognito or guest mode.
+  if (!SessionServiceFactory::GetForProfileForSessionRestore(profile_))
+    return false;
+
+  bool restore_apps = false;
+#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+  restore_apps = ShouldRestoreApps(StartupBrowserCreator::WasRestarted());
+#endif  // BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+  // Note: there's no session service in incognito or guest mode.
   SessionService* service =
       SessionServiceFactory::GetForProfileForSessionRestore(profile_);
 
-  return service && service->RestoreIfNecessary(TabsToUrls(tabs));
+  return service && service->RestoreIfNecessary(TabsToUrls(tabs), restore_apps);
 }
 
 Browser* StartupBrowserCreatorImpl::RestoreOrCreateBrowser(
@@ -504,6 +549,15 @@ Browser* StartupBrowserCreatorImpl::RestoreOrCreateBrowser(
     bool is_post_crash_launch) {
   Browser* browser = nullptr;
   if (behavior == BrowserOpenBehavior::SYNCHRONOUS_RESTORE) {
+#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+    // It's worth noting that this codepath is not hit by crash restore
+    // because we want to avoid a crash restore loop, so we don't
+    // automatically restore after a crash.
+    // Crash restores are triggered via session_crashed_bubble_view.cc
+    if (ShouldRestoreApps(StartupBrowserCreator::WasRestarted()))
+      restore_options |= SessionRestore::RESTORE_APPS;
+#endif  //  BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+
     browser = SessionRestore::RestoreSession(profile_, nullptr, restore_options,
                                              TabsToUrls(tabs));
     if (browser)
@@ -659,4 +713,32 @@ StartupBrowserCreatorImpl::DetermineSynchronousRestoreOptions(
     options |= SessionRestore::ALWAYS_CREATE_TABBED_BROWSER;
 
   return options;
+}
+
+// static
+bool StartupBrowserCreatorImpl::ShouldLaunch(
+    const base::CommandLine& command_line) {
+  // Don't open any browser windows if starting up in "background mode".
+  if (command_line.HasSwitch(switches::kNoStartupWindow))
+    return false;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Don't open any browser windows if Ash requested that Lacros not do so. The
+  // implicit assumption is that some other code is responsible for keeping
+  // Lacros running in the background
+  if (chromeos::LacrosService::Get() &&
+      chromeos::LacrosService::Get()->init_params()->initial_browser_action ==
+          crosapi::mojom::InitialBrowserAction::kDoNotOpenWindow) {
+    return false;
+  }
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // If Lacros is the primary web browser, do not open the browser window
+  // on Chrome OS session login.
+  if (crosapi::browser_util::IsLacrosPrimaryBrowser())
+    return false;
+#endif
+
+  return true;
 }

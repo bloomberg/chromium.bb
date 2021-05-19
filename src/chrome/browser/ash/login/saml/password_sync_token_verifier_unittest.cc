@@ -6,9 +6,9 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/default_clock.h"
-#include "chrome/browser/chromeos/login/login_pref_names.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -34,7 +34,7 @@ constexpr base::TimeDelta kSyncTokenCheckInterval =
 constexpr base::TimeDelta kSyncTokenCheckBelowInterval =
     base::TimeDelta::FromMinutes(4);
 
-class FakeUserManagerWithLocalState : public chromeos::FakeChromeUserManager {
+class FakeUserManagerWithLocalState : public FakeChromeUserManager {
  public:
   FakeUserManagerWithLocalState()
       : test_local_state_(std::make_unique<TestingPrefServiceSimple>()) {

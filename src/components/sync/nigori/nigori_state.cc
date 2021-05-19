@@ -63,7 +63,7 @@ bool EncryptKeyBag(const CryptographerImpl& cryptographer,
 void UpdateNigoriSpecificsFromEncryptedTypes(
     ModelTypeSet encrypted_types,
     sync_pb::NigoriSpecifics* specifics) {
-  static_assert(39 == ModelType::NUM_ENTRIES,
+  static_assert(38 == GetNumModelTypes(),
                 "If adding an encryptable type, update handling below.");
   specifics->set_encrypt_bookmarks(encrypted_types.Has(BOOKMARKS));
   specifics->set_encrypt_preferences(encrypted_types.Has(PREFERENCES));
@@ -276,7 +276,7 @@ sync_pb::NigoriSpecifics NigoriState::ToSpecificsProto() const {
 
 NigoriState NigoriState::Clone() const {
   NigoriState result;
-  result.cryptographer = cryptographer->CloneImpl();
+  result.cryptographer = cryptographer->Clone();
   result.pending_keys = pending_keys;
   result.passphrase_type = passphrase_type;
   result.keystore_migration_time = keystore_migration_time;

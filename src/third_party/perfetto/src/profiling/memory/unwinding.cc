@@ -147,8 +147,8 @@ bool DoUnwind(WireMessage* msg, UnwindingMetadata* metadata, AllocRecord* out) {
   unwindstack::Unwinder unwinder(kMaxFrames, &metadata->fd_maps, regs.get(),
                                  mems);
 #if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
-  unwinder.SetJitDebug(metadata->jit_debug.get());
-  unwinder.SetDexFiles(metadata->dex_files.get());
+  unwinder.SetJitDebug(metadata->GetJitDebug(regs->Arch()));
+  unwinder.SetDexFiles(metadata->GetDexFiles(regs->Arch()));
 #endif
   // Suppress incorrect "variable may be uninitialized" error for if condition
   // after this loop. error_code = LastErrorCode gets run at least once.
@@ -168,8 +168,8 @@ bool DoUnwind(WireMessage* msg, UnwindingMetadata* metadata, AllocRecord* out) {
       ReadFromRawData(regs.get(), alloc_metadata->register_data);
       out->reparsed_map = true;
 #if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
-      unwinder.SetJitDebug(metadata->jit_debug.get());
-      unwinder.SetDexFiles(metadata->dex_files.get());
+      unwinder.SetJitDebug(metadata->GetJitDebug(regs->Arch()));
+      unwinder.SetDexFiles(metadata->GetDexFiles(regs->Arch()));
 #endif
     }
     out->frames.swap(unwinder.frames());  // Provide the unwinder buffer to use.
@@ -413,7 +413,9 @@ void UnwindingWorker::PostDisconnectSocket(pid_t pid) {
 void UnwindingWorker::HandleDisconnectSocket(pid_t pid) {
   auto it = client_data_.find(pid);
   if (it == client_data_.end()) {
-    PERFETTO_DFATAL_OR_ELOG("Trying to disconnect unknown socket.");
+    // This is expected if the client voluntarily disconnects before the
+    // profiling session ended. In that case, there is a race between the main
+    // thread learning about the disconnect and it calling back here.
     return;
   }
   ClientData& client_data = it->second;

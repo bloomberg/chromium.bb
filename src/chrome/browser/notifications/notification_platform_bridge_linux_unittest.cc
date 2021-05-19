@@ -48,10 +48,10 @@ class NotificationBuilder {
   explicit NotificationBuilder(const std::string& id)
       : notification_(message_center::NOTIFICATION_TYPE_SIMPLE,
                       id,
-                      base::string16(),
-                      base::string16(),
+                      std::u16string(),
+                      std::u16string(),
                       gfx::Image(),
-                      base::string16(),
+                      std::u16string(),
                       GURL(),
                       message_center::NotifierId(GURL()),
                       message_center::RichNotificationData(),
@@ -72,7 +72,7 @@ class NotificationBuilder {
     return *this;
   }
 
-  NotificationBuilder& SetMessage(const base::string16& message) {
+  NotificationBuilder& SetMessage(const std::u16string& message) {
     notification_.set_message(message);
     return *this;
   }
@@ -102,7 +102,7 @@ class NotificationBuilder {
     return *this;
   }
 
-  NotificationBuilder& SetTitle(const base::string16& title) {
+  NotificationBuilder& SetTitle(const std::u16string& title) {
     notification_.set_title(title);
     return *this;
   }
@@ -352,7 +352,7 @@ class NotificationPlatformBridgeLinuxTest : public BrowserWithTestWindowTest {
                        const GURL& origin,
                        const std::string& notification_id,
                        const base::Optional<int>& action_index,
-                       const base::Optional<base::string16>& reply,
+                       const base::Optional<std::u16string>& reply,
                        const base::Optional<bool>& by_user) {
     last_operation_ = operation;
     last_action_index_ = action_index;
@@ -453,7 +453,7 @@ class NotificationPlatformBridgeLinuxTest : public BrowserWithTestWindowTest {
 
   base::Optional<NotificationCommon::Operation> last_operation_;
   base::Optional<int> last_action_index_;
-  base::Optional<base::string16> last_reply_;
+  base::Optional<std::u16string> last_reply_;
 
  private:
   void DoInvokeAction(uint32_t dbus_id, const std::string& action) {
@@ -509,7 +509,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, ProgressPercentageAddedToSummary) {
       NotificationBuilder("")
           .SetType(message_center::NOTIFICATION_TYPE_PROGRESS)
           .SetProgress(42)
-          .SetTitle(base::UTF8ToUTF16("The Title"))
+          .SetTitle(u"The Title")
           .GetResult(),
       nullptr);
 }
@@ -529,8 +529,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationListItemsInBody) {
       NotificationBuilder("")
           .SetType(message_center::NOTIFICATION_TYPE_MULTIPLE)
           .SetItems(std::vector<message_center::NotificationItem>{
-              {base::UTF8ToUTF16("abc"), base::UTF8ToUTF16("123")},
-              {base::UTF8ToUTF16("def"), base::UTF8ToUTF16("456")}})
+              {u"abc", u"123"}, {u"def", u"456"}})
           .GetResult(),
       nullptr);
 }
@@ -637,7 +636,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("")
-          .SetMessage(base::ASCIIToUTF16("Body text"))
+          .SetMessage(u"Body text")
           .SetOriginUrl(GURL("https://google.com/search?q=test&ie=UTF8"))
           .GetResult(),
       nullptr);
@@ -658,7 +657,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttributionKde) {
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("")
-          .SetMessage(base::ASCIIToUTF16("Body text"))
+          .SetMessage(u"Body text")
           .SetOriginUrl(GURL("https://google.com/search?q=test&ie=UTF8"))
           .GetResult(),
       nullptr);
@@ -694,8 +693,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, EscapeHtml) {
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("")
-          .SetMessage(
-              base::ASCIIToUTF16("<span id='1' class=\"2\">&#39;</span>"))
+          .SetMessage(u"<span id='1' class=\"2\">&#39;</span>")
           .GetResult(),
       nullptr);
 }
@@ -903,8 +901,8 @@ TEST_F(NotificationPlatformBridgeLinuxTest, ActionButtonForwards) {
       NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("1")
           .SetOriginUrl(GURL("https://google.com"))
-          .AddButton(ButtonInfo(base::ASCIIToUTF16("button0")))
-          .AddButton(ButtonInfo(base::ASCIIToUTF16("button1")))
+          .AddButton(ButtonInfo(u"button0"))
+          .AddButton(ButtonInfo(u"button1"))
           .GetResult(),
       nullptr);
 
@@ -948,8 +946,8 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationRepliedForwards) {
   CreateNotificationBridgeLinux(TestParams().SetCapabilities(
       std::vector<std::string>{"actions", "body", "inline-reply"}));
 
-  ButtonInfo replyButton(base::ASCIIToUTF16("button0"));
-  replyButton.placeholder = base::ASCIIToUTF16("Reply...");
+  ButtonInfo replyButton(u"button0");
+  replyButton.placeholder = u"Reply...";
 
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, profile(),
@@ -961,5 +959,5 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationRepliedForwards) {
 
   EXPECT_EQ(NotificationCommon::OPERATION_CLICK, last_operation_);
   EXPECT_EQ(false, last_action_index_.has_value());
-  EXPECT_EQ(base::ASCIIToUTF16("Hello"), last_reply_);
+  EXPECT_EQ(u"Hello", last_reply_);
 }

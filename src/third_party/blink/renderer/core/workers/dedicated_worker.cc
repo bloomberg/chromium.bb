@@ -216,14 +216,15 @@ void DedicatedWorker::Start() {
     // asynchronous OnHostCreated call, so we call it directly here.
     // See https://crbug.com/1101603#c8.
     factory_client_->CreateWorkerHostDeprecated(
-        token_, WTF::Bind([](const network::CrossOriginEmbedderPolicy&) {}));
+        token_, script_request_url_,
+        WTF::Bind([](const network::CrossOriginEmbedderPolicy&) {}));
     OnHostCreated(std::move(blob_url_loader_factory),
                   network::CrossOriginEmbedderPolicy());
     return;
   }
 
   factory_client_->CreateWorkerHostDeprecated(
-      token_,
+      token_, script_request_url_,
       WTF::Bind(&DedicatedWorker::OnHostCreated, WrapWeakPersistent(this),
                 std::move(blob_url_loader_factory)));
 }
@@ -461,7 +462,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
       mojom::blink::V8CacheOptions::kDefault,
       nullptr /* worklet_module_responses_map */,
       std::move(browser_interface_broker_), CreateBeginFrameProviderParams(),
-      GetExecutionContext()->GetSecurityContext().GetFeaturePolicy(),
+      GetExecutionContext()->GetSecurityContext().GetPermissionsPolicy(),
       GetExecutionContext()->GetAgentClusterID(),
       GetExecutionContext()->UkmSourceID(),
       GetExecutionContext()->GetExecutionContextToken(),

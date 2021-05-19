@@ -32,7 +32,7 @@ class VertexBufferRobustnessTest : public DawnTest {
     // viewport.
     wgpu::ShaderModule CreateVertexModule(const std::string& attributes,
                                           const std::string& successExpression) {
-        return utils::CreateShaderModuleFromWGSL(device, (attributes + R"(
+        return utils::CreateShaderModule(device, (attributes + R"(
                 [[builtin(position)]] var<out> Position : vec4<f32>;
 
                 [[stage(vertex)]] fn main() -> void {
@@ -46,7 +46,7 @@ class VertexBufferRobustnessTest : public DawnTest {
                     return;
                 }
             )")
-                                                             .c_str());
+                                                     .c_str());
     }
 
     // Runs the test, a true |expectation| meaning success
@@ -57,7 +57,7 @@ class VertexBufferRobustnessTest : public DawnTest {
                 uint64_t bufferOffset,
                 bool expectation) {
         wgpu::ShaderModule vsModule = CreateVertexModule(attributes, successExpression);
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
                 [[location(0)]] var<out> outColor : vec4<f32>;
 
                 [[stage(fragment)]] fn main() -> void {
@@ -68,15 +68,16 @@ class VertexBufferRobustnessTest : public DawnTest {
 
         utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::PointList;
-        descriptor.vertexState = &vertexState;
-        descriptor.cColorStates[0].format = renderPass.colorFormat;
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
+        descriptor.vertex.bufferCount = vertexState.vertexBufferCount;
+        descriptor.vertex.buffers = &vertexState.cVertexBuffers[0];
+        descriptor.cTargets[0].format = renderPass.colorFormat;
         renderPass.renderPassInfo.cColorAttachments[0].clearColor = {0, 0, 0, 1};
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
@@ -99,7 +100,7 @@ TEST_P(VertexBufferRobustnessTest, DetectInvalidValues) {
     vertexState.vertexBufferCount = 1;
     vertexState.cVertexBuffers[0].arrayStride = sizeof(float);
     vertexState.cVertexBuffers[0].attributeCount = 1;
-    vertexState.cAttributes[0].format = wgpu::VertexFormat::Float;
+    vertexState.cAttributes[0].format = wgpu::VertexFormat::Float32;
     vertexState.cAttributes[0].offset = 0;
     vertexState.cAttributes[0].shaderLocation = 0;
 
@@ -116,7 +117,7 @@ TEST_P(VertexBufferRobustnessTest, FloatClamp) {
     vertexState.vertexBufferCount = 1;
     vertexState.cVertexBuffers[0].arrayStride = sizeof(float);
     vertexState.cVertexBuffers[0].attributeCount = 1;
-    vertexState.cAttributes[0].format = wgpu::VertexFormat::Float;
+    vertexState.cAttributes[0].format = wgpu::VertexFormat::Float32;
     vertexState.cAttributes[0].offset = 0;
     vertexState.cAttributes[0].shaderLocation = 0;
 
@@ -133,7 +134,7 @@ TEST_P(VertexBufferRobustnessTest, IntClamp) {
     vertexState.vertexBufferCount = 1;
     vertexState.cVertexBuffers[0].arrayStride = sizeof(int32_t);
     vertexState.cVertexBuffers[0].attributeCount = 1;
-    vertexState.cAttributes[0].format = wgpu::VertexFormat::Int;
+    vertexState.cAttributes[0].format = wgpu::VertexFormat::Sint32;
     vertexState.cAttributes[0].offset = 0;
     vertexState.cAttributes[0].shaderLocation = 0;
 
@@ -150,7 +151,7 @@ TEST_P(VertexBufferRobustnessTest, UIntClamp) {
     vertexState.vertexBufferCount = 1;
     vertexState.cVertexBuffers[0].arrayStride = sizeof(uint32_t);
     vertexState.cVertexBuffers[0].attributeCount = 1;
-    vertexState.cAttributes[0].format = wgpu::VertexFormat::UInt;
+    vertexState.cAttributes[0].format = wgpu::VertexFormat::Uint32;
     vertexState.cAttributes[0].offset = 0;
     vertexState.cAttributes[0].shaderLocation = 0;
 
@@ -159,7 +160,7 @@ TEST_P(VertexBufferRobustnessTest, UIntClamp) {
     wgpu::Buffer vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices),
                                                             wgpu::BufferUsage::Vertex);
 
-    DoTest("[[location(0)]] var<in> a : u32;", "a == 473", vertexState, vertexBuffer, 4, true);
+    DoTest("[[location(0)]] var<in> a : u32;", "a == 473u", vertexState, vertexBuffer, 4, true);
 }
 
 TEST_P(VertexBufferRobustnessTest, Float2Clamp) {
@@ -167,7 +168,7 @@ TEST_P(VertexBufferRobustnessTest, Float2Clamp) {
     vertexState.vertexBufferCount = 1;
     vertexState.cVertexBuffers[0].arrayStride = sizeof(float) * 2;
     vertexState.cVertexBuffers[0].attributeCount = 1;
-    vertexState.cAttributes[0].format = wgpu::VertexFormat::Float2;
+    vertexState.cAttributes[0].format = wgpu::VertexFormat::Float32x2;
     vertexState.cAttributes[0].offset = 0;
     vertexState.cAttributes[0].shaderLocation = 0;
 
@@ -185,7 +186,7 @@ TEST_P(VertexBufferRobustnessTest, Float3Clamp) {
     vertexState.vertexBufferCount = 1;
     vertexState.cVertexBuffers[0].arrayStride = sizeof(float) * 3;
     vertexState.cVertexBuffers[0].attributeCount = 1;
-    vertexState.cAttributes[0].format = wgpu::VertexFormat::Float3;
+    vertexState.cAttributes[0].format = wgpu::VertexFormat::Float32x3;
     vertexState.cAttributes[0].offset = 0;
     vertexState.cAttributes[0].shaderLocation = 0;
 
@@ -203,7 +204,7 @@ TEST_P(VertexBufferRobustnessTest, Float4Clamp) {
     vertexState.vertexBufferCount = 1;
     vertexState.cVertexBuffers[0].arrayStride = sizeof(float) * 4;
     vertexState.cVertexBuffers[0].attributeCount = 1;
-    vertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
+    vertexState.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
     vertexState.cAttributes[0].offset = 0;
     vertexState.cAttributes[0].shaderLocation = 0;
 

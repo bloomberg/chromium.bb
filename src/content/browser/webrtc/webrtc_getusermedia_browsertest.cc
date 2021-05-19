@@ -582,8 +582,17 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 // This test calls getUserMedia in an iframe and immediately close the iframe
 // in the scope of the failure callback.
-IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       VideoWithBadConstraintsInIFrameAndCloseInFailureCb) {
+// Flaky on lacros-chrome and mac bots. http://crbug.com/1196389
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_MAC)
+#define MAYBE_VideoWithBadConstraintsInIFrameAndCloseInFailureCb \
+  DISABLED_VideoWithBadConstraintsInIFrameAndCloseInFailureCb
+#else
+#define MAYBE_VideoWithBadConstraintsInIFrameAndCloseInFailureCb \
+  VideoWithBadConstraintsInIFrameAndCloseInFailureCb
+#endif
+IN_PROC_BROWSER_TEST_F(
+    WebRtcGetUserMediaBrowserTest,
+    MAYBE_VideoWithBadConstraintsInIFrameAndCloseInFailureCb) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -760,8 +769,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("concurrentGetUserMediaStop()");
 }
 
+// TODO(crbug.com/1087081) : Flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       GetUserMediaAfterStopElementCapture) {
+                       DISABLED_GetUserMediaAfterStopElementCapture) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -776,8 +786,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("getUserMediaEchoCancellationOnAndOff()");
 }
 
+// TODO(crbug.com/1087081) : Flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       GetUserMediaEchoCancellationOnAndOffAndVideo) {
+                       DISABLED_GetUserMediaEchoCancellationOnAndOffAndVideo) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));

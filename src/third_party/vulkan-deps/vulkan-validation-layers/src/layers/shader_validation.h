@@ -24,7 +24,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "vulkan/vulkan.h"
@@ -129,6 +128,13 @@ struct function_set {
     function_set() : id(0), offset(0), length(0) {}
 };
 
+struct builtin_set {
+    uint32_t offset;  // offset to instruction (OpDecorate or OpMemberDecorate)
+    spv::BuiltIn builtin;
+
+    builtin_set(uint32_t offset, spv::BuiltIn builtin) : offset(offset), builtin(builtin) {}
+};
+
 struct shader_struct_member {
     uint32_t offset;
     uint32_t size;                                 // A scalar size or a struct size. Not consider array
@@ -189,15 +195,24 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
     std::vector<uint32_t> words;
     // A mapping of <id> to the first word of its def. this is useful because walking type
     // trees, constant expressions, etc requires jumping all over the instruction stream.
-    std::unordered_map<unsigned, unsigned> def_index;
-    std::unordered_map<unsigned, decoration_set> decorations;
+    layer_data::unordered_map<unsigned, unsigned> def_index;
+    layer_data::unordered_map<unsigned, decoration_set> decorations;
+    // Find all decoration instructions to prevent relooping module later - many checks need this info
+    std::vector<spirv_inst_iter> decoration_inst;
+    std::vector<spirv_inst_iter> member_decoration_inst;
+    // Execution are not tied to an entry point and are their own mapping tied to entry point function
+    // [OpEntryPoint function <id> operand] : [Execution Mode Instruction list]
+    layer_data::unordered_map<uint32_t, std::vector<spirv_inst_iter>> execution_mode_inst;
+    // both OpDecorate and OpMemberDecorate builtin instructions
+    std::vector<builtin_set> builtin_decoration_list;
     struct EntryPoint {
-        uint32_t offset;
+        uint32_t offset;  // into module to get OpEntryPoint instruction
         VkShaderStageFlagBits stage;
         std::unordered_multimap<unsigned, unsigned> decorate_list;  // key: spv::Op,  value: offset
         std::vector<function_set> function_set_list;
         shader_struct_member push_constant_used_in_shader;
     };
+    // entry point is not unqiue to single value so need multimap
     std::unordered_multimap<std::string, EntryPoint> entry_points;
     bool has_valid_spirv;
     bool has_specialization_constants{false};
@@ -294,7 +309,7 @@ class ValidationCache {
     // we don't store negative results, as we would have to also store what was
     // wrong with them; also, we expect they will get fixed, so we're less
     // likely to see them again.
-    std::unordered_set<uint32_t> good_shader_hashes;
+    layer_data::unordered_set<uint32_t> good_shader_hashes;
     ValidationCache() {}
 
   public:
@@ -395,23 +410,24 @@ spirv_inst_iter FindEntrypoint(SHADER_MODULE_STATE const *src, char const *name,
 //
 // TODO: The set of interesting opcodes here was determined by eyeballing the SPIRV spec. It might be worth
 // converting parts of this to be generated from the machine-readable spec instead.
-std::unordered_set<uint32_t> MarkAccessibleIds(SHADER_MODULE_STATE const *src, spirv_inst_iter entrypoint);
+layer_data::unordered_set<uint32_t> MarkAccessibleIds(SHADER_MODULE_STATE const *src, spirv_inst_iter entrypoint);
 
 // Returns an int32_t corresponding to the spv::Dim of the given resource, when positive, and corresponding to an unknown type, when
 // negative.
 int32_t GetShaderResourceDimensionality(const SHADER_MODULE_STATE *module, const interface_var &resource);
 
-bool FindLocalSize(SHADER_MODULE_STATE const *src, uint32_t &local_size_x, uint32_t &local_size_y, uint32_t &local_size_z);
+bool FindLocalSize(SHADER_MODULE_STATE const *src, const spirv_inst_iter &entrypoint, uint32_t &local_size_x,
+                   uint32_t &local_size_y, uint32_t &local_size_z);
 
 void ProcessExecutionModes(SHADER_MODULE_STATE const *src, const spirv_inst_iter &entrypoint, PIPELINE_STATE *pipeline);
 
 std::vector<std::pair<descriptor_slot_t, interface_var>> CollectInterfaceByDescriptorSlot(
-    SHADER_MODULE_STATE const *src, std::unordered_set<uint32_t> const &accessible_ids, bool *has_writable_descriptor,
+    SHADER_MODULE_STATE const *src, layer_data::unordered_set<uint32_t> const &accessible_ids, bool *has_writable_descriptor,
     bool *has_atomic_descriptor);
 
 void SetPushConstantUsedInShader(SHADER_MODULE_STATE &src);
 
-std::unordered_set<uint32_t> CollectWritableOutputLocationinFS(const SHADER_MODULE_STATE &module,
+layer_data::unordered_set<uint32_t> CollectWritableOutputLocationinFS(const SHADER_MODULE_STATE &module,
                                                                const VkPipelineShaderStageCreateInfo &stage_info);
 
 uint32_t DescriptorTypeToReqs(SHADER_MODULE_STATE const *module, uint32_t type_id);

@@ -24,21 +24,22 @@
 #include "base/values.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
+#include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
+#include "chrome/browser/ash/login/lock_screen_utils.h"
 #include "chrome/browser/ash/login/quick_unlock/fingerprint_storage.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_storage.h"
+#include "chrome/browser/ash/login/reauth_stats.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/views/user_board_view.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
+#include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/system_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/lock_screen_utils.h"
-#include "chrome/browser/chromeos/login/reauth_stats.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/views/user_board_view.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
-#include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -47,10 +48,10 @@
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_util.h"
@@ -69,11 +70,7 @@
 
 namespace chromeos {
 
-constexpr StaticOobeScreenId UserBoardView::kScreenId;
-
 namespace {
-
-bool g_skip_force_online_signin_for_testing = false;
 
 const char kWakeLockReason[] = "TPMLockedIssue";
 const int kWaitingOvertimeInSeconds = 1;
@@ -269,7 +266,7 @@ class UserSelectionScreen::DircryptoMigrationChecker {
       return;
     }
 
-    CryptohomeClient::Get()->WaitForServiceToBeAvailable(
+    UserDataAuthClient::Get()->WaitForServiceToBeAvailable(
         base::BindOnce(&DircryptoMigrationChecker::RunCryptohomeCheck,
                        weak_ptr_factory_.GetWeakPtr(), account_id));
   }
@@ -283,29 +280,31 @@ class UserSelectionScreen::DircryptoMigrationChecker {
       return;
     }
 
-    CryptohomeClient::Get()->NeedsDircryptoMigration(
-        cryptohome::CreateAccountIdentifierFromAccountId(account_id),
-        base::BindOnce(&DircryptoMigrationChecker::
-                           OnCryptohomeNeedsDircryptoMigrationCallback,
-                       weak_ptr_factory_.GetWeakPtr(), account_id));
+    user_data_auth::NeedsDircryptoMigrationRequest request;
+    *request.mutable_account_id() =
+        cryptohome::CreateAccountIdentifierFromAccountId(account_id);
+    UserDataAuthClient::Get()->NeedsDircryptoMigration(
+        request, base::BindOnce(&DircryptoMigrationChecker::
+                                    OnCryptohomeNeedsDircryptoMigrationCallback,
+                                weak_ptr_factory_.GetWeakPtr(), account_id));
   }
 
   // Callback invoked when NeedsDircryptoMigration call is finished.
   void OnCryptohomeNeedsDircryptoMigrationCallback(
       const AccountId& account_id,
-      base::Optional<bool> needs_migration) {
-    if (!needs_migration.has_value()) {
+      base::Optional<user_data_auth::NeedsDircryptoMigrationReply> reply) {
+    if (!reply.has_value()) {
       LOG(ERROR) << "Failed to call cryptohome NeedsDircryptoMigration.";
       // Hide the banner to avoid confusion in http://crbug.com/721948.
       // Cache is not updated so that cryptohome call will still be attempted.
       UpdateUI(account_id, false);
       return;
     }
-    UMA_HISTOGRAM_BOOLEAN("Ash.Login.Login.MigrationBanner",
-                          needs_migration.value());
+    bool needs_migration = reply->needs_dircrypto_migration();
+    UMA_HISTOGRAM_BOOLEAN("Ash.Login.Login.MigrationBanner", needs_migration);
 
-    needs_dircrypto_migration_cache_[account_id] = needs_migration.value();
-    UpdateUI(account_id, needs_migration.value());
+    needs_dircrypto_migration_cache_[account_id] = needs_migration;
+    UpdateUI(account_id, needs_migration);
   }
 
   // Update UI for the given user when the check result is available.
@@ -317,7 +316,7 @@ class UserSelectionScreen::DircryptoMigrationChecker {
     owner_->ShowBannerMessage(
         needs_migration ? l10n_util::GetStringUTF16(
                               IDS_LOGIN_NEEDS_DIRCRYPTO_MIGRATION_BANNER)
-                        : base::string16(),
+                        : std::u16string(),
         needs_migration);
   }
 
@@ -344,7 +343,7 @@ class UserSelectionScreen::TpmLockedChecker {
   ~TpmLockedChecker() = default;
 
   void Check() {
-    CryptohomeClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
+    UserDataAuthClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
         &TpmLockedChecker::RunCryptohomeCheck, weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -437,8 +436,7 @@ class UserSelectionScreen::TpmLockedChecker {
 };
 
 UserSelectionScreen::UserSelectionScreen(DisplayedScreen display_type)
-    : BaseScreen(UserBoardView::kScreenId, OobeScreenPriority::DEFAULT),
-      display_type_(display_type) {
+    : display_type_(display_type) {
   session_manager::SessionManager::Get()->AddObserver(this);
   if (display_type_ != DisplayedScreen::SIGN_IN_SCREEN)
     return;
@@ -468,15 +466,12 @@ void UserSelectionScreen::SetTpmLockedState(bool is_locked,
 }
 
 // static
-void UserSelectionScreen::SetSkipForceOnlineSigninForTesting(bool skip) {
-  g_skip_force_online_signin_for_testing = skip;
-}
-
-// static
 bool UserSelectionScreen::ShouldForceOnlineSignIn(
     const user_manager::User* user) {
-  if (g_skip_force_online_signin_for_testing)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSkipForceOnlineSignInForTesting)) {
     return false;
+  }
 
   // Public sessions are always allowed to log in offline.
   // Deprecated supervised users are always allowed to log in offline.
@@ -488,15 +483,9 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
 
   const user_manager::User::OAuthTokenStatus token_status =
       user->oauth_token_status();
-  // TODO(crbug/1155729): Check if this bool is ever true. If not, remove it.
-  const bool is_deprecated_supervised_user =
-      user->GetType() == user_manager::USER_TYPE_SUPERVISED_DEPRECATED;
   const bool is_public_session =
       user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
   const bool has_gaia_account = user->HasGaiaAccount();
-
-  if (is_deprecated_supervised_user)
-    return false;
 
   if (is_public_session)
     return false;
@@ -563,8 +552,8 @@ ash::UserAvatar UserSelectionScreen::BuildAshUserAvatarForUser(
         user.image_bytes()->front(),
         user.image_bytes()->front() + user.image_bytes()->size());
   } else if (user.HasDefaultImage()) {
-    int resource_id = chromeos::default_user_image::kDefaultImageResourceIDs
-        [user.image_index()];
+    int resource_id =
+        default_user_image::kDefaultImageResourceIDs[user.image_index()];
     load_image_from_resource(resource_id);
   } else if (user.image_is_stub()) {
     load_image_from_resource(IDR_LOGIN_DEFAULT_USER);
@@ -583,7 +572,15 @@ void UserSelectionScreen::Init(const user_manager::UserList& users) {
   if (!ime_state_.get())
     ime_state_ = input_method::InputMethodManager::Get()->GetActiveIMEState();
 
-  if (users.size() > 0) {
+  // Resets observed object in case of re-Init, no-op otherwise.
+  scoped_observation_.Reset();
+  // Login screen-only  logic to send users through the online re-auth.
+  // In-session (including the lock screen) is handled by
+  // InSessionPasswordSyncManager.
+  if (users.size() > 0 && display_type_ == DisplayedScreen::SIGN_IN_SCREEN) {
+    online_signin_notifier_ = std::make_unique<UserOnlineSigninNotifier>(users);
+    scoped_observation_.Observe(online_signin_notifier_.get());
+    online_signin_notifier_->CheckForPolicyEnforcedOnlineSignin();
     sync_token_checkers_ =
         std::make_unique<PasswordSyncTokenCheckersCollection>();
     sync_token_checkers_->StartPasswordSyncCheckers(users, this);
@@ -726,7 +723,7 @@ void UserSelectionScreen::OnUserStatusChecked(
   if (status == TokenHandleUtil::INVALID) {
     RecordReauthReason(account_id, ReauthReason::INVALID_TOKEN_HANDLE);
     SetAuthType(account_id, proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
-                base::string16());
+                std::u16string());
   }
 }
 
@@ -734,7 +731,7 @@ void UserSelectionScreen::OnUserStatusChecked(
 
 void UserSelectionScreen::SetAuthType(const AccountId& account_id,
                                       proximity_auth::mojom::AuthType auth_type,
-                                      const base::string16& initial_value) {
+                                      const std::u16string& initial_value) {
   if (GetAuthType(account_id) ==
       proximity_auth::mojom::AuthType::FORCE_OFFLINE_PASSWORD) {
     return;
@@ -768,7 +765,7 @@ UserSelectionScreen::GetScreenType() const {
   }
 }
 
-void UserSelectionScreen::ShowBannerMessage(const base::string16& message,
+void UserSelectionScreen::ShowBannerMessage(const std::u16string& message,
                                             bool is_warning) {
   view_->ShowBannerMessage(message, is_warning);
 }
@@ -835,17 +832,18 @@ void UserSelectionScreen::OnInvalidSyncToken(const AccountId& account_id) {
   RecordReauthReason(account_id,
                      ReauthReason::SAML_PASSWORD_SYNC_TOKEN_VALIDATION_FAILED);
   SetAuthType(account_id, proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
-              base::string16());
+              std::u16string());
 }
 
-void UserSelectionScreen::ShowImpl() {}
-
-void UserSelectionScreen::HideImpl() {}
+void UserSelectionScreen::OnOnlineSigninEnforced(const AccountId& account_id) {
+  SetAuthType(account_id, proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
+              std::u16string());
+}
 
 void UserSelectionScreen::HardLockPod(const AccountId& account_id) {
   view_->SetAuthType(account_id,
                      proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
-                     base::string16());
+                     std::u16string());
   EasyUnlockService* service = GetEasyUnlockServiceForUser(account_id);
   if (!service)
     return;

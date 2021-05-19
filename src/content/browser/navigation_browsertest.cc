@@ -4,11 +4,14 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -101,7 +104,7 @@ class InterceptAndCancelDidCommitProvisionalLoad
 
   void Wait(size_t number_of_messages) {
     while (intercepted_messages_.size() < number_of_messages) {
-      loop_.reset(new base::RunLoop);
+      loop_ = std::make_unique<base::RunLoop>();
       loop_->Run();
     }
   }
@@ -169,7 +172,7 @@ class RenderFrameHostFactoryForHistoryBackInterceptor
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       bool renderer_initiated_creation,
-      RenderFrameHostImpl::LifecycleState lifecycle_state) override {
+      RenderFrameHostImpl::LifecycleStateImpl lifecycle_state) override {
     return base::WrapUnique(new RenderFrameHostImplForHistoryBackInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
@@ -292,32 +295,16 @@ class NavigationGoToEntryAtOffsetBrowserTest : public NavigationBrowserTest {
   RenderFrameHostFactoryForHistoryBackInterceptor render_frame_host_factory_;
 };
 
-class NetworkIsolationNavigationBrowserTest
-    : public ContentBrowserTest,
-      public ::testing::WithParamInterface<bool> {
+class NetworkIsolationNavigationBrowserTest : public ContentBrowserTest {
  public:
-  NetworkIsolationNavigationBrowserTest() {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(
-          net::features::kAppendFrameOriginToNetworkIsolationKey);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          net::features::kAppendFrameOriginToNetworkIsolationKey);
-    }
-  }
+  NetworkIsolationNavigationBrowserTest() = default;
 
  protected:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
     ContentBrowserTest::SetUpOnMainThread();
   }
-
-  base::test::ScopedFeatureList feature_list_;
 };
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         NetworkIsolationNavigationBrowserTest,
-                         ::testing::Bool());
 
 class NavigationBrowserTestReferrerPolicy
     : public NavigationBrowserTest,
@@ -842,7 +829,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
   EXPECT_EQ("\"done\"", done);
 }
 
-IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
+IN_PROC_BROWSER_TEST_F(NetworkIsolationNavigationBrowserTest,
                        BrowserNavigationNetworkIsolationKey) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   url::Origin origin = url::Origin::Create(url);
@@ -860,7 +847,7 @@ IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
                   .IsEqualForTesting(request->trusted_params->isolation_info));
 }
 
-IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
+IN_PROC_BROWSER_TEST_F(NetworkIsolationNavigationBrowserTest,
                        RenderNavigationIsolationInfo) {
   GURL url(embedded_test_server()->GetURL("/title2.html"));
   url::Origin origin = url::Origin::Create(url);
@@ -879,7 +866,7 @@ IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
                   .IsEqualForTesting(request->trusted_params->isolation_info));
 }
 
-IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
+IN_PROC_BROWSER_TEST_F(NetworkIsolationNavigationBrowserTest,
                        SubframeIsolationInfo) {
   GURL url(embedded_test_server()->GetURL("/page_with_iframe.html"));
   GURL iframe_document = embedded_test_server()->GetURL("/title1.html");
@@ -1081,6 +1068,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   RenderFrameHost* initial_rfh = current_frame_host();
   url::Origin initial_origin = initial_rfh->GetLastCommittedOrigin();
   blink::LocalFrameToken initiator_frame_token = initial_rfh->GetFrameToken();
+  int initiator_process_id = initial_rfh->GetProcess()->GetID();
 
   // Simulate clicking on a cross-site link which has rel="noopener".
   {
@@ -1111,6 +1099,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     EXPECT_TRUE(observer.last_initiator_frame_token().has_value());
     EXPECT_EQ(initiator_frame_token,
               observer.last_initiator_frame_token().value());
+    EXPECT_EQ(initiator_process_id, observer.last_initiator_process_id());
   }
 }
 
@@ -1692,8 +1681,8 @@ class PreviewsStateBrowserTest : public ContentBrowserTest {
 
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    client_.reset(new PreviewsStateContentBrowserClient(
-        embedded_test_server()->GetURL("/title1.html")));
+    client_ = std::make_unique<PreviewsStateContentBrowserClient>(
+        embedded_test_server()->GetURL("/title1.html"));
 
     client_->SetClient();
   }
@@ -2827,7 +2816,7 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest, CookiesInheritedSrcDoc) {
   EXPECT_EQ("a=0; b=0", EvalJs(sub_document_1, "document.cookie"));
 
   // 3. Checks cookies are sent while requesting resources.
-  EXPECT_TRUE(ExecJs(sub_document_1, "fetch('/response_1');"));
+  ExecuteScriptAsync(sub_document_1, "fetch('/response_1');");
   response_1.WaitForRequest();
   EXPECT_EQ("a=0; b=0", response_1.http_request()->headers.at("Cookie"));
 
@@ -2854,7 +2843,7 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest, CookiesInheritedSrcDoc) {
   EXPECT_EQ("d=0", EvalJs(sub_document_2, "document.cookie"));
 
   // 7. Checks cookies are sent while requesting resources.
-  EXPECT_TRUE(ExecJs(sub_document_2, "fetch('/response_2');"));
+  ExecuteScriptAsync(sub_document_2, "fetch('/response_2');");
   response_2.WaitForRequest();
   EXPECT_EQ("d=0", response_2.http_request()->headers.at("Cookie"));
 
@@ -2888,7 +2877,7 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest, CookiesInheritedSrcDoc) {
             EvalJs(sub_document_3, "document.cookie"));
 
   // 12. Checks cookies are sent while requesting resources.
-  EXPECT_TRUE(ExecJs(sub_document_3, "fetch('/response_3');"));
+  ExecuteScriptAsync(sub_document_3, "fetch('/response_3');");
   response_3.WaitForRequest();
   EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
             response_3.http_request()->headers.at("Cookie"));
@@ -2951,7 +2940,7 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest,
 
   // 3. Checks cookies are sent while requesting resources.
   GURL url_response_1 = https_server()->GetURL("a.com", "/response_1");
-  EXPECT_TRUE(ExecJs(sub_document_1, JsReplace("fetch($1)", url_response_1)));
+  ExecuteScriptAsync(sub_document_1, JsReplace("fetch($1)", url_response_1));
   response_1.WaitForRequest();
   EXPECT_EQ("a=0; b=0", response_1.http_request()->headers.at("Cookie"));
 
@@ -2978,7 +2967,7 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest,
   EXPECT_EQ("d=0", EvalJs(sub_document_2, "document.cookie"));
 
   // 7. Checks cookies are sent while requesting resources.
-  EXPECT_TRUE(ExecJs(sub_document_2, "fetch('/response_2');"));
+  ExecuteScriptAsync(sub_document_2, "fetch('/response_2');");
   response_2.WaitForRequest();
   EXPECT_EQ("d=0", response_2.http_request()->headers.at("Cookie"));
 
@@ -3011,7 +3000,7 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest,
             EvalJs(sub_document_3, "document.cookie"));
 
   // 11. Even if document.cookie is empty, cookies are sent.
-  EXPECT_TRUE(ExecJs(sub_document_3, "fetch('/response_3');"));
+  ExecuteScriptAsync(sub_document_3, "fetch('/response_3');");
   response_3.WaitForRequest();
   EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
             response_3.http_request()->headers.at("Cookie"));
@@ -3077,7 +3066,7 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest,
   EXPECT_EQ("a=0; b=0", EvalJs(sub_document_1, "document.cookie"));
 
   // 3. Checks cookies are sent while requesting resources.
-  EXPECT_TRUE(ExecJs(sub_document_1, "fetch('/response_1');"));
+  ExecuteScriptAsync(sub_document_1, "fetch('/response_1');");
   response_1.WaitForRequest();
   EXPECT_EQ("a=0; b=0", response_1.http_request()->headers.at("Cookie"));
 
@@ -3104,7 +3093,7 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest,
   EXPECT_EQ("d=0", EvalJs(sub_document_2, "document.cookie"));
 
   // 7. Checks cookies are sent while requesting resources.
-  EXPECT_TRUE(ExecJs(sub_document_2, "fetch('/response_2');"));
+  ExecuteScriptAsync(sub_document_2, "fetch('/response_2');");
   response_2.WaitForRequest();
   EXPECT_EQ("d=0", response_2.http_request()->headers.at("Cookie"));
 
@@ -3139,7 +3128,7 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest,
             EvalJs(sub_document_3, "document.cookie"));
 
   // 11. Checks cookies are sent while requesting resources.
-  EXPECT_TRUE(ExecJs(sub_document_3, "fetch('/response_3');"));
+  ExecuteScriptAsync(sub_document_3, "fetch('/response_3');");
   response_3.WaitForRequest();
   EXPECT_EQ("a=0; b=0; c=0; e=0; f=0",
             response_3.http_request()->headers.at("Cookie"));
@@ -3198,7 +3187,7 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest, CookiesInheritedDataUrl) {
   EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'a=0;SameSite=Lax'"));
   EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'b=0;SameSite=Strict'"));
   GURL url_response_1 = https_server()->GetURL("a.com", "/response_1");
-  EXPECT_TRUE(ExecJs(sub_document_1, JsReplace("fetch($1)", url_response_1)));
+  ExecuteScriptAsync(sub_document_1, JsReplace("fetch($1)", url_response_1));
   response_1.WaitForRequest();
   EXPECT_EQ(0u, response_1.http_request()->headers.count("Cookie"));
 
@@ -3237,7 +3226,7 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest, CookiesInheritedDataUrl) {
 
   // 7. No cookies are sent when requested from the data-URL.
   GURL url_response_2 = https_server()->GetURL("a.com", "/response_2");
-  EXPECT_TRUE(ExecJs(sub_document_2, JsReplace("fetch($1)", url_response_2)));
+  ExecuteScriptAsync(sub_document_2, JsReplace("fetch($1)", url_response_2));
   response_2.WaitForRequest();
   EXPECT_EQ(0u, response_2.http_request()->headers.count("Cookie"));
 }
@@ -3479,6 +3468,35 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     EXPECT_FALSE(NavigateToURL(shell(), url2));
     EXPECT_TRUE(navigation_1.has_committed());
     EXPECT_FALSE(navigation_1.was_same_document());
+  }
+
+  // This case is also an empty 404 page, but we do replaceState and pushState
+  // afterwards, creating successful same-document navigations.
+  {
+    // Navigate to empty 404, committing an error page.
+    GURL url1 = embedded_test_server()->GetURL("a.com", "/empty404.html");
+    NavigationHandleCommitObserver navigation(web_contents(), url1);
+    EXPECT_FALSE(NavigateToURL(shell(), url1));
+    EXPECT_TRUE(navigation.has_committed());
+    EXPECT_FALSE(navigation.was_same_document());
+
+    // replaceState on an error page, without changing the URL.
+    {
+      FrameNavigateParamsCapturer capturer(main_frame());
+      capturer.set_wait_for_load(false);
+      EXPECT_TRUE(ExecJs(shell(), "history.replaceState('foo', '')"));
+      capturer.Wait();
+      EXPECT_TRUE(capturer.is_same_document());
+    }
+
+    // pushState on an error page, without changing the URL.
+    {
+      FrameNavigateParamsCapturer capturer(main_frame());
+      capturer.set_wait_for_load(false);
+      EXPECT_TRUE(ExecJs(shell(), "history.pushState('foo', '')"));
+      capturer.Wait();
+      EXPECT_TRUE(capturer.is_same_document());
+    }
   }
 }
 
@@ -4450,10 +4468,8 @@ class NetworkIsolationSplitCacheAppendIframeOrigin
     : public NavigationBaseBrowserTest {
  public:
   NetworkIsolationSplitCacheAppendIframeOrigin() {
-    feature_list_.InitWithFeatures(
-        {net::features::kSplitCacheByNetworkIsolationKey,
-         net::features::kAppendFrameOriginToNetworkIsolationKey},
-        {});
+    feature_list_.InitAndEnableFeature(
+        net::features::kSplitCacheByNetworkIsolationKey);
   }
 
  private:
@@ -4544,73 +4560,105 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   console_observer.Wait();
 }
 
-namespace {
+class SubresourceLoadingTest : public NavigationBrowserTest {
+ public:
+  SubresourceLoadingTest() = default;
+  SubresourceLoadingTest(const SubresourceLoadingTest&) = delete;
+  SubresourceLoadingTest& operator=(const SubresourceLoadingTest&) = delete;
 
-void VerifyImageSubresourceLoad(
-    const ToRenderFrameHost& target,
-    const GURL& image_url,
-    const std::string& target_document = "document") {
-  const char kScriptTemplate[] = R"(
-      new Promise(resolve => {
-          let img = document.createElement('img');
-          img.src = $1;  // `$1` will be replaced with the value of `image_url`.
-          img.addEventListener('load', () => {
-              resolve('allowed');
-          });
-          img.addEventListener('error', () => {
-              resolve('blocked');
-          });
+  void DontTestNetworkServiceCrashes() {
+    test_network_service_crashes_ = false;
+  }
 
-          // `%%s` will be replaced with the value of `target_document`.
-          %s.body.appendChild(img);
-      }); )";
-  std::string script = base::StringPrintf(
-      JsReplace(kScriptTemplate, image_url).c_str(), target_document.c_str());
-  EXPECT_EQ("allowed", EvalJs(target, script));
-}
+  void VerifyResultsOfAboutBlankNavigation(RenderFrameHost* target_frame,
+                                           RenderFrameHost* initiator_frame) {
+    // Verify that `target_frame` has been navigated to "about:blank".
+    EXPECT_EQ(GURL(url::kAboutBlankURL), target_frame->GetLastCommittedURL());
 
-void VerifyResultsOfAboutBlankNavigation(RenderFrameHostImpl* target_frame,
-                                         RenderFrameHostImpl* initiator_frame,
-                                         const GURL& image_url) {
-  // Verify that `target_frame` has been navigated to "about:blank".
-  EXPECT_EQ(GURL(url::kAboutBlankURL), target_frame->GetLastCommittedURL());
+    // Verify that "about:blank" committed with the expected origin, and in the
+    // expected SiteInstance.
+    EXPECT_EQ(target_frame->GetLastCommittedOrigin(),
+              initiator_frame->GetLastCommittedOrigin());
+    EXPECT_EQ(target_frame->GetSiteInstance(),
+              initiator_frame->GetSiteInstance());
 
-  // Verify that "about:blank" committed with the expected origin, and in the
-  // expected SiteInstance.
-  EXPECT_EQ(target_frame->GetLastCommittedOrigin(),
-            initiator_frame->GetLastCommittedOrigin());
-  EXPECT_EQ(target_frame->GetSiteInstance(),
-            initiator_frame->GetSiteInstance());
+    // Start monitoring NetworkService for crashes.
+    //
+    // TODO(https://crbug.com/1169431): This should be part of BrowserTestBase.
+    // (with optional opt-out for things like NetworkServiceRestartBrowserTest).
+    bool did_network_service_crash = false;
+    base::CallbackListSubscription crash_monitoring_subscription =
+        RegisterNetworkServiceCrashHandler(base::BindLambdaForTesting(
+            [&]() { did_network_service_crash = true; }));
+    // Ask for cookies in the `target_frame`.  One implicit verification here
+    // is whether this step will hit any `cookie_url`-related NOTREACHED or DwoC
+    // in RestrictedCookieManager::ValidateAccessToCookiesAt.  This verification
+    // is non-racey, because `document.cookie` must have heard back from the
+    // RestrictedCookieManager before returning the value of cookies (this
+    // ignores possible Blink-side caching, but this is the first time the
+    // renderer needs the cookies and so this is okay for this test).
+    EXPECT_EQ("", EvalJs(target_frame, "document.cookie"));
+    // |network_context| might receive an error notification, but it's not
+    // guaranteed to have arrived at this point. Flush the remote to make sure
+    // the notification has been received.
+    //
+    // We flush via `initiator_frame`, because in the current set of tests, the
+    // `initiator_frame` always has a mojo connection to the NetworkService via
+    // the `network_service_disconnect_handler_holder_mojo` field of
+    // RenderFrameHostImpl.  (This is not true for the `target_frame` in tests
+    // where that frame uses the process-wide URLLoaderFactory fallback rather
+    // than creating a URLLoaderFactory via RenderFrameHostImpl.)
+    //
+    // TODO(https://crbug.com/1169431): This should be part of BrowserTestBase.
+    if (!IsInProcessNetworkService())
+      initiator_frame->FlushNetworkAndNavigationInterfacesForTesting();
+    EXPECT_FALSE(did_network_service_crash);
 
-  // Start monitoring NetworkService for crashes.
-  //
-  // TODO(https://crbug.com/1169431): This should be part of BrowserTestBase.
-  // (with optional opt-out for things like NetworkServiceRestartBrowserTest).
-  bool did_network_service_crash = false;
-  base::CallbackListSubscription crash_monitoring_subscription =
-      RegisterNetworkServiceCrashHandler(base::BindLambdaForTesting(
-          [&]() { did_network_service_crash = true; }));
-  // Ask for cookies in the `target_frame`.  One implicit verification here
-  // is whether this step will hit any `cookie_url`-related NOTREACHED or DwoC
-  // in RestrictedCookieManager::ValidateAccessToCookiesAt.  This verification
-  // is non-racey, because `document.cookie` must have heard back from the
-  // RestrictedCookieManager before returning the value of cookies (this ignores
-  // possible Blink-side caching, but this is the first time the renderer needs
-  // the cookies and so this is okay for this test).
-  EXPECT_EQ("", EvalJs(target_frame, "document.cookie"));
-  // |network_context| might receive an error notification, but it's not
-  // guaranteed to have arrived at this point. Flush the remote to make sure
-  // the notification has been received.
-  // TODO(https://crbug.com/1169431): This should be part of BrowserTestBase.
-  if (!IsInProcessNetworkService())
-    target_frame->FlushNetworkAndNavigationInterfacesForTesting();
-  EXPECT_FALSE(did_network_service_crash);
+    // Verify that the "about:blank" frame is able to load an image.
+    VerifyImageSubresourceLoads(target_frame);
+  }
 
-  // Verify that the "about:blank" frame is able to load an image.
-  VerifyImageSubresourceLoad(target_frame, image_url);
-}
+  void VerifyImageSubresourceLoads(
+      const ToRenderFrameHost& target,
+      const std::string& target_document = "document") {
+    VerifySingleImageSubresourceLoad(target, target_document);
 
-}  // namespace
+    // Verify detecting and recovering from a NetworkService crash (e.g. via the
+    // `network_service_disconnect_handler_holder_mojo` field and the
+    // UpdateSubresourceLoaderFactories method of RenderFrameHostImpl).
+    if (!IsInProcessNetworkService() && test_network_service_crashes_) {
+      SimulateNetworkServiceCrash();
+      VerifySingleImageSubresourceLoad(target, target_document);
+    }
+  }
+
+ private:
+  void VerifySingleImageSubresourceLoad(const ToRenderFrameHost& target,
+                                        const std::string& target_document) {
+    // Use a random, GUID-based hostname, to avoid hitting the network cache.
+    GURL image_url = embedded_test_server()->GetURL(
+        base::GenerateGUID() + ".com", "/blank.jpg");
+    const char kScriptTemplate[] = R"(
+        new Promise(resolve => {
+            let img = document.createElement('img');
+            img.src = $1;  // `$1` is replaced with the value of `image_url`.
+            img.addEventListener('load', () => {
+                resolve('allowed');
+            });
+            img.addEventListener('error', () => {
+                resolve('blocked');
+            });
+
+            // `%%s` is replaced with the value of `target_document`.
+            %s.body.appendChild(img);
+        }); )";
+    std::string script = base::StringPrintf(
+        JsReplace(kScriptTemplate, image_url).c_str(), target_document.c_str());
+    EXPECT_EQ("allowed", EvalJs(target, script));
+  }
+
+  bool test_network_service_crashes_ = true;
+};
 
 // The test below verifies that an "about:blank" navigation commits with the
 // right origin, even when the initiator of the navigation is not the parent or
@@ -4622,7 +4670,7 @@ void VerifyResultsOfAboutBlankNavigation(RenderFrameHostImpl* target_frame,
 // frame is a local frame (even in presence of site-per-process).  See also
 // GrandchildToAboutBlank_ABA_CrossSite and
 // GrandchildToAboutBlank_ABB_CrossSite.
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
                        GrandchildToAboutBlank_ABA_SameSite) {
   GURL url(embedded_test_server()->GetURL(
       "a.example.com",
@@ -4658,8 +4706,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       shell()->web_contents()->GetMainFrame());
   child_frame = main_frame->child_at(0)->current_frame_host();
   grandchild_frame = child_frame->child_at(0)->current_frame_host();
-  GURL image_url = embedded_test_server()->GetURL("b.com", "/blank.jpg");
-  VerifyResultsOfAboutBlankNavigation(grandchild_frame, main_frame, image_url);
+  VerifyResultsOfAboutBlankNavigation(grandchild_frame, main_frame);
 }
 
 // The test below verifies that an "about:blank" navigation commits with the
@@ -4671,7 +4718,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
 // In this test case there are no process swaps and the parent of the navigated
 // frame is a remote frame (in presence of site-per-process).  See also
 // GrandchildToAboutBlank_ABA_SameSite and GrandchildToAboutBlank_ABB_CrossSite.
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
                        GrandchildToAboutBlank_ABA_CrossSite) {
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(a))"));
@@ -4709,8 +4756,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       shell()->web_contents()->GetMainFrame());
   child_frame = main_frame->child_at(0)->current_frame_host();
   grandchild_frame = child_frame->child_at(0)->current_frame_host();
-  GURL image_url = embedded_test_server()->GetURL("b.com", "/blank.jpg");
-  VerifyResultsOfAboutBlankNavigation(grandchild_frame, main_frame, image_url);
+  VerifyResultsOfAboutBlankNavigation(grandchild_frame, main_frame);
 }
 
 // The test below verifies that an "about:blank" navigation commits with the
@@ -4722,7 +4768,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
 // In this test case the navigation forces a process swap of the target frame.
 // See also GrandchildToAboutBlank_ABA_SameSite and
 // GrandchildToAboutBlank_ABA_CrossSite.
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
                        GrandchildToAboutBlank_ABB_CrossSite) {
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(b))"));
@@ -4761,8 +4807,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       shell()->web_contents()->GetMainFrame());
   child_frame = main_frame->child_at(0)->current_frame_host();
   grandchild_frame = child_frame->child_at(0)->current_frame_host();
-  GURL image_url = embedded_test_server()->GetURL("b.com", "/blank.jpg");
-  VerifyResultsOfAboutBlankNavigation(grandchild_frame, main_frame, image_url);
+  VerifyResultsOfAboutBlankNavigation(grandchild_frame, main_frame);
 }
 
 // The test below verifies that an "about:blank" navigation commits with the
@@ -4770,7 +4815,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
 // opener of the frame targeted by the navigation.  In the
 // TopToAboutBlank_CrossSite testcase, the top-level navigation is initiated by
 // a cross-site subframe.
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, TopToAboutBlank_CrossSite) {
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest, TopToAboutBlank_CrossSite) {
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -4819,7 +4864,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, TopToAboutBlank_CrossSite) {
 // SameSiteSiblingToAboutBlank_CrossSiteTop testcase, the navigation is
 // initiated by a same-origin sibling (notably, not by one of target frame's
 // ancestors) and both siblings are subframes of a cross-site main frame.
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
                        SameSiteSiblingToAboutBlank_CrossSiteTop) {
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
@@ -4850,14 +4895,109 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       shell()->web_contents()->GetMainFrame());
   child_frame1 = main_frame->child_at(0)->current_frame_host();
   child_frame2 = main_frame->child_at(1)->current_frame_host();
-  GURL image_url = embedded_test_server()->GetURL("b.com", "/blank.jpg");
-  VerifyResultsOfAboutBlankNavigation(child_frame2, child_frame1, image_url);
+  VerifyResultsOfAboutBlankNavigation(child_frame2, child_frame1);
+}
+
+// The test below verifies that an initial empty document has a functional
+// URLLoaderFactory.  Note that some aspects of the current behavior (e.g. the
+// synchronous re-navigation) are not spec-compliant - see
+// https://crbug.com/778318 and https://github.com/whatwg/html/issues/3267.
+// Note that the same behavior is expected in the ...NewFrameWithoutSrc and
+// in the ...NewFrameWithAboutBlank testcases.
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
+                       URLLoaderFactoryInInitialEmptyDoc_NewFrameWithoutSrc) {
+  GURL opener_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), opener_url));
+
+  // This inserts an `iframe` element without an `src` attribute.  According to
+  // some specs "the browsing context will remain at the initial about:blank
+  // page", although other specs suggest that there is an explicit, separate
+  // navigation.  See:
+  // https://html.spec.whatwg.org/dev/iframe-embed-object.html#the-iframe-element
+  // https://html.spec.whatwg.org/multipage/iframe-embed-object.html#shared-attribute-processing-steps-for-iframe-and-frame-elements
+  ASSERT_TRUE(ExecJs(shell(), R"( let ifr = document.createElement('iframe');
+                                  document.body.appendChild(ifr); )"));
+  WaitForLoadStop(shell()->web_contents());
+  RenderFrameHost* main_frame = shell()->web_contents()->GetMainFrame();
+  RenderFrameHost* subframe = ChildFrameAt(main_frame, 0);
+
+  VerifyResultsOfAboutBlankNavigation(subframe, main_frame);
+}
+
+// See the doc comment for the
+// URLLoaderFactoryInInitialEmptyDoc_NewFrameWithoutSrc test case.
+IN_PROC_BROWSER_TEST_F(
+    SubresourceLoadingTest,
+    URLLoaderFactoryInInitialEmptyDoc_NewFrameWithAboutBlank) {
+  GURL opener_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), opener_url));
+
+  ASSERT_TRUE(ExecJs(shell(), R"( ifr = document.createElement('iframe');
+                                  ifr.src = 'about:blank';
+                                  document.body.appendChild(ifr); )"));
+  WaitForLoadStop(shell()->web_contents());
+  RenderFrameHost* main_frame = shell()->web_contents()->GetMainFrame();
+  RenderFrameHost* subframe = ChildFrameAt(main_frame, 0);
+
+  VerifyResultsOfAboutBlankNavigation(subframe, main_frame);
+}
+
+// The test below verifies that an initial empty document has a functional
+// URLLoaderFactory.  Note that the same behavior is expected in the
+// ...NewPopupToEmptyUrl and in the ...NewPopupToAboutBlank testcases - the
+// differences in test expectations (around `GetController().GetEntryCount()`)
+// are unexpected and would need to be fixed as part of https://crbug.com/524208
+// (or maybe more broadly https://crbug.com/778318 and/or
+// https://github.com/whatwg/html/issues/3267).
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
+                       URLLoaderFactoryInInitialEmptyDoc_NewPopupToEmptyUrl) {
+  GURL opener_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), opener_url));
+
+  content::WebContents* popup = nullptr;
+  {
+    WebContentsAddedObserver popup_observer;
+    ASSERT_TRUE(ExecJs(shell(), "window.open('', '_blank')"));
+    popup = popup_observer.GetWebContents();
+  }
+  WaitForLoadStop(popup);
+
+  // Verify that we are at the initial empty document.
+  EXPECT_EQ(0, popup->GetController().GetEntryCount());
+
+  // Verify that the `popup` is at "about:blank", with expected origin, with
+  // working `document.cookie`, and with working subresource loads.
+  VerifyResultsOfAboutBlankNavigation(popup->GetMainFrame(),
+                                      shell()->web_contents()->GetMainFrame());
+}
+
+// See the doc comment for the
+// URLLoaderFactoryInInitialEmptyDoc_NewPopupToEmptyUrl test case.
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
+                       URLLoaderFactoryInInitialEmptyDoc_NewPopupToAboutBlank) {
+  GURL opener_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), opener_url));
+
+  content::WebContents* popup = nullptr;
+  {
+    WebContentsAddedObserver popup_observer;
+    ASSERT_TRUE(ExecJs(shell(), "window.open('about:blank', '_blank')"));
+    popup = popup_observer.GetWebContents();
+  }
+  WaitForLoadStop(popup);
+
+  // Verify that we are not at the initial empty document anymore.
+  EXPECT_EQ(1, popup->GetController().GetEntryCount());
+
+  // Verify other about:blank things.
+  VerifyResultsOfAboutBlankNavigation(popup->GetMainFrame(),
+                                      shell()->web_contents()->GetMainFrame());
 }
 
 // The test below verifies that an initial empty document has a functional
 // URLLoaderFactory.
 IN_PROC_BROWSER_TEST_F(
-    NavigationBrowserTest,
+    SubresourceLoadingTest,
     URLLoaderFactoryInInitialEmptyDoc_LongNavigationInSubframe) {
   ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
@@ -4871,6 +5011,14 @@ IN_PROC_BROWSER_TEST_F(
                                    document.body.appendChild(ifr); )",
                                 hung_url)));
 
+  // No process swaps are expected before ReadyToCommit (which will never happen
+  // for a navigation to "/hung").  This test assertion double-checks that the
+  // test will cover inheriting URLLoaderFactory from the creator/opener/parent
+  // frame.
+  RenderFrameHost* main_frame = shell()->web_contents()->GetMainFrame();
+  RenderFrameHost* subframe = ChildFrameAt(main_frame, 0);
+  EXPECT_EQ(main_frame->GetProcess()->GetID(), subframe->GetProcess()->GetID());
+
   // Ask the parent to script the same-origin subframe and trigger some HTTP
   // subresource loads within the subframe.
   //
@@ -4878,14 +5026,13 @@ IN_PROC_BROWSER_TEST_F(
   // initial empty document.  In this test, the `request_initiator` will be a
   // non-opaque origin - it requires that the URLLoaderFactory will have a
   // matching `request_initiator_origin_lock` (e.g. inherited from the parent).
-  GURL image_url = embedded_test_server()->GetURL("b.com", "/blank.jpg");
-  VerifyImageSubresourceLoad(shell(), image_url, "ifr.contentDocument");
+  VerifyImageSubresourceLoads(shell(), "ifr.contentDocument");
 }
 
 // The test below verifies that an initial empty document has a functional
 // URLLoaderFactory.
 IN_PROC_BROWSER_TEST_F(
-    NavigationBrowserTest,
+    SubresourceLoadingTest,
     URLLoaderFactoryInInitialEmptyDoc_LongNavigationInPopup) {
   ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
@@ -4893,7 +5040,22 @@ IN_PROC_BROWSER_TEST_F(
   // Open a popup window that will never commit a navigation (i.e. that will be
   // stuck on the initial empty document).
   const GURL hung_url = embedded_test_server()->GetURL("a.com", "/hung");
-  ASSERT_TRUE(ExecJs(shell(), JsReplace("popup = window.open($1)", hung_url)));
+  WebContents* popup = nullptr;
+  {
+    WebContentsAddedObserver popup_observer;
+    ASSERT_TRUE(
+        ExecJs(shell(), JsReplace("popup = window.open($1)", hung_url)));
+    popup = popup_observer.GetWebContents();
+  }
+
+  // No process swaps are expected before ReadyToCommit (which will never happen
+  // for a navigation to "/hung").  This test assertion double-checks that the
+  // test will cover inheriting URLLoaderFactory from the creator/opener/parent
+  // frame.
+  RenderFrameHost* opener_frame = shell()->web_contents()->GetMainFrame();
+  RenderFrameHost* popup_frame = popup->GetMainFrame();
+  EXPECT_EQ(opener_frame->GetProcess()->GetID(),
+            popup_frame->GetProcess()->GetID());
 
   // Ask the opener to script the (same-origin) popup window and trigger some
   // HTTP subresource loads within the popup.
@@ -4902,13 +5064,82 @@ IN_PROC_BROWSER_TEST_F(
   // initial empty document.  In this test, the `request_initiator` will be a
   // non-opaque origin - it requires that the URLLoaderFactory will have a
   // matching `request_initiator_origin_lock` (e.g. inherited from the opener).
-  GURL image_url = embedded_test_server()->GetURL("b.com", "/blank.jpg");
-  VerifyImageSubresourceLoad(shell(), image_url, "popup.document");
+  VerifyImageSubresourceLoads(shell(), "popup.document");
+
+  // TODO(https://crbug.com/1194763): Crash recovery doesn't work when there is
+  // no opener.
+  DontTestNetworkServiceCrashes();
+  // Test again after closing the opener..
+  shell()->Close();
+  VerifyImageSubresourceLoads(popup);
+}
+
+// The test below verifies that an initial empty document has a functional
+// URLLoaderFactory.  The ...WithClearedOpener testcase is a regression test for
+// https://crbug.com/1191203.
+IN_PROC_BROWSER_TEST_F(
+    SubresourceLoadingTest,
+    URLLoaderFactoryInInitialEmptyDoc_LongNavigationInPopupWithClearedOpener) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  // Open a new window that will never commit a navigation (i.e. that will be
+  // stuck on the initial empty document).  Clearing of `popup.opener` tests if
+  // inheriting of URLLoaderFactory from the opener will work when the opener
+  // has been cleared in DOM/Javascript.
+  const GURL hung_url = embedded_test_server()->GetURL("a.com", "/hung");
+  const char kScriptTemplate[] = R"(
+      popup = window.open($1);
+      popup.opener = null;
+  )";
+  content::WebContents* popup = nullptr;
+  {
+    WebContentsAddedObserver popup_observer;
+    ASSERT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, hung_url)));
+    popup = popup_observer.GetWebContents();
+  }
+
+  // No process swaps are expected before ReadyToCommit (which will never happen
+  // for a navigation to "/hung").  This test assertion double-checks that the
+  // test will cover inheriting URLLoaderFactory from the creator/opener/parent
+  // frame.  This differentiates the test from the "noopener" case covered in
+  // another testcase.
+  RenderFrameHost* opener_frame = shell()->web_contents()->GetMainFrame();
+  RenderFrameHost* popup_frame = popup->GetMainFrame();
+  EXPECT_EQ(opener_frame->GetProcess()->GetID(),
+            popup_frame->GetProcess()->GetID());
+
+  // Double-check that the popup didn't commit any navigation and that it has
+  // an the same origin as the initial opener.
+  EXPECT_EQ(GURL(), popup->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_NE("null", EvalJs(popup, "window.origin"));
+  EXPECT_EQ(shell()
+                ->web_contents()
+                ->GetMainFrame()
+                ->GetLastCommittedOrigin()
+                .Serialize(),
+            EvalJs(popup, "window.origin"));
+
+  // Use the parent frame's `popup` reference to script the same-origin popup
+  // window and trigger some HTTP subresource loads within the popup.
+  //
+  // This tests the functionality of the URLLoaderFactory that gets used by the
+  // initial empty document.  In this test, the `request_initiator` will be a
+  // non-opaque origin - it requires that the URLLoaderFactory will have a
+  // matching `request_initiator_origin_lock` (e.g. inherited from the opener).
+  VerifyImageSubresourceLoads(popup);
+
+  // TODO(https://crbug.com/1194763): Crash recovery doesn't work when there is
+  // no opener.
+  DontTestNetworkServiceCrashes();
+  // Test again after closing the opener..
+  shell()->Close();
+  VerifyImageSubresourceLoads(popup);
 }
 
 // The test below verifies that an initial empty document has a functional
 // URLLoaderFactory.
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
                        URLLoaderFactoryInInitialEmptyDoc_204NoOpenerPopup) {
   ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
@@ -4938,6 +5169,19 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_EQ(GURL(), popup->GetMainFrame()->GetLastCommittedURL());
   EXPECT_EQ("null", EvalJs(popup, "window.origin"));
 
+  // Process swap is expected because of 'noopener'.  This test assertion
+  // double-checks that in the test it is not possible to inheriting
+  // URLLoaderFactory from the creator/opener/parent frame (because the popup is
+  // in another process).
+  RenderFrameHost* opener_frame = shell()->web_contents()->GetMainFrame();
+  RenderFrameHost* popup_frame = popup->GetMainFrame();
+  EXPECT_NE(opener_frame->GetProcess()->GetID(),
+            popup_frame->GetProcess()->GetID());
+
+  // TODO(https://crbug.com/1194763): Crash recovery doesn't work when there is
+  // no opener.
+  DontTestNetworkServiceCrashes();
+
   // Inject Javascript that triggers some subresource loads over HTTP.
   //
   // To some extent, this simulates an ability of 1) Android WebView (see
@@ -4949,8 +5193,51 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   // initial empty document.  In this test, the `request_initiator` will be an
   // opaque, unique origin (since nothing has committed yet) and will be
   // compatible with `request_initiator_origin_lock` of the URLLoaderFactory.
-  GURL image_url = embedded_test_server()->GetURL("b.com", "/blank.jpg");
-  VerifyImageSubresourceLoad(popup, image_url);
+  VerifyImageSubresourceLoads(popup);
+}
+
+// The test below verifies that an initial empty document has a functional
+// URLLoaderFactory.
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
+                       URLLoaderFactoryInInitialEmptyDoc_HungNewWindow) {
+  // Open a new shell, starting at the "/hung" URL.
+  const GURL hung_url = embedded_test_server()->GetURL("a.com", "/hung");
+  Shell* new_shell =
+      Shell::CreateNewWindow(shell()->web_contents()->GetBrowserContext(),
+                             hung_url, nullptr, gfx::Size());
+
+  // Wait until the renderer process launches (this will flush the CreateView
+  // IPC and make sure that ExecJs and EvalJs are able to work).
+  RenderFrameHost* main_frame = new_shell->web_contents()->GetMainFrame();
+  {
+    RenderProcessHostWatcher process_watcher(
+        main_frame->GetProcess(),
+        RenderProcessHostWatcher::WATCH_FOR_PROCESS_READY);
+    process_watcher.Wait();
+  }
+
+  // Double-check that the new shell didn't commit any navigation and that it
+  // has an opaque origin.
+  ASSERT_EQ(0, new_shell->web_contents()->GetController().GetEntryCount());
+  EXPECT_EQ(GURL(), main_frame->GetLastCommittedURL());
+  EXPECT_EQ("null", EvalJs(main_frame, "window.origin"));
+
+  // TODO(https://crbug.com/1194763): Crash recovery doesn't work when there is
+  // no opener.
+  DontTestNetworkServiceCrashes();
+
+  // Inject Javascript that triggers some subresource loads over HTTP.
+  //
+  // To some extent, this simulates an ability of 1) Android WebView (see
+  // https://crbug.com/1189838) and 2) Chrome Extensions, to inject Javascript
+  // into an initial empty document (even when no web/renderer content has
+  // access to the document).
+  //
+  // This tests the functionality of the URLLoaderFactory that gets used by the
+  // initial empty document.  In this test, the `request_initiator` will be an
+  // opaque, unique origin (since nothing has committed yet) and will be
+  // compatible with `request_initiator_origin_lock` of the URLLoaderFactory.
+  VerifyImageSubresourceLoads(main_frame);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, Bug838348) {

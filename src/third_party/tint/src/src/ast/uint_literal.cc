@@ -14,32 +14,31 @@
 
 #include "src/ast/uint_literal.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::UintLiteral);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::UintLiteral);
 
 namespace tint {
 namespace ast {
 
 UintLiteral::UintLiteral(const Source& source, type::Type* type, uint32_t value)
-    : Base(source, type), value_(value) {}
+    : Base(source, type, value) {}
 
 UintLiteral::~UintLiteral() = default;
 
 std::string UintLiteral::to_str(const semantic::Info&) const {
-  return std::to_string(value_);
+  return std::to_string(value());
 }
 
 std::string UintLiteral::name() const {
-  return "__uint" + std::to_string(value_);
+  return "__uint" + std::to_string(value());
 }
 
 UintLiteral* UintLiteral::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
   auto src = ctx->Clone(source());
   auto* ty = ctx->Clone(type());
-  return ctx->dst->create<UintLiteral>(src, ty, value_);
+  return ctx->dst->create<UintLiteral>(src, ty, value());
 }
 
 }  // namespace ast

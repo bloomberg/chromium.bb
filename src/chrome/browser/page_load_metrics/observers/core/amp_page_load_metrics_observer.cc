@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -161,7 +162,8 @@ void AMPPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   subframe_info.navigation_start = navigation_handle->NavigationStart();
 }
 
-void AMPPageLoadMetricsObserver::OnFrameDeleted(content::RenderFrameHost* rfh) {
+void AMPPageLoadMetricsObserver::OnRenderFrameDeleted(
+    content::RenderFrameHost* rfh) {
   if (current_main_frame_nav_info_ &&
       current_main_frame_nav_info_->subframe_rfh == rfh) {
     MaybeRecordAmpDocumentMetrics();
@@ -493,12 +495,38 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
         std::string(kHistogramPrefix)
             .append(kHistogramAMPSubframeLayoutInstabilityShiftScore),
         uma_value);
+    if (!normalized_cls_data.data_tainted) {
+      base::UmaHistogramCounts100(
+          "PageLoad.Clients.AMP.LayoutInstability.MaxCumulativeShiftScore."
+          "Subframe.SessionWindow.Gap1000ms.Max5000ms",
+          page_load_metrics::LayoutShiftUmaValue(
+              normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls));
+      base::UmaHistogramCounts100(
+          "PageLoad.Clients.AMP.LayoutInstability.MaxCumulativeShiftScore."
+          "Subframe.SessionWindowByInputs.Gap1000ms.Max5000ms",
+          page_load_metrics::LayoutShiftUmaValue(
+              normalized_cls_data
+                  .session_windows_by_inputs_gap1000ms_max5000ms_max_cls));
+    }
   } else {
     UMA_HISTOGRAM_COUNTS_100(
         std::string(kHistogramPrefix)
             .append(
                 kHistogramAMPSubframeLayoutInstabilityShiftScoreFullNavigation),
         uma_value);
+    if (!normalized_cls_data.data_tainted) {
+      base::UmaHistogramCounts100(
+          "PageLoad.Clients.AMP.LayoutInstability.MaxCumulativeShiftScore."
+          "Subframe.FullNavigation.SessionWindow.Gap1000ms.Max5000ms",
+          page_load_metrics::LayoutShiftUmaValue(
+              normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls));
+      base::UmaHistogramCounts100(
+          "PageLoad.Clients.AMP.LayoutInstability.MaxCumulativeShiftScore."
+          "Subframe.FullNavigation.SessionWindowByInputs.Gap1000ms.Max5000ms",
+          page_load_metrics::LayoutShiftUmaValue(
+              normalized_cls_data
+                  .session_windows_by_inputs_gap1000ms_max5000ms_max_cls));
+    }
   }
 
   builder.Record(ukm::UkmRecorder::Get());

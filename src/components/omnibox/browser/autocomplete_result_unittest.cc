@@ -120,7 +120,7 @@ class AutocompleteResultTest : public testing::Test {
     // Type of the match
     AutocompleteMatchType::Type type{AutocompleteMatchType::SEARCH_SUGGEST};
 
-    // Suggestion Group ID for this suggeston
+    // Suggestion Group ID for this suggestion
     base::Optional<int> suggestion_group_id;
 
     // Inline autocompletion.
@@ -140,7 +140,7 @@ class AutocompleteResultTest : public testing::Test {
   AutocompleteResultTest& operator=(const AutocompleteResultTest&) = delete;
 
   void SetUp() override {
-    template_url_service_.reset(new TemplateURLService(nullptr, 0));
+    template_url_service_ = std::make_unique<TemplateURLService>(nullptr, 0);
     template_url_service_->Load();
   }
 
@@ -261,8 +261,7 @@ void AutocompleteResultTest::RunTransferOldMatchesTest(const TestData* last,
                                                        size_t current_size,
                                                        const TestData* expected,
                                                        size_t expected_size) {
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   RunTransferOldMatchesTest(last, last_size, current, current_size, expected,
                             expected_size, input);
@@ -328,8 +327,7 @@ TEST_F(AutocompleteResultTest, Swap) {
   AutocompleteMatch match;
   match.relevance = 1;
   match.allowed_to_be_default_match = true;
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   matches.push_back(match);
   r1.AppendMatches(input, matches);
@@ -346,8 +344,7 @@ TEST_F(AutocompleteResultTest, Swap) {
 }
 
 TEST_F(AutocompleteResultTest, AlternateNavUrl) {
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
 
   FakeAutocompleteProviderClient client;
@@ -377,8 +374,7 @@ TEST_F(AutocompleteResultTest, AlternateNavUrl) {
 }
 
 TEST_F(AutocompleteResultTest, AlternateNavUrl_IntranetRedirectPolicy) {
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
 
   FakeAutocompleteProviderClient client;
@@ -472,8 +468,7 @@ TEST_F(AutocompleteResultTest, TransferOldMatchesAllowedToBeDefault) {
 // match is allowed to be default.
 TEST_F(AutocompleteResultTest,
        TransferOldMatchesAllowedToBeDefaultWithPreventInlineAutocompletion) {
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_prevent_inline_autocomplete(true);
 
@@ -692,8 +687,7 @@ TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
   matches[3].destination_url = GURL();
   matches[4].destination_url = GURL();
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -733,8 +727,7 @@ TEST_F(AutocompleteResultTest, SortAndCullTailSuggestions) {
   matches[3].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
   matches[4].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -768,8 +761,7 @@ TEST_F(AutocompleteResultTest, SortAndCullKeepDefaultTailSuggestions) {
   matches[1].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
   matches[2].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -801,8 +793,7 @@ TEST_F(AutocompleteResultTest, SortAndCullKeepMoreDefaultTailSuggestions) {
   for (size_t i = 1; i < 5; ++i)
     matches[i].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -836,8 +827,7 @@ TEST_F(AutocompleteResultTest, SortAndCullZeroRelevanceSuggestions) {
   for (size_t i = 2; i < base::size(data); ++i)
     matches[i].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -870,8 +860,7 @@ TEST_F(AutocompleteResultTest, SortAndCullZeroRelevanceDefaultMatches) {
   for (size_t i = 1; i < base::size(data); ++i)
     matches[i].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -908,8 +897,7 @@ TEST_F(AutocompleteResultTest, SortAndCullOnlyTailSuggestions) {
   for (size_t i = 1; i < 5; ++i)
     matches[i].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -935,7 +923,7 @@ TEST_F(AutocompleteResultTest, SortAndCullNoMatchesAllowedToBeDefault) {
   ACMatches matches;
   PopulateAutocompleteMatches(data, base::size(data), &matches);
 
-  AutocompleteInput input(base::string16(), metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(std::u16string(), metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -952,8 +940,8 @@ TEST_F(AutocompleteResultTest, SortAndCullNoMatchesAllowedToBeDefault) {
 TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   // Register a template URL that corresponds to 'foo' search engine.
   TemplateURLData url_data;
-  url_data.SetShortName(base::ASCIIToUTF16("unittest"));
-  url_data.SetKeyword(base::ASCIIToUTF16("foo"));
+  url_data.SetShortName(u"unittest");
+  url_data.SetKeyword(u"foo");
   url_data.SetURL("http://www.foo.com/s?q={searchTerms}");
   template_url_service_->Add(std::make_unique<TemplateURL>(url_data));
 
@@ -973,8 +961,7 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   matches[3].destination_url = GURL("http://www.foo.com/s?q=foo&aqs=0");
   matches[4].destination_url = GURL("http://www.foo.com/");
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -996,8 +983,8 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
 TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   // Register a template URL that corresponds to 'foo' search engine.
   TemplateURLData url_data;
-  url_data.SetShortName(base::ASCIIToUTF16("unittest"));
-  url_data.SetKeyword(base::ASCIIToUTF16("foo"));
+  url_data.SetShortName(u"unittest");
+  url_data.SetKeyword(u"foo");
   url_data.SetURL("http://www.foo.com/s?q={searchTerms}");
   template_url_service_->Add(std::make_unique<TemplateURL>(url_data));
 
@@ -1024,8 +1011,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   matches[4].destination_url = GURL("http://www.foo.com/");
   matches[5].destination_url = GURL("http://www.foo.com/s?q=foo2&oq=f");
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -1077,7 +1063,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
   base::FieldTrialList::CreateFieldTrial(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"), OmniboxEventProto::HOME_PAGE,
+  AutocompleteInput input(u"a", OmniboxEventProto::HOME_PAGE,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -1108,8 +1094,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithPreserveDefaultMatch) {
       {0, 1, 400, true},
   };
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
 
   ACMatches last_matches;
@@ -1152,8 +1137,7 @@ TEST_F(AutocompleteResultTest, LogAsynchronousUpdateMetrics) {
       {11, 1, 200, true},
   };
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
 
   ACMatches last_matches;
@@ -1216,8 +1200,7 @@ TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {
   matches[0].provider->type_ = AutocompleteProvider::TYPE_SEARCH;
   matches[1].provider->type_ = AutocompleteProvider::TYPE_ON_DEVICE_HEAD;
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
 
   // Test setting on device suggestion relevances to 0.
@@ -1380,8 +1363,7 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     // PopulateAutocompleteMatches()).
     ACMatches matches;
     PopulateAutocompleteMatches(data, base::size(data), &matches);
-    AutocompleteInput input(base::ASCIIToUTF16("a"),
-                            metrics::OmniboxEventProto::HOME_PAGE,
+    AutocompleteInput input(u"a", metrics::OmniboxEventProto::HOME_PAGE,
                             test_scheme_classifier);
     AutocompleteResult result;
     result.AppendMatches(input, matches);
@@ -1395,8 +1377,7 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     PopulateAutocompleteMatches(data, base::size(data), &matches);
     matches[0].allowed_to_be_default_match = false;
     matches[1].allowed_to_be_default_match = false;
-    AutocompleteInput input(base::ASCIIToUTF16("a"),
-                            metrics::OmniboxEventProto::HOME_PAGE,
+    AutocompleteInput input(u"a", metrics::OmniboxEventProto::HOME_PAGE,
                             test_scheme_classifier);
     AutocompleteResult result;
     result.AppendMatches(input, matches);
@@ -1423,8 +1404,7 @@ TEST_F(AutocompleteResultTest, SortAndCullPromoteDefaultMatch) {
   // appropriately.
   ACMatches matches;
   PopulateAutocompleteMatches(data, base::size(data), &matches);
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::HOME_PAGE,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::HOME_PAGE,
                           test_scheme_classifier);
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -1456,8 +1436,7 @@ TEST_F(AutocompleteResultTest, SortAndCullPromoteUnconsecutiveMatches) {
   // even for a default match that isn't the best.
   ACMatches matches;
   PopulateAutocompleteMatches(data, base::size(data), &matches);
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::HOME_PAGE,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::HOME_PAGE,
                           test_scheme_classifier);
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -1529,8 +1508,7 @@ TEST_F(AutocompleteResultTest, SortAndCullPreferEntities) {
   ACMatches matches;
   PopulateEntityTestCases(test_cases, &matches);
 
-  AutocompleteInput input(base::ASCIIToUTF16("f"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"f", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -1550,8 +1528,7 @@ TEST_F(AutocompleteResultTest, SortAndCullPreferEntities) {
             result.match_at(1)->type);
   EXPECT_EQ(1100, result.match_at(1)->relevance);
   EXPECT_TRUE(result.match_at(1)->allowed_to_be_default_match);
-  EXPECT_EQ(base::ASCIIToUTF16("oo"),
-            result.match_at(1)->inline_autocompletion);
+  EXPECT_EQ(u"oo", result.match_at(1)->inline_autocompletion);
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullPreferEntitiesFillIntoEditMustMatch) {
@@ -1574,8 +1551,7 @@ TEST_F(AutocompleteResultTest, SortAndCullPreferEntitiesFillIntoEditMustMatch) {
   ACMatches matches;
   PopulateEntityTestCases(test_cases, &matches);
 
-  AutocompleteInput input(base::ASCIIToUTF16("f"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"f", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -1590,8 +1566,7 @@ TEST_F(AutocompleteResultTest, SortAndCullPreferEntitiesFillIntoEditMustMatch) {
             result.match_at(0)->type);
   EXPECT_EQ(1100, result.match_at(0)->relevance);
   EXPECT_TRUE(result.match_at(0)->allowed_to_be_default_match);
-  EXPECT_EQ(base::ASCIIToUTF16("oo"),
-            result.match_at(0)->inline_autocompletion);
+  EXPECT_EQ(u"oo", result.match_at(0)->inline_autocompletion);
 }
 
 TEST_F(AutocompleteResultTest,
@@ -1615,8 +1590,7 @@ TEST_F(AutocompleteResultTest,
   ACMatches matches;
   PopulateEntityTestCases(test_cases, &matches);
 
-  AutocompleteInput input(base::ASCIIToUTF16("f"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"f", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -1634,15 +1608,14 @@ TEST_F(AutocompleteResultTest,
             result.match_at(1)->type);
   EXPECT_EQ(1001, result.match_at(1)->relevance);
   EXPECT_TRUE(result.match_at(1)->allowed_to_be_default_match);
-  EXPECT_EQ(base::ASCIIToUTF16("oo"),
-            result.match_at(1)->inline_autocompletion);
+  EXPECT_EQ(u"oo", result.match_at(1)->inline_autocompletion);
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullPromoteDuplicateSearchURLs) {
   // Register a template URL that corresponds to 'foo' search engine.
   TemplateURLData url_data;
-  url_data.SetShortName(base::ASCIIToUTF16("unittest"));
-  url_data.SetKeyword(base::ASCIIToUTF16("foo"));
+  url_data.SetShortName(u"unittest");
+  url_data.SetKeyword(u"foo");
   url_data.SetURL("http://www.foo.com/s?q={searchTerms}");
   template_url_service_->Add(std::make_unique<TemplateURL>(url_data));
 
@@ -1663,8 +1636,7 @@ TEST_F(AutocompleteResultTest, SortAndCullPromoteDuplicateSearchURLs) {
   matches[3].destination_url = GURL("http://www.foo.com/s?q=foo&aqs=0");
   matches[4].destination_url = GURL("http://www.foo.com/");
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -1702,8 +1674,7 @@ TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
   ACMatches matches;
   PopulateAutocompleteMatches(data, base::size(data), &matches);
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -1744,13 +1715,14 @@ TEST_F(AutocompleteResultTest, SortAndCullKeepGroupedSuggestionsLast) {
   ACMatches matches;
   PopulateAutocompleteMatches(data, base::size(data), &matches);
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
 
-  result.headers_map_[1] = STRING16_LITERAL("1");
-  result.headers_map_[2] = STRING16_LITERAL("2");
+  SearchSuggestionParser::HeadersMap headers_map;
+  headers_map[1] = u"1";
+  headers_map[2] = u"2";
+  result.MergeHeadersMap(headers_map);
 
   result.AppendMatches(input, matches);
   result.SortAndCull(input, template_url_service_.get());
@@ -1800,8 +1772,7 @@ TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
     };
     PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
 
-    AutocompleteInput input(base::ASCIIToUTF16("a"),
-                            metrics::OmniboxEventProto::OTHER,
+    AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                             TestSchemeClassifier());
     AutocompleteResult result;
     result.AppendMatches(input, matches);
@@ -1838,8 +1809,7 @@ TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
     };
     PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
 
-    AutocompleteInput input(base::ASCIIToUTF16("a"),
-                            metrics::OmniboxEventProto::OTHER,
+    AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                             TestSchemeClassifier());
     AutocompleteResult result;
     result.AppendMatches(input, matches);
@@ -1931,15 +1901,17 @@ TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
 
 TEST_F(AutocompleteResultTest, ConvertsOpenTabsCorrectly) {
   AutocompleteResult result;
+  ACMatches matches;
   AutocompleteMatch match;
   match.destination_url = GURL("http://this-site-matches.com");
-  result.matches_.push_back(match);
+  matches.push_back(match);
   match.destination_url = GURL("http://other-site-matches.com");
-  match.description = base::UTF8ToUTF16("Some Other Site");
-  result.matches_.push_back(match);
+  match.description = u"Some Other Site";
+  matches.push_back(match);
   match.destination_url = GURL("http://doesnt-match.com");
-  match.description = base::string16();
-  result.matches_.push_back(match);
+  match.description = std::u16string();
+  matches.push_back(match);
+  result.AppendMatches({}, matches);
 
   // Have IsTabOpenWithURL() return true for some URLs.
   FakeAutocompleteProviderClient client;
@@ -1962,8 +1934,7 @@ TEST_F(AutocompleteResultTest, AttachesPedals) {
   EXPECT_NE(nullptr, client.GetPedalProvider());
 
   AutocompleteResult result;
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
 
   // Populate result with test matches.
@@ -2041,8 +2012,7 @@ TEST_F(AutocompleteResultTest, DocumentSuggestionsCanMergeButNotToDefault) {
       ->SetType(AutocompleteProvider::Type::TYPE_DOCUMENT);
   matches[5].type = AutocompleteMatchType::HISTORY_URL;
 
-  AutocompleteInput input(base::ASCIIToUTF16("a"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"a", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -2147,8 +2117,7 @@ TEST_F(AutocompleteResultTest, ClipboardSuggestionOnTopOfSearchSuggestionTest) {
   static_cast<FakeAutocompleteProvider*>(matches[4].provider)
       ->SetType(AutocompleteProvider::Type::TYPE_CLIPBOARD);
 
-  AutocompleteInput input(base::ASCIIToUTF16(""),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   AutocompleteResult result;
   result.AppendMatches(input, matches);
@@ -2157,76 +2126,4 @@ TEST_F(AutocompleteResultTest, ClipboardSuggestionOnTopOfSearchSuggestionTest) {
   EXPECT_EQ(result.size(), 5u);
   EXPECT_EQ(result.match_at(0)->relevance, 1500);
   EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_URL, result.match_at(0)->type);
-}
-
-TEST_F(AutocompleteResultTest, BubbleURLSuggestions) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(omnibox::kBubbleUrlSuggestions);
-
-  auto test = [&](const std::vector<int>& scores, size_t begin_search,
-                  size_t begin_url, const std::vector<size_t>& expected_order,
-                  const std::string& trace_string) {
-    SCOPED_TRACE(trace_string);
-    std::vector<TestData> data;
-    for (size_t i = 0; i < scores.size(); ++i)
-      data.push_back(TestData{i, 0, scores[i]});
-    ACMatches matches;
-    PopulateAutocompleteMatches(data.data(), scores.size(), &matches);
-    AutocompleteResult::BubbleURLSuggestions(
-        matches.begin() + begin_search, matches.begin() + begin_url, matches);
-    ASSERT_EQ(matches.size(), scores.size());
-    for (size_t i = 0; i < matches.size(); ++i)
-      AssertMatch(matches[i], data[expected_order[i]], i);
-  };
-
-  // Regardless of scores, in the trivial cases with only either searches or
-  // URLs, the matches should not be reordered.
-  test({500, 1100, 1000, 1300, 1200}, 0, 5, {0, 1, 2, 3, 4}, "Only searches");
-  test({500, 1100, 1000, 1300, 1200}, 0, 0, {0, 1, 2, 3, 4}, "Only URLs");
-  test({500, 1100, 1000, 1300, 1200}, 3, 5, {0, 1, 2, 3, 4},
-       "Only skipped suggestions & searches");
-  test({500, 1100, 1000, 1300, 1200}, 3, 3, {0, 1, 2, 3, 4},
-       "Only skipped suggestions & URLs");
-
-  // URLs are bubbled above a search suggestion if 2 conditions are met:
-  // 1) There must be a sufficient score gap between the adjacent searches. E.g.
-  // for (S1, U1, S2), the difference in scores of S1 and S2 must be larger than
-  // some threshold.
-  // 2) There must be a sufficient buffer between the URL and search scores.
-  // This only applies to the first URL suggestion in a group. E.g. for
-  // (S1, U1, U2, S2, U3, S3), U1 & U3 must score higher than S2 + threshold &
-  // S3 + threshold respectively, but U2 need only score higher than S2.
-  test({600, 400, /*URL*/ 500}, 0, 2, {0, 2, 1}, "Bubble 1 URL");
-  test({599, 400, /*URL*/ 500}, 0, 2, {0, 1, 2}, "Insufficient gap");
-  test({600, 400, /*URL*/ 499}, 0, 2, {0, 1, 2}, "Insufficient buffer");
-
-  // No buffer is necessary for subsequent URLs in a group, but is necessary
-  // for the 1st URL of each group.
-  test({600, 400, 200, /*URL group 1*/ 500, 450, /*URL group 2*/ 300, 250}, 0,
-       3, {0, 3, 4, 1, 5, 6, 2}, "Bubble 2 URL groups");
-  test({600, 400, 200, /*URL group 1*/ 500, 450, /*URL group 2*/ 299, 250}, 0,
-       3, {0, 3, 4, 1, 2, 5, 6},
-       "Bubble 1st of 2 URL groups; insufficient buffer for 2nd group");
-  test({600, 399, 200, /*URL group 1*/ 500, 450, /*URL group 2*/ 300, 250}, 0,
-       3, {0, 3, 4, 1, 2, 5, 6},
-       "Bubble 1st of 2 URL groups; insufficient gap for 2nd group");
-  test({600, 400, 200, /*URL group 1*/ 499, 450, /*URL group 2*/ 300, 250}, 0,
-       3, {0, 1, 3, 4, 5, 6, 2},
-       "Bubble 2nd of 2 URL groups; insufficient buffer for 1st group");
-  test({599, 400, 200, /*URL group 1*/ 500, 450, /*URL group 2*/ 300, 250}, 0,
-       3, {0, 1, 3, 4, 5, 6, 2},
-       "Bubble 2nd of 2 URL groups; insufficient gap for 1st group");
-
-  // No gap is necessary when bubbling into the top position.
-  test({600, /*URLs*/ 700, 650}, 0, 1, {1, 2, 0},
-       "Bubble 1 URL group into top position");
-  test({600, /*URL*/ 650}, 0, 1, {0, 1},
-       "Insufficient buffer for top position");
-
-  // Skipped suggestions (e.g. default or clipboard suggestions) should not
-  // affect ordering.
-  test({/*skipped*/ 900, /*search*/ 600, /*URL*/ 700}, 1, 2, {0, 2, 1},
-       "Skipped suggestion");
-  test({/*skipped*/ 600, /*search*/ 600, /*URL*/ 700}, 1, 2, {0, 2, 1},
-       "Skipped suggestion should not affect gap");
 }

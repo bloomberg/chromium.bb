@@ -31,15 +31,16 @@ class EmojiSuggester : public Suggester {
   void OnFocus(int context_id) override;
   void OnBlur() override;
   SuggestionStatus HandleKeyEvent(const ui::KeyEvent& event) override;
-  bool Suggest(const base::string16& text) override;
+  bool Suggest(const std::u16string& text) override;
   bool AcceptSuggestion(size_t index) override;
   void DismissSuggestion() override;
   AssistiveType GetProposeActionType() override;
+  bool HasSuggestions() override;
+  std::vector<std::u16string> GetSuggestions() override;
 
-  bool ShouldShowSuggestion(const base::string16& text);
+  bool ShouldShowSuggestion(const std::u16string& text);
 
   void LoadEmojiMapForTesting(const std::string& emoji_data);
-  bool GetSuggestionShownForTesting() const;
   size_t GetCandidatesSizeForTesting() const;
 
  private:
@@ -69,7 +70,7 @@ class EmojiSuggester : public Suggester {
   bool suggestion_shown_ = false;
 
   // The current list of candidates.
-  std::vector<base::string16> candidates_;
+  std::vector<std::u16string> candidates_;
   AssistiveWindowProperties properties_;
 
   std::vector<ui::ime::AssistiveWindowButton> buttons_;
@@ -78,7 +79,7 @@ class EmojiSuggester : public Suggester {
   ui::ime::AssistiveWindowButton learn_more_button_;
 
   // The map holding one-word-mapping to emojis.
-  std::map<std::string, std::vector<base::string16>> emoji_map_;
+  std::map<std::string, std::vector<std::u16string>> emoji_map_;
 
   base::TimeTicks session_start_;
 

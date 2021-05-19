@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 
-class ChromeBrowserState;
 @class ChromeIdentity;
 @protocol ChromeIdentityBrowserOpener;
 @class ChromeIdentityInteractionManager;
@@ -152,7 +151,6 @@ class ChromeIdentityService {
   // delegate.
   virtual ChromeIdentityInteractionManager*
   CreateChromeIdentityInteractionManager(
-      ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const;
 
   // Returns YES if |identity| is valid and if the service has it in its list of

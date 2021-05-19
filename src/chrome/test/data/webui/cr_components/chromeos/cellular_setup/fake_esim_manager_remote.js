@@ -52,11 +52,16 @@ cr.define('cellular_setup', function() {
       }
       this.fakeEuicc_.notifyProfileChangedForTest(this);
       this.fakeEuicc_.notifyProfileListChangedForTest();
-      return Promise.resolve({
-        result: this.profileInstallResult_ ?
-            this.profileInstallResult_ :
-            chromeos.cellularSetup.mojom.ProfileInstallResult.kSuccess
-      });
+      // Simulate a delay in response. This is neccessary because a few tests
+      // require UI to be in installing state.
+      return new Promise(
+          resolve => setTimeout(
+              () => resolve({
+                result: this.profileInstallResult_ ?
+                    this.profileInstallResult_ :
+                    chromeos.cellularSetup.mojom.ProfileInstallResult.kSuccess
+              }),
+              0));
     }
 
     /**
@@ -160,6 +165,8 @@ cr.define('cellular_setup', function() {
       for (let i = 0; i < numProfiles; i++) {
         this.addProfile();
       }
+      this.requestPendingProfilesResult_ =
+          chromeos.cellularSetup.mojom.ESimOperationResult.kSuccess;
     }
 
     /**
@@ -178,7 +185,7 @@ cr.define('cellular_setup', function() {
      */
     requestPendingProfiles() {
       return Promise.resolve({
-        result: chromeos.cellularSetup.mojom.ESimOperationResult.kSuccess,
+        result: this.requestPendingProfilesResult_,
       });
     }
 
@@ -218,6 +225,13 @@ cr.define('cellular_setup', function() {
             this.profileInstallResult_ :
             chromeos.cellularSetup.mojom.ProfileInstallResult.kSuccess,
       });
+    }
+
+    /**
+     * @param {chromeos.cellularSetup.mojom.ESimOperationResult} result
+     */
+    setRequestPendingProfilesResult(result) {
+      this.requestPendingProfilesResult_ = result;
     }
 
     /**

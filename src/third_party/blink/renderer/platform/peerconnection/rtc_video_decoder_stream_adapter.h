@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -62,11 +63,14 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
     : public webrtc::VideoDecoder {
  public:
   // Creates and initializes an RTCVideoDecoderStreamAdapter. Returns nullptr if
-  // |format| cannot be supported.
+  // |format| cannot be supported. The gpu_factories may be null, in which case
+  // only SW decoders will be used.
   // Called on the worker thread.
   static std::unique_ptr<RTCVideoDecoderStreamAdapter> Create(
       media::GpuVideoAcceleratorFactories* gpu_factories,
       media::DecoderFactory* decoder_factory,
+      scoped_refptr<base::SequencedTaskRunner> media_task_runner,
+      const gfx::ColorSpace& render_color_space,
       const webrtc::SdpVideoFormat& format);
 
   // Called on |media_task_runner_|.
@@ -103,6 +107,8 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
   RTCVideoDecoderStreamAdapter(
       media::GpuVideoAcceleratorFactories* gpu_factories,
       media::DecoderFactory* decoder_factory,
+      scoped_refptr<base::SequencedTaskRunner> media_task_runner,
+      const gfx::ColorSpace& render_color_space,
       const media::VideoDecoderConfig& config,
       const webrtc::SdpVideoFormat& format);
 
@@ -143,6 +149,7 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
   const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
   media::GpuVideoAcceleratorFactories* const gpu_factories_;
   media::DecoderFactory* const decoder_factory_;
+  gfx::ColorSpace render_color_space_;
   const webrtc::SdpVideoFormat format_;
   media::VideoDecoderConfig config_;
 
@@ -154,7 +161,6 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
   // Decoding thread members.
   bool key_frame_required_ = true;
   webrtc::VideoCodecType video_codec_type_ = webrtc::kVideoCodecGeneric;
-  webrtc::DecodedImageCallback* decode_complete_callback_ = nullptr;
 
   // Shared members.
   mutable base::Lock lock_;
@@ -172,6 +178,12 @@ class PLATFORM_EXPORT RTCVideoDecoderStreamAdapter
   bool logged_init_status_ GUARDED_BY(lock_) = false;
   // Current decoder info, as reported by GetDecoderInfo().
   webrtc::VideoDecoder::DecoderInfo decoder_info_ GUARDED_BY(lock_);
+  // Current decode callback, if any.
+  webrtc::DecodedImageCallback* decode_complete_callback_ GUARDED_BY(lock_) =
+      nullptr;
+  // Time since construction.  Cleared when we record that a frame has been
+  // successfully decoded.
+  base::Optional<base::TimeTicks> start_time_ GUARDED_BY(lock_);
 
   // Do we have an outstanding `DecoderStream::Read()`?
   // Media thread only.

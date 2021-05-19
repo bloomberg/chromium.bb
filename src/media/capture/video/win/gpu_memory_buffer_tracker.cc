@@ -7,7 +7,8 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "base/win/scoped_handle.h"
-#include "gpu/ipc/common/gpu_memory_buffer_impl_dxgi.h"
+#include "gpu/ipc/common/dxgi_helpers.h"
+#include "media/base/win/mf_helpers.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -38,6 +39,12 @@ base::win::ScopedHandle CreateNV12Texture(ID3D11Device* d3d11_device,
   HRESULT hr = d3d11_device->CreateTexture2D(&desc, nullptr, &d3d11_texture);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to create D3D11 texture: "
+                << logging::SystemErrorCodeToString(hr);
+    return base::win::ScopedHandle();
+  }
+  hr = SetDebugName(d3d11_texture.Get(), "Camera_MemoryBufferTracker");
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to label D3D11 texture: "
                 << logging::SystemErrorCodeToString(hr);
     return base::win::ScopedHandle();
   }
@@ -89,7 +96,7 @@ bool GpuMemoryBufferTracker::CreateBufferInternal() {
   buffer_ = gpu::GpuMemoryBufferImplDXGI::CreateFromHandle(
       std::move(buffer_handle), buffer_size_,
       gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::GPU_READ,
-      gpu::GpuMemoryBufferImpl::DestructionCallback());
+      gpu::GpuMemoryBufferImpl::DestructionCallback(), nullptr, nullptr);
   if (!buffer_) {
     NOTREACHED() << "Failed to create GPU memory buffer";
     return false;
@@ -127,8 +134,21 @@ GpuMemoryBufferTracker::GetMemoryMappedAccess() {
 
 base::UnsafeSharedMemoryRegion
 GpuMemoryBufferTracker::DuplicateAsUnsafeRegion() {
-  NOTREACHED() << "Unsupported operation";
-  return base::UnsafeSharedMemoryRegion();
+  if (!buffer_) {
+    return base::UnsafeSharedMemoryRegion();
+  }
+  const auto data_size = GetMemorySizeInBytes();
+  if (!region_.IsValid() || region_.GetSize() < data_size) {
+    region_ = base::UnsafeSharedMemoryRegion::Create(data_size);
+  }
+
+  if (!gpu::CopyDXGIBufferToShMem(buffer_->GetHandle(), region_.Duplicate(),
+                                  d3d_device_.Get(), &staging_texture_)) {
+    DLOG(ERROR) << "Couldn't copy DXGI buffer to shmem";
+    return base::UnsafeSharedMemoryRegion();
+  }
+
+  return region_.Duplicate();
 }
 
 mojo::ScopedSharedBufferHandle GpuMemoryBufferTracker::DuplicateAsMojoBuffer() {

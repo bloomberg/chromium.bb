@@ -978,13 +978,31 @@ angle::Result InitializeRenderPassFromDesc(ContextVk *contextVk,
 
         VkAttachmentReference colorRef;
         colorRef.attachment = attachmentCount.get();
-        colorRef.layout     = needInputAttachments ? VK_IMAGE_LAYOUT_GENERAL
-                                               : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
+        colorRef.layout     = needInputAttachments
+                              ? VK_IMAGE_LAYOUT_GENERAL
+                              : ConvertImageLayoutToVkImageLayout(
+                                    static_cast<ImageLayout>(ops[attachmentCount].initialLayout));
         colorAttachmentRefs.push_back(colorRef);
 
         UnpackAttachmentDesc(&attachmentDescs[attachmentCount.get()], format, attachmentSamples,
                              ops[attachmentCount]);
+
+        angle::FormatID attachmentFormat = format.actualImageFormatID;
+
+        // If this renderpass uses EXT_srgb_write_control, we need to override the format to its
+        // linear counterpart. Formats that cannot be reinterpreted are exempt from this
+        // requirement.
+        angle::FormatID linearFormat = rx::ConvertToLinear(attachmentFormat);
+        if (linearFormat != angle::FormatID::NONE)
+        {
+            if (desc.getSRGBWriteControlMode() == gl::SrgbWriteControlMode::Linear)
+            {
+                attachmentFormat = linearFormat;
+            }
+        }
+        attachmentDescs[attachmentCount.get()].format =
+            contextVk->getRenderer()->getFormat(attachmentFormat).actualImageVkFormat();
+        ASSERT(attachmentDescs[attachmentCount.get()].format != VK_FORMAT_UNDEFINED);
 
         isColorInvalidated.set(colorIndexGL, ops[attachmentCount].isInvalidated);
 
@@ -1485,6 +1503,18 @@ RenderPassDesc &RenderPassDesc::operator=(const RenderPassDesc &other)
 {
     memcpy(this, &other, sizeof(RenderPassDesc));
     return *this;
+}
+
+void RenderPassDesc::setWriteControlMode(gl::SrgbWriteControlMode mode)
+{
+    if (mode == gl::SrgbWriteControlMode::Default)
+    {
+        mAttachmentFormats.back() &= ~kSrgbWriteControlFlag;
+    }
+    else
+    {
+        mAttachmentFormats.back() |= kSrgbWriteControlFlag;
+    }
 }
 
 size_t RenderPassDesc::hash() const
@@ -2879,8 +2909,7 @@ bool PipelineLayoutDesc::operator==(const PipelineLayoutDesc &other) const
 void PipelineLayoutDesc::updateDescriptorSetLayout(DescriptorSetIndex setIndex,
                                                    const DescriptorSetLayoutDesc &desc)
 {
-    ASSERT(ToUnderlying(setIndex) < mDescriptorSetLayouts.size());
-    mDescriptorSetLayouts[ToUnderlying(setIndex)] = desc;
+    mDescriptorSetLayouts[setIndex] = desc;
 }
 
 void PipelineLayoutDesc::updatePushConstantRange(gl::ShaderType shaderType,
@@ -2962,28 +2991,30 @@ bool TextureDescriptorDesc::operator==(const TextureDescriptorDesc &other) const
     return memcmp(mSerials.data(), other.mSerials.data(), sizeof(TexUnitSerials) * mMaxIndex) == 0;
 }
 
-// UniformsAndXfbDesc implementation.
-UniformsAndXfbDesc::UniformsAndXfbDesc()
+// UniformsAndXfbDescriptorDesc implementation.
+UniformsAndXfbDescriptorDesc::UniformsAndXfbDescriptorDesc()
 {
     reset();
 }
 
-UniformsAndXfbDesc::~UniformsAndXfbDesc()                               = default;
-UniformsAndXfbDesc::UniformsAndXfbDesc(const UniformsAndXfbDesc &other) = default;
-UniformsAndXfbDesc &UniformsAndXfbDesc::operator=(const UniformsAndXfbDesc &other) = default;
+UniformsAndXfbDescriptorDesc::~UniformsAndXfbDescriptorDesc() = default;
+UniformsAndXfbDescriptorDesc::UniformsAndXfbDescriptorDesc(
+    const UniformsAndXfbDescriptorDesc &other)                      = default;
+UniformsAndXfbDescriptorDesc &UniformsAndXfbDescriptorDesc::operator=(
+    const UniformsAndXfbDescriptorDesc &other) = default;
 
-size_t UniformsAndXfbDesc::hash() const
+size_t UniformsAndXfbDescriptorDesc::hash() const
 {
     return angle::ComputeGenericHash(&mBufferSerials, sizeof(BufferSerial) * mBufferCount);
 }
 
-void UniformsAndXfbDesc::reset()
+void UniformsAndXfbDescriptorDesc::reset()
 {
     mBufferCount = 0;
     memset(&mBufferSerials, 0, sizeof(BufferSerial) * kMaxBufferCount);
 }
 
-bool UniformsAndXfbDesc::operator==(const UniformsAndXfbDesc &other) const
+bool UniformsAndXfbDescriptorDesc::operator==(const UniformsAndXfbDescriptorDesc &other) const
 {
     if (mBufferCount != other.mBufferCount)
     {
@@ -3053,6 +3084,7 @@ void FramebufferDesc::reset()
     mMaxIndex                = 0;
     mHasFramebufferFetch     = false;
     mLayerCount              = 0;
+    mSrgbWriteControlMode    = 0;
     mUnresolveAttachmentMask = 0;
     mIsRenderToTexture       = 0;
     memset(&mSerials, 0, sizeof(mSerials));
@@ -3063,6 +3095,7 @@ bool FramebufferDesc::operator==(const FramebufferDesc &other) const
     if (mMaxIndex != other.mMaxIndex || mLayerCount != other.mLayerCount ||
         mUnresolveAttachmentMask != other.mUnresolveAttachmentMask ||
         mHasFramebufferFetch != other.mHasFramebufferFetch ||
+        mSrgbWriteControlMode != other.mSrgbWriteControlMode ||
         mIsRenderToTexture != other.mIsRenderToTexture)
     {
         return false;
@@ -3832,6 +3865,6 @@ void DescriptorSetCache<key, cacheType>::destroy(RendererVk *rendererVk)
 // Below declarations are needed to avoid linker errors.
 template class DescriptorSetCache<vk::TextureDescriptorDesc, VulkanCacheType::TextureDescriptors>;
 
-template class DescriptorSetCache<vk::UniformsAndXfbDesc,
-                                  VulkanCacheType::UniformsAndXfbDescriptorSet>;
+template class DescriptorSetCache<vk::UniformsAndXfbDescriptorDesc,
+                                  VulkanCacheType::UniformsAndXfbDescriptors>;
 }  // namespace rx

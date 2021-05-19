@@ -48,7 +48,7 @@ class MockPlatformWindowDelegate : public ui::PlatformWindowDelegate {
   MockPlatformWindowDelegate() = default;
   ~MockPlatformWindowDelegate() = default;
 
-  MOCK_METHOD1(OnBoundsChanged, void(const gfx::Rect& new_bounds));
+  MOCK_METHOD1(OnBoundsChanged, void(const BoundsChange& change));
   MOCK_METHOD1(OnDamageRect, void(const gfx::Rect& damaged_region));
   MOCK_METHOD1(DispatchEvent, void(ui::Event* event));
   MOCK_METHOD0(OnCloseRequest, void());
@@ -116,8 +116,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       std::make_unique<ui::WaylandConnection>();
   CHECK(connection->Initialize());
 
-  auto screen = connection->wayland_output_manager()->CreateWaylandScreen(
-      connection.get());
+  auto screen = connection->wayland_output_manager()->CreateWaylandScreen();
 
   MockPlatformWindowDelegate delegate;
   gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;

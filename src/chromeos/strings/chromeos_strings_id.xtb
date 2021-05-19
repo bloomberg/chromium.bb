@@ -38,6 +38,7 @@
 <translation id="1662989795263954667">Dihentikan - Tinta habis</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Keberadaan DNS Resolver</translation>
+<translation id="1715359911173058521">Terjadi masalah saat menghubungkan ke pemindai. Periksa koneksi jaringan atau USB, lalu coba lagi.</translation>
 <translation id="1717874160321062422">Dikelola oleh <ph name="FIRST_MANAGER" /> dan <ph name="SECOND_MANAGER" /></translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1792647875738159689">Membatalkan pemindaian</translation>
@@ -95,6 +96,7 @@
 <translation id="3226405216343213872">Mencari pemindai</translation>
 <translation id="3246869037381808805">Tugas pencetakan yang sudah lebih dari 1 hari akan dihapus</translation>
 <translation id="3268178239013324452">Gagal - Tutup terbuka</translation>
+<translation id="3283504360622356314">{0,plural, =1{Edit file}other{Edit file}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3310640316857623290">Latensi DNS jauh melebihi ambang batas yang diizinkan</translation>
 <translation id="3328783797891415197">Pengujian sedang berjalan</translation>
@@ -135,6 +137,7 @@
 <translation id="4227825898293920515">Sandi kedaluwarsa dalam <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Tidak ada tugas pencetakan yang sedang berlangsung</translation>
 <translation id="4297501883039923494">Dihentikan - Error tidak diketahui</translation>
+<translation id="4344214025510306853">Lampirkan APN</translation>
 <translation id="4378373042927530923">Tidak Berjalan</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Drive Saya</translation>
@@ -162,7 +165,9 @@
 <translation id="4707579418881001319">L2TP/IPsec + sertifikat pengguna</translation>
 <translation id="4731797938093519117">Akses orang tua</translation>
 <translation id="4773299976671772492">Dihentikan</translation>
+<translation id="4794140124556169553">Menjalankan pengujian CPU dapat memengaruhi performa sistem Anda</translation>
 <translation id="4808449224298348341">Tugas pencetakan <ph name="DOCUMENT_TITLE" /> dibatalkan</translation>
+<translation id="4813345808229079766">Sambungan</translation>
 <translation id="4832079907277790330">Pilih folder di aplikasi File ...</translation>
 <translation id="4835901797422965222">Tidak ada jaringan yang aktif</translation>
 <translation id="4848429997038228357">BERJALAN</translation>
@@ -177,6 +182,7 @@
 <translation id="4932733599132424254">Tanggal</translation>
 <translation id="498186245079027698">Periksa pemindai, lalu coba lagi. Pastikan terdapat cukup ruang penyimpanan lokal untuk menyimpan file hasil pemindaian.</translation>
 <translation id="4985509611418653372">Jalankan</translation>
+<translation id="4987769320337599931">Firewall</translation>
 <translation id="4999333166442584738">Sembunyikan laporan</translation>
 <translation id="500920857929044050">Hentikan pengujian</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -211,6 +217,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="54609108002486618">Terkelola</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} kesempatan lagi}other{{0} kesempatan lagi}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
+<translation id="5499114900554609492">Tidak dapat menyelesaikan pemindaian</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -225,6 +232,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="5916084858004523819">Terlarang</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{File Anda berhasil dipindai dan disimpan ke <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{File Anda berhasil dipindai dan disimpan ke <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">File tidak ditemukan</translation>
+<translation id="6037291330010597344">Pengumpan dokumen pemindai kosong. Tambahkan dokumen, lalu coba lagi.</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6040852767465482106">Identitas Anonim</translation>
 <translation id="604124094241169006">Otomatis</translation>
@@ -247,6 +255,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="6302401976930124515">Pengujian <ph name="TEST_NAME" /> telah dibatalkan</translation>
 <translation id="6325525973963619867">Gagal</translation>
 <translation id="636850387210749493">Pendaftaran perusahaan</translation>
+<translation id="6388847657025262518">Pengumpan dokumen pemindai macet. Periksa pengumpan, lalu coba lagi.</translation>
 <translation id="641081527798843608">Kecocokan subjek</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6456394469623773452">Lancar</translation>
@@ -268,7 +277,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="6766275201586212568">Resolusi DNS gagal</translation>
 <translation id="6768237774506518020">Tingkat kegagalan resolusi DNS tinggi</translation>
 <translation id="6853312040151791195">Kecepatan pemakaian daya</translation>
-<translation id="6898743098396957679">Tidak dapat menyelesaikan pemindaian</translation>
+<translation id="6910312834584889076">Penutup pemindai terbuka. Tutup penutup dan coba lagi.</translation>
 <translation id="6911383237894364323">Tidak dapat terhubung ke server media</translation>
 <translation id="6957231940976260713">Nama layanan</translation>
 <translation id="6977381486153291903">Revisi firmware</translation>
@@ -276,12 +285,14 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7059230779847288458">Mengisi daya, <ph name="TIME_VALUE" /> sampai penuh</translation>
 <translation id="708426984172631313">DIHENTIKAN</translation>
+<translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7143207342074048698">Menghubungkan</translation>
 <translation id="7144878232160441200">Coba lagi</translation>
 <translation id="714876143603641390">Konektivitas LAN</translation>
 <translation id="7162487448488904999">Galeri</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> ini dikelola oleh <ph name="MANAGER" />. Administrator dapat mengonfigurasi perangkat dari jarak jauh.</translation>
 <translation id="7216409898977639127">Operator seluler</translation>
+<translation id="7271040990581020067">Pemindai sedang digunakan. Coba lagi nanti.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7343649194310845056">Perangkat Jaringan</translation>
 <translation id="7359657277149375382">Jenis file</translation>
@@ -307,6 +318,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="7769672763586021400">ID Model</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7819857487979277519">PSK (WPA atau RSN)</translation>
+<translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Jenis penyedia</translation>
 <translation id="7936303884198020182">Tidak ada server nama yang ditemukan</translation>
 <translation id="7960831585769876809">Suhu</translation>
@@ -336,6 +348,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="8483248364096924578">Alamat IP</translation>
 <translation id="8503813439785031346">Nama Pengguna</translation>
 <translation id="8503836310948963452">Tinggal beberapa menit lagi...</translation>
+<translation id="8575298406870537639">Operator Anda mungkin memerlukan opsi ini untuk terhubung ke jaringan. Hubungi operator untuk mengetahui detailnya.</translation>
 <translation id="8576249514688522074">Tidak diinisialisasi</translation>
 <translation id="8620617069779373398">Status roaming</translation>
 <translation id="8675354002693747642">Kunci yang dibagikan sebelumnya</translation>
@@ -348,6 +361,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8798441408945964110">Nama penyedia</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8818152010000655963">Wallpaper</translation>
 <translation id="8845001906332463065">Dapatkan bantuan</translation>
 <translation id="8881098542468797602">Pengujian berhasil</translation>
 <translation id="8898840733695078011">Kekuatan sinyal</translation>
@@ -365,6 +379,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="910415269708673980">Perbarui tiket untuk <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Memindai halaman <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Buka kunci</translation>
+<translation id="9137526406337347448">Layanan Google</translation>
 <translation id="9149391708638971077">Jalankan pengujian Memori</translation>
 <translation id="9173638680043580060">Kurang dari satu menit lagi</translation>
 <translation id="9190063653747922532">L2TP/IPSec + kunci yang dibagikan sebelumnya</translation>

@@ -14,25 +14,8 @@
 
 #include "src/type/access_control_type.h"
 
-#include <memory>
-#include <utility>
-
-#include "src/ast/storage_class.h"
-#include "src/ast/stride_decoration.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_decoration.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/pointer_type.h"
-#include "src/type/struct_type.h"
 #include "src/type/test_helper.h"
 #include "src/type/texture_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
 
 namespace tint {
 namespace type {
@@ -110,74 +93,6 @@ TEST_F(AccessControlTest, FriendlyNameWriteOnly) {
 TEST_F(AccessControlTest, FriendlyNameReadWrite) {
   AccessControl at{ast::AccessControl::kReadWrite, ty.i32()};
   EXPECT_EQ(at.FriendlyName(Symbols()), "[[access(read_write)]] i32");
-}
-
-TEST_F(AccessControlTest, MinBufferBindingSizeU32) {
-  U32 u32;
-  AccessControl at{ast::AccessControl::kReadOnly, &u32};
-  EXPECT_EQ(4u, at.MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AccessControlTest, MinBufferBindingSizeArray) {
-  U32 u32;
-  Array array(&u32, 4,
-              ast::ArrayDecorationList{create<ast::StrideDecoration>(4)});
-  AccessControl at{ast::AccessControl::kReadOnly, &array};
-  EXPECT_EQ(16u, at.MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AccessControlTest, MinBufferBindingSizeRuntimeArray) {
-  U32 u32;
-  Array array(&u32, 0,
-              ast::ArrayDecorationList{create<ast::StrideDecoration>(4)});
-  AccessControl at{ast::AccessControl::kReadOnly, &array};
-  EXPECT_EQ(4u, at.MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AccessControlTest, MinBufferBindingSizeStruct) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("foo", ty.u32(), {MemberOffset(0)}),
-                            Member("bar", ty.u32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
-
-  auto* struct_type = ty.struct_("struct_type", str);
-  AccessControl at{ast::AccessControl::kReadOnly, struct_type};
-  EXPECT_EQ(16u, at.MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-  EXPECT_EQ(8u, at.MinBufferBindingSize(MemoryLayout::kStorageBuffer));
-}
-
-TEST_F(AccessControlTest, BaseAlignmentU32) {
-  U32 u32;
-  AccessControl at{ast::AccessControl::kReadOnly, &u32};
-  EXPECT_EQ(4u, at.BaseAlignment(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AccessControlTest, BaseAlignmentArray) {
-  U32 u32;
-  Array array(&u32, 4,
-              ast::ArrayDecorationList{create<ast::StrideDecoration>(4)});
-  AccessControl at{ast::AccessControl::kReadOnly, &array};
-  EXPECT_EQ(16u, at.BaseAlignment(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AccessControlTest, BaseAlignmentRuntimeArray) {
-  U32 u32;
-  Array array(&u32, 0,
-              ast::ArrayDecorationList{create<ast::StrideDecoration>(4)});
-  AccessControl at{ast::AccessControl::kReadOnly, &array};
-  EXPECT_EQ(16u, at.BaseAlignment(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AccessControlTest, BaseAlignmentStruct) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("foo", ty.u32(), {MemberOffset(0)}),
-                            Member("bar", ty.u32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
-  auto* struct_type = ty.struct_("struct_type", str);
-
-  AccessControl at{ast::AccessControl::kReadOnly, struct_type};
-  EXPECT_EQ(16u, at.BaseAlignment(MemoryLayout::kUniformBuffer));
-  EXPECT_EQ(4u, at.BaseAlignment(MemoryLayout::kStorageBuffer));
 }
 
 }  // namespace

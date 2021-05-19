@@ -17,12 +17,16 @@
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_delegate.h"
-#include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
-#include "ash/accessibility/key_accessibility_enabler.h"
+#include "ash/accessibility/autoclick/autoclick_controller.h"
+#include "ash/accessibility/chromevox/key_accessibility_enabler.h"
+#include "ash/accessibility/magnifier/docked_magnifier_controller_impl.h"
+#include "ash/accessibility/magnifier/magnification_controller.h"
+#include "ash/accessibility/magnifier/partial_magnification_controller.h"
+#include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
+#include "ash/accessibility/ui/accessibility_focus_ring_controller_impl.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller_impl.h"
-#include "ash/autoclick/autoclick_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/child_accounts/parent_access_controller_impl.h"
 #include "ash/clipboard/clipboard_history_controller_impl.h"
@@ -60,7 +64,6 @@
 #include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/highlighter/highlighter_controller.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/hud_display/hud_display.h"
 #include "ash/ime/ime_controller_impl.h"
@@ -69,9 +72,7 @@
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login_status.h"
-#include "ash/magnifier/docked_magnifier_controller_impl.h"
-#include "ash/magnifier/magnification_controller.h"
-#include "ash/magnifier/partial_magnification_controller.h"
+#include "ash/marker/marker_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/media/media_notification_controller_impl.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
@@ -101,7 +102,6 @@
 #include "ash/shell_observer.h"
 #include "ash/shell_tab_handler.h"
 #include "ash/shutdown_controller_impl.h"
-#include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
@@ -140,6 +140,7 @@
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/tray_action/tray_action.h"
+#include "ash/utility/occlusion_tracker_pauser.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/ash_focus_rules.h"
@@ -668,10 +669,6 @@ Shell::~Shell() {
   shelf_controller_->Shutdown();
   shelf_config_->Shutdown();
 
-  // Destroy |home_screen_controller_| before |app_list_controller_| since
-  // the former delegates to the latter.
-  home_screen_controller_.reset();
-
   // Destroy |app_list_controller_| earlier than |tablet_mode_controller_| since
   // the former may use the latter before destruction.
   app_list_controller_.reset();
@@ -781,7 +778,6 @@ Shell::~Shell() {
   modality_filter_.reset();
 
   touch_transformer_controller_.reset();
-  laser_pointer_controller_.reset();
   partial_magnification_controller_.reset();
   highlighter_controller_.reset();
   key_accessibility_enabler_.reset();
@@ -849,7 +845,12 @@ Shell::~Shell() {
 
   display_color_manager_.reset();
   projecting_observer_.reset();
+
+  // Depends on MarkerController and LaserPointerController.
   projector_controller_.reset();
+
+  marker_controller_.reset();
+  laser_pointer_controller_.reset();
 
   if (display_change_observer_)
     display_manager_->configurator()->RemoveObserver(
@@ -1160,13 +1161,10 @@ void Shell::Init(
         std::make_unique<AmbientController>(std::move(fingerprint));
   }
 
-  home_screen_controller_ = std::make_unique<HomeScreenController>();
-
-  // |tablet_mode_controller_| |mru_window_tracker_|,
-  // |assistant_controller_| and |home_screen_controller_| are put before
-  // |app_list_controller_| as they are used in its constructor.
+  // |tablet_mode_controller_| |mru_window_tracker_|, and
+  // |assistant_controller_| are put before |app_list_controller_| as they are
+  // used in its constructor.
   app_list_controller_ = std::make_unique<AppListControllerImpl>();
-  home_screen_controller_->SetDelegate(app_list_controller_.get());
 
   autoclick_controller_ = std::make_unique<AutoclickController>();
 
@@ -1285,6 +1283,7 @@ void Shell::Init(
   }
 
   if (chromeos::features::IsProjectorEnabled()) {
+    marker_controller_ = std::make_unique<MarkerController>();
     projector_controller_ = std::make_unique<ProjectorControllerImpl>();
   }
 
@@ -1302,6 +1301,8 @@ void Shell::Init(
     observer.OnShellInitialized();
 
   user_metrics_recorder_->OnShellInitialized();
+
+  occlusion_tracker_pauser_ = std::make_unique<OcclusionTrackerPauser>();
 
   // Initialize the D-Bus bus and services for ash.
   dbus_bus_ = dbus_bus;
@@ -1409,7 +1410,7 @@ ui::EventTarget* Shell::GetParentTarget() {
 }
 
 std::unique_ptr<ui::EventTargetIterator> Shell::GetChildIterator() const {
-  return std::unique_ptr<ui::EventTargetIterator>();
+  return nullptr;
 }
 
 ui::EventTargeter* Shell::GetEventTargeter() {

@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/views/apps/app_dialog/app_uninstall_dialog_view.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
@@ -58,7 +59,7 @@ bool IsArcShortcutApp(Profile* profile, const std::string& app_id) {
 }
 #endif
 
-base::string16 GetWindowTitleForApp(Profile* profile,
+std::u16string GetWindowTitleForApp(Profile* profile,
                                     apps::mojom::AppType app_type,
                                     const std::string& app_id,
                                     const std::string& app_name) {
@@ -179,6 +180,7 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
       break;
 
     case apps::mojom::AppType::kWeb:
+    case apps::mojom::AppType::kSystemWeb:
       if (base::FeatureList::IsEnabled(
               features::kDesktopPWAsWithoutExtensions)) {
         InitializeViewForWebApp(profile, app_id);
@@ -193,7 +195,7 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
 }
 
 void AppUninstallDialogView::InitializeCheckbox(const GURL& app_start_url) {
-  std::vector<base::string16> replacements;
+  std::vector<std::u16string> replacements;
   replacements.push_back(url_formatter::FormatUrlForSecurityDisplay(
       app_start_url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 
@@ -209,7 +211,7 @@ void AppUninstallDialogView::InitializeCheckbox(const GURL& app_start_url) {
     replacements.push_back(base::ASCIIToUTF16(domain));
   }
 
-  base::string16 learn_more_text =
+  std::u16string learn_more_text =
       l10n_util::GetStringUTF16(IDS_APP_UNINSTALL_PROMPT_LEARN_MORE);
   replacements.push_back(learn_more_text);
 
@@ -242,7 +244,7 @@ void AppUninstallDialogView::InitializeCheckbox(const GURL& app_start_url) {
   checkbox_label->SetBorder(views::CreateEmptyBorder(3, 0, 0, 0));
 
   auto clear_site_data_checkbox =
-      std::make_unique<views::Checkbox>(base::string16());
+      std::make_unique<views::Checkbox>(std::u16string());
   clear_site_data_checkbox->SetAssociatedLabel(checkbox_label.get());
 
   // Create a view to hold the checkbox and the text.
@@ -315,7 +317,7 @@ void AppUninstallDialogView::InitializeViewForArcApp(
 }
 
 void AppUninstallDialogView::InitializeViewWithMessage(
-    const base::string16& message) {
+    const std::u16string& message) {
   auto* label = AddChildView(std::make_unique<views::Label>(message));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

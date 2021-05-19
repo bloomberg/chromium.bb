@@ -8,6 +8,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -19,7 +20,6 @@
 #include "base/native_library.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -30,6 +30,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/child_process_host_flags.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -89,7 +90,7 @@
 
 #if BUILDFLAG(ENABLE_WIDEVINE) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 #include "base/no_destructor.h"
-#include "chrome/common/media/cdm_manifest.h"
+#include "components/cdm/common/cdm_manifest.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
 // TODO(crbug.com/663554): Needed for WIDEVINE_CDM_VERSION_STRING. Support
 // component updated CDM on all desktop platforms and remove this.
@@ -254,7 +255,6 @@ std::unique_ptr<content::CdmInfo> CreateCdmInfoForChromeOS(
   capability.video_codecs.push_back(media::VideoCodec::kCodecVP8);
   capability.video_codecs.push_back(media::VideoCodec::kCodecVP9);
   capability.video_codecs.push_back(media::VideoCodec::kCodecAV1);
-  capability.supports_vp9_profile2 = true;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   capability.video_codecs.push_back(media::VideoCodec::kCodecH264);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -458,8 +458,7 @@ void ChromeContentClient::AddContentDecryptionModules(
       content::CdmCapability capability(
           {}, {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs},
           {media::CdmSessionType::kTemporary,
-           media::CdmSessionType::kPersistentLicense,
-           media::CdmSessionType::kPersistentUsageRecord});
+           media::CdmSessionType::kPersistentLicense});
 
       // Register kExternalClearKeyDifferentGuidTestKeySystem first separately.
       // Otherwise, it'll be treated as a sub-key-system of normal
@@ -564,13 +563,13 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
 #endif
 }
 
-base::string16 ChromeContentClient::GetLocalizedString(int message_id) {
+std::u16string ChromeContentClient::GetLocalizedString(int message_id) {
   return l10n_util::GetStringUTF16(message_id);
 }
 
-base::string16 ChromeContentClient::GetLocalizedString(
+std::u16string ChromeContentClient::GetLocalizedString(
     int message_id,
-    const base::string16& replacement) {
+    const std::u16string& replacement) {
   return l10n_util::GetStringFUTF16(message_id, replacement);
 }
 
@@ -596,6 +595,14 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) {
 base::FilePath ChromeContentClient::GetChildProcessPath(
     int child_flags,
     const base::FilePath& helpers_path) {
+  std::string helper_name(chrome::kHelperProcessExecutableName);
+  if (child_flags == chrome::kChildProcessHelperAlerts) {
+    helper_name += " (Alerts)";
+    return helpers_path.Append(helper_name + ".app")
+        .Append("Contents")
+        .Append("MacOS")
+        .Append(helper_name);
+  }
   NOTREACHED() << "Unsupported child process flags!";
   return {};
 }

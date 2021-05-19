@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/strings/string16.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "build/build_config.h"
@@ -96,14 +95,14 @@ class RenderViewTest : public testing::Test {
   // |result|.
   // Returns true if the JavaScript was evaluated correctly to an int value,
   // false otherwise.
-  bool ExecuteJavaScriptAndReturnIntValue(const base::string16& script,
+  bool ExecuteJavaScriptAndReturnIntValue(const std::u16string& script,
                                           int* result);
 
   // Executes the given JavaScript and sets the number value it evaluates to in
   // |result|.
   // Returns true if the JavaScript was evaluated correctly to an number value,
   // false otherwise.
-  bool ExecuteJavaScriptAndReturnNumberValue(const base::string16& script,
+  bool ExecuteJavaScriptAndReturnNumberValue(const std::u16string& script,
                                              double* result);
 
   // Loads |html| into the main frame as a data: URL and blocks until the

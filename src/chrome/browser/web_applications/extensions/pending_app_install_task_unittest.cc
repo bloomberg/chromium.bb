@@ -170,6 +170,7 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
   }
 
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
+                      content::WebContents* web_contents,
                       InstallFinalizedCallback callback) override {
     NOTREACHED();
   }
@@ -330,7 +331,7 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
         GetFactoryForRetriever(std::move(data_retriever)));
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = options.install_url;
-    manifest->name = base::ASCIIToUTF16("Manifest Name");
+    manifest->name = u"Manifest Name";
 
     data_retriever_->SetRendererWebApplicationInfo(
         std::make_unique<WebApplicationInfo>());
@@ -672,7 +673,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholder) {
         EXPECT_EQ(WebAppUrl(), web_app_info.start_url);
         EXPECT_TRUE(web_app_info.open_as_window);
         EXPECT_TRUE(web_app_info.icon_infos.empty());
-        EXPECT_TRUE(web_app_info.icon_bitmaps_any.empty());
+        EXPECT_TRUE(web_app_info.icon_bitmaps.any.empty());
 
         run_loop.Quit();
       }));
@@ -712,7 +713,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholderNoCreateOsShorcuts) {
         EXPECT_EQ(WebAppUrl(), web_app_info.start_url);
         EXPECT_TRUE(web_app_info.open_as_window);
         EXPECT_TRUE(web_app_info.icon_infos.empty());
-        EXPECT_TRUE(web_app_info.icon_bitmaps_any.empty());
+        EXPECT_TRUE(web_app_info.icon_bitmaps.any.empty());
 
         run_loop.Quit();
       }));
@@ -1006,7 +1007,7 @@ TEST_F(PendingAppInstallTaskTest, InstallWithWebAppInfoSucceeds) {
     auto info = std::make_unique<WebApplicationInfo>();
     info->start_url = WebAppUrl();
     info->scope = WebAppUrl().GetWithoutFilename();
-    info->title = base::UTF8ToUTF16("Foo Web App");
+    info->title = u"Foo Web App";
     return info;
   });
 
@@ -1056,7 +1057,7 @@ TEST_F(PendingAppInstallTaskTest, InstallWithWebAppInfoFails) {
     auto info = std::make_unique<WebApplicationInfo>();
     info->start_url = WebAppUrl();
     info->scope = WebAppUrl().GetWithoutFilename();
-    info->title = base::UTF8ToUTF16("Foo Web App");
+    info->title = u"Foo Web App";
     return info;
   });
 

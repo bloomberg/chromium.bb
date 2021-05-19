@@ -60,6 +60,8 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     ~MockURLLoaderClient() override {}
 
     // network::mojom::URLLoaderClient overrides:
+    MOCK_METHOD1(OnReceiveEarlyHints,
+                 void(const network::mojom::EarlyHintsPtr));
     MOCK_METHOD1(OnReceiveResponse,
                  void(const network::mojom::URLResponseHeadPtr));
     MOCK_METHOD2(OnReceiveRedirect,
@@ -112,7 +114,6 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
 
     void CreateLoaderAndStart(
         mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-        int32_t routing_id,
         int32_t request_id,
         uint32_t options,
         const network::ResourceRequest& url_request,

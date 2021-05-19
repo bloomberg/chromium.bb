@@ -20,6 +20,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "ui/base/models/image_model.h"
 #include "url/origin.h"
 
@@ -204,19 +205,19 @@ void RenderViewContextMenuBase::InitMenu() {
 }
 
 void RenderViewContextMenuBase::AddMenuItem(int command_id,
-                                            const base::string16& title) {
+                                            const std::u16string& title) {
   menu_model_.AddItem(command_id, title);
 }
 
 void RenderViewContextMenuBase::AddMenuItemWithIcon(
     int command_id,
-    const base::string16& title,
+    const std::u16string& title,
     const ui::ImageModel& icon) {
   menu_model_.AddItemWithIcon(command_id, title, icon);
 }
 
 void RenderViewContextMenuBase::AddCheckItem(int command_id,
-                                         const base::string16& title) {
+                                             const std::u16string& title) {
   menu_model_.AddCheckItem(command_id, title);
 }
 
@@ -225,8 +226,8 @@ void RenderViewContextMenuBase::AddSeparator() {
 }
 
 void RenderViewContextMenuBase::AddSubMenu(int command_id,
-                                       const base::string16& label,
-                                       ui::MenuModel* model) {
+                                           const std::u16string& label,
+                                           ui::MenuModel* model) {
   menu_model_.AddSubMenu(command_id, label, model);
 }
 
@@ -240,9 +241,9 @@ void RenderViewContextMenuBase::AddSubMenuWithStringIdAndIcon(
 }
 
 void RenderViewContextMenuBase::UpdateMenuItem(int command_id,
-                                           bool enabled,
-                                           bool hidden,
-                                           const base::string16& label) {
+                                               bool enabled,
+                                               bool hidden,
+                                               const std::u16string& label) {
   int index = menu_model_.GetIndexOfCommandId(command_id);
   if (index == -1)
     return;
@@ -296,6 +297,22 @@ void RenderViewContextMenuBase::RemoveAdjacentSeparators() {
       menu_model_.RemoveItemAt(index);
     }
   }
+
+  if (toolkit_delegate_)
+    toolkit_delegate_->RebuildMenu();
+}
+
+void RenderViewContextMenuBase::RemoveSeparatorBeforeMenuItem(int command_id) {
+  int index = menu_model_.GetIndexOfCommandId(command_id);
+  // Ignore if command not found (index == -1) or if it's the first menu item.
+  if (index <= 0)
+    return;
+
+  ui::MenuModel::ItemType prev_type = menu_model_.GetTypeAt(index - 1);
+  if (prev_type != ui::MenuModel::ItemType::TYPE_SEPARATOR)
+    return;
+
+  menu_model_.RemoveItemAt(index - 1);
 
   if (toolkit_delegate_)
     toolkit_delegate_->RebuildMenu();

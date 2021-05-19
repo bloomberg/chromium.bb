@@ -376,9 +376,12 @@ class GerritAccessor(object):
   To avoid excessive Gerrit calls, caches the results.
   """
 
-  def __init__(self, host):
-    self.host = host
+  def __init__(self, url=None, project=None, branch=None):
+    self.host = urlparse.urlparse(url).netloc if url else None
+    self.project = project
+    self.branch = branch
     self.cache = {}
+    self.code_owners_enabled = None
 
   def _FetchChangeDetail(self, issue):
     # Separate function to be easily mocked in tests.
@@ -463,6 +466,12 @@ class GerritAccessor(object):
 
   def UpdateDescription(self, description, issue):
     gerrit_util.SetCommitMessage(self.host, issue, description, notify='NONE')
+
+  def IsCodeOwnersEnabledOnRepo(self):
+    if self.code_owners_enabled is None:
+      self.code_owners_enabled = gerrit_util.IsCodeOwnersEnabledOnRepo(
+          self.host, self.project)
+    return self.code_owners_enabled
 
 
 class OutputApi(object):
@@ -650,10 +659,14 @@ class InputApi(object):
     # Temporary files we must manually remove at the end of a run.
     self._named_temporary_files = []
 
-    # TODO(dpranke): figure out a list of all approved owners for a repo
-    # in order to be able to handle wildcard OWNERS files?
-    self.owners_client = owners_client.DepotToolsClient(
-        change.RepositoryRoot(), change.UpstreamBranch(), os_path=self.os_path)
+    self.owners_client = None
+    if self.gerrit:
+      self.owners_client = owners_client.GetCodeOwnersClient(
+          root=change.RepositoryRoot(),
+          upstream=change.UpstreamBranch(),
+          host=self.gerrit.host,
+          project=self.gerrit.project,
+          branch=self.gerrit.branch)
     self.owners_db = owners_db.Database(
         change.RepositoryRoot(), fopen=open, os_path=self.os_path)
     self.owners_finder = owners_finder.OwnersFinder
@@ -1507,7 +1520,7 @@ def DoPostUploadExecuter(change,
 
 class PresubmitExecuter(object):
   def __init__(self, change, committing, verbose, gerrit_obj, dry_run=None,
-               thread_pool=None, parallel=False, gerrit_project=None):
+               thread_pool=None, parallel=False):
     """
     Args:
       change: The Change object.
@@ -1525,7 +1538,6 @@ class PresubmitExecuter(object):
     self.more_cc = []
     self.thread_pool = thread_pool
     self.parallel = parallel
-    self.gerrit_project = gerrit_project
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
     """Executes a single presubmit script.
@@ -1567,10 +1579,10 @@ class PresubmitExecuter(object):
     rel_path = rel_path.replace(os.path.sep, '/')
 
     # Get the URL of git remote origin and use it to identify host and project
-    host = ''
-    if self.gerrit and self.gerrit.host:
-      host = self.gerrit.host
-    project = self.gerrit_project or ''
+    host = project = ''
+    if self.gerrit:
+      host = self.gerrit.host or ''
+      project = self.gerrit.project or ''
 
     # Prefix for test names
     prefix = 'presubmit:%s/%s:%s/' % (host, project, rel_path)
@@ -1635,11 +1647,11 @@ class PresubmitExecuter(object):
     try:
       result = eval(function_name + '(*__args)', context)
       self._check_result_type(result)
-    except:
+    except Exception as e:
       if sink:
         elapsed_time = time_time() - start_time
         sink.report(function_name, rdb_wrapper.STATUS_FAIL, elapsed_time)
-      raise
+      raise type(e)('Evaluation of %s failed: %s' % (function_name, e))
 
     if sink:
       elapsed_time = time_time() - start_time
@@ -1669,8 +1681,7 @@ def DoPresubmitChecks(change,
                       gerrit_obj,
                       dry_run=None,
                       parallel=False,
-                      json_output=None,
-                      gerrit_project=None):
+                      json_output=None):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -1713,7 +1724,7 @@ def DoPresubmitChecks(change,
     results = []
     thread_pool = ThreadPool()
     executer = PresubmitExecuter(change, committing, verbose, gerrit_obj,
-                                 dry_run, thread_pool, parallel, gerrit_project)
+                                 dry_run, thread_pool, parallel)
     if default_presubmit:
       if verbose:
         sys.stdout.write('Running default presubmit script.\n')
@@ -1874,7 +1885,10 @@ def _parse_gerrit_options(parser, options):
   """
   gerrit_obj = None
   if options.gerrit_url:
-    gerrit_obj = GerritAccessor(urlparse.urlparse(options.gerrit_url).netloc)
+    gerrit_obj = GerritAccessor(
+        url=options.gerrit_url,
+        project=options.gerrit_project,
+        branch=options.gerrit_branch)
 
   if not options.gerrit_fetch:
     return gerrit_obj
@@ -1946,6 +1960,8 @@ def main(argv=None):
                       'to skip multiple canned checks.')
   parser.add_argument('--dry_run', action='store_true', help=argparse.SUPPRESS)
   parser.add_argument('--gerrit_url', help=argparse.SUPPRESS)
+  parser.add_argument('--gerrit_project', help=argparse.SUPPRESS)
+  parser.add_argument('--gerrit_branch', help=argparse.SUPPRESS)
   parser.add_argument('--gerrit_fetch', action='store_true',
                       help=argparse.SUPPRESS)
   parser.add_argument('--parallel', action='store_true',
@@ -1959,7 +1975,6 @@ def main(argv=None):
                       help='List of files to be marked as modified when '
                       'executing presubmit or post-upload hooks. fnmatch '
                       'wildcards can also be used.')
-  parser.add_argument('--gerrit_project', help=argparse.SUPPRESS)
   options = parser.parse_args(argv)
 
   log_level = logging.ERROR
@@ -1992,8 +2007,7 @@ def main(argv=None):
           gerrit_obj,
           options.dry_run,
           options.parallel,
-          options.json_output,
-          options.gerrit_project)
+          options.json_output)
   except PresubmitFailure as e:
     print(e, file=sys.stderr)
     print('Maybe your depot_tools is out of date?', file=sys.stderr)

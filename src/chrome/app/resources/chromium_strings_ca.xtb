@@ -10,7 +10,6 @@
 <translation id="1315551408014407711">Configura el teu perfil de Chromium nou</translation>
 <translation id="1396446129537741364">Chromium està provant de mostrar les contrasenyes.</translation>
 <translation id="1414495520565016063">Teniu la sessió iniciada a Chromium.</translation>
-<translation id="1414973082589232775">Perquè Rosetta pugui reproduir contingut multimèdia protegit, has de reiniciar Chromium.</translation>
 <translation id="151962892725702025">Chromium OS no ha pogut sincronitzar les vostres dades perquè la sincronització no està disponible per al vostre domini.</translation>
 <translation id="1524282610922162960">Comparteix una pestanya de Chromium</translation>
 <translation id="1553461853655228091">Chromium necessita permís per accedir a la càmera i poder crear un mapa 3D del teu entorn</translation>
@@ -25,8 +24,8 @@
 <translation id="1966382378801805537">Chromium no pot determinar ni definir el navegador predeterminat</translation>
 <translation id="2008474315282236005">Amb aquesta acció, se suprimirà 1 element d'aquest dispositiu. Per recuperar les teves dades més endavant, inicia la sessió a Chromium com a <ph name="USER_EMAIL" />.</translation>
 <translation id="2020032459870799438">Per comprovar si les teves altres contrasenyes estan protegides contra violacions de les dades i contra altres problemes de seguretat, <ph name="BEGIN_LINK" />inicia la sessió a Chromium<ph name="END_LINK" />.</translation>
+<translation id="2174178932569897599">Personalitza Chromium</translation>
 <translation id="2185166961232948079">Chromium - Inici de sessió a la xarxa - <ph name="PAGE_TITLE" /></translation>
-<translation id="2225696941839557119">Chromium OS no ha pogut sincronitzar les teves contrasenyes.</translation>
 <translation id="2241627712206172106">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chromium com vulguin.</translation>
 <translation id="2294245788148774212">Opcional: ajuda a millorar les funcions i el rendiment de Chromium OS enviant automàticament dades de diagnòstic i d'ús a Google.</translation>
 <translation id="2343156876103232566">Per enviar un número d'aquí al teu telèfon Android, inicia la sessió a Chromium en tots dos dispositius.</translation>
@@ -40,10 +39,8 @@
 <translation id="2577788541081224677">Per accedir a les teves coses de Chromium des de tots els teus dispositius, inicia la sessió per poder activar la sincronització.</translation>
 <translation id="2583187216237139145">L'administrador del perfil de treball pot suprimir qualsevol dada de Chromium que es generi durant l'ús d'aquest perfil, com ara les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració. <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">Cal reiniciar Chromium OS per aplicar l'actualització.</translation>
-<translation id="2615699638672665509">Aquest ordinador aviat deixarà de rebre actualitzacions de Chromium perquè el seu maquinari ja no s'admet.</translation>
 <translation id="2648074677641340862">S'ha produït un error en el sistema operatiu durant la instal·lació. Torneu a baixar Chromium.</translation>
 <translation id="2661879430930417727">Si comparteixes un dispositiu, els amics i els familiars poden navegar per separat i configurar Chromium com vulguin</translation>
-<translation id="270245676623587882">Chromium recomana que es desactivi aquesta extensió perquè en aquests moments no compleix els estàndards de Navegació segura millorada.</translation>
 <translation id="2711502716910134313">Pestanya de Chromium</translation>
 <translation id="2718390899429598676">Per a més seguretat, Chromium encriptarà les teves dades.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
@@ -63,6 +60,7 @@
 <translation id="3130323860337406239">Chromium està utilitzant el micròfon.</translation>
 <translation id="3155163173539279776">Torna a iniciar Chromium</translation>
 <translation id="3179665906251668410">Obre l'enllaç en una finestra d'incò&amp;gnit a Chromium</translation>
+<translation id="3185330573522821672">Personalitza el teu perfil de Chromium nou</translation>
 <translation id="3190315855212034486">Chromium s'ha bloquejat. Voleu tornar-lo a iniciar?</translation>
 <translation id="3229526316128325841">Chromium vol exportar les teves contrasenyes.</translation>
 <translation id="3258596308407688501">Chromium no pot llegir ni escriure en el directori de dades:
@@ -77,6 +75,7 @@
 <translation id="3430503420100763906">Els perfils de Chromium et permeten separar tot el contingut de Chromium. Crea perfils per a amics i familiars, o separa la feina de la diversió.</translation>
 <translation id="347328004046849135">Chromium t'enviarà una notificació quan iniciïs la sessió amb una contrasenya en perill</translation>
 <translation id="3474745554856756813">Amb aquesta acció, se suprimiran <ph name="ITEMS_COUNT" /> elements d'aquest dispositiu. Per recuperar les teves dades més endavant, inicia la sessió a Chromium com a <ph name="USER_EMAIL" />.</translation>
+<translation id="3497319089134299931"><ph name="SHORTCUT" /> permet canviar entre perfils de Chromium</translation>
 <translation id="3509308970982693815">Tanqueu totes les finestres de Chromium i torneu-ho a provar.</translation>
 <translation id="3575459661164320785">Hi ha programari nociu a l'ordinador. Chromium el pot suprimir, restaurar la configuració i desactivar les extensions perquè el navegador torni a funcionar amb normalitat.</translation>
 <translation id="3639635944603682591">Les dades de navegació d'aquesta persona se suprimiran d'aquest dispositiu. Per recuperar-les, inicia la sessió a Chromium com a <ph name="USER_EMAIL" />.</translation>
@@ -137,11 +136,11 @@
 <translation id="5480860683791598150">Chromium necessita accedir a la teva ubicació per compartir-la amb aquest lloc web</translation>
 <translation id="549669000822060376">Espereu mentre Chromium instal·la les darreres actualitzacions del sistema.</translation>
 <translation id="5496810170689441661">Chromium està provant d'editar les contrasenyes. Escriu la teva contrasenya de Windows per permetre-ho.</translation>
+<translation id="5527463683072221100">Obre els fitxers PDF a Chromium</translation>
 <translation id="5623402015214259806">{0,plural, =0{Hi ha una actualització de Chromium disponible}=1{Hi ha una actualització de Chromium disponible}other{Fa # dies que hi ha una actualització de Chromium disponible}}</translation>
 <translation id="5634636535844844681">Chromium requereix Windows 7 o una versió posterior.</translation>
 <translation id="5653831366781983928">Reinicia Chromium ara</translation>
 <translation id="5698481217667032250">Mostra Chromium en aquest idioma</translation>
-<translation id="5736967399513123100">Per permetre que Chromium reprodueixi contingut multimèdia protegit, has d'instal·lar Rosetta. Vols instal·lar-lo ara?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Us donem la benvinguda a Chromium</translation>
 <translation id="5895138241574237353">Reinicia</translation>
@@ -157,10 +156,10 @@
 <translation id="6120345080069858279">Chromium desarà aquesta contrasenya al Compte de Google. No caldrà que la recordis.</translation>
 <translation id="6129621093834146363">Chromium ha bloquejat <ph name="FILE_NAME" /> perquè és perillós.</translation>
 <translation id="6134968993075716475">Navegació segura està desactivada. Chromium recomana activar-la.</translation>
+<translation id="6145820983052037069">Pots canviar entre perfils de Chromium aquí</translation>
 <translation id="6183079672144801177">Assegura't que tinguis la sessió iniciada a Chromium a <ph name="TARGET_DEVICE_NAME" /> i prova d'enviar-ho de nou.</translation>
 <translation id="6212496753309875659">Aquest equip ja té una versió més recent de Chromium. Si el programari no funciona, desinstal·leu Chromium i torneu-ho a provar.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium es reiniciarà ara}=1{Chromium es reiniciarà d'aquí a 1 segon}other{Chromium es reiniciarà d'aquí a # segons}}</translation>
-<translation id="623836266260425961">Chromium OS no ha pogut sincronitzar les teves dades.</translation>
 <translation id="6248213926982192922">Estableix Chromium com a navegador predeterminat</translation>
 <translation id="6266342355635466082">Chromium no pot cercar actualitzacions. Comprova la connexió a Internet.</translation>
 <translation id="6268381023930128611">Voleu tancar la sessió de Chromium?</translation>
@@ -193,7 +192,6 @@
 <translation id="6857782730669500492">Chromium: <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiada a Chromium)</translation>
 <translation id="6893813176749746474">S'ha actualitzat Chromium, però fa almenys 30 dies que no l'heu utilitzat.</translation>
-<translation id="6897548120660295439">Rosetta permet que Chromium reprodueixi el contingut multimèdia protegit d'aquesta pàgina.</translation>
 <translation id="691026815377248078">Chromium necessita accedir al Bluetooth per continuar 
  amb la vinculació. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="6964305034639999644">Obre l'enllaç en una finestra d'incò&amp;gnit a Chromium</translation>
@@ -201,11 +199,9 @@
 <translation id="6990124437352146030">Per visitar aquest lloc web, Chromium necessita permís per accedir al micròfon</translation>
 <translation id="701244094609242530">Chromium no pot comprovar les teves extensions. Torna-ho a provar més tard.</translation>
 <translation id="705851970750939768">Actualitza Chromium</translation>
-<translation id="7066436765290594559">Chromium OS no ha pogut sincronitzar les vostres dades. Actualitzeu la frase de contrasenya de sincronització.</translation>
 <translation id="7067091210845072982">Si una imatge no té una descripció útil, Chromium provarà d'oferir-te'n una. Per crear les descripcions, les imatges s'envien a Google.</translation>
 <translation id="7196312274710523067">No s'ha pogut iniciar Chromium. Torna-ho a provar.</translation>
 <translation id="7197677400338048821">Chromium no pot comprovar les teves contrasenyes. Torna-ho a provar al cap de 24 hores.</translation>
-<translation id="7205698830395646142">Amaga al menú de Chromium</translation>
 <translation id="7223968959479464213">Gestor de tasques: Chromium</translation>
 <translation id="731644333568559921">Actualitza &amp;Chromium OS</translation>
 <translation id="731795002583552498">S'està actualitzant Chromium</translation>
@@ -241,7 +237,6 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="7907774600618164274">Chromium OS no s'ha tancat correctament.</translation>
 <translation id="7937630085815544518">Teníeu la sessió iniciada a Chromium com a <ph name="USER_EMAIL_ADDRESS" />. Utilitzeu el mateix compte per tornar a iniciar-hi la sessió.</translation>
 <translation id="7975919845073681630">Aquesta és una instal·lació secundària de Chromium i no pot definir-se com a navegador predeterminat.</translation>
-<translation id="7979877361127045932">Amaga al menú de Chromium</translation>
 <translation id="8013436988911883588">Un cop Chromium tingui accés, els llocs web et podran demanar accés.</translation>
 <translation id="81770708095080097">Chromium ha bloquejat aquest fitxer perquè és perillós.</translation>
 <translation id="8248265253516264921">Si una imatge no té una descripció útil, Chromium provarà d'oferir-te'n una. Per crear les descripcions, les imatges s'envien a Google. Pots desactivar aquesta funció en qualsevol moment a la configuració.</translation>

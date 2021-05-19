@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -15,25 +16,17 @@
 #include "base/test/task_environment.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
 #include "components/feed/core/v2/protocol_translator.h"
-#include "components/feed/core/v2/public/feed_stream_api.h"
+#include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/test/callback_receiver.h"
 #include "components/feed/core/v2/test/proto_printer.h"
 #include "components/feed/core/v2/test/stream_builder.h"
+#include "components/feed/core/v2/test/test_util.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
 namespace {
-
-// This is EXPECT_EQ, but also dumps the string values for ease of reading.
-#define EXPECT_STRINGS_EQUAL(WANT, GOT)                                   \
-  {                                                                       \
-    std::string want_param_ = (WANT), got_param_ = (GOT);                 \
-    EXPECT_EQ(want_param_, got_param_) << "Wanted:\n"                     \
-                                       << (want_param_) << "\nBut got:\n" \
-                                       << (got_param_);                   \
-  }
 
 using LoadStreamResult = FeedStore::LoadStreamResult;
 
@@ -131,7 +124,9 @@ TEST_F(FeedStoreTest, InitFailure) {
 TEST_F(FeedStoreTest, OverwriteStream) {
   MakeFeedStore({});
   CallbackReceiver<bool> receiver;
-  store_->OverwriteStream(kInterestStream, MakeTypicalInitialModelState(),
+  // TODO(harringtond): find a long term fix for assumptions about
+  // kTestTimeEpoch value.
+  store_->OverwriteStream(kForYouStream, MakeTypicalInitialModelState(),
                           receiver.Bind());
   fake_db_->UpdateCallback(true);
 
@@ -250,6 +245,8 @@ TEST_F(FeedStoreTest, OverwriteStream) {
 TEST_F(FeedStoreTest, OverwriteStreamWebFeed) {
   MakeFeedStore({});
   CallbackReceiver<bool> receiver;
+  // TODO(harringtond): find a long term fix for assumptions about
+  // kTestTimeEpoch value.
   store_->OverwriteStream(kWebFeedStream, MakeTypicalInitialModelState(),
                           receiver.Bind());
   fake_db_->UpdateCallback(true);
@@ -385,7 +382,7 @@ TEST_F(FeedStoreTest, OverwriteStreamOverwritesData) {
   db_entries_["m"].mutable_local_action()->set_id(6);
 
   CallbackReceiver<bool> receiver;
-  store_->OverwriteStream(kInterestStream, MakeTypicalInitialModelState(),
+  store_->OverwriteStream(kForYouStream, MakeTypicalInitialModelState(),
                           receiver.Bind());
   fake_db_->UpdateCallback(true);
 
@@ -399,12 +396,12 @@ TEST_F(FeedStoreTest, OverwriteStreamOverwritesData) {
 
 TEST_F(FeedStoreTest, LoadStreamSuccess) {
   MakeFeedStore({});
-  store_->OverwriteStream(kInterestStream, MakeTypicalInitialModelState(),
+  store_->OverwriteStream(kForYouStream, MakeTypicalInitialModelState(),
                           base::DoNothing());
   fake_db_->UpdateCallback(true);
 
   CallbackReceiver<LoadStreamResult> receiver;
-  store_->LoadStream(kInterestStream, receiver.Bind());
+  store_->LoadStream(kForYouStream, receiver.Bind());
   fake_db_->LoadCallback(true);
 
   ASSERT_TRUE(receiver.GetResult());
@@ -415,12 +412,12 @@ TEST_F(FeedStoreTest, LoadStreamSuccess) {
 
 TEST_F(FeedStoreTest, LoadStreamFail) {
   MakeFeedStore({});
-  store_->OverwriteStream(kInterestStream, MakeTypicalInitialModelState(),
+  store_->OverwriteStream(kForYouStream, MakeTypicalInitialModelState(),
                           base::DoNothing());
   fake_db_->UpdateCallback(true);
 
   CallbackReceiver<LoadStreamResult> receiver;
-  store_->LoadStream(kInterestStream, receiver.Bind());
+  store_->LoadStream(kForYouStream, receiver.Bind());
   fake_db_->LoadCallback(false);
 
   ASSERT_TRUE(receiver.GetResult());
@@ -431,7 +428,7 @@ TEST_F(FeedStoreTest, LoadStreamNoData) {
   MakeFeedStore({});
 
   CallbackReceiver<LoadStreamResult> receiver;
-  store_->LoadStream(kInterestStream, receiver.Bind());
+  store_->LoadStream(kForYouStream, receiver.Bind());
   fake_db_->LoadCallback(true);
 
   ASSERT_TRUE(receiver.GetResult());
@@ -440,7 +437,7 @@ TEST_F(FeedStoreTest, LoadStreamNoData) {
 
 TEST_F(FeedStoreTest, LoadStreamIgnoresADifferentStreamType) {
   MakeFeedStore({});
-  store_->OverwriteStream(kInterestStream, MakeTypicalInitialModelState(),
+  store_->OverwriteStream(kForYouStream, MakeTypicalInitialModelState(),
                           base::DoNothing());
   fake_db_->UpdateCallback(true);
 
@@ -456,7 +453,7 @@ TEST_F(FeedStoreTest, LoadStreamIgnoresADifferentStreamType) {
 TEST_F(FeedStoreTest, WriteOperations) {
   MakeFeedStore({});
   CallbackReceiver<LoadStreamResult> receiver;
-  store_->WriteOperations(kInterestStream, /*sequence_number=*/5,
+  store_->WriteOperations(kForYouStream, /*sequence_number=*/5,
                           {MakeOperation(MakeCluster(2, MakeRootId())),
                            MakeOperation(MakeCluster(6, MakeRootId()))});
   fake_db_->UpdateCallback(true);
@@ -501,7 +498,7 @@ TEST_F(FeedStoreTest, ReadNonexistentContentAndSharedStates) {
                    std::vector<feedstore::StreamSharedState>>
       cr;
 
-  store_->ReadContent(kInterestStream, {MakeContentContentId(0)},
+  store_->ReadContent(kForYouStream, {MakeContentContentId(0)},
                       {MakeSharedStateContentId(0)}, cr.Bind());
   fake_db_->LoadCallback(true);
 
@@ -536,8 +533,7 @@ TEST_F(FeedStoreTest, ReadContentAndSharedStates) {
       cr;
 
   // Successful read
-  store_->ReadContent(kInterestStream, content_ids, shared_state_ids,
-                      cr.Bind());
+  store_->ReadContent(kForYouStream, content_ids, shared_state_ids, cr.Bind());
   fake_db_->LoadCallback(true);
 
   ASSERT_NE(cr.GetResult<0>(), base::nullopt);
@@ -557,8 +553,7 @@ TEST_F(FeedStoreTest, ReadContentAndSharedStates) {
 
   // Failed read
   cr.Clear();
-  store_->ReadContent(kInterestStream, content_ids, shared_state_ids,
-                      cr.Bind());
+  store_->ReadContent(kForYouStream, content_ids, shared_state_ids, cr.Bind());
   fake_db_->LoadCallback(false);
 
   ASSERT_NE(cr.GetResult<0>(), base::nullopt);
@@ -636,7 +631,7 @@ TEST_F(FeedStoreTest, RemoveActions) {
 TEST_F(FeedStoreTest, ClearAllSuccess) {
   // Write at least one record of each type.
   MakeFeedStore({});
-  store_->OverwriteStream(kInterestStream, MakeTypicalInitialModelState(),
+  store_->OverwriteStream(kForYouStream, MakeTypicalInitialModelState(),
                           base::DoNothing());
   fake_db_->UpdateCallback(true);
   store_->WriteActions({MakeAction(0)}, base::DoNothing());
@@ -734,6 +729,188 @@ TEST_F(FeedStoreTest, UpgradeFromStreamSchemaV0) {
                 "a/someaction",
             }),
             StoredKeys());
+}
+
+TEST_F(FeedStoreTest, WriteRecommendedFeedsAndReadThem) {
+  MakeFeedStore({});
+
+  CallbackReceiver<> receiver;
+  feedstore::RecommendedWebFeedIndex index;
+  index.add_entries()->set_web_feed_id("foo");
+  *index.mutable_entries(0)->add_matchers() =
+      MakeWebFeedInfo("foo").matchers(0);
+  index.add_entries()->set_web_feed_id("bar");
+  *index.mutable_entries(1)->add_matchers() =
+      MakeWebFeedInfo("bar").matchers(0);
+
+  store_->WriteRecommendedFeeds(
+      index, {MakeWebFeedInfo("foo"), MakeWebFeedInfo("bar")}, receiver.Bind());
+
+  fake_db_->UpdateCallback(true);
+
+  ASSERT_TRUE(receiver.called());
+
+  CallbackReceiver<FeedStore::WebFeedStartupData> startup_callback;
+  store_->ReadWebFeedStartupData(startup_callback.Bind());
+  fake_db_->LoadCallback(true);
+
+  ASSERT_TRUE(startup_callback.GetResult());
+
+  // Check that we can load the stored data.
+  std::string want = R"({
+  entries {
+    matchers {
+      criteria {
+        text: "foo.com"
+        criteria_type: 2
+      }
+    }
+    web_feed_id: "foo"
+  }
+  entries {
+    matchers {
+      criteria {
+        text: "bar.com"
+        criteria_type: 2
+      }
+    }
+    web_feed_id: "bar"
+  }
+}
+)";
+  EXPECT_STRINGS_EQUAL(
+      want, ToTextProto(startup_callback.GetResult()->recommended_feed_index));
+
+  CallbackReceiver<std::unique_ptr<feedstore::WebFeedInfo>> foo_callback;
+  store_->ReadRecommendedWebFeedInfo("id_foo", foo_callback.Bind());
+  fake_db_->GetCallback(true);
+  ASSERT_TRUE(foo_callback.GetResult());
+  ASSERT_TRUE(*foo_callback.GetResult());
+  EXPECT_STRINGS_EQUAL(R"({
+  web_feed_id: "id_foo"
+  title: "Title foo"
+  visit_uri: "https://foo.com"
+  favicon {
+    url: "http://favicon/foo"
+  }
+  follower_count: 123
+  matchers {
+    criteria {
+      text: "foo.com"
+      criteria_type: 2
+    }
+  }
+}
+)",
+                       ToTextProto(**foo_callback.GetResult()));
+
+  CallbackReceiver<std::unique_ptr<feedstore::WebFeedInfo>> bar_callback;
+  store_->ReadRecommendedWebFeedInfo("id_bar", bar_callback.Bind());
+  fake_db_->GetCallback(true);
+  ASSERT_TRUE(bar_callback.GetResult());
+  ASSERT_TRUE(*bar_callback.GetResult());
+  EXPECT_STRINGS_EQUAL(R"({
+  web_feed_id: "id_bar"
+  title: "Title bar"
+  visit_uri: "https://bar.com"
+  favicon {
+    url: "http://favicon/bar"
+  }
+  follower_count: 123
+  matchers {
+    criteria {
+      text: "bar.com"
+      criteria_type: 2
+    }
+  }
+}
+)",
+                       ToTextProto(**bar_callback.GetResult()));
+}
+
+TEST_F(FeedStoreTest, WriteSubscribedFeeds) {
+  MakeFeedStore({});
+
+  CallbackReceiver<> receiver;
+  feedstore::SubscribedWebFeeds subscribed_web_feeds;
+  *subscribed_web_feeds.add_feeds() = MakeWebFeedInfo("foo");
+  *subscribed_web_feeds.add_feeds() = MakeWebFeedInfo("bar");
+
+  store_->WriteSubscribedFeeds(subscribed_web_feeds, receiver.Bind());
+
+  fake_db_->UpdateCallback(true);
+
+  ASSERT_TRUE(receiver.called());
+
+  CallbackReceiver<FeedStore::WebFeedStartupData> startup_callback;
+  store_->ReadWebFeedStartupData(startup_callback.Bind());
+  fake_db_->LoadCallback(true);
+
+  ASSERT_TRUE(startup_callback.called());
+
+  std::string want = R"({
+  feeds {
+    web_feed_id: "id_foo"
+    title: "Title foo"
+    visit_uri: "https://foo.com"
+    favicon {
+      url: "http://favicon/foo"
+    }
+    follower_count: 123
+    matchers {
+      criteria {
+        text: "foo.com"
+        criteria_type: 2
+      }
+    }
+  }
+  feeds {
+    web_feed_id: "id_bar"
+    title: "Title bar"
+    visit_uri: "https://bar.com"
+    favicon {
+      url: "http://favicon/bar"
+    }
+    follower_count: 123
+    matchers {
+      criteria {
+        text: "bar.com"
+        criteria_type: 2
+      }
+    }
+  }
+}
+)";
+  EXPECT_STRINGS_EQUAL(
+      want, ToTextProto(startup_callback.GetResult()->subscribed_web_feeds));
+}
+
+TEST_F(FeedStoreTest, ReadWebFeedStartupDataNotPresent) {
+  MakeFeedStore({});
+
+  CallbackReceiver<FeedStore::WebFeedStartupData> startup_callback;
+  store_->ReadWebFeedStartupData(startup_callback.Bind());
+  fake_db_->LoadCallback(true);
+
+  ASSERT_TRUE(startup_callback.called());
+
+  EXPECT_STRINGS_EQUAL(
+      "{\n}\n",
+      ToTextProto(startup_callback.GetResult()->subscribed_web_feeds));
+  EXPECT_STRINGS_EQUAL(
+      "{\n}\n",
+      ToTextProto(startup_callback.GetResult()->recommended_feed_index));
+}
+
+TEST_F(FeedStoreTest, ReadRecommendedWebFeedInfoNotPresent) {
+  MakeFeedStore({});
+
+  CallbackReceiver<std::unique_ptr<feedstore::WebFeedInfo>> callback;
+  store_->ReadRecommendedWebFeedInfo("id_foo", callback.Bind());
+  fake_db_->GetCallback(true);
+
+  ASSERT_TRUE(callback.GetResult());
+  ASSERT_FALSE(*callback.GetResult());
 }
 
 }  // namespace feed

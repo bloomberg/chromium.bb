@@ -791,7 +791,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Search.ContextualSearchQuickActions.Category"
-    enum="ContextualSearchQuickActionCategory" expires_after="2021-07-27">
+    enum="ContextualSearchQuickActionCategory" expires_after="2021-10-04">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1146,7 +1146,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Search.DefaultSearchProviderType"
-    enum="OmniboxSearchEngineType" expires_after="2021-06-30">
+    enum="OmniboxSearchEngineType" expires_after="2021-08-29">
   <owner>mpearson@chromium.org</owner>
   <owner>csharp@chromium.org</owner>
   <summary>
@@ -1336,7 +1336,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Search.QueryTiles.NTP.Chip.SearchClicked" units="index"
-    expires_after="2021-06-20">
+    expires_after="2021-09-05">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>
@@ -1356,7 +1356,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Search.QueryTiles.Tile.Clicked" units="index"
-    expires_after="M91">
+    expires_after="M95">
 <!-- Name completed by histogram_suffixes name="TileUiSurface" -->
 
   <owner>shaktisahu@chromium.org</owner>
@@ -1368,7 +1368,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Search.QueryTiles.Tile.Clicked.IsTopLevel"
-    enum="BooleanIsTopLevel" expires_after="M91">
+    enum="BooleanIsTopLevel" expires_after="M95">
 <!-- Name completed by histogram_suffixes name="TileUiSurface" -->
 
   <owner>shaktisahu@chromium.org</owner>
@@ -1407,7 +1407,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Search.QueryTiles.TrendingTileEvent" enum="TrendingTileEvent"
-    expires_after="M91">
+    expires_after="M94">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>

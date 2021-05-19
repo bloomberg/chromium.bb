@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind.h"
@@ -20,6 +21,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/public/test/url_loader_monitor.h"
 #include "content/shell/browser/shell.h"
 #include "crypto/sha2.h"
@@ -402,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEndInIsolatedWorld) {
   // Ensure an isolated world can execute Trust Tokens operations when its
   // window's main world can. In particular, this ensures that the
-  // redemtion-and-signing feature policy is appropriately propagated by the
+  // redemtion-and-signing permissions policy is appropriately propagated by the
   // browser process.
 
   ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
@@ -440,6 +442,30 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEndInIsolatedWorld) {
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, RecordsTimers) {
   base::HistogramTester histograms;
 
+  // |completion_waiter| adds a synchronization point so that we can
+  // safely fetch all of the relevant histograms from the network process.
+  //
+  // Without this, there's a race between the fetch() promises resolving and the
+  // NetErrorForTrustTokenOperation histogram being logged. This likely has no
+  // practical impact during normal operation, but it makes this test flake: see
+  // https://crbug.com/1165862.
+  //
+  // The URLLoaderInterceptor's completion callback receives its
+  // URLLoaderCompletionStatus from URLLoaderClient::OnComplete, which happens
+  // after CorsURLLoader::NotifyCompleted, which records the final histogram.
+  base::RunLoop run_loop;
+  content::URLLoaderInterceptor completion_waiter(
+      base::BindRepeating([](URLLoaderInterceptor::RequestParams*) {
+        return false;  // Don't intercept outbound requests.
+      }),
+      base::BindLambdaForTesting(
+          [&run_loop](const GURL& url,
+                      const network::URLLoaderCompletionStatus& status) {
+            if (url.spec().find("sign") != std::string::npos)
+              run_loop.Quit();
+          }),
+      /*ready_callback=*/base::NullCallback());
+
   ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
 
   GURL start_url = server_.GetURL("a.test", "/title1.html");
@@ -460,10 +486,12 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, RecordsTimers) {
       "Success",
       EvalJs(shell(), JsReplace(command, IssuanceOriginFromHost("a.test"))));
 
+  run_loop.Run();
+  content::FetchHistogramsFromChildProcesses();
+
   // Just check that the timers were populated: since we can't mock a clock in
   // this browser test, it's hard to check the recorded values for
   // reasonableness.
-  content::FetchHistogramsFromChildProcesses();
   for (const std::string& op : {"Issuance", "Redemption", "Signing"}) {
     histograms.ExpectTotalCount(
         "Net.TrustTokens.OperationBeginTime.Success." + op, 1);
@@ -707,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OverlongAdditionalSigningData) {
   // network::kTrustTokenAdditionalSigningDataMaxSizeBytes code units, once it's
   // converted to UTF-8 it will contain more than that many bytes, so we expect
   // that it will get rejected by the network service.
-  base::string16 overlong_signing_data(
+  std::u16string overlong_signing_data(
       network::kTrustTokenAdditionalSigningDataMaxSizeBytes,
       u'€' /* char16 literal */);
   ASSERT_LE(overlong_signing_data.size(),
@@ -1210,7 +1238,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
 }
 
 // Redemption with `refresh-policy: 'refresh'` from a non-issuer context should
-// fail.
+// still work.
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
                        RefreshPolicyRefreshRequiresIssuerContext) {
   ProvideRequestHandlerKeyCommitmentsToNetworkService({"b.test"});
@@ -1218,7 +1246,8 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
   ASSERT_TRUE(NavigateToURL(shell(), server_.GetURL("a.test", "/title1.html")));
 
   // Execute the operations against issuer https://b.test:<port> from a
-  // different context; attempting to use refreshPolicy: 'refresh' should error.
+  // different context; attempting to use refreshPolicy: 'refresh' should still
+  // succeed.
   EXPECT_EQ("Success",
             EvalJs(shell(), JsReplace(R"(fetch($1,
         { trustToken: { type: 'token-request' } })
@@ -1231,7 +1260,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
         .then(()=>'Success'); )",
                                       server_.GetURL("b.test", "/redeem"))));
 
-  EXPECT_EQ("InvalidStateError",
+  EXPECT_EQ("Success",
             EvalJs(shell(), JsReplace(R"(fetch($1,
         { trustToken: { type: 'token-redemption',
                         refreshPolicy: 'refresh' } })

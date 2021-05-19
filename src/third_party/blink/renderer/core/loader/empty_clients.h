@@ -40,6 +40,7 @@
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/common/widget/screen_info.h"
+#include "third_party/blink/public/common/widget/screen_infos.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -177,7 +178,10 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
     return s;
   }
   const ScreenInfo& GetScreenInfo(LocalFrame&) const override {
-    return empty_screen_info_;
+    return empty_screen_infos_.current();
+  }
+  const ScreenInfos& GetScreenInfos(LocalFrame&) const override {
+    return empty_screen_infos_;
   }
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override {}
   void ShowMouseOverURL(const HitTestResult&) override {}
@@ -228,7 +232,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
                              BatterySavingsFlags savings) override {}
 
  private:
-  const ScreenInfo empty_screen_info_ = {};
+  const ScreenInfos empty_screen_infos_{ScreenInfo()};
 };
 
 class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
@@ -254,8 +258,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       HistoryItem* item,
       WebHistoryCommitType commit_type,
       bool should_reset_browser_interface_broker,
-      network::mojom::WebSandboxFlags sandbox_flags,
-      const blink::ParsedFeaturePolicy& feature_policy_header,
+      const blink::ParsedPermissionsPolicy& permissions_policy_header,
       const blink::DocumentPolicyFeatureState& document_policy_header)
       override {}
   void DispatchDidFailLoad(const ResourceError&,
@@ -279,10 +282,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       base::TimeTicks,
       const String&,
       const base::Optional<WebImpression>&,
-      WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>
-          initiator_csp,
       network::mojom::IPAddressSpace,
-      mojo::PendingRemote<mojom::blink::NavigationInitiator>,
       const LocalFrameToken* initiator_frame_token,
       mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>)
       override;
@@ -295,8 +295,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   DocumentLoader* CreateDocumentLoader(
       LocalFrame*,
       WebNavigationType,
-      ContentSecurityPolicy*,
       std::unique_ptr<WebNavigationParams> navigation_params,
+      std::unique_ptr<PolicyContainer> policy_container,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
   void UpdateDocumentLoader(
       DocumentLoader* document_loader,

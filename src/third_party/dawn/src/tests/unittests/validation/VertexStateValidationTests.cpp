@@ -22,24 +22,25 @@ class VertexStateTest : public ValidationTest {
     void CreatePipeline(bool success,
                         const utils::ComboVertexStateDescriptor& state,
                         const char* vertexSource) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, vertexSource);
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, vertexSource);
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
             [[location(0)]] var<out> fragColor : vec4<f32>;
             [[stage(fragment)]] fn main() -> void {
                 fragColor = vec4<f32>(1.0, 0.0, 0.0, 1.0);
             }
         )");
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.vertexState = &state;
-        descriptor.cColorStates[0].format = wgpu::TextureFormat::RGBA8Unorm;
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.vertex.bufferCount = state.vertexBufferCount;
+        descriptor.vertex.buffers = &state.cVertexBuffers[0];
+        descriptor.cFragment.module = fsModule;
+        descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
 
         if (!success) {
-            ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+            ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
         } else {
-            device.CreateRenderPipeline(&descriptor);
+            device.CreateRenderPipeline2(&descriptor);
         }
     }
 
@@ -284,7 +285,7 @@ TEST_F(VertexStateTest, SetAttributeOffsetOutOfBounds) {
     utils::ComboVertexStateDescriptor state;
     state.vertexBufferCount = 1;
     state.cVertexBuffers[0].attributeCount = 1;
-    state.cAttributes[0].offset = kMaxVertexBufferStride - sizeof(wgpu::VertexFormat::Float);
+    state.cAttributes[0].offset = kMaxVertexBufferStride - sizeof(wgpu::VertexFormat::Float32);
     CreatePipeline(true, state, kDummyVertexShader);
 
     // Test attribute offset out of bounds
@@ -292,17 +293,32 @@ TEST_F(VertexStateTest, SetAttributeOffsetOutOfBounds) {
     CreatePipeline(false, state, kDummyVertexShader);
 }
 
-// Check multiple of 4 bytes constraint on offset
+// Check the "component byte size" alignment constraint for the offset.
 TEST_F(VertexStateTest, SetOffsetNotAligned) {
-    // Control case, setting offset 4 bytes.
+    // Control case, setting the offset at the correct alignments.
     utils::ComboVertexStateDescriptor state;
     state.vertexBufferCount = 1;
     state.cVertexBuffers[0].attributeCount = 1;
+
+    state.cAttributes[0].format = wgpu::VertexFormat::Float32;
     state.cAttributes[0].offset = 4;
     CreatePipeline(true, state, kDummyVertexShader);
 
-    // Test offset not multiple of 4 bytes
+    state.cAttributes[0].format = wgpu::VertexFormat::Snorm16x2;
     state.cAttributes[0].offset = 2;
+    CreatePipeline(true, state, kDummyVertexShader);
+
+    state.cAttributes[0].format = wgpu::VertexFormat::Uint8x2;
+    state.cAttributes[0].offset = 1;
+    CreatePipeline(true, state, kDummyVertexShader);
+
+    // Test offset not multiple of the component byte size.
+    state.cAttributes[0].format = wgpu::VertexFormat::Float32;
+    state.cAttributes[0].offset = 2;
+    CreatePipeline(false, state, kDummyVertexShader);
+
+    state.cAttributes[0].format = wgpu::VertexFormat::Snorm16x2;
+    state.cAttributes[0].offset = 1;
     CreatePipeline(false, state, kDummyVertexShader);
 }
 
@@ -321,6 +337,6 @@ TEST_F(VertexStateTest, VertexFormatLargerThanNonZeroStride) {
     state.vertexBufferCount = 1;
     state.cVertexBuffers[0].arrayStride = 4;
     state.cVertexBuffers[0].attributeCount = 1;
-    state.cAttributes[0].format = wgpu::VertexFormat::Float4;
+    state.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
     CreatePipeline(false, state, kDummyVertexShader);
 }

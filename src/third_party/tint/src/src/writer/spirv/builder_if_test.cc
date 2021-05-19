@@ -12,24 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gmock/gmock.h"
-#include "src/ast/assignment_statement.h"
-#include "src/ast/bool_literal.h"
-#include "src/ast/break_statement.h"
-#include "src/ast/continue_statement.h"
-#include "src/ast/else_statement.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/if_statement.h"
-#include "src/ast/loop_statement.h"
-#include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
-#include "src/type/bool_type.h"
-#include "src/type/i32_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -529,14 +511,10 @@ TEST_F(BuilderTest, If_WithReturnValue) {
   // if (true) {
   //   return false;
   // }
-  auto* if_body = create<ast::BlockStatement>(ast::StatementList{
-      create<ast::ReturnStatement>(Expr(false)),
-  });
-
-  auto* expr =
-      create<ast::IfStatement>(Expr(true), if_body, ast::ElseStatementList{});
-  WrapInFunction(expr);
-
+  // return true;
+  auto* if_body = Block(Return(Expr(false)));
+  auto* expr = If(Expr(true), if_body);
+  Func("test", {}, ty.bool_(), {expr, Return(Expr(true))}, {});
   spirv::Builder& b = Build();
 
   b.push_function(Function{});

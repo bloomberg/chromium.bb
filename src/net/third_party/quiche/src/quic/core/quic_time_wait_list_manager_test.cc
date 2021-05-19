@@ -21,7 +21,6 @@
 #include "quic/core/quic_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_test.h"
-#include "quic/platform/api/quic_uint128.h"
 #include "quic/test_tools/mock_quic_session_visitor.h"
 #include "quic/test_tools/quic_test_utils.h"
 #include "quic/test_tools/quic_time_wait_list_manager_peer.h"
@@ -41,6 +40,8 @@ namespace quic {
 namespace test {
 namespace {
 
+const size_t kTestPacketSize = 100;
+
 class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
  public:
   FramerVisitorCapturingPublicReset(QuicConnectionId connection_id)
@@ -55,7 +56,8 @@ class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
     return public_reset_packet_;
   }
 
-  bool IsValidStatelessResetToken(QuicUint128 token) const override {
+  bool IsValidStatelessResetToken(
+      const StatelessResetToken& token) const override {
     return token == QuicUtils::GenerateStatelessResetToken(connection_id_);
   }
 
@@ -176,7 +178,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
   void ProcessPacket(QuicConnectionId connection_id) {
     time_wait_list_manager_.ProcessPacket(
         self_address_, peer_address_, connection_id, GOOGLE_QUIC_PACKET,
-        std::make_unique<QuicPerPacketContext>());
+        kTestPacketSize, std::make_unique<QuicPerPacketContext>());
   }
 
   QuicEncryptedPacket* ConstructEncryptedPacket(
@@ -218,7 +220,7 @@ bool ValidPublicResetPacketPredicate(
   QuicIetfStatelessResetPacket stateless_reset =
       visitor.stateless_reset_packet();
 
-  QuicUint128 expected_stateless_reset_token =
+  StatelessResetToken expected_stateless_reset_token =
       QuicUtils::GenerateStatelessResetToken(expected_connection_id);
 
   bool stateless_reset_is_valid =
@@ -684,7 +686,8 @@ TEST_F(QuicTimeWaitListManagerTest,
   // Processes IETF short header packet.
   time_wait_list_manager_.ProcessPacket(
       self_address_, peer_address_, connection_id_,
-      IETF_QUIC_SHORT_HEADER_PACKET, std::make_unique<QuicPerPacketContext>());
+      IETF_QUIC_SHORT_HEADER_PACKET, kTestPacketSize,
+      std::make_unique<QuicPerPacketContext>());
 }
 
 TEST_F(QuicTimeWaitListManagerTest,
@@ -707,7 +710,8 @@ TEST_F(QuicTimeWaitListManagerTest,
   // Processes IETF short header packet.
   time_wait_list_manager_.ProcessPacket(
       self_address_, peer_address_, connection_id_,
-      IETF_QUIC_SHORT_HEADER_PACKET, std::make_unique<QuicPerPacketContext>());
+      IETF_QUIC_SHORT_HEADER_PACKET, kTestPacketSize,
+      std::make_unique<QuicPerPacketContext>());
 }
 
 TEST_F(QuicTimeWaitListManagerTest,
@@ -741,7 +745,7 @@ TEST_F(QuicTimeWaitListManagerTest,
   for (auto const& cid : active_connection_ids) {
     time_wait_list_manager_.ProcessPacket(
         self_address_, peer_address_, cid, IETF_QUIC_SHORT_HEADER_PACKET,
-        std::make_unique<QuicPerPacketContext>());
+        kTestPacketSize, std::make_unique<QuicPerPacketContext>());
   }
 }
 

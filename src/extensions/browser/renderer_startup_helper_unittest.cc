@@ -15,6 +15,7 @@
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/mojom/renderer.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 
@@ -60,6 +61,14 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
     unloaded_extensions_.push_back(extension_id);
   }
 
+  void SuspendExtension(
+      const std::string& extension_id,
+      mojom::Renderer::SuspendExtensionCallback callback) override {
+    std::move(callback).Run();
+  }
+
+  void CancelSuspendExtension(const std::string& extension_id) override {}
+
   void SetSessionInfo(version_info::Channel channel,
                       mojom::FeatureSessionType session,
                       bool is_lock_screen_context) override {}
@@ -71,12 +80,37 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
   void SetScriptingAllowlist(
       const std::vector<std::string>& extension_ids) override {}
 
+  void ShouldSuspend(ShouldSuspendCallback callback) override {
+    std::move(callback).Run();
+  }
+
+  void TransferBlobs(TransferBlobsCallback callback) override {
+    std::move(callback).Run();
+  }
+
   void UpdateDefaultPolicyHostRestrictions(
       const URLPatternSet& default_policy_blocked_hosts,
       const URLPatternSet& default_policy_allowed_hosts) override {
     default_blocked_hosts_.AddPatterns(default_policy_blocked_hosts);
     default_allowed_hosts_.AddPatterns(default_policy_allowed_hosts);
   }
+
+  void UpdateTabSpecificPermissions(const std::string& extension_id,
+                                    const URLPatternSet& new_hosts,
+                                    int tab_id,
+                                    bool update_origin_whitelist) override {}
+
+  void UpdateUserScripts(base::ReadOnlySharedMemoryRegion shared_memory,
+                         mojom::HostIDPtr host_id,
+                         std::vector<mojom::HostIDPtr> changed_hosts,
+                         bool allowlisted_only) override {}
+
+  void ClearTabSpecificPermissions(
+      const std::vector<std::string>& extension_ids,
+      int tab_id,
+      bool update_origin_whitelist) override {}
+
+  void WatchPages(const std::vector<std::string>& css_selectors) override {}
 
   URLPatternSet default_blocked_hosts_;
   URLPatternSet default_allowed_hosts_;

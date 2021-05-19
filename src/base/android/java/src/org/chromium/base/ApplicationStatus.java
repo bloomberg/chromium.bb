@@ -19,6 +19,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.build.BuildConfig;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -295,7 +296,7 @@ public class ApplicationStatus {
             }
 
             private void checkCallback(Activity activity) {
-                if (BuildConfig.DCHECK_IS_ON) {
+                if (BuildConfig.ENABLE_ASSERTS) {
                     assert reachesWindowCallback(activity.getWindow().getCallback());
                 }
             }

@@ -422,7 +422,7 @@ void EncodeRandomizedValue(const RandomizedEncoder& encoder,
       encoder.Encode(form_signature, field_signature, data_type, data_value));
   if (include_checksum) {
     DCHECK(data_type == RandomizedEncoder::FORM_URL);
-    output->set_checksum(StrToHash32Bit(data_value.data()));
+    output->set_checksum(StrToHash32Bit(data_value));
   }
 }
 
@@ -630,15 +630,12 @@ FormStructure::FormStructure(const FormData& form)
       target_url_(form.action),
       main_frame_origin_(form.main_frame_origin),
       is_form_tag_(form.is_form_tag),
-      is_formless_checkout_(form.is_formless_checkout),
       all_fields_are_passwords_(!form.fields.empty()),
       form_parsed_timestamp_(AutofillTickClock::NowTicks()),
-      passwords_were_revealed_(false),
-      password_symbol_vote_(0),
-      developer_engagement_metrics_(0),
+      host_frame_(form.host_frame),
       unique_renderer_id_(form.unique_renderer_id) {
   // Copy the form fields.
-  std::map<base::string16, size_t> unique_names;
+  std::map<std::u16string, size_t> unique_names;
   for (const FormFieldData& field : form.fields) {
     if (!ShouldSkipField(field))
       ++active_field_count_;
@@ -651,9 +648,8 @@ FormStructure::FormStructure(const FormData& form)
     // Generate a unique name for this field by appending a counter to the name.
     // Make sure to prepend the counter with a non-numeric digit so that we are
     // guaranteed to avoid collisions.
-    base::string16 unique_name =
-        field.name + base::ASCIIToUTF16("_") +
-        base::NumberToString16(++unique_names[field.name]);
+    std::u16string unique_name =
+        field.name + u"_" + base::NumberToString16(++unique_names[field.name]);
     fields_.push_back(std::make_unique<AutofillField>(field, unique_name));
   }
 
@@ -689,7 +685,7 @@ void FormStructure::DetermineHeuristicTypes(
     const FieldCandidatesMap field_type_map = FormField::ParseFormFields(
         fields_, current_page_language_, is_form_tag_, log_manager);
     for (const auto& field : fields_) {
-      const auto iter = field_type_map.find(field->unique_renderer_id);
+      const auto iter = field_type_map.find(field->global_id());
       if (iter != field_type_map.end()) {
         field->set_heuristic_type(iter->second.BestHeuristicType());
       }
@@ -765,7 +761,7 @@ bool FormStructure::EncodeUploadRequest(
   }
 
   if (is_raw_metadata_uploading_enabled) {
-    upload->set_action_signature(StrToHash64Bit(target_url_.host()));
+    upload->set_action_signature(StrToHash64Bit(target_url_.host_piece()));
     if (!form_name().empty())
       upload->set_form_name(base::UTF16ToUTF8(form_name()));
     for (const ButtonTitleInfo& e : button_titles_) {
@@ -1050,10 +1046,8 @@ bool FormStructure::ShouldBeParsed(LogManager* log_manager) const {
   }
 
   // Rule out search forms.
-  static const base::string16 kUrlSearchActionPattern =
-      base::UTF8ToUTF16(kUrlSearchActionRe);
   if (MatchesPattern(base::UTF8ToUTF16(target_url_.path_piece()),
-                     kUrlSearchActionPattern)) {
+                     kUrlSearchActionRe)) {
     if (log_manager) {
       log_manager->Log() << LoggingScope::kAbortParsing
                          << LogMessage::kAbortParsingUrlMatchesSearchRegex
@@ -1077,10 +1071,7 @@ bool FormStructure::ShouldBeParsed(LogManager* log_manager) const {
 
 bool FormStructure::ShouldRunHeuristics() const {
   return active_field_count() >= kMinRequiredFieldsForHeuristics &&
-         HasAllowedScheme(source_url_) &&
-         (is_form_tag_ || is_formless_checkout_ ||
-          !base::FeatureList::IsEnabled(
-              features::kAutofillRestrictUnownedFieldsToFormlessCheckout));
+         HasAllowedScheme(source_url_);
 }
 
 bool FormStructure::ShouldBeQueried() const {
@@ -1098,14 +1089,14 @@ void FormStructure::RetrieveFromCache(
     const FormStructure& cached_form,
     const bool should_keep_cached_value,
     const bool only_server_and_autofill_state) {
-  std::map<FieldRendererId, const AutofillField*> cached_fields_by_id;
+  std::map<FieldGlobalId, const AutofillField*> cached_fields_by_id;
   for (size_t i = 0; i < cached_form.field_count(); ++i) {
     auto* const field = cached_form.field(i);
-    cached_fields_by_id[field->unique_renderer_id] = field;
+    cached_fields_by_id[field->global_id()] = field;
   }
   for (auto& field : *this) {
     const AutofillField* cached_field = nullptr;
-    const auto& it = cached_fields_by_id.find(field->unique_renderer_id);
+    const auto& it = cached_fields_by_id.find(field->global_id());
     if (it != cached_fields_by_id.end())
       cached_field = it->second;
 
@@ -1155,7 +1146,7 @@ void FormStructure::RetrieveFromCache(
           // default values are equivalent to empty fields.
           // Since a website can prefill country and state values basedw on
           // GeoIp, the mechanism is deactivated for state and country fields.
-          field->value = base::string16();
+          field->value = std::u16string();
         }
       }
       field->set_server_type(cached_field->server_type());
@@ -1454,8 +1445,8 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
   was_parsed_for_autocomplete_attributes_ = true;
 }
 
-std::set<base::string16> FormStructure::PossibleValues(ServerFieldType type) {
-  std::set<base::string16> values;
+std::set<std::u16string> FormStructure::PossibleValues(ServerFieldType type) {
+  std::set<std::u16string> values;
   AutofillType target_type(type);
   for (const auto& field : fields_) {
     if (field->Type().GetStorableType() != target_type.GetStorableType() ||
@@ -1469,12 +1460,12 @@ std::set<base::string16> FormStructure::PossibleValues(ServerFieldType type) {
       break;
     }
 
-    for (const base::string16& val : field->option_values) {
+    for (const std::u16string& val : field->option_values) {
       if (!val.empty())
         values.insert(base::i18n::ToUpper(val));
     }
 
-    for (const base::string16& content : field->option_contents) {
+    for (const std::u16string& content : field->option_contents) {
       if (!content.empty())
         values.insert(base::i18n::ToUpper(content));
     }
@@ -1516,8 +1507,8 @@ FormData FormStructure::ToFormData() const {
   data.action = target_url_;
   data.main_frame_origin = main_frame_origin_;
   data.is_form_tag = is_form_tag_;
-  data.is_formless_checkout = is_formless_checkout_;
-  data.unique_renderer_id = unique_renderer_id_;
+  data.host_frame = host_frame();
+  data.unique_renderer_id = unique_renderer_id();
 
   for (const auto& field : fields_) {
     data.fields.push_back(*field);
@@ -2099,14 +2090,14 @@ void FormStructure::IdentifySectionsWithNewMethod() {
     if (base::FeatureList::IsEnabled(
             features::kAutofillNameSectionsWithRendererIds)) {
       return base::StrCat(
-          {field.name, base::ASCIIToUTF16("_"),
-           base::NumberToString16(field.unique_renderer_id.value())});
+          {field.name, u"_", base::ASCIIToUTF16(field.host_frame.ToString()),
+           u"_", base::NumberToString16(field.unique_renderer_id.value())});
     } else {
       return field.unique_name();
     }
   };
 
-  base::string16 current_section = get_section_name(*fields_.front());
+  std::u16string current_section = get_section_name(*fields_.front());
 
   // Keep track of the types we've seen in this section.
   ServerFieldTypeSet seen_types;
@@ -2117,7 +2108,7 @@ void FormStructure::IdentifySectionsWithNewMethod() {
   bool previous_autocomplete_section_present = false;
 
   bool is_hidden_section = false;
-  base::string16 last_visible_section;
+  std::u16string last_visible_section;
   for (const auto& field : fields_) {
     const ServerFieldType current_type = field->Type().GetStorableType();
     // All credit card fields belong to the same section that's different
@@ -2281,22 +2272,22 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
     if (base::FeatureList::IsEnabled(
             features::kAutofillNameSectionsWithRendererIds)) {
       return base::StrCat(
-          {field.name, base::ASCIIToUTF16("_"),
-           base::NumberToString16(field.unique_renderer_id.value())});
+          {field.name, u"_", base::ASCIIToUTF16(field.host_frame.ToString()),
+           u"_", base::NumberToString16(field.unique_renderer_id.value())});
     } else {
       return field.unique_name();
     }
   };
 
   if (!has_author_specified_sections) {
-    base::string16 current_section = get_section_name(*fields_.front());
+    std::u16string current_section = get_section_name(*fields_.front());
 
     // Keep track of the types we've seen in this section.
     ServerFieldTypeSet seen_types;
     ServerFieldType previous_type = UNKNOWN_TYPE;
 
     bool is_hidden_section = false;
-    base::string16 last_visible_section;
+    std::u16string last_visible_section;
     for (const auto& field : fields_) {
       const ServerFieldType current_type = field->Type().GetStorableType();
       // All credit card fields belong to the same section that's different
@@ -2434,7 +2425,7 @@ void FormStructure::ExtractParseableFieldLabels() {
   }
 
   // Determine the parsable labels and write them back.
-  base::Optional<std::vector<base::string16>> parsable_labels =
+  base::Optional<std::vector<std::u16string>> parsable_labels =
       GetParseableLabels(field_labels);
   // If not single label was split, the function can return, because the
   // |parsable_label_| is assigned to |label| by default.
@@ -2463,7 +2454,7 @@ void FormStructure::ExtractParseableFieldNames() {
   }
 
   // Determine the parseable names and write them into the corresponding field.
-  std::vector<base::string16> parseable_names = GetParseableNames(names);
+  std::vector<std::u16string> parseable_names = GetParseableNames(names);
   DCHECK_EQ(parseable_names.size(), field_count());
   size_t idx = 0;
   for (auto& field : *this) {
@@ -2479,14 +2470,14 @@ DenseSet<FormType> FormStructure::GetFormTypes() const {
   return form_types;
 }
 
-base::string16 FormStructure::GetIdentifierForRefill() const {
+std::u16string FormStructure::GetIdentifierForRefill() const {
   if (!form_name().empty())
     return form_name();
 
   if (field_count() && !field(0)->unique_name().empty())
     return field(0)->unique_name();
 
-  return base::string16();
+  return std::u16string();
 }
 
 void FormStructure::set_randomized_encoder(
@@ -2525,6 +2516,7 @@ std::ostream& operator<<(std::ostream& buffer, const FormStructure& form) {
                           base::NumberToString(
                               HashFormSignature(form.form_signature()))});
   buffer << "\n Form name: " << form.form_name();
+  buffer << "\n Host frame: " << form.host_frame().ToString();
   buffer << "\n Unique renderer Id: " << form.unique_renderer_id().value();
   buffer << "\n Target URL:" << form.target_url();
   for (size_t i = 0; i < form.field_count(); ++i) {
@@ -2536,6 +2528,7 @@ std::ostream& operator<<(std::ostream& buffer, const FormStructure& form) {
                    " - ",
                    base::NumberToString(
                        HashFieldSignature(field->GetFieldSignature())),
+                   ", host frame: ", field->host_frame.ToString(),
                    ", unique renderer id: ",
                    base::NumberToString(field->unique_renderer_id.value())});
     buffer << "\n  Name: " << field->parseable_name();
@@ -2555,7 +2548,7 @@ std::ostream& operator<<(std::ostream& buffer, const FormStructure& form) {
     buffer << "\n  Section: " << field->section;
 
     constexpr size_t kMaxLabelSize = 100;
-    const base::string16 truncated_label =
+    const std::u16string truncated_label =
         field->label.substr(0, std::min(field->label.length(), kMaxLabelSize));
     buffer << "\n  Label: " << truncated_label;
 
@@ -2573,6 +2566,7 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
                           base::NumberToString(
                               HashFormSignature(form.form_signature()))});
   buffer << Tr{} << "Form name:" << form.form_name();
+  buffer << Tr{} << "Host frame:" << form.host_frame().ToString();
   buffer << Tr{} << "Unique renderer id:" << form.unique_renderer_id().value();
   buffer << Tr{} << "Target URL:" << form.target_url();
   for (size_t i = 0; i < form.field_count(); ++i) {
@@ -2587,6 +2581,7 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
                    " - ",
                    base::NumberToString(
                        HashFieldSignature(field->GetFieldSignature())),
+                   ", host frame: ", field->host_frame.ToString(),
                    ", unique renderer id: ",
                    base::NumberToString(field->unique_renderer_id.value())});
     buffer << Tr{} << "Name:" << field->parseable_name();
@@ -2606,7 +2601,7 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
     buffer << Tr{} << "Section:" << field->section;
 
     constexpr size_t kMaxLabelSize = 100;
-    const base::string16 truncated_label =
+    const std::u16string truncated_label =
         field->label.substr(0, std::min(field->label.length(), kMaxLabelSize));
     buffer << Tr{} << "Label:" << truncated_label;
 

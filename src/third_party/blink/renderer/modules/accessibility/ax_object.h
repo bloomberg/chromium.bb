@@ -429,8 +429,13 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Check object role or purpose.
   ax::mojom::blink::Role RoleValue() const;
-  bool IsARIATextControl() const;
   bool IsAnchor() const;
+
+  // Returns true if this object is an ARIA text field, i.e. it is neither an
+  // <input> nor a <textarea>, but it has an ARIA role of textbox, searchbox or
+  // (on certain platforms) combobox.
+  bool IsARIATextField() const;
+
   bool IsButton() const;
   bool IsCanvas() const;
   bool IsCheckboxOrRadio() const;
@@ -449,24 +454,43 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool IsMeter() const;
   virtual bool IsNativeImage() const;
   virtual bool IsNativeSpinButton() const;
+
   // Returns true if this object is an input element of a text field type, such
   // as type="text" or type="tel", or a textarea.
-  virtual bool IsNativeTextControl() const;
-  // Returns true if this object is a contenteditable or has role=textbox.
-  virtual bool IsNonNativeTextControl() const;
-  virtual bool IsPasswordField() const;
+  bool IsNativeTextField() const;
+
+  // Returns true if this object is not an <input> or a <textarea>, and is
+  // either a contenteditable, or has role=textbox role=searchbox or
+  // role=combobox.
+  bool IsNonNativeTextField() const;
+
+  // Returns true if this object is a text field that is used for entering
+  // passwords, i.e. <input type=password>.
+  bool IsPasswordField() const;
+
+  // Returns true if this object is a text field that is used for entering
+  // passwords, but its input should be masked from the user.
   bool IsPasswordFieldAndShouldHideValue() const;
+
   bool IsPresentational() const;
   bool IsRangeValueSupported() const;
-  bool IsScrollbar() const {
-    return RoleValue() == ax::mojom::blink::Role::kScrollBar;
-  }
-  virtual bool IsNativeSlider() const { return false; }
-  virtual bool IsSpinButton() const {
-    return RoleValue() == ax::mojom::blink::Role::kSpinButton;
-  }
-  bool IsTabItem() const { return RoleValue() == ax::mojom::blink::Role::kTab; }
-  virtual bool IsTextControl() const { return false; }
+  bool IsScrollbar() const;
+  virtual bool IsNativeSlider() const;
+  virtual bool IsSpinButton() const;
+  bool IsTabItem() const;
+
+  // This object is a text field. This is any widget in which the user should be
+  // able to enter and edit text.
+  //
+  // Examples include <input type="text">, <input type="password">, <textarea>,
+  // <div contenteditable="true">, <div role="textbox">, <div role="searchbox">
+  // and <div role="combobox">. Note that when an ARIA role that indicates that
+  // the widget is editable is used, such as "role=textbox", the element doesn't
+  // need to be contenteditable for this method to return true, as in theory
+  // JavaScript could be used to implement editing functionality. In practice,
+  // this situation should be rare.
+  bool IsTextField() const;
+
   bool IsTextObject() const;
   bool IsTree() const { return RoleValue() == ax::mojom::blink::Role::kTree; }
   bool IsWebArea() const {
@@ -474,33 +498,27 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   }
 
   // Check object state.
-  virtual bool IsAutofillAvailable() const { return false; }
+  virtual bool IsAutofillAvailable() const;
   virtual bool IsClickable() const;
-  virtual AccessibilityExpanded IsExpanded() const {
-    return kExpandedUndefined;
-  }
-  virtual bool IsFocused() const { return false; }
+  virtual AccessibilityExpanded IsExpanded() const;
+  virtual bool IsFocused() const;
   // aria-grabbed is deprecated in WAI-ARIA 1.1.
-  virtual AccessibilityGrabbedState IsGrabbed() const {
-    return kGrabbedStateUndefined;
-  }
-  virtual bool IsHovered() const { return false; }
-  virtual bool IsLineBreakingObject() const { return false; }
-  virtual bool IsLinked() const { return false; }
-  virtual bool IsLoaded() const { return false; }
+  virtual AccessibilityGrabbedState IsGrabbed() const;
+  virtual bool IsHovered() const;
+  virtual bool IsLineBreakingObject() const;
+  virtual bool IsLinked() const;
+  virtual bool IsLoaded() const;
   virtual bool IsModal() const;
-  virtual bool IsMultiSelectable() const { return false; }
-  virtual bool IsOffScreen() const { return false; }
-  virtual bool IsRequired() const { return false; }
-  virtual AccessibilitySelectedState IsSelected() const {
-    return kSelectedStateUndefined;
-  }
+  virtual bool IsMultiSelectable() const;
+  virtual bool IsOffScreen() const;
+  virtual bool IsRequired() const;
+  virtual AccessibilitySelectedState IsSelected() const;
   // Is the object selected because selection is following focus?
-  virtual bool IsSelectedFromFocus() const { return false; }
-  virtual bool IsSelectedOptionActive() const { return false; }
-  virtual bool IsNotUserSelectable() const { return false; }
+  virtual bool IsSelectedFromFocus() const;
+  virtual bool IsSelectedOptionActive() const;
+  virtual bool IsNotUserSelectable() const;
   virtual bool IsVisible() const;
-  virtual bool IsVisited() const { return false; }
+  virtual bool IsVisited() const;
 
   // Check whether value can be modified.
   bool CanSetValueAttribute() const;
@@ -529,6 +547,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual AXObjectInclusion DefaultObjectInclusion(
       IgnoredReasons* = nullptr) const;
   bool IsInertOrAriaHidden() const;
+  bool IsAriaHidden() const;
   const AXObject* AriaHiddenRoot() const;
   bool ComputeIsInertOrAriaHidden(IgnoredReasons* = nullptr) const;
   bool IsBlockedByAriaModalDialog(IgnoredReasons* = nullptr) const;
@@ -547,7 +566,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool LastKnownIsIgnoredButIncludedInTreeValue() const;
   bool LastKnownIsIncludedInTreeValue() const;
   bool HasInheritedPresentationalRole() const;
-  bool IsPresentationalChild() const;
   bool CanBeActiveDescendant() const;
   // Some objects, such as table header containers, could be the children of
   // more than one object but have only one primary parent.
@@ -644,7 +662,12 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Used by objects of role ColorWellRole.
   virtual RGBA32 ColorValue() const { return Color::kTransparent; }
   virtual bool CanvasHasFallbackContent() const { return false; }
-  virtual String FontFamily() const { return String(); }
+  // Returns the font family that was cascaded onto ComputedStyle. This may
+  // contain non-user-friendly internal names.
+  virtual const AtomicString& ComputedFontFamily() const { return g_null_atom; }
+  // Returns the font family used on this platform. This is a user friendly name
+  // that is appropriate for serialization.
+  virtual String FontFamilyForSerialization() const { return String(); }
   // Font size is in pixels.
   virtual float FontSize() const { return 0.0f; }
   virtual float FontWeight() const { return 0.0f; }
@@ -663,7 +686,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual ax::mojom::blink::ListStyle GetListStyle() const {
     return ax::mojom::blink::ListStyle::kNone;
   }
-  virtual String GetText() const { return String(); }
   virtual ax::mojom::blink::TextAlign GetTextAlign() const {
     return ax::mojom::blink::TextAlign::kNone;
   }
@@ -718,7 +740,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual void GetWordBoundaries(Vector<int>& word_starts,
                                  Vector<int>& word_ends) const;
 
-  virtual int TextLength() const { return 0; }
+  // For all inline text fields and native text fields: Returns the length of
+  // the inline's text or the field's value respectively.
+  virtual int TextLength() const;
 
   // Supported on layout inline, layout text, layout replaced, and layout block
   // flow, provided that they are at inline-level, i.e. "display=inline" or
@@ -770,17 +794,32 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   }
   // Only used when invalidState() returns InvalidStateOther.
   virtual String AriaInvalidValue() const { return String(); }
-  virtual String ValueDescription() const { return String(); }
   virtual bool ValueForRange(float* out_value) const { return false; }
   virtual bool MaxValueForRange(float* out_value) const { return false; }
   virtual bool MinValueForRange(float* out_value) const { return false; }
   virtual bool StepValueForRange(float* out_value) const { return false; }
-  virtual String StringValue() const { return String(); }
+
+  // Returns the value of a control such as a plain text field, a content
+  // editable, a submit button, a slider, a progress bar, a scroll bar, a meter,
+  // a spinner, a <select> element, a date picker or an ARIA combo box. In order
+  // to improve performance during our cross-process communication with the
+  // browser, we avoid computing the value of a content editable from its inner
+  // text. (See `AXObject::SlowGetValueForControlIncludingContentEditable()`.)
+  // For range controls, such as sliders and scroll bars, the value of
+  // aria-valuetext takes priority over the value of aria-valuenow.
+  virtual String GetValueForControl() const;
+
+  // Similar to `AXObject::GetValueForControl()` above, but also computes the
+  // value of a content editable from its inner text. Sending this value to the
+  // browser process might be slow if the content editable has a lot of content.
+  // So, we should prefer computing the value of a content editable on the
+  // browser side.
+  virtual String SlowGetValueForControlIncludingContentEditable() const;
+
   virtual AXRestriction Restriction() const;
 
   // ARIA attributes.
-  virtual ax::mojom::blink::Role DetermineAccessibilityRole() = 0;
-  void UpdateRoleForImage();  // Set role to image (leaf) or map (has children).
+  virtual ax::mojom::blink::Role DetermineAccessibilityRole();
   ax::mojom::blink::Role DetermineAriaRoleAttribute() const;
   virtual ax::mojom::blink::Role AriaRoleAttribute() const;
   virtual bool HasAriaAttribute() const { return false; }
@@ -1236,6 +1275,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   bool IsHiddenForTextAlternativeCalculation() const;
 
+  // What should the role be assuming an ARIA role is not present?
+  virtual ax::mojom::blink::Role NativeRoleIgnoringAria() const = 0;
+
   // Returns a string representation of this object.
   // |cached_values_only| avoids recomputing cached values, and thus can be
   // used during UpdateCachedValuesIfNecessary() without causing recursion.
@@ -1248,8 +1290,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Only children that are included in tree, maybe rename to children_in_tree_.
   mutable AXObjectVector children_;
   mutable bool children_dirty_;
+
+  // The final role, taking into account the ARIA role and native role.
   ax::mojom::blink::Role role_;
-  ax::mojom::blink::Role aria_role_;
+
   LayoutRect explicit_element_rect_;
   AXID explicit_container_id_;
 
@@ -1305,14 +1349,19 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   const AXObject* TableParent() const;
 
   // Helpers for serialization.
+  void SerializeColorAttributes(ui::AXNodeData* node_data);
   void SerializeStyleAttributes(ui::AXNodeData* node_data);
   void SerializeSparseAttributes(ui::AXNodeData* node_data);
   void SerializeTableAttributes(ui::AXNodeData* node_data);
+  void SerializeLangAttribute(ui::AXNodeData* node_data);
   void SerializeListAttributes(ui::AXNodeData* node_data);
   void SerializeScrollAttributes(ui::AXNodeData* node_data);
   void SerializeChooserPopupAttributes(ui::AXNodeData* node_data);
-  void SerializeElementAttributes(ui::AXNodeData* dst);
-  void SerializeHTMLAttributes(ui::AXNodeData* dst);
+  void SerializeElementAttributes(ui::AXNodeData* node_data);
+  void SerializeHTMLTagAndClass(ui::AXNodeData* node_data);
+  void SerializeHTMLAttributes(ui::AXNodeData* node_data);
+  void SerializeUnignoredAttributes(ui::AXNodeData* node_data,
+                                    ui::AXMode accessibility_mode);
 
   // Serialization implemented in specific subclasses.
   virtual void SerializeMarkerAttributes(ui::AXNodeData* node_data) const;

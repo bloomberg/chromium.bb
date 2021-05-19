@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <type_traits>
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
@@ -41,6 +42,18 @@ namespace {
 
 constexpr int kNumSpeedTests = 5e8;
 constexpr char kAverageBlend[] = "AverageBlend";
+// average_blend is applied to compound prediction values. This implies a range
+// far exceeding that of pixel values.
+// The ranges include kCompoundOffset in 10bpp and 12bpp.
+// see: src/dsp/convolve.cc & src/dsp/warp.cc.
+constexpr int kCompoundPredictionRange[3][2] = {
+    // 8bpp
+    {-5132, 9212},
+    // 10bpp
+    {3988, 61532},
+    // 12bpp
+    {3974, 61559},
+};
 
 struct TestParam {
   TestParam(int width, int height) : width(width), height(height) {}
@@ -89,12 +102,14 @@ class AverageBlendTest : public ::testing::TestWithParam<TestParam>,
   void Test(const char* digest, int num_tests, bool debug);
 
  private:
+  using PredType =
+      typename std::conditional<bitdepth == 8, int16_t, uint16_t>::type;
   static constexpr int kDestStride = kMaxSuperBlockSizeInPixels;
   const int width_ = GetParam().width;
   const int height_ = GetParam().height;
-  alignas(kMaxAlignment) uint16_t
+  alignas(kMaxAlignment) PredType
       source1_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels];
-  alignas(kMaxAlignment) uint16_t
+  alignas(kMaxAlignment) PredType
       source2_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels];
   Pixel dest_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels] = {};
   Pixel reference_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels] =
@@ -109,19 +124,15 @@ void AverageBlendTest<bitdepth, Pixel>::Test(const char* digest, int num_tests,
                                              bool debug) {
   if (func_ == nullptr) return;
   libvpx_test::ACMRandom rnd(libvpx_test::ACMRandom::DeterministicSeed());
-  uint16_t* src_1 = source1_;
-  uint16_t* src_2 = source2_;
-  constexpr int kRoundBitsHorizontal = (bitdepth == 12)
-                                           ? kInterRoundBitsHorizontal12bpp
-                                           : kInterRoundBitsHorizontal;
-  const int mask = (1 << (bitdepth + (kFilterBits - kRoundBitsHorizontal))) - 1;
-  const int compound_round_offset = (bitdepth == 8) ? 0 : kCompoundOffset;
+  PredType* src_1 = source1_;
+  PredType* src_2 = source2_;
   for (int y = 0; y < height_; ++y) {
     for (int x = 0; x < width_; ++x) {
-      src_1[x] = rnd.Rand16() & mask;
-      src_2[x] = rnd.Rand16() & mask;
-      src_1[x] += compound_round_offset;
-      src_2[x] += compound_round_offset;
+      constexpr int bitdepth_index = (bitdepth - 8) >> 1;
+      const int min_val = kCompoundPredictionRange[bitdepth_index][0];
+      const int max_val = kCompoundPredictionRange[bitdepth_index][1];
+      src_1[x] = static_cast<PredType>(rnd(max_val - min_val) + min_val);
+      src_2[x] = static_cast<PredType>(rnd(max_val - min_val) + min_val);
     }
     src_1 += width_;
     src_2 += width_;
@@ -164,20 +175,32 @@ using AverageBlendTest8bpp = AverageBlendTest<8, uint8_t>;
 
 const char* GetAverageBlendDigest8bpp(const TestParam block_size) {
   static const char* const kDigestsWidth4[] = {
-      "6a02bbcc2a43b3c69974ff17fec6b8e6", "612b27128271ab284155194efb4ca3e8"};
+      "152bcc35946900b1ed16369b3e7a81b7",
+      "c23e9b5698f7384eaae30a3908118b77",
+  };
   static const char* const kDigestsWidth8[] = {
-      "c22ef0eafdf4a8ced020e2e046712cce", "6124bd376645b59ada1e9e5c0d215d67"};
+      "d90d3abd368e58c513070a88b34649ba",
+      "77f7d53d0edeffb3537afffd9ff33a4a",
+  };
   static const char* const kDigestsWidth16[] = {
-      "4b2a188124bd078be581afd89f12fa58", "789607b15e344f3a63be44473ddaed40",
-      "932929b60516b14204de08c382497116"};
+      "a50e268e93b48ae39cc2a47d377410e2",
+      "65c8502ff6d78065d466f9911ed6bb3e",
+      "bc2c873b9f5d74b396e1df705e87f699",
+  };
   static const char* const kDigestsWidth32[] = {
-      "08a7a14cbcf877be410c1175e3d34203", "27b7132ee24253389780900f39af223d",
-      "8a228ecc87389b62175a0d805f212eb8"};
+      "ca40d46d89773e7f858b15fcecd43cc0",
+      "bfdc894707323f4dc43d1326309f8368",
+      "f4733417621719b7feba3166ec0da5b9",
+  };
   static const char* const kDigestsWidth64[] = {
-      "0fc63c59c2f9d35e8afa52d940d75f54", "53ca3fa951f731b58a009e7e426858cd",
-      "3a380228c00f49b4bf7361c67210bfa9"};
+      "db38fe2e082bd4a09acb3bb1d52ee11e",
+      "3ad44401cc731215c46c9b7d96f7e4ae",
+      "6c43267be5ed03d204a05fe36090f870",
+  };
   static const char* const kDigestsWidth128[] = {
-      "f844aa786a7e00ed64c720b809bf99ee", "9e65c896a40ae91934f52b4f8715dcae"};
+      "c8cfe46ebf166c1cbf08e8804206aadb",
+      "b0557b5156d2334c8ce4a7ee12f9d6b4",
+  };
   // height < width implies 0.
   // height == width implies 1.
   // height > width implies 2.
@@ -225,20 +248,32 @@ using AverageBlendTest10bpp = AverageBlendTest<10, uint16_t>;
 
 const char* GetAverageBlendDigest10bpp(const TestParam block_size) {
   static const char* const kDigestsWidth4[] = {
-      "c8697e7bd1227c9b7af598663b2ce982", "385c5d0198830490adcb5f7eb3eb1017"};
+      "98c0671c092b4288adcaaa17362cc4a3",
+      "7083f3def8bfb63ab3a985ef5616a923",
+  };
   static const char* const kDigestsWidth8[] = {
-      "2dc3a8cec04e1651ed490eeb22b89434", "7a299a39263f767f15f4c5503ec004c4"};
+      "3bee144b9ea6f4288b860c24f88a22f3",
+      "27113bd17bf95034f100e9046c7b59d2",
+  };
   static const char* const kDigestsWidth16[] = {
-      "1c73e2d626c7ec77d2d765de3e3b467e", "1cb3620c2b933cff1dd139edfef8a77c",
-      "730182dfb816aa295b15096cbc7e14f4"};
+      "24c9e079b9a8647a6ee03f5441f2cdd9",
+      "dd05777751ccdb4356856c90e1176e53",
+      "27b1d69d035b1525c013b7373cfe3875",
+  };
   static const char* const kDigestsWidth32[] = {
-      "6fba0faf129a93de6c9fc6dbf1311c91", "a777d092ef11fec52311aef295b91633",
-      "1a2d478b58430185c352a2864e8cd30b"};
+      "efd24dd7b555786bff1a482e51170ea3",
+      "3b37ddac87de443cd18784f02c2d1dd5",
+      "80d8070939a743a20689a65bf5dc0a68",
+  };
   static const char* const kDigestsWidth64[] = {
-      "1974a1c0640ef07f478bc89abf1bc480", "408da09ccf5fec0a3003cbe9fb6e1a97",
-      "d924ad272cdbb43efbfb0dc281b64e84"};
+      "af1fe8c52487c9f2951c3ea516828abb",
+      "ea6f18ff56b053748c18032b7e048e83",
+      "af0cb87fe27d24c2e0afd2c90a8533a6",
+  };
   static const char* const kDigestsWidth128[] = {
-      "12bc0024cc10cd664a0ffa0283033245", "df11aa6fe7f9f2dc98e893079bd0bb94"};
+      "16a83b19911d6dc7278a694b8baa9901",
+      "bd22e77ce6fa727267ff63eeb4dcb19c",
+  };
   // (height  < width) -> 0
   // (height == width) -> 1
   // (height  > width) -> 2
@@ -274,6 +309,10 @@ INSTANTIATE_TEST_SUITE_P(C, AverageBlendTest10bpp,
                          ::testing::ValuesIn(kTestParam));
 #if LIBGAV1_ENABLE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(SSE41, AverageBlendTest10bpp,
+                         ::testing::ValuesIn(kTestParam));
+#endif
+#if LIBGAV1_ENABLE_NEON
+INSTANTIATE_TEST_SUITE_P(NEON, AverageBlendTest10bpp,
                          ::testing::ValuesIn(kTestParam));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10

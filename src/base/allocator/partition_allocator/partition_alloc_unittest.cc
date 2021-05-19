@@ -45,10 +45,13 @@
 namespace {
 
 bool IsLargeMemoryDevice() {
-  // Treat any device with 2GiB or more of physical memory as a "large memory
-  // device". We check for slightly less than 2GiB so that devices with a small
+  // Treat any device with 4GiB or more of physical memory as a "large memory
+  // device". We check for slightly less than GiB so that devices with a small
   // amount of memory not accessible to the OS still count as "large".
-  return base::SysInfo::AmountOfPhysicalMemory() >= 2040LL * 1024 * 1024;
+  //
+  // Set to 4GiB, since we have 2GiB Android devices where tests flakily fail
+  // (e.g. Nexus 5X, crbug.com/1191195).
+  return base::SysInfo::AmountOfPhysicalMemory() >= 4000LL * 1024 * 1024;
 }
 
 bool SetAddressSpaceLimit() {
@@ -188,14 +191,16 @@ class PartitionAllocTest : public testing::Test {
 
   void SetUp() override {
     PartitionAllocGlobalInit(HandleOOM);
-    allocator.init({PartitionOptions::Alignment::kRegular,
+    allocator.init({PartitionOptions::AlignedAlloc::kDisallowed,
                     PartitionOptions::ThreadCache::kDisabled,
                     PartitionOptions::Quarantine::kDisallowed,
-                    PartitionOptions::RefCount::kEnabled});
-    aligned_allocator.init({PartitionOptions::Alignment::kAlignedAlloc,
+                    PartitionOptions::Cookies::kAllowed,
+                    PartitionOptions::RefCount::kAllowed});
+    aligned_allocator.init({PartitionOptions::AlignedAlloc::kAllowed,
                             PartitionOptions::ThreadCache::kDisabled,
                             PartitionOptions::Quarantine::kDisallowed,
-                            PartitionOptions::RefCount::kDisabled});
+                            PartitionOptions::Cookies::kDisallowed,
+                            PartitionOptions::RefCount::kDisallowed});
     test_bucket_index_ = SizeToIndex(kRealAllocSize);
   }
 
@@ -251,7 +256,7 @@ class PartitionAllocTest : public testing::Test {
               static_cast<size_t>(
                   bucket->active_slot_spans_head->num_allocated_slots));
     EXPECT_EQ(nullptr, bucket->active_slot_spans_head->freelist_head);
-    EXPECT_TRUE(bucket->active_slot_spans_head);
+    EXPECT_TRUE(bucket->is_valid());
     EXPECT_TRUE(bucket->active_slot_spans_head !=
                 SlotSpan::get_sentinel_slot_span());
     return bucket->active_slot_spans_head;
@@ -1027,7 +1032,12 @@ TEST_F(PartitionAllocTest, GetSlotStartMultiplePages) {
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
 // Test the realloc() contract.
-TEST_F(PartitionAllocTest, Realloc) {
+#if defined(OS_ANDROID)
+#define MAYBE_Realloc DISABLED_Realloc
+#else
+#define MAYBE_Realloc Realloc
+#endif
+TEST_F(PartitionAllocTest, MAYBE_Realloc) {
   // realloc(0, size) should be equivalent to malloc().
   void* ptr = allocator.root()->Realloc(nullptr, kTestAllocSize, type_name);
   memset(ptr, 'A', kTestAllocSize);
@@ -1383,7 +1393,12 @@ TEST_F(PartitionAllocTest, SlotSpanRefilling) {
 }
 
 // Basic tests to ensure that allocations work for partial page buckets.
-TEST_F(PartitionAllocTest, PartialPages) {
+#if defined(OS_ANDROID)
+#define MAYBE_PartialPages DISABLED_PartialPages
+#else
+#define MAYBE_PartialPages PartialPages
+#endif
+TEST_F(PartitionAllocTest, MAYBE_PartialPages) {
   // Find a size that is backed by a partial partition page.
   size_t size = sizeof(void*);
   size_t bucket_index;
@@ -1618,7 +1633,7 @@ TEST_F(PartitionAllocTest, LostFreeSlotSpansBug) {
   EXPECT_TRUE(ptr);
   allocator.root()->Free(ptr);
 
-  EXPECT_TRUE(bucket->active_slot_spans_head);
+  EXPECT_TRUE(bucket->is_valid());
   EXPECT_TRUE(bucket->empty_slot_spans_head);
   EXPECT_TRUE(bucket->decommitted_slot_spans_head);
 }
@@ -2092,7 +2107,12 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
 }
 
 // Tests the API to purge freeable memory.
-TEST_F(PartitionAllocTest, Purge) {
+#if defined(OS_ANDROID)
+#define MAYBE_Purge DISABLED_Purge
+#else
+#define MAYBE_Purge Purge
+#endif
+TEST_F(PartitionAllocTest, MAYBE_Purge) {
   char* ptr = reinterpret_cast<char*>(
       allocator.root()->Alloc(2048 - kExtraAllocSize, type_name));
   allocator.root()->Free(ptr);
@@ -2696,7 +2716,12 @@ void VerifyAlignment(PartitionRoot<ThreadSafe>* root,
     PartitionRoot<ThreadSafe>::Free(ptr);
 }
 
-TEST_F(PartitionAllocTest, AlignedAllocations) {
+#if defined(OS_ANDROID)
+#define MAYBE_AlignedAllocations DISABLED_AlignedAllocations
+#else
+#define MAYBE_AlignedAllocations AlignedAllocations
+#endif
+TEST_F(PartitionAllocTest, MAYBE_AlignedAllocations) {
   size_t alloc_sizes[] = {1, 10, 100, 1000, 10000, 100000, 1000000};
   size_t alignemnts[] = {8, 16, 32, 64, 256, 1024, 4096, 8192};
 
@@ -2855,7 +2880,7 @@ TEST_F(PartitionAllocTest, MAYBE_Bookkeeping) {
         PartitionRoot<ThreadSafe>::GetDirectMapMetadataAndGuardPagesSize();
     size_t alignment = PageAllocationGranularity();
 #if defined(PA_HAS_64_BITS_POINTERS)
-    if (root.UsesGigaCage())
+    if (features::IsPartitionAllocGigaCageEnabled())
       alignment = kSuperPageSize;
 #endif
     size_t expected_direct_map_size =
@@ -2890,15 +2915,15 @@ TEST_F(PartitionAllocTest, RefCountBasic) {
 
   auto* ref_count =
       PartitionRefCountPointer(reinterpret_cast<char*>(ptr1) - kPointerOffset);
-  EXPECT_TRUE(ref_count->HasOneRef());
+  EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
 
   ref_count->Acquire();
   EXPECT_FALSE(ref_count->Release());
-  EXPECT_TRUE(ref_count->HasOneRef());
+  EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
   EXPECT_EQ(*ptr1, kCookie);
 
   ref_count->Acquire();
-  EXPECT_FALSE(ref_count->HasOneRef());
+  EXPECT_FALSE(ref_count->IsAliveWithNoKnownRefs());
 
   allocator.root()->Free(ptr1);
   // The allocation shouldn't be reclaimed, and its contents should be zapped.
@@ -2929,31 +2954,32 @@ void PartitionAllocTest::RunRefCountReallocSubtest(size_t orig_size,
 
   auto* ref_count1 =
       PartitionRefCountPointer(reinterpret_cast<char*>(ptr1) - kPointerOffset);
-  EXPECT_TRUE(ref_count1->HasOneRef());
+  EXPECT_TRUE(ref_count1->IsAliveWithNoKnownRefs());
 
   ref_count1->Acquire();
-  EXPECT_FALSE(ref_count1->HasOneRef());
+  EXPECT_FALSE(ref_count1->IsAliveWithNoKnownRefs());
 
   void* ptr2 = allocator.root()->Realloc(ptr1, new_size, type_name);
   EXPECT_TRUE(ptr2);
 
-  // Re-query ref-count. It may have moved within the slot, or if Realloc
-  // changed the slot.
+  // Re-query ref-count. It may have moved if Realloc changed the slot.
   auto* ref_count2 =
       PartitionRefCountPointer(reinterpret_cast<char*>(ptr2) - kPointerOffset);
 
   if (ptr1 == ptr2) {
-    // If the slot didn't change, ref-count may have moved within it, in which
-    // case the old location may have been trashed, but the new one should have
-    // the same value.
-    EXPECT_FALSE(ref_count2->HasOneRef());
+    // If the slot didn't change, ref-count should stay the same.
+    EXPECT_EQ(ref_count1, ref_count2);
+    EXPECT_FALSE(ref_count2->IsAliveWithNoKnownRefs());
 
     EXPECT_FALSE(ref_count2->Release());
   } else {
     // If the allocation was moved to another slot, the old ref-count stayed
-    // and still has a reference. The new ref-count has no references.
-    EXPECT_FALSE(ref_count1->HasOneRef());
-    EXPECT_TRUE(ref_count2->HasOneRef());
+    // in the same location in memory, is no longer alive, but still has a
+    // reference. The new ref-count is alive, but has no references.
+    EXPECT_NE(ref_count1, ref_count2);
+    EXPECT_FALSE(ref_count1->IsAlive());
+    EXPECT_FALSE(ref_count1->IsAliveWithNoKnownRefs());
+    EXPECT_TRUE(ref_count2->IsAliveWithNoKnownRefs());
 
     EXPECT_TRUE(ref_count1->Release());
   }
@@ -2976,7 +3002,12 @@ TEST_F(PartitionAllocTest, RefCountRealloc) {
 #endif
 
 // Test for crash http://crbug.com/1169003.
-TEST_F(PartitionAllocTest, CrossPartitionRootRealloc) {
+#if defined(OS_ANDROID)
+#define MAYBE_CrossPartitionRootRealloc DISABLED_CrossPartitionRootRealloc
+#else
+#define MAYBE_CrossPartitionRootRealloc CrossPartitionRootRealloc
+#endif
+TEST_F(PartitionAllocTest, MAYBE_CrossPartitionRootRealloc) {
   // Size is large enough to satisfy it from a single-slot slot span
   size_t test_size =
       SystemPageSize() * MaxSystemPagesPerSlotSpan() - kExtraAllocSize;
@@ -2992,10 +3023,11 @@ TEST_F(PartitionAllocTest, CrossPartitionRootRealloc) {
 
   // Create a new root
   auto* new_root = new base::PartitionRoot<base::internal::ThreadSafe>({
-      base::PartitionOptions::Alignment::kRegular,
+      base::PartitionOptions::AlignedAlloc::kDisallowed,
       base::PartitionOptions::ThreadCache::kDisabled,
       base::PartitionOptions::Quarantine::kDisallowed,
-      base::PartitionOptions::RefCount::kDisabled,
+      base::PartitionOptions::Cookies::kAllowed,
+      base::PartitionOptions::RefCount::kDisallowed,
   });
 
   // Realloc from |allocator.root()| into |new_root|.
@@ -3089,7 +3121,7 @@ TEST_F(PartitionAllocTest, DISABLED_PreforkHandler) {
   // Continuously allocates / frees memory, bypassing the thread cache. This
   // makes it likely that this thread will own the lock, and that the
   // EXPECT_EXIT() part will deadlock.
-  constexpr size_t kAllocSize = ThreadCache::kSizeThreshold + 1;
+  constexpr size_t kAllocSize = ThreadCache::kLargeSizeThreshold + 1;
   LambdaThreadDelegate delegate{BindLambdaForTesting([&]() {
     started_threads++;
     while (!please_stop.load(std::memory_order_relaxed)) {

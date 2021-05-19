@@ -190,9 +190,8 @@ class StringTokenizerT {
   const_iterator token_begin() const { return token_begin_; }
   const_iterator token_end() const { return token_end_; }
   str token() const { return str(token_begin_, token_end_); }
-  BasicStringPiece<str> token_piece() const {
-    return BasicStringPiece<str>(&*token_begin_,
-                                 std::distance(token_begin_, token_end_));
+  BasicStringPiece<char_type> token_piece() const {
+    return MakeBasicStringPiece<char_type>(token_begin_, token_end_);
   }
 
  private:
@@ -351,7 +350,8 @@ class StringTokenizerT {
 
 typedef StringTokenizerT<std::string, std::string::const_iterator>
     StringTokenizer;
-typedef StringTokenizerT<string16, string16::const_iterator> String16Tokenizer;
+typedef StringTokenizerT<std::u16string, std::u16string::const_iterator>
+    String16Tokenizer;
 typedef StringTokenizerT<std::string, const char*> CStringTokenizer;
 
 }  // namespace base

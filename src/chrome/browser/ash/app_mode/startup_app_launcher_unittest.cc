@@ -24,9 +24,9 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/test_kiosk_extension_builder.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/extensions/test_external_cache.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -53,6 +53,7 @@
 using extensions::ExternalInstallInfoFile;
 using extensions::ExternalInstallInfoUpdateUrl;
 using extensions::Manifest;
+using extensions::mojom::ManifestLocation;
 using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
@@ -533,9 +534,8 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
         visitor,
         base::MakeRefCounted<KioskAppExternalLoader>(
             KioskAppExternalLoader::AppClass::kPrimary),
-        profile(), extensions::Manifest::EXTERNAL_POLICY,
-        extensions::Manifest::INVALID_LOCATION,
-        extensions::Extension::NO_FLAGS);
+        profile(), ManifestLocation::kExternalPolicy,
+        ManifestLocation::kInvalidLocation, extensions::Extension::NO_FLAGS);
     InitializeKioskAppsProvider(primary_app_provider_.get());
 
     secondary_apps_provider_ =
@@ -543,8 +543,8 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
             visitor,
             base::MakeRefCounted<KioskAppExternalLoader>(
                 KioskAppExternalLoader::AppClass::kSecondary),
-            profile(), extensions::Manifest::EXTERNAL_PREF,
-            extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+            profile(), ManifestLocation::kExternalPref,
+            ManifestLocation::kExternalPrefDownload,
             extensions::Extension::NO_FLAGS);
     InitializeKioskAppsProvider(secondary_apps_provider_.get());
   }
@@ -560,8 +560,7 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
   void InitializeKioskAppUser() {
     const AccountId kiosk_account_id(
         AccountId::FromUserEmail(kTestUserAccount));
-    auto fake_user_manager_ =
-        std::make_unique<chromeos::FakeChromeUserManager>();
+    auto fake_user_manager_ = std::make_unique<FakeChromeUserManager>();
     fake_user_manager_->AddKioskAppUser(kiosk_account_id);
     fake_user_manager_->LoginUser(kiosk_account_id);
 

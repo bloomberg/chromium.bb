@@ -77,6 +77,13 @@ class FrameTimelineEventParser {
   StringId jank_type_id_;
   StringId layer_name_id_;
   StringId prediction_type_id_;
+  StringId is_buffer_id_;
+
+  StringId jank_tag_none_id_;
+  StringId jank_tag_self_id_;
+  StringId jank_tag_other_id_;
+  StringId jank_tag_dropped_id_;
+  StringId jank_tag_buffer_stuffing_id_;
 
   // upid -> set of tokens map. The expected timeline is the same for a given
   // token no matter how many times its seen. We can safely ignore duplicates

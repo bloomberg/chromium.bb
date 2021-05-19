@@ -14,18 +14,11 @@
 
 #include "src/ast/function.h"
 
-#include <sstream>
-
 #include "src/ast/stage_decoration.h"
-#include "src/ast/variable.h"
 #include "src/ast/workgroup_decoration.h"
-#include "src/clone_context.h"
 #include "src/program_builder.h"
-#include "src/type/multisampled_texture_type.h"
-#include "src/type/sampled_texture_type.h"
-#include "src/type/texture_type.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::Function);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::Function);
 
 namespace tint {
 namespace ast {
@@ -35,13 +28,21 @@ Function::Function(const Source& source,
                    VariableList params,
                    type::Type* return_type,
                    BlockStatement* body,
-                   FunctionDecorationList decorations)
+                   DecorationList decorations,
+                   DecorationList return_type_decorations)
     : Base(source),
       symbol_(symbol),
       params_(std::move(params)),
       return_type_(return_type),
       body_(body),
-      decorations_(std::move(decorations)) {}
+      decorations_(std::move(decorations)),
+      return_type_decorations_(std::move(return_type_decorations)) {
+  for (auto* param : params_) {
+    TINT_ASSERT(param);
+  }
+  TINT_ASSERT(symbol_.IsValid());
+  TINT_ASSERT(return_type_);
+}
 
 Function::Function(Function&&) = default;
 
@@ -77,24 +78,8 @@ Function* Function::Clone(CloneContext* ctx) const {
   auto* ret = ctx->Clone(return_type_);
   auto* b = ctx->Clone(body_);
   auto decos = ctx->Clone(decorations_);
-  return ctx->dst->create<Function>(src, sym, p, ret, b, decos);
-}
-
-bool Function::IsValid() const {
-  for (auto* param : params_) {
-    if (param == nullptr || !param->IsValid())
-      return false;
-  }
-  if (body_ == nullptr || !body_->IsValid()) {
-    return false;
-  }
-  if (!symbol_.IsValid()) {
-    return false;
-  }
-  if (return_type_ == nullptr) {
-    return false;
-  }
-  return true;
+  auto ret_decos = ctx->Clone(return_type_decorations_);
+  return ctx->dst->create<Function>(src, sym, p, ret, b, decos, ret_decos);
 }
 
 void Function::to_str(const semantic::Info& sem,
@@ -139,7 +124,9 @@ std::string Function::type_name() const {
 
   out << "__func" + return_type_->type_name();
   for (auto* param : params_) {
-    out << param->type()->type_name();
+    // No need for the semantic::Variable here, functions params must have a
+    // type
+    out << param->declared_type()->type_name();
   }
 
   return out.str();

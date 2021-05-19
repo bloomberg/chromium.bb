@@ -12,16 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
-#include "src/ast/function.h"
-#include "src/ast/identifier_expression.h"
-#include "src/program.h"
-#include "src/type/void_type.h"
-#include "src/writer/msl/generator_impl.h"
 #include "src/writer/msl/test_helper.h"
 
 namespace tint {
@@ -33,7 +24,7 @@ using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, EmitExpression_Call_WithoutParams) {
   Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   auto* call = Call("my_func");
   WrapInFunction(call);
@@ -46,9 +37,9 @@ TEST_F(MslGeneratorImplTest, EmitExpression_Call_WithoutParams) {
 
 TEST_F(MslGeneratorImplTest, EmitExpression_Call_WithParams) {
   Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::FunctionDecorationList{});
-  Global("param1", ty.f32(), ast::StorageClass::kNone);
-  Global("param2", ty.f32(), ast::StorageClass::kNone);
+       ast::DecorationList{});
+  Global("param1", ty.f32(), ast::StorageClass::kInput);
+  Global("param2", ty.f32(), ast::StorageClass::kInput);
 
   auto* call = Call("my_func", "param1", "param2");
   WrapInFunction(call);
@@ -61,9 +52,9 @@ TEST_F(MslGeneratorImplTest, EmitExpression_Call_WithParams) {
 
 TEST_F(MslGeneratorImplTest, EmitStatement_Call) {
   Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::FunctionDecorationList{});
-  Global("param1", ty.f32(), ast::StorageClass::kNone);
-  Global("param2", ty.f32(), ast::StorageClass::kNone);
+       ast::DecorationList{});
+  Global("param1", ty.f32(), ast::StorageClass::kInput);
+  Global("param2", ty.f32(), ast::StorageClass::kInput);
 
   auto* call = Call("my_func", "param1", "param2");
   auto* stmt = create<ast::CallStatement>(call);

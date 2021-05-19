@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/chromeos/login/ui/oobe_dialog_size_utils.h"
+#include "chrome/browser/ash/login/ui/oobe_dialog_size_utils.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -92,7 +92,7 @@ void MultiDeviceSetupDialog::AddOnCloseCallback(base::OnceClosure callback) {
 }
 
 MultiDeviceSetupDialog::MultiDeviceSetupDialog()
-    : SystemWebDialogDelegate(CreateMultiDeviceSetupURL(), base::string16()) {}
+    : SystemWebDialogDelegate(CreateMultiDeviceSetupURL(), std::u16string()) {}
 
 MultiDeviceSetupDialog::~MultiDeviceSetupDialog() {
   for (auto& callback : on_close_callbacks_)

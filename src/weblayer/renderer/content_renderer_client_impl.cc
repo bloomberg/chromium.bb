@@ -198,9 +198,9 @@ void ContentRendererClientImpl::PrepareErrorPage(
 #endif
 }
 
-std::unique_ptr<content::URLLoaderThrottleProvider>
+std::unique_ptr<blink::URLLoaderThrottleProvider>
 ContentRendererClientImpl::CreateURLLoaderThrottleProvider(
-    content::URLLoaderThrottleProviderType provider_type) {
+    blink::URLLoaderThrottleProviderType provider_type) {
   return std::make_unique<URLLoaderThrottleProvider>(
       browser_interface_broker_.get(), provider_type);
 }
@@ -221,6 +221,10 @@ void ContentRendererClientImpl::
   // (for both Chrome and WebLayer).
   blink::WebRuntimeFeatures::EnableWebShare(true);
 #endif
+
+  if (base::FeatureList::IsEnabled(subresource_filter::kAdTagging)) {
+    blink::WebRuntimeFeatures::EnableAdTagging(true);
+  }
 }
 
 bool ContentRendererClientImpl::IsPrefetchOnly(

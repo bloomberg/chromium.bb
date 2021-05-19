@@ -38,30 +38,6 @@ if (NOT TARGET SPIRV-Tools)
     add_subdirectory(${DAWN_SPIRV_TOOLS_DIR})
 endif()
 
-if (NOT TARGET glslang)
-    set(SKIP_GLSLANG_INSTALL ON CACHE BOOL "" FORCE)
-    set(ENABLE_SPVREMAPPER OFF CACHE BOOL "" FORCE)
-    set(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "" FORCE)
-    set(ENABLE_CTEST OFF CACHE BOOL "" FORCE)
-
-    message(STATUS "Dawn: using GLSLang at ${DAWN_GLSLANG_DIR}")
-    add_subdirectory(${DAWN_GLSLANG_DIR})
-endif()
-
-if (NOT TARGET shaderc)
-    set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
-    set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
-
-    # Change the default value of SHADERC_ENABLE_SHARED_CRT to ON as that's what matches the
-    # CMake defaults better.
-    if(MSVC)
-        set(SHADERC_ENABLE_SHARED_CRT ON CACHE BOOL "Use the shared CRT instead of the static CRT")
-    endif()
-
-    message(STATUS "Dawn: using shaderc at ${DAWN_SHADERC_DIR}")
-    add_subdirectory(${DAWN_SHADERC_DIR})
-endif()
-
 if (DAWN_BUILD_EXAMPLES)
     if (NOT TARGET glfw)
         set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -78,12 +54,9 @@ if (DAWN_BUILD_EXAMPLES)
     endif()
 endif()
 
-if (DAWN_ENABLE_WGSL)
-    if (NOT TARGET libtint)
-        set(TINT_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-        message(STATUS "Dawn: using Tint at ${DAWN_TINT_DIR}")
-        add_subdirectory(${DAWN_TINT_DIR})
-    endif()
+if (NOT TARGET libtint)
+    message(STATUS "Dawn: using Tint at ${DAWN_TINT_DIR}")
+    add_subdirectory(${DAWN_TINT_DIR})
 endif()
 
 # Header-only library for khrplatform.h

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -98,8 +99,8 @@ class ManagedValueStoreCache::ExtensionTracker
 
   Profile* profile_;
   policy::PolicyDomain policy_domain_;
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_{this};
+  base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observation_{this};
   policy::SchemaRegistry* schema_registry_;
   base::WeakPtrFactory<ExtensionTracker> weak_factory_{this};
 
@@ -112,7 +113,7 @@ ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(
     : profile_(profile),
       policy_domain_(policy_domain),
       schema_registry_(profile->GetPolicySchemaRegistryService()->registry()) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+  extension_registry_observation_.Observe(ExtensionRegistry::Get(profile_));
   // Load schemas when the extension system is ready. It might be ready now.
   ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE, base::BindOnce(&ExtensionTracker::OnExtensionsReady,
@@ -239,7 +240,8 @@ ManagedValueStoreCache::ManagedValueStoreCache(
 
   policy_service_->AddObserver(policy_domain_, this);
 
-  extension_tracker_.reset(new ExtensionTracker(profile_, policy_domain_));
+  extension_tracker_ =
+      std::make_unique<ExtensionTracker>(profile_, policy_domain_);
 
   if (policy_service_->IsInitializationComplete(policy_domain_))
     OnPolicyServiceInitialized(policy_domain_);

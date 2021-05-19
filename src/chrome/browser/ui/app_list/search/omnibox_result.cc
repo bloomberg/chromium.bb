@@ -81,7 +81,7 @@ int ACMatchStyleToTagStyle(int styles) {
 }
 
 // Translates ACMatchClassifications into ChromeSearchResult tags.
-void ACMatchClassificationsToTags(const base::string16& text,
+void ACMatchClassificationsToTags(const std::u16string& text,
                                   const ACMatchClassifications& text_classes,
                                   ChromeSearchResult::Tags* tags) {
   int tag_styles = ash::SearchResultTag::NONE;
@@ -181,12 +181,12 @@ const gfx::VectorIcon& TypeToAnswerIcon(int type) {
 gfx::ImageSkia CreateAnswerIcon(const gfx::VectorIcon& vector_icon) {
   const auto& icon = gfx::CreateVectorIcon(vector_icon, SK_ColorWHITE);
   const int dimension =
-      ash::AppListConfig::instance().search_list_answer_icon_dimension();
+      ash::SharedAppListConfig::instance().search_list_answer_icon_dimension();
   return gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
       dimension / 2, gfx::kGoogleBlue600, icon);
 }
 
-base::Optional<base::string16> GetAdditionalText(
+base::Optional<std::u16string> GetAdditionalText(
     const SuggestionAnswer::ImageLine& line) {
   if (line.additional_text()) {
     const auto additional_text = line.additional_text()->text();
@@ -196,8 +196,8 @@ base::Optional<base::string16> GetAdditionalText(
   return base::nullopt;
 }
 
-base::string16 ImageLineToString16(const SuggestionAnswer::ImageLine& line) {
-  std::vector<base::string16> text;
+std::u16string ImageLineToString16(const SuggestionAnswer::ImageLine& line) {
+  std::vector<std::u16string> text;
   for (const auto& text_field : line.text_fields()) {
     text.push_back(text_field.text());
   }
@@ -208,7 +208,7 @@ base::string16 ImageLineToString16(const SuggestionAnswer::ImageLine& line) {
   // TODO(crbug.com/1130372): Use placeholders or a l10n-friendly way to
   // construct this string instead of concatenation. This currently only happens
   // for stock ticker symbols.
-  return base::JoinString(text, base::ASCIIToUTF16(" "));
+  return base::JoinString(text, u" ");
 }
 
 }  // namespace
@@ -239,8 +239,7 @@ OmniboxResult::OmniboxResult(Profile* profile,
       // The answer subtype overrides the match subtype.
       set_result_subtype(static_cast<int>(match_.answer->type()));
     } else if (match_.type == AutocompleteMatchType::CALCULATOR) {
-      // Calculator results are treated as answers.
-      SetOmniboxType(OmniboxType::kAnswer);
+      SetOmniboxType(OmniboxType::kCalculatorAnswer);
     } else if (!match_.image_url.is_empty()) {
       SetOmniboxType(OmniboxType::kRichImage);
     }
@@ -301,8 +300,10 @@ void OmniboxResult::OnFetchComplete(const GURL& url, const SkBitmap* bitmap) {
 
 ash::SearchResultType OmniboxResult::GetSearchResultType() const {
   // Rich entity types take precedence.
-  if (omnibox_type() == OmniboxType::kAnswer)
+  if (omnibox_type() == OmniboxType::kAnswer ||
+      omnibox_type() == OmniboxType::kCalculatorAnswer) {
     return ash::OMNIBOX_RICH_ENTITY_ANSWER;
+  }
   if (omnibox_type() == OmniboxType::kRichImage)
     return ash::OMNIBOX_RICH_ENTITY_IMAGE_ENTITY;
 
@@ -393,7 +394,7 @@ void OmniboxResult::UpdateIcon() {
     const gfx::VectorIcon& icon =
         is_bookmarked ? omnibox::kBookmarkIcon : TypeToVectorIcon(match_.type);
     SetIcon(gfx::CreateVectorIcon(
-        icon, ash::AppListConfig::instance().search_list_icon_dimension(),
+        icon, ash::SharedAppListConfig::instance().search_list_icon_dimension(),
         kListIconColor));
   }
 }
@@ -406,10 +407,10 @@ void OmniboxResult::UpdateTitleAndDetails() {
     // TODO(crbug.com/1130372): Use placeholders or a l10n-friendly way to
     // construct this string instead of concatenation. This currently only
     // happens for stock ticker symbols.
-    SetTitle(additional_text
-                 ? base::JoinString({match_.contents, additional_text.value()},
-                                    base::ASCIIToUTF16(" "))
-                 : match_.contents);
+    SetTitle(
+        additional_text
+            ? base::JoinString({match_.contents, additional_text.value()}, u" ")
+            : match_.contents);
     SetDetails(ImageLineToString16(match_.answer->second_line()));
   } else if (!IsUrlResultWithDescription()) {
     SetTitle(match_.contents);
@@ -483,10 +484,10 @@ void OmniboxResult::SetZeroSuggestionActions() {
     ash::OmniBoxZeroStateAction button_action =
         ash::GetOmniBoxZeroStateAction(i);
     gfx::ImageSkia button_image;
-    base::string16 button_tooltip;
+    std::u16string button_tooltip;
     bool visible_on_hover = false;
     const int kImageButtonIconSize =
-        ash::AppListConfig::instance().search_list_badge_icon_dimension();
+        ash::SharedAppListConfig::instance().search_list_badge_icon_dimension();
 
     switch (button_action) {
       case ash::OmniBoxZeroStateAction::kRemoveSuggestion:

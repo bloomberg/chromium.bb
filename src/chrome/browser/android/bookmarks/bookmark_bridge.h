@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
@@ -14,7 +15,6 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/profiles/profile.h"
@@ -241,7 +241,7 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   bool IsBookmarked(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& gurl);
 
-  base::string16 GetTitle(const bookmarks::BookmarkNode* node) const;
+  std::u16string GetTitle(const bookmarks::BookmarkNode* node) const;
 
   // ProfileObserver override
   void OnProfileWillBeDestroyed(Profile* profile) override;

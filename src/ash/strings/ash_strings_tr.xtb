@@ -40,6 +40,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> güç kaynağından şarj ediliyor</translation>
 <translation id="1255033239764210633">Hava nasıl?</translation>
 <translation id="1267032506238418139">Kısayol değişikliği</translation>
+<translation id="1269405891096105529">Çevre birimi, Misafir modunda desteklenmiyor</translation>
 <translation id="1270290102613614947">Dokunmatik klavye devre dışı</translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> güç sağlıyor</translation>
@@ -132,6 +133,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2012624427112548395">Ctrl+Arama+H</translation>
 <translation id="2016340657076538683">Mesaj yazın</translation>
 <translation id="2018630726571919839">Bana bir fıkra anlat</translation>
+<translation id="2021864487439853900">Kilidi açmak için tıklayın</translation>
 <translation id="2049240716062114887">Masa adı <ph name="DESK_NAME" /> olarak değiştirildi</translation>
 <translation id="2050339315714019657">Dikey</translation>
 <translation id="2067602449040652523">Klavye parlaklığı</translation>
@@ -276,6 +278,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> daha sonra yine oturum açabilir.</translation>
 <translation id="3321628682574733415">Ebeveyn kodu yanlış</translation>
 <translation id="332587331255250389">Lütfen pili değiştirin</translation>
+<translation id="3333741161915951567">Modem yeniden başlatılıyor. 30 saniye bekleyip tekrar deneyin.</translation>
 <translation id="3341303451326249809">Ekran görüntüsü alındı</translation>
 <translation id="334252345105450327">Ekran görüntüsü al</translation>
 <translation id="3351879221545518001">Şu anda ekranı yayınlıyorsunuz.</translation>
@@ -320,6 +323,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Yönetilen kullanıcı</translation>
 <translation id="3665889125180354336">Mikrofon kaydı</translation>
 <translation id="36813544980941320">Kablosuz ağlar; telefonunuz ve <ph name="DEVICE_NAME" /> arasında paylaşılacak</translation>
+<translation id="3702809606464356667">Mevcut masadaki pencereler gösteriliyor, tüm masalardaki pencerelerin gösterilmesi için Yukarı ok tuşuna basın</translation>
 <translation id="3702846122927433391">Nijerya'nın nüfusu</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Yükleniyor...</translation>
@@ -351,6 +355,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="394485226368336402">Ses ayarları</translation>
 <translation id="3945319193631853098">Kuruluımu tamamlamak için dokunun</translation>
 <translation id="3945867833895287237">Hotspot'a bağlanılıyor...</translation>
+<translation id="3958465044488004317">Sonucu Asistan'da göster</translation>
 <translation id="3962859241508114581">Önceki Parça</translation>
 <translation id="3969043077941541451">Kapalı</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
@@ -407,10 +412,12 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME" /> ile paylaşılıyor.</translation>
 <translation id="4424159417645388645">Masa 5</translation>
 <translation id="4430019312045809116">Ses</translation>
+<translation id="4445159312344259901">Kilidi açmak için oturum açın</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 önemli bildirim}other{# önemli bildirim}}</translation>
 <translation id="4450893287417543264">Bir daha gösterme</translation>
 <translation id="445864333228800152">İyi akşamlar,</translation>
 <translation id="4458688154122353284">Ekran kaydını durdur</translation>
+<translation id="4467143075433126295">Tam ekrandan çıkmak için [Esc] tuşunu basılı tutun</translation>
 <translation id="4472575034687746823">Başlayın</translation>
 <translation id="4477350412780666475">Sonraki Parça</translation>
 <translation id="4477892968187500306">Bu cihaz Google tarafından doğrulanmamış uygulamalar içerebilir.</translation>
@@ -608,6 +615,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Google Asistan, misafir oturumunda kullanılamaz.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> için kaldırma iletişim kutusunu aç</translation>
+<translation id="6154006699632741460">Çevre birimi desteklenmiyor</translation>
 <translation id="615957422585914272">Dokunmatik klavyeyi göster</translation>
 <translation id="6165508094623778733">Daha fazla bilgi</translation>
 <translation id="6179832488876878285">Önemli dosyalarınızı buraya sabitleyebilirsiniz. Başlamak için Dosyalar uygulamasını açın.</translation>
@@ -625,11 +633,11 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="6297287540776456956">Alan seçmek için ekran kalemini kullanın</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> dönme ayarı <ph name="ROTATION" /> olarak değiştirildi</translation>
 <translation id="6315170314923504164">Ses</translation>
+<translation id="6330012934079202188">Tüm masalardaki pencereler gösteriliyor, mevcut masadaki pencerelerin gösterilmesi için Yukarı ok tuşuna basın</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" />, <ph name="MANAGER" /> tarafından yönetilen bir oturumdur</translation>
 <translation id="6376931439017688372">Bluetooth açık</translation>
 <translation id="6381109794406942707">Cihazın kilidini açmak için PIN'inizi girin.</translation>
 <translation id="639644700271529076">CAPS LOCK kapalı</translation>
-<translation id="6396835948284782440">Çıkmak için [Esc] tuşunu basılı tutun</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, <ph name="SIGNAL_STRENGTH" /> Sinyal Gücü</translation>
 <translation id="642644398083277086">Tüm bildirimleri temizleyin</translation>
@@ -795,7 +803,6 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="7780159184141939021">Ekranı Döndür</translation>
 <translation id="7796353162336583443">Not veya ekran görüntüsü almak, Google Asistan, lazer işaretçi veya büyüteç işlevlerini kullanmak için raftaki ekran kalemi düğmesine dokunun.</translation>
 <translation id="7798302898096527229">İptal etmek için Ara veya Üst Karakter tuşuna basın.</translation>
-<translation id="7807966291075028781">Güvenlik nedeniyle Misafir modunda çevre birimleri desteklenmiyor</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ve <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Güçlü sinyal</translation>
 <translation id="7837740436429729974">Süre doldu</translation>
@@ -945,6 +952,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="8936501819958976551">devre dışı</translation>
 <translation id="8938800817013097409">USB-C cihaz (arkadaki sağ bağlantı noktası)</translation>
 <translation id="8940956008527784070">Pil gücü az (%<ph name="PERCENTAGE" />)</translation>
+<translation id="8951539504029375108">Yalnızca onaylı Thunderbolt cihazlar Chromebook'unuzla uyumludur</translation>
 <translation id="8982906748181120328">Yakındakiler görünürlüğü</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> kullanılıyor</translation>

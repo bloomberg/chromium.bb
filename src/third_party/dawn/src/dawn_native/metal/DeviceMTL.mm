@@ -117,64 +117,66 @@ namespace dawn_native { namespace metal {
         }
     }
 
-    ResultOrError<BindGroupBase*> Device::CreateBindGroupImpl(
+    ResultOrError<Ref<BindGroupBase>> Device::CreateBindGroupImpl(
         const BindGroupDescriptor* descriptor) {
         return BindGroup::Create(this, descriptor);
     }
-    ResultOrError<BindGroupLayoutBase*> Device::CreateBindGroupLayoutImpl(
+    ResultOrError<Ref<BindGroupLayoutBase>> Device::CreateBindGroupLayoutImpl(
         const BindGroupLayoutDescriptor* descriptor) {
-        return new BindGroupLayout(this, descriptor);
+        return BindGroupLayout::Create(this, descriptor);
     }
     ResultOrError<Ref<BufferBase>> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return Buffer::Create(this, descriptor);
     }
-    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoder* encoder,
-                                                   const CommandBufferDescriptor* descriptor) {
-        return new CommandBuffer(encoder, descriptor);
+    ResultOrError<Ref<CommandBufferBase>> Device::CreateCommandBuffer(
+        CommandEncoder* encoder,
+        const CommandBufferDescriptor* descriptor) {
+        return CommandBuffer::Create(encoder, descriptor);
     }
-    ResultOrError<ComputePipelineBase*> Device::CreateComputePipelineImpl(
+    ResultOrError<Ref<ComputePipelineBase>> Device::CreateComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
         return ComputePipeline::Create(this, descriptor);
     }
-    ResultOrError<PipelineLayoutBase*> Device::CreatePipelineLayoutImpl(
+    ResultOrError<Ref<PipelineLayoutBase>> Device::CreatePipelineLayoutImpl(
         const PipelineLayoutDescriptor* descriptor) {
-        return new PipelineLayout(this, descriptor);
+        return PipelineLayout::Create(this, descriptor);
     }
-    ResultOrError<QuerySetBase*> Device::CreateQuerySetImpl(const QuerySetDescriptor* descriptor) {
+    ResultOrError<Ref<QuerySetBase>> Device::CreateQuerySetImpl(
+        const QuerySetDescriptor* descriptor) {
         return QuerySet::Create(this, descriptor);
     }
-    ResultOrError<RenderPipelineBase*> Device::CreateRenderPipelineImpl(
-        const RenderPipelineDescriptor* descriptor) {
+    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
+        const RenderPipelineDescriptor2* descriptor) {
         return RenderPipeline::Create(this, descriptor);
     }
-    ResultOrError<SamplerBase*> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
+    ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
         return Sampler::Create(this, descriptor);
     }
-    ResultOrError<ShaderModuleBase*> Device::CreateShaderModuleImpl(
+    ResultOrError<Ref<ShaderModuleBase>> Device::CreateShaderModuleImpl(
         const ShaderModuleDescriptor* descriptor,
         ShaderModuleParseResult* parseResult) {
         return ShaderModule::Create(this, descriptor, parseResult);
     }
-    ResultOrError<SwapChainBase*> Device::CreateSwapChainImpl(
+    ResultOrError<Ref<SwapChainBase>> Device::CreateSwapChainImpl(
         const SwapChainDescriptor* descriptor) {
-        return new OldSwapChain(this, descriptor);
+        return OldSwapChain::Create(this, descriptor);
     }
-    ResultOrError<NewSwapChainBase*> Device::CreateSwapChainImpl(
+    ResultOrError<Ref<NewSwapChainBase>> Device::CreateSwapChainImpl(
         Surface* surface,
         NewSwapChainBase* previousSwapChain,
         const SwapChainDescriptor* descriptor) {
         return SwapChain::Create(this, surface, previousSwapChain, descriptor);
     }
     ResultOrError<Ref<TextureBase>> Device::CreateTextureImpl(const TextureDescriptor* descriptor) {
-        return AcquireRef(new Texture(this, descriptor));
+        return Texture::Create(this, descriptor);
     }
-    ResultOrError<TextureViewBase*> Device::CreateTextureViewImpl(
+    ResultOrError<Ref<TextureViewBase>> Device::CreateTextureViewImpl(
         TextureBase* texture,
         const TextureViewDescriptor* descriptor) {
-        return new TextureView(texture, descriptor);
+        return TextureView::Create(texture, descriptor);
     }
 
-    ExecutionSerial Device::CheckAndUpdateCompletedSerials() {
+    ResultOrError<ExecutionSerial> Device::CheckAndUpdateCompletedSerials() {
         uint64_t frontendCompletedSerial{GetCompletedCommandSerial()};
         if (frontendCompletedSerial > mCompletedSerial) {
             // sometimes we increase the serials, in which case the completed serial in
@@ -313,7 +315,7 @@ namespace dawn_native { namespace metal {
         const Extent3D clampedSize =
             texture->ClampToMipLevelVirtualSize(dst->mipLevel, dst->origin, copySizePixels);
         const uint32_t copyBaseLayer = dst->origin.z;
-        const uint32_t copyLayerCount = copySizePixels.depth;
+        const uint32_t copyLayerCount = copySizePixels.depthOrArrayLayers;
         const uint64_t bytesPerImage = dataLayout.rowsPerImage * dataLayout.bytesPerRow;
 
         MTLBlitOption blitOption = ComputeMTLBlitOption(texture->GetFormat(), dst->aspect);
@@ -373,12 +375,12 @@ namespace dawn_native { namespace metal {
     MaybeError Device::WaitForIdleForDestruction() {
         // Forget all pending commands.
         mCommandContext.AcquireCommands();
-        CheckPassedSerials();
+        DAWN_TRY(CheckPassedSerials());
 
         // Wait for all commands to be finished so we can free resources
         while (GetCompletedCommandSerial() != GetLastSubmittedCommandSerial()) {
             usleep(100);
-            CheckPassedSerials();
+            DAWN_TRY(CheckPassedSerials());
         }
 
         return {};

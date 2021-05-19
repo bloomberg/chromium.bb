@@ -18,6 +18,7 @@ class sk_sp;
 namespace blink {
 
 class ROBuffer;
+class ParkableImage;
 
 // Interface that looks like SharedBuffer. Used by ImageDecoders to use various
 // sources of input including:
@@ -43,12 +44,16 @@ class PLATFORM_EXPORT SegmentReader
   static scoped_refptr<SegmentReader> CreateFromSkData(sk_sp<SkData>);
   static scoped_refptr<SegmentReader> CreateFromROBuffer(
       scoped_refptr<ROBuffer>);
+  static scoped_refptr<SegmentReader> CreateFromParkableImage(
+      scoped_refptr<ParkableImage>);
 
   SegmentReader() = default;
   virtual ~SegmentReader() = default;
   virtual size_t size() const = 0;
   virtual size_t GetSomeData(const char*& data, size_t position) const = 0;
   virtual sk_sp<SkData> GetAsSkData() const = 0;
+  virtual void LockData() {}
+  virtual void UnlockData() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SegmentReader);

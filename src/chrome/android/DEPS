@@ -33,6 +33,7 @@ include_rules = [
   "+components/favicon_base",
   "+components/find_in_page/android",
   "+components/infobars/android",
+  "+components/installedapp/android",
   "+components/invalidation",
   "+components/javascript_dialogs/android",
   "+components/messages/android",
@@ -43,7 +44,6 @@ include_rules = [
   "+components/prefs/android",
   "+components/query_tiles",
   "+components/security_interstitials/content/android",
-  "+components/signin/core/browser/android",
   "+components/signin/public/android",
   "+components/site_engagement/content/android",
   "+components/spellcheck/browser",
@@ -147,9 +147,6 @@ specific_include_rules = {
     "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
   ],
   "VrShellDelegate\.java": [
-    "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
-  ],
-  "VrWindowAndroid\.java": [
     "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
   ],
 }

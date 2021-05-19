@@ -144,6 +144,73 @@ dpsl.TelemetryInfoTypes;
  */
 dpsl.AvailableRoutinesList;
 
+/**
+ * |progressPercent| percentage of the routine progress.
+ * |output| accumulated output, like logs.
+ * |status| current status of the routine.
+ * |detail| more detailed status message.
+ * |userMessage| Request user action. Should be localized and displayed to the
+ * user. Note: used in interactive routines only, two possible values are
+ * returned: 'unplug-ac-power' or 'plug-in-ac-power'.
+ * @typedef {{
+ *   progressPercent: number,
+ *   output: string,
+ *   status: string,
+ *   statusMessage: string,
+ *   userMessage: string
+  }}
+ */
+dpsl.RoutineStatus;
+
+/**
+ * Params object of dpsl.diagnostics.battery.runChargeRoutine()
+ * @typedef {{
+ *   lengthSeconds: !number,
+ *   minimumChargePercentRequired: !number
+ * }}
+ */
+dpsl.BatteryChargeRoutineParams;
+
+/**
+ * Params object of dpsl.diagnostics.battery.runDischargeRoutine()
+ * @typedef {{
+ *   lengthSeconds: !number,
+ *   maximumDischargePercentAllowed: !number
+ * }}
+ */
+dpsl.BatteryDischargeRoutineParams;
+
+/**
+ * Params object of dpsl.diagnostics.nvme.runWearLevelRoutine()
+ * @typedef {{wearLevelThreshold: !number}}
+ */
+dpsl.NvmeWearLevelRoutineParams;
+
+/**
+ * Params object of dpsl.diagnostics.power.{runAcConnectedRoutine(),
+ * runAcDisconnectedRoutine()}
+ * @typedef {{expectedPowerType: !string}}
+ */
+dpsl.PowerAcRoutineParams;
+
+/**
+ * Params object of dpsl.diagnostics.cpu.{runCacheRoutine(), runStressRoutine(),
+ * runFloatingPointAccuracyRoutine()}
+ * @typedef {{duration: !number}}
+ */
+dpsl.CpuRoutineDurationParams;
+
+/**
+ * Params object of dpsl.diagnostics.cpu.runPrimeSearchRoutine()
+ * @typedef {{lengthSeconds: !number, maximumNumber: !number}}
+ */
+dpsl.CpuPrimeSearchRoutineParams;
+
+/**
+ * Params object of dpsl.diagnostics.disk.run{Linear/Random}ReadRoutine()
+ * @typedef {{lengthSeconds: !number, fileSizeMB: !number}}
+ */
+dpsl.DiskReadRoutineParams;
 //////////////////// dpsl.system_events.* type definitions /////////////////////
 
 /**

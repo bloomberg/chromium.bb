@@ -194,6 +194,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
     }
     aom_free(pbi->thread_data);
   }
+  aom_free(pbi->dcb.xd.seg_mask);
 
   for (i = 0; i < pbi->num_workers; ++i) {
     AVxWorker *const worker = &pbi->tile_workers[i];

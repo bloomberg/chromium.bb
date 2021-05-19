@@ -8,6 +8,7 @@
 #include <shldisp.h>
 #include <wrl/client.h>
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
@@ -247,11 +247,11 @@ void UtilWinImpl::IsPinnedToTaskbar(IsPinnedToTaskbarCallback callback) {
 void UtilWinImpl::CallExecuteSelectFile(
     ui::SelectFileDialog::Type type,
     uint32_t owner,
-    const base::string16& title,
+    const std::u16string& title,
     const base::FilePath& default_path,
     const std::vector<ui::FileFilterSpec>& filter,
     int32_t file_type_index,
-    const base::string16& default_extension,
+    const std::u16string& default_extension,
     CallExecuteSelectFileCallback callback) {
   base::win::ScopedCOMInitializer scoped_com_initializer;
 

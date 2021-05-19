@@ -7,7 +7,9 @@
 #include <string>
 #include <utility>
 
+#include "absl/memory/memory.h"
 #include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/http/quic_server_initiated_spdy_stream.h"
 #include "quic/core/http/quic_spdy_client_stream.h"
 #include "quic/core/http/spdy_utils.h"
 #include "quic/core/quic_server_id.h"
@@ -16,7 +18,6 @@
 #include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
-#include "quic/platform/api/quic_ptr_util.h"
 
 namespace quic {
 
@@ -66,7 +67,8 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingBidirectionalStream() {
 }
 
 bool QuicSpdyClientSession::ShouldCreateOutgoingUnidirectionalStream() {
-  QUIC_BUG << "Try to create outgoing unidirectional client data streams";
+  QUIC_BUG(quic_bug_10396_1)
+      << "Try to create outgoing unidirectional client data streams";
   return false;
 }
 
@@ -83,7 +85,8 @@ QuicSpdyClientSession::CreateOutgoingBidirectionalStream() {
 
 QuicSpdyClientStream*
 QuicSpdyClientSession::CreateOutgoingUnidirectionalStream() {
-  QUIC_BUG << "Try to create outgoing unidirectional client data streams";
+  QUIC_BUG(quic_bug_10396_2)
+      << "Try to create outgoing unidirectional client data streams";
   return nullptr;
 }
 
@@ -100,6 +103,18 @@ QuicCryptoClientStreamBase* QuicSpdyClientSession::GetMutableCryptoStream() {
 const QuicCryptoClientStreamBase* QuicSpdyClientSession::GetCryptoStream()
     const {
   return crypto_stream_.get();
+}
+
+bool QuicSpdyClientSession::IsKnownServerAddress(
+    const QuicSocketAddress& address) const {
+  return std::find(known_server_addresses_.cbegin(),
+                   known_server_addresses_.cend(),
+                   address) != known_server_addresses_.cend();
+}
+
+void QuicSpdyClientSession::AddKnownServerAddress(
+    const QuicSocketAddress& address) {
+  known_server_addresses_.push_back(address);
 }
 
 void QuicSpdyClientSession::CryptoConnect() {
@@ -125,7 +140,8 @@ int QuicSpdyClientSession::GetNumReceivedServerConfigUpdates() const {
 
 bool QuicSpdyClientSession::ShouldCreateIncomingStream(QuicStreamId id) {
   if (!connection()->connected()) {
-    QUIC_BUG << "ShouldCreateIncomingStream called when disconnected";
+    QUIC_BUG(quic_bug_10396_3)
+        << "ShouldCreateIncomingStream called when disconnected";
     return false;
   }
   if (goaway_received() && respect_goaway_) {
@@ -135,8 +151,9 @@ bool QuicSpdyClientSession::ShouldCreateIncomingStream(QuicStreamId id) {
   }
 
   if (QuicUtils::IsClientInitiatedStreamId(transport_version(), id)) {
-    QUIC_BUG << "ShouldCreateIncomingStream called with client initiated "
-                "stream ID.";
+    QUIC_BUG(quic_bug_10396_4)
+        << "ShouldCreateIncomingStream called with client initiated "
+           "stream ID.";
     return false;
   }
 
@@ -150,7 +167,8 @@ bool QuicSpdyClientSession::ShouldCreateIncomingStream(QuicStreamId id) {
   }
 
   if (VersionHasIetfQuicFrames(transport_version()) &&
-      QuicUtils::IsBidirectionalStreamId(id, version())) {
+      QuicUtils::IsBidirectionalStreamId(id, version()) &&
+      !WillNegotiateWebTransport()) {
     connection()->CloseConnection(
         QUIC_HTTP_SERVER_INITIATED_BIDIRECTIONAL_STREAM,
         "Server created bidirectional stream.",
@@ -165,7 +183,7 @@ QuicSpdyStream* QuicSpdyClientSession::CreateIncomingStream(
     PendingStream* pending) {
   QuicSpdyStream* stream =
       new QuicSpdyClientStream(pending, this, READ_UNIDIRECTIONAL);
-  ActivateStream(QuicWrapUnique(stream));
+  ActivateStream(absl::WrapUnique(stream));
   return stream;
 }
 
@@ -173,9 +191,17 @@ QuicSpdyStream* QuicSpdyClientSession::CreateIncomingStream(QuicStreamId id) {
   if (!ShouldCreateIncomingStream(id)) {
     return nullptr;
   }
-  QuicSpdyStream* stream =
-      new QuicSpdyClientStream(id, this, READ_UNIDIRECTIONAL);
-  ActivateStream(QuicWrapUnique(stream));
+  QuicSpdyStream* stream;
+  if (version().UsesHttp3() &&
+      QuicUtils::IsBidirectionalStreamId(id, version())) {
+    QUIC_BUG_IF(QuicServerInitiatedSpdyStream but no WebTransport support,
+                !WillNegotiateWebTransport())
+        << "QuicServerInitiatedSpdyStream created but no WebTransport support";
+    stream = new QuicServerInitiatedSpdyStream(id, this, BIDIRECTIONAL);
+  } else {
+    stream = new QuicSpdyClientStream(id, this, READ_UNIDIRECTIONAL);
+  }
+  ActivateStream(absl::WrapUnique(stream));
   return stream;
 }
 

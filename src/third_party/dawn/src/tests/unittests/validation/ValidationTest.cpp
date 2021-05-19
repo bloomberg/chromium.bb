@@ -43,6 +43,14 @@ void InitDawnValidationTestEnvironment(int argc, char** argv) {
             gWireTraceDir = argv[i] + argLen;
             continue;
         }
+
+        // Skip over args that look like they're for Googletest.
+        constexpr const char kGtestArgPrefix[] = "--gtest_";
+        if (strncmp(kGtestArgPrefix, argv[i], sizeof(kGtestArgPrefix) - 1) == 0) {
+            continue;
+        }
+
+        dawn::WarningLog() << " Unused argument: " << argv[i];
     }
 }
 
@@ -123,12 +131,13 @@ void ValidationTest::FlushWire() {
 }
 
 void ValidationTest::WaitForAllOperations(const wgpu::Device& device) {
-    wgpu::Queue queue = device.GetQueue();
-    wgpu::Fence fence = queue.CreateFence();
+    bool done = false;
+    device.GetQueue().OnSubmittedWorkDone(
+        0u, [](WGPUQueueWorkDoneStatus, void* userdata) { *static_cast<bool*>(userdata) = true; },
+        &done);
 
     // Force the currently submitted operations to completed.
-    queue.Signal(fence, 1);
-    while (fence.GetCompletedValue() < 1) {
+    while (!done) {
         device.Tick();
         FlushWire();
     }
@@ -137,14 +146,6 @@ void ValidationTest::WaitForAllOperations(const wgpu::Device& device) {
     // once WebGPU has defined the ordering of callbacks firing.
     device.Tick();
     FlushWire();
-}
-
-bool ValidationTest::HasWGSL() const {
-#ifdef DAWN_ENABLE_WGSL
-    return true;
-#else
-    return false;
-#endif
 }
 
 bool ValidationTest::HasToggleEnabled(const char* toggle) const {
@@ -178,7 +179,7 @@ ValidationTest::DummyRenderPass::DummyRenderPass(const wgpu::Device& device)
     descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = width;
     descriptor.size.height = height;
-    descriptor.size.depth = 1;
+    descriptor.size.depthOrArrayLayers = 1;
     descriptor.sampleCount = 1;
     descriptor.format = attachmentFormat;
     descriptor.mipLevelCount = 1;

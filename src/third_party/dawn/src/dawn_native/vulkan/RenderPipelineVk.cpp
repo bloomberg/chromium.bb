@@ -38,66 +38,68 @@ namespace dawn_native { namespace vulkan {
 
         VkFormat VulkanVertexFormat(wgpu::VertexFormat format) {
             switch (format) {
-                case wgpu::VertexFormat::UChar2:
+                case wgpu::VertexFormat::Uint8x2:
                     return VK_FORMAT_R8G8_UINT;
-                case wgpu::VertexFormat::UChar4:
+                case wgpu::VertexFormat::Uint8x4:
                     return VK_FORMAT_R8G8B8A8_UINT;
-                case wgpu::VertexFormat::Char2:
+                case wgpu::VertexFormat::Sint8x2:
                     return VK_FORMAT_R8G8_SINT;
-                case wgpu::VertexFormat::Char4:
+                case wgpu::VertexFormat::Sint8x4:
                     return VK_FORMAT_R8G8B8A8_SINT;
-                case wgpu::VertexFormat::UChar2Norm:
+                case wgpu::VertexFormat::Unorm8x2:
                     return VK_FORMAT_R8G8_UNORM;
-                case wgpu::VertexFormat::UChar4Norm:
+                case wgpu::VertexFormat::Unorm8x4:
                     return VK_FORMAT_R8G8B8A8_UNORM;
-                case wgpu::VertexFormat::Char2Norm:
+                case wgpu::VertexFormat::Snorm8x2:
                     return VK_FORMAT_R8G8_SNORM;
-                case wgpu::VertexFormat::Char4Norm:
+                case wgpu::VertexFormat::Snorm8x4:
                     return VK_FORMAT_R8G8B8A8_SNORM;
-                case wgpu::VertexFormat::UShort2:
+                case wgpu::VertexFormat::Uint16x2:
                     return VK_FORMAT_R16G16_UINT;
-                case wgpu::VertexFormat::UShort4:
+                case wgpu::VertexFormat::Uint16x4:
                     return VK_FORMAT_R16G16B16A16_UINT;
-                case wgpu::VertexFormat::Short2:
+                case wgpu::VertexFormat::Sint16x2:
                     return VK_FORMAT_R16G16_SINT;
-                case wgpu::VertexFormat::Short4:
+                case wgpu::VertexFormat::Sint16x4:
                     return VK_FORMAT_R16G16B16A16_SINT;
-                case wgpu::VertexFormat::UShort2Norm:
+                case wgpu::VertexFormat::Unorm16x2:
                     return VK_FORMAT_R16G16_UNORM;
-                case wgpu::VertexFormat::UShort4Norm:
+                case wgpu::VertexFormat::Unorm16x4:
                     return VK_FORMAT_R16G16B16A16_UNORM;
-                case wgpu::VertexFormat::Short2Norm:
+                case wgpu::VertexFormat::Snorm16x2:
                     return VK_FORMAT_R16G16_SNORM;
-                case wgpu::VertexFormat::Short4Norm:
+                case wgpu::VertexFormat::Snorm16x4:
                     return VK_FORMAT_R16G16B16A16_SNORM;
-                case wgpu::VertexFormat::Half2:
+                case wgpu::VertexFormat::Float16x2:
                     return VK_FORMAT_R16G16_SFLOAT;
-                case wgpu::VertexFormat::Half4:
+                case wgpu::VertexFormat::Float16x4:
                     return VK_FORMAT_R16G16B16A16_SFLOAT;
-                case wgpu::VertexFormat::Float:
+                case wgpu::VertexFormat::Float32:
                     return VK_FORMAT_R32_SFLOAT;
-                case wgpu::VertexFormat::Float2:
+                case wgpu::VertexFormat::Float32x2:
                     return VK_FORMAT_R32G32_SFLOAT;
-                case wgpu::VertexFormat::Float3:
+                case wgpu::VertexFormat::Float32x3:
                     return VK_FORMAT_R32G32B32_SFLOAT;
-                case wgpu::VertexFormat::Float4:
+                case wgpu::VertexFormat::Float32x4:
                     return VK_FORMAT_R32G32B32A32_SFLOAT;
-                case wgpu::VertexFormat::UInt:
+                case wgpu::VertexFormat::Uint32:
                     return VK_FORMAT_R32_UINT;
-                case wgpu::VertexFormat::UInt2:
+                case wgpu::VertexFormat::Uint32x2:
                     return VK_FORMAT_R32G32_UINT;
-                case wgpu::VertexFormat::UInt3:
+                case wgpu::VertexFormat::Uint32x3:
                     return VK_FORMAT_R32G32B32_UINT;
-                case wgpu::VertexFormat::UInt4:
+                case wgpu::VertexFormat::Uint32x4:
                     return VK_FORMAT_R32G32B32A32_UINT;
-                case wgpu::VertexFormat::Int:
+                case wgpu::VertexFormat::Sint32:
                     return VK_FORMAT_R32_SINT;
-                case wgpu::VertexFormat::Int2:
+                case wgpu::VertexFormat::Sint32x2:
                     return VK_FORMAT_R32G32_SINT;
-                case wgpu::VertexFormat::Int3:
+                case wgpu::VertexFormat::Sint32x3:
                     return VK_FORMAT_R32G32B32_SINT;
-                case wgpu::VertexFormat::Int4:
+                case wgpu::VertexFormat::Sint32x4:
                     return VK_FORMAT_R32G32B32A32_SINT;
+                default:
+                    UNREACHABLE();
             }
         }
 
@@ -220,18 +222,29 @@ namespace dawn_native { namespace vulkan {
                                               : static_cast<VkColorComponentFlags>(0);
         }
 
-        VkPipelineColorBlendAttachmentState ComputeColorDesc(const ColorStateDescriptor* descriptor,
+        VkPipelineColorBlendAttachmentState ComputeColorDesc(const ColorTargetState* state,
                                                              bool isDeclaredInFragmentShader) {
             VkPipelineColorBlendAttachmentState attachment;
-            attachment.blendEnable = BlendEnabled(descriptor) ? VK_TRUE : VK_FALSE;
-            attachment.srcColorBlendFactor = VulkanBlendFactor(descriptor->colorBlend.srcFactor);
-            attachment.dstColorBlendFactor = VulkanBlendFactor(descriptor->colorBlend.dstFactor);
-            attachment.colorBlendOp = VulkanBlendOperation(descriptor->colorBlend.operation);
-            attachment.srcAlphaBlendFactor = VulkanBlendFactor(descriptor->alphaBlend.srcFactor);
-            attachment.dstAlphaBlendFactor = VulkanBlendFactor(descriptor->alphaBlend.dstFactor);
-            attachment.alphaBlendOp = VulkanBlendOperation(descriptor->alphaBlend.operation);
+            attachment.blendEnable = state->blend != nullptr ? VK_TRUE : VK_FALSE;
+            if (attachment.blendEnable) {
+                attachment.srcColorBlendFactor = VulkanBlendFactor(state->blend->color.srcFactor);
+                attachment.dstColorBlendFactor = VulkanBlendFactor(state->blend->color.dstFactor);
+                attachment.colorBlendOp = VulkanBlendOperation(state->blend->color.operation);
+                attachment.srcAlphaBlendFactor = VulkanBlendFactor(state->blend->alpha.srcFactor);
+                attachment.dstAlphaBlendFactor = VulkanBlendFactor(state->blend->alpha.dstFactor);
+                attachment.alphaBlendOp = VulkanBlendOperation(state->blend->alpha.operation);
+            } else {
+                // Swiftshader's Vulkan implementation appears to expect these values to be valid
+                // even when blending is not enabled.
+                attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+                attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+                attachment.colorBlendOp = VK_BLEND_OP_ADD;
+                attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+                attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+                attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+            }
             attachment.colorWriteMask =
-                VulkanColorWriteMask(descriptor->writeMask, isDeclaredInFragmentShader);
+                VulkanColorWriteMask(state->writeMask, isDeclaredInFragmentShader);
             return attachment;
         }
 
@@ -257,7 +270,7 @@ namespace dawn_native { namespace vulkan {
         }
 
         VkPipelineDepthStencilStateCreateInfo ComputeDepthStencilDesc(
-            const DepthStencilStateDescriptor* descriptor) {
+            const DepthStencilState* descriptor) {
             VkPipelineDepthStencilStateCreateInfo depthStencilState;
             depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
             depthStencilState.pNext = nullptr;
@@ -306,15 +319,15 @@ namespace dawn_native { namespace vulkan {
     }  // anonymous namespace
 
     // static
-    ResultOrError<RenderPipeline*> RenderPipeline::Create(
+    ResultOrError<Ref<RenderPipeline>> RenderPipeline::Create(
         Device* device,
-        const RenderPipelineDescriptor* descriptor) {
+        const RenderPipelineDescriptor2* descriptor) {
         Ref<RenderPipeline> pipeline = AcquireRef(new RenderPipeline(device, descriptor));
         DAWN_TRY(pipeline->Initialize(descriptor));
-        return pipeline.Detach();
+        return pipeline;
     }
 
-    MaybeError RenderPipeline::Initialize(const RenderPipelineDescriptor* descriptor) {
+    MaybeError RenderPipeline::Initialize(const RenderPipelineDescriptor2* descriptor) {
         Device* device = ToBackend(GetDevice());
 
         VkPipelineShaderStageCreateInfo shaderStages[2];
@@ -324,16 +337,16 @@ namespace dawn_native { namespace vulkan {
             shaderStages[0].flags = 0;
             shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
             shaderStages[0].pSpecializationInfo = nullptr;
-            shaderStages[0].module = ToBackend(descriptor->vertexStage.module)->GetHandle();
-            shaderStages[0].pName = descriptor->vertexStage.entryPoint;
+            shaderStages[0].module = ToBackend(descriptor->vertex.module)->GetHandle();
+            shaderStages[0].pName = descriptor->vertex.entryPoint;
 
             shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
             shaderStages[1].pNext = nullptr;
             shaderStages[1].flags = 0;
             shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
             shaderStages[1].pSpecializationInfo = nullptr;
-            shaderStages[1].module = ToBackend(descriptor->fragmentStage->module)->GetHandle();
-            shaderStages[1].pName = descriptor->fragmentStage->entryPoint;
+            shaderStages[1].module = ToBackend(descriptor->fragment->module)->GetHandle();
+            shaderStages[1].pName = descriptor->fragment->entryPoint;
         }
 
         PipelineVertexInputStateCreateInfoTemporaryAllocations tempAllocations;
@@ -398,11 +411,11 @@ namespace dawn_native { namespace vulkan {
         ASSERT(multisample.rasterizationSamples <= 32);
         VkSampleMask sampleMask = GetSampleMask();
         multisample.pSampleMask = &sampleMask;
-        multisample.alphaToCoverageEnable = descriptor->alphaToCoverageEnabled;
+        multisample.alphaToCoverageEnable = IsAlphaToCoverageEnabled();
         multisample.alphaToOneEnable = VK_FALSE;
 
         VkPipelineDepthStencilStateCreateInfo depthStencilState =
-            ComputeDepthStencilDesc(GetDepthStencilStateDescriptor());
+            ComputeDepthStencilDesc(GetDepthStencilState());
 
         // Initialize the "blend state info" that will be chained in the "create info" from the data
         // pre-computed in the ColorState
@@ -411,9 +424,8 @@ namespace dawn_native { namespace vulkan {
         const auto& fragmentOutputsWritten =
             GetStage(SingleShaderStage::Fragment).metadata->fragmentOutputsWritten;
         for (ColorAttachmentIndex i : IterateBitSet(GetColorAttachmentsMask())) {
-            const ColorStateDescriptor* colorStateDescriptor = GetColorStateDescriptor(i);
-            colorBlendAttachments[i] =
-                ComputeColorDesc(colorStateDescriptor, fragmentOutputsWritten[i]);
+            const ColorTargetState* target = GetColorTargetState(i);
+            colorBlendAttachments[i] = ComputeColorDesc(target, fragmentOutputsWritten[i]);
         }
         VkPipelineColorBlendStateCreateInfo colorBlend;
         colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

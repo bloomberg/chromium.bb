@@ -14,6 +14,7 @@
 
 import("../../gn/fuzzer.gni")
 import("../../gn/perfetto.gni")
+import("../../gn/perfetto_cc_proto_descriptor.gni")
 import("../../gn/perfetto_host_executable.gni")
 import("../../gn/test.gni")
 import("../../gn/wasm.gni")
@@ -86,16 +87,26 @@ source_set("storage_minimal") {
     "importers/proto/args_table_utils.h",
     "importers/proto/async_track_set_tracker.cc",
     "importers/proto/async_track_set_tracker.h",
+    "importers/proto/chrome_string_lookup.cc",
+    "importers/proto/chrome_string_lookup.h",
+    "importers/proto/chrome_system_probes_module.cc",
+    "importers/proto/chrome_system_probes_module.h",
+    "importers/proto/chrome_system_probes_parser.cc",
+    "importers/proto/chrome_system_probes_parser.h",
     "importers/proto/heap_profile_tracker.cc",
     "importers/proto/heap_profile_tracker.h",
     "importers/proto/memory_tracker_snapshot_module.cc",
     "importers/proto/memory_tracker_snapshot_module.h",
     "importers/proto/memory_tracker_snapshot_parser.cc",
     "importers/proto/memory_tracker_snapshot_parser.h",
+    "importers/proto/metadata_module.cc",
+    "importers/proto/metadata_module.h",
     "importers/proto/metadata_tracker.cc",
     "importers/proto/metadata_tracker.h",
     "importers/proto/packet_sequence_state.cc",
     "importers/proto/packet_sequence_state.h",
+    "importers/proto/perf_sample_tracker.cc",
+    "importers/proto/perf_sample_tracker.h",
     "importers/proto/profile_module.cc",
     "importers/proto/profile_module.h",
     "importers/proto/profile_packet_utils.cc",
@@ -391,16 +402,20 @@ perfetto_unittest_source_set("unittests") {
     "importers/proto/async_track_set_tracker_unittest.cc",
     "importers/proto/heap_graph_tracker_unittest.cc",
     "importers/proto/heap_profile_tracker_unittest.cc",
+    "importers/proto/perf_sample_tracker_unittest.cc",
     "importers/proto/proto_trace_parser_unittest.cc",
     "importers/syscalls/syscall_tracker_unittest.cc",
     "importers/systrace/systrace_parser_unittest.cc",
     "trace_sorter_unittest.cc",
   ]
   deps = [
+    ":gen_cc_test_messages_descriptor",
     ":storage_full",
     "../../gn:default_deps",
     "../../gn:gtest_and_gmock",
+    "../../protos/perfetto/common:cpp",
     "../../protos/perfetto/common:zero",
+    "../../protos/perfetto/trace:cpp",
     "../../protos/perfetto/trace:minimal_zero",
     "../../protos/perfetto/trace:zero",
     "../../protos/perfetto/trace/android:zero",
@@ -408,6 +423,7 @@ perfetto_unittest_source_set("unittests") {
     "../../protos/perfetto/trace/ftrace:zero",
     "../../protos/perfetto/trace/gpu:zero",
     "../../protos/perfetto/trace/interned_data:zero",
+    "../../protos/perfetto/trace/profiling:cpp",
     "../../protos/perfetto/trace/ps:zero",
     "../../protos/perfetto/trace/sys_stats:zero",
     "../../protos/perfetto/trace/track_event:zero",
@@ -458,6 +474,11 @@ perfetto_unittest_source_set("unittests") {
       ]
     }
   }
+}
+
+perfetto_cc_proto_descriptor("gen_cc_test_messages_descriptor") {
+  descriptor_name = "test_messages.descriptor"
+  descriptor_target = "../protozero:test_messages_descriptor"
 }
 
 source_set("integrationtests") {

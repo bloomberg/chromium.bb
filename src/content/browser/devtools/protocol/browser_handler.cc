@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include <algorithm>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_base.h"
@@ -14,17 +15,22 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_item.h"
+#include "content/browser/devtools/browser_devtools_agent_host.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/permissions/permission_controller_impl.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
+#include "net/base/filename_util.h"
 #include "url/gurl.h"
 #include "v8/include/v8-version-string.h"
 
@@ -33,6 +39,7 @@ namespace protocol {
 
 BrowserHandler::BrowserHandler(bool allow_set_download_behavior)
     : DevToolsDomainHandler(Browser::Metainfo::domainName),
+      download_events_enabled_(false),
       allow_set_download_behavior_(allow_set_download_behavior) {}
 
 BrowserHandler::~BrowserHandler() = default;
@@ -72,11 +79,13 @@ Response BrowserHandler::Disable() {
     }
   }
   contexts_with_overridden_downloads_.clear();
+  SetDownloadEventsEnabled(false);
 
   return Response::Success();
 }
 
 void BrowserHandler::Wire(UberDispatcher* dispatcher) {
+  frontend_ = std::make_unique<Browser::Frontend>(dispatcher->channel());
   Browser::Dispatcher::wire(dispatcher, this);
 }
 
@@ -201,6 +210,8 @@ Response PermissionDescriptorToPermissionType(
     *permission_type = PermissionType::FONT_ACCESS;
   } else if (name == "display-capture") {
     *permission_type = PermissionType::DISPLAY_CAPTURE;
+  } else if (name == "file-handling") {
+    *permission_type = PermissionType::FILE_HANDLING;
   } else {
     return Response::InvalidParams("Invalid PermissionDescriptor name: " +
                                    name);
@@ -331,6 +342,12 @@ Response BrowserHandler::FindBrowserContext(
                                  context_id);
 }
 
+// static
+std::vector<BrowserHandler*> BrowserHandler::ForAgentHost(
+    BrowserDevToolsAgentHost* host) {
+  return host->HandlersByName<BrowserHandler>(Browser::Metainfo::domainName);
+}
+
 Response BrowserHandler::SetPermission(
     std::unique_ptr<protocol::Browser::PermissionDescriptor> permission,
     const protocol::Browser::PermissionSetting& setting,
@@ -433,13 +450,18 @@ Response BrowserHandler::ResetPermissions(
 Response BrowserHandler::SetDownloadBehavior(
     const std::string& behavior,
     Maybe<std::string> browser_context_id,
-    Maybe<std::string> download_path) {
+    Maybe<std::string> download_path,
+    Maybe<bool> events_enabled) {
   BrowserContext* browser_context = nullptr;
   Response response = FindBrowserContext(browser_context_id, &browser_context);
   if (!response.IsSuccess())
     return response;
-  return DoSetDownloadBehavior(behavior, browser_context,
-                               std::move(download_path));
+  response = DoSetDownloadBehavior(behavior, browser_context,
+                                   std::move(download_path));
+  if (!response.IsSuccess())
+    return response;
+  SetDownloadEventsEnabled(events_enabled.fromMaybe(false));
+  return response;
 }
 
 Response BrowserHandler::DoSetDownloadBehavior(
@@ -482,6 +504,24 @@ Response BrowserHandler::DoSetDownloadBehavior(
           ? ""
           : browser_context->UniqueId());
 
+  return Response::Success();
+}
+
+Response BrowserHandler::CancelDownload(const std::string& guid,
+                                        Maybe<std::string> browser_context_id) {
+  BrowserContext* browser_context = nullptr;
+  Response response = FindBrowserContext(browser_context_id, &browser_context);
+  if (!response.IsSuccess())
+    return response;
+  auto* delegate =
+      DevToolsDownloadManagerDelegate::GetOrCreateInstance(browser_context);
+  auto* download_item = delegate->GetDownloadByGuid(guid);
+  if (!download_item)
+    return Response::InvalidParams("No download item found for the given GUID");
+  // DownloadItem::Cancel is implemented in a soft way, where there would be no
+  // error triggered if the state is not suitable for cancallation (e.g.
+  // already cancelled or finished).
+  download_item->Cancel(true);
   return Response::Success();
 }
 
@@ -535,6 +575,58 @@ Response BrowserHandler::CrashGpuProcess() {
                                host->gpu_service()->Crash();
                            }));
   return Response::Success();
+}
+
+void BrowserHandler::OnDownloadUpdated(download::DownloadItem* item) {
+  std::string state;
+  switch (item->GetState()) {
+    case download::DownloadItem::IN_PROGRESS:
+      state = Browser::DownloadProgress::StateEnum::InProgress;
+      break;
+    case download::DownloadItem::COMPLETE:
+      state = Browser::DownloadProgress::StateEnum::Completed;
+      break;
+    case download::DownloadItem::CANCELLED:
+    case download::DownloadItem::INTERRUPTED:
+      state = Browser::DownloadProgress::StateEnum::Canceled;
+      break;
+    case download::DownloadItem::MAX_DOWNLOAD_STATE:
+      NOTREACHED();
+  }
+  frontend_->DownloadProgress(item->GetGuid(), item->GetTotalBytes(),
+                              item->GetReceivedBytes(), state);
+  if (state != Browser::DownloadProgress::StateEnum::InProgress) {
+    item->RemoveObserver(this);
+    pending_downloads_.erase(item);
+  }
+}
+
+void BrowserHandler::OnDownloadDestroyed(download::DownloadItem* item) {
+  pending_downloads_.erase(item);
+}
+
+void BrowserHandler::DownloadWillBegin(FrameTreeNode* ftn,
+                                       download::DownloadItem* item) {
+  if (!download_events_enabled_)
+    return;
+  const std::u16string likely_filename = net::GetSuggestedFilename(
+      item->GetURL(), item->GetContentDisposition(), std::string(),
+      item->GetSuggestedFilename(), item->GetMimeType(), "download");
+
+  frontend_->DownloadWillBegin(ftn->devtools_frame_token().ToString(),
+                               item->GetGuid(), item->GetURL().spec(),
+                               base::UTF16ToUTF8(likely_filename));
+  item->AddObserver(this);
+  pending_downloads_.insert(item);
+}
+
+void BrowserHandler::SetDownloadEventsEnabled(bool enabled) {
+  if (!enabled) {
+    for (auto* item : pending_downloads_)
+      item->RemoveObserver(this);
+    pending_downloads_.clear();
+  }
+  download_events_enabled_ = enabled;
 }
 
 }  // namespace protocol

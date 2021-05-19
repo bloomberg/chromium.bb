@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_DATA_TRANSFER_NOTIFIER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_DATA_TRANSFER_NOTIFIER_H_
 
+#include "base/timer/timer.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
@@ -29,33 +30,31 @@ class DlpDataTransferNotifier : public views::WidgetObserver {
       const ui::DataTransferEndpoint* const data_src,
       const ui::DataTransferEndpoint* const data_dst) = 0;
 
-  // Warns the user that the data transfer action is not recommended.
-  virtual void WarnOnAction(const ui::DataTransferEndpoint* const data_src,
-                            const ui::DataTransferEndpoint* const data_dst) = 0;
-
  protected:
-  virtual void ShowBlockBubble(const base::string16& text);
-
+  // Virtual for tests to override.
+  virtual void ShowBlockBubble(const std::u16string& text);
   virtual void ShowWarningBubble(
-      const base::string16& text,
-      base::RepeatingCallback<void(views::Widget*)> proceed_cb);
+      const std::u16string& text,
+      base::RepeatingCallback<void(views::Widget*)> proceed_cb,
+      base::RepeatingCallback<void(views::Widget*)> cancel_cb);
+  virtual void CloseWidget(views::Widget* widget,
+                           views::Widget::ClosedReason reason);
 
-  void CloseWidget(views::Widget* widget, views::Widget::ClosedReason reason);
+  // views::WidgetObserver
+  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
-  views::Widget* GetWidgetForTesting() { return widget_.get(); }
-
+  // TODO(ayaelattar): Change to std::unique_ptr.
   views::UniqueWidgetPtr widget_;
 
  private:
-  // views::WidgetObserver
-  void OnWidgetClosing(views::Widget* widget) override;
-  void OnWidgetDestroyed(views::Widget* widget) override;
-  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
-
   void InitWidget();
 
+  // TODO(ayaelattar): Change `timeout_duration_ms` to TimeDelta.
   void ResizeAndShowWidget(const gfx::Size& bubble_size,
                            int timeout_duration_ms);
+
+  base::OneShotTimer widget_closing_timer_;
 };
 
 }  // namespace policy

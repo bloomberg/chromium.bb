@@ -16,6 +16,7 @@ import "services/network/public/mojom/content_security_policy.mojom";
 import "services/network/public/mojom/cross_origin_opener_policy.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/source_location.mojom";
+import "services/network/public/mojom/url_request.mojom";
 import "services/network/public/mojom/web_sandbox_flags.mojom";
 import "services/viz/public/mojom/compositing/frame_sink_id.mojom";
 import "skia/public/mojom/skcolor.mojom";
@@ -25,9 +26,10 @@ import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/choosers/popup_menu.mojom";
 import "third_party/blink/public/mojom/context_menu/context_menu.mojom";
+import "third_party/blink/public/mojom/conversions/conversions.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/devtools/inspector_issue.mojom";
-import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
+import "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom";
 import "third_party/blink/public/mojom/favicon/favicon_url.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 import "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom";
@@ -47,6 +49,7 @@ import "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom";
 import "third_party/blink/public/mojom/input/focus_type.mojom";
 import "third_party/blink/public/mojom/input/scroll_direction.mojom";
 import "third_party/blink/public/mojom/modal_close_watcher/modal_close_listener.mojom";
+import "third_party/blink/public/mojom/navigation/navigation_policy.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom";
@@ -155,6 +158,45 @@ struct TextAutosizerPageInfo {
   float device_scale_adjustment;
 };
 
+// This struct holds parameters included in the OpenURL method sent by the
+// renderer to the browser, |is_history_navigation_in_new_child_frame| is true
+// in the case that the browser process should look for an existing history item
+// for the frame.
+struct OpenURLParams {
+  // The main URL to open.
+  url.mojom.Url url;
+  url.mojom.Origin initiator_origin;
+
+  // The token of the RenderFrameHost that initiated the navigation. It might
+  // refer to a RenderFrameHost that doesn't exist anymore when the IPC reaches
+  // the browser process.
+  blink.mojom.LocalFrameToken? initiator_frame_token;
+
+  network.mojom.URLRequestBody? post_body;
+  string extra_headers;
+  blink.mojom.Referrer referrer;
+
+  // The window position to open the URL.
+  ui.mojom.WindowOpenDisposition disposition;
+  bool should_replace_current_entry;
+  bool user_gesture;
+
+  // Extra information about the triggering of the OpenURL.
+  blink.mojom.TriggeringEventInfo triggering_event_info;
+  pending_remote<blink.mojom.BlobURLToken>? blob_url_token;
+  string href_translate;
+  Impression? impression;
+  NavigationDownloadPolicy download_policy;
+
+  // Passing the |initiator_policy_container_keep_alive_handle| is just a mean
+  // to ensure that the PolicyContainerHost of the initiator RenderFrameHost is
+  // kept alive, even if the RenderFrameHost itself has already been deleted in
+  // the meantime. If this can be ensured in other ways, it is safe to pass a
+  // mojo::NullRemote here.
+  pending_remote<blink.mojom.PolicyContainerHostKeepAliveHandle>?
+      initiator_policy_container_keep_alive_handle;
+};
+
 // An opaque handle that keeps alive the associated render process even after
 // the frame is detached. Used by resource requests with "keepalive" specified.
 interface KeepAliveHandle {};
@@ -255,15 +297,6 @@ interface LocalFrameHost {
   // Called to notify the browser process counterpart of this local frame that
   // |window.focus()| on a page has been invoked in the renderer process.
   DidCallFocus();
-
-  // Notifies the browser process about a new Content Security Policy that needs
-  // to be applies to the frame. This message is sent when a frame commits
-  // navigation to a new location (reporting accumulated policies from HTTP
-  // headers and/or policies that might have been inherited from the parent
-  // frame) or when a new policy has been discovered afterwards (i.e. found in a
-  // dynamically added or a static <meta> element).
-  DidAddContentSecurityPolicies(
-      array<network.mojom.ContentSecurityPolicy> policies);
 
   // Sent when the frame starts enforcing an insecure request policy. Sending
   // this information in DidCommitProvisionalLoad isn't sufficient; this
@@ -410,7 +443,7 @@ interface LocalFrameHost {
 
   // Notification that the text selection has changed.
   // Note: The second parameter is the character based offset of the
-  // base::string16 text in the document.
+  // std::u16string text in the document.
   TextSelectionChanged(mojo_base.mojom.BigString16 text,
                        uint32 offset,
                        gfx.mojom.Range range);
@@ -511,6 +544,10 @@ interface LocalFrameHost {
   // correctly set the initial size of the frame in case of a cross-process
   // navigation.
   FrameSizeChanged(gfx.mojom.Size size);
+
+  // Used when a prerendered page is activated. Notifies the browser that the
+  // document in this frame dispatched the prerenderingchange event.
+  DidActivateForPrerendering();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -704,6 +741,18 @@ interface LocalFrame {
                     url.mojom.Url url_before_redirects,
                     bool had_redirect,
                     network.mojom.SourceLocation? source_location);
+
+  // Sent to a prerendered frame to inform it that it is being activated.
+  // The document in the frame updates `document.prerendering` and dispatches
+  // the prerenderingchange event.
+  ActivateForPrerendering();
+
+  // Samsung Galaxy Note-specific "smart clip" stylus text getter.
+  // Extracts the data at the given rect.
+  [EnableIf=is_android]
+  ExtractSmartClipData(gfx.mojom.Rect rect)
+      => (mojo_base.mojom.String16 text, mojo_base.mojom.String16 html,
+              gfx.mojom.Rect clip_rect);
 };
 
 // Also implemented in Blink, this interface defines frame-specific methods
@@ -829,6 +878,9 @@ interface RemoteFrameHost {
   // Tells the browser that a child's visual properties have changed.
   SynchronizeVisualProperties(
     FrameVisualProperties properties);
+
+  // Requests that the given URL be opened in the specified manner.
+  OpenURL(blink.mojom.OpenURLParams params);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -845,16 +897,6 @@ interface RemoteFrame {
   // as part of ViewMsg_Resize, once the browser process has resized the tab for
   // fullscreen.
   WillEnterFullscreen(FullscreenOptions options);
-
-  // Updates replicated ContentSecurityPolicy on the remote frame's
-  // SecurityContent.
-  AddReplicatedContentSecurityPolicies(
-      array<network.mojom.ContentSecurityPolicy> csps);
-
-  // Resets the replicated ContentSecurityPolicy on the remote frame's
-  // SecurityContext. Used to reset CSP from the previous document on
-  // a cross-document navigation.
-  ResetReplicatedContentSecurityPolicy();
 
   // Update replicated set for enforcement of insecure navigations. |set|
   // is a hashed set of host/port pairs. See
@@ -958,10 +1000,10 @@ interface RemoteFrame {
   // FrameWidgetHost interface.
   IntrinsicSizingInfoOfChildChanged(IntrinsicSizingInfo sizing_info);
 
-  // Used to replicate the updated sandbox flags and feature policy headers to
+  // Used to replicate the updated sandbox flags and permissions policy headers to
   // all corresponding remote frames of a local frame when a navigation commits.
   DidSetFramePolicyHeaders(network.mojom.WebSandboxFlags sandbox_flags,
-      array<blink.mojom.ParsedFeaturePolicyDeclaration> parsed_feature_policy);
+      array<blink.mojom.ParsedPermissionsPolicyDeclaration> parsed_permissions_policy);
 
   // Notifies the frame that its parent has changed the frame's sandbox flags or
   // container policy.
@@ -991,6 +1033,10 @@ interface RemoteFrame {
   // Notifies this remote frame that its associated compositing
   // destination (RenderWidgetHostView) has changed.
   SetFrameSinkId(viz.mojom.FrameSinkId frame_sink_id);
+
+  // Notifies the remote frame that the process rendering the child frame's
+  // contents has terminated.
+  ChildProcessGone();
 };
 
 // Implemented in Blink, this interface defines main-frame-specific methods that
@@ -1073,8 +1119,7 @@ interface LocalMainFrame {
 
   // Notify renderer that the window controls overlay has changed size or
   // visibility.
-  UpdateWindowControlsOverlay(gfx.mojom.Rect window_controls_overlay_rect,
-                              gfx.mojom.Insets insets);
+  UpdateWindowControlsOverlay(gfx.mojom.Rect window_controls_overlay_rect);
 };
 
 // Implemented in Blink, this interface defines remote main-frame-specific

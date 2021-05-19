@@ -30,6 +30,10 @@
 #include "ui/aura/window.h"
 #endif
 
+#if defined(OS_MAC)
+#include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
+#endif
+
 // This file provides a testing framework for mocking out the RenderProcessHost
 // layer. It allows you to test RenderViewHost, WebContentsImpl,
 // NavigationController, and other layers above that without running an actual
@@ -77,6 +81,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void ShowDefinitionForSelection() override {}
   void SpeakSelection() override;
   void SetWindowFrameInScreen(const gfx::Rect& rect) override;
+  void ShowSharePicker(
+      const std::string& title,
+      const std::string& text,
+      const std::string& url,
+      const std::vector<std::string>& file_paths,
+      blink::mojom::ShareService::ShareCallback callback) override;
 #endif  // defined(OS_MAC)
 
   // Advances the fallback surface to the first surface after navigation. This
@@ -96,7 +106,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void UpdateCursor(const WebCursor& cursor) override;
   void RenderProcessGone() override;
   void Destroy() override;
-  void SetTooltipText(const base::string16& tooltip_text) override {}
+  void SetTooltipText(const std::u16string& tooltip_text) override {}
   gfx::Rect GetBoundsInRootWindow() override;
   blink::mojom::PointerLockResult LockMouse(bool) override;
   blink::mojom::PointerLockResult ChangeMouseLock(bool) override;

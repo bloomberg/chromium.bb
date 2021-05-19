@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/page_info/page_info_hover_button.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
+#include "chrome/browser/ui/views/page_info/security_information_view.h"
 #include "components/page_info/page_info_ui.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/security_state/core/security_state.h"
@@ -29,7 +30,6 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/widget/widget.h"
 
-class BubbleHeaderView;
 class GURL;
 class Profile;
 
@@ -54,16 +54,22 @@ class View;
 }  // namespace views
 
 // The views implementation of the page info UI.
+// TODO(crbug.com/1188101): This will be deprecated in favor of
+// PageInfoNewBubbleView (which is under PageInfoV2Desktop) when it is finished.
 class PageInfoBubbleView : public PageInfoBubbleViewBase,
                            public PermissionSelectorRowObserver,
                            public ChosenObjectViewObserver,
                            public PageInfoUI {
  public:
+  METADATA_HEADER(PageInfoBubbleView);
+
   // The width of the column size for permissions and chosen object icons.
   static constexpr int kIconColumnWidth = 16;
   // The column set id of the permissions table for |permissions_view_|.
   static constexpr int kPermissionColumnSetId = 0;
 
+  PageInfoBubbleView(const PageInfoBubbleView&) = delete;
+  PageInfoBubbleView& operator=(const PageInfoBubbleView&) = delete;
   ~PageInfoBubbleView() override;
 
   enum PageInfoBubbleViewID {
@@ -96,8 +102,12 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   void SecurityDetailsClicked(const ui::Event& event);
   void ResetDecisionsClicked();
 
+  PageInfoUI::SecurityDescriptionType GetSecurityDescriptionType() const;
+  void SetSecurityDescriptionType(
+      const PageInfoUI::SecurityDescriptionType& type);
+
  protected:
-  const base::string16 details_text() const { return details_text_; }
+  const std::u16string details_text() const { return details_text_; }
 
  private:
   friend class PageInfoBubbleViewBrowserTest;
@@ -138,13 +148,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   // WebContentsObserver:
   void DidChangeVisibleSecurityState() override;
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  std::unique_ptr<PageInfoUI::SecurityDescription>
-  CreateSecurityDescriptionForPasswordReuse() const override;
-#endif
-
-  // Creates the contents of the |site_settings_view_|. The ownership of the
-  // returned view is transferred to the caller.
+  // Creates the contents of the |site_settings_view_|.
   std::unique_ptr<views::View> CreateSiteSettingsView() WARN_UNUSED_RESULT;
 
   // Posts a task to HandleMoreInfoRequestAsync() below.
@@ -161,10 +165,10 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   Profile* const profile_;
 
   // The header section (containing security-related information).
-  BubbleHeaderView* header_ = nullptr;
+  SecurityInformationView* header_ = nullptr;
 
   // The raw details of the status of the identity check for this site.
-  base::string16 details_text_ = base::string16();
+  std::u16string details_text_ = std::u16string();
 
   // The view that contains the certificate, cookie, and permissions sections.
   views::View* site_settings_view_ = nullptr;
@@ -195,9 +199,12 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
 
   PageInfoClosingCallback closing_callback_;
 
-  base::WeakPtrFactory<PageInfoBubbleView> weak_factory_{this};
+  PageInfoUI::SecurityDescriptionType security_description_type_ =
+      PageInfoUI::SecurityDescriptionType::CONNECTION;
 
-  DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleView);
+  std::unique_ptr<PageInfoUiDelegate> ui_delegate_;
+
+  base::WeakPtrFactory<PageInfoBubbleView> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_BUBBLE_VIEW_H_

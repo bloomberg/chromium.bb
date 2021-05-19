@@ -12,33 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-
-#include "gmock/gmock.h"
-#include "spirv/unified1/spirv.h"
-#include "spirv/unified1/spirv.hpp11"
-#include "src/ast/binary_expression.h"
-#include "src/ast/bool_literal.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
-#include "src/ast/struct.h"
-#include "src/ast/struct_decoration.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/uint_literal.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -168,7 +141,7 @@ TEST_F(SpvBuilderConstructorTest, Type_IdentifierExpression_Param) {
 }
 
 TEST_F(SpvBuilderConstructorTest, Vector_Bitcast_Params) {
-  auto* t = vec2<u32>(1, 1);
+  auto* t = vec2<u32>(Construct<u32>(1), Construct<u32>(1));
   WrapInFunction(t);
 
   spirv::Builder& b = Build();
@@ -180,14 +153,14 @@ TEST_F(SpvBuilderConstructorTest, Vector_Bitcast_Params) {
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeInt 32 0
 %1 = OpTypeVector %2 2
-%3 = OpTypeInt 32 1
-%4 = OpConstant %3 1
+%4 = OpTypeInt 32 1
+%5 = OpConstant %4 1
 )");
 
   EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
-            R"(%5 = OpBitcast %2 %4
-%6 = OpBitcast %2 %4
-%7 = OpCompositeConstruct %1 %5 %6
+            R"(%3 = OpBitcast %2 %5
+%6 = OpBitcast %2 %5
+%7 = OpCompositeConstruct %1 %3 %6
 )");
 }
 
@@ -1001,15 +974,12 @@ TEST_F(SpvBuilderConstructorTest, Type_Array_2_Vec3) {
 }
 
 TEST_F(SpvBuilderConstructorTest, Type_Struct) {
-  auto* s = create<ast::Struct>(
-      ast::StructMemberList{
-          Member("a", ty.f32()),
-          Member("b", ty.vec3<f32>()),
-      },
-      ast::StructDecorationList{});
-  auto* s_type = ty.struct_("my_struct", s);
+  auto* s = Structure("my_struct", {
+                                       Member("a", ty.f32()),
+                                       Member("b", ty.vec3<f32>()),
+                                   });
 
-  auto* t = Construct(s_type, 2.0f, vec3<f32>(2.0f, 2.0f, 2.0f));
+  auto* t = Construct(s, 2.0f, vec3<f32>(2.0f, 2.0f, 2.0f));
   WrapInFunction(t);
 
   spirv::Builder& b = Build();
@@ -1154,13 +1124,8 @@ TEST_F(SpvBuilderConstructorTest, Type_ZeroInit_Array) {
 }
 
 TEST_F(SpvBuilderConstructorTest, Type_ZeroInit_Struct) {
-  auto* s = create<ast::Struct>(
-      ast::StructMemberList{
-          Member("a", ty.f32()),
-      },
-      ast::StructDecorationList{});
-  auto* s_type = ty.struct_("my_struct", s);
-  auto* t = Construct(s_type);
+  auto* s = Structure("my_struct", {Member("a", ty.f32())});
+  auto* t = Construct(s);
   WrapInFunction(t);
 
   spirv::Builder& b = Build();
@@ -1485,7 +1450,7 @@ TEST_F(SpvBuilderConstructorTest,
 
 TEST_F(SpvBuilderConstructorTest,
        IsConstructorConst_GlobalVectorWithMatchingTypeConstructors) {
-  // vec3<f32>(f32(1.0), f32(2.0))  -> false
+  // vec2<f32>(f32(1.0), f32(2.0))  -> false
 
   auto* t = vec2<f32>(Construct<f32>(1.f), Construct<f32>(2.f));
   WrapInFunction(t);
@@ -1498,7 +1463,7 @@ TEST_F(SpvBuilderConstructorTest,
 
 TEST_F(SpvBuilderConstructorTest,
        IsConstructorConst_GlobalWithTypeCastConstructor) {
-  // vec3<f32>(f32(1), f32(2)) -> false
+  // vec2<f32>(f32(1), f32(2)) -> false
 
   auto* t = vec2<f32>(Construct<f32>(1), Construct<f32>(2));
   WrapInFunction(t);
@@ -1525,12 +1490,12 @@ TEST_F(SpvBuilderConstructorTest,
 TEST_F(SpvBuilderConstructorTest, IsConstructorConst_Vector_WithIdent) {
   // vec3<f32>(a, b, c)  -> false
 
-  auto* t = vec3<f32>("a", "b", "c");
-  WrapInFunction(t);
-
   Global("a", ty.f32(), ast::StorageClass::kPrivate);
   Global("b", ty.f32(), ast::StorageClass::kPrivate);
   Global("c", ty.f32(), ast::StorageClass::kPrivate);
+
+  auto* t = vec3<f32>("a", "b", "c");
+  WrapInFunction(t);
 
   spirv::Builder& b = Build();
 
@@ -1556,22 +1521,10 @@ TEST_F(SpvBuilderConstructorTest,
 }
 
 TEST_F(SpvBuilderConstructorTest,
-       IsConstructorConst_VectorWith_TypeCastConstConstructors) {
+       IsConstructorConst_VectorWithTypeCastConstConstructors) {
   // vec2<f32>(f32(1), f32(2))  -> false
 
-  auto* t = vec2<f32>(1, 2);
-  WrapInFunction(t);
-
-  spirv::Builder& b = Build();
-
-  EXPECT_FALSE(b.is_constructor_const(t, false));
-  EXPECT_FALSE(b.has_error());
-}
-
-TEST_F(SpvBuilderConstructorTest, IsConstructorConst_WithTypeCastConstructor) {
-  // vec3<f32>(f32(1), f32(2)) -> false
-
-  auto* t = vec3<f32>(1, 2);
+  auto* t = vec2<f32>(Construct<f32>(1), Construct<f32>(2));
   WrapInFunction(t);
 
   spirv::Builder& b = Build();
@@ -1581,7 +1534,7 @@ TEST_F(SpvBuilderConstructorTest, IsConstructorConst_WithTypeCastConstructor) {
 }
 
 TEST_F(SpvBuilderConstructorTest, IsConstructorConst_BitCastScalars) {
-  auto* t = vec2<u32>(1, 1);
+  auto* t = vec2<u32>(Construct<u32>(1), Construct<u32>(1));
   WrapInFunction(t);
 
   spirv::Builder& b = Build();
@@ -1591,14 +1544,12 @@ TEST_F(SpvBuilderConstructorTest, IsConstructorConst_BitCastScalars) {
 }
 
 TEST_F(SpvBuilderConstructorTest, IsConstructorConst_Struct) {
-  auto* s = create<ast::Struct>(
-      ast::StructMemberList{
-          Member("a", ty.f32()),
-          Member("b", ty.vec3<f32>()),
-      },
-      ast::StructDecorationList{});
-  auto* s_type = ty.struct_("my_struct", s);
-  auto* t = Construct(s_type, 2.f, vec3<f32>(2.f, 2.f, 2.f));
+  auto* s = Structure("my_struct", {
+                                       Member("a", ty.f32()),
+                                       Member("b", ty.vec3<f32>()),
+                                   });
+
+  auto* t = Construct(s, 2.f, vec3<f32>(2.f, 2.f, 2.f));
   WrapInFunction(t);
 
   spirv::Builder& b = Build();
@@ -1609,19 +1560,16 @@ TEST_F(SpvBuilderConstructorTest, IsConstructorConst_Struct) {
 
 TEST_F(SpvBuilderConstructorTest,
        IsConstructorConst_Struct_WithIdentSubExpression) {
-  auto* s = create<ast::Struct>(
-      ast::StructMemberList{
-          Member("a", ty.f32()),
-          Member("b", ty.vec3<f32>()),
-      },
-      ast::StructDecorationList{});
-
-  auto* s_type = ty.struct_("my_struct", s);
-  auto* t = Construct(s_type, 2.f, "a", 2.f);
-  WrapInFunction(t);
+  auto* s = Structure("my_struct", {
+                                       Member("a", ty.f32()),
+                                       Member("b", ty.vec3<f32>()),
+                                   });
 
   Global("a", ty.f32(), ast::StorageClass::kPrivate);
   Global("b", ty.f32(), ast::StorageClass::kPrivate);
+
+  auto* t = Construct(s, 2.f, "a", 2.f);
+  WrapInFunction(t);
 
   spirv::Builder& b = Build();
 

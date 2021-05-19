@@ -11,7 +11,8 @@
 #import "ios/web/js_messaging/java_script_content_world.h"
 #import "ios/web/js_messaging/java_script_feature_manager.h"
 #include "ios/web/js_messaging/page_script_util.h"
-#include "ios/web/js_messaging/web_frame_impl.h"
+#include "ios/web/js_messaging/web_frame_internal.h"
+#import "ios/web/public/js_messaging/web_frame.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -46,10 +47,10 @@ JavaScriptFeature::FeatureScript::CreateWithFilename(
     InjectionTime injection_time,
     TargetFrames target_frames,
     ReinjectionBehavior reinjection_behavior,
-    std::map<std::string, NSString*> replacements) {
+    const PlaceholderReplacementsCallback& replacements_callback) {
   return JavaScriptFeature::FeatureScript(filename, injection_time,
                                           target_frames, reinjection_behavior,
-                                          replacements);
+                                          replacements_callback);
 }
 
 JavaScriptFeature::FeatureScript::FeatureScript(
@@ -57,15 +58,22 @@ JavaScriptFeature::FeatureScript::FeatureScript(
     InjectionTime injection_time,
     TargetFrames target_frames,
     ReinjectionBehavior reinjection_behavior,
-    std::map<std::string, NSString*> replacements)
+    const PlaceholderReplacementsCallback& replacements_callback)
     : script_filename_(filename),
       injection_time_(injection_time),
       target_frames_(target_frames),
       reinjection_behavior_(reinjection_behavior),
-      replacements_(replacements) {}
+      replacements_callback_(replacements_callback) {}
 
-JavaScriptFeature::FeatureScript::FeatureScript(const FeatureScript& other) =
-    default;
+JavaScriptFeature::FeatureScript::FeatureScript(const FeatureScript&) = default;
+
+JavaScriptFeature::FeatureScript& JavaScriptFeature::FeatureScript::operator=(
+    const FeatureScript&) = default;
+
+JavaScriptFeature::FeatureScript::FeatureScript(FeatureScript&&) = default;
+
+JavaScriptFeature::FeatureScript& JavaScriptFeature::FeatureScript::operator=(
+    FeatureScript&&) = default;
 
 JavaScriptFeature::FeatureScript::~FeatureScript() = default;
 
@@ -86,11 +94,18 @@ NSString* JavaScriptFeature::FeatureScript::GetScriptString() const {
 
 NSString* JavaScriptFeature::FeatureScript::ReplacePlaceholders(
     NSString* script) const {
-  for (auto item : replacements_) {
-    script = [script
-        stringByReplacingOccurrencesOfString:base::SysUTF8ToNSString(item.first)
-                                  withString:item.second];
+  if (replacements_callback_.is_null())
+    return script;
+
+  PlaceholderReplacements replacements = replacements_callback_.Run();
+  if (!replacements)
+    return script;
+
+  for (NSString* key in replacements) {
+    script = [script stringByReplacingOccurrencesOfString:key
+                                               withString:replacements[key]];
   }
+
   return script;
 }
 
@@ -147,24 +162,24 @@ JavaScriptFeature::GetScriptMessageHandler() const {
                              weak_factory_.GetWeakPtr());
 }
 
-void JavaScriptFeature::ScriptMessageReceived(BrowserState* browser_state,
-                                              WKScriptMessage* message) {}
+void JavaScriptFeature::ScriptMessageReceived(WebState* web_state,
+                                              const ScriptMessage& message) {}
 
 bool JavaScriptFeature::CallJavaScriptFunction(
     WebFrame* web_frame,
     const std::string& function_name,
     const std::vector<base::Value>& parameters) {
-  WebFrameImpl* web_frame_impl = static_cast<WebFrameImpl*>(web_frame);
   JavaScriptFeatureManager* feature_manager =
-      JavaScriptFeatureManager::FromBrowserState(
-          web_frame_impl->GetWebState()->GetBrowserState());
+      JavaScriptFeatureManager::FromBrowserState(web_frame->GetBrowserState());
   DCHECK(feature_manager);
-  JavaScriptContentWorld* content_world =
-      feature_manager->GetContentWorldForFeature(this);
+
   // A feature can still ExecuteJavaScript even if there are no initial scripts,
   // so a nil content_world here will execute JS in the main page content world.
-  return web_frame_impl->CallJavaScriptFunction(function_name, parameters,
-                                                content_world);
+  JavaScriptContentWorld* content_world =
+      feature_manager->GetContentWorldForFeature(this);
+
+  return web_frame->GetWebFrameInternal()->CallJavaScriptFunctionInContentWorld(
+      function_name, parameters, content_world);
 }
 
 bool JavaScriptFeature::CallJavaScriptFunction(
@@ -173,16 +188,16 @@ bool JavaScriptFeature::CallJavaScriptFunction(
     const std::vector<base::Value>& parameters,
     base::OnceCallback<void(const base::Value*)> callback,
     base::TimeDelta timeout) {
-  WebFrameImpl* web_frame_impl = static_cast<WebFrameImpl*>(web_frame);
   JavaScriptFeatureManager* feature_manager =
-      JavaScriptFeatureManager::FromBrowserState(
-          web_frame_impl->GetWebState()->GetBrowserState());
+      JavaScriptFeatureManager::FromBrowserState(web_frame->GetBrowserState());
   DCHECK(feature_manager);
-  JavaScriptContentWorld* content_world =
-      feature_manager->GetContentWorldForFeature(this);
+
   // A feature can still ExecuteJavaScript even if there are no initial scripts,
   // so a nil content_world here will execute JS in the main page content world.
-  return web_frame_impl->CallJavaScriptFunction(
+  JavaScriptContentWorld* content_world =
+      feature_manager->GetContentWorldForFeature(this);
+
+  return web_frame->GetWebFrameInternal()->CallJavaScriptFunctionInContentWorld(
       function_name, parameters, content_world, std::move(callback), timeout);
 }
 

@@ -103,8 +103,7 @@ class HorzSuperresEndToEndTest
   virtual ~HorzSuperresEndToEndTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(::libaom_test::kTwoPassGood);
+    InitializeConfig(::libaom_test::kTwoPassGood);
     cfg_.g_lag_in_frames = 5;
     cfg_.rc_end_usage = AOM_Q;
     cfg_.rc_target_bitrate = kBitrate;
@@ -207,8 +206,7 @@ class HorzSuperresFixedEndToEndTest
   virtual ~HorzSuperresFixedEndToEndTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(::libaom_test::kTwoPassGood);
+    InitializeConfig(::libaom_test::kTwoPassGood);
     cfg_.g_lag_in_frames = 5;
     cfg_.rc_end_usage = AOM_VBR;
     cfg_.rc_target_bitrate = kBitrate;
@@ -318,8 +316,7 @@ class HorzSuperresQThreshEndToEndTest
   virtual ~HorzSuperresQThreshEndToEndTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(::libaom_test::kTwoPassGood);
+    InitializeConfig(::libaom_test::kTwoPassGood);
     cfg_.g_lag_in_frames = 5;
     cfg_.rc_end_usage = AOM_VBR;
     cfg_.rc_target_bitrate = kBitrate;

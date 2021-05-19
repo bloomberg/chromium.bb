@@ -5,7 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_RENDERER_PREFERENCES_RENDERER_PREFERENCES_MOJOM_TRAITS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_RENDERER_PREFERENCES_RENDERER_PREFERENCES_MOJOM_TRAITS_H_
 
+#include <stdint.h>
+
 #include <string>
+#include <vector>
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
@@ -169,7 +172,7 @@ struct BLINK_COMMON_EXPORT
 #endif
 
 #if defined(OS_WIN)
-  static const base::string16& caption_font_family_name(
+  static const std::u16string& caption_font_family_name(
       const ::blink::RendererPreferences& data) {
     return data.caption_font_family_name;
   }
@@ -177,7 +180,7 @@ struct BLINK_COMMON_EXPORT
       const ::blink::RendererPreferences& data) {
     return data.caption_font_height;
   }
-  static const base::string16& small_caption_font_family_name(
+  static const std::u16string& small_caption_font_family_name(
       const ::blink::RendererPreferences& data) {
     return data.small_caption_font_family_name;
   }
@@ -185,7 +188,7 @@ struct BLINK_COMMON_EXPORT
       const ::blink::RendererPreferences& data) {
     return data.small_caption_font_height;
   }
-  static const base::string16& menu_font_family_name(
+  static const std::u16string& menu_font_family_name(
       const ::blink::RendererPreferences& data) {
     return data.menu_font_family_name;
   }
@@ -193,7 +196,7 @@ struct BLINK_COMMON_EXPORT
       const ::blink::RendererPreferences& data) {
     return data.menu_font_height;
   }
-  static const base::string16& status_font_family_name(
+  static const std::u16string& status_font_family_name(
       const ::blink::RendererPreferences& data) {
     return data.status_font_family_name;
   }
@@ -201,7 +204,7 @@ struct BLINK_COMMON_EXPORT
       const ::blink::RendererPreferences& data) {
     return data.status_font_height;
   }
-  static const base::string16& message_font_family_name(
+  static const std::u16string& message_font_family_name(
       const ::blink::RendererPreferences& data) {
     return data.message_font_family_name;
   }
@@ -235,6 +238,11 @@ struct BLINK_COMMON_EXPORT
   static const bool& caret_browsing_enabled(
       const ::blink::RendererPreferences& data) {
     return data.caret_browsing_enabled;
+  }
+
+  static const std::vector<uint16_t>& explicitly_allowed_network_ports(
+      const ::blink::RendererPreferences& data) {
+    return data.explicitly_allowed_network_ports;
   }
 
   static bool Read(blink::mojom::RendererPreferencesDataView,

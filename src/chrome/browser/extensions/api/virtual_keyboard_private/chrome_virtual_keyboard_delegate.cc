@@ -19,9 +19,8 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -209,7 +208,7 @@ bool ChromeVirtualKeyboardDelegate::HideKeyboard() {
   return true;
 }
 
-bool ChromeVirtualKeyboardDelegate::InsertText(const base::string16& text) {
+bool ChromeVirtualKeyboardDelegate::InsertText(const std::u16string& text) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ui::TextInputClient* tic = GetFocusedTextInputClient();
   if (!tic || tic->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
@@ -269,13 +268,9 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
 
   base::RecordAction(
       base::UserMetricsAction("VirtualKeyboard.OpenLanguageSettings"));
-  const std::string path =
-      base::FeatureList::IsEnabled(
-          ::chromeos::features::kLanguageSettingsUpdate)
-          ? chromeos::settings::mojom::kInputSubpagePath
-          : chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath;
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      ProfileManager::GetActiveUserProfile(), path);
+      ProfileManager::GetActiveUserProfile(),
+      chromeos::settings::mojom::kInputSubpagePath);
   return true;
 }
 
@@ -562,10 +557,6 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       GenerateFeatureFlag("systemlatinphysicaltyping",
                           base::FeatureList::IsEnabled(
                               chromeos::features::kSystemLatinPhysicalTyping)));
-  features->AppendString(
-      GenerateFeatureFlag("languagesettingsupdate",
-                          base::FeatureList::IsEnabled(
-                              chromeos::features::kLanguageSettingsUpdate)));
   features->AppendString(GenerateFeatureFlag(
       "multilingualtyping",
       base::FeatureList::IsEnabled(chromeos::features::kMultilingualTyping)));

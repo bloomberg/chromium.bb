@@ -37,6 +37,7 @@ class PrefService;
 namespace safe_browsing {
 
 class SafeBrowsingTokenFetcher;
+class ReferrerChainProvider;
 
 // This class implements the real time lookup feature for a given user/profile.
 // It is separated from the base class for logic that is related to consumer
@@ -55,28 +56,30 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   RealTimeUrlLookupService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       VerdictCacheManager* cache_manager,
-      const IsHistorySyncEnabledCallback& is_history_sync_enabled_callback,
+      base::RepeatingCallback<ChromeUserPopulation()>
+          get_user_population_callback,
       PrefService* pref_service,
       std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher,
       const ClientConfiguredForTokenFetchesCallback&
           client_token_config_callback,
-      const ChromeUserPopulation::ProfileManagementStatus&
-          profile_management_status,
-      bool is_under_advanced_protection,
       bool is_off_the_record,
-      variations::VariationsService* variations_service);
+      variations::VariationsService* variations_service,
+      ReferrerChainProvider* referrer_chain_provider);
   ~RealTimeUrlLookupService() override;
 
   // RealTimeUrlLookupServiceBase:
   bool CanPerformFullURLLookup() const override;
   bool CanCheckSubresourceURL() const override;
   bool CanCheckSafeBrowsingDb() const override;
+  void Shutdown() override;
 
  private:
   // RealTimeUrlLookupServiceBase:
   GURL GetRealTimeLookupUrl() const override;
   net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const override;
   bool CanPerformFullURLLookupWithToken() const override;
+  bool CanAttachReferrerChain() const override;
+  int GetReferrerUserGestureLimit() const override;
   void GetAccessToken(const GURL& url,
                       RTLookupRequestCallback request_callback,
                       RTLookupResponseCallback response_callback) override;

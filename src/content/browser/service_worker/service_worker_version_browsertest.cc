@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -16,11 +17,9 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
@@ -94,12 +93,12 @@ struct FetchResult {
 
 void RunWithDelay(base::OnceClosure closure, base::TimeDelta delay) {
   base::RunLoop run_loop;
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                        base::BindLambdaForTesting([&]() {
-                          std::move(closure).Run();
-                          run_loop.Quit();
-                        }),
-                        delay);
+  GetUIThreadTaskRunner({})->PostDelayedTask(FROM_HERE,
+                                             base::BindLambdaForTesting([&]() {
+                                               std::move(closure).Run();
+                                               run_loop.Quit();
+                                             }),
+                                             delay);
   run_loop.Run();
 }
 
@@ -304,7 +303,7 @@ class ConsoleListener : public EmbeddedWorkerInstance::Listener {
  public:
   void OnReportConsoleMessage(blink::mojom::ConsoleMessageSource source,
                               blink::mojom::ConsoleMessageLevel message_level,
-                              const base::string16& message,
+                              const std::u16string& message,
                               int line_number,
                               const GURL& source_url) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -328,10 +327,10 @@ class ConsoleListener : public EmbeddedWorkerInstance::Listener {
     ASSERT_EQ(messages_.size(), expected_message_count);
   }
 
-  const std::vector<base::string16>& messages() const { return messages_; }
+  const std::vector<std::u16string>& messages() const { return messages_; }
 
  private:
-  std::vector<base::string16> messages_;
+  std::vector<std::u16string> messages_;
   size_t expected_message_count_ = 0;
   base::OnceClosure quit_;
 };
@@ -1008,10 +1007,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected,
             status.value());
 
-  const base::string16 expected =
-      base::ASCIIToUTF16("Rejecting oninstall event");
+  const std::u16string expected = u"Rejecting oninstall event";
   console_listener.WaitForConsoleMessages(1);
-  ASSERT_NE(base::string16::npos,
+  ASSERT_NE(std::u16string::npos,
             console_listener.messages()[0].find(expected));
   version_->embedded_worker()->RemoveObserver(&console_listener);
 }
@@ -1212,12 +1210,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   version_->embedded_worker()->AddObserver(&console_listener);
 
   FetchOnRegisteredWorker("/service_worker/empty.html", &result, &response);
-  const base::string16 expected1 = base::ASCIIToUTF16(
+  const std::u16string expected1 = base::ASCIIToUTF16(
       "resulted in a network error response: the promise was rejected.");
-  const base::string16 expected2 =
-      base::ASCIIToUTF16("Uncaught (in promise) Rejecting respondWith promise");
+  const std::u16string expected2 =
+      u"Uncaught (in promise) Rejecting respondWith promise";
   console_listener.WaitForConsoleMessages(2);
-  ASSERT_NE(base::string16::npos,
+  ASSERT_NE(std::u16string::npos,
             console_listener.messages()[0].find(expected1));
   ASSERT_EQ(0u, console_listener.messages()[1].find(expected2));
   version_->embedded_worker()->RemoveObserver(&console_listener);

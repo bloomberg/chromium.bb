@@ -17,13 +17,16 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.CallbackController;
 import org.chromium.base.FeatureList;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
@@ -32,12 +35,13 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.util.VoiceRecognitionUtil;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -54,7 +58,7 @@ import java.util.List;
 /**
  * Class containing functionality related to voice search.
  */
-public class VoiceRecognitionHandler implements ProfileManager.Observer {
+public class VoiceRecognitionHandler {
     private static final String TAG = "VoiceRecognition";
 
     /**
@@ -153,6 +157,26 @@ public class VoiceRecognitionHandler implements ProfileManager.Observer {
     private Supplier<AssistantVoiceSearchService> mAssistantVoiceSearchServiceSupplier;
     private TranslateBridgeWrapper mTranslateBridgeWrapper;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
+    private final Runnable mLaunchAssistanceSettingsAction;
+    private CallbackController mCallbackController = new CallbackController();
+    private ObservableSupplier<Profile> mProfileSupplier;
+
+    /**
+     * AudioPermissionState defined in tools/metrics/histograms/enums.xml.
+     *
+     * Do not reorder or remove items, only add new items before NUM_ENTRIES.
+     */
+    @IntDef({AudioPermissionState.GRANTED, AudioPermissionState.DENIED_CAN_ASK_AGAIN,
+            AudioPermissionState.DENIED_CANNOT_ASK_AGAIN})
+    public @interface AudioPermissionState {
+        // Permissions have been granted and won't be requested this time.
+        int GRANTED = 0;
+        int DENIED_CAN_ASK_AGAIN = 1;
+        int DENIED_CANNOT_ASK_AGAIN = 2;
+
+        // Be sure to also update enums.xml when updating these values.
+        int NUM_ENTRIES = 3;
+    }
 
     /**
      * VoiceInteractionEventSource defined in tools/metrics/histograms/enums.xml.
@@ -344,11 +368,15 @@ public class VoiceRecognitionHandler implements ProfileManager.Observer {
     }
 
     public VoiceRecognitionHandler(Delegate delegate,
-            Supplier<AssistantVoiceSearchService> assistantVoiceSearchServiceSupplier) {
+            Supplier<AssistantVoiceSearchService> assistantVoiceSearchServiceSupplier,
+            Runnable launchAssistanceSettingsAction, ObservableSupplier<Profile> profileSupplier) {
         mDelegate = delegate;
         mAssistantVoiceSearchServiceSupplier = assistantVoiceSearchServiceSupplier;
+        mLaunchAssistanceSettingsAction = launchAssistanceSettingsAction;
         mTranslateBridgeWrapper = new TranslateBridgeWrapper();
-        ProfileManager.addObserver(this);
+        mProfileSupplier = profileSupplier;
+        mProfileSupplier.addObserver(
+                mCallbackController.makeCancelable(profile -> notifyVoiceAvailabilityImpacted()));
     }
 
     public void addObserver(Observer observer) {
@@ -365,17 +393,9 @@ public class VoiceRecognitionHandler implements ProfileManager.Observer {
         }
     }
 
-    /**
-     * After profile is created and prefs loaded ensure that UI is updated and the mic shown/hidden
-     * as needed.
-     */
-    @Override
-    public void onProfileAdded(Profile profile) {
+    public void setActiveProfile(Profile profile) {
         notifyVoiceAvailabilityImpacted();
     }
-
-    @Override
-    public void onProfileDestroyed(Profile profile) {}
 
     /**
      * Instantiated when a voice search is performed to monitor the web contents for a navigation
@@ -451,6 +471,15 @@ public class VoiceRecognitionHandler implements ProfileManager.Observer {
                 return;
             }
 
+            // Log successful voice use for IPH purposes.
+            if (FeatureList.isInitialized()
+                    && ChromeFeatureList.isEnabled(ChromeFeatureList.TOOLBAR_MIC_IPH_ANDROID)
+                    && mProfileSupplier.hasValue()) {
+                // mic shouldn't be visibble
+                assert !mProfileSupplier.get().isOffTheRecord();
+                Tracker tracker = TrackerFactory.getTrackerForProfile(mProfileSupplier.get());
+                tracker.notifyEvent(EventConstants.SUCCESSFUL_VOICE_SEARCH);
+            }
             // Assume transcription by default when the page URL feature is disabled.
             @AssistantActionPerformed
             int actionPerformed = AssistantActionPerformed.TRANSCRIPTION;
@@ -725,24 +754,33 @@ public class VoiceRecognitionHandler implements ProfileManager.Observer {
      */
     private boolean ensureAudioPermissionGranted(
             Activity activity, WindowAndroid windowAndroid, @VoiceInteractionSource int source) {
-        if (windowAndroid.hasPermission(Manifest.permission.RECORD_AUDIO)) return true;
-
+        if (windowAndroid.hasPermission(Manifest.permission.RECORD_AUDIO)) {
+            recordAudioPermissionStateEvent(AudioPermissionState.GRANTED);
+            return true;
+        }
         // If we don't have permission and also can't ask, then there's no more work left other
         // than telling the delegate to update the mic state.
         if (!windowAndroid.canRequestPermission(Manifest.permission.RECORD_AUDIO)) {
+            recordAudioPermissionStateEvent(AudioPermissionState.DENIED_CANNOT_ASK_AGAIN);
             notifyVoiceAvailabilityImpacted();
             return false;
         }
 
         PermissionCallback callback = (permissions, grantResults) -> {
             if (grantResults.length != 1) {
+                recordAudioPermissionStateEvent(AudioPermissionState.DENIED_CAN_ASK_AGAIN);
                 return;
             }
 
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Don't record granted permission here, it will get logged from
+                // within startSystemForVoiceSearch call.
                 startSystemForVoiceSearch(activity, windowAndroid, source);
             } else if (!windowAndroid.canRequestPermission(Manifest.permission.RECORD_AUDIO)) {
+                recordAudioPermissionStateEvent(AudioPermissionState.DENIED_CANNOT_ASK_AGAIN);
                 notifyVoiceAvailabilityImpacted();
+            } else {
+                recordAudioPermissionStateEvent(AudioPermissionState.DENIED_CAN_ASK_AGAIN);
             }
         };
         windowAndroid.requestPermissions(new String[] {Manifest.permission.RECORD_AUDIO}, callback);
@@ -794,7 +832,7 @@ public class VoiceRecognitionHandler implements ProfileManager.Observer {
         if (assistantVoiceSearchService.needsEnabledCheck()) {
             mDelegate.clearOmniboxFocus();
             AssistantVoiceSearchConsentUi.show(windowAndroid,
-                    SharedPreferencesManager.getInstance(), new SettingsLauncherImpl(),
+                    SharedPreferencesManager.getInstance(), mLaunchAssistanceSettingsAction,
                     BottomSheetControllerProvider.from(windowAndroid), (useAssistant) -> {
                         // Notify the service about the consent completion.
                         assistantVoiceSearchService.onAssistantConsentDialogComplete(useAssistant);
@@ -979,7 +1017,7 @@ public class VoiceRecognitionHandler implements ProfileManager.Observer {
             PrefService prefService = getPrefService();
             // If the PrefService isn't initialized yet we won't know here whether or not voice
             // search is allowed by policy. In that case, treat voice search as enabled but check
-            // again before starting voice search.
+            // again when a Profile is set and PrefService becomes available.
             if (prefService != null && !prefService.getBoolean(Pref.AUDIO_CAPTURE_ALLOWED)) {
                 return false;
             }
@@ -1192,6 +1230,16 @@ public class VoiceRecognitionHandler implements ProfileManager.Observer {
                 "VoiceInteraction.AssistantIntent.TranslateExtrasAttached", result);
     }
 
+    /**
+     * Records audio permissions state when a system voice recognition is requested.
+     * @param permissionsState The current RECORD_AUDIO permission state.
+     */
+    @VisibleForTesting
+    protected void recordAudioPermissionStateEvent(@AudioPermissionState int permissionsState) {
+        RecordHistogram.recordEnumeratedHistogram("VoiceInteraction.AudioPermissionEvent",
+                permissionsState, AudioPermissionState.NUM_ENTRIES);
+    }
+
     /** Allows for overriding the TranslateBridgeWrapper for test purposes. */
     @VisibleForTesting
     protected void setTranslateBridgeWrapper(TranslateBridgeWrapper wrapper) {
@@ -1214,10 +1262,5 @@ public class VoiceRecognitionHandler implements ProfileManager.Observer {
     /** Sets the start time for testing. */
     void setQueryStartTimeForTesting(Long queryStartTimeMs) {
         mQueryStartTimeMs = queryStartTimeMs;
-    }
-
-    /** Clean up. Creators must call this when the object is no longer needed. */
-    public void destroy() {
-        ProfileManager.removeObserver(this);
     }
 }

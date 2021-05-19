@@ -15,12 +15,7 @@
 #ifndef SRC_AST_MEMBER_ACCESSOR_EXPRESSION_H_
 #define SRC_AST_MEMBER_ACCESSOR_EXPRESSION_H_
 
-#include <memory>
-#include <utility>
-
-#include "src/ast/expression.h"
 #include "src/ast/identifier_expression.h"
-#include "src/ast/literal.h"
 
 namespace tint {
 namespace ast {
@@ -50,9 +45,6 @@ class MemberAccessorExpression
   /// @param ctx the clone context
   /// @return the newly cloned node
   MemberAccessorExpression* Clone(CloneContext* ctx) const override;
-
-  /// @returns true if the node is valid
-  bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
   /// @param sem the semantic info for the program

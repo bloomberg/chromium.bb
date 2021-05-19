@@ -9,6 +9,7 @@
 #include "base/hash/hash.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -100,7 +101,7 @@ CurrentTabDesktopMediaList::CurrentTabDesktopMediaList(
   }
 
   // The source never changes - it always applies to the current tab.
-  UpdateSourcesList({SourceDescription(media_id_, base::string16())});
+  UpdateSourcesList({SourceDescription(media_id_, std::u16string())});
 }
 
 CurrentTabDesktopMediaList::~CurrentTabDesktopMediaList() = default;

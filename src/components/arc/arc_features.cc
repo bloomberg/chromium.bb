@@ -22,14 +22,13 @@ const base::Feature kCleanArcDataOnRegularToChildTransitionFeature{
 const base::Feature kCustomTabsExperimentFeature{
     "ArcCustomTabsExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to handle files with unknown size.
+const base::Feature kDocumentsProviderUnknownSizeFeature{
+    "ArcDocumentsProviderUnknownSize", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether ARC handles child->regular account transition.
 const base::Feature kEnableChildToRegularTransitionFeature{
     "ArcEnableChildToRegularTransition", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether ARC documents from DocumentsProviders should be shown in
-// Chrome OS Files app.
-const base::Feature kEnableDocumentsProviderInFilesAppFeature{
-    "ArcEnableDocumentsProviderInFilesApp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether ARC handles regular->child account transition.
 const base::Feature kEnableRegularToChildTransitionFeature{
@@ -76,9 +75,10 @@ const base::Feature kRtVcpuDualCore{"ArcRtVcpuDualCore",
 const base::Feature kRtVcpuQuadCore{"ArcRtVcpuQuadCore",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls ARC high-memory dalvik profile.
+// Controls ARC high-memory dalvik profile in ARCVM.
 // When enabled, Android tries to use dalvik memory profile tuned for
-// high-memory devices like 8G and 16G.
+// high-memory devices like 8G and 16G. This is enabled without conditions
+// in ARC container.
 const base::Feature kUseHighMemoryDalvikProfile{
     "ArcUseHighMemoryDalvikProfile", base::FEATURE_DISABLED_BY_DEFAULT};
 

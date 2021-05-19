@@ -38,9 +38,9 @@ class SessionMessager : public MessagePort::Client {
 
  protected:
   // Barebones message sending method shared by both children.
-  Error SendMessage(const std::string& destination_id,
-                    const std::string& namespace_,
-                    const Json::Value& message_root);
+  [[nodiscard]] Error SendMessage(const std::string& destination_id,
+                                  const std::string& namespace_,
+                                  const Json::Value& message_root);
 
   // Used to report errors in subclasses.
   void ReportError(Error error);

@@ -6,11 +6,14 @@
 
 #include <utility>
 
-#include "ash/accelerators/accelerator_confirmation_dialog.h"
+#include "ash/accelerators/accelerator_history_impl.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accelerators/pre_target_accelerator_handler.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/magnifier/docked_magnifier_controller_impl.h"
+#include "ash/accessibility/magnifier/magnification_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
+#include "ash/accessibility/ui/accessibility_confirmation_dialog.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/capture_mode/capture_mode_controller.h"
@@ -20,8 +23,6 @@
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/mode_indicator_observer.h"
 #include "ash/ime/test_ime_controller_client.h"
-#include "ash/magnifier/docked_magnifier_controller_impl.h"
-#include "ash/magnifier/magnification_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -75,6 +76,7 @@
 #include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/base/ime/chromeos/fake_ime_keyboard.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -1096,7 +1098,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
   {
     base::UserActionTester user_action_tester;
-    ui::AcceleratorHistory* history = controller_->accelerator_history();
+    auto* history = controller_->accelerator_history();
 
     EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeMute_F8"));
     EXPECT_TRUE(ProcessInController(volume_mute));
@@ -1986,7 +1988,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
   {
     base::UserActionTester user_action_tester;
-    ui::AcceleratorHistory* history = controller_->accelerator_history();
+    auto* history = controller_->accelerator_history();
 
     EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeMute_F8"));
     EXPECT_TRUE(ProcessInController(volume_mute));
@@ -2104,6 +2106,57 @@ TEST_F(AcceleratorControllerTest, TestToggleHighContrast) {
   EXPECT_FALSE(IsConfirmationDialogOpen());
   EXPECT_TRUE(ContainsHighContrastNotification());
   RemoveAllNotifications();
+}
+
+// TODO(crbug.com/1179893): Replace with the implementation below in
+// AcceleratorControllerImprovedTest::DeskShortcuts_New once the feature is
+// enabled permantently.
+TEST_F(AcceleratorControllerTest, DeskShortcuts_Old) {
+  // The shortcuts are Search+Shift+[MINUS|PLUS], but due to event
+  // rewriting they became Shift+[F11|F12]. So only the rewritten shortcut
+  // works but the "real" shortcut doesn't.
+  EXPECT_TRUE(controller_->IsRegistered(
+      ui::Accelerator(ui::VKEY_F12, ui::EF_SHIFT_DOWN)));
+  EXPECT_TRUE(controller_->IsRegistered(
+      ui::Accelerator(ui::VKEY_F11, ui::EF_SHIFT_DOWN)));
+  EXPECT_FALSE(controller_->IsRegistered(ui::Accelerator(
+      ui::VKEY_OEM_PLUS, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)));
+  EXPECT_FALSE(controller_->IsRegistered(ui::Accelerator(
+      ui::VKEY_OEM_MINUS, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)));
+}
+
+namespace {
+
+// TODO(crbug.com/1179893): Remove once the feature is enabled permantently.
+class AcceleratorControllerImprovedTest : public AcceleratorControllerTest {
+ public:
+  AcceleratorControllerImprovedTest() = default;
+  ~AcceleratorControllerImprovedTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        ::features::kImprovedKeyboardShortcuts);
+    AcceleratorControllerTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+}  // namespace
+
+TEST_F(AcceleratorControllerImprovedTest, DeskShortcuts_New) {
+  // The shortcuts are Search+Shift+[MINUS|PLUS]. The old shortcuts that were
+  // rewritten to F11/F12 should not longer have any effect and the "real"
+  // shortcut should now work.
+  EXPECT_FALSE(controller_->IsRegistered(
+      ui::Accelerator(ui::VKEY_F12, ui::EF_SHIFT_DOWN)));
+  EXPECT_FALSE(controller_->IsRegistered(
+      ui::Accelerator(ui::VKEY_F11, ui::EF_SHIFT_DOWN)));
+  EXPECT_TRUE(controller_->IsRegistered(ui::Accelerator(
+      ui::VKEY_OEM_PLUS, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)));
+  EXPECT_TRUE(controller_->IsRegistered(ui::Accelerator(
+      ui::VKEY_OEM_MINUS, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)));
 }
 
 namespace {
@@ -2608,9 +2661,6 @@ TEST_P(MediaSessionAcceleratorTest, MediaPlaybackAcceleratorsBehavior) {
   const ui::KeyboardCode media_keys[] = {ui::VKEY_MEDIA_NEXT_TRACK,
                                          ui::VKEY_MEDIA_PLAY_PAUSE,
                                          ui::VKEY_MEDIA_PREV_TRACK};
-
-  std::unique_ptr<ui::AcceleratorHistory> accelerator_history(
-      std::make_unique<ui::AcceleratorHistory>());
   ::wm::AcceleratorFilter filter(
       std::make_unique<PreTargetAcceleratorHandler>());
 

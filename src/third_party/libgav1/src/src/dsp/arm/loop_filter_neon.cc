@@ -35,7 +35,7 @@ namespace {
 // (abs(p1 - p0) > thresh) || (abs(q1 - q0) > thresh)
 inline uint8x8_t Hev(const uint8x8_t abd_p0p1_q0q1, const uint8_t thresh) {
   const uint8x8_t a = vcgt_u8(abd_p0p1_q0q1, vdup_n_u8(thresh));
-  return vorr_u8(a, RightShift<32>(a));
+  return vorr_u8(a, RightShiftVector<32>(a));
 }
 
 // abs(p0 - q0) * 2 + abs(p1 - q1) / 2 <= outer_thresh
@@ -44,7 +44,7 @@ inline uint8x8_t OuterThreshold(const uint8x8_t p0q0, const uint8x8_t p1q1,
   const uint8x8x2_t a = Interleave32(p0q0, p1q1);
   const uint8x8_t b = vabd_u8(a.val[0], a.val[1]);
   const uint8x8_t p0q0_double = vqadd_u8(b, b);
-  const uint8x8_t p1q1_half = RightShift<32>(vshr_n_u8(b, 1));
+  const uint8x8_t p1q1_half = RightShiftVector<32>(vshr_n_u8(b, 1));
   const uint8x8_t c = vqadd_u8(p0q0_double, p1q1_half);
   return vcle_u8(c, vdup_n_u8(outer_thresh));
 }
@@ -56,7 +56,7 @@ inline uint8x8_t NeedsFilter4(const uint8x8_t abd_p0p1_q0q1,
                               const uint8_t inner_thresh,
                               const uint8_t outer_thresh) {
   const uint8x8_t a = vcle_u8(abd_p0p1_q0q1, vdup_n_u8(inner_thresh));
-  const uint8x8_t inner_mask = vand_u8(a, RightShift<32>(a));
+  const uint8x8_t inner_mask = vand_u8(a, RightShiftVector<32>(a));
   const uint8x8_t outer_mask = OuterThreshold(p0q0, p1q1, outer_thresh);
   return vand_u8(inner_mask, outer_mask);
 }
@@ -121,7 +121,7 @@ inline void Filter4(const uint8x8_t q0p1, const uint8x8_t p0q1,
       vcombine_s16(vget_low_s16(p0q1_l), vget_low_s16(q0p1_l));
   // Need to shift the second term or we end up with a2_ma2.
   const int8x8_t a2_ma1 =
-      InterleaveLow32(a2_a1, RightShift<32>(vneg_s8(a2_a1)));
+      InterleaveLow32(a2_a1, RightShiftVector<32>(vneg_s8(a2_a1)));
   const int16x8_t p0q0_a = vaddw_s8(p0q0_l, a2_ma1);
 
   *p1q1_result = vqmovun_s16(p1q1_a3);
@@ -251,7 +251,7 @@ inline uint8x8_t IsFlat3(const uint8x8_t abd_p0p1_q0q1,
                          const uint8x8_t abd_p0p2_q0q2) {
   const uint8x8_t a = vmax_u8(abd_p0p1_q0q1, abd_p0p2_q0q2);
   const uint8x8_t b = vcle_u8(a, vdup_n_u8(1));
-  return vand_u8(b, RightShift<32>(b));
+  return vand_u8(b, RightShiftVector<32>(b));
 }
 
 // abs(p2 - p1) <= inner_thresh && abs(p1 - p0) <= inner_thresh &&
@@ -264,7 +264,7 @@ inline uint8x8_t NeedsFilter6(const uint8x8_t abd_p0p1_q0q1,
                               const uint8_t outer_thresh) {
   const uint8x8_t a = vmax_u8(abd_p0p1_q0q1, abd_p1p2_q1q2);
   const uint8x8_t b = vcle_u8(a, vdup_n_u8(inner_thresh));
-  const uint8x8_t inner_mask = vand_u8(b, RightShift<32>(b));
+  const uint8x8_t inner_mask = vand_u8(b, RightShiftVector<32>(b));
   const uint8x8_t outer_mask = OuterThreshold(p0q0, p1q1, outer_thresh);
   return vand_u8(inner_mask, outer_mask);
 }
@@ -482,7 +482,7 @@ inline uint8x8_t IsFlat4(const uint8x8_t abd_p0n0_q0n0,
   const uint8x8_t a = vmax_u8(abd_p0n0_q0n0, abd_p0n1_q0n1);
   const uint8x8_t b = vmax_u8(a, abd_p0n2_q0n2);
   const uint8x8_t c = vcle_u8(b, vdup_n_u8(1));
-  return vand_u8(c, RightShift<32>(c));
+  return vand_u8(c, RightShiftVector<32>(c));
 }
 
 // abs(p3 - p2) <= inner_thresh && abs(p2 - p1) <= inner_thresh &&
@@ -498,7 +498,7 @@ inline uint8x8_t NeedsFilter8(const uint8x8_t abd_p0p1_q0q1,
   const uint8x8_t a = vmax_u8(abd_p0p1_q0q1, abd_p1p2_q1q2);
   const uint8x8_t b = vmax_u8(a, abd_p2p3_q2q3);
   const uint8x8_t c = vcle_u8(b, vdup_n_u8(inner_thresh));
-  const uint8x8_t inner_mask = vand_u8(c, RightShift<32>(c));
+  const uint8x8_t inner_mask = vand_u8(c, RightShiftVector<32>(c));
   const uint8x8_t outer_mask = OuterThreshold(p0q0, p1q1, outer_thresh);
   return vand_u8(inner_mask, outer_mask);
 }

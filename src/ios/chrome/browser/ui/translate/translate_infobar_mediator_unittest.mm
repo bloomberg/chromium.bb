@@ -179,8 +179,8 @@ TEST_F(TranslateInfobarMediatorTest, InstallHandlers) {
 // options popup menu on its consumer.
 TEST_F(TranslateInfobarMediatorTest, TranslateOptionMenuItems) {
   // Set up what TranslateInfoBarDelegate should return.
-  EXPECT_CALL(*GetDelegate(), original_language_name())
-      .WillRepeatedly(testing::Return(base::UTF8ToUTF16("French")));
+  EXPECT_CALL(*GetDelegate(), source_language_name())
+      .WillRepeatedly(testing::Return(u"French"));
   EXPECT_CALL(*GetDelegate(), ShouldAlwaysTranslate())
       .WillOnce(testing::Return(true));
 
@@ -230,11 +230,11 @@ TEST_F(TranslateInfobarMediatorTest, LanguageSelectionMenuItems) {
   EXPECT_CALL(*GetDelegate(), language_code_at(0))
       .WillOnce(testing::Return("en"));
   EXPECT_CALL(*GetDelegate(), language_name_at(0))
-      .WillOnce(testing::Return(base::UTF8ToUTF16("English")));
+      .WillOnce(testing::Return(u"English"));
   EXPECT_CALL(*GetDelegate(), language_code_at(2))
       .WillOnce(testing::Return("fr"));
   EXPECT_CALL(*GetDelegate(), language_name_at(2))
-      .WillOnce(testing::Return(base::UTF8ToUTF16("French")));
+      .WillOnce(testing::Return(u"French"));
 
   LegacyTranslateInfobarMediator* translate_infobar_mediator = mediator();
   translate_infobar_mediator.type = TranslatePopupMenuTypeLanguageSelection;

@@ -14,10 +14,9 @@
 
 #include "src/ast/bitcast_expression.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::BitcastExpression);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::BitcastExpression);
 
 namespace tint {
 namespace ast {
@@ -25,7 +24,10 @@ namespace ast {
 BitcastExpression::BitcastExpression(const Source& source,
                                      type::Type* type,
                                      Expression* expr)
-    : Base(source), type_(type), expr_(expr) {}
+    : Base(source), type_(type), expr_(expr) {
+  TINT_ASSERT(type_);
+  TINT_ASSERT(expr_);
+}
 
 BitcastExpression::BitcastExpression(BitcastExpression&&) = default;
 BitcastExpression::~BitcastExpression() = default;
@@ -36,12 +38,6 @@ BitcastExpression* BitcastExpression::Clone(CloneContext* ctx) const {
   auto* ty = ctx->Clone(type_);
   auto* e = ctx->Clone(expr_);
   return ctx->dst->create<BitcastExpression>(src, ty, e);
-}
-
-bool BitcastExpression::IsValid() const {
-  if (expr_ == nullptr || !expr_->IsValid())
-    return false;
-  return type_ != nullptr;
 }
 
 void BitcastExpression::to_str(const semantic::Info& sem,

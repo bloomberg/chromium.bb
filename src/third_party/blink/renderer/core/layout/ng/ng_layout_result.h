@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
@@ -185,12 +186,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return intrinsic_block_size_;
   }
 
-  LayoutUnit OverflowBlockSize() const {
-    return HasRareData() && rare_data_->overflow_block_size != kIndefiniteSize
-               ? rare_data_->overflow_block_size
-               : intrinsic_block_size_;
-  }
-
   LayoutUnit MinimalSpaceShortage() const {
     if (!HasRareData() || rare_data_->minimal_space_shortage == kIndefiniteSize)
       return LayoutUnit::Max();
@@ -225,6 +220,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   wtf_size_t TableColumnCount() const {
     return HasRareData() ? rare_data_->table_column_count_ : 0;
+  }
+
+  const NGGridData* GridData() const {
+    return HasRareData() ? rare_data_->grid_layout_data_.get() : nullptr;
   }
 
   LayoutUnit MathItalicCorrection() const {
@@ -336,6 +335,29 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return MutableForOutOfFlow(this);
   }
 
+  class MutableForLayoutBoxCachedResults final {
+    STACK_ALLOCATED();
+
+   protected:
+    friend class LayoutBox;
+
+    void SetFragmentChildrenInvalid() {
+      layout_result_->physical_fragment_->SetChildrenInvalid();
+    }
+
+   private:
+    friend class NGLayoutResult;
+    explicit MutableForLayoutBoxCachedResults(
+        const NGLayoutResult* layout_result)
+        : layout_result_(const_cast<NGLayoutResult*>(layout_result)) {}
+
+    NGLayoutResult* layout_result_;
+  };
+
+  MutableForLayoutBoxCachedResults GetMutableForLayoutBoxCachedResults() const {
+    return MutableForLayoutBoxCachedResults(this);
+  }
+
 #if DCHECK_IS_ON()
   void CheckSameForSimplifiedLayout(const NGLayoutResult&,
                                     bool check_same_block_size = true) const;
@@ -402,6 +424,31 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
              base::Optional<LayoutUnit> bfc_block_offset)
         : bfc_line_offset(bfc_line_offset),
           bfc_block_offset(bfc_block_offset) {}
+    RareData(const RareData& rare_data)
+        : bfc_line_offset(rare_data.bfc_line_offset),
+          bfc_block_offset(rare_data.bfc_block_offset),
+          early_break(rare_data.early_break),
+          early_break_appeal(rare_data.early_break_appeal),
+          oof_positioned_offset(rare_data.oof_positioned_offset),
+          end_margin_strut(rare_data.end_margin_strut),
+          unpositioned_list_marker(rare_data.unpositioned_list_marker),
+          // This will initialize "both" members of the union.
+          tallest_unbreakable_block_size(
+              rare_data.tallest_unbreakable_block_size),
+          exclusion_space(rare_data.exclusion_space),
+          custom_layout_data(rare_data.custom_layout_data),
+          annotation_overflow(rare_data.annotation_overflow),
+          block_end_annotation_space(rare_data.block_end_annotation_space),
+          is_single_use(rare_data.is_single_use),
+          has_violating_break(rare_data.has_violating_break),
+          lines_until_clamp(rare_data.lines_until_clamp),
+          table_column_count_(rare_data.table_column_count_),
+          math_layout_data_(rare_data.math_layout_data_) {
+      if (rare_data.grid_layout_data_) {
+        grid_layout_data_ =
+            std::make_unique<NGGridData>(*rare_data.grid_layout_data_);
+      }
+    }
 
     LayoutUnit bfc_line_offset;
     base::Optional<LayoutUnit> bfc_block_offset;
@@ -428,13 +475,13 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     NGExclusionSpace exclusion_space;
     scoped_refptr<SerializedScriptValue> custom_layout_data;
 
-    LayoutUnit overflow_block_size = kIndefiniteSize;
     LayoutUnit annotation_overflow;
     LayoutUnit block_end_annotation_space;
     bool is_single_use = false;
     bool has_violating_break = false;
     int lines_until_clamp = 0;
     wtf_size_t table_column_count_ = 0;
+    std::unique_ptr<const NGGridData> grid_layout_data_;
     base::Optional<MathData> math_layout_data_;
   };
 

@@ -29,7 +29,8 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.feed.FeedServiceBridge;
+import org.chromium.chrome.browser.feed.VideoPreviewsType;
 import org.chromium.chrome.browser.feed.shared.ScrollTracker;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
@@ -55,6 +56,7 @@ import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
 import org.chromium.chrome.browser.xsurface.SurfaceScopeDependencyProvider;
+import org.chromium.chrome.browser.xsurface.SurfaceScopeDependencyProvider.AutoplayPreference;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
@@ -88,8 +90,7 @@ import java.util.Map;
  *
  * Created once for each StreamSurfaceMediator corresponding to each NTP/start surface.
  */
-
-@JNINamespace("feed")
+@JNINamespace("feed::android")
 public class FeedStreamSurface
         implements SurfaceActionsHandler, FeedActionsHandler, DisplayAndroidObserver {
     private static final String TAG = "FeedStreamSurface";
@@ -141,14 +142,6 @@ public class FeedStreamSurface
 
     private static ProcessScope sXSurfaceProcessScope;
 
-    public static ProcessScope xSurfaceProcessScope() {
-        if (sXSurfaceProcessScope == null) {
-            sXSurfaceProcessScope = AppHooks.get().getExternalSurfaceProcessScope(
-                    new FeedProcessScopeDependencyProvider());
-        }
-        return sXSurfaceProcessScope;
-    }
-
     // This must match the FeedSendFeedbackType enum in enums.xml.
     public @interface FeedFeedbackType {
         int FEEDBACK_TAPPED_ON_CARD = 0;
@@ -159,13 +152,25 @@ public class FeedStreamSurface
     // We avoid attaching surfaces until after |startup()| is called. This ensures that
     // the correct sign-in state is used if attaching the surface triggers a fetch.
     private static boolean sStartupCalled;
+    private static boolean sSetServiceBridgeDelegate;
     // Tracks all the instances of FeedStreamSurface.
     @VisibleForTesting
     static HashSet<FeedStreamSurface> sSurfaces;
 
+    /**
+     * Initializes the FeedServiceBridge. We do this once at startup, either in startup(), or in
+     * FeedStreamSurface's constructor, whichever comes first.
+     */
+    private static void initServiceBridge() {
+        if (sSetServiceBridgeDelegate) return;
+        sSetServiceBridgeDelegate = true;
+        FeedServiceBridge.setDelegate(new FeedServiceBridgeDelegateImpl());
+    }
+
     public static void startup() {
         if (sStartupCalled) return;
         sStartupCalled = true;
+        initServiceBridge();
         FeedServiceBridge.startup();
         if (sSurfaces != null) {
             for (FeedStreamSurface surface : sSurfaces) {
@@ -209,7 +214,7 @@ public class FeedStreamSurface
             surface.onSurfaceClosed();
         }
 
-        ProcessScope processScope = xSurfaceProcessScope();
+        ProcessScope processScope = FeedServiceBridge.xSurfaceProcessScope();
         if (processScope != null) {
             processScope.resetAccount();
         }
@@ -248,13 +253,21 @@ public class FeedStreamSurface
      * Provides activity and darkmode context for a single surface.
      */
     private class FeedSurfaceScopeDependencyProvider implements SurfaceScopeDependencyProvider {
+        final Activity mActivity;
         final Context mActivityContext;
         final boolean mDarkMode;
 
-        FeedSurfaceScopeDependencyProvider(Context activityContext, boolean darkMode) {
+        FeedSurfaceScopeDependencyProvider(
+                Activity activity, Context activityContext, boolean darkMode) {
+            mActivity = activity;
             mActivityContext =
                     FeedProcessScopeDependencyProvider.createFeedContext(activityContext);
             mDarkMode = darkMode;
+        }
+
+        @Override
+        public Activity getActivity() {
+            return mActivity;
         }
 
         @Override
@@ -283,7 +296,7 @@ public class FeedStreamSurface
             CoreAccountInfo primaryAccount =
                     IdentityServicesProvider.get()
                             .getIdentityManager(Profile.getLastUsedRegularProfile())
-                            .getPrimaryAccountInfo(ConsentLevel.NOT_REQUIRED);
+                            .getPrimaryAccountInfo(ConsentLevel.SIGNIN);
             return (primaryAccount == null) ? "" : primaryAccount.getEmail();
         }
 
@@ -308,6 +321,22 @@ public class FeedStreamSurface
             assert ThreadUtils.runningOnUiThread();
             return FeedStreamSurfaceJni.get().getSessionId(
                     mNativeFeedStreamSurface, FeedStreamSurface.this);
+        }
+
+        @Override
+        public AutoplayPreference getAutoplayPreference() {
+            assert ThreadUtils.runningOnUiThread();
+            @VideoPreviewsType
+            int videoPreviewsType = FeedServiceBridge.getVideoPreviewsTypePreference();
+            switch (videoPreviewsType) {
+                case VideoPreviewsType.NEVER:
+                    return AutoplayPreference.AUTOPLAY_DISABLED;
+                case VideoPreviewsType.WIFI_AND_MOBILE_DATA:
+                    return AutoplayPreference.AUTOPLAY_ON_WIFI_AND_MOBILE_DATA;
+                case VideoPreviewsType.WIFI:
+                default:
+                    return AutoplayPreference.AUTOPLAY_ON_WIFI_ONLY;
+            }
         }
     }
 
@@ -356,6 +385,7 @@ public class FeedStreamSurface
             BottomSheetController bottomSheetController,
             HelpAndFeedbackLauncher helpAndFeedbackLauncher, boolean isPlaceholderShown,
             ShareHelperWrapper shareHelper, DisplayAndroid displayAndroid) {
+        initServiceBridge();
         mNativeFeedStreamSurface = FeedStreamSurfaceJni.get().init(FeedStreamSurface.this);
         mSnackbarManager = snackbarManager;
         mActivity = activity;
@@ -374,10 +404,10 @@ public class FeedStreamSurface
         Context context = new ContextThemeWrapper(
                 activity, (isBackgroundDark ? R.style.Dark : R.style.Light));
 
-        ProcessScope processScope = xSurfaceProcessScope();
+        ProcessScope processScope = FeedServiceBridge.xSurfaceProcessScope();
         if (processScope != null) {
             mSurfaceScope = processScope.obtainSurfaceScope(
-                    new FeedSurfaceScopeDependencyProvider(context, isBackgroundDark));
+                    new FeedSurfaceScopeDependencyProvider(activity, context, isBackgroundDark));
         } else {
             mSurfaceScope = null;
         }
@@ -457,9 +487,23 @@ public class FeedStreamSurface
 
     /**
      * Attempts to load more content if it can be triggered.
+     *
+     * <p>This method uses the default or Finch configured load more lookahead trigger.
+     *
      * @return true if loading more content can be triggered.
      */
     boolean maybeLoadMore() {
+        return maybeLoadMore(mLoadMoreTriggerLookahead);
+    }
+
+    /**
+     * Attempts to load more content if it can be triggered.
+     * @param lookaheadTrigger The threshold of off-screen cards below which the feed should attempt
+     *         to load more content. I.e., if there are fewer than |lookaheadTrigger| cards left to
+     *         show the user, then the feed should load more cards.
+     * @return true if loading more content can be triggered.
+     */
+    private boolean maybeLoadMore(int lookaheadTrigger) {
         // Checks if loading more can be triggered.
         boolean canLoadMore = false;
         LinearLayoutManager layoutManager = (LinearLayoutManager) mRootView.getLayoutManager();
@@ -468,7 +512,7 @@ public class FeedStreamSurface
         }
         int totalItemCount = layoutManager.getItemCount();
         int lastVisibleItem = layoutManager.findLastVisibleItemPosition();
-        if (totalItemCount - lastVisibleItem > mLoadMoreTriggerLookahead) {
+        if (totalItemCount - lastVisibleItem > lookaheadTrigger) {
             return false;
         }
 
@@ -539,6 +583,11 @@ public class FeedStreamSurface
         }
 
         updateContentsInPlace(newContentList);
+
+        // If all of the cards fit on the screen, load more content. The view
+        // may not be scrollable, preventing the user from otherwise triggering
+        // load more.
+        maybeLoadMore(/*lookaheadTrigger=*/0);
     }
 
     @CalledByNative

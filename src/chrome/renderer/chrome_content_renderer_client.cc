@@ -127,6 +127,7 @@
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
+#include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
@@ -192,6 +193,10 @@
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PDF_UNSEASONED)
+#include "pdf/pdf_view_web_plugin.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -366,8 +371,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     InitSpellCheck();
 #endif
 
-  subresource_filter_ruleset_dealer_.reset(
-      new subresource_filter::UnverifiedRulesetDealer());
+  subresource_filter_ruleset_dealer_ =
+      std::make_unique<subresource_filter::UnverifiedRulesetDealer>();
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(subresource_filter_ruleset_dealer_.get());
@@ -427,7 +432,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
       chrome_search_scheme);
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  pdf_print_client_.reset(new ChromePDFPrintClient());
+  pdf_print_client_ = std::make_unique<ChromePDFPrintClient>();
   pdf::PepperPDFHost::SetPrintClient(pdf_print_client_.get());
 #endif
 
@@ -618,8 +623,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   if (subresource_redirect::ShouldEnablePublicImageHintsBasedCompression()) {
     new subresource_redirect::PublicImageHintsDeciderAgent(
         associated_interfaces, render_frame);
-  } else if (subresource_redirect::
-                 ShouldEnableLoginRobotsCheckedCompression()) {
+  } else if (subresource_redirect::ShouldEnableRobotsRulesFetching()) {
     new subresource_redirect::LoginRobotsDeciderAgent(associated_interfaces,
                                                       render_frame);
   }
@@ -795,7 +799,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     const chrome::mojom::PluginInfo& plugin_info) {
   const WebPluginInfo& info = plugin_info.plugin;
   const std::string& actual_mime_type = plugin_info.actual_mime_type;
-  const base::string16& group_name = plugin_info.group_name;
+  const std::u16string& group_name = plugin_info.group_name;
   const std::string& identifier = plugin_info.group_identifier;
   chrome::mojom::PluginStatus status = plugin_info.status;
   GURL url(original_params.url);
@@ -865,7 +869,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
     auto create_blocked_plugin = [&render_frame, &params, &info, &identifier,
                                   &group_name](int template_id,
-                                               const base::string16& message) {
+                                               const std::u16string& message) {
       return ChromePluginPlaceholder::CreateBlockedPlugin(
           render_frame, params, info, identifier, group_name, template_id,
           message);
@@ -986,6 +990,16 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           break;
         }
 
+#if BUILDFLAG(ENABLE_PDF_UNSEASONED)
+        if (info.name ==
+            ASCIIToUTF16(ChromeContentClient::kPDFInternalPluginName)) {
+          // Create unseasoned PDF plugin directly, for development purposes.
+          // TODO(crbug.com/1123621): Implement a more permanent solution once
+          // the new PDF viewer process model is approved and in place.
+          return new chrome_pdf::PdfViewWebPlugin(params);
+        }
+#endif  // BUILDFLAG(ENABLE_PDF_UNSEASONED)
+
         return render_frame->CreatePlugin(info, params);
       }
       case chrome::mojom::PluginStatus::kDisabled: {
@@ -1098,7 +1112,7 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
     const content::WebPluginInfo& plugin) {
   // Look for the manifest URL among the MIME type's additonal parameters.
   const char kNaClPluginManifestAttribute[] = "nacl";
-  base::string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
+  std::u16string nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
   for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
     if (plugin.mime_types[i].mime_type == actual_mime_type) {
       for (const auto& p : plugin.mime_types[i].additional_params) {
@@ -1208,9 +1222,9 @@ void ChromeContentRendererClient::PrepareErrorPage(
     std::string* error_html) {
   NetErrorHelper::Get(render_frame)
       ->PrepareErrorPage(
-          error_page::Error::NetError(web_error.url(), web_error.reason(),
-                                      web_error.resolve_error_info(),
-                                      web_error.has_copy_in_cache()),
+          error_page::Error::NetError(
+              web_error.url(), web_error.reason(), web_error.extended_reason(),
+              web_error.resolve_error_info(), web_error.has_copy_in_cache()),
           http_method == "POST", error_html);
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -1392,7 +1406,7 @@ SpellCheck* ChromeContentRendererClient::GetSpellCheck() {
 }
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
-std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return std::make_unique<WebSocketHandshakeThrottleProviderImpl>(
       browser_interface_broker_.get());
@@ -1408,7 +1422,7 @@ bool ChromeContentRendererClient::IsKeySystemsUpdateNeeded() {
 }
 
 bool ChromeContentRendererClient::ShouldReportDetailedMessageForSource(
-    const base::string16& source) {
+    const std::u16string& source) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   return extensions::IsSourceFromAnExtension(source);
 #else
@@ -1583,9 +1597,9 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   return FlashEmbedRewrite::RewriteFlashEmbedURL(url);
 }
 
-std::unique_ptr<content::URLLoaderThrottleProvider>
+std::unique_ptr<blink::URLLoaderThrottleProvider>
 ChromeContentRendererClient::CreateURLLoaderThrottleProvider(
-    content::URLLoaderThrottleProviderType provider_type) {
+    blink::URLLoaderThrottleProviderType provider_type) {
   return std::make_unique<URLLoaderThrottleProviderImpl>(
       browser_interface_broker_.get(), provider_type, this);
 }
@@ -1620,40 +1634,4 @@ void ChromeContentRendererClient::DidSetUserAgent(
 #if BUILDFLAG(ENABLE_PRINTING)
   printing::SetAgent(user_agent);
 #endif
-}
-
-bool ChromeContentRendererClient::RequiresHtmlImports(const GURL& url) {
-  if (url.SchemeIs(content::kChromeUIScheme)) {
-    base::StringPiece host_piece = url.host_piece();
-    // TODO(crbug.com/1014322): Remove when migrated to Polymer3.
-    return host_piece == content::kChromeUIResourcesHost ||
-           // TODO(crbug.com/1006778): Remove when chrome://tracing is fully
-           // removed.
-           host_piece == content::kChromeUITracingHost ||
-           // TODO(crbug.com/1110954): Remove when migrated away from HTML
-           // imports.
-           host_piece == chrome::kChromeUIBluetoothInternalsHost ||
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-           // TODO(crbug.com/1111430): Remove when migrated to Polymer3.
-           host_piece == chrome::kChromeUIAccountManagerErrorHost ||
-           host_piece == chrome::kChromeUIAccountManagerWelcomeHost ||
-           host_piece == chrome::kChromeUIAccountMigrationWelcomeHost ||
-           // TODO(crbug.com/1111430): Remove when migrated to Polymer3.
-           host_piece == chrome::kChromeUIAddSupervisionHost ||
-           // TODO(crbug.com/1090884): Remove when migrated to Polymer3.
-           host_piece == chrome::kChromeUIInternetConfigDialogHost ||
-           // TODO(crbug.com/1090883): Remove when migrated to Polymer3.
-           host_piece == chrome::kChromeUIInternetDetailDialogHost ||
-           // TODO(crbug.com/1022196): Remove when migrated to Polymer3.
-           host_piece == chrome::kChromeUIMultiDeviceSetupHost ||
-           // TODO(crbug.com/1111852): Remove when migrated to Polymer3.
-           host_piece == chrome::kChromeUINetworkHost ||
-           // TODO(crbug.com/1045266): Remove when migrated to Polymer3.
-           host_piece == chrome::kChromeUIOSSettingsHost ||
-           // TODO(crbug.com/1022192): Remove when migrated to Polymer3.
-           host_piece == chrome::kChromeUIPasswordChangeHost ||
-#endif
-           false;
-  }
-  return false;
 }

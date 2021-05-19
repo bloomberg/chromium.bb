@@ -732,7 +732,6 @@ TEST_F(VkLayerTest, InvalidMemoryMapping) {
         mmr.offset = 3;  // Not a multiple of atom_size
         mmr.size = VK_WHOLE_SIZE;
         m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkMappedMemoryRange-offset-00687");
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkMappedMemoryRange-size-01389");
         vk::FlushMappedMemoryRanges(m_device->device(), 1, &mmr);
         m_errorMonitor->VerifyFound();
 
@@ -743,6 +742,16 @@ TEST_F(VkLayerTest, InvalidMemoryMapping) {
         mmr.offset = atom_size;
         mmr.size = 2 * atom_size + 1;  // Not a multiple of atom_size
         m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkMappedMemoryRange-size-01390");
+        vk::FlushMappedMemoryRanges(m_device->device(), 1, &mmr);
+        m_errorMonitor->VerifyFound();
+
+        // Now with VK_WHOLE_SIZE and a mapping that does not end at a multiple of atom_size nor at the end of the memory.
+        vk::UnmapMemory(m_device->device(), mem);
+        err = vk::MapMemory(m_device->device(), mem, 0, 4 * atom_size + 1, 0, (void **)&pData);
+        ASSERT_VK_SUCCESS(err);
+        mmr.offset = atom_size;
+        mmr.size = VK_WHOLE_SIZE;
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkMappedMemoryRange-size-01389");
         vk::FlushMappedMemoryRanges(m_device->device(), 1, &mmr);
         m_errorMonitor->VerifyFound();
     }
@@ -779,9 +788,9 @@ TEST_F(VkLayerTest, InvalidMemoryMapping) {
         mmr.memory = mem;
         mmr.offset = atom_size;
         mmr.size = VK_WHOLE_SIZE;
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkMappedMemoryRange-size-01389");
+        m_errorMonitor->ExpectSuccess();
         vk::FlushMappedMemoryRanges(m_device->device(), 1, &mmr);
-        m_errorMonitor->VerifyFound();
+        m_errorMonitor->VerifyNotFound();
     }
 
     pass = m_device->phy().set_memory_type(mem_reqs.memoryTypeBits, &alloc_info, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
@@ -5986,17 +5995,17 @@ TEST_F(VkLayerTest, InvalidBarriers) {
     // Attempt to mismatch barriers/waitEvents calls with incompatible queues
     // Create command pool with incompatible queueflags
     const std::vector<VkQueueFamilyProperties> queue_props = m_device->queue_props;
-    uint32_t queue_family_index = m_device->QueueFamilyMatching(VK_QUEUE_GRAPHICS_BIT, VK_QUEUE_COMPUTE_BIT);
+    uint32_t queue_family_index = m_device->QueueFamilyMatching(VK_QUEUE_COMPUTE_BIT, VK_QUEUE_GRAPHICS_BIT, false);
     if (queue_family_index == UINT32_MAX) {
-        printf("%s No non-compute queue supporting graphics found; skipped.\n", kSkipPrefix);
+        printf("%s No non-graphics queue supporting compute found; skipped.\n", kSkipPrefix);
         return;  // NOTE: this exits the test function!
     }
 
     VkBufferMemoryBarrier buf_barrier = {};
     buf_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
     buf_barrier.pNext = NULL;
-    buf_barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    buf_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    buf_barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+    buf_barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
     buf_barrier.buffer = buffer.handle();
     buf_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     buf_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -6009,10 +6018,10 @@ TEST_F(VkLayerTest, InvalidBarriers) {
     VkCommandBufferObj bad_command_buffer(m_device, &command_pool);
 
     bad_command_buffer.begin();
-    buf_barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     // Set two bits that should both be supported as a bonus positive check
+    buf_barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     buf_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
-    vk::CmdPipelineBarrier(bad_command_buffer.handle(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+    vk::CmdPipelineBarrier(bad_command_buffer.handle(), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
                            VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 1, &buf_barrier, 0, nullptr);
     m_errorMonitor->VerifyFound();
 
@@ -6023,8 +6032,8 @@ TEST_F(VkLayerTest, InvalidBarriers) {
     VkEventCreateInfo event_create_info{};
     event_create_info.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
     vk::CreateEvent(m_device->device(), &event_create_info, nullptr, &event);
-    vk::CmdWaitEvents(bad_command_buffer.handle(), 1, &event, /*source stage mask*/ VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                      VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, 0, nullptr, 0, nullptr, 0, nullptr);
+    vk::CmdWaitEvents(bad_command_buffer.handle(), 1, &event, /*source stage mask*/ VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                      VK_PIPELINE_STAGE_TRANSFER_BIT, 0, nullptr, 0, nullptr, 0, nullptr);
     m_errorMonitor->VerifyFound();
     bad_command_buffer.end();
 
@@ -6394,15 +6403,14 @@ TEST_F(VkLayerTest, Sync2InvalidBarriers) {
     // Attempt to mismatch barriers/waitEvents calls with incompatible queues
     // Create command pool with incompatible queueflags
     const std::vector<VkQueueFamilyProperties> queue_props = m_device->queue_props;
-    uint32_t queue_family_index = m_device->QueueFamilyMatching(VK_QUEUE_GRAPHICS_BIT, VK_QUEUE_COMPUTE_BIT);
+    uint32_t queue_family_index = m_device->QueueFamilyMatching(VK_QUEUE_COMPUTE_BIT, VK_QUEUE_GRAPHICS_BIT, false);
     if (queue_family_index == UINT32_MAX) {
-        printf("%s No non-compute queue supporting graphics found; skipped.\n", kSkipPrefix);
+        printf("%s No non-graphics queue supporting compute found; skipped.\n", kSkipPrefix);
         return;  // NOTE: this exits the test function!
     }
+    printf("qfi=%d\n", queue_family_index);
 
     auto buf_barrier = lvl_init_struct<VkBufferMemoryBarrier2KHR>();
-    buf_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    buf_barrier.pNext = NULL;
     buf_barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     buf_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
     buf_barrier.srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
@@ -6419,7 +6427,7 @@ TEST_F(VkLayerTest, Sync2InvalidBarriers) {
 
     m_commandBuffer->PipelineBarrier2KHR(&dep_info);
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier-srcStageMask-4098");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier2KHR-srcStageMask-03849");
 
     VkCommandPoolObj command_pool(m_device, queue_family_index, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
     VkCommandBufferObj bad_command_buffer(m_device, &command_pool);
@@ -6428,10 +6436,10 @@ TEST_F(VkLayerTest, Sync2InvalidBarriers) {
     buf_barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     // Set two bits that should both be supported as a bonus positive check
     buf_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
-    buf_barrier.srcAccessMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-    buf_barrier.dstAccessMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    buf_barrier.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    buf_barrier.dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
 
-    m_commandBuffer->PipelineBarrier2KHR(&dep_info);
+    bad_command_buffer.PipelineBarrier2KHR(&dep_info);
     m_errorMonitor->VerifyFound();
 }
 
@@ -7958,6 +7966,9 @@ TEST_F(VkLayerTest, CreateImageViewFormatFeatureMismatch) {
     ivci.subresourceRange.baseArrayLayer = 0;
     ivci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
 
+    // The 02277 VU is 'probably' redundant, but keeping incase a future spec change
+    // This extra VU checked is because depth formats are only compatible with themselves
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkImageViewCreateInfo-image-01018");
     // Test for error message
     CreateImageViewTest(*this, &ivci, optimal_error_codes[i]);
 }
@@ -13215,15 +13226,15 @@ TEST_F(VkLayerTest, VerityUnnormalizedCoordinatesSampler) {
     ASSERT_VK_SUCCESS(vk::CreateSampler(m_device->device(), &sampler_ci, nullptr, &sampler));
 
     g_pipe.descriptor_set_->WriteDescriptorImageInfo(1, VK_NULL_HANDLE, sampler, VK_DESCRIPTOR_TYPE_SAMPLER,
-                                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
+                                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1);
     g_pipe.descriptor_set_->WriteDescriptorImageInfo(2, view_pass, VK_NULL_HANDLE, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
     g_pipe.descriptor_set_->WriteDescriptorImageInfo(3, view_fail, VK_NULL_HANDLE, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-                                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 2);
+                                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 2);
     g_pipe.descriptor_set_->WriteDescriptorImageInfo(4, view_fail, sampler, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     g_pipe.descriptor_set_->WriteDescriptorImageInfo(5, view_pass, sampler, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 2);
+                                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 2);
     g_pipe.descriptor_set_->WriteDescriptorImageInfo(6, view_pass, sampler, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 2);
+                                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 2);
     g_pipe.descriptor_set_->UpdateDescriptorSets();
 
     m_commandBuffer->begin();
@@ -13324,6 +13335,76 @@ TEST_F(VkLayerTest, CreateImageViewIncompatibleFormat) {
     // VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT, so there should be no error. This is specifically for testing issue
     // https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/2203.
     CreateImageViewTest(*this, &imgViewInfo, {});
+}
+
+TEST_F(VkLayerTest, CreateImageViewIncompatibleDepthFormat) {
+    TEST_DESCRIPTION("Tests for VUID-VkImageViewCreateInfo-image-01761 with depth format");
+
+    VkPhysicalDeviceFeatures device_features = {};
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    ASSERT_NO_FATAL_FAILURE(GetPhysicalDeviceFeatures(&device_features));
+
+    auto maintenance2_support = DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    if (maintenance2_support) {
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    }
+    auto ycbcr_support = DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
+    if (ycbcr_support) {
+        m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
+    }
+
+    const char *error_vuid;
+    if ((!maintenance2_support) && (!ycbcr_support)) {
+        error_vuid = "VUID-VkImageViewCreateInfo-image-01018";
+    } else if ((maintenance2_support) && (!ycbcr_support)) {
+        error_vuid = "VUID-VkImageViewCreateInfo-image-01759";
+    } else if ((!maintenance2_support) && (ycbcr_support)) {
+        error_vuid = "VUID-VkImageViewCreateInfo-image-01760";
+    } else {
+        // both enabled
+        error_vuid = "VUID-VkImageViewCreateInfo-image-01761";
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(&device_features));
+
+    const VkFormat depthOnlyFormat = FindSupportedDepthOnlyFormat(gpu());
+    const VkFormat depthStencilFormat = FindSupportedDepthStencilFormat(gpu());
+    if ((depthOnlyFormat == VK_FORMAT_UNDEFINED) || (depthStencilFormat == VK_FORMAT_UNDEFINED)) {
+        printf("%s requires a depth only and depth/stencil format.\n", kSkipPrefix);
+        return;
+    }
+
+    VkImageCreateInfo imageInfo = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+                                   nullptr,
+                                   VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT,
+                                   VK_IMAGE_TYPE_2D,
+                                   depthStencilFormat,
+                                   {128, 128, 1},
+                                   1,
+                                   1,
+                                   VK_SAMPLE_COUNT_1_BIT,
+                                   VK_IMAGE_TILING_OPTIMAL,
+                                   VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                                   VK_SHARING_MODE_EXCLUSIVE,
+                                   0,
+                                   nullptr,
+                                   VK_IMAGE_LAYOUT_UNDEFINED};
+
+    VkImageObj mutImage(m_device);
+    mutImage.init(&imageInfo);
+    ASSERT_TRUE(mutImage.initialized());
+
+    VkImageViewCreateInfo imgViewInfo = {};
+    imgViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    imgViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    imgViewInfo.subresourceRange.layerCount = 1;
+    imgViewInfo.subresourceRange.baseMipLevel = 0;
+    imgViewInfo.subresourceRange.levelCount = 1;
+    imgViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    imgViewInfo.image = mutImage.handle();
+    // "Each depth/stencil format is only compatible with itself."
+    imgViewInfo.format = depthOnlyFormat;
+    CreateImageViewTest(*this, &imgViewInfo, error_vuid);
 }
 
 TEST_F(VkLayerTest, InvalidShadingRateUsage) {

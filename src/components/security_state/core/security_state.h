@@ -133,7 +133,10 @@ enum class SafetyTipStatus {
   // The current page had a lookalike URL, but a Safety Tip was not shown since
   // it had been previously ignored by the user.
   kLookalikeIgnored = 6,
-  kMaxValue = kLookalikeIgnored,
+  // Safety tip UI was ignored because of the lookalike's digital asset link
+  // manifest matched the target's.
+  kDigitalAssetLinkMatch = 7,
+  kMaxValue = kDigitalAssetLinkMatch,
 };
 
 // Information about the last safety tip shown in the UI. This is used in page
@@ -199,8 +202,6 @@ struct VisibleSecurityState {
   bool is_devtools;
   // True if the page is a reader mode page.
   bool is_reader_mode;
-  // True if the page was loaded over a legacy TLS version.
-  bool connection_used_legacy_tls;
   // True if mixed forms should be treated as secure from the visible security
   // state perspective (for example, if a different warning is being shown for
   // them).
@@ -247,17 +248,6 @@ std::string GetSecurityLevelHistogramName(
 // Returns the given prefix suffixed with a dot and the given Safety Tip status.
 std::string GetSafetyTipHistogramName(const std::string& prefix,
                                       SafetyTipStatus safety_tip_status);
-
-// Returns whether the given VisibleSecurityState would trigger a legacy TLS
-// warning.
-bool GetLegacyTLSWarningStatus(
-    const VisibleSecurityState& visible_security_state);
-
-// Returns the given prefix suffixed with a dot and the legacy TLS status
-// derived from the VisibleSecurityStatus.
-std::string GetLegacyTLSHistogramName(
-    const std::string& prefix,
-    const VisibleSecurityState& visible_security_state);
 
 bool IsSHA1InChain(const VisibleSecurityState& visible_security_state);
 

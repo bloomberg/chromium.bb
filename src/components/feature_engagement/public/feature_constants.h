@@ -24,10 +24,12 @@ extern const base::Feature kIPHGlobalMediaControlsFeature;
 extern const base::Feature kIPHLiveCaptionFeature;
 extern const base::Feature kIPHPasswordsAccountStorageFeature;
 extern const base::Feature kIPHReadingListDiscoveryFeature;
+extern const base::Feature kIPHReadingListEntryPointFeature;
 extern const base::Feature kIPHReopenTabFeature;
 extern const base::Feature kIPHWebUITabStripFeature;
 extern const base::Feature kIPHDesktopSnoozeFeature;
 extern const base::Feature kIPHDesktopPwaInstallFeature;
+extern const base::Feature kIPHProfileSwitchFeature;
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
@@ -35,6 +37,8 @@ extern const base::Feature kIPHDesktopPwaInstallFeature;
 // should also be declared in:
 // org.chromium.components.feature_engagement.FeatureConstants.
 #if defined(OS_ANDROID)
+extern const base::Feature kIPHAddToHomescreenMessageFeature;
+extern const base::Feature kIPHAddToHomescreenTextBubbleFeature;
 extern const base::Feature kIPHDataSaverDetailFeature;
 extern const base::Feature kIPHDataSaverMilestonePromoFeature;
 extern const base::Feature kIPHDataSaverPreviewFeature;
@@ -50,6 +54,7 @@ extern const base::Feature kIPHContextualSearchPromoteTapFeature;
 extern const base::Feature kIPHContextualSearchPromotePanelOpenFeature;
 extern const base::Feature kIPHContextualSearchOptInFeature;
 extern const base::Feature kIPHContextualSearchTappedButShouldLongpressFeature;
+extern const base::Feature kIPHContextualSearchInPanelHelpFeature;
 extern const base::Feature kIPHDownloadSettingsFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature;
@@ -64,6 +69,7 @@ extern const base::Feature kIPHKeyboardAccessoryBarSwipingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPaymentFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPaymentOfferFeature;
+extern const base::Feature kIPHMicToolbarFeature;
 extern const base::Feature kIPHNewTabPageHomeButtonFeature;
 extern const base::Feature kIPHPageInfoFeature;
 extern const base::Feature kIPHPreviewsOmniboxUIFeature;

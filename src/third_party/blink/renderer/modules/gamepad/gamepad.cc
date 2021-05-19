@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/modules/gamepad/gamepad.h"
 
-#include "base/i18n/uchar.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_comparisons.h"
@@ -55,17 +54,17 @@ Gamepad::Gamepad(Client* client,
 
 Gamepad::~Gamepad() = default;
 
-void Gamepad::UpdateFromDeviceState(const device::Gamepad& device_gamepad) {
+void Gamepad::UpdateFromDeviceState(const device::Gamepad& device_gamepad,
+                                    bool cross_origin_isolated_capability) {
   bool newly_connected;
   GamepadComparisons::HasGamepadConnectionChanged(
-      connected(),               // Old connected.
-      device_gamepad.connected,  // New connected.
-      id() !=
-          StringView(base::i18n::ToUCharPtr(device_gamepad.id)),  // ID changed.
+      connected(),                            // Old connected.
+      device_gamepad.connected,               // New connected.
+      id() != StringView(device_gamepad.id),  // ID changed.
       &newly_connected, nullptr);
 
   SetConnected(device_gamepad.connected);
-  SetTimestamp(device_gamepad);
+  SetTimestamp(device_gamepad, cross_origin_isolated_capability);
   SetAxes(device_gamepad.axes_length, device_gamepad.axes);
   SetButtons(device_gamepad.buttons_length, device_gamepad.buttons);
   // Always called as gamepads require additional steps to determine haptics
@@ -76,7 +75,7 @@ void Gamepad::UpdateFromDeviceState(const device::Gamepad& device_gamepad) {
   // These fields are not expected to change and will only be written when the
   // gamepad is newly connected.
   if (newly_connected) {
-    SetId(base::i18n::ToUCharPtr(device_gamepad.id));
+    SetId(device_gamepad.id);
     SetMapping(device_gamepad.mapping);
   }
 }
@@ -151,7 +150,8 @@ void Gamepad::SetVibrationActuatorInfo(
 
 // Convert the raw timestamp from the device to a relative one and apply the
 // floor.
-void Gamepad::SetTimestamp(const device::Gamepad& device_gamepad) {
+void Gamepad::SetTimestamp(const device::Gamepad& device_gamepad,
+                           bool cross_origin_isolated_capability) {
   base::TimeTicks last_updated =
       base::TimeTicks() +
       base::TimeDelta::FromMicroseconds(device_gamepad.timestamp);
@@ -159,7 +159,8 @@ void Gamepad::SetTimestamp(const device::Gamepad& device_gamepad) {
     last_updated = time_floor_;
 
   timestamp_ = Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, last_updated, false);
+      time_origin_, last_updated, /*allow_negative_value=*/false,
+      cross_origin_isolated_capability);
 
   if (device_gamepad.is_xr) {
     base::TimeTicks now = base::TimeTicks::Now();

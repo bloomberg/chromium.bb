@@ -108,6 +108,8 @@ typedef struct OptionsContext {
     int        nb_audio_sample_rate;
     SpecifierOpt *frame_rates;
     int        nb_frame_rates;
+    SpecifierOpt *max_frame_rates;
+    int        nb_max_frame_rates;
     SpecifierOpt *frame_sizes;
     int        nb_frame_sizes;
     SpecifierOpt *frame_pix_fmts;
@@ -305,7 +307,7 @@ typedef struct InputStream {
 #define DECODING_FOR_FILTER 2
 
     AVCodecContext *dec_ctx;
-    AVCodec *dec;
+    const AVCodec *dec;
     AVFrame *decoded_frame;
     AVFrame *filter_frame; /* a ref of decoded_frame, to be sent to filters */
 
@@ -468,7 +470,7 @@ typedef struct OutputStream {
 
     AVCodecContext *enc_ctx;
     AVCodecParameters *ref_par; /* associated input codec parameters with encoders options applied */
-    AVCodec *enc;
+    const AVCodec *enc;
     int64_t max_frames;
     AVFrame *filtered_frame;
     AVFrame *last_frame;
@@ -479,6 +481,7 @@ typedef struct OutputStream {
 
     /* video only */
     AVRational frame_rate;
+    AVRational max_frame_rate;
     int is_cfr;
     int force_fps;
     int top_field_first;
@@ -614,6 +617,7 @@ extern int debug_ts;
 extern int exit_on_error;
 extern int abort_on_flags;
 extern int print_stats;
+extern int64_t stats_period;
 extern int qp_hist;
 extern int stdin_interaction;
 extern int frame_bits_per_raw_sample;
@@ -639,24 +643,15 @@ extern HWDevice *filter_hw_device;
 void term_init(void);
 void term_exit(void);
 
-void reset_options(OptionsContext *o, int is_input);
 void show_usage(void);
-
-void opt_output_file(void *optctx, const char *filename);
 
 void remove_avoptions(AVDictionary **a, AVDictionary *b);
 void assert_avoptions(AVDictionary *m);
 
 int guess_input_channel_layout(InputStream *ist);
 
-enum AVPixelFormat choose_pixel_fmt(AVStream *st, AVCodecContext *avctx,
-                                    const AVCodec *codec, enum AVPixelFormat target);
-void choose_sample_fmt(AVStream *st, const AVCodec *codec);
-
 int configure_filtergraph(FilterGraph *fg);
-int configure_output_filter(FilterGraph *fg, OutputFilter *ofilter, AVFilterInOut *out);
 void check_filter_outputs(void);
-int ist_in_filtergraph(FilterGraph *fg, InputStream *ist);
 int filtergraph_is_simple(FilterGraph *fg);
 int init_simple_filtergraph(InputStream *ist, OutputStream *ost);
 int init_complex_filtergraph(FilterGraph *fg);

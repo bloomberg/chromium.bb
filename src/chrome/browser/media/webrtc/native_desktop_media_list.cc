@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,6 +19,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "media/base/video_util.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -31,6 +33,10 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/snapshot/snapshot_aura.h"
+#endif
+
+#if defined(OS_MAC)
+#include "components/remote_cocoa/browser/scoped_cg_window_id.h"
 #endif
 
 using content::DesktopMediaID;
@@ -169,12 +175,12 @@ void NativeDesktopMediaList::Worker::Refresh(
 
   webrtc::DesktopCapturer::SourceList sources;
   if (!capturer_->GetSourceList(&sources)) {
-    // Will pass empty results list to RefreshForAuraWindows().
+    // Will pass empty results list to RefreshForVizFrameSinkWindows().
     sources.clear();
   }
 
   bool mutiple_sources = sources.size() > 1;
-  base::string16 title;
+  std::u16string title;
   for (size_t i = 0; i < sources.size(); ++i) {
     DesktopMediaID::Type type = DesktopMediaID::Type::TYPE_NONE;
     switch (type_) {
@@ -205,8 +211,9 @@ void NativeDesktopMediaList::Worker::Refresh(
   }
 
   content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&NativeDesktopMediaList::RefreshForAuraWindows,
-                                media_list_, result, update_thumnails));
+      FROM_HERE,
+      base::BindOnce(&NativeDesktopMediaList::RefreshForVizFrameSinkWindows,
+                     media_list_, result, update_thumnails));
 }
 
 void NativeDesktopMediaList::Worker::RefreshThumbnails(
@@ -309,8 +316,9 @@ NativeDesktopMediaList::NativeDesktopMediaList(
 #endif
   thread_.StartWithOptions(base::Thread::Options(thread_type, 0));
 
-  worker_.reset(new Worker(thread_.task_runner(), weak_factory_.GetWeakPtr(),
-                           type, std::move(capturer)));
+  worker_ = std::make_unique<Worker>(thread_.task_runner(),
+                                     weak_factory_.GetWeakPtr(), type,
+                                     std::move(capturer));
 
   thread_.task_runner()->PostTask(
       FROM_HERE,
@@ -339,17 +347,18 @@ void NativeDesktopMediaList::Refresh(bool update_thumnails) {
                      view_dialog_id_.id, update_thumnails));
 }
 
-void NativeDesktopMediaList::RefreshForAuraWindows(
+void NativeDesktopMediaList::RefreshForVizFrameSinkWindows(
     std::vector<SourceDescription> sources,
     bool update_thumnails) {
   DCHECK(can_refresh());
 
-#if defined(USE_AURA)
-  // Associate aura id with native id.
+  // Assign |source.id.window_id| if |source.id.id| corresponds to a
+  // viz::FrameSinkId.
   for (auto& source : sources) {
     if (source.id.type != DesktopMediaID::TYPE_WINDOW)
       continue;
 
+#if defined(USE_AURA)
     aura::WindowTreeHost* const host =
         aura::WindowTreeHost::GetForAcceleratedWidget(
             *reinterpret_cast<gfx::AcceleratedWidget*>(&source.id.id));
@@ -359,8 +368,13 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
           DesktopMediaID::TYPE_WINDOW, aura_window);
       source.id.window_id = aura_id.window_id;
     }
+#elif defined(OS_MAC)
+    if (base::FeatureList::IsEnabled(features::kWindowCaptureMacV2)) {
+      if (remote_cocoa::ScopedCGWindowID::Get(source.id.id))
+        source.id.window_id = source.id.id;
+    }
+#endif
   }
-#endif  // defined(USE_AURA)
 
   UpdateSourcesList(sources);
 
@@ -381,7 +395,7 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
   }
 
   // OnAuraThumbnailCaptured() and UpdateNativeThumbnailsFinished() are
-  // guaranteed to be executed after RefreshForAuraWindows() and
+  // guaranteed to be executed after RefreshForVizFrameSinkWindows() and
   // CaptureAuraWindowThumbnail() in the browser UI thread.
   // Therefore pending_aura_capture_requests_ will be set the number of aura
   // windows to be captured and pending_native_thumbnail_capture_ will be set

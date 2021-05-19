@@ -162,7 +162,7 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
   std::unique_ptr<base::ListValue> GetEnabledNetworkTypes() override {
     std::unique_ptr<base::ListValue> result;
     if (!fail_) {
-      result.reset(new base::ListValue);
+      result = std::make_unique<base::ListValue>();
       result->AppendString(::onc::network_config::kEthernet);
     }
     return result;
@@ -172,7 +172,7 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
     std::unique_ptr<DeviceStateList> result;
     if (fail_)
       return result;
-    result.reset(new DeviceStateList);
+    result = std::make_unique<DeviceStateList>();
     std::unique_ptr<api::networking_private::DeviceStateProperties> properties(
         new api::networking_private::DeviceStateProperties);
     properties->type = api::networking_private::NETWORK_TYPE_ETHERNET;
@@ -359,8 +359,10 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
 
  protected:
   bool RunNetworkingSubtest(const std::string& subtest) {
-    return RunExtensionSubtest("networking_private", "main.html?" + subtest,
-                               kFlagNone, kFlagLoadAsComponent);
+    const std::string page_url = "main.html?" + subtest;
+    return RunExtensionTest({.name = "networking_private",
+                             .page_url = page_url.c_str(),
+                             .load_as_component = true});
   }
 
  private:

@@ -18,19 +18,19 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -939,25 +939,17 @@ void EventRouter::OnUnshare(const std::string& vm_name,
 }
 
 void EventRouter::OnTabletModeStarted() {
-  for (const auto& extension_id : GetEventListenerExtensionIds(
-           profile_, file_manager_private::OnTabletModeChanged::kEventName)) {
-    DispatchEventToExtension(
-        profile_, extension_id,
-        extensions::events::FILE_MANAGER_PRIVATE_ON_TABLET_MODE_CHANGED,
-        file_manager_private::OnTabletModeChanged::kEventName,
-        file_manager_private::OnTabletModeChanged::Create(/*enabled=*/true));
-  }
+  BroadcastEvent(
+      profile_, extensions::events::FILE_MANAGER_PRIVATE_ON_TABLET_MODE_CHANGED,
+      file_manager_private::OnTabletModeChanged::kEventName,
+      file_manager_private::OnTabletModeChanged::Create(/*enabled=*/true));
 }
 
 void EventRouter::OnTabletModeEnded() {
-  for (const auto& extension_id : GetEventListenerExtensionIds(
-           profile_, file_manager_private::OnTabletModeChanged::kEventName)) {
-    DispatchEventToExtension(
-        profile_, extension_id,
-        extensions::events::FILE_MANAGER_PRIVATE_ON_TABLET_MODE_CHANGED,
-        file_manager_private::OnTabletModeChanged::kEventName,
-        file_manager_private::OnTabletModeChanged::Create(/*enabled=*/false));
-  }
+  BroadcastEvent(
+      profile_, extensions::events::FILE_MANAGER_PRIVATE_ON_TABLET_MODE_CHANGED,
+      file_manager_private::OnTabletModeChanged::kEventName,
+      file_manager_private::OnTabletModeChanged::Create(/*enabled=*/false));
 }
 
 void EventRouter::OnCrostiniChanged(

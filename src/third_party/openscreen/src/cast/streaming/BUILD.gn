@@ -112,6 +112,7 @@ source_set("sender") {
     "bandwidth_estimator.h",
     "compound_rtcp_parser.cc",
     "compound_rtcp_parser.h",
+    "remoting_capabilities.h",
     "rtp_packetizer.cc",
     "rtp_packetizer.h",
     "sender.cc",

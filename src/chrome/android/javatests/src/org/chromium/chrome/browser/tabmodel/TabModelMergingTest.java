@@ -26,11 +26,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -462,6 +464,10 @@ public class TabModelMergingTest {
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     public void testMergeWithNoTabs() {
+        // Enter the tab switcher before closing all tabs with grid tab switcher enabled, otherwise
+        // the activity is killed and the test fails.
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivity1.getLayoutManager().showOverview(false));
+
         // Close all tabs and wait for the callback.
         ChromeTabUtils.closeAllTabs(InstrumentationRegistry.getInstrumentation(), mActivity1);
 
@@ -478,6 +484,7 @@ public class TabModelMergingTest {
     @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
+    @DisabledTest(message = "https://crbug.com/1190012")
     public void testMergingIncognitoTabs() {
         // Incognito tabs must be fully loaded so that their tab states are written out.
         ChromeTabUtils.fullyLoadUrlInNewTab(

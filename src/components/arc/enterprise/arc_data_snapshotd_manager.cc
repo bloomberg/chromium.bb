@@ -9,7 +9,6 @@
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -19,6 +18,7 @@
 #include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/enterprise/arc_data_remove_requested_pref_handler.h"
@@ -26,6 +26,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
 
 namespace arc {
@@ -62,10 +63,31 @@ bool IsFirstExecAfterBoot() {
          user_manager::UserManager::Get()->IsFirstExecAfterBoot();
 }
 
+// Returns true if in ozone platform headless UI mode.
+bool IsInHeadlessMode() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->GetSwitchValueASCII(switches::kOzonePlatform) ==
+         kHeadless;
+}
+
 // Enables ozone platform headless via command line.
 void EnableHeadlessMode() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII(switches::kOzonePlatform, "headless");
+  command_line->AppendSwitchASCII(switches::kOzonePlatform, kHeadless);
+  command_line->AppendSwitchASCII(switches::kUseGL,
+                                  gl::kGLImplementationSwiftShaderName);
+}
+
+// Disables D-Bus clients:
+// * BIOD
+// * CrosDisks
+// Should be called while in BlockedUi state.
+void DisableDBusClients() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  // Disable BIOD input.
+  command_line->AppendSwitch(chromeos::switches::kBiodFake);
+  // Disable USB input.
+  command_line->AppendSwitch(chromeos::switches::kCrosDisksFake);
 }
 
 // Returns non-empty account ID string if a MGS is active.
@@ -84,6 +106,9 @@ std::string GetMgsCryptohomeAccountId() {
 }
 
 }  // namespace
+
+const char kHeadless[] = "headless";
+const char kRestartFreconEnv[] = "RESTART_FRECON=1";
 
 bool ArcDataSnapshotdManager::is_snapshot_enabled_for_testing_ = false;
 
@@ -334,15 +359,19 @@ ArcDataSnapshotdManager::ArcDataSnapshotdManager(
 
   if (IsRestoredSession()) {
     state_ = State::kRestored;
-  } else {
-    if (snapshot_.is_blocked_ui_mode() && IsSnapshotEnabled() &&
-        IsFirstExecAfterBoot()) {
-      state_ = State::kBlockedUi;
-      EnableHeadlessMode();
-    }
+    DoClearSnapshots();
+    return;
   }
-  // Ensure the snapshot's info is up-to-date.
-  DoClearSnapshots();
+
+  if (local_state->GetAllPrefStoresInitializationStatus() !=
+      PrefService::INITIALIZATION_STATUS_SUCCESS) {
+    local_state->AddPrefInitObserver(
+        base::BindOnce(&ArcDataSnapshotdManager::OnLocalStateInitialized,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    // Ensure the snapshot's info is up-to-date.
+    OnLocalStateInitialized(true /* initialized */);
+  }
 }
 
 ArcDataSnapshotdManager::~ArcDataSnapshotdManager() {
@@ -374,9 +403,11 @@ void ArcDataSnapshotdManager::EnsureDaemonStarted(base::OnceClosure callback) {
   }
   VLOG(1) << "Starting arc-data-snapshotd";
   daemon_weak_ptr_factory_.InvalidateWeakPtrs();
-  chromeos::UpstartClient::Get()->StartArcDataSnapshotd(base::BindOnce(
-      &ArcDataSnapshotdManager::OnDaemonStarted,
-      daemon_weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  chromeos::UpstartClient::Get()->StartArcDataSnapshotd(
+      GetStartEnvVars(),
+      base::BindOnce(&ArcDataSnapshotdManager::OnDaemonStarted,
+                     daemon_weak_ptr_factory_.GetWeakPtr(),
+                     std::move(callback)));
 }
 
 void ArcDataSnapshotdManager::EnsureDaemonStopped(base::OnceClosure callback) {
@@ -433,6 +464,10 @@ bool ArcDataSnapshotdManager::IsAutoLoginAllowed() {
     case State::kMgsToLaunch:
       return true;
   }
+}
+
+bool ArcDataSnapshotdManager::IsBlockedUiScreenShown() {
+  return IsAutoLoginConfigured() && IsInHeadlessMode();
 }
 
 bool ArcDataSnapshotdManager::IsSnapshotInProgress() {
@@ -586,6 +621,23 @@ bool ArcDataSnapshotdManager::IsSnapshotEnabled() {
   return policy_service_.is_snapshot_enabled();
 }
 
+void ArcDataSnapshotdManager::OnLocalStateInitialized(bool initialized) {
+  if (!initialized)
+    LOG(ERROR) << "Local State intiialization failed.";
+
+  if (snapshot_.is_blocked_ui_mode() && IsFirstExecAfterBoot() &&
+      IsSnapshotEnabled()) {
+    if (!IsInHeadlessMode()) {
+      EnableHeadlessMode();
+      DisableDBusClients();
+      delegate_->RestartChrome(*base::CommandLine::ForCurrentProcess());
+      return;
+    }
+    state_ = State::kBlockedUi;
+  }
+  DoClearSnapshots();
+}
+
 void ArcDataSnapshotdManager::StopDaemon(base::OnceClosure callback) {
   VLOG(1) << "Stopping arc-data-snapshotd";
   daemon_weak_ptr_factory_.InvalidateWeakPtrs();
@@ -728,6 +780,9 @@ void ArcDataSnapshotdManager::OnKeyPairGenerated(bool success) {
         SnapshotSessionController::Create(delegate_->CreateAppsTracker());
     session_controller_->AddObserver(this);
 
+    bridge_->ConnectToUiCancelledSignal(base::BindRepeating(
+        &ArcDataSnapshotdManager::OnUiClosed, weak_ptr_factory_.GetWeakPtr()));
+
     // Move last to previous snapshot:
     snapshot_.StartNewSnapshot();
     snapshot_.Sync();
@@ -864,6 +919,40 @@ void ArcDataSnapshotdManager::OnUnexpectedArcDataRemoveRequested() {
 void ArcDataSnapshotdManager::OnUiUpdated(bool success) {
   if (!success)
     LOG(ERROR) << "Failed to update UI progress bar.";
+}
+
+void ArcDataSnapshotdManager::OnUiClosed() {
+  // Stop all ongoing flows.
+  daemon_weak_ptr_factory_.InvalidateWeakPtrs();
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  switch (state_) {
+    // If in process of taking a snapshot, stop and restart browser.
+    case State::kBlockedUi:
+    case State::kMgsLaunched:
+    case State::kMgsToLaunch:
+      state_ = State::kStopping;
+      snapshot_.set_blocked_ui_mode(false);
+      if (session_controller_)
+        session_controller_->RemoveObserver(this);
+      session_controller_.reset();
+      reboot_controller_.reset();
+      break;
+    case State::kNone:
+    case State::kLoading:
+    case State::kRestored:
+    case State::kStopping:
+    case State::kRunning:
+      LOG(ERROR) << "Received a signal from UI when not in blocked UI mode.";
+      break;
+  }
+  StopDaemon(std::move(attempt_user_exit_callback_));
+}
+
+std::vector<std::string> ArcDataSnapshotdManager::GetStartEnvVars() {
+  if (ArcDataSnapshotdManager::IsBlockedUiScreenShown())
+    return {kRestartFreconEnv};
+  else
+    return {};
 }
 
 }  // namespace data_snapshotd

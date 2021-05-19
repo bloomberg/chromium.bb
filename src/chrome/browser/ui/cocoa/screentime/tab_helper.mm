@@ -5,10 +5,14 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/screentime/fake_webpage_controller.h"
+#include "chrome/browser/ui/cocoa/screentime/screentime_features.h"
+#include "chrome/browser/ui/cocoa/screentime/screentime_policy.h"
 #include "chrome/browser/ui/cocoa/screentime/tab_helper.h"
 #include "chrome/browser/ui/cocoa/screentime/webpage_controller.h"
 #include "chrome/browser/ui/cocoa/screentime/webpage_controller_impl.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
@@ -24,12 +28,10 @@ void TabHelper::UseFakeWebpageControllerForTesting() {
 }
 
 // static
-bool TabHelper::IsScreentimeEnabled() {
-  static constexpr base::Feature kScreenTime{
-      "ScreenTime",
-      base::FEATURE_DISABLED_BY_DEFAULT,
-  };
-  return base::FeatureList::IsEnabled(kScreenTime);
+bool TabHelper::IsScreentimeEnabledForProfile(Profile* profile) {
+  if (profile->IsOffTheRecord())
+    return false;
+  return IsScreenTimeEnabled();
 }
 
 TabHelper::TabHelper(content::WebContents* contents)
@@ -41,11 +43,16 @@ TabHelper::TabHelper(content::WebContents* contents)
 TabHelper::~TabHelper() = default;
 
 void TabHelper::DidFinishNavigation(content::NavigationHandle* handle) {
+  Profile* profile = Profile::FromBrowserContext(
+      handle->GetWebContents()->GetBrowserContext());
+  // Absolutely ensure that we never record a navigation for an OTR profile.
+  CHECK(!profile->IsOffTheRecord());
+
   // TODO(ellyjones): Some defensive programming around chrome:// URLs would
   // probably be a good idea here. It's not unimaginable that ScreenTime would
   // misbehave and end up occluding those URLs, which would be very bad.
   if (handle->IsInMainFrame() && handle->HasCommitted())
-    page_controller_->PageURLChangedTo(handle->GetURL());
+    page_controller_->PageURLChangedTo(URLForReporting(handle->GetURL()));
 }
 
 std::unique_ptr<WebpageController> TabHelper::MakeWebpageController() {
@@ -66,10 +73,13 @@ std::unique_ptr<WebpageController> TabHelper::MakeWebpageController() {
 }
 
 void TabHelper::OnBlockedChanged(bool blocked) {
-  // TODO: Pause/resume playing media, update occlusion state on the
-  // WebContents, and so on. Getting this behavior right will probably require
-  // some care.
-  NOTIMPLEMENTED();
+  // TODO: Update occlusion state on the WebContents, and so on.
+  // Getting this behavior right will probably require some care.
+  auto* media_session = content::MediaSession::Get(web_contents());
+  if (blocked)
+    media_session->Suspend(content::MediaSession::SuspendType::kSystem);
+  else
+    media_session->Resume(content::MediaSession::SuspendType::kSystem);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(TabHelper)

@@ -52,7 +52,7 @@ class CalculatedStats {
   // Gets the calculated metrics associated with |originalName| in the order
   // that they were added, or an empty list if there are no associated metrics.
   getCalculatedMetrics(originalName) {
-    let calculatedMetrics =
+    const calculatedMetrics =
         this.calculatedMetricsByOriginalName.get(originalName);
     if (!calculatedMetrics) {
       return [];
@@ -62,7 +62,7 @@ class CalculatedStats {
 
   toString() {
     let str = '{id:"' + this.id + '"';
-    for (let originalName of this.calculatedMetricsByOriginalName.keys()) {
+    for (const originalName of this.calculatedMetricsByOriginalName.keys()) {
       const calculatedMetrics =
           this.calculatedMetricsByOriginalName.get(originalName);
       str += ',' + originalName + ':[';
@@ -83,7 +83,7 @@ class CalculatedStats {
 // associated with metrics from the original report. Convertible to and from the
 // "internal reports" format used by webrtc_internals.js to pass stats from C++
 // to JavaScript.
-class StatsReport {
+export class StatsReport {
   constructor() {
     // Represents an RTCStatsReport. It is a Map RTCStats.id -> RTCStats.
     // https://w3c.github.io/webrtc-pc/#dom-rtcstatsreport
@@ -125,7 +125,7 @@ class StatsReport {
 
   toInternalsReportList() {
     const result = [];
-    for (let stats of this.statsById.values()) {
+    for (const stats of this.statsById.values()) {
       const internalReport = {
         id: stats.id,
         type: stats.type,
@@ -158,14 +158,14 @@ class StatsReport {
 
   toString() {
     let str = '';
-    for (let stats of this.statsById.values()) {
+    for (const stats of this.statsById.values()) {
       if (str !== '') {
         str += ',';
       }
       str += JSON.stringify(stats);
     }
     let str2 = '';
-    for (let stats of this.calculatedStatsById.values()) {
+    for (const stats of this.calculatedStatsById.values()) {
       if (str2 !== '') {
         str2 += ',';
       }
@@ -180,7 +180,7 @@ class StatsReport {
 
   getByType(type) {
     const result = [];
-    for (let stats of this.statsById.values()) {
+    for (const stats of this.statsById.values()) {
       if (stats.type === type) {
         result.push(stats);
       }
@@ -203,6 +203,23 @@ class StatsReport {
     return calculatedStats ?
         calculatedStats.getCalculatedMetrics(originalMetricName) :
         [];
+  }
+}
+
+// Shows a `DOMHighResTimeStamp` as a human readable date time.
+// The metric must be a time value in milliseconds with Unix epoch as time
+// origin.
+class DateCalculator {
+  constructor(metric) {
+    this.metric = metric;
+  }
+  getCalculatedMetricName() {
+    return '[' + this.metric + ']';
+  }
+  calculate(id, previousReport, currentReport) {
+    const timestamp = currentReport.get(id)[this.metric];
+    const date = new Date(timestamp);
+    return date.toLocaleString();
   }
 }
 
@@ -394,7 +411,7 @@ class StandardDeviationCalculator {
 
 // Keeps track of previous and current stats report and calculates all
 // calculated metrics.
-class StatsRatesCalculator {
+export class StatsRatesCalculator {
   constructor() {
     this.previousReport = null;
     this.currentReport = null;
@@ -512,6 +529,16 @@ class StatsRatesCalculator {
           jitterBufferDelay: new RateCalculator(
               'jitterBufferDelay', 'jitterBufferEmittedCount',
               CalculatorModifier.kMillisecondsFromSeconds),
+          lastPacketReceivedTimestamp: new DateCalculator(
+              'lastPacketReceivedTimestamp'),
+          estimatedPlayoutTimestamp: new DateCalculator(
+              'estimatedPlayoutTimestamp'),
+        },
+      },
+      {
+        type: 'remote-outbound-rtp',
+        metricCalculators: {
+          remoteTimestamp: new DateCalculator('remoteTimestamp'),
         },
       },
       {

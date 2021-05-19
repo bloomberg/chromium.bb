@@ -1,8 +1,8 @@
 OpCapability Shader
 %1 = OpExtInstImport "GLSL.std.450"
 OpMemoryModel Logical GLSL450
-OpEntryPoint Fragment %_entrypoint "_entrypoint" %sk_FragColor %sk_Clockwise
-OpExecutionMode %_entrypoint OriginUpperLeft
+OpEntryPoint Fragment %_entrypoint_v "_entrypoint" %sk_FragColor %sk_Clockwise
+OpExecutionMode %_entrypoint_v OriginUpperLeft
 OpName %sk_FragColor "sk_FragColor"
 OpName %sk_Clockwise "sk_Clockwise"
 OpName %_UniformBuffer "_UniformBuffer"
@@ -10,18 +10,17 @@ OpMemberName %_UniformBuffer 0 "testInputs"
 OpMemberName %_UniformBuffer 1 "colorBlack"
 OpMemberName %_UniformBuffer 2 "colorGreen"
 OpMemberName %_UniformBuffer 3 "colorRed"
-OpName %_entrypoint "_entrypoint"
+OpName %_entrypoint_v "_entrypoint_v"
 OpName %main "main"
-OpName %_1_v "_1_v"
-OpName %_2_i "_2_i"
-OpName %_3_x "_3_x"
-OpName %_4_y "_4_y"
-OpName %_5_z "_5_z"
-OpName %_6_w "_6_w"
+OpName %_0_v "_0_v"
+OpName %_1_i "_1_i"
+OpName %_2_x "_2_x"
+OpName %_3_y "_3_y"
+OpName %_4_z "_4_z"
+OpName %_5_w "_5_w"
 OpDecorate %sk_FragColor RelaxedPrecision
 OpDecorate %sk_FragColor Location 0
 OpDecorate %sk_FragColor Index 0
-OpDecorate %sk_Clockwise RelaxedPrecision
 OpDecorate %sk_Clockwise BuiltIn FrontFacing
 OpMemberDecorate %_UniformBuffer 0 Offset 0
 OpMemberDecorate %_UniformBuffer 0 RelaxedPrecision
@@ -34,16 +33,27 @@ OpMemberDecorate %_UniformBuffer 3 RelaxedPrecision
 OpDecorate %_UniformBuffer Block
 OpDecorate %10 Binding 0
 OpDecorate %10 DescriptorSet 0
+OpDecorate %_0_v RelaxedPrecision
 OpDecorate %26 RelaxedPrecision
 OpDecorate %32 RelaxedPrecision
+OpDecorate %33 RelaxedPrecision
+OpDecorate %35 RelaxedPrecision
+OpDecorate %37 RelaxedPrecision
+OpDecorate %39 RelaxedPrecision
+OpDecorate %_2_x RelaxedPrecision
 OpDecorate %44 RelaxedPrecision
+OpDecorate %_3_y RelaxedPrecision
 OpDecorate %49 RelaxedPrecision
+OpDecorate %_4_z RelaxedPrecision
 OpDecorate %54 RelaxedPrecision
+OpDecorate %_5_w RelaxedPrecision
 OpDecorate %59 RelaxedPrecision
 OpDecorate %63 RelaxedPrecision
 OpDecorate %64 RelaxedPrecision
 OpDecorate %65 RelaxedPrecision
 OpDecorate %66 RelaxedPrecision
+OpDecorate %67 RelaxedPrecision
+OpDecorate %70 RelaxedPrecision
 OpDecorate %80 RelaxedPrecision
 OpDecorate %83 RelaxedPrecision
 OpDecorate %84 RelaxedPrecision
@@ -74,7 +84,7 @@ OpDecorate %84 RelaxedPrecision
 %v4bool = OpTypeVector %bool 4
 %int_2 = OpConstant %int 2
 %int_3 = OpConstant %int 3
-%_entrypoint = OpFunction %void None %15
+%_entrypoint_v = OpFunction %void None %15
 %16 = OpLabel
 %17 = OpFunctionCall %v4float %main
 OpStore %sk_FragColor %17
@@ -82,16 +92,16 @@ OpReturn
 OpFunctionEnd
 %main = OpFunction %v4float None %18
 %19 = OpLabel
-%_1_v = OpVariable %_ptr_Function_v4float Function
-%_2_i = OpVariable %_ptr_Function_v4int Function
-%_3_x = OpVariable %_ptr_Function_float Function
-%_4_y = OpVariable %_ptr_Function_float Function
-%_5_z = OpVariable %_ptr_Function_float Function
-%_6_w = OpVariable %_ptr_Function_float Function
+%_0_v = OpVariable %_ptr_Function_v4float Function
+%_1_i = OpVariable %_ptr_Function_v4int Function
+%_2_x = OpVariable %_ptr_Function_float Function
+%_3_y = OpVariable %_ptr_Function_float Function
+%_4_z = OpVariable %_ptr_Function_float Function
+%_5_w = OpVariable %_ptr_Function_float Function
 %74 = OpVariable %_ptr_Function_v4float Function
 %22 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
 %26 = OpLoad %v4float %22
-OpStore %_1_v %26
+OpStore %_0_v %26
 %30 = OpAccessChain %_ptr_Uniform_v4float %10 %int_1
 %32 = OpLoad %v4float %30
 %33 = OpCompositeExtract %float %32 0
@@ -103,31 +113,31 @@ OpStore %_1_v %26
 %39 = OpCompositeExtract %float %32 3
 %40 = OpConvertFToS %int %39
 %41 = OpCompositeConstruct %v4int %34 %36 %38 %40
-OpStore %_2_i %41
-%44 = OpLoad %v4float %_1_v
-%45 = OpLoad %v4int %_2_i
+OpStore %_1_i %41
+%44 = OpLoad %v4float %_0_v
+%45 = OpLoad %v4int %_1_i
 %46 = OpCompositeExtract %int %45 0
 %47 = OpVectorExtractDynamic %float %44 %46
-OpStore %_3_x %47
-%49 = OpLoad %v4float %_1_v
-%50 = OpLoad %v4int %_2_i
+OpStore %_2_x %47
+%49 = OpLoad %v4float %_0_v
+%50 = OpLoad %v4int %_1_i
 %51 = OpCompositeExtract %int %50 1
 %52 = OpVectorExtractDynamic %float %49 %51
-OpStore %_4_y %52
-%54 = OpLoad %v4float %_1_v
-%55 = OpLoad %v4int %_2_i
+OpStore %_3_y %52
+%54 = OpLoad %v4float %_0_v
+%55 = OpLoad %v4int %_1_i
 %56 = OpCompositeExtract %int %55 2
 %57 = OpVectorExtractDynamic %float %54 %56
-OpStore %_5_z %57
-%59 = OpLoad %v4float %_1_v
-%60 = OpLoad %v4int %_2_i
+OpStore %_4_z %57
+%59 = OpLoad %v4float %_0_v
+%60 = OpLoad %v4int %_1_i
 %61 = OpCompositeExtract %int %60 3
 %62 = OpVectorExtractDynamic %float %59 %61
-OpStore %_6_w %62
-%63 = OpLoad %float %_3_x
-%64 = OpLoad %float %_4_y
-%65 = OpLoad %float %_5_z
-%66 = OpLoad %float %_6_w
+OpStore %_5_w %62
+%63 = OpLoad %float %_2_x
+%64 = OpLoad %float %_3_y
+%65 = OpLoad %float %_4_z
+%66 = OpLoad %float %_5_w
 %67 = OpCompositeConstruct %v4float %63 %64 %65 %66
 %71 = OpFOrdEqual %v4bool %67 %70
 %73 = OpAll %bool %71

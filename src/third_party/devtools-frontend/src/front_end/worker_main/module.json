@@ -1,15 +1,6 @@
 {
-  "extensions": [
-    {
-      "type": "early-initialization",
-      "className": "WorkerMain.WorkerMain"
-    }
-  ],
   "dependencies": [
     "components",
-    "mobile_throttling"
-  ],
-  "modules": [
-    "worker_main-legacy.js"
+    "panels/mobile_throttling"
   ]
 }

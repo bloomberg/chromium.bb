@@ -117,6 +117,11 @@
     "META": {"sizes": {"includes": [20]}},
     "includes": [1365],
   },
+  "chrome/browser/resources/chromeos/login/oobe_resources.grd": {
+    "META": {"sizes": {"includes": [50], "structures": [200]}},
+    "includes": [1367],
+    "structures": [1368],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/multidevice_internals/resources.grd": {
     "META": {"sizes": {"includes": [35]}},
     "includes": [1370],
@@ -145,6 +150,10 @@
     "META": {"sizes": {"includes": [30]}},
     "includes": [1580],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/internals/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [1590],
+  },
   "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
     "includes": [1620],
   },
@@ -166,7 +175,11 @@
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/new_tab_page/resources.grd": {
     "META": {"sizes": {"includes": [200]}},
-    "includes": [1680],
+    "includes": [1670],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/new_tab_page_third_party/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [1695],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/ntp4/apps_resources.grd": {
     "META": {"sizes": {"includes": [40]}},
@@ -217,32 +230,13 @@
   "chrome/browser/test_dummy/internal/android/resources/resources.grd": {
     "includes": [1980],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/download_shelf/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [1990],
+  },
   # END chrome/browser section.
 
   # START chrome/ WebUI resources section
-  # Both the kaleidoscope_resources.grd and kaleidoscope_internal_resources.grd
-  # start with the same id because only one of them is built based on whether
-  # src-internal is available.
-  "chrome/browser/media/kaleidoscope/kaleidoscope_resources.grd": {
-    # Big alignment at start of section.
-    "META": {"align": 100},
-    "includes": [2000],
-  },
-  "chrome/browser/media/kaleidoscope/kaleidoscope_internal_resources.grd": {
-    # Big alignment at start of section.
-    "META": {"align": 100},
-    "includes": [2000],
-  },
-  # The internal version of kaleidoscope_resources.grd will be removed in a
-  # follow up. It is only here to avoid build breakages.
-  "chrome/browser/media/kaleidoscope/internal/kaleidoscope_resources.grd": {
-    "META": {"sizes": {"includes": [50],}},  # Relies on src-internal.
-    "includes": [2010],
-  },
-  "chrome/browser/media/kaleidoscope/internal/kaleidoscope_strings.grd": {
-    "META": {"sizes": {"messages": [50]}, "join": 2},  # Relies on src-internal.
-    "messages": [2015],
-  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/bluetooth_internals/resources.grd": {
     "META": {"sizes": {"includes": [30],}},
     "includes": [2020],
@@ -262,6 +256,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/network_ui/network_ui_resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [2065],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/download_internals/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [2070],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/gaia_auth_host/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
@@ -303,7 +301,8 @@
    "META": {"sizes": {"includes": [10],}},
    "includes": [2230],
   },
-  "components/sync/driver/resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/components/sync/driver/resources/resources.grd": {
+   "META": {"sizes": {"includes": [30],}},
     "includes": [2240],
   },
   "components/resources/dev_ui_components_resources.grd": {
@@ -313,7 +312,8 @@
     "META": {"sizes": {"includes": [10],}},
     "includes": [2270],
   },
-  "content/browser/webrtc/resources/resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/content/browser/webrtc/resources/resources.grd": {
+    "META": {"sizes": {"includes": [20],}},
     "includes": [2280],
   },
   "content/dev_ui_content_resources.grd": {
@@ -405,7 +405,7 @@
     "META": {"sizes": {"includes": [50],}},
     "includes": [2640],
   },
-  "chromeos/components/scanning/resources/scanning_app_resources.grd": {
+  "ash/content/scanning/resources/scanning_app_resources.grd": {
     "includes": [2645],
     "structures": [2650],
   },
@@ -419,9 +419,20 @@
     "META": {"sizes": {"includes": [50],}},
     "includes": [2670],
   },
+  # Both eche_bundle_resources.grd and eche_bundle_mock_resources.grd
+  # start with the same id because only one of them is built depending on if
+  # src_internal is available.
   "chromeos/components/eche_app_ui/resources/prod/eche_bundle_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [2680],
+  },
+  "chromeos/components/eche_app_ui/resources/mock/eche_bundle_mock_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [2680],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/personalization_app/resources/chromeos_personalization_app_resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [2690],
   },
   # END chromeos/ section.
 
@@ -682,7 +693,7 @@
     "messages": [3660],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ui/file_manager/file_manager_gen_resources.grd": {
-    "META": {"sizes": {"includes": [200]}},
+    "META": {"sizes": {"includes": [2000]}},
     "includes": [3670],
   },
   "ui/file_manager/file_manager_resources.grd": {

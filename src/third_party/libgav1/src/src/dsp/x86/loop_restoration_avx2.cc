@@ -116,7 +116,8 @@ inline void WienerHorizontalTap7(const uint8_t* src, const ptrdiff_t src_stride,
   filter[0] = _mm256_shuffle_epi8(coefficients, _mm256_set1_epi16(0x0100));
   filter[1] = _mm256_shuffle_epi8(coefficients, _mm256_set1_epi16(0x0302));
   filter[2] = _mm256_shuffle_epi8(coefficients, _mm256_set1_epi16(0x0102));
-  filter[3] = _mm256_shuffle_epi8(coefficients, _mm256_set1_epi16(0x8000));
+  filter[3] = _mm256_shuffle_epi8(
+      coefficients, _mm256_set1_epi16(static_cast<int16_t>(0x8000)));
   for (int y = height; y != 0; --y) {
     __m256i s = LoadUnaligned32(src);
     __m256i ss[4];
@@ -144,7 +145,8 @@ inline void WienerHorizontalTap5(const uint8_t* src, const ptrdiff_t src_stride,
   __m256i filter[3];
   filter[0] = _mm256_shuffle_epi8(coefficients, _mm256_set1_epi16(0x0201));
   filter[1] = _mm256_shuffle_epi8(coefficients, _mm256_set1_epi16(0x0203));
-  filter[2] = _mm256_shuffle_epi8(coefficients, _mm256_set1_epi16(0x8001));
+  filter[2] = _mm256_shuffle_epi8(
+      coefficients, _mm256_set1_epi16(static_cast<int16_t>(0x8001)));
   for (int y = height; y != 0; --y) {
     __m256i s = LoadUnaligned32(src);
     __m256i ss[4];
@@ -171,7 +173,8 @@ inline void WienerHorizontalTap3(const uint8_t* src, const ptrdiff_t src_stride,
                                  int16_t** const wiener_buffer) {
   __m256i filter[2];
   filter[0] = _mm256_shuffle_epi8(coefficients, _mm256_set1_epi16(0x0302));
-  filter[1] = _mm256_shuffle_epi8(coefficients, _mm256_set1_epi16(0x8002));
+  filter[1] = _mm256_shuffle_epi8(
+      coefficients, _mm256_set1_epi16(static_cast<int16_t>(0x8002)));
   for (int y = height; y != 0; --y) {
     __m256i s = LoadUnaligned32(src);
     __m256i ss[4];

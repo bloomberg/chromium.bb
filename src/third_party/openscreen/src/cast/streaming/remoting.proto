@@ -238,10 +238,15 @@ message VideoDecoderConfig {
   optional bytes extra_data = 9;
 }
 
-message PipelineDecoderInfo {
+message AudioDecoderInfo {
   reserved 3;
-  reserved "has_decrypting_demuxer_stream";
-  optional string decoder_name = 1;
+  optional int64 decoder_type = 1;
+  optional bool is_platform_decoder = 2;
+};
+
+message VideoDecoderInfo {
+  reserved 3;
+  optional int64 decoder_type = 1;
   optional bool is_platform_decoder = 2;
 };
 
@@ -253,8 +258,8 @@ message PipelineStatistics {
   optional int64 audio_memory_usage = 5;
   optional int64 video_memory_usage = 6;
   optional int64 video_frame_duration_average_usec = 7;
-  optional PipelineDecoderInfo audio_decoder_info = 8;
-  optional PipelineDecoderInfo video_decoder_info = 9;
+  optional AudioDecoderInfo audio_decoder_info = 8;
+  optional VideoDecoderInfo video_decoder_info = 9;
 };
 
 message AcquireDemuxer {

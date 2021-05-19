@@ -252,7 +252,10 @@ Error DnsDataGraphImpl::Node::ApplyDataRecordChange(MdnsRecord record,
 
   if (record.dns_type() == DnsType::kPTR) {
     child_name = absl::get<PtrRecordRdata>(record.rdata()).ptr_domain();
-    it = std::find(records_.begin(), records_.end(), record);
+    it = std::find_if(records_.begin(), records_.end(),
+                      [record](const MdnsRecord& rhs) {
+                        return record.IsReannouncementOf(rhs);
+                      });
   } else {
     if (record.dns_type() == DnsType::kSRV) {
       child_name = absl::get<SrvRecordRdata>(record.rdata()).target();

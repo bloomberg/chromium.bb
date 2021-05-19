@@ -405,6 +405,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
                                   this,
                                   loading_task_runner_.get())
                             : nullptr),
+      text_position_(TextPosition::MinimumPosition()),
       task_runner_state_(
           MakeGarbageCollected<HTMLDocumentParserState>(sync_policy)),
       pending_csp_meta_token_(nullptr),
@@ -551,9 +552,6 @@ void HTMLDocumentParser::PrepareToStopParsing() {
   // underneath. In that case, just bail out.
   if (IsDetached())
     return;
-
-  if (script_runner_)
-    script_runner_->RecordMetricsAtParseEnd();
 
   AttemptToRunDeferredScriptsAndEnd();
 }

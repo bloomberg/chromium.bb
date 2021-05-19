@@ -7,30 +7,30 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("formatter") {
   sources = [
-    "FormatterWorkerPool.js",
-    "ScriptFormatter.js",
-    "SourceFormatter.js",
+    "FormatterWorkerPool.ts",
+    "ScriptFormatter.ts",
+    "SourceFormatter.ts",
   ]
 
   deps = [
-    "../bindings:bundle",
-    "../common:bundle",
+    "../core/common:bundle",
+    "../core/platform:bundle",
+    "../core/sdk:bundle",
     "../formatter_worker:formatter_actions",
-    "../platform:bundle",
-    "../sdk:bundle",
-    "../text_utils:bundle",
+    "../models/bindings:bundle",
+    "../models/text_utils:bundle",
     "../workspace:bundle",
   ]
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "formatter.js"
+  entrypoint = "formatter.ts"
 
   deps = [ ":formatter" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "formatter-legacy.js"
+  entrypoint = "formatter-legacy.ts"
 
   deps = [ ":bundle" ]
 }

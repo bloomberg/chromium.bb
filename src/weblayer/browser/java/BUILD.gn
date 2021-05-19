@@ -96,6 +96,7 @@ java_cpp_enum("generated_enums") {
 
 android_library("base_module_java") {
   sources = [
+    "org/chromium/weblayer_private/ApplicationInfoHelper.java",
     "org/chromium/weblayer_private/ChildProcessServiceImpl.java",
     "org/chromium/weblayer_private/WebViewCompatibilityHelperImpl.java",
   ]
@@ -143,6 +144,7 @@ android_library("java") {
     "org/chromium/weblayer_private/HttpAuthHandlerImpl.java",
     "org/chromium/weblayer_private/InfoBarContainer.java",
     "org/chromium/weblayer_private/InfoBarContainerView.java",
+    "org/chromium/weblayer_private/InstalledAppProviderFactory.java",
     "org/chromium/weblayer_private/IntentUtils.java",
     "org/chromium/weblayer_private/InterceptNavigationDelegateClientImpl.java",
     "org/chromium/weblayer_private/LocaleChangedBroadcastReceiver.java",
@@ -196,7 +198,6 @@ android_library("java") {
     ":weblayer_bundle_utils",
     ":weblayer_resources",
     "//base:base_java",
-    "//base:jni_java",
     "//cc:cc_java",
     "//components/autofill/android/provider:java",
     "//components/browser_ui/banners/android:java",
@@ -221,7 +222,9 @@ android_library("java") {
     "//components/content_settings/android:java",
     "//components/crash/android:handler_java",
     "//components/crash/android:java",
+    "//components/download/internal/background_service:internal_java",
     "//components/download/internal/common:internal_java",
+    "//components/download/network:network_java",
     "//components/embedder_support/android:application_java",
     "//components/embedder_support/android:browser_context_java",
     "//components/embedder_support/android:content_view_java",
@@ -234,6 +237,7 @@ android_library("java") {
     "//components/infobars/android:infobar_android_enums_java",
     "//components/infobars/android:java",
     "//components/infobars/core:infobar_enums_java",
+    "//components/installedapp/android:java",
     "//components/javascript_dialogs/android:java",
     "//components/location/android:settings_java",
     "//components/media_router/browser/android:cast_options_provider_java",
@@ -261,6 +265,7 @@ android_library("java") {
     "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
     "//components/webapps/browser/android:java",
+    "//components/webauthn/android:java",
     "//components/webrtc/android:java",
     "//content/public/android:content_java",
     "//mojo/public/java:bindings_java",
@@ -268,6 +273,7 @@ android_library("java") {
     "//net/android:net_java",
     "//services/network/public/mojom:cookies_mojom_java",
     "//services/network/public/mojom:mojom_java",
+    "//services/network/public/mojom:url_loader_base_java",
     "//services/service_manager/public/java:service_manager_java",
     "//third_party/android_deps:material_design_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
@@ -297,6 +303,13 @@ android_library("java") {
       "//third_party/android_sdk:public_framework_system_java"
 }
 
+java_group("upstream_java") {
+  deps = [
+    ":gms_bridge_upstream_impl_java",
+    "//components/externalauth/android:google_delegate_public_impl_java",
+  ]
+}
+
 generate_jni_registration("weblayer_jni_registration") {
   targets = [ ":java" ]
   header_output = "$target_gen_dir/$target_name.h"
@@ -313,6 +326,7 @@ android_resources("weblayer_test_resources") {
 android_library("test_java") {
   testonly = true
   sources = [
+    "org/chromium/weblayer_private/test/TestAutofillManagerWrapper.java",
     "org/chromium/weblayer_private/test/TestContentCaptureConsumer.java",
     "org/chromium/weblayer_private/test/TestInfoBar.java",
     "org/chromium/weblayer_private/test/TestWebLayerImpl.java",
@@ -322,21 +336,27 @@ android_library("test_java") {
     ":base_module_interfaces_java",
     ":interfaces_java",
     ":java",
+    ":test_interfaces_java",
     ":weblayer_test_resources",
     "//base:base_java",
-    "//base:jni_java",
+    "//components/autofill/android/provider:java",
+    "//components/autofill/android/provider/test_support:component_autofill_provider_java_test_support",
     "//components/content_capture/android:java",
     "//components/infobars/android:java",
     "//components/location/android:location_java",
     "//components/media_router/browser/android:java",
     "//components/media_router/browser/android:test_support_java",
     "//components/permissions/android:java",
+    "//components/webauthn/android:java",
+    "//components/webauthn/android:test_support_java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java",
     "//services/device/public/java:geolocation_java",
     "//services/device/public/java:geolocation_java_test_support",
     "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//ui/android:ui_full_java",
+    "//url:origin_java",
   ]
   srcjar_deps = [ ":test_aidl" ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -414,6 +434,7 @@ generate_jni("test_jni") {
 
 generate_jni("jni") {
   sources = [
+    "org/chromium/weblayer_private/ApplicationInfoHelper.java",
     "org/chromium/weblayer_private/AutocompleteSchemeClassifierImpl.java",
     "org/chromium/weblayer_private/BrowserControlsContainerView.java",
     "org/chromium/weblayer_private/BrowserImpl.java",
@@ -498,6 +519,13 @@ android_library("interfaces_java") {
   srcjar_deps = [ ":aidl" ]
 }
 
+android_library("test_interfaces_java") {
+  sources =
+      [ "org/chromium/weblayer_private/test_interfaces/AutofillEventType.java" ]
+
+  deps = [ "//third_party/androidx:androidx_annotation_annotation_java" ]
+}
+
 # Separate target to allow for a dependency on GmsCore without pulling in all of
 # java classes. It compiles the abstract class; implementations are compiled
 # separately.
@@ -561,6 +589,7 @@ android_aidl("aidl") {
     "org/chromium/weblayer_private/interfaces/INavigation.aidl",
     "org/chromium/weblayer_private/interfaces/INavigationController.aidl",
     "org/chromium/weblayer_private/interfaces/INavigationControllerClient.aidl",
+    "org/chromium/weblayer_private/interfaces/IOpenUrlCallbackClient.aidl",
     "org/chromium/weblayer_private/interfaces/IPrerenderController.aidl",
     "org/chromium/weblayer_private/interfaces/IProfile.aidl",
     "org/chromium/weblayer_private/interfaces/IProfileClient.aidl",

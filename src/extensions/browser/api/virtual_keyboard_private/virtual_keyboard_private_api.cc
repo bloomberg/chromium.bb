@@ -5,12 +5,12 @@
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -62,7 +62,7 @@ VirtualKeyboardPrivateFunction::~VirtualKeyboardPrivateFunction() {}
 
 ExtensionFunction::ResponseAction
 VirtualKeyboardPrivateInsertTextFunction::Run() {
-  base::string16 text;
+  std::u16string text;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &text));
   if (!delegate()->InsertText(text))
     return RespondNow(Error(kUnknownError));

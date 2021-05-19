@@ -24,15 +24,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "build/buildflag.h"
-#include "chromeos/assistant/buildflags.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/services/assistant/assistant_interaction_logger.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
-#include "chromeos/services/assistant/assistant_manager_service_delegate_impl.h"
-#include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
-#include "chromeos/services/assistant/fake_assistant_settings_impl.h"
+#include "chromeos/services/assistant/assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
@@ -47,18 +43,10 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/assistant/internal/internal_constants.h"
-#include "chromeos/services/assistant/assistant_manager_service_impl.h"
-#include "chromeos/services/assistant/assistant_settings_impl.h"
-#endif
-
 namespace chromeos {
 namespace assistant {
 
 namespace {
-
-using CommunicationErrorType = AssistantManagerService::CommunicationErrorType;
 
 constexpr char kScopeAuthGcm[] = "https://www.googleapis.com/auth/gcm";
 constexpr char kScopeAssistant[] =
@@ -79,16 +67,14 @@ AssistantStatus ToAssistantStatus(AssistantManagerService::State state) {
   using State = AssistantManagerService::State;
 
   switch (state) {
-    case State::STOPPED:
-    case State::STARTING:
-    case State::STARTED:
+    case State::kStopped:
+    case State::kStarted:
       return AssistantStatus::NOT_READY;
-    case State::RUNNING:
+    case State::kRunning:
       return AssistantStatus::READY;
   }
 }
 
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 base::Optional<std::string> GetS3ServerUriOverride() {
   if (g_s3_server_uri_override)
     return g_s3_server_uri_override;
@@ -100,7 +86,6 @@ base::Optional<std::string> GetDeviceIdOverride() {
     return g_device_id_override;
   return base::nullopt;
 }
-#endif
 
 // In the signed-out mode, we are going to run Assistant service without
 // using user's signed in account information.
@@ -296,7 +281,7 @@ void Service::OnAssistantConsentStatusChanged(int consent_status) {
   // Notify device apps status when user accepts activity control.
   if (assistant_manager_service_ &&
       assistant_manager_service_->GetState() ==
-          AssistantManagerService::State::RUNNING) {
+          AssistantManagerService::State::kRunning) {
     assistant_manager_service_->SyncDeviceAppsStatus();
   }
 }
@@ -334,17 +319,16 @@ void Service::OnLockedFullScreenStateChanged(bool enabled) {
   UpdateListeningState();
 }
 
-void Service::OnCommunicationError(CommunicationErrorType error_type) {
-  if (error_type == CommunicationErrorType::AuthenticationError)
-    RequestAccessToken();
+void Service::OnAuthenticationError() {
+  RequestAccessToken();
 }
 
 void Service::OnStateChanged(AssistantManagerService::State new_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (new_state == AssistantManagerService::State::STARTED)
+  if (new_state == AssistantManagerService::State::kStarted)
     FinalizeAssistantManagerService();
-  if (new_state == AssistantManagerService::State::RUNNING)
+  if (new_state == AssistantManagerService::State::kRunning)
     DVLOG(1) << "Assistant is running";
 
   AssistantClient::Get()->OnAssistantStatusChanged(
@@ -376,14 +360,13 @@ void Service::UpdateAssistantManagerState() {
 
   auto state = assistant_manager_service_->GetState();
   switch (state) {
-    case AssistantManagerService::State::STOPPED:
+    case AssistantManagerService::State::kStopped:
       if (assistant_state->settings_enabled().value()) {
         assistant_manager_service_->Start(GetUserInfo(), ShouldEnableHotword());
         DVLOG(1) << "Request Assistant start";
       }
       break;
-    case AssistantManagerService::State::STARTING:
-    case AssistantManagerService::State::STARTED:
+    case AssistantManagerService::State::kStarted:
       // If the Assistant is disabled by domain policy, the libassistant will
       // never becomes ready. Stop waiting for the state change and stop the
       // service.
@@ -401,7 +384,7 @@ void Service::UpdateAssistantManagerState() {
           FROM_HERE, update_assistant_manager_callback_.callback(),
           kUpdateAssistantManagerDelay);
       break;
-    case AssistantManagerService::State::RUNNING:
+    case AssistantManagerService::State::kRunning:
       if (assistant_state->settings_enabled().value()) {
         assistant_manager_service_->SetUser(GetUserInfo());
         assistant_manager_service_->EnableHotword(ShouldEnableHotword());
@@ -417,8 +400,8 @@ void Service::UpdateAssistantManagerState() {
 }
 
 CoreAccountInfo Service::RetrievePrimaryAccountInfo() const {
-  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
-      signin::ConsentLevel::kNotRequired);
+  CoreAccountInfo account_info =
+      identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
   CHECK(!account_info.account_id.empty());
   CHECK(!account_info.gaia.empty());
   return account_info;
@@ -495,7 +478,7 @@ void Service::CreateAssistantManagerService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   assistant_manager_service_ = CreateAndReturnAssistantManagerService();
-  assistant_manager_service_->AddCommunicationErrorObserver(this);
+  assistant_manager_service_->AddAuthenticationStateObserver(this);
   assistant_manager_service_->AddAndFireStateObserver(this);
 
   if (AssistantInteractionLogger::IsLoggingEnabled()) {
@@ -510,26 +493,19 @@ Service::CreateAndReturnAssistantManagerService() {
   if (assistant_manager_service_for_testing_)
     return std::move(assistant_manager_service_for_testing_);
 
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  auto delegate =
-      std::make_unique<AssistantManagerServiceDelegateImpl>(context());
-
   // |assistant_manager_service_| is only created once.
   DCHECK(pending_url_loader_factory_);
   return std::make_unique<AssistantManagerServiceImpl>(
-      context(), std::move(delegate), std::move(pending_url_loader_factory_),
+      context(), std::move(pending_url_loader_factory_),
       GetS3ServerUriOverride(), GetDeviceIdOverride());
-#else
-  return std::make_unique<FakeAssistantManagerServiceImpl>();
-#endif
 }
 
 void Service::FinalizeAssistantManagerService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(assistant_manager_service_->GetState() ==
-             AssistantManagerService::STARTED ||
+             AssistantManagerService::State::kStarted ||
          assistant_manager_service_->GetState() ==
-             AssistantManagerService::RUNNING);
+             AssistantManagerService::State::kRunning);
 
   // Ensure one-time mojom initialization.
   if (is_assistant_manager_service_finalized_)

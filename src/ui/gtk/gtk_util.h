@@ -11,13 +11,13 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "ui/base/glib/scoped_gobject.h"
+#include "ui/color/color_id.h"
+#include "ui/gtk/gtk_buildflags.h"
+#include "ui/gtk/gtk_compat.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/window/frame_buttons.h"
-
-// Function availability can be tested by checking if the address of gtk_* is
-// not nullptr.
-#define WEAK_GTK_FN(x) extern "C" __attribute__((weak)) decltype(x) x
 
 namespace aura {
 class Window;
@@ -33,6 +33,11 @@ class KeyEvent;
 
 namespace gtk {
 
+extern const char kGtkCSSMenu[];
+extern const char kGtkCSSMenuItem[];
+extern const char kGtkCSSMenuScrollbar[];
+
+COMPONENT_EXPORT(GTK)
 void GtkInitFromCommandLine(const base::CommandLine& command_line);
 
 // Sets |dialog| as transient for |parent|, which will keep it on top and center
@@ -78,19 +83,51 @@ class CairoSurface {
   cairo_t* cairo_;
 };
 
-// Returns true iff the runtime version of Gtk used meets
-// |major|.|minor|.|micro|.
-bool GtkCheckVersion(int major, int minor = 0, int micro = 0);
+class GtkCssContext {
+ public:
+  GtkCssContext();
+  GtkCssContext(const GtkCssContext&);
+  GtkCssContext(GtkCssContext&&);
+  GtkCssContext& operator=(const GtkCssContext&);
+  GtkCssContext& operator=(GtkCssContext&&);
+  ~GtkCssContext();
 
-using ScopedStyleContext = ScopedGObject<GtkStyleContext>;
+  // GTK3 constructor.
+  explicit GtkCssContext(GtkStyleContext* context);
+
+  // GTK4 constructor.
+  GtkCssContext(GtkWidget* widget, GtkWidget* root);
+
+  // As a convenience, allow using a GtkCssContext as a gtk_style_context()
+  // to avoid repeated use of an explicit getter.
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  operator GtkStyleContext*();
+
+  GtkCssContext GetParent();
+
+  // Only available on GTK4.
+  GtkWidget* widget();
+  GtkWidget* root();
+
+ private:
+  // GTK3 state.
+  ScopedGObject<GtkStyleContext> context_;
+
+  // GTK4 state.
+  // GTK widgets own their children, so instead of keeping a reference to the
+  // widget directly, keep a reference to the root widget.
+  GtkWidget* widget_ = nullptr;
+  ScopedGObject<GtkWidget> root_;
+};
+
 using ScopedCssProvider = ScopedGObject<GtkCssProvider>;
 
-#if !GTK_CHECK_VERSION(3, 90, 0)
+#if BUILDFLAG(GTK_VERSION) < 4
 }  // namespace gtk
 
 // Template override cannot be in the gtk namespace.
 template <>
-inline void gtk::ScopedStyleContext::Unref() {
+inline void ScopedGObject<GtkStyleContext>::Unref() {
   // Versions of GTK earlier than 3.15.4 had a bug where a g_assert
   // would be triggered when trying to free a GtkStyleContext that had
   // a parent whose only reference was the child context in question.
@@ -123,24 +160,24 @@ SkColor GdkRgbaToSkColor(const GdkRGBA& color);
 // If |context| is nullptr, creates a new top-level style context
 // specified by parsing |css_node|.  Otherwise, creates the child
 // context with |context| as the parent.
-ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
-                                               const std::string& css_node);
+GtkCssContext AppendCssNodeToStyleContext(GtkCssContext context,
+                                          const std::string& css_node);
 
-// Parses |css_selector| into a GtkStyleContext.  The format is a
+// Parses |css_selector| into a StyleContext.  The format is a
 // sequence of whitespace-separated objects.  Each object may have at
 // most one object name at the beginning of the string, and any number
 // of '.'-prefixed classes and ':'-prefixed pseudoclasses.  An example
 // is "GtkButton.button.suggested-action:hover:active".  The caller
 // must g_object_unref() the returned context.
-ScopedStyleContext GetStyleContextFromCss(const std::string& css_selector);
+GtkCssContext GetStyleContextFromCss(const std::string& css_selector);
 
 SkColor GetFgColorFromStyleContext(GtkStyleContext* context);
 
-SkColor GetBgColorFromStyleContext(GtkStyleContext* context);
+SkColor GetBgColorFromStyleContext(GtkCssContext context);
 
 // Overrides properties on |context| and all its parents with those
 // provided by |css|.
-void ApplyCssToContext(GtkStyleContext* context, const std::string& css);
+void ApplyCssToContext(GtkCssContext context, const std::string& css);
 
 // Get the 'color' property from the style context created by
 // GetStyleContextFromCss(|css_selector|).
@@ -152,7 +189,7 @@ ScopedCssProvider GetCssProvider(const std::string& css);
 // the background for |context| itself.
 void RenderBackground(const gfx::Size& size,
                       cairo_t* cr,
-                      GtkStyleContext* context);
+                      GtkCssContext context);
 
 // Renders a background from the style context created by
 // GetStyleContextFromCss(|css_selector|) into a 24x24 bitmap and
@@ -186,14 +223,33 @@ std::string GetGtkSettingsStringProperty(GtkSettings* settings,
 // https://gitlab.freedesktop.org/xorg/proto/xorgproto/blob/master/include/X11/extensions/XKB.h#L372
 int BuildXkbStateFromGdkEvent(unsigned int state, unsigned char group);
 
+int GetKeyEventProperty(const ui::KeyEvent& key_event,
+                        const char* property_key);
+
+GdkModifierType GetGdkKeyEventState(const ui::KeyEvent& key_event);
+
 // Translates |key_event| into a GdkEvent. GdkEvent::key::window is the only
 // field not set by this function, callers must set it, as the way for
 // retrieving it may vary depending on the event being processed. E.g: for IME
 // Context impl, X11 window XID is obtained through Event::target() which is
-// root aura::Window targeted by that key event.
+// root aura::Window targeted by that key event.  Only available in GTK3.
 GdkEvent* GdkEventFromKeyEvent(const ui::KeyEvent& key_event);
 
 GtkIconTheme* GetDefaultIconTheme();
+
+void GtkWindowDestroy(GtkWidget* widget);
+
+GtkWidget* GetDummyWindow();
+
+gfx::Size GetSeparatorSize(bool horizontal);
+
+float GetDeviceScaleFactor();
+
+// This should only be called on Gtk4.
+GdkTexture* GetTextureFromRenderNode(GskRenderNode* node);
+
+// Gets the GTK theme color for a given `color_id`.
+base::Optional<SkColor> SkColorFromColorId(ui::ColorId color_id);
 
 }  // namespace gtk
 

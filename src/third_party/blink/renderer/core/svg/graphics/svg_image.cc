@@ -821,6 +821,9 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
       page->GetSettings().SetDefaultFixedFontSize(
           default_settings.GetDefaultFixedFontSize());
 
+      page->GetSettings().SetImageAnimationPolicy(
+          default_settings.GetImageAnimationPolicy());
+
       // Also copy the preferred-color-scheme to ensure a responsiveness to
       // dark/light color schemes.
       page->GetSettings().SetPreferredColorScheme(
@@ -839,9 +842,9 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
     frame = MakeGarbageCollected<LocalFrame>(
         frame_client_, *page, nullptr, nullptr, nullptr,
         FrameInsertType::kInsertInConstructor, LocalFrameToken(), nullptr,
-        nullptr, /* policy_container */ nullptr);
+        nullptr);
     frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
-    frame->Init(nullptr);
+    frame->Init(/*opener=*/nullptr, /*policy_container=*/nullptr);
   }
 
   // SVG Images will always synthesize a viewBox, if it's not available, and
@@ -860,27 +863,29 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   // writing-mode).
   frame->GetDocument()->UpdateStyleAndLayoutTree();
 
-  // Set the concrete object size before a container size is available.
-  intrinsic_size_ = RoundedLayoutSize(ConcreteObjectSize(FloatSize(
-      LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight)));
-
   DCHECK(page_);
   switch (load_state_) {
     case kInDataChanged:
       load_state_ = kWaitingForAsyncLoadCompletion;
-      return RootElement() ? kSizeAvailableAndLoadingAsynchronously
-                           : kSizeUnavailable;
-
+      break;
     case kLoadCompleted:
-      return RootElement() ? kSizeAvailable : kSizeUnavailable;
-
+      break;
     case kDataChangedNotStarted:
     case kWaitingForAsyncLoadCompletion:
       CHECK(false);
       break;
   }
 
-  NOTREACHED();
+  if (!RootElement())
+    return kSizeUnavailable;
+
+  // Set the concrete object size before a container size is available.
+  intrinsic_size_ = RoundedLayoutSize(ConcreteObjectSize(FloatSize(
+      LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight)));
+
+  if (load_state_ == kWaitingForAsyncLoadCompletion)
+    return kSizeAvailableAndLoadingAsynchronously;
+  DCHECK_EQ(load_state_, kLoadCompleted);
   return kSizeAvailable;
 }
 

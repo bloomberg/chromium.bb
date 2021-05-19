@@ -6,7 +6,7 @@
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals,assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {installMockChrome} from '../../../base/js/mock_chrome.m.js';
+import {installMockChrome} from '../../common/js/mock_chrome.m.js';
 import {ProgressItemState} from '../../common/js/progress_center_common.m.js';
 
 import {DriveSyncHandlerImpl} from './drive_sync_handler.m.js';
@@ -86,6 +86,15 @@ mockChrome.fileManagerPrivate = {
     },
     listener_: null
   },
+  onMountCompleted: {
+    addListener: function(callback) {
+      mockChrome.fileManagerPrivate.onMountCompleted.listener_ = callback;
+    },
+    removeListener: function() {
+      mockChrome.fileManagerPrivate.onMountCompleted.listener_ = null;
+    },
+    listener_: null
+  },
   getPreferences: function() {},
   setPreferences: function() {},
 
@@ -101,6 +110,15 @@ mockChrome.notifications = {
     },
     removeListener: function() {
       mockChrome.notifications.onButtonClicked.listener_ = null;
+    },
+    listener_: null
+  },
+  onClosed: {
+    addListener: function(callback) {
+      mockChrome.notifications.onClosed.listener_ = callback;
+    },
+    removeListener: function() {
+      mockChrome.notifications.onClosed.listener_ = null;
     },
     listener_: null
   },

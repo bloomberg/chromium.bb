@@ -4,6 +4,7 @@
 
 #include "net/cert/cert_verify_proc.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -2798,7 +2799,7 @@ class CertVerifyProcNameNormalizationTest : public CertVerifyProcInternalTest {
     scoped_refptr<X509Certificate> root_cert =
         ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
     ASSERT_TRUE(root_cert);
-    test_root_.reset(new ScopedTestRoot(root_cert.get()));
+    test_root_ = std::make_unique<ScopedTestRoot>(root_cert.get());
   }
 
   std::string HistogramName() const {
@@ -3366,7 +3367,9 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   leaf.SetSubjectAltName(kHostname);
 
   // Make two versions of the intermediate - one that is SHA256 signed, and one
-  // that is SHA1 signed.
+  // that is SHA1 signed. Note that the subjectKeyIdentifier for `intermediate`
+  // is intentionally not changed, so that path building will consider both
+  // certificate paths.
   intermediate.SetSignatureAlgorithmRsaPkca1(DigestAlgorithm::Sha256);
   intermediate.SetRandomSerialNumber();
   auto intermediate_sha256 = intermediate.DupCertBuffer();

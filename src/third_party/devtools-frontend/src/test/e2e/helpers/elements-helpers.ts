@@ -8,7 +8,6 @@ import * as puppeteer from 'puppeteer';
 import {$, $$, click, getBrowserAndPages, step, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
 
 const SELECTED_TREE_ELEMENT_SELECTOR = '.selected[role="treeitem"]';
-const EXPANDED_SELECTED_TREE_ELEMENT_SELECTOR = '.selected.expanded[role="treeitem"]';
 const CSS_PROPERTY_NAME_SELECTOR = '.webkit-css-property';
 const CSS_PROPERTY_VALUE_SELECTOR = '.value';
 const COLOR_SWATCH_SELECTOR = '.color-swatch-inner';
@@ -30,6 +29,7 @@ const ADORNER_SELECTOR = 'devtools-adorner';
 export const INACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Enable grid mode"]';
 export const ACTIVE_GRID_ADORNER_SELECTOR = '[aria-label="Disable grid mode"]';
 const ELEMENT_CHECKBOX_IN_LAYOUT_PANE_SELECTOR = '.elements input[type=checkbox]';
+const ELEMENT_STYLE_SECTION_SELECTOR = '[aria-label="element.style, css selector"]';
 
 export const openLayoutPane = async () => {
   await step('Open Layout pane', async () => {
@@ -104,16 +104,6 @@ export const waitForContentOfSelectedElementsNode = async (expectedTextContent: 
   });
 };
 
-export const waitForContentOfExpandedSelectedElementsNode = async (expectedTextContent: string) => {
-  await waitForFunction(async () => {
-    const selectedNode = await waitFor(EXPANDED_SELECTED_TREE_ELEMENT_SELECTOR);
-    const selectedTextContent = await selectedNode.evaluate(node => node.textContent);
-    return selectedTextContent === expectedTextContent;
-  });
-  // Make sure that the element is focused and can receive keyboard events.
-  await click(EXPANDED_SELECTED_TREE_ELEMENT_SELECTOR);
-};
-
 /**
  * Gets the text content of the currently selected element.
  */
@@ -165,6 +155,12 @@ export const waitForSelectedTreeElementSelectorWhichIncludesText = async (expect
 
 export const waitForChildrenOfSelectedElementNode = async () => {
   await waitFor(`${SELECTED_TREE_ELEMENT_SELECTOR} + ol > li`);
+};
+
+export const clickNthChildOfSelectedElementNode = async (childIndex: number) => {
+  assert(childIndex > 0, 'CSS :nth-child() selector indices are 1-based.');
+  const element = await waitFor(`${SELECTED_TREE_ELEMENT_SELECTOR} + ol > li:nth-child(${childIndex})`);
+  await element.click();
 };
 
 export const focusElementsTree = async () => {
@@ -374,6 +370,11 @@ export const shiftClickColorSwatch = async (ruleSection: puppeteer.ElementHandle
   await frontend.keyboard.down('Shift');
   await click(swatch);
   await frontend.keyboard.up('Shift');
+};
+
+export const getElementStyleFontEditorButton = async () => {
+  const section = await waitFor(ELEMENT_STYLE_SECTION_SELECTOR);
+  return await $(FONT_EDITOR_SELECTOR, section);
 };
 
 export const getFontEditorButtons = async () => {

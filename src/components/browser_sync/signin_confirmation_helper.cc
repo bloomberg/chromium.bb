@@ -5,13 +5,13 @@
 #include "components/browser_sync/signin_confirmation_helper.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string16.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_db_task.h"
@@ -82,7 +82,7 @@ void SigninConfirmationHelper::CheckHasHistory(int max_entries) {
   history::QueryOptions opts;
   opts.max_count = max_entries;
   history_service_->QueryHistory(
-      base::string16(), opts,
+      std::u16string(), opts,
       base::BindOnce(&SigninConfirmationHelper::OnHistoryQueryResults,
                      base::Unretained(this), max_entries),
       &task_tracker_);

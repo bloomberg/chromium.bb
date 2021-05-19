@@ -22,12 +22,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/omnibox/browser/autocomplete_input.h"
-#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/intranet_redirector_state.h"
-#include "components/omnibox/browser/match_compare.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
@@ -305,9 +303,7 @@ void AutocompleteResult::SortAndCull(
         next = std::next(next);
       }
     }
-    auto begin_url = GroupSuggestionsBySearchVsURL(next, matches_.end());
-    if (base::FeatureList::IsEnabled(omnibox::kBubbleUrlSuggestions))
-      BubbleURLSuggestions(next, begin_url, matches_);
+    GroupSuggestionsBySearchVsURL(next, matches_.end());
   }
 
   // Grouping and Demoting Matches with Headers needs to be done only after
@@ -322,13 +318,12 @@ void AutocompleteResult::SortAndCull(
   // not typed a query yet.
   auto* default_match = this->default_match();
   if (default_match && default_match->destination_url.is_valid()) {
-    const base::string16 debug_info =
-        base::ASCIIToUTF16("fill_into_edit=") + default_match->fill_into_edit +
-        base::ASCIIToUTF16(", provider=") +
+    const std::u16string debug_info =
+        u"fill_into_edit=" + default_match->fill_into_edit + u", provider=" +
         ((default_match->provider != nullptr)
              ? base::ASCIIToUTF16(default_match->provider->GetName())
-             : base::string16()) +
-        base::ASCIIToUTF16(", input=") + input.text();
+             : std::u16string()) +
+        u", input=" + input.text();
 
     if (AutocompleteMatch::IsSearchType(default_match->type)) {
       // We shouldn't get query matches for URL inputs.
@@ -360,7 +355,7 @@ void AutocompleteResult::GroupAndDemoteMatchesWithHeaders() {
       // additional_info field for chrome://omnibox.
       int group_id = it->suggestion_group_id.value();
       it->RecordAdditionalInfo("suggestion_group_id", group_id);
-      const base::string16 header = GetHeaderForGroupId(group_id);
+      const std::u16string header = GetHeaderForGroupId(group_id);
       if (!header.empty()) {
         it->RecordAdditionalInfo("header string", header);
       } else {
@@ -485,7 +480,8 @@ void AutocompleteResult::AttachPedalsToMatches(
       continue;
     }
 
-    OmniboxPedal* const pedal = provider->FindPedalMatch(input, match.contents);
+    OmniboxPedal* const pedal =
+        provider->FindReadyPedalMatch(input, match.contents);
     if (pedal) {
       const auto result = pedals_found.insert(pedal);
       if (result.second)
@@ -807,7 +803,7 @@ void AutocompleteResult::DeduplicateMatches(ACMatches* matches) {
 }
 
 void AutocompleteResult::InlineTailPrefixes() {
-  base::string16 common_prefix;
+  std::u16string common_prefix;
 
   for (const auto& match : matches_) {
     if (match.type == ACMatchType::SEARCH_SUGGEST_TAIL) {
@@ -839,12 +835,12 @@ AutocompleteResult::GetMatchDedupComparators() const {
   return comparators;
 }
 
-base::string16 AutocompleteResult::GetHeaderForGroupId(
+std::u16string AutocompleteResult::GetHeaderForGroupId(
     int suggestion_group_id) const {
   const auto& it = headers_map_.find(suggestion_group_id);
   if (it != headers_map_.end())
     return it->second;
-  return base::string16();
+  return std::u16string();
 }
 
 bool AutocompleteResult::IsSuggestionGroupIdHidden(
@@ -1075,60 +1071,9 @@ void AutocompleteResult::LimitNumberOfURLsShown(
 }
 
 // static
-AutocompleteResult::iterator AutocompleteResult::GroupSuggestionsBySearchVsURL(
-    iterator begin,
-    iterator end) {
-  return std::stable_partition(begin, end, [](const AutocompleteMatch& match) {
+void AutocompleteResult::GroupSuggestionsBySearchVsURL(iterator begin,
+                                                       iterator end) {
+  std::stable_partition(begin, end, [](const AutocompleteMatch& match) {
     return AutocompleteMatch::IsSearchType(match.type);
   });
-}
-
-// static
-void AutocompleteResult::BubbleURLSuggestions(iterator begin_search,
-                                              iterator begin_url,
-                                              ACMatches& matches) {
-  auto absolute_gap = base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kBubbleUrlSuggestions,
-      OmniboxFieldTrial::kBubbleUrlSuggestionsAbsoluteGapParam, 200);
-  auto relative_gap = base::GetFieldTrialParamByFeatureAsDouble(
-      omnibox::kBubbleUrlSuggestions,
-      OmniboxFieldTrial::kBubbleUrlSuggestionsRelativeGapParam, 1);
-  auto absolute_buffer = base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kBubbleUrlSuggestions,
-      OmniboxFieldTrial::kBubbleUrlSuggestionsAbsoluteBufferParam, 100);
-  auto relative_buffer = base::GetFieldTrialParamByFeatureAsDouble(
-      omnibox::kBubbleUrlSuggestions,
-      OmniboxFieldTrial::kBubbleUrlSuggestionsRelativeBufferParam, 1);
-
-  // |next_url| tracks the first (i.e. highest scoring) yet unbubbled URL
-  // suggestion.
-  auto next_url = begin_url;
-
-  for (auto next_search = begin_search;
-       next_search != next_url && next_url != matches.end();
-       next_search = std::next(next_search)) {
-    // Only bubble if there's a sufficient score gap between adjacent searches.
-    if (next_search != begin_search &&
-        std::prev(next_search)->relevance <
-            std::max(next_search->relevance + absolute_gap * 1.,
-                     next_search->relevance * relative_gap))
-      continue;
-    // Only bubble if there's a sufficient buffer between the URL and search.
-    if (next_url->relevance <
-        std::max(next_search->relevance + absolute_buffer * 1.,
-                 next_search->relevance * relative_buffer))
-      continue;
-
-    // Find the series of URLs to bubble: [next_url, last_bubble_url).
-    // Although |next_url| must score higher than the |next_search| by at least
-    // the buffer amount, the remaining URls in the series need to score only
-    // as high as |next_search|.
-    auto last_bubble_url = std::find_if(
-        std::next(next_url), matches.end(),
-        [&](auto& match) { return match.relevance < next_search->relevance; });
-
-    // Bubble [next_url, last_bubble_url) above |next_search|.
-    next_search = std::rotate(next_search, next_url, last_bubble_url);
-    next_url = last_bubble_url;
-  }
 }

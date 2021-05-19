@@ -44,14 +44,25 @@ struct TestCase {
     return *this;
   }
 
-  TestCase& EnableDocumentsProvider() {
+  TestCase& EnableGenericDocumentsProvider() {
     options.arc = true;
-    options.documents_provider = true;
+    options.generic_documents_provider = true;
     return *this;
   }
 
-  TestCase& DisableDocumentsProvider() {
-    options.documents_provider = false;
+  TestCase& DisableGenericDocumentsProvider() {
+    options.generic_documents_provider = false;
+    return *this;
+  }
+
+  TestCase& EnablePhotosDocumentsProvider() {
+    options.arc = true;
+    options.photos_documents_provider = true;
+    return *this;
+  }
+
+  TestCase& DisablePhotosDocumentsProvider() {
+    options.photos_documents_provider = false;
     return *this;
   }
 
@@ -137,6 +148,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableTrash() {
+    options.enable_trash = true;
+    return *this;
+  }
+
   TestCase& EnableHoldingSpace(bool enable) {
     options.enable_holding_space = enable;
     return *this;
@@ -165,8 +181,11 @@ struct TestCase {
     if (!options.native_smb)
       full_name += "_DisableNativeSmb";
 
-    if (options.documents_provider)
-      full_name += "_DocumentsProvider";
+    if (options.generic_documents_provider)
+      full_name += "_GenericDocumentsProvider";
+
+    if (options.photos_documents_provider)
+      full_name += "_PhotosDocumentsProvider";
 
     if (options.zip_no_nacl)
       full_name += "_ZipNoNaCl";
@@ -179,6 +198,9 @@ struct TestCase {
 
     if (!options.enable_js_modules)
       full_name += "_NonJsModule";
+
+    if (options.enable_trash)
+      full_name += "_Trash";
 
     return full_name;
   }
@@ -407,28 +429,35 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     KeyboardOperations, /* keyboard_operations.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("keyboardDeleteDownloads").InGuestMode(),
-                      TestCase("keyboardDeleteDownloads"),
-                      TestCase("keyboardDeleteDownloads").DisableJsModules(),
-                      TestCase("keyboardDeleteDrive"),
-                      TestCase("keyboardDeleteFolderDownloads").InGuestMode(),
-                      TestCase("keyboardDeleteFolderDownloads"),
-                      TestCase("keyboardDeleteFolderDrive"),
-                      TestCase("keyboardCopyDownloads").InGuestMode(),
-                      TestCase("keyboardCopyDownloads"),
-                      TestCase("keyboardCopyDrive"),
-                      TestCase("keyboardFocusOutlineVisible"),
-                      TestCase("keyboardFocusOutlineVisibleMouse"),
-                      TestCase("keyboardSelectDriveDirectoryTree"),
-                      TestCase("keyboardDisableCopyWhenDialogDisplayed"),
-                      TestCase("keyboardOpenNewWindow"),
-                      TestCase("keyboardOpenNewWindow").InGuestMode(),
-                      TestCase("renameFileDownloads").InGuestMode(),
-                      TestCase("renameFileDownloads"),
-                      TestCase("renameFileDrive"),
-                      TestCase("renameNewFolderDownloads").InGuestMode(),
-                      TestCase("renameNewFolderDownloads"),
-                      TestCase("renameNewFolderDrive")));
+    ::testing::Values(
+        TestCase("keyboardDeleteDownloads").InGuestMode(),
+        TestCase("keyboardDeleteDownloads"),
+        TestCase("keyboardDeleteDownloads").DisableJsModules(),
+        TestCase("keyboardDeleteDownloads").EnableTrash(),
+        TestCase("keyboardDeleteDrive"),
+        TestCase("keyboardDeleteDrive").EnableTrash(),
+        TestCase("keyboardDeleteFolderDownloads").InGuestMode(),
+        TestCase("keyboardDeleteFolderDownloads"),
+        TestCase("keyboardDeleteFolderDownloads").EnableTrash(),
+        TestCase("keyboardDeleteFolderDrive"),
+        TestCase("keyboardCopyDownloads").InGuestMode(),
+        TestCase("keyboardCopyDownloads"),
+        TestCase("keyboardCopyDownloads").EnableTrash(),
+        TestCase("keyboardCopyDrive"),
+        TestCase("keyboardFocusOutlineVisible"),
+        TestCase("keyboardFocusOutlineVisible").EnableTrash(),
+        TestCase("keyboardFocusOutlineVisibleMouse"),
+        TestCase("keyboardFocusOutlineVisibleMouse").EnableTrash(),
+        TestCase("keyboardSelectDriveDirectoryTree"),
+        TestCase("keyboardDisableCopyWhenDialogDisplayed"),
+        TestCase("keyboardOpenNewWindow"),
+        TestCase("keyboardOpenNewWindow").InGuestMode(),
+        TestCase("renameFileDownloads").InGuestMode(),
+        TestCase("renameFileDownloads"),
+        TestCase("renameFileDrive"),
+        TestCase("renameNewFolderDownloads").InGuestMode(),
+        TestCase("renameNewFolderDownloads"),
+        TestCase("renameNewFolderDrive")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ContextMenu, /* context_menu.js for file list */
@@ -470,10 +499,15 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkDownloadsContextMenu"),
         TestCase("checkPlayFilesContextMenu"),
         TestCase("checkLinuxFilesContextMenu"),
-        TestCase("checkDeleteDisabledInDocProvider").EnableDocumentsProvider(),
-        TestCase("checkDeleteEnabledInDocProvider").EnableDocumentsProvider(),
-        TestCase("checkRenameDisabledInDocProvider").EnableDocumentsProvider(),
-        TestCase("checkRenameEnabledInDocProvider").EnableDocumentsProvider(),
+        TestCase("checkTrashContextMenu").EnableTrash(),
+        TestCase("checkDeleteDisabledInDocProvider")
+            .EnableGenericDocumentsProvider(),
+        TestCase("checkDeleteEnabledInDocProvider")
+            .EnableGenericDocumentsProvider(),
+        TestCase("checkRenameDisabledInDocProvider")
+            .EnableGenericDocumentsProvider(),
+        TestCase("checkRenameEnabledInDocProvider")
+            .EnableGenericDocumentsProvider(),
         TestCase("checkContextMenuFocus"),
         TestCase("checkContextMenusForInputElements"),
         TestCase("checkDeleteDisabledInRecents").EnableUnifiedMediaView(),
@@ -492,6 +526,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("toolbarDeleteEntry").InGuestMode(),
         TestCase("toolbarDeleteEntry"),
         TestCase("toolbarDeleteEntry").DisableJsModules(),
+        TestCase("toolbarDeleteEntry").EnableTrash(),
         TestCase("toolbarRefreshButtonWithSelection").EnableArc(),
         TestCase("toolbarAltACommand"),
         TestCase("toolbarRefreshButtonHiddenInRecents"),
@@ -541,7 +576,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewDrive"),
         TestCase("openQuickViewSmbfs").EnableSmbfs(),
         TestCase("openQuickViewAndroid"),
-        TestCase("openQuickViewDocumentsProvider").EnableDocumentsProvider(),
+        TestCase("openQuickViewDocumentsProvider")
+            .EnableGenericDocumentsProvider(),
         TestCase("openQuickViewCrostini"),
         TestCase("openQuickViewUsb"),
         TestCase("openQuickViewRemovablePartitions"),
@@ -552,6 +588,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewTabIndexAudio"),
         TestCase("openQuickViewTabIndexVideo"),
         TestCase("openQuickViewTabIndexDeleteDialog"),
+        TestCase("openQuickViewTabIndexDeleteDialog").EnableTrash(),
         TestCase("openQuickViewToggleInfoButtonKeyboard"),
         TestCase("openQuickViewToggleInfoButtonClick"),
         TestCase("openQuickViewWithMultipleFiles"),
@@ -561,10 +598,15 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewWithMultipleFilesKeyboardLeftRight"),
         TestCase("openQuickViewFromDirectoryTree"),
         TestCase("openQuickViewAndDeleteSingleSelection"),
+        TestCase("openQuickViewAndDeleteSingleSelection").EnableTrash(),
         TestCase("openQuickViewAndDeleteCheckSelection"),
+        TestCase("openQuickViewAndDeleteCheckSelection").EnableTrash(),
         TestCase("openQuickViewDeleteEntireCheckSelection"),
+        TestCase("openQuickViewDeleteEntireCheckSelection").EnableTrash(),
         TestCase("openQuickViewClickDeleteButton"),
+        TestCase("openQuickViewClickDeleteButton").EnableTrash(),
         TestCase("openQuickViewDeleteButtonNotShown"),
+        TestCase("openQuickViewDeleteButtonNotShown").EnableTrash(),
         TestCase("openQuickViewUmaViaContextMenu"),
         TestCase("openQuickViewUmaForCheckSelectViaContextMenu"),
         TestCase("openQuickViewUmaViaSelectionMenu"),
@@ -631,13 +673,17 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 #endif
         TestCase("dirContextMenuRecent"),
         TestCase("dirContextMenuMyFiles"),
+        TestCase("dirContextMenuMyFiles").EnableTrash(),
         TestCase("dirContextMenuMyFilesWithPaste"),
+        TestCase("dirContextMenuMyFilesWithPaste").EnableTrash(),
         TestCase("dirContextMenuCrostini"),
+        TestCase("dirContextMenuCrostini").EnableTrash(),
         TestCase("dirContextMenuPlayFiles"),
         TestCase("dirContextMenuUsbs"),
         TestCase("dirContextMenuUsbs").EnableSinglePartitionFormat(),
         TestCase("dirContextMenuFsp"),
-        TestCase("dirContextMenuDocumentsProvider").EnableDocumentsProvider(),
+        TestCase("dirContextMenuDocumentsProvider")
+            .EnableGenericDocumentsProvider(),
         TestCase("dirContextMenuUsbDcim"),
         TestCase("dirContextMenuUsbDcim").EnableSinglePartitionFormat(),
         TestCase("dirContextMenuMtp"),
@@ -647,6 +693,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuSharedWithMe"),
         TestCase("dirContextMenuOffline"),
         TestCase("dirContextMenuComputers"),
+        TestCase("dirContextMenuTrash").EnableTrash(),
         TestCase("dirContextMenuShortcut"),
         TestCase("dirContextMenuFocus")));
 
@@ -654,7 +701,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DriveSpecific, /* drive_specific.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("driveOpenSidebarOffline"),
+        TestCase("driveOpenSidebarOffline").EnableGenericDocumentsProvider(),
         TestCase("driveOpenSidebarSharedWithMe"),
         TestCase("driveAutoCompleteQuery"),
         TestCase("drivePinMultiple"),
@@ -733,6 +780,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferDragAndHover"),
         TestCase("transferFromDownloadsToDownloads"),
         TestCase("transferDeletedFile"),
+        TestCase("transferDeletedFile").EnableTrash(),
         TestCase("transferInfoIsRemembered"),
         TestCase("transferToUsbHasDestinationText"),
         TestCase("transferDismissedErrorIsRemembered"),
@@ -889,16 +937,16 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     GridView, /* grid_view.js */
     FilesAppBrowserTest,
-    ::testing::Values(
-        TestCase("showGridViewDownloads").InGuestMode(),
-        TestCase("showGridViewDownloads"),
-        TestCase("showGridViewDownloads").DisableJsModules(),
-        TestCase("showGridViewDrive"),
-        TestCase("showGridViewButtonSwitches"),
-        TestCase("showGridViewKeyboardSelectionA11y"),
-        TestCase("showGridViewTitles"),
-        TestCase("showGridViewMouseSelectionA11y"),
-        TestCase("showGridViewDocumentsProvider").EnableDocumentsProvider()));
+    ::testing::Values(TestCase("showGridViewDownloads").InGuestMode(),
+                      TestCase("showGridViewDownloads"),
+                      TestCase("showGridViewDownloads").DisableJsModules(),
+                      TestCase("showGridViewDrive"),
+                      TestCase("showGridViewButtonSwitches"),
+                      TestCase("showGridViewKeyboardSelectionA11y"),
+                      TestCase("showGridViewTitles"),
+                      TestCase("showGridViewMouseSelectionA11y"),
+                      TestCase("showGridViewDocumentsProvider")
+                          .EnableGenericDocumentsProvider()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Providers, /* providers.js */
@@ -935,7 +983,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         // crbug.com/1177203
         // TestCase("showAvailableStorageDrive"),
         TestCase("showAvailableStorageSmbfs").EnableSmbfs(),
-        TestCase("showAvailableStorageDocProvider").EnableDocumentsProvider()));
+        TestCase("showAvailableStorageDocProvider")
+            .EnableGenericDocumentsProvider()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesTooltip, /* files_tooltip.js */
@@ -956,6 +1005,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("fileListKeyboardSelectionA11y"),
                       TestCase("fileListMouseSelectionA11y"),
                       TestCase("fileListDeleteMultipleFiles"),
+                      TestCase("fileListDeleteMultipleFiles").EnableTrash(),
+                      TestCase("fileListRenameSelectedItem"),
                       TestCase("fileListRenameFromSelectAll")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
@@ -974,6 +1025,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestCase("directoryTreeRefresh"),
         TestCase("showMyFiles"),
+        TestCase("showMyFiles").EnableTrash(),
         TestCase("myFilesDisplaysAndOpensEntries"),
         TestCase("myFilesFolderRename"),
         TestCase("myFilesUpdatesWhenAndroidVolumeMounts").DontMountVolumes(),
@@ -1024,7 +1076,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metadata, /* metadata.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("metadataDocumentsProvider").EnableDocumentsProvider(),
+        TestCase("metadataDocumentsProvider").EnableGenericDocumentsProvider(),
         TestCase("metadataDownloads"),
         TestCase("metadataDrive"),
         TestCase("metadataTeamDrives"),
@@ -1072,12 +1124,14 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestCase("formatDialog"),
         TestCase("formatDialog").DisableJsModules(),
+        TestCase("formatDialogIsModal"),
         TestCase("formatDialogEmpty"),
         TestCase("formatDialogCancel"),
         TestCase("formatDialogNameLength"),
         TestCase("formatDialogNameInvalid"),
         TestCase("formatDialogGearMenu"),
         TestCase("formatDialog").EnableSinglePartitionFormat(),
+        TestCase("formatDialogIsModal").EnableSinglePartitionFormat(),
         TestCase("formatDialogEmpty").EnableSinglePartitionFormat(),
         TestCase("formatDialogCancel").EnableSinglePartitionFormat(),
         TestCase("formatDialogNameLength").EnableSinglePartitionFormat(),
@@ -1087,9 +1141,19 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Trash, /* trash.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("trashMoveToTrash"),
-                      TestCase("trashRestoreFromToast"),
-                      TestCase("trashRestoreFromTrash"),
-                      TestCase("trashDeleteFromTrash")));
+    ::testing::Values(TestCase("trashMoveToTrash").EnableTrash(),
+                      TestCase("trashPermanentlyDelete").EnableTrash(),
+                      TestCase("trashRestoreFromToast").EnableTrash(),
+                      TestCase("trashRestoreFromTrash").EnableTrash(),
+                      TestCase("trashRestoreFromTrashShortcut").EnableTrash(),
+                      TestCase("trashEmptyTrash").EnableTrash(),
+                      TestCase("trashEmptyTrashShortcut").EnableTrash(),
+                      TestCase("trashDeleteFromTrash").EnableTrash()));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    AndroidPhotos, /* android_photos.js */
+    FilesAppBrowserTest,
+    ::testing::Values(
+        TestCase("androidPhotosBanner").EnablePhotosDocumentsProvider()));
 
 }  // namespace file_manager

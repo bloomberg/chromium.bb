@@ -147,7 +147,7 @@
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chromeos/dbus/attestation/fake_attestation_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -261,7 +261,7 @@ class TestWebappRegistry : public WebappRegistry {
 class TestSearchEngineDelegate
     : public SearchPermissionsService::SearchEngineDelegate {
  public:
-  base::string16 GetDSEName() override { return base::string16(); }
+  std::u16string GetDSEName() override { return std::u16string(); }
 
   url::Origin GetDSEOrigin() override {
     return url::Origin::Create(DSEOrigin());
@@ -798,12 +798,11 @@ class RemoveAutofillTester {
     autofill::AutofillProfile profile;
     profile.set_guid(base::GenerateGUID());
     profile.set_origin(kWebOrigin);
-    profile.SetRawInfo(autofill::NAME_FIRST, base::ASCIIToUTF16("Bob"));
-    profile.SetRawInfo(autofill::NAME_LAST, base::ASCIIToUTF16("Smith"));
-    profile.SetRawInfo(autofill::ADDRESS_HOME_ZIP, base::ASCIIToUTF16("94043"));
-    profile.SetRawInfo(autofill::EMAIL_ADDRESS,
-                       base::ASCIIToUTF16("sue@example.com"));
-    profile.SetRawInfo(autofill::COMPANY_NAME, base::ASCIIToUTF16("Company X"));
+    profile.SetRawInfo(autofill::NAME_FIRST, u"Bob");
+    profile.SetRawInfo(autofill::NAME_LAST, u"Smith");
+    profile.SetRawInfo(autofill::ADDRESS_HOME_ZIP, u"94043");
+    profile.SetRawInfo(autofill::EMAIL_ADDRESS, u"sue@example.com");
+    profile.SetRawInfo(autofill::COMPANY_NAME, u"Company X");
     profiles.push_back(profile);
 
     profile.set_guid(base::GenerateGUID());
@@ -818,8 +817,7 @@ class RemoveAutofillTester {
     autofill::CreditCard card;
     card.set_guid(base::GenerateGUID());
     card.set_origin(kWebOrigin);
-    card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
-                    base::ASCIIToUTF16("1234-5678-9012-3456"));
+    card.SetRawInfo(autofill::CREDIT_CARD_NUMBER, u"1234-5678-9012-3456");
     cards.push_back(card);
 
     card.set_guid(base::GenerateGUID());
@@ -867,9 +865,17 @@ class MockReportingService : public net::ReportingService {
     NOTREACHED();
   }
 
-  void ProcessHeader(const GURL& url,
-                     const net::NetworkIsolationKey& network_isolation_key,
-                     const std::string& header_value) override {
+  void ProcessReportToHeader(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
+      const std::string& header_value) override {
+    NOTREACHED();
+  }
+
+  void ProcessReportingEndpointsHeader(
+      const url::Origin& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
+      const std::string& header_value) override {
     NOTREACHED();
   }
 
@@ -1046,7 +1052,14 @@ class ClearNetworkErrorLoggingTester {
 
 class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
  public:
-  ChromeBrowsingDataRemoverDelegateTest() {
+  ChromeBrowsingDataRemoverDelegateTest() = default;
+  ~ChromeBrowsingDataRemoverDelegateTest() override = default;
+
+  void SetUp() override {
+    // This needs to be done after the test constructor, so that subclasses
+    // that initialize a ScopedFeatureList in their constructors can do so
+    // before the code below potentially kicks off tasks on other threads that
+    // check if a feature is enabled, to avoid tsan data races.
     TestingProfile::Builder profile_builder;
     profile_builder.AddTestingFactory(
         StatefulSSLHostStateDelegateFactory::GetInstance(),
@@ -1124,8 +1137,6 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
 
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }
-
-  ~ChromeBrowsingDataRemoverDelegateTest() override = default;
 
   // Returns the set of data types for which the deletion failed.
   uint64_t BlockUntilBrowsingDataRemoved(const base::Time& delete_begin,
@@ -1525,8 +1536,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ExpireBookmarkFavicons) {
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
-  bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
-                         base::ASCIIToUTF16("a"), bookmarked_page);
+  bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0, u"a",
+                         bookmarked_page);
 
   RemoveFaviconTester favicon_tester;
   ASSERT_TRUE(favicon_tester.Init(GetProfile()));
@@ -1546,8 +1557,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DeleteBookmarks) {
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
-  bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
-                         base::ASCIIToUTF16("a"), bookmarked_page);
+  bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0, u"a",
+                         bookmarked_page);
   EXPECT_EQ(1u, bookmark_model->bookmark_bar_node()->children().size());
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 constants::DATA_TYPE_BOOKMARKS, false);
@@ -1730,8 +1741,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ZeroSuggestCacheClear) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        ContentProtectionPlatformKeysRemoval) {
-  chromeos::MockUserManager* mock_user_manager =
-      new testing::NiceMock<chromeos::MockUserManager>();
+  ash::MockUserManager* mock_user_manager =
+      new testing::NiceMock<ash::MockUserManager>();
   mock_user_manager->SetActiveUser(
       AccountId::FromUserEmail("test@example.com"));
   user_manager::ScopedUserManager user_manager_enabler(
@@ -2408,9 +2419,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   http_auth_cache->Add(Origin1(), net::HttpAuth::AUTH_SERVER, kTestRealm,
                        net::HttpAuth::AUTH_SCHEME_BASIC,
                        net::NetworkIsolationKey(), "test challenge",
-                       net::AuthCredentials(base::ASCIIToUTF16("foo"),
-                                            base::ASCIIToUTF16("bar")),
-                       "/");
+                       net::AuthCredentials(u"foo", u"bar"), "/");
   CHECK(http_auth_cache->Lookup(Origin1(), net::HttpAuth::AUTH_SERVER,
                                 kTestRealm, net::HttpAuth::AUTH_SCHEME_BASIC,
                                 net::NetworkIsolationKey()));
@@ -2424,7 +2433,19 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
                 net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey()));
 }
 
-TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
+class ChromeBrowsingDataRemoverDelegateBlockPromptsTest
+    : public ChromeBrowsingDataRemoverDelegateTest {
+ public:
+  ChromeBrowsingDataRemoverDelegateBlockPromptsTest() {
+    // This needs to be done before SetUp, to avoid tsan flakes due to tasks
+    // running on other threads checking if a feature is enabled.
+    feature_list_.InitWithFeatures(
+        {permissions::features::kBlockPromptsIfDismissedOften}, {});
+  }
+};
+
+TEST_F(ChromeBrowsingDataRemoverDelegateBlockPromptsTest,
+       ClearPermissionPromptCounts) {
   RemovePermissionPromptCountsTest tester(GetProfile());
 
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_1(
@@ -2436,9 +2457,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
       BrowsingDataFilterBuilder::Create(
           BrowsingDataFilterBuilder::Mode::kPreserve));
   filter_builder_2->AddRegisterableDomain(kTestRegisterableDomain1);
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {permissions::features::kBlockPromptsIfDismissedOften}, {});
 
   {
     // Test REMOVE_HISTORY.

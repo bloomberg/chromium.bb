@@ -15,9 +15,6 @@
 #ifndef SRC_AST_CALL_STATEMENT_H_
 #define SRC_AST_CALL_STATEMENT_H_
 
-#include <memory>
-#include <utility>
-
 #include "src/ast/call_expression.h"
 #include "src/ast/statement.h"
 
@@ -43,9 +40,6 @@ class CallStatement : public Castable<CallStatement, Statement> {
   /// @param ctx the clone context
   /// @return the newly cloned node
   CallStatement* Clone(CloneContext* ctx) const override;
-
-  /// @returns true if the node is valid
-  bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
   /// @param sem the semantic info for the program

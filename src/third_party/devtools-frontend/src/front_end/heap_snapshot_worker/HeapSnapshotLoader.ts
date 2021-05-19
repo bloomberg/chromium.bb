@@ -30,7 +30,7 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as TextUtils from '../text_utils/text_utils.js';
+import * as TextUtils from '../models/text_utils/text_utils.js';
 import {HeapSnapshotProgress, JSHeapSnapshot} from './HeapSnapshot.js';
 import type {HeapSnapshotHeader, Profile} from './HeapSnapshot.js';
 import type {HeapSnapshotWorkerDispatcher} from './HeapSnapshotWorkerDispatcher.js';
@@ -176,7 +176,11 @@ export class HeapSnapshotLoader {
     this._array = length ? new Uint32Array(length) : [];
     this._arrayIndex = 0;
     while (this._parseUintArray()) {
-      this._progress.updateProgress(title, this._arrayIndex, this._array.length);
+      if (length) {
+        this._progress.updateProgress(title, this._arrayIndex, this._array.length);
+      } else {
+        this._progress.updateStatus(title);
+      }
       this._json += await this._fetchChunk();
     }
     const result = this._array;

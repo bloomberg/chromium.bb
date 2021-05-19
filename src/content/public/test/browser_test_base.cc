@@ -36,6 +36,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -400,7 +401,7 @@ void BrowserTestBase::SetUp() {
   // to be obtained and used to launch lacros-chrome so that a mojo connection
   // between lacros-chrome and ash-chrome can be established.
   // For more details, please see:
-  // //chrome/browser/chromeos/crosapi/test_mojo_connection_manager.h.
+  // //chrome/browser/ash/crosapi/test_mojo_connection_manager.h.
   {
     // TODO(crbug.com/1127581): Switch to use |kLacrosMojoSocketForTesting| in
     // //ash/constants/ash_switches.h.
@@ -416,7 +417,7 @@ void BrowserTestBase::SetUp() {
 
       // Mark the channel as blocking.
       int flags = fcntl(socket_fd.get(), F_GETFL);
-      PCHECK(flags != -1);
+      PCHECK(flags != -1) << "Ash is probably not running. Perhaps it crashed?";
       fcntl(socket_fd.get(), F_SETFL, flags & ~O_NONBLOCK);
 
       uint8_t buf[32];
@@ -643,7 +644,9 @@ void BrowserTestBase::SetUp() {
 
     auto ui_task = std::make_unique<base::OnceClosure>(
         base::BindOnce(&BrowserTestBase::WaitUntilJavaIsReady,
-                       base::Unretained(this), loop.QuitClosure()));
+                       base::Unretained(this), loop.QuitClosure(),
+                       /*wait_retry_left=*/
+                       TestTimeouts::action_max_timeout()));
 
     // The MainFunctionParams must out-live all the startup tasks running.
     MainFunctionParams params(*command_line);
@@ -730,17 +733,24 @@ void BrowserTestBase::SimulateNetworkServiceCrash() {
 }
 
 #if defined(OS_ANDROID)
-void BrowserTestBase::WaitUntilJavaIsReady(base::OnceClosure quit_closure) {
+void BrowserTestBase::WaitUntilJavaIsReady(
+    base::OnceClosure quit_closure,
+    const base::TimeDelta& wait_retry_left) {
+  CHECK_GE(wait_retry_left.InMilliseconds(), 0)
+      << "WaitUntilJavaIsReady() timed out.";
+
   if (testing::android::JavaAsyncStartupTasksCompleteForBrowserTests()) {
     std::move(quit_closure).Run();
     return;
   }
 
+  base::TimeDelta retry_interval = base::TimeDelta::FromMilliseconds(100);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&BrowserTestBase::WaitUntilJavaIsReady,
-                     base::Unretained(this), std::move(quit_closure)),
-      base::TimeDelta::FromMilliseconds(100));
+                     base::Unretained(this), std::move(quit_closure),
+                     wait_retry_left - retry_interval),
+      retry_interval);
   return;
 }
 #endif
@@ -811,7 +821,10 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 
     bool old_io_allowed_value = false;
     old_io_allowed_value = base::ThreadRestrictions::SetIOAllowed(false);
-    RunTestOnMainThread();
+    {
+      TRACE_EVENT0("test", "RunTestOnMainThread");
+      RunTestOnMainThread();
+    }
     base::ThreadRestrictions::SetIOAllowed(old_io_allowed_value);
     TearDownOnMainThread();
   }
@@ -874,12 +887,6 @@ void BrowserTestBase::EnablePixelOutput(float force_device_scale_factor) {
 
 void BrowserTestBase::UseSoftwareCompositing() {
   use_software_compositing_ = true;
-}
-
-bool BrowserTestBase::UsingSoftwareGL() const {
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  return cmd->GetSwitchValueASCII(switches::kUseGL) ==
-         gl::GetGLImplementationName(gl::GetSoftwareGLImplementation());
 }
 
 void BrowserTestBase::SetInitialWebContents(WebContents* web_contents) {

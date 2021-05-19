@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as i18n from '../i18n/i18n.js';
-import * as SDK from '../sdk/sdk.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as SDK from '../core/sdk/sdk.js';
 import * as WebComponents from '../ui/components/components.js';
-import * as UI from '../ui/ui.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import * as FontEditorUnitConverter from './FontEditorUnitConverter.js';
 import * as FontEditorUtils from './FontEditorUtils.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Font editor label for font family selector
   */
@@ -56,8 +56,9 @@ export const UIStrings = {
   */
   deleteS: 'Delete {PH1}',
   /**
-  *@description Warning message for Font Editor invalid text input
-  *@example {font-size} PH1
+  * @description Warning message for Font Editor invalid text input. The placeholder is the name of
+  * the CSS attribute that is incorrect.
+  * @example {font-size} PH1
   */
   PleaseEnterAValidValueForSText: '* Please enter a valid value for {PH1} text input',
   /**
@@ -72,7 +73,7 @@ export const UIStrings = {
   */
   sSliderInput: '{PH1} Slider Input',
   /**
-  *@description Label for Font Editor property text input
+  *@description Accessible label for a text input for a property in the Font Editor.
   *@example {font-size} PH1
   */
   sTextInput: '{PH1} Text Input',
@@ -92,8 +93,12 @@ export const UIStrings = {
   */
   sKeyValueSelector: '{PH1} Key Value Selector',
   /**
-  *@description Label for Font Editor toggle input type button
-  *@example {font-size} PH1
+  * @description Label for Font Editor toggle input type button. The placeholder is the name of the
+  * font property that this UI input controls. e.g. font-size, line-height, line-weight. Tooltip for
+  * a button next to the text input which allows the user to change the input type. When they click
+  * this button, the UI changes to allow the user to choose from a list of pre-selected font
+  * categories.
+  * @example {font-size} PH1
   */
   sToggleInputType: '{PH1} toggle input type',
   /**
@@ -272,7 +277,7 @@ export class FontEditor extends UI.Widget.VBox {
     let fontSelectorObject = this._fontSelectors[index];
     const isPrimary = index === 0;
     if (fontSelectorObject.input.value === '' && !isGlobalValue) {
-      UI.ARIAUtils.alert(i18nString(UIStrings.thereIsNoValueToDeleteAtIndexS, {PH1: index}), this.contentElement);
+      UI.ARIAUtils.alert(i18nString(UIStrings.thereIsNoValueToDeleteAtIndexS, {PH1: index}));
       return;
     }
     if (isPrimary) {
@@ -298,7 +303,7 @@ export class FontEditor extends UI.Widget.VBox {
           this._updateFontSelectorList();
         }
       }
-      UI.ARIAUtils.alert(i18nString(UIStrings.fontSelectorDeletedAtIndexS, {PH1: index}), this.contentElement);
+      UI.ARIAUtils.alert(i18nString(UIStrings.fontSelectorDeletedAtIndexS, {PH1: index}));
     }
     this._onFontSelectorChanged();
     this._resizePopout();
@@ -814,7 +819,7 @@ class FontPropertyInputs {
       this._unitInput.hidden = true;
       this._selectorInput.hidden = false;
       this._showSliderMode = false;
-      UI.ARIAUtils.alert(i18nString(UIStrings.selectorInputMode), this._textBoxInput);
+      UI.ARIAUtils.alert(i18nString(UIStrings.selectorInputMode));
     } else {
       // Show sliderinput type
       this._sliderInput.hidden = false;
@@ -822,7 +827,7 @@ class FontPropertyInputs {
       this._unitInput.hidden = false;
       this._selectorInput.hidden = true;
       this._showSliderMode = true;
-      UI.ARIAUtils.alert(i18nString(UIStrings.sliderInputMode), this._textBoxInput);
+      UI.ARIAUtils.alert(i18nString(UIStrings.sliderInputMode));
     }
   }
 

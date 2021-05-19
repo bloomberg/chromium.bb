@@ -87,6 +87,7 @@
 <translation id="1853795129690976061">Папкава е споделена со Linux</translation>
 <translation id="1864756863218646478">Не може да се најде датотеката.</translation>
 <translation id="1920670151694390848">транслитерација на малајалски</translation>
+<translation id="1920798810075583923">Лубеница</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> е форматиран</translation>
 <translation id="1931134289871235022">Словачки</translation>
 <translation id="1933345018156373194">Потегот не успеа, неочекувана грешка: <ph name="ERROR_MESSAGE" /></translation>
@@ -120,6 +121,7 @@
 <translation id="2288278176040912387">Грамофон</translation>
 <translation id="2291538123825441971">Се отвораат <ph name="NUMBER_OF_FILES" /> датотеки.</translation>
 <translation id="2303301624314357662">Се отвора датотеката <ph name="FILE_NAME" />.</translation>
+<translation id="2304820083631266885">Планета</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> е отстранет.</translation>
 <translation id="2325650632570794183">Овој тип датотека не е поддржан. Посетете ја веб-продавницата на Chrome за да најдете апликација што може да го отвори овој тип датотека.</translation>
 <translation id="2326539130272988168">бугарски</translation>
@@ -218,10 +220,12 @@
 <translation id="3335337277364016868">Година на снимање</translation>
 <translation id="3353984535370177728">Избери папка за поставување</translation>
 <translation id="3356580349448036450">Завршено</translation>
+<translation id="3358452157379365236">Гитара</translation>
 <translation id="3382143449143186018">непалски со тастатура InScript</translation>
 <translation id="3408236822532681288">германски (Германија) со тастатура Neo 2</translation>
 <translation id="3414856743105198592">Со форматирање на преносливиот медиум ќе се избришат сите податоци. Дали сакате да продолжите?</translation>
 <translation id="3437801641691368414">Време на создавање</translation>
+<translation id="343907260260897561">Инстант камера</translation>
 <translation id="3455931012307786678">естонски</translation>
 <translation id="3466147780910026086">Се скенира преносливиот уред...</translation>
 <translation id="3468522857997926824">Направивте резервна копија на <ph name="FILE_COUNT" /> фотографии на <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
@@ -253,7 +257,7 @@
 <translation id="3741243925913727067">Направи резервна копија на фотографиите и видеата од преносливиот уред на Google Drive.</translation>
 <translation id="3749289110408117711">Име на датотека</translation>
 <translation id="3780536599611287598">Немате дозвола за преместување датотеки во „<ph name="FOLDER_NAME" />“.</translation>
-<translation id="3786301125658655746">Исклучени сте</translation>
+<translation id="3786301125658655746">Офлајн сте</translation>
 <translation id="3789841737615482174">Инсталирај</translation>
 <translation id="3793469551756281394">Преостануваат околу <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Верзија</translation>
@@ -297,6 +301,7 @@
 <translation id="4309915981827077375">Општи информации</translation>
 <translation id="432252891123397018">романски со стандардна тастатура</translation>
 <translation id="4325128273762811722">словенечки</translation>
+<translation id="4326142238881453352">Ботаничар</translation>
 <translation id="4326192123064055915">Кафе</translation>
 <translation id="4336032328163998280">Копирањето не успеа. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4348495354623233847">сорани курдски со тастатура заснована на арапски</translation>
@@ -395,6 +400,7 @@
 <translation id="5159383109919732130"><ph name="BEGIN_BOLD" />Уште не го отстранувајте уредот!<ph name="END_BOLD" />
    <ph name="LINE_BREAKS" />
    Со отстранување на уредот додека се користи може да се предизвика загуба на податоци. Почекајте додека да заврши операцијата, па исфрлете го уредот со помош на апликацијата Датотеки.</translation>
+<translation id="5159560892333415631">Испразни ја корпата</translation>
 <translation id="5163869187418756376">Споделувањето не успеа. Проверете ја врската и обидете се повторно подоцна.</translation>
 <translation id="516592729076796170">US Programmer Dvorak</translation>
 <translation id="5170477580121653719">Преостанат простор во Google Диск: <ph name="SPACE_AVAILABLE" />.</translation>
@@ -412,6 +418,8 @@
     <ph name="MARKUP_7" />Споделувајте, создавајте и соработувајте<ph name="MARKUP_8" />
     на датотеки со други, сѐ на едно место.<ph name="MARKUP_9" /></translation>
 <translation id="5275973617553375938">Повратени датотеки од Google Диск</translation>
+<translation id="5288441970121584418">Хамбургер</translation>
+<translation id="5299998344490869684">Дали сигурно сакате да ја испразните корпата?</translation>
 <translation id="5317780077021120954">Зачувај</translation>
 <translation id="5318819489018851358">Споделете со Linux</translation>
 <translation id="5323213332664049067">Латиноамерикански</translation>
@@ -501,10 +509,12 @@
 <translation id="6248400709929739064">Овозможи титлови</translation>
 <translation id="6269630227984243955">малајски</translation>
 <translation id="6287852322318138013">Изберете апликација за да ја отворите оваа датотека</translation>
+<translation id="6321303798550928047">Мавтање</translation>
 <translation id="6339145975392024142">САД, меѓународна (PC)</translation>
 <translation id="6346310558342052870">Забранет пристап</translation>
 <translation id="6356685157277930264">Прозорец со информации за датотеките</translation>
 <translation id="6358884629796491903">Змеј</translation>
+<translation id="6367976544441405720">Комбе</translation>
 <translation id="637062427944097960">Оваа датотека се отвори на друг десктоп. Поместете ја на <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) за да се прикаже.</translation>
 <translation id="6394388407447716302">Само за читање</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> ставки</translation>
@@ -528,6 +538,7 @@
 <translation id="6650726141019353908">Розова пеперутка</translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6673674183150363784">француски (Франција) со тастатура Bépo</translation>
+<translation id="6710022688720561421">Робот</translation>
 <translation id="6710213216561001401">Претходно</translation>
 <translation id="6751256176799620176">Избрана е 1 папка</translation>
 <translation id="6790428901817661496">Репродуцирај</translation>
@@ -561,6 +572,7 @@
 <translation id="6965382102122355670">Во ред</translation>
 <translation id="6970230597523682626">бугарски</translation>
 <translation id="6973630695168034713">Папки</translation>
+<translation id="6976795442547527108">Лав</translation>
 <translation id="6978611942794658017">Оваа датотека е дизајнирана за компјутер кој користи софтвер на Windows. Таа не е компатибилна со вашиот уред кој работи на Chrome ОС. Пребарајте ја веб-продавницата на Chrome за да најдете соодветна апликација за замена.</translation>
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="6989942356279143254">шведски</translation>
@@ -607,6 +619,7 @@
 <translation id="7532029025027028521">транслитерација на персиски</translation>
 <translation id="7544830582642184299">Дајте им дозвола на апликациите на Linux да пристапуваат до датотеките во вашиот Google Drive. Промените ќе се синхронизираат со другите уреди.</translation>
 <translation id="7544853251252956727">Измешај</translation>
+<translation id="7547009467130558110">Патика</translation>
 <translation id="7547780573915868306">литвански</translation>
 <translation id="7547811415869834682">Холандски</translation>
 <translation id="7551643184018910560">Прикачи на полицата</translation>
@@ -621,6 +634,7 @@
 <translation id="7628656427739290098"><ph name="PERCENT" /> % завршени.</translation>
 <translation id="7649070708921625228">Помош</translation>
 <translation id="7654209398114106148">Се преместуваат <ph name="NUMBER_OF_ITEMS" /> ставки…</translation>
+<translation id="7655441028674523381">Лесно пристапувајте до „Фотографии на Google“</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7663224033570512922">хинди</translation>
 <translation id="7693909743393669729">Форматирањето на дискот ќе ги избрише сите податоци што се зачувани на него и ќе ги отстрани сите постојни партиции, вклучително и партициите што можеби не се видливи. Дејството не може да се врати.</translation>
@@ -712,6 +726,7 @@
 <translation id="8466234950814670489">Архива Tar</translation>
 <translation id="8475647382427415476">Google Drive не може да ја синхронизира „<ph name="FILENAME" />" во моментов. Ќе се обиде повторно подоцна.</translation>
 <translation id="8477649328507734757">Концентрични кругови</translation>
+<translation id="8484284835977497781">Изберете од вашите неодамнешни фотографии.</translation>
 <translation id="8487700953926739672">Достапно е исклучено од линија</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="8525306231823319788">Цел екран</translation>
@@ -736,6 +751,7 @@
 <translation id="872537912056138402">хрватска</translation>
 <translation id="8750438273876807512">Допрете и задржете датотека и допрете <ph name="ICON" />, па изберете „Прикачи на полицата“ за брз пристап до вашите датотеки во полицата.</translation>
 <translation id="8775404590947523323">Вашите уредувања се зачувуваат автоматски.<ph name="BREAKS" />За да зачувате копија од оригиналната слика, поништете го изборот на „Пребриши оригинал“</translation>
+<translation id="8802459921616481935">Премести во „Корпа“</translation>
 <translation id="8808686172382650546">Мачка</translation>
 <translation id="8810671769985673465">Пакувањето не успеа, ставката постои: „<ph name="FILE_NAME" />“</translation>
 <translation id="8813284582615685103">шпански (Шпанија)</translation>
@@ -744,6 +760,7 @@
 <translation id="8860454412039442620">Табела во Excel</translation>
 <translation id="8866284467018526531">транслитерација на арапски</translation>
 <translation id="8900820606136623064">унгарски</translation>
+<translation id="8903931173357132290">Дипломец</translation>
 <translation id="8919081441417203123">дански</translation>
 <translation id="8965697826696209160">Нема доволно простор.</translation>
 <translation id="8970501467542182729">Датотекава е создадена за компјутер што користи Macintosh. Таа не е компатибилна со вашиот уред којшто извршува Chrome OS. <ph name="BEGIN_LINK_HELP" />Дознајте повеќе<ph name="END_LINK_HELP" /> за отворање датотеки во Chrome OS.</translation>
@@ -768,6 +785,7 @@
 <translation id="9154418932169119429">Сликата не е достапна локално.</translation>
 <translation id="9172592259078059678">транслитерација на гуџарати</translation>
 <translation id="9173120999827300720">англиски (САД) со меѓународна тастатура</translation>
+<translation id="9174050671906956834">Ставките од корпата се бришат засекогаш по 30 дена.</translation>
 <translation id="9189836632794948435">казашки</translation>
 <translation id="9213073329713032541">Инсталирањето успешно започна.</translation>
 <translation id="9219103736887031265">Слики</translation>

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../../../../front_end/common/common.js';
-import * as Platform from '../../../../front_end/platform/platform.js';
+import * as Common from '../../../../front_end/core/common/common.js';
+import * as Platform from '../../../../front_end/core/platform/platform.js';
 import * as QuickOpen from '../../../../front_end/quick_open/quick_open.js';
 import {deinitializeGlobalVars, initializeGlobalVars} from '../helpers/EnvironmentHelpers.js';
 
@@ -19,7 +19,7 @@ describe('Setting registration', () => {
   const settingCategory = Common.Settings.SettingCategory.CONSOLE;
 
   before(async () => {
-    Common.Settings.registerSettingExtengionsForTest(
+    Common.Settings.registerSettingsForTest(
         [{
           category: settingCategory,
           title: (): Platform.UIString.LocalizedString => settingTitle as Platform.UIString.LocalizedString,
@@ -84,6 +84,18 @@ describe('Setting registration', () => {
 
   it('throws an error when trying to register a duplicated setting name', () => {
     assert.throws(() => {
+      Common.Settings.registerSettingExtension({
+        settingName,
+        settingType: Common.Settings.SettingType.BOOLEAN,
+        defaultValue: false,
+      });
+    });
+  });
+
+  it('deletes a registered setting using its name', () => {
+    const removalResult = Common.Settings.maybeRemoveSettingExtension(settingName);
+    assert.isTrue(removalResult);
+    assert.doesNotThrow(() => {
       Common.Settings.registerSettingExtension({
         settingName,
         settingType: Common.Settings.SettingType.BOOLEAN,

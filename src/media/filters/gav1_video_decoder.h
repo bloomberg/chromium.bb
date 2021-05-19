@@ -38,7 +38,6 @@ class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
   Gav1VideoDecoder& operator=(const Gav1VideoDecoder&) = delete;
 
   // VideoDecoder implementation.
-  std::string GetDisplayName() const override;
   VideoDecoderType GetDecoderType() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
@@ -48,6 +47,7 @@ class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
+  bool IsOptimizedForRTC() const override;
 
   // OffloadableVideoDecoder implementation.
   void Detach() override;
@@ -74,7 +74,7 @@ class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
 
   // Info configured in Initialize(). These are used in outputting frames.
   VideoColorSpace color_space_;
-  gfx::Size natural_size_;
+  double pixel_aspect_ratio_;
 
   DecoderState state_ = DecoderState::kUninitialized;
 

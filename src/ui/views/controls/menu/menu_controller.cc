@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/display/screen.h"
@@ -61,6 +62,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -147,17 +149,17 @@ constexpr base::TimeDelta kAlertAnimationThrobDuration =
     base::TimeDelta::FromMilliseconds(1000);
 
 // Returns true if the mnemonic of |menu| matches key.
-bool MatchesMnemonic(MenuItemView* menu, base::char16 key) {
+bool MatchesMnemonic(MenuItemView* menu, char16_t key) {
   return key != 0 && menu->GetMnemonic() == key;
 }
 
 // Returns true if |menu| doesn't have a mnemonic and first character of the its
 // title is |key|.
-bool TitleMatchesMnemonic(MenuItemView* menu, base::char16 key) {
+bool TitleMatchesMnemonic(MenuItemView* menu, char16_t key) {
   if (menu->GetMnemonic())
     return false;
 
-  base::string16 lower_title = base::i18n::ToLower(menu->title());
+  std::u16string lower_title = base::i18n::ToLower(menu->title());
   return !lower_title.empty() && lower_title[0] == key;
 }
 
@@ -466,7 +468,8 @@ void MenuController::Run(Widget* parent,
                          const gfx::Rect& bounds,
                          MenuAnchorPosition position,
                          bool context_menu,
-                         bool is_nested_drag) {
+                         bool is_nested_drag,
+                         gfx::NativeView native_view_for_gestures) {
   exit_type_ = ExitType::kNone;
   possible_drag_ = false;
   drag_in_progress_ = false;
@@ -511,6 +514,8 @@ void MenuController::Run(Widget* parent,
     owner_ = parent;
     if (owner_)
       owner_->AddObserver(this);
+
+    native_view_for_gestures_ = native_view_for_gestures;
 
     // Only create a MenuPreTargetHandler for non-nested menus. Nested menus
     // will use the existing one.
@@ -885,13 +890,16 @@ bool MenuController::OnMouseWheel(SubmenuView* source,
 void MenuController::OnGestureEvent(SubmenuView* source,
                                     ui::GestureEvent* event) {
   if (owner_ && send_gesture_events_to_owner()) {
-#if defined(OS_APPLE)
-    NOTIMPLEMENTED();
-#else   // !defined(OS_APPLE)
+#if defined(USE_AURA)
+    gfx::NativeView target = native_view_for_gestures_
+                                 ? native_view_for_gestures_
+                                 : owner()->GetNativeWindow();
     event->ConvertLocationToTarget(source->GetWidget()->GetNativeWindow(),
-                                   owner()->GetNativeWindow());
-#endif  // defined(OS_APPLE)
+                                   target);
+    target->delegate()->OnGestureEvent(event);
+#else
     owner()->OnGestureEvent(event);
+#endif  // defined(USE_AURA)
     // Reset |send_gesture_events_to_owner_| when the first gesture ends.
     if (event->type() == ui::ET_GESTURE_END)
       send_gesture_events_to_owner_ = false;
@@ -1231,7 +1239,7 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
           ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN;
       const int flags = event->flags();
       if (exit_type() == ExitType::kNone && (flags & kKeyFlagsMask) == 0) {
-        base::char16 c = event->GetCharacter();
+        char16_t c = event->GetCharacter();
         SelectByChar(c);
         // SelectByChar can lead to this being deleted.
         if (!this_ref) {
@@ -1293,6 +1301,7 @@ void MenuController::OnWidgetDestroying(Widget* widget) {
   DCHECK_EQ(owner_, widget);
   owner_->RemoveObserver(this);
   owner_ = nullptr;
+  native_view_for_gestures_ = nullptr;
 }
 
 bool MenuController::IsCancelAllTimerRunningForTest() {
@@ -2116,7 +2125,8 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
   }
 
   if (show) {
-    item->GetSubmenu()->ShowAt(owner_, bounds, do_capture);
+    item->GetSubmenu()->ShowAt(owner_, bounds, do_capture,
+                               native_view_for_gestures_);
 
     // Figure out if the mouse is under the menu; if so, remember the mouse
     // location so we can ignore the first mouse move event(s) with that
@@ -2768,8 +2778,8 @@ void MenuController::CloseSubmenu() {
 
 MenuController::SelectByCharDetails MenuController::FindChildForMnemonic(
     MenuItemView* parent,
-    base::char16 key,
-    bool (*match_function)(MenuItemView* menu, base::char16 mnemonic)) {
+    char16_t key,
+    bool (*match_function)(MenuItemView* menu, char16_t mnemonic)) {
   SubmenuView* submenu = parent->GetSubmenu();
   DCHECK(submenu);
   SelectByCharDetails details;
@@ -2817,15 +2827,15 @@ void MenuController::AcceptOrSelect(MenuItemView* parent,
   }
 }
 
-void MenuController::SelectByChar(base::char16 character) {
+void MenuController::SelectByChar(char16_t character) {
   // Do not process while performing drag-and-drop.
   if (for_drop_)
     return;
   if (!character)
     return;
 
-  base::char16 char_array[] = {character, 0};
-  base::char16 key = base::i18n::ToLower(char_array)[0];
+  char16_t char_array[] = {character, 0};
+  char16_t key = base::i18n::ToLower(char_array)[0];
   MenuItemView* item = pending_state_.item;
   if (!item->SubmenuIsShowing())
     item = item->GetParentMenuItem();
@@ -3034,9 +3044,6 @@ void MenuController::ExitMenu() {
   bool nested = delegate_stack_.size() > 1;
   // ExitTopMostMenu unwinds nested delegates
   internal::MenuControllerDelegate* delegate = delegate_;
-  // MenuController may have been deleted when releasing ViewsDelegate ref.
-  // However as |delegate| can outlive this, it must still be notified of the
-  // menu closing so that it can perform teardown.
   int accept_event_flags = accept_event_flags_;
   base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   MenuItemView* result = ExitTopMostMenu();
@@ -3048,15 +3055,12 @@ void MenuController::ExitMenu() {
 }
 
 MenuItemView* MenuController::ExitTopMostMenu() {
-  base::WeakPtr<MenuController> this_ref = AsWeakPtr();
-
   // Release the lock which prevents Chrome from shutting down while the menu is
   // showing.
-  ViewsDelegate::GetInstance()->ReleaseRef();
-
-  // Releasing the lock can result in Chrome shutting down, deleting this.
-  if (!this_ref)
-    return nullptr;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ViewsDelegate::ReleaseRef,
+                     base::Unretained(ViewsDelegate::GetInstance())));
 
   // Close any open menus.
   SetSelection(nullptr, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);

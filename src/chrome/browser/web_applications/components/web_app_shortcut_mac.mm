@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -32,7 +33,6 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -366,7 +366,7 @@ class BundleInfoPlist {
     return GURL(base::SysNSStringToUTF8(
         [plist_ valueForKey:app_mode::kCrAppModeShortcutURLKey]));
   }
-  base::string16 GetTitle() const {
+  std::u16string GetTitle() const {
     return base::SysNSStringToUTF16(
         [plist_ valueForKey:app_mode::kCrAppModeShortcutNameKey]);
   }
@@ -627,7 +627,7 @@ bool UpdateAppShortcutsSubdirLocalizedName(
     return false;
 
   base::FilePath directory_name = apps_directory.BaseName().RemoveExtension();
-  base::string16 localized_name =
+  std::u16string localized_name =
       shell_integration::GetAppShortcutsSubdirName();
   NSDictionary* strings_dict = @{
     base::mac::FilePathToNSString(directory_name) :
@@ -837,7 +837,7 @@ base::FilePath WebAppShortcutCreator::GetShortcutBasename(
     return GetFallbackBasename();
 
   // Strip all preceding '.'s from the path.
-  base::string16 title = info_->title;
+  std::u16string title = info_->title;
   size_t first_non_dot = 0;
   while (first_non_dot < title.size() && title[first_non_dot] == '.')
     first_non_dot += 1;
@@ -1179,6 +1179,22 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
               forKey:app_mode::kCFBundleDocumentTypesKey];
   }
 
+  // 4. Fill in protocol handlers
+  if (!info_->protocol_handlers.empty()) {
+    base::scoped_nsobject<NSMutableArray> handlers(
+        [[NSMutableArray alloc] init]);
+    for (const auto& protocol_handler : info_->protocol_handlers)
+      [handlers addObject:base::SysUTF8ToNSString(protocol_handler)];
+
+    [plist
+        setObject:@[ @{
+          app_mode::kCFBundleURLNameKey :
+              base::SysUTF8ToNSString(GetBundleIdentifier(info_->extension_id)),
+          app_mode::kCFBundleURLSchemesKey : handlers
+        } ]
+           forKey:app_mode::kCFBundleURLTypesKey];
+  }
+
   if (IsMultiProfile()) {
     [plist setObject:base::SysUTF16ToNSString(info_->title)
               forKey:base::mac::CFToNSCast(kCFBundleNameKey)];
@@ -1372,6 +1388,19 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
   return shortcut_creator.CreateShortcuts(creation_reason, creation_locations);
 }
 
+ShortcutLocations GetAppExistingShortCutLocationImpl(
+    const ShortcutInfo& shortcut_info) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  WebAppShortcutCreator shortcut_creator(
+      internals::GetShortcutDataDir(shortcut_info), &shortcut_info);
+  ShortcutLocations locations;
+  if (!shortcut_creator.GetAppBundlesById().empty()) {
+    locations.applications_menu_location = APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
+  }
+  return locations;
+}
+
 bool DeletePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -1402,7 +1431,7 @@ void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
 }
 
 void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
-                             const base::string16& old_app_title,
+                             const std::u16string& old_app_title,
                              const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);

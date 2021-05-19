@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_INFOBARS_CORE_INFOBAR_DELEGATE_H_
 #define COMPONENTS_INFOBARS_CORE_INFOBAR_DELEGATE_H_
 
+#include <string>
+
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -154,7 +155,7 @@ class InfoBarDelegate {
     BLOATED_RENDERER_INFOBAR_DELEGATE = 84,
     // Removed: SUPERVISED_USERS_DEPRECATED_INFOBAR_DELEGATE = 85,
     NEAR_OOM_REDUCTION_INFOBAR_ANDROID = 86,
-    LITE_PAGE_PREVIEWS_INFOBAR = 87,
+    // Removed: LITE_PAGE_PREVIEWS_INFOBAR = 87,
     MODULE_INSTALL_FAILURE_INFOBAR_ANDROID = 88,
     INLINE_UPDATE_READY_INFOBAR_ANDROID = 89,
     INLINE_UPDATE_FAILED_INFOBAR_ANDROID = 90,
@@ -170,9 +171,10 @@ class InfoBarDelegate {
     LITE_MODE_HTTPS_IMAGE_COMPRESSION_INFOBAR_ANDROID = 100,
     // Removed: SYSTEM_INFOBAR_DELEGATE_MAC = 101,
     EXPERIMENTAL_INFOBAR_DELEGATE_LACROS = 102,
-    ROSETTA_REQUIRED_INFOBAR_DELEGATE = 103,
+    // Removed: ROSETTA_REQUIRED_INFOBAR_DELEGATE = 103,
     // Removed: WEBID_PERMISSION_INFOBAR_DELEGATE = 104,
     AUTOFILL_OFFER_NOTIFICATION_INFOBAR_DELEGATE = 105,
+    AUTOFILL_ADDRESS_PROFILE_INFOBAR_DELEGATE_IOS = 106,
   };
 
   // Describes navigation events, used to decide whether infobars should be
@@ -223,7 +225,7 @@ class InfoBarDelegate {
 
   // Returns the text of the link to be displayed, if any. Otherwise returns
   // an empty string.
-  virtual base::string16 GetLinkText() const;
+  virtual std::u16string GetLinkText() const;
 
   // Returns the URL the link should navigate to.
   virtual GURL GetLinkURL() const;

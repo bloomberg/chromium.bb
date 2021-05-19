@@ -1,4 +1,5 @@
 include(CMakeParseArguments)
+include(GNUInstallDirs)
 
 set(ABSL_INTERNAL_DLL_FILES
   "algorithm/algorithm.h"
@@ -131,6 +132,7 @@ set(ABSL_INTERNAL_DLL_FILES
   "numeric/int128.cc"
   "numeric/int128.h"
   "numeric/internal/bits.h"
+  "numeric/internal/representation.h"
   "random/bernoulli_distribution.h"
   "random/beta_distribution.h"
   "random/bit_gen_ref.h"
@@ -499,7 +501,7 @@ function(absl_make_dll)
     abseil_dll
     PUBLIC
       "$<BUILD_INTERFACE:${ABSL_COMMON_INCLUDE_DIRS}>"
-      $<INSTALL_INTERFACE:${ABSL_INSTALL_INCLUDEDIR}>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
 
   target_compile_options(
@@ -517,8 +519,8 @@ function(absl_make_dll)
       ${ABSL_CC_LIB_DEFINES}
   )
   install(TARGETS abseil_dll EXPORT ${PROJECT_NAME}Targets
-        RUNTIME DESTINATION ${ABSL_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${ABSL_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${ABSL_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 endfunction()

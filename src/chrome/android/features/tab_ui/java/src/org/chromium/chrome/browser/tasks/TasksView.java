@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.tasks;
 
-import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
-
 import static com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS;
 import static com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL;
 
@@ -30,7 +28,6 @@ import com.google.android.material.appbar.AppBarLayout;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.MathUtils;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
-import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ntp.IncognitoDescriptionView;
 import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
@@ -100,7 +97,7 @@ class TasksView extends CoordinatorLayoutForPointer {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mUiConfig.updateDisplayStyle();
-        alignHeaderForFeedV2();
+        alignHeaderForFeed();
     }
 
     private void adjustScrollMode(AppBarLayout.LayoutParams layoutParams) {
@@ -132,20 +129,12 @@ class TasksView extends CoordinatorLayoutForPointer {
         // ExploreSurfaceCoordinator.
         TextView titleDescription = (TextView) findViewById(R.id.tab_switcher_title_description);
         TextView moreTabs = (TextView) findViewById(R.id.more_tabs);
-        if (FeedFeatures.cachedIsReportingUserActions()) {
-            ApiCompatibilityUtils.setTextAppearance(
-                    titleDescription, R.style.TextAppearance_TextAccentMediumThick_Secondary);
-            ApiCompatibilityUtils.setTextAppearance(
-                    moreTabs, R.style.TextAppearance_Button_Text_Blue);
-            ViewCompat.setPaddingRelative(titleDescription, titleDescription.getPaddingStart(),
-                    titleDescription.getPaddingTop(), titleDescription.getPaddingEnd(),
-                    titleDescription.getPaddingBottom());
-        } else {
-            ApiCompatibilityUtils.setTextAppearance(
-                    titleDescription, R.style.TextAppearance_TextAccentMediumThick_Secondary);
-            ApiCompatibilityUtils.setTextAppearance(
-                    moreTabs, R.style.TextAppearance_Button_Text_Blue);
-        }
+        ApiCompatibilityUtils.setTextAppearance(
+                titleDescription, R.style.TextAppearance_TextAccentMediumThick_Secondary);
+        ApiCompatibilityUtils.setTextAppearance(moreTabs, R.style.TextAppearance_Button_Text_Blue);
+        ViewCompat.setPaddingRelative(titleDescription, titleDescription.getPaddingStart(),
+                titleDescription.getPaddingTop(), titleDescription.getPaddingEnd(),
+                titleDescription.getPaddingBottom());
     }
 
     ViewGroup getCarouselTabSwitcherContainer() {
@@ -462,44 +451,28 @@ class TasksView extends CoordinatorLayoutForPointer {
      */
     private void setHeaderPadding() {
         int defaultPadding = 0;
-        int widePadding = getResources().getDimensionPixelSize(FeedFeatures.cachedIsV2Enabled()
-                        ? R.dimen.ntp_wide_card_lateral_margins_v2
-                        : R.dimen.ntp_wide_card_lateral_margins);
+        int widePadding =
+                getResources().getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
 
         ViewResizer.createAndAttach(mHeaderView, mUiConfig, defaultPadding, widePadding);
-        alignHeaderForFeedV2();
+        alignHeaderForFeed();
     }
 
     /**
-     * Feed v2 has extra content padding, we need to align the header with it. However, the padding
+     * Feed has extra content padding, we need to align the header with it. However, the padding
      * of the header is already bound with ViewResizer in setHeaderPadding(), so we update the left
      * & right margins of MV tiles container and carousel tab switcher container.
      */
-    private void alignHeaderForFeedV2() {
-        if (!FeedFeatures.cachedIsV2Enabled()) {
-            return;
-        }
-
-        MarginLayoutParams MVParams =
+    private void alignHeaderForFeed() {
+        MarginLayoutParams mostVisitedLayoutParams =
                 (MarginLayoutParams) mHeaderView.findViewById(R.id.mv_tiles_container)
                         .getLayoutParams();
 
         MarginLayoutParams carouselTabSwitcherParams =
                 (MarginLayoutParams) mCarouselTabSwitcherContainer.getLayoutParams();
-
-        int margin = getResources().getDimensionPixelSize(
-                R.dimen.content_suggestions_card_modern_padding_v2);
-        if (getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE) {
-            MVParams.leftMargin = margin;
-            MVParams.rightMargin = margin;
-            carouselTabSwitcherParams.leftMargin = margin;
-            carouselTabSwitcherParams.rightMargin = margin;
-        } else {
-            MVParams.leftMargin = 0;
-            MVParams.rightMargin = 0;
-            carouselTabSwitcherParams.leftMargin =
-                    getResources().getDimensionPixelSize(R.dimen.tab_carousel_start_margin);
+            mostVisitedLayoutParams.leftMargin = 0;
+            mostVisitedLayoutParams.rightMargin = 0;
+            carouselTabSwitcherParams.leftMargin = 0;
             carouselTabSwitcherParams.rightMargin = 0;
-        }
     }
 }

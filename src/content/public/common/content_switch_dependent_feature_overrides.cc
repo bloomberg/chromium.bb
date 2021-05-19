@@ -10,6 +10,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "third_party/blink/public/common/features.h"
+#include "ui/gfx/switches.h"
 
 namespace content {
 
@@ -30,7 +31,7 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
        base::FeatureList::OVERRIDE_DISABLE_FEATURE},
       // Overrides for --enable-experimental-web-platform-features.
       {switches::kEnableExperimentalWebPlatformFeatures,
-       std::cref(features::kCookieDeprecationMessages),
+       std::cref(network::features::kCrossOriginEmbedderPolicyCredentialless),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
       {switches::kEnableExperimentalWebPlatformFeatures,
        std::cref(network::features::kCrossOriginOpenerPolicyReporting),
@@ -43,6 +44,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
       {switches::kEnableExperimentalWebPlatformFeatures,
        std::cref(features::kDocumentPolicyNegotiation),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+      {switches::kEnableExperimentalWebPlatformFeatures,
+       std::cref(features::kExperimentalContentSecurityPolicyFeatures),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
       {switches::kEnableExperimentalWebPlatformFeatures,
        std::cref(features::kFeaturePolicyForClientHints),
@@ -71,11 +75,11 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
       {switches::kEnableExperimentalWebPlatformFeatures,
        std::cref(features::kBlockInsecurePrivateNetworkRequests),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+      {switches::kEnableExperimentalWebPlatformFeatures,
+       std::cref(network::features::kAcceptCHFrame),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
 
       // Overrides for --enable-experimental-cookie-features.
-      {switches::kEnableExperimentalCookieFeatures,
-       std::cref(features::kCookieDeprecationMessages),
-       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
       {switches::kEnableExperimentalCookieFeatures,
        std::cref(net::features::kCookiesWithoutSameSiteMustBeSecure),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
@@ -100,6 +104,10 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
       {network::switches::kUseFirstPartySet,
        std::cref(net::features::kFirstPartySets),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+
+      // Overrides for headless
+      {::switches::kHeadless, std::cref(blink::features::kPaintHolding),
+       base::FeatureList::OVERRIDE_DISABLE_FEATURE},
   };
 
   std::vector<base::FeatureList::FeatureOverrideInfo> overrides;

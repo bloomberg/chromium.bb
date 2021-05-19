@@ -32,7 +32,7 @@ public:
 
     const char* name() const override { return "TestRectOp::GP"; }
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps& caps) const override {
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps& caps) const override {
         return new GLSLGP();
     }
 
@@ -46,8 +46,8 @@ private:
     class GLSLGP : public GrGLSLGeometryProcessor {
     public:
         void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrPrimitiveProcessor& pp) override {
-            const auto& gp = pp.cast<GP>();
+                     const GrGeometryProcessor& geomProc) override {
+            const auto& gp = geomProc.cast<GP>();
             this->setTransform(pdman, fLocalMatrixUni, gp.fLocalMatrix);
         }
 
@@ -57,14 +57,15 @@ private:
 
     private:
         void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-            const auto& gp = args.fGP.cast<GP>();
+            const auto& gp = args.fGeomProc.cast<GP>();
             args.fVaryingHandler->emitAttributes(gp);
             GrGLSLVarying colorVarying(kHalf4_GrSLType);
             args.fVaryingHandler->addVarying("color", &colorVarying,
                                              GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
             args.fVertBuilder->codeAppendf("%s = %s;", colorVarying.vsOut(), gp.fInColor.name());
-            args.fFragBuilder->codeAppendf("%s = %s;", args.fOutputColor, colorVarying.fsIn());
-            args.fFragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+            args.fFragBuilder->codeAppendf("half4 %s = %s;",
+                                           args.fOutputColor, colorVarying.fsIn());
+            args.fFragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
             this->writeOutputPosition(args.fVertBuilder, gpArgs, gp.fInPosition.name());
             this->writeLocalCoord(args.fVertBuilder, args.fUniformHandler, gpArgs,
                                   gp.fInLocalCoords.asShaderVar(), gp.fLocalMatrix,
@@ -213,7 +214,7 @@ void TestRectOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBounds
     }
 
     flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-    flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+    flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
     flushState->drawMesh(*fMesh);
 }
 

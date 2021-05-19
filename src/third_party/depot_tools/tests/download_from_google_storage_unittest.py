@@ -295,6 +295,8 @@ class DownloadTests(unittest.TestCase):
     shutil.rmtree(output_dirname)
     sha1_hash = download_from_google_storage.get_sha1(output_filename)
     input_filename = '%s/%s' % (self.base_url, sha1_hash)
+
+    # Initial download
     self.queue.put((sha1_hash, output_filename))
     self.queue.put((None, None))
     stdout_queue = queue.Queue()
@@ -315,6 +317,64 @@ class DownloadTests(unittest.TestCase):
     expected_output.extend([
         '0> Extracting 3 entries from %s to %s' % (output_filename,
                                                    output_dirname)])
+    expected_ret_codes = []
+    self.assertEqual(list(stdout_queue.queue), expected_output)
+    self.assertEqual(self.gsutil.history, expected_calls)
+    self.assertEqual(list(self.ret_codes.queue), expected_ret_codes)
+    self.assertTrue(os.path.exists(output_dirname))
+    self.assertTrue(os.path.exists(extracted_filename))
+
+    # Test noop download
+    self.queue.put((sha1_hash, output_filename))
+    self.queue.put((None, None))
+    stdout_queue = queue.Queue()
+    download_from_google_storage._downloader_worker_thread(0,
+                                                           self.queue,
+                                                           False,
+                                                           self.base_url,
+                                                           self.gsutil,
+                                                           stdout_queue,
+                                                           self.ret_codes,
+                                                           True,
+                                                           True,
+                                                           delete=False)
+
+    self.assertEqual(list(stdout_queue.queue), [])
+    self.assertEqual(self.gsutil.history, expected_calls)
+    self.assertEqual(list(self.ret_codes.queue), [])
+    self.assertTrue(os.path.exists(output_dirname))
+    self.assertTrue(os.path.exists(extracted_filename))
+
+    # With dirty flag file, previous extraction wasn't complete
+    with open(os.path.join(self.base_path, 'subfolder.tmp'), 'a'):
+      pass
+
+    self.queue.put((sha1_hash, output_filename))
+    self.queue.put((None, None))
+    stdout_queue = queue.Queue()
+    download_from_google_storage._downloader_worker_thread(0,
+                                                           self.queue,
+                                                           False,
+                                                           self.base_url,
+                                                           self.gsutil,
+                                                           stdout_queue,
+                                                           self.ret_codes,
+                                                           True,
+                                                           True,
+                                                           delete=False)
+    expected_calls += [('check_call', ('ls', input_filename)),
+                       ('check_call', ('cp', input_filename, output_filename))]
+    if sys.platform != 'win32':
+      expected_calls.append(
+          ('check_call', ('stat', 'gs://sometesturl/%s' % sha1_hash)))
+    expected_output = [
+        '0> Detected tmp flag file for %s, re-downloading...' %
+        (output_filename),
+        '0> Downloading %s@%s...' % (output_filename, sha1_hash),
+        '0> Removed %s...' % (output_dirname),
+        '0> Extracting 3 entries from %s to %s' %
+        (output_filename, output_dirname),
+    ]
     expected_ret_codes = []
     self.assertEqual(list(stdout_queue.queue), expected_output)
     self.assertEqual(self.gsutil.history, expected_calls)

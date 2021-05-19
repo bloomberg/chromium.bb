@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -110,12 +109,12 @@ std::string TestBookmarkPositionsAsString(
 
 // Return the positions in |matches| as a formatted string for unit test
 // diagnostic output.
-base::string16 MatchesAsString16(const ACMatches& matches) {
-  base::string16 matches_string;
+std::u16string MatchesAsString16(const ACMatches& matches) {
+  std::u16string matches_string;
   for (auto i = matches.begin(); i != matches.end(); ++i) {
-    matches_string.append(base::ASCIIToUTF16("    '"));
+    matches_string.append(u"    '");
     matches_string.append(i->description);
-    matches_string.append(base::ASCIIToUTF16("'\n"));
+    matches_string.append(u"'\n");
   }
   return matches_string;
 }
@@ -200,7 +199,7 @@ BookmarkProviderTest::BookmarkProviderTest() {
 }
 
 void BookmarkProviderTest::SetUp() {
-  provider_client_.reset(new MockAutocompleteProviderClient());
+  provider_client_ = std::make_unique<MockAutocompleteProviderClient>();
   EXPECT_CALL(*provider_client_, GetBookmarkModel())
       .WillRepeatedly(testing::Return(model_.get()));
   EXPECT_CALL(*provider_client_, GetSchemeClassifier())
@@ -445,7 +444,7 @@ TEST_F(BookmarkProviderTest, InlineAutocompletion) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             metrics::OmniboxEventProto::OTHER,
                             TestSchemeClassifier());
-    const base::string16 fixed_up_input(
+    const std::u16string fixed_up_input(
         provider_->FixupUserInput(input).second);
     BookmarkNode node(/*id=*/0, base::GUID::GenerateRandomV4(),
                       GURL(query_data[i].url));
@@ -525,8 +524,7 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
 }
 
 TEST_F(BookmarkProviderTest, DoesNotProvideMatchesOnFocus) {
-  AutocompleteInput input(base::ASCIIToUTF16("foo"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"foo", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   provider_->Start(input, false);

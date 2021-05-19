@@ -4,10 +4,13 @@
 <translation id="1175958423215084756">បានរកឃើញ​តំណ។ <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">រូបភាព​ក្នុងសាលរូបភាព</translation>
 <translation id="1430915738399379752">បោះពុម្ព</translation>
+<translation id="1467231725790366244"><ph name="CAMERA" /> ត្រូវបានផ្ដាច់។</translation>
 <translation id="1473110567575736769">កម្មវិធីកំណត់ម៉ោងរាប់ថយក្រោយ 3 វិនាទី</translation>
 <translation id="1620510694547887537">កាមេរ៉ា</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">មិនបានថត​អ្វី​សោះ</translation>
+<translation id="1838104802459806957">ផ្អៀង​ឡើងលើ</translation>
+<translation id="1851169887664797861">មាន​ការគ្រប់គ្រង​កាមេរ៉ាបន្ថែម</translation>
 <translation id="1851616744363735765">បាន​ផ្អាក</translation>
 <translation id="1862930711583847113">មិនអាច​នាំចេញ <ph name="FILE" /> បានទេ</translation>
 <translation id="1899697626337024495">កម្រិតច្បាស់នៃរូបថត</translation>
@@ -17,15 +20,18 @@
 <translation id="2064538373111010176"><ph name="CAMERA" /> ដំណើរការ</translation>
 <translation id="2144806332417375165">ប៉ារ៉ាម៉ែត្រវីដេអូផ្ទាល់ខ្លួន</translation>
 <translation id="229579744168541441">នាំចេញ​ទៅក្នុងថាស</translation>
+<translation id="2320741269052147773">រំកិល​ទៅឆ្វេង</translation>
 <translation id="2501278716633472235">ត្រលប់ក្រោយ</translation>
 <translation id="2501853267655415902">បាន​បញ្ឈប់​ការ​ថត</translation>
 <translation id="2501953888035679275">ថតរូប និង​ថតវីដេអូ​ដោយ​ប្រើ​កាមេរ៉ា​របស់អ្នក។</translation>
 <translation id="2549985041256363841">ចាប់​ផ្តើម​ថត</translation>
 <translation id="2599796128805996109">កាមេរ៉ាក្រោយ</translation>
+<translation id="2879583609344924966"><ph name="CAMERA" /> ត្រូវបានភ្ជាប់។</translation>
 <translation id="2912439424121107408">មិនអាចប្រើ​មុខងារអ្នកជំនាញ​នៅលើឧបករណ៍នេះបានទេ</translation>
 <translation id="2968794441791257519">រូបថត និង​វីដេអូ​ដែល​ថត​ដោយប្រើកាមេរ៉ា​​នឹងផ្លាស់ទី​ទៅក្នុង​ថត​ទាញយក។ អ្នកអាច​ចូលប្រើរូបថត និងវីដេអូទាំងនោះ​នៅក្នុង​កម្មវិធី Files ។
 
         កម្មវិធី​ដែលមាន​ការអនុញ្ញាត​ចូលប្រើ​ទំហំផ្ទុកនឹងមាន​សិទ្ធិ​ចូលប្រើ​រូបថត​ និងវីដេអូ​របស់អ្នក។</translation>
+<translation id="3067436040345934772">រំកិល​ទៅស្ដាំ</translation>
 <translation id="3081586908890909590">ប្ដូរទៅ​ថត​វីដេអូ</translation>
 <translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">ប្រភេទក្រឡា</translation>
@@ -34,6 +40,7 @@
 <translation id="3259149966178251584">កម្រិតច្បាស់កាមេរ៉ា</translation>
 <translation id="3517926952904427380">មិនអាច​ថតរូប​បញ្ឈរ​បានទេ</translation>
 <translation id="3569311554794739032">តើអ្នកពិតជា​ចង់លុប <ph name="FILE" /> មែនឬ?</translation>
+<translation id="3733597664308256288">មាន​ការគ្រប់គ្រង​កាមេរ៉ាបន្ថែម។ Search + ព្រួញទៅ​ស្ដាំ ដើម្បីចូលប្រើ។</translation>
 <translation id="3810838688059735925">វីដេអូ</translation>
 <translation id="3838931309141338733">ស្កេន​បារកូដ</translation>
 <translation id="3892148308691398805">ចម្លង​អត្ថបទ</translation>
@@ -56,6 +63,7 @@
 <translation id="5671277269877808209">ការ៉េ</translation>
 <translation id="5775960006311140197">មុខងារអ្នកជំនាញ</translation>
 <translation id="5869546221129391014">ក្រឡា</translation>
+<translation id="5975083100439434680">បង្រួម</translation>
 <translation id="6040143037577758943">បិទ</translation>
 <translation id="6073451960410192870">បញ្ឈប់ការថត</translation>
 <translation id="6197807149213783179">រក្សាទុក​ទិន្នន័យ​មេតា</translation>
@@ -84,16 +92,19 @@
 <translation id="7974782136796202581">បង្ហាញជម្រើសរំកិល/ផ្អៀង/ពង្រីកបង្រួម</translation>
 <translation id="7983668134180549431">បានរកឃើញ​អត្ថបទ។</translation>
 <translation id="8067883171444229417">ចាក់​វីដេអូ</translation>
+<translation id="8120146556401698679">រំកិល ផ្អៀង ពង្រីកបង្រួម</translation>
 <translation id="8131740175452115882">អះអាង</translation>
 <translation id="8145038249676204903">ប្ដូរទៅថតរូប</translation>
 <translation id="8239780215768881278">ថតវីដេអូខ្លី</translation>
 <translation id="8261506727792406068">លុប</translation>
+<translation id="8425673304802773841">ផ្អៀង​ចុះក្រោម</translation>
 <translation id="8428213095426709021">ការកំណត់</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">មើលទិន្នន័យ​មេតាសាកល្បង</translation>
 <translation id="8815966864175525708">ប្ដូរទៅ​ថតរូប​បញ្ឈរ</translation>
 <translation id="8828441885228359828">បន្ត​ការថត</translation>
 <translation id="8870695351537079478">មិន​អាច​ចាប់ផ្ដើម​ថត​បាន​ទេ</translation>
+<translation id="8903921497873541725">ពង្រីក</translation>
 <translation id="9045155556724273246">10 វិនាទី</translation>
 <translation id="945522503751344254">ផ្ញើមតិ</translation>
 </translationbundle>

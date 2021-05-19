@@ -7,8 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
+#include <string>
+
 #include "base/ios/block_types.h"
-#include "base/strings/string16.h"
 
 @class AlertCoordinator;
 @class ActionSheetCoordinator;
@@ -29,7 +30,7 @@ using SignoutActionSheetCoordinatorCompletion =
     void (^)(SignoutActionSheetCoordinatorResult result);
 
 // Returns the hosted domain for the primary account.
-base::string16 HostedDomainForPrimaryAccount(Browser* browser);
+std::u16string HostedDomainForPrimaryAccount(Browser* browser);
 
 // Returns ActionSheetCoordinator to ask the sign-out confirmation from the
 // user. The alert sheet dialog choices are based if the primary account is

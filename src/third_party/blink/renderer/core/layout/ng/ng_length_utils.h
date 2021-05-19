@@ -12,8 +12,8 @@
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -22,10 +22,7 @@
 namespace blink {
 class ComputedStyle;
 class Length;
-struct MinMaxSizesInput;
 class NGConstraintSpace;
-class NGBlockNode;
-class NGLayoutInputNode;
 
 inline bool NeedMinMaxSize(const ComputedStyle& style) {
   return style.LogicalWidth().IsContentOrIntrinsic() ||
@@ -310,19 +307,21 @@ inline LayoutUnit ResolveMainBlockLength(
 MinMaxSizesResult ComputeMinAndMaxContentContribution(
     const ComputedStyle& parent_style,
     const NGBlockNode& child,
-    const MinMaxSizesInput&);
+    const NGConstraintSpace& space,
+    const MinMaxSizesFloatInput float_input = MinMaxSizesFloatInput());
 
 // Similar to |ComputeMinAndMaxContentContribution| but ignores the parent
 // writing-mode, and instead computes the contribution relative to |child|'s
 // own writing-mode.
 MinMaxSizesResult ComputeMinAndMaxContentContributionForSelf(
     const NGBlockNode& child,
-    const MinMaxSizesInput&);
+    const NGConstraintSpace& space);
 
 // Used for unit-tests.
 CORE_EXPORT MinMaxSizes
 ComputeMinAndMaxContentContributionForTest(WritingMode writing_mode,
                                            const NGBlockNode&,
+                                           const NGConstraintSpace&,
                                            const MinMaxSizes&);
 
 // Computes the min-block-size and max-block-size values for a node.
@@ -330,7 +329,6 @@ MinMaxSizes ComputeMinMaxBlockSizes(
     const NGConstraintSpace&,
     const ComputedStyle&,
     const NGBoxStrut& border_padding,
-    LayoutUnit intrinsic_size,
     LayoutUnit available_block_size_adjustment = LayoutUnit(),
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr);
@@ -351,25 +349,13 @@ MinMaxSizes ComputeMinMaxInlineSizesFromAspectRatio(
     const ComputedStyle&,
     const NGBoxStrut& border_padding);
 
-// Tries to compute the inline size of a node from its block size and
-// aspect ratio. If there is no aspect ratio or the block size is indefinite,
-// returns kIndefiniteSize.
-// This function will not do the right thing when used on a replaced element.
-// block_size can be specified to base the calculation off of that size
-// instead of calculating it.
-LayoutUnit ComputeInlineSizeFromAspectRatio(
-    const NGConstraintSpace&,
-    const ComputedStyle&,
-    const NGBoxStrut& border_padding,
-    bool should_be_considered_as_replaced,
-    LayoutUnit block_size = kIndefiniteSize);
-
 template <typename MinMaxSizesFunc>
 MinMaxSizes ComputeMinMaxInlineSizes(const NGConstraintSpace& space,
-                                     const ComputedStyle& style,
+                                     const NGBlockNode& node,
                                      const NGBoxStrut& border_padding,
                                      const MinMaxSizesFunc& min_max_sizes_func,
                                      const Length* opt_min_length = nullptr) {
+  const ComputedStyle& style = node.Style();
   const Length& min_length =
       opt_min_length ? *opt_min_length : style.LogicalMinWidth();
   MinMaxSizes sizes = {
@@ -389,6 +375,12 @@ MinMaxSizes ComputeMinMaxInlineSizes(const NGConstraintSpace& space,
     sizes.max_size = std::min(sizes.max_size, transferred_sizes.max_size);
   }
 
+  if (node.IsTable()) {
+    // Tables can't shrink below their inline min-content size.
+    sizes.Encompass(
+        min_max_sizes_func(MinMaxSizesType::kIntrinsic).sizes.min_size);
+  }
+
   sizes.max_size = std::max(sizes.max_size, sizes.min_size);
   return sizes;
 }
@@ -401,7 +393,7 @@ MinMaxSizes ComputeMinMaxInlineSizes(const NGConstraintSpace& space,
 // |override_min_max_sizes_for_test| is provided *solely* for use by unit tests.
 CORE_EXPORT LayoutUnit ComputeInlineSizeForFragment(
     const NGConstraintSpace&,
-    NGLayoutInputNode,
+    const NGBlockNode& node,
     const NGBoxStrut& border_padding,
     const MinMaxSizes* override_min_max_sizes_for_test = nullptr);
 
@@ -410,7 +402,7 @@ CORE_EXPORT LayoutUnit ComputeInlineSizeForFragment(
 // https://drafts.csswg.org/css-tables-3/#used-width-of-table
 CORE_EXPORT LayoutUnit ComputeUsedInlineSizeForTableFragment(
     const NGConstraintSpace& space,
-    NGLayoutInputNode node,
+    const NGBlockNode& node,
     const NGBoxStrut& border_padding,
     const MinMaxSizes& table_grid_min_max_sizes);
 
@@ -427,7 +419,14 @@ CORE_EXPORT LayoutUnit ComputeBlockSizeForFragment(
     const NGBoxStrut& border_padding,
     LayoutUnit intrinsic_size,
     base::Optional<LayoutUnit> inline_size,
-    bool should_be_considered_as_replaced,
+    LayoutUnit available_block_size_adjustment = LayoutUnit());
+
+LayoutUnit ComputeInitialBlockSizeForFragment(
+    const NGConstraintSpace&,
+    const ComputedStyle&,
+    const NGBoxStrut& border_padding,
+    LayoutUnit intrinsic_size,
+    base::Optional<LayoutUnit> inline_size,
     LayoutUnit available_block_size_adjustment = LayoutUnit());
 
 // Calculates default content size for html and body elements in quirks mode.
@@ -622,14 +621,14 @@ inline LayoutUnit ConstrainByMinMax(LayoutUnit length,
 // constraint space.
 // The "pre-layout" block-size may be indefinite, as we'll only have enough
 // information to determine this post-layout.
+// Setting |is_intrinsic| to true will avoid calculating the inline-size, and
+// is typically used within the |NGBlockNode::ComputeMinMaxSizes| pass (as to
+// determine the inline-size, we'd need to compute the min/max sizes, which in
+// turn would call this function).
 CORE_EXPORT NGFragmentGeometry
-CalculateInitialFragmentGeometry(const NGConstraintSpace&, const NGBlockNode&);
-
-// Similar to |CalculateInitialFragmentGeometry| however will only calculate
-// the border, scrollbar, and padding (resolving percentages to zero).
-CORE_EXPORT NGFragmentGeometry
-CalculateInitialMinMaxFragmentGeometry(const NGConstraintSpace&,
-                                       const NGBlockNode&);
+CalculateInitialFragmentGeometry(const NGConstraintSpace&,
+                                 const NGBlockNode&,
+                                 bool is_intrinsic = false);
 
 // Shrinks the logical |size| by |insets|.
 LogicalSize ShrinkLogicalSize(LogicalSize size, const NGBoxStrut& insets);
@@ -656,14 +655,6 @@ LogicalSize CalculateReplacedChildPercentageSize(
     const LogicalSize child_available_size,
     const NGBoxStrut& border_scrollbar_padding,
     const NGBoxStrut& border_padding);
-
-LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
-    const NGConstraintSpace& constraint_space,
-    const NGBlockNode node,
-    const NGBoxStrut& border_padding,
-    const NGBoxStrut& scrollbar,
-    LayoutUnit input_percentage_block_size,
-    bool* uses_input_percentage_block_size);
 
 // The following function clamps the calculated size based on the node
 // requirements. Specifically, this adjusts the size based on size containment

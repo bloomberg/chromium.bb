@@ -8,6 +8,7 @@
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/wide_frame_view.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -29,6 +30,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "cc/paint/display_item_list.h"
 #include "chromeos/ui/base/window_pin_type.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -1583,7 +1585,7 @@ TEST_F(ClientControlledShellSurfaceTest, SetExtraTitle) {
   surface->Commit();
   shell_surface->GetWidget()->Show();
 
-  const base::string16 window_title(base::ASCIIToUTF16("title"));
+  const std::u16string window_title(u"title");
   shell_surface->SetTitle(window_title);
   const aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
   EXPECT_EQ(window_title, window->GetTitle());
@@ -1616,7 +1618,7 @@ TEST_F(ClientControlledShellSurfaceTest, SetExtraTitle) {
 
   // Setting the extra title/debug text won't change the window's title, but it
   // will be drawn by the frame header.
-  shell_surface->SetExtraTitle(base::ASCIIToUTF16("extra"));
+  shell_surface->SetExtraTitle(u"extra");
   surface->Commit();
   EXPECT_EQ(window_title, window->GetTitle());
   EXPECT_TRUE(paint_does_draw_text());
@@ -2658,6 +2660,47 @@ TEST_F(ClientControlledShellSurfaceTest, SnappedClientBounds) {
   // Clean up state.
   shell_surface->SetSnappedToLeft();
   surface->Commit();
+}
+
+// The shell surface with resize lock on should be unresizable.
+TEST_F(ClientControlledShellSurfaceTest,
+       ShellSurfaceWithResizeLockOnIsUnresizable) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  // Test resizability with the feature flag on.
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(ash::features::kArcResizeLock);
+    EXPECT_TRUE(shell_surface->CanResize());
+
+    shell_surface->SetResizeLock(true);
+    surface->Commit();
+    EXPECT_FALSE(shell_surface->CanResize());
+
+    shell_surface->SetResizeLock(false);
+    surface->Commit();
+    EXPECT_TRUE(shell_surface->CanResize());
+  }
+
+  // Test resizability with the feature flag off.
+  // TODO(180252634): Remove this once the feature is enabled by default and
+  // and the flag is removed.
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(ash::features::kArcResizeLock);
+    EXPECT_TRUE(shell_surface->CanResize());
+
+    shell_surface->SetResizeLock(true);
+    surface->Commit();
+    EXPECT_TRUE(shell_surface->CanResize());
+  }
 }
 
 }  // namespace exo

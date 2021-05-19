@@ -10,14 +10,17 @@
 #include "base/allocator/partition_allocator/address_pool_manager_bitmap.h"
 #include "base/allocator/partition_allocator/address_pool_manager_types.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/atomicops.h"
-#include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
 
 namespace base {
+
+template <typename Type>
+struct LazyInstanceTraitsBase;
 
 namespace internal {
 
@@ -32,14 +35,15 @@ namespace internal {
 //
 // (32bit version)
 // AddressPoolManager wraps AllocPages and FreePages and remembers allocated
-// address regions using bitmaps. IsManagedByPartitionAllocDirectMap and
-// IsManagedByPartitionAllocNormalBuckets use the bitmaps to judge whether a
-// given address is managed by the direct map or normal buckets.
+// address regions using bitmaps. IsManagedByPartitionAllocBRPPool and
+// IsManagedByPartitionAllocNonBRPPool use the bitmaps to judge whether a given
+// address is in a pool that supports BackupRefPtr or in a pool that doesn't.
+// All PartitionAlloc allocations must be in either of the pools.
 class BASE_EXPORT AddressPoolManager {
   static constexpr uint64_t kGiB = 1024 * 1024 * 1024ull;
 
  public:
-  static constexpr uint64_t kNormalBucketMaxSize =
+  static constexpr uint64_t kBRPPoolMaxSize =
 #if defined(PA_HAS_64_BITS_POINTERS)
       16 * kGiB;
 #else
@@ -59,16 +63,18 @@ class BASE_EXPORT AddressPoolManager {
   void ResetForTesting();
 
 #if !defined(PA_HAS_64_BITS_POINTERS)
-  static bool IsManagedByDirectMapPool(const void* address) {
-    return AddressPoolManagerBitmap::IsManagedByDirectMapPool(address);
+  static bool IsManagedByNonBRPPool(const void* address) {
+    return AddressPoolManagerBitmap::IsManagedByNonBRPPool(address);
   }
 
-  static bool IsManagedByNormalBucketPool(const void* address) {
-    return AddressPoolManagerBitmap::IsManagedByNormalBucketPool(address);
+  static bool IsManagedByBRPPool(const void* address) {
+    return AddressPoolManagerBitmap::IsManagedByBRPPool(address);
   }
 #endif
 
  private:
+  friend class AddressPoolManagerForTesting;
+
   AddressPoolManager();
   ~AddressPoolManager();
 
@@ -90,7 +96,7 @@ class BASE_EXPORT AddressPoolManager {
    private:
     // The bitset stores the allocation state of the address pool. 1 bit per
     // super-page: 1 = allocated, 0 = free.
-    static constexpr size_t kMaxBits = kNormalBucketMaxSize / kSuperPageSize;
+    static constexpr size_t kMaxBits = kBRPPoolMaxSize / kSuperPageSize;
 
     base::Lock lock_;
     std::bitset<kMaxBits> alloc_bitset_ GUARDED_BY(lock_);
@@ -120,10 +126,12 @@ class BASE_EXPORT AddressPoolManager {
   void MarkUsed(pool_handle handle, const char* address, size_t size);
   void MarkUnused(pool_handle handle, uintptr_t address, size_t size);
 
-  static constexpr pool_handle kDirectMapHandle = 1;
-  static constexpr pool_handle kNormalBucketHandle = 2;
-  friend internal::pool_handle GetDirectMapPool();
-  friend internal::pool_handle GetNormalBucketPool();
+  // BRP stands for BackupRefPtr. GigaCage is split into pools, one which
+  // supports BackupRefPtr and one that doesn't.
+  static constexpr pool_handle kNonBRPPoolHandle = 1;
+  static constexpr pool_handle kBRPPoolHandle = 2;
+  friend internal::pool_handle GetNonBRPPool();
+  friend internal::pool_handle GetBRPPool();
 #endif  // defined(PA_HAS_64_BITS_POINTERS)
 
   friend struct base::LazyInstanceTraitsBase<AddressPoolManager>;
@@ -131,12 +139,12 @@ class BASE_EXPORT AddressPoolManager {
 };
 
 #if !defined(PA_HAS_64_BITS_POINTERS)
-ALWAYS_INLINE internal::pool_handle GetDirectMapPool() {
-  return AddressPoolManager::kDirectMapHandle;
+ALWAYS_INLINE internal::pool_handle GetNonBRPPool() {
+  return AddressPoolManager::kNonBRPPoolHandle;
 }
 
-ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
-  return AddressPoolManager::kNormalBucketHandle;
+ALWAYS_INLINE internal::pool_handle GetBRPPool() {
+  return AddressPoolManager::kBRPPoolHandle;
 }
 #endif
 

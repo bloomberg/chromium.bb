@@ -55,14 +55,13 @@ class ExtensionActionViewController
   void SetDelegate(ToolbarActionViewDelegate* delegate) override;
   gfx::Image GetIcon(content::WebContents* web_contents,
                      const gfx::Size& size) override;
-  base::string16 GetActionName() const override;
-  base::string16 GetAccessibleName(content::WebContents* web_contents) const
-      override;
-  base::string16 GetTooltip(content::WebContents* web_contents) const override;
+  std::u16string GetActionName() const override;
+  std::u16string GetAccessibleName(
+      content::WebContents* web_contents) const override;
+  std::u16string GetTooltip(content::WebContents* web_contents) const override;
   PageInteractionStatus GetPageInteractionStatus(
       content::WebContents* web_contents) const override;
   bool IsEnabled(content::WebContents* web_contents) const override;
-  bool HasPopup(content::WebContents* web_contents) const override;
   bool IsShowingPopup() const override;
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;

@@ -38,7 +38,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // our database without *too* many bad effects.
-const int kCurrentVersionNumber = 43;
+const int kCurrentVersionNumber = 44;
 const int kCompatibleVersionNumber = 16;
 const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
@@ -83,7 +83,7 @@ HistoryDatabase::HistoryDatabase(
            // BeginExclusiveMode below which is called later (we have to be in
            // shared mode to start out for the in-memory backend to read the
            // data).
-           // TODO(1153459) Remove this dependency on normal locking mode. 
+           // TODO(1153459) Remove this dependency on normal locking mode.
            .exclusive_locking = false,
            // Set the database page size to something a little larger to give us
            // better performance (we're typically seek rather than bandwidth
@@ -124,6 +124,8 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
   if (!CreateURLTable(false) || !InitVisitTable() ||
       !InitKeywordSearchTermsTable() || !InitDownloadTable() ||
       !InitSegmentTables() || !InitSyncTable())
+    return LogInitFailure(InitStep::CREATE_TABLES);
+  if (!InitVisitAnnotationsTables())
     return LogInitFailure(InitStep::CREATE_TABLES);
   CreateMainURLIndex();
 
@@ -321,6 +323,11 @@ bool HistoryDatabase::RecreateAllTablesButURL() {
   if (!DropSegmentTables())
     return false;
   if (!InitSegmentTables())
+    return false;
+
+  if (!DropVisitAnnotationsTables())
+    return false;
+  if (!InitVisitAnnotationsTables())
     return false;
 
   return true;
@@ -627,6 +634,13 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   if (cur_version == 42) {
     if (!MigrateVisitsWithoutPubliclyRoutableColumn())
       return LogMigrationFailure(42);
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 43) {
+    if (!CanMigrateFlocAllowed() || !MigrateFlocAllowedToAnnotationsTable())
+      return LogMigrationFailure(43);
     cur_version++;
     meta_table_.SetVersionNumber(cur_version);
   }

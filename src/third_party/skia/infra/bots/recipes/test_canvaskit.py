@@ -4,27 +4,30 @@
 
 # Recipe which runs the Canvaskit tests using docker
 
+
 DEPS = [
   'checkout',
   'docker',
   'env',
+  'flavor',
   'infra',
   'recipe_engine/file',
   'recipe_engine/path',
   'recipe_engine/properties',
   'recipe_engine/python',
   'recipe_engine/step',
+  'gold_upload',
   'run',
   'vars',
 ]
 
 
-DOCKER_IMAGE = 'gcr.io/skia-public/gold-karma-chrome-tests:87.0.4280.88_v1'
+DOCKER_IMAGE = 'gcr.io/skia-public/gold-karma-chrome-tests:87.0.4280.88_v2'
 INNER_KARMA_SCRIPT = 'skia/infra/canvaskit/test_canvaskit.sh'
-
 
 def RunSteps(api):
   api.vars.setup()
+  api.flavor.setup('dm')
   checkout_root = api.path['start_dir']
   out_dir = api.vars.swarming_out_dir
 
@@ -32,7 +35,7 @@ def RunSteps(api):
   # the test files to load, so we must copy them there (see Set up for docker).
   copy_dest = checkout_root.join('skia', 'modules', 'canvaskit',
                                  'npm_build', 'bin')
-  api.file.ensure_directory('mkdirs copy_dest', copy_dest, mode=0777)
+  api.file.ensure_directory('mkdirs copy_dest', copy_dest, mode=0o777)
   base_dir = api.vars.build_dir
   copies = {
     base_dir.join('canvaskit.js'): copy_dest.join('canvaskit.js'),
@@ -44,8 +47,6 @@ def RunSteps(api):
     '--builder',              api.vars.builder_name,
     '--git_hash',             api.properties['revision'],
     '--buildbucket_build_id', api.properties.get('buildbucket_build_id', ''),
-    '--bot_id',               api.vars.swarming_bot_id,
-    '--task_id',              api.vars.swarming_task_id,
     '--browser',              'Chrome',
     '--config',               api.vars.configuration,
     '--source_type',          'canvaskit',
@@ -69,6 +70,7 @@ def RunSteps(api):
       attempts=3,
   )
 
+  api.gold_upload.upload()
 
 def GenTests(api):
   yield (
@@ -77,6 +79,7 @@ def GenTests(api):
                                   '-wasm-Debug-All-CanvasKit'),
                      repository='https://skia.googlesource.com/skia.git',
                      revision='abc123',
+                     gs_bucket='skia-infra-gm',
                      path_config='kitchen',
                      swarm_out_dir='[SWARM_OUT_DIR]')
   )
@@ -87,6 +90,7 @@ def GenTests(api):
                                   '-wasm-Debug-All-CanvasKit'),
                      repository='https://skia.googlesource.com/skia.git',
                      revision='abc123',
+                     gs_bucket='skia-infra-gm',
                      path_config='kitchen',
                      swarm_out_dir='[SWARM_OUT_DIR]',
                      patch_ref='89/456789/12',

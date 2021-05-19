@@ -14,34 +14,12 @@
 
 #include "src/ast/decoration.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::Decoration);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::Decoration);
 
 namespace tint {
 namespace ast {
 
 Decoration::~Decoration() = default;
-
-std::ostream& operator<<(std::ostream& out, DecorationKind data) {
-  switch (data) {
-    case DecorationKind::kArray:
-      return out << "array";
-    case DecorationKind::kFunction:
-      return out << "function";
-    case DecorationKind::kStruct:
-      return out << "struct";
-    case DecorationKind::kStructMember:
-      return out << "struct member";
-    case DecorationKind::kType:
-      return out << "type";
-    case DecorationKind::kVariable:
-      return out << "variable";
-  }
-  return out << "<unknown>";
-}
-
-bool Decoration::IsValid() const {
-  return true;
-}
 
 }  // namespace ast
 }  // namespace tint

@@ -7,6 +7,8 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
@@ -16,6 +18,8 @@
 namespace chromeos {
 
 namespace {
+
+const char kNonShillCellularNetworkPathPrefix[] = "/non-shill-cellular/";
 
 base::flat_set<dbus::ObjectPath> GetProfilePathsFromEuicc(
     HermesEuiccClient::Properties* euicc_properties) {
@@ -59,6 +63,14 @@ std::vector<CellularESimProfile> GenerateProfilesFromEuicc(
        GetProfilePathsFromEuicc(euicc_properties)) {
     HermesProfileClient::Properties* profile_properties =
         HermesProfileClient::Get()->GetProperties(profile_path);
+
+    // Only consider profiles of type kOperational. Other profile types are only
+    // used for testing and should not be exposed to the UI.
+    if (profile_properties->profile_class().value() !=
+        hermes::profile::ProfileClass::kOperational) {
+      continue;
+    }
+
     profiles.emplace_back(
         FromProfileState(profile_properties->state().value()), profile_path,
         eid, profile_properties->iccid().value(),
@@ -125,6 +137,25 @@ const DeviceState::CellularSIMSlotInfos GetSimSlotInfosWithUpdatedEid(
     }
   }
   return sim_slot_infos;
+}
+
+bool IsSimPrimary(const std::string& iccid, const DeviceState* device) {
+  const DeviceState::CellularSIMSlotInfos& sim_slot_infos =
+      device->sim_slot_infos();
+  for (auto& sim_slot_info : sim_slot_infos) {
+    if (sim_slot_info.iccid == iccid && sim_slot_info.primary) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::string GenerateStubCellularServicePath(const std::string& iccid) {
+  return base::StrCat({kNonShillCellularNetworkPathPrefix, iccid});
+}
+
+bool IsStubCellularServicePath(const std::string& service_path) {
+  return base::StartsWith(service_path, kNonShillCellularNetworkPathPrefix);
 }
 
 }  // namespace chromeos

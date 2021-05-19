@@ -146,6 +146,7 @@
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 
@@ -608,6 +609,13 @@ class DownloadTest : public InProcessBrowserTest {
     content::SetupCrossSiteRedirector(embedded_test_server());
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    // Slower builders (linux-chromeos-rel, debug, and maybe others) are flaky
+    // due to slower loading interacting with deferred commits.
+    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
+  }
+
   void TearDownOnMainThread() override {
     // Needs to be torn down on the main thread. file_activity_observer_ holds a
     // reference to the ChromeDownloadManagerDelegate which should be destroyed
@@ -636,8 +644,9 @@ class DownloadTest : public InProcessBrowserTest {
     DownloadManager* manager = DownloadManagerForBrowser(browser());
     DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpenByUser();
 
-    file_activity_observer_.reset(
-        new DownloadTestFileActivityObserver(browser()->profile()));
+    file_activity_observer_ =
+        std::make_unique<DownloadTestFileActivityObserver>(
+            browser()->profile());
 
     return true;
   }
@@ -876,9 +885,9 @@ class DownloadTest : public InProcessBrowserTest {
     // TODO(ahendrickson) -- |expected_title_in_progress| and
     // |expected_title_finished| need to be checked.
     base::FilePath filename = base::FilePath::FromUTF8Unsafe(url.path());
-    base::string16 expected_title_in_progress(
+    std::u16string expected_title_in_progress(
         base::ASCIIToUTF16(partial_indication) + filename.LossyDisplayName());
-    base::string16 expected_title_finished(
+    std::u16string expected_title_finished(
         base::ASCIIToUTF16(total_indication) + filename.LossyDisplayName());
 
     // Download a partial web page in a background tab and wait.
@@ -1031,13 +1040,13 @@ class DownloadTest : public InProcessBrowserTest {
 
     std::unique_ptr<content::DownloadTestObserver> observer;
     if (download_info.reason == download::DOWNLOAD_INTERRUPT_REASON_NONE) {
-      observer.reset(new content::DownloadTestObserverTerminal(
+      observer = std::make_unique<content::DownloadTestObserverTerminal>(
           download_manager, 1,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
     } else {
-      observer.reset(new content::DownloadTestObserverInterrupted(
+      observer = std::make_unique<content::DownloadTestObserverInterrupted>(
           download_manager, 1,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
     }
 
     if (download_info.download_method == DOWNLOAD_DIRECT) {
@@ -2049,7 +2058,7 @@ static std::unique_ptr<net::test_server::HttpResponse>
 ServerRedirectRequestHandler(const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, "/redirect",
                         base::CompareCase::SENSITIVE)) {
-    return std::unique_ptr<net::test_server::HttpResponse>();
+    return nullptr;
   }
 
   std::unique_ptr<net::test_server::BasicHttpResponse> response(
@@ -3160,7 +3169,7 @@ FilterPostOnlyURLsHandler(const net::test_server::HttpRequest& request) {
   std::unique_ptr<net::test_server::BasicHttpResponse> response;
   if (request.relative_url.find("?allow-post-only") != std::string::npos &&
       request.method != net::test_server::METHOD_POST) {
-    response.reset(new net::test_server::BasicHttpResponse());
+    response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_code(net::HTTP_NOT_FOUND);
   }
   return std::move(response);
@@ -3457,7 +3466,7 @@ EchoReferrerRequestHandler(const net::test_server::HttpRequest& request) {
 
   if (!base::StartsWith(request.relative_url, "/echoreferrer",
                         base::CompareCase::SENSITIVE)) {
-    return std::unique_ptr<net::test_server::HttpResponse>();
+    return nullptr;
   }
 
   std::unique_ptr<net::test_server::BasicHttpResponse> response(
@@ -4078,14 +4087,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_CrazyFilenames) {
 
   for (size_t index = 0; index < base::size(kCrazyFilenames); ++index) {
     SCOPED_TRACE(testing::Message() << "Index " << index);
-    base::string16 crazy16;
     std::string crazy8;
     const wchar_t* const crazy_w = kCrazyFilenames[index];
     ASSERT_TRUE(base::WideToUTF8(crazy_w, wcslen(crazy_w), &crazy8));
-    ASSERT_TRUE(base::WideToUTF16(crazy_w, wcslen(crazy_w), &crazy16));
     base::FilePath file_path(origin_directory.Append(
 #if defined(OS_WIN)
-        crazy16
+        crazy_w
 #elif defined(OS_POSIX)
         crazy8
 #endif
@@ -4545,11 +4552,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrossOriginDownloadNavigatesIframe) {
 
   // Clicking the <a download> in the iframe should navigate the iframe,
   // not the main frame.
-  base::string16 expected_title(base::UTF8ToUTF16("Loaded as iframe"));
-  base::string16 failed_title(base::UTF8ToUTF16("Loaded as main frame"));
+  std::u16string expected_title(u"Loaded as iframe");
+  std::u16string failed_title(u"Loaded as main frame");
   content::TitleWatcher title_watcher(web_contents, expected_title);
   title_watcher.AlsoWaitForTitle(failed_title);
-  render_frame_host->ExecuteJavaScriptForTests(base::ASCIIToUTF16("runTest();"),
+  render_frame_host->ExecuteJavaScriptForTests(u"runTest();",
                                                base::NullCallback());
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 

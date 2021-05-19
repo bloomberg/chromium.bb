@@ -59,9 +59,10 @@ ErrorOr<SenderMessage> SenderMessage::Parse(const Json::Value& value) {
     }
   } else if (message.type == SenderMessage::Type::kRpc) {
     std::string rpc_body;
+    std::vector<uint8_t> rpc;
     if (json::ParseAndValidateString(value[kRpcMessageBody], &rpc_body) &&
-        base64::Decode(rpc_body, &rpc_body)) {
-      message.body = rpc_body;
+        base64::Decode(rpc_body, &rpc)) {
+      message.body = rpc;
       message.valid = true;
     }
   } else if (message.type == SenderMessage::Type::kGetStatus ||
@@ -90,7 +91,8 @@ ErrorOr<Json::Value> SenderMessage::ToJson() const {
       break;
 
     case SenderMessage::Type::kRpc:
-      root[kRpcMessageBody] = base64::Encode(absl::get<std::string>(body));
+      root[kRpcMessageBody] =
+          base64::Encode(absl::get<std::vector<uint8_t>>(body));
       break;
 
     case SenderMessage::Type::kGetCapabilities:  // fallthrough

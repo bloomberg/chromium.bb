@@ -11,9 +11,9 @@
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager_observer.h"
-#include "chrome/browser/chromeos/arc/kiosk/arc_kiosk_bridge.h"
-#include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
+#include "chrome/browser/ash/arc/kiosk/arc_kiosk_bridge.h"
+#include "chrome/browser/ash/arc/policy/arc_policy_bridge.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -58,7 +58,8 @@ class ArcKioskAppService : public KeyedService,
   void OnTaskCreated(int32_t task_id,
                      const std::string& package_name,
                      const std::string& activity,
-                     const std::string& intent) override;
+                     const std::string& intent,
+                     int32_t session_id) override;
   void OnTaskDestroyed(int32_t task_id) override;
   void OnPackageListInitialRefreshed() override;
 

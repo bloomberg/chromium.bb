@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
@@ -378,9 +379,14 @@ CanvasResourceRasterSharedImage::CanvasResourceRasterSharedImage(
 
   // The GLES2 flag is needed for rendering via GL using a GrContext.
   if (use_oop_rasterization_) {
+    // TODO(crbug.com/1050845): Ideally we'd like to get rid of the GLES2 usage
+    // flags. Adding them for now to isolate other errors/prepare for field
+    // trials.
     shared_image_usage_flags = shared_image_usage_flags |
                                gpu::SHARED_IMAGE_USAGE_RASTER |
-                               gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+                               gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
+                               gpu::SHARED_IMAGE_USAGE_GLES2 |
+                               gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
   } else {
     shared_image_usage_flags = shared_image_usage_flags |
                                gpu::SHARED_IMAGE_USAGE_GLES2 |

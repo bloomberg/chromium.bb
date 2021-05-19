@@ -1,3 +1,66 @@
+2021-02-24 v3.0.0
+  This release includes compression efficiency improvement, speed improvement
+  for realtime mode, as well as some new APIs.
+
+  - Upgrading:
+    Support for PSNR calculation based on stream bit-depth.
+
+    New encoder control IDs added:
+      - AV1E_SET_ENABLE_RECT_TX
+      - AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP
+      - AV1E_GET_BASELINE_GF_INTERVAL
+      - AV1E_SET_ENABLE_DNL_DENOISING
+
+    New decoder control IDs added:
+      - AOMD_GET_FWD_KF_PRESENT
+      - AOMD_GET_FRAME_FLAGS
+      - AOMD_GET_ALTREF_PRESENT
+      - AOMD_GET_TILE_INFO
+      - AOMD_GET_SCREEN_CONTENT_TOOLS_INFO
+      - AOMD_GET_STILL_PICTURE
+      - AOMD_GET_SB_SIZE
+      - AOMD_GET_SHOW_EXISTING_FRAME_FLAG
+      - AOMD_GET_S_FRAME_INFO
+
+    New aom_tune_content enum value: AOM_CONTENT_FILM
+
+    New aom_tune_metric enum value: AOM_TUNE_VMAF_NEG_MAX_GAIN
+
+    Coefficient and mode update can be turned off via
+    AV1E_SET_{COEFF/MODE}_COST_UPD_FREQ.
+
+    New key & value API added, available with aom_codec_set_option() function.
+
+    Scaling API expanded to include 1/4, 3/4 and 1/8.
+
+  - Enhancements:
+    Better multithreading performance with realtime mode.
+
+    New speed 9 setting for faster realtime encoding.
+
+    Smaller binary size with low bitdepth and realtime only build.
+
+    Temporal denoiser and its optimizations on x86 and Neon.
+
+    Optimizations for scaling.
+
+    Faster encoding with speed settings 2 to 6 for good encoding mode.
+
+    Improved documentation throughout the library, with function level
+    documentation, tree view and support for the dot tool.
+
+  - Bug fixes:
+    Aside from those mentioned in v2.0.1 and v2.0.2, this release includes the
+    following bug fixes:
+
+    Issue 2940: Segfault when encoding with --use-16bit-internal and --limit > 1
+
+    Issue 2941: Decoder mismatch with --rt --bit-depth=10 and --cpu-used=8
+
+    Issue 2895: mingw-w64 i686 gcc fails to build
+
+    Issue 2874: Separate ssse3 functions from sse2 file.
+
 2021-02-09 v2.0.2
   This release includes several bug fixes.
 

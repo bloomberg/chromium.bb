@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/updater/test/integration_tests.h"
-
 #include <cstdlib>
 #include <memory>
 
@@ -27,156 +25,32 @@
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/registration_data.h"
+#include "chrome/updater/test/integration_test_commands.h"
+#include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test/server.h"
 #include "chrome/updater/test/test_app/constants.h"
 #include "chrome/updater/test/test_app/test_app_version.h"
 #include "chrome/updater/update_service.h"
+#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace updater {
+#if defined(OS_WIN)
+#include "base/strings/utf_string_conversions.h"
+#endif  // OS_WIN
 
+namespace updater {
 namespace test {
 
-// The project's position is that component builds are not portable outside of
-// the build directory. Therefore, installation of component builds is not
-// expected to work and these tests do not run on component builders.
-// See crbug.com/1112527.
-#if defined(OS_WIN) || !defined(COMPONENT_BUILD)
-
-namespace {
-
-void ExpectActiveVersion(std::string expected) {
-  EXPECT_EQ(CreateGlobalPrefs()->GetActiveVersion(), expected);
-}
-
-#if defined(OS_MAC)
-void RegisterApp(const std::string& app_id) {
-  scoped_refptr<UpdateService> update_service = CreateUpdateService();
-  RegistrationRequest registration;
-  registration.app_id = app_id;
-  registration.version = base::Version("0.1");
-  base::RunLoop loop;
-  update_service->RegisterApp(
-      registration, base::BindOnce(base::BindLambdaForTesting(
-                        [&loop](const RegistrationResponse& response) {
-                          EXPECT_EQ(response.status_code, 0);
-                          loop.Quit();
-                        })));
-  loop.Run();
-}
-#endif  // defined(OS_MAC)
-
-}  // namespace
-
-void PrintLog() {
-  std::string contents;
-  VLOG(0) << GetDataDirPath().AppendASCII("updater.log");
-  if (base::ReadFileToString(GetDataDirPath().AppendASCII("updater.log"),
-                             &contents)) {
-    VLOG(0) << "Contents of updater.log:";
-    VLOG(0) << contents;
-  } else {
-    VLOG(0) << "Failed to read updater.log file.";
-  }
-}
-
-const testing::TestInfo* GetTestInfo() {
-  return testing::UnitTest::GetInstance()->current_test_info();
-}
-
-base::FilePath GetLogDestinationDir() {
-  // Fetch path to ${ISOLATED_OUTDIR} env var.
-  // ResultDB reads logs and test artifacts info from there.
-  return base::FilePath::FromUTF8Unsafe(std::getenv("ISOLATED_OUTDIR"));
-}
-
-void CopyLog(const base::FilePath& src_dir) {
-  // TODO(crbug.com/1159189): copy other test artifacts.
-  base::FilePath dest_dir = GetLogDestinationDir();
-  if (base::PathExists(dest_dir) && base::PathExists(src_dir)) {
-    base::FilePath dest_file_path = dest_dir.AppendASCII(
-        base::StrCat({GetTestInfo()->test_suite_name(), ".",
-                      GetTestInfo()->name(), "_updater.log"}));
-    EXPECT_TRUE(
-        base::CopyFile(src_dir.AppendASCII("updater.log"), dest_file_path));
-  }
-}
-
-void RunWake(int expected_exit_code) {
-  const base::FilePath installed_executable_path = GetInstalledExecutablePath();
-  EXPECT_TRUE(base::PathExists(installed_executable_path));
-  base::CommandLine command_line(installed_executable_path);
-  command_line.AppendSwitch(kWakeSwitch);
-  command_line.AppendSwitch(kEnableLoggingSwitch);
-  command_line.AppendSwitchASCII(kLoggingModuleSwitch, "*/updater/*=2");
-  int exit_code = -1;
-  ASSERT_TRUE(Run(command_line, &exit_code));
-  EXPECT_EQ(exit_code, expected_exit_code);
-}
-
-void SetupFakeUpdaterPrefs(const base::Version& version) {
-  std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
-  global_prefs->SetActiveVersion(version.GetString());
-  global_prefs->SetSwapping(false);
-  PrefsCommitPendingWrites(global_prefs->GetPrefService());
-
-  ASSERT_EQ(version.GetString(), global_prefs->GetActiveVersion());
-}
-
-void SetupFakeUpdaterInstallFolder(const base::Version& version) {
-  const base::FilePath folder_path = GetFakeUpdaterInstallFolderPath(version);
-  ASSERT_TRUE(base::CreateDirectory(folder_path));
-}
-
-void SetupFakeUpdater(const base::Version& version) {
-  SetupFakeUpdaterPrefs(version);
-  SetupFakeUpdaterInstallFolder(version);
-}
-
-void SetupFakeUpdaterVersion(int offset) {
-  ASSERT_NE(offset, 0);
-  std::vector<uint32_t> components =
-      base::Version(UPDATER_VERSION_STRING).components();
-  base::CheckedNumeric<uint32_t> new_version = components[0];
-  new_version += offset;
-  ASSERT_TRUE(new_version.AssignIfValid(&components[0]));
-  SetupFakeUpdater(base::Version(std::move(components)));
-}
-
-void SetupFakeUpdaterLowerVersion() {
-  SetupFakeUpdaterVersion(-1);
-}
-
-void SetupFakeUpdaterHigherVersion() {
-  SetupFakeUpdaterVersion(1);
-}
-
-bool Run(base::CommandLine command_line, int* exit_code) {
-  command_line.AppendSwitch("enable-logging");
-  command_line.AppendSwitchASCII("vmodule", "*/updater/*=2");
-  base::Process process = base::LaunchProcess(command_line, {});
-  if (!process.IsValid())
-    return false;
-  return process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
-                                        exit_code);
-}
-
-void SleepFor(int seconds) {
-  VLOG(2) << "Sleeping " << seconds << " seconds...";
-  base::WaitableEvent sleep(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::ThreadPool::PostDelayedTask(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&sleep)),
-      base::TimeDelta::FromSeconds(seconds));
-  sleep.Wait();
-  VLOG(2) << "Sleep complete.";
-}
+// TODO(crbug.com/1096654): Enable for system integration tests for Win.
 
 class IntegrationTest : public ::testing::Test {
+ public:
+  IntegrationTest() : test_commands_(CreateIntegrationTestCommands()) {}
+  ~IntegrationTest() override = default;
+
  protected:
   void SetUp() override {
     Clean();
@@ -189,20 +63,96 @@ class IntegrationTest : public ::testing::Test {
       PrintLog();
     // TODO(crbug.com/1159189): Use a specific test output directory
     // because Uninstall() deletes the files under GetDataDirPath().
-    CopyLog(GetDataDirPath());
+    CopyLog();
     ExpectClean();
     Clean();
   }
+
+  void CopyLog() { test_commands_->CopyLog(); }
+
+  void PrintLog() { test_commands_->PrintLog(); }
+
+  void Install() { test_commands_->Install(); }
+
+  void ExpectInstalled() { test_commands_->ExpectInstalled(); }
+
+  void Uninstall() { test_commands_->Uninstall(); }
+
+  void ExpectCandidateUninstalled() {
+    test_commands_->ExpectCandidateUninstalled();
+  }
+
+  void Clean() { test_commands_->Clean(); }
+
+  void ExpectClean() { test_commands_->ExpectClean(); }
+
+  void EnterTestMode(const GURL& url) { test_commands_->EnterTestMode(url); }
+
+  void ExpectVersionActive(const std::string& version) {
+    test_commands_->ExpectVersionActive(version);
+  }
+
+  void ExpectVersionNotActive(const std::string& version) {
+    test_commands_->ExpectVersionNotActive(version);
+  }
+
+  void ExpectActiveUpdater() { test_commands_->ExpectActiveUpdater(); }
+
+  void SetupFakeUpdaterHigherVersion() {
+    test_commands_->SetupFakeUpdaterHigherVersion();
+  }
+
+  void SetActive(const std::string& app_id) {
+    test_commands_->SetActive(app_id);
+  }
+
+  void ExpectActive(const std::string& app_id) {
+    test_commands_->ExpectActive(app_id);
+  }
+
+  void ExpectNotActive(const std::string& app_id) {
+    test_commands_->ExpectNotActive(app_id);
+  }
+
+  void SetFakeExistenceCheckerPath(const std::string& app_id) {
+    test_commands_->SetFakeExistenceCheckerPath(app_id);
+  }
+
+  void ExpectAppUnregisteredExistenceCheckerPath(const std::string& app_id) {
+    test_commands_->ExpectAppUnregisteredExistenceCheckerPath(app_id);
+  }
+
+  void RegisterApp(const std::string& app_id) {
+    test_commands_->RegisterApp(app_id);
+  }
+
+  void RegisterTestApp() { test_commands_->RegisterTestApp(); }
+
+  void RunWake(int exit_code) { test_commands_->RunWake(exit_code); }
+
+  scoped_refptr<IntegrationTestCommands> test_commands_;
 
  private:
   base::test::TaskEnvironment environment_;
 };
 
+// The project's position is that component builds are not portable outside of
+// the build directory. Therefore, installation of component builds is not
+// expected to work and these tests do not run on component builders.
+// See crbug.com/1112527.
+#if defined(OS_WIN) || !defined(COMPONENT_BUILD)
+
 TEST_F(IntegrationTest, InstallUninstall) {
   Install();
   ExpectInstalled();
-  ExpectActiveVersion(UPDATER_VERSION_STRING);
-  ExpectActive();
+  ExpectVersionActive(UPDATER_VERSION_STRING);
+  ExpectActiveUpdater();
+#if defined(OS_WIN)
+  // Tests the COM registration after the install. For now, tests that the
+  // COM interfaces are registered, which is indirectly testing the type
+  // library separation for the public, private, and legacy interfaces.
+  ExpectInterfacesRegistered();
+#endif  // OS_WIN
   Uninstall();
 }
 
@@ -210,7 +160,8 @@ TEST_F(IntegrationTest, SelfUninstallOutdatedUpdater) {
   Install();
   ExpectInstalled();
   SetupFakeUpdaterHigherVersion();
-  EXPECT_NE(CreateGlobalPrefs()->GetActiveVersion(), UPDATER_VERSION_STRING);
+  ExpectVersionNotActive(UPDATER_VERSION_STRING);
+  SleepFor(2);
 
   RunWake(0);
 
@@ -221,25 +172,21 @@ TEST_F(IntegrationTest, SelfUninstallOutdatedUpdater) {
 
   ExpectCandidateUninstalled();
   // The candidate uninstall should not have altered global prefs.
-  EXPECT_NE(CreateGlobalPrefs()->GetActiveVersion(), UPDATER_VERSION_STRING);
-  EXPECT_NE(CreateGlobalPrefs()->GetActiveVersion(), "0.0.0.0");
+  ExpectVersionNotActive(UPDATER_VERSION_STRING);
+  ExpectVersionNotActive("0.0.0.0");
 
   Uninstall();
   Clean();
 }
 
-#if defined(OS_MAC)
-// TODO(crbug.com/1163524): Enable on Windows.
 TEST_F(IntegrationTest, RegisterTestApp) {
   RegisterTestApp();
   ExpectInstalled();
-  ExpectActiveVersion(UPDATER_VERSION_STRING);
-  ExpectActive();
+  ExpectVersionActive(UPDATER_VERSION_STRING);
+  ExpectActiveUpdater();
   Uninstall();
 }
 
-// TODO(crbug.com/1163524): Enable on Windows.
-// TODO(crbug.com/1163625): Failing on Mac 10.11.
 TEST_F(IntegrationTest, ReportsActive) {
   // A longer than usual timeout is needed for this test because the macOS
   // UpdateServiceInternal server takes at least 10 seconds to shut down after
@@ -248,7 +195,7 @@ TEST_F(IntegrationTest, ReportsActive) {
   base::test::ScopedRunLoopTimeout timeout(FROM_HERE,
                                            base::TimeDelta::FromSeconds(18));
 
-  ScopedServer test_server;
+  ScopedServer test_server(test_commands_);
   Install();
   ExpectInstalled();
 
@@ -281,71 +228,35 @@ TEST_F(IntegrationTest, ReportsActive) {
 TEST_F(IntegrationTest, UnregisterUninstalledApp) {
   RegisterTestApp();
   ExpectInstalled();
-  ExpectActiveVersion(UPDATER_VERSION_STRING);
-  ExpectActive();
+  ExpectVersionActive(UPDATER_VERSION_STRING);
+  ExpectActiveUpdater();
 
   RegisterApp("test1");
   RegisterApp("test2");
 
-  {
-    std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
-    auto persisted_data =
-        base::MakeRefCounted<PersistedData>(global_prefs->GetPrefService());
-    base::FilePath fake_ecp =
-        persisted_data->GetExistenceCheckerPath(kTestAppId)
-            .Append(FILE_PATH_LITERAL("NOT_THERE"));
-    persisted_data->SetExistenceCheckerPath(kTestAppId, fake_ecp);
-
-    PrefsCommitPendingWrites(global_prefs->GetPrefService());
-
-    EXPECT_EQ(fake_ecp.value(),
-              persisted_data->GetExistenceCheckerPath(kTestAppId).value());
-  }
+  SetFakeExistenceCheckerPath(kTestAppId);
 
   RunWake(0);
 
   SleepFor(13);
   ExpectInstalled();
 
-  {
-    std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
-    auto persisted_data =
-        base::MakeRefCounted<PersistedData>(global_prefs->GetPrefService());
-    EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("")).value(),
-              persisted_data->GetExistenceCheckerPath(kTestAppId).value());
-  }
+  ExpectAppUnregisteredExistenceCheckerPath(kTestAppId);
 
   Uninstall();
-  Clean();
 }
 
 TEST_F(IntegrationTest, UninstallUpdaterWhenAllAppsUninstalled) {
   RegisterTestApp();
   ExpectInstalled();
-  ExpectActiveVersion(UPDATER_VERSION_STRING);
-  ExpectActive();
+  ExpectVersionActive(UPDATER_VERSION_STRING);
+  ExpectActiveUpdater();
 
-  {
-    std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
-    auto persisted_data =
-        base::MakeRefCounted<PersistedData>(global_prefs->GetPrefService());
-    const base::FilePath fake_ecp =
-        persisted_data->GetExistenceCheckerPath(kTestAppId)
-            .Append(FILE_PATH_LITERAL("NOT_THERE"));
-    persisted_data->SetExistenceCheckerPath(kTestAppId, fake_ecp);
-
-    PrefsCommitPendingWrites(global_prefs->GetPrefService());
-
-    EXPECT_EQ(fake_ecp.value(),
-              persisted_data->GetExistenceCheckerPath(kTestAppId).value());
-  }
+  SetFakeExistenceCheckerPath(kTestAppId);
 
   RunWake(0);
 
   SleepFor(13);
-
-  ExpectClean();
-  Clean();
 }
 
 // TODO(https://crbug.com/1166196): Fix flaky timeouts. The timeout is in
@@ -358,8 +269,8 @@ TEST_F(IntegrationTest, UninstallUpdaterWhenAllAppsUninstalled) {
 TEST_F(IntegrationTest, MAYBE_UnregisterUnownedApp) {
   RegisterTestApp();
   ExpectInstalled();
-  ExpectActiveVersion(UPDATER_VERSION_STRING);
-  ExpectActive();
+  ExpectVersionActive(UPDATER_VERSION_STRING);
+  ExpectActiveUpdater();
 
   {
     std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
@@ -384,25 +295,10 @@ TEST_F(IntegrationTest, MAYBE_UnregisterUnownedApp) {
               persisted_data->GetExistenceCheckerPath(kTestAppId).value());
   }
 
-  Uninstall();
-  Clean();
+  SleepFor(13);
 }
-
-#endif  // OS_MAC
-
-#if defined(OS_WIN)
-// Tests the COM registration after the install. For now, tests that the
-// COM interfaces are registered, which is indirectly testing the type
-// library separation for the public, private, and legacy interfaces.
-TEST_F(IntegrationTest, COMRegistration) {
-  Install();
-  ExpectInterfacesRegistered();
-  Uninstall();
-}
-#endif  // OS_WIN
 
 #endif  // defined(OS_WIN) || !defined(COMPONENT_BUILD)
 
 }  // namespace test
-
 }  // namespace updater

@@ -4,10 +4,13 @@
 <translation id="1175958423215084756">ଲିଙ୍କଟି ଚିହ୍ନଟ କରାଯାଇଛି। <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">ଗ୍ୟାଲେରୀ ଛବିଗୁଡ଼ିକ</translation>
 <translation id="1430915738399379752">ପ୍ରିଣ୍ଟ କରନ୍ତୁ</translation>
+<translation id="1467231725790366244"><ph name="CAMERA" />କୁ ଅନପ୍ଲଗ୍ କରାଯାଇଛି।</translation>
 <translation id="1473110567575736769">3 ସେକେଣ୍ଡର ଟାଇମର୍</translation>
 <translation id="1620510694547887537">କ୍ୟାମେରା</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">କିଛି ରେକର୍ଡ କରାଯାଇ ନାହିଁ</translation>
+<translation id="1838104802459806957">ଉପରକୁ ଟିଲ୍ଟ କରନ୍ତୁ</translation>
+<translation id="1851169887664797861">ଅତିରିକ୍ତ କ୍ୟାମେରା ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="1851616744363735765">ବିରତ କରାଯାଇଛି</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> ଏକ୍ସପୋର୍ଟ କରିବାରେ ଅକ୍ଷମ</translation>
 <translation id="1899697626337024495">ଫଟୋ ରିଜୋଲ୍ୟୁଶନ୍</translation>
@@ -17,15 +20,18 @@
 <translation id="2064538373111010176"><ph name="CAMERA" /> ସକ୍ରିୟ ଅଛି</translation>
 <translation id="2144806332417375165">କଷ୍ଟମ୍ ଭିଡିଓ ପାରାମିଟରଗୁଡ଼ିକ</translation>
 <translation id="229579744168541441">ଡିସ୍କକୁ ଏକ୍ସପୋର୍ଟ କରନ୍ତୁ</translation>
+<translation id="2320741269052147773">ବାମକୁ ପ୍ୟାନ୍ କରନ୍ତୁ</translation>
 <translation id="2501278716633472235">ଫେରନ୍ତୁ</translation>
 <translation id="2501853267655415902">ରେକର୍ଡିଂ ବନ୍ଦ ହୋଇଗଲା।</translation>
 <translation id="2501953888035679275">ଆପଣଙ୍କର କ୍ୟାମେରାରେ ଫଟୋଗୁଡ଼ିକ ଉଠାନ୍ତୁ ଏବଂ ଭିଡିଓଗୁଡ଼ିକ ରେକର୍ଡ କରନ୍ତୁ।</translation>
 <translation id="2549985041256363841">ରେକର୍ଡିଂ ଆରମ୍ଭ କରନ୍ତୁ</translation>
 <translation id="2599796128805996109">ପଛ କ୍ୟାମେରା</translation>
+<translation id="2879583609344924966"><ph name="CAMERA" />କୁ ପ୍ଲଗ୍ ଇନ୍ କରାଯାଇଛି।</translation>
 <translation id="2912439424121107408">ଏହି ଡିଭାଇସ୍‍‍ରେ ଏକ୍ସପାର୍ଟ ମୋଡ୍ ସମର୍ଥନ କରେ ନାହିଁ</translation>
 <translation id="2968794441791257519">କ୍ୟାମେରାରେ ଉଠାଯାଇଥିବା ଫଟୋ ଏବଂ ଭିଡିଓଗୁଡ଼ିକ ଡାଉନ୍‌ଲୋଡ୍ ଫୋଲ୍ଡର୍‍କୁ ନିଆଯିବ। ଆପଣ ସେଗୁଡ଼ିକ ଫାଇଲ୍‌ଗୁଡ଼ିକରେ ଆକ୍ସେସ୍ କରାଯାଇପାରିବ।
 
         ଆପଣଙ୍କର ଫଟୋ ଓ ଭିଡିଓଗୁଡ଼ିକୁ ଷ୍ଟୋରେଜ୍ ଅନୁମତିଗୁଡ଼ିକ ଥିବା ଆପ୍ସ ଆକ୍ସେସ୍ କରିପାରିବେ।</translation>
+<translation id="3067436040345934772">ଡାହାଣକୁ ପ୍ୟାନ୍ କରନ୍ତୁ</translation>
 <translation id="3081586908890909590">ଭିଡିଓ ରେକର୍ଡ ମୋଡ୍‍କୁ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
 <translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">ଗ୍ରିଡ୍‌ର ପ୍ରକାର</translation>
@@ -34,6 +40,7 @@
 <translation id="3259149966178251584">କ୍ୟାମେରା ରିଜୋଲ୍ୟୁଶନ୍</translation>
 <translation id="3517926952904427380">ପୋଟ୍ରେଟ୍ ଫଟୋ ଉଠାଇବା ପାଇଁ ଅକ୍ଷମ</translation>
 <translation id="3569311554794739032">ଆପଣ କ'ଣ ପ୍ରକୃତରେ <ph name="FILE" />କୁ କାଢ଼ି ଦେବାକୁ ଚାହୁଁଛନ୍ତି?</translation>
+<translation id="3733597664308256288">ଅତିରିକ୍ତ କ୍ୟାମେରା ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ ଉପଲବ୍ଧ ଅଛି। ଆକ୍ସେସ୍ କରିବା ପାଇଁ ସନ୍ଧାନ + ଡାହାଣ ତୀର କୀ ଦବାନ୍ତୁ।</translation>
 <translation id="3810838688059735925">ଭିଡିଓ</translation>
 <translation id="3838931309141338733">ବାରକୋଡ୍ ସ୍କାନ୍ କରନ୍ତୁ</translation>
 <translation id="3892148308691398805">ଟେକ୍ସଟ୍ କପି କରନ୍ତୁ</translation>
@@ -56,6 +63,7 @@
 <translation id="5671277269877808209">ବର୍ଗାକାର</translation>
 <translation id="5775960006311140197">ଏକ୍ସପାର୍ଟ ମୋଡ୍</translation>
 <translation id="5869546221129391014">ଗ୍ରିଡ୍</translation>
+<translation id="5975083100439434680">ଜୁମ୍ କମାନ୍ତୁ</translation>
 <translation id="6040143037577758943">ବନ୍ଦ</translation>
 <translation id="6073451960410192870">ରେକର୍ଡିଂ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="6197807149213783179">ମେଟାଡାଟା ସେଭ୍ କରନ୍ତୁ</translation>
@@ -84,16 +92,19 @@
 <translation id="7974782136796202581">ପ୍ୟାନ୍ ଟିଲ୍ଟ ଜୁମ୍ ବିକଳ୍ପ ଦେଖାନ୍ତୁ</translation>
 <translation id="7983668134180549431">ଟେକ୍ସଟ୍ ଚିହ୍ନଟ କରାଯାଇଛି।</translation>
 <translation id="8067883171444229417">ଭିଡିଓ ଚଲାନ୍ତୁ</translation>
+<translation id="8120146556401698679">ପ୍ୟାନ୍ ଟିଲ୍ଟ ଜୁମ୍</translation>
 <translation id="8131740175452115882">ନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="8145038249676204903">ଫଟୋ ଉଠାଇବା ପାଇଁ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
 <translation id="8239780215768881278">ଭିଡିଓର ସ୍ନାପସଟ୍ ନିଅନ୍ତୁ</translation>
 <translation id="8261506727792406068">ବିଲୋପ</translation>
+<translation id="8425673304802773841">ତଳକୁ ଟିଲ୍ଟ କରନ୍ତୁ</translation>
 <translation id="8428213095426709021">ସେଟିଂସ୍</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">ମେଟାଡାଟା ପ୍ରିଭ୍ୟୁ କରନ୍ତୁ</translation>
 <translation id="8815966864175525708">ପୋଟ୍ରେଟ୍ ଫଟୋ ଉଠାଇବା ପାଇଁ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
 <translation id="8828441885228359828">ରେକର୍ଡିଂ ପୁଣି ଆରମ୍ଭ କରନ୍ତୁ</translation>
 <translation id="8870695351537079478">ରେକର୍ଡିଂ ଆରମ୍ଭ କରିବା ପାଇଁ ଅକ୍ଷମ</translation>
+<translation id="8903921497873541725">ଜୁମ୍ ବଢ଼ାନ୍ତୁ</translation>
 <translation id="9045155556724273246">10 ସେକେଣ୍ଡ</translation>
 <translation id="945522503751344254">ମତାମତ ପଠାନ୍ତୁ</translation>
 </translationbundle>

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -21,7 +22,8 @@
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -44,7 +46,7 @@ namespace web_app {
 
 namespace {
 
-bool IsAppInstalled(apps::AppServiceProxy* proxy, const AppId& app_id) {
+bool IsAppInstalled(apps::AppServiceProxyBase* proxy, const AppId& app_id) {
   bool installed = false;
   proxy->AppRegistryCache().ForOneApp(
       app_id, [&installed](const apps::AppUpdate& update) {
@@ -95,8 +97,10 @@ WebAppUiManagerImpl::WebAppUiManagerImpl(Profile* profile)
 WebAppUiManagerImpl::~WebAppUiManagerImpl() = default;
 
 void WebAppUiManagerImpl::SetSubsystems(
-    AppRegistryController* app_registry_controller) {
+    AppRegistryController* app_registry_controller,
+    OsIntegrationManager* os_integration_manager) {
   app_registry_controller_ = app_registry_controller;
+  os_integration_manager_ = os_integration_manager;
 }
 
 void WebAppUiManagerImpl::Start() {
@@ -159,9 +163,9 @@ bool WebAppUiManagerImpl::UninstallAndReplaceIfExists(
     const std::vector<AppId>& from_apps,
     const AppId& to_app) {
   bool has_migrated = false;
-  bool did_uninstall = false;
+  bool uninstall_triggered = false;
   for (const AppId& from_app : from_apps) {
-    apps::AppServiceProxy* proxy =
+    apps::AppServiceProxyBase* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile_);
     if (!IsAppInstalled(proxy, from_app))
       continue;
@@ -206,17 +210,72 @@ bool WebAppUiManagerImpl::UninstallAndReplaceIfExists(
                 to_app, DisplayMode::kBrowser, /*is_user_action=*/false);
             break;
         }
-
         has_migrated = true;
+        auto shortcut_info = web_app::ShortcutInfoForExtensionAndProfile(
+            from_extension, profile_);
+        auto callback =
+            base::BindOnce(&WebAppUiManagerImpl::OnShortcutLocationGathered,
+                           weak_ptr_factory_.GetWeakPtr(), from_app, to_app);
+        os_integration_manager_->GetAppExistingShortCutLocation(
+            std::move(callback), std::move(shortcut_info));
+        uninstall_triggered = true;
+        continue;
       }
+      has_migrated = true;
+      // The from_app could be a web app.
+      os_integration_manager_->GetShortcutInfoForApp(
+          from_app,
+          base::BindOnce(&WebAppUiManagerImpl::
+                             OnShortcutInfoReceivedSearchShortcutLocations,
+                         weak_ptr_factory_.GetWeakPtr(), from_app, to_app));
+      uninstall_triggered = true;
+      continue;
     }
 
     proxy->UninstallSilently(from_app,
                              apps::mojom::UninstallSource::kMigration);
-    did_uninstall = true;
+    uninstall_triggered = true;
   }
 
-  return did_uninstall;
+  return uninstall_triggered;
+}
+
+void WebAppUiManagerImpl::OnShortcutInfoReceivedSearchShortcutLocations(
+    const AppId& from_app,
+    const AppId& app_id,
+    std::unique_ptr<ShortcutInfo> shortcut_info) {
+  if (!shortcut_info) {
+    // The shortcut info couldn't be found, simply uninstall.
+    apps::AppServiceProxyBase* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile_);
+    proxy->UninstallSilently(from_app,
+                             apps::mojom::UninstallSource::kMigration);
+    return;
+  }
+  auto callback =
+      base::BindOnce(&WebAppUiManagerImpl::OnShortcutLocationGathered,
+                     weak_ptr_factory_.GetWeakPtr(), from_app, app_id);
+  os_integration_manager_->GetAppExistingShortCutLocation(
+      std::move(callback), std::move(shortcut_info));
+}
+
+void WebAppUiManagerImpl::OnShortcutLocationGathered(
+    const AppId& from_app,
+    const AppId& app_id,
+    ShortcutLocations locations) {
+  apps::AppServiceProxyBase* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
+  proxy->UninstallSilently(from_app, apps::mojom::UninstallSource::kMigration);
+
+  InstallOsHooksOptions options;
+  options.os_hooks[OsHookType::kShortcuts] =
+      locations.on_desktop || locations.applications_menu_location ||
+      locations.in_quick_launch_bar || locations.in_startup;
+  options.add_to_desktop = locations.on_desktop;
+  options.add_to_quick_launch_bar = locations.in_quick_launch_bar;
+  options.os_hooks[OsHookType::kRunOnOsLogin] = locations.in_startup;
+  os_integration_manager_->InstallOsHooks(app_id, base::DoNothing(), nullptr,
+                                          options);
 }
 
 bool WebAppUiManagerImpl::CanAddAppToQuickLaunchBar() const {
@@ -276,6 +335,21 @@ void WebAppUiManagerImpl::ReparentAppTabToWindow(content::WebContents* contents,
   DCHECK(CanReparentAppTabToWindow(app_id, shortcut_created));
   // Reparent the tab into an app window immediately.
   ReparentWebContentsIntoAppBrowser(contents, app_id);
+}
+
+content::WebContents* WebAppUiManagerImpl::NavigateExistingWindow(
+    const AppId& app_id,
+    const GURL& url) {
+  for (Browser* open_browser : *BrowserList::GetInstance()) {
+    if (web_app::AppBrowserController::IsForWebApp(open_browser, app_id)) {
+      open_browser->OpenURL(content::OpenURLParams(
+          url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+          ui::PAGE_TRANSITION_LINK,
+          /*is_renderer_initiated=*/false));
+      return open_browser->tab_strip_model()->GetActiveWebContents();
+    }
+  }
+  return nullptr;
 }
 
 void WebAppUiManagerImpl::OnBrowserAdded(Browser* browser) {

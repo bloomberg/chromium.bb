@@ -2,11 +2,11 @@
 ++[list]
 ++++[list item]
 ++++++[panel]
-++++++++[static] name='• '
+++++++++[static] name='%E2%80%A2 '
 ++++++[static] name='One'
 ++++[list item]
 ++++++[panel]
-++++++++[static] name='• '
+++++++++[static] name='%E2%80%A2 '
 ++++++[static] name='Two'
 ++++++[static] name=' '
 ++++++[static] name='Three'

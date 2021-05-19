@@ -51,8 +51,6 @@ source_set("util") {
     "json/json_serialization.h",
     "json/json_value.cc",
     "json/json_value.h",
-    "operation_loop.cc",
-    "operation_loop.h",
     "osp_logging.h",
     "saturate_cast.h",
     "simple_fraction.cc",
@@ -101,6 +99,7 @@ source_set("unittests") {
     "alarm_unittest.cc",
     "base64_unittest.cc",
     "big_endian_unittest.cc",
+    "crypto/certificate_utils_unittest.cc",
     "crypto/random_bytes_unittest.cc",
     "crypto/rsa_private_key_unittest.cc",
     "crypto/secure_hash_unittest.cc",
@@ -111,7 +110,6 @@ source_set("unittests") {
     "json/json_helpers_unittest.cc",
     "json/json_serialization_unittest.cc",
     "json/json_value_unittest.cc",
-    "operation_loop_unittest.cc",
     "saturate_cast_unittest.cc",
     "simple_fraction_unittest.cc",
     "stringprintf_unittest.cc",
@@ -125,12 +123,6 @@ source_set("unittests") {
   # when trace logging is enabled.
   if (enable_trace_logging) {
     sources += [ "trace_logging_unittest.cc" ]
-  }
-
-  # TODO(http://issuetracker.google.com/159955844): test fails on fieldtrial
-  # bot, needs to be diagnosed and reenabled in Chrome.
-  if (!build_with_chromium) {
-    sources += [ "crypto/certificate_utils_unittest.cc" ]
   }
 
   deps = [

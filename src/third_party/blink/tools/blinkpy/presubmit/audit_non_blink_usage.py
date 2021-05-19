@@ -88,6 +88,7 @@ _CONFIG = [
             'base::size',
             'base::span',
             'logging::GetVlogLevel',
+            'logging::SetLogItems',
             'base::PassKey',
 
             # //base/allocator/partition_allocator/partition_alloc_constants.h
@@ -203,6 +204,7 @@ _CONFIG = [
 
             # //base/template_util.h.
             'base::void_t',
+            'base::remove_cvref_t',
 
             # Debugging helpers from //base/debug are allowed everywhere.
             'base::debug::.+',
@@ -502,20 +504,23 @@ _CONFIG = [
             'ui::AXEventIntent',
             'ui::AXMode',
             'ui::AXNodeData',
+            'ui::AXTreeID',
             'ax::mojom::BoolAttribute',
             'ax::mojom::HasPopup',
             'ax::mojom::State',
             'ax::mojom::Restriction',
 
             # Accessibility helper functions - mostly used in Blink for
-            # serialization.
+            # serialization. Please keep alphabetized.
             'ui::CanHaveInlineTextBoxChildren',
+            'ui::IsCellOrTableHeader',
+            'ui::IsContainerWithSelectableChildren',
             'ui::IsDialog',
             'ui::IsHeading',
-            'ui::IsContainerWithSelectableChildren',
+            'ui::IsPlatformDocument',
+            'ui::IsPresentational',
             'ui::IsTableLike',
             'ui::IsTableRow',
-            'ui::IsCellOrTableHeader',
             'ui::IsTableHeader',
 
             # Blink uses UKM for logging e.g. always-on leak detection (crbug/757374)
@@ -633,8 +638,18 @@ _CONFIG = [
             'cc::PaintBenchmarkResult',
             'cc::RenderFrameMetadata',
             'cc::TaskGraphRunner',
+            'cc::ContentLayerClient',
+            'cc::DeadlinePolicy',
+            'cc::DisplayItemList',
+            'cc::DrawColorOp',
+            'cc::DrawImageOp',
+            'cc::SaveOp',
+            'cc::ScaleOp',
+            'cc::RestoreOp',
+            'cc::TranslateOp',
             'gfx::DisplayColorSpaces',
             'gfx::FontRenderParams',
+            'gfx::RenderingPipeline',
             'ui::ImeTextSpan',
             'viz::FrameSinkId',
             'viz::LocalSurfaceId',
@@ -664,6 +679,15 @@ _CONFIG = [
         'allowed': [
             'ui::ImeTextSpan',
             'ui::TextInputAction',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/editing/commands/undo_stack.cc',
+            'third_party/blink/renderer/core/editing/commands/undo_stack.h'
+        ],
+        'allowed': [
+            'base::MemoryPressureListener',
         ],
     },
     {
@@ -828,6 +852,15 @@ _CONFIG = [
         ],
     },
     {
+        'paths': [
+            'third_party/blink/renderer/core/inspector/inspector_network_agent.cc'
+        ],
+        'allowed': [
+            'net::SourceStream',
+            'base::flat_set',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/workers/worker_thread.cc'],
         'allowed': [
             'base::ScopedAllowBaseSyncPrimitives',
@@ -870,10 +903,12 @@ _CONFIG = [
             'gpu::MailboxHolder',
             'display::Display',
             'media::IsOpaque',
+            'media::kNoTransformation',
             'media::PaintCanvasVideoRenderer',
             'media::PIXEL_FORMAT_Y16',
             'media::VideoFrame',
             'viz::RasterContextProvider',
+            'viz::TransferableResource',
         ],
     },
     {
@@ -884,6 +919,17 @@ _CONFIG = [
         # list.
         'allowed': [
             'media::.+',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/timing/background_tracing_helper.cc',
+            'third_party/blink/renderer/core/timing/background_tracing_helper.h',
+        ],
+        'allowed': [
+            'base::MD5Digest',
+            'base::MD5Sum',
+            'base::StringPiece',
         ]
     },
     {
@@ -1044,6 +1090,9 @@ _CONFIG = [
         'allowed': [
             'base::PlatformThreadRef',
             'base::WrapRefCounted',
+            'cc::kNumYUVPlanes',
+            'cc::YUVIndex',
+            'cc::YUVSubsampling',
             'gpu::kNullSurfaceHandle',
             'gpu::SHARED_IMAGE_.+',
             'gpu::raster::RasterInterface',
@@ -1141,6 +1190,10 @@ _CONFIG = [
             'third_party/blink/renderer/modules/url_pattern/',
         ],
         'allowed': [
+            # Required to provide a canonicalization functor to liburlpattern.
+            "absl::InvalidArgumentError",
+            "absl::StatusOr",
+
             # Required by liburlpattern API in order to pass string data
             # efficiently.
             "absl::string_view",
@@ -1272,7 +1325,10 @@ _CONFIG = [
     },
     {
         'paths': ['third_party/blink/renderer/modules/manifest/'],
-        'allowed': ['net::ParseMimeTypeWithoutParameter'],
+        'allowed': [
+            'net::ParseMimeTypeWithoutParameter',
+            'net::registry_controlled_domains::.+',
+        ],
     },
     {
         'paths':
@@ -1323,6 +1379,12 @@ _CONFIG = [
         ],
         'allowed': ['viz::ResourceId'],
     },
+    {
+        'paths': [
+            'third_party/blink/renderer/platform/graphics/document_transition_shared_element_id.h'
+        ],
+        'allowed': ['cc::DocumentTransitionSharedElementId'],
+    }
 ]
 
 

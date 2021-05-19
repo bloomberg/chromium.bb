@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
@@ -109,8 +110,16 @@ app_runtime::LaunchSource GetLaunchSourceEnum(
   ASSERT_ENUM_EQUAL(kSourceContextMenu, SOURCE_CONTEXT_MENU);
   ASSERT_ENUM_EQUAL(kSourceArc, SOURCE_ARC);
   ASSERT_ENUM_EQUAL(kSourceIntentUrl, SOURCE_INTENT_URL);
+
+  // We don't allow extensions to launch an app specifying RunOnOSLogin
+  // as the source. In this case we map it to SOURCE_CHROME_INTERNAL.
+  if (source == extensions::AppLaunchSource::kSourceRunOnOsLogin)
+    source = extensions::AppLaunchSource::kSourceChromeInternal;
+
+  // The +1 accounts for kSourceRunOnOsLogin not having a corresponding entry
+  // in app_runtime::LaunchSource.
   static_assert(static_cast<int>(extensions::AppLaunchSource::kMaxValue) ==
-                    app_runtime::LaunchSource::LAUNCH_SOURCE_LAST,
+                    app_runtime::LaunchSource::LAUNCH_SOURCE_LAST + 1,
                 "");
 
   return static_cast<app_runtime::LaunchSource>(source);
@@ -210,9 +219,9 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEventWithUrl(
   app_runtime::LaunchData launch_data;
   app_runtime::LaunchSource source_enum =
       app_runtime::LAUNCH_SOURCE_URL_HANDLER;
-  launch_data.id.reset(new std::string(handler_id));
-  launch_data.url.reset(new std::string(url.spec()));
-  launch_data.referrer_url.reset(new std::string(referrer_url.spec()));
+  launch_data.id = std::make_unique<std::string>(handler_id);
+  launch_data.url = std::make_unique<std::string>(url.spec());
+  launch_data.referrer_url = std::make_unique<std::string>(referrer_url.spec());
   if (extensions::FeatureSwitch::trace_app_source()->IsEnabled()) {
     launch_data.source = source_enum;
   }

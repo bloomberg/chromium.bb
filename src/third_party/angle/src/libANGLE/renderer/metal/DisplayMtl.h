@@ -50,6 +50,8 @@ class DisplayMtl : public DisplayImpl
     std::string getVendorString() override;
     std::string getVersionString() override;
 
+    DeviceImpl *createDevice() override;
+
     egl::Error waitClient(const gl::Context *context) override;
     egl::Error waitNative(const gl::Context *context, EGLint engine) override;
 
@@ -111,7 +113,7 @@ class DisplayMtl : public DisplayImpl
 
     // Check whether either of the specified iOS or Mac GPU family is supported
     bool supportsEitherGPUFamily(uint8_t iOSFamily, uint8_t macFamily) const;
-    bool supportsIOSGPUFamily(uint8_t iOSFamily) const;
+    bool supportsAppleGPUFamily(uint8_t iOSFamily) const;
     bool supportsMacGPUFamily(uint8_t macFamily) const;
     bool isAMD() const;
     bool isIntel() const;
@@ -188,9 +190,6 @@ class DisplayMtl : public DisplayImpl
     mutable gl::Limitations mNativeLimitations;
 
     angle::FeaturesMtl mFeatures;
-
-    // track whether we initialized (or released) glslang
-    bool mGlslangInitialized;
 };
 
 }  // namespace rx

@@ -34,7 +34,7 @@ bool IsEncodedFormat(const assistant_client::OutputStreamFormat& format) {
 class AudioOutputImpl : public assistant_client::AudioOutput {
  public:
   AudioOutputImpl(
-      mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory,
+      mojo::PendingRemote<media::mojom::AudioStreamFactory> stream_factory,
       scoped_refptr<base::SequencedTaskRunner> main_task_runner,
       chromeos::assistant::mojom::AssistantAudioDecoderFactory*
           audio_decoder_factory,
@@ -126,7 +126,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
-  mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory_
+  mojo::PendingRemote<media::mojom::AudioStreamFactory> stream_factory_
       GUARDED_BY_CONTEXT(main_sequence_checker_);
   chromeos::assistant::mojom::AssistantAudioDecoderFactory*
       audio_decoder_factory_ GUARDED_BY_CONTEXT(main_sequence_checker_);
@@ -178,22 +178,21 @@ void AudioOutputProviderImpl::Bind(
 AudioOutputProviderImpl::~AudioOutputProviderImpl() = default;
 
 // Called from the Libassistant thread.
+#if BUILDFLAG(BUILD_LIBASSISTANT_146S)
 assistant_client::AudioOutput* AudioOutputProviderImpl::CreateAudioOutput(
     assistant_client::OutputStreamType type,
     const assistant_client::OutputStreamFormat& stream_format) {
-  mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&AudioOutputProviderImpl::BindStreamFactory,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     stream_factory.InitWithNewPipeAndPassReceiver()));
-  // Owned by one arbitrary thread inside libassistant. It will be destroyed
-  // once assistant_client::AudioOutput::Delegate::OnStopped() is called.
-  return new AudioOutputImpl(std::move(stream_factory), main_task_runner_,
-                             audio_decoder_factory_.get(),
-                             audio_output_delegate_.get(), type, stream_format,
-                             device_id_);
+  return CreateAudioOutputInternal(type, stream_format);
 }
+#endif  // BUILD_LIBASSISTANT_146S
+
+#if BUILDFLAG(BUILD_LIBASSISTANT_152S)
+assistant_client::AudioOutput* AudioOutputProviderImpl::CreateAudioOutput(
+    assistant_client::OutputStreamMetadata metadata) {
+  return CreateAudioOutputInternal(metadata.type,
+                                   metadata.buffer_stream_format);
+}
+#endif  // BUILD_LIBASSISTANT_152S
 
 // Called from the Libassistant thread.
 std::vector<assistant_client::OutputStreamEncoding>
@@ -230,8 +229,26 @@ void AudioOutputProviderImpl::RegisterAudioEmittingStateCallback(
 }
 
 void AudioOutputProviderImpl::BindStreamFactory(
-    mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
+    mojo::PendingReceiver<media::mojom::AudioStreamFactory> receiver) {
   platform_delegate_->BindAudioStreamFactory(std::move(receiver));
+}
+
+assistant_client::AudioOutput*
+AudioOutputProviderImpl::CreateAudioOutputInternal(
+    assistant_client::OutputStreamType type,
+    const assistant_client::OutputStreamFormat& stream_format) {
+  mojo::PendingRemote<media::mojom::AudioStreamFactory> stream_factory;
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AudioOutputProviderImpl::BindStreamFactory,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     stream_factory.InitWithNewPipeAndPassReceiver()));
+  // Owned by one arbitrary thread inside libassistant. It will be destroyed
+  // once assistant_client::AudioOutput::Delegate::OnStopped() is called.
+  return new AudioOutputImpl(std::move(stream_factory), main_task_runner_,
+                             audio_decoder_factory_.get(),
+                             audio_output_delegate_.get(), type, stream_format,
+                             device_id_);
 }
 
 }  // namespace libassistant

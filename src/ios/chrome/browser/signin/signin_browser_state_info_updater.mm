@@ -10,7 +10,6 @@
 
 #include <string>
 
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "ios/chrome/browser/application_context.h"
@@ -62,7 +61,7 @@ void SigninBrowserStateInfoUpdater::UpdateBrowserStateInfo() {
         index, account_info.gaia, base::UTF8ToUTF16(account_info.email));
   } else {
     cache->SetAuthInfoOfBrowserStateAtIndex(index, /*gaia_id=*/std::string(),
-                                            /*user_name=*/base::string16());
+                                            /*user_name=*/std::u16string());
   }
 }
 

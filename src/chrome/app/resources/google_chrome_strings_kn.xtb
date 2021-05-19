@@ -11,13 +11,12 @@
 <translation id="1125124144982679672">Chrome ಅನ್ನು ಯಾರು ಬಳಸುತ್ತಿದ್ದಾರೆ?</translation>
 <translation id="1142745911746664600">Chrome ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="1154147086299354128">ಮತ್ತು Chrome ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
-<translation id="123620459398936149">ನಿಮ್ಮ ಡೇಟಾವನ್ನು Chrome OS ಗೆ ಸಿಂಕ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ.</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> ನ ನೀತಿಯ ಪ್ರಕಾರ ಈ ಸಾಧನವನ್ನು ಬಳಸುವ ಮೊದಲು ನೀವು ಈ ಕೆಳಗಿನ ಸೇವಾ ನಿಯಮಗಳನ್ನು ಓದಿ, ಅವುಗಳಿಗೆ ಸಮ್ಮತಿಸಬೇಕಾಗುತ್ತದೆ. ಈ ನಿಯಮಗಳು Google Chrome OS ನಿಯಮಗಳನ್ನು ವಿಸ್ತರಿಸುವುದಿಲ್ಲ, ಮಾರ್ಪಡಿಸುವುದಿಲ್ಲ, ಅಥವಾ ಸೀಮಿತಗೊಳಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="1302523850133262269">ಇತ್ತೀಚಿನ ಸಿಸ್ಟಂ ನವೀಕರಣಗಳನ್ನು Chrome ಸ್ಥಾಪಿಸುವಾಗ ದಯವಿಟ್ಟು ಕಾಯಿರಿ.</translation>
 <translation id="137466361146087520">Google Chrome ಬೀಟಾ</translation>
 <translation id="1399397803214730675">ಈ ಕಂಪ್ಯೂಟರ್ ಈಗಾಗಲೇ ತೀರಾ ಇತ್ತೀಚಿನ Google Chrome ಆವೃತ್ತಿಯನ್ನು ಹೊಂದಿದೆ. ಸಾಫ್ಟ್‌ವೇರ್ ಕಾರ್ಯ ನಿರ್ವಹಿಸದೆ ಇದ್ದರೆ, ದಯವಿಟ್ಟು Google Chrome ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="1434626383986940139">Chrome ಕ್ಯಾನರಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
-<translation id="147727933880789532">ಈ ವಿಸ್ತರಣೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು Chrome ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ ಏಕೆಂದರೆ ಇದು ಪ್ರಸ್ತುತ ವರ್ಧಿತ ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್ ಮಾನದಂಡಗಳನ್ನು ಪೂರೈಸುತ್ತಿಲ್ಲ.</translation>
+<translation id="1507198376417198979">ನಿಮ್ಮ ಹೊಸ Chrome ಪ್ರೊಫೈಲ್ ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ</translation>
 <translation id="1516530951338665275">ಜೋಡಣೆಯನ್ನು ಮುಂದುವರಿಸಲು Google Chrome ಗೆ ಬ್ಲೂಟೂತ್ ಪ್ರವೇಶದ ಅಗತ್ಯವಿದೆ. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1553358976309200471">Chrome ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="1583073672411044740">ಈ Chrome ಪ್ರೊಫೈಲ್‌ಗೆ ಈಗಾಗಲೇ <ph name="EXISTING_USER" /> ಅವರು ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ. ಇದು <ph name="USER_EMAIL_ADDRESS" /> ಗಾಗಿ ಹೊಸ Chrome ಪ್ರೊಫೈಲ್ ಅನ್ನು ರಚಿಸುತ್ತದೆ</translation>
@@ -25,7 +24,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹಾಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="1597911401261118146">ನಿಮ್ಮ ಇತರ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಡೇಟಾ ಉಲ್ಲಂಘನೆ ಮತ್ತು ಭದ್ರತಾ ಸಮಸ್ಯೆಗಳಿಂದ ಸುರಕ್ಷಿತವಾಗಿವೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಲು, <ph name="BEGIN_LINK" />Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ<ph name="END_LINK" />.</translation>
 <translation id="1619887657840448962">Chrome ಅನ್ನು ಸುರಕ್ಷಿತವಾಗಿರಿಸಲು, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ನಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡದಿರುವ ಕೆಳಗಿನ ವಿಸ್ತರಣೆಯನ್ನು ನಾವು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದೇವೆ ಮತ್ತು ಇದು ನಿಮ್ಮ ಗಮನಕ್ಕೆ ಬಾರದೇ ಸೇರಿಸಲಾಗಿರಬಹುದು.</translation>
-<translation id="162629503687514352">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="1628000112320670027">Chrome ಕುರಿತಾಗಿ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="1666409074978194368">ಬಹುತೇಕ ಅಪ್ ಟು ಡೇಟ್ ಆಗಿದೆ! ಅಪ್‌ಡೇಟ್ ಅನ್ನು ಮುಕ್ತಾಯಗೊಳಿಸಲು, Google Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ. ಅಜ್ಞಾತ ವಿಂಡೋಗಳನ್ನು ತೆರೆಯಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="1674870198290878346">ಲಿಂಕ್‌ ಅನ್ನು ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
@@ -92,14 +90,12 @@
 <translation id="3089968997497233615">ಹೊಸದಾದ, ಸುರಕ್ಷಿತವಾದ Google Chrome ನ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ.</translation>
 <translation id="3100998948628680988">ನಿಮ್ಮ Chrome ಪ್ರೊಫೈಲ್ ಅನ್ನು ಹೆಸರಿಸಿ</translation>
 <translation id="3114643501466072395">ನಿಮ್ಮ ಇತರ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಡೇಟಾ ಉಲ್ಲಂಘನೆ ಮತ್ತು ಇತರ ಭದ್ರತಾ ಸಮಸ್ಯೆಗಳಿಂದ ಸುರಕ್ಷಿತವಾಗಿವೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಲು, <ph name="BEGIN_LINK" />Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ<ph name="END_LINK" />.</translation>
-<translation id="3127818369811890733">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="3140883423282498090">ನೀವು ಮುಂದಿನ ಬಾರಿ Google Chrome ಮರುಪ್ರಾರಂಭಿಸಿದಾಗ ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಕಾರ್ಯಗತಗೊಳ್ಳುತ್ತವೆ.</translation>
 <translation id="3149510190863420837">Chrome ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="3360895254066713204">Chrome ಸಹಾಯಕ</translation>
 <translation id="3379938682270551431">{0,plural, =0{ಇದೀಗ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}=1{1 ಸೆಕೆಂಡಿನಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="3395323229510056640">Chrome OS ನಿಂದ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="3396977131400919238">ಸ್ಥಾಪನೆ ವೇಳೆ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಂ ದೋಷವು ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು Google Chrome ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಡೌನ್ಲೋಡ್ ಮಾಡಿ.</translation>
-<translation id="3398288718845740432">Chrome ಮೆನುವಿನಲ್ಲಿ ಮರೆಮಾಡು</translation>
 <translation id="3434246496373299699">ನೀವು Google ಖಾತೆಯ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ, Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಬಲ್ಲದು</translation>
 <translation id="3451115285585441894">Chrome ಗೆ ಸೇರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="345171907106878721">ನಿಮ್ಮನ್ನು Chrome ಗೆ ಸೇರಿಸಿಕೊಳ್ಳಿ</translation>
@@ -147,7 +143,6 @@
 <translation id="4571503333518166079">Chrome ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ</translation>
 <translation id="459622048091363950">Chrome ಒಮ್ಮೆ ಪ್ರವೇಶವನ್ನು ಪಡೆದ ಬಳಿಕ, ಪ್ರವೇಶಕ್ಕಾಗಿ ನಿಮ್ಮನ್ನು ಕೇಳಲು ವೆಬ್‍ಸೈಟ್‍ಗಳಿಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ.</translation>
 <translation id="4600710005438004015">Chrome ಗೆ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಗೆ ಅಪ್‌ಡೇಟ್ ಆಗಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ, ಆದ್ದರಿಂದ ನೀವು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಮತ್ತು ಭದ್ರತೆ ಸರಿಪಡಿಸುವಿಕೆಗಳನ್ನು ಕಳೆದುಕೊಳ್ಳುತ್ತೀರಿ.</translation>
-<translation id="4631713731678262610">Chrome ಮೆನುವಿನಲ್ಲಿ ಮರೆಮಾಡು</translation>
 <translation id="4633000520311261472">Chrome ಸುರಕ್ಷಿತವಾಗಿರಿಸುವಂತೆ ಮಾಡಲು, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ನಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡಲಾದ ಕೆಲವು ವಿಸ್ತರಣೆಗಳನ್ನು ನಾವು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದೇವೆ ಮತ್ತು ಅವುಗಳನ್ನು ನಿಮ್ಮ ಅರಿವಿಲ್ಲದೆ ಸೇರಿಸಿರಬಹುದು.</translation>
 <translation id="4666328473657283332">ನಿಮ್ಮ Chrome ವಿಷಯಗಳನ್ನು ಎಲ್ಲಾ ಸಾಧನಗಳಾದ್ಯಂತ ಪ್ರವೇಶಿಸಲು, ಸೈನ್ ಇನ್ ಮಾಡಿ, ಇದರಿಂದ ನೀವು ಸಿಂಕ್ ಅನ್ನು ಆನ್ ಮಾಡಬಹುದು.</translation>
 <translation id="4728575227883772061">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. Google Chrome ಪ್ರಸ್ತುತ ಚಲಿಸುತ್ತಿದ್ದರೆ, ದಯವಿಟ್ಟು ಇದನ್ನು ಮುಚ್ಚಿ ಮತ್ತು ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -193,6 +188,7 @@
 <translation id="6070348360322141662">ಹೆಚ್ಚುವರಿ ಭದ್ರತೆಗಾಗಿ, Google Chrome ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡುತ್ತದೆ</translation>
 <translation id="608006075545470555">ಈ ಬ್ರೌಸರ್‌ಗೆ ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್‌ ಸೇರಿಸಿ</translation>
 <translation id="6113794647360055231">Chrome ಇದೀಗ ಉತ್ತಮಗೊಂಡಿದೆ</translation>
+<translation id="6145313976051292476">Chrome ನಲ್ಲಿ PDF ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
 <translation id="61852838583753520">&amp;Chrome OS ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
@@ -205,7 +201,6 @@
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">Chrome OS ಸಿಸ್ಟಂ</translation>
-<translation id="6650333065969705433">ಸುರಕ್ಷಿತ ಮಾಧ್ಯಮವನ್ನು ಪ್ಲೇ ಮಾಡುವುದಕ್ಕೆ Rosetta ಅನ್ನು ಬಳಸಲು, ನೀವು Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕು.</translation>
 <translation id="6676384891291319759">ಇಂಟರ್ನೆಟ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="6679975945624592337">Google Chrome ಹಿನ್ನೆಲೆಯಲ್ಲಿ ರನ್ ಆಗಲು ಅನುಮತಿಸಿ</translation>
 <translation id="6739177684496155661">ಹೊಸ Chrome ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ ಮುಂದುವರಿಯಬೇಕೆ?</translation>
@@ -217,7 +212,7 @@
 <translation id="6943584222992551122">ಈ ವ್ಯಕ್ತಿಯ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಈ ಸಾಧನದಿಂದ ಅಳಿಸಲಾಗುತ್ತದೆ. ಡೇಟಾವನ್ನು ಮರಳಿ ಪಡೆದುಕೊಳ್ಳಲು, Chrome ನಲ್ಲಿ <ph name="USER_EMAIL" /> ಎಂದು ಸೈನ್-ಇನ್ ಮಾಡಿ.</translation>
 <translation id="6967962315388095737">mDNS ಟ್ರಾಫಿಕ್‌ಗೆ ಅನುಮತಿಸುವ ನಿಟ್ಟಿನಲ್ಲಿ Google Chrome ಬೀಟಾಗೆ ಒಳಬರುವ ನಿಯಮ.</translation>
 <translation id="6989339256997917931">Google Chrome ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ, ಆದರೆ ನೀವು ಕನಿಷ್ಠ 30 ದಿನಗಳವರೆಗಾದರೂ ಇದನ್ನು ಬಳಸಿರಲಿಕ್ಕಿಲ್ಲ. </translation>
-<translation id="7054640471403081847">ಈ ಕಂಪ್ಯೂಟರ್‌ ಶೀಘ್ರದಲ್ಲೇ Google Chrome ನವೀಕರಣಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸುತ್ತದೆ. ಏಕೆಂದರೆ ಅದರ ಹಾರ್ಡ್‌ವೇರ್ ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
+<translation id="7025800014283535195">ನೀವು ಇಲ್ಲಿ Chrome ಪ್ರೊಫೈಲ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಬಹುದು</translation>
 <translation id="7062128746136194023">ನಿಮ್ಮ ಪೋಷಕರು Chrome ನಲ್ಲಿ "ಸೈಟ್‌ಗಳು, ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳಿಗಾಗಿ ಅನುಮತಿಗಳನ್ನು" ಆಫ್ ಮಾಡಿದ್ದಾರೆ. ಈ <ph name="EXTENSION_TYPE_PARAMETER" /> ಅನ್ನು ಸೇರಿಸಲು ಅನುಮತಿಯಿಲ್ಲ.</translation>
 <translation id="7098166902387133879">Google Chrome ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಅನ್ನು ಬಳಸುತ್ತಿದೆ.</translation>
 <translation id="7106741999175697885">ಕಾರ್ಯ ನಿರ್ವಾಹಕ - Google Chrome</translation>
@@ -270,7 +265,6 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">ಈ ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್‌ ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಪ್ರೊಫೈಲ್‌ನಿಂದ ಸಂಪೂರ್ಣವಾಗಿ ಪ್ರತ್ಯೇಕವಾಗಿದೆ.</translation>
 <translation id="8556340503434111824">Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ, ಮತ್ತು ಇದು ಎಂದಿಗಿಂತಲೂ ವೇಗವಾಗಿದೆ.</translation>
-<translation id="861359755029082151">Rosetta, ಈ ಪುಟದಲ್ಲಿ ಸುರಕ್ಷಿತ ಮಾಧ್ಯಮವನ್ನು ಪ್ಲೇ ಮಾಡಲು Chrome ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.</translation>
 <translation id="8614913330719544658">Google Chrome ಸ್ಪಂದಿಸುತ್ತಿಲ್ಲ. ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೆ?
 </translation>
 <translation id="861702415419836452">ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಪರಿಸರದ 3D ನಕ್ಷೆಯನ್ನು ರಚಿಸುವುದಕ್ಕಾಗಿ ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿ ಬೇಕಾಗಿದೆ</translation>
@@ -285,7 +279,6 @@
 <translation id="8834965163890861871">Google Chrome, ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ. ಇದನ್ನು ಅನುಮತಿಸಲು ನಿಮ್ಮ Windows ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="884296878221830158">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ಅಥವಾ ಹೋಮ್ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
 <translation id="8862326446509486874">ಸಿಸ್ಟಂ ಮಟ್ಟದ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ನೀವು ಸರಿಯಾದ ಹಕ್ಕುಗಳನ್ನು ಹೊಂದಿಲ್ಲ. ನಿರ್ವಾಹಕರಂತೆ ಮತ್ತೆ ಇನ್‌ಸ್ಟಾಲರ್ ಅನ್ನು ರನ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="8907709077090383765">ಸುರಕ್ಷಿತ ಮಾಧ್ಯಮವನ್ನು ಪ್ಲೇ ಮಾಡುವುದಕ್ಕೆ Chrome ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು, ನೀವು Rosetta ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ. ನೀವು ಈಗಲೇ ಅದನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="8914504000324227558">Chrome ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="8922193594870374009"><ph name="ORIGIN" /> ನಿಂದ ನಿಮ್ಮ Android ಫೋನ್‌ಗೆ ಸಂಖ್ಯೆಯನ್ನು ಕಳುಹಿಸಲು, ಎರಡೂ ಸಾಧನಗಳಲ್ಲಿ Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="8986207147630327271">ನೀವು ಈ ಬ್ರೌಸರ್‌ಗೆ ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್‌ ಅನ್ನು ಸೇರಿಸುತ್ತಿರುವಿರಿ ಮತ್ತು ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಗೆ ಕೇವಲ ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್‌ನ ಮೇಲೆ ನಿಯಂತ್ರಣವನ್ನು ನೀಡುತ್ತಿರುವಿರಿ.</translation>
@@ -295,6 +288,8 @@
 <translation id="911206726377975832">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಸಹ ಅಳಿಸುವುದೇ?</translation>
 <translation id="9138603949443464873">ನಿಮ್ಮ ಬದಲಾವಣೆಗಳನ್ನು ಅನ್ವಯಿಸಲು, Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="919706545465235479">ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು Chrome ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
+<translation id="922152298093051471">Chrome ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ</translation>
 <translation id="940313311831216333">ನಿಮ್ಮ Chrome ವಿಷಯಗಳನ್ನು ಎಲ್ಲಾ ಸಾಧನಗಳಾದ್ಯಂತ ಪ್ರವೇಶಿಸಲು, ಸೈನ್ ಇನ್ ಮಾಡಿ, ನಂತರ ಸಿಂಕ್ ಅನ್ನು ಆನ್ ಮಾಡಿ.</translation>
 <translation id="989369509083708165">Google Chrome ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿದೆ.</translation>
+<translation id="989816563149873169">Chrome ಪ್ರೊಫೈಲ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಲು <ph name="SHORTCUT" /> ಅನ್ನು ಬಳಸಬಹುದು</translation>
 </translationbundle>

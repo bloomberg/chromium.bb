@@ -73,6 +73,6 @@ export function run(format: GPUTextureFormat) {
 
     const encoder = t.device.createCommandEncoder();
     encoder.copyBufferToTexture({ buffer, bytesPerRow }, { texture }, [2, 2, 1]);
-    t.device.defaultQueue.submit([encoder.finish()]);
+    t.device.queue.submit([encoder.finish()]);
   });
 }

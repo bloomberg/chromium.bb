@@ -67,6 +67,7 @@ ASH_PUBLIC_EXPORT extern const char kContextualTooltips[];
 
 ASH_PUBLIC_EXPORT extern const char kDesksNamesList[];
 ASH_PUBLIC_EXPORT extern const char kDesksMetricsList[];
+ASH_PUBLIC_EXPORT extern const char kDesksWeeklyActiveDesksMetrics[];
 ASH_PUBLIC_EXPORT extern const char kDesksActiveDesk[];
 
 ASH_PUBLIC_EXPORT extern const char kDockedMagnifierEnabled[];
@@ -171,6 +172,7 @@ ASH_PUBLIC_EXPORT extern const char kLogoutDialogDurationMs[];
 
 ASH_PUBLIC_EXPORT extern const char kUserWallpaperInfo[];
 ASH_PUBLIC_EXPORT extern const char kWallpaperColors[];
+ASH_PUBLIC_EXPORT extern const char kSyncableWallpaperInfo[];
 
 ASH_PUBLIC_EXPORT extern const char kUserBluetoothAdapterEnabled[];
 ASH_PUBLIC_EXPORT extern const char kSystemBluetoothAdapterEnabled[];

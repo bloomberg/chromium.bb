@@ -25,7 +25,7 @@ class VertexBufferValidationTest : public ValidationTest {
     void SetUp() override {
         ValidationTest::SetUp();
 
-        fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        fsModule = utils::CreateShaderModule(device, R"(
             [[location(0)]] var<out> fragColor : vec4<f32>;
             [[stage(fragment)]] fn main() -> void {
                 fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
@@ -59,25 +59,24 @@ class VertexBufferValidationTest : public ValidationTest {
 
         vs << "}\n";
 
-        return utils::CreateShaderModuleFromWGSL(device, vs.str().c_str());
+        return utils::CreateShaderModule(device, vs.str().c_str());
     }
 
     wgpu::RenderPipeline MakeRenderPipeline(const wgpu::ShaderModule& vsModule,
                                             unsigned int bufferCount) {
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
 
         for (unsigned int i = 0; i < bufferCount; ++i) {
-            descriptor.cVertexState.cVertexBuffers[i].attributeCount = 1;
-            descriptor.cVertexState.cVertexBuffers[i].attributes =
-                &descriptor.cVertexState.cAttributes[i];
-            descriptor.cVertexState.cAttributes[i].shaderLocation = i;
-            descriptor.cVertexState.cAttributes[i].format = wgpu::VertexFormat::Float3;
+            descriptor.cBuffers[i].attributeCount = 1;
+            descriptor.cBuffers[i].attributes = &descriptor.cAttributes[i];
+            descriptor.cAttributes[i].shaderLocation = i;
+            descriptor.cAttributes[i].format = wgpu::VertexFormat::Float32x3;
         }
-        descriptor.cVertexState.vertexBufferCount = bufferCount;
+        descriptor.vertex.bufferCount = bufferCount;
 
-        return device.CreateRenderPipeline(&descriptor);
+        return device.CreateRenderPipeline2(&descriptor);
     }
 
     wgpu::ShaderModule fsModule;

@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
@@ -32,7 +34,9 @@ HostDispatcherWrapper::HostDispatcherWrapper(
       permissions_(perms),
       is_external_(is_external) {}
 
-HostDispatcherWrapper::~HostDispatcherWrapper() {}
+HostDispatcherWrapper::~HostDispatcherWrapper() {
+  hung_plugin_filter_->HostDispatcherDestroyed();
+}
 
 bool HostDispatcherWrapper::Init(
     const IPC::ChannelHandle& channel_handle,
@@ -43,9 +47,9 @@ bool HostDispatcherWrapper::Init(
   if (!channel_handle.is_mojo_channel_handle())
     return false;
 
-  dispatcher_delegate_.reset(new PepperProxyChannelDelegateImpl);
-  dispatcher_.reset(new ppapi::proxy::HostDispatcher(
-      module_->pp_module(), local_get_interface, permissions_));
+  dispatcher_delegate_ = std::make_unique<PepperProxyChannelDelegateImpl>();
+  dispatcher_ = std::make_unique<ppapi::proxy::HostDispatcher>(
+      module_->pp_module(), local_get_interface, permissions_);
   // The HungPluginFilter needs to know when we are blocked on a sync message
   // to the plugin. Note the filter outlives the dispatcher, so there is no
   // need to remove it as an observer.

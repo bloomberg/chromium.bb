@@ -10,53 +10,116 @@
 
 namespace base {
 
+// Use PowerMonitorTestSource via ScopedPowerMonitorTestSource wrapper when you
+// need to simulate power events (suspend and resume).
+class PowerMonitorTestSource;
+
+namespace test {
+
+// ScopedPowerMonitorTestSource initializes the PowerMonitor with a Mock
+// PowerMonitorSource. Mock power notifications can be simulated through this
+// helper class.
+//
+// Example:
+//   base::test::ScopedPowerMonitorTestSource power_monitor_source;
+//   power_monitor_source.Suspend();
+//   [...]
+//   power_monitor_source.Resume();
+class ScopedPowerMonitorTestSource {
+ public:
+  ScopedPowerMonitorTestSource();
+  ~ScopedPowerMonitorTestSource();
+
+  ScopedPowerMonitorTestSource(const ScopedPowerMonitorTestSource&) = delete;
+  ScopedPowerMonitorTestSource& operator=(const ScopedPowerMonitorTestSource&) =
+      delete;
+
+  // Sends asynchronous notifications to registered observers.
+  void Suspend();
+  void Resume();
+  void SetOnBatteryPower(bool on_battery_power);
+
+  void GeneratePowerStateEvent(bool on_battery_power);
+
+ private:
+  // Owned by PowerMonitor.
+  PowerMonitorTestSource* power_monitor_test_source_ = nullptr;
+};
+
+}  // namespace test
+
+// TODO(crbug/1188692): Move `PowerMonitorTestSource` and
+// `PowerMonitorTestObserver` into `test` namespace.
 class PowerMonitorTestSource : public PowerMonitorSource {
  public:
   PowerMonitorTestSource();
   ~PowerMonitorTestSource() override;
-  PowerObserver::DeviceThermalState GetCurrentThermalState() override;
 
+  // Retrieve current states.
+  PowerThermalObserver::DeviceThermalState GetCurrentThermalState() override;
+  bool IsOnBatteryPower() override;
+
+  // Sends asynchronous notifications to registered observers.
+  void Suspend();
+  void Resume();
+  void SetOnBatteryPower(bool on_battery_power);
+
+  // Sends asynchronous notifications to registered observers and ensures they
+  // are executed (i.e. RunUntilIdle()).
   void GeneratePowerStateEvent(bool on_battery_power);
   void GenerateSuspendEvent();
   void GenerateResumeEvent();
   void GenerateThermalThrottlingEvent(
-      PowerObserver::DeviceThermalState new_thermal_state);
+      PowerThermalObserver::DeviceThermalState new_thermal_state);
 
  protected:
-  bool IsOnBatteryPowerImpl() override;
-
   bool test_on_battery_power_ = false;
-  PowerObserver::DeviceThermalState current_thermal_state_ =
-      PowerObserver::DeviceThermalState::kUnknown;
+  PowerThermalObserver::DeviceThermalState current_thermal_state_ =
+      PowerThermalObserver::DeviceThermalState::kUnknown;
 };
 
-class PowerMonitorTestObserver : public PowerObserver {
+class PowerMonitorTestObserver : public PowerSuspendObserver,
+                                 public PowerThermalObserver,
+                                 public PowerStateObserver {
  public:
   PowerMonitorTestObserver();
   ~PowerMonitorTestObserver() override;
 
-  // PowerObserver callbacks.
+  // PowerStateObserver overrides.
   void OnPowerStateChange(bool on_battery_power) override;
+  // PowerSuspendObserver overrides.
   void OnSuspend() override;
   void OnResume() override;
+  // PowerThermalObserver overrides.
   void OnThermalStateChange(
-      PowerObserver::DeviceThermalState new_state) override;
+      PowerThermalObserver::DeviceThermalState new_state) override;
 
   // Test status counts.
-  bool last_power_state() const { return last_power_state_; }
   int power_state_changes() const { return power_state_changes_; }
   int suspends() const { return suspends_; }
   int resumes() const { return resumes_; }
-  PowerObserver::DeviceThermalState last_thermal_state() const {
+  int thermal_state_changes() const { return thermal_state_changes_; }
+
+  bool last_power_state() const { return last_power_state_; }
+  PowerThermalObserver::DeviceThermalState last_thermal_state() const {
     return last_thermal_state_;
   }
 
  private:
-  bool last_power_state_;    // Last power state we were notified of.
-  int power_state_changes_;  // Count of OnPowerStateChange notifications.
-  int suspends_;             // Count of OnSuspend notifications.
-  int resumes_;              // Count of OnResume notifications.
-  PowerObserver::DeviceThermalState last_thermal_state_;
+  // Count of OnPowerStateChange notifications.
+  int power_state_changes_ = 0;
+  // Count of OnSuspend notifications.
+  int suspends_ = 0;
+  // Count of OnResume notifications.
+  int resumes_ = 0;
+  // Count of OnThermalStateChange notifications.
+  int thermal_state_changes_ = 0;
+
+  // Last power state we were notified of.
+  bool last_power_state_ = false;
+  // Last power thermal we were notified of.
+  PowerThermalObserver::DeviceThermalState last_thermal_state_ =
+      PowerThermalObserver::DeviceThermalState::kUnknown;
 };
 
 }  // namespace base

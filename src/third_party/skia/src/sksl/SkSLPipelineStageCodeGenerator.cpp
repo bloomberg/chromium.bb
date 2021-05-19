@@ -7,11 +7,14 @@
 
 #include "src/sksl/SkSLPipelineStageCodeGenerator.h"
 
+#include "include/private/SkSLProgramElement.h"
+#include "include/private/SkSLStatement.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLOperators.h"
 #include "src/sksl/SkSLStringStream.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
 #include "src/sksl/ir/SkSLConstructor.h"
+#include "src/sksl/ir/SkSLConstructorArray.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLFieldAccess.h"
 #include "src/sksl/ir/SkSLForStatement.h"
@@ -22,9 +25,7 @@
 #include "src/sksl/ir/SkSLIndexExpression.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
-#include "src/sksl/ir/SkSLProgramElement.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
-#include "src/sksl/ir/SkSLStatement.h"
 #include "src/sksl/ir/SkSLStructDefinition.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
@@ -62,7 +63,7 @@ private:
 
     void writeFunction(const FunctionDefinition& f);
 
-    void writeModifiers(const Modifiers& modifiers);
+    String modifierString(const Modifiers& modifiers);
 
     // Handles arrays correctly, eg: `float x[2]`
     String typedVariable(const Type& type, StringFragment name);
@@ -73,7 +74,7 @@ private:
 
     void writeExpression(const Expression& expr, Precedence parentPrecedence);
     void writeFunctionCall(const FunctionCall& c);
-    void writeConstructor(const Constructor& c, Precedence parentPrecedence);
+    void writeAnyConstructor(const AnyConstructor& c, Precedence parentPrecedence);
     void writeFieldAccess(const FieldAccess& f);
     void writeSwizzle(const Swizzle& swizzle);
     void writeBinaryExpression(const BinaryExpression& b, Precedence parentPrecedence);
@@ -142,7 +143,7 @@ void PipelineStageCodeGenerator::writeFunctionCall(const FunctionCall& c) {
     const ExpressionArray& arguments = c.arguments();
     if (function.isBuiltin() && function.name() == "sample") {
         SkASSERT(arguments.size() <= 2);
-        SkASSERT("fragmentProcessor" == arguments[0]->type().name());
+        SkASSERT(arguments[0]->type().isEffectChild());
         SkASSERT(arguments[0]->is<VariableReference>());
         int index = 0;
         bool found = false;
@@ -152,7 +153,7 @@ void PipelineStageCodeGenerator::writeFunctionCall(const FunctionCall& c) {
                 const VarDeclaration& decl = global.declaration()->as<VarDeclaration>();
                 if (&decl.var() == arguments[0]->as<VariableReference>().variable()) {
                     found = true;
-                } else if (decl.var().type() == *fProgram.fContext->fTypes.fFragmentProcessor) {
+                } else if (decl.var().type().isEffectChild()) {
                     ++index;
                 }
             }
@@ -219,10 +220,9 @@ void PipelineStageCodeGenerator::writeVariableReference(const VariableReference&
                     found = true;
                     break;
                 }
-                // Skip over fragmentProcessors (shaders).
-                // These are indexed separately from other globals.
-                if (var.modifiers().fFlags & flag &&
-                    var.type() != *fProgram.fContext->fTypes.fFragmentProcessor) {
+                // Skip over children (shaders/colorFilters). These are indexed separately from
+                // other globals.
+                if ((var.modifiers().fFlags & flag) && !var.type().isEffectChild()) {
                     ++index;
                 }
             }
@@ -281,9 +281,8 @@ void PipelineStageCodeGenerator::writeFunction(const FunctionDefinition& f) {
     // explicitly cast any returns (from main) to half4. This is only strictly necessary
     // if the return type is float4 - injecting it unconditionally reduces the risk of an
     // obscure bug.
-    bool isMain = f.declaration().name() == "main";
-
-    if (isMain) {
+    const FunctionDeclaration& decl = f.declaration();
+    if (decl.isMain()) {
         fCastReturnsToHalf = true;
     }
 
@@ -292,54 +291,50 @@ void PipelineStageCodeGenerator::writeFunction(const FunctionDefinition& f) {
         this->writeLine();
     }
 
-    if (isMain) {
+    if (decl.isMain()) {
         fCastReturnsToHalf = false;
     }
 
-    String fnName =
-            isMain ? "main" : fCallbacks->getMangledName(String(f.declaration().name()).c_str());
+    String fnName = decl.isMain() ? decl.name()
+                                  : fCallbacks->getMangledName(String(decl.name()).c_str());
 
-    // This is similar to decl->description(), but substitutes a mangled name, and handles
-    // modifiers on parameters (eg inout).
-    const FunctionDeclaration& decl = f.declaration();
+    // This is similar to decl.description(), but substitutes a mangled name, and handles modifiers
+    // on the function (e.g. `inline`) and its parameters (e.g. `inout`).
     String declString =
-            String::printf("%s %s(", this->typeName(decl.returnType()).c_str(), fnName.c_str());
+            String::printf("%s%s%s %s(",
+                           (decl.modifiers().fFlags & Modifiers::kInline_Flag) ? "inline " : "",
+                           (decl.modifiers().fFlags & Modifiers::kNoInline_Flag) ? "noinline " : "",
+                           this->typeName(decl.returnType()).c_str(),
+                           fnName.c_str());
     const char* separator = "";
-    for (auto p : decl.parameters()) {
+    for (const Variable* p : decl.parameters()) {
         // TODO: Handle arrays
-        const char* typeModifier = "";
-        switch (p->modifiers().fFlags & (SkSL::Modifiers::kIn_Flag | SkSL::Modifiers::kOut_Flag)) {
-            case SkSL::Modifiers::kOut_Flag:
-                typeModifier = "out ";
-                break;
-            case SkSL::Modifiers::kIn_Flag | SkSL::Modifiers::kOut_Flag:
-                typeModifier = "inout ";
-                break;
-            default:
-                break;
-        }
-        declString.appendf("%s%s%s %s", separator, typeModifier, this->typeName(p->type()).c_str(),
+        declString.appendf("%s%s%s %s",
+                           separator,
+                           this->modifierString(p->modifiers()).c_str(),
+                           this->typeName(p->type()).c_str(),
                            String(p->name()).c_str());
         separator = ", ";
     }
     declString.append(")");
 
-    fFunctionNames.insert({&f.declaration(), std::move(fnName)});
-    fCallbacks->defineFunction(declString.c_str(), body.fBuffer.str().c_str(), isMain);
+    fFunctionNames.insert({&decl, std::move(fnName)});
+    fCallbacks->defineFunction(declString.c_str(), body.fBuffer.str().c_str(), decl.isMain());
 }
 
 void PipelineStageCodeGenerator::writeGlobalVarDeclaration(const GlobalVarDeclaration& g) {
     const VarDeclaration& decl = g.declaration()->as<VarDeclaration>();
     const Variable& var = decl.var();
 
-    if (var.isBuiltin()) {
-        // Don't mangle the name or re-declare this. (eg, sk_FragCoord)
+    if (var.isBuiltin() || var.type().isOpaque()) {
+        // Don't re-declare these. (eg, sk_FragCoord, or fragmentProcessor children)
     } else if (var.modifiers().fFlags & Modifiers::kUniform_Flag) {
         String uniformName = fCallbacks->declareUniform(&decl);
         fVariableNames.insert({&var, std::move(uniformName)});
     } else {
         String mangledName = fCallbacks->getMangledName(String(var.name()).c_str());
-        String declaration = this->typedVariable(var.type(), StringFragment(mangledName.c_str()));
+        String declaration = this->modifierString(var.modifiers()) +
+                             this->typedVariable(var.type(), StringFragment(mangledName.c_str()));
         if (decl.value()) {
             AutoOutputBuffer outputToBuffer(this);
             this->writeExpression(*decl.value(), Precedence::kTopLevel);
@@ -413,8 +408,14 @@ void PipelineStageCodeGenerator::writeExpression(const Expression& expr,
         case Expression::Kind::kIntLiteral:
             this->write(expr.description());
             break;
-        case Expression::Kind::kConstructor:
-            this->writeConstructor(expr.as<Constructor>(), parentPrecedence);
+        case Expression::Kind::kConstructorArray:
+        case Expression::Kind::kConstructorCompound:
+        case Expression::Kind::kConstructorCompoundCast:
+        case Expression::Kind::kConstructorDiagonalMatrix:
+        case Expression::Kind::kConstructorMatrixResize:
+        case Expression::Kind::kConstructorScalarCast:
+        case Expression::Kind::kConstructorSplat:
+            this->writeAnyConstructor(expr.asAnyConstructor(), parentPrecedence);
             break;
         case Expression::Kind::kFieldAccess:
             this->writeFieldAccess(expr.as<FieldAccess>());
@@ -447,12 +448,12 @@ void PipelineStageCodeGenerator::writeExpression(const Expression& expr,
     }
 }
 
-void PipelineStageCodeGenerator::writeConstructor(const Constructor& c,
-                                                  Precedence parentPrecedence) {
+void PipelineStageCodeGenerator::writeAnyConstructor(const AnyConstructor& c,
+                                                     Precedence parentPrecedence) {
     this->writeType(c.type());
     this->write("(");
     const char* separator = "";
-    for (const auto& arg : c.arguments()) {
+    for (const auto& arg : c.argumentSpan()) {
         this->write(separator);
         separator = ", ";
         this->writeExpression(*arg, Precedence::kSequence);
@@ -544,18 +545,21 @@ void PipelineStageCodeGenerator::writePostfixExpression(const PostfixExpression&
     }
 }
 
-void PipelineStageCodeGenerator::writeModifiers(const Modifiers& modifiers) {
-    if ((modifiers.fFlags & Modifiers::kIn_Flag) &&
-        (modifiers.fFlags & Modifiers::kOut_Flag)) {
-        this->write("inout ");
-    } else if (modifiers.fFlags & Modifiers::kIn_Flag) {
-        this->write("in ");
-    } else if (modifiers.fFlags & Modifiers::kOut_Flag) {
-        this->write("out ");
-    }
+String PipelineStageCodeGenerator::modifierString(const Modifiers& modifiers) {
+    String result;
     if (modifiers.fFlags & Modifiers::kConst_Flag) {
-        this->write("const ");
+        result.append("const ");
     }
+
+    if ((modifiers.fFlags & Modifiers::kIn_Flag) && (modifiers.fFlags & Modifiers::kOut_Flag)) {
+        result.append("inout ");
+    } else if (modifiers.fFlags & Modifiers::kIn_Flag) {
+        result.append("in ");
+    } else if (modifiers.fFlags & Modifiers::kOut_Flag) {
+        result.append("out ");
+    }
+
+    return result;
 }
 
 String PipelineStageCodeGenerator::typedVariable(const Type& type, StringFragment name) {
@@ -569,7 +573,7 @@ String PipelineStageCodeGenerator::typedVariable(const Type& type, StringFragmen
 }
 
 void PipelineStageCodeGenerator::writeVarDeclaration(const VarDeclaration& var) {
-    this->writeModifiers(var.var().modifiers());
+    this->write(this->modifierString(var.var().modifiers()));
     this->write(this->typedVariable(var.var().type(), var.var().name()));
     if (var.value()) {
         this->write(" = ");

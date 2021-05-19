@@ -87,6 +87,7 @@
 <translation id="1853795129690976061">已与 Linux 共享此文件夹</translation>
 <translation id="1864756863218646478">找不到该文件。</translation>
 <translation id="1920670151694390848">马拉雅拉姆语音译</translation>
+<translation id="1920798810075583923">西瓜</translation>
 <translation id="1924372192547904021">已将“<ph name="DRIVE_NAME" />”格式化</translation>
 <translation id="1931134289871235022">斯洛伐克语</translation>
 <translation id="1933345018156373194">移动失败，出现了意外的错误：<ph name="ERROR_MESSAGE" /></translation>
@@ -120,6 +121,7 @@
 <translation id="2288278176040912387">电唱机</translation>
 <translation id="2291538123825441971">正在打开 <ph name="NUMBER_OF_FILES" /> 个文件。</translation>
 <translation id="2303301624314357662">正在打开文件“<ph name="FILE_NAME" />”</translation>
+<translation id="2304820083631266885">星球</translation>
 <translation id="2305020378527873881">已移除 <ph name="VOLUME_NAME" />。</translation>
 <translation id="2325650632570794183">不支持此文件类型。请访问 Chrome 网上应用店，找到能打开此文件类型的应用。</translation>
 <translation id="2326539130272988168">保加利亚语</translation>
@@ -218,10 +220,12 @@
 <translation id="3335337277364016868">录制年份</translation>
 <translation id="3353984535370177728">选择要上传的文件夹</translation>
 <translation id="3356580349448036450">已完成</translation>
+<translation id="3358452157379365236">吉他</translation>
 <translation id="3382143449143186018">尼泊尔语 InScript 键盘</translation>
 <translation id="3408236822532681288">德语（德国）Neo 2 键盘</translation>
 <translation id="3414856743105198592">格式化可移动设备会删除其中的所有数据。您要继续吗？</translation>
 <translation id="3437801641691368414">创建时间</translation>
+<translation id="343907260260897561">拍立得相机</translation>
 <translation id="3455931012307786678">爱沙尼亚语</translation>
 <translation id="3466147780910026086">正在扫描您的媒体设备…</translation>
 <translation id="3468522857997926824">已将 <ph name="FILE_COUNT" /> 张照片备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" /></translation>
@@ -297,6 +301,7 @@
 <translation id="4309915981827077375">基本信息</translation>
 <translation id="432252891123397018">俄语标准键盘</translation>
 <translation id="4325128273762811722">斯洛文尼亚语</translation>
+<translation id="4326142238881453352">植物学家</translation>
 <translation id="4326192123064055915">咖啡</translation>
 <translation id="4336032328163998280">复制操作失败。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="4348495354623233847">索拉尼库尔德语（阿拉伯语字母）键盘</translation>
@@ -395,6 +400,7 @@
 <translation id="5159383109919732130"><ph name="BEGIN_BOLD" />暂时请不要取出您的设备！<ph name="END_BOLD" />
    <ph name="LINE_BREAKS" />
    取出使用中的设备可能会导致数据丢失。请等待操作完成，然后使用“文件”菜单弹出设备。</translation>
+<translation id="5159560892333415631">清空垃圾箱</translation>
 <translation id="5163869187418756376">共享失败。请检查连接是否正常，然后重试。</translation>
 <translation id="516592729076796170">美式 Programmer Dvorak 键盘</translation>
 <translation id="5170477580121653719">Google 云端硬盘可用存储空间：<ph name="SPACE_AVAILABLE" />。</translation>
@@ -407,7 +413,9 @@
 <translation id="5257456363153333584">蜻蜓</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />可随时随地访问文件，即使处于离线状态也没关系。<ph name="MARKUP_2" />Google 云端硬盘上的文件是最新的，并可通过任意设备访问。<ph name="MARKUP_3" /><ph name="MARKUP_4" />可确保文件安全。<ph name="MARKUP_5" />无论您的设备出现什么状况，您的文件都会安全地存储在 Google 云端硬盘上。<ph name="MARKUP_6" /><ph name="MARKUP_7" />文件集中存储，方便您与他人在同一个地方共享、创建和协作处理<ph name="MARKUP_8" />文件。<ph name="MARKUP_9" /></translation>
 <translation id="5275973617553375938">从 Google 云端硬盘恢复的文件</translation>
+<translation id="5288441970121584418">汉堡包</translation>
 <translation id="5288481194217812690"><ph name="FILENAME" /></translation>
+<translation id="5299998344490869684">确定要清空垃圾箱吗？</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5318819489018851358">与 Linux 共享</translation>
 <translation id="5323213332664049067">拉丁美洲</translation>
@@ -497,10 +505,12 @@
 <translation id="6248400709929739064">启用字幕</translation>
 <translation id="6269630227984243955">马来语</translation>
 <translation id="6287852322318138013">选择用于打开此文件的应用</translation>
+<translation id="6321303798550928047">挥手</translation>
 <translation id="6339145975392024142">美式国际 (PC) 键盘</translation>
 <translation id="6346310558342052870">访问权限受限</translation>
 <translation id="6356685157277930264">文件反馈窗口</translation>
 <translation id="6358884629796491903">龙</translation>
+<translation id="6367976544441405720">客货车</translation>
 <translation id="637062427944097960">此文件已在其他桌面打开。请转至<ph name="USER_NAME" />(<ph name="MAIL_ADDRESS" />)查看此文件。</translation>
 <translation id="6394388407447716302">只读</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> 项内容</translation>
@@ -524,6 +534,7 @@
 <translation id="6650726141019353908">粉蝴蝶</translation>
 <translation id="6657585470893396449">密码</translation>
 <translation id="6673674183150363784">法语（法国）Bépo 键盘</translation>
+<translation id="6710022688720561421">机器人</translation>
 <translation id="6710213216561001401">上一项</translation>
 <translation id="6751256176799620176">已选择 1 个文件夹</translation>
 <translation id="6790428901817661496">播放</translation>
@@ -557,6 +568,7 @@
 <translation id="6965382102122355670">确定</translation>
 <translation id="6970230597523682626">保加利亚语</translation>
 <translation id="6973630695168034713">文件夹</translation>
+<translation id="6976795442547527108">狮子</translation>
 <translation id="6978611942794658017">此文件适用于采用 Windows 软件的 PC，不适用于运行 Chrome 操作系统的设备。请在 Chrome 网上应用店中搜索合适的替代应用。</translation>
 <translation id="6979158407327259162">Google 云端硬盘</translation>
 <translation id="6989942356279143254">瑞典语</translation>
@@ -603,6 +615,7 @@
 <translation id="7532029025027028521">波斯语音译</translation>
 <translation id="7544830582642184299">授权 Linux 应用访问您 Google 云端硬盘中的文件。相关更改会同步到您的其他设备。</translation>
 <translation id="7544853251252956727">随机播放</translation>
+<translation id="7547009467130558110">运动鞋</translation>
 <translation id="7547780573915868306">立陶宛语</translation>
 <translation id="7547811415869834682">荷兰语</translation>
 <translation id="7551643184018910560">固定到任务栏</translation>
@@ -617,6 +630,7 @@
 <translation id="7628656427739290098">已完成 <ph name="PERCENT" />%。</translation>
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7654209398114106148">正在移动 <ph name="NUMBER_OF_ITEMS" /> 项内容…</translation>
+<translation id="7655441028674523381">轻松访问 Google 相册</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7663224033570512922">印地语</translation>
 <translation id="7693909743393669729">将 U 盘格式化会清空其中存储的所有数据，并会移除所有现有分区（包括未必可见的分区）。此操作无法撤消。</translation>
@@ -708,6 +722,7 @@
 <translation id="8466234950814670489">Tar 归档</translation>
 <translation id="8475647382427415476">Google 云端硬盘暂时无法同步“<ph name="FILENAME" />”，将在稍后重试。</translation>
 <translation id="8477649328507734757">同心圆</translation>
+<translation id="8484284835977497781">从您的近期照片中选择。</translation>
 <translation id="8487700953926739672">可离线使用</translation>
 <translation id="8521441079177373948">英国英语</translation>
 <translation id="8525306231823319788">全屏</translation>
@@ -732,6 +747,7 @@
 <translation id="872537912056138402">克罗地亚语</translation>
 <translation id="8750438273876807512">轻触并按住某个文件，点按 <ph name="ICON" />，然后选择“固定到任务栏”，即可在任务栏中快速访问您的文件。</translation>
 <translation id="8775404590947523323">系统会自动保存您所做的修改。<ph name="BREAKS" />要保留原始图像的副本，请取消选中“覆盖原始文件”。</translation>
+<translation id="8802459921616481935">移至垃圾箱</translation>
 <translation id="8808686172382650546">猫</translation>
 <translation id="8810671769985673465">压缩失败，已有此项内容：“<ph name="FILE_NAME" />”</translation>
 <translation id="8813284582615685103">西班牙语（西班牙）</translation>
@@ -740,6 +756,7 @@
 <translation id="8860454412039442620">Excel 电子表格</translation>
 <translation id="8866284467018526531">阿拉伯语音译</translation>
 <translation id="8900820606136623064">匈牙利语</translation>
+<translation id="8903931173357132290">毕业</translation>
 <translation id="8919081441417203123">丹麦语</translation>
 <translation id="8965697826696209160">空间不足。</translation>
 <translation id="8970501467542182729">此文件适用于运行 Macintosh 软件的计算机，不适用于运行 Chrome 操作系统的设备。<ph name="BEGIN_LINK_HELP" />详细了解<ph name="END_LINK_HELP" />如何在 Chrome 操作系统中打开文件。</translation>
@@ -764,6 +781,7 @@
 <translation id="9154418932169119429">此图片无法在离线模式下显示。</translation>
 <translation id="9172592259078059678">古吉拉特语音译</translation>
 <translation id="9173120999827300720">英语（美国）国际键盘</translation>
+<translation id="9174050671906956834">移至垃圾箱 30 天后，所移动的内容将被永久删除。</translation>
 <translation id="9189836632794948435">哈萨克语</translation>
 <translation id="9213073329713032541">安装已成功启动。</translation>
 <translation id="9219103736887031265">图片</translation>

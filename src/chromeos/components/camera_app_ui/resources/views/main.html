@@ -9,9 +9,11 @@
     <title>&#xfeff;</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/ptz_panel.css">
+    <link rel="stylesheet" href="/css/ripple.css">
+    <link rel="stylesheet" href="/css/ptz_toast.css">
     <script src="/js/mojo/mojo_bindings_lite.js"></script>
     <script src="/js/mojo/time.mojom-lite.js"></script>
-    <script src="/js/mojo/idle_manager.mojom-lite.js"></script>
     <script src="/js/mojo/camera_metadata_tags.mojom-lite.js"></script>
     <script src="/js/mojo/camera_metadata.mojom-lite.js"></script>
     <script src="/js/mojo/camera_common.mojom-lite.js"></script>
@@ -68,28 +70,16 @@
               <div id="preview-wb-gain-blue" class="metadata value"></div>
               <div id="preview-awb-state" class="metadata value"></div>
             </div>
-            <div id="pan-slider" class="expert-control-row">
-              <span class="title">Pan</span>
-              <input type="range">
-            </div>
-            <div id="tilt-slider" class="expert-control-row">
-              <span class="title">Tilt</span>
-              <input type="range">
-            </div>
-            <div id="zoom-slider" class="expert-control-row">
-              <span class="title">Zoom</span>
-              <input type="range">
-            </div>
             <div class="video-option-row expert-control-row">
               <span class="title">Profile</span>
-              <select id="video-profile">
+              <select id="video-profile" tabindex="0">
                 <!-- Generate in runtime -->
               </select>
             </div>
             <div id="bitrate-slider" class="video-option-row
                      expert-control-row">
               <span class="title">Bitrate</span>
-              <input type="range" min="1">
+              <input type="range" min="1" tabindex="0">
               <div id="bitrate-multiplier" class="value"></div>
               <div id="bitrate-number" class="value"></div>
             </div>
@@ -211,10 +201,20 @@
         <button id="switch-device" tabindex="0"
                 i18n-label="switch_camera_button"></button>
       </div>
+      <div id="ptz-toast" class="hidden" i18n-aria="label_new_control_toast"
+           tabindex="0">
+        <span i18n-text="new_control_toast" aria-hidden="true"></span>
+      </div>
+
       <div id="options-group" class="left-stripe buttons">
+        <button id="open-ptz-panel" tabindex="0" aria-haspopup="true"
+                i18n-label="open_ptz_panel_button">
+          <div class="ripple"></div>
+          <div class="ripple ripple-2nd"></div>
+          <div class="ripple ripple-3rd"></div>
+        </button>
         <input type="checkbox" id="toggle-timer" tabindex="0"
-               i18n-label="toggle_timer_button" data-state="timer"
-               data-key="toggleTimer">
+               data-state="timer" data-key="toggleTimer">
         <input type="checkbox" id="toggle-grid" tabindex="0"
                i18n-label="toggle_grid_button" data-state="grid"
                data-key="toggleGrid">
@@ -245,6 +245,21 @@
       </div>
       <div class="centered-overlay">
         <div id="timer-tick-msg"></div>
+      </div>
+    </div>
+    <div id="view-ptz-panel">
+      <div id="panel-container">
+        <button id="tilt-up" i18n-label="tilt_up_button"></button>
+        <button id="pan-right" i18n-label="pan_right_button"></button>
+        <button id="tilt-down" i18n-label="tilt_down_button"></button>
+        <button id="pan-left" i18n-label="pan_left_button"></button>
+        <button id="zoom-in" i18n-label="zoom_in_button"></button>
+        <button id="zoom-out" i18n-label="zoom_out_button"></button>
+        <div id="ptz-divider1" class="ptz-divider"></div>
+        <div id="ptz-divider2" class="ptz-divider"></div>
+        <div id="ptz-divider3" class="ptz-divider"></div>
+        <div id="ptz-divider4" class="ptz-divider"></div>
+        <div id="ptz-zoom-divider" class="ptz-divider"></div>
       </div>
     </div>
     <div id="view-settings">

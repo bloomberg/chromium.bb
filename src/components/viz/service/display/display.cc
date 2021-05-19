@@ -284,11 +284,25 @@ void Display::PresentationGroupTiming::OnSwap(gfx::SwapTimings timings) {
 }
 
 void Display::PresentationGroupTiming::OnPresent(
-    const gfx::PresentationFeedback& feedback) {
+    const gfx::PresentationFeedback& feedback,
+    DisplaySchedulerBase* scheduler) {
   for (auto& presentation_helper : presentation_helpers_) {
     presentation_helper->DidPresent(draw_start_timestamp_, swap_timings_,
                                     feedback);
   }
+
+  if (feedback.ready_timestamp.is_null())
+    return;
+
+  auto gpu_latency = feedback.ready_timestamp - swap_timings_.swap_start;
+  // TODO(crbug.com/1157620): Move this check to SanitizePresentationFeedback
+  // to handle all incorrect feedback cases.
+  if (gpu_latency < base::TimeDelta::FromSeconds(0)) {
+    DLOG(ERROR) << "Gpu latency is negative : "
+                << gpu_latency.InMillisecondsF();
+    return;
+  }
+  scheduler->SetGpuLatency(gpu_latency);
 }
 
 Display::Display(
@@ -775,6 +789,7 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
     draw_timer.emplace();
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     overlay_processor_->SetFrameSequenceNumber(frame_sequence_number_);
+    overlay_processor_->SetIsVideoCaptureEnabled(frame.video_capture_enabled);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
                          current_surface_size, display_color_spaces_,
                          std::move(frame.surface_damage_rect_list_));
@@ -861,7 +876,10 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
       }
     }
 
-    renderer_->SwapBuffersSkipped();
+    // If we did draw, but not going to swap we need notify DirectRenderer that
+    // swap buffers will be skipped.
+    if (should_draw)
+      renderer_->SwapBuffersSkipped();
 
     TRACE_EVENT_ASYNC_END1("viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
                            swapped_trace_id_, "status", "canceled");
@@ -944,6 +962,23 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
         "Compositing.Display.VizScheduledDrawToGpuStartedDrawUs", delta,
         kDrawToSwapMin, kDrawToSwapMax, kDrawToSwapUsBuckets);
   }
+
+  if (!timings.gpu_task_ready.is_null()) {
+    DCHECK(!timings.viz_scheduled_draw.is_null());
+    DCHECK(!timings.gpu_started_draw.is_null());
+    DCHECK_LE(timings.viz_scheduled_draw, timings.gpu_task_ready);
+    DCHECK_LE(timings.gpu_task_ready, timings.gpu_started_draw);
+    base::TimeDelta dependency_delta =
+        timings.gpu_task_ready - timings.viz_scheduled_draw;
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Compositing.Display.VizScheduledDrawToDependencyResolvedUs",
+        dependency_delta, kDrawToSwapMin, kDrawToSwapMax, kDrawToSwapUsBuckets);
+    base::TimeDelta scheduling_delta =
+        timings.gpu_started_draw - timings.gpu_task_ready;
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Compositing.Display.VizDependencyResolvedToGpuStartedDrawUs",
+        scheduling_delta, kDrawToSwapMin, kDrawToSwapMax, kDrawToSwapUsBuckets);
+  }
 }
 
 void Display::DidReceiveTextureInUseResponses(
@@ -988,7 +1023,7 @@ void Display::DidReceivePresentationFeedback(
     }
   }
 
-  presentation_group_timing.OnPresent(copy_feedback);
+  presentation_group_timing.OnPresent(copy_feedback, scheduler_.get());
   pending_presentation_group_timings_.pop_front();
 }
 
@@ -1302,8 +1337,9 @@ void Display::PreserveChildSurfaceControls() {
   }
 }
 
-DelegatedInkPointRendererBase* Display::GetDelegatedInkPointRenderer() {
-  return renderer_->GetDelegatedInkPointRenderer();
+DelegatedInkPointRendererBase* Display::GetDelegatedInkPointRenderer(
+    bool create_if_necessary) {
+  return renderer_->GetDelegatedInkPointRenderer(create_if_necessary);
 }
 
 }  // namespace viz

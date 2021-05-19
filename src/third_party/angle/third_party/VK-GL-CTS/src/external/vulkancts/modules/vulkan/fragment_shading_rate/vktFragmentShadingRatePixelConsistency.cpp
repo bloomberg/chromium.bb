@@ -106,6 +106,8 @@ Move<VkDevice> createImageRobustnessDevice(Context& context)
 	// Add image robustness extension if supported
 	std::vector<const char*> deviceExtensions;
 
+	deviceExtensions.push_back("VK_KHR_fragment_shading_rate");
+
 	if (context.isDeviceFunctionalitySupported("VK_EXT_image_robustness"))
 	{
 		deviceExtensions.push_back("VK_EXT_image_robustness");
@@ -171,6 +173,11 @@ FSRPixelConsistencyInstance::FSRPixelConsistencyInstance(Context& context, const
 	context.getInstanceInterface().getPhysicalDeviceFragmentShadingRatesKHR(context.getPhysicalDevice(), &m_supportedFragmentShadingRateCount, DE_NULL);
 
 	m_supportedFragmentShadingRates.resize(m_supportedFragmentShadingRateCount);
+	for (deUint32 i = 0; i < m_supportedFragmentShadingRateCount; ++i)
+	{
+		m_supportedFragmentShadingRates[i].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_KHR;
+		m_supportedFragmentShadingRates[i].pNext = nullptr;
+	}
 	context.getInstanceInterface().getPhysicalDeviceFragmentShadingRatesKHR(context.getPhysicalDevice(), &m_supportedFragmentShadingRateCount, &m_supportedFragmentShadingRates[0]);
 
 	clampShadingRate();

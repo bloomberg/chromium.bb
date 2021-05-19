@@ -102,49 +102,51 @@ namespace dawn_native { namespace vulkan {
         ShutDownBase();
     }
 
-    ResultOrError<BindGroupBase*> Device::CreateBindGroupImpl(
+    ResultOrError<Ref<BindGroupBase>> Device::CreateBindGroupImpl(
         const BindGroupDescriptor* descriptor) {
         return BindGroup::Create(this, descriptor);
     }
-    ResultOrError<BindGroupLayoutBase*> Device::CreateBindGroupLayoutImpl(
+    ResultOrError<Ref<BindGroupLayoutBase>> Device::CreateBindGroupLayoutImpl(
         const BindGroupLayoutDescriptor* descriptor) {
         return BindGroupLayout::Create(this, descriptor);
     }
     ResultOrError<Ref<BufferBase>> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return Buffer::Create(this, descriptor);
     }
-    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoder* encoder,
-                                                   const CommandBufferDescriptor* descriptor) {
+    ResultOrError<Ref<CommandBufferBase>> Device::CreateCommandBuffer(
+        CommandEncoder* encoder,
+        const CommandBufferDescriptor* descriptor) {
         return CommandBuffer::Create(encoder, descriptor);
     }
-    ResultOrError<ComputePipelineBase*> Device::CreateComputePipelineImpl(
+    ResultOrError<Ref<ComputePipelineBase>> Device::CreateComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
         return ComputePipeline::Create(this, descriptor);
     }
-    ResultOrError<PipelineLayoutBase*> Device::CreatePipelineLayoutImpl(
+    ResultOrError<Ref<PipelineLayoutBase>> Device::CreatePipelineLayoutImpl(
         const PipelineLayoutDescriptor* descriptor) {
         return PipelineLayout::Create(this, descriptor);
     }
-    ResultOrError<QuerySetBase*> Device::CreateQuerySetImpl(const QuerySetDescriptor* descriptor) {
+    ResultOrError<Ref<QuerySetBase>> Device::CreateQuerySetImpl(
+        const QuerySetDescriptor* descriptor) {
         return QuerySet::Create(this, descriptor);
     }
-    ResultOrError<RenderPipelineBase*> Device::CreateRenderPipelineImpl(
-        const RenderPipelineDescriptor* descriptor) {
+    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
+        const RenderPipelineDescriptor2* descriptor) {
         return RenderPipeline::Create(this, descriptor);
     }
-    ResultOrError<SamplerBase*> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
+    ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
         return Sampler::Create(this, descriptor);
     }
-    ResultOrError<ShaderModuleBase*> Device::CreateShaderModuleImpl(
+    ResultOrError<Ref<ShaderModuleBase>> Device::CreateShaderModuleImpl(
         const ShaderModuleDescriptor* descriptor,
         ShaderModuleParseResult* parseResult) {
         return ShaderModule::Create(this, descriptor, parseResult);
     }
-    ResultOrError<SwapChainBase*> Device::CreateSwapChainImpl(
+    ResultOrError<Ref<SwapChainBase>> Device::CreateSwapChainImpl(
         const SwapChainDescriptor* descriptor) {
         return OldSwapChain::Create(this, descriptor);
     }
-    ResultOrError<NewSwapChainBase*> Device::CreateSwapChainImpl(
+    ResultOrError<Ref<NewSwapChainBase>> Device::CreateSwapChainImpl(
         Surface* surface,
         NewSwapChainBase* previousSwapChain,
         const SwapChainDescriptor* descriptor) {
@@ -153,7 +155,7 @@ namespace dawn_native { namespace vulkan {
     ResultOrError<Ref<TextureBase>> Device::CreateTextureImpl(const TextureDescriptor* descriptor) {
         return Texture::Create(this, descriptor);
     }
-    ResultOrError<TextureViewBase*> Device::CreateTextureViewImpl(
+    ResultOrError<Ref<TextureViewBase>> Device::CreateTextureViewImpl(
         TextureBase* texture,
         const TextureViewDescriptor* descriptor) {
         return TextureView::Create(texture, descriptor);
@@ -341,9 +343,11 @@ namespace dawn_native { namespace vulkan {
             ASSERT(deviceInfo.HasExt(DeviceExt::ShaderFloat16Int8) &&
                    deviceInfo.shaderFloat16Int8Features.shaderFloat16 == VK_TRUE &&
                    deviceInfo.HasExt(DeviceExt::_16BitStorage) &&
+                   deviceInfo._16BitStorageFeatures.storageBuffer16BitAccess == VK_TRUE &&
                    deviceInfo._16BitStorageFeatures.uniformAndStorageBuffer16BitAccess == VK_TRUE);
 
             usedKnobs.shaderFloat16Int8Features.shaderFloat16 = VK_TRUE;
+            usedKnobs._16BitStorageFeatures.storageBuffer16BitAccess = VK_TRUE;
             usedKnobs._16BitStorageFeatures.uniformAndStorageBuffer16BitAccess = VK_TRUE;
 
             featuresChain.Add(&usedKnobs.shaderFloat16Int8Features,
@@ -509,21 +513,22 @@ namespace dawn_native { namespace vulkan {
         return fence;
     }
 
-    ExecutionSerial Device::CheckAndUpdateCompletedSerials() {
+    ResultOrError<ExecutionSerial> Device::CheckAndUpdateCompletedSerials() {
         ExecutionSerial fenceSerial(0);
         while (!mFencesInFlight.empty()) {
             VkFence fence = mFencesInFlight.front().first;
             ExecutionSerial tentativeSerial = mFencesInFlight.front().second;
             VkResult result = VkResult::WrapUnsafe(
                 INJECT_ERROR_OR_RUN(fn.GetFenceStatus(mVkDevice, fence), VK_ERROR_DEVICE_LOST));
-            // TODO: Handle DeviceLost error.
-            ASSERT(result == VK_SUCCESS || result == VK_NOT_READY);
 
             // Fence are added in order, so we can stop searching as soon
             // as we see one that's not ready.
             if (result == VK_NOT_READY) {
                 return fenceSerial;
+            } else {
+                DAWN_TRY(CheckVkSuccess(::VkResult(result), "GetFenceStatus"));
             }
+
             // Update fenceSerial since fence is ready.
             fenceSerial = tentativeSerial;
 

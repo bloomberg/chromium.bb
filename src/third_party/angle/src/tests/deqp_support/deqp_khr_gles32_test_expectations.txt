@@ -33,10 +33,6 @@
 5579 VULKAN WIN : KHR-GLES32.core.geometry_shader.layered_rendering.layered_rendering = FAIL
 // Crashes on ASSERT due to mismatch between shader resources and pipeline layout
 5579 VULKAN WIN : KHR-GLES32.core.geometry_shader.api.max_image_uniforms = SKIP
-// The spec says if PPO misses VS or GS, it's not an error, but the test expects
-// GL_INVALID_OPERATION.  Our validation is incorrect regardless.
-5579 VULKAN WIN : KHR-GLES32.core.geometry_shader.api.fs_gs_draw_call = FAIL
-5579 VULKAN WIN : KHR-GLES32.core.geometry_shader.api.pipeline_program_without_active_vs = SKIP
 // Failures on windows nvidia
 5579 VULKAN WIN NVIDIA : KHR-GLES32.core.geometry_shader.limits.max_invocations = FAIL
 5579 VULKAN WIN NVIDIA : KHR-GLES32.core.tessellation_shader.single.primitive_coverage = FAIL
@@ -60,7 +56,6 @@
 5557 VULKAN WIN : KHR-GLES32.core.tessellation_shader.tessellation_shader_triangles_tessellation.degenerate_triangle = FAIL
 // Missing names in mVariableInfo map (fail on ASSERT in SPIR-V transformer)
 5557 VULKAN WIN : KHR-GLES32.core.tessellation_shader.single.xfb_captures_data_from_correct_stage = SKIP
-5557 VULKAN WIN : KHR-GLES32.core.tessellation_shader.tessellation_control_to_tessellation_evaluation.gl_in = SKIP
 // Translator validation bugs
 5557 VULKAN WIN : KHR-GLES32.core.tessellation_shader.single.max_patch_vertices = FAIL
 // Bug in front-end where builtins are not correctly marked active in every stage
@@ -141,6 +136,9 @@
 // Desktop cards without native etc support
 5276 AMD VULKAN : KHR-GLES32.core.texture_cube_map_array.etc2_texture = FAIL
 5276 NVIDIA VULKAN : KHR-GLES32.core.texture_cube_map_array.etc2_texture = FAIL
+
+// New failures with latest dEQP roll (2021-03-05)
+5722 VULKAN : KHR-GLES32.core.framebuffer_completeness.rbo_and_texture_expect_zero_numsamples = FAIL
 
 // Android failures
 

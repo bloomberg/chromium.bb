@@ -11,8 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/feed/core/proto/v2/store.pb.h"
-#include "components/feed/core/proto/v2/wire/discover_actions_service.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_action.pb.h"
+#include "components/feed/core/proto/v2/wire/upload_actions_request.pb.h"
+#include "components/feed/core/proto/v2/wire/upload_actions_response.pb.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_store.h"
@@ -115,6 +116,8 @@ class UploadActionsTask : public offline_pages::Task {
   // Number of stale actions.
   size_t stale_count_ = 0;
   base::Optional<NetworkResponseInfo> last_network_response_info_;
+
+  std::string gaia_;
 
   base::WeakPtrFactory<UploadActionsTask> weak_ptr_factory_{this};
 };

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/base64url.h"
-#include "base/bind.h"
+#include "base/callback.h"
 #include "base/check.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -35,7 +35,7 @@ class TestNetworkContext : public network::TestNetworkContext {
  public:
   using ContactCallback = base::RepeatingCallback<void(
       base::span<const uint8_t, kTunnelIdSize> tunnel_id,
-      base::span<const uint8_t> pairing_id,
+      base::span<const uint8_t, kPairingIDSize> pairing_id,
       base::span<const uint8_t, kClientNonceSize> client_nonce)>;
 
   explicit TestNetworkContext(base::Optional<ContactCallback> contact_callback)
@@ -53,8 +53,8 @@ class TestNetworkContext : public network::TestNetworkContext {
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
           handshake_client,
-      mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
-          auth_cert_observer,
+      mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
+          url_loader_network_observer,
       mojo::PendingRemote<network::mojom::WebSocketAuthenticationHandler>
           auth_handler,
       mojo::PendingRemote<network::mojom::TrustedHeaderClient> header_client)
@@ -114,15 +114,17 @@ class TestNetworkContext : public network::TestNetworkContext {
           std::make_unique<Connection>(Connection::Type::CONTACT,
                                        std::move(handshake_client)));
 
+      const std::vector<uint8_t>& pairing_id_vec =
+          map.find(cbor::Value(1))->second.GetBytestring();
+      base::span<const uint8_t, kPairingIDSize> pairing_id(
+          pairing_id_vec.data(), pairing_id_vec.size());
+
       const std::vector<uint8_t>& client_nonce_vec =
           map.find(cbor::Value(2))->second.GetBytestring();
       base::span<const uint8_t, kClientNonceSize> client_nonce(
           client_nonce_vec.data(), client_nonce_vec.size());
 
-      contact_callback_->Run(
-          tunnel_id,
-          /*pairing_id=*/map.find(cbor::Value(1))->second.GetBytestring(),
-          client_nonce);
+      contact_callback_->Run(tunnel_id, pairing_id, client_nonce);
     } else {
       CHECK(false) << "unexpected path: " << path;
     }
@@ -348,8 +350,10 @@ class DummyBLEAdvert
 // messages to the given |VirtualCtap2Device|.
 class TestPlatform : public authenticator::Platform {
  public:
-  TestPlatform(Discovery* discovery, device::VirtualCtap2Device* ctap2_device)
-      : discovery_(discovery), ctap2_device_(ctap2_device) {}
+  TestPlatform(Discovery::AdvertEventStream::Callback ble_advert_callback,
+               device::VirtualCtap2Device* ctap2_device)
+      : ble_advert_callback_(ble_advert_callback),
+        ctap2_device_(ctap2_device) {}
 
   void MakeCredential(std::unique_ptr<MakeCredentialParams> params) override {
     std::vector<device::PublicKeyCredentialParams::CredentialInfo> cred_infos;
@@ -393,15 +397,16 @@ class TestPlatform : public authenticator::Platform {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            [](Discovery* discovery, std::array<uint8_t, kAdvertSize> payload) {
-              discovery->OnBLEAdvertSeen(payload);
-            },
-            base::Unretained(discovery_),
+            &TestPlatform::DoSendBLEAdvert, weak_factory_.GetWeakPtr(),
             device::fido_parsing_utils::Materialize<EXTENT(payload)>(payload)));
     return std::make_unique<DummyBLEAdvert>();
   }
 
  private:
+  void DoSendBLEAdvert(base::span<const uint8_t, kAdvertSize> advert) {
+    ble_advert_callback_.Run(advert);
+  }
+
   std::vector<uint8_t> ToCTAP2Command(
       const std::pair<device::CtapRequestCommand, base::Optional<cbor::Value>>&
           parts) {
@@ -451,7 +456,7 @@ class TestPlatform : public authenticator::Platform {
         *attestation_obj);
   }
 
-  Discovery* const discovery_;
+  Discovery::AdvertEventStream::Callback ble_advert_callback_;
   device::VirtualCtap2Device* const ctap2_device_;
   base::WeakPtrFactory<TestPlatform> weak_factory_{this};
 };
@@ -466,9 +471,9 @@ std::unique_ptr<network::mojom::NetworkContext> NewMockTunnelServer(
 namespace authenticator {
 
 std::unique_ptr<authenticator::Platform> NewMockPlatform(
-    Discovery* discovery,
+    Discovery::AdvertEventStream::Callback ble_advert_callback,
     device::VirtualCtap2Device* ctap2_device) {
-  return std::make_unique<TestPlatform>(discovery, ctap2_device);
+  return std::make_unique<TestPlatform>(ble_advert_callback, ctap2_device);
 }
 
 }  // namespace authenticator

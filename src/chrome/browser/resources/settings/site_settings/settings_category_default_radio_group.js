@@ -7,8 +7,8 @@
  * 'settings-category-default-radio-group' is the polymer element for showing
  * a certain category under Site Settings.
  */
-import '../settings_shared_css.m.js';
-import '../controls/settings_radio_group.m.js';
+import '../settings_shared_css.js';
+import '../controls/settings_radio_group.js';
 import '../privacy_page/collapse_radio_button.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
@@ -82,33 +82,41 @@ Polymer({
    * @private
    */
   getAllowOptionForCategory_() {
+    /**
+     * This list must be kept in sync with the list in
+     * category_default_setting.js
+     */
     switch (this.category) {
       case ContentSettingsTypes.ADS:
       case ContentSettingsTypes.BACKGROUND_SYNC:
       case ContentSettingsTypes.IMAGES:
       case ContentSettingsTypes.JAVASCRIPT:
       case ContentSettingsTypes.MIXEDSCRIPT:
-      case ContentSettingsTypes.SOUND:
-      case ContentSettingsTypes.SENSORS:
       case ContentSettingsTypes.PAYMENT_HANDLER:
       case ContentSettingsTypes.POPUPS:
       case ContentSettingsTypes.PROTOCOL_HANDLERS:
+      case ContentSettingsTypes.SENSORS:
+      case ContentSettingsTypes.SOUND:
         // "Allowed" vs "Blocked".
         return ContentSetting.ALLOW;
+      case ContentSettingsTypes.AR:
       case ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
-      case ContentSettingsTypes.CAMERA:
-      case ContentSettingsTypes.CLIPBOARD:
-      case ContentSettingsTypes.GEOLOCATION:
-      case ContentSettingsTypes.MIC:
-      case ContentSettingsTypes.NOTIFICATIONS:
-      case ContentSettingsTypes.MIDI_DEVICES:
-      case ContentSettingsTypes.USB_DEVICES:
-      case ContentSettingsTypes.SERIAL_PORTS:
       case ContentSettingsTypes.BLUETOOTH_DEVICES:
       case ContentSettingsTypes.BLUETOOTH_SCANNING:
+      case ContentSettingsTypes.CAMERA:
+      case ContentSettingsTypes.CLIPBOARD:
+      case ContentSettingsTypes.FILE_HANDLING:
+      case ContentSettingsTypes.FILE_SYSTEM_WRITE:
+      case ContentSettingsTypes.FONT_ACCESS:
+      case ContentSettingsTypes.GEOLOCATION:
       case ContentSettingsTypes.HID_DEVICES:
+      case ContentSettingsTypes.IDLE_DETECTION:
+      case ContentSettingsTypes.MIC:
+      case ContentSettingsTypes.MIDI_DEVICES:
+      case ContentSettingsTypes.NOTIFICATIONS:
+      case ContentSettingsTypes.SERIAL_PORTS:
+      case ContentSettingsTypes.USB_DEVICES:
       case ContentSettingsTypes.VR:
-      case ContentSettingsTypes.AR:
       case ContentSettingsTypes.WINDOW_PLACEMENT:
         // "Ask" vs "Blocked".
         return ContentSetting.ASK;

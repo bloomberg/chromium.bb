@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -60,6 +61,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::mojom::ManifestLocation;
+
 namespace app_list {
 namespace test {
 
@@ -105,7 +108,8 @@ bool MoreRelevant(const ChromeSearchResult* result1,
   return result1->relevance() > result2->relevance();
 }
 
-void UpdateIconKey(apps::AppServiceProxy& proxy, const std::string& app_id) {
+void UpdateIconKey(apps::AppServiceProxyChromeOs& proxy,
+                   const std::string& app_id) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_id = app_id;
   proxy.AppRegistryCache().ForOneApp(
@@ -238,7 +242,7 @@ class AppSearchProviderTest : public AppListTestBase {
 
   void AddExtension(const std::string& id,
                     const std::string& name,
-                    extensions::Manifest::Location location,
+                    ManifestLocation location,
                     int init_from_value_flags) {
     scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder()
@@ -673,7 +677,7 @@ TEST_F(AppSearchProviderTest, FilterDuplicate) {
   ASSERT_TRUE(extension_prefs);
 
   AddExtension(extension_misc::kGmailAppId, kGmailExtensionName,
-               extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+               ManifestLocation::kExternalPrefDownload,
                extensions::Extension::NO_FLAGS);
 
   const std::string arc_gmail_app_id =
@@ -718,11 +722,10 @@ TEST_F(AppSearchProviderTest, FetchInternalApp) {
 }
 
 TEST_F(AppSearchProviderTest, WebApp) {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(testing_profile());
-  proxy->FlushMojoCallsForTesting();
+  apps::AppServiceProxyFactory::GetForProfile(testing_profile())
+      ->FlushMojoCallsForTesting();
 
-  const web_app::AppId app_id = web_app::InstallDummyWebApp(
+  const web_app::AppId app_id = web_app::test::InstallDummyWebApp(
       testing_profile(), kWebAppName, GURL(kWebAppUrl));
 
   // Allow async callbacks to run.
@@ -812,7 +815,7 @@ TEST_F(AppSearchProviderCrostiniTest, CrostiniApp) {
 }
 
 TEST_F(AppSearchProviderTest, AppServiceIconCache) {
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
   ASSERT_NE(proxy, nullptr);
 
@@ -897,7 +900,7 @@ TEST_P(AppSearchProviderWithExtensionInstallType, InstallInternallyRanking) {
   const std::string normal_app_id =
       crx_file::id_util::GenerateId(kRankingNormalAppName);
   AddExtension(normal_app_id, kRankingNormalAppName,
-               extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+               ManifestLocation::kExternalPrefDownload,
                extensions::Extension::NO_FLAGS);
 
   // Wait a bit to make sure time is updated.
@@ -909,22 +912,22 @@ TEST_P(AppSearchProviderWithExtensionInstallType, InstallInternallyRanking) {
   switch (GetParam()) {
     case TestExtensionInstallType::CONTROLLED_BY_POLICY:
       AddExtension(internal_app_id, kRankingInternalAppName,
-                   extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD,
+                   ManifestLocation::kExternalPolicyDownload,
                    extensions::Extension::NO_FLAGS);
       break;
     case TestExtensionInstallType::CHROME_COMPONENT:
       AddExtension(internal_app_id, kRankingInternalAppName,
-                   extensions::Manifest::COMPONENT,
+                   ManifestLocation::kComponent,
                    extensions::Extension::NO_FLAGS);
       break;
     case TestExtensionInstallType::INSTALLED_BY_DEFAULT:
       AddExtension(internal_app_id, kRankingInternalAppName,
-                   extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+                   ManifestLocation::kExternalPrefDownload,
                    extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
       break;
     case TestExtensionInstallType::INSTALLED_BY_OEM:
       AddExtension(internal_app_id, kRankingInternalAppName,
-                   extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+                   ManifestLocation::kExternalPrefDownload,
                    extensions::Extension::WAS_INSTALLED_BY_OEM);
       break;
   }
@@ -982,7 +985,7 @@ TEST_P(AppSearchProviderWithExtensionInstallType, OemResultsOnFirstBoot) {
     const std::string internal_app_id = crx_file::id_util::GenerateId(app_id);
 
     AddExtension(internal_app_id, app_id,
-                 extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+                 ManifestLocation::kExternalPrefDownload,
                  extensions::Extension::WAS_INSTALLED_BY_OEM);
 
     service_->EnableExtension(internal_app_id);

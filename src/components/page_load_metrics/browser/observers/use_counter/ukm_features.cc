@@ -46,7 +46,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kXMLHttpRequestSynchronousInWorker,
           WebFeature::kPaymentHandler,
           WebFeature::kPaymentRequestShowWithoutGesture,
-          WebFeature::kHTMLImports,
           WebFeature::kCredentialManagerCreatePublicKeyCredential,
           WebFeature::kCredentialManagerGetPublicKeyCredential,
           WebFeature::kCredentialManagerMakePublicKeyCredentialSuccess,
@@ -192,6 +191,10 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kRTCPeerConnectionUsingComplexUnifiedPlan,
           WebFeature::kWebPImage,
           WebFeature::kAVIFImage,
+          WebFeature::kGetDisplayMedia,
+          WebFeature::kGetCurrentBrowsingContextMedia,
+          WebFeature::kLaxAllowingUnsafeCookies,
+          WebFeature::kOpenWebDatabaseThirdPartyContext,
           WebFeature::kPaymentRequestCSPViolation,
       }));
   return *opt_in_features;

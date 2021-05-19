@@ -26,23 +26,9 @@ const base::Feature kChromeTipsInMainMenu{"ChromeTipsInMainMenu",
 const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-// Enables using dialogs (instead of bubbles) for the post-install UI when an
-// extension overrides a setting.
-// TODO(devlin): Remove this feature in M88, since this launched as part of
-// https://crbug.com/1084281.
-const base::Feature kExtensionSettingsOverriddenDialogs{
-    "ExtensionSettingsOverriddenDialogs", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 // Enables an extension menu in the toolbar. See https://crbug.com/943702
 const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Force enables legacy privet printers that are already registered in Print
-// Preview. To be removed in M90.
-const base::Feature kForceEnablePrivetPrinting{
-    "ForceEnablePrivetPrinting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the new profile picker.
 // https:://crbug.com/1063856
@@ -59,6 +45,11 @@ const base::Feature kNewTabstripAnimation{"NewTabstripAnimation",
 const base::Feature kProminentDarkModeActiveTabTitle{
     "ProminentDarkModeActiveTabTitle", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a 'new' badge on the option to add to the reading list in the tab
+// context menu.
+const base::Feature kReadLaterNewBadgePromo{"ReadLaterNewBadgePromo",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables tabs to scroll in the tabstrip. https://crbug.com/951078
 const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -72,6 +63,10 @@ const base::Feature kScrollableTabStripButtons{
 // Hosts some content in a side panel. https://crbug.com/1149995
 const base::Feature kSidePanel{"SidePanel", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Displays a prototype of the side panel. https://crbug.com/1181931
+const base::Feature kSidePanelPrototype{"SidePanelPrototype",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Updated managed profile sign-in popup. https://crbug.com/1141224
 const base::Feature kSyncConfirmationUpdatedText{
     "SyncConfirmationUpdatedText", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -83,7 +78,7 @@ const base::Feature kSignInProfileCreation{"SignInProfileCreation",
 // Smoother enterprise experience in the sign-in profile creation flow.
 // https://crbug.com/1178494
 const base::Feature kSignInProfileCreationEnterprise{
-    "kSignInProfileCreationEnterprise", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SignInProfileCreationEnterprise", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Automatically create groups for users based on domain.
 // https://crbug.com/1128703
@@ -119,40 +114,53 @@ const char kTabHoverCardsFeatureParameterName[] = "setting";
 // https://crbug.com/928954
 const base::Feature kTabHoverCardImages{"TabHoverCardImages",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const char kTabHoverCardImagesNotReadyDelayParameterName[] =
+    "page_not_ready_delay";
+const char kTabHoverCardImagesLoadingDelayParameterName[] =
+    "page_loading_delay";
+const char kTabHoverCardImagesLoadedDelayParameterName[] = "page_loaded_delay";
 
 // Enables tab outlines in additional situations for accessibility.
 const base::Feature kTabOutlinesInLowContrastThemes{
     "TabOutlinesInLowContrastThemes", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables searching tabs across multiple windows. This feature launch is
-// staggered to release to ChromeOS first and other platforms later. Tab Search
-// is enabled by default on ChromeOS following its launch on the platform.
-// TODO(crbug.com/1137558): Remove this after launch to the remaining desktop
-// platforms.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kTabSearch{"TabSearch", base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kTabSearch{"TabSearch", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+// Controls whether or not feature parameters should be used for Tab Search's
+// fuzzy search or if default values should be used.
+const base::Feature kTabSearchFuzzySearch{"kTabSearchFuzzySearch",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the tab search submit feedback button.
 const base::Feature kTabSearchFeedback{"TabSearchFeedback",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls feature parameters for Tab Search's `Recently Closed` entries.
+const base::Feature kTabSearchRecentlyClosed{"TabSearchRecentlyClosed",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::FeatureParam<bool> kTabSearchSearchIgnoreLocation{
-    &kTabSearch, "TabSearchSearchIgnoreLocation", true};
+    &kTabSearchFuzzySearch, "TabSearchSearchIgnoreLocation", true};
 
 const base::FeatureParam<int> kTabSearchSearchDistance{
-    &kTabSearch, "TabSearchSearchDistance", 200};
+    &kTabSearchFuzzySearch, "TabSearchSearchDistance", 200};
 
 const base::FeatureParam<double> kTabSearchSearchThreshold{
-    &kTabSearch, "TabSearchSearchThreshold", 0.0};
+    &kTabSearchFuzzySearch, "TabSearchSearchThreshold", 0.0};
 
 const base::FeatureParam<double> kTabSearchTitleToHostnameWeightRatio{
-    &kTabSearch, "TabSearchTitleToHostnameWeightRatio", 2.0};
+    &kTabSearchFuzzySearch, "TabSearchTitleToHostnameWeightRatio", 2.0};
 
 const base::FeatureParam<bool> kTabSearchMoveActiveTabToBottom{
-    &kTabSearch, "TabSearchMoveActiveTabToBottom", true};
+    &kTabSearchFuzzySearch, "TabSearchMoveActiveTabToBottom", true};
+
+const base::FeatureParam<int> kTabSearchRecentlyClosedDefaultItemDisplayCount{
+    &kTabSearchRecentlyClosed, "TabSearchRecentlyClosedDefaultItemDisplayCount",
+    8};
+
+const base::FeatureParam<int> kTabSearchRecentlyClosedMaxEntries{
+    &kTabSearchRecentlyClosed, "TabSearchRecentlyClosedMaxEntries", 100};
+
+const base::Feature kToolbarUseHardwareBitmapDraw{
+    "ToolbarUseHardwareBitmapDraw", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables a web-based separator that's only used for performance testing. See
 // https://crbug.com/993502.
@@ -163,6 +171,11 @@ const base::Feature kWebFooterExperiment{"WebFooterExperiment",
 // with the current Profile for WebUI bubbles. See https://crbug.com/1177048.
 const base::Feature kWebUIBubblePerProfilePersistence{
     "WebUIBubblePerProfilePersistence", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the WebUI Download Shelf instead of the Views framework Download
+// Shelf. See https://crbug.com/1180372.
+const base::Feature kWebUIDownloadShelf{"WebUIDownloadShelf",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables a web-based tab strip. See https://crbug.com/989131. Note this
 // feature only works when the ENABLE_WEBUI_TAB_STRIP buildflag is enabled.
@@ -179,11 +192,6 @@ const base::Feature kWebUIFeedback{"WebUIFeedback",
 // https://crbug.com/903908
 const base::Feature kHiddenNetworkWarning{"HiddenNetworkWarning",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables a separate group of settings (speed, button swap, and acceleration)
-// for pointing sticks (such as TrackPoints).
-const base::Feature kSeparatePointingStickSettings{
-    "SeparatePointingStickSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace features

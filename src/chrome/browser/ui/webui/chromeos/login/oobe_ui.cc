@@ -12,6 +12,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/esim_manager.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/bind.h"
@@ -27,11 +28,11 @@
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
@@ -80,6 +81,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/ssh_configured_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -103,6 +105,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/component_extension_resources.h"
+#include "chrome/grit/oobe_resources.h"
+#include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -143,10 +147,15 @@ constexpr char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
 constexpr char kLoginJSPath[] = "login.js";
 constexpr char kOobeJSPath[] = "oobe.js";
 constexpr char kProductLogoPath[] = "product-logo.png";
-constexpr char kRecommendAppListViewHTMLPath[] = "recommend_app_list_view.html";
 constexpr char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
 constexpr char kTestAPIJSPath[] = "test_api.js";
 constexpr char kWebviewSamlInjectedJSPath[] = "webview_saml_injected.js";
+
+// Public
+constexpr char kLoginScreenBehaviorHTML[] = "components/login_screen_behavior.html";
+constexpr char kLoginScreenBehaviorJS[] = "components/login_screen_behavior.js";
+constexpr char kMultiStepBehaviorHTML[] = "components/multi_step_behavior.html";
+constexpr char kMultiStepBehaviorJS[] = "components/multi_step_behavior.js";
 
 // Components
 constexpr char kOobeSharedVarsCssHTML[] =
@@ -228,8 +237,6 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
 
   source->AddResourcePath(kRecommendAppListViewJSPath,
                           IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS);
-  source->AddResourcePath(kRecommendAppListViewHTMLPath,
-                          IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   source->AddResourcePath(kArcAppDownloadingVideoPath,
                           IDR_OOBE_ARC_APPS_DOWNLOADING_VIDEO);
@@ -263,43 +270,6 @@ void AddMarketingOptInResources(content::WebUIDataSource* source) {
                           IDR_MARKETING_OPT_IN_ALL_SET_ANIMATION_NEW_NOLOOP);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
-}
-
-void AddFingerprintResources(content::WebUIDataSource* source) {
-  int animation_id;
-  bool is_lottie_animation = false;
-  switch (quick_unlock::GetFingerprintLocation()) {
-    case quick_unlock::FingerprintLocation::TABLET_POWER_BUTTON:
-      is_lottie_animation = true;
-      animation_id = IDR_LOGIN_FINGER_PRINT_TABLET_ANIMATION;
-      break;
-    case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_LEFT:
-      animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_BOTTOM_LEFT_ANIMATION;
-      break;
-    case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
-      animation_id =
-          IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_BOTTOM_RIGHT_ANIMATION;
-      break;
-    case quick_unlock::FingerprintLocation::KEYBOARD_TOP_RIGHT:
-      animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_TOP_RIGHT_ANIMATION;
-      break;
-  }
-  if (is_lottie_animation) {
-    source->AddResourcePath("fingerprint_scanner_animation.json", animation_id);
-
-    // To use lottie, the worker-src CSP needs to be updated for the web ui that
-    // is using it. Since as of now there are only a couple of webuis using
-    // lottie animations, this update has to be performed manually. As the usage
-    // increases, set this as the default so manual override is no longer
-    // required.
-    source->OverrideContentSecurityPolicy(
-        network::mojom::CSPDirectiveName::WorkerSrc,
-        "worker-src blob: 'self';");
-  } else {
-    source->AddResourcePath("fingerprint_scanner_animation.png", animation_id);
-  }
-
-  source->AddBoolean("useLottieAnimationForFingerprint", is_lottie_animation);
 }
 
 void AddMultiDeviceSetupResources(content::WebUIDataSource* source) {
@@ -387,7 +357,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   // Configure shared resources
   AddProductLogoResources(source);
 
-  AddFingerprintResources(source);
+  chromeos::quick_unlock::AddFingerprintResources(source);
   AddSyncConsentResources(source);
   AddArcScreensResources(source);
   AddAssistantScreensResources(source);
@@ -552,6 +522,9 @@ void OobeUI::ConfigureOobeDisplay() {
   signin_screen_handler_ = signin_screen_handler.get();
   AddWebUIHandler(std::move(signin_screen_handler));
 
+  AddWebUIHandler(
+      std::make_unique<SshConfiguredHandler>(js_calls_container_.get()));
+
   AddScreenHandler(std::make_unique<AppLaunchSplashScreenHandler>(
       js_calls_container_.get(), network_state_informer_, error_screen));
 
@@ -635,6 +608,11 @@ void OobeUI::BindInterface(
   ash::GetNetworkConfigService(std::move(receiver));
 }
 
+void OobeUI::BindInterface(
+    mojo::PendingReceiver<cellular_setup::mojom::ESimManager> receiver) {
+  ash::GetESimManager(std::move(receiver));
+}
+
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
   display_type_ = GetDisplayType(url);
@@ -691,6 +669,15 @@ OobeUI::~OobeUI() {
 
 void OobeUI::AddOobeComponents(content::WebUIDataSource* source,
                                const base::DictionaryValue& localized_strings) {
+  source->AddResourcePath(kLoginScreenBehaviorHTML,
+                          IDR_OOBE_COMPONENTS_LOGIN_SCREEN_BEHAVIOR_HTML);
+  source->AddResourcePath(kLoginScreenBehaviorJS,
+                          IDR_OOBE_COMPONENTS_LOGIN_SCREEN_BEHAVIOR_JS);
+  source->AddResourcePath(kMultiStepBehaviorHTML,
+                          IDR_OOBE_COMPONENTS_MULTI_STEP_BEHAVIOR_HTML);
+  source->AddResourcePath(kMultiStepBehaviorJS,
+                          IDR_OOBE_COMPONENTS_MULTI_STEP_BEHAVIOR_JS);
+
   source->AddResourcePath(kI18nBehaviorHTML,
                           IDR_OOBE_COMPONENTS_I18N_BEHAVIOR_HTML);
   source->AddResourcePath(kI18nBehaviorJS,
@@ -752,6 +739,7 @@ void OobeUI::AddOobeComponents(content::WebUIDataSource* source,
 
     source->AddResourcePath("welcome_screen_animation.json",
                             IDR_LOGIN_WELCOME_SCREEN_ANIMATION);
+    source->AddResourcePath("spinner.json", IDR_LOGIN_SPINNER_ANIMATION);
     source->OverrideContentSecurityPolicy(
         network::mojom::CSPDirectiveName::WorkerSrc,
         "worker-src blob: 'self';");
@@ -872,16 +860,6 @@ void OobeUI::ShowOobeUI(bool show) {
 }
 
 void OobeUI::ShowSigninScreen(SigninScreenHandlerDelegate* delegate) {
-  // Check our device mode.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->GetDeviceMode() == policy::DEVICE_MODE_LEGACY_RETAIL_MODE) {
-    // If we're in legacy retail mode, the best thing we can do is launch the
-    // new offline demo mode.
-    LoginDisplayHost::default_host()->StartDemoAppLaunch();
-    return;
-  }
-
   signin_screen_handler_->SetDelegate(delegate);
 
   signin_screen_handler_->Show(core_handler_->show_oobe_ui());
@@ -918,6 +896,11 @@ void OobeUI::OnDisplayConfigurationChanged() {
 
 void OobeUI::SetLoginUserCount(int user_count) {
   core_handler_->SetLoginUserCount(user_count);
+}
+
+void OobeUI::OnSystemTrayBubbleShown() {
+  if (current_screen_ == WelcomeView::kScreenId)
+    GetHandler<WelcomeScreenHandler>()->CancelChromeVoxHintIdleDetection();
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(OobeUI)

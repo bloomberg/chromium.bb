@@ -14,20 +14,16 @@
 
 #include "src/type/multisampled_texture_type.h"
 
-#include <cassert>
-#include <sstream>
-
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::MultisampledTexture);
+TINT_INSTANTIATE_TYPEINFO(tint::type::MultisampledTexture);
 
 namespace tint {
 namespace type {
 
 MultisampledTexture::MultisampledTexture(TextureDimension dim, Type* type)
     : Base(dim), type_(type) {
-  assert(type_);
+  TINT_ASSERT(type_);
 }
 
 MultisampledTexture::MultisampledTexture(MultisampledTexture&&) = default;

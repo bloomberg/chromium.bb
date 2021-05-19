@@ -25,7 +25,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
@@ -38,7 +37,6 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/renderer_host.mojom.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/discardable_memory_utils.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -59,6 +57,7 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/public/platform/url_loader_throttle_provider.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/web/web_memory_statistics.h"
 #include "ui/gfx/native_widget_types.h"
@@ -79,6 +78,10 @@ namespace cc {
 class TaskGraphRunner;
 }
 
+namespace gfx {
+class RenderingPipeline;
+}
+
 namespace gpu {
 class GpuChannelHost;
 }
@@ -96,7 +99,6 @@ namespace viz {
 class ContextProviderCommandBuffer;
 class Gpu;
 class RasterContextProvider;
-class SyntheticBeginFrameSource;
 }  // namespace viz
 
 namespace content {
@@ -203,6 +205,8 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::scheduler::WebThreadScheduler* GetWebMainThreadScheduler() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   std::unique_ptr<cc::UkmRecorderFactory> CreateUkmRecorderFactory() override;
+  gfx::RenderingPipeline* GetMainThreadPipeline() override;
+  gfx::RenderingPipeline* GetCompositorThreadPipeline() override;
 
   bool IsLcdTextEnabled();
   bool IsElasticOverscrollEnabled();
@@ -256,7 +260,7 @@ class CONTENT_EXPORT RenderThreadImpl
     return cors_exempt_header_list_;
   }
 
-  URLLoaderThrottleProvider* url_loader_throttle_provider() const {
+  blink::URLLoaderThrottleProvider* url_loader_throttle_provider() const {
     return url_loader_throttle_provider_.get();
   }
 
@@ -379,6 +383,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // Sets the current pipeline rendering color space.
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space);
 
+  gfx::ColorSpace GetRenderingColorSpace();
+
   scoped_refptr<base::SingleThreadTaskRunner>
   CreateVideoFrameCompositorTaskRunner();
 
@@ -472,9 +478,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnSyncMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  std::unique_ptr<viz::SyntheticBeginFrameSource>
-  CreateSyntheticBeginFrameSource();
-
   void OnRendererInterfaceReceiver(
       mojo::PendingAssociatedReceiver<mojom::Renderer> receiver);
 
@@ -484,7 +487,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // These objects live solely on the render thread.
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
-  std::unique_ptr<URLLoaderThrottleProvider> url_loader_throttle_provider_;
+  std::unique_ptr<blink::URLLoaderThrottleProvider>
+      url_loader_throttle_provider_;
 
   std::vector<std::string> cors_exempt_header_list_;
 
@@ -517,6 +521,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Thread for running multimedia operations (e.g., video decoding).
   std::unique_ptr<base::Thread> media_thread_;
+
+  std::unique_ptr<gfx::RenderingPipeline> main_thread_pipeline_;
+  std::unique_ptr<gfx::RenderingPipeline> compositor_thread_pipeline_;
 
   // Will point to appropriate task runner after initialization,
   // regardless of whether |compositor_thread_| is overriden.

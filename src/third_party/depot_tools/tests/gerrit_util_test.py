@@ -481,6 +481,19 @@ class GerritUtilTest(unittest.TestCase):
         ],
         mockQueryChanges.mock_calls)
 
+  @mock.patch('gerrit_util.CreateHttpConn')
+  @mock.patch('gerrit_util.ReadHttpJsonResponse')
+  def testIsCodeOwnersEnabledOnRepo_Disabled(
+      self, mockJsonResponse, mockCreateHttpConn):
+    mockJsonResponse.return_value = {'status': {'disabled': True}}
+    self.assertFalse(gerrit_util.IsCodeOwnersEnabledOnRepo('host', 'repo'))
+
+  @mock.patch('gerrit_util.CreateHttpConn')
+  @mock.patch('gerrit_util.ReadHttpJsonResponse')
+  def testIsCodeOwnersEnabledOnRepo_Enabled(
+      self, mockJsonResponse, mockCreateHttpConn):
+    mockJsonResponse.return_value = {'status': {}}
+    self.assertTrue(gerrit_util.IsCodeOwnersEnabledOnRepo('host', 'repo'))
 
 if __name__ == '__main__':
   unittest.main()

@@ -322,8 +322,10 @@ void URLRequestHttpJob::CloseConnectionOnDestruction() {
   transaction_->CloseConnectionOnDestruction();
 }
 
-int URLRequestHttpJob::NotifyConnectedCallback(const TransportInfo& info) {
-  return URLRequestJob::NotifyConnected(info);
+int URLRequestHttpJob::NotifyConnectedCallback(
+    const TransportInfo& info,
+    CompletionOnceCallback callback) {
+  return URLRequestJob::NotifyConnected(info, std::move(callback));
 }
 
 void URLRequestHttpJob::NotifyHeadersComplete() {
@@ -461,6 +463,8 @@ void URLRequestHttpJob::StartTransactionInternal() {
       transaction_->SetConnectedCallback(base::BindRepeating(
           &URLRequestHttpJob::NotifyConnectedCallback, base::Unretained(this)));
       transaction_->SetRequestHeadersCallback(request_headers_callback_);
+      transaction_->SetEarlyResponseHeadersCallback(
+          early_response_headers_callback_);
       transaction_->SetResponseHeadersCallback(response_headers_callback_);
 
       if (!throttling_entry_.get() ||
@@ -497,26 +501,32 @@ void URLRequestHttpJob::AddExtraHeaders() {
       request_info_.extra_headers.SetHeader(HttpRequestHeaders::kAcceptEncoding,
                                             "identity");
     } else {
-      // Advertise "br" encoding only if transferred data is opaque to proxy.
-      bool advertise_brotli = false;
-      if (request()->context()->enable_brotli()) {
-        if (request()->url().SchemeIsCryptographic() ||
-            IsLocalhost(request()->url())) {
-          advertise_brotli = true;
-        }
-      }
-
       // Supply Accept-Encoding headers first so that it is more likely that
       // they will be in the first transmitted packet. This can sometimes make
       // it easier to filter and analyze the streams to assure that a proxy has
       // not damaged these headers. Some proxies deliberately corrupt
       // Accept-Encoding headers.
-      std::string advertised_encodings = "gzip, deflate";
-      if (advertise_brotli)
-        advertised_encodings += ", br";
-      // Tell the server what compression formats are supported.
-      request_info_.extra_headers.SetHeader(HttpRequestHeaders::kAcceptEncoding,
-                                            advertised_encodings);
+      std::vector<std::string> advertised_encoding_names;
+      if (request_->Supports(SourceStream::SourceType::TYPE_GZIP)) {
+        advertised_encoding_names.push_back("gzip");
+      }
+      if (request_->Supports(SourceStream::SourceType::TYPE_DEFLATE)) {
+        advertised_encoding_names.push_back("deflate");
+      }
+      // Advertise "br" encoding only if transferred data is opaque to proxy.
+      if (request()->context()->enable_brotli() &&
+          request_->Supports(SourceStream::SourceType::TYPE_BROTLI)) {
+        if (request()->url().SchemeIsCryptographic() ||
+            IsLocalhost(request()->url())) {
+          advertised_encoding_names.push_back("br");
+        }
+      }
+      if (!advertised_encoding_names.empty()) {
+        // Tell the server what compression formats are supported.
+        request_info_.extra_headers.SetHeader(
+            HttpRequestHeaders::kAcceptEncoding,
+            base::JoinString(base::make_span(advertised_encoding_names), ", "));
+      }
     }
   }
 
@@ -552,9 +562,9 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
                                     request_->isolation_info().request_type();
     CookieOptions::SameSiteCookieContext same_site_context =
         net::cookie_util::ComputeSameSiteContextForRequest(
-            request_->method(), request_->url(), request_->site_for_cookies(),
-            request_->initiator(), is_main_frame_navigation,
-            force_ignore_site_for_cookies);
+            request_->method(), request_->url_chain(),
+            request_->site_for_cookies(), request_->initiator(),
+            is_main_frame_navigation, force_ignore_site_for_cookies);
 
     net::SchemefulSite request_site(request_->url());
 
@@ -563,7 +573,8 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 
     CookieOptions::SamePartyCookieContextType same_party_context =
         net::cookie_util::ComputeSamePartyContext(
-            request_site, request_->isolation_info(), delegate);
+            request_site, request_->isolation_info(), delegate,
+            request_->force_ignore_top_frame_party_for_cookies());
     bool is_in_nontrivial_first_party_set =
         delegate && delegate->IsInNontrivialFirstPartySet(request_site);
     CookieOptions options = CreateCookieOptions(
@@ -717,15 +728,17 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
                                   request_->isolation_info().request_type();
   CookieOptions::SameSiteCookieContext same_site_context =
       net::cookie_util::ComputeSameSiteContextForResponse(
-          request_->url(), request_->site_for_cookies(), request_->initiator(),
-          is_main_frame_navigation, force_ignore_site_for_cookies);
+          request_->url_chain(), request_->site_for_cookies(),
+          request_->initiator(), is_main_frame_navigation,
+          force_ignore_site_for_cookies);
 
   const CookieAccessDelegate* delegate = cookie_store->cookie_access_delegate();
   net::SchemefulSite request_site(request_->url());
 
   CookieOptions::SamePartyCookieContextType same_party_context =
       net::cookie_util::ComputeSamePartyContext(
-          request_site, request_->isolation_info(), delegate);
+          request_site, request_->isolation_info(), delegate,
+          request_->force_ignore_top_frame_party_for_cookies());
   bool is_in_nontrivial_first_party_set =
       delegate && delegate->IsInNontrivialFirstPartySet(request_site);
   CookieOptions options = CreateCookieOptions(
@@ -1105,6 +1118,12 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
       case SourceStream::TYPE_BROTLI:
       case SourceStream::TYPE_DEFLATE:
       case SourceStream::TYPE_GZIP:
+        if (request_->accepted_stream_types() &&
+            !request_->accepted_stream_types()->contains(source_type)) {
+          // If the source type is disabled, we treat it
+          // in the same way as SourceStream::TYPE_UNKNOWN.
+          return upstream;
+        }
         types.push_back(source_type);
         break;
       case SourceStream::TYPE_NONE:
@@ -1400,6 +1419,13 @@ void URLRequestHttpJob::SetRequestHeadersCallback(
   DCHECK(!transaction_);
   DCHECK(!request_headers_callback_);
   request_headers_callback_ = std::move(callback);
+}
+
+void URLRequestHttpJob::SetEarlyResponseHeadersCallback(
+    ResponseHeadersCallback callback) {
+  DCHECK(!transaction_);
+  DCHECK(!early_response_headers_callback_);
+  early_response_headers_callback_ = std::move(callback);
 }
 
 void URLRequestHttpJob::SetResponseHeadersCallback(

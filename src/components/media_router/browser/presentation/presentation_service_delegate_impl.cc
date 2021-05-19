@@ -5,6 +5,7 @@
 #include "components/media_router/browser/presentation/presentation_service_delegate_impl.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -173,9 +174,9 @@ bool PresentationFrame::SetScreenAvailabilityListener(
   if (sinks_observer && sinks_observer->listener() == listener)
     return false;
 
-  sinks_observer.reset(new PresentationMediaSinksObserver(
+  sinks_observer = std::make_unique<PresentationMediaSinksObserver>(
       router_, listener, source,
-      GetLastCommittedURLForFrame(render_frame_host_id_)));
+      GetLastCommittedURLForFrame(render_frame_host_id_));
 
   if (!sinks_observer->Init()) {
     url_to_sinks_observer_.erase(source.id());
@@ -369,8 +370,8 @@ PresentationFrame* PresentationServiceDelegateImpl::GetOrAddPresentationFrame(
     const content::GlobalFrameRoutingId& render_frame_host_id) {
   auto& presentation_frame = presentation_frames_[render_frame_host_id];
   if (!presentation_frame) {
-    presentation_frame.reset(
-        new PresentationFrame(render_frame_host_id, web_contents_, router_));
+    presentation_frame = std::make_unique<PresentationFrame>(
+        render_frame_host_id, web_contents_, router_);
   }
   return presentation_frame.get();
 }
@@ -588,7 +589,12 @@ void PresentationServiceDelegateImpl::ListenForConnectionStateChange(
                                                      render_frame_id);
   const auto it = presentation_frames_.find(render_frame_host_id);
   if (it != presentation_frames_.end())
-    it->second->ListenForConnectionStateChange(connection, state_changed_cb);
+    it->second->ListenForConnectionStateChange(
+        connection,
+        base::BindRepeating(
+            &PresentationServiceDelegateImpl::OnConnectionStateChanged,
+            weak_factory_.GetWeakPtr(), render_frame_host_id, connection,
+            state_changed_cb));
 }
 
 void PresentationServiceDelegateImpl::AddObserver(
@@ -636,6 +642,16 @@ void PresentationServiceDelegateImpl::OnPresentationResponse(
   } else {
     DCHECK(!connection);
   }
+}
+std::vector<MediaRoute> PresentationServiceDelegateImpl::GetMediaRoutes() {
+  std::vector<MediaRoute> routes;
+  for (const auto& presentation_frame : presentation_frames_) {
+    for (const auto& route :
+         presentation_frame.second->presentation_id_to_route()) {
+      routes.push_back(route.second);
+    }
+  }
+  return routes;
 }
 
 base::WeakPtr<WebContentsPresentationManager>
@@ -726,15 +742,22 @@ void PresentationServiceDelegateImpl::NotifyDefaultPresentationChanged(
 }
 
 void PresentationServiceDelegateImpl::NotifyMediaRoutesChanged() {
-  std::vector<MediaRoute> routes;
-  for (const auto& presentation_frame : presentation_frames_) {
-    for (const auto& route :
-         presentation_frame.second->presentation_id_to_route()) {
-      routes.push_back(route.second);
-    }
-  }
+  auto routes = GetMediaRoutes();
   for (auto& presentation_observer : presentation_observers_)
     presentation_observer.OnMediaRoutesChanged(routes);
+}
+
+void PresentationServiceDelegateImpl::OnConnectionStateChanged(
+    const content::GlobalFrameRoutingId& render_frame_host_id,
+    const PresentationInfo& connection,
+    const content::PresentationConnectionStateChangedCallback& state_changed_cb,
+    const content::PresentationConnectionStateChangeInfo& info) {
+  if (info.state == blink::mojom::PresentationConnectionState::CLOSED ||
+      info.state == blink::mojom::PresentationConnectionState::TERMINATED) {
+    RemovePresentation(render_frame_host_id, connection.id);
+  }
+
+  state_changed_cb.Run(info);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PresentationServiceDelegateImpl)

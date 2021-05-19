@@ -57,7 +57,10 @@ PhysicalRect NGLayoutOverflowCalculator::RecalculateLayoutOverflowForFragment(
       calculator.AddChild(*box_fragment, child.offset);
     }
   }
-
+  if (fragment.IsTableNG()) {
+    if (const NGTableBorders* table_borders = fragment.TableCollapsedBorders())
+      calculator.AddTableCollapsedBorders(*table_borders);
+  }
   return calculator.Result(fragment.InflowBounds());
 }
 
@@ -107,7 +110,8 @@ const PhysicalRect NGLayoutOverflowCalculator::Result(
   PhysicalRect normal_overflow = layout_overflow_;
   normal_overflow.UniteEvenIfEmpty(inflow_overflow);
 
-  if (node_.IsInlineFormattingContextRoot())
+  if (node_.IsInlineFormattingContextRoot() || node_.IsFlexibleBox() ||
+      node_.IsGrid())
     return normal_overflow;
 
   WritingModeConverter converter(writing_direction_, size_);
@@ -208,6 +212,15 @@ void NGLayoutOverflowCalculator::AddItems(const NGFragmentItems& items) {
   AddItemsInternal(items.Items());
 }
 
+void NGLayoutOverflowCalculator::AddTableCollapsedBorders(
+    const NGTableBorders& table_borders) {
+  PhysicalRect overflow{PhysicalOffset(), size_};
+  overflow.Expand(
+      table_borders.GetCollapsedBorderVisualSizeDiff().ConvertToPhysical(
+          writing_direction_));
+  AddOverflow(overflow);
+}
+
 PhysicalRect NGLayoutOverflowCalculator::AdjustOverflowForHanging(
     const PhysicalRect& line_rect,
     PhysicalRect overflow) {
@@ -260,10 +273,16 @@ PhysicalRect NGLayoutOverflowCalculator::LayoutOverflowForPropagation(
 
   PhysicalRect overflow = {{}, child_fragment.Size()};
   const auto& child_style = child_fragment.Style();
-  if (!child_fragment.ShouldApplyLayoutContainment() &&
-      (!child_fragment.ShouldClipOverflowAlongBothAxis() ||
-       child_style.OverflowClipMargin() != LayoutUnit()) &&
-      !child_fragment.IsInlineBox()) {
+
+  // Collapsed table rows/sections set IsHiddenForPaint flag.
+  bool ignore_layout_overflow =
+      child_fragment.ShouldApplyLayoutContainment() ||
+      child_fragment.IsInlineBox() ||
+      (child_fragment.ShouldClipOverflowAlongBothAxis() &&
+       child_style.OverflowClipMargin() == LayoutUnit()) ||
+      child_fragment.IsHiddenForPaint();
+
+  if (!ignore_layout_overflow) {
     PhysicalRect child_overflow = child_fragment.LayoutOverflow();
     if (child_fragment.HasNonVisibleOverflow()) {
       const OverflowClipAxes overflow_clip_axes =

@@ -12,23 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/assignment_statement.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/location_decoration.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/pipeline_stage.h"
 #include "src/ast/stage_decoration.h"
-#include "src/ast/variable.h"
-#include "src/program.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type/void_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/msl/generator_impl.h"
 #include "src/writer/msl/test_helper.h"
 
 namespace tint {
@@ -48,18 +32,18 @@ TEST_F(MslGeneratorImplTest, Emit_Function_EntryPointData_Vertex_Input) {
   // };
 
   Global("foo", ty.f32(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(0)});
+         ast::DecorationList{create<ast::LocationDecoration>(0)});
 
   Global("bar", ty.i32(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(1)});
+         ast::DecorationList{create<ast::LocationDecoration>(1)});
 
   auto body = ast::StatementList{
       create<ast::AssignmentStatement>(Expr("foo"), Expr("foo")),
       create<ast::AssignmentStatement>(Expr("bar"), Expr("bar")),
   };
 
-  Func("vtx_main", ast::VariableList{}, ty.f32(), body,
-       ast::FunctionDecorationList{
+  Func("vtx_main", ast::VariableList{}, ty.void_(), body,
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kVertex),
        });
 
@@ -85,18 +69,18 @@ TEST_F(MslGeneratorImplTest, Emit_Function_EntryPointData_Vertex_Output) {
   // };
 
   Global("foo", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(0)});
+         ast::DecorationList{create<ast::LocationDecoration>(0)});
 
   Global("bar", ty.i32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(1)});
+         ast::DecorationList{create<ast::LocationDecoration>(1)});
 
   auto body = ast::StatementList{
       create<ast::AssignmentStatement>(Expr("foo"), Expr("foo")),
       create<ast::AssignmentStatement>(Expr("bar"), Expr("bar")),
   };
 
-  Func("vtx_main", ast::VariableList{}, ty.f32(), body,
-       ast::FunctionDecorationList{
+  Func("vtx_main", ast::VariableList{}, ty.void_(), body,
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kVertex),
        });
 
@@ -122,18 +106,18 @@ TEST_F(MslGeneratorImplTest, Emit_Function_EntryPointData_Fragment_Input) {
   // };
 
   Global("foo", ty.f32(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(0)});
+         ast::DecorationList{create<ast::LocationDecoration>(0)});
 
   Global("bar", ty.i32(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(1)});
+         ast::DecorationList{create<ast::LocationDecoration>(1)});
 
   auto body = ast::StatementList{
       create<ast::AssignmentStatement>(Expr("foo"), Expr("foo")),
       create<ast::AssignmentStatement>(Expr("bar"), Expr("bar")),
   };
 
-  Func("main", ast::VariableList{}, ty.f32(), body,
-       ast::FunctionDecorationList{
+  Func("main", ast::VariableList{}, ty.void_(), body,
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
@@ -159,18 +143,18 @@ TEST_F(MslGeneratorImplTest, Emit_Function_EntryPointData_Fragment_Output) {
   // };
 
   Global("foo", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(0)});
+         ast::DecorationList{create<ast::LocationDecoration>(0)});
 
   Global("bar", ty.i32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(1)});
+         ast::DecorationList{create<ast::LocationDecoration>(1)});
 
   auto body = ast::StatementList{
       create<ast::AssignmentStatement>(Expr("foo"), Expr("foo")),
       create<ast::AssignmentStatement>(Expr("bar"), Expr("bar")),
   };
 
-  Func("main", ast::VariableList{}, ty.f32(), body,
-       ast::FunctionDecorationList{
+  Func("main", ast::VariableList{}, ty.void_(), body,
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 
@@ -193,18 +177,18 @@ TEST_F(MslGeneratorImplTest, Emit_Function_EntryPointData_Compute_Input) {
   // -> Error, not allowed
 
   Global("foo", ty.f32(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(0)});
+         ast::DecorationList{create<ast::LocationDecoration>(0)});
 
   Global("bar", ty.i32(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(1)});
+         ast::DecorationList{create<ast::LocationDecoration>(1)});
 
   auto body = ast::StatementList{
       create<ast::AssignmentStatement>(Expr("foo"), Expr("foo")),
       create<ast::AssignmentStatement>(Expr("bar"), Expr("bar")),
   };
 
-  Func("main", ast::VariableList{}, ty.f32(), body,
-       ast::FunctionDecorationList{
+  Func("main", ast::VariableList{}, ty.void_(), body,
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kCompute),
        });
 
@@ -223,18 +207,18 @@ TEST_F(MslGeneratorImplTest, Emit_Function_EntryPointData_Compute_Output) {
   // -> Error not allowed
 
   Global("foo", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(0)});
+         ast::DecorationList{create<ast::LocationDecoration>(0)});
 
   Global("bar", ty.i32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{create<ast::LocationDecoration>(1)});
+         ast::DecorationList{create<ast::LocationDecoration>(1)});
 
   auto body = ast::StatementList{
       create<ast::AssignmentStatement>(Expr("foo"), Expr("foo")),
       create<ast::AssignmentStatement>(Expr("bar"), Expr("bar")),
   };
 
-  Func("main", ast::VariableList{}, ty.f32(), body,
-       ast::FunctionDecorationList{
+  Func("main", ast::VariableList{}, ty.void_(), body,
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kCompute),
        });
 
@@ -258,18 +242,18 @@ TEST_F(MslGeneratorImplTest, Emit_Function_EntryPointData_Builtins) {
   // };
 
   Global("coord", ty.vec4<f32>(), ast::StorageClass::kInput, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BuiltinDecoration>(ast::Builtin::kFragCoord)});
 
   Global("depth", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BuiltinDecoration>(ast::Builtin::kFragDepth)});
 
   auto body = ast::StatementList{create<ast::AssignmentStatement>(
       Expr("depth"), MemberAccessor("coord", "x"))};
 
   Func("main", ast::VariableList{}, ty.void_(), body,
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 

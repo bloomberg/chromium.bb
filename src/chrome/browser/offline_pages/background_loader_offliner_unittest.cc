@@ -16,7 +16,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/offline_pages/offliner_helper.h"
-#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -29,7 +28,6 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/previews_user_data.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/mhtml_extra_parts.h"
 #include "content/public/browser/web_contents.h"
@@ -266,8 +264,9 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
     offliner_->SetBackgroundSnapshotControllerForTest(
         std::move(snapshot_controller));
     // Call complete loading.
-    offliner()->DocumentAvailableInMainFrame();
-    offliner()->DocumentOnLoadCompletedInMainFrame();
+    auto* main_frame = offliner()->web_contents()->GetMainFrame();
+    offliner()->DocumentAvailableInMainFrame(main_frame);
+    offliner()->DocumentOnLoadCompletedInMainFrame(main_frame);
     PumpLoop();
   }
 
@@ -845,7 +844,8 @@ TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithLowBarStartedTriesMet) {
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
   // Guarantees low bar for saving is met.
-  offliner()->DocumentAvailableInMainFrame();
+  auto* main_frame = offliner()->web_contents()->GetMainFrame();
+  offliner()->DocumentAvailableInMainFrame(main_frame);
   // Timeout
   EXPECT_TRUE(offliner()->HandleTimeout(kRequestId));
   EXPECT_TRUE(SaveInProgress());
@@ -862,7 +862,8 @@ TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithLowBarCompletedTriesMet) {
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
   // Guarantees low bar for saving is met.
-  offliner()->DocumentAvailableInMainFrame();
+  auto* main_frame = offliner()->web_contents()->GetMainFrame();
+  offliner()->DocumentAvailableInMainFrame(main_frame);
   // Timeout
   EXPECT_TRUE(offliner()->HandleTimeout(kRequestId));
   EXPECT_TRUE(SaveInProgress());
@@ -903,7 +904,8 @@ TEST_F(BackgroundLoaderOfflinerTest, HandleTimeoutWithLowBarNoRetryLimit) {
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
   // Sets lowbar.
-  offliner()->DocumentAvailableInMainFrame();
+  auto* main_frame = offliner()->web_contents()->GetMainFrame();
+  offliner()->DocumentAvailableInMainFrame(main_frame);
   // Timeout
   EXPECT_FALSE(offliner()->HandleTimeout(kRequestId));
   EXPECT_FALSE(SaveInProgress());

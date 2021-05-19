@@ -192,7 +192,7 @@ This file contains the strings for ash.
         Learn more
       </message>
       <message name="IDS_EXO_UI_LOCK_NOTIFICATION_BUBBLE_MESSAGE" desc="The text string prompting users on how to exit non-immersive fullscreen mode.">
-        Press and hold [Esc] to exit.
+        Press and hold [Esc] to exit full screen
       </message>
 
       <!-- Status tray items -->
@@ -1572,6 +1572,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_ACTIVATE" desc="The label used in quick settings to indicate an unactivated cellular network that can be clicked to launch activation through setup flow. [CHAR_LIMIT=29]">
         Click to activate
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_UNLOCK" desc="The label used in quick settings to indicate a cellular network is locked and clicking on it will open unlock dialog in chrome OS settings. [CHAR_LIMIT=29]">
+        Click to unlock
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_SIGN_IN_TO_UNLOCK" desc="The label used in quick settings to indicate a cellular network is locked, after signing in the user can unlock the network. [CHAR_LIMIT=29]">
+        Sign in to unlock
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_SECURED" desc="a11y label used when a Wi-Fi network is secured. [CHAR_LIMIT=14]">
         Secured
       </message>
@@ -2084,6 +2090,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CELLULAR_ADDRESS" desc="The label for the mac address of the cellular device.">
         Cellular: <ph name="ADDRESS">$1<ex>01:23:45:67:89:AB</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR" desc="When the modem is rebooting, it cannot process any new commands, so we disable the button and show this message in the tooltip.">
+        Modem reboot. Wait 30 sec before trying again.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
         Initializing...
@@ -2977,9 +2986,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_TECHNICAL" desc="Message shown in an onboarding suggestion in Assistant UI to initiate a technical query.">
         Take a screenshot
       </message>
-      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE" desc="Title for Assistant timer notification.">
-        Time's up
-      </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE" desc="Message for Assistant timer notification. Example: 10m timer.">
         <ph name="TOTAL_TIME">{0}<ex>10m</ex></ph> timer
       </message>
@@ -3124,6 +3130,9 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_RETRY" desc="Display text when the Quick Answers view is retry.">
         Retry
       </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_VIEW_NO_RESULT" desc="Display text when the Quick Answers view receives no result.">
+        See result in Assistant
+      </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_ALERT_TEXT" desc="A11y alert text for the Quick Answers view.">
         Info related to your selection available. Use Up arrow key to access.
       </message>
@@ -3219,11 +3228,17 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_ALT_TAB_CURRENT_DESK_MODE_SELECTED_TITLE" desc="Accessibility text read by ChromeVox to indicate that alt-tab is in the current-desk mode.">
         Show windows from the current desk, radio button selected
       </message>
-      <message name="IDS_ASH_ALT_TAB_FOCUS_WINDOW_LIST_TITLE" desc="Accessibility text read by ChromeVox to suggest that the user can continue cycling the window list by pressing Down arrow key.">
+      <message name="IDS_ASH_ALT_TAB_FOCUS_WINDOW_LIST_TITLE" desc="Accessibility text read by ChromeVox to suggest that the user can continue cycling the window list by pressing the Down arrow key.">
         Press the Down arrow key to switch windows
       </message>
       <message name="IDS_ASH_ALT_TAB_WINDOW_SELECTED_TITLE" desc="Accessibility text read by ChromeVox to inform that the window is selected during alt-tab mode switching.">
         <ph name="WINDOW_TITLE">$1<ex>Chrome New tab</ex></ph> window selected
+      </message>
+      <message name="IDS_ASH_ALT_TAB_FOCUS_ALL_DESKS_MODE" desc="Accessibility text read by ChromeVox when starting alt-tab right after announcing the window title to suggest that the user can switch from the all-desks mode to the current-desk mode by pressing the Up arrow key.">
+        Showing windows from all desks, press the Up arrow key to show windows from the current desk
+      </message>
+      <message name="IDS_ASH_ALT_TAB_FOCUS_CURRENT_DESK_MODE" desc="Accessibility text read by ChromeVox when starting alt-tab right after announcing the window title to suggest that the user can switch from the current-desk mode to the all-desks mode by pressing the Up arrow key.">
+        Showing windows from the current desk, press the Up arrow key to show windows from all desks
       </message>
 
       <!-- Back gesture -->
@@ -3510,6 +3525,10 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SHORTCUT_DEPRECATION_ALT_CLICK" desc="Message telling user to use search/launcher click instead of alt click to emulate a right click. The name of the launcher key varies by device and may be either Search or Launcher depending on the glyph on the keyboard." translateable="false">
         The Alt + click keyboard shortcut has changed. To use your keyboard to right-click, press the <ph name="LAUNCHER_KEY_NAME">$1<ex>Launcher</ex></ph> key + click.
       </message>
+      <message name="IDS_ASH_SHORTCUT_DEPRECATION_FKEY" desc="Message telling user to use search/launcher + top row key instead of Search + a digit key to emulate a F-Key. The name of the launcher key varies by device and may be either Search or Launcher depending on the glyph on the keyboard." translateable="false">
+        The Search + Digit keyboard shortcut has changed. To generate F-Keys, press the <ph name="LAUNCHER_KEY_NAME">$1<ex>Launcher</ex></ph> key + a key on the top row.
+      </message>
+
 
       <!-- PciePeripheral notifications -->
       <message name="IDS_ASH_PCIE_PERIPHERAL_NOTIFICATION_PERFORMANCE_LIMITED_TITLE" desc="Notification title to indicate to users that their peripheral device's performance may be limited.">
@@ -3528,7 +3547,13 @@ Here are some things you can try to get started.
         Peripheral performance may be limited in Guest mode
       </message>
       <message name="IDS_ASH_PCIE_PERIPHERAL_NOTIFICATION_GUEST_MODE_NOT_SUPPORTED" desc="Notification body text that explains to the user that their peripheral is not supported in Guest mode due to security reasons.">
-        Peripheral not supported in Guest mode for security reasons
+        Peripheral not supported in Guest mode
+      </message>
+      <message name="IDS_ASH_PCIE_PERIPHERAL_NOTIFICATION_DEVICE_BLOCKED_TITLE" desc="Notification title that indicates to the user that their peripheral is not supported due to security reasons.">
+        Peripheral not supported
+      </message>
+      <message name="IDS_ASH_PCIE_PERIPHERAL_NOTIFICATION_DEVICE_BLOCKED_BODY" desc="Notification body text that explains to the user that their peripheral is not supported because it is not part of the approved peripherals list.">
+        Only approved Thunderbolt devices are compatible with your Chromebook
       </message>
     </messages>
   </release>

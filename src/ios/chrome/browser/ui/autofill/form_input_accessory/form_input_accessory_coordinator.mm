@@ -8,11 +8,13 @@
 
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
@@ -158,7 +160,8 @@
   [self.childCoordinators removeAllObjects];
 }
 
-- (void)startPasswordsFromButton:(UIButton*)button {
+- (void)startPasswordsFromButton:(UIButton*)button
+          invokedOnPasswordField:(BOOL)invokedOnPasswordField {
   WebStateList* webStateList = self.browser->GetWebStateList();
   DCHECK(webStateList->GetActiveWebState());
   const GURL& URL = webStateList->GetActiveWebState()->GetLastCommittedURL();
@@ -167,7 +170,8 @@
           initWithBaseViewController:self.baseViewController
                              browser:self.browser
                                  URL:URL
-                    injectionHandler:self.injectionHandler];
+                    injectionHandler:self.injectionHandler
+              invokedOnPasswordField:invokedOnPasswordField];
   passwordCoordinator.delegate = self;
   if (IsIPadIdiom()) {
     [passwordCoordinator presentFromButton:button];
@@ -249,7 +253,10 @@
 
 - (void)passwordButtonPressed:(UIButton*)sender {
   [self stopChildren];
-  [self startPasswordsFromButton:sender];
+  BOOL invokedOnPasswordField =
+      [self.formInputAccessoryMediator lastFocusedFieldWasPassword];
+  [self startPasswordsFromButton:sender
+          invokedOnPasswordField:invokedOnPasswordField];
   [self.formInputAccessoryViewController lockManualFallbackView];
   [self.formInputAccessoryMediator disableSuggestions];
 }
@@ -266,6 +273,9 @@
 - (void)openPasswordSettings {
   [self reset];
   [self.navigator openPasswordSettings];
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.ManagePasswordsReferrer",
+      password_manager::ManagePasswordsReferrer::kPasswordsAccessorySheet);
 }
 
 - (void)openAllPasswordsPicker {
@@ -351,7 +361,7 @@
 - (void)showConfirmationDialogToUseOtherPassword {
   WebStateList* webStateList = self.browser->GetWebStateList();
   const GURL& URL = webStateList->GetActiveWebState()->GetLastCommittedURL();
-  base::string16 origin = base::ASCIIToUTF16(
+  std::u16string origin = base::ASCIIToUTF16(
       password_manager::GetShownOrigin(url::Origin::Create(URL)));
   NSString* title =
       l10n_util::GetNSString(IDS_IOS_CONFIRM_USING_OTHER_PASSWORD_TITLE);

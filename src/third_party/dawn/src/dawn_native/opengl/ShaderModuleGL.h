@@ -46,9 +46,9 @@ namespace dawn_native { namespace opengl {
 
     class ShaderModule final : public ShaderModuleBase {
       public:
-        static ResultOrError<ShaderModule*> Create(Device* device,
-                                                   const ShaderModuleDescriptor* descriptor,
-                                                   ShaderModuleParseResult* parseResult);
+        static ResultOrError<Ref<ShaderModule>> Create(Device* device,
+                                                       const ShaderModuleDescriptor* descriptor,
+                                                       ShaderModuleParseResult* parseResult);
 
         std::string TranslateToGLSL(const char* entryPointName,
                                     SingleShaderStage stage,
@@ -61,7 +61,8 @@ namespace dawn_native { namespace opengl {
         ~ShaderModule() override = default;
         MaybeError Initialize(ShaderModuleParseResult* parseResult);
 
-        std::vector<uint32_t> mSpirv;
+        std::vector<uint32_t> mGLSpirv;
+        EntryPointMetadataTable mGLEntryPoints;
     };
 
 }}  // namespace dawn_native::opengl

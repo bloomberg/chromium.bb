@@ -14,10 +14,9 @@
 
 #include "src/ast/constant_id_decoration.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::ConstantIdDecoration);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::ConstantIdDecoration);
 
 namespace tint {
 namespace ast {

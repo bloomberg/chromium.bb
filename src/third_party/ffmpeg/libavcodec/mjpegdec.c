@@ -51,40 +51,6 @@
 #include "bytestream.h"
 
 
-static void build_huffman_codes(uint8_t *huff_size, const uint8_t *bits_table)
-{
-    for (int i = 1, k = 0; i <= 16; i++) {
-        int nb = bits_table[i];
-        for (int j = 0; j < nb;j++) {
-            huff_size[k] = i;
-            k++;
-        }
-    }
-}
-
-static int build_vlc(VLC *vlc, const uint8_t *bits_table,
-                     const uint8_t *val_table, int nb_codes,
-                     int is_ac, void *logctx)
-{
-    uint8_t huff_size[256];
-    uint16_t huff_sym[256];
-    int i;
-
-    av_assert0(nb_codes <= 256);
-
-    build_huffman_codes(huff_size, bits_table);
-
-    for (i = 0; i < nb_codes; i++) {
-        huff_sym[i] = val_table[i] + 16 * is_ac;
-
-        if (is_ac && !val_table[i])
-            huff_sym[i] = 16 * 256;
-    }
-
-    return ff_init_vlc_from_lengths(vlc, 9, nb_codes, huff_size, 1,
-                                    huff_sym, 2, 2, 0, 0, logctx);
-}
-
 static int init_default_huffman_tables(MJpegDecodeContext *s)
 {
     static const struct {
@@ -110,9 +76,9 @@ static int init_default_huffman_tables(MJpegDecodeContext *s)
     int i, ret;
 
     for (i = 0; i < FF_ARRAY_ELEMS(ht); i++) {
-        ret = build_vlc(&s->vlcs[ht[i].class][ht[i].index],
-                        ht[i].bits, ht[i].values, ht[i].length,
-                        ht[i].class == 1, s->avctx);
+        ret = ff_mjpeg_build_vlc(&s->vlcs[ht[i].class][ht[i].index],
+                                 ht[i].bits, ht[i].values,
+                                 ht[i].class == 1, s->avctx);
         if (ret < 0)
             return ret;
 
@@ -172,7 +138,7 @@ av_cold int ff_mjpeg_decode_init(AVCodecContext *avctx)
     s->start_code    = -1;
     s->first_picture = 1;
     s->got_picture   = 0;
-    s->org_height    = avctx->coded_height;
+    s->orig_height    = avctx->coded_height;
     avctx->chroma_sample_location = AVCHROMA_LOC_CENTER;
     avctx->colorspace = AVCOL_SPC_BT470BG;
     s->hwaccel_pix_fmt = s->hwaccel_sw_pix_fmt = AV_PIX_FMT_NONE;
@@ -307,14 +273,14 @@ int ff_mjpeg_decode_dht(MJpegDecodeContext *s)
         ff_free_vlc(&s->vlcs[class][index]);
         av_log(s->avctx, AV_LOG_DEBUG, "class=%d index=%d nb_codes=%d\n",
                class, index, n);
-        if ((ret = build_vlc(&s->vlcs[class][index], bits_table, val_table,
-                             n, class > 0, s->avctx)) < 0)
+        if ((ret = ff_mjpeg_build_vlc(&s->vlcs[class][index], bits_table,
+                                      val_table, class > 0, s->avctx)) < 0)
             return ret;
 
         if (class > 0) {
             ff_free_vlc(&s->vlcs[2][index]);
-            if ((ret = build_vlc(&s->vlcs[2][index], bits_table, val_table,
-                                 n, 0, s->avctx)) < 0)
+            if ((ret = ff_mjpeg_build_vlc(&s->vlcs[2][index], bits_table,
+                                          val_table, 0, s->avctx)) < 0)
                 return ret;
         }
 
@@ -466,8 +432,8 @@ int ff_mjpeg_decode_sof(MJpegDecodeContext *s)
         /* test interlaced mode */
         if (s->first_picture   &&
             (s->multiscope != 2 || s->avctx->time_base.den >= 25 * s->avctx->time_base.num) &&
-            s->org_height != 0 &&
-            s->height < ((s->org_height * 3) / 4)) {
+            s->orig_height != 0 &&
+            s->height < ((s->orig_height * 3) / 4)) {
             s->interlaced                    = 1;
             s->bottom_field                  = s->interlace_polarity;
             s->picture_ptr->interlaced_frame = 1;
@@ -478,6 +444,11 @@ int ff_mjpeg_decode_sof(MJpegDecodeContext *s)
         ret = ff_set_dimensions(s->avctx, width, height);
         if (ret < 0)
             return ret;
+
+        if ((s->avctx->codec_tag == MKTAG('A', 'V', 'R', 'n') ||
+             s->avctx->codec_tag == MKTAG('A', 'V', 'D', 'J')) &&
+            s->orig_height < height)
+            s->avctx->height = AV_CEIL_RSHIFT(s->orig_height, s->avctx->lowres);
 
         s->first_picture = 0;
     } else {
@@ -2605,21 +2576,13 @@ eoi_parser:
             s->got_picture = 0;
 
             frame->pkt_dts = s->pkt->dts;
-            frame->best_effort_timestamp = s->pkt->pts;
 
-            if (!s->lossless) {
+            if (!s->lossless && avctx->debug & FF_DEBUG_QP) {
                 int qp = FFMAX3(s->qscale[0],
                                 s->qscale[1],
                                 s->qscale[2]);
-                int qpw = (s->width + 15) / 16;
-                AVBufferRef *qp_table_buf = av_buffer_alloc(qpw);
-                if (qp_table_buf) {
-                    memset(qp_table_buf->data, qp, qpw);
-                    av_frame_set_qp_table(frame, qp_table_buf, 0, FF_QSCALE_TYPE_MPEG1);
-                }
 
-                if(avctx->debug & FF_DEBUG_QP)
-                    av_log(avctx, AV_LOG_DEBUG, "QP: %d\n", qp);
+                av_log(avctx, AV_LOG_DEBUG, "QP: %d\n", qp);
             }
 
             goto the_end;
@@ -2897,6 +2860,12 @@ the_end:
             return ret;
         }
     }
+    if ((avctx->codec_tag == MKTAG('A', 'V', 'R', 'n') ||
+         avctx->codec_tag == MKTAG('A', 'V', 'D', 'J')) &&
+        avctx->coded_height > s->orig_height) {
+        frame->height   = AV_CEIL_RSHIFT(avctx->coded_height, avctx->lowres);
+        frame->crop_top = frame->height - avctx->height;
+    }
 
     ret = 0;
 
@@ -2991,7 +2960,7 @@ AVCodec ff_mjpeg_decoder = {
     .profiles       = NULL_IF_CONFIG_SMALL(ff_mjpeg_profiles),
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP |
                       FF_CODEC_CAP_SKIP_FRAME_FILL_PARAM | FF_CODEC_CAP_SETS_PKT_DTS,
-    .hw_configs     = (const AVCodecHWConfigInternal*[]) {
+    .hw_configs     = (const AVCodecHWConfigInternal *const []) {
 #if CONFIG_MJPEG_NVDEC_HWACCEL
                         HWACCEL_NVDEC(mjpeg),
 #endif
@@ -3033,6 +3002,6 @@ AVCodec ff_smvjpeg_decoder = {
     .flush          = decode_flush,
     .capabilities   = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_EXPORTS_CROPPING |
-                      FF_CODEC_CAP_SETS_PKT_DTS,
+                      FF_CODEC_CAP_SETS_PKT_DTS | FF_CODEC_CAP_INIT_CLEANUP,
 };
 #endif

@@ -22,7 +22,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaControlsProgressView
  public:
   METADATA_HEADER(MediaControlsProgressView);
   explicit MediaControlsProgressView(
-      base::RepeatingCallback<void(double)> seek_callback);
+      base::RepeatingCallback<void(double)> seek_callback,
+      bool is_modern_notification = false);
   MediaControlsProgressView(const MediaControlsProgressView&) = delete;
   MediaControlsProgressView& operator=(const MediaControlsProgressView&) =
       delete;
@@ -32,25 +33,28 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaControlsProgressView
 
   void SetForegroundColor(SkColor color);
   void SetBackgroundColor(SkColor color);
+  void SetTextColor(SkColor color);
 
   // views::View:
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   const views::ProgressBar* progress_bar_for_testing() const;
-  const base::string16& progress_time_for_testing() const;
-  const base::string16& duration_for_testing() const;
+  const std::u16string& progress_time_for_testing() const;
+  const std::u16string& duration_for_testing() const;
 
  private:
   void SetBarProgress(double progress);
-  void SetProgressTime(const base::string16& time);
-  void SetDuration(const base::string16& duration);
+  void SetProgressTime(const std::u16string& time);
+  void SetDuration(const std::u16string& duration);
 
   void HandleSeeking(const gfx::Point& location);
 
   views::ProgressBar* progress_bar_;
   views::Label* progress_time_;
   views::Label* duration_;
+
+  const bool is_modern_notification_;
 
   // Timer to continually update the progress.
   base::RepeatingTimer update_progress_timer_;

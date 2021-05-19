@@ -49,6 +49,7 @@
 #include "components/autofill/core/browser/logging/log_receiver.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill_assistant/browser/public/runtime_manager.h"
+#include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/password_manager/content/browser/bad_message.h"
@@ -369,10 +370,11 @@ void ChromePasswordManagerClient::HideManualFallbackForSaving() {
 
 void ChromePasswordManagerClient::FocusedInputChanged(
     PasswordManagerDriver* driver,
+    autofill::FieldRendererId focused_field_id,
     autofill::mojom::FocusedFieldType focused_field_type) {
 #if defined(OS_ANDROID)
   ManualFillingController::GetOrCreate(web_contents())
-      ->NotifyFocusedInputChanged(focused_field_type);
+      ->NotifyFocusedInputChanged(focused_field_id, focused_field_type);
   password_manager::ContentPasswordManagerDriver* content_driver =
       static_cast<password_manager::ContentPasswordManagerDriver*>(driver);
   if (!PasswordAccessoryControllerImpl::ShouldAcceptFocusEvent(
@@ -434,7 +436,7 @@ void ChromePasswordManagerClient::ShowTouchToFill(
 
 #if defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnPasswordSelected(
-    const base::string16& text) {
+    const std::u16string& text) {
   password_reuse_detection_manager_.OnPaste(text);
 }
 #endif
@@ -557,9 +559,8 @@ void ChromePasswordManagerClient::AutofillHttpAuth(
 
 void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
-    password_manager::CompromisedSitesCount saved_sites,
     const GURL& origin,
-    const base::string16& username) {
+    const std::u16string& username) {
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(
           password_manager::features::kPasswordScriptsFetching) &&
@@ -580,8 +581,7 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
   }
 
   (new CredentialLeakControllerAndroid(
-       leak_type, saved_sites, origin, username,
-       web_contents()->GetTopLevelNativeWindow()))
+       leak_type, origin, username, web_contents()->GetTopLevelNativeWindow()))
       ->ShowDialog();
 #else   // !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
@@ -913,8 +913,7 @@ bool ChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
 
 bool ChromePasswordManagerClient::IsNewTabPage() const {
   auto origin = GetLastCommittedURL().GetOrigin();
-  return origin == GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin() ||
-         origin == GURL(chrome::kChromeUINewTabPageURL).GetOrigin() ||
+  return origin == GURL(chrome::kChromeUINewTabPageURL).GetOrigin() ||
          origin == GURL(chrome::kChromeUINewTabURL).GetOrigin();
 }
 
@@ -971,7 +970,7 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     const gfx::RectF& bounds,
     const autofill::FormData& form_data,
     autofill::FieldRendererId field_renderer_id,
-    const base::string16& password_value) {
+    const std::u16string& password_value) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
           password_generation_driver_receivers_.GetCurrentTargetFrame(),
           form_data.url,
@@ -984,7 +983,7 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
           password_generation_driver_receivers_.GetCurrentTargetFrame(),
           bounds));
   autofill::password_generation::PasswordGenerationUIData ui_data(
-      bounds, /*max_length=*/0, /*generation_element=*/base::string16(),
+      bounds, /*max_length=*/0, /*generation_element=*/std::u16string(),
       field_renderer_id, /*is_generation_element_password_type=*/true,
       base::i18n::TextDirection(), form_data);
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
@@ -1004,7 +1003,7 @@ void ChromePasswordManagerClient::PasswordGenerationRejectedByTyping() {
 
 void ChromePasswordManagerClient::PresaveGeneratedPassword(
     const autofill::FormData& form_data,
-    const base::string16& password_value) {
+    const std::u16string& password_value) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
           password_generation_driver_receivers_.GetCurrentTargetFrame(),
           form_data.url,
@@ -1054,12 +1053,12 @@ void ChromePasswordManagerClient::GenerationElementLostFocus() {
 
 #if defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnImeTextCommittedEvent(
-    const base::string16& text_str) {
+    const std::u16string& text_str) {
   password_reuse_detection_manager_.OnKeyPressedCommitted(text_str);
 }
 
 void ChromePasswordManagerClient::OnImeSetComposingTextEvent(
-    const base::string16& text_str) {
+    const std::u16string& text_str) {
   last_composing_text_ = text_str;
   password_reuse_detection_manager_.OnKeyPressedUncommitted(
       last_composing_text_);
@@ -1112,7 +1111,10 @@ void ChromePasswordManagerClient::BindCredentialManager(
   // next call is made, if it has become disconnected.
   // TODO(https://crbug.com/1015358): Remove this workaround.
   content::BackForwardCache::DisableForRenderFrameHost(
-      render_frame_host, "ChromePasswordManagerClient::BindCredentialManager");
+      render_frame_host,
+      back_forward_cache::DisabledReason(
+          back_forward_cache::DisabledReasonId::
+              kChromePasswordManagerClient_BindCredentialManager));
 
   instance->content_credential_manager_.BindRequest(std::move(receiver));
 }
@@ -1252,7 +1254,7 @@ void ChromePasswordManagerClient::WebContentsDestroyed() {
 
 #if !defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnPaste() {
-  base::string16 text;
+  std::u16string text;
   bool used_crosapi_workaround = false;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // On Lacros, the ozone/wayland clipboard implementation is asynchronous by
@@ -1263,12 +1265,13 @@ void ChromePasswordManagerClient::OnPaste() {
   // TODO(https://crbug.com/913422): This logic can be removed once all
   // clipboard APIs are async.
   auto* service = chromeos::LacrosChromeServiceImpl::Get();
-  if (service->IsClipboardAvailable()) {
+  if (service->IsAvailable<crosapi::mojom::Clipboard>()) {
     used_crosapi_workaround = true;
     std::string text_utf8;
     {
       crosapi::ScopedAllowSyncCall allow_sync_call;
-      service->clipboard_remote()->GetCopyPasteText(&text_utf8);
+      service->GetRemote<crosapi::mojom::Clipboard>()->GetCopyPasteText(
+          &text_utf8);
     }
     text = base::UTF8ToUTF16(text_utf8);
   }
@@ -1437,7 +1440,8 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
   gfx::RectF element_bounds_in_screen_space =
       GetBoundsInScreenSpace(element_bounds_in_top_frame_space);
   password_manager_.SetGenerationElementAndTypeForForm(
-      driver, ui_data.form_data, ui_data.generation_element_id, type);
+      driver, ui_data.form_data.unique_renderer_id,
+      ui_data.generation_element_id, type);
 
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
       popup_controller_, element_bounds_in_screen_space, ui_data,

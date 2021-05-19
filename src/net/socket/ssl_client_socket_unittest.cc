@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <memory>
 #include <tuple>
 #include <utility>
 
@@ -23,6 +24,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -125,6 +127,15 @@ const uint8_t kGoodHashValueVectorInput = 0;
 // TestSPKI pin.
 const uint8_t kBadHashValueVectorInput = 3;
 
+// TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+constexpr uint16_t kModernTLS12Cipher = 0xc02f;
+// TLS_RSA_WITH_AES_128_GCM_SHA256
+constexpr uint16_t kRSACipher = 0x009c;
+// TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+constexpr uint16_t kCBCCipher = 0xc013;
+// TLS_RSA_WITH_3DES_EDE_CBC_SHA
+constexpr uint16_t k3DESCipher = 0x000a;
+
 // Simulates synchronously receiving an error during Read() or Write()
 class SynchronousErrorStreamSocket : public WrappedStreamSocket {
  public:
@@ -218,6 +229,7 @@ class FakeBlockingStreamSocket : public WrappedStreamSocket {
   int ReadIfReady(IOBuffer* buf,
                   int buf_len,
                   CompletionOnceCallback callback) override;
+  int CancelReadIfReady() override;
   int Write(IOBuffer* buf,
             int buf_len,
             CompletionOnceCallback callback,
@@ -358,6 +370,12 @@ int FakeBlockingStreamSocket::ReadIfReady(IOBuffer* buf,
   return rv;
 }
 
+int FakeBlockingStreamSocket::CancelReadIfReady() {
+  DCHECK(!read_if_ready_callback_.is_null());
+  read_if_ready_callback_.Reset();
+  return OK;
+}
+
 int FakeBlockingStreamSocket::Write(
     IOBuffer* buf,
     int len,
@@ -418,7 +436,7 @@ void FakeBlockingStreamSocket::WaitForReadResult() {
 
   if (pending_read_result_ != ERR_IO_PENDING)
     return;
-  read_loop_.reset(new base::RunLoop);
+  read_loop_ = std::make_unique<base::RunLoop>();
   read_loop_->Run();
   read_loop_.reset();
   DCHECK_NE(ERR_IO_PENDING, pending_read_result_);
@@ -461,7 +479,7 @@ void FakeBlockingStreamSocket::WaitForWrite() {
 
   if (pending_write_buf_.get())
     return;
-  write_loop_.reset(new base::RunLoop);
+  write_loop_ = std::make_unique<base::RunLoop>();
   write_loop_->Run();
   write_loop_.reset();
   DCHECK(pending_write_buf_.get());
@@ -485,12 +503,13 @@ void FakeBlockingStreamSocket::OnReadCompleted(int result) {
 
 void FakeBlockingStreamSocket::CompleteReadIfReady(scoped_refptr<IOBuffer> buf,
                                                    int rv) {
-  DCHECK(read_if_ready_callback_);
   DCHECK(read_if_ready_buf_.empty());
   DCHECK(!should_block_read_);
   if (rv > 0)
     read_if_ready_buf_ = std::string(buf->data(), buf->data() + rv);
-  std::move(read_if_ready_callback_).Run(rv > 0 ? OK : rv);
+  // The callback may be null if CancelReadIfReady() was called.
+  if (!read_if_ready_callback_.is_null())
+    std::move(read_if_ready_callback_).Run(rv > 0 ? OK : rv);
 }
 
 void FakeBlockingStreamSocket::ReturnReadResult() {
@@ -1157,7 +1176,7 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
       TestCompletionCallback* callback,
       FakeBlockingStreamSocket** out_raw_transport,
       std::unique_ptr<SSLClientSocket>* out_sock) {
-    CHECK(spawned_test_server());
+    CHECK(embedded_test_server());
 
     std::unique_ptr<StreamSocket> real_transport(
         new TCPClientSocket(addr(), nullptr, nullptr, nullptr, NetLogSource()));
@@ -1168,8 +1187,7 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
 
     FakeBlockingStreamSocket* raw_transport = transport.get();
     std::unique_ptr<SSLClientSocket> sock = CreateSSLClientSocket(
-        std::move(transport), spawned_test_server()->host_port_pair(),
-        client_config);
+        std::move(transport), host_port_pair(), client_config);
 
     // Connect. Stop before the client processes the first server leg
     // (ServerHello, etc.)
@@ -1195,10 +1213,11 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
     *out_sock = std::move(sock);
   }
 
-  void TestFalseStart(const SpawnedTestServer::SSLOptions& server_options,
+  void TestFalseStart(const SSLServerConfig& server_config,
                       const SSLConfig& client_config,
                       bool expect_false_start) {
-    ASSERT_TRUE(StartTestServer(server_options));
+    ASSERT_TRUE(
+        StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
     TestCompletionCallback callback;
     FakeBlockingStreamSocket* raw_transport = nullptr;
@@ -1313,7 +1332,7 @@ std::unique_ptr<test_server::HttpResponse> HandleZeroRTTRequest(
     }
   }
 
-  return std::unique_ptr<ZeroRTTResponse>(new ZeroRTTResponse(zero_rtt));
+  return std::make_unique<ZeroRTTResponse>(zero_rtt);
 }
 
 class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
@@ -1353,8 +1372,8 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
     SSLConfig ssl_config;
     ssl_config.early_data_enabled = early_data_enabled;
 
-    real_transport_.reset(
-        new TCPClientSocket(addr(), nullptr, nullptr, nullptr, NetLogSource()));
+    real_transport_ = std::make_unique<TCPClientSocket>(
+        addr(), nullptr, nullptr, nullptr, NetLogSource());
     std::unique_ptr<FakeBlockingStreamSocket> transport(
         new FakeBlockingStreamSocket(std::move(real_transport_)));
     FakeBlockingStreamSocket* raw_transport = transport.get();
@@ -2461,17 +2480,14 @@ TEST_F(SSLClientSocketTest, PrematureApplicationData) {
 }
 
 TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
-  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-  static const uint16_t kTestCipher = 0xc02f;
-
   SSLServerConfig server_config;
   server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-  server_config.cipher_suite_for_testing = kTestCipher;
+  server_config.cipher_suite_for_testing = kModernTLS12Cipher;
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   SSLContextConfig ssl_context_config;
-  ssl_context_config.disabled_cipher_suites.push_back(kTestCipher);
+  ssl_context_config.disabled_cipher_suites.push_back(kModernTLS12Cipher);
   ssl_config_service_->UpdateSSLConfigAndNotify(ssl_context_config);
 
   int rv;
@@ -3160,11 +3176,12 @@ TEST_F(SSLClientSocketTest, SessionResumption_RSA) {
   for (bool use_rsa : {false, true}) {
     SCOPED_TRACE(use_rsa);
 
-    SpawnedTestServer::SSLOptions ssl_options;
-    ssl_options.key_exchanges =
-        use_rsa ? SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA
-                : SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
-    ASSERT_TRUE(StartTestServer(ssl_options));
+    SSLServerConfig server_config;
+    server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+    server_config.cipher_suite_for_testing =
+        use_rsa ? kRSACipher : kModernTLS12Cipher;
+    ASSERT_TRUE(
+        StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
     SSLConfig ssl_config;
     ssl_client_session_cache_->Flush();
 
@@ -3212,17 +3229,11 @@ TEST_F(SSLClientSocketTest, SessionResumption_RSA) {
 }
 
 // Tests that ALPN works with session resumption.
-// Failed on Android, see https://crbug.com/1014556.
-#if defined(OS_ANDROID)
-#define MAYBE_SessionResumptionAlpn DISABLED_SessionResumptionAlpn
-#else
-#define MAYBE_SessionResumptionAlpn SessionResumptionAlpn
-#endif
-TEST_F(SSLClientSocketTest, MAYBE_SessionResumptionAlpn) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.alpn_protocols.push_back("h2");
-  ssl_options.alpn_protocols.push_back("http/1.1");
-  ASSERT_TRUE(StartTestServer(ssl_options));
+TEST_F(SSLClientSocketTest, SessionResumptionAlpn) {
+  SSLServerConfig server_config;
+  server_config.alpn_protos = {NextProto::kProtoHTTP2, NextProto::kProtoHTTP11};
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   // First, perform a full handshake.
   SSLConfig ssl_config;
@@ -3424,8 +3435,7 @@ TEST_F(SSLClientSocketTest, RequireECDHE) {
   // Run test server without ECDHE.
   SSLServerConfig server_config;
   server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-  // TLS_RSA_WITH_AES_128_GCM_SHA256
-  server_config.cipher_suite_for_testing = 0x009c;
+  server_config.cipher_suite_for_testing = kRSACipher;
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
@@ -3439,8 +3449,7 @@ TEST_F(SSLClientSocketTest, RequireECDHE) {
 TEST_F(SSLClientSocketTest, 3DES) {
   SSLServerConfig server_config;
   server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-  // TLS_RSA_WITH_3DES_EDE_CBC_SHA
-  server_config.cipher_suite_for_testing = 0x000a;
+  server_config.cipher_suite_for_testing = k3DESCipher;
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
@@ -3476,72 +3485,59 @@ TEST_F(SSLClientSocketTest, SHA1) {
 
 TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
   // False Start requires ALPN, ECDHE, and an AEAD.
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
-  server_options.bulk_ciphers =
-      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.alpn_protocols.push_back("http/1.1");
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.cipher_suite_for_testing = kModernTLS12Cipher;
+  server_config.alpn_protos = {NextProto::kProtoHTTP11};
   SSLConfig client_config;
   client_config.alpn_protos.push_back(kProtoHTTP11);
-  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, true));
+  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_config, client_config, true));
 }
 
 // Test that False Start is disabled without ALPN.
 TEST_F(SSLClientSocketFalseStartTest, NoAlpn) {
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
-  server_options.bulk_ciphers =
-      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.cipher_suite_for_testing = kModernTLS12Cipher;
   SSLConfig client_config;
   client_config.alpn_protos.clear();
-  ASSERT_NO_FATAL_FAILURE(
-      TestFalseStart(server_options, client_config, false));
+  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_config, client_config, false));
 }
 
 // Test that False Start is disabled with plain RSA ciphers.
 TEST_F(SSLClientSocketFalseStartTest, RSA) {
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA;
-  server_options.bulk_ciphers =
-      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.alpn_protocols.push_back("http/1.1");
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.cipher_suite_for_testing = kRSACipher;
+  server_config.alpn_protos = {NextProto::kProtoHTTP11};
   SSLConfig client_config;
   client_config.alpn_protos.push_back(kProtoHTTP11);
-  ASSERT_NO_FATAL_FAILURE(
-      TestFalseStart(server_options, client_config, false));
+  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_config, client_config, false));
 }
 
 // Test that False Start is disabled without an AEAD.
 TEST_F(SSLClientSocketFalseStartTest, NoAEAD) {
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
-  server_options.bulk_ciphers =
-      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128;
-  server_options.alpn_protocols.push_back("http/1.1");
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.cipher_suite_for_testing = kCBCCipher;
+  server_config.alpn_protos = {NextProto::kProtoHTTP11};
   SSLConfig client_config;
   client_config.alpn_protos.push_back(kProtoHTTP11);
-  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, false));
+  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_config, client_config, false));
 }
 
 // Test that sessions are resumable after receiving the server Finished message.
 TEST_F(SSLClientSocketFalseStartTest, SessionResumption) {
   // Start a server.
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
-  server_options.bulk_ciphers =
-      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.alpn_protocols.push_back("http/1.1");
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.cipher_suite_for_testing = kModernTLS12Cipher;
+  server_config.alpn_protos = {NextProto::kProtoHTTP11};
   SSLConfig client_config;
   client_config.alpn_protos.push_back(kProtoHTTP11);
 
   // Let a full handshake complete with False Start.
-  ASSERT_NO_FATAL_FAILURE(
-      TestFalseStart(server_options, client_config, true));
+  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_config, client_config, true));
 
   // Make a second connection.
   int rv;
@@ -3560,13 +3556,12 @@ TEST_F(SSLClientSocketFalseStartTest, SessionResumption) {
 // client's HTTP/1.1 POST fit in transport windows.
 TEST_F(SSLClientSocketFalseStartTest, CompleteHandshakeWithoutRequest) {
   // Start a server.
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
-  server_options.bulk_ciphers =
-      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.alpn_protocols.push_back("http/1.1");
-  ASSERT_TRUE(StartTestServer(server_options));
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.cipher_suite_for_testing = kModernTLS12Cipher;
+  server_config.alpn_protos = {NextProto::kProtoHTTP11};
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   SSLConfig client_config;
   client_config.alpn_protos.push_back(kProtoHTTP11);
@@ -3608,13 +3603,12 @@ TEST_F(SSLClientSocketFalseStartTest, CompleteHandshakeWithoutRequest) {
 // server Finished message.
 TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBeforeFinished) {
   // Start a server.
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
-  server_options.bulk_ciphers =
-      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.alpn_protocols.push_back("http/1.1");
-  ASSERT_TRUE(StartTestServer(server_options));
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.cipher_suite_for_testing = kModernTLS12Cipher;
+  server_config.alpn_protos = {NextProto::kProtoHTTP11};
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   SSLConfig client_config;
   client_config.alpn_protos.push_back(kProtoHTTP11);
@@ -3662,13 +3656,12 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBeforeFinished) {
 // message was bad.
 TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBadFinished) {
   // Start a server.
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
-  server_options.bulk_ciphers =
-      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.alpn_protocols.push_back("http/1.1");
-  ASSERT_TRUE(StartTestServer(server_options));
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.cipher_suite_for_testing = kModernTLS12Cipher;
+  server_config.alpn_protos = {NextProto::kProtoHTTP11};
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   SSLConfig client_config;
   client_config.alpn_protos.push_back(kProtoHTTP11);
@@ -3723,10 +3716,10 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBadFinished) {
 
 // Server preference should win in ALPN.
 TEST_F(SSLClientSocketTest, Alpn) {
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.alpn_protocols.push_back("h2");
-  server_options.alpn_protocols.push_back("http/1.1");
-  ASSERT_TRUE(StartTestServer(server_options));
+  SSLServerConfig server_config;
+  server_config.alpn_protos = {NextProto::kProtoHTTP2, NextProto::kProtoHTTP11};
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   SSLConfig client_config;
   client_config.alpn_protos.push_back(kProtoHTTP11);
@@ -3741,9 +3734,10 @@ TEST_F(SSLClientSocketTest, Alpn) {
 
 // If the server supports ALPN but the client does not, then ALPN is not used.
 TEST_F(SSLClientSocketTest, AlpnClientDisabled) {
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.alpn_protocols.push_back("foo");
-  ASSERT_TRUE(StartTestServer(server_options));
+  SSLServerConfig server_config;
+  server_config.alpn_protos = {NextProto::kProtoHTTP2};
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   SSLConfig client_config;
 
@@ -3976,10 +3970,10 @@ TEST_P(SSLClientSocketVersionTest, PKPEnforced) {
 namespace {
 // TLS_RSA_WITH_AES_128_GCM_SHA256's key exchange involves encrypting to the
 // server long-term key.
-const uint16_t kEncryptingCipher = 0x009c;
+const uint16_t kEncryptingCipher = kRSACipher;
 // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256's key exchange involves a signature by
 // the server long-term key.
-const uint16_t kSigningCipher = 0xc02f;
+const uint16_t kSigningCipher = kModernTLS12Cipher;
 }  // namespace
 
 struct KeyUsageTest {
@@ -5017,6 +5011,77 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTEarlyDataLimit) {
   EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
 }
 
+// When a client socket reaches the 0-RTT early data limit, both Write() and
+// ConfirmHandshake() become blocked on a transport read. Test that
+// CancelReadIfReady() does not interrupt those.
+TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTEarlyDataLimitCancelReadIfReady) {
+  ASSERT_TRUE(StartServer());
+  ASSERT_TRUE(RunInitialConnection());
+
+  // Make a 0-RTT Connection. Connect() completes even though the ServerHello is
+  // blocked.
+  FakeBlockingStreamSocket* socket = MakeClient(true);
+  socket->BlockReadResult();
+  ASSERT_THAT(Connect(), IsOk());
+
+  // EmbeddedTestServer uses BoringSSL's hard-coded early data limit, which is
+  // below 16k.
+  constexpr size_t kRequestSize = 16 * 1024;
+  std::string request = "GET /zerortt HTTP/1.0\r\n";
+  while (request.size() < kRequestSize) {
+    request += "The-Answer-To-Life-The-Universe-And-Everything: 42\r\n";
+  }
+  request += "\r\n";
+
+  // Writing the large input should not succeed. It is blocked on the
+  // ServerHello.
+  TestCompletionCallback write_callback;
+  auto write_buf = base::MakeRefCounted<StringIOBuffer>(request);
+  int write_rv = ssl_socket()->Write(write_buf.get(), request.size(),
+                                     write_callback.callback(),
+                                     TRAFFIC_ANNOTATION_FOR_TESTS);
+  ASSERT_THAT(write_rv, IsError(ERR_IO_PENDING));
+
+  // The Write should have issued a read for the ServerHello, so
+  // WaitForReadResult has something to wait for.
+  socket->WaitForReadResult();
+  EXPECT_TRUE(socket->pending_read_result());
+
+  // Attempt a ReadIfReady(). It should be blocked on the ServerHello.
+  TestCompletionCallback read_callback;
+  auto read_buf = base::MakeRefCounted<IOBuffer>(4096);
+  int read_rv =
+      ssl_socket()->ReadIfReady(read_buf.get(), 4096, read_callback.callback());
+  ASSERT_THAT(read_rv, IsError(ERR_IO_PENDING));
+
+  // Also queue a ConfirmHandshake. It should also be blocked on ServerHello.
+  TestCompletionCallback confirm_callback;
+  int confirm_rv = ssl_socket()->ConfirmHandshake(confirm_callback.callback());
+  ASSERT_THAT(confirm_rv, IsError(ERR_IO_PENDING));
+
+  // Cancel the ReadIfReady() and release the ServerHello. The remaining
+  // operations should complete.
+  ASSERT_THAT(ssl_socket()->CancelReadIfReady(), IsOk());
+  socket->UnblockReadResult();
+  EXPECT_EQ(static_cast<int>(request.size()),
+            write_callback.GetResult(write_rv));
+  EXPECT_THAT(confirm_callback.GetResult(confirm_rv), IsOk());
+
+  // ReadIfReady() should not complete.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(read_callback.have_result());
+
+  SSLInfo ssl_info;
+  ASSERT_TRUE(GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+
+  // After a canceled read, future reads are still possible.
+  TestCompletionCallback read_callback2;
+  read_rv = read_callback2.GetResult(
+      ssl_socket()->Read(read_buf.get(), 4096, read_callback2.callback()));
+  ASSERT_GT(read_rv, 0);
+}
+
 TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTReject) {
   ASSERT_TRUE(StartServer());
   ASSERT_TRUE(RunInitialConnection());
@@ -5946,6 +6011,62 @@ TEST_F(SSLClientSocketTest, VersionMinOverride) {
   config.version_max_override = SSL_PROTOCOL_VERSION_TLS1_3;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
   EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+}
+
+// Basic test of CancelReadIfReady works.
+TEST_F(SSLClientSocketTest, CancelReadIfReady) {
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, SSLServerConfig()));
+
+  // Connect with a FakeBlockingStreamSocket.
+  auto real_transport = std::make_unique<TCPClientSocket>(
+      addr(), nullptr, nullptr, nullptr, NetLogSource());
+  auto transport =
+      std::make_unique<FakeBlockingStreamSocket>(std::move(real_transport));
+  FakeBlockingStreamSocket* raw_transport = transport.get();
+  TestCompletionCallback callback;
+  ASSERT_THAT(callback.GetResult(transport->Connect(callback.callback())),
+              IsOk());
+
+  // Complete the handshake. Disable the post-handshake peek so that, after the
+  // handshake, there are no pending reads on the transport.
+  SSLConfig config;
+  config.disable_post_handshake_peek_for_testing = true;
+  auto sock =
+      CreateSSLClientSocket(std::move(transport), host_port_pair(), config);
+  ASSERT_THAT(callback.GetResult(sock->Connect(callback.callback())), IsOk());
+
+  // Block the socket and wait for some data to arrive from the server.
+  raw_transport->BlockReadResult();
+  auto write_buf =
+      base::MakeRefCounted<StringIOBuffer>("GET / HTTP/1.0\r\n\r\n");
+  ASSERT_EQ(callback.GetResult(sock->Write(write_buf.get(), write_buf->size(),
+                                           callback.callback(),
+                                           TRAFFIC_ANNOTATION_FOR_TESTS)),
+            write_buf->size());
+
+  // ReadIfReady() should not read anything because the socket is blocked.
+  bool callback_called = false;
+  auto read_buf = base::MakeRefCounted<IOBuffer>(100);
+  int rv = sock->ReadIfReady(
+      read_buf.get(), 100,
+      base::BindLambdaForTesting([&](int rv) { callback_called = true; }));
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Cancel ReadIfReady() and unblock the socket.
+  ASSERT_THAT(sock->CancelReadIfReady(), IsOk());
+  raw_transport->WaitForReadResult();
+  raw_transport->UnblockReadResult();
+  base::RunLoop().RunUntilIdle();
+
+  // Although data is now available, the callback should not have been called.
+  EXPECT_FALSE(callback_called);
+
+  // Future reads on the socket should still work. The data should be
+  // synchronously available.
+  EXPECT_GT(
+      callback.GetResult(sock->Read(read_buf.get(), 100, callback.callback())),
+      0);
 }
 
 class SSLClientSocketAlpsTest

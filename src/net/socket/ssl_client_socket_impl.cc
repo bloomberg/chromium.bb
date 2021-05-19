@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cstring>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -38,6 +39,7 @@
 #include "net/base/features.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_verifier.h"
@@ -237,6 +239,18 @@ RSAKeyUsage CheckRSAKeyUsage(const X509Certificate* cert,
                                 : RSAKeyUsage::kMissingDigitalSignature;
 }
 
+// IsCECPQ2Host returns true if the given host is eligible for CECPQ2. This is
+// used to implement a gradual rollout as the larger TLS messages may cause
+// middlebox issues.
+bool IsCECPQ2Host(const std::string& host) {
+  // Currently only eTLD+1s that start with "aa" are included, for example
+  // aardvark.com or aaron.com.
+  return registry_controlled_domains::GetDomainAndRegistry(
+             host, registry_controlled_domains::PrivateRegistryFilter::
+                       EXCLUDE_PRIVATE_REGISTRIES)
+             .find(features::kPostQuantumCECPQ2Prefix.Get()) == 0;
+}
+
 }  // namespace
 
 class SSLClientSocketImpl::SSLContext {
@@ -297,12 +311,6 @@ class SSLClientSocketImpl::SSLContext {
     SSL_CTX_set_msg_callback(ssl_ctx_.get(), MessageCallback);
 
     ConfigureCertificateCompression(ssl_ctx_.get());
-
-    if (base::FeatureList::IsEnabled(features::kPostQuantumCECPQ2)) {
-      static const int kCurves[] = {NID_CECPQ2, NID_X25519,
-                                    NID_X9_62_prime256v1, NID_secp384r1};
-      SSL_CTX_set1_curves(ssl_ctx_.get(), kCurves, base::size(kCurves));
-    }
   }
 
   static int ClientCertRequestCallback(SSL* ssl, void* arg) {
@@ -683,11 +691,21 @@ int SSLClientSocketImpl::ReadIfReady(IOBuffer* buf,
 }
 
 int SSLClientSocketImpl::CancelReadIfReady() {
-  int result = stream_socket_->CancelReadIfReady();
+  DCHECK(user_read_callback_);
+  DCHECK(!user_read_buf_);
+
   // Cancel |user_read_callback_|, because caller does not expect the callback
   // to be invoked after they have canceled the ReadIfReady.
+  //
+  // We do not pass the signal on to |stream_socket_| or |transport_adapter_|.
+  // Multiple operations may be waiting on a transport ReadIfReady().
+  // Conversely, an SSL ReadIfReady() may be blocked on something other than a
+  // transport ReadIfReady(). Instead, the underlying transport ReadIfReady()
+  // will continue running (with no underlying buffer). When it completes, it
+  // will signal OnReadReady(), which will notice there is no read operation to
+  // progress and skip it.
   user_read_callback_.Reset();
-  return result;
+  return OK;
 }
 
 int SSLClientSocketImpl::Write(
@@ -742,15 +760,30 @@ int SSLClientSocketImpl::Init() {
   if (!ssl_ || !context->SetClientSocketForSSL(ssl_.get(), this))
     return ERR_UNEXPECTED;
 
+  IPAddress unused;
+  const bool host_is_ip_address =
+      unused.AssignFromIPLiteral(host_and_port_.host());
+
   // SNI should only contain valid DNS hostnames, not IP addresses (see RFC
   // 6066, Section 3).
   //
   // TODO(rsleevi): Should this code allow hostnames that violate the LDH rule?
   // See https://crbug.com/496472 and https://crbug.com/496468 for discussion.
-  IPAddress unused;
-  if (!unused.AssignFromIPLiteral(host_and_port_.host()) &&
+  if (!host_is_ip_address &&
       !SSL_set_tlsext_host_name(ssl_.get(), host_and_port_.host().c_str())) {
     return ERR_UNEXPECTED;
+  }
+
+  if (context_->config().cecpq2_enabled &&
+      (base::FeatureList::IsEnabled(features::kPostQuantumCECPQ2) ||
+       (!host_is_ip_address &&
+        base::FeatureList::IsEnabled(features::kPostQuantumCECPQ2SomeDomains) &&
+        IsCECPQ2Host(host_and_port_.host())))) {
+    static const int kCurves[] = {NID_CECPQ2, NID_X25519, NID_X9_62_prime256v1,
+                                  NID_secp384r1};
+    if (!SSL_set1_curves(ssl_.get(), kCurves, base::size(kCurves))) {
+      return ERR_UNEXPECTED;
+    }
   }
 
   if (IsCachingEnabled()) {
@@ -771,9 +804,9 @@ int SSLClientSocketImpl::Init() {
       SSL_set_session(ssl_.get(), session.get());
   }
 
-  transport_adapter_.reset(
-      new SocketBIOAdapter(stream_socket_.get(), kDefaultOpenSSLBufferSize,
-                           kDefaultOpenSSLBufferSize, this));
+  transport_adapter_ = std::make_unique<SocketBIOAdapter>(
+      stream_socket_.get(), kDefaultOpenSSLBufferSize,
+      kDefaultOpenSSLBufferSize, this);
   BIO* transport_bio = transport_adapter_->bio();
 
   BIO_up_ref(transport_bio);  // SSL_set0_rbio takes ownership.

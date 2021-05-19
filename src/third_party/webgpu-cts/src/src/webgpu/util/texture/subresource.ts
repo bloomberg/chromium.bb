@@ -1,6 +1,7 @@
 import { assert } from '../../../common/framework/util/util.js';
 import { kAllTextureFormatInfo } from '../../capability_info.js';
 import { align } from '../../util/math.js';
+import { standardizeExtent3D } from '../unions.js';
 
 export interface BeginCountRange {
   begin: number;
@@ -58,30 +59,34 @@ export class SubresourceRange {
   }
 }
 
-export function mipSize(size: [number], level: number): [number];
-export function mipSize(size: [number, number], level: number): [number, number];
-export function mipSize(size: [number, number, number], level: number): [number, number, number];
+export function mipSize(size: readonly [number], level: number): [number];
+export function mipSize(size: readonly [number, number], level: number): [number, number];
+export function mipSize(
+  size: readonly [number, number, number],
+  level: number
+): [number, number, number];
 export function mipSize(size: GPUExtent3DDict, level: number): GPUExtent3DDict;
-export function mipSize(size: GPUExtent3D, level: number): GPUExtent3D {
+export function mipSize(size: Readonly<GPUExtent3D>, level: number): GPUExtent3D {
   const rShiftMax1 = (s: number) => Math.max(s >> level, 1);
   if (size instanceof Array) {
     return size.map(rShiftMax1);
   } else {
+    const size_ = standardizeExtent3D(size);
     return {
-      width: rShiftMax1(size.width),
-      height: rShiftMax1(size.height),
-      depth: rShiftMax1(size.depth),
+      width: rShiftMax1(size_.width),
+      height: rShiftMax1(size_.height),
+      depthOrArrayLayers: rShiftMax1(size_.depthOrArrayLayers),
     };
   }
 }
 
 // TODO(jiawei.shao@intel.com): support 1D and 3D textures
 export function physicalMipSize(
-  size: GPUExtent3DDict,
+  size: Required<GPUExtent3DDict>,
   format: GPUTextureFormat,
   dimension: GPUTextureDimension,
   level: number
-): GPUExtent3DDict {
+): Required<GPUExtent3DDict> {
   assert(dimension === '2d');
   assert(Math.max(size.width, size.height) >> level > 0);
 
@@ -92,5 +97,9 @@ export function physicalMipSize(
     virtualHeightAtLevel,
     kAllTextureFormatInfo[format].blockHeight
   );
-  return { width: physicalWidthAtLevel, height: physicalHeightAtLevel, depth: size.depth };
+  return {
+    width: physicalWidthAtLevel,
+    height: physicalHeightAtLevel,
+    depthOrArrayLayers: size.depthOrArrayLayers,
+  };
 }

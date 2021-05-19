@@ -4,6 +4,7 @@
 
 #include "net/socket/ssl_server_socket_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -89,6 +90,7 @@ class SSLServerContextImpl::SocketImpl : public SSLServerSocket,
   int ReadIfReady(IOBuffer* buf,
                   int buf_len,
                   CompletionOnceCallback callback) override;
+  int CancelReadIfReady() override;
   int Write(IOBuffer* buf,
             int buf_len,
             CompletionOnceCallback callback,
@@ -478,6 +480,22 @@ int SSLServerContextImpl::SocketImpl::ReadIfReady(
   return rv;
 }
 
+int SSLServerContextImpl::SocketImpl::CancelReadIfReady() {
+  DCHECK(user_read_callback_);
+  DCHECK(!user_read_buf_);
+
+  // Cancel |user_read_callback_|, because caller does not expect the callback
+  // to be invoked after they have canceled the ReadIfReady.
+  //
+  // We do not pass the signal on to |stream_socket_| or |transport_adapter_|.
+  // When it completes, it will signal OnReadReady(), which will notice there is
+  // no read operation to progress and skip it. Unlike with SSLClientSocket,
+  // SSL and transport reads are more aligned, but this avoids making
+  // assumptions or breaking the SocketBIOAdapter's state.
+  user_read_callback_.Reset();
+  return OK;
+}
+
 int SSLServerContextImpl::SocketImpl::Write(
     IOBuffer* buf,
     int buf_len,
@@ -838,8 +856,14 @@ int SSLServerContextImpl::SocketImpl::Init() {
     CHECK(SSL_set_signing_algorithm_prefs(ssl_.get(), &id, 1));
   }
 
-  transport_adapter_.reset(new SocketBIOAdapter(
-      transport_socket_.get(), kBufferSize, kBufferSize, this));
+  const std::vector<int>& curves =
+      context_->ssl_server_config_.curves_for_testing;
+  if (!curves.empty()) {
+    CHECK(SSL_set1_curves(ssl_.get(), curves.data(), curves.size()));
+  }
+
+  transport_adapter_ = std::make_unique<SocketBIOAdapter>(
+      transport_socket_.get(), kBufferSize, kBufferSize, this);
   BIO* transport_bio = transport_adapter_->bio();
 
   BIO_up_ref(transport_bio);  // SSL_set0_rbio takes ownership.

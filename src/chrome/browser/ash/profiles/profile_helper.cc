@@ -17,15 +17,15 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/ash/base/file_flusher.h"
+#include "chrome/browser/ash/login/helper.h"
+#include "chrome/browser/ash/login/signin/oauth2_login_manager.h"
+#include "chrome/browser/ash/login/signin/oauth2_login_manager_factory.h"
+#include "chrome/browser/ash/login/signin_partition_manager.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
-#include "chrome/browser/chromeos/base/file_flusher.h"
-#include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
-#include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
-#include "chrome/browser/chromeos/login/signin_partition_manager.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,14 +43,11 @@
 #include "extensions/browser/extension_system.h"
 
 namespace ash {
-
 namespace {
 
 // TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
 // source migration is finished.
 namespace login = ::chromeos::login;
-using ::chromeos::ChromeUserManager;
-using ::chromeos::FileFlusher;
 using ::chromeos::OAuth2LoginManager;
 
 // This array contains a subset of the explicitly allowlisted extensions that

@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/ast/scalar_constructor_expression.h"
-
-#include "src/ast/bool_literal.h"
+#include "gtest/gtest-spi.h"
 #include "src/ast/test_helper.h"
-#include "src/type/bool_type.h"
 
 namespace tint {
 namespace ast {
@@ -35,16 +32,6 @@ TEST_F(ScalarConstructorExpressionTest, Creation_WithSource) {
   auto src = Expr(true)->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
-}
-
-TEST_F(ScalarConstructorExpressionTest, IsValid) {
-  auto* c = Expr(true);
-  EXPECT_TRUE(c->IsValid());
-}
-
-TEST_F(ScalarConstructorExpressionTest, IsValid_MissingLiteral) {
-  auto* c = create<ScalarConstructorExpression>(nullptr);
-  EXPECT_FALSE(c->IsValid());
 }
 
 TEST_F(ScalarConstructorExpressionTest, ToStr) {

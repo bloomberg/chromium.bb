@@ -6,7 +6,6 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
-#include "base/i18n/uchar.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
@@ -75,8 +74,8 @@ double ScoreForMatches(const std::vector<MatchRecord>& matches,
   return score;
 }
 
-size_t LengthInCodePoints(const base::string16& str) {
-  return u_countChar32(base::i18n::ToUCharPtr(str.data()), str.size());
+size_t LengthInCodePoints(const std::u16string& str) {
+  return u_countChar32(str.data(), str.size());
 }
 
 // Returns a positive score if every code point in |needle| is present in
@@ -89,8 +88,8 @@ size_t LengthInCodePoints(const base::string16& str) {
 // use is to filter nonmatches before a more comprehensive algorithm, and as a
 // fallback for when the inputs are too high for a more comprehensive algorithm
 // to be performant.
-double ConsecutiveMatchWithGaps(const base::string16& needle,
-                                const base::string16& haystack,
+double ConsecutiveMatchWithGaps(const std::u16string& needle,
+                                const std::u16string& haystack,
                                 std::vector<gfx::Range>* matched_ranges) {
   DCHECK(needle == base::i18n::FoldCase(needle));
   DCHECK(haystack == base::i18n::FoldCase(haystack));
@@ -224,7 +223,7 @@ int ScoreForMatrix(const std::vector<int> score_matrix,
 
 namespace commander {
 
-FuzzyFinder::FuzzyFinder(const base::string16& needle)
+FuzzyFinder::FuzzyFinder(const std::u16string& needle)
     : needle_(base::i18n::FoldCase(needle)) {
   if (needle_.size() <= kMaxNeedle) {
     score_matrix_.reserve(needle_.size() * kMaxHaystack);
@@ -234,12 +233,12 @@ FuzzyFinder::FuzzyFinder(const base::string16& needle)
 
 FuzzyFinder::~FuzzyFinder() = default;
 
-double FuzzyFinder::Find(const base::string16& haystack,
+double FuzzyFinder::Find(const std::u16string& haystack,
                          std::vector<gfx::Range>* matched_ranges) {
   matched_ranges->clear();
   if (needle_.size() == 0)
     return 0;
-  const base::string16& folded = base::i18n::FoldCase(haystack);
+  const std::u16string& folded = base::i18n::FoldCase(haystack);
   size_t m = needle_.size();
   size_t n = folded.size();
   // Special case 0: M > N. We don't allow skipping anything in |needle|, so
@@ -323,8 +322,8 @@ double FuzzyFinder::Find(const base::string16& haystack,
   return MatrixMatch(needle_, folded, matched_ranges);
 }
 
-double FuzzyFinder::MatrixMatch(const base::string16& needle_string,
-                                const base::string16& haystack_string,
+double FuzzyFinder::MatrixMatch(const std::u16string& needle_string,
+                                const std::u16string& haystack_string,
                                 std::vector<gfx::Range>* matched_ranges) {
   static constexpr int kMatchScore = 16;
   static constexpr int kBoundaryBonus = 8;

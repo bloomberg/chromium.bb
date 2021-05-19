@@ -60,10 +60,7 @@ class MetadataEncodeTest
 
   virtual ~MetadataEncodeTest() {}
 
-  virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
-  }
+  virtual void SetUp() { InitializeConfig(GET_PARAM(1)); }
 
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video) {
     aom_image_t *current_frame = video->img();

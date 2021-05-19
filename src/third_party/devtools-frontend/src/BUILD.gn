@@ -15,75 +15,53 @@ import("./third_party/blink/public/public_features.gni")
 
 devtools_test_files = [
   "front_end/third_party/axe-core/axe.js",
-  "front_end/accessibility_test_runner/accessibility_test_runner.js",
-  "front_end/accessibility_test_runner/module.json",
-  "front_end/bindings_test_runner/bindings_test_runner.js",
-  "front_end/application_test_runner/application_test_runner.js",
-  "front_end/application_test_runner/AppcacheTestRunner.js",
-  "front_end/application_test_runner/CacheStorageTestRunner.js",
-  "front_end/application_test_runner/IndexedDBTestRunner.js",
-  "front_end/application_test_runner/module.json",
-  "front_end/application_test_runner/ResourcesTestRunner.js",
-  "front_end/application_test_runner/ResourceTreeTestRunner.js",
-  "front_end/application_test_runner/ServiceWorkersTestRunner.js",
-  "front_end/application_test_runner/StorageTestRunner.js",
-  "front_end/lighthouse_test_runner/lighthouse_test_runner.js",
-  "front_end/lighthouse_test_runner/module.json",
-  "front_end/axe_core_test_runner/axe_core_test_runner.js",
-  "front_end/axe_core_test_runner/module.json",
-  "front_end/bindings_test_runner/AutomappingTestRunner.js",
-  "front_end/bindings_test_runner/BindingsTestRunner.js",
-  "front_end/bindings_test_runner/IsolatedFilesystemTestRunner.js",
-  "front_end/bindings_test_runner/module.json",
-  "front_end/bindings_test_runner/OverridesTestRunner.js",
-  "front_end/bindings_test_runner/PersistenceTestRunner.js",
-  "front_end/console_test_runner/console_test_runner.js",
-  "front_end/console_test_runner/module.json",
-  "front_end/coverage_test_runner/coverage_test_runner.js",
-  "front_end/coverage_test_runner/module.json",
-  "front_end/cpu_profiler_test_runner/module.json",
-  "front_end/cpu_profiler_test_runner/cpu_profiler_test_runner.js",
-  "front_end/data_grid_test_runner/data_grid_test_runner.js",
-  "front_end/data_grid_test_runner/module.json",
-  "front_end/device_mode_test_runner/device_mode_test_runner.js",
-  "front_end/device_mode_test_runner/module.json",
-  "front_end/elements_test_runner/elements_test_runner.js",
-  "front_end/elements_test_runner/EditDOMTestRunner.js",
-  "front_end/elements_test_runner/ElementsPanelShadowSelectionOnRefreshTestRunner.js",
-  "front_end/elements_test_runner/ElementsTestRunner.js",
-  "front_end/elements_test_runner/module.json",
-  "front_end/elements_test_runner/SetOuterHTMLTestRunner.js",
-  "front_end/elements_test_runner/StylesUpdateLinksTestRunner.js",
-  "front_end/extensions_test_runner/extensions_test_runner.js",
-  "front_end/extensions_test_runner/ExtensionsNetworkTestRunner.js",
-  "front_end/extensions_test_runner/ExtensionsTestRunner.js",
-  "front_end/extensions_test_runner/module.json",
-  "front_end/heap_profiler_test_runner/heap_profiler_test_runner.js",
-  "front_end/heap_profiler_test_runner/module.json",
+  "front_end/legacy_test_runner/accessibility_test_runner/accessibility_test_runner.js",
+  "front_end/legacy_test_runner/bindings_test_runner/bindings_test_runner.js",
+  "front_end/legacy_test_runner/application_test_runner/application_test_runner.js",
+  "front_end/legacy_test_runner/application_test_runner/AppcacheTestRunner.js",
+  "front_end/legacy_test_runner/application_test_runner/CacheStorageTestRunner.js",
+  "front_end/legacy_test_runner/application_test_runner/IndexedDBTestRunner.js",
+  "front_end/legacy_test_runner/application_test_runner/ResourcesTestRunner.js",
+  "front_end/legacy_test_runner/application_test_runner/ResourceTreeTestRunner.js",
+  "front_end/legacy_test_runner/application_test_runner/ServiceWorkersTestRunner.js",
+  "front_end/legacy_test_runner/application_test_runner/StorageTestRunner.js",
+  "front_end/legacy_test_runner/lighthouse_test_runner/lighthouse_test_runner.js",
+  "front_end/legacy_test_runner/axe_core_test_runner/axe_core_test_runner.js",
+  "front_end/legacy_test_runner/bindings_test_runner/AutomappingTestRunner.js",
+  "front_end/legacy_test_runner/bindings_test_runner/BindingsTestRunner.js",
+  "front_end/legacy_test_runner/bindings_test_runner/IsolatedFilesystemTestRunner.js",
+  "front_end/legacy_test_runner/bindings_test_runner/OverridesTestRunner.js",
+  "front_end/legacy_test_runner/bindings_test_runner/PersistenceTestRunner.js",
+  "front_end/legacy_test_runner/console_test_runner/console_test_runner.js",
+  "front_end/legacy_test_runner/coverage_test_runner/coverage_test_runner.js",
+  "front_end/legacy_test_runner/cpu_profiler_test_runner/cpu_profiler_test_runner.js",
+  "front_end/legacy_test_runner/data_grid_test_runner/data_grid_test_runner.js",
+  "front_end/legacy_test_runner/device_mode_test_runner/device_mode_test_runner.js",
+  "front_end/legacy_test_runner/elements_test_runner/elements_test_runner.js",
+  "front_end/legacy_test_runner/elements_test_runner/EditDOMTestRunner.js",
+  "front_end/legacy_test_runner/elements_test_runner/ElementsPanelShadowSelectionOnRefreshTestRunner.js",
+  "front_end/legacy_test_runner/elements_test_runner/ElementsTestRunner.js",
+  "front_end/legacy_test_runner/elements_test_runner/SetOuterHTMLTestRunner.js",
+  "front_end/legacy_test_runner/elements_test_runner/StylesUpdateLinksTestRunner.js",
+  "front_end/legacy_test_runner/extensions_test_runner/extensions_test_runner.js",
+  "front_end/legacy_test_runner/extensions_test_runner/ExtensionsNetworkTestRunner.js",
+  "front_end/legacy_test_runner/extensions_test_runner/ExtensionsTestRunner.js",
+  "front_end/legacy_test_runner/heap_profiler_test_runner/heap_profiler_test_runner.js",
   "front_end/integration_test_runner.html",
-  "front_end/integration_test_runner.js",
-  "front_end/integration_test_runner.json",
-  "front_end/layers_test_runner/layers_test_runner.js",
-  "front_end/layers_test_runner/module.json",
-  "front_end/network_test_runner/module.json",
-  "front_end/network_test_runner/network_test_runner.js",
-  "front_end/performance_test_runner/performance_test_runner.js",
-  "front_end/performance_test_runner/module.json",
-  "front_end/performance_test_runner/TimelineDataTestRunner.js",
-  "front_end/performance_test_runner/TimelineTestRunner.js",
-  "front_end/sdk_test_runner/module.json",
-  "front_end/sdk_test_runner/sdk_test_runner.js",
-  "front_end/security_test_runner/module.json",
-  "front_end/security_test_runner/security_test_runner.js",
-  "front_end/sources_test_runner/sources_test_runner.js",
-  "front_end/sources_test_runner/AutocompleteTestRunner.js",
-  "front_end/sources_test_runner/DebuggerTestRunner.js",
-  "front_end/sources_test_runner/EditorTestRunner.js",
-  "front_end/sources_test_runner/LiveEditTestRunner.js",
-  "front_end/sources_test_runner/module.json",
-  "front_end/sources_test_runner/SearchTestRunner.js",
-  "front_end/sources_test_runner/SourcesTestRunner.js",
-  "front_end/test_runner/module.json",
+  "front_end/legacy_test_runner/layers_test_runner/layers_test_runner.js",
+  "front_end/legacy_test_runner/network_test_runner/network_test_runner.js",
+  "front_end/legacy_test_runner/performance_test_runner/performance_test_runner.js",
+  "front_end/legacy_test_runner/performance_test_runner/TimelineDataTestRunner.js",
+  "front_end/legacy_test_runner/performance_test_runner/TimelineTestRunner.js",
+  "front_end/legacy_test_runner/sdk_test_runner/sdk_test_runner.js",
+  "front_end/legacy_test_runner/security_test_runner/security_test_runner.js",
+  "front_end/legacy_test_runner/sources_test_runner/sources_test_runner.js",
+  "front_end/legacy_test_runner/sources_test_runner/AutocompleteTestRunner.js",
+  "front_end/legacy_test_runner/sources_test_runner/DebuggerTestRunner.js",
+  "front_end/legacy_test_runner/sources_test_runner/EditorTestRunner.js",
+  "front_end/legacy_test_runner/sources_test_runner/LiveEditTestRunner.js",
+  "front_end/legacy_test_runner/sources_test_runner/SearchTestRunner.js",
+  "front_end/legacy_test_runner/sources_test_runner/SourcesTestRunner.js",
 ]
 
 devtools_embedder_scripts = [
@@ -105,7 +83,6 @@ generated_applications_html = [
 ]
 
 applications_js = [
-  "lighthouse_worker.js",
   "devtools_app.js",
   "inspector.js",
   "js_app.js",
@@ -114,48 +91,45 @@ applications_js = [
   "worker_app.js",
 ]
 
-resources_generated_applications_js = []
 gen_generated_applications_js = []
 
 foreach(application, applications_js) {
-  resources_generated_applications_js += [ "$resources_out_dir/$application" ]
   gen_generated_applications_js += [ "$target_gen_dir/front_end/$application" ]
 }
 
 non_autostart_non_remote_modules = [
-  "accessibility/accessibility_module.js",
-  "animation/animation_module.js",
-  "browser_debugger/browser_debugger_module.js",
-  "changes/changes_module.js",
+  "panels/accessibility/accessibility_module.js",
+  "panels/animation/animation_module.js",
+  "panels/browser_debugger/browser_debugger_module.js",
+  "panels/changes/changes_module.js",
   "cm/cm_module.js",
   "color_picker/color_picker_module.js",
-  "console/console_module.js",
+  "panels/console/console_module.js",
   "cookie_table/cookie_table_module.js",
-  "coverage/coverage_module.js",
-  "css_overview/css_overview_module.js",
+  "panels/coverage/coverage_module.js",
+  "panels/css_overview/css_overview_module.js",
   "data_grid/data_grid_module.js",
-  "elements/elements_module.js",
-  "event_listeners/event_listeners_module.js",
-  "har_importer/har_importer_module.js",
-  "help/help_module.js",
+  "panels/elements/elements_module.js",
+  "panels/event_listeners/event_listeners_module.js",
+  "panels/help/help_module.js",
   "inline_editor/inline_editor_module.js",
-  "input/input_module.js",
+  "panels/input/input_module.js",
   "js_profiler/js_profiler_module.js",
-  "layer_viewer/layer_viewer_module.js",
-  "layers/layers_module.js",
-  "lighthouse/lighthouse_module.js",
-  "media/media_module.js",
-  "network/network_module.js",
+  "panels/layer_viewer/layer_viewer_module.js",
+  "panels/layers/layers_module.js",
+  "panels/lighthouse/lighthouse_module.js",
+  "panels/media/media_module.js",
+  "panels/network/network_module.js",
   "node_debugger/node_debugger_module.js",
   "object_ui/object_ui_module.js",
   "perf_ui/perf_ui_module.js",
-  "performance_monitor/performance_monitor_module.js",
-  "profiler/profiler_module.js",
+  "panels/performance_monitor/performance_monitor_module.js",
+  "panels/profiler/profiler_module.js",
   "issues/issues_module.js",
-  "developer_resources/developer_resources_module.js",
-  "protocol_monitor/protocol_monitor_module.js",
+  "panels/developer_resources/developer_resources_module.js",
+  "panels/protocol_monitor/protocol_monitor_module.js",
   "quick_open/quick_open_module.js",
-  "resources/resources_module.js",
+  "panels/application/application_module.js",
   "search/search_module.js",
   "security/security_module.js",
   "settings/settings_module.js",
@@ -163,7 +137,6 @@ non_autostart_non_remote_modules = [
   "source_frame/source_frame_module.js",
   "sources/sources_module.js",
   "text_editor/text_editor_module.js",
-  "timeline_model/timeline_model_module.js",
   "timeline/timeline_module.js",
   "web_audio/web_audio_module.js",
   "webauthn/webauthn_module.js",
@@ -171,53 +144,16 @@ non_autostart_non_remote_modules = [
   "emulated_devices/emulated_devices_module.js",
 ]
 
-resources_non_autostart_non_remote_modules = []
 gen_non_autostart_non_remote_modules = []
 
 foreach(module_file, non_autostart_non_remote_modules) {
-  resources_non_autostart_non_remote_modules +=
-      [ "$resources_out_dir/$module_file" ]
   gen_non_autostart_non_remote_modules +=
       [ "$target_gen_dir/front_end/$module_file" ]
 }
 
-test_modules = [
-  "accessibility_test_runner/accessibility_test_runner_module.js",
-  "application_test_runner/application_test_runner_module.js",
-  "lighthouse_test_runner/lighthouse_test_runner_module.js",
-  "axe_core_test_runner/axe_core_test_runner_module.js",
-  "bindings_test_runner/bindings_test_runner_module.js",
-  "console_test_runner/console_test_runner_module.js",
-  "coverage_test_runner/coverage_test_runner_module.js",
-  "cpu_profiler_test_runner/cpu_profiler_test_runner_module.js",
-  "data_grid_test_runner/data_grid_test_runner_module.js",
-  "device_mode_test_runner/device_mode_test_runner_module.js",
-  "elements_test_runner/elements_test_runner_module.js",
-  "extensions_test_runner/extensions_test_runner_module.js",
-  "heap_profiler_test_runner/heap_profiler_test_runner_module.js",
-  "heap_snapshot_worker/heap_snapshot_worker_module.js",
-  "integration_test_runner.js",
-  "layers_test_runner/layers_test_runner_module.js",
-  "network_test_runner/network_test_runner_module.js",
-  "performance_test_runner/performance_test_runner_module.js",
-  "sdk_test_runner/sdk_test_runner_module.js",
-  "security_test_runner/security_test_runner_module.js",
-  "sources_test_runner/sources_test_runner_module.js",
-]
-
-resources_test_modules = []
-gen_test_modules = []
-
-foreach(module_file, test_modules) {
-  resources_test_modules += [ "$resources_out_dir/$module_file" ]
-  gen_test_modules += [ "$target_gen_dir/front_end/$module_file" ]
-}
-
 devtools_applications = [
-  "lighthouse_worker",
   "devtools_app",
   "inspector",
-  "integration_test_runner",
   "js_app",
   "ndb_app",
   "node_app",
@@ -346,26 +282,15 @@ python2_action("build_release_devtools") {
     "front_end/rollup.config.js",
   ]
 
-  deps = [
-    "front_end",
-    "front_end:legacy_test-resources",
-  ]
+  deps = [ "front_end" ]
 
   inputs = helper_scripts + all_devtools_files + devtools_test_files +
            application_templates
-  outputs =
-      resources_generated_applications_js + gen_generated_applications_js +
-      resources_non_autostart_non_remote_modules +
-      gen_non_autostart_non_remote_modules + resources_test_modules +
-      gen_test_modules
+  outputs = gen_generated_applications_js + gen_non_autostart_non_remote_modules
 
   args = devtools_applications + [
            "--input_path",
            rebase_path("front_end", root_build_dir),
-
-           # TODO(crbug.com/1174013): Remove output to resources_out_dir
-           "--output_path",
-           rebase_path(resources_out_dir, root_build_dir),
            "--output_path_gen",
            rebase_path("$target_gen_dir/front_end", root_build_dir),
          ] + build_release_devtools_args

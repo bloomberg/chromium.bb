@@ -64,11 +64,11 @@ ExtensionInstalledNotification::~ExtensionInstalledNotification() {}
 
 void ExtensionInstalledNotification::Click(
     const base::Optional<int>& button_index,
-    const base::Optional<base::string16>& reply) {
+    const base::Optional<std::u16string>& reply) {
   if (!extensions::util::IsAppLaunchable(extension_id_, profile_))
     return;
 
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
   if (proxy->AppRegistryCache().GetAppType(extension_id_) ==
       apps::mojom::AppType::kUnknown) {

@@ -34,7 +34,9 @@
 namespace blink {
 
 AnalyserHandler::AnalyserHandler(AudioNode& node, float sample_rate)
-    : AudioBasicInspectorHandler(kNodeTypeAnalyser, node, sample_rate) {
+    : AudioBasicInspectorHandler(kNodeTypeAnalyser, node, sample_rate),
+      analyser_(
+          node.context()->GetDeferredTaskHandler().RenderQuantumFrames()) {
   channel_count_ = 2;
   AddOutput(1);
 

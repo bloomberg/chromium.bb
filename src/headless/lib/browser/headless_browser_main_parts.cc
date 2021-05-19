@@ -4,6 +4,7 @@
 
 #include "headless/lib/browser/headless_browser_main_parts.h"
 
+#include "content/public/common/result_codes.h"
 #include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
@@ -15,6 +16,12 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service_factory.h"
 #endif
+
+#if defined(HEADLESS_USE_POLICY)
+#include "headless/lib/browser/policy/headless_mode_policy.h"
+#endif
+
+#include "services/device/public/cpp/geolocation/geolocation_system_permission_mac.h"
 
 namespace headless {
 
@@ -34,7 +41,7 @@ HeadlessBrowserMainParts::HeadlessBrowserMainParts(
 
 HeadlessBrowserMainParts::~HeadlessBrowserMainParts() = default;
 
-void HeadlessBrowserMainParts::PreMainMessageLoopRun() {
+int HeadlessBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(HEADLESS_USE_PREFS)
   CreatePrefService();
 #endif
@@ -50,15 +57,16 @@ void HeadlessBrowserMainParts::PreMainMessageLoopRun() {
     delete parameters_.ui_task;
     run_message_loop_ = false;
   }
+
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
-void HeadlessBrowserMainParts::PreDefaultMainMessageLoopRun(
-    base::OnceClosure quit_closure) {
-  quit_main_message_loop_ = std::move(quit_closure);
-}
-
-bool HeadlessBrowserMainParts::MainMessageLoopRun(int* result_code) {
-  return !run_message_loop_;
+void HeadlessBrowserMainParts::WillRunMainMessageLoop(
+    std::unique_ptr<base::RunLoop>& run_loop) {
+  if (run_message_loop_)
+    quit_main_message_loop_ = run_loop->QuitClosure();
+  else
+    run_loop.reset();
 }
 
 void HeadlessBrowserMainParts::PostMainMessageLoopRun() {
@@ -67,10 +75,25 @@ void HeadlessBrowserMainParts::PostMainMessageLoopRun() {
     devtools_http_handler_started_ = false;
   }
 #if defined(HEADLESS_USE_PREFS)
-  if (local_state_)
+  if (local_state_) {
     local_state_->CommitPendingWrite();
+    local_state_.reset(nullptr);
+  }
+#endif
+#if defined(HEADLESS_USE_POLICY)
+  if (policy_connector_) {
+    policy_connector_->Shutdown();
+    policy_connector_.reset(nullptr);
+  }
 #endif
 }
+
+#if defined(OS_MAC)
+device::GeolocationSystemPermissionManager*
+HeadlessBrowserMainParts::GetLocationPermissionManager() {
+  return location_permission_manager_.get();
+}
+#endif
 
 void HeadlessBrowserMainParts::QuitMainMessageLoop() {
   if (quit_main_message_loop_)
@@ -97,6 +120,17 @@ void HeadlessBrowserMainParts::CreatePrefService() {
 #endif
 
   PrefServiceFactory factory;
+
+#if defined(HEADLESS_USE_POLICY)
+  policy::HeadlessModePolicy::RegisterLocalPrefs(pref_registry.get());
+
+  policy_connector_ =
+      std::make_unique<policy::HeadlessBrowserPolicyConnector>();
+
+  factory.set_managed_prefs(
+      policy_connector_->CreatePrefStore(policy::POLICY_LEVEL_MANDATORY));
+#endif  // defined(HEADLESS_USE_POLICY)
+
   factory.set_user_prefs(pref_store);
   local_state_ = factory.Create(std::move(pref_registry));
 
@@ -106,7 +140,7 @@ void HeadlessBrowserMainParts::CreatePrefService() {
     if (!OSCrypt::Init(local_state_.get()))
       LOG(ERROR) << "Failed to initialize OSCrypt";
   }
-#endif
+#endif  // defined(OS_WIN)
 }
 #endif  // defined(HEADLESS_USE_PREFS)
 

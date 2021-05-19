@@ -29,22 +29,21 @@ class ShaderInfo final : angle::NonCopyable
     ShaderInfo();
     ~ShaderInfo();
 
-    angle::Result initShaders(ContextVk *contextVk,
-                              const gl::ShaderBitSet &linkedShaderStages,
-                              const gl::ShaderMap<std::string> &shaderSources,
+    angle::Result initShaders(const gl::ShaderBitSet &linkedShaderStages,
+                              const gl::ShaderMap<const angle::spirv::Blob *> &spirvBlobs,
                               const ShaderInterfaceVariableInfoMap &variableInfoMap);
     void release(ContextVk *contextVk);
 
     ANGLE_INLINE bool valid() const { return mIsInitialized; }
 
-    const gl::ShaderMap<SpirvBlob> &getSpirvBlobs() const { return mSpirvBlobs; }
+    const gl::ShaderMap<angle::spirv::Blob> &getSpirvBlobs() const { return mSpirvBlobs; }
 
     // Save and load implementation for GLES Program Binary support.
     void load(gl::BinaryInputStream *stream);
     void save(gl::BinaryOutputStream *stream);
 
   private:
-    gl::ShaderMap<SpirvBlob> mSpirvBlobs;
+    gl::ShaderMap<angle::spirv::Blob> mSpirvBlobs;
     bool mIsInitialized = false;
 };
 
@@ -69,6 +68,7 @@ class ProgramInfo final : angle::NonCopyable
     angle::Result initProgram(ContextVk *contextVk,
                               const gl::ShaderType shaderType,
                               bool isLastPreFragmentStage,
+                              bool isTransformFeedbackProgram,
                               const ShaderInfo &shaderInfo,
                               ProgramTransformOptions optionBits,
                               const ShaderInterfaceVariableInfoMap &variableInfoMap);
@@ -98,6 +98,14 @@ struct DefaultUniformBlock final : private angle::NonCopyable
     // Since the default blocks are laid out in std140, this tells us where to write on a call
     // to a setUniform method. They are arranged in uniform location order.
     std::vector<sh::BlockMemberInfo> uniformLayout;
+};
+
+// Performance and resource counters.
+using DescriptorSetCountList = angle::PackedEnumMap<DescriptorSetIndex, uint32_t>;
+
+struct ProgramExecutablePerfCounters
+{
+    DescriptorSetCountList descriptorSetsAllocated;
 };
 
 class ProgramExecutableVk
@@ -153,7 +161,7 @@ class ProgramExecutableVk
         gl::ShaderMap<DefaultUniformBlock> &defaultUniformBlocks,
         vk::BufferHelper *defaultUniformBuffer,
         ContextVk *contextVk,
-        const vk::UniformsAndXfbDesc &xfbBufferDesc);
+        const vk::UniformsAndXfbDescriptorDesc &xfbBufferDesc);
     angle::Result updateInputAttachmentDescriptorSet(const gl::ProgramExecutable &executable,
                                                      const gl::ShaderType shaderType,
                                                      ContextVk *contextVk,
@@ -174,22 +182,16 @@ class ProgramExecutableVk
         mProgramPipeline = pipeline;
     }
 
-    using DescriptorSetCountList = std::array<uint32_t, DescriptorSetIndex::EnumCount>;
-    // Performance and resource counters.
-    struct PerfCounters
-    {
-        DescriptorSetCountList descriptorSetsAllocated;
-    };
-
-    const PerfCounters getObjectPerfCounters() const { return mObjectPerfCounters; }
+    ProgramExecutablePerfCounters getAndResetObjectPerfCounters();
 
   private:
     friend class ProgramVk;
     friend class ProgramPipelineVk;
 
-    angle::Result allocUniformAndXfbDescriptorSet(ContextVk *contextVk,
-                                                  const vk::UniformsAndXfbDesc &xfbBufferDesc,
-                                                  bool *newDescriptorSetAllocated);
+    angle::Result allocUniformAndXfbDescriptorSet(
+        ContextVk *contextVk,
+        const vk::UniformsAndXfbDescriptorDesc &xfbBufferDesc,
+        bool *newDescriptorSetAllocated);
 
     angle::Result allocateDescriptorSet(ContextVk *contextVk,
                                         DescriptorSetIndex descriptorSetIndex);
@@ -220,6 +222,8 @@ class ProgramExecutableVk
                                             ContextVk *contextVk);
     void updateTransformFeedbackDescriptorSetImpl(const gl::ProgramState &programState,
                                                   ContextVk *contextVk);
+    angle::Result getOrAllocateShaderResourcesDescriptorSet(ContextVk *contextVk,
+                                                            VkDescriptorSet *descriptorSetOut);
     angle::Result updateBuffersDescriptorSet(ContextVk *contextVk,
                                              const gl::ShaderType shaderType,
                                              vk::CommandBufferHelper *commandBufferHelper,
@@ -241,13 +245,13 @@ class ProgramExecutableVk
     void outputCumulativePerfCounters();
 
     // Descriptor sets for uniform blocks and textures for this program.
-    vk::DescriptorSetLayoutArray<VkDescriptorSet> mDescriptorSets;
-    vk::DescriptorSetLayoutArray<VkDescriptorSet> mEmptyDescriptorSets;
+    vk::DescriptorSetArray<VkDescriptorSet> mDescriptorSets;
+    vk::DescriptorSetArray<VkDescriptorSet> mEmptyDescriptorSets;
     size_t mNumDefaultUniformDescriptors;
     vk::BufferSerial mCurrentDefaultUniformBufferSerial;
 
-    DescriptorSetCache<vk::UniformsAndXfbDesc, VulkanCacheType::UniformsAndXfbDescriptorSet>
-        mUniformsAndXfbDescriptorSetCache;
+    DescriptorSetCache<vk::UniformsAndXfbDescriptorDesc, VulkanCacheType::UniformsAndXfbDescriptors>
+        mUniformsAndXfbDescriptorsCache;
     DescriptorSetCache<vk::TextureDescriptorDesc, VulkanCacheType::TextureDescriptors>
         mTextureDescriptorsCache;
 
@@ -258,14 +262,15 @@ class ProgramExecutableVk
 
     // Keep bindings to the descriptor pools. This ensures the pools stay valid while the Program
     // is in use.
-    vk::DescriptorSetLayoutArray<vk::RefCountedDescriptorPoolBinding> mDescriptorPoolBindings;
+    vk::DescriptorSetArray<vk::RefCountedDescriptorPoolBinding> mDescriptorPoolBindings;
 
     // Store descriptor pools here. We store the descriptors in the Program to facilitate descriptor
     // cache management. It can also allow fewer descriptors for shaders which use fewer
     // textures/buffers.
-    vk::DescriptorSetLayoutArray<vk::DynamicDescriptorPool> mDynamicDescriptorPools;
+    vk::DescriptorSetArray<vk::DynamicDescriptorPool> mDynamicDescriptorPools;
 
-    gl::ShaderVector<uint32_t> mDynamicBufferOffsets;
+    // A set of dynamic offsets used with vkCmdBindDescriptorSets for the default uniform buffers.
+    gl::ShaderVector<uint32_t> mDynamicDescriptorOffsets;
 
     // TODO: http://anglebug.com/4524: Need a different hash key than a string,
     // since that's slow to calculate.
@@ -281,7 +286,8 @@ class ProgramExecutableVk
     ProgramVk *mProgram;
     ProgramPipelineVk *mProgramPipeline;
 
-    PerfCounters mObjectPerfCounters;
+    ProgramExecutablePerfCounters mPerfCounters;
+    ProgramExecutablePerfCounters mCumulativePerfCounters;
 };
 
 }  // namespace rx

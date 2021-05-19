@@ -44,8 +44,6 @@ set(TINT_LIB_SRCS
   ast/access_decoration.h
   ast/array_accessor_expression.cc
   ast/array_accessor_expression.h
-  ast/array_decoration.cc
-  ast/array_decoration.h
   ast/assignment_statement.cc
   ast/assignment_statement.h
   ast/binary_expression.cc
@@ -90,8 +88,6 @@ set(TINT_LIB_SRCS
   ast/float_literal.h
   ast/function.cc
   ast/function.h
-  ast/function_decoration.cc
-  ast/function_decoration.h
   ast/group_decoration.cc
   ast/group_decoration.h
   ast/identifier_expression.cc
@@ -100,6 +96,8 @@ set(TINT_LIB_SRCS
   ast/if_statement.h
   ast/int_literal.cc
   ast/int_literal.h
+  ast/internal_decoration.cc
+  ast/internal_decoration.h
   ast/literal.cc
   ast/literal.h
   ast/location_decoration.cc
@@ -112,8 +110,6 @@ set(TINT_LIB_SRCS
   ast/module.h
   ast/node.cc
   ast/node.h
-  ast/null_literal.cc
-  ast/null_literal.h
   ast/pipeline_stage.cc
   ast/pipeline_stage.h
   ast/return_statement.cc
@@ -134,20 +130,18 @@ set(TINT_LIB_SRCS
   ast/struct.h
   ast/struct_block_decoration.cc
   ast/struct_block_decoration.h
-  ast/struct_decoration.cc
-  ast/struct_decoration.h
   ast/struct_member.cc
   ast/struct_member.h
-  ast/struct_member_decoration.cc
-  ast/struct_member_decoration.h
+  ast/struct_member_align_decoration.cc
+  ast/struct_member_align_decoration.h
   ast/struct_member_offset_decoration.cc
   ast/struct_member_offset_decoration.h
+  ast/struct_member_size_decoration.cc
+  ast/struct_member_size_decoration.h
   ast/switch_statement.cc
   ast/switch_statement.h
   ast/type_constructor_expression.cc
   ast/type_constructor_expression.h
-  ast/type_decoration.cc
-  ast/type_decoration.h
   ast/uint_literal.cc
   ast/uint_literal.h
   ast/unary_op.cc
@@ -156,8 +150,6 @@ set(TINT_LIB_SRCS
   ast/unary_op_expression.h
   ast/variable.cc
   ast/variable.h
-  ast/variable_decoration.cc
-  ast/variable_decoration.h
   ast/variable_decl_statement.cc
   ast/variable_decl_statement.h
   ast/workgroup_decoration.cc
@@ -185,20 +177,23 @@ set(TINT_LIB_SRCS
   inspector/inspector.h
   inspector/scalar.cc
   inspector/scalar.h
-  namer.cc
-  namer.h
   program_builder.cc
   program_builder.h
   program.cc
   program.h
   reader/reader.cc
   reader/reader.h
+  resolver/resolver.cc
+  resolver/resolver.h
   scope_stack.h
+  semantic/array.h
   semantic/call.h
+  semantic/call_target.h
   semantic/expression.h
   semantic/info.h
   semantic/intrinsic.h
   semantic/node.h
+  semantic/sem_array.cc
   semantic/sem_call.cc
   semantic/sem_call_target.cc
   semantic/sem_expression.cc
@@ -208,6 +203,7 @@ set(TINT_LIB_SRCS
   semantic/sem_intrinsic.cc
   semantic/sem_node.cc
   semantic/sem_statement.cc
+  semantic/sem_struct.cc
   semantic/sem_variable.cc
   semantic/type_mappings.h
   source.cc
@@ -217,20 +213,25 @@ set(TINT_LIB_SRCS
   symbol_table.cc
   symbol_table.h
   traits.h
-  transform/emit_vertex_point_size.cc
-  transform/emit_vertex_point_size.h
+  transform/binding_point.h
+  transform/binding_remapper.cc
+  transform/binding_remapper.h
   transform/bound_array_accessors.cc
   transform/bound_array_accessors.h
+  transform/canonicalize_entry_point_io.cc
+  transform/canonicalize_entry_point_io.h
+  transform/emit_vertex_point_size.cc
+  transform/emit_vertex_point_size.h
   transform/first_index_offset.cc
   transform/first_index_offset.h
   transform/manager.cc
   transform/manager.h
+  transform/renamer.cc
+  transform/renamer.h
   transform/transform.cc
   transform/transform.h
   transform/vertex_pulling.cc
   transform/vertex_pulling.h
-  type_determiner.cc
-  type_determiner.h
   type/access_control_type.cc
   type/access_control_type.h
   type/alias_type.cc
@@ -271,11 +272,11 @@ set(TINT_LIB_SRCS
   type/vector_type.h
   type/void_type.cc
   type/void_type.h
+  utils/get_or_create.h
+  utils/hash.h
+  utils/math.h
   utils/unique_vector.h
-  validator/validator.cc
   validator/validator.h
-  validator/validator_impl.cc
-  validator/validator_impl.h
   writer/append_vector.cc
   writer/append_vector.h
   writer/float_to_string.cc
@@ -347,6 +348,7 @@ if(${TINT_BUILD_SPV_WRITER})
     writer/spirv/instruction.h
     writer/spirv/operand.cc
     writer/spirv/operand.h
+    writer/spirv/scalar_constant.h
   )
 endif()
 
@@ -367,8 +369,6 @@ if(${TINT_BUILD_MSL_WRITER})
     writer/msl/generator.h
     writer/msl/generator_impl.cc
     writer/msl/generator_impl.h
-    writer/msl/namer.cc
-    writer/msl/namer.h
   )
 endif()
 
@@ -428,7 +428,6 @@ if(${TINT_BUILD_TESTS})
     ast/case_statement_test.cc
     ast/constant_id_decoration_test.cc
     ast/continue_statement_test.cc
-    ast/decoration_test.cc
     ast/discard_statement_test.cc
     ast/else_statement_test.cc
     ast/fallthrough_statement_test.cc
@@ -445,13 +444,14 @@ if(${TINT_BUILD_TESTS})
     ast/member_accessor_expression_test.cc
     ast/module_clone_test.cc
     ast/module_test.cc
-    ast/null_literal_test.cc
     ast/return_statement_test.cc
     ast/scalar_constructor_expression_test.cc
     ast/sint_literal_test.cc
     ast/stage_decoration_test.cc
     ast/stride_decoration_test.cc
+    ast/struct_member_align_decoration_test.cc
     ast/struct_member_offset_decoration_test.cc
+    ast/struct_member_size_decoration_test.cc
     ast/struct_member_test.cc
     ast/struct_test.cc
     ast/switch_statement_test.cc
@@ -471,14 +471,32 @@ if(${TINT_BUILD_TESTS})
     diagnostic/printer_test.cc
     inspector/inspector_test.cc
     intrinsic_table_test.cc
-    namer_test.cc
     program_test.cc
+    resolver/assignment_validation_test.cc
+    resolver/builtins_validation_test.cc
+    resolver/control_block_validation_test.cc
+    resolver/decoration_validation_test.cc
+    resolver/entry_point_validation_test.cc
+    resolver/function_validation_test.cc
+    resolver/host_shareable_validation_test.cc
+    resolver/intrinsic_test.cc
+    resolver/is_host_shareable_test.cc
+    resolver/is_storeable_test.cc
+    resolver/resolver_test_helper.cc
+    resolver/resolver_test_helper.h
+    resolver/resolver_test.cc
+    resolver/struct_layout_test.cc
+    resolver/struct_pipeline_stage_use_test.cc
+    resolver/struct_storage_class_use_test.cc
+    resolver/type_constructor_validation_test.cc
+    resolver/type_validation_test.cc
+    resolver/validation_test.cc
     scope_stack_test.cc
+    semantic/sem_intrinsic_test.cc
     symbol_table_test.cc
     symbol_test.cc
     traits_test.cc
     test_main.cc
-    type_determiner_test.cc
     type/access_control_type_test.cc
     type/alias_type_test.cc
     type/array_type_test.cc
@@ -499,16 +517,13 @@ if(${TINT_BUILD_TESTS})
     type/vector_type_test.cc
     utils/command_test.cc
     utils/command.h
+    utils/get_or_create_test.cc
+    utils/hash_test.cc
+    utils/math_test.cc
     utils/tmpfile_test.cc
     utils/tmpfile.h
     utils/unique_vector_test.cc
-    validator/validator_builtins_test.cc
-    validator/validator_control_block_test.cc
-    validator/validator_function_test.cc
-    validator/validator_test.cc
-    validator/validator_type_test.cc
-    validator/validator_test_helper.cc
-    validator/validator_test_helper.h
+    writer/append_vector_test.cc
     writer/float_to_string_test.cc
   )
 
@@ -540,6 +555,7 @@ if(${TINT_BUILD_TESTS})
       reader/spirv/function_misc_test.cc
       reader/spirv/function_var_test.cc
       reader/spirv/namer_test.cc
+      reader/spirv/parser_impl_barrier_test.cc
       reader/spirv/parser_impl_convert_member_decoration_test.cc
       reader/spirv/parser_impl_convert_type_test.cc
       reader/spirv/parser_impl_function_decl_test.cc
@@ -638,6 +654,7 @@ if(${TINT_BUILD_TESTS})
 
   if(${TINT_BUILD_SPV_WRITER})
     list(APPEND TINT_TEST_SRCS
+      transform/msl_test.cc
       transform/spirv_test.cc
       writer/spirv/binary_writer_test.cc
       writer/spirv/builder_accessor_expression_test.cc
@@ -648,6 +665,7 @@ if(${TINT_BUILD_TESTS})
       writer/spirv/builder_call_test.cc
       writer/spirv/builder_constructor_expression_test.cc
       writer/spirv/builder_discard_test.cc
+      writer/spirv/builder_entry_point_test.cc
       writer/spirv/builder_format_conversion_test.cc
       writer/spirv/builder_function_decoration_test.cc
       writer/spirv/builder_function_test.cc
@@ -666,6 +684,7 @@ if(${TINT_BUILD_TESTS})
       writer/spirv/builder_unary_op_expression_test.cc
       writer/spirv/instruction_test.cc
       writer/spirv/operand_test.cc
+      writer/spirv/scalar_constant_test.cc
       writer/spirv/spv_dump.cc
       writer/spirv/spv_dump.h
       writer/spirv/test_helper.h
@@ -708,9 +727,12 @@ if(${TINT_BUILD_TESTS})
 
   if(${TINT_BUILD_WGSL_READER} AND ${TINT_BUILD_WGSL_WRITER})
     list(APPEND TINT_TEST_SRCS
+      transform/binding_remapper_test.cc
       transform/bound_array_accessors_test.cc
+      transform/canonicalize_entry_point_io_test.cc
       transform/emit_vertex_point_size_test.cc
       transform/first_index_offset_test.cc
+      transform/renamer_test.cc
       transform/test_helper.h
       transform/vertex_pulling_test.cc
     )
@@ -747,7 +769,6 @@ if(${TINT_BUILD_TESTS})
       writer/msl/generator_impl_type_test.cc
       writer/msl/generator_impl_unary_op_test.cc
       writer/msl/generator_impl_variable_decl_statement_test.cc
-      writer/msl/namer_test.cc
       writer/msl/test_helper.h
     )
   endif()
@@ -779,12 +800,13 @@ if(${TINT_BUILD_TESTS})
       writer/hlsl/generator_impl_member_accessor_test.cc
       writer/hlsl/generator_impl_module_constant_test.cc
       writer/hlsl/generator_impl_return_test.cc
-      writer/hlsl/generator_impl_sanitizer_tests.cc
+      writer/hlsl/generator_impl_sanitizer_test.cc
       writer/hlsl/generator_impl_switch_test.cc
       writer/hlsl/generator_impl_test.cc
       writer/hlsl/generator_impl_type_test.cc
       writer/hlsl/generator_impl_unary_op_test.cc
       writer/hlsl/generator_impl_variable_decl_statement_test.cc
+      writer/hlsl/generator_impl_workgroup_var_test.cc
       writer/hlsl/namer_test.cc
       writer/hlsl/test_helper.cc
       writer/hlsl/test_helper.h

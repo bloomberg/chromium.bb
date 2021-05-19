@@ -5,9 +5,9 @@
 #include "ui/base/clipboard/clipboard_non_backed.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -18,9 +18,9 @@
 namespace ui {
 namespace {
 
-std::vector<std::string> UTF8Types(std::vector<base::string16> types) {
+std::vector<std::string> UTF8Types(std::vector<std::u16string> types) {
   std::vector<std::string> result;
-  for (const base::string16& type : types)
+  for (const std::u16string& type : types)
     result.push_back(base::UTF16ToUTF8(type));
   return result;
 }
@@ -99,7 +99,7 @@ TEST_F(ClipboardNonBackedTest, TextURIList) {
   auto data = std::make_unique<ClipboardData>();
   data->set_bookmark_url("http://example.com");
   clipboard()->WriteClipboardData(std::move(data));
-  std::vector<base::string16> types;
+  std::vector<std::u16string> types;
   clipboard()->ReadAvailableTypes(ClipboardBuffer::kCopyPaste,
                                   /*data_dst=*/nullptr, &types);
 

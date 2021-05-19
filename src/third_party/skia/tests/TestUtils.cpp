@@ -135,27 +135,68 @@ bool BipmapToBase64DataURI(const SkBitmap& bitmap, SkString* dst) {
     return true;
 }
 
-using AccessPixelFn = const float*(const char* floatBuffer, int x, int y);
+static bool compare_colors(int x, int y,
+                           const float rgbaA[],
+                           const float rgbaB[],
+                           const float tolRGBA[4],
+                           std::function<ComparePixmapsErrorReporter>& error) {
+    float diffs[4];
+    bool bad = false;
+    for (int i = 0; i < 4; ++i) {
+        diffs[i] = rgbaB[i] - rgbaA[i];
+        if (std::abs(diffs[i]) > std::abs(tolRGBA[i])) {
+            bad = true;
+        }
+    }
+    if (bad) {
+        error(x, y, diffs);
+        return false;
+    }
+    return true;
+}
 
-bool compare_pixels(int width, int height,
-                    const char* floatA, std::function<AccessPixelFn>& atA,
-                    const char* floatB, std::function<AccessPixelFn>& atB,
-                    const float tolRGBA[4], std::function<ComparePixmapsErrorReporter>& error) {
+bool ComparePixels(const GrCPixmap& a,
+                   const GrCPixmap& b,
+                   const float tolRGBA[4],
+                   std::function<ComparePixmapsErrorReporter>& error) {
+    if (a.dimensions() != b.dimensions()) {
+        static constexpr float kDummyDiffs[4] = {};
+        error(-1, -1, kDummyDiffs);
+        return false;
+    }
 
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            const float* rgbaA = atA(floatA, x, y);
-            const float* rgbaB = atB(floatB, x, y);
-            float diffs[4];
-            bool bad = false;
-            for (int i = 0; i < 4; ++i) {
-                diffs[i] = rgbaB[i] - rgbaA[i];
-                if (std::abs(diffs[i]) > std::abs(tolRGBA[i])) {
-                    bad = true;
-                }
-            }
-            if (bad) {
-                error(x, y, diffs);
+    SkAlphaType floatAlphaType = a.alphaType();
+    // If one is premul and the other is unpremul we do the comparison in premul space.
+    if ((a.alphaType() == kPremul_SkAlphaType   || b.alphaType() == kPremul_SkAlphaType) &&
+        (a.alphaType() == kUnpremul_SkAlphaType || b.alphaType() == kUnpremul_SkAlphaType)) {
+        floatAlphaType = kPremul_SkAlphaType;
+    }
+    sk_sp<SkColorSpace> floatCS;
+    if (SkColorSpace::Equals(a.colorSpace(), b.colorSpace())) {
+        floatCS = a.refColorSpace();
+    } else {
+        floatCS = SkColorSpace::MakeSRGBLinear();
+    }
+    GrImageInfo floatInfo(GrColorType::kRGBA_F32,
+                          floatAlphaType,
+                          std::move(floatCS),
+                          a.dimensions());
+
+    GrPixmap floatA = GrPixmap::Allocate(floatInfo);
+    GrPixmap floatB = GrPixmap::Allocate(floatInfo);
+    SkAssertResult(GrConvertPixels(floatA, a));
+    SkAssertResult(GrConvertPixels(floatB, b));
+
+    SkASSERT(floatA.rowBytes() == floatB.rowBytes());
+    auto at = [rb = floatA.rowBytes()](const void* base, int x, int y) {
+        return SkTAddOffset<const float>(base, y*rb + x*sizeof(float)*4);
+    };
+
+    for (int y = 0; y < floatA.height(); ++y) {
+        for (int x = 0; x < floatA.width(); ++x) {
+            const float* rgbaA = at(floatA.addr(), x, y);
+            const float* rgbaB = at(floatB.addr(), x, y);
+            if (!compare_colors(x, y, rgbaA, rgbaB, tolRGBA, error)) {
                 return false;
             }
         }
@@ -163,95 +204,44 @@ bool compare_pixels(int width, int height,
     return true;
 }
 
-bool ComparePixels(const GrImageInfo& infoA, const char* a, size_t rowBytesA,
-                   const GrImageInfo& infoB, const char* b, size_t rowBytesB,
-                   const float tolRGBA[4], std::function<ComparePixmapsErrorReporter>& error) {
-    if (infoA.width() != infoB.width() || infoA.height() != infoB.height()) {
-        static constexpr float kDummyDiffs[4] = {};
-        error(-1, -1, kDummyDiffs);
-        return false;
-    }
-
-    SkAlphaType floatAlphaType = infoA.alphaType();
-    // If one is premul and the other is unpremul we do the comparison in premul space.
-    if ((infoA.alphaType() == kPremul_SkAlphaType ||
-         infoB.alphaType() == kPremul_SkAlphaType) &&
-        (infoA.alphaType() == kUnpremul_SkAlphaType ||
-         infoB.alphaType() == kUnpremul_SkAlphaType)) {
-        floatAlphaType = kPremul_SkAlphaType;
-    }
-    sk_sp<SkColorSpace> floatCS;
-    if (SkColorSpace::Equals(infoA.colorSpace(), infoB.colorSpace())) {
-        floatCS = infoA.refColorSpace();
-    } else {
-        floatCS = SkColorSpace::MakeSRGBLinear();
-    }
-    GrImageInfo floatInfo(GrColorType::kRGBA_F32, floatAlphaType, std::move(floatCS),
-                          infoA.width(), infoA.height());
-
-    size_t floatBpp = GrColorTypeBytesPerPixel(GrColorType::kRGBA_F32);
-    size_t floatRowBytes = floatBpp * infoA.width();
-    std::unique_ptr<char[]> floatA(new char[floatRowBytes * infoA.height()]);
-    std::unique_ptr<char[]> floatB(new char[floatRowBytes * infoA.height()]);
-    SkAssertResult(GrConvertPixels(floatInfo, floatA.get(), floatRowBytes, infoA, a, rowBytesA));
-    SkAssertResult(GrConvertPixels(floatInfo, floatB.get(), floatRowBytes, infoB, b, rowBytesB));
-
-    auto at = std::function<AccessPixelFn>(
-        [floatBpp, floatRowBytes](const char* floatBuffer, int x, int y) {
-            return reinterpret_cast<const float*>(floatBuffer + y * floatRowBytes + x * floatBpp);
-        });
-
-    return compare_pixels(infoA.width(), infoA.height(),
-                          floatA.get(), at, floatB.get(), at,
-                          tolRGBA, error);
-}
-
-bool ComparePixels(const SkPixmap& a, const SkPixmap& b, const float tolRGBA[4],
-                   std::function<ComparePixmapsErrorReporter>& error) {
-    return ComparePixels(a.info(), static_cast<const char*>(a.addr()), a.rowBytes(),
-                         b.info(), static_cast<const char*>(b.addr()), b.rowBytes(),
-                         tolRGBA, error);
-}
-
-bool CheckSolidPixels(const SkColor4f& col, const SkPixmap& pixmap,
-                      const float tolRGBA[4], std::function<ComparePixmapsErrorReporter>& error) {
-
+bool CheckSolidPixels(const SkColor4f& col,
+                      const SkPixmap& pixmap,
+                      const float tolRGBA[4],
+                      std::function<ComparePixmapsErrorReporter>& error) {
     size_t floatBpp = GrColorTypeBytesPerPixel(GrColorType::kRGBA_F32);
 
-    std::unique_ptr<char[]> floatA(new char[floatBpp]);
     // First convert 'col' to be compatible with 'pixmap'
+    GrPixmap colorPixmap;
     {
         sk_sp<SkColorSpace> srcCS = SkColorSpace::MakeSRGBLinear();
-        GrImageInfo srcInfo(GrColorType::kRGBA_F32, kUnpremul_SkAlphaType, std::move(srcCS), 1, 1);
-        GrImageInfo dstInfo(GrColorType::kRGBA_F32, pixmap.alphaType(), pixmap.refColorSpace(), 1, 1);
-
-        SkAssertResult(GrConvertPixels(dstInfo, floatA.get(), floatBpp, srcInfo,
-                                       col.vec(), floatBpp));
+        GrImageInfo srcInfo(GrColorType::kRGBA_F32,
+                            kUnpremul_SkAlphaType,
+                            std::move(srcCS),
+                            {1, 1});
+        GrCPixmap srcPixmap(srcInfo, col.vec(), floatBpp);
+        GrImageInfo dstInfo =
+                srcInfo.makeAlphaType(pixmap.alphaType()).makeColorSpace(pixmap.refColorSpace());
+        colorPixmap = GrPixmap::Allocate(dstInfo);
+        SkAssertResult(GrConvertPixels(colorPixmap, srcPixmap));
     }
 
     size_t floatRowBytes = floatBpp * pixmap.width();
     std::unique_ptr<char[]> floatB(new char[floatRowBytes * pixmap.height()]);
     // Then convert 'pixmap' to RGBA_F32
-    {
-        GrImageInfo dstInfo(GrColorType::kRGBA_F32, pixmap.alphaType(), pixmap.refColorSpace(),
-                            pixmap.width(), pixmap.height());
+    GrPixmap f32Pixmap = GrPixmap::Allocate(pixmap.info().makeColorType(kRGBA_F32_SkColorType));
+    SkAssertResult(GrConvertPixels(f32Pixmap, pixmap));
 
-        SkAssertResult(GrConvertPixels(dstInfo, floatB.get(), floatRowBytes, pixmap.info(),
-                                       pixmap.addr(), pixmap.rowBytes()));
+    for (int y = 0; y < f32Pixmap.height(); ++y) {
+        for (int x = 0; x < f32Pixmap.width(); ++x) {
+            auto rgbaA = SkTAddOffset<const float>(f32Pixmap.addr(),
+                                                   f32Pixmap.rowBytes()*y + floatBpp*x);
+            auto rgbaB = static_cast<const float*>(colorPixmap.addr());
+            if (!compare_colors(x, y, rgbaA, rgbaB, tolRGBA, error)) {
+                return false;
+            }
+        }
     }
-
-    auto atA = std::function<AccessPixelFn>(
-        [](const char* floatBuffer, int /* x */, int /* y */) {
-            return reinterpret_cast<const float*>(floatBuffer);
-        });
-
-    auto atB = std::function<AccessPixelFn>(
-        [floatBpp, floatRowBytes](const char* floatBuffer, int x, int y) {
-            return reinterpret_cast<const float*>(floatBuffer + y * floatRowBytes + x * floatBpp);
-        });
-
-    return compare_pixels(pixmap.width(), pixmap.height(), floatA.get(), atA, floatB.get(), atB,
-                          tolRGBA, error);
+    return true;
 }
 
 void CheckSingleThreadedProxyRefs(skiatest::Reporter* reporter,

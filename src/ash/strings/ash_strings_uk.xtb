@@ -40,6 +40,7 @@
 <translation id="1252999807265626933">Джерело заряджання: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Який прогноз погоди?</translation>
 <translation id="1267032506238418139">Зміна комбінацій клавіш</translation>
+<translation id="1269405891096105529">Периферійні пристрої не підтримуються в режимі гостя</translation>
 <translation id="1270290102613614947">Екранну клавіатуру вимкнено</translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1275285675049378717">Живлення пристрою (<ph name="POWER_SOURCE" />)</translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Введіть повідомлення</translation>
 <translation id="2018630726571919839">Розкажи жарт</translation>
+<translation id="2021864487439853900">Натисніть, щоб розблокувати</translation>
 <translation id="2049240716062114887">Назву робочого столу змінено на "<ph name="DESK_NAME" />"</translation>
 <translation id="2050339315714019657">Портретна</translation>
 <translation id="2067602449040652523">Яскравість клавіатури</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> усе одно зможе ввійти в обліковий запис.</translation>
 <translation id="3321628682574733415">Неправильний код доступу батьків</translation>
 <translation id="332587331255250389">Замініть акумулятор</translation>
+<translation id="3333741161915951567">Перезапуск модема. Спробуйте знову через 30 секунд.</translation>
 <translation id="3341303451326249809">Знімок екрана зроблено</translation>
 <translation id="334252345105450327">Зробити знімок екрана</translation>
 <translation id="3351879221545518001">Зараз ви транслюєте екран.</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> – керований користувач</translation>
 <translation id="3665889125180354336">Мікрофон для запису</translation>
 <translation id="36813544980941320">Ваш телефон і пристрій <ph name="DEVICE_NAME" /> підключатимуться до однакових мереж Wi-Fi</translation>
+<translation id="3702809606464356667">Показано вікна поточного робочого столу. Щоб показати вікна всіх робочих столів, натисніть клавішу зі стрілкою вгору.</translation>
 <translation id="3702846122927433391">Яка чисельність населення в Нігерії</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Завантаження...</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">Налаштування звуку</translation>
 <translation id="3945319193631853098">Натисніть, щоб завершити налаштування</translation>
 <translation id="3945867833895287237">Підключення до точки доступу…</translation>
+<translation id="3958465044488004317">Перегляньте результат в Асистенті</translation>
 <translation id="3962859241508114581">Попередня композиція</translation>
 <translation id="3969043077941541451">Вимкнено</translation>
 <translation id="397105322502079400">Обчислення...</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175">Спільний доступ до екрана для користувача <ph name="HELPER_NAME" /> через віддалену допомогу.</translation>
 <translation id="4424159417645388645">Робочий стіл 5</translation>
 <translation id="4430019312045809116">Гучність</translation>
+<translation id="4445159312344259901">Увійдіть, щоб розблокувати</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 важливе сповіщення}one{# важливе сповіщення}few{# важливі сповіщення}many{# важливих сповіщень}other{# важливого сповіщення}}</translation>
 <translation id="4450893287417543264">Більше не показувати</translation>
 <translation id="445864333228800152">Доброго вечора!</translation>
 <translation id="4458688154122353284">Зупинити запис екрана</translation>
+<translation id="4467143075433126295">Щоб вийти з повноекранного режиму, утримуйте клавішу [Esc]</translation>
 <translation id="4472575034687746823">Початок роботи</translation>
 <translation id="4477350412780666475">Наступна композиція</translation>
 <translation id="4477892968187500306">На цьому пристрої можуть бути додатки, які не були перевірені Google.</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Google Асистент недоступний під час сеансу в режимі "Гість".</translation>
 <translation id="6137566720514957455">Відкрити вікно видалення облікового запису <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Периферійний пристрій не підтримується</translation>
 <translation id="615957422585914272">Показувати екранну клавіатуру</translation>
 <translation id="6165508094623778733">Докладніше</translation>
 <translation id="6179832488876878285">Тут можна закріпити важливі файли. Щоб почати, відкрийте додаток Файли.</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">Виберіть область за допомогою стилуса</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> обернено на <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Аудіо</translation>
+<translation id="6330012934079202188">Показано вікна всіх робочих столів. Щоб показати вікна поточного робочого столу, натисніть клавішу зі стрілкою вгору.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> – сеанс, яким керує <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth увімкнено</translation>
 <translation id="6381109794406942707">Щоб розблокувати пристрій, введіть PIN-код.</translation>
 <translation id="639644700271529076">Режим CAPS LOCK вимкнено</translation>
-<translation id="6396835948284782440">Щоб вийти, утримуйте клавішу [Esc].</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Видаліть усі сповіщення</translation>
@@ -794,7 +802,6 @@
 <translation id="7780159184141939021">Обернути екран</translation>
 <translation id="7796353162336583443">Щоб додавати примітки та знімки екрана, користуватися Google Асистентом або використовувати стилус як лазерний вказівник чи лупу, торкніться кнопки стилуса на полиці.</translation>
 <translation id="7798302898096527229">Щоб скасувати, натисніть клавішу Search або Shift.</translation>
-<translation id="7807966291075028781">З міркувань безпеки периферійні пристрої не підтримуються в режимі гостя</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> і <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">потужний сигнал</translation>
 <translation id="7837740436429729974">Час минув</translation>
@@ -944,6 +951,7 @@
 <translation id="8936501819958976551">деактивовано</translation>
 <translation id="8938800817013097409">Пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
 <translation id="8940956008527784070">Низький заряд акумулятора (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">З вашим Chromebook сумісні лише схвалені пристрої Thunderbolt</translation>
 <translation id="8982906748181120328">Видимість поблизу</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Використовується: <ph name="IME_NAME" /></translation>

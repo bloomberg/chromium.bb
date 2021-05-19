@@ -9,11 +9,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/common/utils.h"
@@ -41,7 +41,7 @@ const size_t kURLLookupTimeoutDurationInSeconds = 3;
 constexpr char kAuthHeaderBearer[] = "Bearer ";
 
 // Represents the value stored in the |version| field of |RTLookupRequest|.
-const int kRTLookupRequestVersion = 1;
+const int kRTLookupRequestVersion = 2;
 
 // UMA helper functions.
 void RecordBooleanWithAndWithoutSuffix(const std::string& metric,
@@ -123,19 +123,13 @@ RTLookupRequest::OSType GetRTLookupRequestOSType() {
 RealTimeUrlLookupServiceBase::RealTimeUrlLookupServiceBase(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     VerdictCacheManager* cache_manager,
-    const IsHistorySyncEnabledCallback& is_history_sync_enabled_callback,
-    PrefService* pref_service,
-    const ChromeUserPopulation::ProfileManagementStatus&
-        profile_management_status,
-    bool is_under_advanced_protection,
-    bool is_off_the_record)
+    base::RepeatingCallback<ChromeUserPopulation()>
+        get_user_population_callback,
+    ReferrerChainProvider* referrer_chain_provider)
     : url_loader_factory_(url_loader_factory),
       cache_manager_(cache_manager),
-      is_history_sync_enabled_callback_(is_history_sync_enabled_callback),
-      pref_service_(pref_service),
-      profile_management_status_(profile_management_status),
-      is_under_advanced_protection_(is_under_advanced_protection),
-      is_off_the_record_(is_off_the_record) {}
+      get_user_population_callback_(get_user_population_callback),
+      referrer_chain_provider_(referrer_chain_provider) {}
 
 RealTimeUrlLookupServiceBase::~RealTimeUrlLookupServiceBase() = default;
 
@@ -171,6 +165,31 @@ GURL RealTimeUrlLookupServiceBase::SanitizeURL(const GURL& url) {
   replacements.ClearUsername();
   replacements.ClearPassword();
   return url.ReplaceComponents(replacements);
+}
+
+// static
+void RealTimeUrlLookupServiceBase::SanitizeReferrerChainEntries(
+    ReferrerChain* referrer_chain) {
+  for (ReferrerChainEntry& entry : *referrer_chain) {
+    // TODO(crbug.com/1161342): Also set the is_subframe_url_removed field after
+    // is_subframe_url_removed is added in the proto.
+    // If the entry sets main_frame_url, that means the url is triggered in a
+    // subframe. Thus replace the url with the main_frame_url and clear
+    // the main_frame_url field.
+    if (entry.has_main_frame_url()) {
+      entry.set_url(entry.main_frame_url());
+      entry.clear_main_frame_url();
+      entry.set_is_subframe_url_removed(true);
+    }
+    // If the entry sets referrer_main_frame_url, that means the referrer_url is
+    // triggered in a subframe. Thus replace the referrer_url with the
+    // referrer_main_frame_url and clear the referrer_main_frame_url field.
+    if (entry.has_referrer_main_frame_url()) {
+      entry.set_referrer_url(entry.referrer_main_frame_url());
+      entry.clear_referrer_main_frame_url();
+      entry.set_is_subframe_referrer_url_removed(true);
+    }
+  }
 }
 
 base::WeakPtr<RealTimeUrlLookupServiceBase>
@@ -279,7 +298,8 @@ void RealTimeUrlLookupServiceBase::MayBeCacheRealTimeUrlVerdict(
     const GURL& url,
     RTLookupResponse response) {
   if (response.threat_info_size() > 0) {
-    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::UI),
+    GetTaskRunner(ThreadID::UI)
+        ->PostTask(FROM_HERE,
                    base::BindOnce(&VerdictCacheManager::CacheRealTimeUrlVerdict,
                                   base::Unretained(cache_manager_), url,
                                   response, base::Time::Now(),
@@ -298,11 +318,11 @@ void RealTimeUrlLookupServiceBase::StartLookup(
   std::unique_ptr<RTLookupResponse> cache_response =
       GetCachedRealTimeUrlVerdict(url);
   if (cache_response) {
-    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
-                   base::BindOnce(std::move(response_callback),
-                                  /* is_rt_lookup_successful */ true,
-                                  /* is_cached_response */ true,
-                                  std::move(cache_response)));
+    GetTaskRunner(ThreadID::IO)
+        ->PostTask(FROM_HERE, base::BindOnce(std::move(response_callback),
+                                             /* is_rt_lookup_successful */ true,
+                                             /* is_cached_response */ true,
+                                             std::move(cache_response)));
     return;
   }
 
@@ -325,6 +345,9 @@ void RealTimeUrlLookupServiceBase::SendRequest(
   RecordRequestPopulationWithAndWithoutSuffix(
       "SafeBrowsing.RT.Request.UserPopulation", GetMetricSuffix(),
       request->population().user_population());
+  RecordCount100WithAndWithoutSuffix(
+      "SafeBrowsing.RT.Request.ReferrerChainLength", GetMetricSuffix(),
+      request->referrer_chain().size());
   std::string req_data;
   request->SerializeToString(&req_data);
 
@@ -341,11 +364,12 @@ void RealTimeUrlLookupServiceBase::SendRequest(
   SendRequestInternal(std::move(resource_request), req_data, url,
                       std::move(response_callback));
 
-  base::PostTask(
-      FROM_HERE, CreateTaskTraits(ThreadID::IO),
-      base::BindOnce(
-          std::move(request_callback), std::move(request),
-          access_token_string.has_value() ? access_token_string.value() : ""));
+  GetTaskRunner(ThreadID::IO)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(std::move(request_callback), std::move(request),
+                                access_token_string.has_value()
+                                    ? access_token_string.value()
+                                    : ""));
 }
 
 void RealTimeUrlLookupServiceBase::SendRequestInternal(
@@ -406,10 +430,11 @@ void RealTimeUrlLookupServiceBase::OnURLLoaderComplete(
                                      GetMetricSuffix(),
                                      response->threat_info_size());
 
-  base::PostTask(
-      FROM_HERE, CreateTaskTraits(ThreadID::IO),
-      base::BindOnce(std::move(it->second), is_rt_lookup_successful,
-                     /* is_cached_response */ false, std::move(response)));
+  GetTaskRunner(ThreadID::IO)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(it->second), is_rt_lookup_successful,
+                         /* is_cached_response */ false, std::move(response)));
 
   delete it->first;
   pending_requests_.erase(it);
@@ -438,20 +463,17 @@ std::unique_ptr<RTLookupRequest> RealTimeUrlLookupServiceBase::FillRequestProto(
     request->set_dm_token(dm_token_string.value());
   }
 
-  ChromeUserPopulation* user_population = request->mutable_population();
-  user_population->set_user_population(
-      IsEnhancedProtectionEnabled(*pref_service_)
-          ? ChromeUserPopulation::ENHANCED_PROTECTION
-          : IsExtendedReportingEnabled(*pref_service_)
-                ? ChromeUserPopulation::EXTENDED_REPORTING
-                : ChromeUserPopulation::SAFE_BROWSING);
+  *request->mutable_population() = get_user_population_callback_.Run();
 
-  user_population->set_profile_management_status(profile_management_status_);
-  user_population->set_is_history_sync_enabled(
-      is_history_sync_enabled_callback_.Run());
-  user_population->set_is_under_advanced_protection(
-      is_under_advanced_protection_);
-  user_population->set_is_incognito(is_off_the_record_);
+  if (CanAttachReferrerChain() && referrer_chain_provider_) {
+    referrer_chain_provider_->IdentifyReferrerChainByPendingEventURL(
+        SanitizeURL(url), GetReferrerUserGestureLimit(),
+        request->mutable_referrer_chain());
+    if (!CanCheckSubresourceURL()) {
+      SanitizeReferrerChainEntries(request->mutable_referrer_chain());
+    }
+  }
+
   return request;
 }
 
@@ -463,6 +485,9 @@ void RealTimeUrlLookupServiceBase::Shutdown() {
     delete pending.first;
   }
   pending_requests_.clear();
+
+  // Clear references to other KeyedServices.
+  cache_manager_ = nullptr;
 }
 
 }  // namespace safe_browsing

@@ -12,16 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <sstream>
-
 #include "gmock/gmock.h"
-#include "src/ast/call_expression.h"
-#include "src/ast/identifier_expression.h"
-#include "src/program.h"
+#include "src/ast/call_statement.h"
+#include "src/ast/stage_decoration.h"
 #include "src/semantic/call.h"
-#include "src/type/f32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type_determiner.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -161,15 +155,15 @@ using HlslIntrinsicTest = TestParamHelper<IntrinsicData>;
 TEST_P(HlslIntrinsicTest, Emit) {
   auto param = GetParam();
 
-  auto* call = GenerateCall(param.intrinsic, param.type, this);
-  ASSERT_NE(nullptr, call) << "Unhandled intrinsic";
-  WrapInFunction(call);
-
   Global("f2", ty.vec2<float>(), ast::StorageClass::kFunction);
   Global("f3", ty.vec3<float>(), ast::StorageClass::kFunction);
   Global("u2", ty.vec2<unsigned int>(), ast::StorageClass::kFunction);
   Global("b2", ty.vec2<bool>(), ast::StorageClass::kFunction);
   Global("m2x2", ty.mat2x2<float>(), ast::StorageClass::kFunction);
+
+  auto* call = GenerateCall(param.intrinsic, param.type, this);
+  ASSERT_NE(nullptr, call) << "Unhandled intrinsic";
+  WrapInFunction(call);
 
   GeneratorImpl& gen = Build();
 
@@ -419,6 +413,44 @@ TEST_F(HlslGeneratorImplTest_Intrinsic, Unpack2x16Float) {
   EXPECT_THAT(
       result(),
       HasSubstr("f16tof32(uint2(_tint_tmp & 0xffff, _tint_tmp >> 16))"));
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, StorageBarrier) {
+  Func("main", {}, ty.void_(),
+       {create<ast::CallStatement>(Call("storageBarrier"))},
+       {create<ast::StageDecoration>(ast::PipelineStage::kCompute)});
+
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  EXPECT_EQ(result(), R"([numthreads(1, 1, 1)]
+void main() {
+  DeviceMemoryBarrierWithGroupSync();
+  return;
+}
+
+)");
+
+  Validate();
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, WorkgroupBarrier) {
+  Func("main", {}, ty.void_(),
+       {create<ast::CallStatement>(Call("workgroupBarrier"))},
+       {create<ast::StageDecoration>(ast::PipelineStage::kCompute)});
+
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  EXPECT_EQ(result(), R"([numthreads(1, 1, 1)]
+void main() {
+  GroupMemoryBarrierWithGroupSync();
+  return;
+}
+
+)");
+
+  Validate();
 }
 
 }  // namespace

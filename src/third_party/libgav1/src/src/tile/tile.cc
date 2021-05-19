@@ -609,7 +609,7 @@ bool Tile::ProcessSuperBlockRow(int row4x4,
   const int block_width4x4 = kNum4x4BlocksWide[SuperBlockSize()];
   for (int column4x4 = column4x4_start_; column4x4 < column4x4_end_;
        column4x4 += block_width4x4) {
-    if (!ProcessSuperBlock(row4x4, column4x4, block_width4x4, scratch_buffer,
+    if (!ProcessSuperBlock(row4x4, column4x4, scratch_buffer,
                            processing_mode)) {
       LIBGAV1_DLOG(ERROR, "Error decoding super block row: %d column: %d",
                    row4x4, column4x4);
@@ -642,9 +642,6 @@ void Tile::SaveSymbolDecoderContext() {
 }
 
 bool Tile::ParseAndDecode() {
-  // If this is the main thread, we build the loop filter bit masks when parsing
-  // so that it happens in the current thread. This ensures that the main thread
-  // does as much work as possible.
   if (split_parse_and_decode_) {
     if (!ThreadedParseAndDecode()) return false;
     SaveSymbolDecoderContext();
@@ -776,8 +773,8 @@ bool Tile::ThreadedParseAndDecode() {
     for (int column4x4 = column4x4_start_, column_index = 0;
          column4x4 < column4x4_end_;
          column4x4 += block_width4x4, ++column_index) {
-      if (!ProcessSuperBlock(row4x4, column4x4, block_width4x4,
-                             scratch_buffer.get(), kProcessingModeParseOnly)) {
+      if (!ProcessSuperBlock(row4x4, column4x4, scratch_buffer.get(),
+                             kProcessingModeParseOnly)) {
         std::lock_guard<std::mutex> lock(threading_.mutex);
         threading_.abort = true;
         break;
@@ -862,8 +859,8 @@ void Tile::DecodeSuperBlock(int row_index, int column_index,
       tile_scratch_buffer_pool_->Get();
   bool ok = scratch_buffer != nullptr;
   if (ok) {
-    ok = ProcessSuperBlock(row4x4, column4x4, block_width4x4,
-                           scratch_buffer.get(), kProcessingModeDecodeOnly);
+    ok = ProcessSuperBlock(row4x4, column4x4, scratch_buffer.get(),
+                           kProcessingModeDecodeOnly);
     tile_scratch_buffer_pool_->Release(std::move(scratch_buffer));
   }
   std::unique_lock<std::mutex> lock(threading_.mutex);
@@ -1629,11 +1626,12 @@ bool Tile::TransformBlock(const Block& block, Plane plane, int base_x,
     const int sb_row_index = SuperBlockRowIndex(block.row4x4);
     const int sb_column_index = SuperBlockColumnIndex(block.column4x4);
     if (mode == kProcessingModeDecodeOnly) {
-      TransformParameterQueue& tx_params =
+      Queue<TransformParameters>& tx_params =
           *residual_buffer_threaded_[sb_row_index][sb_column_index]
                ->transform_parameters();
       ReconstructBlock(block, plane, start_x, start_y, tx_size,
-                       tx_params.Type(), tx_params.NonZeroCoeffCount());
+                       tx_params.Front().type,
+                       tx_params.Front().non_zero_coeff_count);
       tx_params.Pop();
     } else {
       TransformType tx_type;
@@ -1656,7 +1654,7 @@ bool Tile::TransformBlock(const Block& block, Plane plane, int base_x,
         assert(mode == kProcessingModeParseOnly);
         residual_buffer_threaded_[sb_row_index][sb_column_index]
             ->transform_parameters()
-            ->Push(non_zero_coeff_count, tx_type);
+            ->Push(TransformParameters(tx_type, non_zero_coeff_count));
       }
     }
   }
@@ -1886,6 +1884,7 @@ bool Tile::AssignInterMv(const Block& block, bool is_compound) {
   GetClampParameters(block, min, max);
   BlockParameters& bp = *block.bp;
   const PredictionParameters& prediction_parameters = *bp.prediction_parameters;
+  bp.mv.mv64 = 0;
   if (is_compound) {
     for (int i = 0; i < 2; ++i) {
       const PredictionMode mode = GetSinglePredictionMode(i, bp.y_mode);
@@ -1948,6 +1947,7 @@ bool Tile::AssignIntraMv(const Block& block) {
   BlockParameters& bp = *block.bp;
   const PredictionParameters& prediction_parameters = *bp.prediction_parameters;
   const MotionVector& ref_mv_0 = prediction_parameters.reference_mv(0);
+  bp.mv.mv64 = 0;
   ReadMotionVector(block, 0);
   if (ref_mv_0.mv32 == 0) {
     const MotionVector& ref_mv_1 = prediction_parameters.reference_mv(1);
@@ -2122,7 +2122,6 @@ void Tile::PopulateDeblockFilterLevel(const Block& block) {
 }
 
 bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
-                        ParameterTree* const tree,
                         TileScratchBuffer* const scratch_buffer,
                         ResidualPtr* residual) {
   // Do not process the block if the starting point is beyond the visible frame.
@@ -2133,8 +2132,24 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
       column4x4 >= frame_header_.columns4x4) {
     return true;
   }
-  BlockParameters& bp = *tree->parameters();
-  block_parameters_holder_.FillCache(row4x4, column4x4, block_size, &bp);
+
+  if (split_parse_and_decode_) {
+    // Push block ordering info to the queue. DecodeBlock() will use this queue
+    // to decode the blocks in the correct order.
+    const int sb_row_index = SuperBlockRowIndex(row4x4);
+    const int sb_column_index = SuperBlockColumnIndex(column4x4);
+    residual_buffer_threaded_[sb_row_index][sb_column_index]
+        ->partition_tree_order()
+        ->Push(PartitionTreeNode(row4x4, column4x4, block_size));
+  }
+
+  BlockParameters* bp_ptr =
+      block_parameters_holder_.Get(row4x4, column4x4, block_size);
+  if (bp_ptr == nullptr) {
+    LIBGAV1_DLOG(ERROR, "Failed to get BlockParameters.");
+    return false;
+  }
+  BlockParameters& bp = *bp_ptr;
   Block block(*this, block_size, row4x4, column4x4, scratch_buffer, residual);
   bp.size = block_size;
   bp.prediction_parameters =
@@ -2186,16 +2201,13 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
   return true;
 }
 
-bool Tile::DecodeBlock(ParameterTree* const tree,
+bool Tile::DecodeBlock(int row4x4, int column4x4, BlockSize block_size,
                        TileScratchBuffer* const scratch_buffer,
                        ResidualPtr* residual) {
-  const int row4x4 = tree->row4x4();
-  const int column4x4 = tree->column4x4();
   if (row4x4 >= frame_header_.rows4x4 ||
       column4x4 >= frame_header_.columns4x4) {
     return true;
   }
-  const BlockSize block_size = tree->block_size();
   Block block(*this, block_size, row4x4, column4x4, scratch_buffer, residual);
   if (!ComputePrediction(block) ||
       !Residual(block, kProcessingModeDecodeOnly)) {
@@ -2206,27 +2218,22 @@ bool Tile::DecodeBlock(ParameterTree* const tree,
 }
 
 bool Tile::ProcessPartition(int row4x4_start, int column4x4_start,
-                            ParameterTree* const root,
                             TileScratchBuffer* const scratch_buffer,
                             ResidualPtr* residual) {
-  Stack<ParameterTree*, kDfsStackSize> stack;
+  Stack<PartitionTreeNode, kDfsStackSize> stack;
 
   // Set up the first iteration.
-  ParameterTree* node = root;
-  int row4x4 = row4x4_start;
-  int column4x4 = column4x4_start;
-  BlockSize block_size = SuperBlockSize();
+  stack.Push(
+      PartitionTreeNode(row4x4_start, column4x4_start, SuperBlockSize()));
 
   // DFS loop. If it sees a terminal node (leaf node), ProcessBlock is invoked.
   // Otherwise, the children are pushed into the stack for future processing.
   do {
-    if (!stack.Empty()) {
-      // Set up subsequent iterations.
-      node = stack.Pop();
-      row4x4 = node->row4x4();
-      column4x4 = node->column4x4();
-      block_size = node->block_size();
-    }
+    PartitionTreeNode node = stack.Pop();
+    int row4x4 = node.row4x4;
+    int column4x4 = node.column4x4;
+    BlockSize block_size = node.block_size;
+
     if (row4x4 >= frame_header_.rows4x4 ||
         column4x4 >= frame_header_.columns4x4) {
       continue;
@@ -2262,13 +2269,13 @@ bool Tile::ProcessPartition(int row4x4_start, int column4x4_start,
           sequence_header_.color_config.subsampling_y);
       return false;
     }
-    if (!node->SetPartitionType(partition)) {
-      LIBGAV1_DLOG(ERROR, "node->SetPartitionType() failed.");
-      return false;
-    }
+
+    const int quarter_block4x4 = half_block4x4 >> 1;
+    const BlockSize split_size = kSubSize[kPartitionSplit][block_size];
+    assert(partition == kPartitionNone || sub_size != kBlockInvalid);
     switch (partition) {
       case kPartitionNone:
-        if (!ProcessBlock(row4x4, column4x4, sub_size, node, scratch_buffer,
+        if (!ProcessBlock(row4x4, column4x4, sub_size, scratch_buffer,
                           residual)) {
           return false;
         }
@@ -2276,28 +2283,82 @@ bool Tile::ProcessPartition(int row4x4_start, int column4x4_start,
       case kPartitionSplit:
         // The children must be added in reverse order since a stack is being
         // used.
-        for (int i = 3; i >= 0; --i) {
-          ParameterTree* const child = node->children(i);
-          assert(child != nullptr);
-          stack.Push(child);
-        }
+        stack.Push(PartitionTreeNode(row4x4 + half_block4x4,
+                                     column4x4 + half_block4x4, sub_size));
+        stack.Push(
+            PartitionTreeNode(row4x4 + half_block4x4, column4x4, sub_size));
+        stack.Push(
+            PartitionTreeNode(row4x4, column4x4 + half_block4x4, sub_size));
+        stack.Push(PartitionTreeNode(row4x4, column4x4, sub_size));
         break;
       case kPartitionHorizontal:
+        if (!ProcessBlock(row4x4, column4x4, sub_size, scratch_buffer,
+                          residual) ||
+            !ProcessBlock(row4x4 + half_block4x4, column4x4, sub_size,
+                          scratch_buffer, residual)) {
+          return false;
+        }
+        break;
       case kPartitionVertical:
+        if (!ProcessBlock(row4x4, column4x4, sub_size, scratch_buffer,
+                          residual) ||
+            !ProcessBlock(row4x4, column4x4 + half_block4x4, sub_size,
+                          scratch_buffer, residual)) {
+          return false;
+        }
+        break;
       case kPartitionHorizontalWithTopSplit:
+        if (!ProcessBlock(row4x4, column4x4, split_size, scratch_buffer,
+                          residual) ||
+            !ProcessBlock(row4x4, column4x4 + half_block4x4, split_size,
+                          scratch_buffer, residual) ||
+            !ProcessBlock(row4x4 + half_block4x4, column4x4, sub_size,
+                          scratch_buffer, residual)) {
+          return false;
+        }
+        break;
       case kPartitionHorizontalWithBottomSplit:
+        if (!ProcessBlock(row4x4, column4x4, sub_size, scratch_buffer,
+                          residual) ||
+            !ProcessBlock(row4x4 + half_block4x4, column4x4, split_size,
+                          scratch_buffer, residual) ||
+            !ProcessBlock(row4x4 + half_block4x4, column4x4 + half_block4x4,
+                          split_size, scratch_buffer, residual)) {
+          return false;
+        }
+        break;
       case kPartitionVerticalWithLeftSplit:
+        if (!ProcessBlock(row4x4, column4x4, split_size, scratch_buffer,
+                          residual) ||
+            !ProcessBlock(row4x4 + half_block4x4, column4x4, split_size,
+                          scratch_buffer, residual) ||
+            !ProcessBlock(row4x4, column4x4 + half_block4x4, sub_size,
+                          scratch_buffer, residual)) {
+          return false;
+        }
+        break;
       case kPartitionVerticalWithRightSplit:
+        if (!ProcessBlock(row4x4, column4x4, sub_size, scratch_buffer,
+                          residual) ||
+            !ProcessBlock(row4x4, column4x4 + half_block4x4, split_size,
+                          scratch_buffer, residual) ||
+            !ProcessBlock(row4x4 + half_block4x4, column4x4 + half_block4x4,
+                          split_size, scratch_buffer, residual)) {
+          return false;
+        }
+        break;
       case kPartitionHorizontal4:
+        for (int i = 0; i < 4; ++i) {
+          if (!ProcessBlock(row4x4 + i * quarter_block4x4, column4x4, sub_size,
+                            scratch_buffer, residual)) {
+            return false;
+          }
+        }
+        break;
       case kPartitionVertical4:
         for (int i = 0; i < 4; ++i) {
-          ParameterTree* const child = node->children(i);
-          // Once a null child is seen, all the subsequent children will also be
-          // null.
-          if (child == nullptr) break;
-          if (!ProcessBlock(child->row4x4(), child->column4x4(),
-                            child->block_size(), child, scratch_buffer,
-                            residual)) {
+          if (!ProcessBlock(row4x4, column4x4 + i * quarter_block4x4, sub_size,
+                            scratch_buffer, residual)) {
             return false;
           }
         }
@@ -2370,7 +2431,7 @@ void Tile::ClearBlockDecoded(TileScratchBuffer* const scratch_buffer,
   }
 }
 
-bool Tile::ProcessSuperBlock(int row4x4, int column4x4, int block_width4x4,
+bool Tile::ProcessSuperBlock(int row4x4, int column4x4,
                              TileScratchBuffer* const scratch_buffer,
                              ProcessingMode mode) {
   const bool parsing =
@@ -2388,13 +2449,10 @@ bool Tile::ProcessSuperBlock(int row4x4, int column4x4, int block_width4x4,
   if (parsing) {
     ReadLoopRestorationCoefficients(row4x4, column4x4, block_size);
   }
-  const int row = row4x4 / block_width4x4;
-  const int column = column4x4 / block_width4x4;
   if (parsing && decoding) {
     uint8_t* residual_buffer = residual_buffer_.get();
-    if (!ProcessPartition(row4x4, column4x4,
-                          block_parameters_holder_.Tree(row, column),
-                          scratch_buffer, &residual_buffer)) {
+    if (!ProcessPartition(row4x4, column4x4, scratch_buffer,
+                          &residual_buffer)) {
       LIBGAV1_DLOG(ERROR, "Error decoding partition row: %d column: %d", row4x4,
                    column4x4);
       return false;
@@ -2412,18 +2470,14 @@ bool Tile::ProcessSuperBlock(int row4x4, int column4x4, int block_width4x4,
     }
     uint8_t* residual_buffer =
         residual_buffer_threaded_[sb_row_index][sb_column_index]->buffer();
-    if (!ProcessPartition(row4x4, column4x4,
-                          block_parameters_holder_.Tree(row, column),
-                          scratch_buffer, &residual_buffer)) {
+    if (!ProcessPartition(row4x4, column4x4, scratch_buffer,
+                          &residual_buffer)) {
       LIBGAV1_DLOG(ERROR, "Error parsing partition row: %d column: %d", row4x4,
                    column4x4);
       return false;
     }
   } else {
-    uint8_t* residual_buffer =
-        residual_buffer_threaded_[sb_row_index][sb_column_index]->buffer();
-    if (!DecodeSuperBlock(block_parameters_holder_.Tree(row, column),
-                          scratch_buffer, &residual_buffer)) {
+    if (!DecodeSuperBlock(sb_row_index, sb_column_index, scratch_buffer)) {
       LIBGAV1_DLOG(ERROR, "Error decoding superblock row: %d column: %d",
                    row4x4, column4x4);
       return false;
@@ -2434,26 +2488,23 @@ bool Tile::ProcessSuperBlock(int row4x4, int column4x4, int block_width4x4,
   return true;
 }
 
-bool Tile::DecodeSuperBlock(ParameterTree* const tree,
-                            TileScratchBuffer* const scratch_buffer,
-                            ResidualPtr* residual) {
-  Stack<ParameterTree*, kDfsStackSize> stack;
-  stack.Push(tree);
-  do {
-    ParameterTree* const node = stack.Pop();
-    if (node->partition() != kPartitionNone) {
-      for (int i = 3; i >= 0; --i) {
-        if (node->children(i) == nullptr) continue;
-        stack.Push(node->children(i));
-      }
-      continue;
-    }
-    if (!DecodeBlock(node, scratch_buffer, residual)) {
+bool Tile::DecodeSuperBlock(int sb_row_index, int sb_column_index,
+                            TileScratchBuffer* const scratch_buffer) {
+  uint8_t* residual_buffer =
+      residual_buffer_threaded_[sb_row_index][sb_column_index]->buffer();
+  Queue<PartitionTreeNode>& partition_tree_order =
+      *residual_buffer_threaded_[sb_row_index][sb_column_index]
+           ->partition_tree_order();
+  while (!partition_tree_order.Empty()) {
+    PartitionTreeNode block = partition_tree_order.Front();
+    if (!DecodeBlock(block.row4x4, block.column4x4, block.block_size,
+                     scratch_buffer, &residual_buffer)) {
       LIBGAV1_DLOG(ERROR, "Error decoding block row: %d column: %d",
-                   node->row4x4(), node->column4x4());
+                   block.row4x4, block.column4x4);
       return false;
     }
-  } while (!stack.Empty());
+    partition_tree_order.Pop();
+  }
   return true;
 }
 

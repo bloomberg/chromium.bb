@@ -30,7 +30,6 @@
 #include "src/core/ext/xds/xds_client_stats.h"
 #include "src/core/lib/channel/channelz.h"
 #include "src/core/lib/gprpp/dual_ref_counted.h"
-#include "src/core/lib/gprpp/map.h"
 #include "src/core/lib/gprpp/memory.h"
 #include "src/core/lib/gprpp/orphanable.h"
 #include "src/core/lib/gprpp/ref_counted.h"
@@ -40,6 +39,7 @@
 namespace grpc_core {
 
 extern TraceFlag grpc_xds_client_trace;
+extern TraceFlag grpc_xds_client_refcount_trace;
 
 class XdsClient : public DualRefCounted<XdsClient> {
  public:
@@ -87,6 +87,10 @@ class XdsClient : public DualRefCounted<XdsClient> {
   // Callers should not instantiate directly.  Use GetOrCreate() instead.
   explicit XdsClient(grpc_error** error);
   ~XdsClient() override;
+
+  CertificateProviderStore& certificate_provider_store() {
+    return *certificate_provider_store_;
+  }
 
   grpc_pollset_set* interested_parties() const { return interested_parties_; }
 
@@ -292,6 +296,7 @@ class XdsClient : public DualRefCounted<XdsClient> {
   const grpc_millis request_timeout_;
   grpc_pollset_set* interested_parties_;
   std::unique_ptr<XdsBootstrap> bootstrap_;
+  OrphanablePtr<CertificateProviderStore> certificate_provider_store_;
   XdsApi api_;
 
   Mutex mu_;
@@ -324,6 +329,9 @@ class XdsClient : public DualRefCounted<XdsClient> {
 namespace internal {
 void SetXdsChannelArgsForTest(grpc_channel_args* args);
 void UnsetGlobalXdsClientForTest();
+// Sets bootstrap config to be used when no env var is set.
+// Does not take ownership of config.
+void SetXdsFallbackBootstrapConfig(const char* config);
 }  // namespace internal
 
 }  // namespace grpc_core

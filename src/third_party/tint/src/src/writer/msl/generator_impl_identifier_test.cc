@@ -12,10 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/identifier_expression.h"
-#include "src/program.h"
-#include "src/writer/msl/generator_impl.h"
 #include "src/writer/msl/test_helper.h"
 
 namespace tint {
@@ -32,15 +28,6 @@ TEST_F(MslGeneratorImplTest, EmitIdentifierExpression) {
 
   ASSERT_TRUE(gen.EmitExpression(i)) << gen.error();
   EXPECT_EQ(gen.result(), "foo");
-}
-
-TEST_F(MslGeneratorImplTest, EmitIdentifierExpression_Single_WithCollision) {
-  auto* i = Expr("virtual");
-
-  GeneratorImpl& gen = Build();
-
-  ASSERT_TRUE(gen.EmitExpression(i)) << gen.error();
-  EXPECT_EQ(gen.result(), "virtual_tint_0");
 }
 
 }  // namespace

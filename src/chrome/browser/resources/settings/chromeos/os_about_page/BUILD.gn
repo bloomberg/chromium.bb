@@ -8,6 +8,7 @@ import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../os_settings.gni")
 
 js_type_check("closure_compile_module") {
+  closure_flags = os_settings_closure_flags
   is_polymer3 = true
   deps = [
     ":channel_switcher_dialog.m",
@@ -22,7 +23,7 @@ js_type_check("closure_compile_module") {
 js_library("channel_switcher_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_about_page/channel_switcher_dialog.m.js" ]
   deps = [
-    "../../about_page:about_page_browser_proxy.m",
+    "../../about_page:about_page_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
@@ -37,10 +38,11 @@ js_library("detailed_build_info.m") {
     ":edit_hostname_dialog.m",
     "..:deep_linking_behavior.m",
     "..:os_route.m",
-    "../..:router.m",
-    "../../about_page:about_page_browser_proxy.m",
+    "../..:router",
+    "../../about_page:about_page_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior.m",
+    "//ui/webui/resources/cr_elements/policy:cr_tooltip_icon.m",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":detailed_build_info_module" ]
@@ -56,7 +58,7 @@ js_library("device_name_browser_proxy.m") {
 js_library("edit_hostname_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_about_page/edit_hostname_dialog.m.js" ]
   deps = [
-    "../../about_page:about_page_browser_proxy.m",
+    "../../about_page:about_page_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
@@ -71,9 +73,9 @@ js_library("os_about_page.m") {
     "..:deep_linking_behavior.m",
     "..:os_route.m",
     "../..:i18n_setup",
-    "../..:lifetime_browser_proxy.m",
-    "../..:router.m",
-    "../../about_page:about_page_browser_proxy.m",
+    "../..:lifetime_browser_proxy",
+    "../..:router",
+    "../../about_page:about_page_browser_proxy",
     "../os_settings_page:main_page_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:i18n_behavior.m",
@@ -87,7 +89,7 @@ js_library("os_about_page.m") {
 js_library("update_warning_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_about_page/update_warning_dialog.m.js" ]
   deps = [
-    "../../about_page:about_page_browser_proxy.m",
+    "../../about_page:about_page_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
@@ -109,7 +111,7 @@ polymer_modulizer("channel_switcher_dialog") {
   js_file = "channel_switcher_dialog.js"
   html_file = "channel_switcher_dialog.html"
   html_type = "dom-module"
-  migrated_imports = settings_migrated_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
   auto_imports = os_settings_auto_imports
 }
@@ -118,7 +120,7 @@ polymer_modulizer("detailed_build_info") {
   js_file = "detailed_build_info.js"
   html_file = "detailed_build_info.html"
   html_type = "dom-module"
-  migrated_imports = settings_migrated_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
   auto_imports = os_settings_auto_imports
 }
@@ -127,7 +129,7 @@ polymer_modulizer("edit_hostname_dialog") {
   js_file = "edit_hostname_dialog.js"
   html_file = "edit_hostname_dialog.html"
   html_type = "dom-module"
-  migrated_imports = settings_migrated_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
   auto_imports = os_settings_auto_imports
 }
@@ -136,7 +138,7 @@ polymer_modulizer("os_about_page") {
   js_file = "os_about_page.js"
   html_file = "os_about_page.html"
   html_type = "dom-module"
-  migrated_imports = settings_migrated_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
   auto_imports = os_settings_auto_imports
 }
@@ -145,7 +147,7 @@ polymer_modulizer("update_warning_dialog") {
   js_file = "update_warning_dialog.js"
   html_file = "update_warning_dialog.html"
   html_type = "dom-module"
-  migrated_imports = settings_migrated_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
   auto_imports = os_settings_auto_imports
 }

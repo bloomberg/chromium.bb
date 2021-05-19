@@ -160,6 +160,13 @@ void TestRenderWidgetHostView::SpeakSelection() {
 }
 
 void TestRenderWidgetHostView::SetWindowFrameInScreen(const gfx::Rect& rect) {}
+
+void TestRenderWidgetHostView::ShowSharePicker(
+    const std::string& title,
+    const std::string& text,
+    const std::string& url,
+    const std::vector<std::string>& file_paths,
+    blink::mojom::ShareService::ShareCallback callback) {}
 #endif
 
 gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
@@ -168,9 +175,7 @@ gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
 
 void TestRenderWidgetHostView::TakeFallbackContentFrom(
     RenderWidgetHostView* view) {
-  base::Optional<SkColor> color = view->GetBackgroundColor();
-  if (color)
-    SetBackgroundColor(*color);
+  CopyBackgroundColorIfPresentFrom(*view);
 }
 
 blink::mojom::PointerLockResult TestRenderWidgetHostView::LockMouse(bool) {
@@ -346,8 +351,8 @@ RenderViewHostImplTestHarness::RenderViewHostImplTestHarness()
           base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
   std::vector<ui::ScaleFactor> scale_factors;
   scale_factors.push_back(ui::SCALE_FACTOR_100P);
-  scoped_set_supported_scale_factors_.reset(
-      new ui::test::ScopedSetSupportedScaleFactors(scale_factors));
+  scoped_set_supported_scale_factors_ =
+      std::make_unique<ui::test::ScopedSetSupportedScaleFactors>(scale_factors);
 }
 
 RenderViewHostImplTestHarness::~RenderViewHostImplTestHarness() {

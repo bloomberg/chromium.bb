@@ -54,6 +54,7 @@ var (
 	useValgrind              = flag.Bool("valgrind", false, "If true, run code under valgrind")
 	useGDB                   = flag.Bool("gdb", false, "If true, run BoringSSL code under gdb")
 	useLLDB                  = flag.Bool("lldb", false, "If true, run BoringSSL code under lldb")
+	useRR                    = flag.Bool("rr-record", false, "If true, run BoringSSL code under `rr record`.")
 	waitForDebugger          = flag.Bool("wait-for-debugger", false, "If true, jobs will run one at a time and pause for a debugger to attach")
 	flagDebug                = flag.Bool("debug", false, "Hexdump the contents of the connection")
 	mallocTest               = flag.Int64("malloc-test", -1, "If non-negative, run each test with each malloc in turn failing from the given number onwards.")
@@ -96,6 +97,11 @@ type ShimConfiguration struct {
 	// HalfRTTTickets is the number of half-RTT tickets the client should
 	// expect before half-RTT data when testing 0-RTT.
 	HalfRTTTickets int
+
+	// AllCurves is the list of all curve code points supported by the shim.
+	// This is currently used to control tests that enable all curves but may
+	// automatically disable tests in the future.
+	AllCurves []int
 }
 
 // Setup shimConfig defaults aligning with BoringSSL.
@@ -252,8 +258,16 @@ func initCertificates() {
 	garbageCertificate.PrivateKey = rsaCertificate.PrivateKey
 }
 
+func flagInts(flagName string, vals []int) []string {
+	ret := make([]string, 0, 2*len(vals))
+	for _, val := range vals {
+		ret = append(ret, flagName, strconv.Itoa(val))
+	}
+	return ret
+}
+
 func useDebugger() bool {
-	return *useGDB || *useLLDB || *waitForDebugger
+	return *useGDB || *useLLDB || *useRR || *waitForDebugger
 }
 
 // delegatedCredentialConfig specifies the shape of a delegated credential, not
@@ -1191,6 +1205,12 @@ func lldbOf(path string, args ...string) *exec.Cmd {
 	return exec.Command("xterm", xtermArgs...)
 }
 
+func rrOf(path string, args ...string) *exec.Cmd {
+	rrArgs := []string{"record", path}
+	rrArgs = append(rrArgs, args...)
+	return exec.Command("rr", rrArgs...)
+}
+
 func removeFirstLineIfSuffix(s, suffix string) string {
 	idx := strings.IndexByte(s, '\n')
 	if idx < 0 {
@@ -1444,8 +1464,6 @@ func runTest(statusChan chan statusMsg, test *testCase, shimPath string, mallocN
 		flags = append(flags, "-tls-unique")
 	}
 
-	flags = append(flags, "-handshaker-path", *handshakerPath)
-
 	if *waitForDebugger {
 		flags = append(flags, "-wait-for-debugger")
 	}
@@ -1482,6 +1500,8 @@ func runTest(statusChan chan statusMsg, test *testCase, shimPath string, mallocN
 		shim = gdbOf(shimPath, flags...)
 	} else if *useLLDB {
 		shim = lldbOf(shimPath, flags...)
+	} else if *useRR {
+		shim = rrOf(shimPath, flags...)
 	} else {
 		shim = exec.Command(shimPath, flags...)
 	}
@@ -1836,7 +1856,7 @@ NextTest:
 		shTest.name += "-Split"
 		shTest.flags = make([]string, len(test.flags), len(test.flags)+1)
 		copy(shTest.flags, test.flags)
-		shTest.flags = append(shTest.flags, "-handoff")
+		shTest.flags = append(shTest.flags, "-handoff", "-handshaker-path", *handshakerPath)
 
 		splitHandshakeTests = append(splitHandshakeTests, shTest)
 	}
@@ -9973,11 +9993,13 @@ func addSignatureAlgorithmTests() {
 							fakeSigAlg2,
 						},
 					},
-					flags: []string{
-						"-cert-file", path.Join(*resourceDir, getShimCertificate(alg.cert)),
-						"-key-file", path.Join(*resourceDir, getShimKey(alg.cert)),
-						"-enable-all-curves",
-					},
+					flags: append(
+						[]string{
+							"-cert-file", path.Join(*resourceDir, getShimCertificate(alg.cert)),
+							"-key-file", path.Join(*resourceDir, getShimKey(alg.cert)),
+						},
+						flagInts("-curves", shimConfig.AllCurves)...,
+					),
 					shouldFail:         shouldFail,
 					expectedError:      signError,
 					expectedLocalError: signLocalError,
@@ -9995,12 +10017,14 @@ func addSignatureAlgorithmTests() {
 						MaxVersion:                ver.version,
 						VerifySignatureAlgorithms: allAlgorithms,
 					},
-					flags: []string{
-						"-cert-file", path.Join(*resourceDir, getShimCertificate(alg.cert)),
-						"-key-file", path.Join(*resourceDir, getShimKey(alg.cert)),
-						"-enable-all-curves",
-						"-signing-prefs", strconv.Itoa(int(alg.id)),
-					},
+					flags: append(
+						[]string{
+							"-cert-file", path.Join(*resourceDir, getShimCertificate(alg.cert)),
+							"-key-file", path.Join(*resourceDir, getShimKey(alg.cert)),
+							"-signing-prefs", strconv.Itoa(int(alg.id)),
+						},
+						flagInts("-curves", shimConfig.AllCurves)...,
+					),
 					expectations: connectionExpectations{
 						peerSignatureAlgorithm: alg.id,
 					},
@@ -10037,12 +10061,14 @@ func addSignatureAlgorithmTests() {
 							IgnorePeerSignatureAlgorithmPreferences: shouldFail,
 						},
 					},
-					flags: []string{
-						"-expect-peer-signature-algorithm", strconv.Itoa(int(alg.id)),
-						"-enable-all-curves",
-						// The algorithm may be disabled by default, so explicitly enable it.
-						"-verify-prefs", strconv.Itoa(int(alg.id)),
-					},
+					flags: append(
+						[]string{
+							"-expect-peer-signature-algorithm", strconv.Itoa(int(alg.id)),
+							// The algorithm may be disabled by default, so explicitly enable it.
+							"-verify-prefs", strconv.Itoa(int(alg.id)),
+						},
+						flagInts("-curves", shimConfig.AllCurves)...,
+					),
 					// Resume the session to assert the peer signature
 					// algorithm is reported on both handshakes.
 					resumeSession:      !shouldFail,
@@ -10068,10 +10094,10 @@ func addSignatureAlgorithmTests() {
 							IgnorePeerSignatureAlgorithmPreferences: rejectByDefault,
 						},
 					},
-					flags: []string{
-						"-expect-peer-signature-algorithm", strconv.Itoa(int(alg.id)),
-						"-enable-all-curves",
-					},
+					flags: append(
+						[]string{"-expect-peer-signature-algorithm", strconv.Itoa(int(alg.id))},
+						flagInts("-curves", shimConfig.AllCurves)...,
+					),
 					// Resume the session to assert the peer signature
 					// algorithm is reported on both handshakes.
 					resumeSession:      !rejectByDefault,
@@ -10094,11 +10120,11 @@ func addSignatureAlgorithmTests() {
 							InvalidSignature: true,
 						},
 					},
-					flags: []string{
-						"-enable-all-curves",
+					flags: append(
 						// The algorithm may be disabled by default, so explicitly enable it.
-						"-verify-prefs", strconv.Itoa(int(alg.id)),
-					},
+						[]string{"-verify-prefs", strconv.Itoa(int(alg.id))},
+						flagInts("-curves", shimConfig.AllCurves)...,
+					),
 					shouldFail:    true,
 					expectedError: ":BAD_SIGNATURE:",
 				}
@@ -11482,10 +11508,10 @@ func addCurveTests() {
 					},
 					CurvePreferences: []CurveID{curve.id},
 				},
-				flags: []string{
-					"-enable-all-curves",
-					"-expect-curve-id", strconv.Itoa(int(curve.id)),
-				},
+				flags: append(
+					[]string{"-expect-curve-id", strconv.Itoa(int(curve.id))},
+					flagInts("-curves", shimConfig.AllCurves)...,
+				),
 				expectations: connectionExpectations{
 					curveID: curve.id,
 				},
@@ -11502,10 +11528,10 @@ func addCurveTests() {
 					},
 					CurvePreferences: []CurveID{curve.id},
 				},
-				flags: []string{
-					"-enable-all-curves",
-					"-expect-curve-id", strconv.Itoa(int(curve.id)),
-				},
+				flags: append(
+					[]string{"-expect-curve-id", strconv.Itoa(int(curve.id))},
+					flagInts("-curves", shimConfig.AllCurves)...,
+				),
 				expectations: connectionExpectations{
 					curveID: curve.id,
 				},
@@ -11526,7 +11552,7 @@ func addCurveTests() {
 							SendCompressedCoordinates: true,
 						},
 					},
-					flags:         []string{"-enable-all-curves"},
+					flags:         flagInts("-curves", shimConfig.AllCurves),
 					shouldFail:    true,
 					expectedError: ":BAD_ECPOINT:",
 				})
@@ -11545,7 +11571,7 @@ func addCurveTests() {
 							SendCompressedCoordinates: true,
 						},
 					},
-					flags:         []string{"-enable-all-curves"},
+					flags:         flagInts("-curves", shimConfig.AllCurves),
 					shouldFail:    true,
 					expectedError: ":BAD_ECPOINT:",
 				})
@@ -16751,6 +16777,25 @@ func main() {
 	*resourceDir = path.Clean(*resourceDir)
 	initCertificates()
 
+	if len(*shimConfigFile) != 0 {
+		encoded, err := ioutil.ReadFile(*shimConfigFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Couldn't read config file %q: %s\n", *shimConfigFile, err)
+			os.Exit(1)
+		}
+
+		if err := json.Unmarshal(encoded, &shimConfig); err != nil {
+			fmt.Fprintf(os.Stderr, "Couldn't decode config file %q: %s\n", *shimConfigFile, err)
+			os.Exit(1)
+		}
+	}
+
+	if shimConfig.AllCurves == nil {
+		for _, curve := range testCurves {
+			shimConfig.AllCurves = append(shimConfig.AllCurves, int(curve.id))
+		}
+	}
+
 	addBasicTests()
 	addCipherSuiteTests()
 	addBadECDSASignatureTests()
@@ -16808,19 +16853,6 @@ func main() {
 	testChan := make(chan *testCase, numWorkers)
 	doneChan := make(chan *testresult.Results)
 
-	if len(*shimConfigFile) != 0 {
-		encoded, err := ioutil.ReadFile(*shimConfigFile)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Couldn't read config file %q: %s\n", *shimConfigFile, err)
-			os.Exit(1)
-		}
-
-		if err := json.Unmarshal(encoded, &shimConfig); err != nil {
-			fmt.Fprintf(os.Stderr, "Couldn't decode config file %q: %s\n", *shimConfigFile, err)
-			os.Exit(1)
-		}
-	}
-
 	go statusPrinter(doneChan, statusChan, len(testCases))
 
 	for i := 0; i < numWorkers; i++ {
@@ -16860,6 +16892,11 @@ func main() {
 		}
 
 		if matched {
+			if foundTest && *useRR {
+				fmt.Fprintf(os.Stderr, "Too many matching tests. Only one test can run when RR is enabled.\n")
+				os.Exit(1)
+			}
+
 			foundTest = true
 			testChan <- &testCases[i]
 
@@ -16886,6 +16923,10 @@ func main() {
 		if err := testOutput.WriteToFile(*jsonOutput); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		}
+	}
+
+	if *useRR {
+		fmt.Println("RR trace recorded. Replay with `rr replay`.")
 	}
 
 	if !testOutput.HasUnexpectedResults() {

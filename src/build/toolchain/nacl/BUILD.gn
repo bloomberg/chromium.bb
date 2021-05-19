@@ -46,10 +46,10 @@ if (host_os == "win") {
   scriptsuffix = ""
 }
 
-# When the compilers are run via goma or ccache rather than directly by
-# GN/Ninja, the goma/ccache wrapper handles .bat files but gets confused
+# When the compilers are run via goma, rbe or ccache rather than directly by
+# GN/Ninja, the rbe/goma/ccache wrapper handles .bat files but gets confused
 # by being given the scriptprefix.
-if (host_os == "win" && !use_goma && cc_wrapper == "") {
+if (host_os == "win" && !use_goma && !use_rbe && cc_wrapper == "") {
   compiler_scriptprefix = scriptprefix
 } else {
   compiler_scriptprefix = ""
@@ -65,6 +65,12 @@ template("pnacl_toolchain") {
     toolprefix =
         rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/pnacl-",
                     root_build_dir)
+
+    if (host_os == "win") {
+      # Flip the slashes so that copy/paste of the commands works.
+      # This is also done throughout build\toolchain\win\BUILD.gn
+      toolprefix = string_replace(toolprefix, "/", "\\")
+    }
 
     cc = compiler_scriptprefix + toolprefix + "clang" + scriptsuffix
     cxx = compiler_scriptprefix + toolprefix + "clang++" + scriptsuffix
@@ -130,6 +136,12 @@ template("nacl_glibc_toolchain") {
                                invoker.toolchain_tuple + "-",
                            root_build_dir)
 
+  if (host_os == "win") {
+    # Flip the slashes so that copy/paste of the commands works.
+    # This is also done throughout build\toolchain\win\BUILD.gn
+    toolprefix = string_replace(toolprefix, "/", "\\")
+  }
+
   nacl_toolchain("glibc_" + toolchain_cpu) {
     cc = toolprefix + "gcc" + toolsuffix
     cxx = toolprefix + "g++" + toolsuffix
@@ -185,6 +197,12 @@ template("nacl_clang_toolchain") {
                                invoker.toolchain_tuple + "-",
                            root_build_dir)
 
+  if (host_os == "win") {
+    # Flip the slashes so that copy/paste of the commands works.
+    # This is also done throughout build\toolchain\win\BUILD.gn
+    toolprefix = string_replace(toolprefix, "/", "\\")
+  }
+
   nacl_toolchain("clang_newlib_" + toolchain_cpu) {
     cc = toolprefix + "clang" + toolsuffix
     cxx = toolprefix + "clang++" + toolsuffix
@@ -211,6 +229,12 @@ template("nacl_irt_toolchain") {
   toolprefix = rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/" +
                                invoker.toolchain_tuple + "-",
                            root_build_dir)
+
+  if (host_os == "win") {
+    # Flip the slashes so that copy/paste of the commands works.
+    # This is also done throughout build\toolchain\win\BUILD.gn
+    toolprefix = string_replace(toolprefix, "/", "\\")
+  }
 
   link_irt = rebase_path("//native_client/build/link_irt.py", root_build_dir)
 

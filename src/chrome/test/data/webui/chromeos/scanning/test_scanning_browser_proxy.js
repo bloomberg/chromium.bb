@@ -4,7 +4,7 @@
 
 import {ScanningBrowserProxy, SelectedPath} from 'chrome://scanning/scanning_browser_proxy.js';
 
-import {assertEquals} from '../../chai_assert.js';
+import {assertArrayEquals, assertEquals} from '../../chai_assert.js';
 import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
 
 /**
@@ -20,6 +20,9 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
       'getPluralString',
       'recordScanJobSettings',
       'getMyFilesPath',
+      'openFilesInMediaApp',
+      'recordScanCompleteAction',
+      'recordNumScanSettingChanges',
     ]);
 
     /** @private {?SelectedPath} */
@@ -30,6 +33,12 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
 
     /** @private {string} */
     this.myFilesPath_ = '';
+
+    /** @private {!Array<string>} */
+    this.filePaths_ = [];
+
+    /** @private {number} */
+    this.expectedNumScanSettingChanges_ = 0;
   }
 
   /** @override */
@@ -58,12 +67,19 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
    */
   getPluralString(name, count) {
     this.methodCalled('getPluralString');
-    return Promise.resolve(
-        count === 1 ?
-            'Your file has been successfully scanned and saved to ' +
-                '<a id="folderLink">$1</a>.' :
-            'Your files have been successfully scanned and saved to ' +
-                '<a id="folderLink">$1</a>.');
+
+    let pluralString = '';
+    if (name === 'fileSavedText') {
+      pluralString = count === 1 ?
+          'Your file has been successfully scanned and saved to ' +
+              '<a id="folderLink">$1</a>.' :
+          'Your files have been successfully scanned and saved to ' +
+              '<a id="folderLink">$1</a>.';
+    } else if (name === 'editButtonLabel') {
+      pluralString = count === 1 ? 'Edit file' : 'Edit files';
+    }
+
+    return Promise.resolve(pluralString);
   }
 
   /** @override */
@@ -73,6 +89,23 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
   getMyFilesPath() {
     this.methodCalled('getMyFilesPath');
     return Promise.resolve(this.myFilesPath_);
+  }
+
+  /**
+   * @param {!Array<string>} filePaths
+   * @override
+   */
+  openFilesInMediaApp(filePaths) {
+    this.methodCalled('openFilesInMediaApp');
+    assertArrayEquals(this.filePaths_, filePaths);
+  }
+
+  /** @override */
+  recordScanCompleteAction() {}
+
+  /** @override */
+  recordNumScanSettingChanges(numChanges) {
+    assertEquals(this.expectedNumScanSettingChanges_, numChanges);
   }
 
   /** @param {!SelectedPath} selectedPath */
@@ -88,5 +121,15 @@ export class TestScanningBrowserProxy extends TestBrowserProxy {
   /** @param {string} myFilesPath */
   setMyFilesPath(myFilesPath) {
     this.myFilesPath_ = myFilesPath;
+  }
+
+  /** @param {!Array<string>} filePaths */
+  setFilePaths(filePaths) {
+    this.filePaths_ = filePaths;
+  }
+
+  /** @param {number} numChanges */
+  setExpectedNumScanSettingChanges(numChanges) {
+    this.expectedNumScanSettingChanges_ = numChanges;
   }
 }

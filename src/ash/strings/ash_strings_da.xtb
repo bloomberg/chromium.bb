@@ -40,6 +40,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1252999807265626933">Oplader fra <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hvordan er vejret?</translation>
 <translation id="1267032506238418139">Ændring af genvej</translation>
+<translation id="1269405891096105529">Eksternt tilbehør understøttes ikke i gæstetilstand</translation>
 <translation id="1270290102613614947">Skærmtastaturet er deaktiveret</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1275285675049378717">Leverer strøm til <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2012624427112548395">Ctrl+Søg+H</translation>
 <translation id="2016340657076538683">Skriv en besked</translation>
 <translation id="2018630726571919839">Fortæl en vittighed</translation>
+<translation id="2021864487439853900">Klik for at låse op</translation>
 <translation id="2049240716062114887">Navnet på skrivebordet blev ændret til <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Lysstyrke for tastatur</translation>
@@ -276,6 +278,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan stadig logge ind senere.</translation>
 <translation id="3321628682574733415">Forkert forældrekode</translation>
 <translation id="332587331255250389">Udskift batteriet</translation>
+<translation id="3333741161915951567">Modemmet genstartes. Vent 30 sekunder, før du prøver igen.</translation>
 <translation id="3341303451326249809">Der blev taget et screenshot</translation>
 <translation id="334252345105450327">Tag et screenshot</translation>
 <translation id="3351879221545518001">Du caster i øjeblikket skærmen.</translation>
@@ -320,6 +323,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Administreret bruger</translation>
 <translation id="3665889125180354336">Optag mikrofon</translation>
 <translation id="36813544980941320">Wi-Fi-netværk deles mellem din telefon og <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Når du får vist vinduer fra det aktuelle skrivebord, kan du trykke på pil op for at få vist vinduer fra alle skriveborde</translation>
 <translation id="3702846122927433391">Befolkningstallet i Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Indlæser...</translation>
@@ -351,6 +355,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="394485226368336402">Lydindstillinger</translation>
 <translation id="3945319193631853098">Tryk for at afslutte konfigurationen</translation>
 <translation id="3945867833895287237">Opretter forbindelse til hotspot…</translation>
+<translation id="3958465044488004317">Se resultatet i Google Assistent</translation>
 <translation id="3962859241508114581">Forrige nummer</translation>
 <translation id="3969043077941541451">Fra</translation>
 <translation id="397105322502079400">Beregner...</translation>
@@ -407,10 +412,12 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME" /> via Fjernsupport.</translation>
 <translation id="4424159417645388645">Skrivebord 5</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
+<translation id="4445159312344259901">Log ind for at låse op</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 vigtig notifikation}one{# vigtig notifikation}other{# vigtige notifikationer}}</translation>
 <translation id="4450893287417543264">Vis ikke igen</translation>
 <translation id="445864333228800152">Godaften</translation>
 <translation id="4458688154122353284">Stop skærmoptagelse</translation>
+<translation id="4467143075433126295">Hold [Esc] nede for at afslutte fuld skærm</translation>
 <translation id="4472575034687746823">Kom godt i gang</translation>
 <translation id="4477350412780666475">Næste nummer</translation>
 <translation id="4477892968187500306">Denne enhed indeholder muligvis apps, der ikke er blevet bekræftet af Google.</translation>
@@ -607,6 +614,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Google Assistent er ikke tilgængelig i en gæstesession.</translation>
 <translation id="6137566720514957455">Åbn dialogboksen til fjernelse for <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Den eksterne enhed understøttes ikke</translation>
 <translation id="615957422585914272">Vis skærmtastatur</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6179832488876878285">Du kan fastgøre dine vigtige filer her. Åbn appen Filer for at komme i gang.</translation>
@@ -624,11 +632,11 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="6297287540776456956">Brug styluspennen til at vælge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> er roteret til <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Stemme</translation>
+<translation id="6330012934079202188">Når du får vist vinduer fra alle skriveborde, kan du trykke på pil op for at få vist vinduer fra det aktuelle skrivebord</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> er en session, der administreres af <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth er slået til</translation>
 <translation id="6381109794406942707">Angiv din pinkode for at låse enheden op.</translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
-<translation id="6396835948284782440">Hold [Esc] nede for at afslutte.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Ryd alle notifikationer</translation>
@@ -794,7 +802,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="7780159184141939021">Roter skærm</translation>
 <translation id="7796353162336583443">Tryk på knappen for styluspen på hylden for at skrive en note, tage et screenshot eller bruge Google Assistent, laserpegepinden eller luppen.</translation>
 <translation id="7798302898096527229">Tryk på Søg eller Shift for at annullere.</translation>
-<translation id="7807966291075028781">Af sikkerhedshensyn understøttes eksterne enheder ikke i Gæstetilstand</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Stærkt signal</translation>
 <translation id="7837740436429729974">Tiden er gået</translation>
@@ -944,6 +951,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="8936501819958976551">deaktiverede</translation>
 <translation id="8938800817013097409">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="8940956008527784070">Batteriniveauet er lavt (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8951539504029375108">Det er kun godkendte Thunderbolt-enheder, der er kompatible med din Chromebook</translation>
 <translation id="8982906748181120328">Deling tæt på</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> anvendes</translation>

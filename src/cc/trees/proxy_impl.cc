@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -90,9 +91,11 @@ ProxyImpl::ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
           CompositorTimingHistory::RENDERER_UMA,
           layer_tree_host->rendering_stats_instrumentation(),
           host_impl_->compositor_frame_reporting_controller()));
-  scheduler_.reset(new Scheduler(this, scheduler_settings, layer_tree_host_id_,
-                                 task_runner_provider_->ImplThreadTaskRunner(),
-                                 std::move(compositor_timing_history)));
+  scheduler_ = std::make_unique<Scheduler>(
+      this, scheduler_settings, layer_tree_host_id_,
+      task_runner_provider_->ImplThreadTaskRunner(),
+      std::move(compositor_timing_history), layer_tree_host->TakeMainPipeline(),
+      layer_tree_host->TakeCompositorPipeline());
 
   DCHECK_EQ(scheduler_->visible(), host_impl_->visible());
 }
@@ -614,6 +617,8 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
   begin_main_frame_state->commit_data = host_impl_->ProcessCompositorDeltas();
   begin_main_frame_state->completed_image_decode_requests =
       host_impl_->TakeCompletedImageDecodeRequests();
+  begin_main_frame_state->finished_transition_request_sequence_ids =
+      host_impl_->TakeFinishedTransitionRequestSequenceIds();
   begin_main_frame_state->mutator_events = host_impl_->TakeMutatorEvents();
   begin_main_frame_state->active_sequence_trackers =
       host_impl_->FrameSequenceTrackerActiveTypes();
@@ -771,7 +776,8 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
       DCHECK_NE(frame.frame_token, 0u);
       // Drawing implies we submitted a frame to the LayerTreeFrameSink.
       scheduler_->DidSubmitCompositorFrame(frame.frame_token,
-                                           host_impl_->TakeEventsMetrics());
+                                           host_impl_->TakeEventsMetrics(),
+                                           frame.has_missing_content);
     }
     result = DRAW_SUCCESS;
   } else {

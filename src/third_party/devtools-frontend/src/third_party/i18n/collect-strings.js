@@ -355,6 +355,25 @@ function _processPlaceholderCustomFormattedIcu(icu) {
 }
 
 /**
+ * Check a string with plurals e.g.
+ * {n, plural, =0 {no things} =1 {# thing} other {# things}}
+ *
+ * @param {IncrementalCtc} icu
+ */
+function _checkPluralGroupsIcu(message, pluralMatches) {
+  if (pluralMatches[0].length < message.length) {
+    throw Error(
+        `Message with plural "${message}" has text outside of the plural. ` +
+        'Move all text inside the plural expression for the best translation.');
+  }
+  if (!pluralMatches[1].includes('=1 {') || !pluralMatches[1].includes('other {')) {
+    throw Error(
+        `Message with plural "${message}" doesn't have the required "=1" ` +
+        'and "other" plural groups.')
+  }
+}
+
+/**
  * Add examples for direct ICU replacement.
  *
  * @param {IncrementalCtc} icu
@@ -364,6 +383,11 @@ function _processPlaceholderDirectIcu(icu, examples) {
   let tempMessage = icu.message;
   let idx = 0;
   const findIcu = /\{(\w+)\}/g;
+
+  const pluralMatches = /\{\w+, plural, (.+)\}/g.exec(tempMessage);
+  if (pluralMatches) {
+    _checkPluralGroupsIcu(icu, pluralMatches);
+  }
 
   let matches;
   // Make sure all ICU vars have examples
@@ -636,7 +660,7 @@ function collectAllStringsInDir(dir) {
  * @param {Record<string, CtcMessage>} strings
  */
 function writeStringsToCtcFiles(locale, strings) {
-  const fullPath = path.join(SRC_ROOT, `front_end/i18n/locales/${locale}.ctc.json`);
+  const fullPath = path.join(SRC_ROOT, `front_end/core/i18n/locales/${locale}.ctc.json`);
   /** @type {Record<string, CtcMessage>} */
   const output = {};
   const sortedEntries = Object.entries(strings).sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
@@ -659,7 +683,7 @@ if (require.main === module) {
 
   // Bake the ctc en-US and en-XL files into en-US and en-XL LHL format
   const lhl = collectAndBakeCtcStrings(
-      path.join(SRC_ROOT, 'front_end/i18n/locales/'), path.join(SRC_ROOT, 'front_end/i18n/locales/'));
+      path.join(SRC_ROOT, 'front_end/core/i18n/locales/'), path.join(SRC_ROOT, 'front_end/core/i18n/locales/'));
 }
 
 module.exports = {

@@ -838,9 +838,9 @@ LayoutUnit LayoutFlexibleBox::ComputeMainSizeFromAspectRatioUsing(
       border_and_padding = main_axis_border_and_padding;
     }
   }
+  // TODO(cbiesinger): box sizing?
   double ratio =
       aspect_ratio.Width().ToFloat() / aspect_ratio.Height().ToFloat();
-  // TODO(cbiesinger): box sizing?
   if (IsHorizontalFlow())
     return LayoutUnit(cross_size * ratio) + border_and_padding;
   return LayoutUnit(cross_size / ratio) + border_and_padding;

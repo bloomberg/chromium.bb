@@ -72,7 +72,7 @@ class BaseTestTriggerer(object):
 
 
   def modify_args(self, all_args, bot_index, shard_index, total_shards,
-                  temp_file):
+                  temp_file, shard_map=None):
     """Modifies the given argument list.
 
     Specifically, it does the following:
@@ -106,7 +106,15 @@ class BaseTestTriggerer(object):
       additional_args = all_args[:dash_ind] + bot_args + all_args[dash_ind:]
     else:
       additional_args = all_args + bot_args
-    return self.append_additional_args(additional_args, shard_index)
+    additional_args = self.append_additional_args(additional_args, shard_index)
+    # crbug/1140389: debug print outs
+    logging.info('DEBUG: Before adding shardmap args: %s', additional_args)
+    if shard_map:
+      shard_map_str = json.dumps(shard_map, separators=(',', ':'))
+      shard_map_args = ['--use-dynamic-shards']
+      shard_map_args.append('--dynamic-shardmap=%s' % shard_map_str)
+      additional_args += shard_map_args
+    return additional_args
 
   def append_additional_args(self, args, shard_index):
     """ Gives subclasses ability to append additional args if necessary
@@ -263,6 +271,10 @@ class BaseTestTriggerer(object):
     else:
       return [args.shard_index]
 
+  def generate_shard_map(self, args, buildername, selected_config, verbose):
+    """Returns shard map generated on runtime if needed."""
+    pass
+
   def trigger_tasks(self, args, remaining):
     """Triggers tasks for each bot.
 
@@ -274,6 +286,8 @@ class BaseTestTriggerer(object):
     Returns:
       Exit code for the script.
     """
+    # crbug/1140389: debug print outs
+    logging.info('DEBUG: init: %s', remaining)
     verbose = args.multiple_dimension_script_verbose
     self.parse_bot_configs(args)
     # Prunes config list to the exact set of configurations to trigger jobs on.
@@ -290,11 +304,19 @@ class BaseTestTriggerer(object):
       for k in config.iterkeys():
         filtered_remaining_args = self.remove_swarming_dimension(
           filtered_remaining_args, k)
+    # crbug/1140389: debug print outs
+    logging.info('DEBUG: After filtered: %s', filtered_remaining_args)
 
     merged_json = {}
-
+    selected_config = self.select_config_indices(args, verbose)
+    shard_map = self.generate_shard_map(
+        args,
+        self._findBuilderName(filtered_remaining_args),
+        selected_config,
+        verbose
+    )
     # Choose selected configs for this run of the test suite.
-    for shard_index, bot_index in self.select_config_indices(args, verbose):
+    for shard_index, bot_index in selected_config:
       # For each shard that we're going to distribute, do the following:
       # 1. Pick which bot configuration to use.
       # 2. Insert that bot configuration's dimensions as command line
@@ -303,8 +325,13 @@ class BaseTestTriggerer(object):
       try:
         json_temp = self.make_temp_file(prefix='base_trigger_dimensions',
                                         suffix='.json')
-        args_to_pass = self.modify_args(filtered_remaining_args, bot_index,
-                                        shard_index, args.shards, json_temp)
+        # crbug/1140389: debug print outs
+        logging.info('DEBUG: Before modify args: %s', filtered_remaining_args)
+        args_to_pass = self.modify_args(
+            filtered_remaining_args, bot_index, shard_index, args.shards,
+            json_temp, shard_map)
+        # crbug/1140389: debug print outs
+        logging.info('DEBUG: Before calling swarming: %s', args_to_pass)
         ret = self.run_swarming_go(
           args_to_pass, verbose, json_temp, shard_index, args.shards,
           merged_json)
@@ -315,6 +342,16 @@ class BaseTestTriggerer(object):
         self.delete_temp_file(json_temp)
     self.write_json_to_file(merged_json, args.dump_json)
     return 0
+
+
+  def _findBuilderName(self, args):
+    args_length = len(args)
+    for i in range(args_length):
+      if (args[i] == '--tag' and
+          i < args_length - 1 and
+          args[i+1].startswith('buildername:')):
+        return args[i+1].split(':', 1)[1]
+
 
   @staticmethod
   def setup_parser_contract(parser):

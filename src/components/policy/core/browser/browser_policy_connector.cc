@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -13,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -70,7 +71,8 @@ const wchar_t* const kNonManagedDomainPatterns[] = {
 const char* non_managed_domain_for_testing = nullptr;
 
 // Returns true if |domain| matches the regex |pattern|.
-bool MatchDomain(const base::string16& domain, const base::string16& pattern,
+bool MatchDomain(const std::u16string& domain,
+                 const std::u16string& pattern,
                  size_t index) {
   UErrorCode status = U_ZERO_ERROR;
   const icu::UnicodeString icu_pattern(pattern.data(), pattern.length());
@@ -108,9 +110,10 @@ void BrowserPolicyConnector::InitInternal(
     std::unique_ptr<DeviceManagementService> device_management_service) {
   device_management_service_ = std::move(device_management_service);
 
-  policy_statistics_collector_.reset(new policy::PolicyStatisticsCollector(
-      base::BindRepeating(&GetChromePolicyDetails), GetChromeSchema(),
-      GetPolicyService(), local_state, base::ThreadTaskRunnerHandle::Get()));
+  policy_statistics_collector_ =
+      std::make_unique<policy::PolicyStatisticsCollector>(
+          base::BindRepeating(&GetChromePolicyDetails), GetChromeSchema(),
+          GetPolicyService(), local_state, base::ThreadTaskRunnerHandle::Get());
   policy_statistics_collector_->Initialize();
 }
 
@@ -175,10 +178,10 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
     // users.
     return true;
   }
-  const base::string16 domain = base::UTF8ToUTF16(
+  const std::u16string domain = base::UTF8ToUTF16(
       gaia::ExtractDomainName(gaia::CanonicalizeEmail(username)));
   for (size_t i = 0; i < base::size(kNonManagedDomainPatterns); i++) {
-    base::string16 pattern = base::WideToUTF16(kNonManagedDomainPatterns[i]);
+    std::u16string pattern = base::WideToUTF16(kNonManagedDomainPatterns[i]);
     if (MatchDomain(domain, pattern, i))
       return true;
   }

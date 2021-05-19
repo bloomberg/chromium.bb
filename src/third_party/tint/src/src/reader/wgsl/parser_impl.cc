@@ -14,63 +14,20 @@
 
 #include "src/reader/wgsl/parser_impl.h"
 
-#include <memory>
-#include <vector>
-
 #include "src/ast/access_decoration.h"
-#include "src/ast/array_accessor_expression.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/binding_decoration.h"
 #include "src/ast/bitcast_expression.h"
-#include "src/ast/bool_literal.h"
-#include "src/ast/break_statement.h"
-#include "src/ast/builtin_decoration.h"
-#include "src/ast/call_expression.h"
-#include "src/ast/case_statement.h"
 #include "src/ast/constant_id_decoration.h"
-#include "src/ast/continue_statement.h"
 #include "src/ast/discard_statement.h"
-#include "src/ast/else_statement.h"
 #include "src/ast/fallthrough_statement.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/group_decoration.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/if_statement.h"
-#include "src/ast/location_decoration.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
 #include "src/ast/stage_decoration.h"
-#include "src/ast/stride_decoration.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/switch_statement.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/type_decoration.h"
-#include "src/ast/uint_literal.h"
-#include "src/ast/unary_op.h"
 #include "src/ast/unary_op_expression.h"
-#include "src/ast/variable.h"
-#include "src/ast/variable_decl_statement.h"
 #include "src/ast/workgroup_decoration.h"
 #include "src/reader/wgsl/lexer.h"
 #include "src/type/access_control_type.h"
-#include "src/type/alias_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
 #include "src/type/depth_texture_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
 #include "src/type/multisampled_texture_type.h"
-#include "src/type/pointer_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/sampler_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type/void_type.h"
 
 namespace tint {
 namespace reader {
@@ -147,7 +104,9 @@ const char kBuiltinDecoration[] = "builtin";
 const char kConstantIdDecoration[] = "constant_id";
 const char kGroupDecoration[] = "group";
 const char kLocationDecoration[] = "location";
-const char kOffsetDecoration[] = "offset";
+const char kOffsetDecoration[] = "offset";  // DEPRECATED
+const char kSizeDecoration[] = "size";
+const char kAlignDecoration[] = "align";
 const char kSetDecoration[] = "set";
 const char kStageDecoration[] = "stage";
 const char kStrideDecoration[] = "stride";
@@ -158,11 +117,12 @@ bool is_decoration(Token t) {
     return false;
 
   auto s = t.to_str();
-  return s == kAccessDecoration || s == kBindingDecoration ||
-         s == kBlockDecoration || s == kBuiltinDecoration ||
-         s == kConstantIdDecoration || s == kLocationDecoration ||
+  return s == kAccessDecoration || s == kAlignDecoration ||
+         s == kBindingDecoration || s == kBlockDecoration ||
+         s == kBuiltinDecoration || s == kConstantIdDecoration ||
+         s == kGroupDecoration || s == kLocationDecoration ||
          s == kOffsetDecoration || s == kSetDecoration ||
-         s == kGroupDecoration || s == kStageDecoration ||
+         s == kSizeDecoration || s == kStageDecoration ||
          s == kStrideDecoration || s == kWorkgroupSizeDecoration;
 }
 
@@ -207,8 +167,13 @@ ParserImpl::FunctionHeader::FunctionHeader(const FunctionHeader&) = default;
 ParserImpl::FunctionHeader::FunctionHeader(Source src,
                                            std::string n,
                                            ast::VariableList p,
-                                           type::Type* ret_ty)
-    : source(src), name(n), params(p), return_type(ret_ty) {}
+                                           type::Type* ret_ty,
+                                           ast::DecorationList ret_decos)
+    : source(src),
+      name(n),
+      params(p),
+      return_type(ret_ty),
+      return_type_decorations(ret_decos) {}
 
 ParserImpl::FunctionHeader::~FunctionHeader() = default;
 
@@ -241,7 +206,7 @@ ParserImpl::Failure::Errored ParserImpl::add_error(const Token& t,
 ParserImpl::Failure::Errored ParserImpl::add_error(const Source& source,
                                                    const std::string& err) {
   if (silence_errors_ == 0) {
-    diags_.add_error(err, source);
+    builder_.Diagnostics().add_error(err, source);
   }
   return Failure::kErrored;
 }
@@ -268,7 +233,6 @@ Token ParserImpl::peek() {
 
 void ParserImpl::register_constructed(const std::string& name,
                                       type::Type* type) {
-  assert(type);
   registered_constructs_[name] = type;
 }
 
@@ -293,14 +257,12 @@ void ParserImpl::translation_unit() {
       break;
     }
     expect_global_decl();
-    if (diags_.error_count() >= max_errors_) {
+    if (builder_.Diagnostics().error_count() >= max_errors_) {
       add_error(Source{{}, p.source().file_path},
                 "stopping after " + std::to_string(max_errors_) + " errors");
       break;
     }
   }
-
-  assert(builder_.IsValid());
 }
 
 // global_decl
@@ -429,10 +391,6 @@ Maybe<ast::Variable*> ParserImpl::global_variable_decl(
   if (!decl.matched)
     return Failure::kNoMatch;
 
-  auto var_decos = cast_decorations<ast::VariableDecoration>(decos);
-  if (var_decos.errored)
-    return Failure::kErrored;
-
   ast::Expression* constructor = nullptr;
   if (match(Token::Type::kEqual)) {
     auto expr = expect_const_expr();
@@ -448,7 +406,7 @@ Maybe<ast::Variable*> ParserImpl::global_variable_decl(
       decl->type,                               // type
       false,                                    // is_const
       constructor,                              // constructor
-      std::move(var_decos.value));              // decorations
+      std::move(decos));                        // decorations
 }
 
 // global_constant_decl
@@ -471,10 +429,6 @@ Maybe<ast::Variable*> ParserImpl::global_constant_decl(
   if (init.errored)
     return Failure::kErrored;
 
-  auto var_decos = cast_decorations<ast::VariableDecoration>(decos);
-  if (var_decos.errored)
-    return Failure::kErrored;
-
   return create<ast::Variable>(
       decl->source,                             // source
       builder_.Symbols().Register(decl->name),  // symbol
@@ -482,7 +436,7 @@ Maybe<ast::Variable*> ParserImpl::global_constant_decl(
       decl->type,                               // type
       true,                                     // is_const
       init.value,                               // constructor
-      std::move(var_decos.value));              // decorations
+      std::move(decos));                        // decorations
 }
 
 // variable_decl
@@ -504,7 +458,12 @@ Maybe<ParserImpl::VarDeclInfo> ParserImpl::variable_decl() {
 
   if (decl->type->UnwrapAll()->is_handle()) {
     // handle types implicitly have the `UniformConstant` storage class.
-    // TODO(jrprice): Produce an error if an explicit storage class is provided.
+    if (explicit_sc.matched) {
+      return add_error(
+          explicit_sc.source,
+          decl->type->UnwrapAll()->FriendlyName(builder_.Symbols()) +
+              " variables must not have a storage class");
+    }
     sc = ast::StorageClass::kUniformConstant;
   }
 
@@ -982,11 +941,7 @@ Maybe<type::Type*> ParserImpl::type_decl(ast::DecorationList& decos) {
     return expect_type_decl_pointer();
 
   if (match(Token::Type::kArray)) {
-    auto array_decos = cast_decorations<ast::ArrayDecoration>(decos);
-    if (array_decos.errored)
-      return Failure::kErrored;
-
-    return expect_type_decl_array(std::move(array_decos.value));
+    return expect_type_decl_array(std::move(decos));
   }
 
   if (t.IsMat2x2() || t.IsMat2x3() || t.IsMat2x4() || t.IsMat3x2() ||
@@ -1050,7 +1005,7 @@ Expect<type::Type*> ParserImpl::expect_type_decl_vector(Token t) {
 }
 
 Expect<type::Type*> ParserImpl::expect_type_decl_array(
-    ast::ArrayDecorationList decos) {
+    ast::DecorationList decos) {
   const char* use = "array declaration";
 
   return expect_lt_gt_block(use, [&]() -> Expect<type::Type*> {
@@ -1098,7 +1053,6 @@ Expect<type::Type*> ParserImpl::expect_type_decl_matrix(Token t) {
 //  | OUTPUT
 //  | UNIFORM
 //  | WORKGROUP
-//  | UNIFORM_CONSTANT
 //  | STORAGE
 //  | IMAGE
 //  | PRIVATE
@@ -1118,9 +1072,6 @@ Expect<ast::StorageClass> ParserImpl::expect_storage_class(
 
   if (match(Token::Type::kWorkgroup))
     return {ast::StorageClass::kWorkgroup, source};
-
-  if (match(Token::Type::kUniformConstant))
-    return {ast::StorageClass::kUniformConstant, source};
 
   if (match(Token::Type::kStorage))
     return {ast::StorageClass::kStorage, source};
@@ -1154,14 +1105,9 @@ Maybe<type::Struct*> ParserImpl::struct_decl(ast::DecorationList& decos) {
   if (body.errored)
     return Failure::kErrored;
 
-  auto struct_decos = cast_decorations<ast::StructDecoration>(decos);
-  if (struct_decos.errored)
-    return Failure::kErrored;
-
   return create<type::Struct>(
       builder_.Symbols().Register(name.value),
-      create<ast::Struct>(source, std::move(body.value),
-                          std::move(struct_decos.value)));
+      create<ast::Struct>(source, std::move(body.value), std::move(decos)));
 }
 
 // struct_body_decl
@@ -1206,16 +1152,12 @@ Expect<ast::StructMember*> ParserImpl::expect_struct_member(
   if (decl.errored)
     return Failure::kErrored;
 
-  auto member_decos = cast_decorations<ast::StructMemberDecoration>(decos);
-  if (member_decos.errored)
-    return Failure::kErrored;
-
   if (!expect("struct member", Token::Type::kSemicolon))
     return Failure::kErrored;
 
   return create<ast::StructMember>(decl->source,
                                    builder_.Symbols().Register(decl->name),
-                                   decl->type, std::move(member_decos.value));
+                                   decl->type, std::move(decos));
 }
 
 // function_decl
@@ -1239,10 +1181,6 @@ Maybe<ast::Function*> ParserImpl::function_decl(ast::DecorationList& decos) {
 
   bool errored = false;
 
-  auto func_decos = cast_decorations<ast::FunctionDecoration>(decos);
-  if (func_decos.errored)
-    errored = true;
-
   auto body = expect_body_stmt();
   if (body.errored)
     errored = true;
@@ -1252,7 +1190,7 @@ Maybe<ast::Function*> ParserImpl::function_decl(ast::DecorationList& decos) {
 
   return create<ast::Function>(
       header->source, builder_.Symbols().Register(header->name), header->params,
-      header->return_type, body.value, func_decos.value);
+      header->return_type, body.value, decos, header->return_type_decorations);
 }
 
 // function_type_decl
@@ -1292,6 +1230,11 @@ Maybe<ParserImpl::FunctionHeader> ParserImpl::function_header() {
   if (!expect(use, Token::Type::kArrow))
     return Failure::kErrored;
 
+  auto decos = decoration_list();
+  if (decos.errored) {
+    return Failure::kErrored;
+  }
+
   auto type = function_type_decl();
   if (type.errored) {
     errored = true;
@@ -1302,46 +1245,57 @@ Maybe<ParserImpl::FunctionHeader> ParserImpl::function_header() {
   if (errored)
     return Failure::kErrored;
 
-  return FunctionHeader{source, name.value, std::move(params.value),
-                        type.value};
+  return FunctionHeader{source, name.value, std::move(params.value), type.value,
+                        std::move(decos.value)};
 }
 
 // param_list
 //   :
-//   | (variable_ident_decl COMMA)* variable_ident_decl
+//   | (param COMMA)* param
 Expect<ast::VariableList> ParserImpl::expect_param_list() {
-  if (!peek().IsIdentifier())  // Empty list
+  // Check for an empty list.
+  auto t = peek();
+  if (!t.IsIdentifier() && !t.IsAttrLeft()) {
     return ast::VariableList{};
+  }
+
+  ast::VariableList ret;
+  while (synchronized_) {
+    auto param = expect_param();
+    if (param.errored)
+      return Failure::kErrored;
+    ret.push_back(param.value);
+
+    if (!match(Token::Type::kComma))
+      break;
+  }
+
+  return ret;
+}
+
+// param
+//   : decoration_list* variable_ident_decl
+Expect<ast::Variable*> ParserImpl::expect_param() {
+  auto decos = decoration_list();
 
   auto decl = expect_variable_ident_decl("parameter");
   if (decl.errored)
     return Failure::kErrored;
 
-  ast::VariableList ret;
-  for (;;) {
-    auto* var = create<ast::Variable>(
-        decl->source,                             // source
-        builder_.Symbols().Register(decl->name),  // symbol
-        ast::StorageClass::kNone,                 // storage_class
-        decl->type,                               // type
-        true,                                     // is_const
-        nullptr,                                  // constructor
-        ast::VariableDecorationList{});           // decorations
-    // Formal parameters are treated like a const declaration where the
-    // initializer value is provided by the call's argument.  The key point is
-    // that it's not updatable after intially set.  This is unlike C or GLSL
-    // which treat formal parameters like local variables that can be updated.
-    ret.push_back(var);
+  auto* var =
+      create<ast::Variable>(decl->source,                             // source
+                            builder_.Symbols().Register(decl->name),  // symbol
+                            ast::StorageClass::kNone,  // storage_class
+                            decl->type,                // type
+                            true,                      // is_const
+                            nullptr,                   // constructor
+                            std::move(decos.value));   // decorations
+  // Formal parameters are treated like a const declaration where the
+  // initializer value is provided by the call's argument.  The key point is
+  // that it's not updatable after initially set.  This is unlike C or GLSL
+  // which treat formal parameters like local variables that can be updated.
 
-    if (!match(Token::Type::kComma))
-      break;
-
-    decl = expect_variable_ident_decl("parameter");
-    if (decl.errored)
-      return Failure::kErrored;
-  }
-
-  return ret;
+  return var;
 }
 
 // pipeline_stage
@@ -1597,7 +1551,7 @@ Maybe<ast::VariableDeclStatement*> ParserImpl::variable_stmt() {
         decl->type,                               // type
         true,                                     // is_const
         constructor.value,                        // constructor
-        ast::VariableDecorationList{});           // decorations
+        ast::DecorationList{});                   // decorations
 
     return create<ast::VariableDeclStatement>(decl->source, var);
   }
@@ -1622,11 +1576,11 @@ Maybe<ast::VariableDeclStatement*> ParserImpl::variable_stmt() {
   auto* var =
       create<ast::Variable>(decl->source,                             // source
                             builder_.Symbols().Register(decl->name),  // symbol
-                            decl->storage_class,             // storage_class
-                            decl->type,                      // type
-                            false,                           // is_const
-                            constructor,                     // constructor
-                            ast::VariableDecorationList{});  // decorations
+                            decl->storage_class,     // storage_class
+                            decl->type,              // type
+                            false,                   // is_const
+                            constructor,             // constructor
+                            ast::DecorationList{});  // decorations
 
   return create<ast::VariableDeclStatement>(var->source(), var);
 }
@@ -2256,32 +2210,34 @@ Maybe<ast::Expression*> ParserImpl::unary_expression() {
 //   | MODULO unary_expression multiplicative_expr
 Expect<ast::Expression*> ParserImpl::expect_multiplicative_expr(
     ast::Expression* lhs) {
-  auto t = peek();
+  while (synchronized_) {
+    auto t = peek();
 
-  ast::BinaryOp op = ast::BinaryOp::kNone;
-  if (t.IsStar())
-    op = ast::BinaryOp::kMultiply;
-  else if (t.IsForwardSlash())
-    op = ast::BinaryOp::kDivide;
-  else if (t.IsMod())
-    op = ast::BinaryOp::kModulo;
-  else
-    return lhs;
+    ast::BinaryOp op = ast::BinaryOp::kNone;
+    if (t.IsStar())
+      op = ast::BinaryOp::kMultiply;
+    else if (t.IsForwardSlash())
+      op = ast::BinaryOp::kDivide;
+    else if (t.IsMod())
+      op = ast::BinaryOp::kModulo;
+    else
+      return lhs;
 
-  auto source = t.source();
-  auto name = t.to_name();
-  next();  // Consume the peek
+    auto source = t.source();
+    auto name = t.to_name();
+    next();  // Consume the peek
 
-  auto rhs = unary_expression();
-  if (rhs.errored)
-    return Failure::kErrored;
-  if (!rhs.matched) {
-    return add_error(peek(),
-                     "unable to parse right side of " + name + " expression");
+    auto rhs = unary_expression();
+    if (rhs.errored)
+      return Failure::kErrored;
+    if (!rhs.matched) {
+      return add_error(peek(),
+                       "unable to parse right side of " + name + " expression");
+    }
+
+    lhs = create<ast::BinaryExpression>(source, op, lhs, rhs.value);
   }
-
-  return expect_multiplicative_expr(
-      create<ast::BinaryExpression>(source, op, lhs, rhs.value));
+  return Failure::kErrored;
 }
 
 // multiplicative_expression
@@ -2302,27 +2258,29 @@ Maybe<ast::Expression*> ParserImpl::multiplicative_expression() {
 //   | MINUS multiplicative_expression additive_expr
 Expect<ast::Expression*> ParserImpl::expect_additive_expr(
     ast::Expression* lhs) {
-  auto t = peek();
+  while (synchronized_) {
+    auto t = peek();
 
-  ast::BinaryOp op = ast::BinaryOp::kNone;
-  if (t.IsPlus())
-    op = ast::BinaryOp::kAdd;
-  else if (t.IsMinus())
-    op = ast::BinaryOp::kSubtract;
-  else
-    return lhs;
+    ast::BinaryOp op = ast::BinaryOp::kNone;
+    if (t.IsPlus())
+      op = ast::BinaryOp::kAdd;
+    else if (t.IsMinus())
+      op = ast::BinaryOp::kSubtract;
+    else
+      return lhs;
 
-  auto source = t.source();
-  next();  // Consume the peek
+    auto source = t.source();
+    next();  // Consume the peek
 
-  auto rhs = multiplicative_expression();
-  if (rhs.errored)
-    return Failure::kErrored;
-  if (!rhs.matched)
-    return add_error(peek(), "unable to parse right side of + expression");
+    auto rhs = multiplicative_expression();
+    if (rhs.errored)
+      return Failure::kErrored;
+    if (!rhs.matched)
+      return add_error(peek(), "unable to parse right side of + expression");
 
-  return expect_additive_expr(
-      create<ast::BinaryExpression>(source, op, lhs, rhs.value));
+    lhs = create<ast::BinaryExpression>(source, op, lhs, rhs.value);
+  }
+  return Failure::kErrored;
 }
 
 // additive_expression
@@ -2342,33 +2300,36 @@ Maybe<ast::Expression*> ParserImpl::additive_expression() {
 //   | SHIFT_LEFT additive_expression shift_expr
 //   | SHIFT_RIGHT additive_expression shift_expr
 Expect<ast::Expression*> ParserImpl::expect_shift_expr(ast::Expression* lhs) {
-  auto t = peek();
-  auto source = t.source();
+  while (synchronized_) {
+    auto t = peek();
+    auto source = t.source();
 
-  auto* name = "";
-  ast::BinaryOp op = ast::BinaryOp::kNone;
-  if (t.IsShiftLeft()) {
-    next();  // Consume the peek
-    op = ast::BinaryOp::kShiftLeft;
-    name = "<<";
-  } else if (t.IsShiftRight()) {
-    next();  // Consume the peek
-    op = ast::BinaryOp::kShiftRight;
-    name = ">>";
-  } else {
-    return lhs;
-  }
+    auto* name = "";
+    ast::BinaryOp op = ast::BinaryOp::kNone;
+    if (t.IsShiftLeft()) {
+      next();  // Consume the peek
+      op = ast::BinaryOp::kShiftLeft;
+      name = "<<";
+    } else if (t.IsShiftRight()) {
+      next();  // Consume the peek
+      op = ast::BinaryOp::kShiftRight;
+      name = ">>";
+    } else {
+      return lhs;
+    }
 
-  auto rhs = additive_expression();
-  if (rhs.errored)
-    return Failure::kErrored;
-  if (!rhs.matched) {
-    return add_error(peek(), std::string("unable to parse right side of ") +
-                                 name + " expression");
+    auto rhs = additive_expression();
+    if (rhs.errored)
+      return Failure::kErrored;
+    if (!rhs.matched) {
+      return add_error(peek(), std::string("unable to parse right side of ") +
+                                   name + " expression");
+    }
+
+    return lhs = create<ast::BinaryExpression>(source, op, lhs, rhs.value);
   }
-  return expect_shift_expr(
-      create<ast::BinaryExpression>(source, op, lhs, rhs.value));
-}  // namespace wgsl
+  return Failure::kErrored;
+}
 
 // shift_expression
 //   : additive_expression shift_expr
@@ -2390,33 +2351,35 @@ Maybe<ast::Expression*> ParserImpl::shift_expression() {
 //   | GREATER_THAN_EQUAL shift_expression relational_expr
 Expect<ast::Expression*> ParserImpl::expect_relational_expr(
     ast::Expression* lhs) {
-  auto t = peek();
-  ast::BinaryOp op = ast::BinaryOp::kNone;
-  if (t.IsLessThan())
-    op = ast::BinaryOp::kLessThan;
-  else if (t.IsGreaterThan())
-    op = ast::BinaryOp::kGreaterThan;
-  else if (t.IsLessThanEqual())
-    op = ast::BinaryOp::kLessThanEqual;
-  else if (t.IsGreaterThanEqual())
-    op = ast::BinaryOp::kGreaterThanEqual;
-  else
-    return lhs;
+  while (synchronized_) {
+    auto t = peek();
+    ast::BinaryOp op = ast::BinaryOp::kNone;
+    if (t.IsLessThan())
+      op = ast::BinaryOp::kLessThan;
+    else if (t.IsGreaterThan())
+      op = ast::BinaryOp::kGreaterThan;
+    else if (t.IsLessThanEqual())
+      op = ast::BinaryOp::kLessThanEqual;
+    else if (t.IsGreaterThanEqual())
+      op = ast::BinaryOp::kGreaterThanEqual;
+    else
+      return lhs;
 
-  auto source = t.source();
-  auto name = t.to_name();
-  next();  // Consume the peek
+    auto source = t.source();
+    auto name = t.to_name();
+    next();  // Consume the peek
 
-  auto rhs = shift_expression();
-  if (rhs.errored)
-    return Failure::kErrored;
-  if (!rhs.matched) {
-    return add_error(peek(),
-                     "unable to parse right side of " + name + " expression");
+    auto rhs = shift_expression();
+    if (rhs.errored)
+      return Failure::kErrored;
+    if (!rhs.matched) {
+      return add_error(peek(),
+                       "unable to parse right side of " + name + " expression");
+    }
+
+    lhs = create<ast::BinaryExpression>(source, op, lhs, rhs.value);
   }
-
-  return expect_relational_expr(
-      create<ast::BinaryExpression>(source, op, lhs, rhs.value));
+  return Failure::kErrored;
 }
 
 // relational_expression
@@ -2437,29 +2400,31 @@ Maybe<ast::Expression*> ParserImpl::relational_expression() {
 //   | NOT_EQUAL relational_expression equality_expr
 Expect<ast::Expression*> ParserImpl::expect_equality_expr(
     ast::Expression* lhs) {
-  auto t = peek();
-  ast::BinaryOp op = ast::BinaryOp::kNone;
-  if (t.IsEqualEqual())
-    op = ast::BinaryOp::kEqual;
-  else if (t.IsNotEqual())
-    op = ast::BinaryOp::kNotEqual;
-  else
-    return lhs;
+  while (synchronized_) {
+    auto t = peek();
+    ast::BinaryOp op = ast::BinaryOp::kNone;
+    if (t.IsEqualEqual())
+      op = ast::BinaryOp::kEqual;
+    else if (t.IsNotEqual())
+      op = ast::BinaryOp::kNotEqual;
+    else
+      return lhs;
 
-  auto source = t.source();
-  auto name = t.to_name();
-  next();  // Consume the peek
+    auto source = t.source();
+    auto name = t.to_name();
+    next();  // Consume the peek
 
-  auto rhs = relational_expression();
-  if (rhs.errored)
-    return Failure::kErrored;
-  if (!rhs.matched) {
-    return add_error(peek(),
-                     "unable to parse right side of " + name + " expression");
+    auto rhs = relational_expression();
+    if (rhs.errored)
+      return Failure::kErrored;
+    if (!rhs.matched) {
+      return add_error(peek(),
+                       "unable to parse right side of " + name + " expression");
+    }
+
+    lhs = create<ast::BinaryExpression>(source, op, lhs, rhs.value);
   }
-
-  return expect_equality_expr(
-      create<ast::BinaryExpression>(source, op, lhs, rhs.value));
+  return Failure::kErrored;
 }
 
 // equality_expression
@@ -2478,21 +2443,24 @@ Maybe<ast::Expression*> ParserImpl::equality_expression() {
 //   :
 //   | AND equality_expression and_expr
 Expect<ast::Expression*> ParserImpl::expect_and_expr(ast::Expression* lhs) {
-  auto t = peek();
-  if (!t.IsAnd())
-    return lhs;
+  while (synchronized_) {
+    auto t = peek();
+    if (!t.IsAnd())
+      return lhs;
 
-  auto source = t.source();
-  next();  // Consume the peek
+    auto source = t.source();
+    next();  // Consume the peek
 
-  auto rhs = equality_expression();
-  if (rhs.errored)
-    return Failure::kErrored;
-  if (!rhs.matched)
-    return add_error(peek(), "unable to parse right side of & expression");
+    auto rhs = equality_expression();
+    if (rhs.errored)
+      return Failure::kErrored;
+    if (!rhs.matched)
+      return add_error(peek(), "unable to parse right side of & expression");
 
-  return expect_and_expr(create<ast::BinaryExpression>(
-      source, ast::BinaryOp::kAnd, lhs, rhs.value));
+    lhs = create<ast::BinaryExpression>(source, ast::BinaryOp::kAnd, lhs,
+                                        rhs.value);
+  }
+  return Failure::kErrored;
 }
 
 // and_expression
@@ -2512,18 +2480,21 @@ Maybe<ast::Expression*> ParserImpl::and_expression() {
 //   | XOR and_expression exclusive_or_expr
 Expect<ast::Expression*> ParserImpl::expect_exclusive_or_expr(
     ast::Expression* lhs) {
-  Source source;
-  if (!match(Token::Type::kXor, &source))
-    return lhs;
+  while (synchronized_) {
+    Source source;
+    if (!match(Token::Type::kXor, &source))
+      return lhs;
 
-  auto rhs = and_expression();
-  if (rhs.errored)
-    return Failure::kErrored;
-  if (!rhs.matched)
-    return add_error(peek(), "unable to parse right side of ^ expression");
+    auto rhs = and_expression();
+    if (rhs.errored)
+      return Failure::kErrored;
+    if (!rhs.matched)
+      return add_error(peek(), "unable to parse right side of ^ expression");
 
-  return expect_exclusive_or_expr(create<ast::BinaryExpression>(
-      source, ast::BinaryOp::kXor, lhs, rhs.value));
+    lhs = create<ast::BinaryExpression>(source, ast::BinaryOp::kXor, lhs,
+                                        rhs.value);
+  }
+  return Failure::kErrored;
 }
 
 // exclusive_or_expression
@@ -2543,18 +2514,21 @@ Maybe<ast::Expression*> ParserImpl::exclusive_or_expression() {
 //   | OR exclusive_or_expression inclusive_or_expr
 Expect<ast::Expression*> ParserImpl::expect_inclusive_or_expr(
     ast::Expression* lhs) {
-  Source source;
-  if (!match(Token::Type::kOr))
-    return lhs;
+  while (synchronized_) {
+    Source source;
+    if (!match(Token::Type::kOr))
+      return lhs;
 
-  auto rhs = exclusive_or_expression();
-  if (rhs.errored)
-    return Failure::kErrored;
-  if (!rhs.matched)
-    return add_error(peek(), "unable to parse right side of | expression");
+    auto rhs = exclusive_or_expression();
+    if (rhs.errored)
+      return Failure::kErrored;
+    if (!rhs.matched)
+      return add_error(peek(), "unable to parse right side of | expression");
 
-  return expect_inclusive_or_expr(create<ast::BinaryExpression>(
-      source, ast::BinaryOp::kOr, lhs, rhs.value));
+    lhs = create<ast::BinaryExpression>(source, ast::BinaryOp::kOr, lhs,
+                                        rhs.value);
+  }
+  return Failure::kErrored;
 }
 
 // inclusive_or_expression
@@ -2574,21 +2548,24 @@ Maybe<ast::Expression*> ParserImpl::inclusive_or_expression() {
 //   | AND_AND inclusive_or_expression logical_and_expr
 Expect<ast::Expression*> ParserImpl::expect_logical_and_expr(
     ast::Expression* lhs) {
-  auto t = peek();
-  if (!t.IsAndAnd())
-    return lhs;
+  while (synchronized_) {
+    auto t = peek();
+    if (!t.IsAndAnd())
+      return lhs;
 
-  auto source = t.source();
-  next();  // Consume the peek
+    auto source = t.source();
+    next();  // Consume the peek
 
-  auto rhs = inclusive_or_expression();
-  if (rhs.errored)
-    return Failure::kErrored;
-  if (!rhs.matched)
-    return add_error(peek(), "unable to parse right side of && expression");
+    auto rhs = inclusive_or_expression();
+    if (rhs.errored)
+      return Failure::kErrored;
+    if (!rhs.matched)
+      return add_error(peek(), "unable to parse right side of && expression");
 
-  return expect_logical_and_expr(create<ast::BinaryExpression>(
-      source, ast::BinaryOp::kLogicalAnd, lhs, rhs.value));
+    lhs = create<ast::BinaryExpression>(source, ast::BinaryOp::kLogicalAnd, lhs,
+                                        rhs.value);
+  }
+  return Failure::kErrored;
 }
 
 // logical_and_expression
@@ -2608,18 +2585,21 @@ Maybe<ast::Expression*> ParserImpl::logical_and_expression() {
 //   | OR_OR logical_and_expression logical_or_expr
 Expect<ast::Expression*> ParserImpl::expect_logical_or_expr(
     ast::Expression* lhs) {
-  Source source;
-  if (!match(Token::Type::kOrOr))
-    return lhs;
+  while (synchronized_) {
+    Source source;
+    if (!match(Token::Type::kOrOr))
+      return lhs;
 
-  auto rhs = logical_and_expression();
-  if (rhs.errored)
-    return Failure::kErrored;
-  if (!rhs.matched)
-    return add_error(peek(), "unable to parse right side of || expression");
+    auto rhs = logical_and_expression();
+    if (rhs.errored)
+      return Failure::kErrored;
+    if (!rhs.matched)
+      return add_error(peek(), "unable to parse right side of || expression");
 
-  return expect_logical_or_expr(create<ast::BinaryExpression>(
-      source, ast::BinaryOp::kLogicalOr, lhs, rhs.value));
+    lhs = create<ast::BinaryExpression>(source, ast::BinaryOp::kLogicalOr, lhs,
+                                        rhs.value);
+  }
+  return Failure::kErrored;
 }
 
 // logical_or_expression
@@ -2840,7 +2820,7 @@ Maybe<ast::Decoration*> ParserImpl::decoration() {
       if (val.errored)
         return Failure::kErrored;
 
-      return create<ast::AccessDecoration>(val.source, val.value);
+      return create<ast::AccessDecoration>(t.source(), val.value);
     });
   }
 
@@ -2851,7 +2831,7 @@ Maybe<ast::Decoration*> ParserImpl::decoration() {
       if (val.errored)
         return Failure::kErrored;
 
-      return create<ast::LocationDecoration>(val.source, val.value);
+      return create<ast::LocationDecoration>(t.source(), val.value);
     });
   }
 
@@ -2862,7 +2842,7 @@ Maybe<ast::Decoration*> ParserImpl::decoration() {
       if (val.errored)
         return Failure::kErrored;
 
-      return create<ast::BindingDecoration>(val.source, val.value);
+      return create<ast::BindingDecoration>(t.source(), val.value);
     });
   }
 
@@ -2873,7 +2853,7 @@ Maybe<ast::Decoration*> ParserImpl::decoration() {
       if (val.errored)
         return Failure::kErrored;
 
-      return create<ast::GroupDecoration>(val.source, val.value);
+      return create<ast::GroupDecoration>(t.source(), val.value);
     });
   }
 
@@ -2883,7 +2863,7 @@ Maybe<ast::Decoration*> ParserImpl::decoration() {
       if (builtin.errored)
         return Failure::kErrored;
 
-      return create<ast::BuiltinDecoration>(builtin.source, builtin.value);
+      return create<ast::BuiltinDecoration>(t.source(), builtin.value);
     });
   }
 
@@ -2922,7 +2902,7 @@ Maybe<ast::Decoration*> ParserImpl::decoration() {
       if (stage.errored)
         return Failure::kErrored;
 
-      return create<ast::StageDecoration>(stage.source, stage.value);
+      return create<ast::StageDecoration>(t.source(), stage.value);
     });
   }
 
@@ -2949,6 +2929,28 @@ Maybe<ast::Decoration*> ParserImpl::decoration() {
         return Failure::kErrored;
 
       return create<ast::StructMemberOffsetDecoration>(t.source(), val.value);
+    });
+  }
+
+  if (s == kSizeDecoration) {
+    const char* use = "size decoration";
+    return expect_paren_block(use, [&]() -> Result {
+      auto val = expect_positive_sint(use);
+      if (val.errored)
+        return Failure::kErrored;
+
+      return create<ast::StructMemberSizeDecoration>(t.source(), val.value);
+    });
+  }
+
+  if (s == kAlignDecoration) {
+    const char* use = "align decoration";
+    return expect_paren_block(use, [&]() -> Result {
+      auto val = expect_positive_sint(use);
+      if (val.errored)
+        return Failure::kErrored;
+
+      return create<ast::StructMemberAlignDecoration>(t.source(), val.value);
     });
   }
 
@@ -2980,29 +2982,6 @@ std::vector<T*> ParserImpl::take_decorations(ast::DecorationList& in) {
   }
 
   in = std::move(remaining);
-  return out;
-}
-
-template <typename T>
-Expect<std::vector<T*>> ParserImpl::cast_decorations(ast::DecorationList& in) {
-  auto out = take_decorations<T>(in);
-
-  bool ok = true;
-
-  for (auto* deco : in) {
-    std::stringstream msg;
-    msg << deco->GetKind() << " decoration type cannot be used for " << T::Kind;
-    add_error(deco->source(), msg.str());
-    ok = false;
-  }
-
-  // clear in so that expect_decorations_consumed() doesn't error again on the
-  // decorations we've already errored on.
-  in.clear();
-
-  if (!ok)
-    return Failure::kErrored;
-
   return out;
 }
 
@@ -3176,7 +3155,9 @@ T ParserImpl::sync(Token::Type tok, F&& body) {
   auto result = body();
   --sync_depth_;
 
-  assert(sync_tokens_.back() == tok);
+  if (sync_tokens_.back() != tok) {
+    TINT_ICE(builder_.Diagnostics()) << "sync_tokens is out of sync";
+  }
   sync_tokens_.pop_back();
 
   if (result.errored) {

@@ -12,6 +12,7 @@
 #include <cctype>
 #include <utility>
 
+#include "core/fxcrt/cfx_datetime.h"
 #include "core/fxcrt/cfx_widetextbuf.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_random.h"
@@ -2069,7 +2070,7 @@ void CFXJSE_FormCalcContext::IsoTime2Num(
   // TODO(dsinclair): See if there is other time conversion code in pdfium and
   //   consolidate.
   int32_t mins = hour * 60 + min;
-  mins -= (pMgr->GetDefLocale()->GetTimeZone().tzHour * 60);
+  mins -= pMgr->GetDefLocale()->GetTimeZoneInMinutes();
   while (mins > 1440)
     mins -= 1440;
   while (mins < 0)
@@ -2479,22 +2480,21 @@ void CFXJSE_FormCalcContext::Time2Num(
 
   CFX_DateTime uniTime = localeValue.GetTime();
   int32_t hour = uniTime.GetHour();
-  int32_t min = uniTime.GetMinute();
-  int32_t second = uniTime.GetSecond();
-  int32_t milSecond = uniTime.GetMillisecond();
-  int32_t mins = hour * 60 + min;
+  int32_t minute = uniTime.GetMinute();
+  const int32_t second = uniTime.GetSecond();
+  const int32_t millisecond = uniTime.GetMillisecond();
 
-  mins -= (CXFA_TimeZoneProvider().GetTimeZone().tzHour * 60);
-  while (mins > 1440)
-    mins -= 1440;
+  constexpr int kMinutesInDay = 24 * 60;
+  int32_t minutes_with_tz =
+      hour * 60 + minute - CXFA_TimeZoneProvider().GetTimeZoneInMinutes();
+  minutes_with_tz %= kMinutesInDay;
+  if (minutes_with_tz < 0)
+    minutes_with_tz += kMinutesInDay;
 
-  while (mins < 0)
-    mins += 1440;
-
-  hour = mins / 60;
-  min = mins % 60;
-  info.GetReturnValue().Set(hour * 3600000 + min * 60000 + second * 1000 +
-                            milSecond + 1);
+  hour = minutes_with_tz / 60;
+  minute = minutes_with_tz % 60;
+  info.GetReturnValue().Set(hour * 3600000 + minute * 60000 + second * 1000 +
+                            millisecond + 1);
 }
 
 // static

@@ -9,6 +9,8 @@ import("//ui/base/ui_features.gni")
 
 visibility = [ "//ui/ozone/*" ]
 
+assert(is_linux || is_chromeos)
+
 source_set("x11") {
   sources = [
     "client_native_pixmap_factory_x11.cc",
@@ -25,6 +27,8 @@ source_set("x11") {
     "x11_canvas_surface.h",
     "x11_clipboard_ozone.cc",
     "x11_clipboard_ozone.h",
+    "x11_global_shortcut_listener_ozone.cc",
+    "x11_global_shortcut_listener_ozone.h",
     "x11_menu_utils.cc",
     "x11_menu_utils.h",
     "x11_screen_ozone.cc",
@@ -33,6 +37,8 @@ source_set("x11") {
     "x11_surface_factory.h",
     "x11_user_input_monitor.cc",
     "x11_user_input_monitor.h",
+    "x11_utils.cc",
+    "x11_utils.h",
   ]
 
   deps = [

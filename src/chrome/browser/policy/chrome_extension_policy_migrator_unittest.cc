@@ -4,9 +4,10 @@
 
 #include "chrome/browser/policy/chrome_extension_policy_migrator.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/hashed_extension_id.h"
@@ -111,7 +112,7 @@ TEST(ChromeExtensionPolicyMigratorTest, DeprecatedWarnings) {
   // Policies in kMigrations should be renamed + copied into the Chrome domain.
   EXPECT_EQ(1u, chrome_map.size());
   ASSERT_TRUE(chrome_map.GetValue(kNewPolicy1));
-  base::RepeatingCallback<base::string16(int)> l10nlookup =
+  base::RepeatingCallback<std::u16string(int)> l10nlookup =
       base::BindRepeating(&l10n_util::GetStringUTF16);
   EXPECT_FALSE(
       chrome_map.Get(kNewPolicy1)

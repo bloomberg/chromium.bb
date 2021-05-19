@@ -9,7 +9,7 @@
 #include "base/feature_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
-#include "components/performance_manager/public/v8_memory/v8_detailed_memory.h"
+#include "components/performance_manager/public/v8_memory/v8_detailed_memory_any_seq.h"
 #include "content/public/browser/render_frame_host.h"
 
 namespace features {
@@ -46,8 +46,8 @@ class PageLoadMetricsMemoryTracker
           FrameDataMap& frame_data) override;
 
   // Removes the entry for a deleted frame from `per_frame_memory_usage_map_`.
-  void OnFrameDeleted(content::RenderFrameHost* render_frame_host,
-                      MetricsWebContentsObserver* observer);
+  void OnRenderFrameDeleted(content::RenderFrameHost* render_frame_host,
+                            MetricsWebContentsObserver* observer);
 
  private:
   int64_t UpdateMemoryUsageAndGetDelta(

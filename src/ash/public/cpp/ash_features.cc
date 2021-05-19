@@ -12,8 +12,14 @@
 namespace ash {
 namespace features {
 
+const base::Feature kArcGhostWindow{"ArcGhostWindow",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kArcResizeLock{"ArcResizeLock",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutoNightLight{"AutoNightLight",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -72,12 +78,6 @@ const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
 const base::Feature kMediaSessionNotification{"MediaSessionNotification",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kMediaNotificationsCounter{
-    "MediaNotificationsCounter", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kMovablePartialScreenshot{
-    "MovablePartialScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNotificationExpansionAnimation{
@@ -128,6 +128,9 @@ const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
 const base::Feature kWebUITabStripTabDragIntegration{
     "WebUITabStripTabDragIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kWindowsFollowCursor{"WindowsFollowCursor",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNotificationsInContextMenu{
     "NotificationsInContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -150,12 +153,21 @@ const base::Feature kKeyboardBasedDisplayArrangementInSettings{
     "KeyboardBasedDisplayArrangementInSettings",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+bool IsArcGhostWindowEnabled() {
+  return base::FeatureList::IsEnabled(kFullRestore) &&
+         base::FeatureList::IsEnabled(kArcGhostWindow);
+}
+
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
 }
 
 bool IsAltTabLimitedToActiveDesk() {
   return base::FeatureList::IsEnabled(kLimitAltTabToActiveDesk);
+}
+
+bool IsArcResizeLockEnabled() {
+  return base::FeatureList::IsEnabled(kArcResizeLock);
 }
 
 bool IsPerDeskShelfEnabled() {
@@ -298,10 +310,6 @@ bool IsDisplayAlignmentAssistanceEnabled() {
   return base::FeatureList::IsEnabled(kDisplayAlignAssist);
 }
 
-bool IsMovablePartialScreenshotEnabled() {
-  return base::FeatureList::IsEnabled(kMovablePartialScreenshot);
-}
-
 bool IsNotificationsInContextMenuEnabled() {
   return base::FeatureList::IsEnabled(kNotificationsInContextMenu);
 }
@@ -326,6 +334,10 @@ bool IsScalableStatusAreaEnabled() {
 bool IsShowDateInTrayButtonEnabled() {
   return IsScalableStatusAreaEnabled() &&
          base::FeatureList::IsEnabled(kShowDateInTrayButton);
+}
+
+bool DoWindowsFollowCursor() {
+  return base::FeatureList::IsEnabled(kWindowsFollowCursor);
 }
 
 namespace {

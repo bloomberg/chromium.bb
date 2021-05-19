@@ -18,6 +18,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/account_manager_facade_factory.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,6 +68,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/settings_resources.h"
 #include "chrome/grit/settings_resources_map.h"
+#include "components/account_manager_core/account_manager_facade.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -94,6 +96,10 @@
 #if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
 #endif  // defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "components/language/core/common/language_experiments.h"
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/account_manager/account_manager.h"
@@ -253,15 +259,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                                                profile->GetPrefs()->GetBoolean(
                                                    prefs::kSigninAllowed));
 
-  html_source->AddBoolean(
-      "safeBrowsingEnhancedEnabled",
-      base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection));
-
-  html_source->AddBoolean(
-      "editPasswordsInSettings",
-      base::FeatureList::IsEnabled(
-          password_manager::features::kEditPasswordsInSettings));
-
   html_source->AddBoolean("showImportPasswords",
                           base::FeatureList::IsEnabled(
                               password_manager::features::kPasswordImport));
@@ -291,6 +288,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
           features::kChromeCleanupScanCompletedNotification));
 #endif
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+  html_source->AddBoolean("enableDesktopRestructuredLanguageSettings",
+                          base::FeatureList::IsEnabled(
+                              language::kDesktopRestructuredLanguageSettings));
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean("splitSettingsSyncEnabled",
                           chromeos::features::IsSplitSettingsSyncEnabled());
@@ -314,6 +317,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   AddSettingsPageUIHandler(std::make_unique<AboutHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));
+
+  html_source->AddBoolean(
+      "searchHistoryLink",
+      base::FeatureList::IsEnabled(features::kSearchHistoryLink));
 
   // Add a handler to provide pluralized strings.
   auto plural_string_handler = std::make_unique<PluralStringHandler>();
@@ -379,10 +386,14 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
     auto* account_manager =
         factory->GetAccountManager(profile->GetPath().value());
     DCHECK(account_manager);
+    auto* account_manager_facade =
+        ::GetAccountManagerFacade(profile->GetPath().value());
+    DCHECK(account_manager_facade);
 
     web_ui()->AddMessageHandler(
         std::make_unique<chromeos::settings::AccountManagerUIHandler>(
-            account_manager, IdentityManagerFactory::GetForProfile(profile)));
+            account_manager, account_manager_facade,
+            IdentityManagerFactory::GetForProfile(profile)));
   }
 
   // MultideviceHandler is required in browser settings to show a special note

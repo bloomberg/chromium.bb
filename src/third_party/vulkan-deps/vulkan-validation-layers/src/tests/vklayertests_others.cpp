@@ -2395,6 +2395,62 @@ TEST_F(VkLayerTest, SwapchainAcquireTooManyImages) {
     DestroySwapchain();
 }
 
+TEST_F(VkLayerTest, NotCheckingForSurfaceSupport) {
+    TEST_DESCRIPTION("Test not calling GetPhysicalDeviceSurfaceSupportKHR");
+
+    if (!AddSurfaceInstanceExtension()) {
+        printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+#ifdef VK_USE_PLATFORM_ANDROID_KHR
+    // in "issue" section of VK_KHR_android_surface it talks how querying support is not needed on Android
+    // The validation layers currently don't validate this VUID for Android surfaces
+    if (std::find(instance_extensions_.begin(), instance_extensions_.end(), VK_KHR_ANDROID_SURFACE_EXTENSION_NAME) !=
+        instance_extensions_.end()) {
+        printf("%s Test does not run on Android Surface, skipping test\n", kSkipPrefix);
+        return;
+    }
+#endif
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (!AddSwapchainDeviceExtension()) {
+        printf("%s swapchain extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    if (!InitSurface()) {
+        printf("%s Cannot create surface, skipping test\n", kSkipPrefix);
+        return;
+    }
+    InitSwapchainInfo();
+
+    VkSwapchainCreateInfoKHR swapchain_create_info = {};
+    swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    swapchain_create_info.pNext = nullptr;
+    swapchain_create_info.flags = 0;
+    swapchain_create_info.surface = m_surface;
+    swapchain_create_info.minImageCount = m_surface_capabilities.minImageCount;
+    swapchain_create_info.imageFormat = m_surface_formats[0].format;
+    swapchain_create_info.imageColorSpace = m_surface_formats[0].colorSpace;
+    swapchain_create_info.imageExtent = {m_surface_capabilities.minImageExtent.width, m_surface_capabilities.minImageExtent.height};
+    swapchain_create_info.imageArrayLayers = 1;
+    swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swapchain_create_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    swapchain_create_info.compositeAlpha = m_surface_composite_alpha;
+    swapchain_create_info.presentMode = m_surface_present_modes[0];
+    swapchain_create_info.clipped = VK_FALSE;
+    swapchain_create_info.oldSwapchain = 0;
+
+    // Never called GetPhysicalDeviceSurfaceSupportKHR
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSwapchainCreateInfoKHR-surface-01270");
+    vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+    m_errorMonitor->VerifyFound();
+}
+
 TEST_F(VkLayerTest, SwapchainAcquireTooManyImages2KHR) {
     TEST_DESCRIPTION("Acquiring invalid amount of images from the swapchain via vkAcquireNextImage2KHR.");
     SetTargetApiVersion(VK_API_VERSION_1_1);
@@ -2451,6 +2507,130 @@ TEST_F(VkLayerTest, SwapchainAcquireTooManyImages2KHR) {
 
     // Cleanup
     vk::WaitForFences(device(), fences.size(), MakeVkHandles<VkFence>(fences).data(), VK_TRUE, UINT64_MAX);
+    DestroySwapchain();
+}
+
+TEST_F(VkLayerTest, InvalidSwapchainImageFormatList) {
+    TEST_DESCRIPTION("Test VK_KHR_image_format_list and VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR with swapchains");
+
+    if (!AddSurfaceInstanceExtension()) {
+        printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (!AddSwapchainDeviceExtension()) {
+        printf("%s swapchain extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SWAPCHAIN_MUTABLE_FORMAT_EXTENSION_NAME) &&
+        DeviceExtensionSupported(gpu(), nullptr, VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_SWAPCHAIN_MUTABLE_FORMAT_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
+    } else {
+        printf("%s Required extensions not supported, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    if (!InitSurface()) {
+        printf("%s Cannot create surface, skipping test\n", kSkipPrefix);
+        return;
+    }
+    InitSwapchainInfo();
+
+    VkBool32 supported;
+    vk::GetPhysicalDeviceSurfaceSupportKHR(gpu(), m_device->graphics_queue_node_index_, m_surface, &supported);
+    if (!supported) {
+        printf("%s Graphics queue does not support present, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    // To make test use, assume a common surface format
+    VkSurfaceFormatKHR valid_surface_format{VK_FORMAT_UNDEFINED, VK_COLOR_SPACE_MAX_ENUM_KHR};
+    VkSurfaceFormatKHR other_surface_format{VK_FORMAT_UNDEFINED, VK_COLOR_SPACE_MAX_ENUM_KHR};
+    for (VkSurfaceFormatKHR surface_format : m_surface_formats) {
+        if (surface_format.format == VK_FORMAT_B8G8R8A8_UNORM) {
+            valid_surface_format = surface_format;
+            break;
+        } else {
+            other_surface_format = surface_format;
+        }
+    }
+    if (valid_surface_format.format == VK_FORMAT_UNDEFINED) {
+        printf("%s Test requires VK_FORMAT_B8G8R8A8_UNORM as a supported surface format, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    // Use sampled formats that will always be supported
+    // Last format is not compatible with the rest
+    const VkFormat formats[4] = {VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R8G8B8A8_SNORM, VK_FORMAT_R8G8B8A8_UINT, VK_FORMAT_R8_UNORM};
+    VkImageFormatListCreateInfo format_list = {};
+    format_list.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO;
+    format_list.pNext = nullptr;
+    format_list.viewFormatCount = 3;  // first 3 are compatible
+    format_list.pViewFormats = formats;
+
+    VkSwapchainCreateInfoKHR swapchain_create_info = {};
+    swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    swapchain_create_info.pNext = &format_list;
+    swapchain_create_info.flags = 0;
+    swapchain_create_info.surface = m_surface;
+    swapchain_create_info.minImageCount = m_surface_capabilities.minImageCount;
+    swapchain_create_info.imageFormat = valid_surface_format.format;
+    swapchain_create_info.imageColorSpace = valid_surface_format.colorSpace;
+    swapchain_create_info.imageExtent = {m_surface_capabilities.minImageExtent.width, m_surface_capabilities.minImageExtent.height};
+    swapchain_create_info.imageArrayLayers = 1;
+    swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swapchain_create_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    swapchain_create_info.compositeAlpha = m_surface_composite_alpha;
+    swapchain_create_info.presentMode = m_surface_present_modes[0];
+    swapchain_create_info.clipped = VK_FALSE;
+    swapchain_create_info.oldSwapchain = 0;
+
+    // No mutable flag
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSwapchainCreateInfoKHR-flags-04100");
+    vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+    m_errorMonitor->VerifyFound();
+    swapchain_create_info.flags = VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR;
+
+    // Last format is not compatible
+    format_list.viewFormatCount = 4;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSwapchainCreateInfoKHR-pNext-04099");
+    vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+    m_errorMonitor->VerifyFound();
+
+    // viewFormatCount of 0
+    format_list.viewFormatCount = 0;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSwapchainCreateInfoKHR-flags-03168");
+    vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+    m_errorMonitor->VerifyFound();
+    format_list.viewFormatCount = 3;  // valid
+
+    // missing pNext
+    swapchain_create_info.pNext = nullptr;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSwapchainCreateInfoKHR-flags-03168");
+    vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+    m_errorMonitor->VerifyFound();
+    swapchain_create_info.pNext = &format_list;
+
+    // Another surface format is available and is not in list of viewFormats
+    if (other_surface_format.format != VK_FORMAT_UNDEFINED) {
+        swapchain_create_info.imageFormat = other_surface_format.format;
+        swapchain_create_info.imageColorSpace = other_surface_format.colorSpace;
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSwapchainCreateInfoKHR-flags-03168");
+        vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+        m_errorMonitor->VerifyFound();
+        swapchain_create_info.imageFormat = valid_surface_format.format;
+        swapchain_create_info.imageColorSpace = valid_surface_format.colorSpace;
+    }
+
+    m_errorMonitor->ExpectSuccess();
+    vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+    m_errorMonitor->VerifyNotFound();
     DestroySwapchain();
 }
 
@@ -3565,7 +3745,7 @@ TEST_F(VkLayerTest, InUseDestroyedSignaled) {
     pipe.InitState();
     pipe.CreateGraphicsPipeline();
 
-    pipe.descriptor_set_->WriteDescriptorBufferInfo(0, buffer_test.GetBuffer(), 1024, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    pipe.descriptor_set_->WriteDescriptorBufferInfo(0, buffer_test.GetBuffer(), 0, 1024, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     pipe.descriptor_set_->UpdateDescriptorSets();
 
     VkEvent event;
@@ -11509,4 +11689,126 @@ TEST_F(VkLayerTest, CmdCopyAccelerationStructureToMemoryKHR) {
     cb.end();
 
     vkDestroyAccelerationStructureKHR(m_device->handle(), as, nullptr);
+}
+
+TEST_F(VkLayerTest, MixedTimelineAndBinarySemaphores) {
+    TEST_DESCRIPTION("Submit mixtures of timeline and binary semaphores");
+
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s not supported by device; skipped.\n", kSkipPrefix, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+        return;
+    }
+
+    if (!CheckTimelineSemaphoreSupportAndInitState(this)) {
+        printf("%s Timeline semaphore not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR =
+        (PFN_vkGetPhysicalDeviceProperties2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceProperties2KHR");
+    ASSERT_TRUE(vkGetPhysicalDeviceProperties2KHR != nullptr);
+    auto timelineproperties = LvlInitStruct<VkPhysicalDeviceTimelineSemaphorePropertiesKHR>();
+    auto prop2 = LvlInitStruct<VkPhysicalDeviceProperties2KHR>(&timelineproperties);
+    vkGetPhysicalDeviceProperties2KHR(gpu(), &prop2);
+
+    VkSemaphoreTypeCreateInfoKHR semaphore_type_create_info{};
+    semaphore_type_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR;
+    semaphore_type_create_info.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE_KHR;
+    semaphore_type_create_info.initialValue = 5;
+
+    VkSemaphoreCreateInfo semaphore_create_info{};
+    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    semaphore_create_info.pNext = &semaphore_type_create_info;
+
+    VkSemaphore semaphore[2];
+    ASSERT_VK_SUCCESS(vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &semaphore[0]));
+    // index 1 should be a binary semaphore
+    semaphore_create_info.pNext = nullptr;
+    ASSERT_VK_SUCCESS(vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &semaphore[1]));
+    VkSemaphore extra_binary;
+    ASSERT_VK_SUCCESS(vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &extra_binary));
+
+    VkSemaphoreSignalInfo semaphore_signal_info{};
+    semaphore_signal_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO;
+    semaphore_signal_info.semaphore = semaphore[0];
+    semaphore_signal_info.value = 3;
+    auto vkSignalSemaphoreKHR = (PFN_vkSignalSemaphoreKHR)vk::GetDeviceProcAddr(m_device->device(), "vkSignalSemaphoreKHR");
+
+    semaphore_signal_info.value = 10;
+    ASSERT_VK_SUCCESS(vkSignalSemaphoreKHR(m_device->device(), &semaphore_signal_info));
+
+    VkTimelineSemaphoreSubmitInfoKHR timeline_semaphore_submit_info{};
+    uint64_t signalValue = 20;
+    timeline_semaphore_submit_info.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR;
+    timeline_semaphore_submit_info.waitSemaphoreValueCount = 0;
+    timeline_semaphore_submit_info.pWaitSemaphoreValues = nullptr;
+    // this array needs a length of 2, even though the binary semaphore won't look at the values array
+    timeline_semaphore_submit_info.signalSemaphoreValueCount = 1;
+    timeline_semaphore_submit_info.pSignalSemaphoreValues = &signalValue;
+
+    VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    VkSubmitInfo submit_info{};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.pNext = &timeline_semaphore_submit_info;
+    submit_info.pWaitDstStageMask = &stageFlags;
+    submit_info.waitSemaphoreCount = 0;
+    submit_info.pWaitSemaphores = nullptr;
+    submit_info.signalSemaphoreCount = 2;
+    submit_info.pSignalSemaphores = semaphore;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSubmitInfo-pNext-03241");
+    vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+
+    uint64_t values[2] = {signalValue, 0 /*ignored*/};
+    timeline_semaphore_submit_info.signalSemaphoreValueCount = 2;
+    timeline_semaphore_submit_info.pSignalSemaphoreValues = values;
+    m_errorMonitor->ExpectSuccess();
+    vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyNotFound();
+
+    // the indexes in pWaitSemaphores and pWaitSemaphoreValues should match
+    VkSemaphore reversed[2] = {semaphore[1], semaphore[0]};
+    uint64_t reversed_values[2] = {UINT64_MAX /* ignored */, 20};
+    VkPipelineStageFlags wait_stages[2] = {VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT};
+    submit_info.signalSemaphoreCount = 0;
+    submit_info.pSignalSemaphores = nullptr;
+    submit_info.waitSemaphoreCount = 2;
+    submit_info.pWaitSemaphores = reversed;
+    submit_info.pWaitDstStageMask = wait_stages;
+    timeline_semaphore_submit_info.signalSemaphoreValueCount = 0;
+    timeline_semaphore_submit_info.pSignalSemaphoreValues = nullptr;
+    timeline_semaphore_submit_info.waitSemaphoreValueCount = 2;
+    timeline_semaphore_submit_info.pWaitSemaphoreValues = reversed_values;
+    m_errorMonitor->ExpectSuccess();
+    vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyNotFound();
+
+    // if we only signal a binary semaphore we don't need a 'values' array
+    timeline_semaphore_submit_info.waitSemaphoreValueCount = 0;
+    timeline_semaphore_submit_info.pWaitSemaphoreValues = nullptr;
+    timeline_semaphore_submit_info.signalSemaphoreValueCount = 0;
+    timeline_semaphore_submit_info.pSignalSemaphoreValues = nullptr;
+    submit_info.waitSemaphoreCount = 0;
+    submit_info.pWaitSemaphores = nullptr;
+    submit_info.signalSemaphoreCount = 1;
+    submit_info.pSignalSemaphores = &extra_binary;
+    m_errorMonitor->ExpectSuccess();
+    vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyNotFound();
+
+    ASSERT_VK_SUCCESS(vk::QueueWaitIdle(m_device->m_queue));
+    vk::DestroySemaphore(m_device->device(), semaphore[0], nullptr);
+    vk::DestroySemaphore(m_device->device(), semaphore[1], nullptr);
+    vk::DestroySemaphore(m_device->device(), extra_binary, nullptr);
 }

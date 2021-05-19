@@ -27,17 +27,17 @@
 #include "src/gpu/vk/GrVkTexture.h"
 
 GrVkPipelineState::GrVkPipelineState(
-        GrVkGpu* gpu,
-        sk_sp<const GrVkPipeline> pipeline,
-        const GrVkDescriptorSetManager::Handle& samplerDSHandle,
-        const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
-        const UniformInfoArray& uniforms,
-        uint32_t uniformSize,
-        bool usePushConstants,
-        const UniformInfoArray& samplers,
-        std::unique_ptr<GrGLSLPrimitiveProcessor> geometryProcessor,
-        std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
-        std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls)
+            GrVkGpu* gpu,
+            sk_sp<const GrVkPipeline> pipeline,
+            const GrVkDescriptorSetManager::Handle& samplerDSHandle,
+            const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
+            const UniformInfoArray& uniforms,
+            uint32_t uniformSize,
+            bool usePushConstants,
+            const UniformInfoArray& samplers,
+            std::unique_ptr<GrGLSLGeometryProcessor> geometryProcessor,
+            std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
+            std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls)
         : fPipeline(std::move(pipeline))
         , fSamplerDSHandle(samplerDSHandle)
         , fBuiltinUniformHandles(builtinUniformHandles)
@@ -47,8 +47,11 @@ GrVkPipelineState::GrVkPipelineState(
         , fDataManager(uniforms, uniformSize, usePushConstants) {
     fNumSamplers = samplers.count();
     for (const auto& sampler : samplers.items()) {
-        // We store the immutable samplers here and take ownership of the ref from the
-        // GrVkUnformHandler.
+        // We store the immutable samplers here and take a ref on the sampler. Once we switch to
+        // using sk_sps here we should just move the immutable samplers to save the extra ref/unref.
+        if (sampler.fImmutableSampler) {
+            sampler.fImmutableSampler->ref();
+        }
         fImmutableSamplers.push_back(sampler.fImmutableSampler);
     }
 }
@@ -61,6 +64,12 @@ GrVkPipelineState::~GrVkPipelineState() {
 void GrVkPipelineState::freeGPUResources(GrVkGpu* gpu) {
     fPipeline.reset();
     fDataManager.releaseData();
+    for (int i = 0; i < fImmutableSamplers.count(); ++i) {
+        if (fImmutableSamplers[i]) {
+            fImmutableSamplers[i]->unref();
+            fImmutableSamplers[i] = nullptr;
+        }
+    }
 }
 
 bool GrVkPipelineState::setAndBindUniforms(GrVkGpu* gpu,
@@ -69,7 +78,7 @@ bool GrVkPipelineState::setAndBindUniforms(GrVkGpu* gpu,
                                            GrVkCommandBuffer* commandBuffer) {
     this->setRenderTargetState(renderTarget, programInfo.origin());
 
-    fGeometryProcessor->setData(fDataManager, programInfo.primProc());
+    fGeometryProcessor->setData(fDataManager, programInfo.geomProc());
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
         auto& fp = programInfo.pipeline().getFragmentProcessor(i);
         for (auto [fp, impl] : GrGLSLFragmentProcessor::ParallelRange(fp, *fFPImpls[i])) {
@@ -103,23 +112,23 @@ bool GrVkPipelineState::setAndBindUniforms(GrVkGpu* gpu,
 }
 
 bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
-                                           const GrPrimitiveProcessor& primProc,
+                                           const GrGeometryProcessor& geomProc,
                                            const GrPipeline& pipeline,
-                                           const GrSurfaceProxy* const primProcTextures[],
+                                           const GrSurfaceProxy* const geomProcTextures[],
                                            GrVkCommandBuffer* commandBuffer) {
-    SkASSERT(primProcTextures || !primProc.numTextureSamplers());
+    SkASSERT(geomProcTextures || !geomProc.numTextureSamplers());
     if (fNumSamplers) {
         struct SamplerBindings {
             GrSamplerState fState;
             GrVkTexture* fTexture;
         };
-        SkAutoSTMalloc<8, SamplerBindings> samplerBindings(fNumSamplers);
+        SkAutoSTArray<8, SamplerBindings> samplerBindings(fNumSamplers);
         int currTextureBinding = 0;
 
-        for (int i = 0; i < primProc.numTextureSamplers(); ++i) {
-            SkASSERT(primProcTextures[i]->asTextureProxy());
-            const auto& sampler = primProc.textureSampler(i);
-            auto texture = static_cast<GrVkTexture*>(primProcTextures[i]->peekTexture());
+        for (int i = 0; i < geomProc.numTextureSamplers(); ++i) {
+            SkASSERT(geomProcTextures[i]->asTextureProxy());
+            const auto& sampler = geomProc.textureSampler(i);
+            auto texture = static_cast<GrVkTexture*>(geomProcTextures[i]->peekTexture());
             samplerBindings[currTextureBinding++] = {sampler.samplerState(), texture};
         }
 
@@ -140,12 +149,13 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
 
         if (fNumSamplers == 1) {
             auto texture = samplerBindings[0].fTexture;
+            auto texAttachment = texture->textureAttachment();
             const auto& samplerState = samplerBindings[0].fState;
             const GrVkDescriptorSet* descriptorSet = texture->cachedSingleDescSet(samplerState);
             if (descriptorSet) {
                 commandBuffer->addGrSurface(sk_ref_sp<const GrSurface>(texture));
-                commandBuffer->addResource(texture->textureView());
-                commandBuffer->addResource(texture->resource());
+                commandBuffer->addResource(texAttachment->textureView());
+                commandBuffer->addResource(texAttachment->resource());
                 commandBuffer->addRecycledResource(descriptorSet);
                 commandBuffer->bindDescriptorSets(gpu, fPipeline->layout(), kSamplerDSIdx,
                                                   /*setCount=*/1, descriptorSet->descriptorSet(),
@@ -164,14 +174,15 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
         for (int i = 0; i < fNumSamplers; ++i) {
             GrSamplerState state = samplerBindings[i].fState;
             GrVkTexture* texture = samplerBindings[i].fTexture;
+            auto texAttachment = texture->textureAttachment();
 
-            const GrVkImageView* textureView = texture->textureView();
+            const GrVkImageView* textureView = texAttachment->textureView();
             const GrVkSampler* sampler = nullptr;
             if (fImmutableSamplers[i]) {
                 sampler = fImmutableSamplers[i];
             } else {
                 sampler = gpu->resourceProvider().findOrCreateCompatibleSampler(
-                        state, texture->ycbcrConversionInfo());
+                        state, texAttachment->ycbcrConversionInfo());
             }
             SkASSERT(sampler);
 
@@ -200,8 +211,8 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
             if (!fImmutableSamplers[i]) {
                 sampler->unref();
             }
-            commandBuffer->addResource(samplerBindings[i].fTexture->textureView());
-            commandBuffer->addResource(samplerBindings[i].fTexture->resource());
+            commandBuffer->addResource(textureView);
+            commandBuffer->addResource(texAttachment->resource());
         }
         if (fNumSamplers == 1) {
             GrSamplerState state = samplerBindings[0].fState;
@@ -221,8 +232,9 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
 bool GrVkPipelineState::setAndBindInputAttachment(GrVkGpu* gpu,
                                                   GrVkRenderTarget* renderTarget,
                                                   GrVkCommandBuffer* commandBuffer) {
-    SkASSERT(renderTarget->supportsInputAttachmentUsage());
+    SkASSERT(renderTarget->colorAttachment()->supportsInputAttachmentUsage());
     const GrVkDescriptorSet* descriptorSet = renderTarget->inputDescSet(gpu, /*forResolve=*/false);
+
     if (!descriptorSet) {
         return false;
     }

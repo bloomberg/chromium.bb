@@ -49,7 +49,7 @@ class ServiceWorkerRegistration;
 class URLLoaderFactoryGetter;
 
 // This class manages data associated with service workers.
-// The class is single threaded and should only be used on the IO thread.
+// The class is single threaded and should only be used on the UI thread.
 // In chromium, there is one instance per storagepartition. This class
 // is the root of the containment hierarchy for service worker data
 // associated with a particular partition.
@@ -154,14 +154,14 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
   void OnDevToolsRoutingIdChanged(ServiceWorkerVersion* version) override;
   void OnErrorReported(ServiceWorkerVersion* version,
-                       const base::string16& error_message,
+                       const std::u16string& error_message,
                        int line_number,
                        int column_number,
                        const GURL& source_url) override;
   void OnReportConsoleMessage(ServiceWorkerVersion* version,
                               blink::mojom::ConsoleMessageSource source,
                               blink::mojom::ConsoleMessageLevel message_level,
-                              const base::string16& message,
+                              const std::u16string& message,
                               int line_number,
                               const GURL& source_url) override;
 

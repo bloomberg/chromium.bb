@@ -1,4 +1,14 @@
 {
+  "ASAN Debug (reclient)": {
+    "gn_args": {
+      "is_asan": true,
+      "is_component_build": true,
+      "is_debug": true,
+      "is_lsan": true,
+      "symbol_level": 1,
+      "use_rbe": true
+    }
+  },
   "Afl Upload Linux ASan": {
     "gn_args": {
       "archive_seed_corpus": false,
@@ -136,6 +146,15 @@
       "use_libfuzzer": true
     }
   },
+  "Linux Builder (goma cache silo)": {
+    "gn_args": {
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "use_goma": true
+    }
+  },
   "Linux Builder (reclient)": {
     "gn_args": {
       "ffmpeg_branding": "Chrome",
@@ -224,12 +243,47 @@
       "use_rbe": true
     }
   },
+  "TSAN Release (j-100) (reclient)": {
+    "gn_args": {
+      "enable_nacl": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_tsan": true,
+      "use_rbe": true
+    }
+  },
+  "TSAN Release (j-250) (reclient)": {
+    "gn_args": {
+      "enable_nacl": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_tsan": true,
+      "use_rbe": true
+    }
+  },
   "TSAN Release (reclient)": {
     "gn_args": {
       "enable_nacl": false,
       "is_component_build": false,
       "is_debug": false,
       "is_tsan": true,
+      "use_rbe": true
+    }
+  },
+  "TSAN Release (runsc-exp) (reclient)": {
+    "gn_args": {
+      "enable_nacl": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_tsan": true,
+      "use_rbe": true
+    }
+  },
+  "UBSan Release (reclient)": {
+    "gn_args": {
+      "is_component_build": false,
+      "is_debug": false,
+      "is_ubsan": true,
       "use_rbe": true
     }
   },
@@ -242,6 +296,15 @@
       "use_ozone": true
     }
   },
+  "VR Linux (reclient)": {
+    "gn_args": {
+      "enable_vr": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "use_ozone": true,
+      "use_rbe": true
+    }
+  },
   "Win 10 Fast Ring": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -249,6 +312,16 @@
       "is_debug": false,
       "symbol_level": 1,
       "use_goma": true
+    }
+  },
+  "Win x64 Builder (reclient)": {
+    "gn_args": {
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_rbe": true
     }
   },
   "android-code-coverage": {
@@ -273,6 +346,7 @@
   "android-code-coverage-native": {
     "gn_args": {
       "disable_android_lint": true,
+      "enable_resource_allowlist_generation": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -333,6 +407,16 @@
       "use_goma": true
     }
   },
+  "chromeos-amd64-generic-rel-dchecks": {
+    "args_file": "//build/args/chromeos/amd64-generic.gni",
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_chromeos_device": true,
+      "ozone_platform_headless": true,
+      "use_goma": true,
+      "use_real_dbus_clients": false
+    }
+  },
   "fuchsia-code-coverage": {
     "gn_args": {
       "is_clang": true,
@@ -358,16 +442,6 @@
     "gn_args": {
       "is_component_build": false,
       "is_debug": false,
-      "target_cpu": "arm64",
-      "target_os": "fuchsia",
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-arm64-size": {
-    "gn_args": {
-      "is_component_build": false,
-      "is_debug": false,
-      "is_official_build": true,
       "target_cpu": "arm64",
       "target_os": "fuchsia",
       "use_goma": true
@@ -459,7 +533,6 @@
   "ios-simulator-multi-window": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
-      "ios_enable_multi_window": true,
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
@@ -573,7 +646,7 @@
       "use_pulseaudio": false,
       "use_system_libsync": false,
       "use_v8_context_snapshot": false,
-      "use_vaapi": false
+      "use_vaapi": true
     }
   },
   "linux-annotator-rel": {

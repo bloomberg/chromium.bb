@@ -11,6 +11,7 @@
 #define LIBANGLE_RENDERER_GL_RENDERERGLUTILS_H_
 
 #include "common/debug.h"
+#include "libANGLE/Caps.h"
 #include "libANGLE/Error.h"
 #include "libANGLE/Version.h"
 #include "libANGLE/angletypes.h"
@@ -101,11 +102,13 @@ void GenerateCaps(const FunctionsGL *functions,
                   gl::Caps *caps,
                   gl::TextureCapsMap *textureCapsMap,
                   gl::Extensions *extensions,
+                  gl::Limitations *limitations,
                   gl::Version *maxSupportedESVersion,
                   MultiviewImplementationTypeGL *multiviewImplementationType);
 
 void InitializeFeatures(const FunctionsGL *functions, angle::FeaturesGL *features);
 void InitializeFrontendFeatures(const FunctionsGL *functions, angle::FrontendFeatures *features);
+void ReInitializeFeaturesAtGPUSwitch(const FunctionsGL *functions, angle::FeaturesGL *features);
 }  // namespace nativegl_gl
 
 namespace nativegl

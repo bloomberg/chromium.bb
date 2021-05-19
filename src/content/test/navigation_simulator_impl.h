@@ -87,8 +87,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetWasFetchedViaCache(bool was_fetched_via_cache) override;
   void SetIsSignedExchangeInnerResponse(
       bool is_signed_exchange_inner_response) override;
-  void SetFeaturePolicyHeader(
-      blink::ParsedFeaturePolicy feature_policy_header) override;
+  void SetPermissionsPolicyHeader(
+      blink::ParsedPermissionsPolicy permissions_policy_header) override;
   void SetContentsMimeType(const std::string& contents_mime_type) override;
   void SetResponseHeaders(
       scoped_refptr<net::HttpResponseHeaders> response_headers) override;
@@ -97,6 +97,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       const net::ResolveErrorInfo& resolve_error_info) override;
   void SetSSLInfo(const net::SSLInfo& ssl_info) override;
   void SetResponseDnsAliases(std::vector<std::string> aliases) override;
+  void SetEarlyHintsPreloadLinkHeaderReceived(bool received) override;
 
   NavigationThrottle::ThrottleCheckResult GetLastThrottleCheckResult() override;
   NavigationRequest* GetNavigationHandle() override;
@@ -188,7 +189,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void StartComplete();
   void RedirectComplete(int previous_num_will_redirect_request_called,
                         int previous_did_redirect_navigation_called);
-  void ReadyToCommitComplete(bool ran_throttles);
+  void WillProcessResponseComplete();
   void FailComplete(int error_code);
 
   void OnWillStartRequest();
@@ -238,6 +239,12 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SimulateUnloadCompletionCallbackForPreviousFrameIfNeeded(
       RenderFrameHostImpl* previous_frame);
 
+  // Certain navigations can skip throttle checks:
+  // - same-document navigations
+  // - about:blank navigations
+  // - navigations not handled by the network stack
+  bool NeedsThrottleChecks() const;
+
   enum State {
     INITIALIZATION,
     WAITING_BEFORE_UNLOAD,
@@ -286,7 +293,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       browser_interface_broker_receiver_;
   std::string contents_mime_type_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
-  blink::ParsedFeaturePolicy feature_policy_header_;
+  blink::ParsedPermissionsPolicy permissions_policy_header_;
   network::mojom::CSPDisposition should_check_main_world_csp_ =
       network::mojom::CSPDisposition::CHECK;
   net::HttpResponseInfo::ConnectionInfo http_connection_info_ =
@@ -317,6 +324,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   bool should_replace_current_entry_ = false;
   base::Optional<bool> did_create_new_entry_;
   bool was_aborted_prior_to_ready_to_commit_ = false;
+
+  bool early_hints_preload_link_header_received_ = false;
 
   // These are used to sanity check the content/public/ API calls emitted as
   // part of the navigation.

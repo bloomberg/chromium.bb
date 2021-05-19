@@ -19,45 +19,35 @@
 
 class GrD3DDirectCommandList;
 class GrD3DGpu;
+class GrD3DPipeline;
 class GrD3DRootSignature;
 class GrProgramInfo;
 
-class GrD3DPipelineState : public GrManagedResource {
+class GrD3DPipelineState {
 public:
     using UniformInfoArray = GrD3DPipelineStateDataManager::UniformInfoArray;
 
-    GrD3DPipelineState(gr_cp<ID3D12PipelineState> pipelineState,
+    GrD3DPipelineState(sk_sp<GrD3DPipeline> pipeline,
                        sk_sp<GrD3DRootSignature> rootSignature,
                        const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
                        const UniformInfoArray& uniforms,
                        uint32_t uniformSize,
                        uint32_t numSamplers,
-                       std::unique_ptr<GrGLSLPrimitiveProcessor> geometryProcessor,
+                       std::unique_ptr<GrGLSLGeometryProcessor> geometryProcessor,
                        std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
                        std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls,
                        size_t vertexStride,
                        size_t instanceStride);
 
-#ifdef SK_TRACE_MANAGED_RESOURCES
-    /** Output a human-readable dump of this resource's information
-    */
-    void dumpInfo() const override {
-        SkDebugf("GrD3DPipelineState: %p (%d refs)\n", fPipelineState.get(), this->getRefCnt());
-    }
-#endif
-
-    // This will be called right before this class is destroyed and there is no reason to explicitly
-    // release the fPipelineState cause the gr_cp will handle that in the dtor.
-    void freeGPUData() const override {}
-
-    ID3D12PipelineState* pipelineState() const { return fPipelineState.get(); }
+    const sk_sp<GrD3DPipeline>& pipeline() const { return fPipeline; }
     const sk_sp<GrD3DRootSignature>& rootSignature() const { return fRootSignature; }
 
     void setAndBindConstants(GrD3DGpu*, const GrRenderTarget*, const GrProgramInfo&);
 
-    void setAndBindTextures(GrD3DGpu*, const GrPrimitiveProcessor& primProc,
-                            const GrSurfaceProxy* const primProcTextures[],
-                            const GrPipeline& pipeline);
+    void setAndBindTextures(GrD3DGpu*,
+                            const GrGeometryProcessor&,
+                            const GrSurfaceProxy* const geomProcTextures[],
+                            const GrPipeline&);
 
     void bindBuffers(GrD3DGpu*, sk_sp<const GrBuffer> indexBuffer,
                      sk_sp<const GrBuffer> instanceBuffer, sk_sp<const GrBuffer> vertexBuffer,
@@ -109,7 +99,7 @@ private:
     // Helper for setData() that sets the view matrix and loads the render target height uniform
     void setRenderTargetState(const GrRenderTarget*, GrSurfaceOrigin);
 
-    gr_cp<ID3D12PipelineState> fPipelineState;
+    sk_sp<GrD3DPipeline> fPipeline;
     sk_sp<GrD3DRootSignature> fRootSignature;
 
     // Tracks the current render target uniforms stored in the vertex buffer.
@@ -117,7 +107,7 @@ private:
     GrGLSLBuiltinUniformHandles fBuiltinUniformHandles;
 
     // Processors in the GrD3DPipelineState
-    std::unique_ptr<GrGLSLPrimitiveProcessor> fGeometryProcessor;
+    std::unique_ptr<GrGLSLGeometryProcessor> fGeometryProcessor;
     std::unique_ptr<GrGLSLXferProcessor> fXferProcessor;
     std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fFPImpls;
 

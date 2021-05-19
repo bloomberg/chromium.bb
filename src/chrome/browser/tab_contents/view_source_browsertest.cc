@@ -61,9 +61,9 @@ class ViewSourceTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ViewSourceTest);
 };
 
-class ViewSourceFeaturePolicyTest : public ViewSourceTest {
+class ViewSourcePermissionsPolicyTest : public ViewSourceTest {
  public:
-  ViewSourceFeaturePolicyTest() : ViewSourceTest() {}
+  ViewSourcePermissionsPolicyTest() : ViewSourceTest() {}
 
  protected:
   void SetUpOnMainThread() override {
@@ -77,7 +77,7 @@ class ViewSourceFeaturePolicyTest : public ViewSourceTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ViewSourceFeaturePolicyTest);
+  DISALLOW_COPY_AND_ASSIGN(ViewSourcePermissionsPolicyTest);
 };
 
 // This test renders a page in view-source and then checks to see if the title
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
 
   // Check that the title didn't get set.  It should not be there (because we
   // are in view-source mode).
-  EXPECT_NE(base::ASCIIToUTF16("foo"),
+  EXPECT_NE(u"foo",
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
 
@@ -736,7 +736,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, JavaScriptURISanitized) {
 
 // This test verifies that 'view-source' documents are not affected by vertical
 // scroll (see https://crbug.com/898688).
-IN_PROC_BROWSER_TEST_F(ViewSourceFeaturePolicyTest,
+IN_PROC_BROWSER_TEST_F(ViewSourcePermissionsPolicyTest,
                        ViewSourceNotAffectedByHeaderPolicy) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const std::string k_verify_feature = R"(

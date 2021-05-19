@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
 from telemetry import story
-from page_sets.desktop_ui import tab_search_story
+from page_sets.desktop_ui import download_shelf_story, tab_search_story, webui_tab_strip_story
 
 
 class DesktopUIStorySet(story.StorySet):
@@ -25,6 +26,17 @@ class DesktopUIStorySet(story.StorySet):
       tab_search_story.TabSearchStoryMeasureMemory3TabSearch,
   ]
 
+  DOWNLOAD_SHELF_STORIES = [
+      download_shelf_story.DownloadShelfStory1File,
+      download_shelf_story.DownloadShelfStory5File,
+  ]
+
+  WEBUI_TAB_STRIP_STORIES = [
+      webui_tab_strip_story.WebUITabStripStoryCleanSlate,
+      webui_tab_strip_story.WebUITabStripStoryTop10,
+      webui_tab_strip_story.WebUITabStripStoryTop10Loading,
+  ]
+
   def __init__(self):
     super(DesktopUIStorySet,
           self).__init__(archive_data_file=('../data/desktop_ui.json'),
@@ -34,3 +46,16 @@ class DesktopUIStorySet(story.StorySet):
           cls(self,
               ['--enable-features=TabSearch', '--top-chrome-touch-ui=disabled'
                ]))
+
+    for cls in self.DOWNLOAD_SHELF_STORIES:
+      self.AddStory(cls(self))
+
+    # WebUI Tab Strip is not available on Mac.
+    if sys.platform != 'darwin':
+      for cls in self.WEBUI_TAB_STRIP_STORIES:
+        self.AddStory(
+            cls(self, [
+                '--enable-features=WebUITabStrip',
+                '--enable-ui-devtools=enabled',
+                '--top-chrome-touch-ui=enabled',
+            ]))

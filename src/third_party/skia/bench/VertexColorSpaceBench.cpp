@@ -45,11 +45,11 @@ public:
 
     const char* name() const override { return "VertexColorXformGP"; }
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override {
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
         class GLSLGP : public GrGLSLGeometryProcessor {
         public:
             void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-                const GP& gp = args.fGP.cast<GP>();
+                const GP& gp = args.fGeomProc.cast<GP>();
                 GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
                 GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
                 GrGLSLVaryingHandler* varyingHandler = args.fVaryingHandler;
@@ -72,17 +72,17 @@ public:
                 }
 
                 vertBuilder->codeAppendf("%s = color;", varying.vsOut());
-                fragBuilder->codeAppendf("%s = %s;", args.fOutputColor, varying.fsIn());
+                fragBuilder->codeAppendf("half4 %s = %s;", args.fOutputColor, varying.fsIn());
 
                 // Position
                 this->writeOutputPosition(args.fVertBuilder, gpArgs, gp.fInPosition.name());
 
                 // Coverage
-                fragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+                fragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
             }
             void setData(const GrGLSLProgramDataManager& pdman,
-                         const GrPrimitiveProcessor& primProc) override {
-                const GP& gp = primProc.cast<GP>();
+                         const GrGeometryProcessor& geomProc) override {
+                const GP& gp = geomProc.cast<GP>();
                 fColorSpaceHelper.setData(pdman, gp.fColorSpaceXform.get());
             }
 
@@ -196,7 +196,7 @@ private:
             this->createProgramInfo(target);
         }
 
-        size_t vertexStride = fProgramInfo->primProc().vertexStride();
+        size_t vertexStride = fProgramInfo->geomProc().vertexStride();
         const int kVertexCount = 1024;
         sk_sp<const GrBuffer> vertexBuffer;
         int firstVertex = 0;
@@ -264,7 +264,7 @@ private:
         }
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
         flushState->drawMesh(*fMesh);
     }
 

@@ -16,7 +16,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/double_or_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/float_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_dictionary_base.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/long_or_boolean.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_treat_null_as_empty_string_or_long.h"
 #include "third_party/blink/renderer/bindings/core/v8/test_enum_or_test_enum_or_null_sequence.h"
@@ -36,11 +38,11 @@
 
 namespace blink {
 
+class Element;
 class EventTarget;
 class InternalDictionary;
-class TestObject;
 class TestInterfaceImplementation;
-class Element;
+class TestObject;
 
 class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
  public:
@@ -50,7 +52,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
 
   TestDictionary();
-  virtual ~TestDictionary();
+  ~TestDictionary() override;
 
   bool hasAnyInRecordMember() const { return has_any_in_record_member_; }
   const HeapVector<std::pair<String, ScriptValue>>& anyInRecordMember() const {

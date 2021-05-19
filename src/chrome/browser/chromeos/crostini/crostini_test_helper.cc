@@ -7,12 +7,12 @@
 #include "base/feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -33,8 +33,8 @@ CrostiniTestHelper::CrostiniTestHelper(TestingProfile* profile,
 
   chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
   scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
-      std::make_unique<chromeos::FakeChromeUserManager>());
-  auto* fake_user_manager = static_cast<chromeos::FakeChromeUserManager*>(
+      std::make_unique<ash::FakeChromeUserManager>());
+  auto* fake_user_manager = static_cast<ash::FakeChromeUserManager*>(
       user_manager::UserManager::Get());
   auto account = AccountId::FromUserEmailGaiaId("test@example.com", "12345");
   fake_user_manager->AddUserWithAffiliationAndTypeAndProfile(

@@ -448,7 +448,9 @@ class IDStatusNode():
     self.children = {}
 
     self.assign = False
+    self.last_assign_coord = None
     self.refer = False
+    self.last_refer_coord = None
 
     self.decl_status = None
 
@@ -485,17 +487,19 @@ class IDStatusNode():
         return self
       return concrete_node
 
-  def set_assign(self, assign):
+  def set_assign(self, assign, coord=None):
     concrete_node = self.get_concrete_node()
     concrete_node.assign = assign
+    concrete_node.last_assign_coord = coord
 
   def get_assign(self):
     concrete_node = self.get_concrete_node()
     return concrete_node.assign
 
-  def set_refer(self, refer):
+  def set_refer(self, refer, coord=None):
     concrete_node = self.get_concrete_node()
     concrete_node.refer = refer
+    concrete_node.last_refer_coord = coord
 
   def get_refer(self):
     concrete_node = self.get_concrete_node()
@@ -561,16 +565,47 @@ class IDStatusNode():
     else:
       return str(self.name) + ' -> ' + ' '.join(self.link_id_chain)
 
-  def show(self, id_chain=None):
+  def collect_assign_refer_status(self,
+                                  id_chain=None,
+                                  assign_ls=None,
+                                  refer_ls=None):
     if id_chain == None:
       id_chain = []
+    if assign_ls == None:
+      assign_ls = []
+    if refer_ls == None:
+      refer_ls = []
     id_chain.append(self.name)
-    if self.assign or self.refer:
-      print(' '.join(id_chain[1:]), 'a:', int(self.assign), 'r:',
-            int(self.refer))
+    if self.assign:
+      info_str = ' '.join([
+          ' '.join(id_chain[1:]), 'a:',
+          str(int(self.assign)), 'r:',
+          str(int(self.refer)),
+          str(self.last_assign_coord)
+      ])
+      assign_ls.append(info_str)
+    if self.refer:
+      info_str = ' '.join([
+          ' '.join(id_chain[1:]), 'a:',
+          str(int(self.assign)), 'r:',
+          str(int(self.refer)),
+          str(self.last_refer_coord)
+      ])
+      refer_ls.append(info_str)
     for c in self.children:
-      self.children[c].show(id_chain)
+      self.children[c].collect_assign_refer_status(id_chain, assign_ls,
+                                                   refer_ls)
     id_chain.pop()
+    return assign_ls, refer_ls
+
+  def show(self):
+    assign_ls, refer_ls = self.collect_assign_refer_status()
+    print('---- assign ----')
+    for item in assign_ls:
+      print(item)
+    print('---- refer ----')
+    for item in refer_ls:
+      print(item)
 
 
 class FuncInOutVisitor(c_ast.NodeVisitor):
@@ -652,16 +687,16 @@ class FuncInOutVisitor(c_ast.NodeVisitor):
           if decl_status.struct_item is None:
             init_descendant = self.id_tree_stack.add_id_node(init_id_chain)
             if init_descendant != None:
-              init_descendant.set_refer(True)
+              init_descendant.set_refer(True, node.coord)
             else:
               self.unknown.append(node)
-            descendant.set_assign(True)
+            descendant.set_assign(True, node.coord)
           else:
             self.id_tree_stack.add_link_node(descendant, init_id_chain)
         else:
           self.unknown.append(node)
       else:
-        descendant.set_assign(True)
+        descendant.set_assign(True, node.coord)
       self.generic_visit(node)
 
   def is_lvalue(self, node):
@@ -702,43 +737,43 @@ class FuncInOutVisitor(c_ast.NodeVisitor):
         return
       decl_status = descendant.get_decl_status()
       if decl_status == None:
-        descendant.set_assign(True)
-        descendant.set_refer(True)
+        descendant.set_assign(True, node.coord)
+        descendant.set_refer(True, node.coord)
         self.unknown.append(node)
         return
       if self.parent_node.__class__.__name__ == 'Assignment':
         if node is self.parent_node.lvalue:
           if decl_status.struct_item != None:
             if len(id_chain) > 1:
-              descendant.set_assign(True)
+              descendant.set_assign(True, node.coord)
             elif len(id_chain) == 1:
               if lead_char == '*':
-                descendant.set_assign(True)
+                descendant.set_assign(True, node.coord)
               else:
                 right_id_chain = self.process_lvalue(self.parent_node.rvalue)
                 if right_id_chain != None:
                   self.id_tree_stack.add_link_node(descendant, right_id_chain)
                 else:
                   #TODO(angiebird): 1.Find a better way to deal with this case.
-                  descendant.set_assign(True)
+                  descendant.set_assign(True, node.coord)
             else:
               debug_print(getframeinfo(currentframe()))
           else:
-            descendant.set_assign(True)
+            descendant.set_assign(True, node.coord)
         elif node is self.parent_node.rvalue:
           if decl_status.struct_item is None:
-            descendant.set_refer(True)
+            descendant.set_refer(True, node.coord)
             if lead_char == '&':
-              descendant.set_assign(True)
+              descendant.set_assign(True, node.coord)
           else:
             left_id_chain = self.process_lvalue(self.parent_node.lvalue)
             left_lead_char = get_lvalue_lead(self.parent_node.lvalue)
             if left_id_chain != None:
               if len(left_id_chain) > 1:
-                descendant.set_refer(True)
+                descendant.set_refer(True, node.coord)
               elif len(left_id_chain) == 1:
                 if left_lead_char == '*':
-                  descendant.set_refer(True)
+                  descendant.set_refer(True, node.coord)
                 else:
                   #TODO(angiebird): Check whether the other node is linked to this node.
                   pass
@@ -754,10 +789,10 @@ class FuncInOutVisitor(c_ast.NodeVisitor):
         # TODO(angiebird): Consider +=, *=, -=, /= etc
         if self.parent_node.op == '--' or self.parent_node.op == '++' or\
         self.parent_node.op == 'p--' or self.parent_node.op == 'p++':
-          descendant.set_assign(True)
-          descendant.set_refer(True)
+          descendant.set_assign(True, node.coord)
+          descendant.set_refer(True, node.coord)
         else:
-          descendant.set_refer(True)
+          descendant.set_refer(True, node.coord)
       elif self.parent_node.__class__.__name__ == 'Decl':
         #The logic is at visit_Decl
         pass
@@ -765,7 +800,7 @@ class FuncInOutVisitor(c_ast.NodeVisitor):
         #The logic is at visit_FuncCall
         pass
       else:
-        descendant.set_refer(True)
+        descendant.set_refer(True, node.coord)
 
   def visit_ID(self, node):
     # If the parent is a FuncCall, this ID is a function name.
@@ -822,10 +857,10 @@ class FuncInOutVisitor(c_ast.NodeVisitor):
           if decl_status != None:
             if decl_status.struct_item == None:
               if decl_status.is_ptr_decl == True:
-                descendant.set_assign(True)
-                descendant.set_refer(True)
+                descendant.set_assign(True, param_node.coord)
+                descendant.set_refer(True, param_node.coord)
               else:
-                descendant.set_refer(True)
+                descendant.set_refer(True, param_node.coord)
             else:
               call_param_map[decl_node.name] = descendant
           else:

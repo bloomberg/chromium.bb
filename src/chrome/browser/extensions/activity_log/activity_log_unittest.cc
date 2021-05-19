@@ -34,6 +34,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/dom_action_types.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/mojom/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,6 +81,12 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
   void ActivateExtension(const std::string& extension_id) override {}
   void SetActivityLoggingEnabled(bool enabled) override {}
   void UnloadExtension(const std::string& extension_id) override {}
+  void SuspendExtension(
+      const std::string& extension_id,
+      mojom::Renderer::SuspendExtensionCallback callback) override {
+    std::move(callback).Run();
+  }
+  void CancelSuspendExtension(const std::string& extension_id) override {}
   void SetSessionInfo(version_info::Channel channel,
                       mojom::FeatureSessionType session,
                       bool is_lock_screen_context) override {}
@@ -88,9 +95,28 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
   void SetWebViewPartitionID(const std::string& partition_id) override {}
   void SetScriptingAllowlist(
       const std::vector<std::string>& extension_ids) override {}
+  void ShouldSuspend(ShouldSuspendCallback callback) override {
+    std::move(callback).Run();
+  }
+  void TransferBlobs(TransferBlobsCallback callback) override {
+    std::move(callback).Run();
+  }
   void UpdateDefaultPolicyHostRestrictions(
       const URLPatternSet& default_policy_blocked_hosts,
       const URLPatternSet& default_policy_allowed_hosts) override {}
+  void UpdateTabSpecificPermissions(const std::string& extension_id,
+                                    const URLPatternSet& new_hosts,
+                                    int tab_id,
+                                    bool update_origin_whitelist) override {}
+  void UpdateUserScripts(base::ReadOnlySharedMemoryRegion shared_memory,
+                         mojom::HostIDPtr host_id,
+                         std::vector<mojom::HostIDPtr> changed_hosts,
+                         bool allowlisted_only) override {}
+  void ClearTabSpecificPermissions(
+      const std::vector<std::string>& extension_ids,
+      int tab_id,
+      bool update_origin_whitelist) override {}
+  void WatchPages(const std::vector<std::string>& css_selectors) override {}
 
   mojo::AssociatedReceiverSet<mojom::Renderer> receivers_;
 };
@@ -134,8 +160,8 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 
   void TearDown() override {
     base::RunLoop().RunUntilIdle();
-    SetActivityLogTaskRunnerForTesting(nullptr);
     ChromeRenderViewHostTestHarness::TearDown();
+    SetActivityLogTaskRunnerForTesting(nullptr);
   }
 
   static void RetrieveActions_LogAndFetchActions0(

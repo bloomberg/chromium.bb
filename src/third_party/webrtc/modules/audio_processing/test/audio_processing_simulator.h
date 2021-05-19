@@ -99,9 +99,11 @@ struct SimulationSettings {
   absl::optional<bool> use_agc;
   absl::optional<bool> use_agc2;
   absl::optional<bool> use_pre_amplifier;
+  absl::optional<bool> use_capture_level_adjustment;
+  absl::optional<bool> use_analog_mic_gain_emulation;
   absl::optional<bool> use_hpf;
   absl::optional<bool> use_ns;
-  absl::optional<bool> use_ts;
+  absl::optional<int> use_ts;
   absl::optional<bool> use_analog_agc;
   absl::optional<bool> use_vad;
   absl::optional<bool> use_le;
@@ -116,6 +118,9 @@ struct SimulationSettings {
   AudioProcessing::Config::GainController2::LevelEstimator
       agc2_adaptive_level_estimator;
   absl::optional<float> pre_amplifier_gain_factor;
+  absl::optional<float> pre_gain_factor;
+  absl::optional<float> post_gain_factor;
+  absl::optional<float> analog_mic_gain_emulation_initial_level;
   absl::optional<int> ns_level;
   absl::optional<bool> ns_analysis_on_linear_aec_output;
   absl::optional<int> maximum_internal_processing_rate;
@@ -124,6 +129,8 @@ struct SimulationSettings {
   absl::optional<bool> multi_channel_render;
   absl::optional<bool> multi_channel_capture;
   absl::optional<int> simulated_mic_kind;
+  absl::optional<int> frame_for_sending_capture_output_used_false;
+  absl::optional<int> frame_for_sending_capture_output_used_true;
   bool report_performance = false;
   absl::optional<std::string> performance_report_output_filename;
   bool report_bitexactness = false;

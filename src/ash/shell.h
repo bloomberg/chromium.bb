@@ -126,7 +126,6 @@ class FrameThrottlingController;
 class HighContrastController;
 class HighlighterController;
 class HoldingSpaceController;
-class HomeScreenController;
 class ImeControllerImpl;
 class InSessionAuthDialogControllerImpl;
 class KeyAccessibilityEnabler;
@@ -139,6 +138,7 @@ class LogoutConfirmationController;
 class LoginScreenController;
 class LoginUnlockThroughputRecorder;
 class MagnificationController;
+class MarkerController;
 class TabletModeController;
 class MediaControllerImpl;
 class MediaNotificationControllerImpl;
@@ -149,6 +149,7 @@ class MultiDeviceNotificationPresenter;
 class NearbyShareControllerImpl;
 class NearbyShareDelegate;
 class NightLightControllerImpl;
+class OcclusionTrackerPauser;
 class OverlayEventFilter;
 class OverviewController;
 class ParentAccessController;
@@ -384,9 +385,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   EventTransformationHandler* event_transformation_handler() {
     return event_transformation_handler_.get();
   }
-  HomeScreenController* home_screen_controller() {
-    return home_screen_controller_.get();
-  }
   ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
   AshFocusRules* focus_rules() { return focus_rules_; }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
@@ -427,6 +425,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   MagnificationController* magnification_controller() {
     return magnification_controller_.get();
   }
+  MarkerController* marker_controller() { return marker_controller_.get(); }
   MediaControllerImpl* media_controller() { return media_controller_.get(); }
   MediaNotificationControllerImpl* media_notification_controller() {
     return media_notification_controller_.get();
@@ -571,6 +570,10 @@ class ASH_EXPORT Shell : public SessionObserver,
     return pcie_peripheral_notification_controller_.get();
   }
 
+  OcclusionTrackerPauser* occlusion_tracker_pauser() {
+    return occlusion_tracker_pauser_.get();
+  }
+
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
@@ -707,7 +710,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<FullRestoreController> full_restore_controller_;
   std::unique_ptr<HoldingSpaceController> holding_space_controller_;
-  std::unique_ptr<HomeScreenController> home_screen_controller_;
   std::unique_ptr<ImeControllerImpl> ime_controller_;
   std::unique_ptr<chromeos::ImmersiveContext> immersive_context_;
   std::unique_ptr<InSessionAuthDialogControllerImpl>
@@ -769,6 +771,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<PersistentWindowController> persistent_window_controller_;
   std::unique_ptr<HighContrastController> high_contrast_controller_;
   std::unique_ptr<MagnificationController> magnification_controller_;
+  std::unique_ptr<MarkerController> marker_controller_;
   std::unique_ptr<AutoclickController> autoclick_controller_;
   std::unique_ptr<::wm::FocusController> focus_controller_;
 
@@ -876,6 +879,8 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   std::unique_ptr<LoginUnlockThroughputRecorder>
       login_unlock_throughput_recorder_;
+
+  std::unique_ptr<OcclusionTrackerPauser> occlusion_tracker_pauser_;
 
   base::ObserverList<ShellObserver>::Unchecked shell_observers_;
 

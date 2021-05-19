@@ -5,6 +5,7 @@
 #include "components/webapps/browser/android/app_banner_manager_android.h"
 
 #include <limits>
+#include <string>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -12,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -38,6 +38,7 @@
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
+#include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -357,7 +358,7 @@ bool AppBannerManagerAndroid::ShouldPerformInstallableNativeAppCheck() {
   // Ensure there is at least one related app specified that is supported on
   // the current platform.
   for (const auto& application : manifest_.related_applications) {
-    if (base::EqualsASCII(application.platform.value_or(base::string16()),
+    if (base::EqualsASCII(application.platform.value_or(std::u16string()),
                           kPlatformPlay))
       return true;
   }
@@ -369,8 +370,8 @@ void AppBannerManagerAndroid::PerformInstallableNativeAppCheck() {
   InstallableStatusCode code = NO_ERROR_DETECTED;
   for (const auto& application : manifest_.related_applications) {
     std::string id =
-        base::UTF16ToUTF8(application.id.value_or(base::string16()));
-    code = QueryNativeApp(application.platform.value_or(base::string16()),
+        base::UTF16ToUTF8(application.id.value_or(std::u16string()));
+    code = QueryNativeApp(application.platform.value_or(std::u16string()),
                           application.url, id);
     if (code == NO_ERROR_DETECTED)
       return;
@@ -381,7 +382,7 @@ void AppBannerManagerAndroid::PerformInstallableNativeAppCheck() {
 }
 
 InstallableStatusCode AppBannerManagerAndroid::QueryNativeApp(
-    const base::string16& platform,
+    const std::u16string& platform,
     const GURL& url,
     const std::string& id) {
   if (!base::EqualsASCII(platform, kPlatformPlay))
@@ -443,7 +444,8 @@ void AppBannerManagerAndroid::OnNativeAppIconFetched(const SkBitmap& bitmap) {
     return;
   }
 
-  primary_icon_ = bitmap;
+  if (!skia::SkBitmapToN32OpaqueOrPremul(bitmap, &primary_icon_))
+    return;
 
   // If we triggered the installability check on page load, then it's possible
   // we don't have enough engagement yet. If that's the case, return here but
@@ -457,12 +459,12 @@ void AppBannerManagerAndroid::OnNativeAppIconFetched(const SkBitmap& bitmap) {
   SendBannerPromptRequest();
 }
 
-base::string16 AppBannerManagerAndroid::GetAppName() const {
+std::u16string AppBannerManagerAndroid::GetAppName() const {
   if (native_app_data_.is_null()) {
     // Prefer the short name if it's available. It's guaranteed that at least
     // one of these is non-empty.
-    base::string16 short_name = manifest_.short_name.value_or(base::string16());
-    return short_name.empty() ? manifest_.name.value_or(base::string16())
+    std::u16string short_name = manifest_.short_name.value_or(std::u16string());
+    return short_name.empty() ? manifest_.name.value_or(std::u16string())
                               : short_name;
   }
 
@@ -519,7 +521,7 @@ void AppBannerManagerAndroid::HideAmbientBadge() {
 }
 
 bool AppBannerManagerAndroid::IsSupportedNonWebAppPlatform(
-    const base::string16& platform) const {
+    const std::u16string& platform) const {
   // TODO(https://crbug.com/949430): Implement for Android apps.
   return false;
 }

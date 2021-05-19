@@ -39,7 +39,6 @@ public class MessageContainerCoordinator implements BrowserControlsStateProvider
     private void updateMargins() {
         CoordinatorLayout.LayoutParams params =
                 (CoordinatorLayout.LayoutParams) mContainer.getLayoutParams();
-        // TODO(crbug.com/1123947): Update dimens for PWAs.
         params.topMargin = getContainerTopOffset();
         mContainer.setLayoutParams(params);
     }
@@ -64,9 +63,8 @@ public class MessageContainerCoordinator implements BrowserControlsStateProvider
     public int getMessageMaxTranslation() {
         // The max translation is message height + message shadow + controls height (adjusted for
         // Message container offsets)
-        final int messageHeightWithShadow = mContainer.findViewById(R.id.message_banner).getHeight()
-                + mContainer.getResources().getDimensionPixelOffset(
-                        R.dimen.message_shadow_top_margin);
+        final int messageHeightWithShadow =
+                mContainer.getMessageBannerHeight() + mContainer.getMessageShadowTopMargin();
         return messageHeightWithShadow + getContainerTopOffset();
     }
 
@@ -87,6 +85,6 @@ public class MessageContainerCoordinator implements BrowserControlsStateProvider
         final Resources res = mContainer.getResources();
         return mControlsManager.getContentOffset()
                 - res.getDimensionPixelOffset(R.dimen.message_bubble_inset)
-                - res.getDimensionPixelOffset(R.dimen.message_shadow_top_margin);
+                - mContainer.getMessageShadowTopMargin();
     }
 }

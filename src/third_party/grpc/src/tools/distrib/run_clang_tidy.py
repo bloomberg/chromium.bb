@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # Copyright 2017 gRPC authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,5 +60,5 @@ for filename in args.files:
             timeout_seconds=15 * 60,
         ))
 
-num_fails, res_set = jobset.run(jobs, maxjobs=args.jobs)
+num_fails, res_set = jobset.run(jobs, maxjobs=args.jobs, quiet_success=True)
 sys.exit(num_fails)

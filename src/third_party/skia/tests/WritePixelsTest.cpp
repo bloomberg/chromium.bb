@@ -505,6 +505,9 @@ static sk_sp<SkImage> upload(const sk_sp<SkSurface>& surf, SkColor color) {
 // This is tests whether the first writePixels is completed before the
 // second writePixels takes effect (i.e., that writePixels correctly flushes
 // in between uses of the shared backing resource).
+// The unit test fails on Nexus 6P/Android M with driver 129.0 without the
+// "DisallowTexSubImageForUnormConfigTexturesEverBoundToFBO" workaround enabled.
+// skbug.com/11834
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(WritePixelsPendingIO, reporter, ctxInfo) {
     auto context = ctxInfo.directContext();
     GrProxyProvider* proxyProvider = context->priv().proxyProvider();
@@ -569,4 +572,24 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(WritePixelsPendingIO, reporter, ctxInfo) {
     }
 
     REPORTER_ASSERT(reporter, isCorrect);
+}
+
+DEF_TEST(WritePixels_InvalidRowBytes, reporter) {
+    auto dstII = SkImageInfo::Make({10, 10}, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+    auto surf = SkSurface::MakeRaster(dstII);
+    for (int ct = 0; ct < kLastEnum_SkColorType + 1; ++ct) {
+        auto colorType = static_cast<SkColorType>(ct);
+
+        size_t bpp = SkColorTypeBytesPerPixel(colorType);
+        if (bpp <= 1) {
+            continue;
+        }
+        auto srcII = dstII.makeColorType(colorType);
+        size_t badRowBytes = (surf->width() + 1)*bpp - 1;
+        auto storage = std::make_unique<char[]>(badRowBytes*surf->height());
+        memset(storage.get(), 0, badRowBytes * surf->height());
+        // SkSurface::writePixels doesn't report bool, SkCanvas's does.
+        REPORTER_ASSERT(reporter,
+                        !surf->getCanvas()->writePixels(srcII, storage.get(), badRowBytes, 0, 0));
+    }
 }

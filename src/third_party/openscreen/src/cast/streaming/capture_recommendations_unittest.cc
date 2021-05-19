@@ -16,9 +16,9 @@ namespace capture_recommendations {
 namespace {
 
 constexpr Recommendations kDefaultRecommendations{
-    Audio{BitRateLimits{32000, 256000}, milliseconds(4000), 2, 48000, 16000},
+    Audio{BitRateLimits{32000, 256000}, milliseconds(400), 2, 48000, 16000},
     Video{BitRateLimits{300000, 1920 * 1080 * 30}, Resolution{320, 240, 30},
-          Resolution{1920, 1080, 30}, false, milliseconds(4000),
+          Resolution{1920, 1080, 30}, false, milliseconds(400),
           1920 * 1080 * 30 / 8}};
 
 constexpr DisplayDescription kEmptyDescription{};

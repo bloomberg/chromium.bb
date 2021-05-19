@@ -32,10 +32,10 @@ TEST_P(ShaderTests, ComputeLog2) {
 
     std::string shader = R"(
 [[block]] struct Buf {
-    [[offset(0)]] data : [[stride(4)]] array<u32, 19>;
+    data : array<u32, 19>;
 };
 
-[[group(0), binding(0)]] var<storage_buffer> buf : [[access(read_write)]] Buf;
+[[group(0), binding(0)]] var<storage> buf : [[access(read_write)]] Buf;
 
 [[stage(compute)]] fn main() -> void {
     const factor : f32 = 1.0001;
@@ -62,7 +62,7 @@ TEST_P(ShaderTests, ComputeLog2) {
 })";
 
     wgpu::ComputePipelineDescriptor csDesc;
-    csDesc.computeStage.module = utils::CreateShaderModuleFromWGSL(device, shader.c_str());
+    csDesc.computeStage.module = utils::CreateShaderModule(device, shader.c_str());
     csDesc.computeStage.entryPoint = "main";
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
 
@@ -84,6 +84,15 @@ TEST_P(ShaderTests, ComputeLog2) {
     queue.Submit(1, &commands);
 
     EXPECT_BUFFER_U32_RANGE_EQ(expected.data(), buffer, 0, kSteps);
+}
+
+TEST_P(ShaderTests, BadWGSL) {
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
+
+    std::string shader = R"(
+I am an invalid shader and should never pass validation!
+})";
+    ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, shader.c_str()));
 }
 
 DAWN_INSTANTIATE_TEST(ShaderTests,

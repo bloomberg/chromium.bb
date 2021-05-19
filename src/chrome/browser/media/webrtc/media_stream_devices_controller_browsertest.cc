@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -215,8 +216,8 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
     permissions::PermissionRequestManager* manager =
         permissions::PermissionRequestManager::FromWebContents(
             browser()->tab_strip_model()->GetActiveWebContents());
-    prompt_factory_.reset(
-        new permissions::MockPermissionPromptFactory(manager));
+    prompt_factory_ =
+        std::make_unique<permissions::MockPermissionPromptFactory>(manager);
 
     // Cleanup.
     media_stream_devices_.clear();
@@ -997,7 +998,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
-                       RequestCamAndMicBlockedByFeaturePolicy) {
+                       RequestCamAndMicBlockedByPermissionsPolicy) {
   InitWithUrl(embedded_test_server()->GetURL("/iframe_blank.html"));
 
   // Create a cross-origin request by using localhost as the iframe origin.
@@ -1027,7 +1028,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
-                       RequestCamBlockedByFeaturePolicy) {
+                       RequestCamBlockedByPermissionsPolicy) {
   InitWithUrl(embedded_test_server()->GetURL("/iframe_blank.html"));
 
   // Create a cross-origin request by using localhost as the iframe origin.

@@ -18,7 +18,7 @@ Some more scripts can be listed using `npx grunt`.
 To start the development server, use:
 
 ```sh
-npm run dev
+npm start
 ```
 
 Then, browse to the standalone test runner at the printed URL.

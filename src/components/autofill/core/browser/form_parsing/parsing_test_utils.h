@@ -6,10 +6,10 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_PARSING_TEST_UTILS_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -93,7 +93,7 @@ class FormFieldTestBase {
   std::vector<std::unique_ptr<AutofillField>> list_;
   std::unique_ptr<FormField> field_;
   FieldCandidatesMap field_candidates_map_;
-  std::map<FieldRendererId, ServerFieldType> expected_classifications_;
+  std::map<FieldGlobalId, ServerFieldType> expected_classifications_;
 
  private:
   uint64_t id_counter_ = 0;

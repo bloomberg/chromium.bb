@@ -43,16 +43,16 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderNonBacked
   std::unique_ptr<OSExchangeDataProvider> Clone() const override;
   void MarkOriginatedFromRenderer() override;
   bool DidOriginateFromRenderer() const override;
-  void SetString(const base::string16& data) override;
-  void SetURL(const GURL& url, const base::string16& title) override;
+  void SetString(const std::u16string& data) override;
+  void SetURL(const GURL& url, const std::u16string& title) override;
   void SetFilename(const base::FilePath& path) override;
   void SetFilenames(const std::vector<FileInfo>& filenames) override;
   void SetPickledData(const ClipboardFormatType& format,
                       const base::Pickle& data) override;
-  bool GetString(base::string16* data) const override;
+  bool GetString(std::u16string* data) const override;
   bool GetURLAndTitle(FilenameToURLPolicy policy,
                       GURL* url,
-                      base::string16* title) const override;
+                      std::u16string* title) const override;
   bool GetFilename(base::FilePath* path) const override;
   bool GetFilenames(std::vector<FileInfo>* filenames) const override;
   bool GetPickledData(const ClipboardFormatType& format,
@@ -61,13 +61,14 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderNonBacked
   bool HasURL(FilenameToURLPolicy policy) const override;
   bool HasFile() const override;
   bool HasCustomFormat(const ClipboardFormatType& format) const override;
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents) override;
-#endif
+  bool GetFileContents(base::FilePath* filename,
+                       std::string* file_contents) const override;
+  bool HasFileContents() const override;
 
-  void SetHtml(const base::string16& html, const GURL& base_url) override;
-  bool GetHtml(base::string16* html, GURL* base_url) const override;
+  void SetHtml(const std::u16string& html, const GURL& base_url) override;
+  bool GetHtml(std::u16string* html, GURL* base_url) const override;
   bool HasHtml() const override;
   void SetDragImage(const gfx::ImageSkia& image,
                     const gfx::Vector2d& cursor_offset) override;
@@ -91,11 +92,11 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderNonBacked
   int formats_ = 0;
 
   // String contents.
-  base::string16 string_;
+  std::u16string string_;
 
   // URL contents.
   GURL url_;
-  base::string16 title_;
+  std::u16string title_;
 
   // File name.
   std::vector<FileInfo> filenames_;
@@ -107,8 +108,12 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderNonBacked
   gfx::ImageSkia drag_image_;
   gfx::Vector2d drag_image_offset_;
 
+  // For file contents.
+  base::FilePath file_contents_filename_;
+  std::string file_contents_;
+
   // For HTML format
-  base::string16 html_;
+  std::u16string html_;
   GURL base_url_;
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)

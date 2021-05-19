@@ -9,6 +9,9 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#ifndef AOM_AV1_ENCODER_TXB_RDOPT_UTILS_H_
+#define AOM_AV1_ENCODER_TXB_RDOPT_UTILS_H_
+
 #include "av1/encoder/encodetxb.h"
 
 static const int golomb_bits_cost[32] = {
@@ -219,3 +222,4 @@ static INLINE void update_coeff_eob_fast(int *eob, int shift,
 
   *eob = eob_out;
 }
+#endif  // AOM_AV1_ENCODER_TXB_RDOPT_UTILS_H_

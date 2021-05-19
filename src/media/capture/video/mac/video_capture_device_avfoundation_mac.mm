@@ -9,6 +9,7 @@
 #import <CoreVideo/CoreVideo.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <sstream>
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
@@ -345,8 +346,15 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
   if (resolutions.size() != _scaledFrameTransformers.size()) {
     reconfigureScaledFrameTransformers = true;
   } else {
-    for (size_t i = 0; i < resolutions.size(); ++i) {
-      if (resolutions[i] != _scaledFrameTransformers[i]->destination_size()) {
+    for (const auto& resolution : resolutions) {
+      bool resolutionHasTransformer = false;
+      for (const auto& scaledFrameTransformer : _scaledFrameTransformers) {
+        if (resolution == scaledFrameTransformer->destination_size()) {
+          resolutionHasTransformer = true;
+          break;
+        }
+      }
+      if (!resolutionHasTransformer) {
         reconfigureScaledFrameTransformers = true;
         break;
       }
@@ -354,6 +362,15 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
   }
   if (!reconfigureScaledFrameTransformers)
     return;
+  std::stringstream str;
+  str << "[";
+  for (size_t i = 0; i < resolutions.size(); ++i) {
+    if (i != 0)
+      str << ", ";
+    str << resolutions[i].ToString();
+  }
+  str << "]";
+  VLOG(1) << "Configuring scaled resolutions: " << str.str();
   _scaledFrameTransformers.clear();
   for (const auto& resolution : resolutions) {
     // Configure the transformer to and from NV12 pixel buffers - we only want
@@ -733,7 +750,11 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
 
   // The lock is needed for |_scaledFrameTransformers| and |_frameReceiver|.
   _lock.AssertAcquired();
+  // References to any scaled pixel buffers need to be retained until after
+  // ReceiveExternalGpuMemoryBufferFrame().
+  std::vector<base::ScopedCFTypeRef<CVPixelBufferRef>> scaledPixelBuffers;
   std::vector<media::CapturedExternalVideoBuffer> scaledExternalBuffers;
+  scaledPixelBuffers.reserve(_scaledFrameTransformers.size());
   scaledExternalBuffers.reserve(_scaledFrameTransformers.size());
   for (auto& scaledFrameTransformer : _scaledFrameTransformers) {
     gfx::Size scaledFrameSize = scaledFrameTransformer->destination_size();
@@ -757,6 +778,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
                  << scaledFrameSize.ToString();
       continue;
     }
+    scaledPixelBuffers.push_back(scaledPixelBuffer);
     IOSurfaceRef scaledIoSurface = CVPixelBufferGetIOSurface(scaledPixelBuffer);
     media::VideoCaptureFormat scaledCaptureFormat = captureFormat;
     scaledCaptureFormat.frame_size = scaledFrameSize;
@@ -889,9 +911,8 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
 
   // If the SampleBufferTransformer is enabled, convert all possible capture
   // formats to an IOSurface-backed NV12 pixel buffer.
-  // TODO(https://crbug.com/1175142): Update this code path so that it is
-  // possible to turn on/off the kAVFoundationCaptureV2ZeroCopy feature and the
-  // kInCaptureConvertToNv12 feature separately.
+  // TODO(https://crbug.com/1175142): Refactor to not hijack the code paths
+  // below the transformer code.
   // TODO(hbos): When |_sampleBufferTransformer| gets shipped 100%, delete the
   // other code paths.
   if (_sampleBufferTransformer && sampleHasPixelBufferOrIsMjpeg) {
@@ -956,17 +977,13 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
     DCHECK_EQ(pixelBufferPixelFormat, sampleBufferPixelFormat);
 
     // First preference is to use an NV12 IOSurface as a GpuMemoryBuffer.
-    static const bool kEnableGpuMemoryBuffers =
-        base::FeatureList::IsEnabled(media::kAVFoundationCaptureV2ZeroCopy);
-    if (kEnableGpuMemoryBuffers) {
-      if (CVPixelBufferGetIOSurface(pixelBuffer) &&
-          videoPixelFormat == media::PIXEL_FORMAT_NV12) {
-        [self processPixelBufferNV12IOSurface:pixelBuffer
-                                captureFormat:captureFormat
-                                   colorSpace:colorSpace
-                                    timestamp:timestamp];
-        return;
-      }
+    if (CVPixelBufferGetIOSurface(pixelBuffer) &&
+        videoPixelFormat == media::PIXEL_FORMAT_NV12) {
+      [self processPixelBufferNV12IOSurface:pixelBuffer
+                              captureFormat:captureFormat
+                                 colorSpace:colorSpace
+                                  timestamp:timestamp];
+      return;
     }
 
     // Second preference is to read the CVPixelBuffer's planes.

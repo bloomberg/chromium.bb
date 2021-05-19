@@ -10,10 +10,11 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/users/affiliation.h"
+#include "chrome/browser/ash/login/users/affiliation.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -58,7 +59,7 @@ class ServerBackedStateKeysBroker;
 class TPMAutoUpdateModePolicyHandler;
 class DeviceScheduledUpdateChecker;
 class DeviceCloudExternalDataPolicyHandler;
-class SystemProxyManager;
+class SystemProxyHandler;
 
 // Extends ChromeBrowserPolicyConnector with the setup specific to Chrome OS.
 class BrowserPolicyConnectorChromeOS
@@ -183,8 +184,8 @@ class BrowserPolicyConnectorChromeOS
     return tpm_auto_update_mode_policy_handler_.get();
   }
 
-  SystemProxyManager* GetSystemProxyManager() const {
-    return system_proxy_manager_.get();
+  SystemProxyHandler* GetSystemProxyHandler() const {
+    return system_proxy_handler_.get();
   }
 
   HostnameHandler* GetHostnameHandler() const {
@@ -198,7 +199,7 @@ class BrowserPolicyConnectorChromeOS
 
   // Return a pointer to the device-wide client certificate provisioning
   // scheduler. The callers do not take ownership of that pointer.
-  chromeos::cert_provisioning::CertProvisioningScheduler*
+  ash::cert_provisioning::CertProvisioningScheduler*
   GetDeviceCertProvisioningScheduler() {
     return device_cert_provisioning_scheduler_.get();
   }
@@ -235,7 +236,10 @@ class BrowserPolicyConnectorChromeOS
   void OnDeviceCloudPolicyManagerConnected() override;
   void OnDeviceCloudPolicyManagerDisconnected() override;
 
-  chromeos::AffiliationIDSet GetDeviceAffiliationIDs() const;
+  // TODO(crbug.com/1187628): Combine the following two functions into one to
+  // simplify the API.
+  base::flat_set<std::string> device_affiliation_ids() const override;
+  ash::AffiliationIDSet GetDeviceAffiliationIDs() const;
 
   // BrowserPolicyConnector:
   // Always returns true as command line flag can be set under dev mode only.
@@ -295,7 +299,7 @@ class BrowserPolicyConnectorChromeOS
       device_scheduled_update_checker_;
   std::vector<std::unique_ptr<policy::DeviceCloudExternalDataPolicyHandler>>
       device_cloud_external_data_policy_handlers_;
-  std::unique_ptr<SystemProxyManager> system_proxy_manager_;
+  std::unique_ptr<SystemProxyHandler> system_proxy_handler_;
   std::unique_ptr<AdbSideloadingAllowanceModePolicyHandler>
       adb_sideloading_allowance_mode_policy_handler_;
 
@@ -316,7 +320,7 @@ class BrowserPolicyConnectorChromeOS
 
   // Manages provisioning of certificates from
   // RequiredClientCertificateForDevice device policy.
-  std::unique_ptr<chromeos::cert_provisioning::CertProvisioningScheduler>
+  std::unique_ptr<ash::cert_provisioning::CertProvisioningScheduler>
       device_cert_provisioning_scheduler_;
 
   base::WeakPtrFactory<BrowserPolicyConnectorChromeOS> weak_ptr_factory_{this};

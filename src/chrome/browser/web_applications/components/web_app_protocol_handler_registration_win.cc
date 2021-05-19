@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
 #include <utility>
 
 #include "chrome/browser/web_applications/components/web_app_protocol_handler_registration.h"
 
+#include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -76,7 +78,10 @@ void RegisterProtocolHandlersWithOSInBackground(
       base::BindOnce(
           [](Profile* profile, const web_app::AppId& app_id,
              std::vector<apps::ProtocolHandlerInfo> protocol_handlers) {
-            // TODO(crbug.com/1019239): call into ProtocolHandlerRegistry
+            ProtocolHandlerRegistry* registry =
+                ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
+
+            registry->RegisterAppProtocolHandlers(app_id, protocol_handlers);
           },
           profile, app_id, std::move(protocol_handlers)));
 }
@@ -100,6 +105,18 @@ void UnregisterProtocolHandlersWithOsInBackground(
   // Clean up application class registry key.
   ShellUtil::DeleteApplicationClass(prog_id);
 }
+
+// TODO(crbug/1019239): Update CheckAndUpdateExternalInstallations
+// to receive a callback that returns a bool. For now, return the call back
+// below for test purposes (StartupBrowserWebAppProtocolHandlingTest).
+void VerifyExternalInstallations(const base::FilePath& cur_profile_path,
+                                 const web_app::AppId& app_id,
+                                 base::OnceCallback<void(bool)> callback) {
+  web_app::CheckAndUpdateExternalInstallations(cur_profile_path, app_id,
+                                               base::DoNothing::Once());
+  std::move(callback).Run(true);
+}
+
 }  // namespace
 
 namespace web_app {
@@ -108,7 +125,8 @@ void RegisterProtocolHandlersWithOs(
     const AppId& app_id,
     const std::string& app_name,
     Profile* profile,
-    std::vector<apps::ProtocolHandlerInfo> protocol_handlers) {
+    std::vector<apps::ProtocolHandlerInfo> protocol_handlers,
+    base::OnceCallback<void(bool)> callback) {
   if (protocol_handlers.empty())
     return;
 
@@ -121,15 +139,18 @@ void RegisterProtocolHandlersWithOs(
       base::BindOnce(&RegisterProtocolHandlersWithOSInBackground, app_id,
                      base::UTF8ToWide(app_name), profile, profile->GetPath(),
                      std::move(protocol_handlers), app_name_extension),
-      base::BindOnce(&CheckAndUpdateExternalInstallations, profile->GetPath(),
-                     app_id));
+      base::BindOnce(&VerifyExternalInstallations, profile->GetPath(), app_id,
+                     std::move(callback)));
 }
 
 void UnregisterProtocolHandlersWithOs(
     const AppId& app_id,
     Profile* profile,
     std::vector<apps::ProtocolHandlerInfo> protocol_handlers) {
-  // TODO(crbug.com/1019239): call into ProtocolHandlerRegistry
+  ProtocolHandlerRegistry* registry =
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
+
+  registry->DeregisterAppProtocolHandlers(app_id, protocol_handlers);
 
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
@@ -137,7 +158,7 @@ void UnregisterProtocolHandlersWithOs(
       base::BindOnce(&UnregisterProtocolHandlersWithOsInBackground, app_id,
                      profile->GetPath()),
       base::BindOnce(&CheckAndUpdateExternalInstallations, profile->GetPath(),
-                     app_id));
+                     app_id, base::DoNothing::Once()));
 }
 
 }  // namespace web_app

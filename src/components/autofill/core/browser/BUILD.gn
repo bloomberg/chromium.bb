@@ -152,6 +152,8 @@ static_library("browser") {
     "form_parsing/field_candidates.h",
     "form_parsing/form_field.cc",
     "form_parsing/form_field.h",
+    "form_parsing/merchant_promo_code_field.cc",
+    "form_parsing/merchant_promo_code_field.h",
     "form_parsing/name_field.cc",
     "form_parsing/name_field.h",
     "form_parsing/phone_field.cc",
@@ -350,6 +352,8 @@ static_library("browser") {
 
   if (is_ios || is_android) {
     sources += [
+      "autofill_save_address_profile_delegate_ios.cc",
+      "autofill_save_address_profile_delegate_ios.h",
       "payments/autofill_credit_card_filling_infobar_delegate_mobile.cc",
       "payments/autofill_credit_card_filling_infobar_delegate_mobile.h",
       "payments/autofill_offer_notification_infobar_delegate_mobile.cc",
@@ -607,6 +611,20 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/autofill/merge/output/primarycase.out",
     "//components/test/data/autofill/merge/output/singlemerge.out",
     "//components/test/data/autofill/merge/output/validation.out",
+    "//components/test/data/autofill/merge_structured_names/input/ambiguous.in",
+    "//components/test/data/autofill/merge_structured_names/input/case.in",
+    "//components/test/data/autofill/merge_structured_names/input/email.in",
+    "//components/test/data/autofill/merge_structured_names/input/identical.in",
+    "//components/test/data/autofill/merge_structured_names/input/primarycase.in",
+    "//components/test/data/autofill/merge_structured_names/input/singlemerge.in",
+    "//components/test/data/autofill/merge_structured_names/input/validation.in",
+    "//components/test/data/autofill/merge_structured_names/output/ambiguous.out",
+    "//components/test/data/autofill/merge_structured_names/output/case.out",
+    "//components/test/data/autofill/merge_structured_names/output/email.out",
+    "//components/test/data/autofill/merge_structured_names/output/identical.out",
+    "//components/test/data/autofill/merge_structured_names/output/primarycase.out",
+    "//components/test/data/autofill/merge_structured_names/output/singlemerge.out",
+    "//components/test/data/autofill/merge_structured_names/output/validation.out",
   ]
   outputs = [ "{{bundle_resources_dir}}/" +
               "{{source_root_relative_dir}}/{{source_file_part}}" ]
@@ -658,6 +676,7 @@ source_set("unit_tests") {
     "form_parsing/credit_card_field_unittest.cc",
     "form_parsing/field_candidates_unittest.cc",
     "form_parsing/form_field_unittest.cc",
+    "form_parsing/merchant_promo_code_field_unittest.cc",
     "form_parsing/name_field_unittest.cc",
     "form_parsing/parsing_test_utils.cc",
     "form_parsing/parsing_test_utils.h",
@@ -717,6 +736,7 @@ source_set("unit_tests") {
 
   if (is_ios || is_android) {
     sources += [
+      "autofill_save_address_profile_delegate_ios_unittest.cc",
       "ui/mobile_label_formatter_unittest.cc",
       "ui/payments/card_expiration_date_fix_flow_controller_impl_unittest.cc",
       "ui/payments/card_name_fix_flow_controller_impl_unittest.cc",

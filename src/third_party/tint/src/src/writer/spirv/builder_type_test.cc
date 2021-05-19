@@ -12,35 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/stride_decoration.h"
-#include "src/ast/struct.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/type/access_control_type.h"
-#include "src/type/alias_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
 #include "src/type/depth_texture_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
 #include "src/type/multisampled_texture_type.h"
-#include "src/type/pointer_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/sampler_type.h"
-#include "src/type/storage_texture_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/texture_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type/void_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -83,11 +58,11 @@ TEST_F(BuilderTest_Type, ReturnsGeneratedAlias) {
 }
 
 TEST_F(BuilderTest_Type, GenerateRuntimeArray) {
-  type::Array ary(ty.i32(), 0, ast::ArrayDecorationList{});
+  auto* ary = ty.array(ty.i32(), 0);
 
   spirv::Builder& b = Build();
 
-  auto id = b.GenerateTypeIfNeeded(&ary);
+  auto id = b.GenerateTypeIfNeeded(ary);
   ASSERT_FALSE(b.has_error()) << b.error();
   EXPECT_EQ(1u, id);
 
@@ -97,12 +72,12 @@ TEST_F(BuilderTest_Type, GenerateRuntimeArray) {
 }
 
 TEST_F(BuilderTest_Type, ReturnsGeneratedRuntimeArray) {
-  type::Array ary(ty.i32(), 0, ast::ArrayDecorationList{});
+  auto* ary = ty.array(ty.i32(), 0);
 
   spirv::Builder& b = Build();
 
-  EXPECT_EQ(b.GenerateTypeIfNeeded(&ary), 1u);
-  EXPECT_EQ(b.GenerateTypeIfNeeded(&ary), 1u);
+  EXPECT_EQ(b.GenerateTypeIfNeeded(ary), 1u);
+  EXPECT_EQ(b.GenerateTypeIfNeeded(ary), 1u);
   ASSERT_FALSE(b.has_error()) << b.error();
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeInt 32 1
@@ -111,11 +86,11 @@ TEST_F(BuilderTest_Type, ReturnsGeneratedRuntimeArray) {
 }
 
 TEST_F(BuilderTest_Type, GenerateArray) {
-  type::Array ary(ty.i32(), 4, ast::ArrayDecorationList{});
+  auto* ary = ty.array(ty.i32(), 4);
 
   spirv::Builder& b = Build();
 
-  auto id = b.GenerateTypeIfNeeded(&ary);
+  auto id = b.GenerateTypeIfNeeded(ary);
   ASSERT_FALSE(b.has_error()) << b.error();
   EXPECT_EQ(1u, id);
 
@@ -127,14 +102,11 @@ TEST_F(BuilderTest_Type, GenerateArray) {
 }
 
 TEST_F(BuilderTest_Type, GenerateArray_WithStride) {
-  type::Array ary(ty.i32(), 4,
-                  ast::ArrayDecorationList{
-                      create<ast::StrideDecoration>(16u),
-                  });
+  auto* ary = ty.array(ty.i32(), 4, 16u);
 
   spirv::Builder& b = Build();
 
-  auto id = b.GenerateTypeIfNeeded(&ary);
+  auto id = b.GenerateTypeIfNeeded(ary);
   ASSERT_FALSE(b.has_error()) << b.error();
   EXPECT_EQ(1u, id);
 
@@ -149,12 +121,12 @@ TEST_F(BuilderTest_Type, GenerateArray_WithStride) {
 }
 
 TEST_F(BuilderTest_Type, ReturnsGeneratedArray) {
-  type::Array ary(ty.i32(), 4, ast::ArrayDecorationList{});
+  auto* ary = ty.array(ty.i32(), 4);
 
   spirv::Builder& b = Build();
 
-  EXPECT_EQ(b.GenerateTypeIfNeeded(&ary), 1u);
-  EXPECT_EQ(b.GenerateTypeIfNeeded(&ary), 1u);
+  EXPECT_EQ(b.GenerateTypeIfNeeded(ary), 1u);
+  EXPECT_EQ(b.GenerateTypeIfNeeded(ary), 1u);
   ASSERT_FALSE(b.has_error()) << b.error();
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%2 = OpTypeInt 32 1
@@ -302,13 +274,11 @@ TEST_F(BuilderTest_Type, ReturnsGeneratedPtr) {
 }
 
 TEST_F(BuilderTest_Type, GenerateStruct_Empty) {
-  auto* s =
-      create<ast::Struct>(ast::StructMemberList{}, ast::StructDecorationList{});
-  auto* s_type = ty.struct_("S", s);
+  auto* s = Structure("S", {});
 
   spirv::Builder& b = Build();
 
-  auto id = b.GenerateTypeIfNeeded(s_type);
+  auto id = b.GenerateTypeIfNeeded(s);
   ASSERT_FALSE(b.has_error()) << b.error();
   EXPECT_EQ(id, 1u);
 
@@ -320,13 +290,11 @@ TEST_F(BuilderTest_Type, GenerateStruct_Empty) {
 }
 
 TEST_F(BuilderTest_Type, GenerateStruct) {
-  auto* s = create<ast::Struct>(ast::StructMemberList{Member("a", ty.f32())},
-                                ast::StructDecorationList{});
-  auto* s_type = ty.struct_("my_struct", s);
+  auto* s = Structure("my_struct", {Member("a", ty.f32())});
 
   spirv::Builder& b = Build();
 
-  auto id = b.GenerateTypeIfNeeded(s_type);
+  auto id = b.GenerateTypeIfNeeded(s);
   ASSERT_FALSE(b.has_error()) << b.error();
   EXPECT_EQ(id, 1u);
 
@@ -339,16 +307,12 @@ OpMemberName %1 0 "a"
 }
 
 TEST_F(BuilderTest_Type, GenerateStruct_Decorated) {
-  ast::StructDecorationList struct_decos;
-  struct_decos.push_back(create<ast::StructBlockDecoration>());
-
-  auto* s = create<ast::Struct>(ast::StructMemberList{Member("a", ty.f32())},
-                                struct_decos);
-  auto* s_type = ty.struct_("my_struct", s);
+  auto* s = Structure("my_struct", {Member("a", ty.f32())},
+                      {create<ast::StructBlockDecoration>()});
 
   spirv::Builder& b = Build();
 
-  auto id = b.GenerateTypeIfNeeded(s_type);
+  auto id = b.GenerateTypeIfNeeded(s);
   ASSERT_FALSE(b.has_error()) << b.error();
   EXPECT_EQ(id, 1u);
 
@@ -359,19 +323,19 @@ TEST_F(BuilderTest_Type, GenerateStruct_Decorated) {
 OpMemberName %1 0 "a"
 )");
   EXPECT_EQ(DumpInstructions(b.annots()), R"(OpDecorate %1 Block
+OpMemberDecorate %1 0 Offset 0
 )");
 }
 
 TEST_F(BuilderTest_Type, GenerateStruct_DecoratedMembers) {
-  auto* s = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.f32(), {MemberOffset(0)}),
-                            Member("b", ty.f32(), {MemberOffset(8)})},
-      ast::StructDecorationList{});
-  auto* s_type = ty.struct_("S", s);
+  auto* s = Structure("S", {
+                               Member("a", ty.f32()),
+                               Member("b", ty.f32(), {MemberAlign(8)}),
+                           });
 
   spirv::Builder& b = Build();
 
-  auto id = b.GenerateTypeIfNeeded(s_type);
+  auto id = b.GenerateTypeIfNeeded(s);
   ASSERT_FALSE(b.has_error()) << b.error();
   EXPECT_EQ(id, 1u);
 
@@ -388,16 +352,15 @@ OpMemberDecorate %1 1 Offset 8
 }
 
 TEST_F(BuilderTest_Type, GenerateStruct_NonLayout_Matrix) {
-  auto* s =
-      create<ast::Struct>(ast::StructMemberList{Member("a", ty.mat2x2<f32>()),
-                                                Member("b", ty.mat2x3<f32>()),
-                                                Member("c", ty.mat4x4<f32>())},
-                          ast::StructDecorationList{});
-  auto* s_type = ty.struct_("S", s);
+  auto* s = Structure("S", {
+                               Member("a", ty.mat2x2<f32>()),
+                               Member("b", ty.mat2x3<f32>()),
+                               Member("c", ty.mat4x4<f32>()),
+                           });
 
   spirv::Builder& b = Build();
 
-  auto id = b.GenerateTypeIfNeeded(s_type);
+  auto id = b.GenerateTypeIfNeeded(s);
   ASSERT_FALSE(b.has_error()) << b.error();
   EXPECT_EQ(id, 1u);
 
@@ -415,21 +378,29 @@ OpMemberName %1 0 "a"
 OpMemberName %1 1 "b"
 OpMemberName %1 2 "c"
 )");
-  EXPECT_EQ(DumpInstructions(b.annots()), "");
+  EXPECT_EQ(DumpInstructions(b.annots()), R"(OpMemberDecorate %1 0 Offset 0
+OpMemberDecorate %1 0 ColMajor
+OpMemberDecorate %1 0 MatrixStride 8
+OpMemberDecorate %1 1 Offset 16
+OpMemberDecorate %1 1 ColMajor
+OpMemberDecorate %1 1 MatrixStride 16
+OpMemberDecorate %1 2 Offset 48
+OpMemberDecorate %1 2 ColMajor
+OpMemberDecorate %1 2 MatrixStride 16
+)");
 }
 
 TEST_F(BuilderTest_Type, GenerateStruct_DecoratedMembers_LayoutMatrix) {
   // We have to infer layout for matrix when it also has an offset.
-  auto* s = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.mat2x2<f32>(), {MemberOffset(0)}),
-                            Member("b", ty.mat2x3<f32>(), {MemberOffset(16)}),
-                            Member("c", ty.mat4x4<f32>(), {MemberOffset(48)})},
-      ast::StructDecorationList{});
-  auto* s_type = ty.struct_("S", s);
+  auto* s = Structure("S", {
+                               Member("a", ty.mat2x2<f32>()),
+                               Member("b", ty.mat2x3<f32>()),
+                               Member("c", ty.mat4x4<f32>()),
+                           });
 
   spirv::Builder& b = Build();
 
-  auto id = b.GenerateTypeIfNeeded(s_type);
+  auto id = b.GenerateTypeIfNeeded(s);
   ASSERT_FALSE(b.has_error()) << b.error();
   EXPECT_EQ(id, 1u);
 
@@ -463,26 +434,22 @@ TEST_F(BuilderTest_Type, GenerateStruct_DecoratedMembers_LayoutArraysOfMatrix) {
   // We have to infer layout for matrix when it also has an offset.
   // The decoration goes on the struct member, even if the matrix is buried
   // in levels of arrays.
-  type::Array arr_mat2x2(ty.mat2x2<f32>(), 1,
-                         ast::ArrayDecorationList{});  // Singly nested array
+  auto* arr_mat2x2 = ty.array(ty.mat2x2<f32>(), 1);      // Singly nested array
+  auto* arr_arr_mat2x3 = ty.array(ty.mat2x3<f32>(), 1);  // Doubly nested array
+  auto* rtarr_mat4x4 = ty.array(ty.mat4x4<f32>(), 0);    // Runtime array
 
-  type::Array arr_mat2x3(ty.mat2x3<f32>(), 1, ast::ArrayDecorationList{});
-  type::Array arr_arr_mat2x3(
-      ty.mat2x3<f32>(), 1, ast::ArrayDecorationList{});  // Doubly nested array
-
-  type::Array rtarr_mat4x4(ty.mat4x4<f32>(), 0,
-                           ast::ArrayDecorationList{});  // Runtime array
-
-  auto* s = create<ast::Struct>(
-      ast::StructMemberList{Member("a", &arr_mat2x2, {MemberOffset(0)}),
-                            Member("b", &arr_arr_mat2x3, {MemberOffset(16)}),
-                            Member("c", &rtarr_mat4x4, {MemberOffset(48)})},
-      ast::StructDecorationList{});
-  auto* s_type = ty.struct_("S", s);
+  auto* s =
+      Structure("S",
+                {
+                    Member("a", arr_mat2x2),
+                    Member("b", arr_arr_mat2x3),
+                    Member("c", rtarr_mat4x4),
+                },
+                ast::DecorationList{create<ast::StructBlockDecoration>()});
 
   spirv::Builder& b = Build();
 
-  auto id = b.GenerateTypeIfNeeded(s_type);
+  auto id = b.GenerateTypeIfNeeded(s);
   ASSERT_FALSE(b.has_error()) << b.error();
   EXPECT_EQ(id, 1u);
 
@@ -505,15 +472,19 @@ OpMemberName %1 0 "a"
 OpMemberName %1 1 "b"
 OpMemberName %1 2 "c"
 )");
-  EXPECT_EQ(DumpInstructions(b.annots()), R"(OpMemberDecorate %1 0 Offset 0
+  EXPECT_EQ(DumpInstructions(b.annots()), R"(OpDecorate %1 Block
+OpMemberDecorate %1 0 Offset 0
 OpMemberDecorate %1 0 ColMajor
 OpMemberDecorate %1 0 MatrixStride 8
+OpDecorate %2 ArrayStride 16
 OpMemberDecorate %1 1 Offset 16
 OpMemberDecorate %1 1 ColMajor
 OpMemberDecorate %1 1 MatrixStride 16
+OpDecorate %8 ArrayStride 32
 OpMemberDecorate %1 2 Offset 48
 OpMemberDecorate %1 2 ColMajor
 OpMemberDecorate %1 2 MatrixStride 16
+OpDecorate %11 ArrayStride 64
 )");
 }
 
@@ -861,7 +832,7 @@ TEST_F(BuilderTest_Type, StorageTexture_Generate_1d_R16Float) {
   auto* s = create<type::StorageTexture>(type::TextureDimension::k1d,
                                          type::ImageFormat::kR16Float, subtype);
 
-  Global("test_var", s, ast::StorageClass::kNone);
+  Global("test_var", s, ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 
@@ -883,7 +854,7 @@ TEST_F(BuilderTest_Type, StorageTexture_Generate_1d_R8SNorm) {
   auto* s = create<type::StorageTexture>(type::TextureDimension::k1d,
                                          type::ImageFormat::kR8Snorm, subtype);
 
-  Global("test_var", s, ast::StorageClass::kNone);
+  Global("test_var", s, ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 
@@ -905,7 +876,7 @@ TEST_F(BuilderTest_Type, StorageTexture_Generate_1d_R8UNorm) {
   auto* s = create<type::StorageTexture>(type::TextureDimension::k1d,
                                          type::ImageFormat::kR8Unorm, subtype);
 
-  Global("test_var", s, ast::StorageClass::kNone);
+  Global("test_var", s, ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 
@@ -927,7 +898,7 @@ TEST_F(BuilderTest_Type, StorageTexture_Generate_1d_R8Uint) {
   auto* s = create<type::StorageTexture>(type::TextureDimension::k1d,
                                          type::ImageFormat::kR8Uint, subtype);
 
-  Global("test_var", s, ast::StorageClass::kNone);
+  Global("test_var", s, ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 
@@ -944,7 +915,7 @@ TEST_F(BuilderTest_Type, StorageTexture_Generate_1d_R8Sint) {
   auto* s = create<type::StorageTexture>(type::TextureDimension::k1d,
                                          type::ImageFormat::kR8Sint, subtype);
 
-  Global("test_var", s, ast::StorageClass::kNone);
+  Global("test_var", s, ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 
@@ -961,7 +932,7 @@ TEST_F(BuilderTest_Type, StorageTexture_Generate_2d) {
   auto* s = create<type::StorageTexture>(type::TextureDimension::k2d,
                                          type::ImageFormat::kR16Float, subtype);
 
-  Global("test_var", s, ast::StorageClass::kNone);
+  Global("test_var", s, ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 
@@ -978,7 +949,7 @@ TEST_F(BuilderTest_Type, StorageTexture_Generate_2dArray) {
   auto* s = create<type::StorageTexture>(type::TextureDimension::k2dArray,
                                          type::ImageFormat::kR16Float, subtype);
 
-  Global("test_var", s, ast::StorageClass::kNone);
+  Global("test_var", s, ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 
@@ -995,7 +966,7 @@ TEST_F(BuilderTest_Type, StorageTexture_Generate_3d) {
   auto* s = create<type::StorageTexture>(type::TextureDimension::k3d,
                                          type::ImageFormat::kR16Float, subtype);
 
-  Global("test_var", s, ast::StorageClass::kNone);
+  Global("test_var", s, ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 
@@ -1013,7 +984,7 @@ TEST_F(BuilderTest_Type,
   auto* s = create<type::StorageTexture>(type::TextureDimension::k2d,
                                          type::ImageFormat::kR32Float, subtype);
 
-  Global("test_var", s, ast::StorageClass::kNone);
+  Global("test_var", s, ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 
@@ -1031,7 +1002,7 @@ TEST_F(BuilderTest_Type,
   auto* s = create<type::StorageTexture>(type::TextureDimension::k2d,
                                          type::ImageFormat::kR32Sint, subtype);
 
-  Global("test_var", s, ast::StorageClass::kNone);
+  Global("test_var", s, ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 
@@ -1049,7 +1020,7 @@ TEST_F(BuilderTest_Type,
   auto* s = create<type::StorageTexture>(type::TextureDimension::k2d,
                                          type::ImageFormat::kR32Uint, subtype);
 
-  Global("test_var", s, ast::StorageClass::kNone);
+  Global("test_var", s, ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 

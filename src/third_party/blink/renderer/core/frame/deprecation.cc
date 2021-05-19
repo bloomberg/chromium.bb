@@ -6,7 +6,7 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -401,12 +401,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
           "https://www.chromestatus.com/feature/5735596811091968 for more "
           "details."};
 
-    case WebFeature::kHTMLImports:
-      return {"HTMLImports", kUnknown,
-              "The HTML Imports feature has been removed. See "
-              "https://www.chromestatus.com/feature/5144752345317376 for more "
-              "details."};
-
     case WebFeature::kLocalCSSFileExtensionRejected:
       return {"LocalCSSFileExtensionRejected", kM64,
               String("CSS cannot be loaded from `file:` URLs unless they end "
@@ -573,25 +567,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
           "The \"RtpDataChannels\" constraint is currently ignored, and may "
           "cause an error at a later date."};
 
-    case WebFeature::kCSSSelectorWebkitDetailsMarker:
-      if (!RuntimeEnabledFeatures::SummaryListItemEnabled())
-        return {"NotDeprecated", kUnknown, ""};
-      return {"CSSSeelctorWebKitDetailsMarker", kM89,
-              ReplacedBy("::-webkit-details-marker pseudo element selector",
-                         "::marker") +
-                  " See https://chromestatus.com/feature/6730096436051968 for "
-                  "more details."};
-
-    case WebFeature::kV8SpeechRecognitionEvent_Interpretation_AttributeGetter:
-      return {"V8SpeechRecognitionEvent_Interpretation_AttributeGetter", kM91,
-              WillBeRemoved("SpeechRecognitionEvent's interpretation attribute",
-                            kM91, "5769608873115648")};
-
-    case WebFeature::kV8SpeechRecognitionEvent_Emma_AttributeGetter:
-      return {"V8SpeechRecognitionEvent_Emma_AttributeGetter", kM91,
-              WillBeRemoved("SpeechRecognitionEvent's emma attribute", kM91,
-                            "5769608873115648")};
-
     case WebFeature::kRTCPeerConnectionSdpSemanticsPlanB:
       return {"RTCPeerConnectionSdpSemanticsPlanB", kM93,
               "Plan B SDP semantics, which is used when constructing an "
@@ -751,19 +726,7 @@ void Deprecation::CountDeprecation(ExecutionContext* context,
     return;
   }
   deprecation->SetReported(feature);
-
-  // Don't count usage of WebComponentsV0 for chrome:// URLs, but still report
-  // the deprecation messages.
-  // Note that this only applies to HTML Imports, as Shadow DOM v0 and Custom
-  // Elements v0 have both now been removed.
-  bool count_usage = true;
-  if (context->Url().ProtocolIs("chrome") &&
-      feature == WebFeature::kHTMLImports) {
-    count_usage = false;
-  }
-  if (count_usage)
-    context->CountUse(feature);
-
+  context->CountUse(feature);
   const DeprecationInfo info = GetDeprecationInfo(feature);
 
   // Send the deprecation message to the console as a warning.

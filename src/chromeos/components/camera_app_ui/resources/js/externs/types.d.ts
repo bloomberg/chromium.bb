@@ -9,7 +9,6 @@ type MojomNamespace = {
 };
 
 declare var arc: MojomNamespace;
-declare var blink: MojomNamespace;
 declare var chromeosCamera: MojomNamespace;
 declare var cros: MojomNamespace;
 
@@ -31,9 +30,12 @@ declare namespace cros.mojom {
   export type StreamType = any;
 }
 
-// TODO(b/172340451): Remove this once we fully removed the legacy Chrome app
-// support.
-declare var chrome: any;
+// TODO(b/172340451): Install @types/w3c-image-capture in third_party/node to
+// get the correct types.
+type PhotoSettings = any;
+type MediaRecorder = any;
+type ImageCapture = any;
+type PhotoCapabilities = any;
 
 // This is currently a Chrome only API, and the spec is still in working draft
 // stage.
@@ -46,6 +48,85 @@ interface UIEvent extends Event {
 interface InputDeviceCapabilities {
   readonly firesTouchEvents: boolean;
   readonly pointerMovementScrolls: boolean;
+}
+
+// The new "subtree" option is not published in the latest spec yet.
+// Ref: https://github.com/w3c/csswg-drafts/pull/3902
+
+interface GetAnimationsOptions {
+  subtree: boolean;
+}
+
+interface Animatable {
+  getAnimations(options?: GetAnimationsOptions): Animation[];
+}
+
+// File System Access API: This is currently a Chrome only API, and the spec is
+// still in working draft stage.
+// https://wicg.github.io/file-system-access/
+
+// close() is only implemented in Chrome so it's not in upstream type
+// definitions. Ref:
+// https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/827.
+interface WritableStream {
+  close(): Promise<void>;
+}
+
+interface FileSystemHandleBase {
+  readonly name: string;
+}
+
+type FileSystemWriteChunkType = BufferSource|Blob|string;
+
+interface FileSystemWritableFileStream extends WritableStream {
+  seek(position: number): Promise<void>;
+  truncate(size: number): Promise<void>;
+  write(data: FileSystemWriteChunkType): Promise<void>;
+}
+
+interface FileSystemCreateWritableOptions {
+  keepExistingData?: boolean;
+}
+
+interface FileSystemFileHandle extends FileSystemHandleBase {
+  readonly kind: 'file';
+  createWritable(options?: FileSystemCreateWritableOptions):
+      Promise<FileSystemWritableFileStream>;
+  getFile(): Promise<File>;
+}
+
+interface FileSystemGetDirectoryOptions {
+  create?: boolean;
+}
+
+interface FileSystemGetFileOptions {
+  create?: boolean;
+}
+
+interface FileSystemDirectoryHandle extends FileSystemHandleBase {
+  readonly kind: 'directory';
+  getDirectoryHandle(name: string, options?: FileSystemGetDirectoryOptions):
+      Promise<FileSystemDirectoryHandle>;
+  getFileHandle(name: string, options?: FileSystemGetFileOptions):
+      Promise<FileSystemFileHandle>;
+  values(): IterableIterator<FileSystemHandle>;
+}
+
+type FileSystemHandle = FileSystemFileHandle|FileSystemDirectoryHandle;
+
+type VarFor<T> = {
+  prototype: T;
+  // clang-format parses "new" in a wrong way.
+  // clang-format off
+  new(): T;
+  // clang-format on
+};
+
+declare var FileSystemDirectoryHandle: VarFor<FileSystemDirectoryHandle>;
+declare var FileSystemFileHandle: VarFor<FileSystemFileHandle>;
+
+interface StorageManager {
+  getDirectory(): Promise<FileSystemDirectoryHandle>;
 }
 
 // Chrome WebUI specific helper.

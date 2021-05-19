@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DLP_DATA_TRANSFER_DLP_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_DATA_TRANSFER_DLP_CONTROLLER_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
+#include "base/callback.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_clipboard_notifier.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_drag_drop_notifier.h"
 #include "ui/base/data_transfer_policy/data_transfer_policy_controller.h"
@@ -37,6 +39,10 @@ class DataTransferDlpController : public ui::DataTransferPolicyController {
   bool IsClipboardReadAllowed(
       const ui::DataTransferEndpoint* const data_src,
       const ui::DataTransferEndpoint* const data_dst) override;
+  void PasteIfAllowed(const ui::DataTransferEndpoint* const data_src,
+                      const ui::DataTransferEndpoint* const data_dst,
+                      content::WebContents* web_contents,
+                      base::OnceCallback<void(bool)> callback) override;
   bool IsDragDropAllowed(const ui::DataTransferEndpoint* const data_src,
                          const ui::DataTransferEndpoint* const data_dst,
                          const bool is_drop) override;
@@ -53,7 +59,15 @@ class DataTransferDlpController : public ui::DataTransferPolicyController {
   virtual void WarnOnPaste(const ui::DataTransferEndpoint* const data_src,
                            const ui::DataTransferEndpoint* const data_dst);
 
-  virtual bool ShouldProceedOnWarn(
+  virtual void WarnOnBlinkPaste(const ui::DataTransferEndpoint* const data_src,
+                                const ui::DataTransferEndpoint* const data_dst,
+                                content::WebContents* web_contents,
+                                base::OnceCallback<void(bool)> paste_cb);
+
+  virtual bool ShouldPasteOnWarn(
+      const ui::DataTransferEndpoint* const data_dst);
+
+  virtual bool ShouldCancelOnWarn(
       const ui::DataTransferEndpoint* const data_dst);
 
   virtual void NotifyBlockedDrop(

@@ -65,7 +65,7 @@ TestRenderFrameHost::TestRenderFrameHost(
     int32_t routing_id,
     mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
     const blink::LocalFrameToken& frame_token,
-    RenderFrameHostImpl::LifecycleState lifecyle_state)
+    RenderFrameHostImpl::LifecycleStateImpl lifecycle_state)
     : RenderFrameHostImpl(site_instance,
                           std::move(render_view_host),
                           delegate,
@@ -75,7 +75,7 @@ TestRenderFrameHost::TestRenderFrameHost(
                           std::move(frame_remote),
                           frame_token,
                           /*renderer_initiated_creation=*/false,
-                          lifecyle_state),
+                          lifecycle_state),
       child_creation_observer_(delegate ? delegate->GetAsWebContents()
                                         : nullptr),
       simulate_history_list_was_cleared_(false),
@@ -150,7 +150,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
 
 TestRenderFrameHost* TestRenderFrameHost::AppendChildWithPolicy(
     const std::string& frame_name,
-    const blink::ParsedFeaturePolicy& allow) {
+    const blink::ParsedPermissionsPolicy& allow) {
   std::string frame_unique_name = base::GenerateGUID();
   OnCreateChildFrame(
       GetProcess()->GetNextRoutingID(), CreateStubFrameRemote(),
@@ -330,7 +330,7 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
       navigation_client_remote.InitWithNewEndpointAndPassReceiver());
   BeginNavigation(std::move(common_params), std::move(begin_params),
                   mojo::NullRemote(), std::move(navigation_client_remote),
-                  mojo::NullRemote(), mojo::NullRemote());
+                  mojo::NullRemote());
 }
 
 void TestRenderFrameHost::SimulateDidChangeOpener(
@@ -414,8 +414,8 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   response->load_timing.send_start = base::TimeTicks::Now();
   response->load_timing.receive_headers_start = base::TimeTicks::Now();
   response->headers = response_headers;
-  response->parsed_headers =
-      network::PopulateParsedHeaders(response->headers, request->GetURL());
+  response->parsed_headers = network::PopulateParsedHeaders(
+      response->headers.get(), request->GetURL());
   response->dns_aliases = dns_aliases;
   // TODO(carlosk): Ideally, it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
@@ -499,6 +499,7 @@ void TestRenderFrameHost::SendCommitFailedNavigation(
     mojom::CommitNavigationParamsPtr commit_params,
     bool has_stale_copy_in_cache,
     int32_t error_code,
+    int32_t extended_error_code,
     const base::Optional<std::string>& error_page_content,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
@@ -526,7 +527,6 @@ TestRenderFrameHost::BuildDidCommitParams(bool did_create_new_entry,
   params->http_status_code = response_code;
   params->history_list_was_cleared = simulate_history_list_was_cleared_;
   params->post_id = -1;
-  params->redirects.push_back(url);
 
   // Simulate Blink assigning an item and document sequence number to the
   // navigation.

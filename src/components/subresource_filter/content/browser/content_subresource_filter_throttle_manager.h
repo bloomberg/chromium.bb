@@ -7,9 +7,9 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -20,12 +20,12 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
-#include "components/subresource_filter/content/common/ad_evidence.h"
 #include "components/subresource_filter/content/common/subresource_filter_utils.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_receiver_set.h"
+#include "third_party/blink/public/common/frame/frame_ad_evidence.h"
 
 namespace content {
 class NavigationHandle;
@@ -38,6 +38,8 @@ namespace subresource_filter {
 class AsyncDocumentSubresourceFilter;
 class ActivationStateComputingNavigationThrottle;
 class PageLoadStatistics;
+class ProfileInteractionManager;
+class SubresourceFilterProfileContext;
 class SubresourceFilterClient;
 
 // This enum backs a histogram. Make sure new elements are only added to the
@@ -94,15 +96,15 @@ class ContentSubresourceFilterThrottleManager
   static void CreateForWebContents(
       content::WebContents* web_contents,
       std::unique_ptr<SubresourceFilterClient> client,
+      SubresourceFilterProfileContext* profile_context,
       VerifiedRulesetDealer::Handle* dealer_handle);
 
   static ContentSubresourceFilterThrottleManager* FromWebContents(
       content::WebContents* web_contents);
-  static const ContentSubresourceFilterThrottleManager* FromWebContents(
-      const content::WebContents* web_contents);
 
   ContentSubresourceFilterThrottleManager(
       std::unique_ptr<SubresourceFilterClient> client,
+      SubresourceFilterProfileContext* profile_context,
       VerifiedRulesetDealer::Handle* dealer_handle,
       content::WebContents* web_contents);
   ~ContentSubresourceFilterThrottleManager() override;
@@ -149,12 +151,20 @@ class ContentSubresourceFilterThrottleManager
 
   static void LogAction(SubresourceFilterAction action);
 
-  void SetFrameAsAdSubframeForTesting(content::RenderFrameHost* frame_host);
+  void SetIsAdSubframeForTesting(content::RenderFrameHost* render_frame_host,
+                                 bool is_ad_subframe);
+
+  // Returns the matching FrameAdEvidence for the frame indicated by
+  // `render_frame_host` or `base::nullopt` if there is none (i.e. the frame is
+  // a main frame, or no navigation or commit has yet occurred and no evidence
+  // has been reported by the renderer).
+  base::Optional<blink::FrameAdEvidence> GetAdEvidenceForFrame(
+      content::RenderFrameHost* render_frame_host);
 
  protected:
   // content::WebContentsObserver:
   void RenderFrameDeleted(content::RenderFrameHost* frame_host) override;
-  void FrameDeleted(content::RenderFrameHost* frame_host) override;
+  void FrameDeleted(int frame_tree_node_id) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
@@ -209,7 +219,7 @@ class ContentSubresourceFilterThrottleManager
   VerifiedRuleset::Handle* EnsureRulesetHandle();
   void DestroyRulesetHandleIfNoLongerUsed();
 
-  FrameAdEvidence& EnsureFrameAdEvidence(
+  blink::FrameAdEvidence& EnsureFrameAdEvidence(
       content::RenderFrameHost* render_frame_host);
 
   // Registers `render_frame_host` as an ad frame. If the frame later moves to
@@ -246,9 +256,10 @@ class ContentSubresourceFilterThrottleManager
       const mojom::ActivationLevel& activation_level,
       bool did_inherit_opener_activation);
 
-  // Sets a frame as an ad subframe by moving its ad evidence from
-  // `tracked_ad_evidence_` to `ad_frames_` (and thus freezing it).
-  void SetFrameAsAdSubframe(content::RenderFrameHost* render_frame_host);
+  // Sets whether the frame is considered an ad subframe. If the value has
+  // changed, we also update the replication state and inform observers.
+  void SetIsAdSubframe(content::RenderFrameHost* render_frame_host,
+                       bool is_ad_subframe);
 
   // For each RenderFrameHost where the last committed load (or the initial load
   // if no committed load has occurred) has subresource filtering activated,
@@ -268,26 +279,15 @@ class ContentSubresourceFilterThrottleManager
   std::map<int64_t, ActivationStateComputingNavigationThrottle*>
       ongoing_activation_throttles_;
 
-  // Map of frames that have been identified as ads, keyed by FrameTreeNode ID,
-  // with value being the evidence that the respective frames are ads. This
-  // evidence object is frozen upon the frame being tagged as an ad and is no
-  // longer updated. An RFH is an ad subframe if any of the following conditions
-  // are met:
-  // 1. Its navigation URL is in the filter list
-  // 2. Its parent is a known ad subframe
-  // 3. Ad script was on the v8 stack when the frame was created (see AdTracker
-  //    in Blink)
-  // 4. It's the result of moving an old ad subframe RFH to a new RFH (e.g.,
-  //    OOPIF)
-  std::map<int, const FrameAdEvidence> ad_frames_;
+  // Set of frames that have been identified as ads, identified by FrameTreeNode
+  // ID. A RenderFrameHost is an ad subframe iff the FrameAdEvidence
+  // corresponding to the frame indicates that it is.
+  base::flat_set<int> ad_frames_;
 
-  // Map of subframes that have not (yet) been tagged as ads, keyed by
-  // FrameTreeNode ID, with value being the evidence that the frames are ads.
-  // Once a subframe is tagged as an ad, the evidence is moved to `ad_frames_`
-  // and no longer updated. This will be called prior to commit time in the case
-  // of an initial synchronous load or at ReadyToCommitNavigation otherwise.
-  // Otherwise, it is updated whenever a navigation's LoadPolicy is calculated.
-  std::map<int, FrameAdEvidence> tracked_ad_evidence_;
+  // Map of subframes, keyed by FrameTreeNode ID, with value being the evidence
+  // for or against the frames being ads. This evidence is updated whenever a
+  // navigation's LoadPolicy is calculated.
+  std::map<int, blink::FrameAdEvidence> tracked_ad_evidence_;
 
   // Map of frames whose navigations have been identified as ads, keyed by
   // FrameTreeNode ID. Contains information on the most current completed
@@ -317,6 +317,8 @@ class ContentSubresourceFilterThrottleManager
   VerifiedRulesetDealer::Handle* dealer_handle_;
 
   std::unique_ptr<SubresourceFilterClient> client_;
+
+  std::unique_ptr<ProfileInteractionManager> profile_interaction_manager_;
 
   base::WeakPtrFactory<ContentSubresourceFilterThrottleManager>
       weak_ptr_factory_{this};

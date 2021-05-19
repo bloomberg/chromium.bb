@@ -6,12 +6,12 @@
 
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/federated_learning/features/features.h"
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 
 namespace federated_learning {
 
@@ -54,7 +54,7 @@ FlocEligibilityObserver::OnCommit(
   // the floc inclusion, the navigation history is not eligible for floc. We can
   // stop observing now.
   if (!navigation_handle->GetRenderFrameHost()->IsFeatureEnabled(
-          blink::mojom::FeaturePolicyFeature::kInterestCohort)) {
+          blink::mojom::PermissionsPolicyFeature::kInterestCohort)) {
     return ObservePolicy::STOP_OBSERVING;
   }
 
@@ -65,11 +65,6 @@ FlocEligibilityObserver::OnCommit(
 }
 
 void FlocEligibilityObserver::OnAdResource() {
-  if (!base::FeatureList::IsEnabled(
-          kFlocPagesWithAdResourcesDefaultIncludedInFlocComputation)) {
-    return;
-  }
-
   OnOptInSignalObserved();
 }
 

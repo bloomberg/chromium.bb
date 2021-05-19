@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -112,8 +113,9 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   // Returns data received via mojo interface method
   // mojom::AutofillAent::FillFieldWithValue().
-  bool GetString16FillFieldWithValue(base::string16* value) {
-    if (!value_fill_field_)
+  bool GetString16FillFieldWithValue(const FieldGlobalId& field,
+                                     std::u16string* value) {
+    if (!value_fill_field_ || value_renderer_id_ != field.renderer_id)
       return false;
     if (value)
       *value = *value_fill_field_;
@@ -122,8 +124,9 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   // Returns data received via mojo interface method
   // mojom::AutofillAent::PreviewFieldWithValue().
-  bool GetString16PreviewFieldWithValue(base::string16* value) {
-    if (!value_preview_field_)
+  bool GetString16PreviewFieldWithValue(const FieldGlobalId field,
+                                        std::u16string* value) {
+    if (!value_preview_field_ || value_renderer_id_ != field.renderer_id)
       return false;
     if (value)
       *value = *value_preview_field_;
@@ -132,8 +135,9 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   // Returns data received via mojo interface method
   // mojom::AutofillAent::AcceptDataListSuggestion().
-  bool GetString16AcceptDataListSuggestion(base::string16* value) {
-    if (!value_accept_data_)
+  bool GetString16AcceptDataListSuggestion(FieldGlobalId field,
+                                           std::u16string* value) {
+    if (!value_accept_data_ || value_renderer_id_ != field.renderer_id)
       return false;
     if (value)
       *value = *value_accept_data_;
@@ -179,17 +183,23 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     CallDone();
   }
 
-  void FillFieldWithValue(const base::string16& value) override {
+  void FillFieldWithValue(FieldRendererId field,
+                          const std::u16string& value) override {
+    value_renderer_id_ = field;
     value_fill_field_ = value;
     CallDone();
   }
 
-  void PreviewFieldWithValue(const base::string16& value) override {
+  void PreviewFieldWithValue(FieldRendererId field,
+                             const std::u16string& value) override {
+    value_renderer_id_ = field;
     value_preview_field_ = value;
     CallDone();
   }
 
-  void SetSuggestionAvailability(const mojom::AutofillState state) override {
+  void SetSuggestionAvailability(FieldRendererId field,
+                                 const mojom::AutofillState state) override {
+    value_renderer_id_ = field;
     if (state == mojom::AutofillState::kAutofillAvailable)
       suggestions_available_ = true;
     else if (state == mojom::AutofillState::kNoSuggestions)
@@ -197,16 +207,18 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     CallDone();
   }
 
-  void AcceptDataListSuggestion(const base::string16& value) override {
+  void AcceptDataListSuggestion(FieldRendererId field,
+                                const std::u16string& value) override {
+    value_renderer_id_ = field;
     value_accept_data_ = value;
     CallDone();
   }
 
-  void FillPasswordSuggestion(const base::string16& username,
-                              const base::string16& password) override {}
+  void FillPasswordSuggestion(const std::u16string& username,
+                              const std::u16string& password) override {}
 
-  void PreviewPasswordSuggestion(const base::string16& username,
-                                 const base::string16& password) override {}
+  void PreviewPasswordSuggestion(const std::u16string& username,
+                                 const std::u16string& password) override {}
 
   void SetUserGestureRequired(bool required) override {}
 
@@ -238,12 +250,15 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
   bool called_clear_section_;
   // Records whether ClearPreviewedForm() got called.
   bool called_clear_previewed_form_;
+  // Records the ID received from FillFieldWithValue(), PreviewFieldWithValue(),
+  // SetSuggestionAvailability(), or AcceptDataListSuggestion().
+  base::Optional<FieldRendererId> value_renderer_id_;
   // Records string received from FillFieldWithValue() call.
-  base::Optional<base::string16> value_fill_field_;
+  base::Optional<std::u16string> value_fill_field_;
   // Records string received from PreviewFieldWithValue() call.
-  base::Optional<base::string16> value_preview_field_;
+  base::Optional<std::u16string> value_preview_field_;
   // Records string received from AcceptDataListSuggestion() call.
-  base::Optional<base::string16> value_accept_data_;
+  base::Optional<std::u16string> value_accept_data_;
   // Records bool received from SetSuggestionAvailability() call.
   bool suggestions_available_;
 };
@@ -294,9 +309,9 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
     // happy for when AppendChild is called.
     NavigateAndCommit(GURL("about:blank"));
 
-    test_autofill_client_.reset(new MockAutofillClient());
-    driver_.reset(new TestContentAutofillDriver(web_contents()->GetMainFrame(),
-                                                test_autofill_client_.get()));
+    test_autofill_client_ = std::make_unique<MockAutofillClient>();
+    driver_ = std::make_unique<TestContentAutofillDriver>(
+        web_contents()->GetMainFrame(), test_autofill_client_.get());
 
     blink::AssociatedInterfaceProvider* remote_interfaces =
         web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces();
@@ -408,15 +423,17 @@ TEST_F(ContentAutofillDriverTest, TypePredictionsSentToRendererWhenEnabled) {
 }
 
 TEST_F(ContentAutofillDriverTest, AcceptDataListSuggestion) {
-  base::string16 input_value(base::ASCIIToUTF16("barfoo"));
-  base::string16 output_value;
+  FieldGlobalId field = test::MakeFieldGlobalId();
+  std::u16string input_value(u"barfoo");
+  std::u16string output_value;
 
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->RendererShouldAcceptDataListSuggestion(input_value);
+  driver_->RendererShouldAcceptDataListSuggestion(field, input_value);
   run_loop.RunUntilIdle();
 
-  EXPECT_TRUE(fake_agent_.GetString16AcceptDataListSuggestion(&output_value));
+  EXPECT_TRUE(
+      fake_agent_.GetString16AcceptDataListSuggestion(field, &output_value));
   EXPECT_EQ(input_value, output_value);
 }
 
@@ -439,28 +456,31 @@ TEST_F(ContentAutofillDriverTest, ClearPreviewedFormSentToRenderer) {
 }
 
 TEST_F(ContentAutofillDriverTest, FillFieldWithValue) {
-  base::string16 input_value(base::ASCIIToUTF16("barqux"));
-  base::string16 output_value;
+  FieldGlobalId field = test::MakeFieldGlobalId();
+  std::u16string input_value(u"barqux");
+  std::u16string output_value;
 
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->RendererShouldFillFieldWithValue(input_value);
+  driver_->RendererShouldFillFieldWithValue(field, input_value);
   run_loop.RunUntilIdle();
 
-  EXPECT_TRUE(fake_agent_.GetString16FillFieldWithValue(&output_value));
+  EXPECT_TRUE(fake_agent_.GetString16FillFieldWithValue(field, &output_value));
   EXPECT_EQ(input_value, output_value);
 }
 
 TEST_F(ContentAutofillDriverTest, PreviewFieldWithValue) {
-  base::string16 input_value(base::ASCIIToUTF16("barqux"));
-  base::string16 output_value;
+  FieldGlobalId field = test::MakeFieldGlobalId();
+  std::u16string input_value(u"barqux");
+  std::u16string output_value;
 
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->RendererShouldPreviewFieldWithValue(input_value);
+  driver_->RendererShouldPreviewFieldWithValue(field, input_value);
   run_loop.RunUntilIdle();
 
-  EXPECT_TRUE(fake_agent_.GetString16PreviewFieldWithValue(&output_value));
+  EXPECT_TRUE(
+      fake_agent_.GetString16PreviewFieldWithValue(field, &output_value));
   EXPECT_EQ(input_value, output_value);
 }
 

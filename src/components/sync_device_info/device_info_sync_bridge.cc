@@ -86,6 +86,43 @@ base::Optional<DeviceInfo::SharingInfo> SpecificsToSharingInfo(
       std::move(enabled_features));
 }
 
+std::vector<uint8_t> VectorFromString(const std::string& s) {
+  const uint8_t* ptr = reinterpret_cast<const uint8_t*>(s.data());
+  return std::vector<uint8_t>(ptr, ptr + s.size());
+}
+
+base::Optional<DeviceInfo::PhoneAsASecurityKeyInfo>
+SpecificsToPhoneAsASecurityKeyInfo(const DeviceInfoSpecifics& specifics) {
+  if (!specifics.has_paask_fields()) {
+    return base::nullopt;
+  }
+
+  DeviceInfo::PhoneAsASecurityKeyInfo to;
+  const auto& from = specifics.paask_fields();
+  if (!from.has_tunnel_server_domain() || !from.has_id() ||
+      !from.has_contact_id() || !from.has_secret() ||
+      !from.has_peer_public_key_x962() ||
+      from.tunnel_server_domain() >= 0x10000) {
+    return base::nullopt;
+  }
+  to.tunnel_server_domain = from.tunnel_server_domain();
+  to.id = from.id();
+  to.contact_id = VectorFromString(from.contact_id());
+
+  if (from.secret().size() != to.secret.size()) {
+    return base::nullopt;
+  }
+  memcpy(to.secret.data(), from.secret().data(), to.secret.size());
+
+  if (from.peer_public_key_x962().size() != to.peer_public_key_x962.size()) {
+    return base::nullopt;
+  }
+  memcpy(to.peer_public_key_x962.data(), from.peer_public_key_x962().data(),
+         to.peer_public_key_x962.size());
+
+  return to;
+}
+
 // Converts DeviceInfoSpecifics into a freshly allocated DeviceInfo.
 std::unique_ptr<DeviceInfo> SpecificsToModel(
     const DeviceInfoSpecifics& specifics) {
@@ -105,10 +142,12 @@ std::unique_ptr<DeviceInfo> SpecificsToModel(
       specifics.chrome_version(), specifics.sync_user_agent(),
       specifics.device_type(), specifics.signin_scoped_device_id(),
       specifics.manufacturer(), specifics.model(),
+      specifics.full_hardware_class(),
       ProtoTimeToTime(specifics.last_updated_timestamp()),
       GetPulseIntervalFromSpecifics(specifics),
       specifics.feature_fields().send_tab_to_self_receiving_enabled(),
       SpecificsToSharingInfo(specifics),
+      SpecificsToPhoneAsASecurityKeyInfo(specifics),
       specifics.invalidation_fields().instance_id_token(), data_types);
 }
 
@@ -119,6 +158,19 @@ std::unique_ptr<EntityData> CopyToEntityData(
   *entity_data->specifics.mutable_device_info() = specifics;
   entity_data->name = specifics.client_name();
   return entity_data;
+}
+
+sync_pb::PhoneAsASecurityKeySpecificFields PhoneAsASecurityKeyInfoToProto(
+    const DeviceInfo::PhoneAsASecurityKeyInfo& paask_info) {
+  sync_pb::PhoneAsASecurityKeySpecificFields paask_fields;
+  paask_fields.set_tunnel_server_domain(paask_info.tunnel_server_domain);
+  paask_fields.set_contact_id(paask_info.contact_id.data(),
+                              paask_info.contact_id.size());
+  paask_fields.set_secret(paask_info.secret.data(), paask_info.secret.size());
+  paask_fields.set_id(paask_info.id);
+  paask_fields.set_peer_public_key_x962(paask_info.peer_public_key_x962.data(),
+                                        paask_info.peer_public_key_x962.size());
+  return paask_fields;
 }
 
 // Converts a local DeviceInfo into a freshly allocated DeviceInfoSpecifics.
@@ -133,6 +185,12 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
   specifics->set_signin_scoped_device_id(info.signin_scoped_device_id());
   specifics->set_manufacturer(info.manufacturer_name());
   specifics->set_model(info.model_name());
+
+  const std::string full_hardware_class = info.full_hardware_class();
+  if (!full_hardware_class.empty()) {
+    specifics->set_full_hardware_class(full_hardware_class);
+  }
+
   // The local device should have not been updated yet. Set the last updated
   // timestamp to now.
   DCHECK(info.last_updated_timestamp() == base::Time());
@@ -162,6 +220,13 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
          sharing_info->enabled_features) {
       sharing_fields->add_enabled_features(feature);
     }
+  }
+
+  const base::Optional<DeviceInfo::PhoneAsASecurityKeyInfo>& paask_info =
+      info.paask_info();
+  if (paask_info) {
+    *specifics->mutable_paask_fields() =
+        PhoneAsASecurityKeyInfoToProto(*paask_info);
   }
 
   // Set sync invalidations FCM registration token and interested data types.
@@ -197,22 +262,6 @@ base::Optional<ModelError> ParseSpecificsOnBackendSequence(
   }
 
   return base::nullopt;
-}
-
-ModelTypeSet ExtractInterestedDataTypes(const DeviceInfoSpecifics& specifics) {
-  ModelTypeSet interested_data_types;
-  for (int data_type_id :
-       specifics.invalidation_fields().interested_data_type_ids()) {
-    const ModelType model_type =
-        GetModelTypeFromSpecificsFieldNumber(data_type_id);
-
-    // This is possible if the browser has been updated and a data type has been
-    // removed.
-    if (model_type != ModelType::UNSPECIFIED) {
-      interested_data_types.Put(model_type);
-    }
-  }
-  return interested_data_types;
 }
 
 }  // namespace
@@ -299,7 +348,8 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
       local_cache_guid_, GetLocalClientName(),
       local_device_name_info_.manufacturer_name,
       local_device_name_info_.model_name,
-      /*last_fcm_registration_token=*/std::string(), ModelTypeSet());
+      local_device_name_info_.full_hardware_class,
+      /*device_info_restored_from_store=*/nullptr);
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& change : entity_data) {
@@ -613,8 +663,8 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
       local_cache_guid_, GetLocalClientName(),
       local_device_name_info_.manufacturer_name,
       local_device_name_info_.model_name,
-      iter->second->invalidation_fields().instance_id_token(),
-      ExtractInterestedDataTypes(*iter->second));
+      local_device_name_info_.full_hardware_class,
+      SpecificsToModel(*iter->second));
 
   // This probably isn't strictly needed, but in case the cache_guid has changed
   // we save the new one to prefs.

@@ -14,10 +14,9 @@
 
 #include "src/ast/discard_statement.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::DiscardStatement);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::DiscardStatement);
 
 namespace tint {
 namespace ast {
@@ -32,10 +31,6 @@ DiscardStatement* DiscardStatement::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
   auto src = ctx->Clone(source());
   return ctx->dst->create<DiscardStatement>(src);
-}
-
-bool DiscardStatement::IsValid() const {
-  return true;
 }
 
 void DiscardStatement::to_str(const semantic::Info&,

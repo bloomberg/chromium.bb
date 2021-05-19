@@ -47,6 +47,7 @@ class TestAppRegistrar : public AppRegistrar {
   bool IsInstalled(const AppId& app_id) const override;
   bool IsLocallyInstalled(const AppId& app_id) const override;
   bool WasInstalledByUser(const AppId& app_id) const override;
+  bool WasInstalledByOem(const AppId& app_id) const override;
   std::map<AppId, GURL> GetExternallyInstalledApps(
       ExternalInstallSource install_source) const override;
   base::Optional<AppId> LookupExternalAppId(
@@ -66,24 +67,27 @@ class TestAppRegistrar : public AppRegistrar {
   const apps::ShareTarget* GetAppShareTarget(
       const AppId& app_id) const override;
   blink::mojom::CaptureLinks GetAppCaptureLinks(
-      const web_app::AppId& app_id) const override;
+      const AppId& app_id) const override;
+  const apps::FileHandlers* GetAppFileHandlers(
+      const AppId& app_id) const override;
   base::Optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
   DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
   DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
   std::vector<DisplayMode> GetAppDisplayModeOverride(
       const AppId& app_id) const override;
   apps::UrlHandlers GetAppUrlHandlers(const AppId& app_id) const override;
-  GURL GetAppManifestUrl(const web_app::AppId& app_id) const override;
-  base::Time GetAppLastLaunchTime(const web_app::AppId& app_id) const override;
-  base::Time GetAppInstallTime(const web_app::AppId& app_id) const override;
+  GURL GetAppManifestUrl(const AppId& app_id) const override;
+  base::Time GetAppLastBadgingTime(const AppId& app_id) const override;
+  base::Time GetAppLastLaunchTime(const AppId& app_id) const override;
+  base::Time GetAppInstallTime(const AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const AppId& app_id) const override;
   SortedSizesPx GetAppDownloadedIconSizesAny(
       const AppId& app_id) const override;
   std::vector<WebApplicationShortcutsMenuItemInfo> GetAppShortcutsMenuItemInfos(
       const AppId& app_id) const override;
-  std::vector<std::vector<SquareSizePx>>
-  GetAppDownloadedShortcutsMenuIconsSizes(const AppId& app_id) const override;
+  std::vector<IconSizes> GetAppDownloadedShortcutsMenuIconsSizes(
+      const AppId& app_id) const override;
   RunOnOsLoginMode GetAppRunOnOsLoginMode(const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
   WebAppRegistrar* AsWebAppRegistrar() override;

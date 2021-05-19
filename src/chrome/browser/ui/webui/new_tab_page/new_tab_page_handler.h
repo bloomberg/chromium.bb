@@ -102,6 +102,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void SetModulesVisible(bool visible) override;
   void SetModuleDisabled(const std::string& module_id, bool disabled) override;
   void UpdateDisabledModules() override;
+  void OnModulesLoadedWithData() override;
   void OnAppRendered(double time) override;
   void OnMostVisitedTilesRendered(
       std::vector<new_tab_page::mojom::MostVisitedTilePtr> tiles,
@@ -131,12 +132,6 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void OnVoiceSearchAction(
       new_tab_page::mojom::VoiceSearchAction action) override;
   void OnVoiceSearchError(new_tab_page::mojom::VoiceSearchError error) override;
-  void OnModuleImpression(const std::string& module_id, double time) override;
-  void OnModuleLoaded(const std::string& module_id,
-                      base::TimeDelta duration,
-                      double time) override;
-  void OnModuleUsage(const std::string& module_id) override;
-  void OnModulesRendered(double time) override;
 
  private:
   // InstantServiceObserver:

@@ -14,24 +14,19 @@
 
 #include "src/type/type.h"
 
-#include <assert.h>
-
 #include "src/type/access_control_type.h"
 #include "src/type/alias_type.h"
-#include "src/type/array_type.h"
 #include "src/type/bool_type.h"
 #include "src/type/f32_type.h"
 #include "src/type/i32_type.h"
 #include "src/type/matrix_type.h"
 #include "src/type/pointer_type.h"
 #include "src/type/sampler_type.h"
-#include "src/type/struct_type.h"
 #include "src/type/texture_type.h"
 #include "src/type/u32_type.h"
 #include "src/type/vector_type.h"
-#include "src/type/void_type.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::Type);
+TINT_INSTANTIATE_TYPEINFO(tint::type::Type);
 
 namespace tint {
 namespace type {
@@ -75,16 +70,8 @@ Type* Type::UnwrapAll() {
   return UnwrapIfNeeded()->UnwrapPtrIfNeeded()->UnwrapIfNeeded();
 }
 
-uint64_t Type::MinBufferBindingSize(MemoryLayout) const {
-  return 0;
-}
-
-uint64_t Type::BaseAlignment(MemoryLayout) const {
-  return 0;
-}
-
 bool Type::is_scalar() const {
-  return is_float_scalar() || is_integer_scalar() || Is<Bool>();
+  return IsAnyOf<F32, U32, I32, Bool>();
 }
 
 bool Type::is_float_scalar() const {
@@ -92,35 +79,41 @@ bool Type::is_float_scalar() const {
 }
 
 bool Type::is_float_matrix() const {
-  return Is<Matrix>() && As<Matrix>()->type()->is_float_scalar();
+  return Is<Matrix>(
+      [](const Matrix* m) { return m->type()->is_float_scalar(); });
 }
 
 bool Type::is_float_vector() const {
-  return Is<Vector>() && As<Vector>()->type()->is_float_scalar();
+  return Is<Vector>(
+      [](const Vector* v) { return v->type()->is_float_scalar(); });
 }
 
 bool Type::is_float_scalar_or_vector() const {
   return is_float_scalar() || is_float_vector();
 }
 
+bool Type::is_float_scalar_or_vector_or_matrix() const {
+  return is_float_scalar() || is_float_vector() || is_float_matrix();
+}
+
 bool Type::is_integer_scalar() const {
-  return Is<U32>() || Is<I32>();
+  return IsAnyOf<U32, I32>();
 }
 
 bool Type::is_unsigned_integer_vector() const {
-  return Is<Vector>() && As<Vector>()->type()->Is<U32>();
+  return Is<Vector>([](const Vector* v) { return v->type()->Is<U32>(); });
 }
 
 bool Type::is_signed_integer_vector() const {
-  return Is<Vector>() && As<Vector>()->type()->Is<I32>();
+  return Is<Vector>([](const Vector* v) { return v->type()->Is<I32>(); });
 }
 
 bool Type::is_unsigned_scalar_or_vector() const {
-  return Is<U32>() || (Is<Vector>() && As<Vector>()->type()->Is<U32>());
+  return Is<U32>() || is_unsigned_integer_vector();
 }
 
 bool Type::is_signed_scalar_or_vector() const {
-  return Is<I32>() || (Is<Vector>() && As<Vector>()->type()->Is<I32>());
+  return Is<I32>() || is_signed_integer_vector();
 }
 
 bool Type::is_integer_scalar_or_vector() const {
@@ -128,7 +121,7 @@ bool Type::is_integer_scalar_or_vector() const {
 }
 
 bool Type::is_bool_vector() const {
-  return Is<Vector>() && As<Vector>()->type()->Is<Bool>();
+  return Is<Vector>([](const Vector* v) { return v->type()->Is<Bool>(); });
 }
 
 bool Type::is_bool_scalar_or_vector() const {
@@ -136,7 +129,7 @@ bool Type::is_bool_scalar_or_vector() const {
 }
 
 bool Type::is_handle() const {
-  return Is<type::Sampler>() || Is<type::Texture>();
+  return IsAnyOf<Sampler, Texture>();
 }
 
 }  // namespace type

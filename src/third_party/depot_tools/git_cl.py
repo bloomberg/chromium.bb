@@ -993,6 +993,7 @@ class Changelist(object):
       branch = GetTargetRef(remote, remote_branch, None)
       self._owners_client = owners_client.GetCodeOwnersClient(
           root=settings.GetRoot(),
+          upstream=self.GetCommonAncestorWithUpstream(),
           host=self.GetGerritHost(),
           project=self.GetGerritProject(),
           branch=branch)
@@ -1290,14 +1291,17 @@ class Changelist(object):
 
     args.extend(['--verbose'] * verbose)
 
+    remote, remote_branch = self.GetRemoteBranch()
+    target_ref = GetTargetRef(remote, remote_branch, None)
+    args.extend(['--gerrit_url', self.GetCodereviewServer()])
+    args.extend(['--gerrit_project', self.GetGerritProject()])
+    args.extend(['--gerrit_branch', target_ref])
+
     author = self.GetAuthor()
-    gerrit_url = self.GetCodereviewServer()
     issue = self.GetIssue()
     patchset = self.GetPatchset()
     if author:
       args.extend(['--author', author])
-    if gerrit_url:
-      args.extend(['--gerrit_url', gerrit_url])
     if issue:
       args.extend(['--issue', str(issue)])
     if patchset:
@@ -1319,11 +1323,9 @@ class Changelist(object):
 
     with gclient_utils.temporary_file() as description_file:
       with gclient_utils.temporary_file() as json_output:
-
         gclient_utils.FileWrite(description_file, description)
         args.extend(['--json_output', json_output])
         args.extend(['--description_file', description_file])
-        args.extend(['--gerrit_project', self.GetGerritProject()])
 
         start = time_time()
         cmd = ['vpython', PRESUBMIT_SUPPORT] + args
@@ -2164,7 +2166,11 @@ class Changelist(object):
 
     gclient_utils.rmtree(git_info_dir)
 
-  def _RunGitPushWithTraces(self, refspec, refspec_opts, git_push_metadata):
+  def _RunGitPushWithTraces(self,
+                            refspec,
+                            refspec_opts,
+                            git_push_metadata,
+                            git_push_options=None):
     """Run git push and collect the traces resulting from the execution."""
     # Create a temporary directory to store traces in. Traces will be compressed
     # and stored in a 'traces' dir inside depot_tools.
@@ -2184,8 +2190,13 @@ class Changelist(object):
       push_returncode = 0
       remote_url = self.GetRemoteUrl()
       before_push = time_time()
+      push_cmd = ['git', 'push', remote_url, refspec]
+      if git_push_options:
+        for opt in git_push_options:
+          push_cmd.extend(['-o', opt])
+
       push_stdout = gclient_utils.CheckCallAndFilter(
-          ['git', 'push', remote_url, refspec],
+          push_cmd,
           env=env,
           print_stdout=True,
           # Flush after every line: useful for seeing progress when running as
@@ -2322,6 +2333,13 @@ class Changelist(object):
     # the initial upload, the CL is private, or auto-CCing has ben disabled.
     if not (self.GetIssue() or options.private or options.no_autocc):
       cc = self.GetCCList().split(',')
+    if len(cc) > 100:
+      lsc = ('https://chromium.googlesource.com/chromium/src/+/HEAD/docs/'
+             'process/lsc/lsc_workflow.md')
+      print('WARNING: This will auto-CC %s users.' % len(cc))
+      print('LSC may be more appropriate: %s' % lsc)
+      print('You can also use the --no-autocc flag to disable auto-CC.')
+      confirm_or_exit(action='continue')
     # Add cc's from the --cc flag.
     if options.cc:
       cc.extend(options.cc)
@@ -2421,8 +2439,10 @@ class Changelist(object):
         'change_id': change_id,
         'description': change_desc.description,
     }
+
     push_stdout = self._RunGitPushWithTraces(refspec, refspec_opts,
-                                             git_push_metadata)
+                                             git_push_metadata,
+                                             options.push_options)
 
     if options.squash:
       regex = re.compile(r'remote:\s+https?://[\w\-\.\+\/#]*/(\d+)\s.*')
@@ -3744,8 +3764,10 @@ def CMDissue(parser, args):
   print('Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL()))
   if options.json:
     write_json(options.json, {
-      'issue': cl.GetIssue(),
+      'gerrit_host': cl.GetGerritHost(),
+      'gerrit_project': cl.GetGerritProject(),
       'issue_url': cl.GetIssueURL(),
+      'issue': cl.GetIssue(),
     })
   return 0
 
@@ -4188,6 +4210,13 @@ def CMDupload(parser, args):
                     help='Run presubmit checks in the ResultSink environment '
                          'and send results to the ResultDB database.')
   parser.add_option('--realm', help='LUCI realm if reporting to ResultDB')
+  parser.add_option('-o',
+                    '--push-options',
+                    action='append',
+                    default=[],
+                    help='Transmit the given string to the server when '
+                    'performing git push (pass-through). See git-push '
+                    'documentation for more details.')
 
   orig_args = args
   (options, args) = parser.parse_args(args)
@@ -4228,7 +4257,7 @@ def CMDupload(parser, args):
     # Load default for user, repo, squash=true, in this order.
     options.squash = settings.GetSquashGerritUploads()
 
-  cl = Changelist()
+  cl = Changelist(branchref=options.target_branch)
   # Warm change details cache now to avoid RPCs later, reducing latency for
   # developers.
   if cl.GetIssue():

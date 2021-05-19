@@ -118,7 +118,6 @@ using blink::Platform;
 using blink::WebAudioDevice;
 using blink::WebAudioLatencyHint;
 using blink::WebMediaStreamTrack;
-using blink::WebSize;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebVector;
@@ -370,16 +369,9 @@ RendererBlinkPlatformImpl::GetResourceRequestSenderDelegate() {
 }
 
 void RendererBlinkPlatformImpl::AppendVariationsThrottles(
-    int routing_id,
+    const url::Origin& top_origin,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles) {
-  url::Origin origin;
-  if (RenderThread::IsMainThread()) {
-    RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(routing_id);
-    if (frame)
-      origin = frame->GetSecurityOriginOfTopFrame();
-  }
-
-  VariationsRenderThreadObserver::AppendThrottleIfNeeded(origin, throttles);
+  VariationsRenderThreadObserver::AppendThrottleIfNeeded(top_origin, throttles);
 }
 
 void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
@@ -629,16 +621,6 @@ bool RendererBlinkPlatformImpl::IsWebRtcEncryptionEnabled() {
 bool RendererBlinkPlatformImpl::IsWebRtcStunOriginEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableWebRtcStunOrigin);
-}
-
-base::Optional<blink::WebString>
-RendererBlinkPlatformImpl::WebRtcStunProbeTrialParameter() {
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kWebRtcStunProbeTrialParameter))
-    return base::nullopt;
-
-  return blink::WebString::FromASCII(
-      cmd_line->GetSwitchValueASCII(switches::kWebRtcStunProbeTrialParameter));
 }
 
 media::MediaPermission* RendererBlinkPlatformImpl::GetWebRTCMediaPermission(
@@ -1017,11 +999,25 @@ void RendererBlinkPlatformImpl::SetRenderingColorSpace(
   render_thread->SetRenderingColorSpace(color_space);
 }
 
+gfx::ColorSpace RendererBlinkPlatformImpl::GetRenderingColorSpace() const {
+  auto* render_thread = RenderThreadImpl::current();
+  if (!render_thread)
+    return {};
+
+  return render_thread->GetRenderingColorSpace();
+}
+
 //------------------------------------------------------------------------------
 
 void RendererBlinkPlatformImpl::SetActiveURL(const blink::WebURL& url,
                                              const blink::WebString& top_url) {
   GetContentClient()->SetActiveURL(url, top_url.Utf8());
+}
+
+//------------------------------------------------------------------------------
+
+SkBitmap* RendererBlinkPlatformImpl::GetSadPageBitmap() {
+  return GetContentClient()->renderer()->GetSadWebViewBitmap();
 }
 
 //------------------------------------------------------------------------------

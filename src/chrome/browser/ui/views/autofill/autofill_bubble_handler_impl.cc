@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
 #include "chrome/browser/ui/autofill/payments/save_upi_bubble.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/views/autofill/edit_address_profile_view.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/offer_notification_bubble_views.h"
@@ -28,6 +29,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace autofill {
@@ -172,6 +174,15 @@ AutofillBubbleBase* AutofillBubbleHandlerImpl::ShowSaveAddressProfileBubble(
   bubble->Show(is_user_gesture ? LocationBarBubbleDelegateView::USER_GESTURE
                                : LocationBarBubbleDelegateView::AUTOMATIC);
   return bubble;
+}
+
+AutofillBubbleBase* AutofillBubbleHandlerImpl::ShowEditAddressProfileDialog(
+    content::WebContents* web_contents,
+    EditAddressProfileDialogController* controller) {
+  EditAddressProfileView* dialog = new EditAddressProfileView(controller);
+  dialog->ShowForWebContents(web_contents);
+  constrained_window::ShowWebModalDialogViews(dialog, web_contents);
+  return dialog;
 }
 
 void AutofillBubbleHandlerImpl::OnPasswordSaved() {

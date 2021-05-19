@@ -8,11 +8,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "chromeos/services/assistant/proxy/conversation_controller_proxy.h"
 #include "chromeos/services/assistant/proxy/libassistant_service_host.h"
-#include "chromeos/services/assistant/proxy/service_controller_proxy.h"
-#include "chromeos/services/libassistant/libassistant_service.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 namespace assistant {
@@ -25,15 +21,12 @@ AssistantProxy::~AssistantProxy() {
   StopLibassistantService();
 }
 
-void AssistantProxy::Initialize(
-    LibassistantServiceHost* host,
-    std::unique_ptr<network::PendingSharedURLLoaderFactory>
-        pending_url_loader_factory) {
+void AssistantProxy::Initialize(LibassistantServiceHost* host) {
   DCHECK(host);
   libassistant_service_host_ = host;
   LaunchLibassistantService();
 
-  BindControllers(host, std::move(pending_url_loader_factory));
+  BindControllers();
 }
 
 void AssistantProxy::LaunchLibassistantService() {
@@ -48,13 +41,14 @@ void AssistantProxy::LaunchLibassistantService() {
           // This is safe because we own the background thread,
           // so when we're deleted the background thread is stopped.
           base::Unretained(this),
-          // |libassistant_service_remote_| runs on the current thread, so must
+          // |libassistant_service_| runs on the current thread, so must
           // be bound here and not on the background thread.
-          libassistant_service_remote_.BindNewPipeAndPassReceiver()));
+          libassistant_service_.BindNewPipeAndPassReceiver()));
 }
 
 void AssistantProxy::LaunchLibassistantServiceOnBackgroundThread(
-    mojo::PendingReceiver<LibassistantServiceMojom> client) {
+    mojo::PendingReceiver<chromeos::libassistant::mojom::LibassistantService>
+        client) {
   DCHECK(background_task_runner()->BelongsToCurrentThread());
   DCHECK(libassistant_service_host_);
   libassistant_service_host_->Launch(std::move(client));
@@ -74,62 +68,63 @@ void AssistantProxy::StopLibassistantServiceOnBackgroundThread() {
   libassistant_service_host_->Stop();
 }
 
-void AssistantProxy::BindControllers(
-    LibassistantServiceHost* host,
-    std::unique_ptr<network::PendingSharedURLLoaderFactory>
-        pending_url_loader_factory) {
-  mojo::PendingRemote<AudioInputControllerMojom>
+void AssistantProxy::BindControllers() {
+  mojo::PendingRemote<chromeos::libassistant::mojom::AudioInputController>
       pending_audio_input_controller_remote;
-  mojo::PendingRemote<AudioOutputDelegateMojom>
+  mojo::PendingRemote<chromeos::libassistant::mojom::AudioOutputDelegate>
       pending_audio_output_delegate_remote;
-  mojo::PendingRemote<ConversationControllerMojom>
-      pending_conversation_controller_remote;
-  mojo::PendingRemote<MediaDelegateMojom> pending_media_delegate_remote;
-  mojo::PendingRemote<PlatformDelegateMojom> pending_platform_delegate_remote;
-  mojo::PendingRemote<ServiceControllerMojom> pending_service_controller_remote;
-  mojo::PendingRemote<SpeakerIdEnrollmentControllerMojom>
+  mojo::PendingRemote<chromeos::libassistant::mojom::DeviceSettingsDelegate>
+      pending_device_settings_delegate_remote;
+  mojo::PendingRemote<chromeos::libassistant::mojom::MediaDelegate>
+      pending_media_delegate_remote;
+  mojo::PendingRemote<chromeos::libassistant::mojom::NotificationDelegate>
+      pending_notification_delegate_remote;
+  mojo::PendingRemote<chromeos::libassistant::mojom::PlatformDelegate>
+      pending_platform_delegate_remote;
+  mojo::PendingRemote<
+      chromeos::libassistant::mojom::SpeakerIdEnrollmentController>
       pending_speaker_id_enrollment_controller_remote;
+  mojo::PendingRemote<chromeos::libassistant::mojom::TimerDelegate>
+      pending_timer_delegate_remote;
 
-  mojo::PendingReceiver<MediaDelegateMojom> pending_media_delegate =
+  media_delegate_ =
       pending_media_delegate_remote.InitWithNewPipeAndPassReceiver();
-  mojo::PendingReceiver<PlatformDelegateMojom> pending_platform_delegate =
+  notification_delegate_ =
+      pending_notification_delegate_remote.InitWithNewPipeAndPassReceiver();
+  platform_delegate_ =
       pending_platform_delegate_remote.InitWithNewPipeAndPassReceiver();
+  timer_delegate_ =
+      pending_timer_delegate_remote.InitWithNewPipeAndPassReceiver();
+
   pending_audio_output_delegate_receiver_ =
       pending_audio_output_delegate_remote.InitWithNewPipeAndPassReceiver();
-  libassistant_service_remote_->Bind(
+  pending_device_settings_delegate_receiver_ =
+      pending_device_settings_delegate_remote.InitWithNewPipeAndPassReceiver();
+  libassistant_service_->Bind(
       pending_audio_input_controller_remote.InitWithNewPipeAndPassReceiver(),
-      pending_conversation_controller_remote.InitWithNewPipeAndPassReceiver(),
-      display_controller_remote_.BindNewPipeAndPassReceiver(),
-      media_controller_remote_.BindNewPipeAndPassReceiver(),
-      pending_service_controller_remote.InitWithNewPipeAndPassReceiver(),
+      conversation_controller_.BindNewPipeAndPassReceiver(),
+      display_controller_.BindNewPipeAndPassReceiver(),
+      media_controller_.BindNewPipeAndPassReceiver(),
+      service_controller_.BindNewPipeAndPassReceiver(),
+      settings_controller_.BindNewPipeAndPassReceiver(),
       pending_speaker_id_enrollment_controller_remote
           .InitWithNewPipeAndPassReceiver(),
+      timer_controller_.BindNewPipeAndPassReceiver(),
       std::move(pending_audio_output_delegate_remote),
+      std::move(pending_device_settings_delegate_remote),
       std::move(pending_media_delegate_remote),
-      std::move(pending_platform_delegate_remote));
-
-  conversation_controller_proxy_ =
-      std::make_unique<ConversationControllerProxy>(
-          std::move(pending_conversation_controller_remote));
-  service_controller_proxy_ = std::make_unique<ServiceControllerProxy>(
-      host, std::move(pending_url_loader_factory),
-      std::move(pending_service_controller_remote));
+      std::move(pending_notification_delegate_remote),
+      std::move(pending_platform_delegate_remote),
+      std::move(pending_timer_delegate_remote));
 
   audio_input_controller_ = std::move(pending_audio_input_controller_remote);
   speaker_id_enrollment_controller_ =
       std::move(pending_speaker_id_enrollment_controller_remote);
-  media_delegate_ = std::move(pending_media_delegate);
-  platform_delegate_ = std::move(pending_platform_delegate);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 AssistantProxy::background_task_runner() {
   return background_thread_.task_runner();
-}
-
-ServiceControllerProxy& AssistantProxy::service_controller() {
-  DCHECK(service_controller_proxy_);
-  return *service_controller_proxy_;
 }
 
 mojo::PendingRemote<chromeos::libassistant::mojom::AudioInputController>
@@ -144,10 +139,22 @@ AssistantProxy::ExtractAudioOutputDelegate() {
   return std::move(pending_audio_output_delegate_receiver_);
 }
 
+mojo::PendingReceiver<chromeos::libassistant::mojom::DeviceSettingsDelegate>
+AssistantProxy::ExtractDeviceSettingsDelegate() {
+  DCHECK(pending_device_settings_delegate_receiver_.is_valid());
+  return std::move(pending_device_settings_delegate_receiver_);
+}
+
 mojo::PendingReceiver<chromeos::libassistant::mojom::MediaDelegate>
 AssistantProxy::ExtractMediaDelegate() {
   DCHECK(media_delegate_.is_valid());
   return std::move(media_delegate_);
+}
+
+mojo::PendingReceiver<chromeos::libassistant::mojom::NotificationDelegate>
+AssistantProxy::ExtractNotificationDelegate() {
+  DCHECK(notification_delegate_.is_valid());
+  return std::move(notification_delegate_);
 }
 
 mojo::PendingReceiver<chromeos::libassistant::mojom::PlatformDelegate>
@@ -163,26 +170,58 @@ AssistantProxy::ExtractSpeakerIdEnrollmentController() {
   return std::move(speaker_id_enrollment_controller_);
 }
 
-ConversationControllerProxy& AssistantProxy::conversation_controller_proxy() {
-  DCHECK(conversation_controller_proxy_);
-  return *conversation_controller_proxy_;
+mojo::PendingReceiver<chromeos::libassistant::mojom::TimerDelegate>
+AssistantProxy::ExtractTimerDelegate() {
+  DCHECK(timer_delegate_.is_valid());
+  return std::move(timer_delegate_);
 }
 
-AssistantProxy::DisplayController& AssistantProxy::display_controller() {
-  DCHECK(display_controller_remote_.is_bound());
-  return *display_controller_remote_.get();
+chromeos::libassistant::mojom::ConversationController&
+AssistantProxy::conversation_controller() {
+  DCHECK(conversation_controller_.is_bound());
+  return *conversation_controller_;
 }
 
-AssistantProxy::MediaController& AssistantProxy::media_controller() {
-  DCHECK(media_controller_remote_.is_bound());
-  return *media_controller_remote_.get();
+chromeos::libassistant::mojom::DisplayController&
+AssistantProxy::display_controller() {
+  DCHECK(display_controller_.is_bound());
+  return *display_controller_.get();
+}
+
+chromeos::libassistant::mojom::ServiceController&
+AssistantProxy::service_controller() {
+  DCHECK(service_controller_.is_bound());
+  return *service_controller_.get();
+}
+
+chromeos::libassistant::mojom::MediaController&
+AssistantProxy::media_controller() {
+  DCHECK(media_controller_.is_bound());
+  return *media_controller_.get();
+}
+
+chromeos::libassistant::mojom::SettingsController&
+AssistantProxy::settings_controller() {
+  DCHECK(settings_controller_.is_bound());
+  return *settings_controller_;
+}
+
+chromeos::libassistant::mojom::TimerController&
+AssistantProxy::timer_controller() {
+  DCHECK(timer_controller_.is_bound());
+  return *timer_controller_.get();
 }
 
 void AssistantProxy::AddSpeechRecognitionObserver(
     mojo::PendingRemote<
         chromeos::libassistant::mojom::SpeechRecognitionObserver> observer) {
-  libassistant_service_remote_->AddSpeechRecognitionObserver(
-      std::move(observer));
+  libassistant_service_->AddSpeechRecognitionObserver(std::move(observer));
+}
+
+void AssistantProxy::AddAuthenticationStateObserver(
+    mojo::PendingRemote<
+        chromeos::libassistant::mojom::AuthenticationStateObserver> observer) {
+  libassistant_service_->AddAuthenticationStateObserver(std::move(observer));
 }
 
 }  // namespace assistant

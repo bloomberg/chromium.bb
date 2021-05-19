@@ -26,7 +26,7 @@ namespace {
 
 void ShouldOverrideUrlLoadingOnUI(
     content::WebContents* web_contents,
-    const base::string16& url,
+    const std::u16string& url,
     bool has_user_gesture,
     bool is_redirect,
     bool is_main_frame,
@@ -144,15 +144,33 @@ void AwRenderViewHostExt::SmoothScroll(int target_x,
     local_main_frame_remote_->SmoothScroll(target_x, target_y, duration);
 }
 
+void AwRenderViewHostExt::ResetLocalMainFrameRemote(
+    content::RenderFrameHost* frame_host) {
+  local_main_frame_remote_.reset();
+  frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+      local_main_frame_remote_.BindNewEndpointAndPassReceiver());
+
+  local_main_frame_remote_->SetBackgroundColor(background_color_);
+}
+
 void AwRenderViewHostExt::RenderFrameCreated(
     content::RenderFrameHost* frame_host) {
-  if (!frame_host->GetParent()) {
-    local_main_frame_remote_.reset();
-    frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
-        local_main_frame_remote_.BindNewEndpointAndPassReceiver());
+  // Only handle the active main frame, neither speculative ones nor subframes.
+  if (frame_host != web_contents()->GetMainFrame())
+    return;
 
-    local_main_frame_remote_->SetBackgroundColor(background_color_);
-  }
+  ResetLocalMainFrameRemote(frame_host);
+}
+
+void AwRenderViewHostExt::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  // Since we skipped speculative main frames in RenderFrameCreated, we must
+  // watch for them being swapped in by watching for RenderFrameHostChanged().
+  if (new_host != web_contents()->GetMainFrame())
+    return;
+
+  ResetLocalMainFrameRemote(new_host);
 }
 
 void AwRenderViewHostExt::DidStartNavigation(
@@ -206,7 +224,7 @@ void AwRenderViewHostExt::ContentsSizeChanged(const gfx::Size& contents_size) {
 }
 
 void AwRenderViewHostExt::ShouldOverrideUrlLoading(
-    const base::string16& url,
+    const std::u16string& url,
     bool has_user_gesture,
     bool is_redirect,
     bool is_main_frame,

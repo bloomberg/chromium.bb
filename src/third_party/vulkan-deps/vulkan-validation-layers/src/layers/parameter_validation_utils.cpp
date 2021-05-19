@@ -36,7 +36,7 @@ inline bool in_inclusive_range(const T &value, const T &min, const T &max) {
 read_lock_guard_t StatelessValidation::read_lock() { return read_lock_guard_t(validation_object_mutex, std::defer_lock); }
 write_lock_guard_t StatelessValidation::write_lock() { return write_lock_guard_t(validation_object_mutex, std::defer_lock); }
 
-static std::unordered_map<VkCommandBuffer, VkCommandPool> secondary_cb_map{};
+static layer_data::unordered_map<VkCommandBuffer, VkCommandPool> secondary_cb_map{};
 static ReadWriteLock secondary_cb_map_mutex;
 static read_lock_guard_t cb_read_lock() { return read_lock_guard_t(secondary_cb_map_mutex); }
 static write_lock_guard_t cb_write_lock() { return write_lock_guard_t(secondary_cb_map_mutex); }
@@ -192,7 +192,7 @@ void StatelessValidation::CommonPostCallRecordEnumeratePhysicalDevice(const VkPh
 
             // Enumerate the Device Ext Properties to save the PhysicalDevice supported extension state
             uint32_t ext_count = 0;
-            std::unordered_set<std::string> dev_exts_enumerated{};
+            layer_data::unordered_set<std::string> dev_exts_enumerated{};
             std::vector<VkExtensionProperties> ext_props{};
             instance_dispatch_table.EnumerateDeviceExtensionProperties(phys_device, nullptr, &ext_count, nullptr);
             ext_props.resize(ext_count);
@@ -517,7 +517,7 @@ bool StatelessValidation::manual_PreCallValidateCreateDevice(VkPhysicalDevice ph
 
     // Validate pCreateInfo->pQueueCreateInfos
     if (pCreateInfo->pQueueCreateInfos) {
-        std::unordered_set<uint32_t> set;
+        layer_data::unordered_set<uint32_t> set;
 
         for (uint32_t i = 0; i < pCreateInfo->queueCreateInfoCount; ++i) {
             const VkDeviceQueueCreateInfo &queue_create_info = pCreateInfo->pQueueCreateInfos[i];
@@ -1030,7 +1030,7 @@ bool StatelessValidation::manual_PreCallValidateCreateImage(VkDevice device, con
                                      "vkCreateImage(): Tiling is VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT but pNext must have "
                                      "either VkImageDrmFormatModifierListCreateInfoEXT or "
                                      "VkImageDrmFormatModifierExplicitCreateInfoEXT in the pNext chain");
-                } else if (drm_format_mod_list != nullptr) {
+                } else if (drm_format_mod_explict != nullptr) {
                     image_create_drm_format_modifiers.push_back(drm_format_mod_explict->drmFormatModifier);
                 } else if (drm_format_mod_list != nullptr) {
                     for (uint32_t i = 0; i < drm_format_mod_list->drmFormatModifierCount; i++) {
@@ -1965,7 +1965,7 @@ bool StatelessValidation::manual_PreCallValidateCreateGraphicsPipelines(VkDevice
                                  i, vertex_input_state->vertexAttributeDescriptionCount, device_limits.maxVertexInputAttributes);
                 }
 
-                std::unordered_set<uint32_t> vertex_bindings(vertex_input_state->vertexBindingDescriptionCount);
+                layer_data::unordered_set<uint32_t> vertex_bindings(vertex_input_state->vertexBindingDescriptionCount);
                 for (uint32_t d = 0; d < vertex_input_state->vertexBindingDescriptionCount; ++d) {
                     auto const &vertex_bind_desc = vertex_input_state->pVertexBindingDescriptions[d];
                     auto const &binding_it = vertex_bindings.find(vertex_bind_desc.binding);
@@ -1996,7 +1996,7 @@ bool StatelessValidation::manual_PreCallValidateCreateGraphicsPipelines(VkDevice
                     }
                 }
 
-                std::unordered_set<uint32_t> attribute_locations(vertex_input_state->vertexAttributeDescriptionCount);
+                layer_data::unordered_set<uint32_t> attribute_locations(vertex_input_state->vertexAttributeDescriptionCount);
                 for (uint32_t d = 0; d < vertex_input_state->vertexAttributeDescriptionCount; ++d) {
                     auto const &vertex_attrib_desc = vertex_input_state->pVertexAttributeDescriptions[d];
                     auto const &location_it = attribute_locations.find(vertex_attrib_desc.location);
@@ -3923,9 +3923,7 @@ bool StatelessValidation::manual_PreCallValidateCmdFillBuffer(VkCommandBuffer co
     return skip;
 }
 
-bool StatelessValidation::manual_PreCallValidateCreateSwapchainKHR(VkDevice device, const VkSwapchainCreateInfoKHR *pCreateInfo,
-                                                                   const VkAllocationCallbacks *pAllocator,
-                                                                   VkSwapchainKHR *pSwapchain) const {
+bool StatelessValidation::ValidateSwapchainCreateInfo(const char *func_name, VkSwapchainCreateInfoKHR const *pCreateInfo) const {
     bool skip = false;
 
     if (pCreateInfo != nullptr) {
@@ -3934,24 +3932,112 @@ bool StatelessValidation::manual_PreCallValidateCreateSwapchainKHR(VkDevice devi
             // If imageSharingMode is VK_SHARING_MODE_CONCURRENT, queueFamilyIndexCount must be greater than 1
             if (pCreateInfo->queueFamilyIndexCount <= 1) {
                 skip |= LogError(device, "VUID-VkSwapchainCreateInfoKHR-imageSharingMode-01278",
-                                 "vkCreateSwapchainKHR(): if pCreateInfo->imageSharingMode is VK_SHARING_MODE_CONCURRENT, "
-                                 "pCreateInfo->queueFamilyIndexCount must be greater than 1.");
+                                 "%s: if pCreateInfo->imageSharingMode is VK_SHARING_MODE_CONCURRENT, "
+                                 "pCreateInfo->queueFamilyIndexCount must be greater than 1.",
+                                 func_name);
             }
 
             // If imageSharingMode is VK_SHARING_MODE_CONCURRENT, pQueueFamilyIndices must be a pointer to an array of
             // queueFamilyIndexCount uint32_t values
             if (pCreateInfo->pQueueFamilyIndices == nullptr) {
                 skip |= LogError(device, "VUID-VkSwapchainCreateInfoKHR-imageSharingMode-01277",
-                                 "vkCreateSwapchainKHR(): if pCreateInfo->imageSharingMode is VK_SHARING_MODE_CONCURRENT, "
+                                 "%s: if pCreateInfo->imageSharingMode is VK_SHARING_MODE_CONCURRENT, "
                                  "pCreateInfo->pQueueFamilyIndices must be a pointer to an array of "
-                                 "pCreateInfo->queueFamilyIndexCount uint32_t values.");
+                                 "pCreateInfo->queueFamilyIndexCount uint32_t values.",
+                                 func_name);
             }
         }
 
         skip |= ValidateGreaterThanZero(pCreateInfo->imageArrayLayers, "pCreateInfo->imageArrayLayers",
-                                        "VUID-VkSwapchainCreateInfoKHR-imageArrayLayers-01275", "vkCreateSwapchainKHR");
-    }
+                                        "VUID-VkSwapchainCreateInfoKHR-imageArrayLayers-01275", func_name);
 
+        // Validate VK_KHR_image_format_list VkImageFormatListCreateInfo
+        const auto format_list_info = LvlFindInChain<VkImageFormatListCreateInfo>(pCreateInfo->pNext);
+        if (format_list_info) {
+            const uint32_t viewFormatCount = format_list_info->viewFormatCount;
+            if (((pCreateInfo->flags & VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR) == 0) && (viewFormatCount > 1)) {
+                skip |= LogError(device, "VUID-VkSwapchainCreateInfoKHR-flags-04100",
+                                 "%s: If the VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR is not set, then "
+                                 "VkImageFormatListCreateInfo::viewFormatCount (%u) must be 0 or 1 if it is in the pNext chain.",
+                                 func_name, viewFormatCount);
+            }
+
+            // Using the first format, compare the rest of the formats against it that they are compatible
+            for (uint32_t i = 1; i < viewFormatCount; i++) {
+                if (FormatCompatibilityClass(format_list_info->pViewFormats[0]) !=
+                    FormatCompatibilityClass(format_list_info->pViewFormats[i])) {
+                    skip |= LogError(device, "VUID-VkSwapchainCreateInfoKHR-pNext-04099",
+                                     "%s: VkImageFormatListCreateInfo::pViewFormats[0] (%s) and "
+                                     "VkImageFormatListCreateInfo::pViewFormats[%u] (%s) are not compatible in the pNext chain.",
+                                     func_name, string_VkFormat(format_list_info->pViewFormats[0]), i,
+                                     string_VkFormat(format_list_info->pViewFormats[i]));
+                }
+            }
+        }
+
+        // Validate VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR
+        if ((pCreateInfo->flags & VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR) != 0) {
+            if (!IsExtEnabled(device_extensions.vk_khr_swapchain_mutable_format)) {
+                skip |= LogError(device, kVUID_PVError_ExtensionNotEnabled,
+                                 "%s: pCreateInfo->flags contains VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR which requires the "
+                                 "VK_KHR_swapchain_mutable_format extension, which has not been enabled.",
+                                 func_name);
+            } else {
+                if (format_list_info == nullptr) {
+                    skip |= LogError(
+                        device, "VUID-VkSwapchainCreateInfoKHR-flags-03168",
+                        "%s: pCreateInfo->flags contains VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR but the pNext chain of "
+                        "pCreateInfo does not contain an instance of VkImageFormatListCreateInfo.",
+                        func_name);
+                } else if (format_list_info->viewFormatCount == 0) {
+                    skip |= LogError(
+                        device, "VUID-VkSwapchainCreateInfoKHR-flags-03168",
+                        "%s: pCreateInfo->flags contains VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR but the viewFormatCount "
+                        "member of VkImageFormatListCreateInfo in the pNext chain is zero.",
+                        func_name);
+                } else {
+                    bool found_base_format = false;
+                    for (uint32_t i = 0; i < format_list_info->viewFormatCount; ++i) {
+                        if (format_list_info->pViewFormats[i] == pCreateInfo->imageFormat) {
+                            found_base_format = true;
+                            break;
+                        }
+                    }
+                    if (!found_base_format) {
+                        skip |=
+                            LogError(device, "VUID-VkSwapchainCreateInfoKHR-flags-03168",
+                                     "%s: pCreateInfo->flags contains VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR but none of the "
+                                     "elements of the pViewFormats member of VkImageFormatListCreateInfo match "
+                                     "pCreateInfo->imageFormat.",
+                                     func_name);
+                    }
+                }
+            }
+        }
+    }
+    return skip;
+}
+
+bool StatelessValidation::manual_PreCallValidateCreateSwapchainKHR(VkDevice device, const VkSwapchainCreateInfoKHR *pCreateInfo,
+                                                                   const VkAllocationCallbacks *pAllocator,
+                                                                   VkSwapchainKHR *pSwapchain) const {
+    bool skip = false;
+    skip |= ValidateSwapchainCreateInfo("vkCreateSwapchainKHR()", pCreateInfo);
+    return skip;
+}
+
+bool StatelessValidation::manual_PreCallValidateCreateSharedSwapchainsKHR(VkDevice device, uint32_t swapchainCount,
+                                                                          const VkSwapchainCreateInfoKHR *pCreateInfos,
+                                                                          const VkAllocationCallbacks *pAllocator,
+                                                                          VkSwapchainKHR *pSwapchains) const {
+    bool skip = false;
+    if (pCreateInfos) {
+        for (uint32_t i = 0; i < swapchainCount; i++) {
+            std::stringstream func_name;
+            func_name << "vkCreateSharedSwapchainsKHR[" << swapchainCount << "]()";
+            skip |= ValidateSwapchainCreateInfo(func_name.str().c_str(), &pCreateInfos[i]);
+        }
+    }
     return skip;
 }
 
@@ -4413,7 +4499,7 @@ void StatelessValidation::PostCallRecordAllocateCommandBuffers(VkDevice device, 
     if ((result == VK_SUCCESS) && pAllocateInfo && (pAllocateInfo->level == VK_COMMAND_BUFFER_LEVEL_SECONDARY)) {
         auto lock = cb_write_lock();
         for (uint32_t cb_index = 0; cb_index < pAllocateInfo->commandBufferCount; cb_index++) {
-            secondary_cb_map.insert({pCommandBuffers[cb_index], pAllocateInfo->commandPool});
+            secondary_cb_map.emplace(pCommandBuffers[cb_index], pAllocateInfo->commandPool);
         }
     }
 }

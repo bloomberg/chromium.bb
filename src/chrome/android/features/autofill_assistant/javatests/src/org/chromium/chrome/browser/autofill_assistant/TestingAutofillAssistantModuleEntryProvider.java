@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.autofill_assistant.onboarding.OnboardingCoordinatorFactory;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.tab.Tab;
@@ -22,7 +22,6 @@ import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Implementation of {@link AutofillAssistantModuleEntryProvider} that can be manipulated to
@@ -44,8 +43,9 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
                 BrowserControlsStateProvider browserControls,
                 CompositorViewHolder compositorViewHolder,
                 ActivityTabProvider activityTabProvider) {
-            super(context, bottomSheetController, browserControls, compositorViewHolder,
-                    activityTabProvider, bottomSheetController.getScrimCoordinator());
+            super(new OnboardingCoordinatorFactory(
+                          context, bottomSheetController, browserControls, compositorViewHolder),
+                    activityTabProvider);
         }
 
         @Override
@@ -64,16 +64,19 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
     /** Mock module entry. */
     static class MockAutofillAssistantModuleEntry implements AutofillAssistantModuleEntry {
         @Override
-        public void start(BottomSheetController bottomSheetController,
+        public AssistantDependencies createDependencies(BottomSheetController bottomSheetController,
                 BrowserControlsStateProvider browserControls,
                 CompositorViewHolder compositorViewHolder, Context context,
                 @NonNull WebContents webContents,
                 ActivityKeyboardVisibilityDelegate keyboardVisibilityDelegate,
                 ApplicationViewportInsetSupplier bottomInsetProvider,
-                ActivityTabProvider activityTabProvider, boolean isChromeCustomTab,
-                @NonNull String initialUrl, Map<String, String> parameters, String experimentIds,
-                @Nullable String callerAccount, @Nullable String userName,
-                @Nullable String originalDeeplink) {}
+                ActivityTabProvider activityTabProvider) {
+            return null;
+        }
+
+        @Override
+        public void start(
+                AssistantDependencies assistantDependencies, TriggerContext triggerContext) {}
 
         @Override
         public AutofillAssistantActionHandler createActionHandler(Context context,

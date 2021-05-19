@@ -7,12 +7,10 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <limits>
-#include <list>
 #include <memory>
 #include <ostream>
+#include <string>
 #include <utility>
-#include <vector>
 
 #include "absl/strings/string_view.h"
 #include "quic/core/frames/quic_frame.h"
@@ -25,7 +23,6 @@
 #include "quic/core/quic_versions.h"
 #include "quic/platform/api/quic_export.h"
 #include "quic/platform/api/quic_socket_address.h"
-#include "quic/platform/api/quic_uint128.h"
 
 namespace quic {
 
@@ -155,7 +152,7 @@ struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
   // Only valid if |has_possible_stateless_reset_token| is true.
   // Stores last 16 bytes of a this packet, used to check whether this packet is
   // a stateless reset packet on decryption failure.
-  QuicUint128 possible_stateless_reset_token;
+  StatelessResetToken possible_stateless_reset_token;
   // Length of the retry token length variable length integer field,
   // carried only by v99 IETF Initial packets.
   QuicVariableLengthIntegerLength retry_token_length_length;
@@ -196,12 +193,12 @@ struct QUIC_EXPORT_PRIVATE QuicVersionNegotiationPacket {
 struct QUIC_EXPORT_PRIVATE QuicIetfStatelessResetPacket {
   QuicIetfStatelessResetPacket();
   QuicIetfStatelessResetPacket(const QuicPacketHeader& header,
-                               QuicUint128 token);
+                               StatelessResetToken token);
   QuicIetfStatelessResetPacket(const QuicIetfStatelessResetPacket& other);
   ~QuicIetfStatelessResetPacket();
 
   QuicPacketHeader header;
-  QuicUint128 stateless_reset_token;
+  StatelessResetToken stateless_reset_token;
 };
 
 class QUIC_EXPORT_PRIVATE QuicData {

@@ -26,7 +26,6 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/process/kill.h"
-#include "base/strings/string16.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -190,7 +189,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // RenderWidgetHostImpl.
   static RenderWidgetHostImpl* From(RenderWidgetHost* rwh);
 
+  // TODO(crbug.com/1179502): FrameTree and FrameTreeNode will not be const as
+  // with prerenderer activation the page needs to move between FrameTreeNodes
+  // and FrameTrees. As it's hard to make sure that all places handle this
+  // transition correctly, MPArch will remove references from this class to
+  // FrameTree/FrameTreeNode.
   FrameTree* frame_tree() const { return frame_tree_; }
+  void SetFrameTree(FrameTree& frame_tree) { frame_tree_ = &frame_tree; }
 
   void set_new_content_rendering_delay_for_testing(
       const base::TimeDelta& delay) {
@@ -245,23 +250,30 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void GetScreenInfo(blink::ScreenInfo* result) override;
   float GetDeviceScaleFactor() override;
   base::Optional<cc::TouchAction> GetAllowedTouchAction() override;
+  void WriteIntoTracedValue(perfetto::TracedValue context) override;
+  using DragOperationCallback =
+      base::OnceCallback<void(::ui::mojom::DragOperation)>;
   // |drop_data| must have been filtered. The embedder should call
   // FilterDropData before passing the drop data to RWHI.
   void DragTargetDragEnter(const DropData& drop_data,
                            const gfx::PointF& client_pt,
                            const gfx::PointF& screen_pt,
                            blink::DragOperationsMask operations_allowed,
-                           int key_modifiers) override;
+                           int key_modifiers,
+                           DragOperationCallback callback) override;
+
   void DragTargetDragEnterWithMetaData(
       const std::vector<DropData::Metadata>& metadata,
       const gfx::PointF& client_pt,
       const gfx::PointF& screen_pt,
       blink::DragOperationsMask operations_allowed,
-      int key_modifiers) override;
+      int key_modifiers,
+      DragOperationCallback callback) override;
   void DragTargetDragOver(const gfx::PointF& client_point,
                           const gfx::PointF& screen_point,
                           blink::DragOperationsMask operations_allowed,
-                          int key_modifiers) override;
+                          int key_modifiers,
+                          DragOperationCallback callback) override;
   void DragTargetDragLeave(const gfx::PointF& client_point,
                            const gfx::PointF& screen_point) override;
   // |drop_data| must have been filtered. The embedder should call
@@ -269,10 +281,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void DragTargetDrop(const DropData& drop_data,
                       const gfx::PointF& client_point,
                       const gfx::PointF& screen_point,
-                      int key_modifiers) override;
+                      int key_modifiers,
+                      base::OnceClosure callback) override;
   void DragSourceEndedAt(const gfx::PointF& client_pt,
                          const gfx::PointF& screen_pt,
-                         ui::mojom::DragOperation operation) override;
+                         ui::mojom::DragOperation operation,
+                         base::OnceClosure callback) override;
   void DragSourceSystemDragEnded() override;
   void FilterDropData(DropData* drop_data) override;
   void SetCursor(const ui::Cursor& cursor) override;
@@ -288,13 +302,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                            const ChildProcessTerminationInfo& info) override;
 
   // blink::mojom::WidgetHost implementation.
-  void SetToolTipText(const base::string16& tooltip_text,
+  void SetToolTipText(const std::u16string& tooltip_text,
                       base::i18n::TextDirection text_direction_hint) override;
   void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override;
   void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                               base::i18n::TextDirection anchor_dir,
                               const gfx::Rect& focus_rect,
                               base::i18n::TextDirection focus_dir,
+                              const gfx::Rect& bounding_box,
                               bool is_anchor_first) override;
   void CreateFrameSink(
       mojo::PendingReceiver<viz::mojom::CompositorFrameSink>
@@ -319,6 +334,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
+
+  // Get info regarding all screens, including which screen is currently showing
+  // this RenderWidgetHost.
+  blink::ScreenInfos GetScreenInfos();
 
   // Forces redraw in the renderer and when the update reaches the browser.
   // grabs snapshot from the compositor.
@@ -538,7 +557,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   //   (on Windows);
   // * when it receives a "preedit_changed" signal of GtkIMContext (on Linux);
   // * when markedText of NSTextInput is called (on Mac).
-  void ImeSetComposition(const base::string16& text,
+  void ImeSetComposition(const std::u16string& text,
                          const std::vector<ui::ImeTextSpan>& ime_text_spans,
                          const gfx::Range& replacement_range,
                          int selection_start,
@@ -551,7 +570,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   //   (on Windows);
   // * when it receives a "commit" signal of GtkIMContext (on Linux);
   // * when insertText of NSTextInput is called (on Mac).
-  void ImeCommitText(const base::string16& text,
+  void ImeCommitText(const std::u16string& text,
                      const std::vector<ui::ImeTextSpan>& ime_text_spans,
                      const gfx::Range& replacement_range,
                      int relative_cursor_pos);
@@ -672,7 +691,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void RendererExited();
 
   // Called from a RenderFrameHost when the text selection has changed.
-  void SelectionChanged(const base::string16& text,
+  void SelectionChanged(const std::u16string& text,
                         uint32_t offset,
                         const gfx::Range& range);
 
@@ -939,7 +958,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // IPC message handlers
   void OnClose();
   void OnUpdateScreenRectsAck();
-  void OnUpdateDragCursor(ui::mojom::DragOperation current_op);
+  void OnUpdateDragCursor(DragOperationCallback callback,
+                          ui::mojom::DragOperation current_op);
 
   // blink::mojom::FrameWidgetHost overrides.
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,

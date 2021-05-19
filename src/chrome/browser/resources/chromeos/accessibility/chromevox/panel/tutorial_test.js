@@ -106,7 +106,9 @@ TEST_F('ChromeVoxTutorialTest', 'BasicTest', function() {
 
 // Tests that different lessons are shown when choosing an experience from the
 // main menu.
-TEST_F('ChromeVoxTutorialTest', 'LessonSetTest', function() {
+// TODO(crbug.com/1193799): fix ax node errors causing console spew and
+// breaking tests
+TEST_F('ChromeVoxTutorialTest', 'DISABLED_LessonSetTest', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.simpleDoc, async function(root) {
     await this.launchAndWaitForTutorial();
@@ -320,7 +322,9 @@ TEST_F('ChromeVoxTutorialTest', 'MainMenuButton', function() {
 
 // Tests that the all lessons button navigates the user to the lesson menu
 // screen.
-TEST_F('ChromeVoxTutorialTest', 'AllLessonsButton', function() {
+// TODO(crbug.com/1193799): fix ax node errors causing console spew and
+// breaking tests
+TEST_F('ChromeVoxTutorialTest', 'DISABLED_AllLessonsButton', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.simpleDoc, async function(root) {
     await this.launchAndWaitForTutorial();
@@ -351,7 +355,9 @@ TEST_F('ChromeVoxTutorialTest', 'AllLessonsButton', function() {
 });
 
 // Tests that the next and previous lesson buttons navigate properly.
-TEST_F('ChromeVoxTutorialTest', 'NextPreviousButtons', function() {
+// TODO(crbug.com/1193799): fix ax node errors causing console spew and
+// breaking tests
+TEST_F('ChromeVoxTutorialTest', 'DISABLED_NextPreviousButtons', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.simpleDoc, async function(root) {
     await this.launchAndWaitForTutorial();
@@ -459,69 +465,75 @@ TEST_F('ChromeVoxTutorialTest', 'EarconLesson', function() {
 
 // Tests that a lesson from the quick orientation blocks ChromeVox execution
 // until the specified keystroke is pressed.
-TEST_F('ChromeVoxTutorialTest', 'QuickOrientationLessonTest', function() {
-  const mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(this.simpleDoc, async function(root) {
-    await this.launchAndWaitForTutorial();
-    const tutorial = this.getTutorial();
-    const keyboardHandler = ChromeVoxState.instance.keyboardHandler_;
+// TODO(crbug.com/1193799): fix ax node errors causing console spew and
+// breaking tests
+TEST_F(
+    'ChromeVoxTutorialTest', 'DISABLED_QuickOrientationLessonTest', function() {
+      const mockFeedback = this.createMockFeedback();
+      this.runWithLoadedTree(this.simpleDoc, async function(root) {
+        await this.launchAndWaitForTutorial();
+        const tutorial = this.getTutorial();
+        const keyboardHandler = ChromeVoxState.instance.keyboardHandler_;
 
-    // Helper functions. For this test, activate commands by hooking into the
-    // BackgroundKeyboardHandler. This is necessary because UserActionMonitor
-    // intercepts key sequences before they are routed to CommandHandler.
-    const getRangeStartNode = () => {
-      return ChromeVoxState.instance.getCurrentRange().start.node;
-    };
+        // Helper functions. For this test, activate commands by hooking into
+        // the BackgroundKeyboardHandler. This is necessary because
+        // UserActionMonitor intercepts key sequences before they are routed to
+        // CommandHandler.
+        const getRangeStartNode = () => {
+          return ChromeVoxState.instance.getCurrentRange().start.node;
+        };
 
-    const simulateKeyPress = (keyCode, opt_modifiers) => {
-      const keyEvent = TestUtils.createMockKeyEvent(keyCode, opt_modifiers);
-      keyboardHandler.onKeyDown(keyEvent);
-      keyboardHandler.onKeyUp(keyEvent);
-    };
+        const simulateKeyPress = (keyCode, opt_modifiers) => {
+          const keyEvent = TestUtils.createMockKeyEvent(keyCode, opt_modifiers);
+          keyboardHandler.onKeyDown(keyEvent);
+          keyboardHandler.onKeyUp(keyEvent);
+        };
 
-    let firstLessonNode;
-    await mockFeedback.expectSpeech('ChromeVox tutorial')
-        .call(doCmd('nextObject'))
-        .expectSpeech('Quick orientation')
-        .call(doCmd('forceClickOnCurrentItem'))
-        .expectSpeech(/Quick Orientation Tutorial, [0-9]+ Lessons/)
-        .call(doCmd('nextObject'))
-        .expectSpeech('Welcome to ChromeVox!')
-        .call(doCmd('forceClickOnCurrentItem'))
-        .expectSpeech(/Welcome to the ChromeVox tutorial./)
-        .call(() => {
-          assertEquals(0, tutorial.activeLessonId);
-          firstLessonNode = getRangeStartNode();
-        })
-        .call(simulateKeyPress.bind(this, KeyCode.RIGHT, {searchKeyHeld: true}))
-        .call(() => {
-          assertEquals(firstLessonNode, getRangeStartNode());
-          assertEquals(0, tutorial.activeLessonId);
-        })
-        .call(simulateKeyPress.bind(this, KeyCode.LEFT, {searchKeyHeld: true}))
-        .call(() => {
-          assertEquals(firstLessonNode, getRangeStartNode());
-          assertEquals(0, tutorial.activeLessonId);
-        })
-        // Pressing space, which is the desired key sequence, should move us to
-        // the next lesson.
-        .call(simulateKeyPress.bind(this, KeyCode.SPACE, {}))
-        .expectSpeech('Essential Keys: Control')
-        .expectSpeech(/Let's start with a few keys you'll use regularly./)
-        .call(() => {
-          assertEquals(1, tutorial.activeLessonId);
-          assertNotEquals(firstLessonNode, getRangeStartNode());
-        })
-        // Pressing control, which is the desired key sequence, should move us
-        // to the next lesson.
-        .call(simulateKeyPress.bind(this, KeyCode.CONTROL, {}))
-        .expectSpeech('Essential Keys: Shift')
-        .call(() => {
-          assertEquals(2, tutorial.activeLessonId);
-        })
-        .replay();
-  });
-});
+        let firstLessonNode;
+        await mockFeedback.expectSpeech('ChromeVox tutorial')
+            .call(doCmd('nextObject'))
+            .expectSpeech('Quick orientation')
+            .call(doCmd('forceClickOnCurrentItem'))
+            .expectSpeech(/Quick Orientation Tutorial, [0-9]+ Lessons/)
+            .call(doCmd('nextObject'))
+            .expectSpeech('Welcome to ChromeVox!')
+            .call(doCmd('forceClickOnCurrentItem'))
+            .expectSpeech(/Welcome to the ChromeVox tutorial./)
+            .call(() => {
+              assertEquals(0, tutorial.activeLessonId);
+              firstLessonNode = getRangeStartNode();
+            })
+            .call(simulateKeyPress.bind(
+                this, KeyCode.RIGHT, {searchKeyHeld: true}))
+            .call(() => {
+              assertEquals(firstLessonNode, getRangeStartNode());
+              assertEquals(0, tutorial.activeLessonId);
+            })
+            .call(simulateKeyPress.bind(
+                this, KeyCode.LEFT, {searchKeyHeld: true}))
+            .call(() => {
+              assertEquals(firstLessonNode, getRangeStartNode());
+              assertEquals(0, tutorial.activeLessonId);
+            })
+            // Pressing space, which is the desired key sequence, should move us
+            // to the next lesson.
+            .call(simulateKeyPress.bind(this, KeyCode.SPACE, {}))
+            .expectSpeech('Essential Keys: Control')
+            .expectSpeech(/Let's start with a few keys you'll use regularly./)
+            .call(() => {
+              assertEquals(1, tutorial.activeLessonId);
+              assertNotEquals(firstLessonNode, getRangeStartNode());
+            })
+            // Pressing control, which is the desired key sequence, should move
+            // us to the next lesson.
+            .call(simulateKeyPress.bind(this, KeyCode.CONTROL, {}))
+            .expectSpeech('Essential Keys: Shift')
+            .call(() => {
+              assertEquals(2, tutorial.activeLessonId);
+            })
+            .replay();
+      });
+    });
 
 // Tests that tutorial nudges are restarted whenever the current range changes.
 TEST_F('ChromeVoxTutorialTest', 'RestartNudges', function() {
@@ -584,7 +596,7 @@ TEST_F('ChromeVoxTutorialTest', 'ResourcesTest', function() {
         .expectSpeech('ChromeVox Command Reference', 'Link')
         .call(doCmd('forceClickOnCurrentItem'))
         .expectSpeech('tab created')
-        .expectSpeech('www.chromevox.com')
+        .expectSpeech('support.google.com')
         .replay();
   });
 });
@@ -673,5 +685,62 @@ TEST_F('ChromeVoxTutorialTest', 'StartStopInteractiveMode', function() {
     tutorial.showLessonMenu_();
     makeAssertions(
         {createdCount: 2, destroyedCount: 2, interactiveMode: false});
+  });
+});
+
+// Tests that gestures can be used in the tutorial to navigate.
+TEST_F('ChromeVoxTutorialTest', 'Gestures', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.simpleDoc, async function(root) {
+    await this.launchAndWaitForTutorial();
+    const tutorial = this.getTutorial();
+    mockFeedback.expectSpeech('ChromeVox tutorial')
+        .call(doGesture(Gesture.SWIPE_RIGHT1))
+        .expectSpeech('Quick orientation', 'Link')
+        .call(doGesture(Gesture.SWIPE_RIGHT1))
+        .expectSpeech('Essential keys', 'Link')
+        .call(doGesture(Gesture.SWIPE_LEFT1))
+        .expectSpeech('Quick orientation', 'Link')
+        .call(doGesture(Gesture.SWIPE_LEFT2))
+        .expectSpeech('Some web content')
+        .replay();
+  });
+});
+
+// Tests that touch orientation loads properly. Tests string content, but does
+// not test interactivity of lessons.
+// TODO(crbug.com/1193799): fix ax node errors causing console spew and
+// breaking tests
+TEST_F('ChromeVoxTutorialTest', 'DISABLED_TouchOrientation', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.simpleDoc, async function(root) {
+    await this.launchAndWaitForTutorial();
+    const tutorial = this.getTutorial();
+    mockFeedback.expectSpeech('ChromeVox tutorial')
+        .call(() => {
+          tutorial.curriculum = 'touch_orientation';
+          tutorial.medium = 'touch';
+          tutorial.showLesson_(0);
+          this.assertActiveLessonIndex(0);
+          this.assertActiveScreen('lesson');
+        })
+        .expectSpeech('ChromeVox touch tutorial')
+        .expectSpeech(/Welcome to the ChromeVox tutorial/)
+        .call(doGesture(Gesture.CLICK))
+        .expectSpeech('Activate an item')
+        .expectSpeech(/To continue, double-tap now/)
+        .call(doGesture(Gesture.CLICK))
+        .expectSpeech('Move to the next or previous item')
+        .call(() => {
+          // Jump to the penultimate lesson.
+          tutorial.showLesson_(6);
+        })
+        .expectSpeech('Move to the next or previous section')
+        .expectSpeech(/swipe from left to right with four fingers/)
+        .call(doGesture(Gesture.SWIPE_RIGHT4))
+        .expectSpeech(/swiping with four fingers from right to left/)
+        .call(doGesture(Gesture.SWIPE_LEFT4))
+        .expectSpeech('Touch tutorial complete')
+        .replay();
   });
 });

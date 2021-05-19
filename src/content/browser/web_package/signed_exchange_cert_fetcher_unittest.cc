@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/test/task_environment.h"
@@ -114,7 +115,6 @@ class URLLoaderFactoryForMockLoader final
   // network::mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,

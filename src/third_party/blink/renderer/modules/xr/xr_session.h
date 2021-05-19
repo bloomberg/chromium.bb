@@ -164,25 +164,15 @@ class XRSession final
   // origin and the initial anchor's position.
   // |native_origin_information| describes native origin relative to which the
   // transform is expressed.
+  // |maybe_plane_id| is an ID of the plane to which the anchor should be
+  // attached - set to base::nullopt if the plane is not to be attached to any
+  // plane.
   ScriptPromise CreateAnchorHelper(
       ScriptState* script_state,
       const blink::TransformationMatrix& native_origin_from_anchor,
       const device::mojom::blink::XRNativeOriginInformation&
           native_origin_information,
-      ExceptionState& exception_state);
-
-  // Helper, not IDL-exposed
-  // |native_origin_from_anchor| is a matrix describing transform between native
-  // origin and the initial anchor's position.
-  // |native_origin_information| describes native origin relative to which the
-  // transform is expressed.
-  // |plane_id| is the id of the plane to which the anchor should be attached.
-  ScriptPromise CreatePlaneAnchorHelper(
-      ScriptState* script_state,
-      const blink::TransformationMatrix& native_origin_from_anchor,
-      const device::mojom::blink::XRNativeOriginInformation&
-          native_origin_information,
-      uint64_t plane_id,
+      base::Optional<uint64_t> maybe_plane_id,
       ExceptionState& exception_state);
 
   // Helper POD type containing the information needed for anchor creation in
@@ -574,13 +564,10 @@ class XRSession final
   uint32_t stage_parameters_id_ = 0;
   device::mojom::blink::VRStageParametersPtr stage_parameters_;
 
-  HeapMojoReceiver<device::mojom::blink::XRSessionClient,
-                   XRSession,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
+  HeapMojoReceiver<device::mojom::blink::XRSessionClient, XRSession>
       client_receiver_;
   HeapMojoAssociatedReceiver<device::mojom::blink::XRInputSourceButtonListener,
-                             XRSession,
-                             HeapMojoWrapperMode::kWithoutContextObserver>
+                             XRSession>
       input_receiver_;
 
   // Used to schedule video.rVFC callbacks for immersive sessions.

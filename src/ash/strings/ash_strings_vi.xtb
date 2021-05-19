@@ -21,7 +21,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="1104621072296271835">Các thiết bị của bạn hoạt động hiệu quả hơn khi kết nối với nhau</translation>
 <translation id="1119348796022671382">Chế độ màu theo giao diện dùng các màu trích xuất từ hình nền để tạo màu nhẹ nhàng cho giao diện.</translation>
 <translation id="112308213915226829">Tự động ẩn kệ</translation>
-<translation id="1153356358378277386">Thiết bị được ghép nối</translation>
+<translation id="1153356358378277386">Thiết bị đã ghép nối</translation>
 <translation id="1165712434476988950">Bạn cần phải khởi động lại thiết bị để áp dụng bản cập nhật.</translation>
 <translation id="1175572348579024023">Cuộn</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
@@ -40,6 +40,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="1252999807265626933">Đang sạc từ <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Tình hình thời tiết thế nào?</translation>
 <translation id="1267032506238418139">Thay đổi phím tắt</translation>
+<translation id="1269405891096105529">Chế độ khách không hỗ trợ thiết bị ngoại vi</translation>
 <translation id="1270290102613614947">Đã tắt bàn phím ảo</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1275285675049378717">Đang cấp nguồn cho <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Nhập tin nhắn</translation>
 <translation id="2018630726571919839">Kể truyện cười cho tôi</translation>
+<translation id="2021864487439853900">Nhấp để mở khóa</translation>
 <translation id="2049240716062114887">Đã đổi tên không gian làm việc thành <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Khổ dọc</translation>
 <translation id="2067602449040652523">Độ sáng bàn phím</translation>
@@ -276,6 +278,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> vẫn có thể đăng nhập vào lúc khác.</translation>
 <translation id="3321628682574733415">Mã dành cho cha mẹ không chính xác</translation>
 <translation id="332587331255250389">Vui lòng thay pin</translation>
+<translation id="3333741161915951567">Khởi động lại modem. Hãy đợi 30 giây rồi thử lại.</translation>
 <translation id="3341303451326249809">Đã chụp ảnh màn hình</translation>
 <translation id="334252345105450327">Chụp ảnh màn hình</translation>
 <translation id="3351879221545518001">Bạn hiện đang truyền màn hình.</translation>
@@ -320,6 +323,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Người dùng được quản lý</translation>
 <translation id="3665889125180354336">Ghi âm</translation>
 <translation id="36813544980941320">Điện thoại và <ph name="DEVICE_NAME" /> của bạn sẽ dùng chung mạng Wi-Fi</translation>
+<translation id="3702809606464356667">Đang hiển thị các cửa sổ của không gian làm việc hiện tại, hãy nhấn phím Mũi tên lên để hiển thị các cửa sổ của mọi không gian làm việc</translation>
 <translation id="3702846122927433391">Dân số ở Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Đang tải...</translation>
@@ -351,6 +355,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="394485226368336402">Cài đặt âm thanh</translation>
 <translation id="3945319193631853098">Nhấn để hoàn tất quá trình thiết lập</translation>
 <translation id="3945867833895287237">Đang kết nối với điểm phát sóng...</translation>
+<translation id="3958465044488004317">Xem kết quả trên giao diện người dùng gốc của Trợ lý</translation>
 <translation id="3962859241508114581">Bản nhạc trước</translation>
 <translation id="3969043077941541451">Đang tắt</translation>
 <translation id="397105322502079400">Đang tính...</translation>
@@ -407,10 +412,12 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4424159417645388645">Không gian làm việc 5</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
+<translation id="4445159312344259901">Đăng nhập để mở khóa</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 thông báo quan trọng}other{# thông báo quan trọng}}</translation>
-<translation id="4450893287417543264">Không hiển thị lại</translation>
+<translation id="4450893287417543264">Không hiện lại</translation>
 <translation id="445864333228800152">Xin chào!</translation>
 <translation id="4458688154122353284">Dừng ghi màn hình</translation>
+<translation id="4467143075433126295">Nhấn và giữ phím [Esc] để thoát khỏi chế độ toàn màn hình</translation>
 <translation id="4472575034687746823">Bắt đầu</translation>
 <translation id="4477350412780666475">Bản nhạc tiếp theo</translation>
 <translation id="4477892968187500306">Thiết bị này có thể chứa những ứng dụng mà Google chưa xác minh.</translation>
@@ -607,7 +614,8 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Bạn không thể dùng Trợ lý Google trong phiên khách.</translation>
 <translation id="6137566720514957455">Mở hộp thoại xóa tài khoản cho <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="615957422585914272">Hiển thị bàn phím ảo</translation>
+<translation id="6154006699632741460">Không hỗ trợ thiết bị ngoại vi</translation>
+<translation id="615957422585914272">Hiện bàn phím ảo</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6179832488876878285">Bạn có thể ghim các tệp quan trọng của mình ở đây. Hãy mở ứng dụng Files để bắt đầu.</translation>
 <translation id="622484624075952240">Xuống</translation>
@@ -624,11 +632,11 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="6297287540776456956">Sử dụng bút cảm ứng để chọn một vùng</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> đã được xoay vòng sang <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Thoại</translation>
+<translation id="6330012934079202188">Đang hiển thị các cửa sổ của mọi không gian làm việc, hãy nhấn phím Mũi tên lên để hiển thị các cửa sổ của không gian làm việc hiện tại</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> là phiên do <ph name="MANAGER" /> quản lý</translation>
 <translation id="6376931439017688372">Bluetooth đang bật</translation>
 <translation id="6381109794406942707">Để mở khóa thiết bị, hãy nhập mã PIN của bạn.</translation>
 <translation id="639644700271529076">CAPS LOCK tắt</translation>
-<translation id="6396835948284782440">Nhấn và giữ phím [Esc] để thoát.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Xóa tất cả thông báo</translation>
@@ -794,7 +802,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="7780159184141939021">Xoay màn hình</translation>
 <translation id="7796353162336583443">Hãy nhấn vào nút bút cảm ứng trên giá để ghi chú, chụp ảnh màn hình, sử dụng Trợ lý Google, chế độ con trỏ laser hoặc kính lúp.</translation>
 <translation id="7798302898096527229">Nhấn phím Search hoặc Shift để hủy.</translation>
-<translation id="7807966291075028781">Bạn không dùng được thiết bị ngoại vi ở Chế độ khách vì lý do bảo mật</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> và <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Tín hiệu mạnh</translation>
 <translation id="7837740436429729974">Hết giờ</translation>
@@ -944,6 +951,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="8936501819958976551">đã tắt</translation>
 <translation id="8938800817013097409">Thiết bị USB-C (cổng bên phải ở phía sau)</translation>
 <translation id="8940956008527784070">Pin yếu (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Chỉ các thiết bị Thunderbolt được phê duyệt mới tương thích với Chromebook của bạn</translation>
 <translation id="8982906748181120328">Chế độ hiển thị lân cận</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Đang dùng <ph name="IME_NAME" /></translation>

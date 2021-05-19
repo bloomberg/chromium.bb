@@ -272,7 +272,7 @@ void PostFilter::ApplyCdefForOneUnit(uint16_t* cdef_block, const int index,
   const uint16_t* cdef_src_row_base[kMaxPlanes];
   int cdef_src_row_base_stride[kMaxPlanes];
   int column_step[kMaxPlanes];
-  assert(planes_ >= 1);
+  assert(planes_ == kMaxPlanesMonochrome || planes_ == kMaxPlanes);
   int plane = kPlaneY;
   do {
     cdef_buffer_row_base[plane] =

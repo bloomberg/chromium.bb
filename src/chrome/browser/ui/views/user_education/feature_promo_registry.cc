@@ -6,10 +6,13 @@
 
 #include "base/no_destructor.h"
 #include "base/optional.h"
+#include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
@@ -20,6 +23,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_params.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -54,16 +58,34 @@ views::View* GetMediaButton(BrowserView* browser_view) {
 
 // kIPHReadingListDiscoveryFeature:
 views::View* GetReadingListButton(BrowserView* browser_view) {
+  if (browser_view->side_panel())
+    return browser_view->toolbar()->read_later_button();
+
   if (browser_view->bookmark_bar()->read_later_button()->IsDrawn())
     return browser_view->bookmark_bar()->read_later_button();
 
   return nullptr;
 }
 
+// kIPHReadingListEntryPointFeature:
+views::View* GetReadingListStarView(BrowserView* browser_view) {
+  return browser_view->toolbar()
+      ->location_bar()
+      ->page_action_icon_controller()
+      ->GetIconView(PageActionIconType::kBookmarkStar);
+}
+
 // kIPHReopenTabFeature:
 views::View* GetAppMenuButton(BrowserView* browser_view) {
   return browser_view->toolbar()->app_menu_button();
 }
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+// kIPHProfileSwitchFeature:
+views::View* GetAvatarToolbarButton(BrowserView* browser_view) {
+  return browser_view->toolbar_button_provider()->GetAvatarToolbarButton();
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 // kIPHWebUITabStripFeature:
@@ -156,7 +178,7 @@ void FeaturePromoRegistry::RegisterKnownFeatures() {
     params.body_string_specifier = IDS_TAB_GROUPS_NEW_GROUP_PROMO;
     params.arrow = views::BubbleBorder::TOP_LEFT;
 
-    // Turn on IPH Snooze only for Tab Group.
+    // Turn on IPH Snooze for Tab Group.
     if (base::FeatureList::IsEnabled(
             feature_engagement::kIPHDesktopSnoozeFeature)) {
       params.allow_focus = true;
@@ -179,6 +201,21 @@ void FeaturePromoRegistry::RegisterKnownFeatures() {
                     base::BindRepeating(GetMediaButton));
   }
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  {
+    // kIPHSwitchProfileFeature:
+    FeaturePromoBubbleParams params;
+    params.body_string_specifier = IDS_PROFILE_SWITCH_PROMO;
+    params.screenreader_string_specifier =
+        IDS_PROFILE_SWITCH_PROMO_SCREENREADER;
+    params.feature_command_id = IDC_SHOW_AVATAR_MENU;
+    params.arrow = views::BubbleBorder::Arrow::TOP_RIGHT;
+
+    RegisterFeature(feature_engagement::kIPHProfileSwitchFeature, params,
+                    base::BindRepeating(GetAvatarToolbarButton));
+  }
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
   {
     // kReadingListDiscoveryFeature:
     FeaturePromoBubbleParams params;
@@ -187,6 +224,24 @@ void FeaturePromoRegistry::RegisterKnownFeatures() {
 
     RegisterFeature(feature_engagement::kIPHReadingListDiscoveryFeature, params,
                     base::BindRepeating(GetReadingListButton));
+  }
+
+  {
+    // kIPHReadingListEntryPointFeature:
+    FeaturePromoBubbleParams params;
+    params.body_string_specifier = IDS_READING_LIST_ENTRY_POINT_PROMO;
+    params.arrow = views::BubbleBorder::TOP_RIGHT;
+
+    // Turn on IPH Snooze for Read Later entry point.
+    if (base::FeatureList::IsEnabled(
+            feature_engagement::kIPHDesktopSnoozeFeature)) {
+      params.allow_focus = true;
+      params.persist_on_blur = true;
+      params.allow_snooze = true;
+    }
+
+    RegisterFeature(feature_engagement::kIPHReadingListEntryPointFeature,
+                    params, base::BindRepeating(GetReadingListStarView));
   }
 
   {

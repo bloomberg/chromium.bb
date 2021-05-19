@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/notreached.h"
-#include "build/build_config.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/services/gpu_mojo_media_client.h"
 #include "media/mojo/services/media_service.h"
@@ -28,11 +27,6 @@ std::unique_ptr<MediaService> CreateMediaService(
 #if defined(OS_ANDROID)
   return std::make_unique<MediaService>(
       std::make_unique<AndroidMojoMediaClient>(), std::move(receiver));
-#elif defined(OS_WIN)
-  DVLOG(1) << "Create MediaService with MediaFoundationMojoMediaClient";
-  return std::make_unique<MediaService>(
-      std::make_unique<media::MediaFoundationMojoMediaClient>(),
-      std::move(receiver));
 #else
   NOTREACHED() << "No MediaService implementation available.";
   return nullptr;

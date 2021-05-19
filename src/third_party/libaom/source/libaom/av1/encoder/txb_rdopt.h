@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AOM_AV1_ENCODER_OPTIMIZE_TXB_H_
-#define AOM_AV1_ENCODER_OPTIMIZE_TXB_H_
+#ifndef AOM_AV1_ENCODER_TXB_RDOPT_H_
+#define AOM_AV1_ENCODER_TXB_RDOPT_H_
 
 #include "av1/common/blockd.h"
 #include "av1/common/txb_common.h"
@@ -157,4 +157,4 @@ int av1_cost_coeffs_txb_estimate(const MACROBLOCK *x, const int plane,
 }
 #endif
 
-#endif  // AOM_AV1_ENCODER_OPTIMIZE_TXB_H_
+#endif  // AOM_AV1_ENCODER_TXB_RDOPT_H_

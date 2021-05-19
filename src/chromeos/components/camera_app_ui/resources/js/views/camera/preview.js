@@ -12,6 +12,7 @@ import * as nav from '../../nav.js';
 import * as state from '../../state.js';
 import {Mode} from '../../type.js';
 import * as util from '../../util.js';
+import {windowController} from '../../window_controller.js';
 
 /**
  * Creates a controller for the video preview of Camera view.
@@ -34,24 +35,6 @@ export class Preview {
      * @private
      */
     this.video_ = dom.get('#preview-video', HTMLVideoElement);
-
-    /**
-     * @type {!HTMLDivElement}
-     * @private
-     */
-    this.panSlider_ = dom.get('#pan-slider', HTMLDivElement);
-
-    /**
-     * @type {!HTMLDivElement}
-     * @private
-     */
-    this.tiltSlider_ = dom.get('#tilt-slider', HTMLDivElement);
-
-    /**
-     * @type {!HTMLDivElement}
-     * @private
-     */
-    this.zoomSlider_ = dom.get('#zoom-slider', HTMLDivElement);
 
     /**
      * The observer id for preview metadata.
@@ -94,7 +77,9 @@ export class Preview {
      */
     this.scanner_ = null;
 
-    window.addEventListener('resize', () => this.onWindowResize_());
+    window.addEventListener('resize', () => this.onWindowStatusChanged_());
+
+    windowController.addListener(() => this.onWindowStatusChanged_());
 
     [state.State.EXPERT, state.State.SHOW_METADATA].forEach((s) => {
       state.addObserver(s, this.updateShowMetadata_.bind(this));
@@ -102,62 +87,6 @@ export class Preview {
     [state.State.EXPERT, state.State.SCAN_BARCODE].forEach((s) => {
       state.addObserver(s, this.updateScanBarcode_.bind(this));
     });
-
-    this.initPTZOptions_();
-  }
-
-  /**
-   * @private
-   */
-  initPTZOptions_() {
-    const getSliderInput = (slider) =>
-        dom.getFrom(slider, 'input[type=range]', HTMLInputElement);
-    for (const {attr, slider} of
-             [{attr: 'pan', slider: this.panSlider_},
-              {attr: 'tilt', slider: this.tiltSlider_},
-              {attr: 'zoom', slider: this.zoomSlider_}]) {
-      const input = getSliderInput(slider);
-      input.addEventListener('input', () => {
-        const track =
-            assertInstanceof(this.stream, MediaStream).getVideoTracks()[0];
-        track.applyConstraints({advanced: [{[attr]: Number(input.value)}]});
-      });
-    }
-    const ptzUIStates = [
-      state.State.EXPERT,
-      state.State.SHOW_PTZ_OPTIONS,
-      state.State.STREAMING,
-    ];
-    const onStateToggled = () => {
-      if (!ptzUIStates.every((s) => state.get(s))) {
-        [this.panSlider_, this.tiltSlider_, this.zoomSlider_].forEach(
-            (slider) => {
-              slider.hidden = true;
-            });
-        return;
-      }
-      const initSlider = (capability, value, slider) => {
-        if (capability === undefined) {
-          slider.hidden = true;
-          return;
-        }
-        slider.hidden = false;
-        const input = getSliderInput(slider);
-        input.min = capability.min;
-        input.max = capability.max;
-        input.step = capability.step;
-        input.value = value;
-      };
-      const track = this.stream.getVideoTracks()[0];
-      const settings = track.getSettings();
-      const cap = track.getCapabilities();
-      initSlider(cap.pan, settings.pan, this.panSlider_);
-      initSlider(cap.tilt, settings.tilt, this.tiltSlider_);
-      initSlider(cap.zoom, settings.zoom, this.zoomSlider_);
-    };
-    for (const s of ptzUIStates) {
-      state.addObserver(s, onStateToggled);
-    }
   }
 
   /**
@@ -173,6 +102,15 @@ export class Preview {
    */
   get video() {
     return this.video_;
+  }
+
+  /**
+   * Whether the opened camera supports PTZ controls.
+   * @return {boolean}
+   */
+  isSupportPTZ() {
+    const {pan, tilt, zoom} = this.stream.getVideoTracks()[0].getCapabilities();
+    return pan !== undefined || tilt !== undefined || zoom !== undefined;
   }
 
   /**
@@ -237,6 +175,31 @@ export class Preview {
       });
       this.updateScanBarcode_();
       this.updateShowMetadata_();
+
+      const deviceOperator = await DeviceOperator.getInstance();
+      if (deviceOperator !== null) {
+        const deviceId =
+            this.stream_.getVideoTracks()[0].getSettings().deviceId;
+        const isSuccess =
+            await deviceOperator.setCameraFrameRotationEnabledAtSource(
+                deviceId, false);
+        if (!isSuccess) {
+          console.warn(
+              'Cannot disable camera frame rotation. ' +
+              'The camera is probably being used by another app.');
+        }
+      }
+
+      const track = this.stream.getVideoTracks()[0];
+      const settings = track.getSettings();
+      const {pan, tilt, zoom} = track.getCapabilities();
+      // PTZ function is excluded from builtin camera until we set up its AVL
+      // calibration standard.
+      const isBuiltinCamera = settings.facingMode !== undefined;
+      state.set(
+          state.State.HAS_PTZ_SUPPORT,
+          !isBuiltinCamera &&
+              (pan !== undefined || tilt !== undefined || zoom !== undefined));
 
       state.set(state.State.STREAMING, true);
     } catch (e) {
@@ -569,11 +532,11 @@ export class Preview {
   }
 
   /**
-   * Handles resizing the window for preview's aspect ratio changes.
+   * Handles the the window state or window size changed.
    * @private
    */
-  onWindowResize_() {
-    nav.onWindowResized();
+  onWindowStatusChanged_() {
+    nav.onWindowStatusChanged();
   }
 
   /**
@@ -583,7 +546,7 @@ export class Preview {
    */
   async onIntrinsicSizeChanged_() {
     if (this.video_.videoWidth && this.video_.videoHeight) {
-      this.onWindowResize_();
+      this.onWindowStatusChanged_();
     }
     this.cancelFocus_();
   }

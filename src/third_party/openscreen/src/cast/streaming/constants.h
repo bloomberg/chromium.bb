@@ -67,10 +67,13 @@ constexpr int kDefaultAudioChannels = 2;
 
 // Codecs known and understood by cast senders and receivers. Note: receivers
 // are required to implement the following codecs to be Cast V2 compliant: H264,
-// VP8, AAC, Opus. Senders have to implement at least one codec for audio and
-// video to start a session.
-enum class AudioCodec { kAac, kOpus };
-enum class VideoCodec { kH264, kVp8, kHevc, kVp9 };
+// VP8, AAC, Opus. Senders have to implement at least one codec from this
+// list for audio or video to start a session.
+// |kNotSpecified| is used in remoting to indicate that the stream is being
+// remoted and is not specified as part of the OFFER message (indicated as
+// "REMOTE_AUDIO" or "REMOTE_VIDEO").
+enum class AudioCodec { kAac, kOpus, kNotSpecified };
+enum class VideoCodec { kH264, kVp8, kHevc, kVp9, kNotSpecified };
 
 }  // namespace cast
 }  // namespace openscreen

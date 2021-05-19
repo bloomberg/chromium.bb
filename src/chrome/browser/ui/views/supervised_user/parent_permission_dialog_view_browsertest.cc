@@ -7,14 +7,15 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
-#include "chrome/browser/chromeos/login/test/logged_in_user_mixin.h"
+#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -91,8 +92,8 @@ class ParentPermissionDialogViewTest
       parent_permission_dialog_ =
           ParentPermissionDialog::CreateParentPermissionDialog(
               browser()->profile(), contents->GetTopLevelNativeWindow(),
-              gfx::ImageSkia::CreateFrom1xBitmap(icon),
-              base::UTF8ToUTF16("Test prompt message"), base::DoNothing());
+              gfx::ImageSkia::CreateFrom1xBitmap(icon), u"Test prompt message",
+              base::DoNothing());
     } else if (name == "extension") {
       parent_permission_dialog_ =
           ParentPermissionDialog::CreateParentPermissionDialogForExtension(
@@ -185,8 +186,8 @@ class ParentPermissionDialogViewTest
     parent_permission_dialog_ =
         ParentPermissionDialog::CreateParentPermissionDialog(
             browser()->profile(), contents->GetTopLevelNativeWindow(),
-            gfx::ImageSkia::CreateFrom1xBitmap(icon),
-            base::UTF8ToUTF16("Test prompt message"), std::move(callback));
+            gfx::ImageSkia::CreateFrom1xBitmap(icon), u"Test prompt message",
+            std::move(callback));
     parent_permission_dialog_->ShowDialog();
     run_loop.Run();
   }
@@ -339,10 +340,6 @@ IN_PROC_BROWSER_TEST_F(ParentPermissionDialogViewTest,
   histogram_tester.ExpectTotalCount(SupervisedUserExtensionsMetricsRecorder::
                                         kParentPermissionDialogHistogramName,
                                     2);
-  histogram_tester.ExpectTotalCount(
-      SupervisedUserExtensionsMetricsRecorder::
-          kParentPermissionDialogParentApprovedTimeHistogramName,
-      1);
   EXPECT_EQ(1, user_action_tester.GetActionCount(
                    SupervisedUserExtensionsMetricsRecorder::
                        kParentPermissionDialogOpenedActionName));
@@ -378,10 +375,6 @@ IN_PROC_BROWSER_TEST_F(ParentPermissionDialogViewTest,
   histogram_tester.ExpectTotalCount(SupervisedUserExtensionsMetricsRecorder::
                                         kParentPermissionDialogHistogramName,
                                     2);
-  histogram_tester.ExpectTotalCount(
-      SupervisedUserExtensionsMetricsRecorder::
-          kParentPermissionDialogFailedTimeHistogramName,
-      1);
   EXPECT_EQ(1, user_action_tester.GetActionCount(
                    SupervisedUserExtensionsMetricsRecorder::
                        kParentPermissionDialogOpenedActionName));
@@ -414,10 +407,6 @@ IN_PROC_BROWSER_TEST_F(ParentPermissionDialogViewTest,
   histogram_tester.ExpectTotalCount(SupervisedUserExtensionsMetricsRecorder::
                                         kParentPermissionDialogHistogramName,
                                     2);
-  histogram_tester.ExpectTotalCount(
-      SupervisedUserExtensionsMetricsRecorder::
-          kParentPermissionDialogParentCanceledTimeHistogramName,
-      1);
   EXPECT_EQ(1, user_action_tester.GetActionCount(
                    SupervisedUserExtensionsMetricsRecorder::
                        kParentPermissionDialogOpenedActionName));

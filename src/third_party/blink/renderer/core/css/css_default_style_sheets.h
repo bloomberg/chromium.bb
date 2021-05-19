@@ -43,6 +43,8 @@ class CSSDefaultStyleSheets final
  public:
   CORE_EXPORT static CSSDefaultStyleSheets& Instance();
 
+  static StyleSheetContents* ParseUASheet(const String&);
+
   CSSDefaultStyleSheets();
   CSSDefaultStyleSheets(const CSSDefaultStyleSheets&) = delete;
   CSSDefaultStyleSheets& operator=(const CSSDefaultStyleSheets&) = delete;

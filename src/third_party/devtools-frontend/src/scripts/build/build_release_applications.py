@@ -44,8 +44,6 @@ def main(argv):
     try:
         input_path_flag_index = argv.index('--input_path')
         input_path = argv[input_path_flag_index + 1]
-        output_path_flag_index = argv.index('--output_path')
-        output_path = argv[output_path_flag_index + 1]
         output_path_gen_flag_index = argv.index('--output_path_gen')
         output_path_gen = argv[output_path_gen_flag_index + 1]
         application_names = argv[1:input_path_flag_index]
@@ -57,8 +55,8 @@ def main(argv):
     loader = modular_build.DescriptorLoader(input_path)
     for app in application_names:
         descriptors = loader.load_application(app)
-        builder = ReleaseBuilder(app, descriptors, input_path, output_path,
-                                 output_path_gen, use_rollup)
+        builder = ReleaseBuilder(app, descriptors, input_path, output_path_gen,
+                                 use_rollup)
         builder.build_app()
 
 
@@ -71,7 +69,8 @@ def minify_js(javascript):
 
 
 def concatenated_module_filename(module_name, output_dir):
-    return join(output_dir, module_name + '/' + module_name + '_module.js')
+    return join(output_dir,
+                module_name + '/' + path.basename(module_name) + '_module.js')
 
 
 # Outputs:
@@ -80,11 +79,10 @@ def concatenated_module_filename(module_name, output_dir):
 class ReleaseBuilder(object):
 
     def __init__(self, application_name, descriptors, application_dir,
-                 output_dir, output_path_gen_dir, use_rollup):
+                 output_path_gen_dir, use_rollup):
         self.application_name = application_name
         self.descriptors = descriptors
         self.application_dir = application_dir
-        self.output_dir = output_dir
         self.output_path_gen_dir = output_path_gen_dir
         self.use_rollup = use_rollup
         self._special_case_namespaces = special_case_namespaces.special_case_namespaces
@@ -116,7 +114,6 @@ class ReleaseBuilder(object):
         output = StringIO()
         self._concatenate_application_script(output)
         minified_content = minify_js(output.getvalue())
-        write_file(join(self.output_dir, script_name), minified_content)
         write_file(join(self.output_path_gen_dir, script_name),
                    minified_content)
         output.close()
@@ -139,11 +136,11 @@ class ReleaseBuilder(object):
                     # contains check and will load that instead.
                     module_files_to_load = []
                     declared_module_files = module.get('modules', [])
-                    legacyFileName = name + '-legacy.js'
+                    legacyFileName = path.basename(name) + '-legacy.js'
                     if legacyFileName in declared_module_files:
                         module_files_to_load += [legacyFileName]
                     # Non-autostart modules are vulcanized.
-                    module['modules'] = [name + '_module.js'
+                    module['modules'] = [path.basename(name) + '_module.js'
                                          ] + module_files_to_load
             result.append(module)
         return json.dumps(result)
@@ -187,7 +184,7 @@ class ReleaseBuilder(object):
         else:
             output.write('Root.applicationDescriptor = %s;' % self.descriptors.application_json())
 
-        output.write("import * as RootModule from './root/root.js';")
+        output.write("import * as RootModule from './core/root/root.js';")
         self._write_module_resources(self.autorun_resource_names(), output)
 
         output.write(minify_js(read_file(join(self.application_dir, self.app_file('js')))))
@@ -200,11 +197,13 @@ class ReleaseBuilder(object):
         module_dir = join(self.application_dir, module_name)
         output = StringIO()
         if resources:
-            output.write("import * as RootModule from '../root/root.js';")
+            relative_file_name = '../core/root/root.js'
+            if "/" in module_name:
+                relative_file_name = '../' + relative_file_name
+            output.write("import * as RootModule from '%s';" %
+                         relative_file_name)
             self._write_module_resources(resources, output)
         minified_content = minify_js(output.getvalue())
-        write_file(concatenated_module_filename(module_name, self.output_dir),
-                   minified_content)
         write_file(
             concatenated_module_filename(module_name,
                                          self.output_path_gen_dir),

@@ -32,7 +32,7 @@ bool PasswordManagerClient::RequiresReauthToFill() {
 
 void PasswordManagerClient::ShowTouchToFill(PasswordManagerDriver* driver) {}
 
-void PasswordManagerClient::OnPasswordSelected(const base::string16& text) {}
+void PasswordManagerClient::OnPasswordSelected(const std::u16string& text) {}
 
 BiometricAuthenticator* PasswordManagerClient::GetBiometricAuthenticator() {
   return nullptr;
@@ -57,9 +57,8 @@ void PasswordManagerClient::AutofillHttpAuth(
 
 void PasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
-    password_manager::CompromisedSitesCount saved_sites,
     const GURL& origin,
-    const base::string16& username) {}
+    const std::u16string& username) {}
 
 void PasswordManagerClient::TriggerReauthForPrimaryAccount(
     signin_metrics::ReauthAccessPoint access_point,
@@ -70,7 +69,7 @@ void PasswordManagerClient::TriggerReauthForPrimaryAccount(
 void PasswordManagerClient::TriggerSignIn(signin_metrics::AccessPoint) {}
 
 SyncState PasswordManagerClient::GetPasswordSyncState() const {
-  return NOT_SYNCING;
+  return SyncState::kNotSyncing;
 }
 
 bool PasswordManagerClient::WasLastNavigationHTTPError() const {

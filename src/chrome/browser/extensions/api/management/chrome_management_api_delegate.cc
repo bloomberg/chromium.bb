@@ -59,8 +59,8 @@
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -171,7 +171,8 @@ class ManagementUninstallFunctionUninstallDialogDelegate
       : function_(function) {
     ChromeExtensionFunctionDetails details(function);
     extension_uninstall_dialog_ = extensions::ExtensionUninstallDialog::Create(
-        details.GetProfile(), details.GetNativeWindowForUI(), this);
+        Profile::FromBrowserContext(function->browser_context()),
+        details.GetNativeWindowForUI(), this);
     bool uninstall_from_webstore =
         function->extension() &&
         function->extension()->id() == extensions::kWebStoreAppId;
@@ -203,7 +204,7 @@ class ManagementUninstallFunctionUninstallDialogDelegate
 
   // ExtensionUninstallDialog::Delegate implementation.
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
-                                        const base::string16& error) override {
+                                        const std::u16string& error) override {
     function_->OnExtensionUninstallDialogClosed(did_start_uninstall, error);
   }
 
@@ -242,7 +243,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     web_app_info->open_as_window = false;
 
     if (!image_result.image.IsEmpty()) {
-      web_app_info->icon_bitmaps_any[image_result.image.Width()] =
+      web_app_info->icon_bitmaps.any[image_result.image.Width()] =
           image_result.image.AsBitmap();
     }
 
@@ -637,7 +638,7 @@ bool ChromeManagementAPIDelegate::UninstallExtension(
     content::BrowserContext* context,
     const std::string& transient_extension_id,
     extensions::UninstallReason reason,
-    base::string16* error) const {
+    std::u16string* error) const {
   return extensions::ExtensionSystem::Get(context)
       ->extension_service()
       ->UninstallExtension(transient_extension_id, reason, error);

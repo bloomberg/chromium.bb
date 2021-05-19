@@ -65,7 +65,6 @@
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
-#include "remoting/host/host_main.h"
 #include "remoting/host/host_power_save_blocker.h"
 #include "remoting/host/host_settings.h"
 #include "remoting/host/host_status_logger.h"
@@ -127,6 +126,7 @@
 #include "remoting/host/audio_capturer_linux.h"
 #include "remoting/host/linux/certificate_watcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/xlib_support.h"
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -704,9 +704,9 @@ void HostProcess::StartOnNetworkThread() {
     OnConfigUpdated(host_config_);
   } else {
     // Start watching the host configuration file.
-    config_watcher_.reset(new ConfigFileWatcher(context_->network_task_runner(),
-                                                context_->file_task_runner(),
-                                                host_config_path_));
+    config_watcher_ = std::make_unique<ConfigFileWatcher>(
+        context_->network_task_runner(), context_->file_task_runner(),
+        host_config_path_);
     config_watcher_->Watch(this);
   }
 #endif  // !defined(REMOTING_MULTI_PROCESS)
@@ -793,7 +793,7 @@ void HostProcess::CreateAuthenticatorFactory() {
 
 #if defined(OS_POSIX)
   // On Linux and Mac, perform a PAM authorization step after authentication.
-  factory.reset(new PamAuthorizationFactory(std::move(factory)));
+  factory = std::make_unique<PamAuthorizationFactory>(std::move(factory));
 #endif
   host_->SetAuthenticatorFactory(std::move(factory));
 }
@@ -1598,9 +1598,9 @@ void HostProcess::StartHost() {
   host_status_logger_ = std::make_unique<HostStatusLogger>(
       host_->status_monitor(), log_to_server_.get());
 
-  power_save_blocker_.reset(new HostPowerSaveBlocker(
+  power_save_blocker_ = std::make_unique<HostPowerSaveBlocker>(
       host_->status_monitor(), context_->ui_task_runner(),
-      context_->file_task_runner()));
+      context_->file_task_runner());
 
   ftl_host_change_notification_listener_ =
       std::make_unique<FtlHostChangeNotificationListener>(
@@ -1764,13 +1764,12 @@ int HostProcessMain() {
   HOST_LOG << "Starting host process: version " << STRINGIZE(VERSION);
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
-  std::unique_ptr<ui::X11EventSource> event_source;
+  // Initialize Xlib for multi-threaded use, allowing non-Chromium code to
+  // use X11 safely (such as the WebRTC capturer, GTK ...)
+  x11::InitXlib();
+
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           kReportOfflineReasonSwitchName)) {
-    // Create an X11EventSource so the global X11 connection
-    // (x11::Connection::Get()) can dispatch X events.
-    event_source = std::make_unique<ui::X11EventSource>(x11::Connection::Get());
-
     // Required for any calls into GTK functions, such as the Disconnect and
     // Continue windows, though these should not be used for the Me2Me case
     // (crbug.com/104377).
@@ -1801,6 +1800,17 @@ int HostProcessMain() {
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
       net::NetworkChangeNotifier::CreateIfNeeded());
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  // Create an X11EventSource on all UI threads, so the global X11 connection
+  // (x11::Connection::Get()) can dispatch X events.
+  auto event_source =
+      std::make_unique<ui::X11EventSource>(x11::Connection::Get());
+  auto input_task_runner = context->input_task_runner();
+  input_task_runner->PostTask(FROM_HERE, base::BindOnce([]() {
+                                new ui::X11EventSource(x11::Connection::Get());
+                              }));
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+
   // Create & start the HostProcess using these threads.
   // TODO(wez): The HostProcess holds a reference to itself until Shutdown().
   // Remove this hack as part of the multi-process refactoring.
@@ -1811,6 +1821,12 @@ int HostProcessMain() {
 
   // Run the main (also UI) task executor until the host no longer needs it.
   run_loop.Run();
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  input_task_runner->PostTask(FROM_HERE, base::BindOnce([]() {
+                                delete ui::X11EventSource::GetInstance();
+                              }));
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   // Block until tasks blocking shutdown have completed their execution.
   base::ThreadPoolInstance::Get()->Shutdown();

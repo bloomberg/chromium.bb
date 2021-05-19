@@ -4,14 +4,14 @@ rootWebArea
 ++++++textField value='Hello<newline><newline>Bye'
 ++++++++list
 ++++++++++listItem
-++++++++++++listMarker name='• '
-++++++++++++++staticText name='• '
-++++++++++++++++inlineTextBox name='• '
+++++++++++++listMarker name='%E2%80%A2 '
+++++++++++++++staticText name='%E2%80%A2 '
+++++++++++++++++inlineTextBox name='%E2%80%A2 '
 ++++++++++++staticText name='Hello'
 ++++++++++++++inlineTextBox name='Hello'
 ++++++++++listItem
-++++++++++++listMarker name='• '
-++++++++++++++staticText name='• '
-++++++++++++++++inlineTextBox name='• '
+++++++++++++listMarker name='%E2%80%A2 '
+++++++++++++++staticText name='%E2%80%A2 '
+++++++++++++++++inlineTextBox name='%E2%80%A2 '
 ++++++++++++staticText name='Bye'
 ++++++++++++++inlineTextBox name='Bye'

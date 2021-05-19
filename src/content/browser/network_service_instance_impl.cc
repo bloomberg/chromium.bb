@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
@@ -54,7 +55,6 @@
 
 #if defined(OS_WIN)
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #endif  // defined(OS_WIN)
@@ -110,12 +110,15 @@ base::Thread& GetNetworkServiceDedicatedThread() {
 // |ShutDownNetworkService()|.
 network::NetworkService* g_in_process_instance = nullptr;
 
+static NetworkServiceClient* g_client = nullptr;
+
 void CreateInProcessNetworkServiceOnThread(
     mojo::PendingReceiver<network::mojom::NetworkService> receiver) {
   // The test interface doesn't need to be implemented in the in-process case.
   auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface(base::BindRepeating(
-      [](mojo::PendingReceiver<network::mojom::NetworkServiceTest>) {}));
+  registry->AddInterface(
+      base::DoNothing::Repeatedly<
+          mojo::PendingReceiver<network::mojom::NetworkServiceTest>>());
   g_in_process_instance = new network::NetworkService(
       std::move(registry), std::move(receiver),
       true /* delay_initialization_until_set_client */);
@@ -153,7 +156,8 @@ network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
   network_service_params->initial_connection_subtype =
       network::mojom::ConnectionSubtype(
           net::NetworkChangeNotifier::GetConnectionSubtype());
-
+  network_service_params->default_observer =
+      g_client->BindURLLoaderNetworkServiceObserver();
 #if defined(OS_POSIX)
   // Send Kerberos environment variables to the network service.
   if (IsOutOfProcessNetworkService()) {
@@ -185,7 +189,6 @@ void CreateNetworkServiceOnIOForTesting(
   GetLocalNetworkService() = std::make_unique<network::NetworkService>(
       nullptr /* registry */, std::move(receiver),
       true /* delay_initialization_until_set_client */);
-  GetLocalNetworkService()->StopMetricsTimerForTesting();
   GetLocalNetworkService()->Initialize(
       network::mojom::NetworkServiceParams::New(),
       true /* mock_network_change_notifier */);
@@ -198,8 +201,8 @@ void BindNetworkChangeManagerReceiver(
   GetNetworkService()->GetNetworkChangeManager(std::move(receiver));
 }
 
-base::CallbackList<void()>& GetCrashHandlersList() {
-  static base::NoDestructor<base::CallbackList<void()>> s_list;
+base::RepeatingClosureList& GetCrashHandlersList() {
+  static base::NoDestructor<base::RepeatingClosureList> s_list;
   return *s_list;
 }
 
@@ -279,8 +282,6 @@ ServiceStatus DetectSecurityProviders() {
 }
 #endif  // defined(OS_WIN)
 
-static NetworkServiceClient* g_client = nullptr;
-
 }  // namespace
 
 class NetworkServiceInstancePrivate {
@@ -328,11 +329,10 @@ network::mojom::NetworkService* GetNetworkService() {
         } else {
           if (service_was_bound)
             LOG(ERROR) << "Network service crashed, restarting service.";
-          ServiceProcessHost::Launch(
-              std::move(receiver),
-              ServiceProcessHost::Options()
-                  .WithDisplayName(base::UTF8ToUTF16("Network Service"))
-                  .Pass());
+          ServiceProcessHost::Launch(std::move(receiver),
+                                     ServiceProcessHost::Options()
+                                         .WithDisplayName(u"Network Service")
+                                         .Pass());
         }
       } else {
         // This should only be reached in unit tests.
@@ -352,12 +352,12 @@ network::mojom::NetworkService* GetNetworkService() {
         }
       }
 
-      mojo::PendingRemote<network::mojom::NetworkServiceClient> client_remote;
-      auto client_receiver = client_remote.InitWithNewPipeAndPassReceiver();
+      delete g_client;  // In case we're recreating the network service.
+      g_client = new NetworkServiceClient();
+
       // Call SetClient before creating NetworkServiceClient, as the latter
       // might make requests to NetworkService that depend on initialization.
-      (*g_network_service_remote)
-          ->SetClient(std::move(client_remote), CreateNetworkServiceParams());
+      (*g_network_service_remote)->SetParams(CreateNetworkServiceParams());
       g_network_service_is_responding = false;
       g_network_service_remote->QueryVersion(base::BindOnce(
           [](base::Time start_time, uint32_t) {
@@ -374,9 +374,6 @@ network::mojom::NetworkService* GetNetworkService() {
             }
           },
           base::Time::Now()));
-
-      delete g_client;  // In case we're recreating the network service.
-      g_client = new NetworkServiceClient(std::move(client_receiver));
 
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();

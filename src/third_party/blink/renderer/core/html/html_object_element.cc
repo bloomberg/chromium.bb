@@ -47,10 +47,7 @@ namespace blink {
 
 HTMLObjectElement::HTMLObjectElement(Document& document,
                                      const CreateElementFlags flags)
-    : HTMLPlugInElement(html_names::kObjectTag,
-                        document,
-                        flags,
-                        kShouldNotPreferPlugInsForImages),
+    : HTMLPlugInElement(html_names::kObjectTag, document, flags),
       use_fallback_content_(false) {
   EnsureUserAgentShadowRoot();
 }
@@ -291,18 +288,16 @@ void HTMLObjectElement::RemovedFrom(ContainerNode& insertion_point) {
 }
 
 void HTMLObjectElement::ChildrenChanged(const ChildrenChange& change) {
+  HTMLPlugInElement::ChildrenChanged(change);
   if (isConnected() && !UseFallbackContent()) {
     SetNeedsPluginUpdate(true);
     ReattachOnPluginChangeIfNeeded();
   }
-  HTMLPlugInElement::ChildrenChanged(change);
 }
 
 bool HTMLObjectElement::IsURLAttribute(const Attribute& attribute) const {
   return attribute.GetName() == html_names::kCodebaseAttr ||
          attribute.GetName() == html_names::kDataAttr ||
-         (attribute.GetName() == html_names::kUsemapAttr &&
-          attribute.Value()[0] != '#') ||
          HTMLPlugInElement::IsURLAttribute(attribute);
 }
 
@@ -402,10 +397,6 @@ void HTMLObjectElement::DidMoveToNewDocument(Document& old_document) {
 
 HTMLFormElement* HTMLObjectElement::formOwner() const {
   return ListedElement::Form();
-}
-
-bool HTMLObjectElement::IsInteractiveContent() const {
-  return FastHasAttribute(html_names::kUsemapAttr);
 }
 
 bool HTMLObjectElement::UseFallbackContent() const {

@@ -5,13 +5,17 @@
 * found in the LICENSE file.
 */
 
+#include "src/gpu/mtl/GrMtlUniformHandler.h"
+
+#include "include/private/GrMtlTypesPriv.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
-#include "src/gpu/mtl/GrMtlUniformHandler.h"
 
 #if !__has_feature(objc_arc)
 #error This file must be compiled with Arc. Use -fobjc-arc flag
 #endif
+
+GR_NORETAIN_BEGIN
 
 // TODO: this class is basically copy and pasted from GrVklUniformHandler so that we can have
 // some shaders working. The SkSL Metal code generator was written to work with GLSL generated for
@@ -213,7 +217,7 @@ GrGLSLUniformHandler::UniformHandle GrMtlUniformHandler::internalAddUniformArray
                                                                    int arrayCount,
                                                                    const char** outName) {
     SkASSERT(name && strlen(name));
-    GrSLTypeIsFloatType(type);
+    SkASSERT(GrSLTypeCanBeUniformValue(type));
 
     // TODO this is a bit hacky, lets think of a better way.  Basically we need to be able to use
     // the uniform view matrix name in the GP, and the GP is immutable so it has to tell the PB
@@ -304,7 +308,7 @@ void GrMtlUniformHandler::appendUniformDecls(GrShaderFlags visibility, SkString*
     SkString uniformsString;
     for (const UniformInfo& localUniform : fUniforms.items()) {
         if (visibility & localUniform.fVisibility) {
-            if (GrSLTypeIsFloatType(localUniform.fVariable.getType())) {
+            if (GrSLTypeCanBeUniformValue(localUniform.fVariable.getType())) {
                 localUniform.fVariable.appendDecl(fProgramBuilder->shaderCaps(), &uniformsString);
                 uniformsString.append(";\n");
             }
@@ -316,3 +320,5 @@ void GrMtlUniformHandler::appendUniformDecls(GrShaderFlags visibility, SkString*
         out->appendf("%s\n};\n", uniformsString.c_str());
     }
 }
+
+GR_NORETAIN_END

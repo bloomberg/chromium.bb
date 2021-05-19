@@ -64,9 +64,8 @@ void CreateAndSwitchToProfile(const std::string& basepath) {
   base::FilePath path = profile_manager->user_data_dir().AppendASCII(basepath);
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
-      path,
-      base::BindRepeating(&UnblockOnProfileInitialized, run_loop.QuitClosure()),
-      base::string16(), std::string());
+      path, base::BindRepeating(&UnblockOnProfileInitialized,
+                                run_loop.QuitClosure()));
   // Run the message loop to allow profile creation to take place; the loop is
   // terminated by UnblockOnProfileCreation when the profile is created.
   run_loop.Run();
@@ -372,18 +371,6 @@ bool StartupBrowserCreatorCorruptProfileTest::
 IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorCorruptProfileTest,
                        LastUsedProfileFallbackFail) {
   ADD_FAILURE() << "Test body is not expected to run.";
-}
-
-// DoNotStartLockedProfile : Profiles that are locked should never be
-// initialized. Since there are no unlocked profiles, the browser should not
-// start.
-IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorCorruptProfileTest,
-                       PRE_DoNotStartLockedProfile) {
-  // Lock the default profile. The user manager is shown after the profile is
-  // locked.
-  signin_util::SetForceSigninForTesting(true);
-  profiles::LockProfile(browser()->profile());
-  ExpectUserManagerToShow();
 }
 
 bool StartupBrowserCreatorCorruptProfileTest::

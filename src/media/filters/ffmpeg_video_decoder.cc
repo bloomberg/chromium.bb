@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -231,10 +232,6 @@ VideoDecoderType FFmpegVideoDecoder::GetDecoderType() const {
   return VideoDecoderType::kFFmpeg;
 }
 
-std::string FFmpegVideoDecoder::GetDisplayName() const {
-  return "FFmpegVideoDecoder";
-}
-
 void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                     bool low_delay,
                                     CdmContext* /* cdm_context */,
@@ -369,7 +366,7 @@ bool FFmpegVideoDecoder::FFmpegDecode(const DecoderBuffer& buffer) {
       return false;
     case FFmpegDecodingLoop::DecodeStatus::kDecodeFrameFailed:
       MEDIA_LOG(DEBUG, media_log_)
-          << GetDisplayName() << " failed to decode a video frame: "
+          << GetDecoderType() << " failed to decode a video frame: "
           << AVErrorToString(decoding_loop_->last_averror_code()) << ", at "
           << buffer.AsHumanReadableString();
       return false;
@@ -431,7 +428,7 @@ bool FFmpegVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config,
     return false;
   }
 
-  decoding_loop_.reset(new FFmpegDecodingLoop(codec_context_.get()));
+  decoding_loop_ = std::make_unique<FFmpegDecodingLoop>(codec_context_.get());
   return true;
 }
 

@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -194,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerSubresourceWebBundlesBrowserTest,
   GURL handler_url = embedded_test_server()->GetURL("/%s");
   AddProtocolHandler("urn", handler_url);
 
-  base::string16 expected_title = base::ASCIIToUTF16("OK");
+  std::u16string expected_title = u"OK";
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
 

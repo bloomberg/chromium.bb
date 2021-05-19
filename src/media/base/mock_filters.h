@@ -220,17 +220,25 @@ class MockDemuxerStream : public DemuxerStream {
 class MockVideoDecoder : public VideoDecoder {
  public:
   MockVideoDecoder();
-  explicit MockVideoDecoder(std::string decoder_name);
+  // Give a decoder a specific ID, like 42, so that different decoders in unit
+  // tests can be differentiated from one another. All of these decoders have
+  // a decoder type of kTesting, so that can't be used to differentiate them.
+  explicit MockVideoDecoder(int decoder_id);
   MockVideoDecoder(bool is_platform_decoder,
                    bool supports_decryption,
-                   std::string decoder_name);
+                   int decoder_id);
   ~MockVideoDecoder() override;
 
   // Decoder implementation
   bool IsPlatformDecoder() const override;
   bool SupportsDecryption() const override;
-  std::string GetDisplayName() const override;
-  VideoDecoderType GetDecoderType() const override;
+  VideoDecoderType GetDecoderType() const override {
+    return VideoDecoderType::kTesting;
+  }
+
+  // Allows getting the unique ID from a mock decoder so that they can be
+  // identified during tests without having to add unique VideoDecoderTypes.
+  int GetDecoderId() const { return decoder_id_; }
 
   // VideoDecoder implementation.
   void Initialize(const VideoDecoderConfig& config,
@@ -262,7 +270,7 @@ class MockVideoDecoder : public VideoDecoder {
  private:
   const bool is_platform_decoder_;
   const bool supports_decryption_;
-  const std::string decoder_name_;
+  const int decoder_id_ = 0;
   DISALLOW_COPY_AND_ASSIGN(MockVideoDecoder);
 };
 
@@ -335,17 +343,22 @@ class MockVideoEncoder : public VideoEncoder {
 class MockAudioDecoder : public AudioDecoder {
  public:
   MockAudioDecoder();
-  explicit MockAudioDecoder(std::string decoder_name);
+  explicit MockAudioDecoder(int decoder_id);
   explicit MockAudioDecoder(bool is_platform_decoder,
                             bool supports_decryption,
-                            std::string decoder_name);
+                            int decoder_id);
   ~MockAudioDecoder() override;
 
   // Decoder implementation
   bool IsPlatformDecoder() const override;
   bool SupportsDecryption() const override;
-  std::string GetDisplayName() const override;
-  AudioDecoderType GetDecoderType() const override;
+  AudioDecoderType GetDecoderType() const override {
+    return AudioDecoderType::kTesting;
+  }
+
+  // Allows getting the unique ID from a mock decoder so that they can be
+  // identified during tests without having to add unique VideoDecoderTypes.
+  int GetDecoderId() const { return decoder_id_; }
 
   // AudioDecoder implementation.
   void Initialize(const AudioDecoderConfig& config,
@@ -368,7 +381,7 @@ class MockAudioDecoder : public AudioDecoder {
  private:
   const bool is_platform_decoder_;
   const bool supports_decryption_;
-  const std::string decoder_name_;
+  const int decoder_id_ = 0;
   DISALLOW_COPY_AND_ASSIGN(MockAudioDecoder);
 };
 
@@ -627,7 +640,7 @@ class MockCdmContext : public CdmContext {
 
   base::Optional<base::UnguessableToken> GetCdmId() const override;
 
-  void set_cdm_id(const base::UnguessableToken* cdm_id);
+  void set_cdm_id(const base::UnguessableToken& cdm_id);
 
  private:
   base::Optional<base::UnguessableToken> cdm_id_;
@@ -684,11 +697,19 @@ class MockCdmKeyStatusPromise : public KeyStatusCdmPromise {
 
 class MockCdm : public ContentDecryptionModule {
  public:
+  MockCdm();
   MockCdm(const std::string& key_system,
           const SessionMessageCB& session_message_cb,
           const SessionClosedCB& session_closed_cb,
           const SessionKeysChangeCB& session_keys_change_cb,
           const SessionExpirationUpdateCB& session_expiration_update_cb);
+
+  void Initialize(
+      const std::string& key_system,
+      const SessionMessageCB& session_message_cb,
+      const SessionClosedCB& session_closed_cb,
+      const SessionKeysChangeCB& session_keys_change_cb,
+      const SessionExpirationUpdateCB& session_expiration_update_cb);
 
   // ContentDecryptionModule implementation.
   MOCK_METHOD2(SetServerCertificate,
@@ -727,16 +748,12 @@ class MockCdm : public ContentDecryptionModule {
                                      base::Time new_expiry_time);
 
   const std::string& GetKeySystem() const { return key_system_; }
-  const url::Origin& GetSecurityOrigin() const { return security_origin_; }
 
  protected:
   ~MockCdm() override;
 
  private:
   std::string key_system_;
-  url::Origin security_origin_;
-
-  // Callbacks.
   SessionMessageCB session_message_cb_;
   SessionClosedCB session_closed_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
@@ -747,7 +764,7 @@ class MockCdm : public ContentDecryptionModule {
 
 class MockCdmFactory : public CdmFactory {
  public:
-  MockCdmFactory();
+  explicit MockCdmFactory(scoped_refptr<MockCdm> cdm);
   ~MockCdmFactory() override;
 
   // CdmFactory implementation.
@@ -762,15 +779,12 @@ class MockCdmFactory : public CdmFactory {
               const SessionExpirationUpdateCB& session_expiration_update_cb,
               CdmCreatedCB cdm_created_cb) override;
 
-  // Return a pointer to the created CDM.
-  MockCdm* GetCreatedCdm();
-
   // Provide a callback to be called before the CDM is created and returned.
   void SetBeforeCreationCB(base::RepeatingClosure before_creation_cb);
 
  private:
   // Reference to the created CDM.
-  scoped_refptr<MockCdm> created_cdm_;
+  scoped_refptr<MockCdm> mock_cdm_;
 
   // Callback to be used before Create() successfully calls |cdm_created_cb|.
   base::RepeatingClosure before_creation_cb_;

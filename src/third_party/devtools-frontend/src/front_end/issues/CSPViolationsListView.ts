@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as SDK from '../sdk/sdk.js';
+import * as SDK from '../core/sdk/sdk.js';
 import * as LitHtml from '../third_party/lit-html/lit-html.js';
 import * as UIComponents from '../ui/components/components.js';  // eslint-disable-line rulesdir/es_modules_import
-import * as UI from '../ui/ui.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 export class CSPViolationsListView extends UI.Widget.VBox {
   private table = new UIComponents.DataGridController.DataGridController();
@@ -63,8 +63,8 @@ export class CSPViolationsListView extends UI.Widget.VBox {
   }
 
   addIssue(issue: SDK.ContentSecurityPolicyIssue.ContentSecurityPolicyIssue): void {
-    const sourceCode = issue.details().sourceCodeLocation;
-    if (!sourceCode) {
+    const location = SDK.Issue.toZeroBasedLocation(issue.details().sourceCodeLocation);
+    if (!location) {
       return;
     }
     const status = issue.details().isReportOnly ? 'report-only' : 'blocked';
@@ -73,12 +73,10 @@ export class CSPViolationsListView extends UI.Widget.VBox {
       cells: [
         {
           columnId: 'sourceCode',
-          value: sourceCode.url,
+          value: location.url,
           renderer(): LitHtml.TemplateResult {
-            return LitHtml.html`<devtools-linkifier .data=${{
-              url: sourceCode.url,
-              lineNumber: sourceCode.lineNumber,
-            } as UIComponents.Linkifier.LinkifierData}></devtools-linkifier>`;
+            return LitHtml.html`<devtools-linkifier .data=${
+                location as UIComponents.Linkifier.LinkifierData}></devtools-linkifier>`;
           },
         },
         {columnId: 'violatedDirective', value: issue.details().violatedDirective},

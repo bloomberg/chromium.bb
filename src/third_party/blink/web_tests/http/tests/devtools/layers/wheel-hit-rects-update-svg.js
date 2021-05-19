@@ -4,9 +4,9 @@
 
 (async function() {
   TestRunner.addResult(`Tests correctness of wheel scroll regions produced by SVG elements after parent update\n`);
-  await TestRunner.loadModule('layers_test_runner');
+  await TestRunner.loadModule('panels/layers'); await TestRunner.loadTestModule('layers_test_runner');
   await TestRunner.loadHTML(`
-    <div id="svg-root" style="width:300px;height:300px">
+    <div id="svg-root">
       <div>
         <svg width="100" height="100">
           <rect width="50" height="50" id="rect"></rect>

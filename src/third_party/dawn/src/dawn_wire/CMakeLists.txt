@@ -31,6 +31,8 @@ target_sources(dawn_wire PRIVATE
     "${DAWN_INCLUDE_DIR}/dawn_wire/WireServer.h"
     "${DAWN_INCLUDE_DIR}/dawn_wire/dawn_wire_export.h"
     ${DAWN_WIRE_GEN_SOURCES}
+    "BufferConsumer.h"
+    "BufferConsumer_impl.h"
     "ChunkedCommandHandler.cpp"
     "ChunkedCommandHandler.h"
     "ChunkedCommandSerializer.cpp"
@@ -39,6 +41,7 @@ target_sources(dawn_wire PRIVATE
     "WireClient.cpp"
     "WireDeserializeAllocator.cpp"
     "WireDeserializeAllocator.h"
+    "WireResult.h"
     "WireServer.cpp"
     "client/ApiObjects.h"
     "client/Buffer.cpp"
@@ -54,6 +57,8 @@ target_sources(dawn_wire PRIVATE
     "client/ObjectAllocator.h"
     "client/Queue.cpp"
     "client/Queue.h"
+    "client/ShaderModule.cpp"
+    "client/ShaderModule.h"
     "server/ObjectStorage.h"
     "server/Server.cpp"
     "server/Server.h"
@@ -62,6 +67,7 @@ target_sources(dawn_wire PRIVATE
     "server/ServerFence.cpp"
     "server/ServerInlineMemoryTransferService.cpp"
     "server/ServerQueue.cpp"
+    "server/ServerShaderModule.cpp"
 )
 target_link_libraries(dawn_wire
     PUBLIC dawn_headers

@@ -14,12 +14,11 @@
 
 #include "src/transform/transform.h"
 
-#include "src/ast/block_statement.h"
-#include "src/ast/function.h"
-#include "src/clone_context.h"
+#include <algorithm>
+
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::transform::Data);
+TINT_INSTANTIATE_TYPEINFO(tint::transform::Data);
 
 namespace tint {
 namespace transform {
@@ -59,8 +58,40 @@ ast::Function* Transform::CloneWithStatementsAtStart(
   auto* body = ctx->dst->create<ast::BlockStatement>(
       ctx->Clone(in->body()->source()), statements);
   auto decos = ctx->Clone(in->decorations());
+  auto ret_decos = ctx->Clone(in->return_type_decorations());
   return ctx->dst->create<ast::Function>(source, symbol, params, return_type,
-                                         body, decos);
+                                         body, decos, ret_decos);
+}
+
+void Transform::RenameReservedKeywords(CloneContext* ctx,
+                                       const char* names[],
+                                       size_t count) {
+  ctx->ReplaceAll([=](Symbol in) {
+    auto name_in = ctx->src->Symbols().NameFor(in);
+    if (!std::binary_search(names, names + count, name_in)) {
+      return ctx->dst->Symbols().Register(name_in);
+    }
+    // Create a new unique name
+    auto base_name = "_tint_" + name_in;
+    auto name_out = base_name;
+    for (int i = 0; ctx->src->Symbols().Get(name_out).IsValid(); i++) {
+      name_out = base_name + "_" + std::to_string(i);
+    }
+    return ctx->dst->Symbols().Register(name_out);
+  });
+}
+
+ast::DecorationList Transform::RemoveDecorations(
+    CloneContext* ctx,
+    const ast::DecorationList& in,
+    std::function<bool(const ast::Decoration*)> should_remove) {
+  ast::DecorationList new_decorations;
+  for (auto* deco : in) {
+    if (!should_remove(deco)) {
+      new_decorations.push_back(ctx->Clone(deco));
+    }
+  }
+  return new_decorations;
 }
 
 }  // namespace transform

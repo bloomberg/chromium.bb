@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UNINSTALLER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UNINSTALLER_VIEW_H_
 
+#include "base/callback_helpers.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 
@@ -58,7 +59,7 @@ class CrostiniUninstallerView : public views::BubbleDialogDelegateView {
   explicit CrostiniUninstallerView(Profile* profile);
   ~CrostiniUninstallerView() override;
 
-  void HandleError(const base::string16& error_message);
+  void HandleError(const std::u16string& error_message);
   void UninstallCrostiniFinished(crostini::CrostiniResult result);
   void RecordUninstallResultHistogram(UninstallResult result);
 

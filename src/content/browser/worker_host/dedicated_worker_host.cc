@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/loader/content_security_notifier.h"
@@ -34,6 +35,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/service_worker/service_worker_scope_match.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 
@@ -385,7 +387,7 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
           ancestor_render_frame_host->BuildClientSecurityState(),
           std::move(coep_reporter), worker_process_host_,
           ancestor_render_frame_host->IsFeatureEnabled(
-              blink::mojom::FeaturePolicyFeature::kTrustTokenRedemption)
+              blink::mojom::PermissionsPolicyFeature::kTrustTokenRedemption)
               ? network::mojom::TrustTokenRedemptionPolicy::kPotentiallyPermit
               : network::mojom::TrustTokenRedemptionPolicy::kForbid,
           "DedicatedWorkerHost::CreateNetworkFactoryForSubresources");
@@ -627,6 +629,44 @@ void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
 
   subresource_loader_updater_->UpdateSubresourceLoaderFactories(
       std::move(subresource_loader_factories));
+}
+
+void DedicatedWorkerHost::MaybeCountWebFeature(const GURL& script_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
+
+  RenderFrameHostImpl* ancestor_render_frame_host =
+      RenderFrameHostImpl::FromID(ancestor_render_frame_host_id_);
+  if (!ancestor_render_frame_host)
+    return;
+
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      ancestor_render_frame_host->GetLastCommittedServiceWorkerHost();
+  if (!container_host)
+    return;
+
+  // Count the number of dedicated workers that are controlled by the service
+  // worker that is inherited from a controlled document, and will not be
+  // controlled after PlzDedicatedWorker is enabled.
+  if (container_host->controller_registration() &&
+      !blink::ServiceWorkerScopeMatches(
+          container_host->controller_registration()->scope(), script_url)) {
+    container_host->CountFeature(
+        blink::mojom::WebFeature::kWorkerControlledByServiceWorkerOutOfScope);
+
+    // Count the number of dedicated workers that will not be controlled by the
+    // service worker with a fetch event handler. This better measures the risk
+    // of site breakage by PlzDedicatedWorker.
+    if (container_host->controller()) {
+      DCHECK_NE(container_host->controller()->fetch_handler_existence(),
+                ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
+      if (container_host->controller()->fetch_handler_existence() ==
+          ServiceWorkerVersion::FetchHandlerExistence::EXISTS)
+        container_host->CountFeature(
+            blink::mojom::WebFeature::
+                kWorkerControlledByServiceWorkerWithFetchEventHandlerOutOfScope);
+    }
+  }
 }
 
 }  // namespace content

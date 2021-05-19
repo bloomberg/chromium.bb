@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/strings/string16.h"
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -43,7 +42,7 @@ class FakeResultDelegate
   void OnFullCardRequestSucceeded(
       const autofill::payments::FullCardRequest& /* full_card_request */,
       const autofill::CreditCard& card,
-      const base::string16& cvc) override {}
+      const std::u16string& cvc) override {}
 
   void OnFullCardRequestFailed(
       autofill::payments::FullCardRequest::FailureType /* failure_type */)
@@ -74,7 +73,7 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
     AddCreditCard(autofill::test::GetCreditCard());  // Visa.
 
     auto frames_manager = std::make_unique<web::FakeWebFramesManager>();
-    auto main_frame = std::make_unique<web::FakeMainWebFrame>(
+    auto main_frame = web::FakeWebFrame::CreateMainWebFrame(
         /*security_origin=*/GURL());
     frames_manager->AddWebFrame(std::move(main_frame));
     web_state()->SetWebFramesManager(std::move(frames_manager));

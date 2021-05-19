@@ -16,18 +16,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "chromeos/assistant/internal/internal_util.h"
-#include "chromeos/assistant/internal/test_support/fake_alarm_timer_manager.h"
-#include "chromeos/assistant/internal/test_support/fake_assistant_manager.h"
-#include "chromeos/assistant/internal/test_support/fake_assistant_manager_internal.h"
 #include "chromeos/assistant/test_support/expect_utils.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/proxy/libassistant_service_host.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
-#include "chromeos/services/assistant/public/cpp/migration/fake_assistant_manager_service_delegate.h"
-#include "chromeos/services/assistant/public/cpp/migration/libassistant_v1_api.h"
 #include "chromeos/services/assistant/service_context.h"
 #include "chromeos/services/assistant/test_support/fake_libassistant_service.h"
 #include "chromeos/services/assistant/test_support/fake_service_context.h"
@@ -38,8 +32,6 @@
 #include "chromeos/services/assistant/test_support/scoped_device_actions.h"
 #include "chromeos/services/libassistant/public/cpp/assistant_timer.h"
 #include "chromeos/services/libassistant/public/mojom/speaker_id_enrollment_controller.mojom.h"
-#include "libassistant/shared/internal_api/assistant_manager_internal.h"
-#include "libassistant/shared/public/assistant_manager.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_session.mojom-shared.h"
@@ -52,61 +44,21 @@
 namespace chromeos {
 namespace assistant {
 
+using chromeos::libassistant::mojom::ServiceState;
+using chromeos::libassistant::mojom::SpeakerIdEnrollmentStatus;
 using media_session::mojom::MediaSessionAction;
 using testing::_;
 using testing::ElementsAre;
 using testing::Invoke;
 using testing::NiceMock;
 using testing::StrictMock;
-using CommunicationErrorType = AssistantManagerService::CommunicationErrorType;
 using UserInfo = AssistantManagerService::UserInfo;
-using libassistant::mojom::ServiceState;
-using libassistant::mojom::SpeakerIdEnrollmentStatus;
 
 namespace {
 
-const char* kNoValue = FakeAssistantManager::kNoValue;
-
+const char* kNoValue = FakeServiceController::kNoValue;
 #define EXPECT_STATE(_state) \
   EXPECT_EQ(_state, assistant_manager_service()->GetState());
-
-// Adds an AlarmTimerEvent of the given |type| to |events|.
-void AddAlarmTimerEvent(std::vector<assistant_client::AlarmTimerEvent>* events,
-                        assistant_client::AlarmTimerEvent::Type type) {
-  events->push_back(assistant_client::AlarmTimerEvent());
-  events->back().type = type;
-}
-
-// Adds an AlarmTimerEvent of type TIMER with the given |state| to |events|.
-void AddTimerEvent(std::vector<assistant_client::AlarmTimerEvent>* events,
-                   assistant_client::Timer::State state) {
-  AddAlarmTimerEvent(events, assistant_client::AlarmTimerEvent::TIMER);
-  events->back().timer_data.state = state;
-}
-
-// Return the list of all libassistant error codes that are considered to be
-// authentication errors. This list is created on demand as there is no clear
-// enum that defines these, and we don't want to hard code this list in the
-// test.
-std::vector<int> GetAuthenticationErrorCodes() {
-  const int kMinErrorCode = GetLowestErrorCode();
-  const int kMaxErrorCode = GetHighestErrorCode();
-
-  std::vector<int> result;
-  for (int code = kMinErrorCode; code <= kMaxErrorCode; ++code) {
-    if (IsAuthError(code))
-      result.push_back(code);
-  }
-
-  return result;
-}
-
-// Return a list of some libassistant error codes that are not considered to be
-// authentication errors.  Note we do not return all such codes as there are
-// simply too many and testing them all significantly slows down the tests.
-std::vector<int> GetNonAuthenticationErrorCodes() {
-  return {-99999, 0, 1};
-}
 
 class AssistantAlarmTimerControllerMock
     : public ash::AssistantAlarmTimerController {
@@ -130,37 +82,17 @@ class AssistantAlarmTimerControllerMock
               (override));
 };
 
-class CommunicationErrorObserverMock
-    : public AssistantManagerService::CommunicationErrorObserver {
- public:
-  CommunicationErrorObserverMock() = default;
-  ~CommunicationErrorObserverMock() override = default;
-
-  MOCK_METHOD(void,
-              OnCommunicationError,
-              (AssistantManagerService::CommunicationErrorType error));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CommunicationErrorObserverMock);
-};
-
 class FakeLibassistantServiceHost : public LibassistantServiceHost {
  public:
   explicit FakeLibassistantServiceHost(FakeLibassistantService* service)
       : service_(service) {}
 
   void Launch(
-      mojo::PendingReceiver<LibassistantServiceMojom> receiver) override {
+      mojo::PendingReceiver<chromeos::libassistant::mojom::LibassistantService>
+          receiver) override {
     service_->Bind(std::move(receiver));
   }
   void Stop() override { service_->Unbind(); }
-
-  void SetInitializeCallback(
-      base::OnceCallback<void(assistant_client::AssistantManager*,
-                              assistant_client::AssistantManagerInternal*)>
-          callback) override {
-    service_->service_controller().SetInitializeCallback(std::move(callback));
-  }
 
  private:
   FakeLibassistantService* service_;
@@ -175,19 +107,6 @@ class StateObserverMock : public AssistantManagerService::StateObserver {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StateObserverMock);
-};
-
-class FakeLibassistantV1Api : public LibassistantV1Api {
- public:
-  explicit FakeLibassistantV1Api(FakeAssistantManager* assistant_manager)
-      : LibassistantV1Api(assistant_manager,
-                          &assistant_manager->assistant_manager_internal()) {
-    SetActionModule(&action_module_);
-  }
-
- private:
-  action::CrosActionModule action_module_{features::IsAppSupportEnabled(),
-                                          features::IsWaitSchedulingEnabled()};
 };
 
 class AssistantManagerServiceImplTest : public testing::Test {
@@ -216,9 +135,19 @@ class AssistantManagerServiceImplTest : public testing::Test {
         ->set_main_task_runner(task_environment().GetMainThreadTaskRunner())
         .set_power_manager_client(PowerManagerClient::Get())
         .set_assistant_state(&assistant_state_)
+        .set_cras_audio_handler(&cras_audio_handler_.Get())
         .set_assistant_alarm_timer_controller(alarm_timer_controller_.get());
 
     CreateAssistantManagerServiceImpl();
+
+    // Flushes the background thread to let Mojom finish all its work (i.e.
+    // binding controllers) before moving formard.
+    RunUntilIdle();
+  }
+
+  void TearDown() override {
+    assistant_manager_service_.reset();
+    PowerManagerClient::Shutdown();
   }
 
   void CreateAssistantManagerServiceImpl(
@@ -229,16 +158,9 @@ class AssistantManagerServiceImplTest : public testing::Test {
     assistant_manager_service_.reset();
 
     assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-        service_context_.get(),
-        std::make_unique<FakeAssistantManagerServiceDelegate>(),
-        shared_url_loader_factory_->Clone(), s3_server_uri_override,
-        device_id_override,
+        service_context_.get(), shared_url_loader_factory_->Clone(),
+        s3_server_uri_override, device_id_override,
         std::make_unique<FakeLibassistantServiceHost>(&libassistant_service_));
-  }
-
-  void TearDown() override {
-    assistant_manager_service_.reset();
-    PowerManagerClient::Shutdown();
   }
 
   FakeServiceController& mojom_service_controller() {
@@ -261,39 +183,7 @@ class AssistantManagerServiceImplTest : public testing::Test {
 
   FullyInitializedAssistantState& assistant_state() { return assistant_state_; }
 
-  FakeAssistantManager* fake_assistant_manager() {
-    return assistant_manager_.get();
-  }
-
-  FakeAssistantManagerInternal* fake_assistant_manager_internal() {
-    return &fake_assistant_manager()->assistant_manager_internal();
-  }
-
-  FakeAlarmTimerManager* fake_alarm_timer_manager() {
-    return static_cast<FakeAlarmTimerManager*>(
-        fake_assistant_manager_internal()->GetAlarmTimerManager());
-  }
-
   FakeServiceContext* fake_service_context() { return service_context_.get(); }
-
-  action::CrosActionModule* action_module() {
-    return assistant_manager_service_->action_module();
-  }
-
-  // Replace the |AssistantAlarmTimerControllerMock| with a |StrictMock|.
-  void UseStrictAlarmTimerControllerMock() {
-    // We can not have 2 instances of |AssistantAlarmTimerController| at the
-    // same time, so we must destroy the current version first.
-    alarm_timer_controller_ = nullptr;
-    alarm_timer_controller_ =
-        std::make_unique<StrictMock<AssistantAlarmTimerControllerMock>>();
-    fake_service_context()->set_assistant_alarm_timer_controller(
-        alarm_timer_controller_.get());
-  }
-
-  AssistantAlarmTimerControllerMock& alarm_timer_controller_mock() {
-    return *alarm_timer_controller_;
-  }
 
   base::test::TaskEnvironment& task_environment() { return task_environment_; }
 
@@ -305,9 +195,9 @@ class AssistantManagerServiceImplTest : public testing::Test {
   // Start Libassistant, and wait until it is running.
   void StartAndWaitForRunning() {
     Start();
-    WaitForState(AssistantManagerService::STARTED);
+    WaitForState(AssistantManagerService::State::kStarted);
     mojom_service_controller().SetState(ServiceState::kRunning);
-    WaitForState(AssistantManagerService::RUNNING);
+    WaitForState(AssistantManagerService::State::kRunning);
   }
 
   void RunUntilIdle() {
@@ -333,50 +223,6 @@ class AssistantManagerServiceImplTest : public testing::Test {
         "AssistantManagerStateImpl");
   }
 
-  // Raise all the |libassistant_error_codes| as communication errors from
-  // libassistant, and check that they are reported to our
-  // |AssistantCommunicationErrorObserver| as errors of type |expected_type|.
-  void TestCommunicationErrors(const std::vector<int>& libassistant_error_codes,
-                               CommunicationErrorType expected_error) {
-    Start();
-    WaitForState(AssistantManagerService::STARTED);
-
-    auto* delegate =
-        fake_assistant_manager_internal()->assistant_manager_delegate();
-
-    for (int code : libassistant_error_codes) {
-      CommunicationErrorObserverMock observer;
-      assistant_manager_service()->AddCommunicationErrorObserver(&observer);
-
-      EXPECT_CALL(observer, OnCommunicationError(expected_error));
-
-      delegate->OnCommunicationError(code);
-      RunUntilIdle();
-
-      assistant_manager_service()->RemoveCommunicationErrorObserver(&observer);
-
-      ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&observer))
-          << "Failure for error code " << code;
-    }
-  }
-
-  void SetAssistantManagerInternal(std::unique_ptr<FakeAssistantManagerInternal>
-                                       assistant_manager_internal) {
-    assistant_manager_->set_assistant_manager_internal(
-        std::move(assistant_manager_internal));
-    libassistant_v1_api_.reset();
-    libassistant_v1_api_ =
-        std::make_unique<FakeLibassistantV1Api>(assistant_manager_.get());
-  }
-
-  void SetAssistantManager(
-      std::unique_ptr<FakeAssistantManager> assistant_manager) {
-    assistant_manager_ = std::move(assistant_manager);
-    libassistant_v1_api_.reset();
-    libassistant_v1_api_ =
-        std::make_unique<FakeLibassistantV1Api>(assistant_manager_.get());
-  }
-
  private:
   base::Thread& background_thread() {
     return assistant_manager_service()->GetBackgroundThreadForTesting();
@@ -385,16 +231,12 @@ class AssistantManagerServiceImplTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
 
   ScopedAssistantClient assistant_client_;
+  ash::ScopedCrasAudioHandlerForTesting cras_audio_handler_;
   ScopedDeviceActions device_actions_;
   FullyInitializedAssistantState assistant_state_;
 
   // Fake implementation of the Libassistant Mojom service.
   FakeLibassistantService libassistant_service_;
-
-  std::unique_ptr<FakeAssistantManager> assistant_manager_{
-      std::make_unique<FakeAssistantManager>()};
-  std::unique_ptr<FakeLibassistantV1Api> libassistant_v1_api_{
-      std::make_unique<FakeLibassistantV1Api>(assistant_manager_.get())};
 
   std::unique_ptr<AssistantAlarmTimerControllerMock> alarm_timer_controller_;
   std::unique_ptr<FakeServiceContext> service_context_;
@@ -408,7 +250,7 @@ class AssistantManagerServiceImplTest : public testing::Test {
 };
 
 class SpeakerIdEnrollmentControllerMock
-    : public ::chromeos::libassistant::mojom::SpeakerIdEnrollmentController {
+    : public chromeos::libassistant::mojom::SpeakerIdEnrollmentController {
  public:
   SpeakerIdEnrollmentControllerMock() = default;
   SpeakerIdEnrollmentControllerMock(const SpeakerIdEnrollmentControllerMock&) =
@@ -417,24 +259,24 @@ class SpeakerIdEnrollmentControllerMock
       const SpeakerIdEnrollmentControllerMock&) = delete;
   ~SpeakerIdEnrollmentControllerMock() override = default;
 
-  // ::chromeos::libassistant::mojom::SpeakerIdEnrollmentController
+  // chromeos::libassistant::mojom::SpeakerIdEnrollmentController
   // implementation:
   MOCK_METHOD(
       void,
       StartSpeakerIdEnrollment,
       (const std::string& user_gaia_id,
        bool skip_cloud_enrollment,
-       ::mojo::PendingRemote<libassistant::mojom::SpeakerIdEnrollmentClient>
-           client));
+       mojo::PendingRemote<
+           chromeos::libassistant::mojom::SpeakerIdEnrollmentClient> client));
   MOCK_METHOD(void, StopSpeakerIdEnrollment, ());
   MOCK_METHOD(void,
               GetSpeakerIdEnrollmentStatus,
               (const std::string& user_gaia_id,
                GetSpeakerIdEnrollmentStatusCallback callback));
 
-  void Bind(
-      mojo::PendingReceiver<libassistant::mojom::SpeakerIdEnrollmentController>
-          pending_receiver) {
+  void Bind(mojo::PendingReceiver<
+            chromeos::libassistant::mojom::SpeakerIdEnrollmentController>
+                pending_receiver) {
     receiver_.Bind(std::move(pending_receiver));
   }
 
@@ -473,62 +315,55 @@ class SpeakerIdEnrollmentClientMock : public SpeakerIdEnrollmentClient {
 }  // namespace
 
 TEST_F(AssistantManagerServiceImplTest, StateShouldStartAsStopped) {
-  EXPECT_STATE(AssistantManagerService::STOPPED);
+  EXPECT_STATE(AssistantManagerService::State::kStopped);
 }
 
 TEST_F(AssistantManagerServiceImplTest,
-       StateShouldChangeToStartingAfterCallingStart) {
-  Start();
-
-  EXPECT_STATE(AssistantManagerService::STARTING);
-}
-
-TEST_F(AssistantManagerServiceImplTest,
-       StateShouldRemainStartingUntilLibassistantServiceIsStarted) {
+       StateShouldRemainStoppedUntilLibassistantServiceIsStarted) {
   mojom_service_controller().BlockStartCalls();
 
   Start();
-  WaitForState(AssistantManagerService::STARTING);
+  WaitForState(AssistantManagerService::State::kStopped);
 
   mojom_service_controller().UnblockStartCalls();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 }
 
 TEST_F(AssistantManagerServiceImplTest,
        StateShouldBecomeRunningAfterLibassistantSignalsRunningState) {
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   mojom_service_controller().SetState(ServiceState::kRunning);
 
-  WaitForState(AssistantManagerService::RUNNING);
+  WaitForState(AssistantManagerService::State::kRunning);
 }
 
 TEST_F(AssistantManagerServiceImplTest, ShouldSetStateToStoppedAfterStopping) {
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   assistant_manager_service()->Stop();
-  WaitForState(AssistantManagerService::STOPPED);
+  WaitForState(AssistantManagerService::State::kStopped);
 }
 
 TEST_F(AssistantManagerServiceImplTest, ShouldAllowRestartingAfterStopping) {
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   assistant_manager_service()->Stop();
-  WaitForState(AssistantManagerService::STOPPED);
+  WaitForState(AssistantManagerService::State::kStopped);
 
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 }
 
 TEST_F(AssistantManagerServiceImplTest, ShouldNotResetDataWhenStopping) {
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   assistant_manager_service()->Stop();
-  WaitForState(AssistantManagerService::STOPPED);
+  WaitForState(AssistantManagerService::State::kStopped);
   RunUntilIdle();
 
   EXPECT_EQ(false, mojom_service_controller().has_data_been_reset());
@@ -537,33 +372,14 @@ TEST_F(AssistantManagerServiceImplTest, ShouldNotResetDataWhenStopping) {
 TEST_F(AssistantManagerServiceImplTest,
        ShouldResetDataWhenAssistantIsDisabled) {
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   assistant_state().SetAssistantEnabled(false);
   assistant_manager_service()->Stop();
-  WaitForState(AssistantManagerService::STOPPED);
+  WaitForState(AssistantManagerService::State::kStopped);
   RunUntilIdle();
 
   EXPECT_EQ(true, mojom_service_controller().has_data_been_reset());
-}
-
-TEST_F(AssistantManagerServiceImplTest,
-       ShouldReportAuthenticationErrorsToCommunicationErrorObservers) {
-  TestCommunicationErrors(GetAuthenticationErrorCodes(),
-                          CommunicationErrorType::AuthenticationError);
-}
-
-TEST_F(AssistantManagerServiceImplTest,
-       ShouldReportNonAuthenticationErrorsToCommunicationErrorObservers) {
-  std::vector<int> non_authentication_errors = GetNonAuthenticationErrorCodes();
-
-  // check to ensure these are not authentication errors.
-  for (int code : non_authentication_errors)
-    ASSERT_FALSE(IsAuthError(code));
-
-  // Run the actual unittest
-  TestCommunicationErrors(non_authentication_errors,
-                          CommunicationErrorType::Other);
 }
 
 TEST_F(AssistantManagerServiceImplTest,
@@ -571,7 +387,7 @@ TEST_F(AssistantManagerServiceImplTest,
   assistant_manager_service()->Start(UserInfo("<user-id>", "<access-token>"),
                                      /*enable_hotword=*/false);
 
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   EXPECT_EQ("<user-id>", mojom_service_controller().gaia_id());
   EXPECT_EQ("<access-token>", mojom_service_controller().access_token());
@@ -579,7 +395,7 @@ TEST_F(AssistantManagerServiceImplTest,
 
 TEST_F(AssistantManagerServiceImplTest, ShouldPassUserInfoToAssistantManager) {
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   assistant_manager_service()->SetUser(
       UserInfo("<new-user-id>", "<new-access-token>"));
@@ -592,7 +408,7 @@ TEST_F(AssistantManagerServiceImplTest, ShouldPassUserInfoToAssistantManager) {
 TEST_F(AssistantManagerServiceImplTest,
        ShouldPassEmptyUserInfoToAssistantManager) {
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   assistant_manager_service()->SetUser(base::nullopt);
   RunUntilIdle();
@@ -603,11 +419,11 @@ TEST_F(AssistantManagerServiceImplTest,
 
 TEST_F(AssistantManagerServiceImplTest,
        ShouldNotCrashWhenSettingUserInfoBeforeStartIsFinished) {
-  EXPECT_STATE(AssistantManagerService::STOPPED);
+  EXPECT_STATE(AssistantManagerService::State::kStopped);
   assistant_manager_service()->SetUser(UserInfo("<user-id>", "<access-token>"));
 
   Start();
-  EXPECT_STATE(AssistantManagerService::STARTING);
+  EXPECT_STATE(AssistantManagerService::State::kStopped);
   assistant_manager_service()->SetUser(UserInfo("<user-id>", "<access-token>"));
 }
 
@@ -616,7 +432,7 @@ TEST_F(AssistantManagerServiceImplTest,
   CreateAssistantManagerServiceImpl("the-uri-override");
 
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   EXPECT_EQ(mojom_service_controller()
                 .libassistant_config()
@@ -630,7 +446,7 @@ TEST_F(AssistantManagerServiceImplTest,
       /*s3_server_uri_override=*/base::nullopt, "the-device-id-override");
 
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   EXPECT_EQ(mojom_service_controller()
                 .libassistant_config()
@@ -691,7 +507,7 @@ TEST_F(AssistantManagerServiceImplTest, ShouldIgnoreOtherMediaManagerActions) {
 TEST_F(AssistantManagerServiceImplTest,
        ShouldNotCrashWhenMediaManagerIsAbsent) {
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   assistant_manager_service()->UpdateInternalMediaPlayerStatus(
       media_session::mojom::MediaSessionAction::kPlay);
@@ -700,25 +516,11 @@ TEST_F(AssistantManagerServiceImplTest,
 TEST_F(AssistantManagerServiceImplTest, ShouldFireStateObserverWhenAddingIt) {
   StrictMock<StateObserverMock> observer;
   EXPECT_CALL(observer,
-              OnStateChanged(AssistantManagerService::State::STOPPED));
+              OnStateChanged(AssistantManagerService::State::kStopped));
 
   assistant_manager_service()->AddAndFireStateObserver(&observer);
 
   assistant_manager_service()->RemoveStateObserver(&observer);
-}
-
-TEST_F(AssistantManagerServiceImplTest, ShouldFireStateObserverWhenStarting) {
-  StrictMock<StateObserverMock> observer;
-  AddStateObserver(&observer);
-
-  fake_assistant_manager()->BlockStartCalls();
-
-  EXPECT_CALL(observer,
-              OnStateChanged(AssistantManagerService::State::STARTING));
-  Start();
-
-  assistant_manager_service()->RemoveStateObserver(&observer);
-  fake_assistant_manager()->UnblockStartCalls();
 }
 
 TEST_F(AssistantManagerServiceImplTest, ShouldFireStateObserverWhenStarted) {
@@ -726,11 +528,9 @@ TEST_F(AssistantManagerServiceImplTest, ShouldFireStateObserverWhenStarted) {
   AddStateObserver(&observer);
 
   EXPECT_CALL(observer,
-              OnStateChanged(AssistantManagerService::State::STARTING));
-  EXPECT_CALL(observer,
-              OnStateChanged(AssistantManagerService::State::STARTED));
+              OnStateChanged(AssistantManagerService::State::kStarted));
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   assistant_manager_service()->RemoveStateObserver(&observer);
 }
@@ -738,29 +538,30 @@ TEST_F(AssistantManagerServiceImplTest, ShouldFireStateObserverWhenStarted) {
 TEST_F(AssistantManagerServiceImplTest,
        ShouldFireStateObserverWhenLibAssistantServiceIsRunning) {
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   StrictMock<StateObserverMock> observer;
   AddStateObserver(&observer);
   EXPECT_CALL(observer,
-              OnStateChanged(AssistantManagerService::State::RUNNING));
+              OnStateChanged(AssistantManagerService::State::kRunning));
 
   mojom_service_controller().SetState(ServiceState::kRunning);
-  WaitForState(AssistantManagerService::RUNNING);
+  WaitForState(AssistantManagerService::State::kRunning);
 
   assistant_manager_service()->RemoveStateObserver(&observer);
 }
 
 TEST_F(AssistantManagerServiceImplTest, ShouldFireStateObserverWhenStopping) {
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   StrictMock<StateObserverMock> observer;
   AddStateObserver(&observer);
   EXPECT_CALL(observer,
-              OnStateChanged(AssistantManagerService::State::STOPPED));
+              OnStateChanged(AssistantManagerService::State::kStopped));
 
   assistant_manager_service()->Stop();
+  WaitForState(AssistantManagerService::State::kStopped);
 
   assistant_manager_service()->RemoveStateObserver(&observer);
 }
@@ -777,166 +578,10 @@ TEST_F(AssistantManagerServiceImplTest,
 }
 
 TEST_F(AssistantManagerServiceImplTest,
-       ShouldNotifyAlarmTimerControllerOfOnlyRingingTimersInV1) {
-  UseStrictAlarmTimerControllerMock();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kAssistantTimersV2);
-
-  StartAndWaitForRunning();
-
-  EXPECT_CALL(alarm_timer_controller_mock(), OnTimerStateChanged)
-      .WillOnce(Invoke([](const auto& timers) {
-        ASSERT_EQ(1u, timers.size());
-        EXPECT_EQ(AssistantTimerState::kFired, timers[0].state);
-      }));
-
-  std::vector<assistant_client::AlarmTimerEvent> events;
-
-  // Ignore NONE, ALARMs, and SCHEDULED/PAUSED timers.
-  AddAlarmTimerEvent(&events, assistant_client::AlarmTimerEvent::Type::NONE);
-  AddAlarmTimerEvent(&events, assistant_client::AlarmTimerEvent::Type::ALARM);
-  AddTimerEvent(&events, assistant_client::Timer::State::SCHEDULED);
-  AddTimerEvent(&events, assistant_client::Timer::State::PAUSED);
-
-  // Accept FIRED timers.
-  AddTimerEvent(&events, assistant_client::Timer::State::FIRED);
-
-  fake_alarm_timer_manager()->SetAllEvents(std::move(events));
-  fake_alarm_timer_manager()->NotifyRingingStateListeners();
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(AssistantManagerServiceImplTest,
-       ShouldNotifyAlarmTimerControllerOfAnyTimersInV2) {
-  UseStrictAlarmTimerControllerMock();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAssistantTimersV2);
-
-  // We expect OnTimerStateChanged() to be invoked when starting LibAssistant.
-  EXPECT_CALL(alarm_timer_controller_mock(), OnTimerStateChanged).Times(1);
-
-  StartAndWaitForRunning();
-
-  testing::Mock::VerifyAndClearExpectations(&alarm_timer_controller_mock());
-
-  EXPECT_CALL(alarm_timer_controller_mock(), OnTimerStateChanged)
-      .WillOnce(Invoke([](const auto& timers) {
-        ASSERT_EQ(3u, timers.size());
-        EXPECT_EQ(AssistantTimerState::kScheduled, timers[0].state);
-        EXPECT_EQ(AssistantTimerState::kPaused, timers[1].state);
-        EXPECT_EQ(AssistantTimerState::kFired, timers[2].state);
-      }));
-
-  std::vector<assistant_client::AlarmTimerEvent> events;
-
-  // Ignore NONE and ALARMs.
-  AddAlarmTimerEvent(&events, assistant_client::AlarmTimerEvent::Type::NONE);
-  AddAlarmTimerEvent(&events, assistant_client::AlarmTimerEvent::Type::ALARM);
-
-  // Accept SCHEDULED/PAUSED/FIRED timers.
-  AddTimerEvent(&events, assistant_client::Timer::State::SCHEDULED);
-  AddTimerEvent(&events, assistant_client::Timer::State::PAUSED);
-  AddTimerEvent(&events, assistant_client::Timer::State::FIRED);
-
-  fake_alarm_timer_manager()->SetAllEvents(std::move(events));
-  fake_alarm_timer_manager()->NotifyRingingStateListeners();
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(AssistantManagerServiceImplTest,
-       ShouldNotifyAlarmTimerControllerOfTimersWhenStartingLibAssistantInV2) {
-  UseStrictAlarmTimerControllerMock();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAssistantTimersV2);
-
-  // Pre-populate the AlarmTimerManager with a single scheduled timer.
-  std::vector<assistant_client::AlarmTimerEvent> events;
-  AddTimerEvent(&events, assistant_client::Timer::State::SCHEDULED);
-  fake_alarm_timer_manager()->SetAllEvents(std::move(events));
-
-  // Expect |timers| to be sent to AssistantAlarmTimerController.  Verify
-  // AssistantAlarmTimerController is notified of the scheduled timer.
-  EXPECT_CALL(alarm_timer_controller_mock(), OnTimerStateChanged)
-      .WillOnce(Invoke([](const auto& timers) {
-        ASSERT_EQ(1u, timers.size());
-        EXPECT_EQ(AssistantTimerState::kScheduled, timers[0].state);
-      }));
-
-  // Start LibAssistant.
-  StartAndWaitForRunning();
-}
-
-class AssistantManagerMock : public FakeAssistantManager {
- public:
-  AssistantManagerMock() = default;
-  ~AssistantManagerMock() override = default;
-
-  MOCK_METHOD(void, StartAssistantInteraction, (), (override));
-};
-
-class AssistantManagerInternalMock : public FakeAssistantManagerInternal {
- public:
-  AssistantManagerInternalMock() = default;
-  ~AssistantManagerInternalMock() override = default;
-
-  MOCK_METHOD(void, StopAssistantInteractionInternal, (bool), (override));
-};
-
-TEST_F(AssistantManagerServiceImplTest, ShouldStopInteractionAfterDelay) {
-  // Start LibAssistant.
-  Start();
-  WaitForState(AssistantManagerService::STARTED);
-
-  auto assistant_manager_internal_mock =
-      std::make_unique<AssistantManagerInternalMock>();
-  auto* mock_ptr = assistant_manager_internal_mock.get();
-  SetAssistantManagerInternal(std::move(assistant_manager_internal_mock));
-
-  EXPECT_CALL(*mock_ptr, StopAssistantInteractionInternal).Times(0);
-
-  assistant_manager_service()->StopActiveInteraction(true);
-  testing::Mock::VerifyAndClearExpectations(mock_ptr);
-
-  WAIT_FOR_CALL(*mock_ptr, StopAssistantInteractionInternal);
-}
-
-TEST_F(AssistantManagerServiceImplTest,
-       ShouldStopInteractionImmediatelyBeforeNewInteraction) {
-  // Start LibAssistant.
-  Start();
-  WaitForState(AssistantManagerService::STARTED);
-
-  auto assistant_manager_mock = std::make_unique<AssistantManagerMock>();
-  auto assistant_manager_internal_mock =
-      std::make_unique<AssistantManagerInternalMock>();
-  auto* assistant_manager_mock_ptr = assistant_manager_mock.get();
-  auto* assistant_manager_internal_mock_ptr =
-      assistant_manager_internal_mock.get();
-
-  assistant_manager_mock->set_assistant_manager_internal(
-      std::move(assistant_manager_internal_mock));
-  SetAssistantManager(std::move(assistant_manager_mock));
-
-  EXPECT_CALL(*assistant_manager_internal_mock_ptr,
-              StopAssistantInteractionInternal)
-      .Times(0);
-
-  assistant_manager_service()->StopActiveInteraction(true);
-  testing::Mock::VerifyAndClearExpectations(
-      assistant_manager_internal_mock_ptr);
-
-  EXPECT_CALL(*assistant_manager_internal_mock_ptr,
-              StopAssistantInteractionInternal)
-      .Times(1);
-  EXPECT_CALL(*assistant_manager_mock_ptr, StartAssistantInteraction).Times(1);
-  assistant_manager_service()->StartVoiceInteraction();
-}
-
-TEST_F(AssistantManagerServiceImplTest,
        ShouldStartSpeakerIdEnrollmentWhenRequested) {
   NiceMock<SpeakerIdEnrollmentClientMock> client_mock;
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   StrictMock<SpeakerIdEnrollmentControllerMock> mojom_mock;
   mojom_mock.Bind(mojom_libassistant_service());
@@ -954,7 +599,7 @@ TEST_F(AssistantManagerServiceImplTest,
   NiceMock<SpeakerIdEnrollmentClientMock> client_mock;
   fake_service_context()->set_primary_account_gaia_id("gaia user id");
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   StrictMock<SpeakerIdEnrollmentControllerMock> mojom_mock;
   mojom_mock.Bind(mojom_libassistant_service());
@@ -970,7 +615,7 @@ TEST_F(AssistantManagerServiceImplTest,
 TEST_F(AssistantManagerServiceImplTest,
        ShouldSendSkipCloudEnrollmentDuringSpeakerIdEnrollment) {
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   StrictMock<SpeakerIdEnrollmentControllerMock> mojom_mock;
   mojom_mock.Bind(mojom_libassistant_service());
@@ -999,7 +644,7 @@ TEST_F(AssistantManagerServiceImplTest,
 TEST_F(AssistantManagerServiceImplTest, ShouldSendStopSpeakerIdEnrollment) {
   NiceMock<SpeakerIdEnrollmentClientMock> client_mock;
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   StrictMock<SpeakerIdEnrollmentControllerMock> mojom_mock;
   mojom_mock.Bind(mojom_libassistant_service());
@@ -1013,7 +658,7 @@ TEST_F(AssistantManagerServiceImplTest, ShouldSendStopSpeakerIdEnrollment) {
 TEST_F(AssistantManagerServiceImplTest, ShouldSyncSpeakerIdEnrollmentStatus) {
   StrictMock<SpeakerIdEnrollmentClientMock> client_mock;
   Start();
-  WaitForState(AssistantManagerService::STARTED);
+  WaitForState(AssistantManagerService::State::kStarted);
 
   StrictMock<SpeakerIdEnrollmentControllerMock> mojom_mock;
   mojom_mock.Bind(mojom_libassistant_service());
@@ -1036,7 +681,6 @@ TEST_F(AssistantManagerServiceImplTest,
 
   StrictMock<SpeakerIdEnrollmentClientMock> client_mock;
   StrictMock<SpeakerIdEnrollmentControllerMock> mojom_mock;
-  RunUntilIdle();
 
   mojom_mock.Bind(mojom_libassistant_service());
 

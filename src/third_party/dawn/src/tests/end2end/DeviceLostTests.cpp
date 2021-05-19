@@ -87,8 +87,7 @@ class DeviceLostTest : public DawnTest {
         device.LoseForTesting();
     }
 
-    static void MapFailCallback(WGPUBufferMapAsyncStatus status,
-                                void* userdata) {
+    static void MapFailCallback(WGPUBufferMapAsyncStatus status, void* userdata) {
         EXPECT_EQ(WGPUBufferMapAsyncStatus_DeviceLost, status);
         EXPECT_EQ(&fakeUserData, userdata);
     }
@@ -125,9 +124,9 @@ TEST_P(DeviceLostTest, CreateBindGroupLayoutFails) {
 
 // Test that GetBindGroupLayout fails when device is lost
 TEST_P(DeviceLostTest, GetBindGroupLayoutFails) {
-    wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
         [[block]] struct UniformBuffer {
-            [[offset(0)]] pos : vec4<f32>;
+            pos : vec4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> ubo : UniformBuffer;
         [[stage(compute)]] fn main() -> void {
@@ -197,8 +196,8 @@ TEST_P(DeviceLostTest, CreateComputePipelineFails) {
 TEST_P(DeviceLostTest, CreateRenderPipelineFails) {
     SetCallbackAndLoseForTesting();
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
-    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    utils::ComboRenderPipelineDescriptor2 descriptor;
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
 }
 
 // Tests that CreateSampler fails when device is lost
@@ -212,7 +211,7 @@ TEST_P(DeviceLostTest, CreateSamplerFails) {
 TEST_P(DeviceLostTest, CreateShaderModuleFails) {
     SetCallbackAndLoseForTesting();
 
-    ASSERT_DEVICE_ERROR(utils::CreateShaderModuleFromWGSL(device, R"(
+    ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, R"(
         [[location(0)]] var<in> color : vec4<f32>;
         [[location(0)]] var<out> fragColor : vec4<f32>;
         [[stage(fragment)]] fn main() -> void {
@@ -235,7 +234,7 @@ TEST_P(DeviceLostTest, CreateTextureFails) {
     wgpu::TextureDescriptor descriptor;
     descriptor.size.width = 4;
     descriptor.size.height = 4;
-    descriptor.size.depth = 1;
+    descriptor.size.depthOrArrayLayers = 1;
     descriptor.mipLevelCount = 1;
     descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.usage = wgpu::TextureUsage::RenderAttachment;
@@ -422,17 +421,13 @@ TEST_P(DeviceLostTest, CommandEncoderFinishFails) {
 TEST_P(DeviceLostTest, CreateFenceFails) {
     SetCallbackAndLoseForTesting();
 
-    wgpu::FenceDescriptor descriptor;
-    descriptor.initialValue = 0;
-
-    ASSERT_DEVICE_ERROR(queue.CreateFence(&descriptor));
+    EXPECT_DEPRECATION_WARNING(ASSERT_DEVICE_ERROR(queue.CreateFence()));
 }
 
 // Test that queue signal fails when device is lost
 TEST_P(DeviceLostTest, QueueSignalFenceFails) {
-    wgpu::FenceDescriptor descriptor;
-    descriptor.initialValue = 0;
-    wgpu::Fence fence = queue.CreateFence(&descriptor);
+    wgpu::Fence fence;
+    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
 
     SetCallbackAndLoseForTesting();
 
@@ -444,14 +439,13 @@ TEST_P(DeviceLostTest, QueueSignalFenceFails) {
     ASSERT_DEVICE_ERROR(fence.OnCompletion(2u, ToMockFenceOnCompletionFails, nullptr));
 
     // completed value should not have changed from initial value
-    EXPECT_EQ(fence.GetCompletedValue(), descriptor.initialValue);
+    EXPECT_EQ(fence.GetCompletedValue(), 0u);
 }
 
 // Test that Fence On Completion fails after device is lost
 TEST_P(DeviceLostTest, FenceOnCompletionFails) {
-    wgpu::FenceDescriptor descriptor;
-    descriptor.initialValue = 0;
-    wgpu::Fence fence = queue.CreateFence(&descriptor);
+    wgpu::Fence fence;
+    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
 
     queue.Signal(fence, 2);
 
@@ -469,9 +463,8 @@ TEST_P(DeviceLostTest, FenceOnCompletionFails) {
 // Test that Fence::OnCompletion callbacks with device lost status when device is lost after calling
 // OnCompletion
 TEST_P(DeviceLostTest, FenceOnCompletionBeforeLossFails) {
-    wgpu::FenceDescriptor descriptor;
-    descriptor.initialValue = 0;
-    wgpu::Fence fence = queue.CreateFence(&descriptor);
+    wgpu::Fence fence;
+    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
 
     queue.Signal(fence, 2);
 
@@ -513,9 +506,8 @@ TEST_P(DeviceLostTest, QueueOnSubmittedWorkDoneBeforeLossFails) {
 TEST_P(DeviceLostTest, AfterSubmitAndSerial) {
     queue.Submit(0, nullptr);
 
-    wgpu::FenceDescriptor descriptor;
-    descriptor.initialValue = 0;
-    wgpu::Fence fence = queue.CreateFence(&descriptor);
+    wgpu::Fence fence;
+    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
 
     queue.Signal(fence, 1);
     SetCallbackAndLoseForTesting();
@@ -523,9 +515,8 @@ TEST_P(DeviceLostTest, AfterSubmitAndSerial) {
 
 // Test that when you Signal, then Tick, then device lost, the fence completed value would be 2
 TEST_P(DeviceLostTest, FenceSignalTickOnCompletion) {
-    wgpu::FenceDescriptor descriptor;
-    descriptor.initialValue = 0;
-    wgpu::Fence fence = queue.CreateFence(&descriptor);
+    wgpu::Fence fence;
+    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
 
     queue.Signal(fence, 2);
     WaitForAllOperations();

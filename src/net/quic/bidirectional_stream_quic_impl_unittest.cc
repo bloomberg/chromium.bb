@@ -4,6 +4,7 @@
 
 #include "net/quic/bidirectional_stream_quic_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -42,7 +43,6 @@
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
@@ -527,8 +527,8 @@ class BidirectionalStreamQuicImplTest
         socket_data_.get(), net_log().bound().net_log()));
     socket->Connect(peer_addr_);
     runner_ = new TestTaskRunner(&clock_);
-    helper_.reset(
-        new QuicChromiumConnectionHelper(&clock_, &random_generator_));
+    helper_ = std::make_unique<QuicChromiumConnectionHelper>(
+        &clock_, &random_generator_);
     alarm_factory_ =
         std::make_unique<QuicChromiumAlarmFactory>(runner_.get(), &clock_);
     connection_ = new quic::QuicConnection(
@@ -554,7 +554,6 @@ class BidirectionalStreamQuicImplTest
                        PRIVACY_MODE_DISABLED, SocketTag(),
                        NetworkIsolationKey(), false /* disable_secure_dns */),
         /*require_confirmation=*/false,
-        /*max_allowed_push_id=*/0,
         /*migrate_session_early_v2=*/false,
         /*migrate_session_on_network_change_v2=*/false,
         /*default_network=*/NetworkChangeNotifier::kInvalidNetworkHandle,

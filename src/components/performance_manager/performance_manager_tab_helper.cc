@@ -22,6 +22,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace performance_manager {
@@ -241,7 +242,14 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
       FROM_HERE, base::BindOnce(
                      [](FrameNodeImpl* old_frame, FrameNodeImpl* new_frame) {
                        if (old_frame) {
-                         DCHECK(old_frame->is_current());
+                         // Prerendering is a special case where,
+                         // old_frame->is_current() would be set to false.
+                         // Ignore this check when Prerender2 is enabled.
+                         // TODO(https://crbug.com/1177859): Remove this check
+                         // once PerformanceManagerTabHelper is supported with
+                         // Prerender2.
+                         DCHECK(blink::features::IsPrerender2Enabled() ||
+                                old_frame->is_current());
                          old_frame->SetIsCurrent(false);
                        }
                        if (new_frame) {
@@ -251,7 +259,10 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
                            // The very first frame to be created is already
                            // current by default. In which case the swap must be
                            // from no frame to a frame.
-                           DCHECK(!old_frame);
+                           // TODO(https://crbug.com/1179682): Make this
+                           // compatible with MPArch.
+                           DCHECK(!old_frame ||
+                                  blink::features::IsPrerender2Enabled());
                          }
                        }
                      },
@@ -447,24 +458,8 @@ void PerformanceManagerTabHelper::DidUpdateFaviconURL(
 void PerformanceManagerTabHelper::BindDocumentCoordinationUnit(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<mojom::DocumentCoordinationUnit> receiver) {
-  // TODO(https://crbug.com/987445): Why else than due to speculative render
-  //     frame hosts would this happen? Is there a race between the RFH creation
-  //     notification and the mojo interface request?
   auto it = frames_.find(render_frame_host);
-  if (it == frames_.end()) {
-    if (render_frame_host->IsRenderFrameCreated()) {
-      // This must be a speculative render frame host, generate a creation event
-      // for it a this point
-      RenderFrameCreated(render_frame_host);
-
-      it = frames_.find(render_frame_host);
-      DCHECK(it != frames_.end());
-    } else {
-      // It would be nice to know what's up here, maybe there's a race between
-      // in-progress interface requests and the frame deletion?
-      return;
-    }
-  }
+  DCHECK(it != frames_.end());
 
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,

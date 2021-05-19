@@ -23,26 +23,26 @@ class ViewportOrientationTests : public DawnTest {};
 TEST_P(ViewportOrientationTests, OriginAt0x0) {
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 2, 2);
 
-    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
         [[builtin(position)]] var<out> Position : vec4<f32>;
 
         [[stage(vertex)]] fn main() -> void {
             Position = vec4<f32>(-0.5, 0.5, 0.0, 1.0);
         })");
 
-    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
         [[location(0)]] var<out> fragColor : vec4<f32>;
         [[stage(fragment)]] fn main() -> void {
             fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
         })");
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
-    descriptor.vertexStage.module = vsModule;
-    descriptor.cFragmentStage.module = fsModule;
-    descriptor.primitiveTopology = wgpu::PrimitiveTopology::PointList;
-    descriptor.cColorStates[0].format = renderPass.colorFormat;
+    utils::ComboRenderPipelineDescriptor2 descriptor;
+    descriptor.vertex.module = vsModule;
+    descriptor.cFragment.module = fsModule;
+    descriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
+    descriptor.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     {

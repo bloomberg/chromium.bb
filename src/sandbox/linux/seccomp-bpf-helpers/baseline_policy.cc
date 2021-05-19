@@ -140,6 +140,17 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   }
 #endif
 
+  if (sysno == __NR_uname) {
+    return Allow();
+  }
+
+  // Return -EPERM rather than killing the process with SIGSYS. This happens
+  // because if a sandboxed process attempts to use sendfile(2) it should be
+  // allowed to fall back to read(2)/write(2).
+  if (SyscallSets::IsSendfile(sysno)) {
+    return Error(EPERM);
+  }
+
   if (IsBaselinePolicyAllowed(sysno)) {
     return Allow();
   }
@@ -159,7 +170,7 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return Allow();
 #endif
 
-  if (sysno == __NR_clock_gettime || sysno == __NR_clock_nanosleep) {
+  if (SyscallSets::IsClockApi(sysno)) {
     return RestrictClockID();
   }
 
@@ -193,8 +204,14 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   }
 #endif
 
-  if (sysno == __NR_futex)
+  if (sysno == __NR_futex
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
+      || sysno == __NR_futex_time64
+#endif
+  ) {
     return RestrictFutex();
+  }
 
   if (sysno == __NR_set_robust_list)
     return Error(EPERM);

@@ -99,6 +99,16 @@ void InitializePlatformOverlaySettings(GPUInfo* gpu_info,
   if (gpu_feature_info.IsWorkaroundEnabled(gpu::FORCE_NV12_OVERLAY_SUPPORT)) {
     gl::DirectCompositionSurfaceWin::ForceNV12OverlaySupport();
   }
+  if (gpu_feature_info.IsWorkaroundEnabled(
+          gpu::FORCE_RGB10A2_OVERLAY_SUPPORT_FLAGS)) {
+    gl::DirectCompositionSurfaceWin::ForceRgb10a2OverlaySupport();
+  }
+  if (gpu_feature_info.IsWorkaroundEnabled(
+          gpu::CHECK_YCBCR_STUDIO_G22_LEFT_P709_FOR_NV12_SUPPORT)) {
+    gl::DirectCompositionSurfaceWin::
+        SetCheckYCbCrStudioG22LeftP709ForNv12Support();
+  }
+
   DCHECK(gpu_info);
   CollectHardwareOverlayInfo(&gpu_info->overlay_info);
 #elif defined(OS_ANDROID)
@@ -320,6 +330,10 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     params.single_process = false;
     params.enable_native_gpu_memory_buffers =
         gpu_preferences.enable_native_gpu_memory_buffers;
+
+    // Page flip testing will only happen in ash-chrome, not in lacros-chrome.
+    // Therefore, we only allow or disallow sync and real buffer page flip
+    // testing for ash-chrome.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     params.allow_sync_and_real_buffer_page_flip_testing =
@@ -426,7 +440,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     LOG_IF(ERROR, !gpu_info_.passthrough_cmd_decoder)
 #endif
         << "Passthrough is not supported, GL is "
-        << gl::GetGLImplementationName(gl::GetGLImplementation());
+        << gl::GetGLImplementationGLName(gl::GetGLImplementationParts());
   } else {
     gpu_info_.passthrough_cmd_decoder = false;
   }
@@ -582,7 +596,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     }
   }
   if (gl_use_swiftshader_ ||
-      gl::GetGLImplementation() == gl::GetSoftwareGLImplementation()) {
+      gl::IsSoftwareGLImplementation(gl::GetGLImplementationParts())) {
     gpu_info_.software_rendering = true;
     watchdog_thread_ = nullptr;
     watchdog_init.SetGpuWatchdogPtr(nullptr);
@@ -661,6 +675,10 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   if (features::IsUsingOzonePlatform()) {
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
+
+    // Page flip testing will only happen in ash-chrome, not in lacros-chrome.
+    // Therefore, we only allow or disallow sync and real buffer page flip
+    // testing for ash-chrome.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     params.allow_sync_and_real_buffer_page_flip_testing =

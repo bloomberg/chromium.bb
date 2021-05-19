@@ -52,7 +52,6 @@
 <translation id="1400642268715879018">4 tuần qua</translation>
 <translation id="1407135791313364759">Mở tất cả</translation>
 <translation id="1430915738399379752">In</translation>
-<translation id="1436290164580597469">Nhập cụm mật khẩu để bắt đầu đồng bộ hóa.</translation>
 <translation id="1449835205994625556">Ẩn mật khẩu</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> mục</translation>
 <translation id="1491277525950327607">Nhấn đúp để chuyển đổi cài đặt</translation>
@@ -97,7 +96,8 @@
 <translation id="1870148520156231997">Hiện mật khẩu</translation>
 <translation id="1872096359983322073">Đèn pin</translation>
 <translation id="1911619930368729126">Tải lên Google Drive</translation>
-<translation id="1923342640370224680">Giờ vừa qua</translation>
+<translation id="1919130412786645364">Cho phép đăng nhập vào Chrome</translation>
+<translation id="1923342640370224680">Một giờ qua</translation>
 <translation id="1941314575388338491">Nhấn đúp để sao chép.</translation>
 <translation id="1952172573699511566">Các trang web sẽ hiển thị văn bản bằng ngôn ngữ ưu tiên của bạn khi có thể.</translation>
 <translation id="1952728750904661634">Đăng nhập bằng tài khoản được quản lý</translation>
@@ -106,14 +106,12 @@
 <translation id="1974060860693918893">Nâng cao</translation>
 <translation id="1989112275319619282">Duyệt qua</translation>
 <translation id="2015722694326466240">Để xem mật khẩu, trước tiên bạn phải đặt mật mã trên thiết bị của mình.</translation>
-<translation id="2047933465321076474">Tổ chức của bạn đã tắt tính năng duyệt web ở chế độ riêng tư. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="2073572773299281212">Hoạt động <ph name="DAYS" /> ngày trước</translation>
 <translation id="2074131957428911366">Bạn luôn có thể chọn nội dung muốn đồng bộ hóa trong phần <ph name="BEGIN_LINK" />cài đặt<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="209018056901015185">Yêu cầu trang web cho máy tính</translation>
 <translation id="2103075008456228677">Mở history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang đã được di chuyển</translation>
-<translation id="2118594521750010466">Khắc phục ngay</translation>
 <translation id="213900355088104901">Để duyệt web riêng tư, hãy mở thẻ ẩn danh</translation>
 <translation id="2139867232736819575">Tìm kiếm văn bản bạn đã sao chép</translation>
 <translation id="2149973817440762519">Chỉnh sửa dấu trang</translation>
@@ -124,7 +122,6 @@
 <translation id="2239626343334228536">Đang xóa dữ liệu duyệt web...</translation>
 <translation id="2257567812274161158">Tính năng đồng bộ hóa hiện không hoạt động.</translation>
 <translation id="225943865679747347">Mã lỗi: <ph name="ERROR_CODE" /></translation>
-<translation id="2262397157440718954">Tổ chức của bạn yêu cầu bạn duyệt web ở chế độ riêng tư. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="2267753748892043616">Thêm tài khoản</translation>
 <translation id="2268044343513325586">Tinh chỉnh</translation>
 <translation id="2273327106802955778">Menu khác</translation>
@@ -141,7 +138,6 @@
 Các trang web không thể dùng cookie để giám sát hoạt động duyệt web của bạn trên nhiều trang web, chẳng hạn như để điều chỉnh quảng cáo cho phù hợp với bạn.</translation>
 <translation id="2381405137052800939">Thông tin cơ bản</translation>
 <translation id="2386793615875593361">Đã chọn 1</translation>
-<translation id="2419661687355878017">Tổ chức của bạn đã tắt chế độ ẩn danh</translation>
 <translation id="2421004566762153674">Chặn cookie của bên thứ ba</translation>
 <translation id="2421044535038393232">Tiếp tục chỉnh sửa</translation>
 <translation id="2435457462613246316">Hiển thị mật khẩu</translation>
@@ -193,6 +189,7 @@ Các trang web không thể dùng cookie để giám sát hoạt động duyệt
 <translation id="2921219216347069551">Ko thể chia sẻ trang</translation>
 <translation id="2923448633003185837">Dán và truy cập</translation>
 <translation id="292639812446257861">Đánh dấu là chưa đọc</translation>
+<translation id="2932085390869194046">Đề xuất mật khẩu...</translation>
 <translation id="2952581218264071393">1. Mở phần Cài đặt của Chrome</translation>
 <translation id="2958718410589002129">Mật khẩu</translation>
 <translation id="2964349545761222050">Chặn cookie của bên thứ ba</translation>
@@ -218,6 +215,7 @@ Các trang web không thể dùng cookie để giám sát hoạt động duyệt
 
 Ở chế độ ẩn danh, các trang web không thể dùng cookie để giám sát hoạt động duyệt web của bạn trên nhiều trang web, chẳng hạn như để điều chỉnh quảng cáo cho phù hợp với bạn.</translation>
 <translation id="3207960819495026254">Đã đánh dấu trang</translation>
+<translation id="3222343486469566063">Chưa đăng nhập</translation>
 <translation id="3224641773458703735">Để xuất mật khẩu, trước tiên bạn phải đặt mật mã trên thiết bị của mình.</translation>
 <translation id="3240426699337459095">Đã sao chép đường liên kết</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -271,7 +269,6 @@ Hãy làm theo các bước sau:</translation>
 <translation id="3670030362669914947">Số</translation>
 <translation id="3691593122358196899">Đã đánh dấu trang vào <ph name="FOLDER_TITLE" /></translation>
 <translation id="3709582977625132201">Đánh dấu là chưa đọc</translation>
-<translation id="3720541637541300822">Khóa các thẻ Ẩn danh khi bạn đóng Chrome</translation>
 <translation id="3740397331642243698">Mở các URL đã nhập trong Google Chrome ở chế độ Ẩn danh.</translation>
 <translation id="3771033907050503522">Thẻ ẩn danh</translation>
 <translation id="3775743491439407556">Tính năng đồng bộ hóa hiện không hoạt động</translation>
@@ -288,10 +285,11 @@ Hãy làm theo các bước sau:</translation>
 <translation id="3928666092801078803">Kết hợp dữ liệu của tôi</translation>
 <translation id="3929457972718048006">Địa chỉ</translation>
 <translation id="3943492037546055397">Mật khẩu</translation>
+<translation id="3943557322767080599">Hiển thị lời nhắc đăng nhập vào Chrome khi bạn đăng nhập vào Tài khoản Google</translation>
+<translation id="3967266340354872733">Bạn có thể xem thêm các chế độ cài đặt liên quan đến quyền riêng tư, vấn đề bảo mật cũng như hoạt động thu thập dữ liệu trong phần <ph name="BEGIN_LINK" />Đồng bộ hóa<ph name="END_LINK" /> và phần <ph name="BEGIN_LINK" />Các dịch vụ của Google<ph name="END_LINK" />.</translation>
 <translation id="3967822245660637423">Đã tải xuống xong</translation>
 <translation id="3968505803272650567">Quản lý mối quan tâm</translation>
 <translation id="3989635538409502728">Đăng xuất</translation>
-<translation id="399419089947468503">Lỗi khi đồng bộ hóa các mật khẩu</translation>
 <translation id="3995521777587992544">Thanh tiến trình tải trang, đã tải <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Tiêu đề</translation>
 <translation id="4004204301268239848">Các mật khẩu được lưu trong Tài khoản Google của bạn, vì vậy, bạn có thể sử dụng các mật khẩu đó trên bất cứ thiết bị nào.</translation>
@@ -316,7 +314,6 @@ Hãy làm theo các bước sau:</translation>
 <translation id="4263576668337963058">Hiển thị các hành động có thể thực hiện trên trang</translation>
 <translation id="4267380167363222949">Thẻ tiếp theo</translation>
 <translation id="4272631900155121838">Để quét mã QR, hãy bật máy ảnh từ cài đặt</translation>
-<translation id="4276041135170112053">Khắc phục ngay.</translation>
 <translation id="4277990410970811858">Duyệt web an toàn</translation>
 <translation id="4281844954008187215">Điều khoản dịch vụ</translation>
 <translation id="430793432425771671">Đồng bộ hóa mọi thứ</translation>
@@ -341,6 +338,7 @@ Hãy làm theo các bước sau:</translation>
 <translation id="457386861538956877">Thêm...</translation>
 <translation id="4592368184551360546">Bàn phím</translation>
 <translation id="461440297010471931">Tìm kiếm bằng Google</translation>
+<translation id="4619564267100705184">Xác minh danh tính của bạn</translation>
 <translation id="4619615317237390068">Thẻ từ các thiết bị khác</translation>
 <translation id="4620246317052452550">Các trang bạn đã đọc</translation>
 <translation id="4630540211544979320">Dịch trang</translation>
@@ -422,10 +420,10 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="54401264925851789">Thông tin bảo mật trang</translation>
 <translation id="5443952882982198570">Thẻ tín dụng</translation>
 <translation id="5457226814769348910">Mở phiên bản ngoại tuyến</translation>
-<translation id="5457907402803865181">Lỗi khi đồng bộ hóa các mật khẩu.</translation>
 <translation id="5489208564673669003">Để quản lý cookie cho tất cả trang web, hãy xem phần <ph name="BEGIN_LINK" />Cài đặt cookie<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">Chặn tất cả cookie (Không khuyến nghị)</translation>
 <translation id="5508435575041083207">Đăng xuất và xóa dữ liệu khỏi thiết bị này</translation>
+<translation id="5513681519188741830"><ph name="TIME" /> giờ trước</translation>
 <translation id="5525269841082836315">Tạo cụm mật khẩu</translation>
 <translation id="5548760955356983418">Tính năng tiếp nối cho phép bạn bắt đầu duyệt web trên thiết bị này và sau đó dễ dàng tiếp tục trên máy Mac của mình. Trang web hiện đang mở sẽ xuất hiện trong thanh Dock trên máy Mac của bạn.
 
@@ -433,7 +431,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5551897871312988470">Đề xuất dịch</translation>
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="5592679540098330836">Bật tính năng đồng bộ hóa cho <ph name="NAME" /></translation>
-<translation id="5597169624050330492">Tổ chức của bạn yêu cầu bạn duyệt web ở chế độ riêng tư. Các thẻ không được lưu ở Chế độ ẩn danh. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="5614553682702429503">Bạn có muốn lưu mật khẩu không?</translation>
 <translation id="5626245204502895507">Không thể tải xuống tệp vào lúc này.</translation>
 <translation id="5631164295104953411">Thêm phương thức thanh toán</translation>
@@ -460,6 +457,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 dấu trang đã được di chuyển</translation>
+<translation id="5896576662943111387">Thiết kế cho iOS</translation>
 <translation id="5897956970858271241">Truy cập vào liên kết đã sao chép</translation>
 <translation id="5899314093904173337">Để chia sẻ với những người ở gần, hãy cho phép họ quét mã QR này bằng máy ảnh hoặc ứng dụng quét mã QR</translation>
 <translation id="5911030830365207728">Google Dịch</translation>
@@ -477,6 +475,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5988851877894965432">Mở URL trong Chrome</translation>
 <translation id="6012140227487808125">Đang mã hóa...</translation>
 <translation id="6021332621416007159">Mở trong...</translation>
+<translation id="6036514205982097558">Mọi thẻ trong một trình duyệt</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6042308850641462728">Xem thêm</translation>
@@ -543,10 +542,13 @@ Hãy cố gắng sử dụng một mật khẩu riêng cho mỗi trang web.</tra
 <translation id="6524918542306337007">Không có Chế độ ẩn danh</translation>
 <translation id="6561262006871132942">Phóng to</translation>
 <translation id="6585618849026997638">Bạn có thể thêm dấu trang để truy cập lại một trang mà bạn thấy quan trọng</translation>
+<translation id="6603393121510733479">Tổ chức của bạn đã tắt tính năng duyệt web ở chế độ riêng tư.
+<ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="6610002944194042868">Tùy chọn dịch</translation>
 <translation id="6620279676667515405">Hủy</translation>
 <translation id="6624219055418309072">Chặn ở chế độ Ẩn danh</translation>
 <translation id="6628106477656132239">Ngày hết hạn không hợp lệ</translation>
+<translation id="6634432609054530164">Tổ chức của bạn đã tắt Chế độ ẩn danh</translation>
 <translation id="6638511529934826365">Thu phóng văn bản…</translation>
 <translation id="6639730758971422557">Để bật tính năng Duyệt web an toàn, hãy mở phần <ph name="BEGIN_LINK" />Đồng bộ hóa và các dịch vụ của Google<ph name="END_LINK" /> rồi nhấn vào Duyệt web an toàn.</translation>
 <translation id="6642362222295953972">Chuyển sang thẻ đang mở</translation>
@@ -555,12 +557,14 @@ Hãy cố gắng sử dụng một mật khẩu riêng cho mỗi trang web.</tra
 <translation id="6656103420185847513">Chỉnh sửa thư mục</translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="6668619169535738264">Chỉnh sửa dấu trang</translation>
+<translation id="6674571176963658787">Để bắt đầu đồng bộ hóa, hãy nhập cụm mật khẩu của bạn</translation>
 <translation id="667999046851023355">Tài liệu</translation>
 <translation id="6691331417640343772">Quản lý dữ liệu đã đồng bộ hóa trên Trang tổng quan của Google</translation>
 <translation id="6710079714193676716">Do tổ chức của bạn quản lý. Bạn có thể không dùng được một số tính năng. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Không thể xuất mật khẩu</translation>
 <translation id="6748108480210050150">Từ</translation>
+<translation id="6760509555861141183">Quay lại thẻ truy cập gần đây</translation>
 <translation id="6780034285637185932">Mã zip</translation>
 <translation id="6785453220513215166">Đang gửi báo cáo lỗi...</translation>
 <translation id="679325081238418596">Sử dụng dấu trang, lịch sử hoạt động, mật khẩu và các tùy chọn cài đặt khác trên tất cả thiết bị của bạn</translation>
@@ -584,8 +588,11 @@ Hãy cố gắng sử dụng một mật khẩu riêng cho mỗi trang web.</tra
 <translation id="6973630695168034713">Thư mục</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Quản lý Tài khoản Google của bạn</translation>
+<translation id="6989674195860388998">Chuyển đổi trong phần Cài đặt…</translation>
 <translation id="6995899638241819463">Cảnh báo bạn nếu mật khẩu bị lộ trong một sự cố rò rỉ dữ liệu</translation>
 <translation id="6998989275928107238">Đến</translation>
+<translation id="7004032350256606903">Tổ chức của bạn yêu cầu bạn duyệt web ở chế độ riêng tư.
+<ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="7004499039102548441">Các thẻ gần đây</translation>
 <translation id="7006788746334555276">Cài đặt nội dung</translation>
 <translation id="7015203776128479407">Quá trình thiết lập đồng bộ hóa ban đầu chưa hoàn tất. Tính năng đồng bộ hóa đã tắt.</translation>
@@ -616,6 +623,7 @@ Hãy cố gắng sử dụng một mật khẩu riêng cho mỗi trang web.</tra
 <translation id="7346909386216857016">Ok</translation>
 <translation id="734758817008927353">Các tùy chọn lưu thẻ</translation>
 <translation id="7348502496356775519">Đánh dấu trang</translation>
+<translation id="7353432112255316844">Xác minh danh tính của bạn</translation>
 <translation id="7383797227493018512">Danh sách đọc</translation>
 <translation id="7398893703713203428">Tạo đường liên kết</translation>
 <translation id="739941347996872055">Thẻ trước</translation>
@@ -633,6 +641,7 @@ Hãy cố gắng sử dụng một mật khẩu riêng cho mỗi trang web.</tra
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="7483467499335917849">Sử dụng thông tin vị trí hiện tại của bạn</translation>
 <translation id="750493650310597496">Đã chọn 0</translation>
+<translation id="7508728395076009983">Để khóa các thẻ ẩn danh, hãy thiết lập Touch ID, Face ID hoặc mật mã.</translation>
 <translation id="7514365320538308">Tải xuống</translation>
 <translation id="7537586195939242955">Rất tiếc, không thể cài đặt Pass (Vé xem) của bạn vào Passbook (Ví điện tử) lúc này.</translation>
 <translation id="7554791636758816595">Thẻ mới</translation>
@@ -642,6 +651,7 @@ Hãy cố gắng sử dụng một mật khẩu riêng cho mỗi trang web.</tra
 <translation id="7603852183842204213">Cửa sổ bật lên đã bị chặn (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7607521702806708809">Xóa mật khẩu</translation>
 <translation id="7638584964844754484">Cụm mật khẩu không chính xác</translation>
+<translation id="7646772052135772216">Tính năng đồng bộ hóa mật khẩu hiện không hoạt động</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="766891008101699113">Để duyệt web ở chế độ riêng tư, hãy thêm thẻ mới.</translation>
@@ -693,12 +703,14 @@ Các trang web có thể dùng cookie để giám sát hoạt động duyệt we
 <translation id="8105368624971345109">Tắt</translation>
 <translation id="8114753159095730575">Hiện đã có tệp tải xuống. Bạn có thể sử dụng các tùy chọn ở gần cuối màn hình.</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
+<translation id="8156478151976189188">Tính năng đồng bộ hóa mật khẩu hiện không hoạt động</translation>
 <translation id="8197543752516192074">Dịch trang</translation>
 <translation id="8205564605687841303">Hủy</translation>
 <translation id="8206354486702514201">Cài đặt này được quản trị viên của bạn thực thi.</translation>
 <translation id="8225985093977202398">Tệp và hình ảnh được lưu vào bộ nhớ đệm</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8281781826761538115">Mặc định - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8283172974887967105">Đặt…</translation>
 <translation id="8299417921174340354">Để sử dụng mật khẩu, trước tiên, bạn phải đặt mật mã trên thiết bị của mình.</translation>
 <translation id="8319076807703933069">Tìm kiếm mới</translation>
 <translation id="8323906514956095947">Chạm và giữ để hiển thị thêm tùy chọn về thẻ</translation>
@@ -746,6 +758,8 @@ Các trang web có thể dùng cookie để giám sát hoạt động duyệt we
 <translation id="8756969031206844760">Bạn có muốn cập nhật mật khẩu không?</translation>
 <translation id="8775144690796719618">URL không hợp lệ</translation>
 <translation id="8803639129939845298">Bảo mật</translation>
+<translation id="8806823403540278281">Tổ chức của bạn yêu cầu bạn duyệt web ở chế độ riêng tư. Các thẻ không được lưu ở Chế độ ẩn danh.
+<ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="8840513115188359703">Bạn sẽ không được đăng xuất khỏi Tài khoản Google của mình.</translation>
 <translation id="8870413625673593573">Các thẻ đã Đóng gần đây</translation>
@@ -774,6 +788,7 @@ Các trang web có thể dùng cookie để giám sát hoạt động duyệt we
 <translation id="9152539721251340337">Tạo mã QR</translation>
 <translation id="9157836665414082580">Hộp thoại loại bỏ</translation>
 <translation id="9188680907066685419">Đăng xuất khỏi tài khoản được quản lý</translation>
+<translation id="9200875785104711666"><ph name="TIME" /> ngày trước</translation>
 <translation id="9203116392574189331">Tiếp nối</translation>
 <translation id="9223358826628549784">Đã gửi báo cáo lỗi.</translation>
 <translation id="952704832371081537">Hủy</translation>

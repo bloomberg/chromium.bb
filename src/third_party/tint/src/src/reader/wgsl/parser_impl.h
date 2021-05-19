@@ -15,50 +15,27 @@
 #ifndef SRC_READER_WGSL_PARSER_IMPL_H_
 #define SRC_READER_WGSL_PARSER_IMPL_H_
 
-#include <cassert>
 #include <deque>
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "src/ast/access_control.h"
-#include "src/ast/array_decoration.h"
 #include "src/ast/assignment_statement.h"
 #include "src/ast/break_statement.h"
-#include "src/ast/builtin.h"
 #include "src/ast/call_statement.h"
-#include "src/ast/case_statement.h"
-#include "src/ast/constructor_expression.h"
 #include "src/ast/continue_statement.h"
-#include "src/ast/else_statement.h"
-#include "src/ast/function.h"
 #include "src/ast/if_statement.h"
-#include "src/ast/literal.h"
 #include "src/ast/loop_statement.h"
-#include "src/ast/pipeline_stage.h"
 #include "src/ast/return_statement.h"
-#include "src/ast/statement.h"
-#include "src/ast/storage_class.h"
-#include "src/ast/struct.h"
-#include "src/ast/struct_decoration.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_decoration.h"
 #include "src/ast/switch_statement.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/ast/variable_decoration.h"
-#include "src/diagnostic/diagnostic.h"
-#include "src/diagnostic/formatter.h"
 #include "src/program_builder.h"
 #include "src/reader/wgsl/parser_impl_detail.h"
 #include "src/reader/wgsl/token.h"
 #include "src/type/storage_texture_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/texture_type.h"
-#include "src/type/type.h"
 
 namespace tint {
 namespace reader {
@@ -132,7 +109,7 @@ class ParserImpl {
     /// return type will always be a pointer to a non-pointer type. #errored
     /// must be false to call.
     inline typename detail::OperatorArrow<T>::type operator->() {
-      assert(!errored);
+      TINT_ASSERT(!errored);
       return detail::OperatorArrow<T>::ptr(value);
     }
 
@@ -203,7 +180,7 @@ class ParserImpl {
     /// return type will always be a pointer to a non-pointer type. #errored
     /// must be false to call.
     inline typename detail::OperatorArrow<T>::type operator->() {
-      assert(!errored);
+      TINT_ASSERT(!errored);
       return detail::OperatorArrow<T>::ptr(value);
     }
 
@@ -241,10 +218,12 @@ class ParserImpl {
     /// @param n function name
     /// @param p function parameters
     /// @param ret_ty function return type
+    /// @param ret_decos return type decorations
     FunctionHeader(Source src,
                    std::string n,
                    ast::VariableList p,
-                   type::Type* ret_ty);
+                   type::Type* ret_ty,
+                   ast::DecorationList ret_decos);
     /// Destructor
     ~FunctionHeader();
     /// Assignment operator
@@ -260,6 +239,8 @@ class ParserImpl {
     ast::VariableList params;
     /// Function return type
     type::Type* return_type;
+    /// Function return type decorations
+    ast::DecorationList return_type_decorations;
   };
 
   /// VarDeclInfo contains the parsed information for variable declaration.
@@ -293,19 +274,13 @@ class ParserImpl {
   size_t get_max_errors() const { return max_errors_; }
 
   /// @returns true if an error was encountered.
-  bool has_error() const { return diags_.contains_errors(); }
+  bool has_error() const { return builder_.Diagnostics().contains_errors(); }
 
   /// @returns the parser error string
   std::string error() const {
     diag::Formatter formatter{{false, false, false, false}};
-    return formatter.format(diags_);
+    return formatter.format(builder_.Diagnostics());
   }
-
-  /// @returns the diagnostic messages
-  const diag::List& diagnostics() const { return diags_; }
-
-  /// @returns the diagnostic messages
-  diag::List& diagnostics() { return diags_; }
 
   /// @returns the Program. The program builder in the parser will be reset
   /// after this.
@@ -448,6 +423,9 @@ class ParserImpl {
   /// Parses a `param_list` grammar element, erroring on parse failure.
   /// @returns the parsed variables
   Expect<ast::VariableList> expect_param_list();
+  /// Parses a `param` grammar element, erroring on parse failure.
+  /// @returns the parsed variable
+  Expect<ast::Variable*> expect_param();
   /// Parses a `pipeline_stage` grammar element, erroring if the next token does
   /// not match a stage name.
   /// @returns the pipeline stage.
@@ -798,18 +776,13 @@ class ParserImpl {
   template <typename T>
   std::vector<T*> take_decorations(ast::DecorationList& list);
 
-  /// Downcasts all the decorations in `list` to the type `T`, raising a parser
-  /// error if any of the decorations aren't of the type `T`.
-  template <typename T>
-  Expect<std::vector<T*>> cast_decorations(ast::DecorationList& list);
-
   /// Reports an error if the decoration list `list` is not empty.
   /// Used to ensure that all decorations are consumed.
   bool expect_decorations_consumed(const ast::DecorationList& list);
 
   Expect<type::Type*> expect_type_decl_pointer();
   Expect<type::Type*> expect_type_decl_vector(Token t);
-  Expect<type::Type*> expect_type_decl_array(ast::ArrayDecorationList decos);
+  Expect<type::Type*> expect_type_decl_array(ast::DecorationList decos);
   Expect<type::Type*> expect_type_decl_matrix(Token t);
 
   Expect<type::Type*> expect_type(const std::string& use);
@@ -827,7 +800,6 @@ class ParserImpl {
     return builder_.create<T>(std::forward<ARGS>(args)...);
   }
 
-  diag::List diags_;
   std::unique_ptr<Lexer> lexer_;
   std::deque<Token> token_queue_;
   bool synchronized_ = true;

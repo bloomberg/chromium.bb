@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_CHROME_PROMPT_ACTIONS_WIN_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_CHROME_PROMPT_ACTIONS_WIN_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 
 namespace safe_browsing {

@@ -22,12 +22,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
-#include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -125,12 +123,12 @@ enum class ConnectionInitializationStatusCode {
   NUM_ITEMS
 };
 
-base::string16 CreateNotificationTitle(
+std::u16string CreateNotificationTitle(
     const message_center::Notification& notification) {
-  base::string16 title;
+  std::u16string title;
   if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS) {
     title += base::FormatPercent(notification.progress());
-    title += base::UTF8ToUTF16(" - ");
+    title += u" - ";
   }
   title += notification.title();
   return title;
@@ -204,7 +202,7 @@ void ForwardNotificationOperationOnUiThread(
     const std::string& notification_id,
     const base::Optional<int>& action_index,
     const base::Optional<bool>& by_user,
-    const base::Optional<base::string16>& reply,
+    const base::Optional<std::u16string>& reply,
     const std::string& profile_id,
     bool is_incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -691,7 +689,7 @@ class NotificationPlatformBridgeLinuxImpl
     // Even-indexed elements in this vector are action IDs passed back to
     // us in OnActionInvoked().  Odd-indexed ones contain the button text.
     std::vector<std::string> actions;
-    base::Optional<base::string16> inline_reply_placeholder;
+    base::Optional<std::u16string> inline_reply_placeholder;
     if (base::Contains(capabilities_, kCapabilityActions)) {
       const bool has_support_for_inline_reply =
           base::Contains(capabilities_, kCapabilityInlineReply);
@@ -898,10 +896,10 @@ class NotificationPlatformBridgeLinuxImpl
       NotificationCommon::Operation operation,
       const base::Optional<int>& action_index,
       const base::Optional<bool>& by_user,
-      const base::Optional<base::string16>& reply) {
+      const base::Optional<std::u16string>& reply) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    base::PostTask(
-        location, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        location,
         base::BindOnce(ForwardNotificationOperationOnUiThread, operation,
                        data->notification_type, data->origin_url,
                        data->notification_id, action_index, by_user, reply,

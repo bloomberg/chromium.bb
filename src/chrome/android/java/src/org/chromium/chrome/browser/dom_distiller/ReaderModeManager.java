@@ -23,7 +23,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsVisibilityManager;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.IncognitoCustomTabIntentDataProvider;
@@ -174,7 +174,8 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
                 return false;
             }
 
-            Intent returnIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(navParams.url));
+            Intent returnIntent =
+                    new Intent(Intent.ACTION_VIEW, Uri.parse(navParams.url.getSpec()));
             returnIntent.setClassName(activity, ChromeLauncherActivity.class.getName());
 
             // Set the parent ID of the tab to be created.
@@ -321,8 +322,7 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
                 int index = controller.getLastCommittedEntryIndex();
                 NavigationEntry entry = controller.getEntryAtIndex(index);
 
-                if (entry != null
-                        && DomDistillerUrlUtils.isDistilledPage(entry.getUrl().getSpec())) {
+                if (entry != null && DomDistillerUrlUtils.isDistilledPage(entry.getUrl())) {
                     mShouldRemovePreviousNavigation = true;
                     mLastDistillerPageIndex = index;
                 }

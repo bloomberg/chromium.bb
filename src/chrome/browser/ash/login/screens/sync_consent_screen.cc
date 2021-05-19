@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -131,7 +131,7 @@ bool SyncConsentScreen::MaybeSkip(WizardContext* context) {
       return false;
     case SyncScreenBehavior::kSkipNonGaiaAccount:
     case SyncScreenBehavior::kSkipPublicAccount:
-    case SyncScreenBehavior::kSkipFeaturePolicy:
+    case SyncScreenBehavior::kSkipPermissionsPolicy:
     case SyncScreenBehavior::kSkipAndEnableNonBrandedBuild:
     case SyncScreenBehavior::kSkipAndEnableEmphemeralUser:
     case SyncScreenBehavior::kSkipAndEnableScreenPolicy:
@@ -230,7 +230,7 @@ void SyncConsentScreen::UpdateSyncSettings(bool enable_sync) {
   // Set a "sync-consented" primary account. See comment above.
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   CoreAccountId account_id =
-      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
   DCHECK(!account_id.empty());
   identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(account_id);
 
@@ -256,7 +256,7 @@ void SyncConsentScreen::MaybeEnableSyncForSkip() {
       return;
     case SyncScreenBehavior::kSkipNonGaiaAccount:
     case SyncScreenBehavior::kSkipPublicAccount:
-    case SyncScreenBehavior::kSkipFeaturePolicy:
+    case SyncScreenBehavior::kSkipPermissionsPolicy:
       // Nothing to do.
       return;
     case SyncScreenBehavior::kSkipAndEnableNonBrandedBuild:
@@ -308,7 +308,7 @@ SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior()
 
   // Skip if sync-the-feature is disabled by policy.
   if (IsProfileSyncDisabledByPolicy())
-    return SyncScreenBehavior::kSkipFeaturePolicy;
+    return SyncScreenBehavior::kSkipPermissionsPolicy;
 
   if (IsProfileSyncEngineInitialized())
     return SyncScreenBehavior::kShow;
@@ -345,7 +345,7 @@ void SyncConsentScreen::RecordConsent(
   // The user might not consent to browser sync, so use the "unconsented" ID.
   const CoreAccountId& google_account_id =
       IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId(
-          signin::ConsentLevel::kNotRequired);
+          signin::ConsentLevel::kSignin);
   // TODO(alemate): Support unified_consent_enabled
   sync_pb::UserConsentTypes::SyncConsent sync_consent;
   sync_consent.set_confirmation_grd_id(consent_confirmation);

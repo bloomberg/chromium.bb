@@ -44,15 +44,15 @@
 #include "base/version.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/status_collector/enterprise_activity_storage.h"
@@ -66,9 +66,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
@@ -117,6 +115,7 @@ using base::TimeDelta;
 namespace em = enterprise_management;
 
 namespace {
+
 // How many seconds of inactivity triggers the idle state.
 const int kIdleStateThresholdSeconds = 300;
 
@@ -1323,7 +1322,7 @@ DeviceStatusCollector::DeviceStatusCollector(
     const GraphicsStatusFetcher& graphics_status_fetcher,
     const CrashReportInfoFetcher& crash_report_info_fetcher,
     base::Clock* clock)
-    : StatusCollector(provider, chromeos::CrosSettings::Get(), clock),
+    : StatusCollector(provider, ash::CrosSettings::Get(), clock),
       pref_service_(pref_service),
       firmware_fetch_error_(kFirmwareNotInitialized),
       volume_info_fetcher_(volume_info_fetcher),
@@ -1966,8 +1965,7 @@ std::string DeviceStatusCollector::GetUserForActivityReporting() const {
 
   // Report only affiliated users for enterprise reporting.
   std::string primary_user_email = primary_user->GetAccountId().GetUserEmail();
-  if (!chromeos::ChromeUserManager::Get()->ShouldReportUser(
-          primary_user_email)) {
+  if (!ash::ChromeUserManager::Get()->ShouldReportUser(primary_user_email)) {
     return std::string();
   }
   return primary_user_email;
@@ -2206,7 +2204,7 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
 
 bool DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* status) {
   const user_manager::UserList& users =
-      chromeos::ChromeUserManager::Get()->GetUsers();
+      ash::ChromeUserManager::Get()->GetUsers();
 
   bool anything_reported = false;
   for (auto* user : users) {
@@ -2215,7 +2213,7 @@ bool DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* status) {
       continue;
 
     em::DeviceUser* device_user = status->add_users();
-    if (chromeos::ChromeUserManager::Get()->ShouldReportUser(
+    if (ash::ChromeUserManager::Get()->ShouldReportUser(
             user->GetAccountId().GetUserEmail())) {
       device_user->set_type(em::DeviceUser::USER_TYPE_MANAGED);
       device_user->set_email(user->GetAccountId().GetUserEmail());

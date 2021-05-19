@@ -22,8 +22,8 @@ namespace webrtc {
 
 // TODO(deadbeef): Move this to .cc file and out of api/. What threads methods
 // are called on is an implementation detail.
-BEGIN_SIGNALING_PROXY_MAP(PeerConnectionFactory)
-PROXY_SIGNALING_THREAD_DESTRUCTOR()
+BEGIN_PROXY_MAP(PeerConnectionFactory)
+PROXY_PRIMARY_THREAD_DESTRUCTOR()
 PROXY_METHOD1(void, SetOptions, const Options&)
 PROXY_METHOD4(rtc::scoped_refptr<PeerConnectionInterface>,
               CreatePeerConnection,
@@ -59,8 +59,8 @@ PROXY_METHOD2(rtc::scoped_refptr<AudioTrackInterface>,
               CreateAudioTrack,
               const std::string&,
               AudioSourceInterface*)
-PROXY_METHOD2(bool, StartAecDump, FILE*, int64_t)
-PROXY_METHOD0(void, StopAecDump)
+PROXY_SECONDARY_METHOD2(bool, StartAecDump, FILE*, int64_t)
+PROXY_SECONDARY_METHOD0(void, StopAecDump)
 END_PROXY_MAP()
 
 }  // namespace webrtc

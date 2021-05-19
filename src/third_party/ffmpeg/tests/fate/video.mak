@@ -43,6 +43,12 @@ fate-auravision-v1: CMD = framecrc -i $(TARGET_SAMPLES)/auravision/SOUVIDEO.AVI 
 FATE_VIDEO-$(call DEMDEC, AVI, AURA2) += fate-auravision-v2
 fate-auravision-v2: CMD = framecrc -i $(TARGET_SAMPLES)/auravision/salma-hayek-in-ugly-betty-partial-avi -an
 
+FATE_VIDEO-$(call DEMDEC, AVI, AVRN) += fate-avid-interlaced
+fate-avid-interlaced: CMD = framecrc -i $(TARGET_SAMPLES)/avid/avid_ntsc_interlaced.avi
+
+FATE_VIDEO-$(call DEMDEC, MOV, MJPEG) += fate-avid-meridian
+fate-avid-meridian: CMD = framecrc -i $(TARGET_SAMPLES)/avid/avidmeridianntsc.mov
+
 FATE_VIDEO-$(call DEMDEC, BETHSOFTVID, BETHSOFTVID) += fate-bethsoft-vid
 fate-bethsoft-vid: CMD = framecrc -i $(TARGET_SAMPLES)/bethsoft-vid/ANIM0001.VID -t 5 -pix_fmt rgb24 -vf scale -af aresample
 
@@ -200,6 +206,9 @@ fate-kgv1: CMD = framecrc -i $(TARGET_SAMPLES)/kega/kgv1.avi -pix_fmt rgb555le -
 
 FATE_VIDEO-$(call DEMDEC, AVI, KMVC) += fate-kmvc
 fate-kmvc: CMD = framecrc -i $(TARGET_SAMPLES)/KMVC/LOGO1.AVI -an -t 3 -pix_fmt rgb24 -vf scale
+
+FATE_VIDEO-$(call DEMDEC, AVI, LSCR) += fate-lscr
+fate-lscr: CMD = framecrc -i $(TARGET_SAMPLES)/lscr/lscr_compr9_short.avi
 
 FATE_MAGICYUV += fate-magicyuv-y4444i \
                  fate-magicyuv-y400i  \

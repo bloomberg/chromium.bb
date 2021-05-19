@@ -7,7 +7,9 @@
 #include "quic/core/http/quic_spdy_session.h"
 #include "quic/core/qpack/qpack_receive_stream.h"
 #include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_flags.h"
 #include "quic/test_tools/quic_session_peer.h"
+#include "common/platform/api/quiche_logging.h"
 
 namespace quic {
 namespace test {
@@ -35,18 +37,6 @@ void QuicSpdySessionPeer::SetHeadersStream(QuicSpdySession* session,
 // static
 spdy::SpdyFramer* QuicSpdySessionPeer::GetSpdyFramer(QuicSpdySession* session) {
   return &session->spdy_framer_;
-}
-
-void QuicSpdySessionPeer::SetHpackEncoderDebugVisitor(
-    QuicSpdySession* session,
-    std::unique_ptr<QuicHpackDebugVisitor> visitor) {
-  session->SetHpackEncoderDebugVisitor(std::move(visitor));
-}
-
-void QuicSpdySessionPeer::SetHpackDecoderDebugVisitor(
-    QuicSpdySession* session,
-    std::unique_ptr<QuicHpackDebugVisitor> visitor) {
-  session->SetHpackDecoderDebugVisitor(std::move(visitor));
 }
 
 void QuicSpdySessionPeer::SetMaxInboundHeaderListSize(
@@ -107,6 +97,20 @@ QpackReceiveStream* QuicSpdySessionPeer::GetQpackDecoderReceiveStream(
 QpackReceiveStream* QuicSpdySessionPeer::GetQpackEncoderReceiveStream(
     QuicSpdySession* session) {
   return session->qpack_encoder_receive_stream_;
+}
+
+// static
+void QuicSpdySessionPeer::SetH3DatagramSupported(QuicSpdySession* session,
+                                                 bool h3_datagram_supported) {
+  session->h3_datagram_supported_ = h3_datagram_supported;
+}
+
+// static
+void QuicSpdySessionPeer::EnableWebTransport(QuicSpdySession& session) {
+  SetQuicReloadableFlag(quic_h3_datagram, true);
+  QUICHE_DCHECK(session.WillNegotiateWebTransport());
+  session.h3_datagram_supported_ = true;
+  session.peer_supports_webtransport_ = true;
 }
 
 }  // namespace test

@@ -156,8 +156,12 @@ void SuperRes_SSE4_1(const void* const coefficients, void* const source,
 
 void Init8bpp() {
   Dsp* dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
+#if DSP_ENABLED_8BPP_SSE4_1(SuperResCoefficients)
   dsp->super_res_coefficients = SuperResCoefficients_SSE4_1;
+#endif  // DSP_ENABLED_8BPP_SSE4_1(SuperResCoefficients)
+#if DSP_ENABLED_8BPP_SSE4_1(SuperRes)
   dsp->super_res = SuperRes_SSE4_1;
+#endif  // DSP_ENABLED_8BPP_SSE4_1(SuperRes)
 }
 
 }  // namespace

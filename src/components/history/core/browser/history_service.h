@@ -29,7 +29,6 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -202,11 +201,11 @@ class HistoryService : public KeyedService {
   // Adds an entry for the specified url without creating a visit. This should
   // only be used when bookmarking a page, otherwise the row leaks in the
   // history db (it never gets cleaned).
-  void AddPageNoVisitForBookmark(const GURL& url, const base::string16& title);
+  void AddPageNoVisitForBookmark(const GURL& url, const std::u16string& title);
 
   // Sets the title for the given page. The page should be in history. If it
   // is not, this operation is ignored.
-  void SetPageTitle(const GURL& url, const base::string16& title);
+  void SetPageTitle(const GURL& url, const std::u16string& title);
 
   // Updates the history database with a page's ending time stamp information.
   // The page can be identified by the combination of the context id, the
@@ -220,6 +219,12 @@ class HistoryService : public KeyedService {
   // be identified by the combination of the context id, the navigation entry id
   // and the url. No-op if the page is not found.
   void SetFlocAllowed(ContextID context_id, int nav_entry_id, const GURL& url);
+
+  // Updates the history database with the content model annotations for the
+  // visit.
+  void AddContentModelAnnotationsForVisit(
+      VisitID visit_id,
+      const VisitContentModelAnnotations& model_annotations);
 
   // Querying ------------------------------------------------------------------
 
@@ -251,7 +256,7 @@ class HistoryService : public KeyedService {
   // history_types.h).  If empty, all results matching the given options
   // will be returned.
   base::CancelableTaskTracker::TaskId QueryHistory(
-      const base::string16& text_query,
+      const std::u16string& text_query,
       const QueryOptions& options,
       QueryHistoryCallback callback,
       base::CancelableTaskTracker* tracker);
@@ -335,18 +340,40 @@ class HistoryService : public KeyedService {
                           DomainDiversityCallback callback,
                           base::CancelableTaskTracker* tracker);
 
-  using GetLastVisitToHostCallback =
-      base::OnceCallback<void(HistoryLastVisitToHostResult)>;
+  using GetLastVisitCallback = base::OnceCallback<void(HistoryLastVisitResult)>;
 
   // Gets the last time any webpage on the given host was visited within the
   // time range [|begin_time|, |end_time|). If the given host has not been
-  // visited in the given time age, the callback will be called with a null
+  // visited in the given time range, the callback will be called with a null
   // base::Time.
   base::CancelableTaskTracker::TaskId GetLastVisitToHost(
       const GURL& host,
       base::Time begin_time,
       base::Time end_time,
-      GetLastVisitToHostCallback callback,
+      GetLastVisitCallback callback,
+      base::CancelableTaskTracker* tracker);
+
+  // Gets the last time |url| was visited before |end_time|. If the given URL
+  // has not been visited in the past, the callback will be called with a null
+  // base::Time.
+  base::CancelableTaskTracker::TaskId GetLastVisitToURL(
+      const GURL& url,
+      base::Time end_time,
+      GetLastVisitCallback callback,
+      base::CancelableTaskTracker* tracker);
+
+  using GetDailyVisitsToHostCallback =
+      base::OnceCallback<void(DailyVisitsResult)>;
+
+  // TODO(crbug/1152592): Use this function.
+  // Gets counts for total visits and days visited for pages matching `host`'s
+  // scheme, port, and host. Counts only user-visible visits (i.e. no redirects
+  // or subframes) within the time range [`begin_time`, `end_time`).
+  base::CancelableTaskTracker::TaskId GetDailyVisitsToHost(
+      const GURL& host,
+      base::Time begin_time,
+      base::Time end_time,
+      GetDailyVisitsToHostCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Database management operations --------------------------------------------
@@ -383,6 +410,13 @@ class HistoryService : public KeyedService {
   void ExpireHistoryBeforeForTesting(base::Time end_time,
                                      base::OnceClosure callback,
                                      base::CancelableTaskTracker* tracker);
+
+  // Mark all favicons as out of date that have been modified at or after
+  // |begin| and before |end|. Calls |callback| when done.
+  void SetFaviconsOutOfDateBetween(base::Time begin,
+                                   base::Time end,
+                                   base::OnceClosure callback,
+                                   base::CancelableTaskTracker* tracker);
 
   // Removes all visits to the given URLs in the specified time range. Calls
   // ExpireHistoryBetween() to delete local visits, and handles deletion of
@@ -448,7 +482,7 @@ class HistoryService : public KeyedService {
   // id of the url, keyword_id the id of the keyword and term the search term.
   void SetKeywordSearchTermsForURL(const GURL& url,
                                    KeywordID keyword_id,
-                                   const base::string16& term);
+                                   const std::u16string& term);
 
   // Deletes all search terms for the specified keyword.
   void DeleteAllSearchTermsForKeyword(KeywordID keyword_id);
@@ -459,7 +493,7 @@ class HistoryService : public KeyedService {
   // Deletes all URL and search term entries matching the given |term| and
   // |keyword_id|.
   void DeleteMatchingURLsForKeyword(KeywordID keyword_id,
-                                    const base::string16& term);
+                                    const std::u16string& term);
 
   // Bookmarks -----------------------------------------------------------------
 
@@ -524,7 +558,7 @@ class HistoryService : public KeyedService {
   // visit using the |last_visit| timestamp, and a PageTransition type of LINK,
   // if |visit_source| != SYNCED.
   void AddPageWithDetails(const GURL& url,
-                          const base::string16& title,
+                          const std::u16string& title,
                           int visit_count,
                           int typed_count,
                           base::Time last_visit,
@@ -642,7 +676,7 @@ class HistoryService : public KeyedService {
   // |keyword_id| associated with a URL and search term.
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
                                       KeywordID keyword_id,
-                                      const base::string16& term);
+                                      const std::u16string& term);
 
   // Notify all HistoryServiceObservers registered that keyword search term is
   // deleted. |url_id| is the id of the url row.

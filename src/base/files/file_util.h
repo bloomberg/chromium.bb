@@ -28,7 +28,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -649,6 +648,20 @@ BASE_EXPORT bool MoveUnsafe(const FilePath& from_path,
 BASE_EXPORT bool CopyAndDeleteDirectory(const FilePath& from_path,
                                         const FilePath& to_path);
 #endif  // defined(OS_WIN)
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+// CopyFileContentsWithSendfile will use the sendfile(2) syscall to perform a
+// file copy without moving the data between kernel and userspace. This is much
+// more efficient than sequences of read(2)/write(2) calls. The |retry_slow|
+// parameter instructs the caller that it should try to fall back to a normal
+// sequences of read(2)/write(2) syscalls.
+//
+// The input file |infile| must be opened for reading and the output file
+// |outfile| must be opened for writing.
+BASE_EXPORT bool CopyFileContentsWithSendfile(File& infile,
+                                              File& outfile,
+                                              bool& retry_slow);
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 // Used by PreReadFile() when no kernel support for prefetching is available.
 bool PreReadFileSlow(const FilePath& file_path, int64_t max_bytes);

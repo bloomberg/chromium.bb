@@ -48,7 +48,6 @@
 #include "src/utils/constants.h"
 #include "src/utils/entropy_decoder.h"
 #include "src/utils/memory.h"
-#include "src/utils/parameter_tree.h"
 #include "src/utils/segmentation_map.h"
 #include "src/utils/threadpool.h"
 #include "src/utils/types.h"
@@ -292,26 +291,25 @@ class Tile : public Allocable {
   // iteratively. It performs a DFS traversal over the partition tree to process
   // the blocks in the right order.
   bool ProcessPartition(
-      int row4x4_start, int column4x4_start, ParameterTree* root,
-      TileScratchBuffer* scratch_buffer,
+      int row4x4_start, int column4x4_start, TileScratchBuffer* scratch_buffer,
       ResidualPtr* residual);  // Iterative implementation of 5.11.4.
   bool ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
-                    ParameterTree* tree, TileScratchBuffer* scratch_buffer,
+                    TileScratchBuffer* scratch_buffer,
                     ResidualPtr* residual);   // 5.11.5.
   void ResetCdef(int row4x4, int column4x4);  // 5.11.55.
 
   // This function is used to decode a superblock when the parsing has already
   // been done for that superblock.
-  bool DecodeSuperBlock(ParameterTree* tree, TileScratchBuffer* scratch_buffer,
-                        ResidualPtr* residual);
+  bool DecodeSuperBlock(int sb_row_index, int sb_column_index,
+                        TileScratchBuffer* scratch_buffer);
   // Helper function used by DecodeSuperBlock(). Note that the decode_block()
   // function in the spec is equivalent to ProcessBlock() in the code.
-  bool DecodeBlock(ParameterTree* tree, TileScratchBuffer* scratch_buffer,
-                   ResidualPtr* residual);
+  bool DecodeBlock(int row4x4, int column4x4, BlockSize block_size,
+                   TileScratchBuffer* scratch_buffer, ResidualPtr* residual);
 
   void ClearBlockDecoded(TileScratchBuffer* scratch_buffer, int row4x4,
                          int column4x4);  // 5.11.3.
-  bool ProcessSuperBlock(int row4x4, int column4x4, int block_width4x4,
+  bool ProcessSuperBlock(int row4x4, int column4x4,
                          TileScratchBuffer* scratch_buffer,
                          ProcessingMode mode);
   void ResetLoopRestorationParams();

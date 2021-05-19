@@ -29,7 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
 
@@ -103,8 +103,8 @@ ExtensionHost* CreateHost(Profile* profile, const Extension* app) {
 class UpdateInstallGateTest : public testing::Test {
  public:
   UpdateInstallGateTest() {
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
   }
 
   // testing::Test
@@ -116,7 +116,7 @@ class UpdateInstallGateTest : public testing::Test {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     const AccountId account_id(AccountId::FromUserEmail(kUserProfile));
     // Needed to allow ChromeProcessManagerDelegate to allow background pages.
-    fake_user_manager_ = new chromeos::FakeChromeUserManager();
+    fake_user_manager_ = new ash::FakeChromeUserManager();
     // Takes ownership of fake_user_manager_.
     scoped_user_manager_enabler_ =
         std::make_unique<user_manager::ScopedUserManager>(
@@ -138,7 +138,7 @@ class UpdateInstallGateTest : public testing::Test {
         EventRouterFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_, base::BindRepeating(&BuildEventRouter)));
 
-    delayer_.reset(new UpdateInstallGate(profile_));
+    delayer_ = std::make_unique<UpdateInstallGate>(profile_);
 
     new_app_ = CreateApp(kAppId, "2.0");
     new_persistent_ = CreateExtension(kPersistentExtensionId, "2.0", true);
@@ -217,7 +217,7 @@ class UpdateInstallGateTest : public testing::Test {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Needed for creating ExtensionService.
-  chromeos::FakeChromeUserManager* fake_user_manager_ = nullptr;
+  ash::FakeChromeUserManager* fake_user_manager_ = nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_enabler_;
 #endif
 

@@ -344,7 +344,7 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
                                           int segment_id) {
   AV1_COMMON *const cm = &cpi->common;
   const int is_key_frame = frame_is_intra_only(cm);
-  const int threshold_multiplier = is_key_frame ? 40 : 1;
+  const int threshold_multiplier = is_key_frame ? 120 : 1;
   int64_t threshold_base =
       (int64_t)(threshold_multiplier *
                 cpi->enc_quant_dequant_params.dequants.y_dequant_QTX[q][1]);
@@ -353,8 +353,13 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
   if (is_key_frame) {
     thresholds[0] = threshold_base;
     thresholds[1] = threshold_base;
-    thresholds[2] = threshold_base >> 2;
-    thresholds[3] = threshold_base >> 2;
+    if (cm->width * cm->height < 1280 * 720) {
+      thresholds[2] = threshold_base / 3;
+      thresholds[3] = threshold_base >> 1;
+    } else {
+      thresholds[2] = threshold_base >> 2;
+      thresholds[3] = threshold_base >> 2;
+    }
     thresholds[4] = threshold_base << 2;
   } else {
     // Increase partition thresholds for noisy content. Apply it only for
@@ -1021,7 +1026,8 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
           (max_var_32x32[m] - min_var_32x32[m]) > 3 * (thresholds[1] >> 3) &&
           max_var_32x32[m] > thresholds[1] >> 1 &&
           (noise_level >= kMedium || cpi->use_svc ||
-           cpi->sf.rt_sf.force_large_partition_blocks)) {
+           cpi->sf.rt_sf.force_large_partition_blocks ||
+           !cpi->sf.rt_sf.use_nonrd_pick_mode)) {
         force_split[1 + m] = 1;
         force_split[0] = 1;
       }

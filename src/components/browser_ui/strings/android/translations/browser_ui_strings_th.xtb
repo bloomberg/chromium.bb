@@ -23,6 +23,7 @@
 <translation id="1509960214886564027">ฟีเจอร์ในหลายเว็บไซต์อาจใช้งานไม่ได้</translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1644574205037202324">ประวัติการเข้าชม</translation>
+<translation id="1647582022260550163">คุณแน่ใจไหมว่าต้องการรีเซ็ตสิทธิ์ รวมถึงล้างคุกกี้และข้อมูลเว็บไซต์</translation>
 <translation id="1660204651932907780">อนุญาตให้เว็บไซต์เล่นเสียง (แนะนำ)</translation>
 <translation id="1677097821151855053">คุกกี้และข้อมูลอื่นๆ ของเว็บไซต์ใช้ในการจดจำคุณ เช่น เพื่อลงชื่อเข้าใช้ให้คุณหรือปรับโฆษณาตามโปรไฟล์ของคุณ ดู<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" />เพื่อจัดการคุกกี้สำหรับทุกเว็บไซต์</translation>
 <translation id="1688867105868176567">ล้างข้อมูลเว็บไซต์ไหม</translation>
@@ -92,7 +93,6 @@
 <translation id="3386292677130313581">ถามก่อนอนุญาตให้เว็บไซต์ทราบตำแหน่งของคุณ (แนะนำ)</translation>
 <translation id="3538390592868664640">บล็อกไม่ให้เว็บไซต์สร้างแผนที่ 3 มิติของสิ่งที่อยู่รอบตัวคุณหรือติดตามตำแหน่งของกล้อง</translation>
 <translation id="3586500876634962664">การใช้กล้องและไมโครโฟน</translation>
-<translation id="3587482841069643663">ทั้งหมด</translation>
 <translation id="358794129225322306">อนุญาตให้เว็บไซต์ดาวน์โหลดไฟล์หลายไฟล์โดยอัตโนมัติ</translation>
 <translation id="3594780231884063836">ปิดเสียงวิดีโอ</translation>
 <translation id="3596414637720633074">บล็อกคุกกี้ของบุคคลที่สามในโหมดไม่ระบุตัวตน</translation>
@@ -104,6 +104,7 @@
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
 <translation id="3955193568934677022">อนุญาตให้เว็บไซต์เล่นเนื้อหาที่ได้รับความคุ้มครอง (แนะนำ)</translation>
+<translation id="3967822245660637423">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="3987993985790029246">คัดลอกลิงก์</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">ชื่อ</translation>
@@ -177,6 +178,7 @@
 <translation id="5916664084637901428">เปิด</translation>
 <translation id="5922853908706496913">กำลังแชร์หน้าจอ</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
+<translation id="5975083100439434680">ย่อ</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">ควบคุมการเข้าถึงอุปกรณ์ของคุณของเว็บไซต์นี้</translation>
 <translation id="6040143037577758943">ปิด</translation>
@@ -297,6 +299,7 @@
 <translation id="8801436777607969138">บล็อก JavaScript ในเว็บไซต์ที่ต้องการ</translation>
 <translation id="8816026460808729765">บล็อกไม่ให้เว็บไซต์เข้าถึงเซ็นเซอร์</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8903921497873541725">ขยาย</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC ในอุปกรณ์นี้ปิดอยู่ เปิดได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="8929372349074745002">เว็บไซต์นี้เปิดและตอบสนองอย่างรวดเร็วสำหรับผู้คนส่วนใหญ่</translation>
@@ -304,10 +307,12 @@
 <translation id="894871326938397531">ออกจากโหมดไม่ระบุตัวตนไหม</translation>
 <translation id="8958424370300090006">บล็อกคุกกี้ของเว็บไซต์ที่เจาะจง</translation>
 <translation id="8959122750345127698">ไม่สามารถเข้าถึงการนำทางได้: <ph name="URL" /></translation>
+<translation id="8986362086234534611">เลิกจำ</translation>
 <translation id="9019902583201351841">มีการจัดการโดยผู้ปกครอง</translation>
 <translation id="9074739597929991885">บลูทูธ</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" /> <ph name="PERMISSION_2" /> และอีก <ph name="NUM_MORE" /> รายการ}other{<ph name="PERMISSION_1" /> <ph name="PERMISSION_2" /> และอีก <ph name="NUM_MORE" /> รายการ}}</translation>
 <translation id="913657688200966289">เปิดการใช้สิทธิ์สำหรับ <ph name="APP_NAME" /> ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
+<translation id="930525582205581608">เลิกจำเว็บไซต์นี้ใช่ไหม</translation>
 <translation id="965817943346481315">บล็อกหากเว็บไซต์แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด (แนะนำ)</translation>
 <translation id="967624055006145463">ข้อมูลที่จัดเก็บ</translation>
 </translationbundle>

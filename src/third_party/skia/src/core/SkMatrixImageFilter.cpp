@@ -9,6 +9,7 @@
 
 #include "include/core/SkCanvas.h"
 #include "include/core/SkRect.h"
+#include "include/effects/SkImageFilters.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkSamplingPriv.h"
 #include "src/core/SkSpecialImage.h"
@@ -21,6 +22,8 @@ SkMatrixImageFilter::SkMatrixImageFilter(const SkMatrix& transform,
     : INHERITED(&input, 1, nullptr)
     , fTransform(transform)
     , fSampling(sampling) {
+    // Pre-cache so future calls to fTransform.getType() are threadsafe.
+    (void)fTransform.getType();
 }
 
 sk_sp<SkImageFilter> SkMatrixImageFilter::Make(const SkMatrix& transform,
@@ -29,6 +32,11 @@ sk_sp<SkImageFilter> SkMatrixImageFilter::Make(const SkMatrix& transform,
     return sk_sp<SkImageFilter>(new SkMatrixImageFilter(transform,
                                                         sampling,
                                                         std::move(input)));
+}
+
+sk_sp<SkImageFilter> SkImageFilters::MatrixTransform(
+        const SkMatrix& transform, const SkSamplingOptions& sampling, sk_sp<SkImageFilter> input) {
+    return SkMatrixImageFilter::Make(transform, sampling, std::move(input));
 }
 
 sk_sp<SkFlattenable> SkMatrixImageFilter::CreateProc(SkReadBuffer& buffer) {
@@ -52,6 +60,8 @@ void SkMatrixImageFilter::flatten(SkWriteBuffer& buffer) const {
     buffer.writeMatrix(fTransform);
     SkSamplingPriv::Write(buffer, fSampling);
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 sk_sp<SkSpecialImage> SkMatrixImageFilter::onFilterImage(const Context& ctx,
                                                          SkIPoint* offset) const {

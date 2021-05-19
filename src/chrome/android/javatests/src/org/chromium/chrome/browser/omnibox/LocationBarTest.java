@@ -15,12 +15,12 @@ import static junit.framework.Assert.assertFalse;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -44,7 +44,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -54,6 +53,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lens.LensController;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconResource;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -116,16 +116,20 @@ public class LocationBarTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
-        LocaleManager.setInstanceForTest(mLocaleManager);
-        SearchEngineLogoUtils.setInstanceForTesting(mSearchEngineLogoUtils);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
+            LocaleManager.setInstanceForTest(mLocaleManager);
+            SearchEngineLogoUtils.setInstanceForTesting(mSearchEngineLogoUtils);
+        });
     }
 
     @After
     public void tearDown() {
-        TemplateUrlServiceFactory.setInstanceForTesting(null);
-        LocaleManager.setInstanceForTest(null);
-        SearchEngineLogoUtils.setInstanceForTesting(null);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TemplateUrlServiceFactory.setInstanceForTesting(null);
+            LocaleManager.setInstanceForTest(null);
+            SearchEngineLogoUtils.setInstanceForTesting(null);
+        });
     }
 
     private void startActivityNormally() {
@@ -179,23 +183,27 @@ public class LocationBarTest {
 
     private void setupSearchEngineLogo(String url) {
         boolean isGoogle = url.equals(GOOGLE_URL);
-        doReturn(isGoogle).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
-        doReturn(url).when(mSearchEngineLogoUtils).getSearchLogoUrl(mTemplateUrlService);
-        doReturn(true)
-                .when(mSearchEngineLogoUtils)
-                .shouldShowSearchEngineLogo(/* incognito= */ false);
-        doReturn(isGoogle ? mGoogleSearchEngine : mNonGoogleSearchEngine)
-                .when(mTemplateUrlService)
-                .getDefaultSearchEngineTemplateUrl();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            doReturn(isGoogle).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
+            doReturn(url).when(mSearchEngineLogoUtils).getSearchLogoUrl(mTemplateUrlService);
+            doReturn(true)
+                    .when(mSearchEngineLogoUtils)
+                    .shouldShowSearchEngineLogo(/* incognito= */ false);
+            doReturn(isGoogle ? mGoogleSearchEngine : mNonGoogleSearchEngine)
+                    .when(mTemplateUrlService)
+                    .getDefaultSearchEngineTemplateUrl();
 
-        // Return null to fallback to the search loupe behavior.
-        Answer bitmapAnswer = (invocation) -> {
-            ((Callback<Bitmap>) invocation.getArgument(2)).onResult(null);
-            return null;
-        };
-        doAnswer(bitmapAnswer)
-                .when(mSearchEngineLogoUtils)
-                .getSearchEngineLogoFavicon(any(), any(), any(), any());
+            Answer logoAnswer = (invocation) -> {
+                ((Callback<StatusIconResource>) invocation.getArgument(4))
+                        .onResult(new StatusIconResource(
+                                isGoogle ? R.drawable.ic_logo_googleg_20dp : R.drawable.ic_search,
+                                0));
+                return null;
+            };
+            doAnswer(logoAnswer)
+                    .when(mSearchEngineLogoUtils)
+                    .getSearchEngineLogo(any(), anyBoolean(), any(), any(), any());
+        });
     }
 
     private void assertTheLastVisibleButtonInSearchBoxById(int id) {
@@ -293,7 +301,6 @@ public class LocationBarTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1172927")
     public void testTemplateUrlServiceChange() throws InterruptedException {
         doReturn(false).when(mLocaleManager).needToCheckForSearchEnginePromo();
         setupSearchEngineLogo(GOOGLE_URL);

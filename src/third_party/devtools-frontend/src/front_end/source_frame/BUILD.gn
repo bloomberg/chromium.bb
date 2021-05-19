@@ -7,42 +7,42 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("source_frame") {
   sources = [
-    "BinaryResourceViewFactory.js",
-    "FontView.js",
-    "ImageView.js",
-    "JSONView.js",
-    "PreviewFactory.js",
-    "ResourceSourceFrame.js",
-    "SourceCodeDiff.js",
-    "SourceFrame.js",
-    "SourcesTextEditor.js",
-    "XMLView.js",
+    "BinaryResourceViewFactory.ts",
+    "FontView.ts",
+    "ImageView.ts",
+    "JSONView.ts",
+    "PreviewFactory.ts",
+    "ResourceSourceFrame.ts",
+    "SourceCodeDiff.ts",
+    "SourceFrame.ts",
+    "SourcesTextEditor.ts",
+    "XMLView.ts",
   ]
 
   deps = [
-    "../common:bundle",
+    "../core/common:bundle",
+    "../core/host:bundle",
+    "../core/i18n:bundle",
+    "../core/platform:bundle",
+    "../core/sdk:bundle",
     "../diff:bundle",
     "../formatter:bundle",
-    "../host:bundle",
-    "../i18n:bundle",
+    "../models/text_utils:bundle",
     "../object_ui:bundle",
-    "../platform:bundle",
-    "../sdk:bundle",
     "../text_editor:bundle",
-    "../text_utils:bundle",
-    "../ui:bundle",
+    "../ui/legacy:bundle",
     "../workspace:bundle",
   ]
 }
 
 devtools_entrypoint("bundle") {
-  entrypoint = "source_frame.js"
+  entrypoint = "source_frame.ts"
 
   deps = [ ":source_frame" ]
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "source_frame-legacy.js"
+  entrypoint = "source_frame-legacy.ts"
 
   deps = [ ":bundle" ]
 }

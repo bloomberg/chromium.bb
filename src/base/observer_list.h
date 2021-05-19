@@ -19,8 +19,6 @@
 #include "base/observer_list_internal.h"
 #include "base/ranges/algorithm.h"
 #include "base/sequence_checker.h"
-#include "base/stl_util.h"
-#include "base/strings/strcat.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -322,10 +320,6 @@ class ObserverList {
 
   bool empty() const { return !observers_count_; }
 
-  // Deprecated: use |has_observers()|.
-  // TODO(1155308): migrate all callers and make this test only.
-  bool might_have_observers() const { return !observers_.empty(); }
-
  private:
   friend class internal::WeakLinkNode<ObserverList>;
 
@@ -335,14 +329,19 @@ class ObserverList {
     // Compact() is only ever called when the last iterator is destroyed.
     DETACH_FROM_SEQUENCE(iteration_sequence_checker_);
 
-    EraseIf(observers_, [](const auto& o) { return o.IsMarkedForRemoval(); });
+    observers_.erase(
+        std::remove_if(observers_.begin(), observers_.end(),
+                       [](const auto& o) { return o.IsMarkedForRemoval(); }),
+        observers_.end());
   }
 
   std::string GetObserversCreationStackString() const {
     std::string result;
 #if DCHECK_IS_ON()
-    for (const auto& observer : observers_)
-      StrAppend(&result, {observer.GetCreationStackString(), "\n"});
+    for (const auto& observer : observers_) {
+      result += observer.GetCreationStackString();
+      result += "\n";
+    }
 #endif
     return result;
   }

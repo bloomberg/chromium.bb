@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Platform from '../../../../front_end/platform/platform.js';
+import * as Platform from '../../../../front_end/core/platform/platform.js';
 import * as QuickOpen from '../../../../front_end/quick_open/quick_open.js';
-import * as UI from '../../../../front_end/ui/ui.js';
+import * as UI from '../../../../front_end/ui/legacy/legacy.js';
 import {deinitializeGlobalVars, initializeGlobalVars} from '../helpers/EnvironmentHelpers.js';
 
 const {assert} = chai;
@@ -74,7 +74,7 @@ describe('Action registration', () => {
 
   it('executes a pre registered from the command menu', async () => {
     actionExecuted = false;
-    const commandMenuProvider = new QuickOpen.CommandMenu.CommandMenuProvider();
+    const commandMenuProvider = QuickOpen.CommandMenu.CommandMenuProvider.instance({forceNew: true});
     commandMenuProvider.attach();
     await commandMenuProvider.selectItem(0, '');
     assert.isTrue(actionExecuted, 'Action was not executed from CommandMenu');
@@ -96,4 +96,15 @@ describe('Action registration', () => {
            UI.ActionRegistry.ActionRegistry.instance().availableActions().map(action => action.id());
        assert.strictEqual(availableActions.indexOf(actionId), -1);
      });
+
+  it('deletes a registered action using its id', () => {
+    const removalResult = UI.ActionRegistration.maybeRemoveActionExtension(actionId);
+    assert.isTrue(removalResult);
+    assert.doesNotThrow(() => {
+      UI.ActionRegistration.registerActionExtension({
+        actionId,
+        category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+      });
+    });
+  });
 });

@@ -31,16 +31,16 @@ export const g = makeTestGroup(GPUTest);
 g.test('render_pass_resolve')
   .params(
     params()
+      .combine(poptions('storeOperation', ['clear', 'store'] as const))
       .combine(poptions('numColorAttachments', [2, 4] as const))
       .combine(poptions('slotsToResolve', kSlotsToResolve))
-      .combine(poptions('storeOperation', ['clear', 'store'] as const))
       .combine(poptions('resolveTargetBaseMipLevel', [0, 1] as const))
       .combine(poptions('resolveTargetBaseArrayLayer', [0, 1] as const))
   )
   .fn(t => {
-    const colorStateDescriptors: GPUColorStateDescriptor[] = [];
+    const targets: GPUColorTargetState[] = [];
     for (let i = 0; i < t.params.numColorAttachments; i++) {
-      colorStateDescriptors.push({ format: kFormat });
+      targets.push({ format: kFormat });
     }
 
     // These shaders will draw a white triangle into a texture. After draw, the top left
@@ -49,11 +49,11 @@ g.test('render_pass_resolve')
     // well as a line between the portions that contain the midpoint color due to the multisample
     // resolve.
     const pipeline = t.device.createRenderPipeline({
-      vertexStage: {
+      vertex: {
         module: t.device.createShaderModule({
           code: `
             [[builtin(position)]] var<out> Position : vec4<f32>;
-            [[builtin(vertex_idx)]] var<in> VertexIndex : i32;
+            [[builtin(vertex_index)]] var<in> VertexIndex : i32;
 
             [[stage(vertex)]] fn main() -> void {
               const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
@@ -66,7 +66,7 @@ g.test('render_pass_resolve')
         }),
         entryPoint: 'main',
       },
-      fragmentStage: {
+      fragment: {
         module: t.device.createShaderModule({
           code: `
             [[location(0)]] var<out> fragColor0 : vec4<f32>;
@@ -83,10 +83,10 @@ g.test('render_pass_resolve')
             }`,
         }),
         entryPoint: 'main',
+        targets,
       },
-      primitiveTopology: 'triangle-list',
-      colorStates: colorStateDescriptors,
-      sampleCount: 4,
+      primitive: { topology: 'triangle-list' },
+      multisample: { count: 4 },
     });
 
     const resolveTargets: GPUTexture[] = [];
@@ -99,21 +99,21 @@ g.test('render_pass_resolve')
     for (let i = 0; i < t.params.numColorAttachments; i++) {
       const colorAttachment = t.device.createTexture({
         format: kFormat,
-        size: { width: kSize, height: kSize, depth: 1 },
+        size: { width: kSize, height: kSize, depthOrArrayLayers: 1 },
         sampleCount: 4,
         mipLevelCount: 1,
         usage:
-          GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+          GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
       });
 
       if (t.params.slotsToResolve.includes(i)) {
         const colorAttachment = t.device.createTexture({
           format: kFormat,
-          size: { width: kSize, height: kSize, depth: 1 },
+          size: { width: kSize, height: kSize, depthOrArrayLayers: 1 },
           sampleCount: 4,
           mipLevelCount: 1,
           usage:
-            GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+            GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
         });
 
         const resolveTarget = t.device.createTexture({
@@ -121,11 +121,11 @@ g.test('render_pass_resolve')
           size: {
             width: kResolveTargetSize,
             height: kResolveTargetSize,
-            depth: t.params.resolveTargetBaseArrayLayer + 1,
+            depthOrArrayLayers: t.params.resolveTargetBaseArrayLayer + 1,
           },
           sampleCount: 1,
           mipLevelCount: t.params.resolveTargetBaseMipLevel + 1,
-          usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+          usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
         });
 
         // Clear to black for the load operation. After the draw, the top left half of the attachment
@@ -158,13 +158,13 @@ g.test('render_pass_resolve')
     pass.setPipeline(pipeline);
     pass.draw(3);
     pass.endPass();
-    t.device.defaultQueue.submit([encoder.finish()]);
+    t.device.queue.submit([encoder.finish()]);
 
     // Verify the resolve targets contain the correct values.
-    for (let i = 0; i < resolveTargets.length; i++) {
+    for (const resolveTarget of resolveTargets) {
       // Test top left pixel, which should be {255, 255, 255, 255}.
       t.expectSinglePixelIn2DTexture(
-        resolveTargets[i],
+        resolveTarget,
         kFormat,
         { x: 0, y: 0 },
         {
@@ -176,7 +176,7 @@ g.test('render_pass_resolve')
 
       // Test bottom right pixel, which should be {0, 0, 0, 0}.
       t.expectSinglePixelIn2DTexture(
-        resolveTargets[i],
+        resolveTarget,
         kFormat,
         { x: kSize - 1, y: kSize - 1 },
         {
@@ -187,12 +187,12 @@ g.test('render_pass_resolve')
       );
 
       // Test top right pixel, which should be {127, 127, 127, 127} due to the multisampled resolve.
-      t.expectSinglePixelIn2DTexture(
-        resolveTargets[i],
+      t.expectSinglePixelBetweenTwoValuesIn2DTexture(
+        resolveTarget,
         kFormat,
         { x: kSize - 1, y: 0 },
         {
-          exp: new Uint8Array([0x7f, 0x7f, 0x7f, 0x7f]),
+          exp: [new Uint8Array([0x7f, 0x7f, 0x7f, 0x7f]), new Uint8Array([0x80, 0x80, 0x80, 0x80])],
           slice: t.params.resolveTargetBaseArrayLayer,
           layout: { mipLevel: t.params.resolveTargetBaseMipLevel },
         }

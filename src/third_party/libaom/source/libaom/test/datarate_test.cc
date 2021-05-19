@@ -38,8 +38,7 @@ class DatarateTestLarge
   virtual ~DatarateTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
+    InitializeConfig(GET_PARAM(1));
     ResetModel();
   }
 
@@ -252,8 +251,7 @@ class DatarateTestFrameDropLarge
   virtual ~DatarateTestFrameDropLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
+    InitializeConfig(GET_PARAM(1));
     ResetModel();
   }
 
@@ -370,8 +368,7 @@ class DatarateTestSpeedChangeRealtime
   virtual ~DatarateTestSpeedChangeRealtime() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
+    InitializeConfig(GET_PARAM(1));
     ResetModel();
   }
 

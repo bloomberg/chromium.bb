@@ -14,12 +14,9 @@
 #include "include/gpu/GrRecordingContext.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrGaussianConvolutionFragmentProcessor.h"
 #include "src/gpu/effects/GrMatrixConvolutionEffect.h"
-
-#include "src/gpu/SkGr.h"
-
-#define MAX_BLUR_SIGMA 4.0f
 
 using Direction = GrGaussianConvolutionFragmentProcessor::Direction;
 
@@ -60,35 +57,37 @@ static void fill_in_2D_gaussian_kernel(float* kernel, int width, int height,
 }
 
 /**
- * Draws 'rtcRect' into 'surfaceDrawContext' evaluating a 1D Gaussian over 'srcView'. The src rect
- * is 'rtcRect' offset by 'rtcToSrcOffset'. 'mode' and 'bounds' are applied to the src coords.
+ * Draws 'dstRect' into 'surfaceFillContext' evaluating a 1D Gaussian over 'srcView'. The src rect
+ * is 'dstRect' offset by 'dstToSrcOffset'. 'mode' and 'bounds' are applied to the src coords.
  */
-static void convolve_gaussian_1d(GrSurfaceDrawContext* surfaceDrawContext,
+static void convolve_gaussian_1d(GrSurfaceFillContext* sfc,
                                  GrSurfaceProxyView srcView,
                                  const SkIRect srcSubset,
-                                 SkIVector rtcToSrcOffset,
-                                 const SkIRect& rtcRect,
+                                 SkIVector dstToSrcOffset,
+                                 const SkIRect& dstRect,
                                  SkAlphaType srcAlphaType,
                                  Direction direction,
                                  int radius,
                                  float sigma,
                                  SkTileMode mode) {
     SkASSERT(radius && !SkGpuBlurUtils::IsEffectivelyZeroSigma(sigma));
-    GrPaint paint;
     auto wm = SkTileModeToWrapMode(mode);
-    auto srcRect = rtcRect.makeOffset(rtcToSrcOffset);
-
+    auto srcRect = dstRect.makeOffset(dstToSrcOffset);
     // NOTE: This could just be GrMatrixConvolutionEffect with one of the dimensions set to 1
     // and the appropriate kernel already computed, but there's value in keeping the shader simpler.
     // TODO(michaelludwig): Is this true? If not, is the shader key simplicity worth it two have
     // two convolution effects?
-    std::unique_ptr<GrFragmentProcessor> conv(GrGaussianConvolutionFragmentProcessor::Make(
-            std::move(srcView), srcAlphaType, direction, radius, sigma, wm, srcSubset, &srcRect,
-            *surfaceDrawContext->caps()));
-    paint.setColorFragmentProcessor(std::move(conv));
-    paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
-    surfaceDrawContext->fillRectToRect(nullptr, std::move(paint), GrAA::kNo, SkMatrix::I(),
-                                       SkRect::Make(rtcRect), SkRect::Make(srcRect));
+    std::unique_ptr<GrFragmentProcessor> conv =
+            GrGaussianConvolutionFragmentProcessor::Make(std::move(srcView),
+                                                         srcAlphaType,
+                                                         direction,
+                                                         radius,
+                                                         sigma,
+                                                         wm,
+                                                         srcSubset,
+                                                         &srcRect,
+                                                         *sfc->caps());
+    sfc->fillRectToRectWithFP(srcRect, dstRect, std::move(conv));
 }
 
 static std::unique_ptr<GrSurfaceDrawContext> convolve_gaussian_2d(GrRecordingContext* context,
@@ -290,7 +289,7 @@ static std::unique_ptr<GrSurfaceDrawContext> convolve_gaussian(GrRecordingContex
 // expanding an intermediate image, so there's no need to account for a proxy offset from the
 // original input.
 static std::unique_ptr<GrSurfaceDrawContext> reexpand(GrRecordingContext* context,
-                                                      std::unique_ptr<GrSurfaceDrawContext> src,
+                                                      std::unique_ptr<GrSurfaceContext> src,
                                                       const SkRect& srcBounds,
                                                       SkISize dstSize,
                                                       sk_sp<SkColorSpace> colorSpace,
@@ -505,18 +504,22 @@ std::unique_ptr<GrSurfaceDrawContext> GaussianBlur(GrRecordingContext* context,
         auto result = GrSurfaceDrawContext::Make(context, srcColorType, std::move(colorSpace), fit,
                                                   dstBounds.size(), 1, GrMipmapped::kNo,
                                                   srcView.proxy()->isProtected(), srcView.origin());
+        if (!result) {
+            return nullptr;
+        }
         GrSamplerState sampler(SkTileModeToWrapMode(mode), GrSamplerState::Filter::kNearest);
-        auto fp = GrTextureEffect::MakeSubset(std::move(srcView), srcAlphaType, SkMatrix::I(),
-                                              sampler, SkRect::Make(srcBounds),
-                                              SkRect::Make(dstBounds), *context->priv().caps());
-        GrPaint paint;
-        paint.setColorFragmentProcessor(std::move(fp));
-        result->drawRect(nullptr, std::move(paint), GrAA::kNo, SkMatrix::I(),
-                         SkRect::Make(dstBounds.size()));
+        auto fp = GrTextureEffect::MakeSubset(std::move(srcView),
+                                              srcAlphaType,
+                                              SkMatrix::I(),
+                                              sampler,
+                                              SkRect::Make(srcBounds),
+                                              SkRect::Make(dstBounds),
+                                              *context->priv().caps());
+        result->fillRectToRectWithFP(dstBounds, SkIRect::MakeSize(dstBounds.size()), std::move(fp));
         return result;
     }
 
-    if (sigmaX <= MAX_BLUR_SIGMA && sigmaY <= MAX_BLUR_SIGMA) {
+    if (sigmaX <= kMaxSigma && sigmaY <= kMaxSigma) {
         SkASSERT(radiusX <= GrGaussianConvolutionFragmentProcessor::kMaxKernelRadius);
         SkASSERT(radiusY <= GrGaussianConvolutionFragmentProcessor::kMaxKernelRadius);
         // For really small blurs (certainly no wider than 5x5 on desktop GPUs) it is faster to just
@@ -536,25 +539,23 @@ std::unique_ptr<GrSurfaceDrawContext> GaussianBlur(GrRecordingContext* context,
                                  radiusX, radiusY, mode, fit);
     }
 
-    float scaleX = sigmaX > MAX_BLUR_SIGMA ? MAX_BLUR_SIGMA/sigmaX : 1.f;
-    float scaleY = sigmaY > MAX_BLUR_SIGMA ? MAX_BLUR_SIGMA/sigmaY : 1.f;
+    GrColorInfo colorInfo(srcColorType, srcAlphaType, colorSpace);
+    auto srcCtx = GrSurfaceContext::Make(context, srcView, colorInfo);
+    SkASSERT(srcCtx);
+
+    float scaleX = sigmaX > kMaxSigma ? kMaxSigma/sigmaX : 1.f;
+    float scaleY = sigmaY > kMaxSigma ? kMaxSigma/sigmaY : 1.f;
     // We round down here so that when we recalculate sigmas we know they will be below
-    // MAX_BLUR_SIGMA.
-    SkISize rescaledSize = {sk_float_floor2int(srcBounds.width() *scaleX),
-                            sk_float_floor2int(srcBounds.height()*scaleY)};
-    if (rescaledSize.isEmpty()) {
-        // TODO: Handle this degenerate case.
-        return nullptr;
-    }
-    // Compute the sigmas using the actual scale factors used once we integerized the rescaledSize.
+    // kMaxSigma (but clamp to 1 do we don't have an empty texture).
+    SkISize rescaledSize = {std::max(sk_float_floor2int(srcBounds.width() *scaleX), 1),
+                            std::max(sk_float_floor2int(srcBounds.height()*scaleY), 1)};
+    // Compute the sigmas using the actual scale factors used once we integerized the
+    // rescaledSize.
     scaleX = static_cast<float>(rescaledSize.width()) /srcBounds.width();
     scaleY = static_cast<float>(rescaledSize.height())/srcBounds.height();
     sigmaX *= scaleX;
     sigmaY *= scaleY;
 
-    GrColorInfo colorInfo(srcColorType, srcAlphaType, colorSpace);
-    auto srcCtx = GrSurfaceContext::Make(context, srcView, colorInfo);
-    SkASSERT(srcCtx);
     // When we are in clamp mode any artifacts in the edge pixels due to downscaling may be
     // exacerbated because of the tile mode. The particularly egregious case is when the original
     // image has transparent black around the edges and the downscaling pulls in some non-zero
@@ -568,35 +569,43 @@ std::unique_ptr<GrSurfaceDrawContext> GaussianBlur(GrRecordingContext* context,
     // border of extra pixels is used as the edge pixels for clamp mode but the dest bounds
     // corresponds only to the pixels inside the border (the normally rescaled pixels inside this
     // border).
-    int pad = mode == SkTileMode::kClamp ? 1 : 0;
+    // Moreover, if we clamped the rescaled size to 1 column or row then we still have a sigma
+    // that is greater than kMaxSigma. By using a pad and making the src 3 wide/tall instead of
+    // 1 we can recurse again and do another downscale. Since mirror and repeat modes are trivial
+    // for a single col/row we only add padding based on sigma exceeding kMaxSigma for decal.
+    int padX = mode == SkTileMode::kClamp ||
+               (mode == SkTileMode::kDecal && sigmaX > kMaxSigma) ? 1 : 0;
+    int padY = mode == SkTileMode::kClamp ||
+               (mode == SkTileMode::kDecal && sigmaY > kMaxSigma) ? 1 : 0;
     auto rescaledSDC = GrSurfaceDrawContext::Make(
             srcCtx->recordingContext(),
             colorInfo.colorType(),
             colorInfo.refColorSpace(),
             SkBackingFit::kApprox,
-            {rescaledSize.width() + 2*pad, rescaledSize.height() + 2*pad},
+            {rescaledSize.width() + 2*padX, rescaledSize.height() + 2*padY},
             1,
             GrMipmapped::kNo,
             srcCtx->asSurfaceProxy()->isProtected(),
             srcCtx->origin());
-
     if (!rescaledSDC) {
         return nullptr;
     }
+    if ((padX || padY) && mode == SkTileMode::kDecal) {
+        rescaledSDC->clear(SkPMColor4f{0, 0, 0, 0});
+    }
     if (!srcCtx->rescaleInto(rescaledSDC.get(),
-                             SkIRect::MakeSize(rescaledSize).makeOffset(pad, pad),
+                             SkIRect::MakeSize(rescaledSize).makeOffset(padX, padY),
                              srcBounds,
                              SkSurface::RescaleGamma::kSrc,
                              SkSurface::RescaleMode::kRepeatedLinear)) {
         return nullptr;
     }
-    if (pad) {
+    if (mode == SkTileMode::kClamp) {
+        SkASSERT(padX == 1 && padY == 1);
         // Rather than run a potentially multi-pass rescaler on single rows/columns we just do a
         // single bilerp draw. If we find this quality unacceptable we should think more about how
         // to rescale these with better quality but without 4 separate multi-pass downscales.
-        // These all batch together into a single draw (and with the above rescaling when there
-        // is only one pass in the interior rescale).
-        auto cheapDownscale = [&](SkIRect dstRect, SkRect srcRect) {
+        auto cheapDownscale = [&](SkIRect dstRect, SkIRect srcRect) {
             rescaledSDC->drawTexture(nullptr,
                                      srcCtx->readSurfaceView(),
                                      srcAlphaType,
@@ -604,7 +613,7 @@ std::unique_ptr<GrSurfaceDrawContext> GaussianBlur(GrRecordingContext* context,
                                      GrSamplerState::MipmapMode::kNone,
                                      SkBlendMode::kSrc,
                                      SK_PMColor4fWHITE,
-                                     srcRect,
+                                     SkRect::Make(srcRect),
                                      SkRect::Make(dstRect),
                                      GrAA::kNo,
                                      GrQuadAAFlags::kNone,
@@ -612,30 +621,40 @@ std::unique_ptr<GrSurfaceDrawContext> GaussianBlur(GrRecordingContext* context,
                                      SkMatrix::I(),
                                      nullptr);
         };
-        auto [dw, dh] = rescaledSDC->dimensions();
+        auto [dw, dh] = rescaledSize;
         // The are the src rows and columns from the source that we will scale into the dst padding.
         float sLCol = srcBounds.left();
         float sTRow = srcBounds.top();
         float sRCol = srcBounds.right() - 1;
         float sBRow = srcBounds.bottom() - 1;
 
-        // Calculate src offsets and lengths for y when copying a col and x when copying a row.
-        float isx = 1.f/scaleX;
-        float isy = 1.f/scaleY;
-        float sx = srcBounds.left()   - isx;
-        float sy = srcBounds.top()    - isy;
-        float sw = srcBounds.width()  + 2*isx;
-        float sh = srcBounds.height() + 2*isy;
+        int sx = srcBounds.left();
+        int sy = srcBounds.top();
+        int sw = srcBounds.width();
+        int sh = srcBounds.height();
 
-        // We double hit the four corners (last hit wins) rather than complicate the rects here.
-        cheapDownscale(SkIRect::MakeXYWH(     0,      0,  1, dh),
-                        SkRect::MakeXYWH( sLCol,     sy,  1, sh));
-        cheapDownscale(SkIRect::MakeXYWH(     0,      0, dw,  1),
-                        SkRect::MakeXYWH(    sx,  sTRow, sw,  1));
-        cheapDownscale(SkIRect::MakeXYWH(dw - 1,      0,  1, dh),
-                        SkRect::MakeXYWH( sRCol,     sy,  1, sh));
-        cheapDownscale(SkIRect::MakeXYWH(     0, dh - 1, dw,  1),
-                        SkRect::MakeXYWH(    sx,  sBRow, sw,  1));
+        // Downscale the edges from the original source. These draws should batch together (and with
+        // the above interior rescaling when it is a single pass).
+        cheapDownscale(SkIRect::MakeXYWH(     0,      1,  1, dh),
+                       SkIRect::MakeXYWH( sLCol,     sy,  1, sh));
+        cheapDownscale(SkIRect::MakeXYWH(     1,      0, dw,  1),
+                       SkIRect::MakeXYWH(    sx,  sTRow, sw,  1));
+        cheapDownscale(SkIRect::MakeXYWH(dw + 1,      1,  1, dh),
+                       SkIRect::MakeXYWH( sRCol,     sy,  1, sh));
+        cheapDownscale(SkIRect::MakeXYWH(     1, dh + 1, dw,  1),
+                       SkIRect::MakeXYWH(    sx,  sBRow, sw,  1));
+
+        // Copy the corners from the original source. These would batch with the edges except that
+        // at time of writing we recognize these can use kNearest and downgrade the filter. So they
+        // batch with each other but not the edge draws.
+        cheapDownscale(SkIRect::MakeXYWH(    0,     0,  1, 1),
+                       SkIRect::MakeXYWH(sLCol, sTRow,  1, 1));
+        cheapDownscale(SkIRect::MakeXYWH(dw + 1,     0, 1, 1),
+                       SkIRect::MakeXYWH(sRCol, sTRow,  1, 1));
+        cheapDownscale(SkIRect::MakeXYWH(dw + 1,dh + 1, 1, 1),
+                       SkIRect::MakeXYWH(sRCol, sBRow,  1, 1));
+        cheapDownscale(SkIRect::MakeXYWH(    0, dh + 1, 1, 1),
+                       SkIRect::MakeXYWH(sLCol, sBRow,  1, 1));
     }
     srcView = rescaledSDC->readSurfaceView();
     // Drop the contexts so we don't hold the proxies longer than necessary.
@@ -651,7 +670,7 @@ std::unique_ptr<GrSurfaceDrawContext> GaussianBlur(GrRecordingContext* context,
     scaledDstBounds.fRight  *= scaleX;
     scaledDstBounds.fBottom *= scaleY;
     // Account for padding in our rescaled src, if any.
-    scaledDstBounds.offset(pad, pad);
+    scaledDstBounds.offset(padX, padY);
     // Turn the scaled down dst bounds into an integer pixel rect.
     auto scaledDstBoundsI = scaledDstBounds.roundOut();
 

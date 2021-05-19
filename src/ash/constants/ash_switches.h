@@ -28,6 +28,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcAvailability[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcAvailable[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDataCleanupOnStart[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableAppSync[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableDownloadProvider[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kArcDisableGmsCoreCache[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableLocaleSync[];
@@ -50,6 +51,7 @@ extern const char kArcPlayStoreAutoUpdate[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcScale[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcStartMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcTosHostForTests[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcVmUreadaheadMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCellularFirst[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperLarge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperSmall[];
@@ -84,6 +86,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDisableMachineCertRequest[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDisableOOBEChromeVoxHintTimerForTesting[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kEnableOOBEChromeVoxHintForDevMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDisablePerUserTimezone[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableRollbackOption[];
@@ -131,6 +135,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnterpriseEnrollmentModulusLimit[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kExternalMetricsCollectionInterval[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kExtraWebAppsDir[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFirstExecAfterBoot[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kFakeDriveFsLauncherChrootPath[];
@@ -191,8 +197,6 @@ extern const char kPublicAccountsSamlAclUrl[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDisableArcCpuRestriction[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kProfileRequiresPolicy[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kRedirectLibassistantLogging[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRegulatoryLabelDir[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRlzPingDelay[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kSafeMode[];
@@ -209,6 +213,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableOobeTestAPI[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kOobeScreenshotDirectory[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kSkipForceOnlineSignInForTesting[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kTelemetryExtensionDirectory[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kTestEncryptionMigrationUI[];
@@ -222,6 +228,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kUnfilteredBluetoothDevices[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kUpdateRequiredAueForTest[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kUseFakeMLServiceForTest[];
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -278,9 +286,14 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldOobeUseTabletModeFirstRun();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsAueReachedForUpdateRequiredForTest();
 
-// Returns true if the OOBE ChromeVox hint timer is disabled for testing.
+// Returns true if the OOBE ChromeVox hint idle detection is disabled for
+// testing.
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsOOBEChromeVoxHintTimerDisabledForTesting();
+
+// Returns true if the OOBE ChromeVox hint is enabled for dev mode.
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsOOBEChromeVoxHintEnabledForDevMode();
 
 // Returns true if the OEM Device Requisition can be configured.
 COMPONENT_EXPORT(ASH_CONSTANTS)

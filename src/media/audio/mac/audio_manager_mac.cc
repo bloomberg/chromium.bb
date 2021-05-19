@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -438,7 +439,7 @@ static bool GetDeviceChannels(AudioUnit audio_unit,
   return true;
 }
 
-class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
+class AudioManagerMac::AudioPowerObserver : public base::PowerSuspendObserver {
  public:
   AudioPowerObserver()
       : is_suspending_(false),
@@ -449,14 +450,14 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
     // base::PowerMonitorDeviceSource for more details.
     if (!is_monitoring_)
       return;
-    base::PowerMonitor::AddObserver(this);
+    base::PowerMonitor::AddPowerSuspendObserver(this);
   }
 
   ~AudioPowerObserver() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!is_monitoring_)
       return;
-    base::PowerMonitor::RemoveObserver(this);
+    base::PowerMonitor::RemovePowerSuspendObserver(this);
   }
 
   bool IsSuspending() const {
@@ -714,9 +715,9 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     // even if OSX calls us on the right thread.  Some CoreAudio drivers will
     // fire the callbacks during stream creation, leading to re-entrancy issues
     // otherwise.  See http://crbug.com/349604
-    output_device_listener_.reset(
-        new AudioDeviceListenerMac(BindToCurrentLoop(base::BindRepeating(
-            &AudioManagerMac::HandleDeviceChanges, base::Unretained(this)))));
+    output_device_listener_ = std::make_unique<AudioDeviceListenerMac>(
+        BindToCurrentLoop(base::BindRepeating(
+            &AudioManagerMac::HandleDeviceChanges, base::Unretained(this))));
     device_listener_first_init = true;
   }
 
@@ -883,7 +884,7 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
 void AudioManagerMac::InitializeOnAudioThread() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   InitializeCoreAudioDispatchOverride();
-  power_observer_.reset(new AudioPowerObserver());
+  power_observer_ = std::make_unique<AudioPowerObserver>();
 }
 
 void AudioManagerMac::HandleDeviceChanges() {

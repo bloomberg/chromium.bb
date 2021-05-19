@@ -132,6 +132,10 @@ feedwire::Request CreateFeedQueryRequest(
   if (base::FeatureList::IsEnabled(kInterestFeedV2Hearts)) {
     feed_request.add_client_capability(feedwire::Capability::HEART);
   }
+  if (base::FeatureList::IsEnabled(kInterestFeedV2Autoplay)) {
+    feed_request.add_client_capability(
+        feedwire::Capability::INLINE_VIDEO_AUTOPLAY);
+  }
 
   *feed_request.mutable_client_info() = CreateClientInfo(request_metadata);
   feedwire::FeedQuery& query = *feed_request.mutable_feed_query();
@@ -182,8 +186,8 @@ bool CompareContentId(const feedwire::ContentId& a,
   // Local variables because tie() needs l-values.
   const int a_id = a.id();
   const int b_id = b.id();
-  const feedwire::ContentId::Type a_type = a.type();
-  const feedwire::ContentId::Type b_type = b.type();
+  const int a_type = a.type();
+  const int b_type = b.type();
   return std::tie(a.content_domain(), a_id, a_type) <
          std::tie(b.content_domain(), b_id, b_type);
 }
@@ -219,7 +223,7 @@ feedwire::ClientInfo CreateClientInfo(const RequestMetadata& request_metadata) {
 #elif defined(OS_IOS)
   client_info.set_platform_type(feedwire::ClientInfo::IOS);
 #endif
-  client_info.set_app_type(feedwire::ClientInfo::CLANK);
+  client_info.set_app_type(feedwire::ClientInfo::CHROME_ANDROID);
   *client_info.mutable_platform_version() = GetPlatformVersionMessage();
   *client_info.mutable_app_version() =
       GetAppVersionMessage(request_metadata.chrome_info);
@@ -259,15 +263,3 @@ feedwire::Request CreateFeedQueryLoadMoreRequest(
 }
 
 }  // namespace feed
-
-namespace feedstore {
-void SetLastAddedTime(base::Time t, feedstore::StreamData& data) {
-  data.set_last_added_time_millis(
-      (t - base::Time::UnixEpoch()).InMilliseconds());
-}
-
-base::Time GetLastAddedTime(const feedstore::StreamData& data) {
-  return base::Time::UnixEpoch() +
-         base::TimeDelta::FromMilliseconds(data.last_added_time_millis());
-}
-}  // namespace feedstore

@@ -12,15 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/ast/function.h"
-
-#include "src/ast/builtin_decoration.h"
+#include "gtest/gtest-spi.h"
 #include "src/ast/discard_statement.h"
-#include "src/ast/location_decoration.h"
-#include "src/ast/pipeline_stage.h"
 #include "src/ast/stage_decoration.h"
 #include "src/ast/test_helper.h"
-#include "src/ast/variable.h"
 #include "src/ast/workgroup_decoration.h"
 
 namespace tint {
@@ -34,8 +29,7 @@ TEST_F(FunctionTest, Creation) {
   params.push_back(Var("var", ty.i32(), StorageClass::kNone));
   auto* var = params[0];
 
-  auto* f = Func("func", params, ty.void_(), StatementList{},
-                 FunctionDecorationList{});
+  auto* f = Func("func", params, ty.void_(), StatementList{}, DecorationList{});
   EXPECT_EQ(f->symbol(), Symbols().Get("func"));
   ASSERT_EQ(f->params().size(), 1u);
   EXPECT_EQ(f->return_type(), ty.void_());
@@ -47,86 +41,42 @@ TEST_F(FunctionTest, Creation_WithSource) {
   params.push_back(Var("var", ty.i32(), StorageClass::kNone));
 
   auto* f = Func(Source{Source::Location{20, 2}}, "func", params, ty.void_(),
-                 StatementList{}, FunctionDecorationList{});
+                 StatementList{}, DecorationList{});
   auto src = f->source();
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
 
-TEST_F(FunctionTest, IsValid) {
-  VariableList params;
-  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
-
-  auto* f = Func("func", params, ty.void_(),
-                 StatementList{
-                     create<DiscardStatement>(),
-                 },
-                 FunctionDecorationList{});
-  EXPECT_TRUE(f->IsValid());
+TEST_F(FunctionTest, Assert_InvalidName) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.Func("", VariableList{}, b.ty.void_(), StatementList{},
+               DecorationList{});
+      },
+      "internal compiler error");
 }
 
-TEST_F(FunctionTest, IsValid_InvalidName) {
-  VariableList params;
-  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
-
-  auto* f =
-      Func("", params, ty.void_(), StatementList{}, FunctionDecorationList{});
-  EXPECT_FALSE(f->IsValid());
+TEST_F(FunctionTest, Assert_NullReturnType) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.Func("f", VariableList{}, nullptr, StatementList{}, DecorationList{});
+      },
+      "internal compiler error");
 }
 
-TEST_F(FunctionTest, IsValid_MissingReturnType) {
-  VariableList params;
-  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
+TEST_F(FunctionTest, Assert_NullParam) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        VariableList params;
+        params.push_back(b.Var("var", b.ty.i32(), StorageClass::kNone));
+        params.push_back(nullptr);
 
-  auto* f =
-      Func("func", params, nullptr, StatementList{}, FunctionDecorationList{});
-  EXPECT_FALSE(f->IsValid());
-}
-
-TEST_F(FunctionTest, IsValid_NullParam) {
-  VariableList params;
-  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
-  params.push_back(nullptr);
-
-  auto* f = Func("func", params, ty.void_(), StatementList{},
-                 FunctionDecorationList{});
-  EXPECT_FALSE(f->IsValid());
-}
-
-TEST_F(FunctionTest, IsValid_InvalidParam) {
-  VariableList params;
-  params.push_back(Var("var", nullptr, StorageClass::kNone));
-
-  auto* f = Func("func", params, ty.void_(), StatementList{},
-                 FunctionDecorationList{});
-  EXPECT_FALSE(f->IsValid());
-}
-
-TEST_F(FunctionTest, IsValid_NullBodyStatement) {
-  VariableList params;
-  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
-
-  auto* f = Func("func", params, ty.void_(),
-                 StatementList{
-                     create<DiscardStatement>(),
-                     nullptr,
-                 },
-                 FunctionDecorationList{});
-
-  EXPECT_FALSE(f->IsValid());
-}
-
-TEST_F(FunctionTest, IsValid_InvalidBodyStatement) {
-  VariableList params;
-  params.push_back(Var("var", ty.i32(), StorageClass::kNone));
-
-  auto* f = Func("func", params, ty.void_(),
-                 StatementList{
-                     create<DiscardStatement>(),
-                     nullptr,
-                 },
-                 FunctionDecorationList{});
-  EXPECT_FALSE(f->IsValid());
+        b.Func("f", params, b.ty.void_(), StatementList{}, DecorationList{});
+      },
+      "internal compiler error");
 }
 
 TEST_F(FunctionTest, ToStr) {
@@ -134,7 +84,7 @@ TEST_F(FunctionTest, ToStr) {
                  StatementList{
                      create<DiscardStatement>(),
                  },
-                 FunctionDecorationList{});
+                 DecorationList{});
 
   EXPECT_EQ(str(f), R"(Function func -> __void
 ()
@@ -149,7 +99,7 @@ TEST_F(FunctionTest, ToStr_WithDecoration) {
                  StatementList{
                      create<DiscardStatement>(),
                  },
-                 FunctionDecorationList{create<WorkgroupDecoration>(2, 4, 6)});
+                 DecorationList{create<WorkgroupDecoration>(2, 4, 6)});
 
   EXPECT_EQ(str(f), R"(Function func -> __void
 WorkgroupDecoration{2 4 6}
@@ -168,7 +118,7 @@ TEST_F(FunctionTest, ToStr_WithParams) {
                  StatementList{
                      create<DiscardStatement>(),
                  },
-                 FunctionDecorationList{});
+                 DecorationList{});
 
   EXPECT_EQ(str(f), R"(Function func -> __void
 (
@@ -186,7 +136,7 @@ TEST_F(FunctionTest, ToStr_WithParams) {
 
 TEST_F(FunctionTest, TypeName) {
   auto* f = Func("func", VariableList{}, ty.void_(), StatementList{},
-                 FunctionDecorationList{});
+                 DecorationList{});
   EXPECT_EQ(f->type_name(), "__func__void");
 }
 
@@ -195,31 +145,29 @@ TEST_F(FunctionTest, TypeName_WithParams) {
   params.push_back(Var("var1", ty.i32(), StorageClass::kNone));
   params.push_back(Var("var2", ty.f32(), StorageClass::kNone));
 
-  auto* f = Func("func", params, ty.void_(), StatementList{},
-                 FunctionDecorationList{});
+  auto* f = Func("func", params, ty.void_(), StatementList{}, DecorationList{});
   EXPECT_EQ(f->type_name(), "__func__void__i32__f32");
 }
 
 TEST_F(FunctionTest, GetLastStatement) {
   VariableList params;
   auto* stmt = create<DiscardStatement>();
-  auto* f = Func("func", params, ty.void_(), StatementList{stmt},
-                 FunctionDecorationList{});
+  auto* f =
+      Func("func", params, ty.void_(), StatementList{stmt}, DecorationList{});
 
   EXPECT_EQ(f->get_last_statement(), stmt);
 }
 
 TEST_F(FunctionTest, GetLastStatement_nullptr) {
   VariableList params;
-  auto* f = Func("func", params, ty.void_(), StatementList{},
-                 FunctionDecorationList{});
+  auto* f = Func("func", params, ty.void_(), StatementList{}, DecorationList{});
 
   EXPECT_EQ(f->get_last_statement(), nullptr);
 }
 
 TEST_F(FunctionTest, WorkgroupSize_NoneSet) {
   auto* f = Func("func", VariableList{}, ty.void_(), StatementList{},
-                 FunctionDecorationList{});
+                 DecorationList{});
   uint32_t x = 0;
   uint32_t y = 0;
   uint32_t z = 0;
@@ -230,9 +178,8 @@ TEST_F(FunctionTest, WorkgroupSize_NoneSet) {
 }
 
 TEST_F(FunctionTest, WorkgroupSize) {
-  auto* f =
-      Func("func", VariableList{}, ty.void_(), StatementList{},
-           FunctionDecorationList{create<WorkgroupDecoration>(2u, 4u, 6u)});
+  auto* f = Func("func", VariableList{}, ty.void_(), StatementList{},
+                 DecorationList{create<WorkgroupDecoration>(2u, 4u, 6u)});
 
   uint32_t x = 0;
   uint32_t y = 0;
@@ -247,7 +194,7 @@ using FunctionListTest = TestHelper;
 
 TEST_F(FunctionListTest, FindSymbol) {
   auto* func = Func("main", VariableList{}, ty.f32(), StatementList{},
-                    ast::FunctionDecorationList{});
+                    ast::DecorationList{});
   FunctionList list;
   list.Add(func);
   EXPECT_EQ(func, list.Find(Symbols().Register("main")));
@@ -260,11 +207,11 @@ TEST_F(FunctionListTest, FindSymbolMissing) {
 
 TEST_F(FunctionListTest, FindSymbolStage) {
   auto* fs = Func("main", VariableList{}, ty.f32(), StatementList{},
-                  ast::FunctionDecorationList{
+                  ast::DecorationList{
                       create<ast::StageDecoration>(PipelineStage::kFragment),
                   });
   auto* vs = Func("main", VariableList{}, ty.f32(), StatementList{},
-                  ast::FunctionDecorationList{
+                  ast::DecorationList{
                       create<ast::StageDecoration>(PipelineStage::kVertex),
                   });
   FunctionList list;
@@ -278,7 +225,7 @@ TEST_F(FunctionListTest, FindSymbolStage) {
 TEST_F(FunctionListTest, FindSymbolStageMissing) {
   FunctionList list;
   list.Add(Func("main", VariableList{}, ty.f32(), StatementList{},
-                ast::FunctionDecorationList{
+                ast::DecorationList{
                     create<ast::StageDecoration>(PipelineStage::kFragment),
                 }));
   EXPECT_EQ(nullptr,
@@ -288,7 +235,7 @@ TEST_F(FunctionListTest, FindSymbolStageMissing) {
 TEST_F(FunctionListTest, HasStage) {
   FunctionList list;
   list.Add(Func("main", VariableList{}, ty.f32(), StatementList{},
-                ast::FunctionDecorationList{
+                ast::DecorationList{
                     create<ast::StageDecoration>(PipelineStage::kFragment),
                 }));
   EXPECT_TRUE(list.HasStage(PipelineStage::kFragment));

@@ -13,21 +13,19 @@
 
 #include "base/callback.h"
 #include "base/containers/span.h"
-#include "base/location.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "pdf/document_layout.h"
 #include "pdf/ppapi_migration/callback.h"
-#include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/private/pdf.h"
 #include "ppapi/cpp/url_loader.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
@@ -45,6 +43,10 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
 
 struct PP_PdfPrintSettings_Dev;
 class SkBitmap;
+
+namespace base {
+class Location;
+}  // namespace base
 
 namespace gfx {
 class Point;
@@ -120,7 +122,7 @@ class PDFEngine {
   // The interface that's provided to the rendering engine.
   class Client {
    public:
-    virtual ~Client() {}
+    virtual ~Client() = default;
 
     // Proposes a document layout to the client. For the proposed layout to
     // become effective, the client must call PDFEngine::ApplyDocumentLayout()
@@ -136,11 +138,11 @@ class PDFEngine {
     // Scroll the horizontal/vertical scrollbars to a given position.
     // Values are in screen coordinates, where 0 is the top/left of the document
     // and a positive value is the distance in pixels from that line.
-    virtual void ScrollToX(int x_in_screen_coords) {}
-    virtual void ScrollToY(int y_in_screen_coords) {}
+    virtual void ScrollToX(int x_screen_coords) {}
+    virtual void ScrollToY(int y_screen_coords) {}
 
     // Scroll by a given delta relative to the current position.
-    virtual void ScrollBy(const gfx::Vector2d& scroll_delta) {}
+    virtual void ScrollBy(const gfx::Vector2d& delta) {}
 
     // Scroll to zero-based |page|.
     virtual void ScrollToPage(int page) {}
@@ -157,7 +159,7 @@ class PDFEngine {
                                        const float* zoom) {}
 
     // Updates the cursor.
-    virtual void UpdateCursor(PP_CursorType_Dev cursor) {}
+    virtual void UpdateCursor(ui::mojom::CursorType cursor_type) {}
 
     // Updates the tick marks in the vertical scrollbar.
     virtual void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) {}
@@ -222,8 +224,8 @@ class PDFEngine {
       int length;
     };
     virtual std::vector<SearchStringResult> SearchString(
-        const base::char16* string,
-        const base::char16* term,
+        const char16_t* string,
+        const char16_t* term,
         bool case_sensitive) = 0;
 
     // Notifies the client that the document has finished loading.
@@ -250,7 +252,7 @@ class PDFEngine {
     virtual SkColor GetBackgroundColor() = 0;
 
     // Sets selection status.
-    virtual void IsSelectingChanged(bool is_selecting) {}
+    virtual void SetIsSelecting(bool is_selecting) {}
 
     virtual void SelectionChanged(const gfx::Rect& left,
                                   const gfx::Rect& right) {}
@@ -279,14 +281,13 @@ class PDFEngine {
     // not always needed. `delay` should be no longer than `INT32_MAX`
     // milliseconds for the Pepper plugin implementation to prevent integer
     // overflow.
-    virtual void ScheduleTaskOnMainThread(
-        base::TimeDelta delay,
-        ResultCallback callback,
-        int32_t result,
-        const base::Location& from_here = base::Location::Current()) = 0;
+    virtual void ScheduleTaskOnMainThread(const base::Location& from_here,
+                                          ResultCallback callback,
+                                          int32_t result,
+                                          base::TimeDelta delay) = 0;
   };
 
-  virtual ~PDFEngine() {}
+  virtual ~PDFEngine() = default;
 
   // Most of these functions are similar to the Pepper functions of the same
   // name, so not repeating the description here unless it's different.

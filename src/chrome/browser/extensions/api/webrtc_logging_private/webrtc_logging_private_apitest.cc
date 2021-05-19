@@ -93,7 +93,7 @@ void InitializeTestMetaData(base::ListValue* parameters) {
   meta_data_entry->SetString("value", kTestLoggingSessionIdValue);
   std::unique_ptr<base::ListValue> meta_data(new base::ListValue());
   meta_data->Append(std::move(meta_data_entry));
-  meta_data_entry.reset(new base::DictionaryValue());
+  meta_data_entry = std::make_unique<base::DictionaryValue>();
   meta_data_entry->SetString("key", "url");
   meta_data_entry->SetString("value", kTestLoggingUrl);
   meta_data->Append(std::move(meta_data_entry));
@@ -398,17 +398,21 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
 
   void SetUpPeerConnection(const std::string& session_id = "") {
     auto* manager = WebRtcEventLogManager::GetInstance();
-    auto* rph =
-        web_contents()->GetMainFrame()->GetRenderViewHost()->GetProcess();
 
-    const int render_process_id = rph->GetID();
+    content::RenderFrameHost* render_frame_host =
+        web_contents()->GetMainFrame();
+    const content::GlobalFrameRoutingId frame_id =
+        render_frame_host->GetGlobalFrameRoutingId();
+    const base::ProcessId pid =
+        render_frame_host->GetProcess()->GetProcess().Pid();
     const int lid = 0;
 
-    manager->PeerConnectionAdded(render_process_id, lid, base::NullCallback());
+    manager->OnPeerConnectionAdded(frame_id, lid, pid, /*url=*/std::string(),
+                                   /*rtc_configuration=*/std::string(),
+                                   /*constraints=*/std::string());
 
     if (!session_id.empty()) {
-      manager->PeerConnectionSessionIdSet(render_process_id, lid, session_id,
-                                          base::NullCallback());
+      manager->OnPeerConnectionSessionIdSet(frame_id, lid, session_id);
     }
   }
 
@@ -806,7 +810,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
     StartEventLoggingForNeverAddedPeerConnectionFails) {
-  // Note that manager->PeerConnectionAdded() is not called.
+  // Note that manager->OnPeerConnectionAdded() is not called.
   const std::string session_id = "id";
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
   constexpr bool expect_success = false;

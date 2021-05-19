@@ -31,13 +31,14 @@ using extensions::APIPermission;
 using extensions::Extension;
 using extensions::Manifest;
 using Result = ExtensionInstallPrompt::Result;
+using extensions::mojom::APIPermissionID;
 
 namespace extensions {
 namespace permission_helper {
 namespace {
 
-auto permission_a = APIPermission::kAudio;
-auto permission_b = APIPermission::kBookmark;
+auto permission_a = APIPermissionID::kAudio;
+auto permission_b = APIPermissionID::kBookmark;
 bool did_show_dialog;
 
 const char kWhitelistedId[] = "cbkkbcmdlboombapidmoeolnmdacpkch";
@@ -45,9 +46,10 @@ const char kNonWhitelistedId[] = "bogus";
 
 scoped_refptr<Extension> LoadManifestHelper(const std::string& id) {
   std::string error;
-  scoped_refptr<Extension> extension = LoadManifestUnchecked(
-      "common/background_page", "manifest.json", Manifest::INVALID_LOCATION,
-      Extension::NO_FLAGS, id, &error);
+  scoped_refptr<Extension> extension =
+      LoadManifestUnchecked("common/background_page", "manifest.json",
+                            mojom::ManifestLocation::kInvalidLocation,
+                            Extension::NO_FLAGS, id, &error);
   EXPECT_TRUE(extension.get()) << error;
   return extension;
 }

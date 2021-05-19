@@ -18,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/multidevice_setup_resources.h"
 #include "chrome/grit/multidevice_setup_resources_map.h"
+#include "chrome/grit/oobe_resources.h"
 #include "chromeos/grit/chromeos_resources.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "components/login/localized_values_builder.h"
@@ -72,11 +73,11 @@ constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
 
 struct LocalizedStringWithName {
   LocalizedStringWithName(const char* name,
-                          const base::string16& localized_string)
+                          const std::u16string& localized_string)
       : name(name), localized_string(localized_string) {}
 
   const char* name;
-  base::string16 localized_string;
+  std::u16string localized_string;
 };
 
 const std::vector<LocalizedStringWithName>&

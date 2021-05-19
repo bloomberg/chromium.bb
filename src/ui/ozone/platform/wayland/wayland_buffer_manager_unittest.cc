@@ -84,7 +84,8 @@ class WaylandBufferManagerTest : public WaylandTest {
     // callback and bind the interface again if the manager failed.
     manager_host_->SetTerminateGpuCallback(callback_.Get());
     auto interface_ptr = manager_host_->BindInterface();
-    buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, false);
+    buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, true,
+                                    false);
   }
 
  protected:
@@ -120,7 +121,7 @@ class WaylandBufferManagerTest : public WaylandTest {
             // same).
             buffer_manager_gpu_ = std::make_unique<WaylandBufferManagerGpu>();
             buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false,
-                                            false);
+                                            true, false);
           }));
     }
   }
@@ -1510,17 +1511,16 @@ TEST_P(WaylandBufferManagerTest,
   testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
   testing::Mock::VerifyAndClearExpectations(mock_surface);
 
-  // Now, commit the buffer with the |kBufferId2| again and make sure the
-  // manager manually sends the submission callback as long as the compositor is
-  // not going to release a buffer as it was the same buffer submitted more than
-  // once.
+  // Now, commit the buffer with the |kBufferId2| again. The manager does not
+  // sends the submission callback, the compositor is not going to release a
+  // buffer as it was the same buffer submitted more than once.
   EXPECT_CALL(mock_surface_gpu,
               OnSubmission(kBufferId2, gfx::SwapResult::SWAP_ACK))
       .Times(1);
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId2, _)).Times(1);
 
   EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(0);
-  EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(0);
   EXPECT_CALL(*mock_surface,
               DamageBuffer(0, 0, bounds.width(), bounds.height()))
       .Times(1);

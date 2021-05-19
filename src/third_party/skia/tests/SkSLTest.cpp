@@ -17,8 +17,8 @@
 #include "include/effects/SkGradientShader.h"
 #include "include/effects/SkImageFilters.h"
 #include "include/effects/SkRuntimeEffect.h"
+#include "include/private/SkSLDefines.h"  // for kDefaultInlineThreshold
 #include "include/utils/SkRandom.h"
-#include "src/sksl/SkSLDefines.h"  // for kDefaultInlineThreshold
 #include "tests/Test.h"
 #include "tools/Resources.h"
 #include "tools/ToolUtils.h"
@@ -94,11 +94,11 @@ static void test_one_permutation(skiatest::Reporter* r,
 
 static void test_permutations(skiatest::Reporter* r, SkSurface* surface, const char* testFile) {
     SkRuntimeEffect::Options options;
-    options.inlineThreshold = 0;
-    test_one_permutation(r, surface, testFile, " (NoInline)", options);
-
-    options.inlineThreshold = SkSL::kDefaultInlineThreshold;
+    options.forceNoInline = false;
     test_one_permutation(r, surface, testFile, "", options);
+
+    options.forceNoInline = true;
+    test_one_permutation(r, surface, testFile, " (NoInline)", options);
 }
 
 static void test_cpu(skiatest::Reporter* r, const char* testFile) {
@@ -135,6 +135,41 @@ SKSL_TEST(SkSLShortCircuitBoolFolding,         "folding/ShortCircuitBoolFolding.
 SKSL_TEST(SkSLVectorScalarFolding,             "folding/VectorScalarFolding.sksl")
 SKSL_TEST(SkSLVectorVectorFolding,             "folding/VectorVectorFolding.sksl")
 
+SKSL_TEST(SkSLForBodyMustBeInlinedIntoAScope,     "inliner/ForBodyMustBeInlinedIntoAScope.sksl")
+SKSL_TEST(SkSLForWithoutReturnInsideCanBeInlined, "inliner/ForWithoutReturnInsideCanBeInlined.sksl")
+SKSL_TEST(SkSLForWithReturnInsideCannotBeInlined, "inliner/ForWithReturnInsideCannotBeInlined.sksl")
+SKSL_TEST(SkSLIfBodyMustBeInlinedIntoAScope,      "inliner/IfBodyMustBeInlinedIntoAScope.sksl")
+SKSL_TEST(SkSLIfElseBodyMustBeInlinedIntoAScope,  "inliner/IfElseBodyMustBeInlinedIntoAScope.sksl")
+SKSL_TEST(SkSLIfElseChainWithReturnsCanBeInlined, "inliner/IfElseChainWithReturnsCanBeInlined.sksl")
+SKSL_TEST(SkSLIfTestCanBeInlined,                 "inliner/IfTestCanBeInlined.sksl")
+SKSL_TEST(SkSLIfWithReturnsCanBeInlined,          "inliner/IfWithReturnsCanBeInlined.sksl")
+SKSL_TEST(SkSLInlineKeywordOverridesThreshold,    "inliner/InlineKeywordOverridesThreshold.sksl")
+SKSL_TEST(SkSLInlinerAvoidsVariableNameOverlap,   "inliner/InlinerAvoidsVariableNameOverlap.sksl")
+SKSL_TEST(SkSLInlinerElidesTempVarForReturnsInsideBlock,
+     "inliner/InlinerElidesTempVarForReturnsInsideBlock.sksl")
+SKSL_TEST(SkSLInlinerUsesTempVarForMultipleReturns,
+     "inliner/InlinerUsesTempVarForMultipleReturns.sksl")
+SKSL_TEST(SkSLInlinerUsesTempVarForReturnsInsideBlockWithVar,
+     "inliner/InlinerUsesTempVarForReturnsInsideBlockWithVar.sksl")
+SKSL_TEST(SkSLInlineThreshold,                    "inliner/InlineThreshold.sksl")
+SKSL_TEST(SkSLInlineWithInoutArgument,            "inliner/InlineWithInoutArgument.sksl")
+SKSL_TEST(SkSLInlineWithModifiedArgument,         "inliner/InlineWithModifiedArgument.sksl")
+SKSL_TEST(SkSLInlineWithNestedBigCalls,           "inliner/InlineWithNestedBigCalls.sksl")
+SKSL_TEST(SkSLInlineWithUnmodifiedArgument,       "inliner/InlineWithUnmodifiedArgument.sksl")
+SKSL_TEST(SkSLInlineWithUnnecessaryBlocks,        "inliner/InlineWithUnnecessaryBlocks.sksl")
+SKSL_TEST(SkSLNoInline,                           "inliner/NoInline.sksl")
+SKSL_TEST(SkSLShortCircuitEvaluationsCannotInlineRightHandSide,
+     "inliner/ShortCircuitEvaluationsCannotInlineRightHandSide.sksl")
+SKSL_TEST(SkSLStructsCanBeInlinedSafely,          "inliner/StructsCanBeInlinedSafely.sksl")
+SKSL_TEST(SkSLSwizzleCanBeInlinedDirectly,        "inliner/SwizzleCanBeInlinedDirectly.sksl")
+SKSL_TEST(SkSLTernaryResultsCannotBeInlined,      "inliner/TernaryResultsCannotBeInlined.sksl")
+SKSL_TEST(SkSLTernaryTestCanBeInlined,            "inliner/TernaryTestCanBeInlined.sksl")
+SKSL_TEST(SkSLTrivialArgumentsInlineDirectly,     "inliner/TrivialArgumentsInlineDirectly.sksl")
+
+// TODO(skia:11052): SPIR-V does not yet honor `out` param semantics correctly
+SKSL_TEST_CPU(SkSLInlinerHonorsGLSLOutParamSemantics,
+         "inliner/InlinerHonorsGLSLOutParamSemantics.sksl")
+
 SKSL_TEST(SkSLIntrinsicAbsFloat,               "intrinsics/AbsFloat.sksl")
 SKSL_TEST(SkSLIntrinsicCeil,                   "intrinsics/Ceil.sksl")
 SKSL_TEST(SkSLIntrinsicClampFloat,             "intrinsics/ClampFloat.sksl")
@@ -147,7 +182,9 @@ SKSL_TEST(SkSLArrayTypes,                      "shared/ArrayTypes.sksl")
 SKSL_TEST(SkSLAssignment,                      "shared/Assignment.sksl")
 SKSL_TEST(SkSLCastsRoundTowardZero,            "shared/CastsRoundTowardZero.sksl")
 SKSL_TEST(SkSLCommaMixedTypes,                 "shared/CommaMixedTypes.sksl")
-SKSL_TEST(SkSLCommaSideEffects,                "shared/CommaSideEffects.sksl")
+// This test causes the Adreno 330 driver to crash, and does not pass on Quadro P400 in wasm.
+// The CPU test confirms that we can get it right, even if not all drivers do.
+SKSL_TEST_CPU(SkSLCommaSideEffects,            "shared/CommaSideEffects.sksl")
 SKSL_TEST(SkSLConstantIf,                      "shared/ConstantIf.sksl")
 SKSL_TEST(SkSLConstVariableComparison,         "shared/ConstVariableComparison.sksl")
 SKSL_TEST(SkSLDeadIfStatement,                 "shared/DeadIfStatement.sksl")
@@ -168,8 +205,10 @@ SKSL_TEST(SkSLNegatedVectorLiteral,            "shared/NegatedVectorLiteral.sksl
 SKSL_TEST(SkSLNumberCasts,                     "shared/NumberCasts.sksl")
 SKSL_TEST(SkSLOperatorsES2,                    "shared/OperatorsES2.sksl")
 SKSL_TEST(SkSLOutParams,                       "shared/OutParams.sksl")
+SKSL_TEST(SkSLOutParamsNoInline,               "shared/OutParamsNoInline.sksl")
 SKSL_TEST(SkSLOutParamsTricky,                 "shared/OutParamsTricky.sksl")
 SKSL_TEST(SkSLResizeMatrix,                    "shared/ResizeMatrix.sksl")
+SKSL_TEST(SkSLReturnsValueOnEveryPathES2,      "shared/ReturnsValueOnEveryPathES2.sksl")
 SKSL_TEST(SkSLScalarConversionConstructorsES2, "shared/ScalarConversionConstructorsES2.sksl")
 SKSL_TEST(SkSLStackingVectorCasts,             "shared/StackingVectorCasts.sksl")
 SKSL_TEST(SkSLStaticIf,                        "shared/StaticIf.sksl")
@@ -182,9 +221,11 @@ SKSL_TEST(SkSLSwizzleOpt,                      "shared/SwizzleOpt.sksl")
 SKSL_TEST(SkSLSwizzleScalar,                   "shared/SwizzleScalar.sksl")
 SKSL_TEST(SkSLTernaryAsLValueEntirelyFoldable, "shared/TernaryAsLValueEntirelyFoldable.sksl")
 SKSL_TEST(SkSLTernaryAsLValueFoldableTest,     "shared/TernaryAsLValueFoldableTest.sksl")
+SKSL_TEST(SkSLTernaryExpression,               "shared/TernaryExpression.sksl")
 SKSL_TEST(SkSLUnaryPositiveNegative,           "shared/UnaryPositiveNegative.sksl")
 SKSL_TEST(SkSLUnusedVariables,                 "shared/UnusedVariables.sksl")
 SKSL_TEST(SkSLVectorConstructors,              "shared/VectorConstructors.sksl")
+SKSL_TEST(SkSLVectorScalarMath,                "shared/VectorScalarMath.sksl")
 
 /*
 // Incompatible with Runtime Effects because calling a function before its definition is disallowed.
@@ -197,6 +238,15 @@ TODO(skia:11209): enable these tests when Runtime Effects have support for ES3
 
 SKSL_TEST(SkSLIntFoldingES3,                   "folding/IntFoldingES3.sksl")
 SKSL_TEST(SkSLMatrixFoldingES3,                "folding/MatrixFoldingES3.sksl")
+
+SKSL_TEST(SkSLDoWhileBodyMustBeInlinedIntoAScope, "inliner/DoWhileBodyMustBeInlinedIntoAScope.sksl")
+SKSL_TEST(SkSLDoWhileTestCannotBeInlined,         "inliner/DoWhileTestCannotBeInlined.sksl")
+SKSL_TEST(SkSLEnumsCanBeInlinedSafely,            "inliner/EnumsCanBeInlinedSafely.sksl")
+SKSL_TEST(SkSLForInitializerExpressionsCanBeInlined,
+     "inliner/ForInitializerExpressionsCanBeInlined.sksl")
+SKSL_TEST(SkSLStaticSwitch,                       "inliner/StaticSwitch.sksl")
+SKSL_TEST(SkSLWhileBodyMustBeInlinedIntoAScope,   "inliner/WhileBodyMustBeInlinedIntoAScope.sksl")
+SKSL_TEST(SkSLWhileTestCannotBeInlined,           "inliner/WhileTestCannotBeInlined.sksl")
 
 SKSL_TEST(SkSLIntrinsicAbsInt,                 "intrinsics/AbsInt.sksl")
 SKSL_TEST(SkSLIntrinsicClampInt,               "intrinsics/ClampInt.sksl")
@@ -213,6 +263,7 @@ SKSL_TEST(SkSLHexUnsigned,                     "shared/HexUnsigned.sksl")
 SKSL_TEST(SkSLMatricesNonsquare,               "shared/MatricesNonsquare.sksl")
 SKSL_TEST(SkSLOperatorsES3,                    "shared/OperatorsES3.sksl")
 SKSL_TEST(SkSLResizeMatrixNonsquare,           "shared/ResizeMatrixNonsquare.sksl")
+SKSL_TEST(SkSLReturnsValueOnEveryPathES3,      "shared/ReturnsValueOnEveryPathES3.sksl")
 SKSL_TEST(SkSLScalarConversionConstructorsES3, "shared/ScalarConversionConstructorsES3.sksl")
 SKSL_TEST(SkSLSwizzleByIndex,                  "shared/SwizzleByIndex.sksl")
 SKSL_TEST(SkSLWhileLoopControlFlow,            "shared/WhileLoopControlFlow.sksl")

@@ -1,0 +1,28 @@
+{
+  "dependencies": [
+    "source_frame",
+    "cookie_table",
+    "inline_editor",
+    "data_grid",
+    "components",
+    "object_ui",
+    "perf_ui",
+    "panels/mobile_throttling",
+    "panels/network",
+    "sources",
+    "browser_sdk"
+  ],
+    "resources": [
+    "appManifestView.css",
+    "backgroundServiceView.css",
+    "storageView.css",
+    "indexedDBViews.css",
+    "resourcesPanel.css",
+    "resourcesSidebar.css",
+    "serviceWorkerCacheViews.css",
+    "serviceWorkersView.css",
+    "serviceWorkerUpdateCycleView.css",
+    "cookieItemsView.css",
+    "frameDetailsReportView.css"
+  ]
+}

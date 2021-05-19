@@ -9,6 +9,13 @@
 
 namespace ui {
 
+PlatformWindowDelegate::BoundsChange::BoundsChange() = default;
+
+PlatformWindowDelegate::BoundsChange::BoundsChange(const gfx::Rect& bounds)
+    : bounds(bounds) {}
+
+PlatformWindowDelegate::BoundsChange::~BoundsChange() = default;
+
 PlatformWindowDelegate::PlatformWindowDelegate() = default;
 
 PlatformWindowDelegate::~PlatformWindowDelegate() = default;
@@ -24,5 +31,7 @@ base::Optional<gfx::Size> PlatformWindowDelegate::GetMaximumSizeForWindow() {
 SkPath PlatformWindowDelegate::GetWindowMaskForWindowShapeInPixels() {
   return SkPath();
 }
+
+void PlatformWindowDelegate::OnSurfaceFrameLockingChanged(bool lock) {}
 
 }  // namespace ui

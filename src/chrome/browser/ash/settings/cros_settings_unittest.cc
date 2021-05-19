@@ -14,10 +14,10 @@
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -36,7 +36,7 @@
 
 namespace em = enterprise_management;
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 constexpr char kOwner[] = "me@owner";
@@ -65,8 +65,8 @@ class CrosSettingsTest : public testing::Test {
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetSigningKey());
     owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-    OwnerSettingsServiceChromeOSFactory::GetInstance()
-        ->SetOwnerKeyUtilForTesting(owner_key_util_);
+    OwnerSettingsServiceAshFactory::GetInstance()->SetOwnerKeyUtilForTesting(
+        owner_key_util_);
     DeviceSettingsService::Get()->SetSessionManager(
         &fake_session_manager_client_, owner_key_util_);
     DeviceSettingsService::Get()->Load();
@@ -81,17 +81,16 @@ class CrosSettingsTest : public testing::Test {
   // partway through the test - this sets one up for those tests that need it.
   // Other tests below cannot use an OwnerSettingsService, since they change
   // |device_policy_| to something that would not be allowed by
-  // OwnerSettingsServiceChromeOS::FixupLocalOwnerPolicy.
-  OwnerSettingsServiceChromeOS* CreateOwnerSettingsService(
+  // OwnerSettingsServiceAsh::FixupLocalOwnerPolicy.
+  OwnerSettingsServiceAsh* CreateOwnerSettingsService(
       const std::string& owner_email) {
     const AccountId account_id = AccountId::FromUserEmail(owner_email);
     user_manager_.AddUser(account_id);
     profile_ = std::make_unique<TestingProfile>();
     profile_->set_profile_name(account_id.GetUserEmail());
 
-    OwnerSettingsServiceChromeOS* service =
-        OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-            profile_.get());
+    OwnerSettingsServiceAsh* service =
+        OwnerSettingsServiceAshFactory::GetForBrowserContext(profile_.get());
     DCHECK(service);
 
     service->OnTPMTokenReady(true);
@@ -143,7 +142,7 @@ class CrosSettingsTest : public testing::Test {
       content::BrowserTaskEnvironment::IO_MAINLOOP};
 
   ScopedTestingLocalState local_state_;
-  ScopedStubInstallAttributes scoped_install_attributes_;
+  chromeos::ScopedStubInstallAttributes scoped_install_attributes_;
   ScopedTestDeviceSettingsService scoped_test_device_settings_;
   ScopedTestCrosSettings scoped_test_cros_settings_;
 
@@ -233,7 +232,7 @@ TEST_F(CrosSettingsTest, SetAllowlistWithListOps2) {
 // level, the CrosSettings API.
 // They do not use OwnerSettingsService since having a local
 // OwnerSettingsService constrains the policies in certain ways - see
-// OwnerSettingsServiceChromeOS::FixupLocalOwnerPolicy.
+// OwnerSettingsServiceAsh::FixupLocalOwnerPolicy.
 
 TEST_F(CrosSettingsTest, SetEmptyAllowlist) {
   // Set an empty allowlist.
@@ -360,8 +359,7 @@ TEST_F(CrosSettingsTest, FindEmailInListWildcard) {
 // not set.
 TEST_F(CrosSettingsTest, AllowFamilyLinkAccountsWithEmptyAllowlist) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      chromeos::features::kFamilyLinkOnSchoolDevice);
+  scoped_feature_list.InitAndEnableFeature(features::kFamilyLinkOnSchoolDevice);
 
   device_policy_.payload().mutable_allow_new_users()->set_allow_new_users(
       false);
@@ -386,7 +384,7 @@ TEST_F(CrosSettingsTest, AllowFamilyLinkAccountsWithEmptyAllowlist) {
 TEST_F(CrosSettingsTest, AllowFamilyLinkAccountsWithFeatureDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
-      chromeos::features::kFamilyLinkOnSchoolDevice);
+      features::kFamilyLinkOnSchoolDevice);
 
   device_policy_.payload().mutable_allow_new_users()->set_allow_new_users(
       false);
@@ -411,8 +409,7 @@ TEST_F(CrosSettingsTest, AllowFamilyLinkAccountsWithFeatureDisabled) {
 
 TEST_F(CrosSettingsTest, AllowFamilyLinkAccountsWithAllowlist) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      chromeos::features::kFamilyLinkOnSchoolDevice);
+  scoped_feature_list.InitAndEnableFeature(features::kFamilyLinkOnSchoolDevice);
 
   device_policy_.payload().mutable_allow_new_users()->set_allow_new_users(
       false);
@@ -435,4 +432,4 @@ TEST_F(CrosSettingsTest, AllowFamilyLinkAccountsWithAllowlist) {
   EXPECT_FALSE(IsUserAllowed(kUser1, user_manager::USER_TYPE_REGULAR));
 }
 
-}  // namespace chromeos
+}  // namespace ash

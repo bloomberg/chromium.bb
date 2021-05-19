@@ -13,11 +13,12 @@ import 'chrome://resources/cr_components/chromeos/network/network_proxy.m.js';
 import 'chrome://resources/cr_components/chromeos/network/network_shared_css.m.js';
 import 'chrome://resources/cr_components/chromeos/network/network_siminfo.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_page_host_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_page_host_style_css.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import './strings.m.js';
 
+import {isActiveSim} from 'chrome://resources/cr_components/chromeos/network/cellular_utils.m.js';
 import {CrPolicyNetworkBehaviorMojo} from 'chrome://resources/cr_components/chromeos/network/cr_policy_network_behavior_mojo.m.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
 import {NetworkListenerBehavior} from 'chrome://resources/cr_components/chromeos/network/network_listener_behavior.m.js';
@@ -26,6 +27,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {InternetDetailDialogBrowserProxy, InternetDetailDialogBrowserProxyImpl} from './internet_detail_dialog_browser_proxy.js';
 
 /**
  * @fileoverview
@@ -71,6 +73,36 @@ Polymer({
             loadTimeData.getBoolean('showTechnologyBadge');
       }
     },
+
+    /**
+     * Whether network configuration properties sections should be shown. The
+     * advanced section is not controlled by this property.
+     * @private
+     */
+    showConfigurableSections_: {
+      type: Boolean,
+      value: true,
+      computed: `computeShowConfigurableSections_(deviceState_.*,
+          managedProperties_.*)`,
+    },
+
+    /**
+     * When true, all inputs that allow state to be changed (e.g., toggles,
+     * inputs) are disabled.
+     */
+    disabled_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeDisabled_(deviceState_.*)'
+    },
+
+    /** @private */
+    isUpdatedCellularUiEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('updatedCellularActivationUi');
+      }
+    },
   },
 
   /**
@@ -89,6 +121,9 @@ Polymer({
   /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
 
+  /** @private {?InternetDetailDialogBrowserProxy} */
+  browserProxy_: null,
+
   /** @override */
   created() {
     this.networkConfig_ =
@@ -97,7 +132,8 @@ Polymer({
 
   /** @override */
   attached() {
-    const dialogArgs = chrome.getVariableValue('dialogArguments');
+    this.browserProxy_ = InternetDetailDialogBrowserProxyImpl.getInstance();
+    const dialogArgs = this.browserProxy_.getDialogArguments();
     let type, name;
     if (dialogArgs) {
       const args = JSON.parse(dialogArgs);
@@ -142,7 +178,7 @@ Polymer({
 
   /** @private */
   close_() {
-    chrome.send('dialogClose');
+    this.browserProxy_.closeDialog();
   },
 
   /**
@@ -376,7 +412,8 @@ Polymer({
   },
 
   /**
-   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties|undefined}
+   *     managedProperties
    * @return {boolean}
    * @private
    */
@@ -386,11 +423,15 @@ Polymer({
   },
 
   /**
-   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties|undefined}
+   *     managedProperties
    * @return {boolean}
    * @private
    */
   showConnect_(managedProperties) {
+    if (!managedProperties) {
+      return false;
+    }
     return managedProperties.connectable &&
         managedProperties.type !=
         chromeos.networkConfig.mojom.NetworkType.kEthernet &&
@@ -399,11 +440,15 @@ Polymer({
   },
 
   /**
-   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties|undefined}
+   *     managedProperties
    * @return {boolean}
    * @private
    */
   showDisconnect_(managedProperties) {
+    if (!managedProperties) {
+      return false;
+    }
     return managedProperties.type !=
         chromeos.networkConfig.mojom.NetworkType.kEthernet &&
         managedProperties.connectionState !=
@@ -428,6 +473,9 @@ Polymer({
    * @private
    */
   enableConnectDisconnect_(managedProperties) {
+    if (this.disabled_) {
+      return false;
+    }
     if (!this.showConnectDisconnect_(managedProperties)) {
       return false;
     }
@@ -535,7 +583,8 @@ Polymer({
    */
   hasVisibleFields_(fields) {
     return fields.some((field) => {
-      const value = this.get(field, this.managedProperties_);
+      const key = OncMojo.getManagedPropertyKey(field);
+      const value = this.get(key, this.managedProperties_);
       return value !== undefined && value !== '';
     });
   },
@@ -556,19 +605,64 @@ Polymer({
     /** @type {!Array<string>} */ const fields = [];
     const type = this.managedProperties_.type;
     if (type == chromeos.networkConfig.mojom.NetworkType.kCellular) {
+      if (this.isUpdatedCellularUiEnabled_) {
+        fields.push('cellular.activationState');
+      }
       fields.push(
-          'cellular.activationState', 'cellular.servingOperator.name',
-          'cellular.roamingState');
+          'cellular.servingOperator.name', 'cellular.networkTechnology');
     }
     if (OncMojo.isRestrictedConnectivity(this.managedProperties_.portalState)) {
       fields.push('portalState');
     }
+    // Two separate checks for type == kCellular because the order of the array
+    // dictates the order the fields appear on the UI. We want portalState to
+    // show after the earlier Cellular fields but before these later fields.
     if (type == chromeos.networkConfig.mojom.NetworkType.kCellular) {
       fields.push(
-          'cellular.homeProvider.name', 'cellular.meid', 'cellular.esn',
-          'cellular.iccid', 'cellular.imei', 'cellular.imsi', 'cellular.mdn',
+          'cellular.homeProvider.name', 'cellular.homeProvider.country',
+          'cellular.firmwareRevision', 'cellular.hardwareRevision',
+          'cellular.esn', 'cellular.iccid', 'cellular.imei', 'cellular.meid',
           'cellular.min');
     }
     return fields;
   },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowConfigurableSections_() {
+    if (!this.isUpdatedCellularUiEnabled_ || !this.managedProperties_ ||
+        !this.deviceState_) {
+      return true;
+    }
+
+    if (this.managedProperties_.type !==
+        chromeos.networkConfig.mojom.NetworkType.kCellular) {
+      return true;
+    }
+
+    const networkState =
+        OncMojo.managedPropertiesToNetworkState(this.managedProperties_);
+    assert(networkState);
+    return isActiveSim(networkState, this.deviceState_);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeDisabled_() {
+    if (!this.isUpdatedCellularUiEnabled_) {
+      return false;
+    }
+    if (!this.deviceState_ ||
+        this.deviceState_.type !==
+            chromeos.networkConfig.mojom.NetworkType.kCellular) {
+      return false;
+    }
+    // If this is a cellular device and inhibited, state cannot be changed, so
+    // the dialog's inputs should be disabled.
+    return OncMojo.deviceIsInhibited(this.deviceState_);
+  }
 });

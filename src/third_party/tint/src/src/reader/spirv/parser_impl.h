@@ -15,36 +15,20 @@
 #ifndef SRC_READER_SPIRV_PARSER_IMPL_H_
 #define SRC_READER_SPIRV_PARSER_IMPL_H_
 
-#include <cstdint>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include "source/opt/constants.h"
-#include "source/opt/decoration_manager.h"
 #include "source/opt/ir_context.h"
-#include "source/opt/module.h"
-#include "source/opt/type_manager.h"
-#include "source/opt/types.h"
-#include "spirv-tools/libspirv.hpp"
-#include "src/ast/expression.h"
-#include "src/ast/struct_member_decoration.h"
 #include "src/program_builder.h"
 #include "src/reader/reader.h"
 #include "src/reader/spirv/entry_point_info.h"
 #include "src/reader/spirv/enum_converter.h"
-#include "src/reader/spirv/fail_stream.h"
 #include "src/reader/spirv/namer.h"
 #include "src/reader/spirv/usage.h"
-#include "src/source.h"
-#include "src/type/alias_type.h"
-#include "src/type/array_type.h"
-#include "src/type/pointer_type.h"
-#include "src/type/type.h"
 
 /// This is the implementation of the SPIR-V parser for Tint.
 
@@ -193,10 +177,9 @@ class ParserImpl : Reader {
   /// @param member_index the index of the member
   /// @param decoration an encoded SPIR-V Decoration
   /// @returns the corresponding ast::StructuMemberDecoration
-  ast::StructMemberDecoration* ConvertMemberDecoration(
-      uint32_t struct_type_id,
-      uint32_t member_index,
-      const Decoration& decoration);
+  ast::Decoration* ConvertMemberDecoration(uint32_t struct_type_id,
+                                           uint32_t member_index,
+                                           const Decoration& decoration);
 
   /// Returns a string for the given type.  If the type ID is invalid,
   /// then the resulting string only names the type ID.
@@ -314,7 +297,7 @@ class ParserImpl : Reader {
                               type::Type* type,
                               bool is_const,
                               ast::Expression* constructor,
-                              ast::VariableDecorationList decorations);
+                              ast::DecorationList decorations);
 
   /// Creates an AST expression node for a SPIR-V constant.
   /// @param id the SPIR-V ID of the constant
@@ -325,6 +308,11 @@ class ParserImpl : Reader {
   /// @param type the AST type
   /// @returns a new expression
   ast::Expression* MakeNullValue(type::Type* type);
+
+  /// Make a typed expression for the null value for the given type.
+  /// @param type the AST type
+  /// @returns a new typed expression
+  TypedExpression MakeNullExpression(type::Type* type);
 
   /// Converts a given expression to the signedness demanded for an operand
   /// of the given SPIR-V instruction, if required.  If the instruction assumes
@@ -338,6 +326,19 @@ class ParserImpl : Reader {
   TypedExpression RectifyOperandSignedness(
       const spvtools::opt::Instruction& inst,
       TypedExpression&& expr);
+
+  /// Conversts a second operand to the signedness of the first operand
+  /// of a binary operator, if the WGSL operator requires they be the same.
+  /// Returns the converted expression, or the original expression if the
+  /// conversion is not needed.
+  /// @param inst the SPIR-V instruction
+  /// @param first_operand_type the type of the first operand to the instruction
+  /// @param second_operand_expr the second operand of the instruction
+  /// @returns second_operand_expr, or a cast of it
+  TypedExpression RectifySecondOperandSignedness(
+      const spvtools::opt::Instruction& inst,
+      type::Type* first_operand_type,
+      TypedExpression&& second_operand_expr);
 
   /// Returns the "forced" result type for the given SPIR-V instruction.
   /// If the WGSL result type for an operation has a more strict rule than
@@ -548,7 +549,7 @@ class ParserImpl : Reader {
   /// @param decorations the populated decoration list
   /// @returns true on success.
   bool ParseArrayDecorations(const spvtools::opt::analysis::Type* spv_type,
-                             ast::ArrayDecorationList* decorations);
+                             ast::DecorationList* decorations);
 
   /// Creates a new `ast::Node` owned by the ProgramBuilder.
   /// @param args the arguments to pass to the type constructor

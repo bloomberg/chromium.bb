@@ -124,6 +124,51 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
   const State wait_for_state_;
 };
 
+// Same as reset on chrome.google.com/sync.
+// This function will wait until the reset is done. If error occurs,
+// it will log error messages.
+void ResetAccount(network::SharedURLLoaderFactory* url_loader_factory,
+                  const std::string& access_token,
+                  const GURL& url,
+                  const std::string& username,
+                  const std::string& birthday) {
+  // Generate https POST payload.
+  sync_pb::ClientToServerMessage message;
+  message.set_share(username);
+  message.set_message_contents(
+      sync_pb::ClientToServerMessage::CLEAR_SERVER_DATA);
+  message.set_store_birthday(birthday);
+  message.set_api_key(google_apis::GetAPIKey());
+  syncer::LogClientToServerMessage(message);
+  std::string payload;
+  message.SerializeToString(&payload);
+  std::string request_to_send;
+  compression::GzipCompress(payload, &request_to_send);
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  resource_request->method = "POST";
+  resource_request->headers.SetHeader("Authorization",
+                                      "Bearer " + access_token);
+  resource_request->headers.SetHeader("Content-Encoding", "gzip");
+  resource_request->headers.SetHeader("Accept-Language", "en-US,en");
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  auto simple_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), TRAFFIC_ANNOTATION_FOR_TESTS);
+  simple_loader->AttachStringForUpload(request_to_send,
+                                       "application/octet-stream");
+  simple_loader->SetTimeoutDuration(base::TimeDelta::FromSeconds(10));
+  content::SimpleURLLoaderTestHelper url_loader_helper;
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory, url_loader_helper.GetCallback());
+  url_loader_helper.WaitForCallback();
+  if (simple_loader->NetError() != 0) {
+    LOG(ERROR) << "Reset account failed with error "
+               << net::ErrorToString(simple_loader->NetError())
+               << ". The account will remain dirty and may cause test fail.";
+  }
+}
+
 }  // namespace
 
 // static
@@ -171,51 +216,6 @@ bool ProfileSyncServiceHarness::SignInPrimaryAccount() {
 
   NOTREACHED();
   return false;
-}
-
-// Same as reset on chrome.google.com/sync.
-// This function will wait until the reset is done. If error occurs,
-// it will log error messages.
-void ResetAccount(network::SharedURLLoaderFactory* url_loader_factory,
-                  const std::string& access_token,
-                  const GURL& url,
-                  const std::string& username,
-                  const std::string& birthday) {
-  // Generate https POST payload.
-  sync_pb::ClientToServerMessage message;
-  message.set_share(username);
-  message.set_message_contents(
-      sync_pb::ClientToServerMessage::CLEAR_SERVER_DATA);
-  message.set_store_birthday(birthday);
-  message.set_api_key(google_apis::GetAPIKey());
-  syncer::LogClientToServerMessage(message);
-  std::string payload;
-  message.SerializeToString(&payload);
-  std::string request_to_send;
-  compression::GzipCompress(payload, &request_to_send);
-
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = url;
-  resource_request->method = "POST";
-  resource_request->headers.SetHeader("Authorization",
-                                      "Bearer " + access_token);
-  resource_request->headers.SetHeader("Content-Encoding", "gzip");
-  resource_request->headers.SetHeader("Accept-Language", "en-US,en");
-  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
-  auto simple_loader = network::SimpleURLLoader::Create(
-      std::move(resource_request), TRAFFIC_ANNOTATION_FOR_TESTS);
-  simple_loader->AttachStringForUpload(request_to_send,
-                                       "application/octet-stream");
-  simple_loader->SetTimeoutDuration(base::TimeDelta::FromSeconds(10));
-  content::SimpleURLLoaderTestHelper url_loader_helper;
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory, url_loader_helper.GetCallback());
-  url_loader_helper.WaitForCallback();
-  if (simple_loader->NetError() != 0) {
-    LOG(ERROR) << "Reset account failed with error "
-               << net::ErrorToString(simple_loader->NetError())
-               << ". The account will remain dirty and may cause test fail.";
-  }
 }
 
 void ProfileSyncServiceHarness::ResetSyncForPrimaryAccount() {
@@ -606,7 +606,7 @@ std::string ProfileSyncServiceHarness::GetServiceStatus() {
   std::unique_ptr<base::DictionaryValue> value(
       syncer::sync_ui_util::ConstructAboutInformation(
           syncer::sync_ui_util::IncludeSensitiveData(true), service(),
-          chrome::GetChannel()));
+          chrome::GetChannelName(chrome::WithExtendedStable(true))));
   std::string service_status;
   base::JSONWriter::WriteWithOptions(
       *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &service_status);

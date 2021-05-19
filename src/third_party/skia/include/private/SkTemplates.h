@@ -103,7 +103,7 @@ public:
 
     /** Reallocates given a new count. Reallocation occurs even if new count equals old count.
      */
-    void reset(int count) { *this = SkAutoTArray(count);  }
+    void reset(int count = 0) { *this = SkAutoTArray(count); }
 
     /** Return the array of T elements. Will be NULL if count == 0
      */
@@ -235,7 +235,10 @@ private:
 /** Manages an array of T elements, freeing the array in the destructor.
  *  Does NOT call any constructors/destructors on T (T must be POD).
  */
-template <typename T> class SkAutoTMalloc  {
+template <typename T,
+          typename = std::enable_if_t<std::is_trivially_default_constructible<T>::value &&
+                                      std::is_trivially_destructible<T>::value>>
+class SkAutoTMalloc  {
 public:
     /** Takes ownership of the ptr. The ptr must be a value which can be passed to sk_free. */
     explicit SkAutoTMalloc(T* ptr = nullptr) : fPtr(ptr) {}
@@ -283,7 +286,11 @@ private:
     std::unique_ptr<T, SkFunctionWrapper<void(void*), sk_free>> fPtr;
 };
 
-template <size_t kCountRequested, typename T> class SkAutoSTMalloc {
+template <size_t kCountRequested,
+          typename T,
+          typename = std::enable_if_t<std::is_trivially_default_constructible<T>::value &&
+                                      std::is_trivially_destructible<T>::value>>
+class SkAutoSTMalloc {
 public:
     SkAutoSTMalloc() : fPtr(fTStorage) {}
 
@@ -433,13 +440,13 @@ private:
 using SkAutoFree = std::unique_ptr<void, SkFunctionWrapper<void(void*), sk_free>>;
 
 template<typename C, std::size_t... Is>
-constexpr auto SkMakeArrayFromIndexSequence(C c, std::index_sequence<Is...>)
--> std::array<std::result_of_t<C(std::size_t)>, sizeof...(Is)> {
+constexpr auto SkMakeArrayFromIndexSequence(C c, std::index_sequence<Is...> is)
+-> std::array<decltype(c(std::declval<typename decltype(is)::value_type>())), sizeof...(Is)> {
     return {{ c(Is)... }};
 }
 
 template<size_t N, typename C> constexpr auto SkMakeArray(C c)
--> std::array<std::result_of_t<C(std::size_t)>, N> {
+-> std::array<decltype(c(std::declval<typename std::index_sequence<N>::value_type>())), N> {
     return SkMakeArrayFromIndexSequence(c, std::make_index_sequence<N>{});
 }
 

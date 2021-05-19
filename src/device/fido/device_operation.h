@@ -25,7 +25,7 @@ namespace device {
 // operation.
 class GenericDeviceOperation {
  public:
-  virtual ~GenericDeviceOperation() {}
+  virtual ~GenericDeviceOperation() = default;
   virtual void Start() = 0;
 
   // Cancel will attempt to cancel the current operation. It is safe to call
@@ -48,12 +48,11 @@ class DeviceOperation : public GenericDeviceOperation {
         request_(std::move(request)),
         callback_(std::move(callback)) {}
 
-  virtual ~DeviceOperation() = default;
+  ~DeviceOperation() override = default;
 
  protected:
-  // TODO(hongjunchoi): Refactor so that |command| is never base::nullopt.
-  void DispatchDeviceRequest(base::Optional<std::vector<uint8_t>> command,
-                             FidoDevice::DeviceCallback callback) {
+  void DispatchU2FCommand(base::Optional<std::vector<uint8_t>> command,
+                          FidoDevice::DeviceCallback callback) {
     if (!command || device_->is_in_error_state()) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));

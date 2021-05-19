@@ -272,17 +272,17 @@ bool AttachmentOverlapsWithTexture(const FramebufferAttachment &attachment,
         return false;
     }
 
-    const gl::ImageIndex &index = attachment.getTextureImageIndex();
-    GLuint attachmentLevel      = static_cast<GLuint>(index.getLevelIndex());
-    GLuint textureBaseLevel     = texture->getBaseLevel();
-    GLuint textureMaxLevel      = textureBaseLevel;
+    const gl::ImageIndex &index      = attachment.getTextureImageIndex();
+    GLuint attachmentLevel           = static_cast<GLuint>(index.getLevelIndex());
+    GLuint textureEffectiveBaseLevel = texture->getTextureState().getEffectiveBaseLevel();
+    GLuint textureMaxLevel           = textureEffectiveBaseLevel;
     if ((sampler && IsMipmapFiltered(sampler->getSamplerState().getMinFilter())) ||
         IsMipmapFiltered(texture->getSamplerState().getMinFilter()))
     {
         textureMaxLevel = texture->getMipmapMaxLevel();
     }
 
-    return attachmentLevel >= textureBaseLevel && attachmentLevel <= textureMaxLevel;
+    return attachmentLevel >= textureEffectiveBaseLevel && attachmentLevel <= textureMaxLevel;
 }
 }  // anonymous namespace
 
@@ -302,7 +302,8 @@ FramebufferState::FramebufferState(rx::Serial serial)
       mDefaultFixedSampleLocations(GL_FALSE),
       mDefaultLayers(0),
       mWebGLDepthStencilConsistent(true),
-      mDefaultFramebufferReadAttachmentInitialized(false)
+      mDefaultFramebufferReadAttachmentInitialized(false),
+      mSrgbWriteControlMode(SrgbWriteControlMode::Default)
 {
     ASSERT(mDrawBufferStates.size() > 0);
     mEnabledDrawBuffers.set(0);
@@ -323,7 +324,8 @@ FramebufferState::FramebufferState(const Caps &caps, FramebufferID id, rx::Seria
       mDefaultFixedSampleLocations(GL_FALSE),
       mDefaultLayers(0),
       mWebGLDepthStencilConsistent(true),
-      mDefaultFramebufferReadAttachmentInitialized(false)
+      mDefaultFramebufferReadAttachmentInitialized(false),
+      mSrgbWriteControlMode(SrgbWriteControlMode::Default)
 {
     ASSERT(mId != Framebuffer::kDefaultDrawFramebufferHandle);
     ASSERT(mDrawBufferStates.size() > 0);
@@ -705,7 +707,10 @@ Framebuffer::Framebuffer(const Caps &caps,
     {
         mDirtyColorAttachmentBindings.emplace_back(this, DIRTY_BIT_COLOR_ATTACHMENT_0 + colorIndex);
     }
-    mDirtyBits.set(DIRTY_BIT_READ_BUFFER);
+    if (caps.maxDrawBuffers > 1)
+    {
+        mDirtyBits.set(DIRTY_BIT_READ_BUFFER);
+    }
 }
 
 Framebuffer::Framebuffer(const Context *context, egl::Surface *surface, egl::Surface *readSurface)
@@ -1874,6 +1879,15 @@ void Framebuffer::updateAttachment(const Context *context,
 void Framebuffer::resetAttachment(const Context *context, GLenum binding)
 {
     setAttachment(context, GL_NONE, binding, ImageIndex(), nullptr);
+}
+
+void Framebuffer::setWriteControlMode(SrgbWriteControlMode srgbWriteControlMode)
+{
+    if (srgbWriteControlMode != mState.getWriteControlMode())
+    {
+        mState.mSrgbWriteControlMode = srgbWriteControlMode;
+        mDirtyBits.set(DIRTY_BIT_FRAMEBUFFER_SRGB_WRITE_CONTROL_MODE);
+    }
 }
 
 angle::Result Framebuffer::syncState(const Context *context,

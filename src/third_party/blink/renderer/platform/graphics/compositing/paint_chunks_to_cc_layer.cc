@@ -535,11 +535,10 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
   // effects, so we can handle them separately.
   bool has_filter = !effect.Filter().IsEmpty();
   bool has_opacity = effect.Opacity() != 1.f;
-  bool has_other_effects = effect.BlendMode() != SkBlendMode::kSrcOver ||
-                           effect.GetColorFilter() != kColorFilterNone;
+  bool has_other_effects = effect.BlendMode() != SkBlendMode::kSrcOver;
   DCHECK(!has_filter || !(has_opacity || has_other_effects));
   // We always composite backdrop filters.
-  DCHECK(effect.BackdropFilter().IsEmpty());
+  DCHECK(!effect.BackdropFilter());
 
   // Apply effects.
   cc_list_.StartPaint();
@@ -551,8 +550,6 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
       PaintFlags flags;
       flags.setBlendMode(effect.BlendMode());
       flags.setAlpha(alpha);
-      flags.setColorFilter(GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
-          effect.GetColorFilter()));
       save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
     } else {
       save_layer_id = cc_list_.push<cc::SaveLayerAlphaOp>(nullptr, alpha);
@@ -932,8 +929,16 @@ static void UpdateNonFastScrollableRegion(
       // This is not necessary with ScrollUnification which ensures the
       // complete scroll tree.
       if (!RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
-        DCHECK(property_tree_manager);
-        property_tree_manager->EnsureCompositorScrollNode(*scroll_translation);
+        if (property_tree_manager) {
+          property_tree_manager->EnsureCompositorScrollNode(
+              *scroll_translation);
+        } else {
+          // A repaint-only update does not modify property tree nodes and has
+          // no property tree manager. This DCHECK ensures that a scroll node
+          // has already been created.
+          DCHECK(scroll_translation->CcNodeId(
+              layer.property_tree_sequence_number()));
+        }
       }
     }
   }

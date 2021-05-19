@@ -194,8 +194,8 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
     MDnsAPI::Get(browser_context())
         ->SetDnsSdRegistryForTesting(registry_.get());
 
-    render_process_host_.reset(
-        new content::MockRenderProcessHost(browser_context()));
+    render_process_host_ =
+        std::make_unique<content::MockRenderProcessHost>(browser_context());
   }
 
   // Returns the mDNS API factory function (mock vs. real) to use for the test.
@@ -231,11 +231,8 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
     std::string error;
     return extensions::Extension::Create(
         bogus_file_pathname(name),
-        extensions::Manifest::INVALID_LOCATION,
-        manifest,
-        Extension::NO_FLAGS,
-        extension_id,
-        &error);
+        extensions::mojom::ManifestLocation::kInvalidLocation, manifest,
+        Extension::NO_FLAGS, extension_id, &error);
   }
 
   content::RenderProcessHost* render_process_host() const {

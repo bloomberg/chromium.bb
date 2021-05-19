@@ -5,7 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_SHELL_TOPLEVEL_WRAPPER_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_SHELL_TOPLEVEL_WRAPPER_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
 namespace gfx {
@@ -64,7 +65,7 @@ class ShellToplevelWrapper {
                              uint32_t hittest) = 0;
 
   // Sets a title of a native window.
-  virtual void SetTitle(const base::string16& title) = 0;
+  virtual void SetTitle(const std::u16string& title) = 0;
 
   // Sends acknowledge configure event back to wayland.
   virtual void AckConfigure(uint32_t serial) = 0;

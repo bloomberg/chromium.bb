@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/developer_private/show_permissions_dialog_helper.h"
 
+#include <memory>
 #include <utility>
 
 #include "apps/saved_files_service.h"
@@ -51,18 +52,19 @@ void ShowPermissionsDialogHelper::ShowPermissionsDialog(
     content::WebContents* web_contents,
     const Extension* extension) {
   extension_id_ = extension->id();
-  prompt_.reset(new ExtensionInstallPrompt(web_contents));
+  prompt_ = std::make_unique<ExtensionInstallPrompt>(web_contents);
   std::vector<base::FilePath> retained_file_paths;
   if (extension->permissions_data()->HasAPIPermission(
-          APIPermission::kFileSystem)) {
+          mojom::APIPermissionID::kFileSystem)) {
     std::vector<SavedFileEntry> retained_file_entries =
         apps::SavedFilesService::Get(profile_)->GetAllFileEntries(
             extension_id_);
     for (const SavedFileEntry& entry : retained_file_entries)
       retained_file_paths.push_back(entry.path);
   }
-  std::vector<base::string16> retained_device_messages;
-  if (extension->permissions_data()->HasAPIPermission(APIPermission::kUsb)) {
+  std::vector<std::u16string> retained_device_messages;
+  if (extension->permissions_data()->HasAPIPermission(
+          mojom::APIPermissionID::kUsb)) {
     retained_device_messages =
         DevicePermissionsManager::Get(profile_)
             ->GetPermissionMessageStrings(extension_id_);

@@ -37,9 +37,6 @@ declare_args() {
   # Compile for Undefined Behaviour Sanitizer's null pointer checks.
   is_ubsan_null = false
 
-  # Compile for Undefined Behaviour Sanitizer's vptr checks.
-  is_ubsan_vptr = false
-
   # Track where uninitialized memory originates from. From fastest to slowest:
   # 0 - no tracking, 1 - track only the initial allocation site, 2 - track the
   # chain of stores leading from allocation site to use site.
@@ -124,6 +121,9 @@ declare_args() {
   # TODO(krasin): remove this, when we're ready to add these checks by default.
   # https://crbug.com/626794
   use_cfi_cast = is_cfi && (is_chromeos_ash || is_chromeos_lacros)
+
+  # Compile for Undefined Behaviour Sanitizer's vptr checks.
+  is_ubsan_vptr = is_ubsan_security
 }
 
 # Disable sanitizers for non-target toolchains.
@@ -164,6 +164,10 @@ use_fuzzing_engine = use_libfuzzer || use_afl || use_external_fuzzing_engine
 # declare_args block. User overrides are only applied at the end of a
 # declare_args block.
 declare_args() {
+  # Generates an owners file for each fuzzer test.
+  # TODO(crbug.com/1194183): Remove this arg when finding OWNERS is faster.
+  generate_fuzzer_owners = use_fuzzing_engine
+
   use_sanitizer_coverage =
       !use_clang_coverage &&
       (use_fuzzing_engine || sanitizer_coverage_flags != "")
@@ -173,8 +177,10 @@ declare_args() {
   # work well for fuzzing builds. Since fuzzing builds already disable the
   # sandbox when dumping coverage, limit the sandbox-only path to non-fuzzing
   # builds.
+  # Everything is IPC on Fuchsia, so this workaround for code coverage inside
+  # the sandbox does not apply.
   use_clang_profiling_inside_sandbox =
-      use_clang_profiling && !use_fuzzing_engine
+      use_clang_profiling && !use_fuzzing_engine && !is_fuchsia
 }
 
 if (use_fuzzing_engine && sanitizer_coverage_flags == "") {

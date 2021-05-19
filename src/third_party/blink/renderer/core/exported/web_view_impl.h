@@ -118,7 +118,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       bool compositing_enabled,
       WebViewImpl* opener,
       mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle,
-      scheduler::WebAgentGroupScheduler& agent_group_scheduler);
+      scheduler::WebAgentGroupScheduler& agent_group_scheduler,
+      const SessionStorageNamespaceId& session_storage_namespace_id);
 
   // All calls to Create() should be balanced with a call to Close(). This
   // synchronously destroys the WebViewImpl.
@@ -202,20 +203,45 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   const RendererPreferences& GetRendererPreferences() override;
   void SetWebPreferences(const web_pref::WebPreferences& preferences) override;
   const web_pref::WebPreferences& GetWebPreferences() override;
+  void SetHistoryListFromNavigation(
+      int32_t history_offset,
+      base::Optional<int32_t> history_length) override;
+  void IncreaseHistoryListFromNavigation() override;
+  int32_t HistoryBackListCount() override;
+  int32_t HistoryForwardListCount() override;
+  const SessionStorageNamespaceId& GetSessionStorageNamespaceId() override;
 
   // Functions to add and remove observers for this object.
   void AddObserver(WebViewObserver* observer);
   void RemoveObserver(WebViewObserver* observer);
 
-  // Overrides the page's background and base background color. You
-  // can use this to enforce a transparent background, which is useful if you
-  // want to have some custom background rendered behind the widget.
+  // `BaseBackgroundColor()` affects how the document is rendered.
+  // `BackgroundColor()` is what the document computes as its background color
+  // (with `BaseBackgroundColor()` as an input), or `BaseBackgroundColor()` if
+  // there is no local main frame; it's used as the background color of the
+  // compositor.
   //
-  // These may are only called for composited WebViews.
-  void SetBackgroundColorOverride(SkColor);
-  void ClearBackgroundColorOverride();
-  void SetBaseBackgroundColorOverride(SkColor);
-  void ClearBaseBackgroundColorOverride();
+  // These methods override `BaseBackgroundColor()` or `BackgroundColor()` for
+  // specific use cases. You can use this to set a transparent background,
+  // which is useful if you want to have some custom background rendered behind
+  // the widget.
+  //
+  // These settings only have an effect for composited WebViews
+  // These overrides are listed in order of precedence.
+  // - Overriding the background color for fullscreen ignores all other inputs,
+  //   including `BaseBackgroundColor()`. Note, however, that
+  //   `BaseBackgroundColor()` is passed directly into
+  //   `LocalFrameView::SetBaseBackgroundColor`.
+  // - Overriding base background color transparency takes precedences over
+  //   any base background color that might be specified for inspector--the
+  //   transparency specified in the inspector base background color is
+  //   ignored.
+  //
+  // Add new methods with clear precedence for new use cases.
+  void SetBackgroundColorOverrideForFullscreenController(
+      base::Optional<SkColor>);
+  void SetBaseBackgroundColorOverrideTransparent(bool override_to_transparent);
+  void SetBaseBackgroundColorOverrideForInspector(base::Optional<SkColor>);
 
   // Resize the WebView. You likely should be using
   // MainFrameWidget()->Resize instead.
@@ -275,10 +301,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   SkColor BackgroundColor() const;
   Color BaseBackgroundColor() const;
-  bool BackgroundColorOverrideEnabled() const {
-    return background_color_override_enabled_;
-  }
-  SkColor BackgroundColorOverride() const { return background_color_override_; }
 
   Frame* FocusedCoreFrame() const;
 
@@ -595,7 +617,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       bool does_composite,
       WebViewImpl* opener,
       mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle,
-      scheduler::WebAgentGroupScheduler& agent_group_scheduler);
+      scheduler::WebAgentGroupScheduler& agent_group_scheduler,
+      const SessionStorageNamespaceId& session_storage_namespace_id);
   ~WebViewImpl() override;
 
   void ConfigureAutoResizeMode();
@@ -729,6 +752,18 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   float compositor_device_scale_factor_override_ = 0.f;
   TransformationMatrix device_emulation_transform_;
 
+  // The offset of the current item in the history list.
+  // The initial value is -1 since the offset should be lower than
+  // |history_list_length_| to count the back/forward history list.
+  int32_t history_list_offset_ = -1;
+
+  // The RenderView's current impression of the history length.  This includes
+  // any items that have committed in this process, but because of cross-process
+  // navigations, the history may have some entries that were committed in other
+  // processes.  We won't know about them until the next navigation in this
+  // process.
+  int32_t history_list_length_ = 0;
+
   // The popup associated with an input/select element. The popup is owned via
   // closership (self-owned-but-deleted-via-close) by RenderWidget. We also hold
   // a reference here because we can extend the lifetime of the popup while
@@ -758,11 +793,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;
 
+  base::Optional<SkColor> background_color_override_for_fullscreen_controller_;
+  bool override_base_background_color_to_transparent_ = false;
+  base::Optional<SkColor> base_background_color_override_for_inspector_;
   SkColor base_background_color_ = Color::kWhite;
-  bool base_background_color_override_enabled_ = false;
-  SkColor base_background_color_override_ = Color::kTransparent;
-  bool background_color_override_enabled_ = false;
-  SkColor background_color_override_ = Color::kTransparent;
+
   float zoom_factor_override_ = 0.f;
 
   FloatSize elastic_overscroll_;
@@ -821,6 +856,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // keeping WorkerFetchContext in sync.
   mojo::RemoteSet<mojom::blink::RendererPreferenceWatcher>
       renderer_preference_watchers_;
+
+  // The SessionStorage namespace that we're assigned to has an ID, and that ID
+  // is passed to us upon creation.  WebKit asks for this ID upon first use and
+  // uses it whenever asking the browser process to allocate new storage areas.
+  SessionStorageNamespaceId session_storage_namespace_id_;
 
   // All the registered observers.
   base::ObserverList<WebViewObserver> observers_;

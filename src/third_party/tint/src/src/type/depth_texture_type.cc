@@ -14,31 +14,23 @@
 
 #include "src/type/depth_texture_type.h"
 
-#include <cassert>
-#include <sstream>
-
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::DepthTexture);
+TINT_INSTANTIATE_TYPEINFO(tint::type::DepthTexture);
 
 namespace tint {
 namespace type {
 namespace {
-
-#ifndef NDEBUG
 
 bool IsValidDepthDimension(TextureDimension dim) {
   return dim == TextureDimension::k2d || dim == TextureDimension::k2dArray ||
          dim == TextureDimension::kCube || dim == TextureDimension::kCubeArray;
 }
 
-#endif  // NDEBUG
-
 }  // namespace
 
 DepthTexture::DepthTexture(TextureDimension dim) : Base(dim) {
-  assert(IsValidDepthDimension(dim));
+  TINT_ASSERT(IsValidDepthDimension(dim));
 }
 
 DepthTexture::DepthTexture(DepthTexture&&) = default;

@@ -7,7 +7,9 @@
 #import <objc/runtime.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <cmath>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -226,6 +228,11 @@ std::map<uint64_t, NativeWidgetNSWindowBridge*>& GetIdToWidgetImplMap() {
   return *id_map;
 }
 
+std::map<NSWindow*, std::u16string>& GetPendingWindowTitleMap() {
+  static base::NoDestructor<std::map<NSWindow*, std::u16string>> map;
+  return *map;
+}
+
 }  // namespace
 
 // static
@@ -313,6 +320,7 @@ NativeWidgetNSWindowBridge::NativeWidgetNSWindowBridge(
 
 NativeWidgetNSWindowBridge::~NativeWidgetNSWindowBridge() {
   display::Screen::GetScreen()->RemoveObserver(this);
+  GetPendingWindowTitleMap().erase(window_.get());
   // The delegate should be cleared already. Note this enforces the precondition
   // that -[NSWindow close] is invoked on the hosted window before the
   // destructor is called.
@@ -751,7 +759,7 @@ void NativeWidgetNSWindowBridge::AcquireCapture() {
   if (!window_visible_)
     return;  // Capture on hidden windows is disallowed.
 
-  mouse_capture_.reset(new CocoaMouseCapture(this));
+  mouse_capture_ = std::make_unique<CocoaMouseCapture>(this);
   host_->OnMouseCaptureActiveChanged(true);
 
   // Initiating global event capture with addGlobalMonitorForEventsMatchingMask:
@@ -789,8 +797,8 @@ bool NativeWidgetNSWindowBridge::RunMoveLoop(const gfx::Vector2d& drag_offset) {
   const gfx::Rect frame = gfx::ScreenRectFromNSRect([window_ frame]);
   const gfx::Point mouse_in_screen(frame.x() + drag_offset.x(),
                                    frame.y() + drag_offset.y());
-  window_move_loop_.reset(new CocoaWindowMoveLoop(
-      this, gfx::ScreenPointToNSPoint(mouse_in_screen)));
+  window_move_loop_ = std::make_unique<CocoaWindowMoveLoop>(
+      this, gfx::ScreenPointToNSPoint(mouse_in_screen));
 
   return window_move_loop_->Run();
 
@@ -1267,9 +1275,30 @@ void NativeWidgetNSWindowBridge::MakeFirstResponder() {
   [window_ makeFirstResponder:bridged_view_];
 }
 
-void NativeWidgetNSWindowBridge::SetWindowTitle(const base::string16& title) {
-  NSString* new_title = base::SysUTF16ToNSString(title);
-  [window_ setTitle:new_title];
+void NativeWidgetNSWindowBridge::SetWindowTitle(const std::u16string& title) {
+  // Delay setting the window title until after any menu tracking is complete.
+  if (NSRunLoop.currentRunLoop.currentMode == NSEventTrackingRunLoopMode) {
+    // Install one run loop trigger to handle all the pending titles.
+    if (GetPendingWindowTitleMap().empty()) {
+      CFRunLoopPerformBlock(
+          [NSRunLoop.currentRunLoop getCFRunLoop], kCFRunLoopDefaultMode, ^{
+            for (const auto& pending_title : GetPendingWindowTitleMap()) {
+              pending_title.first.title =
+                  base::SysUTF16ToNSString(pending_title.second);
+            }
+
+            GetPendingWindowTitleMap().clear();
+          });
+    }
+
+    GetPendingWindowTitleMap()[window_.get()] = title;
+  } else {
+    window_.get().title = base::SysUTF16ToNSString(title);
+
+    // In case there is an unfired run loop trigger, erase any pending title so
+    // that the new title now being set doesn't get smashed.
+    GetPendingWindowTitleMap().erase(window_.get());
+  }
 }
 
 void NativeWidgetNSWindowBridge::ClearTouchBar() {

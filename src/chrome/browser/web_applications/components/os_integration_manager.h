@@ -12,6 +12,7 @@
 #include "base/auto_reset.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece_forward.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
@@ -111,7 +112,15 @@ class OsIntegrationManager {
   // virtual for testing
   virtual void UpdateOsHooks(const AppId& app_id,
                              base::StringPiece old_name,
+                             std::unique_ptr<ShortcutInfo> old_shortcut,
+                             bool file_handlers_need_os_update,
                              const WebApplicationInfo& web_app_info);
+
+  // Proxy calls for AppShortcutManager.
+  // virtual for testing
+  virtual void GetAppExistingShortCutLocation(
+      ShortcutLocationCallback callback,
+      std::unique_ptr<ShortcutInfo> shortcut_info);
 
   // Proxy calls for AppShortcutManager.
   void GetShortcutInfoForApp(
@@ -130,12 +139,29 @@ class OsIntegrationManager {
   void ForceEnableFileHandlingOriginTrial(const AppId& app_id);
   void DisableForceEnabledFileHandlingOriginTrial(const AppId& app_id);
 
+  // Proxy calls for ProtocolHandlerManager.
+  virtual base::Optional<GURL> TranslateProtocolUrl(const AppId& app_id,
+                                                    const GURL& protocol_url);
+
   // Getter for testing FileHandlerManager
   FileHandlerManager& file_handler_manager_for_testing();
+
+  UrlHandlerManager& url_handler_manager_for_testing();
+
+  ProtocolHandlerManager& protocol_handler_manager_for_testing();
 
   static ScopedOsHooksSuppress ScopedSuppressOsHooksForTesting();
 
   virtual TestOsIntegrationManager* AsTestOsIntegrationManager();
+
+  void set_url_handler_manager(
+      std::unique_ptr<UrlHandlerManager> url_handler_manager) {
+    url_handler_manager_ = std::move(url_handler_manager);
+  }
+
+  virtual void UpdateUrlHandlers(
+      const AppId& app_id,
+      base::OnceCallback<void(bool success)> callback);
 
  protected:
   AppShortcutManager* shortcut_manager() { return shortcut_manager_.get(); }
@@ -160,10 +186,7 @@ class OsIntegrationManager {
       std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager) {
     protocol_handler_manager_ = std::move(protocol_handler_manager);
   }
-  void set_url_handler_manager(
-      std::unique_ptr<UrlHandlerManager> url_handler_manager) {
-    url_handler_manager_ = std::move(url_handler_manager);
-  }
+
   virtual void CreateShortcuts(const AppId& app_id,
                                bool add_to_desktop,
                                CreateShortcutsCallback callback);
@@ -182,7 +205,7 @@ class OsIntegrationManager {
       const AppId& app_id,
       const std::vector<WebApplicationShortcutsMenuItemInfo>&
           shortcuts_menu_item_infos,
-      const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps,
+      const ShortcutsMenuIconBitmaps& shortcuts_menu_icon_bitmaps,
       base::OnceCallback<void(bool success)> callback);
   virtual void ReadAllShortcutsMenuIconsAndRegisterShortcutsMenu(
       const AppId& app_id,
@@ -198,19 +221,25 @@ class OsIntegrationManager {
   virtual bool UnregisterShortcutsMenu(const AppId& app_id);
   virtual void UnregisterRunOnOsLogin(const AppId& app_id,
                                       const base::FilePath& profile_path,
-                                      const base::string16& shortcut_title,
+                                      const std::u16string& shortcut_title,
                                       UnregisterRunOnOsLoginCallback callback);
   virtual void DeleteShortcuts(const AppId& app_id,
                                const base::FilePath& shortcuts_data_dir,
                                std::unique_ptr<ShortcutInfo> shortcut_info,
                                DeleteShortcutsCallback callback);
-  virtual void UnregisterFileHandlers(const AppId& app_id);
+  virtual void UnregisterFileHandlers(const AppId& app_id,
+                                      std::unique_ptr<ShortcutInfo> info,
+                                      base::OnceCallback<void()> callback);
   virtual void UnregisterProtocolHandlers(const AppId& app_id);
   virtual void UnregisterUrlHandlers(const AppId& app_id);
   virtual void UnregisterWebAppOsUninstallation(const AppId& app_id);
 
   // Update:
-  virtual void UpdateUrlHandlers(const AppId& app_id);
+  virtual void UpdateShortcuts(const AppId& app_id, base::StringPiece old_name);
+  virtual void UpdateShortcutsMenu(const AppId& app_id,
+                                   const WebApplicationInfo& web_app_info);
+  virtual void UpdateFileHandlers(const AppId& app_id,
+                                  std::unique_ptr<ShortcutInfo> info);
 
   // Utility methods:
   virtual std::unique_ptr<ShortcutInfo> BuildShortcutInfo(const AppId& app_id);

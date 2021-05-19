@@ -16,6 +16,7 @@
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
@@ -57,8 +58,10 @@ FileSystemSigninDialogDelegate::FileSystemSigninDialogDelegate(
   SetHasWindowSizeControls(true);
   SetTitle(IDS_PROFILES_GAIA_SIGNIN_TITLE);
   SetButtons(ui::DIALOG_BUTTON_NONE);
-  // TODO(https://crbug.com/1158490): Add a way to cancel user login.
   set_use_custom_frame(false);
+  SetCancelCallback(
+      base::BindOnce(&FileSystemSigninDialogDelegate::OnCancellation,
+                     weak_factory_.GetWeakPtr()));
 
   AddChildView(web_view_.get());
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -143,6 +146,12 @@ views::View* FileSystemSigninDialogDelegate::GetInitiallyFocusedView() {
   return static_cast<views::View*>(web_view_.get());
 }
 
+void FileSystemSigninDialogDelegate::OnCancellation() {
+  std::move(callback_).Run(
+      GoogleServiceAuthError{GoogleServiceAuthError::State::REQUEST_CANCELED},
+      std::string(), std::string());
+}
+
 void FileSystemSigninDialogDelegate::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   const GURL& url = navigation_handle->GetURL();
@@ -159,11 +168,12 @@ void FileSystemSigninDialogDelegate::DidFinishNavigation(
   }
 
   content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartitionForSite(
+      content::BrowserContext::GetStoragePartitionForUrl(
           web_view_->GetBrowserContext(), GURL(kFileSystemBoxEndpointApi));
   auto url_loader = partition->GetURLLoaderFactoryForBrowserProcess();
-  auto callback = base::BindOnce(
-      &FileSystemSigninDialogDelegate::OnGotOAuthTokens, factory_.GetWeakPtr());
+  auto callback =
+      base::BindOnce(&FileSystemSigninDialogDelegate::OnGotOAuthTokens,
+                     weak_factory_.GetWeakPtr());
 
   // No refresh_token, so need to get both tokens with authorization code.
   token_fetcher_ = std::make_unique<AccessTokenFetcher>(
@@ -174,11 +184,11 @@ void FileSystemSigninDialogDelegate::DidFinishNavigation(
 }
 
 void FileSystemSigninDialogDelegate::OnGotOAuthTokens(
-    bool success,
+    const GoogleServiceAuthError& status,
     const std::string& access_token,
     const std::string& refresh_token) {
   token_fetcher_ = nullptr;
-  std::move(callback_).Run(success, access_token, refresh_token);
+  std::move(callback_).Run(status, access_token, refresh_token);
   GetWidget()->Close();
 }
 

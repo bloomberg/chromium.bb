@@ -27,12 +27,14 @@ group("resources") {
       ":webid_resources",
       "bookmarks:resources",
       "commander:resources",
+      "download_shelf:resources",
       "downloads:resources",
       "feedback_webui:resources",
       "gaia_auth_host:resources",
       "history:resources",
       "memories:resources",
       "new_tab_page:resources",
+      "new_tab_page_third_party:resources",
       "read_later:resources",
       "settings:resources",
       "tab_search:resources",
@@ -47,6 +49,7 @@ group("resources") {
       "chromeos:multidevice_setup_resources",
       "chromeos/accessibility:build",
       "chromeos/emoji_picker:resources",
+      "chromeos/login:resources",
       "chromeos/multidevice_internals:resources",
       "chromeos/network_ui:resources",
       "nearby_internals:resources",
@@ -102,29 +105,30 @@ if (enable_js_type_check) {
         "commander:closure_compile",
         "discards:closure_compile",
         "download_internals:closure_compile",
+        "download_shelf:closure_compile",
         "downloads:closure_compile",
+        "feedback_webui/js:closure_compile",
         "gaia_auth_host:closure_compile",
         "history:closure_compile",
         "inline_login:closure_compile",
+        "internals/user_education:closure_compile",
         "local_ntp:closure_compile",
-        "local_state:closure_compile",
         "management:closure_compile",
         "media_router:closure_compile",
         "memories:closure_compile",
         "nearby_internals:closure_compile",
         "new_tab_page:closure_compile",
+        "new_tab_page_third_party:closure_compile",
         "ntp4:closure_compile",
         "omnibox:closure_compile",
         "quota_internals:closure_compile",
         "read_later:closure_compile",
         "settings:closure_compile",
-        "settings:closure_compile_module",
         "signin:closure_compile",
         "sync_file_system_internals:closure_compile",
         "tab_search:closure_compile",
         "usb_internals:closure_compile",
         "web_app_internals:closure_compile",
-        "welcome:closure_compile",
       ]
     }
     if (is_win || is_android || is_linux || is_chromeos) {
@@ -140,6 +144,9 @@ if (enable_js_type_check) {
         "nearby_share/shared:closure_compile",
         "nearby_share/shared:closure_compile_module",
       ]
+    }
+    if (!is_android && !is_chromeos_ash) {
+      deps += [ "welcome:closure_compile" ]
     }
     if (enable_extensions) {
       deps += [ "extensions:closure_compile" ]
@@ -309,6 +316,8 @@ repack("dev_ui_paks") {
   sources = [
     "$root_gen_dir/chrome/bluetooth_internals_resources.pak",
     "$root_gen_dir/chrome/dev_ui_browser_resources.pak",
+    "$root_gen_dir/chrome/download_internals_resources.pak",
+    "$root_gen_dir/chrome/internals_resources.pak",
     "$root_gen_dir/chrome/invalidations_resources.pak",
     "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/chrome/omnibox_resources.pak",
@@ -316,7 +325,7 @@ repack("dev_ui_paks") {
     "$root_gen_dir/chrome/usb_internals_resources.pak",
     "$root_gen_dir/chrome/webrtc_logs_resources.pak",
     "$root_gen_dir/components/dev_ui_components_resources.pak",
-    "$root_gen_dir/components/sync_driver_resources.pak",
+    "$root_gen_dir/components/sync_driver_sync_internals_resources.pak",
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
     "$root_gen_dir/content/browser/webrtc/resources/webrtc_internals_resources.pak",
     "$root_gen_dir/content/dev_ui_content_resources.pak",
@@ -324,6 +333,8 @@ repack("dev_ui_paks") {
   deps = [
     "//chrome/browser:dev_ui_browser_resources",
     "//chrome/browser/resources/bluetooth_internals:resources",
+    "//chrome/browser/resources/download_internals:resources",
+    "//chrome/browser/resources/internals:resources",
     "//chrome/browser/resources/invalidations:resources",
     "//chrome/browser/resources/media:webrtc_logs_resources",
     "//chrome/browser/resources/net_internals:resources",
@@ -331,7 +342,7 @@ repack("dev_ui_paks") {
     "//chrome/browser/resources/quota_internals:resources",
     "//chrome/browser/resources/usb_internals:resources",
     "//components/resources:dev_ui_components_resources",
-    "//components/sync/driver:resources",
+    "//components/sync/driver/resources",
     "//content:dev_ui_content_resources",
     "//content/browser/resources/media:resources",
     "//content/browser/webrtc/resources",

@@ -88,9 +88,17 @@ static int subtitle_handler(AVCodecContext *avctx, void *frame,
     return ret;
 }
 
+static int audio_video_handler(AVCodecContext *avctx, AVFrame *frame,
+                               int *got_frame, const AVPacket *dummy)
+{
+    int ret = avcodec_receive_frame(avctx, frame);
+    *got_frame = ret >= 0;
+    return ret;
+}
+
 // Ensure we don't loop forever
 const uint32_t maxiteration = 8096;
-const uint64_t maxpixels_per_frame = 4096 * 4096;
+uint64_t maxpixels_per_frame = 4096 * 4096;
 uint64_t maxpixels;
 
 uint64_t maxsamples_per_frame = 256*1024*32;
@@ -133,8 +141,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
 
     switch (c->type) {
-    case AVMEDIA_TYPE_AUDIO   : decode_handler = avcodec_decode_audio4; break;
-    case AVMEDIA_TYPE_VIDEO   : decode_handler = avcodec_decode_video2; break;
+    case AVMEDIA_TYPE_AUDIO   :
+    case AVMEDIA_TYPE_VIDEO   : decode_handler = audio_video_handler  ; break;
     case AVMEDIA_TYPE_SUBTITLE: decode_handler = subtitle_handler     ; break;
     }
     switch (c->id) {
@@ -146,11 +154,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case AV_CODEC_ID_AGM:         maxpixels  /= 1024;  break;
     case AV_CODEC_ID_BINKVIDEO:   maxpixels  /= 32;    break;
     case AV_CODEC_ID_CFHD:        maxpixels  /= 128;   break;
+    case AV_CODEC_ID_COOK:        maxsamples /= 1<<20; break;
     case AV_CODEC_ID_DIRAC:       maxpixels  /= 8192;  break;
     case AV_CODEC_ID_DST:         maxsamples /= 1<<20; break;
     case AV_CODEC_ID_DXV:         maxpixels  /= 32;    break;
     case AV_CODEC_ID_FFWAVESYNTH: maxsamples /= 16384; break;
-    case AV_CODEC_ID_G2M:         maxpixels  /= 64;    break;
+    case AV_CODEC_ID_FLV1:        maxpixels  /= 1024;  break;
+    case AV_CODEC_ID_G2M:         maxpixels  /= 1024;  break;
     case AV_CODEC_ID_GDV:         maxpixels  /= 512;   break;
     case AV_CODEC_ID_GIF:         maxpixels  /= 16;    break;
     case AV_CODEC_ID_HAP:         maxpixels  /= 128;   break;
@@ -158,10 +168,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case AV_CODEC_ID_HNM4_VIDEO:  maxpixels  /= 128;   break;
     case AV_CODEC_ID_IFF_ILBM:    maxpixels  /= 128;   break;
     case AV_CODEC_ID_INDEO4:      maxpixels  /= 128;   break;
+    case AV_CODEC_ID_INTERPLAY_ACM: maxsamples /= 16384;  break;
     case AV_CODEC_ID_LAGARITH:    maxpixels  /= 1024;  break;
     case AV_CODEC_ID_LSCR:        maxpixels  /= 16;    break;
     case AV_CODEC_ID_MOTIONPIXELS:maxpixels  /= 256;   break;
     case AV_CODEC_ID_MP4ALS:      maxsamples /= 65536; break;
+    case AV_CODEC_ID_MSA1:        maxpixels  /= 16384; break;
     case AV_CODEC_ID_MSRLE:       maxpixels  /= 16;    break;
     case AV_CODEC_ID_MSS2:        maxpixels  /= 16384; break;
     case AV_CODEC_ID_MSZH:        maxpixels  /= 128;   break;
@@ -176,9 +188,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case AV_CODEC_ID_SMACKVIDEO:  maxpixels  /= 64;    break;
     case AV_CODEC_ID_SNOW:        maxpixels  /= 128;   break;
     case AV_CODEC_ID_TGV:         maxpixels  /= 32;    break;
+    case AV_CODEC_ID_THEORA:      maxpixels  /= 1024;  break;
     case AV_CODEC_ID_TRUEMOTION2: maxpixels  /= 1024;  break;
+    case AV_CODEC_ID_VC1IMAGE:    maxpixels  /= 8192;  break;
+    case AV_CODEC_ID_VMNC:        maxpixels  /= 8192;  break;
     case AV_CODEC_ID_VP7:         maxpixels  /= 256;   break;
     case AV_CODEC_ID_VP9:         maxpixels  /= 4096;  break;
+    case AV_CODEC_ID_WAVPACK:     maxsamples /= 1024;  break;
     case AV_CODEC_ID_WMV3IMAGE:   maxpixels  /= 8192;  break;
     case AV_CODEC_ID_WS_VQA:      maxpixels  /= 16384; break;
     case AV_CODEC_ID_WMALOSSLESS: maxsamples /= 1024;  break;
@@ -186,6 +202,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
 
     maxsamples_per_frame = FFMIN(maxsamples_per_frame, maxsamples);
+    maxpixels_per_frame  = FFMIN(maxpixels_per_frame , maxpixels);
 
     AVCodecContext* ctx = avcodec_alloc_context3(c);
     AVCodecContext* parser_avctx = avcodec_alloc_context3(NULL);
@@ -194,7 +211,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     if (ctx->max_pixels == 0 || ctx->max_pixels > maxpixels_per_frame)
         ctx->max_pixels = maxpixels_per_frame; //To reduce false positive OOM and hangs
-    ctx->refcounted_frames = 1; //To reduce false positive timeouts and focus testing on the refcounted API
 
     ctx->max_samples = maxsamples_per_frame;
 
@@ -306,6 +322,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         last = data;
 
         while (parsepkt.size > 0) {
+            int decode_more;
 
             if (parser) {
                 av_init_packet(&avpkt);
@@ -338,8 +355,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
               avcodec_flush_buffers(ctx);
           flushpattern = (flushpattern >> 3) + (flushpattern << 61);
 
+          if (ctx->codec_type != AVMEDIA_TYPE_SUBTITLE) {
+              int ret = avcodec_send_packet(ctx, &avpkt);
+              decode_more = ret >= 0;
+              if(!decode_more) {
+                    ec_pixels += (ctx->width + 32LL) * (ctx->height + 32LL);
+                    if (it > 20 || ec_pixels > 4 * ctx->max_pixels)
+                        ctx->error_concealment = 0;
+                    if (ec_pixels > maxpixels)
+                        goto maximums_reached;
+              }
+          } else
+              decode_more = 1;
+
           // Iterate through all data
-          while (avpkt.size > 0 && it++ < maxiteration) {
+          while (decode_more && it++ < maxiteration) {
             av_frame_unref(frame);
             int ret = decode_handler(ctx, frame, &got_frame, &avpkt);
 
@@ -360,10 +390,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
             if (ret <= 0 || ret > avpkt.size)
                break;
-            if (ctx->codec_type != AVMEDIA_TYPE_AUDIO)
-                ret = avpkt.size;
-            avpkt.data += ret;
-            avpkt.size -= ret;
+
+            if (ctx->codec_type == AVMEDIA_TYPE_SUBTITLE) {
+                avpkt.data += ret;
+                avpkt.size -= ret;
+                decode_more = avpkt.size > 0;
+            } else
+                decode_more = ret >= 0;
           }
           av_packet_unref(&avpkt);
         }
@@ -372,6 +405,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 maximums_reached:
 
     av_packet_unref(&avpkt);
+
+    if (ctx->codec_type != AVMEDIA_TYPE_SUBTITLE)
+        avcodec_send_packet(ctx, NULL);
 
     do {
         got_frame = 0;

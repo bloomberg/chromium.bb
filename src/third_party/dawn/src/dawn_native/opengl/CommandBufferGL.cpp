@@ -14,6 +14,7 @@
 
 #include "dawn_native/opengl/CommandBufferGL.h"
 
+#include "common/VertexFormatUtils.h"
 #include "dawn_native/BindGroup.h"
 #include "dawn_native/BindGroupTracker.h"
 #include "dawn_native/CommandEncoder.h"
@@ -49,57 +50,59 @@ namespace dawn_native { namespace opengl {
 
         GLenum VertexFormatType(wgpu::VertexFormat format) {
             switch (format) {
-                case wgpu::VertexFormat::UChar2:
-                case wgpu::VertexFormat::UChar4:
-                case wgpu::VertexFormat::UChar2Norm:
-                case wgpu::VertexFormat::UChar4Norm:
+                case wgpu::VertexFormat::Uint8x2:
+                case wgpu::VertexFormat::Uint8x4:
+                case wgpu::VertexFormat::Unorm8x2:
+                case wgpu::VertexFormat::Unorm8x4:
                     return GL_UNSIGNED_BYTE;
-                case wgpu::VertexFormat::Char2:
-                case wgpu::VertexFormat::Char4:
-                case wgpu::VertexFormat::Char2Norm:
-                case wgpu::VertexFormat::Char4Norm:
+                case wgpu::VertexFormat::Sint8x2:
+                case wgpu::VertexFormat::Sint8x4:
+                case wgpu::VertexFormat::Snorm8x2:
+                case wgpu::VertexFormat::Snorm8x4:
                     return GL_BYTE;
-                case wgpu::VertexFormat::UShort2:
-                case wgpu::VertexFormat::UShort4:
-                case wgpu::VertexFormat::UShort2Norm:
-                case wgpu::VertexFormat::UShort4Norm:
+                case wgpu::VertexFormat::Uint16x2:
+                case wgpu::VertexFormat::Uint16x4:
+                case wgpu::VertexFormat::Unorm16x2:
+                case wgpu::VertexFormat::Unorm16x4:
                     return GL_UNSIGNED_SHORT;
-                case wgpu::VertexFormat::Short2:
-                case wgpu::VertexFormat::Short4:
-                case wgpu::VertexFormat::Short2Norm:
-                case wgpu::VertexFormat::Short4Norm:
+                case wgpu::VertexFormat::Sint16x2:
+                case wgpu::VertexFormat::Sint16x4:
+                case wgpu::VertexFormat::Snorm16x2:
+                case wgpu::VertexFormat::Snorm16x4:
                     return GL_SHORT;
-                case wgpu::VertexFormat::Half2:
-                case wgpu::VertexFormat::Half4:
+                case wgpu::VertexFormat::Float16x2:
+                case wgpu::VertexFormat::Float16x4:
                     return GL_HALF_FLOAT;
-                case wgpu::VertexFormat::Float:
-                case wgpu::VertexFormat::Float2:
-                case wgpu::VertexFormat::Float3:
-                case wgpu::VertexFormat::Float4:
+                case wgpu::VertexFormat::Float32:
+                case wgpu::VertexFormat::Float32x2:
+                case wgpu::VertexFormat::Float32x3:
+                case wgpu::VertexFormat::Float32x4:
                     return GL_FLOAT;
-                case wgpu::VertexFormat::UInt:
-                case wgpu::VertexFormat::UInt2:
-                case wgpu::VertexFormat::UInt3:
-                case wgpu::VertexFormat::UInt4:
+                case wgpu::VertexFormat::Uint32:
+                case wgpu::VertexFormat::Uint32x2:
+                case wgpu::VertexFormat::Uint32x3:
+                case wgpu::VertexFormat::Uint32x4:
                     return GL_UNSIGNED_INT;
-                case wgpu::VertexFormat::Int:
-                case wgpu::VertexFormat::Int2:
-                case wgpu::VertexFormat::Int3:
-                case wgpu::VertexFormat::Int4:
+                case wgpu::VertexFormat::Sint32:
+                case wgpu::VertexFormat::Sint32x2:
+                case wgpu::VertexFormat::Sint32x3:
+                case wgpu::VertexFormat::Sint32x4:
                     return GL_INT;
+                default:
+                    UNREACHABLE();
             }
         }
 
         GLboolean VertexFormatIsNormalized(wgpu::VertexFormat format) {
             switch (format) {
-                case wgpu::VertexFormat::UChar2Norm:
-                case wgpu::VertexFormat::UChar4Norm:
-                case wgpu::VertexFormat::Char2Norm:
-                case wgpu::VertexFormat::Char4Norm:
-                case wgpu::VertexFormat::UShort2Norm:
-                case wgpu::VertexFormat::UShort4Norm:
-                case wgpu::VertexFormat::Short2Norm:
-                case wgpu::VertexFormat::Short4Norm:
+                case wgpu::VertexFormat::Unorm8x2:
+                case wgpu::VertexFormat::Unorm8x4:
+                case wgpu::VertexFormat::Snorm8x2:
+                case wgpu::VertexFormat::Snorm8x4:
+                case wgpu::VertexFormat::Unorm16x2:
+                case wgpu::VertexFormat::Unorm16x4:
+                case wgpu::VertexFormat::Snorm16x2:
+                case wgpu::VertexFormat::Snorm16x4:
                     return GL_TRUE;
                 default:
                     return GL_FALSE;
@@ -108,22 +111,22 @@ namespace dawn_native { namespace opengl {
 
         bool VertexFormatIsInt(wgpu::VertexFormat format) {
             switch (format) {
-                case wgpu::VertexFormat::UChar2:
-                case wgpu::VertexFormat::UChar4:
-                case wgpu::VertexFormat::Char2:
-                case wgpu::VertexFormat::Char4:
-                case wgpu::VertexFormat::UShort2:
-                case wgpu::VertexFormat::UShort4:
-                case wgpu::VertexFormat::Short2:
-                case wgpu::VertexFormat::Short4:
-                case wgpu::VertexFormat::UInt:
-                case wgpu::VertexFormat::UInt2:
-                case wgpu::VertexFormat::UInt3:
-                case wgpu::VertexFormat::UInt4:
-                case wgpu::VertexFormat::Int:
-                case wgpu::VertexFormat::Int2:
-                case wgpu::VertexFormat::Int3:
-                case wgpu::VertexFormat::Int4:
+                case wgpu::VertexFormat::Uint8x2:
+                case wgpu::VertexFormat::Uint8x4:
+                case wgpu::VertexFormat::Sint8x2:
+                case wgpu::VertexFormat::Sint8x4:
+                case wgpu::VertexFormat::Uint16x2:
+                case wgpu::VertexFormat::Uint16x4:
+                case wgpu::VertexFormat::Sint16x2:
+                case wgpu::VertexFormat::Sint16x4:
+                case wgpu::VertexFormat::Uint32:
+                case wgpu::VertexFormat::Uint32x2:
+                case wgpu::VertexFormat::Uint32x3:
+                case wgpu::VertexFormat::Uint32x4:
+                case wgpu::VertexFormat::Sint32:
+                case wgpu::VertexFormat::Sint32x2:
+                case wgpu::VertexFormat::Sint32x3:
+                case wgpu::VertexFormat::Sint32x4:
                     return true;
                 default:
                     return false;
@@ -175,7 +178,7 @@ namespace dawn_native { namespace opengl {
                         uint64_t offset = mVertexBufferOffsets[slot];
 
                         const VertexBufferInfo& vertexBuffer = mLastPipeline->GetVertexBuffer(slot);
-                        uint32_t components = VertexFormatNumComponents(attribute.format);
+                        uint32_t components = dawn::VertexFormatNumComponents(attribute.format);
                         GLenum formatType = VertexFormatType(attribute.format);
 
                         GLboolean normalized = VertexFormatIsNormalized(attribute.format);
@@ -469,7 +472,7 @@ namespace dawn_native { namespace opengl {
                 blitMask |= GL_STENCIL_BUFFER_BIT;
             }
             // Iterate over all layers, doing a single blit for each.
-            for (uint32_t layer = 0; layer < copySize.depth; ++layer) {
+            for (uint32_t layer = 0; layer < copySize.depthOrArrayLayers; ++layer) {
                 // Bind all required aspects for this layer.
                 for (Aspect aspect : IterateEnumMask(src.aspect)) {
                     GLenum glAttachment;
@@ -649,7 +652,8 @@ namespace dawn_native { namespace opengl {
                             if (texture->GetArrayLayers() > 1) {
                                 // TODO(jiawei.shao@intel.com): do a single copy when the data is
                                 // correctly packed.
-                                for (size_t copyZ = 0; copyZ < copyExtent.depth; ++copyZ) {
+                                for (size_t copyZ = 0; copyZ < copyExtent.depthOrArrayLayers;
+                                     ++copyZ) {
                                     uintptr_t offsetPerImage = static_cast<uintptr_t>(
                                         src.offset + copyZ * src.bytesPerRow * src.rowsPerImage);
                                     uint32_t dstOriginY = dst.origin.y;
@@ -699,13 +703,15 @@ namespace dawn_native { namespace opengl {
 
                             uint64_t copyDataSize = (copySize.width / blockInfo.width) *
                                                     (copySize.height / blockInfo.height) *
-                                                    blockInfo.byteSize * copySize.depth;
+                                                    blockInfo.byteSize *
+                                                    copySize.depthOrArrayLayers;
 
                             if (texture->GetArrayLayers() > 1) {
                                 gl.CompressedTexSubImage3D(
                                     target, dst.mipLevel, dst.origin.x, dst.origin.y, dst.origin.z,
-                                    copyExtent.width, copyExtent.height, copyExtent.depth,
-                                    format.internalFormat, copyDataSize,
+                                    copyExtent.width, copyExtent.height,
+                                    copyExtent.depthOrArrayLayers, format.internalFormat,
+                                    copyDataSize,
                                     reinterpret_cast<void*>(static_cast<uintptr_t>(src.offset)));
                             } else {
                                 gl.CompressedTexSubImage2D(
@@ -731,8 +737,8 @@ namespace dawn_native { namespace opengl {
                                 if (texture->GetArrayLayers() > 1) {
                                     gl.TexSubImage3D(target, dst.mipLevel, dst.origin.x,
                                                      dst.origin.y, dst.origin.z, copySize.width,
-                                                     copySize.height, copySize.depth, format.format,
-                                                     format.type,
+                                                     copySize.height, copySize.depthOrArrayLayers,
+                                                     format.format, format.type,
                                                      reinterpret_cast<void*>(
                                                          static_cast<uintptr_t>(src.offset)));
                                 } else {
@@ -836,7 +842,7 @@ namespace dawn_native { namespace opengl {
                             }
 
                             const uint64_t bytesPerImage = dst.bytesPerRow * dst.rowsPerImage;
-                            for (uint32_t layer = 0; layer < copySize.depth; ++layer) {
+                            for (uint32_t layer = 0; layer < copySize.depthOrArrayLayers; ++layer) {
                                 gl.FramebufferTextureLayer(GL_READ_FRAMEBUFFER, glAttachment,
                                                            texture->GetHandle(), src.mipLevel,
                                                            src.origin.z + layer);
@@ -889,7 +895,8 @@ namespace dawn_native { namespace opengl {
                                             src.mipLevel, src.origin.x, src.origin.y, src.origin.z,
                                             dstTexture->GetHandle(), dstTexture->GetGLTarget(),
                                             dst.mipLevel, dst.origin.x, dst.origin.y, dst.origin.z,
-                                            copySize.width, copySize.height, copy->copySize.depth);
+                                            copySize.width, copySize.height,
+                                            copy->copySize.depthOrArrayLayers);
                     } else {
                         CopyTextureToTextureWithBlit(gl, src, dst, copySize);
                     }

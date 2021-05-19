@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTION_VIEW_CONTROLLER_H_
 #define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTION_VIEW_CONTROLLER_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "ui/gfx/image/image.h"
 
 namespace content {
@@ -55,8 +56,8 @@ class ToolbarActionViewController {
 
     // The action was invoked by the user activiating (via mouse or keyboard)
     // the entry in the legacy overflow (3-dot) menu.
-    // TODO(devlin): Remove this entry when the extensions menu fully launches.
-    kLegacyOverflowedEntry = 3,
+    // Removed 2021/04.
+    // kLegacyOverflowedEntry = 3,
 
     // The action was invoked programmatically via an API.
     kApi = 4,
@@ -79,23 +80,20 @@ class ToolbarActionViewController {
 
   // Returns the name of the action, which can be separate from the accessible
   // name or name for the tooltip.
-  virtual base::string16 GetActionName() const = 0;
+  virtual std::u16string GetActionName() const = 0;
 
   // Returns the accessible name to use for the given |web_contents|.
   // May be passed null, or a |web_contents| that returns -1 for
   // |sessions::SessionTabHelper::IdForTab(..)|.
-  virtual base::string16 GetAccessibleName(content::WebContents* web_contents)
-      const = 0;
+  virtual std::u16string GetAccessibleName(
+      content::WebContents* web_contents) const = 0;
 
   // Returns the tooltip to use for the given |web_contents|.
-  virtual base::string16 GetTooltip(content::WebContents* web_contents)
-      const = 0;
+  virtual std::u16string GetTooltip(
+      content::WebContents* web_contents) const = 0;
 
   // Returns true if the action should be enabled on the given |web_contents|.
   virtual bool IsEnabled(content::WebContents* web_contents) const = 0;
-
-  // Returns true if the action has a popup for the given |web_contents|.
-  virtual bool HasPopup(content::WebContents* web_contents) const = 0;
 
   // Returns whether there is currently a popup visible.
   virtual bool IsShowingPopup() const = 0;

@@ -5,6 +5,8 @@
 #include "cast/streaming/rpc_broker.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "cast/streaming/remoting.pb.h"
@@ -17,13 +19,12 @@ using testing::Return;
 
 namespace openscreen {
 namespace cast {
-
 namespace {
 
 class FakeMessager {
  public:
-  void OnReceivedRpc(const RpcMessage& message) {
-    received_rpc_ = message;
+  void OnReceivedRpc(std::unique_ptr<RpcMessage> message) {
+    received_rpc_ = std::move(message);
     received_count_++;
   }
 
@@ -33,7 +34,7 @@ class FakeMessager {
   }
 
   int received_count() const { return received_count_; }
-  const RpcMessage& received_rpc() const { return received_rpc_; }
+  const RpcMessage& received_rpc() const { return *received_rpc_; }
 
   int sent_count() const { return sent_count_; }
   const RpcMessage& sent_rpc() const { return sent_rpc_; }
@@ -42,7 +43,7 @@ class FakeMessager {
   RpcBroker::Handle handle() { return handle_; }
 
  private:
-  RpcMessage received_rpc_;
+  std::unique_ptr<RpcMessage> received_rpc_;
   int received_count_ = 0;
 
   RpcMessage sent_rpc_;
@@ -67,9 +68,16 @@ class RpcBrokerTest : public testing::Test {
     const auto handle = rpc_broker_->GetUniqueHandle();
     fake_messager_->set_handle(handle);
     rpc_broker_->RegisterMessageReceiverCallback(
-        handle, [p = fake_messager_.get()](const RpcMessage& message) {
-          p->OnReceivedRpc(message);
+        handle,
+        [p = fake_messager_.get()](std::unique_ptr<RpcMessage> message) {
+          p->OnReceivedRpc(std::move(message));
         });
+  }
+
+  void ProcessMessage(const RpcMessage& rpc) {
+    std::vector<uint8_t> message(rpc.ByteSizeLong());
+    rpc.SerializeToArray(message.data(), message.size());
+    rpc_broker_->ProcessMessageFromRemote(message.data(), message.size());
   }
 
   std::unique_ptr<FakeMessager> fake_messager_;
@@ -79,14 +87,14 @@ class RpcBrokerTest : public testing::Test {
 TEST_F(RpcBrokerTest, TestProcessMessageFromRemoteRegistered) {
   RpcMessage rpc;
   rpc.set_handle(fake_messager_->handle());
-  rpc_broker_->ProcessMessageFromRemote(rpc);
+  ProcessMessage(rpc);
   ASSERT_EQ(1, fake_messager_->received_count());
 }
 
 TEST_F(RpcBrokerTest, TestProcessMessageFromRemoteUnregistered) {
   RpcMessage rpc;
   rpc_broker_->UnregisterMessageReceiverCallback(fake_messager_->handle());
-  rpc_broker_->ProcessMessageFromRemote(rpc);
+  ProcessMessage(rpc);
   ASSERT_EQ(0, fake_messager_->received_count());
 }
 
@@ -119,7 +127,7 @@ TEST_F(RpcBrokerTest, ProcessMessageWithRegisteredHandle) {
   sent_rpc.set_handle(fake_messager_->handle());
   sent_rpc.set_proc(RpcMessage::RPC_R_SETVOLUME);
   sent_rpc.set_double_value(3.4);
-  rpc_broker_->ProcessMessageFromRemote(sent_rpc);
+  ProcessMessage(sent_rpc);
 
   // Checks if received message is identical to the one sent earlier.
   ASSERT_EQ(1, fake_messager_->received_count());
@@ -136,7 +144,7 @@ TEST_F(RpcBrokerTest, ProcessMessageWithUnregisteredHandle) {
   sent_rpc.set_handle(different_handle);
   sent_rpc.set_proc(RpcMessage::RPC_R_SETVOLUME);
   sent_rpc.set_double_value(4.5);
-  rpc_broker_->ProcessMessageFromRemote(sent_rpc);
+  ProcessMessage(sent_rpc);
 
   // We shouldn't have gotten the message since the handle is different.
   ASSERT_EQ(0, fake_messager_->received_count());

@@ -40,6 +40,13 @@
 namespace
 {
 constexpr VkFormatFeatureFlags kInvalidFormatFeatureFlags = static_cast<VkFormatFeatureFlags>(-1);
+
+#if defined(ANGLE_EXPOSE_NON_CONFORMANT_EXTENSIONS_AND_VERSIONS)
+constexpr bool kExposeNonConformantExtensionsAndVersions = true;
+#else
+constexpr bool kExposeNonConformantExtensionsAndVersions = false;
+#endif
+
 }  // anonymous namespace
 
 namespace rx
@@ -164,6 +171,23 @@ constexpr const char *kSkippedMessages[] = {
     // http://anglebug.com/5331
     "VUID-VkSubpassDescriptionDepthStencilResolve-depthResolveMode-parameter",
     "VUID-VkSubpassDescriptionDepthStencilResolve-stencilResolveMode-parameter",
+    // https://crbug.com/1183542
+    "VUID-vkCmdBindDescriptorSets-pDescriptorSets-01979",
+    // https://issuetracker.google.com/175584609
+    "VUID-vkCmdDraw-None-04584",
+    "VUID-vkCmdDrawIndexed-None-04584",
+    "VUID-vkCmdDrawIndirect-None-04584",
+    "VUID-vkCmdDrawIndirectCount-None-04584",
+    "VUID-vkCmdDrawIndexedIndirect-None-04584",
+    "VUID-vkCmdDrawIndexedIndirectCount-None-04584",
+    // http://anglebug.com/5821
+    "VUID-vkCmdDraw-None-02698",
+    "VUID-vkCmdDrawIndexed-None-02698",
+    "VUID-vkCmdDrawIndirect-None-02698",
+    "VUID-vkCmdDrawIndirectCount-None-02698",
+    "VUID-vkCmdDrawIndexedIndirect-None-02698",
+    "VUID-vkCmdDrawIndexedIndirectCount-None-02698",
+    "VUID-vkCmdDispatch-None-02698",
 };
 
 // Suppress validation errors that are known
@@ -483,10 +507,23 @@ void ComputePipelineCacheVkChunkKey(VkPhysicalDeviceProperties physicalDevicePro
 
 angle::Result CompressAndStorePipelineCacheVk(VkPhysicalDeviceProperties physicalDeviceProperties,
                                               DisplayVk *displayVk,
+                                              ContextVk *contextVk,
                                               angle::MemoryBuffer *pipelineCacheData,
                                               bool *success)
 {
-    // Compress the whole pipelineCache.
+    // There is a limitation in android, we can only store cache data less than 64kb in blob cache.
+    // So there is no use to handle big pipeline cache when android will reject it finally.
+    constexpr size_t kMaxTotalSize = 64 * 1024;
+
+    if (pipelineCacheData->size() >= kMaxTotalSize)
+    {
+        // TODO: handle the big pipeline cache. http://anglebug.com/4722
+        ANGLE_PERF_WARNING(contextVk->getDebug(), GL_DEBUG_SEVERITY_LOW,
+                           "Skip syncing pipeline cache data when it's larger than 64kb.");
+        return angle::Result::Continue;
+    }
+
+    // To make it possible to store more pipeline cache data, compress the whole pipelineCache.
     angle::MemoryBuffer compressedData;
     ANGLE_VK_CHECK(displayVk, egl::CompressBlobCacheData(pipelineCacheData, &compressedData),
                    VK_ERROR_INITIALIZATION_FAILED);
@@ -550,6 +587,7 @@ angle::Result GetAndDecompressPipelineCacheVk(VkPhysicalDeviceProperties physica
                                         &keySize) ||
         keyData.size() < kBlobHeaderSize)
     {
+        // Nothing in the cache.
         return angle::Result::Continue;
     }
 
@@ -574,6 +612,7 @@ angle::Result GetAndDecompressPipelineCacheVk(VkPhysicalDeviceProperties physica
             keyData.size() < kBlobHeaderSize)
         {
             // Can't find every part of the cache data.
+            WARN() << "Failed to get pipeline cache chunk " << chunkIndex << " of " << numChunks;
             return angle::Result::Continue;
         }
 
@@ -583,6 +622,10 @@ angle::Result GetAndDecompressPipelineCacheVk(VkPhysicalDeviceProperties physica
         if (checkNumber != numChunks || compressedData.size() < (compressedSize + chunkSize))
         {
             // Validate the number value and enough space to store.
+            WARN() << "Pipeline cache chunk header corrupted: checkNumber = " << checkNumber
+                   << ", numChunks = " << numChunks
+                   << ", compressedData.size() = " << compressedData.size()
+                   << ", (compressedSize + chunkSize) = " << (compressedSize + chunkSize);
             return angle::Result::Continue;
         }
         memcpy(compressedData.data() + compressedSize, keyData.data() + kBlobHeaderSize, chunkSize);
@@ -625,7 +668,6 @@ RendererVk::RendererVk()
       mPipelineCacheDirty(false),
       mPipelineCacheInitialized(false),
       mCommandProcessor(this),
-      mGlslangInitialized(false),
       mSupportedVulkanPipelineStageMask(0)
 {
     VkFormatProperties invalid = {0, 0, kInvalidFormatFeatureFlags};
@@ -695,11 +737,7 @@ void RendererVk::onDestroy(vk::Context *context)
 
     mAllocator.destroy();
 
-    if (mGlslangInitialized)
-    {
-        GlslangRelease();
-        mGlslangInitialized = false;
-    }
+    sh::FinalizeGlslang();
 
     if (mDevice)
     {
@@ -1062,10 +1100,9 @@ angle::Result RendererVk::initialize(DisplayVk *displayVk,
     // Store the physical device memory properties so we can find the right memory pools.
     mMemoryProperties.init(mPhysicalDevice);
 
-    if (!mGlslangInitialized)
     {
-        GlslangInitialize();
-        mGlslangInitialized = true;
+        ANGLE_TRACE_EVENT0("gpu.angle,startup", "GlslangWarmup");
+        sh::InitializeGlslang();
     }
 
     // Initialize the format table.
@@ -1925,7 +1962,8 @@ gl::Version RendererVk::getMaxSupportedESVersion() const
     // either none or IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS atomic counter buffers.  So if
     // Vulkan doesn't support at least that many storage buffers in compute, we don't support 3.1.
     const uint32_t kMinimumStorageBuffersForES31 =
-        gl::limits::kMinimumComputeStorageBuffers + gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS;
+        gl::limits::kMinimumComputeStorageBuffers +
+        gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS;
     if (mPhysicalDeviceProperties.limits.maxPerStageDescriptorStorageBuffers <
         kMinimumStorageBuffersForES31)
     {
@@ -2092,6 +2130,13 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
     ANGLE_FEATURE_CONDITION(
         &mFeatures, supportsIncrementalPresent,
         ExtensionFound(VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME, deviceExtensionNames));
+
+    // The Vulkan specification for the VK_KHR_incremental_present extension does not address
+    // rotation.  In Android, this extension is implemented on top of the same platform code as
+    // eglSwapBuffersWithDamageKHR(), which code assumes that it should rotate each rectangle.  To
+    // avoid double-rotating damage rectangles on Android, we must avoid pre-rotating
+    // application-provided rectangles.   See: https://issuetracker.google.com/issues/181796746
+    ANGLE_FEATURE_CONDITION(&mFeatures, disablePreRotateIncrementalPresentRectangles, IsAndroid());
 
 #if defined(ANGLE_PLATFORM_ANDROID)
     ANGLE_FEATURE_CONDITION(
@@ -2310,6 +2355,17 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
     // Negative viewports are exposed in the Maintenance1 extension and in core Vulkan 1.1+.
     ANGLE_FEATURE_CONDITION(&mFeatures, supportsNegativeViewport, supportsNegativeViewport);
 
+    // Whether non-conformant configurations and extensions should be exposed.
+    ANGLE_FEATURE_CONDITION(&mFeatures, exposeNonConformantExtensionsAndVersions,
+                            kExposeNonConformantExtensionsAndVersions);
+
+    // The EGL_EXT_buffer_age implementation causes
+    // android.graphics.cts.BitmapTest#testDrawingHardwareBitmapNotLeaking to fail on Cuttlefish
+    // with SwANGLE. Needs investigation whether this is a race condition which could affect other
+    // Vulkan drivers, or if it's a SwiftShader bug.
+    // http://anglebug.com/3529
+    ANGLE_FEATURE_CONDITION(&mFeatures, enableBufferAge, !isSwiftShader);
+
     angle::PlatformMethods *platform = ANGLEPlatformCurrent();
     platform->overrideFeaturesVk(platform, &mFeatures);
 
@@ -2397,7 +2453,7 @@ angle::Result RendererVk::getPipelineCacheSize(DisplayVk *displayVk, size_t *pip
     return angle::Result::Continue;
 }
 
-angle::Result RendererVk::syncPipelineCacheVk(DisplayVk *displayVk)
+angle::Result RendererVk::syncPipelineCacheVk(DisplayVk *displayVk, ContextVk *contextVk)
 {
     // TODO: Synchronize access to the pipeline/blob caches?
     ASSERT(mPipelineCache.valid());
@@ -2464,7 +2520,7 @@ angle::Result RendererVk::syncPipelineCacheVk(DisplayVk *displayVk)
     }
 
     bool success = false;
-    ANGLE_TRY(CompressAndStorePipelineCacheVk(mPhysicalDeviceProperties, displayVk,
+    ANGLE_TRY(CompressAndStorePipelineCacheVk(mPhysicalDeviceProperties, displayVk, contextVk,
                                               pipelineCacheData, &success));
 
     if (success)

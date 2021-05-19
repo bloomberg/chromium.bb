@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
+#import "ios/chrome/browser/ui/authentication/views/views_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -18,7 +19,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service_constants.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -65,7 +66,7 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::PrimarySignInButton()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kIdentityPickerViewIdentifier)]
+                                          kIdentityButtonControlIdentifier)]
       performAction:grey_tap()];
   [self selectIdentityWithEmail:fakeIdentity.userEmail];
   if (!enableSync) {

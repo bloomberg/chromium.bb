@@ -30,6 +30,7 @@
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/test/error_test_util.h"
 #import "ios/web/public/test/fakes/async_web_state_policy_decider.h"
+#import "ios/web/public/test/fakes/fake_web_client.h"
 #include "ios/web/public/test/fakes/fake_web_state_observer.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -781,6 +782,7 @@ class WebStateObserverTest : public WebIntTest {
 
   void SetUp() override {
     WebIntTest::SetUp();
+
     decider_ = std::make_unique<StrictMock<PolicyDeciderMock>>(web_state());
     scoped_observer_.Add(web_state());
 

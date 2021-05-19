@@ -82,6 +82,11 @@ typedef struct AV1TplRowMultiThreadInfo {
 #define MAX_TPL_EXTEND (MAX_LAG_BUFFERS - MAX_GF_INTERVAL)
 #define TPL_DEP_COST_SCALE_LOG2 4
 
+typedef struct TplTxfmStats {
+  double abs_coeff_sum[256];  // Assume we are using 16x16 transform block
+  int txfm_block_count;
+} TplTxfmStats;
+
 typedef struct TplDepStats {
   int64_t intra_cost;
   int64_t inter_cost;
@@ -236,8 +241,9 @@ void av1_tpl_rdmult_setup(struct AV1_COMP *cpi);
 void av1_tpl_rdmult_setup_sb(struct AV1_COMP *cpi, MACROBLOCK *const x,
                              BLOCK_SIZE sb_size, int mi_row, int mi_col);
 
-void av1_mc_flow_dispenser_row(struct AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
-                               BLOCK_SIZE bsize, TX_SIZE tx_size);
+void av1_mc_flow_dispenser_row(struct AV1_COMP *cpi,
+                               TplTxfmStats *tpl_txfm_stats, MACROBLOCK *x,
+                               int mi_row, BLOCK_SIZE bsize, TX_SIZE tx_size);
 
 /*!\brief  Compute the entropy of an exponential probability distribution
  * function (pdf) subjected to uniform quantization.

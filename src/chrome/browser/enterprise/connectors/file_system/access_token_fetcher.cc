@@ -21,6 +21,7 @@ constexpr char kAccessTokenPrefPathTemplate[] =
       "enterprise_connectors.file_system.%s.access_token";
 constexpr char kRefreshTokenPrefPathTemplate[] =
       "enterprise_connectors.file_system.%s.refresh_token";
+constexpr char kBoxProviderName[] = "box";
 
 // Traffic annotation strings must be fully defined at compile time.  They
 // can't be dynamically built at runtime based on the |service_provider|.
@@ -28,7 +29,7 @@ constexpr char kRefreshTokenPrefPathTemplate[] =
 // appropriate annotation for each.
 net::NetworkTrafficAnnotationTag GetAnnotation(
     const std::string& service_provider) {
-  if (service_provider == "box") {
+  if (service_provider == kBoxProviderName) {
     return net::DefineNetworkTrafficAnnotation("box_access_token_fetcher",
                                                R"(
         semantics {
@@ -103,7 +104,8 @@ net::NetworkTrafficAnnotationTag AccessTokenFetcher::GetTrafficAnnotationTag()
 
 void AccessTokenFetcher::OnGetTokenSuccess(
     const TokenResponse& token_response) {
-  std::move(callback_).Run(true, token_response.access_token,
+  std::move(callback_).Run(GoogleServiceAuthError::AuthErrorNone(),
+                           token_response.access_token,
                            token_response.refresh_token);
 }
 
@@ -111,7 +113,7 @@ void AccessTokenFetcher::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   // TODO(https://crbug.com/1159179): pop a dialog about authentication failure?
   DLOG(ERROR) << "[AccessTokenFetcher] Failed: " << error.error_message();
-  std::move(callback_).Run(false, std::string(), std::string());
+  std::move(callback_).Run(error, std::string(), std::string());
 }
 
 void RegisterFileSystemPrefsForServiceProvider(
@@ -124,33 +126,56 @@ void RegisterFileSystemPrefsForServiceProvider(
       base::StringPrintf(kRefreshTokenPrefPathTemplate,
                          service_provider.c_str()),
       std::string());
+  // Currently need this caching only for Box, depending on what other 3P APIs
+  // look like we may want to do this more generally.
+  if (service_provider == kBoxProviderName) {
+    registry->RegisterStringPref(kFileSystemUploadFolderIdPref, std::string());
+  }
+}
 
-  // TODO(1157641) store folder_id in profile pref to handle indexing latency.
+bool SetFileSystemToken(PrefService* prefs,
+                        const std::string& service_provider,
+                        const char token_pref_path_template[],
+                        const std::string& token) {
+  std::string enc_token;
+  if (!OSCrypt::EncryptString(token, &enc_token)) {
+    return false;
+  }
+
+  std::string b64_enc_token;
+  base::Base64Encode(enc_token, &b64_enc_token);
+  prefs->SetString(
+      base::StringPrintf(token_pref_path_template, service_provider.c_str()),
+      b64_enc_token);
+  return true;
 }
 
 bool SetFileSystemOAuth2Tokens(PrefService* prefs,
                                const std::string& service_provider,
                                const std::string& access_token,
                                const std::string& refresh_token) {
-  std::string enc_access_token;
-  std::string enc_refresh_token;
-  if (!OSCrypt::EncryptString(access_token, &enc_access_token) ||
-      !OSCrypt::EncryptString(refresh_token, &enc_refresh_token)) {
-    return false;
-  }
+  return SetFileSystemToken(prefs, service_provider,
+                            kAccessTokenPrefPathTemplate, access_token) &&
+         SetFileSystemToken(prefs, service_provider,
+                            kRefreshTokenPrefPathTemplate, refresh_token);
+}
 
-  std::string b64_enc_token;
+bool ClearFileSystemAccessToken(PrefService* prefs,
+                                const std::string& service_provider) {
+  return SetFileSystemToken(prefs, service_provider,
+                            kAccessTokenPrefPathTemplate, std::string());
+}
 
-  base::Base64Encode(enc_access_token, &b64_enc_token);
-  prefs->SetString(base::StringPrintf(kAccessTokenPrefPathTemplate,
-                                      service_provider.c_str()),
-                   b64_enc_token);
+bool ClearFileSystemRefreshToken(PrefService* prefs,
+                                 const std::string& service_provider) {
+  return SetFileSystemToken(prefs, service_provider,
+                            kRefreshTokenPrefPathTemplate, std::string());
+}
 
-  base::Base64Encode(enc_refresh_token, &b64_enc_token);
-  prefs->SetString(base::StringPrintf(kRefreshTokenPrefPathTemplate,
-                                      service_provider.c_str()),
-                   b64_enc_token);
-  return true;
+bool ClearFileSystemOAuth2Tokens(PrefService* prefs,
+                                 const std::string& service_provider) {
+  return ClearFileSystemAccessToken(prefs, service_provider) &&
+         ClearFileSystemRefreshToken(prefs, service_provider);
 }
 
 bool GetFileSystemOAuth2Tokens(PrefService* prefs,

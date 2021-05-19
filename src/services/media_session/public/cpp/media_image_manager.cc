@@ -154,11 +154,10 @@ base::Optional<double> MediaImageManager::GetImageExtensionScore(
 
 // static
 base::Optional<double> MediaImageManager::GetImageTypeScore(
-    const base::string16& type) {
+    const std::u16string& type) {
   // These hashes are calculated in
   // MediaImageManagerTest_CheckExpectedImageTypeHashes
-  switch (
-      base::PersistentHash(type.data(), type.size() * sizeof(base::char16))) {
+  switch (base::PersistentHash(type.data(), type.size() * sizeof(char16_t))) {
     case 0xfd295465:  // image/bmp
       return kBMPTypeScore;
     case 0xce81e113:  // image/gif

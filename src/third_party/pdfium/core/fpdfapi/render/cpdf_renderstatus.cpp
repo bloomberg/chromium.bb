@@ -53,6 +53,7 @@
 #include "core/fxcrt/autorestorer.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_glyphbitmap.h"
@@ -154,7 +155,7 @@ class ScopedSkiaDeviceFlush {
   ~ScopedSkiaDeviceFlush() { m_pDevice->Flush(/*release=*/false); }
 
  private:
-  CFX_RenderDevice* const m_pDevice;
+  UnownedPtr<CFX_RenderDevice> const m_pDevice;
 };
 #endif
 
@@ -971,7 +972,7 @@ bool CPDF_RenderStatus::ProcessType3Text(CPDF_TextObject* textobj,
         status.SetFormResource(pFormResource);
         status.Initialize(this, pStates.get());
         status.m_Type3FontCache = m_Type3FontCache;
-        status.m_Type3FontCache.push_back(pType3Font);
+        status.m_Type3FontCache.emplace_back(pType3Font);
 
         CFX_RenderDevice::StateRestorer restorer(m_pDevice);
         status.RenderObjectList(pForm, matrix);
@@ -996,7 +997,7 @@ bool CPDF_RenderStatus::ProcessType3Text(CPDF_TextObject* textobj,
         status.SetFormResource(pFormResource);
         status.Initialize(this, pStates.get());
         status.m_Type3FontCache = m_Type3FontCache;
-        status.m_Type3FontCache.push_back(pType3Font);
+        status.m_Type3FontCache.emplace_back(pType3Font);
         matrix.Translate(-rect.left, -rect.top);
         status.RenderObjectList(pForm, matrix);
         m_pDevice->SetDIBits(bitmap_device.GetBitmap(), rect.left, rect.top);
@@ -1079,7 +1080,7 @@ void CPDF_RenderStatus::DrawTextPathWithPattern(const CPDF_TextObject* textobj,
                                                 bool stroke) {
   if (!stroke) {
     std::vector<std::unique_ptr<CPDF_TextObject>> pCopy;
-    pCopy.push_back(std::unique_ptr<CPDF_TextObject>(textobj->Clone()));
+    pCopy.push_back(textobj->Clone());
 
     CPDF_PathObject path;
     path.set_filltype(CFX_FillRenderOptions::FillType::kWinding);

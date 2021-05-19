@@ -1,26 +1,31 @@
 OpCapability Shader
 %1 = OpExtInstImport "GLSL.std.450"
 OpMemoryModel Logical GLSL450
-OpEntryPoint Fragment %_entrypoint "_entrypoint" %sk_FragColor %sk_Clockwise
-OpExecutionMode %_entrypoint OriginUpperLeft
+OpEntryPoint Fragment %_entrypoint_v "_entrypoint" %sk_FragColor %sk_Clockwise
+OpExecutionMode %_entrypoint_v OriginUpperLeft
 OpName %sk_FragColor "sk_FragColor"
 OpName %sk_Clockwise "sk_Clockwise"
-OpName %_entrypoint "_entrypoint"
+OpName %_entrypoint_v "_entrypoint_v"
 OpName %main "main"
 OpName %x "x"
 OpDecorate %sk_FragColor RelaxedPrecision
 OpDecorate %sk_FragColor Location 0
 OpDecorate %sk_FragColor Index 0
-OpDecorate %sk_Clockwise RelaxedPrecision
 OpDecorate %sk_Clockwise BuiltIn FrontFacing
+OpDecorate %x RelaxedPrecision
+OpDecorate %20 RelaxedPrecision
 OpDecorate %26 RelaxedPrecision
+OpDecorate %27 RelaxedPrecision
 OpDecorate %33 RelaxedPrecision
 OpDecorate %35 RelaxedPrecision
 OpDecorate %36 RelaxedPrecision
+OpDecorate %37 RelaxedPrecision
 OpDecorate %47 RelaxedPrecision
+OpDecorate %48 RelaxedPrecision
 OpDecorate %52 RelaxedPrecision
 OpDecorate %53 RelaxedPrecision
 OpDecorate %54 RelaxedPrecision
+OpDecorate %55 RelaxedPrecision
 OpDecorate %61 RelaxedPrecision
 %float = OpTypeFloat 32
 %v4float = OpTypeVector %float 4
@@ -42,7 +47,7 @@ OpDecorate %61 RelaxedPrecision
 %float_0 = OpConstant %float 0
 %int_2 = OpConstant %int 2
 %int_1 = OpConstant %int 1
-%_entrypoint = OpFunction %void None %12
+%_entrypoint_v = OpFunction %void None %12
 %13 = OpLabel
 %14 = OpFunctionCall %v4float %main
 OpStore %sk_FragColor %14

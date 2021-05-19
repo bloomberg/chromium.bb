@@ -38,8 +38,10 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_v8_features.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
@@ -91,6 +93,8 @@ namespace content {
 
 RenderProcessImpl::RenderProcessImpl()
     : RenderProcess("Renderer", GetThreadPoolInitParams()) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
 #if defined(DCHECK_IS_CONFIGURABLE)
   // Some official builds ship with DCHECKs compiled in. Failing DCHECKs then
   // are either fatal or simply log the error, based on a feature flag.
@@ -144,38 +148,45 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfFeature(blink::features::kTopLevelAwait,
                      "--harmony-top-level-await");
 
+  SetV8FlagIfFeature(blink::features::kJSONModules,
+                     "--harmony-import-assertions");
+
   constexpr char kAtomicsFlag[] = "--harmony-atomics";
   v8::V8::SetFlagsFromString(kAtomicsFlag, sizeof(kAtomicsFlag));
 
-  // SharedArrayBuffers require the feature flag, or the WebAssembly threads
-  // feature, or site isolation. On Android, SABs are disabled by default, so
-  // site isolation is required. On desktop, site isolation is optional while we
-  // migrate existing web pages to require site isolation.
   bool enable_wasm_threads =
       base::FeatureList::IsEnabled(features::kWebAssemblyThreads);
-  bool restrict_shared_array_buffers =
-      base::FeatureList::IsEnabled(features::kRestrictSharedArrayBuffer);
+  bool enable_shared_array_buffer =
+      base::FeatureList::IsEnabled(features::kSharedArrayBuffer);
   bool cross_origin_isolated =
       base::FeatureList::IsEnabled(network::features::kCrossOriginIsolated) &&
       blink::IsCrossOriginIsolated();
 
-  bool enable_shared_array_buffer = false;
-  if (cross_origin_isolated) {
-    enable_shared_array_buffer = true;
-    enable_wasm_threads = true;
-  } else if (!restrict_shared_array_buffers) {
+#if (!defined(OS_ANDROID))
+  if (!enable_shared_array_buffer) {
+    // Bypass the SAB restriction for the Finch "kill switch".
     enable_shared_array_buffer =
-        enable_wasm_threads ||
-        base::FeatureList::IsEnabled(features::kSharedArrayBuffer);
+        base::FeatureList::IsEnabled(features::kSharedArrayBufferOnDesktop);
+    if (!enable_shared_array_buffer &&
+        command_line->HasSwitch(
+            switches::kSharedArrayBufferUnrestrictedAccessAllowed)) {
+      // Bypass the SAB restriction when enabled by Enterprise Policy.
+      enable_shared_array_buffer = true;
+      blink::WebRuntimeFeatures::
+          EnableSharedArrayBufferUnrestrictedAccessAllowed(true);
+    }
   }
+#endif
 
-  if (enable_wasm_threads) {
-    constexpr char kWasmThreadsFlag[] = "--experimental-wasm-threads";
-    v8::V8::SetFlagsFromString(kWasmThreadsFlag, sizeof(kWasmThreadsFlag));
+  // WebAssembly Threads require the feature flag, or SharedArrayBuffer, or
+  // site isolation.
+  if (enable_wasm_threads || enable_shared_array_buffer ||
+      cross_origin_isolated) {
+    blink::WebV8Features::EnableWasmThreads();
   }
-  if (enable_shared_array_buffer) {
-    constexpr char kSABFlag[] = "--harmony-sharedarraybuffer";
-    v8::V8::SetFlagsFromString(kSABFlag, sizeof(kSABFlag));
+  // SharedArrayBuffer requires feature flags, or site isolation.
+  if (enable_shared_array_buffer || cross_origin_isolated) {
+    blink::WebV8Features::EnableSharedArrayBuffer();
   } else {
     constexpr char kNoSABFlag[] = "--no-harmony-sharedarraybuffer";
     v8::V8::SetFlagsFromString(kNoSABFlag, sizeof(kNoSABFlag));
@@ -188,8 +199,6 @@ RenderProcessImpl::RenderProcessImpl()
                         "--no-wasm-trap-handler");
 #if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
   if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
     if (command_line->HasSwitch(switches::kEnableCrashpad) ||
         command_line->HasSwitch(switches::kEnableCrashReporter) ||
         command_line->HasSwitch(switches::kEnableCrashReporterForTesting)) {
@@ -230,18 +239,15 @@ RenderProcessImpl::RenderProcessImpl()
   }
 #endif  // defined(OS_MAC) && defined(ARCH_CPU_X86_64)
 
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kNoV8UntrustedCodeMitigations)) {
+  if (command_line->HasSwitch(switches::kNoV8UntrustedCodeMitigations)) {
     const char* disable_mitigations = "--no-untrusted-code-mitigations";
     v8::V8::SetFlagsFromString(disable_mitigations,
                                strlen(disable_mitigations));
   }
 
-  if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
+  if (command_line->HasSwitch(switches::kJavaScriptFlags)) {
     std::string js_flags =
-        command_line.GetSwitchValueASCII(switches::kJavaScriptFlags);
+        command_line->GetSwitchValueASCII(switches::kJavaScriptFlags);
     std::vector<base::StringPiece> flag_list = base::SplitStringPiece(
         js_flags, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     for (const auto& flag : flag_list) {

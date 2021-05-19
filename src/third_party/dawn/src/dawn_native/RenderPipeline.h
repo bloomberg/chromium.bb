@@ -30,14 +30,16 @@ namespace dawn_native {
     class DeviceBase;
 
     MaybeError ValidateRenderPipelineDescriptor(DeviceBase* device,
-                                                const RenderPipelineDescriptor* descriptor);
+                                                const RenderPipelineDescriptor2* descriptor);
+
+    std::vector<StageAndDescriptor> GetStages(const RenderPipelineDescriptor2* descriptor);
+
     size_t IndexFormatSize(wgpu::IndexFormat format);
-    uint32_t VertexFormatNumComponents(wgpu::VertexFormat format);
-    size_t VertexFormatComponentSize(wgpu::VertexFormat format);
-    size_t VertexFormatSize(wgpu::VertexFormat format);
+
     bool IsStripPrimitiveTopology(wgpu::PrimitiveTopology primitiveTopology);
 
-    bool StencilTestEnabled(const DepthStencilStateDescriptor* mDepthStencilState);
+    bool StencilTestEnabled(const DepthStencilState* mDepthStencil);
+
     bool BlendEnabled(const ColorStateDescriptor* mColorState);
 
     struct VertexAttributeInfo {
@@ -54,28 +56,29 @@ namespace dawn_native {
 
     class RenderPipelineBase : public PipelineBase {
       public:
-        RenderPipelineBase(DeviceBase* device, const RenderPipelineDescriptor* descriptor);
+        RenderPipelineBase(DeviceBase* device, const RenderPipelineDescriptor2* descriptor);
         ~RenderPipelineBase() override;
 
         static RenderPipelineBase* MakeError(DeviceBase* device);
 
-        const VertexStateDescriptor* GetVertexStateDescriptor() const;
         const ityp::bitset<VertexAttributeLocation, kMaxVertexAttributes>&
         GetAttributeLocationsUsed() const;
         const VertexAttributeInfo& GetAttribute(VertexAttributeLocation location) const;
         const ityp::bitset<VertexBufferSlot, kMaxVertexBuffers>& GetVertexBufferSlotsUsed() const;
         const VertexBufferInfo& GetVertexBuffer(VertexBufferSlot slot) const;
+        uint32_t GetVertexBufferCount() const;
 
-        const ColorStateDescriptor* GetColorStateDescriptor(
-            ColorAttachmentIndex attachmentSlot) const;
-        const DepthStencilStateDescriptor* GetDepthStencilStateDescriptor() const;
+        const ColorTargetState* GetColorTargetState(ColorAttachmentIndex attachmentSlot) const;
+        const DepthStencilState* GetDepthStencilState() const;
         wgpu::PrimitiveTopology GetPrimitiveTopology() const;
+        wgpu::IndexFormat GetStripIndexFormat() const;
         wgpu::CullMode GetCullMode() const;
         wgpu::FrontFace GetFrontFace() const;
         bool IsDepthBiasEnabled() const;
         int32_t GetDepthBias() const;
         float GetDepthBiasSlopeScale() const;
         float GetDepthBiasClamp() const;
+        bool ShouldClampDepth() const;
 
         ityp::bitset<ColorAttachmentIndex, kMaxColorAttachments> GetColorAttachmentsMask() const;
         bool HasDepthStencilAttachment() const;
@@ -98,7 +101,7 @@ namespace dawn_native {
         RenderPipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
         // Vertex state
-        VertexStateDescriptor mVertexState;
+        uint32_t mVertexBufferCount;
         ityp::bitset<VertexAttributeLocation, kMaxVertexAttributes> mAttributeLocationsUsed;
         ityp::array<VertexAttributeLocation, VertexAttributeInfo, kMaxVertexAttributes>
             mAttributeInfos;
@@ -107,14 +110,14 @@ namespace dawn_native {
 
         // Attachments
         Ref<AttachmentState> mAttachmentState;
-        DepthStencilStateDescriptor mDepthStencilState;
-        ityp::array<ColorAttachmentIndex, ColorStateDescriptor, kMaxColorAttachments> mColorStates;
+        ityp::array<ColorAttachmentIndex, ColorTargetState, kMaxColorAttachments> mTargets;
+        ityp::array<ColorAttachmentIndex, BlendState, kMaxColorAttachments> mTargetBlend;
 
         // Other state
-        wgpu::PrimitiveTopology mPrimitiveTopology;
-        RasterizationStateDescriptor mRasterizationState;
-        uint32_t mSampleMask;
-        bool mAlphaToCoverageEnabled;
+        PrimitiveState mPrimitive;
+        DepthStencilState mDepthStencil;
+        MultisampleState mMultisample;
+        bool mClampDepth = false;
     };
 
 }  // namespace dawn_native

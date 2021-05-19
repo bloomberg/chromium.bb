@@ -4,6 +4,7 @@
 
 #include "extensions/common/stack_frame.h"
 
+#include <memory>
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
@@ -27,8 +28,8 @@ StackFrame::StackFrame(const StackFrame& frame)
 
 StackFrame::StackFrame(uint32_t line_number,
                        uint32_t column_number,
-                       const base::string16& source,
-                       const base::string16& function)
+                       const std::u16string& source,
+                       const std::u16string& function)
     : line_number(line_number),
       column_number(column_number),
       source(source),
@@ -46,7 +47,7 @@ StackFrame::~StackFrame() {
 // both ways. If we reconcile this, we can clean this up.)
 // static
 std::unique_ptr<StackFrame> StackFrame::CreateFromText(
-    const base::string16& frame_text) {
+    const std::u16string& frame_text) {
   // We need to use utf8 for re2 matching.
   std::string text = base::UTF16ToUTF8(frame_text);
 
@@ -63,8 +64,8 @@ std::unique_ptr<StackFrame> StackFrame::CreateFromText(
     return std::unique_ptr<StackFrame>();
   }
 
-  return std::unique_ptr<StackFrame>(new StackFrame(
-      line, column, base::UTF8ToUTF16(source), base::UTF8ToUTF16(function)));
+  return std::make_unique<StackFrame>(line, column, base::UTF8ToUTF16(source),
+                                      base::UTF8ToUTF16(function));
 }
 
 bool StackFrame::operator==(const StackFrame& rhs) const {

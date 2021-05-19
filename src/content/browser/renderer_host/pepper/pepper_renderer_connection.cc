@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -26,6 +27,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_message_utils.h"
@@ -35,10 +37,6 @@
 namespace content {
 
 namespace {
-
-const uint32_t kPepperFilteredMessageClasses[] = {
-    PpapiMsgStart, FrameMsgStart,
-};
 
 // Responsible for creating the pending resource hosts, holding their IDs until
 // all of them have been created for a single message, and sending the reply to
@@ -135,21 +133,16 @@ PepperRendererConnection::PepperRendererConnection(
     PluginServiceImpl* plugin_service,
     BrowserContext* browser_context,
     StoragePartition* storage_partition)
-    : BrowserMessageFilter(kPepperFilteredMessageClasses,
-                           base::size(kPepperFilteredMessageClasses)),
+    : BrowserMessageFilter(PpapiMsgStart),
       BrowserAssociatedInterface<mojom::PepperIOHost>(this),
       render_process_id_(render_process_id),
       incognito_(browser_context->IsOffTheRecord()),
       plugin_service_(plugin_service),
       profile_data_directory_(storage_partition->GetPath()) {
   // Only give the renderer permission for stable APIs.
-  in_process_host_.reset(new BrowserPpapiHostImpl(this,
-                                                  ppapi::PpapiPermissions(),
-                                                  "",
-                                                  base::FilePath(),
-                                                  base::FilePath(),
-                                                  true /* in_process */,
-                                                  false /* external_plugin */));
+  in_process_host_ = std::make_unique<BrowserPpapiHostImpl>(
+      this, ppapi::PpapiPermissions(), "", base::FilePath(), base::FilePath(),
+      true /* in_process */, false /* external_plugin */);
 }
 
 PepperRendererConnection::~PepperRendererConnection() {}
@@ -182,6 +175,15 @@ BrowserPpapiHostImpl* PepperRendererConnection::GetHostForChildProcess(
   }
 
   return host;
+}
+
+void PepperRendererConnection::OverrideThreadForMessage(
+    const IPC::Message& message,
+    content::BrowserThread::ID* thread) {
+  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI) &&
+      IPC_MESSAGE_ID_CLASS(message.type()) == PpapiMsgStart) {
+    *thread = content::BrowserThread::UI;
+  }
 }
 
 bool PepperRendererConnection::OnMessageReceived(const IPC::Message& msg) {
@@ -223,8 +225,8 @@ void PepperRendererConnection::OnMsgCreateResourceHostsFromHost(
         base::FilePath external_path;
         if (ppapi::UnpackMessage<PpapiHostMsg_FileRef_CreateForRawFS>(
                 nested_msg, &external_path)) {
-          resource_host.reset(new PepperFileRefHost(
-              host, instance, params.pp_resource(), external_path));
+          resource_host = std::make_unique<PepperFileRefHost>(
+              host, instance, params.pp_resource(), external_path);
         }
       } else if (nested_msg.type() ==
                  PpapiHostMsg_FileSystem_CreateFromRenderer::ID) {

@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_SAVE_PAYMENT_ICON_CONTROLLER_H_
 #define CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_SAVE_PAYMENT_ICON_CONTROLLER_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "content/public/browser/web_contents.h"
 
 namespace autofill {
@@ -50,7 +51,7 @@ class SavePaymentIconController {
   virtual AutofillBubbleBase* GetSaveBubbleView() const = 0;
 
   // Returns the tooltip message for the save payment icon.
-  virtual base::string16 GetSavePaymentIconTooltipText() const = 0;
+  virtual std::u16string GetSavePaymentIconTooltipText() const = 0;
 };
 
 }  // namespace autofill

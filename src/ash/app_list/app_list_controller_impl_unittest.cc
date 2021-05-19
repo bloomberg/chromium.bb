@@ -5,20 +5,20 @@
 #include "ash/app_list/app_list_controller_impl.h"
 
 #include <set>
+#include <string>
 
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/app_list_test_view_delegate.h"
 #include "ash/app_list/test/app_list_test_helper.h"
-#include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
+#include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/search_box_view.h"
-#include "ash/app_list/views/test/apps_grid_view_test_api.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
@@ -29,6 +29,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/system_tray_test_api.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -44,11 +45,11 @@
 #include "ash/wm/window_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/with_feature_override.h"
+#include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
@@ -199,6 +200,8 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
 // Verify that when the emoji panel shows and AppListView is in Peeking state,
 // AppListView's rounded corners should be hidden (see https://crbug.com/950468)
 TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
+  ui::SetShowEmojiKeyboardCallback(
+      base::BindRepeating(ui::ShowTabletModeEmojiPanel));
   // Set IME client. Otherwise the emoji panel is unable to show.
   ImeController* ime_controller = Shell::Get()->ime_controller();
   TestImeControllerClient client;
@@ -461,9 +464,8 @@ TEST_F(AppListControllerImplTest, MAYBE_CloseNotificationWithAppListShown) {
   message_center::MessageCenter::Get()->AddNotification(
       std::make_unique<message_center::Notification>(
           message_center::NOTIFICATION_TYPE_BASE_FORMAT, notification_id,
-          base::UTF8ToUTF16(notification_title),
-          base::UTF8ToUTF16("test message"), gfx::Image(),
-          base::string16() /* display_source */, GURL(),
+          base::UTF8ToUTF16(notification_title), u"test message", gfx::Image(),
+          std::u16string() /* display_source */, GURL(),
           message_center::NotifierId(), message_center::RichNotificationData(),
           new message_center::NotificationDelegate()));
   base::RunLoop().RunUntilIdle();
@@ -749,8 +751,7 @@ TEST_F(AppListControllerImplTest, DragItemFromAppsGridView) {
   EXPECT_EQ(1.0f, shelf_icon_view->layer()->opacity());
 }
 
-// Tests for HomeScreenDelegate::GetInitialAppListItemScreenBoundsForWindow
-// implemtenation.
+// Tests for GetInitialAppListItemScreenBoundsForWindow.
 TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
   // Populate app list model with 25 items, of which items at indices in
   // |folders| are folders containing a single item.
@@ -803,8 +804,8 @@ TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
   std::unique_ptr<views::Widget> widget_without_app_id =
       TestWidgetBuilder().SetBounds(init_bounds).BuildOwnsNativeWidget();
 
-  HomeScreenDelegate* const home_screen_delegate =
-      Shell::Get()->home_screen_controller()->delegate();
+  AppListControllerImpl* app_list_controller =
+      Shell::Get()->app_list_controller();
   // NOTE: Calculate the apps grid bounds after test window is shown, as showing
   // the window can change the app list layout (due to the change in the shelf
   // height).
@@ -813,7 +814,7 @@ TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
       gfx::Rect(apps_grid_bounds.CenterPoint(), gfx::Size(1, 1));
 
   EXPECT_EQ(apps_grid_center,
-            home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
+            app_list_controller->GetInitialAppListItemScreenBoundsForWindow(
                 widget_without_app_id->GetNativeWindow()));
 
   // Run tests cases, both for when the first and the second apps grid page is
@@ -839,7 +840,7 @@ TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
               .BuildOwnsNativeWidget();
 
       const gfx::Rect item_bounds =
-          home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
+          app_list_controller->GetInitialAppListItemScreenBoundsForWindow(
               widget->GetNativeWindow());
       if (!test_case.grid_position.has_value()) {
         EXPECT_EQ(apps_grid_center, item_bounds);
@@ -882,6 +883,39 @@ TEST_F(AppListControllerImplTest, NoOverlapWithHotseatOnSwitchFromSideShelf) {
       shelf->shelf_widget()->GetWindowBoundsInScreen()));
   EXPECT_FALSE(apps_grid_view_bounds.Intersects(
       shelf->hotseat_widget()->GetWindowBoundsInScreen()));
+}
+
+TEST_F(AppListControllerImplTest, OnlyMinimizeCycleListWindows) {
+  std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
+  std::unique_ptr<aura::Window> w2(CreateTestWindow(
+      gfx::Rect(0, 0, 400, 400), aura::client::WINDOW_TYPE_POPUP));
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  std::unique_ptr<ui::Event> test_event = std::make_unique<ui::KeyEvent>(
+      ui::EventType::ET_MOUSE_PRESSED, ui::VKEY_UNKNOWN, ui::EF_NONE);
+  Shell::Get()->app_list_controller()->GoHome(GetPrimaryDisplay().id());
+  EXPECT_TRUE(WindowState::Get(w1.get())->IsMinimized());
+  EXPECT_FALSE(WindowState::Get(w2.get())->IsMinimized());
+}
+
+// Tests that the home screen is visible after rotating the screen in overview
+// mode.
+TEST_F(AppListControllerImplTest,
+       HomeScreenVisibleAfterDisplayUpdateInOverview) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+
+  // Trigger a display configuration change, this simulates screen rotation.
+  Shell::Get()->app_list_controller()->OnDisplayConfigurationChanged();
+
+  // End overview mode, the home launcher should be visible.
+  overview_controller->EndOverview();
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kExitAnimationComplete);
+
+  EXPECT_TRUE(
+      Shell::Get()->app_list_controller()->GetHomeScreenWindow()->IsVisible());
 }
 
 // The test parameter indicates whether the shelf should auto-hide. In either
@@ -938,7 +972,7 @@ class AppListAnimationTest : public AshTestBase,
   // The app list view y coordinate in peeking state.
   int PeekingHeightTop() const {
     return shown_shelf_bounds_.bottom() -
-           AppListConfig::instance().peeking_app_list_height();
+           GetAppListView()->GetAppListConfig().peeking_app_list_height();
   }
 
  private:
@@ -1128,7 +1162,7 @@ TEST_F(AppListControllerImplMetricsTest,
   // hidden.
   std::unique_ptr<aura::Window> w(
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
-  Shell::Get()->home_screen_controller()->GoHome(
+  Shell::Get()->app_list_controller()->GoHome(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_FALSE(w->IsVisible());
   EXPECT_EQ(AppListViewState::kFullscreenAllApps,

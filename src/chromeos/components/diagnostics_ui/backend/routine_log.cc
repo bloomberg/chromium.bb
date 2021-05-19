@@ -9,7 +9,6 @@
 
 #include "base/files/file_util.h"
 #include "base/i18n/time_formatting.h"
-#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 
@@ -42,16 +41,12 @@ std::string getRoutineResultString(mojom::StandardRoutineResult result) {
 std::string getRoutineTypeString(mojom::RoutineType type) {
   std::stringstream s;
   s << type;
+  const std::string routineName = s.str();
 
-  // RoutineType::kCpuStress -> ["RoutineType",  "CpuStress"]
-  std::vector<std::string> parts = base::SplitStringUsingSubstr(
-    s.str(), "::k", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  DCHECK_EQ(2U, parts.size());
-
-  const std::string routineName = parts[1];
+  // Remove leading "k" ex: "kCpuStress" -> "CpuStress".
   DCHECK_GE(routineName.size(), 1U);
-  return routineName;
+  DCHECK_EQ(routineName[0], 'k');
+  return routineName.substr(1, routineName.size() - 1);
 }
 
 }  // namespace

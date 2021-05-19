@@ -15,8 +15,8 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
+#include "chrome/browser/themes/test/theme_service_changed_waiter.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -224,6 +224,10 @@ TEST_F(ChromeCustomizeThemesHandlerTest, ObserveThemeChanges) {
 }
 
 TEST_F(ChromeCustomizeThemesHandlerTest, InstallThirdPartyTheme) {
+  // Prevent "Cached Theme.pak" from being created in the current directory by
+  // this test.
+  ThemeService::DisableThemePackForTesting();
+
   // Read and parse an extension theme manifest from a test file.
   base::FilePath test_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
@@ -235,13 +239,11 @@ TEST_F(ChromeCustomizeThemesHandlerTest, InstallThirdPartyTheme) {
       base::JSONReader::Read(config_contents);
   ASSERT_TRUE(manifest.has_value());
 
-  content::WindowedNotificationObserver theme_change_observer(
-      chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-      content::Source<ThemeService>(theme_service()));
+  test::ThemeServiceChangedWaiter waiter(theme_service());
   EXPECT_CALL(*mock_client(), SetTheme(MatchesThirdPartyTheme(
                                   kThemeExtensionId, kThemeExtensionName)));
   env()->MakeExtension(manifest.value(), kThemeExtensionId);
-  theme_change_observer.Wait();
+  waiter.WaitForThemeChanged();
 }
 
 TEST_F(ChromeCustomizeThemesHandlerTest, RevertThemeChanges) {

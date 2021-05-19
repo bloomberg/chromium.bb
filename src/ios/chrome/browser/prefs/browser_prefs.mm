@@ -57,7 +57,6 @@
 #include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/chrome/browser/first_run/first_run.h"
-#import "ios/chrome/browser/geolocation/omnibox_geolocation_local_state.h"
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
 #include "ios/chrome/browser/notification_promo.h"
@@ -72,7 +71,7 @@
 #import "ios/chrome/browser/ui/first_run/location_permissions_field_trial.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
-#import "ios/chrome/browser/web/font_size_tab_helper.h"
+#import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -105,6 +104,12 @@ const char kPasswordManagerOnboardingState[] =
 
 const char kWasOnboardingFeatureCheckedBefore[] =
     "profile.was_pwm_onboarding_feature_checked_before";
+
+// Deprecated 03/2021
+const char kOmniboxGeolocationAuthorizationState[] =
+    "ios.omnibox.geolocation_authorization_state";
+const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
+    "ios.omnibox.geolocation_last_authorization_alert_version";
 }
 
 // Deprecated 12/2020
@@ -132,7 +137,6 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kBrowserStatesNumCreated, 1);
   registry->RegisterListPref(prefs::kBrowserStatesLastActive);
 
-  [OmniboxGeolocationLocalState registerLocalState:registry];
   [MemoryDebuggerManager registerLocalState:registry];
   [IncognitoReauthSceneAgent registerLocalState:registry];
 
@@ -162,6 +166,10 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterTimePref(enterprise_reporting::kLastUploadTimestamp,
                              base::Time());
+
+  registry->RegisterIntegerPref(kOmniboxGeolocationAuthorizationState, 0);
+  registry->RegisterStringPref(kOmniboxGeolocationLastAuthorizationAlertVersion,
+                               "");
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -265,6 +273,10 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
   prefs->ClearPref(kInvalidatorSavedInvalidations);
   prefs->ClearPref(kInvalidatorInvalidationState);
   prefs->ClearPref(kInvalidatorClientId);
+
+  // Added 2021/03.
+  prefs->ClearPref(kOmniboxGeolocationAuthorizationState);
+  prefs->ClearPref(kOmniboxGeolocationLastAuthorizationAlertVersion);
 }
 
 // This method should be periodically pruned of year+ old migrations.

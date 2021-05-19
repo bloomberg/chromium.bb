@@ -24,10 +24,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.BuildConfig;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.build.BuildConfig;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -209,7 +209,7 @@ public final class PolicyCacheTest {
                 Pair.create(POLICY_NAME_5, Pair.create(PolicyCache.Type.Dict, "{1:2}"))));
 
         Assert.assertFalse(mPolicyCache.isReadable());
-        if (BuildConfig.DCHECK_IS_ON) {
+        if (BuildConfig.ENABLE_ASSERTS) {
             assertAssertionError(() -> mPolicyCache.getIntValue(POLICY_NAME));
             assertAssertionError(() -> mPolicyCache.getBooleanValue(POLICY_NAME_2));
             assertAssertionError(() -> mPolicyCache.getStringValue(POLICY_NAME_3));

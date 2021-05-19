@@ -53,8 +53,7 @@ Profile* CreateProfile() {
   profile_manager->CreateProfileAsync(
       profile_manager->GenerateNextProfileDirectoryPath(),
       base::BindRepeating(&CreateProfileCallback, &profile,
-                          run_loop.QuitClosure()),
-      base::string16(), std::string());
+                          run_loop.QuitClosure()));
   run_loop.Run();
   return profile;
 }
@@ -67,7 +66,7 @@ bool ProfileIsTagged(Profile* profile) {
 // Saves |value| in the registry at the value name corresponding to the cleanup
 // completed state.
 void SetCompletedState(DWORD value) {
-  base::string16 cleaner_key_path(
+  std::wstring cleaner_key_path(
       chrome_cleaner::kSoftwareRemovalToolRegistryKey);
   cleaner_key_path.append(L"\\").append(chrome_cleaner::kCleanerSubKey);
 

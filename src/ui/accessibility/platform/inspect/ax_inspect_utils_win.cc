@@ -4,7 +4,6 @@
 
 #include "ui/accessibility/platform/inspect/ax_inspect_utils_win.h"
 
-#include <oleacc.h>
 #include <uiautomation.h>
 
 #include <map>
@@ -12,6 +11,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
@@ -20,10 +20,10 @@
 namespace ui {
 namespace {
 
-const wchar_t kChromeTitle[] = L"Google Chrome";
-const wchar_t kChromiumTitle[] = L"Chromium";
-const wchar_t kEdgeTitle[] = L"Edge";
-const wchar_t kFirefoxTitle[] = L"Firefox";
+constexpr wchar_t kChromeTitle[] = L"Google Chrome";
+constexpr wchar_t kChromiumTitle[] = L"Chromium";
+constexpr wchar_t kEdgeTitle[] = L"Edge";
+constexpr wchar_t kFirefoxTitle[] = L"Mozilla Firefox";
 
 struct PlatformConstantToNameEntry {
   int32_t value;
@@ -366,6 +366,7 @@ AX_EXPORT std::wstring UiaIdentifierToString(int32_t identifier) {
       QUOTE(UIA_CustomNavigationPatternId),
       QUOTE(UIA_SelectionPattern2Id),
       // Events
+      QUOTE(UIA_ActiveTextPositionChangedEventId),
       QUOTE(UIA_ToolTipOpenedEventId),
       QUOTE(UIA_ToolTipClosedEventId),
       QUOTE(UIA_StructureChangedEventId),
@@ -700,24 +701,29 @@ AX_EXPORT HWND GetHwndForProcess(base::ProcessId pid) {
 
 struct HWNDSearchInfo {
   std::wstring title;
-  HWND hwnd;
+  std::wstring pattern;
+  HWND matched_hwnd{nullptr};
+  std::vector<std::wstring> matched_titles;
 };
 
 BOOL CALLBACK MatchWindow(HWND hwnd, LPARAM lParam) {
-  const auto num_chars = ::GetWindowTextLength(hwnd);
-  if (!num_chars) {
+  int length = ::GetWindowTextLength(hwnd);
+  if (length == 0) {
     return TRUE;
   }
 
-  std::wstring title(num_chars + 1, '\0');
-  if (!::GetWindowText(hwnd, &title.front(), title.size())) {
-    return TRUE;
-  }
+  std::wstring title(length, '\0');
+  int actual_length = ::GetWindowText(hwnd, &title.front(), title.size() + 1);
+  if (length > actual_length)
+    title.erase(actual_length);
 
   auto* info = reinterpret_cast<HWNDSearchInfo*>(lParam);
-  if (title.find(info->title) != std::wstring::npos) {
-    info->hwnd = hwnd;
-    return FALSE;
+  if (base::EndsWith(title, info->title) &&
+      (info->pattern.empty() ||
+       base::MatchPattern(base::AsStringPiece16(title),
+                          base::AsStringPiece16(info->pattern)))) {
+    info->matched_titles.push_back(title);
+    info->matched_hwnd = hwnd;
   }
   return TRUE;
 }
@@ -732,17 +738,87 @@ AX_EXPORT HWND GetHWNDBySelector(const AXTreeSelector& selector) {
     info.title = kEdgeTitle;
   } else if (selector.types & AXTreeSelector::Firefox) {
     info.title = kFirefoxTitle;
-  } else {
+  }
+
+  if (!selector.pattern.empty()) {
+    info.pattern = base::UTF8ToWide(selector.pattern);
+  } else if (info.title.empty()) {
     LOG(ERROR) << selector.AppName()
                << " application is not supported on the system";
     return NULL;
   }
 
-  if (::EnumWindows(MatchWindow, reinterpret_cast<LPARAM>(&info))) {
+  // A match is found when the window title ends with the search title
+  // and matches the search pattern when provided.
+  // Note that both the search title and pattern are optional, but at
+  // least one should be provided.
+  DCHECK(!info.title.empty() || !info.pattern.empty());
+
+  ::EnumWindows(MatchWindow, reinterpret_cast<LPARAM>(&info));
+
+  // Fail if multiple matches are found.
+  if (info.matched_titles.size() > 1) {
+    LOG(ERROR) << "Ambiguous name: multiple windows matched:";
+    for (auto title : info.matched_titles) {
+      LOG(ERROR) << "  " << title;
+      // Extra empty log to avoid jamming titles together. Apparently titles
+      // contain special characters that prevent from printing anything coming
+      // afterwards.
+      LOG(ERROR) << "";
+    }
     return NULL;
   }
 
-  return info.hwnd;
+  return info.matched_hwnd;
 }
+
+MSAAChild::MSAAChild() = default;
+MSAAChild::MSAAChild(IAccessible* parent, VARIANT&& variant) : parent_(parent) {
+  child_variant_.Reset(variant);
+
+  Microsoft::WRL::ComPtr<IDispatch> dispatch;
+  if (child_variant_.type() == VT_DISPATCH) {
+    dispatch = V_DISPATCH(child_variant_.ptr());
+  } else if (child_variant_.type() == VT_I4) {
+    if (FAILED(parent->get_accChild(child_variant_, &dispatch))) {
+      child_variant_.Reset();
+    }
+  }
+
+  if (dispatch) {
+    if (FAILED(dispatch.As(&child_))) {
+      child_ = nullptr;
+    }
+  }
+}
+MSAAChild::MSAAChild(MSAAChild&&) = default;
+MSAAChild::~MSAAChild() = default;
+
+MSAAChildren::MSAAChildren(IAccessible* parent) {
+  if (FAILED(parent->get_accChildCount(&count_)))
+    return;
+
+  std::unique_ptr<VARIANT[]> children_variants(new VARIANT[count_]);
+  if (FAILED(AccessibleChildren(parent, 0, count_, children_variants.get(),
+                                &count_))) {
+    count_ = 0;
+    return;
+  }
+
+  children_.reserve(count_);
+  for (LONG i = 0; i < count_; i++)
+    children_.emplace_back(parent, std::move(children_variants[i]));
+}
+
+MSAAChildren::MSAAChildren(const Microsoft::WRL::ComPtr<IAccessible>& parent)
+    : MSAAChildren(parent.Get()) {}
+MSAAChildren::~MSAAChildren() = default;
+
+MSAAChildren::Iterator::Iterator(MSAAChildren* children)
+    : children_(children) {}
+MSAAChildren::Iterator::Iterator(MSAAChildren* children, LONG index)
+    : index_(index), children_(children) {}
+MSAAChildren::Iterator::Iterator(const Iterator&) = default;
+MSAAChildren::Iterator::~Iterator() = default;
 
 }  // namespace ui

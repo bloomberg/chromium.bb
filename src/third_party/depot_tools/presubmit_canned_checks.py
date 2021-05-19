@@ -989,39 +989,6 @@ def RunPylint(input_api, *args, **kwargs):
   return input_api.RunTests(GetPylint(input_api, *args, **kwargs), False)
 
 
-def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
-    ignored):
-  try:
-    connection = input_api.urllib_request.urlopen(url)
-    raw_data = connection.read()
-    connection.close()
-  except IOError:
-    return [output_api.PresubmitNotifyResult('%s is not accessible' % url)]
-
-  try:
-    data = input_api.json.loads(raw_data)
-  except ValueError:
-    return [output_api.PresubmitNotifyResult('Received malformed json while '
-                                             'looking up buildbot status')]
-
-  out = []
-  for (builder_name, builder) in data.items():
-    if builder_name in ignored:
-      continue
-    if builder.get('state', '') == 'offline':
-      continue
-    pending_builds_len = len(builder.get('pending_builds', []))
-    if pending_builds_len > max_pendings:
-      out.append('%s has %d build(s) pending' %
-                  (builder_name, pending_builds_len))
-  if out:
-    return [output_api.PresubmitPromptWarning(
-        'Build(s) pending. It is suggested to wait that no more than %d '
-            'builds are pending.' % max_pendings,
-        long_text='\n'.join(out))]
-  return []
-
-
 def CheckDirMetadataFormat(input_api, output_api, dirmd_bin=None):
   # TODO(crbug.com/1102997): Remove OWNERS once DIR_METADATA migration is
   # complete.
@@ -1108,6 +1075,8 @@ def CheckOwnersDirMetadataExclusive(input_api, output_api):
 
 
 def CheckOwnersFormat(input_api, output_api):
+  if input_api.gerrit and input_api.gerrit.IsCodeOwnersEnabledOnRepo():
+    return []
   affected_files = set([
       f.LocalPath()
       for f in input_api.change.AffectedFiles()
@@ -1127,20 +1096,15 @@ def CheckOwnersFormat(input_api, output_api):
 
 def CheckOwners(
     input_api, output_api, source_file_filter=None, allow_tbr=True):
-  if input_api.change.issue:
-    # Skip OWNERS check when Bot-Commit label is approved. This label is
-    # intended for commits made by trusted bots that don't require review nor
-    # owners approval.
-    if input_api.gerrit.IsBotCommitApproved(input_api.change.issue):
-      return []
-    # Skip OWNERS check when Owners-Override label is approved. This is intended
-    # for global owners, trusted bots, and on-call sheriffs. Review is still
-    # required for these changes.
-    if input_api.gerrit.IsOwnersOverrideApproved(input_api.change.issue):
-      return []
+  # Skip OWNERS check when Owners-Override label is approved. This is intended
+  # for global owners, trusted bots, and on-call sheriffs. Review is still
+  # required for these changes.
+  if (input_api.change.issue
+      and input_api.gerrit.IsOwnersOverrideApproved(input_api.change.issue)):
+    return []
 
-  # Ignore tbr if not allowed for this repo.
-  tbr = input_api.tbr and allow_tbr
+  if input_api.gerrit and input_api.gerrit.IsCodeOwnersEnabledOnRepo():
+    return []
 
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(file_filter=source_file_filter)])
@@ -1157,7 +1121,7 @@ def CheckOwners(
   affects_owners = any('OWNERS' in name for name in missing_files)
 
   if input_api.is_committing:
-    if tbr and not affects_owners:
+    if input_api.tbr and not affects_owners:
       return [output_api.PresubmitNotifyResult(
           '--tbr was specified, skipping OWNERS check')]
     needed = 'LGTM from an OWNER'
@@ -1179,7 +1143,7 @@ def CheckOwners(
     output_list = [
         output_fn('Missing %s for these files:\n    %s' %
                   (needed, '\n    '.join(sorted(missing_files))))]
-    if tbr and affects_owners:
+    if input_api.tbr and affects_owners:
       output_list.append(output_fn('TBR for OWNERS files are ignored.'))
     if not input_api.is_committing:
       suggested_owners = input_api.owners_client.SuggestOwners(
@@ -1189,7 +1153,8 @@ def CheckOwners(
           ('\n    '.join(suggested_owners))))
     return output_list
 
-  if input_api.is_committing and not reviewers:
+  if (input_api.is_committing and not reviewers and
+      not input_api.gerrit.IsBotCommitApproved(input_api.change.issue)):
     return [output_fn('Missing LGTM from someone other than %s' % owner_email)]
   return []
 
@@ -1750,3 +1715,136 @@ def CheckJsonParses(input_api, output_api):
         warnings.append(output_api.PresubmitPromptWarning(
             '%s does not appear to be valid JSON.' % f.LocalPath()))
   return warnings
+
+# string pattern, sequence of strings to show when pattern matches,
+# error flag. True if match is a presubmit error, otherwise it's a warning.
+_NON_INCLUSIVE_TERMS = (
+    (
+        # Note that \b pattern in python re is pretty particular. In this
+        # regexp, 'class WhiteList ...' will match, but 'class FooWhiteList
+        # ...' will not. This may require some tweaking to catch these cases
+        # without triggering a lot of false positives. Leaving it naive and
+        # less matchy for now.
+        r'/\b(?i)((black|white)list|slave)\b',  # nocheck
+        (
+            'Please don\'t use blacklist, whitelist, '  # nocheck
+            'or slave in your',  # nocheck
+            'code and make every effort to use other terms. Using "// nocheck"',
+            '"# nocheck" or "<!-- nocheck -->"',
+            'at the end of the offending line will bypass this PRESUBMIT error',
+            'but avoid using this whenever possible. Reach out to',
+            'community@chromium.org if you have questions'),
+        True),)
+
+
+def _GetMessageForMatchingTerm(input_api, affected_file, line_number, line,
+                               term, message):
+  """Helper method for CheckInclusiveLanguage.
+
+  Returns an string composed of the name of the file, the line number where the
+  match has been found and the additional text passed as |message| in case the
+  target type name matches the text inside the line passed as parameter.
+  """
+  result = []
+
+  # A // nocheck comment will bypass this error.
+  if line.endswith(" nocheck") or line.endswith("<!-- nocheck -->"):
+    return result
+
+  # Ignore C-style single-line comments about banned terms.
+  if input_api.re.search(r"//.*$", line):
+    line = input_api.re.sub(r"//.*$", "", line)
+
+  # Ignore lines from C-style multi-line comments.
+  if input_api.re.search(r"^\s*\*", line):
+    return result
+
+  # Ignore Python-style comments about banned terms.
+  # This actually removes comment text from the first # on.
+  if input_api.re.search(r"#.*$", line):
+    line = input_api.re.sub(r"#.*$", "", line)
+
+  matched = False
+  if term[0:1] == '/':
+    regex = term[1:]
+    if input_api.re.search(regex, line):
+      matched = True
+  elif term in line:
+    matched = True
+
+  if matched:
+    result.append('    %s:%d:' % (affected_file.LocalPath(), line_number))
+    for message_line in message:
+      result.append('      %s' % message_line)
+
+  return result
+
+
+def CheckInclusiveLanguage(input_api, output_api,
+                           excluded_directories_relative_path=None,
+                           non_inclusive_terms=_NON_INCLUSIVE_TERMS):
+  """Make sure that banned non-inclusive terms are not used."""
+
+  # Presubmit checks may run on a bot where the changes are actually
+  # in a repo that isn't chromium/src (e.g., when testing src + tip-of-tree
+  # ANGLE), but this particular check only makes sense for changes to
+  # chromium/src.
+  if input_api.change.RepositoryRoot() != input_api.PresubmitLocalPath():
+    return []
+
+  warnings = []
+  errors = []
+
+  if excluded_directories_relative_path is None:
+    excluded_directories_relative_path = [
+        'infra',
+        'inclusive_language_presubmit_exempt_dirs.txt'
+    ]
+
+  # Note that this matches exact path prefixes, and does not match
+  # subdirectories. Only files directly in an exlcluded path will
+  # match.
+  def IsExcludedFile(affected_file, excluded_paths):
+    local_dir = input_api.os_path.dirname(affected_file.LocalPath())
+
+    return local_dir in excluded_paths
+
+  def CheckForMatch(affected_file, line_num, line, term, message, error):
+    problems = _GetMessageForMatchingTerm(input_api, affected_file, line_num,
+                                          line, term, message)
+
+    if problems:
+      if error:
+        errors.extend(problems)
+      else:
+        warnings.extend(problems)
+
+  excluded_paths = []
+  dirs_file_path = input_api.os_path.join(input_api.change.RepositoryRoot(),
+                                          *excluded_directories_relative_path)
+  f = input_api.ReadFile(dirs_file_path)
+
+  for line in f.splitlines():
+    path = line.split()[0]
+    if len(path) > 0:
+      excluded_paths.append(path)
+
+  excluded_paths = set(excluded_paths)
+  for f in input_api.AffectedFiles():
+    for line_num, line in f.ChangedContents():
+      for term, message, error in non_inclusive_terms:
+        if IsExcludedFile(f, excluded_paths):
+          continue
+        CheckForMatch(f, line_num, line, term, message, error)
+
+  result = []
+  if (warnings):
+    result.append(
+        output_api.PresubmitPromptWarning(
+            'Banned non-inclusive language was used.\n' + '\n'.join(warnings)))
+  if (errors):
+    result.append(
+        output_api.PresubmitError('Banned non-inclusive language was used.\n' +
+                                  '\n'.join(errors)))
+  return result
+

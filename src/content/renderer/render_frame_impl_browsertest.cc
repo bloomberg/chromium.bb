@@ -48,7 +48,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
+#include "third_party/blink/public/common/widget/screen_infos.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_replication_state.mojom.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
@@ -107,6 +110,8 @@ class RenderFrameImplTest : public RenderViewTest {
         mojom::CreateFrameWidgetParams::New();
     widget_params->routing_id = kSubframeWidgetRouteId;
     widget_params->visual_properties.new_size = gfx::Size(100, 100);
+    widget_params->visual_properties.screen_infos =
+        blink::ScreenInfos(blink::ScreenInfo());
 
     widget_remote_.reset();
     mojo::PendingAssociatedReceiver<blink::mojom::Widget>
@@ -121,8 +126,7 @@ class RenderFrameImplTest : public RenderViewTest {
     widget_params->widget = std::move(blink_widget_receiver);
     widget_params->widget_host = blink_widget_host.Unbind();
 
-    mojom::FrameReplicationStatePtr frame_replication_state =
-        mojom::FrameReplicationState::New();
+    auto frame_replication_state = blink::mojom::FrameReplicationState::New();
     frame_replication_state->name = "frame";
     frame_replication_state->unique_name = "frame-uniqueName";
 
@@ -130,6 +134,7 @@ class RenderFrameImplTest : public RenderViewTest {
         view_->GetMainRenderFrame()->GetWebFrame()->FirstChild())
         ->Unload(kFrameProxyRouteId, false, frame_replication_state->Clone(),
                  blink::RemoteFrameToken());
+    MockPolicyContainerHost mock_policy_container_host;
     RenderFrameImpl::CreateFrame(
         *agent_scheduling_group_, blink::LocalFrameToken(), kSubframeRouteId,
         TestRenderFrame::CreateStubFrameReceiver(),
@@ -138,7 +143,11 @@ class RenderFrameImplTest : public RenderViewTest {
         base::UnguessableToken::Create(), std::move(frame_replication_state),
         &compositor_deps_, std::move(widget_params),
         blink::mojom::FrameOwnerProperties::New(),
-        /*has_committed_real_load=*/true, CreateStubPolicyContainer());
+        /*has_committed_real_load=*/true,
+        blink::mojom::PolicyContainer::New(
+            blink::mojom::PolicyContainerPolicies::New(),
+            mock_policy_container_host
+                .BindNewEndpointAndPassDedicatedRemote()));
 
     frame_ = static_cast<TestRenderFrame*>(
         RenderFrameImpl::FromRoutingID(kSubframeRouteId));
@@ -226,6 +235,7 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   // Make an update where the widget's size and the visible_viewport_size
   // are not the same.
   blink::VisualProperties visual_properties;
+  visual_properties.screen_infos = blink::ScreenInfos(blink::ScreenInfo());
   gfx::Size widget_size(400, 200);
   gfx::Size visible_size(350, 170);
   visual_properties.new_size = widget_size;
@@ -276,7 +286,7 @@ class DownloadURLMockLocalFrameHost : public LocalFrameHostInterceptor {
       : LocalFrameHostInterceptor(provider) {}
 
   MOCK_METHOD2(RunModalAlertDialog,
-               void(const base::string16& alert_message,
+               void(const std::u16string& alert_message,
                     RunModalAlertDialogCallback callback));
   MOCK_METHOD1(DownloadURL, void(blink::mojom::DownloadURLParamsPtr params));
 };

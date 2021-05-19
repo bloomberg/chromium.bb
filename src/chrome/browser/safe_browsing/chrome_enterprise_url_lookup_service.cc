@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
@@ -29,20 +30,14 @@ ChromeEnterpriseRealTimeUrlLookupService::
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         VerdictCacheManager* cache_manager,
         Profile* profile,
-        const IsHistorySyncEnabledCallback& is_history_sync_enabled_callback,
+        base::RepeatingCallback<ChromeUserPopulation()>
+            get_user_population_callback,
         enterprise_connectors::ConnectorsService* connectors_service,
-        PrefService* pref_service,
-        const ChromeUserPopulation::ProfileManagementStatus&
-            profile_management_status,
-        bool is_under_advanced_protection,
-        bool is_off_the_record)
+        ReferrerChainProvider* referrer_chain_provider)
     : RealTimeUrlLookupServiceBase(url_loader_factory,
                                    cache_manager,
-                                   is_history_sync_enabled_callback,
-                                   pref_service,
-                                   profile_management_status,
-                                   is_under_advanced_protection,
-                                   is_off_the_record),
+                                   get_user_population_callback,
+                                   referrer_chain_provider),
       profile_(profile),
       connectors_service_(connectors_service) {}
 
@@ -60,6 +55,18 @@ bool ChromeEnterpriseRealTimeUrlLookupService::
     CanPerformFullURLLookupWithToken() const {
   // URL lookup with token is disabled for enterprise users.
   return false;
+}
+
+bool ChromeEnterpriseRealTimeUrlLookupService::CanAttachReferrerChain() const {
+  // Referrer chain is currently not supported for enterprise users.
+  return false;
+}
+
+int ChromeEnterpriseRealTimeUrlLookupService::GetReferrerUserGestureLimit()
+    const {
+  NOTREACHED()
+      << "Referrer chain is currently not supported for enterprise users.";
+  return 0;
 }
 
 bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSubresourceURL() const {

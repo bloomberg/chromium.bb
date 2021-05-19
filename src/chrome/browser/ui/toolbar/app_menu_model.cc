@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -44,7 +45,6 @@
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
@@ -120,15 +120,9 @@ const base::Feature kChromeTipsInMainMenuNewBadge{
     "ChromeTipsInMainMenuNewBadge", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_MAC)
-// An empty command used because of a bug in AppKit menus.
-// See comment in CreateActionToolbarOverflowMenu().
-const int kEmptyMenuItemCommand = 0;
-#endif
-
 // Conditionally return the update app menu item title based on upgrade detector
 // state.
-base::string16 GetUpgradeDialogMenuItemName() {
+std::u16string GetUpgradeDialogMenuItemName() {
   if (UpgradeDetector::GetInstance()->is_outdated_install() ||
       UpgradeDetector::GetInstance()->is_outdated_install_no_au()) {
     return l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_MENU_ITEM);
@@ -139,12 +133,12 @@ base::string16 GetUpgradeDialogMenuItemName() {
 
 // Returns the appropriate menu label for the IDC_INSTALL_PWA command if
 // available.
-base::Optional<base::string16> GetInstallPWAAppMenuItemName(Browser* browser) {
+base::Optional<std::u16string> GetInstallPWAAppMenuItemName(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
     return base::nullopt;
-  base::string16 app_name =
+  std::u16string app_name =
       webapps::AppBannerManager::GetInstallableWebAppName(web_contents);
   if (app_name.empty())
     return base::nullopt;
@@ -322,7 +316,7 @@ bool AppMenuModel::IsItemForCommandIdDynamic(int command_id) const {
          command_id == IDC_INSTALL_PWA || command_id == IDC_UPGRADE_DIALOG;
 }
 
-base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
+std::u16string AppMenuModel::GetLabelForCommandId(int command_id) const {
   switch (command_id) {
     case IDC_ZOOM_PERCENT_DISPLAY:
       return zoom_label_;
@@ -348,7 +342,7 @@ base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
       return GetUpgradeDialogMenuItemName();
     default:
       NOTREACHED();
-      return base::string16();
+      return std::u16string();
   }
 }
 
@@ -737,10 +731,6 @@ bool AppMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool AppMenuModel::IsCommandIdVisible(int command_id) const {
   switch (command_id) {
-#if defined(OS_MAC)
-    case kEmptyMenuItemCommand:
-      return false;  // Always hidden (see CreateActionToolbarOverflowMenu).
-#endif
     case IDC_PIN_TO_START_SCREEN:
       return false;
     case IDC_UPGRADE_DIALOG: {
@@ -797,9 +787,6 @@ void AppMenuModel::Build() {
   // Build (and, by extension, Init) should only be called once.
   DCHECK_EQ(0, GetItemCount());
 
-  if (CreateActionToolbarOverflowMenu())
-    AddSeparator(ui::UPPER_SEPARATOR);
-
   if (IsCommandIdVisible(IDC_UPGRADE_DIALOG))
     AddItem(IDC_UPGRADE_DIALOG, GetUpgradeDialogMenuItemName());
   if (AddGlobalErrorMenuItems() || IsCommandIdVisible(IDC_UPGRADE_DIALOG))
@@ -841,15 +828,15 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 
-  if (base::Optional<base::string16> name =
+  if (base::Optional<std::u16string> name =
           GetInstallPWAAppMenuItemName(browser_)) {
     AddItem(IDC_INSTALL_PWA, *name);
   } else if (base::Optional<web_app::AppId> app_id =
                  web_app::GetWebAppForActiveTab(browser_)) {
     auto* provider = web_app::WebAppProvider::Get(browser_->profile());
-    const base::string16 short_name =
+    const std::u16string short_name =
         base::UTF8ToUTF16(provider->registrar().GetAppShortName(*app_id));
-    const base::string16 truncated_name = gfx::TruncateString(
+    const std::u16string truncated_name = gfx::TruncateString(
         short_name, kMaxAppNameLength, gfx::CHARACTER_BREAK);
     AddItem(IDC_OPEN_IN_PWA_WINDOW,
             l10n_util::GetStringFUTF16(IDS_OPEN_IN_APP_WINDOW, truncated_name));
@@ -932,27 +919,6 @@ void AppMenuModel::Build() {
   uma_action_recorded_ = false;
 }
 
-bool AppMenuModel::CreateActionToolbarOverflowMenu() {
-  // The extensions menu replaces the 3-dot menu entry.
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
-    return false;
-
-  // We only add the extensions overflow container if there are any icons that
-  // aren't shown in the main container.
-  // browser_->window() can return null during startup.
-  if (!browser_->window())
-    return false;
-
-  // |toolbar_actions_bar| can be null in testing.
-  ToolbarActionsBar* const toolbar_actions_bar =
-      ToolbarActionsBar::FromBrowserWindow(browser_->window());
-  if (toolbar_actions_bar && toolbar_actions_bar->NeedsOverflow()) {
-    AddItem(IDC_EXTENSIONS_OVERFLOW_MENU, base::string16());
-    return true;
-  }
-  return false;
-}
-
 void AppMenuModel::CreateCutCopyPasteMenu() {
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
   // layout for this menu item in AppMenu.xib. It does, however, use the
@@ -966,7 +932,8 @@ void AppMenuModel::CreateCutCopyPasteMenu() {
 }
 
 void AppMenuModel::CreateZoomMenu() {
-  zoom_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
+  zoom_menu_item_model_ =
+      std::make_unique<ui::ButtonMenuItemModel>(IDS_ZOOM_MENU, this);
   zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_MINUS,
                                                   IDS_ZOOM_MINUS2);
   zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_PLUS,

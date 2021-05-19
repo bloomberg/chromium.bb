@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -330,7 +331,7 @@ class SearchPrefetchBaseBrowserTest : public InProcessBrowserTest {
     return search_suggest_server_->GetURL(kSuggestDomain, path);
   }
 
-  void WaitUntilStatusChangesTo(base::string16 search_terms,
+  void WaitUntilStatusChangesTo(std::u16string search_terms,
                                 base::Optional<SearchPrefetchStatus> status) {
     auto* search_prefetch_service =
         SearchPrefetchServiceFactory::GetForProfile(browser()->profile());
@@ -1020,18 +1021,17 @@ IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
       SearchPrefetchEligibilityReason::kMaxAttemptsReached, 1);
 
   auto prefetch_status =
-      search_prefetch_service->GetSearchPrefetchStatusForTesting(
-          base::ASCIIToUTF16("prefetch_1"));
+      search_prefetch_service->GetSearchPrefetchStatusForTesting(u"prefetch_1");
   ASSERT_TRUE(prefetch_status.has_value());
   EXPECT_EQ(SearchPrefetchStatus::kInFlight, prefetch_status.value());
 
-  prefetch_status = search_prefetch_service->GetSearchPrefetchStatusForTesting(
-      base::ASCIIToUTF16("prefetch_2"));
+  prefetch_status =
+      search_prefetch_service->GetSearchPrefetchStatusForTesting(u"prefetch_2");
   ASSERT_TRUE(prefetch_status.has_value());
   EXPECT_EQ(SearchPrefetchStatus::kInFlight, prefetch_status.value());
 
-  prefetch_status = search_prefetch_service->GetSearchPrefetchStatusForTesting(
-      base::ASCIIToUTF16("prefetch_3"));
+  prefetch_status =
+      search_prefetch_service->GetSearchPrefetchStatusForTesting(u"prefetch_3");
   EXPECT_FALSE(prefetch_status.has_value());
 }
 
@@ -2572,7 +2572,7 @@ IN_PROC_BROWSER_TEST_F(SearchPrefetchServiceZeroCacheTimeBrowserTest,
   EXPECT_FALSE(search_prefetch_service->MaybePrefetchURL(
       GetSearchServerQueryURL("prefetch_3")));
 
-  WaitUntilStatusChangesTo(base::ASCIIToUTF16("prefetch_1"), base::nullopt);
+  WaitUntilStatusChangesTo(u"prefetch_1", base::nullopt);
 
   EXPECT_TRUE(search_prefetch_service->MaybePrefetchURL(
       GetSearchServerQueryURL("prefetch_4")));
@@ -2732,7 +2732,7 @@ IN_PROC_BROWSER_TEST_F(GooglePFTest, BaseGoogleSearchHasPFForPrefetch) {
   auto* default_search = template_url_service->GetDefaultSearchProvider();
 
   TemplateURLRef::SearchTermsArgs search_terms_args =
-      TemplateURLRef::SearchTermsArgs(base::string16());
+      TemplateURLRef::SearchTermsArgs(std::u16string());
   search_terms_args.is_prefetch = true;
 
   std::string generated_url = default_search->url_ref().ReplaceSearchTerms(
@@ -2746,7 +2746,7 @@ IN_PROC_BROWSER_TEST_F(GooglePFTest, BaseGoogleSearchNoPFForNonPrefetch) {
   auto* default_search = template_url_service->GetDefaultSearchProvider();
 
   TemplateURLRef::SearchTermsArgs search_terms_args =
-      TemplateURLRef::SearchTermsArgs(base::string16());
+      TemplateURLRef::SearchTermsArgs(std::u16string());
   search_terms_args.is_prefetch = false;
 
   std::string generated_url = default_search->url_ref().ReplaceSearchTerms(

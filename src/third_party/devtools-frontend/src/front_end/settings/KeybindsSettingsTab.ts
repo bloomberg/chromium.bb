@@ -4,13 +4,13 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../common/common.js';
-import * as Host from '../host/host.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Root from '../root/root.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Root from '../core/root/root.js';
+import * as UI from '../ui/legacy/legacy.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Text for keyboard shortcuts
   */
@@ -110,8 +110,7 @@ export class KeybindsSettingsTab extends UI.Widget.VBox implements UI.ListContro
     const footer = this.contentElement.createChild('div');
     footer.classList.add('keybinds-footer');
     const docsLink = UI.XLink.XLink.create(
-        'https://developers.google.com/web/tools/chrome-devtools/shortcuts',
-        i18nString(UIStrings.FullListOfDevtoolsKeyboard));
+        'https://developer.chrome.com/docs/devtools/shortcuts/', i18nString(UIStrings.FullListOfDevtoolsKeyboard));
     docsLink.classList.add('docs-link');
     footer.appendChild(docsLink);
     footer.appendChild(UI.UIUtils.createTextButton(i18nString(UIStrings.RestoreDefaultShortcuts), () => {

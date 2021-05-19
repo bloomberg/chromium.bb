@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
 
 namespace tint {
@@ -27,16 +25,16 @@ const diag::Formatter::Style formatter_style{
 
 class ParserImplErrorTest : public ParserImplTest {};
 
-#define EXPECT(SOURCE, EXPECTED)                                          \
-  do {                                                                    \
-    std::string source = SOURCE;                                          \
-    std::string expected = EXPECTED;                                      \
-    auto p = parser(source);                                              \
-    p->set_max_errors(5);                                                 \
-    EXPECT_EQ(false, p->Parse());                                         \
-    EXPECT_EQ(true, p->diagnostics().contains_errors());                  \
-    EXPECT_EQ(expected,                                                   \
-              diag::Formatter(formatter_style).format(p->diagnostics())); \
+#define EXPECT(SOURCE, EXPECTED)                                               \
+  do {                                                                         \
+    std::string source = SOURCE;                                               \
+    std::string expected = EXPECTED;                                           \
+    auto p = parser(source);                                                   \
+    p->set_max_errors(5);                                                      \
+    EXPECT_EQ(false, p->Parse());                                              \
+    auto diagnostics = p->builder().Diagnostics();                             \
+    EXPECT_EQ(true, diagnostics.contains_errors());                            \
+    EXPECT_EQ(expected, diag::Formatter(formatter_style).format(diagnostics)); \
   } while (false)
 
 TEST_F(ParserImplErrorTest, AdditiveInvalidExpr) {
@@ -706,33 +704,62 @@ TEST_F(ParserImplErrorTest, GlobalDeclStructMemberMissingSemicolon) {
          "                   ^\n");
 }
 
-TEST_F(ParserImplErrorTest, GlobalDeclStructMemberOffsetMissingLParen) {
-  EXPECT("struct S { [[offset 1)]] i : i32; };",
-         "test.wgsl:1:21 error: expected '(' for offset decoration\n"
-         "struct S { [[offset 1)]] i : i32; };\n"
-         "                    ^\n");
+TEST_F(ParserImplErrorTest, GlobalDeclStructMemberAlignMissingLParen) {
+  EXPECT("struct S { [[align 1)]] i : i32; };",
+         "test.wgsl:1:20 error: expected '(' for align decoration\n"
+         "struct S { [[align 1)]] i : i32; };\n"
+         "                   ^\n");
 }
 
-TEST_F(ParserImplErrorTest, GlobalDeclStructMemberOffsetMissingRParen) {
-  EXPECT("struct S { [[offset(1]] i : i32; };",
-         "test.wgsl:1:22 error: expected ')' for offset decoration\n"
-         "struct S { [[offset(1]] i : i32; };\n"
-         "                     ^^\n");
-}
-
-TEST_F(ParserImplErrorTest, GlobalDeclStructMemberOffsetInvaldValue) {
-  EXPECT("struct S { [[offset(x)]] i : i32; };",
-         "test.wgsl:1:21 error: expected signed integer literal for offset "
-         "decoration\n"
-         "struct S { [[offset(x)]] i : i32; };\n"
-         "                    ^\n");
-}
-
-TEST_F(ParserImplErrorTest, GlobalDeclStructMemberOffsetNegativeValue) {
-  EXPECT("struct S { [[offset(-2)]] i : i32; };",
-         "test.wgsl:1:21 error: offset decoration must be positive\n"
-         "struct S { [[offset(-2)]] i : i32; };\n"
+TEST_F(ParserImplErrorTest, GlobalDeclStructMemberAlignMissingRParen) {
+  EXPECT("struct S { [[align(1]] i : i32; };",
+         "test.wgsl:1:21 error: expected ')' for align decoration\n"
+         "struct S { [[align(1]] i : i32; };\n"
          "                    ^^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclStructMemberAlignInvaldValue) {
+  EXPECT("struct S { [[align(x)]] i : i32; };",
+         "test.wgsl:1:20 error: expected signed integer literal for align "
+         "decoration\n"
+         "struct S { [[align(x)]] i : i32; };\n"
+         "                   ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclStructMemberAlignNegativeValue) {
+  EXPECT("struct S { [[align(-2)]] i : i32; };",
+         "test.wgsl:1:20 error: align decoration must be positive\n"
+         "struct S { [[align(-2)]] i : i32; };\n"
+         "                   ^^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclStructMemberSizeMissingLParen) {
+  EXPECT("struct S { [[size 1)]] i : i32; };",
+         "test.wgsl:1:19 error: expected '(' for size decoration\n"
+         "struct S { [[size 1)]] i : i32; };\n"
+         "                  ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclStructMemberSizeMissingRParen) {
+  EXPECT("struct S { [[size(1]] i : i32; };",
+         "test.wgsl:1:20 error: expected ')' for size decoration\n"
+         "struct S { [[size(1]] i : i32; };\n"
+         "                   ^^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclStructMemberSizeInvaldValue) {
+  EXPECT("struct S { [[size(x)]] i : i32; };",
+         "test.wgsl:1:19 error: expected signed integer literal for size "
+         "decoration\n"
+         "struct S { [[size(x)]] i : i32; };\n"
+         "                  ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclStructMemberSizeNegativeValue) {
+  EXPECT("struct S { [[size(-2)]] i : i32; };",
+         "test.wgsl:1:19 error: size decoration must be positive\n"
+         "struct S { [[size(-2)]] i : i32; };\n"
+         "                  ^^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclTypeAliasMissingIdentifier) {
@@ -1083,8 +1110,7 @@ TEST_F(ParserImplErrorTest, GlobalDeclVarVectorMissingType) {
          "             ^\n");
 }
 
-TEST_F(ParserImplErrorTest, DISABLED_GlobalDeclSamplerExplicitStorageClass) {
-  // TODO(jrprice): Enable this once downstream users have caught up.
+TEST_F(ParserImplErrorTest, GlobalDeclSamplerExplicitStorageClass) {
   EXPECT(
       "var<uniform> x : sampler;",
       "test.wgsl:1:5 error: sampler variables must not have a storage class\n"
@@ -1092,13 +1118,12 @@ TEST_F(ParserImplErrorTest, DISABLED_GlobalDeclSamplerExplicitStorageClass) {
       "    ^^^^^^^\n");
 }
 
-TEST_F(ParserImplErrorTest, DISABLED_GlobalDeclTextureExplicitStorageClass) {
-  // TODO(jrprice): Enable this once downstream users have caught up.
-  EXPECT(
-      "var<uniform> x : [[access(read)]] texture_1d<f32>;",
-      "test.wgsl:1:5 error: texture variables must not have a storage class\n"
-      "var<uniform> x : [[access(read)]] texture_1d<f32>;\n"
-      "    ^^^^^^^\n");
+TEST_F(ParserImplErrorTest, GlobalDeclTextureExplicitStorageClass) {
+  EXPECT("var<uniform> x : [[access(read)]] texture_1d<f32>;",
+         "test.wgsl:1:5 error: texture_1d<f32> variables must not have a "
+         "storage class\n"
+         "var<uniform> x : [[access(read)]] texture_1d<f32>;\n"
+         "    ^^^^^^^\n");
 }
 
 TEST_F(ParserImplErrorTest, IfStmtMissingLParen) {

@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -77,7 +79,8 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 
   void SetUpOnMainThread() override {
     PlatformAppBrowserTest::SetUpOnMainThread();
-    ensure_media_directories_exists_.reset(new EnsureMediaDirectoriesExists);
+    ensure_media_directories_exists_ =
+        std::make_unique<EnsureMediaDirectoriesExists>();
     // Prevent the ProcessManager from suspending the chrome-test app. Needed
     // because the writer.onerror and writer.onwriteend events do not qualify as
     // pending callbacks, so the app looks dormant.
@@ -133,7 +136,9 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     }
 
     base::AutoReset<base::FilePath> reset(&test_data_dir_, temp_dir.GetPath());
-    bool result = RunPlatformAppTestWithArg(extension_name, custom_arg);
+    bool result = RunExtensionTest({.name = extension_name.c_str(),
+                                    .custom_arg = custom_arg,
+                                    .launch_as_platform_app = true});
     content::RunAllPendingInMessageLoop();  // avoid race on exit in registry.
     return result;
   }
@@ -144,7 +149,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 
     StorageMonitor::GetInstance()->receiver()->ProcessAttach(
         StorageInfo(device_id_, kDevicePath, base::ASCIIToUTF16(kDeviceName),
-                    base::string16(), base::string16(), 0));
+                    std::u16string(), std::u16string(), 0));
     content::RunAllPendingInMessageLoop();
   }
 

@@ -10,7 +10,6 @@
 #include <stdint.h>
 #include <string>
 
-#include "base/strings/string16.h"
 #include "chromeos/components/phonehub/proto/phonehub_api.pb.h"
 
 namespace chromeos {
@@ -34,7 +33,7 @@ class MessageSenderImpl : public MessageSender {
   void SendDismissNotificationRequest(int64_t notification_id) override;
   void SendNotificationInlineReplyRequest(
       int64_t notification_id,
-      const base::string16& reply_text) override;
+      const std::u16string& reply_text) override;
   void SendShowNotificationAccessSetupRequest() override;
   void SendRingDeviceRequest(bool device_ringing_enabled) override;
 

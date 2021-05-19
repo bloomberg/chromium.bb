@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_profile_validator.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
@@ -304,7 +303,7 @@ class PersonalDataManager : public KeyedService,
   // user is interacting.
   std::vector<Suggestion> GetProfileSuggestions(
       const AutofillType& type,
-      const base::string16& field_contents,
+      const std::u16string& field_contents,
       bool field_is_autofilled,
       const std::vector<ServerFieldType>& field_types);
 
@@ -329,7 +328,7 @@ class PersonalDataManager : public KeyedService,
   // side cards should not be included.
   std::vector<Suggestion> GetCreditCardSuggestions(
       const AutofillType& type,
-      const base::string16& field_contents,
+      const std::u16string& field_contents,
       bool include_server_cards);
 
   // Re-loads profiles and credit cards from the WebDatabase asynchronously.
@@ -676,7 +675,7 @@ class PersonalDataManager : public KeyedService,
   // |type| and |field_contents| of the credit card field.
   std::vector<Suggestion> GetSuggestionsForCards(
       const AutofillType& type,
-      const base::string16& field_contents,
+      const std::u16string& field_contents,
       const std::vector<CreditCard*>& cards_to_suggest) const;
 
   // Converts the Wallet addresses to local autofill profiles. This should be
@@ -750,7 +749,7 @@ class PersonalDataManager : public KeyedService,
   // stored in |card|, unless |card| exists as a local and a server copy. In
   // this case, we prefer the nickname of the local if it is defined. If only
   // one copy has a nickname, take that.
-  base::string16 GetDisplayNicknameForCreditCard(const CreditCard& card) const;
+  std::u16string GetDisplayNicknameForCreditCard(const CreditCard& card) const;
 
   // Returns true if the sync is enabled for |model_type|.
   bool IsSyncEnabledFor(syncer::ModelType model_type);

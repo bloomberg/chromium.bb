@@ -9,43 +9,22 @@
 
 # Failed tests
 BindGeneratesResourceTest.*
-BindUniformLocationTest.Basic/*
-BindUniformLocationTest.Compositor/*
-BindUniformLocationTest.SameLocationForUsedAndUnusedUniform/*
-BindUniformLocationTest.SamplerLocation/*
-BindUniformLocationTest.UnusedUniformUpdate/*
-BindUniformLocationTest.UnusedUniformUpdateComplex/*
-BindUniformLocationTest.UseSamplerWhenUnusedUniforms/*
 ClearTest.Depth16Scissored/*
 ClearTest.InceptionScissorClears/*
 ClientArraysTest.*
-CopyTexImageTest.*
-CopyTextureTestWebGL.*
+CopyTextureTestWebGL.NPOT/*
 D3DImageFormatConversionTest.*
 DifferentStencilMasksTest.*
-EGLContextASANTest.*
-EGLContextSharingTest.TextureLifetime/*
 FramebufferTest.MultiContextNoRenderingFeedbackLoops/*
-GetTexLevelParameterTest.ExtensionStringExposed/*
-GLSLTest.InactiveVaryingInVertexActiveInFragment/*
 InstancingTest.LineLoop/*
-MaxTextureSizeTest.*
-MultisampledRenderToTextureTest.FramebufferCompleteness/*
-MultisampledRenderToTextureTest.TextureCubeMapParameterCheck/*
 PbufferTest.BindTexImage/*
 PbufferTest.Clearing/*
 PbufferTest.TextureSizeReset/*
-RequestExtensionTest.ExtensionsDisabledByDefault/*
-RequestExtensionTest.Queries/*
-RobustBufferAccessBehaviorTest.DynamicBuffer/*
 SimpleStateChangeTest.DrawAndClearTextureRepeatedly/*
 SimpleStateChangeTest.RebindTranslatedAttribute/*
 StateChangeTest.DrawAfterFlushWithNoStateChange/*
-Texture2DDepthTest.DepthTextureES2Compatibility/*
-TextureCubeTest.*
-VulkanClearTest.*
-WebGL2ReadOutsideFramebufferTest.*
-WebGLDrawElementsTest.*
+WebGL2ReadOutsideFramebufferTest.CopyTexSubImage3D/*
+WebGLDrawElementsTest.DrawElementsTypeAlignment/*
 WebGLGLSLTest.*
 WebGLReadOutsideFramebufferTest.*
 
@@ -63,7 +42,6 @@ CopyCompressedTextureTest.InternalFormat/*
 DebugMarkerTest.*
 DebugTest.*
 DepthStencilTest.*
-DiscardFramebufferEXTTest.*
 DrawBuffersTest.*
 EGLPrintEGLinfoTest.PrintGLESCapabilities/*
 EGLStreamTest.*
@@ -82,7 +60,8 @@ IndexedPointsTestUShort.*
 OcclusionQueriesTest.*
 PBOExtensionTest.*
 PixmapTest.Clearing/*
-SemaphoreTest.SemaphoreShouldBeSemaphore/*
+RobustClientMemoryTest.*
+SemaphoreTest.*
 SRGBFramebufferTest.Validation/*
 StateChangeRenderTest.GenerateMipmap/*
 SyncQueriesTest.*
@@ -95,6 +74,13 @@ VertexAttributeCachingTest.*
 VertexAttributeOORTest.*
 VertexAttributeTest.*
 ViewportTest.*
+VulkanExternalImageTest.ShouldClearMutableNoStorageUsageOpaqueFdRGBA8/*
+VulkanExternalImageTest.ShouldClearOpaqueFdWithSemaphores/*
+VulkanExternalImageTest.ShouldClearZirconVmoRGBA8/*
+VulkanExternalImageTest.ShouldClearZirconWithFlagsVmoRGBA8/*
+VulkanExternalImageTest.ShouldImportSemaphoreOpaqueFd/*
+VulkanExternalImageTest.TextureFormatCompatChromiumMutableNoStorageZirconVmo/*
+VulkanExternalImageTest.TextureFormatCompatChromiumZirconVmo/*
 WebGLCompatibilityTest.*
 WebGLFramebufferTest.*
 
@@ -105,16 +91,4 @@ LineLoopTest.DISABLED_DrawArraysWithLargeCount/*
 MipmapTest.DISABLED_ThreeLevelsInitData/*
 
 # Compile failed tests
-EGLSyncTest.AndroidNativeFence_WaitSync/*
-ExplicitContextTest.GetProcAddress/*
-GetImageTest.*
-GetTexLevelParameterTest.Queries/*
-MemoryObjectTest.MemoryObjectQueries/*
-MemoryObjectTest.MemoryObjectShouldBeMemoryObject/*
-MemoryObjectTest.ShouldFailValidationOnImportFdUnsupportedHandleType/*
-PointSpritesTest.PointWithoutAttributesCompliance/*
-RobustBufferAccessBehaviorTest.EmptyBuffer/*
-RobustClientMemoryTest.*
 RobustResourceInitTest.*
-SemaphoreTest.*
-VulkanExternalImageTest.*

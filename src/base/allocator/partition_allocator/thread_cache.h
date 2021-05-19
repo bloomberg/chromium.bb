@@ -8,6 +8,7 @@
 #include <atomic>
 #include <memory>
 
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
@@ -18,14 +19,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "base/partition_alloc_buildflags.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
-
-// Need TLS support.
-#if defined(OS_POSIX) || defined(OS_WIN)
-#define PA_THREAD_CACHE_SUPPORTED
-#endif
+#include "build/build_config.h"
 
 namespace base {
 
@@ -69,6 +65,10 @@ class BASE_EXPORT ThreadCacheRegistry {
   // Starts a periodic timer on the current thread to purge all thread caches.
   void StartPeriodicPurge();
 
+  // Controls the thread cache size, by setting the multiplier to a value above
+  // or below |ThreadCache::kDefaultMultiplier|.
+  void SetThreadCacheMultiplier(float multiplier);
+
   static PartitionLock& GetLock() { return Instance().lock_; }
   // Purges all thread caches *now*. This is completely thread-unsafe, and
   // should only be called in a post-fork() handler.
@@ -81,7 +81,7 @@ class BASE_EXPORT ThreadCacheRegistry {
   static constexpr TimeDelta kMinPurgeInterval = TimeDelta::FromSeconds(1);
   static constexpr TimeDelta kMaxPurgeInterval = TimeDelta::FromMinutes(1);
   static constexpr TimeDelta kDefaultPurgeInterval = 2 * kMinPurgeInterval;
-  static constexpr int kMinMainThreadAllocationsForPurging = 1000;
+  static constexpr int kMinAllocationsForPurging = 10000;
 
  private:
   void PeriodicPurge();
@@ -97,10 +97,7 @@ class BASE_EXPORT ThreadCacheRegistry {
 
 constexpr ThreadCacheRegistry::ThreadCacheRegistry() = default;
 
-// Optional statistics collection.
-#define PA_ENABLE_THREAD_CACHE_STATISTICS 1
-
-#if defined(PA_ENABLE_THREAD_CACHE_STATISTICS)
+#if defined(PA_THREAD_CACHE_ENABLE_STATISTICS)
 #define INCREMENT_COUNTER(counter) ++counter
 #define GET_COUNTER(counter) counter
 #else
@@ -108,10 +105,15 @@ constexpr ThreadCacheRegistry::ThreadCacheRegistry() = default;
   do {                             \
   } while (0)
 #define GET_COUNTER(counter) 0
-#endif  // defined(PA_ENABLE_THREAD_CACHE_STATISTICS)
+#endif  // defined(PA_THREAD_CACHE_ENABLE_STATISTICS)
 
 ALWAYS_INLINE static constexpr int ConstexprLog2(size_t n) {
   return n < 1 ? -1 : (n < 2 ? 0 : (1 + ConstexprLog2(n >> 1)));
+}
+
+ALWAYS_INLINE static constexpr uint16_t BucketIndexForSize(size_t size) {
+  return ((ConstexprLog2(size) - kMinBucketedOrder + 1)
+          << kNumBucketsPerOrderBits);
 }
 
 #if DCHECK_IS_ON()
@@ -208,7 +210,6 @@ class BASE_EXPORT ThreadCache {
   // Asks this cache to trigger |Purge()| at a later point. Can be called from
   // any thread.
   void SetShouldPurge();
-  void SetNotifiesRegistry(bool enabled);
   // Empties the cache.
   // The Partition lock must *not* be held when calling this.
   // Must be called from the thread this cache is for.
@@ -219,21 +220,34 @@ class BASE_EXPORT ThreadCache {
     return buckets_[index].count;
   }
 
+  // Sets the maximum size of allocations that may be cached by the thread
+  // cache. This applies to all threads. However, the maximum size is bounded by
+  // |kLargeSizeThreshold|.
+  static void SetLargestCachedSize(size_t size);
+
   // TODO(lizeb): Once we have periodic purge, lower the ratio.
   static constexpr uint16_t kBatchFillRatio = 8;
-  static constexpr uint8_t kMaxCountPerBucket = 128;
+  static constexpr float kDefaultMultiplier = 2.;
+  static constexpr uint8_t kSmallBucketBaseCount = 64;
 
-  // TODO(lizeb): Optimize the threshold.
-  static constexpr size_t kSizeThreshold = 512;
+  // When trying to conserve memory, set the thread cache limit to this.
+  static constexpr size_t kDefaultSizeThreshold = 512;
+  // 32kiB is chosen here as from local experiments, "zone" allocation in
+  // V8 is performance-sensitive, and zones can (and do) grow up to 32kiB for
+  // each individual allocation.
+  static constexpr size_t kLargeSizeThreshold = 1 << 15;
 
  private:
   struct Bucket {
-    PartitionFreelistEntry* freelist_head;
+    PartitionFreelistEntry* freelist_head = nullptr;
     // Want to keep sizeof(Bucket) small, using small types.
-    uint8_t count;
-    uint8_t limit;
-    uint16_t slot_size;
+    uint8_t count = 0;
+    std::atomic<uint8_t> limit{};  // Can be changed from another thread.
+    uint16_t slot_size = 0;
+
+    Bucket();
   };
+  static_assert(sizeof(Bucket) <= 2 * sizeof(void*), "Keep Bucket small.");
   enum class Mode { kNormal, kPurge, kNotifyRegistry };
 
   explicit ThreadCache(PartitionRoot<ThreadSafe>* root);
@@ -244,13 +258,14 @@ class BASE_EXPORT ThreadCache {
   // Empties the |bucket| until there are at most |limit| objects in it.
   void ClearBucket(Bucket& bucket, size_t limit);
   ALWAYS_INLINE void PutInBucket(Bucket& bucket, void* slot_start);
-  void HandleNonNormalMode();
   void ResetForTesting();
+  // Releases the entire freelist starting at |head| to the root.
+  void FreeAfter(PartitionFreelistEntry* head);
+  static void SetGlobalLimits(PartitionRoot<ThreadSafe>* root,
+                              float multiplier);
 
   static constexpr uint16_t kBucketCount =
-      ((ConstexprLog2(kSizeThreshold) - kMinBucketedOrder + 1)
-       << kNumBucketsPerOrderBits) +
-      1;
+      BucketIndexForSize(kLargeSizeThreshold) + 1;
   static_assert(
       kBucketCount < kNumBuckets,
       "Cannot have more cached buckets than what the allocator supports");
@@ -268,7 +283,16 @@ class BASE_EXPORT ThreadCache {
   static constexpr uintptr_t kTombstone = 0x1;
   static constexpr uintptr_t kTombstoneMask = ~kTombstone;
 
+  static uint8_t global_limits_[kBucketCount];
+  // Index of the largest active bucket. Not all processes/platforms will use
+  // all buckets, as using larger buckets increases the memory footprint.
+  //
+  // TODO(lizeb): Investigate making this per-thread rather than static, to
+  // improve locality, and open the door to per-thread settings.
+  static uint16_t largest_active_bucket_index_;
+
   Bucket buckets_[kBucketCount];
+  uint64_t allocations_ = 0;
   std::atomic<bool> should_purge_;
   ThreadCacheStats stats_;
   PartitionRoot<ThreadSafe>* const root_;
@@ -290,6 +314,13 @@ class BASE_EXPORT ThreadCache {
   FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, RecordStats);
   FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, ThreadCacheRegistry);
   FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, MultipleThreadCachesAccounting);
+  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, DynamicCountPerBucket);
+  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, DynamicCountPerBucketClamping);
+  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest,
+                           DynamicCountPerBucketMultipleThreads);
+  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, DynamicSizeThreshold);
+  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, DynamicSizeThresholdPurge);
+  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, ClearFromTail);
 };
 
 ALWAYS_INLINE bool ThreadCache::MaybePutInCache(void* slot_start,
@@ -297,7 +328,7 @@ ALWAYS_INLINE bool ThreadCache::MaybePutInCache(void* slot_start,
   PA_REENTRANCY_GUARD(is_in_thread_cache_);
   INCREMENT_COUNTER(stats_.cache_fill_count);
 
-  if (UNLIKELY(bucket_index >= kBucketCount)) {
+  if (UNLIKELY(bucket_index > largest_active_bucket_index_)) {
     INCREMENT_COUNTER(stats_.cache_fill_misses);
     return false;
   }
@@ -309,9 +340,14 @@ ALWAYS_INLINE bool ThreadCache::MaybePutInCache(void* slot_start,
   PutInBucket(bucket, slot_start);
   INCREMENT_COUNTER(stats_.cache_fill_hits);
 
+  // Relaxed ordering: we don't care about having an up-to-date or consistent
+  // value, just want it to not change while we are using it, hence using
+  // relaxed ordering, and loading into a local variable. Without it, we are
+  // gambling that the compiler would not issue multiple loads.
+  uint8_t limit = bucket.limit.load(std::memory_order_relaxed);
   // Batched deallocation, amortizing lock acquisitions.
-  if (UNLIKELY(bucket.count >= bucket.limit)) {
-    ClearBucket(bucket, bucket.limit / 2);
+  if (UNLIKELY(bucket.count > limit)) {
+    ClearBucket(bucket, limit / 2);
   }
 
   if (UNLIKELY(should_purge_.load(std::memory_order_relaxed)))
@@ -322,10 +358,15 @@ ALWAYS_INLINE bool ThreadCache::MaybePutInCache(void* slot_start,
 
 ALWAYS_INLINE void* ThreadCache::GetFromCache(size_t bucket_index,
                                               size_t* slot_size) {
+  allocations_++;
+#if defined(PA_THREAD_CACHE_ALLOC_STATS)
+  stats_.allocs_per_bucket_[bucket_index]++;
+#endif
+
   PA_REENTRANCY_GUARD(is_in_thread_cache_);
   INCREMENT_COUNTER(stats_.alloc_count);
   // Only handle "small" allocations.
-  if (UNLIKELY(bucket_index >= kBucketCount)) {
+  if (UNLIKELY(bucket_index > largest_active_bucket_index_)) {
     INCREMENT_COUNTER(stats_.alloc_miss_too_large);
     INCREMENT_COUNTER(stats_.alloc_misses);
     return nullptr;

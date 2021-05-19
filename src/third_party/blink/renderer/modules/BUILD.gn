@@ -77,13 +77,14 @@ component("modules") {
   sub_modules = [
     "//third_party/blink/renderer/bindings/modules/v8",
     "//third_party/blink/renderer/modules/accessibility",
+    "//third_party/blink/renderer/modules/ad_auction",
     "//third_party/blink/renderer/modules/animationworklet",
     "//third_party/blink/renderer/modules/app_banner",
     "//third_party/blink/renderer/modules/audio_output_devices",
     "//third_party/blink/renderer/modules/background_fetch",
     "//third_party/blink/renderer/modules/background_sync",
     "//third_party/blink/renderer/modules/badging",
-    "//third_party/blink/renderer/modules/device",
+    "//third_party/blink/renderer/modules/managed_device",
     "//third_party/blink/renderer/modules/battery",
     "//third_party/blink/renderer/modules/beacon",
     "//third_party/blink/renderer/modules/bluetooth",
@@ -124,6 +125,7 @@ component("modules") {
     "//third_party/blink/renderer/modules/keyboard",
     "//third_party/blink/renderer/modules/launch",
     "//third_party/blink/renderer/modules/locks",
+    "//third_party/blink/renderer/modules/lock_screen",
     "//third_party/blink/renderer/modules/manifest",
     "//third_party/blink/renderer/modules/media_capabilities",
     "//third_party/blink/renderer/modules/media_controls",
@@ -699,6 +701,25 @@ if (use_libfuzzer) {
     ]
 
     seed_corpus = "webcodecs/fuzzer_seed_corpus/video_encoder"
+
+    deps = [
+      ":modules",
+      "//third_party/blink/renderer/core:testing",
+      "//third_party/blink/renderer/modules/webcodecs:fuzzer_protos",
+      "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+      "//third_party/libprotobuf-mutator",
+      "//third_party/protobuf:protobuf_lite",
+    ]
+  }
+
+  fuzzer_test("webcodecs_audio_encoder_fuzzer") {
+    sources = [
+      "webcodecs/audio_encoder_fuzzer.cc",
+      "webcodecs/fuzzer_utils.cc",
+      "webcodecs/fuzzer_utils.h",
+    ]
+
+    seed_corpus = "webcodecs/fuzzer_seed_corpus/audio_encoder"
 
     deps = [
       ":modules",

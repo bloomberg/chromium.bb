@@ -37,9 +37,9 @@ import six
 import time
 
 EXCLUSIVE_CHANGE_DIRECTORIES = [
-    [ 'third_party', 'v8' ],
-    [ 'node_modules' ],
-    [ 'OWNERS' ],
+    ['third_party', 'v8'],
+    ['node_modules'],
+    ['OWNERS', 'config/owner'],
 ]
 
 AUTOROLL_ACCOUNT = "devtools-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com"
@@ -50,7 +50,9 @@ def _ExecuteSubProcess(input_api, output_api, script_path, args, results):
         script_path = [input_api.python_executable, script_path]
 
     start_time = time.time()
-    process = input_api.subprocess.Popen(script_path + args, stdout=input_api.subprocess.PIPE, stderr=input_api.subprocess.STDOUT)
+    process = input_api.subprocess.Popen(script_path + args,
+                                         stdout=input_api.subprocess.PIPE,
+                                         stderr=input_api.subprocess.STDOUT)
     out, _ = process.communicate()
     end_time = time.time()
 
@@ -67,6 +69,7 @@ def _CheckChangesAreExclusiveToDirectory(input_api, output_api):
     if input_api.change.DISABLE_THIRD_PARTY_CHECK != None:
         return []
     results = [output_api.PresubmitNotifyResult('Directory Exclusivity Check:')]
+
     def IsParentDir(file, dir):
         while file != '':
             if file == dir:
@@ -125,7 +128,8 @@ def _CheckBugAssociation(input_api, output_api, is_committing):
 
 def _CheckBuildGN(input_api, output_api):
     results = [output_api.PresubmitNotifyResult('Running BUILD.GN check:')]
-    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'check_gn.js')
+    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                         'scripts', 'check_gn.js')
     results.extend(_checkWithNodeScript(input_api, output_api, script_path))
     return results
 
@@ -133,9 +137,9 @@ def _CheckBuildGN(input_api, output_api):
 def _CheckExperimentTelemetry(input_api, output_api):
     experiment_telemetry_files = [
         input_api.os_path.join(input_api.PresubmitLocalPath(), 'front_end',
-                               'main', 'MainImpl.js'),
+                               'main', 'MainImpl.ts'),
         input_api.os_path.join(input_api.PresubmitLocalPath(), 'front_end',
-                               'host', 'UserMetrics.js')
+                               'core', 'host', 'UserMetrics.ts')
     ]
     affected_main_files = _getAffectedFiles(input_api,
                                             experiment_telemetry_files, [],
@@ -157,13 +161,17 @@ def _CheckExperimentTelemetry(input_api, output_api):
 
 def _CheckJSON(input_api, output_api):
     results = [output_api.PresubmitNotifyResult('Running JSON Validator:')]
-    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'json_validator', 'validate_module_json.js')
+    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                         'scripts', 'json_validator',
+                                         'validate_module_json.js')
     results.extend(_checkWithNodeScript(input_api, output_api, script_path))
     return results
 
 
 def _CheckFormat(input_api, output_api):
-    node_modules_affected_files = _getAffectedFiles(input_api, [input_api.os_path.join(input_api.PresubmitLocalPath(), 'node_modules')], [], [])
+    node_modules_affected_files = _getAffectedFiles(input_api, [
+        input_api.os_path.join(input_api.PresubmitLocalPath(), 'node_modules')
+    ], [], [])
 
     # TODO(crbug.com/1068198): Remove once `git cl format --js` can handle large CLs.
     if (len(node_modules_affected_files) > 0):
@@ -172,39 +180,6 @@ def _CheckFormat(input_api, output_api):
     results = [output_api.PresubmitNotifyResult('Running Format Checks:')]
 
     return _ExecuteSubProcess(input_api, output_api, ['git', 'cl', 'format', '--js'], [], results)
-
-
-def _CheckDevtoolsLocalization(input_api, output_api, check_all_files=False):  # pylint: disable=invalid-name
-    devtools_root = input_api.PresubmitLocalPath()
-    script_path = input_api.os_path.join(devtools_root, 'scripts', 'test', 'run_localization_check.py')
-    if check_all_files == True:
-        # Scan all files and fix any errors
-        args = ['--autofix', '--all']
-    else:
-        devtools_front_end = input_api.os_path.join(devtools_root, 'front_end')
-        affected_front_end_files = _getAffectedFiles(
-            input_api, [devtools_front_end], [],
-            ['.ts', '.js', '.grdp', '.grd', 'module.json'])
-
-        if len(affected_front_end_files) == 0:
-            return [
-                output_api.PresubmitNotifyResult(
-                    'No affected files for localization check')
-            ]
-
-        with input_api.CreateTemporaryFile() as file_list:
-            for affected_file in affected_front_end_files:
-                file_list.write(affected_file + '\n')
-        file_list.close()
-
-        # Scan only added or modified files with specific extensions.
-        args = ['--autofix', '--file-list', file_list.name]
-
-    results = [
-        output_api.PresubmitNotifyResult('Running Localization Checks:')
-    ]
-    return _ExecuteSubProcess(input_api, output_api, script_path, args, results)
-
 
 def _CheckDevToolsStyleJS(input_api, output_api):
     results = [output_api.PresubmitNotifyResult('JS style check:')]
@@ -296,18 +271,27 @@ def _CheckDevToolsStyleCSS(input_api, output_api):
         input_api, output_api, lint_config_files, default_linted_directories,
         ['.css'], results)
 
-    if not css_should_bail_out:
-        script_args = ["--files"] + css_files_to_lint
-        results.extend(
-            _checkWithNodeScript(input_api, output_api, lint_path,
-                                 script_args))
-
     ts_should_bail_out, ts_files_to_lint = _getFilesToLint(
         input_api, output_api, lint_config_files, default_linted_directories,
         ['.ts'], results)
 
+    # If there are more than 50 files to check, don't bother and check
+    # everything, so as to not run into command line length limits on Windows.
+    if not css_should_bail_out:
+        if len(css_files_to_lint) < 50:
+            script_args = ["--files"] + css_files_to_lint
+        else:
+            script_args = []  # The defaults check all CSS files.
+        results.extend(
+            _checkWithNodeScript(input_api, output_api, lint_path,
+                                 script_args))
+
     if not ts_should_bail_out:
-        script_args = ["--syntax", "html", "--files"] + ts_files_to_lint
+        script_args = ["--syntax", "html"]
+        if len(ts_files_to_lint) < 50:
+            script_args += ["--files"] + ts_files_to_lint
+        else:
+            script_args += ["--glob", "front_end/**/*.ts"]
         results.extend(
             _checkWithNodeScript(input_api, output_api, lint_path,
                                  script_args))
@@ -499,6 +483,7 @@ def _CommonChecks(input_api, output_api):
     results.extend(_CheckJSON(input_api, output_api))
     results.extend(_CheckDevToolsStyleJS(input_api, output_api))
     results.extend(_CheckDevToolsStyleCSS(input_api, output_api))
+
     results.extend(_CheckDarkModeStyleSheetsUpToDate(input_api, output_api))
     results.extend(_CheckFormat(input_api, output_api))
     results.extend(_CheckOptimizeSVGHashes(input_api, output_api))
@@ -528,8 +513,6 @@ def _SideEffectChecks(input_api, output_api):
 def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CommonChecks(input_api, output_api))
-    results.extend(_CheckDevtoolsLocalization(input_api, output_api))
-    # Run collectStrings after localization check that cleans up unused strings
     results.extend(_CollectStrings(input_api, output_api))
     # Run checks that rely on output from other DevTool checks
     results.extend(_SideEffectChecks(input_api, output_api))
@@ -540,8 +523,6 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
     results = []
     results.extend(_CommonChecks(input_api, output_api))
-    results.extend(_CheckDevtoolsLocalization(input_api, output_api, True))
-    # Run collectStrings after localization check that cleans up unused strings
     results.extend(_CollectStrings(input_api, output_api))
     # Run checks that rely on output from other DevTool checks
     results.extend(_SideEffectChecks(input_api, output_api))

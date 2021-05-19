@@ -213,11 +213,38 @@ void SafeBrowsingMetricsCollector::OnEnhancedProtectionPrefChanged() {
   }
 }
 
-void SafeBrowsingMetricsCollector::LogEnhancedProtectionDisabledMetrics() {
+const base::Value* SafeBrowsingMetricsCollector::GetSafeBrowsingEventDictionary(
+    UserState user_state) {
   const base::DictionaryValue* state_dict =
       pref_service_->GetDictionary(prefs::kSafeBrowsingEventTimestamps);
-  const base::Value* event_dict = state_dict->FindDictKey(
-      UserStateToPrefKey(UserState::ENHANCED_PROTECTION));
+
+  return state_dict->FindDictKey(UserStateToPrefKey(user_state));
+}
+
+base::Optional<SafeBrowsingMetricsCollector::Event>
+SafeBrowsingMetricsCollector::GetLatestEventFromEventType(
+    UserState user_state,
+    EventType event_type) {
+  const base::Value* event_dict = GetSafeBrowsingEventDictionary(user_state);
+
+  if (!event_dict) {
+    return base::nullopt;
+  }
+
+  const base::Value* timestamps =
+      event_dict->FindListKey(EventTypeToPrefKey(event_type));
+
+  if (timestamps && timestamps->GetList().size() > 0) {
+    base::Time time = PrefValueToTime(timestamps->GetList().back());
+    return Event(event_type, time);
+  }
+
+  return base::nullopt;
+}
+
+void SafeBrowsingMetricsCollector::LogEnhancedProtectionDisabledMetrics() {
+  const base::Value* event_dict =
+      GetSafeBrowsingEventDictionary(UserState::ENHANCED_PROTECTION);
   if (!event_dict) {
     return;
   }
@@ -234,13 +261,11 @@ void SafeBrowsingMetricsCollector::LogEnhancedProtectionDisabledMetrics() {
             GetEventTypeMetricSuffix(event_type),
         GetEventCountSince(UserState::ENHANCED_PROTECTION, event_type,
                            base::Time::Now() - base::TimeDelta::FromDays(28)));
-    const base::Value* timestamps =
-        event_dict->FindListKey(EventTypeToPrefKey(event_type));
 
-    // Get the latest timestamp for this bypass event type.
-    if (timestamps && timestamps->GetList().size() > 0) {
-      base::Time time = PrefValueToTime(timestamps->GetList().back());
-      bypass_events.emplace_back(Event(event_type, time));
+    const base::Optional<Event> latest_event =
+        GetLatestEventFromEventType(UserState::ENHANCED_PROTECTION, event_type);
+    if (latest_event) {
+      bypass_events.emplace_back(latest_event.value());
     }
   }
 
@@ -258,15 +283,22 @@ void SafeBrowsingMetricsCollector::LogEnhancedProtectionDisabledMetrics() {
         /* min */ base::TimeDelta::FromSeconds(1),
         /* max */ base::TimeDelta::FromDays(1), /* buckets */ 50);
   }
+
+  const base::Optional<Event> latest_enabled_event =
+      GetLatestEventFromEventType(UserState::ENHANCED_PROTECTION,
+                                  EventType::USER_STATE_ENABLED);
+  if (latest_enabled_event) {
+    const auto days_since_enabled =
+        (base::Time::Now() - latest_enabled_event.value().timestamp).InDays();
+    base::UmaHistogramCounts100("SafeBrowsing.EsbDisabled.LastEnabledInterval",
+                                /* sample */ days_since_enabled);
+  }
 }
 
 int SafeBrowsingMetricsCollector::GetEventCountSince(UserState user_state,
                                                      EventType event_type,
                                                      base::Time since_time) {
-  const base::DictionaryValue* state_dict =
-      pref_service_->GetDictionary(prefs::kSafeBrowsingEventTimestamps);
-  const base::Value* event_dict =
-      state_dict->FindDictKey(UserStateToPrefKey(user_state));
+  const base::Value* event_dict = GetSafeBrowsingEventDictionary(user_state);
   if (!event_dict) {
     return 0;
   }
@@ -306,10 +338,12 @@ bool SafeBrowsingMetricsCollector::IsBypassEventType(const EventType& type) {
     case EventType::USER_STATE_ENABLED:
       return false;
     case EventType::DATABASE_INTERSTITIAL_BYPASS:
-    case EventType::CSD_INTERSITITAL_BYPASS:
+    case EventType::CSD_INTERSTITIAL_BYPASS:
     case EventType::REAL_TIME_INTERSTITIAL_BYPASS:
     case EventType::DANGEROUS_DOWNLOAD_BYPASS:
     case EventType::PASSWORD_REUSE_MODAL_BYPASS:
+    case EventType::EXTENSION_ALLOWLIST_INSTALL_BYPASS:
+    case EventType::NON_ALLOWLISTED_EXTENSION_RE_ENABLED:
       return true;
   }
 }
@@ -335,7 +369,7 @@ std::string SafeBrowsingMetricsCollector::GetEventTypeMetricSuffix(
       return "UserStateEnabled";
     case EventType::DATABASE_INTERSTITIAL_BYPASS:
       return "DatabaseInterstitialBypass";
-    case EventType::CSD_INTERSITITAL_BYPASS:
+    case EventType::CSD_INTERSTITIAL_BYPASS:
       return "CsdInterstitialBypass";
     case EventType::REAL_TIME_INTERSTITIAL_BYPASS:
       return "RealTimeInterstitialBypass";
@@ -343,6 +377,10 @@ std::string SafeBrowsingMetricsCollector::GetEventTypeMetricSuffix(
       return "DangerousDownloadBypass";
     case EventType::PASSWORD_REUSE_MODAL_BYPASS:
       return "PasswordReuseModalBypass";
+    case EventType::EXTENSION_ALLOWLIST_INSTALL_BYPASS:
+      return "ExtensionAllowlistInstallBypass";
+    case EventType::NON_ALLOWLISTED_EXTENSION_RE_ENABLED:
+      return "NonAllowlistedExtensionReEnabled";
   }
 }
 

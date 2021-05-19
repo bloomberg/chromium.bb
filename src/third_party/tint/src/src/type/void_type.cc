@@ -14,10 +14,9 @@
 
 #include "src/type/void_type.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::Void);
+TINT_INSTANTIATE_TYPEINFO(tint::type::Void);
 
 namespace tint {
 namespace type {

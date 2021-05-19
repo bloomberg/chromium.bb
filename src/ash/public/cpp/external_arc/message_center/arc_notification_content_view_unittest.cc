@@ -71,7 +71,7 @@ class MockKeyboardDelegate : public exo::KeyboardDelegate {
   MOCK_METHOD(void,
               OnKeyboardEnter,
               (exo::Surface*,
-               (const base::flat_map<ui::DomCode, ui::DomCode>&)),
+               (const base::flat_map<ui::DomCode, exo::KeyState>&)),
               (override));
   MOCK_METHOD(void, OnKeyboardLeave, (exo::Surface*), (override));
   MOCK_METHOD(uint32_t,
@@ -224,9 +224,8 @@ class ArcNotificationContentViewTest : public AshTestBase {
         message_center::SettingsButtonHandler::DELEGATE;
     Notification notification(
         message_center::NOTIFICATION_TYPE_CUSTOM,
-        notification_item->GetNotificationId(), base::UTF8ToUTF16("title"),
-        base::UTF8ToUTF16("message"), gfx::Image(), base::UTF8ToUTF16("arc"),
-        GURL(),
+        notification_item->GetNotificationId(), u"title", u"message",
+        gfx::Image(), u"arc", GURL(),
         message_center::NotifierId(
             message_center::NotifierType::ARC_APPLICATION, "ARC_NOTIFICATION"),
         optional_fields,
@@ -325,9 +324,8 @@ TEST_F(ArcNotificationContentViewTest, CloseButton) {
   // ARC to avoid surface shutdown issues.
   auto mc_notification = std::make_unique<Notification>(
       message_center::NOTIFICATION_TYPE_SIMPLE,
-      notification_item->GetNotificationId(), base::UTF8ToUTF16("title"),
-      base::UTF8ToUTF16("message"), gfx::Image(), base::UTF8ToUTF16("arc"),
-      GURL(),
+      notification_item->GetNotificationId(), u"title", u"message",
+      gfx::Image(), u"arc", GURL(),
       message_center::NotifierId(message_center::NotifierType::ARC_APPLICATION,
                                  "ARC_NOTIFICATION"),
       message_center::RichNotificationData(), nullptr);
@@ -369,7 +367,7 @@ TEST_F(ArcNotificationContentViewTest, CloseButtonInMessageCenterView) {
   // Show MessageCenterView and activate its widget.
   auto* unified_system_tray =
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()->unified_system_tray();
-  unified_system_tray->ShowBubble(false /* show_by_click */);
+  unified_system_tray->ShowBubble();
   unified_system_tray->ActivateBubble();
 
   auto notification_item =

@@ -40,6 +40,7 @@
 <translation id="1252999807265626933">Зарежда се от <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">„What's the weather?“ („Какво е времето?“)</translation>
 <translation id="1267032506238418139">Промяна на клавишната комбинация</translation>
+<translation id="1269405891096105529">Периферното устройство не се поддържа в режим на гост</translation>
 <translation id="1270290102613614947">Екранната клавиатура е деактивирана</translation>
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="1275285675049378717">Захранва се <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl + клавиш „Търсене“ + H</translation>
 <translation id="2016340657076538683">Въведете съобщение</translation>
 <translation id="2018630726571919839">Tell me a joke</translation>
+<translation id="2021864487439853900">Кликнете за отключване</translation>
 <translation id="2049240716062114887">Името на работния кът бе променено на „<ph name="DESK_NAME" />“</translation>
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2067602449040652523">Яркост на клавиатурата</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> пак може да влезе в профила си по-късно.</translation>
 <translation id="3321628682574733415">Неправилен код на родител</translation>
 <translation id="332587331255250389">Моля, заменете батерията</translation>
+<translation id="3333741161915951567">Модемът се рестартира. Изчакайте 30 сек, преди да опитате отново.</translation>
 <translation id="3341303451326249809">Екранната снимка е заснета</translation>
 <translation id="334252345105450327">Take a screenshot</translation>
 <translation id="3351879221545518001">Понастоящем предавате екрана.</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> – управляван потребител</translation>
 <translation id="3665889125180354336">Записване от микрофона</translation>
 <translation id="36813544980941320">Wi-Fi мрежите ще бъдат споделяни между телефона и устройството ви <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Показани са прозорци от текущия работен кът. Натиснете клавиша със стрелка за нагоре, за да се покажат прозорците от всички работни кътове</translation>
 <translation id="3702846122927433391">Population in Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Зарежда се...</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">Настройки за звука</translation>
 <translation id="3945319193631853098">Докоснете, за да завършите настройването</translation>
 <translation id="3945867833895287237">Установява се връзка с точката за достъп...</translation>
+<translation id="3958465044488004317">Вижте резултата в Асистент</translation>
 <translation id="3962859241508114581">Предишен запис</translation>
 <translation id="3969043077941541451">Изключено</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="4424159417645388645">Работен кът 5</translation>
 <translation id="4430019312045809116">Звук</translation>
+<translation id="4445159312344259901">Влезте в профила си за откл.</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 важно известие}other{# важни известия}}</translation>
 <translation id="4450893287417543264">Да не се показва отново</translation>
 <translation id="445864333228800152">Добър вечер,</translation>
 <translation id="4458688154122353284">Спиране на записа на екрана</translation>
+<translation id="4467143075433126295">За изход от цял екран натиснете и задръжте Esc</translation>
 <translation id="4472575034687746823">Първи стъпки</translation>
 <translation id="4477350412780666475">Следващ запис</translation>
 <translation id="4477892968187500306">На това устройство може да са инсталирани приложения, които не са потвърдени от Google.</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Google Асистент не се поддържа по време на сесия като гост.</translation>
 <translation id="6137566720514957455">Отваряне на диалоговия прозорец за премахване на профила <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Периферното устройство не се поддържа</translation>
 <translation id="615957422585914272">Показване на екранната клавиатура</translation>
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6179832488876878285">Тук можете да фиксирате важните за вас файлове. Отворете приложението „Файлове“, за да започнете.</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">Използвайте писалката, за да изберете област</translation>
 <translation id="6310121235600822547">Завъртяхте „<ph name="DISPLAY_NAME" />“ на <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Глас</translation>
+<translation id="6330012934079202188">Показани са прозорци от всички работни кътове. Натиснете клавиша със стрелка за нагоре, за да се покажат прозорците от текущия работен кът</translation>
 <translation id="6338485349199627913">„<ph name="DISPLAY_NAME" />“ е сесия, управлявана от <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Функцията за Bluetooth е включена</translation>
 <translation id="6381109794406942707">Въведете ПИН кода си, за да отключите устройството.</translation>
 <translation id="639644700271529076">„CAPS LOCK“ е изключен</translation>
-<translation id="6396835948284782440">Натиснете и задръжте Esc, за да излезете.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Изчистване на всички известия</translation>
@@ -794,7 +802,6 @@
 <translation id="7780159184141939021">Завъртане на екрана</translation>
 <translation id="7796353162336583443">Докоснете бутона с икона на писалка в лавицата, за да създадете бележка, да направите екранна снимка или да използвате Google Асистент, лазерната показалка или лупата.</translation>
 <translation id="7798302898096527229">Натиснете клавиша „търсене“ или Shift, за да анулирате.</translation>
-<translation id="7807966291075028781">От съображения за сигурност това периферно устройство не се поддържа в режим на гост</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">силен сигнал</translation>
 <translation id="7837740436429729974">Времето изтече</translation>
@@ -944,6 +951,7 @@
 <translation id="8936501819958976551">деактивирана</translation>
 <translation id="8938800817013097409">Устройство с USB-C (десният порт на гърба)</translation>
 <translation id="8940956008527784070">Батерията е изтощена (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Само одобрени устройства Thunderbolt са съвместими с вашия Chromebook</translation>
 <translation id="8982906748181120328">Видимост наблизо</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Използвате <ph name="IME_NAME" /></translation>

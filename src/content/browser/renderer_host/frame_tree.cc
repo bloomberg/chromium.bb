@@ -26,6 +26,7 @@
 #include "content/browser/renderer_host/render_frame_host_factory.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
@@ -128,6 +129,9 @@ FrameTree::FrameTree(
       load_progress_(0.0) {}
 
 FrameTree::~FrameTree() {
+#if DCHECK_IS_ON()
+  DCHECK(was_shut_down_);
+#endif
   delete root_;
   root_ = nullptr;
 }
@@ -221,9 +225,9 @@ FrameTreeNode* FrameTree::AddFrame(
       devtools_frame_token, frame_owner_properties, owner_type));
 
   // Set sandbox flags and container policy and make them effective immediately,
-  // since initial sandbox flags and feature policy should apply to the initial
-  // empty document in the frame. This needs to happen before the call to
-  // AddChild so that the effective policy is sent to any newly-created
+  // since initial sandbox flags and permissions policy should apply to the
+  // initial empty document in the frame. This needs to happen before the call
+  // to AddChild so that the effective policy is sent to any newly-created
   // RenderFrameProxy objects when the RenderFrameHost is created.
   // SetPendingFramePolicy is necessary here because next navigation on this
   // frame will need the value of pending frame policy instead of effective
@@ -423,22 +427,30 @@ scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
 
 scoped_refptr<RenderViewHostImpl> FrameTree::GetRenderViewHost(
     SiteInstance* site_instance) {
-  auto it = render_view_host_map_.find(site_instance->GetId());
+  auto it = render_view_host_map_.find(GetRenderViewHostMapId(site_instance));
   if (it == render_view_host_map_.end())
     return nullptr;
 
   return base::WrapRefCounted(it->second);
 }
 
-void FrameTree::RegisterRenderViewHost(SiteInstance* site_instance,
-                                       RenderViewHostImpl* rvh) {
-  CHECK(!base::Contains(render_view_host_map_, site_instance->GetId()));
-  render_view_host_map_[site_instance->GetId()] = rvh;
+FrameTree::RenderViewHostMapId FrameTree::GetRenderViewHostMapId(
+    SiteInstance* site_instance) const {
+  // TODO(acolwell): Change this to use a SiteInstanceGroup ID once
+  // SiteInstanceGroups are implemented so that all SiteInstances within a
+  // group can use the same RenderViewHost.
+  return RenderViewHostMapId::FromUnsafeValue(site_instance->GetId());
 }
 
-void FrameTree::UnregisterRenderViewHost(SiteInstance* site_instance,
+void FrameTree::RegisterRenderViewHost(RenderViewHostMapId id,
+                                       RenderViewHostImpl* rvh) {
+  CHECK(!base::Contains(render_view_host_map_, id));
+  render_view_host_map_[id] = rvh;
+}
+
+void FrameTree::UnregisterRenderViewHost(RenderViewHostMapId id,
                                          RenderViewHostImpl* rvh) {
-  auto it = render_view_host_map_.find(site_instance->GetId());
+  auto it = render_view_host_map_.find(id);
   CHECK(it != render_view_host_map_.end());
   CHECK_EQ(it->second, rvh);
   render_view_host_map_.erase(it);
@@ -544,12 +556,12 @@ void FrameTree::RegisterExistingOriginToPreventOptInIsolation(
 void FrameTree::Init(SiteInstance* main_frame_site_instance,
                      bool renderer_initiated_creation,
                      const std::string& main_frame_name,
-                     bool is_prerendering) {
+                     FrameTree::Type type) {
   // blink::FrameTree::SetName always keeps |unique_name| empty in case of a
   // main frame - let's do the same thing here.
   std::string unique_name;
   root_->SetFrameName(main_frame_name, unique_name);
-  is_prerendering_ = is_prerendering;
+  type_ = type;
   root_->render_manager()->InitRoot(main_frame_site_instance,
                                     renderer_initiated_creation);
 }
@@ -561,9 +573,10 @@ void FrameTree::DidAccessInitialMainDocument() {
 }
 
 void FrameTree::ActivatePrerenderedFrameTree() {
-  DCHECK(is_prerendering_ && blink::features::IsPrerender2Enabled());
-  is_prerendering_ = false;
-  GetMainFrame()->OnPrerenderedPageActivated();
+  DCHECK(is_prerendering());
+  DCHECK(blink::features::IsPrerenderWebContentsEnabled());
+  type_ = FrameTree::Type::kPrimary;
+  GetMainFrame()->ActivateForPrerendering();
 }
 
 void FrameTree::DidStartLoadingNode(FrameTreeNode& node,
@@ -610,6 +623,59 @@ void FrameTree::DidCancelLoading() {
 void FrameTree::StopLoading() {
   for (FrameTreeNode* node : Nodes())
     node->StopLoading();
+}
+
+
+void FrameTree::Shutdown() {
+#if DCHECK_IS_ON()
+  DCHECK(!was_shut_down_);
+  was_shut_down_ = true;
+#endif
+
+  RenderFrameHostManager* root_manager = root_->render_manager();
+
+  // If the page has been moved out due to MPArch activation do nothing.
+  // TODO(https://crbug.com/1176148): It might make sense to do some of the
+  // things here like delete RFHs pending shutdown.
+  if (!root_manager->current_frame_host())
+    return;
+
+  for (FrameTreeNode* node : Nodes()) {
+    // Delete all RFHs pending shutdown, which will lead the corresponding RVHs
+    // to be shutdown and be deleted as well.
+    node->render_manager()->ClearRFHsPendingShutdown();
+    // TODO(https://crbug.com/1164280): Ban WebUI instance in Prerender pages.
+    node->render_manager()->ClearWebUIInstances();
+  }
+
+  // Destroy all subframes now. This notifies observers.
+  root_manager->current_frame_host()->ResetChildren();
+  root_manager->ResetProxyHosts();
+
+  controller().GetBackForwardCache().Shutdown();
+
+  // Manually call the observer methods for the root FrameTreeNode. It is
+  // necessary to manually delete all objects tracking navigations
+  // (NavigationHandle, NavigationRequest) for observers to be properly
+  // notified of these navigations stopping before the WebContents is
+  // destroyed.
+
+  root_manager->current_frame_host()->RenderFrameDeleted();
+  root_manager->current_frame_host()->ResetNavigationRequests();
+
+  // Do not update state as the FrameTree::Delegate (possibly a WebContents) is
+  // being destroyed.
+  root_->ResetNavigationRequest(/*keep_state=*/true);
+  if (root_manager->speculative_frame_host()) {
+    root_manager->speculative_frame_host()->DeleteRenderFrame(
+        mojom::FrameDeleteIntention::kSpeculativeMainFrameForShutdown);
+    root_manager->speculative_frame_host()->RenderFrameDeleted();
+    root_manager->speculative_frame_host()->ResetNavigationRequests();
+  }
+
+  manager_delegate_->OnFrameTreeNodeDestroyed(root_);
+  render_view_delegate_->RenderViewDeleted(
+      root_manager->current_frame_host()->render_view_host());
 }
 
 }  // namespace content

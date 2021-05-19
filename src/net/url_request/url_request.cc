@@ -24,6 +24,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_delegate.h"
 #include "net/base/upload_data_stream.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
@@ -131,7 +132,8 @@ void ConvertRealLoadTimesToBlockingTimes(LoadTimingInfo* load_timing_info) {
 // URLRequest::Delegate
 
 int URLRequest::Delegate::OnConnected(URLRequest* request,
-                                      const TransportInfo& info) {
+                                      const TransportInfo& info,
+                                      CompletionOnceCallback callback) {
   return OK;
 }
 
@@ -261,10 +263,10 @@ LoadStateWithParam URLRequest::GetLoadState() const {
     return LoadStateWithParam(LOAD_STATE_WAITING_FOR_DELEGATE,
                               use_blocked_by_as_load_param_
                                   ? base::UTF8ToUTF16(blocked_by_)
-                                  : base::string16());
+                                  : std::u16string());
   }
   return LoadStateWithParam(job_.get() ? job_->GetLoadState() : LOAD_STATE_IDLE,
-                            base::string16());
+                            std::u16string());
 }
 
 base::Value URLRequest::GetStateAsValue() const {
@@ -545,6 +547,7 @@ URLRequest::URLRequest(const GURL& url,
                                       NetLogSourceType::URL_REQUEST)),
       url_chain_(1, url),
       force_ignore_site_for_cookies_(false),
+      force_ignore_top_frame_party_for_cookies_(false),
       method_("GET"),
       referrer_policy_(
           ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
@@ -569,7 +572,6 @@ URLRequest::URLRequest(const GURL& url,
       has_notified_completion_(false),
       received_response_content_length_(0),
       creation_time_(base::TimeTicks::Now()),
-      raw_header_size_(0),
       traffic_annotation_(traffic_annotation),
       upgrade_if_insecure_(false) {
   // Sanity check out environment.
@@ -625,6 +627,7 @@ void URLRequest::StartJob(std::unique_ptr<URLRequestJob> job) {
   job_->SetExtraRequestHeaders(extra_request_headers_);
   job_->SetPriority(priority_);
   job_->SetRequestHeadersCallback(request_headers_callback_);
+  job_->SetEarlyResponseHeadersCallback(early_response_headers_callback_);
   job_->SetResponseHeadersCallback(response_headers_callback_);
 
   if (upload_data_stream_.get())
@@ -777,8 +780,9 @@ bool URLRequest::failed() const {
   return (status_ != OK && status_ != ERR_IO_PENDING);
 }
 
-int URLRequest::NotifyConnected(const TransportInfo& info) {
-  return delegate_->OnConnected(this, info);
+int URLRequest::NotifyConnected(const TransportInfo& info,
+                                CompletionOnceCallback callback) {
+  return delegate_->OnConnected(this, info, std::move(callback));
 }
 
 void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
@@ -1100,7 +1104,6 @@ void URLRequest::OnHeadersComplete() {
 
     load_timing_info_.request_start = request_start;
     load_timing_info_.request_start_time = request_start_time;
-    raw_header_size_ = GetTotalReceivedBytes();
 
     ConvertRealLoadTimesToBlockingTimes(&load_timing_info_);
   }
@@ -1179,6 +1182,13 @@ void URLRequest::SetResponseHeadersCallback(ResponseHeadersCallback callback) {
   DCHECK(!job_.get());
   DCHECK(response_headers_callback_.is_null());
   response_headers_callback_ = std::move(callback);
+}
+
+void URLRequest::SetEarlyResponseHeadersCallback(
+    ResponseHeadersCallback callback) {
+  DCHECK(!job_.get());
+  DCHECK(early_response_headers_callback_.is_null());
+  early_response_headers_callback_ = std::move(callback);
 }
 
 void URLRequest::set_socket_tag(const SocketTag& socket_tag) {

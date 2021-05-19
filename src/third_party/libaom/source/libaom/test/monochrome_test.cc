@@ -28,10 +28,7 @@ class MonochromeTest
 
   virtual ~MonochromeTest() {}
 
-  virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
-  }
+  virtual void SetUp() { InitializeConfig(GET_PARAM(1)); }
 
   virtual void DecompressedFrameHook(const aom_image_t &img,
                                      aom_codec_pts_t pts) {

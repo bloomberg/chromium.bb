@@ -216,7 +216,8 @@ void NavigationControllerImpl::TitleWasSet(content::NavigationEntry* entry) {
   OnNavigationEntryChanged();
 }
 
-void NavigationControllerImpl::DocumentAvailableInMainFrame() {
+void NavigationControllerImpl::DocumentAvailableInMainFrame(
+    content::RenderFrameHost* render_frame_host) {
   // The main document is loaded, but not necessarily all the subresources. Some
   // fields like "title" will change here.
 
@@ -260,11 +261,8 @@ void NavigationControllerImpl::DidStartNavigation(
 
 void NavigationControllerImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument() ||
-      navigation_handle != active_navigation_) {
+  if (navigation_handle != active_navigation_)
     return;
-  }
 
   active_navigation_ = nullptr;
   uncommitted_load_error_ = !navigation_handle->HasCommitted() &&

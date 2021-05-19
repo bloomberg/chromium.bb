@@ -38,12 +38,8 @@ var HistoryListFocusTest = class extends HistoryFocusTest {
   }
 };
 
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_AllListFocus DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_AllListFocus All');
-GEN('#endif');
-TEST_F('HistoryListFocusTest', 'MAYBE_AllListFocus', function() {
+// Flaky. See crbug.com/1040940.
+TEST_F('HistoryListFocusTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

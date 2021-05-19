@@ -12,7 +12,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/payments/core/payer_data.h"
@@ -81,7 +80,7 @@ class PaymentApp {
   virtual bool CanPreselect() const = 0;
   // Returns a message to indicate to the user what's missing for the app to be
   // complete for payment.
-  virtual base::string16 GetMissingInfoLabel() const = 0;
+  virtual std::u16string GetMissingInfoLabel() const = 0;
   // Returns this app's answer for PaymentRequest.hasEnrolledInstrument().
   virtual bool HasEnrolledInstrument() const = 0;
   // Records the use of this payment app.
@@ -94,8 +93,8 @@ class PaymentApp {
   virtual std::string GetId() const = 0;
 
   // Return the sub/label of payment app, to be displayed to the user.
-  virtual base::string16 GetLabel() const = 0;
-  virtual base::string16 GetSublabel() const = 0;
+  virtual std::u16string GetLabel() const = 0;
+  virtual std::u16string GetSublabel() const = 0;
 
   // Returns the icon bitmap or null.
   virtual const SkBitmap* icon_bitmap() const;

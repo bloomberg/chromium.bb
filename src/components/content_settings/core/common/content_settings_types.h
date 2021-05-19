@@ -21,7 +21,6 @@ enum class ContentSettingsType : int32_t {
   COOKIES = 0,
   IMAGES,
   JAVASCRIPT,
-  DEPRECATED_PLUGINS,
 
   // This setting governs both popups and unwanted redirects like tab-unders and
   // framebusting.
@@ -236,6 +235,13 @@ enum class ContentSettingsType : int32_t {
   // No values are stored for this type, this is solely needed to be able to
   // register the PermissionContext.
   DISPLAY_CAPTURE,
+
+  // Register file-type associations with the operating system and obtain
+  // read-only access to files that the user chooses to open with this
+  // installed web application from the system file manager. This setting has
+  // no effect on the File System API, <input type="file">, or the ability to
+  // access files through drag & drop or clipboard paste operations.
+  FILE_HANDLING,
 
   NUM_TYPES,
 };

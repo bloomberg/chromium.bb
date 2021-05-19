@@ -4,15 +4,7 @@
 
 module drive.mojom;
 
-// The types of documents available within Google Drive.
-// TODO(crbug/1176927): Verify prioritized types from
-// Item Suggest.
-enum FileType {
-  kDoc,
-  kSlide,
-  kSheet,
-  kOther,
-};
+import "url/mojom/url.mojom";
 
 // A Google Drive File.
 struct File {
@@ -20,10 +12,15 @@ struct File {
   string id;
   // Information on why the Drive Item was returned.
   string justification_text;
+  // The mime type of the Drive Item.
+  string mime_type;
   // The name of the Drive Item.
   string title;
-  // The type of the Drive Item.
-  FileType type;
+  // The URL of the active person's photo that
+  // must be served through SanitizedImageSource.
+  url.mojom.Url? untrusted_photo_url;
+  // The URL to navigate to the Drive Item.
+  url.mojom.Url item_url;
 };
 
 // Browser-side handler for requests from NTP Module UI.

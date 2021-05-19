@@ -6,7 +6,7 @@ import './LinearMemoryNavigator.js';
 import './LinearMemoryValueInterpreter.js';
 import './LinearMemoryViewer.js';
 
-import * as Common from '../common/common.js';
+import * as Common from '../core/common/common.js';
 import * as LitHtml from '../third_party/lit-html/lit-html.js';
 
 const {render, html} = LitHtml;
@@ -14,12 +14,12 @@ const {render, html} = LitHtml;
 import {Mode, AddressInputChangedEvent, HistoryNavigationEvent, LinearMemoryNavigatorData, Navigation, PageNavigationEvent} from './LinearMemoryNavigator.js';
 import type {EndiannessChangedEvent, LinearMemoryValueInterpreterData, ValueTypeToggledEvent} from './LinearMemoryValueInterpreter.js';
 import type {ByteSelectedEvent, LinearMemoryViewerData, ResizeEvent} from './LinearMemoryViewer.js';
-import {VALUE_INTEPRETER_MAX_NUM_BYTES, Endianness, DEFAULT_MODE_MAPPING} from './ValueInterpreterDisplayUtils.js';
+import {VALUE_INTEPRETER_MAX_NUM_BYTES, Endianness, ValueType, ValueTypeMode, getDefaultValueTypeMapping} from './ValueInterpreterDisplayUtils.js';
 import {formatAddress, parseAddress} from './LinearMemoryInspectorUtils.js';
-import type {ValueTypeModeChangedEvent} from './ValueInterpreterDisplay.js';
+import type {JumpToPointerAddressEvent, ValueTypeModeChangedEvent} from './ValueInterpreterDisplay.js';
 
-import * as i18n from '../i18n/i18n.js';
-export const UIStrings = {
+import * as i18n from '../core/i18n/i18n.js';
+const UIStrings = {
   /**
   *@description Tooltip text that appears when hovering over an invalid address in the address line in the Linear Memory Inspector
   *@example {0x00000000} PH1
@@ -38,6 +38,42 @@ export interface LinearMemoryInspectorData {
   address: number;
   memoryOffset: number;
   outerMemoryLength: number;
+  valueTypes?: Set<ValueType>;
+  valueTypeModes?: Map<ValueType, ValueTypeMode>;
+  endianness?: Endianness;
+}
+
+export type Settings = {
+  valueTypes: Set<ValueType>,
+  modes: Map<ValueType, ValueTypeMode>,
+  endianness: Endianness,
+};
+
+export class MemoryRequestEvent extends Event {
+  data: {start: number, end: number, address: number};
+
+  constructor(start: number, end: number, address: number) {
+    super('memory-request');
+    this.data = {start, end, address};
+  }
+}
+
+export class AddressChangedEvent extends Event {
+  data: number;
+
+  constructor(address: number) {
+    super('address-changed');
+    this.data = address;
+  }
+}
+
+export class SettingsChangedEvent extends Event {
+  data: Settings;
+
+  constructor(settings: Settings) {
+    super('settings-changed');
+    this.data = settings;
+  }
 }
 
 class AddressHistoryEntry implements Common.SimpleHistoryManager.HistoryEntry {
@@ -61,24 +97,6 @@ class AddressHistoryEntry implements Common.SimpleHistoryManager.HistoryEntry {
   }
 }
 
-export class MemoryRequestEvent extends Event {
-  data: {start: number, end: number, address: number};
-
-  constructor(start: number, end: number, address: number) {
-    super('memory-request');
-    this.data = {start, end, address};
-  }
-}
-
-export class AddressChangedEvent extends Event {
-  data: number;
-
-  constructor(address: number) {
-    super('address-changed');
-    this.data = address;
-  }
-}
-
 export class LinearMemoryInspector extends HTMLElement {
   private readonly shadow = this.attachShadow({mode: 'open'});
   private readonly history = new Common.SimpleHistoryManager.SimpleHistoryManager(10);
@@ -87,15 +105,15 @@ export class LinearMemoryInspector extends HTMLElement {
   private memoryOffset = 0;
   private outerMemoryLength = 0;
 
-  private address = 0;
+  private address = -1;
 
   private currentNavigatorMode = Mode.Submitted;
   private currentNavigatorAddressLine = `${this.address}`;
 
   private numBytesPerPage = 4;
 
-  private valueTypes = new Set(DEFAULT_MODE_MAPPING.keys());
-  private valueTypeModes = DEFAULT_MODE_MAPPING;
+  private valueTypeModes = getDefaultValueTypeMapping();
+  private valueTypes = new Set(this.valueTypeModes.keys());
   private endianness = Endianness.Little;
 
   set data(data: LinearMemoryInspectorData) {
@@ -110,6 +128,9 @@ export class LinearMemoryInspector extends HTMLElement {
     this.memory = data.memory;
     this.memoryOffset = data.memoryOffset;
     this.outerMemoryLength = data.outerMemoryLength;
+    this.valueTypeModes = data.valueTypeModes || this.valueTypeModes;
+    this.valueTypes = data.valueTypes || this.valueTypes;
+    this.endianness = data.endianness || this.endianness;
     this.setAddress(data.address);
     this.render();
   }
@@ -124,7 +145,11 @@ export class LinearMemoryInspector extends HTMLElement {
     const invalidAddressMsg = i18nString(
         UIStrings.addressHasToBeANumberBetweenSAnd,
         {PH1: formatAddress(0), PH2: formatAddress(this.outerMemoryLength)});
+
     const errorMsg = navigatorAddressIsValid ? undefined : invalidAddressMsg;
+
+    const canGoBackInHistory = this.history.canRollback();
+    const canGoForwardInHistory = this.history.canRollover();
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
@@ -154,7 +179,7 @@ export class LinearMemoryInspector extends HTMLElement {
       </style>
       <div class="view">
         <devtools-linear-memory-inspector-navigator
-          .data=${{address: navigatorAddressToShow, valid: navigatorAddressIsValid, mode: this.currentNavigatorMode, error: errorMsg} as LinearMemoryNavigatorData}
+          .data=${{address: navigatorAddressToShow, valid: navigatorAddressIsValid, mode: this.currentNavigatorMode, error: errorMsg, canGoBackInHistory, canGoForwardInHistory} as LinearMemoryNavigatorData}
           @refresh-requested=${this.onRefreshRequest}
           @address-input-changed=${this.onAddressChange}
           @page-navigation=${this.navigatePage}
@@ -171,16 +196,27 @@ export class LinearMemoryInspector extends HTMLElement {
             value: this.memory.slice(this.address - this.memoryOffset, this.address + VALUE_INTEPRETER_MAX_NUM_BYTES).buffer,
             valueTypes: this.valueTypes,
             valueTypeModes: this.valueTypeModes,
-            endianness: this.endianness } as LinearMemoryValueInterpreterData}
+            endianness: this.endianness,
+            memoryLength: this.outerMemoryLength } as LinearMemoryValueInterpreterData}
           @value-type-toggled=${this.onValueTypeToggled}
           @value-type-mode-changed=${this.onValueTypeModeChanged}
-          @endianness-changed=${this.onEndiannessChanged}>
+          @endianness-changed=${this.onEndiannessChanged}
+          @jump-to-pointer-address=${this.onJumpToPointerAddress}
+          >
         </devtools-linear-memory-inspector-interpreter/>
       </div>
       `, this.shadow, {
       eventContext: this,
     });
     // clang-format on
+  }
+
+  private onJumpToPointerAddress(e: JumpToPointerAddressEvent): void {
+    // Stop event from bubbling up, since no element further up needs the event.
+    e.stopPropagation();
+    this.currentNavigatorMode = Mode.Submitted;
+    const addressInRange = Math.max(0, Math.min(e.data, this.outerMemoryLength - 1));
+    this.jumpToAddress(addressInRange);
   }
 
   private onRefreshRequest(): void {
@@ -194,8 +230,13 @@ export class LinearMemoryInspector extends HTMLElement {
     this.jumpToAddress(addressInRange);
   }
 
+  private createSettings(): Settings {
+    return {valueTypes: this.valueTypes, modes: this.valueTypeModes, endianness: this.endianness};
+  }
+
   private onEndiannessChanged(e: EndiannessChangedEvent): void {
     this.endianness = e.data;
+    this.dispatchEvent(new SettingsChangedEvent(this.createSettings()));
     this.render();
   }
 
@@ -232,6 +273,7 @@ export class LinearMemoryInspector extends HTMLElement {
     } else {
       this.valueTypes.delete(type);
     }
+    this.dispatchEvent(new SettingsChangedEvent(this.createSettings()));
     this.render();
   }
 
@@ -239,6 +281,7 @@ export class LinearMemoryInspector extends HTMLElement {
     e.stopImmediatePropagation();
     const {type, mode} = e.data;
     this.valueTypeModes.set(type, mode);
+    this.dispatchEvent(new SettingsChangedEvent(this.createSettings()));
     this.render();
   }
 
@@ -284,6 +327,10 @@ export class LinearMemoryInspector extends HTMLElement {
   }
 
   private setAddress(address: number): void {
+    // If we are already showing the address that is requested, no need to act upon it.
+    if (this.address === address) {
+      return;
+    }
     const historyEntry = new AddressHistoryEntry(address, () => this.jumpToAddress(address));
     this.history.push(historyEntry);
     this.address = address;

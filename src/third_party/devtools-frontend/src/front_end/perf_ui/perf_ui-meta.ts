@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Root from '../root/root.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Root from '../core/root/root.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 // eslint-disable-next-line rulesdir/es_modules_import
 import type * as PerfUI from './perf_ui.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
      *@description Title of a setting under the Performance category in Settings
     */
@@ -45,7 +45,7 @@ export const UIStrings = {
 };
 
 const str_ = i18n.i18n.registerUIStrings('perf_ui/perf_ui-meta.ts', UIStrings);
-const i18nString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
+const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
 let loadedPerfUIModule: (typeof PerfUI|undefined);
 
@@ -61,7 +61,7 @@ async function loadPerfUIModule(): Promise<typeof PerfUI> {
 UI.ActionRegistration.registerActionExtension({
   actionId: 'components.collect-garbage',
   category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
-  title: i18nString(UIStrings.collectGarbage),
+  title: i18nLazyString(UIStrings.collectGarbage),
   iconClass: UI.ActionRegistration.IconClass.LARGEICON_TRASH_BIN,
   async loadActionDelegate() {
     const PerfUI = await loadPerfUIModule();
@@ -71,19 +71,19 @@ UI.ActionRegistration.registerActionExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.PERFORMANCE,
-  title: i18nString(UIStrings.flamechartMouseWheelAction),
+  title: i18nLazyString(UIStrings.flamechartMouseWheelAction),
   settingName: 'flamechartMouseWheelAction',
   settingType: Common.Settings.SettingType.ENUM,
   defaultValue: 'zoom',
   options: [
     {
-      title: i18nString(UIStrings.scroll),
-      text: i18nString(UIStrings.scroll),
+      title: i18nLazyString(UIStrings.scroll),
+      text: i18nLazyString(UIStrings.scroll),
       value: 'scroll',
     },
     {
-      title: i18nString(UIStrings.zoom),
-      text: i18nString(UIStrings.zoom),
+      title: i18nLazyString(UIStrings.zoom),
+      text: i18nLazyString(UIStrings.zoom),
       value: 'zoom',
     },
   ],
@@ -92,18 +92,18 @@ Common.Settings.registerSettingExtension({
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.MEMORY,
   experiment: Root.Runtime.ExperimentName.LIVE_HEAP_PROFILE,
-  title: i18nString(UIStrings.liveMemoryAllocationAnnotations),
+  title: i18nLazyString(UIStrings.liveMemoryAllocationAnnotations),
   settingName: 'memoryLiveHeapProfile',
   settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
   options: [
     {
       value: true,
-      title: i18nString(UIStrings.showLiveMemoryAllocation),
+      title: i18nLazyString(UIStrings.showLiveMemoryAllocation),
     },
     {
       value: false,
-      title: i18nString(UIStrings.hideLiveMemoryAllocation),
+      title: i18nLazyString(UIStrings.hideLiveMemoryAllocation),
     },
   ],
 });

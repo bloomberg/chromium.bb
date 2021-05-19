@@ -7,8 +7,8 @@
 
 #include <map>
 #include <set>
+#include <string>
 
-#include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
 #include "components/autofill/core/common/dense_set.h"
 
@@ -106,6 +106,8 @@ enum ServerFieldType {
   // these are likely to be filled out differently on a case by case basis,
   // they are here primarily for use by Autocheckout.
   MERCHANT_EMAIL_SIGNUP = 73,
+  // A promo/gift/coupon code, usually entered during checkout on a commerce web
+  // site to reduce the cost of a purchase.
   MERCHANT_PROMO_CODE = 74,
 
   // Field types for the password fields. PASSWORD is the default type for all

@@ -28,38 +28,66 @@ SharesheetServiceDelegate::~SharesheetServiceDelegate() = default;
 void SharesheetServiceDelegate::ShowBubble(
     std::vector<TargetInfo> targets,
     apps::mojom::IntentPtr intent,
-    sharesheet::CloseCallback close_callback) {
+    sharesheet::DeliveredCallback delivered_callback) {
   if (is_bubble_open_) {
-    // TODO(melzhang@) Update by adding SharesheetAlreadyOpenCancel.
-    if (close_callback) {
-      std::move(close_callback).Run(sharesheet::SharesheetResult::kCancel);
+    if (delivered_callback) {
+      std::move(delivered_callback)
+          .Run(sharesheet::SharesheetResult::kErrorAlreadyOpen);
     }
     return;
   }
   sharesheet_bubble_view_->ShowBubble(std::move(targets), std::move(intent),
-                                      std::move(close_callback));
+                                      std::move(delivered_callback));
   is_bubble_open_ = true;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void SharesheetServiceDelegate::ShowNearbyShareBubble(
+    apps::mojom::IntentPtr intent,
+    sharesheet::DeliveredCallback delivered_callback) {
+  if (is_bubble_open_) {
+    if (delivered_callback) {
+      std::move(delivered_callback)
+          .Run(sharesheet::SharesheetResult::kErrorAlreadyOpen);
+    }
+    return;
+  }
+  sharesheet_bubble_view_->ShowNearbyShareBubble(std::move(intent),
+                                                 std::move(delivered_callback));
+  is_bubble_open_ = true;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 void SharesheetServiceDelegate::OnBubbleClosed(
-    const base::string16& active_action) {
+    const std::u16string& active_action) {
   sharesheet_bubble_view_.release();
   sharesheet_service_->OnBubbleClosed(native_window_, active_action);
   // This object is now deleted and nothing can be accessed any more.
   // Therefore there is no need to set is_bubble_open_ to false.
 }
 
-void SharesheetServiceDelegate::OnActionLaunched() {
-  sharesheet_bubble_view_->ShowActionView();
-}
-
 void SharesheetServiceDelegate::OnTargetSelected(
-    const base::string16& target_name,
+    const std::u16string& target_name,
     const TargetType type,
     apps::mojom::IntentPtr intent,
     views::View* share_action_view) {
   sharesheet_service_->OnTargetSelected(native_window_, target_name, type,
                                         std::move(intent), share_action_view);
+}
+
+bool SharesheetServiceDelegate::OnAcceleratorPressed(
+    const ui::Accelerator& accelerator,
+    const std::u16string& active_action) {
+  return sharesheet_service_->OnAcceleratorPressed(accelerator, active_action);
+}
+
+void SharesheetServiceDelegate::OnActionLaunched() {
+  sharesheet_bubble_view_->ShowActionView();
+}
+
+const gfx::VectorIcon* SharesheetServiceDelegate::GetVectorIcon(
+    const std::u16string& display_name) {
+  return sharesheet_service_->GetVectorIcon(display_name);
 }
 
 gfx::NativeWindow SharesheetServiceDelegate::GetNativeWindow() {
@@ -79,11 +107,6 @@ void SharesheetServiceDelegate::SetSharesheetSize(const int& width,
 
 void SharesheetServiceDelegate::CloseSharesheet() {
   sharesheet_bubble_view_->CloseBubble();
-}
-
-const gfx::VectorIcon* SharesheetServiceDelegate::GetVectorIcon(
-    const base::string16& display_name) {
-  return sharesheet_service_->GetVectorIcon(display_name);
 }
 
 }  // namespace sharesheet

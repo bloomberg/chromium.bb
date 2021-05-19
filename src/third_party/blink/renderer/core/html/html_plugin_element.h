@@ -37,11 +37,6 @@ class LayoutEmbeddedContent;
 class LayoutEmbeddedObject;
 class WebPluginContainerImpl;
 
-enum PreferPlugInsForImagesOption {
-  kShouldPreferPlugInsForImages,
-  kShouldNotPreferPlugInsForImages
-};
-
 class PluginParameters {
  public:
   PluginParameters() {}
@@ -97,7 +92,7 @@ class CORE_EXPORT HTMLPlugInElement
 
   bool ShouldAccelerate() const;
 
-  ParsedFeaturePolicy ConstructContainerPolicy() const override;
+  ParsedPermissionsPolicy ConstructContainerPolicy() const override;
 
   bool IsImageType() const;
   HTMLImageLoader* ImageLoader() const { return image_loader_.Get(); }
@@ -105,8 +100,7 @@ class CORE_EXPORT HTMLPlugInElement
  protected:
   HTMLPlugInElement(const QualifiedName& tag_name,
                     Document&,
-                    const CreateElementFlags,
-                    PreferPlugInsForImagesOption);
+                    const CreateElementFlags);
 
   // Node functions:
   void RemovedFrom(ContainerNode& insertion_point) override;
@@ -214,7 +208,6 @@ class CORE_EXPORT HTMLPlugInElement
 
   v8::Global<v8::Object> plugin_wrapper_;
   bool needs_plugin_update_;
-  bool should_prefer_plug_ins_for_images_;
   // Represents |layoutObject() && layoutObject()->isEmbeddedObject() &&
   // !layoutEmbeddedItem().showsUnavailablePluginIndicator()|.  We want to
   // avoid accessing |layoutObject()| in layoutObjectIsFocusable().

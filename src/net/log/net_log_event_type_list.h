@@ -392,10 +392,21 @@ EVENT_TYPE(TCP_CONNECT)
 //     "address": <String of the network address>,
 //   }
 //
-// And the END event will contain the system error code if it failed:
+// The END event will contain one of the following:
+//
+// On success:
+//   {
+//     "local_address": <The local address, as a string>,
+//     "remote_address": <The remote address, as a string>,
+//   }
+//
+// On success, but unable to determine the connected address:
+//   {
+//     "get_address_net_error": <Net integer error code>,
+//   }
 //
 //   {
-//     "os_error": <Integer error code the operating system returned>,
+//     "net_error": <Net integer error code>,
 //   }
 EVENT_TYPE(TCP_CONNECT_ATTEMPT)
 
@@ -1240,6 +1251,13 @@ EVENT_TYPE(HTTP_TRANSACTION_READ_HEADERS)
 //     "headers": <The list of header:value pairs>,
 //   }
 EVENT_TYPE(HTTP_TRANSACTION_READ_RESPONSE_HEADERS)
+
+// This event is sent on receipt of a 103 Early Hints response headers.
+// The following parameters are attached:
+//   {
+//     "headers": <The list of header:value pairs>,
+//   }
+EVENT_TYPE(HTTP_TRANSACTION_READ_EARLY_HINTS_RESPONSE_HEADERS)
 
 // Measures the time to read the entity body from the server.
 EVENT_TYPE(HTTP_TRANSACTION_READ_BODY)
@@ -2292,6 +2310,12 @@ EVENT_TYPE(HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION)
 //     "headers": <The list of header:value pairs>
 //   }
 EVENT_TYPE(QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS)
+
+// The stream has read a 103 Early Hints response headers.
+//   {
+//     "headers": <The list of header:value pairs>
+//   }
+EVENT_TYPE(QUIC_CHROMIUM_CLIENT_STREAM_READ_EARLY_HINTS_RESPONSE_HEADERS)
 
 // The stream has read the response headers.
 //   {

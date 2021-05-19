@@ -50,6 +50,8 @@
 #include "extensions/common/error_utils.h"
 #endif
 
+using extensions::mojom::ManifestLocation;
+
 namespace extensions {
 
 namespace {
@@ -151,7 +153,7 @@ void ManagementApiUnitTest::SetUp() {
   EventRouterFactory::GetInstance()->SetTestingFactory(
       profile(), base::BindRepeating(&BuildEventRouter));
 
-  browser_window_.reset(new TestBrowserWindow());
+  browser_window_ = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
   params.type = Browser::TYPE_NORMAL;
   params.window = browser_window_.get();
@@ -213,17 +215,21 @@ TEST_F(ManagementApiUnitTest, ManagementSetEnabled) {
 // Test that component extensions cannot be disabled, and that policy extensions
 // can be disabled only by component/policy extensions.
 TEST_F(ManagementApiUnitTest, ComponentPolicyDisabling) {
-  auto component =
-      ExtensionBuilder("component").SetLocation(Manifest::COMPONENT).Build();
-  auto component2 =
-      ExtensionBuilder("component2").SetLocation(Manifest::COMPONENT).Build();
-  auto policy =
-      ExtensionBuilder("policy").SetLocation(Manifest::EXTERNAL_POLICY).Build();
+  auto component = ExtensionBuilder("component")
+                       .SetLocation(ManifestLocation::kComponent)
+                       .Build();
+  auto component2 = ExtensionBuilder("component2")
+                        .SetLocation(ManifestLocation::kComponent)
+                        .Build();
+  auto policy = ExtensionBuilder("policy")
+                    .SetLocation(ManifestLocation::kExternalPolicy)
+                    .Build();
   auto policy2 = ExtensionBuilder("policy2")
-                     .SetLocation(Manifest::EXTERNAL_POLICY)
+                     .SetLocation(ManifestLocation::kExternalPolicy)
                      .Build();
-  auto internal =
-      ExtensionBuilder("internal").SetLocation(Manifest::INTERNAL).Build();
+  auto internal = ExtensionBuilder("internal")
+                      .SetLocation(ManifestLocation::kInternal)
+                      .Build();
 
   service()->AddExtension(component.get());
   service()->AddExtension(component2.get());
@@ -266,15 +272,18 @@ TEST_F(ManagementApiUnitTest, ComponentPolicyDisabling) {
 // Test that policy extensions can be enabled only by component/policy
 // extensions.
 TEST_F(ManagementApiUnitTest, ComponentPolicyEnabling) {
-  auto component =
-      ExtensionBuilder("component").SetLocation(Manifest::COMPONENT).Build();
-  auto policy =
-      ExtensionBuilder("policy").SetLocation(Manifest::EXTERNAL_POLICY).Build();
+  auto component = ExtensionBuilder("component")
+                       .SetLocation(ManifestLocation::kComponent)
+                       .Build();
+  auto policy = ExtensionBuilder("policy")
+                    .SetLocation(ManifestLocation::kExternalPolicy)
+                    .Build();
   auto policy2 = ExtensionBuilder("policy2")
-                     .SetLocation(Manifest::EXTERNAL_POLICY)
+                     .SetLocation(ManifestLocation::kExternalPolicy)
                      .Build();
-  auto internal =
-      ExtensionBuilder("internal").SetLocation(Manifest::INTERNAL).Build();
+  auto internal = ExtensionBuilder("internal")
+                      .SetLocation(ManifestLocation::kInternal)
+                      .Build();
 
   service()->AddExtension(component.get());
   service()->AddExtension(policy.get());
@@ -795,7 +804,7 @@ class TestManagementAPIDelegate : public ManagementAPIDelegate {
   bool UninstallExtension(content::BrowserContext* context,
                           const std::string& transient_extension_id,
                           UninstallReason reason,
-                          base::string16* error) const override {
+                          std::u16string* error) const override {
     return true;
   }
   bool CreateAppShortcutFunctionDelegate(

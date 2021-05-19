@@ -32,6 +32,7 @@ import * as util from './util.js';
 import {Camera} from './views/camera.js';
 import {CameraIntent} from './views/camera_intent.js';
 import {Dialog} from './views/dialog.js';
+import {PTZPanel} from './views/ptz_panel.js';
 import {
   BaseSettings,
   PrimarySettings,
@@ -43,8 +44,7 @@ import {WaitableEvent} from './waitable_event.js';
 
 /**
  * The app window instance which is used for communication with Tast tests. For
- * non-test sessions or test sessions but using the legacy communication
- * solution (chrome.runtime), it should be null.
+ * non-test sessions, it should be null.
  * @type {?AppWindow}
  */
 const appWindow = window['appWindow'];
@@ -140,6 +140,7 @@ export class App {
     nav.setup([
       this.cameraView_,
       new PrimarySettings(),
+      new PTZPanel(),
       new BaseSettings(ViewName.GRID_SETTINGS),
       new BaseSettings(ViewName.TIMER_SETTINGS),
       resolutionSettings,

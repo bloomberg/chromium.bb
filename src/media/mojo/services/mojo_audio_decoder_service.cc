@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/mojo_audio_decoder_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -83,8 +84,8 @@ void MojoAudioDecoderService::SetDataSource(
     mojo::ScopedDataPipeConsumerHandle receive_pipe) {
   DVLOG(1) << __func__;
 
-  mojo_decoder_buffer_reader_.reset(
-      new MojoDecoderBufferReader(std::move(receive_pipe)));
+  mojo_decoder_buffer_reader_ =
+      std::make_unique<MojoDecoderBufferReader>(std::move(receive_pipe));
 }
 
 void MojoAudioDecoderService::Decode(mojom::DecoderBufferPtr buffer,
@@ -110,8 +111,9 @@ void MojoAudioDecoderService::OnInitialized(InitializeCallback callback,
 
   if (!status.is_ok()) {
     // Do not call decoder_->NeedsBitstreamConversion() if init failed.
-    std::move(callback).Run(std::move(status), false,
-                            AudioDecoderType::kUnknown);
+    std::move(callback).Run(
+        std::move(status), false,
+        decoder_ ? decoder_->GetDecoderType() : AudioDecoderType::kUnknown);
     return;
   }
 

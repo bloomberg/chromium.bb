@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 
+#include <string>
+
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -184,10 +185,10 @@ const gfx::VectorIcon& PwaInstallView::GetVectorIcon() const {
   return omnibox::kPlusIcon;
 }
 
-base::string16 PwaInstallView::GetTextForTooltipAndAccessibleName() const {
+std::u16string PwaInstallView::GetTextForTooltipAndAccessibleName() const {
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
-    return base::string16();
+    return std::u16string();
   return l10n_util::GetStringFUTF16(
       IDS_OMNIBOX_PWA_INSTALL_ICON_TOOLTIP,
       webapps::AppBannerManager::GetInstallableWebAppName(web_contents));

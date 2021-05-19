@@ -2,29 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../../../../front_end/common/common.js';
-import * as Host from '../../../../front_end/host/host.js';
-import * as i18n from '../../../../front_end/i18n/i18n.js';
-import * as Root from '../../../../front_end/root/root.js';
-import * as SDK from '../../../../front_end/sdk/sdk.js';
+import * as Common from '../../../../front_end/core/common/common.js';
+import * as Host from '../../../../front_end/core/host/host.js';
+import * as i18n from '../../../../front_end/core/i18n/i18n.js';
+import * as Root from '../../../../front_end/core/root/root.js';
+import * as SDK from '../../../../front_end/core/sdk/sdk.js';
 
-import type * as UIModule from '../../../../front_end/ui/ui.js';
+import type * as UIModule from '../../../../front_end/ui/legacy/legacy.js';
 
 // Don't import UI at this stage because it will fail without
 // the environment. Instead we do the import at the end of the
 // initialization phase.
 let UI: typeof UIModule;
-
-function exposeLSIfNecessary() {
-  // SDK.ResourceTree model has to exist to avoid a circular dependency, thus it
-  // needs to be placed on the global if it is not already there.
-  const globalObject = (globalThis as unknown as {ls: Function});
-  globalObject.ls = globalObject.ls || Common.ls;
-}
-
-// Initially expose the ls function so that imports that assume its existence
-// don't fail. This side-effect will be undone as part of the deinitialize.
-exposeLSIfNecessary();
 
 // Expose the locale.
 i18n.i18n.registerLocale('en-US');
@@ -73,10 +62,9 @@ function createSettingValue(
 }
 
 export async function initializeGlobalVars({reset = true} = {}) {
-  exposeLSIfNecessary();
 
   // Create the appropriate settings needed to boot.
-  const extensions = [
+  const settings = [
     createSettingValue(Common.Settings.SettingCategory.APPEARANCE, 'disablePausedStateOverlay', false),
     createSettingValue(Common.Settings.SettingCategory.CONSOLE, 'customFormatters', false),
     createSettingValue(Common.Settings.SettingCategory.DEBUGGER, 'pauseOnCaughtException', false),
@@ -128,27 +116,12 @@ export async function initializeGlobalVars({reset = true} = {}) {
     createSettingValue(Common.Settings.SettingCategory.GRID, 'showGridTrackSizes', true),
     createSettingValue(Common.Settings.SettingCategory.NONE, 'activeKeybindSet', '', Common.Settings.SettingType.ENUM),
     createSettingValue(Common.Settings.SettingCategory.NONE, 'userShortcuts', [], Common.Settings.SettingType.ARRAY),
+    createSettingValue(
+        Common.Settings.SettingCategory.APPEARANCE, 'help.show-release-note', true,
+        Common.Settings.SettingType.BOOLEAN),
   ];
 
-  // We instantiate a Runtime with an empty module as the settings needed to boot up are
-  // provided via the Common.Settings.registerSettingExtension system. Nevertheless,
-  // several unit test rely on a singleton instace so we stil need this call.
-  // TODO(crbug.com/1134103): Remove this call once all extensions have been migrated.
-  Root.Runtime.Runtime.instance({
-    forceNew: reset,
-    moduleDescriptors: [{
-      name: 'Test',
-      extensions: [],
-      dependencies: [],
-      modules: [],
-      scripts: [],
-      resources: [],
-      condition: '',
-      experiment: '',
-    }],
-  });
-
-  Common.Settings.registerSettingExtengionsForTest(extensions, reset);
+  Common.Settings.registerSettingsForTest(settings, reset);
 
   // Instantiate the storage.
   const storageVals = new Map<string, string>();
@@ -158,7 +131,7 @@ export async function initializeGlobalVars({reset = true} = {}) {
   Common.Settings.Settings.instance({forceNew: reset, globalStorage: storage, localStorage: storage});
 
   // Dynamically import UI after the rest of the environment is set up, otherwise it will fail.
-  UI = await import('../../../../front_end/ui/ui.js');
+  UI = await import('../../../../front_end/ui/legacy/legacy.js');
   UI.ZoomManager.ZoomManager.instance(
       {forceNew: true, win: window, frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance});
 
@@ -178,10 +151,12 @@ export async function deinitializeGlobalVars() {
   SDK.SDKModel.TargetManager.removeInstance();
   Root.Runtime.Runtime.removeInstance();
   Common.Settings.Settings.removeInstance();
+  Common.Settings.resetSettings();
 
   // Protect against the dynamic import not having happened.
   if (UI) {
     UI.ZoomManager.ZoomManager.removeInstance();
+    UI.ViewManager.ViewManager.removeInstance();
   }
 }
 

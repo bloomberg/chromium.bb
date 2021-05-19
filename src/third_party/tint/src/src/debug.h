@@ -15,7 +15,6 @@
 #ifndef SRC_DEBUG_H_
 #define SRC_DEBUG_H_
 
-#include <sstream>
 #include <utility>
 
 #include "src/diagnostic/diagnostic.h"
@@ -88,5 +87,30 @@ class InternalCompilerError {
 /// Use the `<<` operator to append an error message to the ICE.
 #define TINT_UNREACHABLE(diagnostics) \
   TINT_ICE(diagnostics) << "TINT_UNREACHABLE "
+
+/// TINT_UNIMPLEMENTED() is a macro for appending a "TINT_UNIMPLEMENTED"
+/// internal compiler error message to the diagnostics list `diagnostics`, and
+/// calling the InternalCompilerErrorReporter with the full diagnostic list if a
+/// reporter is set.
+/// The ICE message contains the callsite's file and line.
+/// Use the `<<` operator to append an error message to the ICE.
+#define TINT_UNIMPLEMENTED(diagnostics) \
+  TINT_ICE(diagnostics) << "TINT_UNIMPLEMENTED "
+
+/// TINT_ASSERT() is a macro for checking the expression is true, triggering a
+/// TINT_ICE if it is not.
+/// The ICE message contains the callsite's file and line.
+/// @warning: Unlike TINT_ICE() and TINT_UNREACHABLE(), TINT_ASSERT() does not
+/// append a message to an existing tint::diag::List. As such, TINT_ASSERT()
+/// may silently fail in builds where SetInternalCompilerErrorReporter() is not
+/// called. Only use in places where there's no sensible place to put proper
+/// error handling.
+#define TINT_ASSERT(condition)                                      \
+  do {                                                              \
+    if (!(condition)) {                                             \
+      tint::diag::List diagnostics;                                 \
+      TINT_ICE(diagnostics) << "TINT_ASSERT(" << #condition << ")"; \
+    }                                                               \
+  } while (false)
 
 #endif  // SRC_DEBUG_H_

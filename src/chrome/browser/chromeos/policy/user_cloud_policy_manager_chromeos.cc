@@ -17,13 +17,15 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/syslog_logging.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/helper.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
+#include "chrome/browser/ash/login/users/affiliation.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/users/affiliation.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/policy/arc_app_install_event_log_uploader.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/extension_install_event_log_uploader.h"
@@ -225,7 +227,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
   std::unique_ptr<CloudPolicyClient> cloud_policy_client =
       std::make_unique<CloudPolicyClient>(
           device_management_service, system_url_loader_factory,
-          chromeos::GetDeviceDMTokenForUserPolicyGetter(account_id_));
+          ash::GetDeviceDMTokenForUserPolicyGetter(account_id_));
   CreateComponentCloudPolicyService(
       dm_protocol::kChromeExtensionPolicyType, component_policy_cache_path_,
       POLICY_SOURCE_CLOUD, cloud_policy_client.get(), schema_registry());
@@ -455,7 +457,7 @@ void UserCloudPolicyManagerChromeOS::OnRegistrationStateChanged(
     } else {
       // If the client has switched to not registered, we bail out as this
       // indicates the cloud policy setup flow has been aborted.
-      CancelWaitForPolicyFetch(true);
+      CancelWaitForPolicyFetch(true, std::string());
     }
   }
 }
@@ -473,14 +475,16 @@ void UserCloudPolicyManagerChromeOS::OnClientError(
       // error is to be expected - treat as a policy fetch success. Also
       // mark this profile as not requiring policy.
       SetPolicyRequired(false);
-      CancelWaitForPolicyFetch(true);
+      CancelWaitForPolicyFetch(true, std::string());
       break;
     case DM_STATUS_SUCCESS:
-      CancelWaitForPolicyFetch(true);
+      CancelWaitForPolicyFetch(true, std::string());
       break;
     default:
       // Unexpected error fetching policy.
-      CancelWaitForPolicyFetch(false);
+      CancelWaitForPolicyFetch(false,
+                               "cloud policy client status: " +
+                                   base::NumberToString(client()->status()));
       break;
   }
   // If we are in re-registration state and re-registration fails, we mark the
@@ -489,8 +493,7 @@ void UserCloudPolicyManagerChromeOS::OnClientError(
     RegistrationResultUMA(RegistrationResult::kReregistrationUnsuccessful);
     LOG(ERROR) << "Re-registration failed, requiring the user to perform an "
                   "online sign-in.";
-    chromeos::ChromeUserManager::Get()->SaveForceOnlineSignin(account_id_,
-                                                              true);
+    ash::ChromeUserManager::Get()->SaveForceOnlineSignin(account_id_, true);
   }
 }
 
@@ -531,18 +534,17 @@ void UserCloudPolicyManagerChromeOS::OnStoreLoaded(
     enforcement_type_ = PolicyEnforcement::kPolicyOptional;
 
     DCHECK(policy_data->has_username());
-    chromeos::AffiliationIDSet set_of_user_affiliation_ids(
+    ash::AffiliationIDSet set_of_user_affiliation_ids(
         policy_data->user_affiliation_ids().begin(),
         policy_data->user_affiliation_ids().end());
 
-    chromeos::ChromeUserManager::Get()->SetUserAffiliation(
+    ash::ChromeUserManager::Get()->SetUserAffiliation(
         account_id_, set_of_user_affiliation_ids);
   }
 }
 
 void UserCloudPolicyManagerChromeOS::SetPolicyRequired(bool policy_required) {
-  chromeos::ChromeUserManager* user_manager =
-      chromeos::ChromeUserManager::Get();
+  auto* user_manager = ash::ChromeUserManager::Get();
   user_manager::known_user::SetProfileRequiresPolicy(
       account_id_,
       policy_required
@@ -671,7 +673,8 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
     }
     // Failed to get a token, stop waiting if policy is not required for this
     // user.
-    CancelWaitForPolicyFetch(false);
+    CancelWaitForPolicyFetch(
+        false, "auth error state: " + base::NumberToString(error.state()));
   }
 
   token_fetcher_.reset();
@@ -684,17 +687,24 @@ void UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete(
                              now - time_client_registered_);
   UMA_HISTOGRAM_MEDIUM_TIMES(kUMAInitialFetchDelayTotal,
                              now - time_init_started_);
-  CancelWaitForPolicyFetch(success);
+  CancelWaitForPolicyFetch(
+      success,
+      "policy fetch complete"
+      ", policy client status: " +
+          base::NumberToString(client()->status()) +
+          ", store status: " + base::NumberToString(store()->status()));
 }
 
 void UserCloudPolicyManagerChromeOS::OnPolicyRefreshTimeout() {
   DCHECK(waiting_for_policy_fetch_);
   LOG(WARNING) << "Timed out while waiting for the policy refresh. "
                << "The session will start with the cached policy.";
-  CancelWaitForPolicyFetch(false);
+  CancelWaitForPolicyFetch(false, "policy refresh timeout");
 }
 
-void UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch(bool success) {
+void UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch(
+    bool success,
+    const std::string& failure_reason) {
   if (!waiting_for_policy_fetch_)
     return;
 
@@ -704,7 +714,11 @@ void UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch(bool success) {
   // to go forward after a failed policy fetch, then trigger a fatal error.
   if (!success && enforcement_type_ != PolicyEnforcement::kPolicyOptional) {
     LOG(ERROR) << "Policy fetch failed for the user. "
-                  "Aborting profile initialization";
+                  "Aborting profile initialization. "
+               << failure_reason;
+    // Also log to syslog so the message is visible even when the user home is
+    // unmounted.
+    SYSLOG(ERROR) << "Policy fetching failed. " << failure_reason;
     // Need to exit the current user, because we've already started this user's
     // session.
     if (fatal_error_callback_)

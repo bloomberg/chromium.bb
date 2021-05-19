@@ -77,8 +77,7 @@ class UniformTileConfigTestLarge
   virtual ~UniformTileConfigTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = end_usage_check_;
@@ -144,8 +143,7 @@ class NonUniformTileConfigTestLarge
   virtual ~NonUniformTileConfigTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = rc_end_usage_;
@@ -301,8 +299,7 @@ class TileGroupTestLarge
   virtual ~TileGroupTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = AOM_Q;

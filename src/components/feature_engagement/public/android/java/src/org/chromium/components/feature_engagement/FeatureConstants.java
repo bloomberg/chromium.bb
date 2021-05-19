@@ -13,9 +13,11 @@ import java.lang.annotation.RetentionPolicy;
  * FeatureConstants contains the String name of all base::Feature in-product help features declared
  * in //components/feature_engagement/public/feature_constants.h.
  */
-@StringDef({FeatureConstants.DOWNLOAD_PAGE_FEATURE,
-        FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE, FeatureConstants.DOWNLOAD_HOME_FEATURE,
-        FeatureConstants.DOWNLOAD_INDICATOR_FEATURE, FeatureConstants.CHROME_HOME_EXPAND_FEATURE,
+@StringDef({FeatureConstants.ADD_TO_HOMESCREEN_MESSAGE_FEATURE,
+        FeatureConstants.ADD_TO_HOMESCREEN_TEXT_BUBBLE_FEATURE,
+        FeatureConstants.DOWNLOAD_PAGE_FEATURE, FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE,
+        FeatureConstants.DOWNLOAD_HOME_FEATURE, FeatureConstants.DOWNLOAD_INDICATOR_FEATURE,
+        FeatureConstants.CHROME_HOME_EXPAND_FEATURE,
         FeatureConstants.CHROME_HOME_PULL_TO_REFRESH_FEATURE,
         FeatureConstants.DATA_SAVER_PREVIEW_FEATURE, FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
         FeatureConstants.EPHEMERAL_TAB_FEATURE, FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE,
@@ -26,6 +28,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_PANEL_OPEN_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_OPT_IN_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_TAPPED_BUT_SHOULD_LONGPRESS_FEATURE,
+        FeatureConstants.CONTEXTUAL_SEARCH_IN_PANEL_HELP_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_BAR_SWIPING_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE,
@@ -49,6 +52,8 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.IPH_SHARE_SCREENSHOT_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
+    String ADD_TO_HOMESCREEN_MESSAGE_FEATURE = "IPH_AddToHomescreenMessage";
+    String ADD_TO_HOMESCREEN_TEXT_BUBBLE_FEATURE = "IPH_AddToHomescreenTextBubble";
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
     String DOWNLOAD_PAGE_SCREENSHOT_FEATURE = "IPH_DownloadPageScreenshot";
     String DOWNLOAD_HOME_FEATURE = "IPH_DownloadHome";
@@ -106,6 +111,11 @@ public @interface FeatureConstants {
             "IPH_ContextualSearchTappedButShouldLongpress";
 
     /**
+     * Another IPH to use longpress instead of tap, but this one appears inside the Panel.
+     */
+    String CONTEXTUAL_SEARCH_IN_PANEL_HELP_FEATURE = "IPH_ContextualSearchInPanelHelp";
+
+    /**
      * An IPH feature indicating to users that there are settings for downloads and they are
      * accessible through Downloads Home.
      */
@@ -122,6 +132,12 @@ public @interface FeatureConstants {
      * are now faster than before.
      */
     String DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_FEATURE = "IPH_DownloadInfoBarDownloadsAreFaster";
+
+    /**
+     * An IPH feature attached to the mic button in the toolbar prompring user
+     * to try voice.
+     */
+    String IPH_MIC_TOOLBAR_FEATURE = "IPH_MicToolbar";
 
     /** An IPH feature to prompt users to open the new tab page after a navigation. */
     String NEW_TAB_PAGE_HOME_BUTTON_FEATURE = "IPH_NewTabPageHomeButton";

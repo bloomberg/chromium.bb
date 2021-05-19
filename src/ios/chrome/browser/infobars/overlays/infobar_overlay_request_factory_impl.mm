@@ -6,11 +6,13 @@
 
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/confirm_infobar_banner_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/public/infobar_banner/save_address_profile_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_card_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_password_infobar_banner_overlay.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/translate_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/update_password_infobar_banner_overlay.h"
 #import "ios/chrome/browser/overlays/public/infobar_modal/password_infobar_modal_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/public/infobar_modal/save_address_profile_infobar_modal_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_modal/save_card_infobar_modal_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_modal/translate_infobar_modal_overlay_request_config.h"
 
@@ -24,6 +26,10 @@ using translate_infobar_overlays::TranslateModalRequestConfig;
 using confirm_infobar_overlays::ConfirmBannerRequestConfig;
 using save_card_infobar_overlays::SaveCardBannerRequestConfig;
 using save_card_infobar_overlays::SaveCardModalRequestConfig;
+using save_address_profile_infobar_overlays::
+    SaveAddressProfileBannerRequestConfig;
+using save_address_profile_infobar_overlays::
+    SaveAddressProfileModalRequestConfig;
 
 InfobarOverlayRequestFactoryImpl::InfobarOverlayRequestFactoryImpl() {
   SetUpFactories(InfobarType::kInfobarTypePasswordSave,
@@ -47,6 +53,10 @@ InfobarOverlayRequestFactoryImpl::InfobarOverlayRequestFactoryImpl() {
                  CreateFactory<SaveCardBannerRequestConfig>(),
                  /*detail_sheet_factory=*/nullptr,
                  CreateFactory<SaveCardModalRequestConfig>());
+  SetUpFactories(InfobarType::kInfobarTypeSaveAutofillAddressProfile,
+                 CreateFactory<SaveAddressProfileBannerRequestConfig>(),
+                 /*detail_sheet_factory=*/nullptr,
+                 CreateFactory<SaveAddressProfileModalRequestConfig>());
 }
 
 InfobarOverlayRequestFactoryImpl::~InfobarOverlayRequestFactoryImpl() = default;

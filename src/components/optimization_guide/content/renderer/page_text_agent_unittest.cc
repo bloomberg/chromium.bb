@@ -4,11 +4,12 @@
 
 #include "components/optimization_guide/content/renderer/page_text_agent.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -25,7 +26,7 @@ class TestConsumer : public mojom::PageTextConsumer {
   TestConsumer() = default;
   ~TestConsumer() override = default;
 
-  base::string16 text() const { return base::StrCat(chunks_); }
+  std::u16string text() const { return base::StrCat(chunks_); }
   bool on_chunks_end_called() const { return on_chunks_end_called_; }
   size_t num_chunks() const { return chunks_.size(); }
 
@@ -34,7 +35,7 @@ class TestConsumer : public mojom::PageTextConsumer {
   }
 
   // mojom::PageTextConsumer:
-  void OnTextDumpChunk(const base::string16& chunk) override {
+  void OnTextDumpChunk(const std::u16string& chunk) override {
     ASSERT_FALSE(on_chunks_end_called_);
     chunks_.push_back(chunk);
   }
@@ -43,23 +44,8 @@ class TestConsumer : public mojom::PageTextConsumer {
 
  private:
   mojo::Receiver<mojom::PageTextConsumer> receiver_{this};
-  std::vector<base::string16> chunks_;
+  std::vector<std::u16string> chunks_;
   bool on_chunks_end_called_ = false;
-};
-
-class TestPageTextAgent : public PageTextAgent {
- public:
-  TestPageTextAgent() : PageTextAgent(nullptr) {}
-  ~TestPageTextAgent() override = default;
-
-  void SetFrameArea(uint64_t area) { area_ = area; }
-
-  uint64_t GetFrameArea() const override { return area_; }
-
-  bool IsInMainFrame() const override { return true; }
-
- private:
-  uint64_t area_ = 123;
 };
 
 class PageTextAgentTest : public testing::Test {
@@ -71,7 +57,7 @@ class PageTextAgentTest : public testing::Test {
 };
 
 TEST_F(PageTextAgentTest, IncreasesMax) {
-  TestPageTextAgent agent;
+  PageTextAgent agent(nullptr);
 
   mojo::PendingRemote<mojom::PageTextConsumer> consumer_remote;
   TestConsumer consumer;
@@ -95,15 +81,15 @@ TEST_F(PageTextAgentTest, IncreasesMax) {
       blink::WebMeaningfulLayout::kVisuallyNonEmpty, &other_size));
   EXPECT_EQ(1234U, other_size);
 
-  std::move(callback).Run(base::ASCIIToUTF16("abc"));
+  std::move(callback).Run(u"abc");
   RunUntilIdle();
 
-  EXPECT_EQ(base::ASCIIToUTF16("abc"), consumer.text());
+  EXPECT_EQ(u"abc", consumer.text());
   EXPECT_TRUE(consumer.on_chunks_end_called());
 }
 
 TEST_F(PageTextAgentTest, MaxStaysSame) {
-  TestPageTextAgent agent;
+  PageTextAgent agent(nullptr);
 
   mojo::PendingRemote<mojom::PageTextConsumer> consumer_remote;
   TestConsumer consumer;
@@ -127,15 +113,15 @@ TEST_F(PageTextAgentTest, MaxStaysSame) {
       blink::WebMeaningfulLayout::kVisuallyNonEmpty, &other_size));
   EXPECT_EQ(1234U, other_size);
 
-  std::move(callback).Run(base::ASCIIToUTF16("abc"));
+  std::move(callback).Run(u"abc");
   RunUntilIdle();
 
-  EXPECT_EQ(base::ASCIIToUTF16("abc"), consumer.text());
+  EXPECT_EQ(u"abc", consumer.text());
   EXPECT_TRUE(consumer.on_chunks_end_called());
 }
 
 TEST_F(PageTextAgentTest, FinishedLoading) {
-  TestPageTextAgent agent;
+  PageTextAgent agent(nullptr);
 
   mojo::PendingRemote<mojom::PageTextConsumer> consumer_remote;
   TestConsumer consumer;
@@ -159,15 +145,15 @@ TEST_F(PageTextAgentTest, FinishedLoading) {
       blink::WebMeaningfulLayout::kVisuallyNonEmpty, &other_size));
   EXPECT_EQ(1234U, other_size);
 
-  std::move(callback).Run(base::ASCIIToUTF16("abc"));
+  std::move(callback).Run(u"abc");
   RunUntilIdle();
 
-  EXPECT_EQ(base::ASCIIToUTF16("abc"), consumer.text());
+  EXPECT_EQ(u"abc", consumer.text());
   EXPECT_TRUE(consumer.on_chunks_end_called());
 }
 
 TEST_F(PageTextAgentTest, LongTextOnChunkEdge) {
-  TestPageTextAgent agent;
+  PageTextAgent agent(nullptr);
 
   mojo::PendingRemote<mojom::PageTextConsumer> consumer_remote;
   TestConsumer consumer;
@@ -191,7 +177,7 @@ TEST_F(PageTextAgentTest, LongTextOnChunkEdge) {
       blink::WebMeaningfulLayout::kVisuallyNonEmpty, &other_size));
   EXPECT_EQ(1234U, other_size);
 
-  base::string16 text(1 << 16, 'a');
+  std::u16string text(1 << 16, 'a');
   std::move(callback).Run(text);
   RunUntilIdle();
 
@@ -201,7 +187,7 @@ TEST_F(PageTextAgentTest, LongTextOnChunkEdge) {
 }
 
 TEST_F(PageTextAgentTest, LongTextOffOfChunkEdge) {
-  TestPageTextAgent agent;
+  PageTextAgent agent(nullptr);
 
   mojo::PendingRemote<mojom::PageTextConsumer> consumer_remote;
   TestConsumer consumer;
@@ -225,7 +211,7 @@ TEST_F(PageTextAgentTest, LongTextOffOfChunkEdge) {
       blink::WebMeaningfulLayout::kVisuallyNonEmpty, &other_size));
   EXPECT_EQ(1234U, other_size);
 
-  base::string16 text((1 << 15) + 3, 'a');
+  std::u16string text((1 << 15) + 3, 'a');
   std::move(callback).Run(text);
   RunUntilIdle();
 
@@ -235,7 +221,7 @@ TEST_F(PageTextAgentTest, LongTextOffOfChunkEdge) {
 }
 
 TEST_F(PageTextAgentTest, NoRequests) {
-  TestPageTextAgent agent;
+  PageTextAgent agent(nullptr);
 
   uint32_t size = 123;
   EXPECT_FALSE(agent.MaybeRequestTextDumpOnLayoutEvent(
@@ -247,25 +233,14 @@ TEST_F(PageTextAgentTest, NoRequests) {
   EXPECT_EQ(123U, size);
 }
 
-TEST_F(PageTextAgentTest, MainframeFrameSizeTooSmallIgnored) {
-  TestPageTextAgent agent;
-  agent.SetFrameArea(100);
+TEST_F(PageTextAgentTest, MultipleBindWithSet) {
+  PageTextAgent agent(nullptr);
 
-  mojo::PendingRemote<mojom::PageTextConsumer> consumer_remote;
-  TestConsumer consumer;
-  consumer.Bind(consumer_remote.InitWithNewPipeAndPassReceiver());
+  mojo::PendingAssociatedRemote<mojom::PageTextService> remote_1;
+  mojo::PendingAssociatedRemote<mojom::PageTextService> remote_2;
 
-  auto request = mojom::PageTextDumpRequest::New();
-  request->max_size = 1024;
-  request->event = mojom::TextDumpEvent::kFirstLayout;
-  request->min_frame_pixel_area = 200;
-  agent.RequestPageTextDump(std::move(request), std::move(consumer_remote));
-
-  uint32_t size = 123;
-  auto callback = agent.MaybeRequestTextDumpOnLayoutEvent(
-      blink::WebMeaningfulLayout::kFinishedParsing, &size);
-  EXPECT_TRUE(callback);
-  EXPECT_EQ(1024U, size);
+  agent.Bind(remote_1.InitWithNewEndpointAndPassReceiver());
+  agent.Bind(remote_2.InitWithNewEndpointAndPassReceiver());
 }
 
 }  // namespace optimization_guide

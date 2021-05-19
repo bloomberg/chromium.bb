@@ -8,7 +8,7 @@ module.exports = function (grunt) {
     pkg: grunt.file.readJSON('package.json'),
 
     clean: {
-      out: ['out/', 'out-wpt/'],
+      out: ['out/', 'out-wpt/', 'out-node/'],
     },
 
     run: {
@@ -18,7 +18,7 @@ module.exports = function (grunt) {
       },
       'generate-listings': {
         cmd: 'node',
-        args: ['tools/gen_listings', 'webgpu', 'unittests', 'demo'],
+        args: ['tools/gen_listings', 'out/', 'src/webgpu', 'src/unittests', 'src/demo'],
       },
       'generate-wpt-cts-html': {
         cmd: 'node',
@@ -54,6 +54,16 @@ module.exports = function (grunt) {
           // These files will be generated, instead of compiled from TypeScript.
           '--ignore=src/common/framework/version.ts',
           '--ignore=src/webgpu/listing.ts',
+        ],
+      },
+      'build-out-node': {
+        cmd: 'node',
+        args: [
+          'node_modules/typescript/lib/tsc.js',
+          '--project', 'node.tsconfig.json',
+          '--outDir', 'out-node/',
+          '--noEmit', 'false',
+          '--declaration', 'false'
         ],
       },
       lint: {
@@ -146,6 +156,7 @@ module.exports = function (grunt) {
     'clean',
     'build-standalone',
     'build-wpt',
+    'run:build-out-node',
     'build-done-message',
     'ts:check',
     'run:unittest',

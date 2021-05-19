@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.tab.HistoricalTabSaver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabIdManager;
@@ -46,11 +47,13 @@ import org.chromium.chrome.browser.tab.TabStateExtractor;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tab.state.FilePersistedTabDataStorage;
+import org.chromium.chrome.browser.tab.state.PersistedTabData;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.url.GURL;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -92,6 +95,7 @@ public class TabPersistentStore {
 
     /** Prevents two TabPersistentStores from saving the same file simultaneously. */
     private static final Object SAVE_LIST_LOCK = new Object();
+    private TabModelObserver mTabModelObserver;
 
     public void onNativeLibraryReady(TabContentManager tabContentManager) {
         setTabContentManager(tabContentManager);
@@ -126,6 +130,28 @@ public class TabPersistentStore {
                 addTabToSaveQueue(tab);
             }
         };
+
+        mTabModelObserver = new TabModelObserver() {
+            @Override
+            public void didCloseTab(Tab tab) {
+                PersistedTabData.onTabClose(tab);
+                if (!tab.isIncognito()) HistoricalTabSaver.createHistoricalTab(tab);
+                removeTabFromQueues(tab);
+            }
+
+            @Override
+            public void willCloseAllTabs(boolean incognito) {
+                cancelLoadingTabs(incognito);
+            }
+
+            @Override
+            public void tabClosureUndone(Tab tab) {
+                saveTabListAsynchronously();
+            }
+        };
+
+        mTabModelSelector.getModel(false).addObserver(mTabModelObserver);
+        mTabModelSelector.getModel(true).addObserver(mTabModelObserver);
     }
 
     /**
@@ -803,7 +829,7 @@ public class TabPersistentStore {
             return;
         }
 
-        if (UrlUtilities.isNTPUrl(tab.getUrlString()) && !tab.canGoBack() && !tab.canGoForward()) {
+        if (UrlUtilities.isNTPUrl(tab.getUrl()) && !tab.canGoBack() && !tab.canGoForward()) {
             return;
         }
         mTabsToSave.addLast(tab);
@@ -847,6 +873,11 @@ public class TabPersistentStore {
 
     public void destroy() {
         mDestroyed = true;
+        if (mTabModelObserver != null) {
+            mTabModelSelector.getModel(false).removeObserver(mTabModelObserver);
+            mTabModelSelector.getModel(true).removeObserver(mTabModelObserver);
+            mTabModelObserver = null;
+        }
         mPersistencePolicy.destroy();
         if (mTabLoader != null) mTabLoader.cancel(true);
         mTabsToSave.clear();
@@ -888,17 +919,18 @@ public class TabPersistentStore {
         ThreadUtils.assertOnUiThread();
 
         TabModel incognitoModel = selector.getModel(true);
+        // TODO(crbug/783819): Convert TabModelMetadata to use GURL.
         TabModelMetadata incognitoInfo = new TabModelMetadata(incognitoModel.index());
         for (int i = 0; i < incognitoModel.getCount(); i++) {
             incognitoInfo.ids.add(incognitoModel.getTabAt(i).getId());
-            incognitoInfo.urls.add(incognitoModel.getTabAt(i).getUrlString());
+            incognitoInfo.urls.add(incognitoModel.getTabAt(i).getUrl().getSpec());
         }
 
         TabModel normalModel = selector.getModel(false);
         TabModelMetadata normalInfo = new TabModelMetadata(normalModel.index());
         for (int i = 0; i < normalModel.getCount(); i++) {
             normalInfo.ids.add(normalModel.getTabAt(i).getId());
-            normalInfo.urls.add(normalModel.getTabAt(i).getUrlString());
+            normalInfo.urls.add(normalModel.getTabAt(i).getUrl().getSpec());
         }
 
         // Cache the active tab id to be pre-loaded next launch.
@@ -1299,7 +1331,8 @@ public class TabPersistentStore {
      * @param encrypted Whether or not the tab is encrypted.
      * @return File pointing at the TabState for the Tab.
      */
-    private File getTabStateFile(int tabId, boolean encrypted) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public File getTabStateFile(int tabId, boolean encrypted) {
         return TabStateFileManager.getTabStateFile(getStateDirectory(), tabId, encrypted);
     }
 
@@ -1593,8 +1626,8 @@ public class TabPersistentStore {
     }
 
     private boolean isTabUrlContentScheme(Tab tab) {
-        String url = tab.getUrlString();
-        return url != null && url.startsWith(UrlConstants.CONTENT_SCHEME);
+        GURL url = tab.getUrl();
+        return url != null && url.getScheme().equals(UrlConstants.CONTENT_SCHEME);
     }
 
     /**

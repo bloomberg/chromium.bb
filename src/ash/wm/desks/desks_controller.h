@@ -74,7 +74,7 @@ class ASH_EXPORT DesksController : public DesksHelper,
   static DesksController* Get();
 
   // Returns the default name for a desk at |desk_index|.
-  static base::string16 GetDeskDefaultName(size_t desk_index);
+  static std::u16string GetDeskDefaultName(size_t desk_index);
 
   const std::vector<std::unique_ptr<Desk>>& desks() const { return desks_; }
 
@@ -194,7 +194,7 @@ class ASH_EXPORT DesksController : public DesksHelper,
   // Restores the desk at |index| to the given |name|. This is only for
   // user-modified desk names, and hence |name| should never be empty since
   // users are not allowed to set empty names.
-  void RestoreNameOfDeskAtIndex(base::string16 name, size_t index);
+  void RestoreNameOfDeskAtIndex(std::u16string name, size_t index);
 
   // Restores the creation time of the desk at |index|.
   void RestoreCreationTimeOfDeskAtIndex(base::Time creation_time, size_t index);
@@ -205,6 +205,20 @@ class ASH_EXPORT DesksController : public DesksHelper,
   void RestoreVisitedMetricsOfDeskAtIndex(int first_day_visited,
                                           int last_day_visited,
                                           size_t index);
+
+  // Restores the |interacted_with_this_week_| field of the desk at |index|.
+  void RestoreWeeklyInteractionMetricOfDeskAtIndex(
+      bool interacted_with_this_week,
+      size_t index);
+
+  // Restores the metrics related to tracking a user's weekly active desks.
+  // Records and resets these metrics if the current time is past |report_time|.
+  void RestoreWeeklyActiveDesksMetrics(int weekly_active_desks,
+                                       base::Time report_time);
+
+  // Returns the time when |weekly_active_desks_scheduler_| is scheduled to go
+  // off.
+  base::Time GetWeeklyActiveReportTime() const;
 
   // Called explicitly by the RootWindowController when a root window has been
   // added or about to be removed in order to update all the available desks.
@@ -220,7 +234,7 @@ class ASH_EXPORT DesksController : public DesksHelper,
   // DesksHelper:
   bool BelongsToActiveDesk(aura::Window* window) override;
   int GetActiveDeskIndex() const override;
-  base::string16 GetDeskName(int index) const override;
+  std::u16string GetDeskName(int index) const override;
   int GetNumberOfDesks() const override;
   void SendToDeskAtIndex(aura::Window* window, int desk_index) override;
 
@@ -287,6 +301,11 @@ class ASH_EXPORT DesksController : public DesksHelper,
 
   void ReportDesksCountHistogram() const;
 
+  // Records the Desk class' global |g_weekly_active_desks| and also resets it
+  // to 1, accounting for the current active desk. Also resets the
+  // |interacted_with_this_week_| field for each inactive desk in |desks_|.
+  void RecordAndResetNumberOfWeeklyActiveDesks();
+
   std::vector<std::unique_ptr<Desk>> desks_;
 
   Desk* active_desk_ = nullptr;
@@ -321,6 +340,9 @@ class ASH_EXPORT DesksController : public DesksHelper,
   std::unique_ptr<DeskTraversalsMetricsHelper> metrics_helper_;
 
   base::ObserverList<Observer>::Unchecked observers_;
+
+  // Scheduler for reporting the weekly active desks metric.
+  base::OneShotTimer weekly_active_desks_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(DesksController);
 };

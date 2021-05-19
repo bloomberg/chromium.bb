@@ -36,14 +36,18 @@ Scheduler::Scheduler(
     const SchedulerSettings& settings,
     int layer_tree_host_id,
     base::SingleThreadTaskRunner* task_runner,
-    std::unique_ptr<CompositorTimingHistory> compositor_timing_history)
+    std::unique_ptr<CompositorTimingHistory> compositor_timing_history,
+    gfx::RenderingPipeline* main_thread_pipeline,
+    gfx::RenderingPipeline* compositor_thread_pipeline)
     : settings_(settings),
       client_(client),
       layer_tree_host_id_(layer_tree_host_id),
       task_runner_(task_runner),
       compositor_timing_history_(std::move(compositor_timing_history)),
       begin_impl_frame_tracker_(FROM_HERE),
-      state_machine_(settings) {
+      state_machine_(settings),
+      main_thread_pipeline_(main_thread_pipeline),
+      compositor_thread_pipeline_(compositor_thread_pipeline) {
   TRACE_EVENT1("cc", "Scheduler::Scheduler", "settings", settings_.AsValue());
   DCHECK(client_);
   DCHECK(!state_machine_.BeginFrameNeeded());
@@ -148,10 +152,12 @@ void Scheduler::SetNeedsPrepareTiles() {
 }
 
 void Scheduler::DidSubmitCompositorFrame(uint32_t frame_token,
-                                         EventMetricsSet events_metrics) {
+                                         EventMetricsSet events_metrics,
+                                         bool has_missing_content) {
   compositor_timing_history_->DidSubmitCompositorFrame(
       frame_token, begin_main_frame_args_.frame_id,
-      last_activate_origin_frame_args_.frame_id, std::move(events_metrics));
+      last_activate_origin_frame_args_.frame_id, std::move(events_metrics),
+      has_missing_content);
   state_machine_.DidSubmitCompositorFrame();
 
   // There is no need to call ProcessScheduledActions here because
@@ -185,6 +191,8 @@ void Scheduler::NotifyReadyToCommit(
 }
 
 void Scheduler::DidCommit() {
+  if (main_thread_pipeline_)
+    main_thread_pipeline_->NotifyFrameFinished();
   compositor_timing_history_->DidCommit();
 }
 
@@ -194,6 +202,8 @@ void Scheduler::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   compositor_timing_history_->BeginMainFrameAborted(
       last_dispatched_begin_main_frame_args_.frame_id, reason);
   state_machine_.BeginMainFrameAborted(reason);
+  if (main_thread_pipeline_)
+    main_thread_pipeline_->NotifyFrameFinished();
   ProcessScheduledActions();
 }
 
@@ -283,6 +293,8 @@ void Scheduler::StartOrStopBeginFrames() {
     devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                      false);
     client_->WillNotReceiveBeginFrame();
+    main_thread_pipeline_active_.reset();
+    compositor_thread_pipeline_active_.reset();
   }
 }
 
@@ -477,20 +489,9 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
       adjusted_args.interval -
       compositor_timing_history_->DrawDurationEstimate() - kDeadlineFudgeFactor;
 
-  // An estimate of time from starting the main frame on the main thread to when
-  // the resulting pending tree is activated. Note that this excludes the
-  // durations where progress is blocked due to back pressure in the pipeline
-  // (ready to commit to commit, ready to activate to activate, etc.)
-  base::TimeDelta bmf_start_to_activate =
-      compositor_timing_history_
-          ->BeginMainFrameStartToReadyToCommitDurationEstimate() +
-      compositor_timing_history_->CommitDurationEstimate() +
-      compositor_timing_history_->CommitToReadyToActivateDurationEstimate() +
-      compositor_timing_history_->ActivateDurationEstimate();
-
   base::TimeDelta bmf_to_activate_estimate_critical =
-      bmf_start_to_activate +
-      compositor_timing_history_->BeginMainFrameQueueDurationCriticalEstimate();
+      compositor_timing_history_
+          ->BeginMainFrameQueueToActivateCriticalEstimate();
   state_machine_.SetCriticalBeginMainFrameToActivateIsFast(
       bmf_to_activate_estimate_critical < bmf_to_activate_threshold);
 
@@ -510,17 +511,15 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
     time_since_main_frame_sent =
         now - compositor_timing_history_->begin_main_frame_sent_time();
   }
-  base::TimeDelta bmf_sent_to_ready_to_commit_estimate =
-      compositor_timing_history_
-          ->BeginMainFrameStartToReadyToCommitDurationEstimate();
+  base::TimeDelta bmf_sent_to_ready_to_commit_estimate;
   if (begin_main_frame_args_.on_critical_path) {
-    bmf_sent_to_ready_to_commit_estimate +=
+    bmf_sent_to_ready_to_commit_estimate =
         compositor_timing_history_
-            ->BeginMainFrameQueueDurationCriticalEstimate();
+            ->BeginMainFrameStartToReadyToCommitCriticalEstimate();
   } else {
-    bmf_sent_to_ready_to_commit_estimate +=
+    bmf_sent_to_ready_to_commit_estimate =
         compositor_timing_history_
-            ->BeginMainFrameQueueDurationNotCriticalEstimate();
+            ->BeginMainFrameStartToReadyToCommitNotCriticalEstimate();
   }
 
   bool main_thread_response_expected_before_deadline;
@@ -540,9 +539,8 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
   base::TimeDelta bmf_to_activate_estimate = bmf_to_activate_estimate_critical;
   if (!begin_main_frame_args_.on_critical_path) {
     bmf_to_activate_estimate =
-        bmf_start_to_activate +
         compositor_timing_history_
-            ->BeginMainFrameQueueDurationNotCriticalEstimate();
+            ->BeginMainFrameQueueToActivateNotCriticalEstimate();
   }
   bool can_activate_before_deadline =
       CanBeginMainFrameAndActivateBeforeDeadline(adjusted_args,
@@ -562,6 +560,29 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
   }
 
   skipped_last_frame_to_reduce_latency_ = false;
+
+  // A pipeline is activated if it's subscribed to BeginFrame callbacks. For the
+  // compositor this implies BeginImplFrames while for the main thread it would
+  // be BeginMainFrames.
+  // TODO(crbug.com/1157620) : For now this also includes cases where the
+  // rendering loop doesn't lead to any visual updates, for example a rAF
+  // callback updating content offscreen. These can be treated differently from
+  // a scheduling perspective (Idle vs Animating).
+  if (compositor_thread_pipeline_) {
+    if (!compositor_thread_pipeline_active_)
+      compositor_thread_pipeline_active_.emplace(compositor_thread_pipeline_);
+    compositor_thread_pipeline_->SetTargetDuration(adjusted_args.interval);
+  }
+
+  if (main_thread_pipeline_) {
+    // TODO(crbug.com/1157620) : We need a heuristic to mark the main pipeline
+    // inactive if it stops subscribing to main frames. For instance after a
+    // composited animation is committed.
+    if (state_machine_.did_commit_during_frame() &&
+        !main_thread_pipeline_active_)
+      main_thread_pipeline_active_.emplace(main_thread_pipeline_);
+    main_thread_pipeline_->SetTargetDuration(adjusted_args.interval);
+  }
 
   BeginImplFrame(adjusted_args, now);
 }
@@ -618,6 +639,9 @@ void Scheduler::FinishImplFrame() {
 
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
+
+  if (compositor_thread_pipeline_)
+    compositor_thread_pipeline_->NotifyFrameFinished();
 }
 
 void Scheduler::SendDidNotProduceFrame(const viz::BeginFrameArgs& args,
@@ -942,9 +966,6 @@ void Scheduler::AsProtozeroInto(
   if (begin_frame_source_) {
     begin_frame_source_->AsProtozeroInto(state->set_begin_frame_source_state());
   }
-
-  compositor_timing_history_->AsProtozeroInto(
-      state->set_compositor_timing_history());
 }
 
 void Scheduler::UpdateCompositorTimingHistoryRecordingEnabled() {

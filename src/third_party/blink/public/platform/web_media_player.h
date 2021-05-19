@@ -239,6 +239,22 @@ class WebMediaPlayer {
   virtual uint64_t AudioDecodedByteCount() const = 0;
   virtual uint64_t VideoDecodedByteCount() const = 0;
 
+  // Set the volume multiplier to control audio ducking.
+  // Output volume should be set to |player_volume| * |multiplier|. The range
+  // of |multiplier| is [0, 1], where 1 indicates normal (non-ducked) playback.
+  virtual void SetVolumeMultiplier(double multiplier) = 0;
+
+  // Set the player as the persistent video. Persistent video should hide its
+  // controls and go fullscreen.
+  virtual void SetPersistentState(bool persistent) {}
+
+  // Notify the player that it is now eligible to start recording power
+  // measurements if |state| is true, else it is no longer eligible.
+  virtual void SetPowerExperimentState(bool enabled) {}
+
+  // Suspends the player for the host frame closed.
+  virtual void SuspendForFrameClosed() = 0;
+
   // Returns true if the player has a frame available for presentation. Usually
   // this just means the first frame has been delivered.
   virtual bool HasAvailableVideoFrame() const = 0;

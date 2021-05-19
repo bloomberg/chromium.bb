@@ -35,6 +35,12 @@ class DriveModuleElement extends mixinBehaviors
     };
   }
 
+  constructor() {
+    super();
+    /** @private {IntersectionObserver} */
+    this.intersectionObserver_ = null;
+  }
+
   /** @private */
   onDisableButtonClick_() {
     this.dispatchEvent(new CustomEvent('disable-module', {
@@ -54,44 +60,18 @@ class DriveModuleElement extends mixinBehaviors
    * @private
    */
   getImageSrc_(file) {
-    switch (file.type) {
-      case (drive.mojom.FileType.kDoc):
-        return 'modules/drive/icons/google_docs_logo.svg';
-      case (drive.mojom.FileType.kSheet):
-        return 'modules/drive/icons/google_sheets_logo.svg';
-      case (drive.mojom.FileType.kSlide):
-        return 'modules/drive/icons/google_slides_logo.svg';
-      default:
-        // TODO(crbug/1176982): Need to return an image
-        // in the case we don't know the type of
-        // drive item.
-        return '';
-    }
+    return 'https://drive-thirdparty.googleusercontent.com/16/type/' +
+        file.mimeType;
   }
 
   /**
-   * @param {drive.mojom.File} file
-   * @return {string}
+   * @param {!Event} e
    * @private
    */
-  getTargetUrl_(file) {
-    const id = file.id;
-    // TODO(crbug/1177439): Use URL from ItemSuggest to generate URL.
-    switch (file.type) {
-      case (drive.mojom.FileType.kDoc):
-        return `https://docs.google.com/document/d/${id}/edit?usp=drive_web`;
-      case (drive.mojom.FileType.kSlide):
-        return `https://docs.google.com/presentation/d/${
-            id}/edit?usp=drive_web`;
-      case (drive.mojom.FileType.kSheet):
-        return `https://docs.google.com/spreadsheets/d/${
-            id}/edit?usp=drive_web`;
-      default:
-        // TODO(crbug/1177426): Generic drive link leads to preview of page,
-        // will need to decide if this is appropriate or we want to navigate
-        // directly to the page we want.
-        return `https://drive.google.com/file/d/${id}/view?usp=drive_web`;
-    }
+  onFileClick_(e) {
+    this.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
+    const index = this.$.fileRepeat.indexForElement(e.target);
+    chrome.metricsPrivate.recordSmallCount('NewTabPage.Drive.FileClick', index);
   }
 }
 
@@ -114,4 +94,4 @@ async function createDriveElement() {
 export const driveDescriptor = new ModuleDescriptor(
     /*id=*/ 'drive',
     /*name=*/ loadTimeData.getString('modulesDriveSentence'),
-    /*heightPx=*/ 260, createDriveElement);
+    createDriveElement);

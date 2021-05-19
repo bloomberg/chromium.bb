@@ -57,13 +57,13 @@ void U2fRegisterOperation::TrySign() {
     CtapMakeCredentialRequest sign_request(request());
     sign_request.rp.id = *request().app_id;
     sign_command = ConvertToU2fSignCommandWithBogusChallenge(
-      sign_request, excluded_key_handle());
+        sign_request, excluded_key_handle());
   } else {
     sign_command = ConvertToU2fSignCommandWithBogusChallenge(
-      request(), excluded_key_handle());
+        request(), excluded_key_handle());
   }
 
-  DispatchDeviceRequest(
+  DispatchU2FCommand(
       std::move(sign_command),
       base::BindOnce(&U2fRegisterOperation::OnCheckForExcludedKeyHandle,
                      weak_factory_.GetWeakPtr()));
@@ -146,7 +146,7 @@ void U2fRegisterOperation::WinkAndTryRegistration() {
 }
 
 void U2fRegisterOperation::TryRegistration() {
-  DispatchDeviceRequest(
+  DispatchU2FCommand(
       ConvertToU2fRegisterCommand(request()),
       base::BindOnce(&U2fRegisterOperation::OnRegisterResponseReceived,
                      weak_factory_.GetWeakPtr()));

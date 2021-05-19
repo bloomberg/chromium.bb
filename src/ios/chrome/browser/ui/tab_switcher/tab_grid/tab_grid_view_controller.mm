@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/gestures/view_controller_trait_collection_observer.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
@@ -520,7 +521,23 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (_reauthHandler == reauthHandler)
     return;
   _reauthHandler = reauthHandler;
-  self.incognitoTabsViewController.handler = self.reauthHandler;
+  self.incognitoTabsViewController.reauthHandler = self.reauthHandler;
+}
+
+- (void)setRegularThumbStripHandler:(id<ThumbStripCommands>)handler {
+  if (_regularThumbStripHandler == handler)
+    return;
+  _regularThumbStripHandler = handler;
+  self.regularTabsViewController.thumbStripHandler =
+      self.regularThumbStripHandler;
+}
+
+- (void)setIncognitoThumbStripHandler:(id<ThumbStripCommands>)handler {
+  if (_incognitoThumbStripHandler == handler)
+    return;
+  _incognitoThumbStripHandler = handler;
+  self.regularTabsViewController.thumbStripHandler =
+      self.incognitoThumbStripHandler;
 }
 
 #pragma mark - TabGridPaging
@@ -947,6 +964,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   UIView* contentView = self.scrollContentView;
   GridViewController* viewController = self.incognitoTabsViewController;
   viewController.view.translatesAutoresizingMaskIntoConstraints = NO;
+  viewController.view.accessibilityIdentifier = kIncognitoTabGridIdentifier;
   [self addChildViewController:viewController];
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
@@ -976,6 +994,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   UIView* contentView = self.scrollContentView;
   GridViewController* viewController = self.regularTabsViewController;
   viewController.view.translatesAutoresizingMaskIntoConstraints = NO;
+  viewController.view.accessibilityIdentifier = kRegularTabGridIdentifier;
   [self addChildViewController:viewController];
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];

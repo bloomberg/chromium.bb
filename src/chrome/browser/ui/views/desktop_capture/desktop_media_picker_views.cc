@@ -28,6 +28,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -45,6 +46,11 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window_tree_host.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/projector/projector_controller.h"
+#include "ash/public/cpp/projector/projector_session.h"
 #endif
 
 using content::DesktopMediaID;
@@ -178,6 +184,56 @@ void RecordUmaSelection(DialogSource dialog_source,
   }
 }
 
+bool IsProjectorEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!ash::ProjectorController::Get())
+    return false;
+
+  // TODO(https://crbug.com/1184881): If there is a session ongoing we should
+  // disable the checkbox.
+  return ash::ProjectorController::Get()->IsEligible();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  return false;
+}
+
+void SetProjectorToolsVisible(bool is_visible) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::ProjectorController::Get()->SetProjectorToolsVisible(is_visible);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+void ProjectorCheckboxPressed(views::Checkbox* presenter_checkbox) {
+  DCHECK(presenter_checkbox);
+  SetProjectorToolsVisible(presenter_checkbox->GetChecked());
+}
+
+void StartProjectorSession(const content::DesktopMediaID& accepted_id) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (accepted_id.type == content::DesktopMediaID::TYPE_NONE)
+    return;
+
+  ash::SourceType scope;
+
+  switch (accepted_id.type) {
+    case content::DesktopMediaID::TYPE_SCREEN:
+      scope = ash::SourceType::kFullscreen;
+      break;
+    case content::DesktopMediaID::TYPE_WINDOW:
+      scope = ash::SourceType::kWindow;
+      break;
+    case content::DesktopMediaID::TYPE_WEB_CONTENTS:
+      scope = ash::SourceType::kTab;
+      break;
+    case content::DesktopMediaID::TYPE_NONE:
+      scope = ash::SourceType::kUnset;
+      break;
+  }
+
+  ash::ProjectorController::Get()->StartProjectorSession(
+      scope, content::DesktopMediaID::GetNativeWindowById(accepted_id));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
 }  // namespace
 
 DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
@@ -190,12 +246,38 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
                  l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SHARE));
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
-  std::unique_ptr<views::Checkbox> audio_share_checkbox;
-  if (params.request_audio) {
-    audio_share_checkbox = std::make_unique<views::Checkbox>(
-        l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
-    audio_share_checkbox->SetChecked(params.approve_audio_by_default);
-    audio_share_checkbox_ = SetExtraView(std::move(audio_share_checkbox));
+  std::unique_ptr<views::View> extra_views_container;
+  if (params.request_audio || IsProjectorEnabled()) {
+    extra_views_container = std::make_unique<views::View>();
+    // A simple horizontal layout manager.
+    extra_views_container->SetLayoutManager(
+        std::make_unique<views::BoxLayout>());
+
+    if (params.request_audio) {
+      std::unique_ptr<views::Checkbox> audio_share_checkbox =
+          std::make_unique<views::Checkbox>(
+              l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
+      audio_share_checkbox->SetChecked(params.approve_audio_by_default);
+      audio_share_checkbox_ =
+          extra_views_container->AddChildView(std::move(audio_share_checkbox));
+    }
+
+    if (IsProjectorEnabled()) {
+      std::unique_ptr<views::Checkbox> presenter_tools_checkbox =
+          std::make_unique<views::Checkbox>(
+              l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PRESENTER_TOOLS));
+
+      presenter_tools_checkbox_ = extra_views_container->AddChildView(
+          std::move(presenter_tools_checkbox));
+      presenter_tools_checked_subscription_ =
+          presenter_tools_checkbox_->AddCheckedChangedCallback(
+              base::BindRepeating(&ProjectorCheckboxPressed,
+                                  presenter_tools_checkbox_));
+      presenter_tools_checkbox_->SetChecked(true);
+    }
+
+    extra_views_container_ = SetExtraView(std::move(extra_views_container));
+    extra_views_container_->SetVisible(true);
   }
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -208,7 +290,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   description_label_ = AddChildView(std::move(description_label));
 
-  std::vector<std::pair<base::string16, std::unique_ptr<View>>> panes;
+  std::vector<std::pair<std::u16string, std::unique_ptr<View>>> panes;
 
   const bool current_tab_among_sources = std::any_of(
       source_lists.begin(), source_lists.end(),
@@ -236,7 +318,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             gfx::Rect(),                             // label_rect
             gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
             gfx::Rect(20, 20, 320, 240),             // image_rect
-            5);  // focus_rectangle_inset
+            5);                                      // focus_rectangle_inset
 
         const DesktopMediaSourceViewStyle kGenericScreenStyle(
             2,                                       // columns
@@ -245,11 +327,11 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             gfx::Rect(15, 165, 240, 40),             // label_rect
             gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
             gfx::Rect(15, 15, 240, 150),             // image_rect
-            5);  // focus_rectangle_inset
+            5);                                      // focus_rectangle_inset
 
         std::unique_ptr<views::ScrollView> screen_scroll_view =
             views::ScrollView::CreateScrollViewWithBorder();
-        base::string16 screen_title_text = l10n_util::GetStringUTF16(
+        std::u16string screen_title_text = l10n_util::GetStringUTF16(
             IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN);
         auto list_controller = std::make_unique<DesktopMediaListController>(
             this, std::move(source_list));
@@ -281,7 +363,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
         std::unique_ptr<views::ScrollView> window_scroll_view =
             views::ScrollView::CreateScrollViewWithBorder();
-        base::string16 window_title_text = l10n_util::GetStringUTF16(
+        std::u16string window_title_text = l10n_util::GetStringUTF16(
             IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_WINDOW);
         auto list_controller = std::make_unique<DesktopMediaListController>(
             this, std::move(source_list));
@@ -302,7 +384,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         source_types_.push_back(DesktopMediaList::Type::kWebContents);
         // Note that "other tab" is inaccurate - we actually allow any tab
         // to be selected in either case.
-        const base::string16 title = l10n_util::GetStringUTF16(
+        const std::u16string title = l10n_util::GetStringUTF16(
             current_tab_among_sources
                 ? IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_OTHER_TAB
                 : IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_TAB);
@@ -325,7 +407,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             5);                                      // focus_rectangle_inset
         std::unique_ptr<views::ScrollView> window_scroll_view =
             views::ScrollView::CreateScrollViewWithBorder();
-        const base::string16 title = l10n_util::GetStringUTF16(
+        const std::u16string title = l10n_util::GetStringUTF16(
             IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_THIS_TAB);
         auto list_controller = std::make_unique<DesktopMediaListController>(
             this, std::move(source_list));
@@ -484,7 +566,7 @@ gfx::Size DesktopMediaPickerDialogView::CalculatePreferredSize() const {
   return gfx::Size(kDialogViewWidth, GetHeightForWidth(kDialogViewWidth));
 }
 
-base::string16 DesktopMediaPickerDialogView::GetWindowTitle() const {
+std::u16string DesktopMediaPickerDialogView::GetWindowTitle() const {
   int title_id = IDS_DESKTOP_MEDIA_PICKER_TITLE;
 
   if (!tabbed_pane_) {
@@ -560,12 +642,24 @@ bool DesktopMediaPickerDialogView::Accept() {
   if (parent_)
     parent_->NotifyDialogResult(source);
 
+  bool notify_projector_session_start =
+      presenter_tools_checkbox_ && presenter_tools_checkbox_->GetChecked() &&
+      IsProjectorEnabled();
+  if (notify_projector_session_start) {
+    StartProjectorSession(source);
+  }
+
   // Return true to close the window.
   return true;
 }
 
 bool DesktopMediaPickerDialogView::Cancel() {
   RecordUmaCancellation(dialog_source_);
+  bool hide_projector_tools =
+      presenter_tools_checkbox_ && presenter_tools_checkbox_->GetChecked();
+  // If the user cancels while the projector tools are visible, hide them.
+  if (hide_projector_tools)
+    SetProjectorToolsVisible(false);
   return views::DialogDelegateView::Cancel();
 }
 

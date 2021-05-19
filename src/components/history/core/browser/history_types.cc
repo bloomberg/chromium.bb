@@ -29,8 +29,7 @@ VisitRow::VisitRow(URLID arg_url_id,
       referring_visit(arg_referring_visit),
       transition(arg_transition),
       segment_id(arg_segment_id),
-      incremented_omnibox_typed_score(arg_incremented_omnibox_typed_score),
-      floc_allowed(floc_allowed) {}
+      incremented_omnibox_typed_score(arg_incremented_omnibox_typed_score) {}
 
 VisitRow::~VisitRow() {
 }
@@ -195,7 +194,7 @@ QueryURLResult& QueryURLResult::operator=(QueryURLResult&&) noexcept = default;
 
 MostVisitedURL::MostVisitedURL() {}
 
-MostVisitedURL::MostVisitedURL(const GURL& url, const base::string16& title)
+MostVisitedURL::MostVisitedURL(const GURL& url, const std::u16string& title)
     : url(url), title(title) {}
 
 MostVisitedURL::MostVisitedURL(const MostVisitedURL& other) = default;
@@ -261,7 +260,7 @@ HistoryAddPageArgs::HistoryAddPageArgs(const GURL& url,
                                        bool did_replace_entry,
                                        bool consider_for_ntp_most_visited,
                                        bool floc_allowed,
-                                       base::Optional<base::string16> title)
+                                       base::Optional<std::u16string> title)
     : url(url),
       time(time),
       context_id(context_id),
@@ -273,7 +272,6 @@ HistoryAddPageArgs::HistoryAddPageArgs(const GURL& url,
       visit_source(source),
       did_replace_entry(did_replace_entry),
       consider_for_ntp_most_visited(consider_for_ntp_most_visited),
-      floc_allowed(floc_allowed),
       title(title) {}
 
 HistoryAddPageArgs::HistoryAddPageArgs(const HistoryAddPageArgs& other) =

@@ -21,6 +21,7 @@
 #include "perfetto/tracing/internal/track_event_data_source.h"
 #include "perfetto/tracing/internal/track_event_internal.h"
 #include "perfetto/tracing/internal/track_event_macros.h"
+#include "perfetto/tracing/string_helpers.h"
 #include "perfetto/tracing/track.h"
 #include "perfetto/tracing/track_event_category_registry.h"
 #include "protos/perfetto/trace/track_event/track_event.pbzero.h"
@@ -151,32 +152,6 @@ constexpr bool IsDynamicCategory(const ::perfetto::DynamicCategory&) {
 }  // namespace internal
 }  // namespace PERFETTO_TRACK_EVENT_NAMESPACE
 
-namespace perfetto {
-
-// A wrapper for marking strings that can't be determined to be static at build
-// time, but are in fact static.
-class PERFETTO_EXPORT StaticString final {
- public:
-  const char* value;
-
-  operator const char*() const { return value; }
-};
-
-namespace internal {
-
-template <typename T = void>
-constexpr bool IsStaticString(const char*) {
-  return true;
-}
-
-template <typename T = void>
-constexpr bool IsStaticString(...) {
-  return false;
-}
-
-}  // namespace internal
-}  // namespace perfetto
-
 // Normally all categories are defined statically at build-time (see
 // PERFETTO_DEFINE_CATEGORIES). However, some categories are only used for
 // testing, and we shouldn't publish them to the tracing service or include them
@@ -222,35 +197,6 @@ constexpr bool IsStaticString(...) {
 #pragma GCC system_header
 #endif
 
-// Ensure that |string| is a static constant string.
-//
-// If you get a compiler failure here, you are most likely trying to use
-// TRACE_EVENT with a dynamic event name. There are two ways to fix this:
-//
-// 1) If the event name is actually dynamic (e.g., std::string), write it into
-//    the event manually:
-//
-//      TRACE_EVENT("category", nullptr, [&](perfetto::EventContext ctx) {
-//        ctx.event()->set_name(dynamic_name);
-//      });
-//
-// 2) If the name is static, but the pointer is computed at runtime, wrap it
-//    with perfetto::StaticString:
-//
-//      TRACE_EVENT("category", perfetto::StaticString{name});
-//
-//    DANGER: Using perfetto::StaticString with strings whose contents change
-//            dynamically can cause silent trace data corruption.
-//
-#define PERFETTO_GET_STATIC_STRING(string)                                 \
-  [&]() {                                                                  \
-    static_assert(                                                         \
-        std::is_same<decltype(string), ::perfetto::StaticString>::value || \
-            ::perfetto::internal::IsStaticString(string),                  \
-        "String must be static");                                          \
-    return static_cast<const char*>(string);                               \
-  }()
-
 // Begin a slice under |category| with the title |name|. Both strings must be
 // static constants. The track event is only recorded if |category| is enabled
 // for a tracing session.
@@ -266,15 +212,93 @@ constexpr bool IsStaticString(...) {
 //    ctx.event()->set_name(dynamic_name);
 //  });
 //
-#define TRACE_EVENT_BEGIN(category, name, ...)    \
-  PERFETTO_INTERNAL_TRACK_EVENT(                  \
-      category, PERFETTO_GET_STATIC_STRING(name), \
+// The following optional arguments can be passed to `TRACE_EVENT` to add extra
+// information to events:
+//
+// TRACE_EVENT("cat", "name"[, track][, timestamp]
+//                          [, "debug_name1", debug_value1]
+//                          [, "debug_name2", debug_value2]
+//                          ...
+//                          [, "debug_nameN", debug_valueN]
+//                          [, lambda]);
+//
+// Some examples of valid combinations:
+//
+// 1. A lambda for writing custom TrackEvent fields:
+//
+//   TRACE_EVENT("category", "Name", [&](perfetto::EventContext ctx) {
+//     ctx.event()->set_custom_value(...);
+//   });
+//
+// 2. A timestamp and a lambda:
+//
+//   TRACE_EVENT("category", "Name", time_in_nanoseconds,
+//       [&](perfetto::EventContext ctx) {
+//     ctx.event()->set_custom_value(...);
+//   });
+//
+//   |time_in_nanoseconds| should be an uint64_t by default. To support custom
+//   timestamp types,
+//   |perfetto::TraceTimestampTraits<T>::ConvertTimestampToTraceTimeNs|
+//   should be defined. See |ConvertTimestampToTraceTimeNs| for more details.
+//
+// 3. Arbitrary number of debug annotations:
+//
+//   TRACE_EVENT("category", "Name", "arg", value);
+//   TRACE_EVENT("category", "Name", "arg", value, "arg2", value2);
+//   TRACE_EVENT("category", "Name", "arg", value, "arg2", value2,
+//                                   "arg3", value3);
+//
+//   See |TracedValue| for recording custom types as debug annotations.
+//
+// 4. Arbitrary number of debug annotations and a lambda:
+//
+//   TRACE_EVENT("category", "Name", "arg", value,
+//       [&](perfetto::EventContext ctx) {
+//     ctx.event()->set_custom_value(...);
+//   });
+//
+// 5. An overridden track:
+//
+//   TRACE_EVENT("category", "Name", perfetto::Track(1234));
+//
+//   See |Track| for other types of tracks which may be used.
+//
+// 6. A track and a lambda:
+//
+//   TRACE_EVENT("category", "Name", perfetto::Track(1234),
+//       [&](perfetto::EventContext ctx) {
+//     ctx.event()->set_custom_value(...);
+//   });
+//
+// 7. A track and a timestamp:
+//
+//   TRACE_EVENT("category", "Name", perfetto::Track(1234),
+//       time_in_nanoseconds);
+//
+// 8. A track, a timestamp and a lambda:
+//
+//   TRACE_EVENT("category", "Name", perfetto::Track(1234),
+//       time_in_nanoseconds, [&](perfetto::EventContext ctx) {
+//     ctx.event()->set_custom_value(...);
+//   });
+//
+// 9. A track and an arbitrary number of debug annotions:
+//
+//   TRACE_EVENT("category", "Name", perfetto::Track(1234),
+//               "arg", value);
+//   TRACE_EVENT("category", "Name", perfetto::Track(1234),
+//               "arg", value, "arg2", value2);
+//
+#define TRACE_EVENT_BEGIN(category, name, ...)               \
+  PERFETTO_INTERNAL_TRACK_EVENT(                             \
+      category, ::perfetto::internal::GetStaticString(name), \
       ::perfetto::protos::pbzero::TrackEvent::TYPE_SLICE_BEGIN, ##__VA_ARGS__)
 
 // End a slice under |category|.
 #define TRACE_EVENT_END(category, ...) \
   PERFETTO_INTERNAL_TRACK_EVENT(       \
-      category, nullptr,               \
+      category, /*name=*/nullptr,      \
       ::perfetto::protos::pbzero::TrackEvent::TYPE_SLICE_END, ##__VA_ARGS__)
 
 // Begin a slice which gets automatically closed when going out of scope.
@@ -282,9 +306,9 @@ constexpr bool IsStaticString(...) {
   PERFETTO_INTERNAL_SCOPED_TRACK_EVENT(category, name, ##__VA_ARGS__)
 
 // Emit a slice which has zero duration.
-#define TRACE_EVENT_INSTANT(category, name, ...)  \
-  PERFETTO_INTERNAL_TRACK_EVENT(                  \
-      category, PERFETTO_GET_STATIC_STRING(name), \
+#define TRACE_EVENT_INSTANT(category, name, ...)             \
+  PERFETTO_INTERNAL_TRACK_EVENT(                             \
+      category, ::perfetto::internal::GetStaticString(name), \
       ::perfetto::protos::pbzero::TrackEvent::TYPE_INSTANT, ##__VA_ARGS__)
 
 // Efficiently determine if the given static or dynamic trace category or
@@ -292,7 +316,49 @@ constexpr bool IsStaticString(...) {
 #define TRACE_EVENT_CATEGORY_ENABLED(category) \
   PERFETTO_INTERNAL_CATEGORY_ENABLED(category)
 
+// Time-varying numeric data can be recorded with the TRACE_COUNTER macro:
+//
+//   TRACE_COUNTER("cat", counter_track[, timestamp], value);
+//
+// For example, to record a single value for a counter called "MyCounter":
+//
+//   TRACE_COUNTER("category", "MyCounter", 1234.5);
+//
+// This data is displayed as a counter track in the Perfetto UI.
+//
+// Both integer and floating point counter values are supported. Counters can
+// also be annotated with additional information such as units, for example, for
+// tracking the rendering framerate in terms of frames per second or "fps":
+//
+//   TRACE_COUNTER("category", perfetto::CounterTrack("Framerate", "fps"), 120);
+//
+// As another example, a memory counter that records bytes but accepts samples
+// as kilobytes (to reduce trace binary size) can be defined like this:
+//
+//   perfetto::CounterTrack memory_track = perfetto::CounterTrack("Memory")
+//       .set_unit("bytes")
+//       .set_multiplier(1024);
+//   TRACE_COUNTER("category", memory_track, 4 /* = 4096 bytes */);
+//
+// See /protos/perfetto/trace/track_event/counter_descriptor.proto
+// for the full set of attributes for a counter track.
+//
+// To record a counter value at a specific point in time (instead of the current
+// time), you can pass in a custom timestamp:
+//
+//   // First record the current time and counter value.
+//   uint64_t timestamp = perfetto::TrackEvent::GetTraceTimeNs();
+//   int64_t value = 1234;
+//
+//   // Later, emit a sample at that point in time.
+//   TRACE_COUNTER("category", "MyCounter", timestamp, value);
+//
+#define TRACE_COUNTER(category, track, ...)                 \
+  PERFETTO_INTERNAL_TRACK_EVENT(                            \
+      category, /*name=*/nullptr,                           \
+      ::perfetto::protos::pbzero::TrackEvent::TYPE_COUNTER, \
+      ::perfetto::CounterTrack(track), ##__VA_ARGS__)
+
 // TODO(skyostil): Add flow events.
-// TODO(skyostil): Add counters.
 
 #endif  // INCLUDE_PERFETTO_TRACING_TRACK_EVENT_H_

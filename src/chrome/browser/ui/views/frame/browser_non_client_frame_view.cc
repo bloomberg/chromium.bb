@@ -72,18 +72,18 @@ void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
   UpdateMinimumSize();
 }
 
-void BrowserNonClientFrameView::OnFullscreenStateChanged() {}
-
-bool BrowserNonClientFrameView::CaptionButtonsOnLeadingEdge() const {
-  return false;
-}
-
-void BrowserNonClientFrameView::UpdateFullscreenTopUI() {
+void BrowserNonClientFrameView::OnFullscreenStateChanged() {
   if (frame_->IsFullscreen())
     browser_view_->HideDownloadShelf();
   else
     browser_view_->UnhideDownloadShelf();
 }
+
+bool BrowserNonClientFrameView::CaptionButtonsOnLeadingEdge() const {
+  return false;
+}
+
+void BrowserNonClientFrameView::UpdateFullscreenTopUI() {}
 
 bool BrowserNonClientFrameView::ShouldHideTopUIForFullscreen() const {
   return frame_->IsFullscreen();
@@ -363,7 +363,7 @@ void BrowserNonClientFrameView::OnProfileAdded(
 
 void BrowserNonClientFrameView::OnProfileWasRemoved(
     const base::FilePath& profile_path,
-    const base::string16& profile_name) {
+    const std::u16string& profile_name) {
   OnProfileAvatarChanged(profile_path);
 }
 

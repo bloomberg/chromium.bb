@@ -14,10 +14,9 @@
 
 #include "src/type/bool_type.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::Bool);
+TINT_INSTANTIATE_TYPEINFO(tint::type::Bool);
 
 namespace tint {
 namespace type {

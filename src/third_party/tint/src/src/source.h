@@ -16,9 +16,7 @@
 #ifndef SRC_SOURCE_H_
 #define SRC_SOURCE_H_
 
-#include <stddef.h>
-
-#include <ostream>
+#include <iostream>
 #include <string>
 #include <vector>
 

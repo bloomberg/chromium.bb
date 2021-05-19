@@ -39,6 +39,12 @@ const base::Feature kClientSideDetectionForAndroid{
 extern const base::Feature kClientSideDetectionModelVersion{
     "ClientSideDetectionModel", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kClientSideDetectionReferrerChain{
+    "ClientSideDetectionReferrerChain", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kClientSideDetectionWithToken{
+    "SafeBrowsingCSDRequestWithToken", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDelayedWarnings{"SafeBrowsingDelayedWarnings",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -55,29 +61,14 @@ const base::Feature kSimplifiedUrlDisplay{"SimplifiedUrlDisplay",
 const base::Feature kDownloadRequestWithToken{
     "SafeBrowsingDownloadRequestWithToken", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kEnhancedProtection{"SafeBrowsingEnhancedProtection",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kEnhancedProtectionMessageInInterstitials{
-    "SafeBrowsingEnhancedProtectionMessageInInterstitials",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kLimitedListSizeForIOS{"SafeBrowsingLimitedListSizeForIOS",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kPasswordProtectionForSavedPasswords{
-    "SafeBrowsingPasswordProtectionForSavedPasswords",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kPasswordProtectionReferringAppEnabledAndroid{
     "SafeBrowsingPasswordProtectionReferringAppEnabledAndroid",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPasswordProtectionShowDomainsForSavedPasswords{
-    "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kPasswordProtectionForSignedInUsers{
+const base::Feature kPasswordProtectionForSignedInUsers {
   "SafeBrowsingPasswordProtectionForSignedInUsers",
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -86,8 +77,12 @@ const base::Feature kPasswordProtectionForSignedInUsers{
 #endif
 };
 
-const base::Feature kPromptAppForDeepScanning{
-    "SafeBrowsingPromptAppForDeepScanning", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kPasswordProtectionWithToken{
+    "SafeBrowsingPasswordProtectionRequestWithToken",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPromptEsbForDeepScanning{
+    "SafeBrowsingPromptEsbForDeepScanning", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingEnterpriseCsd{
     "SafeBrowsingEnterpriseCsd", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -105,11 +100,15 @@ const base::Feature kRealTimeUrlLookupEnabledForEnterprise{
 
 const base::Feature kRealTimeUrlLookupEnterpriseGaEndpoint{
     "SafeBrowsingkRealTimeUrlLookupEnterpriseGaEndpoint",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRealTimeUrlLookupEnabledWithToken{
     "SafeBrowsingRealTimeUrlLookupEnabledWithToken",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kRealTimeUrlLookupReferrerChain{
+    "SafeBrowsingRealTimeUrlLookupReferrerChain",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingSeparateNetworkContexts{
     "SafeBrowsingSeparateNetworkContexts", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -119,9 +118,6 @@ const base::Feature kSafeBrowsingRemoveCookies{
 
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
     &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
-
-const base::Feature kSafeBrowsingSectionUIAndroid{
-    "SafeBrowsingSecuritySectionUIAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -153,22 +149,18 @@ constexpr struct {
     {&kAdSamplerTriggerFeature, false},
     {&kCaptureInlineJavascriptForGoogleAds, true},
     {&kClientSideDetectionForAndroid, true},
+    {&kClientSideDetectionWithToken, true},
     {&kDelayedWarnings, true},
     {&kDownloadRequestWithToken, true},
-    {&kEnhancedProtection, true},
-    {&kEnhancedProtectionMessageInInterstitials, true},
     {&kLimitedListSizeForIOS, true},
-    {&kPasswordProtectionForSavedPasswords, true},
     {&kPasswordProtectionReferringAppEnabledAndroid, true},
-    {&kPasswordProtectionShowDomainsForSavedPasswords, true},
     {&kPasswordProtectionForSignedInUsers, true},
-    {&kPromptAppForDeepScanning, true},
     {&kRealTimeUrlLookupEnabled, true},
     {&kRealTimeUrlLookupEnabledForEnterprise, true},
     {&kRealTimeUrlLookupEnterpriseGaEndpoint, true},
     {&kRealTimeUrlLookupEnabledWithToken, true},
+    {&kRealTimeUrlLookupReferrerChain, true},
     {&kSafeBrowsingSeparateNetworkContexts, true},
-    {&kSafeBrowsingSectionUIAndroid, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

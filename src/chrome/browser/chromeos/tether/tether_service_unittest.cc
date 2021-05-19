@@ -15,7 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/ash/network/tether_notification_presenter.h"
 #include "chrome/common/pref_names.h"
@@ -317,7 +317,7 @@ class TetherServiceTest : public testing::Test {
     TestingProfile::Builder builder;
     profile_ = builder.Build();
 
-    fake_chrome_user_manager_ = new chromeos::FakeChromeUserManager();
+    fake_chrome_user_manager_ = new ash::FakeChromeUserManager();
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(fake_chrome_user_manager_));
 
@@ -540,7 +540,7 @@ class TetherServiceTest : public testing::Test {
   const content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestingProfile> profile_;
-  chromeos::FakeChromeUserManager* fake_chrome_user_manager_;
+  ash::FakeChromeUserManager* fake_chrome_user_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;

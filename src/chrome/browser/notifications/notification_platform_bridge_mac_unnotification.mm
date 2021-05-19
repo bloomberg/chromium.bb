@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/notifications/notification_platform_bridge_mac_metrics.h"
 #include "chrome/browser/notifications/notification_platform_bridge_mac_utils.h"
 #include "chrome/browser/notifications/unnotification_metrics.h"
 #include "chrome/browser/profiles/profile.h"
@@ -101,10 +102,10 @@ void NotificationPlatformBridgeMacUNNotification::Display(
            settingsLabel:l10n_util::GetNSString(
                              IDS_NOTIFICATION_BUTTON_SETTINGS)]);
 
-  base::string16 context_message =
+  std::u16string context_message =
       notification.items().empty()
           ? notification.message()
-          : (notification.items().at(0).title + base::UTF8ToUTF16(" - ") +
+          : (notification.items().at(0).title + u" - " +
              notification.items().at(0).message);
 
   bool is_alert = IsAlertNotificationMac(notification);
@@ -161,14 +162,16 @@ void NotificationPlatformBridgeMacUNNotification::Display(
   [builder setIdentifier:notification_id];
 
   if (is_alert) {
+    LogMacNotificationDelivered(is_alert, /*success=*/true);
     NSDictionary* dict = [builder buildDictionary];
     [alert_dispatcher_ dispatchNotification:dict];
+    [builder setClosedFromAlert:YES];
     DeliveredSuccessfully(system_notification_id, std::move(builder));
     return;
   }
 
   // Create a new category from the desired action buttons.
-  std::vector<base::string16> button_titles;
+  std::vector<std::u16string> button_titles;
   for (const message_center::ButtonInfo& button : notification.buttons())
     button_titles.push_back(button.title);
   NSString* category = category_manager_.GetOrCreateCategory(
@@ -183,10 +186,12 @@ void NotificationPlatformBridgeMacUNNotification::Display(
 
   void (^notification_delivered_block)(NSError* _Nullable) = ^(
       NSError* _Nullable error) {
+    LogMacNotificationDelivered(is_alert, /*success=*/!error);
     if (error != nil) {
       DVLOG(1) << "Notification request did not succeed";
       return;
     }
+    [builder setClosedFromAlert:NO];
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(
@@ -378,22 +383,9 @@ void NotificationPlatformBridgeMacUNNotification::DoSynchronizeNotifications(
   }
 
   for (NSString* notification_id in delivered_notifications_.get()) {
-    base::scoped_nsobject<NSMutableDictionary> dict(
-        [[delivered_notifications_ objectForKey:notification_id] mutableCopy]);
-
     OnNotificationClosed(base::SysNSStringToUTF8(notification_id));
-
-    // Closed notifications need to carry
-    // NotificationOperation::NOTIFICATION_CLOSE and an invalid button index.
-    // TODO(crbug/1141869): Modify the builder so that it sets these values by
-    // default.
-    [dict
-        setObject:@(static_cast<int>(NotificationOperation::NOTIFICATION_CLOSE))
-           forKey:notification_constants::kNotificationOperation];
-    [dict setObject:@(notification_constants::kNotificationInvalidButtonIndex)
-             forKey:notification_constants::kNotificationButtonIndex];
-
-    ProcessMacNotificationResponse(dict.autorelease());
+    ProcessMacNotificationResponse(
+        [delivered_notifications_ objectForKey:notification_id]);
   }
 
   delivered_notifications_.reset(remaining_notifications);
@@ -549,7 +541,7 @@ void NotificationPlatformBridgeMacUNNotification::
     didReceiveNotificationResponse:(UNNotificationResponse*)response
              withCompletionHandler:(void (^)(void))completionHandler {
   NSDictionary* notificationResponse =
-      [UNNotificationResponseBuilder buildDictionary:response];
+      [UNNotificationResponseBuilder buildDictionary:response fromAlert:NO];
 
   // Notify platform bridge about closed notifications for cleanup tasks.
   int operation = [[notificationResponse

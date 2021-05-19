@@ -658,11 +658,20 @@ void QuicTransport::Init(const String& url,
     return;
   }
 
-  if (!url_.ProtocolIs("quic-transport")) {
+  if (!url_.ProtocolIs("quic-transport") && !url_.ProtocolIs("https")) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
-        "The URL's scheme must be 'quic-transport'. '" + url_.Protocol() +
-            "' is not allowed.");
+        "The URL's scheme must be 'quic-transport' or 'https'. '" +
+            url_.Protocol() + "' is not allowed.");
+    return;
+  }
+
+  if (url_.ProtocolIs("quic-transport") &&
+      !RuntimeEnabledFeatures::QuicTransportEnabled()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kSyntaxError,
+        "You need to enable the \"QuicTransport\" "
+        "feature to use WebTransport over QUIC");
     return;
   }
 

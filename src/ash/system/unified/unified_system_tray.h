@@ -96,7 +96,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   void ShowAudioDetailedViewBubble();
 
   // Shows main bubble with network settings detailed view.
-  void ShowNetworkDetailedViewBubble(bool show_by_click);
+  void ShowNetworkDetailedViewBubble();
 
   // Return the bounds of the bubble in the screen.
   gfx::Rect GetBubbleBoundsInScreen() const;
@@ -139,11 +139,10 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   void MaybeRecordFirstInteraction(FirstInteractionType type);
 
   // TrayBackgroundView:
-  bool PerformAction(const ui::Event& event) override;
-  void ShowBubble(bool show_by_click) override;
+  void ShowBubble() override;
   void CloseBubble() override;
-  base::string16 GetAccessibleNameForBubble() override;
-  base::string16 GetAccessibleNameForTray() override;
+  std::u16string GetAccessibleNameForBubble() override;
+  std::u16string GetAccessibleNameForTray() override;
   void HandleLocaleChange() override;
   void HideBubble(const TrayBubbleView* bubble_view) override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
@@ -151,12 +150,13 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   void UpdateLayout() override;
   void UpdateAfterLoginStatusChange() override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
+  views::Widget* GetBubbleWidget() const override;
   const char* GetClassName() const override;
 
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
 
-  base::string16 GetAccessibleNameForQuickSettingsBubble();
+  std::u16string GetAccessibleNameForQuickSettingsBubble();
 
   UnifiedSystemTrayModel* model() { return model_.get(); }
   UnifiedSystemTrayBubble* bubble() { return bubble_.get(); }
@@ -175,7 +175,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   class UiDelegate;
 
   // Forwarded from UiDelegate.
-  void ShowBubbleInternal(bool show_by_click);
+  void ShowBubbleInternal();
   void HideBubbleInternal();
   void UpdateNotificationInternal();
   void UpdateNotificationAfterDelay();

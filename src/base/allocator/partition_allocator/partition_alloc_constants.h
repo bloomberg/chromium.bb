@@ -10,6 +10,7 @@
 
 #include <algorithm>
 
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "build/build_config.h"
 
@@ -18,17 +19,6 @@
 #endif
 
 namespace base {
-
-// ARCH_CPU_64_BITS implies 64-bit instruction set, but not necessarily 64-bit
-// address space. The only known case where address space is 32-bit is NaCl, so
-// eliminate it explicitly. static_assert below ensures that other won't slip
-// through.
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
-#define PA_HAS_64_BITS_POINTERS
-static_assert(sizeof(void*) == 8, "");
-#else
-static_assert(sizeof(void*) != 8, "");
-#endif
 
 // Underlying partition storage pages (`PartitionPage`s) are a power-of-2 size.
 // It is typical for a `PartitionPage` to be based on multiple system pages.
@@ -126,6 +116,16 @@ MaxSystemPagesPerSlotSpan() {
 //
 // QuarantineBitmaps are inserted for partitions that may have PCScan enabled.
 //
+// If refcount_at_end_allocation is enabled, RefcountBitmap(4KiB) is inserted
+// after the Metadata page for BackupRefPtr. The guard pages after the bitmap
+// will be 4KiB.
+//
+//...
+//     | Metadata page (4 KiB) |
+//     | RefcountBitmap (4 KiB)|
+//     | Guard pages (4 KiB)   |
+//...
+//
 // Each slot span is a contiguous range of one or more `PartitionPage`s. Note
 // that slot spans of different sizes may co-exist with one super page. Even
 // slot spans of the same size may support different slot sizes. However, all
@@ -198,9 +198,9 @@ NumPartitionPagesPerSuperPage() {
 // platforms, as Chrome's requirement is C++14 as of 2020.
 #if defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__)
 static constexpr size_t kAlignment =
-    std::max(alignof(std::max_align_t), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+    std::max(alignof(max_align_t), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #else
-static constexpr size_t kAlignment = alignof(std::max_align_t);
+static constexpr size_t kAlignment = alignof(max_align_t);
 #endif
 static_assert(kAlignment <= 16,
               "PartitionAlloc doesn't support a fundamental alignment larger "

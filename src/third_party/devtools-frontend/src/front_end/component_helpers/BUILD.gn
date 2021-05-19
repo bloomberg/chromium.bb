@@ -10,14 +10,16 @@ import("../../third_party/typescript/typescript.gni")
 devtools_module("component_helpers") {
   sources = [
     "component-server-setup.ts",
+    "directives.ts",
     "get-stylesheet.ts",
     "set-css-property.ts",
   ]
 
   deps = [
-    "../common:bundle",
-    "../root:bundle",
+    "../core/common:bundle",
+    "../core/root:bundle",
     "../theme_support:bundle",
+    "../third_party/lit-html:bundle",
   ]
 }
 

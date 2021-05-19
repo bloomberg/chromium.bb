@@ -85,8 +85,6 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   MOCK_METHOD0(ClearTransientContent, void());
   MOCK_METHOD0(ClearDialogs, void());
   MOCK_METHOD0(RecordPageStateInNavigationItem, void());
-  MOCK_METHOD2(OnGoToIndexSameDocumentNavigation,
-               void(NavigationInitiationType type, bool has_user_gesture));
   MOCK_METHOD1(LoadCurrentItem, void(NavigationInitiationType type));
   MOCK_METHOD0(LoadIfNecessary, void());
   MOCK_METHOD0(Reload, void());
@@ -2407,7 +2405,7 @@ TEST_F(NavigationManagerTest, RestoreSessionWithHistory) {
   auto item0 = std::make_unique<NavigationItemImpl>();
   GURL url(url::SchemeHostPort(kSchemeToRewrite, "test", 0).Serialize());
   item0->SetURL(url);
-  item0->SetTitle(base::ASCIIToUTF16("Test Website 0"));
+  item0->SetTitle(u"Test Website 0");
   auto item1 = std::make_unique<NavigationItemImpl>();
   item1->SetURL(GURL("http://www.1.com"));
 
@@ -2828,83 +2826,6 @@ TEST_F(NavigationManagerDetachedModeTest, NotSerializable) {
                            web::NavigationInitiationType::BROWSER_INITIATED);
   EXPECT_FALSE(manager_->GetPendingItemInCurrentOrRestoredSession()
                    ->ShouldSkipSerialization());
-}
-
-class NavigationManagerImplUtilTest : public PlatformTest {
- protected:
-  web::FakeNavigationManager nav_manager_;
-};
-
-// Tests that empty navigation manager returns nullptr.
-TEST_F(NavigationManagerImplUtilTest, TestLastNonRedirectedItemEmpty) {
-  EXPECT_FALSE(
-      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(nullptr));
-  EXPECT_FALSE(
-      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_));
-}
-
-// Tests that typed in URL works correctly.
-TEST_F(NavigationManagerImplUtilTest, TestLastNonRedirectedItemTypedUrl) {
-  nav_manager_.AddItem(GURL("http://foo.com/page0"), ui::PAGE_TRANSITION_TYPED);
-  NavigationItem* item =
-      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_);
-  ASSERT_TRUE(item);
-  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
-      item->GetTransitionType(), ui::PAGE_TRANSITION_TYPED));
-}
-
-// Tests that link click works correctly.
-TEST_F(NavigationManagerImplUtilTest, TestLastNonRedirectedItemLinkClicked) {
-  nav_manager_.AddItem(GURL("http://foo.com/page0"), ui::PAGE_TRANSITION_LINK);
-  NavigationItem* item =
-      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_);
-  ASSERT_TRUE(item);
-  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
-      item->GetTransitionType(), ui::PAGE_TRANSITION_LINK));
-}
-
-// Tests that redirect items are skipped.
-TEST_F(NavigationManagerImplUtilTest,
-       TestLastNonRedirectedItemLinkMultiRedirects) {
-  nav_manager_.AddItem(GURL("http://foo.com/page0"), ui::PAGE_TRANSITION_LINK);
-  nav_manager_.AddItem(GURL("http://bar.com/redir1"),
-                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  nav_manager_.AddItem(GURL("http://bar.com/redir2"),
-                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  NavigationItem* item =
-      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_);
-  ASSERT_TRUE(item);
-  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
-      item->GetTransitionType(), ui::PAGE_TRANSITION_LINK));
-}
-
-// Tests that when all items are redirects, nullptr is returned.
-TEST_F(NavigationManagerImplUtilTest, TestLastNonRedirectedItemAllRedirects) {
-  nav_manager_.AddItem(GURL("http://bar.com/redir0"),
-                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  nav_manager_.AddItem(GURL("http://bar.com/redir1"),
-                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  nav_manager_.AddItem(GURL("http://bar.com/redir2"),
-                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  NavigationItem* item =
-      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_);
-  EXPECT_FALSE(item);
-}
-
-// Tests that earlier redirects are not found.
-TEST_F(NavigationManagerImplUtilTest, TestLastNonRedirectedItemNotEarliest) {
-  nav_manager_.AddItem(GURL("http://foo.com/bookmark"),
-                       ui::PAGE_TRANSITION_AUTO_BOOKMARK);
-  nav_manager_.AddItem(GURL("http://foo.com/page0"), ui::PAGE_TRANSITION_TYPED);
-  nav_manager_.AddItem(GURL("http://bar.com/redir1"),
-                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  nav_manager_.AddItem(GURL("http://bar.com/redir2"),
-                       ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  NavigationItem* item =
-      NavigationManagerImpl::GetLastCommittedNonRedirectedItem(&nav_manager_);
-  ASSERT_TRUE(item);
-  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
-      item->GetTransitionType(), ui::PAGE_TRANSITION_TYPED));
 }
 
 }  // namespace web

@@ -66,11 +66,11 @@ void SetSystemTrayVisibility(SystemTrayVisibility visibility) {
 LoginScreenController::LoginScreenController(
     SystemTrayNotifier* system_tray_notifier)
     : system_tray_notifier_(system_tray_notifier) {
-  system_tray_notifier_->AddSystemTrayFocusObserver(this);
+  system_tray_notifier_->AddSystemTrayObserver(this);
 }
 
 LoginScreenController::~LoginScreenController() {
-  system_tray_notifier_->RemoveSystemTrayFocusObserver(this);
+  system_tray_notifier_->RemoveSystemTrayObserver(this);
 }
 
 // static
@@ -281,7 +281,7 @@ LoginScreenModel* LoginScreenController::GetModel() {
 void LoginScreenController::ShowKioskAppError(const std::string& message) {
   ToastData toast_data(
       "KioskAppError", base::UTF8ToUTF16(message), -1 /*duration_ms*/,
-      base::Optional<base::string16>(base::string16()) /*dismiss_text*/,
+      base::Optional<std::u16string>(std::u16string()) /*dismiss_text*/,
       true /*visible_on_lock_screen*/);
   Shell::Get()->toast_manager()->Show(toast_data);
 }
@@ -372,7 +372,7 @@ void LoginScreenController::ClearSecurityTokenPinRequest() {
   security_token_request_controller_.ClosePinUi();
 }
 bool LoginScreenController::SetLoginShelfGestureHandler(
-    const base::string16& nudge_text,
+    const std::u16string& nudge_text,
     const base::RepeatingClosure& fling_callback,
     base::OnceClosure exit_callback) {
   return Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
@@ -388,11 +388,13 @@ void LoginScreenController::ClearLoginShelfGestureHandler() {
 }
 
 void LoginScreenController::ShowLockScreen() {
+  CHECK(!LockScreen::HasInstance());
   OnShow();
   LockScreen::Show(LockScreen::ScreenType::kLock);
 }
 
 void LoginScreenController::ShowLoginScreen() {
+  CHECK(!LockScreen::HasInstance());
   // Login screen can only be used during login.
   session_manager::SessionState session_state =
       Shell::Get()->session_controller()->GetSessionState();
@@ -477,6 +479,20 @@ void LoginScreenController::OnFocusLeavingSystemTray(bool reverse) {
   if (!client_)
     return;
   client_->OnFocusLeavingSystemTray(reverse);
+}
+
+void LoginScreenController::OnSystemTrayBubbleShown() {
+  if (!client_)
+    return;
+  client_->OnSystemTrayBubbleShown();
+}
+
+void LoginScreenController::OnLockScreenDestroyed() {
+  DCHECK_EQ(authentication_stage_, AuthenticationStage::kIdle);
+
+  // Still handle it to avoid crashes during Login/Lock/Unlock flows.
+  authentication_stage_ = AuthenticationStage::kIdle;
+  SetSystemTrayVisibility(SystemTrayVisibility::kAll);
 }
 
 void LoginScreenController::NotifyLoginScreenShown() {

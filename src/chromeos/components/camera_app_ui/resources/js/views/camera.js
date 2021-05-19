@@ -14,7 +14,9 @@ import {
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../device/device_info_updater.js';
 import * as dom from '../dom.js';
+import * as error from '../error.js';
 import * as metrics from '../metrics.js';
+import * as loadTimeData from '../models/load_time_data.js';
 import * as localStorage from '../models/local_storage.js';
 // eslint-disable-next-line no-unused-vars
 import {ResultSaver} from '../models/result_saver.js';
@@ -26,6 +28,7 @@ import {PerfLogger} from '../perf.js';
 import * as sound from '../sound.js';
 import * as state from '../state.js';
 import * as toast from '../toast.js';
+import {ErrorLevel, ErrorType} from '../type.js';
 import {
   CanceledError,
   Facing,
@@ -130,6 +133,14 @@ export class Camera extends View {
         new VideoEncoderOptions((parameters) => setAvc1Parameters(parameters));
 
     /**
+     * Clock-wise rotation that needs to be applied to the recorded video in
+     * order for the video to be replayed in upright orientation.
+     * @type {number}
+     * @private
+     */
+    this.outputVideoRotation_ = 0;
+
+    /**
      * @type {!ResultSaver}
      * @protected
      */
@@ -142,6 +153,14 @@ export class Camera extends View {
      * @private
      */
     this.activeDeviceId_ = null;
+
+    /**
+     * The last time of all screen state turning from OFF to ON during the app
+     * execution. Sets to -Infinity for no such time since app is opened.
+     * @type {number}
+     * @private
+     */
+    this.lastScreenOnTime_ = -Infinity;
 
     /**
      * Modes for the camera.
@@ -200,7 +219,18 @@ export class Camera extends View {
     this.banner_ = dom.get('#banner', HTMLElement);
 
     /**
-     * @const {!Set<function(): void>}
+     * @type {!HTMLElement}
+     * @private
+     */
+    this.ptzToast_ = dom.get('#ptz-toast', HTMLElement);
+
+    /**
+     * @type {!HTMLButtonElement}
+     */
+    this.openPTZPanel_ = dom.get('#open-ptz-panel', HTMLButtonElement);
+
+    /**
+     * @const {!Set<function(): *>}
      * @private
      */
     this.configureCompleteListener_ = new Set();
@@ -269,12 +299,20 @@ export class Camera extends View {
           animate.cancel(this.banner_);
         });
 
+    this.initOpenPTZPanel_();
+
     // Monitor the states to stop camera when locked/minimized.
-    ChromeHelper.getInstance().addOnLockListener((isLocked) => {
-      this.locked_ = isLocked;
+    const idleDetector = new window.IdleDetector();
+    idleDetector.addEventListener('change', () => {
+      this.locked_ = idleDetector.screenState === 'locked';
       if (this.locked_) {
         this.start();
       }
+    });
+    idleDetector.start().catch((e) => {
+      error.reportError(
+          ErrorType.IDLE_DETECTOR_FAILURE, ErrorLevel.ERROR,
+          assertInstanceof(e, Error));
     });
 
     document.addEventListener('visibilitychange', () => {
@@ -310,16 +348,61 @@ export class Camera extends View {
         await helper.initExternalScreenMonitor(updateExternalScreen);
     updateExternalScreen(hasExternalScreen);
 
-    const checkScreenOff = () => {
+    const handleScreenStateChange = () => {
       if (this.screenOff_) {
         this.start();
+      } else {
+        this.lastScreenOnTime_ = performance.now();
       }
     };
 
-    state.addObserver(state.State.SCREEN_OFF_AUTO, checkScreenOff);
-    state.addObserver(state.State.HAS_EXTERNAL_SCREEN, checkScreenOff);
+    state.addObserver(state.State.SCREEN_OFF_AUTO, handleScreenStateChange);
+    state.addObserver(state.State.HAS_EXTERNAL_SCREEN, handleScreenStateChange);
 
     this.initVideoEncoderOptions_();
+  }
+
+  /**
+   * @suppress {uselessCode} For skip highlighting PTZ button code.
+   * @private
+   */
+  initOpenPTZPanel_() {
+    this.openPTZPanel_.addEventListener('click', () => {
+      nav.open(ViewName.PTZ_PANEL, this.preview_.stream);
+    });
+
+    // Skip highlight effect on R91 release.
+    return;
+    /* eslint-disable no-unreachable */
+    // Highlight effect for PTZ button.
+    const highlight = (enabled) => {
+      this.ptzToast_.classList.toggle('hidden', !enabled);
+      this.openPTZPanel_.classList.toggle('rippling', enabled);
+      if (enabled) {
+        this.ptzToast_.focus();
+        setTimeout(() => highlight(false), 10000);
+      }
+    };
+
+    this.addConfigureCompleteListener_(async () => {
+      if (!this.preview_.isSupportPTZ()) {
+        highlight(false);
+        return;
+      }
+
+      const ptzToastKey = 'isPTZToastShown';
+      if ((await localStorage.get({[ptzToastKey]: false}))[ptzToastKey]) {
+        return;
+      }
+      localStorage.set({[ptzToastKey]: true});
+
+      const {bottom, right} =
+          dom.get('#open-ptz-panel', HTMLButtonElement).getBoundingClientRect();
+      this.ptzToast_.style.bottom = `${window.innerHeight - bottom}px`;
+      this.ptzToast_.style.left = `${right + 20}px`;
+      highlight(true);
+    });
+    /* eslint-enabled no-unreachable */
   }
 
   /**
@@ -338,7 +421,7 @@ export class Camera extends View {
   }
 
   /**
-   * @param {function(): void} listener
+   * @param {function(): *} listener
    * @private
    */
   addConfigureCompleteListener_(listener) {
@@ -422,6 +505,20 @@ export class Camera extends View {
     this.take_ = (async () => {
       let hasError = false;
       try {
+        // Record and keep the rotation only at the instance the user starts the
+        // capture. Users may change the device orientation while taking video.
+        const cameraFrameRotation = await (async () => {
+          const deviceOperator = await DeviceOperator.getInstance();
+          if (deviceOperator === null) {
+            return 0;
+          }
+          assert(this.activeDeviceId_ !== null);
+          return await deviceOperator.getCameraFrameRotation(
+              this.activeDeviceId_);
+        })();
+        // Translate the camera frame rotation back to the UI rotation, which is
+        // what we need to rotate the captured video with.
+        this.outputVideoRotation_ = (360 - cameraFrameRotation) % 360;
         await timertick.start();
         await this.modes_.current.startCapture();
       } catch (e) {
@@ -481,7 +578,7 @@ export class Camera extends View {
    * @override
    */
   createVideoSaver() {
-    return this.resultSaver_.startSaveVideo();
+    return this.resultSaver_.startSaveVideo(this.outputVideoRotation_);
   }
 
   /**
@@ -605,7 +702,19 @@ export class Camera extends View {
           if (deviceOperator !== null) {
             factory.prepareDevice(deviceOperator, constraints);
           }
+
+          // Sets 2500 ms delay between screen resumed and open camera preview.
+          // TODO(b/173679752): Removes this workaround after fix delay on
+          // kernel side.
+          if (loadTimeData.getBoard() === 'zork') {
+            const screenOnTime = performance.now() - this.lastScreenOnTime_;
+            const delay = 2500 - screenOnTime;
+            if (delay > 0) {
+              await util.sleep(delay);
+            }
+          }
           const stream = await this.preview_.open(constraints);
+
           this.facingMode_ = await this.options_.updateValues(stream);
           factory.setPreviewStream(stream);
           factory.setFacing(this.facingMode_);

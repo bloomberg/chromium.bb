@@ -58,7 +58,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.AccessibilityWithTalkBack" enum="BooleanEnabled"
-    expires_after="2021-07-01">
+    expires_after="2021-09-05">
   <owner>hirokisato@chromium.org</owner>
   <owner>sarakato@chromium.org</owner>
   <summary>
@@ -127,7 +127,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.AppInstalledReason" enum="InstallationCounterReasonEnum"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>robsc@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -180,7 +180,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.AppUninstallReason" enum="UninstallCounterReasonEnum"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>robsc@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -331,7 +331,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.CompanionLibraryApisCounter"
-    enum="CompanionLibraryApisList" expires_after="M93">
+    enum="CompanionLibraryApisList" expires_after="2021-09-19">
   <owner>sstan@google.com</owner>
   <owner>bartfab@chromium.org</owner>
   <owner>giovax@google.com</owner>
@@ -352,7 +352,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.ContainerLifetimeEvent" enum="ArcContainerLifetimeEvent"
-    expires_after="2021-07-27">
+    expires_after="2021-10-04">
   <owner>elijahtaylor@google.com</owner>
   <owner>yusukes@google.com</owner>
   <summary>
@@ -373,7 +373,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Arc.CpuRestrictionDisabled" units="ms"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>wvk@google.com</owner>
   <owner>khmel@google.com</owner>
   <summary>
@@ -465,7 +465,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.EngagementTime.Foreground" units="ms"
-    expires_after="2021-06-27">
+    expires_after="2021-08-29">
   <owner>maajid@google.com</owner>
   <owner>shaochuan@google.com</owner>
   <owner>shihuis@google.com</owner>
@@ -512,7 +512,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.FirstAppLaunchDelay.TimeDelta" units="ms"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>yusukes@google.com</owner>
   <owner>khmel@google.com</owner>
   <summary>
@@ -593,7 +593,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Arc.ImeCount" units="units" expires_after="2021-04-11">
+<histogram name="Arc.ImeCount" units="units" expires_after="2021-10-01">
   <owner>yhanada@chromium.org</owner>
   <owner>tetsui@chromium.org</owner>
   <summary>
@@ -705,7 +705,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.OptInSilentAuthCode" enum="ArcOptInSilentAuthCode"
-    expires_after="2021-06-27">
+    expires_after="2021-08-29">
   <owner>elijahtaylor@google.com</owner>
   <summary>
     Arc Silent Auth Code status. This status is set during the ARC OptIn flow.
@@ -773,7 +773,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PlayStoreSearch.QueryTime" units="ms"
-    expires_after="2021-06-27">
+    expires_after="2021-08-29">
   <owner>hejq@chromium.org</owner>
   <summary>
     Time between sending an Play Store app discovery request and the storing
@@ -829,7 +829,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Arc.PrintPreview.PreviewEvent" enum="PrintPreviewHelperEvents"
     expires_after="2021-06-01">
   <owner>bmgordon@chromium.org</owner>
-  <owner>jschettler@chromium.org</owner>
+  <owner>project-bolton@google.com</owner>
   <summary>
     Print preview events for ARC. Recorded when specific print preview events
     occur (print preview requested, preview document created, etc.).
@@ -839,7 +839,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Arc.PrintPreview.RenderAndGeneratePDFTime" units="ms"
     expires_after="2021-06-01">
   <owner>bmgordon@chromium.org</owner>
-  <owner>jschettler@chromium.org</owner>
+  <owner>project-bolton@google.com</owner>
   <summary>
     Time taken for ARC to render and generate a PDF for print preview. Includes
     time to reflow the page back to normal, but not the time to reflow the page
@@ -850,7 +850,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Arc.PrintPreview.RenderAndGeneratePDFTimeAvgPerPage"
     units="ms" expires_after="2021-06-01">
   <owner>bmgordon@chromium.org</owner>
-  <owner>jschettler@chromium.org</owner>
+  <owner>project-bolton@google.com</owner>
   <summary>
     Time taken for ARC to render and generate a PDF for print preview divided by
     the number of pages. Includes time to reflow the page back to normal, but
@@ -859,9 +859,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PrintPreview.RendererError" enum="PrintPreviewFailureType"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>bmgordon@chromium.org</owner>
-  <owner>jschettler@chromium.org</owner>
+  <owner>project-bolton@google.com</owner>
   <summary>
     Count how frequently a set of pre-defined print preview errors occur for
     ARC.
@@ -871,7 +871,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Arc.PrintPreview.RenderToPDFTime" units="ms"
     expires_after="2021-06-01">
   <owner>bmgordon@chromium.org</owner>
-  <owner>jschettler@chromium.org</owner>
+  <owner>project-bolton@google.com</owner>
   <summary>Time taken for ARC to render a PDF for print preview.</summary>
 </histogram>
 
@@ -936,7 +936,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Provisioning.TimeDelta.Failure" units="ms"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
   <owner>alexchau@google.com</owner>
@@ -947,7 +947,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Provisioning.TimeDelta.Success" units="ms"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
 <!-- Name completed by histogram_suffixes name="ArcUserTypes" -->
 
   <owner>alexchau@google.com</owner>
@@ -970,7 +970,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Runtime.Performance.CommitDeviation" units="microseconds"
-    expires_after="2021-08-09">
+    expires_after="2021-06-01">
+  <obsolete>
+    Removed in Mar 2021. Now reported as
+    Arc.Runtime.Performance.CommitDeviation2.
+  </obsolete>
 <!-- Name completed by histogram_suffixes name="ArcPerformanceAppCategories" -->
 
   <owner>khmel@google.com</owner>
@@ -978,13 +982,40 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Standard deviation for commit time delta from ideal time.</summary>
 </histogram>
 
+<histogram name="Arc.Runtime.Performance.CommitDeviation2" units="microseconds"
+    expires_after="2021-08-09">
+<!-- Name completed by histogram_suffixes name="ArcPerformanceAppCategories" -->
+
+  <owner>khmel@google.com</owner>
+  <owner>camurcu@google.com</owner>
+  <summary>
+    Standard deviation for commit time delta from ideal time. Only collected if
+    the user has app syncing enabled and doesn't have a custom passphrase set.
+  </summary>
+</histogram>
+
 <histogram name="Arc.Runtime.Performance.FPS" units="fps"
-    expires_after="2021-07-18">
+    expires_after="2021-06-01">
+  <obsolete>
+    Removed in Mar 2021. Now reported as Arc.Runtime.Performance.FPS2.
+  </obsolete>
 <!-- Name completed by histogram_suffixes name="ArcPerformanceAppCategories" -->
 
   <owner>khmel@google.com</owner>
   <owner>camurcu@google.com</owner>
   <summary>Render frames per second.</summary>
+</histogram>
+
+<histogram name="Arc.Runtime.Performance.FPS2" units="fps"
+    expires_after="2021-07-18">
+<!-- Name completed by histogram_suffixes name="ArcPerformanceAppCategories" -->
+
+  <owner>khmel@google.com</owner>
+  <owner>camurcu@google.com</owner>
+  <summary>
+    Render frames per second. Only collected if the user has app syncing enabled
+    and doesn't have a custom passphrase set.
+  </summary>
 </histogram>
 
 <histogram name="Arc.Runtime.Performance.Generic.FirstFrameRendered" units="ms"
@@ -1019,12 +1050,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Runtime.Performance.RenderQuality" units="%"
-    expires_after="2021-07-18">
+    expires_after="2021-06-01">
+  <obsolete>
+    Removed in Mar 2021. Now reported as Arc.Runtime.Performance.RenderQuality2.
+  </obsolete>
 <!-- Name completed by histogram_suffixes name="ArcPerformanceAppCategories" -->
 
   <owner>khmel@google.com</owner>
   <owner>camurcu@google.com</owner>
   <summary>Render quality with maximum 100%.</summary>
+</histogram>
+
+<histogram name="Arc.Runtime.Performance.RenderQuality2" units="%"
+    expires_after="2021-07-18">
+<!-- Name completed by histogram_suffixes name="ArcPerformanceAppCategories" -->
+
+  <owner>khmel@google.com</owner>
+  <owner>camurcu@google.com</owner>
+  <summary>
+    Render quality with maximum 100%. Only collected if the user has app syncing
+    enabled and doesn't have a custom passphrase set.
+  </summary>
 </histogram>
 
 <histogram name="Arc.SdkVersionUpgradeType" enum="ArcSdkVersionUpgradeType"
@@ -1038,7 +1084,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.Secondary.Signin.Result" enum="ArcProvisioningStatus"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>sinhak@google.com</owner>
   <owner>jhorwich@google.com</owner>
   <owner>khmel@google.com</owner>

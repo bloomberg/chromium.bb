@@ -288,21 +288,26 @@ enum class AccountConsistencyPromoAfterDismissal {
 #endif  // defined(OS_ANDROID)
 
 // Enum values which enumerates all reasons to start sign in process.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Please keep in Sync with "SigninReason" in
+// src/tools/metrics/histograms/enums.xml.
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SigninReason
 enum class Reason : int {
-  REASON_SIGNIN_PRIMARY_ACCOUNT = 0,
-  REASON_ADD_SECONDARY_ACCOUNT,
-  REASON_REAUTHENTICATION,
-  REASON_UNLOCK,
-  REASON_UNKNOWN_REASON,  // This should never have been used to get signin URL.
-  REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT,
-  REASON_FETCH_LST_ONLY,  // Used to simply login and acquire a login scope
-                          // token without actually signing into any profiles on
-                          // Chrome. This allows the chrome signin page to work
-                          // in incognito mode.
-  REASON_MAX,             // This must be last.
+  kSigninPrimaryAccount = 0,
+  kAddSecondaryAccount = 1,
+  kReauthentication = 2,
+  // REASON_UNLOCK = 3,  // DEPRECATED, profile unlocking was removed.
+  // This should never have been used to get signin URL.
+  kUnknownReason = 4,
+  kForcedSigninPrimaryAccount = 5,
+  // Used to simply login and acquire a login scope token without actually
+  // signing into any profiles on Chrome. This allows the chrome signin page to
+  // work in incognito mode.
+  kFetchLstOnly = 6,
+  kMaxValue = kFetchLstOnly,
 };
 
 // Enum values used for use with the "Signin.Reauth" histogram.
@@ -352,13 +357,13 @@ enum class AccountEquality : int {
 };
 
 // When the user is give a choice of deleting their profile or not when signing
-// out, the |DELETED| or |KEEPING| metric should be used. If the user is not
-// given any option, then use the |IGNORE_METRIC| value should be used.
+// out, the |kDeleted| or |kKeeping| metric should be used. If the user is not
+// given any option, then use the |kIgnoreMetric| value should be used.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 enum class SignoutDelete : int {
-  DELETED = 0,
-  KEEPING,
-  IGNORE_METRIC,
+  kDeleted = 0,
+  kKeeping,
+  kIgnoreMetric,
 };
 
 // This is the relationship between the account used to sign into chrome, and

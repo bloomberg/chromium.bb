@@ -257,7 +257,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                              base::TimeTicks failed_load_time);
   void PageHidden();
   void PageShown();
-  void FrameDeleted(content::RenderFrameHost* rfh);
+  void RenderFrameDeleted(content::RenderFrameHost* rfh);
+  void FrameDeleted(int frame_tree_node_id);
 
   void OnInputEvent(const blink::WebInputEvent& event);
 
@@ -278,7 +279,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info);
 
-  void FrameReceivedFirstUserActivation(content::RenderFrameHost* rfh);
+  void FrameReceivedUserActivation(content::RenderFrameHost* rfh);
   void FrameDisplayStateChanged(content::RenderFrameHost* render_frame_host,
                                 bool is_display_none);
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,

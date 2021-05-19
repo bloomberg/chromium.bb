@@ -57,6 +57,24 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
                      errors::kInvalidBackgroundCombination);
 }
 
+TEST_F(ExtensionManifestBackgroundTest, BackgroundServiceWorkerScript) {
+  std::string error;
+  base::Value manifest = LoadManifest("background_script_sw.json", &error);
+  ASSERT_TRUE(manifest.is_dict());
+
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess(ManifestData(manifest.Clone(), "")));
+  ASSERT_TRUE(extension.get());
+  ASSERT_TRUE(BackgroundInfo::IsServiceWorkerBased(extension.get()));
+  const std::string& service_worker_script =
+      BackgroundInfo::GetBackgroundServiceWorkerScript(extension.get());
+  EXPECT_EQ("service_worker.js", service_worker_script);
+
+  manifest.SetPath({"background", "page"}, base::Value("monkey.html"));
+  LoadAndExpectError(ManifestData(std::move(manifest), ""),
+                     errors::kInvalidBackgroundCombination);
+}
+
 TEST_F(ExtensionManifestBackgroundTest, BackgroundPage) {
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("background_page.json"));
@@ -149,19 +167,16 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPagePersistentPlatformApp) {
 }
 
 TEST_F(ExtensionManifestBackgroundTest, BackgroundPagePersistentInvalidKey) {
-  scoped_refptr<Extension> extension =
-      LoadAndExpectSuccess("background_page_invalid_persistent_key_app.json");
+  std::vector<std::string> expected_warnings = {
+      "'background' is only allowed for extensions, legacy packaged apps, "
+      "hosted apps, and login screen extensions, but this is a packaged app.",
+      "'background.persistent' is only allowed for extensions, legacy packaged "
+      "apps, and login screen extensions, but this is a packaged app."};
+  scoped_refptr<Extension> extension = LoadAndExpectWarnings(
+      "background_page_invalid_persistent_key_app.json", expected_warnings);
   ASSERT_TRUE(extension->is_platform_app());
   ASSERT_TRUE(BackgroundInfo::HasBackgroundPage(extension.get()));
   EXPECT_FALSE(BackgroundInfo::HasPersistentBackgroundPage(extension.get()));
-
-  std::string error;
-  std::vector<InstallWarning> warnings;
-  ManifestHandler::ValidateExtension(extension.get(), &error, &warnings);
-  // The key 'background.persistent' is not supported for packaged apps.
-  EXPECT_EQ(1U, warnings.size());
-  EXPECT_EQ(errors::kBackgroundPersistentInvalidForPlatformApps,
-            warnings[0].message);
 }
 
 // Tests channel restriction on "background.service_worker" key.

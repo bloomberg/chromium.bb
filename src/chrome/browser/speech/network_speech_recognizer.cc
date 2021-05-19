@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/speech/speech_recognizer_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -105,7 +105,7 @@ class NetworkSpeechRecognizer::EventListener
   std::string locale_;
   base::OneShotTimer speech_timeout_;
   int session_;
-  base::string16 last_result_str_;
+  std::u16string last_result_str_;
 
   base::WeakPtrFactory<EventListener> weak_factory_{this};
 
@@ -125,10 +125,19 @@ NetworkSpeechRecognizer::EventListener::EventListener(
       locale_(locale),
       session_(kInvalidSessionId) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_READY);
 }
 
 NetworkSpeechRecognizer::EventListener::~EventListener() {
+  // No more callbacks when we are deleting.
+  delegate_.reset();
   DCHECK(!speech_timeout_.IsRunning());
+  if (session_ != kInvalidSessionId) {
+    // Ensure the session is aborted.
+    int session = session_;
+    session_ = kInvalidSessionId;
+    content::SpeechRecognitionManager::GetInstance()->AbortSession(session);
+  }
 }
 
 void NetworkSpeechRecognizer::EventListener::StartOnIOThread(
@@ -177,6 +186,9 @@ void NetworkSpeechRecognizer::EventListener::StopOnIOThread() {
   StopSpeechTimeout();
   content::SpeechRecognitionManager::GetInstance()->StopAudioCaptureForSession(
       session);
+  // Since we no longer have access to this session ID, end the session
+  // associated with it.
+  content::SpeechRecognitionManager::GetInstance()->AbortSession(session);
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -205,6 +217,7 @@ void NetworkSpeechRecognizer::EventListener::StopSpeechTimeout() {
 void NetworkSpeechRecognizer::EventListener::SpeechTimeout() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   StopOnIOThread();
+  NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_READY);
 }
 
 void NetworkSpeechRecognizer::EventListener::OnRecognitionStart(
@@ -220,7 +233,7 @@ void NetworkSpeechRecognizer::EventListener::OnRecognitionEnd(int session_id) {
 void NetworkSpeechRecognizer::EventListener::OnRecognitionResults(
     int session_id,
     const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results) {
-  base::string16 result_str;
+  std::u16string result_str;
   size_t final_count = 0;
   // The number of results with |is_provisional| false. If |final_count| ==
   // results.size(), then all results are non-provisional and the recognition is
@@ -237,11 +250,11 @@ void NetworkSpeechRecognizer::EventListener::OnRecognitionResults(
                      result_str, final_count == results.size(),
                      base::nullopt /* word offsets */));
 
-  // Stop the moment we have a final result. If we receive any new or changed
-  // text, restart the timer to give the user more time to speak. (The timer is
-  // recording the amount of time since the most recent utterance.)
+  // Restart the timer when we have a final result. If we receive any new or
+  // changed text, restart the timer to give the user more time to speak. (The
+  // timer is recording the amount of time since the most recent utterance.)
   if (final_count == results.size())
-    StopOnIOThread();
+    StartSpeechTimeout(kNoSpeechTimeoutInSeconds);
   else if (result_str != last_result_str_)
     StartSpeechTimeout(kNoNewSpeechTimeoutInSeconds);
 
@@ -253,7 +266,7 @@ void NetworkSpeechRecognizer::EventListener::OnRecognitionError(
     const blink::mojom::SpeechRecognitionError& error) {
   StopOnIOThread();
   if (error.code == blink::mojom::SpeechRecognitionErrorCode::kNetwork) {
-    NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_NETWORK_ERROR);
+    NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_ERROR);
   }
   NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_READY);
 }
@@ -310,6 +323,8 @@ NetworkSpeechRecognizer::NetworkSpeechRecognizer(
 
 NetworkSpeechRecognizer::~NetworkSpeechRecognizer() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Reset the delegate before calling Stop() to avoid any additional callbacks.
+  delegate().reset();
   Stop();
 }
 

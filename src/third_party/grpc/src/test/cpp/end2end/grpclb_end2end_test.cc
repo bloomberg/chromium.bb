@@ -24,6 +24,7 @@
 #include <string>
 #include <thread>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 
@@ -273,7 +274,8 @@ class BalancerServiceImpl : public BalancerService {
       }
       {
         grpc::internal::MutexLock lock(&mu_);
-        serverlist_cond_.WaitUntil(&mu_, [this] { return serverlist_done_; });
+        grpc::internal::WaitUntil(&serverlist_cond_, &mu_,
+                                  [this] { return serverlist_done_; });
       }
 
       if (client_load_reporting_interval_seconds_ > 0) {
@@ -333,8 +335,8 @@ class BalancerServiceImpl : public BalancerService {
     grpc::internal::CondVar cv;
     if (load_report_queue_.empty()) {
       load_report_cond_ = &cv;
-      load_report_cond_->WaitUntil(
-          &mu_, [this] { return !load_report_queue_.empty(); });
+      grpc::internal::WaitUntil(load_report_cond_, &mu_,
+                                [this] { return !load_report_queue_.empty(); });
       load_report_cond_ = nullptr;
     }
     ClientStats load_report = std::move(load_report_queue_.front());
@@ -346,7 +348,7 @@ class BalancerServiceImpl : public BalancerService {
     grpc::internal::MutexLock lock(&mu_);
     if (!serverlist_done_) {
       serverlist_done_ = true;
-      serverlist_cond_.Broadcast();
+      serverlist_cond_.SignalAll();
     }
   }
 
@@ -540,18 +542,17 @@ class GrpclbEnd2endTest : public ::testing::Test {
       const std::vector<AddressData>& address_data) {
     grpc_core::ServerAddressList addresses;
     for (const auto& addr : address_data) {
-      std::string lb_uri_str = absl::StrCat(
-          ipv6_only_ ? "ipv6:[::1]:" : "ipv4:127.0.0.1:", addr.port);
-      grpc_uri* lb_uri = grpc_uri_parse(lb_uri_str.c_str(), true);
-      GPR_ASSERT(lb_uri != nullptr);
+      absl::StatusOr<grpc_core::URI> lb_uri =
+          grpc_core::URI::Parse(absl::StrCat(
+              ipv6_only_ ? "ipv6:[::1]:" : "ipv4:127.0.0.1:", addr.port));
+      GPR_ASSERT(lb_uri.ok());
       grpc_resolved_address address;
-      GPR_ASSERT(grpc_parse_uri(lb_uri, &address));
+      GPR_ASSERT(grpc_parse_uri(*lb_uri, &address));
       grpc_arg arg = grpc_core::CreateAuthorityOverrideChannelArg(
           addr.balancer_name.c_str());
       grpc_channel_args* args =
           grpc_channel_args_copy_and_add(nullptr, &arg, 1);
       addresses.emplace_back(address.addr, address.len, args);
-      grpc_uri_destroy(lb_uri);
     }
     return addresses;
   }
@@ -696,8 +697,8 @@ class GrpclbEnd2endTest : public ::testing::Test {
       // by ServerThread::Serve from firing before the wait below is hit.
       grpc::internal::MutexLock lock(&mu);
       grpc::internal::CondVar cond;
-      thread_.reset(new std::thread(
-          std::bind(&ServerThread::Serve, this, server_host, &mu, &cond)));
+      thread_ = absl::make_unique<std::thread>(
+          std::bind(&ServerThread::Serve, this, server_host, &mu, &cond));
       cond.Wait(&mu);
       gpr_log(GPR_INFO, "%s server startup complete", type_.c_str());
     }

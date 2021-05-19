@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "content/browser/loader/navigation_early_hints_manager.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/browser/global_request_id.h"
@@ -62,6 +63,10 @@ void TestNavigationURLLoader::SimulateErrorWithStatus(
   delegate_->OnRequestFailed(status);
 }
 
+void TestNavigationURLLoader::SimulateEarlyHintsPreloadLinkHeaderReceived() {
+  was_early_hints_preload_link_header_received_ = true;
+}
+
 void TestNavigationURLLoader::CallOnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr response_head) {
@@ -87,12 +92,17 @@ void TestNavigationURLLoader::CallOnResponseStarted(
           std::move(url_loader_remote),
           url_loader_client_remote.InitWithNewPipeAndPassReceiver());
 
+  NavigationURLLoaderDelegate::EarlyHints early_hints;
+  early_hints.was_preload_link_header_received =
+      was_early_hints_preload_link_header_received_;
+
   delegate_->OnResponseStarted(
       std::move(url_loader_client_endpoints), std::move(response_head),
       mojo::ScopedDataPipeConsumerHandle(),
       GlobalRequestID::MakeBrowserInitiated(), false,
       blink::NavigationDownloadPolicy(),
-      request_info_->isolation_info.network_isolation_key(), base::nullopt);
+      request_info_->isolation_info.network_isolation_key(), base::nullopt,
+      std::move(early_hints));
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

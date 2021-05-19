@@ -17,7 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
@@ -260,7 +260,7 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   TestingUserActivityUkmLogger delegate_;
-  chromeos::FakeChromeUserManager fake_user_manager_;
+  FakeChromeUserManager fake_user_manager_;
   // Only used to get SourceIds for URLs.
   ukm::TestAutoSetUkmRecorder ukm_recorder_;
   TabActivitySimulator tab_activity_simulator_;

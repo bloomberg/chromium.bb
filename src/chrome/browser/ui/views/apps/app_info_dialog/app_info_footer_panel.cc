@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h"
 
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -113,7 +114,7 @@ void AppInfoFooterPanel::UpdatePinButtons(bool focus_visible_button) {
 
 void AppInfoFooterPanel::OnExtensionUninstallDialogClosed(
     bool did_start_uninstall,
-    const base::string16& error) {
+    const std::u16string& error) {
   if (did_start_uninstall) {
     // Close the App Info dialog as well (which will free the dialog too).
     Close();

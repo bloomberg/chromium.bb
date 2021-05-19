@@ -31,6 +31,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActionModeHandler;
+import org.chromium.chrome.browser.ChromePowerModeVoter;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -54,13 +55,11 @@ import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.messages.ChromeMessageQueueMediator;
 import org.chromium.chrome.browser.messages.MessageContainerCoordinator;
-import org.chromium.chrome.browser.metrics.UkmRecorder;
 import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceInteractionSource;
 import org.chromium.chrome.browser.paint_preview.DemoPaintPreview;
-import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareButtonController;
@@ -96,6 +95,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerFacto
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.ManagedBottomSheetController;
+import org.chromium.components.browser_ui.widget.CoordinatorLayoutForPointer;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -103,6 +103,7 @@ import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.ManagedMessageDispatcher;
 import org.chromium.components.messages.MessageContainer;
 import org.chromium.components.messages.MessagesFactory;
+import org.chromium.components.ukm.UkmRecorder;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -272,7 +273,7 @@ public class RootUiCoordinator
             }
         };
         mTopUiThemeColorProvider = new TopUiThemeColorProvider(mActivity, mActivityTabSupplier,
-                mActivity::getActivityThemeColor, mActivity::isTablet, Previews::isPreview);
+                mActivity::getActivityThemeColor, mActivity::isTablet);
     }
 
     // TODO(pnoland, crbug.com/865801): remove this in favor of wiring it directly.
@@ -390,6 +391,13 @@ public class RootUiCoordinator
 
     @Override
     public void onInflationComplete() {
+        // Allow the ChromePowerModeVoter instance to observe any touch events on the view
+        // hierarchy, so that we can avoid power throttling while the user interacts with Java views
+        // in the main Chrome activity.
+        ViewGroup coordinator = mActivity.findViewById(R.id.coordinator);
+        ((CoordinatorLayoutForPointer) coordinator)
+                .setTouchEventCallback(ChromePowerModeVoter.getInstance().getTouchEventCallback());
+
         mScrimCoordinator = buildScrimWidget();
 
         initFindToolbarManager();
@@ -437,6 +445,23 @@ public class RootUiCoordinator
             public void onExitVr() {}
         };
         VrModuleProvider.registerVrModeObserver(mVrModeObserver);
+
+        // Ensure the bottom sheet's container has been laid out at least once before hiding it.
+        // TODO(1196804): This should be owned by the BottomSheetControllerImpl, but there are some
+        //                complexities around the order of events resulting from waiting for layout.
+        ViewGroup sheetContainer = mActivity.findViewById(R.id.sheet_container);
+        if (!sheetContainer.isLaidOut()) {
+            sheetContainer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View view, int left, int top, int right, int bottom,
+                        int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    sheetContainer.setVisibility(View.GONE);
+                    sheetContainer.removeOnLayoutChangeListener(this);
+                }
+            });
+        } else {
+            sheetContainer.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -530,8 +555,7 @@ public class RootUiCoordinator
                 RecordUserAction.record("MobileShortcutFindInPage");
             }
             return true;
-        } else if (id == R.id.share_menu_button_id || id == R.id.share_menu_id
-                || id == R.id.direct_share_menu_id) {
+        } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             onShareMenuItemSelected(id == R.id.direct_share_menu_id,
                     mTabModelSelectorSupplier.get().isIncognitoSelected());
         } else if (id == R.id.paint_preview_show_id) {
@@ -697,8 +721,7 @@ public class RootUiCoordinator
                     shouldShowMenuUpdateBadge(), mTabModelSelectorSupplier, mStartSurfaceSupplier,
                     mOmniboxFocusStateSupplier, mIntentMetadataOneshotSupplier,
                     mPromoShownOneshotSupplier, mActivity.getWindowAndroid(),
-                    mActivity::isInOverviewMode, mActivity.isCustomTab(),
-                    mActivity.getModalDialogManagerSupplier(),
+                    mActivity::isInOverviewMode, mActivity.getModalDialogManagerSupplier(),
                     mActivity.getStatusBarColorController(),
                     /* appMenuDelegate= */ mActivity, mActivity.getLifecycleDispatcher(),
                     mStartSurfaceParentTabSupplier);
@@ -875,7 +898,7 @@ public class RootUiCoordinator
         mBottomSheetController = BottomSheetControllerFactory.createBottomSheetController(
                 () -> mScrimCoordinator, sheetInitializedCallback, mActivity.getWindow(),
                 mActivity.getWindowAndroid().getKeyboardDelegate(),
-                () -> mActivity.findViewById(R.id.coordinator));
+                () -> mActivity.findViewById(R.id.sheet_container));
         BottomSheetControllerFactory.setExceptionReporter(
                 (throwable)
                         -> PureJavaExceptionReporter.reportJavaException((Throwable) throwable));

@@ -88,6 +88,27 @@ describe('IconButton', () => {
     assert.deepEqual(iconNames, ['error_icon']);
   });
 
+  it('renders correctly with a customly sized icon', () => {
+    const {shadowRoot} = renderIconButton({
+      clickHandler: () => {},
+      groups: [
+        {
+          iconName: 'warning_icon',
+          iconColor: '#1a73e8',
+          text: 'Text',
+          iconHeight: '2ex',
+          iconWidth: '3ex',
+        },
+      ],
+    });
+
+    const icons = extractIconGroups(shadowRoot);
+    assert.strictEqual(icons.length, 1);
+    const icon = icons[0];
+    assert.strictEqual(icon.iconData.height, '2ex');
+    assert.strictEqual(icon.iconData.width, '3ex');
+  });
+
   describe('setCounts', () => {
     it('renders correctly with two icons', () => {
       const {component, shadowRoot} = renderIconButton({
@@ -134,6 +155,50 @@ describe('IconButton', () => {
       assertElement(icon, HTMLButtonElement);
       icon.click();
       await clicked;
+    });
+  });
+
+  describe('border', () => {
+    it('is rendered when there is a click handler', async () => {
+      const {shadowRoot} = renderIconButton({clickHandler: () => {}, groups: [defaultIcon]});
+      const button = shadowRoot.querySelector('.icon-button');
+      assertElement(button, HTMLButtonElement);
+      assert.isTrue(button.classList.contains('with-click-handler'));
+    });
+
+    it('is omitted when requested', async () => {
+      const {shadowRoot} = renderIconButton({groups: [defaultIcon]});
+      const button = shadowRoot.querySelector('.icon-button');
+      assertElement(button, HTMLButtonElement);
+      assert.isFalse(button.classList.contains('with-click-handler'));
+    });
+  });
+
+  describe('leading text', () => {
+    it('is rendered if provided', async () => {
+      const {shadowRoot} = renderIconButton({clickHandler: () => {}, groups: [defaultIcon], leadingText: 'LEAD'});
+      const texts = Array.from(shadowRoot.querySelectorAll('.icon-button-title'));
+      assert.deepEqual(texts.map(x => x.textContent), ['LEAD', '1']);
+    });
+
+    it('is omitted if not provided', async () => {
+      const {shadowRoot} = renderIconButton({clickHandler: () => {}, groups: [defaultIcon]});
+      const texts = Array.from(shadowRoot.querySelectorAll('.icon-button-title'));
+      assert.deepEqual(texts.map(x => x.textContent), ['1']);
+    });
+  });
+
+  describe('trailing text', () => {
+    it('is rendered if provided', async () => {
+      const {shadowRoot} = renderIconButton({clickHandler: () => {}, groups: [defaultIcon], trailingText: 'TRAIL'});
+      const texts = Array.from(shadowRoot.querySelectorAll('.icon-button-title'));
+      assert.deepEqual(texts.map(x => x.textContent), ['1', 'TRAIL']);
+    });
+
+    it('is omitted if not provided', async () => {
+      const {shadowRoot} = renderIconButton({clickHandler: () => {}, groups: [defaultIcon]});
+      const texts = Array.from(shadowRoot.querySelectorAll('.icon-button-title'));
+      assert.deepEqual(texts.map(x => x.textContent), ['1']);
     });
   });
 });

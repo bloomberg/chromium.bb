@@ -84,9 +84,6 @@ bool LayoutNGMixin<Base>::NodeAtPoint(HitTestResult& result,
 
 template <typename Base>
 RecalcLayoutOverflowResult LayoutNGMixin<Base>::RecalcLayoutOverflow() {
-  if (!RuntimeEnabledFeatures::LayoutNGLayoutOverflowEnabled())
-    return Base::RecalcLayoutOverflow();
-
   RecalcLayoutOverflowResult child_result;
   if (Base::ChildNeedsLayoutOverflowRecalc())
     child_result = Base::RecalcChildLayoutOverflow();
@@ -151,6 +148,15 @@ RecalcLayoutOverflowResult LayoutNGMixin<Base>::RecalcLayoutOverflow() {
   return {layout_overflow_changed, rebuild_fragment_tree};
 }
 
+template <typename Base>
+void LayoutNGMixin<Base>::RecalcVisualOverflow() {
+  if (Base::CanUseFragmentsForVisualOverflow()) {
+    Base::RecalcFragmentsVisualOverflow();
+    return;
+  }
+  Base::RecalcVisualOverflow();
+}
+
 // The current fragment from the last layout cycle for this box.
 // When pre-NG layout calls functions of this block flow, fragment and/or
 // LayoutResult are required to compute the result.
@@ -176,16 +182,10 @@ MinMaxSizes LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths() const {
   if (!node.CanUseNewLayout())
     return Base::ComputeIntrinsicLogicalWidths();
 
-  LayoutUnit available_logical_height =
-      LayoutBoxUtils::AvailableLogicalHeight(*this, Base::ContainingBlock());
-
   NGConstraintSpace space = ConstraintSpaceForMinMaxSizes();
-  MinMaxSizes sizes =
-      node.ComputeMinMaxSizes(node.Style().GetWritingMode(),
-                              MinMaxSizesInput(available_logical_height,
-                                               MinMaxSizesType::kContent),
-                              &space)
-          .sizes;
+  MinMaxSizes sizes = node.ComputeMinMaxSizes(node.Style().GetWritingMode(),
+                                              MinMaxSizesType::kContent, space)
+                          .sizes;
 
   if (Base::IsTableCell()) {
     // If a table cell, or the column that it belongs to, has a specified fixed
@@ -212,7 +212,8 @@ NGConstraintSpace LayoutNGMixin<Base>::ConstraintSpaceForMinMaxSizes() const {
                                    style.GetWritingDirection(),
                                    /* is_new_fc */ true);
   builder.SetAvailableSize(
-      {Base::ContainingBlockLogicalWidthForContent(), kIndefiniteSize});
+      {Base::ContainingBlockLogicalWidthForContent(),
+       LayoutBoxUtils::AvailableLogicalHeight(*this, Base::ContainingBlock())});
 
   // Table cells borders may be collapsed, we can't calculate these directly
   // from the style.
@@ -318,7 +319,7 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
   // These are the unpositioned OOF descendants of the current OOF block.
   for (const auto& descendant :
        result->PhysicalFragment().OutOfFlowPositionedDescendants())
-    descendant.node.UseLegacyOutOfFlowPositioning();
+    descendant.node.InsertIntoLegacyPositionedObjects();
 
   const auto& fragment = result->PhysicalFragment();
   DCHECK_GT(fragment.Children().size(), 0u);
@@ -366,7 +367,7 @@ LayoutNGMixin<Base>::UpdateInFlowBlockLayout() {
 
   for (const auto& descendant :
        physical_fragment.OutOfFlowPositionedDescendants())
-    descendant.node.UseLegacyOutOfFlowPositioning();
+    descendant.node.InsertIntoLegacyPositionedObjects();
 
   // Even if we are a layout root, our baseline may have shifted. In this
   // (rare) case, mark our containing-block for layout.
@@ -383,6 +384,28 @@ LayoutNGMixin<Base>::UpdateInFlowBlockLayout() {
   return result;
 }
 
+template <typename Base>
+void LayoutNGMixin<Base>::UpdateMargins() {
+  const LayoutBlock* containing_block = Base::ContainingBlock();
+  if (!containing_block || !containing_block->IsLayoutBlockFlow())
+    return;
+
+  // In the legacy engine, for regular block container layout, children
+  // calculate and store margins on themselves, while in NG that's done by the
+  // container. Since this object is a LayoutNG entry-point, we'll have to do it
+  // on ourselves, since that's what the legacy container expects.
+  const ComputedStyle& style = Base::StyleRef();
+  const ComputedStyle& cb_style = containing_block->StyleRef();
+  const auto writing_direction = cb_style.GetWritingDirection();
+  LayoutUnit available_logical_width =
+      LayoutBoxUtils::AvailableLogicalWidth(*this, containing_block);
+  NGBoxStrut margins = ComputePhysicalMargins(style, available_logical_width)
+                           .ConvertToLogical(writing_direction);
+  ResolveInlineMargins(style, cb_style, available_logical_width,
+                       Base::LogicalWidth(), &margins);
+  Base::SetMargin(margins.ConvertToPhysical(writing_direction));
+}
+
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutBlock>;
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutBlockFlow>;
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutProgress>;
@@ -390,6 +413,7 @@ template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutRubyAsBlock>;
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutRubyBase>;
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutRubyRun>;
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutRubyText>;
+template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutSVGBlock>;
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutTableCaption>;
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutTableCell>;
 

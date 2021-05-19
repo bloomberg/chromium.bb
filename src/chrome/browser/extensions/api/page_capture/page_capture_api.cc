@@ -117,7 +117,7 @@ ExtensionFunction::ResponseAction PageCaptureSaveAsMHTMLFunction::Run() {
     // This Unretained is safe because this object is Released() in
     // OnMessageReceived which gets called at some point after callback is run.
     permission_helper::HandlePermissionRequest(
-        *extension(), {APIPermission::kPageCapture}, web_contents,
+        *extension(), {mojom::APIPermissionID::kPageCapture}, web_contents,
         base::BindOnce(
             &PageCaptureSaveAsMHTMLFunction::ResolvePermissionRequest,
             base::Unretained(this)),
@@ -199,7 +199,8 @@ void PageCaptureSaveAsMHTMLFunction::OnServiceWorkerAck() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void PageCaptureSaveAsMHTMLFunction::ResolvePermissionRequest(
     const PermissionIDSet& allowed_permissions) {
-  if (allowed_permissions.ContainsID(APIPermission::kPageCapture)) {
+  if (allowed_permissions.ContainsID(
+          extensions::mojom::APIPermissionID::kPageCapture)) {
     base::ThreadPool::PostTask(
         FROM_HERE, kCreateTemporaryFileTaskTraits,
         base::BindOnce(&PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile,

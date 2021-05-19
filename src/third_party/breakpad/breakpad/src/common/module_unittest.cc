@@ -613,4 +613,9 @@ TEST(Write, OutOfRangeAddresses) {
                "STACK CFI INIT 2000 100 \n",
                s.str().c_str());
 
+  // Cleanup - Prevent Memory Leak errors.
+  delete (extern1);
+  delete (function);
+  delete (entry3);
+  delete (entry1);
 }

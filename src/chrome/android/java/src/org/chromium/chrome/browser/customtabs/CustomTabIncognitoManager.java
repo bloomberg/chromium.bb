@@ -15,7 +15,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.UnownedUserData;
 import org.chromium.base.UnownedUserDataKey;
 import org.chromium.base.annotations.CheckDiscard;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -105,7 +105,8 @@ public class CustomTabIncognitoManager implements NativeInitObserver, Destroyabl
 
     public Profile getProfile() {
         if (mOTRProfileID == null) mOTRProfileID = OTRProfileID.createUnique("CCT:Incognito");
-        return Profile.getLastUsedRegularProfile().getOffTheRecordProfile(mOTRProfileID);
+        return Profile.getLastUsedRegularProfile().getOffTheRecordProfile(
+                mOTRProfileID, /*createIfNeeded=*/true);
     }
 
     @Override
@@ -119,7 +120,7 @@ public class CustomTabIncognitoManager implements NativeInitObserver, Destroyabl
     public void destroy() {
         if (mOTRProfileID != null) {
             Profile.getLastUsedRegularProfile()
-                    .getOffTheRecordProfile(mOTRProfileID)
+                    .getOffTheRecordProfile(mOTRProfileID, /*createIfNeeded=*/true)
                     .destroyWhenAppropriate();
             mOTRProfileID = null;
         }

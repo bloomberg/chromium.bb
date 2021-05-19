@@ -41,6 +41,7 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/events/keyboard_layout_util.h"
 
 namespace chromeos {
 namespace settings {
@@ -345,6 +346,10 @@ bool IsSwitchAccessTextAllowed() {
       ::switches::kEnableExperimentalAccessibilitySwitchAccessText);
 }
 
+bool IsSwitchAccessPointScanningEnabled() {
+  return features::IsSwitchAccessPointScanningEnabled();
+}
+
 bool IsSwitchAccessSetupGuideAllowed() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilitySwitchAccessSetupGuide);
@@ -440,6 +445,7 @@ void AccessibilitySection::AddLoadTimeData(
       {"chromeVoxLabel", IDS_SETTINGS_CHROMEVOX_LABEL},
       {"chromeVoxOptionsLabel", IDS_SETTINGS_CHROMEVOX_OPTIONS_LABEL},
       {"screenMagnifierLabel", IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL},
+      {"screenMagnifierHintLabel", IDS_SETTINGS_SCREEN_MAGNIFIER_HINT_LABEL},
       {"screenMagnifierMouseFollowingModeContinuous",
        IDS_SETTINGS_SCREEN_MANIFIER_MOUSE_FOLLOWING_MODE_CONTINUOUS},
       {"screenMagnifierMouseFollowingModeCentered",
@@ -449,6 +455,8 @@ void AccessibilitySection::AddLoadTimeData(
       {"screenMagnifierFocusFollowingLabel",
        IDS_SETTINGS_SCREEN_MAGNIFIER_FOCUS_FOLLOWING_LABEL},
       {"screenMagnifierZoomLabel", IDS_SETTINGS_SCREEN_MAGNIFIER_ZOOM_LABEL},
+      {"screenMagnifierZoomHintLabel",
+       IDS_SETTINGS_SCREEN_MAGNIFIER_ZOOM_HINT_LABEL},
       {"dockedMagnifierLabel", IDS_SETTINGS_DOCKED_MAGNIFIER_LABEL},
       {"dockedMagnifierZoomLabel", IDS_SETTINGS_DOCKED_MAGNIFIER_ZOOM_LABEL},
       {"screenMagnifierZoom2x", IDS_SETTINGS_SCREEN_MAGNIFIER_ZOOM_2_X},
@@ -584,6 +592,8 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_SPEED_LABEL},
       {"switchAccessAutoScanKeyboardSpeedLabel",
        IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_KEYBOARD_SPEED_LABEL},
+      {"switchAccessPointScanSpeedLabel",
+       IDS_SETTINGS_SWITCH_ACCESS_POINT_SCAN_SPEED_LABEL},
       {"durationInSeconds", IDS_SETTINGS_DURATION_IN_SECONDS},
       {"manageAccessibilityFeatures",
        IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES},
@@ -655,12 +665,20 @@ void AccessibilitySection::AddLoadTimeData(
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
+  html_source->AddLocalizedString("screenMagnifierHintSearchKey",
+                                  ui::DeviceUsesKeyboardLayout2()
+                                      ? IDS_SETTINGS_KEYBOARD_KEY_LAUNCHER
+                                      : IDS_SETTINGS_KEYBOARD_KEY_SEARCH);
+
   html_source->AddString("a11yLearnMoreUrl",
                          chrome::kChromeAccessibilityHelpURL);
 
   html_source->AddBoolean(
       "showExperimentalAccessibilitySwitchAccessImprovedTextInput",
       IsSwitchAccessTextAllowed());
+
+  html_source->AddBoolean("isSwitchAccessPointScanningEnabled",
+                          IsSwitchAccessPointScanningEnabled());
 
   html_source->AddBoolean("showSwitchAccessSetupGuide",
                           IsSwitchAccessSetupGuideAllowed());

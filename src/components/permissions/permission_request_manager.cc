@@ -5,6 +5,7 @@
 #include "components/permissions/permission_request_manager.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -14,10 +15,10 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/autofill_assistant/browser/public/runtime_manager.h"
+#include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_prompt.h"
@@ -114,10 +115,10 @@ bool ShouldGroupRequests(PermissionRequest* a, PermissionRequest* b) {
 // PermissionRequestManager ----------------------------------------------------
 
 bool PermissionRequestManager::PermissionRequestSource::
-    IsSourceFrameInactiveAndDisallowReactivation() const {
+    IsSourceFrameInactiveAndDisallowActivation() const {
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  return !rfh || rfh->IsInactiveAndDisallowReactivation();
+  return !rfh || rfh->IsInactiveAndDisallowActivation();
 }
 
 PermissionRequestManager::~PermissionRequestManager() {
@@ -285,18 +286,17 @@ void PermissionRequestManager::DidFinishNavigation(
     // later, but the requests won't be.
     // Disable bfcache here if we have any requests here to prevent this
     // from happening.
-    web_contents()
-        ->GetController()
-        .GetBackForwardCache()
-        .DisableForRenderFrameHost(
-            navigation_handle->GetPreviousRenderFrameHostId(),
-            "PermissionRequestManager");
+    content::BackForwardCache::DisableForRenderFrameHost(
+        navigation_handle->GetPreviousRenderFrameHostId(),
+        back_forward_cache::DisabledReason(
+            back_forward_cache::DisabledReasonId::kPermissionRequestManager));
   }
 
   CleanUpRequests();
 }
 
-void PermissionRequestManager::DocumentOnLoadCompletedInMainFrame() {
+void PermissionRequestManager::DocumentOnLoadCompletedInMainFrame(
+    content::RenderFrameHost* render_frame_host) {
   // This is scheduled because while all calls to the browser have been
   // issued at DOMContentLoaded, they may be bouncing around in scheduled
   // callbacks finding the UI thread still. This makes sure we allow those
@@ -485,7 +485,7 @@ void PermissionRequestManager::DequeueRequestIfNeeded() {
   while (!queued_requests_.empty()) {
     PermissionRequest* next = PopNextQueuedRequest();
     PermissionRequestSource& source = request_sources_map_.find(next)->second;
-    if (!source.IsSourceFrameInactiveAndDisallowReactivation()) {
+    if (!source.IsSourceFrameInactiveAndDisallowActivation()) {
       requests_.push_back(next);
       break;
     }
@@ -502,7 +502,7 @@ void PermissionRequestManager::DequeueRequestIfNeeded() {
   for (; !queued_requests_.empty(); PopNextQueuedRequest()) {
     PermissionRequest* front = PeekNextQueuedRequest();
     PermissionRequestSource& source = request_sources_map_.find(front)->second;
-    if (source.IsSourceFrameInactiveAndDisallowReactivation()) {
+    if (source.IsSourceFrameInactiveAndDisallowActivation()) {
       front->Cancelled();
       front->RequestFinished();
       request_sources_map_.erase(request_sources_map_.find(front));
@@ -673,6 +673,9 @@ void PermissionRequestManager::FinalizeCurrentRequests(
     request_sources_map_.erase(request_sources_map_.find(*requests_iter));
   }
   requests_.clear();
+
+  for (Observer& observer : observer_list_)
+    observer.OnRequestsFinalized();
 
   ScheduleDequeueRequestIfNeeded();
 }

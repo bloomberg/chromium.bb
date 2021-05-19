@@ -28,8 +28,29 @@ type Options struct {
 	AllowDoubleUnderscoreNames bool
 }
 
-func isDoubleUnderscore(s string) bool {
-	return len(s) >= 2 && s[0] == '_' && s[1] == '_'
+func validConstName(s string) bool {
+	if (len(s) >= 2) && (s[0] == '_') && (s[1] == '_') {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		switch c := s[i]; {
+		default:
+			return false
+		case c == '_':
+		case ('0' <= c) && (c <= '9'):
+		case ('A' <= c) && (c <= 'Z'): // Upper A-Z but not lower a-z.
+		}
+	}
+	return true
+}
+
+func containsDoubleUnderscore(s string) bool {
+	for i := 1; i < len(s); i++ {
+		if (s[i-1] == '_') && (s[i] == '_') {
+			return true
+		}
+	}
+	return false
 }
 
 func isStatusMessage(s string) bool {
@@ -138,7 +159,10 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 			if err != nil {
 				return nil, err
 			}
-			// TODO: check AllowDoubleUnderscoreNames?
+			if !validConstName(p.tm.ByID(id)) {
+				return nil, fmt.Errorf(`parse: invalid const name %q at %s:%d`,
+					p.tm.ByID(id), p.filename, p.line())
+			}
 
 			if x := p.peek1(); x != t.IDColon {
 				got := p.tm.ByID(x)
@@ -181,7 +205,7 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 			}
 			// TODO: should we require id0 != 0? In other words, always methods
 			// (attached to receivers) and never free standing functions?
-			if !p.opts.AllowDoubleUnderscoreNames && isDoubleUnderscore(p.tm.ByID(id1)) {
+			if !p.opts.AllowDoubleUnderscoreNames && containsDoubleUnderscore(p.tm.ByID(id1)) {
 				return nil, fmt.Errorf(`parse: double-underscore %q used for func name at %s:%d`,
 					p.tm.ByID(id1), p.filename, p.line())
 			}
@@ -193,7 +217,7 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 				return nil, err
 			}
 			out := (*a.TypeExpr)(nil)
-			if p.peek1() != t.IDOpenCurly {
+			if x := p.peek1(); (x != t.IDOpenCurly) && (x != t.IDComma) {
 				out, err = p.parseTypeExpr()
 				if err != nil {
 					return nil, err
@@ -202,12 +226,42 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 			asserts := []*a.Node(nil)
 			if p.peek1() == t.IDComma {
 				p.src = p.src[1:]
+				if p.peek1() == t.IDChoosy {
+					p.src = p.src[1:]
+					if (flags & a.FlagsPublic) != 0 {
+						return nil, fmt.Errorf(`parse: choosy function cannot be pub at %s:%d`,
+							p.filename, p.line())
+					} else if p.funcEffect.Coroutine() {
+						return nil, fmt.Errorf(`parse: choosy function cannot be a coroutine at %s:%d`,
+							p.filename, p.line())
+					}
+					flags |= a.FlagsChoosy
+					if p.peek1() != t.IDOpenCurly {
+						if x := p.peek1(); x != t.IDComma {
+							return nil, fmt.Errorf(`parse: expected ",", got %q at %s:%d`,
+								p.tm.ByID(x), p.filename, p.line())
+						}
+						p.src = p.src[1:]
+					}
+				}
+
 				asserts, err = p.parseList(t.IDOpenCurly, (*parser).parseAssertNode)
 				if err != nil {
 					return nil, err
 				}
-				if err := p.assertsSorted(asserts); err != nil {
+				if err := p.assertsSorted(asserts, true); err != nil {
 					return nil, err
+				}
+				for _, o := range asserts {
+					o := o.AsAssert()
+					if o.Keyword() != t.IDChoose {
+						continue
+					} else if o.IsChooseCPUArch() {
+						flags |= a.FlagsHasChooseCPUArch
+					} else {
+						return nil, fmt.Errorf(`parse: invalid "choose" condition at %s:%d`,
+							p.filename, p.line())
+					}
 				}
 			}
 
@@ -223,6 +277,17 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 				return nil, fmt.Errorf(`parse: expected (implicit) ";", got %q at %s:%d`, got, p.filename, p.line())
 			}
 			p.src = p.src[1:]
+
+			if (flags & a.FlagsHasChooseCPUArch) != 0 {
+				if (flags & a.FlagsPublic) != 0 {
+					return nil, fmt.Errorf(`parse: cpu_arch function cannot be public at %s:%d`,
+						p.filename, p.line())
+				}
+				if (flags & a.FlagsChoosy) != 0 {
+					return nil, fmt.Errorf(`parse: cpu_arch function cannot be choosy at %s:%d`,
+						p.filename, p.line())
+				}
+			}
 			p.funcEffect = 0
 			in := a.NewStruct(0, p.filename, line, t.IDArgs, nil, argFields)
 			return a.NewFunc(flags, p.filename, line, id0, id1, in, out, asserts, body).AsNode(), nil
@@ -253,7 +318,7 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 			if err != nil {
 				return nil, err
 			}
-			if !p.opts.AllowDoubleUnderscoreNames && isDoubleUnderscore(p.tm.ByID(name)) {
+			if !p.opts.AllowDoubleUnderscoreNames && containsDoubleUnderscore(p.tm.ByID(name)) {
 				return nil, fmt.Errorf(`parse: double-underscore %q used for struct name at %s:%d`,
 					p.tm.ByID(name), p.filename, p.line())
 			}
@@ -266,7 +331,7 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 			implements := []*a.Node(nil)
 			if p.peek1() == t.IDImplements {
 				p.src = p.src[1:]
-				implements, err = p.parseList(t.IDOpenParen, (*parser).parseQualifiedIdentNode)
+				implements, err = p.parseList(t.IDOpenParen, (*parser).parseQualifiedIdentAsTypeExprNode)
 				if err != nil {
 					return nil, err
 				}
@@ -297,7 +362,7 @@ func (p *parser) parseTopLevelDecl() (*a.Node, error) {
 	return nil, fmt.Errorf(`parse: unrecognized top level declaration at %s:%d`, p.filename, line)
 }
 
-func (p *parser) parseQualifiedIdentNode() (*a.Node, error) {
+func (p *parser) parseQualifiedIdentAsTypeExprNode() (*a.Node, error) {
 	pkg, name, err := p.parseQualifiedIdent()
 	if err != nil {
 		return nil, err
@@ -322,6 +387,14 @@ func (p *parser) parseQualifiedIdent() (t.ID, t.ID, error) {
 		return 0, 0, err
 	}
 	return x, y, nil
+}
+
+func (p *parser) parseIdentAsExprNode() (*a.Node, error) {
+	id, err := p.parseIdent()
+	if err != nil {
+		return nil, err
+	}
+	return a.NewExpr(0, 0, id, nil, nil, nil, nil).AsNode(), nil
 }
 
 func (p *parser) parseIdent() (t.ID, error) {
@@ -483,6 +556,12 @@ func (p *parser) parseTypeExpr() (*a.TypeExpr, error) {
 		if err != nil {
 			return nil, err
 		}
+		if name.IsNumType() &&
+			((pkg == t.IDBase) || ((pkg == 0) && p.opts.AllowBuiltInNames)) {
+			// No-op.
+		} else {
+			return nil, fmt.Errorf(`parse: cannot refine non-numeric type at %s:%d`, p.filename, p.line())
+		}
 	}
 
 	return a.NewTypeExpr(0, pkg, name, lhs.AsNode(), mhs, nil), nil
@@ -587,17 +666,26 @@ func (p *parser) parseBlock(doubleCurly bool) ([]*a.Node, error) {
 	return block, nil
 }
 
-func (p *parser) assertsSorted(asserts []*a.Node) error {
-	seenInv, seenPost := false, false
-	for _, a := range asserts {
-		switch a.AsAssert().Keyword() {
+func (p *parser) assertsSorted(asserts []*a.Node, allowChoose bool) error {
+	seenPre, seenInv, seenPost := false, false, false
+	for _, o := range asserts {
+		switch o.AsAssert().Keyword() {
 		case t.IDAssert:
 			return fmt.Errorf(`parse: assertion chain cannot contain "assert", `+
 				`only "pre", "inv" and "post" at %s:%d`, p.filename, p.line())
+		case t.IDChoose:
+			if !allowChoose {
+				return fmt.Errorf(`parse: invalid "choose" at %s:%d`, p.filename, p.line())
+			}
+			if seenPre || seenPost || seenInv {
+				break
+			}
+			continue
 		case t.IDPre:
 			if seenPost || seenInv {
 				break
 			}
+			seenPre = true
 			continue
 		case t.IDInv:
 			if seenPost {
@@ -609,7 +697,7 @@ func (p *parser) assertsSorted(asserts []*a.Node) error {
 			seenPost = true
 			continue
 		}
-		return fmt.Errorf(`parse: assertion chain not in "pre", "inv", "post" order at %s:%d`,
+		return fmt.Errorf(`parse: assertion chain not in "choose", "pre", "inv", "post" order at %s:%d`,
 			p.filename, p.line())
 	}
 	return nil
@@ -617,7 +705,7 @@ func (p *parser) assertsSorted(asserts []*a.Node) error {
 
 func (p *parser) parseAssertNode() (*a.Node, error) {
 	switch x := p.peek1(); x {
-	case t.IDAssert, t.IDPre, t.IDInv, t.IDPost:
+	case t.IDAssert, t.IDChoose, t.IDPre, t.IDInv, t.IDPost:
 		p.src = p.src[1:]
 		condition, err := p.parseExpr()
 		if err != nil {
@@ -702,7 +790,7 @@ func (p *parser) parseStatement1() (*a.Node, error) {
 	p.allowVar = false
 
 	switch x {
-	case t.IDAssert, t.IDPre, t.IDPost:
+	case t.IDAssert:
 		return p.parseAssertNode()
 
 	case t.IDBreak, t.IDContinue:
@@ -746,6 +834,31 @@ func (p *parser) parseStatement1() (*a.Node, error) {
 		n := a.NewJump(x, label)
 		n.SetJumpTarget(loop)
 		return n.AsNode(), nil
+
+	case t.IDChoose:
+		p.src = p.src[1:]
+		if p.funcEffect.Pure() {
+			return nil, fmt.Errorf(`parse: choose within pure function at %s:%d`, p.filename, p.line())
+		}
+		name, err := p.parseIdent()
+		if err != nil {
+			return nil, err
+		}
+		if x := p.peek1(); x != t.IDEq {
+			got := p.tm.ByID(x)
+			return nil, fmt.Errorf(`parse: expected "=", got %q at %s:%d`, got, p.filename, p.line())
+		}
+		p.src = p.src[1:]
+		if x := p.peek1(); x != t.IDOpenBracket {
+			got := p.tm.ByID(x)
+			return nil, fmt.Errorf(`parse: expected "[", got %q at %s:%d`, got, p.filename, p.line())
+		}
+		p.src = p.src[1:]
+		args, err := p.parseList(t.IDCloseBracket, (*parser).parseIdentAsExprNode)
+		if err != nil {
+			return nil, err
+		}
+		return a.NewChoose(name, args).AsNode(), nil
 
 	case t.IDIOBind, t.IDIOLimit:
 		return p.parseIOBindNode()
@@ -930,7 +1043,7 @@ func (p *parser) parseAsserts() ([]*a.Node, error) {
 		if asserts, err = p.parseList(t.IDOpenDoubleCurly, (*parser).parseAssertNode); err != nil {
 			return nil, err
 		}
-		if err := p.assertsSorted(asserts); err != nil {
+		if err := p.assertsSorted(asserts, false); err != nil {
 			return nil, err
 		}
 	}
@@ -968,16 +1081,27 @@ func (p *parser) parseIOBindNode() (*a.Node, error) {
 			io.Str(p.tm), p.filename, p.line())
 	}
 
+	arg1Name := t.ID(0)
+	if keyword == t.IDIOBind {
+		arg1Name = t.IDData
+		if io.Operator() != 0 {
+			return nil, fmt.Errorf(`parse: invalid %s argument %q at %s:%d`,
+				keyword.Str(p.tm), io.Str(p.tm), p.filename, p.line())
+		}
+	} else {
+		arg1Name = t.IDLimit
+		if (io.Operator() != 0) && (io.IsArgsDotFoo() == 0) {
+			return nil, fmt.Errorf(`parse: invalid %s argument %q at %s:%d`,
+				keyword.Str(p.tm), io.Str(p.tm), p.filename, p.line())
+		}
+	}
+
 	if x := p.peek1(); x != t.IDComma {
 		got := p.tm.ByID(x)
 		return nil, fmt.Errorf(`parse: expected ",", got %q at %s:%d`, got, p.filename, p.line())
 	}
 	p.src = p.src[1:]
 
-	arg1Name := t.IDData
-	if keyword == t.IDIOLimit {
-		arg1Name = t.IDLimit
-	}
 	if x := p.peek1(); x != arg1Name {
 		got := p.tm.ByID(x)
 		return nil, fmt.Errorf(`parse: expected %q, got %q at %s:%d`, arg1Name.Str(p.tm), got, p.filename, p.line())
@@ -1090,9 +1214,39 @@ func (p *parser) parseIterateBlock(label t.ID, assigns []*a.Node) (*a.Iterate, e
 	p.src = p.src[1:]
 
 	length := p.peek1()
-	if length.SmallPowerOf2Value() == 0 {
-		return nil, fmt.Errorf(`parse: expected power-of-2 length count in [1 ..= 256], got %q at %s:%d`,
+	lengthInt := asSmallPositiveInt256(p.tm, length)
+	if lengthInt == 0 {
+		return nil, fmt.Errorf(`parse: expected length count in [1 ..= 256], got %q at %s:%d`,
 			p.tm.ByID(length), p.filename, p.line())
+	}
+	p.src = p.src[1:]
+
+	if x := p.peek1(); x != t.IDComma {
+		got := p.tm.ByID(x)
+		return nil, fmt.Errorf(`parse: expected ",", got %q at %s:%d`, got, p.filename, p.line())
+	}
+	p.src = p.src[1:]
+
+	if x := p.peek1(); x != t.IDAdvance {
+		got := p.tm.ByID(x)
+		return nil, fmt.Errorf(`parse: expected "advance", got %q at %s:%d`, got, p.filename, p.line())
+	}
+	p.src = p.src[1:]
+
+	if x := p.peek1(); x != t.IDColon {
+		got := p.tm.ByID(x)
+		return nil, fmt.Errorf(`parse: expected ":", got %q at %s:%d`, got, p.filename, p.line())
+	}
+	p.src = p.src[1:]
+
+	advance := p.peek1()
+	advanceInt := asSmallPositiveInt256(p.tm, advance)
+	if advanceInt == 0 {
+		return nil, fmt.Errorf(`parse: expected advance count in [1 ..= 256], got %q at %s:%d`,
+			p.tm.ByID(advance), p.filename, p.line())
+	} else if advanceInt > lengthInt {
+		return nil, fmt.Errorf(`parse: advance %d is larger than length %d at %s:%d`,
+			advanceInt, lengthInt, p.filename, p.line())
 	}
 	p.src = p.src[1:]
 
@@ -1115,8 +1269,8 @@ func (p *parser) parseIterateBlock(label t.ID, assigns []*a.Node) (*a.Iterate, e
 	p.src = p.src[1:]
 
 	unroll := p.peek1()
-	if unroll.SmallPowerOf2Value() == 0 {
-		return nil, fmt.Errorf(`parse: expected power-of-2 unroll count in [1 ..= 256], got %q at %s:%d`,
+	if asSmallPositiveInt256(p.tm, unroll) == 0 {
+		return nil, fmt.Errorf(`parse: expected unroll count in [1 ..= 256], got %q at %s:%d`,
 			p.tm.ByID(unroll), p.filename, p.line())
 	}
 	p.src = p.src[1:]
@@ -1131,7 +1285,7 @@ func (p *parser) parseIterateBlock(label t.ID, assigns []*a.Node) (*a.Iterate, e
 	if err != nil {
 		return nil, err
 	}
-	n := a.NewIterate(label, assigns, length, unroll, asserts)
+	n := a.NewIterate(label, assigns, length, advance, unroll, asserts)
 	// TODO: decide how break/continue work with iterate loops.
 	if !p.loops.Push(n) {
 		return nil, fmt.Errorf(`parse: duplicate loop label %s at %s:%d`,
@@ -1154,6 +1308,29 @@ func (p *parser) parseIterateBlock(label t.ID, assigns []*a.Node) (*a.Iterate, e
 	}
 
 	return n, nil
+}
+
+// asSmallPositiveInt256 returns id's value when id is a numeric literal in the
+// range [1 ..= 256]. Otherwise, it returns 0.
+func asSmallPositiveInt256(tm *t.Map, id t.ID) int {
+	if !id.IsNumLiteral(tm) {
+		return 0
+	}
+	s := id.Str(tm)
+	if (len(s) > 3) || (len(s) == 0) || (s[0] < '1') || ('9' < s[0]) {
+		return 0
+	}
+	n, s := int(s[0]-'0'), s[1:]
+	for ; len(s) > 0; s = s[1:] {
+		if (s[0] < '0') || ('9' < s[0]) {
+			return 0
+		}
+		n = (10 * n) + int(s[0]-'0')
+	}
+	if n > 256 {
+		return 0
+	}
+	return n
 }
 
 func (p *parser) parseArgNode() (*a.Node, error) {

@@ -13,16 +13,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
@@ -31,12 +30,11 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
@@ -151,11 +149,12 @@ class AffiliatedInvalidationServiceProviderImplTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
-  chromeos::FakeChromeUserManager* fake_user_manager_;
+  ash::FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   TestingProfileManager profile_manager_;
+  session_manager::SessionManager session_manager_;
 };
 
 FakeConsumer::FakeConsumer(AffiliatedInvalidationServiceProviderImpl* provider)
@@ -209,7 +208,7 @@ AffiliatedInvalidationServiceProviderImplTest::
     AffiliatedInvalidationServiceProviderImplTest()
     : device_invalidation_service_(nullptr),
       profile_invalidation_service_(nullptr),
-      fake_user_manager_(new chromeos::FakeChromeUserManager),
+      fake_user_manager_(new ash::FakeChromeUserManager),
       user_manager_enabler_(base::WrapUnique(fake_user_manager_)),
       profile_manager_(TestingBrowserProcess::GetGlobal()) {
   cros_settings_test_helper_.InstallAttributes()->SetCloudManaged("example.com",
@@ -217,8 +216,8 @@ AffiliatedInvalidationServiceProviderImplTest::
 }
 
 void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
+  chromeos::CryptohomeMiscClient::InitializeFake();
   chromeos::SystemSaltGetter::Initialize();
-  chromeos::CryptohomeClient::InitializeFake();
   ASSERT_TRUE(profile_manager_.SetUp());
 
   DeviceOAuth2TokenServiceFactory::Initialize(
@@ -241,8 +240,8 @@ void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
       ->RegisterTestingFactory(
           BrowserContextKeyedServiceFactory::TestingFactory());
   DeviceOAuth2TokenServiceFactory::Shutdown();
-  chromeos::CryptohomeClient::Shutdown();
   chromeos::SystemSaltGetter::Shutdown();
+  chromeos::CryptohomeMiscClient::Shutdown();
 }
 
 Profile*
@@ -259,13 +258,11 @@ Profile* AffiliatedInvalidationServiceProviderImplTest::
 Profile* AffiliatedInvalidationServiceProviderImplTest::LogInAndReturnProfile(
     const std::string& user_id,
     bool is_affiliated) {
-  fake_user_manager_->AddUserWithAffiliation(AccountId::FromUserEmail(user_id),
-                                             is_affiliated);
-  Profile* profile = profile_manager_.CreateTestingProfile(user_id);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-      content::NotificationService::AllSources(),
-      content::Details<Profile>(profile));
+  TestingProfile* profile = profile_manager_.CreateTestingProfile(user_id);
+  AccountId account_id = AccountId::FromUserEmail(user_id);
+  fake_user_manager_->AddUserWithAffiliationAndTypeAndProfile(
+      account_id, is_affiliated, user_manager::USER_TYPE_REGULAR, profile);
+  session_manager_.NotifyUserProfileLoaded(account_id);
   return profile;
 }
 

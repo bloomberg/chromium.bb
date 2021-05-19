@@ -5,6 +5,7 @@
 #include "services/proxy_resolver/proxy_resolver_v8_tracing.h"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -134,7 +135,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
   struct AlertOrError {
     bool is_alert;
     int line_number;
-    base::string16 message;
+    std::u16string message;
   };
 
   ~Job() override;
@@ -166,8 +167,8 @@ class Job : public base::RefCountedThreadSafe<Job>,
                   net::ProxyResolveDnsOperation op,
                   std::string* output,
                   bool* terminate) override;
-  void Alert(const base::string16& message) override;
-  void OnError(int line_number, const base::string16& error) override;
+  void Alert(const std::u16string& message) override;
+  void OnError(int line_number, const std::u16string& error) override;
 
   bool ResolveDnsBlocking(const std::string& host,
                           net::ProxyResolveDnsOperation op,
@@ -205,11 +206,11 @@ class Job : public base::RefCountedThreadSafe<Job>,
 
   void HandleAlertOrError(bool is_alert,
                           int line_number,
-                          const base::string16& message);
+                          const std::u16string& message);
   void DispatchBufferedAlertsAndErrors();
   void DispatchAlertOrErrorOnOriginThread(bool is_alert,
                                           int line_number,
-                                          const base::string16& message);
+                                          const std::u16string& message);
 
   // The thread which called into ProxyResolverV8TracingImpl, and on which the
   // completion callback is expected to run.
@@ -629,11 +630,11 @@ bool Job::ResolveDns(const std::string& host,
                        : ResolveDnsNonBlocking(host, op, output, terminate);
 }
 
-void Job::Alert(const base::string16& message) {
+void Job::Alert(const std::u16string& message) {
   HandleAlertOrError(true, -1, message);
 }
 
-void Job::OnError(int line_number, const base::string16& error) {
+void Job::OnError(int line_number, const std::u16string& error) {
   HandleAlertOrError(false, line_number, error);
 }
 
@@ -862,7 +863,7 @@ std::string Job::MakeDnsCacheKey(const std::string& host,
 
 void Job::HandleAlertOrError(bool is_alert,
                              int line_number,
-                             const base::string16& message) {
+                             const std::u16string& message) {
   CheckIsOnWorkerThread();
 
   if (cancelled_.IsSet())
@@ -907,7 +908,7 @@ void Job::DispatchBufferedAlertsAndErrors() {
 
 void Job::DispatchAlertOrErrorOnOriginThread(bool is_alert,
                                              int line_number,
-                                             const base::string16& message) {
+                                             const std::u16string& message) {
   CheckIsOnOriginThread();
 
   if (cancelled_.IsSet())
@@ -978,7 +979,7 @@ void ProxyResolverV8TracingImpl::GetProxyForURL(
 
   scoped_refptr<Job> job = new Job(job_params_.get(), std::move(bindings));
 
-  request->reset(new RequestImpl(job));
+  *request = std::make_unique<RequestImpl>(job);
 
   job->StartGetProxyForURL(url, network_isolation_key, results,
                            std::move(callback));
@@ -1023,8 +1024,8 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
     base::Thread::Options options;
     options.timer_slack = base::TIMER_SLACK_MAXIMUM;
     CHECK(thread_->StartWithOptions(options));
-    job_params_.reset(
-        new Job::Params(thread_->task_runner(), &num_outstanding_callbacks_));
+    job_params_ = std::make_unique<Job::Params>(thread_->task_runner(),
+                                                &num_outstanding_callbacks_);
     create_resolver_job_ = new Job(job_params_.get(), std::move(bindings));
     create_resolver_job_->StartCreateV8Resolver(
         pac_script, &v8_resolver_,
@@ -1055,8 +1056,8 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
     DCHECK(factory_);
     if (error == net::OK) {
       job_params_->v8_resolver = v8_resolver_.get();
-      resolver_out_->reset(new ProxyResolverV8TracingImpl(
-          std::move(thread_), std::move(v8_resolver_), std::move(job_params_)));
+      *resolver_out_ = std::make_unique<ProxyResolverV8TracingImpl>(
+          std::move(thread_), std::move(v8_resolver_), std::move(job_params_));
     } else {
       StopWorkerThread();
     }

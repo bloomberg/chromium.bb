@@ -73,11 +73,11 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   // Factory method to create a translate infobar.  |error_type| must be
   // specified iff |step| == TRANSLATION_ERROR.  For other translate steps,
-  // |original_language| and |target_language| must be ASCII language codes
+  // |source_language| and |target_language| must be ASCII language codes
   // (e.g. "en", "fr", etc.) for languages the TranslateManager supports
   // translating.  The lone exception is when the user initiates translation
   // from the context menu, in which case it's legal to call this with
-  // |step| == TRANSLATING and |original_language| == kUnknownLanguageCode.
+  // |step| == TRANSLATING and |source_language| == kUnknownLanguageCode.
   //
   // If |replace_existing_infobar| is true, the infobar is created and added to
   // the infobar manager, replacing any other translate infobar already present
@@ -88,7 +88,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
                      infobars::InfoBarManager* infobar_manager,
                      bool is_off_the_record,
                      translate::TranslateStep step,
-                     const std::string& original_language,
+                     const std::string& source_language,
                      const std::string& target_language,
                      TranslateErrors::Type error_type,
                      bool triggered_from_menu);
@@ -100,7 +100,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   virtual std::string language_code_at(size_t index) const;
 
   // Returns the displayable name for the language at |index|.
-  virtual base::string16 language_name_at(size_t index) const;
+  virtual std::u16string language_name_at(size_t index) const;
 
   translate::TranslateStep translate_step() const { return step_; }
 
@@ -108,19 +108,19 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   TranslateErrors::Type error_type() const { return error_type_; }
 
-  std::string original_language_code() const {
-    return ui_delegate_.GetOriginalLanguageCode();
+  std::string source_language_code() const {
+    return ui_delegate_.GetSourceLanguageCode();
   }
 
-  virtual base::string16 original_language_name() const;
+  virtual std::u16string source_language_name() const;
 
-  virtual void UpdateOriginalLanguage(const std::string& language_code);
+  virtual void UpdateSourceLanguage(const std::string& language_code);
 
   std::string target_language_code() const {
     return ui_delegate_.GetTargetLanguageCode();
   }
 
-  virtual base::string16 target_language_name() const;
+  virtual std::u16string target_language_name() const;
 
   virtual void UpdateTargetLanguage(const std::string& language_code);
 
@@ -138,7 +138,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
     return triggered_from_menu_;
   }
   // Languages supporting translate.
-  virtual void GetLanguagesNames(std::vector<base::string16>* languages) const;
+  virtual void GetLanguagesNames(std::vector<std::u16string>* languages) const;
   virtual void GetLanguagesCodes(
       std::vector<std::string>* languages_codes) const;
 
@@ -172,10 +172,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   void ResetTranslationDeniedCount();
 
   // Translatable content languages.
-  virtual void GetContentLanguagesNames(
-      std::vector<base::string16>* content_languages) const;
-  virtual void GetContentLanguagesNativeNames(
-      std::vector<base::string16>* native_content_languages) const;
   virtual void GetContentLanguagesCodes(
       std::vector<std::string>* content_languages_codes) const;
 
@@ -194,7 +190,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   // The following methods are called by the infobar that displays the status
   // while translating and also the one displaying the error message.
-  base::string16 GetMessageInfoBarButtonText();
+  std::u16string GetMessageInfoBarButtonText();
   void MessageInfoBarButtonPressed();
   bool ShouldShowMessageInfoBarButton();
 
@@ -221,7 +217,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // should be inverted (some languages express the sentense as "The page has
   // been translate to <lang2> from <lang1>."). It is ignored if
   // |autodetermined_source_language| is true.
-  static void GetAfterTranslateStrings(std::vector<base::string16>* strings,
+  static void GetAfterTranslateStrings(std::vector<std::u16string>* strings,
                                        bool* swap_languages,
                                        bool autodetermined_source_language);
 
@@ -254,14 +250,14 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
       const base::WeakPtr<TranslateManager>& translate_manager,
       bool is_off_the_record,
       translate::TranslateStep step,
-      const std::string& original_language,
+      const std::string& source_language,
       const std::string& target_language,
       TranslateErrors::Type error_type,
       bool triggered_from_menu);
 
  private:
   friend class TranslateInfoBarDelegateTest;
-  typedef std::pair<std::string, base::string16> LanguageNamePair;
+  typedef std::pair<std::string, std::u16string> LanguageNamePair;
 
   bool is_off_the_record_;
   translate::TranslateStep step_;

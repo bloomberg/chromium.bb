@@ -130,6 +130,9 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
     client_->OnTransferSizeUpdated(transfer_size_diff);
   }
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
+    client_->OnReceiveEarlyHints(std::move(early_hints));
+  }
   void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
     if (devtools_enabled_) {
       // Make a deep copy of URLResponseHead before passing it cross-thread.
@@ -785,7 +788,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   }
 
   factory->CreateLoaderAndStart(
-      url_loader.InitWithNewPipeAndPassReceiver(), -1 /* routing_id? */,
+      url_loader.InitWithNewPipeAndPassReceiver(),
       GlobalRequestID::MakeBrowserInitiated().request_id,
       network::mojom::kURLLoadOptionNone, resource_request,
       std::move(url_loader_client_to_pass),

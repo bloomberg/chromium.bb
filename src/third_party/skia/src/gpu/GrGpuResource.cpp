@@ -158,15 +158,12 @@ void GrGpuResource::setUniqueKey(const GrUniqueKey& key) {
     get_resource_cache(fGpu)->resourceAccess().changeUniqueKey(this, key);
 }
 
-void GrGpuResource::notifyRefCntWillBeZero() const {
-    GrGpuResource* mutableThis = const_cast<GrGpuResource*>(this);
-    mutableThis->willRemoveLastRef();
-}
-
 void GrGpuResource::notifyARefCntIsZero(LastRemovedRef removedRef) const {
     if (this->wasDestroyed()) {
-        // We've already been removed from the cache. Goodbye cruel world!
-        delete this;
+        if (this->hasNoCommandBufferUsages() && !this->hasRef()) {
+            // We've already been removed from the cache. Goodbye cruel world!
+            delete this;
+        }
         return;
     }
 

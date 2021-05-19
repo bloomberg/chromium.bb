@@ -8,6 +8,7 @@
 
 #include <shellapi.h>
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -17,7 +18,6 @@
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -173,7 +173,7 @@ enum class TryChromeButtonType { OPEN_CHROME, NO_THANKS };
 // the browser.
 std::unique_ptr<views::LabelButton> CreateWin10StyleButton(
     views::Button::PressedCallback callback,
-    const base::string16& text,
+    const std::u16string& text,
     TryChromeButtonType button_type) {
   auto button = std::make_unique<views::LabelButton>(std::move(callback), text,
                                                      CONTEXT_WINDOWS10_NATIVE);

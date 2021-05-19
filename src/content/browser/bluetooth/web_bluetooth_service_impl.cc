@@ -11,6 +11,7 @@
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -373,7 +374,7 @@ class WebBluetoothServiceImpl::ScanningClient
       const std::string& device_id,
       const base::Optional<std::string>& device_name) {
     bool should_update_name = device_name.has_value();
-    base::string16 device_name_for_display =
+    std::u16string device_name_for_display =
         base::UTF8ToUTF16(device_name.value_or(""));
     prompt_controller_->AddFilteredDevice(device_id, should_update_name,
                                           device_name_for_display);
@@ -574,12 +575,8 @@ void WebBluetoothServiceImpl::OnBluetoothScanningPromptEvent(
   }
 }
 
-void WebBluetoothServiceImpl::OnPermissionRevoked(
-    const url::Origin& requesting_origin,
-    const url::Origin& embedding_origin) {
-  if (render_frame_host_->GetLastCommittedOrigin() != requesting_origin ||
-      render_frame_host_->GetMainFrame()->GetLastCommittedOrigin() !=
-          embedding_origin) {
+void WebBluetoothServiceImpl::OnPermissionRevoked(const url::Origin& origin) {
+  if (render_frame_host_->GetMainFrame()->GetLastCommittedOrigin() != origin) {
     return;
   }
 
@@ -1611,8 +1608,9 @@ void WebBluetoothServiceImpl::RequestDeviceImpl(
   // before constructing the new one to make sure they can't conflict.
   device_chooser_controller_.reset();
 
-  device_chooser_controller_.reset(new BluetoothDeviceChooserController(
-      this, render_frame_host_, std::move(adapter)));
+  device_chooser_controller_ =
+      std::make_unique<BluetoothDeviceChooserController>(
+          this, render_frame_host_, std::move(adapter));
 
   // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
   // the callee interface.
@@ -2252,8 +2250,8 @@ void WebBluetoothServiceImpl::ClearState() {
   descriptor_id_to_characteristic_id_.clear();
   characteristic_id_to_service_id_.clear();
   service_id_to_device_address_.clear();
-  connected_devices_.reset(
-      new FrameConnectedBluetoothDevices(render_frame_host_));
+  connected_devices_ =
+      std::make_unique<FrameConnectedBluetoothDevices>(render_frame_host_);
   device_chooser_controller_.reset();
   device_scanning_prompt_controller_.reset();
   ClearAdvertisementClients();

@@ -16,6 +16,7 @@
 #include "base/base64.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -86,11 +87,11 @@ base::OnceClosure& GetRegistrationCBForTesting() {
   return *registration_cb_for_testing;
 }
 
-void ReportUploadsWithUma(const base::string16& upload_results) {
-  base::String16Tokenizer tokenizer(upload_results, STRING16_LITERAL(";"));
+void ReportUploadsWithUma(const std::u16string& upload_results) {
+  base::String16Tokenizer tokenizer(upload_results, u";");
   bool last_result = false;
   while (tokenizer.GetNext()) {
-    last_result = (tokenizer.token_piece() != STRING16_LITERAL("0"));
+    last_result = (tokenizer.token_piece() != u"0");
   }
 
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.LastUploadResult", last_result);
@@ -210,7 +211,7 @@ bool ExtractInvocationSequenceFromManifest(
 
     std::vector<std::wstring> argv = {exe_path.value()};
     for (const auto& value : *arguments) {
-      base::string16 argument;
+      std::u16string argument;
       if (!value.GetAsString(&argument)) {
         ReportConfigurationError(kBadParams);
         return false;

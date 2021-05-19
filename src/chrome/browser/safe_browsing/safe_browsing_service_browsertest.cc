@@ -61,6 +61,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/embedder_support/switches.h"
 #include "components/error_page/content/browser/net_error_auto_reloader.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/prefs/pref_service.h"
@@ -269,7 +270,7 @@ std::string JsRequestTestNavigateAndWaitForTitle(Browser* browser,
   auto expected_title = base::ASCIIToUTF16("ERROR");
   content::TitleWatcher title_watcher(
       browser->tab_strip_model()->GetActiveWebContents(), expected_title);
-  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("NOT BLOCKED"));
+  title_watcher.AlsoWaitForTitle(u"NOT BLOCKED");
 
   ui_test_utils::NavigateToURL(browser, url);
   return base::UTF16ToUTF8(title_watcher.WaitAndGetTitle());
@@ -773,8 +774,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
   // a site that does not respond.  Should show interstitial and have first page
   // in referrer.
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("navigateAndLoadMalwareImage()"),
-      base::NullCallback());
+      u"navigateAndLoadMalwareImage()", base::NullCallback());
   load_stop_observer.Wait();
 
   EXPECT_TRUE(ShowingInterstitialPage());
@@ -828,8 +828,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
 
   // While the top-level navigation is pending, run javascript
   // function in the page which loads the malware image.
-  rfh->ExecuteJavaScriptForTests(base::ASCIIToUTF16("loadMalwareImage()"),
-                                 base::NullCallback());
+  rfh->ExecuteJavaScriptForTests(u"loadMalwareImage()", base::NullCallback());
 
   // Wait for interstitial to show.
   load_stop_observer.Wait();
@@ -859,7 +858,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
   content::RenderFrameHost* main_rfh = main_contents->GetMainFrame();
 
   content::WebContentsAddedObserver web_contents_added_observer;
-  main_rfh->ExecuteJavaScriptForTests(base::ASCIIToUTF16("w=window.open();"),
+  main_rfh->ExecuteJavaScriptForTests(u"w=window.open();",
                                       base::NullCallback());
   WebContents* new_tab_contents = web_contents_added_observer.GetWebContents();
   content::RenderFrameHost* new_tab_rfh = new_tab_contents->GetMainFrame();
@@ -1030,7 +1029,7 @@ class V4SafeBrowsingServiceWithAutoReloadTest
   V4SafeBrowsingServiceWithAutoReloadTest() = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableAutoReload);
+    command_line->AppendSwitch(embedder_support::kEnableAutoReload);
     V4SafeBrowsingServiceTest::SetUpCommandLine(command_line);
   }
 };

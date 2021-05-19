@@ -10,7 +10,6 @@
 <translation id="1315551408014407711">Создайте профиль Chromium</translation>
 <translation id="1396446129537741364">Вводимые пароли будут отображаться в Chromium.</translation>
 <translation id="1414495520565016063">Добро пожаловать в Chromium!</translation>
-<translation id="1414973082589232775">Для запуска приложения Rosetta необходимо перезапустить Chromium.</translation>
 <translation id="151962892725702025">Не удалось синхронизировать данные, поскольку сервис Sync недоступен в вашем домене.</translation>
 <translation id="1524282610922162960">Откройте доступ к вкладке Chromium</translation>
 <translation id="1553461853655228091">Chromium запрашивает доступ к камере, чтобы создавать 3D-карты места, в котором вы находитесь.</translation>
@@ -25,8 +24,8 @@
 <translation id="1966382378801805537">Chromium не удалось определить или задать браузер по умолчанию</translation>
 <translation id="2008474315282236005">С устройства будет удален 1 объект. Чтобы восстановить данные позже, войдите в Chromium как <ph name="USER_EMAIL" />.</translation>
 <translation id="2020032459870799438">Чтобы проверить, защищены ли другие ваши пароли от утечки данных и прочих проблем с безопасностью, <ph name="BEGIN_LINK" />войдите в Chromium<ph name="END_LINK" />.</translation>
+<translation id="2174178932569897599">Настроить Chromium</translation>
 <translation id="2185166961232948079">Chromium – вход в сеть – "<ph name="PAGE_TITLE" />"</translation>
-<translation id="2225696941839557119">Не удалось синхронизировать пароли.</translation>
 <translation id="2241627712206172106">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chromium на свой вкус.</translation>
 <translation id="2294245788148774212">Автоматически отправлять данные об использовании и диагностике в Google, чтобы помогать нам повышать производительность и улучшать функции Chromium OS (необязательно)</translation>
 <translation id="2343156876103232566">Чтобы отправить номер на телефон Android, войдите в Chromium на обоих устройствах.</translation>
@@ -40,10 +39,8 @@
 <translation id="2577788541081224677">Чтобы получить доступ к данным в Chromium на всех устройствах, войдите в аккаунт и включите синхронизацию.</translation>
 <translation id="2583187216237139145">Администратор рабочего профиля может удалять любые данные, сохраненные в браузере Chromium при использовании этого профиля (например, добавленные закладки, историю, пароли и настройки). <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">Перезагрузите Chromium OS, чтобы установить обновление.</translation>
-<translation id="2615699638672665509">Обновление Chromium вскоре будет прекращено на этом компьютере, поскольку его аппаратное обеспечение больше не поддерживается.</translation>
 <translation id="2648074677641340862">В процессе установки произошла ошибка в операционной системе. Скачайте Chromium ещё раз.</translation>
 <translation id="2661879430930417727">Если кроме вас устройством пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chromium на свой вкус.</translation>
-<translation id="270245676623587882">Chromium рекомендует отключить это расширение, так как оно не отвечает стандартам улучшенного Безопасного просмотра.</translation>
 <translation id="2711502716910134313">Вкладка Chromium</translation>
 <translation id="2718390899429598676">В целях повышения безопасности Chromium шифрует ваши данные.</translation>
 <translation id="2770231113462710648">Назначить браузером по умолчанию:</translation>
@@ -63,6 +60,7 @@
 <translation id="3130323860337406239">Chromium использует микрофон.</translation>
 <translation id="3155163173539279776">Перезапустить Chromium</translation>
 <translation id="3179665906251668410">Открыть ссылку в режиме инкогнито браузера Chromium</translation>
+<translation id="3185330573522821672">Настройте новый профиль Chromium</translation>
 <translation id="3190315855212034486">Произошел сбой Chromium. Перезапустить?</translation>
 <translation id="3229526316128325841">Вы собираетесь экспортировать пароли из Chromium.</translation>
 <translation id="3258596308407688501">Chromium не может выполнять операции чтения и записи в своем каталоге: <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -75,6 +73,7 @@
 <translation id="3430503420100763906">Профили Chromium нужны для раздельного использования браузера, например разными людьми или в разных целях.</translation>
 <translation id="347328004046849135">Вы получите уведомление от Chromium, если войдете в аккаунт с паролем, который был раскрыт.</translation>
 <translation id="3474745554856756813">С устройства будут удалены объекты (<ph name="ITEMS_COUNT" />). Чтобы восстановить данные позже, войдите в Chromium как <ph name="USER_EMAIL" />.</translation>
+<translation id="3497319089134299931">Переключиться на другой профиль Chromium можно с помощью сочетания клавиш <ph name="SHORTCUT" /></translation>
 <translation id="3509308970982693815">Закройте все окна Chromium и повторите попытку снова.</translation>
 <translation id="3575459661164320785">На компьютере обнаружено вредоносное ПО. Chromium может удалить его, восстановить настройки и отключить расширения. Это вернет браузер в обычное состояние.</translation>
 <translation id="3639635944603682591">Данные о работе этого пользователя в браузере будут удалены с устройства. Чтобы восстановить их, войдите в Chromium как <ph name="USER_EMAIL" />.</translation>
@@ -135,11 +134,11 @@
 <translation id="5480860683791598150">Для этого сайта Chromium запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="549669000822060376">Подождите, пока Chromium устанавливает последние обновления системы</translation>
 <translation id="5496810170689441661">Chromium пытается изменить пароли. Чтобы разрешить это действие, введите свой пароль Windows.</translation>
+<translation id="5527463683072221100">Открывать PDF-файлы в Chromium</translation>
 <translation id="5623402015214259806">{0,plural, =0{Доступно обновление Chromium}=1{Доступно обновление Chromium}one{Обновление Chromium доступно # день}few{Обновление Chromium доступно # дня}many{Обновление Chromium доступно # дней}other{Обновление Chromium доступно # дня}}</translation>
 <translation id="5634636535844844681">Для работы Chromium необходима ОС Windows 7 или более поздней версии.</translation>
 <translation id="5653831366781983928">Перезапустите Chromium</translation>
 <translation id="5698481217667032250">Отображать Chromium на этом языке</translation>
-<translation id="5736967399513123100">Чтобы воспроизводить в браузере Chromium защищенный контент, требуется установить приложение Rosetta. Сделать это сейчас?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Добро пожаловать в Chromium</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
@@ -155,10 +154,10 @@
 <translation id="6120345080069858279">Этот пароль будет сохранен в аккаунте Google. Вам не нужно его запоминать.</translation>
 <translation id="6129621093834146363">Chromium заблокировал файл <ph name="FILE_NAME" /> как опасный.</translation>
 <translation id="6134968993075716475">Безопасный просмотр отключен. Chromium рекомендует включить его.</translation>
+<translation id="6145820983052037069">Здесь можно переключиться на другой профиль Chromium</translation>
 <translation id="6183079672144801177">Убедитесь, что вы вошли в Chromium на устройстве <ph name="TARGET_DEVICE_NAME" />, и попробуйте повторить отправку.</translation>
 <translation id="6212496753309875659">На этом компьютере установлена актуальная версия Chromium. Если программа не работает, удалите Chromium и повторите попытку.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium перезапускается}=1{Chromium перезапустится через 1 секунду}one{Chromium перезапустится через # секунду}few{Chromium перезапустится через # секунды}many{Chromium перезапустится через # секунд}other{Chromium перезапустится через # секунды}}</translation>
-<translation id="623836266260425961">Не удалось синхронизировать данные.</translation>
 <translation id="6248213926982192922">Назначить Chromium браузером по умолчанию</translation>
 <translation id="6266342355635466082">Не удалось проверить наличие обновлений в Chromium. Проверьте подключение к Интернету.</translation>
 <translation id="6268381023930128611">Выйти из Chromium?</translation>
@@ -191,18 +190,15 @@
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (скопирована в Chromium)</translation>
 <translation id="6893813176749746474">Chromium был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
-<translation id="6897548120660295439">Благодаря приложению Rosetta браузер Chromium сможет воспроизводить защищенный контент на этой странице.</translation>
 <translation id="691026815377248078">Чтобы продолжить подключение, предоставьте браузеру Chromium доступ к Bluetooth. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="6964305034639999644">Открыть ссылку в режиме инкогнито браузера Chromium</translation>
 <translation id="6978145336957848883">Простые пароли легко подобрать. Разрешите Chromium <ph name="BEGIN_LINK" />создавать и хранить надежные пароли для вас<ph name="END_LINK" />.</translation>
 <translation id="6990124437352146030">Для этого сайта Chromium запрашивает доступ к микрофону.</translation>
 <translation id="701244094609242530">Не удается запустить проверку паролей в Chromium. Повторите попытку позже.</translation>
 <translation id="705851970750939768">Обновить Chromium</translation>
-<translation id="7066436765290594559">Не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
 <translation id="7067091210845072982">Если у изображения нет понятного описания, Chromium попытается его найти. Для создания описаний изображения отправляются в Google.</translation>
 <translation id="7196312274710523067">Не удалось запустить Chromium. Повторите попытку.</translation>
 <translation id="7197677400338048821">Не удается проверить пароли в Chromium. Повторите попытку через 24 часа.</translation>
-<translation id="7205698830395646142">Спрятать в меню Chromium</translation>
 <translation id="7223968959479464213">Диспетчер задач – Chromium</translation>
 <translation id="731644333568559921">Обновить &amp;Chromium OS</translation>
 <translation id="731795002583552498">Обновление Chromium…</translation>
@@ -236,7 +232,6 @@
 <translation id="7907774600618164274">Работа Chromium OS была завершена некорректно.</translation>
 <translation id="7937630085815544518">Ранее вы входили в Chromium как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="7975919845073681630">Это дополнительная установка Chromium. Его нельзя сделать браузером по умолчанию.</translation>
-<translation id="7979877361127045932">Не показывать в меню Chromium</translation>
 <translation id="8013436988911883588">Когда вы предоставите доступ Chromium, веб-сайты также смогут запрашивать у вас доступ.</translation>
 <translation id="81770708095080097">Chromium заблокировал этот файл как опасный.</translation>
 <translation id="8248265253516264921">Если у изображения нет понятного описания, Chromium попытается его найти. Для создания описаний изображения отправляются в Google. Эту функцию можно отключить в настройках в любое время.</translation>

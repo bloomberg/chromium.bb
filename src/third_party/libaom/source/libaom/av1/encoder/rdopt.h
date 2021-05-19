@@ -272,8 +272,16 @@ static INLINE int prune_ref_by_selective_ref_frame(
     int ref_frame_list[2] = { LAST3_FRAME, LAST2_FRAME };
 
     if (x != NULL) {
-      if (x->tpl_keep_ref_frame[LAST3_FRAME]) ref_frame_list[0] = NONE_FRAME;
-      if (x->tpl_keep_ref_frame[LAST2_FRAME]) ref_frame_list[1] = NONE_FRAME;
+      // Disable pruning if either tpl suggests that we keep the frame or
+      // the pred_mv gives us the best sad
+      if (x->tpl_keep_ref_frame[LAST3_FRAME] ||
+          x->pred_mv_sad[LAST3_FRAME] == x->best_pred_mv_sad) {
+        ref_frame_list[0] = NONE_FRAME;
+      }
+      if (x->tpl_keep_ref_frame[LAST2_FRAME] ||
+          x->pred_mv_sad[LAST2_FRAME] == x->best_pred_mv_sad) {
+        ref_frame_list[1] = NONE_FRAME;
+      }
     }
 
     if (prune_ref(ref_frame, ref_display_order_hint,
@@ -286,8 +294,16 @@ static INLINE int prune_ref_by_selective_ref_frame(
     int ref_frame_list[2] = { ALTREF2_FRAME, BWDREF_FRAME };
 
     if (x != NULL) {
-      if (x->tpl_keep_ref_frame[ALTREF2_FRAME]) ref_frame_list[0] = NONE_FRAME;
-      if (x->tpl_keep_ref_frame[BWDREF_FRAME]) ref_frame_list[1] = NONE_FRAME;
+      // Disable pruning if either tpl suggests that we keep the frame or
+      // the pred_mv gives us the best sad
+      if (x->tpl_keep_ref_frame[ALTREF2_FRAME] ||
+          x->pred_mv_sad[ALTREF2_FRAME] == x->best_pred_mv_sad) {
+        ref_frame_list[0] = NONE_FRAME;
+      }
+      if (x->tpl_keep_ref_frame[BWDREF_FRAME] ||
+          x->pred_mv_sad[BWDREF_FRAME] == x->best_pred_mv_sad) {
+        ref_frame_list[1] = NONE_FRAME;
+      }
     }
 
     if (prune_ref(ref_frame, ref_display_order_hint,

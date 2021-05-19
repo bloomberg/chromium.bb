@@ -4,10 +4,12 @@
 
 #include "components/viz/common/features.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/system/sys_info.h"
-#include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
+#include "components/viz/common/delegated_ink_prediction_configuration.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/common/viz_utils.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -19,6 +21,9 @@
 #endif
 
 namespace features {
+
+// Enables the use of CPU scheduling APIs on Android.
+const base::Feature kAdpf{"Adpf", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableOverlayPrioritization {
   "EnableOverlayPrioritization",
@@ -33,7 +38,7 @@ const base::Feature kEnableOverlayPrioritization {
 const base::Feature kUseSkiaRenderer {
   "UseSkiaRenderer",
 #if defined(OS_WIN) || defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
-    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMECAST))
+    defined(OS_LINUX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -114,18 +119,32 @@ const base::Feature kUseX11Present{"UseX11Present",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enables platform supported delegated ink trails instead of Skia backed
+// delegated ink trails.
+const base::Feature kUsePlatformDelegatedInk{"UsePlatformDelegatedInk",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Used to debug Android WebView Vulkan composite. Composite to an intermediate
 // buffer and draw the intermediate buffer to the secondary command buffer.
 const base::Feature kWebViewVulkanIntermediateBuffer{
     "WebViewVulkanIntermediateBuffer", base::FEATURE_DISABLED_BY_DEFAULT};
 
+bool IsAdpfEnabled() {
+  // TODO(crbug.com/1157620): Limit this to correct android version.
+  return base::FeatureList::IsEnabled(kAdpf);
+}
+
 bool IsOverlayPrioritizationEnabled() {
   return base::FeatureList::IsEnabled(kEnableOverlayPrioritization);
 }
 
-bool IsVizHitTestingDebugEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableVizHitTestDebug);
+// If a synchronous IPC should used when destroying windows. This exists to test
+// the impact of removing the sync IPC.
+bool IsSyncWindowDestructionEnabled() {
+  static constexpr base::Feature kSyncWindowDestruction{
+      "SyncWindowDestruction", base::FEATURE_ENABLED_BY_DEFAULT};
+
+  return base::FeatureList::IsEnabled(kSyncWindowDestruction);
 }
 
 bool IsUsingSkiaRenderer() {
@@ -170,10 +189,6 @@ bool IsUsingFastPathForSolidColorQuad() {
 }
 
 bool IsUsingVizForWebView() {
-  // Viz for WebView requires shared images to be enabled.
-  if (!base::FeatureList::IsEnabled(kEnableSharedImageForWebview))
-    return false;
-
   // Vulkan on WebView requires viz.
   if (features::IsUsingVulkan())
     return true;
@@ -201,6 +216,11 @@ bool IsUsingPreferredIntervalForVideo() {
   return base::FeatureList::IsEnabled(kUsePreferredIntervalForVideo);
 }
 
+bool IsVizHitTestingDebugEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableVizHitTestDebug);
+}
+
 bool ShouldUseRealBuffersForPageFlipTest() {
   return base::FeatureList::IsEnabled(kUseRealBuffersForPageFlipTest);
 }
@@ -214,4 +234,29 @@ bool ShouldUseSetPresentDuration() {
   return base::FeatureList::IsEnabled(kUseSetPresentDuration);
 }
 #endif  // OS_WIN
+
+base::Optional<int> ShouldDrawPredictedInkPoints() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kDrawPredictedInkPoint))
+    return base::nullopt;
+
+  std::string predicted_points =
+      command_line->GetSwitchValueASCII(switches::kDrawPredictedInkPoint);
+  if (predicted_points == switches::kDraw1Point12Ms)
+    return viz::PredictionConfig::k1Point12Ms;
+  else if (predicted_points == switches::kDraw2Points6Ms)
+    return viz::PredictionConfig::k2Points6Ms;
+  else if (predicted_points == switches::kDraw1Point6Ms)
+    return viz::PredictionConfig::k1Point6Ms;
+  else if (predicted_points == switches::kDraw2Points3Ms)
+    return viz::PredictionConfig::k2Points3Ms;
+
+  NOTREACHED();
+  return base::nullopt;
+}
+
+bool ShouldUsePlatformDelegatedInk() {
+  return base::FeatureList::IsEnabled(kUsePlatformDelegatedInk);
+}
+
 }  // namespace features

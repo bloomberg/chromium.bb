@@ -1,0 +1,12 @@
+{
+  "dependencies": [
+    "panels/elements",
+    "sources",
+    "panels/console"
+  ],
+    "resources": [
+    "domBreakpointsSidebarPane.css",
+    "categorizedBreakpointsSidebarPane.css",
+    "xhrBreakpointsSidebarPane.css"
+  ]
+}

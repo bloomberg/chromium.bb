@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_SAML_PASSWORD_EXPIRY_NOTIFICATION_H_
 #define CHROME_BROWSER_ASH_LOGIN_SAML_PASSWORD_EXPIRY_NOTIFICATION_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "base/time/time.h"
 
 class Profile;
@@ -21,7 +22,7 @@ class PasswordExpiryNotification {
 
   // Returns localized title text appropriate for `time_until_expiry`, eg:
   // "Password expires in 7 days".
-  static base::string16 GetTitleText(base::TimeDelta time_until_expiry);
+  static std::u16string GetTitleText(base::TimeDelta time_until_expiry);
 
   // Hides the password expiry notification if it is currently shown.
   static void Dismiss(Profile* profile);

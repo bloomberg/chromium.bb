@@ -141,15 +141,24 @@ enum CommitTextCursorBehavior {
 };
 
 struct AutocorrectSpan {
-  // The range to set the autocorrect span to.
+  // The range to set the autocorrect span to, currently having `current_text`.
   gfx.mojom.Range autocorrect_range;
 
   // The original text that was replaced by autocorrect.
   string original_text;
+
+  // The current text that replaced `original_text` and is now located at
+  // `autocorrect_range` in the text field.
+  // NOTE: Technically redundant to require client to supply `current_text` as
+  // it can be retrieved from current text editing state known to IMF. However,
+  // due to async situation between browser-process IMF and render-process
+  // TextInputClient, it may just be a stale value if obtained that way.
+  // TODO(crbug/1194424): Remove technically redundant `current_text` param to
+  // avoid situation with multiple conflicting sources of truth.
+  string current_text;
 };
 
 // Proposed candidate for completing some text.
-// TODO(crbug/1159614): Remove in favour of sending serialized proto data.
 struct CompletionCandidate {
   // The candidate text
   string text;
@@ -158,9 +167,23 @@ struct CompletionCandidate {
   float normalized_score;
 };
 
+enum SuggestionType {
+  // A completion suggestion is text that completes an incomplete word. For
+  // example, the text "hello wor" may have a completion candidate like the
+  // following "hello world".
+  kCompletion = 0,
+
+  // A prediction suggestion is text that we predict may come after some other
+  // text that contains completed words. For example, the text "hello " may
+  // produce a prediction suggestion such as "hello world".
+  kPrediction = 1,
+};
+
 // Single request to generate suggestion candidates from the given context.
-// TODO(crbug/1159614): Remove in favour of sending serialized proto data.
 struct SuggestionsRequest {
+  // The type of suggestions that should be generated.
+  SuggestionType suggestion_type;
+
   // The preceding text used to produced the suggestions.
   string text;
 
@@ -169,7 +192,6 @@ struct SuggestionsRequest {
 };
 
 // A suggestion candidate containing multiple predicted words.
-// TODO(crbug/1159614): Remove in favour of sending serialized proto data.
 struct MultiWordSuggestionCandidate {
   // The words predicted.
   string text;
@@ -179,14 +201,12 @@ struct MultiWordSuggestionCandidate {
 };
 
 // Represents a single generated suggestion candidate.
-// TODO(crbug/1159614): Remove in favour of sending serialized proto data.
 union SuggestionCandidate {
   // A suggestion candidate that contains multiple words.
   MultiWordSuggestionCandidate multi_word;
 };
 
 // Encapsulates the results of a suggestions request.
-// TODO(crbug/1159614): Remove in favour of sending serialized proto data.
 struct SuggestionsResponse {
   // A list of suggestion candidates generated.
   array<SuggestionCandidate> candidates;
@@ -217,6 +237,13 @@ interface InputEngineManager {
 // In order to encapsulate all the communication, (e.g. access to some
 // closed-sourced input engine with decoders), implement the method that takes
 // a serialized protobuf message (instead of a plaintext) as its argument.
+//
+// Note that only closed source proto messages are allowed to be sent via
+// the ProcessMessage() method. All other proto messages must be mirrored with
+// a respective mojom method here in this interface for security (see
+// chromeos/services/ime/decoder/system_engine.cc for an example of mirroring).
+// TODO(crbug/1194372): Investigate using libmojo within ime shared lib.
+//
 // TODO(crbug.com/1145326): Split this into two separate APIs for the sending or
 // receiving end.
 interface InputChannel {

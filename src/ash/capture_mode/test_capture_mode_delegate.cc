@@ -39,7 +39,8 @@ class FakeRecordingService : public recording::mojom::RecordingService {
   void RecordFullscreen(
       mojo::PendingRemote<recording::mojom::RecordingServiceClient> client,
       mojo::PendingRemote<viz::mojom::FrameSinkVideoCapturer> video_capturer,
-      mojo::PendingRemote<audio::mojom::StreamFactory> audio_stream_factory,
+      mojo::PendingRemote<media::mojom::AudioStreamFactory>
+          audio_stream_factory,
       const viz::FrameSinkId& frame_sink_id,
       const gfx::Size& frame_sink_size) override {
     remote_client_.Bind(std::move(client));
@@ -51,7 +52,8 @@ class FakeRecordingService : public recording::mojom::RecordingService {
   void RecordWindow(
       mojo::PendingRemote<recording::mojom::RecordingServiceClient> client,
       mojo::PendingRemote<viz::mojom::FrameSinkVideoCapturer> video_capturer,
-      mojo::PendingRemote<audio::mojom::StreamFactory> audio_stream_factory,
+      mojo::PendingRemote<media::mojom::AudioStreamFactory>
+          audio_stream_factory,
       const viz::FrameSinkId& frame_sink_id,
       const gfx::Size& frame_sink_size,
       const viz::SubtreeCaptureId& subtree_capture_id,
@@ -65,7 +67,8 @@ class FakeRecordingService : public recording::mojom::RecordingService {
   void RecordRegion(
       mojo::PendingRemote<recording::mojom::RecordingServiceClient> client,
       mojo::PendingRemote<viz::mojom::FrameSinkVideoCapturer> video_capturer,
-      mojo::PendingRemote<audio::mojom::StreamFactory> audio_stream_factory,
+      mojo::PendingRemote<media::mojom::AudioStreamFactory>
+          audio_stream_factory,
       const viz::FrameSinkId& frame_sink_id,
       const gfx::Size& frame_sink_size,
       const gfx::Rect& crop_region) override {
@@ -180,7 +183,7 @@ TestCaptureModeDelegate::LaunchRecordingService() {
 }
 
 void TestCaptureModeDelegate::BindAudioStreamFactory(
-    mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {}
+    mojo::PendingReceiver<media::mojom::AudioStreamFactory> receiver) {}
 
 void TestCaptureModeDelegate::OnSessionStateChanged(bool started) {}
 

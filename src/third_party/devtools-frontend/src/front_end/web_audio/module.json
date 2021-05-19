@@ -1,12 +1,9 @@
 {
   "dependencies": [
     "components",
-    "ui"
+    "ui/legacy"
   ],
-  "modules": [
-    "web_audio-legacy.js"
-  ],
-  "resources": [
+    "resources": [
     "webAudio.css",
     "audioContextSelector.css"
   ]

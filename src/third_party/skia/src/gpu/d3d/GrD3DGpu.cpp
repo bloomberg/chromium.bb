@@ -14,6 +14,7 @@
 #include "src/gpu/GrBackendUtils.h"
 #include "src/gpu/GrDataUtils.h"
 #include "src/gpu/GrTexture.h"
+#include "src/gpu/GrThreadSafePipelineBuilder.h"
 #include "src/gpu/d3d/GrD3DAMDMemoryAllocator.h"
 #include "src/gpu/d3d/GrD3DAttachment.h"
 #include "src/gpu/d3d/GrD3DBuffer.h"
@@ -28,6 +29,15 @@
 #if GR_TEST_UTILS
 #include <DXProgrammableCapture.h>
 #endif
+
+GrThreadSafePipelineBuilder* GrD3DGpu::pipelineBuilder() {
+    return nullptr;
+}
+
+sk_sp<GrThreadSafePipelineBuilder> GrD3DGpu::refPipelineBuilder() {
+    return nullptr;
+}
+
 
 sk_sp<GrGpu> GrD3DGpu::Make(const GrD3DBackendContext& backendContext,
                             const GrContextOptions& contextOptions, GrDirectContext* direct) {
@@ -228,61 +238,6 @@ void GrD3DGpu::addFinishedCallback(sk_sp<GrRefCntedCallback> finishedCallback) {
         back->fCommandList->addFinishedCallback(finishedCallback);
     }
     fCurrentDirectCommandList->addFinishedCallback(std::move(finishedCallback));
-}
-
-void GrD3DGpu::querySampleLocations(GrRenderTarget* renderTarget,
-                                    SkTArray<SkPoint>* sampleLocations) {
-    // By default, the Direct3D backend uses the standard sample locations defined by the docs.
-    // These are transformed from D3D's integer coordinate system with origin at the center,
-    // to our normalized coordinate system with origin at the upper left.
-    // This ends up corresponding with Vulkan's sample locations.
-    SkASSERT(this->caps()->sampleLocationsSupport());
-    static constexpr SkPoint kStandardSampleLocations_1[1] = {
-        {0.5f, 0.5f} };
-    static constexpr SkPoint kStandardSampleLocations_2[2] = {
-        {0.75f, 0.75f}, {0.25f, 0.25f} };
-    static constexpr SkPoint kStandardSampleLocations_4[4] = {
-        {0.375f, 0.125f}, {0.875f, 0.375f}, {0.125f, 0.625f}, {0.625f, 0.875f} };
-    static constexpr SkPoint kStandardSampleLocations_8[8] = {
-        {0.5625f, 0.3125f}, {0.4375f, 0.6875f}, {0.8125f, 0.5625f}, {0.3125f, 0.1875f},
-        {0.1875f, 0.8125f}, {0.0625f, 0.4375f}, {0.6875f, 0.9375f}, {0.9375f, 0.0625f} };
-    static constexpr SkPoint kStandardSampleLocations_16[16] = {
-        {0.5625f, 0.5625f}, {0.4375f, 0.3125f}, {0.3125f, 0.625f}, {0.75f, 0.4375f},
-        {0.1875f, 0.375f}, {0.625f, 0.8125f}, {0.8125f, 0.6875f}, {0.6875f, 0.1875f},
-        {0.375f, 0.875f}, {0.5f, 0.0625f}, {0.25f, 0.125f}, {0.125f, 0.75f},
-        {0.0f, 0.5f}, {0.9375f, 0.25f}, {0.875f, 0.9375f}, {0.0625f, 0.0f} };
-
-    int numSamples = renderTarget->numSamples();
-    // TODO: support mixed samples?
-    SkASSERT(numSamples > 1);
-    SkASSERT(!renderTarget->getStencilAttachment() ||
-             numSamples == renderTarget->getStencilAttachment()->numSamples());
-
-    GrD3DRenderTarget* d3dRT = static_cast<GrD3DRenderTarget*>(renderTarget);
-    unsigned int pattern = d3dRT->msaaTextureResource()->sampleQualityPattern();
-    if (pattern == DXGI_CENTER_MULTISAMPLE_QUALITY_PATTERN) {
-        sampleLocations->push_back_n(numSamples, kStandardSampleLocations_1[0]);
-        return;
-    }
-    SkASSERT(pattern == DXGI_STANDARD_MULTISAMPLE_QUALITY_PATTERN);
-
-    switch (numSamples) {
-    case 2:
-        sampleLocations->push_back_n(2, kStandardSampleLocations_2);
-        break;
-    case 4:
-        sampleLocations->push_back_n(4, kStandardSampleLocations_4);
-        break;
-    case 8:
-        sampleLocations->push_back_n(8, kStandardSampleLocations_8);
-        break;
-    case 16:
-        sampleLocations->push_back_n(16, kStandardSampleLocations_16);
-        break;
-    default:
-        SK_ABORT("Invalid sample count.");
-        break;
-    }
 }
 
 sk_sp<GrD3DTexture> GrD3DGpu::createD3DTexture(SkISize dimensions,

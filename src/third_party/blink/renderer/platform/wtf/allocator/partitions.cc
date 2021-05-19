@@ -74,10 +74,12 @@ void Partitions::Initialize() {
 bool Partitions::InitializeOnce() {
 #if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   static base::NoDestructor<base::PartitionAllocator> fast_malloc_allocator{};
-  fast_malloc_allocator->init({base::PartitionOptions::Alignment::kRegular,
-                               base::PartitionOptions::ThreadCache::kEnabled,
-                               base::PartitionOptions::Quarantine::kAllowed,
-                               base::PartitionOptions::RefCount::kDisabled});
+  fast_malloc_allocator->init(
+      {base::PartitionOptions::AlignedAlloc::kDisallowed,
+       base::PartitionOptions::ThreadCache::kEnabled,
+       base::PartitionOptions::Quarantine::kAllowed,
+       base::PartitionOptions::Cookies::kAllowed,
+       base::PartitionOptions::RefCount::kDisallowed});
 
   fast_malloc_root_ = fast_malloc_allocator->root();
 #endif  // !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -89,18 +91,22 @@ bool Partitions::InitializeOnce() {
 
   base::PartitionAllocGlobalInit(&Partitions::HandleOutOfMemory);
 
-  array_buffer_allocator->init({base::PartitionOptions::Alignment::kRegular,
-                                base::PartitionOptions::ThreadCache::kDisabled,
-                                base::PartitionOptions::Quarantine::kAllowed,
-                                base::PartitionOptions::RefCount::kDisabled});
-  buffer_allocator->init({base::PartitionOptions::Alignment::kRegular,
+  array_buffer_allocator->init(
+      {base::PartitionOptions::AlignedAlloc::kDisallowed,
+       base::PartitionOptions::ThreadCache::kDisabled,
+       base::PartitionOptions::Quarantine::kAllowed,
+       base::PartitionOptions::Cookies::kAllowed,
+       base::PartitionOptions::RefCount::kDisallowed});
+  buffer_allocator->init({base::PartitionOptions::AlignedAlloc::kDisallowed,
                           base::PartitionOptions::ThreadCache::kDisabled,
                           base::PartitionOptions::Quarantine::kAllowed,
-                          base::PartitionOptions::RefCount::kDisabled});
-  layout_allocator->init({base::PartitionOptions::Alignment::kRegular,
+                          base::PartitionOptions::Cookies::kAllowed,
+                          base::PartitionOptions::RefCount::kDisallowed});
+  layout_allocator->init({base::PartitionOptions::AlignedAlloc::kDisallowed,
                           base::PartitionOptions::ThreadCache::kDisabled,
                           base::PartitionOptions::Quarantine::kAllowed,
-                          base::PartitionOptions::RefCount::kDisabled});
+                          base::PartitionOptions::Cookies::kAllowed,
+                          base::PartitionOptions::RefCount::kDisallowed});
 
   array_buffer_root_ = array_buffer_allocator->root();
   buffer_root_ = buffer_allocator->root();
@@ -109,8 +115,7 @@ bool Partitions::InitializeOnce() {
 #if PA_ALLOW_PCSCAN
   if (base::FeatureList::IsEnabled(base::features::kPartitionAllocPCScan) ||
       base::FeatureList::IsEnabled(kPCScanBlinkPartitions)) {
-    auto& pcscan =
-        base::internal::PCScan<base::internal::ThreadSafe>::Instance();
+    auto& pcscan = base::internal::PCScan::Instance();
     pcscan.RegisterNonScannableRoot(array_buffer_root_);
 #if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     pcscan.RegisterScannableRoot(fast_malloc_root_);
@@ -200,58 +205,65 @@ size_t Partitions::TotalActiveBytes() {
 }
 
 static NOINLINE void PartitionsOutOfMemoryUsing2G(size_t size) {
+  NO_CODE_FOLDING();
   size_t signature = 2UL * 1024 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH(size);
 }
 
 static NOINLINE void PartitionsOutOfMemoryUsing1G(size_t size) {
+  NO_CODE_FOLDING();
   size_t signature = 1UL * 1024 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH(size);
 }
 
 static NOINLINE void PartitionsOutOfMemoryUsing512M(size_t size) {
+  NO_CODE_FOLDING();
   size_t signature = 512 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH(size);
 }
 
 static NOINLINE void PartitionsOutOfMemoryUsing256M(size_t size) {
+  NO_CODE_FOLDING();
   size_t signature = 256 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH(size);
 }
 
 static NOINLINE void PartitionsOutOfMemoryUsing128M(size_t size) {
+  NO_CODE_FOLDING();
   size_t signature = 128 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH(size);
 }
 
 static NOINLINE void PartitionsOutOfMemoryUsing64M(size_t size) {
+  NO_CODE_FOLDING();
   size_t signature = 64 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH(size);
 }
 
 static NOINLINE void PartitionsOutOfMemoryUsing32M(size_t size) {
+  NO_CODE_FOLDING();
   size_t signature = 32 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH(size);
 }
 
 static NOINLINE void PartitionsOutOfMemoryUsing16M(size_t size) {
+  NO_CODE_FOLDING();
   size_t signature = 16 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH(size);
 }
 
 static NOINLINE void PartitionsOutOfMemoryUsingLessThan16M(size_t size) {
+  NO_CODE_FOLDING();
   size_t signature = 16 * 1024 * 1024 - 1;
   base::debug::Alias(&signature);
-  DLOG(FATAL) << "PartitionAlloc: out of memory with < 16M usage (error:"
-              << base::GetAllocPageErrorCode() << ")";
   OOM_CRASH(size);
 }
 

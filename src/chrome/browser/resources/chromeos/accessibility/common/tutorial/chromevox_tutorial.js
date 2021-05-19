@@ -66,26 +66,37 @@ Polymer({
         {
           title: 'tutorial_quick_orientation_title',
           curriculum: Curriculum.QUICK_ORIENTATION,
+          medium: InteractionMedium.KEYBOARD,
         },
         {
           title: 'tutorial_essential_keys_title',
           curriculum: Curriculum.ESSENTIAL_KEYS,
+          medium: InteractionMedium.KEYBOARD,
         },
         {
           title: 'tutorial_navigation_title',
           curriculum: Curriculum.NAVIGATION,
+          medium: InteractionMedium.KEYBOARD,
         },
         {
           title: 'tutorial_command_references_title',
           curriculum: Curriculum.COMMAND_REFERENCES,
+          medium: InteractionMedium.KEYBOARD,
         },
         {
           title: 'tutorial_sounds_and_settings_title',
           curriculum: Curriculum.SOUNDS_AND_SETTINGS,
+          medium: InteractionMedium.KEYBOARD,
         },
         {
           title: 'tutorial_resources_title',
           curriculum: Curriculum.RESOURCES,
+          medium: InteractionMedium.KEYBOARD,
+        },
+        {
+          title: 'tutorial_touch_orientation_title',
+          curriculum: Curriculum.TOUCH_ORIENTATION,
+          medium: InteractionMedium.TOUCH,
         }
       ]
     },
@@ -293,7 +304,99 @@ Polymer({
           content: ['tutorial_learn_more'],
           medium: InteractionMedium.KEYBOARD,
           curriculums: [Curriculum.RESOURCES],
-        }
+        },
+
+        {
+          title: 'tutorial_touch_orientation_intro_title',
+          content: ['tutorial_touch_orientation_intro_text'],
+          medium: InteractionMedium.TOUCH,
+          curriculums: [Curriculum.TOUCH_ORIENTATION],
+          actions: [{type: 'gesture', value: 'click'}],
+          autoInteractive: true,
+        },
+
+        {
+          title: 'tutorial_touch_orientation_activate_title',
+          content: ['tutorial_touch_orientation_activate_text'],
+          medium: InteractionMedium.TOUCH,
+          curriculums: [Curriculum.TOUCH_ORIENTATION],
+          actions: [{type: 'gesture', value: 'click'}],
+          autoInteractive: true,
+        },
+
+        {
+          title: 'tutorial_touch_orientation_next_previous_item_title',
+          content: [
+            'tutorial_touch_orientation_next_item_text',
+            'tutorial_touch_orientation_previous_item_text',
+            'tutorial_touch_orientation_next_previous_continue_text'
+          ],
+          medium: InteractionMedium.TOUCH,
+          curriculums: [Curriculum.TOUCH_ORIENTATION]
+        },
+
+        {
+          title: 'tutorial_touch_orientation_touch_explore_title',
+          content: [
+            'tutorial_touch_orientation_touch_explore_text',
+            'tutorial_touch_orientation_touch_explore_more_text',
+            'tutorial_touch_orientation_touch_explore_efficiency_text',
+            'tutorial_touch_orientation_touch_explore_continue_text',
+          ],
+          medium: InteractionMedium.TOUCH,
+          curriculums: [Curriculum.TOUCH_ORIENTATION]
+        },
+
+        {
+          title: 'tutorial_touch_orientation_stop_speech_title',
+          content: [
+            'tutorial_touch_orientation_stop_spech_text',
+          ],
+          medium: InteractionMedium.TOUCH,
+          curriculums: [Curriculum.TOUCH_ORIENTATION],
+          actions: [{type: 'gesture', value: 'tap2'}],
+          autoInteractive: true,
+        },
+
+        {
+          title: 'tutorial_touch_orientation_menus_title',
+          content: ['tutorial_touch_orientation_menus_text'],
+          medium: InteractionMedium.TOUCH,
+          curriculums: [Curriculum.TOUCH_ORIENTATION],
+          actions: [{type: 'gesture', value: 'tap4', shouldPropagate: false}],
+          autoInteractive: true,
+        },
+
+        {
+          title: 'tutorial_touch_orientation_next_previous_section_title',
+          content: [
+            'tutorial_touch_orientation_next_section_text',
+            'tutorial_touch_orientation_previous_section_text',
+          ],
+          medium: InteractionMedium.TOUCH,
+          curriculums: [Curriculum.TOUCH_ORIENTATION],
+          actions: [
+            {
+              type: 'gesture',
+              value: 'swipeRight4',
+              shouldPropagate: false,
+              afterActionCmd: 'nextObject'
+            },
+            {type: 'gesture', value: 'swipeLeft4', shouldPropagate: false}
+          ],
+          autoInteractive: true,
+        },
+
+        {
+          title: 'tutorial_touch_orientation_complete_title',
+          content: [
+            'tutorial_touch_orientation_complete_text',
+            'tutorial_touch_orientation_complete_help_center_text',
+            'tutorial_touch_orientation_complete_more_tutorials_text'
+          ],
+          medium: InteractionMedium.TOUCH,
+          curriculums: [Curriculum.TOUCH_ORIENTATION]
+        },
       ]
     }
   },
@@ -581,7 +684,8 @@ Polymer({
     const resources = [
       {
         msgId: 'next_command_reference',
-        link: 'https://www.chromevox.com/next_keyboard_shortcuts.html'
+        link:
+            'https://support.google.com/chromebook/answer/7031755#zippy=%2Cmove-through-a-page-with-keyboard-shortcuts'
       },
       {
         msgId: 'chrome_keyboard_shortcuts',
@@ -608,4 +712,32 @@ Polymer({
       learnMoreLesson.contentDiv.appendChild(br);
     }
   },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  computeMainMenuHeaderDescription_() {
+    if (this.medium === InteractionMedium.KEYBOARD) {
+      return 'tutorial_main_menu_header_description';
+    }
+
+    // Automatically return the description for touch, since the only supported
+    // interaction mediums are touch and keyboard.
+    return 'tutorial_touch_main_menu_header_description';
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  computeLessonMenuHeaderDescription_() {
+    if (this.medium === InteractionMedium.KEYBOARD) {
+      return 'tutorial_lesson_menu_header_description';
+    }
+
+    // Automatically return the description for touch, since the only supported
+    // interaction mediums are touch and keyboard.
+    return 'tutorial_touch_lesson_menu_header_description';
+  }
 });

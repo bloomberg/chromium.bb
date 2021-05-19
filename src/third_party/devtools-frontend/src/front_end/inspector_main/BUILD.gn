@@ -12,12 +12,13 @@ devtools_module("inspector_main") {
   ]
 
   deps = [
-    "../common:bundle",
     "../components:bundle",
-    "../host:bundle",
-    "../mobile_throttling:bundle",
-    "../sdk:bundle",
-    "../ui:bundle",
+    "../core/common:bundle",
+    "../core/host:bundle",
+    "../core/i18n:bundle",
+    "../core/sdk:bundle",
+    "../panels/mobile_throttling:bundle",
+    "../ui/legacy:bundle",
   ]
 }
 
@@ -32,12 +33,6 @@ devtools_entrypoint("bundle") {
   entrypoint = "inspector_main.ts"
 
   deps = [ ":inspector_main" ]
-}
-
-devtools_entrypoint("legacy") {
-  entrypoint = "inspector_main-legacy.js"
-
-  deps = [ ":bundle" ]
 }
 
 devtools_entrypoint("meta") {

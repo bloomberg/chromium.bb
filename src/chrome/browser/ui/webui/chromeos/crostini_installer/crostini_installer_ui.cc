@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 
+#include <string>
 #include <utility>
 
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/crostini/crostini_disk.h"
@@ -42,6 +42,7 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"back", IDS_CROSTINI_INSTALLER_BACK_BUTTON},
       {"install", IDS_CROSTINI_INSTALLER_INSTALL_BUTTON},
       {"retry", IDS_CROSTINI_INSTALLER_RETRY_BUTTON},
+      {"settings", IDS_CROSTINI_INSTALLER_SETTINGS_BUTTON},
       {"close", IDS_APP_CLOSE},
       {"cancel", IDS_APP_CANCEL},
       {"learnMore", IDS_LEARN_MORE},
@@ -50,8 +51,10 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"installingTitle", IDS_CROSTINI_INSTALLER_INSTALLING},
       {"cancelingTitle", IDS_CROSTINI_INSTALLER_CANCELING_TITLE},
       {"errorTitle", IDS_CROSTINI_INSTALLER_ERROR_TITLE},
+      {"needUpdateTitle", IDS_CROSTINI_INSTALLER_NEED_UPDATE_TITLE},
 
       {"loadTerminaError", IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR},
+      {"needUpdateError", IDS_CROSTINI_INSTALLER_NEED_UPDATE_ERROR},
       {"createDiskImageError", IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_ERROR},
       {"startTerminaVmError", IDS_CROSTINI_INSTALLER_START_TERMINA_VM_ERROR},
       {"startLxdError", IDS_CROSTINI_INSTALLER_START_LXD_ERROR},
@@ -81,6 +84,7 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"diskSizeSubtitle", IDS_CROSTINI_INSTALLER_DISK_SIZE_SUBTITLE},
       {"diskSizeHint", IDS_CROSTINI_INSTALLER_DISK_SIZE_HINT},
       {"insufficientDiskError", IDS_CROSTINI_INSTALLER_INSUFFICIENT_DISK_ERROR},
+      {"usernameLabel", IDS_CROSTINI_INSTALLER_USERNAME_LABEL},
       {"usernameMessage", IDS_CROSTINI_INSTALLER_USERNAME_MESSAGE},
       {"usernameInvalidFirstCharacterError",
        IDS_CROSTINI_INSTALLER_USERNAME_INVALID_FIRST_CHARACTER_ERROR},
@@ -92,7 +96,7 @@ void AddStringResources(content::WebUIDataSource* source) {
   };
   source->AddLocalizedStrings(kStrings);
 
-  base::string16 device_name = ui::GetChromeOSDeviceName();
+  std::u16string device_name = ui::GetChromeOSDeviceName();
 
   source->AddString("promptMessage",
                     l10n_util::GetStringFUTF8(

@@ -15,52 +15,25 @@
 #include "src/writer/wgsl/generator_impl.h"
 
 #include <algorithm>
-#include <cassert>
 #include <limits>
 
-#include "src/ast/array_accessor_expression.h"
-#include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/binding_decoration.h"
-#include "src/ast/bitcast_expression.h"
-#include "src/ast/block_statement.h"
 #include "src/ast/bool_literal.h"
-#include "src/ast/break_statement.h"
-#include "src/ast/builtin_decoration.h"
-#include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
-#include "src/ast/case_statement.h"
 #include "src/ast/constant_id_decoration.h"
-#include "src/ast/constructor_expression.h"
-#include "src/ast/continue_statement.h"
-#include "src/ast/else_statement.h"
 #include "src/ast/float_literal.h"
-#include "src/ast/group_decoration.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/if_statement.h"
-#include "src/ast/location_decoration.h"
-#include "src/ast/loop_statement.h"
-#include "src/ast/member_accessor_expression.h"
+#include "src/ast/internal_decoration.h"
 #include "src/ast/module.h"
-#include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
 #include "src/ast/stage_decoration.h"
-#include "src/ast/statement.h"
 #include "src/ast/stride_decoration.h"
-#include "src/ast/struct.h"
-#include "src/ast/struct_member.h"
+#include "src/ast/struct_member_align_decoration.h"
 #include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/switch_statement.h"
-#include "src/ast/type_constructor_expression.h"
+#include "src/ast/struct_member_size_decoration.h"
 #include "src/ast/uint_literal.h"
-#include "src/ast/unary_op_expression.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
 #include "src/ast/workgroup_decoration.h"
-#include "src/debug.h"
-#include "src/program.h"
 #include "src/semantic/function.h"
+#include "src/semantic/struct.h"
 #include "src/semantic/variable.h"
 #include "src/type/access_control_type.h"
 #include "src/type/alias_type.h"
@@ -73,12 +46,10 @@
 #include "src/type/multisampled_texture_type.h"
 #include "src/type/pointer_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/sampler_type.h"
-#include "src/type/storage_texture_type.h"
-#include "src/type/struct_type.h"
 #include "src/type/u32_type.h"
 #include "src/type/vector_type.h"
 #include "src/type/void_type.h"
+#include "src/utils/math.h"
 #include "src/writer/float_to_string.h"
 
 namespace tint {
@@ -329,6 +300,9 @@ bool GeneratorImpl::EmitFunction(ast::Function* func) {
     if (auto* stage = deco->As<ast::StageDecoration>()) {
       out_ << "stage(" << stage->value() << ")";
     }
+    if (auto* internal = deco->As<ast::InternalDecoration>()) {
+      out_ << "internal(" << internal->Name() << ")";
+    }
     out_ << "]]" << std::endl;
   }
 
@@ -342,21 +316,41 @@ bool GeneratorImpl::EmitFunction(ast::Function* func) {
     }
     first = false;
 
+    if (!v->decorations().empty()) {
+      if (!EmitDecorations(v->decorations())) {
+        return false;
+      }
+      out_ << " ";
+    }
+
     out_ << program_->Symbols().NameFor(v->symbol()) << " : ";
 
-    if (!EmitType(v->type())) {
+    if (!EmitType(program_->Sem().Get(v)->Type())) {
       return false;
     }
   }
 
   out_ << ") -> ";
 
+  if (!func->return_type_decorations().empty()) {
+    if (!EmitDecorations(func->return_type_decorations())) {
+      return false;
+    }
+    out_ << " ";
+  }
+
   if (!EmitType(func->return_type())) {
     return false;
   }
 
-  out_ << " ";
-  return EmitBlockAndNewline(func->body());
+  if (func->body()) {
+    out_ << " ";
+    return EmitBlockAndNewline(func->body());
+  } else {
+    out_ << std::endl;
+  }
+
+  return true;
 }
 
 bool GeneratorImpl::EmitImageFormat(const type::ImageFormat fmt) {
@@ -522,16 +516,46 @@ bool GeneratorImpl::EmitStructType(const type::Struct* str) {
   out_ << "struct " << program_->Symbols().NameFor(str->symbol()) << " {"
        << std::endl;
 
-  increment_indent();
-  for (auto* mem : impl->members()) {
-    for (auto* deco : mem->decorations()) {
-      make_indent();
+  auto add_padding = [&](uint32_t size) {
+    make_indent();
+    out_ << "[[size(" << size << ")]]" << std::endl;
+    make_indent();
+    // Note: u32 is the smallest primitive we currently support. When WGSL
+    // supports smaller types, this will need to be updated.
+    out_ << UniqueIdentifier("padding") << " : u32;" << std::endl;
+  };
 
-      // TODO(dsinclair): Split this out when we have more then one
-      auto* offset = deco->As<ast::StructMemberOffsetDecoration>();
-      assert(offset != nullptr);
-      out_ << "[[offset(" << offset->offset() << ")]]" << std::endl;
+  increment_indent();
+  uint32_t offset = 0;
+  for (auto* mem : impl->members()) {
+    auto* mem_sem = program_->Sem().Get(mem);
+
+    offset = utils::RoundUp(mem_sem->Align(), offset);
+    if (uint32_t padding = mem_sem->Offset() - offset) {
+      add_padding(padding);
+      offset += padding;
     }
+    offset += mem_sem->Size();
+
+    // Offset decorations no longer exist in the WGSL spec, but are emitted
+    // by the SPIR-V reader and are consumed by the Resolver(). These should not
+    // be emitted, but instead struct padding fields should be emitted.
+    ast::DecorationList decorations_sanitized;
+    decorations_sanitized.reserve(mem->decorations().size());
+    for (auto* deco : mem->decorations()) {
+      if (!deco->Is<ast::StructMemberOffsetDecoration>()) {
+        decorations_sanitized.emplace_back(deco);
+      }
+    }
+
+    if (!decorations_sanitized.empty()) {
+      make_indent();
+      if (!EmitDecorations(decorations_sanitized)) {
+        return false;
+      }
+      out_ << std::endl;
+    }
+
     make_indent();
     out_ << program_->Symbols().NameFor(mem->symbol()) << " : ";
     if (!EmitType(mem->type())) {
@@ -551,8 +575,11 @@ bool GeneratorImpl::EmitVariable(ast::Variable* var) {
 
   make_indent();
 
-  if (!var->decorations().empty() && !EmitVariableDecorations(sem)) {
-    return false;
+  if (!var->decorations().empty()) {
+    if (!EmitDecorations(var->decorations())) {
+      return false;
+    }
+    out_ << " ";
   }
 
   if (var->is_const()) {
@@ -561,13 +588,13 @@ bool GeneratorImpl::EmitVariable(ast::Variable* var) {
     out_ << "var";
     if (sem->StorageClass() != ast::StorageClass::kNone &&
         sem->StorageClass() != ast::StorageClass::kFunction &&
-        !var->type()->UnwrapAll()->is_handle()) {
+        !sem->Type()->UnwrapAll()->is_handle()) {
       out_ << "<" << sem->StorageClass() << ">";
     }
   }
 
   out_ << " " << program_->Symbols().NameFor(var->symbol()) << " : ";
-  if (!EmitType(var->type())) {
+  if (!EmitType(sem->Type())) {
     return false;
   }
 
@@ -582,12 +609,10 @@ bool GeneratorImpl::EmitVariable(ast::Variable* var) {
   return true;
 }
 
-bool GeneratorImpl::EmitVariableDecorations(const semantic::Variable* var) {
-  auto* decl = var->Declaration();
-
+bool GeneratorImpl::EmitDecorations(const ast::DecorationList& decos) {
   out_ << "[[";
   bool first = true;
-  for (auto* deco : decl->decorations()) {
+  for (auto* deco : decos) {
     if (!first) {
       out_ << ", ";
     }
@@ -603,12 +628,17 @@ bool GeneratorImpl::EmitVariableDecorations(const semantic::Variable* var) {
       out_ << "builtin(" << builtin->value() << ")";
     } else if (auto* constant = deco->As<ast::ConstantIdDecoration>()) {
       out_ << "constant_id(" << constant->value() << ")";
+    } else if (auto* size = deco->As<ast::StructMemberSizeDecoration>()) {
+      out_ << "size(" << size->size() << ")";
+    } else if (auto* align = deco->As<ast::StructMemberAlignDecoration>()) {
+      out_ << "align(" << align->align() << ")";
     } else {
-      diagnostics_.add_error("unknown variable decoration");
+      TINT_ICE(diagnostics_)
+          << "Unsupported decoration '" << deco->TypeInfo().name << "'";
       return false;
     }
   }
-  out_ << "]] ";
+  out_ << "]]";
 
   return true;
 }
@@ -962,6 +992,23 @@ bool GeneratorImpl::EmitSwitch(ast::SwitchStatement* stmt) {
   out_ << "}" << std::endl;
 
   return true;
+}
+
+std::string GeneratorImpl::UniqueIdentifier(const std::string& suffix) {
+  auto const limit =
+      std::numeric_limits<decltype(next_unique_identifier_suffix)>::max();
+  while (next_unique_identifier_suffix < limit) {
+    auto ident = "tint_" + std::to_string(next_unique_identifier_suffix);
+    if (!suffix.empty()) {
+      ident += "_" + suffix;
+    }
+    next_unique_identifier_suffix++;
+    if (!program_->Symbols().Get(ident).IsValid()) {
+      return ident;
+    }
+  }
+  diagnostics_.add_error("Unable to generate a unique WGSL identifier");
+  return "<invalid-ident>";
 }
 
 }  // namespace wgsl

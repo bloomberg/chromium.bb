@@ -4,8 +4,9 @@
 
 #import <Foundation/NSUserNotification.h>
 
+#include <string>
+
 #include "base/mac/mac_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/services/mac_notifications/public/cpp/notification_category_manager.h"
 #include "chrome/services/mac_notifications/public/cpp/notification_constants_mac.h"
@@ -104,7 +105,7 @@ TEST_F(NotificationCategoryManagerTest, TestNotificationNoButtons) {
 TEST_F(NotificationCategoryManagerTest, TestNotificationOneButton) {
   if (@available(macOS 10.14, *)) {
     NSString* category_id = manager_->GetOrCreateCategory(
-        "notification_id", /*buttons=*/{STRING16_LITERAL("Button1")},
+        "notification_id", /*buttons=*/{u"Button1"},
         /*settings_button=*/true);
     ASSERT_EQ(1u, [[fake_notification_center_ categories] count]);
     UNNotificationCategory* category =
@@ -168,10 +169,10 @@ TEST_F(NotificationCategoryManagerTest, TestNotificationOneButton) {
 
 TEST_F(NotificationCategoryManagerTest, TestNotificationTwoButtons) {
   if (@available(macOS 10.14, *)) {
-    NSString* category_id = manager_->GetOrCreateCategory(
-        "notification_id", /*buttons=*/
-        {STRING16_LITERAL("Button1"), STRING16_LITERAL("Button2")},
-        /*settings_button=*/true);
+    NSString* category_id =
+        manager_->GetOrCreateCategory("notification_id", /*buttons=*/
+                                      {u"Button1", u"Button2"},
+                                      /*settings_button=*/true);
     ASSERT_EQ(1u, [[fake_notification_center_ categories] count]);
     UNNotificationCategory* category =
         [[fake_notification_center_ categories] anyObject];
@@ -286,10 +287,10 @@ TEST_F(NotificationCategoryManagerTest, TestNotificationExtensionNoButtons) {
 
 TEST_F(NotificationCategoryManagerTest, TestNotificationExtensionTwoButtons) {
   if (@available(macOS 10.14, *)) {
-    NSString* category_id = manager_->GetOrCreateCategory(
-        "notification_id", /*buttons=*/
-        {STRING16_LITERAL("Button1"), STRING16_LITERAL("Button2")},
-        /*settings_button=*/false);
+    NSString* category_id =
+        manager_->GetOrCreateCategory("notification_id", /*buttons=*/
+                                      {u"Button1", u"Button2"},
+                                      /*settings_button=*/false);
     ASSERT_EQ(1u, [[fake_notification_center_ categories] count]);
     UNNotificationCategory* category =
         [[fake_notification_center_ categories] anyObject];

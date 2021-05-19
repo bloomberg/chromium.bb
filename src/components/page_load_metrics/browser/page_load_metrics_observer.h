@@ -14,6 +14,7 @@
 #include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/host_port_pair.h"
@@ -419,7 +420,8 @@ class PageLoadMetricsObserver {
   // coded as WebPerformance::
   // kRequestAnimationFramesToRecordAfterBackForwardCacheRestore.
   virtual void OnRequestAnimationFramesAfterBackForwardCacheRestoreInPage(
-      const mojom::BackForwardCacheTiming& timing) {}
+      const mojom::BackForwardCacheTiming& timing,
+      size_t index) {}
 
   // Unlike other paint callbacks, OnFirstMeaningfulPaintInMainFrameDocument is
   // tracked per document, and is reported for the main frame document only.
@@ -515,7 +517,7 @@ class PageLoadMetricsObserver {
   virtual void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info) {}
 
-  virtual void FrameReceivedFirstUserActivation(
+  virtual void FrameReceivedUserActivation(
       content::RenderFrameHost* render_frame_host) {}
 
   // Called when the display property changes on the frame.
@@ -527,7 +529,9 @@ class PageLoadMetricsObserver {
   virtual void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                                 const gfx::Size& frame_size) {}
 
-  virtual void OnFrameDeleted(content::RenderFrameHost* render_frame_host) {}
+  virtual void OnRenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) {}
+  virtual void OnFrameDeleted(int frame_tree_node_id) {}
 
   // Called when a cookie is read for a resource request or by document.cookie.
   virtual void OnCookiesRead(const GURL& url,

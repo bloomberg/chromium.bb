@@ -81,7 +81,11 @@ class BinaryUploadService : public KeyedService {
     // The file's type is not supported and the file was not uploaded.
     DLP_SCAN_UNSUPPORTED_FILE_TYPE = 8,
 
-    kMaxValue = DLP_SCAN_UNSUPPORTED_FILE_TYPE,
+    // The server returned a 429 HTTP status indicating too many requests are
+    // being sent.
+    TOO_MANY_REQUESTS = 9,
+
+    kMaxValue = TOO_MANY_REQUESTS,
   };
 
   // Callbacks used to pass along the results of scanning. The response protos
@@ -143,6 +147,9 @@ class BinaryUploadService : public KeyedService {
     void set_tab_url(const GURL& tab_url);
     const GURL& tab_url() const;
 
+    void set_per_profile_request(bool per_profile_request);
+    bool per_profile_request() const;
+
     // Methods for modifying the ContentAnalysisRequest.
     void set_analysis_connector(
         enterprise_connectors::AnalysisConnector connector);
@@ -156,6 +163,7 @@ class BinaryUploadService : public KeyedService {
     void set_filename(const std::string& filename);
     void set_digest(const std::string& digest);
     void clear_dlp_scan_request();
+    void set_client_metadata(enterprise_connectors::ClientMetadata metadata);
 
     // Methods for accessing the ContentAnalysisRequest.
     enterprise_connectors::AnalysisConnector analysis_connector();
@@ -182,6 +190,9 @@ class BinaryUploadService : public KeyedService {
 
     // The URL of the page that initially triggered the scan.
     GURL tab_url_;
+
+    // Indicates if the request was triggered by a profile-level policy or not.
+    bool per_profile_request_ = false;
   };
 
   // Upload the given file contents for deep scanning if the browser is
@@ -211,8 +222,9 @@ class BinaryUploadService : public KeyedService {
   void SetAuthForTesting(const std::string& dm_token, bool authorized);
 
   // Returns the URL that requests are uploaded to. Scans for enterprise go to a
-  // different URL than scans for Advanced Protection users.
-  static GURL GetUploadUrl(bool is_advanced_protection_request);
+  // different URL than scans for Advanced Protection users and Enhanced
+  // Protection users.
+  static GURL GetUploadUrl(bool is_consumer_scan_eligible);
 
  protected:
   void FinishRequest(Request* request,
@@ -237,6 +249,7 @@ class BinaryUploadService : public KeyedService {
 
   void OnUploadComplete(Request* request,
                         bool success,
+                        int http_status,
                         const std::string& response_data);
 
   void OnGetResponse(Request* request,

@@ -19,9 +19,6 @@
 #include <vector>
 
 #include "src/ast/function.h"
-#include "src/ast/node.h"
-#include "src/ast/variable.h"
-#include "src/type/type.h"
 
 namespace tint {
 namespace ast {
@@ -38,19 +35,20 @@ class Module : public Castable<Module, Node> {
   /// @param source the source of the module
   /// @param global_decls the list of global types, functions, and variables, in
   /// the order they were declared in the source program
-  Module(const Source& source, std::vector<CastableBase*> global_decls);
+  Module(const Source& source, std::vector<Cloneable*> global_decls);
 
   /// Destructor
   ~Module() override;
 
   /// @returns the ordered global declarations for the translation unit
-  const std::vector<CastableBase*>& GlobalDeclarations() const {
+  const std::vector<Cloneable*>& GlobalDeclarations() const {
     return global_declarations_;
   }
 
   /// Add a global variable to the Builder
   /// @param var the variable to add
   void AddGlobalVariable(ast::Variable* var) {
+    TINT_ASSERT(var);
     global_variables_.push_back(var);
     global_declarations_.push_back(var);
   }
@@ -65,6 +63,7 @@ class Module : public Castable<Module, Node> {
   /// The type must be an alias or a struct.
   /// @param type the constructed type to add
   void AddConstructedType(type::Type* type) {
+    TINT_ASSERT(type);
     constructed_types_.push_back(type);
     global_declarations_.push_back(type);
   }
@@ -77,15 +76,13 @@ class Module : public Castable<Module, Node> {
   /// Add a function to the Builder
   /// @param func the function to add
   void AddFunction(ast::Function* func) {
+    TINT_ASSERT(func);
     functions_.push_back(func);
     global_declarations_.push_back(func);
   }
 
   /// @returns the functions declared in the translation unit
   const FunctionList& Functions() const { return functions_; }
-
-  /// @returns true if all required fields in the AST are present.
-  bool IsValid() const override;
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
@@ -111,7 +108,7 @@ class Module : public Castable<Module, Node> {
   std::string to_str(const semantic::Info& sem) const;
 
  private:
-  std::vector<CastableBase*> global_declarations_;
+  std::vector<Cloneable*> global_declarations_;
   std::vector<type::Type*> constructed_types_;
   FunctionList functions_;
   VariableList global_variables_;

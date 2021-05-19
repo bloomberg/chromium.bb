@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/constants/ash_features.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/session/session_controller_impl.h"
@@ -278,6 +279,19 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
 
 void NetworkStateListDetailedView::HandleViewClickedImpl(
     NetworkStatePropertiesPtr network) {
+  // If the network is locked and is cellular show SIM unlock dialog in OS
+  // Settings.
+  if (network->type == NetworkType::kCellular &&
+      base::FeatureList::IsEnabled(
+          chromeos::features::kUpdatedCellularActivationUi) &&
+      network->type_state->get_cellular()->sim_locked) {
+    if (!Shell::Get()->session_controller()->ShouldEnableSettings()) {
+      return;
+    }
+    Shell::Get()->system_tray_model()->client()->ShowSettingsSimUnlock();
+    return;
+  }
+
   if (network && CanNetworkConnect(network->connection_state, network->type,
                                    network->connectable)) {
     Shell::Get()->metrics()->RecordUserMetricsAction(
@@ -426,14 +440,14 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
       cellular_address = *cellular->mac_address;
   }
 
-  base::string16 bubble_text;
+  std::u16string bubble_text;
   auto maybe_add_mac_address = [&bubble_text](const std::string& address,
                                               int ids) {
     if (address.empty())
       return;
 
     if (!bubble_text.empty())
-      bubble_text += base::ASCIIToUTF16("\n");
+      bubble_text += u"\n";
 
     bubble_text += l10n_util::GetStringFUTF16(ids, base::UTF8ToUTF16(address));
   };

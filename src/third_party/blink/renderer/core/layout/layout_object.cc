@@ -342,13 +342,6 @@ LayoutObject::LayoutObject(Node* node)
   InstanceCounters::IncrementCounter(InstanceCounters::kLayoutObjectCounter);
   if (node_)
     GetFrameView()->IncrementLayoutObjectCount();
-
-  if (UNLIKELY(!IsLayoutNGObject())) {
-    if (const auto* element = DynamicTo<Element>(GetNode())) {
-      if (element->ShouldForceLegacyLayout())
-        SetForceLegacyLayout();
-    }
-  }
 }
 
 LayoutObject::~LayoutObject() {
@@ -1300,8 +1293,8 @@ void LayoutObject::SetIntrinsicLogicalWidthsDirty(
     MarkingBehavior mark_parents) {
   NOT_DESTROYED();
   bitfields_.SetIntrinsicLogicalWidthsDirty(true);
-  bitfields_.SetIntrinsicLogicalWidthsDependsOnPercentageBlockSize(true);
-  bitfields_.SetIntrinsicLogicalWidthsChildDependsOnPercentageBlockSize(true);
+  bitfields_.SetIntrinsicLogicalWidthsDependsOnBlockConstraints(true);
+  bitfields_.SetIntrinsicLogicalWidthsChildDependsOnBlockConstraints(true);
   if (mark_parents == kMarkContainerChain &&
       (IsText() || !StyleRef().HasOutOfFlowPosition()))
     InvalidateContainerIntrinsicLogicalWidths();
@@ -1715,12 +1708,8 @@ bool LayoutObject::HasDistortingVisualEffects() const {
   // No filters, no blends, no opacity < 100%.
   for (const auto* effect = &paint_properties.Effect().Unalias(); effect;
        effect = effect->UnaliasedParent()) {
-    if (!effect->Filter().IsEmpty() || !effect->BackdropFilter().IsEmpty() ||
-        effect->GetColorFilter() != kColorFilterNone ||
-        effect->BlendMode() != SkBlendMode::kSrcOver ||
-        effect->Opacity() != 1.0) {
+    if (effect->HasRealEffects())
       return true;
-    }
   }
 
   auto& local_frame_root = GetDocument().GetFrame()->LocalFrameRoot();
@@ -2040,6 +2029,17 @@ void LayoutObject::ShowLineTreeForThis() const {
 
 void LayoutObject::ShowLayoutObject() const {
   NOT_DESTROYED();
+
+  if (getenv("RUNNING_UNDER_RR")) {
+    // Printing timestamps requires an IPC to get the local time, which
+    // does not work in an rr replay session. Just disable timestamp printing
+    // globally, since we don't need them. Affecting global state isn't a
+    // problem because invoking this from a rr session creates a temporary
+    // program environment that will be destroyed as soon as the invocation
+    // completes.
+    logging::SetLogItems(true, true, false, false);
+  }
+
   StringBuilder string_builder;
   DumpLayoutObject(string_builder, true, kShowTreeCharacterOffset);
   DLOG(INFO) << "\n" << string_builder.ToString().Utf8();
@@ -2213,7 +2213,7 @@ StyleDifference LayoutObject::AdjustStyleDifference(
         (IsText() && !IsBR() && To<LayoutText>(this)->HasInlineFragments()) ||
         (IsSVG() && StyleRef().IsFillColorCurrentColor()) ||
         (IsSVG() && StyleRef().IsStrokeColorCurrentColor()) ||
-        IsListMarkerForNormalContent() || IsDetailsMarker() || IsMathML())
+        IsListMarkerForNormalContent() || IsMathML())
       diff.SetNeedsPaintInvalidation();
   }
 
@@ -2257,7 +2257,8 @@ void LayoutObject::SetPseudoElementStyle(
   // avoid getting an inline with positioning or an invalid display.
   //
   if (IsImage() || IsQuote()) {
-    scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+    scoped_refptr<ComputedStyle> style =
+        GetDocument().GetStyleResolver().CreateComputedStyle();
     style->InheritFrom(*pseudo_style);
     SetStyle(std::move(style));
     return;
@@ -2454,6 +2455,10 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
        diff.BlendModeChanged() || diff.MaskChanged() ||
        diff.CompositingReasonsChanged())) {
     SetNeedsPaintPropertyUpdate();
+  }
+
+  if (!IsText() && diff.CompositablePaintEffectChanged()) {
+    SetShouldDoFullPaintInvalidationWithoutGeometryChange();
   }
 }
 
@@ -2888,7 +2893,7 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
       continue;
 
     scoped_refptr<ComputedStyle> new_style =
-        ComputedStyle::CreateAnonymousStyleWithDisplay(
+        GetDocument().GetStyleResolver().CreateAnonymousStyleWithDisplay(
             StyleRef(), child->StyleRef().Display());
 
     // Preserve the position style of anonymous block continuations as they can
@@ -3139,14 +3144,6 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   container->MapLocalToAncestor(ancestor, transform_state, mode);
 }
 
-const LayoutObject* LayoutObject::PushMappingToContainer(
-    const LayoutBoxModelObject* ancestor_to_stop_at,
-    LayoutGeometryMap& geometry_map) const {
-  NOT_DESTROYED();
-  NOTREACHED();
-  return nullptr;
-}
-
 void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
                                       TransformState& transform_state,
                                       MapCoordinatesFlags mode) const {
@@ -3371,6 +3368,13 @@ TransformationMatrix LayoutObject::LocalToAncestorTransform(
   TransformState transform_state(TransformState::kApplyTransformDirection);
   MapLocalToAncestor(ancestor, transform_state, mode);
   return transform_state.AccumulatedTransform();
+}
+
+bool LayoutObject::OffsetForContainerDependsOnPoint(
+    const LayoutObject* container) const {
+  return IsLayoutFlowThread() ||
+         (container->StyleRef().IsFlippedBlocksWritingMode() &&
+          container->IsBox());
 }
 
 PhysicalOffset LayoutObject::OffsetFromContainer(
@@ -3992,7 +3996,7 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
       // it.
       if (scoped_refptr<ComputedStyle> first_line_style =
               first_line_block->GetUncachedPseudoElementStyle(
-                  PseudoElementStyleRequest(kPseudoIdFirstLine), Style())) {
+                  StyleRequest(kPseudoIdFirstLine, Style()))) {
         return StyleRef().AddCachedPseudoElementStyle(
             std::move(first_line_style));
       }
@@ -4008,8 +4012,8 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
       // A first-line style is in effect. Get uncached first line style based on
       // parent_first_line_style and cache the result in this object's style.
       if (scoped_refptr<ComputedStyle> first_line_style =
-              GetUncachedPseudoElementStyle(kPseudoIdFirstLineInherited,
-                                            parent_first_line_style)) {
+              GetUncachedPseudoElementStyle(StyleRequest(
+                  kPseudoIdFirstLineInherited, parent_first_line_style))) {
         return StyleRef().AddCachedPseudoElementStyle(
             std::move(first_line_style));
       }
@@ -4030,13 +4034,11 @@ const ComputedStyle* LayoutObject::GetCachedPseudoElementStyle(
   if (!element)
     return nullptr;
 
-  return element->CachedStyleForPseudoElement(
-      PseudoElementStyleRequest(pseudo));
+  return element->CachedStyleForPseudoElement(pseudo);
 }
 
 scoped_refptr<ComputedStyle> LayoutObject::GetUncachedPseudoElementStyle(
-    const PseudoElementStyleRequest& request,
-    const ComputedStyle* parent_style) const {
+    const StyleRequest& request) const {
   NOT_DESTROYED();
   DCHECK_NE(request.pseudo_id, kPseudoIdBefore);
   DCHECK_NE(request.pseudo_id, kPseudoIdAfter);
@@ -4050,7 +4052,7 @@ scoped_refptr<ComputedStyle> LayoutObject::GetUncachedPseudoElementStyle(
       request.pseudo_id != kPseudoIdFirstLineInherited)
     return nullptr;
 
-  return element->UncachedStyleForPseudoElement(request, parent_style);
+  return element->UncachedStyleForPseudoElement(request);
 }
 
 void LayoutObject::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
@@ -4793,6 +4795,16 @@ bool IsListBox(const LayoutObject* object) {
 #if DCHECK_IS_ON()
 
 void showTree(const blink::LayoutObject* object) {
+  if (getenv("RUNNING_UNDER_RR")) {
+    // Printing timestamps requires an IPC to get the local time, which
+    // does not work in an rr replay session. Just disable timestamp printing
+    // globally, since we don't need them. Affecting global state isn't a
+    // problem because invoking this from a rr session creates a temporary
+    // program environment that will be destroyed as soon as the invocation
+    // completes.
+    logging::SetLogItems(true, true, false, false);
+  }
+
   if (object)
     object->ShowTreeForThis();
   else
@@ -4800,6 +4812,16 @@ void showTree(const blink::LayoutObject* object) {
 }
 
 void showLineTree(const blink::LayoutObject* object) {
+  if (getenv("RUNNING_UNDER_RR")) {
+    // Printing timestamps requires an IPC to get the local time, which
+    // does not work in an rr replay session. Just disable timestamp printing
+    // globally, since we don't need them. Affecting global state isn't a
+    // problem because invoking this from a rr session creates a temporary
+    // program environment that will be destroyed as soon as the invocation
+    // completes.
+    logging::SetLogItems(true, true, false, false);
+  }
+
   if (object)
     object->ShowLineTreeForThis();
   else
@@ -4812,6 +4834,16 @@ void showLayoutTree(const blink::LayoutObject* object1) {
 
 void showLayoutTree(const blink::LayoutObject* object1,
                     const blink::LayoutObject* object2) {
+  if (getenv("RUNNING_UNDER_RR")) {
+    // Printing timestamps requires an IPC to get the local time, which
+    // does not work in an rr replay session. Just disable timestamp printing
+    // globally, since we don't need them. Affecting global state isn't a
+    // problem because invoking this from a rr session creates a temporary
+    // program environment that will be destroyed as soon as the invocation
+    // completes.
+    logging::SetLogItems(true, true, false, false);
+  }
+
   if (object1) {
     const blink::LayoutObject* root = object1;
     while (root->Parent())

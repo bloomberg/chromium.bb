@@ -18,10 +18,9 @@
 namespace content {
 namespace {
 
+using ::testing::ByRef;
 using ::testing::Eq;
 using ::testing::IsNull;
-using ::testing::Not;
-using ::testing::NotNull;
 using ::testing::Pointee;
 
 // Extracted from |GetPolicies()| because ASSERT_* macros can only be used in
@@ -124,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(PolicyContainerNavigationBundleBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell()->web_contents(), PublicUrl()));
   EXPECT_TRUE(NavigateToURLFromRenderer(root, AboutBlankUrl()));
 
-  const PolicyContainerPolicies root_policies = GetPolicies(root);
+  const PolicyContainerPolicies& root_policies = GetPolicies(root);
   EXPECT_EQ(root_policies.ip_address_space,
             network::mojom::IPAddressSpace::kPublic);
 
@@ -133,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(PolicyContainerNavigationBundleBrowserTest,
   PolicyContainerNavigationBundle bundle(
       nullptr, nullptr, GetLastCommittedFrameNavigationEntry());
 
-  EXPECT_THAT(bundle.HistoryPolicies(), Pointee(Eq(root_policies)));
+  EXPECT_THAT(bundle.HistoryPolicies(), Pointee(Eq(ByRef(root_policies))));
 }
 
 // Verifies that CreatePolicyContainerForBlink() returns a policy container
@@ -143,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(PolicyContainerNavigationBundleBrowserTest,
   PolicyContainerNavigationBundle bundle(nullptr, nullptr, nullptr);
   bundle.SetIPAddressSpace(network::mojom::IPAddressSpace::kPublic);
 
-  bundle.FinalizePolicies(GURL());
+  bundle.ComputePolicies(GURL());
 
   // This must be called on a task runner, hence the need for this test to be
   // a browser test and not a simple unit test.
@@ -172,22 +171,24 @@ IN_PROC_BROWSER_TEST_F(PolicyContainerNavigationBundleBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell()->web_contents(), PublicUrl()));
   EXPECT_TRUE(NavigateToURLFromRenderer(root, AboutBlankUrl()));
 
-  PolicyContainerPolicies initiator_policies;
-  initiator_policies.ip_address_space = network::mojom::IPAddressSpace::kLocal;
+  auto initiator_policies = std::make_unique<PolicyContainerPolicies>();
+  initiator_policies->ip_address_space = network::mojom::IPAddressSpace::kLocal;
 
   blink::LocalFrameToken token;
   auto initiator_host =
-      base::MakeRefCounted<PolicyContainerHost>(initiator_policies);
+      base::MakeRefCounted<PolicyContainerHost>(std::move(initiator_policies));
   initiator_host->AssociateWithFrameToken(token);
 
   PolicyContainerNavigationBundle bundle(
       nullptr, &token, GetLastCommittedFrameNavigationEntry());
 
-  EXPECT_THAT(*bundle.HistoryPolicies(), Not(Eq(*bundle.InitiatorPolicies())));
+  EXPECT_NE(*bundle.HistoryPolicies(), *bundle.InitiatorPolicies());
 
-  bundle.FinalizePolicies(AboutBlankUrl());
+  std::unique_ptr<PolicyContainerPolicies> history_policies =
+      bundle.HistoryPolicies()->Clone();
+  bundle.ComputePolicies(AboutBlankUrl());
 
-  EXPECT_EQ(bundle.FinalPolicies(), *bundle.HistoryPolicies());
+  EXPECT_EQ(bundle.FinalPolicies(), *history_policies);
 }
 
 // Verifies that when the URL of the document to commit is `about:srcdoc`, and
@@ -220,11 +221,13 @@ IN_PROC_BROWSER_TEST_F(PolicyContainerNavigationBundleBrowserTest,
   PolicyContainerNavigationBundle bundle(
       parent, nullptr, GetLastCommittedFrameNavigationEntry());
 
-  EXPECT_THAT(*bundle.HistoryPolicies(), Not(Eq(*bundle.ParentPolicies())));
+  EXPECT_NE(*bundle.HistoryPolicies(), *bundle.ParentPolicies());
 
-  bundle.FinalizePolicies(AboutSrcdocUrl());
+  std::unique_ptr<PolicyContainerPolicies> history_policies =
+      bundle.HistoryPolicies()->Clone();
+  bundle.ComputePolicies(AboutSrcdocUrl());
 
-  EXPECT_EQ(bundle.FinalPolicies(), *bundle.HistoryPolicies());
+  EXPECT_EQ(bundle.FinalPolicies(), *history_policies);
 }
 
 // Verifies that history policies are ignored in the case of error pages.
@@ -241,10 +244,35 @@ IN_PROC_BROWSER_TEST_F(PolicyContainerNavigationBundleBrowserTest,
   PolicyContainerNavigationBundle bundle(
       nullptr, nullptr, GetLastCommittedFrameNavigationEntry());
 
-  bundle.FinalizePoliciesForError();
+  bundle.ComputePoliciesForError();
 
   // Error pages commit with default policies, ignoring the history policies.
   EXPECT_EQ(bundle.FinalPolicies(), PolicyContainerPolicies());
+}
+
+// After |ComputePolicies()| or |ComputePoliciesForError()|, the history
+// policies are still accessible.
+IN_PROC_BROWSER_TEST_F(PolicyContainerNavigationBundleBrowserTest,
+                       AccessHistoryAfterComputingPolicies) {
+  // First navigate to a local scheme with non-default policies. To do that, we
+  // first navigate to a document with a public address space, then have that
+  // document navigate itself to `about:blank`. The final blank document
+  // inherits its policies from the first document, and stores them in its
+  // frame navigation entry for restoring later.
+  EXPECT_TRUE(NavigateToURL(shell()->web_contents(), PublicUrl()));
+  EXPECT_TRUE(NavigateToURLFromRenderer(root_frame_host(), AboutBlankUrl()));
+
+  PolicyContainerNavigationBundle bundle(
+      nullptr, nullptr, GetLastCommittedFrameNavigationEntry());
+
+  std::unique_ptr<PolicyContainerPolicies> history_policies =
+      bundle.HistoryPolicies()->Clone();
+
+  bundle.ComputePolicies(AboutBlankUrl());
+  EXPECT_THAT(bundle.HistoryPolicies(), Pointee(Eq(ByRef(*history_policies))));
+
+  bundle.ComputePoliciesForError();
+  EXPECT_THAT(bundle.HistoryPolicies(), Pointee(Eq(ByRef(*history_policies))));
 }
 
 }  // namespace

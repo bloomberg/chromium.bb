@@ -151,7 +151,7 @@ bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
   return nonceable;
 }
 
-static WebFeature GetUseCounterHelperType(ContentSecurityPolicyType type) {
+static WebFeature GetUseCounterType(ContentSecurityPolicyType type) {
   switch (type) {
     case ContentSecurityPolicyType::kEnforce:
       return WebFeature::kContentSecurityPolicy;
@@ -185,6 +185,7 @@ void ContentSecurityPolicy::BindToDelegate(
 
   // Report use counters for all the policies that have been parsed until now.
   ReportUseCounters(policies_);
+  delegate_->DidAddContentSecurityPolicies(mojo::Clone(GetParsedPolicies()));
 }
 
 void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
@@ -218,7 +219,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
 void ContentSecurityPolicy::ReportUseCounters(
     const Vector<network::mojom::blink::ContentSecurityPolicyPtr>& policies) {
   for (const auto& policy : policies) {
-    Count(GetUseCounterHelperType(policy->header->type));
+    Count(GetUseCounterType(policy->header->type));
     if (CSPDirectiveListAllowDynamic(*policy,
                                      CSPDirectiveName::ScriptSrcAttr) ||
         CSPDirectiveListAllowDynamic(*policy,
@@ -287,20 +288,14 @@ void ContentSecurityPolicy::Trace(Visitor* visitor) const {
   visitor->Trace(console_messages_);
 }
 
-void ContentSecurityPolicy::CopyStateFrom(const ContentSecurityPolicy* other) {
-  DCHECK(policies_.IsEmpty());
-  policies_ = mojo::Clone(other->policies_);
-  for (const auto& policy : policies_)
-    ComputeInternalStateForParsedPolicy(*policy);
-  if (delegate_)
-    ReportAccumulatedHeaders();
-}
-
-void ContentSecurityPolicy::DidReceiveHeaders(
+Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+ContentSecurityPolicy::DidReceiveHeaders(
     const ContentSecurityPolicyResponseHeaders& headers) {
   scoped_refptr<SecurityOrigin> self_origin =
       SecurityOrigin::Create(headers.ResponseUrl());
-  if (headers.ShouldParseWasmEval())
+
+  if (RuntimeEnabledFeatures::WebAssemblyCSPEnabled() ||
+      headers.ShouldParseWasmEval())
     supports_wasm_eval_ = true;
 
   Vector<network::mojom::blink::ContentSecurityPolicyPtr> parsed_policies;
@@ -317,7 +312,8 @@ void ContentSecurityPolicy::DidReceiveHeaders(
     }
   }
 
-  AddPolicies(std::move(parsed_policies));
+  AddPolicies(mojo::Clone(parsed_policies));
+  return parsed_policies;
 }
 
 // static
@@ -329,12 +325,15 @@ ContentSecurityPolicy::ParseHeaders(
   return std::move(content_security_policy->policies_);
 }
 
-void ContentSecurityPolicy::DidReceiveHeader(
-    const String& header,
-    const SecurityOrigin& self_origin,
-    ContentSecurityPolicyType type,
-    ContentSecurityPolicySource source) {
-  AddPolicies(Parse(header, self_origin, type, source));
+Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+ContentSecurityPolicy::DidReceiveHeader(const String& header,
+                                        const SecurityOrigin& self_origin,
+                                        ContentSecurityPolicyType type,
+                                        ContentSecurityPolicySource source) {
+  Vector<network::mojom::blink::ContentSecurityPolicyPtr> parsed_policies =
+      Parse(header, self_origin, type, source);
+  AddPolicies(mojo::Clone(parsed_policies));
+  return parsed_policies;
 }
 
 void ContentSecurityPolicy::AddPolicies(
@@ -346,6 +345,11 @@ void ContentSecurityPolicy::AddPolicies(
 
   for (network::mojom::blink::ContentSecurityPolicyPtr& policy : policies) {
     ComputeInternalStateForParsedPolicy(*policy);
+
+    // Report parsing errors in the console.
+    for (const String& message : policy->parsing_errors)
+      LogToConsole(message);
+
     policies_.push_back(std::move(policy));
   }
 
@@ -357,15 +361,6 @@ void ContentSecurityPolicy::AddPolicies(
   ApplyPolicySideEffectsToDelegate();
   ReportUseCounters(policies_to_report);
 
-  // Notify about the new header, so that it can be reported back to the
-  // browser process. This is needed in order to:
-  // 1) replicate CSP directives (i.e. frame-src) to OOPIFs (only for now /
-  // short-term).
-  // 2) enforce CSP in the browser process (long-term - see
-  // https://crbug.com/376522).
-  // TODO(arthursonzogni): policies are actually replicated (1) and some of
-  // them are enforced on the browser process (2). Stop doing (1) when (2) is
-  // finished.
   delegate_->DidAddContentSecurityPolicies(std::move(policies_to_report));
 }
 
@@ -454,11 +449,6 @@ void ContentSecurityPolicy::ComputeInternalStateForParsedPolicy(
         break;
     }
   }
-}
-
-void ContentSecurityPolicy::ReportAccumulatedHeaders() const {
-  DCHECK(delegate_);
-  delegate_->DidAddContentSecurityPolicies(mojo::Clone(GetParsedPolicies()));
 }
 
 void ContentSecurityPolicy::SetOverrideAllowInlineStyle(bool value) {
@@ -591,13 +581,13 @@ bool ContentSecurityPolicy::AllowEval(
   return is_allowed;
 }
 
-bool ContentSecurityPolicy::AllowWasmEval(
+bool ContentSecurityPolicy::AllowWasmCodeGeneration(
     ReportingDisposition reporting_disposition,
     ContentSecurityPolicy::ExceptionStatus exception_status,
     const String& script_content) {
   bool is_allowed = true;
   for (const auto& policy : policies_) {
-    is_allowed &= CSPDirectiveListAllowWasmEval(
+    is_allowed &= CSPDirectiveListAllowWasmCodeGeneration(
         *policy, this, reporting_disposition, exception_status, script_content);
   }
   return is_allowed;
@@ -1128,9 +1118,9 @@ void ContentSecurityPolicy::ReportViolation(
   PostViolationReport(violation_data, context_frame, report_endpoints,
                       use_reporting_api);
 
-  // Fire a violation event if we're working with a delegate (e.g. we're not
-  // processing 'frame-ancestors').
-  if (delegate_)
+  // Fire a violation event if we're working with a delegate and we don't have a
+  // `context_frame` (i.e. we're not processing 'frame-ancestors').
+  if (delegate_ && !context_frame)
     delegate_->DispatchViolationEvent(*violation_data, element);
 
   ReportContentSecurityPolicyIssue(*violation_data, header_type, violation_type,

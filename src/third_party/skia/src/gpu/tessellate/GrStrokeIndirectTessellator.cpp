@@ -75,8 +75,7 @@ public:
 
     void updateTolerances(float strokeWidth, bool isRoundJoin) {
         this->flush();
-        fTolerances = GrStrokeTessellateShader::Tolerances::Make(fMatrixMinMaxScales.data(),
-                                                                 strokeWidth);
+        fTolerances = GrStrokeTolerances::Make(fMatrixMinMaxScales.data(), strokeWidth);
         fResolveLevelForCircles = SkTPin<float>(
                 sk_float_nextlog2(fTolerances.fNumRadialSegmentsPerRadian * SK_ScalarPI),
                 1, kMaxResolveLevel);
@@ -432,7 +431,7 @@ private:
 #endif
     int* const fResolveLevelCounts;
     std::array<float, 2> fMatrixMinMaxScales;
-    GrStrokeTessellateShader::Tolerances fTolerances;
+    GrStrokeTolerances fTolerances;
     int fResolveLevelForCircles;
     bool fIsRoundJoin;
 };
@@ -720,7 +719,7 @@ public:
 #ifdef SK_DEBUG
     ~BinningInstanceWriter() {
         for (int i = 0; i < kNumBins; ++i) {
-            if (fInstanceWriters[i].isValid()) {
+            if (fInstanceWriters[i]) {
                 SkASSERT(fInstanceWriters[i] == fEndWriters[i]);
             }
         }
@@ -750,7 +749,8 @@ private:
 }  // namespace
 
 void GrStrokeIndirectTessellator::prepare(GrMeshDrawOp::Target* target,
-                                          const SkMatrix& viewMatrix) {
+                                          const SkMatrix& viewMatrix,
+                                          int /*totalCombinedVerbCnt*/) {
     SkASSERT(fResolveLevels);
     SkASSERT(!fDrawIndirectBuffer);
     SkASSERT(!fInstanceBuffer);
@@ -776,7 +776,7 @@ void GrStrokeIndirectTessellator::prepare(GrMeshDrawOp::Target* target,
     size_t instanceStride = GrStrokeTessellateShader::IndirectInstanceStride(fShaderFlags);
     GrVertexWriter instanceWriter = {target->makeVertexSpace(instanceStride, fChainedInstanceCount,
                                                              &fInstanceBuffer, &baseInstance)};
-    if (!instanceWriter.isValid()) {
+    if (!instanceWriter) {
         SkASSERT(!fInstanceBuffer);
         fDrawIndirectBuffer.reset();
         return;

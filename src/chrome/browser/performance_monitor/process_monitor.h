@@ -22,9 +22,9 @@ class ProcessMetricsHistory;
 
 enum ProcessSubtypes {
   kProcessSubtypeUnknown,
-  kProcessSubtypePPAPIFlash,
   kProcessSubtypeExtensionPersistent,
-  kProcessSubtypeExtensionEvent
+  kProcessSubtypeExtensionEvent,
+  kProcessSubtypeNetworkProcess,
 };
 
 struct ProcessMetadata {
@@ -43,13 +43,6 @@ class ProcessMonitor {
     // process, in the interval since the last time the metric was sampled. This
     // can exceed 100% in multi-thread processes running on multi-core systems.
     double cpu_usage = 0.0;
-
-#if defined(OS_WIN)
-    // The number of bytes transferred to/from disk per second, across all
-    // threads of the process, in the interval since the last time the metric
-    // was sampled.
-    uint64_t disk_usage = 0;
-#endif
 
 #if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
     defined(OS_AIX)
@@ -125,8 +118,8 @@ class ProcessMonitor {
   static std::vector<ProcessMetadata> GatherProcessesOnUIThread();
 
   // Returns the ProcessMetadata for every Chrome processes accessible from the
-  // UI thread.
-  static std::vector<ProcessMetadata> GatherProcessesOnIOThread();
+  // process thread.
+  static std::vector<ProcessMetadata> GatherProcessesOnProcessThread();
 
   // Gather all the processes from both threads and then invokes GatherMetrics()
   // back on the calling thread.

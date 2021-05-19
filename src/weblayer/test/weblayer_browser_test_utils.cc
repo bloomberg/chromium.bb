@@ -4,11 +4,13 @@
 
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "url/gurl.h"
+#include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/subresource_filter_client_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation_controller.h"
@@ -82,7 +84,7 @@ void ExecuteScriptWithUserGesture(Tab* tab, const std::string& script) {
   tab_impl->ExecuteScriptWithUserGestureForTests(base::ASCIIToUTF16(script));
 }
 
-const base::string16& GetTitle(Shell* shell) {
+const std::u16string& GetTitle(Shell* shell) {
   TabImpl* tab_impl = static_cast<TabImpl*>(shell->tab());
 
   return tab_impl->web_contents()->GetTitle();

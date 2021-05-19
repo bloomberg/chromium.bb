@@ -7,6 +7,14 @@ const rulesDirPlugin = require('eslint-plugin-rulesdir');
 rulesDirPlugin.RULES_DIR = path.join(__dirname, '..', 'scripts', 'eslint_rules', 'lib');
 
 module.exports = {
+  'rules': {
+    // L10n rules are only relevant in 'front_end'.
+    'rulesdir/l10n_filename_matches': 2,
+    'rulesdir/l10n_no_i18nString_calls_module_instantiation': 2,
+    'rulesdir/l10n_no_locked_or_placeholder_only_phrase': 2,
+    'rulesdir/l10n_no_uistrings_export': 2,
+    'rulesdir/l10n_no_unused_message': 2,
+  },
   'overrides': [
     {
       'files': ['*.ts'],

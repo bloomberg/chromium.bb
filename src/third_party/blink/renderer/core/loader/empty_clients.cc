@@ -105,9 +105,7 @@ void EmptyLocalFrameClient::BeginNavigation(
     base::TimeTicks,
     const String&,
     const base::Optional<WebImpression>&,
-    WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> initiator_csp,
     network::mojom::IPAddressSpace,
-    mojo::PendingRemote<mojom::blink::NavigationInitiator>,
     const LocalFrameToken* initiator_frame_token,
     mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>) {}
 
@@ -116,13 +114,13 @@ void EmptyLocalFrameClient::DispatchWillSendSubmitEvent(HTMLFormElement*) {}
 DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
     LocalFrame* frame,
     WebNavigationType navigation_type,
-    ContentSecurityPolicy* content_security_policy,
     std::unique_ptr<WebNavigationParams> navigation_params,
+    std::unique_ptr<PolicyContainer> policy_container,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(frame);
   return MakeGarbageCollected<DocumentLoader>(frame, navigation_type,
-                                              content_security_policy,
-                                              std::move(navigation_params));
+                                              std::move(navigation_params),
+                                              std::move(policy_container));
 }
 
 LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,

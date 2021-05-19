@@ -14,20 +14,14 @@
 
 #include "src/semantic/function.h"
 
-#include "src/ast/binding_decoration.h"
-#include "src/ast/builtin_decoration.h"
 #include "src/ast/function.h"
-#include "src/ast/group_decoration.h"
-#include "src/ast/location_decoration.h"
-#include "src/ast/variable.h"
-#include "src/ast/variable_decoration.h"
 #include "src/semantic/variable.h"
+#include "src/type/depth_texture_type.h"
 #include "src/type/multisampled_texture_type.h"
 #include "src/type/sampled_texture_type.h"
 #include "src/type/storage_texture_type.h"
-#include "src/type/texture_type.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::semantic::Function);
+TINT_INSTANTIATE_TYPEINFO(tint::semantic::Function);
 
 namespace tint {
 namespace semantic {
@@ -38,7 +32,8 @@ ParameterList GetParameters(ast::Function* ast) {
   ParameterList parameters;
   parameters.reserve(ast->params().size());
   for (auto* param : ast->params()) {
-    parameters.emplace_back(Parameter{param->type(), Parameter::Usage::kNone});
+    parameters.emplace_back(
+        Parameter{param->declared_type(), Parameter::Usage::kNone});
   }
   return parameters;
 }
@@ -48,11 +43,13 @@ ParameterList GetParameters(ast::Function* ast) {
 Function::Function(ast::Function* declaration,
                    std::vector<const Variable*> referenced_module_vars,
                    std::vector<const Variable*> local_referenced_module_vars,
+                   std::vector<const ast::ReturnStatement*> return_statements,
                    std::vector<Symbol> ancestor_entry_points)
     : Base(declaration->return_type(), GetParameters(declaration)),
       declaration_(declaration),
       referenced_module_vars_(std::move(referenced_module_vars)),
       local_referenced_module_vars_(std::move(local_referenced_module_vars)),
+      return_statements_(std::move(return_statements)),
       ancestor_entry_points_(std::move(ancestor_entry_points)) {}
 
 Function::~Function() = default;
@@ -80,20 +77,9 @@ Function::VariableBindings Function::ReferencedUniformVariables() const {
       continue;
     }
 
-    ast::BindingDecoration* binding = nullptr;
-    ast::GroupDecoration* group = nullptr;
-    for (auto* deco : var->Declaration()->decorations()) {
-      if (auto* b = deco->As<ast::BindingDecoration>()) {
-        binding = b;
-      } else if (auto* g = deco->As<ast::GroupDecoration>()) {
-        group = g;
-      }
+    if (auto binding_point = var->Declaration()->binding_point()) {
+      ret.push_back({var, binding_point});
     }
-    if (binding == nullptr || group == nullptr) {
-      continue;
-    }
-
-    ret.push_back({var, BindingInfo{binding, group}});
   }
   return ret;
 }
@@ -106,20 +92,9 @@ Function::VariableBindings Function::ReferencedStorageBufferVariables() const {
       continue;
     }
 
-    ast::BindingDecoration* binding = nullptr;
-    ast::GroupDecoration* group = nullptr;
-    for (auto* deco : var->Declaration()->decorations()) {
-      if (auto* b = deco->As<ast::BindingDecoration>()) {
-        binding = b;
-      } else if (auto* s = deco->As<ast::GroupDecoration>()) {
-        group = s;
-      }
+    if (auto binding_point = var->Declaration()->binding_point()) {
+      ret.push_back({var, binding_point});
     }
-    if (binding == nullptr || group == nullptr) {
-      continue;
-    }
-
-    ret.push_back({var, BindingInfo{binding, group}});
   }
   return ret;
 }
@@ -161,26 +136,34 @@ Function::VariableBindings Function::ReferencedStorageTextureVariables() const {
   VariableBindings ret;
 
   for (auto* var : ReferencedModuleVariables()) {
-    auto* unwrapped_type = var->Declaration()->type()->UnwrapIfNeeded();
+    auto* unwrapped_type =
+        var->Declaration()->declared_type()->UnwrapIfNeeded();
     auto* storage_texture = unwrapped_type->As<type::StorageTexture>();
     if (storage_texture == nullptr) {
       continue;
     }
 
-    ast::BindingDecoration* binding = nullptr;
-    ast::GroupDecoration* group = nullptr;
-    for (auto* deco : var->Declaration()->decorations()) {
-      if (auto* b = deco->As<ast::BindingDecoration>()) {
-        binding = b;
-      } else if (auto* s = deco->As<ast::GroupDecoration>()) {
-        group = s;
-      }
+    if (auto binding_point = var->Declaration()->binding_point()) {
+      ret.push_back({var, binding_point});
     }
-    if (binding == nullptr || group == nullptr) {
+  }
+  return ret;
+}
+
+Function::VariableBindings Function::ReferencedDepthTextureVariables() const {
+  VariableBindings ret;
+
+  for (auto* var : ReferencedModuleVariables()) {
+    auto* unwrapped_type =
+        var->Declaration()->declared_type()->UnwrapIfNeeded();
+    auto* storage_texture = unwrapped_type->As<type::DepthTexture>();
+    if (storage_texture == nullptr) {
       continue;
     }
 
-    ret.push_back({var, BindingInfo{binding, group}});
+    if (auto binding_point = var->Declaration()->binding_point()) {
+      ret.push_back({var, binding_point});
+    }
   }
   return ret;
 }
@@ -214,27 +197,16 @@ Function::VariableBindings Function::ReferencedSamplerVariablesImpl(
   VariableBindings ret;
 
   for (auto* var : ReferencedModuleVariables()) {
-    auto* unwrapped_type = var->Declaration()->type()->UnwrapIfNeeded();
+    auto* unwrapped_type =
+        var->Declaration()->declared_type()->UnwrapIfNeeded();
     auto* sampler = unwrapped_type->As<type::Sampler>();
     if (sampler == nullptr || sampler->kind() != kind) {
       continue;
     }
 
-    ast::BindingDecoration* binding = nullptr;
-    ast::GroupDecoration* group = nullptr;
-    for (auto* deco : var->Declaration()->decorations()) {
-      if (auto* b = deco->As<ast::BindingDecoration>()) {
-        binding = b;
-      }
-      if (auto* s = deco->As<ast::GroupDecoration>()) {
-        group = s;
-      }
+    if (auto binding_point = var->Declaration()->binding_point()) {
+      ret.push_back({var, binding_point});
     }
-    if (binding == nullptr || group == nullptr) {
-      continue;
-    }
-
-    ret.push_back({var, BindingInfo{binding, group}});
   }
   return ret;
 }
@@ -244,7 +216,8 @@ Function::VariableBindings Function::ReferencedSampledTextureVariablesImpl(
   VariableBindings ret;
 
   for (auto* var : ReferencedModuleVariables()) {
-    auto* unwrapped_type = var->Declaration()->type()->UnwrapIfNeeded();
+    auto* unwrapped_type =
+        var->Declaration()->declared_type()->UnwrapIfNeeded();
     auto* texture = unwrapped_type->As<type::Texture>();
     if (texture == nullptr) {
       continue;
@@ -257,20 +230,9 @@ Function::VariableBindings Function::ReferencedSampledTextureVariablesImpl(
       continue;
     }
 
-    ast::BindingDecoration* binding = nullptr;
-    ast::GroupDecoration* group = nullptr;
-    for (auto* deco : var->Declaration()->decorations()) {
-      if (auto* b = deco->As<ast::BindingDecoration>()) {
-        binding = b;
-      } else if (auto* s = deco->As<ast::GroupDecoration>()) {
-        group = s;
-      }
+    if (auto binding_point = var->Declaration()->binding_point()) {
+      ret.push_back({var, binding_point});
     }
-    if (binding == nullptr || group == nullptr) {
-      continue;
-    }
-
-    ret.push_back({var, BindingInfo{binding, group}});
   }
 
   return ret;

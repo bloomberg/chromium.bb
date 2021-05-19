@@ -39,10 +39,7 @@ ui::IMEEngineHandlerInterface* GetEngine() {
 // InputMethodChromeOS implementation -----------------------------------------
 InputMethodChromeOS::InputMethodChromeOS(
     internal::InputMethodDelegate* delegate)
-    : InputMethodBase(delegate),
-      composing_text_(false),
-      composition_changed_(false),
-      handling_key_event_(false) {
+    : InputMethodBase(delegate) {
   ResetContext();
 }
 
@@ -241,7 +238,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
 
   gfx::Range text_range;
   gfx::Range selection_range;
-  base::string16 surrounding_text;
+  std::u16string surrounding_text;
   if (!client->GetTextRange(&text_range) ||
       !client->GetTextFromRange(text_range, &surrounding_text) ||
       !client->GetEditableSelectionRange(&selection_range)) {
@@ -566,8 +563,7 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessUnfilteredKeyPressEvent(
   // If a key event was not filtered by |context_| and |character_composer_|,
   // then it means the key event didn't generate any result text. So we need
   // to send corresponding character to the focused text input client.
-  uint16_t ch = event->GetCharacter();
-  if (ch)
+  if (event->GetCharacter())
     client->InsertChar(*event);
   return details;
 }
@@ -580,7 +576,7 @@ void InputMethodChromeOS::MaybeProcessPendingInputMethodResult(
 
   if (result_text_.length()) {
     if (handled && NeedInsertChar()) {
-      for (base::string16::const_iterator i = result_text_.begin();
+      for (std::u16string::const_iterator i = result_text_.begin();
            i != result_text_.end(); ++i) {
         KeyEvent ch_event(ET_KEY_PRESSED, VKEY_UNKNOWN, EF_NONE);
         ch_event.set_character(*i);
@@ -589,14 +585,14 @@ void InputMethodChromeOS::MaybeProcessPendingInputMethodResult(
     } else {
       // Split |result_text_| into two separate commits, one for the substring
       // before |result_text_cursor_| and one for the substring after.
-      const base::string16 before_cursor =
+      const std::u16string before_cursor =
           result_text_.substr(0, result_text_cursor_);
       if (!before_cursor.empty()) {
         client->InsertText(
             before_cursor,
             TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
       }
-      const base::string16 after_cursor =
+      const std::u16string after_cursor =
           result_text_.substr(result_text_cursor_);
       if (!after_cursor.empty()) {
         client->InsertText(
@@ -650,19 +646,12 @@ bool InputMethodChromeOS::HasInputMethodResult() const {
 }
 
 void InputMethodChromeOS::CommitText(
-    const std::string& text,
+    const std::u16string& text,
     TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-  if (text.empty())
-    return;
-
   // We need to receive input method result even if the text input type is
   // TEXT_INPUT_TYPE_NONE, to make sure we can always send correct
   // character for each key event to the focused text input client.
   if (!GetTextInputClient())
-    return;
-
-  const base::string16 utf16_text = base::UTF8ToUTF16(text);
-  if (utf16_text.empty())
     return;
 
   if (!CanComposeInline()) {
@@ -672,17 +661,17 @@ void InputMethodChromeOS::CommitText(
 
   // Append the text to the buffer, because commit signal might be fired
   // multiple times when processing a key event.
-  result_text_.insert(result_text_cursor_, utf16_text);
+  result_text_.insert(result_text_cursor_, text);
   if (cursor_behavior ==
       TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText) {
-    result_text_cursor_ += utf16_text.length();
+    result_text_cursor_ += text.length();
   }
 
   // If we are not handling key event, do not bother sending text result if the
   // focused text input client does not support text input.
   if (!handling_key_event_ && !IsTextInputTypeNone()) {
     if (!SendFakeProcessKeyEvent(true))
-      GetTextInputClient()->InsertText(utf16_text, cursor_behavior);
+      GetTextInputClient()->InsertText(text, cursor_behavior);
     SendFakeProcessKeyEvent(false);
     result_text_.clear();
     result_text_cursor_ = 0;
@@ -789,12 +778,11 @@ bool InputMethodChromeOS::ExecuteCharacterComposer(const ui::KeyEvent& event) {
   if (!character_composer_.FilterKeyPress(event))
     return false;
 
-  // CharacterComposer consumed the key event.  Update the composition text.
+  // CharacterComposer consumed the key event. Update the composition text.
   CompositionText preedit;
   preedit.text = character_composer_.preedit_string();
   UpdateCompositionText(preedit, preedit.text.size(), !preedit.text.empty());
-  std::string commit_text =
-      base::UTF16ToUTF8(character_composer_.composed_character());
+  const std::u16string& commit_text = character_composer_.composed_character();
   if (!commit_text.empty()) {
     CommitText(commit_text,
                TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);

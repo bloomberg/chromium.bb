@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -141,11 +142,10 @@ class ServiceWorkerConsoleObserver
     : public content::ServiceWorkerContextObserver {
  public:
   explicit ServiceWorkerConsoleObserver(
-      content::BrowserContext* browser_context)
-      : scoped_observer_(this) {
+      content::BrowserContext* browser_context) {
     content::StoragePartition* partition =
         content::BrowserContext::GetDefaultStoragePartition(browser_context);
-    scoped_observer_.Add(partition->GetServiceWorkerContext());
+    scoped_observation_.Observe(partition->GetServiceWorkerContext());
   }
   ~ServiceWorkerConsoleObserver() override = default;
 
@@ -169,9 +169,9 @@ class ServiceWorkerConsoleObserver
 
   base::RunLoop run_loop_;
   std::vector<Message> messages_;
-  ScopedObserver<content::ServiceWorkerContext,
-                 content::ServiceWorkerContextObserver>
-      scoped_observer_;
+  base::ScopedObservation<content::ServiceWorkerContext,
+                          content::ServiceWorkerContextObserver>
+      scoped_observation_{this};
 };
 
 class CorbAndCorsExtensionBrowserTest : public CorbAndCorsExtensionTestBase {
@@ -1161,7 +1161,7 @@ IN_PROC_BROWSER_TEST_F(CorbAndCorsExtensionBrowserTest,
       "text-object.txt: ae52dd09-9746-4b7e-86a6-6ada5e2680c2");
 }
 
-// The trust-token-redemption Feature Policy feature, which is enabled by
+// The trust-token-redemption Permissions Policy feature, which is enabled by
 // default, is required in order to execute a Trust Tokens
 // (https://github.com/wicg/trust-token-api) redemption operation alongside a
 // subresource request. To enforce this requirement, the browser binds the
@@ -1916,7 +1916,7 @@ IN_PROC_BROWSER_TEST_F(CorbAndCorsExtensionBrowserTest,
   // is restricted to secure contexts.
   GURL main_url(origin + "/appcache/simple_page_with_manifest.html");
   ui_test_utils::NavigateToURL(browser(), main_url);
-  base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
+  std::u16string expected_title = u"AppCache updated";
   content::TitleWatcher title_watcher(active_web_contents(), expected_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   ui_test_utils::NavigateToURL(browser(), main_url);

@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_PERMISSIONS_TEST_MOCK_PERMISSION_REQUEST_H_
 #define COMPONENTS_PERMISSIONS_TEST_MOCK_PERMISSION_REQUEST_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "build/build_config.h"
 #include "components/permissions/permission_request.h"
 #include "url/gurl.h"
@@ -34,9 +35,9 @@ class MockPermissionRequest : public PermissionRequest {
   RequestType GetRequestType() const override;
 
 #if defined(OS_ANDROID)
-  base::string16 GetMessageText() const override;
+  std::u16string GetMessageText() const override;
 #endif
-  base::string16 GetMessageTextFragment() const override;
+  std::u16string GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
 
   void PermissionGranted(bool is_one_time) override;
@@ -65,9 +66,9 @@ class MockPermissionRequest : public PermissionRequest {
   PermissionRequestGestureType gesture_type_;
   ContentSettingsType content_settings_type_;
 
-  base::string16 text_;
-  base::string16 accept_label_;
-  base::string16 deny_label_;
+  std::u16string text_;
+  std::u16string accept_label_;
+  std::u16string deny_label_;
   GURL origin_;
 };
 

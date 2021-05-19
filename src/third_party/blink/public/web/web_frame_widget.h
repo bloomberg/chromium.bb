@@ -55,7 +55,7 @@ class WebNonCompositedWidgetClient;
 
 class WebFrameWidget : public WebWidget {
  public:
-  // Similiar to `InitializeCompositing()` but for non-compositing widgets.
+  // Similar to `InitializeCompositing()` but for non-compositing widgets.
   // Exactly one of either `InitializeCompositing()` or this method must
   // be called before using the widget.
   virtual void InitializeNonCompositing(
@@ -96,12 +96,14 @@ class WebFrameWidget : public WebWidget {
   virtual void DragTargetDrop(const WebDragData&,
                               const gfx::PointF& point_in_viewport,
                               const gfx::PointF& screen_point,
-                              uint32_t key_modifiers) = 0;
+                              uint32_t key_modifiers,
+                              base::OnceClosure callback) = 0;
 
   // Notifies the WebFrameWidget that a drag has terminated.
   virtual void DragSourceEndedAt(const gfx::PointF& point_in_viewport,
                                  const gfx::PointF& screen_point,
-                                 ui::mojom::DragOperation) = 0;
+                                 ui::mojom::DragOperation,
+                                 base::OnceClosure callback) = 0;
 
   // Notifies the WebFrameWidget that the system drag and drop operation has
   // ended.

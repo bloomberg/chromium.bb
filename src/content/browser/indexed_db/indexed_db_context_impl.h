@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -18,15 +19,16 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
 #include "components/services/storage/public/mojom/file_system_access_context.mojom.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/indexed_db_control_test.mojom.h"
+#include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "components/services/storage/public/mojom/storage_policy_update.mojom.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -40,6 +42,10 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace storage {
+class QuotaClientCallbackWrapper;
+}
+
 namespace url {
 class Origin;
 }
@@ -47,6 +53,7 @@ class Origin;
 namespace content {
 class IndexedDBConnection;
 class IndexedDBFactoryImpl;
+class IndexedDBQuotaClient;
 
 class CONTENT_EXPORT IndexedDBContextImpl
     : public base::RefCountedThreadSafe<IndexedDBContextImpl>,
@@ -194,8 +201,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   void NotifyIndexedDBListChanged(const url::Origin& origin);
   void NotifyIndexedDBContentChanged(const url::Origin& origin,
-                                     const base::string16& database_name,
-                                     const base::string16& object_store_name);
+                                     const std::u16string& database_name,
+                                     const std::u16string& object_store_name);
 
  private:
   friend class base::RefCountedThreadSafe<IndexedDBContextImpl>;
@@ -249,11 +256,16 @@ class CONTENT_EXPORT IndexedDBContextImpl
   std::set<url::Origin> origins_to_purge_on_shutdown_;
   base::Clock* const clock_;
 
+  const std::unique_ptr<IndexedDBQuotaClient> quota_client_;
+  const std::unique_ptr<storage::QuotaClientCallbackWrapper>
+      quota_client_wrapper_;
+
   mojo::ReceiverSet<storage::mojom::IndexedDBControl> receivers_;
   mojo::ReceiverSet<storage::mojom::IndexedDBControlTest> test_receivers_;
   base::Optional<mojo::Receiver<storage::mojom::MockFailureInjector>>
       mock_failure_injector_;
   mojo::RemoteSet<storage::mojom::IndexedDBObserver> observers_;
+  mojo::Receiver<storage::mojom::QuotaClient> quota_client_receiver_;
   const std::unique_ptr<storage::FilesystemProxy> filesystem_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);

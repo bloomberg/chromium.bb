@@ -29,6 +29,18 @@ struct ReceiverWifiStatus {
   std::vector<int32_t> wifi_speed;
 };
 
+enum class MediaCapability {
+  kAudio,
+  kAac,
+  kOpus,
+  kVideo,
+  k4k,
+  kH264,
+  kVp8,
+  kVp9,
+  kHevc
+};
+
 struct ReceiverCapability {
   static constexpr int kRemotingVersionUnknown = -1;
 
@@ -39,7 +51,7 @@ struct ReceiverCapability {
   int remoting_version = kRemotingVersionUnknown;
 
   // Set of capabilities (e.g., ac3, 4k, hevc, vp9, dolby_vision, etc.).
-  std::vector<std::string> media_capabilities;
+  std::vector<MediaCapability> media_capabilities;
 };
 
 struct ReceiverError {
@@ -84,7 +96,7 @@ struct ReceiverMessage {
 
   absl::variant<absl::monostate,
                 Answer,
-                std::string,
+                std::vector<uint8_t>,  // Binary-encoded RPC message.
                 ReceiverWifiStatus,
                 ReceiverCapability,
                 ReceiverError>

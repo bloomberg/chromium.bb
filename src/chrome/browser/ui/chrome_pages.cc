@@ -44,7 +44,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -112,11 +112,10 @@ void OpenBookmarkManagerForNode(Browser* browser, int64_t node_id) {
 void LaunchReleaseNotesImpl(Profile* profile,
                             apps::mojom::LaunchSource source) {
   base::RecordAction(UserMetricsAction("ReleaseNotes.ShowReleaseNotes"));
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(profile);
-  proxy->LaunchAppWithUrl(web_app::kHelpAppId, ui::EventFlags::EF_NONE,
-                          GURL("chrome://help-app/updates"), source,
-                          apps::MakeWindowInfo(display::kDefaultDisplayId));
+  apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(profile)
+      ->LaunchAppWithUrl(web_app::kHelpAppId, ui::EventFlags::EF_NONE,
+                         GURL("chrome://help-app/updates"), source,
+                         apps::MakeWindowInfo(display::kDefaultDisplayId));
 }
 
 #endif
@@ -143,10 +142,9 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
     default:
       NOTREACHED() << "Unhandled help source" << source;
   }
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(profile);
-  proxy->Launch(web_app::kHelpAppId, ui::EventFlags::EF_NONE, app_launch_source,
-                apps::MakeWindowInfo(display::kDefaultDisplayId));
+  apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(profile)
+      ->Launch(web_app::kHelpAppId, ui::EventFlags::EF_NONE, app_launch_source,
+               apps::MakeWindowInfo(display::kDefaultDisplayId));
 #else
   GURL url;
   switch (source) {
@@ -450,30 +448,17 @@ void ShowAppManagementPage(Profile* profile,
                                                                sub_page);
 }
 
-void ShowPrintManagementApp(Profile* profile,
-                            PrintManagementAppEntryPoint entry_point) {
-  DCHECK(entry_point == PrintManagementAppEntryPoint::kSettings ||
-         entry_point == PrintManagementAppEntryPoint::kNotification);
-
-  base::UmaHistogramEnumeration("Printing.CUPS.PrintManagementAppEntryPoint",
-                                entry_point);
+void ShowPrintManagementApp(Profile* profile) {
   LaunchSystemWebAppAsync(profile, web_app::SystemAppType::PRINT_MANAGEMENT);
 }
 
 void ShowConnectivityDiagnosticsApp(Profile* profile) {
-  DCHECK(base::FeatureList::IsEnabled(
-      chromeos::features::kConnectivityDiagnosticsWebUi));
   LaunchSystemWebAppAsync(profile,
                           web_app::SystemAppType::CONNECTIVITY_DIAGNOSTICS);
 }
 
-void ShowScanningApp(Profile* profile,
-                     chromeos::scanning::ScanAppEntryPoint entry_point) {
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kScanningUI));
-  DCHECK_EQ(chromeos::scanning::ScanAppEntryPoint::kSettings, entry_point);
-
+void ShowScanningApp(Profile* profile) {
   LaunchSystemWebAppAsync(profile, web_app::SystemAppType::SCANNING);
-  chromeos::scanning::RecordScanAppEntryPoint(entry_point);
 }
 
 void ShowDiagnosticsApp(Profile* profile) {
@@ -513,7 +498,7 @@ void ShowBrowserSignin(Browser* browser,
       case signin::ConsentLevel::kSync:
         bubble_view_mode = profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
         break;
-      case signin::ConsentLevel::kNotRequired:
+      case signin::ConsentLevel::kSignin:
         bubble_view_mode = profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT;
         break;
     }

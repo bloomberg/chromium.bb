@@ -73,16 +73,16 @@ namespace dawn_native {
         return new Fence(device, ObjectBase::kError);
     }
 
-    uint64_t Fence::GetCompletedValue() const {
+    uint64_t Fence::APIGetCompletedValue() const {
         if (IsError()) {
             return 0;
         }
         return uint64_t(mCompletedValue);
     }
 
-    void Fence::OnCompletion(uint64_t apiValue,
-                             wgpu::FenceOnCompletionCallback callback,
-                             void* userdata) {
+    void Fence::APIOnCompletion(uint64_t apiValue,
+                                wgpu::FenceOnCompletionCallback callback,
+                                void* userdata) {
         FenceAPISerial value(apiValue);
 
         WGPUFenceCompletionStatus status;

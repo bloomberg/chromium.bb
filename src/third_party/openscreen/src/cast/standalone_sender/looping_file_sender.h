@@ -24,6 +24,7 @@ class LoopingFileSender final : public SimulatedAudioCapturer::Client,
  public:
   LoopingFileSender(Environment* environment,
                     const char* path,
+                    const SenderSession* session,
                     SenderSession::ConfiguredSenders senders,
                     int max_bitrate);
 
@@ -59,11 +60,12 @@ class LoopingFileSender final : public SimulatedAudioCapturer::Client,
   // The path to the media file to stream over and over.
   const char* const path_;
 
-  // The packet router allows both the Audio Sender and the Video Sender to
-  // share the same UDP socket.
-  SenderPacketRouter packet_router_;
+  // Session to query for bandwidth information.
+  const SenderSession* session_;
 
-  const int max_bitrate_;  // Passed by the user on the command line.
+  // User provided maximum bitrate (from command line argument).
+  const int max_bitrate_;
+
   int bandwidth_estimate_ = 0;
   int bandwidth_being_utilized_;
 

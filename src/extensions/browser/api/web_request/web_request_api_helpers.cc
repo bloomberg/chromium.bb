@@ -14,7 +14,9 @@
 
 #include "base/bind.h"
 #include "base/containers/adapters.h"
+#include "base/containers/contains.h"
 #include "base/containers/fixed_flat_map.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -49,6 +51,15 @@
 #include "net/log/net_log_event_type.h"
 #include "services/network/public/cpp/features.h"
 #include "url/url_constants.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/login/login_state/login_state.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"  // nogncheck
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#endif
 
 // TODO(battre): move all static functions into an anonymous namespace at the
 // top of this file.
@@ -1719,16 +1730,31 @@ std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
 bool ShouldHideRequestHeader(content::BrowserContext* browser_context,
                              int extra_info_spec,
                              const std::string& name) {
-  static const std::set<std::string> kRequestHeaders(
-      {"accept-encoding", "accept-language", "cookie", "origin", "referer"});
+  static constexpr auto kRequestHeaders =
+      base::MakeFixedFlatSet<base::StringPiece>({"accept-encoding",
+                                                 "accept-language", "cookie",
+                                                 "origin", "referer"});
   return !(extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) &&
-         kRequestHeaders.find(base::ToLowerASCII(name)) !=
-             kRequestHeaders.end();
+         base::Contains(kRequestHeaders, base::ToLowerASCII(name));
 }
 
 bool ShouldHideResponseHeader(int extra_info_spec, const std::string& name) {
   return !(extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) &&
          base::LowerCaseEqualsASCII(name, "set-cookie");
+}
+
+bool ArePublicSessionRestrictionsEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (chromeos::LoginState::IsInitialized()) {
+    return chromeos::LoginState::Get()->ArePublicSessionRestrictionsEnabled();
+  }
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  DCHECK(chromeos::LacrosChromeServiceImpl::Get());
+  return chromeos::LacrosChromeServiceImpl::Get()
+             ->init_params()
+             ->session_type == crosapi::mojom::SessionType::kPublicSession;
+#endif
+  return false;
 }
 
 }  // namespace extension_web_request_api_helpers

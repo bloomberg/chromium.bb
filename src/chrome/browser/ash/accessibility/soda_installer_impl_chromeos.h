@@ -10,6 +10,11 @@
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 
 class PrefService;
+class OnDeviceSpeechRecognizerTest;
+
+namespace ash {
+class DictationTest;
+}  // namespace ash
 
 namespace speech {
 
@@ -35,9 +40,22 @@ class SodaInstallerImplChromeOS : public SodaInstaller {
   void InstallSoda(PrefService* prefs) override;
   void InstallLanguage(PrefService* prefs) override;
   bool IsSodaInstalled() const override;
-  void UninstallSoda(PrefService* global_prefs) override;
+  bool IsLanguageInstalled(
+      const std::string& locale_or_language) const override;
 
  private:
+  friend class ::ash::DictationTest;
+  friend class ::OnDeviceSpeechRecognizerTest;
+
+  // SodaInstaller:
+  // Here "uninstall" is used in the DLC sense of the term: Uninstallation will
+  // disable a DLC but not immediately remove it from disk.
+  // Once a refcount to the DLC reaches 0 (meaning all profiles which had it
+  // installed have called to uninstall it), the DLC will remain in cache; if it
+  // is then not installed within a (DLC-service-defined) window of time, the
+  // DLC is automatically purged from disk.
+  void UninstallSoda(PrefService* global_prefs) override;
+
   void SetSodaBinaryPath(base::FilePath new_path);
   void SetLanguagePath(base::FilePath new_path);
 
@@ -55,6 +73,11 @@ class SodaInstallerImplChromeOS : public SodaInstaller {
 
   // This is the UninstallCallback for DlcserviceClient::Uninstall().
   void OnDlcUninstalled(const std::string& dlc_id, const std::string& err);
+
+  // When true, IsSodaInstalled() will return true. This may be used by tests
+  // that need to pretend soda is installed before using
+  // FakeSpeechRecognitionService.
+  bool soda_installed_for_test_ = false;
 
   bool is_soda_downloading_ = false;
   bool is_language_downloading_ = false;

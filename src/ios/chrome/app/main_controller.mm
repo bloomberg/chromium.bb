@@ -34,6 +34,7 @@
 #import "ios/chrome/app/content_suggestions_scheduler_app_state_agent.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/memory_monitor.h"
+#import "ios/chrome/app/safe_mode_app_state_agent.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #include "ios/chrome/app/startup/chrome_main_starter.h"
@@ -82,6 +83,7 @@
 #import "ios/chrome/browser/search_engines/extension_search_engine_data_updater.h"
 #include "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/sessions/scene_util.h"
 #import "ios/chrome/browser/share_extension/share_extension_service.h"
 #import "ios/chrome/browser/share_extension/share_extension_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_delegate.h"
@@ -334,8 +336,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Helper methods to initialize the application to a specific stage.
 // Setting |_browserInitializationStage| to a specific stage requires the
 // corresponding function to return YES.
-// Initializes the application to INITIALIZATION_STAGE_BASIC, which is the
-// minimum initialization needed in all cases.
+// Initializes the application to the minimum initialization needed in all
+// cases.
 - (void)startUpBrowserBasicInitialization;
 // Initializes the application to INITIALIZATION_STAGE_BACKGROUND, which is
 // needed by background handlers.
@@ -373,12 +375,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // This function starts up to only what is needed at each stage of the
 // initialization. It is possible to continue initialization later.
 - (void)startUpBrowserToStage:(BrowserInitializationStageType)stage {
-  if (_browserInitializationStage < INITIALIZATION_STAGE_BASIC &&
-      stage >= INITIALIZATION_STAGE_BASIC) {
-    [self startUpBrowserBasicInitialization];
-    _browserInitializationStage = INITIALIZATION_STAGE_BASIC;
-  }
-
   if (_browserInitializationStage < INITIALIZATION_STAGE_BACKGROUND &&
       stage >= INITIALIZATION_STAGE_BACKGROUND) {
     [self startUpBrowserBackgroundInitialization];
@@ -489,10 +485,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // browser state.
   BOOL needRestoration = NO;
   if (isPostCrashLaunch) {
-    NSSet<NSString*>* sessions =
-        base::ios::IsMultiwindowSupported()
-            ? [[PreviousSessionInfo sharedInstance] connectedSceneSessionsIDs]
-            : [NSSet setWithArray:@[ @"" ]];
+    NSSet<NSString*>* sessions = nil;
+    if (@available(ios 13, *)) {
+      sessions =
+          [[PreviousSessionInfo sharedInstance] connectedSceneSessionsIDs];
+    } else {
+      sessions = [NSSet setWithObjects:SessionIdentifierForScene(nil), nil];
+    }
 
     needRestoration = [CrashRestoreHelper moveAsideSessions:sessions
                                             forBrowserState:chromeBrowserState];
@@ -601,6 +600,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self startUpAfterFirstWindowCreated];
 }
 
+- (void)appState:(AppState*)appState
+    didTransitionToInitStage:(InitStage)initStage {
+  if (initStage == InitStageStart) {
+    [self startUpBrowserBasicInitialization];
+  }
+}
+
 #pragma mark - Property implementation.
 
 - (void)setAppState:(AppState*)appState {
@@ -612,6 +618,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [appState addAgent:[[AppMetricsAppStateAgent alloc] init]];
   [appState addAgent:[[ContentSuggestionsSchedulerAppAgent alloc] init]];
   [appState addAgent:[[IncognitoUsageAppStateAgent alloc] init]];
+  [appState addAgent:[[SafeModeAppAgent alloc] init]];
 
   // Create the window accessibility agent only when multuple windows are
   // possible.

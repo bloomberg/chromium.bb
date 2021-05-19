@@ -126,7 +126,7 @@ TEST_F(RenderViewHostTest, StartDragging) {
   DropData drop_data;
   // If `html` is not populated, `html_base_url` won't be populated when
   // converting to `DragData` with `DropDataToDragData`.
-  drop_data.html = base::string16();
+  drop_data.html = std::u16string();
 
   GURL blocked_url = GURL(kBlockedURL);
   GURL file_url = GURL("file:///home/user/secrets.txt");
@@ -178,7 +178,8 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
   // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
   rvh()->GetWidget()->FilterDropData(&dropped_data);
   rvh()->GetWidget()->DragTargetDragEnter(
-      dropped_data, client_point, screen_point, blink::kDragOperationNone, 0);
+      dropped_data, client_point, screen_point, blink::kDragOperationNone, 0,
+      base::DoNothing());
 
   int id = process()->GetID();
   ChildProcessSecurityPolicyImpl* policy =

@@ -170,7 +170,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.FailedTasksChrome"
-    enum="ChromeBrowsingDataRemoverTasks" expires_after="2021-04-01">
+    enum="ChromeBrowsingDataRemoverTasks" expires_after="2021-07-01">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
@@ -374,7 +374,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.UserDeletedFromTab"
-    enum="ClearBrowsingDataTab" expires_after="2021-08-01">
+    enum="ClearBrowsingDataTab" expires_after="2021-10-04">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
@@ -659,7 +659,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.InMemoryURLHistoryItems" units="units"
-    expires_after="2021-08-03">
+    expires_after="2021-10-04">
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -670,7 +670,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime" units="ms"
-    expires_after="2021-06-30">
+    expires_after="2021-08-29">
   <owner>mpearson@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -680,7 +680,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexRestoreCacheTime" units="ms"
-    expires_after="2021-06-30">
+    expires_after="2021-08-29">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -690,7 +690,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexSaveCacheTime" units="ms"
-    expires_after="2021-06-30">
+    expires_after="2021-08-29">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -725,7 +725,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.MonthlyURLCount" units="urls"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -736,7 +736,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.MonthlyVisitCount" units="visits"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -859,7 +859,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.URLTableCount" units="units"
-    expires_after="2021-06-27">
+    expires_after="2021-08-29">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -869,7 +869,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.VisitTableCount" units="units"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -890,7 +890,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.WeeklyURLCount" units="units"
-    expires_after="2021-06-27">
+    expires_after="2021-08-29">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -901,7 +901,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.WeeklyVisitCount" units="units"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>

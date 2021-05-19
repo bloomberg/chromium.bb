@@ -189,7 +189,7 @@ class StartSurfaceToolbarMediator {
 
     boolean isToolbarOnScreenTop() {
         return (mOverviewModeState == StartSurfaceState.SHOWN_HOMEPAGE
-                || mOverviewModeState == StartSurfaceState.SHOWN_TABSWITCHER)
+                       || mOverviewModeState == StartSurfaceState.SHOWN_TABSWITCHER)
                 && !mPropertyModel.get(IS_INCOGNITO) && mPropertyModel.get(IS_VISIBLE)
                 && mPropertyModel.get(TRANSLATION_Y) == 0;
     }

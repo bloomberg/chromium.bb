@@ -128,7 +128,8 @@ void DevToolsHost::EvaluateScript(const String& expression) {
   v8::MicrotasksScope microtasks(script_state->GetIsolate(),
                                  v8::MicrotasksScope::kRunMicrotasks);
   ScriptSourceCode source_code(expression, ScriptSourceLocationType::kInternal,
-                               nullptr, KURL(), TextPosition());
+                               nullptr, KURL(),
+                               TextPosition::MinimumPosition());
   V8ScriptRunner::CompileAndRunInternalScript(script_state->GetIsolate(),
                                               script_state, source_code);
 }
@@ -160,11 +161,13 @@ void DevToolsHost::copyText(const String& text) {
   frontend_frame_->GetSystemClipboard()->CommitWrite();
 }
 
-static String EscapeUnicodeNonCharacters(const String& str) {
-  const UChar kNonChar = 0xD800;
+static String EscapeInvalidUnicode(const String& str) {
+  const UChar kSurrogateStart = 0xD800;
+  const UChar kSurrogateEnd = 0xDFFF;
 
   unsigned i = 0;
-  while (i < str.length() && str[i] < kNonChar)
+  while (i < str.length() &&
+         (str[i] < kSurrogateStart || str[i] > kSurrogateEnd))
     ++i;
   if (i == str.length())
     return str;
@@ -173,7 +176,7 @@ static String EscapeUnicodeNonCharacters(const String& str) {
   dst.Append(str, 0, i);
   for (; i < str.length(); ++i) {
     UChar c = str[i];
-    if (c >= kNonChar) {
+    if (kSurrogateStart <= c && c <= kSurrogateEnd) {
       unsigned symbol = static_cast<unsigned>(c);
       String symbol_code = String::Format("\\u%04X", symbol);
       dst.Append(symbol_code);
@@ -186,7 +189,7 @@ static String EscapeUnicodeNonCharacters(const String& str) {
 
 void DevToolsHost::sendMessageToEmbedder(const String& message) {
   if (client_)
-    client_->SendMessageToEmbedder(EscapeUnicodeNonCharacters(message));
+    client_->SendMessageToEmbedder(EscapeInvalidUnicode(message));
 }
 
 void DevToolsHost::ShowContextMenu(LocalFrame* target_frame,

@@ -12,12 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/function.h"
-#include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
-#include "src/type/type.h"
-#include "src/type/void_type.h"
 
 namespace tint {
 namespace reader {
@@ -36,6 +31,22 @@ TEST_F(ParserImplTest, FunctionHeader) {
   EXPECT_EQ(f->params[0]->symbol(), p->builder().Symbols().Get("a"));
   EXPECT_EQ(f->params[1]->symbol(), p->builder().Symbols().Get("b"));
   EXPECT_TRUE(f->return_type->Is<type::Void>());
+}
+
+TEST_F(ParserImplTest, FunctionHeader_DecoratedReturnType) {
+  auto p = parser("fn main() -> [[location(1)]] f32");
+  auto f = p->function_header();
+  ASSERT_FALSE(p->has_error()) << p->error();
+  EXPECT_TRUE(f.matched);
+  EXPECT_FALSE(f.errored);
+
+  EXPECT_EQ(f->name, "main");
+  EXPECT_EQ(f->params.size(), 0u);
+  EXPECT_TRUE(f->return_type->Is<type::F32>());
+  ASSERT_EQ(f->return_type_decorations.size(), 1u);
+  auto* loc = f->return_type_decorations[0]->As<ast::LocationDecoration>();
+  ASSERT_TRUE(loc != nullptr);
+  EXPECT_EQ(loc->value(), 1u);
 }
 
 TEST_F(ParserImplTest, FunctionHeader_MissingIdent) {

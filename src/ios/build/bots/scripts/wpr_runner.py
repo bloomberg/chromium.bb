@@ -402,6 +402,18 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
         test_config['test_filter'] = test_app.excluded_tests
     return test_config
 
+  def get_launch_test_app(self):
+    """Returns the proper test_app for the run.
+
+    Returns:
+      This runner disregards xcode, and returns an implementation of GTestsApp
+    """
+    return test_apps.GTestsApp(
+        self.app_path,
+        included_tests=self.test_cases,
+        env_vars=self.env_vars,
+        test_args=self.test_args)
+
   def proxy_start(self):
     """Starts tsproxy and routes the machine's traffic through tsproxy."""
 
@@ -427,6 +439,7 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
             'networksetup', '-setsocksfirewallproxy', service, '127.0.0.1',
             '1080'
         ])
+        LOGGER.info('Added SOCKS proxy for service: %s.', service)
 
     self.proxy_process = subprocess.Popen(
         [
@@ -443,19 +456,7 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
     """Stops tsproxy and disables the machine's proxy settings."""
     if self.proxy_process is not None:
       os.kill(self.proxy_process.pid, signal.SIGINT)
-
-    network_services = subprocess.check_output(
-        ['networksetup', '-listallnetworkservices']).strip().split('\n')
-    if len(network_services) > 1:
-      # We ignore the first line as it is a description of the command's output.
-      network_services = network_services[1:]
-
-      for service in network_services:
-        # Disabled services have a '*' but calls should not include it
-        if service.startswith('*'):
-          service = service[1:]
-        subprocess.check_call(
-            ['networksetup', '-setsocksfirewallproxystate', service, 'off'])
+    self.remove_proxy_settings()
 
   def wprgo_start(self, replay_path):
     """Starts WprGo serving the specified replay file.

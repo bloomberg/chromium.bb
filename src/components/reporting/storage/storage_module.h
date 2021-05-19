@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "components/reporting/encryption/encryption_module.h"
+#include "components/reporting/encryption/encryption_module_interface.h"
 #include "components/reporting/proto/record.pb.h"
 #include "components/reporting/proto/record_constants.pb.h"
 #include "components/reporting/storage/storage.h"
@@ -27,8 +27,8 @@ class StorageModule : public StorageModuleInterface {
   // Factory method creates |StorageModule| object.
   static void Create(
       const StorageOptions& options,
-      UploaderInterface::StartCb start_upload_cb,
-      scoped_refptr<EncryptionModule> encryption_module,
+      UploaderInterface::AsyncStartUploaderCb async_start_upload_cb,
+      scoped_refptr<EncryptionModuleInterface> encryption_module,
       base::OnceCallback<void(StatusOr<scoped_refptr<StorageModuleInterface>>)>
           callback);
 
@@ -41,6 +41,13 @@ class StorageModule : public StorageModuleInterface {
   void AddRecord(Priority priority,
                  Record record,
                  base::OnceCallback<void(Status)> callback) override;
+
+  // Initiates upload of collected records according to the priority.
+  // Called usually for a queue with an infinite or very large upload period.
+  // Multiple |Flush| calls can safely run in parallel.
+  // Returns error if cannot start upload.
+  void Flush(Priority priority,
+             base::OnceCallback<void(Status)> callback) override;
 
   // Once a record has been successfully uploaded, the sequencing information
   // can be passed back to the StorageModule here for record deletion.

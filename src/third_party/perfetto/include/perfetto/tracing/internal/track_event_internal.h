@@ -47,7 +47,7 @@ class DebugAnnotation;
 // A callback interface for observing track event tracing sessions starting and
 // stopping. See TrackEvent::{Add,Remove}SessionObserver. Note that all methods
 // will be called on an internal Perfetto thread.
-class TrackEventSessionObserver {
+class PERFETTO_EXPORT TrackEventSessionObserver {
  public:
   virtual ~TrackEventSessionObserver();
   // Called when a track event tracing session is configured. Note tracing isn't
@@ -141,6 +141,8 @@ class PERFETTO_EXPORT TrackEventInternal {
       perfetto::protos::pbzero::TrackEvent::Type,
       uint64_t timestamp = GetTimeNs());
 
+  static void ResetIncrementalState(TraceWriterBase*, uint64_t timestamp);
+
   template <typename T>
   static void AddDebugAnnotation(perfetto::EventContext* event_ctx,
                                  const char* name,
@@ -189,7 +191,6 @@ class PERFETTO_EXPORT TrackEventInternal {
   static const Track kDefaultTrack;
 
  private:
-  static void ResetIncrementalState(TraceWriterBase*, uint64_t timestamp);
   static protozero::MessageHandle<protos::pbzero::TracePacket> NewTracePacket(
       TraceWriterBase*,
       uint64_t timestamp,

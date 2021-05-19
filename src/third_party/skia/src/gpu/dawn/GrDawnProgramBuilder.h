@@ -55,7 +55,7 @@ struct GrDawnProgram : public SkRefCnt {
                   uint32_t uniformBufferSize)
       : fDataManager(uniforms, uniformBufferSize) {
     }
-    std::unique_ptr<GrGLSLPrimitiveProcessor> fGeometryProcessor;
+    std::unique_ptr<GrGLSLGeometryProcessor> fGeometryProcessor;
     std::unique_ptr<GrGLSLXferProcessor> fXferProcessor;
     std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fFPImpls;
     std::vector<wgpu::BindGroupLayout> fBindGroupLayouts;
@@ -66,10 +66,10 @@ struct GrDawnProgram : public SkRefCnt {
 
     void setRenderTargetState(const GrRenderTarget*, GrSurfaceOrigin);
     wgpu::BindGroup setUniformData(GrDawnGpu*, const GrRenderTarget*, const GrProgramInfo&);
-    wgpu::BindGroup setTextures(GrDawnGpu* gpu,
-                                const GrPrimitiveProcessor& primProc,
-                                const GrPipeline& pipeline,
-                                const GrSurfaceProxy* const primProcTextures[]);
+    wgpu::BindGroup setTextures(GrDawnGpu*,
+                                const GrGeometryProcessor&,
+                                const GrPipeline&,
+                                const GrSurfaceProxy* const geomProcTextures[]);
 };
 
 class GrDawnProgramBuilder : public GrGLSLProgramBuilder {

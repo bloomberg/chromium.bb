@@ -49,7 +49,7 @@ class AwContentRendererClient : public content::ContentRendererClient,
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)
       override;
-  std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+  std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
   CreateWebSocketHandshakeThrottleProvider() override;
   bool HandleNavigation(content::RenderFrame* render_frame,
                         bool is_content_initiated,
@@ -59,9 +59,9 @@ class AwContentRendererClient : public content::ContentRendererClient,
                         blink::WebNavigationType type,
                         blink::WebNavigationPolicy default_policy,
                         bool is_redirect) override;
-  std::unique_ptr<content::URLLoaderThrottleProvider>
+  std::unique_ptr<blink::URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(
-      content::URLLoaderThrottleProviderType provider_type) override;
+      blink::URLLoaderThrottleProviderType provider_type) override;
 
   visitedlink::VisitedLinkReader* visited_link_reader() {
     return visited_link_reader_.get();

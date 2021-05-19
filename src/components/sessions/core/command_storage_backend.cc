@@ -369,6 +369,8 @@ base::FilePath::StringType GetSessionBaseName(
     CommandStorageManager::SessionType type,
     const base::FilePath& supplied_path) {
   switch (type) {
+    case CommandStorageManager::kAppRestore:
+      return kAppSessionFileNamePrefix;
     case CommandStorageManager::kTabRestore:
       return kTabSessionFileNamePrefix;
     case CommandStorageManager::kSessionRestore:
@@ -391,6 +393,8 @@ base::FilePath GetLegacySessionPath(CommandStorageManager::SessionType type,
                                     const base::FilePath& base_path,
                                     bool current) {
   switch (type) {
+    case CommandStorageManager::kAppRestore:
+      return base_path;
     case CommandStorageManager::kTabRestore:
       return base_path.Append(current ? kLegacyCurrentTabSessionFileName
                                       : kLegacyLastTabSessionFileName);

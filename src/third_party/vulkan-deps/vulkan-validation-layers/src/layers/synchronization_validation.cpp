@@ -28,6 +28,15 @@
 
 static bool SimpleBinding(const BINDABLE &bindable) { return !bindable.sparse && bindable.binding.mem_state; }
 
+static bool SimpleBinding(const IMAGE_STATE &image_state) {
+    bool simple = SimpleBinding(static_cast<const BINDABLE &>(image_state)) || image_state.is_swapchain_image ||
+                  (VK_NULL_HANDLE != image_state.bind_swapchain);
+
+    // If it's not simple we must have an encoder.
+    assert(!simple || image_state.fragment_encoder.get());
+    return simple;
+}
+
 const static std::array<AccessAddressType, static_cast<size_t>(AccessAddressType::kTypeCount)> kAddressTypes = {
     AccessAddressType::kLinear, AccessAddressType::kIdealized};
 
@@ -218,6 +227,15 @@ static const ResourceUsageTag kCurrentCommandTag(ResourceUsageTag::kMaxIndex, Re
 
 static VkDeviceSize ResourceBaseAddress(const BINDABLE &bindable) {
     return bindable.binding.offset + bindable.binding.mem_state->fake_base_address;
+}
+static VkDeviceSize ResourceBaseAddress(const IMAGE_STATE &image_state) {
+    VkDeviceSize base_address;
+    if (image_state.is_swapchain_image || (VK_NULL_HANDLE != image_state.bind_swapchain)) {
+        base_address = image_state.swapchain_fake_address;
+    } else {
+        base_address = ResourceBaseAddress(static_cast<const BINDABLE &>(image_state));
+    }
+    return base_address;
 }
 
 inline VkDeviceSize GetRealWholeSize(VkDeviceSize offset, VkDeviceSize size, VkDeviceSize whole_size) {
@@ -5015,32 +5033,26 @@ bool SyncOpPipelineBarrier::Validate(const CommandBufferAccessContext &cb_contex
     const auto *context = cb_context.GetCurrentAccessContext();
     assert(context);
     if (!context) return skip;
+    assert(barriers_.size() == 1);  // PipelineBarriers only support a single barrier set.
+
     // Validate Image Layout transitions
-    for (size_t barrier_set_index = 0; barrier_set_index < barriers_.size(); barrier_set_index++) {
-        const auto &barrier_set = barriers_[barrier_set_index];
-        for (const auto &image_barrier : barrier_set.image_memory_barriers) {
-            if (image_barrier.new_layout == image_barrier.old_layout)
-                continue;  // Only interested in layout transitions at this point.
-            const auto *image_state = image_barrier.image.get();
-            if (!image_state) continue;
-            const auto hazard = context->DetectImageBarrierHazard(image_barrier);
-            if (hazard.hazard) {
-                // PHASE1 TODO -- add tag information to log msg when useful.
-                const auto &sync_state = cb_context.GetSyncState();
-                const auto image_handle = image_state->image;
-                std::string barrier_set_string;
-                if (CMD_PIPELINEBARRIER2KHR == cmd_) {
-                    barrier_set_string = std::string(", pDependencyInfo ") + std::to_string(barrier_set_index);
-                }
-                skip |= sync_state.LogError(image_handle, string_SyncHazardVUID(hazard.hazard),
-                                            "%s: Hazard %s for image barrier %" PRIu32 " %s%s. Access info %s.", CmdName(),
-                                            string_SyncHazard(hazard.hazard), image_barrier.index,
-                                            sync_state.report_data->FormatHandle(image_handle).c_str(), barrier_set_string.c_str(),
-                                            cb_context.FormatUsage(hazard).c_str());
-            }
+    const auto &barrier_set = barriers_[0];
+    for (const auto &image_barrier : barrier_set.image_memory_barriers) {
+        if (image_barrier.new_layout == image_barrier.old_layout) continue;  // Only interested in layout transitions at this point.
+        const auto *image_state = image_barrier.image.get();
+        if (!image_state) continue;
+        const auto hazard = context->DetectImageBarrierHazard(image_barrier);
+        if (hazard.hazard) {
+            // PHASE1 TODO -- add tag information to log msg when useful.
+            const auto &sync_state = cb_context.GetSyncState();
+            const auto image_handle = image_state->image;
+            skip |= sync_state.LogError(image_handle, string_SyncHazardVUID(hazard.hazard),
+                                        "%s: Hazard %s for image barrier %" PRIu32 " %s. Access info %s.", CmdName(),
+                                        string_SyncHazard(hazard.hazard), image_barrier.index,
+                                        sync_state.report_data->FormatHandle(image_handle).c_str(),
+                                        cb_context.FormatUsage(hazard).c_str());
         }
     }
-
     return skip;
 }
 
@@ -5317,7 +5329,7 @@ bool SyncOpWaitEvents::Validate(const CommandBufferAccessContext &cb_context) co
                             (cmd_ == CMD_WAITEVENTS) ? "VUID-vkCmdResetEvent-event-03834" : "VUID-vkCmdResetEvent-event-03835";
                         if (ignore_reason == SyncEventState::Reset2WaitRace) {
                             vuid =
-                                (cmd_ == CMD_WAITEVENTS) ? "VUID-vkCmdResetEvent-event-03831" : "VUID-vkCmdResetEvent-event-03832";
+                                (cmd_ == CMD_WAITEVENTS) ? "VUID-vkCmdResetEvent2KHR-event-03831" : "VUID-vkCmdResetEvent2KHR-event-03832";
                         }
                         const char *const message =
                             "%s: %s %s operation following %s without intervening execution barrier, may cause race condition. %s";

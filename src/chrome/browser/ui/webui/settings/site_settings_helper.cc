@@ -11,7 +11,6 @@
 
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
@@ -113,6 +112,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
      kBluetoothChooserDataGroupType},
     {ContentSettingsType::WINDOW_PLACEMENT, "window-placement"},
     {ContentSettingsType::FONT_ACCESS, "font-access"},
+    {ContentSettingsType::FILE_HANDLING, "file-handling"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions do have UI in
@@ -151,9 +151,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::DISPLAY_CAPTURE, nullptr},
 };
 
-// TODO(crbug.com/1149878): After removing
-// ContentSettingsType::DEPRECATED_PLUGINS, remove +1.
-static_assert(base::size(kContentSettingsTypeGroupNames) + 1 ==
+static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.
                   static_cast<int32_t>(ContentSettingsType::NUM_TYPES) + 1,
               "kContentSettingsTypeGroupNames should have "
@@ -794,7 +792,7 @@ const ChooserTypeNameEntry* ChooserTypeFromGroupName(const std::string& name) {
 // in a chooser permission exceptions table. The chooser permission will contain
 // a list of site exceptions that correspond to the exception.
 base::Value CreateChooserExceptionObject(
-    const base::string16& display_name,
+    const std::u16string& display_name,
     const base::Value& object,
     const std::string& chooser_type,
     const ChooserExceptionDetails& chooser_exception_details) {
@@ -880,32 +878,31 @@ base::Value GetChooserExceptionListFromProfile(
   // Maps from a chooser exception name/object pair to a
   // ChooserExceptionDetails. This will group and sort the exceptions by the UI
   // string and object for display.
-  std::map<std::pair<base::string16, base::Value>, ChooserExceptionDetails>
+  std::map<std::pair<std::u16string, base::Value>, ChooserExceptionDetails>
       all_chooser_objects;
   for (const auto& object : objects) {
     // Don't include WebUI settings.
-    if (content::HasWebUIScheme(object->requesting_origin))
+    if (content::HasWebUIScheme(object->origin))
       continue;
 
-    base::string16 name = chooser_context->GetObjectDisplayName(object->value);
+    std::u16string name = chooser_context->GetObjectDisplayName(object->value);
     auto& chooser_exception_details =
         all_chooser_objects[std::make_pair(name, object->value.Clone())];
 
     std::string source = GetSourceStringForChooserException(
         profile, content_type, object->source);
 
-    const auto requesting_origin_source_pair =
-        std::make_pair(object->requesting_origin, source);
-    auto& embedding_origin_incognito_pair_set =
-        chooser_exception_details[requesting_origin_source_pair];
+    const auto origin_source_pair = std::make_pair(object->origin, source);
+    auto& origin_incognito_pair_set =
+        chooser_exception_details[origin_source_pair];
 
-    const auto embedding_origin_incognito_pair =
-        std::make_pair(object->embedding_origin, object->incognito);
-    embedding_origin_incognito_pair_set.insert(embedding_origin_incognito_pair);
+    const auto origin_incognito_pair =
+        std::make_pair(object->origin, object->incognito);
+    origin_incognito_pair_set.insert(origin_incognito_pair);
   }
 
   for (const auto& all_chooser_objects_entry : all_chooser_objects) {
-    const base::string16& name = all_chooser_objects_entry.first.first;
+    const std::u16string& name = all_chooser_objects_entry.first.first;
     const base::Value& object = all_chooser_objects_entry.first.second;
     const ChooserExceptionDetails& chooser_exception_details =
         all_chooser_objects_entry.second;

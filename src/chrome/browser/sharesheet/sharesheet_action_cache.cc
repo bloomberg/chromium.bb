@@ -41,7 +41,7 @@ SharesheetActionCache::SharesheetActionCache(Profile* profile) {
     AddShareAction(std::make_unique<ExampleAction>());
     AddShareAction(std::make_unique<ExampleAction>());
   }
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 SharesheetActionCache::~SharesheetActionCache() = default;
@@ -52,7 +52,7 @@ SharesheetActionCache::GetShareActions() {
 }
 
 ShareAction* SharesheetActionCache::GetActionFromName(
-    const base::string16& action_name) {
+    const std::u16string& action_name) {
   auto iter = share_actions_.begin();
   while (iter != share_actions_.end()) {
     if ((*iter)->GetActionName() == action_name) {
@@ -65,7 +65,7 @@ ShareAction* SharesheetActionCache::GetActionFromName(
 }
 
 const gfx::VectorIcon* SharesheetActionCache::GetVectorIconFromName(
-    const base::string16& display_name) {
+    const std::u16string& display_name) {
   ShareAction* share_action = GetActionFromName(display_name);
   if (share_action == nullptr) {
     return nullptr;

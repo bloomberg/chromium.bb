@@ -27,11 +27,8 @@ AudioFrame::AudioFrame(scoped_refptr<media::AudioBuffer> buffer)
   buffer_ = AudioBuffer::CreateUninitialized(
       buffer->channel_count(), buffer->frame_count(), buffer->sample_rate());
 
-  // AudioBuffer::CreateUninitialized() can fail. This can be the result of
-  // running out of memory, or having parameters that exceed some of WebAudio's
-  // limits. Crash here to prevent accessing uninitialized data below.
-  // TODO(crbug.com/1179079): Add upstream checks to prevent initializing
-  // |buffer_| with parameters outside of WebAudio's limits.
+  // AudioBuffer::CreateUninitialized() can fail if we run out of memory.
+  // Crash here to prevent accessing uninitialized data below.
   CHECK(buffer_);
 
   auto converted_data =
@@ -47,9 +44,39 @@ AudioFrame::AudioFrame(scoped_refptr<media::AudioBuffer> buffer)
   buffer->ReadAllFrames(wrapped_channels);
 }
 
+AudioFrame::AudioFrame(std::unique_ptr<AudioFrameSerializationData> data)
+    : AudioFrame(data.get()) {}
+
+AudioFrame::AudioFrame(AudioFrameSerializationData* data)
+    : timestamp_(data->timestamp().InMicroseconds()) {
+  media::AudioBus* data_bus = data->data();
+
+  buffer_ = AudioBuffer::CreateUninitialized(
+      data_bus->channels(), data_bus->frames(), data->sample_rate());
+
+  // AudioBuffer::CreateUninitialized() can fail if we run out of memory.
+  // Crash here to prevent accessing uninitialized data below.
+  CHECK(buffer_);
+
+  // Copy the frames.
+  // TODO(https://crbug.com/1168418): Avoid this copy by refactoring
+  // blink::AudioBuffer accept a serializable audio data backing object.
+  DCHECK_EQ(static_cast<int>(buffer_->numberOfChannels()),
+            data_bus->channels());
+  DCHECK_EQ(static_cast<int>(buffer_->length()), data_bus->frames());
+
+  for (int i = 0; i < data_bus->channels(); ++i) {
+    size_t byte_length = buffer_->getChannelData(i)->byteLength();
+    DCHECK_EQ(byte_length, data_bus->frames() * sizeof(float));
+    float* buffer_data_dest = buffer_->getChannelData(i)->Data();
+    memcpy(buffer_data_dest, data_bus->channel(i), byte_length);
+  }
+}
+
 std::unique_ptr<AudioFrameSerializationData>
 AudioFrame::GetSerializationData() {
-  DCHECK(buffer_);
+  if (!buffer_)
+    return nullptr;
 
   // Copy buffer unaligned memory into media::AudioBus' aligned memory.
   // TODO(https://crbug.com/1168418): reevaluate if this copy is necessary after
@@ -69,35 +96,6 @@ AudioFrame::GetSerializationData() {
   return AudioFrameSerializationData::Wrap(
       std::move(data_copy), buffer_->sampleRate(),
       base::TimeDelta::FromMicroseconds(timestamp_));
-}
-
-AudioFrame::AudioFrame(std::unique_ptr<AudioFrameSerializationData> data)
-    : timestamp_(data->timestamp().InMicroseconds()) {
-  media::AudioBus* data_bus = data->data();
-
-  buffer_ = AudioBuffer::CreateUninitialized(
-      data_bus->channels(), data_bus->frames(), data->sample_rate());
-
-  // AudioBuffer::CreateUninitialized() can fail. This can be the result of
-  // running out of memory, or having parameters that exceed some of WebAudio's
-  // limits. Crash here to prevent accessing uninitialized data below.
-  // TODO(crbug.com/1179079): Add upstream checks to prevent initializing
-  // |buffer_| with parameters outside of WebAudio's limits.
-  CHECK(buffer_);
-
-  // Copy the frames.
-  // TODO(https://crbug.com/1168418): Avoid this copy by refactoring
-  // blink::AudioBuffer accept a serializable audio data backing object.
-  DCHECK_EQ(static_cast<int>(buffer_->numberOfChannels()),
-            data_bus->channels());
-  DCHECK_EQ(static_cast<int>(buffer_->length()), data_bus->frames());
-
-  for (int i = 0; i < data_bus->channels(); ++i) {
-    size_t byte_length = buffer_->getChannelData(i)->byteLength();
-    DCHECK_EQ(byte_length, data_bus->frames() * sizeof(float));
-    float* buffer_data_dest = buffer_->getChannelData(i)->Data();
-    memcpy(buffer_data_dest, data_bus->channel(i), byte_length);
-  }
 }
 
 void AudioFrame::close() {

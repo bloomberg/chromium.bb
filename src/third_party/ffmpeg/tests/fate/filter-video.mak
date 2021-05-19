@@ -423,9 +423,9 @@ fate-filter-overlay-dvdsub-2397: CMD = framecrc -auto_conversion_filters -flags 
 
 FATE_FILTER_HQX-$(call ALLYES, IMAGE2_DEMUXER PNG_DECODER HQX_FILTER) = fate-filter-hq2x fate-filter-hq3x fate-filter-hq4x
 FATE_FILTER_SAMPLES-yes += $(FATE_FILTER_HQX-yes)
-fate-filter-hq2x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,hqx=2 -pix_fmt bgra
-fate-filter-hq3x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,hqx=3 -pix_fmt bgra
-fate-filter-hq4x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,hqx=4 -pix_fmt bgra
+fate-filter-hq2x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,format=rgb32,hqx=2,scale,format=bgra
+fate-filter-hq3x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,format=rgb32,hqx=3,scale,format=bgra
+fate-filter-hq4x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,format=rgb32,hqx=4,scale,format=bgra
 fate-filter-hqx: $(FATE_FILTER_HQX-yes)
 
 FATE_FILTER_XBR-$(call ALLYES, IMAGE2_DEMUXER PNG_DECODER XBR_FILTER) = fate-filter-2xbr fate-filter-3xbr fate-filter-4xbr
@@ -564,29 +564,30 @@ fate-filter-pad: CMD = video_filter "pad=iw*1.5:ih*1.5:iw*0.3:ih*0.2"
 FATE_FILTER_PP = fate-filter-pp fate-filter-pp1 fate-filter-pp2 fate-filter-pp3 fate-filter-pp4 fate-filter-pp5 fate-filter-pp6
 FATE_FILTER_VSYNTH-$(CONFIG_PP_FILTER) += $(FATE_FILTER_PP)
 $(FATE_FILTER_PP): fate-vsynth1-mpeg4-qprd
+fate-vsynth1-mpeg4-qprd: KEEP_OVERRIDE= -keep
 
-fate-filter-pp:  CMD = framecrc -flags bitexact -idct simple -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf "pp=be/hb/vb/tn/l5/al"
+fate-filter-pp:  CMD = framecrc -flags bitexact -export_side_data venc_params -idct simple -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf "pp=be/hb/vb/tn/l5/al"
 fate-filter-pp1: CMD = video_filter "pp=fq|4/be/hb/vb/tn/l5/al"
-fate-filter-pp2: CMD = video_filter "qp=x+y,pp=be/h1/v1/lb"
-fate-filter-pp3: CMD = video_filter "qp=x+y,pp=be/ha|128|7/va/li"
+fate-filter-pp2: CMD = video_filter "qp=2*(x+y),pp=be/h1/v1/lb"
+fate-filter-pp3: CMD = video_filter "qp=2*(x+y),pp=be/ha|128|7/va/li"
 fate-filter-pp4: CMD = video_filter "pp=be/ci"
 fate-filter-pp5: CMD = video_filter "pp=md"
 fate-filter-pp6: CMD = video_filter "pp=be/fd"
 
 FATE_FILTER_VSYNTH-$(CONFIG_PP7_FILTER) += fate-filter-pp7
 fate-filter-pp7: fate-vsynth1-mpeg4-qprd
-fate-filter-pp7: CMD = framecrc -flags bitexact -idct simple -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf "pp7"
+fate-filter-pp7: CMD = framecrc -flags bitexact -export_side_data venc_params -idct simple -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf "pp7"
 
 FATE_FILTER_VSYNTH-$(CONFIG_SPP_FILTER) += fate-filter-spp
 fate-filter-spp: fate-vsynth1-mpeg4-qprd
-fate-filter-spp: CMD = framecrc -flags bitexact -idct simple -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf "spp=idct=simple:dct=int"
+fate-filter-spp: CMD = framecrc -flags bitexact -export_side_data venc_params -idct simple -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf "spp=idct=simple:dct=int"
 
 FATE_FILTER_VSYNTH-$(CONFIG_CODECVIEW_FILTER) += fate-filter-codecview
 fate-filter-codecview: fate-vsynth1-mpeg4-qprd
 fate-filter-codecview: CMD = framecrc -flags bitexact -idct simple -flags2 +export_mvs -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf codecview=mv=pf+bf+bb
 
 FATE_FILTER_VSYNTH-$(call ALLYES, QP_FILTER PP_FILTER) += fate-filter-qp
-fate-filter-qp: CMD = video_filter "qp=17,pp=be/hb/vb/tn/l5/al"
+fate-filter-qp: CMD = video_filter "qp=34,pp=be/hb/vb/tn/l5/al"
 
 FATE_FILTER_VSYNTH-$(CONFIG_SELECT_FILTER) += fate-filter-select
 fate-filter-select: CMD = framecrc -flags bitexact -idct simple -i $(SRC) -vf "select=not(eq(mod(n\,2)\,0)+eq(mod(n\,3)\,0))" -frames:v 25 -flags +bitexact

@@ -20,6 +20,7 @@
 #include "chromeos/network/certificate_helper.h"
 #include "chromeos/network/onc/certificate_scope.h"
 #include "chromeos/network/policy_certificate_provider.h"
+#include "chromeos/network/system_token_cert_db_storage.h"
 #include "crypto/chaps_support.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
@@ -31,6 +32,9 @@
 namespace chromeos {
 
 namespace {
+
+bool g_force_available_for_network_auth_for_test = false;
+NetworkCertLoader* g_cert_loader = nullptr;
 
 enum class NetworkCertType {
   kAuthorityCertificate,
@@ -46,6 +50,12 @@ NetworkCertType GetNetworkCertType(CERTCertificate* cert) {
     return NetworkCertType::kAuthorityCertificate;
   VLOG(2) << "Ignoring cert type: " << type;
   return NetworkCertType::kOther;
+}
+
+bool IsAvailableForNetworkAuth(CERTCertificate* cert) {
+  if (g_force_available_for_network_auth_for_test)
+    return true;
+  return crypto::IsSlotProvidedByChaps(cert->slot);
 }
 
 // Returns all authority certificates with default (not restricted) scope
@@ -66,8 +76,9 @@ NetworkCertLoader::NetworkCertList GetPolicyProvidedAuthorities(
       LOG(ERROR) << "Unable to create CERTCertificate";
       continue;
     }
-    result.push_back(
-        NetworkCertLoader::NetworkCert(std::move(x509_cert), device_wide));
+    result.push_back(NetworkCertLoader::NetworkCert(
+        std::move(x509_cert), /*available_for_network_auth=*/false,
+        device_wide));
   }
   return result;
 }
@@ -229,10 +240,12 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
       NetworkCertType type = GetNetworkCertType(cert.get());
       if (type == NetworkCertType::kAuthorityCertificate) {
         authority_certs_.push_back(
-            NetworkCert(std::move(cert), is_slot_device_wide_));
+            NetworkCert(std::move(cert), /*available_for_network_auth=*/false,
+                        is_slot_device_wide_));
       } else if (type == NetworkCertType::kClientCertificate) {
-        client_certs_.push_back(
-            NetworkCert(std::move(cert), is_slot_device_wide_));
+        bool available_for_network_auth = IsAvailableForNetworkAuth(cert.get());
+        client_certs_.push_back(NetworkCert(
+            std::move(cert), available_for_network_auth, is_slot_device_wide_));
       }
     }
 
@@ -278,23 +291,27 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
 };
 
 NetworkCertLoader::NetworkCert::NetworkCert(net::ScopedCERTCertificate cert,
+                                            bool available_for_network_auth,
                                             bool device_wide)
-    : cert_(std::move(cert)), device_wide_(device_wide) {}
-
-NetworkCertLoader::NetworkCert::NetworkCert(NetworkCert&& other) = default;
+    : cert_(std::move(cert)),
+      available_for_network_auth_(available_for_network_auth),
+      device_wide_(device_wide) {}
 
 NetworkCertLoader::NetworkCert::~NetworkCert() = default;
+
+NetworkCertLoader::NetworkCert::NetworkCert(NetworkCert&& other) = default;
 
 NetworkCertLoader::NetworkCert& NetworkCertLoader::NetworkCert::operator=(
     NetworkCert&& other) = default;
 
-NetworkCertLoader::NetworkCert NetworkCertLoader::NetworkCert::Clone() const {
-  return NetworkCert(net::x509_util::DupCERTCertificate(cert_.get()),
-                     device_wide_);
+bool NetworkCertLoader::NetworkCert::IsHardwareBacked() const {
+  return net::NSSCertDatabase::IsHardwareBacked(cert_.get());
 }
 
-static NetworkCertLoader* g_cert_loader = nullptr;
-static bool g_force_hardware_backed_for_test = false;
+NetworkCertLoader::NetworkCert NetworkCertLoader::NetworkCert::Clone() const {
+  return NetworkCert(net::x509_util::DupCERTCertificate(cert_.get()),
+                     available_for_network_auth_, device_wide_);
+}
 
 // static
 void NetworkCertLoader::Initialize() {
@@ -329,6 +346,12 @@ NetworkCertLoader::NetworkCertLoader() {
   user_public_slot_cert_cache_ =
       std::make_unique<CertCache>(base::BindRepeating(
           &NetworkCertLoader::OnCertCacheUpdated, base::Unretained(this)));
+
+  auto* system_token_cert_db_storage = SystemTokenCertDbStorage::Get();
+  DCHECK(system_token_cert_db_storage);
+
+  system_token_cert_db_storage->GetDatabase(base::BindOnce(
+      &NetworkCertLoader::OnSystemNssDbReady, weak_factory_.GetWeakPtr()));
 }
 
 NetworkCertLoader::~NetworkCertLoader() {
@@ -340,7 +363,7 @@ void NetworkCertLoader::MarkSystemNSSDBWillBeInitialized() {
   system_slot_cert_cache_->MarkWillBeInitialized(true);
 }
 
-void NetworkCertLoader::SetSystemNSSDB(
+void NetworkCertLoader::SetSystemNssDbForTesting(
     net::NSSCertDatabase* system_slot_database) {
   system_slot_cert_cache_->SetNSSDBAndSlot(
       system_slot_database, system_slot_database->GetSystemSlot(),
@@ -397,14 +420,6 @@ void NetworkCertLoader::RemoveObserver(NetworkCertLoader::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-// static
-// TODO(https://crbug.com/1179239): Rename this to match what it does.
-bool NetworkCertLoader::IsCertificateHardwareBacked(CERTCertificate* cert) {
-  if (g_force_hardware_backed_for_test)
-    return true;
-  return crypto::IsSlotProvidedByChaps(cert->slot);
-}
-
 bool NetworkCertLoader::initial_load_of_any_database_running() const {
   return system_slot_cert_cache_->initial_load_running() ||
          user_private_slot_cert_cache_->initial_load_running() ||
@@ -459,8 +474,8 @@ NetworkCertLoader::NetworkCertList NetworkCertLoader::CloneNetworkCertList(
 }
 
 // static
-void NetworkCertLoader::ForceHardwareBackedForTesting() {
-  g_force_hardware_backed_for_test = true;
+void NetworkCertLoader::ForceAvailableForNetworkAuthForTesting() {
+  g_force_available_for_network_auth_for_test = true;
 }
 
 // static
@@ -492,6 +507,20 @@ std::string NetworkCertLoader::GetPkcs11IdAndSlotForCert(CERTCertificate* cert,
   SECKEY_DestroyPrivateKey(priv_key);
 
   return pkcs11_id;
+}
+
+void NetworkCertLoader::OnSystemNssDbReady(
+    net::NSSCertDatabase* system_slot_database) {
+  // SystemTokenCertDbStorage informs callers that the system token certificate
+  // database initialization failed by returning nullptr.
+  if (!system_slot_database) {
+    LOG(ERROR) << "Failed to retrieve system token certificate database";
+    return;
+  }
+
+  system_slot_cert_cache_->SetNSSDBAndSlot(
+      system_slot_database, system_slot_database->GetSystemSlot(),
+      true /* is_slot_device_wide */);
 }
 
 void NetworkCertLoader::OnCertCacheUpdated() {

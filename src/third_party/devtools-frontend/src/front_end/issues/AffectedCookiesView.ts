@@ -2,16 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Host from '../host/host.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Network from '../network/network.js';
-import * as UI from '../ui/ui.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as Network from '../panels/network/network.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import {AffectedItem, AffectedResourcesView} from './AffectedResourcesView.js';
+
 import type {AggregatedIssue} from './IssueAggregator.js';
 import {IssueView} from './IssueView.js';
 
-export const UIStrings = {
+const UIStrings = {
+  /**
+  *@description Noun, singular or plural. Label for the kind and number of affected resources associated with a DevTools issue. A cookie is a small piece of data that a server sends to the user's web browser. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.
+  */
+  nCookies: '{n, plural, =1 { cookie} other { cookies}}',
   /**
   *@description Noun, singular. Label for the kind and number of affected resources associated with a DevTools issue. A cookie is a small piece of data that a server sends to the user's web browser. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.
   */
@@ -43,6 +49,10 @@ export class AffectedCookiesView extends AffectedResourcesView {
     this.issue = issue;
   }
 
+  protected getResourceName(count: number): Platform.UIString.LocalizedString {
+    return i18nString(UIStrings.nCookies, {n: count});
+  }
+
   private appendAffectedCookies(cookies: Iterable<{cookie: Protocol.Audits.AffectedCookie, hasRequest: boolean}>):
       void {
     const header = document.createElement('tr');
@@ -70,14 +80,20 @@ export class AffectedCookiesView extends AffectedResourcesView {
         Host.userMetrics.issuesPanelResourceOpened(this.issue.getCategory(), AffectedItem.Cookie);
         Network.NetworkPanel.NetworkPanel.revealAndFilter([
           {
+            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
+            // @ts-expect-error
             filterType: 'cookie-domain',
             filterValue: cookie.domain,
           },
           {
+            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
+            // @ts-expect-error
             filterType: 'cookie-name',
             filterValue: cookie.name,
           },
           {
+            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
+            // @ts-expect-error
             filterType: 'cookie-path',
             filterValue: cookie.path,
           },

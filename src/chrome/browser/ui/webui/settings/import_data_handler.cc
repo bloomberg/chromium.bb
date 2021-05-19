@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -178,7 +177,7 @@ void ImportDataHandler::HandleImportFromBookmarksFile(
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
 
   select_file_dialog_->SelectFile(
-      ui::SelectFileDialog::SELECT_OPEN_FILE, base::string16(),
+      ui::SelectFileDialog::SELECT_OPEN_FILE, std::u16string(),
       base::FilePath(), &file_type_info, 0, base::FilePath::StringType(),
       browser->window()->GetNativeWindow(), nullptr);
 }

@@ -76,8 +76,7 @@ void ZoomView::ZoomChangedForActiveTab(bool can_show_bubble) {
                                    zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM
                 ? &kZoomMinusIcon
                 : &kZoomPlusIcon;
-    if (GetNativeTheme())
-      UpdateIconImage();
+    UpdateIconImage();
 
     // Visibility must be enabled before the bubble is shown to ensure the
     // bubble anchors correctly.
@@ -109,7 +108,7 @@ const gfx::VectorIcon& ZoomView::GetVectorIcon() const {
   return *icon_;
 }
 
-base::string16 ZoomView::GetTextForTooltipAndAccessibleName() const {
+std::u16string ZoomView::GetTextForTooltipAndAccessibleName() const {
   return l10n_util::GetStringFUTF16(IDS_TOOLTIP_ZOOM,
                                     base::FormatPercent(current_zoom_percent_));
 }

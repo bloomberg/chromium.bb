@@ -5,12 +5,15 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/floc_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core/amp_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core/ukm_page_load_metrics_observer.h"
@@ -45,6 +48,7 @@
 #include "chrome/browser/search/search.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/observers/ad_metrics/ads_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_base.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
@@ -65,6 +69,10 @@
 namespace chrome {
 
 namespace {
+
+std::string GetApplicationLocale() {
+  return g_browser_process->GetApplicationLocale();
+}
 
 class PageLoadMetricsEmbedder
     : public page_load_metrics::PageLoadMetricsEmbedderBase {
@@ -128,8 +136,13 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
     tracker->AddObserver(std::make_unique<TabRestorePageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<DataSaverSiteBreakdownMetricsObserver>());
-    std::unique_ptr<AdsPageLoadMetricsObserver> ads_observer =
-        AdsPageLoadMetricsObserver::CreateIfNeeded(tracker->GetWebContents());
+    std::unique_ptr<page_load_metrics::AdsPageLoadMetricsObserver>
+        ads_observer =
+            page_load_metrics::AdsPageLoadMetricsObserver::CreateIfNeeded(
+                tracker->GetWebContents(),
+                HeavyAdServiceFactory::GetForBrowserContext(
+                    tracker->GetWebContents()->GetBrowserContext()),
+                base::BindRepeating(&GetApplicationLocale));
     if (ads_observer)
       tracker->AddObserver(std::move(ads_observer));
 

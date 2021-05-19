@@ -45,7 +45,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
@@ -228,7 +228,7 @@ void IdentityGetAuthTokenFunction::GetAuthTokenForPrimaryAccount(
       OnAccountsInCookieUpdated(accounts_in_cookies,
                                 GoogleServiceAuthError::AuthErrorNone());
     } else {
-      scoped_identity_manager_observer_.Add(identity_manager);
+      scoped_identity_manager_observation_.Observe(identity_manager);
     }
   }
 }
@@ -290,7 +290,7 @@ void IdentityGetAuthTokenFunction::OnAccountsInCookieUpdated(
 
   // Stop listening cookies.
   account_listening_mode_ = AccountListeningMode::kNotListening;
-  scoped_identity_manager_observer_.RemoveAll();
+  scoped_identity_manager_observation_.Reset();
 
   const std::vector<gaia::ListedAccount>& accounts =
       accounts_in_cookie_jar_info.signed_in_accounts;
@@ -405,7 +405,7 @@ void IdentityGetAuthTokenFunction::StartSigninFlow() {
                  token_key_.account_info.account_id));
     }
   }
-  scoped_identity_manager_observer_.Add(identity_manager);
+  scoped_identity_manager_observation_.Observe(identity_manager);
 
   ShowExtensionLoginPrompt();
 #endif
@@ -628,7 +628,7 @@ void IdentityGetAuthTokenFunction::OnRefreshTokenUpdatedForAccount(
   if (token_key_.account_info == account_info) {
     // Stop listening tokens.
     account_listening_mode_ = AccountListeningMode::kNotListening;
-    scoped_identity_manager_observer_.RemoveAll();
+    scoped_identity_manager_observation_.Reset();
 
     StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
   }
@@ -669,7 +669,7 @@ void IdentityGetAuthTokenFunction::OnPrimaryAccountChanged(
   DCHECK(IdentityManagerFactory::GetForProfile(GetProfile())
              ->HasAccountWithRefreshToken(primary_account_info.account_id));
   account_listening_mode_ = AccountListeningMode::kNotListening;
-  scoped_identity_manager_observer_.RemoveAll();
+  scoped_identity_manager_observation_.Reset();
 
   StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
 }
@@ -828,7 +828,7 @@ void IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted(
 void IdentityGetAuthTokenFunction::OnIdentityAPIShutdown() {
   device_access_token_request_.reset();
   token_key_account_access_token_fetcher_.reset();
-  scoped_identity_manager_observer_.RemoveAll();
+  scoped_identity_manager_observation_.Reset();
   extensions::IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
       ->mint_queue()
@@ -958,7 +958,8 @@ std::string IdentityGetAuthTokenFunction::GetOAuth2ClientId() const {
 
   // Component apps using auto_approve may use Chrome's client ID by
   // omitting the field.
-  if (client_id.empty() && extension()->location() == Manifest::COMPONENT &&
+  if (client_id.empty() &&
+      extension()->location() == mojom::ManifestLocation::kComponent &&
       oauth2_info.auto_approve) {
     client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   }

@@ -114,8 +114,12 @@ source_set("omnibox_internal") {
     "omnibox_mediator.mm",
     "omnibox_text_change_delegate.h",
     "omnibox_text_field_delegate.h",
+    "omnibox_text_field_experimental.h",
+    "omnibox_text_field_experimental.mm",
     "omnibox_text_field_ios.h",
     "omnibox_text_field_ios.mm",
+    "omnibox_text_field_legacy.h",
+    "omnibox_text_field_legacy.mm",
     "omnibox_text_field_paste_delegate.h",
     "omnibox_text_field_paste_delegate.mm",
     "omnibox_view_controller.h",
@@ -154,13 +158,13 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/default_promo:utils",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/location_bar:constants",
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/orchestrator:orchestrator",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/browser/ui/whats_new:utils",
     "//ios/chrome/common",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/favicon",
@@ -251,6 +255,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "omnibox_text_field_ios_experimental_unittest.mm",
     "omnibox_text_field_ios_unittest.mm",
     "omnibox_view_ios_unittest.mm",
   ]

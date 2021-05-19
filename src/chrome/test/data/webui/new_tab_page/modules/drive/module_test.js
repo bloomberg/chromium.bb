@@ -4,7 +4,7 @@
 
 import {driveDescriptor, DriveProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-import {isVisible} from 'chrome://test/test_util.m.js';
+import {eventToPromise, isVisible} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageModulesDriveModuleTest', () => {
   /**
@@ -18,7 +18,7 @@ suite('NewTabPageModulesDriveModuleTest', () => {
     testProxy = TestBrowserProxy.fromClass(DriveProxy);
     testProxy.handler =
         TestBrowserProxy.fromClass(drive.mojom.DriveHandlerRemote);
-    DriveProxy.instance_ = testProxy;
+    DriveProxy.setInstance(testProxy);
   });
 
   test('module appears on render', async () => {
@@ -28,19 +28,23 @@ suite('NewTabPageModulesDriveModuleTest', () => {
           justificationText: 'Edited last week',
           title: 'Foo',
           id: '123',
-          type: drive.mojom.FileType.kDoc,
+          mimeType: 'application/vnd.google-apps.spreadsheet',
+          itemUrl: {url: 'https://foo.com'},
+          untrustedPhotoUrl: {url: 'https://photo.com'},
         },
         {
           justificationText: 'Edited today',
           title: 'Bar',
           id: '234',
-          type: drive.mojom.FileType.kSheet,
+          mimeType: 'application/vnd.google-apps.document',
+          itemUrl: {url: 'https://bar.com'},
         },
         {
           justificationText: 'Created today',
           title: 'Caz',
           id: '345',
-          type: drive.mojom.FileType.kOther,
+          mimeType: 'application/vnd.google-apps.presentation',
+          itemUrl: {url: 'https://caz.com'},
         }
       ]
     };
@@ -60,15 +64,21 @@ suite('NewTabPageModulesDriveModuleTest', () => {
     assertEquals(
         'Edited today',
         items[1].querySelector('.file-description').textContent);
+    assertEquals(
+        'https://drive-thirdparty.googleusercontent.com/16/type/application/vnd.google-apps.spreadsheet',
+        items[0].querySelector('.file-icon').autoSrc);
+    assertEquals(
+        'https://drive-thirdparty.googleusercontent.com/16/type/application/vnd.google-apps.document',
+        items[1].querySelector('.file-icon').autoSrc);
+    assertEquals(
+        'https://drive-thirdparty.googleusercontent.com/16/type/application/vnd.google-apps.presentation',
+        items[2].querySelector('.file-icon').autoSrc);
+    assertEquals(
+        'https://photo.com', items[0].querySelector('.user-image').autoSrc);
     const urls = module.shadowRoot.querySelectorAll('.file');
-    assertEquals(
-        'https://docs.google.com/document/d/123/edit?usp=drive_web',
-        urls[0].href);
-    assertEquals(
-        'https://docs.google.com/spreadsheets/d/234/edit?usp=drive_web',
-        urls[1].href);
-    assertEquals(
-        'https://drive.google.com/file/d/345/view?usp=drive_web', urls[2].href);
+    assertEquals('https://foo.com/', urls[0].href);
+    assertEquals('https://bar.com/', urls[1].href);
+    assertEquals('https://caz.com/', urls[2].href);
   });
 
   test('documents do not show without data', async () => {

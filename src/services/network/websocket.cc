@@ -7,6 +7,7 @@
 #include <inttypes.h>
 #include <string.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -211,7 +212,6 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
     impl_->Reset();
     return;
   }
-  impl_->data_pipe_use_tracker_.Activate();
   const MojoResult mojo_result = impl_->writable_watcher_.Watch(
       impl_->writable_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
       MOJO_WATCH_CONDITION_SATISFIED,
@@ -353,12 +353,12 @@ void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
   DVLOG(3) << "WebSocketEventHandler::OnSSLCertificateError"
            << reinterpret_cast<void*>(this) << " url=" << url.spec()
            << " cert_status=" << ssl_info.cert_status << " fatal=" << fatal;
-  if (!impl_->auth_cert_observer_) {
+  if (!impl_->url_loader_network_observer_) {
     impl_->OnSSLCertificateErrorResponse(std::move(callbacks), ssl_info,
                                          net::ERR_INSECURE_RESPONSE);
     return;
   }
-  impl_->auth_cert_observer_->OnSSLCertificateError(
+  impl_->url_loader_network_observer_->OnSSLCertificateError(
       url, net_error, ssl_info, fatal,
       base::BindOnce(&WebSocket::OnSSLCertificateErrorResponse,
                      impl_->weak_ptr_factory_.GetWeakPtr(),
@@ -406,16 +406,15 @@ WebSocket::WebSocket(
     net::NetworkTrafficAnnotationTag traffic_annotation,
     HasRawHeadersAccess has_raw_headers_access,
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
-    mojo::PendingRemote<mojom::AuthenticationAndCertificateObserver>
-        auth_cert_observer,
+    mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
+        url_loader_network_observer,
     mojo::PendingRemote<mojom::WebSocketAuthenticationHandler> auth_handler,
     mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
     base::Optional<WebSocketThrottler::PendingConnection>
         pending_connection_tracker,
-    DataPipeUseTracker data_pipe_use_tracker,
     base::TimeDelta delay)
     : factory_(factory),
-      auth_cert_observer_(std::move(auth_cert_observer)),
+      url_loader_network_observer_(std::move(url_loader_network_observer)),
       handshake_client_(std::move(handshake_client)),
       auth_handler_(std::move(auth_handler)),
       header_client_(std::move(header_client)),
@@ -432,7 +431,6 @@ WebSocket::WebSocket(
       readable_watcher_(FROM_HERE,
                         mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                         base::ThreadTaskRunnerHandle::Get()),
-      data_pipe_use_tracker_(std::move(data_pipe_use_tracker)),
       reassemble_short_messages_(base::FeatureList::IsEnabled(
           network::features::kWebSocketReassembleShortMessages)) {
   DCHECK(handshake_client_);
@@ -600,8 +598,8 @@ void WebSocket::AddChannel(
 
   std::unique_ptr<net::WebSocketEventInterface> event_interface(
       new WebSocketEventHandler(this));
-  channel_.reset(new net::WebSocketChannel(std::move(event_interface),
-                                           factory_->GetURLRequestContext()));
+  channel_ = std::make_unique<net::WebSocketChannel>(
+      std::move(event_interface), factory_->GetURLRequestContext());
 
   net::HttpRequestHeaders headers_to_pass;
   for (const auto& header : additional_headers) {
@@ -879,7 +877,6 @@ void WebSocket::Reset() {
   auth_handler_.reset();
   header_client_.reset();
   receiver_.reset();
-  data_pipe_use_tracker_.Reset();
 
   // net::WebSocketChannel requires that we delete it at this point.
   channel_.reset();

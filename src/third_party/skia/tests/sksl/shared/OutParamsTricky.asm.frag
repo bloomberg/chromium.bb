@@ -1,23 +1,22 @@
 OpCapability Shader
 %1 = OpExtInstImport "GLSL.std.450"
 OpMemoryModel Logical GLSL450
-OpEntryPoint Fragment %_entrypoint "_entrypoint" %sk_FragColor %sk_Clockwise
-OpExecutionMode %_entrypoint OriginUpperLeft
+OpEntryPoint Fragment %_entrypoint_v "_entrypoint" %sk_FragColor %sk_Clockwise
+OpExecutionMode %_entrypoint_v OriginUpperLeft
 OpName %sk_FragColor "sk_FragColor"
 OpName %sk_Clockwise "sk_Clockwise"
 OpName %_UniformBuffer "_UniformBuffer"
 OpMemberName %_UniformBuffer 0 "colorGreen"
 OpMemberName %_UniformBuffer 1 "colorRed"
-OpName %_entrypoint "_entrypoint"
-OpName %tricky "tricky"
-OpName %func "func"
+OpName %_entrypoint_v "_entrypoint_v"
+OpName %tricky_h2hhh2h "tricky_h2hhh2h"
+OpName %func_vh4 "func_vh4"
 OpName %t "t"
 OpName %main "main"
 OpName %result "result"
 OpDecorate %sk_FragColor RelaxedPrecision
 OpDecorate %sk_FragColor Location 0
 OpDecorate %sk_FragColor Index 0
-OpDecorate %sk_Clockwise RelaxedPrecision
 OpDecorate %sk_Clockwise BuiltIn FrontFacing
 OpMemberDecorate %_UniformBuffer 0 Offset 0
 OpMemberDecorate %_UniformBuffer 0 RelaxedPrecision
@@ -27,17 +26,25 @@ OpDecorate %_UniformBuffer Block
 OpDecorate %12 Binding 0
 OpDecorate %12 DescriptorSet 0
 OpDecorate %29 RelaxedPrecision
+OpDecorate %30 RelaxedPrecision
 OpDecorate %31 RelaxedPrecision
 OpDecorate %32 RelaxedPrecision
 OpDecorate %33 RelaxedPrecision
 OpDecorate %34 RelaxedPrecision
+OpDecorate %35 RelaxedPrecision
+OpDecorate %t RelaxedPrecision
 OpDecorate %45 RelaxedPrecision
 OpDecorate %46 RelaxedPrecision
 OpDecorate %51 RelaxedPrecision
+OpDecorate %52 RelaxedPrecision
 OpDecorate %53 RelaxedPrecision
 OpDecorate %54 RelaxedPrecision
+OpDecorate %55 RelaxedPrecision
 OpDecorate %56 RelaxedPrecision
+OpDecorate %result RelaxedPrecision
+OpDecorate %62 RelaxedPrecision
 OpDecorate %64 RelaxedPrecision
+OpDecorate %65 RelaxedPrecision
 OpDecorate %77 RelaxedPrecision
 OpDecorate %80 RelaxedPrecision
 OpDecorate %81 RelaxedPrecision
@@ -72,13 +79,13 @@ OpDecorate %81 RelaxedPrecision
 %int = OpTypeInt 32 1
 %int_0 = OpConstant %int 0
 %int_1 = OpConstant %int 1
-%_entrypoint = OpFunction %void None %17
+%_entrypoint_v = OpFunction %void None %17
 %18 = OpLabel
 %19 = OpFunctionCall %v4float %main
 OpStore %sk_FragColor %19
 OpReturn
 OpFunctionEnd
-%tricky = OpFunction %v2float None %21
+%tricky_h2hhh2h = OpFunction %v2float None %21
 %24 = OpFunctionParameter %_ptr_Function_float
 %25 = OpFunctionParameter %_ptr_Function_float
 %26 = OpFunctionParameter %_ptr_Function_v2float
@@ -94,7 +101,7 @@ OpStore %26 %30
 %35 = OpCompositeConstruct %v2float %33 %34
 OpReturnValue %35
 OpFunctionEnd
-%func = OpFunction %void None %36
+%func_vh4 = OpFunction %void None %36
 %38 = OpFunctionParameter %_ptr_Function_v4float
 %39 = OpLabel
 %t = OpVariable %_ptr_Function_v2float Function
@@ -108,7 +115,7 @@ OpStore %44 %float_2
 %46 = OpVectorShuffle %v2float %45 %45 0 2
 OpStore %47 %46
 OpStore %49 %float_5
-%50 = OpFunctionCall %v2float %tricky %42 %44 %47 %49
+%50 = OpFunctionCall %v2float %tricky_h2hhh2h %42 %44 %47 %49
 %51 = OpLoad %v2float %47
 %52 = OpLoad %v4float %38
 %53 = OpVectorShuffle %v4float %52 %51 4 1 5 3
@@ -125,7 +132,7 @@ OpFunctionEnd
 %result = OpVariable %_ptr_Function_v4float Function
 %69 = OpVariable %_ptr_Function_v4float Function
 OpStore %result %62
-%63 = OpFunctionCall %void %func %result
+%63 = OpFunctionCall %void %func_vh4 %result
 %64 = OpLoad %v4float %result
 %66 = OpFOrdEqual %v4bool %64 %65
 %68 = OpAll %bool %66

@@ -32,9 +32,9 @@ CREATE TABLE android_sysui_cuj_last_cuj AS
   WHERE
     slice.name LIKE 'J<%>'
     AND slice.dur > 0
-    AND process.name IN (
-      'com.android.systemui',
-      'com.google.android.apps.nexuslauncher')
+    AND (
+      process.name LIKE 'com.google.android%'
+      OR process.name = 'com.android.systemui')
   ORDER BY ts desc
   LIMIT 1;
 
@@ -49,9 +49,21 @@ SELECT slices.* FROM android_sysui_cuj_main_thread_slices slices
 JOIN android_sysui_cuj_last_cuj last_cuj
 ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
 
+DROP TABLE IF EXISTS android_sysui_cuj_do_frame_slices_in_cuj;
+CREATE TABLE android_sysui_cuj_do_frame_slices_in_cuj AS
+SELECT slices.* FROM android_sysui_cuj_do_frame_slices slices
+JOIN android_sysui_cuj_last_cuj last_cuj
+ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
+
 DROP TABLE IF EXISTS android_sysui_cuj_render_thread_slices_in_cuj;
 CREATE TABLE android_sysui_cuj_render_thread_slices_in_cuj AS
 SELECT slices.* FROM android_sysui_cuj_render_thread_slices slices
+JOIN android_sysui_cuj_last_cuj last_cuj
+ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
+
+DROP TABLE IF EXISTS android_sysui_cuj_draw_frame_slices_in_cuj;
+CREATE TABLE android_sysui_cuj_draw_frame_slices_in_cuj AS
+SELECT slices.* FROM android_sysui_cuj_draw_frame_slices slices
 JOIN android_sysui_cuj_last_cuj last_cuj
 ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
 
@@ -67,6 +79,27 @@ SELECT slices.* FROM android_sysui_cuj_gpu_completion_slices slices
 JOIN android_sysui_cuj_last_cuj last_cuj
 ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
 
+DROP TABLE IF EXISTS android_sysui_cuj_frame_timeline_events;
+CREATE TABLE android_sysui_cuj_frame_timeline_events AS
+  SELECT
+    expected.ts as ts_expected,
+    expected.dur as dur_expected,
+    expected.layer_name as layer_name,
+    actual.ts as ts_actual,
+    actual.dur as dur_actual,
+    actual.jank_type LIKE '%App Deadline Missed%' as app_missed,
+    actual.jank_type,
+    actual.on_time_finish
+  FROM expected_frame_timeline_slice expected
+  JOIN android_sysui_cuj_last_cuj cuj
+    ON expected.upid = cuj.upid
+    AND expected.ts + expected.dur > cuj.ts_start
+    AND expected.ts < cuj.ts_end
+  JOIN actual_frame_timeline_slice actual
+    ON expected.surface_frame_token = actual.surface_frame_token
+    AND expected.upid = actual.upid
+    AND expected.layer_name = actual.layer_name;
+
 DROP TABLE IF EXISTS android_sysui_cuj_frames;
 CREATE TABLE android_sysui_cuj_frames AS
   WITH gcs_to_rt_match AS (
@@ -81,7 +114,7 @@ CREATE TABLE android_sysui_cuj_frames AS
     JOIN android_sysui_cuj_render_thread_slices_in_cuj rts ON rts.ts < gcs.ts
     -- dispatchFrameCallbacks might be seen in case of
     -- drawing that happens on RT only (e.g. ripple effect)
-    WHERE (rts.name = 'DrawFrame' OR rts.name = 'dispatchFrameCallbacks')
+    WHERE (rts.name LIKE 'DrawFrame%' OR rts.name = 'dispatchFrameCallbacks')
     GROUP BY gcs.ts, gcs.ts_end, gcs.dur, gcs.idx
   ),
   frame_boundaries AS (
@@ -90,17 +123,18 @@ CREATE TABLE android_sysui_cuj_frames AS
       mts.ts as mts_ts,
       mts.ts_end as mts_ts_end,
       mts.dur as mts_dur,
+      mts.vsync as vsync,
       MAX(gcs_rt.gcs_ts) as gcs_ts_start,
       MAX(gcs_rt.gcs_ts_end) as gcs_ts_end
-    FROM android_sysui_cuj_main_thread_slices_in_cuj mts
-    JOIN android_sysui_cuj_render_thread_slices_in_cuj rts
+    FROM android_sysui_cuj_do_frame_slices_in_cuj mts
+    JOIN android_sysui_cuj_draw_frame_slices_in_cuj rts
       ON mts.ts < rts.ts AND mts.ts_end >= rts.ts
     LEFT JOIN gcs_to_rt_match gcs_rt ON gcs_rt.rts_ts = rts.ts
-    WHERE mts.name = 'Choreographer#doFrame' AND rts.name = 'DrawFrame'
     GROUP BY mts.ts, mts.ts_end, mts.dur
   )
   SELECT
     ROW_NUMBER() OVER (ORDER BY f.mts_ts) AS frame_number,
+    f.vsync as vsync,
     f.mts_ts as ts_main_thread_start,
     f.mts_ts_end as ts_main_thread_end,
     f.mts_dur AS dur_main_thread,
@@ -113,19 +147,39 @@ CREATE TABLE android_sysui_cuj_frames AS
     COUNT(DISTINCT(rts.ts)) as draw_frames,
     COUNT(DISTINCT(gcs_rt.gcs_ts)) as gpu_completions
   FROM frame_boundaries f
-  JOIN android_sysui_cuj_render_thread_slices_in_cuj rts
+  JOIN android_sysui_cuj_draw_frame_slices_in_cuj rts
     ON f.mts_ts < rts.ts AND f.mts_ts_end >= rts.ts
   LEFT JOIN gcs_to_rt_match gcs_rt
     ON rts.ts = gcs_rt.rts_ts
   LEFT JOIN android_sysui_cuj_hwc_release_slices_in_cuj hwc USING (idx)
-  WHERE rts.name = 'DrawFrame'
   GROUP BY f.mts_ts
   HAVING gpu_completions >= 1;
+
+-- TODO(marcinoc): This matching does not work well. Fix by using VSYNC id.
+DROP TABLE IF EXISTS android_sysui_cuj_frame_timeline_match;
+CREATE TABLE android_sysui_cuj_frame_timeline_match AS
+  SELECT f.frame_number, MAX(fte.ts_actual) as ts_actual_match
+  FROM android_sysui_cuj_frames f
+  JOIN android_sysui_cuj_frame_timeline_events fte
+    ON f.ts_main_thread_start >= fte.ts_actual
+  GROUP BY f.frame_number;
+
+DROP TABLE IF EXISTS android_sysui_cuj_missed_frames;
+CREATE TABLE android_sysui_cuj_missed_frames AS
+  SELECT
+    f.*,
+    (SELECT MAX(fte.app_missed)
+     FROM android_sysui_cuj_frame_timeline_events fte
+     WHERE match.ts_actual_match = fte.ts_actual
+     AND fte.on_time_finish = 0) as app_missed
+  FROM android_sysui_cuj_frames f
+  JOIN android_sysui_cuj_frame_timeline_match match USING (frame_number);
 
 DROP VIEW IF EXISTS android_sysui_cuj_frame_main_thread_bounds;
 CREATE VIEW android_sysui_cuj_frame_main_thread_bounds AS
 SELECT frame_number, ts_main_thread_start as ts, dur_main_thread as dur
-FROM android_sysui_cuj_frames;
+FROM android_sysui_cuj_missed_frames
+WHERE app_missed;
 
 DROP VIEW IF EXISTS android_sysui_cuj_main_thread_state_data;
 CREATE VIEW android_sysui_cuj_main_thread_state_data AS
@@ -150,7 +204,8 @@ CREATE TABLE android_sysui_cuj_main_thread_state AS
 DROP VIEW IF EXISTS android_sysui_cuj_frame_render_thread_bounds;
 CREATE VIEW android_sysui_cuj_frame_render_thread_bounds AS
 SELECT frame_number, ts_render_thread_start as ts, dur_render_thread as dur
-FROM android_sysui_cuj_frames;
+FROM android_sysui_cuj_missed_frames
+WHERE app_missed;
 
 DROP VIEW IF EXISTS android_sysui_cuj_render_thread_state_data;
 CREATE VIEW android_sysui_cuj_render_thread_state_data AS
@@ -178,32 +233,52 @@ CREATE TABLE android_sysui_cuj_main_thread_binder AS
     f.frame_number,
     SUM(mts.dur) AS dur,
     COUNT(*) AS call_count
-  FROM android_sysui_cuj_frames f
+  FROM android_sysui_cuj_missed_frames f
   JOIN android_sysui_cuj_main_thread_slices_in_cuj mts
     ON mts.ts >= f.ts_main_thread_start AND mts.ts < f.ts_main_thread_end
   WHERE mts.name = 'binder transaction'
+  AND f.app_missed
   GROUP BY f.frame_number;
+
+DROP TABLE IF EXISTS android_sysui_cuj_sf_jank_causes;
+CREATE TABLE android_sysui_cuj_sf_jank_causes AS
+  WITH RECURSIVE split_jank_type(frame_number, jank_cause, remainder) AS (
+    SELECT match.frame_number, "", fte.jank_type || ","
+    FROM android_sysui_cuj_frame_timeline_match match
+    JOIN android_sysui_cuj_frame_timeline_events fte ON match.ts_actual_match = fte.ts_actual
+    UNION ALL SELECT
+    frame_number,
+    STR_SPLIT(remainder, ",", 0) AS jank_cause,
+    TRIM(SUBSTR(remainder, INSTR(remainder, ",") + 1)) AS remainder
+    FROM split_jank_type
+    WHERE remainder <> "")
+  SELECT frame_number, jank_cause
+  FROM split_jank_type
+  WHERE jank_cause NOT IN ('', 'App Deadline Missed', 'None')
+  ORDER BY frame_number ASC;
 
 DROP TABLE IF EXISTS android_sysui_cuj_jank_causes;
 CREATE TABLE android_sysui_cuj_jank_causes AS
   SELECT
   frame_number,
   'RenderThread - long shader_compile' AS jank_cause
-  FROM android_sysui_cuj_frames f
+  FROM android_sysui_cuj_missed_frames f
   JOIN android_sysui_cuj_render_thread_slices_in_cuj rts
     ON rts.ts >= f.ts_render_thread_start AND rts.ts < f.ts_render_thread_end
   WHERE rts.name = 'shader_compile'
+  AND f.app_missed
   AND rts.dur > 8000000
 
   UNION ALL
   SELECT
   frame_number,
   'RenderThread - long flush layers' AS jank_cause
-  FROM android_sysui_cuj_frames f
+  FROM android_sysui_cuj_missed_frames f
   JOIN android_sysui_cuj_render_thread_slices_in_cuj rts
     ON rts.ts >= f.ts_render_thread_start AND rts.ts < f.ts_render_thread_end
   WHERE rts.name = 'flush layers'
   AND rts.dur > 8000000
+  AND f.app_missed
 
   UNION ALL
   SELECT
@@ -263,8 +338,9 @@ CREATE TABLE android_sysui_cuj_jank_causes AS
   SELECT
   frame_number,
   'GPU completion - long completion time' AS jank_cause
-  FROM android_sysui_cuj_frames f
+  FROM android_sysui_cuj_missed_frames f
   WHERE dur_gcs > 8000000
+  AND app_missed
 
   UNION ALL
   SELECT
@@ -275,7 +351,11 @@ CREATE TABLE android_sysui_cuj_jank_causes AS
   WHERE
     mts.state = 'Running'
     AND rts.state = 'Running'
-    AND mts.dur + rts.dur > 15000000;
+    AND mts.dur + rts.dur > 15000000
+
+  UNION ALL
+  SELECT frame_number, jank_cause FROM android_sysui_cuj_sf_jank_causes
+  GROUP BY frame_number, jank_cause;
 
 -- TODO(b/175098682): Switch to use async slices
 DROP VIEW IF EXISTS android_sysui_cuj_event;
@@ -303,6 +383,7 @@ SELECT
        (SELECT RepeatedField(
          AndroidSysUiCujMetrics_Frame(
            'number', f.frame_number,
+           'vsync', f.vsync,
            'ts', f.ts_main_thread_start,
            'dur', f.dur_frame,
            'jank_cause',

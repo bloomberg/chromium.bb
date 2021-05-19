@@ -12,10 +12,10 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -54,7 +54,7 @@ using AddressImportRequirement =
 // of importing a form.
 bool IsValidFieldTypeAndValue(const ServerFieldTypeSet types_seen,
                               ServerFieldType field_type,
-                              const base::string16& value,
+                              const std::u16string& value,
                               LogBuffer* import_log_buffer) {
   // Abandon the import if two fields of the same type are encountered.
   // This indicates ambiguous data or miscategorization of types.
@@ -293,6 +293,13 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
     return;
   }
 
+  // Do not offer credit card save at all if Autofill Assistant is running.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSuppressCreditCardSaveForAssistant) &&
+      client_->IsAutofillAssistantShowing()) {
+    return;
+  }
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // A credit card was successfully imported, but it's possible it is already a
   // local or server card. First, check to see if we should offer local card
@@ -359,7 +366,7 @@ bool FormDataImporter::IsValidLearnableProfile(
 
   // Check that the email address is valid if it is supplied.
   bool is_email_invalid = false;
-  base::string16 email = profile.GetRawInfo(EMAIL_ADDRESS);
+  std::u16string email = profile.GetRawInfo(EMAIL_ADDRESS);
   if (!email.empty() && !IsValidEmailAddress(email)) {
     if (import_log_buffer) {
       *import_log_buffer << LogMessage::kImportAddressProfileFromFormFailed
@@ -555,7 +562,7 @@ bool FormDataImporter::ImportAddressProfileForSection(
     if (field->section != section && !section.empty())
       continue;
 
-    base::string16 value;
+    std::u16string value;
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 
     // If we don't know the type of the field, or the user hasn't entered any
@@ -658,7 +665,7 @@ bool FormDataImporter::ImportAddressProfileForSection(
   // Construct the phone number. Reject the whole profile if the number is
   // invalid.
   if (!combined_phone.IsEmpty()) {
-    base::string16 constructed_number;
+    std::u16string constructed_number;
     if (!combined_phone.ParseNumber(candidate_profile, app_locale_,
                                     &constructed_number) ||
         !candidate_profile.SetInfoWithVerificationStatus(
@@ -855,7 +862,7 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
 
   ServerFieldTypeSet types_seen;
   for (const auto& field : form) {
-    base::string16 value;
+    std::u16string value;
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 
     // If we don't know the type of the field, or the user hasn't entered any

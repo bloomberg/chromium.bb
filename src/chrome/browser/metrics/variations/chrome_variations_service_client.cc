@@ -21,7 +21,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"
 #endif
 
@@ -73,8 +72,8 @@ ChromeVariationsServiceClient::GetNetworkTimeTracker() {
 bool ChromeVariationsServiceClient::OverridesRestrictParameter(
     std::string* parameter) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::CrosSettings::Get()->GetString(
-      chromeos::kVariationsRestrictParameter, parameter);
+  ash::CrosSettings::Get()->GetString(chromeos::kVariationsRestrictParameter,
+                                      parameter);
   return true;
 #else
   return false;

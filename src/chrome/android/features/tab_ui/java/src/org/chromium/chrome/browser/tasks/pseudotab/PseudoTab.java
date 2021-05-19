@@ -90,7 +90,7 @@ public class PseudoTab {
                 if (cached.getTab() == tab) {
                     return cached;
                 } else {
-                    assert cached.getTab().getWebContents() == null
+                    assert tab.getWebContents() == null || cached.getTab().getWebContents() == null
                             || cached.getTab().getWebContents().getTopLevelNativeWindow() == null;
                     return new PseudoTab(tab);
                 }
@@ -245,6 +245,11 @@ public class PseudoTab {
     public static void clearForTesting() {
         synchronized (sLock) {
             sAllTabs.clear();
+            sReadStateFile = false;
+            sActiveTabFromStateFile = null;
+            if (sAllTabsFromStateFile != null) {
+                sAllTabsFromStateFile.clear();
+            }
         }
     }
 

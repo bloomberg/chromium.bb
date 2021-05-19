@@ -7,8 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/arc/enterprise/arc_apps_tracker.h"
@@ -30,6 +32,17 @@ namespace data_snapshotd {
 
 class ArcDataRemoveRequestedPrefHandler;
 class ArcDataSnapshotdBridge;
+
+// Ozone platform headless command line switch value.
+extern const char kHeadless[];
+// Environment variable to be passed to UpstartClient::StartArcDataSnapshotd
+// if the frecon (freon console from platform/frecon) must be restarted.
+// The environment variable is passed in order to restart frecon from a
+// configuration script and not grant excessive permissions to
+// arc-data-snapshotd.
+// The restart of frecon is needed only when system UI is shown (in BlockedUi
+// state).
+extern const char kRestartFreconEnv[];
 
 // This class manages ARC data/ directory snapshots and controls the lifetime of
 // the arc-data-snapshotd daemon.
@@ -79,6 +92,8 @@ class ArcDataSnapshotdManager final
 
     // Creates an ARC apps tracker.
     virtual std::unique_ptr<ArcAppsTracker> CreateAppsTracker() = 0;
+
+    virtual void RestartChrome(const base::CommandLine& command_line) = 0;
   };
 
   // This class operates with a snapshot related info either last or
@@ -240,6 +255,8 @@ class ArcDataSnapshotdManager final
   // Returns true if autologin is allowed to be performed and manager is not
   // waiting for the response from arc-data-snapshotd daemon.
   bool IsAutoLoginAllowed();
+  // Returns true if blocked UI screen is shown.
+  bool IsBlockedUiScreenShown();
 
   // Returns true if ARC data snapshot update is in progress.
   bool IsSnapshotInProgress();
@@ -287,6 +304,9 @@ class ArcDataSnapshotdManager final
   }
 
  private:
+  // Local State initialization observer.
+  void OnLocalStateInitialized(bool intialized);
+
   // Attempts to arc-data-snapshotd daemon regardless of state of the class.
   // Runs |callback| once finished.
   void StopDaemon(base::OnceClosure callback);
@@ -339,6 +359,14 @@ class ArcDataSnapshotdManager final
 
   // Called once a progress bar is updated.
   void OnUiUpdated(bool success);
+
+  // Called once user escapes the blocked UI screen.
+  void OnUiClosed();
+
+  // Returns the list of daemon enviromnet variables to be passed to upstart of
+  // arc-data-snapshotd daemon.
+  // Currently, sets RESTART_FRECON=1 if the UI should be blocked.
+  std::vector<std::string> GetStartEnvVars();
 
   static bool is_snapshot_enabled_for_testing_;
 

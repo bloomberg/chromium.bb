@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -339,6 +339,13 @@ class DebianBuilder(InstrumentedPackageBuilder):
     return deb_files
 
 
+class LibcurlBuilder(DebianBuilder):
+  def build_and_install(self):
+    DebianBuilder.build_and_install(self)
+    self.shell_call('ln -rsf %s/libcurl-gnutls.so.4 %s/libcurl.so' %
+                    (self.dest_libdir(), self.dest_libdir()))
+
+
 class LibcapBuilder(InstrumentedPackageBuilder):
   def build_and_install(self):
     # libcap2 doesn't have a configure script
@@ -519,6 +526,8 @@ def main():
     builder = NSSBuilder(args, clobber)
   elif args.build_method == 'custom_libcap':
     builder = LibcapBuilder(args, clobber)
+  elif args.build_method == 'custom_libcurl':
+    builder = LibcurlBuilder(args, clobber)
   elif args.build_method == 'custom_libpci3':
     builder = Libpci3Builder(args, clobber)
   elif args.build_method == 'debian':

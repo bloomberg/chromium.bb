@@ -98,7 +98,13 @@ const char kIFramePageHtml[] =
 class JavaScriptConsoleFeatureTest : public ChromeWebTest {
  protected:
   JavaScriptConsoleFeatureTest()
-      : ChromeWebTest(std::make_unique<web::FakeWebClient>()) {}
+      : ChromeWebTest(std::make_unique<web::FakeWebClient>()) {
+    JavaScriptConsoleFeature* feature =
+        JavaScriptConsoleFeatureFactory::GetInstance()->GetForBrowserState(
+            GetBrowserState());
+    feature->SetDelegate(&delegate_);
+    GetWebClient()->SetJavaScriptFeatures({feature});
+  }
 
   web::FakeWebClient* GetWebClient() override {
     return static_cast<web::FakeWebClient*>(
@@ -127,22 +133,11 @@ class JavaScriptConsoleFeatureTest : public ChromeWebTest {
     return iframe;
   }
 
-  // Attaches a JavaScriptConsoleFeature instance to the associated browser
-  // state with |delegate_| configured to receive console message details.
-  void SetupFeature() {
-    JavaScriptConsoleFeature* feature =
-        JavaScriptConsoleFeatureFactory::GetInstance()->GetForBrowserState(
-            GetBrowserState());
-    feature->SetDelegate(&delegate_);
-    GetWebClient()->SetJavaScriptFeatures({feature});
-  }
-
   FakeJavaScriptConsoleFeatureDelegate delegate_;
 };
 
 // Tests that debug console message details are received from the main frame.
 TEST_F(JavaScriptConsoleFeatureTest, DebugMessageReceivedMainFrame) {
-  SetupFeature();
   ASSERT_TRUE(IsDelegateStateEmpty());
 
   ASSERT_TRUE(LoadHtml(kPageHtml));
@@ -159,7 +154,6 @@ TEST_F(JavaScriptConsoleFeatureTest, DebugMessageReceivedMainFrame) {
 
 // Tests that error console message details are received from the main frame.
 TEST_F(JavaScriptConsoleFeatureTest, ErrorMessageReceivedMainFrame) {
-  SetupFeature();
   ASSERT_TRUE(IsDelegateStateEmpty());
 
   ASSERT_TRUE(LoadHtml(kPageHtml));
@@ -176,7 +170,6 @@ TEST_F(JavaScriptConsoleFeatureTest, ErrorMessageReceivedMainFrame) {
 
 // Tests that info console message details are received from the main frame.
 TEST_F(JavaScriptConsoleFeatureTest, InfoMessageReceivedMainFrame) {
-  SetupFeature();
   ASSERT_TRUE(IsDelegateStateEmpty());
 
   ASSERT_TRUE(LoadHtml(kPageHtml));
@@ -193,7 +186,6 @@ TEST_F(JavaScriptConsoleFeatureTest, InfoMessageReceivedMainFrame) {
 
 // Tests that log console message details are received from the main frame.
 TEST_F(JavaScriptConsoleFeatureTest, LogMessageReceivedMainFrame) {
-  SetupFeature();
   ASSERT_TRUE(IsDelegateStateEmpty());
 
   ASSERT_TRUE(LoadHtml(kPageHtml));
@@ -210,7 +202,6 @@ TEST_F(JavaScriptConsoleFeatureTest, LogMessageReceivedMainFrame) {
 
 // Tests that warning console message details are received from the main frame.
 TEST_F(JavaScriptConsoleFeatureTest, WarnMessageReceivedMainFrame) {
-  SetupFeature();
   ASSERT_TRUE(IsDelegateStateEmpty());
 
   ASSERT_TRUE(LoadHtml(kPageHtml));
@@ -227,7 +218,6 @@ TEST_F(JavaScriptConsoleFeatureTest, WarnMessageReceivedMainFrame) {
 
 // Tests that debug console message details are received from an iframe.
 TEST_F(JavaScriptConsoleFeatureTest, DebugMessageReceivedIFrame) {
-  SetupFeature();
   ASSERT_TRUE(IsDelegateStateEmpty());
 
   ASSERT_TRUE(LoadHtml(kIFramePageHtml));
@@ -246,7 +236,6 @@ TEST_F(JavaScriptConsoleFeatureTest, DebugMessageReceivedIFrame) {
 
 // Tests that error console message details are received from an iframe.
 TEST_F(JavaScriptConsoleFeatureTest, ErrorMessageReceivedIFrame) {
-  SetupFeature();
   ASSERT_TRUE(IsDelegateStateEmpty());
 
   ASSERT_TRUE(LoadHtml(kIFramePageHtml));
@@ -265,7 +254,6 @@ TEST_F(JavaScriptConsoleFeatureTest, ErrorMessageReceivedIFrame) {
 
 // Tests that info console message details are received from an iframe.
 TEST_F(JavaScriptConsoleFeatureTest, InfoMessageReceivedIFrame) {
-  SetupFeature();
   ASSERT_TRUE(IsDelegateStateEmpty());
 
   ASSERT_TRUE(LoadHtml(kIFramePageHtml));
@@ -284,7 +272,6 @@ TEST_F(JavaScriptConsoleFeatureTest, InfoMessageReceivedIFrame) {
 
 // Tests that log console message details are received from an iframe.
 TEST_F(JavaScriptConsoleFeatureTest, LogMessageReceivedIFrame) {
-  SetupFeature();
   ASSERT_TRUE(IsDelegateStateEmpty());
 
   ASSERT_TRUE(LoadHtml(kIFramePageHtml));
@@ -303,7 +290,6 @@ TEST_F(JavaScriptConsoleFeatureTest, LogMessageReceivedIFrame) {
 
 // Tests that warning console message details are received from an iframe.
 TEST_F(JavaScriptConsoleFeatureTest, WarnMessageReceivedIFrame) {
-  SetupFeature();
   ASSERT_TRUE(IsDelegateStateEmpty());
 
   ASSERT_TRUE(LoadHtml(kIFramePageHtml));

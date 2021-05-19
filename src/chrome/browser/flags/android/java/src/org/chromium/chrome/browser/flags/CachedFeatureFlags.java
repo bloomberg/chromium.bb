@@ -50,7 +50,6 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR, false);
             put(ChromeFeatureList.ANDROID_MANAGED_BY_MENU_ITEM, true);
             put(ChromeFeatureList.ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE, true);
-            put(ChromeFeatureList.BOOKMARK_BOTTOM_SHEET, false);
             put(ChromeFeatureList.CHROME_STARTUP_DELEGATE, false);
             put(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID, false);
             put(ChromeFeatureList.LENS_CAMERA_ASSISTED_SEARCH, false);
@@ -61,27 +60,23 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.EARLY_LIBRARY_LOAD, false);
             put(ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS, true);
             put(ChromeFeatureList.IMMERSIVE_UI_MODE, false);
-            put(ChromeFeatureList.SHARE_BY_DEFAULT_IN_CCT, true);
             put(ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT, true);
             put(ChromeFeatureList.START_SURFACE_ANDROID, false);
             put(ChromeFeatureList.PAINT_PREVIEW_DEMO, false);
             put(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP, false);
             put(ChromeFeatureList.PREFETCH_NOTIFICATION_SCHEDULING_INTEGRATION, false);
-            put(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, false);
-            put(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
+            put(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
+            put(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
             put(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID, false);
+            put(ChromeFeatureList.TOOLBAR_USE_HARDWARE_BITMAP_DRAW, false);
             put(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS, false);
             put(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA, false);
             put(ChromeFeatureList.INSTANT_START, false);
-            put(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID, false);
-            put(ChromeFeatureList.TAB_TO_GTS_ANIMATION, false);
+            put(ChromeFeatureList.TAB_TO_GTS_ANIMATION, true);
             put(ChromeFeatureList.TEST_DEFAULT_DISABLED, false);
             put(ChromeFeatureList.TEST_DEFAULT_ENABLED, true);
-            put(ChromeFeatureList.REPORT_FEED_USER_ACTIONS, false);
             put(ChromeFeatureList.INTEREST_FEED_V2, true);
-            put(ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_ICONS, false);
-            put(ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_REGROUP, false);
-            put(ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_THREE_BUTTON_ACTIONBAR, false);
+            put(ChromeFeatureList.THEME_REFACTOR_ANDROID, false);
             put(ChromeFeatureList.USE_CHIME_ANDROID_SDK, false);
             put(ChromeFeatureList.CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY, false);
             put(ChromeFeatureList.READ_LATER, false);
@@ -89,6 +84,8 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.OFFLINE_MEASUREMENTS_BACKGROUND_TASK, false);
             put(ChromeFeatureList.CCT_INCOGNITO, true);
             put(ChromeFeatureList.EXPERIMENTS_FOR_AGSA, true);
+            put(ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION, false);
+            put(ChromeFeatureList.CLIPBOARD_SUGGESTION_CONTENT_HIDDEN, false);
         }
     };
 
@@ -259,6 +256,10 @@ public class CachedFeatureFlags {
                 ChromeFeatureList.isEnabled(ChromeFeatureList.REACHED_CODE_PROFILER),
                 ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                         ChromeFeatureList.REACHED_CODE_PROFILER, "sampling_interval_us", 0));
+
+        // Similarly, propagate the BACKGROUND_THREAD_POOL feature value to LibraryLoader.
+        LibraryLoader.setBackgroundThreadPoolEnabledOnNextRuns(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.BACKGROUND_THREAD_POOL));
     }
 
     /**
@@ -398,11 +399,11 @@ public class CachedFeatureFlags {
     }
 
     private static String getPrefForFeatureFlag(String featureName) {
-        String grandfatheredPrefKey = sNonDynamicPrefKeys.get(featureName);
-        if (grandfatheredPrefKey == null) {
+        String legacyPrefKey = sNonDynamicPrefKeys.get(featureName);
+        if (legacyPrefKey == null) {
             return ChromePreferenceKeys.FLAGS_CACHED.createKey(featureName);
         } else {
-            return grandfatheredPrefKey;
+            return legacyPrefKey;
         }
     }
 

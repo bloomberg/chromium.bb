@@ -89,6 +89,7 @@ class WebAXObject {
   BLINK_EXPORT static bool MaybeUpdateLayoutAndCheckValidity(
       const WebDocument&);
   BLINK_EXPORT static void UpdateLayout(const WebDocument&);
+  BLINK_EXPORT static bool IsDirty(const WebDocument&);
   // A Freeze() occurs during a serialization run.
   // Used here as a hint for DCHECKS to enforce the following behavior:
   // objects in the ax hierarchy should not be destroyed during serialization.
@@ -144,7 +145,7 @@ class WebAXObject {
   BLINK_EXPORT bool IsModal() const;
   // Returns true if this object is an input element of a text field type, such
   // as type="text" or type="tel", or a textarea.
-  BLINK_EXPORT bool IsNativeTextControl() const;
+  BLINK_EXPORT bool IsNativeTextField() const;
   BLINK_EXPORT bool IsOffScreen() const;
   BLINK_EXPORT bool IsSelectedOptionActive() const;
   BLINK_EXPORT bool IsVisited() const;
@@ -178,7 +179,7 @@ class WebAXObject {
   BLINK_EXPORT WebAXObject InPageLinkTarget() const;
   BLINK_EXPORT WebVector<WebAXObject> RadioButtonsInGroup() const;
   BLINK_EXPORT ax::mojom::Role Role() const;
-  BLINK_EXPORT WebString StringValue() const;
+  BLINK_EXPORT WebString GetValueForControl() const;
   BLINK_EXPORT ax::mojom::WritingDirection GetTextDirection() const;
   BLINK_EXPORT WebURL Url() const;
 

@@ -5,9 +5,9 @@
 #include "content/public/browser/shared_worker_instance.h"
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -17,16 +17,16 @@
 #include "chrome/browser/ash/app_mode/certificate_manager_dialog.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/login/auth/chrome_login_performer.h"
+#include "chrome/browser/ash/login/chrome_restart_request.h"
+#include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/login/ui/captive_portal_window_proxy.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/login_display_host_mojo.h"
+#include "chrome/browser/ash/login/ui/webui_login_view.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/chrome_restart_request.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -107,6 +107,10 @@ void ErrorScreen::ShowOfflineLoginOption(bool show) {
 
 void ErrorScreen::AllowOfflineLogin(bool allowed) {
   offline_login_allowed_ = allowed;
+}
+
+void ErrorScreen::AllowOfflineLoginPerUser(bool allowed) {
+  offline_login_per_user_allowed_ = allowed;
 }
 
 void ErrorScreen::FixCaptivePortal() {
@@ -242,9 +246,9 @@ void ErrorScreen::ShowNetworkErrorMessage(NetworkStateInformer::State state,
   const bool guest_signin_allowed =
       user_manager::UserManager::Get()->IsGuestSessionAllowed();
   AllowGuestSignin(guest_signin_allowed);
-  ShowOfflineLoginOption(offline_login_allowed_ &&
-                         GetErrorState() !=
-                             NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT);
+  ShowOfflineLoginOption(
+      offline_login_allowed_ && offline_login_per_user_allowed_ &&
+      GetErrorState() != NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT);
 
   // No need to show the screen again if it is already shown.
   if (is_hidden()) {
@@ -311,7 +315,7 @@ void ErrorScreen::OnOffTheRecordAuthSuccess() {
   base::CommandLine command_line(browser_command_line.GetProgram());
   GetOffTheRecordCommandLine(GURL(), StartupUtils::IsOobeCompleted(),
                              browser_command_line, &command_line);
-  RestartChrome(command_line);
+  RestartChrome(command_line, RestartChromeReason::kGuest);
 }
 
 void ErrorScreen::OnPasswordChangeDetected(const UserContext& user_context) {

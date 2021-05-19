@@ -34,6 +34,9 @@ public:
 
     void disconnect(DisconnectType) override;
 
+    GrThreadSafePipelineBuilder* pipelineBuilder() override;
+    sk_sp<GrThreadSafePipelineBuilder> refPipelineBuilder() override;
+
     GrStagingBufferManager* stagingBufferManager() override { return &fStagingBufferManager; }
     void takeOwnershipOfBuffer(sk_sp<GrGpuBuffer>) override;
 
@@ -105,8 +108,6 @@ public:
 
 private:
     GrDawnGpu(GrDirectContext*, const GrContextOptions&, const wgpu::Device&);
-
-    virtual void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>*) override {}
 
     sk_sp<GrTexture> onCreateTexture(SkISize,
                                      const GrBackendFormat&,

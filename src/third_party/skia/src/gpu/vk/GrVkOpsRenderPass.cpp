@@ -67,7 +67,7 @@ void GrVkOpsRenderPass::setAttachmentLayouts(LoadFromResolve loadFromResolve) {
     bool withResolve = fCurrentRenderPass->hasResolveAttachment();
 
     GrVkRenderTarget* vkRT = static_cast<GrVkRenderTarget*>(fRenderTarget);
-    GrVkImage* targetImage = vkRT->colorAttachmentImage();
+    GrVkImage* targetImage = vkRT->colorAttachment();
 
     if (fSelfDependencyFlags == SelfDependencyFlags::kForInputAttachment) {
         // We need to use the GENERAL layout in this case since we'll be using texture barriers
@@ -91,15 +91,16 @@ void GrVkOpsRenderPass::setAttachmentLayouts(LoadFromResolve loadFromResolve) {
     }
 
     if (withResolve) {
-        GrVkImage* resolveImage = vkRT;
+        GrVkAttachment* resolveAttachment = vkRT->resolveAttachment();
+        SkASSERT(resolveAttachment);
         if (loadFromResolve == LoadFromResolve::kLoad) {
-            resolveImage->setImageLayout(fGpu,
-                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                         VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
-                                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                                         false);
+            resolveAttachment->setImageLayout(fGpu,
+                                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                              VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+                                              VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                                              false);
         } else {
-            resolveImage->setImageLayout(
+            resolveAttachment->setImageLayout(
                     fGpu,
                     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
@@ -326,7 +327,7 @@ void GrVkOpsRenderPass::loadResolveIntoMSAA(const SkIRect& nativeBounds) {
     // internally to VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL. Thus we need to update our tracking
     // of the layout to match the new layout.
     GrVkRenderTarget* vkRT = static_cast<GrVkRenderTarget*>(fRenderTarget);
-    vkRT->updateImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    vkRT->resolveAttachment()->updateImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 }
 
 void GrVkOpsRenderPass::submit() {
@@ -383,7 +384,9 @@ bool GrVkOpsRenderPass::set(GrRenderTarget* rt,
             SkASSERT(sampledProxies[i]->asTextureProxy());
             GrVkTexture* vkTex = static_cast<GrVkTexture*>(sampledProxies[i]->peekTexture());
             SkASSERT(vkTex);
-            vkTex->setImageLayout(
+            GrVkAttachment* texture = vkTex->textureAttachment();
+            SkASSERT(texture);
+            texture->setImageLayout(
                     fGpu, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_SHADER_READ_BIT,
                     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, false);
         }
@@ -410,7 +413,7 @@ bool GrVkOpsRenderPass::set(GrRenderTarget* rt,
     bool withResolve = false;
     GrOpsRenderPass::LoadAndStoreInfo resolveInfo{GrLoadOp::kLoad, GrStoreOp::kStore, {}};
     if (fRenderTarget->numSamples() > 1 && fGpu->vkCaps().preferDiscardableMSAAAttachment() &&
-        vkRT->resolveAttachmentView() && vkRT->supportsInputAttachmentUsage()) {
+        vkRT->resolveAttachment() && vkRT->resolveAttachment()->supportsInputAttachmentUsage()) {
         withResolve = true;
         localColorInfo.fStoreOp = GrStoreOp::kDiscard;
         if (colorInfo.fLoadOp == GrLoadOp::kLoad) {
@@ -713,18 +716,18 @@ void GrVkOpsRenderPass::onSetScissorRect(const SkIRect& scissor) {
 #ifdef SK_DEBUG
 void check_sampled_texture(GrTexture* tex, GrRenderTarget* rt, GrVkGpu* gpu) {
     SkASSERT(!tex->isProtected() || (rt->isProtected() && gpu->protectedContext()));
-    GrVkTexture* vkTex = static_cast<GrVkTexture*>(tex);
+    auto vkTex = static_cast<GrVkTexture*>(tex)->textureAttachment();
     SkASSERT(vkTex->currentLayout() == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 #endif
 
-bool GrVkOpsRenderPass::onBindTextures(const GrPrimitiveProcessor& primProc,
-                                       const GrSurfaceProxy* const primProcTextures[],
+bool GrVkOpsRenderPass::onBindTextures(const GrGeometryProcessor& geomProc,
+                                       const GrSurfaceProxy* const geomProcTextures[],
                                        const GrPipeline& pipeline) {
 #ifdef SK_DEBUG
     SkASSERT(fCurrentPipelineState);
-    for (int i = 0; i < primProc.numTextureSamplers(); ++i) {
-        check_sampled_texture(primProcTextures[i]->peekTexture(), fRenderTarget, fGpu);
+    for (int i = 0; i < geomProc.numTextureSamplers(); ++i) {
+        check_sampled_texture(geomProcTextures[i]->peekTexture(), fRenderTarget, fGpu);
     }
     pipeline.visitTextureEffects([&](const GrTextureEffect& te) {
         check_sampled_texture(te.texture(), fRenderTarget, fGpu);
@@ -733,7 +736,7 @@ bool GrVkOpsRenderPass::onBindTextures(const GrPrimitiveProcessor& primProc,
         check_sampled_texture(dstTexture, fRenderTarget, fGpu);
     }
 #endif
-    if (!fCurrentPipelineState->setAndBindTextures(fGpu, primProc, pipeline, primProcTextures,
+    if (!fCurrentPipelineState->setAndBindTextures(fGpu, geomProc, pipeline, geomProcTextures,
                                                    this->currentCommandBuffer())) {
         return false;
     }
@@ -868,7 +871,7 @@ void GrVkOpsRenderPass::onExecuteDrawable(std::unique_ptr<SkDrawable::GpuDrawHan
     }
     GrVkRenderTarget* target = static_cast<GrVkRenderTarget*>(fRenderTarget);
 
-    GrVkImage* targetImage = target->colorAttachmentImage();
+    GrVkImage* targetImage = target->colorAttachment();
 
     VkRect2D bounds;
     bounds.offset = { 0, 0 };

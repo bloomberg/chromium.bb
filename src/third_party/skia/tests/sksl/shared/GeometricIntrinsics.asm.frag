@@ -1,27 +1,26 @@
 OpCapability Shader
 %1 = OpExtInstImport "GLSL.std.450"
 OpMemoryModel Logical GLSL450
-OpEntryPoint Fragment %_entrypoint "_entrypoint" %sk_FragColor %sk_Clockwise
-OpExecutionMode %_entrypoint OriginUpperLeft
+OpEntryPoint Fragment %_entrypoint_v "_entrypoint" %sk_FragColor %sk_Clockwise
+OpExecutionMode %_entrypoint_v OriginUpperLeft
 OpName %sk_FragColor "sk_FragColor"
 OpName %sk_Clockwise "sk_Clockwise"
 OpName %_UniformBuffer "_UniformBuffer"
 OpMemberName %_UniformBuffer 0 "colorGreen"
-OpName %_entrypoint "_entrypoint"
+OpName %_entrypoint_v "_entrypoint_v"
 OpName %main "main"
+OpName %_0_x "_0_x"
 OpName %_1_x "_1_x"
-OpName %_3_x "_3_x"
 OpDecorate %sk_FragColor RelaxedPrecision
 OpDecorate %sk_FragColor Location 0
 OpDecorate %sk_FragColor Index 0
-OpDecorate %sk_Clockwise RelaxedPrecision
 OpDecorate %sk_Clockwise BuiltIn FrontFacing
 OpMemberDecorate %_UniformBuffer 0 Offset 0
 OpMemberDecorate %_UniformBuffer 0 RelaxedPrecision
 OpDecorate %_UniformBuffer Block
 OpDecorate %10 Binding 0
 OpDecorate %10 DescriptorSet 0
-OpDecorate %52 RelaxedPrecision
+OpDecorate %54 RelaxedPrecision
 %float = OpTypeFloat 32
 %v4float = OpTypeVector %float 4
 %_ptr_Output_v4float = OpTypePointer Output %v4float
@@ -40,14 +39,14 @@ OpDecorate %52 RelaxedPrecision
 %float_2 = OpConstant %float 2
 %v2float = OpTypeVector %float 2
 %_ptr_Function_v2float = OpTypePointer Function %v2float
-%34 = OpConstantComposite %v2float %float_1 %float_2
+%35 = OpConstantComposite %v2float %float_1 %float_2
 %float_3 = OpConstant %float 3
 %float_4 = OpConstant %float 4
-%41 = OpConstantComposite %v2float %float_3 %float_4
+%43 = OpConstantComposite %v2float %float_3 %float_4
 %_ptr_Uniform_v4float = OpTypePointer Uniform %v4float
 %int = OpTypeInt 32 1
 %int_0 = OpConstant %int 0
-%_entrypoint = OpFunction %void None %15
+%_entrypoint_v = OpFunction %void None %15
 %16 = OpLabel
 %17 = OpFunctionCall %v4float %main
 OpStore %sk_FragColor %17
@@ -55,36 +54,38 @@ OpReturn
 OpFunctionEnd
 %main = OpFunction %v4float None %18
 %19 = OpLabel
-%_1_x = OpVariable %_ptr_Function_float Function
-%_3_x = OpVariable %_ptr_Function_v2float Function
-OpStore %_1_x %float_1
-%23 = OpExtInst %float %1 Length %float_1
-OpStore %_1_x %23
-%25 = OpLoad %float %_1_x
-%24 = OpExtInst %float %1 Distance %25 %float_2
-OpStore %_1_x %24
-%28 = OpLoad %float %_1_x
-%27 = OpFMul %float %28 %float_2
-OpStore %_1_x %27
-%30 = OpLoad %float %_1_x
-%29 = OpExtInst %float %1 Normalize %30
-OpStore %_1_x %29
-OpStore %_3_x %34
-%35 = OpExtInst %float %1 Length %34
-%36 = OpCompositeConstruct %v2float %35 %35
-OpStore %_3_x %36
-%38 = OpLoad %v2float %_3_x
-%37 = OpExtInst %float %1 Distance %38 %41
-%42 = OpCompositeConstruct %v2float %37 %37
-OpStore %_3_x %42
-%44 = OpLoad %v2float %_3_x
-%43 = OpDot %float %44 %41
-%45 = OpCompositeConstruct %v2float %43 %43
-OpStore %_3_x %45
-%47 = OpLoad %v2float %_3_x
-%46 = OpExtInst %v2float %1 Normalize %47
-OpStore %_3_x %46
-%48 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
-%52 = OpLoad %v4float %48
-OpReturnValue %52
+%_0_x = OpVariable %_ptr_Function_float Function
+%_1_x = OpVariable %_ptr_Function_v2float Function
+OpStore %_0_x %float_1
+%24 = OpLoad %float %_0_x
+%23 = OpExtInst %float %1 Length %24
+OpStore %_0_x %23
+%26 = OpLoad %float %_0_x
+%25 = OpExtInst %float %1 Distance %26 %float_2
+OpStore %_0_x %25
+%29 = OpLoad %float %_0_x
+%28 = OpFMul %float %29 %float_2
+OpStore %_0_x %28
+%31 = OpLoad %float %_0_x
+%30 = OpExtInst %float %1 Normalize %31
+OpStore %_0_x %30
+OpStore %_1_x %35
+%37 = OpLoad %v2float %_1_x
+%36 = OpExtInst %float %1 Length %37
+%38 = OpCompositeConstruct %v2float %36 %36
+OpStore %_1_x %38
+%40 = OpLoad %v2float %_1_x
+%39 = OpExtInst %float %1 Distance %40 %43
+%44 = OpCompositeConstruct %v2float %39 %39
+OpStore %_1_x %44
+%46 = OpLoad %v2float %_1_x
+%45 = OpDot %float %46 %43
+%47 = OpCompositeConstruct %v2float %45 %45
+OpStore %_1_x %47
+%49 = OpLoad %v2float %_1_x
+%48 = OpExtInst %v2float %1 Normalize %49
+OpStore %_1_x %48
+%50 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
+%54 = OpLoad %v4float %50
+OpReturnValue %54
 OpFunctionEnd

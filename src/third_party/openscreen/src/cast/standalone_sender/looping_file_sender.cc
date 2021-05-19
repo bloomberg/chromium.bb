@@ -11,11 +11,12 @@ namespace cast {
 
 LoopingFileSender::LoopingFileSender(Environment* environment,
                                      const char* path,
+                                     const SenderSession* session,
                                      SenderSession::ConfiguredSenders senders,
                                      int max_bitrate)
     : env_(environment),
       path_(path),
-      packet_router_(env_),
+      session_(session),
       max_bitrate_(max_bitrate),
       audio_encoder_(senders.audio_sender->config().channels,
                      StreamingOpusEncoder::kDefaultCastAudioFramesPerSecond,
@@ -51,7 +52,7 @@ void LoopingFileSender::UpdateEncoderBitrates() {
 }
 
 void LoopingFileSender::ControlForNetworkCongestion() {
-  bandwidth_estimate_ = packet_router_.ComputeNetworkBandwidth();
+  bandwidth_estimate_ = session_->GetEstimatedNetworkBandwidth();
   if (bandwidth_estimate_ > 0) {
     // Don't ever try to use *all* of the network bandwidth! However, don't go
     // below the absolute minimum requirement either.

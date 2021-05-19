@@ -5,6 +5,7 @@
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 
 #include <algorithm>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -151,7 +152,7 @@ void DispatchEventsAfterBackForwardCacheRestore(
              ->request_animation_frames_after_back_forward_cache_restore
              .empty())) {
       observer->OnRequestAnimationFramesAfterBackForwardCacheRestoreInPage(
-          *new_timings[i]);
+          *new_timings[i], i);
     }
 
     auto first_input_delay =
@@ -402,11 +403,17 @@ void PageLoadTracker::PageShown() {
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnShown);
 }
 
-void PageLoadTracker::FrameDeleted(content::RenderFrameHost* rfh) {
-  metrics_update_dispatcher_.OnFrameDeleted(rfh);
-  largest_contentful_paint_handler_.OnFrameDeleted(rfh);
+void PageLoadTracker::FrameDeleted(int frame_tree_node_id) {
+  metrics_update_dispatcher_.OnFrameDeleted(frame_tree_node_id);
+  largest_contentful_paint_handler_.OnFrameDeleted(frame_tree_node_id);
   for (const auto& observer : observers_) {
-    observer->OnFrameDeleted(rfh);
+    observer->OnFrameDeleted(frame_tree_node_id);
+  }
+}
+
+void PageLoadTracker::RenderFrameDeleted(content::RenderFrameHost* rfh) {
+  for (const auto& observer : observers_) {
+    observer->OnRenderFrameDeleted(rfh);
   }
 }
 
@@ -474,9 +481,9 @@ void PageLoadTracker::FailedProvisionalLoad(
     content::NavigationHandle* navigation_handle,
     base::TimeTicks failed_load_time) {
   DCHECK(!failed_provisional_load_info_);
-  failed_provisional_load_info_.reset(new FailedProvisionalLoadInfo(
+  failed_provisional_load_info_ = std::make_unique<FailedProvisionalLoadInfo>(
       failed_load_time - navigation_handle->NavigationStart(),
-      navigation_handle->GetNetErrorCode()));
+      navigation_handle->GetNetErrorCode());
 }
 
 void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {
@@ -526,10 +533,10 @@ void PageLoadTracker::OnLoadedResource(
   }
 }
 
-void PageLoadTracker::FrameReceivedFirstUserActivation(
+void PageLoadTracker::FrameReceivedUserActivation(
     content::RenderFrameHost* rfh) {
   for (const auto& observer : observers_) {
-    observer->FrameReceivedFirstUserActivation(rfh);
+    observer->FrameReceivedUserActivation(rfh);
   }
 }
 

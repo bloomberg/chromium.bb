@@ -10,6 +10,7 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,7 +19,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -238,9 +238,10 @@ PasswordCheckDelegate::PasswordCheckDelegate(
           presenter,
           BulkLeakCheckServiceFactory::GetForProfile(profile_),
           profile_->GetPrefs()) {
-  observed_saved_passwords_presenter_.Add(saved_passwords_presenter_);
-  observed_insecure_credentials_manager_.Add(&insecure_credentials_manager_);
-  observed_bulk_leak_check_service_.Add(
+  observed_saved_passwords_presenter_.Observe(saved_passwords_presenter_);
+  observed_insecure_credentials_manager_.Observe(
+      &insecure_credentials_manager_);
+  observed_bulk_leak_check_service_.Observe(
       BulkLeakCheckServiceFactory::GetForProfile(profile_));
 
   // Instructs the provider to initialize and build its cache.
@@ -511,6 +512,9 @@ void PasswordCheckDelegate::
   profile_->GetPrefs()->SetDouble(
       password_manager::prefs::kLastTimePasswordCheckCompleted,
       base::Time::Now().ToDoubleT());
+  profile_->GetPrefs()->SetTime(
+      password_manager::prefs::kSyncedLastTimePasswordCheckCompleted,
+      base::Time::Now());
 
   // Delay the last Check Status update by a second. This avoids flickering of
   // the UI if the full check ran from start to finish almost immediately.

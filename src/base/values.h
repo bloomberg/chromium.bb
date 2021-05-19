@@ -36,7 +36,6 @@
 #include "base/containers/checked_range.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/value_iterators.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -145,15 +144,23 @@ class BASE_EXPORT Value {
   explicit Value(int in_int);
   explicit Value(double in_double);
 
-  // Value(const char*) and Value(const char16*) are required despite
+  // Value(const char*) and Value(const char16_t*) are required despite
   // Value(StringPiece) and Value(StringPiece16) because otherwise the
   // compiler will choose the Value(bool) constructor for these arguments.
   // Value(std::string&&) allow for efficient move construction.
   explicit Value(const char* in_string);
   explicit Value(StringPiece in_string);
   explicit Value(std::string&& in_string) noexcept;
-  explicit Value(const char16* in_string16);
+  explicit Value(const char16_t* in_string16);
   explicit Value(StringPiece16 in_string16);
+
+  // Disable constructions from other pointers, so that there is no silent
+  // conversion to bool.
+  template <typename T,
+            typename = std::enable_if_t<
+                !std::is_convertible<T*, std::string>::value &&
+                !std::is_convertible<T*, std::u16string>::value>>
+  explicit Value(T* ptr) = delete;
 
   explicit Value(const std::vector<char>& in_blob);
   explicit Value(base::span<const uint8_t> in_blob);
@@ -220,10 +227,20 @@ class BASE_EXPORT Value {
   void Append(bool value);
   void Append(int value);
   void Append(double value);
+
   void Append(const char* value);
   void Append(StringPiece value);
   void Append(std::string&& value);
-  void Append(const char16* value);
+  void Append(const char16_t* value);
+
+  // Disable Append() from other pointers, so that there is no silent
+  // conversion to bool.
+  template <typename T,
+            typename = std::enable_if_t<
+                !std::is_convertible<T*, std::string>::value &&
+                !std::is_convertible<T*, std::u16string>::value>>
+  void Append(T* ptr) = delete;
+
   void Append(StringPiece16 value);
   void Append(Value&& value);
 
@@ -517,7 +534,7 @@ class BASE_EXPORT Value {
   bool GetAsDouble(double* out_value) const;
   // DEPRECATED, use GetIfString() instead.
   bool GetAsString(std::string* out_value) const;
-  bool GetAsString(string16* out_value) const;
+  bool GetAsString(std::u16string* out_value) const;
   bool GetAsString(const Value** out_value) const;
   bool GetAsString(StringPiece* out_value) const;
   // ListValue::From is the equivalent for std::unique_ptr conversions.
@@ -660,7 +677,7 @@ class BASE_EXPORT DictionaryValue : public Value {
   // DEPRECATED, use Value::SetStringPath().
   Value* SetString(StringPiece path, StringPiece in_value);
   // DEPRECATED, use Value::SetStringPath().
-  Value* SetString(StringPiece path, const string16& in_value);
+  Value* SetString(StringPiece path, const std::u16string& in_value);
   // DEPRECATED, use Value::SetPath().
   DictionaryValue* SetDictionary(StringPiece path,
                                  std::unique_ptr<DictionaryValue> in_value);
@@ -701,7 +718,7 @@ class BASE_EXPORT DictionaryValue : public Value {
   // DEPRECATED, use Value::FindStringPath(path) instead.
   bool GetString(StringPiece path, std::string* out_value) const;
   // DEPRECATED, use Value::FindStringPath(path) instead.
-  bool GetString(StringPiece path, string16* out_value) const;
+  bool GetString(StringPiece path, std::u16string* out_value) const;
   // DEPRECATED, use Value::FindString(path) and IsAsciiString() instead.
   bool GetStringASCII(StringPiece path, std::string* out_value) const;
   // DEPRECATED, use Value::FindBlobPath(path) instead.
@@ -734,7 +751,7 @@ class BASE_EXPORT DictionaryValue : public Value {
                                      std::string* out_value) const;
   // DEPRECATED, use Value::FindStringKey(key) and UTF8ToUTF16() instead.
   bool GetStringWithoutPathExpansion(StringPiece key,
-                                     string16* out_value) const;
+                                     std::u16string* out_value) const;
   // DEPRECATED, use Value::FindDictKey(key) instead.
   bool GetDictionaryWithoutPathExpansion(
       StringPiece key,
@@ -872,7 +889,7 @@ class BASE_EXPORT ListValue : public Value {
   bool GetDouble(size_t index, double* out_value) const;
   // DEPRECATED, use GetList()::operator[]::GetString() instead.
   bool GetString(size_t index, std::string* out_value) const;
-  bool GetString(size_t index, string16* out_value) const;
+  bool GetString(size_t index, std::u16string* out_value) const;
 
   bool GetDictionary(size_t index, const DictionaryValue** out_value) const;
   bool GetDictionary(size_t index, DictionaryValue** out_value);
@@ -914,7 +931,7 @@ class BASE_EXPORT ListValue : public Value {
   void AppendInteger(int in_value);
   void AppendDouble(double in_value);
   void AppendString(StringPiece in_value);
-  void AppendString(const string16& in_value);
+  void AppendString(const std::u16string& in_value);
   // DEPRECATED, use Value::Append() in a loop instead.
   void AppendStrings(const std::vector<std::string>& in_values);
 

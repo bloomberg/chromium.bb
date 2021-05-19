@@ -4,7 +4,7 @@
 
 /***************************************************************************
  *
- * Copyright (c) 2020 The Khronos Group Inc.
+ * Copyright (c) 2020-2021 The Khronos Group Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@
  *
  ****************************************************************************/
 
-#include <unordered_map>
 #include <string>
 #include <functional>
 #include <spirv/unified1/spirv.hpp>
@@ -263,6 +262,7 @@ static const std::unordered_multimap<std::string, RequiredSpirvInfo> spirvExtens
     {"SPV_EXT_fragment_invocation_density", {0, nullptr, &DeviceExtensions::vk_ext_fragment_density_map, ""}},
     {"SPV_EXT_fragment_shader_interlock", {0, nullptr, &DeviceExtensions::vk_ext_fragment_shader_interlock, ""}},
     {"SPV_EXT_physical_storage_buffer", {0, nullptr, &DeviceExtensions::vk_ext_buffer_device_address, ""}},
+    {"SPV_EXT_shader_atomic_float_add", {0, nullptr, &DeviceExtensions::vk_ext_shader_atomic_float, ""}},
     {"SPV_EXT_shader_image_int64", {0, nullptr, &DeviceExtensions::vk_ext_shader_image_atomic_int64, ""}},
     {"SPV_EXT_shader_stencil_export", {0, nullptr, &DeviceExtensions::vk_ext_shader_stencil_export, ""}},
     {"SPV_EXT_shader_viewport_index_layer", {VK_API_VERSION_1_2, nullptr, nullptr, ""}},
@@ -561,151 +561,159 @@ static inline const char* string_SpvCapability(uint32_t input_value) {
     };
 };
 
-bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE const *src) const {
+bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE const *src, spirv_inst_iter& insn) const {
     bool skip = false;
 
-    for (auto insn : *src) {
-        if (insn.opcode() == spv::OpCapability) {
-            // All capabilities are generated so if it is not in the list it is not supported by Vulkan
-            if (spirvCapabilities.count(insn.word(1)) == 0) {
-                skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-01090",
-                    "vkCreateShaderModule(): A SPIR-V Capability (%s) was declared that is not supported by Vulkan.", string_SpvCapability(insn.word(1)));
-                    continue;
-            }
+    if (insn.opcode() == spv::OpCapability) {
+        // All capabilities are generated so if it is not in the list it is not supported by Vulkan
+        if (spirvCapabilities.count(insn.word(1)) == 0) {
+            skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-01090",
+                "vkCreateShaderModule(): A SPIR-V Capability (%s) was declared that is not supported by Vulkan.", string_SpvCapability(insn.word(1)));
+            return skip; // no known capability to validate
+        }
 
-            // Each capability has one or more requirements to check
-            // Only one item has to be satisfied and an error only occurs
-            // when all are not satisfied
-            auto caps = spirvCapabilities.equal_range(insn.word(1));
-            bool has_support = false;
-            for (auto it = caps.first; (it != caps.second) && (has_support == false); ++it) {
-                if (it->second.version) {
-                    if (api_version >= it->second.version) {
-                        has_support = true;
-                    }
-                } else if (it->second.feature) {
-                    if (it->second.feature.IsEnabled(enabled_features)) {
-                        has_support = true;
-                    }
-                } else if (it->second.extension) {
-                    if (device_extensions.*(it->second.extension)) {
-                        has_support = true;
-                    }
-                } else if (it->second.property) {
-                    switch (insn.word(1)) {
-                        default:
-                            break;
-                        case spv::CapabilityDenormFlushToZero:
-                            has_support = ((phys_dev_props_core12.shaderDenormFlushToZeroFloat64 & VK_TRUE) != 0);
-                            break;
-                        case spv::CapabilityDenormPreserve:
-                            has_support = ((phys_dev_props_core12.shaderDenormPreserveFloat64 & VK_TRUE) != 0);
-                            break;
-                        case spv::CapabilityGroupNonUniform:
-                            has_support = ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_BASIC_BIT) != 0);
-                            break;
-                        case spv::CapabilityGroupNonUniformArithmetic:
-                            has_support = ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_ARITHMETIC_BIT) != 0);
-                            break;
-                        case spv::CapabilityGroupNonUniformBallot:
-                            has_support = ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_BALLOT_BIT) != 0);
-                            break;
-                        case spv::CapabilityGroupNonUniformClustered:
-                            has_support = ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_CLUSTERED_BIT) != 0);
-                            break;
-                        case spv::CapabilityGroupNonUniformPartitionedNV:
-                            has_support = ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_PARTITIONED_BIT_NV) != 0);
-                            break;
-                        case spv::CapabilityGroupNonUniformQuad:
-                            has_support = ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_QUAD_BIT) != 0);
-                            break;
-                        case spv::CapabilityGroupNonUniformShuffle:
-                            has_support = ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_SHUFFLE_BIT) != 0);
-                            break;
-                        case spv::CapabilityGroupNonUniformShuffleRelative:
-                            has_support = ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT) != 0);
-                            break;
-                        case spv::CapabilityGroupNonUniformVote:
-                            has_support = ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_VOTE_BIT) != 0);
-                            break;
-                        case spv::CapabilityRoundingModeRTE:
-                            has_support = ((phys_dev_props_core12.shaderRoundingModeRTEFloat64 & VK_TRUE) != 0);
-                            break;
-                        case spv::CapabilityRoundingModeRTZ:
-                            has_support = ((phys_dev_props_core12.shaderRoundingModeRTZFloat64 & VK_TRUE) != 0);
-                            break;
-                        case spv::CapabilitySignedZeroInfNanPreserve:
-                            has_support = ((phys_dev_props_core12.shaderSignedZeroInfNanPreserveFloat64 & VK_TRUE) != 0);
-                            break;
-                    }
+        // Each capability has one or more requirements to check
+        // Only one item has to be satisfied and an error only occurs
+        // when all are not satisfied
+        auto caps = spirvCapabilities.equal_range(insn.word(1));
+        bool has_support = false;
+        for (auto it = caps.first; (it != caps.second) && (has_support == false); ++it) {
+            if (it->second.version) {
+                if (api_version >= it->second.version) {
+                    has_support = true;
                 }
-            }
-
-            if (has_support == false) {
-                skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-01091",
-                    "vkCreateShaderModule(): The SPIR-V Capability (%s) was declared, but none of the requirements were met to use it.", string_SpvCapability(insn.word(1)));
-                    continue;
-            }
-
-            // Portability checks
-            if (IsExtEnabled(device_extensions.vk_khr_portability_subset)) {
-                if ((VK_FALSE == enabled_features.portability_subset_features.shaderSampleRateInterpolationFunctions) &&
-                    (spv::CapabilityInterpolationFunction == insn.word(1))) {
-                    skip |= LogError(device, kVUID_Portability_InterpolationFunction,
-                                     "Invalid shader capability (portability error): interpolation functions are not supported "
-                                     "by this platform");
+            } else if (it->second.feature) {
+                if (it->second.feature.IsEnabled(enabled_features)) {
+                    has_support = true;
                 }
-            }
-        } else if (insn.opcode() == spv::OpExtension) {
-            static const std::string spv_prefix = "SPV_";
-            std::string extension_name = (char const *)&insn.word(1);
-
-            if (0 == extension_name.compare(0, spv_prefix.size(), spv_prefix)) {
-                if (spirvExtensions.count(extension_name) == 0) {
-                    skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-04146",
-                        "vkCreateShaderModule(): A SPIR-V Extension (%s) was declared that is not supported by Vulkan.", extension_name.c_str());
-                   continue;
+            } else if (it->second.extension) {
+                if (device_extensions.*(it->second.extension)) {
+                    has_support = true;
                 }
-            } else {
-                skip |= LogError(device, kVUID_Core_Shader_InvalidExtension,
-                    "vkCreateShaderModule(): The SPIR-V code uses the '%s' extension which is not a SPIR-V extension. Please use a SPIR-V"
-                    " extension (https://github.com/KhronosGroup/SPIRV-Registry) for OpExtension instructions. Non-SPIR-V extensions can be"
-                    " recorded in SPIR-V using the OpSourceExtension instruction.", extension_name.c_str());
-                continue;
-            }
-
-            // Each SPIR-V Extension has one or more requirements to check
-            // Only one item has to be satisfied and an error only occurs
-            // when all are not satisfied
-            auto ext = spirvExtensions.equal_range(extension_name);
-            bool has_support = false;
-            for (auto it = ext.first; (it != ext.second) && (has_support == false); ++it) {
-                if (it->second.version) {
-                    if (api_version >= it->second.version) {
-                        has_support = true;
-                    }
-                } else if (it->second.feature) {
-                    if (it->second.feature.IsEnabled(enabled_features)) {
-                        has_support = true;
-                    }
-                } else if (it->second.extension) {
-                    if (device_extensions.*(it->second.extension)) {
-                        has_support = true;
-                    }
-                } else if (it->second.property) {
-                    switch (insn.word(1)) {
-                        default:
-                            break;
-                    }
+            } else if (it->second.property) {
+                // support is or'ed as only one has to be supported (if applicable)
+                switch (insn.word(1)) {
+                    case spv::CapabilityDenormFlushToZero:
+                        has_support |= ((phys_dev_props_core12.shaderDenormFlushToZeroFloat16 & VK_TRUE) != 0);
+                        has_support |= ((phys_dev_props_core12.shaderDenormFlushToZeroFloat32 & VK_TRUE) != 0);
+                        has_support |= ((phys_dev_props_core12.shaderDenormFlushToZeroFloat64 & VK_TRUE) != 0);
+                        break;
+                    case spv::CapabilityDenormPreserve:
+                        has_support |= ((phys_dev_props_core12.shaderDenormPreserveFloat16 & VK_TRUE) != 0);
+                        has_support |= ((phys_dev_props_core12.shaderDenormPreserveFloat32 & VK_TRUE) != 0);
+                        has_support |= ((phys_dev_props_core12.shaderDenormPreserveFloat64 & VK_TRUE) != 0);
+                        break;
+                    case spv::CapabilityGroupNonUniform:
+                        has_support |= ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_BASIC_BIT) != 0);
+                        break;
+                    case spv::CapabilityGroupNonUniformArithmetic:
+                        has_support |= ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_ARITHMETIC_BIT) != 0);
+                        break;
+                    case spv::CapabilityGroupNonUniformBallot:
+                        has_support |= ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_BALLOT_BIT) != 0);
+                        break;
+                    case spv::CapabilityGroupNonUniformClustered:
+                        has_support |= ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_CLUSTERED_BIT) != 0);
+                        break;
+                    case spv::CapabilityGroupNonUniformPartitionedNV:
+                        has_support |= ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_PARTITIONED_BIT_NV) != 0);
+                        break;
+                    case spv::CapabilityGroupNonUniformQuad:
+                        has_support |= ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_QUAD_BIT) != 0);
+                        break;
+                    case spv::CapabilityGroupNonUniformShuffle:
+                        has_support |= ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_SHUFFLE_BIT) != 0);
+                        break;
+                    case spv::CapabilityGroupNonUniformShuffleRelative:
+                        has_support |= ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT) != 0);
+                        break;
+                    case spv::CapabilityGroupNonUniformVote:
+                        has_support |= ((phys_dev_props_core11.subgroupSupportedOperations & VK_SUBGROUP_FEATURE_VOTE_BIT) != 0);
+                        break;
+                    case spv::CapabilityRoundingModeRTE:
+                        has_support |= ((phys_dev_props_core12.shaderRoundingModeRTEFloat16 & VK_TRUE) != 0);
+                        has_support |= ((phys_dev_props_core12.shaderRoundingModeRTEFloat32 & VK_TRUE) != 0);
+                        has_support |= ((phys_dev_props_core12.shaderRoundingModeRTEFloat64 & VK_TRUE) != 0);
+                        break;
+                    case spv::CapabilityRoundingModeRTZ:
+                        has_support |= ((phys_dev_props_core12.shaderRoundingModeRTZFloat16 & VK_TRUE) != 0);
+                        has_support |= ((phys_dev_props_core12.shaderRoundingModeRTZFloat32 & VK_TRUE) != 0);
+                        has_support |= ((phys_dev_props_core12.shaderRoundingModeRTZFloat64 & VK_TRUE) != 0);
+                        break;
+                    case spv::CapabilitySignedZeroInfNanPreserve:
+                        has_support |= ((phys_dev_props_core12.shaderSignedZeroInfNanPreserveFloat16 & VK_TRUE) != 0);
+                        has_support |= ((phys_dev_props_core12.shaderSignedZeroInfNanPreserveFloat32 & VK_TRUE) != 0);
+                        has_support |= ((phys_dev_props_core12.shaderSignedZeroInfNanPreserveFloat64 & VK_TRUE) != 0);
+                        break;
+                    default:
+                        break;
                 }
-            }
-
-            if (has_support == false) {
-                skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-04147",
-                    "vkCreateShaderModule(): The SPIR-V Extension (%s) was declared, but none of the requirements were met to use it.", extension_name.c_str());
-                    continue;
             }
         }
-    }
+
+        if (has_support == false) {
+            skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-01091",
+                "vkCreateShaderModule(): The SPIR-V Capability (%s) was declared, but none of the requirements were met to use it.", string_SpvCapability(insn.word(1)));
+        }
+
+        // Portability checks
+        if (IsExtEnabled(device_extensions.vk_khr_portability_subset)) {
+            if ((VK_FALSE == enabled_features.portability_subset_features.shaderSampleRateInterpolationFunctions) &&
+                (spv::CapabilityInterpolationFunction == insn.word(1))) {
+                skip |= LogError(device, kVUID_Portability_InterpolationFunction,
+                                    "Invalid shader capability (portability error): interpolation functions are not supported "
+                                    "by this platform");
+            }
+        }
+    } else if (insn.opcode() == spv::OpExtension) {
+        static const std::string spv_prefix = "SPV_";
+        std::string extension_name = (char const *)&insn.word(1);
+
+        if (0 == extension_name.compare(0, spv_prefix.size(), spv_prefix)) {
+            if (spirvExtensions.count(extension_name) == 0) {
+                skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-04146",
+                    "vkCreateShaderModule(): A SPIR-V Extension (%s) was declared that is not supported by Vulkan.", extension_name.c_str());
+                return skip; // no known extension to validate
+            }
+        } else {
+            skip |= LogError(device, kVUID_Core_Shader_InvalidExtension,
+                "vkCreateShaderModule(): The SPIR-V code uses the '%s' extension which is not a SPIR-V extension. Please use a SPIR-V"
+                " extension (https://github.com/KhronosGroup/SPIRV-Registry) for OpExtension instructions. Non-SPIR-V extensions can be"
+                " recorded in SPIR-V using the OpSourceExtension instruction.", extension_name.c_str());
+            return skip; // no known extension to validate
+        }
+
+        // Each SPIR-V Extension has one or more requirements to check
+        // Only one item has to be satisfied and an error only occurs
+        // when all are not satisfied
+        auto ext = spirvExtensions.equal_range(extension_name);
+        bool has_support = false;
+        for (auto it = ext.first; (it != ext.second) && (has_support == false); ++it) {
+            if (it->second.version) {
+                if (api_version >= it->second.version) {
+                    has_support = true;
+                }
+            } else if (it->second.feature) {
+                if (it->second.feature.IsEnabled(enabled_features)) {
+                    has_support = true;
+                }
+            } else if (it->second.extension) {
+                if (device_extensions.*(it->second.extension)) {
+                    has_support = true;
+                }
+            } else if (it->second.property) {
+                // support is or'ed as only one has to be supported (if applicable)
+                switch (insn.word(1)) {
+                    default:
+                        break;
+                }
+            }
+        }
+
+        if (has_support == false) {
+            skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-04147",
+                "vkCreateShaderModule(): The SPIR-V Extension (%s) was declared, but none of the requirements were met to use it.", extension_name.c_str());
+        }
+    } //spv::OpExtension
     return skip;
 }

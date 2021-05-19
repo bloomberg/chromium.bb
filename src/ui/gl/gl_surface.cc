@@ -4,6 +4,8 @@
 
 #include "ui/gl/gl_surface.h"
 
+#include <utility>
+
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -178,6 +180,10 @@ bool GLSurface::SetEnableDCLayers(bool enable) {
 }
 
 bool GLSurface::IsSurfaceless() const {
+  return false;
+}
+
+bool GLSurface::SupportsViewporter() const {
   return false;
 }
 
@@ -457,6 +463,10 @@ bool GLSurfaceAdapter::IsSurfaceless() const {
   return surface_->IsSurfaceless();
 }
 
+bool GLSurfaceAdapter::SupportsViewporter() const {
+  return surface_->SupportsViewporter();
+}
+
 gfx::SurfaceOrigin GLSurfaceAdapter::GetOrigin() const {
   return surface_->GetOrigin();
 }
@@ -537,7 +547,12 @@ bool GLSurfaceAdapter::SupportsDelegatedInk() {
   return surface_->SupportsDelegatedInk();
 }
 
-GLSurfaceAdapter::~GLSurfaceAdapter() {}
+void GLSurfaceAdapter::SetDelegatedInkTrailStartPoint(
+    std::unique_ptr<gfx::DelegatedInkMetadata> metadata) {
+  surface_->SetDelegatedInkTrailStartPoint(std::move(metadata));
+}
+
+GLSurfaceAdapter::~GLSurfaceAdapter() = default;
 
 scoped_refptr<GLSurface> InitializeGLSurfaceWithFormat(
     scoped_refptr<GLSurface> surface, GLSurfaceFormat format) {

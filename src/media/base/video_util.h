@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/media_export.h"
 #include "media/base/status.h"
+#include "media/base/video_types.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -149,7 +150,10 @@ MEDIA_EXPORT gfx::Size PadToMatchAspectRatio(const gfx::Size& size,
 
 // A helper function to map GpuMemoryBuffer-based VideoFrame. This function
 // maps the given GpuMemoryBuffer of |frame| as-is without converting pixel
-// format. The returned VideoFrame owns the |frame|.
+// format, unless the video frame is backed by DXGI GMB.
+// The returned VideoFrame owns the |frame|.
+// If the underlying buffer is DXGI, then it will be copied to shared memory
+// in GPU process.
 MEDIA_EXPORT scoped_refptr<VideoFrame> ConvertToMemoryMappedFrame(
     scoped_refptr<VideoFrame> frame);
 
@@ -197,6 +201,11 @@ MEDIA_EXPORT Status ConvertAndScaleFrame(const VideoFrame& src_frame,
                                          std::vector<uint8_t>& tmp_buf)
     WARN_UNUSED_RESULT;
 
+// Converts kRGBA_8888_SkColorType and kBGRA_8888_SkColorType to the appropriate
+// ARGB, XRGB, ABGR, or XBGR format.
+MEDIA_EXPORT VideoPixelFormat
+VideoPixelFormatFromSkColorType(SkColorType sk_color_type, bool is_opaque);
+
 // Backs a VideoFrame with a SkImage. The created frame takes a ref on the
 // provided SkImage to make this operation zero copy. Only works with CPU
 // backed images.
@@ -204,7 +213,8 @@ MEDIA_EXPORT scoped_refptr<VideoFrame> CreateFromSkImage(
     sk_sp<SkImage> sk_image,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    base::TimeDelta timestamp);
+    base::TimeDelta timestamp,
+    bool force_opaque = false);
 
 }  // namespace media
 

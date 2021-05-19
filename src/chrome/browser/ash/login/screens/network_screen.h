@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -86,7 +85,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   void UnsubscribeNetworkNotification();
 
   // Notifies wizard on successful connection.
-  void NotifyOnConnection();
+  inline void NotifyOnConnection() { exit_callback_.Run(Result::CONNECTED); }
 
   // Called by `connection_timer_` when connection to the network timed out.
   void OnConnectionTimeout();
@@ -95,10 +94,10 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   void UpdateStatus();
 
   // Stops waiting for network to connect.
-  void StopWaitingForConnection(const base::string16& network_id);
+  void StopWaitingForConnection(const std::u16string& network_id);
 
   // Starts waiting for network connection. Shows spinner.
-  void WaitForConnection(const base::string16& network_id);
+  void WaitForConnection(const std::u16string& network_id);
 
   // Called when back button is clicked.
   void OnBackButtonClicked();
@@ -116,7 +115,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   bool is_network_subscribed_ = false;
 
   // ID of the network that we are waiting for.
-  base::string16 network_id_;
+  std::u16string network_id_;
 
   // Keeps track of the number of times OnContinueButtonClicked was called.
   // OnContinueButtonClicked is called either in response to the user pressing

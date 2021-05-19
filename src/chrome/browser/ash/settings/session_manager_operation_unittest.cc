@@ -17,9 +17,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -40,7 +40,7 @@ namespace em = enterprise_management;
 using testing::Mock;
 using testing::_;
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 class ObservableFakeSessionManagerClient : public FakeSessionManagerClient {
@@ -70,11 +70,11 @@ class SessionManagerOperationTest : public testing::Test {
  public:
   SessionManagerOperationTest()
       : owner_key_util_(new ownership::MockOwnerKeyUtil()),
-        user_manager_(new chromeos::FakeChromeUserManager()),
+        user_manager_(new FakeChromeUserManager()),
         user_manager_enabler_(base::WrapUnique(user_manager_)),
         validated_(false) {
-    OwnerSettingsServiceChromeOSFactory::GetInstance()
-        ->SetOwnerKeyUtilForTesting(owner_key_util_);
+    OwnerSettingsServiceAshFactory::GetInstance()->SetOwnerKeyUtilForTesting(
+        owner_key_util_);
   }
 
   void SetUp() override {
@@ -83,8 +83,8 @@ class SessionManagerOperationTest : public testing::Test {
     policy_.Build();
 
     profile_.reset(new TestingProfile());
-    service_ = OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-        profile_.get());
+    service_ =
+        OwnerSettingsServiceAshFactory::GetForBrowserContext(profile_.get());
   }
 
   MOCK_METHOD2(OnOperationCompleted,
@@ -114,11 +114,11 @@ class SessionManagerOperationTest : public testing::Test {
   ObservableFakeSessionManagerClient session_manager_client_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
 
-  chromeos::FakeChromeUserManager* user_manager_;
+  FakeChromeUserManager* user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 
   std::unique_ptr<TestingProfile> profile_;
-  OwnerSettingsServiceChromeOS* service_;
+  OwnerSettingsServiceAsh* service_;
 
   bool validated_;
 
@@ -292,4 +292,4 @@ TEST_F(SessionManagerOperationTest, StoreSettings) {
             op.device_settings()->SerializeAsString());
 }
 
-}  // namespace chromeos
+}  // namespace ash

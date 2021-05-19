@@ -15,6 +15,8 @@
 #ifndef AOM_AV1_ENCODER_LOOKAHEAD_H_
 #define AOM_AV1_ENCODER_LOOKAHEAD_H_
 
+#include <stdbool.h>
+
 #include "aom_scale/yv12config.h"
 #include "aom/aom_integer.h"
 
@@ -53,7 +55,9 @@ struct lookahead_ctx {
   int write_idx;                         /* Write index */
   struct read_ctx read_ctxs[MAX_STAGES]; /* Read context */
   struct lookahead_entry *buf;           /* Buffer list */
-  int push_frame_count; /* Number of frames has been pushed in the queue*/
+  int push_frame_count; /* Number of frames that have been pushed in the queue*/
+  uint8_t
+      max_pre_frames; /* Maximum number of past frames allowed in the queue */
 };
 /*!\endcond */
 
@@ -65,7 +69,8 @@ struct lookahead_ctx {
 struct lookahead_ctx *av1_lookahead_init(
     unsigned int width, unsigned int height, unsigned int subsampling_x,
     unsigned int subsampling_y, int use_highbitdepth, unsigned int depth,
-    const int border_in_pixels, int byte_alignment, int num_lap_buffers);
+    const int border_in_pixels, int byte_alignment, int num_lap_buffers,
+    bool is_all_intra, int enable_global_motion);
 
 /**\brief Destroys the lookahead stage
  */
@@ -75,9 +80,6 @@ void av1_lookahead_destroy(struct lookahead_ctx *ctx);
  *
  * This function will copy the source image into a new framebuffer with
  * the expected stride/border.
- *
- * If active_map is non-NULL and there is only one frame in the queue, then copy
- * only active macroblocks.
  *
  * \param[in] ctx         Pointer to the lookahead context
  * \param[in] src         Pointer to the image to enqueue

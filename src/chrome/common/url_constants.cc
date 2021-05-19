@@ -83,15 +83,13 @@ const char kChromeOsHelpViaWebUIURL[] =
 const char kChromeNativeScheme[] = "chrome-native";
 
 const char kChromeSearchLocalNtpHost[] = "local-ntp";
-const char kChromeSearchLocalNtpUrl[] =
-    "chrome-search://local-ntp/local-ntp.html";
 
 const char kChromeSearchMostVisitedHost[] = "most-visited";
 const char kChromeSearchMostVisitedUrl[] = "chrome-search://most-visited/";
 
-const char kChromeSearchLocalNtpBackgroundUrl[] =
-    "chrome-search://local-ntp/background.jpg";
-const char kChromeSearchLocalNtpBackgroundFilename[] = "background.jpg";
+const char kChromeUIUntrustedNewTabPageBackgroundUrl[] =
+    "chrome-untrusted://new-tab-page/background.jpg";
+const char kChromeUIUntrustedNewTabPageBackgroundFilename[] = "background.jpg";
 
 const char kChromeSearchRemoteNtpHost[] = "remote-ntp";
 
@@ -120,9 +118,6 @@ const char kContentSettingsExceptionsLearnMoreURL[] =
 
 const char kCookiesSettingsHelpCenterURL[] =
     "https://support.google.com/chrome?p=cpn_cookies";
-
-const char kCpuX86Sse2ObsoleteURL[] =
-    "https://support.google.com/chrome/?p=chrome_update_sse3";
 
 const char kCrashReasonURL[] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -285,6 +280,9 @@ const char kUpgradeHelpCenterBaseURL[] =
 const char kWhoIsMyAdministratorHelpURL[] =
     "https://support.google.com/chrome?p=your_administrator";
 
+const char kCwsEnhancedSafeBrowsingLearnMoreURL[] =
+    "https://support.google.com/chrome?p=cws_enhanced_safe_browsing";
+
 #if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
 const char kEnhancedPlaybackNotificationLearnMoreURL[] =
 #endif
@@ -421,11 +419,17 @@ const char kTabletModeGesturesLearnMoreURL[] =
 const char kWifiSyncLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=wifisync";
 
+const char kWifiHiddenNetworkURL[] =
+    "http://support.google.com/chromebook?p=hidden_networks";
+
 const char kNearbyShareLearnMoreURL[] =
     "https://support.google.com/chromebook?p=nearby_share";
 
 extern const char kNearbyShareManageContactsURL[] =
     "https://contacts.google.com";
+
+extern const char kFingerprintLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=chromebook_fingerprint";
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

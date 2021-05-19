@@ -34,7 +34,7 @@ class DeviceOffHoursController;
 }  // namespace off_hours
 }  // namespace policy
 
-namespace chromeos {
+namespace ash {
 
 class SessionManagerOperation;
 
@@ -50,7 +50,7 @@ class SessionManagerOperation;
 //
 // DeviceSettingsService generates notifications for key and policy update
 // events so interested parties can reload state as appropriate.
-class DeviceSettingsService : public SessionManagerClient::Observer {
+class DeviceSettingsService : public chromeos::SessionManagerClient::Observer {
  public:
   // Indicates ownership status of the device (listed in upgrade order).
   enum OwnershipStatus {
@@ -110,7 +110,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   ~DeviceSettingsService() override;
 
   // To be called on startup once threads are initialized and D-Bus is ready.
-  void SetSessionManager(SessionManagerClient* session_manager_client,
+  void SetSessionManager(chromeos::SessionManagerClient* session_manager_client,
                          scoped_refptr<ownership::OwnerKeyUtil> owner_key_util);
 
   // Prevents the service from making further calls to session_manager_client
@@ -187,7 +187,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // TODO (ygorshenin@, crbug.com/433840): get rid of the method when
   // write path for device settings will be removed from
   // DeviceSettingsProvider and all existing clients will be switched
-  // to OwnerSettingsServiceChromeOS.
+  // to OwnerSettingsServiceAsh.
   void InitOwner(const std::string& username,
                  const base::WeakPtr<ownership::OwnerSettingsService>&
                      owner_settings_service);
@@ -212,7 +212,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   void PropertyChangeComplete(bool success) override;
 
  private:
-  friend class OwnerSettingsServiceChromeOS;
+  friend class OwnerSettingsServiceAsh;
 
   // Enqueues a new operation. Takes ownership of |operation| and starts it
   // right away if there is no active operation currently.
@@ -248,7 +248,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // Processes pending callbacks from GetOwnershipStatusAsync().
   void RunPendingOwnershipStatusCallbacks();
 
-  SessionManagerClient* session_manager_client_ = nullptr;
+  chromeos::SessionManagerClient* session_manager_client_ = nullptr;
   scoped_refptr<ownership::OwnerKeyUtil> owner_key_util_;
 
   Status store_status_ = STORE_SUCCESS;
@@ -296,6 +296,17 @@ class ScopedTestDeviceSettingsService {
   DISALLOW_COPY_AND_ASSIGN(ScopedTestDeviceSettingsService);
 };
 
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when Chrome OS code migration is
+// done.
+namespace chromeos {
+using ::ash::DeviceSettingsService;
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove once the migration is finished.
+namespace ash {
+using ::chromeos::DeviceSettingsService;
+}
 
 #endif  // CHROME_BROWSER_ASH_SETTINGS_DEVICE_SETTINGS_SERVICE_H_

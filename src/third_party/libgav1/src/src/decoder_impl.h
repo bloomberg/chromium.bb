@@ -215,6 +215,10 @@ class DecoderImpl : public Allocable {
   // |quantizer_matrix_initialized_| to true.
   bool MaybeInitializeQuantizerMatrix(const ObuFrameHeader& frame_header);
 
+  // Allocates and generates the |wedge_masks_| if necessary and sets
+  // |wedge_masks_initialized_| to true.
+  bool MaybeInitializeWedgeMasks(FrameType frame_type);
+
   // Elements in this queue cannot be moved with std::move since the
   // |EncodedFrame.temporal_unit| stores a pointer to elements in this queue.
   Queue<TemporalUnit> temporal_units_;
@@ -233,6 +237,7 @@ class DecoderImpl : public Allocable {
 
   BufferPool buffer_pool_;
   WedgeMaskArray wedge_masks_;
+  bool wedge_masks_initialized_ = false;
   QuantizerMatrix quantizer_matrix_;
   bool quantizer_matrix_initialized_ = false;
   FrameScratchBufferPool frame_scratch_buffer_pool_;

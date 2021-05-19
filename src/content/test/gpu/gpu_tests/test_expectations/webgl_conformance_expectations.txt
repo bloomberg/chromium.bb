@@ -22,9 +22,9 @@
 #         release release-x64 ]
 # GPU
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 amd-0x7340
-#         apple apple-apple-a12z
+#         apple apple-apple-m1 apple-metal-renderer:-apple-m1
 #         arm
-#         google google-0xffff google-angle-(metal-renderer:-apple-a12z)
+#         google google-0xffff
 #         intel intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92 intel-0x3e9b
 #               intel-0x5912
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
@@ -53,6 +53,8 @@
 #         mesa_lt_19.1 mesa_ge_20.1 ]
 # ASan
 # tags: [ asan no-asan ]
+# Display Server
+# tags: [ display-server-wayland display-server-x ]
 # results: [ Failure RetryOnFailure Skip ]
 # END TAG HEADER
 
@@ -187,6 +189,10 @@ crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/text
 [ android nvidia ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ android nvidia no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 
+# Extensions not available on angle-vulkan
+crbug.com/1187260 [ angle-vulkan passthrough ] WebglExtension_WEBGL_debug_shaders [ Skip ]
+crbug.com/1187260 [ angle-swiftshader passthrough ] WebglExtension_WEBGL_debug_shaders [ Skip ]
+
 # Extensions not available on angle-metal
 crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_EXT_shader_texture_lod [ Skip ]
@@ -194,6 +200,7 @@ crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_EXT_t
 crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_OES_fbo_render_mipmap [ Skip ]
 crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_WEBGL_draw_buffers [ Skip ]
+crbug.com/1187260 [ mac angle-metal passthrough ] WebglExtension_WEBGL_debug_shaders [ Skip ]
 
 # ========================
 # Conformance expectations
@@ -207,8 +214,10 @@ crbug.com/1082533 [ mac intel ] conformance/textures/misc/texture-copying-and-de
 crbug.com/1136231 [ win ] conformance/extensions/s3tc-and-rgtc.html [ Failure ]
 crbug.com/1136231 [ linux ] conformance/extensions/s3tc-and-rgtc.html [ Failure ]
 
-# Must handle rotated videos on all platforms.
-crbug.com/1136205 conformance/textures/misc/video-rotation.html [ Skip ]
+# This test uses H.264 and the ChromeOS and Fuchsia bots aren't compiled with
+# proprietary codecs.
+crbug.com/1136205 [ chromeos ] conformance/textures/misc/video-rotation.html [ Skip ]
+crbug.com/1136205 [ fuchsia ] conformance/textures/misc/video-rotation.html [ Skip ]
 
 # Failing on most platforms. Only runs with passthrough.
 crbug.com/1175371 [ android ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
@@ -372,6 +381,7 @@ crbug.com/angleproject/2192 [ win angle-d3d9 passthrough ] conformance/textures/
 crbug.com/angleproject/2192 [ win angle-d3d9 passthrough ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/angleproject/2192 [ win angle-d3d9 passthrough ] conformance/textures/webgl_canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/angleproject/2192 [ win angle-d3d9 passthrough ] conformance/textures/webgl_canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/1191456 [ win angle-d3d9 passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]
 
 # D3D9 / AMD RX 5500 XT / Passthrough command decoder
 crbug.com/1159126 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/more/glsl/uniformOutOfBounds.html [ RetryOnFailure ]
@@ -423,9 +433,7 @@ crbug.com/929009 [ mac amd ] conformance/glsl/misc/shader-with-non-reserved-word
 # crbug.com/735483 [ mac amd release ] conformance/rendering/texture-switch-performance.html [ Failure ]
 
 # Mac Intel ANGLE and native OpenGL
-crbug.com/1144247 [ mac intel-0x3e9b angle-opengl ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
 crbug.com/1144247 [ mac intel-0x3e9b angle-disabled ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
-crbug.com/1144207 [ mac intel-0x3e9b angle-opengl ] conformance/extensions/webgl-multi-draw.html [ Failure ]
 crbug.com/1144207 [ mac intel-0x3e9b angle-disabled ] conformance/extensions/webgl-multi-draw.html [ Failure ]
 crbug.com/1018028 [ mac intel angle-disabled ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
 crbug.com/886970 [ mac intel-0xa2e angle-disabled ] conformance/rendering/canvas-alpha-bug.html [ Failure ]
@@ -469,21 +477,21 @@ crbug.com/angleproject/4846 [ mac angle-metal passthrough nvidia ] conformance/r
 crbug.com/angleproject/4846 [ mac angle-metal passthrough nvidia ] conformance/rendering/more-than-65536-indices.html [ Failure ]
 
 # Mac ARM-based DTKs
-crbug.com/1130703 [ mac apple-apple-a12z no-passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
-crbug.com/1130703 [ mac apple-apple-a12z no-passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
+crbug.com/1130703 [ mac apple-apple-m1 no-passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
+crbug.com/1130703 [ mac apple-apple-m1 no-passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
 # TODO(crbug.com/1153984): remove the expectations with the incorrect GPU type for the Metal backend.
 # finder:disable Want to keep both sets of expectations around until the issue is fixed.
-crbug.com/1130758 [ mac apple-apple-a12z ] conformance/extensions/webgl-depth-texture.html [ Failure ]
-crbug.com/1130758 [ mac google-angle-(metal-renderer:-apple-a12z) ] conformance/extensions/webgl-depth-texture.html [ Failure ]
-crbug.com/1130759 [ mac apple-apple-a12z angle-metal ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
-crbug.com/1130759 [ mac google-angle-(metal-renderer:-apple-a12z) angle-metal ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
-crbug.com/1130759 [ mac apple-apple-a12z angle-metal ] conformance/textures/misc/texture-mips.html [ Failure ]
-crbug.com/1130760 [ mac apple-apple-a12z angle-metal ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
-crbug.com/1130760 [ mac google-angle-(metal-renderer:-apple-a12z) angle-metal ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
-crbug.com/1130760 [ mac apple-apple-a12z angle-metal ] conformance/ogles/GL/discard/discard_001_to_002.html [ Failure ]
-crbug.com/1130760 [ mac google-angle-(metal-renderer:-apple-a12z) angle-metal ] conformance/ogles/GL/discard/discard_001_to_002.html [ Failure ]
-crbug.com/1141066 [ mac apple-apple-a12z angle-opengl passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
-crbug.com/1141066 [ mac apple-apple-a12z angle-opengl passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
+crbug.com/1130758 [ mac apple-apple-m1 ] conformance/extensions/webgl-depth-texture.html [ Failure ]
+crbug.com/1130758 [ mac apple-metal-renderer:-apple-m1 ] conformance/extensions/webgl-depth-texture.html [ Failure ]
+crbug.com/1130759 [ mac apple-apple-m1 angle-metal ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
+crbug.com/1130759 [ mac apple-metal-renderer:-apple-m1 angle-metal ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
+crbug.com/1130759 [ mac apple-apple-m1 angle-metal ] conformance/textures/misc/texture-mips.html [ Failure ]
+crbug.com/1130760 [ mac apple-apple-m1 angle-metal ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
+crbug.com/1130760 [ mac apple-metal-renderer:-apple-m1 angle-metal ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
+crbug.com/1130760 [ mac apple-apple-m1 angle-metal ] conformance/ogles/GL/discard/discard_001_to_002.html [ Failure ]
+crbug.com/1130760 [ mac apple-metal-renderer:-apple-m1 angle-metal ] conformance/ogles/GL/discard/discard_001_to_002.html [ Failure ]
+crbug.com/1141066 [ mac apple-apple-m1 angle-opengl passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
+crbug.com/1141066 [ mac apple-apple-m1 angle-opengl passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
 # finder:enable
 
 ####################
@@ -537,8 +545,7 @@ crbug.com/352645 [ android android-webview-instrumentation ] conformance/texture
 
 # Also flaky on nexus9 non-webview (bug=834933) but can't specify both.
 crbug.com/352645 [ android ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-# TODO(crbug.com/1175322): uncomment once bug is fixed
-# crbug.com/352645 [ android android-webview-instrumentation ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
+crbug.com/352645 [ android android-webview-instrumentation ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
 crbug.com/352645 [ android android-webview-instrumentation ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
 crbug.com/352645 [ android android-webview-instrumentation ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
 crbug.com/352645 [ android android-webview-instrumentation angle-disabled ] conformance/textures/misc/texture-npot-video.html [ Skip ]
@@ -547,24 +554,19 @@ crbug.com/352645 [ android android-webview-instrumentation angle-disabled ] conf
 # TODO(crbug.com/1178518): This crbug caused the test to fail consistently. It
 # should be probably back to flaky once the bug is fixed. So uncomment below test once the bug is fixed.
 # crbug.com/834933 [ android android-chromium ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
-# TODO(crbug.com/1175322): uncomment once bug is fixed
-# crbug.com/733599 [ android angle-disabled ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
-# TODO(crbug.com/1175322): uncomment once bug is fixed
-# crbug.com/733599 [ android angle-disabled ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/733599 [ android angle-disabled ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/733599 [ android angle-disabled ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
 # TODO(crbug.com/1178518): This crbug caused the test to fail consistently. It
 # should be probably back to flaky once the bug is fixed. So uncomment below test once the bug is fixed.
 # crbug.com/834933 [ android android-chromium ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
-# TODO(crbug.com/1175322): uncomment once bug is fixed
-# crbug.com/834933 [ android android-chromium ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
-# TODO(crbug.com/1175322): uncomment once bug is fixed
-# crbug.com/891456 [ android ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
+crbug.com/834933 [ android android-chromium ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/891456 [ android ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
 
 # This crashes in Android WebView on the Nexus 6, preventing the
 # suite from running further. Rather than add multiple
 # suppressions, skip it until it's passing at least in content
 # shell.
-# TODO(crbug.com/1175322): uncomment once bug is fixed
-# crbug.com/499555 [ android android-nexus-6 ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
+crbug.com/499555 [ android android-nexus-6 ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
 
 # The test that runs after conformance/state/gl-object-get-calls.html is failing
 # on Nexus 5/6 consistently and other Android bots (eg. Nexus 5X) sometimes.
@@ -585,8 +587,8 @@ crbug.com/611943 [ android android-nexus-5 ] conformance/glsl/misc/struct-equals
 crbug.com/478572 [ android android-nexus-5 ] deqp/data/gles2/shaders/linkage.html [ Failure ]
 crbug.com/678850 [ android android-nexus-5 ] conformance/more/functions/vertexAttribPointerBadArgs.html [ Failure ]
 crbug.com/678850 [ android android-nexus-5 ] conformance/attribs/gl-vertexattribpointer.html [ Failure ]
-# TODO(crbug.com/1175322): uncomment once bug is fixed
-# crbug.com/891456 [ android android-nexus-5 ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
+
+crbug.com/891456 [ android android-nexus-5 ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 
 # Nexus 5X
 # Was timing out randomly on android_optional_gpu_tests_rel, but became so
@@ -652,8 +654,7 @@ crbug.com/606096 [ android android-nexus-9 ] conformance/glsl/bugs/multiplicatio
 crbug.com/891456 [ android android-nexus-9 ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
 crbug.com/1025790 [ android android-nexus-9 ] conformance/textures/misc/tex-image-canvas-corruption.html [ Skip ]
 crbug.com/478572 [ android android-nexus-9 ] deqp/data/gles2/shaders/functions.html [ Failure ]
-# TODO(crbug.com/1175322): uncomment once bug is fixed
-# crbug.com/891456 [ android android-shield-android-tv ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
+crbug.com/891456 [ android android-shield-android-tv ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
 crbug.com/891456 [ android android-shield-android-tv ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
 crbug.com/891456 [ android android-shield-android-tv ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/1025790 [ android android-shield-android-tv ] conformance/textures/misc/tex-image-canvas-corruption.html [ Skip ]
@@ -661,41 +662,8 @@ crbug.com/1153676 [ android android-shield-android-tv ] conformance/extensions/s
 # Texture tests found to generate intermittent GL errors in the GPU process
 crbug.com/1090407 [ android android-nexus-9 ] conformance/textures/* [ RetryOnFailure ]
 crbug.com/1090407 [ android android-shield-android-tv ] conformance/textures/* [ RetryOnFailure ]
-# TODO(crbug.com/1175322): uncomment once bug is fixed
-# crbug.com/906724 [ android angle-opengles ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
-# TODO(crbug.com/1175322): uncomment once bug is fixed
-# crbug.com/906724 [ android angle-opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
-
-# These video-related tests are timing out on the Nexus 5 and 6
-crbug.com/1175322 [ android android-nexus-5 ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-5 ] conformance/textures/image_bitmap_from_video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-5 ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-5 ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-5 ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-5 ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-5 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-5 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-5 ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-5 ] conformance/textures/misc/texture-upload-size.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-5 ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
-
-crbug.com/1175322 [ android android-nexus-6 ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-6 ] conformance/textures/image_bitmap_from_video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-6 ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-6 ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-6 ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-6 ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-6 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-6 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-6 ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Skip ]
-crbug.com/1175322 [ android android-nexus-6 ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
-
-# These video-related tests (which are timing out on the Nexus 5 & 6) replace existing failures that have been commented out
-crbug.com/1175322 [ android ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1175322 [ android ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
-crbug.com/1175322 [ android ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
+crbug.com/906724 [ android angle-opengles ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/906724 [ android angle-opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
 
 # Failing webgl video tests on nexus 5 and nexus 6.
 crbug.com/1178518 [ android android-nexus-5 android-chromium ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
@@ -710,6 +678,7 @@ crbug.com/1178518 [ android android-nexus-6 android-chromium ] conformance/textu
 crbug.com/1175223 [ android android-pixel-4 angle-opengles passthrough ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
 crbug.com/1175226 [ android android-pixel-4 no-passthrough no-swiftshader-gl ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1179432 [ android android-pixel-4 no-passthrough ] conformance/rendering/polygon-offset.html [ RetryOnFailure ]
+crbug.com/1191030 [ android android-pixel-4 ] conformance/textures/misc/video-rotation.html [ Failure ]
 
 # Misc failures
 crbug.com/angleproject/2988 [ android angle-opengles ] conformance/context/context-size-change.html [ Failure ]
@@ -759,6 +728,16 @@ crbug.com/1108368 [ chromeos chromeos-board-kevin ] conformance/misc/shader-prec
 # Flaky renderer hangs suspected due to some driver issue on Kevin devices.
 crbug.com/1091562 [ chromeos-board-kevin ] * [ RetryOnFailure ]
 
+# Flaky driver crash on AMD.
+crbug.com/1186499 [ chromeos chromeos-board-amd64-generic ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
+
+###########################
+# Lacros/Wayland failures #
+###########################
+
+crbug.com/1185344 [ linux display-server-wayland intel no-swiftshader-gl angle-disabled ] WebglExtension_EXT_sRGB [ Failure ]
+crbug.com/1185344 [ linux display-server-wayland intel no-swiftshader-gl angle-disabled ] WebglExtension_EXT_shader_texture_lod [ Failure ]
+
 ########################
 # SwiftShader failures #
 ########################
@@ -773,140 +752,7 @@ crbug.com/1099959 [ swiftshader-gl no-passthrough ] WebglExtension_EXT_texture_c
 
 # All platforms, Vulkan backend
 crbug.com/1114284 [ linux angle-swiftshader passthrough google-0xffff ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ RetryOnFailure ]
-
-# Windows. All backends.
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/buffers/buffer-data-dynamic-delay.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/canvas/buffer-offscreen-test.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/canvas/buffer-preserve-test.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/canvas/framebuffer-bindings-unaffected-on-resize.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/canvas/rapid-resizing.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/canvas/texture-bindings-unaffected-on-resize.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/context/context-hidden-alpha.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/context/deleted-object-behavior.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/context/user-defined-properties-on-context.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/extensions/webgl-draw-buffers.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/glsl/bugs/loop-if-loop-gradient.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/glsl/bugs/qualcomm-crash.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/glsl/bugs/qualcomm-loop-with-continue-crash.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/glsl/bugs/sketchfab-lighting-shader-crash.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/more/functions/readPixelsBadArgs.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/more/functions/texImage2DHTML.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/more/functions/texSubImage2DHTML.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/offscreencanvas/context-attribute-preserve-drawing-buffer.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/renderbuffers/framebuffer-state-restoration.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/rendering/color-mask-preserved-during-implicit-clears.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/rendering/draw-webgl-to-canvas-2d-repeatedly.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/rendering/many-draw-calls.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/rendering/scissor-rect-repeated-rendering.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/state/state-uneffected-after-compositing.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/misc/exif-orientation.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/misc/origin-clean-conformance-offscreencanvas.html [ Failure ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/misc/origin-clean-conformance.html [ Failure ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/misc/texture-npot-video.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/misc/texture-upload-size.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/misc/texture-video-transparent.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/uniforms/uniform-default-values.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] deqp/data/gles2/shaders/conditionals.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] deqp/data/gles2/shaders/conversions.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] deqp/data/gles2/shaders/constant_expressions.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] deqp/data/gles2/shaders/constants.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] deqp/data/gles2/shaders/functions.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] deqp/data/gles2/shaders/keywords.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] deqp/data/gles2/shaders/linkage.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] deqp/data/gles2/shaders/preprocessor.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] deqp/data/gles2/shaders/scoping.html [ Skip ]
-crbug.com/1170944 [ win google angle-swiftshader passthrough ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/buffers/buffer-data-dynamic-delay.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/canvas/buffer-offscreen-test.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/canvas/buffer-preserve-test.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/canvas/framebuffer-bindings-unaffected-on-resize.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/canvas/rapid-resizing.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/canvas/texture-bindings-unaffected-on-resize.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/context/context-hidden-alpha.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/context/deleted-object-behavior.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/context/user-defined-properties-on-context.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/extensions/webgl-draw-buffers.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/glsl/bugs/loop-if-loop-gradient.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/glsl/bugs/qualcomm-crash.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/glsl/bugs/qualcomm-loop-with-continue-crash.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/glsl/bugs/sketchfab-lighting-shader-crash.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/more/functions/readPixelsBadArgs.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/more/functions/texImage2DHTML.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/more/functions/texSubImage2DHTML.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/offscreencanvas/context-attribute-preserve-drawing-buffer.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/renderbuffers/framebuffer-state-restoration.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/rendering/color-mask-preserved-during-implicit-clears.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/rendering/draw-webgl-to-canvas-2d-repeatedly.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/rendering/many-draw-calls.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/rendering/scissor-rect-repeated-rendering.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/state/state-uneffected-after-compositing.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/misc/exif-orientation.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/misc/origin-clean-conformance-offscreencanvas.html [ Failure ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/misc/origin-clean-conformance.html [ Failure ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/misc/texture-npot-video.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/misc/texture-upload-size.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/misc/texture-video-transparent.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/uniforms/uniform-default-values.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] deqp/data/gles2/shaders/conditionals.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] deqp/data/gles2/shaders/conversions.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] deqp/data/gles2/shaders/constant_expressions.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] deqp/data/gles2/shaders/constants.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] deqp/data/gles2/shaders/functions.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] deqp/data/gles2/shaders/keywords.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] deqp/data/gles2/shaders/linkage.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] deqp/data/gles2/shaders/preprocessor.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] deqp/data/gles2/shaders/scoping.html [ Skip ]
-crbug.com/1170944 [ win google swiftshader-gl no-passthrough ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
+crbug.com/1114284 [ mac angle-swiftshader passthrough google-0xffff ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ RetryOnFailure ]
 
 # Mac. All backends.
 crbug.com/1099960 [ mac angle-swiftshader passthrough ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Failure ]
@@ -968,3 +814,4 @@ crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/web
 crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
 crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
 crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
+crbug.com/1190853 [ mac angle-swiftshader passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]

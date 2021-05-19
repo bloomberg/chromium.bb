@@ -10,8 +10,8 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -95,7 +95,6 @@ void DemoModeDetector::OnIdle() {
   if (demo_launched_)
     return;
   demo_launched_ = true;
-  observer_->OnShouldStartDemoMode();
 }
 
 void DemoModeDetector::OnOobeTimerUpdate() {

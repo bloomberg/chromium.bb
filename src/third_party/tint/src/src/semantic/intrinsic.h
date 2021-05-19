@@ -15,7 +15,7 @@
 #ifndef SRC_SEMANTIC_INTRINSIC_H_
 #define SRC_SEMANTIC_INTRINSIC_H_
 
-#include <ostream>
+#include <string>
 
 #include "src/semantic/call_target.h"
 
@@ -72,11 +72,11 @@ enum class IntrinsicType {
   kMix,
   kModf,
   kNormalize,
-  kPack4x8Snorm,
-  kPack4x8Unorm,
+  kPack2x16Float,
   kPack2x16Snorm,
   kPack2x16Unorm,
-  kPack2x16Float,
+  kPack4x8Snorm,
+  kPack4x8Unorm,
   kPow,
   kReflect,
   kReverseBits,
@@ -88,6 +88,7 @@ enum class IntrinsicType {
   kSmoothStep,
   kSqrt,
   kStep,
+  kStorageBarrier,
   kTan,
   kTanh,
   kTextureDimensions,
@@ -102,12 +103,19 @@ enum class IntrinsicType {
   kTextureSampleLevel,
   kTextureStore,
   kTrunc,
-  kUnpack4x8Snorm,
-  kUnpack4x8Unorm,
+  kUnpack2x16Float,
   kUnpack2x16Snorm,
   kUnpack2x16Unorm,
-  kUnpack2x16Float,
+  kUnpack4x8Snorm,
+  kUnpack4x8Unorm,
+  kWorkgroupBarrier,
 };
+
+/// Matches the IntrisicType by name
+/// @param name the intrinsic name to parse
+/// @returns the parsed IntrinsicType, or IntrinsicType::kNone if `name` did not
+/// match any intrinsic.
+IntrinsicType ParseIntrinsicType(const std::string& name);
 
 /// @returns the name of the intrinsic function type. The spelling, including
 /// case, matches the name in the WGSL spec.
@@ -153,6 +161,11 @@ bool IsDataPackingIntrinsic(IntrinsicType i);
 /// @returns true if the given `i` is a data unpacking intrinsic
 bool IsDataUnpackingIntrinsic(IntrinsicType i);
 
+/// Determines if the given `i` is a barrier intrinsic
+/// @param i the intrinsic
+/// @returns true if the given `i` is a barrier intrinsic
+bool IsBarrierIntrinsic(IntrinsicType i);
+
 /// Intrinsic holds the semantic information for an intrinsic function.
 class Intrinsic : public Castable<Intrinsic, CallTarget> {
  public:
@@ -197,6 +210,9 @@ class Intrinsic : public Castable<Intrinsic, CallTarget> {
 
   /// @returns true if intrinsic is a data unpacking intrinsic
   bool IsDataUnpacking() const;
+
+  /// @returns true if intrinsic is a barrier intrinsic
+  bool IsBarrier() const;
 
  private:
   IntrinsicType const type_;

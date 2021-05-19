@@ -13,6 +13,7 @@
 
 #include "compiler/translator/Compiler.h"
 #include "compiler/translator/InitializeDll.h"
+#include "compiler/translator/glslang_wrapper.h"
 #include "compiler/translator/length_limits.h"
 #ifdef ANGLE_ENABLE_HLSL
 #    include "compiler/translator/TranslatorHLSL.h"
@@ -26,7 +27,8 @@ namespace sh
 namespace
 {
 
-bool isInitialized = false;
+bool isInitialized        = false;
+bool isGlslangInitialized = false;
 
 //
 // This is the platform independent interface between an OGL driver
@@ -440,6 +442,18 @@ const std::string &GetObjectCode(const ShHandle handle)
 
     TInfoSink &infoSink = compiler->getInfoSink();
     return infoSink.obj.str();
+}
+
+//
+// Return any object binary code.
+//
+const BinaryBlob &GetObjectBinaryBlob(const ShHandle handle)
+{
+    TCompiler *compiler = GetCompilerFromHandle(handle);
+    ASSERT(compiler);
+
+    TInfoSink &infoSink = compiler->getInfoSink();
+    return infoSink.obj.getBinary();
 }
 
 const std::map<std::string, std::string> *GetNameHashingMap(const ShHandle handle)
@@ -902,6 +916,24 @@ unsigned int GetShaderSharedMemorySize(const ShHandle handle)
     return sharedMemorySize;
 }
 
+void InitializeGlslang()
+{
+    if (!isGlslangInitialized)
+    {
+        GlslangInitialize();
+    }
+    isGlslangInitialized = true;
+}
+
+void FinalizeGlslang()
+{
+    if (isGlslangInitialized)
+    {
+        GlslangFinalize();
+    }
+    isGlslangInitialized = false;
+}
+
 // Can't prefix with just _ because then we might introduce a double underscore, which is not safe
 // in GLSL (ESSL 3.00.6 section 3.8: All identifiers containing a double underscore are reserved for
 // use by the underlying implementation). u is short for user-defined.
@@ -927,6 +959,7 @@ const char kAtomicCountersBlockName[] = "ANGLEAtomicCounters";
 const char kLineRasterEmulationPosition[] = "ANGLEPosition";
 
 const char kXfbEmulationGetOffsetsFunctionName[] = "ANGLEGetXfbOffsets";
+const char kXfbEmulationCaptureFunctionName[]    = "ANGLECaptureXfb";
 const char kXfbEmulationBufferBlockName[]        = "ANGLEXfbBuffer";
 const char kXfbEmulationBufferName[]             = "ANGLEXfb";
 const char kXfbEmulationBufferFieldName[]        = "xfbOut";

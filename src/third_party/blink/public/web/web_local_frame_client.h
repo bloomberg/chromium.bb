@@ -39,9 +39,9 @@
 #include "base/unguessable_token.h"
 #include "media/base/speech_recognition_client.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-forward.h"
@@ -364,8 +364,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidCommitNavigation(
       WebHistoryCommitType commit_type,
       bool should_reset_browser_interface_broker,
-      network::mojom::WebSandboxFlags sandbox_flags,
-      const ParsedFeaturePolicy& feature_policy_header,
+      const ParsedPermissionsPolicy& permissions_policy_header,
       const DocumentPolicyFeatureState& document_policy_header) {}
 
   // A new document has just been committed as a result of evaluating
@@ -415,8 +414,8 @@ class BLINK_EXPORT WebLocalFrameClient {
   // named anchor or a PopState event may have been dispatched.
   virtual void DidFinishSameDocumentNavigation(WebHistoryCommitType,
                                                bool content_initiated,
-                                               bool is_history_api_navigation) {
-  }
+                                               bool is_history_api_navigation,
+                                               bool is_client_redirect) {}
 
   // Called when a RenderFrame's page lifecycle state gets updated.
   virtual void DidSetPageLifecycleState() {}

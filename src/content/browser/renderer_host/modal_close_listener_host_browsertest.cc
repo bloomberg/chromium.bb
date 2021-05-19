@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/modal_close_listener_host.h"
 
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -44,7 +45,7 @@ class ModalCloseListenerHostBrowserTest : public ContentBrowserTest {
                     render_frame_host_impl)
                     ->SignalIfActive());
 
-    const base::string16 signaled_title = base::ASCIIToUTF16("SUCCESS");
+    const std::u16string signaled_title = u"SUCCESS";
     TitleWatcher watcher(web_contents(), signaled_title);
     watcher.AlsoWaitForTitle(signaled_title);
     EXPECT_EQ(signaled_title, watcher.WaitAndGetTitle());

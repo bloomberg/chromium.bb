@@ -65,6 +65,7 @@
       probes: [
         "CharacterDataModified",
         "DidCommitLoad",
+        'DidRestoreFromBackForwardCache',
         "DidInsertDOMNode",
         "DidInvalidateStyleAttr",
         "DidModifyDOMAttr",
@@ -186,11 +187,12 @@
     },
     InspectorPageAgent: {
       probes: [
-        "ConsumeCompilationCache",
+        "ApplyCompilationModeOverride",
         "DidChangeViewport",
         "DidClearDocumentOfWindowObject",
         "DidNavigateWithinDocument",
         "WillCommitLoad",
+        "DidRestoreFromBackForwardCache",
         "DidResizeMainFrame",
         "DidRunJavaScriptDialog",
         "DomContentLoadedEventFired",
@@ -206,7 +208,7 @@
         "LifecycleEvent",
         "LoadEventFired",
         "PaintTiming",
-        "ProduceCompilationCache",
+        "DidProduceCompilationCache",
         "RecalculateStyle",
         "UpdateLayout",
         "WillRunJavaScriptDialog",

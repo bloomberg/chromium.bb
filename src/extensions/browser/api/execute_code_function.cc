@@ -16,6 +16,9 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/mojom/action_type.mojom-shared.h"
+#include "extensions/common/mojom/css_origin.mojom-shared.h"
+#include "extensions/common/mojom/run_location.mojom-shared.h"
 
 namespace {
 
@@ -78,11 +81,11 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string,
 
   DCHECK(!(ShouldInsertCSS() && ShouldRemoveCSS()));
 
-  auto action_type = UserScript::ActionType::ADD_JAVASCRIPT;
+  auto action_type = mojom::ActionType::kAddJavascript;
   if (ShouldInsertCSS())
-    action_type = UserScript::ActionType::ADD_CSS;
+    action_type = mojom::ActionType::kAddCss;
   else if (ShouldRemoveCSS())
-    action_type = UserScript::ActionType::REMOVE_CSS;
+    action_type = mojom::ActionType::kRemoveCss;
 
   ScriptExecutor::FrameScope frame_scope =
       details_->all_frames.get() && *details_->all_frames
@@ -98,29 +101,29 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string,
           ? ScriptExecutor::MATCH_ABOUT_BLANK
           : ScriptExecutor::DONT_MATCH_ABOUT_BLANK;
 
-  UserScript::RunLocation run_at = UserScript::UNDEFINED;
+  mojom::RunLocation run_at = mojom::RunLocation::kUndefined;
   switch (details_->run_at) {
     case api::extension_types::RUN_AT_NONE:
     case api::extension_types::RUN_AT_DOCUMENT_IDLE:
-      run_at = UserScript::DOCUMENT_IDLE;
+      run_at = mojom::RunLocation::kDocumentIdle;
       break;
     case api::extension_types::RUN_AT_DOCUMENT_START:
-      run_at = UserScript::DOCUMENT_START;
+      run_at = mojom::RunLocation::kDocumentStart;
       break;
     case api::extension_types::RUN_AT_DOCUMENT_END:
-      run_at = UserScript::DOCUMENT_END;
+      run_at = mojom::RunLocation::kDocumentEnd;
       break;
   }
-  CHECK_NE(UserScript::UNDEFINED, run_at);
+  CHECK_NE(mojom::RunLocation::kUndefined, run_at);
 
-  CSSOrigin css_origin = CSSOrigin::kAuthor;
+  mojom::CSSOrigin css_origin = mojom::CSSOrigin::kAuthor;
   switch (details_->css_origin) {
     case api::extension_types::CSS_ORIGIN_NONE:
     case api::extension_types::CSS_ORIGIN_AUTHOR:
-      css_origin = CSSOrigin::kAuthor;
+      css_origin = mojom::CSSOrigin::kAuthor;
       break;
     case api::extension_types::CSS_ORIGIN_USER:
-      css_origin = CSSOrigin::kUser;
+      css_origin = mojom::CSSOrigin::kUser;
       break;
   }
 

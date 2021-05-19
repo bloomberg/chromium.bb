@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap_observer_set.h"
-#include "third_party/blink/renderer/platform/mojo/features.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_binding_context.h"
 #include "third_party/blink/renderer/platform/testing/mock_context_lifecycle_notifier.h"
@@ -156,9 +155,6 @@ class HeapMojoReceiverGCWithoutContextObserverTest
 class HeapMojoReceiverDestroyContextWithContextObserverTest
     : public HeapMojoReceiverDestroyContextBaseTest<
           HeapMojoWrapperMode::kWithContextObserver> {};
-class HeapMojoReceiverDestroyContextWithoutContextObserverTest
-    : public HeapMojoReceiverDestroyContextBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
 class HeapMojoReceiverDestroyContextForceWithoutContextObserverTest
     : public HeapMojoReceiverDestroyContextBaseTest<
           HeapMojoWrapperMode::kForceWithoutContextObserver> {};
@@ -171,17 +167,13 @@ class HeapMojoReceiverDisconnectWithReasonHandlerWithoutContextObserverTest
 
 // Make HeapMojoReceiver with context observer garbage collected and check that
 // the connection is disconnected right after the marking phase.
-// TODO(1056170): Re-enable test.
-#if !BUILDFLAG(USE_V8_OILPAN)
 TEST_F(HeapMojoReceiverGCWithContextObserverTest, ResetsOnGC) {
   ClearOwner();
   EXPECT_FALSE(disconnected());
   PreciselyCollectGarbage();
   run_loop().Run();
   EXPECT_TRUE(disconnected());
-  CompleteSweepingIfNeeded();
 }
-#endif  // !USE_V8_OILPAN
 
 // Check that the owner
 TEST_F(HeapMojoReceiverGCWithContextObserverTest, NoResetOnConservativeGC) {
@@ -197,17 +189,13 @@ TEST_F(HeapMojoReceiverGCWithContextObserverTest, NoResetOnConservativeGC) {
 
 // Make HeapMojoReceiver without context observer garbage collected and check
 // that the connection is disconnected right after the marking phase.
-// TODO(1056170): Re-enable test.
-#if !BUILDFLAG(USE_V8_OILPAN)
 TEST_F(HeapMojoReceiverGCWithoutContextObserverTest, ResetsOnGC) {
   ClearOwner();
   EXPECT_FALSE(disconnected());
   PreciselyCollectGarbage();
   run_loop().Run();
   EXPECT_TRUE(disconnected());
-  CompleteSweepingIfNeeded();
 }
-#endif  // !USE_V8_OILPAN
 
 // Destroy the context with context observer and check that the connection is
 // disconnected.
@@ -216,29 +204,6 @@ TEST_F(HeapMojoReceiverDestroyContextWithContextObserverTest,
   EXPECT_TRUE(owner_->receiver().is_bound());
   context_->NotifyContextDestroyed();
   EXPECT_FALSE(owner_->receiver().is_bound());
-}
-
-// Destroy the context with context observer and check that the connection is
-// disconnected.
-TEST_F(HeapMojoReceiverDestroyContextWithoutContextObserverTest,
-       ResetsOnContextDestroyedWhenFinchEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeaturesAndParameters(
-      {{kHeapMojoUseContextObserver, {}}}, {});
-  EXPECT_TRUE(owner_->receiver().is_bound());
-  context_->NotifyContextDestroyed();
-  EXPECT_FALSE(owner_->receiver().is_bound());
-}
-
-// Destroy the context without context observer and check that the connection is
-// still connected.
-TEST_F(HeapMojoReceiverDestroyContextWithoutContextObserverTest,
-       ResetsOnContextDestroyedWhenFinchDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeaturesAndParameters({}, {kHeapMojoUseContextObserver});
-  EXPECT_TRUE(owner_->receiver().is_bound());
-  context_->NotifyContextDestroyed();
-  EXPECT_TRUE(owner_->receiver().is_bound());
 }
 
 // Destroy the context without context observer and check that the connection is

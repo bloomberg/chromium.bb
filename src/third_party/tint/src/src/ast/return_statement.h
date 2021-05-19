@@ -15,9 +15,6 @@
 #ifndef SRC_AST_RETURN_STATEMENT_H_
 #define SRC_AST_RETURN_STATEMENT_H_
 
-#include <memory>
-#include <utility>
-
 #include "src/ast/expression.h"
 #include "src/ast/statement.h"
 
@@ -48,9 +45,6 @@ class ReturnStatement : public Castable<ReturnStatement, Statement> {
   /// @param ctx the clone context
   /// @return the newly cloned node
   ReturnStatement* Clone(CloneContext* ctx) const override;
-
-  /// @returns true if the node is valid
-  bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
   /// @param sem the semantic info for the program

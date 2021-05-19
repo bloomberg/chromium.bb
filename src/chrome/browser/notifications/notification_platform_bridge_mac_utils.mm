@@ -12,6 +12,7 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
+#include "chrome/browser/notifications/notification_platform_bridge_mac_metrics.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/services/mac_notifications/public/cpp/notification_constants_mac.h"
@@ -34,7 +35,7 @@ void DoProcessMacNotificationResponse(
     const GURL& origin,
     const std::string& notificationId,
     const base::Optional<int>& actionIndex,
-    const base::Optional<base::string16>& reply,
+    const base::Optional<std::u16string>& reply,
     const base::Optional<bool>& byUser) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -68,21 +69,21 @@ bool MacOSSupportsXPCAlertsImpl() {
 
 }  // namespace
 
-base::string16 CreateMacNotificationTitle(
+std::u16string CreateMacNotificationTitle(
     const message_center::Notification& notification) {
-  base::string16 title;
+  std::u16string title;
   // Show progress percentage if available. We don't support indeterminate
   // states on macOS native notifications.
   if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS &&
       notification.progress() >= 0 && notification.progress() <= 100) {
     title += base::FormatPercent(notification.progress());
-    title += base::UTF8ToUTF16(" - ");
+    title += u" - ";
   }
   title += notification.title();
   return title;
 }
 
-base::string16 CreateMacNotificationContext(
+std::u16string CreateMacNotificationContext(
     bool isPersistent,
     const message_center::Notification& notification,
     bool requiresAttribution) {
@@ -104,7 +105,7 @@ base::string16 CreateMacNotificationContext(
   size_t maxCharacters =
       isPersistent ? kMaxDomainLengthAlert : kMaxDomainLengthBanner;
 
-  base::string16 origin = url_formatter::FormatOriginForSecurityDisplay(
+  std::u16string origin = url_formatter::FormatOriginForSecurityDisplay(
       url::Origin::Create(notification.origin_url()),
       url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
 
@@ -112,7 +113,7 @@ base::string16 CreateMacNotificationContext(
     return origin;
 
   // Too long, use etld+1
-  base::string16 etldplusone =
+  std::u16string etldplusone =
       base::UTF8ToUTF16(net::registry_controlled_domains::GetDomainAndRegistry(
           notification.origin_url(),
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
@@ -133,7 +134,8 @@ bool VerifyMacNotificationData(NSDictionary* response) {
       ![response objectForKey:notification_constants::kNotificationIncognito] ||
       ![response
           objectForKey:notification_constants::kNotificationCreatorPid] ||
-      ![response objectForKey:notification_constants::kNotificationType]) {
+      ![response objectForKey:notification_constants::kNotificationType] ||
+      ![response objectForKey:notification_constants::kNotificationIsAlert]) {
     LOG(ERROR) << "Missing required key";
     return false;
   }
@@ -200,7 +202,12 @@ bool VerifyMacNotificationData(NSDictionary* response) {
 }
 
 void ProcessMacNotificationResponse(NSDictionary* response) {
-  if (!VerifyMacNotificationData(response))
+  bool isAlert = [[response
+      objectForKey:notification_constants::kNotificationIsAlert] boolValue];
+  bool isValid = VerifyMacNotificationData(response);
+  LogMacNotificationActionReceived(isAlert, isValid);
+
+  if (!isValid)
     return;
 
   NSNumber* buttonIndex =

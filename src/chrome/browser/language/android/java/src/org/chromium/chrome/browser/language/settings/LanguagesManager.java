@@ -13,9 +13,11 @@ import org.chromium.chrome.browser.translate.TranslateBridge;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 /**
  * Manages languages details for languages settings.
@@ -44,7 +46,12 @@ public class LanguagesManager {
             LanguageSettingsActionType.ENABLE_TRANSLATE_FOR_SINGLE_LANGUAGE,
             LanguageSettingsActionType.LANGUAGE_LIST_REORDERED,
             LanguageSettingsActionType.CHANGE_CHROME_LANGUAGE,
-            LanguageSettingsActionType.CHANGE_TARGET_LANGUAGE})
+            LanguageSettingsActionType.CHANGE_TARGET_LANGUAGE,
+            LanguageSettingsActionType.REMOVE_FROM_NEVER_TRANSLATE,
+            LanguageSettingsActionType.ADD_TO_NEVER_TRANSLATE,
+            LanguageSettingsActionType.REMOVE_FROM_ALWAYS_TRANSLATE,
+            LanguageSettingsActionType.ADD_TO_ALWAYS_TRANSLATE,
+            LanguageSettingsActionType.REMOVE_SITE_FROM_NEVER_TRANSLATE})
     @Retention(RetentionPolicy.SOURCE)
     @interface LanguageSettingsActionType {
         // int CLICK_ON_ADD_LANGUAGE = 1; // Removed M89
@@ -57,27 +64,43 @@ public class LanguagesManager {
         int LANGUAGE_LIST_REORDERED = 8;
         int CHANGE_CHROME_LANGUAGE = 9;
         int CHANGE_TARGET_LANGUAGE = 10;
-        int NUM_ENTRIES = 11;
+        int REMOVE_FROM_NEVER_TRANSLATE = 11;
+        int ADD_TO_NEVER_TRANSLATE = 12;
+        int REMOVE_FROM_ALWAYS_TRANSLATE = 13;
+        int ADD_TO_ALWAYS_TRANSLATE = 14;
+        int REMOVE_SITE_FROM_NEVER_TRANSLATE = 15;
+        int NUM_ENTRIES = 16;
     }
 
     // Constants used to log UMA enum histogram, must stay in sync with
     // LanguageSettingsPageType. Further actions can only be appended, existing
     // entries must not be overwritten.
-    @IntDef({LanguageSettingsPageType.PAGE_MAIN, LanguageSettingsPageType.PAGE_ADD_LANGUAGE,
-            LanguageSettingsPageType.CHROME_LANGUAGE,
+    @IntDef({LanguageSettingsPageType.PAGE_MAIN,
+            LanguageSettingsPageType.CONTENT_LANGUAGE_ADD_LANGUAGE,
+            LanguageSettingsPageType.CHANGE_CHROME_LANGUAGE,
             LanguageSettingsPageType.ADVANCED_LANGUAGE_SETTINGS,
-            LanguageSettingsPageType.TARGET_LANGUAGE,
-            LanguageSettingsPageType.LANGUAGE_OVERFLOW_MENU_OPENED})
+            LanguageSettingsPageType.CHANGE_TARGET_LANGUAGE,
+            LanguageSettingsPageType.LANGUAGE_OVERFLOW_MENU_OPENED,
+            LanguageSettingsPageType.VIEW_NEVER_TRANSLATE_LANGUAGES,
+            LanguageSettingsPageType.NEVER_TRANSLATE_ADD_LANGUAGE,
+            LanguageSettingsPageType.VIEW_ALWAYS_TRANSLATE_LANGUAGES,
+            LanguageSettingsPageType.ALWAYS_TRANSLATE_ADD_LANGUAGE,
+            LanguageSettingsPageType.VIEW_NEVER_TRANSLATE_SITES})
     @Retention(RetentionPolicy.SOURCE)
     @interface LanguageSettingsPageType {
         int PAGE_MAIN = 0;
-        int PAGE_ADD_LANGUAGE = 1;
+        int CONTENT_LANGUAGE_ADD_LANGUAGE = 1;
         // int LANGUAGE_DETAILS = 2; // iOS only
-        int CHROME_LANGUAGE = 3;
+        int CHANGE_CHROME_LANGUAGE = 3;
         int ADVANCED_LANGUAGE_SETTINGS = 4;
-        int TARGET_LANGUAGE = 5;
+        int CHANGE_TARGET_LANGUAGE = 5;
         int LANGUAGE_OVERFLOW_MENU_OPENED = 6;
-        int NUM_ENTRIES = 7;
+        int VIEW_NEVER_TRANSLATE_LANGUAGES = 7;
+        int NEVER_TRANSLATE_ADD_LANGUAGE = 8;
+        int VIEW_ALWAYS_TRANSLATE_LANGUAGES = 9;
+        int ALWAYS_TRANSLATE_ADD_LANGUAGE = 10;
+        int VIEW_NEVER_TRANSLATE_SITES = 11;
+        int NUM_ENTRIES = 12;
     }
 
     private static LanguagesManager sManager;
@@ -156,6 +179,36 @@ public class LanguagesManager {
         List<LanguageItem> results = new ArrayList<>();
         for (LanguageItem item : mLanguagesMap.values()) {
             if (item.isSupportedBaseLanguage()) results.add(item);
+        }
+        return results;
+    }
+
+    /**
+     * Get a list of LanguageItems that the user has set to always translate. The list is sorted
+     * alphabetically by display name.
+     * @return List of LanguageItems.
+     */
+    public Collection<LanguageItem> getAlwaysTranslateLanguageItems() {
+        // Get the latest always translate list from native. This list has no guaranteed order.
+        List<String> codes = TranslateBridge.getAlwaysTranslateLanguages();
+        TreeSet<LanguageItem> results = new TreeSet(LanguageItem.COMPARE_BY_DISPLAY_NAME);
+        for (String code : codes) {
+            if (mLanguagesMap.containsKey(code)) results.add(mLanguagesMap.get(code));
+        }
+        return results;
+    }
+
+    /**
+     * Get a list of LanguageItems that the user has set to never prompt for translation. The list
+     * is sorted alphabetically by display name.
+     * @return List of LanguageItems.
+     */
+    public Collection<LanguageItem> getNeverTranslateLanguageItems() {
+        // Get the latest never translate list from native. This list has no guaranteed order.
+        List<String> codes = TranslateBridge.getNeverTranslateLanguages();
+        TreeSet<LanguageItem> results = new TreeSet(LanguageItem.COMPARE_BY_DISPLAY_NAME);
+        for (String code : codes) {
+            if (mLanguagesMap.containsKey(code)) results.add(mLanguagesMap.get(code));
         }
         return results;
     }

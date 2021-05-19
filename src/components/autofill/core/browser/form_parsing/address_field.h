@@ -6,12 +6,12 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_PARSING_ADDRESS_FIELD_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/browser/pattern_provider/pattern_provider.h"
@@ -88,7 +88,7 @@ class AddressField : public FormField {
   // change.
   ParseNameLabelResult ParseNameAndLabelSeparately(
       AutofillScanner* scanner,
-      const base::string16& pattern,
+      const std::u16string& pattern,
       int match_type,
       const std::vector<MatchingPattern>& patterns,
       AutofillField** match,

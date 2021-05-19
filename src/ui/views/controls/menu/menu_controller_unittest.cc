@@ -46,7 +46,10 @@
 #include "ui/aura/client/drag_drop_client_observer.h"
 #include "ui/aura/null_window_targeter.h"
 #include "ui/aura/scoped_window_targeter.h"
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/views/controls/menu/menu_pre_target_handler.h"
 #endif
@@ -689,7 +692,7 @@ class MenuControllerTest : public ViewsTestBase,
 
   void MenuHostOnDragComplete(MenuHost* host) { host->OnDragComplete(); }
 
-  void SelectByChar(base::char16 character) {
+  void SelectByChar(char16_t character) {
     menu_controller_->SelectByChar(character);
   }
 
@@ -767,12 +770,11 @@ class MenuControllerTest : public ViewsTestBase,
   // `single_child` is true, the hosting menu item has only one child button.
   MenuItemView* AddButtonMenuItems(bool single_child) {
     menu_item()->SetBounds(0, 0, 200, 300);
-    MenuItemView* item_view =
-        menu_item()->AppendMenuItem(5, base::ASCIIToUTF16("Five"));
+    MenuItemView* item_view = menu_item()->AppendMenuItem(5, u"Five");
     const size_t children_count = single_child ? 1 : 3;
     for (size_t i = 0; i < children_count; ++i) {
-      LabelButton* button = new LabelButton(Button::PressedCallback(),
-                                            base::ASCIIToUTF16("Label"));
+      LabelButton* button =
+          new LabelButton(Button::PressedCallback(), u"Label");
       // This is an in-menu button. Hence it must be always focusable.
       button->SetFocusBehavior(View::FocusBehavior::ALWAYS);
       item_view->AddChildView(button);
@@ -834,10 +836,10 @@ class MenuControllerTest : public ViewsTestBase,
   void SetupMenuItem() {
     menu_delegate_ = std::make_unique<TestMenuDelegate>();
     menu_item_ = std::make_unique<TestMenuItemViewShown>(menu_delegate_.get());
-    menu_item_->AppendMenuItem(1, base::ASCIIToUTF16("One"));
-    menu_item_->AppendMenuItem(2, base::ASCIIToUTF16("Two"));
-    menu_item_->AppendMenuItem(3, base::ASCIIToUTF16("Three"));
-    menu_item_->AppendMenuItem(4, base::ASCIIToUTF16("Four"));
+    menu_item_->AppendMenuItem(1, u"One");
+    menu_item_->AppendMenuItem(2, u"Two");
+    menu_item_->AppendMenuItem(3, u"Three");
+    menu_item_->AppendMenuItem(4, u"Four");
   }
 
   void SetupMenuController() {
@@ -1751,6 +1753,65 @@ TEST_F(MenuControllerTest, PreserveGestureForOwner) {
   EXPECT_EQ(CountOwnerOnGestureEvent(), 2);
 }
 
+#if defined(USE_AURA)
+// Tests that setting `send_gesture_events_to_owner` flag forwards gesture
+// events to the NativeView specified for gestures and not the owner's
+// NativeView.
+TEST_F(MenuControllerTest, ForwardsEventsToNativeViewForGestures) {
+  aura::test::EventCountDelegate child_delegate;
+  auto child_window = std::make_unique<aura::Window>(&child_delegate);
+  child_window->Init(ui::LAYER_TEXTURED);
+  owner()->GetNativeView()->AddChild(child_window.get());
+
+  MenuController* controller = menu_controller();
+  MenuItemView* item = menu_item();
+
+  // Ensure menu is closed before running with the menu with `child_window` as
+  // the NativeView for gestures.
+  controller->Cancel(MenuController::ExitType::kAll);
+
+  controller->Run(owner(), nullptr, item, gfx::Rect(),
+                  MenuAnchorPosition::kBottomCenter, false, false,
+                  child_window.get());
+  SubmenuView* sub_menu = item->GetSubmenu();
+  sub_menu->ShowAt(owner(), gfx::Rect(0, 0, 100, 100), true,
+                   child_window.get());
+
+  gfx::Point location(sub_menu->bounds().bottom_left().x(),
+                      sub_menu->bounds().bottom_left().y() + 10);
+  ui::GestureEvent event(location.x(), location.y(), 0, ui::EventTimeForNow(),
+                         ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
+
+  // Gesture events should not be forwarded to either the `child_window` or the
+  // hosts native window if the flag is not set.
+  EXPECT_EQ(0, CountOwnerOnGestureEvent());
+  EXPECT_EQ(0, child_delegate.GetGestureCountAndReset());
+  EXPECT_FALSE(controller->send_gesture_events_to_owner());
+  controller->OnGestureEvent(sub_menu, &event);
+  EXPECT_EQ(0, CountOwnerOnGestureEvent());
+  EXPECT_EQ(0, child_delegate.GetGestureCountAndReset());
+
+  // The `child_window` should receive gestures triggered outside the menu.
+  controller->set_send_gesture_events_to_owner(true);
+  controller->OnGestureEvent(sub_menu, &event);
+  EXPECT_EQ(0, CountOwnerOnGestureEvent());
+  EXPECT_EQ(1, child_delegate.GetGestureCountAndReset());
+
+  ui::GestureEvent event2(location.x(), location.y(), 0, ui::EventTimeForNow(),
+                          ui::GestureEventDetails(ui::ET_GESTURE_END));
+
+  controller->OnGestureEvent(sub_menu, &event2);
+  EXPECT_EQ(0, CountOwnerOnGestureEvent());
+  EXPECT_EQ(1, child_delegate.GetGestureCountAndReset());
+
+  // ET_GESTURE_END resets the `send_gesture_events_to_owner_` flag, so further
+  // gesture events should not be sent to the `child_window`.
+  controller->OnGestureEvent(sub_menu, &event2);
+  EXPECT_EQ(0, CountOwnerOnGestureEvent());
+  EXPECT_EQ(0, child_delegate.GetGestureCountAndReset());
+}
+#endif
+
 // Tests that touch outside menu does not closes the menu when forwarding
 // gesture events to owner.
 TEST_F(MenuControllerTest, NoTouchCloseWhenSendingGesturesToOwner) {
@@ -2162,7 +2223,7 @@ TEST_P(MenuControllerTest, TestMenuFitsOnSmallScreen) {
 TEST_P(MenuControllerTest, TestSubmenuFitsOnScreen) {
   menu_controller()->set_use_touchable_layout(true);
   MenuItemView* sub_item = menu_item()->GetSubmenu()->GetMenuItemAt(0);
-  sub_item->AppendMenuItem(11, base::ASCIIToUTF16("Subitem.One"));
+  sub_item->AppendMenuItem(11, u"Subitem.One");
 
   const int menu_width = MenuConfig::instance().touchable_menu_min_width;
   const gfx::Size parent_size(menu_width, menu_width);
@@ -2249,9 +2310,8 @@ TEST_F(MenuControllerTest, MouseAtMenuItemOnShow) {
   // the menu is shown.
   std::unique_ptr<TestMenuItemViewNotShown> menu_item(
       new TestMenuItemViewNotShown(menu_delegate()));
-  MenuItemView* first_item =
-      menu_item->AppendMenuItem(1, base::ASCIIToUTF16("One"));
-  menu_item->AppendMenuItem(2, base::ASCIIToUTF16("Two"));
+  MenuItemView* first_item = menu_item->AppendMenuItem(1, u"One");
+  menu_item->AppendMenuItem(2, u"Two");
   menu_item->SetController(menu_controller());
 
   // Move the mouse to where the first menu item will be shown,

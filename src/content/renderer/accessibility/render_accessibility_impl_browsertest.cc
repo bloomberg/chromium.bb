@@ -42,7 +42,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -1182,7 +1181,7 @@ TEST_F(BlinkAXActionTargetTest, TestMethods) {
     action_data.value = value_to_set;
     EXPECT_TRUE(input_text_action_target->PerformAction(action_data));
   }
-  EXPECT_EQ(value_to_set, input_text.StringValue().Utf8());
+  EXPECT_EQ(value_to_set, input_text.GetValueForControl().Utf8());
 
   // Setting selection requires layout to be clean.
   ASSERT_TRUE(root_obj.MaybeUpdateLayoutAndCheckValidity());

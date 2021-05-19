@@ -44,6 +44,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'setDefaultValueForContentType',
       'setOriginPermissions',
       'setProtocolDefault',
+      'setProtocolHandlerDefault',
       'updateIncognitoStatus',
       'clearEtldPlus1DataAndCookies',
       'clearOriginDataAndCookies',
@@ -501,5 +502,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   setDefaultCaptureDevice() {}
 
   /** @override */
-  setProtocolHandlerDefault() {}
+  setProtocolHandlerDefault(value) {
+    this.methodCalled('setProtocolHandlerDefault', value);
+  }
 }

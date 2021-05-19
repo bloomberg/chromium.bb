@@ -4,6 +4,7 @@
 <translation id="1282031177488366470">Palīdzēt uzlabot Chrome funkcijas un veiktspēju</translation>
 <translation id="1314663809820920746">Šajā ierīcē joprojām varat skatīt visas savas grāmatzīmes, vēsturi, paroles un citus iestatījumus. Ja veiksiet izmaiņas, tās netiks sinhronizētas ar jūsu Google kontu.</translation>
 <translation id="1479202195792305274">Pārlūkprogrammā Chrome var pārbaudīt jūsu paroles, ja esat pierakstījies savā Google kontā.</translation>
+<translation id="1493827051843127077">Lai visās ierīcēs sinhronizētu savas cilnes, paroles un maksājumu informāciju, iestatiet pārlūku Chrome kā noklusējuma pārlūku</translation>
 <translation id="1504372625950710826">Pārlūkā Chrome nevarēja pārbaudīt atjauninājumu pieejamību. Pārbaudiet interneta savienojumu.</translation>
 <translation id="1682483655351012182">Sinhronizēt jūsu Chrome datus</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -14,6 +15,7 @@
 <translation id="2342919707875585281">Chrome kopīgo jūsu atrašanās vietu ar vietnēm, kam atļaujat saņemt šo informāciju.</translation>
 <translation id="2347208864470321755">Ja šī funkcija ir ieslēgta, Chrome piedāvā tulkot citās valodās rakstītas lapas, izmantojot Google tulkotāju. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="2415682770504543561">Chrome kā noklusējuma pārlūka iestatīšana</translation>
+<translation id="2561231791489583059">Parūpējieties par aizsardzību no bīstamām vietnēm un savu paroļu drošību, izmantojot pārlūku Chrome kā savu noklusējuma pārlūku</translation>
 <translation id="2574249610672786438">Lai skatītu cilnes no ierīcēm, kurās lietojat pārlūku Chrome, pierakstieties visās savās ierīcēs.</translation>
 <translation id="2576431527583832481">Pārlūkprogramma Chrome ir uzlabota! Ir pieejama jauna versija.</translation>
 <translation id="257708665678654955">Vai vēlaties, lai Google Chrome nākamreiz piedāvātu tulkot šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE_NAME" />?</translation>
@@ -30,13 +32,12 @@
 <translation id="3522659714780527202">Lai skatītu cilnes no ierīcēm, kurās lietojat pārlūku Chrome, ieslēdziet sinhronizāciju.</translation>
 <translation id="3533694711092285624">Nav saglabātu paroļu. Pārlūkprogrammā Chrome var pārbaudīt jūsu paroles, ja jūs tās saglabājat.</translation>
 <translation id="3706101708757577809">Tagad varat izmantot Chrome ikreiz, kad pieskaraties saitēm ziņojumos, dokumentos un citās lietotnēs.</translation>
+<translation id="3720541637541300822">Bloķēt inkognito cilnes, aizverot pārlūku Chrome</translation>
 <translation id="384394811301901750">Google Chrome pašlaik nevar izmantot kameru.</translation>
-<translation id="38949020760388809">Izvēlieties, vai notīrīt Chrome datus no šīs ierīces vai tos paturēt.</translation>
 <translation id="3980220367029651214">Jūs pārslēdzat sinhronizējamos kontus no konta <ph name="USER_EMAIL1" /> uz kontu <ph name="USER_EMAIL2" />. Jūsu esošie Chrome dati tiek pārvaldīti domēnā <ph name="DOMAIN" />. Pārslēdzot kontus, jūsu dati tiks dzēsti no šīs ierīces, taču tie paliks kontā <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">Saskaņā ar jūsu organizācijas politiku ir atspējota pierakstīšanās pārlūkā Chrome.</translation>
 <translation id="3988789688219830639">Google Chrome nevar piekļūt jūsu fotoattēliem vai videoklipiem. Iespējojiet piekļuvi: iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4099578267706723511">Uzlabojiet pārlūku Chrome, uzņēmumam Google sūtot lietojuma statistiku un avāriju pārskatus.</translation>
-<translation id="415767770115540173">Uzlabojiet savu Google pakalpojumu izmantošanas pieredzi pārlūkā Chrome, sūtot informāciju par savu atrašanās vietu.</translation>
 <translation id="417201473131094001">Netiek atbalstīta pārlūkā Chrome Canary.</translation>
 <translation id="424864128008805179">Vai izrakstīties no pārlūka Chrome?</translation>
 <translation id="4249068189593983585">Chrome padoms. Lai iegūtu vairāk ciļņu iespēju, rīkjoslā, kas atrodas ekrāna apakšdaļā vai augšdaļā, pieskarieties pogai Rādīt cilnes un turiet to.</translation>
@@ -51,7 +52,9 @@
 <translation id="5642200033778930880">Google Chrome nevar izmantot kameru dalītā skata režīmā.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Pārlūkā Chrome nevar pārbaudīt atjauninājumu pieejamību.</translation>
+<translation id="5716154293141027663">Tiks atvērts pārlūks Chrome ikreiz, kad pieskarsieties saitēm citās lietotnēs.</translation>
 <translation id="5854621639439811139">Chrome padoms. Tagad ekrāna apakšdaļā ir dažas pogas, piemēram, Atpakaļ, Pārsūtīt un Meklēt.</translation>
+<translation id="5876773482963502140">Ja atļaujat pārlūkam Chrome piekļūt jūsu atrašanās vietas informācijai, pārlūkā Chrome šī informācija tiek nosūtīta uz visām vietnēm, kurām piešķirat atļauju. Vietnēs var tikt lūgta atļauja piekļūt atrašanās vietas informācijai, lai rādītu jums vietēju informāciju, piemēram, vietējās ziņas vai informāciju par tuvumā esošiem veikaliem.</translation>
 <translation id="6036420186814142909">Pārlūkā Google Chrome ir funkcijas, ko varat izmantot, lai pārvaldītu interneta datus un tīmekļa lapu ielādes ātrumu.
 <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="6181930887571472871">Pāriet uz Chrome</translation>
@@ -71,6 +74,7 @@
 <translation id="7261678641327190792">Pārlūkprogrammā Chrome nevar pārbaudīt jūsu paroles.</translation>
 <translation id="7265369419224458312">Šeit varat piekļūt cilnēm, kas ir atvērtas jūsu datorā. Vienkārši atveriet pārlūku Chrome savā datorā, pārejiet uz izvēlni un atlasiet “Pierakstīties pakalpojumā Chrome…”</translation>
 <translation id="7272930098487145294">Lai saglabātu attēlus, pieskarieties vienumam Iestatījumi un atļaujiet Chrome pievienot fotoattēlus.</translation>
+<translation id="7275945473750112644">Jūsu konts tiek pārvaldīts domēnā <ph name="HOSTED_DOMAIN" />, tāpēc jūsu Chrome dati no šīs ierīces tiks dzēsti</translation>
 <translation id="7400722733683201933">Par Google Chrome</translation>
 <translation id="7501046334262221972">Lai iestatītu Chrome kā noklusējuma pārlūku, atveriet iestatījumus. Pieskarieties vienumam “Noklusējuma pārlūka lietotne” un pēc tam atlasiet Chrome.</translation>
 <translation id="756809126120519699">Chrome dati tika notīrīti</translation>
@@ -79,8 +83,9 @@
 <translation id="766361182512894255">Jūsu parole tika atklāta datu noplūdes dēļ. Chrome iesaka pēc iespējas ātrāk nomainīt paroli.</translation>
 <translation id="7698568245838009292">Chrome pieprasa piekļuvi kamerai</translation>
 <translation id="7855730255114109580">Pārlūks Google Chrome ir atjaunināts.</translation>
-<translation id="8109233255338845204">Jūsu konts tiek pārvaldīts domēnā <ph name="HOSTED_DOMAIN" />, tāpēc jūsu Chrome dati no šīs ierīces tiks dzēsti.</translation>
+<translation id="8022947259858476807">Lai atvērtu saites, veiktu meklēšanu logrīkos un automātiski aizpildītu paroles citās lietotnēs, izmantojiet pārlūku Chrome kā noklusējuma pārlūku</translation>
 <translation id="8160472928944011082">Nevar atjaunināt pārlūku Chrome.</translation>
+<translation id="8357607116237445042">Izvēlieties, vai notīrīt Chrome datus no šīs ierīces vai tos paturēt</translation>
 <translation id="8370517070665726704">Autortiesības: <ph name="YEAR" /> Google LLC. Visas tiesības paturētas.</translation>
 <translation id="840168496893712993">Daži papildinājumi var izraisīt pārlūka Chrome avarēšanu. Lūdzu, atinstalējiet tos.</translation>
 <translation id="8459495907675268833">Atlasītie dati ir noņemti no pārlūka Chrome un sinhronizētajām ierīcēm. Jūsu Google kontam vietnē history.google.com var būt citu veidu pārlūkošanas vēstures dati, piemēram, meklēšanas vaicājumi un darbības citos Google pakalpojumos.</translation>
@@ -89,5 +94,6 @@
   2. Pieskarieties vienumam “Noklusējuma pārlūka lietotne”.
   3. Atlasiet Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="9135668017386497357">Ja atļaujat pārlūkam Chrome piekļūt jūsu atrašanās vietas informācijai, pārlūkā Chrome šī informācija tiek nosūtīta uz jūsu noklusējuma meklētājprogrammu un uz vietnēm, kurām piešķirat atļauju. Vietnēs var tikt lūgta atļauja piekļūt atrašanās vietas informācijai, lai rādītu jums vietēju informāciju, piemēram, vietējās ziņas vai informāciju par tuvumā esošiem veikaliem.</translation>
+<translation id="8736550665979974340">Droša pārlūkošana, izmantojot pārlūku Google Chrome</translation>
+<translation id="9112744793181547300">Vai iestatīt Chrome kā noklusējuma pārlūku?</translation>
 </translationbundle>

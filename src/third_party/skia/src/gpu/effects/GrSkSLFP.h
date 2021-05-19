@@ -9,6 +9,7 @@
 #define GrSkSLFP_DEFINED
 
 #include "include/core/SkRefCnt.h"
+#include "include/effects/SkRuntimeEffect.h"
 #include "include/gpu/GrContextOptions.h"
 #include "src/gpu/GrFragmentProcessor.h"
 #include <atomic>
@@ -50,6 +51,8 @@ private:
 
     bool onIsEqual(const GrFragmentProcessor&) const override;
 
+    SkPMColor4f constantOutputForConstantInput(const SkPMColor4f&) const override;
+
     ShaderErrorHandler*       fShaderErrorHandler;
 
     sk_sp<SkRuntimeEffect> fEffect;
@@ -63,6 +66,29 @@ private:
     friend class GrGLSLSkSLFP;
 
     friend class GrSkSLFPFactory;
+};
+
+class GrRuntimeFPBuilder : public SkRuntimeEffectBuilder<std::unique_ptr<GrFragmentProcessor>> {
+public:
+    ~GrRuntimeFPBuilder();
+
+    template <const char* CODE> static GrRuntimeFPBuilder Make() {
+        static const SkRuntimeEffect::Result gResult = SkRuntimeEffect::Make(SkString(CODE));
+#ifdef SK_DEBUG
+        if (!gResult.effect) {
+            SK_ABORT("Code failed: %s", gResult.errorText.c_str());
+        }
+#endif
+        return GrRuntimeFPBuilder(gResult.effect);
+    }
+
+    std::unique_ptr<GrFragmentProcessor> makeFP(GrRecordingContext*);
+
+private:
+    explicit GrRuntimeFPBuilder(sk_sp<SkRuntimeEffect>);
+    GrRuntimeFPBuilder(GrRuntimeFPBuilder&& that) = default;
+
+    using INHERITED = SkRuntimeEffectBuilder<std::unique_ptr<GrFragmentProcessor>>;
 };
 
 #endif

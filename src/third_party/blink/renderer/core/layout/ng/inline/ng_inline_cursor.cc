@@ -89,6 +89,7 @@ bool ShouldIgnoreForPositionForPoint(const NGFragmentItem& item) {
     case NGFragmentItem::kGeneratedText:
       return true;
     case NGFragmentItem::kText:
+    case NGFragmentItem::kSVGText:
       // Returns true when |item.GetLayoutObject().IsStyleGenerated()|.
       // All/LayoutViewHitTestTest.PseudoElementAfter* needs this.
       return item.IsGeneratedText();
@@ -761,6 +762,7 @@ PositionWithAffinity NGInlineCursor::PositionForPointInChild(
   const NGFragmentItem& child_item = *CurrentItem();
   switch (child_item.Type()) {
     case NGFragmentItem::kText:
+    case NGFragmentItem::kSVGText:
       return child_item.PositionForPointInText(
           point_in_container - child_item.OffsetInContainerFragment(), *this);
     case NGFragmentItem::kGeneratedText:
@@ -871,26 +873,20 @@ inline wtf_size_t NGInlineCursor::SpanIndexFromItemIndex(unsigned index) const {
 }
 
 void NGInlineCursor::MoveTo(const NGFragmentItem& fragment_item) {
-  MoveTo(*fragment_item.GetLayoutObject());
-  while (IsNotNull()) {
-    if (CurrentItem() == &fragment_item)
-      return;
-    MoveToNext();
-  }
-  NOTREACHED();
+  DCHECK(HasRoot());
+  // Note: We use address instead of iterator because we can't compare
+  // iterators in different span. See |base::CheckedContiguousIterator<T>|.
+  const ptrdiff_t index = &fragment_item - &*items_.begin();
+  DCHECK_GE(index, 0);
+  DCHECK_LT(static_cast<size_t>(index), items_.size());
+  MoveToItem(items_.begin() + index);
 }
 
 void NGInlineCursor::MoveTo(const NGInlineCursor& cursor) {
   if (cursor.current_.item_) {
     if (!fragment_items_)
       SetRoot(*cursor.root_box_fragment_, *cursor.fragment_items_);
-    // Note: We use address instead of iterator because we can't compare
-    // iterators in different span. See |base::CheckedContiguousIterator<T>|.
-    const ptrdiff_t index = &*cursor.current_.item_iter_ - &*items_.begin();
-    DCHECK_GE(index, 0);
-    DCHECK_LT(static_cast<size_t>(index), items_.size());
-    MoveToItem(items_.begin() + index);
-    return;
+    return MoveTo(*cursor.current_.item_);
   }
   *this = cursor;
 }
@@ -1017,10 +1013,13 @@ void NGInlineCursor::MoveToLastLogicalLeaf() {
 void NGInlineCursor::MoveToLastNonPseudoLeaf() {
   // TODO(yosin): We should introduce |IsTruncated()| to avoid to use
   // |in_hidden_for_paint|. See also |LayoutText::GetTextBoxInfo()|.
-  // When "text-overflow:ellipsis" specified, items are:
+  // When "text-overflow:ellipsis" specified, items usually are:
   //  [i+0] original non-truncated text (IsHiddenForPaint()=true)
   //  [i+1] truncated text
   //  [i+2] ellipsis (IsLayoutGeneratedText())
+  // But this is also possible:
+  //  [i+0] atomic inline box
+  //  [i+1] ellipsis (IsLayoutGeneratedText())
   NGInlineCursor last_leaf;
   bool in_hidden_for_paint = false;
   for (NGInlineCursor cursor = *this; cursor; cursor.MoveToNext()) {
@@ -1029,7 +1028,10 @@ void NGInlineCursor::MoveToLastNonPseudoLeaf() {
     if (cursor.Current().IsLineBreak() && last_leaf)
       break;
     if (cursor.Current().IsText()) {
-      DCHECK(!cursor.Current().IsLayoutGeneratedText());
+      if (cursor.Current().IsLayoutGeneratedText()) {
+        // |cursor| is at ellipsis.
+        break;
+      }
       if (in_hidden_for_paint && !cursor.Current().IsHiddenForPaint()) {
         // |cursor| is at truncated text.
         break;

@@ -92,7 +92,7 @@ deps = {
   # python ./src/util/generate_build_files.py gn
   'third_party/boringssl/src': {
     'url' : Var('boringssl_git') + '/boringssl.git' +
-      '@' + '78987bb7bb4764ca3a8b08b0a6f7bd14b53c3e4f',
+      '@' + 'f6bd54efbcafcf4625ce99b5f702dc4850b0ca50',
     'condition': 'not build_with_chromium',
   },
 

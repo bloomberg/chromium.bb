@@ -194,25 +194,25 @@ TEST_F(TranslateUIDelegateTest, ShouldShowNeverTranslateShortcut) {
 
 TEST_F(TranslateUIDelegateTest, LanguageCodes) {
   // Test language codes.
-  EXPECT_EQ("ar", delegate_->GetOriginalLanguageCode());
+  EXPECT_EQ("ar", delegate_->GetSourceLanguageCode());
   EXPECT_EQ("fr", delegate_->GetTargetLanguageCode());
 
-  // Test language indicies.
-  const size_t ar_index = delegate_->GetOriginalLanguageIndex();
+  // Test language indices.
+  const size_t ar_index = delegate_->GetSourceLanguageIndex();
   EXPECT_EQ("ar", delegate_->GetLanguageCodeAt(ar_index));
   const size_t fr_index = delegate_->GetTargetLanguageIndex();
   EXPECT_EQ("fr", delegate_->GetLanguageCodeAt(fr_index));
 
-  // Test updating original / target codes.
-  delegate_->UpdateOriginalLanguage("es");
-  EXPECT_EQ("es", delegate_->GetOriginalLanguageCode());
+  // Test updating source / target codes.
+  delegate_->UpdateSourceLanguage("es");
+  EXPECT_EQ("es", delegate_->GetSourceLanguageCode());
   delegate_->UpdateTargetLanguage("de");
   EXPECT_EQ("de", delegate_->GetTargetLanguageCode());
 
-  // Test updating original / target indicies. Note that this also returns
+  // Test updating source / target indices. Note that this also returns
   // the delegate to the starting state.
-  delegate_->UpdateOriginalLanguageIndex(ar_index);
-  EXPECT_EQ("ar", delegate_->GetOriginalLanguageCode());
+  delegate_->UpdateSourceLanguageIndex(ar_index);
+  EXPECT_EQ("ar", delegate_->GetSourceLanguageCode());
   delegate_->UpdateTargetLanguageIndex(fr_index);
   EXPECT_EQ("fr", delegate_->GetTargetLanguageCode());
 }
@@ -233,42 +233,20 @@ TEST_F(TranslateUIDelegateTest, ContentLanguagesWhenEnabled) {
 
   std::unique_ptr<TranslateUIDelegate> delegate =
       std::make_unique<TranslateUIDelegate>(manager_->GetWeakPtr(), "en", "fr");
-  std::vector<base::string16> expected_names = {base::UTF8ToUTF16("German"),
-                                                base::UTF8ToUTF16("Polish")};
-  std::vector<base::string16> expected_native_names = {
-      base::UTF8ToUTF16("Deutsch"), base::UTF8ToUTF16("polski")};
   std::vector<std::string> expected_codes = {"de", "pl"};
 
-  std::vector<base::string16> actual_names;
-  std::vector<base::string16> actual_native_names;
   std::vector<std::string> actual_codes;
 
   delegate->GetContentLanguagesCodes(&actual_codes);
-  delegate->GetContentLanguagesNames(&actual_names);
-  delegate->GetContentLanguagesNativeNames(&actual_native_names);
 
   EXPECT_THAT(expected_codes, ::testing::ContainerEq(actual_codes));
-  EXPECT_THAT(expected_names, ::testing::ContainerEq(actual_names));
-  EXPECT_THAT(expected_native_names,
-              ::testing::ContainerEq(actual_native_names));
 
   // Mimic an update.
   prefs->AddToLanguageList("it", /*force_blocked=*/false);
   delegate->MaybeSetContentLanguages();
   delegate->GetContentLanguagesCodes(&actual_codes);
-  delegate->GetContentLanguagesNames(&actual_names);
-  delegate->GetContentLanguagesNativeNames(&actual_native_names);
-
-  expected_names = {base::UTF8ToUTF16("German"), base::UTF8ToUTF16("Polish"),
-                    base::UTF8ToUTF16("Italian")};
-  expected_native_names = {base::UTF8ToUTF16("Deutsch"),
-                           base::UTF8ToUTF16("polski"),
-                           base::UTF8ToUTF16("italiano")};
   expected_codes = {"de", "pl", "it"};
   EXPECT_THAT(expected_codes, ::testing::ContainerEq(actual_codes));
-  EXPECT_THAT(expected_names, ::testing::ContainerEq(actual_names));
-  EXPECT_THAT(expected_native_names,
-              ::testing::ContainerEq(actual_native_names));
 }
 
 TEST_F(TranslateUIDelegateTest, ContentLanguagesWhenDisabled) {
@@ -283,17 +261,10 @@ TEST_F(TranslateUIDelegateTest, ContentLanguagesWhenDisabled) {
   std::unique_ptr<TranslateUIDelegate> delegate =
       std::make_unique<TranslateUIDelegate>(manager_->GetWeakPtr(), "en", "fr");
 
-  std::vector<base::string16> actual_names;
-  std::vector<base::string16> actual_native_names;
   std::vector<std::string> actual_codes;
 
   delegate->GetContentLanguagesCodes(&actual_codes);
-  delegate->GetContentLanguagesNames(&actual_names);
-  delegate->GetContentLanguagesNativeNames(&actual_native_names);
-
   EXPECT_TRUE(actual_codes.empty());
-  EXPECT_TRUE(actual_names.empty());
-  EXPECT_TRUE(actual_native_names.empty());
 }
 
 }  // namespace translate

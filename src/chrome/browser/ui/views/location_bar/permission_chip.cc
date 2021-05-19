@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_style.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/permissions/features.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/request_type.h"
 #include "components/strings/grit/components_strings.h"
@@ -78,7 +79,10 @@ PermissionChip::PermissionChip(Browser* browser) : browser_(browser) {
           chip_button_)));
 
   chip_button_->SetExpandAnimationEndedCallback(base::BindRepeating(
-      &PermissionChip::StartCollapseTimer, base::Unretained(this)));
+      &PermissionChip::ExpandAnimationEnded, base::Unretained(this)));
+
+  chip_button_->SetTheme(OmniboxChipButton::Theme::kBlue);
+  chip_button_->SetProminent(true);
 }
 
 PermissionChip::~PermissionChip() {
@@ -91,6 +95,7 @@ void PermissionChip::DisplayRequest(
     permissions::PermissionPrompt::Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
+  requested_time_ = base::TimeTicks::Now();
 
   const std::vector<permissions::PermissionRequest*>& requests =
       delegate_->Requests();
@@ -107,27 +112,18 @@ void PermissionChip::DisplayRequest(
   chip_button_->SetText(GetPermissionMessage());
   chip_button_->SetIcon(&GetPermissionIconId());
 
-  SetVisible(true);
-  // TODO(olesiamarukhno): Add tests for animation logic.
-  chip_button_->ResetAnimation();
-  if (!delegate_->WasCurrentRequestAlreadyDisplayed())
-    chip_button_->AnimateExpand();
-  requested_time_ = base::TimeTicks::Now();
-  PreferredSizeChanged();
+  Show(ShouldBubbleStartOpen());
 
-  AnnouncePermissionRequested();
-  // In case the user didn't hear the initial alert, reannounce permission again
-  // with a 2 minute delay.
-  constexpr auto kDelayBeforeReannouncingRequest =
-      base::TimeDelta::FromMinutes(2);
-  announce_timer_.Start(FROM_HERE, kDelayBeforeReannouncingRequest, this,
-                        &PermissionChip::AnnouncePermissionRequested);
+  if (!ShouldBubbleStartOpen()) {
+    GetViewAccessibility().AnnounceText(l10n_util::GetStringUTF16(
+        IDS_PERMISSIONS_REQUESTED_SCREENREADER_ANNOUNCEMENT));
+  }
 }
 
 void PermissionChip::FinalizeRequest() {
   SetVisible(false);
-  timer_.AbandonAndStop();
-  announce_timer_.AbandonAndStop();
+  collapse_timer_.AbandonAndStop();
+  dismiss_timer_.AbandonAndStop();
   delegate_ = nullptr;
   if (prompt_bubble_)
     prompt_bubble_->GetWidget()->Close();
@@ -138,13 +134,7 @@ void PermissionChip::FinalizeRequest() {
 void PermissionChip::Reshow() {
   if (GetVisible())
     return;
-
-  SetVisible(true);
-  // TODO(olesiamarukhno): Add tests for animation logic.
-  chip_button_->ResetAnimation();
-  if (!delegate_->WasCurrentRequestAlreadyDisplayed())
-    chip_button_->AnimateExpand();
-  PreferredSizeChanged();
+  Show(/*always_open_bubble=*/false);
 }
 
 void PermissionChip::Hide() {
@@ -156,15 +146,18 @@ bool PermissionChip::GetActiveRequest() const {
 }
 
 void PermissionChip::OnMouseEntered(const ui::MouseEvent& event) {
-  // Restart the timer after user hovers the view.
-  StartCollapseTimer();
+  if (!chip_button_->is_animating())
+    RestartTimersOnInteraction();
 }
 
 void PermissionChip::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget, prompt_bubble_->GetWidget());
   widget->RemoveObserver(this);
   prompt_bubble_ = nullptr;
-  chip_button_->AnimateCollapse();
+  // If permission request is still active after the prompt was closed,
+  // collapse the chip.
+  if (delegate_)
+    Collapse(/*allow_restart=*/false);
 }
 
 void PermissionChip::OpenBubble() {
@@ -172,9 +165,6 @@ void PermissionChip::OpenBubble() {
   // deactivation.
   DCHECK(!prompt_bubble_);
 
-  // If the user opens the bubble, they must know about the pending request so
-  // we don't need to announce it again later.
-  announce_timer_.AbandonAndStop();
   prompt_bubble_ = new PermissionPromptBubbleView(
       browser_, delegate_, requested_time_, PermissionPromptStyle::kChip);
   prompt_bubble_->Show();
@@ -185,10 +175,54 @@ bool PermissionChip::IsBubbleShowing() const {
   return prompt_bubble_ != nullptr;
 }
 
+bool PermissionChip::ShouldBubbleStartOpen() const {
+  if (base::FeatureList::IsEnabled(
+          permissions::features::kPermissionChipGestureSensitive)) {
+    auto requests = delegate_->Requests();
+    const bool has_gesture =
+        std::any_of(requests.begin(), requests.end(), [](auto* request) {
+          return request->GetGestureType() ==
+                 permissions::PermissionRequestGestureType::GESTURE;
+        });
+    if (has_gesture)
+      return true;
+  }
+  if (base::FeatureList::IsEnabled(
+          permissions::features::kPermissionChipRequestTypeSensitive)) {
+    // Notifications and geolocation are targeted here because they are usually
+    // not necessary for the website to function correctly, so they can safely
+    // be given less prominence.
+    auto requests = delegate_->Requests();
+    const bool is_geolocation_or_notifications =
+        std::any_of(requests.begin(), requests.end(), [](auto* request) {
+          auto request_type = request->GetRequestType();
+          return request_type == permissions::RequestType::kNotifications ||
+                 request_type == permissions::RequestType::kGeolocation;
+        });
+    if (!is_geolocation_or_notifications)
+      return true;
+  }
+  return false;
+}
+
+void PermissionChip::Show(bool always_open_bubble) {
+  SetVisible(true);
+  // TODO(olesiamarukhno): Add tests for animation logic.
+  chip_button_->ResetAnimation();
+  if (!delegate_->WasCurrentRequestAlreadyDisplayed() || always_open_bubble)
+    chip_button_->AnimateExpand();
+  PreferredSizeChanged();
+}
+
+void PermissionChip::ExpandAnimationEnded() {
+  StartCollapseTimer();
+  if (ShouldBubbleStartOpen())
+    OpenBubble();
+}
+
 void PermissionChip::ChipButtonPressed() {
   OpenBubble();
-  // Restart the timer after user clicks on the chip to open the bubble.
-  StartCollapseTimer();
+  RestartTimersOnInteraction();
   if (!already_recorded_interaction_) {
     base::UmaHistogramLongTimes("Permissions.Chip.TimeToInteraction",
                                 base::TimeTicks::Now() - requested_time_);
@@ -196,19 +230,42 @@ void PermissionChip::ChipButtonPressed() {
   }
 }
 
-void PermissionChip::Collapse() {
-  if (IsMouseHovered() || prompt_bubble_) {
-    StartCollapseTimer();
+void PermissionChip::RestartTimersOnInteraction() {
+  if (is_fully_collapsed()) {
+    StartDismissTimer();
   } else {
-    chip_button_->AnimateCollapse();
+    StartCollapseTimer();
   }
 }
 
 void PermissionChip::StartCollapseTimer() {
-  constexpr auto kDelayBeforeCollapsingChip =
-      base::TimeDelta::FromMilliseconds(8000);
-  timer_.Start(FROM_HERE, kDelayBeforeCollapsingChip, this,
-               &PermissionChip::Collapse);
+  constexpr auto kDelayBeforeCollapsingChip = base::TimeDelta::FromSeconds(12);
+  collapse_timer_.Start(
+      FROM_HERE, kDelayBeforeCollapsingChip,
+      base::BindOnce(&PermissionChip::Collapse, base::Unretained(this),
+                     /*allow_restart=*/true));
+}
+
+void PermissionChip::Collapse(bool allow_restart) {
+  if (allow_restart && (IsMouseHovered() || prompt_bubble_)) {
+    StartCollapseTimer();
+  } else {
+    chip_button_->AnimateCollapse();
+    StartDismissTimer();
+  }
+}
+
+void PermissionChip::StartDismissTimer() {
+  constexpr auto kDelayBeforeDismissingRequest =
+      base::TimeDelta::FromSeconds(6);
+  dismiss_timer_.Start(FROM_HERE, kDelayBeforeDismissingRequest, this,
+                       &PermissionChip::Dismiss);
+}
+
+void PermissionChip::Dismiss() {
+  delegate_->Closing();
+  GetViewAccessibility().AnnounceText(l10n_util::GetStringUTF16(
+      IDS_PERMISSIONS_EXPIRED_SCREENREADER_ANNOUNCEMENT));
 }
 
 const gfx::VectorIcon& PermissionChip::GetPermissionIconId() const {
@@ -223,9 +280,9 @@ const gfx::VectorIcon& PermissionChip::GetPermissionIconId() const {
              : permissions::GetIconId(requests[1]->GetRequestType());
 }
 
-base::string16 PermissionChip::GetPermissionMessage() const {
+std::u16string PermissionChip::GetPermissionMessage() const {
   if (!delegate_)
-    return base::string16();
+    return std::u16string();
   auto requests = delegate_->Requests();
 
   return requests.size() == 1
@@ -234,12 +291,7 @@ base::string16 PermissionChip::GetPermissionMessage() const {
                    IDS_MEDIA_CAPTURE_VIDEO_AND_AUDIO_PERMISSION_CHIP);
 }
 
-void PermissionChip::AnnouncePermissionRequested() {
-  GetViewAccessibility().AnnounceText(l10n_util::GetStringUTF16(
-      IDS_PERMISSIONS_REQUESTED_SCREENREADER_ANNOUNCEMENT));
-}
-
 BEGIN_METADATA(PermissionChip, views::View)
 ADD_READONLY_PROPERTY_METADATA(bool, ActiveRequest)
-ADD_READONLY_PROPERTY_METADATA(base::string16, PermissionMessage)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, PermissionMessage)
 END_METADATA

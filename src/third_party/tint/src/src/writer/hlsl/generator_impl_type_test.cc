@@ -12,35 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/ast/struct.h"
+#include "gmock/gmock.h"
+#include "src/ast/call_statement.h"
+#include "src/ast/stage_decoration.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/ast/struct_decoration.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_decoration.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/program.h"
 #include "src/type/access_control_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
 #include "src/type/depth_texture_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
 #include "src/type/multisampled_texture_type.h"
-#include "src/type/pointer_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/sampler_type.h"
 #include "src/type/storage_texture_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type/void_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
 namespace writer {
 namespace hlsl {
 namespace {
+
+using ::testing::HasSubstr;
 
 using HlslGeneratorImplTest_Type = TestHelper;
 
@@ -170,7 +158,7 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Matrix) {
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.EmitType(out, mat2x3, "")) << gen.error();
-  EXPECT_EQ(result(), "float3x2");
+  EXPECT_EQ(result(), "float2x3");
 }
 
 // TODO(dsinclair): How to annotate as workgroup?
@@ -184,12 +172,11 @@ TEST_F(HlslGeneratorImplTest_Type, DISABLED_EmitType_Pointer) {
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_StructDecl) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.i32()),
-                            Member("b", ty.f32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
-
-  auto* s = ty.struct_("S", str);
+  auto* s = Structure("S", {
+                               Member("a", ty.i32()),
+                               Member("b", ty.f32()),
+                           });
+  Global("g", s, ast::StorageClass::kPrivate);
 
   GeneratorImpl& gen = Build();
 
@@ -201,13 +188,25 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_StructDecl) {
 )");
 }
 
-TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.i32()),
-                            Member("b", ty.f32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
+TEST_F(HlslGeneratorImplTest_Type, EmitType_StructDecl_OmittedIfStorageBuffer) {
+  auto* s = Structure("S", {
+                               Member("a", ty.i32()),
+                               Member("b", ty.f32()),
+                           });
+  Global("g", s, ast::StorageClass::kStorage);
 
-  auto* s = ty.struct_("S", str);
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.EmitStructType(out, s, "S")) << gen.error();
+  EXPECT_EQ(result(), "");
+}
+
+TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct) {
+  auto* s = Structure("S", {
+                               Member("a", ty.i32()),
+                               Member("b", ty.f32()),
+                           });
+  Global("g", s, ast::StorageClass::kPrivate);
 
   GeneratorImpl& gen = Build();
 
@@ -215,35 +214,37 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct) {
   EXPECT_EQ(result(), "S");
 }
 
+/// TODO(bclayton): Enable this, fix it, add tests for vector, matrix, array and
+/// nested structures.
 TEST_F(HlslGeneratorImplTest_Type, DISABLED_EmitType_Struct_InjectPadding) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.i32(), {MemberOffset(4)}),
-                            Member("b", ty.f32(), {MemberOffset(32)}),
-                            Member("c", ty.f32(), {MemberOffset(128)})},
-      ast::StructDecorationList{});
-
-  auto* s = ty.struct_("S", str);
+  auto* s = Structure(
+      "S", {
+               Member("a", ty.i32(), {MemberSize(32)}),
+               Member("b", ty.f32()),
+               Member("c", ty.f32(), {MemberAlign(128), MemberSize(128)}),
+           });
+  Global("g", s, ast::StorageClass::kPrivate);
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.EmitType(out, s, "")) << gen.error();
-  EXPECT_EQ(result(), R"(struct {
-  int8_t pad_0[4];
+  EXPECT_EQ(gen.result(), R"(struct S {
   int a;
-  int8_t pad_1[24];
+  int8_t pad_0[28];
   float b;
-  int8_t pad_2[92];
+  int8_t pad_1[92];
   float c;
-})");
+  int8_t pad_2[124];
+};
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct_NameCollision) {
-  auto* str =
-      create<ast::Struct>(ast::StructMemberList{Member("double", ty.i32()),
-                                                Member("float", ty.f32())},
-                          ast::StructDecorationList{});
-
-  auto* s = ty.struct_("S", str);
+  auto* s = Structure("S", {
+                               Member("double", ty.i32()),
+                               Member("float", ty.f32()),
+                           });
+  Global("g", s, ast::StorageClass::kPrivate);
 
   GeneratorImpl& gen = Build();
 
@@ -257,15 +258,13 @@ TEST_F(HlslGeneratorImplTest_Type, EmitType_Struct_NameCollision) {
 
 // TODO(dsinclair): How to translate [[block]]
 TEST_F(HlslGeneratorImplTest_Type, DISABLED_EmitType_Struct_WithDecoration) {
-  ast::StructDecorationList decos;
-  decos.push_back(create<ast::StructBlockDecoration>());
-
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.i32()),
-                            Member("b", ty.f32(), {MemberOffset(4)})},
-      decos);
-
-  auto* s = ty.struct_("S", str);
+  auto* s = Structure("S",
+                      {
+                          Member("a", ty.i32()),
+                          Member("b", ty.f32()),
+                      },
+                      {create<ast::StructBlockDecoration>()});
+  Global("g", s, ast::StorageClass::kPrivate);
 
   GeneratorImpl& gen = Build();
 
@@ -329,58 +328,91 @@ inline std::ostream& operator<<(std::ostream& out, HlslDepthTextureData data) {
   out << data.dim;
   return out;
 }
-using HlslDepthtexturesTest = TestParamHelper<HlslDepthTextureData>;
-TEST_P(HlslDepthtexturesTest, Emit) {
+using HlslDepthTexturesTest = TestParamHelper<HlslDepthTextureData>;
+TEST_P(HlslDepthTexturesTest, Emit) {
   auto params = GetParam();
 
-  type::DepthTexture s(params.dim);
+  auto* t = create<type::DepthTexture>(params.dim);
+
+  Global("tex", t, ast::StorageClass::kUniformConstant, nullptr,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(1),
+             create<ast::GroupDecoration>(2),
+         });
+
+  Func("main", {}, ty.void_(),
+       {create<ast::CallStatement>(Call("textureDimensions", "tex"))},
+       {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(out, &s, "")) << gen.error();
-  EXPECT_EQ(result(), params.result);
+  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  EXPECT_THAT(result(), HasSubstr(params.result));
+
+  Validate();
 }
 INSTANTIATE_TEST_SUITE_P(
     HlslGeneratorImplTest_Type,
-    HlslDepthtexturesTest,
+    HlslDepthTexturesTest,
     testing::Values(
-        HlslDepthTextureData{type::TextureDimension::k2d, "Texture2D"},
+        HlslDepthTextureData{type::TextureDimension::k2d,
+                             "Texture2D tex : register(t1, space2);"},
         HlslDepthTextureData{type::TextureDimension::k2dArray,
-                             "Texture2DArray"},
-        HlslDepthTextureData{type::TextureDimension::kCube, "TextureCube"},
+                             "Texture2DArray tex : register(t1, space2);"},
+        HlslDepthTextureData{type::TextureDimension::kCube,
+                             "TextureCube tex : register(t1, space2);"},
         HlslDepthTextureData{type::TextureDimension::kCubeArray,
-                             "TextureCubeArray"}));
+                             "TextureCubeArray tex : register(t1, space2);"}));
 
-struct HlslTextureData {
+struct HlslSampledTextureData {
   type::TextureDimension dim;
   std::string result;
 };
-inline std::ostream& operator<<(std::ostream& out, HlslTextureData data) {
+inline std::ostream& operator<<(std::ostream& out,
+                                HlslSampledTextureData data) {
   out << data.dim;
   return out;
 }
-using HlslSampledtexturesTest = TestParamHelper<HlslTextureData>;
-TEST_P(HlslSampledtexturesTest, Emit) {
+using HlslSampledTexturesTest = TestParamHelper<HlslSampledTextureData>;
+TEST_P(HlslSampledTexturesTest, Emit) {
   auto params = GetParam();
 
-  type::SampledTexture s(params.dim, ty.f32());
+  auto* t = create<type::SampledTexture>(params.dim, ty.f32());
+
+  Global("tex", t, ast::StorageClass::kUniformConstant, nullptr,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(1),
+             create<ast::GroupDecoration>(2),
+         });
+
+  Func("main", {}, ty.void_(),
+       {create<ast::CallStatement>(Call("textureDimensions", "tex"))},
+       {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(out, &s, "")) << gen.error();
-  EXPECT_EQ(result(), params.result);
+  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  EXPECT_THAT(result(), HasSubstr(params.result));
+
+  Validate();
 }
 INSTANTIATE_TEST_SUITE_P(
     HlslGeneratorImplTest_Type,
-    HlslSampledtexturesTest,
+    HlslSampledTexturesTest,
     testing::Values(
-        HlslTextureData{type::TextureDimension::k1d, "Texture1D"},
-        HlslTextureData{type::TextureDimension::k2d, "Texture2D"},
-        HlslTextureData{type::TextureDimension::k2dArray, "Texture2DArray"},
-        HlslTextureData{type::TextureDimension::k3d, "Texture3D"},
-        HlslTextureData{type::TextureDimension::kCube, "TextureCube"},
-        HlslTextureData{type::TextureDimension::kCubeArray,
-                        "TextureCubeArray"}));
+        HlslSampledTextureData{type::TextureDimension::k1d,
+                               "Texture1D tex : register(t1, space2);"},
+        HlslSampledTextureData{type::TextureDimension::k2d,
+                               "Texture2D tex : register(t1, space2);"},
+        HlslSampledTextureData{type::TextureDimension::k2dArray,
+                               "Texture2DArray tex : register(t1, space2);"},
+        HlslSampledTextureData{type::TextureDimension::k3d,
+                               "Texture3D tex : register(t1, space2);"},
+        HlslSampledTextureData{type::TextureDimension::kCube,
+                               "TextureCube tex : register(t1, space2);"},
+        HlslSampledTextureData{
+            type::TextureDimension::kCubeArray,
+            "TextureCubeArray tex : register(t1, space2);"}));
 
 TEST_F(HlslGeneratorImplTest_Type, EmitMultisampledTexture) {
   type::MultisampledTexture s(type::TextureDimension::k2d, ty.f32());
@@ -402,64 +434,77 @@ inline std::ostream& operator<<(std::ostream& out,
   out << data.dim << (data.ro ? "ReadOnly" : "WriteOnly");
   return out;
 }
-using HlslStoragetexturesTest = TestParamHelper<HlslStorageTextureData>;
-TEST_P(HlslStoragetexturesTest, Emit) {
+using HlslStorageTexturesTest = TestParamHelper<HlslStorageTextureData>;
+TEST_P(HlslStorageTexturesTest, Emit) {
   auto params = GetParam();
 
   auto* subtype = type::StorageTexture::SubtypeFor(params.imgfmt, Types());
-  auto* s = create<type::StorageTexture>(params.dim, params.imgfmt, subtype);
+  auto* t = create<type::StorageTexture>(params.dim, params.imgfmt, subtype);
   auto* ac =
       create<type::AccessControl>(params.ro ? ast::AccessControl::kReadOnly
                                             : ast::AccessControl::kWriteOnly,
-                                  s);
+                                  t);
+
+  Global("tex", ac, ast::StorageClass::kUniformConstant, nullptr,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(1),
+             create<ast::GroupDecoration>(2),
+         });
+
+  Func("main", {}, ty.void_(),
+       {create<ast::CallStatement>(Call("textureDimensions", "tex"))},
+       {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitType(out, ac, "")) << gen.error();
-  EXPECT_EQ(result(), params.result);
+  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  EXPECT_THAT(result(), HasSubstr(params.result));
+
+  Validate();
 }
 INSTANTIATE_TEST_SUITE_P(
     HlslGeneratorImplTest_Type,
-    HlslStoragetexturesTest,
-    testing::Values(HlslStorageTextureData{type::TextureDimension::k1d,
-                                           type::ImageFormat::kRgba8Unorm, true,
-                                           "RWTexture1D<float4>"},
-                    HlslStorageTextureData{type::TextureDimension::k2d,
-                                           type::ImageFormat::kRgba16Float,
-                                           true, "RWTexture2D<float4>"},
-                    HlslStorageTextureData{type::TextureDimension::k2dArray,
-                                           type::ImageFormat::kR32Float, true,
-                                           "RWTexture2DArray<float4>"},
-                    HlslStorageTextureData{type::TextureDimension::k3d,
-                                           type::ImageFormat::kRg32Float, true,
-                                           "RWTexture3D<float4>"},
-                    HlslStorageTextureData{type::TextureDimension::k1d,
-                                           type::ImageFormat::kRgba32Float,
-                                           false, "RWTexture1D<float4>"},
-                    HlslStorageTextureData{type::TextureDimension::k2d,
-                                           type::ImageFormat::kRgba16Uint,
-                                           false, "RWTexture2D<uint4>"},
-                    HlslStorageTextureData{type::TextureDimension::k2dArray,
-                                           type::ImageFormat::kR32Uint, false,
-                                           "RWTexture2DArray<uint4>"},
-                    HlslStorageTextureData{type::TextureDimension::k3d,
-                                           type::ImageFormat::kRg32Uint, false,
-                                           "RWTexture3D<uint4>"},
-                    HlslStorageTextureData{type::TextureDimension::k1d,
-                                           type::ImageFormat::kRgba32Uint, true,
-                                           "RWTexture1D<uint4>"},
-                    HlslStorageTextureData{type::TextureDimension::k2d,
-                                           type::ImageFormat::kRgba16Sint, true,
-                                           "RWTexture2D<int4>"},
-                    HlslStorageTextureData{type::TextureDimension::k2dArray,
-                                           type::ImageFormat::kR32Sint, true,
-                                           "RWTexture2DArray<int4>"},
-                    HlslStorageTextureData{type::TextureDimension::k3d,
-                                           type::ImageFormat::kRg32Sint, true,
-                                           "RWTexture3D<int4>"},
-                    HlslStorageTextureData{type::TextureDimension::k1d,
-                                           type::ImageFormat::kRgba32Sint,
-                                           false, "RWTexture1D<int4>"}));
+    HlslStorageTexturesTest,
+    testing::Values(
+        HlslStorageTextureData{type::TextureDimension::k1d,
+                               type::ImageFormat::kRgba8Unorm, true,
+                               "Texture1D<float4> tex : register(t1, space2);"},
+        HlslStorageTextureData{type::TextureDimension::k2d,
+                               type::ImageFormat::kRgba16Float, true,
+                               "Texture2D<float4> tex : register(t1, space2);"},
+        HlslStorageTextureData{
+            type::TextureDimension::k2dArray, type::ImageFormat::kR32Float,
+            true, "Texture2DArray<float4> tex : register(t1, space2);"},
+        HlslStorageTextureData{type::TextureDimension::k3d,
+                               type::ImageFormat::kRg32Float, true,
+                               "Texture3D<float4> tex : register(t1, space2);"},
+        HlslStorageTextureData{
+            type::TextureDimension::k1d, type::ImageFormat::kRgba32Float, false,
+            "RWTexture1D<float4> tex : register(u1, space2);"},
+        HlslStorageTextureData{
+            type::TextureDimension::k2d, type::ImageFormat::kRgba16Uint, false,
+            "RWTexture2D<uint4> tex : register(u1, space2);"},
+        HlslStorageTextureData{
+            type::TextureDimension::k2dArray, type::ImageFormat::kR32Uint,
+            false, "RWTexture2DArray<uint4> tex : register(u1, space2);"},
+        HlslStorageTextureData{
+            type::TextureDimension::k3d, type::ImageFormat::kRg32Uint, false,
+            "RWTexture3D<uint4> tex : register(u1, space2);"},
+        HlslStorageTextureData{type::TextureDimension::k1d,
+                               type::ImageFormat::kRgba32Uint, true,
+                               "Texture1D<uint4> tex : register(t1, space2);"},
+        HlslStorageTextureData{type::TextureDimension::k2d,
+                               type::ImageFormat::kRgba16Sint, true,
+                               "Texture2D<int4> tex : register(t1, space2);"},
+        HlslStorageTextureData{
+            type::TextureDimension::k2dArray, type::ImageFormat::kR32Sint, true,
+            "Texture2DArray<int4> tex : register(t1, space2);"},
+        HlslStorageTextureData{type::TextureDimension::k3d,
+                               type::ImageFormat::kRg32Sint, true,
+                               "Texture3D<int4> tex : register(t1, space2);"},
+        HlslStorageTextureData{
+            type::TextureDimension::k1d, type::ImageFormat::kRgba32Sint, false,
+            "RWTexture1D<int4> tex : register(u1, space2);"}));
 
 }  // namespace
 }  // namespace hlsl

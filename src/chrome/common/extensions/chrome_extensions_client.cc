@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/common/chrome_resource_request_blocked_reason.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_extensions_api_provider.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
@@ -110,7 +111,7 @@ void ChromeExtensionsClient::FilterHostPermissions(
       // We should not add any additional "host" here.
       if (GURL(chrome::kChromeUIFaviconURL).host() != i->host())
         continue;
-      permissions->insert(APIPermission::kFavicon);
+      permissions->insert(mojom::APIPermissionID::kFavicon);
     } else {
       new_hosts->AddPattern(*i);
     }
@@ -146,7 +147,7 @@ URLPatternSet ChromeExtensionsClient::GetPermittedChromeSchemeHosts(
   // See http://crbug.com/222856. A temporary hack is implemented here to
   // make chrome://thumbs available to NTP Russia extension as
   // non-experimental.
-  if ((api_permissions.find(APIPermission::kExperimental) !=
+  if ((api_permissions.find(mojom::APIPermissionID::kExperimental) !=
        api_permissions.end()) ||
       (extension->id() == kThumbsWhiteListedExtension &&
        extension->from_webstore())) {
@@ -242,13 +243,18 @@ void ChromeExtensionsClient::AddOriginAccessPermissions(
   // whitelist entries need to be updated when the kManagement permission
   // changes.
   if (is_extension_active && extension.permissions_data()->HasAPIPermission(
-                                 extensions::APIPermission::kManagement)) {
+                                 mojom::APIPermissionID::kManagement)) {
     origin_patterns->push_back(network::mojom::CorsOriginPattern::New(
         content::kChromeUIScheme, chrome::kChromeUIExtensionIconHost,
         /*port=*/0, network::mojom::CorsDomainMatchMode::kDisallowSubdomains,
         network::mojom::CorsPortMatchMode::kAllowAnyPort,
         network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
   }
+}
+
+base::Optional<int> ChromeExtensionsClient::GetExtensionExtendedErrorCode()
+    const {
+  return static_cast<int>(ChromeResourceRequestBlockedReason::kExtension);
 }
 
 }  // namespace extensions

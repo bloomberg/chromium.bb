@@ -3857,7 +3857,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetBufferDestroyed) {
         pipe.CreateGraphicsPipeline();
 
         // Correctly update descriptor to avoid "NOT_UPDATED" error
-        pipe.descriptor_set_->WriteDescriptorBufferInfo(0, buffer.handle(), 1024);
+        pipe.descriptor_set_->WriteDescriptorBufferInfo(0, buffer.handle(), 0, 1024);
         pipe.descriptor_set_->UpdateDescriptorSets();
 
         m_commandBuffer->begin();
@@ -3932,7 +3932,7 @@ TEST_F(VkLayerTest, InvalidDrawDescriptorSetBufferDestroyed) {
         pipe.CreateGraphicsPipeline();
 
         // Correctly update descriptor to avoid "NOT_UPDATED" error
-        pipe.descriptor_set_->WriteDescriptorBufferInfo(0, buffer.handle(), 1024);
+        pipe.descriptor_set_->WriteDescriptorBufferInfo(0, buffer.handle(), 0, 1024);
         pipe.descriptor_set_->UpdateDescriptorSets();
     }
 
@@ -4697,9 +4697,8 @@ TEST_F(VkLayerTest, DescriptorImageUpdateNoMemoryBound) {
     descriptor_set.WriteDescriptorImageInfo(0, view, sampler);
     // Break memory binding and attempt update
     vk::FreeMemory(m_device->device(), image_memory, nullptr);
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
-                                         " previously bound memory was freed. Memory must not be freed prior to this operation.");
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkUpdateDescriptorSets() failed write update validation for ");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-BoundResourceFreedMemoryAccess");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-BoundResourceFreedMemoryAccess");
     descriptor_set.UpdateDescriptorSets();
     m_errorMonitor->VerifyFound();
     // Cleanup
@@ -4714,8 +4713,7 @@ TEST_F(VkLayerTest, InvalidDynamicOffsetCases) {
     // 1. No dynamicOffset supplied
     // 2. Too many dynamicOffsets supplied
     // 3. Dynamic offset oversteps buffer being updated
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
-                                         " requires 1 dynamicOffsets, but only 0 dynamicOffsets are left in pDynamicOffsets ");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindDescriptorSets-dynamicOffsetCount-00359");
 
     ASSERT_NO_FATAL_FAILURE(Init());
     ASSERT_NO_FATAL_FAILURE(InitViewport());
@@ -4741,7 +4739,8 @@ TEST_F(VkLayerTest, InvalidDynamicOffsetCases) {
     dynamic_uniform_buffer.init(*m_device, buffCI);
 
     // Correctly update descriptor to avoid "NOT_UPDATED" error
-    descriptor_set.WriteDescriptorBufferInfo(0, dynamic_uniform_buffer.handle(), 1024, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
+    descriptor_set.WriteDescriptorBufferInfo(0, dynamic_uniform_buffer.handle(), 0, 1024,
+                                             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
     descriptor_set.UpdateDescriptorSets();
 
     m_commandBuffer->begin();
@@ -4749,15 +4748,15 @@ TEST_F(VkLayerTest, InvalidDynamicOffsetCases) {
     vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout.handle(), 0, 1,
                               &descriptor_set.set_, 0, NULL);
     m_errorMonitor->VerifyFound();
-    uint32_t pDynOff[2] = {512, 756};
+    uint32_t pDynOff[2] = {0, 756};
     // Now cause error b/c too many dynOffsets in array for # of dyn descriptors
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "Attempting to bind 1 descriptorSets with 1 dynamic descriptors, but ");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindDescriptorSets-dynamicOffsetCount-00359");
     vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout.handle(), 0, 1,
                               &descriptor_set.set_, 2, pDynOff);
     m_errorMonitor->VerifyFound();
+    pDynOff[0] = 512;
     // Finally cause error due to dynamicOffset being too big
-    m_errorMonitor->SetDesiredFailureMsg(
-        kErrorBit, " dynamic offset 512 combined with offset 0 and range 1024 that oversteps the buffer size of 1024");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindDescriptorSets-pDescriptorSets-01979");
     // Create PSO to be used for draw-time errors below
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, bindStateFragUniformShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this);
@@ -4777,7 +4776,6 @@ TEST_F(VkLayerTest, InvalidDynamicOffsetCases) {
     // /w range 1024 & size 1024
     vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout.handle(), 0, 1,
                               &descriptor_set.set_, 1, pDynOff);
-    m_commandBuffer->Draw(1, 0, 0, 0);
     m_errorMonitor->VerifyFound();
 
     m_commandBuffer->EndRenderPass();
@@ -4787,9 +4785,9 @@ TEST_F(VkLayerTest, InvalidDynamicOffsetCases) {
 TEST_F(VkLayerTest, DescriptorBufferUpdateNoMemoryBound) {
     TEST_DESCRIPTION("Attempt to update a descriptor with a non-sparse buffer that doesn't have memory bound");
     VkResult err;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
-                                         " used with no memory bound. Memory should be bound by calling vkBindBufferMemory().");
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkUpdateDescriptorSets() failed write update validation for ");
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkWriteDescriptorSet-descriptorType-00329");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkWriteDescriptorSet-descriptorType-00329");
 
     ASSERT_NO_FATAL_FAILURE(Init());
     ASSERT_NO_FATAL_FAILURE(InitViewport());
@@ -4814,10 +4812,172 @@ TEST_F(VkLayerTest, DescriptorBufferUpdateNoMemoryBound) {
     ASSERT_VK_SUCCESS(err);
 
     // Attempt to update descriptor without binding memory to it
-    descriptor_set.WriteDescriptorBufferInfo(0, dynamic_uniform_buffer, 1024, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
+    descriptor_set.WriteDescriptorBufferInfo(0, dynamic_uniform_buffer, 0, 1024, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
     descriptor_set.UpdateDescriptorSets();
     m_errorMonitor->VerifyFound();
     vk::DestroyBuffer(m_device->device(), dynamic_uniform_buffer, NULL);
+}
+
+TEST_F(VkLayerTest, InvalidDynamicDescriptorSet) {
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    const VkDeviceSize partial_size = m_device->props.limits.minUniformBufferOffsetAlignment;
+    const VkDeviceSize buffer_size = partial_size * 10;  // make sure way more then alignment multiple
+
+    // Create a buffer to update the descriptor with
+    uint32_t qfi = 0;
+    VkBufferCreateInfo buffer_ci = {};
+    buffer_ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_ci.size = buffer_size;
+    buffer_ci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    buffer_ci.queueFamilyIndexCount = 1;
+    buffer_ci.pQueueFamilyIndices = &qfi;
+    VkBufferObj buffer;
+    buffer.init(*m_device, buffer_ci);
+
+    // test various uses of offsets and size
+    // The non-dynamic binds are there to make sure pDynamicOffsets are matched correctly at bind time
+    // clang-format off
+    OneOffDescriptorSet descriptor_set_0(m_device, {
+        {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         1, VK_SHADER_STAGE_ALL, nullptr},
+        // Gap to ensure looping for binding index is correct
+        {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_ALL, nullptr}  // pDynamicOffsets[0]
+    });
+    OneOffDescriptorSet descriptor_set_1(m_device, {
+        {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         1, VK_SHADER_STAGE_ALL, nullptr},
+        // This dynamic type has a descriptorCount of 0 which will be skipped
+        {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 0, VK_SHADER_STAGE_ALL, nullptr},
+    });
+    OneOffDescriptorSet descriptor_set_2(m_device, {
+        {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_ALL, nullptr},  // pDynamicOffsets[1]
+        {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         1, VK_SHADER_STAGE_ALL, nullptr},
+        // [2] and [3] are same, but tests descriptor arrays
+        {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 2, VK_SHADER_STAGE_ALL, nullptr},  // pDynamicOffsets[2]/[3]
+        {3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_ALL, nullptr}   // pDynamicOffsets[4]
+    });
+    // clang-format on
+    const VkPipelineLayoutObj pipeline_layout(m_device,
+                                              {&descriptor_set_0.layout_, &descriptor_set_1.layout_, &descriptor_set_2.layout_});
+    const VkPipelineLayout layout = pipeline_layout.handle();
+
+    // Correctly update descriptor to avoid "NOT_UPDATED" error
+    descriptor_set_0.WriteDescriptorBufferInfo(0, buffer.handle(), 0, VK_WHOLE_SIZE);  // non-dynamic
+    descriptor_set_1.WriteDescriptorBufferInfo(0, buffer.handle(), 0, VK_WHOLE_SIZE);  // non-dynamic
+    descriptor_set_2.WriteDescriptorBufferInfo(1, buffer.handle(), 0, VK_WHOLE_SIZE);  // non-dynamic
+
+    // buffer[0, max]
+    descriptor_set_0.WriteDescriptorBufferInfo(2, buffer.handle(), 0, VK_WHOLE_SIZE,
+                                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);  // pDynamicOffsets[0]
+    // buffer[alignment, max]
+    descriptor_set_2.WriteDescriptorBufferInfo(0, buffer.handle(), partial_size, VK_WHOLE_SIZE,
+                                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);  // pDynamicOffsets[1]
+    // buffer[0, max - alignment]
+    descriptor_set_2.WriteDescriptorBufferInfo(2, buffer.handle(), 0, buffer_size - partial_size,
+                                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 0, 1);  // pDynamicOffsets[2]
+    // buffer[0, max - alignment]
+    descriptor_set_2.WriteDescriptorBufferInfo(2, buffer.handle(), 0, buffer_size - partial_size,
+                                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, 1);  // pDynamicOffsets[3]
+    // buffer[alignment, max - alignment]
+    descriptor_set_2.WriteDescriptorBufferInfo(3, buffer.handle(), partial_size, buffer_size - (partial_size * 2),
+                                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);  // pDynamicOffsets[4]
+
+    descriptor_set_0.UpdateDescriptorSets();
+    descriptor_set_1.UpdateDescriptorSets();
+    descriptor_set_2.UpdateDescriptorSets();
+
+    m_commandBuffer->begin();
+
+    VkDescriptorSet descriptorSets[3] = {descriptor_set_0.set_, descriptor_set_1.set_, descriptor_set_2.set_};
+    uint32_t offsets[5] = {0, 0, 0, 0, 0};
+
+    if (partial_size > 1) {
+        // non multiple of alignment
+        offsets[4] = 1;
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindDescriptorSets-pDynamicOffsets-01971");
+        vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 3, descriptorSets, 5,
+                                  offsets);
+        m_errorMonitor->VerifyFound();
+        offsets[4] = 0;
+    }
+
+    // Larger than buffer
+    offsets[0] = static_cast<uint32_t>(partial_size);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindDescriptorSets-pDescriptorSets-01979");
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 3, descriptorSets, 5, offsets);
+    m_errorMonitor->VerifyFound();
+    offsets[0] = 0;
+
+    // Larger than buffer
+    offsets[1] = static_cast<uint32_t>(partial_size);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindDescriptorSets-pDescriptorSets-01979");
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 3, descriptorSets, 5, offsets);
+    m_errorMonitor->VerifyFound();
+    offsets[1] = 0;
+
+    // Makes the range the same size of buffer which is valid
+    offsets[2] = static_cast<uint32_t>(partial_size);
+    m_errorMonitor->ExpectSuccess();
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 3, descriptorSets, 5, offsets);
+    m_errorMonitor->VerifyNotFound();
+
+    // Now an extra increment larger than buffer
+    offsets[2] = static_cast<uint32_t>(partial_size * 2);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindDescriptorSets-pDescriptorSets-01979");
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 3, descriptorSets, 5, offsets);
+    m_errorMonitor->VerifyFound();
+    offsets[2] = 0;
+
+    // Same thing but with [3] to test descriptor arrays
+    offsets[3] = static_cast<uint32_t>(partial_size);
+    m_errorMonitor->ExpectSuccess();
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 3, descriptorSets, 5, offsets);
+    m_errorMonitor->VerifyNotFound();
+
+    offsets[3] = static_cast<uint32_t>(partial_size * 2);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindDescriptorSets-pDescriptorSets-01979");
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 3, descriptorSets, 5, offsets);
+    m_errorMonitor->VerifyFound();
+    offsets[3] = 0;
+
+    // range should be at end of buffer (same size)
+    offsets[4] = static_cast<uint32_t>(partial_size);
+    m_errorMonitor->ExpectSuccess();
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 3, descriptorSets, 5, offsets);
+    m_errorMonitor->VerifyNotFound();
+
+    // Now an extra increment larger than buffer
+    // tests (offset + range + dynamic_offset)
+    offsets[4] = static_cast<uint32_t>(partial_size * 2);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindDescriptorSets-pDescriptorSets-01979");
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 3, descriptorSets, 5, offsets);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
+}
+
+TEST_F(VkLayerTest, UpdateDescriptorSetMismatchType) {
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    uint32_t qfi = 0;
+    VkBufferCreateInfo buffer_ci = {};
+    buffer_ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_ci.size = m_device->props.limits.minUniformBufferOffsetAlignment;
+    buffer_ci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    buffer_ci.queueFamilyIndexCount = 1;
+    buffer_ci.pQueueFamilyIndices = &qfi;
+    VkBufferObj buffer;
+    buffer.init(*m_device, buffer_ci);
+
+    OneOffDescriptorSet descriptor_set(m_device, {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
+                                                  {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_ALL, nullptr}});
+
+    descriptor_set.WriteDescriptorBufferInfo(0, buffer.handle(), 0, VK_WHOLE_SIZE, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    // wrong type
+    descriptor_set.WriteDescriptorBufferInfo(1, buffer.handle(), 0, VK_WHOLE_SIZE, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkWriteDescriptorSet-descriptorType-00319");
+    descriptor_set.UpdateDescriptorSets();
+    m_errorMonitor->VerifyFound();
 }
 
 TEST_F(VkLayerTest, DescriptorSetCompatibility) {
@@ -7992,7 +8152,7 @@ TEST_F(VkLayerTest, NullDescriptorsDisabled) {
     m_errorMonitor->VerifyFound();
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorBufferInfo-buffer-02998");
-    descriptor_set.WriteDescriptorBufferInfo(1, VK_NULL_HANDLE, VK_WHOLE_SIZE, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    descriptor_set.WriteDescriptorBufferInfo(1, VK_NULL_HANDLE, 0, VK_WHOLE_SIZE, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     descriptor_set.UpdateDescriptorSets();
     descriptor_set.descriptor_writes.clear();
     m_errorMonitor->VerifyFound();
@@ -8056,7 +8216,7 @@ TEST_F(VkLayerTest, NullDescriptorsEnabled) {
                                                  });
 
     descriptor_set.WriteDescriptorImageInfo(0, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
-    descriptor_set.WriteDescriptorBufferInfo(1, VK_NULL_HANDLE, VK_WHOLE_SIZE, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    descriptor_set.WriteDescriptorBufferInfo(1, VK_NULL_HANDLE, 0, VK_WHOLE_SIZE, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     VkBufferView buffer_view = VK_NULL_HANDLE;
     descriptor_set.WriteDescriptorBufferView(2, buffer_view, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER);
     descriptor_set.UpdateDescriptorSets();
@@ -8070,7 +8230,7 @@ TEST_F(VkLayerTest, NullDescriptorsEnabled) {
     m_errorMonitor->VerifyNotFound();
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorBufferInfo-buffer-02999");
-    descriptor_set.WriteDescriptorBufferInfo(1, VK_NULL_HANDLE, 16, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    descriptor_set.WriteDescriptorBufferInfo(1, VK_NULL_HANDLE, 0, 16, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     descriptor_set.UpdateDescriptorSets();
     m_errorMonitor->VerifyFound();
 

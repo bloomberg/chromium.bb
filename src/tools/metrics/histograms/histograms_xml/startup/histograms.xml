@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="Startup.AfterStartupTaskCount" units="units"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>michaeln@chromium.org</owner>
   <summary>
     The number of after-startup tasks that were queued prior to startup
@@ -31,7 +31,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.AfterStartupTaskDelayedUntilTime" units="ms"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>michaeln@chromium.org</owner>
   <summary>
     Time from the process creation until deferred after-startup tasks began
@@ -55,8 +55,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Startup.Android.ChromeTabbedTaskExistsTime" units="ms"
+    expires_after="2021-09-19">
+  <owner>mthiesse@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Measures the amount of time it takes to check if a ChromeTabbedActivity task
+    already exists during startup.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstContentfulPaint"
-    units="ms" expires_after="2021-07-11">
+    units="ms" expires_after="2021-09-12">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -69,7 +79,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstNavigationCommit"
-    units="ms" expires_after="2021-07-11">
+    units="ms" expires_after="2021-09-12">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -96,7 +106,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.Android.Cold.TimeToVisibleContent" units="ms"
-    expires_after="2021-06-27">
+    expires_after="2021-08-29">
   <owner>yashard@chromium.org</owner>
   <owner>ckitagawa@chromium.org</owner>
   <summary>
@@ -110,7 +120,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Startup.Android.FeedContentFirstLoadedTime"
-    units="ms" expires_after="2021-06-10">
+    units="ms" expires_after="2021-10-04">
 <!-- Name completed by histogram_suffixes name="JavaStartMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -237,7 +247,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.Android.TimeToGTSFirstMeaningfulPaint.Cold" units="ms"
-    expires_after="2021-07-27">
+    expires_after="2021-10-04">
   <owner>yusufo@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -273,7 +283,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.BringToForegroundReason"
-    enum="BooleanBringToForegroundReason" expires_after="2021-07-18">
+    enum="BooleanBringToForegroundReason" expires_after="2021-09-19">
   <owner>peter@chromium.org</owner>
   <summary>
     Records the cause, each time Chrome is brought to the foreground. Currently
@@ -283,7 +293,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.BrowserMainRunnerImplInitializeLongTime" units="ms"
-    expires_after="2021-07-27">
+    expires_after="2021-10-04">
   <owner>robliao@chromium.org</owner>
   <summary>
     The amount of time that elapsed during BrowserMainRunnerImpl::Initialize.
@@ -375,7 +385,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.BrowserWindow.FirstPaint" units="ms"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>sebmarchand@chromium.org</owner>
   <owner>mblsha@yandex-team.ru</owner>
   <summary>
@@ -424,13 +434,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Startup.ColdStartFromProcessCreationTime" units="ms"
     expires_after="2021-08-22">
+  <obsolete>
+    Removed 03/2021. Broken starting M-87; removed and replaced with
+    Startup.ColdStartFromProcessCreationTime2 in M-91.
+  </obsolete>
   <owner>djean@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
     The duration of all initializations from process creation time to UI ready.
     This includes code loading, static initializers and the execution time
     contained in Startup.ColdStartWithExternalURLTime and
-    Startup.ColdStartWithoutExternalURLTime metrics. iOS specific.
+    Startup.ColdStartWithoutExternalURLTime metrics. iOS specific. Deprecated
+    due to incomplete data from M87 to M91. The data is incomplete because it
+    was not logged in iOS 13+. See Startup.ColdStartFromProcessCreationTimeV2
+    instead.
+  </summary>
+</histogram>
+
+<histogram name="Startup.ColdStartFromProcessCreationTimeV2" units="ms"
+    expires_after="2022-03-24">
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    The duration of all initializations from process creation time to UI ready.
+    This includes code loading, static initializers and the execution time
+    contained in Startup.ColdStartWithExternalURLTime and
+    Startup.ColdStartWithoutExternalURLTime metrics. iOS specific, from M91+.
   </summary>
 </histogram>
 
@@ -567,7 +596,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartAction"
-    enum="MobileSessionStartAction" expires_after="2021-07-04">
+    enum="MobileSessionStartAction" expires_after="2021-09-05">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -577,7 +606,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartFromApps"
-    enum="MobileSessionCallerApp" expires_after="2021-07-04">
+    enum="MobileSessionCallerApp" expires_after="2021-09-05">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>The calling application (if any).</summary>

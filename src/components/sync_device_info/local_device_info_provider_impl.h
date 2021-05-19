@@ -29,12 +29,13 @@ class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
   ~LocalDeviceInfoProviderImpl() override;
 
   // MutableLocalDeviceInfoProvider implementation.
-  void Initialize(const std::string& cache_guid,
-                  const std::string& client_name,
-                  const std::string& manufacturer_name,
-                  const std::string& model_name,
-                  const std::string& last_fcm_registration_token,
-                  const ModelTypeSet& last_interested_data_types) override;
+  void Initialize(
+      const std::string& cache_guid,
+      const std::string& client_name,
+      const std::string& manufacturer_name,
+      const std::string& model_name,
+      const std::string& full_hardware_class,
+      std::unique_ptr<DeviceInfo> device_info_restored_from_store) override;
   void Clear() override;
   void UpdateClientName(const std::string& client_name) override;
   version_info::Channel GetChannel() const override;
@@ -49,10 +50,18 @@ class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
   // The version string for the current client.
   const std::string version_;
 
+  void ResetFullHardwareClassIfUmaDisabled() const;
+
   const DeviceInfoSyncClient* const sync_client_;
 
+  bool IsUmaEnabledOnCrOSDevice() const;
+
+  // The |full_hardware_class| is stored in order to handle UMA toggles
+  // during a users session. Tracking |full_hardware_class| in this class
+  // ensures it's reset/retrieved correctly when GetLocalDeviceInfo() is called.
+  std::string full_hardware_class_;
   std::unique_ptr<DeviceInfo> local_device_info_;
-  base::CallbackList<void(void)> callback_list_;
+  base::RepeatingClosureList closure_list_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

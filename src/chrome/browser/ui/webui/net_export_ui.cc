@@ -319,7 +319,7 @@ void NetExportMessageHandler::StartNetLog(const base::FilePath& path) {
   file_writer_->StartNetLog(
       path, capture_mode_, max_log_file_size_,
       base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
-      chrome::GetChannelName(),
+      chrome::GetChannelName(chrome::WithExtendedStable(true)),
       content::BrowserContext::GetDefaultStoragePartition(
           Profile::FromWebUI(web_ui()))
           ->GetNetworkContext());
@@ -368,7 +368,7 @@ void NetExportMessageHandler::ShowSelectFileDialog(
   file_type_info.extensions = {{FILE_PATH_LITERAL("json")}};
   gfx::NativeWindow owning_window = webcontents->GetTopLevelNativeWindow();
   select_file_dialog_->SelectFile(
-      ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(), default_path,
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE, std::u16string(), default_path,
       &file_type_info, 0, base::FilePath::StringType(), owning_window, nullptr);
 }
 

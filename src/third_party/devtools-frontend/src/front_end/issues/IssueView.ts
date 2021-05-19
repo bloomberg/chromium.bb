@@ -4,32 +4,40 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
-import * as Elements from '../elements/elements.js';
-import * as Host from '../host/host.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Network from '../network/network.js';
-import * as Platform from '../platform/platform.js';
-import * as SDK from '../sdk/sdk.js';
+import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as ConsoleCounters from '../panels/console_counters/console_counters.js';
+import * as Elements from '../panels/elements/elements.js';
+import * as Network from '../panels/network/network.js';
 import * as WebComponents from '../ui/components/components.js';
-import * as UI from '../ui/ui.js';
+import * as UI from '../ui/legacy/legacy.js';
 
+import {AffectedBlockedByResponseView} from './AffectedBlockedByResponseView.js';
 import {AffectedCookiesView} from './AffectedCookiesView.js';
 import {AffectedElementsView} from './AffectedElementsView.js';
 import {AffectedElementsWithLowContrastView} from './AffectedElementsWithLowContrastView.js';
+import {AffectedHeavyAdView} from './AffectedHeavyAdView.js';
 import {AffectedItem, AffectedResourcesView, extractShortPath} from './AffectedResourcesView.js';
 import {AffectedSharedArrayBufferIssueDetailsView} from './AffectedSharedArrayBufferIssueDetailsView.js';
 import {AffectedTrustedWebActivityIssueDetailsView} from './AffectedTrustedWebActivityIssueDetailsView.js';
 import {CorsIssueDetailsView} from './CorsIssueDetailsView.js';
+
 import type {AggregatedIssue} from './IssueAggregator.js';
 import type {IssueDescription} from './MarkdownIssueDescription.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Noun, singular. Label for a column or field containing the name of an entity.
   */
   name: 'Name',
+  /**
+  *@description Singular or plural label for number of affected directive resource indication in issue view.
+  */
+  nDirectives: '{n, plural, =1 { directive} other { directives}}',
   /**
   *@description Singular label for number of affected directive resource indication in issue view
   */
@@ -71,6 +79,10 @@ export const UIStrings = {
   */
   resourceC: 'Resource',
   /**
+  *@description Label for a type of issue that can appear in the Issues view. Noun for singular or plural number of network requests.
+  */
+  nRequests: '{n, plural, =1 { request} other { requests}}',
+  /**
   *@description Label for a type of issue that can appear in the Issues view. Noun for a singular network request.
   */
   request: 'request',
@@ -79,6 +91,10 @@ export const UIStrings = {
   */
   requests: 'requests',
   /**
+  *@description Singular or Plural label for number of affected source resource indication in issue view
+  */
+  nSources: '{n, plural, =1 { source} other { sources}}',
+  /**
   *@description Singular label for number of affected source resource indication in issue view
   */
   source: 'source',
@@ -86,6 +102,10 @@ export const UIStrings = {
   *@description Plural label for number of affected source resource indication in issue view
   */
   sources: 'sources',
+  /**
+  *@description Label for singular or plural number of affected resources indication in issue view
+  */
+  nResources: '{n, plural, =1 { resource} other { resources}}',
   /**
   *@description Label for number of affected resources indication in issue view
   */
@@ -99,53 +119,10 @@ export const UIStrings = {
   */
   restrictionStatus: 'Restriction Status',
   /**
-  *@description Title for a column in an Heavy Ads issue view
-  */
-  limitExceeded: 'Limit exceeded',
-  /**
-  *@description Title for a column in an Heavy Ads issue view
-  */
-  resolutionStatus: 'Resolution Status',
-  /**
-  *@description Title for a column in an Heavy Ads issue view
-  */
-  frameUrl: 'Frame URL',
-  /**
-  * @description When there is a Heavy Ad, the browser can choose to deal with it in different ways.
-  * This string indicates that the ad was bad enough that it was removed.
-  */
-  removed: 'Removed',
-  /**
   * @description When there is a Heavy Ad, the browser can choose to deal with it in different ways.
   * This string indicates that the ad was only warned, and not removed.
   */
   warned: 'Warned',
-  /**
-  *@description Reason for a Heavy Ad being flagged in issue view. The Ad has been flagged as a
-  *Heavy Ad because it exceeded the set limit for peak CPU usage, e.g. it blocked the main thread
-  *for more than 15 seconds in any 30-second window.
-  */
-  cpuPeakLimit: 'CPU peak limit',
-  /**
-  *@description Reason for a Heavy Ad being flagged in issue view
-  */
-  cpuTotalLimit: 'CPU total limit',
-  /**
-  *@description Reason for a Heavy Ad being flagged in issue view
-  */
-  networkLimit: 'Network limit',
-  /**
-  *@description Label for the category of affected resources in issue view
-  */
-  requestC: 'Request',
-  /**
-  *@description Title for a column in an issue view
-  */
-  parentFrame: 'Parent Frame',
-  /**
-  *@description Title for a column in an issue view
-  */
-  blockedResource: 'Blocked Resource',
   /**
   *@description Header for the section listing affected resources
   */
@@ -156,9 +133,9 @@ export const UIStrings = {
   */
   learnMoreS: 'Learn more: {PH1}',
   /**
-  *@description Link text for opening a survey in the expended view of an Issue in the issue view
-  */
-  isThisIssueMessageHelpfulToYou: 'Is this issue message helpful to you?',
+ *@description The kind of resolution for a mixed content issue
+ */
+  automaticallyUpgraded: 'automatically upgraded',
 };
 const str_ = i18n.i18n.registerUIStrings('issues/IssueView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -180,6 +157,10 @@ class AffectedDirectivesView extends AffectedResourcesView {
       status.textContent = i18nString(UIStrings.blocked);
     }
     element.appendChild(status);
+  }
+
+  protected getResourceName(count: number): Platform.UIString.LocalizedString {
+    return i18nString(UIStrings.nDirectives, {n: count});
   }
 
   _appendViolatedDirective(element: Element, directive: string): void {
@@ -277,28 +258,29 @@ class AffectedDirectivesView extends AffectedResourcesView {
     element.classList.add('affected-resource-directive');
 
     const cspIssueDetails = cspIssue.details();
+    const location = SDK.Issue.toZeroBasedLocation(cspIssueDetails.sourceCodeLocation);
     const model = cspIssue.model();
     const maybeTarget = cspIssue.model()?.getTargetIfNotDisposed();
     if (this._issue.code() === SDK.ContentSecurityPolicyIssue.inlineViolationCode && model) {
       this._appendViolatedDirective(element, cspIssueDetails.violatedDirective);
       this._appendBlockedElement(element, cspIssueDetails.violatingNodeId, model);
-      this.appendSourceLocation(element, cspIssueDetails.sourceCodeLocation, maybeTarget);
+      this.appendSourceLocation(element, location, maybeTarget);
       this._appendStatus(element, cspIssueDetails.isReportOnly);
     } else if (this._issue.code() === SDK.ContentSecurityPolicyIssue.urlViolationCode) {
       const url = cspIssueDetails.blockedURL ? cspIssueDetails.blockedURL : '';
       this._appendBlockedURL(element, url);
       this._appendStatus(element, cspIssueDetails.isReportOnly);
       this._appendViolatedDirective(element, cspIssueDetails.violatedDirective);
-      this.appendSourceLocation(element, cspIssueDetails.sourceCodeLocation, maybeTarget);
+      this.appendSourceLocation(element, location, maybeTarget);
     } else if (this._issue.code() === SDK.ContentSecurityPolicyIssue.evalViolationCode) {
-      this.appendSourceLocation(element, cspIssueDetails.sourceCodeLocation, maybeTarget);
+      this.appendSourceLocation(element, location, maybeTarget);
       this._appendViolatedDirective(element, cspIssueDetails.violatedDirective);
       this._appendStatus(element, cspIssueDetails.isReportOnly);
     } else if (this._issue.code() === SDK.ContentSecurityPolicyIssue.trustedTypesSinkViolationCode) {
-      this.appendSourceLocation(element, cspIssueDetails.sourceCodeLocation, maybeTarget);
+      this.appendSourceLocation(element, location, maybeTarget);
       this._appendStatus(element, cspIssueDetails.isReportOnly);
     } else if (this._issue.code() === SDK.ContentSecurityPolicyIssue.trustedTypesPolicyViolationCode) {
-      this.appendSourceLocation(element, cspIssueDetails.sourceCodeLocation, maybeTarget);
+      this.appendSourceLocation(element, location, maybeTarget);
       this._appendViolatedDirective(element, cspIssueDetails.violatedDirective);
       this._appendStatus(element, cspIssueDetails.isReportOnly);
     } else {
@@ -330,6 +312,10 @@ class AffectedRequestsView extends AffectedResourcesView {
       }
     }
     this.updateAffectedResourceCount(count);
+  }
+
+  protected getResourceName(count: number): Platform.UIString.LocalizedString {
+    return i18nString(UIStrings.nRequests, {n: count});
   }
 
   _appendNetworkRequest(request: SDK.NetworkRequest.NetworkRequest): void {
@@ -366,7 +352,7 @@ class AffectedSourcesView extends AffectedResourcesView {
     this._issue = issue;
   }
 
-  _appendAffectedSources(affectedSources: Iterable<SDK.Issue.AffectedSource>): void {
+  _appendAffectedSources(affectedSources: Iterable<Protocol.Audits.SourceCodeLocation>): void {
     let count = 0;
     for (const source of affectedSources) {
       this._appendAffectedSource(source);
@@ -375,7 +361,11 @@ class AffectedSourcesView extends AffectedResourcesView {
     this.updateAffectedResourceCount(count);
   }
 
-  _appendAffectedSource({url, lineNumber, columnNumber}: SDK.Issue.AffectedSource): void {
+  protected getResourceName(count: number): Platform.UIString.LocalizedString {
+    return i18nString(UIStrings.nSources, {n: count});
+  }
+
+  _appendAffectedSource({url, lineNumber, columnNumber}: Protocol.Audits.SourceCodeLocation): void {
     const cellElement = document.createElement('td');
     // TODO(chromium:1072331): Check feasibility of plumping through scriptId for `linkifyScriptLocation`
     //                         to support source maps and formatted scripts.
@@ -399,7 +389,7 @@ class AffectedSourcesView extends AffectedResourcesView {
   }
 }
 
-const issueTypeToNetworkHeaderMap = new Map<symbol, string>([
+const issueTypeToNetworkHeaderMap = new Map<SDK.Issue.IssueCategory, Network.NetworkItemView.Tabs>([
   [SDK.Issue.IssueCategory.SameSiteCookie, Network.NetworkItemView.Tabs.Cookies],
   [SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy, Network.NetworkItemView.Tabs.Headers],
   [SDK.Issue.IssueCategory.MixedContent, Network.NetworkItemView.Tabs.Headers],
@@ -435,6 +425,10 @@ class AffectedMixedContentView extends AffectedResourcesView {
     this.updateAffectedResourceCount(count);
   }
 
+  protected getResourceName(count: number): Platform.UIString.LocalizedString {
+    return i18nString(UIStrings.nResources, {n: count});
+  }
+
   appendAffectedMixedContent(
       mixedContent: Protocol.Audits.MixedContentIssueDetails,
       maybeRequest: SDK.NetworkRequest.NetworkRequest|null = null): void {
@@ -459,10 +453,22 @@ class AffectedMixedContentView extends AffectedResourcesView {
 
     const status = document.createElement('td');
     status.classList.add('affected-resource-mixed-content-info');
-    status.textContent = SDK.MixedContentIssue.MixedContentIssue.translateStatus(mixedContent.resolutionStatus);
+    status.textContent = AffectedMixedContentView.translateStatus(mixedContent.resolutionStatus);
     element.appendChild(status);
 
     this.affectedResources.appendChild(element);
+  }
+
+  private static translateStatus(resolutionStatus: Protocol.Audits.MixedContentResolutionStatus):
+      Platform.UIString.LocalizedString {
+    switch (resolutionStatus) {
+      case Protocol.Audits.MixedContentResolutionStatus.MixedContentBlocked:
+        return i18nString(UIStrings.blocked);
+      case Protocol.Audits.MixedContentResolutionStatus.MixedContentAutomaticallyUpgraded:
+        return i18nString(UIStrings.automaticallyUpgraded);
+      case Protocol.Audits.MixedContentResolutionStatus.MixedContentWarning:
+        return i18nString(UIStrings.warned);
+    }
   }
 
   update(): void {
@@ -470,141 +476,6 @@ class AffectedMixedContentView extends AffectedResourcesView {
     this._appendAffectedMixedContentDetails(this._issue.getMixedContentIssues());
   }
 }
-
-class AffectedHeavyAdView extends AffectedResourcesView {
-  _issue: SDK.Issue.Issue;
-  constructor(parent: IssueView, issue: SDK.Issue.Issue) {
-    super(parent, {singular: i18nString(UIStrings.resource), plural: i18nString(UIStrings.resources)});
-    this._issue = issue;
-  }
-
-  _appendAffectedHeavyAds(heavyAds: Iterable<Protocol.Audits.HeavyAdIssueDetails>): void {
-    const header = document.createElement('tr');
-    this.appendColumnTitle(header, i18nString(UIStrings.limitExceeded));
-    this.appendColumnTitle(header, i18nString(UIStrings.resolutionStatus));
-    this.appendColumnTitle(header, i18nString(UIStrings.frameUrl));
-
-    this.affectedResources.appendChild(header);
-
-    let count = 0;
-    for (const heavyAd of heavyAds) {
-      this._appendAffectedHeavyAd(heavyAd);
-      count++;
-    }
-    this.updateAffectedResourceCount(count);
-  }
-
-  _statusToString(status: Protocol.Audits.HeavyAdResolutionStatus): string {
-    switch (status) {
-      case Protocol.Audits.HeavyAdResolutionStatus.HeavyAdBlocked:
-        return i18nString(UIStrings.removed);
-      case Protocol.Audits.HeavyAdResolutionStatus.HeavyAdWarning:
-        return i18nString(UIStrings.warned);
-    }
-    return '';
-  }
-
-  _limitToString(status: Protocol.Audits.HeavyAdReason): string {
-    switch (status) {
-      case Protocol.Audits.HeavyAdReason.CpuPeakLimit:
-        return i18nString(UIStrings.cpuPeakLimit);
-      case Protocol.Audits.HeavyAdReason.CpuTotalLimit:
-        return i18nString(UIStrings.cpuTotalLimit);
-      case Protocol.Audits.HeavyAdReason.NetworkTotalLimit:
-        return i18nString(UIStrings.networkLimit);
-    }
-    return '';
-  }
-
-  _appendAffectedHeavyAd(heavyAd: Protocol.Audits.HeavyAdIssueDetails): void {
-    const element = document.createElement('tr');
-    element.classList.add('affected-resource-heavy-ad');
-
-    const reason = document.createElement('td');
-    reason.classList.add('affected-resource-heavy-ad-info');
-    reason.textContent = this._limitToString(heavyAd.reason);
-    element.appendChild(reason);
-
-    const status = document.createElement('td');
-    status.classList.add('affected-resource-heavy-ad-info');
-    status.textContent = this._statusToString(heavyAd.resolution);
-    element.appendChild(status);
-
-    const frameId = heavyAd.frame.frameId;
-    const frameUrl = this.createFrameCell(frameId, this._issue);
-    element.appendChild(frameUrl);
-
-    this.affectedResources.appendChild(element);
-  }
-
-  update(): void {
-    this.clear();
-    this._appendAffectedHeavyAds(this._issue.heavyAds());
-  }
-}
-
-class AffectedBlockedByResponseView extends AffectedResourcesView {
-  _issue: SDK.Issue.Issue;
-  constructor(parent: IssueView, issue: SDK.Issue.Issue) {
-    super(parent, {singular: i18nString(UIStrings.request), plural: i18nString(UIStrings.requests)});
-    this._issue = issue;
-  }
-
-  _appendDetails(details: Iterable<Protocol.Audits.BlockedByResponseIssueDetails>): void {
-    const header = document.createElement('tr');
-    this.appendColumnTitle(header, i18nString(UIStrings.requestC));
-    this.appendColumnTitle(header, i18nString(UIStrings.parentFrame));
-    this.appendColumnTitle(header, i18nString(UIStrings.blockedResource));
-
-    this.affectedResources.appendChild(header);
-
-    let count = 0;
-    for (const detail of details) {
-      this._appendDetail(detail);
-      count++;
-    }
-    this.updateAffectedResourceCount(count);
-  }
-
-  _appendDetail(details: Protocol.Audits.BlockedByResponseIssueDetails): void {
-    const element = document.createElement('tr');
-    element.classList.add('affected-resource-row');
-
-    const requestCell = this.createRequestCell(details.request);
-    element.appendChild(requestCell);
-
-    if (details.parentFrame) {
-      const frameUrl = this.createFrameCell(details.parentFrame.frameId, this._issue);
-      element.appendChild(frameUrl);
-    } else {
-      element.appendChild(document.createElement('td'));
-    }
-
-    if (details.blockedFrame) {
-      const frameUrl = this.createFrameCell(details.blockedFrame.frameId, this._issue);
-      element.appendChild(frameUrl);
-    } else {
-      element.appendChild(document.createElement('td'));
-    }
-
-    this.affectedResources.appendChild(element);
-  }
-
-  update(): void {
-    this.clear();
-    this._appendDetails(this._issue.getBlockedByResponseDetails());
-  }
-}
-
-// These come from chrome/browser/ui/hats/hats_service.cc.
-const issueSurveyTriggers = new Map<symbol, string|null>([
-  [SDK.Issue.IssueCategory.CrossOriginEmbedderPolicy, 'devtools-issues-coep'],
-  [SDK.Issue.IssueCategory.MixedContent, 'devtools-issues-mixed-content'],
-  [SDK.Issue.IssueCategory.SameSiteCookie, 'devtools-issues-cookies-samesite'],
-  [SDK.Issue.IssueCategory.HeavyAd, 'devtools-issues-heavy-ad'],
-  [SDK.Issue.IssueCategory.ContentSecurityPolicy, 'devtools-issues-csp'],
-  [SDK.Issue.IssueCategory.Other, null],
-]);
 
 export class IssueView extends UI.TreeOutline.TreeElement {
   _parent: UI.Widget.VBox;
@@ -624,6 +495,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     this.toggleOnClick = true;
     this.listItemElement.classList.add('issue');
     this.childrenListElement.classList.add('body');
+    this.childrenListElement.classList.add(IssueView.getBodyCSSClass(this._issue.getKind()));
 
     this.affectedResources = this._createAffectedResources();
     this._affectedResourceViews = [
@@ -643,6 +515,17 @@ export class IssueView extends UI.TreeOutline.TreeElement {
 
     this._aggregatedIssuesCount = null;
     this._hasBeenExpandedBefore = false;
+  }
+
+  private static getBodyCSSClass(issueKind: SDK.Issue.IssueKind): string {
+    switch (issueKind) {
+      case SDK.Issue.IssueKind.BreakingChange:
+        return 'issue-kind-breaking-change';
+      case SDK.Issue.IssueKind.PageError:
+        return 'issue-kind-page-error';
+      case SDK.Issue.IssueKind.Improvement:
+        return 'issue-kind-improvement';
+    }
   }
 
   getIssueTitle(): string {
@@ -670,13 +553,19 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     const header = document.createElement('div');
     header.classList.add('header');
     const icon = new WebComponents.Icon.Icon();
-    icon.data = {iconName: 'breaking_change_icon', color: '', width: '16px', height: '16px'};
-    icon.classList.add('breaking-change');
+    const kind = this._issue.getKind();
+    icon.data = ConsoleCounters.IssueCounter.getIssueKindIconData(kind);
+    icon.classList.add('leading-issue-icon');
     this._aggregatedIssuesCount = (document.createElement('span') as HTMLElement);
-    const countAdorner = Elements.Adorner.Adorner.create(this._aggregatedIssuesCount, 'countWrapper');
+    const countAdorner = new Elements.Adorner.Adorner();
+    countAdorner.data = {
+      name: 'countWrapper',
+      content: this._aggregatedIssuesCount,
+    };
     countAdorner.classList.add('aggregated-issues-count');
     this._aggregatedIssuesCount.textContent = `${this._issue.getAggregatedIssuesCount()}`;
     header.appendChild(icon);
+    UI.Tooltip.Tooltip.install(icon, ConsoleCounters.IssueCounter.getIssueKindDescription(kind));
     header.appendChild(countAdorner);
 
     const title = document.createElement('div');
@@ -688,9 +577,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
   }
 
   onexpand(): void {
-    const issueCategory = this._issue.getCategory().description;
-
-    Host.userMetrics.issuesPanelIssueExpanded(issueCategory);
+    Host.userMetrics.issuesPanelIssueExpanded(this._issue.getCategory());
 
     if (!this._hasBeenExpandedBefore) {
       this._hasBeenExpandedBefore = true;
@@ -738,38 +625,20 @@ export class IssueView extends UI.TreeOutline.TreeElement {
 
     const linkList = linkWrapper.listItemElement.createChild('ul', 'link-list');
     for (const description of this._description.links) {
-      const link = UI.Fragment.html`<a class="link devtools-link" role="link" tabindex="0" href=${description.link}>${
-          i18nString(UIStrings.learnMoreS, {PH1: description.linkTitle})}</a>`;
+      const link = UI.Fragment.html`<x-link class="link devtools-link" tabindex="0" href=${description.link}>${
+                       i18nString(UIStrings.learnMoreS, {PH1: description.linkTitle})}</x-link>` as UI.XLink.XLink;
       const linkIcon = new WebComponents.Icon.Icon();
-      linkIcon.data = {iconName: 'link_icon', color: 'var(--issue-link)', width: '16px', height: '16px'};
+      linkIcon.data = {iconName: 'link_icon', color: 'var(--color-link)', width: '16px', height: '16px'};
       linkIcon.classList.add('link-icon');
       link.prepend(linkIcon);
-      self.onInvokeElement(link, event => {
+      link.addEventListener('x-link-invoke', () => {
         Host.userMetrics.issuesPanelResourceOpened(this._issue.getCategory(), AffectedItem.LearnMore);
-        const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
-        if (mainTarget) {
-          mainTarget.targetAgent().invoke_createTarget({url: description.link});
-        }
-        event.consume(true);
       });
 
       const linkListItem = linkList.createChild('li');
       linkListItem.appendChild(link);
     }
     this.appendChild(linkWrapper);
-
-    const surveyTrigger = issueSurveyTriggers.get(this._issue.getCategory());
-    if (surveyTrigger) {
-      // This part of the UI is async so be careful relying on it being available.
-      const surveyLink = new WebComponents.SurveyLink.SurveyLink();
-      surveyLink.data = {
-        trigger: surveyTrigger,
-        promptText: i18nString(UIStrings.isThisIssueMessageHelpfulToYou),
-        canShowSurvey: Host.InspectorFrontendHost.InspectorFrontendHostInstance.canShowSurvey,
-        showSurvey: Host.InspectorFrontendHost.InspectorFrontendHostInstance.showSurvey,
-      };
-      linkList.createChild('li').appendChild(surveyLink);
-    }
   }
 
   update(): void {

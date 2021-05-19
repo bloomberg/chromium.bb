@@ -60,10 +60,6 @@ config("icu_config") {
   } else {
     defines += [ "ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_STATIC" ]
   }
-
-  if (is_win) {
-    defines += [ "UCHAR_TYPE=wchar_t" ]
-  }
 }
 
 # Config used only by ICU code.
@@ -125,6 +121,10 @@ config("icu_code") {
       # is fixed.
       "-Wno-implicit-int-float-conversion",
       "-Wno-conversion",
+
+      # Used for conditional changes to the compilation process that
+      # are only needed for the Fuchsia toolchain.
+      "-DICU_IS_IN_FUCHSIA",
     ]
   }
 }

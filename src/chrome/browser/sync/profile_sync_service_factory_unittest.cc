@@ -29,7 +29,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chromeos/components/sync_wifi/wifi_configuration_sync_service.h"
@@ -78,7 +78,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   std::vector<syncer::ModelType> DefaultDatatypes() {
-    static_assert(39 == syncer::ModelType::NUM_ENTRIES,
+    static_assert(38 == syncer::GetNumModelTypes(),
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -131,6 +131,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::AUTOFILL_PROFILE);
     datatypes.push_back(syncer::AUTOFILL_WALLET_DATA);
     datatypes.push_back(syncer::AUTOFILL_WALLET_METADATA);
+    datatypes.push_back(syncer::AUTOFILL_WALLET_OFFER);
     datatypes.push_back(syncer::BOOKMARKS);
     datatypes.push_back(syncer::DEVICE_INFO);
     datatypes.push_back(syncer::HISTORY_DELETE_DIRECTIVES);

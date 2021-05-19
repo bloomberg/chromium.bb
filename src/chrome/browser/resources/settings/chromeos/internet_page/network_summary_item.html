@@ -30,8 +30,13 @@
         flex: auto;
       }
 
-      #networkState {
+      .network-state {
         color: var(--cr-secondary-text-color);
+        font-size: inherit;
+      }
+
+      .locked-warning-message {
+        color: var(--google-yellow-800);
         font-size: inherit;
       }
     </style>
@@ -52,14 +57,17 @@
             <div id="networkTitleText">
               [[getTitleText_(activeNetworkState)]]
             </div>
-            <div id="networkState">
+            <div id="networkState"
+                class$="[[getNetworkStateClass_(deviceState, deviceState.*)]]">
               [[getNetworkStateText_(activeNetworkState, deviceState.*)]]
             </div>
           </div>
         </div>
 
         <template is="dom-if" if="[[showSimInfo_(deviceState)]]" restamp>
-          <network-siminfo device-state="[[deviceState]]" on-click="doNothing_">
+          <network-siminfo
+              network-state="[[activeNetworkState]]"
+              device-state="[[deviceState]]">
           </network-siminfo>
         </template>
 

@@ -34,8 +34,8 @@
  * TODO(crbug.com/1113642): Remove this element when content settings redesign
  * is launched.
  */
-import '../controls/settings_toggle_button.m.js';
-import '../settings_shared_css.m.js';
+import '../controls/settings_toggle_button.js';
+import '../settings_shared_css.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -154,40 +154,45 @@ Polymer({
         chrome.settingsPrivate.Enforcement.ENFORCED) {
       return;
     }
+    /**
+     * This list must be kept in sync with the list in
+     * settings_category_default_radio_group.js
+     */
     switch (this.category) {
       case ContentSettingsTypes.ADS:
       case ContentSettingsTypes.BACKGROUND_SYNC:
       case ContentSettingsTypes.IMAGES:
       case ContentSettingsTypes.JAVASCRIPT:
       case ContentSettingsTypes.MIXEDSCRIPT:
-      case ContentSettingsTypes.SOUND:
-      case ContentSettingsTypes.SENSORS:
       case ContentSettingsTypes.PAYMENT_HANDLER:
       case ContentSettingsTypes.POPUPS:
       case ContentSettingsTypes.PROTOCOL_HANDLERS:
+      case ContentSettingsTypes.SENSORS:
+      case ContentSettingsTypes.SOUND:
         // "Allowed" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,
             this.categoryEnabled ? ContentSetting.ALLOW : ContentSetting.BLOCK);
         break;
+      case ContentSettingsTypes.AR:
       case ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
-      case ContentSettingsTypes.CAMERA:
-      case ContentSettingsTypes.CLIPBOARD:
-      case ContentSettingsTypes.FONT_ACCESS:
-      case ContentSettingsTypes.GEOLOCATION:
-      case ContentSettingsTypes.MIC:
-      case ContentSettingsTypes.NOTIFICATIONS:
-      case ContentSettingsTypes.MIDI_DEVICES:
-      case ContentSettingsTypes.USB_DEVICES:
-      case ContentSettingsTypes.SERIAL_PORTS:
       case ContentSettingsTypes.BLUETOOTH_DEVICES:
       case ContentSettingsTypes.BLUETOOTH_SCANNING:
+      case ContentSettingsTypes.CAMERA:
+      case ContentSettingsTypes.CLIPBOARD:
+      case ContentSettingsTypes.FILE_HANDLING:
       case ContentSettingsTypes.FILE_SYSTEM_WRITE:
+      case ContentSettingsTypes.FONT_ACCESS:
+      case ContentSettingsTypes.GEOLOCATION:
       case ContentSettingsTypes.HID_DEVICES:
-      case ContentSettingsTypes.VR:
-      case ContentSettingsTypes.AR:
-      case ContentSettingsTypes.WINDOW_PLACEMENT:
       case ContentSettingsTypes.IDLE_DETECTION:
+      case ContentSettingsTypes.MIC:
+      case ContentSettingsTypes.MIDI_DEVICES:
+      case ContentSettingsTypes.NOTIFICATIONS:
+      case ContentSettingsTypes.SERIAL_PORTS:
+      case ContentSettingsTypes.USB_DEVICES:
+      case ContentSettingsTypes.VR:
+      case ContentSettingsTypes.WINDOW_PLACEMENT:
         // "Ask" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,

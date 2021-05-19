@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/numerics/ranges.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -32,21 +31,19 @@ namespace metadata {
 const char kNoPrefix[] = "";
 const char kSkColorPrefix[] = "--";
 
-base::string16 PointerToString(const void* pointer_val) {
-  return pointer_val ? base::ASCIIToUTF16("(assigned)")
-                     : base::ASCIIToUTF16("(not assigned)");
+std::u16string PointerToString(const void* pointer_val) {
+  return pointer_val ? u"(assigned)" : u"(not assigned)";
 }
 
-const base::string16& GetNullOptStr() {
-  static const base::NoDestructor<base::string16> kNullOptStr(
-      base::ASCIIToUTF16("<Empty>"));
+const std::u16string& GetNullOptStr() {
+  static const base::NoDestructor<std::u16string> kNullOptStr(u"<Empty>");
   return *kNullOptStr;
 }
 
 /***** String Conversions *****/
 
 #define CONVERT_NUMBER_TO_STRING(T)                           \
-  base::string16 TypeConverter<T>::ToString(T source_value) { \
+  std::u16string TypeConverter<T>::ToString(T source_value) { \
     return base::NumberToString16(source_value);              \
   }
 
@@ -61,98 +58,97 @@ CONVERT_NUMBER_TO_STRING(uint64_t)
 CONVERT_NUMBER_TO_STRING(float)
 CONVERT_NUMBER_TO_STRING(double)
 
-base::string16 TypeConverter<bool>::ToString(bool source_value) {
+std::u16string TypeConverter<bool>::ToString(bool source_value) {
   return base::ASCIIToUTF16(source_value ? "true" : "false");
 }
 
 ValidStrings TypeConverter<bool>::GetValidStrings() {
-  return {base::ASCIIToUTF16("false"), base::ASCIIToUTF16("true")};
+  return {u"false", u"true"};
 }
 
-base::string16 TypeConverter<const char*>::ToString(const char* source_value) {
+std::u16string TypeConverter<const char*>::ToString(const char* source_value) {
   return base::UTF8ToUTF16(source_value);
 }
 
-base::string16 TypeConverter<base::FilePath>::ToString(
+std::u16string TypeConverter<base::FilePath>::ToString(
     const base::FilePath& source_value) {
   return source_value.AsUTF16Unsafe();
 }
 
-base::string16 TypeConverter<base::string16>::ToString(
-    const base::string16& source_value) {
+std::u16string TypeConverter<std::u16string>::ToString(
+    const std::u16string& source_value) {
   return source_value;
 }
 
-base::string16 TypeConverter<base::TimeDelta>::ToString(
+std::u16string TypeConverter<base::TimeDelta>::ToString(
     const base::TimeDelta& source_value) {
-  return base::NumberToString16(source_value.InSecondsF()) +
-         base::ASCIIToUTF16("s");
+  return base::NumberToString16(source_value.InSecondsF()) + u"s";
 }
 
-base::string16 TypeConverter<gfx::Insets>::ToString(
+std::u16string TypeConverter<gfx::Insets>::ToString(
     const gfx::Insets& source_value) {
   return base::ASCIIToUTF16(source_value.ToString());
 }
 
-base::string16 TypeConverter<gfx::Point>::ToString(
+std::u16string TypeConverter<gfx::Point>::ToString(
     const gfx::Point& source_value) {
   return base::ASCIIToUTF16(source_value.ToString());
 }
 
-base::string16 TypeConverter<gfx::PointF>::ToString(
+std::u16string TypeConverter<gfx::PointF>::ToString(
     const gfx::PointF& source_value) {
   return base::ASCIIToUTF16(source_value.ToString());
 }
 
-base::string16 TypeConverter<gfx::Range>::ToString(
+std::u16string TypeConverter<gfx::Range>::ToString(
     const gfx::Range& source_value) {
   return base::ASCIIToUTF16(source_value.ToString());
 }
 
-base::string16 TypeConverter<gfx::Rect>::ToString(
+std::u16string TypeConverter<gfx::Rect>::ToString(
     const gfx::Rect& source_value) {
   return base::ASCIIToUTF16(source_value.ToString());
 }
 
-base::string16 TypeConverter<gfx::RectF>::ToString(
+std::u16string TypeConverter<gfx::RectF>::ToString(
     const gfx::RectF& source_value) {
   return base::ASCIIToUTF16(source_value.ToString());
 }
 
-base::string16 TypeConverter<gfx::ShadowValues>::ToString(
+std::u16string TypeConverter<gfx::ShadowValues>::ToString(
     const gfx::ShadowValues& source_value) {
-  base::string16 ret = base::ASCIIToUTF16("[");
+  std::u16string ret = u"[";
   for (auto shadow_value : source_value) {
     ret += base::ASCIIToUTF16(" " + shadow_value.ToString() + ";");
   }
 
   ret[ret.length() - 1] = ' ';
-  ret += base::ASCIIToUTF16("]");
+  ret += u"]";
   return ret;
 }
 
-base::string16 TypeConverter<gfx::Size>::ToString(
+std::u16string TypeConverter<gfx::Size>::ToString(
     const gfx::Size& source_value) {
   return base::ASCIIToUTF16(source_value.ToString());
 }
 
-base::string16 TypeConverter<gfx::SizeF>::ToString(
+std::u16string TypeConverter<gfx::SizeF>::ToString(
     const gfx::SizeF& source_value) {
   return base::ASCIIToUTF16(source_value.ToString());
 }
 
-base::string16 TypeConverter<GURL>::ToString(const GURL& source_value) {
+std::u16string TypeConverter<GURL>::ToString(const GURL& source_value) {
   return base::ASCIIToUTF16(source_value.possibly_invalid_spec());
 }
 
-base::string16 TypeConverter<url::Component>::ToString(
+std::u16string TypeConverter<url::Component>::ToString(
     const url::Component& source_value) {
   return base::ASCIIToUTF16(
       base::StringPrintf("{%d,%d}", source_value.begin, source_value.len));
 }
 
 base::Optional<int8_t> TypeConverter<int8_t>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   int32_t ret = 0;
   if (base::StringToInt(source_value, &ret) &&
       base::IsValueInRangeForNumericType<int8_t>(ret)) {
@@ -162,7 +158,7 @@ base::Optional<int8_t> TypeConverter<int8_t>::FromString(
 }
 
 base::Optional<int16_t> TypeConverter<int16_t>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   int32_t ret = 0;
   if (base::StringToInt(source_value, &ret) &&
       base::IsValueInRangeForNumericType<int16_t>(ret)) {
@@ -172,21 +168,21 @@ base::Optional<int16_t> TypeConverter<int16_t>::FromString(
 }
 
 base::Optional<int32_t> TypeConverter<int32_t>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   int value;
   return base::StringToInt(source_value, &value) ? base::make_optional(value)
                                                  : base::nullopt;
 }
 
 base::Optional<int64_t> TypeConverter<int64_t>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   int64_t value;
   return base::StringToInt64(source_value, &value) ? base::make_optional(value)
                                                    : base::nullopt;
 }
 
 base::Optional<uint8_t> TypeConverter<uint8_t>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   unsigned ret = 0;
   if (base::StringToUint(source_value, &ret) &&
       base::IsValueInRangeForNumericType<uint8_t>(ret)) {
@@ -196,7 +192,7 @@ base::Optional<uint8_t> TypeConverter<uint8_t>::FromString(
 }
 
 base::Optional<uint16_t> TypeConverter<uint16_t>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   unsigned ret = 0;
   if (base::StringToUint(source_value, &ret) &&
       base::IsValueInRangeForNumericType<uint16_t>(ret)) {
@@ -206,21 +202,21 @@ base::Optional<uint16_t> TypeConverter<uint16_t>::FromString(
 }
 
 base::Optional<uint32_t> TypeConverter<uint32_t>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   unsigned value;
   return base::StringToUint(source_value, &value) ? base::make_optional(value)
                                                   : base::nullopt;
 }
 
 base::Optional<uint64_t> TypeConverter<uint64_t>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   uint64_t value;
   return base::StringToUint64(source_value, &value) ? base::make_optional(value)
                                                     : base::nullopt;
 }
 
 base::Optional<float> TypeConverter<float>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   if (base::Optional<double> temp =
           TypeConverter<double>::FromString(source_value))
     return static_cast<float>(temp.value());
@@ -228,7 +224,7 @@ base::Optional<float> TypeConverter<float>::FromString(
 }
 
 base::Optional<double> TypeConverter<double>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   double value;
   return base::StringToDouble(base::UTF16ToUTF8(source_value), &value)
              ? base::make_optional(value)
@@ -236,34 +232,33 @@ base::Optional<double> TypeConverter<double>::FromString(
 }
 
 base::Optional<bool> TypeConverter<bool>::FromString(
-    const base::string16& source_value) {
-  const bool is_true = source_value == base::ASCIIToUTF16("true");
-  if (is_true || source_value == base::ASCIIToUTF16("false"))
+    const std::u16string& source_value) {
+  const bool is_true = source_value == u"true";
+  if (is_true || source_value == u"false")
     return is_true;
   return base::nullopt;
 }
 
-base::Optional<base::string16> TypeConverter<base::string16>::FromString(
-    const base::string16& source_value) {
+base::Optional<std::u16string> TypeConverter<std::u16string>::FromString(
+    const std::u16string& source_value) {
   return source_value;
 }
 
 base::Optional<base::FilePath> TypeConverter<base::FilePath>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   return base::FilePath::FromUTF16Unsafe(source_value);
 }
 
 base::Optional<base::TimeDelta> TypeConverter<base::TimeDelta>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   std::string source = base::UTF16ToUTF8(source_value);
   return base::TimeDelta::FromString(source);
 }
 
 base::Optional<gfx::Insets> TypeConverter<gfx::Insets>::FromString(
-    const base::string16& source_value) {
-  const auto values =
-      base::SplitStringPiece(source_value, base::ASCIIToUTF16(","),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    const std::u16string& source_value) {
+  const auto values = base::SplitStringPiece(
+      source_value, u",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   int top, left, bottom, right;
   if ((values.size() == 4) && base::StringToInt(values[0], &top) &&
       base::StringToInt(values[1], &left) &&
@@ -275,10 +270,9 @@ base::Optional<gfx::Insets> TypeConverter<gfx::Insets>::FromString(
 }
 
 base::Optional<gfx::Point> TypeConverter<gfx::Point>::FromString(
-    const base::string16& source_value) {
-  const auto values =
-      base::SplitStringPiece(source_value, base::ASCIIToUTF16(","),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    const std::u16string& source_value) {
+  const auto values = base::SplitStringPiece(
+      source_value, u",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   int x, y;
   if ((values.size() == 2) && base::StringToInt(values[0], &x) &&
       base::StringToInt(values[1], &y)) {
@@ -288,10 +282,9 @@ base::Optional<gfx::Point> TypeConverter<gfx::Point>::FromString(
 }
 
 base::Optional<gfx::PointF> TypeConverter<gfx::PointF>::FromString(
-    const base::string16& source_value) {
-  const auto values =
-      base::SplitStringPiece(source_value, base::ASCIIToUTF16(","),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    const std::u16string& source_value) {
+  const auto values = base::SplitStringPiece(
+      source_value, u",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   double x, y;
   if ((values.size() == 2) && base::StringToDouble(values[0], &x) &&
       base::StringToDouble(values[1], &y)) {
@@ -301,10 +294,9 @@ base::Optional<gfx::PointF> TypeConverter<gfx::PointF>::FromString(
 }
 
 base::Optional<gfx::Range> TypeConverter<gfx::Range>::FromString(
-    const base::string16& source_value) {
-  const auto values =
-      base::SplitStringPiece(source_value, base::ASCIIToUTF16("{,}"),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    const std::u16string& source_value) {
+  const auto values = base::SplitStringPiece(
+      source_value, u"{,}", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   unsigned min, max;
   if ((values.size() == 2) && base::StringToUint(values[0], &min) &&
       base::StringToUint(values[1], &max)) {
@@ -314,10 +306,9 @@ base::Optional<gfx::Range> TypeConverter<gfx::Range>::FromString(
 }
 
 base::Optional<gfx::Rect> TypeConverter<gfx::Rect>::FromString(
-    const base::string16& source_value) {
-  const auto values =
-      base::SplitString(source_value, base::ASCIIToUTF16(" "),
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    const std::u16string& source_value) {
+  const auto values = base::SplitString(
+      source_value, u" ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (values.size() != 2)
     return base::nullopt;
   const base::Optional<gfx::Point> origin =
@@ -330,10 +321,9 @@ base::Optional<gfx::Rect> TypeConverter<gfx::Rect>::FromString(
 }
 
 base::Optional<gfx::RectF> TypeConverter<gfx::RectF>::FromString(
-    const base::string16& source_value) {
-  const auto values =
-      base::SplitString(source_value, base::ASCIIToUTF16(" "),
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    const std::u16string& source_value) {
+  const auto values = base::SplitString(
+      source_value, u" ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (values.size() != 2)
     return base::nullopt;
   const base::Optional<gfx::PointF> origin =
@@ -346,28 +336,26 @@ base::Optional<gfx::RectF> TypeConverter<gfx::RectF>::FromString(
 }
 
 base::Optional<gfx::ShadowValues> TypeConverter<gfx::ShadowValues>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   gfx::ShadowValues ret;
-  const auto shadow_value_strings =
-      base::SplitStringPiece(source_value, base::ASCIIToUTF16("[;]"),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  const auto shadow_value_strings = base::SplitStringPiece(
+      source_value, u"[;]", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   for (auto v : shadow_value_strings) {
-    base::string16 value = base::string16(v);
+    std::u16string value = std::u16string(v);
     base::String16Tokenizer tokenizer(
-        value, base::ASCIIToUTF16("(,)"),
-        base::String16Tokenizer::WhitespacePolicy::kSkipOver);
+        value, u"(,)", base::String16Tokenizer::WhitespacePolicy::kSkipOver);
     tokenizer.set_options(base::String16Tokenizer::RETURN_DELIMS);
     int x, y;
     double blur;
-    if (tokenizer.GetNext() && tokenizer.token() == base::ASCIIToUTF16("(") &&
+    if (tokenizer.GetNext() && tokenizer.token() == u"(" &&
         tokenizer.GetNext() && base::StringToInt(tokenizer.token(), &x) &&
-        tokenizer.GetNext() && tokenizer.token() == base::ASCIIToUTF16(",") &&
+        tokenizer.GetNext() && tokenizer.token() == u"," &&
         tokenizer.GetNext() && base::StringToInt(tokenizer.token(), &y) &&
-        tokenizer.GetNext() && tokenizer.token() == base::ASCIIToUTF16(")") &&
-        tokenizer.GetNext() && tokenizer.token() == base::ASCIIToUTF16(",") &&
+        tokenizer.GetNext() && tokenizer.token() == u")" &&
+        tokenizer.GetNext() && tokenizer.token() == u"," &&
         tokenizer.GetNext() && base::StringToDouble(tokenizer.token(), &blur) &&
-        tokenizer.GetNext() && tokenizer.token() == base::ASCIIToUTF16(",") &&
+        tokenizer.GetNext() && tokenizer.token() == u"," &&
         tokenizer.GetNext()) {
       const auto color =
           SkColorConverter::GetNextColor(tokenizer.token_begin(), value.cend());
@@ -379,10 +367,9 @@ base::Optional<gfx::ShadowValues> TypeConverter<gfx::ShadowValues>::FromString(
 }
 
 base::Optional<gfx::Size> TypeConverter<gfx::Size>::FromString(
-    const base::string16& source_value) {
-  const auto values =
-      base::SplitStringPiece(source_value, base::ASCIIToUTF16("x"),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    const std::u16string& source_value) {
+  const auto values = base::SplitStringPiece(
+      source_value, u"x", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   int width, height;
   if ((values.size() == 2) && base::StringToInt(values[0], &width) &&
       base::StringToInt(values[1], &height)) {
@@ -392,10 +379,9 @@ base::Optional<gfx::Size> TypeConverter<gfx::Size>::FromString(
 }
 
 base::Optional<gfx::SizeF> TypeConverter<gfx::SizeF>::FromString(
-    const base::string16& source_value) {
-  const auto values =
-      base::SplitStringPiece(source_value, base::ASCIIToUTF16("x"),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    const std::u16string& source_value) {
+  const auto values = base::SplitStringPiece(
+      source_value, u"x", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   double width, height;
   if ((values.size() == 2) && base::StringToDouble(values[0], &width) &&
       base::StringToDouble(values[1], &height)) {
@@ -405,17 +391,16 @@ base::Optional<gfx::SizeF> TypeConverter<gfx::SizeF>::FromString(
 }
 
 base::Optional<GURL> TypeConverter<GURL>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   const GURL url =
       url_formatter::FixupURL(base::UTF16ToUTF8(source_value), std::string());
   return url.is_valid() ? base::make_optional(url) : base::nullopt;
 }
 
 base::Optional<url::Component> TypeConverter<url::Component>::FromString(
-    const base::string16& source_value) {
-  const auto values =
-      base::SplitStringPiece(source_value, base::ASCIIToUTF16("{,}"),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    const std::u16string& source_value) {
+  const auto values = base::SplitStringPiece(
+      source_value, u"{,}", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   int begin, len;
   if ((values.size() == 2) && base::StringToInt(values[0], &begin) &&
       base::StringToInt(values[1], &len) && len >= -1) {
@@ -424,13 +409,13 @@ base::Optional<url::Component> TypeConverter<url::Component>::FromString(
   return base::nullopt;
 }
 
-base::string16 TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::ToString(
+std::u16string TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::ToString(
     SkColor source_value) {
   return base::UTF8ToUTF16(color_utils::SkColorToRgbaString(source_value));
 }
 
 base::Optional<SkColor> TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::FromString(
-    const base::string16& source_value) {
+    const std::u16string& source_value) {
   return GetNextColor(source_value.cbegin(), source_value.cend());
 }
 
@@ -439,23 +424,21 @@ ValidStrings TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::GetValidStrings() {
 }
 
 bool TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::GetNextColor(
-    base::string16::const_iterator start,
-    base::string16::const_iterator end,
-    base::string16& color,
-    base::string16::const_iterator& next_token) {
-  static const auto open_paren = STRING16_LITERAL('(');
-  static const auto close_paren = STRING16_LITERAL(')');
-  static const std::vector<base::string16> schemes = {
-      base::ASCIIToUTF16("hsl"), base::ASCIIToUTF16("hsla"),
-      base::ASCIIToUTF16("rgb"), base::ASCIIToUTF16("rgba")};
+    std::u16string::const_iterator start,
+    std::u16string::const_iterator end,
+    std::u16string& color,
+    std::u16string::const_iterator& next_token) {
+  static const auto open_paren = u'(';
+  static const auto close_paren = u')';
+  static const std::vector<std::u16string> schemes = {u"hsl", u"hsla", u"rgb",
+                                                      u"rgba"};
   base::String16Tokenizer tokenizer(
-      start, end, base::ASCIIToUTF16("(,)"),
-      base::String16Tokenizer::WhitespacePolicy::kSkipOver);
+      start, end, u"(,)", base::String16Tokenizer::WhitespacePolicy::kSkipOver);
   tokenizer.set_options(base::String16Tokenizer::RETURN_DELIMS);
   for (; tokenizer.GetNext();) {
     if (!tokenizer.token_is_delim()) {
       base::StringPiece16 token = tokenizer.token_piece();
-      base::string16::const_iterator start_color = tokenizer.token_begin();
+      std::u16string::const_iterator start_color = tokenizer.token_begin();
       if (base::ranges::find(schemes.begin(), schemes.end(), token) !=
           schemes.end()) {
         if (!tokenizer.GetNext() || *tokenizer.token_begin() != open_paren)
@@ -467,7 +450,7 @@ bool TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::GetNextColor(
           return false;
       }
       next_token = tokenizer.token_end();
-      color = base::string16(start_color, next_token);
+      color = std::u16string(start_color, next_token);
       return true;
     }
   }
@@ -475,27 +458,24 @@ bool TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::GetNextColor(
 }
 
 bool TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::GetNextColor(
-    base::string16::const_iterator start,
-    base::string16::const_iterator end,
-    base::string16& color) {
-  base::string16::const_iterator next_token;
+    std::u16string::const_iterator start,
+    std::u16string::const_iterator end,
+    std::u16string& color) {
+  std::u16string::const_iterator next_token;
   return GetNextColor(start, end, color, next_token);
 }
 
 base::Optional<SkColor> TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::GetNextColor(
-    base::string16::const_iterator start,
-    base::string16::const_iterator end,
-    base::string16::const_iterator& next_token) {
-  base::string16 color;
+    std::u16string::const_iterator start,
+    std::u16string::const_iterator end,
+    std::u16string::const_iterator& next_token) {
+  std::u16string color;
   if (GetNextColor(start, end, color, next_token)) {
-    if (base::StartsWith(color, base::ASCIIToUTF16("hsl"),
-                         base::CompareCase::SENSITIVE))
+    if (base::StartsWith(color, u"hsl", base::CompareCase::SENSITIVE))
       return ParseHslString(color);
-    if (base::StartsWith(color, base::ASCIIToUTF16("rgb"),
-                         base::CompareCase::SENSITIVE))
+    if (base::StartsWith(color, u"rgb", base::CompareCase::SENSITIVE))
       return ParseRgbString(color);
-    if (base::StartsWith(color, base::ASCIIToUTF16("0x"),
-                         base::CompareCase::INSENSITIVE_ASCII))
+    if (base::StartsWith(color, u"0x", base::CompareCase::INSENSITIVE_ASCII))
       return ParseHexString(color);
     SkColor value;
     if (base::StringToUint(color, &value))
@@ -505,9 +485,9 @@ base::Optional<SkColor> TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::GetNextColor(
 }
 
 base::Optional<SkColor> TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::GetNextColor(
-    base::string16::const_iterator start,
-    base::string16::const_iterator end) {
-  base::string16::const_iterator next_token;
+    std::u16string::const_iterator start,
+    std::u16string::const_iterator end) {
+  std::u16string::const_iterator next_token;
   return GetNextColor(start, end, next_token);
 }
 
@@ -533,7 +513,7 @@ TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::RgbaPiecesToSkColor(
 
 base::Optional<SkColor>
 TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::ParseHexString(
-    const base::string16& hex_string) {
+    const std::u16string& hex_string) {
   SkColor value;
   if (base::HexStringToUInt(base::UTF16ToUTF8(hex_string), &value)) {
     // Add in a 1.0 alpha channel if it wasn't included in the input.
@@ -546,12 +526,11 @@ TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::ParseHexString(
 
 base::Optional<SkColor>
 TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::ParseHslString(
-    const base::string16& hsl_string) {
-  base::string16 pruned_string;
-  base::RemoveChars(hsl_string, base::ASCIIToUTF16("(%)hsla"), &pruned_string);
-  const auto values =
-      base::SplitStringPiece(pruned_string, base::ASCIIToUTF16(", "),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    const std::u16string& hsl_string) {
+  std::u16string pruned_string;
+  base::RemoveChars(hsl_string, u"(%)hsla", &pruned_string);
+  const auto values = base::SplitStringPiece(
+      pruned_string, u", ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   double h, s, v;
   double a = 1.0;
   if (values.size() >= 3 && values.size() <= 4 &&
@@ -574,16 +553,15 @@ TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::ParseHslString(
 
 base::Optional<SkColor>
 TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::ParseRgbString(
-    const base::string16& rgb_string) {
+    const std::u16string& rgb_string) {
   // Declare a constant string here for use below since it might trigger an
   // ASAN error due to the stack temp going out of scope before the call to
   // RgbaPiecesToSkColor.
   static const auto opaque_alpha = base::ASCIIToUTF16("1.0");
-  base::string16 pruned_string;
-  base::RemoveChars(rgb_string, base::ASCIIToUTF16("()rgba"), &pruned_string);
-  auto values =
-      base::SplitStringPiece(pruned_string, base::ASCIIToUTF16(", "),
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::u16string pruned_string;
+  base::RemoveChars(rgb_string, u"()rgba", &pruned_string);
+  auto values = base::SplitStringPiece(
+      pruned_string, u", ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   // if it was just an rgb string, add the 1.0 alpha
   if (values.size() == 3)
     values.push_back(opaque_alpha);
@@ -594,125 +572,92 @@ TypeConverter<UNIQUE_TYPE_NAME(SkColor)>::ParseRgbString(
 }  // namespace views
 
 DEFINE_ENUM_CONVERTERS(gfx::HorizontalAlignment,
-                       {gfx::HorizontalAlignment::ALIGN_LEFT,
-                        base::ASCIIToUTF16("ALIGN_LEFT")},
+                       {gfx::HorizontalAlignment::ALIGN_LEFT, u"ALIGN_LEFT"},
                        {gfx::HorizontalAlignment::ALIGN_CENTER,
-                        base::ASCIIToUTF16("ALIGN_CENTER")},
-                       {gfx::HorizontalAlignment::ALIGN_RIGHT,
-                        base::ASCIIToUTF16("ALIGN_RIGHT")},
+                        u"ALIGN_CENTER"},
+                       {gfx::HorizontalAlignment::ALIGN_RIGHT, u"ALIGN_RIGHT"},
                        {gfx::HorizontalAlignment::ALIGN_TO_HEAD,
-                        base::ASCIIToUTF16("ALIGN_TO_HEAD")})
+                        u"ALIGN_TO_HEAD"})
+
+DEFINE_ENUM_CONVERTERS(gfx::VerticalAlignment,
+                       {gfx::VerticalAlignment::ALIGN_TOP, u"ALIGN_TOP"},
+                       {gfx::VerticalAlignment::ALIGN_MIDDLE, u"ALIGN_MIDDLE"},
+                       {gfx::VerticalAlignment::ALIGN_BOTTOM, u"ALIGN_BOTTOM"})
+
+DEFINE_ENUM_CONVERTERS(gfx::ElideBehavior,
+                       {gfx::ElideBehavior::NO_ELIDE, u"NO_ELIDE"},
+                       {gfx::ElideBehavior::TRUNCATE, u"TRUNCATE"},
+                       {gfx::ElideBehavior::ELIDE_HEAD, u"ELIDE_HEAD"},
+                       {gfx::ElideBehavior::ELIDE_MIDDLE, u"ELIDE_MIDDLE"},
+                       {gfx::ElideBehavior::ELIDE_TAIL, u"ELIDE_TAIL"},
+                       {gfx::ElideBehavior::ELIDE_EMAIL, u"ELIDE_EMAIL"},
+                       {gfx::ElideBehavior::FADE_TAIL, u"FADE_TAIL"})
 
 DEFINE_ENUM_CONVERTERS(
-    gfx::VerticalAlignment,
-    {gfx::VerticalAlignment::ALIGN_TOP, base::ASCIIToUTF16("ALIGN_TOP")},
-    {gfx::VerticalAlignment::ALIGN_MIDDLE, base::ASCIIToUTF16("ALIGN_MIDDLE")},
-    {gfx::VerticalAlignment::ALIGN_BOTTOM, base::ASCIIToUTF16("ALIGN_BOTTOM")})
+    ui::TextInputType,
+    {ui::TextInputType::TEXT_INPUT_TYPE_NONE, u"TEXT_INPUT_TYPE_NONE"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_TEXT, u"TEXT_INPUT_TYPE_TEXT"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_PASSWORD, u"TEXT_INPUT_TYPE_PASSWORD"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_SEARCH, u"TEXT_INPUT_TYPE_SEARCH"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_EMAIL, u"EXT_INPUT_TYPE_EMAIL"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_NUMBER, u"TEXT_INPUT_TYPE_NUMBER"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_TELEPHONE,
+     u"TEXT_INPUT_TYPE_TELEPHONE"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_URL, u"TEXT_INPUT_TYPE_URL"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_DATE, u"TEXT_INPUT_TYPE_DATE"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_DATE_TIME,
+     u"TEXT_INPUT_TYPE_DATE_TIME"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_DATE_TIME_LOCAL,
+     u"TEXT_INPUT_TYPE_DATE_TIME_LOCAL"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_MONTH, u"TEXT_INPUT_TYPE_MONTH"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_TIME, u"TEXT_INPUT_TYPE_TIME"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_WEEK, u"TEXT_INPUT_TYPE_WEEK"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_TEXT_AREA,
+     u"TEXT_INPUT_TYPE_TEXT_AREA"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_CONTENT_EDITABLE,
+     u"TEXT_INPUT_TYPE_CONTENT_EDITABLE"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_DATE_TIME_FIELD,
+     u"TEXT_INPUT_TYPE_DATE_TIME_FIELD"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_NULL, u"TEXT_INPUT_TYPE_NULL"},
+    {ui::TextInputType::TEXT_INPUT_TYPE_MAX, u"TEXT_INPUT_TYPE_MAX"})
 
 DEFINE_ENUM_CONVERTERS(
-    gfx::ElideBehavior,
-    {gfx::ElideBehavior::NO_ELIDE, base::ASCIIToUTF16("NO_ELIDE")},
-    {gfx::ElideBehavior::TRUNCATE, base::ASCIIToUTF16("TRUNCATE")},
-    {gfx::ElideBehavior::ELIDE_HEAD, base::ASCIIToUTF16("ELIDE_HEAD")},
-    {gfx::ElideBehavior::ELIDE_MIDDLE, base::ASCIIToUTF16("ELIDE_MIDDLE")},
-    {gfx::ElideBehavior::ELIDE_TAIL, base::ASCIIToUTF16("ELIDE_TAIL")},
-    {gfx::ElideBehavior::ELIDE_EMAIL, base::ASCIIToUTF16("ELIDE_EMAIL")},
-    {gfx::ElideBehavior::FADE_TAIL, base::ASCIIToUTF16("FADE_TAIL")})
+    ui::MenuSeparatorType,
+    {ui::MenuSeparatorType::NORMAL_SEPARATOR, u"NORMAL_SEPARATOR"},
+    {ui::MenuSeparatorType::DOUBLE_SEPARATOR, u"DOUBLE_SEPARATOR"},
+    {ui::MenuSeparatorType::UPPER_SEPARATOR, u"UPPER_SEPARATOR"},
+    {ui::MenuSeparatorType::LOWER_SEPARATOR, u"LOWER_SEPARATOR"},
+    {ui::MenuSeparatorType::SPACING_SEPARATOR, u"SPACING_SEPARATOR"},
+    {ui::MenuSeparatorType::VERTICAL_SEPARATOR, u"VERTICAL_SEPARATOR"},
+    {ui::MenuSeparatorType::PADDED_SEPARATOR, u"PADDED_SEPARATOR"})
 
-DEFINE_ENUM_CONVERTERS(ui::TextInputType,
-                       {ui::TextInputType::TEXT_INPUT_TYPE_NONE,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_NONE")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_TEXT,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_TEXT")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_PASSWORD,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_PASSWORD")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_SEARCH,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_SEARCH")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_EMAIL,
-                        base::ASCIIToUTF16("EXT_INPUT_TYPE_EMAIL")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_NUMBER,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_NUMBER")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_TELEPHONE,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_TELEPHONE")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_URL,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_URL")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_DATE,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_DATE")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_DATE_TIME,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_DATE_TIME")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_DATE_TIME_LOCAL,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_DATE_TIME_LOCAL")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_MONTH,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_MONTH")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_TIME,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_TIME")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_WEEK,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_WEEK")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_TEXT_AREA,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_TEXT_AREA")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_CONTENT_EDITABLE,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_CONTENT_EDITABLE")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_DATE_TIME_FIELD,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_DATE_TIME_FIELD")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_NULL,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_NULL")},
-                       {ui::TextInputType::TEXT_INPUT_TYPE_MAX,
-                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_MAX")})
-
-DEFINE_ENUM_CONVERTERS(ui::MenuSeparatorType,
-                       {ui::MenuSeparatorType::NORMAL_SEPARATOR,
-                        base::ASCIIToUTF16("NORMAL_SEPARATOR")},
-                       {ui::MenuSeparatorType::DOUBLE_SEPARATOR,
-                        base::ASCIIToUTF16("DOUBLE_SEPARATOR")},
-                       {ui::MenuSeparatorType::UPPER_SEPARATOR,
-                        base::ASCIIToUTF16("UPPER_SEPARATOR")},
-                       {ui::MenuSeparatorType::LOWER_SEPARATOR,
-                        base::ASCIIToUTF16("LOWER_SEPARATOR")},
-                       {ui::MenuSeparatorType::SPACING_SEPARATOR,
-                        base::ASCIIToUTF16("SPACING_SEPARATOR")},
-                       {ui::MenuSeparatorType::VERTICAL_SEPARATOR,
-                        base::ASCIIToUTF16("VERTICAL_SEPARATOR")},
-                       {ui::MenuSeparatorType::PADDED_SEPARATOR,
-                        base::ASCIIToUTF16("PADDED_SEPARATOR")})
-
-DEFINE_ENUM_CONVERTERS(views::ScrollView::ScrollBarMode,
-                       {views::ScrollView::ScrollBarMode::kDisabled,
-                        base::ASCIIToUTF16("kDisabled")},
-                       {views::ScrollView::ScrollBarMode::kHiddenButEnabled,
-                        base::ASCIIToUTF16("kHiddenButEnabled")},
-                       {views::ScrollView::ScrollBarMode::kEnabled,
-                        base::ASCIIToUTF16("kEnabled")})
+DEFINE_ENUM_CONVERTERS(
+    views::ScrollView::ScrollBarMode,
+    {views::ScrollView::ScrollBarMode::kDisabled, u"kDisabled"},
+    {views::ScrollView::ScrollBarMode::kHiddenButEnabled, u"kHiddenButEnabled"},
+    {views::ScrollView::ScrollBarMode::kEnabled, u"kEnabled"})
 
 DEFINE_ENUM_CONVERTERS(
     views::BubbleFrameView::PreferredArrowAdjustment,
-    {views::BubbleFrameView::PreferredArrowAdjustment::kMirror,
-     base::ASCIIToUTF16("kMirror")},
-    {views::BubbleFrameView::PreferredArrowAdjustment::kOffset,
-     base::ASCIIToUTF16("kOffset")})
+    {views::BubbleFrameView::PreferredArrowAdjustment::kMirror, u"kMirror"},
+    {views::BubbleFrameView::PreferredArrowAdjustment::kOffset, u"kOffset"})
 
 DEFINE_ENUM_CONVERTERS(
     views::BubbleBorder::Arrow,
-    {views::BubbleBorder::Arrow::TOP_LEFT, base::ASCIIToUTF16("TOP_LEFT")},
-    {views::BubbleBorder::Arrow::TOP_RIGHT, base::ASCIIToUTF16("TOP_RIGHT")},
-    {views::BubbleBorder::Arrow::BOTTOM_LEFT,
-     base::ASCIIToUTF16("BOTTOM_LEFT")},
-    {views::BubbleBorder::Arrow::BOTTOM_RIGHT,
-     base::ASCIIToUTF16("BOTTOM_RIGHT")},
-    {views::BubbleBorder::Arrow::LEFT_TOP, base::ASCIIToUTF16("LEFT_TOP")},
-    {views::BubbleBorder::Arrow::RIGHT_TOP, base::ASCIIToUTF16("RIGHT_TOP")},
-    {views::BubbleBorder::Arrow::LEFT_BOTTOM,
-     base::ASCIIToUTF16("LEFT_BOTTOM")},
-    {views::BubbleBorder::Arrow::RIGHT_BOTTOM,
-     base::ASCIIToUTF16("RIGHT_BOTTOM")},
-    {views::BubbleBorder::Arrow::TOP_CENTER, base::ASCIIToUTF16("TOP_CENTER")},
-    {views::BubbleBorder::Arrow::BOTTOM_CENTER,
-     base::ASCIIToUTF16("BOTTOM_CENTER")},
-    {views::BubbleBorder::Arrow::LEFT_CENTER,
-     base::ASCIIToUTF16("LEFT_CENTER")},
-    {views::BubbleBorder::Arrow::RIGHT_CENTER,
-     base::ASCIIToUTF16("RIGHT_CENTER")},
-    {views::BubbleBorder::Arrow::NONE, base::ASCIIToUTF16("NONE")},
-    {views::BubbleBorder::Arrow::FLOAT, base::ASCIIToUTF16("FLOAT")})
+    {views::BubbleBorder::Arrow::TOP_LEFT, u"TOP_LEFT"},
+    {views::BubbleBorder::Arrow::TOP_RIGHT, u"TOP_RIGHT"},
+    {views::BubbleBorder::Arrow::BOTTOM_LEFT, u"BOTTOM_LEFT"},
+    {views::BubbleBorder::Arrow::BOTTOM_RIGHT, u"BOTTOM_RIGHT"},
+    {views::BubbleBorder::Arrow::LEFT_TOP, u"LEFT_TOP"},
+    {views::BubbleBorder::Arrow::RIGHT_TOP, u"RIGHT_TOP"},
+    {views::BubbleBorder::Arrow::LEFT_BOTTOM, u"LEFT_BOTTOM"},
+    {views::BubbleBorder::Arrow::RIGHT_BOTTOM, u"RIGHT_BOTTOM"},
+    {views::BubbleBorder::Arrow::TOP_CENTER, u"TOP_CENTER"},
+    {views::BubbleBorder::Arrow::BOTTOM_CENTER, u"BOTTOM_CENTER"},
+    {views::BubbleBorder::Arrow::LEFT_CENTER, u"LEFT_CENTER"},
+    {views::BubbleBorder::Arrow::RIGHT_CENTER, u"RIGHT_CENTER"},
+    {views::BubbleBorder::Arrow::NONE, u"NONE"},
+    {views::BubbleBorder::Arrow::FLOAT, u"FLOAT"})
 
 #define OP(enum_name) \
   { ui::NativeTheme::enum_name, base::ASCIIToUTF16(#enum_name) }

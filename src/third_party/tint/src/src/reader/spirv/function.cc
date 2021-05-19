@@ -16,65 +16,23 @@
 
 #include <algorithm>
 #include <array>
-#include <cassert>
-#include <sstream>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
-#include <vector>
 
-#include "source/opt/basic_block.h"
-#include "source/opt/function.h"
-#include "source/opt/instruction.h"
-#include "source/opt/module.h"
-#include "spirv/unified1/GLSL.std.450.h"
-#include "src/ast/array_accessor_expression.h"
 #include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
 #include "src/ast/bitcast_expression.h"
-#include "src/ast/bool_literal.h"
 #include "src/ast/break_statement.h"
-#include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
-#include "src/ast/case_statement.h"
 #include "src/ast/continue_statement.h"
 #include "src/ast/discard_statement.h"
-#include "src/ast/else_statement.h"
 #include "src/ast/fallthrough_statement.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
 #include "src/ast/if_statement.h"
 #include "src/ast/loop_statement.h"
-#include "src/ast/member_accessor_expression.h"
 #include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
 #include "src/ast/stage_decoration.h"
-#include "src/ast/storage_class.h"
 #include "src/ast/switch_statement.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/uint_literal.h"
-#include "src/ast/unary_op.h"
 #include "src/ast/unary_op_expression.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/reader/spirv/construct.h"
-#include "src/reader/spirv/fail_stream.h"
-#include "src/reader/spirv/parser_impl.h"
-#include "src/semantic/intrinsic.h"
-#include "src/type/bool_type.h"
 #include "src/type/depth_texture_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/pointer_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/storage_texture_type.h"
-#include "src/type/texture_type.h"
-#include "src/type/type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type/void_type.h"
 
 // Terms:
 //    CFG: the control flow graph of the function, where basic blocks are the
@@ -726,9 +684,6 @@ DefInfo::DefInfo(const spvtools::opt::Instruction& def_inst,
 
 DefInfo::~DefInfo() = default;
 
-bool StatementBuilder::IsValid() const {
-  return true;
-}
 ast::Node* StatementBuilder::Clone(CloneContext*) const {
   return nullptr;
 }
@@ -779,7 +734,7 @@ FunctionEmitter::StatementBlock::StatementBlock(StatementBlock&& other) =
 FunctionEmitter::StatementBlock::~StatementBlock() = default;
 
 void FunctionEmitter::StatementBlock::Finalize(ProgramBuilder* pb) {
-  assert(!finalized_ /* Finalize() must only be called once */);
+  TINT_ASSERT(!finalized_ /* Finalize() must only be called once */);
 
   for (size_t i = 0; i < statements_.size(); i++) {
     if (auto* sb = statements_[i]->As<StatementBuilder>()) {
@@ -795,7 +750,7 @@ void FunctionEmitter::StatementBlock::Finalize(ProgramBuilder* pb) {
 }
 
 void FunctionEmitter::StatementBlock::Add(ast::Statement* statement) {
-  assert(!finalized_ /* Add() must not be called after Finalize() */);
+  TINT_ASSERT(!finalized_ /* Add() must not be called after Finalize() */);
   statements_.emplace_back(statement);
 }
 
@@ -807,8 +762,8 @@ void FunctionEmitter::PushNewStatementBlock(const Construct* construct,
 
 void FunctionEmitter::PushGuard(const std::string& guard_name,
                                 uint32_t end_id) {
-  assert(!statements_stack_.empty());
-  assert(!guard_name.empty());
+  TINT_ASSERT(!statements_stack_.empty());
+  TINT_ASSERT(!guard_name.empty());
   // Guard control flow by the guard variable.  Introduce a new
   // if-selection with a then-clause ending at the same block
   // as the statement block at the top of the stack.
@@ -825,7 +780,7 @@ void FunctionEmitter::PushGuard(const std::string& guard_name,
 }
 
 void FunctionEmitter::PushTrueGuard(uint32_t end_id) {
-  assert(!statements_stack_.empty());
+  TINT_ASSERT(!statements_stack_.empty());
   const auto& top = statements_stack_.back();
 
   auto* cond = MakeTrue(Source{});
@@ -838,14 +793,14 @@ void FunctionEmitter::PushTrueGuard(uint32_t end_id) {
 }
 
 const ast::StatementList FunctionEmitter::ast_body() {
-  assert(!statements_stack_.empty());
+  TINT_ASSERT(!statements_stack_.empty());
   auto& entry = statements_stack_[0];
   entry.Finalize(&builder_);
   return entry.GetStatements();
 }
 
 ast::Statement* FunctionEmitter::AddStatement(ast::Statement* statement) {
-  assert(!statements_stack_.empty());
+  TINT_ASSERT(!statements_stack_.empty());
   if (statement != nullptr) {
     statements_stack_.back().Add(statement);
   }
@@ -853,9 +808,9 @@ ast::Statement* FunctionEmitter::AddStatement(ast::Statement* statement) {
 }
 
 ast::Statement* FunctionEmitter::LastStatement() {
-  assert(!statements_stack_.empty());
+  TINT_ASSERT(!statements_stack_.empty());
   auto& statement_list = statements_stack_.back().GetStatements();
-  assert(!statement_list.empty());
+  TINT_ASSERT(!statement_list.empty());
   return statement_list.back();
 }
 
@@ -888,10 +843,10 @@ bool FunctionEmitter::Emit() {
 
   auto& statements = statements_stack_[0].GetStatements();
   auto* body = create<ast::BlockStatement>(Source{}, statements);
-  builder_.AST().AddFunction(
-      create<ast::Function>(decl.source, builder_.Symbols().Register(decl.name),
-                            std::move(decl.params), decl.return_type, body,
-                            std::move(decl.decorations)));
+  builder_.AST().AddFunction(create<ast::Function>(
+      decl.source, builder_.Symbols().Register(decl.name),
+      std::move(decl.params), decl.return_type, body,
+      std::move(decl.decorations), ast::DecorationList{}));
 
   // Maintain the invariant by repopulating the one and only element.
   statements_stack_.clear();
@@ -932,7 +887,7 @@ bool FunctionEmitter::ParseFunctionDeclaration(FunctionDeclaration* decl) {
         if (ast_type != nullptr) {
           auto* ast_param = parser_impl_.MakeVariable(
               param->result_id(), ast::StorageClass::kNone, ast_type, true,
-              nullptr, ast::VariableDecorationList{});
+              nullptr, ast::DecorationList{});
           // Parameters are treated as const declarations.
           ast_params.emplace_back(ast_param);
           // The value is accessible by name.
@@ -945,7 +900,7 @@ bool FunctionEmitter::ParseFunctionDeclaration(FunctionDeclaration* decl) {
   if (failed()) {
     return false;
   }
-  ast::FunctionDecorationList decos;
+  ast::DecorationList decos;
   if (ep_info_ != nullptr) {
     decos.emplace_back(create<ast::StageDecoration>(Source{}, ep_info_->stage));
   }
@@ -1266,7 +1221,7 @@ bool FunctionEmitter::LabelControlFlowConstructs() {
   //      block. Also mark the the most recent continue target for which we
   //      haven't reached the backedge block.
 
-  assert(block_order_.size() > 0);
+  TINT_ASSERT(block_order_.size() > 0);
   constructs_.clear();
   const auto entry_id = block_order_[0];
 
@@ -1287,8 +1242,8 @@ bool FunctionEmitter::LabelControlFlowConstructs() {
     // A loop construct is added right after its associated continue construct.
     // In that case, adjust the parent up.
     if (k == Construct::kLoop) {
-      assert(parent);
-      assert(parent->kind == Construct::kContinue);
+      TINT_ASSERT(parent);
+      TINT_ASSERT(parent->kind == Construct::kContinue);
       scope_end_pos = parent->end_pos;
       parent = parent->parent;
     }
@@ -1307,9 +1262,9 @@ bool FunctionEmitter::LabelControlFlowConstructs() {
 
   for (uint32_t i = 0; i < block_order_.size(); ++i) {
     const auto block_id = block_order_[i];
-    assert(block_id > 0);
+    TINT_ASSERT(block_id > 0);
     auto* block_info = GetBlockInfo(block_id);
-    assert(block_info);
+    TINT_ASSERT(block_info);
 
     if (enclosing.empty()) {
       return Fail() << "internal error: too many merge blocks before block "
@@ -1366,7 +1321,7 @@ bool FunctionEmitter::LabelControlFlowConstructs() {
       }
     }
 
-    assert(top);
+    TINT_ASSERT(top);
     block_info->construct = top;
   }
 
@@ -1575,9 +1530,9 @@ bool FunctionEmitter::ClassifyCFGEdges() {
   //    NEC(S) is the parent of NEC(T).
 
   for (const auto src : block_order_) {
-    assert(src > 0);
+    TINT_ASSERT(src > 0);
     auto* src_info = GetBlockInfo(src);
-    assert(src_info);
+    TINT_ASSERT(src_info);
     const auto src_pos = src_info->pos;
     const auto& src_construct = *(src_info->construct);
 
@@ -1615,7 +1570,7 @@ bool FunctionEmitter::ClassifyCFGEdges() {
     for (const auto dest : successors) {
       const auto* dest_info = GetBlockInfo(dest);
       // We've already checked terminators are valid.
-      assert(dest_info);
+      TINT_ASSERT(dest_info);
       const auto dest_pos = dest_info->pos;
 
       // Insert the edge kind entry and keep a handle to update
@@ -1640,7 +1595,7 @@ bool FunctionEmitter::ClassifyCFGEdges() {
                         << " (violates post-dominance rule)";
         }
         const auto* ct_info = GetBlockInfo(continue_construct->begin_id);
-        assert(ct_info);
+        TINT_ASSERT(ct_info);
         if (ct_info->header_for_continue != dest) {
           return Fail()
                  << "Invalid backedge (" << src << "->" << dest
@@ -1919,7 +1874,7 @@ bool FunctionEmitter::FindIfSelectionInternalHeaders() {
       // The first clause might be a then-clause or an else-clause.
       const auto second_head = std::max(true_head_pos, false_head_pos);
       const auto end_first_clause_pos = second_head - 1;
-      assert(end_first_clause_pos < block_order_.size());
+      TINT_ASSERT(end_first_clause_pos < block_order_.size());
       const auto end_first_clause = block_order_[end_first_clause_pos];
       uint32_t premerge_id = 0;
       uint32_t if_break_id = 0;
@@ -2006,7 +1961,7 @@ bool FunctionEmitter::EmitFunctionVariables() {
     }
     auto* var = parser_impl_.MakeVariable(
         inst.result_id(), ast::StorageClass::kFunction, var_store_type, false,
-        constructor, ast::VariableDecorationList{});
+        constructor, ast::DecorationList{});
     auto* var_decl_stmt = create<ast::VariableDeclStatement>(Source{}, var);
     AddStatement(var_decl_stmt);
     // Save this as an already-named value.
@@ -2091,6 +2046,13 @@ TypedExpression FunctionEmitter::MakeExpression(uint32_t id) {
                              create<ast::IdentifierExpression>(
                                  Source{}, builder_.Symbols().Register(name))};
     }
+    case SpvOpUndef:
+      // Substitute a null value for undef.
+      // This case occurs when OpUndef appears at module scope, as if it were
+      // a constant.
+      return parser_impl_.MakeNullExpression(
+          parser_impl_.ConvertType(inst->type_id()));
+
     default:
       break;
   }
@@ -2110,15 +2072,15 @@ bool FunctionEmitter::EmitFunctionBodyStatements() {
 
   // Upon entry, the statement stack has one entry representing the whole
   // function.
-  assert(!constructs_.empty());
+  TINT_ASSERT(!constructs_.empty());
   Construct* function_construct = constructs_[0].get();
-  assert(function_construct != nullptr);
-  assert(function_construct->kind == Construct::kFunction);
+  TINT_ASSERT(function_construct != nullptr);
+  TINT_ASSERT(function_construct->kind == Construct::kFunction);
   // Make the first entry valid by filling in the construct field, which
   // had not been computed at the time the entry was first created.
   // TODO(dneto): refactor how the first construct is created vs.
   // this statements stack entry is populated.
-  assert(statements_stack_.size() == 1);
+  TINT_ASSERT(statements_stack_.size() == 1);
   statements_stack_[0].SetConstruct(function_construct);
 
   for (auto block_id : block_order()) {
@@ -2308,8 +2270,8 @@ bool FunctionEmitter::EmitBasicBlock(const BlockInfo& block_info) {
 bool FunctionEmitter::EmitIfStart(const BlockInfo& block_info) {
   // The block is the if-header block.  So its construct is the if construct.
   auto* construct = block_info.construct;
-  assert(construct->kind == Construct::kIfSelection);
-  assert(construct->begin_id == block_info.id);
+  TINT_ASSERT(construct->kind == Construct::kIfSelection);
+  TINT_ASSERT(construct->begin_id == block_info.id);
 
   const uint32_t true_head = block_info.true_head;
   const uint32_t false_head = block_info.false_head;
@@ -2325,7 +2287,7 @@ bool FunctionEmitter::EmitIfStart(const BlockInfo& block_info) {
         parser_impl_.Bool(),                      // type
         false,                                    // is_const
         MakeTrue(Source{}),                       // constructor
-        ast::VariableDecorationList{});           // decorations
+        ast::DecorationList{});                   // decorations
     auto* guard_decl = create<ast::VariableDeclStatement>(Source{}, guard_var);
     AddStatement(guard_decl);
   }
@@ -2434,8 +2396,8 @@ bool FunctionEmitter::EmitIfStart(const BlockInfo& block_info) {
 bool FunctionEmitter::EmitSwitchStart(const BlockInfo& block_info) {
   // The block is the if-header block.  So its construct is the if construct.
   auto* construct = block_info.construct;
-  assert(construct->kind == Construct::kSwitchSelection);
-  assert(construct->begin_id == block_info.id);
+  TINT_ASSERT(construct->kind == Construct::kSwitchSelection);
+  TINT_ASSERT(construct->begin_id == block_info.id);
   const auto* branch = block_info.basic_block->terminator();
 
   const auto selector_id = branch->GetSingleWordInOperand(0);
@@ -2481,7 +2443,7 @@ bool FunctionEmitter::EmitSwitchStart(const BlockInfo& block_info) {
       clause_heads[w] = clause_heads[r];
     }
     // We know it's not empty because it always has at least a default clause.
-    assert(!clause_heads.empty());
+    TINT_ASSERT(!clause_heads.empty());
     clause_heads.resize(w + 1);
   }
 
@@ -2659,8 +2621,14 @@ bool FunctionEmitter::EmitNormalTerminator(const BlockInfo& block_info) {
       return true;
     }
     case SpvOpSwitch:
-      // TODO(dneto)
-      break;
+      // An OpSelectionMerge must precede an OpSwitch.  That is clarified
+      // in the resolution to Khronos-internal SPIR-V issue 115.
+      // A new enough version of the SPIR-V validator checks this case.
+      // But issue an error in this case, as a defensive measure.
+      return Fail() << "invalid structured control flow: found an OpSwitch "
+                       "that is not preceded by an "
+                       "OpSelectionMerge: "
+                    << terminator.PrettyPrint();
     default:
       break;
   }
@@ -2684,9 +2652,9 @@ ast::Statement* FunctionEmitter::MakeBranchDetailed(
       // Unless forced, don't bother with a break at the end of a case/default
       // clause.
       const auto header = dest_info.header_for_merge;
-      assert(header != 0);
+      TINT_ASSERT(header != 0);
       const auto* exiting_construct = GetBlockInfo(header)->construct;
-      assert(exiting_construct->kind == Construct::kSwitchSelection);
+      TINT_ASSERT(exiting_construct->kind == Construct::kSwitchSelection);
       const auto candidate_next_case_pos = src_info.pos + 1;
       // Leaving the last block from the last case?
       if (candidate_next_case_pos == dest_info.pos) {
@@ -2830,22 +2798,22 @@ bool FunctionEmitter::EmitStatementsInBasicBlock(const BlockInfo& block_info,
   // Emit declarations of hoisted variables, in index order.
   for (auto id : sorted_by_index(block_info.hoisted_ids)) {
     const auto* def_inst = def_use_mgr_->GetDef(id);
-    assert(def_inst);
+    TINT_ASSERT(def_inst);
     auto* ast_type =
         RemapStorageClass(parser_impl_.ConvertType(def_inst->type_id()), id);
     AddStatement(create<ast::VariableDeclStatement>(
-        Source{}, parser_impl_.MakeVariable(id, ast::StorageClass::kFunction,
-                                            ast_type, false, nullptr,
-                                            ast::VariableDecorationList{})));
+        Source{},
+        parser_impl_.MakeVariable(id, ast::StorageClass::kFunction, ast_type,
+                                  false, nullptr, ast::DecorationList{})));
     // Save this as an already-named value.
     identifier_values_.insert(id);
   }
   // Emit declarations of phi state variables, in index order.
   for (auto id : sorted_by_index(block_info.phis_needing_state_vars)) {
     const auto* def_inst = def_use_mgr_->GetDef(id);
-    assert(def_inst);
+    TINT_ASSERT(def_inst);
     const auto phi_var_name = GetDefInfo(id)->phi_var;
-    assert(!phi_var_name.empty());
+    TINT_ASSERT(!phi_var_name.empty());
     auto* var = create<ast::Variable>(
         Source{},                                       // source
         builder_.Symbols().Register(phi_var_name),      // symbol
@@ -2853,7 +2821,7 @@ bool FunctionEmitter::EmitStatementsInBasicBlock(const BlockInfo& block_info,
         parser_impl_.ConvertType(def_inst->type_id()),  // type
         false,                                          // is_const
         nullptr,                                        // constructor
-        ast::VariableDecorationList{});                 // decorations
+        ast::DecorationList{});                         // decorations
     AddStatement(create<ast::VariableDeclStatement>(Source{}, var));
   }
 
@@ -2904,7 +2872,7 @@ bool FunctionEmitter::EmitConstDefinition(
   }
   auto* ast_const = parser_impl_.MakeVariable(
       inst.result_id(), ast::StorageClass::kNone, ast_expr.type, true,
-      ast_expr.expr, ast::VariableDecorationList{});
+      ast_expr.expr, ast::DecorationList{});
   if (!ast_const) {
     return false;
   }
@@ -3098,7 +3066,7 @@ bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
       }
       auto expr = MakeExpression(ptr_id);
       // The load result type is the pointee type of its operand.
-      assert(expr.type->Is<type::Pointer>());
+      TINT_ASSERT(expr.type->Is<type::Pointer>());
       expr.type = expr.type->As<type::Pointer>()->type();
       return EmitConstDefOrWriteToHoistedVar(inst, expr);
     }
@@ -3141,6 +3109,9 @@ bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
 
     case SpvOpFunctionCall:
       return EmitFunctionCall(inst);
+
+    case SpvOpControlBarrier:
+      return EmitControlBarrier(inst);
 
     case SpvOpExtInst:
       if (parser_impl_.IsIgnoredExtendedInstruction(inst)) {
@@ -3198,7 +3169,8 @@ TypedExpression FunctionEmitter::MaybeEmitCombinatorialValue(
   auto binary_op = ConvertBinaryOp(opcode);
   if (binary_op != ast::BinaryOp::kNone) {
     auto arg0 = MakeOperand(inst, 0);
-    auto arg1 = MakeOperand(inst, 1);
+    auto arg1 = parser_impl_.RectifySecondOperandSignedness(
+        inst, arg0.type, MakeOperand(inst, 1));
     auto* binary_expr = create<ast::BinaryExpression>(Source{}, binary_op,
                                                       arg0.expr, arg1.expr);
     TypedExpression result{ast_type, binary_expr};
@@ -3294,7 +3266,7 @@ TypedExpression FunctionEmitter::MaybeEmitCombinatorialValue(
 
   if (opcode == SpvOpUndef) {
     // Replace undef with the null value.
-    return {ast_type, parser_impl_.MakeNullValue(ast_type)};
+    return parser_impl_.MakeNullExpression(ast_type);
   }
 
   if (opcode == SpvOpSelect) {
@@ -3578,8 +3550,8 @@ TypedExpression FunctionEmitter::MakeAccessChain(
     const auto pointer_type_id =
         type_mgr_->FindPointerToType(pointee_type_id, storage_class);
     auto* ast_pointer_type = parser_impl_.ConvertType(pointer_type_id);
-    assert(ast_pointer_type);
-    assert(ast_pointer_type->Is<type::Pointer>());
+    TINT_ASSERT(ast_pointer_type);
+    TINT_ASSERT(ast_pointer_type->Is<type::Pointer>());
     current_expr = TypedExpression{ast_pointer_type, next_expr};
   }
   return current_expr;
@@ -3774,7 +3746,7 @@ TypedExpression FunctionEmitter::MakeVectorShuffle(
           source, MakeExpression(vec0_id).expr, Swizzle(index)));
     } else if (index < vec0_len + vec1_len) {
       const auto sub_index = index - vec0_len;
-      assert(sub_index < kMaxVectorLen);
+      TINT_ASSERT(sub_index < kMaxVectorLen);
       values.emplace_back(create<ast::MemberAccessorExpression>(
           source, MakeExpression(vec1_id).expr, Swizzle(sub_index)));
     } else if (index == 0xFFFFFFFF) {
@@ -4073,7 +4045,7 @@ const Construct* FunctionEmitter::GetEnclosingScope(uint32_t first_pos,
                                                     uint32_t last_pos) const {
   const auto* enclosing_construct =
       GetBlockInfo(block_order_[first_pos])->construct;
-  assert(enclosing_construct != nullptr);
+  TINT_ASSERT(enclosing_construct != nullptr);
   // Constructs are strictly nesting, so follow parent pointers
   while (enclosing_construct &&
          !enclosing_construct->ScopeContainsPos(last_pos)) {
@@ -4085,7 +4057,7 @@ const Construct* FunctionEmitter::GetEnclosingScope(uint32_t first_pos,
         sibling_loop ? sibling_loop : enclosing_construct->parent;
   }
   // At worst, we go all the way out to the function construct.
-  assert(enclosing_construct != nullptr);
+  TINT_ASSERT(enclosing_construct != nullptr);
   return enclosing_construct;
 }
 
@@ -4152,6 +4124,9 @@ bool FunctionEmitter::EmitFunctionCall(const spvtools::opt::Instruction& inst) {
   for (uint32_t iarg = 1; iarg < inst.NumInOperands(); ++iarg) {
     params.emplace_back(MakeOperand(inst, iarg).expr);
   }
+  if (failed()) {
+    return false;
+  }
   auto* call_expr =
       create<ast::CallExpression>(Source{}, function, std::move(params));
   auto* result_type = parser_impl_.ConvertType(inst.type_id());
@@ -4166,6 +4141,53 @@ bool FunctionEmitter::EmitFunctionCall(const spvtools::opt::Instruction& inst) {
   }
 
   return EmitConstDefOrWriteToHoistedVar(inst, {result_type, call_expr});
+}
+
+bool FunctionEmitter::EmitControlBarrier(
+    const spvtools::opt::Instruction& inst) {
+  uint32_t operands[3];
+  for (int i = 0; i < 3; i++) {
+    if (auto* op = MakeOperand(inst, i).expr) {
+      auto* lit = As<ast::ScalarConstructorExpression>(op)->literal();
+      if (auto* int_lit = lit->As<ast::IntLiteral>()) {
+        operands[i] = int_lit->value_as_u32();
+        continue;
+      }
+    }
+    return Fail() << "invalid or missing operands for control barrier";
+  }
+
+  uint32_t execution = operands[0];
+  uint32_t memory = operands[1];
+  uint32_t semantics = operands[2];
+
+  if (execution != SpvScopeWorkgroup) {
+    return Fail() << "unsupported control barrier execution scope: "
+                  << "expected Workgroup (2), got: " << execution;
+  }
+  if (semantics & SpvMemorySemanticsAcquireReleaseMask) {
+    semantics &= ~SpvMemorySemanticsAcquireReleaseMask;
+  } else {
+    return Fail() << "control barrier semantics requires acquire and release";
+  }
+  if (semantics & SpvMemorySemanticsWorkgroupMemoryMask) {
+    if (memory != SpvScopeWorkgroup) {
+      return Fail() << "workgroupBarrier requires workgroup memory scope";
+    }
+    AddStatement(create<ast::CallStatement>(builder_.Call("workgroupBarrier")));
+    semantics &= ~SpvMemorySemanticsWorkgroupMemoryMask;
+  }
+  if (semantics & SpvMemorySemanticsUniformMemoryMask) {
+    if (memory != SpvScopeDevice) {
+      return Fail() << "storageBarrier requires device memory scope";
+    }
+    AddStatement(create<ast::CallStatement>(builder_.Call("storageBarrier")));
+    semantics &= ~SpvMemorySemanticsUniformMemoryMask;
+  }
+  if (semantics) {
+    return Fail() << "unsupported control barrier semantics: " << semantics;
+  }
+  return true;
 }
 
 TypedExpression FunctionEmitter::MakeIntrinsicCall(
@@ -4945,7 +4967,7 @@ bool FunctionEmitter::MakeVectorInsertDynamic(
 
   auto* temp_var = create<ast::Variable>(
       Source{}, registered_temp_name, ast::StorageClass::kFunction, ast_type,
-      false, src_vector.expr, ast::VariableDecorationList{});
+      false, src_vector.expr, ast::DecorationList{});
   AddStatement(create<ast::VariableDeclStatement>(Source{}, temp_var));
 
   auto* lhs = create<ast::ArrayAccessorExpression>(
@@ -4991,7 +5013,7 @@ bool FunctionEmitter::MakeCompositeInsert(
 
   auto* temp_var = create<ast::Variable>(
       Source{}, registered_temp_name, ast::StorageClass::kFunction, ast_type,
-      false, src_composite.expr, ast::VariableDecorationList{});
+      false, src_composite.expr, ast::DecorationList{});
   AddStatement(create<ast::VariableDeclStatement>(Source{}, temp_var));
 
   TypedExpression seed_expr{ast_type, create<ast::IdentifierExpression>(
@@ -5019,7 +5041,7 @@ FunctionEmitter::FunctionDeclaration::~FunctionDeclaration() = default;
 }  // namespace reader
 }  // namespace tint
 
-TINT_INSTANTIATE_CLASS_ID(tint::reader::spirv::StatementBuilder);
-TINT_INSTANTIATE_CLASS_ID(tint::reader::spirv::SwitchStatementBuilder);
-TINT_INSTANTIATE_CLASS_ID(tint::reader::spirv::IfStatementBuilder);
-TINT_INSTANTIATE_CLASS_ID(tint::reader::spirv::LoopStatementBuilder);
+TINT_INSTANTIATE_TYPEINFO(tint::reader::spirv::StatementBuilder);
+TINT_INSTANTIATE_TYPEINFO(tint::reader::spirv::SwitchStatementBuilder);
+TINT_INSTANTIATE_TYPEINFO(tint::reader::spirv::IfStatementBuilder);
+TINT_INSTANTIATE_TYPEINFO(tint::reader::spirv::LoopStatementBuilder);

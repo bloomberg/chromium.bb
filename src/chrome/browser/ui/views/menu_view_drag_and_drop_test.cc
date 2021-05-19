@@ -114,7 +114,7 @@ bool TestTargetView::AreDropTypesRequired() {
 }
 
 bool TestTargetView::CanDrop(const OSExchangeData& data) {
-  base::string16 contents;
+  std::u16string contents;
   return data.GetString(&contents) &&
          contents == base::ASCIIToUTF16(kTestNestedDragData);
 }
@@ -201,13 +201,12 @@ class MenuViewDragAndDropTest : public MenuTestBase,
 void MenuViewDragAndDropTest::BuildMenu(views::MenuItemView* menu) {
   // Build a menu item that has a nested view that supports its own drag and
   // drop...
-  views::MenuItemView* menu_item_view =
-      menu->AppendMenuItem(1, base::ASCIIToUTF16("item 1"));
+  views::MenuItemView* menu_item_view = menu->AppendMenuItem(1, u"item 1");
   target_view_ = new TestTargetView();
   menu_item_view->AddChildView(target_view_);
   // ... as well as two other, normal items.
-  menu->AppendMenuItem(2, base::ASCIIToUTF16("item 2"));
-  menu->AppendMenuItem(3, base::ASCIIToUTF16("item 3"));
+  menu->AppendMenuItem(2, u"item 2");
+  menu->AppendMenuItem(3, u"item 3");
 }
 
 void MenuViewDragAndDropTest::DoTestWithMenuOpen() {
@@ -259,7 +258,7 @@ bool MenuViewDragAndDropTest::AreDropTypesRequired(views::MenuItemView* menu) {
 
 bool MenuViewDragAndDropTest::CanDrop(views::MenuItemView* menu,
                                       const ui::OSExchangeData& data) {
-  base::string16 contents;
+  std::u16string contents;
   return data.GetString(&contents) &&
          contents == base::ASCIIToUTF16(kTestTopLevelDragData);
 }

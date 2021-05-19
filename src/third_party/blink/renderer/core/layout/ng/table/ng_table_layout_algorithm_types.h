@@ -24,7 +24,8 @@ class NGLayoutInputNode;
 // Define constraint classes for NGTableLayoutAlgorithm.
 class CORE_EXPORT NGTableTypes {
  public:
-  static constexpr LayoutUnit kTableMaxInlineSize = LayoutUnit::Max();
+  static constexpr LayoutUnit kTableMaxInlineSize =
+      LayoutUnit(static_cast<uint64_t>(1000000));
 
   // Inline constraint for a single cell.
   // Takes into account the cell style, and min/max content-sizes.
@@ -74,6 +75,19 @@ class CORE_EXPORT NGTableTypes {
           is_table_fixed(is_table_fixed),
           is_mergeable(is_mergeable) {}
     Column() = default;
+
+    bool operator==(const Column& other) const {
+      return min_inline_size == other.min_inline_size &&
+             max_inline_size == other.max_inline_size &&
+             percent == other.percent &&
+             percent_border_padding == other.percent_border_padding &&
+             is_constrained == other.is_constrained &&
+             is_collapsed == other.is_collapsed &&
+             is_table_fixed == other.is_table_fixed &&
+             is_mergeable == other.is_mergeable;
+    }
+    bool operator!=(const Column& other) const { return !(*this == other); }
+
     // These members are initialized from <col> and <colgroup>, then they
     // accumulate data from |CellInlineConstraint|s.
     base::Optional<LayoutUnit> min_inline_size;
@@ -208,8 +222,7 @@ class CORE_EXPORT NGTableTypes {
       WritingMode table_writing_mode,
       bool is_fixed_layout,
       const NGBoxStrut& cell_border,
-      const NGBoxStrut& cell_padding,
-      bool has_collapsed_borders);
+      const NGBoxStrut& cell_padding);
 
   static Section CreateSection(const NGLayoutInputNode&,
                                wtf_size_t start_row,

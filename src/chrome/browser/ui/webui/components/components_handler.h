@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/update_client/update_client.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -43,8 +42,8 @@ class ComponentsHandler : public content::WebUIMessageHandler,
   void OnEvent(Events event, const std::string& id) override;
 
  private:
-  static base::string16 ComponentEventToString(Events event);
-  static base::string16 ServiceStatusToString(
+  static std::u16string ComponentEventToString(Events event);
+  static std::u16string ServiceStatusToString(
       update_client::ComponentState state);
 
   std::unique_ptr<base::ListValue> LoadComponents();

@@ -21,18 +21,18 @@ found in the LICENSE file.
  * are no pointers in memory which point to explicitly freed objects before
  * actually releasing their memory.
  *
- * pa:pcscan:<process_name>
+ * pa:pcscan:<process_name>:<scanner|mutator>
  * ========================
  * The overall time spent on scanning the partition alloc heap for a specific
- * process (can be either 'browser_process' or 'renderer_processes').
+ * process either in the scanner or mutator thread (process_name can be either 'browser_process' or 'renderer_processes').
  *
- * pa:pcscan:<process_name>:<phase>
+ * pa:pcscan:<process_name>:<scanner|mutator>:<phase>
  * ========================
  * Time spent on a certain PCScan phase ('clear', 'scan' or 'sweep').
  */
 tr.exportTo('tr.metrics.pa', function() {
   function pcscanMetric(histograms, model) {
-    function createNumericForProcess(name, processName, desc) {
+    function createNumericForProcess(name, processName, context, desc) {
       function createNumericForEventTime(name, desc) {
         const n = new tr.v.Histogram(name,
             tr.b.Unit.byName.timeDurationInMs_smallerIsBetter);
@@ -46,21 +46,27 @@ tr.exportTo('tr.metrics.pa', function() {
           sum: true});
         return n;
       }
-      const scheme = ['pa', 'pcscan', processName];
+      const scheme = ['pa', 'pcscan', processName, context];
       if (name) scheme.push(name);
       return createNumericForEventTime(scheme.join(':'), desc);
     }
 
     function createHistsForProcess(processName) {
       return {
-        scan: createNumericForProcess('scan', processName,
-            'Time for scanning heap for quarantine pointers'),
-        sweep: createNumericForProcess('sweep', processName,
+        scanner_scan: createNumericForProcess('scan', processName, 'scanner',
+            'Time for scanning heap for quarantine pointers on concurrent threads'),
+        scanner_sweep: createNumericForProcess('sweep', processName, 'scanner',
             'Time for sweeping quarantine'),
-        clear: createNumericForProcess('clear', processName,
+        scanner_clear: createNumericForProcess('clear', processName, 'scanner',
             'Time for clearing quarantine entries'),
-        total: createNumericForProcess('', processName,
-            'Total time for PCScan execution')
+        scanner_total: createNumericForProcess('', processName, 'scanner',
+            'Total time for PCScan execution on concurrent threads'),
+        mutator_scan: createNumericForProcess('scan', processName, 'mutator',
+            'Time for scanning heap for quarantine pointers on mutator threads'),
+        mutator_clear: createNumericForProcess('clear', processName, 'mutator',
+            'Time for clearing heap quarantine entries on mutator threads'),
+        mutator_total: createNumericForProcess('', processName, 'mutator',
+            'Total time for PCScan execution on mutator threads (inside safepoints)'),
       };
     }
 
@@ -68,14 +74,20 @@ tr.exportTo('tr.metrics.pa', function() {
       if (!(slice instanceof tr.model.ThreadSlice)) return;
       if (slice.category !== 'partition_alloc') return;
 
-      if (slice.title === 'PCScan.Scan') {
-        hists.scan.addSample(slice.duration);
-      } else if (slice.title === 'PCScan.Sweep') {
-        hists.sweep.addSample(slice.duration);
-      } else if (slice.title === 'PCScan.Clear') {
-        hists.clear.addSample(slice.duration);
-      } else if (slice.title === 'PCScan') {
-        hists.total.addSample(slice.duration);
+      if (slice.title === 'PCScan.Scanner.Scan') {
+        hists.scanner_scan.addSample(slice.duration);
+      } else if (slice.title === 'PCScan.Scanner.Sweep') {
+        hists.scanner_sweep.addSample(slice.duration);
+      } else if (slice.title === 'PCScan.Scanner.Clear') {
+        hists.scanner_clear.addSample(slice.duration);
+      } else if (slice.title === 'PCScan.Scanner') {
+        hists.scanner_total.addSample(slice.duration);
+      } else if (slice.title === 'PCScan.Mutator.Scan') {
+        hists.mutator_scan.addSample(slice.duration);
+      } else if (slice.title === 'PCScan.Mutator.Clear') {
+        hists.mutator_clear.addSample(slice.duration);
+      } else if (slice.title === 'PCScan.Mutator') {
+        hists.mutator_total.addSample(slice.duration);
       }
     }
 

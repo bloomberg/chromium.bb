@@ -77,28 +77,28 @@ int TranslateBubbleModelImpl::GetNumberOfTargetLanguages() const {
   return ui_delegate_->GetNumberOfLanguages() - 1;
 }
 
-base::string16 TranslateBubbleModelImpl::GetSourceLanguageNameAt(
+std::u16string TranslateBubbleModelImpl::GetSourceLanguageNameAt(
     int index) const {
   return ui_delegate_->GetLanguageNameAt(index);
 }
 
-base::string16 TranslateBubbleModelImpl::GetTargetLanguageNameAt(
+std::u16string TranslateBubbleModelImpl::GetTargetLanguageNameAt(
     int index) const {
   // Add 1 to account for unknown language option at index 0 in
   // TranslateUIDelegate language list.
   return ui_delegate_->GetLanguageNameAt(index + 1);
 }
 
-std::string TranslateBubbleModelImpl::GetOriginalLanguageCode() const {
-  return ui_delegate_->GetOriginalLanguageCode();
+std::string TranslateBubbleModelImpl::GetSourceLanguageCode() const {
+  return ui_delegate_->GetSourceLanguageCode();
 }
 
-int TranslateBubbleModelImpl::GetOriginalLanguageIndex() const {
-  return ui_delegate_->GetOriginalLanguageIndex();
+int TranslateBubbleModelImpl::GetSourceLanguageIndex() const {
+  return ui_delegate_->GetSourceLanguageIndex();
 }
 
-void TranslateBubbleModelImpl::UpdateOriginalLanguageIndex(int index) {
-  ui_delegate_->UpdateOriginalLanguageIndex(index);
+void TranslateBubbleModelImpl::UpdateSourceLanguageIndex(int index) {
+  ui_delegate_->UpdateSourceLanguageIndex(index);
 }
 
 int TranslateBubbleModelImpl::GetTargetLanguageIndex() const {
@@ -165,12 +165,18 @@ void TranslateBubbleModelImpl::OnBubbleClosing() {
 }
 
 bool TranslateBubbleModelImpl::IsPageTranslatedInCurrentLanguages() const {
-  const translate::LanguageState& language_state =
+  const translate::LanguageState* language_state =
       ui_delegate_->GetLanguageState();
-  return ui_delegate_->GetOriginalLanguageCode() ==
-             language_state.original_language() &&
-         ui_delegate_->GetTargetLanguageCode() ==
-             language_state.current_language();
+  if (language_state) {
+    return ui_delegate_->GetSourceLanguageCode() ==
+               language_state->original_language() &&
+           ui_delegate_->GetTargetLanguageCode() ==
+               language_state->current_language();
+  }
+  // If LanguageState does not exist, it means that TranslateManager has been
+  // destructed. Return true so that callers don't try to kick off any more
+  // translations.
+  return true;
 }
 
 void TranslateBubbleModelImpl::ReportUIInteraction(

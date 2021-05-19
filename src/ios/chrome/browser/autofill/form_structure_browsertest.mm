@@ -6,6 +6,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
@@ -18,7 +19,8 @@
 #include "components/autofill/core/browser/data_driven_test.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/unique_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
@@ -77,16 +79,18 @@ base::FilePath GetIOSOutputDirectory() {
 
 const std::vector<base::FilePath> GetTestFiles() {
   base::FilePath dir(GetIOSInputDirectory());
-  base::FileEnumerator input_files(dir, false, base::FileEnumerator::FILES);
-  std::vector<base::FilePath> files;
-  for (base::FilePath input_file = input_files.Next(); !input_file.empty();
-       input_file = input_files.Next()) {
-    files.push_back(input_file);
+  std::string input_list_string;
+  if (!base::ReadFileToString(dir.AppendASCII("autofill_test_files"),
+                              &input_list_string)) {
+    return {};
   }
-  std::sort(files.begin(), files.end());
-
-  base::mac::ClearAmIBundledCache();
-  return files;
+  std::vector<base::FilePath> result;
+  for (const base::StringPiece& piece :
+       base::SplitStringPiece(input_list_string, "\n", base::TRIM_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    result.push_back(dir.AppendASCII(piece));
+  }
+  return result;
 }
 
 }  // namespace
@@ -114,7 +118,7 @@ class FormStructureBrowserTest
 
   // Serializes the given |forms| into a string.
   std::string FormStructuresToString(
-      const std::map<FormRendererId, std::unique_ptr<FormStructure>>& forms);
+      const std::map<FormGlobalId, std::unique_ptr<FormStructure>>& forms);
 
   std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
   AutofillAgent* autofill_agent_;
@@ -146,9 +150,11 @@ FormStructureBrowserTest::FormStructureBrowserTest()
        // TODO(crbug/1165780): Remove once shared labels are launched.
        autofill::features::kAutofillEnableSupportForParsingWithSharedLabels,
        // TODO(crbug.com/1150895) Remove once launched.
-       autofill::features::kAutofillParsingPatternsLanguageDetection},
+       autofill::features::kAutofillParsingPatternsLanguageDetection,
+       // TODO(crbug.com/1190334): Remove once launched.
+       autofill::features::kAutofillParseMerchantPromoCodeFields},
       // Disabled
-      {autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
+      {});
 }
 
 void FormStructureBrowserTest::SetUp() {
@@ -193,7 +199,7 @@ bool FormStructureBrowserTest::LoadHtmlWithoutSubresourcesAndInitRendererIds(
     const std::string& html) {
   bool success = ChromeWebTest::LoadHtmlWithoutSubresources(html);
   if (success)
-    ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+    ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(1);");
   return success;
 }
 
@@ -214,9 +220,9 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
 }
 
 std::string FormStructureBrowserTest::FormStructuresToString(
-    const std::map<FormRendererId, std::unique_ptr<FormStructure>>& forms) {
+    const std::map<FormGlobalId, std::unique_ptr<FormStructure>>& forms) {
   std::string forms_string;
-  // The forms are sorted by renderer ID, which should make the order
+  // The forms are sorted by their global ID, which should make the order
   // deterministic.
   for (const auto& form_kv : forms) {
     const auto* form = form_kv.second.get();
@@ -242,15 +248,17 @@ std::string FormStructureBrowserTest::FormStructuresToString(
       // Normalize the section by replacing the unique but platform-dependent
       // integers in |field->section| with consecutive unique integers.
       size_t last_underscore = section.find_last_of('_');
-      size_t next_dash = section.find_first_of('-', last_underscore);
+      size_t second_last_underscore =
+          section.find_last_of('_', last_underscore - 1);
+      size_t next_dash = section.find_first_of('-', second_last_underscore);
       int new_section_index = static_cast<int>(section_to_index.size() + 1);
       int section_index =
           section_to_index.insert(std::make_pair(section, new_section_index))
               .first->second;
-      if (last_underscore != std::string::npos &&
+      if (second_last_underscore != std::string::npos &&
           next_dash != std::string::npos) {
         section = base::StringPrintf(
-            "%s%d%s", section.substr(0, last_underscore + 1).c_str(),
+            "%s%d%s", section.substr(0, second_last_underscore + 1).c_str(),
             section_index, section.substr(next_dash).c_str());
       }
 

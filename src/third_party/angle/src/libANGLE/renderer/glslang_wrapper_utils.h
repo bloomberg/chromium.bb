@@ -11,17 +11,12 @@
 
 #include <functional>
 
+#include "common/spirv/spirv_types.h"
 #include "libANGLE/renderer/ProgramImpl.h"
 #include "libANGLE/renderer/renderer_utils.h"
 
 namespace rx
 {
-enum class GlslangError
-{
-    InvalidShader,
-    InvalidSpirv,
-};
-
 constexpr gl::ShaderMap<const char *> kDefaultUniformNames = {
     {gl::ShaderType::Vertex, sh::vk::kDefaultUniformsNameVS},
     {gl::ShaderType::TessControl, sh::vk::kDefaultUniformsNameTCS},
@@ -65,19 +60,26 @@ struct GlslangSpirvOptions
     bool removeEarlyFragmentTestsOptimization = false;
     bool removeDebugInfo                      = false;
     bool isTransformFeedbackStage             = false;
+    bool isTransformFeedbackEmulated          = false;
 };
-
-using SpirvBlob = std::vector<uint32_t>;
-
-using GlslangErrorCallback = std::function<angle::Result(GlslangError)>;
 
 struct ShaderInterfaceVariableXfbInfo
 {
     static constexpr uint32_t kInvalid = std::numeric_limits<uint32_t>::max();
 
+    // Used by both extension and emulation
     uint32_t buffer = kInvalid;
     uint32_t offset = kInvalid;
     uint32_t stride = kInvalid;
+
+    // Used only by emulation (array index support is missing from VK_EXT_transform_feedback)
+    uint32_t arraySize   = kInvalid;
+    uint32_t columnCount = kInvalid;
+    uint32_t rowCount    = kInvalid;
+    uint32_t arrayIndex  = kInvalid;
+    GLenum componentType = GL_FLOAT;
+    // If empty, the whole array is captured.  Otherwise only the specified members are captured.
+    std::vector<ShaderInterfaceVariableXfbInfo> arrayElements;
 };
 
 // Information for each shader interface variable.  Not all fields are relevant to each shader
@@ -160,22 +162,11 @@ class ShaderInterfaceVariableInfoMap final : angle::NonCopyable
     gl::ShaderMap<VariableNameToInfoMap> mData;
 };
 
-void GlslangInitialize();
-void GlslangRelease();
-
 bool GetImageNameWithoutIndices(std::string *name);
 
-// Get the mapped sampler name after the source is transformed by GlslangGetShaderSource()
+// Get the mapped sampler name.
 std::string GlslangGetMappedSamplerName(const std::string &originalName);
 std::string GetXfbBufferName(const uint32_t bufferIndex);
-
-// NOTE: options.emulateTransformFeedback is ignored in this case. It is assumed to be always true.
-void GlslangGenTransformFeedbackEmulationOutputs(
-    const GlslangSourceOptions &options,
-    const gl::ProgramState &programState,
-    GlslangProgramInterfaceInfo *programInterfaceInfo,
-    std::string *vertexShader,
-    ShaderInterfaceVariableInfoMap *variableInfoMapOut);
 
 void GlslangAssignLocations(const GlslangSourceOptions &options,
                             const gl::ProgramState &programState,
@@ -186,33 +177,24 @@ void GlslangAssignLocations(const GlslangSourceOptions &options,
                             GlslangProgramInterfaceInfo *programInterfaceInfo,
                             ShaderInterfaceVariableInfoMap *variableInfoMapOut);
 
-// Transform the source to include actual binding points for various shader resources (textures,
-// buffers, xfb, etc).  For some variables, these values are instead output to the variableInfoMap
-// to be set during a SPIR-V transformation.  This is a transitory step towards moving all variables
-// to this map, at which point GlslangGetShaderSpirvCode will also be called by this function.
-void GlslangGetShaderSource(const GlslangSourceOptions &options,
-                            const gl::ProgramState &programState,
-                            const gl::ProgramLinkedResources &resources,
-                            GlslangProgramInterfaceInfo *programInterfaceInfo,
-                            gl::ShaderMap<std::string> *shaderSourcesOut,
-                            ShaderInterfaceVariableInfoMap *variableInfoMapOut);
+void GlslangAssignTransformFeedbackLocations(gl::ShaderType shaderType,
+                                             const gl::ProgramState &programState,
+                                             bool isTransformFeedbackStage,
+                                             GlslangProgramInterfaceInfo *programInterfaceInfo,
+                                             ShaderInterfaceVariableInfoMap *variableInfoMapOut);
 
-angle::Result GlslangTransformSpirvCode(const GlslangErrorCallback &callback,
-                                        const GlslangSpirvOptions &options,
+// Retrieves the compiled SPIR-V code for each shader stage, and calls |GlslangAssignLocations|.
+void GlslangGetShaderSpirvCode(const GlslangSourceOptions &options,
+                               const gl::ProgramState &programState,
+                               const gl::ProgramLinkedResources &resources,
+                               GlslangProgramInterfaceInfo *programInterfaceInfo,
+                               gl::ShaderMap<const angle::spirv::Blob *> *spirvBlobsOut,
+                               ShaderInterfaceVariableInfoMap *variableInfoMapOut);
+
+angle::Result GlslangTransformSpirvCode(const GlslangSpirvOptions &options,
                                         const ShaderInterfaceVariableInfoMap &variableInfoMap,
-                                        const SpirvBlob &initialSpirvBlob,
-                                        SpirvBlob *spirvBlobOut);
-
-angle::Result GlslangGetShaderSpirvCode(const GlslangErrorCallback &callback,
-                                        const gl::ShaderBitSet &linkedShaderStages,
-                                        const gl::Caps &glCaps,
-                                        const gl::ShaderMap<std::string> &shaderSources,
-                                        gl::ShaderMap<SpirvBlob> *spirvBlobsOut);
-
-angle::Result GlslangCompileShaderOneOff(const GlslangErrorCallback &callback,
-                                         gl::ShaderType shaderType,
-                                         const std::string &shaderSource,
-                                         SpirvBlob *spirvBlobOut);
+                                        const angle::spirv::Blob &initialSpirvBlob,
+                                        angle::spirv::Blob *spirvBlobOut);
 
 }  // namespace rx
 

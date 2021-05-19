@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
 #include "ash/components/audio/sounds.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
@@ -22,7 +23,6 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/sticky_keys/sticky_keys_controller.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -38,6 +38,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
+#include "chrome/browser/accessibility/soda_installer.h"
 #include "chrome/browser/ash/accessibility/accessibility_extension_loader.h"
 #include "chrome/browser/ash/accessibility/dictation.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
@@ -82,7 +83,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
-#include "extensions/common/host_id.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
@@ -271,8 +271,13 @@ AccessibilityManager::AccessibilityManager() {
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                               content::NotificationService::AllSources());
-  notification_registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                              content::NotificationService::AllSources());
+
+  focus_changed_subscription_ =
+      content::BrowserAccessibilityState::GetInstance()
+          ->RegisterFocusChangedCallback(
+              base::BindRepeating(&AccessibilityManager::OnFocusChangedInPage,
+                                  base::Unretained(this)));
+
   input_method::InputMethodManager::Get()->AddObserver(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
@@ -658,7 +663,7 @@ void AccessibilityManager::OnAccessibilityCommonChanged(
   const bool enabled = profile_->GetPrefs()->GetBoolean(pref_name);
   if (enabled) {
     accessibility_common_extension_loader_->SetProfile(
-        profile_, base::Closure() /* done_callback */);
+        profile_, base::OnceClosure() /* done_callback */);
   }
 
   size_t pref_count = accessibility_common_enabled_features_.count(pref_name);
@@ -843,6 +848,26 @@ bool AccessibilityManager::IsDictationEnabled() const {
                          prefs::kAccessibilityDictationEnabled);
 }
 
+void AccessibilityManager::OnDictationChanged() {
+  OnAccessibilityCommonChanged(prefs::kAccessibilityDictationEnabled);
+  if (!profile_)
+    return;
+
+  // Only need to check SODA installation if offline dictation is enabled.
+  if (!::switches::IsExperimentalAccessibilityDictationOfflineEnabled())
+    return;
+
+  // Note: OnDictationChanged should not be called at start-up or it will
+  // push back SODA deletion each time start-up occurs with dictation disabled.
+  const bool enabled =
+      profile_->GetPrefs()->GetBoolean(prefs::kAccessibilityDictationEnabled);
+  if (!enabled) {
+    speech::SodaInstaller::GetInstance()->SetUninstallTimer(
+        profile_->GetPrefs(), g_browser_process->local_state());
+  }
+  // TODO(crbug.com/1173135): Initialize SODA download when enabled.
+}
+
 void AccessibilityManager::SetFocusHighlightEnabled(bool enabled) {
   if (!profile_)
     return;
@@ -919,7 +944,7 @@ void AccessibilityManager::OnSelectToSpeakChanged() {
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       prefs::kAccessibilitySelectToSpeakEnabled);
   if (enabled)
-    select_to_speak_loader_->SetProfile(profile_, base::Closure());
+    select_to_speak_loader_->SetProfile(profile_, base::OnceClosure());
 
   if (select_to_speak_enabled_ == enabled)
     return;
@@ -974,7 +999,7 @@ void AccessibilityManager::OnSwitchAccessChanged() {
               keyboard::KeyboardEnableFlag::kExtensionEnabled);
     }
 
-    switch_access_loader_->SetProfile(profile_, base::Closure());
+    switch_access_loader_->SetProfile(profile_, base::OnceClosure());
 
     // Make sure we always update the VK state, on every profile transition.
     ChromeKeyboardControllerClient::Get()->SetEnableFlag(
@@ -1109,10 +1134,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   // Clear all dictation state on profile change.
   dictation_.reset();
 
-  // All features supported by accessibility common.
+  // All features supported by accessibility common which don't need
+  // separate pref change handlers.
   static const char* kAccessibilityCommonFeatures[] = {
       prefs::kAccessibilityAutoclickEnabled,
-      prefs::kAccessibilityDictationEnabled,
       prefs::kAccessibilityScreenMagnifierEnabled,
       prefs::kDockedMagnifierEnabled};
 
@@ -1172,6 +1197,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         prefs::kAccessibilitySwitchAccessEnabled,
         base::BindRepeating(&AccessibilityManager::OnSwitchAccessChanged,
                             base::Unretained(this)));
+    pref_change_registrar_->Add(
+        prefs::kAccessibilityDictationEnabled,
+        base::BindRepeating(&AccessibilityManager::OnDictationChanged,
+                            base::Unretained(this)));
 
     for (const std::string& feature : kAccessibilityCommonFeatures) {
       pref_change_registrar_->Add(
@@ -1219,6 +1248,12 @@ void AccessibilityManager::SetProfile(Profile* profile) {
 
   for (const std::string& feature : kAccessibilityCommonFeatures)
     OnAccessibilityCommonChanged(feature);
+  // Dictation is not in kAccessibilityCommonFeatures because it needs to
+  // be handled in OnDictationChanged also. OnDictationChanged will call to
+  // OnAccessibilityCommonChanged. However, OnDictationChanged shouldn't
+  // be called at start-up, so we call OnAccessibilityCommonChanged directly
+  // for dictation.
+  OnAccessibilityCommonChanged(prefs::kAccessibilityDictationEnabled);
 }
 
 void AccessibilityManager::SetProfileByUser(const user_manager::User* user) {
@@ -1352,18 +1387,17 @@ void AccessibilityManager::Observe(
       app_terminating_ = true;
       break;
     }
-    case content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE: {
-      // Avoid unnecessary mojo IPC to ash when focus highlight feature is not
-      // enabled.
-      if (!IsFocusHighlightEnabled())
-        return;
-      content::FocusedNodeDetails* node_details =
-          content::Details<content::FocusedNodeDetails>(details).ptr();
-      AccessibilityController::Get()->SetFocusHighlightRect(
-          node_details->node_bounds_in_screen);
-      break;
-    }
   }
+}
+
+void AccessibilityManager::OnFocusChangedInPage(
+    const content::FocusedNodeDetails& details) {
+  // Avoid unnecessary IPC to ash when focus highlight feature is not enabled.
+  if (!IsFocusHighlightEnabled())
+    return;
+
+  AccessibilityController::Get()->SetFocusHighlightRect(
+      details.node_bounds_in_screen);
 }
 
 void AccessibilityManager::OnBrailleDisplayStateChanged(

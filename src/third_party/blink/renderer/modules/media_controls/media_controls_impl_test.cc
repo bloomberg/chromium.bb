@@ -14,7 +14,6 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/widget/screen_orientation.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
@@ -67,9 +66,9 @@ namespace {
 
 class FakeChromeClient : public EmptyChromeClient {
  public:
-  FakeChromeClient()
-      : screen_info_({.orientation_type =
-                          mojom::blink::ScreenOrientation::kLandscapePrimary}) {
+  FakeChromeClient() {
+    screen_info_.orientation_type =
+        mojom::blink::ScreenOrientation::kLandscapePrimary;
   }
 
   // ChromeClient overrides.
@@ -78,7 +77,7 @@ class FakeChromeClient : public EmptyChromeClient {
   }
 
  private:
-  const ScreenInfo screen_info_;
+  ScreenInfo screen_info_;
 };
 
 class MockWebMediaPlayerForImpl : public EmptyWebMediaPlayer {

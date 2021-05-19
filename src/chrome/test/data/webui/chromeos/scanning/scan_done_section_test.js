@@ -7,7 +7,7 @@ import 'chrome://scanning/scan_done_section.js';
 import {ScanningBrowserProxyImpl} from 'chrome://scanning/scanning_browser_proxy.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.m.js';
+import {flushTasks, isVisible} from '../../test_util.m.js';
 
 import {TestScanningBrowserProxy} from './test_scanning_browser_proxy.js';
 
@@ -82,9 +82,10 @@ export function scanDoneSectionTest() {
       fileNotFoundEventFired = true;
     });
 
-    const lastScannedFilePath = {'path': '/test/path/scan.jpg'};
-    scanningBrowserProxy.setPathToFile(lastScannedFilePath.path);
-    scanDoneSection.lastScannedFilePath = lastScannedFilePath;
+    const scannedFilePaths =
+        [{'path': '/test/path/scan1.jpg'}, {'path': '/test/path/scan2.jpg'}];
+    scanningBrowserProxy.setPathToFile(scannedFilePaths[1].path);
+    scanDoneSection.scannedFilePaths = scannedFilePaths;
     scanDoneSection.numFilesSaved = 1;
     return flushTasks().then(() => {
       scanDoneSection.$$('#folderLink').click();
@@ -103,7 +104,7 @@ export function scanDoneSectionTest() {
     });
 
     scanningBrowserProxy.setPathToFile('/wrong/path/file/so/not/found.jpg');
-    scanDoneSection.lastScannedFilePath = {'path': '/test/path/scan.jpg'};
+    scanDoneSection.scannedFilePaths = [{'path': '/test/path/scan.jpg'}];
     scanDoneSection.numFilesSaved = 1;
     return flushTasks().then(() => {
       scanDoneSection.$$('#folderLink').click();
@@ -123,5 +124,49 @@ export function scanDoneSectionTest() {
 
     scanDoneSection.$$('#doneButton').click();
     assertTrue(doneEventFired);
+  });
+
+  test('editButtonClick', () => {
+    const scannedFilePaths =
+        [{'path': '/test/path/scan1.jpg'}, {'path': '/test/path/scan2.jpg'}];
+    scanDoneSection.scannedFilePaths = scannedFilePaths;
+    scanningBrowserProxy.setFilePaths(
+        scannedFilePaths.map(filePath => filePath.path));
+    scanDoneSection.selectedFileType =
+        ash.scanning.mojom.FileType.kJpg.toString();
+
+    // After click, TestScanningBrowserProxy asserts that the array of file
+    // paths sent from |scanDoneSection| matches the expected array of file
+    // paths.
+    scanDoneSection.$$('#editButton').click();
+  });
+
+  test('editButtonHiddenForFileTypePdf', () => {
+    const editButton =
+        /** @type {!HTMLElement} */ (scanDoneSection.$$('#editButton'));
+    scanDoneSection.selectedFileType =
+        ash.scanning.mojom.FileType.kPng.toString();
+    assertTrue(isVisible(editButton));
+
+    scanDoneSection.selectedFileType =
+        ash.scanning.mojom.FileType.kPdf.toString();
+    assertFalse(isVisible(editButton));
+  });
+
+  test('editFileButtonLabel', () => {
+    scanDoneSection.numFilesSaved = 1;
+    return flushTasks()
+        .then(() => {
+          assertEquals(
+              'Edit file',
+              scanDoneSection.$$('#editButtonLabel').textContent.trim());
+          scanDoneSection.numFilesSaved = 2;
+          return flushTasks();
+        })
+        .then(() => {
+          assertEquals(
+              'Edit files',
+              scanDoneSection.$$('#editButtonLabel').textContent.trim());
+        });
   });
 }

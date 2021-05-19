@@ -728,6 +728,29 @@ JSON file that contains all metadata related to test-25fps.av1.ivf, used by the
 video\_decode\_accelerator\_tests. This includes the video codec, resolution and
 md5 checksums of individual video frames when converted to the I420 format.
 
+#### test-25fps.hevc:
+H.265/HEVC video whose content is the same as test-25fps.h264.
+```
+ffmpeg -i test-25fps.h264 -vcodec hevc test25fps.hevc
+```
+
+#### test-25fps.hevc.json:
+JSON file that contains all metadata related to test-25fps.hevc, used by the
+video\_decode\_accelerator\_tests. This includes the video codec, resolution and
+md5 checksums of individual video frames when converted to the I420 format.
+
+#### test-25fps.hevc10:
+10-bit H.265/HEVC video whose content is the same as test-25fps.h264 but
+converted to 10bpp.
+```
+ffmpeg -i test-25fps.h264 -vcodec hevc -pix_fmt yuv420p10le test25fps.hevc10
+```
+
+#### test-25fps.hevc10.json:
+JSON file that contains all metadata related to test-25fps.hevc10, used by the
+video\_decode\_accelerator\_tests. This includes the video codec, resolution and
+md5 checksums of individual video frames when converted to the I420 format.
+
 ### VP9 video with raw vp9 frames
 
 #### buck-1280x720-vp9.webm
@@ -830,7 +853,7 @@ Metadata describing bear\_320x192.nv12.yuv.
 First frame of bear\_320x192\_40frames.yv12.yuv for image\_processor_test and
 formatted yv12.
 To get the uncompressed yuv, execute the following command.
-`ffmpeg -s:v 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv  -c:v rawvideo -pix_fmt yuv420p -vf shuffleplanes=0:2:1 bear_320x192.yv12.2.yuv`
+`ffmpeg -s:v 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv  -c:v rawvideo -pix_fmt yuv420p -vf shuffleplanes=0:2:1 bear_320x192.yv12.yuv`
 
 #### bear\_320x192.rgba
 RAW RGBA format data. This data is created from bear\_320x192.i420.yuv.
@@ -842,7 +865,7 @@ To get the uncompressed yuv, execute the following command.
 RAW BGRA format data. This data is created from bear\_320x192.i420.yuv.
 Alpha channel is always 0xFF.
 To get the uncompressed yuv, execute the following command.
-`ffmpeg -s 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv -vcodec rawvideo -f image2 -pix_fmt rgba bear_320x192.bgra`
+`ffmpeg -s 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv -vcodec rawvideo -f image2 -pix_fmt bgra bear_320x192.bgra`
 
 #### bear\_192x320\_90.nv12.yuv
 Rotate bear\_320x192.nv12.yuv by 90 degrees clockwise.

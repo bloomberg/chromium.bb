@@ -19,20 +19,20 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/ash/login/marketing_backend_connector.h"
+#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/ash/login/test/js_checker.h"
+#include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/ash/login/test/local_state_mixin.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
+#include "chrome/browser/ash/login/test/oobe_base_test.h"
+#include "chrome/browser/ash/login/test/oobe_screen_exit_waiter.h"
+#include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/test/user_policy_mixin.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/login_pref_names.h"
-#include "chrome/browser/chromeos/login/marketing_backend_connector.h"
-#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
-#include "chrome/browser/chromeos/login/test/local_state_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -51,7 +51,7 @@ namespace {
 const test::UIPath kChromebookEmailToggle = {"marketing-opt-in",
                                              "chromebookUpdatesOption"};
 const test::UIPath kChromebookEmailToggleDiv = {"marketing-opt-in",
-                                                "marketing-opt-in-toggle"};
+                                                "toggleRow"};
 const test::UIPath kChromebookEmailLegalFooterDiv = {"marketing-opt-in",
                                                      "legalFooter"};
 const test::UIPath kChromebookEmailAnimation = {"marketing-opt-in",

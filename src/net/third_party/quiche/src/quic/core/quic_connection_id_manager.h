@@ -12,6 +12,7 @@
 
 #include <cstddef>
 #include <memory>
+
 #include "quic/core/frames/quic_new_connection_id_frame.h"
 #include "quic/core/frames/quic_retire_connection_id_frame.h"
 #include "quic/core/quic_alarm.h"
@@ -19,19 +20,23 @@
 #include "quic/core/quic_clock.h"
 #include "quic/core/quic_connection_id.h"
 #include "quic/core/quic_interval_set.h"
+#include "quic/core/quic_types.h"
 #include "quic/platform/api/quic_export.h"
-#include "quic/platform/api/quic_uint128.h"
 
 namespace quic {
+
+namespace test {
+class QuicConnectionIdManagerPeer;
+}  // namespace test
 
 struct QUIC_EXPORT_PRIVATE QuicConnectionIdData {
   QuicConnectionIdData(const QuicConnectionId& connection_id,
                        uint64_t sequence_number,
-                       QuicUint128 stateless_reset_token);
+                       const StatelessResetToken& stateless_reset_token);
 
   QuicConnectionId connection_id;
   uint64_t sequence_number;
-  QuicUint128 stateless_reset_token;
+  StatelessResetToken stateless_reset_token;
 };
 
 // Used by QuicSelfIssuedConnectionIdManager
@@ -83,7 +88,7 @@ class QUIC_EXPORT_PRIVATE QuicPeerIssuedConnectionIdManager {
                            const QuicConnectionId& new_connection_id);
 
  private:
-  friend class QuicConnectionIdManagerPeer;
+  friend class test::QuicConnectionIdManagerPeer;
 
   bool IsConnectionIdNew(const QuicNewConnectionIdFrame& frame);
 
@@ -134,7 +139,7 @@ class QUIC_EXPORT_PRIVATE QuicSelfIssuedConnectionIdManager {
       const QuicConnectionId& old_connection_id) const;
 
  private:
-  friend class QuicConnectionIdManagerPeer;
+  friend class test::QuicConnectionIdManagerPeer;
 
   QuicNewConnectionIdFrame IssueNewConnectionId();
 

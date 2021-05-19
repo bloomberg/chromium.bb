@@ -17,9 +17,12 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/browser_resources.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace chromeos {
 namespace quick_unlock {
@@ -122,8 +125,7 @@ bool IsPinEnabled(PrefService* pref_service) {
 // Returns fingerprint location depending on the commandline switch.
 // TODO(rsorokin): Add browser tests for different assets.
 FingerprintLocation GetFingerprintLocation() {
-  const FingerprintLocation default_location =
-      FingerprintLocation::TABLET_POWER_BUTTON;
+  const FingerprintLocation default_location = FingerprintLocation::UNKNOWN;
   const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (!cl->HasSwitch(switches::kFingerprintSensorLocation))
     return default_location;
@@ -138,17 +140,26 @@ FingerprintLocation GetFingerprintLocation() {
     return FingerprintLocation::KEYBOARD_BOTTOM_RIGHT;
   if (location_info == "keyboard-top-right")
     return FingerprintLocation::KEYBOARD_TOP_RIGHT;
+  if (location_info == "right-side")
+    return FingerprintLocation::RIGHT_SIDE;
+  if (location_info == "left-side")
+    return FingerprintLocation::LEFT_SIDE;
   NOTREACHED() << "Not handled value: " << location_info;
   return default_location;
+}
+
+bool IsFingerprintSupported() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  return base::FeatureList::IsEnabled(::features::kQuickUnlockFingerprint) &&
+         command_line->HasSwitch(switches::kFingerprintSensorLocation);
 }
 
 bool IsFingerprintEnabled(Profile* profile) {
   if (enable_for_testing_)
     return true;
 
-  // Disable fingerprint if the device does not have a fingerprint reader.
-  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  if (!cl->HasSwitch(switches::kFingerprintSensorLocation))
+  if (!IsFingerprintSupported())
     return false;
 
   // Disable fingerprint if the profile does not belong to the primary user.
@@ -159,8 +170,52 @@ bool IsFingerprintEnabled(Profile* profile) {
   if (IsFingerprintDisabledByPolicy(profile->GetPrefs()))
     return false;
 
-  // Enable fingerprint unlock only if the switch is present.
-  return base::FeatureList::IsEnabled(::features::kQuickUnlockFingerprint);
+  return true;
+}
+
+void AddFingerprintResources(content::WebUIDataSource* html_source) {
+  int resource_id;
+  bool is_lottie_animation = false;
+  switch (GetFingerprintLocation()) {
+    case FingerprintLocation::TABLET_POWER_BUTTON:
+      is_lottie_animation = true;
+      resource_id = IDR_FINGERPRINT_TABLET_ANIMATION;
+      break;
+    case FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
+      is_lottie_animation = true;
+      resource_id = IDR_FINGERPRINT_LAPTOP_BOTTOM_RIGHT_ANIMATION;
+      break;
+    case FingerprintLocation::KEYBOARD_BOTTOM_LEFT:
+      resource_id = IDR_FINGERPRINT_LAPTOP_BOTTOM_LEFT_ILLUSTRATION_SVG;
+      break;
+    case FingerprintLocation::KEYBOARD_TOP_RIGHT:
+      resource_id = IDR_FINGERPRINT_LAPTOP_TOP_RIGHT_ILLUSTRATION_SVG;
+      break;
+    case FingerprintLocation::RIGHT_SIDE:
+    case FingerprintLocation::LEFT_SIDE:
+    case FingerprintLocation::UNKNOWN:
+      is_lottie_animation = true;
+      resource_id = IDR_FINGERPRINT_DEFAULT_ANIMATION;
+      break;
+  }
+  if (is_lottie_animation) {
+    html_source->AddResourcePath("fingerprint_scanner_animation.json",
+                                 resource_id);
+
+    // To use lottie, the worker-src CSP needs to be updated for the web ui
+    // that is using it. Since as of now there are only a couple of webuis
+    // using lottie animations, this update has to be performed manually. As
+    // the usage increases, set this as the default so manual override is no
+    // longer required.
+    html_source->OverrideContentSecurityPolicy(
+        network::mojom::CSPDirectiveName::WorkerSrc,
+        "worker-src blob: 'self';");
+  } else {
+    html_source->AddResourcePath("fingerprint_scanner_illustration.svg",
+                                 resource_id);
+  }
+  html_source->AddBoolean("useLottieAnimationForFingerprint",
+                          is_lottie_animation);
 }
 
 void EnabledForTesting(bool state) {

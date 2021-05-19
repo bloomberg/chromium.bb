@@ -74,20 +74,21 @@ private:
 
             const char* name() const override { return "Dummy GP"; }
 
-            GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override {
+            GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
                 class GLSLGP : public GrGLSLGeometryProcessor {
                 public:
                     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-                        const GP& gp = args.fGP.cast<GP>();
+                        const GP& gp = args.fGeomProc.cast<GP>();
                         args.fVaryingHandler->emitAttributes(gp);
                         this->writeOutputPosition(args.fVertBuilder, gpArgs,
                                                   gp.fAttributes[0].name());
                         GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
-                        fragBuilder->codeAppendf("%s = half4(1);", args.fOutputColor);
-                        fragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+                        fragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputColor);
+                        fragBuilder->codeAppendf("const half4 %s = half4(1);",
+                                                 args.fOutputCoverage);
                     }
-                    void setData(const GrGLSLProgramDataManager& pdman,
-                                 const GrPrimitiveProcessor& primProc) override {}
+                    void setData(const GrGLSLProgramDataManager&,
+                                 const GrGeometryProcessor&) override {}
                 };
                 return new GLSLGP();
             }
@@ -143,7 +144,7 @@ private:
             this->createProgramInfo(target);
         }
 
-        size_t vertexStride = fProgramInfo->primProc().vertexStride();
+        size_t vertexStride = fProgramInfo->geomProc().vertexStride();
         QuadHelper helper(target, vertexStride, 1);
         SkPoint* vertices = reinterpret_cast<SkPoint*>(helper.vertices());
         SkPointPriv::SetRectTriStrip(vertices, 0.f, 0.f, 1.f, 1.f, vertexStride);
@@ -156,7 +157,7 @@ private:
         }
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
         flushState->drawMesh(*fMesh);
     }
 

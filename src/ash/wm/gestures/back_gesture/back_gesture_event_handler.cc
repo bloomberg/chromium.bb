@@ -6,7 +6,6 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/keyboard_util.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_types.h"
@@ -354,14 +353,13 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
         if (!keyboard_util::CloseKeyboardIfActive()) {
           ActivateUnderneathWindowInSplitViewMode(
               back_start_location_, dragged_from_splitview_divider_);
-          if (shell->home_screen_controller()->IsHomeScreenVisible()) {
+          if (shell->app_list_controller()->IsHomeScreenVisible()) {
             DCHECK(shell->app_list_controller()->GetAppListViewState() ==
                    AppListViewState::kFullscreenSearch);
             // Exit home screen search and go back to home screen all apps page.
             shell->app_list_controller()->Back();
           } else {
             auto* top_window = window_util::GetTopWindow();
-            DCHECK(top_window);
             auto* top_window_state = WindowState::Get(top_window);
             if (top_window_state && top_window_state->IsFullscreen() &&
                 !shell->overview_controller()->InOverviewSession()) {
@@ -402,8 +400,12 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
               // window.
               SendBackEvent(screen_location);
             }
-            RecordUnderneathWindowType(
-                GetUnderneathWindowType(back_gesture_start_scenario_type_));
+            // |top_window| could be nullptr while in overview mode since back
+            // gesture is allowed in overview mode even no window opens.
+            if (top_window) {
+              RecordUnderneathWindowType(
+                  GetUnderneathWindowType(back_gesture_start_scenario_type_));
+            }
           }
         }
         back_gesture_affordance_->Complete();
@@ -451,7 +453,7 @@ bool BackGestureEventHandler::CanStartGoingBack(
       hit_bounds_in_screen.Contains(screen_location);
 
   const bool is_home_launcher_visible =
-      shell->home_screen_controller()->IsHomeScreenVisible();
+      shell->app_list_controller()->IsHomeScreenVisible();
   const bool is_fullscreen_search_state =
       shell->app_list_controller()->GetAppListViewState() ==
       AppListViewState::kFullscreenSearch;

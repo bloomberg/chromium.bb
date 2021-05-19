@@ -30,6 +30,10 @@ oobe-content-dialog {
           var(--caption-bar-height) / 2);
 }
 
+:host-context([orientation=vertical]:not([screen=oobe])) oobe-adaptive-dialog {
+  --oobe-adaptive-dialog-content-padding: 64px;
+}
+
 webview {
   user-select: none;
 }
@@ -50,24 +54,48 @@ webview {
   margin-inline-end: 0;
 }
 
-/**
- * TODO(crbug.com/1101320): remove below when style of gstatic animation is
- * fixed.
- */
-h1,
-#content-container {
-  z-index: 1;
-}
-
-.animation-outer-container {
-  max-height: 240px;
-}
-
-:host-context(html:not([new-layout])) .animation-container {
+:host-context(html:not([new-layout])) #animation-container {
   display: none;
 }
 
-:host-context([new-layout]) .animation-container {
-  height: 350px;
-  transform: translateY(-15%);
+:host-context([orientation=horizontal]) #animation-container {
+  height: 240px;
+  transform: translate(-40px, -12px);
+  width: 340px;
+}
+
+:host-context([orientation=horizontal][screen=oobe]) #animation-container {
+  transform: translate(-48px, -12px);
+}
+
+:host-context([orientation=vertical]) #animation-container {
+  min-height: 280px;
+  padding-bottom: 20px;
+  transform: translateX(-8px);
+  width: 100%;
+}
+
+@media screen and (max-height: 1040px) {
+  :host-context([orientation=vertical][screen=oobe]) #animation-container {
+    display: none;
+  }
+
+  :host-context([orientation=vertical][screen=oobe])
+      oobe-adaptive-dialog {
+    --oobe-adaptive-dialog-content-top-padding:
+        var(--oobe-adaptive-dialog-header-top-padding);
+  }
+}
+
+@media screen and (max-height: 825px) {
+  :host-context([orientation=vertical]:not([screen=oobe]))
+      #animation-container {
+    display: none;
+  }
+
+  :host-context([orientation=vertical]:not([screen=oobe]))
+      oobe-adaptive-dialog {
+    --oobe-adaptive-dialog-content-top-padding:
+        var(--oobe-adaptive-dialog-header-top-padding);
+  }
 }

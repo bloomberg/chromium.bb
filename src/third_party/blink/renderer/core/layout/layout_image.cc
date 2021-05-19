@@ -28,7 +28,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -200,25 +200,6 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
   if (defer == CanDeferInvalidation::kYes && ImageResource() &&
       ImageResource()->MaybeAnimated())
     SetShouldDelayFullPaintInvalidation();
-
-  // Tell any potential compositing layers that the image needs updating.
-  ContentChanged(kImageChanged);
-}
-
-void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
-  NOT_DESTROYED();
-  LayoutObject::ImageNotifyFinished(new_image);
-  if (!image_resource_)
-    return;
-
-  if (DocumentBeingDestroyed())
-    return;
-
-  if (new_image == image_resource_->CachedImage()) {
-    // tell any potential compositing layers
-    // that the image is done and they can reference it directly.
-    ContentChanged(kImageChanged);
-  }
 }
 
 void LayoutImage::PaintReplaced(const PaintInfo& paint_info,
@@ -275,8 +256,9 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
   if (object_fit != EObjectFit::kFill && object_fit != EObjectFit::kCover)
     return false;
   // Check for image with alpha.
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
-               "data", inspector_paint_image_event::Data(this, *image_content));
+  DEVTOOLS_TIMELINE_TRACE_EVENT_WITH_CATEGORIES(
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
+      inspector_paint_image_event::Data, this, *image_content);
   return image_content->GetImage()->CurrentFrameKnownToBeOpaque();
 }
 

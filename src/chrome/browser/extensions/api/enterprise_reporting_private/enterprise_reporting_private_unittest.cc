@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/policy/dm_token_utils.h"
-#include "chrome/common/extensions/api/enterprise_reporting_private.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -23,10 +22,17 @@
 #include "base/test/test_reg_util_win.h"
 #endif
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#include "base/nix/xdg_util.h"
+#endif
+
 namespace enterprise_reporting_private =
     ::extensions::api::enterprise_reporting_private;
 
 namespace extensions {
+
+#if !defined(OS_CHROMEOS)
+
 namespace {
 
 const char kFakeClientId[] = "fake-client-id";
@@ -291,7 +297,7 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfo) {
   EXPECT_EQ("windows", info.os_name);
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar("XDG_CURRENT_DESKTOP", "XFCE");
+  env->SetVar(base::nix::kXdgCurrentDesktopEnvVar, "XFCE");
   EXPECT_EQ("linux", info.os_name);
 #else
   // Verify a stub implementation.
@@ -308,6 +314,8 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfo) {
   EXPECT_EQ("00:00:00:00:00:00", info.mac_addresses[0]);
 #endif
 }
+
+#endif  // !defined(OS_CHROMEOS)
 
 class EnterpriseReportingPrivateGetContextInfoTest
     : public ExtensionApiUnittest {

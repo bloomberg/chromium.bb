@@ -10,7 +10,6 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -23,6 +22,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/crash/core/common/crash_keys.h"
 #include "components/viz/common/switches.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
@@ -171,14 +171,8 @@ HeadlessContentMainDelegate::HeadlessContentMainDelegate(
 }
 
 void HeadlessContentMainDelegate::Init() {
-  headless_crash_key_ = base::debug::AllocateCrashKeyString(
-      kHeadlessCrashKey, base::debug::CrashKeySize::Size32);
-
   DCHECK(!g_current_headless_content_main_delegate);
   g_current_headless_content_main_delegate = this;
-
-  // Mark any bug reports from headless mode as such.
-  base::debug::SetCrashKeyString(headless_crash_key_, "true");
 }
 
 HeadlessContentMainDelegate::~HeadlessContentMainDelegate() {
@@ -227,7 +221,10 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 
   // When running headless there is no need to suppress input until content
-  // is ready for display (because it isn't displayed to users).
+  // is ready for display (because it isn't displayed to users). Nor is it
+  // necessary to delay compositor commits in any way via PaintHolding,
+  // but we disable that feature based on the --headless switch. The code is
+  // in content/public/common/content_switch_dependent_feature_overrides.cc
   command_line->AppendSwitch(::blink::switches::kAllowPreCommitInput);
 
 #if defined(OS_WIN)
@@ -338,6 +335,7 @@ void HeadlessContentMainDelegate::InitCrashReporter(
       options()->crash_dumps_dir);
 
   crash_reporter::InitializeCrashKeys();
+  crash_keys::SetSwitchesFromCommandLine(command_line, nullptr);
 
 #if defined(HEADLESS_USE_BREAKPAD)
   if (!options()->enable_crash_reporter) {
@@ -352,10 +350,14 @@ void HeadlessContentMainDelegate::InitCrashReporter(
 // crashpad is already enabled.
 // TODO(dvallet): Ideally we would also want to avoid this for component builds.
 #elif defined(OS_WIN)
-  crash_reporter::InitializeCrashpadWithEmbeddedHandler(
-      process_type.empty(), process_type, "", base::FilePath());
+  // InitializeCrashpad is already called from main() on Windows, no need to
+  // call it from here.
 #endif  // defined(HEADLESS_USE_BREAKPAD)
 #endif  // defined(OS_FUCHSIA)
+
+  // Mark any bug reports from headless mode as such.
+  static crash_reporter::CrashKeyString<32> headless_key(kHeadlessCrashKey);
+  headless_key.Set("true");
 }
 
 
@@ -369,11 +371,9 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
 #else
   if (command_line.HasSwitch(::switches::kEnableLogging))
     InitLogging(command_line);
-
-  // Initializing the crash reporter fails in multiple ways on Windows. See
-  // https://crbug.com/1147063
-  InitCrashReporter(command_line);
 #endif  // defined(OS_WIN)
+
+  InitCrashReporter(command_line);
 
   InitializeResourceBundle(command_line);
 

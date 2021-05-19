@@ -66,6 +66,9 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   // Translates the mirror container by |delta_x|.
   void Drag(float delta_x);
 
+  // Beings a fling with initial velocity of |velocity_x|.
+  void StartFling(float velocity_x);
+
   // Moves the focus ring to the respective preview for |window|. Does not
   // scroll the window cycle list.
   void SetFocusedWindow(aura::Window* window);
@@ -102,6 +105,7 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   friend class WindowCycleControllerTest;
   friend class MultiUserWindowCycleControllerTest;
   friend class InteractiveWindowCycleListGestureHandlerTest;
+  friend class ModeSelectionWindowCycleControllerTest;
 
   static void DisableInitialDelayForTesting();
 
@@ -154,6 +158,9 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
 
   // Returns the window cycle list's target window.
   const aura::Window* GetTargetWindowForTesting() const;
+
+  // Returns whether the cycle view is animating.
+  bool IsCycleViewAnimatingForTesting() const;
 
   WindowCycleView* cycle_view_for_testing() const { return cycle_view_; }
 

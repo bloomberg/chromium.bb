@@ -67,14 +67,6 @@ export function getShortcutIdentifier(event) {
 }
 
 /**
- * Makes the element unfocusable by mouse.
- * @param {!HTMLElement} element Element to be unfocusable.
- */
-export function makeUnfocusableByMouse(element) {
-  element.addEventListener('mousedown', (event) => event.preventDefault());
-}
-
-/**
  * Opens help.
  */
 export function openHelp() {
@@ -216,4 +208,13 @@ export async function createUntrustedJSModule(scriptUrl) {
       await Comlink.wrap(Comlink.windowEndpoint(iFrame.contentWindow, self));
   await untrustedRemote.loadScript(scriptUrl);
   return untrustedRemote;
+}
+
+/**
+ * Sleeps for a specified time.
+ * @param {number} ms Milliseconds to sleep.
+ * @return {!Promise}
+ */
+export function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

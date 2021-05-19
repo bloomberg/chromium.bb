@@ -16,7 +16,6 @@
 #include <linux/videodev2.h>
 #include <string.h>
 #include <sys/mman.h>
-#include <sstream>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -34,9 +33,6 @@
 #include "ui/gfx/generic_shared_memory_id.h"
 #include "ui/gfx/native_pixmap_handle.h"
 
-#if defined(ARCH_CPU_ARMEL)
-#include "media/gpu/v4l2/tegra_v4l2_device.h"
-#endif
 #if defined(AML_V4L2)
 #include "media/gpu/v4l2/aml_v4l2_device.h"
 #endif
@@ -68,6 +64,21 @@ struct v4l2_format BuildV4L2Format(const enum v4l2_buf_type type,
   format.fmt.pix_mp.plane_fmt[0].sizeimage = buffer_size;
 
   return format;
+}
+
+const char* V4L2BufferTypeToString(const enum v4l2_buf_type buf_type) {
+  switch (buf_type) {
+    case V4L2_BUF_TYPE_VIDEO_OUTPUT:
+      return "OUTPUT";
+    case V4L2_BUF_TYPE_VIDEO_CAPTURE:
+      return "CAPTURE";
+    case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
+      return "OUTPUT_MPLANE";
+    case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
+      return "CAPTURE_MPLANE";
+    default:
+      return "UNKNOWN";
+  }
 }
 
 }  // namespace
@@ -116,8 +127,8 @@ class V4L2Buffer {
   // V4L2 data as queried by QUERYBUF.
   struct v4l2_buffer v4l2_buffer_;
   // WARNING: do not change this to a vector or something smaller than
-  // VIDEO_MAX_PLANES, otherwise the Tegra libv4l2 will write data beyond
-  // the number of allocated planes, resulting in memory corruption.
+  // VIDEO_MAX_PLANES (the maximum number of planes V4L2 supports). The
+  // element overhead is small and may avoid memory corruption bugs.
   struct v4l2_plane v4l2_planes_[VIDEO_MAX_PLANES];
 
   struct v4l2_format format_;
@@ -235,18 +246,21 @@ scoped_refptr<VideoFrame> V4L2Buffer::CreateVideoFrame() {
     return nullptr;
   }
 
+  // DMA buffer fds should not be invalid
+  for (const auto& dmabuf_fd : dmabuf_fds) {
+    if (!dmabuf_fd.is_valid()) {
+      DLOG(ERROR) << "Fail to get DMABUFs of V4L2 buffer - invalid fd";
+      return nullptr;
+    }
+  }
+
   // Duplicate the fd of the last v4l2 plane until the number of fds are the
   // same as the number of color planes.
-  while (dmabuf_fds.size() != layout->planes().size()) {
-    int duped_fd = -1;
-    // Fd in dmabuf_fds is invalid with TegraV4L2Device. An invalid fd is added
-    // in the case.
-    if (dmabuf_fds.back().is_valid()) {
-      duped_fd = HANDLE_EINTR(dup(dmabuf_fds.back().get()));
-      if (duped_fd == -1) {
-        DLOG(ERROR) << "Failed duplicating dmabuf fd";
-        return nullptr;
-      }
+  while (dmabuf_fds.size() < layout->planes().size()) {
+    int duped_fd = HANDLE_EINTR(dup(dmabuf_fds.back().get()));
+    if (duped_fd == -1) {
+      DLOG(ERROR) << "Failed duplicating dmabuf fd";
+      return nullptr;
     }
 
     dmabuf_fds.emplace_back(duped_fd);
@@ -357,8 +371,8 @@ class V4L2BufferRefBase {
   // Data from the buffer, that users can query and/or write.
   struct v4l2_buffer v4l2_buffer_;
   // WARNING: do not change this to a vector or something smaller than
-  // VIDEO_MAX_PLANES, otherwise the Tegra libv4l2 will write data beyond
-  // the number of allocated planes, resulting in memory corruption.
+  // VIDEO_MAX_PLANES (the maximum number of planes V4L2 supports). The
+  // element overhead is small and may avoid memory corruption bugs.
   struct v4l2_plane v4l2_planes_[VIDEO_MAX_PLANES];
 
  private:
@@ -900,11 +914,11 @@ class V4L2BufferRefFactory {
 
 // Helper macros that print the queue type with logs.
 #define VPQLOGF(level) \
-  VPLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+  VPLOGF(level) << "(" << V4L2BufferTypeToString(type_) << ") "
 #define VQLOGF(level) \
-  VLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+  VLOGF(level) << "(" << V4L2BufferTypeToString(type_) << ") "
 #define DVQLOGF(level) \
-  DVLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+  DVLOGF(level) << "(" << V4L2BufferTypeToString(type_) << ") "
 
 V4L2Queue::V4L2Queue(scoped_refptr<V4L2Device> dev,
                      enum v4l2_buf_type type,
@@ -1055,9 +1069,6 @@ size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
   }
 
   // First query the number of planes in the buffers we are about to request.
-  // This should not be required, but Tegra's VIDIOC_QUERYBUF will fail on
-  // output buffers if the number of specified planes does not exactly match the
-  // format.
   base::Optional<v4l2_format> format = GetFormat().first;
   if (!format) {
     VQLOGF(1) << "Cannot get format.";
@@ -1253,8 +1264,8 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
   struct v4l2_buffer v4l2_buffer;
   memset(&v4l2_buffer, 0, sizeof(v4l2_buffer));
   // WARNING: do not change this to a vector or something smaller than
-  // VIDEO_MAX_PLANES, otherwise the Tegra libv4l2 will write data beyond
-  // the number of allocated planes, resulting in memory corruption.
+  // VIDEO_MAX_PLANES (the maximum number of planes V4L2 supports). The
+  // element overhead is small and may avoid memory corruption bugs.
   struct v4l2_plane planes[VIDEO_MAX_PLANES];
   memset(planes, 0, sizeof(planes));
   v4l2_buffer.type = type_;
@@ -1440,12 +1451,6 @@ scoped_refptr<V4L2Device> V4L2Device::Create() {
 
   scoped_refptr<V4L2Device> device;
 
-#if defined(ARCH_CPU_ARMEL)
-  device = new TegraV4L2Device();
-  if (device->Initialize())
-    return device;
-#endif
-
 #if defined(AML_V4L2)
   device = new AmlV4L2Device();
   if (device->Initialize())
@@ -1479,7 +1484,7 @@ uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
     else
       return V4L2_PIX_FMT_VP9;
   } else {
-    LOG(ERROR) << "Unknown profile: " << GetProfileName(profile);
+    DVLOGF(1) << "Unsupported profile: " << GetProfileName(profile);
     return 0;
   }
 }
@@ -1608,29 +1613,6 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
   std::sort(profiles.begin(), profiles.end());
   profiles.erase(std::unique(profiles.begin(), profiles.end()), profiles.end());
   return profiles;
-}
-
-// static
-uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
-  switch (format) {
-    case V4L2_PIX_FMT_NV12:
-    case V4L2_PIX_FMT_NV12M:
-      return DRM_FORMAT_NV12;
-
-    case V4L2_PIX_FMT_YUV420:
-    case V4L2_PIX_FMT_YUV420M:
-      return DRM_FORMAT_YUV420;
-
-    case V4L2_PIX_FMT_YVU420:
-      return DRM_FORMAT_YVU420;
-
-    case V4L2_PIX_FMT_RGB32:
-      return DRM_FORMAT_ARGB8888;
-
-    default:
-      DVLOGF(1) << "Unrecognized format " << FourccToString(format);
-      return 0;
-  }
 }
 
 // static
@@ -1792,108 +1774,6 @@ gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(
   DCHECK_LE(sizeimage, VideoFrame::AllocationSize(frame_format, coded_size));
 
   return coded_size;
-}
-
-// static
-const char* V4L2Device::V4L2MemoryToString(const v4l2_memory memory) {
-  switch (memory) {
-    case V4L2_MEMORY_MMAP:
-      return "V4L2_MEMORY_MMAP";
-    case V4L2_MEMORY_USERPTR:
-      return "V4L2_MEMORY_USERPTR";
-    case V4L2_MEMORY_DMABUF:
-      return "V4L2_MEMORY_DMABUF";
-    case V4L2_MEMORY_OVERLAY:
-      return "V4L2_MEMORY_OVERLAY";
-    default:
-      return "UNKNOWN";
-  }
-}
-
-// static
-const char* V4L2Device::V4L2BufferTypeToString(
-    const enum v4l2_buf_type buf_type) {
-  switch (buf_type) {
-    case V4L2_BUF_TYPE_VIDEO_OUTPUT:
-      return "OUTPUT";
-    case V4L2_BUF_TYPE_VIDEO_CAPTURE:
-      return "CAPTURE";
-    case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
-      return "OUTPUT_MPLANE";
-    case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
-      return "CAPTURE_MPLANE";
-    default:
-      return "UNKNOWN";
-  }
-}
-
-// static
-std::string V4L2Device::V4L2FormatToString(const struct v4l2_format& format) {
-  std::ostringstream s;
-  s << "v4l2_format type: " << format.type;
-  if (format.type == V4L2_BUF_TYPE_VIDEO_CAPTURE ||
-      format.type == V4L2_BUF_TYPE_VIDEO_OUTPUT) {
-    //  single-planar
-    const struct v4l2_pix_format& pix = format.fmt.pix;
-    s << ", width_height: " << gfx::Size(pix.width, pix.height).ToString()
-      << ", pixelformat: " << FourccToString(pix.pixelformat)
-      << ", field: " << pix.field << ", bytesperline: " << pix.bytesperline
-      << ", sizeimage: " << pix.sizeimage;
-  } else if (V4L2_TYPE_IS_MULTIPLANAR(format.type)) {
-    const struct v4l2_pix_format_mplane& pix_mp = format.fmt.pix_mp;
-    // As long as num_planes's type is uint8_t, ostringstream treats it as a
-    // char instead of an integer, which is not what we want. Casting
-    // pix_mp.num_planes unsigned int solves the issue.
-    s << ", width_height: " << gfx::Size(pix_mp.width, pix_mp.height).ToString()
-      << ", pixelformat: " << FourccToString(pix_mp.pixelformat)
-      << ", field: " << pix_mp.field
-      << ", num_planes: " << static_cast<unsigned int>(pix_mp.num_planes);
-    for (size_t i = 0; i < pix_mp.num_planes; ++i) {
-      const struct v4l2_plane_pix_format& plane_fmt = pix_mp.plane_fmt[i];
-      s << ", plane_fmt[" << i << "].sizeimage: " << plane_fmt.sizeimage
-        << ", plane_fmt[" << i << "].bytesperline: " << plane_fmt.bytesperline;
-    }
-  } else {
-    s << " unsupported yet.";
-  }
-  return s.str();
-}
-
-// static
-std::string V4L2Device::V4L2BufferToString(const struct v4l2_buffer& buffer) {
-  std::ostringstream s;
-  s << "v4l2_buffer type: " << buffer.type << ", memory: " << buffer.memory
-    << ", index: " << buffer.index << " bytesused: " << buffer.bytesused
-    << ", length: " << buffer.length;
-  if (buffer.type == V4L2_BUF_TYPE_VIDEO_CAPTURE ||
-      buffer.type == V4L2_BUF_TYPE_VIDEO_OUTPUT) {
-    //  single-planar
-    if (buffer.memory == V4L2_MEMORY_MMAP) {
-      s << ", m.offset: " << buffer.m.offset;
-    } else if (buffer.memory == V4L2_MEMORY_USERPTR) {
-      s << ", m.userptr: " << buffer.m.userptr;
-    } else if (buffer.memory == V4L2_MEMORY_DMABUF) {
-      s << ", m.fd: " << buffer.m.fd;
-    }
-  } else if (V4L2_TYPE_IS_MULTIPLANAR(buffer.type)) {
-    for (size_t i = 0; i < buffer.length; ++i) {
-      const struct v4l2_plane& plane = buffer.m.planes[i];
-      s << ", m.planes[" << i << "](bytesused: " << plane.bytesused
-        << ", length: " << plane.length
-        << ", data_offset: " << plane.data_offset;
-      if (buffer.memory == V4L2_MEMORY_MMAP) {
-        s << ", m.mem_offset: " << plane.m.mem_offset;
-      } else if (buffer.memory == V4L2_MEMORY_USERPTR) {
-        s << ", m.userptr: " << plane.m.userptr;
-      } else if (buffer.memory == V4L2_MEMORY_DMABUF) {
-        s << ", m.fd: " << plane.m.fd;
-      }
-      s << ")";
-    }
-  } else {
-    s << " unsupported yet.";
-  }
-  return s.str();
 }
 
 // static

@@ -320,13 +320,13 @@ std::string InstallVerifier::GetDebugPolicyProviderName() const {
 
 bool InstallVerifier::MustRemainDisabled(const Extension* extension,
                                          disable_reason::DisableReason* reason,
-                                         base::string16* error) const {
+                                         std::u16string* error) const {
   CHECK(extension);
   if (!CanUseExtensionApis(*extension))
     return false;
   if (Manifest::IsUnpackedLocation(extension->location()))
     return false;
-  if (extension->location() == Manifest::COMPONENT)
+  if (extension->location() == mojom::ManifestLocation::kComponent)
     return false;
   if (AllowedByEnterprisePolicy(extension->id()))
     return false;

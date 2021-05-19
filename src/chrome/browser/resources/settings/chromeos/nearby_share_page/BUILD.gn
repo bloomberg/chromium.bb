@@ -14,7 +14,11 @@ js_type_check("closure_compile_module") {
   # TODO(crbug.com/1121865): browser_resolver_prefix_replacements allows path
   # from ../../shared/* to resolve to ../../../nearby_share/shared/* for closure
   # purposes.
-  closure_flags = default_closure_args + [ "browser_resolver_prefix_replacements=\"../../shared/=../../../nearby_share/shared/\"" ]
+  closure_flags = os_settings_closure_flags + [
+                    "js_module_root=../../chrome/browser/resources/nearby_share",
+                    "js_module_root=./gen/chrome/browser/resources/nearby_share",
+                    "browser_resolver_prefix_replacements=\"../../shared/=../../../nearby_share/shared/\"",
+                  ]
   deps = [
     ":nearby_share_confirm_page.m",
     ":nearby_share_contact_visibility_dialog.m",
@@ -54,9 +58,9 @@ js_library("nearby_share_data_usage_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/nearby_share_page/nearby_share_data_usage_dialog.m.js" ]
   deps = [
     ":types.m",
-    "../../prefs:prefs.m",
-    "../../prefs:prefs_behavior.m",
-    "../../prefs:prefs_types.m",
+    "../../prefs:prefs",
+    "../../prefs:prefs_behavior",
+    "../../prefs:prefs_types",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
     "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button.m",
@@ -101,7 +105,7 @@ js_library("nearby_share_receive_dialog.m") {
     "//chrome/browser/resources/nearby_share/shared:nearby_visibility_page.m",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
-    "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager.m",
+    "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
@@ -117,7 +121,7 @@ js_library("nearby_share_receive_manager.m") {
     "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
-    "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager.m",
+    "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":modulize" ]
@@ -135,14 +139,14 @@ js_library("nearby_share_subpage.m") {
     ":types.m",
     "..:deep_linking_behavior.m",
     "..:os_route.m",
-    "../..:router.m",
-    "../../prefs:prefs.m",
-    "../../prefs:prefs_behavior.m",
-    "../../prefs:prefs_types.m",
+    "../..:router",
+    "../../prefs:prefs",
+    "../../prefs:prefs_behavior",
+    "../../prefs:prefs_types",
     "//chrome/browser/resources/nearby_share/shared:nearby_onboarding_page.m",
     "//chrome/browser/resources/nearby_share/shared:nearby_share_settings_behavior.m",
     "//chrome/browser/resources/nearby_share/shared:nearby_visibility_page.m",
-    "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row.m",
+    "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data",
@@ -179,8 +183,7 @@ group("polymer3_elements") {
     ":nearby_share_high_visibility_page_module",
     ":nearby_share_receive_dialog_module",
     ":nearby_share_subpage_module",
-    "../../controls:polymer3_elements",
-    "../../prefs:polymer3_elements",
+    "../../controls:web_components",
     "//chrome/browser/ui/webui/nearby_share:mojom_js",
   ]
 }
@@ -205,6 +208,7 @@ polymer_modulizer("nearby_share_confirm_page") {
   html_file = "nearby_share_confirm_page.html"
   html_type = "dom-module"
   namespace_rewrites = os_settings_namespace_rewrites
+  migrated_imports = os_settings_migrated_imports
   auto_imports = os_settings_auto_imports
 }
 
@@ -214,6 +218,7 @@ polymer_modulizer("nearby_share_contact_visibility_dialog") {
   html_type = "dom-module"
   namespace_rewrites =
       os_settings_namespace_rewrites + nearby_shared_namespace_rewrites
+  migrated_imports = os_settings_migrated_imports
   auto_imports =
       os_settings_auto_imports + nearby_shared_auto_imports_closure_fix
 }
@@ -223,6 +228,7 @@ polymer_modulizer("nearby_share_data_usage_dialog") {
   html_file = "nearby_share_data_usage_dialog.html"
   html_type = "dom-module"
   namespace_rewrites = os_settings_namespace_rewrites
+  migrated_imports = os_settings_migrated_imports
   auto_imports = os_settings_auto_imports
 }
 
@@ -232,6 +238,7 @@ polymer_modulizer("nearby_share_device_name_dialog") {
   html_type = "dom-module"
   namespace_rewrites =
       os_settings_namespace_rewrites + nearby_shared_namespace_rewrites
+  migrated_imports = os_settings_migrated_imports
   auto_imports =
       os_settings_auto_imports + nearby_shared_auto_imports_closure_fix
 }
@@ -241,6 +248,7 @@ polymer_modulizer("nearby_share_high_visibility_page") {
   html_file = "nearby_share_high_visibility_page.html"
   html_type = "dom-module"
   namespace_rewrites = os_settings_namespace_rewrites
+  migrated_imports = os_settings_migrated_imports
   auto_imports = os_settings_auto_imports
 }
 
@@ -261,6 +269,7 @@ polymer_modulizer("nearby_share_subpage") {
   html_type = "dom-module"
   namespace_rewrites =
       os_settings_namespace_rewrites + nearby_shared_namespace_rewrites
+  migrated_imports = os_settings_migrated_imports
   auto_imports =
       os_settings_auto_imports + nearby_shared_auto_imports_closure_fix +
       [ "chrome/browser/resources/settings/chromeos/os_route.html|routes" ]

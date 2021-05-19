@@ -23,11 +23,12 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ash/attestation/attestation_ca_client.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
+#include "chrome/browser/ash/notifications/adb_sideloading_policy_change_notification.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/system/timezone_util.h"
-#include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/adb_sideloading_allowance_mode_policy_handler.h"
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
@@ -56,16 +57,14 @@
 #include "chrome/browser/chromeos/policy/remote_commands/affiliated_remote_commands_invalidator.h"
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/device_scheduled_update_checker.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
-#include "chrome/browser/chromeos/policy/system_proxy_manager.h"
+#include "chrome/browser/chromeos/policy/system_proxy_handler.h"
 #include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
-#include "chrome/browser/chromeos/ui/adb_sideloading_policy_change_notification.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -133,10 +132,10 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS() {
   // TODO(satorux): Remove SystemSaltGetter::IsInitialized() when it's ready
   // (removing it now breaks tests). crbug.com/141016.
   if (chromeos::DBusThreadManager::IsInitialized() &&
-      chromeos::DeviceSettingsService::IsInitialized()) {
+      ash::DeviceSettingsService::IsInitialized()) {
     std::unique_ptr<DeviceCloudPolicyStoreChromeOS> device_cloud_policy_store =
         std::make_unique<DeviceCloudPolicyStoreChromeOS>(
-            chromeos::DeviceSettingsService::Get(),
+            ash::DeviceSettingsService::Get(),
             chromeos::InstallAttributes::Get(), GetBackgroundTaskRunner());
 
     if (chromeos::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
@@ -204,8 +203,7 @@ void BrowserPolicyConnectorChromeOS::Init(
     device_local_account_policy_service_ =
         std::make_unique<DeviceLocalAccountPolicyService>(
             chromeos::SessionManagerClient::Get(),
-            chromeos::DeviceSettingsService::Get(),
-            chromeos::CrosSettings::Get(),
+            ash::DeviceSettingsService::Get(), ash::CrosSettings::Get(),
             affiliated_invalidation_service_provider_.get(),
             GetBackgroundTaskRunner(), GetBackgroundTaskRunner(),
             GetBackgroundTaskRunner(), url_loader_factory);
@@ -244,7 +242,7 @@ void BrowserPolicyConnectorChromeOS::Init(
           chromeos::NetworkHandler::Get()
               ->managed_network_configuration_handler(),
           chromeos::NetworkHandler::Get()->network_device_handler(),
-          chromeos::CrosSettings::Get(),
+          ash::CrosSettings::Get(),
           DeviceNetworkConfigurationUpdater::DeviceAssetIDFetcher());
   // NetworkCertLoader may be not initialized in tests.
   if (chromeos::NetworkCertLoader::IsInitialized()) {
@@ -253,10 +251,10 @@ void BrowserPolicyConnectorChromeOS::Init(
   }
 
   bluetooth_policy_handler_ =
-      std::make_unique<BluetoothPolicyHandler>(chromeos::CrosSettings::Get());
+      std::make_unique<BluetoothPolicyHandler>(ash::CrosSettings::Get());
 
   hostname_handler_ =
-      std::make_unique<HostnameHandler>(chromeos::CrosSettings::Get());
+      std::make_unique<HostnameHandler>(ash::CrosSettings::Get());
 
   minimum_version_policy_handler_delegate_ =
       std::make_unique<MinimumVersionPolicyHandlerDelegateImpl>();
@@ -264,23 +262,23 @@ void BrowserPolicyConnectorChromeOS::Init(
   minimum_version_policy_handler_ =
       std::make_unique<MinimumVersionPolicyHandler>(
           minimum_version_policy_handler_delegate_.get(),
-          chromeos::CrosSettings::Get());
+          ash::CrosSettings::Get());
 
   device_dock_mac_address_source_handler_ =
       std::make_unique<DeviceDockMacAddressHandler>(
-          chromeos::CrosSettings::Get(),
+          ash::CrosSettings::Get(),
           chromeos::NetworkHandler::Get()->network_device_handler());
 
   device_wifi_allowed_handler_ =
-      std::make_unique<DeviceWiFiAllowedHandler>(chromeos::CrosSettings::Get());
+      std::make_unique<DeviceWiFiAllowedHandler>(ash::CrosSettings::Get());
 
   tpm_auto_update_mode_policy_handler_ =
-      std::make_unique<TPMAutoUpdateModePolicyHandler>(
-          chromeos::CrosSettings::Get(), local_state);
+      std::make_unique<TPMAutoUpdateModePolicyHandler>(ash::CrosSettings::Get(),
+                                                       local_state);
 
   device_scheduled_update_checker_ =
       std::make_unique<DeviceScheduledUpdateChecker>(
-          chromeos::CrosSettings::Get(),
+          ash::CrosSettings::Get(),
           chromeos::NetworkHandler::Get()->network_state_handler());
 
   chromeos::BulkPrintersCalculatorFactory* calculator_factory =
@@ -303,14 +301,14 @@ void BrowserPolicyConnectorChromeOS::Init(
             policy::DeviceWilcoDtcConfigurationExternalDataHandler>(
             GetPolicyService()));
   }
-  system_proxy_manager_ = std::make_unique<SystemProxyManager>(
-      chromeos::CrosSettings::Get(), local_state);
+  system_proxy_handler_ =
+      std::make_unique<SystemProxyHandler>(chromeos::CrosSettings::Get());
 
   adb_sideloading_allowance_mode_policy_handler_ =
       std::make_unique<AdbSideloadingAllowanceModePolicyHandler>(
-          chromeos::CrosSettings::Get(), local_state,
+          ash::CrosSettings::Get(), local_state,
           chromeos::PowerManagerClient::Get(),
-          new chromeos::AdbSideloadingPolicyChangeNotification());
+          new ash::AdbSideloadingPolicyChangeNotification());
 }
 
 void BrowserPolicyConnectorChromeOS::PreShutdown() {
@@ -324,7 +322,7 @@ void BrowserPolicyConnectorChromeOS::PreShutdown() {
 
 void BrowserPolicyConnectorChromeOS::Shutdown() {
   device_cert_provisioning_scheduler_.reset();
-  system_proxy_manager_.reset();
+  system_proxy_handler_.reset();
 
   // NetworkCertLoader may be not initialized in tests.
   if (chromeos::NetworkCertLoader::IsInitialized()) {
@@ -499,6 +497,9 @@ void BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerConnected() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
       FROM_HERE, std::move(device_cloud_policy_initializer_));
 
+  // TODO(crbug.com/705758): Remove once the crash is resolved.
+  LOG(WARNING) << "DeviceCloudPolicyInitializer is not available anymore.";
+
   if (!device_cert_provisioning_scheduler_) {
     // CertProvisioningScheduler depends on the device-wide CloudPolicyClient to
     // be available so it can only be created when the CloudPolicyManager is
@@ -507,7 +508,7 @@ void BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerConnected() {
     // to be non-null when this observer function has been called.
     CloudPolicyClient* cloud_policy_client =
         device_cloud_policy_manager_->core()->client();
-    device_cert_provisioning_scheduler_ = chromeos::cert_provisioning::
+    device_cert_provisioning_scheduler_ = ash::cert_provisioning::
         CertProvisioningSchedulerImpl::CreateDeviceCertProvisioningScheduler(
             cloud_policy_client,
             affiliated_invalidation_service_provider_.get());
@@ -536,7 +537,7 @@ BrowserPolicyConnectorChromeOS::CreatePolicyProviders() {
 void BrowserPolicyConnectorChromeOS::SetTimezoneIfPolicyAvailable() {
   typedef chromeos::CrosSettingsProvider Provider;
   Provider::TrustedStatus result =
-      chromeos::CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
+      ash::CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
           &BrowserPolicyConnectorChromeOS::SetTimezoneIfPolicyAvailable,
           weak_ptr_factory_.GetWeakPtr()));
 
@@ -544,8 +545,8 @@ void BrowserPolicyConnectorChromeOS::SetTimezoneIfPolicyAvailable() {
     return;
 
   std::string timezone;
-  if (chromeos::CrosSettings::Get()->GetString(chromeos::kSystemTimezonePolicy,
-                                               &timezone) &&
+  if (ash::CrosSettings::Get()->GetString(chromeos::kSystemTimezonePolicy,
+                                          &timezone) &&
       !timezone.empty()) {
     chromeos::system::SetSystemAndSigninScreenTimezone(timezone);
   }
@@ -565,18 +566,23 @@ void BrowserPolicyConnectorChromeOS::RestartDeviceCloudPolicyInitializer() {
 std::unique_ptr<chromeos::attestation::AttestationFlow>
 BrowserPolicyConnectorChromeOS::CreateAttestationFlow() {
   return std::make_unique<chromeos::attestation::AttestationFlow>(
-      std::make_unique<chromeos::attestation::AttestationCAClient>());
+      std::make_unique<ash::attestation::AttestationCAClient>());
 }
 
-chromeos::AffiliationIDSet
-BrowserPolicyConnectorChromeOS::GetDeviceAffiliationIDs() const {
-  chromeos::AffiliationIDSet affiliation_ids;
+base::flat_set<std::string>
+BrowserPolicyConnectorChromeOS::device_affiliation_ids() const {
   const em::PolicyData* policy = GetDevicePolicy();
   if (policy) {
-    affiliation_ids.insert(policy->device_affiliation_ids().begin(),
-                           policy->device_affiliation_ids().end());
+    const auto& ids = policy->device_affiliation_ids();
+    return {ids.begin(), ids.end()};
   }
-  return affiliation_ids;
+  return {};
+}
+
+ash::AffiliationIDSet
+BrowserPolicyConnectorChromeOS::GetDeviceAffiliationIDs() const {
+  base::flat_set<std::string> affiliation_ids = device_affiliation_ids();
+  return {affiliation_ids.begin(), affiliation_ids.end()};
 }
 
 const em::PolicyData* BrowserPolicyConnectorChromeOS::GetDevicePolicy() const {

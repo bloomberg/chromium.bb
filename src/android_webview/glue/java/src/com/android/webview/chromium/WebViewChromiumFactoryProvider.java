@@ -53,9 +53,9 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.VerifiesOnN;
 import org.chromium.base.annotations.VerifiesOnP;
-import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
+import org.chromium.build.NativeLibraries;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.components.embedder_support.application.FirebaseConfig;
@@ -405,6 +405,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         RecordHistogram.recordTimesHistogram(
                 "Android.WebView.Startup.CreationTime.Stage1.FactoryInit",
                 SystemClock.elapsedRealtime() - startTime);
+
+        if (BuildInfo.isAtLeastS()) {
+            // TODO: Use the framework constants as indices in timestamps array.
+            startTime = mWebViewDelegate.getTimestamps()[0];
+            RecordHistogram.recordTimesHistogram(
+                    "Android.WebView.Startup.CreationTime.TotalFactoryInitTime",
+                    SystemClock.elapsedRealtime() - startTime);
+        }
     }
 
     /* package */ static void checkStorageIsNotDeviceProtected(Context context) {
@@ -542,7 +550,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         return new WebViewChromium(this, webView, privateAccess, mShouldDisableThreadChecking);
     }
 
-    // Workaround for IME thread crashes on grandfathered OEM apps.
+    // Workaround for IME thread crashes on legacy OEM apps.
     private boolean shouldDisableThreadChecking(Context context) {
         String appName = context.getPackageName();
         int versionCode = PackageUtils.getPackageVersion(context, appName);

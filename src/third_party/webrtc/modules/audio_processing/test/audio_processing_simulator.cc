@@ -226,6 +226,20 @@ void AudioProcessingSimulator::ProcessStream(bool fixed_interface) {
                                      : analog_mic_level_);
   }
 
+  // Post any scheduled runtime settings.
+  if (settings_.frame_for_sending_capture_output_used_false &&
+      *settings_.frame_for_sending_capture_output_used_false ==
+          static_cast<int>(num_process_stream_calls_)) {
+    ap_->PostRuntimeSetting(
+        AudioProcessing::RuntimeSetting::CreateCaptureOutputUsedSetting(false));
+  }
+  if (settings_.frame_for_sending_capture_output_used_true &&
+      *settings_.frame_for_sending_capture_output_used_true ==
+          static_cast<int>(num_process_stream_calls_)) {
+    ap_->PostRuntimeSetting(
+        AudioProcessing::RuntimeSetting::CreateCaptureOutputUsedSetting(true));
+  }
+
   // Process the current audio frame.
   if (fixed_interface) {
     {
@@ -453,7 +467,7 @@ void AudioProcessingSimulator::DetachAecDump() {
 void AudioProcessingSimulator::ConfigureAudioProcessor() {
   AudioProcessing::Config apm_config;
   if (settings_.use_ts) {
-    apm_config.transient_suppression.enabled = *settings_.use_ts;
+    apm_config.transient_suppression.enabled = *settings_.use_ts != 0;
   }
   if (settings_.multi_channel_render) {
     apm_config.pipeline.multi_channel_render = *settings_.multi_channel_render;
@@ -483,6 +497,34 @@ void AudioProcessingSimulator::ConfigureAudioProcessor() {
       apm_config.pre_amplifier.fixed_gain_factor =
           *settings_.pre_amplifier_gain_factor;
     }
+  }
+
+  if (settings_.use_analog_mic_gain_emulation) {
+    if (*settings_.use_analog_mic_gain_emulation) {
+      apm_config.capture_level_adjustment.enabled = true;
+      apm_config.capture_level_adjustment.analog_mic_gain_emulation.enabled =
+          true;
+    } else {
+      apm_config.capture_level_adjustment.analog_mic_gain_emulation.enabled =
+          false;
+    }
+  }
+  if (settings_.analog_mic_gain_emulation_initial_level) {
+    apm_config.capture_level_adjustment.analog_mic_gain_emulation
+        .initial_level = *settings_.analog_mic_gain_emulation_initial_level;
+  }
+
+  if (settings_.use_capture_level_adjustment) {
+    apm_config.capture_level_adjustment.enabled =
+        *settings_.use_capture_level_adjustment;
+  }
+  if (settings_.pre_gain_factor) {
+    apm_config.capture_level_adjustment.pre_gain_factor =
+        *settings_.pre_gain_factor;
+  }
+  if (settings_.post_gain_factor) {
+    apm_config.capture_level_adjustment.post_gain_factor =
+        *settings_.post_gain_factor;
   }
 
   const bool use_aec = settings_.use_aec && *settings_.use_aec;
@@ -560,7 +602,9 @@ void AudioProcessingSimulator::ConfigureAudioProcessor() {
   ap_->ApplyConfig(apm_config);
 
   if (settings_.use_ts) {
-    ap_->set_stream_key_pressed(*settings_.use_ts);
+    // Default to key pressed if activating the transient suppressor with
+    // continuous key events.
+    ap_->set_stream_key_pressed(*settings_.use_ts == 2);
   }
 
   if (settings_.aec_dump_output_filename) {

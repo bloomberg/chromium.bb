@@ -21,6 +21,8 @@ class CORE_EXPORT NGTableNode final : public NGBlockNode {
 
   scoped_refptr<const NGTableBorders> GetTableBorders() const;
 
+  LayoutUnit ComputeCaptionBlockSize(const NGConstraintSpace& space) const;
+
   scoped_refptr<const NGTableTypes::Columns> GetColumnConstraints(
       const NGTableGroupedChildren&,
       const NGBoxStrut& border_padding) const;
@@ -37,9 +39,6 @@ class CORE_EXPORT NGTableNode final : public NGBlockNode {
   // TODO(layout-dev): This isn't ideal, as we may have a fixed inline-size
   // parent where an "infinite" size would be fine.
   bool AllowColumnPercentages(bool is_layout_pass) const;
-
-  // True if table's intrinsic max size can be infinite.
-  bool AllowsInfiniteMaxInlineSize() const;
 };
 
 template <>

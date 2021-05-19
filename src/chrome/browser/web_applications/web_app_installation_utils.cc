@@ -36,13 +36,19 @@ std::vector<SquareSizePx> GetSquareSizePxs(
   return sizes;
 }
 
-std::vector<std::vector<SquareSizePx>> GetDownloadedShortcutsMenuIconsSizes(
-    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps) {
-  std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes;
-  shortcuts_menu_icons_sizes.reserve(shortcuts_menu_icons_bitmaps.size());
-  for (const auto& shortcut_icon_bitmaps : shortcuts_menu_icons_bitmaps) {
-    shortcuts_menu_icons_sizes.emplace_back(
-        GetSquareSizePxs(shortcut_icon_bitmaps));
+std::vector<IconSizes> GetDownloadedShortcutsMenuIconsSizes(
+    const ShortcutsMenuIconBitmaps& shortcuts_menu_icon_bitmaps) {
+  std::vector<IconSizes> shortcuts_menu_icons_sizes;
+  shortcuts_menu_icons_sizes.reserve(shortcuts_menu_icon_bitmaps.size());
+  for (const auto& shortcut_icon_bitmaps : shortcuts_menu_icon_bitmaps) {
+    IconSizes icon_sizes;
+    // TODO (crbug.com/1114638): Return monochrome icon sizes too.
+    icon_sizes.SetSizesForPurpose(IconPurpose::ANY,
+                                  GetSquareSizePxs(shortcut_icon_bitmaps.any));
+    icon_sizes.SetSizesForPurpose(
+        IconPurpose::MASKABLE,
+        GetSquareSizePxs(shortcut_icon_bitmaps.maskable));
+    shortcuts_menu_icons_sizes.push_back(std::move(icon_sizes));
   }
   return shortcuts_menu_icons_sizes;
 }
@@ -85,19 +91,6 @@ void SetWebAppProtocolHandlers(
   web_app.SetProtocolHandlers(web_app_protocol_handlers);
 }
 
-void SetWebAppUrlHandlers(
-    const std::vector<blink::Manifest::UrlHandler>& url_handlers,
-    WebApp& web_app) {
-  apps::UrlHandlers web_app_url_handlers;
-  for (const auto& url_handler : url_handlers) {
-    apps::UrlHandlerInfo web_app_url_handler;
-    web_app_url_handler.origin = url_handler.origin;
-    web_app_url_handlers.push_back(std::move(web_app_url_handler));
-  }
-
-  web_app.SetUrlHandlers(std::move(web_app_url_handlers));
-}
-
 }  // namespace
 
 void SetWebAppManifestFields(const WebApplicationInfo& web_app_info,
@@ -127,22 +120,23 @@ void SetWebAppManifestFields(const WebApplicationInfo& web_app_info,
 
   web_app.SetIconInfos(web_app_info.icon_infos);
   web_app.SetDownloadedIconSizes(
-      IconPurpose::ANY, GetSquareSizePxs(web_app_info.icon_bitmaps_any));
+      IconPurpose::ANY, GetSquareSizePxs(web_app_info.icon_bitmaps.any));
   // TODO (crbug.com/1114638): Add monochrome icons support.
   web_app.SetDownloadedIconSizes(
       IconPurpose::MASKABLE,
-      GetSquareSizePxs(web_app_info.icon_bitmaps_maskable));
+      GetSquareSizePxs(web_app_info.icon_bitmaps.maskable));
   web_app.SetIsGeneratedIcon(web_app_info.is_generated_icon);
 
   web_app.SetShortcutsMenuItemInfos(web_app_info.shortcuts_menu_item_infos);
   web_app.SetDownloadedShortcutsMenuIconsSizes(
       GetDownloadedShortcutsMenuIconsSizes(
-          web_app_info.shortcuts_menu_icons_bitmaps));
+          web_app_info.shortcuts_menu_icon_bitmaps));
 
   SetWebAppFileHandlers(web_app_info.file_handlers, web_app);
   web_app.SetShareTarget(web_app_info.share_target);
   SetWebAppProtocolHandlers(web_app_info.protocol_handlers, web_app);
-  SetWebAppUrlHandlers(web_app_info.url_handlers, web_app);
+  web_app.SetNoteTakingNewNoteUrl(web_app_info.note_taking_new_note_url);
+  web_app.SetUrlHandlers(web_app_info.url_handlers);
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin) &&
       web_app_info.run_on_os_login) {

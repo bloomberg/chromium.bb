@@ -8,18 +8,16 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
-#include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/ash/login/configuration_keys.h"
+#include "chrome/browser/ash/login/error_screens_histogram_helper.h"
 #include "chrome/browser/ash/login/screens/network_error.h"
-#include "chrome/browser/chromeos/login/configuration_keys.h"
-#include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
-#include "chrome/browser/chromeos/login/wizard_context.h"
+#include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/grit/chromium_strings.h"
@@ -38,8 +36,6 @@ constexpr const char kUserActionRejectUpdateOverCellular[] =
     "update-reject-cellular";
 
 constexpr const char kUserActionCancelUpdateShortcut[] = "cancel-update";
-
-const char kUpdateDeadlineFile[] = "/tmp/update-check-response-deadline";
 
 // Time in seconds after which we initiate reboot.
 constexpr const base::TimeDelta kWaitBeforeRebootTime =
@@ -291,6 +287,8 @@ void UpdateScreen::UpdateInfoChanged(
     const VersionUpdater::UpdateInfo& update_info) {
   const update_engine::StatusResult& status = update_info.status;
   hide_progress_on_exit_ = false;
+  has_critical_update_ =
+      status.update_urgency() == update_engine::UpdateUrgency::CRITICAL;
   if (update_info.requires_permission_for_cellular && view_) {
     view_->SetUpdateState(UpdateView::UIState::kCellularPermission);
     MakeSureScreenIsShown();
@@ -431,7 +429,7 @@ void UpdateScreen::SetUpdateStatusMessage(int percent,
                                           base::TimeDelta time_left) {
   if (!view_)
     return;
-  base::string16 time_left_message;
+  std::u16string time_left_message;
   if (time_left.InMinutes() == 0) {
     time_left_message = l10n_util::GetStringFUTF16(
         IDS_UPDATE_STATUS_SUBTITLE_TIME_LEFT,
@@ -465,26 +463,7 @@ void UpdateScreen::UpdateBatteryWarningVisibility() {
 }
 
 bool UpdateScreen::HasCriticalUpdate() {
-  if (ignore_update_deadlines_)
-    return true;
-  if (has_critical_update_.has_value())
-    return has_critical_update_.value();
-  has_critical_update_ = true;
-
-  std::string deadline;
-  // Checking for update flag file causes us to do blocking IO on UI thread.
-  // Temporarily allow it until we fix http://crosbug.com/11106
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  base::FilePath update_deadline_file_path(kUpdateDeadlineFile);
-  if (!base::ReadFileToString(update_deadline_file_path, &deadline) ||
-      deadline.empty()) {
-    has_critical_update_ = false;
-    return false;
-  }
-
-  // TODO(dpolukhin): Analyze file content. Now we can just assume that
-  // if the file exists and not empty, there is critical update.
-  return true;
+  return has_critical_update_.has_value() && has_critical_update_.value();
 }
 
 void UpdateScreen::MakeSureScreenIsShown() {

@@ -60,6 +60,7 @@ class PLATFORM_EXPORT WorkerMainScriptLoader final
   void Cancel();
 
   // Implements network::mojom::URLLoaderClient.
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
   void OnReceiveResponse(
       network::mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveRedirect(
@@ -99,6 +100,7 @@ class PLATFORM_EXPORT WorkerMainScriptLoader final
   Member<WorkerMainScriptLoaderClient> client_;
   Member<ResourceLoadObserver> resource_load_observer_;
 
+  int request_id_;
   ResourceRequestHead initial_request_;
   ResourceLoaderOptions resource_loader_options_{nullptr /* world */};
   KURL initial_request_url_;

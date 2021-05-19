@@ -5,6 +5,7 @@
 #include "remoting/host/input_injector_chromeos.h"
 
 #include <set>
+#include <string>
 #include <utility>
 
 #include "ash/shell.h"
@@ -13,7 +14,6 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "remoting/host/chromeos/point_transformer.h"
 #include "remoting/host/clipboard.h"
@@ -178,7 +178,7 @@ void InputInjectorChromeos::Core::InjectTextEvent(const TextEvent& event) {
   std::string normalized_str;
   base::ConvertToUtf8AndNormalize(event.text(), base::kCodepageUTF8,
                                   &normalized_str);
-  base::string16 utf16_string = base::UTF8ToUTF16(normalized_str);
+  std::u16string utf16_string = base::UTF8ToUTF16(normalized_str);
 
   text_input_client->InsertText(
       utf16_string,

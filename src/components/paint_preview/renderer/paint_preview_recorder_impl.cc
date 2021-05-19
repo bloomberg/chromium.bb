@@ -73,6 +73,7 @@ void RecordToFileOnThreadPool(sk_sp<const SkPicture> skp,
                               CapturePaintPreviewCallback callback) {
   TRACE_EVENT0("paint_preview", "RecordToFileOnThreadPool");
   size_t serialized_size = 0;
+  tracker->GetImageSerializationContext()->skip_texture_backed = true;
   bool success = RecordToFile(std::move(skp_file), skp, tracker.get(),
                               max_capture_size, &serialized_size);
   out.status = success ? mojom::PaintPreviewStatus::kOk
@@ -233,8 +234,7 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   // Default to using the clip rect.
   gfx::Rect bounds = params->clip_rect;
   auto document_size = frame->DocumentSize();
-  gfx::Rect document_rect =
-      gfx::Rect(0, 0, document_size.width, document_size.height);
+  gfx::Rect document_rect = gfx::Rect(document_size);
   if (bounds.IsEmpty() || params->clip_rect_is_hint) {
     // If the clip rect is empty or only a hint try to use the document size.
     if (!document_rect.IsEmpty())
@@ -279,8 +279,8 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
 
   auto tracker = std::make_unique<PaintPreviewTracker>(
       params->guid, frame->GetEmbeddingToken(), is_main_frame_);
-  auto size = frame->GetScrollOffset();
-  response->scroll_offsets = gfx::Size(size.width, size.height);
+  auto offset = frame->GetScrollOffset();
+  response->scroll_offsets = gfx::Size(offset.x(), offset.y());
 
   cc::PaintRecorder recorder;
   cc::PaintCanvas* canvas =

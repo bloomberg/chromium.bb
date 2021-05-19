@@ -44,6 +44,7 @@ struct DeepScanDebugData {
   base::Time request_time;
   base::Optional<enterprise_connectors::ContentAnalysisRequest> request;
   GURL tab_url;
+  bool per_profile_request;
 
   base::Time response_time;
   std::string response_status;
@@ -57,6 +58,15 @@ struct DeepScanDebugData {
 // browsing page.
 struct RTLookupRequestAndToken {
   RTLookupRequest request;
+  std::string token;
+};
+
+// The struct to combine a client-side phishing request and the token associated
+// with it. The token is not part of the request proto because it is sent in the
+// header. The token will be displayed along with the request in the safe
+// browsing page.
+struct ClientPhishingRequestAndToken {
+  ClientPhishingRequest request;
   std::string token;
 };
 
@@ -94,6 +104,14 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // Get the ClientDownloadReponses that have been collected since the oldest
   // currently open chrome://safe-browsing tab was opened.
   void GetReceivedClientDownloadResponses(const base::ListValue* args);
+
+  // Get the ClientPhishingRequests that have been collected since the oldest
+  // currently open chrome://safe-browsing tab was opened.
+  void GetSentClientPhishingRequests(const base::ListValue* args);
+
+  // Get the ClientPhishingResponses that have been collected since the oldest
+  // currently open chrome://safe-browsing tab was opened.
+  void GetReceivedClientPhishingResponses(const base::ListValue* args);
 
   // Get the ThreatDetails that have been collected since the oldest currently
   // open chrome://safe-browsing tab was opened.
@@ -156,6 +174,16 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // or more WebUI tabs are open.
   void NotifyClientDownloadResponseJsListener(
       ClientDownloadResponse* client_download_response);
+
+  // Called when any new ClientPhishingRequest messages are sent (potentially
+  // with token in header) while one or more WebUI tabs are open.
+  void NotifyClientPhishingRequestJsListener(
+      const ClientPhishingRequestAndToken& client_phishing_request);
+
+  // Called when any new ClientPhishingResponse messages are received while one
+  // or more WebUI tabs are open.
+  void NotifyClientPhishingResponseJsListener(
+      ClientPhishingResponse* client_phishing_response);
 
   // Get the new ThreatDetails messages sent from ThreatDetails when a ping is
   // sent, while one or more WebUI tabs are opened.
@@ -255,6 +283,23 @@ class WebUIInfoSingleton {
   // Clear the list of the received ClientDownloadResponse messages.
   void ClearClientDownloadResponsesReceived();
 
+  // Add the new message and token in |client_phishing_requests_sent_| and send
+  // it to all the open chrome://safe-browsing tabs.
+  void AddToClientPhishingRequestsSent(
+      std::unique_ptr<ClientPhishingRequest> client_phishing_request,
+      std::string token);
+
+  // Clear the list of the sent ClientPhishingRequest messages.
+  void ClearClientPhishingRequestsSent();
+
+  // Add the new message in |client_phishing_responses_received_| and send it to
+  // all the open chrome://safe-browsing tabs.
+  void AddToClientPhishingResponsesReceived(
+      std::unique_ptr<ClientPhishingResponse> response);
+
+  // Clear the list of the received ClientPhishingResponse messages.
+  void ClearClientPhishingResponsesReceived();
+
   // Add the new message in |csbrrs_sent_| and send it to all the open
   // chrome://safe-browsing tabs.
   void AddToCSBRRsSent(std::unique_ptr<ClientSafeBrowsingReportRequest> csbrr);
@@ -326,6 +371,7 @@ class WebUIInfoSingleton {
   // and response.
   void AddToDeepScanRequests(
       const GURL& tab_url,
+      bool per_profile_request,
       const enterprise_connectors::ContentAnalysisRequest& request);
 
   // Add the new response to |deep_scan_requests_| and send it to all the open
@@ -357,6 +403,21 @@ class WebUIInfoSingleton {
   const std::vector<std::unique_ptr<ClientDownloadResponse>>&
   client_download_responses_received() const {
     return client_download_responses_received_;
+  }
+
+  // Get the list of the sent ClientPhishingRequestAndToken that have been
+  // collected (potentially with token in header) since the oldest currently
+  // open chrome://safe-browsing tab was opened.
+  const std::vector<ClientPhishingRequestAndToken>&
+  client_phishing_requests_sent() const {
+    return client_phishing_requests_sent_;
+  }
+
+  // Get the list of the sent ClientPhishingResponse that have been collected
+  // since the oldest currently open chrome://safe-browsing tab was opened.
+  const std::vector<std::unique_ptr<ClientPhishingResponse>>&
+  client_phishing_responses_received() const {
+    return client_phishing_responses_received_;
   }
 
   // Get the list of the sent CSBRR reports that have been collected since the
@@ -465,6 +526,19 @@ class WebUIInfoSingleton {
   // is not marked const.
   std::vector<std::unique_ptr<ClientDownloadResponse>>
       client_download_responses_received_;
+
+  // List of ClientPhishingRequests and tokens sent since since the oldest
+  // currently open chrome://safe-browsing tab was opened.
+  // "ClientPhishingRequests" cannot be const, due to being used by functions
+  // that call AllowJavascript(), which is not marked const.
+  std::vector<ClientPhishingRequestAndToken> client_phishing_requests_sent_;
+
+  // List of ClientPhishingResponses received since since the oldest currently
+  // open chrome://safe-browsing tab was opened. "ClientPhishingResponse" cannot
+  // be const, due to being used by functions that call AllowJavascript(), which
+  // is not marked const.
+  std::vector<std::unique_ptr<ClientPhishingResponse>>
+      client_phishing_responses_received_;
 
   // List of CSBRRs sent since since the oldest currently open
   // chrome://safe-browsing tab was opened.

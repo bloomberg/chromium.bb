@@ -17,6 +17,7 @@
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/remote_security_context.h"
+#include "third_party/blink/renderer/core/frame/child_frame_compositor.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -37,9 +38,12 @@ class LocalFrame;
 class MessageEvent;
 class RemoteFrameClient;
 struct FrameLoadRequest;
+class ChildFrameCompositingHelper;
+class WebFrameWidget;
 
 // A RemoteFrame is a frame that is possibly hosted outside this process.
 class CORE_EXPORT RemoteFrame final : public Frame,
+                                      public ChildFrameCompositor,
                                       public mojom::blink::RemoteMainFrame,
                                       public mojom::blink::RemoteFrame {
  public:
@@ -57,7 +61,9 @@ class CORE_EXPORT RemoteFrame final : public Frame,
               const RemoteFrameToken& frame_token,
               WindowAgentFactory* inheriting_agent_factory,
               InterfaceRegistry*,
-              AssociatedInterfaceProvider*);
+              AssociatedInterfaceProvider*,
+              WebFrameWidget* ancestor_widget,
+              const base::UnguessableToken& devtools_frame_token);
   ~RemoteFrame() override;
 
   // Frame overrides:
@@ -80,8 +86,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void AddResourceTimingFromChild(
       mojom::blink::ResourceTimingInfoPtr timing) override;
 
-  void SetCcLayer(cc::Layer*, bool is_surface_layer);
-  cc::Layer* GetCcLayer() const { return cc_layer_; }
+  // ChildFrameCompositor:
+  const scoped_refptr<cc::Layer>& GetCcLayer() override;
 
   void AdvanceFocus(mojom::blink::FocusType, LocalFrame* source);
 
@@ -106,8 +112,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   void DidChangeVisibleToHitTesting() override;
 
-  void SetReplicatedFeaturePolicyHeader(
-      const ParsedFeaturePolicy& parsed_header);
+  void SetReplicatedPermissionsPolicyHeader(
+      const ParsedPermissionsPolicy& parsed_header);
 
   void SetReplicatedSandboxFlags(network::mojom::blink::WebSandboxFlags);
   void SetInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy);
@@ -144,10 +150,6 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   // blink::mojom::RemoteFrame overrides:
   void WillEnterFullscreen(mojom::blink::FullscreenOptionsPtr) override;
-  void AddReplicatedContentSecurityPolicies(
-      WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> csps)
-      override;
-  void ResetReplicatedContentSecurityPolicy() override;
   void EnforceInsecureNavigationsSet(const WTF::Vector<uint32_t>& set) override;
   void SetFrameOwnerProperties(
       mojom::blink::FrameOwnerPropertiesPtr properties) override;
@@ -183,12 +185,12 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       mojom::blink::IntrinsicSizingInfoPtr sizing_info) override;
   void DidSetFramePolicyHeaders(
       network::mojom::blink::WebSandboxFlags,
-      const WTF::Vector<ParsedFeaturePolicyDeclaration>&) override;
-  // Updates the snapshotted policy attributes (sandbox flags and feature policy
-  // container policy) in the frame's FrameOwner. This is used when this frame's
-  // parent is in another process and it dynamically updates this frame's
-  // sandbox flags or container policy. The new policy won't take effect until
-  // the next navigation.
+      const WTF::Vector<ParsedPermissionsPolicyDeclaration>&) override;
+  // Updates the snapshotted policy attributes (sandbox flags and permissions
+  // policy container policy) in the frame's FrameOwner. This is used when this
+  // frame's parent is in another process and it dynamically updates this
+  // frame's sandbox flags or container policy. The new policy won't take effect
+  // until the next navigation.
   void DidUpdateFramePolicy(const FramePolicy& frame_policy) override;
   void UpdateOpener(
       const base::Optional<blink::FrameToken>& opener_frame_token) override;
@@ -199,6 +201,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
   void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
+  void ChildProcessGone() override;
 
   // Called only when this frame has a local frame owner.
   IntSize GetMainFrameViewportSize() const override;
@@ -228,6 +231,11 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   // Frame protected overrides:
   bool DetachImpl(FrameDetachType) override;
 
+  // ChildFrameCompositor:
+  void SetCcLayer(scoped_refptr<cc::Layer> layer,
+                  bool is_surface_layer) override;
+  SkBitmap* GetSadPageBitmap() override;
+
   // Intentionally private to prevent redundant checks when the type is
   // already RemoteFrame.
   bool IsLocalFrame() const override { return false; }
@@ -235,7 +243,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   // Returns false if detaching child frames reentrantly detached `this`.
   bool DetachChildren();
-  void ApplyReplicatedFeaturePolicyHeader();
+  void ApplyReplicatedPermissionsPolicyHeader();
   void RecordSentVisualProperties();
 
   static void BindToReceiver(
@@ -249,16 +257,28 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   RemoteSecurityContext security_context_;
   base::Optional<blink::FrameVisualProperties> sent_visual_properties_;
   blink::FrameVisualProperties pending_visual_properties_;
-  cc::Layer* cc_layer_ = nullptr;
+  scoped_refptr<cc::Layer> cc_layer_;
   bool is_surface_layer_ = false;
-  ParsedFeaturePolicy feature_policy_header_;
+  ParsedPermissionsPolicy permissions_policy_header_;
   String unique_name_;
 
   viz::FrameSinkId frame_sink_id_;
   std::unique_ptr<viz::ParentLocalSurfaceIdAllocator>
       parent_local_surface_id_allocator_;
 
+  // The WebFrameWidget of the nearest ancestor local root. If the proxy has no
+  // local root ancestor (eg it is a proxy of the root frame) then the pointer
+  // is null.
+  WebFrameWidget* ancestor_widget_;
+
   InterfaceRegistry* const interface_registry_;
+
+  // True when the process rendering the child's frame contents has terminated
+  // and ChildProcessGone() is called.
+  bool remote_process_gone_ = false;
+
+  // Will be nullptr when this RemoteFrame's parent is not a LocalFrame.
+  std::unique_ptr<ChildFrameCompositingHelper> compositing_helper_;
 
   mojo::AssociatedRemote<mojom::blink::RemoteFrameHost>
       remote_frame_host_remote_;

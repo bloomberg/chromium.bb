@@ -675,13 +675,18 @@ Specify the preset for matching stream(s).
 Print encoding progress/statistics. It is on by default, to explicitly
 disable it you need to specify @code{-nostats}.
 
+@item -stats_period @var{time} (@emph{global})
+Set period at which encoding progress/statistics are updated. Default is 0.5 seconds.
+
 @item -progress @var{url} (@emph{global})
 Send program-friendly progress information to @var{url}.
 
-Progress information is written approximately every second and at the end of
+Progress information is written periodically and at the end of
 the encoding process. It is made of "@var{key}=@var{value}" lines. @var{key}
 consists of only alphanumeric characters. The last key of a sequence of
 progress information is always "progress".
+
+The update period is set using @code{-stats_period}.
 
 @anchor{stdin option}
 @item -stdin
@@ -753,6 +758,13 @@ If in doubt use @option{-framerate} instead of the input option @option{-r}.
 
 As an output option, duplicate or drop input frames to achieve constant output
 frame rate @var{fps}.
+
+@item -fpsmax[:@var{stream_specifier}] @var{fps} (@emph{output,per-stream})
+Set maximum frame rate (Hz value, fraction or abbreviation).
+
+Clamps output frame rate when output framerate is auto-set and is higher than this value.
+Useful in batch processing or when input framerate is wrongly detected as very high.
+It cannot be set together with @code{-r}. It is ignored during streamcopy.
 
 @item -s[:@var{stream_specifier}] @var{size} (@emph{input/output,per-stream})
 Set frame size.
@@ -1500,6 +1512,17 @@ is enabled.
 
 This option has been deprecated. Use the @code{aresample} audio filter instead.
 
+@item -adrift_threshold @var{time}
+Set the minimum difference between timestamps and audio data (in seconds) to trigger
+adding/dropping samples to make it match the timestamps. This option effectively is
+a threshold to select between hard (add/drop) and soft (squeeze/stretch) compensation.
+@code{-async} must be set to a positive value.
+
+@item -apad @var{parameters} (@emph{output,per-stream})
+Pad the output audio stream(s). This is the same as applying @code{-af apad}.
+Argument is a string of filter parameters composed the same as with the @code{apad} filter.
+@code{-shortest} must be set for this output for the option to take effect.
+
 @item -copyts
 Do not process input timestamps, but keep their values without trying
 to sanitize them. In particular, do not remove the initial start time
@@ -1654,6 +1677,22 @@ graph will be added to the output file automatically, so we can simply write
 ffmpeg -i video.mkv -i image.png -filter_complex 'overlay' out.mkv
 @end example
 
+As a special exception, you can use a bitmap subtitle stream as input: it
+will be converted into a video with the same size as the largest video in
+the file, or 720x576 if no video is present. Note that this is an
+experimental and temporary solution. It will be removed once libavfilter has
+proper support for subtitles.
+
+For example, to hardcode subtitles on top of a DVB-T recording stored in
+MPEG-TS format, delaying the subtitles by 1 second:
+@example
+ffmpeg -i input.ts -filter_complex \
+  '[#0x2ef] setpts=PTS+1/TB [sub] ; [#0x2d0] [sub] overlay' \
+  -sn -map '#0x2dc' output.mkv
+@end example
+(0x2d0, 0x2dc and 0x2ef are the MPEG-TS PIDs of respectively the video,
+audio and subtitles streams; 0:0, 0:3 and 0:7 would have worked too)
+
 To generate 5 seconds of pure red video using lavfi @code{color} source:
 @example
 ffmpeg -filter_complex 'color=c=red' -t 5 out.mkv
@@ -1734,6 +1773,11 @@ No packets were passed to the muxer, the output is empty.
 No packets were passed to the muxer in some of the output streams.
 @end table
 
+@item -max_error_rate (@emph{global})
+Set fraction of decoding frame failures across all inputs which when crossed
+ffmpeg will return exit code 69. Crossing this threshold does not terminate
+processing. Range is a floating-point number between 0 to 1. Default is 2/3.
+
 @item -xerror (@emph{global})
 Stop and exit on error
 
@@ -1762,22 +1806,6 @@ On by default, to explicitly disable it you need to specify
 @code{-noauto_conversion_filters}.
 
 @end table
-
-As a special exception, you can use a bitmap subtitle stream as input: it
-will be converted into a video with the same size as the largest video in
-the file, or 720x576 if no video is present. Note that this is an
-experimental and temporary solution. It will be removed once libavfilter has
-proper support for subtitles.
-
-For example, to hardcode subtitles on top of a DVB-T recording stored in
-MPEG-TS format, delaying the subtitles by 1 second:
-@example
-ffmpeg -i input.ts -filter_complex \
-  '[#0x2ef] setpts=PTS+1/TB [sub] ; [#0x2d0] [sub] overlay' \
-  -sn -map '#0x2dc' output.mkv
-@end example
-(0x2d0, 0x2dc and 0x2ef are the MPEG-TS PIDs of respectively the video,
-audio and subtitles streams; 0:0, 0:3 and 0:7 would have worked too)
 
 @section Preset files
 A preset file contains a sequence of @var{option}=@var{value} pairs,

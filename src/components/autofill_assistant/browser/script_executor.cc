@@ -20,8 +20,8 @@
 #include "components/autofill_assistant/browser/actions/action_delegate_util.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/full_card_requester.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
-#include "components/autofill_assistant/browser/self_delete_full_card_requester.h"
 #include "components/autofill_assistant/browser/service/service.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/wait_for_document_operation.h"
@@ -230,6 +230,7 @@ bool ScriptExecutor::ShouldInterruptOnPause(const ActionProto& proto) {
     case ActionProto::ActionInfoCase::kCheckElementIsOnTop:
     case ActionProto::ActionInfoCase::kReleaseElements:
     case ActionProto::ActionInfoCase::kDispatchJsEvent:
+    case ActionProto::ActionInfoCase::kSendKeyEvent:
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       return false;
   }
@@ -378,15 +379,6 @@ void ScriptExecutor::FindAllElements(const Selector& selector,
   delegate_->GetWebController()->FindAllElements(selector, std::move(callback));
 }
 
-void ScriptExecutor::WaitUntilElementIsStable(
-    int max_rounds,
-    base::TimeDelta check_interval,
-    const ElementFinder::Result& element,
-    base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback) {
-  delegate_->GetWebController()->WaitUntilElementIsStable(
-      element, max_rounds, check_interval, std::move(callback));
-}
-
 void ScriptExecutor::ClickOrTapElement(
     ClickType click_type,
     const ElementFinder::Result& element,
@@ -463,19 +455,22 @@ void ScriptExecutor::GetFullCard(const autofill::CreditCard* credit_card,
   // User might be asked to provide the cvc.
   delegate_->EnterState(AutofillAssistantState::MODAL_DIALOG);
 
-  // TODO(crbug.com/806868): Consider refactoring SelfDeleteFullCardRequester
-  // so as to unit test it.
-  (new SelfDeleteFullCardRequester())
-      ->GetFullCard(
-          GetWebContents(), credit_card,
-          base::BindOnce(&ScriptExecutor::OnGetFullCard,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  std::unique_ptr<FullCardRequester> full_card_requester =
+      std::make_unique<FullCardRequester>();
+  FullCardRequester* full_card_requester_ptr = full_card_requester.get();
+  full_card_requester_ptr->GetFullCard(
+      GetWebContents(), credit_card,
+      base::BindOnce(&ScriptExecutor::OnGetFullCard,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(full_card_requester), std::move(callback)));
 }
 
-void ScriptExecutor::OnGetFullCard(GetFullCardCallback callback,
-                                   const ClientStatus& status,
-                                   std::unique_ptr<autofill::CreditCard> card,
-                                   const base::string16& cvc) {
+void ScriptExecutor::OnGetFullCard(
+    std::unique_ptr<FullCardRequester> full_card_requester,
+    GetFullCardCallback callback,
+    const ClientStatus& status,
+    std::unique_ptr<autofill::CreditCard> card,
+    const std::u16string& cvc) {
   delegate_->EnterState(AutofillAssistantState::RUNNING);
   std::move(callback).Run(status, std::move(card), cvc);
 }
@@ -557,7 +552,7 @@ void ScriptExecutor::FillAddressForm(
 
 void ScriptExecutor::FillCardForm(
     std::unique_ptr<autofill::CreditCard> card,
-    const base::string16& cvc,
+    const std::u16string& cvc,
     const Selector& selector,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->FillCardForm(std::move(card), cvc, selector,
@@ -571,17 +566,6 @@ void ScriptExecutor::RetrieveElementFormAndFieldData(
                             const autofill::FormFieldData&)> callback) {
   delegate_->GetWebController()->RetrieveElementFormAndFieldData(
       selector, std::move(callback));
-}
-
-void ScriptExecutor::SelectOption(
-    const std::string& re2,
-    bool case_sensitive,
-    SelectOptionProto::OptionComparisonAttribute option_comparison_attribute,
-    const ElementFinder::Result& element,
-    base::OnceCallback<void(const ClientStatus&)> callback) {
-  delegate_->GetWebController()->SelectOption(element, re2, case_sensitive,
-                                              option_comparison_attribute,
-                                              std::move(callback));
 }
 
 void ScriptExecutor::ScrollToElementPosition(
@@ -626,48 +610,6 @@ void ScriptExecutor::SetProgressBarErrorState(bool error) {
 void ScriptExecutor::SetStepProgressBarConfiguration(
     const ShowProgressBarProto::StepProgressBarConfiguration& configuration) {
   delegate_->SetStepProgressBarConfiguration(configuration);
-}
-
-void ScriptExecutor::GetFieldValue(
-    const ElementFinder::Result& element,
-    base::OnceCallback<void(const ClientStatus&, const std::string&)>
-        callback) {
-  delegate_->GetWebController()->GetFieldValue(element, std::move(callback));
-}
-
-void ScriptExecutor::GetStringAttribute(
-    const std::vector<std::string>& attributes,
-    const ElementFinder::Result& element,
-    base::OnceCallback<void(const ClientStatus&, const std::string&)>
-        callback) {
-  delegate_->GetWebController()->GetStringAttribute(element, attributes,
-                                                    std::move(callback));
-}
-
-void ScriptExecutor::SetValueAttribute(
-    const std::string& value,
-    const ElementFinder::Result& element,
-    base::OnceCallback<void(const ClientStatus&)> callback) {
-  delegate_->GetWebController()->SetValueAttribute(element, value,
-                                                   std::move(callback));
-}
-
-void ScriptExecutor::SetAttribute(
-    const std::vector<std::string>& attributes,
-    const std::string& value,
-    const ElementFinder::Result& element,
-    base::OnceCallback<void(const ClientStatus&)> callback) {
-  delegate_->GetWebController()->SetAttribute(element, attributes, value,
-                                              std::move(callback));
-}
-
-void ScriptExecutor::SendKeyboardInput(
-    const std::vector<UChar32>& codepoints,
-    int key_press_delay_in_millisecond,
-    const ElementFinder::Result& element,
-    base::OnceCallback<void(const ClientStatus&)> callback) {
-  delegate_->GetWebController()->SendKeyboardInput(
-      element, codepoints, key_press_delay_in_millisecond, std::move(callback));
 }
 
 void ScriptExecutor::ExpectNavigation() {
@@ -759,7 +701,7 @@ autofill::PersonalDataManager* ScriptExecutor::GetPersonalDataManager() {
   return delegate_->GetPersonalDataManager();
 }
 
-WebsiteLoginManager* ScriptExecutor::GetWebsiteLoginManager() {
+WebsiteLoginManager* ScriptExecutor::GetWebsiteLoginManager() const {
   return delegate_->GetWebsiteLoginManager();
 }
 

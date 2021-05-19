@@ -230,7 +230,7 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
       : ui::SelectFileDialog(listener, std::move(policy)) {}
 
   void SelectFileImpl(Type type,
-                      const base::string16& title,
+                      const std::u16string& title,
                       const base::FilePath& default_path,
                       const FileTypeInfo* file_types,
                       int file_type_index,
@@ -682,7 +682,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionPolicyUITest,
   extensions::ExtensionBuilder builder;
   builder.SetPath(temp_dir_.GetPath());
   builder.SetManifest(manifest.Build());
-  builder.SetLocation(extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  builder.SetLocation(
+      extensions::mojom::ManifestLocation::kExternalPolicyDownload);
 
   // Install extension.
   extensions::ExtensionService* service =

@@ -28,19 +28,15 @@ const base::Feature kTestFeature2{"FeatureName2",
 
 class ChromeLabsButtonTest : public TestWithBrowserView {
  public:
+  ChromeLabsButtonTest()
+      : scoped_feature_entries_({{kFirstTestFeatureId, "", "",
+                                  flags_ui::FlagsState::GetCurrentPlatform(),
+                                  FEATURE_VALUE_TYPE(kTestFeature1)}}) {}
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kChromeLabs);
 
-    std::vector<flags_ui::FeatureEntry> entries = {
-        {kFirstTestFeatureId, "", "",
-         flags_ui::FlagsState::GetCurrentPlatform(),
-         FEATURE_VALUE_TYPE(kTestFeature1)}};
-
-    about_flags::testing::SetFeatureEntries(entries);
-
     std::vector<LabInfo> test_feature_info = {
-        {kFirstTestFeatureId, base::ASCIIToUTF16(""), base::ASCIIToUTF16(""),
-         version_info::Channel::STABLE}};
+        {kFirstTestFeatureId, u"", u"", "", version_info::Channel::STABLE}};
     scoped_chrome_labs_model_data_.SetModelDataForTesting(test_feature_info);
 
     TestWithBrowserView::SetUp();
@@ -49,6 +45,7 @@ class ChromeLabsButtonTest : public TestWithBrowserView {
   }
 
  private:
+  about_flags::testing::ScopedFeatureEntries scoped_feature_entries_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   ScopedChromeLabsModelDataForTesting scoped_chrome_labs_model_data_;
@@ -71,22 +68,30 @@ TEST_F(ChromeLabsButtonTest, ShowAndHideChromeLabsBubbleOnPress) {
 }
 
 TEST_F(ChromeLabsButtonTest, ShouldButtonShowTest) {
+  // There are experiments available so the button should not be nullptr.
   EXPECT_NE(browser_view()->toolbar()->chrome_labs_button(), nullptr);
+  // Enterprise policy is initially set to true.
+  EXPECT_TRUE(browser_view()->toolbar()->chrome_labs_button()->GetVisible());
+
+  // Default enterprise policy value should show the Chrome Labs button.
+  profile()->GetPrefs()->ClearPref(chrome_labs_prefs::kBrowserLabsEnabled);
+  EXPECT_TRUE(browser_view()->toolbar()->chrome_labs_button()->GetVisible());
+
+  profile()->GetPrefs()->SetBoolean(chrome_labs_prefs::kBrowserLabsEnabled,
+                                    false);
+  EXPECT_FALSE(browser_view()->toolbar()->chrome_labs_button()->GetVisible());
 }
 
 class ChromeLabsButtonNoExperimentsAvailableTest : public TestWithBrowserView {
  public:
+  ChromeLabsButtonNoExperimentsAvailableTest()
+      : scoped_feature_entries_({{kSecondTestFeatureId, "", "", 0,
+                                  FEATURE_VALUE_TYPE(kTestFeature2)}}) {}
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kChromeLabs);
 
-    std::vector<flags_ui::FeatureEntry> entries = {
-        {kSecondTestFeatureId, "", "", 0, FEATURE_VALUE_TYPE(kTestFeature2)}};
-
-    about_flags::testing::SetFeatureEntries(entries);
-
     std::vector<LabInfo> test_feature_info = {
-        {kSecondTestFeatureId, base::ASCIIToUTF16(""), base::ASCIIToUTF16(""),
-         version_info::Channel::STABLE}};
+        {kSecondTestFeatureId, u"", u"", "", version_info::Channel::STABLE}};
     scoped_chrome_labs_model_data_.SetModelDataForTesting(test_feature_info);
 
     TestWithBrowserView::SetUp();
@@ -95,6 +100,7 @@ class ChromeLabsButtonNoExperimentsAvailableTest : public TestWithBrowserView {
   }
 
  private:
+  about_flags::testing::ScopedFeatureEntries scoped_feature_entries_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   ScopedChromeLabsModelDataForTesting scoped_chrome_labs_model_data_;

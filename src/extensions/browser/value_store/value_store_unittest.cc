@@ -4,6 +4,7 @@
 
 #include "extensions/browser/value_store/value_store_unittest.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/json/json_writer.h"
@@ -85,9 +86,9 @@ testing::AssertionResult ChangesEq(
         " but was " << actual.size();
   }
 
-  std::map<std::string, std::unique_ptr<ValueStoreChange>> expected_as_map;
+  std::map<std::string, const ValueStoreChange*> expected_as_map;
   for (const ValueStoreChange& change : expected)
-    expected_as_map[change.key()] = std::make_unique<ValueStoreChange>(change);
+    expected_as_map[change.key()] = &change;
 
   std::set<std::string> keys_seen;
 
@@ -103,13 +104,13 @@ testing::AssertionResult ChangesEq(
           "Actual has unexpected change for key: " << it->key();
     }
 
-    ValueStoreChange expected_change = *expected_as_map[it->key()];
+    const ValueStoreChange* expected_change = expected_as_map[it->key()];
     std::string error;
-    if (!ValuesEqual(expected_change.new_value(), it->new_value(), &error)) {
+    if (!ValuesEqual(expected_change->new_value(), it->new_value(), &error)) {
       return testing::AssertionFailure() <<
           "New value for " << it->key() << " was unexpected: " << error;
     }
-    if (!ValuesEqual(expected_change.old_value(), it->old_value(), &error)) {
+    if (!ValuesEqual(expected_change->old_value(), it->old_value(), &error)) {
       return testing::AssertionFailure() <<
           "Old value for " << it->key() << " was unexpected: " << error;
     }
@@ -127,9 +128,9 @@ ValueStoreTest::ValueStoreTest()
       dict3_(new base::DictionaryValue()),
       dict12_(new base::DictionaryValue()),
       dict123_(new base::DictionaryValue()) {
-  val1_.reset(new base::Value(key1_ + "Value"));
-  val2_.reset(new base::Value(key2_ + "Value"));
-  val3_.reset(new base::Value(key3_ + "Value"));
+  val1_ = std::make_unique<base::Value>(key1_ + "Value");
+  val2_ = std::make_unique<base::Value>(key2_ + "Value");
+  val3_ = std::make_unique<base::Value>(key3_ + "Value");
 
   list1_.push_back(key1_);
   list2_.push_back(key2_);

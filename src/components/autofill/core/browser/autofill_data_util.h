@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
 #include "components/autofill/core/browser/field_types.h"
 
@@ -20,9 +19,9 @@ class FormStructure;
 namespace data_util {
 
 struct NameParts {
-  base::string16 given;
-  base::string16 middle;
-  base::string16 family;
+  std::u16string given;
+  std::u16string middle;
+  std::u16string family;
 };
 
 namespace bit_field_type_groups {
@@ -95,7 +94,7 @@ NameParts SplitName(base::StringPiece16 name);
 
 // Concatenates the name parts together in the correct order (based on script),
 // and returns the result.
-base::string16 JoinNameParts(base::StringPiece16 given,
+std::u16string JoinNameParts(base::StringPiece16 given,
                              base::StringPiece16 middle,
                              base::StringPiece16 family);
 
@@ -117,7 +116,7 @@ bool IsValidBasicCardIssuerNetwork(
 
 // Returns whether the specified |country_code| is a valid country code.
 bool IsValidCountryCode(const std::string& country_code);
-bool IsValidCountryCode(const base::string16& country_code);
+bool IsValidCountryCode(const std::u16string& country_code);
 
 // Returns a country code to be used when validating this profile. If the
 // profile has a valid country code set, it is returned. If not, a country code

@@ -5,13 +5,12 @@ struct Uniforms {
     float4 sk_RTAdjust;
 };
 struct Inputs {
-    float4 pos;
+    float4 pos  [[attribute(0)]];
 };
 struct Outputs {
     float4 sk_Position [[position]];
     float sk_PointSize [[point_size]];
 };
-
 
 vertex Outputs vertexMain(Inputs _in [[stage_in]], constant Uniforms& _uniforms [[buffer(0)]], uint sk_VertexID [[vertex_id]], uint sk_InstanceID [[instance_id]]) {
     Outputs _out;

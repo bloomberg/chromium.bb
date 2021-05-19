@@ -57,7 +57,7 @@ void GetFontNamesFromFilename(const std::string& filename,
 
 // Returns true if |text| contains only ASCII digits.
 bool ContainsOnlyDigits(const std::string& text) {
-  return text.find_first_not_of("0123456789") == base::string16::npos;
+  return text.find_first_not_of("0123456789") == std::u16string::npos;
 }
 
 // Appends a Font with the given |name| and |size| to |fonts| unless the last
@@ -224,7 +224,7 @@ bool GetFallbackFont(const Font& font,
   // Check that we have at least as much text as was claimed. If we have less
   // text than expected then DirectWrite will become confused and crash. This
   // shouldn't happen, but crbug.com/624905 shows that it happens sometimes.
-  constexpr base::char16 kNulCharacter = '\0';
+  constexpr char16_t kNulCharacter = '\0';
   if (text.find(kNulCharacter) != base::StringPiece16::npos)
     return false;
 

@@ -375,7 +375,7 @@ class AvdConfig(object):
         pkgs_by_dir[pkg.dest_path] = []
       pkgs_by_dir[pkg.dest_path].append(pkg)
 
-    for pkg_dir, pkgs in pkgs_by_dir.iteritems():
+    for pkg_dir, pkgs in pkgs_by_dir.items():
       logging.info('Installing packages in %s', pkg_dir)
       cipd_root = os.path.join(constants.DIR_SOURCE_ROOT, pkg_dir)
       if not os.path.exists(cipd_root):
@@ -530,6 +530,10 @@ class _AvdInstance(object):
           '-report-console',
           'unix:%s' % socket_path,
           '-no-boot-anim',
+          # Set the gpu mode to swiftshader_indirect otherwise the avd may exit
+          # with the error "change of render" under window mode
+          '-gpu',
+          'swiftshader_indirect',
       ]
 
       if read_only:

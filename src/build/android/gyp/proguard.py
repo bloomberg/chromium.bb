@@ -31,6 +31,7 @@ _API_LEVEL_VERSION_CODE = [
     (28, 'P'),
     (29, 'Q'),
     (30, 'R'),
+    (31, 'S'),
 ]
 
 
@@ -302,7 +303,8 @@ def _OptimizeWithR8(options,
                                                      tmp_output)
     base_context = split_contexts_by_name['base']
 
-    cmd = build_utils.JavaCmd(options.warnings_as_errors) + [
+    # R8 OOMs with the default xmx=1G.
+    cmd = build_utils.JavaCmd(options.warnings_as_errors, xmx='2G') + [
         '-Dcom.android.tools.r8.allowTestProguardOptions=1',
         '-Dcom.android.tools.r8.verticalClassMerging=1',
     ]
@@ -488,7 +490,7 @@ def _CheckForMissingSymbols(r8_path, dex_files, classpath, warnings_as_errors):
 
         # trichrome_webview_google_bundle contains this missing reference.
         # TODO(crbug.com/1142530): Fix this missing reference properly.
-        'org/chromium/base/library_loader/NativeLibraries',
+        'org/chromium/build/NativeLibraries',
 
         # TODO(agrieve): Exclude these only when use_jacoco_coverage=true.
         'Ljava/lang/instrument/ClassFileTransformer',
@@ -553,15 +555,19 @@ def _CombineConfigs(configs, dynamic_config_data, exclude_generated=False):
     if exclude_generated and config.endswith('.resources.proguard.txt'):
       continue
 
-    ret.append('# File: ' + config)
     with open(config) as config_file:
       contents = config_file.read().rstrip()
+
+    if not contents.strip():
+      # Ignore empty files.
+      continue
 
     # Fix up line endings (third_party configs can have windows endings).
     contents = contents.replace('\r', '')
     # Remove numbers from generated rule comments to make file more
     # diff'able.
     contents = re.sub(r' #generated:\d+', '', contents)
+    ret.append('# File: ' + config)
     ret.append(contents)
     ret.append('')
 
@@ -573,7 +579,11 @@ def _CombineConfigs(configs, dynamic_config_data, exclude_generated=False):
 
 
 def _CreateDynamicConfig(options):
-  ret = []
+  # Our scripts already fail on output. Adding -ignorewarnings makes R8 output
+  # warnings rather than throw exceptions so we can selectively ignore them via
+  # dex.py's ignore list. Context: https://crbug.com/1180222
+  ret = ["-ignorewarnings"]
+
   if options.sourcefile:
     ret.append("-renamesourcefileattribute '%s' # OMIT FROM EXPECTATIONS" %
                options.sourcefile)

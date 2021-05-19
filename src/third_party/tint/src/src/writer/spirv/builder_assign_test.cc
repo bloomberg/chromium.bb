@@ -12,25 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gmock/gmock.h"
-#include "src/ast/array_accessor_expression.h"
-#include "src/ast/assignment_statement.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
-#include "src/ast/struct.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/vector_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -195,12 +176,12 @@ TEST_F(BuilderTest, Assign_StructMember) {
   // var ident : my_struct
   // ident.b = 4.0;
 
-  auto* s = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.f32()), Member("b", ty.f32())},
-      ast::StructDecorationList{});
+  auto* s = Structure("my_struct", {
+                                       Member("a", ty.f32()),
+                                       Member("b", ty.f32()),
+                                   });
 
-  auto* s_type = ty.struct_("my_struct", s);
-  auto* v = Global("ident", s_type, ast::StorageClass::kFunction);
+  auto* v = Global("ident", s, ast::StorageClass::kFunction);
 
   auto* assign =
       create<ast::AssignmentStatement>(MemberAccessor("ident", "b"), Expr(4.f));

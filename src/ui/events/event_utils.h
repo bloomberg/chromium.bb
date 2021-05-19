@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "ui/display/display.h"
@@ -33,6 +33,7 @@ class Vector2d;
 }  // namespace gfx
 
 namespace base {
+class TickClock;
 class TimeTicks;
 }
 
@@ -49,12 +50,20 @@ constexpr char kPropertyKeyboardGroup[] = "_keyevent_kbd_group_";
 // Key used to store 'hardware key code' values in Event::Properties
 constexpr char kPropertyKeyboardHwKeyCode[] = "_keyevent_kbd_hw_keycode_";
 
-// IBus specific Event::Properties constants. ibus-gtk in async mode uses
-// gtk-specific XKeyEvent::state bits 24 and 25 for its key events.
+// Event::Properties constants for IBus-GTK and fcitx-GTK.
+// Both of them in async mode use gtk-specific XKeyEvent::state bits 24 and 25.
+// 24 is handled and 25 is ignored.
+// Note that they use more bits, but Chrome does not handle it now.
+// cf)
+// https://github.com/ibus/ibus/blob/dd4cc5b028c35f9bb8fa9d3bdc8f26bcdfc43d40/src/ibustypes.h#L88
+// https://github.com/fcitx/fcitx/blob/289b2f674d95651d4e0d0c77a48e3a2f0da40efe/src/lib/fcitx-utils/keysym.h#L47
 // https://mail.gnome.org/archives/gtk-devel-list/2013-June/msg00003.html
-constexpr char kPropertyKeyboardIBusFlag[] = "_keyevent_kbd_ibus_ime_flags_";
-constexpr unsigned int kPropertyKeyboardIBusFlagOffset = 24;
-constexpr unsigned int kPropertyKeyboardIBusFlagMask = 0x03;
+constexpr char kPropertyKeyboardImeFlag[] = "_keyevent_kbd_ime_flags_";
+constexpr unsigned int kPropertyKeyboardImeFlagOffset = 24;
+constexpr unsigned int kPropertyKeyboardImeFlagMask = 0x03;
+// Ignored is the 25-th bit.
+constexpr unsigned int kPropertyKeyboardImeIgnoredFlag =
+    1 << (25 - kPropertyKeyboardImeFlagOffset);
 
 // Key used to store mouse event flag telling ET_MOUSE_EXITED must actually be
 // interpreted as "crossing intermediate window" in blink context.
@@ -161,6 +170,26 @@ EVENTS_EXPORT display::Display::TouchSupport GetInternalDisplayTouchSupport();
 EVENTS_EXPORT void ComputeEventLatencyOS(const PlatformEvent& native_event);
 
 #if defined(OS_WIN)
+// Makes ComputeEventLatencyOSWinFromTickCount call the given |clock| to find
+// the current time ticks to compare to an MSG timestamp. If |clock| is nullptr,
+// it will call ::GetTickCount, which is the default.
+EVENTS_EXPORT void SetEventLatencyTickClockForTesting(
+    const base::TickClock* clock);
+
+// Records Event.Latency.OS_WIN.* metrics for events whose timestamp comes from
+// ::GetTickCount (such as an MSG).
+EVENTS_EXPORT void ComputeEventLatencyOSWinFromTickCount(
+    ui::EventType event_type,
+    DWORD event_time,
+    base::TimeTicks current_time);
+
+// Records Event.Latency.OS_WIN.* metrics for events whose timestamp comes from
+// a Performance Counter (such as POINTER_INFO).
+EVENTS_EXPORT void ComputeEventLatencyOSWinFromPerformanceCounter(
+    ui::EventType event_type,
+    UINT64 event_time,
+    base::TimeTicks current_time);
+
 EVENTS_EXPORT int GetModifiersFromKeyState();
 
 // Returns true if |message| identifies a mouse event that was generated as the

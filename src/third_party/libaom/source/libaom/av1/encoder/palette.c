@@ -251,10 +251,7 @@ static AOM_INLINE void palette_rd_y(
                    1);
   extend_palette_color_map(color_map, cols, rows, block_width, block_height);
 
-  const int palette_mode_cost =
-      intra_mode_info_cost_y(cpi, x, mbmi, bsize, dc_mode_cost);
-  if (model_intra_yrd_and_prune(cpi, x, bsize, palette_mode_cost,
-                                best_model_rd)) {
+  if (model_intra_yrd_and_prune(cpi, x, bsize, best_model_rd)) {
     return;
   }
 
@@ -262,6 +259,8 @@ static AOM_INLINE void palette_rd_y(
   av1_pick_uniform_tx_size_type_yrd(cpi, x, &tokenonly_rd_stats, bsize,
                                     *best_rd);
   if (tokenonly_rd_stats.rate == INT_MAX) return;
+  const int palette_mode_cost =
+      intra_mode_info_cost_y(cpi, x, mbmi, bsize, dc_mode_cost);
   int this_rate = tokenonly_rd_stats.rate + palette_mode_cost;
   int64_t this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
   if (!xd->lossless[mbmi->segment_id] && block_signals_txsize(mbmi->bsize)) {

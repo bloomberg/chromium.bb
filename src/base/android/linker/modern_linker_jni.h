@@ -26,10 +26,12 @@ enum class RelroSharingStatus {
   COUNT = 3,
 };
 
+struct SharedMemoryFunctions;
+
 // Holds address ranges of the loaded native library, its RELRO region, along
 // with the RELRO FD identifying the shared memory region. Carries the same
-// members as the Java-side LibInfo, allowing to internally import/export the
-// member values from/to the Java-side counterpart.
+// members as the Java-side LibInfo (without mLibFilePath), allowing to
+// internally import/export the member values from/to the Java-side counterpart.
 //
 // Does *not* own the RELRO FD as soon as the latter gets exported to Java
 // (as a result of 'spawning' the RELRO region as shared memory.
@@ -37,16 +39,27 @@ enum class RelroSharingStatus {
 // *Not* threadsafe.
 class NativeLibInfo {
  public:
-  // Constructs an (almost) empty instance. To be later populated from native
-  // code. The |env| and |java_object| will be useful later for exporting the
-  // values to the Java counterpart.
-  NativeLibInfo(size_t address, JNIEnv* env, jobject java_object);
-
-  // Constructs and imports fields from the Java LibInfo. As above, the |env|
-  // and |java_object| are used for exporting.
+  // Constructs an empty instance. The |java_object| indicates the handle to
+  // import and export member fields.
+  //
+  // Having |env| as |nullptr| disables export to java for the lifetime of the
+  // instance. This is useful as a scratch info that is gradually populated for
+  // comparison with another NativeLibInfo, and then discarded.
   NativeLibInfo(JNIEnv* env, jobject java_object);
 
-  size_t load_address() const { return load_address_; }
+  // Copies the java-side object state to this native instance. Returns false
+  // iff an imported value is invalid.
+  bool CopyFromJavaObject();
+
+  void set_load_address(uintptr_t a) { load_address_ = a; }
+
+  // Whether to use memfd_create(2) when creating shared memory regions.
+  void set_use_memfd(bool use_memfd) {
+    use_memfd_initialized_ = true;
+    use_memfd_ = use_memfd;
+  }
+
+  uintptr_t load_address() const { return load_address_; }
 
   // Loads the native library using android_dlopen_ext and invokes JNI_OnLoad().
   //
@@ -63,8 +76,6 @@ class NativeLibInfo {
   // provide RELRO FD before it starts processing arbitrary input. For example,
   // an App Zygote can create a RELRO FD in a sufficiently trustworthy way to
   // make the Browser/Privileged processes share the region with it.
-  //
-  // TODO(pasko): Add an option to use an existing memory reservation.
   bool LoadLibrary(const String& library_path, bool spawn_relro_region);
 
   // Finds the RELRO region in the native library identified by
@@ -79,12 +90,15 @@ class NativeLibInfo {
   // process has a writable mapping of the region remaining.
   bool CompareRelroAndReplaceItBy(const NativeLibInfo& other_lib_info);
 
-  void set_relro_info_for_testing(size_t start, size_t size) {
+  void set_relro_info_for_testing(uintptr_t start, size_t size) {
     relro_start_ = start;
     relro_size_ = size;
   }
 
-  bool CreateSharedRelroFdForTesting() { return CreateSharedRelroFd(); }
+  // Creates a shared RELRO region as it normally would during LoadLibrary()
+  // with |spawn_relro_region=true|. Exposed here because it is difficult to
+  // unittest LoadLibrary() directly.
+  bool CreateSharedRelroFdForTesting();
 
   int get_relro_fd_for_testing() { return relro_fd_; }
 
@@ -118,29 +132,32 @@ class NativeLibInfo {
   bool FindRelroAndLibraryRangesInElf();
 
   // Loads and initializes the load address ranges: |load_address_|,
-  // |load_size_|.
+  // |load_size_|. Assumes that the memory range is reserved (in Linker.java).
   bool LoadWithDlopenExt(const String& path, void** handle);
 
   // Initializes |relro_fd_| with a newly created read-only shared memory region
   // sized as the library's RELRO and with identical data.
-  bool CreateSharedRelroFd();
+  bool CreateSharedRelroFd(const SharedMemoryFunctions& functions);
 
   // Assuming that RELRO-related information is populated, memory-maps the RELRO
   // FD on top of the library's RELRO.
-  bool ReplaceRelroWithSharedOne() const;
+  bool ReplaceRelroWithSharedOne(const SharedMemoryFunctions& functions) const;
 
   // Returns true iff the RELRO address and size, along with the contents are
   // equal among the two.
-  bool RelroIsIdentical(const NativeLibInfo& external_lib_info) const;
+  bool RelroIsIdentical(const NativeLibInfo& external_lib_info,
+                        const SharedMemoryFunctions& functions) const;
 
   static constexpr int kInvalidFd = -1;
-  size_t load_address_ = 0;
+  uintptr_t load_address_ = 0;
   size_t load_size_ = 0;
-  size_t relro_start_ = 0;
+  uintptr_t relro_start_ = 0;
   size_t relro_size_ = 0;
   int relro_fd_ = kInvalidFd;
-  JNIEnv* env_;
-  jobject java_object_;
+  JNIEnv* const env_;
+  const jobject java_object_;
+  bool use_memfd_initialized_ = false;
+  bool use_memfd_;
 };
 
 // JNI_OnLoad() initialization hook for the modern linker.

@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -28,7 +29,6 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -512,6 +512,10 @@ bool ChromeMetricsServiceClient::GetBrand(std::string* brand_code) {
 
 metrics::SystemProfileProto::Channel ChromeMetricsServiceClient::GetChannel() {
   return metrics::AsProtobufChannel(chrome::GetChannel());
+}
+
+bool ChromeMetricsServiceClient::IsExtendedStableChannel() {
+  return chrome::IsExtendedStableChannel();
 }
 
 std::string ChromeMetricsServiceClient::GetVersionString() {

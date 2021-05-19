@@ -12,20 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/type/u32_type.h"
-
 #include "src/type/access_control_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/pointer_type.h"
-#include "src/type/sampler_type.h"
-#include "src/type/struct_type.h"
 #include "src/type/test_helper.h"
 #include "src/type/texture_type.h"
-#include "src/type/vector_type.h"
 
 namespace tint {
 namespace type {
@@ -59,16 +48,6 @@ TEST_F(U32Test, TypeName) {
 TEST_F(U32Test, FriendlyName) {
   U32 u;
   EXPECT_EQ(u.FriendlyName(Symbols()), "u32");
-}
-
-TEST_F(U32Test, MinBufferBindingSize) {
-  U32 u;
-  EXPECT_EQ(4u, u.MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(U32Test, BaseAlignment) {
-  U32 u;
-  EXPECT_EQ(4u, u.BaseAlignment(MemoryLayout::kUniformBuffer));
 }
 
 }  // namespace

@@ -20,7 +20,6 @@
 #include "core/internal/mediums/webrtc/data_channel_listener.h"
 #include "core/internal/mediums/webrtc/data_channel_observer_impl.h"
 #include "core/internal/mediums/webrtc/local_ice_candidate_listener.h"
-#include "core/internal/mediums/webrtc/peer_connection_observer_impl.h"
 #include "core/internal/mediums/webrtc/session_description_wrapper.h"
 #include "platform/base/runnable.h"
 #include "platform/public/single_thread_executor.h"
@@ -66,7 +65,7 @@ namespace mediums {
  * previous states if we disconnect at any point in the flow.
  * </ul>
  */
-class ConnectionFlow {
+class ConnectionFlow : public webrtc::PeerConnectionObserver {
  public:
   enum class State {
     kInitialized,
@@ -83,7 +82,7 @@ class ConnectionFlow {
   static std::unique_ptr<ConnectionFlow> Create(
       LocalIceCandidateListener local_ice_candidate_listener,
       DataChannelListener data_channel_listener, WebRtcMedium& webrtc_medium);
-  ~ConnectionFlow();
+  ~ConnectionFlow() override;
 
   // Returns the current state of the ConnectionFlow.
   State GetState() ABSL_LOCKS_EXCLUDED(mutex_);
@@ -116,23 +115,36 @@ class ConnectionFlow {
   // Close the peer connection and data channel.
   bool Close() ABSL_LOCKS_EXCLUDED(mutex_);
 
-  // Invoked when the peer connection indicates that signaling is stable.
-  void OnSignalingStable() ABSL_LOCKS_EXCLUDED(mutex_);
-  webrtc::DataChannelObserver* CreateDataChannelObserver(
-      rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel);
+  // webrtc::PeerConnectionObserver:
+  void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
+  void OnSignalingChange(
+      webrtc::PeerConnectionInterface::SignalingState new_state) override;
+  void OnDataChannel(
+      rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) override;
+  void OnIceGatheringChange(
+      webrtc::PeerConnectionInterface::IceGatheringState new_state) override;
+  void OnConnectionChange(
+      webrtc::PeerConnectionInterface::PeerConnectionState new_state) override;
+  void OnRenegotiationNeeded() override;
 
-  // Invoked upon changes in the state of peer connection, e.g. react to
-  // disconnect.
-  void ProcessOnPeerConnectionChange(
-      webrtc::PeerConnectionInterface::PeerConnectionState new_state)
-      ABSL_LOCKS_EXCLUDED(mutex_);
+  // For tests only
+  webrtc::PeerConnectionInterface* GetPeerConnection() {
+    return peer_connection_.get();
+  }
 
  private:
   ConnectionFlow(LocalIceCandidateListener local_ice_candidate_listener,
                  DataChannelListener data_channel_listener);
 
+  // Invoked when the peer connection indicates that signaling is stable.
+  void OnSignalingStable() ABSL_LOCKS_EXCLUDED(mutex_);
+  void RegisterDataChannelObserver(
+      rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel);
+
   // TODO(bfranz): Consider whether this needs to be configurable per platform
   static constexpr absl::Duration kTimeout = absl::Milliseconds(250);
+  static constexpr absl::Duration kPeerConnectionTimeout =
+      absl::Milliseconds(2500);
 
   bool InitPeerConnection(WebRtcMedium& webrtc_medium);
 
@@ -146,7 +158,7 @@ class ConnectionFlow {
       ABSL_LOCKS_EXCLUDED(mutex_);
 
   void CloseAndNotifyLocked() ABSL_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
-  bool CloseLocked() ABSL_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  bool Close(bool close_peer_connection) ABSL_LOCKS_EXCLUDED(mutex_);
 
   void OffloadFromSignalingThread(Runnable runnable);
 
@@ -157,7 +169,7 @@ class ConnectionFlow {
 
   std::unique_ptr<DataChannelObserverImpl> data_channel_observer_;
 
-  PeerConnectionObserverImpl peer_connection_observer_;
+  LocalIceCandidateListener local_ice_candidate_listener_;
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
 
   std::vector<std::unique_ptr<webrtc::IceCandidateInterface>>

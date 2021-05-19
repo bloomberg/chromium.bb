@@ -1,0 +1,15 @@
+{
+  "dependencies": [
+    "components",
+    "perf_ui",
+    "data_grid",
+    "object_ui"
+  ],
+    "resources": [
+    "heapProfiler.css",
+    "liveHeapProfile.css",
+    "profileLauncherView.css",
+    "profilesPanel.css",
+    "profilesSidebarTree.css"
+  ]
+}

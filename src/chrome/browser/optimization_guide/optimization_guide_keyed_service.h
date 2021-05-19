@@ -33,6 +33,7 @@ class OptimizationGuideStore;
 class PredictionManager;
 class PredictionManagerBrowserTestBase;
 class PredictionModelDownloadClient;
+class TabUrlProvider;
 class TopHostProvider;
 }  // namespace optimization_guide
 
@@ -61,8 +62,6 @@ class OptimizationGuideKeyedService
   void ShouldTargetNavigationAsync(
       content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationTarget optimization_target,
-      const base::flat_map<optimization_guide::proto::ClientModelFeature,
-                           float>& client_model_feature_values,
       optimization_guide::OptimizationGuideTargetDecisionCallback callback)
       override;
   void AddObserverForOptimizationTargetModel(
@@ -92,13 +91,6 @@ class OptimizationGuideKeyedService
       const GURL& url,
       optimization_guide::proto::OptimizationType optimization_type,
       const base::Optional<optimization_guide::OptimizationMetadata>& metadata);
-
-  // Override the decision returned by |ShouldTargetNavigation|
-  // for |optimization_target|. For testing purposes only.
-  void OverrideTargetDecisionForTesting(
-      optimization_guide::proto::OptimizationTarget optimization_target,
-      optimization_guide::OptimizationGuideDecision
-          optimization_guide_decision);
 
   // Override the model file sent to observers of |optimization_target|. For
   // testing purposes only.
@@ -142,9 +134,6 @@ class OptimizationGuideKeyedService
   // Clears data specific to the user.
   void ClearData();
 
-  // Updates |prediction_manager_| with the provided fcp value.
-  void UpdateSessionFCP(base::TimeDelta fcp);
-
   // KeyedService implementation:
   void Shutdown() override;
 
@@ -168,6 +157,10 @@ class OptimizationGuideKeyedService
   // hosts. Will be null if the user has not consented to this type of browser
   // behavior.
   std::unique_ptr<optimization_guide::TopHostProvider> top_host_provider_;
+
+  // The tab URL provider to use for fetching information for the user's active
+  // tabs. Will be null if the user is off the record.
+  std::unique_ptr<optimization_guide::TabUrlProvider> tab_url_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideKeyedService);
 };

@@ -15,20 +15,26 @@
 #include "src/ast/struct.h"
 
 #include "src/ast/struct_block_decoration.h"
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::Struct);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::Struct);
 
 namespace tint {
 namespace ast {
 
 Struct::Struct(const Source& source,
                StructMemberList members,
-               StructDecorationList decorations)
+               DecorationList decorations)
     : Base(source),
       members_(std::move(members)),
-      decorations_(std::move(decorations)) {}
+      decorations_(std::move(decorations)) {
+  for (auto* mem : members_) {
+    TINT_ASSERT(mem);
+  }
+  for (auto* deco : decorations_) {
+    TINT_ASSERT(deco);
+  }
+}
 
 Struct::Struct(Struct&&) = default;
 
@@ -58,15 +64,6 @@ Struct* Struct::Clone(CloneContext* ctx) const {
   auto mem = ctx->Clone(members());
   auto decos = ctx->Clone(decorations());
   return ctx->dst->create<Struct>(src, mem, decos);
-}
-
-bool Struct::IsValid() const {
-  for (auto* mem : members_) {
-    if (mem == nullptr || !mem->IsValid()) {
-      return false;
-    }
-  }
-  return true;
 }
 
 void Struct::to_str(const semantic::Info& sem,

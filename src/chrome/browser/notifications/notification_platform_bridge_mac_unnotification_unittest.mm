@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -61,9 +62,8 @@ class UNNotificationPlatformBridgeMacTest : public testing::Test {
     GURL url("https://gmail.com");
 
     Notification notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, notificationId,
-        base::UTF8ToUTF16("Title"), base::UTF8ToUTF16("Context"), gfx::Image(),
-        base::UTF8ToUTF16("Notifier's Name"), url,
+        message_center::NOTIFICATION_TYPE_SIMPLE, notificationId, u"Title",
+        u"Context", gfx::Image(), u"Notifier's Name", url,
         message_center::NotifierId(url), message_center::RichNotificationData(),
         base::MakeRefCounted<message_center::NotificationDelegate>());
 
@@ -112,6 +112,7 @@ class UNNotificationPlatformBridgeMacBannerStyleTest
 
 TEST_F(UNNotificationPlatformBridgeMacTest, TestDisplay) {
   if (@available(macOS 10.14, *)) {
+    base::HistogramTester histogram_tester;
     Notification notification = CreateNotification();
 
     bridge_->Display(NotificationHandler::Type::WEB_PERSISTENT, profile_,
@@ -132,11 +133,15 @@ TEST_F(UNNotificationPlatformBridgeMacTest, TestDisplay) {
                  NSSet<UNNotificationCategory*>* categories) {
       EXPECT_EQ(1u, [categories count]);
     }];
+
+    histogram_tester.ExpectUniqueSample("Notifications.macOS.Delivered.Banner",
+                                        /*sample=*/true, /*expected_count=*/1);
   }
 }
 
 TEST_F(UNNotificationPlatformBridgeMacTest, TestDisplayAlert) {
   if (@available(macOS 10.14, *)) {
+    base::HistogramTester histogram_tester;
     Notification alert = CreateAlert();
     // Some OS versions don't support alerts.
     if (!IsAlertNotificationMac(alert))
@@ -167,6 +172,9 @@ TEST_F(UNNotificationPlatformBridgeMacTest, TestDisplayAlert) {
     EXPECT_NSEQ(@"Context", informative_text);
     EXPECT_NSEQ(@"gmail.com", subtitle);
     EXPECT_NSEQ(@"r|Moe|id1", identifier);
+
+    histogram_tester.ExpectUniqueSample("Notifications.macOS.Delivered.Alert",
+                                        /*sample=*/true, /*expected_count=*/1);
   }
 }
 
@@ -515,8 +523,8 @@ TEST_F(UNNotificationPlatformBridgeMacTest, TestNotificationWithButtons) {
     notification.set_settings_button_handler(
         message_center::SettingsButtonHandler::DELEGATE);
     std::vector<message_center::ButtonInfo> buttons = {
-        message_center::ButtonInfo(base::UTF8ToUTF16("Button 1")),
-        message_center::ButtonInfo(base::UTF8ToUTF16("Button 2"))};
+        message_center::ButtonInfo(u"Button 1"),
+        message_center::ButtonInfo(u"Button 2")};
     notification.set_buttons(buttons);
 
     bridge_->Display(NotificationHandler::Type::WEB_PERSISTENT, profile_,
@@ -587,6 +595,7 @@ TEST_F(UNNotificationPlatformBridgeMacTest, TestCloseRemovesCategory) {
 
 TEST_F(UNNotificationPlatformBridgeMacTest, TestSynchronizeNotifications) {
   if (@available(macOS 10.14, *)) {
+    base::HistogramTester histogram_tester;
     Notification banner1 = CreateNotification("banner1");
     Notification banner2 = CreateNotification("banner2");
     Notification alert1 = CreateAlert("alert1");
@@ -625,6 +634,13 @@ TEST_F(UNNotificationPlatformBridgeMacTest, TestSynchronizeNotifications) {
     display_service_tester_->SetProcessNotificationOperationDelegate(
         operation_callback.Get());
     task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5));
+
+    histogram_tester.ExpectUniqueSample(
+        "Notifications.macOS.ActionReceived.Alert", /*sample=*/true,
+        /*expected_count=*/1);
+    histogram_tester.ExpectUniqueSample(
+        "Notifications.macOS.ActionReceived.Banner", /*sample=*/true,
+        /*expected_count=*/1);
   }
 }
 
@@ -708,3 +724,35 @@ INSTANTIATE_TEST_SUITE_P(UNNotificationPlatformBridgeMacBannerStyleTest,
                          testing::Values(UNNotificationStyle::kNone,
                                          UNNotificationStyle::kBanners,
                                          UNNotificationStyle::kAlerts));
+
+TEST_F(UNNotificationPlatformBridgeMacTest, NotificationResponse) {
+  if (@available(macOS 10.14, *)) {
+    base::HistogramTester histogram_tester;
+
+    base::scoped_nsobject<FakeUNNotificationResponse> fakeResponse =
+        CreateFakeUNNotificationResponse(@{
+          notification_constants::kNotificationOrigin : @"https://google.com",
+          notification_constants::kNotificationId : @"notificationId",
+          notification_constants::kNotificationProfileId : @"profileId",
+          notification_constants::kNotificationIncognito : @YES,
+          notification_constants::kNotificationType : @0,
+          notification_constants::
+          kNotificationCreatorPid : @(base::GetCurrentProcId()),
+        });
+
+    [[center_ delegate]
+                userNotificationCenter:static_cast<UNUserNotificationCenter*>(
+                                           center_.get())
+        didReceiveNotificationResponse:static_cast<UNNotificationResponse*>(
+                                           fakeResponse.get())
+                 withCompletionHandler:^{
+                 }];
+
+    // Handling responses is async, make sure we wait for all tasks to complete.
+    task_environment_.RunUntilIdle();
+
+    histogram_tester.ExpectUniqueSample(
+        "Notifications.macOS.ActionReceived.Banner", /*sample=*/true,
+        /*expected_count=*/1);
+  }
+}

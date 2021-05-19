@@ -3,23 +3,23 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {EntryLocation} from '../../../externs/entry_location.m.js';
-// #import {VolumeInfo} from '../../../externs/volume_info.m.js';
+// #import {EntryLocation} from '../../externs/entry_location.m.js';
+// #import {VolumeInfo} from '../../externs/volume_info.m.js';
 // #import {List} from 'chrome://resources/js/cr/ui/list.m.js';
-// #import {FilesAppDirEntry, FakeEntry, FilesAppEntry} from '../../../externs/files_app_entry_interfaces.m.js';
+// #import {FilesAppDirEntry, FakeEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.m.js';
 // #import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
-// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
+// #import {VolumeManager} from '../../externs/volume_manager.m.js';
 // #import {DirectoryModel} from './directory_model.m.js';
 // #import {ThumbnailModel} from './metadata/thumbnail_model.m.js';
 // #import {MetadataModel} from './metadata/metadata_model.m.js';
-// #import {FileOperationManager} from '../../../externs/background/file_operation_manager.m.js';
-// #import {ProgressCenter} from '../../../externs/background/progress_center.m.js';
+// #import {FileOperationManager} from '../../externs/background/file_operation_manager.m.js';
+// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
 // #import {ListContainer} from './ui/list_container.m.js';
 // #import {DropEffectAndLabel, DropEffectType} from './drop_effect_and_label.m.js';
 // #import {FileSelectionHandler} from './file_selection.m.js';
 // #import {DragSelector} from './ui/drag_selector.m.js';
 // #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-// #import {VolumeManagerCommon} from '../../../base/js/volume_manager_types.m.js';
+// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
 // #import {DirectoryItem, DirectoryTree} from './ui/directory_tree.m.js';
 // #import {TreeItem} from 'chrome://resources/js/cr/ui/tree.m.js';
 // #import {ThumbnailLoader} from './thumbnail_loader.m.js';

@@ -203,8 +203,17 @@ def Copy(src_dir, src_paths, dst_dir, dst_paths, src_path_must_exist=True):
             src_dir, missing_files))
 
 
-def CopyFileOrDirectory(src_path, dst_path):
-    """Copy file or directory |src_path| into |dst_path| exactly."""
+def CopyFileOrDirectory(src_path, dst_path, ignore_extension=None):
+    """Copy file or directory |src_path| into |dst_path| exactly.
+
+    Args:
+      src_path: Source path.
+      dst_path: Destination path.
+      ignore_extension: File extension of files not to copy, starting with '.'. If None, all files
+          are copied.
+    """
+    assert not ignore_extension or ignore_extension[0] == '.'
+
     src_path = os.path.normpath(src_path)
     dst_path = os.path.normpath(dst_path)
     logging.debug('copy [%s -> %s]', src_path, dst_path)
@@ -212,8 +221,12 @@ def CopyFileOrDirectory(src_path, dst_path):
     if os.path.isdir(src_path):
         # Copy directory recursively.
         DeleteDirectory(dst_path)
-        shutil.copytree(src_path, dst_path)
-    else:
+        ignore = None
+        if ignore_extension:
+            ignore = shutil.ignore_patterns('*' + ignore_extension)
+        shutil.copytree(src_path, dst_path, ignore=ignore)
+    elif not ignore_extension or not re.match('.*\.' + ignore_extension[1:],
+                                              src_path):
         shutil.copy(src_path, dst_path)
 
 
@@ -504,8 +517,8 @@ def main():
 
         subprojects = _ParseSubprojects(
             os.path.join(args.android_deps_dir, 'subprojects.txt'))
+        subproject_dirs = []
         if subprojects:
-            subproject_dirs = []
             for (index, subproject) in enumerate(subprojects):
                 subproject_dir = 'subproject{}'.format(index)
                 Copy(args.android_deps_dir, [subproject],
@@ -513,11 +526,11 @@ def main():
                      [os.path.join(subproject_dir, 'build.gradle')])
                 subproject_dirs.append(subproject_dir)
 
-            _GenerateSettingsGradle(
-                subproject_dirs,
-                os.path.join(args.android_deps_dir,
-                             'settings.gradle.template'),
-                os.path.join(build_android_deps_dir, 'settings.gradle'))
+        _GenerateSettingsGradle(
+            subproject_dirs,
+            os.path.join(_PRIMARY_ANDROID_DEPS_DIR,
+                         'settings.gradle.template'),
+            os.path.join(build_android_deps_dir, 'settings.gradle'))
 
         if not args.ignore_vulnerabilities:
             report_dst = os.path.join(args.android_deps_dir,
@@ -607,7 +620,9 @@ def main():
             pkg_path = pkg.path
             dst_pkg_path = os.path.join(args.android_deps_dir, pkg_path)
             src_pkg_path = os.path.join(build_android_deps_dir, pkg_path)
-            CopyFileOrDirectory(src_pkg_path, dst_pkg_path)
+            CopyFileOrDirectory(src_pkg_path,
+                                dst_pkg_path,
+                                ignore_extension=".tmp")
 
         # Useful for printing timestamp.
         logging.info('All Done.')

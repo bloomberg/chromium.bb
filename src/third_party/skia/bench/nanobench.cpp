@@ -35,6 +35,7 @@
 #include "src/core/SkOSFile.h"
 #include "src/core/SkTaskGroup.h"
 #include "src/core/SkTraceEvent.h"
+#include "src/gpu/GrShaderUtils.h"
 #include "src/utils/SkJSONWriter.h"
 #include "src/utils/SkOSPath.h"
 #include "tools/AutoreleasePool.h"
@@ -137,7 +138,8 @@ static DEFINE_string(benchType,  "",
 
 static DEFINE_bool(forceRasterPipeline, false, "sets gSkForceRasterPipelineBlitter");
 static DEFINE_bool(skvm, false, "sets gUseSkVMBlitter");
-static DEFINE_bool(jit, true, "sets gSkVMAllowJIT and gSkVMJITViaDylib");
+static DEFINE_bool(jit, true, "JIT SkVM?");
+static DEFINE_bool(dylib, false, "JIT via dylib (much slower compile but easier to debug/profile)");
 
 static DEFINE_bool2(pre_log, p, false,
                     "Log before running each test. May be incomprehensible when threading");
@@ -247,11 +249,10 @@ struct GPUTarget : public Target {
     }
     bool init(SkImageInfo info, Benchmark* bench) override {
         GrContextOptions options = grContextOpts;
+        options.fAlwaysAntialias = config.useDMSAA;
         bench->modifyGrContextOptions(&options);
         this->factory = std::make_unique<GrContextFactory>(options);
-        uint32_t flags = this->config.useDFText ? SkSurfaceProps::kUseDeviceIndependentFonts_Flag :
-                                                  0;
-        SkSurfaceProps props(flags, kRGB_H_SkPixelGeometry);
+        SkSurfaceProps props(this->config.surfaceFlags, kRGB_H_SkPixelGeometry);
         this->surface = SkSurface::MakeRenderTarget(
                 this->factory->get(this->config.ctxType, this->config.ctxOverrides),
                 SkBudgeted::kNo, info, this->config.samples, &props);
@@ -471,6 +472,7 @@ static void create_config(const SkCommandLineConfig* config, SkTArray<Config>* c
         const auto ctxType = gpuConfig->getContextType();
         const auto ctxOverrides = gpuConfig->getContextOverrides();
         const auto sampleCount = gpuConfig->getSamples();
+        const auto useDMSAA = gpuConfig->getUseDMSAA();
         const auto colorType = gpuConfig->getColorType();
         auto colorSpace = gpuConfig->getColorSpace();
         if (gpuConfig->getSurfType() != SkCommandLineConfigGpu::SurfType::kDefault) {
@@ -501,9 +503,10 @@ static void create_config(const SkCommandLineConfig* config, SkTArray<Config>* c
             kPremul_SkAlphaType,
             sk_ref_sp(colorSpace),
             sampleCount,
+            useDMSAA,
             ctxType,
             ctxOverrides,
-            gpuConfig->getUseDIText()
+            gpuConfig->getSurfaceFlags()
         };
 
         configs->push_back(target);
@@ -519,7 +522,7 @@ static void create_config(const SkCommandLineConfig* config, SkTArray<Config>* c
             }                                                                  \
             Config config = {                                                  \
                 SkString(#name), Benchmark::backend, color, alpha, colorSpace, \
-                0, kBogusContextType, kBogusContextOverrides, false            \
+                0, false, kBogusContextType, kBogusContextOverrides, 0         \
             };                                                                 \
             configs->push_back(config);                                        \
             return;                                                            \
@@ -1150,6 +1153,15 @@ static void start_keepalive() {
     (void)intentionallyLeaked;
 }
 
+class NanobenchShaderErrorHandler : public GrContextOptions::ShaderErrorHandler {
+    void compileError(const char* shader, const char* errors) override {
+        // Nanobench should abort if any shader can't compile. Failure is much better than
+        // reporting meaningless performance metrics.
+        SkSL::String message = GrShaderUtils::BuildShaderErrorMessage(shader, errors);
+        SK_ABORT("\n%s", message.c_str());
+    }
+};
+
 int main(int argc, char** argv) {
     CommandLineFlags::Parse(argc, argv);
 
@@ -1163,6 +1175,9 @@ int main(int argc, char** argv) {
     SkTaskGroup::Enabler enabled(FLAGS_threads);
 
     SetCtxOptionsFromCommonFlags(&grContextOpts);
+
+    NanobenchShaderErrorHandler errorHandler;
+    grContextOpts.fShaderErrorHandler = &errorHandler;
 
     if (kAutoTuneLoops != FLAGS_loops) {
         FLAGS_samples     = 1;
@@ -1239,7 +1254,8 @@ int main(int argc, char** argv) {
 
     gSkForceRasterPipelineBlitter = FLAGS_forceRasterPipeline;
     gUseSkVMBlitter = FLAGS_skvm;
-    gSkVMAllowJIT = gSkVMJITViaDylib = FLAGS_jit;
+    gSkVMAllowJIT = FLAGS_jit;
+    gSkVMJITViaDylib = FLAGS_dylib;
 
     int runs = 0;
     BenchmarkStream benchStream;

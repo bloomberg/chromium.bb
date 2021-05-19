@@ -5,11 +5,11 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -43,9 +43,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -1098,7 +1098,7 @@ class SafeBrowsingIsRealtimeReportingEnabledTest
     }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
+    auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
     const AccountId account_id(
         AccountId::FromUserEmail(profile_->GetProfileUserName()));
     const user_manager::User* user = user_manager->AddUserWithAffiliation(

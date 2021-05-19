@@ -5,7 +5,9 @@
 #include "chrome/browser/background/background_mode_manager.h"
 
 #include <stddef.h>
+
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -133,8 +135,15 @@ void BackgroundModeManager::BackgroundModeData::UpdateProfileKeepAlive() {
     profile_keep_alive_.reset();
     return;
   }
+
   if (profile_keep_alive_)
     return;
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile_)) {
+    // ScopedProfileKeepAlive will cause issues if we create it now. Wait for
+    // OnProfileAdded().
+    return;
+  }
+
   profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
       profile_, ProfileKeepAliveOrigin::kBackgroundMode);
 }
@@ -212,7 +221,8 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
       //
       // The compromise is to disable the item, avoiding the non-actionable
       // navigate to the extensions page and preserving the user model.
-      if (application->location() == extensions::Manifest::COMPONENT) {
+      if (application->location() ==
+          extensions::mojom::ManifestLocation::kComponent) {
         GURL options_page =
             extensions::OptionsPageInfo::GetOptionsPage(application.get());
         if (!options_page.is_valid())
@@ -237,11 +247,11 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
 }
 
 void BackgroundModeManager::BackgroundModeData::SetName(
-    const base::string16& new_profile_name) {
+    const std::u16string& new_profile_name) {
   name_ = new_profile_name;
 }
 
-base::string16 BackgroundModeManager::BackgroundModeData::name() {
+std::u16string BackgroundModeManager::BackgroundModeData::name() {
   return name_;
 }
 
@@ -312,13 +322,14 @@ BackgroundModeManager::BackgroundModeManager(
   // extensions, at which point we should either run in background mode (if
   // there are background apps) or exit if there are none.
   if (command_line.HasSwitch(switches::kNoStartupWindow)) {
-    keep_alive_for_startup_.reset(
-        new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP,
-                            KeepAliveRestartOption::DISABLED));
+    keep_alive_for_startup_ = std::make_unique<ScopedKeepAlive>(
+        KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP,
+        KeepAliveRestartOption::DISABLED);
     // Wait for force-installed extensions to install, as well.
-    keep_alive_for_force_installed_extensions_.reset(new ScopedKeepAlive(
-        KeepAliveOrigin::BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS,
-        KeepAliveRestartOption::DISABLED));
+    keep_alive_for_force_installed_extensions_ =
+        std::make_unique<ScopedKeepAlive>(
+            KeepAliveOrigin::BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS,
+            KeepAliveRestartOption::DISABLED);
   } else {
     // Otherwise, start with background mode suspended in case we're launching
     // in a mode that doesn't open a browser window. It will be resumed when the
@@ -374,7 +385,7 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
   background_mode_data_[profile] = std::move(bmd);
 
   // Initially set the name for this background mode data.
-  base::string16 name = l10n_util::GetStringUTF16(IDS_PROFILES_DEFAULT_NAME);
+  std::u16string name = l10n_util::GetStringUTF16(IDS_PROFILES_DEFAULT_NAME);
   ProfileAttributesEntry* entry =
       profile_storage_->GetProfileAttributesWithPath(profile->GetPath());
   if (entry) {
@@ -509,7 +520,7 @@ void BackgroundModeManager::OnApplicationListChanged(const Profile* profile) {
 
   // Get the new apps (if any) and process them.
   std::set<const extensions::Extension*> new_apps = bmd->GetNewBackgroundApps();
-  std::vector<base::string16> new_names;
+  std::vector<std::u16string> new_names;
   for (auto* app : new_apps)
     new_names.push_back(base::UTF8ToUTF16(app->name()));
   OnClientsChanged(profile, new_names);
@@ -521,7 +532,7 @@ void BackgroundModeManager::OnProfileAdded(const base::FilePath& profile_path) {
   ProfileAttributesEntry* entry =
       profile_storage_->GetProfileAttributesWithPath(profile_path);
   DCHECK(entry);
-  base::string16 profile_name = entry->GetName();
+  std::u16string profile_name = entry->GetName();
   // At this point, the profile should be registered with the background mode
   // manager, but when it's actually added to the ProfileAttributesStorage is
   // when its name is set so we need up to update that with the
@@ -540,7 +551,7 @@ void BackgroundModeManager::OnProfileWillBeRemoved(
   ProfileAttributesEntry* entry =
       profile_storage_->GetProfileAttributesWithPath(profile_path);
   DCHECK(entry);
-  base::string16 profile_name = entry->GetName();
+  std::u16string profile_name = entry->GetName();
   // Remove the profile from our map of profiles.
   auto it = GetBackgroundModeIterator(profile_name);
   // If a profile isn't running a background app, it may not be in the map.
@@ -559,11 +570,11 @@ void BackgroundModeManager::OnProfileWillBeRemoved(
 
 void BackgroundModeManager::OnProfileNameChanged(
     const base::FilePath& profile_path,
-    const base::string16& old_profile_name) {
+    const std::u16string& old_profile_name) {
   ProfileAttributesEntry* entry =
       profile_storage_->GetProfileAttributesWithPath(profile_path);
   DCHECK(entry);
-  base::string16 new_profile_name = entry->GetName();
+  std::u16string new_profile_name = entry->GetName();
   BackgroundModeInfoMap::const_iterator it =
       GetBackgroundModeIterator(old_profile_name);
   // We check that the returned iterator is valid due to unittests, but really
@@ -759,7 +770,7 @@ void BackgroundModeManager::OnBrowserAdded(Browser* browser) {
 
 void BackgroundModeManager::OnClientsChanged(
     const Profile* profile,
-    const std::vector<base::string16>& new_client_names) {
+    const std::vector<std::u16string>& new_client_names) {
   DCHECK(IsBackgroundModePrefEnabled());
 
   // Update the ProfileAttributesStorage with the fact whether background
@@ -825,7 +836,7 @@ bool BackgroundModeManager::ShouldBeInBackgroundMode() const {
 }
 
 void BackgroundModeManager::OnBackgroundClientInstalled(
-    const base::string16& name) {
+    const std::u16string& name) {
   // Background mode is disabled - don't do anything.
   if (!IsBackgroundModePrefEnabled())
     return;
@@ -1003,7 +1014,7 @@ BackgroundModeManager::GetBackgroundModeData(const Profile* profile) const {
 
 BackgroundModeManager::BackgroundModeInfoMap::iterator
 BackgroundModeManager::GetBackgroundModeIterator(
-    const base::string16& profile_name) {
+    const std::u16string& profile_name) {
   auto profile_it = background_mode_data_.end();
   for (auto it = background_mode_data_.begin();
        it != background_mode_data_.end(); ++it) {

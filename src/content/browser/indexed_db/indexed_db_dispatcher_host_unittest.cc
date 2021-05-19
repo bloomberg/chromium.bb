@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -94,7 +95,7 @@ struct TestDatabaseConnection {
 
   TestDatabaseConnection(scoped_refptr<base::SequencedTaskRunner> task_runner,
                          url::Origin origin,
-                         base::string16 db_name,
+                         std::u16string db_name,
                          int64_t version,
                          int64_t upgrade_txn_id)
       : task_runner(std::move(task_runner)),
@@ -124,7 +125,7 @@ struct TestDatabaseConnection {
 
   scoped_refptr<base::SequencedTaskRunner> task_runner;
   url::Origin origin;
-  base::string16 db_name;
+  std::u16string db_name;
   int64_t version;
   int64_t upgrade_txn_id;
 
@@ -158,8 +159,8 @@ class TestIndexedDBObserver : public storage::mojom::IndexedDBObserver {
 
   void OnIndexedDBContentChanged(
       const url::Origin& origin,
-      const base::string16& database_name,
-      const base::string16& object_store_name) override {
+      const std::u16string& database_name,
+      const std::u16string& object_store_name) override {
     ++notify_content_changed_count;
   }
 
@@ -178,7 +179,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
       : special_storage_policy_(
             base::MakeRefCounted<storage::MockSpecialStoragePolicy>()),
         quota_manager_(base::MakeRefCounted<storage::MockQuotaManager>(
-            false /*is_incognito*/,
+            /*is_incognito=*/false,
             CreateAndReturnTempDir(&temp_dir_),
             task_environment_.GetMainThreadTaskRunner(),
             special_storage_policy_)),
@@ -191,27 +192,6 @@ class IndexedDBDispatcherHostTest : public testing::Test {
             task_environment_.GetMainThreadTaskRunner(),
             nullptr)) {}
 
-  void TearDown() override {
-    // Cycle the IndexedDBTaskQueue to remove all IDB tasks.
-    {
-      base::RunLoop loop;
-      context_impl_->IDBTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
-      loop.Run();
-    }
-    base::RunLoop loop;
-    context_impl_->IDBTaskRunner()->PostTask(FROM_HERE,
-                                             base::BindLambdaForTesting([&]() {
-                                               idb_mojo_factory_.reset();
-                                               loop.Quit();
-                                             }));
-    loop.Run();
-    context_impl_ = nullptr;
-    quota_manager_ = nullptr;
-    task_environment_.RunUntilIdle();
-    // File are leaked if this doesn't return true.
-    ASSERT_TRUE(temp_dir_.Delete());
-  }
-
   void SetUp() override {
     base::RunLoop loop;
     context_impl_->IDBTaskRunner()->PostTask(
@@ -222,6 +202,34 @@ class IndexedDBDispatcherHostTest : public testing::Test {
           loop.Quit();
         }));
     loop.Run();
+  }
+
+  void TearDown() override {
+    // Cycle the IndexedDBTaskQueue to remove all IDB tasks.
+    {
+      base::RunLoop loop;
+      context_impl_->IDBTaskRunner()->PostTask(
+          FROM_HERE, base::BindLambdaForTesting([&]() {
+            idb_mojo_factory_.reset();
+            loop.Quit();
+          }));
+      loop.Run();
+    }
+
+    // IndexedDBContextImpl must be released on the IDB sequence.
+    {
+      scoped_refptr<base::SequencedTaskRunner> idb_task_runner =
+          context_impl_->IDBTaskRunner();
+      context_impl_->ReleaseOnIDBSequence(std::move(context_impl_));
+      base::RunLoop loop;
+      idb_task_runner->PostTask(FROM_HERE, loop.QuitClosure());
+      loop.Run();
+    }
+
+    quota_manager_ = nullptr;
+    task_environment_.RunUntilIdle();
+    // File are leaked if this doesn't return true.
+    ASSERT_TRUE(temp_dir_.Delete());
   }
 
  protected:
@@ -521,7 +529,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_PutWithInvalidBlob) {
         external_objects.push_back(
             blink::mojom::IDBExternalObject::NewBlobOrFile(
                 blink::mojom::IDBBlobInfo::New(std::move(blob), "fakeUUID",
-                                               base::string16(), 100,
+                                               std::u16string(), 100,
                                                nullptr)));
 
         std::string value = "hello";
@@ -534,8 +542,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_PutWithInvalidBlob) {
         new_value->external_objects = std::move(external_objects);
 
         connection->version_change_transaction->Put(
-            kObjectStoreId, std::move(new_value),
-            IndexedDBKey(base::UTF8ToUTF16("hello")),
+            kObjectStoreId, std::move(new_value), IndexedDBKey(u"hello"),
             blink::mojom::IDBPutMode::AddOnly,
             std::vector<IndexedDBIndexKeys>(), put_callback.Get());
         connection->version_change_transaction->Commit(0);
@@ -1320,8 +1327,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBContentChanged) {
         new_value->bits = std::move(value_vector);
 
         connection1->version_change_transaction->Put(
-            kObjectStoreId, std::move(new_value),
-            IndexedDBKey(base::UTF8ToUTF16("key")),
+            kObjectStoreId, std::move(new_value), IndexedDBKey(u"key"),
             blink::mojom::IDBPutMode::AddOnly,
             std::vector<IndexedDBIndexKeys>(), put_callback.Get());
         connection1->version_change_transaction->Commit(0);
@@ -1421,12 +1427,18 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBContentChanged) {
   loop6.Run();
 }
 
-TEST_F(IndexedDBDispatcherHostTest, DatabaseOperationSequencing) {
+// Flaky on Mac and Linux ASAN builds. See: crbug.com/1189512.
+#if defined(OS_MAC) || (defined(OS_LINUX) && defined(ADDRESS_SANITIZER))
+#define MAYBE_DatabaseOperationSequencing DISABLED_DatabaseOperationSequencing
+#else
+#define MAYBE_DatabaseOperationSequencing DatabaseOperationSequencing
+#endif
+TEST_F(IndexedDBDispatcherHostTest, MAYBE_DatabaseOperationSequencing) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
-  const base::string16 kObjectStoreName1 = base::ASCIIToUTF16("os1");
-  const base::string16 kObjectStoreName2 = base::ASCIIToUTF16("os2");
-  const base::string16 kObjectStoreName3 = base::ASCIIToUTF16("os3");
+  const std::u16string kObjectStoreName1 = u"os1";
+  const std::u16string kObjectStoreName2 = u"os2";
+  const std::u16string kObjectStoreName3 = u"os3";
 
   std::unique_ptr<TestDatabaseConnection> connection;
   IndexedDBDatabaseMetadata metadata;

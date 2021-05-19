@@ -22,8 +22,10 @@
 #include "components/safe_browsing/content/browser/client_side_detection_service.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/core/browser/sync/sync_utils.h"
 #include "components/safe_browsing/core/db/allowlist_checker_client.h"
 #include "components/safe_browsing/core/db/database_manager.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -283,26 +285,39 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
 // static
 std::unique_ptr<ClientSideDetectionHost> ClientSideDetectionHost::Create(
     content::WebContents* tab,
-    std::unique_ptr<Delegate> delegate) {
-  return base::WrapUnique(
-      new ClientSideDetectionHost(tab, std::move(delegate)));
+    std::unique_ptr<Delegate> delegate,
+    PrefService* pref_service,
+    std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher,
+    bool is_off_the_record,
+    const PrimaryAccountSignedIn& account_signed_in_callback) {
+  return base::WrapUnique(new ClientSideDetectionHost(
+      tab, std::move(delegate), pref_service, std::move(token_fetcher),
+      is_off_the_record, account_signed_in_callback));
 }
 
 ClientSideDetectionHost::ClientSideDetectionHost(
     WebContents* tab,
-    std::unique_ptr<Delegate> delegate)
+    std::unique_ptr<Delegate> delegate,
+    PrefService* pref_service,
+    std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher,
+    bool is_off_the_record,
+    const PrimaryAccountSignedIn& account_signed_in_callback)
     : content::WebContentsObserver(tab),
       csd_service_(nullptr),
       tab_(tab),
       classification_request_(nullptr),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      delegate_(std::move(delegate)) {
+      delegate_(std::move(delegate)),
+      pref_service_(pref_service),
+      token_fetcher_(std::move(token_fetcher)),
+      is_off_the_record_(is_off_the_record),
+      account_signed_in_callback_(account_signed_in_callback) {
   DCHECK(tab);
   // Note: csd_service_ and sb_service will be nullptr here in testing.
   csd_service_ = delegate_->GetClientSideDetectionService();
 
-  // ui_manager_ and database_manager_ can be null if safe browsing
-  // service is not available in the embedder.
+  // |ui_manager_| and |database_manager_| can
+  // be null if safe browsing service is not available in the embedder.
   ui_manager_ = delegate_->GetSafeBrowsingUIManager();
   database_manager_ = delegate_->GetSafeBrowsingDBManager();
 }
@@ -442,18 +457,26 @@ void ClientSideDetectionHost::PhishingDetectionDone(
       verdict->clear_phash_dimension_size();
     }
 
+    if (IsEnhancedProtectionEnabled(*delegate_->GetPrefs()) &&
+        base::FeatureList::IsEnabled(kClientSideDetectionReferrerChain)) {
+      delegate_->AddReferrerChain(verdict.get(), current_url_);
+    }
+
     base::UmaHistogramBoolean("SBClientPhishing.LocalModelDetectsPhishing",
                               verdict->is_phishing());
 
     // We only send phishing verdict to the server if the verdict is phishing.
-    if (verdict->is_phishing()) {
-      ClientSideDetectionService::ClientReportPhishingRequestCallback callback =
-          base::BindOnce(&ClientSideDetectionHost::MaybeShowPhishingWarning,
-                         weak_factory_.GetWeakPtr(),
-                         /*is_from_cache=*/false);
-      csd_service_->SendClientReportPhishingRequest(std::move(verdict),
-                                                    std::move(callback));
+    if (!verdict->is_phishing())
+      return;
+
+    if (CanGetAccessToken()) {
+      token_fetcher_->Start(
+          base::BindOnce(&ClientSideDetectionHost::OnGotAccessToken,
+                         weak_factory_.GetWeakPtr(), std::move(verdict)));
+      return;
     }
+    std::string empty_access_token;
+    SendRequest(std::move(verdict), empty_access_token);
   }
 }
 
@@ -508,6 +531,34 @@ void ClientSideDetectionHost::set_ui_manager(BaseUIManager* ui_manager) {
 void ClientSideDetectionHost::set_database_manager(
     SafeBrowsingDatabaseManager* database_manager) {
   database_manager_ = database_manager;
+}
+
+void ClientSideDetectionHost::OnGotAccessToken(
+    std::unique_ptr<ClientPhishingRequest> verdict,
+    const std::string& access_token) {
+  ClientSideDetectionHost::SendRequest(std::move(verdict), access_token);
+}
+
+bool ClientSideDetectionHost::CanGetAccessToken() {
+  if (is_off_the_record_)
+    return false;
+
+  // Return true if the finch feature is enabled for an ESB user, and if the
+  // primary user account is signed in.
+  return base::FeatureList::IsEnabled(kClientSideDetectionWithToken) &&
+         IsEnhancedProtectionEnabled(*pref_service_) &&
+         std::move(account_signed_in_callback_).Run();
+}
+
+void ClientSideDetectionHost::SendRequest(
+    std::unique_ptr<ClientPhishingRequest> verdict,
+    const std::string& access_token) {
+  ClientSideDetectionService::ClientReportPhishingRequestCallback callback =
+      base::BindOnce(&ClientSideDetectionHost::MaybeShowPhishingWarning,
+                     weak_factory_.GetWeakPtr(),
+                     /*is_from_cache=*/false);
+  csd_service_->SendClientReportPhishingRequest(
+      std::move(verdict), std::move(callback), access_token);
 }
 
 }  // namespace safe_browsing

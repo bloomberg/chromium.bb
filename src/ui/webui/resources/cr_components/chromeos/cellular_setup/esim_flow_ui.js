@@ -27,6 +27,32 @@ cr.define('cellular_setup', function() {
   };
 
   /**
+   * The reason that caused the user to exit the ESim Setup flow.
+   * These values are persisted to logs. Entries should not be renumbered
+   * and numeric values should never be reused.
+   * @enum{number}
+   */
+  /* #export */ const ESimSetupFlowResult = {
+    SUCCESS: 0,
+    INSTALL_FAIL: 1,
+    CANCELLED_NEEDS_CONFIRMATION_CODE: 2,
+    CANCELLED_INVALID_ACTIVATION_CODE: 3,
+    ERROR_FETCHING_PROFILES: 4,
+    CANCELLED_WITHOUT_ERROR: 5,
+    CANCELLED_NO_PROFILES: 6,
+    NO_NETWORK: 7,
+  };
+
+  /* #export */ const ESIM_SETUP_RESULT_METRIC_NAME =
+      'Network.Cellular.ESim.SetupFlowResult';
+
+  /* #export */ const SUCCESSFUL_ESIM_SETUP_DURATION_METRIC_NAME =
+      'Network.Cellular.ESim.CellularSetup.Success.Duration';
+
+  /* #export */ const FAILED_ESIM_SETUP_DURATION_METRIC_NAME =
+      'Network.Cellular.ESim.CellularSetup.Failure.Duration';
+
+  /**
    * Root element for the eSIM cellular setup flow. This element interacts with
    * the CellularSetup service to carry out the esim activation flow.
    */
@@ -107,7 +133,7 @@ cr.define('cellular_setup', function() {
       },
 
       /** @private */
-      hasActivePSimNetwork_: {
+      hasHadActivePSimNetwork_: {
         type: Boolean,
         value: false,
       },
@@ -122,8 +148,27 @@ cr.define('cellular_setup', function() {
     /** @private {?chromeos.cellularSetup.mojom.EuiccRemote} */
     euicc_: null,
 
+    /** @private {boolean} */
+    hasFailedFetchingProfiles_: false,
+
+    /** @private {?chromeos.cellularSetup.mojom.ProfileInstallResult} */
+    lastProfileInstallResult_: null,
+
+    /**
+     * If there are no active network connections of any type.
+     * @private {boolean}
+     */
+    isOffline_: false,
+
+    /**
+     * The time at which the ESim flow is attached.
+     * @private {?Date}
+     */
+    timeOnAttached_: null,
+
     listeners: {
       'activation-code-updated': 'onActivationCodeUpdated_',
+      'forward-navigation-requested': 'onForwardNavigationRequested_',
     },
 
     observers: ['onSelectedProfileChanged_(selectedProfile_)'],
@@ -131,6 +176,87 @@ cr.define('cellular_setup', function() {
     /** @override */
     created() {
       this.eSimManagerRemote_ = cellular_setup.getESimManagerRemote();
+      const networkConfig =
+          network_config.MojoInterfaceProviderImpl.getInstance()
+              .getMojoServiceRemote();
+
+      const filter = {
+        filter: chromeos.networkConfig.mojom.FilterType.kActive,
+        limit: chromeos.networkConfig.mojom.NO_LIMIT,
+        networkType: chromeos.networkConfig.mojom.NetworkType.kAll,
+      };
+      networkConfig.getNetworkStateList(filter).then(response => {
+        this.onActiveNetworksChanged(response.result);
+      });
+    },
+
+    /** @override */
+    attached() {
+      this.timeOnAttached_ = new Date();
+    },
+
+    /** @override */
+    detached() {
+      let resultCode = null;
+
+      const ProfileInstallResult =
+          chromeos.cellularSetup.mojom.ProfileInstallResult;
+
+      switch (this.lastProfileInstallResult_) {
+        case ProfileInstallResult.kSuccess:
+          resultCode = ESimSetupFlowResult.SUCCESS;
+          break;
+        case ProfileInstallResult.kFailure:
+          resultCode = ESimSetupFlowResult.INSTALL_FAIL;
+          break;
+        case ProfileInstallResult.kErrorNeedsConfirmationCode:
+          resultCode = ESimSetupFlowResult.CANCELLED_NEEDS_CONFIRMATION_CODE;
+          break;
+        case ProfileInstallResult.kErrorInvalidActivationCode:
+          resultCode = ESimSetupFlowResult.CANCELLED_INVALID_ACTIVATION_CODE;
+          break;
+        default:
+          // Handles case when no profile installation was attempted.
+          if (this.hasFailedFetchingProfiles_) {
+            resultCode = ESimSetupFlowResult.ERROR_FETCHING_PROFILES;
+          } else if (this.pendingProfiles_ && !this.pendingProfiles_.length) {
+            resultCode = ESimSetupFlowResult.CANCELLED_NO_PROFILES;
+          } else {
+            resultCode = ESimSetupFlowResult.CANCELLED_WITHOUT_ERROR;
+          }
+          break;
+      }
+
+      if (this.isOffline_ && resultCode !== ProfileInstallResult.kSuccess) {
+        resultCode = ESimSetupFlowResult.NO_NETWORK;
+      }
+
+      assert(resultCode !== null);
+      chrome.metricsPrivate.recordEnumerationValue(
+          ESIM_SETUP_RESULT_METRIC_NAME, resultCode,
+          Object.keys(ESimSetupFlowResult).length);
+
+      const elapsedTimeMs = new Date() - this.timeOnAttached_;
+      if (resultCode === ESimSetupFlowResult.SUCCESS) {
+        chrome.metricsPrivate.recordLongTime(
+            SUCCESSFUL_ESIM_SETUP_DURATION_METRIC_NAME, elapsedTimeMs);
+        return;
+      }
+
+      chrome.metricsPrivate.recordLongTime(
+          FAILED_ESIM_SETUP_DURATION_METRIC_NAME, elapsedTimeMs);
+    },
+
+    /**
+     * NetworkListenerBehavior override
+     * Used to determine if there is an online network connection.
+     * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
+     *     activeNetworks
+     */
+    onActiveNetworksChanged(activeNetworks) {
+      this.isOffline_ = !activeNetworks.some(
+          (network) => network.connectionState ===
+              chromeos.networkConfig.mojom.ConnectionStateType.kOnline);
     },
 
     initSubflow() {
@@ -142,10 +268,10 @@ cr.define('cellular_setup', function() {
     async fetchProfiles_() {
       const euicc = await cellular_setup.getEuicc();
       if (!euicc) {
-        // TODO(crbug.com/1093185) User should have at least 1 EUICC or
-        // we shouldn't have gotten to this flow. Add check for this in
-        // cellular_setup.
-        console.error('No Euiccs found');
+        this.hasFailedFetchingProfiles_ = true;
+        this.showError_ = true;
+        this.state_ = ESimUiState.SETUP_FINISH;
+        console.warn('No Euiccs found');
         return;
       }
       this.euicc_ = euicc;
@@ -153,7 +279,8 @@ cr.define('cellular_setup', function() {
           await euicc.requestPendingProfiles();
       if (requestPendingProfilesResponse.result ===
           chromeos.cellularSetup.mojom.ESimOperationResult.kFailure) {
-        console.error(
+        this.hasFailedFetchingProfiles_ = true;
+        console.warn(
             'Error requesting pending profiles: ',
             requestPendingProfilesResponse);
       }
@@ -182,6 +309,7 @@ cr.define('cellular_setup', function() {
      *     response
      */
     handleProfileInstallResponse_(response) {
+      this.lastProfileInstallResult_ = response.result;
       if (response.result ===
           chromeos.cellularSetup.mojom.ProfileInstallResult
               .kErrorNeedsConfirmationCode) {
@@ -251,62 +379,112 @@ cr.define('cellular_setup', function() {
       }
     },
 
+    /**
+     * @param {boolean} enableForwardBtn
+     * @param {!cellularSetup.ButtonState} cancelButtonStateIfEnabled
+     * @param {boolean} isInstalling
+     * @return {!cellularSetup.ButtonBarState}
+     * @private
+     */
+    generateButtonStateForActivationPage_(
+        enableForwardBtn, cancelButtonStateIfEnabled, isInstalling) {
+      this.forwardButtonLabel = this.i18n('next');
+      let backBtnState = cellularSetup.ButtonState.HIDDEN;
+      if (this.pendingProfiles_.length > 1) {
+        backBtnState = isInstalling ? cellularSetup.ButtonState.DISABLED :
+                                      cellularSetup.ButtonState.ENABLED;
+      }
+      return {
+        backward: backBtnState,
+        cancel: cancelButtonStateIfEnabled,
+        forward: enableForwardBtn ? cellularSetup.ButtonState.ENABLED :
+                                    cellularSetup.ButtonState.DISABLED,
+      };
+    },
+
+    /**
+     * @param {boolean} enableForwardBtn
+     * @param {!cellularSetup.ButtonState} cancelButtonStateIfEnabled
+     * @param {boolean} isInstalling
+     * @return {!cellularSetup.ButtonBarState}
+     * @private
+     */
+    generateButtonStateForConfirmationPage_(
+        enableForwardBtn, cancelButtonStateIfEnabled, isInstalling) {
+      this.forwardButtonLabel = this.i18n('confirm');
+      let backBtnState = cellularSetup.ButtonState.ENABLED;
+      if (this.pendingProfiles_.length === 1) {
+        backBtnState = cellularSetup.ButtonState.HIDDEN;
+      } else if (isInstalling) {
+        backBtnState = cellularSetup.ButtonState.DISABLED;
+      }
+      return {
+        backward: backBtnState,
+        cancel: cancelButtonStateIfEnabled,
+        forward: enableForwardBtn ? cellularSetup.ButtonState.ENABLED :
+                                    cellularSetup.ButtonState.DISABLED,
+      };
+    },
+
     /** @private */
     updateButtonBarState_() {
       let buttonState;
       const cancelButtonStateIfEnabled =
           this.delegate.shouldShowCancelButton() ?
           cellularSetup.ButtonState.ENABLED :
-          undefined;
+          cellularSetup.ButtonState.HIDDEN;
       switch (this.state_) {
         case ESimUiState.PROFILE_SEARCH:
-        case ESimUiState.ACTIVATION_CODE_ENTRY:
           this.forwardButtonLabel = this.i18n('next');
           buttonState = {
-            backward: cellularSetup.ButtonState.ENABLED,
+            backward: cellularSetup.ButtonState.HIDDEN,
             cancel: cancelButtonStateIfEnabled,
             forward: cellularSetup.ButtonState.DISABLED,
           };
+          break;
+        case ESimUiState.ACTIVATION_CODE_ENTRY:
+          buttonState = this.generateButtonStateForActivationPage_(
+              /*enableForwardBtn*/ false, cancelButtonStateIfEnabled,
+              /*isInstalling*/ false);
           break;
         case ESimUiState.ACTIVATION_CODE_ENTRY_READY:
-          this.forwardButtonLabel = this.i18n('next');
-          buttonState = {
-            backward: cellularSetup.ButtonState.ENABLED,
-            cancel: cancelButtonStateIfEnabled,
-            forward: cellularSetup.ButtonState.ENABLED,
-          };
+          buttonState = this.generateButtonStateForActivationPage_(
+              /*enableForwardBtn*/ true, cancelButtonStateIfEnabled,
+              /*isInstalling*/ false);
+          break;
+        case ESimUiState.ACTIVATION_CODE_ENTRY_INSTALLING:
+          buttonState = this.generateButtonStateForActivationPage_(
+              /*enableForwardBtn*/ false, cancelButtonStateIfEnabled,
+              /*isInstalling*/ true);
           break;
         case ESimUiState.CONFIRMATION_CODE_ENTRY:
-          this.forwardButtonLabel = this.i18n('confirm');
-          buttonState = {
-            backward: cellularSetup.ButtonState.ENABLED,
-            cancel: cancelButtonStateIfEnabled,
-            forward: cellularSetup.ButtonState.DISABLED,
-          };
+          buttonState = this.generateButtonStateForConfirmationPage_(
+              /*enableForwardBtn*/ false, cancelButtonStateIfEnabled,
+              /*isInstalling*/ false);
           break;
         case ESimUiState.CONFIRMATION_CODE_ENTRY_READY:
-          this.forwardButtonLabel = this.i18n('confirm');
-          buttonState = {
-            backward: cellularSetup.ButtonState.ENABLED,
-            cancel: cancelButtonStateIfEnabled,
-            forward: cellularSetup.ButtonState.ENABLED,
-          };
+          buttonState = this.generateButtonStateForConfirmationPage_(
+              /*enableForwardBtn*/ true, cancelButtonStateIfEnabled,
+              /*isInstalling*/ false);
+          break;
+        case ESimUiState.CONFIRMATION_CODE_ENTRY_INSTALLING:
+          buttonState = this.generateButtonStateForConfirmationPage_(
+              /*enableForwardBtn*/ false, cancelButtonStateIfEnabled,
+              /*isInstalling*/ true);
           break;
         case ESimUiState.PROFILE_SELECTION:
           this.forwardButtonLabel = this.selectedProfile_ ?
               this.i18n('next') :
               this.i18n('skipDiscovery');
           buttonState = {
-            backward: cellularSetup.ButtonState.ENABLED,
+            backward: cellularSetup.ButtonState.HIDDEN,
             cancel: cancelButtonStateIfEnabled,
             forward: cellularSetup.ButtonState.ENABLED,
           };
           break;
-        case ESimUiState.ACTIVATION_CODE_ENTRY_INSTALLING:
         case ESimUiState.PROFILE_SELECTION_INSTALLING:
-        case ESimUiState.CONFIRMATION_CODE_ENTRY_INSTALLING:
           buttonState = {
-            backward: cellularSetup.ButtonState.DISABLED,
+            backward: cellularSetup.ButtonState.HIDDEN,
             cancel: cancelButtonStateIfEnabled,
             forward: cellularSetup.ButtonState.DISABLED,
           };
@@ -314,6 +492,8 @@ cr.define('cellular_setup', function() {
         case ESimUiState.SETUP_FINISH:
           this.forwardButtonLabel = this.i18n('done');
           buttonState = {
+            backward: cellularSetup.ButtonState.HIDDEN,
+            cancel: cellularSetup.ButtonState.HIDDEN,
             forward: cellularSetup.ButtonState.ENABLED,
           };
           break;
@@ -380,7 +560,6 @@ cr.define('cellular_setup', function() {
     /** SubflowBehavior override */
     navigateForward() {
       this.showError_ = false;
-
       switch (this.state_) {
         case ESimUiState.ACTIVATION_CODE_ENTRY_READY:
           // Assume installing the profile doesn't require a confirmation
@@ -423,29 +602,37 @@ cr.define('cellular_setup', function() {
       }
     },
 
-    /**
-     * @returns {boolean} true if backward navigation was handled
-     * SubflowBehavior override
-     */
-    attemptBackwardNavigation() {
+    /** SubflowBehavior override */
+    navigateBackward() {
       if ((this.state_ === ESimUiState.ACTIVATION_CODE_ENTRY ||
            this.state_ === ESimUiState.ACTIVATION_CODE_ENTRY_READY) &&
           this.pendingProfiles_.length > 1) {
         this.state_ = ESimUiState.PROFILE_SELECTION;
-        return true;
-      } else if (
-          this.state_ === ESimUiState.CONFIRMATION_CODE_ENTRY ||
+        return;
+      }
+
+      if (this.state_ === ESimUiState.CONFIRMATION_CODE_ENTRY ||
           this.state_ === ESimUiState.CONFIRMATION_CODE_ENTRY_READY) {
         if (this.activationCode_) {
           this.state_ = ESimUiState.ACTIVATION_CODE_ENTRY_READY;
+          return;
         } else if (this.pendingProfiles_.length > 1) {
           this.state_ = ESimUiState.PROFILE_SELECTION;
-        } else {
-          return false;
+          return;
         }
-        return true;
       }
-      return false;
+      console.error(
+          'Navigate backward faled for : ' + this.state_ +
+          ' this state does not support backward navigation.');
+      assertNotReached();
+    },
+
+    /** @private */
+    onForwardNavigationRequested_() {
+      if (this.state_ === ESimUiState.ACTIVATION_CODE_ENTRY_READY ||
+          this.state_ === ESimUiState.CONFIRMATION_CODE_ENTRY_READY) {
+        this.navigateForward();
+      }
     },
 
     /** @private */
@@ -456,7 +643,12 @@ cr.define('cellular_setup', function() {
     /** NetworkListenerBehavior override */
     onNetworkStateListChanged() {
       hasActivePSimNetwork().then((hasActive) => {
-        this.hasActivePSimNetwork_ = hasActive;
+        // If hasHadActivePSimNetwork_ has been set to true, don't set to false
+        // again as we should show the cellular disconnect warning for the
+        // duration of the flow's lifecycle.
+        if (hasActive) {
+          this.hasHadActivePSimNetwork_ = hasActive;
+        }
       });
     },
 

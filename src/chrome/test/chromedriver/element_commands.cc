@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <cmath>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -40,6 +41,54 @@ const std::set<std::string> inputControlTypes = {
     "datetime-local", "number", "range", "color", "file"};
 
 const std::set<std::string> nontypeableControlTypes = {"color"};
+
+const std::unordered_set<std::string> booleanAttributes = {
+    "allowfullscreen",
+    "allowpaymentrequest",
+    "allowusermedia",
+    "async",
+    "autofocus",
+    "autoplay",
+    "checked",
+    "compact",
+    "complete",
+    "controls",
+    "declare",
+    "default",
+    "defaultchecked",
+    "defaultselected",
+    "defer",
+    "disabled",
+    "ended",
+    "formnovalidate",
+    "hidden",
+    "indeterminate",
+    "iscontenteditable",
+    "ismap",
+    "itemscope",
+    "loop",
+    "multiple",
+    "muted",
+    "nohref",
+    "nomodule",
+    "noresize",
+    "noshade",
+    "novalidate",
+    "nowrap",
+    "open",
+    "paused",
+    "playsinline",
+    "pubdate",
+    "readonly",
+    "required",
+    "reversed",
+    "scoped",
+    "seamless",
+    "seeking",
+    "selected",
+    "truespeed",
+    "typemustmatch",
+    "willvalidate"};
 
 namespace {
 
@@ -455,9 +504,9 @@ Status ExecuteSendKeysToElement(Session* session,
         return status;
     }
     // Compress array into a single string.
-    base::FilePath::StringType paths_string;
+    std::string paths_string;
     for (size_t i = 0; i < key_list->GetSize(); ++i) {
-      base::FilePath::StringType path_part;
+      std::string path_part;
       if (!key_list->GetString(i, &path_part))
         return Status(kInvalidArgument, "'value' is invalid");
       paths_string.append(path_part);
@@ -473,17 +522,18 @@ Status ExecuteSendKeysToElement(Session* session,
     // Separate the string into separate paths, delimited by '\n'.
     std::vector<base::FilePath> paths;
     for (const auto& path_piece : base::SplitStringPiece(
-             paths_string, base::FilePath::StringType(1, '\n'),
-             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+             paths_string, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       // For local desktop browser, verify that the file exists.
       // No easy way to do that for remote or mobile browser.
-      if (is_desktop && !base::PathExists(base::FilePath(path_piece))) {
+      if (is_desktop &&
+          !base::PathExists(base::FilePath::FromUTF8Unsafe(path_piece))) {
         return Status(
             kInvalidArgument,
-            base::StringPrintf("File not found : %" PRFilePath,
-                               base::FilePath(path_piece).value().c_str()));
+            base::StringPrintf(
+                "File not found : %" PRFilePath,
+                base::FilePath::FromUTF8Unsafe(path_piece).value().c_str()));
       }
-      paths.push_back(base::FilePath(path_piece));
+      paths.push_back(base::FilePath::FromUTF8Unsafe(path_piece));
     }
 
     bool multiple = false;
@@ -728,8 +778,8 @@ Status ExecuteIsElementEnabled(Session* session,
     return status;
 
   if (is_xml) {
-      value->reset(new base::Value(false));
-      return Status(kOk);
+    *value = std::make_unique<base::Value>(false);
+    return Status(kOk);
   } else {
     return web_view->CallFunction(
       session->GetCurrentFrameId(),
@@ -923,10 +973,22 @@ Status ExecuteGetElementAttribute(Session* session,
                                   const std::string& element_id,
                                   const base::DictionaryValue& params,
                                   std::unique_ptr<base::Value>* value) {
-  std::string name;
-  if (!params.GetString("name", &name))
+  std::string attribute_name;
+  if (!params.GetString("name", &attribute_name))
     return Status(kInvalidArgument, "missing 'name'");
-  return GetElementAttribute(session, web_view, element_id, name, value);
+
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  args.AppendString(attribute_name);
+  return web_view->CallFunction(
+      session->GetCurrentFrameId(),
+      booleanAttributes.count(base::ToLowerASCII(attribute_name))
+          ? "(elem, attribute) => elem.hasAttribute(attribute) ? 'true' : null"
+          : "(elem, attribute) => elem.getAttribute(attribute)",
+      args, value);
 }
 
 Status ExecuteGetElementValueOfCSSProperty(
@@ -941,7 +1003,7 @@ Status ExecuteGetElementValueOfCSSProperty(
     return status;
 
   if (is_xml) {
-      value->reset(new base::Value(""));
+    *value = std::make_unique<base::Value>("");
   } else {
     std::string property_name;
     if (!params.GetString("propertyName", &property_name))
@@ -951,7 +1013,7 @@ Status ExecuteGetElementValueOfCSSProperty(
         session, web_view, element_id, property_name, &property_value);
     if (status.IsError())
       return status;
-    value->reset(new base::Value(property_value));
+    *value = std::make_unique<base::Value>(property_value);
   }
   return Status(kOk);
 }
@@ -964,7 +1026,7 @@ Status ExecuteElementEquals(Session* session,
   std::string other_element_id;
   if (!params.GetString("other", &other_element_id))
     return Status(kInvalidArgument, "'other' must be a string");
-  value->reset(new base::Value(element_id == other_element_id));
+  *value = std::make_unique<base::Value>(element_id == other_element_id);
   return Status(kOk);
 }
 
@@ -1044,6 +1106,6 @@ Status ExecuteElementScreenshot(Session* session,
   if (status.IsError())
     return status;
 
-  value->reset(new base::Value(screenshot));
+  *value = std::make_unique<base::Value>(screenshot);
   return Status(kOk);
 }

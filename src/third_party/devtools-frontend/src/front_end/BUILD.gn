@@ -24,43 +24,44 @@ group("front_end") {
     ":toolbox",
     ":ts_library-verification",
     ":worker_app",
-    "bindings:bundle",
     "color_picker:bundle",
-    "common:bundle",
     "component_helpers:bundle",
     "components:bundle",
     "cookie_table:bundle",
+    "core/common:bundle",
+    "core/i18n:bundle",
+    "core/i18n:i18n_locales",
+    "core/protocol_client:bundle",
     "data_grid:bundle",
     "diff:bundle",
     "emulated_devices/optimized:optimized_emulated_devices",
-    "event_listeners:bundle",
-    "extensions:bundle",
     "formatter:bundle",
     "formatter_worker:worker_entrypoint",
     "har_importer:bundle",
-    "heap_snapshot_model:bundle",
     "heap_snapshot_worker:worker_entrypoint",
-    "i18n:bundle",
     "inline_editor:bundle",
-    "javascript_metadata:bundle",
     "js_main:bundle",
+    "legacy_test_runner",
     "lighthouse_worker:bundle",
-    "protocol_client:bundle",
+    "models/bindings:bundle",
+    "models/extensions:bundle",
+    "models/heap_snapshot_model:bundle",
+    "models/javascript_metadata:bundle",
+    "models/text_utils:bundle",
+    "models/timeline_model:bundle",
+    "panels/event_listeners:bundle",
     "recorder:bundle",
     "render_coordinator:bundle",
     "screencast:bundle",
     "search:bundle",
     "snippets:bundle",
     "startup:bundle",
-    "test_runner:bundle",
     "text_editor:bundle",
-    "text_utils:bundle",
     "theme_support:bundle",
     "third_party/lighthouse",
     "third_party/puppeteer:bundle",
-    "timeline_model:bundle",
-    "ui:bundle",
     "ui/components:bundle",
+    "ui/legacy:bundle",
     "wasmparser_worker:worker_entrypoint",
     "worker_main:bundle",
     "workspace:bundle",
@@ -68,103 +69,73 @@ group("front_end") {
   ]
 }
 
-group("legacy_test-resources") {
-  public_deps = [
-    "accessibility_test_runner:bundle",
-    "application_test_runner:bundle",
-    "axe_core_test_runner:bundle",
-    "bindings_test_runner:bundle",
-    "console_test_runner:bundle",
-    "coverage_test_runner:bundle",
-    "cpu_profiler_test_runner:bundle",
-    "data_grid_test_runner:bundle",
-    "device_mode_test_runner:bundle",
-    "elements_test_runner:bundle",
-    "extensions_test_runner:bundle",
-    "heap_profiler_test_runner:bundle",
-    "layers_test_runner:bundle",
-    "lighthouse_test_runner:bundle",
-    "network_test_runner:bundle",
-    "performance_test_runner:bundle",
-    "sdk_test_runner:bundle",
-    "security_test_runner:bundle",
-    "sources_test_runner:bundle",
-  ]
-}
-
 group("legacy_css") {
   public_deps = [
     "cm:legacy_css",
     "components:legacy_css",
-    "console:legacy_css",
     "data_grid:legacy_css",
-    "elements:legacy_css",
-    "emulation:legacy_css",
-    "help:legacy_css",
     "inline_editor:legacy_css",
     "inspector_main:legacy_css",
-    "mobile_throttling:legacy_css",
+    "models/persistence:legacy_css",
     "object_ui:legacy_css",
-    "persistence:legacy_css",
+    "panels/application:legacy_css",
+    "panels/console:legacy_css",
+    "panels/elements:legacy_css",
+    "panels/emulation:legacy_css",
+    "panels/help:legacy_css",
+    "panels/mobile_throttling:legacy_css",
     "text_editor:legacy_css",
-    "ui:legacy_css",
+    "ui/legacy:legacy_css",
   ]
 }
 
 group("legacy_entrypoints") {
   public_deps = [
-    "accessibility:legacy",
-    "animation:legacy",
-    "bindings:legacy",
-    "browser_debugger:legacy",
-    "changes:legacy",
     "color_picker:legacy",
-    "common:legacy",
     "components:legacy",
-    "console:legacy",
-    "console_counters:legacy",
     "cookie_table:legacy",
-    "coverage:legacy",
+    "core/common:legacy",
+    "core/host:legacy",
+    "core/protocol_client:legacy",
+    "core/root:legacy",
+    "core/sdk:legacy",
     "data_grid:legacy",
-    "developer_resources:legacy",
     "diff:legacy",
-    "elements:legacy",
-    "emulation:legacy",
-    "event_listeners:legacy",
-    "extensions:legacy",
     "formatter:legacy",
     "har_importer:legacy",
-    "heap_snapshot_model:legacy",
     "heap_snapshot_worker:legacy",
-    "help:legacy",
-    "host:legacy",
     "inline_editor:legacy",
-    "input:legacy",
-    "inspector_main:legacy",
-    "issues:legacy",
-    "javascript_metadata:legacy",
-    "js_main:legacy",
-    "layer_viewer:legacy",
-    "layers:legacy",
-    "lighthouse:legacy",
     "linear_memory_inspector:legacy",
     "main:legacy",
-    "media:legacy",
-    "mobile_throttling:legacy",
-    "network:legacy",
-    "node_main:legacy",
+    "models/bindings:legacy",
+    "models/extensions:legacy",
+    "models/heap_snapshot_model:legacy",
+    "models/javascript_metadata:legacy",
+    "models/persistence:legacy",
+    "models/text_utils:legacy",
+    "models/timeline_model:legacy",
     "object_ui:legacy",
+    "panels/accessibility:legacy",
+    "panels/animation:legacy",
+    "panels/application:legacy",
+    "panels/browser_debugger:legacy",
+    "panels/changes:legacy",
+    "panels/console:legacy",
+    "panels/console_counters:legacy",
+    "panels/coverage:legacy",
+    "panels/developer_resources:legacy",
+    "panels/elements:legacy",
+    "panels/emulation:legacy",
+    "panels/event_listeners:legacy",
+    "panels/help:legacy",
+    "panels/layer_viewer:legacy",
+    "panels/layers:legacy",
+    "panels/lighthouse:legacy",
+    "panels/mobile_throttling:legacy",
+    "panels/network:legacy",
+    "panels/profiler:legacy",
     "perf_ui:legacy",
-    "performance_monitor:legacy",
-    "persistence:legacy",
-    "profiler:legacy",
-    "protocol_client:legacy",
-    "protocol_monitor:legacy",
     "quick_open:legacy",
-    "resources:legacy",
-    "root:legacy",
-    "screencast:legacy",
-    "sdk:legacy",
     "search:legacy",
     "security:legacy",
     "settings:legacy",
@@ -172,13 +143,9 @@ group("legacy_entrypoints") {
     "source_frame:legacy",
     "sources:legacy",
     "text_editor:legacy",
-    "text_utils:legacy",
     "timeline:legacy",
-    "timeline_model:legacy",
-    "ui:legacy",
+    "ui/legacy:legacy",
     "web_audio:legacy",
-    "webauthn:legacy",
-    "worker_main:legacy",
     "workspace:legacy",
     "workspace_diff:legacy",
   ]
@@ -189,35 +156,36 @@ ts_library("shell") {
   sources = [ "shell.js" ]
 
   deps = [
-    "bindings:legacy",
+    "Images:generate_css_vars",
     "browser_sdk:meta",
-    "changes:meta",
     "components:legacy",
-    "console:meta",
-    "console_counters:legacy",
-    "console_counters:meta",
-    "coverage:meta",
-    "dom_extension:bundle",
-    "extensions:legacy",
-    "host:legacy",
-    "input:meta",
+    "core/dom_extension:bundle",
+    "core/host:legacy",
+    "core/protocol_client:legacy",
+    "core/sdk:legacy",
+    "core/sdk:meta",
     "linear_memory_inspector:meta",
     "main:meta",
+    "models/bindings:legacy",
+    "models/extensions:legacy",
+    "models/persistence:legacy",
+    "models/persistence:meta",
     "object_ui:meta",
+    "panels/changes:meta",
+    "panels/console:meta",
+    "panels/console_counters:legacy",
+    "panels/console_counters:meta",
+    "panels/coverage:meta",
+    "panels/input:meta",
+    "panels/profiler:meta",
+    "panels/protocol_monitor:meta",
     "perf_ui:meta",
-    "persistence:legacy",
-    "persistence:meta",
-    "profiler:meta",
-    "protocol_client:legacy",
-    "protocol_monitor:meta",
     "quick_open:meta",
-    "sdk:legacy",
-    "sdk:meta",
     "settings:meta",
     "source_frame:meta",
     "sources:meta",
     "startup:bundle",
-    "ui:legacy",
+    "ui/legacy:legacy",
     "workspace:legacy",
   ]
 }
@@ -228,24 +196,24 @@ ts_library("devtools_app") {
 
   deps = [
     ":shell",
-    "accessibility:meta",
-    "animation:meta",
-    "browser_debugger:meta",
-    "css_overview:meta",
-    "developer_resources:meta",
-    "elements:meta",
-    "emulation:meta",
-    "help:meta",
     "inspector_main:meta",
     "issues:meta",
-    "layer_viewer:meta",
-    "layers:meta",
-    "lighthouse:meta",
-    "media:meta",
-    "mobile_throttling:meta",
-    "network:meta",
-    "performance_monitor:meta",
-    "resources:meta",
+    "panels/accessibility:meta",
+    "panels/animation:meta",
+    "panels/application:meta",
+    "panels/browser_debugger:meta",
+    "panels/css_overview:meta",
+    "panels/developer_resources:meta",
+    "panels/elements:meta",
+    "panels/emulation:meta",
+    "panels/help:meta",
+    "panels/layer_viewer:meta",
+    "panels/layers:meta",
+    "panels/lighthouse:meta",
+    "panels/media:meta",
+    "panels/mobile_throttling:meta",
+    "panels/network:meta",
+    "panels/performance_monitor:meta",
     "security:meta",
     "startup:bundle",
     "timeline:meta",
@@ -303,8 +271,9 @@ devtools_entrypoint("toolbox") {
   entrypoint = "toolbox.ts"
 
   deps = [
-    "dom_extension:bundle",
-    "platform:bundle",
+    "Images:generate_css_vars",
+    "core/dom_extension:bundle",
+    "core/platform:bundle",
   ]
 }
 
@@ -314,37 +283,30 @@ ts_library("worker_app") {
 
   deps = [
     ":shell",
-    "browser_debugger:meta",
-    "developer_resources:meta",
-    "elements:meta",
-    "help:meta",
     "issues:meta",
-    "layer_viewer:meta",
-    "mobile_throttling:meta",
-    "network:meta",
-    "resources:meta",
+    "panels/application:meta",
+    "panels/browser_debugger:meta",
+    "panels/developer_resources:meta",
+    "panels/elements:meta",
+    "panels/help:meta",
+    "panels/layer_viewer:meta",
+    "panels/mobile_throttling:meta",
+    "panels/network:meta",
     "startup:bundle",
     "timeline:meta",
   ]
 }
 
 group("integration_test_runner") {
-  public_deps = [
-    ":integration_test_runner-gen",
-    ":integration_test_runner-resources",
-  ]
+  public_deps = [ ":integration_test_runner-gen" ]
   data_deps = public_deps
-}
-
-copy_sources_to_resources("integration_test_runner-resources") {
-  sources = [ "integration_test_runner.html" ]
 }
 
 copy_to_gen("integration_test_runner-gen") {
   sources = [ "integration_test_runner.html" ]
 }
 
-node_action("html_entrypoints-generation") {
+node_action("html_entrypoints") {
   inputs = [ "entrypoint_template.html" ]
 
   script = "scripts/build/generate_html_entrypoint.js"
@@ -367,38 +329,7 @@ node_action("html_entrypoints-generation") {
   ]
 }
 
-copy("html_entrypoints") {
-  sources = [
-    "$target_gen_dir/devtools_app.html",
-    "$target_gen_dir/inspector.html",
-    "$target_gen_dir/js_app.html",
-    "$target_gen_dir/ndb_app.html",
-    "$target_gen_dir/node_app.html",
-    "$target_gen_dir/toolbox.html",
-    "$target_gen_dir/worker_app.html",
-  ]
-
-  outputs = [ "$resources_out_dir/{{source_file_part}}" ]
-
-  public_deps = [ ":html_entrypoints-generation" ]
-  data_deps = [ ":html_entrypoints-generation" ]
-}
-
-group("embedder-scripts") {
-  public_deps = [
-    ":gen-embedder-scripts",
-    ":resources-embedder-scripts",
-  ]
-}
-
-copy_sources_to_resources("resources-embedder-scripts") {
-  sources = [
-    "Tests.js",
-    "devtools_compatibility.js",
-  ]
-}
-
-copy_to_gen("gen-embedder-scripts") {
+copy_to_gen("embedder-scripts") {
   sources = [
     "Tests.js",
     "devtools_compatibility.js",
@@ -422,15 +353,15 @@ ts_library("ts_library-verification") {
   sources = [ "verification.ts" ]
 
   deps = [
-    "bindings:bundle",
     "browser_sdk:bundle",
     "color_picker:bundle",
-    "common:bundle",
-    "dom_extension:bundle",
-    "host:bundle",
-    "protocol_client:bundle",
-    "root:bundle",
-    "sdk:bundle",
+    "core/common:bundle",
+    "core/dom_extension:bundle",
+    "core/host:bundle",
+    "core/protocol_client:bundle",
+    "core/root:bundle",
+    "core/sdk:bundle",
+    "models/bindings:bundle",
     "workspace:bundle",
   ]
 }

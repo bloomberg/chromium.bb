@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -40,6 +39,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -94,7 +94,7 @@ class PopupHostWatcher : public content::NotificationObserver {
     const ExtensionHost* host =
         content::Details<const ExtensionHost>(details).ptr();
     DCHECK(host);
-    if (host->extension_host_type() != VIEW_TYPE_EXTENSION_POPUP)
+    if (host->extension_host_type() != mojom::ViewType::kExtensionPopup)
       return;
 
     ++(type == NOTIFICATION_EXTENSION_HOST_CREATED ? created_ : destroyed_);
@@ -274,9 +274,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopupIncognito) {
   content::WindowedNotificationObserver frame_observer(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllSources());
-  ASSERT_TRUE(RunExtensionSubtest("browser_action/open_popup",
-                                  "open_popup_succeeds.html",
-                                  kFlagEnableIncognito, kFlagUseIncognito))
+  ASSERT_TRUE(RunExtensionTest({.name = "browser_action/open_popup",
+                                .page_url = "open_popup_succeeds.html",
+                                .open_in_incognito = true},
+                               {.allow_in_incognito = true}))
       << message_;
   frame_observer.Wait();
   // Non-Aura Linux uses a singleton for the popup, so it looks like all windows
@@ -352,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
                        sessions::SessionTabHelper::IdForTab(
                            browser()->tab_strip_model()->GetActiveWebContents())
                            .id(),
-                       APIPermission::kTab));
+                       mojom::APIPermissionID::kTab));
   EXPECT_TRUE(ClosePopup());
 }
 
@@ -566,8 +567,6 @@ class MainFrameSizeWaiter : public content::WebContentsObserver {
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, BrowserActionPopup) {
-  base::AutoReset<bool> disable_toolbar_animations(
-      &ToolbarActionsBar::disable_animations_for_testing_, true);
   ASSERT_TRUE(
       LoadExtension(test_data_dir_.AppendASCII("browser_action/popup")));
   const Extension* extension = GetSingleLoadedExtension();

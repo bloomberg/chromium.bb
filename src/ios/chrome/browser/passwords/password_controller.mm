@@ -9,13 +9,13 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -26,9 +26,10 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
-#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/autofill/ios/browser/autofill_util.h"
+#import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
@@ -48,6 +49,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
+#import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -81,12 +83,14 @@
 
 using autofill::FormActivityObserverBridge;
 using autofill::FormData;
+using autofill::JsSuggestionManager;
 using autofill::PasswordFormGenerationData;
 using password_manager::PasswordForm;
 using autofill::FormRendererId;
 using autofill::FieldRendererId;
 using base::SysNSStringToUTF16;
 using base::SysUTF16ToNSString;
+using base::SysUTF8ToNSString;
 using l10n_util::GetNSString;
 using l10n_util::GetNSStringF;
 using password_manager::metrics_util::LogPasswordDropdownShown;
@@ -177,10 +181,11 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());
-    if (passwordManagerClient)
+    if (passwordManagerClient) {
       _passwordManagerClient = std::move(passwordManagerClient);
-    else
+    } else {
       _passwordManagerClient.reset(new IOSChromePasswordManagerClient(self));
+    }
     _passwordManager.reset(new PasswordManager(_passwordManagerClient.get()));
 
     PasswordFormHelper* formHelper =
@@ -256,6 +261,12 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
   return _sharedPasswordController;
 }
 
+#pragma mark - PasswordGenerationProvider
+
+- (id<PasswordGenerationProvider>)generationProvider {
+  return _sharedPasswordController;
+}
+
 #pragma mark - IOSChromePasswordManagerClientBridge
 
 - (WebState*)webState {
@@ -300,8 +311,9 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 // Shows auto sign-in notification and schedules hiding it after 3 seconds.
 // TODO(crbug.com/435048): Animate appearance.
 - (void)showAutosigninNotification:(std::unique_ptr<PasswordForm>)formSignedIn {
-  if (!_webState)
+  if (!_webState) {
     return;
+  }
 
   // If a notification is already being displayed, hides the old one, then shows
   // the new one.
@@ -415,14 +427,15 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 - (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManagerForUI>)form
                infoBarType:(PasswordInfoBarType)type
                     manual:(BOOL)manual {
-  if (!_webState)
+  if (!_webState) {
     return;
+  }
 
   bool isSyncUser = false;
   if (self.browserState) {
-    syncer::SyncService* sync_service =
+    syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
-    isSyncUser = password_bubble_experiment::IsSmartLockUser(sync_service);
+    isSyncUser = password_bubble_experiment::IsSmartLockUser(syncService);
   }
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(_webState);
@@ -443,18 +456,18 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
         std::unique_ptr<InfoBarIOS> infobar;
 
         // If manual save, skip showing banner.
-        bool skip_banner = manual;
+        bool skipBanner = manual;
         if (IsInfobarOverlayUIEnabled()) {
           infobar = std::make_unique<InfoBarIOS>(
               InfobarType::kInfobarTypePasswordSave, std::move(delegate),
-              skip_banner);
+              skipBanner);
         } else {
           InfobarPasswordCoordinator* coordinator = [[InfobarPasswordCoordinator
               alloc]
               initWithInfoBarDelegate:delegate.get()
                                  type:InfobarType::kInfobarTypePasswordSave];
           infobar = std::make_unique<InfoBarIOS>(
-              coordinator, std::move(delegate), skip_banner);
+              coordinator, std::move(delegate), skipBanner);
         }
         infoBarManager->AddInfoBar(std::move(infobar),
                                    /*replace_existing=*/true);
@@ -567,11 +580,26 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
     [weakSelf generatePasswordPopupDismissed];
   };
 
+  auto closeKeyboard = ^{
+    if (!weakSelf.webState) {
+      return;
+    }
+    FormInputAccessoryViewHandler* handler =
+        [[FormInputAccessoryViewHandler alloc] init];
+    handler.JSSuggestionManager =
+        JsSuggestionManager::GetOrCreateForWebState(weakSelf.webState);
+    NSString* mainFrameID =
+        SysUTF8ToNSString(web::GetMainWebFrameId(weakSelf.webState));
+    [handler setLastFocusFormActivityWebFrameID:mainFrameID];
+    [handler closeKeyboardWithoutButtonPress];
+  };
+
   [self.actionSheetCoordinator
       addItemWithTitle:GetNSString(IDS_IOS_USE_SUGGESTED_PASSWORD)
                 action:^{
                   decisionHandler(YES);
                   popupDismissed();
+                  closeKeyboard();
                 }
                  style:UIAlertActionStyleDefault];
 

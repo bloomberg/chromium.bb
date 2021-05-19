@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/surface_tree_host.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -85,7 +84,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void Activate();
 
   // Set title for the surface.
-  void SetTitle(const base::string16& title);
+  void SetTitle(const std::u16string& title);
 
   // Set icon for the surface.
   void SetIcon(const gfx::ImageSkia& icon);
@@ -133,8 +132,32 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Prevents shell surface from being moved.
   void DisableMovement();
 
+  // Update the resizability for the surface.
+  virtual void UpdateCanResize();
+
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
+
+  // An overlay creation parameters. The view is owned by the
+  // overlay.
+  struct OverlayParams {
+    OverlayParams(std::unique_ptr<views::View> overlay);
+    ~OverlayParams();
+
+    bool translucent = false;
+    bool focusable = true;
+    std::unique_ptr<views::View> contents_view;
+  };
+
+  // Add a new overlay. Currently only one overlay is supported.
+  // It is caller's responsibility to make sure there is no overlay
+  // before calling this.
+  void AddOverlay(OverlayParams&& params);
+
+  // Remove the current overlay. This is no-op if there is no overlay.
+  void RemoveOverlay();
+
+  bool HasOverlay() const { return !!overlay_widget_; }
 
   // SurfaceDelegate:
   void OnSurfaceCommit() override;
@@ -156,6 +179,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
   void OnContentSizeChanged(Surface*) override {}
+  void OnFrameLockingChanged(Surface*, bool) override {}
 
   // CaptureClientObserver:
   void OnCaptureChanged(aura::Window* lost_capture,
@@ -180,6 +204,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  views::FocusTraversable* GetFocusTraversable() override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -325,7 +350,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Size maximum_size_;
   gfx::Size pending_maximum_size_;
   gfx::SizeF pending_aspect_ratio_;
-  ui::AXTreeID child_ax_tree_id_ = ui::AXTreeIDUnknown();
+
+  bool skip_ime_processing_ = false;
+  std::unique_ptr<views::Widget> overlay_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceBase);
 };

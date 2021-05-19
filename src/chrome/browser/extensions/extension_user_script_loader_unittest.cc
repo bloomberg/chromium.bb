@@ -15,14 +15,17 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/bind.h"
+#include "base/test/values_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/content_verifier.h"
-#include "extensions/common/host_id.h"
 #include "extensions/test/test_content_script_load_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,9 +67,109 @@ TEST_F(ExtensionUserScriptLoaderTest, NoScripts) {
                                    /*listen_for_extension_system_loaded=*/true,
                                    /*content_verifier=*/nullptr);
   ContentScriptLoadWaiter waiter(&loader);
-  loader.StartLoad();
+  loader.StartLoadForTesting(UserScriptLoader::ScriptsLoadedCallback());
   waiter.Wait();
   content::RunAllTasksUntilIdle();
+}
+
+// Repeat the above test, except we verify that a callback passed in will get
+// called once scripts are loaded.
+TEST_F(ExtensionUserScriptLoaderTest, NoScriptsWithCallbackAfterLoad) {
+  TestingProfile profile;
+  ExtensionUserScriptLoader loader(&profile, ExtensionId(),
+                                   /*listen_for_extension_system_loaded=*/true,
+                                   /*content_verifier=*/nullptr);
+  base::RunLoop run_loop;
+  auto on_load_complete = [&run_loop](
+                              UserScriptLoader* loader,
+                              const base::Optional<std::string>& error) {
+    EXPECT_FALSE(error.has_value()) << *error;
+    run_loop.Quit();
+  };
+
+  loader.StartLoadForTesting(base::BindLambdaForTesting(on_load_complete));
+  run_loop.Run();
+}
+
+// Verifies that adding an empty set of scripts will trigger a callback
+// immediately but will not trigger a load.
+TEST_F(ExtensionUserScriptLoaderTest, NoScriptsAddedWithCallback) {
+  TestingProfile profile;
+  ExtensionUserScriptLoader loader(&profile, ExtensionId(),
+                                   /*listen_for_extension_system_loaded=*/true,
+                                   /*content_verifier=*/nullptr);
+
+  // Use a flag instead of a RunLoop to verify that the callback was called
+  // synchronously.
+  bool callback_called = false;
+  auto callback = [&callback_called](UserScriptLoader* loader,
+                                     const base::Optional<std::string>& error) {
+    // Check that there is at least an error message.
+    EXPECT_TRUE(error.has_value());
+    EXPECT_THAT(*error, testing::HasSubstr("No changes to loaded scripts"));
+    callback_called = true;
+  };
+
+  loader.AddScripts(std::make_unique<UserScriptList>(),
+                    base::BindLambdaForTesting(callback));
+  EXPECT_TRUE(callback_called);
+}
+
+// Test that callbacks for a queued load will be called after callbacks for the
+// current load.
+TEST_F(ExtensionUserScriptLoaderTest, QueuedLoadWithCallback) {
+  TestingProfile profile;
+  ExtensionUserScriptLoader loader(&profile, ExtensionId(),
+                                   /*listen_for_extension_system_loaded=*/true,
+                                   /*content_verifier=*/nullptr);
+  base::RunLoop run_loop;
+
+  // Record which callbacks were called. The test succeeds when all three
+  // callbacks are called.
+  bool first_callback_fired = false, second_callback_fired = false,
+       third_callback_fired = false;
+  auto on_first_load_complete =
+      [&first_callback_fired, &second_callback_fired, &third_callback_fired](
+          UserScriptLoader* loader, const base::Optional<std::string>& error) {
+        EXPECT_FALSE(error.has_value()) << *error;
+
+        // Callbacks for the second load should not have been called.
+        EXPECT_FALSE(second_callback_fired);
+        EXPECT_FALSE(third_callback_fired);
+        first_callback_fired = true;
+      };
+
+  // Creates a callback which:
+  // 1) Checks |first_callback_fired| to ensure that the first callback has
+  // been called.
+  // 2) Sets |second_callback_fired| or |third_callback_fired| to true, based on
+  // the number of callbacks already called.
+  // 3) Completes the test if all callbacks have been called.
+  auto on_second_load_complete =
+      [&run_loop, &first_callback_fired, &second_callback_fired,
+       &third_callback_fired](UserScriptLoader* loader,
+                              const base::Optional<std::string>& error) {
+        EXPECT_FALSE(error.has_value()) << *error;
+        EXPECT_TRUE(first_callback_fired);
+        if (second_callback_fired)
+          third_callback_fired = true;
+        else
+          second_callback_fired = true;
+
+        if (third_callback_fired)
+          run_loop.Quit();
+      };
+
+  loader.StartLoadForTesting(
+      base::BindLambdaForTesting(on_first_load_complete));
+
+  // The next 2 load requests should be batched into one load, which should
+  // start after the first load has completed.
+  loader.StartLoadForTesting(
+      base::BindLambdaForTesting(on_second_load_complete));
+  loader.StartLoadForTesting(
+      base::BindLambdaForTesting(on_second_load_complete));
+  run_loop.Run();
 }
 
 TEST_F(ExtensionUserScriptLoaderTest, Parse1) {

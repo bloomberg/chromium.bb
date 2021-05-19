@@ -15,9 +15,10 @@
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
-#include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_migration_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 
 namespace web_app {
@@ -59,6 +60,12 @@ TestWebAppProvider::~TestWebAppProvider() = default;
 void TestWebAppProvider::SetRunSubsystemStartupTasks(
     bool run_subsystem_startup_tasks) {
   run_subsystem_startup_tasks_ = run_subsystem_startup_tasks;
+}
+
+void TestWebAppProvider::SetMigrationManager(
+    std::unique_ptr<WebAppMigrationManager> migration_manager) {
+  CheckNotStarted();
+  migration_manager_ = std::move(migration_manager);
 }
 
 void TestWebAppProvider::SetRegistrar(std::unique_ptr<AppRegistrar> registrar) {
@@ -112,6 +119,11 @@ void TestWebAppProvider::SetOsIntegrationManager(
     std::unique_ptr<OsIntegrationManager> os_integration_manager) {
   CheckNotStarted();
   os_integration_manager_ = std::move(os_integration_manager);
+}
+
+void TestWebAppProvider::DisableMigrationManager() {
+  CheckNotStarted();
+  migration_manager_ = nullptr;
 }
 
 void TestWebAppProvider::CheckNotStarted() const {

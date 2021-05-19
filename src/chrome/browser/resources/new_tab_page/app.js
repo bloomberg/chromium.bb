@@ -21,13 +21,15 @@ import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-w
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BackgroundManager} from './background_manager.js';
-import {BrowserProxy} from './browser_proxy.js';
 import {BackgroundSelection, BackgroundSelectionType, CustomizeDialogPage} from './customize_dialog_types.js';
+import {recordLoadDuration} from './metrics_utils.js';
 import {ModuleDescriptor} from './modules/module_descriptor.js';
 import {ModuleRegistry} from './modules/module_registry.js';
+import {NewTabPageProxy} from './new_tab_page_proxy.js';
 import {oneGoogleBarApi} from './one_google_bar_api.js';
 import {PromoBrowserCommandProxy} from './promo_browser_command_proxy.js';
 import {$$} from './utils.js';
+import {WindowProxy} from './window_proxy.js';
 
 /**
  * @typedef {{
@@ -274,9 +276,9 @@ class AppElement extends PolymerElement {
     performance.mark('app-creation-start');
     super();
     /** @private {!newTabPage.mojom.PageCallbackRouter} */
-    this.callbackRouter_ = BrowserProxy.getInstance().callbackRouter;
+    this.callbackRouter_ = NewTabPageProxy.getInstance().callbackRouter;
     /** @private {newTabPage.mojom.PageHandlerRemote} */
-    this.pageHandler_ = BrowserProxy.getInstance().handler;
+    this.pageHandler_ = NewTabPageProxy.getInstance().handler;
     /** @private {!BackgroundManager} */
     this.backgroundManager_ = BackgroundManager.getInstance();
     /** @private {?number} */
@@ -359,9 +361,9 @@ class AppElement extends PolymerElement {
   /** @override */
   ready() {
     super.ready();
-    this.pageHandler_.onAppRendered(BrowserProxy.getInstance().now());
+    this.pageHandler_.onAppRendered(WindowProxy.getInstance().now());
     // Let the browser breath and then render remaining elements.
-    BrowserProxy.getInstance().waitForLazyRender().then(() => {
+    WindowProxy.getInstance().waitForLazyRender().then(() => {
       ensureLazyLoaded();
       this.lazyRender_ = true;
     });
@@ -435,7 +437,7 @@ class AppElement extends PolymerElement {
     endOfBodyScript.appendChild(document.createTextNode(parts.endOfBodyScript));
     document.body.appendChild(endOfBodyScript);
 
-    this.pageHandler_.onOneGoogleBarRendered(BrowserProxy.getInstance().now());
+    this.pageHandler_.onOneGoogleBarRendered(WindowProxy.getInstance().now());
     oneGoogleBarApi.trackDarkModeChanges();
   }
 
@@ -546,12 +548,21 @@ class AppElement extends PolymerElement {
 
   /** @private */
   async onLazyRendered_() {
+    // Instantiate modules even if |modulesEnabled| is false to counterfactually
+    // trigger a HaTS survey in a potential control group.
+    if (!loadTimeData.getBoolean('modulesLoadEnabled') &&
+        !loadTimeData.getBoolean('modulesEnabled')) {
+      return;
+    }
+    const descriptors = await ModuleRegistry.getInstance().initializeModules(
+        loadTimeData.getInteger('modulesLoadTimeout'));
+    if (descriptors) {
+      this.pageHandler_.onModulesLoadedWithData();
+    }
     if (!loadTimeData.getBoolean('modulesEnabled')) {
       return;
     }
-    this.moduleDescriptors_ =
-        await ModuleRegistry.getInstance().initializeModules(
-            loadTimeData.getInteger('modulesLoadTimeout'));
+    this.moduleDescriptors_ = descriptors;
   }
 
   /** @private */
@@ -642,13 +653,16 @@ class AppElement extends PolymerElement {
   onModulesLoadedAndVisibilityDeterminedChange_() {
     if (this.modulesLoadedAndVisibilityDetermined_ &&
         loadTimeData.getBoolean('modulesEnabled')) {
-      this.pageHandler_.onModulesRendered(BrowserProxy.getInstance().now());
+      recordLoadDuration(
+          'NewTabPage.Modules.ShownTime', WindowProxy.getInstance().now());
       this.moduleDescriptors_.forEach(({id}) => {
         chrome.metricsPrivate.recordBoolean(
             `NewTabPage.Modules.EnabledOnNTPLoad.${id}`,
             !this.disabledModules_.all &&
                 !this.disabledModules_.ids.includes(id));
       });
+      chrome.metricsPrivate.recordBoolean(
+          'NewTabPage.Modules.VisibleOnNTPLoad', !this.disabledModules_.all);
     }
   }
 
@@ -830,8 +844,7 @@ class AppElement extends PolymerElement {
         oneGoogleBar.style.zIndex = '1000';
       }
       this.oneGoogleBarLoaded_ = true;
-      this.pageHandler_.onOneGoogleBarRendered(
-          BrowserProxy.getInstance().now());
+      this.pageHandler_.onOneGoogleBarRendered(WindowProxy.getInstance().now());
     } else if (data.messageType === 'overlaysUpdated') {
       this.$.oneGoogleBarClipPath.querySelectorAll('rect').forEach(el => {
         el.remove();
@@ -957,6 +970,10 @@ class AppElement extends PolymerElement {
    * @private
    */
   onUndoRemoveModuleButtonClick_() {
+    if (!this.removedModuleData_) {
+      return;
+    }
+
     // Restore the module.
     this.removedModuleData_.undo();
 

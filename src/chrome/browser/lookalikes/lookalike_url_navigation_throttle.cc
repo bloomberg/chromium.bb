@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,11 +40,6 @@
 namespace {
 
 typedef content::NavigationThrottle::ThrottleCheckResult ThrottleCheckResult;
-
-const base::FeatureParam<base::TimeDelta> kManifestFetchDelay{
-    &lookalikes::features::kLookalikeDigitalAssetLinks,
-    lookalikes::features::kLookalikeDigitalAssetLinksTimeoutParameter,
-    base::TimeDelta::FromSeconds(5)};
 
 // Returns true if |current_url| is at the end of the redirect chain
 // stored in |stored_redirect_chain|.
@@ -141,7 +135,8 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
     const GURL& safe_domain,
     const GURL& lookalike_domain,
     ukm::SourceId source_id,
-    LookalikeUrlMatchType match_type) {
+    LookalikeUrlMatchType match_type,
+    bool triggered_by_initial_url) {
   content::NavigationHandle* handle = navigation_handle();
   content::WebContents* web_contents = handle->GetWebContents();
 
@@ -151,7 +146,8 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
   std::unique_ptr<LookalikeUrlBlockingPage> blocking_page(
       new LookalikeUrlBlockingPage(
           web_contents, safe_domain, lookalike_domain, source_id, match_type,
-          handle->IsSignedExchangeInnerResponse(), std::move(controller)));
+          handle->IsSignedExchangeInnerResponse(), triggered_by_initial_url,
+          std::move(controller)));
 
   base::Optional<std::string> error_page_contents =
       blocking_page->GetHTMLContents();
@@ -193,7 +189,8 @@ LookalikeUrlNavigationThrottle::CheckManifestsAndMaybeShowInterstitial(
     const GURL& safe_domain,
     const GURL& lookalike_domain,
     ukm::SourceId source_id,
-    LookalikeUrlMatchType match_type) {
+    LookalikeUrlMatchType match_type,
+    bool triggered_by_initial_url) {
   RecordUMAFromMatchType(match_type);
 
   // Punycode interstitial doesn't have a target site, so safe_domain isn't
@@ -202,7 +199,7 @@ LookalikeUrlNavigationThrottle::CheckManifestsAndMaybeShowInterstitial(
           lookalikes::features::kLookalikeDigitalAssetLinks) ||
       !safe_domain.is_valid()) {
     return ShowInterstitial(safe_domain, lookalike_domain, source_id,
-                            match_type);
+                            match_type, triggered_by_initial_url);
   }
 
   const url::Origin lookalike_origin =
@@ -211,13 +208,14 @@ LookalikeUrlNavigationThrottle::CheckManifestsAndMaybeShowInterstitial(
   DigitalAssetLinkCrossValidator::ResultCallback callback = base::BindOnce(
       &LookalikeUrlNavigationThrottle::OnManifestValidationResult,
       weak_factory_.GetWeakPtr(), safe_domain, lookalike_domain, source_id,
-      match_type);
+      match_type, triggered_by_initial_url);
   DCHECK(!digital_asset_link_validator_);
   // This assumes each navigation has its own throttle.
   // TODO(crbug.com/1175385): Consider moving this to LookalikeURLService.
   digital_asset_link_validator_ =
       std::make_unique<DigitalAssetLinkCrossValidator>(
-          profile_, lookalike_origin, target_origin, kManifestFetchDelay.Get(),
+          profile_, lookalike_origin, target_origin,
+          LookalikeUrlService::kManifestFetchDelay.Get(),
           LookalikeUrlService::Get(profile_)->clock(), std::move(callback));
   digital_asset_link_validator_->Start();
   return NavigationThrottle::DEFER;
@@ -228,13 +226,22 @@ void LookalikeUrlNavigationThrottle::OnManifestValidationResult(
     const GURL& lookalike_domain,
     ukm::SourceId source_id,
     LookalikeUrlMatchType match_type,
+    bool triggered_by_initial_url,
     bool validation_succeeded) {
   if (validation_succeeded) {
+    // Add the lookalike URL to the allowlist.
+    // TODO(meacer): Use a proper key for caching here. At the very least, we
+    // should allowlist (lookalike, target) pairs. We should also cache some of
+    // the failure cases, e.g. when the lookalike site serves a manifest but it
+    // doesn't have an entry for the target site.
+    ReputationService::Get(profile_)->SetUserIgnore(lookalike_domain);
+
     Resume();
     return;
   }
   ThrottleCheckResult result =
-      ShowInterstitial(safe_domain, lookalike_domain, source_id, match_type);
+      ShowInterstitial(safe_domain, lookalike_domain, source_id, match_type,
+                       triggered_by_initial_url);
   CancelDeferredNavigation(result);
 }
 
@@ -256,28 +263,33 @@ void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
     const std::vector<DomainInfo>& engaged_sites) {
-  DCHECK_EQ(
+  // The last URL in the redirect chain must be the same as the commit URL,
+  // or the navigation is a loadData navigation (where the base URL is saved in
+  // the redirect chain, instead of the commit URL).
+  const GURL& last_url_in_redirect_chain =
       navigation_handle()
           ->GetRedirectChain()[navigation_handle()->GetRedirectChain().size() -
-                               1],
-      navigation_handle()->GetURL());
+                               1];
+  DCHECK(last_url_in_redirect_chain == navigation_handle()->GetURL() ||
+         !navigation_handle()->GetBaseURLForDataURL().is_empty());
 
   // Check for two lookalikes -- at the beginning and end of the redirect chain.
   const GURL& first_url = navigation_handle()->GetRedirectChain()[0];
+  const GURL& last_url = navigation_handle()->GetURL();
+
+  // If first_url and last_url share a hostname, then only check last_url.
+  // This saves time, and avoids clouding metrics.
   LookalikeUrlMatchType first_match_type;
   GURL first_suggested_url;
-  bool first_is_lookalike = IsLookalikeUrl(
-      first_url, engaged_sites, &first_match_type, &first_suggested_url);
+  bool first_is_lookalike =
+      first_url.host() != last_url.host() &&
+      IsLookalikeUrl(first_url, engaged_sites, &first_match_type,
+                     &first_suggested_url);
 
-  const GURL& last_url = navigation_handle()->GetURL();
   LookalikeUrlMatchType last_match_type;
   GURL last_suggested_url;
-  // If first_url and last_url share a hostname, then don't check a second time.
-  // This saves time, and avoids clouding metrics.
-  bool last_is_lookalike =
-      first_url.host() != last_url.host() &&
-      IsLookalikeUrl(last_url, engaged_sites, &last_match_type,
-                     &last_suggested_url);
+  bool last_is_lookalike = IsLookalikeUrl(
+      last_url, engaged_sites, &last_match_type, &last_suggested_url);
 
   // If the first URL is a lookalike, but we ended up on the suggested site
   // anyway, don't warn.
@@ -315,19 +327,21 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   // this line. See crbug.com/1138138 for an example bug.
 
   // source_id corresponds to last_url, even when first_url is what triggered.
-  // TODO(crbug.com/1133598): disambiguate first_- vs. last_urls.
+  // UKM records first_is_lookalike/triggered_by_initial_url to disambiguate.
   ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
 
   if (first_is_lookalike &&
       ShouldBlockLookalikeUrlNavigation(first_match_type)) {
     return CheckManifestsAndMaybeShowInterstitial(
-        first_suggested_url, first_url, source_id, first_match_type);
+        first_suggested_url, first_url, source_id, first_match_type,
+        first_is_lookalike);
   }
 
   if (last_is_lookalike && ShouldBlockLookalikeUrlNavigation(last_match_type)) {
     return CheckManifestsAndMaybeShowInterstitial(last_suggested_url, last_url,
-                                                  source_id, last_match_type);
+                                                  source_id, last_match_type,
+                                                  first_is_lookalike);
   }
 
   RecordUMAFromMatchType(first_is_lookalike ? first_match_type
@@ -335,7 +349,8 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   // Interstitial normally records UKM, but still record when it's not shown.
   RecordUkmForLookalikeUrlBlockingPage(
       source_id, first_is_lookalike ? first_match_type : last_match_type,
-      LookalikeUrlBlockingPageUserAction::kInterstitialNotShown);
+      LookalikeUrlBlockingPageUserAction::kInterstitialNotShown,
+      first_is_lookalike);
   return NavigationThrottle::PROCEED;
 }
 

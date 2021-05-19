@@ -14,7 +14,6 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "pdf/page_orientation.h"
 #include "pdf/pdf_engine.h"
 #include "ppapi/cpp/private/pdf.h"
@@ -126,9 +125,10 @@ class PDFiumPage {
                                 base::Optional<float>* zoom_value);
 
   // For a named destination with "XYZ" view fit type, pre-processes the in-page
-  // x/y coordinate in case it's out of the range of the page dimension.
-  float PreProcessInPageCoordX(float x);
-  float PreProcessInPageCoordY(float y);
+  // x/y coordinate in case it's out of the range of the page dimension. Then
+  // transform it to a screen coordinate.
+  float PreProcessAndTransformInPageCoordX(float x);
+  float PreProcessAndTransformInPageCoordY(float y);
 
   // Transforms an (x, y) position in page coordinates to screen coordinates.
   gfx::PointF TransformPageToScreenXY(const gfx::PointF& xy);
@@ -153,7 +153,7 @@ class PDFiumPage {
   static Area FormTypeToArea(int form_type);
 
   // Gets the character at the given index.
-  base::char16 GetCharAtIndex(int index);
+  char16_t GetCharAtIndex(int index);
 
   // Gets the number of characters in the page.
   int GetCharCount();

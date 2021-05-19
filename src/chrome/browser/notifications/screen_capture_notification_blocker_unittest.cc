@@ -7,8 +7,6 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/browser_features.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/notifications/muted_notification_handler.h"
@@ -32,9 +30,9 @@ message_center::Notification CreateNotification(const GURL& origin,
                                                 const std::string& id) {
   return message_center::Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, id,
-      /*title=*/base::string16(),
-      /*message=*/base::string16(), /*icon=*/gfx::Image(),
-      /*display_source=*/base::string16(), origin, message_center::NotifierId(),
+      /*title=*/std::u16string(),
+      /*message=*/std::u16string(), /*icon=*/gfx::Image(),
+      /*display_source=*/std::u16string(), origin, message_center::NotifierId(),
       message_center::RichNotificationData(), /*delegate=*/nullptr);
 }
 
@@ -64,9 +62,6 @@ class MockNotificationBlockerObserver : public NotificationBlocker::Observer {
 class ScreenCaptureNotificationBlockerTest : public testing::Test {
  public:
   ScreenCaptureNotificationBlockerTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kMuteNotificationsDuringScreenShare);
-
     notification_service_ =
         std::make_unique<StubNotificationDisplayService>(&profile_);
     auto blocker = std::make_unique<ScreenCaptureNotificationBlocker>(
@@ -129,7 +124,6 @@ class ScreenCaptureNotificationBlockerTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfile profile_;
   content::TestWebContentsFactory web_contents_factory_;
   std::unique_ptr<StubNotificationDisplayService> notification_service_;

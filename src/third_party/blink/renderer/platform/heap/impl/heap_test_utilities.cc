@@ -11,8 +11,6 @@
 
 namespace blink {
 
-std::atomic_int IntegerObject::destructor_calls{0};
-
 // static
 void TestSupportingGC::PreciselyCollectGarbage(
     BlinkGC::SweepingType sweeping_type) {
@@ -33,7 +31,8 @@ void TestSupportingGC::ConservativelyCollectGarbage(
 
 TestSupportingGC::~TestSupportingGC() {
   // Complete sweeping before |task_environment_| is destroyed.
-  CompleteSweepingIfNeeded();
+  if (ThreadState::Current()->IsSweepingInProgress())
+    ThreadState::Current()->CompleteSweep();
 }
 
 void TestSupportingGC::ClearOutOldGarbage() {
@@ -47,9 +46,8 @@ void TestSupportingGC::ClearOutOldGarbage() {
   }
 }
 
-void TestSupportingGC::CompleteSweepingIfNeeded() {
-  if (ThreadState::Current()->IsSweepingInProgress())
-    ThreadState::Current()->CompleteSweep();
+void CompactionTestDriver::ForceCompactionForNextGC() {
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
 }
 
 IncrementalMarkingTestDriver::~IncrementalMarkingTestDriver() {
@@ -57,11 +55,12 @@ IncrementalMarkingTestDriver::~IncrementalMarkingTestDriver() {
     FinishGC();
 }
 
-void IncrementalMarkingTestDriver::Start() {
+void IncrementalMarkingTestDriver::StartGC() {
   thread_state_->IncrementalMarkingStartForTesting();
 }
 
-bool IncrementalMarkingTestDriver::SingleStep(BlinkGC::StackState stack_state) {
+bool IncrementalMarkingTestDriver::TriggerSingleMarkingStep(
+    BlinkGC::StackState stack_state) {
   CHECK(thread_state_->IsIncrementalMarking());
   if (thread_state_->GetGCState() ==
       ThreadState::kIncrementalMarkingStepScheduled) {
@@ -71,37 +70,20 @@ bool IncrementalMarkingTestDriver::SingleStep(BlinkGC::StackState stack_state) {
   return false;
 }
 
-void IncrementalMarkingTestDriver::FinishSteps(
+void IncrementalMarkingTestDriver::TriggerMarkingSteps(
     BlinkGC::StackState stack_state) {
   CHECK(thread_state_->IsIncrementalMarking());
-  while (SingleStep(stack_state)) {
-  }
-}
-
-bool IncrementalMarkingTestDriver::SingleConcurrentStep(
-    BlinkGC::StackState stack_state) {
-  CHECK(thread_state_->IsIncrementalMarking());
-  if (thread_state_->GetGCState() ==
-      ThreadState::kIncrementalMarkingStepScheduled) {
-    thread_state_->SkipIncrementalMarkingForTesting();
-    thread_state_->IncrementalMarkingStep(stack_state);
-    return true;
-  }
-  return false;
-}
-
-void IncrementalMarkingTestDriver::FinishConcurrentSteps(
-    BlinkGC::StackState stack_state) {
-  CHECK(thread_state_->IsIncrementalMarking());
-  while (SingleConcurrentStep(stack_state)) {
+  while (TriggerSingleMarkingStep(stack_state)) {
   }
 }
 
 void IncrementalMarkingTestDriver::FinishGC(bool complete_sweep) {
   CHECK(thread_state_->IsIncrementalMarking());
-  FinishSteps(BlinkGC::StackState::kNoHeapPointersOnStack);
+  IncrementalMarkingTestDriver::TriggerMarkingSteps(
+      BlinkGC::StackState::kNoHeapPointersOnStack);
   CHECK_EQ(ThreadState::kIncrementalMarkingFinalizeScheduled,
            thread_state_->GetGCState());
+  thread_state_->ForceNoFollowupFullGCForTesting();
   thread_state_->IncrementalMarkingFinalize();
   CHECK(!thread_state_->IsIncrementalMarking());
   if (complete_sweep) {
@@ -112,6 +94,15 @@ void IncrementalMarkingTestDriver::FinishGC(bool complete_sweep) {
 size_t IncrementalMarkingTestDriver::GetHeapCompactLastFixupCount() const {
   HeapCompact* compaction = ThreadState::Current()->Heap().Compaction();
   return compaction->LastFixupCountForTesting();
+}
+
+void ConcurrentMarkingTestDriver::TriggerMarkingSteps(
+    BlinkGC::StackState stack_state) {
+  if (thread_state_->GetGCState() ==
+      ThreadState::kIncrementalMarkingStepScheduled) {
+    thread_state_->SkipIncrementalMarkingForTesting();
+    TriggerSingleMarkingStep();
+  }
 }
 
 }  // namespace blink

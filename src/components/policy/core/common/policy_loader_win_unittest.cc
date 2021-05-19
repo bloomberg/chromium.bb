@@ -13,6 +13,7 @@
 #include <cstring>
 #include <functional>
 #include <iterator>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -22,7 +23,6 @@
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -93,7 +93,7 @@ bool InstallValue(const base::Value& value,
     }
 
     case base::Value::Type::STRING: {
-      base::string16 str_value;
+      std::u16string str_value;
       if (!value.GetAsString(&str_value))
         return false;
       return key.WriteValue(name.c_str(), base::as_wcstr(str_value)) ==

@@ -26,30 +26,67 @@ TransferableResourceTracker::TransferableResourceTracker()
 
 TransferableResourceTracker::~TransferableResourceTracker() = default;
 
-TransferableResource TransferableResourceTracker::ImportResource(
+TransferableResourceTracker::ResourceFrame
+TransferableResourceTracker::ImportResources(
     std::unique_ptr<SurfaceSavedFrame> saved_frame) {
   DCHECK(saved_frame);
-  DCHECK(saved_frame->IsValid());
-  if (saved_frame->HasTextureResult())
-    return ImportTextureResult(saved_frame->TakeTextureResult());
+  // Since we will be dereferencing this blindly, CHECK that the frame is indeed
+  // valid.
+  CHECK(saved_frame->IsValid());
 
-  NOTREACHED();
-  return TransferableResource();
+  base::Optional<SurfaceSavedFrame::FrameResult> frame_copy =
+      saved_frame->TakeResult();
+
+  ResourceFrame resource_frame;
+  resource_frame.root = ImportResource(std::move(frame_copy->root_result));
+  resource_frame.shared.resize(frame_copy->shared_results.size());
+
+  for (size_t i = 0; i < frame_copy->shared_results.size(); ++i) {
+    auto& shared_result = frame_copy->shared_results[i];
+    if (shared_result.has_value()) {
+      resource_frame.shared[i].emplace(
+          ImportResource(std::move(*shared_result)));
+    }
+  }
+  return resource_frame;
 }
 
-TransferableResource TransferableResourceTracker::ImportTextureResult(
-    SurfaceSavedFrame::TextureResult texture) {
-  TransferableResource result =
-      TransferableResource::MakeGL(texture.mailbox, GL_LINEAR, GL_TEXTURE_2D,
-                                   texture.sync_token, texture.size,
-                                   /*is_overlay_candidate=*/false);
-  result.id = GetNextAvailableResourceId();
+TransferableResourceTracker::PositionedResource
+TransferableResourceTracker::ImportResource(
+    SurfaceSavedFrame::OutputCopyResult output_copy) {
+  TransferableResource resource;
+  if (output_copy.is_software) {
+    // TODO(vmpstr): This needs to be updated and tested in software. For
+    // example, we don't currently have a release callback in software, although
+    // tests do set one up.
+    resource = TransferableResource::MakeSoftware(
+        output_copy.mailbox, output_copy.rect.size(), RGBA_8888);
+  } else {
+    resource = TransferableResource::MakeGL(
+        output_copy.mailbox, GL_LINEAR, GL_TEXTURE_2D, output_copy.sync_token,
+        output_copy.rect.size(),
+        /*is_overlay_candidate=*/false);
+  }
 
-  DCHECK(!base::Contains(managed_resources_, result.id));
+  resource.id = GetNextAvailableResourceId();
+  DCHECK(!base::Contains(managed_resources_, resource.id));
   managed_resources_.emplace(
-      result.id,
-      TransferableResourceHolder(result, std::move(texture.release_callback)));
+      resource.id, TransferableResourceHolder(
+                       resource, std::move(output_copy.release_callback)));
+
+  PositionedResource result;
+  result.resource = resource;
+  result.rect = output_copy.rect;
+  result.target_transform = output_copy.target_transform;
   return result;
+}
+
+void TransferableResourceTracker::ReturnFrame(const ResourceFrame& frame) {
+  UnrefResource(frame.root.resource.id);
+  for (const auto& shared : frame.shared) {
+    if (shared.has_value())
+      UnrefResource(shared->resource.id);
+  }
 }
 
 void TransferableResourceTracker::RefResource(ResourceId id) {
@@ -83,6 +120,7 @@ ResourceId TransferableResourceTracker::GetNextAvailableResourceId() {
       ++next_id_;
     }
   }
+  DCHECK_GE(result, kVizReservedRangeStartId.GetUnsafeValue());
   return ResourceId(result);
 }
 
@@ -108,5 +146,14 @@ TransferableResourceTracker::TransferableResourceHolder::
 TransferableResourceTracker::TransferableResourceHolder&
 TransferableResourceTracker::TransferableResourceHolder::operator=(
     TransferableResourceHolder&& other) = default;
+
+TransferableResourceTracker::ResourceFrame::ResourceFrame() = default;
+TransferableResourceTracker::ResourceFrame::ResourceFrame(
+    ResourceFrame&& other) = default;
+TransferableResourceTracker::ResourceFrame::~ResourceFrame() = default;
+
+TransferableResourceTracker::ResourceFrame&
+TransferableResourceTracker::ResourceFrame::operator=(ResourceFrame&& other) =
+    default;
 
 }  // namespace viz

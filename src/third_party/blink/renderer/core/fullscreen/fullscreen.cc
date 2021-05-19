@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_fullscreen_options.h"
@@ -271,10 +271,10 @@ bool AllowedToUseFullscreen(const Document& document,
   if (!document.GetFrame())
     return false;
 
-  // 2. If Feature Policy is enabled, return the policy for "fullscreen"
+  // 2. If Permissions Policy is enabled, return the policy for "fullscreen"
   // feature.
   return document.GetExecutionContext()->IsFeatureEnabled(
-      mojom::blink::FeaturePolicyFeature::kFullscreen, report_on_failure);
+      mojom::blink::PermissionsPolicyFeature::kFullscreen, report_on_failure);
 }
 
 bool AllowedToRequestFullscreen(Document& document) {

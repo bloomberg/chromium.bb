@@ -36,6 +36,7 @@ angle_extensions = [
     "GL_CHROMIUM_lose_context",
     "GL_ANGLE_copy_texture_3d",
     "GL_ANGLE_get_image",
+    "GL_ANGLE_get_serialized_context_string",
     "GL_ANGLE_get_tex_level_parameter",
     "GL_ANGLE_program_binary",
     "GL_ANGLE_request_extension",
@@ -221,7 +222,7 @@ DESKTOP_GL_VERSIONS = [(1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (2, 0), (
 GLES_VERSIONS = [(2, 0), (3, 0), (3, 1), (3, 2), (1, 0)]
 EGL_VERSIONS = [(1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5)]
 WGL_VERSIONS = [(1, 0)]
-CL_VERSIONS = [(1, 0)]
+CL_VERSIONS = [(1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2), (3, 0)]
 
 
 # API types

@@ -11,22 +11,23 @@
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
+#include "chrome/browser/ash/base/locale_util.h"
+#include "chrome/browser/ash/login/configuration_keys.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
+#include "chrome/browser/ash/login/ui/input_events_blocker.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
-#include "chrome/browser/chromeos/login/configuration_keys.h"
-#include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -36,6 +37,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -80,9 +82,10 @@ constexpr const char kUserActionActivateChromeVoxFromHint[] =
     "activateChromeVoxFromHint";
 constexpr const char kUserActionDismissChromeVoxHint[] = "dismissChromeVoxHint";
 constexpr const char kUserActionCancelChromeVoxHint[] = "cancelChromeVoxHint";
-
-constexpr base::TimeDelta kChromeVoxHintTimerDuration =
-    base::TimeDelta::FromSeconds(20);
+constexpr const char kUserActionActivateRemoraRequisition[] =
+    "activateRemoraRequisition";
+constexpr const char kUserActionEditDeviceRequisition[] =
+    "editDeviceRequisition";
 
 struct WelcomeScreenA11yUserAction {
   const char* name_;
@@ -162,8 +165,6 @@ std::string WelcomeScreen::GetResultString(Result result) {
   switch (result) {
     case Result::NEXT:
       return "Next";
-    case Result::START_DEMO:
-      return "StartDemo";
     case Result::SETUP_DEMO:
       return "SetupDemo";
     case Result::ENABLE_DEBUGGING:
@@ -356,17 +357,17 @@ void WelcomeScreen::ShowImpl() {
 
   demo_mode_detector_ = std::make_unique<DemoModeDetector>(
       base::DefaultTickClock::GetInstance(), this);
-  if (view_) {
+  chromevox_hint_detector_ = std::make_unique<ChromeVoxHintDetector>(
+      base::DefaultTickClock::GetInstance(), this);
+  if (view_)
     view_->Show();
-    StartChromeVoxHintTimer();
-  }
 }
 
 void WelcomeScreen::HideImpl() {
   if (view_)
     view_->Hide();
   demo_mode_detector_.reset();
-  CancelChromeVoxHintTimer();
+  CancelChromeVoxHintIdleDetection();
 }
 
 void WelcomeScreen::OnUserAction(const std::string& action_id) {
@@ -396,7 +397,17 @@ void WelcomeScreen::OnUserAction(const std::string& action_id) {
     return;
   }
   if (action_id == kUserActionCancelChromeVoxHint) {
-    CancelChromeVoxHintTimer();
+    CancelChromeVoxHintIdleDetection();
+    return;
+  }
+
+  if (action_id == kUserActionActivateRemoraRequisition) {
+    HandleAccelerator(ash::LoginAcceleratorAction::kDeviceRequisitionRemora);
+    return;
+  }
+
+  if (action_id == kUserActionEditDeviceRequisition) {
+    HandleAccelerator(ash::LoginAcceleratorAction::kEditDeviceRequisition);
     return;
   }
 
@@ -496,13 +507,7 @@ void WelcomeScreen::InputMethodChanged(
 
 void WelcomeScreen::OnContinueButtonPressed() {
   demo_mode_detector_.reset();
-  CancelChromeVoxHintTimer();
   exit_callback_.Run(Result::NEXT);
-}
-
-void WelcomeScreen::OnShouldStartDemoMode() {
-  demo_mode_detector_.reset();
-  exit_callback_.Run(Result::START_DEMO);
 }
 
 void WelcomeScreen::OnSetupDemoMode() {
@@ -566,35 +571,21 @@ void WelcomeScreen::NotifyLocaleChange() {
   ash::LocaleUpdateController::Get()->OnLocaleChanged();
 }
 
-void WelcomeScreen::StartChromeVoxHintTimer() {
-  if (!features::IsOobeChromeVoxHintEnabled() ||
-      chromeos::switches::IsOOBEChromeVoxHintTimerDisabledForTesting()) {
-    return;
-  }
-
-  if (chromevox_hint_timer_activated_)
-    return;
-
-  // This timer should only be started once.
-  chromevox_hint_timer_activated_ = true;
-  chromevox_hint_timer_.Start(FROM_HERE, kChromeVoxHintTimerDuration, this,
-                              &WelcomeScreen::GiveChromeVoxHint);
+void WelcomeScreen::CancelChromeVoxHintIdleDetection() {
+  chromevox_hint_detector_.reset();
 }
 
-void WelcomeScreen::CancelChromeVoxHintTimer() {
-  chromevox_hint_timer_.Stop();
-  chromevox_hint_timer_cancelled_for_testing_ = true;
-}
-
-void WelcomeScreen::GiveChromeVoxHint() {
+void WelcomeScreen::OnShouldGiveChromeVoxHint() {
   if (is_hidden())
     return;
-  if (view_)
+  if (view_) {
     view_->GiveChromeVoxHint();
+    chromevox_hint_detector_.reset();
+  }
 }
 
-void WelcomeScreen::GiveChromeVoxHintForTesting() {
-  GiveChromeVoxHint();
+ChromeVoxHintDetector* WelcomeScreen::GetChromeVoxHintDetectorForTesting() {
+  return chromevox_hint_detector_.get();
 }
 
 }  // namespace chromeos

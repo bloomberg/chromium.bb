@@ -20,6 +20,8 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler_helpers.h"
 
+using extensions::mojom::ManifestLocation;
+
 namespace extensions {
 
 namespace keys = manifest_keys;
@@ -31,62 +33,63 @@ namespace {
 // An extension installed from two locations will have the location
 // with the higher rank, as returned by this function. The actual
 // integer values may change, and should never be persisted.
-int GetLocationRank(Manifest::Location location) {
+int GetLocationRank(ManifestLocation location) {
   const int kInvalidRank = -1;
   int rank = kInvalidRank;  // Will CHECK that rank is not kInvalidRank.
 
   switch (location) {
-    // Component extensions can not be overriden by any other type.
-    case Manifest::COMPONENT:
+    // Component extensions can not be overridden by any other type.
+    case ManifestLocation::kComponent:
       rank = 9;
       break;
 
-    case Manifest::EXTERNAL_COMPONENT:
+    case ManifestLocation::kExternalComponent:
       rank = 8;
       break;
 
     // Policy controlled extensions may not be overridden by any type
     // that is not part of chrome.
-    case Manifest::EXTERNAL_POLICY:
+    case ManifestLocation::kExternalPolicy:
       rank = 7;
       break;
 
-    case Manifest::EXTERNAL_POLICY_DOWNLOAD:
+    case ManifestLocation::kExternalPolicyDownload:
       rank = 6;
       break;
 
     // A developer-loaded extension should override any installed type
     // that a user can disable. Anything specified on the command-line should
     // override one loaded via the extensions UI.
-    case Manifest::COMMAND_LINE:
+    case ManifestLocation::kCommandLine:
       rank = 5;
       break;
 
-    case Manifest::UNPACKED:
+    case ManifestLocation::kUnpacked:
       rank = 4;
       break;
 
     // The relative priority of various external sources is not important,
     // but having some order ensures deterministic behavior.
-    case Manifest::EXTERNAL_REGISTRY:
+    case ManifestLocation::kExternalRegistry:
       rank = 3;
       break;
 
-    case Manifest::EXTERNAL_PREF:
+    case ManifestLocation::kExternalPref:
       rank = 2;
       break;
 
-    case Manifest::EXTERNAL_PREF_DOWNLOAD:
+    case ManifestLocation::kExternalPrefDownload:
       rank = 1;
       break;
 
     // User installed extensions are overridden by any external type.
-    case Manifest::INTERNAL:
+    case ManifestLocation::kInternal:
       rank = 0;
       break;
 
-    default:
-      NOTREACHED() << "Need to add new extension location " << location;
+    // kInvalidLocation should never be passed to this function.
+    case ManifestLocation::kInvalidLocation:
+      break;
   }
 
   CHECK(rank != kInvalidRank);
@@ -181,8 +184,8 @@ class AvailableValuesFilter {
 }  // namespace
 
 // static
-Manifest::Location Manifest::GetHigherPriorityLocation(
-    Location loc1, Location loc2) {
+ManifestLocation Manifest::GetHigherPriorityLocation(ManifestLocation loc1,
+                                                     ManifestLocation loc2) {
   if (loc1 == loc2)
     return loc1;
 
@@ -226,9 +229,9 @@ Manifest::Type Manifest::GetTypeFromManifestValue(
 }
 
 // static
-bool Manifest::ShouldAlwaysLoadExtension(Manifest::Location location,
+bool Manifest::ShouldAlwaysLoadExtension(ManifestLocation location,
                                          bool is_theme) {
-  if (location == Manifest::COMPONENT)
+  if (location == ManifestLocation::kComponent)
     return true;  // Component extensions are always allowed.
 
   if (is_theme)
@@ -243,7 +246,7 @@ bool Manifest::ShouldAlwaysLoadExtension(Manifest::Location location,
 
 // static
 std::unique_ptr<Manifest> Manifest::CreateManifestForLoginScreen(
-    Location location,
+    ManifestLocation location,
     std::unique_ptr<base::DictionaryValue> value,
     ExtensionId extension_id) {
   CHECK(IsPolicyLocation(location));
@@ -252,12 +255,12 @@ std::unique_ptr<Manifest> Manifest::CreateManifestForLoginScreen(
       new Manifest(location, std::move(value), std::move(extension_id), true));
 }
 
-Manifest::Manifest(Location location,
+Manifest::Manifest(ManifestLocation location,
                    std::unique_ptr<base::DictionaryValue> value,
                    ExtensionId extension_id)
     : Manifest(location, std::move(value), std::move(extension_id), false) {}
 
-Manifest::Manifest(Location location,
+Manifest::Manifest(ManifestLocation location,
                    std::unique_ptr<base::DictionaryValue> value,
                    ExtensionId extension_id,
                    bool for_login_screen)
@@ -346,8 +349,8 @@ bool Manifest::GetString(
   return available_values_->GetString(path, out_value);
 }
 
-bool Manifest::GetString(
-    const std::string& path, base::string16* out_value) const {
+bool Manifest::GetString(const std::string& path,
+                         std::u16string* out_value) const {
   return available_values_->GetString(path, out_value);
 }
 

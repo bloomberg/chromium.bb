@@ -9,7 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -41,7 +41,7 @@ class ScopedSpoofGoogleBrandedDevice {
   ~ScopedSpoofGoogleBrandedDevice() { OverrideIsGoogleDeviceForTesting(false); }
 };
 
-class FakeUserManagerWithLocalState : public chromeos::FakeChromeUserManager {
+class FakeUserManagerWithLocalState : public ash::FakeChromeUserManager {
  public:
   explicit FakeUserManagerWithLocalState(
       TestingProfileManager* testing_profile_manager)
@@ -103,7 +103,7 @@ class ScopedLogIn {
       return;
 
     if (!identity_test_env_->identity_manager()->HasPrimaryAccount(
-            signin::ConsentLevel::kNotRequired)) {
+            signin::ConsentLevel::kSignin)) {
       identity_test_env_->MakeUnconsentedPrimaryAccountAvailable(
           account_id_.GetUserEmail());
     }

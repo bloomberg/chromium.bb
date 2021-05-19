@@ -6,7 +6,6 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -41,7 +40,7 @@ std::unique_ptr<CommandItem> CreateOpenBookmarkItem(
 
 CommandSource::CommandResults GetMatchingBookmarks(
     Browser* browser,
-    const base::string16& input) {
+    const std::u16string& input) {
   CommandSource::CommandResults results;
   bookmarks::BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContext(browser->profile());
@@ -69,7 +68,7 @@ BookmarkCommandSource::BookmarkCommandSource() = default;
 BookmarkCommandSource::~BookmarkCommandSource() = default;
 
 CommandSource::CommandResults BookmarkCommandSource::GetCommands(
-    const base::string16& input,
+    const std::u16string& input,
     Browser* browser) const {
   CommandSource::CommandResults results;
   bookmarks::BookmarkModel* model =
@@ -87,7 +86,7 @@ CommandSource::CommandResults BookmarkCommandSource::GetCommands(
   std::vector<gfx::Range> ranges;
   // TODO(lgrey): Temporarily using an untranslated string since it's not
   // yet clear which commands will ship.
-  base::string16 open_title = base::ASCIIToUTF16("Open bookmark...");
+  std::u16string open_title = u"Open bookmark...";
   double score = finder.Find(open_title, &ranges);
   if (score > 0) {
     auto verb = std::make_unique<CommandItem>(open_title, score, ranges);

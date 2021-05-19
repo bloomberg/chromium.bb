@@ -38,6 +38,7 @@
 <translation id="1662989795263954667">Đã dừng – Hết mực</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Tồn tại trình phân giải hệ thống tên miền (DNS)</translation>
+<translation id="1715359911173058521">Đã xảy ra sự cố khi kết nối với máy quét. Hãy kiểm tra kết nối mạng hoặc USB rồi thử lại.</translation>
 <translation id="1717874160321062422">Do <ph name="FIRST_MANAGER" /> và <ph name="SECOND_MANAGER" /> quản lý</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1792647875738159689">Đang hủy quá trình quét</translation>
@@ -95,6 +96,7 @@
 <translation id="3226405216343213872">Đang tìm máy quét</translation>
 <translation id="3246869037381808805">Các lệnh in quá 1 ngày sẽ bị xóa</translation>
 <translation id="3268178239013324452">Không thành công – Cửa máy in đang mở</translation>
+<translation id="3283504360622356314">{0,plural, =1{Chỉnh sửa tệp}other{Chỉnh sửa các tệp}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3310640316857623290">Độ trễ của Hệ thống tên miền (DNS) vượt ngưỡng cho phép đáng kể</translation>
 <translation id="3328783797891415197">Đang chạy quá trình kiểm tra</translation>
@@ -135,6 +137,7 @@
 <translation id="4227825898293920515">Mật khẩu sẽ hết hạn sau <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Không có lệnh in nào đang xử lý</translation>
 <translation id="4297501883039923494">Đã dừng – Lỗi không xác định</translation>
+<translation id="4344214025510306853">Đính kèm APN</translation>
 <translation id="4378373042927530923">Không chạy</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Drive của tôi</translation>
@@ -162,7 +165,9 @@
 <translation id="4707579418881001319">L2TP/IPsec + chứng chỉ người dùng</translation>
 <translation id="4731797938093519117">Quyền truy cập của cha mẹ</translation>
 <translation id="4773299976671772492">Đã dừng</translation>
+<translation id="4794140124556169553">Việc chạy quá trình kiểm tra CPU có thể ảnh hưởng đến hiệu suất của hệ thống</translation>
 <translation id="4808449224298348341">Đã hủy lệnh in <ph name="DOCUMENT_TITLE" /></translation>
+<translation id="4813345808229079766">Kết nối</translation>
 <translation id="4832079907277790330">Chọn thư mục trong ứng dụng Files...</translation>
 <translation id="4835901797422965222">Không có mạng nào đang hoạt động</translation>
 <translation id="4848429997038228357">ĐANG CHẠY</translation>
@@ -177,6 +182,7 @@
 <translation id="4932733599132424254">Ngày Tháng</translation>
 <translation id="498186245079027698">Hãy kiểm tra trình quét rồi thử lại. Đảm bảo máy có đủ dung lượng để lưu các tệp đã quét.</translation>
 <translation id="4985509611418653372">Chạy</translation>
+<translation id="4987769320337599931">Tường lửa</translation>
 <translation id="4999333166442584738">Ẩn báo cáo</translation>
 <translation id="500920857929044050">Dừng kiểm tra</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -211,6 +217,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="54609108002486618">Được quản lý</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Bạn còn {0} lần thử}other{Bạn còn {0} lần thử}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
+<translation id="5499114900554609492">Không thể hoàn tất quá trình quét</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Đang kích hoạt</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -225,6 +232,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="5916084858004523819">Bị cấm</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Tệp của bạn đã được quét thành công và lưu vào <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Các tệp của bạn đã được quét thành công và lưu vào <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Không tìm thấy tệp</translation>
+<translation id="6037291330010597344">Khay nạp tài liệu của máy quét đang trống. Hãy nạp tài liệu rồi thử lại.</translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6040852767465482106">Danh tính ẩn danh</translation>
 <translation id="604124094241169006">Tự động</translation>
@@ -247,6 +255,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6302401976930124515">Đã hủy quá trình kiểm tra <ph name="TEST_NAME" /></translation>
 <translation id="6325525973963619867">Lỗi</translation>
 <translation id="636850387210749493">Đăng ký doanh nghiệp</translation>
+<translation id="6388847657025262518">Khay nạp tài liệu của máy quét bị kẹt. Hãy kiểm tra khay nạp rồi thử lại.</translation>
 <translation id="641081527798843608">Khớp với chủ đề</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6456394469623773452">Tốt</translation>
@@ -268,7 +277,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6766275201586212568">Quá trình phân giải DNS không thành công</translation>
 <translation id="6768237774506518020">Tỷ lệ lỗi cao trong quá trình phân giải DNS</translation>
 <translation id="6853312040151791195">Tốc độ xả pin</translation>
-<translation id="6898743098396957679">Không thể hoàn tất quy trình quét</translation>
+<translation id="6910312834584889076">Nắp của máy quét đang mở. Hãy đóng nắp máy quét rồi thử lại.</translation>
 <translation id="6911383237894364323">Không thể kết nối với máy chủ phương tiện</translation>
 <translation id="6957231940976260713">Tên dịch vụ</translation>
 <translation id="6977381486153291903">Hiệu chỉnh chương trình cơ sở</translation>
@@ -276,12 +285,14 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7040230719604914234">Nhà mạng</translation>
 <translation id="7059230779847288458">Đang sạc, còn <ph name="TIME_VALUE" /> nữa là pin đầy</translation>
 <translation id="708426984172631313">ĐÃ DỪNG</translation>
+<translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7143207342074048698">Đang kết nối</translation>
 <translation id="7144878232160441200">Thử lại</translation>
 <translation id="714876143603641390">Khả năng kết nối với mạng LAN</translation>
 <translation id="7162487448488904999">Thư viện</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> này do <ph name="MANAGER" /> quản lý. Quản trị viên có thể định cấu hình từ xa thiết bị này.</translation>
 <translation id="7216409898977639127">Nhà cung cấp dịch vụ di động</translation>
+<translation id="7271040990581020067">Máy quét đang được sử dụng. Hãy thử lại sau.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7343649194310845056">Thiết bị mạng</translation>
 <translation id="7359657277149375382">Loại tệp</translation>
@@ -307,6 +318,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7769672763586021400">ID kiểu máy</translation>
 <translation id="7805768142964895445">Trạng thái</translation>
 <translation id="7819857487979277519">PSK (WPA hoặc RSN)</translation>
+<translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Loại nhà mạng</translation>
 <translation id="7936303884198020182">Không tìm thấy máy chủ định danh</translation>
 <translation id="7960831585769876809">Nhiệt độ</translation>
@@ -336,6 +348,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="8483248364096924578">Địa chỉ IP</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="8503836310948963452">Còn một vài phút nữa thôi…</translation>
+<translation id="8575298406870537639">Nhà mạng của bạn có thể yêu cầu bạn bật tùy chọn này để kết nối với mạng của họ. Hãy liên hệ với nhà mạng để biết thông tin chi tiết.</translation>
 <translation id="8576249514688522074">Chưa khởi chạy</translation>
 <translation id="8620617069779373398">Trạng thái chuyển vùng</translation>
 <translation id="8675354002693747642">Khóa được chia sẻ trước</translation>
@@ -348,6 +361,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="8798099450830957504">Mặc định</translation>
 <translation id="8798441408945964110">Tên nhà mạng</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8818152010000655963">Hình nền</translation>
 <translation id="8845001906332463065">Nhận trợ giúp</translation>
 <translation id="8881098542468797602">Đã kiểm tra thành công</translation>
 <translation id="8898840733695078011">Cường độ tín hiệu</translation>
@@ -365,6 +379,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="910415269708673980">Làm mới phiếu cho <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Đang quét trang <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Mở khóa</translation>
+<translation id="9137526406337347448">Dịch vụ của Google</translation>
 <translation id="9149391708638971077">Chạy quá trình Kiểm tra bộ nhớ</translation>
 <translation id="9173638680043580060">Còn chưa đầy 1 phút</translation>
 <translation id="9190063653747922532">L2TP/IPsec + khóa chia sẻ trước</translation>

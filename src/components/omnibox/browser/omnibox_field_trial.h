@@ -302,7 +302,7 @@ int MaxNumHQPUrlsIndexedAtStartup();
 // bundled omnibox field trial.
 
 // Returns the number of visits HQP should use when computing frequency
-// scores.  Returns 10 if the epxeriment isn't active.
+// scores.  Returns 10 if the experiment isn't active.
 size_t HQPMaxVisitsToScore();
 
 // Returns the score that should be given to typed transitions.  (The score
@@ -394,6 +394,12 @@ bool IsTabSwitchSuggestionsEnabled();
 // Returns true if the Pedals and suggestion button row features are enabled.
 bool IsPedalSuggestionsEnabled();
 
+// Returns true if the second batch of Pedals is enabled.
+bool IsPedalsBatch2Enabled();
+
+// Returns true if the default icon used for Pedal buttons should be colored.
+bool IsPedalsDefaultIconColored();
+
 // Returns true if the keyword button and suggestion button row features are
 // enabled.
 bool IsKeywordSearchButtonEnabled();
@@ -408,9 +414,12 @@ bool IsRefinedFocusStateEnabled();
 // Rich autocompletion.
 bool IsRichAutocompletionEnabled();
 bool RichAutocompletionAutocompleteTitles();
+bool RichAutocompletionAutocompleteTitlesShortcutProvider();
+bool RichAutocompletionAutocompleteTitlesNoInputsWithSpaces();
 size_t RichAutocompletionAutocompleteTitlesMinChar();
 bool RichAutocompletionAutocompleteNonPrefixAll();
 bool RichAutocompletionAutocompleteNonPrefixShortcutProvider();
+bool RichAutocompletionAutocompleteNonPrefixNoInputsWithSpaces();
 size_t RichAutocompletionAutocompleteNonPrefixMinChar();
 bool RichAutocompletionShowAdditionalText();
 bool RichAutocompletionSplitTitleCompletion();
@@ -442,6 +451,16 @@ int UnelideURLOnHoverThresholdMs();
 // Returns true if CGI parameter names should not be considered when scoring
 // suggestions.
 bool ShouldDisableCGIParamMatching();
+
+enum KeywordSpaceTrigger {
+  SPACE_TRIGGERING_DISABLED = 0,
+  SINGLE_SPACE_TRIGGERS_KEYWORD = 1,
+  DOUBLE_SPACE_TRIGGERS_KEYWORD = 2,
+};
+
+// Returns whether space triggering is disabled, triggered by single space
+// (default), or double space (double space keyword triggering is enabled).
+KeywordSpaceTrigger GetKeywordSpaceTrigger();
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
@@ -522,12 +541,6 @@ extern const char kUIMaxAutocompleteMatchesParam[];
 extern const char kDynamicMaxAutocompleteUrlCutoffParam[];
 extern const char kDynamicMaxAutocompleteIncreasedLimitParam[];
 
-// Parameters used for ranking.
-extern const char kBubbleUrlSuggestionsAbsoluteGapParam[];
-extern const char kBubbleUrlSuggestionsRelativeGapParam[];
-extern const char kBubbleUrlSuggestionsAbsoluteBufferParam[];
-extern const char kBubbleUrlSuggestionsRelativeBufferParam[];
-
 // Parameter names used by on device head provider.
 // These four parameters are shared by both non-incognito and incognito.
 extern const char kOnDeviceHeadModelLocaleConstraint[];
@@ -550,10 +563,15 @@ extern const char kShortBookmarkSuggestionsByTotalInputLengthThresholdParam[];
 
 // Parameter names used for rich autocompletion variations.
 extern const char kRichAutocompletionAutocompleteTitlesParam[];
+extern const char kRichAutocompletionAutocompleteTitlesShortcutProviderParam[];
+extern const char
+    kRichAutocompletionAutocompleteTitlesNoInputsWithSpacesParam[];
 extern const char kRichAutocompletionAutocompleteTitlesMinCharParam[];
 extern const char kRichAutocompletionAutocompleteNonPrefixAllParam[];
 extern const char
     kRichAutocompletionAutocompleteNonPrefixShortcutProviderParam[];
+extern const char
+    kRichAutocompletionAutocompleteNonPrefixNoInputsWithSpacesParam[];
 extern const char kRichAutocompletionAutocompleteNonPrefixMinCharParam[];
 extern const char kRichAutocompletionShowAdditionalTextParam[];
 extern const char kRichAutocompletionSplitTitleCompletionParam[];
@@ -580,6 +598,9 @@ extern const char kBookmarkPathsUiReplaceTitle[];
 extern const char kBookmarkPathsUiReplaceUrl[];
 extern const char kBookmarkPathsUiAppendAfterTitle[];
 extern const char kBookmarkPathsUiDynamicReplaceUrl[];
+
+// Parameter names used for scoped search/keyword mode experiments.
+extern const char kKeywordSpaceTriggeringDoubleSpaceParam[];
 
 namespace internal {
 // The bundled omnibox experiment comes with a set of parameters

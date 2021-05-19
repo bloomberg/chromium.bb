@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/feature_list.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 
 class PrefService;
@@ -67,7 +66,6 @@ extern const base::Feature kAutofillProbableFormSubmissionInBrowser;
 extern const base::Feature kAutofillProfileClientValidation;
 extern const base::Feature kAutofillProfileImportFromUnfocusableFields;
 extern const base::Feature kAutofillProfileServerValidation;
-extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillRetrieveOverallPredictionsFromCache;
 extern const base::Feature kAutofillRichMetadataQueries;
 extern const base::Feature kAutofillSaveAndFillVPA;

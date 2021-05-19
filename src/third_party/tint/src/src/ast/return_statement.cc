@@ -14,10 +14,9 @@
 
 #include "src/ast/return_statement.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::ReturnStatement);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::ReturnStatement);
 
 namespace tint {
 namespace ast {
@@ -37,13 +36,6 @@ ReturnStatement* ReturnStatement::Clone(CloneContext* ctx) const {
   auto src = ctx->Clone(source());
   auto* ret = ctx->Clone(value());
   return ctx->dst->create<ReturnStatement>(src, ret);
-}
-
-bool ReturnStatement::IsValid() const {
-  if (value_ != nullptr) {
-    return value_->IsValid();
-  }
-  return true;
 }
 
 void ReturnStatement::to_str(const semantic::Info& sem,

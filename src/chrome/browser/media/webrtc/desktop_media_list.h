@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_DESKTOP_MEDIA_LIST_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_DESKTOP_MEDIA_LIST_H_
 
+#include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "ui/gfx/image/image_skia.h"
@@ -39,7 +39,7 @@ class DesktopMediaList {
     content::DesktopMediaID id;
 
     // Name of the source that should be shown to the user.
-    base::string16 name;
+    std::u16string name;
 
     // The thumbnail for the source.
     gfx::ImageSkia thumbnail;

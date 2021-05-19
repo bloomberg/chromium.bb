@@ -6,9 +6,10 @@
 
 #include <shlobj.h>
 
+#include <string>
+
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #include "base/win/registry.h"
 
 namespace {

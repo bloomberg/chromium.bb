@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
-#include "third_party/skia/include/effects/SkLumaColorFilter.h"
 
 namespace blink {
 
@@ -872,7 +871,7 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
   // Don't use shader based rounded corner if the next effect has backdrop
   // filter and the clip is in different transform space, because we will use
   // the effect's transform space for the mask isolation effect node.
-  if (next_effect && !next_effect->BackdropFilter().IsEmpty() &&
+  if (next_effect && next_effect->BackdropFilter() &&
       &next_effect->LocalTransformSpace() != &clip.LocalTransformSpace())
     return false;
 
@@ -1137,7 +1136,7 @@ static cc::RenderSurfaceReason RenderSurfaceReasonForEffect(
     return cc::RenderSurfaceReason::kFilter;
   if (effect.HasActiveFilterAnimation())
     return cc::RenderSurfaceReason::kFilterAnimation;
-  if (!effect.BackdropFilter().IsEmpty())
+  if (effect.BackdropFilter())
     return cc::RenderSurfaceReason::kBackdropFilter;
   if (effect.HasActiveBackdropFilterAnimation())
     return cc::RenderSurfaceReason::kBackdropFilterAnimation;
@@ -1148,6 +1147,8 @@ static cc::RenderSurfaceReason RenderSurfaceReasonForEffect(
       effect.BlendMode() != SkBlendMode::kDstIn) {
     return cc::RenderSurfaceReason::kBlendMode;
   }
+  if (effect.DocumentTransitionSharedElementId().valid())
+    return cc::RenderSurfaceReason::kDocumentTransitionParticipant;
   return cc::RenderSurfaceReason::kNone;
 }
 
@@ -1160,32 +1161,23 @@ void PropertyTreeManager::PopulateCcEffectNode(
   effect_node.render_surface_reason = RenderSurfaceReasonForEffect(effect);
   effect_node.opacity = effect.Opacity();
   const auto& transform = effect.LocalTransformSpace().Unalias();
-  if (effect.GetColorFilter() != kColorFilterNone) {
-    // Currently color filter is only used by SVG masks.
-    // We are cutting corner here by support only specific configuration.
-    DCHECK_EQ(effect.GetColorFilter(), kColorFilterLuminanceToAlpha);
-    DCHECK_EQ(effect.BlendMode(), SkBlendMode::kDstIn);
+  effect_node.transform_id = EnsureCompositorTransformNode(transform);
+  if (effect.HasBackdropEffect()) {
+    // We never have backdrop effect and filter on the same effect node.
     DCHECK(effect.Filter().IsEmpty());
-    effect_node.filters.Append(cc::FilterOperation::CreateReferenceFilter(
-        sk_make_sp<ColorFilterPaintFilter>(SkLumaColorFilter::Make(),
-                                           nullptr)));
-    effect_node.blend_mode = SkBlendMode::kDstIn;
-  } else {
-    effect_node.transform_id = EnsureCompositorTransformNode(transform);
-    if (effect.HasBackdropEffect()) {
-      // We never have backdrop effect and filter on the same effect node.
-      DCHECK(effect.Filter().IsEmpty());
-      effect_node.backdrop_filters =
-          effect.BackdropFilter().AsCcFilterOperations();
+    if (auto* backdrop_filter = effect.BackdropFilter()) {
+      effect_node.backdrop_filters = backdrop_filter->AsCcFilterOperations();
       effect_node.backdrop_filter_bounds = effect.BackdropFilterBounds();
-      effect_node.blend_mode = effect.BlendMode();
       effect_node.backdrop_mask_element_id = effect.BackdropMaskElementId();
-    } else {
-      effect_node.filters = effect.Filter().AsCcFilterOperations();
     }
+    effect_node.blend_mode = effect.BlendMode();
+  } else {
+    effect_node.filters = effect.Filter().AsCcFilterOperations();
   }
   effect_node.double_sided = !transform.IsBackfaceHidden();
   effect_node.effect_changed = effect.NodeChangeAffectsRaster();
+  effect_node.document_transition_shared_element_id =
+      effect.DocumentTransitionSharedElementId();
 }
 
 }  // namespace blink

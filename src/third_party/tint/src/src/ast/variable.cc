@@ -14,36 +14,50 @@
 
 #include "src/ast/variable.h"
 
-#include <assert.h>
-
 #include "src/ast/constant_id_decoration.h"
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 #include "src/semantic/variable.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::Variable);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::Variable);
 
 namespace tint {
 namespace ast {
 
 Variable::Variable(const Source& source,
                    const Symbol& sym,
-                   StorageClass sc,
-                   type::Type* type,
+                   StorageClass declared_storage_class,
+                   type::Type* declared_type,
                    bool is_const,
                    Expression* constructor,
-                   VariableDecorationList decorations)
+                   DecorationList decorations)
     : Base(source),
       symbol_(sym),
-      type_(type),
+      declared_type_(declared_type),
       is_const_(is_const),
       constructor_(constructor),
       decorations_(std::move(decorations)),
-      declared_storage_class_(sc) {}
+      declared_storage_class_(declared_storage_class) {
+  TINT_ASSERT(symbol_.IsValid());
+  // no type means we must have a constructor to infer it
+  TINT_ASSERT(declared_type_ || constructor);
+}
 
 Variable::Variable(Variable&&) = default;
 
 Variable::~Variable() = default;
+
+Variable::BindingPoint Variable::binding_point() const {
+  GroupDecoration* group = nullptr;
+  BindingDecoration* binding = nullptr;
+  for (auto* deco : decorations()) {
+    if (auto* g = deco->As<GroupDecoration>()) {
+      group = g;
+    } else if (auto* b = deco->As<BindingDecoration>()) {
+      binding = b;
+    }
+  }
+  return BindingPoint{group, binding};
+}
 
 bool Variable::HasLocationDecoration() const {
   for (auto* deco : decorations_) {
@@ -82,7 +96,7 @@ LocationDecoration* Variable::GetLocationDecoration() const {
 }
 
 uint32_t Variable::constant_id() const {
-  assert(HasConstantIdDecoration());
+  TINT_ASSERT(HasConstantIdDecoration());
   for (auto* deco : decorations_) {
     if (auto* cid = deco->As<ConstantIdDecoration>()) {
       return cid->value();
@@ -94,24 +108,11 @@ uint32_t Variable::constant_id() const {
 Variable* Variable::Clone(CloneContext* ctx) const {
   auto src = ctx->Clone(source());
   auto sym = ctx->Clone(symbol());
-  auto* ty = ctx->Clone(type());
+  auto* ty = ctx->Clone(declared_type());
   auto* ctor = ctx->Clone(constructor());
   auto decos = ctx->Clone(decorations());
   return ctx->dst->create<Variable>(src, sym, declared_storage_class(), ty,
                                     is_const_, ctor, decos);
-}
-
-bool Variable::IsValid() const {
-  if (!symbol_.IsValid()) {
-    return false;
-  }
-  if (type_ == nullptr) {
-    return false;
-  }
-  if (constructor_ && !constructor_->IsValid()) {
-    return false;
-  }
-  return true;
 }
 
 void Variable::info_to_str(const semantic::Info& sem,
@@ -124,7 +125,9 @@ void Variable::info_to_str(const semantic::Info& sem,
   out << (var_sem ? var_sem->StorageClass() : declared_storage_class())
       << std::endl;
   make_indent(out, indent);
-  out << type_->type_name() << std::endl;
+  if (declared_type_) {
+    out << declared_type_->type_name() << std::endl;
+  }
 }
 
 void Variable::constructor_to_str(const semantic::Info& sem,

@@ -96,12 +96,12 @@ void PageActionIconView::ExecuteForTesting() {
 
 void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
-  const base::string16 name_text = GetTextForTooltipAndAccessibleName();
+  const std::u16string name_text = GetTextForTooltipAndAccessibleName();
   node_data->SetName(name_text);
 }
 
-base::string16 PageActionIconView::GetTooltipText(const gfx::Point& p) const {
-  return IsBubbleShowing() ? base::string16()
+std::u16string PageActionIconView::GetTooltipText(const gfx::Point& p) const {
+  return IsBubbleShowing() ? std::u16string()
                            : GetTextForTooltipAndAccessibleName();
 }
 
@@ -218,6 +218,14 @@ void PageActionIconView::Update() {
 }
 
 void PageActionIconView::UpdateIconImage() {
+  // If PageActionIconView is not hosted within a Widget hierarchy early return
+  // here. `UpdateIconImage()` is called in OnThemeChanged() and will update as
+  // needed when added to a Widget and on theme changes. Returning early avoids
+  // a call to GetNativeTheme() when no hosting Widget is present which falls
+  // through to the deprecated global NativeTheme accessor.
+  if (!GetWidget())
+    return;
+
   const ui::NativeTheme* theme = GetNativeTheme();
   const SkColor icon_color =
       active_ ? theme->GetSystemColor(

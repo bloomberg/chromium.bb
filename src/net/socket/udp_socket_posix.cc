@@ -12,6 +12,8 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -211,7 +213,7 @@ int UDPSocketPosix::Open(AddressFamily address_family) {
   return OK;
 }
 
-void UDPSocketPosix::ActivityMonitor::Increment(uint32_t bytes) {
+void UDPSocketPosix::ReceivedActivityMonitor::Increment(uint32_t bytes) {
   if (!bytes)
     return;
   bool timer_running = timer_.IsRunning();
@@ -228,23 +230,23 @@ void UDPSocketPosix::ActivityMonitor::Increment(uint32_t bytes) {
   }
   if (!timer_running) {
     timer_.Start(FROM_HERE, kActivityMonitorMsThreshold, this,
-                 &UDPSocketPosix::ActivityMonitor::OnTimerFired);
+                 &UDPSocketPosix::ReceivedActivityMonitor::OnTimerFired);
   }
 }
 
-void UDPSocketPosix::ActivityMonitor::Update() {
+void UDPSocketPosix::ReceivedActivityMonitor::Update() {
   if (!bytes_)
     return;
-  NetworkActivityMonitorIncrement(bytes_);
+  NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(bytes_);
   bytes_ = 0;
 }
 
-void UDPSocketPosix::ActivityMonitor::OnClose() {
+void UDPSocketPosix::ReceivedActivityMonitor::OnClose() {
   timer_.Stop();
   Update();
 }
 
-void UDPSocketPosix::ActivityMonitor::OnTimerFired() {
+void UDPSocketPosix::ReceivedActivityMonitor::OnTimerFired() {
   increments_ = 0;
   if (!bytes_) {
     // Can happen if the socket has been idle and have had no
@@ -254,16 +256,6 @@ void UDPSocketPosix::ActivityMonitor::OnTimerFired() {
     return;
   }
   Update();
-}
-
-void UDPSocketPosix::SentActivityMonitor::NetworkActivityMonitorIncrement(
-    uint32_t bytes) {
-  NetworkActivityMonitor::GetInstance()->IncrementBytesSent(bytes);
-}
-
-void UDPSocketPosix::ReceivedActivityMonitor::NetworkActivityMonitorIncrement(
-    uint32_t bytes) {
-  NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(bytes);
 }
 
 void UDPSocketPosix::Close() {
@@ -311,7 +303,6 @@ void UDPSocketPosix::Close() {
   tag_ = SocketTag();
 
   write_async_timer_.Stop();
-  sent_activity_monitor_.OnClose();
   received_activity_monitor_.OnClose();
 }
 
@@ -437,7 +428,7 @@ int UDPSocketPosix::SendToOrWrite(IOBuffer* buf,
   write_buf_len_ = buf_len;
   DCHECK(!send_to_address_.get());
   if (address) {
-    send_to_address_.reset(new IPEndPoint(*address));
+    send_to_address_ = std::make_unique<IPEndPoint>(*address);
   }
   write_callback_ = std::move(callback);
   return ERR_IO_PENDING;
@@ -488,7 +479,7 @@ int UDPSocketPosix::InternalConnect(const IPEndPoint& address) {
   if (rv < 0)
     return MapSystemError(errno);
 
-  remote_address_.reset(new IPEndPoint(address));
+  remote_address_ = std::make_unique<IPEndPoint>(address);
   return rv;
 }
 
@@ -783,8 +774,6 @@ void UDPSocketPosix::LogWrite(int result,
     NetLogUDPDataTransfer(net_log_, NetLogEventType::UDP_BYTES_SENT, result,
                           bytes, address);
   }
-
-  sent_activity_monitor_.Increment(result);
 }
 
 int UDPSocketPosix::InternalRecvFrom(IOBuffer* buf,
@@ -804,63 +793,68 @@ int UDPSocketPosix::InternalRecvFromConnectedSocket(IOBuffer* buf,
                                                     IPEndPoint* address) {
   DCHECK(is_connected_);
   DCHECK(remote_address_);
-  int bytes_transferred;
-  bytes_transferred = HANDLE_EINTR(read(socket_, buf->data(), buf_len));
   int result;
-
+  int bytes_transferred = HANDLE_EINTR(read(socket_, buf->data(), buf_len));
   if (bytes_transferred < 0) {
     result = MapSystemError(errno);
+    if (result == ERR_IO_PENDING) {
+      return result;
+    }
   } else if (bytes_transferred == buf_len) {
+    // NB: recv(..., MSG_TRUNC) would be a more reliable way to do this on
+    // Linux, but isn't supported by POSIX.
     result = ERR_MSG_TOO_BIG;
   } else {
     result = bytes_transferred;
-    if (address)
+    if (address) {
       *address = *remote_address_.get();
+    }
   }
 
-  if (result != ERR_IO_PENDING) {
-    SockaddrStorage sock_addr;
-    bool success =
+  SockaddrStorage sock_addr;
+  bool success =
         remote_address_->ToSockAddr(sock_addr.addr, &sock_addr.addr_len);
     DCHECK(success);
     LogRead(result, buf->data(), sock_addr.addr_len, sock_addr.addr);
-  }
   return result;
 }
 
 int UDPSocketPosix::InternalRecvFromNonConnectedSocket(IOBuffer* buf,
                                                        int buf_len,
                                                        IPEndPoint* address) {
-  int bytes_transferred;
-
-  struct iovec iov = {};
-  iov.iov_base = buf->data();
-  iov.iov_len = buf_len;
-
-  struct msghdr msg = {};
-  msg.msg_iov = &iov;
-  msg.msg_iovlen = 1;
-
   SockaddrStorage storage;
-  msg.msg_name = storage.addr;
-  msg.msg_namelen = storage.addr_len;
-
-  bytes_transferred = HANDLE_EINTR(recvmsg(socket_, &msg, 0));
-  storage.addr_len = msg.msg_namelen;
+  struct iovec iov = {
+      .iov_base = buf->data(),
+      .iov_len = buf_len,
+  };
+  struct msghdr msg = {
+      .msg_name = storage.addr,
+      .msg_namelen = storage.addr_len,
+      .msg_iov = &iov,
+      .msg_iovlen = 1,
+  };
   int result;
-  if (bytes_transferred >= 0) {
-    if (msg.msg_flags & MSG_TRUNC) {
-      result = ERR_MSG_TOO_BIG;
-    } else {
-      result = bytes_transferred;
-      if (address && !address->FromSockAddr(storage.addr, storage.addr_len))
-        result = ERR_ADDRESS_INVALID;
+  int bytes_transferred = HANDLE_EINTR(recvmsg(socket_, &msg, 0));
+  if (bytes_transferred < 0) {
+    result = MapSystemError(errno);
+    if (result == ERR_IO_PENDING) {
+      return result;
     }
   } else {
-    result = MapSystemError(errno);
+    storage.addr_len = msg.msg_namelen;
+    if (msg.msg_flags & MSG_TRUNC) {
+      // NB: recvfrom(..., MSG_TRUNC, ...) would be a simpler way to do this on
+      // Linux, but isn't supported by POSIX.
+      result = ERR_MSG_TOO_BIG;
+    } else if (address &&
+               !address->FromSockAddr(storage.addr, storage.addr_len)) {
+      result = ERR_ADDRESS_INVALID;
+    } else {
+      result = bytes_transferred;
+    }
   }
-  if (result != ERR_IO_PENDING)
-    LogRead(result, buf->data(), storage.addr_len, storage.addr);
+
+  LogRead(result, buf->data(), storage.addr_len, storage.addr);
   return result;
 }
 

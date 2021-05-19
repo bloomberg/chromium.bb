@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -90,7 +91,7 @@ void ReportValidationError(ValidationContext* context,
                            ValidationError error,
                            const char* description) {
 #if !defined(OS_NACL)
-  SCOPED_CRASH_KEY_STRING32("mojo-message", "header-bytes",
+  SCOPED_CRASH_KEY_STRING64("mojo-message", "header-bytes",
                             MessageHeaderAsHexString(context->message()));
 #endif  // !defined (OS_NACL)
 
@@ -177,6 +178,10 @@ SerializationWarningObserverForTesting::
     ~SerializationWarningObserverForTesting() {
   DCHECK(g_serialization_warning_observer == this);
   g_serialization_warning_observer = nullptr;
+}
+
+void RecordInvalidStringDeserialization() {
+  base::UmaHistogramBoolean("Mojo.InvalidUTF8String", false);
 }
 
 }  // namespace internal

@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
@@ -451,7 +452,7 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
   TRACE_EVENT0("dwrite,fonts",
                "DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily");
 
-  static base::NoDestructor<base::string16> windows_fonts_path(
+  static base::NoDestructor<std::u16string> windows_fonts_path(
       GetWindowsFontsPath());
 
   DWriteFontLookupTableBuilder::FamilyResult family_result;

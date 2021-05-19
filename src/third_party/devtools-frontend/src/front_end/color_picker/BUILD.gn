@@ -14,13 +14,13 @@ devtools_module("color_picker") {
   ]
 
   deps = [
-    "../common:bundle",
-    "../host:bundle",
-    "../i18n:bundle",
-    "../platform:bundle",
-    "../sdk:bundle",
-    "../ui:bundle",
+    "../core/common:bundle",
+    "../core/host:bundle",
+    "../core/i18n:bundle",
+    "../core/platform:bundle",
+    "../core/sdk:bundle",
     "../ui/components:bundle",
+    "../ui/legacy:bundle",
   ]
 }
 

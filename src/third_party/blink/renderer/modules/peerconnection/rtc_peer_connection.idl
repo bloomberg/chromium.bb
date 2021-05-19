@@ -70,8 +70,8 @@ enum RTCPeerConnectionState {
 ] interface RTCPeerConnection : EventTarget {
     // TODO(guidou): There should only be one constructor argument.
     [CallWith=ExecutionContext, RaisesException] constructor(optional RTCConfiguration configuration = {}, optional any mediaConstraints);
-    [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescription> createOffer(optional RTCOfferOptions options = {});
-    [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescription> createAnswer(optional RTCAnswerOptions options = {});
+    [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescriptionInit> createOffer(optional RTCOfferOptions options = {});
+    [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescriptionInit> createAnswer(optional RTCAnswerOptions options = {});
     [CallWith=ScriptState, RaisesException] Promise<void> setLocalDescription(optional RTCSessionDescriptionInit description = {});
     readonly attribute RTCSessionDescription? localDescription;
     readonly attribute RTCSessionDescription? currentLocalDescription;
@@ -182,9 +182,7 @@ enum RTCPeerConnectionState {
 callback RTCPeerConnectionErrorCallback = void (DOMException error);
 
 // https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescriptioncallback
-// TODO(yukishiino): The argument type must be RTCSessionDescriptionInit instead
-// of RTCSessionDescription.
-callback RTCSessionDescriptionCallback = void (RTCSessionDescription description);
+callback RTCSessionDescriptionCallback = void (RTCSessionDescriptionInit description);
 
 // No spec.  Blink specific definition.
 callback RTCStatsCallback = void (RTCStatsResponse response);

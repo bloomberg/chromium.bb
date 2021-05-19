@@ -12,17 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-#include <vector>
-
-#include "src/ast/identifier_expression.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/program.h"
-#include "src/type/array_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/vector_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -33,7 +23,7 @@ namespace {
 using HlslGeneratorImplTest_VariableDecl = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_VariableDecl, Emit_VariableDeclStatement) {
-  auto* var = Global("a", ty.f32(), ast::StorageClass::kNone);
+  auto* var = Global("a", ty.f32(), ast::StorageClass::kInput);
 
   auto* stmt = create<ast::VariableDeclStatement>(var);
 
@@ -49,6 +39,7 @@ TEST_F(HlslGeneratorImplTest_VariableDecl, Emit_VariableDeclStatement_Const) {
   auto* var = Const("a", ty.f32());
 
   auto* stmt = create<ast::VariableDeclStatement>(var);
+  WrapInFunction(stmt);
 
   GeneratorImpl& gen = Build();
 
@@ -59,7 +50,7 @@ TEST_F(HlslGeneratorImplTest_VariableDecl, Emit_VariableDeclStatement_Const) {
 }
 
 TEST_F(HlslGeneratorImplTest_VariableDecl, Emit_VariableDeclStatement_Array) {
-  auto* var = Global("a", ty.array<f32, 5>(), ast::StorageClass::kNone);
+  auto* var = Global("a", ty.array<f32, 5>(), ast::StorageClass::kInput);
 
   auto* stmt = create<ast::VariableDeclStatement>(var);
 
@@ -100,7 +91,7 @@ TEST_F(HlslGeneratorImplTest_VariableDecl, Emit_VariableDeclStatement_Private) {
 
 TEST_F(HlslGeneratorImplTest_VariableDecl,
        Emit_VariableDeclStatement_Initializer_Private) {
-  Global("initializer", ty.f32(), ast::StorageClass::kNone);
+  Global("initializer", ty.f32(), ast::StorageClass::kInput);
   auto* var =
       Global("a", ty.f32(), ast::StorageClass::kPrivate, Expr("initializer"));
 
@@ -124,7 +115,7 @@ TEST_F(HlslGeneratorImplTest_VariableDecl,
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.EmitStatement(out, stmt)) << gen.error();
-  EXPECT_EQ(result(), R"(float3 a = float3(0.0f);
+  EXPECT_EQ(result(), R"(float3 a = float3(0.0f, 0.0f, 0.0f);
 )");
 }
 
@@ -140,7 +131,7 @@ TEST_F(HlslGeneratorImplTest_VariableDecl,
 
   ASSERT_TRUE(gen.EmitStatement(out, stmt)) << gen.error();
   EXPECT_EQ(result(),
-            R"(float3x2 a = float3x2(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+            R"(float2x3 a = float2x3(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 )");
 }
 

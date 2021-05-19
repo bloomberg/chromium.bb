@@ -73,6 +73,9 @@ class StorageHandler : public DevToolsDomainHandler,
 
   void GetTrustTokens(
       std::unique_ptr<GetTrustTokensCallback> callback) override;
+  void ClearTrustTokens(
+      const std::string& issuerOrigin,
+      std::unique_ptr<ClearTrustTokensCallback> callback) override;
 
  private:
   // See definition for lifetime information.
@@ -88,8 +91,8 @@ class StorageHandler : public DevToolsDomainHandler,
                                         const std::string& name);
   void NotifyIndexedDBListChanged(const std::string& origin);
   void NotifyIndexedDBContentChanged(const std::string& origin,
-                                     const base::string16& database_name,
-                                     const base::string16& object_store_name);
+                                     const std::u16string& database_name,
+                                     const std::u16string& object_store_name);
 
   Response FindStoragePartition(const Maybe<std::string>& browser_context_id,
                                 StoragePartition** storage_partition);

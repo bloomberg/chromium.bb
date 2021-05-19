@@ -17,7 +17,7 @@ const int kMaxNumberOfFieldsToShareALabel = 3;
 // The maximum length of a label that can be shared among fields.
 const int kMaxLengthOfShareableLabel = 40;
 
-base::Optional<std::vector<base::string16>> GetParseableLabels(
+base::Optional<std::vector<std::u16string>> GetParseableLabels(
     const LabelPieces& labels) {
   // Make a copy of the labels.
   LabelPieces shared_labels = labels;
@@ -65,8 +65,7 @@ base::Optional<std::vector<base::string16>> GetParseableLabels(
 
     // Otherwise, try to split the label by single character separators.
     LabelPieces label_components = base::SplitStringPiece(
-        label, base::ASCIIToUTF16("/,&-"), base::TRIM_WHITESPACE,
-        base::SPLIT_WANT_NONEMPTY);
+        label, u"/,&-", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
     // If the number of components does not match, try to split by common
     // separating words.
@@ -98,10 +97,10 @@ base::Optional<std::vector<base::string16>> GetParseableLabels(
 
   // Otherwise convert the shared label string pieces into strings for memory
   // safety.
-  std::vector<base::string16> result;
+  std::vector<std::u16string> result;
   result.reserve(shared_labels.size());
   base::ranges::transform(shared_labels, std::back_inserter(result),
-                          [](auto& s) { return base::string16(s); });
+                          [](auto& s) { return std::u16string(s); });
   return base::make_optional(std::move(result));
 }
 

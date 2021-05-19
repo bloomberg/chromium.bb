@@ -14,13 +14,7 @@
 
 #include "src/type/texture_type.h"
 
-#include <cassert>
-#include <ostream>
-
-#include "src/type/multisampled_texture_type.h"
-#include "src/type/sampled_texture_type.h"
-
-TINT_INSTANTIATE_CLASS_ID(tint::type::Texture);
+TINT_INSTANTIATE_TYPEINFO(tint::type::Texture);
 
 namespace tint {
 namespace type {

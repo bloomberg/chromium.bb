@@ -14,6 +14,7 @@
 #include "include/private/SkTemplates.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/core/SkTLazy.h"
+#include "src/gpu/GrColorInfo.h"
 #include "src/shaders/SkColorShader.h"
 #include "tests/Test.h"
 
@@ -396,7 +397,7 @@ static void test_unsorted_degenerate(skiatest::Reporter* r) {
     GrMockOptions options;
     auto context = GrDirectContext::MakeMock(&options);
 
-    GrFPArgs args(context.get(), provider, SkSamplingOptions(), &dstColorInfo);
+    GrFPArgs args(context.get(), provider, &dstColorInfo);
     as_SB(gradient)->asFragmentProcessor(args);
 }
 

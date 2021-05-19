@@ -4,19 +4,34 @@
 
 module chromeos.libassistant.mojom;
 
+import "chromeos/services/libassistant/public/mojom/conversation_observer.mojom";
+import "chromeos/services/libassistant/public/mojom/notification_delegate.mojom";
+import "chromeos/services/libassistant/public/mojom/assistant_notification.mojom";
+import "ui/accessibility/mojom/ax_assistant_structure.mojom";
+
 // Interface for controller supporting conversation related functionalities.
 interface ConversationController {
-  // Sends the specific text query to Libassistant. |conversation_id| is an
-  // identifier that will be propagated through the speech processor event
-  // pipeline to uniquely identify a conversation turn. If omitted, a unique
-  // identifier will be automatically generated.
-  SendTextQuery(string query, bool allow_tts, string? conversation_id);
+  // Sends the specific text query to Libassistant.
+  SendTextQuery(string query, AssistantQuerySource source, bool allow_tts);
+
+  // Initiates a voice interaction.
+  StartVoiceInteraction();
 
   // Starts an interaction to edit the reminder uniquely identified by
   // |client_id|. In response to the request, LibAssistant will initiate
   // a user facing interaction with the context pre-populated with details
   // to edit the specified reminder.
   StartEditReminderInteraction(string client_id);
+
+  // Starts a screen context interaction.
+  // |screenshot| contains JPEG data.
+  StartScreenContextInteraction(
+      ax.mojom.AssistantStructure assistant_structure,
+      array<uint8> screenshot);
+
+  // Stops the ongoing interaction with a delay to give buffer time to
+  // Libassistant when being forcefully stopped.
+  StopActiveInteraction(bool cancel_conversation);
 
   // Retrieves a notification. A voiceless interaction will be sent to server to
   // retrieve the notification of |action_index|, which can trigger other
@@ -33,24 +48,10 @@ interface ConversationController {
 
   // Sends Assistant feedback to Assistant server.
   SendAssistantFeedback(AssistantFeedback feedback);
-};
 
-// Models an Assistant notification. This should be kept in sync with
-// |chromeos::assistant::AssistantNotification|. For now we only include
-// entries that are currently in use.
-struct AssistantNotification {
-  // An id that uniquely identifies a notification on the server.
-  string server_id;
-
-  // Used to fetch notification contents.
-  string consistency_token;
-  string opaque_token;
-
-  // Key that can be used to group multiple notifications together.
-  string grouping_key;
-
-  // Obfuscated Gaia id of the intended recipient of the user.
-  string obfuscated_gaia_id;
+  // Add a remote observer, which will be informed of set of events
+  // related to the ongoing conversation.
+  AddRemoteObserver(pending_remote<ConversationObserver> observer);
 };
 
 // Models an Assistant feedback. This should be kept in sync with

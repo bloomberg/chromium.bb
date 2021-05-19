@@ -44,6 +44,14 @@ class MockTranslateMetricsLoggerContainer
                                                      ranker_version);
   }
 
+  void LogRankerStart() override {
+    mock_translate_metrics_logger_->LogRankerStart();
+  }
+
+  void LogRankerFinish() override {
+    mock_translate_metrics_logger_->LogRankerFinish();
+  }
+
   void LogTriggerDecision(
       translate::TriggerDecision trigger_decision) override {
     mock_translate_metrics_logger_->LogTriggerDecision(trigger_decision);
@@ -92,8 +100,12 @@ class MockTranslateMetricsLoggerContainer
     mock_translate_metrics_logger_->LogSourceLanguage(source_language_code);
   }
 
-  void LogTargetLanguage(const std::string& target_language_code) override {
-    mock_translate_metrics_logger_->LogTargetLanguage(target_language_code);
+  void LogTargetLanguage(
+      const std::string& target_language_code,
+      translate::TranslateBrowserMetrics::TargetLanguageOrigin
+          target_language_origin) override {
+    mock_translate_metrics_logger_->LogTargetLanguage(target_language_code,
+                                                      target_language_origin);
   }
 
   void LogUIInteraction(translate::UIInteraction ui_interaction) override {

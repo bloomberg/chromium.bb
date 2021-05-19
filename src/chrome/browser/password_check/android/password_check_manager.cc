@@ -27,7 +27,7 @@
 
 namespace {
 
-base::string16 GetDisplayUsername(const base::string16& username) {
+std::u16string GetDisplayUsername(const std::u16string& username) {
   return username.empty()
              ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
              : username;
@@ -191,6 +191,9 @@ void PasswordCheckManager::OnStateChanged(State state) {
     profile_->GetPrefs()->SetDouble(
         password_manager::prefs::kLastTimePasswordCheckCompleted,
         base::Time::Now().ToDoubleT());
+    profile_->GetPrefs()->SetTime(
+        password_manager::prefs::kSyncedLastTimePasswordCheckCompleted,
+        base::Time::Now());
   }
 
   if (state != State::kRunning) {
@@ -311,19 +314,15 @@ bool PasswordCheckManager::CanUseAccountCheck() const {
   SyncState sync_state = password_manager_util::GetPasswordSyncState(
       ProfileSyncServiceFactory::GetForProfile(profile_));
   switch (sync_state) {
-    case SyncState::NOT_SYNCING:
+    case SyncState::kNotSyncing:
       ABSL_FALLTHROUGH_INTENDED;
-    case SyncState::SYNCING_WITH_CUSTOM_PASSPHRASE:
+    case SyncState::kSyncingWithCustomPassphrase:
       return false;
 
-    case SyncState::SYNCING_NORMAL_ENCRYPTION:
+    case SyncState::kSyncingNormalEncryption:
       ABSL_FALLTHROUGH_INTENDED;
-    case SyncState::ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION:
+    case SyncState::kAccountPasswordsActiveNormalEncryption:
       return true;
-
-    default:
-      NOTREACHED();
-      return false;
   }
 }
 
@@ -361,20 +360,16 @@ bool PasswordCheckManager::ShouldFetchPasswordScripts() const {
   // Password change scripts are using password generation, so automatic
   // password change should not be offered to non sync users.
   switch (sync_state) {
-    case SyncState::NOT_SYNCING:
+    case SyncState::kNotSyncing:
       return false;
 
-    case SyncState::SYNCING_WITH_CUSTOM_PASSPHRASE:
+    case SyncState::kSyncingWithCustomPassphrase:
       ABSL_FALLTHROUGH_INTENDED;
-    case SyncState::SYNCING_NORMAL_ENCRYPTION:
+    case SyncState::kSyncingNormalEncryption:
       ABSL_FALLTHROUGH_INTENDED;
-    case SyncState::ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION:
+    case SyncState::kAccountPasswordsActiveNormalEncryption:
       return base::FeatureList::IsEnabled(
           password_manager::features::kPasswordScriptsFetching);
-
-    default:
-      NOTREACHED();
-      return false;
   }
 }
 

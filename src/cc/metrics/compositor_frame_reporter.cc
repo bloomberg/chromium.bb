@@ -46,6 +46,12 @@ constexpr int kBlinkBreakdownInitialIndex =
 constexpr int kFrameSequenceTrackerTypeCount =
     static_cast<int>(FrameSequenceTrackerType::kMaxType) + 1;
 
+// Maximum number of partial update dependents a reporter can own. When a
+// reporter with too many dependents is terminated, it will terminate all its
+// dependents which will block the pipeline for a long time. Too many dependents
+// also means too much memory usage.
+constexpr size_t kMaxOwnedPartialUpdateDependents = 300u;
+
 // Names for the viz breakdowns that are shown in trace as substages under
 // PipelineReporter -> SubmitCompositorFrameToPresentationCompositorFrame or
 // EventLatency -> SubmitCompositorFrameToPresentationCompositorFrame.
@@ -539,16 +545,20 @@ CompositorFrameReporter::CompositorFrameReporter(
     LatencyUkmReporter* latency_ukm_reporter,
     bool should_report_metrics,
     SmoothThread smooth_thread,
+    FrameSequenceMetrics::ThreadType scrolling_thread,
     int layer_tree_host_id,
     DroppedFrameCounter* dropped_frame_counter)
     : should_report_metrics_(should_report_metrics),
       args_(args),
       active_trackers_(active_trackers),
+      scrolling_thread_(scrolling_thread),
       latency_ukm_reporter_(latency_ukm_reporter),
       dropped_frame_counter_(dropped_frame_counter),
       smooth_thread_(smooth_thread),
       layer_tree_host_id_(layer_tree_host_id) {
   dropped_frame_counter_->OnBeginFrame(args, IsScrollActive(active_trackers_));
+  DCHECK(IsScrollActive(active_trackers_) ||
+         scrolling_thread_ == FrameSequenceMetrics::ThreadType::kUnknown);
 }
 
 std::unique_ptr<CompositorFrameReporter>
@@ -565,7 +575,8 @@ CompositorFrameReporter::CopyReporterAtBeginImplStage() {
   }
   auto new_reporter = std::make_unique<CompositorFrameReporter>(
       active_trackers_, args_, latency_ukm_reporter_, should_report_metrics_,
-      smooth_thread_, layer_tree_host_id_, dropped_frame_counter_);
+      smooth_thread_, scrolling_thread_, layer_tree_host_id_,
+      dropped_frame_counter_);
   new_reporter->did_finish_impl_frame_ = did_finish_impl_frame_;
   new_reporter->impl_frame_finish_time_ = impl_frame_finish_time_;
   new_reporter->main_frame_abort_time_ = main_frame_abort_time_;
@@ -576,7 +587,7 @@ CompositorFrameReporter::CopyReporterAtBeginImplStage() {
 
   // Set up the new reporter so that it depends on |this| for partial update
   // information.
-  new_reporter->SetPartialUpdateDecider(weak_factory_.GetWeakPtr());
+  new_reporter->SetPartialUpdateDecider(this);
 
   return new_reporter;
 }
@@ -672,10 +683,17 @@ void CompositorFrameReporter::SetVizBreakdown(
   viz_breakdown_ = viz_breakdown;
 }
 
-void CompositorFrameReporter::SetEventsMetrics(
+void CompositorFrameReporter::AddEventsMetrics(
     EventMetrics::List events_metrics) {
-  DCHECK_EQ(0u, events_metrics_.size());
-  events_metrics_ = std::move(events_metrics);
+  events_metrics_.insert(events_metrics_.end(),
+                         std::make_move_iterator(events_metrics.begin()),
+                         std::make_move_iterator(events_metrics.end()));
+}
+
+EventMetrics::List CompositorFrameReporter::TakeEventsMetrics() {
+  EventMetrics::List result = std::move(events_metrics_);
+  events_metrics_.clear();
+  return result;
 }
 
 void CompositorFrameReporter::TerminateReporter() {
@@ -1059,11 +1077,26 @@ void CompositorFrameReporter::ReportCompositorLatencyTraceEvents() const {
         reporter->set_state(state);
         reporter->set_frame_source(args_.frame_id.source_id);
         reporter->set_frame_sequence(args_.frame_id.sequence_number);
+        reporter->set_has_missing_content(has_missing_content_);
         if (IsDroppedFrameAffectingSmoothness()) {
           DCHECK(state == ChromeFrameReporter::STATE_DROPPED ||
                  state == ChromeFrameReporter::STATE_PRESENTED_PARTIAL);
           reporter->set_affects_smoothness(true);
         }
+        ChromeFrameReporter::ScrollState scroll_state;
+        switch (scrolling_thread_) {
+          case FrameSequenceMetrics::ThreadType::kMain:
+            scroll_state = ChromeFrameReporter::SCROLL_MAIN_THREAD;
+            break;
+          case FrameSequenceMetrics::ThreadType::kCompositor:
+            scroll_state = ChromeFrameReporter::SCROLL_COMPOSITOR_THREAD;
+            break;
+          case FrameSequenceMetrics::ThreadType::kUnknown:
+            scroll_state = ChromeFrameReporter::SCROLL_NONE;
+            break;
+        }
+        reporter->set_scroll_state(scroll_state);
+
         // TODO(crbug.com/1086974): Set 'drop reason' if applicable.
       });
 
@@ -1255,10 +1288,6 @@ bool CompositorFrameReporter::IsDroppedFrameAffectingSmoothness() const {
   return false;
 }
 
-base::WeakPtr<CompositorFrameReporter> CompositorFrameReporter::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
 void CompositorFrameReporter::AdoptReporter(
     std::unique_ptr<CompositorFrameReporter> reporter) {
   // If |this| reporter is dependent on another reporter to decide about partial
@@ -1270,32 +1299,36 @@ void CompositorFrameReporter::AdoptReporter(
 }
 
 void CompositorFrameReporter::SetPartialUpdateDecider(
-    base::WeakPtr<CompositorFrameReporter> decider) {
+    CompositorFrameReporter* decider) {
   DCHECK(decider);
-  has_partial_update_ = true;
-  partial_update_decider_ = decider;
-  decider->partial_update_dependents_.push(GetWeakPtr());
   DCHECK(partial_update_dependents_.empty());
+  has_partial_update_ = true;
+  partial_update_decider_ = decider->GetWeakPtr();
+  decider->partial_update_dependents_.push(GetWeakPtr());
 }
 
 void CompositorFrameReporter::DiscardOldPartialUpdateReporters() {
   DCHECK_LE(owned_partial_update_dependents_.size(),
             partial_update_dependents_.size());
-  while (owned_partial_update_dependents_.size() > 300u) {
+  // Remove old owned partial update dependents if there are too many.
+  while (owned_partial_update_dependents_.size() >
+         kMaxOwnedPartialUpdateDependents) {
     auto& dependent = owned_partial_update_dependents_.front();
     dependent->set_has_partial_update(false);
-    partial_update_dependents_.pop();
     owned_partial_update_dependents_.pop();
     discarded_partial_update_dependents_count_++;
   }
+
+  // Remove dependent reporters from the front of `partial_update_dependents_`
+  // queue if they are already destroyed.
+  while (!partial_update_dependents_.empty() &&
+         !partial_update_dependents_.front()) {
+    partial_update_dependents_.pop();
+  }
 }
 
-bool CompositorFrameReporter::MightHavePartialUpdate() const {
-  return !!partial_update_decider_;
-}
-
-size_t CompositorFrameReporter::GetPartialUpdateDependentsCount() const {
-  return partial_update_dependents_.size();
+base::WeakPtr<CompositorFrameReporter> CompositorFrameReporter::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace cc

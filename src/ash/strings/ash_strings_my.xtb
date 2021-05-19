@@ -40,6 +40,7 @@
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" />မှ အားသွင်းနေပါသည်</translation>
 <translation id="1255033239764210633">မိုးလေဝသအခြေအနေ ဘယ်လိုရှိလဲ။</translation>
 <translation id="1267032506238418139">ဖြတ်လမ်းလင့်ခ် ပြောင်းလဲခြင်း</translation>
+<translation id="1269405891096105529">‘ဧည့်သည်မုဒ်’ တွင် ချိတ်ဆက်ပစ္စည်းကို မပံ့ပိုးပါ</translation>
 <translation id="1270290102613614947">မျက်နှာပြင် ပေါ်က ကီးဘုတ် ပိတ်ထား</translation>
 <translation id="1272079795634619415">ရပ်ရန်</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> ကို အားသွင်းနေသည်</translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">မက်ဆေ့ဂျ် ရိုက်ပါ</translation>
 <translation id="2018630726571919839">ဟာသတစ်ခု ပြောပါ</translation>
+<translation id="2021864487439853900">ဖွင့်ရန် နှိပ်ပါ</translation>
 <translation id="2049240716062114887">မျက်နှာပြင်နေရာအမည်ကို <ph name="DESK_NAME" /> သို့ ပြောင်းထားသည်</translation>
 <translation id="2050339315714019657">ဒေါင်လိုက်</translation>
 <translation id="2067602449040652523">ကီးဘုတ် တောက်ပမှု</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> သည် နောက်ပိုင်းတွင် လက်မှတ်ထိုး ဝင်နိုင်ပါသေးသည်။</translation>
 <translation id="3321628682574733415">မိဘသုံးခွင့်ကုဒ် မှားနေသည်</translation>
 <translation id="332587331255250389">ဓာတ်ခဲ လဲပါ</translation>
+<translation id="3333741161915951567">မိုဒမ် ပြန်လည်စတင်နေသည်။ ထပ်မစမ်းမီ စက္ကန့် ၃၀ စောင့်ပါ။</translation>
 <translation id="3341303451326249809">ဖန်သားပြင်ဓာတ်ပုံ ဖမ်းယူပြီးပြီ</translation>
 <translation id="334252345105450327">ဖန်သားပြင်ဓာတ်ပုံတစ်ပုံရိုက်ပါ</translation>
 <translation id="3351879221545518001">သင်သည် လောလောဆယ် မျက်နှာပြင်ကို ကာ့စ်လုပ်နေပါသည်။</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> စီမံခန့်ခွဲသော အသုံးပြုသူ</translation>
 <translation id="3665889125180354336">မိုက်ခရိုဖုန်းအသံဖမ်းရန်</translation>
 <translation id="36813544980941320">သင့်ဖုန်းနှင့် <ph name="DEVICE_NAME" /> အကြားတွင် Wi-Fi ကွန်ရက်များကို မျှဝေပါမည်</translation>
+<translation id="3702809606464356667">လက်ရှိမျက်နှာပြင်နေရာမှ ဝင်းဒိုးများကို ပြနေသည်၊ မျက်နှာပြင်နေရာ အားလုံးမှ ဝင်းဒိုးများကို ပြရန် ‘အပေါ်ညွှန်မြား’ ကီးကို နှိပ်ပါ</translation>
 <translation id="3702846122927433391">နိုင်ဂျီးရီးယားရှိ လူဦးရေ</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">တင်ပေးနေ...</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">အသံဆက်တင်များ</translation>
 <translation id="3945319193631853098">စနစ်ထည့်သွင်းခြင်း အပြီးသတ်ရန် တို့ပါ</translation>
 <translation id="3945867833895287237">ဟော့စပေါ့သို့ ချိတ်ဆက်နေသည်...</translation>
+<translation id="3958465044488004317">Assistant တွင် ရလဒ်ကို ကြည့်ပါ</translation>
 <translation id="3962859241508114581">ယခင်တစ်ပုဒ်</translation>
 <translation id="3969043077941541451">ပိတ်ရန်</translation>
 <translation id="397105322502079400">တွက်ချက်နေ...</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175">အဝေးမှ ထောက်ကူခြင်း ဆိုသည်မှ တဆင့် သင့်ဖန်သားပြင်အား <ph name="HELPER_NAME" /> နှင့် မျှဝေသုံးစွဲခြင်း။</translation>
 <translation id="4424159417645388645">မျက်နှာပြင်နေရာ ၅</translation>
 <translation id="4430019312045809116">ပမာဏ</translation>
+<translation id="4445159312344259901">ဖွင့်ရန် လက်မှတ်ထိုးဝင်ပါ</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{အရေးကြီးသော အကြောင်းကြားချက် 1 ခု}other{အရေးကြီးသော အကြောင်းကြားချက် # ခု}}</translation>
 <translation id="4450893287417543264">ထပ်မပြပါနှင့်</translation>
 <translation id="445864333228800152">မင်္ဂလာ ညနေခင်းပါ၊</translation>
 <translation id="4458688154122353284">ဖန်သားပြင်ရိုက်ကူးမှု ရပ်ရန်</translation>
+<translation id="4467143075433126295">ဖန်သားပြင် အပြည့်မှ ထွက်ရန် [Esc] ကို နှိပ်ထားပါ</translation>
 <translation id="4472575034687746823">စကြရအောင်</translation>
 <translation id="4477350412780666475">နောက်တစ်ပုဒ်</translation>
 <translation id="4477892968187500306">ဤစက်တွင် Google က အတည်ပြုမထားသော အက်ပ်များ ပါဝင်နိုင်သည်။</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />။ <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">ဧည့်သည်စက်ရှင်တွင် Google Assistant ကို အသုံးပြု၍ မရပါ။</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> အတွက် ဖယ်ရှားမှုဒိုင်ယာလော့ခ် ဖွင့်မည်</translation>
+<translation id="6154006699632741460">ချိတ်ဆက်ပစ္စည်းကို မပံ့ပိုးပါ</translation>
 <translation id="615957422585914272">မျက်နှာပြင် ပေါ်က ကီးဘုတ်ကို ပြရန်</translation>
 <translation id="6165508094623778733">ပိုမိုလေ့လာရန်</translation>
 <translation id="6179832488876878285">သင့်အရေးကြီးဖိုင်များကို ဤနေရာတွင် ပင်ထိုးနိုင်သည်။ စတင်ရန် Files အက်ပ်ကို ဖွင့်ပါ။</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">အစိတ်အပိုင်းကိုရွေးရန် စတိုင်လပ်စ်ခဲတံအား အသုံးပြုပါ</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ကို <ph name="ROTATION" />ဆီသို့ လှည့်ပေးခဲ့</translation>
 <translation id="6315170314923504164">အသံ</translation>
+<translation id="6330012934079202188">မျက်နှာပြင်နေရာ အားလုံးမှ ဝင်းဒိုးများကို ပြနေသည်၊ လက်ရှိမျက်နှာပြင်နေရာမှ ဝင်းဒိုးများကို ပြရန် ‘အပေါ်ညွှန်မြား’ ကီးကို နှိပ်ပါ</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> သည် <ph name="MANAGER" /> က စီမံခန့်ခွဲထားသည့် စက်ရှင်ဖြစ်သည်</translation>
 <translation id="6376931439017688372">ဘလူးတုသ်ကို ဖွင့်ထားသည်</translation>
 <translation id="6381109794406942707">ဤစက်ကိုဖွင့်ရန် သင့်ပင်နံပါတ် ထည့်ပါ။</translation>
 <translation id="639644700271529076">စာလုံးကြီးများကို နှိပ်မထား</translation>
-<translation id="6396835948284782440">ထွက်ရန် [Esc] နှိပ်ထားပါ။</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />၊ လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">သတိပေးချက်အားလုံးကို ဖယ်ရှားပါ</translation>
@@ -794,7 +802,6 @@
 <translation id="7780159184141939021">မျက်နှာပြင် လှည့်ခြင်း</translation>
 <translation id="7796353162336583443">မှတ်စုရေးရန်၊ ဖန်သားပြင်ဓာတ်ပုံ ရိုက်ရန်၊ Google Assistant ကို သုံးရန်၊ လေဆာညွှန်ပြကိရိယာ သို့မဟုတ် မှန်ဘီလူးတို့ကို သုံးရန် စင်ပေါ်ရှိ စတိုင်လပ်စ်ခလုတ်ကို တို့ပါ။</translation>
 <translation id="7798302898096527229">ပယ်ဖျက်ရန် Search သို့မဟုတ် Shift ခလုတ်ကို နှိပ်ပါ။</translation>
-<translation id="7807966291075028781">လုံခြုံရေးအကြောင်းများကြောင့် ‘ဧည့်သည်မုဒ်’ တွင် ချိတ်ဆက်ပစ္စည်းကို အသုံးပြု၍မရပါ</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> နှင့် <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">လိုင်းအားကောင်းသည်</translation>
 <translation id="7837740436429729974">အချိန်စေ့ပါပြီ</translation>
@@ -944,6 +951,7 @@
 <translation id="8936501819958976551">ရပ်ထားသည်</translation>
 <translation id="8938800817013097409">USB-C ကိရိယာ (ကျောဘက် ညာ ပို့တ်)</translation>
 <translation id="8940956008527784070">ဓာတ်ခဲအားနည်း (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">အတည်ပြုထားသော Thunderbolt ကိရိယာများကိုသာ သင်၏ Chromebook ဖြင့် တွဲသုံးနိုင်သည်</translation>
 <translation id="8982906748181120328">အနီးတစ်ဝိုက် မြင်နိုင်မှု</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ကို အသုံးပြုနေသည်</translation>

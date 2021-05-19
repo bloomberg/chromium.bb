@@ -71,9 +71,9 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
 
     // Emulates the input method.
     if (::isalnum(static_cast<int>(key_code))) {
-      base::char16 character = ::tolower(static_cast<int>(key_code));
+      char16_t character = ::tolower(static_cast<int>(key_code));
       GetSearchBoxView()->search_box()->InsertText(
-          base::string16(1, character),
+          std::u16string(1, character),
           ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
     }
   }

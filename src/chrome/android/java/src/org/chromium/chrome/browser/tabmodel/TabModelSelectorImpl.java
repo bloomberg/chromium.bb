@@ -11,6 +11,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -38,15 +39,11 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
     private boolean mIsUndoSupported;
 
-    // Whether the Activity that owns that TabModelSelector is tabbed or not.
-    // Used by sync to determine how to handle restore on cold start.
-    private boolean mIsTabbedActivityForSync;
+    // Type of the Activity for this tab model. Used by sync to determine how to handle restore
+    // on cold start.
+    private final @ActivityType int mActivityType;
 
     private final TabModelOrderController mOrderController;
-
-    // TODO(crbug.com/1138561): Remove the dependency from TabModelSelectorImpl to
-    // TabPersistentStore.
-    private Supplier<TabPersistentStore> mTabSaver;
 
     private final AsyncTabParamsManager mAsyncTabParamsManager;
 
@@ -68,33 +65,21 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
      * @param tabModelFilterFactory
      * @param nextTabPolicySupplier
      * @param asyncTabParamsManager
+     * @param activityType Type of the activity for the tab model selector.
      * @param supportUndo Whether a tab closure can be undone.
      */
     public TabModelSelectorImpl(@Nullable Supplier<WindowAndroid> windowAndroidSupplier,
             TabCreatorManager tabCreatorManager, TabModelFilterFactory tabModelFilterFactory,
             NextTabPolicySupplier nextTabPolicySupplier,
             AsyncTabParamsManager asyncTabParamsManager, boolean supportUndo,
-            boolean isTabbedActivity, boolean startIncognito) {
+            @ActivityType int activityType, boolean startIncognito) {
         super(tabCreatorManager, tabModelFilterFactory, startIncognito);
         mWindowAndroidSupplier = windowAndroidSupplier;
         mIsUndoSupported = supportUndo;
-        mIsTabbedActivityForSync = isTabbedActivity;
         mOrderController = new TabModelOrderControllerImpl(this);
         mNextTabPolicySupplier = nextTabPolicySupplier;
         mAsyncTabParamsManager = asyncTabParamsManager;
-    }
-
-    /**
-     * TODO(crbug.com/1138561): Do not add more parameters here. This is temporary while the
-     * dependency from TabModelSelectorImpl to TabPersistentStore is removed.
-     *
-     * This must be called after the constructor; NPEs are expected, otherwise.
-     * A Supplier that supplies null can be passed in tests.
-     */
-    public void setTabPersistentStoreSupplier(
-            Supplier<TabPersistentStore> tabPersistentStoreSupplier) {
-        assert mTabSaver == null;
-        mTabSaver = tabPersistentStoreSupplier;
+        mActivityType = activityType;
     }
 
     @Override
@@ -132,15 +117,15 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         ChromeTabCreator incognitoTabCreator =
                 (ChromeTabCreator) getTabCreatorManager().getTabCreator(true);
         TabModelImpl normalModel = new TabModelImpl(Profile.getLastUsedRegularProfile(),
-                mIsTabbedActivityForSync, regularTabCreator, incognitoTabCreator, mOrderController,
-                mTabContentManager, mTabSaver.get(), mNextTabPolicySupplier, mAsyncTabParamsManager,
-                this, mIsUndoSupported);
+                mActivityType, regularTabCreator, incognitoTabCreator, mOrderController,
+                mTabContentManager, mNextTabPolicySupplier, mAsyncTabParamsManager, this,
+                mIsUndoSupported);
         regularTabCreator.setTabModel(normalModel, mOrderController);
 
         IncognitoTabModel incognitoModel = new IncognitoTabModelImpl(
                 new IncognitoTabModelImplCreator(mWindowAndroidSupplier, regularTabCreator,
-                        incognitoTabCreator, mOrderController, mTabContentManager, mTabSaver.get(),
-                        mNextTabPolicySupplier, mAsyncTabParamsManager, this));
+                        incognitoTabCreator, mOrderController, mTabContentManager,
+                        mNextTabPolicySupplier, mAsyncTabParamsManager, mActivityType, this));
         incognitoTabCreator.setTabModel(incognitoModel, mOrderController);
         onNativeLibraryReadyInternal(tabContentProvider, normalModel, incognitoModel);
     }
@@ -156,7 +141,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
                 // Only invalidate if the tab exists in the currently selected model.
                 if (TabModelUtils.getTabById(getCurrentModel(), tab.getId()) != null) {
-                    mTabContentManager.invalidateIfChanged(tab.getId(), tab.getUrlString());
+                    mTabContentManager.invalidateIfChanged(tab.getId(), tab.getUrl());
                 }
             }
         });
@@ -166,14 +151,13 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             public void onUrlUpdated(Tab tab) {
                 TabModel model = getModelForTabId(tab.getId());
                 if (model == getCurrentModel()) {
-                    mTabContentManager.invalidateIfChanged(tab.getId(), tab.getUrlString());
+                    mTabContentManager.invalidateIfChanged(tab.getId(), tab.getUrl());
                 }
             }
 
             @Override
             public void onPageLoadStarted(Tab tab, GURL url) {
-                String previousUrl = tab.getUrlString();
-                mTabContentManager.invalidateTabThumbnail(tab.getId(), previousUrl);
+                mTabContentManager.invalidateTabThumbnail(tab.getId(), tab.getUrl());
             }
 
             @Override

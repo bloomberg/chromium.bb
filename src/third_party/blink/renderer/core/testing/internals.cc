@@ -97,8 +97,10 @@
 #include "third_party/blink/renderer/core/geometry/dom_point.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_list.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_font_cache.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -138,6 +140,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/import_map.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/scroll/mac_scrollbar_animator.h"
 #include "third_party/blink/renderer/core/scroll/programmatic_scroll_animator.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -208,10 +211,10 @@ namespace {
 
 std::unique_ptr<ScopedMockOverlayScrollbars> g_mock_overlay_scrollbars;
 
-class UseCounterHelperObserverImpl final : public UseCounterHelper::Observer {
+class UseCounterImplObserverImpl final : public UseCounterImpl::Observer {
  public:
-  UseCounterHelperObserverImpl(ScriptPromiseResolver* resolver,
-                               WebFeature feature)
+  UseCounterImplObserverImpl(ScriptPromiseResolver* resolver,
+                             WebFeature feature)
       : resolver_(resolver), feature_(feature) {}
 
   bool OnCountFeature(WebFeature feature) final {
@@ -222,14 +225,14 @@ class UseCounterHelperObserverImpl final : public UseCounterHelper::Observer {
   }
 
   void Trace(Visitor* visitor) const override {
-    UseCounterHelper::Observer::Trace(visitor);
+    UseCounterImpl::Observer::Trace(visitor);
     visitor->Trace(resolver_);
   }
 
  private:
   Member<ScriptPromiseResolver> resolver_;
   WebFeature feature_;
-  DISALLOW_COPY_AND_ASSIGN(UseCounterHelperObserverImpl);
+  DISALLOW_COPY_AND_ASSIGN(UseCounterImplObserverImpl);
 };
 
 class TestReadableStreamSource : public UnderlyingSourceBase {
@@ -2765,7 +2768,7 @@ void Internals::mediaPlayerPlayingRemotelyChanged(
 void Internals::setPersistent(HTMLVideoElement* video_element,
                               bool persistent) {
   DCHECK(video_element);
-  video_element->OnBecamePersistentVideo(persistent);
+  video_element->SetPersistentState(persistent);
 }
 
 void Internals::forceStaleStateForMediaElement(HTMLMediaElement* media_element,
@@ -3064,6 +3067,14 @@ static const char* CursorTypeToString(
       return "DragAndDropCopy";
     case ui::mojom::blink::CursorType::kDndLink:
       return "DragAndDropLink";
+    case ui::mojom::blink::CursorType::kNorthSouthNoResize:
+      return "NorthSouthNoResize";
+    case ui::mojom::blink::CursorType::kEastWestNoResize:
+      return "EastWestNoResize";
+    case ui::mojom::blink::CursorType::kNorthEastSouthWestNoResize:
+      return "NorthEastSouthWestNoResize";
+    case ui::mojom::blink::CursorType::kNorthWestSouthEastNoResize:
+      return "NorthWestSouthEastNoResize";
   }
 
   NOTREACHED();
@@ -3297,23 +3308,6 @@ void Internals::resetTypeAheadSession(HTMLSelectElement* select) {
   select->ResetTypeAheadSessionForTesting();
 }
 
-bool Internals::loseSharedGraphicsContext3D() {
-  std::unique_ptr<WebGraphicsContext3DProvider> shared_provider =
-      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
-  if (!shared_provider)
-    return false;
-  gpu::gles2::GLES2Interface* shared_gl = shared_provider->ContextGL();
-  if (!shared_gl)
-    return false;
-  shared_gl->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_EXT,
-                                 GL_INNOCENT_CONTEXT_RESET_EXT);
-  // To prevent tests that call loseSharedGraphicsContext3D from being
-  // flaky, we call finish so that the context is guaranteed to be lost
-  // synchronously (i.e. before returning).
-  shared_gl->Finish();
-  return true;
-}
-
 void Internals::forceCompositingUpdate(Document* document,
                                        ExceptionState& exception_state) {
   DCHECK(document);
@@ -3499,6 +3493,14 @@ unsigned Internals::canvasFontCacheMaxFonts() {
   return CanvasFontCache::MaxFonts();
 }
 
+void Internals::forceLoseCanvasContext(HTMLCanvasElement* canvas,
+                                       const String& context_type) {
+  CanvasContextCreationAttributesCore attr;
+  CanvasRenderingContext* context =
+      canvas->GetCanvasRenderingContext(context_type, attr);
+  context->LoseContext(CanvasRenderingContext::kSyntheticLostContext);
+}
+
 void Internals::setScrollChain(ScrollState* scroll_state,
                                const HeapVector<Member<Element>>& elements,
                                ExceptionState&) {
@@ -3619,8 +3621,8 @@ ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
     return promise;
   }
 
-  loader->GetUseCounterHelper().AddObserver(
-      MakeGarbageCollected<UseCounterHelperObserverImpl>(
+  loader->GetUseCounter().AddObserver(
+      MakeGarbageCollected<UseCounterImplObserverImpl>(
           resolver, static_cast<WebFeature>(use_counter_feature)));
   return promise;
 }
@@ -3653,8 +3655,12 @@ bool Internals::setScrollbarVisibilityInScrollableArea(Node* node,
                                                        bool visible) {
   if (ScrollableArea* scrollable_area = ScrollableAreaForNode(node)) {
     scrollable_area->SetScrollbarsHiddenForTesting(!visible);
-    scrollable_area->GetScrollAnimator().SetScrollbarsVisibleForTesting(
-        visible);
+
+    if (MacScrollbarAnimator* scrollbar_animator =
+            scrollable_area->GetMacScrollbarAnimator()) {
+      scrollbar_animator->SetScrollbarsVisibleForTesting(visible);
+    }
+
     return scrollable_area->GetPageScrollbarTheme().UsesOverlayScrollbars();
   }
   return false;

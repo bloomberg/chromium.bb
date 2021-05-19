@@ -7,20 +7,15 @@
 
 #include <stdint.h>
 
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
+#include "base/allocator/partition_allocator/partition_ref_count.h"
 #include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
 #include "base/immediate_crash.h"
+#include "base/partition_alloc_buildflags.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
-
-// Enable free list hardening.
-//
-// Disabled on ARM64 Macs, as this crashes very early (crbug.com/1172236).
-// TODO(lizeb): Enable in as many configurations as possible.
-#if !(defined(OS_MAC) && defined(ARCH_CPU_ARM64))
-#define PA_HAS_FREELIST_HARDENING
-#endif
 
 namespace base {
 namespace internal {
@@ -38,8 +33,24 @@ namespace {
 struct EncodedPartitionFreelistEntry;
 
 #if defined(PA_HAS_FREELIST_HARDENING)
-static_assert((1 << kMinBucketedOrder) >= 2 * sizeof(void*),
+static_assert(kSmallestBucket >= 2 * sizeof(void*),
               "Need enough space for two pointers in freelist entries");
+#endif
+
+#if BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION)
+constexpr size_t kMinimalBucketSizeWithRefCount =
+    (1 + sizeof(PartitionRefCount) + kSmallestBucket - 1) &
+    ~(kSmallestBucket - 1);
+#if defined(PA_HAS_FREELIST_HARDENING)
+static_assert(
+    kMinimalBucketSizeWithRefCount >=
+        sizeof(PartitionRefCount) + 2 * sizeof(void*),
+    "Need enough space for two pointer and one refcount in freelist entries");
+#else
+static_assert(
+    kMinimalBucketSizeWithRefCount >= sizeof(PartitionRefCount) + sizeof(void*),
+    "Need enough space for one pointer and one refcount in freelist entries");
+#endif
 #endif
 
 // Freelist entries are encoded for security reasons. See

@@ -7,7 +7,8 @@
 
 #include <windows.h>
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "base/win/atl.h"
 
 namespace updater {

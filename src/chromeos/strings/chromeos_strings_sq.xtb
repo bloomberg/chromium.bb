@@ -38,6 +38,7 @@
 <translation id="1662989795263954667">Ndaloi - Nuk ka bojë</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Zgjidhësi i DNS-së i pranishëm</translation>
+<translation id="1715359911173058521">Ka një problem komunikimi me skanerin. Kontrollo lidhjen e rrjetit ose lidhjen USB dhe provo përsëri.</translation>
 <translation id="1717874160321062422">Menaxhohet nga <ph name="FIRST_MANAGER" /> dhe <ph name="SECOND_MANAGER" /></translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1792647875738159689">Skanimi po anulohet</translation>
@@ -95,6 +96,7 @@
 <translation id="3226405216343213872">Po kërkon për skanerë</translation>
 <translation id="3246869037381808805">Printimet më të vjetra se 1 ditë do të hiqen</translation>
 <translation id="3268178239013324452">Dështoi - Kapaku i hapur</translation>
+<translation id="3283504360622356314">{0,plural, =1{Modifiko skedarin}other{Modifiko skedarët}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3310640316857623290">Vonesa e DNS-së është shumë më lart se pragu i lejueshëm</translation>
 <translation id="3328783797891415197">Testi është në ekzekutim</translation>
@@ -135,6 +137,7 @@
 <translation id="4227825898293920515">Fjalëkalimi skadon për <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nuk ka printime në vazhdim</translation>
 <translation id="4297501883039923494">Ndaloi - Gabim i panjohur</translation>
+<translation id="4344214025510306853">Lidh APN-në</translation>
 <translation id="4378373042927530923">Nuk u ekzekutua</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Disku im</translation>
@@ -162,7 +165,9 @@
 <translation id="4707579418881001319">L2TP/IPsec + certifikatë përdoruesi</translation>
 <translation id="4731797938093519117">Qasja e prindit</translation>
 <translation id="4773299976671772492">Ndaloi</translation>
+<translation id="4794140124556169553">Ekzekutimi i një testimi të CPU-së mund të ketë ndikim te cilësia e funksionimit të sistemit</translation>
 <translation id="4808449224298348341">U anulua printimi i "<ph name="DOCUMENT_TITLE" />"</translation>
+<translation id="4813345808229079766">Lidhja</translation>
 <translation id="4832079907277790330">Zgjidh dosjen në aplikacionin "Skedarët"...</translation>
 <translation id="4835901797422965222">Nuk ka asnjë rrjet aktiv</translation>
 <translation id="4848429997038228357">NË EKZEKUTIM</translation>
@@ -177,6 +182,7 @@
 <translation id="4932733599132424254">Data</translation>
 <translation id="498186245079027698">Kontrollo skanerin dhe provo përsëri. Sigurohu që të jetë hapësirë lokale të mjaftueshme për të ruajtur skedarët e skanuar.</translation>
 <translation id="4985509611418653372">Ekzekuto</translation>
+<translation id="4987769320337599931">Mur mbrojtës</translation>
 <translation id="4999333166442584738">Fshih raportin</translation>
 <translation id="500920857929044050">Ndalo testin</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -210,6 +216,7 @@
 <translation id="54609108002486618">E menaxhuar</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} përpjekje e mbetur}other{{0} përpjekje të mbetura}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
+<translation id="5499114900554609492">Skanimi nuk mund të përfundohej</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Po aktivizohet</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -224,6 +231,7 @@
 <translation id="5916084858004523819">E ndaluar</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Skedari yt është skanuar dhe është ruajtur me sukses në <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Skedarët e tu janë skanuar dhe janë ruajtur me sukses në <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Skedari nuk u gjet</translation>
+<translation id="6037291330010597344">Furnizuesi i dokumenteve i skanerit është bosh. Shto dokumente dhe provo përsëri.</translation>
 <translation id="6040143037577758943">Mbyll</translation>
 <translation id="6040852767465482106">Identiteti anonim</translation>
 <translation id="604124094241169006">Automatike</translation>
@@ -246,6 +254,7 @@
 <translation id="6302401976930124515">Testi "<ph name="TEST_NAME" />" është anuluar</translation>
 <translation id="6325525973963619867">Dështoi</translation>
 <translation id="636850387210749493">Regjistrimi i ndërmarrjes</translation>
+<translation id="6388847657025262518">Furnizuesi i dokumenteve i skanerit është bllokuar. Kontrollo furnizuesin dhe provo përsëri.</translation>
 <translation id="641081527798843608">Përputhja e subjektit</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6456394469623773452">I mirë</translation>
@@ -267,7 +276,7 @@
 <translation id="6766275201586212568">Rezolucione të dështuara të DNS-së</translation>
 <translation id="6768237774506518020">Normë e lartë e rezolucioneve të dështuara të DNS-së</translation>
 <translation id="6853312040151791195">Shpejtësia e shkarkimit</translation>
-<translation id="6898743098396957679">Skanimi nuk mund të përfundohej</translation>
+<translation id="6910312834584889076">Kapaku i skanerit është i hapur. Mbylle kapakun dhe provo përsëri.</translation>
 <translation id="6911383237894364323">Nuk mund të lidhet me serverët e medias.</translation>
 <translation id="6957231940976260713">Emri i shërbimit</translation>
 <translation id="6977381486153291903">Rishikimi i firmuerit</translation>
@@ -275,12 +284,14 @@
 <translation id="7040230719604914234">Operatori</translation>
 <translation id="7059230779847288458">Po karikohet, <ph name="TIME_VALUE" /> derisa të mbushet</translation>
 <translation id="708426984172631313">NDALOI</translation>
+<translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7143207342074048698">Po lidhet</translation>
 <translation id="7144878232160441200">Provo sërish</translation>
 <translation id="714876143603641390">Lidhshmëria e LAN-it</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7177485034254901881">Kjo pajisje <ph name="DEVICE_TYPE" /> menaxhohet nga <ph name="MANAGER" />. Administratorët mund ta konfigurojnë në distancë pajisjen.</translation>
 <translation id="7216409898977639127">Operatori celular</translation>
+<translation id="7271040990581020067">Skaneri është aktualisht në përdorim. Provo përsëri më vonë.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7343649194310845056">Pajisjet e rrjetit</translation>
 <translation id="7359657277149375382">Lloji i skedarit</translation>
@@ -306,6 +317,7 @@
 <translation id="7769672763586021400">ID-ja e modelit</translation>
 <translation id="7805768142964895445">Statusi</translation>
 <translation id="7819857487979277519">PSK (WPA ose RSN)</translation>
+<translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Lloji i ofruesit</translation>
 <translation id="7936303884198020182">Nuk u gjetën serverë DNS</translation>
 <translation id="7960831585769876809">Temperatura</translation>
@@ -335,6 +347,7 @@
 <translation id="8483248364096924578">Adresa e IP-së</translation>
 <translation id="8503813439785031346">Emri i përdoruesit</translation>
 <translation id="8503836310948963452">Edhe vetëm pak minuta...</translation>
+<translation id="8575298406870537639">Operatori celular mund të kërkojë këtë opsion për t'u lidhur me rrjetin e tij. Kontakto me operatorin celular për detaje.</translation>
 <translation id="8576249514688522074">E pafilluar</translation>
 <translation id="8620617069779373398">Statusi në roaming</translation>
 <translation id="8675354002693747642">Çelës i ndarë paraprakisht</translation>
@@ -347,6 +360,7 @@
 <translation id="8798099450830957504">I parazgjedhur</translation>
 <translation id="8798441408945964110">Emri i ofruesit</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8818152010000655963">Imazhi i sfondit</translation>
 <translation id="8845001906332463065">Kërko ndihmë</translation>
 <translation id="8881098542468797602">Testi u krye me sukses</translation>
 <translation id="8898840733695078011">Fuqia e sinjalit</translation>
@@ -364,6 +378,7 @@
 <translation id="910415269708673980">Rifresko biletën për <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Po skanon faqen <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Shkyç</translation>
+<translation id="9137526406337347448">Shërbimet e Google</translation>
 <translation id="9149391708638971077">Ekzekuto testin e memories</translation>
 <translation id="9173638680043580060">Ka mbetur më pak se një minutë</translation>
 <translation id="9190063653747922532">L2TP/IPsec + çelësi i ndarë paraprakisht</translation>

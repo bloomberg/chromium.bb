@@ -80,7 +80,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.Entries.Dropped.ByEntryHash" enum="UkmEventNameHash"
-    expires_after="2021-07-04">
+    expires_after="2021-09-12">
   <owner>jwd@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -92,7 +92,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.Entries.Recorded.ByEntryHash" enum="UkmEventNameHash"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>yrsun@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -135,7 +135,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.IOSLog.OnSuccess" units="records"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>rkaplow@chromium.org</owner>
   <summary>
     Number of times when UKM.LogSize.OnSuccess was recorded on iOS. Recorded
@@ -225,7 +225,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.ResetReason" enum="UkmResetReason"
-    expires_after="2021-07-01">
+    expires_after="2021-09-05">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>
@@ -294,7 +294,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UKM.UnsentLogs.DroppedSize" units="bytes"
-    expires_after="2021-06-27">
+    expires_after="2021-08-29">
   <owner>rkaplow@chromium.org</owner>
   <owner>ukm-team@google.com</owner>
   <summary>

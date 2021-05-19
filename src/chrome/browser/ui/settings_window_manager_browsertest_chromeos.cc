@@ -9,8 +9,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -29,6 +29,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "ui/display/types/display_constants.h"
 #include "url/gurl.h"
 
 namespace {
@@ -61,7 +62,8 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
 
   void ShowSettingsForProfile(Profile* profile) {
     settings_manager_->ShowChromePageForProfile(
-        profile, GURL(chrome::kChromeUISettingsURL));
+        profile, GURL(chrome::kChromeUISettingsURL),
+        display::kInvalidDisplayId);
   }
 
   void CloseNonDefaultBrowsers() {

@@ -7,10 +7,10 @@
 #include "ash/constants/ash_features.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/saml/mock_lock_handler.h"
-#include "chrome/browser/chromeos/login/login_pref_names.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -34,7 +34,7 @@ const char kSAMLUserEmail2[] = "bob@corp.example.com";
 constexpr base::TimeDelta kSamlOnlineShortDelay =
     base::TimeDelta::FromSeconds(10);
 
-class FakeUserManagerWithLocalState : public chromeos::FakeChromeUserManager {
+class FakeUserManagerWithLocalState : public FakeChromeUserManager {
  public:
   FakeUserManagerWithLocalState()
       : test_local_state_(std::make_unique<TestingPrefServiceSimple>()) {
@@ -190,7 +190,7 @@ TEST_F(InSessionPasswordSyncManagerTest, ReauthenticateSetOnLock) {
   EXPECT_CALL(*lock_handler_,
               SetAuthType(saml_login_account_id1_,
                           proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
-                          base::string16()))
+                          std::u16string()))
       .Times(1);
   user_manager_->SaveForceOnlineSignin(saml_login_account_id1_, true);
   manager_->MaybeForceReauthOnLockScreen(
@@ -210,7 +210,7 @@ TEST_F(InSessionPasswordSyncManagerTest, AuthenticateWithIncorrectUser) {
   EXPECT_CALL(*lock_handler_,
               SetAuthType(saml_login_account_id1_,
                           proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
-                          base::string16()))
+                          std::u16string()))
       .Times(1);
   EXPECT_CALL(*lock_handler_, Unlock(saml_login_account_id1_)).Times(0);
   user_manager_->SaveForceOnlineSignin(saml_login_account_id1_, true);
@@ -240,7 +240,7 @@ TEST_F(InSessionPasswordSyncManagerTest, AuthenticateWithCorrectUser) {
   EXPECT_CALL(*lock_handler_,
               SetAuthType(saml_login_account_id1_,
                           proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
-                          base::string16()))
+                          std::u16string()))
       .Times(1);
   EXPECT_CALL(*lock_handler_, Unlock(saml_login_account_id1_)).Times(1);
   user_manager_->SaveForceOnlineSignin(saml_login_account_id1_, true);

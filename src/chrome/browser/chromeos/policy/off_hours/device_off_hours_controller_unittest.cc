@@ -9,14 +9,13 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/power_monitor/test/fake_power_monitor_source.h"
+#include "base/test/power_monitor_test_base.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 
@@ -100,16 +99,15 @@ void SetOffHoursPolicyToProto(em::ChromeDeviceSettingsProto* proto,
 
 }  // namespace
 
-class DeviceOffHoursControllerSimpleTest
-    : public chromeos::DeviceSettingsTestBase {
+class DeviceOffHoursControllerSimpleTest : public ash::DeviceSettingsTestBase {
  protected:
   DeviceOffHoursControllerSimpleTest()
-      : chromeos::DeviceSettingsTestBase(
+      : ash::DeviceSettingsTestBase(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~DeviceOffHoursControllerSimpleTest() override = default;
 
   void SetUp() override {
-    chromeos::DeviceSettingsTestBase::SetUp();
+    ash::DeviceSettingsTestBase::SetUp();
     chromeos::SystemClockClient::InitializeFake();
     system_clock_client()->SetServiceIsAvailable(false);
 
@@ -121,7 +119,7 @@ class DeviceOffHoursControllerSimpleTest
 
   void TearDown() override {
     chromeos::SystemClockClient::Shutdown();
-    chromeos::DeviceSettingsTestBase::TearDown();
+    ash::DeviceSettingsTestBase::TearDown();
   }
 
   void UpdateDeviceSettings() {
@@ -353,7 +351,7 @@ class DeviceOffHoursControllerFakeClockTest
 
  private:
   base::SimpleTestClock test_clock_;
-  base::test::ScopedFakePowerMonitorSource fake_power_monitor_source_;
+  base::test::ScopedPowerMonitorTestSource fake_power_monitor_source_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOffHoursControllerFakeClockTest);
 };

@@ -332,7 +332,9 @@ bool ScrollableShelfContainerView::DoesIntersectRect(
   // This view's layer is clipped. So the view should only handle the events
   // within the area after cilp.
 
-  gfx::RectF bounds = gfx::RectF(scrollable_shelf_view_->visible_space());
+  // Note that |rect| is not mirrored under RTL while |visible_space_| has been
+  // mirrored.
+  gfx::RectF bounds(GetMirroredRect(scrollable_shelf_view_->visible_space()));
   views::View::ConvertRectToTarget(scrollable_shelf_view_, this, &bounds);
   return ToEnclosedRect(bounds).Contains(rect);
 }
@@ -1151,10 +1153,10 @@ const std::vector<aura::Window*> ScrollableShelfView::GetOpenWindowsForView(
   return shelf_view_->GetOpenWindowsForView(view);
 }
 
-base::string16 ScrollableShelfView::GetTitleForView(
+std::u16string ScrollableShelfView::GetTitleForView(
     const views::View* view) const {
   if (!view || !view->parent())
-    return base::string16();
+    return std::u16string();
 
   if (view->parent() == shelf_view_)
     return shelf_view_->GetTitleForView(view);
@@ -1165,7 +1167,7 @@ base::string16 ScrollableShelfView::GetTitleForView(
   if (view == right_arrow_)
     return l10n_util::GetStringUTF16(IDS_SHELF_NEXT);
 
-  return base::string16();
+  return std::u16string();
 }
 
 views::View* ScrollableShelfView::GetViewForEvent(const ui::Event& event) {

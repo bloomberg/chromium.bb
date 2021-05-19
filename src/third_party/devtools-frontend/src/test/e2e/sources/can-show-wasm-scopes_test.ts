@@ -4,15 +4,15 @@
 
 import {assert} from 'chai';
 
-import {click, getBrowserAndPages, step, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
+import {click, getBrowserAndPages, step, waitFor, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {addBreakpointForLine, getScopeNames, getValuesForScope, openSourceCodeEditorForFile, PAUSE_INDICATOR_SELECTOR, RESUME_BUTTON, waitForSourceCodeLines} from '../helpers/sources-helpers.js';
+import {addBreakpointForLine, getScopeNames, getValuesForScope, openSourceCodeEditorForFile, PAUSE_INDICATOR_SELECTOR, reloadPageAndWaitForSourceFile, RESUME_BUTTON} from '../helpers/sources-helpers.js';
 
 describe('Source Tab', async () => {
   it('shows and updates the module, local, and stack scope while pausing', async () => {
     const {frontend, target} = getBrowserAndPages();
-    const breakpointLine = 12;
-    const numberOfLines = 16;
+    const breakpointLine = '0x05f';
+    const fileName = 'scopes.wasm';
     let moduleScopeValues: string[];
     let localScopeValues: string[];
 
@@ -25,13 +25,7 @@ describe('Source Tab', async () => {
     });
 
     await step('reload the page', async () => {
-      await target.reload();
-      // FIXME(crbug/1112692): Refactor test to remove the timeout.
-      await timeout(100);
-    });
-
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
+      await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
 
     await step('check that the module, local, and stack scope appear', async () => {
@@ -39,7 +33,7 @@ describe('Source Tab', async () => {
         const names = await getScopeNames();
         return names.length === 3 ? names : undefined;
       });
-      assert.deepEqual(scopeNames, ['Stack', 'Local', 'Module']);
+      assert.deepEqual(scopeNames, ['Expression', 'Local', 'Module']);
     });
 
     await step('expand the module scope', async () => {
@@ -47,8 +41,10 @@ describe('Source Tab', async () => {
     });
 
     await step('check that the stack scope content is as expected', async () => {
-      const stackScopeValues = await getValuesForScope('Stack', 0, 0);
-      assert.deepEqual(stackScopeValues, []);
+      const stackScopeValues = await getValuesForScope('Expression', 0, 0);
+      assert.deepEqual(stackScopeValues, [
+        'stack: Stack\xA0{}',
+      ]);
     });
 
     await step('check that the local scope content is as expected', async () => {
@@ -71,7 +67,8 @@ describe('Source Tab', async () => {
         'functions: Functions\xA0{$foo: ƒ}',
         'globals: Globals\xA0{$imports.global: i32}',
         'instance: Instance\xA0{}',
-        'memories: Memories\xA0{$memory0: Memory(1)}',
+        'memories: Memories',
+        '$memory0: Memory(1)',
         'module: Module\xA0{}',
       ]);
     });
@@ -92,8 +89,10 @@ describe('Source Tab', async () => {
     });
 
     await step('check that the stack scope content is updated to reflect the change', async () => {
-      const stackScopeValues = await getValuesForScope('Stack', 0, 1);
-      assert.deepEqual(stackScopeValues, ['0: i32 {value: 24}']);
+      const stackScopeValues = await getValuesForScope('Expression', 0, 1);
+      assert.deepEqual(stackScopeValues, [
+        'stack: Stack\xA0{0: i32}',
+      ]);
     });
 
     await step('resume execution', async () => {

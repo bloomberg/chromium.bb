@@ -22,7 +22,7 @@
 GrVkResourceProvider::GrVkResourceProvider(GrVkGpu* gpu)
     : fGpu(gpu)
     , fPipelineCache(VK_NULL_HANDLE) {
-    fPipelineStateCache = new PipelineStateCache(gpu);
+    fPipelineStateCache = sk_make_sp<PipelineStateCache>(gpu);
 }
 
 GrVkResourceProvider::~GrVkResourceProvider() {
@@ -30,7 +30,6 @@ GrVkResourceProvider::~GrVkResourceProvider() {
     SkASSERT(0 == fExternalRenderPasses.count());
     SkASSERT(0 == fMSAALoadPipelines.count());
     SkASSERT(VK_NULL_HANDLE == fPipelineCache);
-    delete fPipelineStateCache;
 }
 
 VkPipelineCache GrVkResourceProvider::pipelineCache() {
@@ -266,14 +265,14 @@ GrVkPipelineState* GrVkResourceProvider::findOrCreateCompatiblePipelineState(
         const GrProgramDesc& desc,
         const GrProgramInfo& programInfo,
         VkRenderPass compatibleRenderPass,
-        GrGpu::Stats::ProgramCacheResult* stat) {
+        GrThreadSafePipelineBuilder::Stats::ProgramCacheResult* stat) {
 
     auto tmp =  fPipelineStateCache->findOrCreatePipelineState(desc, programInfo,
                                                                compatibleRenderPass, stat);
     if (!tmp) {
-        fGpu->stats()->incNumPreCompilationFailures();
+        fPipelineStateCache->stats()->incNumPreCompilationFailures();
     } else {
-        fGpu->stats()->incNumPreProgramCacheResult(*stat);
+        fPipelineStateCache->stats()->incNumPreProgramCacheResult(*stat);
     }
 
     return tmp;
@@ -294,8 +293,8 @@ sk_sp<const GrVkPipeline> GrVkResourceProvider::findOrCreateMSAALoadPipeline(
     if (!pipeline) {
         pipeline = GrVkPipeline::Make(
                 fGpu,
-                /*vertexAttribs=*/GrPrimitiveProcessor::AttributeSet(),
-                /*instanceAttribs=*/GrPrimitiveProcessor::AttributeSet(),
+                /*vertexAttribs=*/GrGeometryProcessor::AttributeSet(),
+                /*instanceAttribs=*/GrGeometryProcessor::AttributeSet(),
                 GrPrimitiveType::kTriangleStrip,
                 kTopLeft_GrSurfaceOrigin,
                 GrStencilSettings(),
@@ -399,7 +398,7 @@ void GrVkResourceProvider::recycleDescriptorSet(const GrVkDescriptorSet* descSet
 }
 
 GrVkCommandPool* GrVkResourceProvider::findOrCreateCommandPool() {
-    std::unique_lock<std::recursive_mutex> lock(fBackgroundMutex);
+    SkAutoMutexExclusive lock(fBackgroundMutex);
     GrVkCommandPool* result;
     if (fAvailableCommandPools.count()) {
         result = fAvailableCommandPools.back();
@@ -489,7 +488,7 @@ void GrVkResourceProvider::destroyResources() {
     }
     fExternalRenderPasses.reset();
 
-    // Iterate through all store GrVkSamplers and unref them before resetting the hash.
+    // Iterate through all store GrVkSamplers and unref them before resetting the hash table.
     fSamplers.foreach([&](auto* elt) { elt->unref(); });
     fSamplers.reset();
 
@@ -507,11 +506,14 @@ void GrVkResourceProvider::destroyResources() {
     }
     fActiveCommandPools.reset();
 
-    for (GrVkCommandPool* pool : fAvailableCommandPools) {
-        SkASSERT(pool->unique());
-        pool->unref();
+    {
+        SkAutoMutexExclusive lock(fBackgroundMutex);
+        for (GrVkCommandPool* pool : fAvailableCommandPools) {
+            SkASSERT(pool->unique());
+            pool->unref();
+        }
+        fAvailableCommandPools.reset();
     }
-    fAvailableCommandPools.reset();
 
     // We must release/destroy all command buffers and pipeline states before releasing the
     // GrVkDescriptorSetManagers. Additionally, we must release all uniform buffers since they hold
@@ -521,6 +523,15 @@ void GrVkResourceProvider::destroyResources() {
     }
     fDescriptorSetManagers.reset();
 
+}
+
+void GrVkResourceProvider::releaseUnlockedBackendObjects() {
+    SkAutoMutexExclusive lock(fBackgroundMutex);
+    for (GrVkCommandPool* pool : fAvailableCommandPools) {
+        SkASSERT(pool->unique());
+        pool->unref();
+    }
+    fAvailableCommandPools.reset();
 }
 
 void GrVkResourceProvider::backgroundReset(GrVkCommandPool* pool) {
@@ -548,7 +559,7 @@ void GrVkResourceProvider::reset(GrVkCommandPool* pool) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     SkASSERT(pool->unique());
     pool->reset(fGpu);
-    std::unique_lock<std::recursive_mutex> providerLock(fBackgroundMutex);
+    SkAutoMutexExclusive lock(fBackgroundMutex);
     fAvailableCommandPools.push_back(pool);
 }
 
@@ -576,7 +587,7 @@ void GrVkResourceProvider::storePipelineCacheData() {
     sk_sp<SkData> keyData = SkData::MakeWithoutCopy(&key, sizeof(uint32_t));
 
     fGpu->getContext()->priv().getPersistentCache()->store(
-            *keyData, *SkData::MakeWithoutCopy(data.get(), dataSize));
+            *keyData, *SkData::MakeWithoutCopy(data.get(), dataSize), SkString("VkPipelineCache"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

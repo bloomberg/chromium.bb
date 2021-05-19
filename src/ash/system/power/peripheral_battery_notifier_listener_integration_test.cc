@@ -5,13 +5,13 @@
 #include "ash/system/power/peripheral_battery_listener.h"
 
 #include <memory>
+#include <string>
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/system/power/peripheral_battery_notifier.h"
 #include "ash/system/power/peripheral_battery_tests.h"
 #include "ash/test/ash_test_base.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -31,13 +31,13 @@ using testing::NiceMock;
 
 namespace {
 
-const base::string16& NotificationMessagePrefix() {
-  static const base::string16 prefix(base::ASCIIToUTF16("Battery low ("));
+const std::u16string& NotificationMessagePrefix() {
+  static const std::u16string prefix(u"Battery low (");
   return prefix;
 }
 
-const base::string16& NotificationMessageSuffix() {
-  static const base::string16 suffix(base::ASCIIToUTF16("%)"));
+const std::u16string& NotificationMessageSuffix() {
+  static const std::u16string suffix(u"%)");
   return suffix;
 }
 
@@ -61,9 +61,8 @@ class PeripheralBatteryNotifierListenerTest : public AshTestBase {
   ~PeripheralBatteryNotifierListenerTest() override = default;
 
   void SetUp() override {
-    ui::DeviceDataManager::CreateInstance();
-
     AshTestBase::SetUp();
+    ASSERT_TRUE(ui::DeviceDataManager::HasInstance());
 
     // Simulate the complete listing of input devices, required by the listener.
     if (complete_devices_)
@@ -91,7 +90,6 @@ class PeripheralBatteryNotifierListenerTest : public AshTestBase {
     battery_notifier_.reset();
     battery_listener_.reset();
     AshTestBase::TearDown();
-    ui::DeviceDataManager::DeleteInstance();
   }
 
   void SendBatteryUpdate(const std::string& path,
@@ -116,7 +114,7 @@ class PeripheralBatteryNotifierListenerTest : public AshTestBase {
 
   // Extracts the battery percentage from the message of a notification.
   uint8_t ExtractBatteryPercentage(message_center::Notification* notification) {
-    const base::string16& message = notification->message();
+    const std::u16string& message = notification->message();
     EXPECT_TRUE(base::StartsWith(message, NotificationMessagePrefix(),
                                  base::CompareCase::SENSITIVE));
     EXPECT_TRUE(base::EndsWith(message, NotificationMessageSuffix(),
@@ -171,7 +169,6 @@ class PeripheralBatteryNotifierListenerIncompleteDevicesTest
 };
 
 TEST_F(PeripheralBatteryNotifierListenerTest, Basic) {
-
   // Level 50 at time 100, no low-battery notification.
   ClockAdvance(base::TimeDelta::FromSeconds(100));
   SendBatteryUpdate(kTestBatteryPath, kTestDeviceName, 50);

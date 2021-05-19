@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
@@ -43,6 +44,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/ukm_manager.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -56,8 +58,10 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
@@ -100,6 +104,7 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
+#include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -404,7 +409,9 @@ void WebFrameWidgetImpl::DragTargetDragLeave(
 void WebFrameWidgetImpl::DragTargetDrop(const WebDragData& web_drag_data,
                                         const gfx::PointF& point_in_viewport,
                                         const gfx::PointF& screen_point,
-                                        uint32_t key_modifiers) {
+                                        uint32_t key_modifiers,
+                                        base::OnceClosure callback) {
+  base::ScopedClosureRunner calllback_runner(std::move(callback));
   gfx::PointF point_in_root_frame(ViewportToRootFrame(point_in_viewport));
 
   DCHECK(current_drag_data_);
@@ -438,7 +445,9 @@ void WebFrameWidgetImpl::DragTargetDrop(const WebDragData& web_drag_data,
 
 void WebFrameWidgetImpl::DragSourceEndedAt(const gfx::PointF& point_in_viewport,
                                            const gfx::PointF& screen_point,
-                                           DragOperation operation) {
+                                           DragOperation operation,
+                                           base::OnceClosure callback) {
+  base::ScopedClosureRunner calllback_runner(std::move(callback));
   if (!local_root_) {
     // We should figure out why |local_root_| could be nullptr
     // (https://crbug.com/792345).
@@ -467,13 +476,7 @@ void WebFrameWidgetImpl::DragSourceSystemDragEnded() {
 }
 
 void WebFrameWidgetImpl::SetBackgroundOpaque(bool opaque) {
-  if (opaque) {
-    View()->ClearBaseBackgroundColorOverride();
-    View()->ClearBackgroundColorOverride();
-  } else {
-    View()->SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
-    View()->SetBackgroundColorOverride(SK_ColorTRANSPARENT);
-  }
+  View()->SetBaseBackgroundColorOverrideTransparent(!opaque);
 }
 
 void WebFrameWidgetImpl::SetTextDirection(base::i18n::TextDirection direction) {
@@ -523,9 +526,13 @@ void WebFrameWidgetImpl::BindWidgetCompositor(
 void WebFrameWidgetImpl::BindInputTargetClient(
     mojo::PendingReceiver<viz::mojom::blink::InputTargetClient> receiver) {
   DCHECK(!input_target_receiver_.is_bound());
-  input_target_receiver_.Bind(
-      std::move(receiver),
-      local_root_->GetTaskRunner(TaskType::kInternalDefault));
+  TaskType priority = TaskType::kInternalDefault;
+  if (base::FeatureList::IsEnabled(
+          blink::features::kInputTargetClientHighPriority)) {
+    priority = TaskType::kInternalInputBlocking;
+  }
+  input_target_receiver_.Bind(std::move(receiver),
+                              local_root_->GetTaskRunner(priority));
 }
 
 void WebFrameWidgetImpl::FrameSinkIdAt(const gfx::PointF& point,
@@ -643,6 +650,10 @@ WebInputEventResult WebFrameWidgetImpl::HandleKeyEvent(
     return WebInputEventResult::kNotHandled;
 
   WebInputEventResult result = frame->GetEventHandler().KeyEvent(event);
+  // EventHandler may have detached the frame.
+  if (!LocalRootImpl())
+    return result;
+
   if (result != WebInputEventResult::kNotHandled) {
     if (WebInputEvent::Type::kRawKeyDown == event.GetType()) {
       // Suppress the next keypress event unless the focused node is a plugin
@@ -1360,10 +1371,11 @@ void WebFrameWidgetImpl::UpdateVisualProperties(
   SetDisplayMode(visual_properties.display_mode);
 
   if (ForMainFrame()) {
-    SetAutoResizeMode(visual_properties.auto_resize_enabled,
-                      visual_properties.min_size_for_auto_resize,
-                      visual_properties.max_size_for_auto_resize,
-                      visual_properties.screen_info.device_scale_factor);
+    SetAutoResizeMode(
+        visual_properties.auto_resize_enabled,
+        visual_properties.min_size_for_auto_resize,
+        visual_properties.max_size_for_auto_resize,
+        visual_properties.screen_infos.current().device_scale_factor);
   }
 
   bool capture_sequence_number_changed =
@@ -1382,7 +1394,9 @@ void WebFrameWidgetImpl::UpdateVisualProperties(
   }
 
   if (!View()->AutoResizeMode()) {
-    if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_) {
+    // This needs to run before ApplyVisualPropertiesSizing below,
+    // which updates the current set of screen_infos from visual properties.
+    if (DidChangeFullscreenState(visual_properties)) {
       is_fullscreen_granted_ = visual_properties.is_fullscreen_granted;
       if (is_fullscreen_granted_)
         View()->DidEnterFullscreen();
@@ -1467,15 +1481,24 @@ void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(
     if (AutoResizeMode()) {
       new_compositor_viewport_pixel_rect = gfx::Rect(gfx::ScaleToCeiledSize(
           widget_base_->BlinkSpaceToFlooredDIPs(size_.value_or(gfx::Size())),
-          visual_properties.screen_info.device_scale_factor));
+          visual_properties.screen_infos.current().device_scale_factor));
     }
   }
 
   SetWindowSegments(visual_properties.root_widget_window_segments);
 
+  const bool screen_infos_changed =
+      widget_base_->screen_infos() != visual_properties.screen_infos;
+
   widget_base_->UpdateSurfaceAndScreenInfo(
       visual_properties.local_surface_id.value_or(viz::LocalSurfaceId()),
-      new_compositor_viewport_pixel_rect, visual_properties.screen_info);
+      new_compositor_viewport_pixel_rect, visual_properties.screen_infos);
+
+  if (screen_infos_changed) {
+    LocalFrame* frame = LocalRootImpl()->GetFrame();
+    CoreInitializer::GetInstance().NotifyScreensChanged(*frame);
+    // TODO(crbug.com/1182855): Propagate info and events to remote frames.
+  }
 
   // Store this even when auto-resizing, it is the size of the full viewport
   // used for clipping, and this value is propagated down the Widget
@@ -1508,6 +1531,18 @@ void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(
 
     Resize(widget_base_->DIPsToCeiledBlinkSpace(visual_properties.new_size));
   }
+}
+
+bool WebFrameWidgetImpl::DidChangeFullscreenState(
+    const VisualProperties& visual_properties) const {
+  if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_)
+    return true;
+  // If changing fullscreen from one display to another, the fullscreen
+  // granted state will not change, but we still need to resolve promises
+  // by considering this a change.
+  return visual_properties.is_fullscreen_granted &&
+         widget_base_->screen_infos().current().display_id !=
+             visual_properties.screen_infos.current().display_id;
 }
 
 int WebFrameWidgetImpl::GetLayerTreeId() {
@@ -1624,9 +1659,10 @@ void WebFrameWidgetImpl::SetDeviceColorSpaceForTesting(
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   widget_base_->LayerTreeHost()->RequestNewLocalSurfaceId();
 
-  blink::ScreenInfo info = widget_base_->GetScreenInfo();
-  info.display_color_spaces = gfx::DisplayColorSpaces(color_space);
-  widget_base_->UpdateScreenInfo(info);
+  blink::ScreenInfos screen_infos = widget_base_->screen_infos();
+  for (blink::ScreenInfo& screen_info : screen_infos.screen_infos)
+    screen_info.display_color_spaces = gfx::DisplayColorSpaces(color_space);
+  widget_base_->UpdateScreenInfo(screen_infos);
 }
 
 // TODO(665924): Remove direct dispatches of mouse events from
@@ -1736,7 +1772,7 @@ void WebFrameWidgetImpl::EnableDeviceEmulation(
     gfx::Size size_in_dips = widget_base_->BlinkSpaceToFlooredDIPs(Size());
 
     device_emulator_ = MakeGarbageCollected<ScreenMetricsEmulator>(
-        this, widget_base_->GetScreenInfo(), size_in_dips,
+        this, widget_base_->screen_infos(), size_in_dips,
         widget_base_->VisibleViewportSizeInDIPs(),
         widget_base_->WidgetScreenRect(), widget_base_->WindowScreenRect());
   }
@@ -1879,15 +1915,18 @@ void WebFrameWidgetImpl::ResetMeaningfulLayoutStateForMainFrame() {
 void WebFrameWidgetImpl::InitializeCompositing(
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
-    const ScreenInfo& screen_info,
+    const ScreenInfos& screen_infos,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
-    const cc::LayerTreeSettings* settings) {
+    const cc::LayerTreeSettings* settings,
+    gfx::RenderingPipeline* main_thread_pipeline,
+    gfx::RenderingPipeline* compositor_thread_pipeline) {
   DCHECK(View()->does_composite());
   DCHECK(!non_composited_client_);  // Assure only one initialize is called.
   widget_base_->InitializeCompositing(
       agent_group_scheduler, task_graph_runner, is_for_child_local_root_,
-      screen_info, std::move(ukm_recorder_factory), settings,
-      input_handler_weak_ptr_factory_.GetWeakPtr());
+      screen_infos, std::move(ukm_recorder_factory), settings,
+      input_handler_weak_ptr_factory_.GetWeakPtr(), main_thread_pipeline,
+      compositor_thread_pipeline);
 
   LocalFrameView* frame_view;
   if (is_for_child_local_root_) {
@@ -1908,8 +1947,7 @@ void WebFrameWidgetImpl::InitializeNonCompositing(
   DCHECK(!non_composited_client_);
   DCHECK(client);
   DCHECK(!View()->does_composite());
-  // Assure only one initialize is called.
-  DCHECK(!widget_base_->IsComposited());
+  widget_base_->InitializeNonCompositing();
   non_composited_client_ = client;
 }
 
@@ -2542,13 +2580,13 @@ float WebFrameWidgetImpl::PageScaleInMainFrame() {
 void WebFrameWidgetImpl::UpdateSurfaceAndScreenInfo(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Rect& compositor_viewport_pixel_rect,
-    const ScreenInfo& new_screen_info) {
+    const ScreenInfos& new_screen_infos) {
   widget_base_->UpdateSurfaceAndScreenInfo(
-      new_local_surface_id, compositor_viewport_pixel_rect, new_screen_info);
+      new_local_surface_id, compositor_viewport_pixel_rect, new_screen_infos);
 }
 
-void WebFrameWidgetImpl::UpdateScreenInfo(const ScreenInfo& new_screen_info) {
-  widget_base_->UpdateScreenInfo(new_screen_info);
+void WebFrameWidgetImpl::UpdateScreenInfo(const ScreenInfos& new_screen_infos) {
+  widget_base_->UpdateScreenInfo(new_screen_infos);
 }
 
 void WebFrameWidgetImpl::UpdateSurfaceAndCompositorRect(
@@ -2565,6 +2603,22 @@ void WebFrameWidgetImpl::UpdateCompositorViewportRect(
 
 const ScreenInfo& WebFrameWidgetImpl::GetScreenInfo() {
   return widget_base_->GetScreenInfo();
+}
+
+const ScreenInfos& WebFrameWidgetImpl::GetScreenInfos() {
+  return widget_base_->screen_infos();
+}
+
+const ScreenInfo& WebFrameWidgetImpl::GetOriginalScreenInfo() {
+  if (device_emulator_)
+    return device_emulator_->GetOriginalScreenInfo();
+  return widget_base_->GetScreenInfo();
+}
+
+const ScreenInfos& WebFrameWidgetImpl::GetOriginalScreenInfos() {
+  if (device_emulator_)
+    return device_emulator_->original_screen_infos();
+  return widget_base_->screen_infos();
 }
 
 gfx::Rect WebFrameWidgetImpl::WindowRect() {
@@ -2724,7 +2778,7 @@ WebFrameWidgetImpl::EnsureCompositorPaintDispatcher(
 }
 
 void WebFrameWidgetImpl::SetDelegatedInkMetadata(
-    std::unique_ptr<viz::DelegatedInkMetadata> metadata) {
+    std::unique_ptr<gfx::DelegatedInkMetadata> metadata) {
   widget_base_->LayerTreeHost()->SetDelegatedInkMetadata(std::move(metadata));
 }
 
@@ -2982,6 +3036,7 @@ void WebFrameWidgetImpl::ResetVirtualKeyboardVisibilityRequest() {
 bool WebFrameWidgetImpl::GetSelectionBoundsInWindow(
     gfx::Rect* focus,
     gfx::Rect* anchor,
+    gfx::Rect* bounding_box,
     base::i18n::TextDirection* focus_dir,
     base::i18n::TextDirection* anchor_dir,
     bool* is_anchor_first) {
@@ -3000,17 +3055,22 @@ bool WebFrameWidgetImpl::GetSelectionBoundsInWindow(
   }
   gfx::Rect focus_root_frame;
   gfx::Rect anchor_root_frame;
-  CalculateSelectionBounds(focus_root_frame, anchor_root_frame);
+  gfx::Rect bounding_box_root_frame;
+  CalculateSelectionBounds(focus_root_frame, anchor_root_frame,
+                           &bounding_box_root_frame);
   gfx::Rect focus_rect_in_dips =
       widget_base_->BlinkSpaceToEnclosedDIPs(gfx::Rect(focus_root_frame));
   gfx::Rect anchor_rect_in_dips =
       widget_base_->BlinkSpaceToEnclosedDIPs(gfx::Rect(anchor_root_frame));
+  gfx::Rect bounding_box_in_dips = widget_base_->BlinkSpaceToEnclosedDIPs(
+      gfx::Rect(bounding_box_root_frame));
 
   // if the bounds are the same return false.
   if (focus_rect_in_dips == *focus && anchor_rect_in_dips == *anchor)
     return false;
   *focus = focus_rect_in_dips;
   *anchor = anchor_rect_in_dips;
+  *bounding_box = bounding_box_in_dips;
 
   WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
   if (!focused_frame)
@@ -3575,15 +3635,18 @@ void WebFrameWidgetImpl::ForEachRemoteFrameControlledByWidget(
                                                callback);
 }
 
-void WebFrameWidgetImpl::CalculateSelectionBounds(gfx::Rect& anchor_root_frame,
-                                                  gfx::Rect& focus_root_frame) {
+void WebFrameWidgetImpl::CalculateSelectionBounds(
+    gfx::Rect& anchor_root_frame,
+    gfx::Rect& focus_root_frame,
+    gfx::Rect* bounding_box_in_root_frame) {
   const LocalFrame* local_frame = FocusedLocalFrameInWidget();
   if (!local_frame)
     return;
 
   IntRect anchor;
   IntRect focus;
-  if (!local_frame->Selection().ComputeAbsoluteBounds(anchor, focus))
+  auto& selection = local_frame->Selection();
+  if (!selection.ComputeAbsoluteBounds(anchor, focus))
     return;
 
   // Apply the visual viewport for main frames this will apply the page scale.
@@ -3594,6 +3657,15 @@ void WebFrameWidgetImpl::CalculateSelectionBounds(gfx::Rect& anchor_root_frame,
       local_frame->View()->ConvertToRootFrame(anchor));
   focus_root_frame = visual_viewport.RootFrameToViewport(
       local_frame->View()->ConvertToRootFrame(focus));
+
+  // Calculate the bounding box of the selection area.
+  if (bounding_box_in_root_frame) {
+    const IntRect bounding_box = EnclosingIntRect(
+        CreateRange(selection.GetSelectionInDOMTree().ComputeRange())
+            ->BoundingRect());
+    *bounding_box_in_root_frame = visual_viewport.RootFrameToViewport(
+        local_frame->View()->ConvertToRootFrame(bounding_box));
+  }
 }
 
 void WebFrameWidgetImpl::BatterySavingsChanged(BatterySavingsFlags savings) {
@@ -3631,13 +3703,13 @@ void WebFrameWidgetImpl::SetScreenMetricsEmulationParameters(
 }
 
 void WebFrameWidgetImpl::SetScreenInfoAndSize(
-    const ScreenInfo& screen_info,
+    const ScreenInfos& screen_infos,
     const gfx::Size& widget_size_in_dips,
     const gfx::Size& visible_viewport_size_in_dips) {
   // Emulation happens on regular main frames which don't use auto-resize mode.
   DCHECK(!AutoResizeMode());
 
-  UpdateScreenInfo(screen_info);
+  UpdateScreenInfo(screen_infos);
   widget_base_->SetVisibleViewportSizeInDIPs(visible_viewport_size_in_dips);
   Resize(widget_base_->DIPsToCeiledBlinkSpace(widget_size_in_dips));
 }
@@ -3712,6 +3784,16 @@ void WebFrameWidgetImpl::SetPageScaleStateAndLimits(
   }
 }
 
+void WebFrameWidgetImpl::UpdateViewportDescription(
+    const ViewportDescription& viewport) {
+  bool is_device_width = viewport.max_width.IsDeviceWidth();
+  bool is_zoom_at_least_one = viewport.zoom >= 1.0 || viewport.min_zoom >= 1;
+  widget_base_->LayerTreeHost()->UpdateViewportIsMobileOptimized(
+      (is_device_width && is_zoom_at_least_one) ||
+      (is_device_width && !viewport.zoom_is_explicit) ||
+      (viewport.max_width.IsAuto() && is_zoom_at_least_one));
+}
+
 bool WebFrameWidgetImpl::UpdateScreenRects(
     const gfx::Rect& widget_screen_rect,
     const gfx::Rect& window_screen_rect) {
@@ -3774,12 +3856,6 @@ gfx::Rect WebFrameWidgetImpl::ViewportVisibleRect() {
   } else {
     return child_data().compositor_visible_rect;
   }
-}
-
-const ScreenInfo& WebFrameWidgetImpl::GetOriginalScreenInfo() {
-  if (device_emulator_)
-    return device_emulator_->original_screen_info();
-  return widget_base_->GetScreenInfo();
 }
 
 base::Optional<blink::mojom::ScreenOrientation>
@@ -3928,11 +4004,11 @@ void WebFrameWidgetImpl::SetDeviceScaleFactorForTesting(float factor) {
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   widget_base_->LayerTreeHost()->RequestNewLocalSurfaceId();
 
-  ScreenInfo info = widget_base_->GetScreenInfo();
-  info.device_scale_factor = factor;
+  ScreenInfos screen_infos = widget_base_->screen_infos();
+  screen_infos.mutable_current().device_scale_factor = factor;
   gfx::Size size_with_dsf = gfx::ScaleToCeiledSize(size_in_dips, factor);
   widget_base_->UpdateCompositorViewportAndScreenInfo(gfx::Rect(size_with_dsf),
-                                                      info);
+                                                      screen_infos);
   if (!AutoResizeMode()) {
     // This picks up the new device scale factor as
     // `UpdateCompositorViewportAndScreenInfo()` has applied a new value.
@@ -4054,7 +4130,7 @@ void WebFrameWidgetImpl::SetWindowRectSynchronously(
       widget_base_->GetScreenInfo().device_scale_factor));
   widget_base_->UpdateSurfaceAndScreenInfo(
       widget_base_->local_surface_id_from_parent(),
-      compositor_viewport_pixel_rect, widget_base_->GetScreenInfo());
+      compositor_viewport_pixel_rect, widget_base_->screen_infos());
 
   Resize(new_window_rect.size());
   widget_base_->SetScreenRects(new_window_rect, new_window_rect);

@@ -66,6 +66,7 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::WINDOW_PLACEMENT:
     case PermissionType::FONT_ACCESS:
     case PermissionType::DISPLAY_CAPTURE:
+    case PermissionType::FILE_HANDLING:
       return base::nullopt;
   }
 }
@@ -261,7 +262,7 @@ void PermissionControllerImpl::UpdateDelegateOverridesForDevTools(
   delegate->SetPermissionOverridesForDevTools(origin, current_overrides);
 }
 
-int PermissionControllerImpl::RequestPermission(
+void PermissionControllerImpl::RequestPermission(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -274,21 +275,20 @@ int PermissionControllerImpl::RequestPermission(
                                          permission);
   if (status_override.has_value()) {
     std::move(callback).Run(*status_override);
-    return kNoPendingOperation;
+    return;
   }
 
   PermissionControllerDelegate* delegate =
       browser_context_->GetPermissionControllerDelegate();
   if (!delegate) {
     std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
-    return kNoPendingOperation;
+    return;
   }
-  return delegate->RequestPermission(permission, render_frame_host,
-                                     requesting_origin, user_gesture,
-                                     std::move(callback));
+  delegate->RequestPermission(permission, render_frame_host, requesting_origin,
+                              user_gesture, std::move(callback));
 }
 
-int PermissionControllerImpl::RequestPermissions(
+void PermissionControllerImpl::RequestPermissions(
     const std::vector<PermissionType>& permissions,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -313,7 +313,7 @@ int PermissionControllerImpl::RequestPermissions(
                                 std::move(callback), results);
   if (permissions_without_overrides.empty()) {
     std::move(wrapper).Run({});
-    return kNoPendingOperation;
+    return;
   }
 
   // Use delegate to find statuses of other permissions that have been requested
@@ -324,11 +324,11 @@ int PermissionControllerImpl::RequestPermissions(
     std::move(wrapper).Run(std::vector<blink::mojom::PermissionStatus>(
         permissions_without_overrides.size(),
         blink::mojom::PermissionStatus::DENIED));
-    return kNoPendingOperation;
+    return;
   }
-  return delegate->RequestPermissions(permissions_without_overrides,
-                                      render_frame_host, requesting_origin,
-                                      user_gesture, std::move(wrapper));
+  delegate->RequestPermissions(permissions_without_overrides, render_frame_host,
+                               requesting_origin, user_gesture,
+                               std::move(wrapper));
 }
 
 blink::mojom::PermissionStatus PermissionControllerImpl::GetPermissionStatus(

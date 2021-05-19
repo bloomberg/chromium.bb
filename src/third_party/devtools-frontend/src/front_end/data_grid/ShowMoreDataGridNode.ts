@@ -30,19 +30,23 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as i18n from '../i18n/i18n.js';
+import * as i18n from '../core/i18n/i18n.js';
 
 import {DataGridNode} from './DataGrid.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
-  *@description In a data grid, for a list of items with omitted items, display the first N omitted items
-  *@example {5} PH1
+  * @description Shown in a table when there are too many results to show directly. The user can
+  * click this button to show more results. This will result in the UI showing X more results before
+  * the current position.
+  * @example {5} PH1
   */
   showDBefore: 'Show {PH1} before',
   /**
-  *@description In a data grid, for a list of items with omitted items, display the last N omitted items
-  *@example {5} PH1
+  * @description Shown in a table when there are too many results to show directly. The user can
+  * click this button to show more results. This will result in the UI showing X more results after
+  * the current position.
+  * @example {5} PH1
   */
   showDAfter: 'Show {PH1} after',
   /**

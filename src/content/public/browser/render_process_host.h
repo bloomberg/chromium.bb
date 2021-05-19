@@ -46,6 +46,7 @@
 #include "third_party/blink/public/mojom/permissions/permission.mojom-forward.h"
 #include "third_party/blink/public/mojom/quota/quota_manager_host.mojom-forward.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-forward.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
@@ -195,11 +196,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns the storage partition associated with this process.
   virtual StoragePartition* GetStoragePartition() = 0;
 
-  // Try to shut down the associated renderer process without running unload
-  // handlers, etc, giving it the specified exit code.  Returns true
-  // if it was able to shut down.  On Windows, this must not be called before
-  // RenderProcessReady was called on a RenderProcessHostObserver, otherwise
-  // RenderProcessExited may never be called.
+  // Terminate the associated renderer process without running unload handlers,
+  // waiting for the process to exit, etc. If supported by the OS, set the
+  // process exit code to |exit_code|. Returns false if the shutdown request
+  // will not be dispatched. If called before
+  // RenderProcessHostObserver::RenderProcessReady,
+  // RenderProcessHostObserver::RenderProcessExited may never be called since
+  // Shutdown() will race with child process startup.
   virtual bool Shutdown(int exit_code) = 0;
 
   // Returns true if shutdown was started by calling |Shutdown()|.
@@ -339,11 +342,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       bool incoming,
       bool outgoing,
       WebRtcRtpPacketCallback packet_callback) = 0;
-
-  // Start/stop event log output from WebRTC on this RPH for the peer connection
-  // identified locally within the RPH using the ID |lid|.
-  virtual void EnableWebRtcEventLogOutput(int lid, int output_period_ms) = 0;
-  virtual void DisableWebRtcEventLogOutput(int lid) = 0;
 
   // Asks the renderer process to bind |receiver|. |receiver| arrives in the
   // renderer process and is carried through the following flow, stopping if any
@@ -548,6 +546,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // the BrowserContext they are associated with.
   virtual std::string GetInfoForBrowserContextDestructionCrashReporting() = 0;
 
+  // Write a representation of this object into a trace.
+  virtual void WriteIntoTracedValue(perfetto::TracedValue context) = 0;
+
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   // Ask the renderer process to dump its profiling data to disk. Invokes
   // |callback| once this has completed.
@@ -598,6 +599,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // This also calls out to ContentBrowserClient::GetApplicationLocale and
   // modifies the current process' command line.
+  // NOTE: This function is fundamentally unsafe and *should not be used*. By
+  // the time a ContentBrowserClient exists in test fixtures, it is already
+  // unsafe to modify the command-line. The command-line should only be modified
+  // from SetUpCommandLine, which is before the ContentClient is created. See
+  // crbug.com/1197147
   static void SetRunRendererInProcess(bool value);
 
   // This forces a renderer that is running "in process" to shut down.

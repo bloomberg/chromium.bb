@@ -166,7 +166,7 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
   // TODO(lukasza): Only get messages from the specific |render_frame_host|.
   DOMMessageQueue dom_message_queue(render_frame_host);
 
-  base::string16 script16 = base::UTF8ToUTF16(script);
+  std::u16string script16 = base::UTF8ToUTF16(script);
   if (world_id == ISOLATED_WORLD_ID_GLOBAL && user_gesture) {
     render_frame_host->ExecuteJavaScriptWithUserGestureForTests(script16,
                                                                 world_id);
@@ -814,7 +814,7 @@ void PrepContentsForBeforeUnloadTest(WebContents* web_contents,
                                      bool trigger_user_activation) {
   for (auto* frame : web_contents->GetAllFrames()) {
     if (trigger_user_activation)
-      frame->ExecuteJavaScriptWithUserGestureForTests(base::string16());
+      frame->ExecuteJavaScriptWithUserGestureForTests(std::u16string());
 
     // Disable the hang monitor, otherwise there will be a race between the
     // beforeunload dialog and the beforeunload hang timer.
@@ -1675,11 +1675,6 @@ testing::AssertionResult ExecJs(const ToRenderFrameHost& execution_target,
   CHECK(!(options & EXECUTE_SCRIPT_USE_MANUAL_REPLY))
       << "USE_MANUAL_REPLY does not make sense with ExecJs.";
 
-  // ExecJs() doesn't care about the result, so disable promise resolution.
-  // Instead of using ExecJs() to wait for an async event, callers may use
-  // EvalJs() with a sentinel result value like "success".
-  options |= EXECUTE_SCRIPT_NO_RESOLVE_PROMISES;
-
   // TODO(nick): Do we care enough about folks shooting themselves in the foot
   // here with e.g. ASSERT_TRUE(ExecJs("window == window.top")) -- when they
   // mean EvalJs -- to fail a CHECK() when eval_result.value.is_bool()?
@@ -2321,18 +2316,18 @@ RenderFrameMetadataProviderImpl* RenderFrameMetadataProviderFromWebContents(
 }  // namespace
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,
-                           const base::string16& expected_title)
+                           const std::u16string& expected_title)
     : WebContentsObserver(web_contents) {
   expected_titles_.push_back(expected_title);
 }
 
-void TitleWatcher::AlsoWaitForTitle(const base::string16& expected_title) {
+void TitleWatcher::AlsoWaitForTitle(const std::u16string& expected_title) {
   expected_titles_.push_back(expected_title);
 }
 
 TitleWatcher::~TitleWatcher() = default;
 
-const base::string16& TitleWatcher::WaitAndGetTitle() {
+const std::u16string& TitleWatcher::WaitAndGetTitle() {
   TestTitle();
   run_loop_.Run();
   return observed_title_;
@@ -2351,7 +2346,7 @@ void TitleWatcher::TitleWasSet(NavigationEntry* entry) {
 }
 
 void TitleWatcher::TestTitle() {
-  const base::string16& current_title = web_contents()->GetTitle();
+  const std::u16string& current_title = web_contents()->GetTitle();
   if (base::Contains(expected_titles_, current_title)) {
     observed_title_ = current_title;
     run_loop_.Quit();
@@ -3119,10 +3114,10 @@ std::string WebContentsConsoleObserver::GetMessageAt(size_t index) const {
 void WebContentsConsoleObserver::OnDidAddMessageToConsole(
     RenderFrameHost* source_frame,
     blink::mojom::ConsoleMessageLevel log_level,
-    const base::string16& message_contents,
+    const std::u16string& message_contents,
     int32_t line_no,
-    const base::string16& source_id,
-    const base::Optional<base::string16>& untrusted_stack_trace) {
+    const std::u16string& source_id,
+    const base::Optional<std::u16string>& untrusted_stack_trace) {
   Message message(
       {source_frame, log_level, message_contents, line_no, source_id});
   if (filter_ && !filter_.Run(message))
@@ -3191,7 +3186,7 @@ void PwnMessageHelper::FileSystemWrite(RenderProcessHost* process,
 
 void PwnMessageHelper::OpenURL(RenderFrameHost* render_frame_host,
                                const GURL& url) {
-  auto params = content::mojom::OpenURLParams::New();
+  auto params = blink::mojom::OpenURLParams::New();
   params->url = url;
   params->disposition = WindowOpenDisposition::CURRENT_TAB;
   params->should_replace_current_entry = false;
@@ -3366,13 +3361,11 @@ int LoadBasicRequest(
     network::mojom::URLLoaderFactory* url_loader_factory,
     const GURL& url,
     int load_flags,
-    const base::Optional<url::Origin>& request_initiator = base::nullopt,
-    int render_frame_id = MSG_ROUTING_NONE) {
+    const base::Optional<url::Origin>& request_initiator = base::nullopt) {
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
   request->load_flags = load_flags;
   request->request_initiator = request_initiator;
-  request->render_frame_id = render_frame_id;
   // Allow access to SameSite cookies in tests.
   request->site_for_cookies = net::SiteForCookies::FromUrl(url);
 
@@ -3418,8 +3411,7 @@ int LoadBasicRequest(RenderFrameHost* frame, const GURL& url) {
       url_loader_factory.BindNewPipeAndPassReceiver());
   return LoadBasicRequest(
       url_loader_factory.get(), url, 0 /* load_flags */,
-      frame->GetLastCommittedOrigin() /* request_initiator */,
-      frame->GetRoutingID());
+      frame->GetLastCommittedOrigin() /* request_initiator */);
 }
 
 void EnsureCookiesFlushed(BrowserContext* browser_context) {

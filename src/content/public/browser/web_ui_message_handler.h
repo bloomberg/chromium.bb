@@ -5,12 +5,12 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_UI_MESSAGE_HANDLER_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_UI_MESSAGE_HANDLER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/check.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_ui.h"
@@ -74,7 +74,7 @@ class CONTENT_EXPORT WebUIMessageHandler {
                                  double* out_value);
 
   // Extract a string value from a list Value.
-  static base::string16 ExtractStringValue(const base::ListValue* value);
+  static std::u16string ExtractStringValue(const base::ListValue* value);
 
   // This is where subclasses specify which messages they'd like to handle and
   // perform any additional initialization.. At this point web_ui() will return

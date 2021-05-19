@@ -8,20 +8,10 @@
 
 namespace quic {
 
-namespace {
-
-std::string GetRequestHandlerKey(
-    const QuicSimpleServerBackend::RequestHandler* request_handler) {
-  return absl::StrCat(request_handler->connection_id().ToString(), "_",
-                      request_handler->stream_id(), "_",
-                      request_handler->peer_host());
-}
-
-}  // namespace
-
-MasqueServerBackend::MasqueServerBackend(const std::string& server_authority,
+MasqueServerBackend::MasqueServerBackend(MasqueMode masque_mode,
+                                         const std::string& server_authority,
                                          const std::string& cache_directory)
-    : server_authority_(server_authority) {
+    : masque_mode_(masque_mode), server_authority_(server_authority) {
   if (!cache_directory.empty()) {
     QuicMemoryCacheBackend::InitializeBackend(cache_directory);
   }
@@ -31,28 +21,40 @@ bool MasqueServerBackend::MaybeHandleMasqueRequest(
     const spdy::Http2HeaderBlock& request_headers,
     const std::string& request_body,
     QuicSimpleServerBackend::RequestHandler* request_handler) {
-  auto path_pair = request_headers.find(":path");
   auto method_pair = request_headers.find(":method");
-  auto scheme_pair = request_headers.find(":scheme");
-  if (path_pair == request_headers.end() ||
-      method_pair == request_headers.end() ||
-      scheme_pair == request_headers.end()) {
-    // This request is missing required headers.
+  if (method_pair == request_headers.end()) {
+    // Request is missing a method.
     return false;
   }
-  absl::string_view path = path_pair->second;
-  absl::string_view scheme = scheme_pair->second;
   absl::string_view method = method_pair->second;
-  if (scheme != "https" || method != "POST" || request_body.empty()) {
-    // MASQUE requests MUST be a non-empty https POST.
-    return false;
-  }
+  std::string masque_path = "";
+  if (masque_mode_ == MasqueMode::kLegacy) {
+    auto path_pair = request_headers.find(":path");
+    auto scheme_pair = request_headers.find(":scheme");
+    if (path_pair == request_headers.end() ||
+        scheme_pair == request_headers.end()) {
+      // This request is missing required headers.
+      return false;
+    }
+    absl::string_view path = path_pair->second;
+    absl::string_view scheme = scheme_pair->second;
+    if (scheme != "https" || method != "POST" || request_body.empty()) {
+      // MASQUE requests MUST be a non-empty https POST.
+      return false;
+    }
 
-  if (path.rfind("/.well-known/masque/", 0) != 0) {
-    // This request is not a MASQUE path.
-    return false;
+    if (path.rfind("/.well-known/masque/", 0) != 0) {
+      // This request is not a MASQUE path.
+      return false;
+    }
+    masque_path = std::string(path.substr(sizeof("/.well-known/masque/") - 1));
+  } else {
+    QUICHE_DCHECK_EQ(masque_mode_, MasqueMode::kOpen);
+    if (method != "CONNECT-UDP") {
+      // This is not a MASQUE request.
+      return false;
+    }
   }
-  std::string masque_path(path.substr(sizeof("/.well-known/masque/") - 1));
 
   if (!server_authority_.empty()) {
     auto authority_pair = request_headers.find(":authority");
@@ -67,34 +69,29 @@ bool MasqueServerBackend::MaybeHandleMasqueRequest(
     }
   }
 
-  auto backend_client_pair =
-      backend_clients_.find(request_handler->connection_id());
-  if (backend_client_pair == backend_clients_.end()) {
+  auto it = backend_client_states_.find(request_handler->connection_id());
+  if (it == backend_client_states_.end()) {
     QUIC_LOG(ERROR) << "Could not find backend client for "
-                    << GetRequestHandlerKey(request_handler) << " "
                     << masque_path << request_headers.DebugString();
     return false;
   }
 
-  BackendClient* backend_client = backend_client_pair->second;
+  BackendClient* backend_client = it->second.backend_client;
 
   std::unique_ptr<QuicBackendResponse> response =
       backend_client->HandleMasqueRequest(masque_path, request_headers,
                                           request_body, request_handler);
   if (response == nullptr) {
     QUIC_LOG(ERROR) << "Backend client did not process request for "
-                    << GetRequestHandlerKey(request_handler) << " "
                     << masque_path << request_headers.DebugString();
     return false;
   }
 
   QUIC_DLOG(INFO) << "Sending MASQUE response for "
-                  << GetRequestHandlerKey(request_handler) << " " << masque_path
                   << request_headers.DebugString();
 
   request_handler->OnResponseBackendComplete(response.get(), {});
-  active_response_map_[GetRequestHandlerKey(request_handler)] =
-      std::move(response);
+  it->second.responses.emplace_back(std::move(response));
 
   return true;
 }
@@ -109,7 +106,6 @@ void MasqueServerBackend::FetchResponseFromBackend(
     return;
   }
   QUIC_DLOG(INFO) << "Fetching non-MASQUE response for "
-                  << GetRequestHandlerKey(request_handler)
                   << request_headers.DebugString();
   QuicMemoryCacheBackend::FetchResponseFromBackend(
       request_headers, request_body, request_handler);
@@ -117,23 +113,23 @@ void MasqueServerBackend::FetchResponseFromBackend(
 
 void MasqueServerBackend::CloseBackendResponseStream(
     QuicSimpleServerBackend::RequestHandler* request_handler) {
-  QUIC_DLOG(INFO) << "Closing response stream for "
-                  << GetRequestHandlerKey(request_handler);
-  active_response_map_.erase(GetRequestHandlerKey(request_handler));
+  QUIC_DLOG(INFO) << "Closing response stream";
   QuicMemoryCacheBackend::CloseBackendResponseStream(request_handler);
 }
 
 void MasqueServerBackend::RegisterBackendClient(QuicConnectionId connection_id,
                                                 BackendClient* backend_client) {
-  QUIC_BUG_IF(backend_clients_.find(connection_id) != backend_clients_.end())
-      << connection_id << " already in backend clients map";
-  backend_clients_[connection_id] = backend_client;
   QUIC_DLOG(INFO) << "Registering backend client for " << connection_id;
+  QUIC_BUG_IF(quic_bug_12005_1, backend_client_states_.find(connection_id) !=
+                                    backend_client_states_.end())
+      << connection_id << " already in backend clients map";
+  backend_client_states_[connection_id] =
+      BackendClientState{backend_client, {}};
 }
 
 void MasqueServerBackend::RemoveBackendClient(QuicConnectionId connection_id) {
-  backend_clients_.erase(connection_id);
   QUIC_DLOG(INFO) << "Removing backend client for " << connection_id;
+  backend_client_states_.erase(connection_id);
 }
 
 }  // namespace quic

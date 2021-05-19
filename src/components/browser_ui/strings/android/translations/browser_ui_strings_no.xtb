@@ -23,6 +23,7 @@
 <translation id="1509960214886564027">Det kan hende at funksjoner på mange nettsteder slutter å fungere</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1644574205037202324">Logg</translation>
+<translation id="1647582022260550163">Er du sikker på at du vil tilbakestille tillatelser og slette informasjonskapsler og nettstedsdata?</translation>
 <translation id="1660204651932907780">Tillat nettsteder å spille av lyd (anbefales)</translation>
 <translation id="1677097821151855053">Informasjonskapsler og andre nettstedsdata brukes til å huske deg, for eksempel for å logge deg på eller for å vise deg personlig tilpassede annonser. For å administrere informasjonskapsler for alle nettsteder, se <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Vil du fjerne nettstedsdata?</translation>
@@ -92,7 +93,6 @@
 <translation id="3386292677130313581">Spør før nettsteder får vite posisjonen min (anbefales)</translation>
 <translation id="3538390592868664640">Blokkér nettsteder fra å lage 3D-kart av omgivelsene dine eller spore kameraposisjonen</translation>
 <translation id="3586500876634962664">Kamera- og mikrofonbruk</translation>
-<translation id="3587482841069643663">Alle</translation>
 <translation id="358794129225322306">Tillat at et nettsted kan laste ned flere filer automatisk.</translation>
 <translation id="3594780231884063836">Kutt lyden i videoen</translation>
 <translation id="3596414637720633074">Blokkér informasjonskapsler fra tredjepart i inkognitomodus</translation>
@@ -104,6 +104,7 @@
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3859306556332390985">Spol fremover</translation>
 <translation id="3955193568934677022">Gi nettsteder tillatelse til å spille av beskyttet innhold (anbefales)</translation>
+<translation id="3967822245660637423">Nedlasting fullført</translation>
 <translation id="3987993985790029246">Kopiér link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Tittel</translation>
@@ -177,6 +178,7 @@
 <translation id="5916664084637901428">På</translation>
 <translation id="5922853908706496913">Deler skjermen din</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
+<translation id="5975083100439434680">Zoom ut</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Kontrollér dette nettstedets tilgang til enheten din</translation>
 <translation id="6040143037577758943">Lukk</translation>
@@ -297,6 +299,7 @@
 <translation id="8801436777607969138">Blokkér JavaScript for et bestemt nettsted.</translation>
 <translation id="8816026460808729765">Blokkér nettsteder fra å få tilgang til sensorer</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8903921497873541725">Zoom inn</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC er av for denne enheten. Slå det på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Dette nettstedet åpnes og svarer raskt for de fleste</translation>
@@ -304,10 +307,12 @@
 <translation id="894871326938397531">Vil du avslutte inkognitomodus?</translation>
 <translation id="8958424370300090006">Blokkér informasjonskapsler for et spesifikt nettsted.</translation>
 <translation id="8959122750345127698">Nettadressen er utilgjengelig: <ph name="URL" /></translation>
+<translation id="8986362086234534611">Glem</translation>
 <translation id="9019902583201351841">Administrert av foreldrene dine</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> og <ph name="NUM_MORE" /> til}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> og <ph name="NUM_MORE" /> til}}</translation>
 <translation id="913657688200966289">Slå på tillatelser for <ph name="APP_NAME" /> i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
+<translation id="930525582205581608">Vil du glemme dette nettstedet?</translation>
 <translation id="965817943346481315">Blokkér hvis nettstedet viser forstyrrende eller villedende annonser (anbefalt)</translation>
 <translation id="967624055006145463">Lagrede data</translation>
 </translationbundle>

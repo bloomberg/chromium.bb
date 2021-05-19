@@ -24,14 +24,12 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "chromeos/dbus/blocking_method_caller.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/login_manager/login_screen_storage.pb.h"
@@ -76,30 +74,6 @@ RetrievePolicyResponseType GetPolicyResponseTypeByError(
     return RetrievePolicyResponseType::POLICY_ENCODE_ERROR;
   }
   return RetrievePolicyResponseType::OTHER_ERROR;
-}
-
-// Logs UMA stat for retrieve policy request, corresponding to D-Bus method name
-// used.
-void LogPolicyResponseUma(login_manager::PolicyAccountType account_type,
-                          RetrievePolicyResponseType response) {
-  switch (account_type) {
-    case login_manager::ACCOUNT_TYPE_DEVICE:
-      UMA_HISTOGRAM_ENUMERATION("Enterprise.RetrievePolicyResponse.Device",
-                                response, RetrievePolicyResponseType::COUNT);
-      break;
-    case login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Enterprise.RetrievePolicyResponse.DeviceLocalAccount", response,
-          RetrievePolicyResponseType::COUNT);
-      break;
-    case login_manager::ACCOUNT_TYPE_USER:
-      UMA_HISTOGRAM_ENUMERATION("Enterprise.RetrievePolicyResponse.User",
-                                response, RetrievePolicyResponseType::COUNT);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
 }
 
 // Creates a PolicyDescriptor object to store/retrieve Chrome policy.
@@ -233,12 +207,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void RestartJob(int socket_fd,
                   const std::vector<std::string>& argv,
+                  RestartJobReason reason,
                   VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerRestartJob);
     dbus::MessageWriter writer(&method_call);
     writer.AppendFileDescriptor(socket_fd);
     writer.AppendArrayOfStrings(argv);
+    writer.AppendUint32(static_cast<uint32_t>(reason));
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
@@ -779,7 +755,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     } else {
       policy_out->clear();
     }
-    LogPolicyResponseUma(descriptor.account_type(), result);
     return result;
   }
 
@@ -929,7 +904,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     if (!response) {
       RetrievePolicyResponseType response_type =
           GetPolicyResponseTypeByError(error ? error->GetErrorName() : "");
-      LogPolicyResponseUma(account_type, response_type);
       std::move(callback).Run(response_type, std::string());
       return;
     }
@@ -937,7 +911,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageReader reader(response);
     std::string proto_blob;
     ExtractPolicyResponseString(account_type, response, &proto_blob);
-    LogPolicyResponseUma(account_type, RetrievePolicyResponseType::SUCCESS);
     std::move(callback).Run(RetrievePolicyResponseType::SUCCESS, proto_blob);
   }
 
@@ -971,10 +944,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void ScreenIsLockedReceived(dbus::Signal* signal) {
     screen_is_locked_ = true;
+    for (auto& observer : observers_)
+      observer.ScreenLockedStateUpdated();
   }
 
   void ScreenIsUnlockedReceived(dbus::Signal* signal) {
     screen_is_locked_ = false;
+    for (auto& observer : observers_)
+      observer.ScreenLockedStateUpdated();
   }
 
   void ArcInstanceStoppedReceived(dbus::Signal* signal) {

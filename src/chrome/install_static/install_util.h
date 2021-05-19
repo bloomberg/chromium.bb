@@ -230,20 +230,25 @@ bool HasEnvironmentVariable(const std::string& variable_name);
 bool HasEnvironmentVariable(const std::wstring& variable_name);
 
 // Gets the exe version details like the |product_name|, |version|,
-// |special_build|, |channel_name|, etc. Most of this information is read
-// from the version resource. |exe_path| is the path of chrome.exe.
-// TODO(ananta)
-// http://crbug.com/604923
-// Unify this with the Browser Distribution code.
+// |special_build|, and |channel_name| from the browser executable at
+// |exe_path|. |channel_name| will be "extended" for clients that follow the
+// extended stable update channel.
 void GetExecutableVersionDetails(const std::wstring& exe_path,
                                  std::wstring* product_name,
                                  std::wstring* version,
                                  std::wstring* special_build,
                                  std::wstring* channel_name);
 
-// Gets the channel or channel name for the current Chrome process.
+// Gets the channel for the current Chrome process.
 version_info::Channel GetChromeChannel();
-std::wstring GetChromeChannelName();
+
+// Gets the channel for the current Chrome process. Unless
+// `with_extended_stable` is true, extended stable will be reported as regular
+// stable (i.e., an empty string).
+std::wstring GetChromeChannelName(bool with_extended_stable);
+
+// Returns true if the current Chrome process is on the extended stable channel.
+bool IsExtendedStableChannel();
 
 // Returns true if the |source| string matches the |pattern|. The pattern
 // may contain wildcards like '?', which matches one character or a '*'
@@ -290,14 +295,19 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path);
 struct DetermineChannelResult {
   std::wstring channel_name;
   ChannelOrigin origin;
+
+  // True if this client follows the extended stable update channel. May only be
+  // true if `channel_name` is "" and `origin` is kPolicy.
+  bool is_extended_stable;
 };
 
-// Returns the unadorned channel name and its origin based on the channel
-// strategy for the install mode. |channel_override|, if not empty is the
-// channel to return if |mode| supports non-fixed channels. |update_ap|, if not
-// null, is set to the raw "ap" value read from Chrome's ClientState key in the
-// registry. |update_cohort_name|, if not null, is set to the raw "cohort\name"
-// value read from Chrome's ClientState key in the registry.
+// Returns the unadorned channel name, its origin, and an indication of whether
+// or not a stable ("") channel is truly the extended stable channel based on
+// the channel strategy for the install mode. |channel_override|, if not empty
+// is the channel to return if |mode| supports non-fixed channels. |update_ap|,
+// if not null, is set to the raw "ap" value read from Chrome's ClientState key
+// in the registry. |update_cohort_name|, if not null, is set to the raw
+// "cohort\name" value read from Chrome's ClientState key in the registry.
 DetermineChannelResult DetermineChannel(const InstallConstants& mode,
                                         bool system_level,
                                         const wchar_t* channel_override,

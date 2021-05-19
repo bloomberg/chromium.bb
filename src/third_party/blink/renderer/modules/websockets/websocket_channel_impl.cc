@@ -86,11 +86,10 @@ enum WebSocketOpCode {
 // event handlers, so there is little reason to disable it on pages using a
 // WebSocket.
 //
-// TODO(crbug.com/1121725): Cleanup this feature once field experiments confirm
-// that the opt-out can be removed.
+// TODO(crbug.com/1121725): Cleanup this feature in June 2021, when it becomes
+// enabled by default on Stable.
 const base::Feature kAllowAggressiveThrottlingWithWebSocket{
-    "AllowAggressiveThrottlingWithWebSocket",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "AllowAggressiveThrottlingWithWebSocket", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -280,10 +279,9 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
     throttle_passed_ = true;
   }
 
-  TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketCreate",
-                       TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorWebSocketCreateEvent::Data(
-                           execution_context_, identifier_, url, protocol));
+  DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
+      "WebSocketCreate", InspectorWebSocketCreateEvent::Data,
+      execution_context_, identifier_, url, protocol);
   probe::DidCreateWebSocket(execution_context_, identifier_, url, protocol);
   return true;
 }
@@ -414,9 +412,9 @@ void WebSocketChannelImpl::Fail(const String& reason,
 void WebSocketChannelImpl::Disconnect() {
   DVLOG(1) << this << " disconnect()";
   if (identifier_) {
-    TRACE_EVENT_INSTANT1(
-        "devtools.timeline", "WebSocketDestroy", TRACE_EVENT_SCOPE_THREAD,
-        "data", InspectorWebSocketEvent::Data(execution_context_, identifier_));
+    DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT("WebSocketDestroy",
+                                          InspectorWebSocketEvent::Data,
+                                          execution_context_, identifier_);
     probe::DidCloseWebSocket(execution_context_, identifier_);
   }
 
@@ -455,10 +453,9 @@ void WebSocketChannelImpl::OnOpeningHandshakeStarted(
   DVLOG(1) << this << " OnOpeningHandshakeStarted(" << request->url.GetString()
            << ")";
 
-  TRACE_EVENT_INSTANT1(
-      "devtools.timeline", "WebSocketSendHandshakeRequest",
-      TRACE_EVENT_SCOPE_THREAD, "data",
-      InspectorWebSocketEvent::Data(execution_context_, identifier_));
+  DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT("WebSocketSendHandshakeRequest",
+                                        InspectorWebSocketEvent::Data,
+                                        execution_context_, identifier_);
   probe::WillSendWebSocketHandshakeRequest(execution_context_, identifier_,
                                            request.get());
   handshake_request_ = std::move(request);
@@ -484,10 +481,9 @@ void WebSocketChannelImpl::OnConnectionEstablished(
   const String& extensions = response->extensions;
   DVLOG(1) << this << " OnConnectionEstablished(" << protocol << ", "
            << extensions << ")";
-  TRACE_EVENT_INSTANT1(
-      "devtools.timeline", "WebSocketReceiveHandshakeResponse",
-      TRACE_EVENT_SCOPE_THREAD, "data",
-      InspectorWebSocketEvent::Data(execution_context_, identifier_));
+  DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT("WebSocketReceiveHandshakeResponse",
+                                        InspectorWebSocketEvent::Data,
+                                        execution_context_, identifier_);
   probe::DidReceiveWebSocketHandshakeResponse(execution_context_, identifier_,
                                               handshake_request_.get(),
                                               response.get());
@@ -554,9 +550,9 @@ void WebSocketChannelImpl::OnDropChannel(bool was_clean,
            << reason << ")";
 
   if (identifier_) {
-    TRACE_EVENT_INSTANT1(
-        "devtools.timeline", "WebSocketDestroy", TRACE_EVENT_SCOPE_THREAD,
-        "data", InspectorWebSocketEvent::Data(execution_context_, identifier_));
+    DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT("WebSocketDestroy",
+                                          InspectorWebSocketEvent::Data,
+                                          execution_context_, identifier_);
     probe::DidCloseWebSocket(execution_context_, identifier_);
     identifier_ = 0;
   }

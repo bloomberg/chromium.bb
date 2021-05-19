@@ -18,7 +18,6 @@
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrOpsRenderPass.h"
 #include "src/gpu/GrPixmap.h"
-#include "src/gpu/GrSamplePatternDictionary.h"
 #include "src/gpu/GrSwizzle.h"
 #include "src/gpu/GrTextureProducer.h"
 #include "src/gpu/GrXferProcessor.h"
@@ -33,9 +32,8 @@ class GrGLContext;
 class GrPath;
 class GrPathRenderer;
 class GrPathRendererChain;
-class GrPathRendering;
 class GrPipeline;
-class GrPrimitiveProcessor;
+class GrGeometryProcessor;
 class GrRenderTarget;
 class GrRingBuffer;
 class GrSemaphore;
@@ -43,6 +41,7 @@ class GrStagingBufferManager;
 class GrStencilSettings;
 class GrSurface;
 class GrTexture;
+class GrThreadSafePipelineBuilder;
 class SkJSONWriter;
 
 namespace SkSL {
@@ -63,8 +62,6 @@ public:
     const GrCaps* caps() const { return fCaps.get(); }
     sk_sp<const GrCaps> refCaps() const { return fCaps; }
 
-    GrPathRendering* pathRendering() { return fPathRendering.get();  }
-
     virtual GrStagingBufferManager* stagingBufferManager() { return nullptr; }
 
     virtual GrRingBuffer* uniformsRingBuffer() { return nullptr; }
@@ -82,6 +79,9 @@ public:
     // Called by context when the underlying backend context is already or will be destroyed
     // before GrDirectContext.
     virtual void disconnect(DisconnectType);
+
+    virtual GrThreadSafePipelineBuilder* pipelineBuilder() = 0;
+    virtual sk_sp<GrThreadSafePipelineBuilder> refPipelineBuilder() = 0;
 
     // Called by GrDirectContext::isContextLost. Returns true if the backend Gpu object has gotten
     // into an unrecoverable, lost state.
@@ -278,7 +278,7 @@ public:
     bool writePixels(GrSurface* surface, int left, int top, int width, int height,
                      GrColorType surfaceColorType, GrColorType srcColorType, const void* buffer,
                      size_t rowBytes, bool prepForTexSampling = false) {
-        GrMipLevel mipLevel = {buffer, rowBytes};
+        GrMipLevel mipLevel = {buffer, rowBytes, nullptr};
         return this->writePixels(surface, left, top, width, height, surfaceColorType, srcColorType,
                                  &mipLevel, 1, prepForTexSampling);
     }
@@ -338,19 +338,6 @@ public:
     bool copySurface(GrSurface* dst, GrSurface* src, const SkIRect& srcRect,
                      const SkIPoint& dstPoint);
 
-    // Queries the per-pixel HW sample locations for the given render target, and then finds or
-    // assigns a key that uniquely identifies the sample pattern. The actual sample locations can be
-    // retrieved with retrieveSampleLocations().
-    int findOrAssignSamplePatternKey(GrRenderTarget*);
-
-    // Retrieves the per-pixel HW sample locations for the given sample pattern key, and, as a
-    // by-product, the actual number of samples in use. (This may differ from the number of samples
-    // requested by the render target.) Sample locations are returned as 0..1 offsets relative to
-    // the top-left corner of the pixel.
-    const SkTArray<SkPoint>& retrieveSampleLocations(int samplePatternKey) const {
-        return fSamplePatternDictionary.retrieveSampleLocations(samplePatternKey);
-    }
-
     // Returns a GrOpsRenderPass which GrOpsTasks send draw commands to instead of directly
     // to the Gpu object. The 'bounds' rect is the content rect of the renderTarget.
     // If a 'stencil' is provided it will be the one bound to 'renderTarget'. If one is not
@@ -409,31 +396,23 @@ public:
      */
     virtual std::unique_ptr<GrSemaphore> prepareTextureForCrossContextUsage(GrTexture*) = 0;
 
+    /**
+     * Frees any backend specific objects that are not currently in use by the GPU. This is called
+     * when the client is trying to free up as much GPU memory as possible. We will not release
+     * resources connected to programs/pipelines since the cost to recreate those is significantly
+     * higher that other resources.
+     */
+    virtual void releaseUnlockedBackendObjects() {}
+
     ///////////////////////////////////////////////////////////////////////////
     // Debugging and Stats
 
     class Stats {
     public:
-        enum class ProgramCacheResult {
-            kHit,       // the program was found in the cache
-            kMiss,      // the program was not found in the cache (and was, thus, compiled)
-            kPartial,   // a precompiled version was found in the persistent cache
-
-            kLast = kPartial
-        };
-
-        static const int kNumProgramCacheResults = (int)ProgramCacheResult::kLast + 1;
-
 #if GR_GPU_STATS
         Stats() = default;
 
         void reset() { *this = {}; }
-
-        int renderTargetBinds() const { return fRenderTargetBinds; }
-        void incRenderTargetBinds() { fRenderTargetBinds++; }
-
-        int shaderCompilations() const { return fShaderCompilations; }
-        void incShaderCompilations() { fShaderCompilations++; }
 
         int textureCreates() const { return fTextureCreates; }
         void incTextureCreates() { fTextureCreates++; }
@@ -468,42 +447,14 @@ public:
         int numScratchMSAAAttachmentsReused() const { return fNumScratchMSAAAttachmentsReused; }
         void incNumScratchMSAAAttachmentsReused() { ++fNumScratchMSAAAttachmentsReused; }
 
-        int numInlineCompilationFailures() const { return fNumInlineCompilationFailures; }
-        void incNumInlineCompilationFailures() { ++fNumInlineCompilationFailures; }
-
-        int numInlineProgramCacheResult(ProgramCacheResult stat) const {
-            return fInlineProgramCacheStats[(int) stat];
-        }
-        void incNumInlineProgramCacheResult(ProgramCacheResult stat) {
-            ++fInlineProgramCacheStats[(int) stat];
-        }
-
-        int numPreCompilationFailures() const { return fNumPreCompilationFailures; }
-        void incNumPreCompilationFailures() { ++fNumPreCompilationFailures; }
-
-        int numPreProgramCacheResult(ProgramCacheResult stat) const {
-            return fPreProgramCacheStats[(int) stat];
-        }
-        void incNumPreProgramCacheResult(ProgramCacheResult stat) {
-            ++fPreProgramCacheStats[(int) stat];
-        }
-
-        int numCompilationFailures() const { return fNumCompilationFailures; }
-        void incNumCompilationFailures() { ++fNumCompilationFailures; }
-
-        int numPartialCompilationSuccesses() const { return fNumPartialCompilationSuccesses; }
-        void incNumPartialCompilationSuccesses() { ++fNumPartialCompilationSuccesses; }
-
-        int numCompilationSuccesses() const { return fNumCompilationSuccesses; }
-        void incNumCompilationSuccesses() { ++fNumCompilationSuccesses; }
+        int renderPasses() const { return fRenderPasses; }
+        void incRenderPasses() { fRenderPasses++; }
 
 #if GR_TEST_UTILS
         void dump(SkString*);
         void dumpKeyValuePairs(SkTArray<SkString>* keys, SkTArray<double>* values);
 #endif
     private:
-        int fRenderTargetBinds = 0;
-        int fShaderCompilations = 0;
         int fTextureCreates = 0;
         int fTextureUploads = 0;
         int fTransfersToTexture = 0;
@@ -515,25 +466,14 @@ public:
         int fNumSubmitToGpus = 0;
         int fNumScratchTexturesReused = 0;
         int fNumScratchMSAAAttachmentsReused = 0;
+        int fRenderPasses = 0;
 
-        int fNumInlineCompilationFailures = 0;
-        int fInlineProgramCacheStats[kNumProgramCacheResults] = { 0 };
-
-        int fNumPreCompilationFailures = 0;
-        int fPreProgramCacheStats[kNumProgramCacheResults] = { 0 };
-
-        int fNumCompilationFailures = 0;
-        int fNumPartialCompilationSuccesses = 0;
-        int fNumCompilationSuccesses = 0;
-
-#else
+#else  // !GR_GPU_STATS
 
 #if GR_TEST_UTILS
         void dump(SkString*) {}
         void dumpKeyValuePairs(SkTArray<SkString>*, SkTArray<double>*) {}
 #endif
-        void incRenderTargetBinds() {}
-        void incShaderCompilations() {}
         void incTextureCreates() {}
         void incTextureUploads() {}
         void incTransfersToTexture() {}
@@ -545,13 +485,7 @@ public:
         void incNumSubmitToGpus() {}
         void incNumScratchTexturesReused() {}
         void incNumScratchMSAAAttachmentsReused() {}
-        void incNumInlineCompilationFailures() {}
-        void incNumInlineProgramCacheResult(ProgramCacheResult stat) {}
-        void incNumPreCompilationFailures() {}
-        void incNumPreProgramCacheResult(ProgramCacheResult stat) {}
-        void incNumCompilationFailures() {}
-        void incNumPartialCompilationSuccesses() {}
-        void incNumCompilationSuccesses() {}
+        void incRenderPasses() {}
 #endif
     };
 
@@ -757,7 +691,6 @@ protected:
     void setOOMed() { fOOMed = true; }
 
     Stats                            fStats;
-    std::unique_ptr<GrPathRendering> fPathRendering;
 
     // Subclass must call this to initialize caps & compiler in its constructor.
     void initCapsAndCompiler(sk_sp<const GrCaps> caps);
@@ -786,10 +719,6 @@ private:
 
     // Implementation of resetTextureBindings.
     virtual void onResetTextureBindings() {}
-
-    // Queries the effective number of samples in use by the hardware for the given render target,
-    // and queries the individual sample locations.
-    virtual void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>*) = 0;
 
     // overridden by backend-specific derived class to create objects.
     // Texture size, renderablility, format support, sample count will have already been validated
@@ -909,7 +838,6 @@ private:
     uint32_t fResetBits;
     // The context owns us, not vice-versa, so this ptr is not ref'ed by Gpu.
     GrDirectContext* fContext;
-    GrSamplePatternDictionary fSamplePatternDictionary;
 
     struct SubmittedProc {
         SubmittedProc(GrGpuSubmittedProc proc, GrGpuSubmittedContext context)

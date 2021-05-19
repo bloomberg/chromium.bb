@@ -24,18 +24,23 @@
 #include "util/json/json_helpers.h"
 #include "util/json/json_serialization.h"
 #include "util/osp_logging.h"
+#include "util/stringprintf.h"
 
 namespace openscreen {
 namespace cast {
 
 namespace {
 
-AudioStream CreateStream(int index, const AudioCaptureConfig& config) {
+constexpr int kSupportedRemotingVersion = 3;
+
+AudioStream CreateStream(int index,
+                         const AudioCaptureConfig& config,
+                         bool use_android_rtp_hack) {
   return AudioStream{
       Stream{index,
              Stream::Type::kAudioSource,
              config.channels,
-             GetPayloadType(config.codec),
+             GetPayloadType(config.codec, use_android_rtp_hack),
              GenerateSsrc(true /*high_priority*/),
              config.target_playout_delay,
              GenerateRandomBytes16(),
@@ -53,7 +58,9 @@ Resolution ToResolution(const DisplayResolution& display_resolution) {
   return Resolution{display_resolution.width, display_resolution.height};
 }
 
-VideoStream CreateStream(int index, const VideoCaptureConfig& config) {
+VideoStream CreateStream(int index,
+                         const VideoCaptureConfig& config,
+                         bool use_android_rtp_hack) {
   std::vector<Resolution> resolutions;
   std::transform(config.resolutions.begin(), config.resolutions.end(),
                  std::back_inserter(resolutions), ToResolution);
@@ -63,7 +70,7 @@ VideoStream CreateStream(int index, const VideoCaptureConfig& config) {
       Stream{index,
              Stream::Type::kVideoSource,
              kVideoStreamChannelCount,
-             GetPayloadType(config.codec),
+             GetPayloadType(config.codec, use_android_rtp_hack),
              GenerateSsrc(false /*high_priority*/),
              config.target_playout_delay,
              GenerateRandomBytes16(),
@@ -89,21 +96,50 @@ VideoStream CreateStream(int index, const VideoCaptureConfig& config) {
 template <typename S, typename C>
 void CreateStreamList(int offset_index,
                       const std::vector<C>& configs,
+                      bool use_android_rtp_hack,
                       std::vector<S>* out) {
   out->reserve(configs.size());
   for (size_t i = 0; i < configs.size(); ++i) {
-    out->emplace_back(CreateStream(i + offset_index, configs[i]));
+    out->emplace_back(
+        CreateStream(i + offset_index, configs[i], use_android_rtp_hack));
   }
 }
 
-Offer CreateOffer(const std::vector<AudioCaptureConfig>& audio_configs,
-                  const std::vector<VideoCaptureConfig>& video_configs) {
+Offer CreateMirroringOffer(const std::vector<AudioCaptureConfig>& audio_configs,
+                           const std::vector<VideoCaptureConfig>& video_configs,
+                           bool use_android_rtp_hack) {
   Offer offer;
+  offer.cast_mode = CastMode::kMirroring;
 
   // NOTE here: IDs will always follow the pattern:
   // [0.. audio streams... N - 1][N.. video streams.. K]
-  CreateStreamList(0, audio_configs, &offer.audio_streams);
-  CreateStreamList(audio_configs.size(), video_configs, &offer.video_streams);
+  CreateStreamList(0, audio_configs, use_android_rtp_hack,
+                   &offer.audio_streams);
+  CreateStreamList(audio_configs.size(), video_configs, use_android_rtp_hack,
+                   &offer.video_streams);
+
+  return offer;
+}
+
+Offer CreateRemotingOffer(const AudioCaptureConfig& audio_config,
+                          const VideoCaptureConfig& video_config,
+                          bool use_android_rtp_hack) {
+  Offer offer;
+  offer.cast_mode = CastMode::kRemoting;
+
+  AudioStream audio_stream =
+      CreateStream(0, audio_config, use_android_rtp_hack);
+  audio_stream.codec = AudioCodec::kNotSpecified;
+  audio_stream.stream.rtp_payload_type =
+      GetPayloadType(AudioCodec::kNotSpecified, use_android_rtp_hack);
+  offer.audio_streams.push_back(std::move(audio_stream));
+
+  VideoStream video_stream =
+      CreateStream(1, video_config, use_android_rtp_hack);
+  video_stream.codec = VideoCodec::kNotSpecified;
+  video_stream.stream.rtp_payload_type =
+      GetPayloadType(VideoCodec::kNotSpecified, use_android_rtp_hack);
+  offer.video_streams.push_back(std::move(video_stream));
 
   return offer;
 }
@@ -136,31 +172,71 @@ bool AreAllValid(const std::vector<AudioCaptureConfig>& audio_configs,
                      IsValidVideoCaptureConfig);
 }
 
+RemotingCapabilities ToCapabilities(const ReceiverCapability& capability) {
+  RemotingCapabilities out;
+  for (MediaCapability c : capability.media_capabilities) {
+    switch (c) {
+      case MediaCapability::kAudio:
+        out.audio.push_back(AudioCapability::kBaselineSet);
+        break;
+      case MediaCapability::kAac:
+        out.audio.push_back(AudioCapability::kAac);
+        break;
+      case MediaCapability::kOpus:
+        out.audio.push_back(AudioCapability::kOpus);
+        break;
+      case MediaCapability::k4k:
+        out.video.push_back(VideoCapability::kSupports4k);
+        break;
+      case MediaCapability::kH264:
+        out.video.push_back(VideoCapability::kH264);
+        break;
+      case MediaCapability::kVp8:
+        out.video.push_back(VideoCapability::kVp8);
+        break;
+      case MediaCapability::kVp9:
+        out.video.push_back(VideoCapability::kVp9);
+        break;
+      case MediaCapability::kHevc:
+        out.video.push_back(VideoCapability::kHevc);
+        break;
+      case MediaCapability::kVideo:
+        // noop, as "video" is ignored by Chrome remoting.
+        break;
+
+      default:
+        OSP_NOTREACHED();
+    }
+  }
+  return out;
+}
+
 }  // namespace
 
 SenderSession::Client::~Client() = default;
 
-SenderSession::SenderSession(IPAddress remote_address,
-                             Client* const client,
-                             Environment* environment,
-                             MessagePort* message_port,
-                             std::string message_source_id,
-                             std::string message_destination_id)
-    : remote_address_(remote_address),
-      client_(client),
-      environment_(environment),
+SenderSession::SenderSession(Configuration config)
+    : config_(config),
       messager_(
-          message_port,
-          std::move(message_source_id),
-          std::move(message_destination_id),
+          config_.message_port,
+          config_.message_source_id,
+          config_.message_destination_id,
           [this](Error error) {
             OSP_DLOG_WARN << "SenderSession message port error: " << error;
-            client_->OnError(this, error);
+            config_.client->OnError(this, error);
           },
-          environment->task_runner()),
-      packet_router_(environment_) {
-  OSP_DCHECK(client_);
-  OSP_DCHECK(environment_);
+          config_.environment->task_runner()),
+      packet_router_(config_.environment) {
+  OSP_DCHECK(config_.client);
+  OSP_DCHECK(config_.environment);
+
+  // We may or may not do remoting this session, however our RPC handler
+  // is not negotiation-specific and registering on construction here allows us
+  // to record any unexpected RPC messages.
+  messager_.SetHandler(ReceiverMessage::Type::kRpc,
+                       [this](ReceiverMessage message) {
+                         this->OnRpcMessage(std::move(message));
+                       });
 }
 
 SenderSession::~SenderSession() = default;
@@ -176,9 +252,45 @@ Error SenderSession::Negotiate(std::vector<AudioCaptureConfig> audio_configs,
     return Error(Error::Code::kParameterInvalid, "Invalid configs provided.");
   }
 
-  Offer offer = CreateOffer(audio_configs, video_configs);
-  current_negotiation_ = std::unique_ptr<Negotiation>(new Negotiation{
-      offer, std::move(audio_configs), std::move(video_configs)});
+  Offer offer = CreateMirroringOffer(audio_configs, video_configs,
+                                     config_.use_android_rtp_hack);
+  return StartNegotiation(std::move(audio_configs), std::move(video_configs),
+                          std::move(offer));
+}
+
+Error SenderSession::NegotiateRemoting(AudioCaptureConfig audio_config,
+                                       VideoCaptureConfig video_config) {
+  // Remoting requires both an audio and a video configuration.
+  if (!IsValidAudioCaptureConfig(audio_config) ||
+      !IsValidVideoCaptureConfig(video_config)) {
+    return Error(Error::Code::kParameterInvalid,
+                 "Passed invalid audio or video config.");
+  }
+
+  Offer offer = CreateRemotingOffer(audio_config, video_config,
+                                    config_.use_android_rtp_hack);
+  return StartNegotiation({audio_config}, {video_config}, std::move(offer));
+}
+
+int SenderSession::GetEstimatedNetworkBandwidth() const {
+  return packet_router_.ComputeNetworkBandwidth();
+}
+
+void SenderSession::ResetState() {
+  state_ = State::kIdle;
+  current_negotiation_.reset();
+  current_audio_sender_.reset();
+  current_video_sender_.reset();
+  broker_.reset();
+}
+
+Error SenderSession::StartNegotiation(
+    std::vector<AudioCaptureConfig> audio_configs,
+    std::vector<VideoCaptureConfig> video_configs,
+    Offer offer) {
+  current_negotiation_ =
+      std::unique_ptr<InProcessNegotiation>(new InProcessNegotiation{
+          offer, std::move(audio_configs), std::move(video_configs)});
 
   return messager_.SendRequest(
       SenderMessage{SenderMessage::Type::kOffer, ++current_sequence_number_,
@@ -188,28 +300,128 @@ Error SenderSession::Negotiate(std::vector<AudioCaptureConfig> audio_configs,
 }
 
 void SenderSession::OnAnswer(ReceiverMessage message) {
-  OSP_LOG_WARN << "Message sn: " << message.sequence_number
-               << ", current: " << current_sequence_number_;
   if (!message.valid) {
-    if (absl::holds_alternative<ReceiverError>(message.body)) {
-      client_->OnError(
-          this, Error(Error::Code::kParameterInvalid,
-                      absl::get<ReceiverError>(message.body).description));
-    } else {
-      client_->OnError(this, Error(Error::Code::kJsonParseError,
-                                   "Received invalid answer message"));
-    }
+    HandleErrorMessage(message, "Invalid answer response message");
     return;
   }
 
+  // There isn't an obvious way to tell from the Answer whether it is mirroring
+  // or remoting specific--the only clues are in the original offer message.
   const Answer& answer = absl::get<Answer>(message.body);
-  ConfiguredSenders senders = SpawnSenders(answer);
-  // If we didn't select any senders, the negotiation was unsuccessful.
-  if (senders.audio_sender == nullptr && senders.video_sender == nullptr) {
+  if (current_negotiation_->offer.cast_mode == CastMode::kMirroring) {
+    ConfiguredSenders senders = SpawnSenders(answer);
+    // If we didn't select any senders, the negotiation was unsuccessful.
+    if (senders.audio_sender == nullptr && senders.video_sender == nullptr) {
+      return;
+    }
+
+    state_ = State::kMirroring;
+    config_.client->OnNegotiated(
+        this, std::move(senders),
+        capture_recommendations::GetRecommendations(answer));
+  } else {
+    state_ = State::kRemoting;
+
+    // We don't want to spawn senders yet, since we don't know what the
+    // receiver's capabilities are. So, we cache the Answer until the
+    // capabilites request is completed.
+    current_negotiation_->answer = answer;
+    const Error result = messager_.SendRequest(
+        SenderMessage{SenderMessage::Type::kGetCapabilities,
+                      ++current_sequence_number_, true},
+        ReceiverMessage::Type::kCapabilitiesResponse,
+        [this](ReceiverMessage message) { OnCapabilitiesResponse(message); });
+    if (!result.ok()) {
+      config_.client->OnError(
+          this, Error(Error::Code::kNegotiationFailure,
+                      "Failed to set a GET_CAPABILITIES request"));
+    }
+  }
+}
+
+void SenderSession::OnCapabilitiesResponse(ReceiverMessage message) {
+  if (!current_negotiation_ || !current_negotiation_->answer.IsValid()) {
+    OSP_LOG_INFO
+        << "Received a capabilities response, but not negotiating anything.";
     return;
   }
-  client_->OnNegotiated(this, std::move(senders),
-                        capture_recommendations::GetRecommendations(answer));
+
+  if (!message.valid) {
+    HandleErrorMessage(
+        message,
+        "Bad CAPABILITIES_RESPONSE, assuming remoting is not supported");
+    return;
+  }
+
+  const ReceiverCapability& caps = absl::get<ReceiverCapability>(message.body);
+  int remoting_version = caps.remoting_version;
+  // If not set, we assume it is version 1.
+  if (remoting_version == ReceiverCapability::kRemotingVersionUnknown) {
+    remoting_version = 1;
+  }
+
+  if (remoting_version > kSupportedRemotingVersion) {
+    std::string message = StringPrintf(
+        "Receiver is using too new of a version for remoting (%d > %d)",
+        remoting_version, kSupportedRemotingVersion);
+    config_.client->OnError(
+        this, Error(Error::Code::kRemotingNotSupported, std::move(message)));
+    return;
+  }
+
+  ConfiguredSenders senders = SpawnSenders(current_negotiation_->answer);
+  // If we didn't select any senders, the negotiation was unsuccessful.
+  if (senders.audio_sender == nullptr && senders.video_sender == nullptr) {
+    config_.client->OnError(this,
+                            Error(Error::Code::kNegotiationFailure,
+                                  "Failed to negotiate a remoting session."));
+    return;
+  }
+  broker_ = std::make_unique<RpcBroker>([this](std::vector<uint8_t> message) {
+    Error error = this->messager_.SendOutboundMessage(SenderMessage{
+        SenderMessage::Type::kRpc, ++(this->current_sequence_number_), true,
+        std::move(message)});
+
+    if (!error.ok()) {
+      OSP_LOG_WARN << "Failed to send RPC message: " << error;
+    }
+  });
+
+  config_.client->OnRemotingNegotiated(
+      this, RemotingNegotiation{std::move(senders), ToCapabilities(caps),
+                                broker_.get()});
+}
+
+void SenderSession::OnRpcMessage(ReceiverMessage message) {
+  if (!broker_) {
+    OSP_LOG_INFO << "Received an RPC message without having an RPCBroker.";
+    return;
+  }
+
+  if (!message.valid) {
+    HandleErrorMessage(
+        message,
+        "Bad RPC message. This may or may not represent a serious problem");
+    return;
+  }
+
+  const auto& body = absl::get<std::vector<uint8_t>>(message.body);
+  broker_->ProcessMessageFromRemote(body.data(), body.size());
+}
+
+void SenderSession::HandleErrorMessage(ReceiverMessage message,
+                                       const std::string& text) {
+  OSP_DCHECK(!message.valid);
+  if (absl::holds_alternative<ReceiverError>(message.body)) {
+    const ReceiverError& error = absl::get<ReceiverError>(message.body);
+    std::string error_text =
+        StringPrintf("%s. Error code: %d, description: %s", text.c_str(),
+                     error.code, error.description.c_str());
+    config_.client->OnError(
+        this, Error(Error::Code::kParameterInvalid, std::move(error_text)));
+  } else {
+    config_.client->OnError(this, Error(Error::Code::kJsonParseError, text));
+  }
 }
 
 std::unique_ptr<Sender> SenderSession::CreateSender(Ssrc receiver_ssrc,
@@ -225,7 +437,7 @@ std::unique_ptr<Sender> SenderSession::CreateSender(Ssrc receiver_ssrc,
                        stream.aes_iv_mask,
                        /* is_pli_enabled*/ true};
 
-  return std::make_unique<Sender>(environment_, &packet_router_,
+  return std::make_unique<Sender>(config_.environment, &packet_router_,
                                   std::move(config), type);
 }
 
@@ -235,7 +447,8 @@ void SenderSession::SpawnAudioSender(ConfiguredSenders* senders,
                                      int config_index) {
   const AudioCaptureConfig& config =
       current_negotiation_->audio_configs[config_index];
-  const RtpPayloadType payload_type = GetPayloadType(config.codec);
+  const RtpPayloadType payload_type =
+      GetPayloadType(config.codec, config_.use_android_rtp_hack);
   for (const AudioStream& stream : current_negotiation_->offer.audio_streams) {
     if (stream.stream.index == send_index) {
       current_audio_sender_ =
@@ -253,7 +466,8 @@ void SenderSession::SpawnVideoSender(ConfiguredSenders* senders,
                                      int config_index) {
   const VideoCaptureConfig& config =
       current_negotiation_->video_configs[config_index];
-  const RtpPayloadType payload_type = GetPayloadType(config.codec);
+  const RtpPayloadType payload_type =
+      GetPayloadType(config.codec, config_.use_android_rtp_hack);
   for (const VideoStream& stream : current_negotiation_->offer.video_streams) {
     if (stream.stream.index == send_index) {
       current_video_sender_ =
@@ -272,8 +486,10 @@ SenderSession::ConfiguredSenders SenderSession::SpawnSenders(
   // Although we already have a message port set up with the TLS
   // address of the receiver, we don't know where to send the separate UDP
   // stream until we get the ANSWER message here.
-  environment_->set_remote_endpoint(
-      IPEndpoint{remote_address_, static_cast<uint16_t>(answer.udp_port)});
+  config_.environment->set_remote_endpoint(IPEndpoint{
+      config_.remote_address, static_cast<uint16_t>(answer.udp_port)});
+  OSP_LOG_INFO << "Streaming to " << config_.environment->remote_endpoint()
+               << "...";
 
   ConfiguredSenders senders;
   for (size_t i = 0; i < answer.send_indexes.size(); ++i) {

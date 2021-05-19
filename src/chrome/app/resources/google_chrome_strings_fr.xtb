@@ -12,13 +12,12 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1125124144982679672">Qui utilise Chrome ?</translation>
 <translation id="1142745911746664600">Impossible de mettre Chrome à jour</translation>
 <translation id="1154147086299354128">&amp;Ouvrir dans Chrome</translation>
-<translation id="123620459398936149">Impossible de synchroniser vos données dans Chrome OS. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> exige que vous lisiez et acceptiez les conditions d'utilisation suivantes pour utiliser cet appareil. Celles-ci n'étendent, ne modifient ni ne restreignent les conditions d'utilisation de Google Chrome OS.</translation>
 <translation id="1302523850133262269">Veuillez patienter pendant que Chrome installe les dernières mises à jour du système.</translation>
 <translation id="137466361146087520">Version bêta de Google Chrome</translation>
 <translation id="1399397803214730675">Une version plus récente de Google Chrome est déjà installée sur cet ordinateur. Si celle-ci ne fonctionne pas, désinstallez Google Chrome, puis réessayez.</translation>
 <translation id="1434626383986940139">Applications Chrome Canary</translation>
-<translation id="147727933880789532">Chrome recommande de désactiver cette extension, car elle ne respecte pas les normes de navigation sécurisée avec protection renforcée à l'heure actuelle.</translation>
+<translation id="1507198376417198979">Personnalisez votre nouveau profil Chrome</translation>
 <translation id="1516530951338665275">Google Chrome a besoin d'accéder au Bluetooth pour continuer 
  l'association. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
@@ -27,7 +26,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1587325591171447154">Chrome a bloqué <ph name="FILE_NAME" />, car ce fichier est dangereux.</translation>
 <translation id="1597911401261118146">Pour vérifier si vos mots de passe sont suffisamment sécurisés afin d'empêcher toute violation de données et d'autres problèmes de sécurité, <ph name="BEGIN_LINK" />connectez-vous à Chrome<ph name="END_LINK" />.</translation>
 <translation id="1619887657840448962">Afin de rendre Chromium plus sûr, nous avons désactivé l'extension suivante qui n'est pas répertoriée sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et qui a pu être ajoutée à votre insu.</translation>
-<translation id="162629503687514352">Impossible de synchroniser vos mots de passe dans Chrome OS.</translation>
 <translation id="1628000112320670027">Obtenir de l'aide avec Chrome</translation>
 <translation id="1666409074978194368">Presque à jour ! Relancez Google Chrome pour terminer la mise à jour. Sachez que les fenêtres de navigation privée ne seront pas rouvertes.</translation>
 <translation id="1674870198290878346">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chrome</translation>
@@ -94,14 +92,12 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3089968997497233615">Une nouvelle version de Google Chrome encore plus sûre est disponible.</translation>
 <translation id="3100998948628680988">Nommer votre profil Chrome</translation>
 <translation id="3114643501466072395">Pour vérifier si vos autres mots de passe sont suffisamment sécurisés afin d'empêcher toute violation de données et autres problèmes de sécurité, <ph name="BEGIN_LINK" />connectez-vous à Chrome<ph name="END_LINK" />.</translation>
-<translation id="3127818369811890733">Impossible de synchroniser vos données dans Chrome OS.</translation>
 <translation id="3140883423282498090">Vos modifications seront prises en compte au prochain redémarrage de Google Chrome.</translation>
 <translation id="3149510190863420837">Applications Chrome</translation>
 <translation id="3360895254066713204">Aide de Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome va être relancé maintenant}=1{Chrome va être relancé dans 1 seconde}one{Chrome va être relancé dans # seconde}other{Chrome va être relancé dans # secondes}}</translation>
 <translation id="3395323229510056640">Obtenir de l'aide avec Chrome OS</translation>
 <translation id="3396977131400919238">Erreur de système d'exploitation pendant l'installation. Veuillez télécharger de nouveau Google Chrome.</translation>
-<translation id="3398288718845740432">Masquer dans le menu Chrome</translation>
 <translation id="3434246496373299699">Chrome peut vérifier vos mots de passe lorsque vous vous connectez à votre compte Google</translation>
 <translation id="3451115285585441894">Ajout à Google Chrome en cours…</translation>
 <translation id="345171907106878721">Ajouter un utilisateur à Chrome</translation>
@@ -149,7 +145,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4571503333518166079">Accéder aux paramètres de notification de Chrome</translation>
 <translation id="459622048091363950">Une fois l'accès à une ressource accordé à Chrome, les sites Web sont également en mesure de vous demander l'accès.</translation>
 <translation id="4600710005438004015">Échec de l'installation de la dernière version de Chrome. Vous ne disposez donc pas des nouvelles fonctionnalités, ni des correctifs de sécurité.</translation>
-<translation id="4631713731678262610">Masquer dans le menu Chrome</translation>
 <translation id="4633000520311261472">Afin de rendre Chrome plus sûr, nous avons désactivé certaines extensions qui ne sont pas répertoriées sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et qui ont pu être ajoutées à votre insu.</translation>
 <translation id="4666328473657283332">Pour retrouver vos réglages Chrome sur tous vos appareils, connectez-vous afin d'activer la synchronisation.</translation>
 <translation id="4728575227883772061">Échec de l'installation suite à une erreur non spécifiée. Si Google Chrome est en cours d'exécution, fermez-le puis réessayez.</translation>
@@ -199,6 +194,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6070348360322141662">Pour plus de sécurité, vos données seront chiffrées dans Google Chrome</translation>
 <translation id="608006075545470555">Ajouter un profil professionnel à ce navigateur</translation>
 <translation id="6113794647360055231">Chrome s'est amélioré</translation>
+<translation id="6145313976051292476">Ouvrir les PDF dans Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Bêta</translation>
 <translation id="61852838583753520">Mettre à jour &amp;Chrome OS</translation>
@@ -211,7 +207,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome pour les développeurs</translation>
 <translation id="6566149418543181476">Mise à jour de Google Chrome (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="6568793831116033768">Système Chrome OS</translation>
-<translation id="6650333065969705433">Pour utiliser Rosetta pour lire des contenus multimédias protégés, vous devez redémarrer Chrome.</translation>
 <translation id="6676384891291319759">Accéder à Internet</translation>
 <translation id="6679975945624592337">Laisser Google Chrome s'exécuter en arrière-plan</translation>
 <translation id="6739177684496155661">Continuer avec un nouveau profil Chrome ?</translation>
@@ -223,7 +218,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6943584222992551122">Les données de navigation de cet utilisateur vont être supprimées de cet appareil. Pour les récupérer, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Règle de trafic entrant pour la version bêta de Google Chrome autorisant le trafic mDNS.</translation>
 <translation id="6989339256997917931">Google Chrome a été mis à jour, mais vous ne l'avez pas utilisé depuis plus de 30 jours.</translation>
-<translation id="7054640471403081847">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car ses composants matériels ne sont plus compatibles.</translation>
+<translation id="7025800014283535195">Vous pouvez passer d'un profil Chrome à un autre ici</translation>
 <translation id="7062128746136194023">L'un de tes parents a désactivé l'option "Autorisations des sites, applications et extensions" pour Chrome. Tu ne peux pas ajouter cette <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="7098166902387133879">Votre micro est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="7106741999175697885">Gestionnaire de tâches - Google Chrome</translation>
@@ -276,7 +271,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">Ce profil professionnel est parfaitement séparé de votre profil personnel.</translation>
 <translation id="8556340503434111824">Une nouvelle version de Google Chrome encore plus rapide est disponible.</translation>
-<translation id="861359755029082151">Rosetta permet à Chrome de lire les contenus multimédias protégés sur cette page.</translation>
 <translation id="8614913330719544658">Google Chrome ne répond pas. Voulez-vous le relancer maintenant ?</translation>
 <translation id="861702415419836452">Chrome a besoin de votre autorisation pour accéder à votre appareil photo afin de créer un plan 3D de votre environnement</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome va être relancé dans 1 minute}one{Chrome va être relancé dans # minute}other{Chrome va être relancé dans # minutes}}</translation>
@@ -290,7 +284,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8834965163890861871">Google Chrome tente de modifier les mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="884296878221830158">Elle contrôle également la page qui s'affiche au démarrage de Chrome ou lorsque vous cliquez sur le bouton Accueil.</translation>
 <translation id="8862326446509486874">Vous ne disposez pas des droits requis pour installer la version système. Relancez l'installation en vous connectant comme administrateur.</translation>
-<translation id="8907709077090383765">Pour autoriser Chrome à lire des contenus multimédias protégés, vous devez installer Rosetta. Voulez-vous l'installer maintenant ?</translation>
 <translation id="8914504000324227558">Relancer Google Chrome</translation>
 <translation id="8922193594870374009">Pour envoyer un numéro depuis <ph name="ORIGIN" /> vers votre téléphone Android, connectez-vous à Chrome sur les deux appareils.</translation>
 <translation id="8986207147630327271">Vous êtes sur le point d'ajouter un profil professionnel à ce navigateur et d'en donner le contrôle à votre administrateur.</translation>
@@ -300,6 +293,8 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
 <translation id="9138603949443464873">Pour appliquer vos modifications, relancez Chrome</translation>
 <translation id="919706545465235479">Mettre à jour Chrome pour lancer la synchronisation</translation>
+<translation id="922152298093051471">Personnaliser Chrome</translation>
 <translation id="940313311831216333">Pour retrouver vos réglages Chrome sur tous vos appareils, connectez-vous, puis activez la synchronisation.</translation>
 <translation id="989369509083708165">Google Chrome est votre navigateur par défaut</translation>
+<translation id="989816563149873169"><ph name="SHORTCUT" /> permet de passer d'un profil Chrome à un autre</translation>
 </translationbundle>

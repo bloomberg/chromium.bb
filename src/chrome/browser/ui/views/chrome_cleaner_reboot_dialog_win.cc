@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/views/chrome_cleaner_reboot_dialog_win.h"
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_reboot_dialog_controller_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -100,7 +101,7 @@ void ChromeCleanerRebootDialog::Show(Browser* browser) {
 
 // WidgetDelegate overrides.
 
-base::string16 ChromeCleanerRebootDialog::GetWindowTitle() const {
+std::u16string ChromeCleanerRebootDialog::GetWindowTitle() const {
   DCHECK(dialog_controller_);
   return l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_REBOOT_PROMPT_TITLE);
 }

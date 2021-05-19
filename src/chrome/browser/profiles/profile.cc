@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -25,7 +27,9 @@
 #include "components/variations/variations.mojom.h"
 #include "components/variations/variations_client.h"
 #include "components/variations/variations_ids_provider.h"
-#include "content/public/browser/cors_origin_pattern_setter.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -98,17 +102,17 @@ bool Profile::OTRProfileID::AllowsBrowserWindows() const {
 
 // static
 const Profile::OTRProfileID Profile::OTRProfileID::PrimaryID() {
+  // OTRProfileID value should be same as
+  // |OTRProfileID.java#sPrimaryOTRProfileID| variable.
   return OTRProfileID("profile::primary_otr");
 }
 
 // static
-int Profile::OTRProfileID::first_unused_index_ = 0;
-
-// static
 Profile::OTRProfileID Profile::OTRProfileID::CreateUnique(
     const std::string& profile_id_prefix) {
-  return OTRProfileID(base::StringPrintf("%s-%i", profile_id_prefix.c_str(),
-                                         first_unused_index_++));
+  return OTRProfileID(base::StringPrintf(
+      "%s-%s", profile_id_prefix.c_str(),
+      base::GUID::GenerateRandomV4().AsLowercaseString().c_str()));
 }
 
 // static
@@ -162,16 +166,26 @@ base::android::ScopedJavaLocalRef<jobject> JNI_OTRProfileID_GetPrimaryID(
   return Profile::OTRProfileID::PrimaryID().ConvertToJavaOTRProfileID(env);
 }
 
+// static
+Profile::OTRProfileID Profile::OTRProfileID::Deserialize(
+    const std::string& value) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> j_value =
+      base::android::ConvertUTF8ToJavaString(env, value);
+  base::android::ScopedJavaLocalRef<jobject> j_otr_profile_id =
+      Java_OTRProfileID_deserializeWithoutVerify(env, j_value);
+  return ConvertFromJavaOTRProfileID(env, j_otr_profile_id);
+}
+
 std::string Profile::OTRProfileID::Serialize() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   return base::android::ConvertJavaStringToUTF8(
       env, Java_OTRProfileID_serialize(env, ConvertToJavaOTRProfileID(env)));
 }
-#endif
+#endif  // defined(OS_ANDROID)
 
 Profile::Profile()
-    : shared_cors_origin_access_list_(
-          content::SharedCorsOriginAccessList::Create()) {
+    : resource_context_(std::make_unique<content::ResourceContext>()) {
 #if DCHECK_IS_ON()
   base::AutoLock lock(g_profile_instances_lock.Get());
   g_profile_instances.Get().insert(this);
@@ -181,6 +195,10 @@ Profile::Profile()
 }
 
 Profile::~Profile() {
+  if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::IO)) {
+    content::GetIOThreadTaskRunner({})->DeleteSoon(
+        FROM_HERE, std::move(resource_context_));
+  }
 #if DCHECK_IS_ON()
   base::AutoLock lock(g_profile_instances_lock.Get());
   g_profile_instances.Get().erase(this);
@@ -349,6 +367,8 @@ bool Profile::IsRegularProfile() const {
 }
 
 bool Profile::IsIncognitoProfile() const {
+  // TODO(https://1169142): Replace logic of this function and other
+  // IsXProfile functions with GetBrowserProfileType().
   return IsPrimaryOTRProfile() && !IsGuestSession() && !IsSystemProfile();
 }
 
@@ -418,7 +438,7 @@ bool Profile::ShouldPersistSessionCookies() const {
 
 void Profile::MaybeSendDestroyedNotification() {
   TRACE_EVENT1("shutdown", "Profile::MaybeSendDestroyedNotification", "profile",
-               static_cast<void*>(this));
+               this);
 
   if (!sent_destroyed_notification_) {
     sent_destroyed_notification_ = true;
@@ -503,64 +523,6 @@ variations::VariationsClient* Profile::GetVariationsClient() {
   return chrome_variations_client_.get();
 }
 
-content::SharedCorsOriginAccessList* Profile::GetSharedCorsOriginAccessList() {
-  return shared_cors_origin_access_list_.get();
-}
-
-void Profile::SetCorsOriginAccessListForOrigin(
-    TargetBrowserContexts target_mode,
-    const url::Origin& source_origin,
-    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-    base::OnceClosure closure) {
-  using content::CorsOriginPatternSetter;
-  switch (target_mode) {
-    case content::BrowserContext::TargetBrowserContexts::kSingleContext: {
-      SetCorsOriginAccessListForThisContextOnly(
-          source_origin, std::move(allow_patterns), std::move(block_patterns),
-          std::move(closure));
-      break;
-    }
-
-    case content::BrowserContext::TargetBrowserContexts::kAllRelatedContexts: {
-      Profile* regular_profile = GetOriginalProfile();
-      std::vector<Profile*> otr_profiles = GetAllOffTheRecordProfiles();
-      // We need one callback for modifying the `regular_profile`, and one for
-      // each off-the-record profile.
-      auto barrier_closure =
-          BarrierClosure(1 + otr_profiles.size(), std::move(closure));
-      regular_profile->SetCorsOriginAccessListForThisContextOnly(
-          source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
-          CorsOriginPatternSetter::ClonePatterns(block_patterns),
-          barrier_closure);
-      for (Profile* otr : otr_profiles) {
-        otr->SetCorsOriginAccessListForThisContextOnly(
-            source_origin,
-            CorsOriginPatternSetter::ClonePatterns(allow_patterns),
-            CorsOriginPatternSetter::ClonePatterns(block_patterns),
-            barrier_closure);
-      }
-      break;
-    }
-  }
-}
-
-void Profile::SetCorsOriginAccessListForThisContextOnly(
-    const url::Origin& source_origin,
-    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-    base::OnceClosure closure) {
-  using content::CorsOriginPatternSetter;
-  auto barrier_closure = BarrierClosure(2, std::move(closure));
-  base::MakeRefCounted<CorsOriginPatternSetter>(
-      source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
-      CorsOriginPatternSetter::ClonePatterns(block_patterns), barrier_closure)
-      ->ApplyToEachStoragePartition(this);
-
-  // Keep the per-profile access list up to date so that we can use this to
-  // restore NetworkContext settings at anytime, e.g. on restarting the
-  // network service.
-  shared_cors_origin_access_list_->SetForOrigin(
-      source_origin, std::move(allow_patterns), std::move(block_patterns),
-      barrier_closure);
+content::ResourceContext* Profile::GetResourceContext() {
+  return resource_context_.get();
 }

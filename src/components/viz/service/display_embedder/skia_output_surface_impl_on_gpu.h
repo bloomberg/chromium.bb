@@ -133,6 +133,9 @@ class SkiaOutputSurfaceImplOnGpu
           output_surface_plane);
   void SwapBuffers(base::TimeTicks post_task_timestamp,
                    OutputSurfaceFrame frame);
+
+  void SetDependenciesResolvedTimings(base::TimeTicks task_ready);
+
   // Runs |deferred_framebuffer_draw_closure| when SwapBuffers() or CopyOutput()
   // will not.
   void SwapBuffersSkipped();
@@ -201,6 +204,7 @@ class SkiaOutputSurfaceImplOnGpu
   }
 
   void ReadbackDone() {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK_GT(num_readbacks_pending_, 0);
     num_readbacks_pending_--;
   }
@@ -209,7 +213,7 @@ class SkiaOutputSurfaceImplOnGpu
   // It will do nothing when Vulkan is used.
   bool MakeCurrent(bool need_framebuffer);
 
-  void ReleaseFenceSyncAndPushTextureUpdates(uint64_t sync_fence_release);
+  void ReleaseFenceSync(uint64_t sync_fence_release);
 
   void PreserveChildSurfaceControls();
 
@@ -236,8 +240,6 @@ class SkiaOutputSurfaceImplOnGpu
       const gpu::SyncToken& sync_token,
       bool is_lost);
 
-  void PullTextureUpdates(std::vector<gpu::SyncToken> sync_token);
-
   void SwapBuffersInternal(base::Optional<OutputSurfaceFrame> frame);
   void PostSubmit(base::Optional<OutputSurfaceFrame> frame);
 
@@ -261,6 +263,8 @@ class SkiaOutputSurfaceImplOnGpu
   // pending readback requests after checking then it will reschedule itself
   // after a short delay.
   void CheckReadbackCompletion();
+
+  void ReleaseAsyncReadResultHelpers();
 
 #if defined(OS_APPLE)
   std::unique_ptr<gpu::SharedImageRepresentationSkia>

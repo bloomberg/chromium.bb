@@ -30,7 +30,13 @@ class HTMLPopupElement final : public HTMLElement {
 
   Element* AnchorElement() const;
 
+  // This is used by invoking elements (which have a "popup" attribute)
+  // to invoke the popup.
+  void Invoke(Element* invoker);
+
   static void HandleLightDismiss(const Event&);
+
+  void Trace(Visitor*) const override;
 
  private:
   void ScheduleHideEvent();
@@ -40,7 +46,10 @@ class HTMLPopupElement final : public HTMLElement {
   void PopPopupElement(HTMLPopupElement*);
   HTMLPopupElement* TopmostPopupElement();
 
+  static const HTMLPopupElement* NearestOpenAncestralPopup(Node*);
+
   bool open_;
+  WeakMember<Element> invoker_;
 };
 
 }  // namespace blink

@@ -68,7 +68,7 @@ public:
 
     void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const final {}
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const final;
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const final;
 
     const Attribute& inVertex() const { return kAttributes[0]; }
     const Attribute& inColor() const { return kAttributes[1]; }
@@ -87,29 +87,29 @@ private:
     friend class GLSLPipelineDynamicStateTestProcessor;
     using INHERITED = GrGeometryProcessor;
 };
-constexpr GrPrimitiveProcessor::Attribute GrPipelineDynamicStateTestProcessor::kAttributes[];
+constexpr GrGeometryProcessor::Attribute GrPipelineDynamicStateTestProcessor::kAttributes[];
 
 class GLSLPipelineDynamicStateTestProcessor : public GrGLSLGeometryProcessor {
-    void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor&) final {}
+    void setData(const GrGLSLProgramDataManager&, const GrGeometryProcessor&) final {}
 
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) final {
         const GrPipelineDynamicStateTestProcessor& mp =
-            args.fGP.cast<GrPipelineDynamicStateTestProcessor>();
+            args.fGeomProc.cast<GrPipelineDynamicStateTestProcessor>();
+        GrGLSLVertexBuilder* v = args.fVertBuilder;
+        GrGLSLFPFragmentBuilder* f = args.fFragBuilder;
 
         GrGLSLVaryingHandler* varyingHandler = args.fVaryingHandler;
         varyingHandler->emitAttributes(mp);
+        f->codeAppendf("half4 %s;", args.fOutputColor);
         varyingHandler->addPassThroughAttribute(mp.inColor(), args.fOutputColor);
 
-        GrGLSLVertexBuilder* v = args.fVertBuilder;
         v->codeAppendf("float2 vertex = %s;", mp.inVertex().name());
         gpArgs->fPositionVar.set(kFloat2_GrSLType, "vertex");
-
-        GrGLSLFPFragmentBuilder* f = args.fFragBuilder;
-        f->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+        f->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
     }
 };
 
-GrGLSLPrimitiveProcessor*
+GrGLSLGeometryProcessor*
 GrPipelineDynamicStateTestProcessor::createGLSLInstance(const GrShaderCaps&) const {
     return new GLSLPipelineDynamicStateTestProcessor;
 }

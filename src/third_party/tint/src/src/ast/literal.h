@@ -18,7 +18,6 @@
 #include <string>
 
 #include "src/ast/node.h"
-#include "src/type/type.h"
 
 namespace tint {
 namespace ast {
@@ -30,9 +29,6 @@ class Literal : public Castable<Literal, Node> {
 
   /// @returns the type of the literal
   type::Type* type() const { return type_; }
-
-  /// @returns true if the node is valid
-  bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
   /// @param sem the semantic info for the program

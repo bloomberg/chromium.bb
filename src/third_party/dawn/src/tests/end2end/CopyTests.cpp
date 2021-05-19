@@ -24,14 +24,16 @@
 // For MinimumBufferSpec bytesPerRow and rowsPerImage, compute a default from the copy extent.
 constexpr uint32_t kStrideComputeDefault = 0xFFFF'FFFEul;
 
+constexpr wgpu::TextureFormat kDefaultFormat = wgpu::TextureFormat::RGBA8Unorm;
+
 class CopyTests : public DawnTest {
   protected:
-    static constexpr wgpu::TextureFormat kTextureFormat = wgpu::TextureFormat::RGBA8Unorm;
-
     struct TextureSpec {
-        wgpu::Origin3D copyOrigin;
+        wgpu::TextureFormat format = kDefaultFormat;
+        wgpu::Origin3D copyOrigin = {0, 0, 0};
         wgpu::Extent3D textureSize;
-        uint32_t level;
+        uint32_t copyLevel = 0;
+        uint32_t levelCount = 1;
     };
 
     struct BufferSpec {
@@ -41,9 +43,28 @@ class CopyTests : public DawnTest {
         uint32_t rowsPerImage;
     };
 
-    static std::vector<RGBA8> GetExpectedTextureData(const utils::TextureDataCopyLayout& layout) {
+    static std::vector<uint8_t> GetExpectedTextureData(const utils::TextureDataCopyLayout& layout) {
+        uint32_t bytesPerTexelBlock = layout.bytesPerRow / layout.texelBlocksPerRow;
+        std::vector<uint8_t> textureData(layout.byteLength);
+        for (uint32_t layer = 0; layer < layout.mipSize.depthOrArrayLayers; ++layer) {
+            const uint32_t byteOffsetPerSlice = layout.bytesPerImage * layer;
+            for (uint32_t y = 0; y < layout.mipSize.height; ++y) {
+                for (uint32_t x = 0; x < layout.mipSize.width * bytesPerTexelBlock; ++x) {
+                    uint32_t i = x + y * layout.texelBlocksPerRow;
+                    textureData[byteOffsetPerSlice + i] =
+                        static_cast<uint8_t>((x + 1 + (layer + 1) * y) % 256);
+                }
+            }
+        }
+        return textureData;
+    }
+
+    // TODO(jiawei.shao@intel.com): remove this function when all the tests in this file support
+    // testing arbitrary formats.
+    static std::vector<RGBA8> GetExpectedTextureDataRGBA8(
+        const utils::TextureDataCopyLayout& layout) {
         std::vector<RGBA8> textureData(layout.texelBlockCount);
-        for (uint32_t layer = 0; layer < layout.mipSize.depth; ++layer) {
+        for (uint32_t layer = 0; layer < layout.mipSize.depthOrArrayLayers; ++layer) {
             const uint32_t texelIndexOffsetPerSlice = layout.texelBlocksPerImage * layer;
             for (uint32_t y = 0; y < layout.mipSize.height; ++y) {
                 for (uint32_t x = 0; x < layout.mipSize.width; ++x) {
@@ -59,15 +80,20 @@ class CopyTests : public DawnTest {
         return textureData;
     }
 
-    static BufferSpec MinimumBufferSpec(uint32_t width, uint32_t height, uint32_t depth = 1) {
+    static BufferSpec MinimumBufferSpec(uint32_t width,
+                                        uint32_t height,
+                                        uint32_t depth = 1,
+                                        wgpu::TextureFormat format = kDefaultFormat) {
         return MinimumBufferSpec({width, height, depth}, kStrideComputeDefault,
-                                 depth == 1 ? wgpu::kCopyStrideUndefined : kStrideComputeDefault);
+                                 depth == 1 ? wgpu::kCopyStrideUndefined : kStrideComputeDefault,
+                                 format);
     }
 
     static BufferSpec MinimumBufferSpec(wgpu::Extent3D copyExtent,
                                         uint32_t overrideBytesPerRow = kStrideComputeDefault,
-                                        uint32_t overrideRowsPerImage = kStrideComputeDefault) {
-        uint32_t bytesPerRow = utils::GetMinimumBytesPerRow(kTextureFormat, copyExtent.width);
+                                        uint32_t overrideRowsPerImage = kStrideComputeDefault,
+                                        wgpu::TextureFormat format = kDefaultFormat) {
+        uint32_t bytesPerRow = utils::GetMinimumBytesPerRow(format, copyExtent.width);
         if (overrideBytesPerRow != kStrideComputeDefault) {
             bytesPerRow = overrideBytesPerRow;
         }
@@ -77,20 +103,24 @@ class CopyTests : public DawnTest {
         }
 
         uint32_t totalDataSize =
-            utils::RequiredBytesInCopy(bytesPerRow, rowsPerImage, copyExtent, kTextureFormat);
+            utils::RequiredBytesInCopy(bytesPerRow, rowsPerImage, copyExtent, format);
         return {totalDataSize, 0, bytesPerRow, rowsPerImage};
     }
-    static void PackTextureData(const RGBA8* srcData,
-                                uint32_t width,
-                                uint32_t height,
-                                uint32_t srcTexelsPerRow,
-                                RGBA8* dstData,
-                                uint32_t dstTexelsPerRow) {
-        for (unsigned int y = 0; y < height; ++y) {
-            for (unsigned int x = 0; x < width; ++x) {
-                unsigned int src = x + y * srcTexelsPerRow;
-                unsigned int dst = x + y * dstTexelsPerRow;
-                dstData[dst] = srcData[src];
+    static void PackTextureData(uint32_t bytesPerTexelBlock,
+                                const void* srcData,
+                                uint32_t widthInBlocks,
+                                uint32_t heightInBlocks,
+                                uint32_t depthInBlocks,
+                                uint32_t srcBytesPerRow,
+                                void* dstData,
+                                uint32_t dstBytesPerRow) {
+        for (unsigned int z = 0; z < depthInBlocks; ++z) {
+            uint32_t srcDepthOffset = z * srcBytesPerRow * heightInBlocks;
+            uint32_t dstDepthOffset = z * dstBytesPerRow * heightInBlocks;
+            for (unsigned int y = 0; y < heightInBlocks; ++y) {
+                memcpy(static_cast<uint8_t*>(dstData) + srcDepthOffset + y * dstBytesPerRow,
+                       static_cast<const uint8_t*>(srcData) + dstDepthOffset + y * srcBytesPerRow,
+                       widthInBlocks * bytesPerTexelBlock);
             }
         }
     }
@@ -100,15 +130,19 @@ class CopyTests_T2B : public CopyTests {
   protected:
     void DoTest(const TextureSpec& textureSpec,
                 const BufferSpec& bufferSpec,
-                const wgpu::Extent3D& copySize) {
-        const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(kTextureFormat);
+                const wgpu::Extent3D& copySize,
+                wgpu::TextureDimension dimension = wgpu::TextureDimension::e2D) {
+        // TODO(jiawei.shao@intel.com): support testing arbitrary formats
+        ASSERT_EQ(kDefaultFormat, textureSpec.format);
+
+        const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(textureSpec.format);
         // Create a texture that is `width` x `height` with (`level` + 1) mip levels.
         wgpu::TextureDescriptor descriptor;
-        descriptor.dimension = wgpu::TextureDimension::e2D;
+        descriptor.dimension = dimension;
         descriptor.size = textureSpec.textureSize;
         descriptor.sampleCount = 1;
-        descriptor.format = kTextureFormat;
-        descriptor.mipLevelCount = textureSpec.level + 1;
+        descriptor.format = textureSpec.format;
+        descriptor.mipLevelCount = textureSpec.levelCount;
         descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc;
         wgpu::Texture texture = device.CreateTexture(&descriptor);
 
@@ -116,21 +150,20 @@ class CopyTests_T2B : public CopyTests {
         // Some parts of this result are also reused later.
         const utils::TextureDataCopyLayout copyLayout =
             utils::GetTextureDataCopyLayoutForTexture2DAtLevel(
-                kTextureFormat, textureSpec.textureSize, textureSpec.level);
-
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+                textureSpec.format, textureSpec.textureSize, textureSpec.copyLevel);
 
         // Initialize the source texture
-        std::vector<RGBA8> textureArrayData = GetExpectedTextureData(copyLayout);
+        std::vector<RGBA8> textureArrayData = GetExpectedTextureDataRGBA8(copyLayout);
         {
-            wgpu::Buffer uploadBuffer = utils::CreateBufferFromData(
-                device, textureArrayData.data(), copyLayout.byteLength, wgpu::BufferUsage::CopySrc);
-            wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(
-                uploadBuffer, 0, copyLayout.bytesPerRow, copyLayout.rowsPerImage);
-            wgpu::TextureCopyView textureCopyView =
-                utils::CreateTextureCopyView(texture, textureSpec.level, {0, 0, 0});
-            encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copyLayout.mipSize);
+            wgpu::ImageCopyTexture imageCopyTexture =
+                utils::CreateImageCopyTexture(texture, textureSpec.copyLevel, {0, 0, 0});
+            wgpu::TextureDataLayout textureDataLayout =
+                utils::CreateTextureDataLayout(0, copyLayout.bytesPerRow, copyLayout.rowsPerImage);
+            queue.WriteTexture(&imageCopyTexture, textureArrayData.data(), copyLayout.byteLength,
+                               &textureDataLayout, &copyLayout.mipSize);
         }
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
         // Create a buffer of `size` and populate it with empty data (0,0,0,0) Note:
         // Prepopulating the buffer with empty data ensures that there is not random data in the
@@ -142,11 +175,11 @@ class CopyTests_T2B : public CopyTests {
         wgpu::Buffer buffer = device.CreateBuffer(&bufferDesc);
 
         {
-            wgpu::TextureCopyView textureCopyView =
-                utils::CreateTextureCopyView(texture, textureSpec.level, textureSpec.copyOrigin);
-            wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(
+            wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(
+                texture, textureSpec.copyLevel, textureSpec.copyOrigin);
+            wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(
                 buffer, bufferSpec.offset, bufferSpec.bytesPerRow, bufferSpec.rowsPerImage);
-            encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &copySize);
+            encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &copySize);
         }
 
         wgpu::CommandBuffer commands = encoder.Finish();
@@ -154,11 +187,18 @@ class CopyTests_T2B : public CopyTests {
 
         uint64_t bufferOffset = bufferSpec.offset;
 
-        const wgpu::Extent3D copySizePerSlice = {copySize.width, copySize.height, 1};
+        uint32_t copyLayer = copySize.depthOrArrayLayers;
+        uint32_t copyDepth = 1;
+        if (dimension == wgpu::TextureDimension::e3D) {
+            copyLayer = 1;
+            copyDepth = copySize.depthOrArrayLayers;
+        }
+
+        const wgpu::Extent3D copySizePerLayer = {copySize.width, copySize.height, copyDepth};
         // Texels in single slice.
         const uint32_t texelCountInCopyRegion = utils::GetTexelCountInCopyRegion(
-            bufferSpec.bytesPerRow, bufferSpec.rowsPerImage, copySizePerSlice, kTextureFormat);
-        const uint32_t maxArrayLayer = textureSpec.copyOrigin.z + copySize.depth;
+            bufferSpec.bytesPerRow, bufferSpec.rowsPerImage, copySizePerLayer, textureSpec.format);
+        const uint32_t maxArrayLayer = textureSpec.copyOrigin.z + copyLayer;
         std::vector<RGBA8> expected(texelCountInCopyRegion);
         for (uint32_t slice = textureSpec.copyOrigin.z; slice < maxArrayLayer; ++slice) {
             // Pack the data used to create the upload buffer in the specified copy region to have
@@ -169,9 +209,10 @@ class CopyTests_T2B : public CopyTests {
                 texelIndexOffset + (textureSpec.copyOrigin.x +
                                     textureSpec.copyOrigin.y * copyLayout.texelBlocksPerRow);
 
-            PackTextureData(textureArrayData.data() + expectedTexelArrayDataStartIndex,
-                            copySize.width, copySize.height, copyLayout.texelBlocksPerRow,
-                            expected.data(), bufferSpec.bytesPerRow / bytesPerTexel);
+            PackTextureData(bytesPerTexel,
+                            textureArrayData.data() + expectedTexelArrayDataStartIndex,
+                            copySize.width, copySize.height, copyDepth, copyLayout.bytesPerRow,
+                            expected.data(), bufferSpec.bytesPerRow);
 
             EXPECT_BUFFER_U32_RANGE_EQ(reinterpret_cast<const uint32_t*>(expected.data()), buffer,
                                        bufferOffset, static_cast<uint32_t>(expected.size()))
@@ -179,9 +220,9 @@ class CopyTests_T2B : public CopyTests {
                 << ", " << textureSpec.copyOrigin.y << ", " << textureSpec.copyOrigin.z << "), ("
                 << textureSpec.copyOrigin.x + copySize.width << ", "
                 << textureSpec.copyOrigin.y + copySize.height << ", "
-                << textureSpec.copyOrigin.z + copySize.depth << ")) from "
+                << textureSpec.copyOrigin.z + copySize.depthOrArrayLayers << ")) from "
                 << textureSpec.textureSize.width << " x " << textureSpec.textureSize.height
-                << " texture at mip level " << textureSpec.level << " layer " << slice << " to "
+                << " texture at mip level " << textureSpec.copyLevel << " layer " << slice << " to "
                 << bufferSpec.size << "-byte buffer with offset " << bufferOffset
                 << " and bytes per row " << bufferSpec.bytesPerRow << std::endl;
 
@@ -201,9 +242,12 @@ class CopyTests_B2T : public CopyTests {
 
     void DoTest(const TextureSpec& textureSpec,
                 const BufferSpec& bufferSpec,
-                const wgpu::Extent3D& copySize) {
+                const wgpu::Extent3D& copySize,
+                wgpu::TextureDimension dimension = wgpu::TextureDimension::e2D) {
+        // TODO(jiawei.shao@intel.com): support testing arbitrary formats
+        ASSERT_EQ(kDefaultFormat, textureSpec.format);
         // Create a buffer of size `size` and populate it with data
-        const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(kTextureFormat);
+        const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(textureSpec.format);
         std::vector<RGBA8> bufferData(bufferSpec.size / bytesPerTexel);
         FillBufferData(bufferData.data(), bufferData.size());
         wgpu::Buffer buffer =
@@ -212,54 +256,61 @@ class CopyTests_B2T : public CopyTests {
 
         // Create a texture that is `width` x `height` with (`level` + 1) mip levels.
         wgpu::TextureDescriptor descriptor;
-        descriptor.dimension = wgpu::TextureDimension::e2D;
+        descriptor.dimension = dimension;
         descriptor.size = textureSpec.textureSize;
         descriptor.sampleCount = 1;
-        descriptor.format = kTextureFormat;
-        descriptor.mipLevelCount = textureSpec.level + 1;
+        descriptor.format = textureSpec.format;
+        descriptor.mipLevelCount = textureSpec.levelCount;
         descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc;
         wgpu::Texture texture = device.CreateTexture(&descriptor);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
-        const utils::TextureDataCopyLayout copyLayout =
-            utils::GetTextureDataCopyLayoutForTexture2DAtLevel(
-                kTextureFormat, textureSpec.textureSize, textureSpec.level,
-                bufferSpec.rowsPerImage);
-
-        const uint32_t maxArrayLayer = textureSpec.copyOrigin.z + copySize.depth;
-
-        wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(
+        wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(
             buffer, bufferSpec.offset, bufferSpec.bytesPerRow, bufferSpec.rowsPerImage);
-        wgpu::TextureCopyView textureCopyView =
-            utils::CreateTextureCopyView(texture, textureSpec.level, textureSpec.copyOrigin);
-        encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+        wgpu::ImageCopyTexture imageCopyTexture =
+            utils::CreateImageCopyTexture(texture, textureSpec.copyLevel, textureSpec.copyOrigin);
+        encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
 
         wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
 
+        const utils::TextureDataCopyLayout copyLayout =
+            utils::GetTextureDataCopyLayoutForTexture2DAtLevel(
+                textureSpec.format, textureSpec.textureSize, textureSpec.copyLevel,
+                bufferSpec.rowsPerImage);
+
+        uint32_t copyLayer = copySize.depthOrArrayLayers;
+        uint32_t copyDepth = 1;
+        if (dimension == wgpu::TextureDimension::e3D) {
+            copyLayer = 1;
+            copyDepth = copySize.depthOrArrayLayers;
+        }
+
         uint64_t bufferOffset = bufferSpec.offset;
         const uint32_t texelCountLastLayer =
-            copyLayout.texelBlocksPerRow * (copyLayout.mipSize.height - 1) +
-            copyLayout.mipSize.width;
-        for (uint32_t slice = textureSpec.copyOrigin.z; slice < maxArrayLayer; ++slice) {
+            copyDepth * (copyLayout.texelBlocksPerRow * (copyLayout.mipSize.height - 1) +
+                         copyLayout.mipSize.width);
+        for (uint32_t layer = 0; layer < copyLayer; ++layer) {
             // Pack the data used to create the buffer in the specified copy region to have the same
             // format as the expected texture data.
             std::vector<RGBA8> expected(texelCountLastLayer);
-            PackTextureData(bufferData.data() + bufferOffset / bytesPerTexel, copySize.width,
-                            copySize.height, bufferSpec.bytesPerRow / bytesPerTexel,
-                            expected.data(), copySize.width);
+            PackTextureData(bytesPerTexel, bufferData.data() + bufferOffset / bytesPerTexel,
+                            copySize.width, copySize.height, copyDepth, bufferSpec.bytesPerRow,
+                            expected.data(), copySize.width * bytesPerTexel);
 
-            EXPECT_TEXTURE_RGBA8_EQ(expected.data(), texture, textureSpec.copyOrigin.x,
-                                    textureSpec.copyOrigin.y, copySize.width, copySize.height,
-                                    textureSpec.level, slice)
+            EXPECT_TEXTURE_EQ(expected.data(), texture,
+                              {textureSpec.copyOrigin.x, textureSpec.copyOrigin.y,
+                               textureSpec.copyOrigin.z + layer},
+                              {copySize.width, copySize.height, copyDepth}, textureSpec.copyLevel)
                 << "Buffer to Texture copy failed copying " << bufferSpec.size
                 << "-byte buffer with offset " << bufferSpec.offset << " and bytes per row "
                 << bufferSpec.bytesPerRow << " to [(" << textureSpec.copyOrigin.x << ", "
                 << textureSpec.copyOrigin.y << "), (" << textureSpec.copyOrigin.x + copySize.width
                 << ", " << textureSpec.copyOrigin.y + copySize.height << ")) region of "
                 << textureSpec.textureSize.width << " x " << textureSpec.textureSize.height
-                << " texture at mip level " << textureSpec.level << " layer " << slice << std::endl;
+                << " texture at mip level " << textureSpec.copyLevel << " layer " << layer
+                << std::endl;
             bufferOffset += copyLayout.bytesPerImage;
         }
     }
@@ -270,13 +321,17 @@ class CopyTests_T2T : public CopyTests {
     void DoTest(const TextureSpec& srcSpec,
                 const TextureSpec& dstSpec,
                 const wgpu::Extent3D& copySize,
-                bool copyWithinSameTexture = false) {
+                bool copyWithinSameTexture = false,
+                wgpu::TextureDimension dimension = wgpu::TextureDimension::e2D) {
+        ASSERT_EQ(srcSpec.format, dstSpec.format);
+        const wgpu::TextureFormat format = srcSpec.format;
+
         wgpu::TextureDescriptor srcDescriptor;
-        srcDescriptor.dimension = wgpu::TextureDimension::e2D;
+        srcDescriptor.dimension = dimension;
         srcDescriptor.size = srcSpec.textureSize;
         srcDescriptor.sampleCount = 1;
-        srcDescriptor.format = kTextureFormat;
-        srcDescriptor.mipLevelCount = srcSpec.level + 1;
+        srcDescriptor.format = format;
+        srcDescriptor.mipLevelCount = srcSpec.levelCount;
         srcDescriptor.usage = wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
         wgpu::Texture srcTexture = device.CreateTexture(&srcDescriptor);
 
@@ -285,75 +340,115 @@ class CopyTests_T2T : public CopyTests {
             dstTexture = srcTexture;
         } else {
             wgpu::TextureDescriptor dstDescriptor;
-            dstDescriptor.dimension = wgpu::TextureDimension::e2D;
+            dstDescriptor.dimension = dimension;
             dstDescriptor.size = dstSpec.textureSize;
             dstDescriptor.sampleCount = 1;
-            dstDescriptor.format = kTextureFormat;
-            dstDescriptor.mipLevelCount = dstSpec.level + 1;
+            dstDescriptor.format = format;
+            dstDescriptor.mipLevelCount = dstSpec.levelCount;
             dstDescriptor.usage = wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
             dstTexture = device.CreateTexture(&dstDescriptor);
         }
 
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-
         // Create an upload buffer and use it to populate the current slice of the texture in
         // `level` mip level
-        const utils::TextureDataCopyLayout copyLayout =
+        const utils::TextureDataCopyLayout srcDataCopyLayout =
             utils::GetTextureDataCopyLayoutForTexture2DAtLevel(
-                kTextureFormat,
-                {srcSpec.textureSize.width, srcSpec.textureSize.height, copySize.depth},
-                srcSpec.level);
+                format,
+                {srcSpec.textureSize.width, srcSpec.textureSize.height,
+                 copySize.depthOrArrayLayers},
+                srcSpec.copyLevel);
 
-        const std::vector<RGBA8> textureArrayCopyData = GetExpectedTextureData(copyLayout);
+        // Initialize the source texture
+        const std::vector<uint8_t> srcTextureCopyData = GetExpectedTextureData(srcDataCopyLayout);
+        {
+            wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(
+                srcTexture, srcSpec.copyLevel, {0, 0, srcSpec.copyOrigin.z});
+            wgpu::TextureDataLayout textureDataLayout = utils::CreateTextureDataLayout(
+                0, srcDataCopyLayout.bytesPerRow, srcDataCopyLayout.rowsPerImage);
+            queue.WriteTexture(&imageCopyTexture, srcTextureCopyData.data(),
+                               srcDataCopyLayout.byteLength, &textureDataLayout,
+                               &srcDataCopyLayout.mipSize);
+        }
 
-        wgpu::Buffer uploadBuffer = utils::CreateBufferFromData(
-            device, textureArrayCopyData.data(), copyLayout.byteLength, wgpu::BufferUsage::CopySrc);
-        wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(
-            uploadBuffer, 0, copyLayout.bytesPerRow, copyLayout.rowsPerImage);
-        wgpu::TextureCopyView textureCopyView =
-            utils::CreateTextureCopyView(srcTexture, srcSpec.level, {0, 0, srcSpec.copyOrigin.z});
-        encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copyLayout.mipSize);
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
-        const wgpu::Extent3D copySizePerSlice = {copySize.width, copySize.height, 1};
         // Perform the texture to texture copy
-        wgpu::TextureCopyView srcTextureCopyView =
-            utils::CreateTextureCopyView(srcTexture, srcSpec.level, srcSpec.copyOrigin);
-        wgpu::TextureCopyView dstTextureCopyView =
-            utils::CreateTextureCopyView(dstTexture, dstSpec.level, dstSpec.copyOrigin);
-        encoder.CopyTextureToTexture(&srcTextureCopyView, &dstTextureCopyView, &copySize);
+        wgpu::ImageCopyTexture srcImageCopyTexture =
+            utils::CreateImageCopyTexture(srcTexture, srcSpec.copyLevel, srcSpec.copyOrigin);
+        wgpu::ImageCopyTexture dstImageCopyTexture =
+            utils::CreateImageCopyTexture(dstTexture, dstSpec.copyLevel, dstSpec.copyOrigin);
+        encoder.CopyTextureToTexture(&srcImageCopyTexture, &dstImageCopyTexture, &copySize);
+
+        // Copy the data from the srcSpec.copyOrigin.z-th layer to (srcSpec.copyOrigin.z +
+        // copySize.depthOrArrayLayers)-th layer of dstTexture to outputBuffer
+        const utils::TextureDataCopyLayout dstDataCopyLayout =
+            utils::GetTextureDataCopyLayoutForTexture2DAtLevel(
+                format,
+                {dstSpec.textureSize.width, dstSpec.textureSize.height,
+                 copySize.depthOrArrayLayers},
+                dstSpec.copyLevel);
+        wgpu::BufferDescriptor outputBufferDescriptor;
+        outputBufferDescriptor.size = dstDataCopyLayout.byteLength;
+        outputBufferDescriptor.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
+        wgpu::Buffer outputBuffer = device.CreateBuffer(&outputBufferDescriptor);
+        wgpu::ImageCopyBuffer outputImageCopyBuffer = utils::CreateImageCopyBuffer(
+            outputBuffer, 0, dstDataCopyLayout.bytesPerRow, dstDataCopyLayout.rowsPerImage);
+        encoder.CopyTextureToBuffer(&dstImageCopyTexture, &outputImageCopyBuffer, &copySize);
 
         wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
 
-        // Texels in single slice.
-        const uint32_t texelCountInCopyRegion = utils::GetTexelCountInCopyRegion(
-            copyLayout.bytesPerRow, copyLayout.bytesPerImage / copyLayout.bytesPerRow,
-            copySizePerSlice, kTextureFormat);
-        std::vector<RGBA8> expected(texelCountInCopyRegion);
-        for (uint32_t slice = 0; slice < copySize.depth; ++slice) {
-            std::fill(expected.begin(), expected.end(), RGBA8());
-            const uint32_t texelIndexOffset = copyLayout.texelBlocksPerImage * slice;
-            const uint32_t expectedTexelArrayDataStartIndex =
-                texelIndexOffset +
-                (srcSpec.copyOrigin.x + srcSpec.copyOrigin.y * copyLayout.texelBlocksPerRow);
-            PackTextureData(&textureArrayCopyData[expectedTexelArrayDataStartIndex], copySize.width,
-                            copySize.height, copyLayout.texelBlocksPerRow, expected.data(),
-                            copySize.width);
+        // Validate if the data in outputBuffer is what we expected, including the untouched data
+        // outside of the copy.
+        {
+            uint32_t copyLayer = copySize.depthOrArrayLayers;
+            uint32_t copyDepth = 1;
+            if (dimension == wgpu::TextureDimension::e3D) {
+                copyLayer = 1;
+                copyDepth = copySize.depthOrArrayLayers;
+            }
 
-            EXPECT_TEXTURE_RGBA8_EQ(expected.data(), dstTexture, dstSpec.copyOrigin.x,
-                                    dstSpec.copyOrigin.y, copySize.width, copySize.height,
-                                    dstSpec.level, dstSpec.copyOrigin.z + slice)
-                << "Texture to Texture copy failed copying region [(" << srcSpec.copyOrigin.x
-                << ", " << srcSpec.copyOrigin.y << "), (" << srcSpec.copyOrigin.x + copySize.width
-                << ", " << srcSpec.copyOrigin.y + copySize.height << ")) from "
-                << srcSpec.textureSize.width << " x " << srcSpec.textureSize.height
-                << " texture at mip level " << srcSpec.level << " layer "
-                << srcSpec.copyOrigin.z + slice << " to [(" << dstSpec.copyOrigin.x << ", "
-                << dstSpec.copyOrigin.y << "), (" << dstSpec.copyOrigin.x + copySize.width << ", "
-                << dstSpec.copyOrigin.y + copySize.height << ")) region of "
-                << dstSpec.textureSize.width << " x " << dstSpec.textureSize.height
-                << " texture at mip level " << dstSpec.level << " layer "
-                << dstSpec.copyOrigin.z + slice << std::endl;
+            const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(format);
+            const uint64_t validDataSizePerDstTextureLayer = utils::RequiredBytesInCopy(
+                dstDataCopyLayout.bytesPerRow, dstDataCopyLayout.mipSize.height,
+                dstDataCopyLayout.mipSize.width, dstDataCopyLayout.mipSize.height, copyDepth,
+                bytesPerTexel);
+
+            std::vector<uint8_t> expectedDstDataPerSlice(validDataSizePerDstTextureLayer);
+            for (uint32_t slice = 0; slice < copyLayer; ++slice) {
+                // For each source texture array slice involved in the copy, emulate the T2T copy
+                // on the CPU side by "copying" the copy data from the "source texture"
+                // (srcTextureCopyData) to the "destination texture" (expectedDstDataPerSlice).
+                std::fill(expectedDstDataPerSlice.begin(), expectedDstDataPerSlice.end(), 0);
+
+                const uint32_t srcBytesOffset = srcDataCopyLayout.bytesPerImage * slice;
+
+                // Get the offset of the srcTextureCopyData that contains the copy data on the
+                // slice-th texture array layer of the source texture.
+                const uint32_t srcTexelDataOffset =
+                    srcBytesOffset + (srcSpec.copyOrigin.x * bytesPerTexel +
+                                      srcSpec.copyOrigin.y * srcDataCopyLayout.bytesPerRow);
+                // expectedDstDataPerSlice stores one layer of the destination texture.
+                const uint32_t expectedDstDataOffset =
+                    (dstSpec.copyOrigin.x +
+                     dstSpec.copyOrigin.y * dstDataCopyLayout.mipSize.width) *
+                    bytesPerTexel;
+                // Do the T2T "copy" on the CPU side to get the expected texel value at the
+                PackTextureData(
+                    bytesPerTexel, &srcTextureCopyData[srcTexelDataOffset], copySize.width,
+                    copySize.height, copyDepth, srcDataCopyLayout.bytesPerRow,
+                    &expectedDstDataPerSlice[expectedDstDataOffset], dstDataCopyLayout.bytesPerRow);
+
+                // Compare the content of the destination texture at the (dstSpec.copyOrigin.z +
+                // slice)-th layer to its expected data after the copy (the outputBuffer contains
+                // the data of the destination texture since the dstSpec.copyOrigin.z-th layer).
+                uint64_t outputBufferExpectationBytesOffset =
+                    dstDataCopyLayout.bytesPerImage * slice;
+                EXPECT_BUFFER_U32_RANGE_EQ(
+                    reinterpret_cast<const uint32_t*>(expectedDstDataPerSlice.data()), outputBuffer,
+                    outputBufferExpectationBytesOffset,
+                    validDataSizePerDstTextureLayer / sizeof(uint32_t));
+            }
         }
     }
 };
@@ -408,8 +503,6 @@ TEST_P(CopyTests_T2B, FullTextureAligned) {
 
     TextureSpec textureSpec;
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.copyOrigin = {0, 0, 0};
-    textureSpec.level = 0;
 
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight), {kWidth, kHeight, 1});
 }
@@ -421,8 +514,6 @@ TEST_P(CopyTests_T2B, ZeroSizedCopy) {
 
     TextureSpec textureSpec;
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.copyOrigin = {0, 0, 0};
-    textureSpec.level = 0;
 
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight), {0, kHeight, 1});
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight), {kWidth, 0, 1});
@@ -436,8 +527,6 @@ TEST_P(CopyTests_T2B, FullTextureUnaligned) {
 
     TextureSpec textureSpec;
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.copyOrigin = {0, 0, 0};
-    textureSpec.level = 0;
 
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight), {kWidth, kHeight, 1});
 }
@@ -452,11 +541,9 @@ TEST_P(CopyTests_T2B, PixelReadAligned) {
     constexpr wgpu::Extent3D kTextureSize = {kWidth, kHeight, 1};
     TextureSpec defaultTextureSpec;
     defaultTextureSpec.textureSize = kTextureSize;
-    defaultTextureSpec.level = 0;
 
     {
         TextureSpec textureSpec = defaultTextureSpec;
-        textureSpec.copyOrigin = {0, 0, 0};
         DoTest(textureSpec, pixelBuffer, kCopySize);
     }
 
@@ -501,11 +588,9 @@ TEST_P(CopyTests_T2B, PixelReadUnaligned) {
     constexpr wgpu::Extent3D kTextureSize = {kWidth, kHeight, 1};
     TextureSpec defaultTextureSpec;
     defaultTextureSpec.textureSize = kTextureSize;
-    defaultTextureSpec.level = 0;
 
     {
         TextureSpec textureSpec = defaultTextureSpec;
-        textureSpec.copyOrigin = {0, 0, 0};
         DoTest(textureSpec, pixelBuffer, kCopySize);
     }
 
@@ -547,8 +632,6 @@ TEST_P(CopyTests_T2B, TextureRegionAligned) {
     for (unsigned int w : {64, 128, 256}) {
         for (unsigned int h : {16, 32, 48}) {
             TextureSpec textureSpec;
-            textureSpec.copyOrigin = {0, 0, 0};
-            textureSpec.level = 0;
             textureSpec.textureSize = {kWidth, kHeight, 1};
             DoTest(textureSpec, MinimumBufferSpec(w, h), {w, h, 1});
         }
@@ -561,8 +644,6 @@ TEST_P(CopyTests_T2B, TextureRegionUnaligned) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
-    defaultTextureSpec.level = 0;
     defaultTextureSpec.textureSize = {kWidth, kHeight, 1};
 
     for (unsigned int w : {13, 63, 65}) {
@@ -579,12 +660,12 @@ TEST_P(CopyTests_T2B, TextureMipAligned) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
     defaultTextureSpec.textureSize = {kWidth, kHeight, 1};
 
     for (unsigned int i = 1; i < 4; ++i) {
         TextureSpec textureSpec = defaultTextureSpec;
-        textureSpec.level = i;
+        textureSpec.copyLevel = i;
+        textureSpec.levelCount = i + 1;
         DoTest(textureSpec, MinimumBufferSpec(kWidth >> i, kHeight >> i),
                {kWidth >> i, kHeight >> i, 1});
     }
@@ -596,12 +677,12 @@ TEST_P(CopyTests_T2B, TextureMipUnaligned) {
     constexpr uint32_t kHeight = 127;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
     defaultTextureSpec.textureSize = {kWidth, kHeight, 1};
 
     for (unsigned int i = 1; i < 4; ++i) {
         TextureSpec textureSpec = defaultTextureSpec;
-        textureSpec.level = i;
+        textureSpec.copyLevel = i;
+        textureSpec.levelCount = i + 1;
         DoTest(textureSpec, MinimumBufferSpec(kWidth >> i, kHeight >> i),
                {kWidth >> i, kHeight >> i, 1});
     }
@@ -613,9 +694,7 @@ TEST_P(CopyTests_T2B, OffsetBufferAligned) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
     for (unsigned int i = 0; i < 3; ++i) {
         BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kHeight);
@@ -632,11 +711,9 @@ TEST_P(CopyTests_T2B, OffsetBufferUnaligned) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
-    const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(kTextureFormat);
+    const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(textureSpec.format);
     for (uint32_t i = bytesPerTexel; i < 512; i += bytesPerTexel * 9) {
         BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kHeight);
         bufferSpec.size += i;
@@ -652,11 +729,9 @@ TEST_P(CopyTests_T2B, OffsetBufferUnalignedSmallBytesPerRow) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
-    const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(kTextureFormat);
+    const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(textureSpec.format);
     for (uint32_t i = 256 + bytesPerTexel; i < 512; i += bytesPerTexel * 9) {
         BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kHeight);
         bufferSpec.size += i;
@@ -671,9 +746,7 @@ TEST_P(CopyTests_T2B, BytesPerRowAligned) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
     BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kHeight);
     for (unsigned int i = 1; i < 4; ++i) {
@@ -690,9 +763,7 @@ TEST_P(CopyTests_T2B, BytesPerRowUnaligned) {
     constexpr uint32_t kHeight = 127;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
     BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kHeight);
     for (unsigned int i = 1; i < 4; ++i) {
@@ -709,9 +780,7 @@ TEST_P(CopyTests_T2B, BytesPerRowWithOneRowCopy) {
     constexpr uint32_t kHeight = 127;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
     {
         BufferSpec bufferSpec = MinimumBufferSpec(5, 1);
@@ -737,9 +806,7 @@ TEST_P(CopyTests_T2B, BytesPerRowWithOneRowCopy) {
 
 TEST_P(CopyTests_T2B, StrideSpecialCases) {
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {4, 4, 4};
-    textureSpec.level = 0;
 
     // bytesPerRow 0
     for (const wgpu::Extent3D copyExtent :
@@ -768,15 +835,13 @@ TEST_P(CopyTests_T2B, StrideSpecialCases) {
 }
 
 // Test that copying whole texture 2D array layers in one texture-to-buffer-copy works.
-TEST_P(CopyTests_T2B, Texture2DArrayRegion) {
+TEST_P(CopyTests_T2B, Texture2DArrayFull) {
     constexpr uint32_t kWidth = 256;
     constexpr uint32_t kHeight = 128;
     constexpr uint32_t kLayers = 6u;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, kLayers};
-    textureSpec.level = 0;
 
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight, kLayers), {kWidth, kHeight, kLayers});
 }
@@ -792,7 +857,6 @@ TEST_P(CopyTests_T2B, Texture2DArraySubRegion) {
     TextureSpec textureSpec;
     textureSpec.copyOrigin = {0, 0, kBaseLayer};
     textureSpec.textureSize = {kWidth, kHeight, kLayers};
-    textureSpec.level = 0;
 
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight, kCopyLayers),
            {kWidth, kHeight, kCopyLayers});
@@ -805,12 +869,12 @@ TEST_P(CopyTests_T2B, Texture2DArrayMip) {
     constexpr uint32_t kLayers = 6u;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
     defaultTextureSpec.textureSize = {kWidth, kHeight, kLayers};
 
     for (unsigned int i = 1; i < 4; ++i) {
         TextureSpec textureSpec = defaultTextureSpec;
-        textureSpec.level = i;
+        textureSpec.copyLevel = i;
+        textureSpec.levelCount = i + 1;
 
         DoTest(textureSpec, MinimumBufferSpec(kWidth >> i, kHeight >> i, kLayers),
                {kWidth >> i, kHeight >> i, kLayers});
@@ -831,7 +895,6 @@ TEST_P(CopyTests_T2B, Texture2DArrayRegionNonzeroRowsPerImage) {
     TextureSpec textureSpec;
     textureSpec.copyOrigin = {0, 0, kBaseLayer};
     textureSpec.textureSize = {kWidth, kHeight, kLayers};
-    textureSpec.level = 0;
 
     BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kRowsPerImage, kCopyLayers);
     bufferSpec.rowsPerImage = kRowsPerImage;
@@ -852,7 +915,6 @@ TEST_P(CopyTests_T2B, Texture2DArrayRegionWithOffsetOddRowsPerImage) {
     TextureSpec textureSpec;
     textureSpec.copyOrigin = {0, 0, kBaseLayer};
     textureSpec.textureSize = {kWidth, kHeight, kLayers};
-    textureSpec.level = 0;
 
     BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kRowsPerImage, kCopyLayers);
     bufferSpec.offset += 128u;
@@ -875,7 +937,6 @@ TEST_P(CopyTests_T2B, Texture2DArrayRegionWithOffsetEvenRowsPerImage) {
     TextureSpec textureSpec;
     textureSpec.copyOrigin = {0, 0, kBaseLayer};
     textureSpec.textureSize = {kWidth, kHeight, kLayers};
-    textureSpec.level = 0;
 
     BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kRowsPerImage, kCopyLayers);
     bufferSpec.offset += 128u;
@@ -883,6 +944,26 @@ TEST_P(CopyTests_T2B, Texture2DArrayRegionWithOffsetEvenRowsPerImage) {
     bufferSpec.rowsPerImage = kRowsPerImage;
     DoTest(textureSpec, bufferSpec, {kWidth, kHeight, kCopyLayers});
 }
+
+// Test that copying whole 3D texture in one texture-to-buffer-copy works.
+TEST_P(CopyTests_T2B, Texture3DFull) {
+    // TODO(yunchao.he@intel.com): implement 3D texture copy on Vulkan, Metal, OpenGL and OpenGLES
+    // backend.
+    DAWN_SKIP_TEST_IF(IsVulkan() || IsMetal() || IsOpenGL() || IsOpenGLES());
+
+    constexpr uint32_t kWidth = 256;
+    constexpr uint32_t kHeight = 128;
+    constexpr uint32_t kDepth = 6u;
+
+    TextureSpec textureSpec;
+    textureSpec.textureSize = {kWidth, kHeight, kDepth};
+
+    DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight, kDepth), {kWidth, kHeight, kDepth},
+           wgpu::TextureDimension::e3D);
+}
+
+// TODO(yunchao.he@intel.com): add T2B tests for 3D textures, like RowPitch,
+// RowsPerImage, buffer offset, partial depth range, non-zero level, etc.
 
 DAWN_INSTANTIATE_TEST(CopyTests_T2B,
                       D3D12Backend(),
@@ -898,8 +979,6 @@ TEST_P(CopyTests_B2T, FullTextureAligned) {
 
     TextureSpec textureSpec;
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.copyOrigin = {0, 0, 0};
-    textureSpec.level = 0;
 
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight), {kWidth, kHeight, 1});
 }
@@ -911,8 +990,6 @@ TEST_P(CopyTests_B2T, ZeroSizedCopy) {
 
     TextureSpec textureSpec;
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.copyOrigin = {0, 0, 0};
-    textureSpec.level = 0;
 
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight), {0, kHeight, 1});
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight), {kWidth, 0, 1});
@@ -926,8 +1003,6 @@ TEST_P(CopyTests_B2T, FullTextureUnaligned) {
 
     TextureSpec textureSpec;
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.copyOrigin = {0, 0, 0};
-    textureSpec.level = 0;
 
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight), {kWidth, kHeight, 1});
 }
@@ -942,11 +1017,9 @@ TEST_P(CopyTests_B2T, PixelReadAligned) {
     constexpr wgpu::Extent3D kTextureSize = {kWidth, kHeight, 1};
     TextureSpec defaultTextureSpec;
     defaultTextureSpec.textureSize = kTextureSize;
-    defaultTextureSpec.level = 0;
 
     {
         TextureSpec textureSpec = defaultTextureSpec;
-        textureSpec.copyOrigin = {0, 0, 0};
         DoTest(textureSpec, pixelBuffer, kCopySize);
     }
 
@@ -991,11 +1064,9 @@ TEST_P(CopyTests_B2T, PixelReadUnaligned) {
     constexpr wgpu::Extent3D kTextureSize = {kWidth, kHeight, 1};
     TextureSpec defaultTextureSpec;
     defaultTextureSpec.textureSize = kTextureSize;
-    defaultTextureSpec.level = 0;
 
     {
         TextureSpec textureSpec = defaultTextureSpec;
-        textureSpec.copyOrigin = {0, 0, 0};
         DoTest(textureSpec, pixelBuffer, kCopySize);
     }
 
@@ -1037,8 +1108,6 @@ TEST_P(CopyTests_B2T, TextureRegionAligned) {
     for (unsigned int w : {64, 128, 256}) {
         for (unsigned int h : {16, 32, 48}) {
             TextureSpec textureSpec;
-            textureSpec.copyOrigin = {0, 0, 0};
-            textureSpec.level = 0;
             textureSpec.textureSize = {kWidth, kHeight, 1};
             DoTest(textureSpec, MinimumBufferSpec(w, h), {w, h, 1});
         }
@@ -1051,8 +1120,6 @@ TEST_P(CopyTests_B2T, TextureRegionUnaligned) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
-    defaultTextureSpec.level = 0;
     defaultTextureSpec.textureSize = {kWidth, kHeight, 1};
 
     for (unsigned int w : {13, 63, 65}) {
@@ -1069,12 +1136,12 @@ TEST_P(CopyTests_B2T, TextureMipAligned) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
     defaultTextureSpec.textureSize = {kWidth, kHeight, 1};
 
     for (unsigned int i = 1; i < 4; ++i) {
         TextureSpec textureSpec = defaultTextureSpec;
-        textureSpec.level = i;
+        textureSpec.copyLevel = i;
+        textureSpec.levelCount = i + 1;
         DoTest(textureSpec, MinimumBufferSpec(kWidth >> i, kHeight >> i),
                {kWidth >> i, kHeight >> i, 1});
     }
@@ -1086,12 +1153,12 @@ TEST_P(CopyTests_B2T, TextureMipUnaligned) {
     constexpr uint32_t kHeight = 127;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
     defaultTextureSpec.textureSize = {kWidth, kHeight, 1};
 
     for (unsigned int i = 1; i < 4; ++i) {
         TextureSpec textureSpec = defaultTextureSpec;
-        textureSpec.level = i;
+        textureSpec.copyLevel = i;
+        textureSpec.levelCount = i + 1;
         DoTest(textureSpec, MinimumBufferSpec(kWidth >> i, kHeight >> i),
                {kWidth >> i, kHeight >> i, 1});
     }
@@ -1103,9 +1170,7 @@ TEST_P(CopyTests_B2T, OffsetBufferAligned) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
     for (unsigned int i = 0; i < 3; ++i) {
         BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kHeight);
@@ -1122,11 +1187,9 @@ TEST_P(CopyTests_B2T, OffsetBufferUnaligned) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
-    const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(kTextureFormat);
+    const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(textureSpec.format);
     for (uint32_t i = bytesPerTexel; i < 512; i += bytesPerTexel * 9) {
         BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kHeight);
         bufferSpec.size += i;
@@ -1142,11 +1205,9 @@ TEST_P(CopyTests_B2T, OffsetBufferUnalignedSmallBytesPerRow) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
-    const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(kTextureFormat);
+    const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(textureSpec.format);
     for (uint32_t i = 256 + bytesPerTexel; i < 512; i += bytesPerTexel * 9) {
         BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kHeight);
         bufferSpec.size += i;
@@ -1161,9 +1222,7 @@ TEST_P(CopyTests_B2T, BytesPerRowAligned) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
     BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kHeight);
     for (unsigned int i = 1; i < 4; ++i) {
@@ -1180,9 +1239,7 @@ TEST_P(CopyTests_B2T, BytesPerRowUnaligned) {
     constexpr uint32_t kHeight = 127;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
     BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kHeight);
     for (unsigned int i = 1; i < 4; ++i) {
@@ -1199,9 +1256,7 @@ TEST_P(CopyTests_B2T, BytesPerRowWithOneRowCopy) {
     constexpr uint32_t kHeight = 127;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, 1};
-    textureSpec.level = 0;
 
     {
         BufferSpec bufferSpec = MinimumBufferSpec(5, 1);
@@ -1227,9 +1282,7 @@ TEST_P(CopyTests_B2T, BytesPerRowWithOneRowCopy) {
 
 TEST_P(CopyTests_B2T, StrideSpecialCases) {
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {4, 4, 4};
-    textureSpec.level = 0;
 
     // bytesPerRow 0
     for (const wgpu::Extent3D copyExtent :
@@ -1258,15 +1311,13 @@ TEST_P(CopyTests_B2T, StrideSpecialCases) {
 }
 
 // Test that copying whole texture 2D array layers in one texture-to-buffer-copy works.
-TEST_P(CopyTests_B2T, Texture2DArrayRegion) {
+TEST_P(CopyTests_B2T, Texture2DArrayFull) {
     constexpr uint32_t kWidth = 256;
     constexpr uint32_t kHeight = 128;
     constexpr uint32_t kLayers = 6u;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
     textureSpec.textureSize = {kWidth, kHeight, kLayers};
-    textureSpec.level = 0;
 
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight, kLayers), {kWidth, kHeight, kLayers});
 }
@@ -1282,7 +1333,6 @@ TEST_P(CopyTests_B2T, Texture2DArraySubRegion) {
     TextureSpec textureSpec;
     textureSpec.copyOrigin = {0, 0, kBaseLayer};
     textureSpec.textureSize = {kWidth, kHeight, kLayers};
-    textureSpec.level = 0;
 
     DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight, kCopyLayers),
            {kWidth, kHeight, kCopyLayers});
@@ -1302,7 +1352,6 @@ TEST_P(CopyTests_B2T, Texture2DArrayRegionNonzeroRowsPerImage) {
     TextureSpec textureSpec;
     textureSpec.copyOrigin = {0, 0, kBaseLayer};
     textureSpec.textureSize = {kWidth, kHeight, kLayers};
-    textureSpec.level = 0;
 
     BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kRowsPerImage, kCopyLayers);
     bufferSpec.rowsPerImage = kRowsPerImage;
@@ -1323,7 +1372,6 @@ TEST_P(CopyTests_B2T, Texture2DArrayRegionWithOffsetOddRowsPerImage) {
     TextureSpec textureSpec;
     textureSpec.copyOrigin = {0, 0, kBaseLayer};
     textureSpec.textureSize = {kWidth, kHeight, kLayers};
-    textureSpec.level = 0;
 
     BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kRowsPerImage, kCopyLayers);
     bufferSpec.offset += 128u;
@@ -1346,7 +1394,6 @@ TEST_P(CopyTests_B2T, Texture2DArrayRegionWithOffsetEvenRowsPerImage) {
     TextureSpec textureSpec;
     textureSpec.copyOrigin = {0, 0, kBaseLayer};
     textureSpec.textureSize = {kWidth, kHeight, kLayers};
-    textureSpec.level = 0;
 
     BufferSpec bufferSpec = MinimumBufferSpec(kWidth, kRowsPerImage, kCopyLayers);
     bufferSpec.offset += 128u;
@@ -1354,6 +1401,26 @@ TEST_P(CopyTests_B2T, Texture2DArrayRegionWithOffsetEvenRowsPerImage) {
     bufferSpec.rowsPerImage = kRowsPerImage;
     DoTest(textureSpec, bufferSpec, {kWidth, kHeight, kCopyLayers});
 }
+
+// Test that copying whole texture 3D in one buffer-to-texture-copy works.
+TEST_P(CopyTests_B2T, Texture3DFull) {
+    // TODO(yunchao.he@intel.com): implement 3D texture copy on Vulkan, Metal, OpenGL and OpenGLES
+    // backend.
+    DAWN_SKIP_TEST_IF(IsVulkan() || IsMetal() || IsOpenGL() || IsOpenGLES());
+
+    constexpr uint32_t kWidth = 256;
+    constexpr uint32_t kHeight = 128;
+    constexpr uint32_t kDepth = 6u;
+
+    TextureSpec textureSpec;
+    textureSpec.textureSize = {kWidth, kHeight, kDepth};
+
+    DoTest(textureSpec, MinimumBufferSpec(kWidth, kHeight, kDepth), {kWidth, kHeight, kDepth},
+           wgpu::TextureDimension::e3D);
+}
+
+// TODO(yunchao.he@intel.com): add more tests like RowPitch, RowsPerImage, buffer offset, partial
+// depth range, non-zero level, etc.
 
 DAWN_INSTANTIATE_TEST(CopyTests_B2T,
                       D3D12Backend(),
@@ -1367,8 +1434,6 @@ TEST_P(CopyTests_T2T, Texture) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
-    textureSpec.level = 0;
     textureSpec.textureSize = {kWidth, kHeight, 1};
     DoTest(textureSpec, textureSpec, {kWidth, kHeight, 1});
 }
@@ -1379,8 +1444,6 @@ TEST_P(CopyTests_T2T, ZeroSizedCopy) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
-    textureSpec.level = 0;
     textureSpec.textureSize = {kWidth, kHeight, 1};
     DoTest(textureSpec, textureSpec, {0, kHeight, 1});
     DoTest(textureSpec, textureSpec, {kWidth, 0, 1});
@@ -1392,8 +1455,6 @@ TEST_P(CopyTests_T2T, TextureRegion) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
-    defaultTextureSpec.level = 0;
     defaultTextureSpec.textureSize = {kWidth, kHeight, 1};
 
     for (unsigned int w : {64, 128, 256}) {
@@ -1405,14 +1466,12 @@ TEST_P(CopyTests_T2T, TextureRegion) {
 }
 
 // Test copying the whole 2D array texture.
-TEST_P(CopyTests_T2T, Texture2DArray) {
+TEST_P(CopyTests_T2T, Texture2DArrayFull) {
     constexpr uint32_t kWidth = 256;
     constexpr uint32_t kHeight = 128;
     constexpr uint32_t kLayers = 6u;
 
     TextureSpec textureSpec;
-    textureSpec.copyOrigin = {0, 0, 0};
-    textureSpec.level = 0;
     textureSpec.textureSize = {kWidth, kHeight, kLayers};
 
     DoTest(textureSpec, textureSpec, {kWidth, kHeight, kLayers});
@@ -1425,8 +1484,6 @@ TEST_P(CopyTests_T2T, Texture2DArrayRegion) {
     constexpr uint32_t kLayers = 6u;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
-    defaultTextureSpec.level = 0;
     defaultTextureSpec.textureSize = {kWidth, kHeight, kLayers};
 
     for (unsigned int w : {64, 128, 256}) {
@@ -1448,7 +1505,6 @@ TEST_P(CopyTests_T2T, Texture2DArrayCopyOneSlice) {
 
     TextureSpec defaultTextureSpec;
     defaultTextureSpec.textureSize = {kWidth, kHeight, kLayers};
-    defaultTextureSpec.level = 0;
 
     TextureSpec srcTextureSpec = defaultTextureSpec;
     srcTextureSpec.copyOrigin = {0, 0, kSrcBaseLayer};
@@ -1470,7 +1526,6 @@ TEST_P(CopyTests_T2T, Texture2DArrayCopyMultipleSlices) {
 
     TextureSpec defaultTextureSpec;
     defaultTextureSpec.textureSize = {kWidth, kHeight, kLayers};
-    defaultTextureSpec.level = 0;
 
     TextureSpec srcTextureSpec = defaultTextureSpec;
     srcTextureSpec.copyOrigin = {0, 0, kSrcBaseLayer};
@@ -1492,7 +1547,6 @@ TEST_P(CopyTests_T2T, CopyWithinSameTextureOneSlice) {
 
     TextureSpec defaultTextureSpec;
     defaultTextureSpec.textureSize = {kWidth, kHeight, kLayers};
-    defaultTextureSpec.level = 0;
 
     TextureSpec srcTextureSpec = defaultTextureSpec;
     srcTextureSpec.copyOrigin = {0, 0, kSrcBaseLayer};
@@ -1515,7 +1569,6 @@ TEST_P(CopyTests_T2T, CopyWithinSameTextureNonOverlappedSlices) {
 
     TextureSpec defaultTextureSpec;
     defaultTextureSpec.textureSize = {kWidth, kHeight, kLayers};
-    defaultTextureSpec.level = 0;
 
     TextureSpec srcTextureSpec = defaultTextureSpec;
     srcTextureSpec.copyOrigin = {0, 0, kSrcBaseLayer};
@@ -1531,12 +1584,12 @@ TEST_P(CopyTests_T2T, TextureMip) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
     defaultTextureSpec.textureSize = {kWidth, kHeight, 1};
 
     for (unsigned int i = 1; i < 4; ++i) {
         TextureSpec textureSpec = defaultTextureSpec;
-        textureSpec.level = i;
+        textureSpec.copyLevel = i;
+        textureSpec.levelCount = i + 1;
 
         DoTest(textureSpec, textureSpec, {kWidth >> i, kHeight >> i, 1});
     }
@@ -1547,16 +1600,15 @@ TEST_P(CopyTests_T2T, SingleMipSrcMultipleMipDst) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
 
     for (unsigned int i = 1; i < 4; ++i) {
         TextureSpec srcTextureSpec = defaultTextureSpec;
         srcTextureSpec.textureSize = {kWidth >> i, kHeight >> i, 1};
-        srcTextureSpec.level = 0;
 
         TextureSpec dstTextureSpec = defaultTextureSpec;
         dstTextureSpec.textureSize = {kWidth, kHeight, 1};
-        dstTextureSpec.level = i;
+        dstTextureSpec.copyLevel = i;
+        dstTextureSpec.levelCount = i + 1;
 
         DoTest(srcTextureSpec, dstTextureSpec, {kWidth >> i, kHeight >> i, 1});
     }
@@ -1567,27 +1619,147 @@ TEST_P(CopyTests_T2T, MultipleMipSrcSingleMipDst) {
     constexpr uint32_t kHeight = 128;
 
     TextureSpec defaultTextureSpec;
-    defaultTextureSpec.copyOrigin = {0, 0, 0};
 
     for (unsigned int i = 1; i < 4; ++i) {
         TextureSpec srcTextureSpec = defaultTextureSpec;
         srcTextureSpec.textureSize = {kWidth, kHeight, 1};
-        srcTextureSpec.level = i;
+        srcTextureSpec.copyLevel = i;
+        srcTextureSpec.levelCount = i + 1;
 
         TextureSpec dstTextureSpec = defaultTextureSpec;
         dstTextureSpec.textureSize = {kWidth >> i, kHeight >> i, 1};
-        dstTextureSpec.level = 0;
 
         DoTest(srcTextureSpec, dstTextureSpec, {kWidth >> i, kHeight >> i, 1});
     }
 }
 
-DAWN_INSTANTIATE_TEST(CopyTests_T2T,
-                      D3D12Backend(),
-                      MetalBackend(),
-                      OpenGLBackend(),
-                      OpenGLESBackend(),
-                      VulkanBackend());
+// A regression test for a bug on D3D12 backend that causes crash when doing texture-to-texture
+// copy one row with the texture format Depth32Float.
+TEST_P(CopyTests_T2B, CopyOneRowWithDepth32Float) {
+    constexpr wgpu::TextureFormat kFormat = wgpu::TextureFormat::Depth32Float;
+    constexpr uint32_t kPixelsPerRow = 4u;
+
+    wgpu::TextureDescriptor textureDescriptor;
+    textureDescriptor.format = kFormat;
+    textureDescriptor.size = {kPixelsPerRow, 1, 1};
+    textureDescriptor.usage = wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::OutputAttachment;
+    wgpu::Texture texture = device.CreateTexture(&textureDescriptor);
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+
+    // Initialize the depth texture with 0.5f.
+    constexpr float kClearDepthValue = 0.5f;
+    utils::ComboRenderPassDescriptor renderPass({}, texture.CreateView());
+    renderPass.cDepthStencilAttachmentInfo.clearDepth = kClearDepthValue;
+    renderPass.cDepthStencilAttachmentInfo.depthLoadOp = wgpu::LoadOp::Clear;
+    renderPass.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Store;
+    wgpu::RenderPassEncoder renderPassEncoder = encoder.BeginRenderPass(&renderPass);
+    renderPassEncoder.EndPass();
+
+    constexpr uint32_t kBufferCopyOffset = kTextureBytesPerRowAlignment;
+    const uint32_t kBufferSize =
+        kBufferCopyOffset + utils::GetTexelBlockSizeInBytes(kFormat) * kPixelsPerRow;
+    wgpu::BufferDescriptor bufferDescriptor;
+    bufferDescriptor.size = kBufferSize;
+    bufferDescriptor.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
+    wgpu::Buffer buffer = device.CreateBuffer(&bufferDescriptor);
+
+    wgpu::ImageCopyBuffer imageCopyBuffer =
+        utils::CreateImageCopyBuffer(buffer, kBufferCopyOffset, kTextureBytesPerRowAlignment);
+    wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
+
+    wgpu::Extent3D copySize = textureDescriptor.size;
+    encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &copySize);
+    wgpu::CommandBuffer commandBuffer = encoder.Finish();
+    queue.Submit(1, &commandBuffer);
+
+    std::array<float, kPixelsPerRow> expectedValues;
+    std::fill(expectedValues.begin(), expectedValues.end(), kClearDepthValue);
+    EXPECT_BUFFER_FLOAT_RANGE_EQ(expectedValues.data(), buffer, kBufferCopyOffset, kPixelsPerRow);
+}
+
+// A regression test (from WebGPU CTS) for an Intel D3D12 driver bug about T2T copy with specific
+// texture formats. See http://crbug.com/1161355 for more details.
+TEST_P(CopyTests_T2T, CopyFromNonZeroMipLevelWithTexelBlockSizeLessThan4Bytes) {
+    // This test can pass on the Windows Intel Vulkan driver version 27.20.100.9168.
+    // TODO(jiawei.shao@intel.com): enable this test on Intel Vulkan drivers after the upgrade of
+    // try bots.
+    DAWN_SKIP_TEST_IF(IsVulkan() && IsWindows() && IsIntel());
+
+    constexpr std::array<wgpu::TextureFormat, 11> kFormats = {
+        {wgpu::TextureFormat::RG8Sint, wgpu::TextureFormat::RG8Uint, wgpu::TextureFormat::RG8Snorm,
+         wgpu::TextureFormat::RG8Unorm, wgpu::TextureFormat::R16Float, wgpu::TextureFormat::R16Sint,
+         wgpu::TextureFormat::R16Uint, wgpu::TextureFormat::R8Snorm, wgpu::TextureFormat::R8Unorm,
+         wgpu::TextureFormat::R8Sint, wgpu::TextureFormat::R8Uint}};
+
+    constexpr uint32_t kSrcLevelCount = 4;
+    constexpr uint32_t kDstLevelCount = 5;
+    constexpr uint32_t kSrcSize = 2 << kSrcLevelCount;
+    constexpr uint32_t kDstSize = 2 << kDstLevelCount;
+    ASSERT_LE(kSrcSize, kTextureBytesPerRowAlignment);
+    ASSERT_LE(kDstSize, kTextureBytesPerRowAlignment);
+
+    // The copyDepth to test:
+    // 1u (non-array texture), 3u (copyDepth < copyWidth), 5u (copyDepth > copyWidth)
+    constexpr std::array<uint32_t, 3> kTestTextureDepth = {1u, 3u, 5u};
+
+    for (wgpu::TextureFormat format : kFormats) {
+        if (HasToggleEnabled("disable_snorm_read") &&
+            (format == wgpu::TextureFormat::RG8Snorm || format == wgpu::TextureFormat::R8Snorm)) {
+            continue;
+        }
+
+        for (uint32_t textureDepth : kTestTextureDepth) {
+            const wgpu::Extent3D kUploadSize = {4u, 4u, textureDepth};
+
+            for (uint32_t srcLevel = 0; srcLevel < kSrcLevelCount; ++srcLevel) {
+                for (uint32_t dstLevel = 0; dstLevel < kDstLevelCount; ++dstLevel) {
+                    TextureSpec srcSpec;
+                    srcSpec.levelCount = kSrcLevelCount;
+                    srcSpec.format = format;
+                    srcSpec.copyLevel = srcLevel;
+                    srcSpec.textureSize = {kSrcSize, kSrcSize, textureDepth};
+
+                    TextureSpec dstSpec = srcSpec;
+                    dstSpec.levelCount = kDstLevelCount;
+                    dstSpec.copyLevel = dstLevel;
+                    dstSpec.textureSize = {kDstSize, kDstSize, textureDepth};
+
+                    DoTest(srcSpec, dstSpec, kUploadSize);
+                }
+            }
+        }
+    }
+}
+
+// Test that copying whole 3D texture in one texture-to-texture-copy works.
+TEST_P(CopyTests_T2T, Texture3DFull) {
+    // TODO(yunchao.he@intel.com): implement 3D texture copy on Vulkan, Metal, OpenGL and OpenGLES
+    // backend.
+    DAWN_SKIP_TEST_IF(IsVulkan() || IsMetal() || IsOpenGL() || IsOpenGLES());
+
+    constexpr uint32_t kWidth = 256;
+    constexpr uint32_t kHeight = 128;
+    constexpr uint32_t kDepth = 6u;
+
+    TextureSpec textureSpec;
+    textureSpec.textureSize = {kWidth, kHeight, kDepth};
+
+    DoTest(textureSpec, textureSpec, {kWidth, kHeight, kDepth}, false, wgpu::TextureDimension::e3D);
+}
+
+// TODO(yunchao.he@intel.com): add T2T tests for 3D textures, like RowPitch,
+// RowsPerImage, buffer offset, partial depth range, non-zero level, etc.
+
+DAWN_INSTANTIATE_TEST(
+    CopyTests_T2T,
+    D3D12Backend(),
+    D3D12Backend(
+        {"use_temp_buffer_in_small_format_texture_to_texture_copy_from_greater_to_less_mip_level"}),
+    MetalBackend(),
+    OpenGLBackend(),
+    OpenGLESBackend(),
+    VulkanBackend());
 
 static constexpr uint64_t kSmallBufferSize = 4;
 static constexpr uint64_t kLargeBufferSize = 1 << 16;

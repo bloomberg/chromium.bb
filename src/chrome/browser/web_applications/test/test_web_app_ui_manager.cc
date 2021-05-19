@@ -18,7 +18,8 @@ TestWebAppUiManager::TestWebAppUiManager() = default;
 TestWebAppUiManager::~TestWebAppUiManager() = default;
 
 void TestWebAppUiManager::SetSubsystems(
-    AppRegistryController* app_registry_controller) {}
+    AppRegistryController* app_registry_controller,
+    OsIntegrationManager* os_integration_manager) {}
 
 void TestWebAppUiManager::Start() {}
 
@@ -83,5 +84,11 @@ bool TestWebAppUiManager::CanReparentAppTabToWindow(
 void TestWebAppUiManager::ReparentAppTabToWindow(content::WebContents* contents,
                                                  const AppId& app_id,
                                                  bool shortcut_created) {}
+
+content::WebContents* TestWebAppUiManager::NavigateExistingWindow(
+    const AppId& app_id,
+    const GURL& url) {
+  return nullptr;
+}
 
 }  // namespace web_app

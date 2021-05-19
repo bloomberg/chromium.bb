@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_WEBAPPS_BROWSER_ANDROID_ADD_TO_HOMESCREEN_DATA_FETCHER_H_
 #define COMPONENTS_WEBAPPS_BROWSER_ANDROID_ADD_TO_HOMESCREEN_DATA_FETCHER_H_
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -33,7 +34,7 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
    public:
     // Called when the homescreen icon title (and possibly information from the
     // web manifest) is available.
-    virtual void OnUserTitleAvailable(const base::string16& title,
+    virtual void OnUserTitleAvailable(const std::u16string& title,
                                       const GURL& url,
                                       bool is_webapk_compatible) = 0;
 

@@ -7,7 +7,7 @@ package org.chromium.components.webxr;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -57,7 +57,8 @@ public class ArImmersiveOverlay
     private Integer mPrimaryPointerId;
 
     public void show(@NonNull ArCompositorDelegate compositorDelegate,
-            @NonNull WebContents webContents, @NonNull ArCoreJavaUtils caller, boolean useOverlay) {
+            @NonNull WebContents webContents, @NonNull ArCoreJavaUtils caller, boolean useOverlay,
+            boolean canRenderDomContent) {
         if (DEBUG_LOGS) Log.i(TAG, "constructor");
         mArCoreJavaUtils = caller;
 
@@ -72,7 +73,7 @@ public class ArImmersiveOverlay
         // Choose a concrete implementation to create a drawable Surface and make it fullscreen.
         // It forwards SurfaceHolder callbacks and touch events to this ArImmersiveOverlay object.
         if (useOverlay) {
-            mSurfaceUi = new SurfaceUiCompositor();
+            mSurfaceUi = new SurfaceUiCompositor(canRenderDomContent);
         } else {
             mSurfaceUi = new SurfaceUiDialog();
         }
@@ -84,9 +85,26 @@ public class ArImmersiveOverlay
         public void destroy();
     }
 
-    private class SurfaceUiDialog implements SurfaceUiWrapper, DialogInterface.OnCancelListener {
+    // The default Dialog cancellation behavior destroys the Surface before we get notified via the
+    // Cancelation callback. This is unfortunate, because we need to ensure that the compositor is
+    // stopped before the surface is destroyed. This class allows us to override the default
+    // cancellation behavior to properly shutdown the compositor before the surface is destroyed. It
+    // is unclear why the SurfaceHolder callbacks are not triggered.
+    private class ArDialog extends Dialog {
+        public ArDialog(Context context, int themeResId) {
+            super(context, themeResId);
+        }
+
+        @Override
+        public void cancel() {
+            ArCoreJavaUtils.onBackPressed();
+            super.cancel();
+        }
+    }
+
+    private class SurfaceUiDialog implements SurfaceUiWrapper {
         private Toast mNotificationToast;
-        private Dialog mDialog;
+        private ArDialog mDialog;
         // Android supports multiple variants of fullscreen applications. Use fully-immersive
         // "sticky" mode without navigation or status bars, and show a toast with a "pull from top
         // and press back button to exit" prompt.
@@ -97,7 +115,7 @@ public class ArImmersiveOverlay
 
         public SurfaceUiDialog() {
             // Create a fullscreen dialog and use its backing Surface for drawing.
-            mDialog = new Dialog(mActivity, android.R.style.Theme_NoTitleBar_Fullscreen);
+            mDialog = new ArDialog(mActivity, android.R.style.Theme_NoTitleBar_Fullscreen);
             mDialog.getWindow().setBackgroundDrawable(null);
             mDialog.getWindow().takeSurface(ArImmersiveOverlay.this);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -114,7 +132,6 @@ public class ArImmersiveOverlay
             view.setSystemUiVisibility(VISIBILITY_FLAGS_IMMERSIVE);
             view.setOnTouchListener(ArImmersiveOverlay.this);
             view.setKeepScreenOn(true);
-            mDialog.setOnCancelListener(this);
             mDialog.getWindow().setLayout(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mDialog.show();
@@ -142,12 +159,6 @@ public class ArImmersiveOverlay
             }
             mDialog.dismiss();
         }
-
-        @Override // DialogInterface.OnCancelListener
-        public void onCancel(DialogInterface dialog) {
-            if (DEBUG_LOGS) Log.i(TAG, "onCancel");
-            cleanupAndExit();
-        }
     }
 
     private class PointerData {
@@ -165,12 +176,24 @@ public class ArImmersiveOverlay
     private class SurfaceUiCompositor implements SurfaceUiWrapper {
         private SurfaceView mSurfaceView;
         private WebContentsObserver mWebContentsObserver;
+        private boolean mDomSurfaceNeedsConfiguring;
 
         @SuppressLint("ClickableViewAccessibility")
-        public SurfaceUiCompositor() {
+        public SurfaceUiCompositor(boolean canRenderDomContent) {
+            // If we can't render the dom content on top of the camera/gl layers manually, then
+            // we need to configure the DOM content's surface view to overlay ours. We need to
+            // track this so that we ensure we teardown everything we need to teardown as well.
+            mDomSurfaceNeedsConfiguring = !canRenderDomContent;
+
+            // Enable alpha channel for the compositor and make the background transparent.
+            // Note that this needs to happen before we create and parent our SurfaceView, so that
+            // it ends up on top if the Dom Surface did not need configuring.
+            if (DEBUG_LOGS) {
+                Log.i(TAG, "calling mArCompositorDelegate.setOverlayImmersiveArMode(true)");
+            }
+            mArCompositorDelegate.setOverlayImmersiveArMode(true, mDomSurfaceNeedsConfiguring);
+
             mSurfaceView = new SurfaceView(mActivity);
-            // Keep the camera layer at "default" Z order. Chrome's compositor SurfaceView is in
-            // OverlayVideoMode, putting it in front of that, but behind other non-SurfaceView UI.
             mSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
             mSurfaceView.getHolder().addCallback(ArImmersiveOverlay.this);
             mSurfaceView.setKeepScreenOn(true);
@@ -182,13 +205,6 @@ public class ArImmersiveOverlay
             View content = mActivity.getWindow().findViewById(android.R.id.content);
             ViewGroup group = (ViewGroup) content.getParent();
             group.addView(mSurfaceView);
-
-            // Enable alpha channel for the compositor and make the background
-            // transparent. (A variant of CompositorView::SetOverlayVideoMode.)
-            if (DEBUG_LOGS) {
-                Log.i(TAG, "calling mArCompositorDelegate.setOverlayImmersiveArMode(true)");
-            }
-            mArCompositorDelegate.setOverlayImmersiveArMode(true);
 
             mWebContentsObserver = new WebContentsObserver() {
                 @Override
@@ -224,7 +240,7 @@ public class ArImmersiveOverlay
             ViewGroup group = (ViewGroup) content.getParent();
             group.removeView(mSurfaceView);
             mSurfaceView = null;
-            mArCompositorDelegate.setOverlayImmersiveArMode(false);
+            mArCompositorDelegate.setOverlayImmersiveArMode(false, mDomSurfaceNeedsConfiguring);
         }
     }
 
@@ -485,7 +501,8 @@ public class ArImmersiveOverlay
         if (DEBUG_LOGS) {
             Log.i(TAG, "surfaceChanged size=" + width + "x" + height + " rotation=" + rotation);
         }
-        mArCoreJavaUtils.onDrawingSurfaceReady(holder.getSurface(), rotation, width, height);
+        mArCoreJavaUtils.onDrawingSurfaceReady(holder.getSurface(),
+                mWebContents.getTopLevelNativeWindow(), rotation, width, height);
         mSurfaceReportedReady = true;
 
         // Show the toast with instructions how to exit fullscreen mode now if necessary.
@@ -507,6 +524,14 @@ public class ArImmersiveOverlay
         if (mCleanupInProgress) return;
         mCleanupInProgress = true;
 
+        // The surface is destroyed when exiting via "back" button, but also in other lifecycle
+        // situations such as switching apps or toggling the phone's power button. Treat each of
+        // these as exiting the immersive session. At this point, the surface isn't destroyed yet.
+        // but will be soon. We need to give the native code a chance to cleanup any state before
+        // we start any other logic to ensure that the surface is destroyed. We also need to run
+        // the destroy callbacks to ensure consistent state after non-exiting lifecycle events.
+        mArCoreJavaUtils.onDrawingSurfaceDestroyed();
+
         mSurfaceUi.destroy();
 
         // The JS app may have put an element into fullscreen mode during the immersive session,
@@ -520,11 +545,5 @@ public class ArImmersiveOverlay
         ScreenOrientationProvider.getInstance().setOrientationDelegate(null);
         if (mRestoreOrientation != null) mActivity.setRequestedOrientation(mRestoreOrientation);
         mRestoreOrientation = null;
-
-        // The surface is destroyed when exiting via "back" button, but also in other lifecycle
-        // situations such as switching apps or toggling the phone's power button. Treat each of
-        // these as exiting the immersive session. We need to run the destroy callbacks to ensure
-        // consistent state after non-exiting lifecycle events.
-        mArCoreJavaUtils.onDrawingSurfaceDestroyed();
     }
 }

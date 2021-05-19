@@ -1986,6 +1986,21 @@ void TParseContext::checkNoncoherentIsNotSpecified(const TSourceLoc &location, b
     }
 }
 
+void TParseContext::checkTCSOutVarIndexIsValid(TIntermBinary *binaryExpression,
+                                               const TSourceLoc &location)
+{
+    ASSERT(binaryExpression->getOp() == EOpIndexIndirect ||
+           binaryExpression->getOp() == EOpIndexDirect);
+    const TIntermSymbol *intermSymbol = binaryExpression->getRight()->getAsSymbolNode();
+    if ((intermSymbol == nullptr) || (intermSymbol->getName() != "gl_InvocationID"))
+    {
+        error(location,
+              "tessellation-control per-vertex output l-value must be indexed with "
+              "gl_InvocationID",
+              "[");
+    }
+}
+
 void TParseContext::functionCallRValueLValueErrorCheck(const TFunction *fnCandidate,
                                                        TIntermAggregate *fnCall)
 {
@@ -2754,6 +2769,7 @@ void TParseContext::checkTessellationShaderUnsizedArraysAndSetSize(const TSource
             case EvqFlatIn:
             case EvqCentroidIn:
             case EvqSmoothIn:
+            case EvqSampleIn:
                 // Declaring an array size is optional. If no size is specified, it will be taken
                 // from the implementation-dependent maximum patch size (gl_MaxPatchVertices).
                 ASSERT(mMaxPatchVertices > 0);
@@ -2763,6 +2779,7 @@ void TParseContext::checkTessellationShaderUnsizedArraysAndSetSize(const TSource
             case EvqFlatOut:
             case EvqCentroidOut:
             case EvqSmoothOut:
+            case EvqSampleOut:
                 // Declaring an array size is optional. If no size is specified, it will be taken
                 // from output patch size declared in the shader.
                 type->sizeOutermostUnsizedArray(mTessControlShaderOutputVertices);
@@ -4601,20 +4618,6 @@ TIntermTyped *TParseContext::addIndexExpression(TIntermTyped *baseExpression,
         }
     }
 
-    if (mShaderType == GL_TESS_CONTROL_SHADER &&
-        IsTessellationControlShaderOutput(mShaderType, baseExpression->getQualifier()))
-    {
-        const TIntermSymbol *intermSymbol = indexExpression->getAsSymbolNode();
-        if (!intermSymbol || intermSymbol->getName() != "gl_InvocationID")
-        {
-            error(location,
-                  "tessellation-control per-vertex output l-value must be indexed with "
-                  "gl_InvocationID",
-                  "[");
-            return CreateZeroNode(TType(EbtFloat, EbpHigh, EvqConst));
-        }
-    }
-
     TIntermConstantUnion *indexConstantUnion = indexExpression->getAsConstantUnion();
 
     // ES3.2 or ES3.1's EXT_gpu_shader5 allow dynamically uniform expressions to be used as indices
@@ -6259,6 +6262,14 @@ TIntermTyped *TParseContext::addAssign(TOperator op,
     TIntermBinary *node = nullptr;
     if (binaryOpCommonCheck(op, left, right, loc))
     {
+        TIntermBinary *lValue = left->getAsBinaryNode();
+        if ((lValue != nullptr) &&
+            (lValue->getOp() == EOpIndexIndirect || lValue->getOp() == EOpIndexDirect) &&
+            IsTessellationControlShaderOutput(mShaderType, lValue->getLeft()->getQualifier()))
+        {
+            checkTCSOutVarIndexIsValid(lValue, loc);
+        }
+
         if (op == EOpMulAssign)
         {
             op = TIntermBinary::GetMulAssignOpBasedOnOperands(left->getType(), right->getType());

@@ -16,32 +16,12 @@
 
 #include <utility>
 
-#include "src/ast/array_accessor_expression.h"
 #include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
 #include "src/ast/bitcast_expression.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/stride_decoration.h"
-#include "src/ast/struct.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/ast/struct_decoration.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/uint_literal.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/clone_context.h"
-#include "src/program.h"
 #include "src/program_builder.h"
 #include "src/semantic/variable.h"
-#include "src/type/array_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
 
 namespace tint {
 namespace transform {
@@ -56,38 +36,12 @@ static const char kDefaultInstanceIndexName[] = "_tint_pulling_instance_index";
 
 }  // namespace
 
-VertexPulling::VertexPulling() = default;
-
-VertexPulling::VertexPulling(const Config& config)
-    : cfg(config), vertex_state_set(true) {}
+VertexPulling::VertexPulling(const Config& config) : cfg(config) {}
 
 VertexPulling::~VertexPulling() = default;
 
-void VertexPulling::SetVertexState(const VertexStateDescriptor& vertex_state) {
-  cfg.vertex_state = vertex_state;
-  vertex_state_set = true;
-}
-
-void VertexPulling::SetEntryPoint(std::string entry_point) {
-  cfg.entry_point_name = std::move(entry_point);
-}
-
-void VertexPulling::SetPullingBufferBindingGroup(uint32_t number) {
-  cfg.pulling_group = number;
-}
-
-void VertexPulling::SetPullingBufferBindingSet(uint32_t number) {
-  cfg.pulling_group = number;
-}
-
-Transform::Output VertexPulling::Run(const Program* in) {
+Transform::Output VertexPulling::Run(const Program* in, const DataMap&) {
   ProgramBuilder out;
-
-  // Check SetVertexState was called
-  if (!vertex_state_set) {
-    out.Diagnostics().add_error("SetVertexState not called");
-    return Output(Program(std::move(out)));
-  }
 
   // Find entry point
   auto* func = in->AST().Functions().Find(
@@ -113,7 +67,7 @@ Transform::Output VertexPulling::Run(const Program* in) {
   for (auto& replacement : state.location_replacements) {
     ctx.Replace(replacement.from, replacement.to);
   }
-  ctx.ReplaceAll([&](CloneContext*, ast::Function* f) -> ast::Function* {
+  ctx.ReplaceAll([&](ast::Function* f) -> ast::Function* {
     if (f == func) {
       return CloneWithStatementsAtStart(&ctx, f,
                                         {state.CreateVertexPullingPreamble()});
@@ -178,10 +132,10 @@ void VertexPulling::State::FindOrInsertVertexIndexIfUsed() {
       Source{},                                        // source
       ctx.dst->Symbols().Register(vertex_index_name),  // symbol
       ast::StorageClass::kInput,                       // storage_class
-      GetI32Type(),                                    // type
+      GetU32Type(),                                    // type
       false,                                           // is_const
       nullptr,                                         // constructor
-      ast::VariableDecorationList{
+      ast::DecorationList{
           ctx.dst->create<ast::BuiltinDecoration>(Source{},
                                                   ast::Builtin::kVertexIndex),
       });
@@ -225,10 +179,10 @@ void VertexPulling::State::FindOrInsertInstanceIndexIfUsed() {
       Source{},                                          // source
       ctx.dst->Symbols().Register(instance_index_name),  // symbol
       ast::StorageClass::kInput,                         // storage_class
-      GetI32Type(),                                      // type
+      GetU32Type(),                                      // type
       false,                                             // is_const
       nullptr,                                           // constructor
-      ast::VariableDecorationList{
+      ast::DecorationList{
           ctx.dst->create<ast::BuiltinDecoration>(Source{},
                                                   ast::Builtin::kInstanceIndex),
       });
@@ -253,10 +207,10 @@ void VertexPulling::State::ConvertVertexInputVariablesToPrivate() {
             Source{},                           // source
             ctx.dst->Symbols().Register(name),  // symbol
             ast::StorageClass::kPrivate,        // storage_class
-            ctx.Clone(v->type()),               // type
+            ctx.Clone(v->declared_type()),      // type
             false,                              // is_const
             nullptr,                            // constructor
-            ast::VariableDecorationList{});     // decorations
+            ast::DecorationList{});             // decorations
         location_to_var[location] = replacement;
         location_replacements.emplace_back(LocationReplacement{v, replacement});
         break;
@@ -270,21 +224,17 @@ void VertexPulling::State::AddVertexStorageBuffers() {
   // The array inside the struct definition
   auto* internal_array_type = ctx.dst->create<type::Array>(
       GetU32Type(), 0,
-      ast::ArrayDecorationList{
+      ast::DecorationList{
           ctx.dst->create<ast::StrideDecoration>(Source{}, 4u),
       });
 
   // Creating the struct type
   ast::StructMemberList members;
-  ast::StructMemberDecorationList member_dec;
-  member_dec.push_back(
-      ctx.dst->create<ast::StructMemberOffsetDecoration>(Source{}, 0u));
-
   members.push_back(ctx.dst->create<ast::StructMember>(
       Source{}, ctx.dst->Symbols().Register(kStructBufferName),
-      internal_array_type, std::move(member_dec)));
+      internal_array_type, ast::DecorationList{}));
 
-  ast::StructDecorationList decos;
+  ast::DecorationList decos;
   decos.push_back(ctx.dst->create<ast::StructBlockDecoration>(Source{}));
 
   auto* struct_type = ctx.dst->create<type::Struct>(
@@ -302,7 +252,7 @@ void VertexPulling::State::AddVertexStorageBuffers() {
         struct_type,                        // type
         false,                              // is_const
         nullptr,                            // constructor
-        ast::VariableDecorationList{
+        ast::DecorationList{
             ctx.dst->create<ast::BindingDecoration>(Source{}, i),
             ctx.dst->create<ast::GroupDecoration>(Source{}, cfg.pulling_group),
         });
@@ -322,11 +272,11 @@ ast::BlockStatement* VertexPulling::State::CreateVertexPullingPreamble() const {
       Source{}, ctx.dst->create<ast::Variable>(
                     Source{},                                         // source
                     ctx.dst->Symbols().Register(kPullingPosVarName),  // symbol
-                    ast::StorageClass::kFunction,     // storage_class
-                    GetI32Type(),                     // type
-                    false,                            // is_const
-                    nullptr,                          // constructor
-                    ast::VariableDecorationList{}));  // decorations
+                    ast::StorageClass::kFunction,  // storage_class
+                    GetU32Type(),                  // type
+                    false,                         // is_const
+                    nullptr,                       // constructor
+                    ast::DecorationList{}));       // decorations
 
   // |kPullingPosVarName| refers to the byte location of the current read. We
   // declare a variable in the shader to avoid having to reuse Expression

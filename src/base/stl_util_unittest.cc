@@ -23,7 +23,6 @@
 
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -276,17 +275,28 @@ TEST(STLUtilTest, Data) {
   }
 }
 
-TEST(STLUtilTest, AsConst) {
-  int i = 123;
-  EXPECT_EQ(&i, &base::as_const(i));
-  static_assert(std::is_same<const int&, decltype(base::as_const(i))>::value,
-                "Error: base::as_const() returns an unexpected type");
+TEST(STLUtilTest, ToUnderlying) {
+  enum Enum : int {
+    kOne = 1,
+    kTwo = 2,
+  };
 
-  const int ci = 456;
-  static_assert(&ci == &base::as_const(ci),
-                "Error: base::as_const() returns an unexpected reference");
-  static_assert(std::is_same<const int&, decltype(base::as_const(ci))>::value,
-                "Error: base::as_const() returns an unexpected type");
+  enum class ScopedEnum : char {
+    kOne = 1,
+    kTwo = 2,
+  };
+
+  static_assert(std::is_same<decltype(to_underlying(kOne)), int>::value, "");
+  static_assert(std::is_same<decltype(to_underlying(kTwo)), int>::value, "");
+  static_assert(to_underlying(kOne) == 1, "");
+  static_assert(to_underlying(kTwo) == 2, "");
+
+  static_assert(
+      std::is_same<decltype(to_underlying(ScopedEnum::kOne)), char>::value, "");
+  static_assert(
+      std::is_same<decltype(to_underlying(ScopedEnum::kTwo)), char>::value, "");
+  static_assert(to_underlying(ScopedEnum::kOne) == 1, "");
+  static_assert(to_underlying(ScopedEnum::kTwo) == 2, "");
 }
 
 TEST(STLUtilTest, GetUnderlyingContainer) {
@@ -520,13 +530,13 @@ TEST(Erase, String) {
 }
 
 TEST(Erase, String16) {
-  std::pair<base::string16, base::string16> test_data[] = {
-      {base::string16(), base::string16()},
-      {UTF8ToUTF16("abc"), UTF8ToUTF16("bc")},
-      {UTF8ToUTF16("abca"), UTF8ToUTF16("bc")},
+  std::pair<std::u16string, std::u16string> test_data[] = {
+      {std::u16string(), std::u16string()},
+      {u"abc", u"bc"},
+      {u"abca", u"bc"},
   };
 
-  const base::string16 letters = UTF8ToUTF16("ab");
+  const std::u16string letters = u"ab";
   for (auto test_case : test_data) {
     Erase(test_case.first, letters[0]);
     EXPECT_EQ(test_case.second, test_case.first);

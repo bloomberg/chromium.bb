@@ -4,14 +4,26 @@
 
 #include "third_party/blink/renderer/core/css/cssom/css_scale.h"
 
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 
 namespace blink {
 
 namespace {
 
 bool IsValidScaleCoord(CSSNumericValue* coord) {
+  // TODO(crbug.com/1188610): Following might be needed for another CSSOM
+  // constructor to resolve the valid type for 'calc'.
+  if (coord && coord->GetType() != CSSStyleValue::StyleValueType::kUnitType) {
+    const CSSMathExpressionNode* node = coord->ToCalcExpressionNode();
+    if (!node)
+      return false;
+    CSSPrimitiveValue::UnitType resolved_type = node->ResolvedUnitType();
+    return (resolved_type == CSSPrimitiveValue::UnitType::kNumber ||
+            resolved_type == CSSPrimitiveValue::UnitType::kInteger);
+  }
   return coord && coord->Type().MatchesNumber();
 }
 
@@ -69,7 +81,7 @@ CSSScale* CSSScale::Create(const CSSNumberish& x,
   CSSNumericValue* y_value = CSSNumericValue::FromNumberish(y);
 
   if (!IsValidScaleCoord(x_value) || !IsValidScaleCoord(y_value)) {
-    exception_state.ThrowTypeError("Must specify an number unit");
+    exception_state.ThrowTypeError("Must specify a number unit");
     return nullptr;
   }
 

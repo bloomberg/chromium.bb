@@ -63,7 +63,6 @@
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -162,14 +161,12 @@ static bool IsImageOrAltText(LayoutObject* layout_object, Node* node) {
   return false;
 }
 
-ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObject(
-    ax::mojom::blink::Role dom_role) const {
+ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObjectOrNode() const {
   DCHECK(layout_object_);
-  // Markup did not provide a specific role, so attempt to determine one
-  // from the computed style.
-  Node* node = GetNode();
 
-  if (layout_object_->IsListItem() || IsA<HTMLLIElement>(node))
+  Node* node = GetNode();  // Can be null in the case of pseudo content.
+
+  if (layout_object_->IsListItemIncludingNG() || IsA<HTMLLIElement>(node))
     return ax::mojom::blink::Role::kListItem;
   if (layout_object_->IsListMarkerIncludingAll())
     return ax::mojom::blink::Role::kListMarker;
@@ -192,11 +189,8 @@ ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObject(
     return DetermineTableCellRole();
 
   if (IsImageOrAltText(layout_object_, node)) {
-    if (node && node->IsLink())
-      return ax::mojom::blink::Role::kImageMap;
     if (IsA<HTMLInputElement>(node))
       return ButtonRoleType();
-
     return ax::mojom::blink::Role::kImage;
   }
 
@@ -214,43 +208,11 @@ ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObject(
   if (layout_object_->IsHR())
     return ax::mojom::blink::Role::kSplitter;
 
-  // TODO(accessibility): refactor this method to take no argument and instead
-  // default to returning kUnknownRole, the caller can then check for this and
-  // return a different value if they prefer.
-  return dom_role;
-}
-
-ax::mojom::blink::Role AXLayoutObject::DetermineAccessibilityRole() {
-  if (!layout_object_) {
-    NOTREACHED();
-    return ax::mojom::blink::Role::kUnknown;
-  }
-  if (GetCSSAltText(GetNode())) {
-    const ComputedStyle* style = GetNode()->GetComputedStyle();
-    ContentData* content_data = style->GetContentData();
-
-    // We just check the first item of the content list to determine the
-    // appropriate role, should only ever be image or text.
-    ax::mojom::blink::Role role = ax::mojom::blink::Role::kStaticText;
-    if (content_data->IsImage())
-      role = ax::mojom::blink::Role::kImage;
-
-    return role;
-  }
-  native_role_ = NativeRoleIgnoringAria();
-
-  if ((aria_role_ = DetermineAriaRoleAttribute()) !=
-      ax::mojom::blink::Role::kUnknown) {
-    return aria_role_;
-  }
-
-  // Anything that needs to still be exposed but doesn't have a more specific
-  // role should be considered a generic container. Examples are
-  // layout blocks with no node, in-page link targets, and plain elements
-  // such as a <span> with ARIA markup.
-  return native_role_ == ax::mojom::blink::Role::kUnknown
-             ? ax::mojom::blink::Role::kGenericContainer
-             : native_role_;
+  // Anything that needs to be exposed but doesn't have a more specific role
+  // should be considered a generic container. Examples are layout blocks with
+  // no node, in-page link targets, and plain elements such as a <span> with
+  // an aria- property.
+  return ax::mojom::blink::Role::kGenericContainer;
 }
 
 Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
@@ -336,8 +298,20 @@ bool AXLayoutObject::IsEditable() const {
     Document& document = GetLayoutObject()->GetDocument();
     HTMLElement* body = document.body();
     if (body && HasEditableStyle(*body)) {
-      AXObject* ax_body = AXObjectCache().GetOrCreate(body);
-      return ax_body && ax_body != ax_body->AriaHiddenRoot();
+      // A web area is editable if the body is contenteditable, unless the body
+      // or an ancestor of the body is aria-hidden. The following avoids
+      // GetOrCreate() on the body so that IsEditable() can be called when
+      // layout is not clean. Check current object for AriaHiddenRoot(), and
+      // manually check the <html> and <body> elements directly.
+      bool is_null = true;
+      if (AriaHiddenRoot() ||
+          AccessibleNode::GetPropertyOrARIAAttribute(
+              body, AOMBooleanProperty::kHidden, is_null) ||
+          AccessibleNode::GetPropertyOrARIAAttribute(
+              body->parentElement(), AOMBooleanProperty::kHidden, is_null)) {
+        return false;
+      }
+      return true;
     }
 
     return HasEditableStyle(document);
@@ -608,12 +582,14 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return false;
   }
 
-  // Positioned elements and scrollable containers are important for
-  // determining bounding boxes.
-  if (IsScrollableContainer())
-    return false;
-  if (layout_object_->IsPositioned())
-    return false;
+  // Positioned elements and scrollable containers are important for determining
+  // bounding boxes, so don't ignore them unless they are pseudo-content.
+  if (!layout_object_->IsPseudoElement()) {
+    if (IsScrollableContainer())
+      return false;
+    if (layout_object_->IsPositioned())
+      return false;
+  }
 
   // Inner editor element of editable area with empty text provides bounds
   // used to compute the character extent for index 0. This is the same as
@@ -710,45 +686,6 @@ ax::mojom::blink::ListStyle AXLayoutObject::GetListStyle() const {
     case ListMarker::ListStyleCategory::kStaticString:
       return ax::mojom::blink::ListStyle::kOther;
   }
-}
-
-String AXLayoutObject::GetText() const {
-  if (IsPasswordFieldAndShouldHideValue()) {
-    if (!GetLayoutObject())
-      return String();
-
-    const ComputedStyle* style = GetLayoutObject()->Style();
-    if (!style)
-      return String();
-
-    unsigned unmasked_text_length = AXNodeObject::GetText().length();
-    if (!unmasked_text_length)
-      return String();
-
-    UChar mask_character = 0;
-    switch (style->TextSecurity()) {
-      case ETextSecurity::kNone:
-        break;  // Fall through to the non-password branch.
-      case ETextSecurity::kDisc:
-        mask_character = kBulletCharacter;
-        break;
-      case ETextSecurity::kCircle:
-        mask_character = kWhiteBulletCharacter;
-        break;
-      case ETextSecurity::kSquare:
-        mask_character = kBlackSquareCharacter;
-        break;
-    }
-    if (mask_character) {
-      StringBuilder masked_text;
-      masked_text.ReserveCapacity(unmasked_text_length);
-      for (unsigned i = 0; i < unmasked_text_length; ++i)
-        masked_text.Append(mask_character);
-      return masked_text.ToString();
-    }
-  }
-
-  return AXNodeObject::GetText();
 }
 
 static bool ShouldUseLayoutNG(const LayoutObject& layout_object) {
@@ -1071,75 +1008,6 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
 // Properties of interactive elements.
 //
 
-String AXLayoutObject::StringValue() const {
-  if (!layout_object_)
-    return String();
-
-  auto* select_element =
-      DynamicTo<HTMLSelectElement>(layout_object_->GetNode());
-  if (select_element && select_element->UsesMenuList()) {
-    // LayoutMenuList will go straight to the text() of its selected item.
-    // This has to be overridde`he case where the selected item has an ARIA
-    // label.
-    int selected_index = select_element->SelectedListIndex();
-    const HeapVector<Member<HTMLElement>>& list_items =
-        select_element->GetListItems();
-    if (selected_index >= 0 &&
-        static_cast<size_t>(selected_index) < list_items.size()) {
-      const AtomicString& overridden_description =
-          list_items[selected_index]->FastGetAttribute(
-              html_names::kAriaLabelAttr);
-      if (!overridden_description.IsNull())
-        return overridden_description;
-    }
-    return select_element->InnerElement().innerText();
-  }
-
-  if (IsWebArea()) {
-    // FIXME: Why would a layoutObject exist when the Document isn't attached to
-    // a frame?
-    if (layout_object_->GetFrame())
-      return String();
-
-    NOTREACHED();
-  }
-
-  if (IsTextControl()) {
-    // TODO(https://crbug.com/1165853) For contenteditable, compute on browser
-    // side instead.
-    return GetText();
-  }
-
-  if (layout_object_->IsFileUploadControl())
-    return To<LayoutFileUploadControl>(layout_object_)->FileTextValue();
-
-  // Handle other HTML input elements that aren't text controls, like date and
-  // time controls, by returning their value converted to text, with the
-  // exception of checkboxes and radio buttons (which would return "on"), and
-  // buttons which will return their name.
-  // https://html.spec.whatwg.org/C/#dom-input-value
-  if (const auto* input = DynamicTo<HTMLInputElement>(GetNode())) {
-    if (input->type() == input_type_names::kFile)
-      return input->FileStatusText();
-    if (input->type() != input_type_names::kButton &&
-        input->type() != input_type_names::kCheckbox &&
-        input->type() != input_type_names::kImage &&
-        input->type() != input_type_names::kRadio &&
-        input->type() != input_type_names::kReset &&
-        input->type() != input_type_names::kSubmit) {
-      return input->value();
-    }
-  }
-
-  // ARIA combobox can get value from  inner contents.
-  if (AriaRoleAttribute() == ax::mojom::blink::Role::kComboBoxMenuButton) {
-    AXObjectSet visited;
-    return TextFromDescendants(visited, false);
-  }
-
-  return String();
-}
-
 String AXLayoutObject::TextAlternative(bool recursive,
                                        bool in_aria_labelled_by_traversal,
                                        AXObjectSet& visited,
@@ -1281,16 +1149,6 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   return result;
 }
 
-bool AXLayoutObject::CanHaveChildren() const {
-  if (!layout_object_)
-    return false;
-  if (GetCSSAltText(GetNode()))
-    return false;
-  if (layout_object_->IsListMarkerForNormalContent())
-    return false;
-  return AXNodeObject::CanHaveChildren();
-}
-
 //
 // DOM and layout tree access.
 //
@@ -1342,81 +1200,6 @@ Element* AXLayoutObject::AnchorElement() const {
   }
 
   return nullptr;
-}
-
-//
-// Notifications that this object may have changed.
-//
-
-void AXLayoutObject::HandleActiveDescendantChanged() {
-  if (!GetLayoutObject() || !GetNode() || !GetDocument())
-    return;
-
-  Node* focused_node = GetDocument()->FocusedElement();
-  if (focused_node == GetNode()) {
-    AXObject* active_descendant = ActiveDescendant();
-    if (active_descendant && active_descendant->IsSelectedFromFocus()) {
-      // In single selection containers, selection follows focus, so a selection
-      // changed event must be fired. This ensures the AT is notified that the
-      // selected state has changed, so that it does not read "unselected" as
-      // the user navigates through the items.
-      AXObjectCache().HandleAriaSelectedChangedWithCleanLayout(
-          active_descendant->GetNode());
-    }
-
-    // Mark this node dirty. AXEventGenerator will automatically infer
-    // that the active descendant changed.
-    AXObjectCache().MarkAXObjectDirty(this, false);
-  }
-}
-
-void AXLayoutObject::HandleAriaExpandedChanged() {
-  // Find if a parent of this object should handle aria-expanded changes.
-  AXObject* container_parent = this->ParentObject();
-  while (container_parent) {
-    bool found_parent = false;
-
-    switch (container_parent->RoleValue()) {
-      case ax::mojom::blink::Role::kLayoutTable:
-      case ax::mojom::blink::Role::kTree:
-      case ax::mojom::blink::Role::kTreeGrid:
-      case ax::mojom::blink::Role::kGrid:
-      case ax::mojom::blink::Role::kTable:
-        found_parent = true;
-        break;
-      default:
-        break;
-    }
-
-    if (found_parent)
-      break;
-
-    container_parent = container_parent->ParentObject();
-  }
-
-  // Post that the row count changed.
-  if (container_parent) {
-    AXObjectCache().PostNotification(container_parent,
-                                     ax::mojom::blink::Event::kRowCountChanged);
-  }
-
-  // Post that the specific row either collapsed or expanded.
-  AccessibilityExpanded expanded = IsExpanded();
-  if (!expanded)
-    return;
-
-  if (RoleValue() == ax::mojom::blink::Role::kRow ||
-      RoleValue() == ax::mojom::blink::Role::kTreeItem) {
-    ax::mojom::blink::Event notification =
-        ax::mojom::blink::Event::kRowExpanded;
-    if (expanded == kExpandedCollapsed)
-      notification = ax::mojom::blink::Event::kRowCollapsed;
-
-    AXObjectCache().PostNotification(this, notification);
-  } else {
-    AXObjectCache().PostNotification(this,
-                                     ax::mojom::blink::Event::kExpandedChanged);
-  }
 }
 
 void AXLayoutObject::HandleAutofillStateChanged(WebAXAutofillState state) {

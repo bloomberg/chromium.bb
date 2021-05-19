@@ -12,7 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/webui/management/management_ui.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
@@ -279,6 +279,8 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
     {"aboutOsProductTitle", IDS_PRODUCT_OS_NAME},
     {"aboutReleaseNotesOffline", IDS_SETTINGS_ABOUT_PAGE_RELEASE_NOTES},
     {"aboutShowReleaseNotes", IDS_SETTINGS_ABOUT_PAGE_SHOW_RELEASE_NOTES},
+    {"aboutManagedEndOfLifeSubtitle",
+     IDS_SETTINGS_ABOUT_PAGE_MANAGED_END_OF_LIFE_SUBTITLE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -306,7 +308,9 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
           l10n_util::GetStringUTF16(version_info::IsOfficialBuild()
                                         ? IDS_VERSION_UI_OFFICIAL
                                         : IDS_VERSION_UI_UNOFFICIAL),
-          base::UTF8ToUTF16(chrome::GetChannelName()),
+          // Extended stable channel is not supported on Chrome OS Ash.
+          base::UTF8ToUTF16(
+              chrome::GetChannelName(chrome::WithExtendedStable(false))),
           l10n_util::GetStringUTF16(VersionUI::VersionProcessorVariation())));
   html_source->AddString(
       "aboutProductCopyright",
@@ -314,16 +318,16 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
           l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT),
           base::Time::Now()));
 
-  base::string16 license = l10n_util::GetStringFUTF16(
+  std::u16string license = l10n_util::GetStringFUTF16(
       IDS_VERSION_UI_LICENSE, base::ASCIIToUTF16(chrome::kChromiumProjectURL),
       base::ASCIIToUTF16(chrome::kChromeUICreditsURL));
   html_source->AddString("aboutProductLicense", license);
 
-  base::string16 os_license = l10n_util::GetStringFUTF16(
+  std::u16string os_license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_CROS_VERSION_LICENSE,
       base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));
   html_source->AddString("aboutProductOsLicense", os_license);
-  base::string16 os_with_linux_license = l10n_util::GetStringFUTF16(
+  std::u16string os_with_linux_license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_CROS_WITH_LINUX_VERSION_LICENSE,
       base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL),
       base::ASCIIToUTF16(chrome::kChromeUICrostiniCreditsURL));

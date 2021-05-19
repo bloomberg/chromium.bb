@@ -314,7 +314,7 @@ class SpellcheckServiceHostBrowserTest : public SpellcheckServiceBrowserTest {
   }
 
   bool spelling_service_done_called_ = false;
-  base::string16 word_;
+  std::u16string word_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceHostBrowserTest);
 };
@@ -768,7 +768,7 @@ const std::vector<std::string> kSpellcheckDictionariesAfter = {
 // spellcheck language preferences for the test profile.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
                        PRE_WindowsHybridSpellcheckDelayInit) {
-  GetPrefs()->SetString(language::prefs::kAcceptLanguages, kAcceptLanguages);
+  GetPrefs()->SetString(language::prefs::kSelectedLanguages, kAcceptLanguages);
   base::Value spellcheck_dictionaries_list(base::Value::Type::LIST);
   for (const auto& dictionary : kSpellcheckDictionariesBefore) {
     spellcheck_dictionaries_list.Append(std::move(dictionary));

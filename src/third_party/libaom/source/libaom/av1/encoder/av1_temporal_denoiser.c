@@ -415,7 +415,7 @@ void av1_denoiser_update_frame_info(
     return;
   }
 
-  if (svc->external_ref_frame_config) {
+  if (svc->set_ref_frame_config) {
     int i;
     for (i = 0; i < REF_FRAMES; i++) {
       if (svc->refresh[svc->spatial_layer_id] & (1 << i))
@@ -501,7 +501,7 @@ int av1_denoiser_realloc_svc(AV1_COMMON *cm, AV1_DENOISER *denoiser,
                              int refresh_alt, int refresh_gld, int refresh_lst,
                              int alt_fb_idx, int gld_fb_idx, int lst_fb_idx) {
   int fail = 0;
-  if (svc->external_ref_frame_config) {
+  if (svc->set_ref_frame_config) {
     int i;
     for (i = 0; i < REF_FRAMES; i++) {
       if (cm->current_frame.frame_type == KEY_FRAME ||

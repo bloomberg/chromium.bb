@@ -22,11 +22,7 @@ Param(
 
 $DepotToolsPath = Split-Path $MyInvocation.MyCommand.Path -Parent
 
-if ([System.IntPtr]::Size -eq 8)  {
-  $Platform = "windows-amd64"
-} else {
-  $Platform = "windows-386"
-}
+$Platform = "windows-amd64"
 
 # Put depot_tool's git revision into the user agent string.
 try {

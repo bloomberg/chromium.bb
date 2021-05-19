@@ -63,6 +63,8 @@ class SeparatorTrayItemView : public TrayItemView {
         AshColorProvider::ContentLayerType::kSeparatorColor));
     separator->SetBorder(views::CreateEmptyBorder(kSeparatorPadding));
     AddChildView(separator);
+
+    set_use_scale_in_animation(false);
   }
   ~SeparatorTrayItemView() override = default;
   SeparatorTrayItemView(const SeparatorTrayItemView&) = delete;
@@ -88,10 +90,15 @@ void NotificationIconTrayItemView::SetNotification(
     message_center::Notification* notification) {
   notification_id_ = notification->id();
 
+  auto* theme = GetNativeTheme();
   gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
       kUnifiedTrayIconSize,
       AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconColorPrimary));
+          AshColorProvider::ContentLayerType::kIconColorPrimary),
+      theme->GetSystemColor(
+          ui::NativeTheme::kColorId_MessageCenterSmallImageMaskBackground),
+      theme->GetSystemColor(
+          ui::NativeTheme::kColorId_MessageCenterSmallImageMaskForeground));
   if (!masked_small_icon.IsEmpty()) {
     image_view()->SetImage(masked_small_icon.AsImageSkia());
   } else {
@@ -107,10 +114,10 @@ void NotificationIconTrayItemView::SetNotification(
 void NotificationIconTrayItemView::Reset() {
   notification_id_ = std::string();
   image_view()->SetImage(gfx::ImageSkia());
-  image_view()->SetTooltipText(base::string16());
+  image_view()->SetTooltipText(std::u16string());
 }
 
-const base::string16& NotificationIconTrayItemView::GetAccessibleNameString()
+const std::u16string& NotificationIconTrayItemView::GetAccessibleNameString()
     const {
   if (notification_id_.empty())
     return base::EmptyString16();
@@ -178,11 +185,11 @@ bool NotificationIconsController::ShouldShowNotificationItemsInTray() {
           AshMessageCenterLockScreenController::IsEnabled());
 }
 
-base::string16 NotificationIconsController::GetAccessibleNameString() const {
+std::u16string NotificationIconsController::GetAccessibleNameString() const {
   if (!TrayItemHasNotification())
     return notification_counter_view_->GetAccessibleNameString();
 
-  std::vector<base::string16> status;
+  std::vector<std::u16string> status;
   status.push_back(l10n_util::GetPluralStringFUTF16(
       IDS_ASH_STATUS_TRAY_NOTIFICATIONS_IMPORTANT_COUNT_ACCESSIBLE_NAME,
       TrayNotificationIconsCount()));

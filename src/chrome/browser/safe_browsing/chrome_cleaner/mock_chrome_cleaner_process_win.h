@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_MOCK_CHROME_CLEANER_PROCESS_WIN_H_
 
 #include <ostream>
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
 
 namespace base {

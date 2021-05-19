@@ -7,9 +7,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -336,8 +338,8 @@ void Shell::UpdateNavigationControls(bool to_different_document) {
 void Shell::ShowDevTools() {
   if (!devtools_frontend_) {
     devtools_frontend_ = ShellDevToolsFrontend::Show(web_contents());
-    devtools_observer_.reset(new DevToolsWebContentsObserver(
-        this, devtools_frontend_->frontend_shell()->web_contents()));
+    devtools_observer_ = std::make_unique<DevToolsWebContentsObserver>(
+        this, devtools_frontend_->frontend_shell()->web_contents());
   }
 
   devtools_frontend_->Activate();
@@ -558,9 +560,9 @@ bool Shell::HandleKeyboardEvent(WebContents* source,
 
 bool Shell::DidAddMessageToConsole(WebContents* source,
                                    blink::mojom::ConsoleMessageLevel log_level,
-                                   const base::string16& message,
+                                   const std::u16string& message,
                                    int32_t line_no,
-                                   const base::string16& source_id) {
+                                   const std::u16string& source_id) {
   return switches::IsRunWebTestsSwitchPresent();
 }
 

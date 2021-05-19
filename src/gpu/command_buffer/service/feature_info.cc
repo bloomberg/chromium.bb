@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -475,8 +476,8 @@ void FeatureInfo::InitializeFeatures() {
   const char* renderer_str =
       reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 
-  gl_version_info_.reset(
-      new gl::GLVersionInfo(version_str, renderer_str, extensions));
+  gl_version_info_ = std::make_unique<gl::GLVersionInfo>(
+      version_str, renderer_str, extensions);
 
   bool enable_es3 = IsWebGL2OrES3OrHigherContext();
 
@@ -493,7 +494,6 @@ void FeatureInfo::InitializeFeatures() {
   // changed on another decoder that does expose them.
   ScopedPixelUnpackBufferOverride scoped_pbo_override(has_pixel_buffers, 0);
 
-  AddExtensionString("GL_ANGLE_translated_shader_source");
   AddExtensionString("GL_CHROMIUM_async_pixel_transfers");
   AddExtensionString("GL_CHROMIUM_bind_uniform_location");
   AddExtensionString("GL_CHROMIUM_color_space_metadata");
@@ -524,6 +524,16 @@ void FeatureInfo::InitializeFeatures() {
 
   if (gfx::HasExtension(extensions, "GL_ANGLE_translated_shader_source")) {
     feature_flags_.angle_translated_shader_source = true;
+  }
+
+  // The validating command decoder always supports
+  // ANGLE_translated_shader_source regardless of the underlying context. But
+  // passthrough relies on the underlying ANGLE context which can't always
+  // support it (e.g. on Vulkan shaders are translated directly to binary
+  // SPIR-V).
+  if (!is_passthrough_cmd_decoder_ ||
+      feature_flags_.angle_translated_shader_source) {
+    AddExtensionString("GL_ANGLE_translated_shader_source");
   }
 
   // Check if we should allow GL_EXT_texture_compression_dxt1 and

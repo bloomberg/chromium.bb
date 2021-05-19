@@ -195,15 +195,16 @@ DesktopWindowTreeHostWin::CreateDragDropClient() {
 }
 
 void DesktopWindowTreeHostWin::Close() {
+  // Calling Hide() can detach the content window's layer, so store it
+  // beforehand so we can access it below.
+  auto* window_layer = content_window()->layer();
+
   content_window()->Hide();
   // TODO(beng): Move this entire branch to DNWA so it can be shared with X11.
   if (should_animate_window_close_) {
     pending_close_ = true;
-    const bool is_animating =
-        content_window()->layer()->GetAnimator()->IsAnimatingProperty(
-            ui::LayerAnimationElement::VISIBILITY);
     // Animation may not start for a number of reasons.
-    if (!is_animating)
+    if (!window_layer->GetAnimator()->is_animating())
       message_handler_->Close();
     // else case, OnWindowHidingAnimationCompleted does the actual Close.
   } else {
@@ -407,7 +408,7 @@ bool DesktopWindowTreeHostWin::IsVisibleOnAllWorkspaces() const {
   return false;
 }
 
-bool DesktopWindowTreeHostWin::SetWindowTitle(const base::string16& title) {
+bool DesktopWindowTreeHostWin::SetWindowTitle(const std::u16string& title) {
   return message_handler_->SetTitle(title);
 }
 
@@ -422,8 +423,8 @@ Widget::MoveLoopResult DesktopWindowTreeHostWin::RunMoveLoop(
   const bool hide_on_escape =
       escape_behavior == Widget::MoveLoopEscapeBehavior::kHide;
   return message_handler_->RunMoveLoop(drag_offset, hide_on_escape)
-             ? Widget::MOVE_LOOP_SUCCESSFUL
-             : Widget::MOVE_LOOP_CANCELED;
+             ? Widget::MoveLoopResult::kSuccessful
+             : Widget::MoveLoopResult::kCanceled;
 }
 
 void DesktopWindowTreeHostWin::EndMoveLoop() {
@@ -462,10 +463,7 @@ void DesktopWindowTreeHostWin::FrameTypeChanged() {
 }
 
 void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
-  auto weak_ptr = GetWeakPtr();
   message_handler_->SetFullscreen(fullscreen);
-  if (!weak_ptr)
-    return;
   // TODO(sky): workaround for ScopedFullscreenVisibility showing window
   // directly. Instead of this should listen for visibility changes and then
   // update window.
@@ -881,7 +879,6 @@ void DesktopWindowTreeHostWin::HandleEndWMSizeMove() {
 
 void DesktopWindowTreeHostWin::HandleMove() {
   CheckForMonitorChange();
-  native_widget_delegate_->OnNativeWidgetMove();
   OnHostMovedInPixels(GetBoundsInPixels().origin());
 }
 

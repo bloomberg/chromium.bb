@@ -22,7 +22,7 @@ VERSION = 2
 
 def LoadConfig():
   if os.path.isfile(CONFIG):
-    with open(CONFIG, 'rb') as f:
+    with open(CONFIG, 'r') as f:
       config = json.load(f)
       if config['version'] == VERSION:
         config['countdown'] = max(0, config['countdown'] - 1)
@@ -37,7 +37,7 @@ def LoadConfig():
 
 
 def SaveConfig(config):
-  with open(CONFIG, 'wb') as f:
+  with open(CONFIG, 'w') as f:
     json.dump(config, f)
 
 

@@ -340,6 +340,7 @@ bool IsPseudoClassValidAfterPseudoElement(
              pseudo_class == CSSSelector::kPseudoState;
     case CSSSelector::kPseudoWebKitCustomElement:
     case CSSSelector::kPseudoBlinkInternalElement:
+    case CSSSelector::kPseudoFileSelectorButton:
       return IsUserActionPseudoClass(pseudo_class);
     default:
       return false;
@@ -713,9 +714,9 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
 
       if (!selector_list->HasOneSelector()) {
         if (selector->GetPseudoType() == CSSSelector::kPseudoHost)
-          context_->Count(WebFeature::kCSSPseudoHostCompoundList);
+          return nullptr;
         if (selector->GetPseudoType() == CSSSelector::kPseudoHostContext)
-          context_->Count(WebFeature::kCSSPseudoHostContextCompoundList);
+          return nullptr;
       }
 
       selector->SetSelectorList(std::move(selector_list));
@@ -1121,7 +1122,6 @@ WebFeature FeatureForWebKitCustomPseudoElement(const AtomicString& name) {
        WebFeature::kCSSSelectorWebkitDatetimeEditWeekField},
       {"-webkit-datetime-edit-year-field",
        WebFeature::kCSSSelectorWebkitDatetimeEditYearField},
-      {"-webkit-details-marker", WebFeature::kCSSSelectorWebkitDetailsMarker},
       {"-webkit-file-upload-button",
        WebFeature::kCSSSelectorWebkitFileUploadButton},
       {"-webkit-inner-spin-button",

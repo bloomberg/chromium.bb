@@ -24,6 +24,8 @@ class BackgroundTracingManager {
  public:
   CONTENT_EXPORT static BackgroundTracingManager* GetInstance();
 
+  CONTENT_EXPORT static const char kContentTriggerConfig[];
+
   // ReceiveCallback will be called on the UI thread every time the
   // BackgroundTracingManager finalizes a trace. The first parameter of this
   // callback is the trace data. The second is metadata that was generated and
@@ -87,7 +89,11 @@ class BackgroundTracingManager {
 
   // Registers a manual trigger handle, and returns a TriggerHandle which can
   // be passed to DidTriggerHappen().
-  virtual TriggerHandle RegisterTriggerType(const char* trigger_name) = 0;
+  virtual TriggerHandle RegisterTriggerType(base::StringPiece trigger_name) = 0;
+
+  // Returns the name associated with the given trigger handle.
+  virtual const std::string& GetTriggerNameFromHandle(
+      TriggerHandle trigger_handle) = 0;
 
   virtual bool HasActiveScenario() = 0;
 

@@ -51,7 +51,6 @@
 #include "third_party/blink/renderer/core/layout/hit_testing_transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_static_position.h"
-#include "third_party/blink/renderer/core/paint/clip_rects_cache.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_clipper.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_resource_info.h"
@@ -276,8 +275,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void AddChild(PaintLayer* new_child, PaintLayer* before_child = nullptr);
   void RemoveChild(PaintLayer*);
 
-  void ClearClipRects(ClipRectsCacheSlot = kNumberOfClipRectsCacheSlots);
-
   void RemoveOnlyThisLayerAfterStyleChange(const ComputedStyle* old_style);
   void InsertOnlyThisLayerAfterStyleChange();
 
@@ -480,7 +477,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PhysicalRect PhysicalBoundingBox(const PaintLayer* ancestor_layer) const;
   PhysicalRect FragmentsBoundingBox(const PaintLayer* ancestor_layer) const;
 
-  PhysicalRect LocalBoundingBoxForCompositingOverlapTest() const;
   IntRect ExpandedBoundingBoxForCompositingOverlapTest(
       bool use_clipped_bounding_rect) const;
   PhysicalRect BoundingBoxForCompositing() const;
@@ -647,28 +643,23 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // If the input CompositorFilterOperation is not empty, it will be populated
   // only if |filter_on_effect_node_dirty_| is true or the reference box has
   // changed. Otherwise it will be populated unconditionally.
+  // |filter_on_effect_node_dirty_| will be cleared.
   void UpdateCompositorFilterOperationsForFilter(
-      CompositorFilterOperations& operations) const;
+      CompositorFilterOperations& operations);
   void SetFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = true; }
-  void ClearFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = false; }
 
-  // |backdrop_filter_bounds| is an out param from both of these functions, and
-  // it represents the clipping bounds for the filtered backdrop image only.
-  // This rect lives in the local transform space of the containing
-  // EffectPaintPropertyNode. If the input CompositorFilterOperation is not
-  // empty, it will be populated only if |backdrop_filter_on_effect_node_dirty_|
-  // is true or the reference box has changed. Otherwise it will be populated
-  // unconditionally.
+  // |backdrop_filter_bounds| represents the clipping bounds for the filtered
+  // backdrop image only. This rect lives in the local transform space of the
+  // containing EffectPaintPropertyNode. If the input CompositorFilterOperation
+  // is not empty, it will be populated only if
+  // |backdrop_filter_on_effect_node_dirty_| is true or the reference box has
+  // changed. Otherwise it will be populated unconditionally.
+  // |backdrop_filter_on_effect_node_dirty_| will be cleared.
   void UpdateCompositorFilterOperationsForBackdropFilter(
       CompositorFilterOperations& operations,
-      base::Optional<gfx::RRectF>* backdrop_filter_bounds) const;
-  CompositorFilterOperations CreateCompositorFilterOperationsForBackdropFilter()
-      const;
+      gfx::RRectF& backdrop_filter_bounds);
   void SetBackdropFilterOnEffectNodeDirty() {
     backdrop_filter_on_effect_node_dirty_ = true;
-  }
-  void ClearBackdropFilterOnEffectNodeDirty() {
-    backdrop_filter_on_effect_node_dirty_ = false;
   }
 
   void SetIsUnderSVGHiddenContainer(bool value) {
@@ -699,7 +690,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // local coordinate system of the effect node containing the filter.
   FloatRect FilterReferenceBox() const;
   FloatRect BackdropFilterReferenceBox() const;
-  gfx::RRectF BackdropFilterBounds(const FloatRect& reference_box) const;
+  gfx::RRectF BackdropFilterBounds() const;
 
   void UpdateFilterReferenceBox();
   void UpdateFilters(const ComputedStyle* old_style,
@@ -749,6 +740,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool CanBeCompositedForDirectReasons() const;
 
+  // Whether the layer could ever be composited.
+  bool CanBeComposited() const;
+
   CompositingReasons PotentialCompositingReasonsFromStyle() const {
     return rare_data_ ? rare_data_->potential_compositing_reasons_from_style
                       : CompositingReason::kNone;
@@ -783,7 +777,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     const PaintLayer* clip_path_ancestor = nullptr;
     const PaintLayer* mask_ancestor = nullptr;
 
-    // The fist ancestor which can scroll. This is a subset of the
+    // The first ancestor which can scroll. This is a subset of the
     // ancestorOverflowLayer chain where the scrolling layer is visible and
     // has a larger scroll content than its bounds.
     const PaintLayer* ancestor_scrolling_layer = nullptr;
@@ -1097,14 +1091,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return descendant_may_need_compositing_requirements_update_;
   }
 
-  ClipRectsCache* GetClipRectsCache() const { return clip_rects_cache_.get(); }
-  ClipRectsCache& EnsureClipRectsCache() const {
-    if (!clip_rects_cache_)
-      clip_rects_cache_ = std::make_unique<ClipRectsCache>();
-    return *clip_rects_cache_;
-  }
-  void ClearClipRectsCache() const { clip_rects_cache_.reset(); }
-
   bool Has3DTransformedDescendant() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
     return has3d_transformed_descendant_;
@@ -1176,6 +1162,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
 
  private:
+  PhysicalRect LocalBoundingBoxForCompositingOverlapTest() const;
   bool PaintsWithDirectReasonIntoOwnBacking(GlobalPaintFlags) const;
 
   void SetNeedsCompositingInputsUpdateInternal();
@@ -1475,8 +1462,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   Persistent<PaintLayerScrollableArea> scrollable_area_;
 
-  mutable std::unique_ptr<ClipRectsCache> clip_rects_cache_;
-
   std::unique_ptr<PaintLayerStackingNode> stacking_node_;
 
   CullRect previous_cull_rect_;
@@ -1499,6 +1484,25 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                            DescendantDependentFlagsStopsAtThrottledFrames);
   FRIEND_TEST_ALL_PREFIXES(PaintLayerTest,
                            PaintLayerTransformUpdatedOnStyleTransformAnimation);
+  FRIEND_TEST_ALL_PREFIXES(
+      PaintLayerOverlapTest,
+      FixedUnderTransformDoesNotExpandBoundingBoxForOverlap);
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerOverlapTest,
+                           FixedUsesExpandedBoundingBoxForOverlap);
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerOverlapTest,
+                           FixedInScrollerUsesExpandedBoundingBoxForOverlap);
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerOverlapTest,
+                           NestedFixedUsesExpandedBoundingBoxForOverlap);
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerOverlapTest,
+
+                           FixedWithExpandedBoundsForChild);
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerOverlapTest,
+                           FixedWithClippedExpandedBoundsForChild);
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerOverlapTest,
+                           FixedWithExpandedBoundsForGrandChild);
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerOverlapTest,
+
+                           FixedWithExpandedBoundsForFixedChild);
 };
 
 #if DCHECK_IS_ON()

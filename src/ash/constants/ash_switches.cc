@@ -73,6 +73,10 @@ const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
 // in autotests to resolve racy conditions.
 const char kArcDisableAppSync[] = "arc-disable-app-sync";
 
+// Flag that disables ARC download provider that prevents extra content to be
+// downloaded and installed in context of Play Store and GMS Core.
+const char kArcDisableDownloadProvider[] = "arc-disable-download-provider";
+
 // Flag to enables an experiment to allow users to turn on 64-bit support in
 // native bridge on systems that have such support available but not yet enabled
 // by default.
@@ -140,6 +144,14 @@ const char kArcStartMode[] = "arc-start-mode";
 
 // Sets ARC Terms Of Service hostname url for testing.
 const char kArcTosHostForTests[] = "arc-tos-host-for-tests";
+
+// Sets the mode of operation for ureadahead during ARCVM boot. If this switch
+// is not set, ARCVM ureadahead will check for the presence and age of pack
+// file and reads ahead files to page cache for improved boot performance.
+// generate - used during Android PFQ data collector to pre-generate pack file
+//            and upload to Google Cloud as build artifact for CrOS build image.
+// disabled - used for test purpose to disable ureadahead during ARCVM boot.
+const char kArcVmUreadaheadMode[] = "arcvm-ureadahead-mode";
 
 // If this flag is set, it indicates that this device is a "Cellular First"
 // device. Cellular First devices use cellular telephone data networks as
@@ -225,10 +237,18 @@ const char kDisableLoginAnimations[] = "disable-login-animations";
 // Disables requests for an enterprise machine certificate during attestation.
 const char kDisableMachineCertRequest[] = "disable-machine-cert-request";
 
-// Disables the ChromeVox hint timer in OOBE, which can lead to unexpected
-// behavior during tests.
+// Disables the ChromeVox hint idle detection in OOBE, which can lead to
+// unexpected behavior during tests.
 const char kDisableOOBEChromeVoxHintTimerForTesting[] =
     "disable-oobe-chromevox-hint-timer-for-testing";
+
+// Enables the ChromeVox hint in OOBE for dev mode. This flag is used
+// to override the default dev mode behavior of disabling the feature.
+// If both kEnableOOBEChromeVoxHintForDevMode and
+// kDisableOOBEChromeVoxHintTimerForTesting are present, the ChromeVox hint
+// will be disabled, since the latter flag takes precedence over the former.
+const char kEnableOOBEChromeVoxHintForDevMode[] =
+    "enable-oobe-chromevox-hint-timer-for-dev-mode";
 
 // Disables per-user timezone.
 const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
@@ -250,10 +270,10 @@ const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
 
-// Enables ARC VM.
+// Enables ARCVM.
 const char kEnableArcVm[] = "enable-arcvm";
 
-// Enable ARC VM realtime VCPU feature.
+// Enables ARCVM realtime VCPU feature.
 const char kEnableArcVmRtVcpu[] = "enable-arcvm-rt-vcpu";
 
 // Enables the Cast Receiver.
@@ -327,6 +347,11 @@ const char kEnterpriseEnrollmentModulusLimit[] =
 // /var/lib/metrics/uma-events.
 const char kExternalMetricsCollectionInterval[] =
     "external-metrics-collection-interval";
+
+// Name of a subdirectory of the main external web apps directory which
+// additional web apps configs should be loaded from. Used to load
+// device-specific web apps.
+const char kExtraWebAppsDir[] = "extra-web-apps-dir";
 
 // An absolute path to the chroot hosting the DriveFS to use. This is only used
 // when running on Linux, i.e. when IsRunningOnChromeOS() returns false.
@@ -509,9 +534,6 @@ const char kPublicAccountsSamlAclUrl[] = "public-accounts-saml-acl-url";
 // must succeed, otherwise session restart should fail).
 const char kProfileRequiresPolicy[] = "profile-requires-policy";
 
-// Redirects libassistant logging to /var/log/chrome/.
-const char kRedirectLibassistantLogging[] = "redirect-libassistant-logging";
-
 // The rlz ping delay (in seconds) that overwrites the default value.
 const char kRlzPingDelay[] = "rlz-ping-delay";
 
@@ -563,6 +585,10 @@ const char kEnableOobeTestAPI[] = "enable-oobe-test-api";
 // Specifies directory for screenshots taken with OOBE UI Debugger.
 const char kOobeScreenshotDirectory[] = "oobe-screenshot-dir";
 
+// Disables online sign-in enforcement in tast tests.
+const char kSkipForceOnlineSignInForTesting[] =
+    "skip-force-online-signin-for-testing";
+
 // Specifies directory for the Telemetry System Web Extension.
 const char kTelemetryExtensionDirectory[] = "telemetry-extension-dir";
 
@@ -603,6 +629,10 @@ const char kDisableArcCpuRestriction[] = "disable-arc-cpu-restriction";
 // assumes that the device has reached Auto Update Expiration. This is useful
 // for testing the policy behaviour on the DUT.
 const char kUpdateRequiredAueForTest[] = "aue-reached-for-update-required-test";
+
+// Uses fake ml service impl to simulate CrOS ml service daemon. This should
+// only be used for lacros_chrome_browsertests that requires ml service.
+const char kUseFakeMLServiceForTest[] = "use-fake-ml-service-for-test";
 
 // Enables configuring the OEM Device Requsition in the OOBE.
 const char kEnableRequisitionEdits[] = "enable-requisition-edits";
@@ -684,6 +714,11 @@ bool IsAueReachedForUpdateRequiredForTest() {
 bool IsOOBEChromeVoxHintTimerDisabledForTesting() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableOOBEChromeVoxHintTimerForTesting);
+}
+
+bool IsOOBEChromeVoxHintEnabledForDevMode() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableOOBEChromeVoxHintForDevMode);
 }
 
 bool IsDeviceRequisitionConfigurable() {

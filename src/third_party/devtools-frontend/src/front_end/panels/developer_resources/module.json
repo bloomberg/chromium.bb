@@ -1,0 +1,10 @@
+{
+    "resources": [
+    "developerResourcesView.css",
+    "developerResourcesListView.css"
+  ],
+  "dependencies": [
+    "ui/legacy",
+    "data_grid"
+  ]
+}

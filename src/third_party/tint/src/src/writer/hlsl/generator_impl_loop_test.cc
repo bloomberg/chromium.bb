@@ -12,18 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "src/ast/assignment_statement.h"
-#include "src/ast/discard_statement.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/loop_statement.h"
-#include "src/ast/return_statement.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/program.h"
-#include "src/type/f32_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -84,8 +73,8 @@ TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopWithContinuing) {
 }
 
 TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopNestedWithContinuing) {
-  Global("lhs", ty.f32(), ast::StorageClass::kNone);
-  Global("rhs", ty.f32(), ast::StorageClass::kNone);
+  Global("lhs", ty.f32(), ast::StorageClass::kInput);
+  Global("rhs", ty.f32(), ast::StorageClass::kInput);
 
   auto* body = create<ast::BlockStatement>(ast::StatementList{
       create<ast::DiscardStatement>(),
@@ -160,7 +149,7 @@ TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopWithVarUsedInContinuing) {
   //   }
   // }
 
-  Global("rhs", ty.f32(), ast::StorageClass::kNone);
+  Global("rhs", ty.f32(), ast::StorageClass::kInput);
 
   auto* var = Var("lhs", ty.f32(), ast::StorageClass::kFunction, Expr(2.4f));
 

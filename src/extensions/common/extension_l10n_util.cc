@@ -170,10 +170,10 @@ GzippedMessagesPermission GetGzippedMessagesPermissionForExtension(
 }
 
 GzippedMessagesPermission GetGzippedMessagesPermissionForLocation(
-    extensions::Manifest::Location location) {
+    extensions::mojom::ManifestLocation location) {
   // Component extensions are part of the chromium or chromium OS source and
   // as such are considered a trusted source.
-  return location == extensions::Manifest::COMPONENT
+  return location == extensions::mojom::ManifestLocation::kComponent
              ? GzippedMessagesPermission::kAllowForTrustedSource
              : GzippedMessagesPermission::kDisallow;
 }

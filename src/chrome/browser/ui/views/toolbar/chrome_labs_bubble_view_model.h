@@ -5,28 +5,30 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_CHROME_LABS_BUBBLE_VIEW_MODEL_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_CHROME_LABS_BUBBLE_VIEW_MODEL_H_
 
+#include <string>
 #include <vector>
-#include "base/strings/string16.h"
 #include "components/version_info/channel.h"
 
-// Currently there are differences in both visible name and visible description
-// between about_flags and what we want for Chrome Labs. We are coordinating to
-// match these. Visible name and visible description can be removed from this
-// struct after that.
 struct LabInfo {
-  LabInfo(const std::string& internal_name,
-          const base::string16& visible_name,
-          const base::string16& visible_description,
-          version_info::Channel allowed_channel);
+  LabInfo(
+      const std::string& internal_name,
+      const std::u16string& visible_name,
+      const std::u16string& visible_description,
+      const std::string& feedback_category_name,
+      version_info::Channel allowed_channel,
+      std::vector<std::u16string> translated_feature_variation_descriptions =
+          std::vector<std::u16string>());
   LabInfo(const LabInfo& other);
   ~LabInfo();
   std::string internal_name;
-  base::string16 visible_name;
-  base::string16 visible_description;
+  std::u16string visible_name;
+  std::u16string visible_description;
+  std::string feedback_category_name;
   // Channels that are less stable than allowed_channel will also be
   // considered allowed. ex) if BETA is specified, this feature will also be
   // shown on CANARY and DEV.
   version_info::Channel allowed_channel;
+  std::vector<std::u16string> translated_feature_variation_descriptions;
 };
 
 class ChromeLabsBubbleViewModel {

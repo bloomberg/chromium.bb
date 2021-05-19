@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
 #include "extensions/common/manifest.h"
 
@@ -134,7 +133,7 @@ bool ContentSecurityPolicyIsSandboxed(
 // If not, populates |error|.
 bool DoesCSPDisallowRemoteCode(const std::string& content_security_policy,
                                base::StringPiece manifest_key,
-                               base::string16* error);
+                               std::u16string* error);
 
 }  // namespace csp_validator
 

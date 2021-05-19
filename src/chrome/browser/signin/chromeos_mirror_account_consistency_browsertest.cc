@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ash/login/login_manager_test.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
@@ -21,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_test.h"
@@ -116,6 +118,11 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
   ASSERT_EQ(user, user_manager::UserManager::Get()->FindUser(account_id_));
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
 
+  // Supervised flag uses `FindExtendedAccountInfoForAccountWithRefreshToken`,
+  // so wait for tokens to be loaded.
+  signin::WaitForRefreshTokensLoaded(
+      IdentityManagerFactory::GetForProfile(profile));
+
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForKey(profile->GetProfileKey());
   supervised_user_settings_service->SetActive(true);
@@ -147,6 +154,11 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
   ASSERT_EQ(user, user_manager::UserManager::Get()->GetPrimaryUser());
   ASSERT_EQ(user, user_manager::UserManager::Get()->FindUser(account_id_));
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+
+  // Supervised flag uses `FindExtendedAccountInfoForAccountWithRefreshToken`,
+  // so wait for tokens to be loaded.
+  signin::WaitForRefreshTokensLoaded(
+      IdentityManagerFactory::GetForProfile(profile));
 
   // With Chrome OS Account Manager enabled, this should be true.
   EXPECT_TRUE(

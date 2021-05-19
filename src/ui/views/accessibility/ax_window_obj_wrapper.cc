@@ -16,6 +16,9 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/aura/window_tree_host_platform.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/widget/widget.h"
 
@@ -103,11 +106,24 @@ AXAuraObjWrapper* AXWindowObjWrapper::GetParent() {
   if (!parent)
     return nullptr;
 
+  if (parent->GetProperty(ui::kChildAXTreeID) &&
+      ui::AXTreeID::FromString(*(parent->GetProperty(ui::kChildAXTreeID))) !=
+          ui::AXTreeIDUnknown()) {
+    return nullptr;
+  }
+
   return aura_obj_cache_->GetOrCreate(parent);
 }
 
 void AXWindowObjWrapper::GetChildren(
     std::vector<AXAuraObjWrapper*>* out_children) {
+  // Ignore this window's descendants if it has a child tree.
+  if (window_->GetProperty(ui::kChildAXTreeID) &&
+      ui::AXTreeID::FromString(*(window_->GetProperty(ui::kChildAXTreeID))) !=
+          ui::AXTreeIDUnknown()) {
+    return;
+  }
+
   for (auto* child : window_->children())
     out_children->push_back(aura_obj_cache_->GetOrCreate(child));
 
@@ -118,6 +134,27 @@ void AXWindowObjWrapper::GetChildren(
 }
 
 void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // This is a top level root window.
+  if (window_->IsRootWindow() && !window_->parent()) {
+    // On desktop aura there is one WindowTreeHost per top-level window.
+    aura::WindowTreeHost* window_tree_host = window_->GetHost();
+    if (window_tree_host) {
+      // Lacros is based on Ozone/Wayland, which uses PlatformWindow and
+      // aura::WindowTreeHostPlatform.
+      aura::WindowTreeHostPlatform* window_tree_host_platform =
+          static_cast<aura::WindowTreeHostPlatform*>(window_tree_host);
+
+      const std::string window_id =
+          window_tree_host_platform->platform_window()->GetWindowUniqueId();
+
+      if (!window_id.empty())
+        out_node_data->AddStringAttribute(
+            ax::mojom::StringAttribute::kParentTreeNodeAppId, window_id);
+    }
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   out_node_data->id = GetUniqueId();
   ax::mojom::Role role = window_->GetProperty(ui::kAXRoleOverride);
   if (role != ax::mojom::Role::kNone)
@@ -132,25 +169,27 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->relative_bounds.bounds =
       gfx::RectF(window_->GetBoundsInScreen());
   std::string* child_ax_tree_id_ptr = window_->GetProperty(ui::kChildAXTreeID);
-  if (child_ax_tree_id_ptr && ui::AXTreeID::FromString(*child_ax_tree_id_ptr) !=
-                                  ui::AXTreeIDUnknown()) {
-    // Most often, child AX trees are parented to Views. We need to handle
-    // the case where they're not here, but we don't want the same AX tree
-    // to be a child of two different parents.
-    //
-    // To avoid this double-parenting, only add the child tree ID of this
-    // window if the top-level window doesn't have an associated Widget.
-    //
-    // Also, if this window is not visible, its child tree should also be
-    // non-visible so prune it.
-    if (!window_->GetToplevelWindow() ||
-        GetWidgetForWindow(window_->GetToplevelWindow()) ||
-        !window_->IsVisible()) {
-      return;
-    }
+  if (child_ax_tree_id_ptr) {
+    ui::AXTreeID child_ax_tree_id =
+        ui::AXTreeID::FromString(*child_ax_tree_id_ptr);
+    if (child_ax_tree_id != ui::AXTreeIDUnknown()) {
+      // Most often, child AX trees are parented to Views. We need to handle
+      // the case where they're not here, but we don't want the same AX tree
+      // to be a child of two different parents.
+      //
+      // To avoid this double-parenting, only add the child tree ID of this
+      // window if the top-level window doesn't have an associated Widget.
+      //
+      // Also, if this window is not visible, its child tree should also be
+      // non-visible so prune it.
+      if (!window_->GetToplevelWindow() ||
+          GetWidgetForWindow(window_->GetToplevelWindow()) ||
+          !window_->IsVisible()) {
+        return;
+      }
 
-    out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
-                                      *child_ax_tree_id_ptr);
+      out_node_data->AddChildTreeId(child_ax_tree_id);
+    }
   }
 
   out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,

@@ -111,6 +111,12 @@ ANGLE_INLINE bool SubDataSizeMeetsThreshold(size_t subDataSize, size_t bufferSiz
     // to acquire a new BufferHelper from the pool.
     return subDataSize > (bufferSize / 2);
 }
+
+ANGLE_INLINE bool IsUsageDynamic(gl::BufferUsage usage)
+{
+    return (usage == gl::BufferUsage::DynamicDraw || usage == gl::BufferUsage::DynamicCopy ||
+            usage == gl::BufferUsage::DynamicRead);
+}
 }  // namespace
 
 // ConversionBuffer implementation.
@@ -121,7 +127,8 @@ ConversionBuffer::ConversionBuffer(RendererVk *renderer,
                                    bool hostVisible)
     : dirty(true), lastAllocationOffset(0)
 {
-    data.init(renderer, usageFlags, alignment, initialSize, hostVisible);
+    data.init(renderer, usageFlags, alignment, initialSize, hostVisible,
+              vk::DynamicBufferPolicy::OneShotUse);
 }
 
 ConversionBuffer::~ConversionBuffer() = default;
@@ -338,7 +345,8 @@ angle::Result BufferVk::setDataWithMemoryType(const gl::Context *context,
         constexpr size_t kBufferHelperPoolInitialSize = 0;
 
         mBufferPool.initWithFlags(contextVk->getRenderer(), usageFlags, kBufferHelperAlignment,
-                                  kBufferHelperPoolInitialSize, memoryPropertyFlags);
+                                  kBufferHelperPoolInitialSize, memoryPropertyFlags,
+                                  vk::DynamicBufferPolicy::FrequentSmallAllocations);
 
         ANGLE_TRY(acquireBufferHelper(contextVk, size, &mBuffer));
 
@@ -467,7 +475,8 @@ angle::Result BufferVk::mapRangeImpl(ContextVk *contextVk,
         ASSERT(mBuffer && mBuffer->valid());
 
         if ((access & GL_MAP_INVALIDATE_BUFFER_BIT) != 0 &&
-            mBuffer->isCurrentlyInUse(contextVk->getLastCompletedQueueSerial()))
+            mBuffer->isCurrentlyInUse(contextVk->getLastCompletedQueueSerial()) &&
+            !mBuffer->isExternalBuffer())
         {
             // We try to map buffer, but buffer is busy. Caller has told us it doesn't care about
             // previous content. Instead of wait for GPU to finish, we just allocate a new buffer.
@@ -630,7 +639,14 @@ angle::Result BufferVk::directUpdate(ContextVk *contextVk,
     ASSERT(mapPointer);
 
     memcpy(mapPointer, data, size);
-    mBuffer->unmap(contextVk->getRenderer());
+
+    // If the buffer has dynamic usage then the intent is frequent client side updates to the
+    // buffer. Don't CPU unmap the buffer, we will take care of unmapping when releasing the buffer
+    // to either the renderer or mBufferFreeList.
+    if (!IsUsageDynamic(mState.getUsage()))
+    {
+        mBuffer->unmap(contextVk->getRenderer());
+    }
     ASSERT(mBuffer->isCoherent());
 
     return angle::Result::Continue;
@@ -664,24 +680,25 @@ angle::Result BufferVk::stagedUpdate(ContextVk *contextVk,
 
 angle::Result BufferVk::acquireAndUpdate(ContextVk *contextVk,
                                          const uint8_t *data,
-                                         size_t size,
+                                         size_t updateSize,
                                          size_t offset)
 {
     // Here we acquire a new BufferHelper and directUpdate() the new buffer.
     // If the subData size was less than the buffer's size we additionally enqueue
     // a GPU copy of the remaining regions from the old mBuffer to the new one.
     vk::BufferHelper *src          = mBuffer;
-    size_t offsetAfterSubdata      = (offset + size);
+    size_t bufferSize              = static_cast<size_t>(mState.getSize());
+    size_t offsetAfterSubdata      = (offset + updateSize);
     bool updateRegionBeforeSubData = (offset > 0);
-    bool updateRegionAfterSubData  = (offsetAfterSubdata < static_cast<size_t>(mState.getSize()));
+    bool updateRegionAfterSubData  = (offsetAfterSubdata < bufferSize);
 
     if (updateRegionBeforeSubData || updateRegionAfterSubData)
     {
         src->retain(&contextVk->getResourceUseList());
     }
 
-    ANGLE_TRY(acquireBufferHelper(contextVk, size, &mBuffer));
-    ANGLE_TRY(directUpdate(contextVk, data, size, offset));
+    ANGLE_TRY(acquireBufferHelper(contextVk, bufferSize, &mBuffer));
+    ANGLE_TRY(directUpdate(contextVk, data, updateSize, offset));
 
     constexpr int kMaxCopyRegions = 2;
     angle::FixedVector<VkBufferCopy, kMaxCopyRegions> copyRegions;
@@ -692,8 +709,8 @@ angle::Result BufferVk::acquireAndUpdate(ContextVk *contextVk,
     }
     if (updateRegionAfterSubData)
     {
-        copyRegions.push_back({offsetAfterSubdata, offsetAfterSubdata,
-                               (static_cast<size_t>(mState.getSize()) - offsetAfterSubdata)});
+        copyRegions.push_back(
+            {offsetAfterSubdata, offsetAfterSubdata, (bufferSize - offsetAfterSubdata)});
     }
 
     if (!copyRegions.empty())
@@ -714,12 +731,14 @@ angle::Result BufferVk::setDataImpl(ContextVk *contextVk,
     updateShadowBuffer(data, size, offset);
 
     // if the buffer is currently in use
-    //     if sub data size meets threshold, acquire a new BufferHelper from the pool
-    //     else stage an update
+    //     if it isn't an external buffer and sub data size meets threshold
+    //          acquire a new BufferHelper from the pool
+    //     else stage the update
     // else update the buffer directly
     if (mBuffer->isCurrentlyInUse(contextVk->getLastCompletedQueueSerial()))
     {
-        if (SubDataSizeMeetsThreshold(size, static_cast<size_t>(mState.getSize())))
+        if (!mBuffer->isExternalBuffer() &&
+            SubDataSizeMeetsThreshold(size, static_cast<size_t>(mState.getSize())))
         {
             ANGLE_TRY(acquireAndUpdate(contextVk, data, size, offset));
         }

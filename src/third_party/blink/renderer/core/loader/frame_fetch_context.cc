@@ -44,9 +44,9 @@
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom-blink.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -129,7 +129,7 @@ namespace {
 // default on all other platforms.
 //
 // When the runtime flag is enabled, all client hints except UA are controlled
-// entirely by feature policy on all platforms. In that case, hints will
+// entirely by permissions policy on all platforms. In that case, hints will
 // generally be sent for first-party resources, and not for third-party
 // resources, unless specifically enabled by policy.
 
@@ -444,12 +444,12 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (!AllowScriptFromSourceWithoutNotifying(request.Url()))
     return;
 
-  // When the runtime flag "FeaturePolicyForClientHints" is enabled, feature
+  // When the runtime flag "FeaturePolicyForClientHints" is enabled, permissions
   // policy is used to enable hints for all subresources, based on the policy of
   // the requesting document, and the origin of the resource.
-  const FeaturePolicy* policy =
+  const PermissionsPolicy* policy =
       document_
-          ? document_->domWindow()->GetSecurityContext().GetFeaturePolicy()
+          ? document_->domWindow()->GetSecurityContext().GetPermissionsPolicy()
           : nullptr;
 
   url::Origin resource_origin =
@@ -569,13 +569,13 @@ bool FrameFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
 
 void FrameFetchContext::DispatchDidBlockRequest(
     const ResourceRequest& resource_request,
-    const FetchInitiatorInfo& fetch_initiator_info,
+    const ResourceLoaderOptions& options,
     ResourceRequestBlockedReason blocked_reason,
     ResourceType resource_type) const {
   if (GetResourceFetcherProperties().IsDetached())
     return;
   probe::DidBlockRequest(Probe(), resource_request, document_loader_, Url(),
-                         fetch_initiator_info, blocked_reason, resource_type);
+                         options, blocked_reason, resource_type);
 }
 
 ContentSecurityPolicy* FrameFetchContext::GetContentSecurityPolicyForWorld(
@@ -597,7 +597,7 @@ bool FrameFetchContext::IsSVGImageChromeClient() const {
 void FrameFetchContext::CountUsage(WebFeature feature) const {
   if (GetResourceFetcherProperties().IsDetached())
     return;
-  document_loader_->GetUseCounterHelper().Count(feature, GetFrame());
+  document_loader_->GetUseCounter().Count(feature, GetFrame());
 }
 
 void FrameFetchContext::CountDeprecation(WebFeature feature) const {
@@ -735,10 +735,11 @@ base::Optional<UserAgentMetadata> FrameFetchContext::GetUserAgentMetadata()
   return GetLocalFrameClient()->UserAgentMetadata();
 }
 
-const FeaturePolicy* FrameFetchContext::GetFeaturePolicy() const {
-  return document_
-             ? document_->domWindow()->GetSecurityContext().GetFeaturePolicy()
-             : nullptr;
+const PermissionsPolicy* FrameFetchContext::GetPermissionsPolicy() const {
+  return document_ ? document_->domWindow()
+                         ->GetSecurityContext()
+                         .GetPermissionsPolicy()
+                   : nullptr;
 }
 
 const ClientHintsPreferences FrameFetchContext::GetClientHintsPreferences()
@@ -809,10 +810,8 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
     return false;
   }
 
-  LocalFrame* frame = document_->GetFrame();
-  DCHECK(frame);
-  // Only register conversions pings that are redirects in the main frame.
-  if (!frame->IsMainFrame() || !redirect_info ||
+  // Only treat same origin redirects as conversion pings.
+  if (!redirect_info ||
       !SecurityOrigin::AreSameOrigin(url, redirect_info->previous_url)) {
     return false;
   }
@@ -823,7 +822,7 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
     return false;
 
   if (!document_->domWindow()->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kConversionMeasurement)) {
+          mojom::blink::PermissionsPolicyFeature::kConversionMeasurement)) {
     String message =
         "The 'conversion-measurement' feature policy must be enabled to "
         "register a conversion.";
@@ -835,13 +834,23 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
 
   // Only allow conversion registration on secure pages with a secure conversion
   // redirect.
+  const Frame& main_frame = GetFrame()->Tree().Top();
+  if (!main_frame.GetSecurityContext()
+           ->GetSecurityOrigin()
+           ->IsPotentiallyTrustworthy()) {
+    return false;
+  }
+
+  if (!GetFrame()->IsMainFrame() && !GetFrame()
+                                         ->GetSecurityContext()
+                                         ->GetSecurityOrigin()
+                                         ->IsPotentiallyTrustworthy()) {
+    return false;
+  }
+
   scoped_refptr<const SecurityOrigin> redirect_origin =
       SecurityOrigin::Create(url);
-  if (!GetFrame()
-           ->GetSecurityContext()
-           ->GetSecurityOrigin()
-           ->IsPotentiallyTrustworthy() ||
-      !redirect_origin->IsPotentiallyTrustworthy()) {
+  if (!redirect_origin->IsPotentiallyTrustworthy()) {
     return false;
   }
 

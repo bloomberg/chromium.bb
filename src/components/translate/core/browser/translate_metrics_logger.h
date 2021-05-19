@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "components/translate/core/browser/translate_browser_metrics.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -126,8 +127,11 @@ class TranslateMetricsLogger {
   // Sets the UKM source ID for the current page load.
   virtual void SetUkmSourceId(ukm::SourceId ukm_source_id) = 0;
 
+  // Tracks information about the Translate Ranker.
   virtual void LogRankerMetrics(RankerDecision ranker_decision,
                                 uint32_t ranker_version) = 0;
+  virtual void LogRankerStart() = 0;
+  virtual void LogRankerFinish() = 0;
 
   // Records trigger decision that impacts the initial state of Translate. The
   // highest priority trigger decision will be logged to UMA at the end of the
@@ -149,7 +153,9 @@ class TranslateMetricsLogger {
   virtual void LogInitialSourceLanguage(const std::string& source_language_code,
                                         bool is_in_users_content_language) = 0;
   virtual void LogSourceLanguage(const std::string& source_language_code) = 0;
-  virtual void LogTargetLanguage(const std::string& target_language_code) = 0;
+  virtual void LogTargetLanguage(
+      const std::string& target_language_code,
+      TranslateBrowserMetrics::TargetLanguageOrigin target_language_origin) = 0;
 
   // Used to record the language attributes specified by the HTML document.
   // Recorded for each language detection.

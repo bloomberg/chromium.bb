@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '../cm_headless/cm_headless.js';
+import '../third_party/codemirror/package/addon/runmode/runmode-standalone.js';
 import '../third_party/codemirror/package/mode/css/css.js';
 import '../third_party/codemirror/package/mode/xml/xml.js';
 
-import * as Platform from '../platform/platform.js';
+import * as Platform from '../core/platform/platform.js';
 import * as FormatterWorker from './formatter_worker.js';  // eslint-disable-line rulesdir/es_modules_import
 
 import {FormatterActions} from './FormatterActions.js';
@@ -25,8 +25,11 @@ self.onmessage = function(event: MessageEvent): void {
     case FormatterActions.PARSE_CSS:
       FormatterWorker.CSSRuleParser.parseCSS(params.content, self.postMessage);
       break;
+    case FormatterActions.HTML_OUTLINE:
+      FormatterWorker.HTMLOutline.htmlOutline(params.content, self.postMessage);
+      break;
     case FormatterActions.JAVASCRIPT_OUTLINE:
-      self.postMessage(FormatterWorker.JavaScriptOutline.javaScriptOutline(params.content));
+      FormatterWorker.JavaScriptOutline.javaScriptOutline(params.content, self.postMessage);
       break;
     case FormatterActions.JAVASCRIPT_IDENTIFIERS:
       self.postMessage(FormatterWorker.FormatterWorker.javaScriptIdentifiers(params.content));

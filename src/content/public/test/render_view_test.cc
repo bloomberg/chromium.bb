@@ -9,6 +9,7 @@
 #include <cctype>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -48,6 +49,7 @@
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
+#include "third_party/blink/public/mojom/frame/frame_replication_state.mojom.h"
 #include "third_party/blink/public/mojom/leak_detector/leak_detector.mojom.h"
 #include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -326,7 +328,7 @@ void RenderViewTest::ExecuteJavaScriptForTests(const char* js) {
 }
 
 bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
-    const base::string16& script,
+    const std::u16string& script,
     int* int_result) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> result = GetMainFrame()->ExecuteScriptAndReturnValue(
@@ -341,7 +343,7 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
 }
 
 bool RenderViewTest::ExecuteJavaScriptAndReturnNumberValue(
-    const base::string16& script,
+    const std::u16string& script,
     double* number_result) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> result = GetMainFrame()->ExecuteScriptAndReturnValue(
@@ -491,7 +493,7 @@ void RenderViewTest::SetUp() {
   view_params->renderer_preferences = blink::RendererPreferences();
   view_params->web_preferences = blink::web_pref::WebPreferences();
   view_params->view_id = render_thread_->GetNextRoutingID();
-  view_params->replication_state = mojom::FrameReplicationState::New();
+  view_params->replication_state = blink::mojom::FrameReplicationState::New();
 
   auto main_frame_params = mojom::CreateLocalMainFrameParams::New();
   main_frame_params->routing_id = render_thread_->GetNextRoutingID();
@@ -754,15 +756,17 @@ void RenderViewTest::Reload(const GURL& url) {
       blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
       nullptr, network::mojom::SourceLocation::New(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
-      false /* has_text_fragment_token */, CreateInitiatorCSPInfo(),
-      std::vector<int>(), std::string(),
+      false /* has_text_fragment_token */,
+      network::mojom::CSPDisposition::CHECK, std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */,
       base::TimeTicks() /* input_start */);
+  auto commit_params = CreateCommitNavigationParams();
+  commit_params->sandbox_flags = network::mojom::WebSandboxFlags::kNone;
   RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(view->GetMainRenderFrame());
   FrameLoadWaiter waiter(frame);
-  frame->Navigate(std::move(common_params), CreateCommitNavigationParams());
+  frame->Navigate(std::move(common_params), std::move(commit_params));
   waiter.Wait();
   view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
       blink::DocumentUpdateReason::kTest);
@@ -770,7 +774,7 @@ void RenderViewTest::Reload(const GURL& url) {
 
 void RenderViewTest::Resize(gfx::Size new_size, bool is_fullscreen_granted) {
   blink::VisualProperties visual_properties;
-  visual_properties.screen_info = blink::ScreenInfo();
+  visual_properties.screen_infos = blink::ScreenInfos(blink::ScreenInfo());
   visual_properties.new_size = new_size;
   visual_properties.compositor_viewport_pixel_rect = gfx::Rect(new_size);
   visual_properties.is_fullscreen_granted = is_fullscreen_granted;
@@ -835,7 +839,8 @@ void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
   view->GetMainRenderFrame()->DidFinishSameDocumentNavigation(
       is_new_navigation ? blink::kWebStandardCommit
                         : blink::kWebHistoryInertCommit,
-      false /* content_initiated */, false /* is_history_api_navigation */);
+      false /* content_initiated */, false /* is_history_api_navigation */,
+      false /* is_client_redirect */);
 }
 
 void RenderViewTest::SetUseZoomForDSFEnabled(bool enabled) {
@@ -864,6 +869,8 @@ std::unique_ptr<FakeRenderWidgetHost> RenderViewTest::CreateRenderWidgetHost() {
 
 blink::VisualProperties RenderViewTest::InitialVisualProperties() {
   blink::VisualProperties initial_visual_properties;
+  initial_visual_properties.screen_infos =
+      blink::ScreenInfos(blink::ScreenInfo());
   // Ensure the view has some size so tests involving scrolling bounds work.
   initial_visual_properties.new_size = gfx::Size(400, 300);
   initial_visual_properties.visible_viewport_size = gfx::Size(400, 300);
@@ -881,10 +888,10 @@ void RenderViewTest::GoToOffset(int offset,
                                 const GURL& url,
                                 const blink::PageState& state) {
   RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
-
+  blink::WebView* webview = view->GetWebView();
   int history_list_length =
-      view->HistoryBackListCount() + view->HistoryForwardListCount() + 1;
-  int pending_offset = offset + view->history_list_offset_;
+      webview->HistoryBackListCount() + webview->HistoryForwardListCount() + 1;
+  int pending_offset = offset + webview->HistoryBackListCount();
 
   auto common_params = mojom::CommonNavigationParams::New(
       url, base::nullopt, blink::mojom::Referrer::New(),
@@ -894,16 +901,17 @@ void RenderViewTest::GoToOffset(int offset,
       blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
       nullptr, network::mojom::SourceLocation::New(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
-      false /* has_text_fragment_token */, CreateInitiatorCSPInfo(),
-      std::vector<int>(), std::string(),
+      false /* has_text_fragment_token */,
+      network::mojom::CSPDisposition::CHECK, std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */,
       base::TimeTicks() /* input_start */);
   auto commit_params = CreateCommitNavigationParams();
   commit_params->page_state = state;
   commit_params->nav_entry_id = pending_offset + 1;
   commit_params->pending_history_list_offset = pending_offset;
-  commit_params->current_history_list_offset = view->history_list_offset_;
+  commit_params->current_history_list_offset = webview->HistoryBackListCount();
   commit_params->current_history_list_length = history_list_length;
+  commit_params->sandbox_flags = network::mojom::WebSandboxFlags::kNone;
 
   auto* frame = static_cast<TestRenderFrame*>(view->GetMainRenderFrame());
   FrameLoadWaiter waiter(frame);
@@ -911,7 +919,7 @@ void RenderViewTest::GoToOffset(int offset,
   // The load may actually happen asynchronously, so we pump messages to process
   // the pending continuation.
   waiter.Wait();
-  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+  webview->MainFrameWidget()->UpdateAllLifecyclePhases(
       blink::DocumentUpdateReason::kTest);
 }
 

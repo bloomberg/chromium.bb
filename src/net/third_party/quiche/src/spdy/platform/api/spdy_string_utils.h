@@ -8,21 +8,10 @@
 #include <string>
 #include <utility>
 
-// The following header file has to be included from at least
-// non-test file in order to avoid strange linking errors.
-// TODO(bnc): Remove this include as soon as it is included elsewhere in
-// non-test code.
-#include "spdy/platform/api/spdy_mem_slice.h"
-
 #include "absl/strings/string_view.h"
 #include "net/spdy/platform/impl/spdy_string_utils_impl.h"
 
 namespace spdy {
-
-template <typename... Args>
-inline void SpdyStrAppend(std::string* output, const Args&... args) {
-  SpdyStrAppendImpl(output, std::forward<const Args&>(args)...);
-}
 
 inline char SpdyHexDigitToInt(char c) {
   return SpdyHexDigitToIntImpl(c);
@@ -40,17 +29,9 @@ inline std::string SpdyHexEncode(const char* bytes, size_t size) {
   return SpdyHexEncodeImpl(bytes, size);
 }
 
-inline std::string SpdyHexEncodeUInt32AndTrim(uint32_t data) {
-  return SpdyHexEncodeUInt32AndTrimImpl(data);
-}
-
 inline std::string SpdyHexDump(absl::string_view data) {
   return SpdyHexDumpImpl(data);
 }
-
-using SpdyStringPieceCaseHash = SpdyStringPieceCaseHashImpl;
-
-using SpdyStringPieceCaseEq = SpdyStringPieceCaseEqImpl;
 
 }  // namespace spdy
 

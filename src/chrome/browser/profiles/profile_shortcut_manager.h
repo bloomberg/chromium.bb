@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/strings/string16.h"
 
 class ProfileManager;
 

@@ -14,11 +14,11 @@
 #include "core/fxge/dib/fx_dib.h"
 #include "third_party/base/span.h"
 #include "xfa/fde/cfde_data.h"
-#include "xfa/fgas/layout/cfx_char.h"
+#include "xfa/fgas/layout/cfgas_char.h"
 
 class CFGAS_GEFont;
+class CFGAS_TxtBreak;
 class CFX_RenderDevice;
-class CFX_TxtBreak;
 class TextCharPos;
 
 class CFDE_TextOut {
@@ -81,7 +81,7 @@ class CFDE_TextOut {
     std::deque<Piece> pieces_;
   };
 
-  bool RetrieveLineWidth(CFX_BreakType dwBreakStatus,
+  bool RetrieveLineWidth(CFGAS_Char::BreakType dwBreakStatus,
                          float* pStartPos,
                          float* pWidth,
                          float* pHeight);
@@ -89,7 +89,7 @@ class CFDE_TextOut {
 
   void Reload(const CFX_RectF& rect);
   void ReloadLinePiece(Line* pLine, const CFX_RectF& rect);
-  bool RetrievePieces(CFX_BreakType dwBreakStatus,
+  bool RetrievePieces(CFGAS_Char::BreakType dwBreakStatus,
                       bool bReload,
                       const CFX_RectF& rect,
                       size_t* pStartChar,
@@ -98,7 +98,7 @@ class CFDE_TextOut {
   void DoAlignment(const CFX_RectF& rect);
   size_t GetDisplayPos(const Piece* pPiece);
 
-  std::unique_ptr<CFX_TxtBreak> const m_pTxtBreak;
+  std::unique_ptr<CFGAS_TxtBreak> const m_pTxtBreak;
   RetainPtr<CFGAS_GEFont> m_pFont;
   float m_fFontSize = 12.0f;
   float m_fLineSpace = 12.0f;

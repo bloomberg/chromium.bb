@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -123,9 +124,8 @@ class ErrorObserver : public ErrorConsole::Observer {
   ErrorObserver(size_t errors_expected, ErrorConsole* error_console)
       : errors_expected_(errors_expected),
         error_console_(error_console),
-        errors_observed_(0),
-        observer_(this) {
-    observer_.Add(error_console_);
+        errors_observed_(0) {
+    observation_.Observe(error_console_);
   }
 
   // ErrorConsole::Observer implementation.
@@ -147,7 +147,8 @@ class ErrorObserver : public ErrorConsole::Observer {
   size_t errors_expected_;
   ErrorConsole* error_console_;
   size_t errors_observed_;
-  ScopedObserver<ErrorConsole, ErrorConsole::Observer> observer_;
+  base::ScopedObservation<ErrorConsole, ErrorConsole::Observer> observation_{
+      this};
   base::RunLoop run_loop_;
 };
 
@@ -374,9 +375,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, NonRootDirectory) {
   const ErrorList& error_list =
       error_console->GetErrorsForExtension(extension->id());
   ASSERT_EQ(kErrorsExpected, error_list.size());
-  ASSERT_EQ(
-      error_list[0]->message(),
-      base::string16(base::ASCIIToUTF16("Service worker registration failed")));
+  ASSERT_EQ(error_list[0]->message(),
+            std::u16string(u"Service worker registration failed"));
 }
 
 // Tests chrome.runtime.onInstalled fires for extension service workers.
@@ -927,8 +927,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateRefreshesServiceWorker) {
   EXPECT_TRUE(listener_v2.WaitUntilSatisfied());
 }
 
-// TODO(crbug.com/765736) Fix the test.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, DISABLED_UpdateWithoutSkipWaiting) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateWithoutSkipWaiting) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
@@ -1219,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
             NavigateAndExtractInnerText(get_resource_url("another.html")));
 
   // Uninstall the extension. Opening pages should fail again.
-  base::string16 error;
+  std::u16string error;
   extension_service()->UninstallExtension(
       extension_id, UninstallReason::UNINSTALL_REASON_FOR_TESTING, &error);
   base::RunLoop().RunUntilIdle();
@@ -1702,20 +1701,17 @@ class TestWorkerObserver : public content::ServiceWorkerContextObserver {
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
                        EventsToStoppedWorker) {
-  // Set up an observer to wait for the registration to be stored.
-  service_worker_test_utils::TestRegistrationObserver observer(
-      browser()->profile());
-
   ExtensionTestMessageListener event_listener_added("ready", false);
   event_listener_added.set_failure_message("ERROR");
 
   // Note: Extension is packed to avoid reloading while loading.
-  const Extension* extension =
-      LoadExtension(PackExtension(test_data_dir_.AppendASCII(
-          "service_worker/worker_based_background/events_to_stopped_worker")));
+  const Extension* extension = LoadExtension(
+      PackExtension(test_data_dir_.AppendASCII(
+          "service_worker/worker_based_background/events_to_stopped_worker")),
+      // Wait for the registration to be stored so that it's persistent
+      // before the test terminates.
+      {.wait_for_registration_stored = true});
   ASSERT_TRUE(extension);
-
-  observer.WaitForRegistrationStored();
   EXPECT_TRUE(event_listener_added.WaitUntilSatisfied());
 
   // Stop the service worker.
@@ -2250,10 +2246,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnCreated) {
 #endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
                        MAYBE_PRE_FilteredEventsAfterRestart) {
-  // Set up an observer to wait for the registration to be stored.
-  service_worker_test_utils::TestRegistrationObserver observer(
-      browser()->profile());
-
   ExtensionTestMessageListener listener_added("ready", false);
   base::FilePath test_dir =
       test_data_dir_.AppendASCII("service_worker/worker_based_background");
@@ -2263,10 +2255,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
 
-  const Extension* extension = LoadExtension(PackExtensionWithOptions(
-      test_dir.AppendASCII("filtered_events_after_restart"),
-      scoped_temp_dir.GetPath().AppendASCII("test_extension.crx"), pem_path,
-      base::FilePath()));
+  const Extension* extension = LoadExtension(
+      PackExtensionWithOptions(
+          test_dir.AppendASCII("filtered_events_after_restart"),
+          scoped_temp_dir.GetPath().AppendASCII("test_extension.crx"), pem_path,
+          base::FilePath()),
+      // Wait for the registration to be stored so that it's persistent
+      // before the test terminates.
+      {.wait_for_registration_stored = true});
   ASSERT_TRUE(extension);
   EXPECT_EQ(kTestExtensionId, extension->id());
   ProcessManager* pm = ProcessManager::Get(browser()->profile());
@@ -2275,8 +2271,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   EXPECT_LT(pm->GetLazyKeepaliveCount(extension), 1);
   EXPECT_TRUE(pm->GetLazyKeepaliveActivities(extension).empty());
   EXPECT_TRUE(listener_added.WaitUntilSatisfied());
-
-  observer.WaitForRegistrationStored();
 }
 
 // After browser restarts, this test step ensures that opening a tab fires
@@ -2367,8 +2361,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, PermissionsAPI) {
 
   // "storage" permission is optional in |extension|, and isn't available right
   // away.
-  EXPECT_FALSE(
-      extension->permissions_data()->HasAPIPermission(APIPermission::kStorage));
+  EXPECT_FALSE(extension->permissions_data()->HasAPIPermission(
+      mojom::APIPermissionID::kStorage));
 
   PermissionsRequestFunction::SetAutoConfirmForTests(true);
 
@@ -2385,8 +2379,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, PermissionsAPI) {
   EXPECT_TRUE(catcher.GetNextResult()) << message_;
 
   // Expect the permission ("storage") to be available now.
-  EXPECT_TRUE(
-      extension->permissions_data()->HasAPIPermission(APIPermission::kStorage));
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
+      mojom::APIPermissionID::kStorage));
 }
 
 // Tests that console messages logged by extension service workers, both via
@@ -2400,11 +2394,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest, ConsoleLogging) {
    public:
     ConsoleMessageObserver(content::BrowserContext* browser_context,
                            const std::string& expected_message)
-        : expected_message_(base::UTF8ToUTF16(expected_message)),
-          scoped_observer_(this) {
+        : expected_message_(base::UTF8ToUTF16(expected_message)) {
       content::StoragePartition* partition =
           content::BrowserContext::GetDefaultStoragePartition(browser_context);
-      scoped_observer_.Add(partition->GetServiceWorkerContext());
+      scoped_observation_.Observe(partition->GetServiceWorkerContext());
     }
     ~ConsoleMessageObserver() override = default;
 
@@ -2420,15 +2413,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest, ConsoleLogging) {
       // the expected messages we're verifying (they're uncommon enough).
       if (message.message != expected_message_)
         return;
-      scoped_observer_.RemoveAll();
+      scoped_observation_.Reset();
       run_loop_.QuitWhenIdle();
     }
 
-    base::string16 expected_message_;
+    std::u16string expected_message_;
     base::RunLoop run_loop_;
-    ScopedObserver<content::ServiceWorkerContext,
-                   content::ServiceWorkerContextObserver>
-        scoped_observer_;
+    base::ScopedObservation<content::ServiceWorkerContext,
+                            content::ServiceWorkerContextObserver>
+        scoped_observation_{this};
 
     DISALLOW_COPY_AND_ASSIGN(ConsoleMessageObserver);
   };

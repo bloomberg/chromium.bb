@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -90,7 +91,6 @@ namespace content {
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
 class BrowserThreadImpl;
-class FieldTrialSynchronizer;
 class MediaKeysListenerManagerImpl;
 class MediaStreamManager;
 class SaveFileManager;
@@ -141,18 +141,25 @@ class CONTENT_EXPORT BrowserMainLoop {
   bool InitializeToolkit();
 
   void PreMainMessageLoopStart();
+  // Creates the main message loop, bringing APIs like
+  // ThreadTaskRunnerHandle::Get() online. TODO(gab): Rename this to
+  // CreateMainMessageLoop() since the message loop isn't actually "started"
+  // here...
   void MainMessageLoopStart();
   void PostMainMessageLoopStart();
-  void PreShutdown();
 
   // Create and start running the tasks we need to complete startup. Note that
   // this can be called more than once (currently only on Android) if we get a
   // request for synchronous startup while the tasks created by asynchronous
-  // startup are still running.
+  // startup are still running. Completes tasks synchronously as part of this
+  // method on non-Android platforms.
   void CreateStartupTasks();
 
-  // Perform the default message loop run logic.
-  void RunMainMessageLoopParts();
+  // Performs the default message loop run logic.
+  void RunMainMessageLoop();
+
+  // Performs the pre-shutdown steps.
+  void PreShutdown();
 
   // Performs the shutdown sequence, starting with PostMainMessageLoopRun
   // through stopping threads to PostDestroyThreads.
@@ -233,8 +240,6 @@ class CONTENT_EXPORT BrowserMainLoop {
       BrowserMainLoopTest,
       PostTaskToIOThreadBeforeThreadCreationDoesNotRunTask);
 
-  void InitializeMainThread();
-
   // Called just before creating the threads
   int PreCreateThreads();
 
@@ -243,9 +248,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // Called just after creating the threads.
   int PostCreateThreads();
-
-  // Called right after the browser threads have been started.
-  int BrowserThreadsStarted();
+  void PostCreateThreadsImpl();
 
   int PreMainMessageLoopRun();
 
@@ -266,15 +269,17 @@ class CONTENT_EXPORT BrowserMainLoop {
   // InitializeToolkit()
   // PreMainMessageLoopStart()
   // MainMessageLoopStart()
-  //   InitializeMainThread()
   // PostMainMessageLoopStart()
   // CreateStartupTasks()
   //   PreCreateThreads()
+  //     InitializeMemoryManagementComponent()
   //   CreateThreads()
   //   PostCreateThreads()
-  //   BrowserThreadsStarted()
-  //     InitializeMojo()
-  //   PreMainMessageLoopRun()
+  //     PostCreateThreadsImpl()
+  //       InitializeMojo()
+  //       InitializeAudio()
+  // PreMainMessageLoopRun()
+  // MainMessageLoopRun()
 
   // Members initialized on construction ---------------------------------------
   const MainFunctionParams& parameters_;
@@ -326,7 +331,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // classes constructed in content (but after |main_thread_|).
   std::unique_ptr<BrowserMainParts> parts_;
 
-  // Members initialized in |InitializeMainThread()| ---------------------------
+  // Members initialized in |MainMessageLoopStart()| ---------------------------
   // This must get destroyed before other threads that are created in |parts_|.
   std::unique_ptr<BrowserThreadImpl> main_thread_;
 
@@ -344,12 +349,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<MediaKeysListenerManagerImpl> media_keys_listener_manager_;
-
-  // The FieldTrialSynchronizer tells child processes when a trial gets
-  // activated. This is mostly an optimization, as a consequence if renderers
-  // know a trial is already active they don't need to send anything to the
-  // browser.
-  scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
   std::unique_ptr<media::UserInputMonitor> user_input_monitor_;

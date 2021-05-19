@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -48,6 +49,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -77,34 +79,33 @@ const int kDefaultHeight = 384;
 
 void SetConstraintProperty(const std::string& name,
                            int value,
-                           base::DictionaryValue* bounds_properties) {
+                           base::Value* bounds_properties) {
+  DCHECK(bounds_properties->is_dict());
   if (value != SizeConstraints::kUnboundedSize)
-    bounds_properties->SetInteger(name, value);
+    bounds_properties->SetIntKey(name, value);
   else
-    bounds_properties->Set(name, std::make_unique<base::Value>());
+    bounds_properties->SetKey(name, base::Value());
 }
 
 void SetBoundsProperties(const gfx::Rect& bounds,
                          const gfx::Size& min_size,
                          const gfx::Size& max_size,
                          const std::string& bounds_name,
-                         base::DictionaryValue* window_properties) {
-  std::unique_ptr<base::DictionaryValue> bounds_properties(
-      new base::DictionaryValue());
+                         base::Value* window_properties) {
+  DCHECK(window_properties->is_dict());
+  base::Value bounds_properties(base::Value::Type::DICTIONARY);
 
-  bounds_properties->SetInteger("left", bounds.x());
-  bounds_properties->SetInteger("top", bounds.y());
-  bounds_properties->SetInteger("width", bounds.width());
-  bounds_properties->SetInteger("height", bounds.height());
+  bounds_properties.SetIntKey("left", bounds.x());
+  bounds_properties.SetIntKey("top", bounds.y());
+  bounds_properties.SetIntKey("width", bounds.width());
+  bounds_properties.SetIntKey("height", bounds.height());
 
-  SetConstraintProperty("minWidth", min_size.width(), bounds_properties.get());
-  SetConstraintProperty(
-      "minHeight", min_size.height(), bounds_properties.get());
-  SetConstraintProperty("maxWidth", max_size.width(), bounds_properties.get());
-  SetConstraintProperty(
-      "maxHeight", max_size.height(), bounds_properties.get());
+  SetConstraintProperty("minWidth", min_size.width(), &bounds_properties);
+  SetConstraintProperty("minHeight", min_size.height(), &bounds_properties);
+  SetConstraintProperty("maxWidth", max_size.width(), &bounds_properties);
+  SetConstraintProperty("maxHeight", max_size.height(), &bounds_properties);
 
-  window_properties->Set(bounds_name, std::move(bounds_properties));
+  window_properties->SetKey(bounds_name, std::move(bounds_properties));
 }
 
 // Combines the constraints of the content and window, and returns constraints
@@ -261,7 +262,7 @@ void AppWindow::Init(const GURL& url,
   initial_url_ = url;
 
   content::WebContentsObserver::Observe(web_contents());
-  SetViewType(web_contents(), VIEW_TYPE_APP_WINDOW);
+  SetViewType(web_contents(), mojom::ViewType::kAppWindow);
   app_delegate_->InitWebContents(web_contents());
 
   ExtensionWebContentsObserver::GetForWebContents(web_contents())->
@@ -295,8 +296,8 @@ void AppWindow::Init(const GURL& url,
   native_app_window_.reset(
       app_window_client->CreateNativeAppWindow(this, &new_params));
 
-  helper_.reset(new AppWebContentsHelper(
-      browser_context_, extension_id_, web_contents(), app_delegate_.get()));
+  helper_ = std::make_unique<AppWebContentsHelper>(
+      browser_context_, extension_id_, web_contents(), app_delegate_.get());
 
   native_app_window_->UpdateWindowIcon();
 
@@ -395,7 +396,7 @@ content::KeyboardEventProcessingResult AppWindow::PreHandleKeyboardEvent(
   if (event.windows_key_code == ui::VKEY_ESCAPE && IsFullscreen() &&
       !IsForcedFullscreen() &&
       !extension->permissions_data()->HasAPIPermission(
-          APIPermission::kOverrideEscFullscreen)) {
+          mojom::APIPermissionID::kOverrideEscFullscreen)) {
     Restore();
     return content::KeyboardEventProcessingResult::HANDLED;
   }
@@ -564,15 +565,15 @@ gfx::Rect AppWindow::GetClientBounds() const {
   return bounds;
 }
 
-base::string16 AppWindow::GetTitle() const {
+std::u16string AppWindow::GetTitle() const {
   const Extension* extension = GetExtension();
   if (!extension)
-    return base::string16();
+    return std::u16string();
 
   // WebContents::GetTitle() will return the page's URL if there's no <title>
   // specified. However, we'd prefer to show the name of the extension in that
   // case, so we directly inspect the NavigationEntry's title.
-  base::string16 title;
+  std::u16string title;
   content::NavigationEntry* entry = web_contents() ?
       web_contents()->GetController().GetLastCommittedEntry() : nullptr;
   if (!entry || entry->GetTitle().empty()) {
@@ -580,7 +581,7 @@ base::string16 AppWindow::GetTitle() const {
   } else {
     title = web_contents()->GetTitle();
   }
-  base::RemoveChars(title, base::ASCIIToUTF16("\n"), &title);
+  base::RemoveChars(title, u"\n", &title);
   return title;
 }
 
@@ -743,16 +744,17 @@ void AppWindow::RestoreAlwaysOnTop() {
     UpdateNativeAlwaysOnTop();
 }
 
-void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
+void AppWindow::GetSerializedState(base::Value* properties) const {
   DCHECK(properties);
+  DCHECK(properties->is_dict());
 
-  properties->SetBoolean("fullscreen",
+  properties->SetBoolKey("fullscreen",
                          native_app_window_->IsFullscreenOrPending());
-  properties->SetBoolean("minimized", native_app_window_->IsMinimized());
-  properties->SetBoolean("maximized", native_app_window_->IsMaximized());
-  properties->SetBoolean("alwaysOnTop", IsAlwaysOnTop());
-  properties->SetBoolean("hasFrameColor", native_app_window_->HasFrameColor());
-  properties->SetBoolean(
+  properties->SetBoolKey("minimized", native_app_window_->IsMinimized());
+  properties->SetBoolKey("maximized", native_app_window_->IsMaximized());
+  properties->SetBoolKey("alwaysOnTop", IsAlwaysOnTop());
+  properties->SetBoolKey("hasFrameColor", native_app_window_->HasFrameColor());
+  properties->SetBoolKey(
       "alphaEnabled",
       requested_alpha_enabled_ && native_app_window_->CanHaveAlphaEnabled());
 
@@ -760,10 +762,10 @@ void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
   // removed to
   // make the values easier to check.
   SkColor transparent_white = ~SK_ColorBLACK;
-  properties->SetInteger(
+  properties->SetIntKey(
       "activeFrameColor",
       native_app_window_->ActiveFrameColor() & transparent_white);
-  properties->SetInteger(
+  properties->SetIntKey(
       "inactiveFrameColor",
       native_app_window_->InactiveFrameColor() & transparent_white);
 
@@ -936,7 +938,8 @@ void AppWindow::ToggleFullscreenModeForTab(content::WebContents* source,
     return;
 
   if (!IsExtensionWithPermissionOrSuggestInConsole(
-          APIPermission::kFullscreen, extension, source->GetMainFrame())) {
+          mojom::APIPermissionID::kFullscreen, extension,
+          source->GetMainFrame())) {
     return;
   }
 

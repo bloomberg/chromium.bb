@@ -40,6 +40,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1252999807265626933">Zdroj nabíjení: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Jaké je počasí?</translation>
 <translation id="1267032506238418139">Změna klávesové zkratky</translation>
+<translation id="1269405891096105529">Periferní zařízení není v režimu hosta podporováno</translation>
 <translation id="1270290102613614947">Softwarová klávesnice je deaktivována</translation>
 <translation id="1272079795634619415">Zastavit</translation>
 <translation id="1275285675049378717">Napájení: <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2012624427112548395">Ctrl+Hledat+H</translation>
 <translation id="2016340657076538683">Zadejte zprávu</translation>
 <translation id="2018630726571919839">Řekni mi vtip</translation>
+<translation id="2021864487439853900">Odemknete kliknutím</translation>
 <translation id="2049240716062114887">Název plochy byl změněn na <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Na výšku</translation>
 <translation id="2067602449040652523">Jas klávesnice</translation>
@@ -276,6 +278,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se i nadále bude moci přihlásit.</translation>
 <translation id="3321628682574733415">Nesprávný kód rodiče</translation>
 <translation id="332587331255250389">Vyměňte prosím baterii</translation>
+<translation id="3333741161915951567">Restartování modemu. Před dalším pokusem 30 sekund počkejte.</translation>
 <translation id="3341303451326249809">Snímek obrazovky byl pořízen</translation>
 <translation id="334252345105450327">Pořídit snímek obrazovky</translation>
 <translation id="3351879221545518001">Právě odesíláte obrazovku.</translation>
@@ -320,6 +323,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> – spravovaný uživatel</translation>
 <translation id="3665889125180354336">Záznam mikrofonu</translation>
 <translation id="36813544980941320">Sítě Wi-Fi se budou sdílet mezi vaším telefonem a zařízením <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Zobrazují se okna z aktuální plochy, stisknutím šipky nahoru zobrazíte okna ze všech ploch</translation>
 <translation id="3702846122927433391">Počet obyvatel Nigérie</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Načítání...</translation>
@@ -351,6 +355,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="394485226368336402">Nastavení zvuku</translation>
 <translation id="3945319193631853098">Klepnutím dokončete nastavení</translation>
 <translation id="3945867833895287237">Připojování k hotspotu…</translation>
+<translation id="3958465044488004317">Zobrazit výsledek v Asistentovi</translation>
 <translation id="3962859241508114581">Předchozí skladba</translation>
 <translation id="3969043077941541451">Vypnout</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
@@ -407,10 +412,12 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME" />.</translation>
 <translation id="4424159417645388645">Plocha 5</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
+<translation id="4445159312344259901">Odemknete přihlášením</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 důležité oznámení}few{# důležitá oznámení}many{# důležitého oznámení}other{# důležitých oznámení}}</translation>
 <translation id="4450893287417543264">Tuto zprávu již nezobrazovat</translation>
 <translation id="445864333228800152">Dobrý večer,</translation>
 <translation id="4458688154122353284">Zastavit nahrávání obrazovky</translation>
+<translation id="4467143075433126295">Režim celé obrazovky ukončíte podržením klávesy [Esc]</translation>
 <translation id="4472575034687746823">Začít</translation>
 <translation id="4477350412780666475">Další skladba</translation>
 <translation id="4477892968187500306">Toto zařízení může obsahovat aplikace, které nebyly ověřeny Googlem.</translation>
@@ -607,6 +614,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Asistent Google v relaci hosta není k dispozici.</translation>
 <translation id="6137566720514957455">Otevřít dialogové okno odstranění účtu <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Periferní zařízení není podporováno</translation>
 <translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="6179832488876878285">Sem si můžete připnout důležité soubory. Začněte tím, že otevřete aplikaci Soubory.</translation>
@@ -624,11 +632,11 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="6297287540776456956">Vyberte pomocí dotykového pera oblast.</translation>
 <translation id="6310121235600822547">Displej <ph name="DISPLAY_NAME" /> byl otočen o <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Hlas</translation>
+<translation id="6330012934079202188">Zobrazují se okna ze všech ploch, stisknutím šipky nahoru zobrazíte okna z aktuální plochy</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> je spravovaná relace, kterou spravuje doména <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Rozhraní Bluetooth je zapnuté</translation>
 <translation id="6381109794406942707">Chcete-li zařízení odemknout, zadejte PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
-<translation id="6396835948284782440">Režim ukončíte podržením klávesy [Esc].</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Vymazat všechna oznámení</translation>
@@ -794,7 +802,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="7780159184141939021">Otočit obrazovku</translation>
 <translation id="7796353162336583443">Klepnutím na tlačítko dotykového pera na poličce můžete pořídit poznámku nebo snímek obrazovky, případně použít Asistenta Google, laserové ukazovátko nebo lupu.</translation>
 <translation id="7798302898096527229">Vypnete jej stisknutím klávesy Hledat nebo Shift.</translation>
-<translation id="7807966291075028781">Periferní zařízení není v režimu hosta z bezpečnostních důvodů podporováno</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> a <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Silný signál</translation>
 <translation id="7837740436429729974">Čas vypršel</translation>
@@ -944,6 +951,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="8936501819958976551">deaktivovala</translation>
 <translation id="8938800817013097409">Zařízení USB Type-C (pravý zadní port)</translation>
 <translation id="8940956008527784070">Slabá baterie (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8951539504029375108">S Chromebookem jsou kompatibilní pouze schválená zařízení Thunderbolt</translation>
 <translation id="8982906748181120328">Viditelnost nablízko</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Metoda zadávání: <ph name="IME_NAME" /></translation>

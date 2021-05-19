@@ -294,8 +294,9 @@ SpdyFramer::SpdyFrameIterator::~SpdyFrameIterator() = default;
 size_t SpdyFramer::SpdyFrameIterator::NextFrame(ZeroCopyOutputBuffer* output) {
   const SpdyFrameIR& frame_ir = GetIR();
   if (!has_next_frame_) {
-    SPDY_BUG << "SpdyFramer::SpdyFrameIterator::NextFrame called without "
-             << "a next frame.";
+    SPDY_BUG(spdy_bug_75_1)
+        << "SpdyFramer::SpdyFrameIterator::NextFrame called without "
+        << "a next frame.";
     return false;
   }
 
@@ -406,7 +407,6 @@ const SpdyFrameIR& SpdyFramer::SpdyControlFrameIterator::GetIR() const {
   return *(frame_ir_.get());
 }
 
-// TODO(yasong): remove all the static_casts.
 std::unique_ptr<SpdyFrameSequence> SpdyFramer::CreateIterator(
     SpdyFramer* framer,
     std::unique_ptr<const SpdyFrameIR> frame_ir) {
@@ -418,8 +418,8 @@ std::unique_ptr<SpdyFrameSequence> SpdyFramer::CreateIterator(
     }
     case SpdyFrameType::PUSH_PROMISE: {
       return std::make_unique<SpdyPushPromiseFrameIterator>(
-          framer, absl::WrapUnique(
-                      static_cast<const SpdyPushPromiseIR*>(frame_ir.release())));
+          framer, absl::WrapUnique(static_cast<const SpdyPushPromiseIR*>(
+                      frame_ir.release())));
     }
     case SpdyFrameType::DATA: {
       SPDY_DVLOG(1) << "Serialize a stream end DATA frame for VTL";
@@ -1377,11 +1377,6 @@ size_t SpdyFramer::header_encoder_table_size() const {
   } else {
     return hpack_encoder_->CurrentHeaderTableSizeSetting();
   }
-}
-
-void SpdyFramer::SetEncoderHeaderTableDebugVisitor(
-    std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
-  GetHpackEncoder()->SetHeaderTableDebugVisitor(std::move(visitor));
 }
 
 size_t SpdyFramer::EstimateMemoryUsage() const {

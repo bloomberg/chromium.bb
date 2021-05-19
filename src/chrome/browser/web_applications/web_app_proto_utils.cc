@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
-#include <third_party/blink/public/common/manifest/manifest.h>
+
+#include "third_party/blink/public/common/manifest/manifest.h"
 
 namespace web_app {
 
@@ -79,6 +80,8 @@ base::Optional<std::vector<WebApplicationIconInfo>> ParseWebAppIconInfos(
 
 sync_pb::WebAppSpecifics WebAppToSyncProto(const WebApp& app) {
   sync_pb::WebAppSpecifics sync_proto;
+  if (app.manifest_id().has_value())
+    sync_proto.set_manifest_id(app.manifest_id().value());
   sync_proto.set_start_url(app.start_url().spec());
   sync_proto.set_user_display_mode(
       ToWebAppSpecificsUserDisplayMode(app.user_display_mode()));

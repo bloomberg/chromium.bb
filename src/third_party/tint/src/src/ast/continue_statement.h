@@ -15,9 +15,6 @@
 #ifndef SRC_AST_CONTINUE_STATEMENT_H_
 #define SRC_AST_CONTINUE_STATEMENT_H_
 
-#include <memory>
-#include <utility>
-
 #include "src/ast/statement.h"
 
 namespace tint {
@@ -38,9 +35,6 @@ class ContinueStatement : public Castable<ContinueStatement, Statement> {
   /// @param ctx the clone context
   /// @return the newly cloned node
   ContinueStatement* Clone(CloneContext* ctx) const override;
-
-  /// @returns true if the node is valid
-  bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
   /// @param sem the semantic info for the program

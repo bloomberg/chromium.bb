@@ -12,10 +12,10 @@
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "services/viz/public/cpp/compositing/begin_frame_args_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/compositor_frame_transition_directive_mojom_traits.h"
-#include "services/viz/public/cpp/compositing/delegated_ink_metadata_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/frame_deadline_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/surface_range_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_metadata.mojom-shared.h"
+#include "ui/gfx/mojom/delegated_ink_metadata_mojom_traits.h"
 #include "ui/gfx/mojom/display_color_spaces_mojom_traits.h"
 #include "ui/gfx/mojom/overlay_transform_mojom_traits.h"
 
@@ -105,6 +105,8 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
 
   static base::Optional<base::TimeDelta> preferred_frame_interval(
       const viz::CompositorFrameMetadata& metadata) {
+    DCHECK(!metadata.preferred_frame_interval ||
+           metadata.preferred_frame_interval.value() >= base::TimeDelta());
     return metadata.preferred_frame_interval;
   }
 
@@ -123,7 +125,7 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.display_transform_hint;
   }
 
-  static const std::unique_ptr<viz::DelegatedInkMetadata>&
+  static const std::unique_ptr<gfx::DelegatedInkMetadata>&
   delegated_ink_metadata(const viz::CompositorFrameMetadata& metadata) {
     return metadata.delegated_ink_metadata;
   }

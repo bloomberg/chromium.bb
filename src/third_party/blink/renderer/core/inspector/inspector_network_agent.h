@@ -67,6 +67,7 @@ class NetworkResourcesData;
 enum class RenderBlockingBehavior : uint8_t;
 class Resource;
 class ResourceError;
+struct ResourceLoaderOptions;
 class ResourceResponse;
 class XHRReplayData;
 class XMLHttpRequest;
@@ -91,7 +92,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   void DidBlockRequest(const ResourceRequest&,
                        DocumentLoader*,
                        const KURL& fetch_context_url,
-                       const FetchInitiatorInfo&,
+                       const ResourceLoaderOptions&,
                        ResourceRequestBlockedReason,
                        ResourceType);
   void DidChangeResourcePriority(DocumentLoader*,
@@ -101,12 +102,11 @@ class CORE_EXPORT InspectorNetworkAgent final
                       ResourceRequest&,
                       ResourceLoaderOptions&,
                       ResourceType);
-  void WillSendRequest(uint64_t identifier,
-                       DocumentLoader*,
+  void WillSendRequest(DocumentLoader*,
                        const KURL& fetch_context_url,
                        const ResourceRequest&,
                        const ResourceResponse& redirect_response,
-                       const FetchInitiatorInfo&,
+                       const ResourceLoaderOptions&,
                        ResourceType,
                        RenderBlockingBehavior);
   void WillSendNavigationRequest(uint64_t identifier,
@@ -249,6 +249,12 @@ class CORE_EXPORT InspectorNetworkAgent final
   void getRequestPostData(const String& request_id,
                           std::unique_ptr<GetRequestPostDataCallback>) override;
 
+  protocol::Response setAcceptedEncodings(
+      std::unique_ptr<protocol::Array<protocol::Network::ContentEncoding>>
+          encodings) override;
+
+  protocol::Response clearAcceptedEncodingsOverride() override;
+
   // Called from other agents.
   protocol::Response GetResponseBody(const String& request_id,
                                      String* content,
@@ -261,12 +267,11 @@ class CORE_EXPORT InspectorNetworkAgent final
 
  private:
   void Enable();
-  void WillSendRequestInternal(uint64_t identifier,
-                               DocumentLoader*,
+  void WillSendRequestInternal(DocumentLoader*,
                                const KURL& fetch_context_url,
                                const ResourceRequest&,
                                const ResourceResponse& redirect_response,
-                               const FetchInitiatorInfo&,
+                               const ResourceLoaderOptions&,
                                InspectorPageAgent::ResourceType);
 
   bool CanGetResponseBodyBlob(const String& request_id);
@@ -294,7 +299,6 @@ class CORE_EXPORT InspectorNetworkAgent final
   base::Optional<InspectorPageAgent::ResourceType> pending_request_type_;
 
   Member<XHRReplayData> pending_xhr_replay_data_;
-  bool is_handling_sync_xhr_ = false;
 
   HashMap<String, std::unique_ptr<protocol::Network::Initiator>>
       frame_navigation_initiator_map_;
@@ -309,6 +313,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   InspectorAgentState::Integer total_buffer_size_;
   InspectorAgentState::Integer resource_buffer_size_;
   InspectorAgentState::Integer max_post_data_size_;
+  InspectorAgentState::BooleanMap accepted_encodings_;
 };
 
 }  // namespace blink

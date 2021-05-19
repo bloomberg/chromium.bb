@@ -48,16 +48,12 @@ constexpr int kMaxPeriodsWithoutActivity =
 DemoModeApp GetAppFromAppId(const std::string& app_id) {
   // Each version of the Highlights app is bucketed into the same value.
   if (app_id == extension_misc::kHighlightsAppId ||
-      app_id == extension_misc::kHighlightsEveAppId ||
-      app_id == extension_misc::kHighlightsNocturneAppId ||
       app_id == extension_misc::kHighlightsAtlasAppId) {
     return DemoModeApp::kHighlights;
   }
 
   // Each version of the Screensaver app is bucketed into the same value.
   if (app_id == extension_misc::kScreensaverAppId ||
-      app_id == extension_misc::kScreensaverEveAppId ||
-      app_id == extension_misc::kScreensaverNocturneAppId ||
       app_id == extension_misc::kScreensaverAtlasAppId ||
       app_id == extension_misc::kScreensaverKraneZdksAppId) {
     return DemoModeApp::kScreensaver;
@@ -85,8 +81,11 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
     return DemoModeApp::kGoogleKeepChromeApp;
   if (app_id == extensions::kWebStoreAppId)
     return DemoModeApp::kWebStore;
-  if (app_id == extension_misc::kYoutubeAppId)
+  if (app_id == extension_misc::kYoutubeAppId ||
+      app_id == extension_misc::kYoutubePwaAppId) {
     return DemoModeApp::kYouTube;
+  }
+
   return DemoModeApp::kOtherChromeApp;
 }
 

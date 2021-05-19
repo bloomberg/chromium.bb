@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/navigation_observer.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,7 +28,7 @@ bool g_repeat_prompting = false;
 
 NavigationObserver::NavigationObserver(Profile* profile) : profile_(profile) {
   RegisterForNotifications();
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
+  extension_registry_observation_.Observe(ExtensionRegistry::Get(profile));
 }
 
 NavigationObserver::~NavigationObserver() {}
@@ -99,8 +101,8 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
     in_progress_prompt_extension_id_ = extension->id();
     in_progress_prompt_navigation_controller_ = nav_controller;
 
-    extension_install_prompt_.reset(
-        new ExtensionInstallPrompt(nav_controller->GetWebContents()));
+    extension_install_prompt_ = std::make_unique<ExtensionInstallPrompt>(
+        nav_controller->GetWebContents());
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(profile_,
                                                                   extension);

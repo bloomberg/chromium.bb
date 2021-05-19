@@ -8,10 +8,8 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/system/sys_info.h"
-#include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
@@ -19,13 +17,8 @@
 #include "media/base/media_content_type.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "ui/gfx/geometry/size.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif
 
 namespace {
 
@@ -62,11 +55,7 @@ bool RendererWebMediaPlayerDelegate::IsFrameHidden() {
   if (is_frame_hidden_for_testing_)
     return true;
 
-  return (render_frame() && render_frame()->IsHidden()) || is_frame_closed_;
-}
-
-bool RendererWebMediaPlayerDelegate::IsFrameClosed() {
-  return is_frame_closed_;
+  return (render_frame() && render_frame()->IsHidden());
 }
 
 int RendererWebMediaPlayerDelegate::AddObserver(Observer* observer) {
@@ -199,29 +188,12 @@ void RendererWebMediaPlayerDelegate::WasHidden() {
 
 void RendererWebMediaPlayerDelegate::WasShown() {
   RecordAction(base::UserMetricsAction("Media.Shown"));
-  is_frame_closed_ = false;
 
   for (base::IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd();
        it.Advance())
     it.GetCurrentValue()->OnFrameShown();
 
   ScheduleUpdateTask();
-}
-
-bool RendererWebMediaPlayerDelegate::OnMessageReceived(
-    const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(RendererWebMediaPlayerDelegate, msg)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_SuspendAllMediaPlayers,
-                        OnMediaDelegateSuspendAllMediaPlayers)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_UpdateVolumeMultiplier,
-                        OnMediaDelegateVolumeMultiplierUpdate)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_BecamePersistentVideo,
-                        OnMediaDelegateBecamePersistentVideo)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_NotifyPowerExperimentState,
-                        OnMediaDelegatePowerExperimentState)
-    IPC_MESSAGE_UNHANDLED(return false)
-  IPC_END_MESSAGE_MAP()
-  return true;
 }
 
 void RendererWebMediaPlayerDelegate::SetIdleCleanupParamsForTesting(
@@ -249,38 +221,6 @@ void RendererWebMediaPlayerDelegate::SetFrameHiddenForTesting(bool is_hidden) {
   ScheduleUpdateTask();
 }
 
-void RendererWebMediaPlayerDelegate::OnMediaDelegateSuspendAllMediaPlayers() {
-  is_frame_closed_ = true;
-
-  for (base::IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd();
-       it.Advance())
-    it.GetCurrentValue()->OnFrameClosed();
-}
-
-void RendererWebMediaPlayerDelegate::OnMediaDelegateVolumeMultiplierUpdate(
-    int player_id,
-    double multiplier) {
-  Observer* observer = id_map_.Lookup(player_id);
-  if (observer)
-    observer->OnVolumeMultiplierUpdate(multiplier);
-}
-
-void RendererWebMediaPlayerDelegate::OnMediaDelegateBecamePersistentVideo(
-    int player_id,
-    bool value) {
-  Observer* observer = id_map_.Lookup(player_id);
-  if (observer)
-    observer->OnBecamePersistentVideo(value);
-}
-
-void RendererWebMediaPlayerDelegate::OnMediaDelegatePowerExperimentState(
-    int player_id,
-    bool state) {
-  Observer* observer = id_map_.Lookup(player_id);
-  if (observer)
-    observer->OnPowerExperimentState(state);
-}
-
 void RendererWebMediaPlayerDelegate::ScheduleUpdateTask() {
   if (!pending_update_task_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -299,9 +239,6 @@ void RendererWebMediaPlayerDelegate::UpdateTask() {
   // between posting the task and UpdateTask() executing.
   bool has_played_video_since_last_update_task = has_played_video_;
   has_played_video_ = false;
-
-  // Record UMAs for background video playback.
-  RecordBackgroundVideoPlayback();
 
   if (!allow_idle_cleanup_)
     return;
@@ -332,31 +269,6 @@ void RendererWebMediaPlayerDelegate::UpdateTask() {
         base::BindOnce(&RendererWebMediaPlayerDelegate::UpdateTask,
                        base::Unretained(this)));
   }
-}
-
-void RendererWebMediaPlayerDelegate::RecordBackgroundVideoPlayback() {
-#if defined(OS_ANDROID)
-  // TODO(avayvod): This would be useful to collect on desktop too and express
-  // in actual media watch time vs. just elapsed time.
-  // See https://crbug.com/638726.
-  bool has_playing_background_video =
-      IsFrameHidden() && !IsFrameClosed() && !playing_videos_.empty();
-
-  if (has_playing_background_video != was_playing_background_video_) {
-    was_playing_background_video_ = has_playing_background_video;
-
-    if (has_playing_background_video) {
-      RecordAction(base::UserMetricsAction("Media.Session.BackgroundResume"));
-      background_video_start_time_ = base::TimeTicks::Now();
-    } else {
-      RecordAction(base::UserMetricsAction("Media.Session.BackgroundSuspend"));
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Media.Android.BackgroundVideoTime",
-          base::TimeTicks::Now() - background_video_start_time_,
-          base::TimeDelta::FromSeconds(7), base::TimeDelta::FromHours(10), 50);
-    }
-  }
-#endif  // OS_ANDROID
 }
 
 void RendererWebMediaPlayerDelegate::CleanUpIdlePlayers(

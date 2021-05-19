@@ -204,7 +204,9 @@ void PixelTest::ReadbackResult(base::OnceClosure quit_run_loop,
                                std::unique_ptr<viz::CopyOutputResult> result) {
   ASSERT_FALSE(result->IsEmpty());
   EXPECT_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_BITMAP);
-  result_bitmap_ = std::make_unique<SkBitmap>(result->AsSkBitmap());
+  auto scoped_sk_bitmap = result->ScopedAccessSkBitmap();
+  result_bitmap_ =
+      std::make_unique<SkBitmap>(scoped_sk_bitmap.GetOutScopedBitmap());
   EXPECT_TRUE(result_bitmap_->readyToDraw());
   std::move(quit_run_loop).Run();
 }
@@ -340,8 +342,8 @@ void PixelTest::EnableExternalStencilTest() {
 }
 
 void PixelTest::SetUpSoftwareRenderer() {
-  output_surface_.reset(new PixelTestOutputSurface(
-      std::make_unique<viz::SoftwareOutputDevice>()));
+  output_surface_ = std::make_unique<PixelTestOutputSurface>(
+      std::make_unique<viz::SoftwareOutputDevice>());
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
   auto resource_provider =

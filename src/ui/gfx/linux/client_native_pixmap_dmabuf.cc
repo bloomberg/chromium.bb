@@ -94,20 +94,6 @@ ClientNativePixmapDmaBuf::PlaneInfo::~PlaneInfo() {
 bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  bool disable_yuv_biplanar = true;
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMECAST)
-  // IsConfigurationSupported(SCANOUT_CPU_READ_WRITE) is used by the renderer
-  // to tell whether the platform supports sampling a given format. Zero-copy
-  // video capture and encoding requires gfx::BufferFormat::YUV_420_BIPLANAR to
-  // be supported by the renderer. Most of Chrome OS platforms support it, so
-  // enable it by default, with a switch that allows an explicit disable on
-  // platforms known to have problems, e.g. the Tegra-based nyan."
-  // TODO(crbug.com/982201): move gfx::BufferFormat::YUV_420_BIPLANAR out
-  // of if defined(ARCH_CPU_X86_FAMLIY) when Tegra is no longer supported.
-  disable_yuv_biplanar = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableYuv420Biplanar);
-#endif
-
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
       return format == gfx::BufferFormat::BGR_565 ||
@@ -123,6 +109,7 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
              format == gfx::BufferFormat::BGRA_8888 ||
              format == gfx::BufferFormat::RGBA_1010102 ||
              format == gfx::BufferFormat::BGRA_1010102;
+    case gfx::BufferUsage::SCANOUT_FRONT_RENDERING:
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
       // TODO(crbug.com/954233): RG_88 is enabled only with
       // --enable-native-gpu-memory-buffers . Otherwise it breaks some telemetry
@@ -130,10 +117,8 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
       if (format == gfx::BufferFormat::RG_88 && !AllowCpuMappableBuffers())
         return false;
 
-      if (!disable_yuv_biplanar &&
-          format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+      if (format == gfx::BufferFormat::YUV_420_BIPLANAR)
         return true;
-      }
 
       return
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -158,10 +143,8 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
       if (!AllowCpuMappableBuffers())
         return false;
 
-      if (!disable_yuv_biplanar &&
-          format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+      if (format == gfx::BufferFormat::YUV_420_BIPLANAR)
         return true;
-      }
 
       return
 #if defined(ARCH_CPU_X86_FAMILY)

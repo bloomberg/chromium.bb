@@ -152,13 +152,15 @@ struct DIEFixture {
 
 struct DwarfHeaderParams {
   DwarfHeaderParams(Endianness endianness, size_t format_size,
-                   int version, size_t address_size)
+                    int version, size_t address_size, int header_type)
       : endianness(endianness), format_size(format_size),
-        version(version), address_size(address_size) { }
+        version(version), address_size(address_size), header_type(header_type)
+  { }
   Endianness endianness;
   size_t format_size;                   // 4-byte or 8-byte DWARF offsets
   int version;
   size_t address_size;
+  int header_type; // DW_UT_{compile, type, partial, skeleton, etc}
 };
 
 class DwarfHeader: public DIEFixture,
@@ -175,7 +177,8 @@ TEST_P(DwarfHeader, Header) {
   info.set_format_size(GetParam().format_size);
   info.set_endianness(GetParam().endianness);
 
-  info.Header(GetParam().version, abbrev_table, GetParam().address_size)
+  info.Header(GetParam().version, abbrev_table, GetParam().address_size,
+              dwarf2reader::DW_UT_compile)
       .ULEB128(1)                     // DW_TAG_compile_unit, with children
       .AppendCString("sam")           // DW_AT_name, DW_FORM_string
       .D8(0);                         // end of children
@@ -190,7 +193,7 @@ TEST_P(DwarfHeader, Header) {
         .WillOnce(Return(true));
     EXPECT_CALL(handler, StartDIE(_, dwarf2reader::DW_TAG_compile_unit))
         .WillOnce(Return(true));
-    EXPECT_CALL(handler, ProcessAttributeString(_, dwarf2reader::DW_AT_name, 
+    EXPECT_CALL(handler, ProcessAttributeString(_, dwarf2reader::DW_AT_name,
                                                 dwarf2reader::DW_FORM_string,
                                                 "sam"))
         .WillOnce(Return());
@@ -204,36 +207,79 @@ TEST_P(DwarfHeader, Header) {
   EXPECT_EQ(parser.Start(), info_contents.size());
 }
 
-INSTANTIATE_TEST_CASE_P(
+TEST_P(DwarfHeader, TypeUnitHeader) {
+  Label abbrev_table = abbrevs.Here();
+  int version = 5;
+  abbrevs.Abbrev(1, dwarf2reader::DW_TAG_type_unit,
+                 dwarf2reader::DW_children_yes)
+      .Attribute(dwarf2reader::DW_AT_name, dwarf2reader::DW_FORM_string)
+      .EndAbbrev()
+      .EndTable();
+
+  info.set_format_size(GetParam().format_size);
+  info.set_endianness(GetParam().endianness);
+
+  info.Header(version, abbrev_table, GetParam().address_size,
+              dwarf2reader::DW_UT_type)
+      .ULEB128(0x41)                  // DW_TAG_type_unit, with children
+      .AppendCString("sam")           // DW_AT_name, DW_FORM_string
+      .D8(0);                         // end of children
+  info.Finish();
+
+  {
+    InSequence s;
+    EXPECT_CALL(handler,
+                StartCompilationUnit(0, GetParam().address_size,
+                                     GetParam().format_size, _,
+                                     version))
+        .WillOnce(Return(true));
+    // If the type unit is handled properly, these calls will be skipped.
+    EXPECT_CALL(handler, StartDIE(_, dwarf2reader::DW_TAG_type_unit))
+        .Times(0);
+    EXPECT_CALL(handler, ProcessAttributeString(_, dwarf2reader::DW_AT_name,
+                                                dwarf2reader::DW_FORM_string,
+                                                "sam"))
+        .Times(0);
+    EXPECT_CALL(handler, EndDIE(_))
+        .Times(0);
+  }
+
+  ByteReader byte_reader(GetParam().endianness == kLittleEndian ?
+                         ENDIANNESS_LITTLE : ENDIANNESS_BIG);
+  CompilationUnit parser("", MakeSectionMap(), 0, &byte_reader, &handler);
+  EXPECT_EQ(parser.Start(), info_contents.size());
+}
+
+INSTANTIATE_TEST_SUITE_P(
     HeaderVariants, DwarfHeader,
-    ::testing::Values(DwarfHeaderParams(kLittleEndian, 4, 2, 4),
-                      DwarfHeaderParams(kLittleEndian, 4, 2, 8),
-                      DwarfHeaderParams(kLittleEndian, 4, 3, 4),
-                      DwarfHeaderParams(kLittleEndian, 4, 3, 8),
-                      DwarfHeaderParams(kLittleEndian, 4, 4, 4),
-                      DwarfHeaderParams(kLittleEndian, 4, 4, 8),
-                      DwarfHeaderParams(kLittleEndian, 8, 2, 4),
-                      DwarfHeaderParams(kLittleEndian, 8, 2, 8),
-                      DwarfHeaderParams(kLittleEndian, 8, 3, 4),
-                      DwarfHeaderParams(kLittleEndian, 8, 3, 8),
-                      DwarfHeaderParams(kLittleEndian, 8, 4, 4),
-                      DwarfHeaderParams(kLittleEndian, 8, 4, 8),
-                      DwarfHeaderParams(kLittleEndian, 8, 5, 4),
-                      DwarfHeaderParams(kLittleEndian, 8, 5, 8),
-                      DwarfHeaderParams(kBigEndian,    4, 2, 4),
-                      DwarfHeaderParams(kBigEndian,    4, 2, 8),
-                      DwarfHeaderParams(kBigEndian,    4, 3, 4),
-                      DwarfHeaderParams(kBigEndian,    4, 3, 8),
-                      DwarfHeaderParams(kBigEndian,    4, 4, 4),
-                      DwarfHeaderParams(kBigEndian,    4, 4, 8),
-                      DwarfHeaderParams(kBigEndian,    8, 2, 4),
-                      DwarfHeaderParams(kBigEndian,    8, 2, 8),
-                      DwarfHeaderParams(kBigEndian,    8, 3, 4),
-                      DwarfHeaderParams(kBigEndian,    8, 3, 8),
-                      DwarfHeaderParams(kBigEndian,    8, 4, 4),
-                      DwarfHeaderParams(kBigEndian,    8, 4, 8),
-                      DwarfHeaderParams(kBigEndian,    8, 5, 4),
-                      DwarfHeaderParams(kBigEndian,    8, 5, 8)));
+    ::testing::Values(DwarfHeaderParams(kLittleEndian, 4, 2, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 4, 2, 8, 1),
+                      DwarfHeaderParams(kLittleEndian, 4, 3, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 4, 3, 8, 1),
+                      DwarfHeaderParams(kLittleEndian, 4, 4, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 4, 4, 8, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 2, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 2, 8, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 3, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 3, 8, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 4, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 4, 8, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 5, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 5, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 2, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 2, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 3, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 3, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 4, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 4, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 2, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 2, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 3, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 3, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 4, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 4, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 5, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 5, 8, 1)));
 
 struct DwarfFormsFixture: public DIEFixture {
   // Start a compilation unit, as directed by |params|, containing one
@@ -253,7 +299,8 @@ struct DwarfFormsFixture: public DIEFixture {
     // Create the compilation unit, up to the attribute value.
     info.set_format_size(params.format_size);
     info.set_endianness(params.endianness);
-    info.Header(params.version, abbrev_table, params.address_size)
+    info.Header(params.version, abbrev_table, params.address_size,
+                dwarf2reader::DW_UT_compile)
         .ULEB128(1);                    // abbrev code
   }
 
@@ -310,6 +357,90 @@ TEST_P(DwarfForms, addr) {
 
   ExpectBeginCompilationUnit(GetParam(), dwarf2reader::DW_TAG_compile_unit);
   EXPECT_CALL(handler, ProcessAttributeUnsigned(_, dwarf2reader::DW_AT_low_pc, 
+                                                dwarf2reader::DW_FORM_addr,
+                                                value))
+      .InSequence(s)
+      .WillOnce(Return());
+  ExpectEndCompilationUnit();
+
+  ParseCompilationUnit(GetParam());
+}
+
+TEST_P(DwarfForms, strx1) {
+  if (GetParam().version != 5) {
+    return;
+  }
+  Label abbrev_table = abbrevs.Here();
+  abbrevs.Abbrev(1, dwarf2reader::DW_TAG_compile_unit,
+                 dwarf2reader::DW_children_no)
+      .Attribute(dwarf2reader::DW_AT_name, dwarf2reader::DW_FORM_strx1)
+      .Attribute(dwarf2reader::DW_AT_low_pc, dwarf2reader::DW_FORM_addr)
+      .Attribute(dwarf2reader::DW_AT_str_offsets_base,
+                 dwarf2reader::DW_FORM_sec_offset)
+      .EndAbbrev()
+      .EndTable();
+
+  info.set_format_size(GetParam().format_size);
+  info.set_endianness(GetParam().endianness);
+  info.Header(GetParam().version, abbrev_table, GetParam().address_size,
+              dwarf2reader::DW_UT_compile)
+      .ULEB128(1)                                 // abbrev index
+      .D8(2);                                     // string index
+
+  uint64_t value;
+  uint64_t offsets_base;
+  if (GetParam().address_size == 4) {
+    value = 0xc8e9ffcc;
+    offsets_base = 8;
+    info.D32(value);                              // low pc
+    info.D32(offsets_base);                       // str_offsets_base
+  } else {
+    value = 0xe942517fc2768564ULL;
+    offsets_base = 16;
+    info.D64(value);                              // low_pc
+    info.D64(offsets_base);                       // str_offsets_base
+  }
+  info.Finish();
+
+  Section debug_strings;
+  // no header, just a series of null-terminated strings.
+  debug_strings.AppendCString("apple");    // offset = 0
+  debug_strings.AppendCString("bird");     // offset = 6
+  debug_strings.AppendCString("canary");   // offset = 11
+  debug_strings.AppendCString("dinosaur"); // offset = 18
+
+  Section str_offsets;
+  str_offsets.set_endianness(GetParam().endianness);
+  // Header for .debug_str_offsets
+  if (GetParam().address_size == 4) {
+    str_offsets.D32(24);  // section length  (4 bytes)
+  } else {
+    str_offsets.D32(0xffffffff);
+    str_offsets.D64(48);  // section length (12 bytes)
+  }
+  str_offsets.D16(GetParam().version); // version (2 bytes)
+  str_offsets.D16(0);                  // padding (2 bytes)
+
+  // .debug_str_offsets data (the offsets)
+  if (GetParam().address_size == 4) {
+    str_offsets.D32(0);
+    str_offsets.D32(6);
+    str_offsets.D32(11);
+    str_offsets.D32(18);
+  } else {
+    str_offsets.D64(0);
+    str_offsets.D64(6);
+    str_offsets.D64(11);
+    str_offsets.D64(18);
+  }
+
+
+  ExpectBeginCompilationUnit(GetParam(), dwarf2reader::DW_TAG_compile_unit);
+  EXPECT_CALL(handler, ProcessAttributeString(_, dwarf2reader::DW_AT_name,
+                                              dwarf2reader::DW_FORM_strx1,
+                                              "bird"))
+      .WillOnce(Return());
+  EXPECT_CALL(handler, ProcessAttributeUnsigned(_, dwarf2reader::DW_AT_low_pc,
                                                 dwarf2reader::DW_FORM_addr,
                                                 value))
       .InSequence(s)
@@ -476,7 +607,8 @@ TEST_P(DwarfForms, implicit_const) {
 
   info.set_format_size(params.format_size);
   info.set_endianness(params.endianness);
-  info.Header(params.version, abbrev_table, params.address_size)
+  info.Header(params.version, abbrev_table, params.address_size,
+              dwarf2reader::DW_UT_compile)
           .ULEB128(1);                    // abbrev code
   info.Finish();
 
@@ -494,32 +626,32 @@ TEST_P(DwarfForms, implicit_const) {
 
 // Tests for the other attribute forms could go here.
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     HeaderVariants, DwarfForms,
-    ::testing::Values(DwarfHeaderParams(kLittleEndian, 4, 2, 4),
-                      DwarfHeaderParams(kLittleEndian, 4, 2, 8),
-                      DwarfHeaderParams(kLittleEndian, 4, 3, 4),
-                      DwarfHeaderParams(kLittleEndian, 4, 3, 8),
-                      DwarfHeaderParams(kLittleEndian, 4, 4, 4),
-                      DwarfHeaderParams(kLittleEndian, 4, 4, 8),
-                      DwarfHeaderParams(kLittleEndian, 8, 2, 4),
-                      DwarfHeaderParams(kLittleEndian, 8, 2, 8),
-                      DwarfHeaderParams(kLittleEndian, 8, 3, 4),
-                      DwarfHeaderParams(kLittleEndian, 8, 3, 8),
-                      DwarfHeaderParams(kLittleEndian, 8, 4, 4),
-                      DwarfHeaderParams(kLittleEndian, 8, 4, 8),
-                      DwarfHeaderParams(kBigEndian,    4, 2, 4),
-                      DwarfHeaderParams(kBigEndian,    4, 2, 8),
-                      DwarfHeaderParams(kBigEndian,    4, 3, 4),
-                      DwarfHeaderParams(kBigEndian,    4, 3, 8),
-                      DwarfHeaderParams(kBigEndian,    4, 4, 4),
-                      DwarfHeaderParams(kBigEndian,    4, 4, 8),
-                      DwarfHeaderParams(kBigEndian,    8, 2, 4),
-                      DwarfHeaderParams(kBigEndian,    8, 2, 8),
-                      DwarfHeaderParams(kBigEndian,    8, 3, 4),
-                      DwarfHeaderParams(kBigEndian,    8, 3, 8),
-                      DwarfHeaderParams(kBigEndian,    8, 4, 4),
-                      DwarfHeaderParams(kBigEndian,    8, 4, 8)));
+    ::testing::Values(DwarfHeaderParams(kLittleEndian, 4, 2, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 4, 2, 8, 1),
+                      DwarfHeaderParams(kLittleEndian, 4, 3, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 4, 3, 8, 1),
+                      DwarfHeaderParams(kLittleEndian, 4, 4, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 4, 4, 8, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 2, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 2, 8, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 3, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 3, 8, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 4, 4, 1),
+                      DwarfHeaderParams(kLittleEndian, 8, 4, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 2, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 2, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 3, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 3, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 4, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    4, 4, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 2, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 2, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 3, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 3, 8, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 4, 4, 1),
+                      DwarfHeaderParams(kBigEndian,    8, 4, 8, 1)));
 
 class MockRangeListHandler: public dwarf2reader::RangeListHandler {
  public:
@@ -574,8 +706,10 @@ TEST(RangeList, Dwarf5ReadRangeList) {
   using dwarf2reader::DW_RLE_offset_pair;
   using dwarf2reader::DW_RLE_end_of_list;
   using dwarf2reader::DW_RLE_base_address;
+  using dwarf2reader::DW_RLE_offset_pair;
   using dwarf2reader::DW_RLE_start_end;
   using dwarf2reader::DW_RLE_start_length;
+  using dwarf2reader::DW_RLE_end_of_list;
   using dwarf2reader::DW_FORM_sec_offset;
   using dwarf2reader::DW_FORM_rnglistx;
 

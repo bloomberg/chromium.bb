@@ -101,7 +101,8 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
         signin_metrics::AccessPoint::ACCESS_POINT_MAX;
     signin_metrics::PromoAction signin_promo_action =
         signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
-    signin_metrics::Reason signin_reason = signin_metrics::Reason::REASON_MAX;
+    signin_metrics::Reason signin_reason =
+        signin_metrics::Reason::kUnknownReason;
     CoreAccountId account_id;
     DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode =
         DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT;
@@ -289,7 +290,7 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
               create_dice_turn_sync_on_helper_params_.signin_access_point);
     EXPECT_EQ(expected_promo_action,
               create_dice_turn_sync_on_helper_params_.signin_promo_action);
-    EXPECT_EQ(signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+    EXPECT_EQ(signin_metrics::Reason::kSigninPrimaryAccount,
               create_dice_turn_sync_on_helper_params_.signin_reason);
     EXPECT_EQ(DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
               create_dice_turn_sync_on_helper_params_.signin_aborted_mode);
@@ -489,7 +490,7 @@ TEST_F(DiceSigninUiUtilTest,
       profile_manager()->profiles_dir().AppendASCII(kSecondProfile);
   profile_manager()->profile_attributes_storage()->AddProfile(
       profile_path, base::ASCIIToUTF16(kSecondProfile), std::string(),
-      base::string16(), false, 0, std::string(), EmptyAccountId());
+      std::u16string(), false, 0, std::string(), EmptyAccountId());
 
   EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
       *profile_manager()->profile_attributes_storage(), profile()));

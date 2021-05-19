@@ -73,7 +73,7 @@ bool WillDispatchDeviceEvent(const device::mojom::UsbDeviceInfo& device_info,
   std::unique_ptr<UsbDevicePermission::CheckParam> param =
       UsbDevicePermission::CheckParam::ForUsbDevice(extension, device_info);
   if (extension->permissions_data()->CheckAPIPermissionWithParam(
-          APIPermission::kUsbDevice, param.get())) {
+          mojom::APIPermissionID::kUsbDevice, param.get())) {
     return true;
   }
 
@@ -162,11 +162,11 @@ void UsbDeviceManager::GetApiDevice(
                         device_in.device_version_minor << 4 |
                         device_in.device_version_subminor;
   device_out->product_name =
-      base::UTF16ToUTF8(device_in.product_name.value_or(base::string16()));
+      base::UTF16ToUTF8(device_in.product_name.value_or(std::u16string()));
   device_out->manufacturer_name =
-      base::UTF16ToUTF8(device_in.manufacturer_name.value_or(base::string16()));
+      base::UTF16ToUTF8(device_in.manufacturer_name.value_or(std::u16string()));
   device_out->serial_number =
-      base::UTF16ToUTF8(device_in.serial_number.value_or(base::string16()));
+      base::UTF16ToUTF8(device_in.serial_number.value_or(std::u16string()));
 }
 
 void UsbDeviceManager::GetDevices(
@@ -188,7 +188,8 @@ void UsbDeviceManager::GetDevice(
     const std::string& guid,
     mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver) {
   EnsureConnectionWithDeviceManager();
-  device_manager_->GetDevice(guid, std::move(device_receiver),
+  device_manager_->GetDevice(guid, /*blocked_interface_classes=*/{},
+                             std::move(device_receiver),
                              /*device_client=*/mojo::NullRemote());
 }
 
@@ -362,14 +363,14 @@ void UsbDeviceManager::DispatchEvent(
 
     std::unique_ptr<Event> event;
     if (event_name == usb::OnDeviceAdded::kEventName) {
-      event.reset(new Event(events::USB_ON_DEVICE_ADDED,
-                            usb::OnDeviceAdded::kEventName,
-                            usb::OnDeviceAdded::Create(device_obj)));
+      event = std::make_unique<Event>(events::USB_ON_DEVICE_ADDED,
+                                      usb::OnDeviceAdded::kEventName,
+                                      usb::OnDeviceAdded::Create(device_obj));
     } else {
       DCHECK(event_name == usb::OnDeviceRemoved::kEventName);
-      event.reset(new Event(events::USB_ON_DEVICE_REMOVED,
-                            usb::OnDeviceRemoved::kEventName,
-                            usb::OnDeviceRemoved::Create(device_obj)));
+      event = std::make_unique<Event>(events::USB_ON_DEVICE_REMOVED,
+                                      usb::OnDeviceRemoved::kEventName,
+                                      usb::OnDeviceRemoved::Create(device_obj));
     }
 
     event->will_dispatch_callback =

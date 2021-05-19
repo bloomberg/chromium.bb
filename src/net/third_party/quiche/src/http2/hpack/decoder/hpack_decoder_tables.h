@@ -19,11 +19,13 @@
 #include <stddef.h>
 
 #include <cstdint>
+#include <iosfwd>
+#include <string>
+#include <utility>
 #include <vector>
 
-#include "http2/hpack/hpack_string.h"
 #include "http2/http2_constants.h"
-#include "http2/platform/api/http2_containers.h"
+#include "quic/core/quic_circular_deque.h"
 #include "common/platform/api/quiche_export.h"
 
 namespace http2 {
@@ -31,36 +33,22 @@ namespace test {
 class HpackDecoderTablesPeer;
 }  // namespace test
 
-// HpackDecoderTablesDebugListener supports a QUIC experiment, enabling
-// the gathering of information about the time-line of use of HPACK
-// dynamic table entries.
-class QUICHE_EXPORT_PRIVATE HpackDecoderTablesDebugListener {
- public:
-  HpackDecoderTablesDebugListener();
-  virtual ~HpackDecoderTablesDebugListener();
+struct QUICHE_EXPORT_PRIVATE HpackStringPair {
+  HpackStringPair(std::string name, std::string value);
+  ~HpackStringPair();
 
-  HpackDecoderTablesDebugListener(const HpackDecoderTablesDebugListener&) =
-      delete;
-  HpackDecoderTablesDebugListener& operator=(
-      const HpackDecoderTablesDebugListener&) = delete;
+  // Returns the size of a header entry with this name and value, per the RFC:
+  // http://httpwg.org/specs/rfc7541.html#calculating.table.size
+  size_t size() const { return 32 + name.size() + value.size(); }
 
-  // The entry has been inserted into the dynamic table. insert_count starts at
-  // 62 because 61 is the last index in the static table; insert_count increases
-  // by 1 with each insert into the dynamic table; it is not incremented when
-  // when a entry is too large to fit into the dynamic table at all (which has
-  // the effect of emptying the dynamic table).
-  // Returns a value that can be used as time_added in OnUseEntry.
-  virtual int64_t OnEntryInserted(const HpackStringPair& entry,
-                                  size_t insert_count) = 0;
+  std::string DebugString() const;
 
-  // The entry has been used, either for the name or for the name and value.
-  // insert_count is the same as passed to OnEntryInserted when entry was
-  // inserted to the dynamic table, and time_added is the value that was
-  // returned by OnEntryInserted.
-  virtual void OnUseEntry(const HpackStringPair& entry,
-                          size_t insert_count,
-                          int64_t time_added) = 0;
+  const std::string name;
+  const std::string value;
 };
+
+QUICHE_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
+                                               const HpackStringPair& p);
 
 // See http://httpwg.org/specs/rfc7541.html#static.table.definition for the
 // contents, and http://httpwg.org/specs/rfc7541.html#index.address.space for
@@ -93,13 +81,6 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderDynamicTable {
   HpackDecoderDynamicTable(const HpackDecoderDynamicTable&) = delete;
   HpackDecoderDynamicTable& operator=(const HpackDecoderDynamicTable&) = delete;
 
-  // Set the listener to be notified of insertions into this table, and later
-  // uses of those entries. Added for evaluation of changes to QUIC's use
-  // of HPACK.
-  void set_debug_listener(HpackDecoderTablesDebugListener* debug_listener) {
-    debug_listener_ = debug_listener;
-  }
-
   // Sets a new size limit, received from the peer; performs evictions if
   // necessary to ensure that the current size does not exceed the new limit.
   // The caller needs to have validated that size_limit does not
@@ -108,7 +89,7 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderDynamicTable {
 
   // Insert entry if possible.
   // If entry is too large to insert, then dynamic table will be empty.
-  void Insert(const HpackString& name, const HpackString& value);
+  void Insert(std::string name, std::string value);
 
   // If index is valid, returns a pointer to the entry, otherwise returns
   // nullptr.
@@ -119,10 +100,6 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderDynamicTable {
 
  private:
   friend class test::HpackDecoderTablesPeer;
-  struct HpackDecoderTableEntry : public HpackStringPair {
-    HpackDecoderTableEntry(const HpackString& name, const HpackString& value);
-    int64_t time_added;
-  };
 
   // Drop older entries to ensure the size is not greater than limit.
   void EnsureSizeNoMoreThan(size_t limit);
@@ -130,7 +107,7 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderDynamicTable {
   // Removes the oldest dynamic table entry.
   void RemoveLastEntry();
 
-  Http2Deque<HpackDecoderTableEntry> table_;
+  quic::QuicCircularDeque<HpackStringPair> table_;
 
   // The last received DynamicTableSizeUpdate value, initialized to
   // SETTINGS_HEADER_TABLE_SIZE.
@@ -141,7 +118,6 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderDynamicTable {
   // insert_count_ and debug_listener_ are used by a QUIC experiment; remove
   // when the experiment is done.
   size_t insert_count_;
-  HpackDecoderTablesDebugListener* debug_listener_;
 };
 
 class QUICHE_EXPORT_PRIVATE HpackDecoderTables {
@@ -151,11 +127,6 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderTables {
 
   HpackDecoderTables(const HpackDecoderTables&) = delete;
   HpackDecoderTables& operator=(const HpackDecoderTables&) = delete;
-
-  // Set the listener to be notified of insertions into the dynamic table, and
-  // later uses of those entries. Added for evaluation of changes to QUIC's use
-  // of HPACK.
-  void set_debug_listener(HpackDecoderTablesDebugListener* debug_listener);
 
   // Sets a new size limit, received from the peer; performs evictions if
   // necessary to ensure that the current size does not exceed the new limit.
@@ -167,10 +138,8 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderTables {
 
   // Insert entry if possible.
   // If entry is too large to insert, then dynamic table will be empty.
-  // TODO(jamessynge): Add methods for moving the string(s) into the table,
-  // or for otherwise avoiding unnecessary copies.
-  void Insert(const HpackString& name, const HpackString& value) {
-    dynamic_table_.Insert(name, value);
+  void Insert(std::string name, std::string value) {
+    dynamic_table_.Insert(std::move(name), std::move(value));
   }
 
   // If index is valid, returns a pointer to the entry, otherwise returns

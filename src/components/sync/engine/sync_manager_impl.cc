@@ -20,7 +20,6 @@
 #include "components/sync/engine/cancelation_signal.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/engine_components_factory.h"
-#include "components/sync/engine/engine_util.h"
 #include "components/sync/engine/loopback_server/loopback_connection_manager.h"
 #include "components/sync/engine/model_type_connector_proxy.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
@@ -89,9 +88,8 @@ SyncManagerImpl::SyncManagerImpl(
       observing_network_connectivity_changes_(false),
       sync_encryption_handler_(nullptr) {
   // Pre-fill |notification_info_map_|.
-  for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
-    notification_info_map_.insert(
-        std::make_pair(ModelTypeFromInt(i), NotificationInfo()));
+  for (ModelType type : ModelTypeSet::All()) {
+    notification_info_map_.insert(std::make_pair(type, NotificationInfo()));
   }
 }
 
@@ -199,9 +197,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   }
 
   model_type_registry_ = std::make_unique<ModelTypeRegistry>(
-      this, args->cancelation_signal,
-      sync_encryption_handler_->GetKeystoreKeysHandler());
-  sync_encryption_handler_->AddObserver(model_type_registry_.get());
+      this, args->cancelation_signal, sync_encryption_handler_);
 
   // Build a SyncCycleContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncCycleContext.";
@@ -341,9 +337,6 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
 
   scheduler_.reset();
   cycle_context_.reset();
-
-  if (model_type_registry_)
-    sync_encryption_handler_->RemoveObserver(model_type_registry_.get());
 
   model_type_registry_.reset();
 

@@ -1,9 +1,8 @@
 {
   "dependencies": [
-    "ui"
+    "ui/legacy"
   ],
-  "modules": [],
-  "resources": [
+    "resources": [
     "bezierEditor.css",
     "colorSwatch.css",
     "bezierSwatch.css",

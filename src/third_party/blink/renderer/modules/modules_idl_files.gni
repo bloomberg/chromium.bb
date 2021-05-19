@@ -48,6 +48,7 @@ import("//third_party/blink/renderer/config.gni")
 #   ]
 _idl_imports = [
   "//third_party/blink/renderer/modules/accessibility/idls.gni",
+  "//third_party/blink/renderer/modules/ad_auction/idls.gni",
   "//third_party/blink/renderer/modules/animationworklet/idls.gni",
   "//third_party/blink/renderer/modules/app_banner/idls.gni",
   "//third_party/blink/renderer/modules/audio_output_devices/idls.gni",
@@ -70,7 +71,7 @@ _idl_imports = [
   "//third_party/blink/renderer/modules/crypto/idls.gni",
   "//third_party/blink/renderer/modules/csspaint/idls.gni",
   "//third_party/blink/renderer/modules/delegated_ink/idls.gni",
-  "//third_party/blink/renderer/modules/device/idls.gni",
+  "//third_party/blink/renderer/modules/managed_device/idls.gni",
   "//third_party/blink/renderer/modules/device_orientation/idls.gni",
   "//third_party/blink/renderer/modules/donottrack/idls.gni",
   "//third_party/blink/renderer/modules/encoding/idls.gni",
@@ -91,6 +92,7 @@ _idl_imports = [
   "//third_party/blink/renderer/modules/keyboard/idls.gni",
   "//third_party/blink/renderer/modules/launch/idls.gni",
   "//third_party/blink/renderer/modules/locks/idls.gni",
+  "//third_party/blink/renderer/modules/lock_screen/idls.gni",
   "//third_party/blink/renderer/modules/manifest/idls.gni",
   "//third_party/blink/renderer/modules/media_capabilities/idls.gni",
   "//third_party/blink/renderer/modules/mediacapturefromelement/idls.gni",

@@ -11,12 +11,12 @@
 // #import {TrashEntry} from '../../common/js/trash.m.js';
 // #import {FileOperationProgressEvent} from '../../common/js/file_operation_common.m.js';
 // #import {FilesConfirmDialog} from './ui/files_confirm_dialog.m.js';
-// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
+// #import {VolumeManager} from '../../externs/volume_manager.m.js';
 // #import {FileSelection, FileSelectionHandler} from './file_selection.m.js';
-// #import {VolumeInfo} from '../../../externs/volume_info.m.js';
+// #import {VolumeInfo} from '../../externs/volume_info.m.js';
 // #import {DirectoryModel} from './directory_model.m.js';
-// #import {FakeEntry, FilesAppEntry, FilesAppDirEntry} from '../../../externs/files_app_entry_interfaces.m.js';
-// #import {CommandHandlerDeps} from '../../../externs/command_handler_deps.m.js';
+// #import {FakeEntry, FilesAppEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.m.js';
+// #import {CommandHandlerDeps} from '../../externs/command_handler_deps.m.js';
 // #import {FileType} from '../../common/js/file_type.m.js';
 // #import {constants} from './constants.m.js';
 // #import {ProgressCenterItem, ProgressItemState} from '../../common/js/progress_center_common.m.js';
@@ -26,7 +26,7 @@
 // #import {DirectoryTree, DirectoryItem} from './ui/directory_tree.m.js';
 // #import {EntryList} from '../../common/js/files_app_entry_types.m.js';
 // #import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.m.js';
-// #import {VolumeManagerCommon} from '../../../base/js/volume_manager_types.m.js';
+// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
 // #import {util, str, strf} from '../../common/js/util.m.js';
 // #import {DialogType} from './dialog_type.m.js';
 // #import {List} from 'chrome://resources/js/cr/ui/list.m.js';
@@ -92,6 +92,8 @@ CommandUtil.getSharingActionSource = event => {
       return FileTasks.SharingActionSourceForUMA.CONTEXT_MENU;
     case CommandUtil.SharingActionElementId.SHARE_BUTTON:
       return FileTasks.SharingActionSourceForUMA.SHARE_BUTTON;
+    case CommandUtil.SharingActionElementId.SHARE_SHEET:
+      return FileTasks.SharingActionSourceForUMA.SHARE_SHEET;
     default: {
       console.error('Unrecognized event.target.id for sharing action "%s"', id);
       return FileTasks.SharingActionSourceForUMA.UNKNOWN;
@@ -1128,16 +1130,18 @@ CommandHandler.COMMANDS_['drive-sync-settings'] =
 };
 
 /**
- * Deletes selected files.
+ * Delete / Move to Trash command.
+ * @private @const {FilesCommand}
  */
-CommandHandler.COMMANDS_['delete'] = new class extends FilesCommand {
+CommandHandler.deleteCommand_ = new class extends FilesCommand {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const permanentlyDelete = event.command.id === 'delete';
 
     // Execute might be called without a call of canExecute method, e.g.,
     // called directly from code, crbug.com/509483. See toolbar controller
     // delete button handling, for an example.
-    this.deleteEntries(entries, fileManager);
+    this.deleteEntries(entries, fileManager, permanentlyDelete);
   }
 
   /** @override */
@@ -1158,17 +1162,27 @@ CommandHandler.COMMANDS_['delete'] = new class extends FilesCommand {
     // space in the file list.
     const noEntries = entries.length === 0;
     event.command.setHidden(noEntries);
+
+    // Hide 'move-to-trash' if trash will not be used. E.g. drive or removable.
+    if (event.command.id === 'move-to-trash' &&
+        !fileManager.fileOperationManager.willUseTrash(
+            fileManager.volumeManager, entries)) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+    }
   }
 
   /**
    * Delete the entries (if the entries can be deleted).
    * @param {!Array<!Entry>} entries
    * @param {!CommandHandlerDeps} fileManager
+   * @param {boolean} permanentlyDelete if true, entries are permanently deleted
+   *     rather than moved to trash.
    * @param {?FilesConfirmDialog} dialog An optional delete confirm dialog.
    *    The default delete confirm dialog will be used if |dialog| is null.
    * @public
    */
-  deleteEntries(entries, fileManager, dialog = null) {
+  deleteEntries(entries, fileManager, permanentlyDelete, dialog = null) {
     // Verify that the entries are not fake or root entries, and that they
     // can be deleted.
     if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
@@ -1178,7 +1192,8 @@ CommandHandler.COMMANDS_['delete'] = new class extends FilesCommand {
     }
 
     // We show undo toast rather than dialog for entries which will use trash.
-    if (fileManager.fileOperationManager.willUseTrash(
+    if (!permanentlyDelete &&
+        fileManager.fileOperationManager.willUseTrash(
             fileManager.volumeManager, entries)) {
       fileManager.fileOperationManager.deleteEntries(entries);
       return;
@@ -1194,15 +1209,22 @@ CommandHandler.COMMANDS_['delete'] = new class extends FilesCommand {
       dialog.showModalElement();
     }
 
-    const deleteCallback = () => {
+    const dialogDoneCallback = () => {
       dialog.doneCallback && dialog.doneCallback();
       document.querySelector('files-tooltip').hideTooltip();
     };
 
-    dialog.show(message, () => {
-      deleteCallback();
-      fileManager.fileOperationManager.deleteEntries(entries);
-    }, deleteCallback, null);
+    const deleteAction = () => {
+      dialogDoneCallback();
+      fileManager.fileOperationManager.deleteEntries(
+          entries, permanentlyDelete);
+    };
+
+    const cancelAction = () => {
+      dialogDoneCallback();
+    };
+
+    dialog.show(message, deleteAction, cancelAction, null);
   }
 
   /**
@@ -1256,6 +1278,9 @@ CommandHandler.COMMANDS_['delete'] = new class extends FilesCommand {
   }
 };
 
+CommandHandler.COMMANDS_['delete'] = CommandHandler.deleteCommand_;
+CommandHandler.COMMANDS_['move-to-trash'] = CommandHandler.deleteCommand_;
+
 /**
  * Register listener on background for delete event, and show undo toast if
  * files are in trash and can be restored.
@@ -1305,11 +1330,32 @@ CommandHandler.COMMANDS_['restore-from-trash'] =
   canExecute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
 
-    const enabled = entries.length > 0 && entries.every(e => {
-      return e.rootType && e.rootType === VolumeManagerCommon.RootType.TRASH;
-    });
+    const enabled =
+        entries.length > 0 && entries.every(e => util.isTrashEntry(e));
     event.canExecute = enabled;
     event.command.setHidden(!enabled);
+  }
+};
+
+/**
+ * Empties (permanently deletes all) files from trash.
+ */
+CommandHandler.COMMANDS_['empty-trash'] = new class extends FilesCommand {
+  execute(event, fileManager) {
+    fileManager.ui.deleteConfirmDialog.show(
+        str('CONFIRM_EMPTY_TRASH'),
+        () => fileManager.fileOperationManager.emptyTrash());
+  }
+
+  /** @override */
+  canExecute(event, fileManager) {
+    // Always allow execute regardless of which files are selected to allow the
+    // trash toolbar action to run even if no files are selected.
+    event.canExecute = true;
+
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const visible = entries.length === 1 && util.isTrashRoot(entries[0]);
+    event.command.setHidden(!visible);
   }
 };
 

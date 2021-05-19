@@ -9,8 +9,8 @@
 #include "base/run_loop.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -70,7 +70,9 @@ class AppDialogViewBrowserTest : public DialogBrowserTest {
 
   const std::string& app_id() const { return app_id_; }
 
-  apps::AppServiceProxy* app_service_proxy() { return app_service_proxy_; }
+  apps::AppServiceProxyChromeOs* app_service_proxy() {
+    return app_service_proxy_;
+  }
 
   bool IsAppPaused() {
     app_service_proxy()->FlushMojoCallsForTesting();
@@ -145,7 +147,7 @@ class AppDialogViewBrowserTest : public DialogBrowserTest {
 
  private:
   std::string app_id_;
-  apps::AppServiceProxy* app_service_proxy_ = nullptr;
+  apps::AppServiceProxyChromeOs* app_service_proxy_ = nullptr;
   ArcAppListPrefs* arc_app_list_pref_ = nullptr;
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
 };

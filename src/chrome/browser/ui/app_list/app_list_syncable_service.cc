@@ -11,6 +11,7 @@
 
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -19,7 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/ui/app_list/page_break_app_item.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -225,6 +227,12 @@ AppListSyncableService::SyncItem::SyncItem(
     : item_id(id), item_type(type) {}
 
 AppListSyncableService::SyncItem::~SyncItem() = default;
+
+// AppListSyncableService::Observer
+
+AppListSyncableService::Observer::~Observer() {
+  CHECK(!IsInObserverList());
+}
 
 // AppListSyncableService::ModelUpdaterObserver
 
@@ -1316,6 +1324,10 @@ syncer::StringOrdinal AppListSyncableService::GetPreferredOemFolderPos() {
 bool AppListSyncableService::AppIsOem(const std::string& id) {
   const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
   if (arc_prefs && arc_prefs->IsOem(id))
+    return true;
+
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
+  if (provider && provider->registrar().WasInstalledByOem(id))
     return true;
 
   if (!extension_system_->extension_service())

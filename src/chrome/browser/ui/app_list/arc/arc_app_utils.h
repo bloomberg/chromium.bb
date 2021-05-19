@@ -27,6 +27,7 @@ class BrowserContext;
 namespace arc {
 
 extern const char kInitialStartParam[];
+extern const char kCategoryLauncher[];
 extern const char kRequestStartTimeParamTemplate[];
 extern const char kPlayStoreActivity[];
 extern const char kPlayStorePackage[];
@@ -126,13 +127,16 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
                          const base::Optional<std::string>& launch_intent,
                          int event_flags,
                          UserInteractionType user_action,
-                         int64_t display_id);
+                         arc::mojom::WindowInfoPtr window_info);
 
 // Launches App Shortcut that was published by Android's ShortcutManager.
 bool LaunchAppShortcutItem(content::BrowserContext* context,
                            const std::string& app_id,
                            const std::string& shortcut_id,
                            int64_t display_id);
+
+// Updates pre-launched window info to ARC.
+void UpdateWindowInfo(arc::mojom::WindowInfoPtr window_info);
 
 // Sets task active.
 void SetTaskActive(int task_id);

@@ -11,7 +11,6 @@ import("//build/config/android/internal_rules.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
-import("//build/config/dcheck_always_on.gni")
 import("//build/config/python.gni")
 import("//build/config/zip.gni")
 import("//build/toolchain/toolchain.gni")
@@ -1083,11 +1082,6 @@ if (enable_java_templates) {
       if (defined(invoker.r_text_file)) {
         r_text_in_path = invoker.r_text_file
       }
-
-      # Always generate R.onResourcesLoaded() method, it is required for
-      # compiling ResourceRewriter, there is no side effect because the
-      # generated R.class isn't used in final apk.
-      shared_resources = true
     }
   }
 
@@ -1386,7 +1380,7 @@ if (enable_java_templates) {
         ":$_jni_srcjar_target",
 
         # This dep is required for any targets that depend on //base:base_java.
-        "//base:base_build_config_gen",
+        "//build/android:build_config_gen",
       ]
     }
 
@@ -1417,6 +1411,8 @@ if (enable_java_templates) {
   # Variables
   #   deps: Specifies the dependencies of this target. Java targets in this list
   #     will be added to the javac classpath.
+  #   public_deps: Dependencies that this target exposes as part of its public API.
+  #     public_deps do not need to be listed in both the 'deps' and 'public_deps' lists.
   #   annotation_processor_deps: List of java_annotation_processor targets to
   #     use when compiling.
   #
@@ -1432,11 +1428,19 @@ if (enable_java_templates) {
   #
   #   chromium_code: If true, extra analysis warning/errors will be enabled.
   #   enable_errorprone: If true, enables the errorprone compiler.
+  #   skip_build_server: If true, avoids sending tasks to the build server.
   #
   #   jar_excluded_patterns: List of patterns of .class files to exclude.
   #   jar_included_patterns: List of patterns of .class files to include.
   #     When omitted, all classes not matched by jar_excluded_patterns are
   #     included. When specified, all non-matching .class files are stripped.
+  #
+  #   low_classpath_priority: Indicates that the library should be placed at the
+  #     end of the classpath. The default classpath order has libraries ordered
+  #     before the libraries that they depend on. 'low_classpath_priority' is
+  #     useful when one java_library() overrides another via
+  #     'jar_excluded_patterns' and the overriding library does not depend on
+  #     the overridee.
   #
   #   output_name: File name for the output .jar (not including extension).
   #     Defaults to the input .jar file name.
@@ -1563,6 +1567,7 @@ if (enable_java_templates) {
         requires_android =
             defined(invoker.requires_android) && invoker.requires_android
         possible_config_deps = _deps
+        ignore_dependency_public_deps = _direct_deps_only
         build_config = _build_config
       }
 
@@ -1741,6 +1746,7 @@ if (enable_java_templates) {
       possible_config_deps = _deps
       supports_android = true
       requires_android = true
+      ignore_dependency_public_deps = _direct_deps_only
       build_config = _build_config
     }
 
@@ -1895,7 +1901,7 @@ if (enable_java_templates) {
     }
   }
 
-  # Creates org/chromium/base/BuildConfig.java
+  # Creates org/chromium/build/BuildConfig.java
   # This doesn't really belong in //build since it genates a file for //base.
   # However, we don't currently have a better way to include this file in all
   # apks that depend on //base:base_java.
@@ -1912,13 +1918,13 @@ if (enable_java_templates) {
   template("generate_build_config_srcjar") {
     java_cpp_template(target_name) {
       forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
-      sources = [ "//base/android/java/templates/BuildConfig.template" ]
+      sources = [ "//build/android/java/templates/BuildConfig.template" ]
       defines = []
 
       # Set these even when !use_final_fields so that they have correct default
       # values within junit_binary(), which ignores jar_excluded_patterns.
-      if (is_java_debug || dcheck_always_on) {
-        defines += [ "_DCHECK_IS_ON" ]
+      if (enable_java_asserts) {
+        defines += [ "_ENABLE_ASSERTS" ]
       }
       if (use_cfi_diag || is_ubsan || is_ubsan_security || is_ubsan_vptr) {
         defines += [ "_IS_UBSAN" ]
@@ -2041,7 +2047,7 @@ if (enable_java_templates) {
   #     the apk for the secondary ABI (optional).
   #   generate_buildconfig_java: If defined and false, skip generating the
   #     BuildConfig java class describing the build configuration. The default
-  #     is true for non-test APKs.
+  #     is true when building with Chromium for non-test APKs.
   #   generate_final_jni: If defined and false, skip generating the
   #     GEN_JNI srcjar.
   #   jni_registration_header: If specified, causes the
@@ -2325,7 +2331,7 @@ if (enable_java_templates) {
     _generate_productconfig_java = defined(invoker.product_config_java_packages)
 
     # JNI generation usually goes hand-in-hand with buildconfig generation.
-    _generate_final_jni = _generate_buildconfig_java
+    _generate_final_jni = _generate_buildconfig_java && build_with_chromium
     if (defined(invoker.generate_final_jni)) {
       _generate_final_jni = invoker.generate_final_jni
     }
@@ -2736,6 +2742,12 @@ if (enable_java_templates) {
         }
       }
       _srcjar_deps += [ ":${_template_name}__final_jni" ]
+    } else {
+      not_needed(invoker,
+                 [
+                   "enable_native_mocks",
+                   "jni_registration_header",
+                 ])
     }
 
     _java_target = "${_template_name}__java"
@@ -2822,7 +2834,7 @@ if (enable_java_templates) {
         if (_enable_main_dex_list) {
           proguard_configs += [ "//build/android/multidex.flags" ]
         }
-        if (!dcheck_always_on && (!defined(testonly) || !testonly) &&
+        if (!enable_java_asserts && (!defined(testonly) || !testonly) &&
             # Injected JaCoCo code causes -checkdiscards to fail.
             !use_jacoco_coverage) {
           proguard_configs += [ "//build/android/dcheck_is_off.flags" ]
@@ -3893,7 +3905,12 @@ if (enable_java_templates) {
     if (!defined(invoker.android_manifest)) {
       jinja_template("${target_name}_manifest") {
         _native_library_name = get_label_info(invoker.shared_library, "name")
-        input = "//testing/android/native_test/java/AndroidManifest.xml.jinja2"
+        if (defined(invoker.android_manifest_template)) {
+          input = invoker.android_manifest_template
+        } else {
+          input =
+              "//testing/android/native_test/java/AndroidManifest.xml.jinja2"
+        }
         output = _android_manifest
         variables = [
           "is_component_build=${is_component_build}",
@@ -4822,6 +4839,8 @@ if (enable_java_templates) {
 
     _bundle_target_name = "${_target_name}__bundle"
     action_with_pydeps(_bundle_target_name) {
+      # TODO(crbug.com/1187279): Get this to work under Python3.
+      run_under_python2 = true
       script = "//build/android/gyp/create_app_bundle.py"
       inputs = _all_module_zip_paths + _all_module_build_configs
       outputs = [ _bundle_path ]

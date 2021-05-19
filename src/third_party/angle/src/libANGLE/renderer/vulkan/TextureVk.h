@@ -410,14 +410,15 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
     angle::Result initImage(ContextVk *contextVk,
                             const vk::Format &format,
                             const bool sized,
-                            const gl::Extents &extents,
+                            const gl::Extents &firstLevelExtents,
+                            const uint32_t firstLevel,
                             const uint32_t levelCount);
     void releaseImage(ContextVk *contextVk);
     void releaseStagingBuffer(ContextVk *contextVk);
     uint32_t getMipLevelCount(ImageMipLevels mipLevels) const;
     uint32_t getMaxLevelCount() const;
     angle::Result copyAndStageImageData(ContextVk *contextVk,
-                                        gl::LevelIndex previousBaseLevel,
+                                        gl::LevelIndex previousFirstAllocateLevel,
                                         vk::ImageHelper *srcImage,
                                         vk::ImageHelper *dstImage);
     angle::Result initImageViews(ContextVk *contextVk,
@@ -443,14 +444,14 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
     // attributes at the next opportunity.
     angle::Result respecifyImageStorage(ContextVk *contextVk);
     angle::Result respecifyImageStorageAndLevels(ContextVk *contextVk,
-                                                 gl::LevelIndex previousBaseLevelGL,
+                                                 gl::LevelIndex previousFirstAllocateLevelGL,
                                                  gl::LevelIndex baseLevelGL,
                                                  gl::LevelIndex maxLevelGL);
 
     // Update base and max levels, and re-create image if needed.
     angle::Result updateBaseMaxLevels(ContextVk *contextVk,
-                                      gl::LevelIndex baseLevelGL,
-                                      gl::LevelIndex maxLevelGL);
+                                      bool baseLevelChanged,
+                                      bool maxLevelChanged);
 
     bool isFastUnpackPossible(const vk::Format &vkFormat, size_t offset) const;
 

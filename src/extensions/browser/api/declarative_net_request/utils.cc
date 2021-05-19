@@ -42,12 +42,12 @@ namespace dnr_api = api::declarative_net_request;
 // url_pattern_index.fbs. Whenever an extension with an indexed ruleset format
 // version different from the one currently used by Chrome is loaded, the
 // extension ruleset will be reindexed.
-constexpr int kIndexedRulesetFormatVersion = 19;
+constexpr int kIndexedRulesetFormatVersion = 20;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
 // updating kIndexedRulesetFormatVersion.
-static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 7,
+static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 8,
               "kUrlPatternIndexFormatVersion has changed, make sure you've "
               "also updated kIndexedRulesetFormatVersion above.");
 
@@ -350,9 +350,10 @@ bool HasDNRFeedbackPermission(const Extension* extension,
   const PermissionsData* permissions_data = extension->permissions_data();
   return tab_id.has_value()
              ? permissions_data->HasAPIPermissionForTab(
-                   *tab_id, APIPermission::kDeclarativeNetRequestFeedback)
+                   *tab_id,
+                   mojom::APIPermissionID::kDeclarativeNetRequestFeedback)
              : permissions_data->HasAPIPermission(
-                   APIPermission::kDeclarativeNetRequestFeedback);
+                   mojom::APIPermissionID::kDeclarativeNetRequestFeedback);
 }
 
 }  // namespace declarative_net_request

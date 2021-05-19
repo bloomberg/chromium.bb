@@ -12,29 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-
-#include "gtest/gtest.h"
-#include "spirv/unified1/spirv.h"
-#include "spirv/unified1/spirv.hpp11"
-#include "src/ast/discard_statement.h"
-#include "src/ast/function.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/return_statement.h"
 #include "src/ast/stage_decoration.h"
-#include "src/ast/struct.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/variable.h"
-#include "src/ast/variable_decl_statement.h"
-#include "src/type/access_control_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/void_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -46,8 +25,7 @@ namespace {
 using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, Function_Empty) {
-  Func("a_func", {}, ty.void_(), ast::StatementList{},
-       ast::FunctionDecorationList{});
+  Func("a_func", {}, ty.void_(), ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -68,7 +46,7 @@ TEST_F(BuilderTest, Function_Terminator_Return) {
        ast::StatementList{
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -87,9 +65,9 @@ OpFunctionEnd
 TEST_F(BuilderTest, Function_Terminator_ReturnValue) {
   Global("a", ty.f32(), ast::StorageClass::kPrivate);
 
-  Func("a_func", {}, ty.void_(),
+  Func("a_func", {}, ty.f32(),
        ast::StatementList{create<ast::ReturnStatement>(Expr("a"))},
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -99,17 +77,16 @@ TEST_F(BuilderTest, Function_Terminator_ReturnValue) {
   ASSERT_TRUE(b.GenerateGlobalVariable(var_a)) << b.error();
   ASSERT_TRUE(b.GenerateFunction(func)) << b.error();
   EXPECT_EQ(DumpBuilder(b), R"(OpName %1 "a"
-OpName %7 "a_func"
+OpName %6 "a_func"
 %3 = OpTypeFloat 32
 %2 = OpTypePointer Private %3
 %4 = OpConstantNull %3
 %1 = OpVariable %2 Private %4
-%6 = OpTypeVoid
-%5 = OpTypeFunction %6
-%7 = OpFunction %6 None %5
-%8 = OpLabel
-%9 = OpLoad %3 %1
-OpReturnValue %9
+%5 = OpTypeFunction %3
+%6 = OpFunction %3 None %5
+%7 = OpLabel
+%8 = OpLoad %3 %1
+OpReturnValue %8
 OpFunctionEnd
 )");
 }
@@ -119,7 +96,7 @@ TEST_F(BuilderTest, Function_Terminator_Discard) {
        ast::StatementList{
            create<ast::DiscardStatement>(),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -141,7 +118,7 @@ TEST_F(BuilderTest, Function_WithParams) {
 
   Func("a_func", params, ty.f32(),
        ast::StatementList{create<ast::ReturnStatement>(Expr("a"))},
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -168,7 +145,7 @@ TEST_F(BuilderTest, Function_WithBody) {
        ast::StatementList{
            create<ast::ReturnStatement>(),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -185,8 +162,7 @@ OpFunctionEnd
 }
 
 TEST_F(BuilderTest, FunctionType) {
-  Func("a_func", {}, ty.void_(), ast::StatementList{},
-       ast::FunctionDecorationList{});
+  Func("a_func", {}, ty.void_(), ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -199,9 +175,9 @@ TEST_F(BuilderTest, FunctionType) {
 
 TEST_F(BuilderTest, FunctionType_DeDuplicate) {
   auto* func1 = Func("a_func", {}, ty.void_(), ast::StatementList{},
-                     ast::FunctionDecorationList{});
+                     ast::DecorationList{});
   auto* func2 = Func("b_func", {}, ty.void_(), ast::StatementList{},
-                     ast::FunctionDecorationList{});
+                     ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -215,7 +191,7 @@ TEST_F(BuilderTest, FunctionType_DeDuplicate) {
 // https://crbug.com/tint/297
 TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
   // [[block]] struct Data {
-  //   [[offset(0)]] d : f32;
+  //   d : f32;
   // };
   // [[binding(0), group(0)]] var<storage> data : Data;
   //
@@ -229,22 +205,16 @@ TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
   //   return;
   // }
 
-  ast::StructDecorationList s_decos;
-  s_decos.push_back(create<ast::StructBlockDecoration>());
+  auto* s = Structure("Data", {Member("d", ty.f32())},
+                      {create<ast::StructBlockDecoration>()});
 
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("d", ty.f32(), {MemberOffset(0)})}, s_decos);
-
-  auto* s = ty.struct_("Data", str);
   type::AccessControl ac(ast::AccessControl::kReadWrite, s);
 
   Global("data", &ac, ast::StorageClass::kStorage, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
-
-  AST().AddConstructedType(s);
 
   {
     auto* var = Var("v", ty.f32(), ast::StorageClass::kFunction,
@@ -255,7 +225,7 @@ TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
              create<ast::VariableDeclStatement>(var),
              create<ast::ReturnStatement>(),
          },
-         ast::FunctionDecorationList{
+         ast::DecorationList{
              create<ast::StageDecoration>(ast::PipelineStage::kCompute),
          });
   }
@@ -269,7 +239,7 @@ TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
              create<ast::VariableDeclStatement>(var),
              create<ast::ReturnStatement>(),
          },
-         ast::FunctionDecorationList{
+         ast::DecorationList{
              create<ast::StageDecoration>(ast::PipelineStage::kCompute),
          });
   }

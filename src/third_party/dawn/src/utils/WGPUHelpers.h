@@ -30,13 +30,8 @@ namespace utils {
 
     enum class SingleShaderStage { Vertex, Fragment, Compute };
 
-    wgpu::ShaderModule CreateShaderModule(const wgpu::Device& device,
-                                          SingleShaderStage stage,
-                                          const char* source);
     wgpu::ShaderModule CreateShaderModuleFromASM(const wgpu::Device& device, const char* source);
-    wgpu::ShaderModule CreateShaderModuleFromWGSL(const wgpu::Device& device, const char* source);
-
-    std::vector<uint32_t> CompileGLSLToSpirv(SingleShaderStage stage, const char* source);
+    wgpu::ShaderModule CreateShaderModule(const wgpu::Device& device, const char* source);
 
     wgpu::Buffer CreateBufferFromData(const wgpu::Device& device,
                                       const void* data,
@@ -50,11 +45,11 @@ namespace utils {
         return CreateBufferFromData(device, data.begin(), uint32_t(sizeof(T) * data.size()), usage);
     }
 
-    wgpu::BufferCopyView CreateBufferCopyView(wgpu::Buffer buffer,
-                                              uint64_t offset,
-                                              uint32_t bytesPerRow,
-                                              uint32_t rowsPerImage = wgpu::kCopyStrideUndefined);
-    wgpu::TextureCopyView CreateTextureCopyView(
+    wgpu::ImageCopyBuffer CreateImageCopyBuffer(wgpu::Buffer buffer,
+                                                uint64_t offset,
+                                                uint32_t bytesPerRow,
+                                                uint32_t rowsPerImage = wgpu::kCopyStrideUndefined);
+    wgpu::ImageCopyTexture CreateImageCopyTexture(
         wgpu::Texture texture,
         uint32_t level,
         wgpu::Origin3D origin,

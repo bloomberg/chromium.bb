@@ -13,11 +13,10 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/attestation/mock_enrollment_certificate_uploader.h"
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/attestation/mock_enrollment_certificate_uploader.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -25,8 +24,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using CertificateStatus =
-    chromeos::attestation::EnrollmentCertificateUploader::Status;
-using chromeos::attestation::MockEnrollmentCertificateUploader;
+    ash::attestation::EnrollmentCertificateUploader::Status;
+using ash::attestation::MockEnrollmentCertificateUploader;
 using testing::_;
 using testing::Invoke;
 
@@ -37,12 +36,12 @@ const char kValidRsuDeviceId[] = "123";
 const char kValidRsuDeviceIdEncoded[] =
     "MTIz";  // base::Base64Encode(kValidRsuDeviceId, kValidRsuDeviceencoded)
 }
-class LookupKeyUploaderTest : public chromeos::DeviceSettingsTestBase {
+class LookupKeyUploaderTest : public ash::DeviceSettingsTestBase {
  protected:
   LookupKeyUploaderTest() = default;
 
   void SetUp() override {
-    chromeos::DeviceSettingsTestBase::SetUp();
+    ash::DeviceSettingsTestBase::SetUp();
     pref_service_.registry()->RegisterStringPref(
         prefs::kLastRsuDeviceIdUploaded, std::string());
     lookup_key_uploader_ = std::make_unique<LookupKeyUploader>(
@@ -52,13 +51,15 @@ class LookupKeyUploaderTest : public chromeos::DeviceSettingsTestBase {
     clock_.Advance(base::TimeDelta::FromDays(50));
   }
 
+  void TearDown() override { ash::DeviceSettingsTestBase::TearDown(); }
+
   void ExpectSavedIdToBe(const std::string& key) {
     EXPECT_EQ(pref_service_.GetString(prefs::kLastRsuDeviceIdUploaded), key);
   }
   bool NeedsUpload() { return lookup_key_uploader_->needs_upload_; }
 
   void SetCryptohomeReplyTo(const std::string& rsu_device_id) {
-    chromeos::FakeCryptohomeClient::Get()->set_rsu_device_id(rsu_device_id);
+    chromeos::FakeCryptohomeMiscClient::Get()->set_rsu_device_id(rsu_device_id);
   }
 
   void AdvanceTime() { clock_.Advance(lookup_key_uploader_->kRetryFrequency); }

@@ -152,6 +152,7 @@ std::set<GroupAndName> FtraceConfigMuxer::GetFtraceEvents(
         events.insert(GroupAndName("mdss", "mdp_sspp_change"));
         events.insert(GroupAndName("mdss", "mdp_sspp_set"));
         AddEventGroup(table, "mali", &events);
+        events.insert(GroupAndName("mali", "tracing_mark_write"));
 
         AddEventGroup(table, "sde", &events);
         events.insert(GroupAndName("sde", "tracing_mark_write"));
@@ -400,6 +401,7 @@ std::set<GroupAndName> FtraceConfigMuxer::GetFtraceEvents(
         // ion_stat supersedes ion_heap_grow / shrink for kernel 4.19+
         events.insert(GroupAndName("ion", "ion_stat"));
         events.insert(GroupAndName("mm_event", "mm_event_record"));
+        events.insert(GroupAndName("dmabuf_heap", "dma_heap_stat"));
         continue;
       }
 

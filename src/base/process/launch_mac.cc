@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/environment_internal.h"
-#include "base/stl_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/base_tracing.h"
@@ -256,13 +255,11 @@ Process LaunchProcess(const std::vector<std::string>& argv,
                                     ? options.real_path.value().c_str()
                                     : argv_cstr[0];
 
-#if defined(ARCH_CPU_ARM64)
-  if (options.launch_x86_64) {
-    cpu_type_t cpu_types[] = {CPU_TYPE_X86_64};
-    DPSXCHECK(posix_spawnattr_setbinpref_np(attr.get(), base::size(cpu_types),
-                                            cpu_types, nullptr));
+  if (__builtin_available(macOS 11.0, *)) {
+    if (options.enable_cpu_security_mitigations) {
+      DPSXCHECK(posix_spawnattr_set_csm_np(attr.get(), POSIX_SPAWN_NP_CSM_ALL));
+    }
   }
-#endif  // ARCH_CPU_ARM64
 
   if (!options.current_directory.empty()) {
     const char* chdir_str = options.current_directory.value().c_str();

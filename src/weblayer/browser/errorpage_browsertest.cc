@@ -7,12 +7,12 @@
 #include "base/macros.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/embedder_support/switches.h"
 #include "components/error_page/content/browser/net_error_auto_reloader.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "weblayer/browser/tab_impl.h"
-#include "weblayer/public/common/switches.h"
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageBrowserTest, NameNotResolved) {
 
   // Currently, interstitials for error pages are displayed only on Android.
 #if defined(OS_ANDROID)
-  base::string16 expected_title =
+  std::u16string expected_title =
       l10n_util::GetStringUTF16(IDS_ANDROID_ERROR_PAGE_WEBPAGE_NOT_AVAILABLE);
   EXPECT_EQ(expected_title, GetTitle(shell()));
 #endif
@@ -55,7 +55,7 @@ class ErrorPageReloadBrowserTest : public ErrorPageBrowserTest {
   ErrorPageReloadBrowserTest() = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableAutoReload);
+    command_line->AppendSwitch(embedder_support::kEnableAutoReload);
     ErrorPageBrowserTest::SetUpCommandLine(command_line);
   }
 

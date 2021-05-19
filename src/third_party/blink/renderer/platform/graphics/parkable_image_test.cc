@@ -63,9 +63,21 @@ class ParkableImageBaseTest : public ::testing::Test {
     MutexLocker lock(pi->lock_);
     pi->Unpark();
   }
+  static void Lock(scoped_refptr<ParkableImage> pi) {
+    MutexLocker lock(pi->lock_);
+    pi->Lock();
+  }
+  static void Unlock(scoped_refptr<ParkableImage> pi) {
+    MutexLocker lock(pi->lock_);
+    pi->Unlock();
+  }
   static bool is_on_disk(scoped_refptr<ParkableImage> pi) {
     MutexLocker lock(pi->lock_);
     return pi->is_on_disk();
+  }
+  static bool is_locked(scoped_refptr<ParkableImage> pi) {
+    MutexLocker lock(pi->lock_);
+    return pi->is_locked();
   }
 
   scoped_refptr<ParkableImage> MakeParkableImageForTesting(const char* buffer,
@@ -87,15 +99,19 @@ class ParkableImageBaseTest : public ::testing::Test {
     }
 
     MutexLocker lock(pi->lock_);
+    pi->Lock();
+
     auto ro_buffer = pi->rw_buffer_->MakeROBufferSnapshot();
     ROBuffer::Iter iter(ro_buffer.get());
     do {
       if (memcmp(iter.data(), buffer, iter.size()) != 0) {
+        pi->Unlock();
         return false;
       }
       buffer += iter.size();
     } while (iter.Next());
 
+    pi->Unlock();
     return true;
   }
 
@@ -182,6 +198,34 @@ TEST_F(ParkableImageTest, Frozen) {
   pi->Freeze();
 
   EXPECT_TRUE(pi->is_frozen());
+}
+
+TEST_F(ParkableImageTest, LockAndUnlock) {
+  auto pi = ParkableImage::Create();
+  ASSERT_EQ(pi->size(), 0u);
+
+  // ParkableImage starts unlocked.
+  EXPECT_FALSE(is_locked(pi));
+
+  Lock(pi);
+
+  // Now locked after calling |Lock|.
+  EXPECT_TRUE(is_locked(pi));
+
+  Lock(pi);
+
+  // Still locked after locking a second time.
+  EXPECT_TRUE(is_locked(pi));
+
+  Unlock(pi);
+
+  // Still locked, we need to unlock a second time to unlock this.
+  EXPECT_TRUE(is_locked(pi));
+
+  Unlock(pi);
+
+  // Now unlocked because we have locked twice then unlocked twice.
+  EXPECT_FALSE(is_locked(pi));
 }
 
 // Tests that |Append|ing to a ParkableImage correctly adds data to it.
@@ -400,6 +444,7 @@ TEST_F(ParkableImageTest, ParkAndUnparkAborted) {
   EXPECT_TRUE(MaybePark(pi));
 
   auto snapshot = pi->MakeROSnapshot();
+  snapshot->LockData();
 
   // Run task to park image.
   RunPostedTasks();
@@ -427,6 +472,7 @@ TEST_F(ParkableImageTest, ParkAndUnparkAborted) {
   EXPECT_FALSE(MaybePark(pi));
 
   // kill the old snapshot.
+  snapshot->UnlockData();
   snapshot = nullptr;
 
   // Now that snapshot is gone, we can park.
@@ -484,6 +530,34 @@ TEST_F(ParkableImageTest, ManagerSimple) {
 
   ExpectWriteStatistics(kDataSize / 1024, 1);
   ExpectReadStatistics(kDataSize / 1024, 1);
+}
+
+// Tests that a small image is not kept in the manager.
+TEST_F(ParkableImageTest, ManagerSmall) {
+  const size_t kDataSize = ParkableImage::kMinSizeToPark - 10;
+  char data[kDataSize];
+  PrepareReferenceData(data, kDataSize);
+
+  auto& manager = ParkableImageManager::Instance();
+  EXPECT_EQ(0u, manager.Size());
+
+  auto pi = MakeParkableImageForTesting(data, kDataSize);
+  EXPECT_EQ(1u, manager.Size());
+
+  pi->Freeze();
+
+  // Image should now be removed from the manager.
+  EXPECT_EQ(0u, manager.Size());
+
+  // One of these is the delayed parking task
+  // |ParkableImageManager::MaybeParkImages|, the other is the delayed
+  // accounting task |ParkableImageManager::RecordStatisticsAfter5Minutes|.
+  EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
+
+  WaitForDelayedParking();
+
+  // Image should be on disk now.
+  EXPECT_FALSE(is_on_disk(pi));
 }
 
 // Tests that the manager can correctly handle multiple parking tasks being
@@ -663,6 +737,73 @@ TEST_F(ParkableImageNoParkingTest, ManagerSimple) {
   // No data should be written or read when parking is disabled.
   ExpectWriteStatistics(kDataSize / 1024, 0);
   ExpectReadStatistics(kDataSize / 1024, 0);
+}
+
+// Test a locked image will not be written to disk.
+TEST_F(ParkableImageTest, ManagerNotUnlocked) {
+  const size_t kDataSize = 3.5 * 4096;
+  char data[kDataSize];
+  PrepareReferenceData(data, kDataSize);
+
+  auto& manager = ParkableImageManager::Instance();
+  EXPECT_EQ(0u, manager.Size());
+
+  auto pi = MakeParkableImageForTesting(data, kDataSize);
+
+  EXPECT_EQ(1u, manager.Size());
+
+  // Freeze, so it would be Parkable (if not for the Lock right after this
+  // line).
+  pi->Freeze();
+  Lock(pi);
+
+  WaitForDelayedParking();
+
+  // Can't park because it is locked.
+  EXPECT_FALSE(is_on_disk(pi));
+
+  Unlock(pi);
+}
+
+// Tests that the manager only reschedules the parking task  when there are
+// unfrozen ParkableImages.
+TEST_F(ParkableImageTest, ManagerRescheduleUnfrozen) {
+  const size_t kDataSize = 3.5 * 4096;
+  char data[kDataSize];
+  PrepareReferenceData(data, kDataSize);
+
+  auto& manager = ParkableImageManager::Instance();
+  EXPECT_EQ(0u, manager.Size());
+
+  auto pi = MakeParkableImageForTesting(data, kDataSize);
+
+  // This is the delayed
+  // accounting task |ParkableImageManager::RecordStatisticsAfter5Minutes|, and
+  // the parking task.
+  EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
+
+  // Fast forward enough for both to run.
+  Wait5MinForStatistics();
+  WaitForDelayedParking();
+
+  // Unfrozen ParkableImages are never parked.
+  ASSERT_FALSE(is_on_disk(pi));
+
+  // We have rescheduled the task because we have unfrozen ParkableImages.
+  EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
+
+  pi->Freeze();
+  Lock(pi);
+
+  WaitForDelayedParking();
+
+  // Locked ParkableImages are never parked.
+  ASSERT_FALSE(is_on_disk(pi));
+
+  // We do no reschedule because there are no un-frozen ParkableImages.
+  EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
+
+  Unlock(pi);
 }
 
 }  // namespace blink

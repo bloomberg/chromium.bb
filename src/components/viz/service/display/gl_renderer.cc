@@ -1524,13 +1524,18 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
           clip_rect = current_draw_rect_;
         }
         gfx::Transform transform = params->quad_to_target_transform;
+        transform.FlattenTo2d();
         if (!transform.IsInvertible()) {
           return false;
         }
-        gfx::QuadF clip_quad = gfx::QuadF(gfx::RectF(clip_rect));
-        gfx::QuadF local_clip =
-            cc::MathUtil::InverseMapQuadToLocalSpace(transform, clip_quad);
-        params->dst_rect.Intersect(local_clip.BoundingBox());
+        // If the transform has perspective, there might be visible content
+        // outside of the bounds of the quad.
+        if (!transform.HasPerspective()) {
+          gfx::QuadF clip_quad = gfx::QuadF(gfx::RectF(clip_rect));
+          gfx::QuadF local_clip =
+              cc::MathUtil::InverseMapQuadToLocalSpace(transform, clip_quad);
+          params->dst_rect.Intersect(local_clip.BoundingBox());
+        }
         // If we've been fully clipped out (by crop rect or clipping), there's
         // nothing to draw.
         if (params->dst_rect.IsEmpty()) {
@@ -3681,7 +3686,7 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
   // Create and set the program if needed.
   std::unique_ptr<Program>& program = program_cache_[program_key];
   if (!program) {
-    program.reset(new Program);
+    program = std::make_unique<Program>();
     program->Initialize(output_surface_->context_provider(), program_key);
   }
   DCHECK(program);
@@ -3957,12 +3962,10 @@ void GLRenderer::ScheduleOutputSurfaceAsOverlay() {
   DCHECK(texture_id || IsContextLost());
   // Output surface is also z-order 0.
   int plane_z_order = 0;
-  // Output surface always uses the full texture.
-  gfx::RectF uv_rect(0.f, 0.f, 1.f, 1.f);
 
   context_support_->ScheduleOverlayPlane(
       plane_z_order, overlay_candidate.transform, texture_id,
-      ToNearestRect(overlay_candidate.display_rect), uv_rect,
+      ToNearestRect(overlay_candidate.display_rect), overlay_candidate.uv_rect,
       overlay_candidate.enable_blending, overlay_candidate.gpu_fence_id);
 }
 

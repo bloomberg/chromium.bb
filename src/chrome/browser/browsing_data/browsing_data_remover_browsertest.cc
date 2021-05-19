@@ -64,6 +64,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -101,8 +102,8 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/net/system_proxy_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/system_proxy_manager.h"
 #include "chromeos/dbus/system_proxy/system_proxy_client.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -482,8 +483,7 @@ class BrowsingDataRemoverBrowserTest
             native_io_context),
         BrowsingDataQuotaHelper::Create(profile),
         new browsing_data::ServiceWorkerHelper(service_worker_context),
-        new browsing_data::SharedWorkerHelper(storage_partition,
-                                              profile->GetResourceContext()),
+        new browsing_data::SharedWorkerHelper(storage_partition),
         new browsing_data::CacheStorageHelper(storage_partition),
         BrowsingDataMediaLicenseHelper::Create(file_system_context));
     base::RunLoop run_loop;
@@ -1433,10 +1433,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 // sends a request to System-proxy to clear the cached user credentials.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        SystemProxyClearsUserCredentials) {
-  g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetSystemProxyManager()
-      ->SetSystemProxyEnabledForTest(true);
+  chromeos::SystemProxyManager::Get()->SetSystemProxyEnabledForTest(true);
   EXPECT_EQ(0, chromeos::SystemProxyClient::Get()
                    ->GetTestInterface()
                    ->GetClearUserCredentialsCount());

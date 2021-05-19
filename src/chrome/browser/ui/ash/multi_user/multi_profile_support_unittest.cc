@@ -35,10 +35,10 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_profile_support.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -46,7 +46,7 @@
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -121,7 +121,7 @@ namespace ash {
 class MultiProfileSupportTest : public ChromeAshTestBase {
  public:
   MultiProfileSupportTest()
-      : fake_user_manager_(new chromeos::FakeChromeUserManager),
+      : fake_user_manager_(new FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
 
   // ChromeAshTestBase:
@@ -173,7 +173,7 @@ class MultiProfileSupportTest : public ChromeAshTestBase {
     return MultiUserWindowManagerHelper::GetWindowManager();
   }
 
-  chromeos::FakeChromeUserManager* user_manager() { return fake_user_manager_; }
+  FakeChromeUserManager* user_manager() { return fake_user_manager_; }
 
   TestingProfileManager* profile_manager() { return profile_manager_.get(); }
 
@@ -276,13 +276,13 @@ class MultiProfileSupportTest : public ChromeAshTestBase {
   aura::Window::Windows windows_;
 
   // Owned by |user_manager_enabler_|.
-  chromeos::FakeChromeUserManager* fake_user_manager_ = nullptr;
+  FakeChromeUserManager* fake_user_manager_ = nullptr;
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
 
   user_manager::ScopedUserManager user_manager_enabler_;
 
-  std::unique_ptr<::WallpaperControllerClient> wallpaper_controller_client_;
+  std::unique_ptr<WallpaperControllerClientImpl> wallpaper_controller_client_;
 
   TestWallpaperController test_wallpaper_controller_;
 
@@ -293,8 +293,8 @@ class MultiProfileSupportTest : public ChromeAshTestBase {
 };
 
 void MultiProfileSupportTest::SetUp() {
-  chromeos::DeviceSettingsService::Initialize();
-  chromeos::CrosSettings::Initialize(
+  ash::DeviceSettingsService::Initialize();
+  ash::CrosSettings::Initialize(
       TestingBrowserProcess::GetGlobal()->local_state());
   ChromeAshTestBase::SetUp(std::make_unique<TestShellDelegateChromeOS>());
   ash_test_helper()
@@ -319,7 +319,7 @@ void MultiProfileSupportTest::SetUpForThisManyWindows(int windows) {
   ash::MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
       ash::MultiUserWindowManagerImpl::ANIMATION_SPEED_DISABLED);
   wallpaper_controller_client_ =
-      std::make_unique<::WallpaperControllerClient>();
+      std::make_unique<WallpaperControllerClientImpl>();
   wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
 }
 
@@ -367,8 +367,8 @@ void MultiProfileSupportTest::TearDown() {
   ChromeAshTestBase::TearDown();
   wallpaper_controller_client_.reset();
   profile_manager_.reset();
-  chromeos::CrosSettings::Shutdown();
-  chromeos::DeviceSettingsService::Shutdown();
+  ash::CrosSettings::Shutdown();
+  ash::DeviceSettingsService::Shutdown();
 }
 
 std::string MultiProfileSupportTest::GetStatusImpl(bool follow_transients) {

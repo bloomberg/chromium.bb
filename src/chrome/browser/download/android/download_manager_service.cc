@@ -175,7 +175,6 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
       ConvertUTF8ToJavaString(env, item->GetMimeType()),
       item->GetReceivedBytes(), item->GetTotalBytes(),
-      browser_context ? browser_context->IsOffTheRecord() : false,
       otr_profile_id, item->GetState(), item->PercentComplete(),
       item->IsPaused(), DownloadUtils::IsDownloadUserInitiated(item),
       item->CanResume(), item->IsParallelDownload(),
@@ -394,7 +393,7 @@ void DownloadManagerService::GetAllDownloadsInternal(ProfileKey* profile_key) {
 
   Java_DownloadManagerService_onAllDownloadsRetrieved(
       env, java_ref_, j_download_item_list,
-      ProfileKeyAndroid(profile_key).GetJavaObject());
+      profile_key->GetProfileKeyAndroid()->GetJavaObject());
 }
 
 void DownloadManagerService::CheckForExternallyRemovedDownloads(

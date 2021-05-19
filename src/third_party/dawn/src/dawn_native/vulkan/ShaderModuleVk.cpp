@@ -14,32 +14,28 @@
 
 #include "dawn_native/vulkan/ShaderModuleVk.h"
 
+#include "dawn_native/TintUtils.h"
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
 #include "dawn_native/vulkan/VulkanError.h"
 
 #include <spirv_cross.hpp>
 
-#ifdef DAWN_ENABLE_WGSL
 // Tint include must be after spirv_hlsl.hpp, because spirv-cross has its own
 // version of spirv_headers. We also need to undef SPV_REVISION because SPIRV-Cross
 // is at 3 while spirv-headers is at 4.
-#    undef SPV_REVISION
-#    include <tint/tint.h>
-#endif  // DAWN_ENABLE_WGSL
+#undef SPV_REVISION
+#include <tint/tint.h>
 
 namespace dawn_native { namespace vulkan {
 
     // static
-    ResultOrError<ShaderModule*> ShaderModule::Create(Device* device,
-                                                      const ShaderModuleDescriptor* descriptor,
-                                                      ShaderModuleParseResult* parseResult) {
+    ResultOrError<Ref<ShaderModule>> ShaderModule::Create(Device* device,
+                                                          const ShaderModuleDescriptor* descriptor,
+                                                          ShaderModuleParseResult* parseResult) {
         Ref<ShaderModule> module = AcquireRef(new ShaderModule(device, descriptor));
-        if (module == nullptr) {
-            return DAWN_VALIDATION_ERROR("Unable to create ShaderModule");
-        }
         DAWN_TRY(module->Initialize(parseResult));
-        return module.Detach();
+        return module;
     }
 
     ShaderModule::ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor)
@@ -50,8 +46,9 @@ namespace dawn_native { namespace vulkan {
         std::vector<uint32_t> spirv;
         const std::vector<uint32_t>* spirvPtr;
 
+        ScopedTintICEHandler scopedICEHandler(GetDevice());
+
         if (GetDevice()->IsToggleEnabled(Toggle::UseTintGenerator)) {
-#ifdef DAWN_ENABLE_WGSL
             std::ostringstream errorStream;
             errorStream << "Tint SPIR-V writer failure:" << std::endl;
 
@@ -62,7 +59,8 @@ namespace dawn_native { namespace vulkan {
 
             tint::Program program;
             DAWN_TRY_ASSIGN(program,
-                            RunTransforms(&transformManager, parseResult->tintProgram.get()));
+                            RunTransforms(&transformManager, parseResult->tintProgram.get(),
+                                          CompilationMessages()));
 
             tint::writer::spirv::Generator generator(&program);
             if (!generator.Generate()) {
@@ -79,9 +77,6 @@ namespace dawn_native { namespace vulkan {
             transformedParseResult.spirv = spirv;
 
             DAWN_TRY(InitializeBase(&transformedParseResult));
-#else
-            UNREACHABLE();
-#endif
         } else {
             DAWN_TRY(InitializeBase(parseResult));
             spirvPtr = &GetSpirv();

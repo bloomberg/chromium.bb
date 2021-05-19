@@ -686,6 +686,12 @@ WebRtcVideoEngine::GetRtpHeaderExtensions() const {
           ? webrtc::RtpTransceiverDirection::kSendRecv
           : webrtc::RtpTransceiverDirection::kStopped);
 
+  result.emplace_back(
+      webrtc::RtpExtension::kVideoFrameTrackingIdUri, id++,
+      IsEnabled(trials_, "WebRTC-VideoFrameTrackingIdAdvertised")
+          ? webrtc::RtpTransceiverDirection::kSendRecv
+          : webrtc::RtpTransceiverDirection::kStopped);
+
   return result;
 }
 
@@ -1032,7 +1038,7 @@ bool WebRtcVideoChannel::ApplyChangedParams(
   if (changed_params.send_codec || changed_params.rtcp_mode) {
     // Update receive feedback parameters from new codec or RTCP mode.
     RTC_LOG(LS_INFO)
-        << "SetFeedbackOptions on all the receive streams because the send "
+        << "SetFeedbackParameters on all the receive streams because the send "
            "codec or RTCP mode has changed.";
     for (auto& kv : receive_streams_) {
       RTC_DCHECK(kv.second != nullptr);
@@ -1040,7 +1046,8 @@ bool WebRtcVideoChannel::ApplyChangedParams(
           HasLntf(send_codec_->codec), HasNack(send_codec_->codec),
           HasTransportCc(send_codec_->codec),
           send_params_.rtcp.reduced_size ? webrtc::RtcpMode::kReducedSize
-                                         : webrtc::RtcpMode::kCompound);
+                                         : webrtc::RtcpMode::kCompound,
+          send_codec_->rtx_time);
     }
   }
   return true;
@@ -1516,6 +1523,12 @@ void WebRtcVideoChannel::ConfigureReceiverRtp(
   config->rtp.rtcp_mode = send_params_.rtcp.reduced_size
                               ? webrtc::RtcpMode::kReducedSize
                               : webrtc::RtcpMode::kCompound;
+
+  // rtx-time (RFC 4588) is a declarative attribute similar to rtcp-rsize and
+  // determined by the sender / send codec.
+  if (send_codec_ && send_codec_->rtx_time != -1) {
+    config->rtp.nack.rtp_history_ms = send_codec_->rtx_time;
+  }
 
   config->rtp.transport_cc =
       send_codec_ ? HasTransportCc(send_codec_->codec) : false;
@@ -2492,11 +2505,17 @@ WebRtcVideoChannel::WebRtcVideoSendStream::CreateVideoEncoderConfig(
 
   encoder_config.legacy_conference_mode = parameters_.conference_mode;
 
+  encoder_config.is_quality_scaling_allowed =
+      !disable_automatic_resize_ && !is_screencast &&
+      (parameters_.config.rtp.ssrcs.size() == 1 ||
+       NumActiveStreams(rtp_parameters_) == 1);
+
   int max_qp = kDefaultQpMax;
   codec.GetParam(kCodecParamMaxQuantization, &max_qp);
   encoder_config.video_stream_factory =
       new rtc::RefCountedObject<EncoderStreamFactory>(
           codec.name, max_qp, is_screencast, parameters_.conference_mode);
+
   return encoder_config;
 }
 
@@ -2574,6 +2593,7 @@ WebRtcVideoChannel::WebRtcVideoSendStream::GetPerLayerVideoSenderInfos(
         stats.quality_limitation_resolution_changes;
     common_info.encoder_implementation_name = stats.encoder_implementation_name;
     common_info.ssrc_groups = ssrc_groups_;
+    common_info.frames = stats.frames;
     common_info.framerate_input = stats.input_frame_rate;
     common_info.avg_encode_ms = stats.avg_encode_time_ms;
     common_info.encode_usage_percent = stats.encode_usage_percent;
@@ -2851,6 +2871,11 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::ConfigureCodecs(
 
   config_.rtp.lntf.enabled = HasLntf(codec.codec);
   config_.rtp.nack.rtp_history_ms = HasNack(codec.codec) ? kNackHistoryMs : 0;
+  // The rtx-time parameter can be used to override the hardcoded default for
+  // the NACK buffer length.
+  if (codec.rtx_time != -1 && config_.rtp.nack.rtp_history_ms != 0) {
+    config_.rtp.nack.rtp_history_ms = codec.rtx_time;
+  }
   config_.rtp.rtcp_xr.receiver_reference_time_report = HasRrtr(codec.codec);
   if (codec.ulpfec.red_rtx_payload_type != -1) {
     config_.rtp
@@ -2884,8 +2909,10 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::SetFeedbackParameters(
     bool lntf_enabled,
     bool nack_enabled,
     bool transport_cc_enabled,
-    webrtc::RtcpMode rtcp_mode) {
-  int nack_history_ms = nack_enabled ? kNackHistoryMs : 0;
+    webrtc::RtcpMode rtcp_mode,
+    int rtx_time) {
+  int nack_history_ms =
+      nack_enabled ? rtx_time != -1 ? rtx_time : kNackHistoryMs : 0;
   if (config_.rtp.lntf.enabled == lntf_enabled &&
       config_.rtp.nack.rtp_history_ms == nack_history_ms &&
       config_.rtp.transport_cc == transport_cc_enabled &&
@@ -2894,7 +2921,8 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::SetFeedbackParameters(
         << "Ignoring call to SetFeedbackParameters because parameters are "
            "unchanged; lntf="
         << lntf_enabled << ", nack=" << nack_enabled
-        << ", transport_cc=" << transport_cc_enabled;
+        << ", transport_cc=" << transport_cc_enabled
+        << ", rtx_time=" << rtx_time;
     return;
   }
   config_.rtp.lntf.enabled = lntf_enabled;
@@ -3164,20 +3192,21 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::
 }
 
 WebRtcVideoChannel::VideoCodecSettings::VideoCodecSettings()
-    : flexfec_payload_type(-1), rtx_payload_type(-1) {}
+    : flexfec_payload_type(-1), rtx_payload_type(-1), rtx_time(-1) {}
 
 bool WebRtcVideoChannel::VideoCodecSettings::operator==(
     const WebRtcVideoChannel::VideoCodecSettings& other) const {
   return codec == other.codec && ulpfec == other.ulpfec &&
          flexfec_payload_type == other.flexfec_payload_type &&
-         rtx_payload_type == other.rtx_payload_type;
+         rtx_payload_type == other.rtx_payload_type &&
+         rtx_time == other.rtx_time;
 }
 
 bool WebRtcVideoChannel::VideoCodecSettings::EqualsDisregardingFlexfec(
     const WebRtcVideoChannel::VideoCodecSettings& a,
     const WebRtcVideoChannel::VideoCodecSettings& b) {
   return a.codec == b.codec && a.ulpfec == b.ulpfec &&
-         a.rtx_payload_type == b.rtx_payload_type;
+         a.rtx_payload_type == b.rtx_payload_type && a.rtx_time == b.rtx_time;
 }
 
 bool WebRtcVideoChannel::VideoCodecSettings::operator!=(
@@ -3195,6 +3224,7 @@ WebRtcVideoChannel::MapCodecs(const std::vector<VideoCodec>& codecs) {
   std::map<int, VideoCodec::CodecType> payload_codec_type;
   // |rtx_mapping| maps video payload type to rtx payload type.
   std::map<int, int> rtx_mapping;
+  std::map<int, int> rtx_time_mapping;
 
   webrtc::UlpfecConfig ulpfec_config;
   absl::optional<int> flexfec_payload_type;
@@ -3256,6 +3286,10 @@ WebRtcVideoChannel::MapCodecs(const std::vector<VideoCodec>& codecs) {
               << in_codec.ToString();
           return {};
         }
+        int rtx_time;
+        if (in_codec.GetParam(kCodecParamRtxTime, &rtx_time) && rtx_time > 0) {
+          rtx_time_mapping[associated_payload_type] = rtx_time;
+        }
         rtx_mapping[associated_payload_type] = payload_type;
         break;
       }
@@ -3305,6 +3339,16 @@ WebRtcVideoChannel::MapCodecs(const std::vector<VideoCodec>& codecs) {
     if (it != rtx_mapping.end()) {
       const int rtx_payload_type = it->second;
       codec_settings.rtx_payload_type = rtx_payload_type;
+
+      auto rtx_time_it = rtx_time_mapping.find(payload_type);
+      if (rtx_time_it != rtx_time_mapping.end()) {
+        const int rtx_time = rtx_time_it->second;
+        if (rtx_time < kNackHistoryMs) {
+          codec_settings.rtx_time = rtx_time;
+        } else {
+          codec_settings.rtx_time = kNackHistoryMs;
+        }
+      }
     }
   }
 

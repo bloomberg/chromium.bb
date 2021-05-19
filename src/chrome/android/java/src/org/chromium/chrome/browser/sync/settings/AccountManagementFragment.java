@@ -138,19 +138,16 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
                 .getSigninManager(Profile.getLastUsedRegularProfile())
                 .addSignInStateObserver(this);
         mProfileDataCache.addObserver(this);
-        List<String> accountNames = AccountUtils.toAccountNames(
-                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts());
-        mProfileDataCache.update(accountNames);
         update();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        mProfileDataCache.removeObserver(this);
         IdentityServicesProvider.get()
                 .getSigninManager(Profile.getLastUsedRegularProfile())
                 .removeSignInStateObserver(this);
-        mProfileDataCache.removeObserver(this);
     }
 
     public void update() {
@@ -165,7 +162,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
                         .getPrimaryAccountInfo(
                                 ChromeFeatureList.isEnabled(
                                         ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
-                                        ? ConsentLevel.NOT_REQUIRED
+                                        ? ConsentLevel.SIGNIN
                                         : ConsentLevel.SYNC));
         if (mSignedInAccountName == null) {
             // The AccountManagementFragment can only be shown when the user is signed in. If the
@@ -407,7 +404,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         // we do not hit a native crash.
         if (IdentityServicesProvider.get()
                         .getIdentityManager(Profile.getLastUsedRegularProfile())
-                        .getPrimaryAccountInfo(ConsentLevel.NOT_REQUIRED)
+                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN)
                 == null) {
             return;
         }

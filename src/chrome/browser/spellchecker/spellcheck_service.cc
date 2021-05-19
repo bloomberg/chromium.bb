@@ -6,10 +6,12 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/no_destructor.h"
@@ -162,7 +164,8 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       base::BindRepeating(&SpellcheckService::InitForAllRenderers,
                           base::Unretained(this)));
 
-  custom_dictionary_.reset(new SpellcheckCustomDictionary(context_->GetPath()));
+  custom_dictionary_ =
+      std::make_unique<SpellcheckCustomDictionary>(context_->GetPath());
   custom_dictionary_->AddObserver(this);
   custom_dictionary_->Load();
 

@@ -246,6 +246,7 @@ public class StartSurfaceLayout extends Layout {
 
         int sourceTabId = nextId;
         if (sourceTabId == Tab.INVALID_TAB_ID) sourceTabId = mTabModelSelector.getCurrentTabId();
+
         LayoutTab sourceLayoutTab = createLayoutTab(
                 sourceTabId, mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NO_TITLE);
         sourceLayoutTab.setDecorationAlpha(0);

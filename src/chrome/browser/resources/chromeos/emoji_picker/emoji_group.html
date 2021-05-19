@@ -5,7 +5,14 @@
 
   #heading {
     color: var(--cr-secondary-text-color);
+    display: flex;
     font-size: 10pt;
+    padding-bottom: 4px;
+    padding-top: 8px;
+  }
+
+  #heading-left {
+    width: 100%;
   }
 
   #emoji {
@@ -14,12 +21,51 @@
     grid-template-columns: repeat(var(--emoji-per-row), 1fr);
     justify-items: center;
   }
+
+  #show_clear {
+    margin: 0;
+    --cr-icon-button-size: 16px;
+  }
+
+  #clearRecents {
+    background-color: inherit;
+    border: none;
+    border-radius: 4px;
+    box-shadow: var(--cr-elevation-3);
+    color: var(--cr-secondary-text-color);
+    cursor: pointer;
+    display: float;
+    font-family: 'Roboto', sans-serif;
+    font-size: 12px;
+    margin: auto 0 auto auto;
+    padding: 4px 8px 4px 8px;
+    position: absolute;
+    right: var(--emoji-picker-side-padding);
+    width: fit-content;
+  }
+  #clearRecents:hover {
+        background-color: var(--cr-hover-background-color);
+  }
+
 </style>
 
-<div id="heading" role="heading" aria-level="2" tabindex="0">[[data.group]]</div>
+<div id="heading" role="heading" aria-level="2" tabindex="0">
+<div id="heading-left">[[data.group]]</div>
+<template is="dom-if" if="[[clearable]]">
+  <cr-icon-button id="show_clear" iron-icon="emoji_picker:more_horizontal"
+    on-click="onClearClick">
+  </cr-icon-button>
+</template>
+</div>
+  <template is = "dom-if" if="[[showClearRecents]]">
+  <button id="clearRecents" on-click="onClearRecentsClick">
+    Clear recently used emojis
+  </button>
+  </template>
 <div id="emoji">
   <template is="dom-repeat" items="[[data.emoji]]">
-    <emoji-button emoji="[[item.base.string]]" variants="[[item.alternates]]">
+    <emoji-button emoji="[[getDisplayEmojiForEmoji(item.base.string)]]"
+      variants="[[item.alternates]]">
     </emoji-button>
   </template>
 </div>

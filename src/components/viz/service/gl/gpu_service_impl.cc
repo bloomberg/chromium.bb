@@ -206,7 +206,10 @@ class LogMessageManager {
   }
 
   // Called when it's no longer safe to invoke |log_callback_|.
-  void ShutdownLogging() { logging::SetLogMessageHandler(nullptr); }
+  void ShutdownLogging() {
+    logging::SetLogMessageHandler(nullptr);
+    log_callback_.Reset();
+  }
 
  private:
   base::Lock message_lock_;
@@ -578,8 +581,8 @@ void GpuServiceImpl::InitializeWithHost(
       image_decode_accelerator_worker_.get(), vulkan_context_provider(),
       metal_context_provider_.get(), dawn_context_provider());
 
-  media_gpu_channel_manager_.reset(
-      new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
+  media_gpu_channel_manager_ = std::make_unique<media::MediaGpuChannelManager>(
+      gpu_channel_manager_.get());
   if (watchdog_thread())
     watchdog_thread()->AddPowerObserver();
 }
@@ -622,6 +625,12 @@ void GpuServiceImpl::InstallPreInitializeLogHandler() {
 // static
 void GpuServiceImpl::FlushPreInitializeLogMessages(mojom::GpuHost* gpu_host) {
   GetLogMessageManager()->FlushMessages(gpu_host);
+}
+
+void GpuServiceImpl::SetVisibilityChangedCallback(
+    VisibilityChangedCallback callback) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  visibility_changed_callback_ = std::move(callback);
 }
 
 void GpuServiceImpl::RecordLogMessage(int severity,
@@ -1095,11 +1104,24 @@ void GpuServiceImpl::OnBackgrounded() {
 
 void GpuServiceImpl::OnBackgroundedOnMainThread() {
   gpu_channel_manager_->OnApplicationBackgrounded();
+
+  if (visibility_changed_callback_)
+    visibility_changed_callback_.Run(false);
 }
 
 void GpuServiceImpl::OnForegrounded() {
+  DCHECK(io_runner_->BelongsToCurrentThread());
   if (watchdog_thread_)
     watchdog_thread_->OnForegrounded();
+
+  main_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuServiceImpl::OnForegroundedOnMainThread, weak_ptr_));
+}
+
+void GpuServiceImpl::OnForegroundedOnMainThread() {
+  if (visibility_changed_callback_)
+    visibility_changed_callback_.Run(true);
 }
 
 #if !defined(OS_ANDROID)

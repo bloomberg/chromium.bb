@@ -25,6 +25,7 @@
 #include "src/trace_processor/importers/common/args_tracker.h"
 #include "src/trace_processor/importers/common/slice_tracker.h"
 #include "src/trace_processor/importers/proto/args_table_utils.h"
+#include "src/trace_processor/importers/proto/chrome_string_lookup.h"
 #include "src/trace_processor/storage/trace_storage.h"
 #include "src/trace_processor/timestamped_trace_piece.h"
 
@@ -76,6 +77,9 @@ class TrackEventParser {
   const StringId task_function_name_args_key_id_;
   const StringId task_line_number_args_key_id_;
   const StringId log_message_body_key_id_;
+  const StringId source_location_function_name_key_id_;
+  const StringId source_location_file_name_key_id_;
+  const StringId source_location_line_number_key_id_;
   const StringId raw_legacy_event_id_;
   const StringId legacy_event_passthrough_utid_id_;
   const StringId legacy_event_category_key_id_;
@@ -101,11 +105,9 @@ class TrackEventParser {
   const StringId chrome_legacy_ipc_class_args_key_id_;
   const StringId chrome_legacy_ipc_line_args_key_id_;
   const StringId chrome_host_app_package_name_id_;
+  const StringId chrome_crash_trace_id_name_id_;
 
-  std::array<StringId, 38> chrome_legacy_ipc_class_ids_;
-  std::array<StringId, 9> chrome_process_name_ids_;
-  std::map<uint32_t /* ChromeThreadDescriptor::ThreadType */, StringId>
-      chrome_thread_name_ids_;
+  ChromeStringLookup chrome_string_lookup_;
   std::array<StringId, 4> counter_unit_ids_;
 
   std::vector<uint16_t> reflect_fields_;

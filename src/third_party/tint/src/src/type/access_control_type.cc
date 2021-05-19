@@ -14,20 +14,17 @@
 
 #include "src/type/access_control_type.h"
 
-#include <assert.h>
-
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::AccessControl);
+TINT_INSTANTIATE_TYPEINFO(tint::type::AccessControl);
 
 namespace tint {
 namespace type {
 
 AccessControl::AccessControl(ast::AccessControl access, Type* subtype)
     : access_(access), subtype_(subtype) {
-  assert(subtype_);
-  assert(!subtype_->Is<AccessControl>());
+  TINT_ASSERT(subtype_);
+  TINT_ASSERT(!subtype_->Is<AccessControl>());
 }
 
 AccessControl::AccessControl(AccessControl&&) = default;
@@ -66,14 +63,6 @@ std::string AccessControl::FriendlyName(const SymbolTable& symbols) const {
   }
   out << ")]] " << subtype_->FriendlyName(symbols);
   return out.str();
-}
-
-uint64_t AccessControl::MinBufferBindingSize(MemoryLayout mem_layout) const {
-  return subtype_->MinBufferBindingSize(mem_layout);
-}
-
-uint64_t AccessControl::BaseAlignment(MemoryLayout mem_layout) const {
-  return subtype_->BaseAlignment(mem_layout);
 }
 
 AccessControl* AccessControl::Clone(CloneContext* ctx) const {

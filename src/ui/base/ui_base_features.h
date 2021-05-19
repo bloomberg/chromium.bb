@@ -57,6 +57,8 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kPointerEventsForTouch;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kPrecisionTouchpadLogging;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kScreenPowerListenerForNativeWinOcclusion;
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kTSFImeSupport;
 
 // Returns true if the system should use WM_POINTER events for touch events.
@@ -114,6 +116,18 @@ extern const base::Feature kImprovedKeyboardShortcuts;
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsImprovedKeyboardShortcutsEnabled();
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kDeprecateAltClick;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsDeprecateAltClickEnabled();
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kShortcutCustomizationApp;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsShortcutCustomizationAppEnabled();
 
 #endif
 

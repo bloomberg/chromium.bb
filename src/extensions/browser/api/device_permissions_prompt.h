@@ -8,12 +8,12 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
@@ -51,14 +51,14 @@ class DevicePermissionsPrompt {
       DeviceInfo();
       virtual ~DeviceInfo();
 
-      const base::string16& name() const { return name_; }
-      const base::string16& serial_number() const { return serial_number_; }
+      const std::u16string& name() const { return name_; }
+      const std::u16string& serial_number() const { return serial_number_; }
       bool granted() const { return granted_; }
       void set_granted() { granted_ = true; }
 
      protected:
-      base::string16 name_;
-      base::string16 serial_number_;
+      std::u16string name_;
+      std::u16string serial_number_;
 
      private:
       bool granted_ = false;
@@ -72,9 +72,9 @@ class DevicePermissionsPrompt {
       // to create the initial set of options.
       virtual void OnDevicesInitialized() = 0;
       virtual void OnDeviceAdded(size_t index,
-                                 const base::string16& device_name) = 0;
+                                 const std::u16string& device_name) = 0;
       virtual void OnDeviceRemoved(size_t index,
-                                   const base::string16& device_name) = 0;
+                                   const std::u16string& device_name) = 0;
 
      protected:
       virtual ~Observer();
@@ -88,8 +88,8 @@ class DevicePermissionsPrompt {
     virtual void SetObserver(Observer* observer);
 
     size_t GetDeviceCount() const { return devices_.size(); }
-    base::string16 GetDeviceName(size_t index) const;
-    base::string16 GetDeviceSerialNumber(size_t index) const;
+    std::u16string GetDeviceName(size_t index) const;
+    std::u16string GetDeviceSerialNumber(size_t index) const;
 
     // Notifies the DevicePermissionsManager for the current extension that
     // access to the device at the given index is now granted.

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -30,11 +31,11 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/embedder_support/pref_names.h"
+#include "components/embedder_support/switches.h"
 #include "components/language/core/browser/language_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -618,11 +619,11 @@ bool GetHttpCacheBackendResetParam(PrefService* local_state) {
   base::FieldTrial* field_trial = base::FeatureList::GetFieldTrial(
       net::features::kSplitCacheByNetworkIsolationKey);
   std::string current_field_trial_status =
-      (field_trial ? field_trial->group_name() : "None") + " ";
-  field_trial = base::FeatureList::GetFieldTrial(
-      net::features::kAppendFrameOriginToNetworkIsolationKey);
-  current_field_trial_status +=
       (field_trial ? field_trial->group_name() : "None");
+  // This used to be used for keying on main frame only vs main frame +
+  // innermost frame, but the feature was removed, and now it's always keyed on
+  // both.
+  current_field_trial_status += " None";
   // This used to be for keying on scheme + eTLD+1 vs origin, but the trial was
   // removed, and now it's always keyed on eTLD+1. Still keeping a third "None"
   // to avoid resetting the disk cache.
@@ -657,7 +658,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   network_context_params->enable_referrers = enable_referrers_.GetValue();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kShortReportingDelay)) {
+  if (command_line->HasSwitch(embedder_support::kShortReportingDelay)) {
     network_context_params->reporting_delivery_interval =
         base::TimeDelta::FromMilliseconds(100);
   }
@@ -777,13 +778,14 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
           cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
               kSystem &&
       TrialComparisonCertVerifierController::MaybeAllowedForProfile(profile_)) {
-    mojo::PendingRemote<network::mojom::TrialComparisonCertVerifierConfigClient>
+    mojo::PendingRemote<
+        cert_verifier::mojom::TrialComparisonCertVerifierConfigClient>
         config_client;
     auto config_client_receiver =
         config_client.InitWithNewPipeAndPassReceiver();
 
     cert_verifier_creation_params->trial_comparison_cert_verifier_params =
-        network::mojom::TrialComparisonCertVerifierParams::New();
+        cert_verifier::mojom::TrialComparisonCertVerifierParams::New();
 
     if (!trial_comparison_cert_verifier_controller_) {
       trial_comparison_cert_verifier_controller_ =
@@ -852,7 +854,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
 
   // Should be initialized with existing per-profile CORS access lists.
   network_context_params->cors_origin_access_list =
-      profile_->GetSharedCorsOriginAccessList()
+      content::BrowserContext::GetSharedCorsOriginAccessList(profile_)
           ->GetOriginAccessList()
           .CreateCorsOriginAccessPatternsList();
 

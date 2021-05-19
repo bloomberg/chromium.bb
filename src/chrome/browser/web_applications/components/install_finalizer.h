@@ -62,7 +62,11 @@ class InstallFinalizer {
                                           UninstallWebAppCallback callback) = 0;
 
   // Write the new WebApp data to disk and update the app.
+  // TODO(https://crbug.com/1196051): Chrome fails to update the manifest
+  // if the app window needing update closes at the same time as Chrome.
+  // Therefore, the manifest may not always update as expected.
   virtual void FinalizeUpdate(const WebApplicationInfo& web_app_info,
+                              content::WebContents* web_contents,
                               InstallFinalizedCallback callback) = 0;
 
   // Removes |external_install_source| from |app_id|. If no more interested

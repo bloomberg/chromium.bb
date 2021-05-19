@@ -22,9 +22,14 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/html_anchor_element.h"
+#include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/xml/dom_parser.h"
@@ -52,14 +57,12 @@ Sanitizer::Sanitizer(ExecutionContext* execution_context,
   }
 
   // Format dropElements to uppercase.
-  drop_elements_ = default_drop_elements_;
   if (config->hasDropElements()) {
     ElementFormatter(drop_elements_, config->dropElements());
     use_default_config = false;
   }
 
   // Format blockElements to uppercase.
-  block_elements_ = default_block_elements_;
   if (config->hasBlockElements()) {
     ElementFormatter(block_elements_, config->blockElements());
     use_default_config = false;
@@ -67,13 +70,13 @@ Sanitizer::Sanitizer(ExecutionContext* execution_context,
 
   // Format allowElements to uppercase.
   if (config->hasAllowElements()) {
-    has_allow_elements_ = true;
     ElementFormatter(allow_elements_, config->allowElements());
     use_default_config = false;
+  } else {
+    allow_elements_ = default_allow_elements_;
   }
 
   // Format dropAttributes to lowercase.
-  drop_attributes_ = default_drop_attributes_;
   if (config->hasDropAttributes()) {
     AttrFormatter(drop_attributes_, config->dropAttributes());
     use_default_config = false;
@@ -81,9 +84,10 @@ Sanitizer::Sanitizer(ExecutionContext* execution_context,
 
   // Format allowAttributes to lowercase.
   if (config->hasAllowAttributes()) {
-    has_allow_attributes_ = true;
     AttrFormatter(allow_attributes_, config->allowAttributes());
     use_default_config = false;
+  } else {
+    allow_attributes_ = default_allow_attributes_;
   }
 
   if (use_default_config) {
@@ -153,13 +157,13 @@ DocumentFragment* Sanitizer::sanitize(
   return SanitizeImpl(script_state, new_input, exception_state);
 }
 
-DocumentFragment* Sanitizer::SanitizeImpl(
+DocumentFragment* Sanitizer::PrepareFragment(
+    LocalDOMWindow* window,
     ScriptState* script_state,
     StringOrDocumentFragmentOrDocument& input,
     ExceptionState& exception_state) {
   DocumentFragment* fragment = nullptr;
 
-  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   if (!window) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot find current DOM window.");
@@ -196,7 +200,12 @@ DocumentFragment* Sanitizer::SanitizeImpl(
                                       "Cannot find current DOM window.");
     return nullptr;
   }
+  return fragment;
+}
 
+DocumentFragment* Sanitizer::DoSanitizing(DocumentFragment* fragment,
+                                          LocalDOMWindow* window,
+                                          ExceptionState& exception_state) {
   Node* node = fragment->firstChild();
 
   while (node) {
@@ -209,23 +218,18 @@ DocumentFragment* Sanitizer::SanitizeImpl(
     // TODO(crbug.com/1126936): Review the sanitising algorithm for non-HTMLs.
     // 1. Let |name| be |element|'s tag name.
     String name = node->nodeName().UpperASCII();
-    // 2. Classify elements into one of three kinds: kCustom, kUnknown, kRegular
-    ElementKind kind = ElementKind::kRegular;
-    if (CustomElement::IsValidName(AtomicString(name.LowerASCII()), false)) {
-      kind = ElementKind::kCustom;
-    } else if (IsA<HTMLElement>(node) &&
-               To<HTMLElement>(node)->IsHTMLUnknownElement()) {
-      kind = ElementKind::kUnknown;
-    }
+
+    // 2. Detect whether current element is a custom element or not.
+    bool is_custom_element =
+        CustomElement::IsValidName(AtomicString(name.LowerASCII()), false);
 
     // 3. If |kind| is `regular` and if |name| is not contained in the
     // default element allow list, then 'drop'
-    if (kind == ElementKind::kRegular &&
-        !default_allow_elements_.Contains(name)) {
+    if (baseline_drop_elements_.Contains(name)) {
       node = DropElement(node, fragment);
       UseCounter::Count(window->GetExecutionContext(),
                         WebFeature::kSanitizerAPIActionTaken);
-    } else if (kind == ElementKind::kCustom && !allow_custom_elements_) {
+    } else if (is_custom_element && !allow_custom_elements_) {
       // 4. If |kind| is `custom` and if allow_custom_elements_ is unset or set
       // to anything other than `true`, then 'drop'.
       node = DropElement(node, fragment);
@@ -241,18 +245,39 @@ DocumentFragment* Sanitizer::SanitizeImpl(
       node = BlockElement(node, fragment, exception_state);
       UseCounter::Count(window->GetExecutionContext(),
                         WebFeature::kSanitizerAPIActionTaken);
-    } else if (has_allow_elements_ && !allow_elements_.Contains(name)) {
-      // 7. if |config| has a non-empty [=element allow list=] and |name| is
-      // not in |config|'s [=element allow list=] then 'block'.
+    } else if (!allow_elements_.Contains(name)) {
+      // 7. if |name| is not in |config|'s [=element allow list=] then 'block'.
       node = BlockElement(node, fragment, exception_state);
       UseCounter::Count(window->GetExecutionContext(),
                         WebFeature::kSanitizerAPIActionTaken);
+    } else if (IsA<HTMLTemplateElement>(node)) {
+      // 8. If |element|'s [=element interface=] is {{HTMLTemplateElement}}
+      // Run the steps of the [=sanitize document fragment=] algorithm on
+      // |element|'s |content| attribute.
+      DoSanitizing(To<HTMLTemplateElement>(node)->content(), window,
+                   exception_state);
+      UseCounter::Count(window->GetExecutionContext(),
+                        WebFeature::kSanitizerAPIActionTaken);
+      node = KeepElement(node, fragment, name, window);
     } else {
       node = KeepElement(node, fragment, name, window);
     }
   }
 
   return fragment;
+}
+
+DocumentFragment* Sanitizer::SanitizeImpl(
+    ScriptState* script_state,
+    StringOrDocumentFragmentOrDocument& input,
+    ExceptionState& exception_state) {
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  DocumentFragment* fragment =
+      PrepareFragment(window, script_state, input, exception_state);
+  if (exception_state.HadException()) {
+    return nullptr;
+  }
+  return DoSanitizing(fragment, window, exception_state);
 }
 
 // If the current element needs to be dropped, remove current element entirely
@@ -295,7 +320,7 @@ Node* Sanitizer::KeepElement(Node* node,
                              String& node_name,
                              LocalDOMWindow* window) {
   Element* element = To<Element>(node);
-  if (has_allow_attributes_ && allow_attributes_.at("*").Contains(node_name)) {
+  if (allow_attributes_.at("*").Contains(node_name)) {
   } else if (drop_attributes_.at("*").Contains(node_name)) {
     for (const auto& name : element->getAttributeNames()) {
       element->removeAttribute(name);
@@ -306,13 +331,43 @@ Node* Sanitizer::KeepElement(Node* node,
     for (const auto& name : element->getAttributeNames()) {
       // Attributes in drop list or not in allow list while allow list
       // exists will be dropped.
-      bool drop = (drop_attributes_.Contains(name) &&
+      bool drop = (baseline_drop_attributes_.Contains(name) &&
+                   (baseline_drop_attributes_.at(name) == kVectorStar ||
+                    baseline_drop_attributes_.at(name).Contains(node_name))) ||
+                  (drop_attributes_.Contains(name) &&
                    (drop_attributes_.at(name) == kVectorStar ||
                     drop_attributes_.at(name).Contains(node_name))) ||
-                  (has_allow_attributes_ &&
-                   !(allow_attributes_.Contains(name) &&
-                     (allow_attributes_.at(name) == kVectorStar ||
-                      allow_attributes_.at(name).Contains(node_name))));
+                  !(allow_attributes_.Contains(name) &&
+                    (allow_attributes_.at(name) == kVectorStar ||
+                     allow_attributes_.at(name).Contains(node_name)));
+      // 9. If |element|'s [=element interface=] is {{HTMLAnchorElement}} or
+      // {{HTMLAreaElement}} and |element|'s `protocol` property is
+      // "javascript:", then remove the `href` attribute from |element|.
+      if (IsA<HTMLAnchorElement>(element) && name == "href" &&
+          To<HTMLAnchorElement>(element)->Href().Protocol() == "javascript") {
+        drop = true;
+      } else if (IsA<HTMLAreaElement>(element) && name == "href" &&
+                 To<HTMLAreaElement>(element)->Href().Protocol() ==
+                     "javascript") {
+        drop = true;
+      } else if (IsA<HTMLFormElement>(element) && name == "action" &&
+                 To<HTMLFormElement>(element)->action().StartsWith(
+                     "javascript:")) {
+        // 10. If |element|'s [=element interface=] is {{HTMLFormElement}} and
+        // |element|'s `action` attribute is a [[URL]] with `javascript:`
+        // protocol, them drop it.
+        drop = true;
+      } else if ((IsA<HTMLInputElement>(element) ||
+                  IsA<HTMLButtonElement>(element)) &&
+                 name == "formaction" &&
+                 To<HTMLFormControlElement>(element)->formAction().StartsWith(
+                     "javascript:")) {
+        // 11. If |element|'s [=element interface=] is {{HTMLInputElement}}
+        // or {{HTMLButtonElement}} and |element|'s `action` attribute is a
+        // [[URL]] with `javascript:` protocol, them drop it.
+        drop = true;
+      }
+
       if (drop) {
         element->removeAttribute(name);
         UseCounter::Count(window->GetExecutionContext(),

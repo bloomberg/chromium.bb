@@ -30,7 +30,6 @@
 #include <random>
 
 #include "base/macros.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_formatted_text.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
@@ -270,7 +269,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void DrawFocusIfNeededInternal(const Path&, Element*);
   bool FocusRingCallIsValid(const Path&, Element*);
-  void DrawFocusRing(const Path&);
+  void DrawFocusRing(const Path&, Element*);
   void UpdateElementAccessibility(const Path&, Element*);
 
   CanvasRenderingContext::ContextType GetContextType() const override {
@@ -314,9 +313,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   static constexpr float kRasterMetricProbability = 0.01;
   std::mt19937 random_generator_;
   std::bernoulli_distribution bernoulli_distribution_;
-
-  ukm::UkmRecorder* ukm_recorder_;
-  ukm::SourceId ukm_source_id_;
 };
 
 }  // namespace blink

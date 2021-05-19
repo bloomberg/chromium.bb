@@ -21,7 +21,6 @@
 #include "modules/video_coding/rtp_vp9_ref_finder.h"
 
 namespace webrtc {
-namespace video_coding {
 namespace internal {
 class RtpFrameReferenceFinderImpl {
  public:
@@ -186,5 +185,4 @@ void RtpFrameReferenceFinder::HandOffFrames(ReturnVector frames) {
   }
 }
 
-}  // namespace video_coding
 }  // namespace webrtc

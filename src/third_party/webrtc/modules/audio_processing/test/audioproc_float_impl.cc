@@ -65,11 +65,11 @@ ABSL_FLAG(bool,
 ABSL_FLAG(int,
           aec,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the echo canceller");
+          "Activate (1) or deactivate (0) the echo canceller");
 ABSL_FLAG(int,
           aecm,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the mobile echo controller");
+          "Activate (1) or deactivate (0) the mobile echo controller");
 ABSL_FLAG(int,
           ed,
           kParameterNotSpecifiedValue,
@@ -81,39 +81,50 @@ ABSL_FLAG(std::string,
 ABSL_FLAG(int,
           agc,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the AGC");
+          "Activate (1) or deactivate (0) the AGC");
 ABSL_FLAG(int,
           agc2,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the AGC2");
+          "Activate (1) or deactivate (0) the AGC2");
 ABSL_FLAG(int,
           pre_amplifier,
           kParameterNotSpecifiedValue,
           "Activate (1) or deactivate(0) the pre amplifier");
+ABSL_FLAG(
+    int,
+    capture_level_adjustment,
+    kParameterNotSpecifiedValue,
+    "Activate (1) or deactivate(0) the capture level adjustment functionality");
+ABSL_FLAG(int,
+          analog_mic_gain_emulation,
+          kParameterNotSpecifiedValue,
+          "Activate (1) or deactivate(0) the analog mic gain emulation in the "
+          "production (non-test) code.");
 ABSL_FLAG(int,
           hpf,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the high-pass filter");
+          "Activate (1) or deactivate (0) the high-pass filter");
 ABSL_FLAG(int,
           ns,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the noise suppressor");
+          "Activate (1) or deactivate (0) the noise suppressor");
 ABSL_FLAG(int,
           ts,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the transient suppressor");
+          "Activate (1), deactivate (0) or activate the transient suppressor "
+          "with continuous key events (2)");
 ABSL_FLAG(int,
           analog_agc,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the transient suppressor");
+          "Activate (1) or deactivate (0) the analog AGC");
 ABSL_FLAG(int,
           vad,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the voice activity detector");
+          "Activate (1) or deactivate (0) the voice activity detector");
 ABSL_FLAG(int,
           le,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the level estimator");
+          "Activate (1) or deactivate (0) the level estimator");
 ABSL_FLAG(bool,
           all_default,
           false,
@@ -135,7 +146,7 @@ ABSL_FLAG(int,
 ABSL_FLAG(int,
           agc_limiter,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the level estimator");
+          "Activate (1) or deactivate (0) the level estimator");
 ABSL_FLAG(int,
           agc_compression_gain,
           kParameterNotSpecifiedValue,
@@ -143,7 +154,7 @@ ABSL_FLAG(int,
 ABSL_FLAG(int,
           agc2_enable_adaptive_gain,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) the AGC2 adaptive gain");
+          "Activate (1) or deactivate (0) the AGC2 adaptive gain");
 ABSL_FLAG(float,
           agc2_fixed_gain_db,
           kParameterNotSpecifiedValue,
@@ -156,6 +167,19 @@ ABSL_FLAG(float,
           pre_amplifier_gain_factor,
           kParameterNotSpecifiedValue,
           "Pre-amplifier gain factor (linear) to apply");
+ABSL_FLAG(float,
+          pre_gain_factor,
+          kParameterNotSpecifiedValue,
+          "Pre-gain factor (linear) to apply in the capture level adjustment");
+ABSL_FLAG(float,
+          post_gain_factor,
+          kParameterNotSpecifiedValue,
+          "Post-gain factor (linear) to apply in the capture level adjustment");
+ABSL_FLAG(float,
+          analog_mic_gain_emulation_initial_level,
+          kParameterNotSpecifiedValue,
+          "Emulated analog mic level to apply initially in the production "
+          "(non-test) code.");
 ABSL_FLAG(int,
           ns_level,
           kParameterNotSpecifiedValue,
@@ -177,30 +201,45 @@ ABSL_FLAG(int,
 ABSL_FLAG(int,
           use_stream_delay,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) reporting the stream delay");
+          "Activate (1) or deactivate (0) reporting the stream delay");
 ABSL_FLAG(int,
           stream_drift_samples,
           kParameterNotSpecifiedValue,
           "Specify the number of stream drift samples to use");
-ABSL_FLAG(int, initial_mic_level, 100, "Initial mic level (0-255)");
+ABSL_FLAG(int,
+          initial_mic_level,
+          100,
+          "Initial mic level (0-255) for the analog mic gain simulation in the "
+          "test code");
 ABSL_FLAG(int,
           simulate_mic_gain,
           0,
-          "Activate (1) or deactivate(0) the analog mic gain simulation");
+          "Activate (1) or deactivate(0) the analog mic gain simulation in the "
+          "test code");
 ABSL_FLAG(int,
           multi_channel_render,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) multi-channel render processing in "
+          "Activate (1) or deactivate (0) multi-channel render processing in "
           "APM pipeline");
 ABSL_FLAG(int,
           multi_channel_capture,
           kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate(0) multi-channel capture processing in "
+          "Activate (1) or deactivate (0) multi-channel capture processing in "
           "APM pipeline");
 ABSL_FLAG(int,
           simulated_mic_kind,
           kParameterNotSpecifiedValue,
           "Specify which microphone kind to use for microphone simulation");
+ABSL_FLAG(int,
+          frame_for_sending_capture_output_used_false,
+          kParameterNotSpecifiedValue,
+          "Capture frame index for sending a runtime setting for that the "
+          "capture output is not used.");
+ABSL_FLAG(int,
+          frame_for_sending_capture_output_used_true,
+          kParameterNotSpecifiedValue,
+          "Capture frame index for sending a runtime setting for that the "
+          "capture output is used.");
 ABSL_FLAG(bool, performance_report, false, "Report the APM performance ");
 ABSL_FLAG(std::string,
           performance_report_output_file,
@@ -403,9 +442,13 @@ SimulationSettings CreateSettings() {
   SetSettingIfFlagSet(absl::GetFlag(FLAGS_agc2), &settings.use_agc2);
   SetSettingIfFlagSet(absl::GetFlag(FLAGS_pre_amplifier),
                       &settings.use_pre_amplifier);
+  SetSettingIfFlagSet(absl::GetFlag(FLAGS_capture_level_adjustment),
+                      &settings.use_capture_level_adjustment);
+  SetSettingIfFlagSet(absl::GetFlag(FLAGS_analog_mic_gain_emulation),
+                      &settings.use_analog_mic_gain_emulation);
   SetSettingIfFlagSet(absl::GetFlag(FLAGS_hpf), &settings.use_hpf);
   SetSettingIfFlagSet(absl::GetFlag(FLAGS_ns), &settings.use_ns);
-  SetSettingIfFlagSet(absl::GetFlag(FLAGS_ts), &settings.use_ts);
+  SetSettingIfSpecified(absl::GetFlag(FLAGS_ts), &settings.use_ts);
   SetSettingIfFlagSet(absl::GetFlag(FLAGS_analog_agc),
                       &settings.use_analog_agc);
   SetSettingIfFlagSet(absl::GetFlag(FLAGS_vad), &settings.use_vad);
@@ -428,6 +471,13 @@ SimulationSettings CreateSettings() {
       absl::GetFlag(FLAGS_agc2_adaptive_level_estimator));
   SetSettingIfSpecified(absl::GetFlag(FLAGS_pre_amplifier_gain_factor),
                         &settings.pre_amplifier_gain_factor);
+  SetSettingIfSpecified(absl::GetFlag(FLAGS_pre_gain_factor),
+                        &settings.pre_gain_factor);
+  SetSettingIfSpecified(absl::GetFlag(FLAGS_post_gain_factor),
+                        &settings.post_gain_factor);
+  SetSettingIfSpecified(
+      absl::GetFlag(FLAGS_analog_mic_gain_emulation_initial_level),
+      &settings.analog_mic_gain_emulation_initial_level);
   SetSettingIfSpecified(absl::GetFlag(FLAGS_ns_level), &settings.ns_level);
   SetSettingIfFlagSet(absl::GetFlag(FLAGS_ns_analysis_on_linear_aec_output),
                       &settings.ns_analysis_on_linear_aec_output);
@@ -451,6 +501,12 @@ SimulationSettings CreateSettings() {
   settings.simulate_mic_gain = absl::GetFlag(FLAGS_simulate_mic_gain);
   SetSettingIfSpecified(absl::GetFlag(FLAGS_simulated_mic_kind),
                         &settings.simulated_mic_kind);
+  SetSettingIfSpecified(
+      absl::GetFlag(FLAGS_frame_for_sending_capture_output_used_false),
+      &settings.frame_for_sending_capture_output_used_false);
+  SetSettingIfSpecified(
+      absl::GetFlag(FLAGS_frame_for_sending_capture_output_used_true),
+      &settings.frame_for_sending_capture_output_used_true);
   settings.report_performance = absl::GetFlag(FLAGS_performance_report);
   SetSettingIfSpecified(absl::GetFlag(FLAGS_performance_report_output_file),
                         &settings.performance_report_output_filename);

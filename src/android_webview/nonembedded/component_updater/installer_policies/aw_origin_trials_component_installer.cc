@@ -19,21 +19,15 @@
 
 namespace android_webview {
 
-AwOriginTrialsComponentInstallerPolicy::AwOriginTrialsComponentInstallerPolicy(
-    std::unique_ptr<AwComponentInstallerPolicyDelegate> delegate)
-    : delegate_(std::move(delegate)) {}
+AwOriginTrialsComponentInstallerPolicy::
+    AwOriginTrialsComponentInstallerPolicy() {
+  std::vector<uint8_t> hash;
+  GetHash(&hash);
+  delegate_ = std::make_unique<AwComponentInstallerPolicyDelegate>(hash);
+}
 
 AwOriginTrialsComponentInstallerPolicy::
     ~AwOriginTrialsComponentInstallerPolicy() = default;
-
-update_client::CrxInstaller::Result
-AwOriginTrialsComponentInstallerPolicy::OnCustomInstall(
-    const base::DictionaryValue& manifest,
-    const base::FilePath& install_dir) {
-  std::vector<uint8_t> hash;
-  GetHash(&hash);
-  return delegate_->OnCustomInstall(manifest, install_dir, hash);
-}
 
 void AwOriginTrialsComponentInstallerPolicy::OnCustomUninstall() {
   delegate_->OnCustomUninstall();
@@ -47,11 +41,13 @@ void AwOriginTrialsComponentInstallerPolicy::ComponentReady(
 }
 
 void RegisterOriginTrialsComponent(
-    component_updater::ComponentUpdateService* update_service) {
+    base::OnceCallback<bool(const update_client::CrxComponent&)>
+        register_callback,
+    base::OnceClosure registration_finished) {
   base::MakeRefCounted<component_updater::ComponentInstaller>(
-      std::make_unique<AwOriginTrialsComponentInstallerPolicy>(
-          std::make_unique<AwComponentInstallerPolicyDelegate>()))
-      ->Register(update_service, base::OnceClosure());
+      std::make_unique<AwOriginTrialsComponentInstallerPolicy>())
+      ->Register(std::move(register_callback),
+                 std::move(registration_finished));
 }
 
 }  // namespace android_webview

@@ -4,10 +4,13 @@
 <translation id="1175958423215084756">Link je otkriven. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Slike u galeriji</translation>
 <translation id="1430915738399379752">Štampaj</translation>
+<translation id="1467231725790366244">Kamera <ph name="CAMERA" /> je isključena.</translation>
 <translation id="1473110567575736769">Tajmer za 3 sekunde</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4×4</translation>
 <translation id="1664224225747386870">Ništa nije snimljeno</translation>
+<translation id="1838104802459806957">Naginjanje nagore</translation>
+<translation id="1851169887664797861">Dostupne su dodatne kontrole za kameru</translation>
 <translation id="1851616744363735765">PAUZIRANO</translation>
 <translation id="1862930711583847113">Izvoz datoteke <ph name="FILE" /> nije uspeo</translation>
 <translation id="1899697626337024495">Rezolucija slike</translation>
@@ -17,15 +20,18 @@
 <translation id="2064538373111010176">Kamera <ph name="CAMERA" /> je aktivna</translation>
 <translation id="2144806332417375165">Prilagođeni parametri video snimaka</translation>
 <translation id="229579744168541441">Izvezi na disk</translation>
+<translation id="2320741269052147773">Pomeranje ulevo</translation>
 <translation id="2501278716633472235">Nazad</translation>
 <translation id="2501853267655415902">Snimanje je zaustavljeno</translation>
 <translation id="2501953888035679275">Snimajte slike i video snimke pomoću kamere.</translation>
 <translation id="2549985041256363841">Započni snimanje</translation>
 <translation id="2599796128805996109">Zadnja kamera</translation>
+<translation id="2879583609344924966">Kamera <ph name="CAMERA" /> je priključena.</translation>
 <translation id="2912439424121107408">Režim za stručnjake nije podržan na ovom uređaju</translation>
 <translation id="2968794441791257519">Slike i video snimci koji su snimljeni pomoću kamere će se premestiti u direktorijum Preuzimanja. Možete da im pristupite u Datotekama.
 
         Aplikacije sa dozvolama za pristup memorijskom prostoru će imati pristup slikama i video snimcima.</translation>
+<translation id="3067436040345934772">Pomeranje udesno</translation>
 <translation id="3081586908890909590">Pređi na režim za snimanje videa</translation>
 <translation id="313467653172006084">30 kadr/s</translation>
 <translation id="3183731565330012717">Tip mreže</translation>
@@ -34,6 +40,7 @@
 <translation id="3259149966178251584">Rezolucija kamere</translation>
 <translation id="3517926952904427380">Snimanje uspravne slike nije uspelo</translation>
 <translation id="3569311554794739032">Želite li stvarno da uklonite datoteku <ph name="FILE" />?</translation>
+<translation id="3733597664308256288">Dostupne su dodatne kontrole za kameru. Ako želite da im pristupite, koristite taster za pretragu + strelicu nadesno.</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Skeniraj bar-kod</translation>
 <translation id="3892148308691398805">Kopiraj tekst</translation>
@@ -56,6 +63,7 @@
 <translation id="5671277269877808209">Kvadrat</translation>
 <translation id="5775960006311140197">Režim za stručnjake</translation>
 <translation id="5869546221129391014">Mreža</translation>
+<translation id="5975083100439434680">Umanjivanje</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="6073451960410192870">Zaustavi snimanje</translation>
 <translation id="6197807149213783179">Sačuvaj metapodatke</translation>
@@ -84,16 +92,19 @@ Ako su povratne informacije u vezi sa kvalitetom slike ili videa, priložite uzo
 <translation id="7974782136796202581">Prikaži opcije za pomeranje, naginjanje i zumiranje</translation>
 <translation id="7983668134180549431">Tekst je otkriven.</translation>
 <translation id="8067883171444229417">Pusti video</translation>
+<translation id="8120146556401698679">Pomeranje, naginjanje, zumiranje</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8145038249676204903">Pređi na režim za snimanje slika</translation>
 <translation id="8239780215768881278">Napravite video-snimak</translation>
 <translation id="8261506727792406068">Izbriši</translation>
+<translation id="8425673304802773841">Naginjanje nadole</translation>
 <translation id="8428213095426709021">Podešavanja</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" /> piksela (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Prikaži metapodatke</translation>
 <translation id="8815966864175525708">Pređi na režim za snimanje uspravnih slika</translation>
 <translation id="8828441885228359828">Nastavi snimanje</translation>
 <translation id="8870695351537079478">Snimanje nije moglo da počne</translation>
+<translation id="8903921497873541725">Uvećavanje</translation>
 <translation id="9045155556724273246">10 sekundi</translation>
 <translation id="945522503751344254">Pošalji povratne informacije</translation>
 </translationbundle>

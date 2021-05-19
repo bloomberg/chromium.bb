@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -141,14 +140,17 @@ DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
   return formatter->Format(GetRootAccessibilityNode(shell()->web_contents()));
 }
 
-void DumpAccessibilityTestBase::RunTest(const base::FilePath file_path,
-                                        const char* file_dir) {
-  RunTestForPlatform(file_path, file_dir);
+void DumpAccessibilityTestBase::RunTest(
+    const base::FilePath file_path,
+    const char* file_dir,
+    const base::FilePath::StringType& expectations_qualifier) {
+  RunTestForPlatform(file_path, file_dir, expectations_qualifier);
 }
 
 void DumpAccessibilityTestBase::RunTestForPlatform(
     const base::FilePath file_path,
-    const char* file_dir) {
+    const char* file_dir,
+    const base::FilePath::StringType& expectations_qualifier) {
   // Disable the "hot tracked" state (set when the mouse is hovering over
   // an object) because it makes test output change based on the mouse position.
   BrowserAccessibilityStateImpl::GetInstance()
@@ -160,13 +162,6 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   // flaky.
   BrowserAccessibilityManager::NeverSuppressOrDelayEventsForTesting();
 
-  // Extra mac nodes are disabled temporarily for stability purposes, but keep
-  // them on for tests.
-  if (disable_extra_mac_nodes_for_testing_)
-    BrowserAccessibilityManager::DisableExtraMacNodesForTesting();
-  EXPECT_EQ(disable_extra_mac_nodes_for_testing_,
-            BrowserAccessibilityManager::GetExtraMacNodesDisabled());
-
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Exit without running the test if we can't find an expectation file.
@@ -174,7 +169,8 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   // We have to check for this in advance in order to avoid waiting on a
   // WAIT-FOR directive in the source file that's looking for something not
   // supported on the current platform.
-  base::FilePath expected_file = test_helper_.GetExpectationFilePath(file_path);
+  base::FilePath expected_file =
+      test_helper_.GetExpectationFilePath(file_path, expectations_qualifier);
   if (expected_file.empty()) {
     LOG(INFO) << "No expectation file present, ignoring test on this "
                  "platform.";
@@ -435,6 +431,45 @@ BrowserAccessibility* DumpAccessibilityTestBase::FindNodeInSubtree(
     BrowserAccessibility* result =
         FindNodeInSubtree(*node.PlatformGetChild(i), name);
     if (result)
+      return result;
+  }
+  return nullptr;
+}
+
+bool DumpAccessibilityTestBase::HasHtmlAttribute(BrowserAccessibility& node,
+                                                 const char* attr,
+                                                 const std::string& value) {
+  std::string result;
+  if (node.GetHtmlAttribute(attr, &result))
+    return result == value;
+
+  if (base::LowerCaseEqualsASCII(attr, "class"))
+    return node.GetStringAttribute(ax::mojom::StringAttribute::kClassName) ==
+           value;
+
+  return false;
+}
+
+BrowserAccessibility* DumpAccessibilityTestBase::FindNodeByHTMLAttribute(
+    const char* attr,
+    const std::string& value) {
+  BrowserAccessibility* root = GetManager()->GetRoot();
+
+  CHECK(root);
+  return FindNodeByHTMLAttributeInSubtree(*root, attr, value);
+}
+
+BrowserAccessibility*
+DumpAccessibilityTestBase::FindNodeByHTMLAttributeInSubtree(
+    BrowserAccessibility& node,
+    const char* attr,
+    const std::string& value) {
+  if (HasHtmlAttribute(node, attr, value))
+    return &node;
+
+  for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
+    if (BrowserAccessibility* result = FindNodeByHTMLAttributeInSubtree(
+            *node.PlatformGetChild(i), attr, value))
       return result;
   }
   return nullptr;

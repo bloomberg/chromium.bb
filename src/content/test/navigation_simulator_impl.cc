@@ -9,6 +9,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
@@ -412,8 +413,7 @@ void NavigationSimulatorImpl::Start() {
   if (IsRendererDebugURL(navigation_url_))
     return;
 
-  if (same_document_ || !IsURLHandledByNetworkStack(navigation_url_) ||
-      navigation_url_.IsAboutBlank()) {
+  if (!NeedsThrottleChecks()) {
     CHECK_EQ(1, num_did_start_navigation_called_);
     return;
   }
@@ -521,6 +521,14 @@ void NavigationSimulatorImpl::ReadyToCommit() {
   response_headers_->SetHeader("Content-Type", contents_mime_type_);
   PrepareCompleteCallbackOnRequest();
   if (frame_tree_node_->navigation_request()) {
+    NavigationRequest* request = frame_tree_node_->navigation_request();
+    if (early_hints_preload_link_header_received_) {
+      TestNavigationURLLoader* url_loader =
+          static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
+      CHECK(url_loader);
+      url_loader->SimulateEarlyHintsPreloadLinkHeaderReceived();
+    }
+
     static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host())
         ->PrepareForCommitDeprecatedForNavigationSimulator(
             remote_endpoint_, was_fetched_via_cache_,
@@ -534,27 +542,31 @@ void NavigationSimulatorImpl::ReadyToCommit() {
     return;
   }
 
-  bool needs_throttle_checks = !same_document_ &&
-                               !navigation_url_.IsAboutBlank() &&
-                               IsURLHandledByNetworkStack(navigation_url_);
   auto complete_closure =
-      base::BindOnce(&NavigationSimulatorImpl::ReadyToCommitComplete,
-                     weak_factory_.GetWeakPtr(), needs_throttle_checks);
-  if (needs_throttle_checks) {
+      base::BindOnce(&NavigationSimulatorImpl::WillProcessResponseComplete,
+                     weak_factory_.GetWeakPtr());
+  if (NeedsThrottleChecks()) {
     MaybeWaitForThrottleChecksComplete(std::move(complete_closure));
+    if (state_ == READY_TO_COMMIT) {
+      // `NavigationRequest::OnWillProcessResponseProcessed()` invokes the
+      // completion callback before synchronously dispatching
+      // `ReadyToCommitNavigation()` to observers. Once the throttle checks are
+      // complete, ensure that `ReadyToCommitNavigation()` has been called as
+      // expected.
+      CHECK_EQ(1, num_ready_to_commit_called_);
+    }
     return;
   }
   std::move(complete_closure).Run();
 }
 
-void NavigationSimulatorImpl::ReadyToCommitComplete(bool ran_throttles) {
-  if (ran_throttles) {
+void NavigationSimulatorImpl::WillProcessResponseComplete() {
+  if (NeedsThrottleChecks()) {
     if (GetLastThrottleCheckResult().action() != NavigationThrottle::PROCEED) {
       state_ = FAILED;
       return;
     }
     CHECK_EQ(1, num_will_process_response_called_);
-    CHECK_EQ(1, num_ready_to_commit_called_);
   }
 
   request_id_ = request_->GetGlobalRequestID();
@@ -904,11 +916,11 @@ void NavigationSimulatorImpl::SetIsSignedExchangeInnerResponse(
   is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
 }
 
-void NavigationSimulatorImpl::SetFeaturePolicyHeader(
-    blink::ParsedFeaturePolicy feature_policy_header) {
-  CHECK_LE(state_, STARTED) << "The Feature-Policy headers cannot be set after "
-                               "the navigation has committed or failed";
-  feature_policy_header_ = std::move(feature_policy_header);
+void NavigationSimulatorImpl::SetPermissionsPolicyHeader(
+    blink::ParsedPermissionsPolicy permissions_policy_header) {
+  CHECK_LE(state_, STARTED) << "The Permissions-Policy headers cannot be set "
+                               "after the navigation has committed or failed";
+  permissions_policy_header_ = std::move(permissions_policy_header);
 }
 
 void NavigationSimulatorImpl::SetContentsMimeType(
@@ -952,6 +964,11 @@ void NavigationSimulatorImpl::SetSSLInfo(const net::SSLInfo& ssl_info) {
 void NavigationSimulatorImpl::SetResponseDnsAliases(
     std::vector<std::string> aliases) {
   response_dns_aliases_ = std::move(aliases);
+}
+
+void NavigationSimulatorImpl::SetEarlyHintsPreloadLinkHeaderReceived(
+    bool received) {
+  early_hints_preload_link_header_received_ = received;
 }
 
 NavigationThrottle::ThrottleCheckResult
@@ -1178,9 +1195,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           ? mojom::NavigationType::RELOAD
           : mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->has_user_gesture = has_user_gesture_;
-  common_params->initiator_csp_info = mojom::InitiatorCSPInfo::New(
-      should_check_main_world_csp_,
-      std::vector<network::mojom::ContentSecurityPolicyPtr>());
+  common_params->should_check_main_world_csp = should_check_main_world_csp_;
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;
@@ -1188,8 +1203,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
       navigation_client_remote.InitWithNewEndpointAndPassReceiver();
   render_frame_host_->frame_host_receiver_for_testing().impl()->BeginNavigation(
       std::move(common_params), std::move(begin_params), mojo::NullRemote(),
-      std::move(navigation_client_remote), mojo::NullRemote(),
-      mojo::NullRemote());
+      std::move(navigation_client_remote), mojo::NullRemote());
 
   NavigationRequest* request =
       render_frame_host_->frame_tree_node()->navigation_request();
@@ -1332,13 +1346,10 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
     // Note: Error pages must commit in a unique origin. So it is left unset.
     params->url_is_unreachable = true;
   } else {
-    params->redirects.push_back(navigation_url_);
     params->should_update_history = true;
     if (same_document) {
-      params->sandbox_flags = current_rfh->active_sandbox_flags();
       params->origin = current_rfh->GetLastCommittedOrigin();
     } else {
-      params->sandbox_flags = request_->SandboxFlagsToCommit();
       params->origin =
           origin_.value_or(request_->GetOriginForURLLoaderFactory());
     }
@@ -1358,7 +1369,7 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
 
   CHECK(same_document || request_);
 
-  params->feature_policy_header = std::move(feature_policy_header_);
+  params->permissions_policy_header = std::move(permissions_policy_header_);
 
   // Simulate Blink assigning a item sequence number and document sequence
   // number to the navigation.
@@ -1418,6 +1429,18 @@ void NavigationSimulatorImpl::
   if (previous_rfh->IsInBackForwardCache())
     return;
   previous_rfh->OnUnloadACK();
+}
+
+bool NavigationSimulatorImpl::NeedsThrottleChecks() const {
+  if (same_document_) {
+    return false;
+  }
+
+  if (navigation_url_.IsAboutBlank()) {
+    return false;
+  }
+
+  return IsURLHandledByNetworkStack(navigation_url_);
 }
 
 }  // namespace content

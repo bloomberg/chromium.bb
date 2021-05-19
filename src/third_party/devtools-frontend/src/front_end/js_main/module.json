@@ -1,14 +1,5 @@
 {
-  "extensions": [
-    {
-      "type": "early-initialization",
-      "className": "JsMain.JsMain"
-    }
-  ],
   "dependencies": [
     "components"
-  ],
-  "modules": [
-    "js_main-legacy.js"
   ]
 }

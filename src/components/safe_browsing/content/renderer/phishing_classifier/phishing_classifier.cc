@@ -82,7 +82,7 @@ bool PhishingClassifier::is_ready() const {
   return !!scorer_;
 }
 
-void PhishingClassifier::BeginClassification(const base::string16* page_text,
+void PhishingClassifier::BeginClassification(const std::u16string* page_text,
                                              DoneCallback done_callback) {
   DCHECK(is_ready());
 
@@ -123,7 +123,7 @@ void PhishingClassifier::BeginFeatureExtraction() {
     return;
   }
 
-  features_.reset(new FeatureMap);
+  features_ = std::make_unique<FeatureMap>();
   if (!url_extractor_->ExtractFeatures(url, features_.get())) {
     RunFailureCallback();
     return;
@@ -148,7 +148,7 @@ void PhishingClassifier::CancelPendingClassification() {
 }
 
 void PhishingClassifier::DOMExtractionFinished(bool success) {
-  shingle_hashes_.reset(new std::set<uint32_t>);
+  shingle_hashes_ = std::make_unique<std::set<uint32_t>>();
   if (success) {
     // Term feature extraction can take awhile, so it runs asynchronously
     // in several chunks of work and invokes the callback when finished.

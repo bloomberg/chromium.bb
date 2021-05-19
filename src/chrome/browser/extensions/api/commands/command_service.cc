@@ -103,7 +103,7 @@ CommandService::CommandService(content::BrowserContext* context)
   ExtensionFunctionRegistry::GetInstance()
       .RegisterFunction<GetAllCommandsFunction>();
 
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+  extension_registry_observation_.Observe(ExtensionRegistry::Get(profile_));
 }
 
 CommandService::~CommandService() {
@@ -319,8 +319,8 @@ Command CommandService::FindCommandByName(const std::string& extension_id,
         shortcut, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     CHECK(tokens.size() >= 2);
 
-    return Command(command_name, base::string16(), tokens[1].as_string(),
-           global);
+    return Command(command_name, std::u16string(), tokens[1].as_string(),
+                   global);
   }
 
   return Command();
@@ -485,7 +485,7 @@ bool CommandService::CanAutoAssign(const Command &command,
       return false;  // Browser and page actions are not global in nature.
 
     if (extension->permissions_data()->HasAPIPermission(
-            APIPermission::kCommandsAccessibility))
+            mojom::APIPermissionID::kCommandsAccessibility))
       return true;
 
     // Global shortcuts are restricted to (Ctrl|Command)+Shift+[0-9].

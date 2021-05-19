@@ -123,7 +123,7 @@ steps = {
   # Some things you probably don't need unless you're debugging.
   "download_mac_sdk":
       { "desc": "Try to download the mac SDK, if needed.",
-        "do_fn": robo_setup.FetchMacSDKs },
+        "do_fn": robo_setup.FetchMacSDK },
 
   # Roll-up for --auto-merge
   "auto-merge":

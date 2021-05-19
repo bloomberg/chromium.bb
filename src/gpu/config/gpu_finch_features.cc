@@ -123,11 +123,6 @@ const base::Feature kCanvasOopRasterization{"CanvasOopRasterization",
 // Use a high priority for GPU process on Windows.
 const base::Feature kGpuProcessHighPriorityWin{
     "GpuProcessHighPriorityWin", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Compute the root damage rect from the surface damage list for overlays on
-// Windows.
-const base::Feature kDirectCompositionUseOverlayDamageList{
-    "DirectCompositionUseOverlayDamageList", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Use ThreadPriority::DISPLAY for GPU main, viz compositor and IO threads.
@@ -210,11 +205,6 @@ const base::FeatureParam<std::string> kVulkanBlockListByAndroidBuildFP{
 // Enable SkiaRenderer Dawn graphics backend. On Windows this will use D3D12,
 // and on Linux this will use Vulkan.
 const base::Feature kSkiaDawn{"SkiaDawn", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Used to enable shared image mailbox and disable legacy texture mailbox on
-// webview.
-const base::Feature kEnableSharedImageForWebview{
-    "EnableSharedImageForWebview", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable GrShaderCache to use with Vulkan backend.
 const base::Feature kEnableGrShaderCacheForVulkan{

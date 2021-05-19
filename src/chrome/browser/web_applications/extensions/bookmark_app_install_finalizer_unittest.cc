@@ -84,8 +84,7 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
 
     void SimulateInstallFailed() {
       CrxInstallError error(CrxInstallErrorType::DECLINED,
-                            CrxInstallErrorDetail::INSTALL_NOT_ENABLED,
-                            base::ASCIIToUTF16(""));
+                            CrxInstallErrorDetail::INSTALL_NOT_ENABLED, u"");
       NotifyCrxInstallComplete(error);
     }
     FakeCrxInstaller(const FakeCrxInstaller&) = delete;
@@ -162,8 +161,9 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
   void SimulateExternalAppUninstalledByUser(const web_app::AppId& app_id) {
     ExtensionRegistry::Get(profile())->RemoveEnabled(app_id);
     auto* extension_prefs = ExtensionPrefs::Get(profile());
-    extension_prefs->OnExtensionUninstalled(app_id, Manifest::EXTERNAL_POLICY,
-                                            false /* external_uninstall */);
+    extension_prefs->OnExtensionUninstalled(
+        app_id, mojom::ManifestLocation::kExternalPolicy,
+        false /* external_uninstall */);
     DCHECK(extension_prefs->IsExternalExtensionUninstalled(app_id));
   }
 
@@ -238,7 +238,8 @@ TEST_F(BookmarkAppInstallFinalizerTest, DefaultInstalledSucceeds) {
             ExtensionRegistry::Get(profile())->GetInstalledExtension(
                 installed_app_id);
         EXPECT_TRUE(Manifest::IsExternalLocation(extension->location()));
-        EXPECT_EQ(Manifest::EXTERNAL_PREF_DOWNLOAD, extension->location());
+        EXPECT_EQ(mojom::ManifestLocation::kExternalPrefDownload,
+                  extension->location());
         EXPECT_TRUE(extension->was_installed_by_default());
 
         run_loop.Quit();
@@ -290,7 +291,8 @@ TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallForArc) {
             ExtensionRegistry::Get(profile())->GetInstalledExtension(
                 installed_app_id);
         EXPECT_TRUE(Manifest::IsExternalLocation(extension->location()));
-        EXPECT_EQ(Manifest::EXTERNAL_PREF_DOWNLOAD, extension->location());
+        EXPECT_EQ(mojom::ManifestLocation::kExternalPrefDownload,
+                  extension->location());
 
         run_loop.Quit();
       }));

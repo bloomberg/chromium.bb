@@ -142,6 +142,11 @@ struct AVFormatInternal {
      * Prefer the codec framerate for avg_frame_rate computation.
      */
     int prefer_codec_framerate;
+
+    /**
+     * Set if chapter ids are strictly monotonic.
+     */
+    int chapter_ids_monotonic;
 };
 
 struct AVStreamInternal {
@@ -359,8 +364,6 @@ do {\
     av_dynarray_add((tab), nb_ptr, (elem));\
 } while(0)
 #endif
-
-struct tm *ff_brktimegm(time_t secs, struct tm *tm);
 
 /**
  * Automatically create sub-directories
@@ -862,15 +865,12 @@ int ff_bprint_to_codecpar_extradata(AVCodecParameters *par, struct AVBPrint *buf
 
 /**
  * Find the next packet in the interleaving queue for the given stream.
- * The pkt parameter is filled in with the queued packet, including
- * references to the data (which the caller is not allowed to keep or
- * modify).
  *
- * @return 0 if a packet was found, a negative value if no packet was found
+ * @return a pointer to a packet if one was found, NULL otherwise.
  */
-int ff_interleaved_peek(AVFormatContext *s, int stream,
-                        AVPacket *pkt, int add_offset);
+const AVPacket *ff_interleaved_peek(AVFormatContext *s, int stream);
 
+int ff_get_muxer_ts_offset(AVFormatContext *s, int stream_index, int64_t *offset);
 
 int ff_lock_avformat(void);
 int ff_unlock_avformat(void);

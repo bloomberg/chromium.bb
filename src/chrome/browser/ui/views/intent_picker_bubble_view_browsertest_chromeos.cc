@@ -11,8 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -233,7 +233,7 @@ class IntentPickerBubbleViewBrowserTestChromeOS : public InProcessBrowserTest {
   bool bubble_closed() { return bubble_closed_; }
 
  private:
-  apps::AppServiceProxy* app_service_proxy_ = nullptr;
+  apps::AppServiceProxyChromeOs* app_service_proxy_ = nullptr;
   std::unique_ptr<arc::FakeIntentHelperInstance> intent_helper_instance_;
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
   FakeIconLoader icon_loader_;

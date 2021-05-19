@@ -5,7 +5,6 @@
 #ifndef IOS_WEB_JS_MESSAGING_WEB_FRAME_IMPL_H_
 #define IOS_WEB_JS_MESSAGING_WEB_FRAME_IMPL_H_
 
-#include "ios/web/public/js_messaging/web_frame.h"
 
 #include <map>
 #include <string>
@@ -15,6 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "crypto/symmetric_key.h"
+#include "ios/web/js_messaging/web_frame_internal.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/web_state.h"
 #include "ios/web/public/web_state_observer.h"
 #include "url/gurl.h"
@@ -25,7 +26,9 @@ namespace web {
 
 class JavaScriptContentWorld;
 
-class WebFrameImpl : public WebFrame, public web::WebStateObserver {
+class WebFrameImpl : public WebFrame,
+                     public WebFrameInternal,
+                     public web::WebStateObserver {
  public:
   // Creates a new WebFrame. |initial_message_id| will be used as the message ID
   // of the next message sent to the frame with the |CallJavaScriptFunction|
@@ -44,23 +47,13 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
   // The associated web state.
   WebState* GetWebState();
 
-  // Executes the JavaScript function |name| with |parameters| in
-  // |content_world|.
-  bool CallJavaScriptFunction(const std::string& name,
-                              const std::vector<base::Value>& parameters,
-                              JavaScriptContentWorld* content_world);
-  bool CallJavaScriptFunction(
-      const std::string& name,
-      const std::vector<base::Value>& parameters,
-      JavaScriptContentWorld* content_world,
-      base::OnceCallback<void(const base::Value*)> callback,
-      base::TimeDelta timeout);
-
-  // WebFrame implementation
+  // WebFrame:
+  WebFrameInternal* GetWebFrameInternal() override;
   std::string GetFrameId() const override;
   bool IsMainFrame() const override;
   GURL GetSecurityOrigin() const override;
   bool CanCallJavaScriptFunction() const override;
+  BrowserState* GetBrowserState() override;
 
   bool CallJavaScriptFunction(
       const std::string& name,
@@ -71,7 +64,19 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
       base::OnceCallback<void(const base::Value*)> callback,
       base::TimeDelta timeout) override;
 
-  // WebStateObserver implementation
+  // WebFrameContentWorldAPI:
+  bool CallJavaScriptFunctionInContentWorld(
+      const std::string& name,
+      const std::vector<base::Value>& parameters,
+      JavaScriptContentWorld* content_world) override;
+  bool CallJavaScriptFunctionInContentWorld(
+      const std::string& name,
+      const std::vector<base::Value>& parameters,
+      JavaScriptContentWorld* content_world,
+      base::OnceCallback<void(const base::Value*)> callback,
+      base::TimeDelta timeout) override;
+
+  // WebStateObserver:
   void WebStateDestroyed(web::WebState* web_state) override;
 
  private:
@@ -80,10 +85,11 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
   // is optional, but if specified, the function will be executed within that
   // world. If |reply_with_result| is true, the return value of executing the
   // function will be sent back to the receiver with |CompleteRequest()|.
-  bool CallJavaScriptFunction(const std::string& name,
-                              const std::vector<base::Value>& parameters,
-                              JavaScriptContentWorld* content_world,
-                              bool reply_with_result);
+  bool CallJavaScriptFunctionInContentWorld(
+      const std::string& name,
+      const std::vector<base::Value>& parameters,
+      JavaScriptContentWorld* content_world,
+      bool reply_with_result);
 
   // Detaches the receiver from the associated  WebState.
   void DetachFromWebState();

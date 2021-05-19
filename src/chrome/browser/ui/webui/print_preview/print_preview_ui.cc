@@ -384,7 +384,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                     chrome::kCloudPrintCertificateErrorLearnMoreURL);
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  const base::string16 shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
+  const std::u16string shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
   source->AddString("systemDialogOption",
                     l10n_util::GetStringFUTF16(
                         IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION, shortcut_text));
@@ -394,7 +394,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   base::Value pdf_strings(base::Value::Type::DICTIONARY);
   pdf_extension_util::AddStrings(
       pdf_extension_util::PdfViewerContext::kPrintPreview, &pdf_strings);
-  pdf_extension_util::AddAdditionalData(&pdf_strings);
+  pdf_extension_util::AddAdditionalData(/*enable_annotations=*/false,
+                                        &pdf_strings);
   source->AddLocalizedStrings(base::Value::AsDictionaryValue(pdf_strings));
 }
 
@@ -412,8 +413,7 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   source->AddBoolean(
       "forceEnablePrivetPrinting",
-      profile->GetPrefs()->GetBoolean(prefs::kForceEnablePrivetPrinting) ||
-          base::FeatureList::IsEnabled(features::kForceEnablePrivetPrinting));
+      profile->GetPrefs()->GetBoolean(prefs::kForceEnablePrivetPrinting));
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -423,9 +423,6 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
   source->AddBoolean(
       "showPrinterStatusInDialog",
       base::FeatureList::IsEnabled(chromeos::features::kPrinterStatusDialog));
-  source->AddBoolean(
-      "printSaveToDrive",
-      base::FeatureList::IsEnabled(chromeos::features::kPrintSaveToDrive));
   source->AddBoolean(
       "printServerScaling",
       base::FeatureList::IsEnabled(chromeos::features::kPrintServerScaling));
@@ -768,7 +765,7 @@ void PrintPreviewUI::OnNupPdfDocumentConvertDone(
       base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
 }
 
-void PrintPreviewUI::SetInitiatorTitle(const base::string16& job_title) {
+void PrintPreviewUI::SetInitiatorTitle(const std::u16string& job_title) {
   initiator_title_ = job_title;
 }
 

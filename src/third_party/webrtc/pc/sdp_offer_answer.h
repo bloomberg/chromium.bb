@@ -39,6 +39,7 @@
 #include "api/set_remote_description_observer_interface.h"
 #include "api/transport/data_channel_transport_interface.h"
 #include "api/turn_customizer.h"
+#include "api/uma_metrics.h"
 #include "api/video/video_bitrate_allocator_factory.h"
 #include "media/base/media_channel.h"
 #include "media/base/stream_params.h"
@@ -173,10 +174,6 @@ class SdpOfferAnswerHandler : public SdpStateProvider,
   absl::optional<bool> is_caller();
   bool HasNewIceCredentials();
   void UpdateNegotiationNeeded();
-  void SetHavePendingRtpDataChannel() {
-    RTC_DCHECK_RUN_ON(signaling_thread());
-    have_pending_rtp_data_channel_ = true;
-  }
 
   // Returns the media section in the given session description that is
   // associated with the RtpTransceiver. Returns null if none found or this
@@ -548,7 +545,6 @@ class SdpOfferAnswerHandler : public SdpStateProvider,
   cricket::MediaDescriptionOptions GetMediaDescriptionOptionsForRejectedData(
       const std::string& mid) const;
 
-  const std::string GetTransportName(const std::string& content_name);
   // Based on number of transceivers per media type, enabled or disable
   // payload type based demuxing in the affected channels.
   bool UpdatePayloadTypeDemuxingState(cricket::ContentSource source);
@@ -642,6 +638,12 @@ class SdpOfferAnswerHandler : public SdpStateProvider,
 
   // Updates the error state, signaling if necessary.
   void SetSessionError(SessionError error, const std::string& error_desc);
+
+  // Implements AddIceCandidate without reporting usage, but returns the
+  // particular success/error value that should be reported (and can be utilized
+  // for other purposes).
+  AddIceCandidateResult AddIceCandidateInternal(
+      const IceCandidateInterface* candidate);
 
   SessionError session_error_ RTC_GUARDED_BY(signaling_thread()) =
       SessionError::kNone;

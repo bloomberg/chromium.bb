@@ -40,8 +40,8 @@
 
 // GOOGLETEST_CM0001 DO NOT DELETE
 
-#ifndef GTEST_INCLUDE_GTEST_INTERNAL_GTEST_PORT_H_
-#define GTEST_INCLUDE_GTEST_INTERNAL_GTEST_PORT_H_
+#ifndef GOOGLETEST_INCLUDE_GTEST_INTERNAL_GTEST_PORT_H_
+#define GOOGLETEST_INCLUDE_GTEST_INTERNAL_GTEST_PORT_H_
 
 // Environment-describing macros
 // -----------------------------
@@ -1936,6 +1936,19 @@ inline bool IsUpper(char ch) {
 inline bool IsXDigit(char ch) {
   return isxdigit(static_cast<unsigned char>(ch)) != 0;
 }
+#ifdef __cpp_char8_t
+inline bool IsXDigit(char8_t ch) {
+  return isxdigit(static_cast<unsigned char>(ch)) != 0;
+}
+#endif
+inline bool IsXDigit(char16_t ch) {
+  const unsigned char low_byte = static_cast<unsigned char>(ch);
+  return ch == low_byte && isxdigit(low_byte) != 0;
+}
+inline bool IsXDigit(char32_t ch) {
+  const unsigned char low_byte = static_cast<unsigned char>(ch);
+  return ch == low_byte && isxdigit(low_byte) != 0;
+}
 inline bool IsXDigit(wchar_t ch) {
   const unsigned char low_byte = static_cast<unsigned char>(ch);
   return ch == low_byte && isxdigit(low_byte) != 0;
@@ -2368,4 +2381,4 @@ using Variant = ::std::variant<T...>;
 #endif  // __has_include
 #endif  // GTEST_HAS_ABSL
 
-#endif  // GTEST_INCLUDE_GTEST_INTERNAL_GTEST_PORT_H_
+#endif  // GOOGLETEST_INCLUDE_GTEST_INTERNAL_GTEST_PORT_H_

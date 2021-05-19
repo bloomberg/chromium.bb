@@ -354,8 +354,6 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
     this->initGLSL(ctxInfo, gli);
     GrShaderCaps* shaderCaps = fShaderCaps.get();
 
-    shaderCaps->fPathRenderingSupport = this->hasPathRenderingSupport(ctxInfo, gli);
-
     // Enable supported shader-related caps
     if (GR_IS_GR_GL(standard)) {
         shaderCaps->fDualSourceBlendingSupport =
@@ -565,9 +563,6 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
     }
 
     GR_GL_GetIntegerv(gli, GR_GL_MAX_RENDERBUFFER_SIZE, &fMaxRenderTargetSize);
-    // Our render targets are always created with textures as the color
-    // attachment, hence this min:
-    fMaxRenderTargetSize = std::min(fMaxTextureSize, fMaxRenderTargetSize);
     fMaxPreferredRenderTargetSize = fMaxRenderTargetSize;
 
     if (kARM_GrGLVendor == ctxInfo.vendor()) {
@@ -593,12 +588,6 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
     // On ANGLE deferring flushes can lead to GPU starvation
     fPreferVRAMUseOverFlushes = !isANGLE;
 #endif
-
-    if (kARM_GrGLVendor == ctxInfo.vendor()) {
-        // ARM seems to do better with larger quantities of fine triangles, as opposed to using the
-        // sample mask. (At least in our current round rect op.)
-        fPreferTrianglesOverSampleMask = true;
-    }
 
     if (kChromium_GrGLDriver == ctxInfo.driver()) {
         fMustClearUploadedBufferData = true;
@@ -997,42 +986,6 @@ void GrGLCaps::initGLSL(const GrGLContextInfo& ctxInfo, const GrGLInterface* gli
       // WebGL 1.0 doesn't support do-while loops.
       shaderCaps->fCanUseDoLoops = version >= GR_GL_VER(2, 0);
     }
-}
-
-bool GrGLCaps::hasPathRenderingSupport(const GrGLContextInfo& ctxInfo, const GrGLInterface* gli) {
-    bool hasChromiumPathRendering = ctxInfo.hasExtension("GL_CHROMIUM_path_rendering");
-
-    if (!(ctxInfo.hasExtension("GL_NV_path_rendering") || hasChromiumPathRendering)) {
-        return false;
-    }
-
-    if (GR_IS_GR_GL(ctxInfo.standard())) {
-        if (ctxInfo.version() < GR_GL_VER(4, 3) &&
-            !ctxInfo.hasExtension("GL_ARB_program_interface_query")) {
-            return false;
-        }
-    } else if (GR_IS_GR_GL_ES(ctxInfo.standard())) {
-        if (!hasChromiumPathRendering &&
-            ctxInfo.version() < GR_GL_VER(3, 1)) {
-            return false;
-        }
-    } else if (GR_IS_GR_WEBGL(ctxInfo.standard())) {
-        // No WebGL support
-        return false;
-    }
-    // We only support v1.3+ of GL_NV_path_rendering which allows us to
-    // set individual fragment inputs with ProgramPathFragmentInputGen. The API
-    // additions are detected by checking the existence of the function.
-    // We also use *Then* functions that not all drivers might have. Check
-    // them for consistency.
-    if (!gli->fFunctions.fStencilThenCoverFillPath ||
-        !gli->fFunctions.fStencilThenCoverStrokePath ||
-        !gli->fFunctions.fStencilThenCoverFillPathInstanced ||
-        !gli->fFunctions.fStencilThenCoverStrokePathInstanced ||
-        !gli->fFunctions.fProgramPathFragmentInputGen) {
-        return false;
-    }
-    return true;
 }
 
 void GrGLCaps::initFSAASupport(const GrContextOptions& contextOptions,
@@ -2435,17 +2388,11 @@ void GrGLCaps::initFormatTable(const GrGLContextInfo& ctxInfo, const GrGLInterfa
             ctInfo.fExternalIOFormats = std::make_unique<ColorTypeInfo::ExternalIOFormats[]>(
                     ctInfo.fExternalIOFormatCount);
             int ioIdx = 0;
-            // Format: RGB8, Surface: kRGB_888x, Data: kRGB_888x
+            // Format: RGB8, Surface: kRGB_888x, Data: kRGB_888
             {
                 auto& ioFormat = ctInfo.fExternalIOFormats[ioIdx++];
-                ioFormat.fColorType = GrColorType::kRGB_888x;
+                ioFormat.fColorType = GrColorType::kRGB_888;
                 ioFormat.fExternalType = GR_GL_UNSIGNED_BYTE;
-                // This is technically the wrong format to use for this color type since the color
-                // type is 4 bytes but the format is 3. However, we don't currently upload data of
-                // this type so the format is only used when creating an empty texture. If we want
-                // to support uploading data we should add in RGB_888 GrColorType. Additionally, on
-                // the FormatInfo we should have a default format to use when we want to create an
-                // empty texture.
                 ioFormat.fExternalTexImageFormat = GR_GL_RGB;
                 ioFormat.fExternalReadFormat = 0;
             }
@@ -3645,7 +3592,13 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         if (ctxInfo.driverVersion() <= GR_GL_DRIVER_VER(219, 0, 0)) {
             fPerformStencilClearsAsDraws = true;
         }
-        fDisallowTexSubImageForUnormConfigTexturesEverBoundToFBO = true;
+        // This is known to be fixed sometime between driver 129.0 and 145.0 on Nexus 6P.
+        // On driver 129 on Android M it fails the unit tests called WritePixelsPendingIO without
+        // the workaround. It passes on Android N with driver 145 without the workaround.
+        // skbug.com/11834
+        if (ctxInfo.driverVersion() < GR_GL_DRIVER_VER(145, 0, 0)) {
+            fDisallowTexSubImageForUnormConfigTexturesEverBoundToFBO = true;
+        }
     }
 
     if (fDriverBugWorkarounds.gl_clear_broken) {
@@ -3950,19 +3903,6 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         }
     }
 
-    // Workaround NVIDIA bug related to glInvalidateFramebuffer and mixed samples.
-    if (fMultisampleDisableSupport &&
-        this->shaderCaps()->dualSourceBlendingSupport() &&
-        this->shaderCaps()->pathRenderingSupport() &&
-        fMixedSamplesSupport &&
-#if GR_TEST_UTILS
-        (contextOptions.fGpuPathRenderers & GpuPathRenderers::kStencilAndCover) &&
-#endif
-        (kNVIDIA_GrGLDriver == ctxInfo.driver() ||
-         kChromium_GrGLDriver == ctxInfo.driver())) {
-            fInvalidateFBType = kNone_InvalidateFBType;
-    }
-
     // Many ES3 drivers only advertise the ES2 image_external extension, but support the _essl3
     // extension, and require that it be enabled to work with ESSL3. Other devices require the ES2
     // extension to be enabled, even when using ESSL3. Enabling both extensions fixes both cases.
@@ -3983,22 +3923,6 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
     // https://bugreport.apple.com/web/?problemID=39948888
     fWritePixelsRowBytesSupport = false;
 #endif
-
-    // CCPR edge AA is busted on Mesa, Sandy Bridge/Valley View (Bay Trail).
-    // http://skbug.com/8162
-    if (kMesa_GrGLDriver == ctxInfo.driver() &&
-        (kIntelSandyBridge_GrGLRenderer == ctxInfo.renderer() ||
-         kIntelIvyBridge_GrGLRenderer == ctxInfo.renderer() ||
-         kIntelValleyView_GrGLRenderer == ctxInfo.renderer())) {
-        fDriverDisableCCPR = true;
-    }
-
-    // Temporarily disable the MSAA implementation of CCPR on various platforms while we work out
-    // specific issues.
-    if (kATI_GrGLVendor == ctxInfo.vendor() ||  // Radeon drops stencil draws that use sample mask.
-        kImagination_GrGLVendor == ctxInfo.vendor() /* PowerVR produces flaky results on Gold. */) {
-        fDriverDisableMSAACCPR = true;
-    }
 
     if (kIntel_GrGLVendor == ctxInfo.vendor() ||  // IntelIris640 drops draws completely.
         ctxInfo.renderer() == kMaliT_GrGLRenderer ||  // Some curves appear flat on GalaxyS6.
@@ -4140,13 +4064,6 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         fTiledRenderingSupport = false;
     }
 
-    if (kQualcomm_GrGLVendor == ctxInfo.vendor() || kATI_GrGLVendor == ctxInfo.vendor()) {
-        // The sample mask round rect op draws nothing on several Adreno and Radeon bots. Other ops
-        // that use sample mask while rendering to stencil seem to work fine.
-        // http://skbug.com/8921
-        shaderCaps->fCanOnlyUseSampleMaskWithStencil = true;
-    }
-
     if (ctxInfo.angleBackend() == GrGLANGLEBackend::kD3D9) {
         formatWorkarounds->fDisallowBGRA8ReadPixels = true;
     }
@@ -4175,6 +4092,11 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
     if (kAdreno530_GrGLRenderer == ctxInfo.renderer()) {
         shaderCaps->fUseNodePools = false;
     }
+
+    // skbug.com/11204. Avoid recursion issue in GrSurfaceContext::writePixels.
+    if (fDisallowTexSubImageForUnormConfigTexturesEverBoundToFBO) {
+        fReuseScratchTextures = false;
+    }
 }
 
 void GrGLCaps::onApplyOptionsOverrides(const GrContextOptions& options) {
@@ -4189,7 +4111,6 @@ void GrGLCaps::onApplyOptionsOverrides(const GrContextOptions& options) {
         SkASSERT(!fDetachStencilFromMSAABuffersBeforeReadPixels);
         SkASSERT(!fDontSetBaseOrMaxLevelForExternalTextures);
         SkASSERT(!fNeverDisableColorWrites);
-        SkASSERT(!fShaderCaps->fCanOnlyUseSampleMaskWithStencil);
     }
     if (options.fShaderCacheStrategy < GrContextOptions::ShaderCacheStrategy::kBackendBinary) {
         fProgramBinarySupport = false;
@@ -4239,7 +4160,8 @@ GrCaps::SurfaceReadPixelsSupport GrGLCaps::surfaceSupportsReadPixels(
     } else if (auto rt = static_cast<const GrGLRenderTarget*>(surface->asRenderTarget())) {
         // glReadPixels does not allow reading back from a MSAA framebuffer. If the underlying
         // GrSurface doesn't have a second FBO to resolve to then we must make a copy.
-        if (rt->numSamples() > 1 && rt->textureFBOID() == GrGLRenderTarget::kUnresolvableFBOID) {
+        if (rt->numSamples() > 1 &&
+            rt->singleSampleFBOID() == GrGLRenderTarget::kUnresolvableFBOID) {
             return SurfaceReadPixelsSupport::kCopyToTexture2D;
         }
     }
@@ -4591,13 +4513,12 @@ uint64_t GrGLCaps::computeFormatKey(const GrBackendFormat& format) const {
     return (uint64_t)(glFormat);
 }
 
-GrProgramDesc GrGLCaps::makeDesc(GrRenderTarget* rt,
+GrProgramDesc GrGLCaps::makeDesc(GrRenderTarget* /* rt */,
                                  const GrProgramInfo& programInfo,
                                  ProgramDescOverrideFlags overrideFlags) const {
     SkASSERT(overrideFlags == ProgramDescOverrideFlags::kNone);
     GrProgramDesc desc;
-    SkDEBUGCODE(bool result =) GrProgramDesc::Build(&desc, rt, programInfo, *this);
-    SkASSERT(result == desc.isValid());
+    GrProgramDesc::Build(&desc, programInfo, *this);
     return desc;
 }
 

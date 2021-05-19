@@ -395,7 +395,9 @@ TEST_F(TranslateMetricsLoggerImplTest, RecordUkmMetrics) {
   translate_metrics_logger()->LogInitialSourceLanguage(
       initial_source_language,
       is_initial_source_language_in_users_content_languages);
-  translate_metrics_logger()->LogTargetLanguage(initial_target_language);
+  translate_metrics_logger()->LogTargetLanguage(
+      initial_target_language,
+      TranslateBrowserMetrics::TargetLanguageOrigin::kLanguageModel);
   translate_metrics_logger()->LogRankerMetrics(ranker_decision,
                                                ranker_model_version);
   translate_metrics_logger()->LogTriggerDecision(trigger_decision);
@@ -424,7 +426,9 @@ TEST_F(TranslateMetricsLoggerImplTest, RecordUkmMetrics) {
   translate_metrics_logger()->LogSourceLanguage(final_source_language);
   translate_metrics_logger()->LogUIInteraction(
       UIInteraction::kChangeTargetLanguage);
-  translate_metrics_logger()->LogTargetLanguage(final_target_language);
+  translate_metrics_logger()->LogTargetLanguage(
+      final_target_language,
+      TranslateBrowserMetrics::TargetLanguageOrigin::kChangedByUser);
   translate_metrics_logger()->LogHTMLDocumentLanguage(html_doc_language);
   translate_metrics_logger()->LogHTMLContentLanguage(html_content_language);
   translate_metrics_logger()->LogDetectionReliabilityScore(
@@ -542,14 +546,24 @@ TEST_F(TranslateMetricsLoggerImplTest, MultipleRecordMetrics) {
 }
 
 TEST_F(TranslateMetricsLoggerImplTest, LogRankerMetrics) {
+  base::SimpleTestTickClock test_clock;
+  translate_metrics_logger()->SetInternalClockForTesting(&test_clock);
+
   RankerDecision ranker_decision = RankerDecision::kDontShowUI;
   uint32_t ranker_model_version = 4321;
+
+  translate_metrics_logger()->LogRankerStart();
+  test_clock.Advance(base::TimeDelta::FromSeconds(10));
+  translate_metrics_logger()->LogRankerFinish();
 
   translate_metrics_logger()->LogRankerMetrics(ranker_decision,
                                                ranker_model_version);
 
   translate_metrics_logger()->RecordMetrics(true);
 
+  histogram_tester()->ExpectUniqueSample(
+      kTranslatePageLoadRankerTimerShouldOfferTranslation,
+      base::TimeDelta::FromSeconds(10).InMilliseconds(), 1);
   histogram_tester()->ExpectUniqueSample(kTranslatePageLoadRankerDecision,
                                          ranker_decision, 1);
   histogram_tester()->ExpectUniqueSample(kTranslatePageLoadRankerVersion,
@@ -557,35 +571,80 @@ TEST_F(TranslateMetricsLoggerImplTest, LogRankerMetrics) {
 }
 
 TEST_F(TranslateMetricsLoggerImplTest, LogTriggerDecision) {
-  // If we log multiple trigger decisions, we expect that only the first one is
-  // recorded.
-  std::vector<TriggerDecision> trigger_decisions = {
+  // If we log multiple trigger decisions, we expect to only record the first
+  // value to Translate.PageLoad.TriggerDecision. All of the values will be
+  // captured by Translate.PageLoad.TriggerDecision.TotalCount and
+  // Translate.PageLoad.TriggerDecision.AllTriggerDecisions.
+  const TriggerDecision kTriggerDecisions[] = {
       TriggerDecision::kAutomaticTranslationByLink,
       TriggerDecision::kDisabledByRanker,
-      TriggerDecision::kDisabledUnsupportedLanguage};
+      TriggerDecision::kDisabledUnsupportedLanguage,
+      TriggerDecision::kDisabledOffline,
+      TriggerDecision::kDisabledTranslationFeatureDisabled,
+      TriggerDecision::kShowUI,
+      TriggerDecision::kDisabledByRanker,
+      TriggerDecision::kDisabledOffline,
+      TriggerDecision::kDisabledNeverTranslateLanguage};
 
-  for (auto trigger_decision : trigger_decisions)
+  for (const auto& trigger_decision : kTriggerDecisions)
     translate_metrics_logger()->LogTriggerDecision(trigger_decision);
 
   translate_metrics_logger()->RecordMetrics(true);
 
+  // Check that we record only the highest priority value to
+  // Translate.PageLoad.TriggerDecision.
   histogram_tester()->ExpectUniqueSample(kTranslatePageLoadTriggerDecision,
-                                         trigger_decisions[0], 1);
+                                         kTriggerDecisions[0], 1);
 
   // Make sure that the href trigger decision wasn't logged.
   histogram_tester()->ExpectTotalCount(kTranslatePageLoadHrefTriggerDecision,
                                        0);
+
+  // Check that the expected values are recorded to the
+  // Translate.PageLoad.TriggerDecision.TotalCount and
+  // Translate.PageLoad.TriggerDecision.AllTriggerDecisions histograms.
+  histogram_tester()->ExpectUniqueSample(
+      kTranslatePageLoadTriggerDecisionTotalCount, 9, 1);
+  histogram_tester()->ExpectTotalCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions, 9);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kAutomaticTranslationByLink, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kDisabledByRanker, 2);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kDisabledUnsupportedLanguage, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kDisabledOffline, 2);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kDisabledTranslationFeatureDisabled, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kShowUI, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kDisabledNeverTranslateLanguage, 1);
 }
 
 TEST_F(TranslateMetricsLoggerImplTest, LogHrefTriggerDecision) {
   // If we log multiple trigger decisions, we expect that only the first one is
   // recorded.
-  std::vector<TriggerDecision> trigger_decisions = {
+  const TriggerDecision kTriggerDecisions[] = {
       TriggerDecision::kAutomaticTranslationByLink,
       TriggerDecision::kDisabledByRanker,
-      TriggerDecision::kDisabledUnsupportedLanguage};
+      TriggerDecision::kDisabledUnsupportedLanguage,
+      TriggerDecision::kDisabledOffline,
+      TriggerDecision::kDisabledTranslationFeatureDisabled,
+      TriggerDecision::kShowUI,
+      TriggerDecision::kDisabledByRanker,
+      TriggerDecision::kDisabledOffline,
+      TriggerDecision::kDisabledNeverTranslateLanguage};
 
-  for (auto trigger_decision : trigger_decisions)
+  for (const auto& trigger_decision : kTriggerDecisions)
     translate_metrics_logger()->LogTriggerDecision(trigger_decision);
 
   translate_metrics_logger()->SetHasHrefTranslateTarget(true);
@@ -593,10 +652,40 @@ TEST_F(TranslateMetricsLoggerImplTest, LogHrefTriggerDecision) {
 
   // CHeck that the main trigger decision histogram was logged.
   histogram_tester()->ExpectUniqueSample(kTranslatePageLoadTriggerDecision,
-                                         trigger_decisions[0], 1);
+                                         kTriggerDecisions[0], 1);
 
+  // Make sure that the href trigger decision was logged.
   histogram_tester()->ExpectUniqueSample(kTranslatePageLoadHrefTriggerDecision,
-                                         trigger_decisions[0], 1);
+                                         kTriggerDecisions[0], 1);
+
+  // Check that the expected values are recorded to the
+  // Translate.PageLoad.TriggerDecision.TotalCount and
+  // Translate.PageLoad.TriggerDecision.AllTriggerDecisions histograms.
+  histogram_tester()->ExpectUniqueSample(
+      kTranslatePageLoadTriggerDecisionTotalCount, 9, 1);
+  histogram_tester()->ExpectTotalCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions, 9);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kAutomaticTranslationByLink, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kDisabledByRanker, 2);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kDisabledUnsupportedLanguage, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kDisabledOffline, 2);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kDisabledTranslationFeatureDisabled, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kShowUI, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslatePageLoadTriggerDecisionAllTriggerDecisions,
+      TriggerDecision::kDisabledNeverTranslateLanguage, 1);
 }
 
 TEST_F(TranslateMetricsLoggerImplTest, LogHrefOverrideTriggerDecision) {
@@ -1003,12 +1092,22 @@ TEST_F(TranslateMetricsLoggerImplTest, LogTranslationLanguages) {
   const struct {
     std::string source_language;
     std::string target_language;
+    TranslateBrowserMetrics::TargetLanguageOrigin target_language_origin;
     int num_translations;
-  } kTests[] = {{"a", "b", 1}, {"b", "c", 2}, {"a", "c", 3}, {"d", "a", 4}};
+  } kTests[] = {
+      {"a", "b", TranslateBrowserMetrics::TargetLanguageOrigin::kRecentTarget,
+       1},
+      {"b", "c", TranslateBrowserMetrics::TargetLanguageOrigin::kLanguageModel,
+       2},
+      {"a", "c", TranslateBrowserMetrics::TargetLanguageOrigin::kApplicationUI,
+       3},
+      {"d", "a", TranslateBrowserMetrics::TargetLanguageOrigin::kChangedByUser,
+       4}};
 
   for (const auto& test : kTests) {
     translate_metrics_logger()->LogSourceLanguage(test.source_language);
-    translate_metrics_logger()->LogTargetLanguage(test.target_language);
+    translate_metrics_logger()->LogTargetLanguage(test.target_language,
+                                                  test.target_language_origin);
 
     for (int i = 0; i < test.num_translations; ++i) {
       translate_metrics_logger()->LogTranslationStarted(
@@ -1022,6 +1121,8 @@ TEST_F(TranslateMetricsLoggerImplTest, LogTranslationLanguages) {
 
   histogram_tester()->ExpectTotalCount(kTranslateTranslationSourceLanguage, 10);
   histogram_tester()->ExpectTotalCount(kTranslateTranslationTargetLanguage, 10);
+  histogram_tester()->ExpectTotalCount(
+      kTranslateTranslationTargetLanguageOrigin, 10);
 
   histogram_tester()->ExpectBucketCount(kTranslateTranslationSourceLanguage,
                                         base::HashMetricName("a"), 4);
@@ -1036,6 +1137,19 @@ TEST_F(TranslateMetricsLoggerImplTest, LogTranslationLanguages) {
                                         base::HashMetricName("b"), 1);
   histogram_tester()->ExpectBucketCount(kTranslateTranslationTargetLanguage,
                                         base::HashMetricName("c"), 5);
+
+  histogram_tester()->ExpectBucketCount(
+      kTranslateTranslationTargetLanguageOrigin,
+      TranslateBrowserMetrics::TargetLanguageOrigin::kRecentTarget, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslateTranslationTargetLanguageOrigin,
+      TranslateBrowserMetrics::TargetLanguageOrigin::kLanguageModel, 2);
+  histogram_tester()->ExpectBucketCount(
+      kTranslateTranslationTargetLanguageOrigin,
+      TranslateBrowserMetrics::TargetLanguageOrigin::kApplicationUI, 3);
+  histogram_tester()->ExpectBucketCount(
+      kTranslateTranslationTargetLanguageOrigin,
+      TranslateBrowserMetrics::TargetLanguageOrigin::kChangedByUser, 4);
 }
 
 TEST_F(TranslateMetricsLoggerImplTest, LogTranslateErrors) {
@@ -1246,27 +1360,39 @@ TEST_F(TranslateMetricsLoggerImplTest, LogTargetLanguage) {
   std::vector<std::string> target_languages = {"de", "en", "en", "de", "fr",
                                                "fr", "es", "it", "it", "es"};
 
-  // We only care about changes in the target language, so if the language stays
-  // the same, we don't count it.
-  int num_target_language_changes = 6;
+  const struct {
+    std::string target_language;
+    TranslateBrowserMetrics::TargetLanguageOrigin target_language_origin;
+  } kTests[] = {
+      {"de", TranslateBrowserMetrics::TargetLanguageOrigin::kLanguageModel},
+      {"en", TranslateBrowserMetrics::TargetLanguageOrigin::kDefaultEnglish},
+      {"en", TranslateBrowserMetrics::TargetLanguageOrigin::kAcceptLanguages},
+      {"de", TranslateBrowserMetrics::TargetLanguageOrigin::kLanguageModel},
+      {"fr", TranslateBrowserMetrics::TargetLanguageOrigin::kChangedByUser},
+      {"fr", TranslateBrowserMetrics::TargetLanguageOrigin::kRecentTarget},
+      {"es", TranslateBrowserMetrics::TargetLanguageOrigin::kChangedByUser},
+      {"it", TranslateBrowserMetrics::TargetLanguageOrigin::kDefaultEnglish},
+      {"it", TranslateBrowserMetrics::TargetLanguageOrigin::kLanguageModel},
+      {"es", TranslateBrowserMetrics::TargetLanguageOrigin::kApplicationUI}};
 
   // Log the target languages.
-  for (auto target_language : target_languages)
-    translate_metrics_logger()->LogTargetLanguage(target_language);
+  for (const auto& test : kTests)
+    translate_metrics_logger()->LogTargetLanguage(test.target_language,
+                                                  test.target_language_origin);
 
   // Record the stored metrics
   translate_metrics_logger()->RecordMetrics(true);
 
   // Check that the histograms match expectations.
   histogram_tester()->ExpectUniqueSample(
-      kTranslatePageLoadInitialTargetLanguage,
-      base::HashMetricName(target_languages[0]), 1);
+      kTranslatePageLoadInitialTargetLanguage, base::HashMetricName("de"), 1);
+  histogram_tester()->ExpectUniqueSample(kTranslatePageLoadFinalTargetLanguage,
+                                         base::HashMetricName("es"), 1);
   histogram_tester()->ExpectUniqueSample(
-      kTranslatePageLoadFinalTargetLanguage,
-      base::HashMetricName(target_languages[target_languages.size() - 1]), 1);
+      kTranslatePageLoadNumTargetLanguageChanges, 6, 1);
   histogram_tester()->ExpectUniqueSample(
-      kTranslatePageLoadNumTargetLanguageChanges, num_target_language_changes,
-      1);
+      kTranslatePageLoadInitialTargetLanguageOrigin,
+      TranslateBrowserMetrics::TargetLanguageOrigin::kLanguageModel, 1);
 }
 
 TEST_F(TranslateMetricsLoggerImplTest, LogMaxTimeToTranslate) {
@@ -1354,14 +1480,40 @@ TEST_F(TranslateMetricsLoggerImplTest, LogUIInteraction) {
       UIInteraction::kNeverTranslateLanguage,
       UIInteraction::kNeverTranslateSite,
       UIInteraction::kCloseUIExplicitly,
-      UIInteraction::kCloseUILostFocus};
+      UIInteraction::kCloseUILostFocus,
+      UIInteraction::kTranslate,
+      UIInteraction::kChangeSourceLanguage,
+      UIInteraction::kCloseUIExplicitly};
   for (auto ui_interaction : kUIInteractions) {
     translate_metrics_logger()->LogUIInteraction(ui_interaction);
   }
 
   translate_metrics_logger()->RecordMetrics(true);
 
-  CheckUIInteractions(kUIInteractions[0], 9);
+  // Checks internal state that track UI interactions over the page load.
+  CheckUIInteractions(kUIInteractions[0], 12);
+
+  // Check that the expected values are recorded to
+  // Translate.UiInteraction.Event.
+  histogram_tester()->ExpectTotalCount(kTranslateUiInteractionEvent, 12);
+  histogram_tester()->ExpectBucketCount(kTranslateUiInteractionEvent,
+                                        UIInteraction::kTranslate, 2);
+  histogram_tester()->ExpectBucketCount(kTranslateUiInteractionEvent,
+                                        UIInteraction::kRevert, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslateUiInteractionEvent, UIInteraction::kAlwaysTranslateLanguage, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslateUiInteractionEvent, UIInteraction::kChangeSourceLanguage, 2);
+  histogram_tester()->ExpectBucketCount(
+      kTranslateUiInteractionEvent, UIInteraction::kChangeTargetLanguage, 1);
+  histogram_tester()->ExpectBucketCount(
+      kTranslateUiInteractionEvent, UIInteraction::kNeverTranslateLanguage, 1);
+  histogram_tester()->ExpectBucketCount(kTranslateUiInteractionEvent,
+                                        UIInteraction::kNeverTranslateSite, 1);
+  histogram_tester()->ExpectBucketCount(kTranslateUiInteractionEvent,
+                                        UIInteraction::kCloseUIExplicitly, 2);
+  histogram_tester()->ExpectBucketCount(kTranslateUiInteractionEvent,
+                                        UIInteraction::kCloseUILostFocus, 1);
 }
 
 }  // namespace testing

@@ -60,6 +60,7 @@ blink::mojom::ShareError SharesheetResultToShareError(
     case sharesheet::SharesheetResult::kSuccess:
       return blink::mojom::ShareError::OK;
     case sharesheet::SharesheetResult::kCancel:
+    case sharesheet::SharesheetResult::kErrorAlreadyOpen:
       return blink::mojom::ShareError::CANCELED;
   }
 }
@@ -222,9 +223,9 @@ void SharesheetClient::ShowSharesheet(
     const std::vector<std::string>& content_types,
     const std::string& text,
     const std::string& title,
-    CloseCallback close_callback) {
+    DeliveredCallback delivered_callback) {
   if (!base::FeatureList::IsEnabled(features::kSharesheet)) {
-    std::move(close_callback).Run(sharesheet::SharesheetResult::kCancel);
+    std::move(delivered_callback).Run(sharesheet::SharesheetResult::kCancel);
     return;
   }
 
@@ -242,7 +243,7 @@ void SharesheetClient::ShowSharesheet(
   sharesheet_service->ShowBubble(
       web_contents, std::move(intent),
       sharesheet::SharesheetMetrics::LaunchSource::kWebShare,
-      std::move(close_callback));
+      std::move(delivered_callback));
 }
 
 SharesheetClient::SharesheetCallback&

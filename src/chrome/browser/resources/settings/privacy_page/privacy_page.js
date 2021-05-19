@@ -9,15 +9,15 @@
  */
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
-import '../controls/settings_toggle_button.m.js';
-import '../prefs/prefs.m.js';
+import '../controls/settings_toggle_button.js';
+import '../prefs/prefs.js';
 import '../site_settings/settings_category_default_radio_group.js';
-import '../settings_page/settings_animated_pages.m.js';
-import '../settings_page/settings_subpage.m.js';
-import '../settings_shared_css.m.js';
+import '../settings_page/settings_animated_pages.js';
+import '../settings_page/settings_subpage.js';
+import '../settings_shared_css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
@@ -28,13 +28,13 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 import {HatsBrowserProxyImpl} from '../hats_browser_proxy.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
-import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.js';
 import {routes} from '../route.js';
-import {RouteObserverBehavior, Router} from '../router.m.js';
+import {RouteObserverBehavior, Router} from '../router.js';
 import {ChooserType, ContentSettingsTypes, CookieControlsMode, NotificationSetting} from '../site_settings/constants.js';
 import {SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
-import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl} from './privacy_page_browser_proxy.m.js';
+import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl} from './privacy_page_browser_proxy.js';
 
 /**
  * @typedef {{
@@ -141,6 +141,14 @@ Polymer({
       type: Boolean,
       value() {
         return loadTimeData.getBoolean('enableFontAccessContentSetting');
+      }
+    },
+
+    /** @private */
+    enableFileHandlingContentSetting_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enableFileHandlingContentSetting');
       }
     },
 

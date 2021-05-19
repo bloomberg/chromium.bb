@@ -244,8 +244,6 @@ const char kAppsNotEnabled[] =
 const char kBackgroundPermissionNeeded[] =
     "Hosted apps that use 'background_page' must have the 'background' "
     "permission.";
-const char kBackgroundPersistentInvalidForPlatformApps[] =
-    "The key 'background.persistent' is not supported for packaged apps.";
 const char kBackgroundRequiredForPlatformApps[] =
     "Packaged apps must have a background page or background scripts.";
 const char kBackgroundSpecificationInvalidForManifestV3[] =
@@ -309,8 +307,8 @@ const char kInvalidBackground[] =
 const char kInvalidBackgroundAllowJsAccess[] =
     "Invalid value for 'background.allow_js_access'.";
 const char kInvalidBackgroundCombination[] =
-    "The background.page and background.scripts properties cannot be used at "
-    "the same time.";
+    "Only one of 'background.page', 'background.scripts', and "
+    "'background.service_worker' can be specified.";
 const char kInvalidBackgroundScript[] =
     "Invalid value for 'background.scripts[*]'.";
 const char kInvalidBackgroundScripts[] =

@@ -45,16 +45,6 @@ class Type : public Castable<Type, Cloneable> {
   /// declared in WGSL.
   virtual std::string FriendlyName(const SymbolTable& symbols) const = 0;
 
-  /// @param mem_layout type of memory layout to use in calculation.
-  /// @returns minimum size required for this type, in bytes.
-  ///          0 for non-host shareable types.
-  virtual uint64_t MinBufferBindingSize(MemoryLayout mem_layout) const;
-
-  /// @param mem_layout type of memory layout to use in calculation.
-  /// @returns base alignment for the type, in bytes.
-  ///          0 for non-host shareable types.
-  virtual uint64_t BaseAlignment(MemoryLayout mem_layout) const;
-
   /// @returns the pointee type if this is a pointer, `this` otherwise
   Type* UnwrapPtrIfNeeded();
 
@@ -87,6 +77,8 @@ class Type : public Castable<Type, Cloneable> {
   bool is_float_vector() const;
   /// @returns true if this type is a float scalar or vector
   bool is_float_scalar_or_vector() const;
+  /// @returns true if this type is a float scalar or vector or matrix
+  bool is_float_scalar_or_vector_or_matrix() const;
   /// @returns true if this type is an integer scalar
   bool is_integer_scalar() const;
   /// @returns true if this type is a signed integer vector

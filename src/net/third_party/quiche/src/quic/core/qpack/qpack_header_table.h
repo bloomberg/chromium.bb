@@ -24,16 +24,17 @@ class QpackHeaderTablePeer;
 }  // namespace test
 
 using QpackEntry = spdy::HpackEntry;
+using QpackLookupEntry = spdy::HpackLookupEntry;
+constexpr size_t kQpackEntrySizeOverhead = spdy::kHpackEntrySizeOverhead;
 
 // This class manages the QPACK static and dynamic tables.  For dynamic entries,
 // it only has a concept of absolute indices.  The caller needs to perform the
 // necessary transformations to and from relative indices and post-base indices.
 class QUIC_EXPORT_PRIVATE QpackHeaderTable {
  public:
-  using EntryTable = spdy::HpackHeaderTable::EntryTable;
-  using EntryHasher = spdy::HpackHeaderTable::EntryHasher;
-  using EntriesEq = spdy::HpackHeaderTable::EntriesEq;
-  using UnorderedEntrySet = spdy::HpackHeaderTable::UnorderedEntrySet;
+  using StaticEntryTable = spdy::HpackHeaderTable::StaticEntryTable;
+  using DynamicEntryTable = spdy::HpackHeaderTable::DynamicEntryTable;
+  using NameValueToEntryMap = spdy::HpackHeaderTable::NameValueToEntryMap;
   using NameToEntryMap = spdy::HpackHeaderTable::NameToEntryMap;
 
   // Result of header table lookup.
@@ -75,11 +76,20 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
                             bool* is_static,
                             uint64_t* index) const;
 
-  // Insert (name, value) into the dynamic table.  May evict entries.  Returns a
-  // pointer to the inserted owned entry on success.  Returns nullptr if entry
-  // is larger than the capacity of the dynamic table.
-  const QpackEntry* InsertEntry(absl::string_view name,
-                                absl::string_view value);
+  // Returns whether an entry with |name| and |value| has a size (including
+  // overhead) that is smaller than or equal to the capacity of the dynamic
+  // table.
+  bool EntryFitsDynamicTableCapacity(absl::string_view name,
+                                     absl::string_view value) const;
+
+  // Inserts (name, value) into the dynamic table.  Entry must not be larger
+  // than the capacity of the dynamic table.  May evict entries.  |name| and
+  // |value| are copied first, therefore it is safe for them to point to an
+  // entry in the dynamic table, even if it is about to be evicted, or even if
+  // the underlying container might move entries around when resizing for
+  // insertion.
+  // Returns the absolute index of the inserted dynamic table entry.
+  uint64_t InsertEntry(absl::string_view name, absl::string_view value);
 
   // Returns the size of the largest entry that could be inserted into the
   // dynamic table without evicting entry |index|.  |index| might be larger than
@@ -150,8 +160,8 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
   friend class test::QpackHeaderTablePeer;
 
   // Evict entries from the dynamic table until table size is less than or equal
-  // to current value of |dynamic_table_capacity_|.
-  void EvictDownToCurrentCapacity();
+  // to |capacity|.
+  void EvictDownToCapacity(uint64_t capacity);
 
   // Static Table
 
@@ -159,10 +169,10 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
   // QpackStaticTable singleton.
 
   // Tracks QpackEntries by index.
-  const EntryTable& static_entries_;
+  const StaticEntryTable& static_entries_;
 
   // Tracks the unique static entry for a given header name and value.
-  const UnorderedEntrySet& static_index_;
+  const NameValueToEntryMap& static_index_;
 
   // Tracks the first static entry for a given header name.
   const NameToEntryMap& static_name_index_;
@@ -171,13 +181,13 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
 
   // Queue of dynamic table entries, for lookup by index.
   // |dynamic_entries_| owns the entries in the dynamic table.
-  EntryTable dynamic_entries_;
+  DynamicEntryTable dynamic_entries_;
 
   // An unordered set of QpackEntry pointers with a comparison operator that
   // only cares about name and value.  This allows fast lookup of the most
   // recently inserted dynamic entry for a given header name and value pair.
   // Entries point to entries owned by |dynamic_entries_|.
-  UnorderedEntrySet dynamic_index_;
+  NameValueToEntryMap dynamic_index_;
 
   // An unordered map of QpackEntry pointers keyed off header name.  This allows
   // fast lookup of the most recently inserted dynamic entry for a given header

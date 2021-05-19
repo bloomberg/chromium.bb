@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 /* eslint-disable rulesdir/no_underscored_properties */
-import * as Common from '../common/common.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Platform from '../platform/platform.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as UI from '../ui/legacy/legacy.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Text that shows there is no recording
   */

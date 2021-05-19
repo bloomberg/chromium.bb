@@ -30,8 +30,6 @@ static_library("test_config") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "../power_monitor/test/fake_power_monitor_source.cc",
-    "../power_monitor/test/fake_power_monitor_source.h",
     "../task/sequence_manager/test/fake_task.cc",
     "../task/sequence_manager/test/fake_task.h",
     "../task/sequence_manager/test/mock_time_domain.cc",
@@ -146,10 +144,10 @@ static_library("test_support") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
-  data = [
+  data_deps = [
     # The isolate needs this script for setting up the test. It's not actually
     # needed to run this target locally.
-    "//testing/test_env.py",
+    "//testing:test_scripts_shared",
   ]
 
   public_deps = [
@@ -168,6 +166,10 @@ static_library("test_support") {
     "//third_party/libxml:libxml_utils",
     "//third_party/libxml:xml_reader",
   ]
+
+  if (enable_base_tracing) {
+    public_deps += [ "//third_party/perfetto:perfetto_test_support" ]
+  }
 
   if (is_win) {
     sources += [
@@ -195,7 +197,7 @@ static_library("test_support") {
   if (is_linux || is_chromeos) {
     sources += [ "test_file_util_linux.cc" ]
     public_deps += [ ":fontconfig_util_linux" ]
-    data_deps = [ "//third_party/test_fonts" ]
+    data_deps += [ "//third_party/test_fonts" ]
     if (current_toolchain == host_toolchain) {
       data_deps += [ ":do_generate_fontconfig_caches" ]
     }

@@ -64,6 +64,7 @@ class CORE_EXPORT NGInkOverflow {
     kSelfAndContents
     // When adding values, make sure |NGFragmentItem| has enough storage.
   };
+  constexpr static int kTypeBits = 3;
 
   NGInkOverflow() = default;
 #if DCHECK_IS_ON()
@@ -81,6 +82,7 @@ class CORE_EXPORT NGInkOverflow {
 
   // Get ink overflow of various types.
   PhysicalRect Self(Type type, const PhysicalSize& size) const;
+  PhysicalRect Contents(Type type, const PhysicalSize& size) const;
   PhysicalRect SelfAndContents(Type type, const PhysicalSize& size) const;
 
   // Reset to |kNone|.

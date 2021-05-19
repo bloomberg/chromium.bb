@@ -535,7 +535,7 @@ public class PaymentRequestService
         }
         mSpec = spec;
         mBrowserPaymentRequest.onSpecValidated(mSpec);
-        logMethodTypes(mSpec.getMethodData());
+        logRequestedMethods(mSpec.getMethodData());
         startPaymentAppService();
         return true;
     }
@@ -602,33 +602,34 @@ public class PaymentRequestService
         return sNativeObserverForTest;
     }
 
-    private void logMethodTypes(Map<String, PaymentMethodData> methodDataMap) {
-        // Log the various types of payment methods that were requested by the merchant.
-        boolean requestedMethodGoogle = false;
-        // Not to record requestedMethodBasicCard because JourneyLogger ignore the case where the
-        // specified networks are unsupported. mPaymentUiService.merchantSupportsAutofillCards()
-        // better captures this group of interest than requestedMethodBasicCard.
-        boolean requestedMethodOther = false;
+    private void logRequestedMethods(Map<String, PaymentMethodData> methodDataMap) {
+        List<Integer> methodTypes = new ArrayList<>();
         for (String methodName : mSpec.getMethodData().keySet()) {
             switch (methodName) {
                 case MethodStrings.ANDROID_PAY:
                 case MethodStrings.GOOGLE_PAY:
-                    requestedMethodGoogle = true;
+                    methodTypes.add(PaymentMethodCategory.GOOGLE);
+                    break;
+                case MethodStrings.GOOGLE_PLAY_BILLING:
+                    methodTypes.add(PaymentMethodCategory.PLAY_BILLING);
                     break;
                 case MethodStrings.BASIC_CARD:
-                    // Do not record requestedMethodBasicCard because
-                    // BasicCardUtils.merchantSupportsBasicCard() is used instead.
+                    // Not to record requestedMethodBasicCard because JourneyLogger ignore the case
+                    // where the specified networks are unsupported.
+                    // mPaymentUiService.merchantSupportsAutofillCards() better captures this group
+                    // of interest than requestedMethodBasicCard.
                     break;
                 default:
                     // "Other" includes https url, http url(when certificate check is bypassed) and
                     // the unlisted methods defined in {@link MethodStrings}.
-                    requestedMethodOther = true;
+                    methodTypes.add(PaymentMethodCategory.OTHER);
             }
         }
-        boolean requestedBasicCard = BasicCardUtils.merchantSupportsBasicCard(methodDataMap);
-        mJourneyLogger.setRequestedPaymentMethodTypes(
-                /*requestedBasicCard=*/requestedBasicCard, requestedMethodGoogle,
-                requestedMethodOther);
+        if (BasicCardUtils.merchantSupportsBasicCard(methodDataMap)) {
+            methodTypes.add(PaymentMethodCategory.BASIC_CARD);
+        }
+
+        mJourneyLogger.setRequestedPaymentMethods(methodTypes);
     }
 
     // Implements PaymentResponseHelper.PaymentResponseResultCallback:
@@ -694,24 +695,31 @@ public class PaymentRequestService
                 Collections.unmodifiableMap(modifiers), paymentOptions, redactedShippingOptions,
                 /*callback=*/this);
         mInvokedPaymentApp = paymentApp;
-        mJourneyLogger.setEventOccurred(Event.PAY_CLICKED);
-        boolean isAutofillCard = paymentApp.isAutofillInstrument();
-        // Record what type of app was selected when "Pay" was clicked.
-        boolean isGooglePaymentApp = false;
-        for (String paymentMethodName : paymentApp.getInstrumentMethodNames()) {
-            if (paymentMethodName.equals(MethodStrings.ANDROID_PAY)
-                    || paymentMethodName.equals(MethodStrings.GOOGLE_PAY)) {
-                isGooglePaymentApp = true;
-                break;
+        mJourneyLogger.setPayClicked();
+        logSelectedMethod(paymentApp);
+    }
+
+    private void logSelectedMethod(PaymentApp invokedPaymentApp) {
+        @PaymentMethodCategory
+        int category = PaymentMethodCategory.OTHER;
+        if (invokedPaymentApp.getPaymentAppType() == PaymentAppType.AUTOFILL) {
+            category = PaymentMethodCategory.BASIC_CARD;
+        } else {
+            for (String method : invokedPaymentApp.getInstrumentMethodNames()) {
+                if (method.equals(MethodStrings.ANDROID_PAY)
+                        || method.equals(MethodStrings.GOOGLE_PAY)) {
+                    category = PaymentMethodCategory.GOOGLE;
+                    break;
+                } else if (method.equals(MethodStrings.GOOGLE_PLAY_BILLING)) {
+                    assert invokedPaymentApp.getPaymentAppType()
+                            == PaymentAppType.NATIVE_MOBILE_APP;
+                    category = PaymentMethodCategory.PLAY_BILLING;
+                    break;
+                }
             }
         }
-        if (isAutofillCard) {
-            mJourneyLogger.setSelectedMethod(PaymentMethodCategory.BASIC_CARD);
-        } else if (isGooglePaymentApp) {
-            mJourneyLogger.setSelectedMethod(PaymentMethodCategory.GOOGLE);
-        } else {
-            mJourneyLogger.setSelectedMethod(PaymentMethodCategory.OTHER);
-        }
+
+        mJourneyLogger.setSelectedMethod(category);
     }
 
     // Implements PaymentAppFactoryDelegate:
@@ -894,9 +902,9 @@ public class PaymentRequestService
         if (mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.onPaymentAppCreated(paymentApp);
         mHasEnrolledInstrument |= paymentApp.canMakePayment();
-        mHasNonAutofillApp |= !paymentApp.isAutofillInstrument();
+        mHasNonAutofillApp |= paymentApp.getPaymentAppType() != PaymentAppType.AUTOFILL;
 
-        if (paymentApp.isAutofillInstrument()) {
+        if (paymentApp.getPaymentAppType() == PaymentAppType.AUTOFILL) {
             mJourneyLogger.setAvailableMethod(PaymentMethodCategory.BASIC_CARD);
         } else if (paymentApp.getInstrumentMethodNames().contains(MethodStrings.GOOGLE_PAY)
                 || paymentApp.getInstrumentMethodNames().contains(MethodStrings.ANDROID_PAY)) {
@@ -1066,7 +1074,8 @@ public class PaymentRequestService
     private static boolean onlySingleAppCanProvideAllRequiredInformation(
             PaymentOptions options, List<PaymentApp> allApps) {
         if (!PaymentOptionsUtils.requestAnyInformation(options)) {
-            return allApps.size() == 1 && !allApps.get(0).isAutofillInstrument();
+            return allApps.size() == 1
+                    && allApps.get(0).getPaymentAppType() != PaymentAppType.AUTOFILL;
         }
 
         boolean anAppCanProvideAllInfo = false;
@@ -1443,11 +1452,6 @@ public class PaymentRequestService
         return mJourneyLogger;
     }
 
-    /** @return Whether the WebContents is currently showing an off-the-record tab. */
-    public boolean isOffTheRecord() {
-        return mIsOffTheRecord;
-    }
-
     /**
      * Redact shipping address before exposing it in ShippingAddressChangeEvent.
      * https://w3c.github.io/payment-request/#shipping-address-changed-algorithm
@@ -1572,6 +1576,12 @@ public class PaymentRequestService
         return mDelegate.getTwaPackageName();
     }
 
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public boolean isOffTheRecord() {
+        return mIsOffTheRecord;
+    }
+
     // Implements PaymentRequestUpdateEventListener:
     @Override
     public boolean changePaymentMethodFromInvokedApp(String methodName, String stringifiedDetails) {
@@ -1634,7 +1644,7 @@ public class PaymentRequestService
         assert stringifiedDetails != null;
         if (mPaymentResponseHelper == null || mBrowserPaymentRequest == null) return;
         mBrowserPaymentRequest.onInstrumentDetailsReady();
-        mJourneyLogger.setEventOccurred(Event.RECEIVED_INSTRUMENT_DETAILS);
+        mJourneyLogger.setReceivedInstrumentDetails();
         mPaymentResponseHelper.generatePaymentResponse(
                 methodName, stringifiedDetails, payerData, /*resultCallback=*/this);
     }

@@ -518,7 +518,7 @@ static TX_SIZE calculate_tx_size(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   TX_SIZE tx_size;
   const TxfmSearchParams *txfm_params = &x->txfm_search_params;
   if (txfm_params->tx_mode_search_type == TX_MODE_SELECT) {
-    if (sse > (var << 2))
+    if (sse > (var << 1))
       tx_size =
           AOMMIN(max_txsize_lookup[bsize],
                  tx_mode_to_biggest_tx_size[txfm_params->tx_mode_search_type]);
@@ -1251,11 +1251,11 @@ static void estimate_block_intra(int plane, int block, int row, int col,
 
   (void)block;
 
-  p->src.buf = &src_buf_base[4 * (row * src_stride + col)];
-  pd->dst.buf = &dst_buf_base[4 * (row * dst_stride + col)];
-
   av1_predict_intra_block_facade(cm, xd, plane, col, row, tx_size);
   av1_invalid_rd_stats(&this_rdc);
+
+  p->src.buf = &src_buf_base[4 * (row * src_stride + col)];
+  pd->dst.buf = &dst_buf_base[4 * (row * dst_stride + col)];
 
   if (plane == 0) {
     block_yrd(cpi, x, 0, 0, &this_rdc, &args->skippable, bsize_tx,
@@ -1666,6 +1666,7 @@ void av1_nonrd_pick_intra_mode(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_cost,
       AOMMIN(max_txsize_lookup[bsize],
              tx_mode_to_biggest_tx_size[txfm_params->tx_mode_search_type]);
   int *bmode_costs;
+  PREDICTION_MODE best_mode = DC_PRED;
   const MB_MODE_INFO *above_mi = xd->above_mbmi;
   const MB_MODE_INFO *left_mi = xd->left_mbmi;
   const PREDICTION_MODE A = av1_above_block_mode(above_mi);
@@ -1687,22 +1688,27 @@ void av1_nonrd_pick_intra_mode(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_cost,
     args.skippable = 1;
     args.rdc = &this_rdc;
     mi->tx_size = intra_tx_size;
+    mi->mode = this_mode;
     av1_foreach_transformed_block_in_plane(xd, bsize, 0, estimate_block_intra,
                                            &args);
+    const int skip_ctx = av1_get_skip_txfm_context(xd);
     if (args.skippable) {
-      this_rdc.rate = av1_cost_symbol(av1_get_skip_txfm_cdf(xd)[1]);
+      this_rdc.rate = x->mode_costs.skip_txfm_cost[skip_ctx][1];
     } else {
-      this_rdc.rate += av1_cost_symbol(av1_get_skip_txfm_cdf(xd)[0]);
+      this_rdc.rate += x->mode_costs.skip_txfm_cost[skip_ctx][0];
     }
     this_rdc.rate += bmode_costs[this_mode];
     this_rdc.rdcost = RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist);
 
     if (this_rdc.rdcost < best_rdc.rdcost) {
       best_rdc = this_rdc;
-      mi->mode = this_mode;
+      best_mode = this_mode;
     }
   }
 
+  mi->mode = best_mode;
+  // Keep DC for UV since mode test is based on Y channel only.
+  mi->uv_mode = DC_PRED;
   *rd_cost = best_rdc;
 
 #if CONFIG_INTERNAL_STATS

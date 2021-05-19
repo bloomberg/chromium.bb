@@ -14,7 +14,6 @@
 
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -59,13 +58,13 @@ namespace extensions {
 
 namespace language_settings_private = api::language_settings_private;
 
+namespace {
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 using chromeos::input_method::InputMethodDescriptor;
 using chromeos::input_method::InputMethodDescriptors;
 using chromeos::input_method::InputMethodManager;
 using chromeos::input_method::InputMethodUtil;
-
-namespace {
 
 // Returns the set of IDs of all enabled IMEs.
 std::unordered_set<std::string> GetEnabledIMEs(
@@ -135,11 +134,8 @@ std::vector<std::string> GetSortedComponentIMEs(
       }
     }
   }
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kLanguageSettingsUpdate)) {
-    for (const auto& input_method_id : available_component_imes) {
-      component_ime_list.push_back(input_method_id);
-    }
+  for (const auto& input_method_id : available_component_imes) {
+    component_ime_list.push_back(input_method_id);
   }
 
   return component_ime_list;
@@ -188,6 +184,13 @@ std::vector<std::string> GetSortedThirdPartyIMEs(
     }
   }
 
+  // Add the rest of the third party IMEs
+  auto item = descriptors.begin();
+  while (item != descriptors.end()) {
+    ime_list.push_back(item->id());
+    item = descriptors.erase(item);
+  }
+
   return ime_list;
 }
 
@@ -202,13 +205,20 @@ std::vector<std::string> GetInputMethodTags(
   return tags;
 }
 
-}  // namespace
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+std::unique_ptr<translate::TranslatePrefs>
+CreateTranslatePrefsForBrowserContext(
+    content::BrowserContext* browser_context) {
+  return ChromeTranslateClient::CreateTranslatePrefs(
+      Profile::FromBrowserContext(browser_context)->GetPrefs());
+}
+
+}  // namespace
 
 LanguageSettingsPrivateGetLanguageListFunction::
     LanguageSettingsPrivateGetLanguageListFunction()
-    : chrome_details_(this),
-      language_list_(std::make_unique<base::ListValue>()) {}
+    : language_list_(std::make_unique<base::ListValue>()) {}
 
 LanguageSettingsPrivateGetLanguageListFunction::
     ~LanguageSettingsPrivateGetLanguageListFunction() = default;
@@ -218,8 +228,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
   // Collect the language codes from the supported accept-languages.
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   const std::unique_ptr<translate::TranslatePrefs> translate_prefs =
-      ChromeTranslateClient::CreateTranslatePrefs(
-          chrome_details_.GetProfile()->GetPrefs());
+      CreateTranslatePrefsForBrowserContext(browser_context());
 
   std::vector<translate::TranslateLanguageInfo> languages;
   translate::TranslatePrefs::GetLanguageInfoList(
@@ -234,8 +243,8 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
   // Build the language list.
   language_list_->Clear();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  const std::unordered_set<std::string> allowed_ui_locales(
-      GetAllowedLanguages(chrome_details_.GetProfile()->GetPrefs()));
+  const std::unordered_set<std::string> allowed_ui_locales(GetAllowedLanguages(
+      Profile::FromBrowserContext(browser_context())->GetPrefs()));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   for (const auto& entry : languages) {
     language_settings_private::Language language;
@@ -246,15 +255,15 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
 
     // Set optional fields only if they differ from the default.
     if (base::Contains(spellcheck_language_set, entry.code)) {
-      language.supports_spellcheck.reset(new bool(true));
+      language.supports_spellcheck = std::make_unique<bool>(true);
     }
     if (entry.supports_translate) {
-      language.supports_translate.reset(new bool(true));
+      language.supports_translate = std::make_unique<bool>(true);
     }
 
     std::string temp_locale = entry.code;
     if (language::ConvertToActualUILocale(&temp_locale)) {
-      language.supports_ui.reset(new bool(true));
+      language.supports_ui = std::make_unique<bool>(true);
     }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     if (!allowed_ui_locales.empty() &&
@@ -326,8 +335,7 @@ void LanguageSettingsPrivateGetLanguageListFunction::
 #endif  // defined(OS_WIN)
 
 LanguageSettingsPrivateEnableLanguageFunction::
-    LanguageSettingsPrivateEnableLanguageFunction()
-    : chrome_details_(this) {}
+    LanguageSettingsPrivateEnableLanguageFunction() = default;
 
 LanguageSettingsPrivateEnableLanguageFunction::
     ~LanguageSettingsPrivateEnableLanguageFunction() = default;
@@ -340,8 +348,7 @@ LanguageSettingsPrivateEnableLanguageFunction::Run() {
   const std::string& language_code = parameters->language_code;
 
   std::unique_ptr<translate::TranslatePrefs> translate_prefs =
-      ChromeTranslateClient::CreateTranslatePrefs(
-          chrome_details_.GetProfile()->GetPrefs());
+      CreateTranslatePrefsForBrowserContext(browser_context());
 
   std::vector<std::string> languages;
   translate_prefs->GetLanguageList(&languages);
@@ -359,8 +366,7 @@ LanguageSettingsPrivateEnableLanguageFunction::Run() {
 }
 
 LanguageSettingsPrivateDisableLanguageFunction::
-    LanguageSettingsPrivateDisableLanguageFunction()
-    : chrome_details_(this) {}
+    LanguageSettingsPrivateDisableLanguageFunction() = default;
 
 LanguageSettingsPrivateDisableLanguageFunction::
     ~LanguageSettingsPrivateDisableLanguageFunction() = default;
@@ -373,8 +379,7 @@ LanguageSettingsPrivateDisableLanguageFunction::Run() {
   const std::string& language_code = parameters->language_code;
 
   std::unique_ptr<translate::TranslatePrefs> translate_prefs =
-      ChromeTranslateClient::CreateTranslatePrefs(
-          chrome_details_.GetProfile()->GetPrefs());
+      CreateTranslatePrefsForBrowserContext(browser_context());
 
   std::vector<std::string> languages;
   translate_prefs->GetLanguageList(&languages);
@@ -395,8 +400,7 @@ LanguageSettingsPrivateDisableLanguageFunction::Run() {
 }
 
 LanguageSettingsPrivateSetEnableTranslationForLanguageFunction::
-    LanguageSettingsPrivateSetEnableTranslationForLanguageFunction()
-    : chrome_details_(this) {}
+    LanguageSettingsPrivateSetEnableTranslationForLanguageFunction() = default;
 
 LanguageSettingsPrivateSetEnableTranslationForLanguageFunction::
     ~LanguageSettingsPrivateSetEnableTranslationForLanguageFunction() = default;
@@ -411,8 +415,7 @@ LanguageSettingsPrivateSetEnableTranslationForLanguageFunction::Run() {
   const bool enable = parameters->enable;
 
   std::unique_ptr<translate::TranslatePrefs> translate_prefs =
-      ChromeTranslateClient::CreateTranslatePrefs(
-          chrome_details_.GetProfile()->GetPrefs());
+      CreateTranslatePrefsForBrowserContext(browser_context());
 
   if (enable) {
     translate_prefs->UnblockLanguage(language_code);
@@ -423,9 +426,74 @@ LanguageSettingsPrivateSetEnableTranslationForLanguageFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+LanguageSettingsPrivateGetAlwaysTranslateLanguagesFunction::
+    LanguageSettingsPrivateGetAlwaysTranslateLanguagesFunction() = default;
+
+LanguageSettingsPrivateGetAlwaysTranslateLanguagesFunction::
+    ~LanguageSettingsPrivateGetAlwaysTranslateLanguagesFunction() = default;
+
+ExtensionFunction::ResponseAction
+LanguageSettingsPrivateGetAlwaysTranslateLanguagesFunction::Run() {
+  const std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      CreateTranslatePrefsForBrowserContext(browser_context());
+
+  std::vector<std::string> languages =
+      translate_prefs->GetAlwaysTranslateLanguages();
+
+  std::unique_ptr<base::ListValue> always_translate_languages_ =
+      (std::make_unique<base::ListValue>());
+  for (const auto& entry : languages) {
+    always_translate_languages_->Append(entry);
+  }
+
+  return RespondNow(OneArgument(
+      base::Value::FromUniquePtrValue(std::move(always_translate_languages_))));
+}
+
+LanguageSettingsPrivateSetLanguageAlwaysTranslateStateFunction::
+    LanguageSettingsPrivateSetLanguageAlwaysTranslateStateFunction() = default;
+
+LanguageSettingsPrivateSetLanguageAlwaysTranslateStateFunction::
+    ~LanguageSettingsPrivateSetLanguageAlwaysTranslateStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+LanguageSettingsPrivateSetLanguageAlwaysTranslateStateFunction::Run() {
+  const auto params = language_settings_private::
+      SetLanguageAlwaysTranslateState::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  const std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      CreateTranslatePrefsForBrowserContext(browser_context());
+
+  translate_prefs->SetLanguageAlwaysTranslateState(params->language_code,
+                                                   params->always_translate);
+
+  return RespondNow(NoArguments());
+}
+
+LanguageSettingsPrivateGetNeverTranslateLanguagesFunction::
+    LanguageSettingsPrivateGetNeverTranslateLanguagesFunction() = default;
+
+LanguageSettingsPrivateGetNeverTranslateLanguagesFunction::
+    ~LanguageSettingsPrivateGetNeverTranslateLanguagesFunction() = default;
+
+ExtensionFunction::ResponseAction
+LanguageSettingsPrivateGetNeverTranslateLanguagesFunction::Run() {
+  const std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      CreateTranslatePrefsForBrowserContext(browser_context());
+
+  std::vector<std::string> languages =
+      translate_prefs->GetNeverTranslateLanguages();
+
+  base::Value never_translate_languages(base::Value::Type::LIST);
+  for (auto& entry : languages) {
+    never_translate_languages.Append(std::move(entry));
+  }
+  return RespondNow(OneArgument(std::move(never_translate_languages)));
+}
+
 LanguageSettingsPrivateMoveLanguageFunction::
-    LanguageSettingsPrivateMoveLanguageFunction()
-    : chrome_details_(this) {}
+    LanguageSettingsPrivateMoveLanguageFunction() = default;
 
 LanguageSettingsPrivateMoveLanguageFunction::
     ~LanguageSettingsPrivateMoveLanguageFunction() = default;
@@ -444,8 +512,7 @@ LanguageSettingsPrivateMoveLanguageFunction::Run() {
   const language_settings_private::MoveType move_type = parameters->move_type;
 
   std::unique_ptr<translate::TranslatePrefs> translate_prefs =
-      ChromeTranslateClient::CreateTranslatePrefs(
-          chrome_details_.GetProfile()->GetPrefs());
+      CreateTranslatePrefsForBrowserContext(browser_context());
 
   translate::TranslatePrefs::RearrangeSpecifier where =
       translate::TranslatePrefs::kNone;
@@ -598,20 +665,47 @@ LanguageSettingsPrivateRemoveSpellcheckWordFunction::Run() {
 }
 
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::
-    LanguageSettingsPrivateGetTranslateTargetLanguageFunction()
-    : chrome_details_(this) {}
+    LanguageSettingsPrivateGetTranslateTargetLanguageFunction() = default;
 
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::
     ~LanguageSettingsPrivateGetTranslateTargetLanguageFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::Run() {
-  Profile* profile = chrome_details_.GetProfile();
   language::LanguageModel* language_model =
-      LanguageModelManagerFactory::GetForBrowserContext(profile)
+      LanguageModelManagerFactory::GetForBrowserContext(browser_context())
           ->GetPrimaryModel();
   return RespondNow(OneArgument(base::Value(TranslateService::GetTargetLanguage(
-      profile->GetPrefs(), language_model))));
+      Profile::FromBrowserContext(browser_context())->GetPrefs(),
+      language_model))));
+}
+
+LanguageSettingsPrivateSetTranslateTargetLanguageFunction::
+    LanguageSettingsPrivateSetTranslateTargetLanguageFunction() = default;
+
+LanguageSettingsPrivateSetTranslateTargetLanguageFunction::
+    ~LanguageSettingsPrivateSetTranslateTargetLanguageFunction() = default;
+
+ExtensionFunction::ResponseAction
+LanguageSettingsPrivateSetTranslateTargetLanguageFunction::Run() {
+  const auto parameters =
+      language_settings_private::SetTranslateTargetLanguage::Params::Create(
+          *args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  const std::string& language_code = parameters->language_code;
+
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      CreateTranslatePrefsForBrowserContext(browser_context());
+
+  std::string chrome_language = language_code;
+  translate_prefs->AddToLanguageList(language_code, false);
+
+  if (language_code == translate_prefs->GetRecentTargetLanguage()) {
+    return RespondNow(NoArguments());
+  }
+  translate_prefs->SetRecentTargetLanguage(language_code);
+
+  return RespondNow(NoArguments());
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -640,9 +734,9 @@ void PopulateInputMethodListFromDescriptors(
   }
 
   // Map of sorted [display name -> input methods].
-  std::map<base::string16, language_settings_private::InputMethod,
-           l10n_util::StringComparator<base::string16>>
-      input_map(l10n_util::StringComparator<base::string16>(collator.get()));
+  std::map<std::u16string, language_settings_private::InputMethod,
+           l10n_util::StringComparator<std::u16string>>
+      input_map(l10n_util::StringComparator<std::u16string>(collator.get()));
 
   for (const auto& descriptor : descriptors) {
     language_settings_private::InputMethod input_method;
@@ -706,8 +800,7 @@ LanguageSettingsPrivateGetInputMethodListsFunction::Run() {
 }
 
 LanguageSettingsPrivateAddInputMethodFunction::
-    LanguageSettingsPrivateAddInputMethodFunction()
-    : chrome_details_(this) {}
+    LanguageSettingsPrivateAddInputMethodFunction() = default;
 
 LanguageSettingsPrivateAddInputMethodFunction::
     ~LanguageSettingsPrivateAddInputMethodFunction() = default;
@@ -732,7 +825,8 @@ LanguageSettingsPrivateAddInputMethodFunction::Run() {
       chromeos::extension_ime_util::IsComponentExtensionIME(
           new_input_method_id);
 
-  PrefService* prefs = chrome_details_.GetProfile()->GetPrefs();
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
   const char* pref_name = is_component_extension_ime
                               ? prefs::kLanguagePreloadEngines
                               : prefs::kLanguageEnabledImes;
@@ -761,8 +855,7 @@ LanguageSettingsPrivateAddInputMethodFunction::Run() {
 }
 
 LanguageSettingsPrivateRemoveInputMethodFunction::
-    LanguageSettingsPrivateRemoveInputMethodFunction()
-    : chrome_details_(this) {}
+    LanguageSettingsPrivateRemoveInputMethodFunction() = default;
 
 LanguageSettingsPrivateRemoveInputMethodFunction::
     ~LanguageSettingsPrivateRemoveInputMethodFunction() = default;
@@ -787,7 +880,8 @@ LanguageSettingsPrivateRemoveInputMethodFunction::Run() {
       chromeos::extension_ime_util::IsComponentExtensionIME(input_method_id);
 
   // Use the pref for the corresponding input method type.
-  PrefService* prefs = chrome_details_.GetProfile()->GetPrefs();
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
   const char* pref_name = is_component_extension_ime
                               ? prefs::kLanguagePreloadEngines
                               : prefs::kLanguageEnabledImes;

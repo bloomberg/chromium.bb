@@ -6,13 +6,13 @@
 
 #include <stddef.h>
 
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -329,7 +329,7 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, MigrateChromeProxyTest) {
   temp_properties.set_target(web_app::GetChromeProxyPath());
   temp_properties.set_app_id(L"Dumbo3.Default");
   base::CommandLine cmd_line = shell_integration::CommandLineArgsForLauncher(
-      GURL(), base::WideToUTF8(extension_id_), base::FilePath());
+      GURL(), base::WideToUTF8(extension_id_), base::FilePath(), "");
   ASSERT_EQ(cmd_line.GetCommandLineString(), L" --app-id=" + extension_id_);
   temp_properties.set_arguments(cmd_line.GetCommandLineString());
   ASSERT_NO_FATAL_FAILURE(
@@ -340,8 +340,8 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, MigrateChromeProxyTest) {
   temp_properties.set_target(web_app::GetChromeProxyPath());
   temp_properties.set_app_id(L"Dumbo4.Default");
   GURL url("http://www.example.com");
-  cmd_line = shell_integration::CommandLineArgsForLauncher(url, std::string(),
-                                                           base::FilePath());
+  cmd_line = shell_integration::CommandLineArgsForLauncher(
+      url, std::string(), base::FilePath(), "");
   ASSERT_EQ(cmd_line.GetCommandLineString(), L" --app=http://www.example.com/");
   temp_properties.set_arguments(cmd_line.GetCommandLineString());
   ASSERT_NO_FATAL_FAILURE(

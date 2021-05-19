@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -229,6 +229,7 @@ class GnGenerator(object):
     if generate_xcode_project:
       gn_command.append('--ide=xcode')
       gn_command.append('--ninja-executable=autoninja')
+      gn_command.append('--xcode-build-system=new')
       if self._settings.has_section('filters'):
         target_filters = self._settings.values('filters')
         if target_filters:
@@ -358,6 +359,9 @@ def Main(args):
   parser.add_argument(
       '--build-dir', default='out',
       help='path where the build should be created (default: %(default)s)')
+  parser.add_argument(
+      '--no-xcode-project', action='store_true', default=False,
+      help='do not generate the build directory with XCode project')
   args = parser.parse_args(args)
 
   # Load configuration (first global and then any user overrides).
@@ -395,9 +399,10 @@ def Main(args):
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
 
-  GenerateXcodeProject(gn_path, args.root, out_dir, settings)
+  if not args.no_xcode_project:
+    GenerateXcodeProject(gn_path, args.root, out_dir, settings)
+    CreateLLDBInitFile(args.root, out_dir, settings)
   GenerateGnBuildRules(gn_path, args.root, out_dir, settings)
-  CreateLLDBInitFile(args.root, out_dir, settings)
 
 
 if __name__ == '__main__':

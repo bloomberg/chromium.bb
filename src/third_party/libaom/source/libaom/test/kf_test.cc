@@ -48,8 +48,7 @@ class KeyFrameIntervalTestLarge
   virtual ~KeyFrameIntervalTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = end_usage_check_;
@@ -126,8 +125,7 @@ class ForcedKeyTestLarge
   virtual ~ForcedKeyTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     cfg_.rc_end_usage = rc_end_usage_;
     cfg_.g_threads = 0;
     cfg_.kf_max_dist = 30;

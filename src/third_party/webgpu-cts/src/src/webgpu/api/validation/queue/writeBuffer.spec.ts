@@ -39,7 +39,7 @@ Also verifies that the specified data range:
 `
   )
   .fn(async t => {
-    const queue = t.device.defaultQueue;
+    const queue = t.device.queue;
 
     function runTest(arrayType: TypedArrayBufferViewConstructor, testBuffer: boolean) {
       const elementSize = arrayType.BYTES_PER_ELEMENT;

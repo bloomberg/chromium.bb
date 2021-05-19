@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -172,7 +173,8 @@ class FakeSchedulerClient : public SchedulerClient,
 
     if (swap_will_happen_if_draw_happens_) {
       last_begin_frame_ack_ = scheduler_->CurrentBeginFrameAckForActiveTree();
-      scheduler_->DidSubmitCompositorFrame(0, EventMetricsSet());
+      scheduler_->DidSubmitCompositorFrame(0, EventMetricsSet(),
+                                           /*has_missing_content=*/false);
 
       if (automatic_ack_)
         scheduler_->DidReceiveCompositorFrameAck();
@@ -367,11 +369,12 @@ class SchedulerTest : public testing::Test {
  protected:
   TestScheduler* CreateScheduler(BeginFrameSourceType bfs_type) {
     viz::BeginFrameSource* frame_source = nullptr;
-    unthrottled_frame_source_.reset(new viz::BackToBackBeginFrameSource(
-        std::make_unique<viz::FakeDelayBasedTimeSource>(
-            task_runner_->GetMockTickClock(), task_runner_.get())));
-    fake_external_begin_frame_source_.reset(
-        new viz::FakeExternalBeginFrameSource(1.0, false));
+    unthrottled_frame_source_ =
+        std::make_unique<viz::BackToBackBeginFrameSource>(
+            std::make_unique<viz::FakeDelayBasedTimeSource>(
+                task_runner_->GetMockTickClock(), task_runner_.get()));
+    fake_external_begin_frame_source_ =
+        std::make_unique<viz::FakeExternalBeginFrameSource>(1.0, false);
     fake_external_begin_frame_source_->SetClient(client_.get());
     synthetic_frame_source_ = std::make_unique<viz::DelayBasedBeginFrameSource>(
         std::make_unique<viz::FakeDelayBasedTimeSource>(
@@ -395,9 +398,9 @@ class SchedulerTest : public testing::Test {
             scheduler_settings_.using_synchronous_renderer_compositor);
     fake_compositor_timing_history_ = fake_compositor_timing_history.get();
 
-    scheduler_.reset(new TestScheduler(
+    scheduler_ = std::make_unique<TestScheduler>(
         task_runner_->GetMockTickClock(), client_.get(), scheduler_settings_, 0,
-        task_runner_.get(), std::move(fake_compositor_timing_history)));
+        task_runner_.get(), std::move(fake_compositor_timing_history));
     client_->set_scheduler(scheduler_.get());
     scheduler_->SetBeginFrameSource(frame_source);
 

@@ -144,6 +144,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                           base::TimeTicks draw_start_timestamp,
                           const gfx::SwapTimings& swap_timings,
                           const gfx::PresentationFeedback& feedback) override;
+  bool IsVideoCaptureStarted() override;
 
   // mojom::CompositorFrameSink helpers.
   void SetNeedsBeginFrame(bool needs_begin_frame);
@@ -205,10 +206,13 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
     return copy_output_requests_;
   }
 
+  void OnCompositorFrameTransitionDirectiveProcessed(uint32_t sequence_id);
+
  private:
   friend class CompositorFrameSinkSupportTest;
   friend class DisplayTest;
   friend class FrameSinkManagerTest;
+  friend class SurfaceAggregatorWithResourcesTest;
 
   // Creates a surface reference from the top-level root to |surface_id|.
   SurfaceReference MakeTopLevelRootReference(const SurfaceId& surface_id);
@@ -250,6 +254,12 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // Checks if any of the pending surfaces should activate now because their
   // deadline has passed. This is called every BeginFrame.
   void CheckPendingSurfaces();
+
+  // When throttling is requested by a client, a BeginFrame will not be sent
+  // until the time elapsed has passed the requested throttle interval since the
+  // last sent BeginFrame. This function returns true if such interval has
+  // passed and a BeginFrame should be sent.
+  bool ShouldThrottleBeginFrameAsRequested(base::TimeTicks frame_time);
 
   mojom::CompositorFrameSinkClient* const client_;
 
@@ -364,6 +374,12 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   SurfaceAnimationManager surface_animation_manager_;
 
   std::unique_ptr<power_scheduler::PowerModeVoter> animation_power_mode_voter_;
+
+  // Represents whether the DocumentTransition feature is enabled.
+  bool document_transitions_enabled_;
+
+  // Number of frames skipped during throttling since last BeginFrame sent.
+  uint64_t frames_throttled_since_last_ = 0;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_{this};
 

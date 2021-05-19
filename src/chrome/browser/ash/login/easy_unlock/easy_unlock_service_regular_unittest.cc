@@ -21,9 +21,9 @@
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_notification_controller.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_regular.h"
-#include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/ash/login/session/chrome_session_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
@@ -148,8 +148,7 @@ class EasyUnlockServiceRegularTest : public testing::Test {
 
     account_id_ = AccountId::FromUserEmail(profile_->GetProfileUserName());
 
-    auto fake_chrome_user_manager =
-        std::make_unique<chromeos::FakeChromeUserManager>();
+    auto fake_chrome_user_manager = std::make_unique<FakeChromeUserManager>();
     fake_chrome_user_manager_ = fake_chrome_user_manager.get();
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(fake_chrome_user_manager));
@@ -249,7 +248,7 @@ class EasyUnlockServiceRegularTest : public testing::Test {
 
   std::unique_ptr<TestingProfile> profile_;
   AccountId account_id_;
-  chromeos::FakeChromeUserManager* fake_chrome_user_manager_;
+  FakeChromeUserManager* fake_chrome_user_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 
   const multidevice::RemoteDeviceRef test_local_device_;

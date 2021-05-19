@@ -1,8 +1,8 @@
 OpCapability Shader
 %1 = OpExtInstImport "GLSL.std.450"
 OpMemoryModel Logical GLSL450
-OpEntryPoint Fragment %_entrypoint "_entrypoint" %sk_FragColor %sk_Clockwise
-OpExecutionMode %_entrypoint OriginUpperLeft
+OpEntryPoint Fragment %_entrypoint_v "_entrypoint" %sk_FragColor %sk_Clockwise
+OpExecutionMode %_entrypoint_v OriginUpperLeft
 OpName %sk_FragColor "sk_FragColor"
 OpName %sk_Clockwise "sk_Clockwise"
 OpName %_UniformBuffer "_UniformBuffer"
@@ -10,8 +10,8 @@ OpMemberName %_UniformBuffer 0 "colorRed"
 OpMemberName %_UniformBuffer 1 "colorGreen"
 OpMemberName %_UniformBuffer 2 "colorWhite"
 OpMemberName %_UniformBuffer 3 "colorBlack"
-OpName %_entrypoint "_entrypoint"
-OpName %setToColorBlack "setToColorBlack"
+OpName %_entrypoint_v "_entrypoint_v"
+OpName %setToColorBlack_vh4 "setToColorBlack_vh4"
 OpName %main "main"
 OpName %a "a"
 OpName %b "b"
@@ -20,7 +20,6 @@ OpName %d "d"
 OpDecorate %sk_FragColor RelaxedPrecision
 OpDecorate %sk_FragColor Location 0
 OpDecorate %sk_FragColor Index 0
-OpDecorate %sk_Clockwise RelaxedPrecision
 OpDecorate %sk_Clockwise BuiltIn FrontFacing
 OpMemberDecorate %_UniformBuffer 0 Offset 0
 OpMemberDecorate %_UniformBuffer 0 RelaxedPrecision
@@ -34,6 +33,10 @@ OpDecorate %_UniformBuffer Block
 OpDecorate %11 Binding 0
 OpDecorate %11 DescriptorSet 0
 OpDecorate %27 RelaxedPrecision
+OpDecorate %a RelaxedPrecision
+OpDecorate %b RelaxedPrecision
+OpDecorate %c RelaxedPrecision
+OpDecorate %d RelaxedPrecision
 OpDecorate %36 RelaxedPrecision
 OpDecorate %39 RelaxedPrecision
 OpDecorate %43 RelaxedPrecision
@@ -83,13 +86,13 @@ OpDecorate %95 RelaxedPrecision
 %int_2 = OpConstant %int 2
 %false = OpConstantFalse %bool
 %v4bool = OpTypeVector %bool 4
-%_entrypoint = OpFunction %void None %16
+%_entrypoint_v = OpFunction %void None %16
 %17 = OpLabel
 %18 = OpFunctionCall %v4float %main
 OpStore %sk_FragColor %18
 OpReturn
 OpFunctionEnd
-%setToColorBlack = OpFunction %void None %19
+%setToColorBlack_vh4 = OpFunction %void None %19
 %21 = OpFunctionParameter %_ptr_Function_v4float
 %22 = OpLabel
 %23 = OpAccessChain %_ptr_Uniform_v4float %11 %int_3
@@ -110,7 +113,7 @@ OpStore %b %36
 %37 = OpAccessChain %_ptr_Uniform_v4float %11 %int_1
 %39 = OpLoad %v4float %37
 OpStore %c %39
-%40 = OpFunctionCall %void %setToColorBlack %d
+%40 = OpFunctionCall %void %setToColorBlack_vh4 %d
 %41 = OpAccessChain %_ptr_Uniform_v4float %11 %int_2
 %43 = OpLoad %v4float %41
 OpStore %a %43

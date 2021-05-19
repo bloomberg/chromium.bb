@@ -35,8 +35,6 @@
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_features.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/variations/variations_associated_data.h"
@@ -336,40 +334,28 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, SimpleURLLoader) {
   // A network change forces the config to be fetched.
   SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
 
-  for (const bool set_render_frame_id : {false, true}) {
-    auto resource_request = std::make_unique<network::ResourceRequest>();
-    if (set_render_frame_id)
-      resource_request->render_frame_id = MSG_ROUTING_CONTROL;
-    // Change the URL for different test cases because a bypassed URL may be
-    // added to the local cache by network service proxy delegate.
-    if (set_render_frame_id) {
-      resource_request->url = GetURLWithMockHost(
-          origin_server, "/echoheader?Chrome-Proxy&random=1");
-    } else {
-      resource_request->url = GetURLWithMockHost(
-          origin_server, "/echoheader?Chrome-Proxy&random=2");
-    }
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url =
+      GetURLWithMockHost(origin_server, "/echoheader?Chrome-Proxy");
 
-    auto simple_loader = network::SimpleURLLoader::Create(
-        std::move(resource_request), TRAFFIC_ANNOTATION_FOR_TESTS);
+  auto simple_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), TRAFFIC_ANNOTATION_FOR_TESTS);
 
-    auto* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
-    auto url_loader_factory =
-        storage_partition->GetURLLoaderFactoryForBrowserProcess();
+  auto* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+  auto url_loader_factory =
+      storage_partition->GetURLLoaderFactoryForBrowserProcess();
 
-    base::RunLoop loop;
-    simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-        url_loader_factory.get(),
-        base::BindLambdaForTesting(
-            [&](std::unique_ptr<std::string> response_body) {
-              loop.Quit();
-              ASSERT_TRUE(response_body);
-              EXPECT_EQ(kDummyBody, *response_body);
-            }));
-    loop.Run();
-  }
+  base::RunLoop loop;
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory.get(),
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<std::string> response_body) {
+            loop.Quit();
+            ASSERT_TRUE(response_body);
+            EXPECT_EQ(kDummyBody, *response_body);
+          }));
+  loop.Run();
 }
 
 

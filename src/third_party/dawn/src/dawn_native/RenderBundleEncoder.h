@@ -28,15 +28,16 @@ namespace dawn_native {
 
     class RenderBundleEncoder final : public RenderEncoderBase {
       public:
-        RenderBundleEncoder(DeviceBase* device, const RenderBundleEncoderDescriptor* descriptor);
-
+        static Ref<RenderBundleEncoder> Create(DeviceBase* device,
+                                               const RenderBundleEncoderDescriptor* descriptor);
         static RenderBundleEncoder* MakeError(DeviceBase* device);
 
-        RenderBundleBase* Finish(const RenderBundleDescriptor* descriptor);
+        RenderBundleBase* APIFinish(const RenderBundleDescriptor* descriptor);
 
         CommandIterator AcquireCommands();
 
       private:
+        RenderBundleEncoder(DeviceBase* device, const RenderBundleEncoderDescriptor* descriptor);
         RenderBundleEncoder(DeviceBase* device, ErrorTag errorTag);
 
         ResultOrError<RenderBundleBase*> FinishImpl(const RenderBundleDescriptor* descriptor);

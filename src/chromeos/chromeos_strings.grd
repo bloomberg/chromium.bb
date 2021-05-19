@@ -594,10 +594,25 @@ Try tapping the mic to ask me anything.
         File not found
       </message>
       <message name="IDS_SCANNING_APP_SCAN_FAILED_DIALOG_TITLE_TEXT" desc="The text displayed as the title of the dialog shown when a scan job fails.">
-        Couldn't complete scanning
+        Couldn't complete scan
       </message>
-      <message name="IDS_SCANNING_APP_SCAN_FAILED_DIALOG_BODY_TEXT" desc="The text displayed as the body of the dialog shown when a scan job fails. The text advises the user to make sure their Chromebook has enough space to save files.">
+      <message name="IDS_SCANNING_APP_SCAN_FAILED_DIALOG_UNKNOWN_ERROR_TEXT" desc="The text displayed as the body of the dialog shown when a scan job fails for an unknown reason. The text advises the user to make sure their Chromebook has enough space to save files.">
         Check the scanner and try again. Make sure there is enough local space to save scanned files.
+      </message>
+      <message name="IDS_SCANNING_APP_SCAN_FAILED_DIALOG_DEVICE_BUSY_TEXT" desc="The text displayed as the body of the dialog shown when a scan job fails due to the scanner being busy. The text advises the user to try scanning again once the scanner is no longer in use.">
+        Scanner is currently in use. Try again later.
+      </message>
+      <message name="IDS_SCANNING_APP_SCAN_FAILED_DIALOG_ADF_JAMMED_TEXT" desc="The text displayed as the body of the dialog shown when a scan job fails due to the scanner's document feeder being jammmed. The text advises the user to clear the feeder and try again.">
+        The scanner’s document feeder is jammed. Check the feeder and try again.
+      </message>
+      <message name="IDS_SCANNING_APP_SCAN_FAILED_DIALOG_ADF_EMPTY_TEXT" desc="The text displayed as the body of the dialog shown when a scan job fails due to the scanner's document feeder being empty. The text advises the user to place documents in the feeder and try again.">
+       The scanner’s document feeder is empty. Add documents and try again.
+      </message>
+      <message name="IDS_SCANNING_APP_SCAN_FAILED_DIALOG_FLATBED_OPEN_TEXT" desc="The text displayed as the body of the dialog shown when a scan job fails due to the scanner's cover being open. The text advises the user to close the cover and try again.">
+        The scanner’s cover is open. Close the cover and try again.
+      </message>
+      <message name="IDS_SCANNING_APP_SCAN_FAILED_DIALOG_IO_ERROR_TEXT" desc="The text displayed as the body of the dialog shown when a scan job fails due to a communication issue with the scanner. The text advises the user to check the network or USB connection and try again.">
+        There's an issue communicating with the scanner. Check the network or USB connection and try again.
       </message>
       <message name="IDS_SCANNING_APP_OK_BUTTON_LABEL" desc="The label for the button to acknowledge and close the dialog shown when a scan job fails.">
         Ok
@@ -624,6 +639,11 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SCANNING_APP_RETRY_BUTTON_LABEL" desc="The label for the button that retries searching for available scanners.">
         Retry
+      </message>
+      <message name="IDS_SCANNING_APP_EDIT_BUTTON_LABEL" desc="The label for the button that opens the Media app for editing scanned files.">
+        {0, plural,
+        =1 {Edit file}
+        other {Edit files}}
       </message>
 
       <!-- Diagnostics App -->
@@ -837,6 +857,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_DIAGNOSTICS_ROUTINE_REMAINING_MIN_FINAL_LARGE" desc="The text used to describe the status of running routine, specifically when a large routine is taking longer than expected.">
         Just a few more minutes...
       </message>
+      <message name="IDS_DIAGNOSTICS_CPU_BANNER_MESSAGE" desc="The text shown while a user is running their CPU test.">
+        Running a CPU test may affect your system performance
+      </message>
 
       <!-- Quick Answers -->
       <message name="IDS_QUICK_ANSWERS_DEFINITION_TITLE_TEXT" desc="The title text format string used for Quick Answers definition result card. The first placeholder contains the source query text and the second placeholder contains the phonetics.">
@@ -847,6 +870,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_QUICK_ANSWERS_TRANSLATION_TITLE_TEXT" desc="The title text format string used for Quick Answers translation result card. The first placeholder contains the source text in foreign language and the second placeholder contains the detected source language name displayed in system locale.">
         <ph name="QUERY_TEXT">$1<ex>prodotto</ex></ph> · <ph name="SOURCE_LANGUAGE_NAME">$2<ex>Italian</ex></ph>
+      </message>
+      <message name="IDS_QUICK_ANSWERS_UNIT_CONVERSION_RESULT_TEXT" desc="The result text format string used for Quick Answers unit conversion result card. The first placeholder contains the value of result unit and the second placeholder contains the display name of the result unit.">
+        <ph name="VALUE">$1<ex>220.462</ex></ph> <ph name="DISPLAY_NAME">$2<ex>pounds</ex></ph>
       </message>
 
     <!-- Common Network type strings -->
@@ -1038,6 +1064,12 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ONC_CELLULAR_APN_PASSWORD" desc="ONC Property label for APN-Password">
         Password
       </message>
+      <message name="IDS_ONC_CELLULAR_APN_ATTACH" desc="ONC Property label for APN-Attach APN that is required by some cellular network providers in order to connect">
+        Attach APN
+      </message>
+      <message name="IDS_ONC_CELLULAR_APN_ATTACH_TOOLTIP_TEXT" desc="Text for help tooltip present in the Attach APN setting row informing users that the associated toggle may be required by some cellular network providers in order to connect">
+        Your carrier may require this option to connect to their network. Contact your carrier for details.
+      </message>
       <message name="IDS_ONC_CELLULAR_SERVING_OPERATOR_NAME" desc="ONC Property label for Cellular.ServingOperator.Name">
         Operator
       </message>
@@ -1216,6 +1248,24 @@ Try tapping the mic to ask me anything.
       <message name="IDS_CONNECTIVITY_DIAGNOSTICS_SEND_FEEDBACK" desc="Label for connectivity diagnostics application send feedback button">
         Send Feedback
       </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_CONNECTION_GROUP" desc="Label for the group of network diagnostic routines about the device's internet connection">
+        Connection
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_WIFI_GROUP" desc="Label for the group of network diagnostic routines about the device's Wi-Fi connection">
+        Wi-Fi
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_GATEWAY_GROUP" desc="Label for the group of network diagnostic routines about the device's network gateway">
+        Gateway
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_FIREWALL_GROUP" desc="Label for the group of network diagnostic routines about the device's network firewall">
+        Firewall
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_DNS_GROUP" desc="Label for the group of network diagnostic routines about the device's network DNS (domain name servers)">
+        DNS
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_GOOGLE_SERVICES_GROUP" desc="Label for the group of network diagnostic routines about connecting to Google services">
+        Google Services
+      </message>
       <message name="IDS_NETWORK_DIAGNOSTICS_LAN_CONNECTIVITY" desc="Label for Network diagnostics `LAN connectivity` test. This test determines if the device is connected to a Local Area Network (LAN)">
         Lan Connectivity
       </message>
@@ -1377,6 +1427,11 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_NETWORK_DIAGNOSTICS_VIDEO_CONFERENCING_PROBLEM_MEDIA_FAILURE" desc="Error message shown when a connection cannot be established to the video conferencing media servers">
         Unable to connect to media servers
+      </message>
+
+      <!-- Personalization App -->
+      <message name="IDS_PERSONALIZATION_APP_TITLE" desc="Name of the system web app for personalizing ChromeOS.">
+        Wallpaper
       </message>
     </messages>
   </release>

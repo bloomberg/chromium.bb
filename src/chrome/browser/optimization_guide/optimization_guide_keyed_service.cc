@@ -7,11 +7,14 @@
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
@@ -27,6 +30,7 @@
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_store.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
+#include "components/optimization_guide/core/tab_url_provider.h"
 #include "components/optimization_guide/core/top_host_provider.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "content/public/browser/browser_context.h"
@@ -34,6 +38,12 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/optimization_guide/android/optimization_guide_tab_url_provider_android.h"
+#else
+#include "chrome/browser/optimization_guide/optimization_guide_tab_url_provider.h"
+#endif
 
 namespace {
 
@@ -93,6 +103,24 @@ void LogOptimizationTargetDecisionAndPassOptimizationGuideDecision(
           optimization_target_decision));
 }
 
+const char kOldOptimizationGuideHintStore[] = "previews_hint_cache_store";
+
+// Deletes old store paths that were written in incorrect locations.
+void DeleteOldStorePaths(const base::FilePath& profile_path) {
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(
+          base::GetDeletePathRecursivelyCallback(),
+          profile_path.AddExtensionASCII(kOldOptimizationGuideHintStore)));
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(
+          base::GetDeletePathRecursivelyCallback(),
+          profile_path.AddExtension(
+              optimization_guide::
+                  kOptimizationGuidePredictionModelAndFeaturesStore)));
+}
+
 }  // namespace
 
 OptimizationGuideKeyedService::OptimizationGuideKeyedService(
@@ -147,11 +175,20 @@ void OptimizationGuideKeyedService::Initialize() {
         "SyntheticOptimizationGuideRemoteFetching",
         optimization_guide_fetching_enabled ? "Enabled" : "Disabled");
 
+#if defined(OS_ANDROID)
+    tab_url_provider_ = std::make_unique<
+        optimization_guide::android::OptimizationGuideTabUrlProviderAndroid>(
+        profile);
+#else
+    tab_url_provider_ =
+        std::make_unique<OptimizationGuideTabUrlProvider>(profile);
+#endif
+
     hint_store_ =
         optimization_guide::features::ShouldPersistHintsToDisk()
             ? std::make_unique<optimization_guide::OptimizationGuideStore>(
                   proto_db_provider,
-                  profile_path.AddExtensionASCII(
+                  profile_path.Append(
                       optimization_guide::kOptimizationGuideHintStore),
                   base::ThreadPool::CreateSequencedTaskRunner(
                       {base::MayBlock(), base::TaskPriority::BEST_EFFORT}))
@@ -161,7 +198,7 @@ void OptimizationGuideKeyedService::Initialize() {
     prediction_model_and_features_store_ =
         std::make_unique<optimization_guide::OptimizationGuideStore>(
             proto_db_provider,
-            profile_path.AddExtensionASCII(
+            profile_path.Append(
                 optimization_guide::
                     kOptimizationGuidePredictionModelAndFeaturesStore),
             base::ThreadPool::CreateSequencedTaskRunner(
@@ -172,10 +209,15 @@ void OptimizationGuideKeyedService::Initialize() {
 
   hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
       profile, profile->GetPrefs(), hint_store, top_host_provider_.get(),
-      url_loader_factory);
+      tab_url_provider_.get(), url_loader_factory);
   prediction_manager_ = std::make_unique<optimization_guide::PredictionManager>(
       prediction_model_and_features_store, top_host_provider_.get(),
       url_loader_factory, profile->GetPrefs(), profile);
+
+  // The previous store paths were written in incorrect locations. Delete the
+  // old paths. Remove this code in 04/2022 since it should be assumed that all
+  // clients that had the previous path have had their previous stores deleted.
+  DeleteOldStorePaths(profile_path);
 }
 
 OptimizationGuideHintsManager*
@@ -231,15 +273,13 @@ void OptimizationGuideKeyedService::RegisterOptimizationTargets(
 void OptimizationGuideKeyedService::ShouldTargetNavigationAsync(
     content::NavigationHandle* navigation_handle,
     optimization_guide::proto::OptimizationTarget optimization_target,
-    const base::flat_map<optimization_guide::proto::ClientModelFeature, float>&
-        client_model_feature_values,
     optimization_guide::OptimizationGuideTargetDecisionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(navigation_handle->IsInMainFrame());
 
   optimization_guide::OptimizationTargetDecision target_decision =
-      prediction_manager_->ShouldTargetNavigation(
-          navigation_handle, optimization_target, client_model_feature_values);
+      prediction_manager_->ShouldTargetNavigation(navigation_handle,
+                                                  optimization_target);
   LogOptimizationTargetDecisionAndPassOptimizationGuideDecision(
       optimization_target, std::move(callback), target_decision);
 }
@@ -312,17 +352,6 @@ void OptimizationGuideKeyedService::ClearData() {
 
 void OptimizationGuideKeyedService::Shutdown() {
   hints_manager_->Shutdown();
-}
-
-void OptimizationGuideKeyedService::UpdateSessionFCP(base::TimeDelta fcp) {
-    prediction_manager_->UpdateFCPSessionStatistics(fcp);
-}
-
-void OptimizationGuideKeyedService::OverrideTargetDecisionForTesting(
-    optimization_guide::proto::OptimizationTarget optimization_target,
-    optimization_guide::OptimizationGuideDecision optimization_guide_decision) {
-    prediction_manager_->OverrideTargetDecisionForTesting(
-        optimization_target, optimization_guide_decision);
 }
 
 void OptimizationGuideKeyedService::OverrideTargetModelFileForTesting(

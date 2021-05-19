@@ -7,7 +7,6 @@
  * authenticator.js and SAML notice handling.
  */
 
-// TODO(https://crbug.com/1171232): Make it compiled by closure.
 Polymer({
   is: 'gaia-dialog',
 
@@ -142,10 +141,7 @@ Polymer({
    * @type {!cr.login.Authenticator|undefined}
    * @private
    */
-  authenticator_: {
-    type: Object,
-    value: undefined,
-  },
+  authenticator_: undefined,
 
   getAuthenticator() {
     return this.authenticator_;
@@ -212,9 +208,17 @@ Polymer({
       },
       'dialogShown': (e) => {
         this.navigationEnabled = false;
+        chrome.send('enableShelfButtons', [false]);
       },
       'dialogHidden': (e) => {
         this.navigationEnabled = true;
+        chrome.send('enableShelfButtons', [true]);
+      },
+      'exit': (e) => {
+        this.fire('exit', e.detail);
+      },
+      'removeUserByEmail': (e) => {
+        this.fire('removeuserbyemail', e.detail);
       },
     };
 
@@ -222,6 +226,13 @@ Polymer({
       this.authenticator_.addEventListener(
           eventName, authenticatorEventListeners[eventName].bind(this));
     }
+
+    cr.sendWithPromise('getIsSshConfigured')
+        .then(this.updateSshWarningVisibility.bind(this));
+  },
+
+  updateSshWarningVisibility(show) {
+    this.$.sshWarning.hidden = !show;
   },
 
   show() {

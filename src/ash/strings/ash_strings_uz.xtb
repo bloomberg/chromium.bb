@@ -40,6 +40,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> orqali quvvat olmoqda</translation>
 <translation id="1255033239764210633">Ob-havo qanday?</translation>
 <translation id="1267032506238418139">Tugmalar birikmasini o‘zgartirish</translation>
+<translation id="1269405891096105529">Mehmon rejimida tashqi qurilmalar ishlamaydi</translation>
 <translation id="1270290102613614947">Ekran klaviaturasi o‘chirib qo‘yilgan</translation>
 <translation id="1272079795634619415">To‘xtatish</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> quvvatlanmoqda</translation>
@@ -132,6 +133,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Xabar yozing</translation>
 <translation id="2018630726571919839">Bitta latifa aytib ber</translation>
+<translation id="2021864487439853900">Ochish uchun bosing</translation>
 <translation id="2049240716062114887">Ish stoli nomi yangilandi: <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Bo‘yiga</translation>
 <translation id="2067602449040652523">Klaviatura yorqinligi</translation>
@@ -276,6 +278,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> keyinroq kira oladi.</translation>
 <translation id="3321628682574733415">Ota-ona kodi xato kiritildi</translation>
 <translation id="332587331255250389">Batareyani almashtiring</translation>
+<translation id="3333741161915951567">Modem qayta ishga tushmoqda. 30 soniyadan keyin qayta urining.</translation>
 <translation id="3341303451326249809">Skrinshot olindi</translation>
 <translation id="334252345105450327">Skrinshot olish</translation>
 <translation id="3351879221545518001">Hozir ekraningiz translatsiya qilinmoqda.</translation>
@@ -320,6 +323,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> boshqariladigan hisob</translation>
 <translation id="3665889125180354336">Mikrofon bilan yozib olish</translation>
 <translation id="36813544980941320">Telefoningiz va <ph name="DEVICE_NAME" /> qurilmangizda bitta Wi-Fi tarmoq ishlatiladi</translation>
+<translation id="3702809606464356667">Joriy ish stoli oynalari chiqarilgan, barcha ish stollar oynalarini chiqarish uchun yuqoriga strelkani bosing</translation>
 <translation id="3702846122927433391">Nigeriyada aholi soni</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Yuklanmoqda…</translation>
@@ -351,6 +355,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="394485226368336402">Audio sozlamalari</translation>
 <translation id="3945319193631853098">Sozlashni yakunlash uchun bosing</translation>
 <translation id="3945867833895287237">Hotspotga ulanmoqda...</translation>
+<translation id="3958465044488004317">Natijani Assistentda koʻrish</translation>
 <translation id="3962859241508114581">Avvalgi trek</translation>
 <translation id="3969043077941541451">Yoqilmagan</translation>
 <translation id="397105322502079400">Hisoblanmoqda...</translation>
@@ -407,10 +412,12 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="4421231901400348175">Ekraningiz boshqaruvini masofaviy yordamchi orqali <ph name="HELPER_NAME" /> bilan ulashish.</translation>
 <translation id="4424159417645388645">Desk 5</translation>
 <translation id="4430019312045809116">Hajmi</translation>
+<translation id="4445159312344259901">Ochish uchun hisobga kiring</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 ta muhim bildirishnoma}other{# ta muhim bildirishnoma}}</translation>
 <translation id="4450893287417543264">Boshqa ko‘rsatilmasin</translation>
 <translation id="445864333228800152">Xayrli kech,</translation>
 <translation id="4458688154122353284">Ekranni yozib olishni toʻxtatish</translation>
+<translation id="4467143075433126295">Toʻliq ekran rejimidan chiqish uchun [Esc] tugmasini bosib turing</translation>
 <translation id="4472575034687746823">Boshlash</translation>
 <translation id="4477350412780666475">Keyingi trek</translation>
 <translation id="4477892968187500306">Bu qurilmada Google tomonidan tekshirilmagan ilovalar boʻlishi mumkin.</translation>
@@ -607,6 +614,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Google Assistent mehmon seansida ishlamaydi.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> hisobini olib tashlash oynasini ochish</translation>
+<translation id="6154006699632741460">Tashqi qurilmalar ishlamaydi</translation>
 <translation id="615957422585914272">Ekran klaviaturasini ko‘rsatish</translation>
 <translation id="6165508094623778733">Batafsil</translation>
 <translation id="6179832488876878285">Bu yerga muhim fayllarni mahkamlash mumkin. Boshlash uchun Files ilovasini oching.</translation>
@@ -624,11 +632,11 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="6297287540776456956">Ekran qismini belgilash uchun stilusdan foydalaning</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />: joylashuv <ph name="ROTATION" /> ga o‘zgartirildi</translation>
 <translation id="6315170314923504164">Ovoz</translation>
+<translation id="6330012934079202188">Barcha ish stollar oynalari chiqarilgan, joriy ish stoli oynalarini chiqarish uchun yuqoriga strelkani bosing</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> seansi <ph name="MANAGER" /> domenida boshqariladi</translation>
 <translation id="6376931439017688372">Bluetooth yoniq</translation>
 <translation id="6381109794406942707">Qurilmani qulfdan chiqarish uchun PIN kodingizni kiriting.</translation>
 <translation id="639644700271529076">CAPS LOCK o‘chiq</translation>
-<translation id="6396835948284782440">Chiqish uchun [Esc] tugmasini bosib turing</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617">Himoya: <ph name="SECURITY_STATUS" />, Signal darajasi: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Barcha eslatmalarni tozalang</translation>
@@ -794,7 +802,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="7780159184141939021">Ekranni burish</translation>
 <translation id="7796353162336583443">Eslatma va skrinshotlar olish hamda assistent, lazerli kursor yoki lupadan foydalanish uchun javondagi stilus tugmasini bosing.</translation>
 <translation id="7798302898096527229">Bekor qilish uchun Qidiruv yoki Shift tugmasini bosing.</translation>
-<translation id="7807966291075028781">Xavfsizlik sabablariga koʻra mehmon rejimida tashqi qurilmalar ishlamaydi</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Signal kuchli</translation>
 <translation id="7837740436429729974">Vaqt tugadi</translation>
@@ -944,6 +951,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="8936501819958976551">faolsizlantirildi</translation>
 <translation id="8938800817013097409">USB-C qurilma (orqa tomondagi o‘ng port)</translation>
 <translation id="8940956008527784070">Batareya zaryadi kam (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Chromebook qurilmangiz faqat ishonchli Thunderbolt qurilmalari bilan ishlay oladi</translation>
 <translation id="8982906748181120328">Atrofga ochish</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ishlatilmoqda</translation>

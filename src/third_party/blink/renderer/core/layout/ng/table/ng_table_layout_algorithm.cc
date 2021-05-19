@@ -32,6 +32,7 @@ namespace blink {
 namespace {
 
 NGTableTypes::Caption ComputeCaptionConstraint(
+    const NGConstraintSpace& table_space,
     const ComputedStyle& table_style,
     const NGTableGroupedChildren& grouped_children) {
   // Caption inline size constraints.
@@ -39,16 +40,52 @@ NGTableTypes::Caption ComputeCaptionConstraint(
   for (const NGBlockNode& caption : grouped_children.captions) {
     // Caption %-block-sizes are treated as auto, as there isn't a reasonable
     // block-size to resolve against.
-    NGBoxStrut margins = ComputeMinMaxMargins(table_style, caption);
-    MinMaxSizes min_max_size =
-        ComputeMinAndMaxContentContribution(
-            table_style, caption,
-            MinMaxSizesInput(kIndefiniteSize, MinMaxSizesType::kContent))
-            .sizes;
-    min_max_size += margins.InlineSum();
-    caption_min_max.Encompass(min_max_size);
+    NGMinMaxConstraintSpaceBuilder builder(table_space, table_style, caption,
+                                           /* is_new_fc */ true);
+    builder.SetAvailableBlockSize(kIndefiniteSize);
+    const auto space = builder.ToConstraintSpace();
+
+    MinMaxSizes min_max_sizes =
+        ComputeMinAndMaxContentContribution(table_style, caption, space).sizes;
+    min_max_sizes += ComputeMinMaxMargins(table_style, caption).InlineSum();
+    caption_min_max.Encompass(min_max_sizes);
   }
   return caption_min_max;
+}
+
+void ComputeCaptionFragments(
+    const NGConstraintSpace& table_constraint_space,
+    const ComputedStyle& table_style,
+    const NGTableGroupedChildren& grouped_children,
+    const LayoutUnit table_inline_size,
+    Vector<NGTableLayoutAlgorithm::CaptionResult>& captions,
+    LayoutUnit& captions_block_size) {
+  const LogicalSize available_size = {table_inline_size, kIndefiniteSize};
+  for (NGBlockNode caption : grouped_children.captions) {
+    const auto& caption_style = caption.Style();
+
+    NGConstraintSpaceBuilder builder(table_constraint_space,
+                                     caption_style.GetWritingDirection(),
+                                     /* is_new_fc */ true);
+    SetOrthogonalFallbackInlineSizeIfNeeded(table_style, caption, &builder);
+    builder.SetAvailableSize(available_size);
+    builder.SetPercentageResolutionSize(available_size);
+    builder.SetStretchInlineSizeIfAuto(true);
+    NGConstraintSpace caption_constraint_space = builder.ToConstraintSpace();
+
+    scoped_refptr<const NGLayoutResult> caption_result =
+        caption.Layout(caption_constraint_space);
+    NGFragment fragment(table_constraint_space.GetWritingDirection(),
+                        caption_result->PhysicalFragment());
+    NGBoxStrut margins = ComputeMarginsFor(
+        caption_constraint_space, caption_style, table_constraint_space);
+    ResolveInlineMargins(caption_style, table_style, table_inline_size,
+                         fragment.InlineSize(), &margins);
+
+    captions.push_back(NGTableLayoutAlgorithm::CaptionResult{
+        caption, std::move(caption_result), margins});
+    captions_block_size += fragment.BlockSize() + margins.BlockSum();
+  }
 }
 
 LayoutUnit ComputeUndistributableTableSpace(
@@ -81,7 +118,10 @@ LayoutUnit ComputeEmptyTableInlineSize(
     const NGBoxStrut& table_border_padding,
     const bool has_collapsed_borders) {
   // If table has a css inline size, use that.
-  if (space.IsFixedInlineSize() || !table_style.LogicalWidth().IsAuto() ||
+  if (space.IsFixedInlineSize() ||
+      (space.StretchInlineSizeIfAuto() &&
+       table_style.LogicalWidth().IsAuto()) ||
+      !table_style.LogicalWidth().IsAuto() ||
       !table_style.LogicalMinWidth().IsAuto()) {
     return assignable_table_inline_size + undistributable_space;
   }
@@ -121,10 +161,13 @@ LayoutUnit ComputeAssignableTableInlineSize(
   LayoutUnit used_table_inline_size = ComputeUsedInlineSizeForTableFragment(
       space, table, table_border_padding, grid_min_max);
 
-  // Don't allow the inline-size to go below the grid, or caption min-size.
+  // |ComputeUsedInlineSizeForTableFragment| returns a value >= GRIDMIN because
+  // of the |grid_min_max| parameter above.
+  DCHECK_GE(used_table_inline_size, grid_min_max.min_size);
+
+  // Don't allow the inline-size to go below the caption min-size.
   used_table_inline_size =
-      std::max({used_table_inline_size, caption_constraint.min_size,
-                grid_min_max.min_size});
+      std::max(used_table_inline_size, caption_constraint.min_size);
 
   // Standard: The assignable table width is the "used width of the table"
   // minus the total horizontal border spacing.
@@ -353,7 +396,7 @@ LayoutUnit NGTableLayoutAlgorithm::ComputeTableInlineSize(
       table.GetColumnConstraints(grouped_children, table_border_padding);
 
   const NGTableTypes::Caption caption_constraint =
-      ComputeCaptionConstraint(table.Style(), grouped_children);
+      ComputeCaptionConstraint(space, table.Style(), grouped_children);
 
   const LayoutUnit undistributable_space = ComputeUndistributableTableSpace(
       *column_constraints, table_border_padding.InlineSum(),
@@ -387,6 +430,19 @@ LayoutUnit NGTableLayoutAlgorithm::ComputeTableInlineSize(
                   caption_constraint.min_size);
 }
 
+LayoutUnit NGTableLayoutAlgorithm::ComputeCaptionBlockSize(
+    const NGTableNode& node,
+    const NGConstraintSpace& space,
+    const LayoutUnit table_inline_size) {
+  Vector<NGTableLayoutAlgorithm::CaptionResult> captions;
+  NGTableGroupedChildren grouped_children(node);
+  LayoutUnit captions_block_size;
+
+  ComputeCaptionFragments(space, node.Style(), grouped_children,
+                          table_inline_size, captions, captions_block_size);
+  return captions_block_size;
+}
+
 scoped_refptr<const NGLayoutResult> NGTableLayoutAlgorithm::Layout() {
   DCHECK(!BreakToken());
 
@@ -407,7 +463,7 @@ scoped_refptr<const NGLayoutResult> NGTableLayoutAlgorithm::Layout() {
   const scoped_refptr<const NGTableTypes::Columns> column_constraints =
       Node().GetColumnConstraints(grouped_children, border_padding);
   const NGTableTypes::Caption caption_constraint =
-      ComputeCaptionConstraint(Style(), grouped_children);
+      ComputeCaptionConstraint(ConstraintSpace(), Style(), grouped_children);
   // Compute assignable table inline size.
   // Standard: https://www.w3.org/TR/css-tables-3/#width-distribution
   const LayoutUnit undistributable_space = ComputeUndistributableTableSpace(
@@ -450,8 +506,9 @@ scoped_refptr<const NGLayoutResult> NGTableLayoutAlgorithm::Layout() {
   // block-size given to the table-grid.
   Vector<CaptionResult> captions;
   LayoutUnit captions_block_size;
-  ComputeCaptionFragments(grouped_children, container_builder_.InlineSize(),
-                          captions, captions_block_size);
+  ComputeCaptionFragments(ConstraintSpace(), Style(), grouped_children,
+                          container_builder_.InlineSize(), captions,
+                          captions_block_size);
 
   NGTableTypes::Rows rows;
   NGTableTypes::CellBlockConstraints cell_block_constraints;
@@ -498,7 +555,7 @@ scoped_refptr<const NGLayoutResult> NGTableLayoutAlgorithm::Layout() {
 }
 
 MinMaxSizesResult NGTableLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesInput& input) const {
+    const MinMaxSizesFloatInput&) const {
   const bool is_fixed_layout = Style().IsFixedTableLayout();
   // Tables need autosizer.
   base::Optional<TextAutosizer::TableLayoutScope> text_autosizer;
@@ -514,7 +571,7 @@ MinMaxSizesResult NGTableLayoutAlgorithm::ComputeMinMaxSizes(
   const scoped_refptr<const NGTableTypes::Columns> column_constraints =
       Node().GetColumnConstraints(grouped_children, border_padding);
   const NGTableTypes::Caption caption_constraint =
-      ComputeCaptionConstraint(Style(), grouped_children);
+      ComputeCaptionConstraint(ConstraintSpace(), Style(), grouped_children);
 
   const LayoutUnit undistributable_space = ComputeUndistributableTableSpace(
       *column_constraints, border_padding.InlineSum(),
@@ -530,13 +587,12 @@ MinMaxSizesResult NGTableLayoutAlgorithm::ComputeMinMaxSizes(
       std::max(grid_min_max.min_size, caption_constraint.min_size),
       std::max(grid_min_max.max_size, caption_constraint.min_size)};
 
-  if (is_fixed_layout && Style().LogicalWidth().IsPercentOrCalc() &&
-      Node().AllowsInfiniteMaxInlineSize()) {
+  if (is_fixed_layout && Style().LogicalWidth().IsPercentOrCalc()) {
     min_max.max_size = NGTableTypes::kTableMaxInlineSize;
   }
   DCHECK_LE(min_max.min_size, min_max.max_size);
   return MinMaxSizesResult{min_max,
-                           /* depends_on_percentage_block_size */ false};
+                           /* depends_on_block_constraints */ false};
 }
 
 void NGTableLayoutAlgorithm::ComputeRows(
@@ -567,19 +623,26 @@ void NGTableLayoutAlgorithm::ComputeRows(
     total_table_block_size += sections->back().block_size;
   }
 
-  // If we can correctly resolve our min-block-size we want to distribute
-  // sections/rows into this space. Pass a definite intrinsic block-size into
-  // |ComputeBlockSizeForFragment| to force it to resolve.
-  const LayoutUnit intrinsic_block_size =
-      BlockLengthUnresolvable(ConstraintSpace(), Style().LogicalMinHeight())
-          ? kIndefiniteSize
-          : table_border_padding.BlockSum();
+  LayoutUnit css_table_block_size;
+  if (ConstraintSpace().IsFixedBlockSizeIndefinite() &&
+      !ConstraintSpace().IsFixedBlockSize()) {
+    // We get here when a flexbox wants to use the table's intrinsic height as
+    // an input to the flex algorithm.
+    css_table_block_size = kIndefiniteSize;
+  } else {
+    // If we can correctly resolve our min-block-size we want to distribute
+    // sections/rows into this space. Pass a definite intrinsic block-size into
+    // |ComputeBlockSizeForFragment| to force it to resolve.
+    LayoutUnit intrinsic_block_size =
+        BlockLengthUnresolvable(ConstraintSpace(), Style().LogicalMinHeight())
+            ? kIndefiniteSize
+            : table_border_padding.BlockSum();
 
-  const LayoutUnit css_table_block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), table_border_padding, intrinsic_block_size,
-      table_grid_inline_size, Node().ShouldBeConsideredAsReplaced(),
-      /* available_block_size_adjustment */ captions_block_size);
-
+    css_table_block_size = ComputeBlockSizeForFragment(
+        ConstraintSpace(), Style(), table_border_padding, intrinsic_block_size,
+        table_grid_inline_size,
+        /* available_block_size_adjustment */ captions_block_size);
+  }
   // In quirks mode, empty tables ignore any specified block-size.
   const bool is_empty_quirks_mode_table =
       Node().GetDocument().InQuirksMode() &&
@@ -652,42 +715,13 @@ void NGTableLayoutAlgorithm::ComputeTableSpecificFragmentData(
       row_offset += row.block_size;
     }
     fragment_borders_geometry->rows.push_back(row_offset);
+    // crbug.com/1179369 make sure dimensions of table_borders and
+    // fragment_borders_geometry are consistent.
+    DCHECK_LE(table_borders.EdgesPerRow() / 2,
+              fragment_borders_geometry->columns.size());
     container_builder_.SetTableCollapsedBorders(table_borders);
     container_builder_.SetTableCollapsedBordersGeometry(
         std::move(fragment_borders_geometry));
-  }
-}
-
-void NGTableLayoutAlgorithm::ComputeCaptionFragments(
-    const NGTableGroupedChildren& grouped_children,
-    const LayoutUnit table_inline_size,
-    Vector<CaptionResult>& captions,
-    LayoutUnit& captions_block_size) {
-  const LogicalSize available_size = {table_inline_size, kIndefiniteSize};
-  for (NGBlockNode caption : grouped_children.captions) {
-    const auto& caption_style = caption.Style();
-
-    NGConstraintSpaceBuilder builder(ConstraintSpace(),
-                                     caption_style.GetWritingDirection(),
-                                     /* is_new_fc */ true);
-    SetOrthogonalFallbackInlineSizeIfNeeded(Style(), caption, &builder);
-    builder.SetAvailableSize(available_size);
-    builder.SetPercentageResolutionSize(available_size);
-    builder.SetStretchInlineSizeIfAuto(true);
-    NGConstraintSpace caption_constraint_space = builder.ToConstraintSpace();
-
-    scoped_refptr<const NGLayoutResult> caption_result =
-        caption.Layout(caption_constraint_space);
-    NGFragment fragment(ConstraintSpace().GetWritingDirection(),
-                        caption_result->PhysicalFragment());
-    NGBoxStrut margins = ComputeMarginsFor(caption_constraint_space,
-                                           caption_style, ConstraintSpace());
-    ResolveInlineMargins(caption_style, Style(), table_inline_size,
-                         fragment.InlineSize(), &margins);
-
-    captions.push_back(
-        CaptionResult{caption, std::move(caption_result), margins});
-    captions_block_size += fragment.BlockSize() + margins.BlockSum();
   }
 }
 
@@ -817,13 +851,14 @@ scoped_refptr<const NGLayoutResult> NGTableLayoutAlgorithm::GenerateFragment(
       AddCaptionResult(caption, &block_offset);
   }
 
+  LayoutUnit block_size = std::max(grid_block_size, block_offset);
   if (ConstraintSpace().IsFixedBlockSize()) {
     container_builder_.SetFragmentBlockSize(
         ConstraintSpace().AvailableSize().block_size);
   } else {
-    container_builder_.SetFragmentBlockSize(block_offset);
+    container_builder_.SetFragmentBlockSize(block_size);
   }
-  container_builder_.SetIntrinsicBlockSize(block_offset);
+  container_builder_.SetIntrinsicBlockSize(block_size);
 
   const WritingModeConverter grid_converter(
       Style().GetWritingDirection(),

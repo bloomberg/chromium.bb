@@ -4,13 +4,13 @@
 
 #include "quic/core/http/quic_receive_control_stream.h"
 
+#include "absl/memory/memory.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
 #include "quic/core/http/http_constants.h"
 #include "quic/core/qpack/qpack_header_table.h"
 #include "quic/core/quic_types.h"
 #include "quic/core/quic_utils.h"
-#include "quic/platform/api/quic_ptr_util.h"
 #include "quic/test_tools/qpack/qpack_encoder_peer.h"
 #include "quic/test_tools/quic_spdy_session_peer.h"
 #include "quic/test_tools/quic_stream_peer.h"
@@ -106,7 +106,7 @@ class QuicReceiveControlStreamTest : public QuicTestWithParam<TestParams> {
     stream_ = new TestStream(GetNthClientInitiatedBidirectionalStreamId(
                                  GetParam().version.transport_version, 0),
                              &session_);
-    session_.ActivateStream(QuicWrapUnique(stream_));
+    session_.ActivateStream(absl::WrapUnique(stream_));
   }
 
   Perspective perspective() const { return GetParam().perspective; }
@@ -303,14 +303,12 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveGoAwayFrame) {
 }
 
 TEST_P(QuicReceiveControlStreamTest, PushPromiseOnControlStreamShouldClose) {
-  PushPromiseFrame push_promise;
-  push_promise.push_id = 0x01;
-  push_promise.headers = "Headers";
-  std::unique_ptr<char[]> buffer;
-  uint64_t length = HttpEncoder::SerializePushPromiseFrameWithOnlyPushId(
-      push_promise, &buffer);
-  QuicStreamFrame frame(receive_control_stream_->id(), false, 1, buffer.get(),
-                        length);
+  std::string push_promise_frame = absl::HexStringToBytes(
+      "05"    // PUSH_PROMISE
+      "01"    // length
+      "00");  // push ID
+  QuicStreamFrame frame(receive_control_stream_->id(), false, 1,
+                        push_promise_frame);
   EXPECT_CALL(
       *connection_,
       CloseConnection(QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM, _, _))
@@ -404,8 +402,7 @@ TEST_P(QuicReceiveControlStreamTest, AcceptChFrameBeforeSettings) {
       "4089"  // type (ACCEPT_CH)
       "00");  // length
 
-  if (GetQuicReloadableFlag(quic_parse_accept_ch_frame) &&
-      perspective() == Perspective::IS_SERVER) {
+  if (perspective() == Perspective::IS_SERVER) {
     EXPECT_CALL(*connection_,
                 CloseConnection(
                     QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM,
@@ -449,23 +446,17 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveAcceptChFrame) {
       "4089"  // type (ACCEPT_CH)
       "00");  // length
 
-  if (GetQuicReloadableFlag(quic_parse_accept_ch_frame)) {
-    if (perspective() == Perspective::IS_CLIENT) {
-      EXPECT_CALL(debug_visitor, OnAcceptChFrameReceived(_));
-    } else {
-      EXPECT_CALL(*connection_,
-                  CloseConnection(
-                      QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM,
-                      "Invalid frame type 137 received on control stream.", _))
-          .WillOnce(
-              Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
-      EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
-      EXPECT_CALL(session_, OnConnectionClosed(_, _));
-    }
+  if (perspective() == Perspective::IS_CLIENT) {
+    EXPECT_CALL(debug_visitor, OnAcceptChFrameReceived(_));
   } else {
-    EXPECT_CALL(debug_visitor,
-                OnUnknownFrameReceived(id, /* frame_type = */ 0x89,
-                                       /* payload_length = */ 0));
+    EXPECT_CALL(*connection_,
+                CloseConnection(
+                    QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM,
+                    "Invalid frame type 137 received on control stream.", _))
+        .WillOnce(
+            Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+    EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _, _));
+    EXPECT_CALL(session_, OnConnectionClosed(_, _));
   }
 
   receive_control_stream_->OnStreamFrame(

@@ -15,6 +15,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/sync/typed_url_sync_metadata_database.h"
 #include "components/history/core/browser/url_database.h"
+#include "components/history/core/browser/visit_annotations_database.h"
 #include "components/history/core/browser/visit_database.h"
 #include "components/history/core/browser/visitsegment_database.h"
 #include "sql/database.h"
@@ -49,6 +50,7 @@ class HistoryDatabase : public DownloadDatabase,
                         public TypedURLSyncMetadataDatabase,
                         public URLDatabase,
                         public VisitDatabase,
+                        public VisitAnnotationsDatabase,
                         public VisitSegmentDatabase {
  public:
   // A simple class for scoping a history database transaction. This does not

@@ -40,12 +40,15 @@
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_decode_surface.h"
+#include "media/gpu/v4l2/v4l2_h264_accelerator.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator_chromium.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator_legacy.h"
 #include "media/gpu/v4l2/v4l2_image_processor_backend.h"
+#include "media/gpu/v4l2/v4l2_utils.h"
 #include "media/gpu/v4l2/v4l2_vda_helpers.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator_legacy.h"
+#include "media/gpu/v4l2/v4l2_vp9_accelerator_chromium.h"
 #include "media/gpu/v4l2/v4l2_vp9_accelerator_legacy.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gl/gl_context.h"
@@ -294,9 +297,14 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
 
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
     if (supports_requests_) {
-      decoder_ = std::make_unique<H264Decoder>(
-          std::make_unique<V4L2ChromiumH264Accelerator>(this, device_.get()),
-          video_profile_);
+      if (V4L2H264Accelerator::SupportsUpstreamABI(device_.get()))
+        decoder_ = std::make_unique<H264Decoder>(
+            std::make_unique<V4L2H264Accelerator>(this, device_.get()),
+            video_profile_);
+      else
+        decoder_ = std::make_unique<H264Decoder>(
+            std::make_unique<V4L2ChromiumH264Accelerator>(this, device_.get()),
+            video_profile_);
     } else {
       decoder_ = std::make_unique<H264Decoder>(
           std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get()),
@@ -313,9 +321,15 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
     }
   } else if (video_profile_ >= VP9PROFILE_MIN &&
              video_profile_ <= VP9PROFILE_MAX) {
-    decoder_ = std::make_unique<VP9Decoder>(
-        std::make_unique<V4L2LegacyVP9Accelerator>(this, device_.get()),
-        video_profile_);
+    if (supports_requests_) {
+      decoder_ = std::make_unique<VP9Decoder>(
+          std::make_unique<V4L2ChromiumVP9Accelerator>(this, device_.get()),
+          video_profile_);
+    } else {
+      decoder_ = std::make_unique<VP9Decoder>(
+          std::make_unique<V4L2LegacyVP9Accelerator>(this, device_.get()),
+          video_profile_);
+    }
   } else {
     NOTREACHED() << "Unsupported profile " << GetProfileName(video_profile_);
     return false;
@@ -2337,14 +2351,14 @@ bool V4L2SliceVideoDecodeAccelerator::OnMemoryDump(
       input_queue_->AllocatedBuffersCount();
   size_t input_queue_memory_usage = 0;
   std::string input_queue_buffers_memory_type =
-      V4L2Device::V4L2MemoryToString(input_queue_->GetMemoryType());
+      V4L2MemoryToString(input_queue_->GetMemoryType());
   input_queue_memory_usage += input_queue_->GetMemoryUsage();
 
   // VIDEO_CAPTURE queue's memory usage.
   const size_t output_queue_buffers_count = output_buffer_map_.size();
   size_t output_queue_memory_usage = 0;
   std::string output_queue_buffers_memory_type =
-      V4L2Device::V4L2MemoryToString(output_queue_->GetMemoryType());
+      V4L2MemoryToString(output_queue_->GetMemoryType());
   if (output_mode_ == Config::OutputMode::ALLOCATE) {
     // Call QUERY_BUF here because the length of buffers on VIDIOC_CATURE queue
     // are not recorded nowhere in V4L2VideoDecodeAccelerator.

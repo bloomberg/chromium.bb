@@ -1345,6 +1345,7 @@ typedef struct AVCodecContext {
      */
     int (*get_buffer2)(struct AVCodecContext *s, AVFrame *frame, int flags);
 
+#if FF_API_OLD_ENCDEC
     /**
      * If non-zero, the decoded audio and video frames returned from
      * avcodec_decode_video2() and avcodec_decode_audio4() are reference-counted
@@ -1360,6 +1361,7 @@ typedef struct AVCodecContext {
      */
     attribute_deprecated
     int refcounted_frames;
+#endif
 
     /* - encoding parameters */
     float qcompress;  ///< amount of qscale change between easy & hard scenes (0.0-1.0)
@@ -1619,42 +1621,20 @@ typedef struct AVCodecContext {
 #define FF_DEBUG_BITSTREAM   4
 #define FF_DEBUG_MB_TYPE     8
 #define FF_DEBUG_QP          16
-#if FF_API_DEBUG_MV
-/**
- * @deprecated this option does nothing
- */
-#define FF_DEBUG_MV          32
-#endif
 #define FF_DEBUG_DCT_COEFF   0x00000040
 #define FF_DEBUG_SKIP        0x00000080
 #define FF_DEBUG_STARTCODE   0x00000100
 #define FF_DEBUG_ER          0x00000400
 #define FF_DEBUG_MMCO        0x00000800
 #define FF_DEBUG_BUGS        0x00001000
-#if FF_API_DEBUG_MV
-#define FF_DEBUG_VIS_QP      0x00002000
-#define FF_DEBUG_VIS_MB_TYPE 0x00004000
-#endif
 #define FF_DEBUG_BUFFERS     0x00008000
 #define FF_DEBUG_THREADS     0x00010000
 #define FF_DEBUG_GREEN_MD    0x00800000
 #define FF_DEBUG_NOMC        0x01000000
 
-#if FF_API_DEBUG_MV
-    /**
-     * debug
-     * - encoding: Set by user.
-     * - decoding: Set by user.
-     */
-    int debug_mv;
-#define FF_DEBUG_VIS_MV_P_FOR  0x00000001 // visualize forward predicted MVs of P-frames
-#define FF_DEBUG_VIS_MV_B_FOR  0x00000002 // visualize forward predicted MVs of B-frames
-#define FF_DEBUG_VIS_MV_B_BACK 0x00000004 // visualize backward predicted MVs of B-frames
-#endif
-
     /**
      * Error recognition; may misdetect some more or less valid parts as errors.
-     * - encoding: unused
+     * - encoding: Set by user.
      * - decoding: Set by user.
      */
     int err_recognition;
@@ -1761,14 +1741,12 @@ typedef struct AVCodecContext {
      */
     int bits_per_raw_sample;
 
-#if FF_API_LOWRES
     /**
      * low resolution decoding, 1-> 1/2 size, 2->1/4 size
      * - encoding: unused
      * - decoding: Set by user.
      */
      int lowres;
-#endif
 
 #if FF_API_CODED_FRAME
     /**
@@ -1819,7 +1797,11 @@ typedef struct AVCodecContext {
      *
      * @deprecated the custom get_buffer2() callback should always be
      *   thread-safe. Thread-unsafe get_buffer2() implementations will be
-     *   invalid once this field is removed.
+     *   invalid starting with LIBAVCODEC_VERSION_MAJOR=60; in other words,
+     *   libavcodec will behave as if this field was always set to 1.
+     *   Callers that want to be forward compatible with future libavcodec
+     *   versions should wrap access to this field in
+     *     #if LIBAVCODEC_VERSION_MAJOR < 60
      */
     attribute_deprecated
     int thread_safe_callbacks;
@@ -1961,6 +1943,9 @@ typedef struct AVCodecContext {
 #define FF_PROFILE_HEVC_MAIN_STILL_PICTURE          3
 #define FF_PROFILE_HEVC_REXT                        4
 
+#define FF_PROFILE_VVC_MAIN_10                      1
+#define FF_PROFILE_VVC_MAIN_10_444                 33
+
 #define FF_PROFILE_AV1_MAIN                         0
 #define FF_PROFILE_AV1_HIGH                         1
 #define FF_PROFILE_AV1_PROFESSIONAL                 2
@@ -2101,15 +2086,6 @@ typedef struct AVCodecContext {
      */
     const AVCodecDescriptor *codec_descriptor;
 
-#if !FF_API_LOWRES
-    /**
-     * low resolution decoding, 1-> 1/2 size, 2->1/4 size
-     * - encoding: unused
-     * - decoding: Set by user.
-     */
-     int lowres;
-#endif
-
     /**
      * Current statistics for PTS correction.
      * - decoding: maintained and used by libavcodec, not intended to be used by user apps
@@ -2160,12 +2136,11 @@ typedef struct AVCodecContext {
      */
     int seek_preroll;
 
-#if !FF_API_DEBUG_MV
+#if FF_API_DEBUG_MV
     /**
-     * debug motion vectors
-     * - encoding: Set by user.
-     * - decoding: Set by user.
+     * @deprecated unused
      */
+    attribute_deprecated
     int debug_mv;
 #define FF_DEBUG_VIS_MV_P_FOR  0x00000001 //visualize forward predicted MVs of P frames
 #define FF_DEBUG_VIS_MV_B_FOR  0x00000002 //visualize forward predicted MVs of B frames
@@ -2384,12 +2359,10 @@ void                     av_codec_set_codec_descriptor(AVCodecContext *avctx, co
 attribute_deprecated
 unsigned av_codec_get_codec_properties(const AVCodecContext *avctx);
 
-#if FF_API_LOWRES
 attribute_deprecated
 int  av_codec_get_lowres(const AVCodecContext *avctx);
 attribute_deprecated
 void av_codec_set_lowres(AVCodecContext *avctx, int val);
-#endif
 
 attribute_deprecated
 int  av_codec_get_seek_preroll(const AVCodecContext *avctx);
@@ -2739,25 +2712,13 @@ const char *avcodec_license(void);
 
 #if FF_API_NEXT
 /**
- * Register the codec codec and initialize libavcodec.
- *
- * @warning either this function or avcodec_register_all() must be called
- * before any other libavcodec functions.
- *
- * @see avcodec_register_all()
+ * @deprecated Calling this function is unnecessary.
  */
 attribute_deprecated
 void avcodec_register(AVCodec *codec);
 
 /**
- * Register all the codecs, parsers and bitstream filters which were enabled at
- * configuration time. If you do not call this function you can select exactly
- * which formats you want to support, by using the individual registration
- * functions.
- *
- * @see avcodec_register
- * @see av_register_codec_parser
- * @see av_register_bitstream_filter
+ * @deprecated Calling this function is unnecessary.
  */
 attribute_deprecated
 void avcodec_register_all(void);
@@ -2801,14 +2762,13 @@ int avcodec_get_context_defaults3(AVCodecContext *s, const AVCodec *codec);
  */
 const AVClass *avcodec_get_class(void);
 
-#if FF_API_COPY_CONTEXT
+#if FF_API_GET_FRAME_CLASS
 /**
- * Get the AVClass for AVFrame. It can be used in combination with
- * AV_OPT_SEARCH_FAKE_OBJ for examining options.
- *
- * @see av_opt_find().
+ * @deprecated This function should not be used.
  */
+attribute_deprecated
 const AVClass *avcodec_get_frame_class(void);
+#endif
 
 /**
  * Get the AVClass for AVSubtitleRect. It can be used in combination with
@@ -2818,6 +2778,7 @@ const AVClass *avcodec_get_frame_class(void);
  */
 const AVClass *avcodec_get_subtitle_rect_class(void);
 
+#if FF_API_COPY_CONTEXT
 /**
  * Copy the settings of the source AVCodecContext into the destination
  * AVCodecContext. The resulting destination codec context will be
@@ -2874,7 +2835,6 @@ int avcodec_parameters_to_context(AVCodecContext *codec,
  * @ref avcodec_receive_frame()).
  *
  * @code
- * avcodec_register_all();
  * av_dict_set(&opts, "b", "2.5M", 0);
  * codec = avcodec_find_decoder(AV_CODEC_ID_H264);
  * if (!codec)
@@ -2979,6 +2939,7 @@ int avcodec_enum_to_chroma_pos(int *xpos, int *ypos, enum AVChromaLocation pos);
  */
 enum AVChromaLocation avcodec_chroma_pos_to_enum(int xpos, int ypos);
 
+#if FF_API_OLD_ENCDEC
 /**
  * Decode the audio frame of size avpkt->size from avpkt->data into frame.
  *
@@ -3085,6 +3046,7 @@ attribute_deprecated
 int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture,
                          int *got_picture_ptr,
                          const AVPacket *avpkt);
+#endif
 
 /**
  * Decode a subtitle message.
@@ -3541,7 +3503,10 @@ typedef struct AVCodecParser {
                         const uint8_t *buf, int buf_size);
     void (*parser_close)(AVCodecParserContext *s);
     int (*split)(AVCodecContext *avctx, const uint8_t *buf, int buf_size);
+#if FF_API_NEXT
+    attribute_deprecated
     struct AVCodecParser *next;
+#endif
 } AVCodecParser;
 
 /**
@@ -3602,14 +3567,18 @@ int av_parser_parse2(AVCodecParserContext *s,
                      int64_t pts, int64_t dts,
                      int64_t pos);
 
+#if FF_API_PARSER_CHANGE
 /**
  * @return 0 if the output buffer is a subset of the input, 1 if it is allocated and must be freed
- * @deprecated use AVBitStreamFilter
+ * @deprecated Use dump_extradata, remove_extra or extract_extradata
+ *             bitstream filters instead.
  */
+attribute_deprecated
 int av_parser_change(AVCodecParserContext *s,
                      AVCodecContext *avctx,
                      uint8_t **poutbuf, int *poutbuf_size,
                      const uint8_t *buf, int buf_size, int keyframe);
+#endif
 void av_parser_close(AVCodecParserContext *s);
 
 /**
@@ -3622,6 +3591,7 @@ void av_parser_close(AVCodecParserContext *s);
  * @{
  */
 
+#if FF_API_OLD_ENCDEC
 /**
  * Encode a frame of audio.
  *
@@ -3704,6 +3674,7 @@ int avcodec_encode_audio2(AVCodecContext *avctx, AVPacket *avpkt,
 attribute_deprecated
 int avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt,
                           const AVFrame *frame, int *got_packet_ptr);
+#endif
 
 int avcodec_encode_subtitle(AVCodecContext *avctx, uint8_t *buf, int buf_size,
                             const AVSubtitle *sub);
@@ -3811,12 +3782,6 @@ void avcodec_get_chroma_sub_sample(enum AVPixelFormat pix_fmt, int *h_shift, int
 unsigned int avcodec_pix_fmt_to_codec_tag(enum AVPixelFormat pix_fmt);
 
 /**
- * @deprecated see av_get_pix_fmt_loss()
- */
-int avcodec_get_pix_fmt_loss(enum AVPixelFormat dst_pix_fmt, enum AVPixelFormat src_pix_fmt,
-                             int has_alpha);
-
-/**
  * Find the best pixel format to convert to given a certain source pixel
  * format.  When converting from one pixel format to another, information loss
  * may occur.  For example, when converting from RGB24 to GRAY, the color
@@ -3837,15 +3802,24 @@ enum AVPixelFormat avcodec_find_best_pix_fmt_of_list(const enum AVPixelFormat *p
                                             enum AVPixelFormat src_pix_fmt,
                                             int has_alpha, int *loss_ptr);
 
+#if FF_API_AVCODEC_PIX_FMT
+/**
+ * @deprecated see av_get_pix_fmt_loss()
+ */
+attribute_deprecated
+int avcodec_get_pix_fmt_loss(enum AVPixelFormat dst_pix_fmt, enum AVPixelFormat src_pix_fmt,
+                             int has_alpha);
 /**
  * @deprecated see av_find_best_pix_fmt_of_2()
  */
+attribute_deprecated
 enum AVPixelFormat avcodec_find_best_pix_fmt_of_2(enum AVPixelFormat dst_pix_fmt1, enum AVPixelFormat dst_pix_fmt2,
                                             enum AVPixelFormat src_pix_fmt, int has_alpha, int *loss_ptr);
 
 attribute_deprecated
 enum AVPixelFormat avcodec_find_best_pix_fmt2(enum AVPixelFormat dst_pix_fmt1, enum AVPixelFormat dst_pix_fmt2,
                                             enum AVPixelFormat src_pix_fmt, int has_alpha, int *loss_ptr);
+#endif
 
 enum AVPixelFormat avcodec_default_get_format(struct AVCodecContext *s, const enum AVPixelFormat * fmt);
 

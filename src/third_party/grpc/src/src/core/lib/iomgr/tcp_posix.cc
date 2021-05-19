@@ -181,8 +181,9 @@ class TcpZerocopySendCtx {
   static constexpr int kDefaultMaxSends = 4;
   static constexpr size_t kDefaultSendBytesThreshold = 16 * 1024;  // 16KB
 
-  TcpZerocopySendCtx(int max_sends = kDefaultMaxSends,
-                     size_t send_bytes_threshold = kDefaultSendBytesThreshold)
+  explicit TcpZerocopySendCtx(
+      int max_sends = kDefaultMaxSends,
+      size_t send_bytes_threshold = kDefaultSendBytesThreshold)
       : max_sends_(max_sends),
         free_send_records_size_(max_sends),
         threshold_bytes_(send_bytes_threshold) {
@@ -465,7 +466,8 @@ static void run_poller(void* bp, grpc_error* /*error_ignored*/) {
   if (gpr_atm_no_barrier_load(&g_uncovered_notifications_pending) == 1 &&
       gpr_atm_full_cas(&g_uncovered_notifications_pending, 1, 0)) {
     gpr_mu_lock(p->pollset_mu);
-    bool cas_ok = gpr_atm_full_cas(&g_backup_poller, (gpr_atm)p, 0);
+    bool cas_ok =
+        gpr_atm_full_cas(&g_backup_poller, reinterpret_cast<gpr_atm>(p), 0);
     if (GRPC_TRACE_FLAG_ENABLED(grpc_tcp_trace)) {
       gpr_log(GPR_INFO, "BACKUP_POLLER:%p done cas_ok=%d", p, cas_ok);
     }
@@ -487,7 +489,8 @@ static void run_poller(void* bp, grpc_error* /*error_ignored*/) {
 }
 
 static void drop_uncovered(grpc_tcp* /*tcp*/) {
-  backup_poller* p = (backup_poller*)gpr_atm_acq_load(&g_backup_poller);
+  backup_poller* p =
+      reinterpret_cast<backup_poller*>(gpr_atm_acq_load(&g_backup_poller));
   gpr_atm old_count =
       gpr_atm_full_fetch_add(&g_uncovered_notifications_pending, -1);
   if (GRPC_TRACE_FLAG_ENABLED(grpc_tcp_trace)) {
@@ -526,8 +529,8 @@ static void cover_self(grpc_tcp* tcp) {
         GRPC_ERROR_NONE, grpc_core::ExecutorType::DEFAULT,
         grpc_core::ExecutorJobType::LONG);
   } else {
-    while ((p = (backup_poller*)gpr_atm_acq_load(&g_backup_poller)) ==
-           nullptr) {
+    while ((p = reinterpret_cast<backup_poller*>(
+                gpr_atm_acq_load(&g_backup_poller))) == nullptr) {
       // spin waiting for backup poller
     }
   }
@@ -1238,11 +1241,11 @@ static void tcp_handle_error(void* arg /* grpc_tcp */, grpc_error* error) {
 
 #else  /* GRPC_LINUX_ERRQUEUE */
 static TcpZerocopySendRecord* tcp_get_send_zerocopy_record(
-    grpc_tcp* tcp, grpc_slice_buffer* buf) {
+    grpc_tcp* /*tcp*/, grpc_slice_buffer* /*buf*/) {
   return nullptr;
 }
 
-static void ZerocopyDisableAndWaitForRemaining(grpc_tcp* tcp) {}
+static void ZerocopyDisableAndWaitForRemaining(grpc_tcp* /*tcp*/) {}
 
 static bool tcp_write_with_timestamps(grpc_tcp* /*tcp*/, struct msghdr* /*msg*/,
                                       size_t /*sending_length*/,
@@ -1388,8 +1391,8 @@ static bool do_tcp_flush_zerocopy(grpc_tcp* tcp, TcpZerocopySendRecord* record,
 
 static void UnrefMaybePutZerocopySendRecord(grpc_tcp* tcp,
                                             TcpZerocopySendRecord* record,
-                                            uint32_t seq,
-                                            const char* /* tag */) {
+                                            uint32_t /*seq*/,
+                                            const char* /*tag*/) {
   if (record->Unref()) {
     tcp->tcp_zerocopy_send_ctx.PutSendRecord(record);
   }

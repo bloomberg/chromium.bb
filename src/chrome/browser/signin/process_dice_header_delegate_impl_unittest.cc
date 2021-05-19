@@ -10,11 +10,13 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/signin/public/base/account_consistency_method.h"
@@ -108,7 +110,7 @@ class ProcessDiceHeaderDelegateImplTest
   std::unique_ptr<ProcessDiceHeaderDelegateImpl>
   CreateDelegateAndNavigateToSignin(
       bool is_sync_signin_tab,
-      Reason reason = Reason::REASON_SIGNIN_PRIMARY_ACCOUNT) {
+      Reason reason = Reason::kSigninPrimaryAccount) {
     signin_reason_ = reason;
     if (!identity_test_environment_profile_adaptor_)
       InitializeIdentityTestEnvironment();
@@ -170,12 +172,11 @@ class ProcessDiceHeaderDelegateImplTest
   // Callback for the ProcessDiceHeaderDelegateImpl.
   void ShowSigninErrorCallback(Profile* profile,
                                content::WebContents* contents,
-                               const std::string& error_message,
-                               const std::string& email) {
+                               const SigninUIError& error) {
     EXPECT_EQ(profile, this->profile());
     EXPECT_EQ(web_contents(), contents);
-    EXPECT_EQ(auth_error_.ToString(), error_message);
-    EXPECT_EQ(email_, email);
+    EXPECT_EQ(base::UTF8ToUTF16(auth_error_.ToString()), error.message());
+    EXPECT_EQ(base::UTF8ToUTF16(email_), error.email());
     show_error_called_ = true;
   }
 
@@ -193,7 +194,7 @@ class ProcessDiceHeaderDelegateImplTest
   CoreAccountId account_id_;
   std::string email_;
   GoogleServiceAuthError auth_error_;
-  Reason signin_reason_ = Reason::REASON_SIGNIN_PRIMARY_ACCOUNT;
+  Reason signin_reason_ = Reason::kSigninPrimaryAccount;
 };
 
 // Check that sync is enabled if the tab is closed during signin.
@@ -326,12 +327,12 @@ struct TokenExchangeSuccessConfiguration {
 
 TokenExchangeSuccessConfiguration kHandleTokenExchangeSuccessTestCases[] = {
     // clang-format off
-    // is_reauth | signin_tab |       reason                       | sync_signin
-    {  false,      false,     Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, false },
-    {  false,      true,      Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, true },
-    {  false,      true,      Reason::REASON_ADD_SECONDARY_ACCOUNT,  false },
-    {  true,       false,     Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, false },
-    {  true,       true,      Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, true },
+    // is_reauth | signin_tab |       reason               | sync_signin
+    {  false,      false,     Reason::kSigninPrimaryAccount, false },
+    {  false,      true,      Reason::kSigninPrimaryAccount, true },
+    {  false,      true,      Reason::kAddSecondaryAccount,  false },
+    {  true,       false,     Reason::kSigninPrimaryAccount, false },
+    {  true,       true,      Reason::kSigninPrimaryAccount, true },
     // clang-format on
 };
 

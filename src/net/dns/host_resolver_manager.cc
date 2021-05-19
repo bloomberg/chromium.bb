@@ -97,6 +97,8 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/datagram_client_socket.h"
+#include "url/third_party/mozilla/url_parse.h"
+#include "url/url_canon_ip.h"
 
 #if BUILDFLAG(ENABLE_MDNS)
 #include "net/dns/mdns_client_impl.h"
@@ -729,6 +731,17 @@ class HostResolverManager::RequestImpl
   void LogFinishRequest(int net_error, bool async_completion) {
     source_net_log_.EndEventWithNetErrorCode(
         NetLogEventType::HOST_RESOLVER_IMPL_REQUEST, net_error);
+
+    url::HostSafetyStatus host_safety_status = url::CheckHostnameSafety(
+        request_host_.host().c_str(),
+        url::Component(0, request_host_.host().size()));
+    if (net_error == net::OK) {
+      UMA_HISTOGRAM_ENUMERATION("Net.DNS.Request.Success.HostSafetyStatus",
+                                host_safety_status);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Net.DNS.Request.Failure.HostSafetyStatus",
+                                host_safety_status);
+    }
 
     if (!parameters_.is_speculative) {
       DCHECK(!request_time_.is_null());
@@ -2048,10 +2061,10 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     DCHECK(!resolver_->HaveTestProcOverride());
     // Need to create the task even if we're going to post a failure instead of
     // running it, as a "started" job needs a task to be properly cleaned up.
-    dns_task_.reset(new DnsTask(resolver_->dns_client_.get(), hostname_,
-                                query_type_, resolve_context_, secure,
-                                secure_dns_mode_, this, net_log_, tick_clock_,
-                                !tasks_.empty() /* fallback_available */));
+    dns_task_ = std::make_unique<DnsTask>(
+        resolver_->dns_client_.get(), hostname_, query_type_, resolve_context_,
+        secure, secure_dns_mode_, this, net_log_, tick_clock_,
+        !tasks_.empty() /* fallback_available */);
     dns_task_->StartNextTransaction();
     // Schedule a second transaction, if needed. DoH queries can bypass the
     // dispatcher and start all of their transactions immediately.
@@ -2499,7 +2512,7 @@ HostResolverManager::HostResolverManager(
       tick_clock_(base::DefaultTickClock::GetInstance()),
       invalidation_in_progress_(false) {
   PrioritizedDispatcher::Limits job_limits = GetDispatcherLimits(options);
-  dispatcher_.reset(new PrioritizedDispatcher(job_limits));
+  dispatcher_ = std::make_unique<PrioritizedDispatcher>(job_limits);
   max_queued_jobs_ = job_limits.total_jobs * 100u;
 
   DCHECK_GE(dispatcher_->num_priorities(), static_cast<size_t>(NUM_PRIORITIES));

@@ -32,8 +32,7 @@ SerialChooserController::SerialChooserController(
       frame_tree_node_id_(render_frame_host->GetFrameTreeNodeId()) {
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
-  requesting_origin_ = render_frame_host->GetLastCommittedOrigin();
-  embedding_origin_ = web_contents->GetMainFrame()->GetLastCommittedOrigin();
+  origin_ = web_contents->GetMainFrame()->GetLastCommittedOrigin();
 
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -55,15 +54,15 @@ bool SerialChooserController::ShouldShowHelpButton() const {
   return true;
 }
 
-base::string16 SerialChooserController::GetNoOptionsText() const {
+std::u16string SerialChooserController::GetNoOptionsText() const {
   return l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
 }
 
-base::string16 SerialChooserController::GetOkButtonLabel() const {
+std::u16string SerialChooserController::GetOkButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_SERIAL_PORT_CHOOSER_CONNECT_BUTTON_TEXT);
 }
 
-std::pair<base::string16, base::string16>
+std::pair<std::u16string, std::u16string>
 SerialChooserController::GetThrobberLabelAndTooltip() const {
   return {
       l10n_util::GetStringUTF16(IDS_SERIAL_PORT_CHOOSER_LOADING_LABEL),
@@ -74,14 +73,14 @@ size_t SerialChooserController::NumOptions() const {
   return ports_.size();
 }
 
-base::string16 SerialChooserController::GetOption(size_t index) const {
+std::u16string SerialChooserController::GetOption(size_t index) const {
   DCHECK_LT(index, ports_.size());
   const device::mojom::SerialPortInfo& port = *ports_[index];
 
   // Get the last component of the device path i.e. COM1 or ttyS0 to show the
   // user something similar to other applications that ask them to choose a
   // serial port and to differentiate between ports with similar display names.
-  base::string16 display_path = port.path.BaseName().LossyDisplayName();
+  std::u16string display_path = port.path.BaseName().LossyDisplayName();
 
   if (port.display_name && !port.display_name->empty()) {
     return l10n_util::GetStringFUTF16(IDS_SERIAL_PORT_CHOOSER_NAME_WITH_PATH,
@@ -99,8 +98,7 @@ bool SerialChooserController::IsPaired(size_t index) const {
   if (!chooser_context_)
     return false;
 
-  return chooser_context_->HasPortPermission(requesting_origin_,
-                                             embedding_origin_, *ports_[index]);
+  return chooser_context_->HasPortPermission(origin_, *ports_[index]);
 }
 
 void SerialChooserController::Select(const std::vector<size_t>& indices) {
@@ -113,8 +111,7 @@ void SerialChooserController::Select(const std::vector<size_t>& indices) {
     return;
   }
 
-  chooser_context_->GrantPortPermission(requesting_origin_, embedding_origin_,
-                                        *ports_[index]);
+  chooser_context_->GrantPortPermission(origin_, *ports_[index]);
   RunCallback(ports_[index]->Clone());
 }
 

@@ -16,6 +16,7 @@
 #include "chromeos/services/device_sync/device_sync_base.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
@@ -47,6 +48,7 @@ void SetDeviceSoftwareFeatureState(
           multidevice::SoftwareFeature::kMessagesForWebHost,
           multidevice::SoftwareFeature::kPhoneHubHost,
           multidevice::SoftwareFeature::kWifiSyncHost,
+          multidevice::SoftwareFeature::kEcheHost,
       };
 
   // Special case: when the Chrome OS device changes the value of the phone's

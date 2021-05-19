@@ -8,11 +8,14 @@
 #include <unordered_map>
 #include <vector>
 
-#include "components/viz/common/delegated_ink_metadata.h"
+#include "ui/gfx/delegated_ink_metadata.h"
+
+namespace gfx {
+class DelegatedInkPoint;
+}  // namespace gfx
 
 namespace viz {
 
-class DelegatedInkPoint;
 class DelegatedInkPointRendererBase;
 class DirectRenderer;
 
@@ -31,7 +34,6 @@ class DelegatedInkPointPixelTestHelper {
 
   explicit DelegatedInkPointPixelTestHelper(DirectRenderer* renderer);
   void SetRendererAndCreateInkRenderer(DirectRenderer* renderer);
-  DelegatedInkPointRendererBase* GetInkRenderer();
 
   void CreateAndSendMetadata(const gfx::PointF& point,
                              float diameter,
@@ -56,12 +58,15 @@ class DelegatedInkPointPixelTestHelper {
   gfx::Rect GetDelegatedInkDamageRect();
   gfx::Rect GetDelegatedInkDamageRect(int32_t pointer_id);
 
-  const DelegatedInkMetadata& metadata() { return metadata_; }
+  const gfx::DelegatedInkMetadata& metadata() { return metadata_; }
 
  private:
+  void CreateInkRenderer();
+
   DirectRenderer* renderer_ = nullptr;
-  std::unordered_map<int32_t, std::vector<DelegatedInkPoint>> ink_points_;
-  DelegatedInkMetadata metadata_;
+  DelegatedInkPointRendererBase* ink_renderer_ = nullptr;
+  std::unordered_map<int32_t, std::vector<gfx::DelegatedInkPoint>> ink_points_;
+  gfx::DelegatedInkMetadata metadata_;
 };
 
 }  // namespace viz

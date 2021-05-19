@@ -29,7 +29,9 @@ GrVkPipelineState* GrVkPipelineStateBuilder::CreatePipelineState(
         VkRenderPass compatibleRenderPass,
         bool overrideSubpassForResolveLoad) {
 
-    gpu->stats()->incShaderCompilations();
+    GrVkResourceProvider& resourceProvider = gpu->resourceProvider();
+
+    resourceProvider.pipelineStateCache()->stats()->incShaderCompilations();
 
     // ensure that we use "." as a decimal separator when creating SkSL code
     GrAutoLocaleSetter als("C");
@@ -160,17 +162,19 @@ void GrVkPipelineStateBuilder::storeShadersInCache(const SkSL::String shaders[],
     // to the key right after the base key.
     sk_sp<SkData> key = SkData::MakeWithoutCopy(this->desc().asKey(),
                                                 this->desc().initialKeyLength()+4);
+    SkString description = GrProgramDesc::Describe(fProgramInfo, *this->caps());
 
     sk_sp<SkData> data = GrPersistentCacheUtils::PackCachedShaders(isSkSL ? kSKSL_Tag : kSPIRV_Tag,
                                                                    shaders,
                                                                    inputs, kGrShaderTypeCount);
-    this->gpu()->getContext()->priv().getPersistentCache()->store(*key, *data);
+
+    this->gpu()->getContext()->priv().getPersistentCache()->store(*key, *data, description);
 }
 
 GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrProgramDesc& desc,
                                                       VkRenderPass compatibleRenderPass,
                                                       bool overrideSubpassForResolveLoad) {
-    TRACE_EVENT0("skia.gpu", TRACE_FUNC);
+    TRACE_EVENT0("skia.shaders", TRACE_FUNC);
 
     VkDescriptorSetLayout dsLayout[GrVkUniformHandler::kDescSetCount];
     VkShaderModule shaderModules[kGrShaderTypeCount] = { VK_NULL_HANDLE,
@@ -208,6 +212,9 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrProgramDesc& desc,
                         this->gpu()->getContext()->priv().options().fSharpenMipmappedTextures;
     settings.fRTHeightOffset = fUniformHandler.getRTHeightOffset();
     settings.fUsePushConstants = usePushConstants;
+    if (fFS.fForceHighPrecision) {
+        settings.fForceHighPrecision = true;
+    }
     SkASSERT(!this->fragColorIsInOut());
 
     sk_sp<SkData> cached;
@@ -270,7 +277,7 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrProgramDesc& desc,
                                                         &shaders[kFragment_GrShaderType],
                                                         &inputs[kFragment_GrShaderType]);
 
-        if (this->primitiveProcessor().willUseGeoShader()) {
+        if (this->geometryProcessor().willUseGeoShader()) {
             success = success && this->createVkShaderModule(VK_SHADER_STAGE_GEOMETRY_BIT,
                                                             *sksl[kGeometry_GrShaderType],
                                                             &shaderModules[kGeometry_GrShaderType],

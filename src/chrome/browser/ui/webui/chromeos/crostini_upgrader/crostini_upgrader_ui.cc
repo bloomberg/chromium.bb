@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_ui.h"
 
+#include <string>
 #include <utility>
 
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
-#include "base/strings/string16.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/crostini/crostini_upgrader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,11 +33,6 @@
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace chromeos {
-
-bool CrostiniUpgraderUI::IsEnabled() {
-  return base::FeatureList::IsEnabled(
-      chromeos::features::kCrostiniWebUIUpgrader);
-}
 
 void AddStringResources(content::WebUIDataSource* source) {
   static constexpr webui::LocalizedString kStrings[] = {
@@ -84,7 +79,7 @@ void AddStringResources(content::WebUIDataSource* source) {
                     std::string{chrome::kLinuxAppsLearnMoreURL} +
                         "&b=" + base::SysInfo::GetLsbReleaseBoard());
 
-  base::string16 device_name = ui::GetChromeOSDeviceName();
+  std::u16string device_name = ui::GetChromeOSDeviceName();
   source->AddString("offlineError",
                     l10n_util::GetStringFUTF8(
                         IDS_CROSTINI_INSTALLER_OFFLINE_ERROR, device_name));

@@ -23,8 +23,8 @@
 #include "base/system/system_monitor.h"
 #include "base/unguessable_token.h"
 #include "components/device_event_log/device_event_log.h"
-#include "media/capture/video/chromeos/ash/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
+#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
 #include "media/capture/video/chromeos/video_capture_device_chromeos_delegate.h"
 #include "media/capture/video/chromeos/video_capture_device_chromeos_halv3.h"
@@ -460,6 +460,13 @@ void CameraHalDelegate::EnableVirtualDevice(const std::string& device_id,
   if (camera_id != -1) {
     base::AutoLock lock(enable_virtual_device_lock_);
     enable_virtual_device_[camera_id] = enable;
+  }
+}
+
+void CameraHalDelegate::DisableAllVirtualDevices() {
+  base::AutoLock lock(enable_virtual_device_lock_);
+  for (auto& it : enable_virtual_device_) {
+    it.second = false;
   }
 }
 

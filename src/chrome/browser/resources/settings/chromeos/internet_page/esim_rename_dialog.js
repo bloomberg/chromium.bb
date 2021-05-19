@@ -14,10 +14,10 @@ Polymer({
   ],
 
   properties: {
-    /** @type {string} */
-    iccid: {
-      type: String,
-      value: '',
+    /** @type {?OncMojo.NetworkStateProperties} */
+    networkState: {
+      type: Object,
+      value: null,
     },
 
     /** @type {boolean} */
@@ -45,15 +45,6 @@ Polymer({
     }
   },
 
-  /**
-   * Provides an interface to the ESimManager Mojo service.
-   * @private {?chromeos.cellularSetup.mojom.ESimManagerRemote}
-   */
-  eSimManagerRemote_: null,
-
-  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
-  networkConfig_: null,
-
   /** @private {?chromeos.cellularSetup.mojom.ESimProfileRemote} */
   esimProfileRemote_: null,
 
@@ -64,11 +55,18 @@ Polymer({
 
   /** @private */
   async init_() {
-    this.esimProfileRemote_ = await cellular_setup.getESimProfile(this.iccid);
-    const profileProperties = await this.esimProfileRemote_.getProperties();
-    this.esimProfileName_ = profileProperties.properties.nickname ?
-        this.convertString16ToJSString_(profileProperties.properties.nickname) :
-        this.convertString16ToJSString_(profileProperties.properties.name);
+    if (!(this.networkState &&
+          this.networkState.type ===
+              chromeos.networkConfig.mojom.NetworkType.kCellular)) {
+      return;
+    }
+    this.esimProfileRemote_ = await cellular_setup.getESimProfile(
+        this.networkState.typeState.cellular.iccid);
+    // Fail gracefully if init is incomplete, see crbug/1194729.
+    if (!this.esimProfileRemote_) {
+      this.errorMessage_ = this.i18n('eSimRenameProfileDialogError');
+    }
+    this.esimProfileName_ = this.networkState.name;
   },
 
   /**
@@ -92,9 +90,9 @@ Polymer({
 
     this.isRenameInProgress_ = true;
 
-    // The C++ layer uses base::string16, which use 16 bit characters. JS
+    // The C++ layer uses std::u16string, which use 16 bit characters. JS
     // strings support either 8 or 16 bit characters, and must be converted
-    // to an array of 16 bit character codes that match base::string16.
+    // to an array of 16 bit character codes that match std::u16string.
     const name = {data: Array.from(this.esimProfileName_, c => c.charCodeAt())};
 
     this.esimProfileRemote_.setProfileNickname(name).then(response => {

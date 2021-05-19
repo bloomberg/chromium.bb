@@ -21,6 +21,10 @@ WindowAgent* WindowAgentFactory::GetAgentForOrigin(
     const SecurityOrigin* origin,
     bool is_origin_agent_cluster) {
   if (has_potential_universal_access_privilege) {
+    // We shouldn't have OAC turned on in this case, since we're sharing a
+    // WindowAgent for all file access. This code block must be kept in sync
+    // with DocumentLoader::InitializeWindow().
+    DCHECK(!is_origin_agent_cluster);
     if (!universal_access_agent_) {
       universal_access_agent_ = MakeGarbageCollected<WindowAgent>(isolate);
     }
@@ -29,6 +33,10 @@ WindowAgent* WindowAgentFactory::GetAgentForOrigin(
 
   // For `file:` scheme origins.
   if (origin->IsLocal()) {
+    // We shouldn't have OAC turned on for files, since we're sharing a
+    // WindowAgent for all file access. This code block must be kept in sync
+    // with DocumentLoader::InitializeWindow().
+    DCHECK(!is_origin_agent_cluster);
     if (!file_url_agent_)
       file_url_agent_ = MakeGarbageCollected<WindowAgent>(isolate);
     return file_url_agent_;

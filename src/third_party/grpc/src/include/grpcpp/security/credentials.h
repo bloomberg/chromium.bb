@@ -69,7 +69,7 @@ std::shared_ptr<ChannelCredentials> XdsCredentials(
 class ChannelCredentials : private grpc::GrpcLibraryCodegen {
  public:
   ChannelCredentials();
-  ~ChannelCredentials();
+  ~ChannelCredentials() override;
 
  protected:
   friend std::shared_ptr<ChannelCredentials> CompositeChannelCredentials(
@@ -126,7 +126,7 @@ class ChannelCredentials : private grpc::GrpcLibraryCodegen {
 class CallCredentials : private grpc::GrpcLibraryCodegen {
  public:
   CallCredentials();
-  ~CallCredentials();
+  ~CallCredentials() override;
 
   /// Apply this instance's credentials to \a call.
   virtual bool ApplyToCall(grpc_call* call) = 0;
@@ -276,6 +276,12 @@ class MetadataCredentialsPlugin {
 
 std::shared_ptr<CallCredentials> MetadataCredentialsFromPlugin(
     std::unique_ptr<MetadataCredentialsPlugin> plugin);
+
+/// Builds External Account credentials.
+/// json_string is the JSON string containing the credentials options.
+/// scopes contains the scopes to be binded with the credentials.
+std::shared_ptr<CallCredentials> ExternalAccountCredentials(
+    const grpc::string& json_string, const std::vector<grpc::string>& scopes);
 
 namespace experimental {
 

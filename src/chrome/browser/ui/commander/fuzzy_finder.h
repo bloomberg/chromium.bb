@@ -5,16 +5,16 @@
 #ifndef CHROME_BROWSER_UI_COMMANDER_FUZZY_FINDER_H_
 #define CHROME_BROWSER_UI_COMMANDER_FUZZY_FINDER_H_
 
+#include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "ui/gfx/range/range.h"
 
 namespace commander {
 
 class FuzzyFinder {
  public:
-  explicit FuzzyFinder(const base::string16& needle);
+  explicit FuzzyFinder(const std::u16string& needle);
   ~FuzzyFinder();
   FuzzyFinder(const FuzzyFinder& other) = delete;
   FuzzyFinder& operator=(const FuzzyFinder& other) = delete;
@@ -23,7 +23,7 @@ class FuzzyFinder {
   // 0 means no match. |matched_ranges| will be filled with the ranges of
   // |haystack| that match |needle| so they can be highlighted in the UI; see
   // comment on commander::CommandItem |matched_ranges| for a worked example.
-  double Find(const base::string16& haystack,
+  double Find(const std::u16string& haystack,
               std::vector<gfx::Range>* matched_ranges);
 
  private:
@@ -36,11 +36,11 @@ class FuzzyFinder {
   // - `needle` and `haystack` are not longer than some maximum size (subject to
   //    change but currently 16 for `needle` and `1024` for haystack).
   // See fuzzy_finder.md for full details.
-  double MatrixMatch(const base::string16& needle,
-                     const base::string16& haystack,
+  double MatrixMatch(const std::u16string& needle,
+                     const std::u16string& haystack,
                      std::vector<gfx::Range>* matched_ranges);
   // Case-folded input string.
-  base::string16 needle_;
+  std::u16string needle_;
   // Scratch space for MatrixMatch().
   std::vector<int> score_matrix_;
   std::vector<int> consecutive_matrix_;

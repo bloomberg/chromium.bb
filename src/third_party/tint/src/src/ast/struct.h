@@ -15,12 +15,9 @@
 #ifndef SRC_AST_STRUCT_H_
 #define SRC_AST_STRUCT_H_
 
-#include <ostream>
-#include <string>
 #include <utility>
 
-#include "src/ast/node.h"
-#include "src/ast/struct_decoration.h"
+#include "src/ast/decoration.h"
 #include "src/ast/struct_member.h"
 
 namespace tint {
@@ -35,14 +32,14 @@ class Struct : public Castable<Struct, Node> {
   /// @param decorations The struct decorations
   Struct(const Source& source,
          StructMemberList members,
-         StructDecorationList decorations);
+         DecorationList decorations);
   /// Move constructor
   Struct(Struct&&);
 
   ~Struct() override;
 
   /// @returns the struct decorations
-  const StructDecorationList& decorations() const { return decorations_; }
+  const DecorationList& decorations() const { return decorations_; }
 
   /// @returns the members
   const StructMemberList& members() const { return members_; }
@@ -61,9 +58,6 @@ class Struct : public Castable<Struct, Node> {
   /// @return the newly cloned node
   Struct* Clone(CloneContext* ctx) const override;
 
-  /// @returns true if the node is valid
-  bool IsValid() const override;
-
   /// Writes a representation of the node to the output stream
   /// @param sem the semantic info for the program
   /// @param out the stream to write to
@@ -76,7 +70,7 @@ class Struct : public Castable<Struct, Node> {
   Struct(const Struct&) = delete;
 
   StructMemberList const members_;
-  StructDecorationList const decorations_;
+  DecorationList const decorations_;
 };
 
 }  // namespace ast

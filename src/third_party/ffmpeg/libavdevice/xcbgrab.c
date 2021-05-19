@@ -206,7 +206,7 @@ static int64_t wait_frame(AVFormatContext *s, AVPacket *pkt)
     c->time_frame += c->frame_duration;
 
     for (;;) {
-        curtime = av_gettime();
+        curtime = av_gettime_relative();
         delay   = c->time_frame - curtime;
         if (delay <= 0)
             break;
@@ -236,7 +236,7 @@ static void free_shm_buffer(void *opaque, uint8_t *data)
     shmdt(data);
 }
 
-static AVBufferRef *allocate_shm_buffer(void *opaque, int size)
+static AVBufferRef *allocate_shm_buffer(void *opaque, buffer_size_t size)
 {
     xcb_connection_t *conn = opaque;
     xcb_shm_seg_t segment;
@@ -422,7 +422,8 @@ static int xcbgrab_read_packet(AVFormatContext *s, AVPacket *pkt)
     int ret = 0;
     int64_t pts;
 
-    pts = wait_frame(s, pkt);
+    wait_frame(s, pkt);
+    pts = av_gettime();
 
     if (c->follow_mouse || c->draw_mouse) {
         pc  = xcb_query_pointer(c->conn, c->screen->root);
@@ -513,21 +514,26 @@ static int pixfmt_from_pixmap_format(AVFormatContext *s, int depth,
             switch (depth) {
             case 32:
                 if (fmt->bits_per_pixel == 32)
-                    *pix_fmt = AV_PIX_FMT_0RGB;
+                    *pix_fmt = setup->image_byte_order == XCB_IMAGE_ORDER_LSB_FIRST ?
+                               AV_PIX_FMT_BGR0 : AV_PIX_FMT_0RGB;
                 break;
             case 24:
                 if (fmt->bits_per_pixel == 32)
-                    *pix_fmt = AV_PIX_FMT_0RGB32;
+                    *pix_fmt = setup->image_byte_order == XCB_IMAGE_ORDER_LSB_FIRST ?
+                               AV_PIX_FMT_BGR0 : AV_PIX_FMT_0RGB;
                 else if (fmt->bits_per_pixel == 24)
-                    *pix_fmt = AV_PIX_FMT_RGB24;
+                    *pix_fmt = setup->image_byte_order == XCB_IMAGE_ORDER_LSB_FIRST ?
+                               AV_PIX_FMT_BGR24 : AV_PIX_FMT_RGB24;
                 break;
             case 16:
                 if (fmt->bits_per_pixel == 16)
-                    *pix_fmt = AV_PIX_FMT_RGB565;
+                    *pix_fmt = setup->image_byte_order == XCB_IMAGE_ORDER_LSB_FIRST ?
+                               AV_PIX_FMT_RGB565LE : AV_PIX_FMT_RGB565BE;
                 break;
             case 15:
                 if (fmt->bits_per_pixel == 16)
-                    *pix_fmt = AV_PIX_FMT_RGB555;
+                    *pix_fmt = setup->image_byte_order == XCB_IMAGE_ORDER_LSB_FIRST ?
+                               AV_PIX_FMT_RGB555LE : AV_PIX_FMT_RGB555BE;
                 break;
             case 8:
                 if (fmt->bits_per_pixel == 8)
@@ -591,7 +597,7 @@ static int create_stream(AVFormatContext *s)
     c->time_base  = (AVRational){ st->avg_frame_rate.den,
                                   st->avg_frame_rate.num };
     c->frame_duration = av_rescale_q(1, c->time_base, AV_TIME_BASE_Q);
-    c->time_frame = av_gettime();
+    c->time_frame = av_gettime_relative();
 
     ret = pixfmt_from_pixmap_format(s, geo->depth, &st->codecpar->format, &c->bpp);
     free(geo);

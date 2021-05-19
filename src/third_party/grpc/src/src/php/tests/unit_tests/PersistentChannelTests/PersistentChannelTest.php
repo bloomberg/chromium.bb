@@ -20,13 +20,13 @@
 /**
  * @group persistent_list_bound_tests
  */
-class PersistentListTest extends PHPUnit_Framework_TestCase
+class PersistentListTest extends \PHPUnit\Framework\TestCase
 {
-  public function setUp()
+  public function setUp(): void
   {
   }
 
-  public function tearDown()
+  public function tearDown(): void
   {
     $channel_clean_persistent =
         new Grpc\Channel('localhost:50010', []);
@@ -167,13 +167,11 @@ class PersistentListTest extends PHPUnit_Framework_TestCase
       $this->channel2->close();
   }
 
-  /**
-   * @expectedException RuntimeException
-   * @expectedExceptionMessage startBatch Error. Channel is closed
-   */
   public function testPersistentChannelSharedChannelClose()
   {
-      // same underlying channel
+    $this->expectException(\RuntimeException::class);
+    $this->expectExceptionMessage("startBatch Error. Channel is closed");
+    // same underlying channel
       $this->channel1 = new Grpc\Channel('localhost:10001', [
           "grpc_target_persist_bound" => 2,
       ]);

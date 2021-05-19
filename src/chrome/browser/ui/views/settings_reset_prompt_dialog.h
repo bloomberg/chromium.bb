@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SETTINGS_RESET_PROMPT_DIALOG_H_
 #define CHROME_BROWSER_UI_VIEWS_SETTINGS_RESET_PROMPT_DIALOG_H_
 
+#include <string>
+
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/metadata/metadata_header_macros.h"
@@ -37,7 +38,7 @@ class SettingsResetPromptDialog : public views::DialogDelegateView {
   void Show();
 
   // views::DialogDelegateView:
-  base::string16 GetWindowTitle() const override;
+  std::u16string GetWindowTitle() const override;
 
  private:
   Browser* const browser_;

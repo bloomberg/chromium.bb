@@ -14,14 +14,10 @@
 
 #include "src/ast/intrinsic_texture_helper_test.h"
 
-#include "src/ast/type_constructor_expression.h"
-#include "src/debug.h"
-#include "src/program_builder.h"
 #include "src/type/access_control_type.h"
 #include "src/type/depth_texture_type.h"
 #include "src/type/multisampled_texture_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/storage_texture_type.h"
 
 namespace tint {
 namespace ast {
@@ -155,7 +151,7 @@ ast::Variable* TextureOverloadCase::buildTextureVariable(
     ProgramBuilder* b) const {
   auto* datatype = resultVectorComponentType(b);
 
-  VariableDecorationList decos = {
+  DecorationList decos = {
       b->create<ast::GroupDecoration>(0),
       b->create<ast::BindingDecoration>(0),
   };
@@ -193,7 +189,7 @@ ast::Variable* TextureOverloadCase::buildTextureVariable(
 
 ast::Variable* TextureOverloadCase::buildSamplerVariable(
     ProgramBuilder* b) const {
-  VariableDecorationList decos = {
+  DecorationList decos = {
       b->create<ast::GroupDecoration>(0),
       b->create<ast::BindingDecoration>(1),
   };
@@ -1662,81 +1658,48 @@ std::vector<TextureOverloadCase> TextureOverloadCase::ValidCases() {
           },
       },
       {
-          ValidTextureOverload::kLoad1dF32,
+          ValidTextureOverload::kLoad1dLevelF32,
           "textureLoad(t      : texture_1d<f32>,\n"
-          "            coords : i32) -> vec4<f32>",
+          "            coords : i32,\n"
+          "            level  : i32) -> vec4<f32>",
           TextureKind::kRegular,
           type::TextureDimension::k1d,
           TextureDataType::kF32,
           "textureLoad",
           [](ProgramBuilder* b) {
             return b->ExprList("texture",  // t
-                               1);         // coords
+                               1,          // coords
+                               3);         // level
           },
       },
       {
-          ValidTextureOverload::kLoad1dU32,
+          ValidTextureOverload::kLoad1dLevelU32,
           "textureLoad(t      : texture_1d<u32>,\n"
-          "            coords : i32) -> vec4<u32>",
+          "            coords : i32,\n"
+          "            level  : i32) -> vec4<u32>",
           TextureKind::kRegular,
           type::TextureDimension::k1d,
           TextureDataType::kU32,
           "textureLoad",
           [](ProgramBuilder* b) {
             return b->ExprList("texture",  // t
-                               1);         // coords
+                               1,          // coords
+                               3);         // level
           },
       },
       {
-          ValidTextureOverload::kLoad1dI32,
+          ValidTextureOverload::kLoad1dLevelI32,
           "textureLoad(t      : texture_1d<i32>,\n"
-          "            coords : i32) -> vec4<i32>",
+          "            coords : i32,\n"
+          "            level  : i32) -> vec4<i32>",
           TextureKind::kRegular,
           type::TextureDimension::k1d,
           TextureDataType::kI32,
           "textureLoad",
           [](ProgramBuilder* b) {
             return b->ExprList("texture",  // t
-                               1);         // coords
-          },
-      },
-      {
-          ValidTextureOverload::kLoad2dF32,
-          "textureLoad(t      : texture_2d<f32>,\n"
-          "            coords : vec2<i32>) -> vec4<f32>",
-          TextureKind::kRegular,
-          type::TextureDimension::k2d,
-          TextureDataType::kF32,
-          "textureLoad",
-          [](ProgramBuilder* b) {
-            return b->ExprList("texture",            // t
-                               b->vec2<i32>(1, 2));  // coords
-          },
-      },
-      {
-          ValidTextureOverload::kLoad2dU32,
-          "textureLoad(t      : texture_2d<u32>,\n"
-          "            coords : vec2<i32>) -> vec4<u32>",
-          TextureKind::kRegular,
-          type::TextureDimension::k2d,
-          TextureDataType::kU32,
-          "textureLoad",
-          [](ProgramBuilder* b) {
-            return b->ExprList("texture",            // t
-                               b->vec2<i32>(1, 2));  // coords
-          },
-      },
-      {
-          ValidTextureOverload::kLoad2dI32,
-          "textureLoad(t      : texture_2d<i32>,\n"
-          "            coords : vec2<i32>) -> vec4<i32>",
-          TextureKind::kRegular,
-          type::TextureDimension::k2d,
-          TextureDataType::kI32,
-          "textureLoad",
-          [](ProgramBuilder* b) {
-            return b->ExprList("texture",            // t
-                               b->vec2<i32>(1, 2));  // coords
+                               1,          // coords
+                               3);         // level
           },
       },
       {
@@ -1782,51 +1745,6 @@ std::vector<TextureOverloadCase> TextureOverloadCase::ValidCases() {
             return b->ExprList("texture",           // t
                                b->vec2<i32>(1, 2),  // coords
                                3);                  // level
-          },
-      },
-      {
-          ValidTextureOverload::kLoad2dArrayF32,
-          "textureLoad(t           : texture_2d_array<f32>,\n"
-          "            coords      : vec2<i32>,\n"
-          "            array_index : i32) -> vec4<f32>",
-          TextureKind::kRegular,
-          type::TextureDimension::k2dArray,
-          TextureDataType::kF32,
-          "textureLoad",
-          [](ProgramBuilder* b) {
-            return b->ExprList("texture",           // t
-                               b->vec2<i32>(1, 2),  // coords
-                               3);                  // array_index
-          },
-      },
-      {
-          ValidTextureOverload::kLoad2dArrayU32,
-          "textureLoad(t           : texture_2d_array<u32>,\n"
-          "            coords      : vec2<i32>,\n"
-          "            array_index : i32) -> vec4<u32>",
-          TextureKind::kRegular,
-          type::TextureDimension::k2dArray,
-          TextureDataType::kU32,
-          "textureLoad",
-          [](ProgramBuilder* b) {
-            return b->ExprList("texture",           // t
-                               b->vec2<i32>(1, 2),  // coords
-                               3);                  // array_index
-          },
-      },
-      {
-          ValidTextureOverload::kLoad2dArrayI32,
-          "textureLoad(t           : texture_2d_array<i32>,\n"
-          "            coords      : vec2<i32>,\n"
-          "            array_index : i32) -> vec4<i32>",
-          TextureKind::kRegular,
-          type::TextureDimension::k2dArray,
-          TextureDataType::kI32,
-          "textureLoad",
-          [](ProgramBuilder* b) {
-            return b->ExprList("texture",           // t
-                               b->vec2<i32>(1, 2),  // coords
-                               3);                  // array_index
           },
       },
       {
@@ -1878,45 +1796,6 @@ std::vector<TextureOverloadCase> TextureOverloadCase::ValidCases() {
                                b->vec2<i32>(1, 2),  // coords
                                3,                   // array_index
                                4);                  // level
-          },
-      },
-      {
-          ValidTextureOverload::kLoad3dF32,
-          "textureLoad(t      : texture_3d<f32>,\n"
-          "            coords : vec3<i32>) -> vec4<f32>",
-          TextureKind::kRegular,
-          type::TextureDimension::k3d,
-          TextureDataType::kF32,
-          "textureLoad",
-          [](ProgramBuilder* b) {
-            return b->ExprList("texture",               // t
-                               b->vec3<i32>(1, 2, 3));  // coords
-          },
-      },
-      {
-          ValidTextureOverload::kLoad3dU32,
-          "textureLoad(t      : texture_3d<u32>,\n"
-          "            coords : vec3<i32>) -> vec4<u32>",
-          TextureKind::kRegular,
-          type::TextureDimension::k3d,
-          TextureDataType::kU32,
-          "textureLoad",
-          [](ProgramBuilder* b) {
-            return b->ExprList("texture",               // t
-                               b->vec3<i32>(1, 2, 3));  // coords
-          },
-      },
-      {
-          ValidTextureOverload::kLoad3dI32,
-          "textureLoad(t      : texture_3d<i32>,\n"
-          "            coords : vec3<i32>) -> vec4<i32>",
-          TextureKind::kRegular,
-          type::TextureDimension::k3d,
-          TextureDataType::kI32,
-          "textureLoad",
-          [](ProgramBuilder* b) {
-            return b->ExprList("texture",               // t
-                               b->vec3<i32>(1, 2, 3));  // coords
           },
       },
       {
@@ -2061,19 +1940,6 @@ std::vector<TextureOverloadCase> TextureOverloadCase::ValidCases() {
           },
       },
       {
-          ValidTextureOverload::kLoadDepth2dF32,
-          "textureLoad(t      : texture_depth_2d,\n"
-          "            coords : vec2<i32>) -> f32",
-          TextureKind::kDepth,
-          type::TextureDimension::k2d,
-          TextureDataType::kF32,
-          "textureLoad",
-          [](ProgramBuilder* b) {
-            return b->ExprList("texture",            // t
-                               b->vec2<i32>(1, 2));  // coords
-          },
-      },
-      {
           ValidTextureOverload::kLoadDepth2dLevelF32,
           "textureLoad(t      : texture_depth_2d,\n"
           "            coords : vec2<i32>,\n"
@@ -2086,21 +1952,6 @@ std::vector<TextureOverloadCase> TextureOverloadCase::ValidCases() {
             return b->ExprList("texture",           // t
                                b->vec2<i32>(1, 2),  // coords
                                3);                  // level
-          },
-      },
-      {
-          ValidTextureOverload::kLoadDepth2dArrayF32,
-          "textureLoad(t           : texture_depth_2d_array,\n"
-          "            coords      : vec2<i32>,\n"
-          "            array_index : i32) -> f32",
-          TextureKind::kDepth,
-          type::TextureDimension::k2dArray,
-          TextureDataType::kF32,
-          "textureLoad",
-          [](ProgramBuilder* b) {
-            return b->ExprList("texture",           // t
-                               b->vec2<i32>(1, 2),  // coords
-                               3);                  // array_index
           },
       },
       {

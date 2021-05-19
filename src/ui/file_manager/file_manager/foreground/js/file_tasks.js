@@ -5,22 +5,22 @@
 // clang-format off
 // #import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
 // #import {MultiMenuButton} from './ui/multi_menu_button.m.js';
-// #import {VolumeInfo} from '../../../externs/volume_info.m.js';
-// #import {ProgressCenter} from '../../../externs/background/progress_center.m.js';
-// #import {Crostini} from '../../../externs/background/crostini.m.js';
+// #import {VolumeInfo} from '../../externs/volume_info.m.js';
+// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
+// #import {Crostini} from '../../externs/background/crostini.m.js';
 // #import {NamingController} from './naming_controller.m.js';
 // #import {TaskHistory} from './task_history.m.js';
 // #import {FileManagerUI} from './ui/file_manager_ui.m.js';
 // #import {DirectoryModel} from './directory_model.m.js';
 // #import {MetadataModel} from './metadata/metadata_model.m.js';
-// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
+// #import {VolumeManager} from '../../externs/volume_manager.m.js';
 // #import {FilesMenuItem} from './ui/files_menu.m.js';
 // #import {decorate} from 'chrome://resources/js/cr/ui.m.js';
 // #import {FilesPasswordDialog} from '../elements/files_password_dialog.m.js';
 // #import {ProgressCenterItem, ProgressItemType, ProgressItemState} from '../../common/js/progress_center_common.m.js';
 // #import {FileTransferController} from './file_transfer_controller.m.js';
 // #import {FilesConfirmDialog} from './ui/files_confirm_dialog.m.js';
-// #import {VolumeManagerCommon} from '../../../base/js/volume_manager_types.m.js';
+// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
 // #import {FileType} from '../../common/js/file_type.m.js';
 // #import {constants} from './constants.m.js';
 // #import {util, strf, str} from '../../common/js/util.m.js';
@@ -1407,6 +1407,7 @@ FileTasks.SharingActionSourceForUMA = {
   UNKNOWN: 'Unknown',
   CONTEXT_MENU: 'Context Menu',
   SHARE_BUTTON: 'Share Button',
+  SHARE_SHEET: 'Share Sheet',
 };
 
 /**
@@ -1417,6 +1418,7 @@ FileTasks.ValidSharingActionSource = Object.freeze([
   FileTasks.SharingActionSourceForUMA.UNKNOWN,
   FileTasks.SharingActionSourceForUMA.CONTEXT_MENU,
   FileTasks.SharingActionSourceForUMA.SHARE_BUTTON,
+  FileTasks.SharingActionSourceForUMA.SHARE_SHEET,
 ]);
 
 /**

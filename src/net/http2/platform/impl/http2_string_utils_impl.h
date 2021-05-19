@@ -14,23 +14,9 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/escape.h"
 #include "net/base/hex_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace http2 {
-
-template <typename... Args>
-inline std::string Http2StrCatImpl(const Args&... args) {
-  std::ostringstream oss;
-  int dummy[] = {1, (oss << args, 0)...};
-  static_cast<void>(dummy);
-  return oss.str();
-}
-
-template <typename... Args>
-inline void Http2StrAppendImpl(std::string* output, Args... args) {
-  output->append(Http2StrCatImpl(args...));
-}
 
 template <typename... Args>
 inline std::string Http2StringPrintfImpl(const Args&... args) {
@@ -47,17 +33,6 @@ inline std::string Http2HexDecodeImpl(absl::string_view data) {
 
 inline std::string Http2HexDumpImpl(absl::string_view data) {
   return quiche::QuicheTextUtils::HexDump(data);
-}
-
-inline std::string Http2HexEscapeImpl(absl::string_view data) {
-  return net::EscapeQueryParamValue(base::StringViewToStringPiece(data), false);
-}
-
-template <typename Number>
-inline std::string Http2HexImpl(Number number) {
-  std::stringstream str;
-  str << std::hex << number;
-  return str.str();
 }
 
 }  // namespace http2

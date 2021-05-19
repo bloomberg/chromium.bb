@@ -33,7 +33,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#include "media/cdm/api/content_decryption_module.h"
+// GN check does not understand conditionals. Android & Fuchsia need nogncheck.
+#include "media/cdm/api/content_decryption_module.h"  // nogncheck
 #include "media/cdm/cdm_adapter.h"
 #include "media/cdm/cdm_auxiliary_helper.h"
 #include "media/cdm/external_clear_key_test_helper.h"
@@ -270,7 +271,7 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
       scoped_feature_list_.InitWithFeatures(
           {media::kExternalClearKeyForTesting}, {});
 
-      helper_.reset(new ExternalClearKeyTestHelper());
+      helper_ = std::make_unique<ExternalClearKeyTestHelper>();
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
       CdmModule::GetInstance()->Initialize(helper_->LibraryPath(), {});

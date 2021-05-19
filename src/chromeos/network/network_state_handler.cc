@@ -209,6 +209,14 @@ bool NetworkStateHandler::OnlyManagedWifiNetworksAllowed() const {
           GetAvailableManagedWifiNetwork());
 }
 
+void NetworkStateHandler::SyncStubCellularNetworks() {
+  bool network_list_changed = AddOrRemoveStubCellularNetworks();
+  if (!network_list_changed)
+    return;
+  SortNetworkList();
+  NotifyNetworkListChanged();
+}
+
 // static
 std::unique_ptr<NetworkStateHandler> NetworkStateHandler::InitializeForTest() {
   auto handler = base::WrapUnique(new NetworkStateHandler());
@@ -454,7 +462,7 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
     const NetworkTypePattern& type) {
   // Sort to ensure visible networks are listed first.
   if (!network_list_sorted_)
-    SortNetworkList(false /* ensure_cellular */);
+    SortNetworkList();
 
   const NetworkState* first_network = nullptr;
   for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
@@ -592,7 +600,7 @@ void NetworkStateHandler::GetNetworkListByTypeImpl(
     limit = std::numeric_limits<size_t>::max();
 
   if (!network_list_sorted_)
-    SortNetworkList(false /* ensure_cellular */);
+    SortNetworkList();
 
   // First, add active Tether networks.
   if (type.MatchesPattern(NetworkTypePattern::Tether()))
@@ -1088,8 +1096,8 @@ void NetworkStateHandler::RequestUpdateForNetwork(
     const std::string& service_path) {
   NetworkState* network = GetModifiableNetworkState(service_path);
   if (network) {
-    // Tether networks are not managed by Shill; do not request properties.
-    if (network->type() == kTypeTether)
+    // Do not request properties for networks which are not backed by Shill.
+    if (network->IsNonProfileType())
       return;
     // Do not request properties if a condition has already triggered a request.
     if (network->update_requested())
@@ -1300,6 +1308,11 @@ void NetworkStateHandler::ProfileListChanged(const base::Value& profile_list) {
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
+
+    // Do not request properties for networks which are not backed by Shill.
+    if (network->IsNonProfileType())
+      continue;
+
     shill_property_handler_->RequestProperties(
         ManagedState::MANAGED_TYPE_NETWORK, network->path());
   }
@@ -1468,8 +1481,12 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   if (notify_active)
     NotifyIfActiveNetworksChanged();
   NotifyNetworkPropertiesUpdated(network);
-  if (sort_networks)
-    SortNetworkList(true /* ensure_cellular */);
+  if (sort_networks) {
+    bool network_list_changed = AddOrRemoveStubCellularNetworks();
+    SortNetworkList();
+    if (network_list_changed)
+      NotifyNetworkListChanged();
+  }
 }
 
 void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
@@ -1483,16 +1500,21 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
     // include the changed property value so we can ignore this update.
     return;
   }
+  const bool was_scanning = device->scanning();
   if (!device->PropertyChanged(key, value))
     return;
 
   LogPropertyUpdated(device, key, value);
   NotifyDevicePropertiesUpdated(device);
 
-  if (key == shill::kScanningProperty && device->scanning() == false) {
-    if (device->type() == shill::kTypeWifi)
+  if (key == shill::kScanningProperty && was_scanning != device->scanning()) {
+    if (device->scanning())
+      NotifyScanStarted(device);
+    else
+      NotifyScanCompleted(device);
+
+    if (device->type() == shill::kTypeWifi && !device->scanning())
       UpdateManagedWifiNetworkAvailable();
-    NotifyScanCompleted(device);
   }
   if (key == shill::kEapAuthenticationCompletedProperty) {
     // Notify a change for each Ethernet service using this device.
@@ -1509,6 +1531,10 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
       }
       RequestUpdateForNetwork(ethernet_service->path());
     }
+  }
+  if (key == shill::kSIMSlotInfoProperty) {
+    // Change in SIM Slot info can result in changes to stub cellular services.
+    SyncStubCellularNetworks();
   }
 }
 
@@ -1567,7 +1593,8 @@ void NetworkStateHandler::ManagedStateListChanged(
   SCOPED_NET_LOG_IF_SLOW();
   switch (type) {
     case ManagedState::MANAGED_TYPE_NETWORK:
-      SortNetworkList(true /* ensure_cellular */);
+      AddOrRemoveStubCellularNetworks();
+      SortNetworkList();
       UpdateNetworkStats();
       NotifyIfActiveNetworksChanged();
       NotifyNetworkListChanged();
@@ -1586,16 +1613,15 @@ void NetworkStateHandler::ManagedStateListChanged(
         devices += (*iter)->name();
       }
       NET_LOG(EVENT) << "DeviceList: " << devices;
-      // A change to the device list may affect the default Cellular network, so
-      // call SortNetworkList here.
-      SortNetworkList(true /* ensure_cellular */);
       NotifyDeviceListChanged();
+      // A change to the device list may affect the default Cellular network.
+      SyncStubCellularNetworks();
       return;
   }
   NOTREACHED();
 }
 
-void NetworkStateHandler::SortNetworkList(bool ensure_cellular) {
+void NetworkStateHandler::SortNetworkList() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (tether_sort_delegate_)
     tether_sort_delegate_->SortTetherNetworkList(&tether_network_list_);
@@ -1605,8 +1631,6 @@ void NetworkStateHandler::SortNetworkList(bool ensure_cellular) {
   // transition to idle before the list is updated). Also separate inactive
   // Mobile and VPN networks (see below).
   ManagedStateList active, non_wifi_visible, wifi_visible, hidden, new_networks;
-  int cellular_count = 0;
-  bool have_default_cellular = false;
   for (ManagedStateList::iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
     NetworkState* network = (*iter)->AsNetworkState();
@@ -1615,11 +1639,6 @@ void NetworkStateHandler::SortNetworkList(bool ensure_cellular) {
     if (!network->update_received()) {
       new_networks.push_back(std::move(*iter));
       continue;
-    }
-    if (NetworkTypePattern::Cellular().MatchesType(network->type())) {
-      ++cellular_count;
-      if ((*iter)->AsNetworkState()->IsDefaultCellular())
-        have_default_cellular = true;
     }
     if (network->IsActive()) {
       active.push_back(std::move(*iter));
@@ -1638,14 +1657,6 @@ void NetworkStateHandler::SortNetworkList(bool ensure_cellular) {
   // List active networks first (will always include Ethernet).
   network_list_ = std::move(active);
 
-  // If a default Cellular network is required, add it next.
-  if (ensure_cellular && cellular_count == 0) {
-    std::unique_ptr<NetworkState> default_cellular =
-        MaybeCreateDefaultCellularNetwork();
-    if (default_cellular)
-      network_list_.push_back(std::move(default_cellular));
-  }
-
   // List non wifi visible networks next (Mobile and VPN).
   std::move(non_wifi_visible.begin(), non_wifi_visible.end(),
             std::back_inserter(network_list_));
@@ -1658,15 +1669,6 @@ void NetworkStateHandler::SortNetworkList(bool ensure_cellular) {
   std::move(new_networks.begin(), new_networks.end(),
             std::back_inserter(network_list_));
   network_list_sorted_ = true;
-
-  if (ensure_cellular && have_default_cellular) {
-    // If we have created a default Cellular NetworkState, and we have > 1
-    // Cellular NetworkState or no Cellular device, remove it.
-    if (cellular_count > 1 ||
-        !GetDeviceStateByType(NetworkTypePattern::Cellular())) {
-      RemoveDefaultCellularNetwork();
-    }
-  }
 }
 
 void NetworkStateHandler::UpdateNetworkStats() {
@@ -1760,10 +1762,9 @@ void NetworkStateHandler::UpdateGuid(NetworkState* network) {
     // If the network is saved in a profile, remove the entry from the map.
     // Otherwise ensure that the entry matches the specified GUID. (e.g. in
     // case a visible network with a specified guid gets configured with a
-    // new guid). Exception: Ethernet and Cellular expect to have a single
-    // network and a consistent GUID.
-    if (network->type() != shill::kTypeEthernet &&
-        network->type() != shill::kTypeCellular && network->IsInProfile()) {
+    // new guid). Exception: Ethernet expects to have a single network and a
+    // consistent GUID.
+    if (network->type() != shill::kTypeEthernet && network->IsInProfile()) {
       specifier_guid_map_.erase(specifier);
     } else {
       specifier_guid_map_[specifier] = network->guid();
@@ -1789,33 +1790,31 @@ void NetworkStateHandler::UpdateCellularStateFromDevice(NetworkState* network) {
   network->provider_requires_roaming_ = device->provider_requires_roaming();
 }
 
-std::unique_ptr<NetworkState>
-NetworkStateHandler::MaybeCreateDefaultCellularNetwork() {
+bool NetworkStateHandler::AddOrRemoveStubCellularNetworks() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!notifying_network_observers_);
-  const DeviceState* device =
-      GetDeviceStateByType(NetworkTypePattern::Cellular());
-  // If no SIM is present there will not be useful user facing Device
-  // information, so do not create a default Cellular network.
-  if (!device || device->IsSimAbsent())
-    return nullptr;
-  // Create a default Cellular network. Properties from the associated Device
-  // will be provided to the UI. Note that the network's name is left empty; UI
-  // surfaces which attempt to show the network name will fall back to showing
-  // the network type (i.e., "Cellular") instead.
-  std::unique_ptr<NetworkState> network =
-      NetworkState::CreateDefaultCellular(device->path());
-  UpdateGuid(network.get());
-  return network;
-}
+  if (!stub_cellular_networks_provider_)
+    return false;
 
-void NetworkStateHandler::RemoveDefaultCellularNetwork() {
-  for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
-    if ((*iter)->AsNetworkState()->IsDefaultCellular()) {
-      network_list_.erase(iter);
-      return;  // There will only ever be one default Cellular network.
-    }
+  const DeviceState* device_state =
+      GetDeviceStateByType(NetworkTypePattern::Cellular());
+  ManagedStateList new_stub_networks;
+  bool network_list_changed =
+      stub_cellular_networks_provider_->AddOrRemoveStubCellularNetworks(
+          network_list_, new_stub_networks, device_state);
+  if (!new_stub_networks.size()) {
+    return network_list_changed;
   }
+
+  // Newly created stub cellular networks will not have a GUID. Assign GUIDs for
+  // these new networks and add to network_list_.
+  for (std::unique_ptr<ManagedState>& managed_state : new_stub_networks) {
+    NetworkState* network = managed_state->AsNetworkState();
+    UpdateGuid(network);
+  }
+  std::move(new_stub_networks.begin(), new_stub_networks.end(),
+            std::back_inserter(network_list_));
+  return true;
 }
 
 void NetworkStateHandler::NotifyNetworkListChanged() {

@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "base/strings/string16.h"
+#include "base/strings/char_traits.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_export.h"
@@ -38,14 +38,11 @@ class AX_EXPORT AXNode final {
   // actual text contents. Also on the same platforms, if a node has only
   // ignored descendants, i.e., it appears to be empty to assistive software, we
   // need to treat it as a character and a word boundary.
-  //
-  // Note that we cannot use L"..." because it works correctly only on Windows.
-  // TODO(nektar): Consider using UTF8 encoding instead, "\xEF\xBF\xBC".
-  static constexpr base::char16 kEmbeddedCharacter[] = {0xFFFC, 0x0000};
+  static constexpr char16_t kEmbeddedCharacter[] = u"\uFFFC";
   // We compute the embedded character's length instead of manually typing it in
   // order to avoid the two variables getting out of sync in a future update.
   static constexpr int kEmbeddedCharacterLength =
-      int{sizeof(kEmbeddedCharacter) / sizeof(base::char16) - 1};
+      base::CharTraits<char16_t>::length(kEmbeddedCharacter);
 
   // Interface to the tree class that owns an AXNode. We use this instead
   // of letting AXNode have a pointer to its AXTree directly so that we're
@@ -125,12 +122,30 @@ class AX_EXPORT AXNode final {
   // Returns ownership of |data_| to the caller; effectively clearing |data_|.
   AXNodeData&& TakeData();
 
-  // Walking the tree skipping ignored nodes.
+  //
+  // Methods for walking the tree.
+  //
+
+  size_t GetChildCount() const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  size_t GetChildCountCrossingTreeBoundary() const;
   size_t GetUnignoredChildCount() const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  size_t GetUnignoredChildCountCrossingTreeBoundary() const;
+  AXNode* GetChildAt(size_t index) const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  AXNode* GetChildAtCrossingTreeBoundary(size_t index) const;
   AXNode* GetUnignoredChildAtIndex(size_t index) const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  AXNode* GetUnignoredChildAtIndexCrossingTreeBoundary(size_t index) const;
+  AXNode* GetParent() const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  AXNode* GetParentCrossingTreeBoundary() const;
   AXNode* GetUnignoredParent() const;
-  size_t GetUnignoredIndexInParent() const;
+  // TODO(nektar): Update `BrowserAccessibility` and remove this method.
+  AXNode* GetUnignoredParentCrossingTreeBoundary() const;
   size_t GetIndexInParent() const;
+  size_t GetUnignoredIndexInParent() const;
   AXNode* GetFirstUnignoredChild() const;
   AXNode* GetLastUnignoredChild() const;
   AXNode* GetDeepestFirstUnignoredChild() const;
@@ -258,10 +273,10 @@ class AX_EXPORT AXNode final {
   }
 
   bool GetString16Attribute(ax::mojom::StringAttribute attribute,
-                            base::string16* value) const {
+                            std::u16string* value) const {
     return data().GetString16Attribute(attribute, value);
   }
-  base::string16 GetString16Attribute(
+  std::u16string GetString16Attribute(
       ax::mojom::StringAttribute attribute) const {
     return data().GetString16Attribute(attribute);
   }
@@ -290,7 +305,7 @@ class AX_EXPORT AXNode final {
     return data().GetStringListAttribute(attribute, value);
   }
 
-  bool GetHtmlAttribute(const char* attribute, base::string16* value) const {
+  bool GetHtmlAttribute(const char* attribute, std::u16string* value) const {
     return data().GetHtmlAttribute(attribute, value);
   }
   bool GetHtmlAttribute(const char* attribute, std::string* value) const {
@@ -317,7 +332,7 @@ class AX_EXPORT AXNode final {
 
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
-  base::string16 GetInheritedString16Attribute(
+  std::u16string GetInheritedString16Attribute(
       ax::mojom::StringAttribute attribute) const;
 
   // If this node is a leaf, returns the inner text of this node. This is
@@ -330,7 +345,7 @@ class AX_EXPORT AXNode final {
   // ATK and IAccessible2 APIs.
   //
   // TODO(nektar): Consider changing the return value to std::string.
-  base::string16 GetHypertext() const;
+  std::u16string GetHypertext() const;
 
   // Returns the text that is found inside this node and all its descendants;
   // including text found in embedded objects.

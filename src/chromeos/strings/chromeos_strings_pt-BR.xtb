@@ -38,6 +38,7 @@
 <translation id="1662989795263954667">Parado (sem tinta)</translation>
 <translation id="1703835215927279855">Carta</translation>
 <translation id="1706391837335750954">Resolvedor de DNS presente</translation>
+<translation id="1715359911173058521">Ocorreu um problema na comunicação com o scanner. Verifique a rede ou a conexão USB e tente novamente.</translation>
 <translation id="1717874160321062422">Gerenciado por <ph name="FIRST_MANAGER" /> e <ph name="SECOND_MANAGER" /></translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1792647875738159689">Cancelando digitalização</translation>
@@ -95,6 +96,7 @@
 <translation id="3226405216343213872">Procurando scanners</translation>
 <translation id="3246869037381808805">Trabalhos de impressão enviados há mais de 1 dia serão removidos</translation>
 <translation id="3268178239013324452">Falha - Porta aberta</translation>
+<translation id="3283504360622356314">{0,plural, =1{Editar arquivo}one{Editar arquivo}other{Editar arquivos}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3310640316857623290">Latência do DNS significativamente acima do limite permitido</translation>
 <translation id="3328783797891415197">Teste em execução</translation>
@@ -135,6 +137,7 @@
 <translation id="4227825898293920515">A senha expirará em <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nenhum trabalho de impressão em andamento</translation>
 <translation id="4297501883039923494">Parado (erro desconhecido)</translation>
+<translation id="4344214025510306853">Adicionar um APN</translation>
 <translation id="4378373042927530923">Não executada</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Meu Drive</translation>
@@ -162,7 +165,9 @@
 <translation id="4707579418881001319">L2TP/IPsec + certificado de usuário</translation>
 <translation id="4731797938093519117">Acesso de pai/mãe</translation>
 <translation id="4773299976671772492">Interrompida</translation>
+<translation id="4794140124556169553">Um teste de CPU pode afetar o desempenho do sistema</translation>
 <translation id="4808449224298348341">Trabalho de impressão cancelado: <ph name="DOCUMENT_TITLE" /></translation>
+<translation id="4813345808229079766">Conexão</translation>
 <translation id="4832079907277790330">Selecionar a pasta no app Arquivos…</translation>
 <translation id="4835901797422965222">Não há redes ativas</translation>
 <translation id="4848429997038228357">EM EXECUÇÃO</translation>
@@ -177,6 +182,7 @@
 <translation id="4932733599132424254">Data</translation>
 <translation id="498186245079027698">Confira o scanner e tente novamente. Confirme se há armazenamento local suficiente para salvar os arquivos digitalizados.</translation>
 <translation id="4985509611418653372">Executar</translation>
+<translation id="4987769320337599931">Firewall</translation>
 <translation id="4999333166442584738">Ocultar relatório</translation>
 <translation id="500920857929044050">Interromper teste</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -211,6 +217,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="54609108002486618">Gerenciado</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} tentativa restante}one{{0} tentativa restante}other{{0} tentativas restantes}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
+<translation id="5499114900554609492">Não foi possível concluir a digitalização</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Ativando</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -225,6 +232,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="5916084858004523819">Proibido</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{O arquivo foi digitalizado e salvo em <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}one{O arquivo foi digitalizado e salvo em <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Os arquivos foram digitalizados e salvos em <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Arquivo não encontrado</translation>
+<translation id="6037291330010597344">O alimentador de documentos do scanner está vazio. Adicione documentos e tente novamente.</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6040852767465482106">Identidade anônima</translation>
 <translation id="604124094241169006">Automático</translation>
@@ -247,6 +255,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="6302401976930124515">O teste de <ph name="TEST_NAME" /> foi cancelado</translation>
 <translation id="6325525973963619867">Falha</translation>
 <translation id="636850387210749493">Registro da empresa</translation>
+<translation id="6388847657025262518">O alimentador de documentos do scanner está obstruído. Verifique-o e tente novamente.</translation>
 <translation id="641081527798843608">Correspondência de assunto</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6456394469623773452">Bom</translation>
@@ -268,7 +277,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="6766275201586212568">Falha em resoluções de DNS</translation>
 <translation id="6768237774506518020">Taxa elevada de erro de resolução de DNS</translation>
 <translation id="6853312040151791195">Taxa de descarregamento</translation>
-<translation id="6898743098396957679">Não foi possível concluir a digitalização</translation>
+<translation id="6910312834584889076">A tampa do scanner está aberta. Feche-a e tente novamente.</translation>
 <translation id="6911383237894364323">Não foi possível se conectar aos servidores de mídia</translation>
 <translation id="6957231940976260713">Nome do serviço</translation>
 <translation id="6977381486153291903">Revisão do firmware</translation>
@@ -276,12 +285,14 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7059230779847288458">Carregando. <ph name="TIME_VALUE" /> até a carga completa</translation>
 <translation id="708426984172631313">PARADO</translation>
+<translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7144878232160441200">Tentar novamente</translation>
 <translation id="714876143603641390">Conectividade LAN</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7177485034254901881">Este <ph name="DEVICE_TYPE" /> é gerenciado por <ph name="MANAGER" />. Os administradores podem configurar o dispositivo remotamente.</translation>
 <translation id="7216409898977639127">Operadora de celular</translation>
+<translation id="7271040990581020067">O scanner está em uso. Tente novamente mais tarde.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7343649194310845056">Dispositivos de rede</translation>
 <translation id="7359657277149375382">Tipo de arquivo</translation>
@@ -307,6 +318,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="7769672763586021400">Código do modelo</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7819857487979277519">Pre-shared key (PSK): WPA ou RSN</translation>
+<translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Tipo de provedor</translation>
 <translation id="7936303884198020182">Nenhum servidor de nomes encontrado</translation>
 <translation id="7960831585769876809">Temperatura</translation>
@@ -336,6 +348,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8483248364096924578">Endereço IP</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="8503836310948963452">Só mais alguns minutos…</translation>
+<translation id="8575298406870537639">Pode ser necessário ativar esta opção para se conectar à rede da sua operadora. Entre em contato com a operadora para mais informações.</translation>
 <translation id="8576249514688522074">Não inicializado</translation>
 <translation id="8620617069779373398">Status do roaming</translation>
 <translation id="8675354002693747642">Chave pré-compartilhada</translation>
@@ -348,6 +361,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8798099450830957504">Padrão</translation>
 <translation id="8798441408945964110">Nome do provedor</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8818152010000655963">Plano de fundo</translation>
 <translation id="8845001906332463065">Ajuda</translation>
 <translation id="8881098542468797602">Teste bem sucedido</translation>
 <translation id="8898840733695078011">Intensidade do sinal</translation>
@@ -365,6 +379,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="910415269708673980">Atualizar tíquete para <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Digitalizando página <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Desbloquear</translation>
+<translation id="9137526406337347448">Serviços do Google</translation>
 <translation id="9149391708638971077">Executar teste de memória</translation>
 <translation id="9173638680043580060">Menos de um minuto restante</translation>
 <translation id="9190063653747922532">L2TP/IPSEC + chave pré-compartilhada</translation>

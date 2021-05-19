@@ -270,8 +270,15 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerChromeosWebAppBrowserTest,
 
 // Verify that the frame layout is as expected when using immersive mode in
 // tablet mode.
+// Fails on Linux Chromium OS ASan LSan Tests.
+// TODO(crbug.com/1191327): reenable the test.
+#if defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)
+#define MAYBE_FrameLayoutToggleTabletMode DISABLED_FrameLayoutToggleTabletMode
+#else
+#define MAYBE_FrameLayoutToggleTabletMode FrameLayoutToggleTabletMode
+#endif
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerChromeosWebAppBrowserTest,
-                       FrameLayoutToggleTabletMode) {
+                       MAYBE_FrameLayoutToggleTabletMode) {
   LaunchAppBrowser();
   ASSERT_FALSE(controller()->IsEnabled());
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -314,22 +321,21 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerChromeosWebAppBrowserTest,
   // Start in tablet mode
   ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
-  BrowserNonClientFrameViewChromeOS* frame_view = nullptr;
+  // Launch app window while in tablet mode
+  LaunchAppBrowser(false);
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+
   {
+    // Skip the title bar animation.
     auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
     base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner);
-
-    // Launch app window while in tablet mode
-    LaunchAppBrowser(false);
-    BrowserView* browser_view =
-        BrowserView::GetBrowserViewForBrowser(browser());
-    frame_view = static_cast<BrowserNonClientFrameViewChromeOS*>(
-        browser_view->GetWidget()->non_client_view()->frame_view());
-
     task_runner->FastForwardBy(titlebar_animation_delay());
-
-    VerifyButtonsInImmersiveMode(frame_view);
   }
+
+  BrowserNonClientFrameViewChromeOS* frame_view =
+      static_cast<BrowserNonClientFrameViewChromeOS*>(
+          browser_view->GetWidget()->non_client_view()->frame_view());
+  VerifyButtonsInImmersiveMode(frame_view);
 
   // Verify the size button is visible in clamshell mode, and that it does not
   // cover the other two buttons.

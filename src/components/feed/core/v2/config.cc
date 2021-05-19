@@ -44,6 +44,16 @@ void OverrideWithFinch(Config* config) {
           kInterestFeedV2, "max_action_upload_requests_per_day",
           config->max_action_upload_requests_per_day);
 
+  config->max_list_recommended_web_feeds_requests_per_day =
+      base::GetFieldTrialParamByFeatureAsInt(
+          kWebFeed, "max_list_recommended_web_feeds_requests_per_day",
+          config->max_list_recommended_web_feeds_requests_per_day);
+
+  config->max_list_web_feeds_requests_per_day =
+      base::GetFieldTrialParamByFeatureAsInt(
+          kWebFeed, "max_list_web_feeds_requests_per_day",
+          config->max_list_web_feeds_requests_per_day);
+
   config->stale_content_threshold =
       base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
           kInterestFeedV2, "stale_content_threshold_seconds",
@@ -86,6 +96,11 @@ void OverrideWithFinch(Config* config) {
       kInterestFeedV2, "load_more_trigger_lookahead",
       config->load_more_trigger_lookahead);
 
+  config->load_more_trigger_scroll_distance_dp =
+      base::GetFieldTrialParamByFeatureAsInt(
+          kInterestFeedV2Scrolling, "load_more_trigger_scroll_distance_dp",
+          config->load_more_trigger_scroll_distance_dp);
+
   config->upload_actions_on_enter_background =
       base::GetFieldTrialParamByFeatureAsBool(
           kInterestFeedV2, "upload_actions_on_enter_background",
@@ -105,6 +120,11 @@ void OverrideWithFinch(Config* config) {
       base::GetFieldTrialParamByFeatureAsInt(
           kInterestFeedV2, "max_prefetch_image_requests_per_refresh",
           config->max_prefetch_image_requests_per_refresh);
+
+  config->webfeed_accelerator_recent_visit_history_days =
+      base::GetFieldTrialParamByFeatureAsInt(
+          kWebFeed, "webfeed_accelerator_recent_visit_history_days",
+          config->webfeed_accelerator_recent_visit_history_days);
 
   // Erase any capabilities with "enable_CAPABILITY = false" set.
   base::EraseIf(config->experimental_capabilities, CapabilityDisabled);

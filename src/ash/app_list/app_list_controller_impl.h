@@ -14,13 +14,13 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/app_list_view_delegate.h"
+#include "ash/app_list/home_launcher_animation_info.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/ash_export.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
@@ -30,14 +30,18 @@
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
+#include "ash/wm/overview/overview_types.h"
+#include "ash/wm/splitview/split_view_observer.h"
+#include "base/callback_helpers.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
+#include "base/scoped_observation.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/sync/model/string_ordinal.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/message_center/message_center_observer.h"
 
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
@@ -52,7 +56,7 @@ class AppListControllerObserver;
 
 // Ash's AppListController owns the AppListModel and implements interface
 // functions that allow Chrome to modify and observe the Shelf and AppListModel
-// state.
+// state. It also controls the "home launcher", the tablet mode app list.
 class ASH_EXPORT AppListControllerImpl
     : public AppListController,
       public SessionObserver,
@@ -60,18 +64,16 @@ class ASH_EXPORT AppListControllerImpl
       public AppListViewDelegate,
       public ShellObserver,
       public OverviewObserver,
+      public SplitViewObserver,
       public TabletModeObserver,
       public KeyboardControllerObserver,
       public WallpaperControllerObserver,
       public AssistantStateObserver,
       public WindowTreeHostManager::Observer,
       public aura::WindowObserver,
-      public MruWindowTracker::Observer,
       public AssistantControllerObserver,
       public AssistantUiModelObserver,
-      public HomeScreenDelegate,
-      public apps::AppRegistryCache::Observer,
-      public message_center::MessageCenterObserver {
+      public apps::AppRegistryCache::Observer {
  public:
   AppListControllerImpl();
   ~AppListControllerImpl() override;
@@ -100,7 +102,7 @@ class ASH_EXPORT AppListControllerImpl
                         const std::string& folder_id) override;
   void SetStatus(AppListModelStatus status) override;
   void SetSearchEngineIsGoogle(bool is_google) override;
-  void UpdateSearchBox(const base::string16& text,
+  void UpdateSearchBox(const std::u16string& text,
                        bool initiated_by_user) override;
   void PublishSearchResults(
       std::vector<std::unique_ptr<SearchResultMetadata>> results) override;
@@ -152,6 +154,13 @@ class ASH_EXPORT AppListControllerImpl
   void EndDragFromShelf(AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event,
                               bool from_touchpad = false);
+
+  // In tablet mode, takes the user to the home screen, either by ending
+  // Overview Mode/Split View Mode or by minimizing the other windows. Returns
+  // false if there was nothing to do because the given display was already
+  // "home". Illegal to call in clamshell mode.
+  bool GoHome(int64_t display_id);
+
   // Toggles app list visibility. In tablet mode, this can only show the app
   // list (by hiding any windows that might be shown over the homde launcher).
   // |display_id| is the id of display where app list should toggle.
@@ -169,14 +178,13 @@ class ASH_EXPORT AppListControllerImpl
   SearchModel* GetSearchModel() override;
   AppListNotifier* GetNotifier() override;
   void StartAssistant() override;
-  void StartSearch(const base::string16& raw_query) override;
+  void StartSearch(const std::u16string& raw_query) override;
   void OpenSearchResult(const std::string& result_id,
                         int event_flags,
                         AppListLaunchedFrom launched_from,
                         AppListLaunchType launch_type,
                         int suggestion_index,
                         bool launch_as_default) override;
-  void LogSearchAbandonHistogram() override;
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index) override;
   using GetContextMenuModelCallback =
@@ -206,7 +214,7 @@ class ASH_EXPORT AppListControllerImpl
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
   void NotifySearchResultsForLogging(
-      const base::string16& raw_query,
+      const std::u16string& raw_query,
       const SearchResultIdWithPositionIndices& results,
       int position_index) override;
   void MaybeIncreaseSuggestedContentInfoShownCount() override;
@@ -237,6 +245,11 @@ class ASH_EXPORT AppListControllerImpl
   void OnOverviewModeStartingAnimationComplete(bool canceled) override;
   void OnOverviewModeEnding(OverviewSession* session) override;
   void OnOverviewModeEnded() override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
+
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -247,6 +260,8 @@ class ASH_EXPORT AppListControllerImpl
 
   // WallpaperControllerObserver:
   void OnWallpaperColorsChanged() override;
+  void OnWallpaperPreviewStarted() override;
+  void OnWallpaperPreviewEnded() override;
 
   // AssistantStateObserver:
   void OnAssistantStatusChanged(
@@ -262,9 +277,6 @@ class ASH_EXPORT AppListControllerImpl
   void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
   void OnWindowDestroyed(aura::Window* window) override;
 
-  // MruWindowTracker::Observer:
-  void OnWindowUntracked(aura::Window* untracked_window) override;
-
   // AssistantControllerObserver:
   void OnAssistantReady() override;
 
@@ -275,29 +287,60 @@ class ASH_EXPORT AppListControllerImpl
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
 
-  // HomeScreenDelegate:
-  void ShowHomeScreenView() override;
-  aura::Window* GetHomeScreenWindow() override;
+  // Gets the home screen window, if available, or null if the home screen
+  // window is being hidden for effects (e.g. when dragging windows or
+  // previewing the wallpaper).
+  aura::Window* GetHomeScreenWindow() const;
+
+  // Scales the home launcher view maintaining the view center point, and
+  // updates its opacity. If |callback| is non-null, the update should be
+  // animated, and the |callback| should be called with the animation settings.
+  // |animation_info| - Information about the transition trigger that will be
+  // used to report animation metrics. Should be set only if |callback| is
+  // not null (otherwise the transition will not be animated).
+  using UpdateAnimationSettingsCallback =
+      base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings)>;
   void UpdateScaleAndOpacityForHomeLauncher(
       float scale,
       float opacity,
-      base::Optional<AnimationInfo> animation_info,
-      UpdateAnimationSettingsCallback callback) override;
-  base::ScopedClosureRunner DisableHomeScreenBackgroundBlur() override;
-  void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
-  void OnHomeLauncherPositionChanged(int percent_shown,
-                                     int64_t display_id) override;
-  bool IsHomeScreenVisible() override;
-  gfx::Rect GetInitialAppListItemScreenBoundsForWindow(
-      aura::Window* window) override;
+      base::Optional<HomeLauncherAnimationInfo> animation_info,
+      UpdateAnimationSettingsCallback callback);
+
+  // Disables background blur in home screen UI while the returned
+  // ScopedClosureRunner is in scope.
+  base::ScopedClosureRunner DisableHomeScreenBackgroundBlur();
+
+  // Called when the HomeLauncher positional animation has completed.
+  void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id);
+
+  // Called when the HomeLauncher has changed its position on the screen,
+  // during either an animation or a drag.
+  void OnHomeLauncherPositionChanged(int percent_shown, int64_t display_id);
+
+  // True if home screen is visible.
+  bool IsHomeScreenVisible();
+
+  // Returns bounds rect in screen coordinates for the app list item associated
+  // with the provided window in the apps grid shown in the home screen,
+  // assuming the initial app list grid page is selected.
+  // If the window is not associated with an app, or the app item is not shown
+  // in the initial home screen page, it returns 1x1 rectangle centered in the
+  // home screen's apps grid.
+  // If the home screen is not yet shown, returns an empty rect.
+  gfx::Rect GetInitialAppListItemScreenBoundsForWindow(aura::Window* window);
+
+  // Called when a window starts/ends dragging. If the home screen is shown, we
+  // should hide it during dragging a window and reshow it when the drag ends.
+  void OnWindowDragStarted();
+
+  // If |animate| is true, scale-in-to-show home screen if home screen should
+  // be shown after drag ends.
+  void OnWindowDragEnded(bool animate);
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
   void OnAppRegistryCacheWillBeDestroyed(
       apps::AppRegistryCache* cache) override;
-
-  // message_center::MessageCenterObserver:
-  void OnQuietModeChanged(bool in_quiet_mode) override;
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
@@ -356,12 +399,24 @@ class ASH_EXPORT AppListControllerImpl
   // Update the visibility of Assistant functionality.
   void UpdateAssistantVisibility();
 
-  // Updates the visibility of expand arrow view.
-  void UpdateExpandArrowVisibility();
-
   int64_t GetDisplayIdToShowAppListOn();
 
   void ResetHomeLauncherIfShown();
+
+  void ShowHomeScreen();
+
+  // Updates the visibility of the home screen based on e.g. if the device is
+  // in overview mode.
+  void UpdateHomeScreenVisibility();
+
+  // Returns true if home screen should be shown based on the current
+  // configuration.
+  bool ShouldShowHomeScreen() const;
+
+  // Updates home launcher scale and opacity when the overview mode state
+  // changes. `show_home_launcher` - whether the home launcher should be shown.
+  // `animate` - whether the transition should be animated.
+  void UpdateForOverviewModeChange(bool show_home_launcher, bool animate);
 
   // Returns the length of the most recent query.
   int GetLastQueryLength();
@@ -383,6 +438,14 @@ class ASH_EXPORT AppListControllerImpl
   // Checks the notification badging pref and then updates whether a
   // notification badge is shown for each AppListItem.
   void UpdateAppNotificationBadging();
+
+  // Responsible for starting or stopping |smoothness_tracker_|.
+  void StartTrackingAnimationSmoothness(int64_t display_id);
+  void RecordAnimationSmoothness();
+
+  // Called when all the window minimize animations triggered by a tablet mode
+  // "Go Home" have ended. |display_id| is the home screen display ID.
+  void OnGoHomeWindowAnimationsEnded(int64_t display_id);
 
   // Whether the home launcher is
   // * being shown (either through an animation or a drag)
@@ -478,8 +541,27 @@ class ASH_EXPORT AppListControllerImpl
   // Whether the pref for notification badging is enabled.
   base::Optional<bool> notification_badging_pref_enabled_;
 
-  // Whether quiet mode is currently enabled.
-  base::Optional<bool> quiet_mode_enabled_;
+  // Whether the wallpaper is being previewed. The home screen should be hidden
+  // during wallpaper preview.
+  bool in_wallpaper_preview_ = false;
+
+  // Whether we're currently in a window dragging process.
+  bool in_window_dragging_ = false;
+
+  // The last overview mode exit type - cached when the overview exit starts, so
+  // it can be used to decide how to update home screen when overview mode exit
+  // animations are finished (at which point this information will not be
+  // available).
+  base::Optional<OverviewEnterExitType> overview_exit_type_;
+
+  // Responsible for recording smoothness related UMA stats for home screen
+  // animations.
+  base::Optional<ui::ThroughputTracker> smoothness_tracker_;
+
+  base::ScopedObservation<SplitViewController, SplitViewObserver>
+      split_view_observation_{this};
+
+  base::WeakPtrFactory<AppListControllerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImpl);
 };

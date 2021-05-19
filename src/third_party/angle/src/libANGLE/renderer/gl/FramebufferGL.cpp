@@ -650,7 +650,9 @@ angle::Result FramebufferGL::readPixels(const gl::Context *context,
                     GL_INVALID_OPERATION);
     }
 
-    stateManager->bindFramebuffer(GL_READ_FRAMEBUFFER, mFramebufferID);
+    GLenum framebufferTarget =
+        stateManager->getHasSeparateFramebufferBindings() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+    stateManager->bindFramebuffer(framebufferTarget, mFramebufferID);
 
     bool useOverlappingRowsWorkaround = features.packOverlappingRowsSeparatelyPackBuffer.enabled &&
                                         packBuffer && packState.rowLength != 0 &&
@@ -1118,10 +1120,7 @@ angle::Result FramebufferGL::clipSrcRegion(const gl::Context *context,
         // If pixels lying outside the read framebuffer, adjust src region
         // and dst region to appropriate in-bounds regions respectively.
         gl::Rectangle realSourceRegion;
-        if (!ClipRectangle(bounds.sourceRegion, bounds.sourceBounds, &realSourceRegion))
-        {
-            return angle::Result::Stop;
-        }
+        ClipRectangle(bounds.sourceRegion, bounds.sourceBounds, &realSourceRegion);
         GLuint xOffset = realSourceRegion.x - bounds.sourceRegion.x;
         GLuint yOffset = realSourceRegion.y - bounds.sourceRegion.y;
 

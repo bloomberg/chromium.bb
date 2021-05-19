@@ -34,9 +34,6 @@ struct TracePerfParams final : public RenderTestParams
     // Common default options
     TracePerfParams()
     {
-        majorVersion = 3;
-        minorVersion = 1;
-
         // Display the frame after every drawBenchmark invocation
         iterationsPerStep = 1;
     }
@@ -132,6 +129,7 @@ class TracePerfTest : public ANGLERenderTest, public ::testing::WithParamInterfa
     uint32_t mCurrentFrame         = 0;
     uint32_t mOffscreenFrameCount  = 0;
     bool mScreenshotSaved          = false;
+    std::unique_ptr<TraceLibrary> mTraceLibrary;
 };
 
 class TracePerfTest;
@@ -311,6 +309,15 @@ TracePerfTest::TracePerfTest()
     {
         // Linux+Nvidia doesn't support GL_KHR_texture_compression_astc_ldr (possibly others also)
         addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+
+        // Intel doesn't support external images.
+        addExtensionPrerequisite("GL_OES_EGL_image_external");
+
+        // Failing on Linux Intel due to invalid enum. http://anglebug.com/5822
+        if (IsLinux() && IsIntel() && param.driver != GLESDriverType::AngleEGL)
+        {
+            mSkipTest = true;
+        }
     }
 
     if (param.testID == RestrictedTraceID::asphalt_8)
@@ -377,10 +384,138 @@ TracePerfTest::TracePerfTest()
     {
         // TODO: https://anglebug.com/5663 Incorrect pixels on Nvidia Windows for first frame
         if (IsWindows() && IsNVIDIA() &&
+            param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE &&
+            param.getDeviceType() != EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::among_us)
+    {
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::car_parking_multiplayer)
+    {
+        // TODO: https://anglebug.com/5613 Nvidia native driver spews undefined behavior warnings
+        if (IsNVIDIA() && param.getRenderer() != EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+        // TODO: https://anglebug.com/5724 Device lost on Win Intel
+        if (IsWindows() && IsIntel() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::rope_hero_vice_town)
+    {
+        // TODO: http://anglebug.com/5716 Trace crashes on Pixel 2 in vulkan driver
+        if (IsPixel2() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::extreme_car_driving_simulator)
+    {
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::lineage_m)
+    {
+        // TODO: http://anglebug.com/5748 Vulkan device is lost on Nvidia Linux
+        if (IsLinux() && IsNVIDIA() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::plants_vs_zombies_2)
+    {
+        // TODO: http://crbug.com/1187752 Corrupted image
+        if (IsWindows() && IsAMD() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::junes_journey)
+    {
+        addExtensionPrerequisite("GL_OES_EGL_image_external");
+    }
+
+    if (param.testID == RestrictedTraceID::ragnarok_m_eternal_love)
+    {
+        addExtensionPrerequisite("GL_OES_EGL_image_external");
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+
+        // TODO: http://anglebug.com/5772 Pixel 2 errors with "Framebuffer is incomplete" on Vulkan
+        if (IsPixel2() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::real_cricket_20)
+    {
+        // TODO: http://anglebug.com/5777 ARM doesn't have enough VS storage blocks
+        if (IsAndroid() && IsARM())
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::league_of_legends_wild_rift)
+    {
+        addExtensionPrerequisite("GL_OES_EGL_image_external");
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+
+        // TODO: http://anglebug.com/5815 Trace is crashing on Intel Linux
+        if (IsLinux() && IsIntel() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::aztec_ruins)
+    {
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+
+        // TODO: http://anglebug.com/5553 Pixel 2 errors with "Framebuffer is incomplete" on Vulkan
+        if (IsPixel2() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::dragon_raja)
+    {
+        addExtensionPrerequisite("GL_OES_EGL_image_external");
+
+        // TODO: http://anglebug.com/5807 Intel Linux and Pixel 2 error with "Framebuffer is
+        // incomplete" on Vulkan
+        if (((IsLinux() && IsIntel()) || IsPixel2()) &&
             param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
         {
             mSkipTest = true;
         }
+    }
+
+    // Adreno gives a driver error with empty/small draw calls. http://anglebug.com/5823
+    if (param.testID == RestrictedTraceID::hill_climb_racing)
+    {
+        if (IsAndroid() && IsPixel2() && param.driver == GLESDriverType::SystemEGL)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::avakin_life)
+    {
+        addExtensionPrerequisite("GL_OES_EGL_image_external");
     }
 
     // We already swap in TracePerfTest::drawBenchmark, no need to swap again in the harness.
@@ -391,9 +526,15 @@ TracePerfTest::TracePerfTest()
 
 void TracePerfTest::initializeBenchmark()
 {
-    const auto &params = GetParam();
+    const auto &params         = GetParam();
+    const TraceInfo &traceInfo = GetTraceInfo(params.testID);
 
     mStartingDirectory = angle::GetCWD().value();
+
+    std::stringstream traceNameStr;
+    traceNameStr << "angle_restricted_trace_" << traceInfo.name;
+    std::string traceName = traceNameStr.str();
+    mTraceLibrary.reset(new TraceLibrary(traceName.c_str()));
 
     // To load the trace data path correctly we set the CWD to the executable dir.
     if (!IsAndroid())
@@ -404,10 +545,16 @@ void TracePerfTest::initializeBenchmark()
 
     trace_angle::LoadGLES(TraceLoadProc);
 
-    const TraceInfo &traceInfo = GetTraceInfo(params.testID);
-    mStartFrame                = traceInfo.startFrame;
-    mEndFrame                  = traceInfo.endFrame;
-    SetBinaryDataDecompressCallback(params.testID, DecompressBinaryData);
+    if (!mTraceLibrary->valid())
+    {
+        ERR() << "Could not load trace library.";
+        mSkipTest = true;
+        return;
+    }
+
+    mStartFrame = traceInfo.startFrame;
+    mEndFrame   = traceInfo.endFrame;
+    mTraceLibrary->setBinaryDataDecompressCallback(DecompressBinaryData);
 
     std::string relativeTestDataDir = std::string("src/tests/restricted_traces/") + traceInfo.name;
 
@@ -417,9 +564,10 @@ void TracePerfTest::initializeBenchmark()
     {
         ERR() << "Could not find test data folder.";
         mSkipTest = true;
+        return;
     }
 
-    SetBinaryDataDir(params.testID, testDataDir);
+    mTraceLibrary->setBinaryDataDir(testDataDir);
 
     mWindowWidth  = mTestParams.windowWidth;
     mWindowHeight = mTestParams.windowHeight;
@@ -464,7 +612,7 @@ void TracePerfTest::initializeBenchmark()
     }
 
     // Potentially slow. Can load a lot of resources.
-    SetupReplay(params.testID);
+    mTraceLibrary->setupReplay();
 
     glFinish();
 
@@ -475,7 +623,7 @@ void TracePerfTest::initializeBenchmark()
 
     // If we're re-tracing, trigger capture start after setup. This ensures the Setup function gets
     // recaptured into another Setup function and not merged with the first frame.
-    if (angle::gStartTraceAfterSetup)
+    if (angle::gRetraceMode)
     {
         angle::SetEnvironmentVar("ANGLE_CAPTURE_TRIGGER", "0");
         getGLWindow()->swap();
@@ -503,6 +651,9 @@ void TracePerfTest::destroyBenchmark()
         glDeleteFramebuffers(1, &mOffscreenFramebuffer);
         mOffscreenFramebuffer = 0;
     }
+
+    mTraceLibrary->finishReplay();
+    mTraceLibrary.reset(nullptr);
 
     // In order for the next test to load, restore the working directory
     angle::SetCWD(mStartingDirectory.c_str());
@@ -558,7 +709,7 @@ void TracePerfTest::drawBenchmark()
     beginInternalTraceEvent(frameName);
 
     startGpuTimer();
-    ReplayFrame(params.testID, mCurrentFrame);
+    mTraceLibrary->replayFrame(mCurrentFrame);
     stopGpuTimer();
 
     if (params.surfaceType == SurfaceType::Offscreen)
@@ -621,7 +772,7 @@ void TracePerfTest::drawBenchmark()
 
     if (mCurrentFrame == mEndFrame)
     {
-        ResetReplay(params.testID);
+        mTraceLibrary->resetReplay();
         mCurrentFrame = mStartFrame;
     }
     else
@@ -949,6 +1100,8 @@ TracePerfParams CombineTestID(const TracePerfParams &in, RestrictedTraceID id)
 
     TracePerfParams out = in;
     out.testID          = id;
+    out.majorVersion    = traceInfo.contextClientMajorVersion;
+    out.minorVersion    = traceInfo.contextClientMinorVersion;
     out.windowWidth     = traceInfo.drawSurfaceWidth;
     out.windowHeight    = traceInfo.drawSurfaceHeight;
     return out;

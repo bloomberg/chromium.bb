@@ -10,6 +10,7 @@
 #include "src/core/SkMatrixPriv.h"
 #include "src/gpu/GrPipeline.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/glsl/GrGLSLProgramBuilder.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
@@ -28,14 +29,14 @@ void GrGLSLGeometryProcessor::emitCode(EmitArgs& args) {
         SkASSERT(!*args.fFPCoordTransformHandler);
     }
 
-    if (args.fGP.willUseTessellationShaders()) {
+    if (args.fGeomProc.willUseTessellationShaders()) {
         // Tessellation shaders are temporarily responsible for integrating their own code strings
         // while we work out full support.
         return;
     }
 
     GrGLSLVertexBuilder* vBuilder = args.fVertBuilder;
-    if (!args.fGP.willUseGeoShader()) {
+    if (!args.fGeomProc.willUseGeoShader()) {
         // Emit the vertex position to the hardware in the normalized window coordinates it expects.
         SkASSERT(kFloat2_GrSLType == gpArgs.fPositionVar.getType() ||
                  kFloat3_GrSLType == gpArgs.fPositionVar.getType());
@@ -242,6 +243,23 @@ void GrGLSLGeometryProcessor::emitTransformCode(GrGLSLVertexBuilder* vb,
     }
 }
 
+void GrGLSLGeometryProcessor::setupUniformColor(GrGLSLFPFragmentBuilder* fragBuilder,
+                                                GrGLSLUniformHandler* uniformHandler,
+                                                const char* outputName,
+                                                UniformHandle* colorUniform) {
+    SkASSERT(colorUniform);
+    const char* stagedLocalVarName;
+    *colorUniform = uniformHandler->addUniform(nullptr,
+                                               kFragment_GrShaderFlag,
+                                               kHalf4_GrSLType,
+                                               "Color",
+                                               &stagedLocalVarName);
+    fragBuilder->codeAppendf("%s = %s;", outputName, stagedLocalVarName);
+    if (fragBuilder->getProgramBuilder()->shaderCaps()->mustObfuscateUniformColor()) {
+        fragBuilder->codeAppendf("%s = max(%s, half4(0));", outputName, outputName);
+    }
+}
+
 void GrGLSLGeometryProcessor::setTransform(const GrGLSLProgramDataManager& pdman,
                                            const UniformHandle& uniform,
                                            const SkMatrix& matrix,
@@ -351,4 +369,30 @@ void GrGLSLGeometryProcessor::writeLocalCoord(GrGLSLVertexBuilder* vertBuilder,
                                               UniformHandle* localMatrixUniform) {
     write_vertex_position(vertBuilder, uniformHandler, localVar, localMatrix, "localMatrix",
                           &gpArgs->fLocalCoordVar, localMatrixUniform);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+GrGLSLGeometryProcessor::FPCoordTransformHandler::FPCoordTransformHandler(
+            const GrPipeline& pipeline,
+            SkTArray<GrShaderVar>* transformedCoordVars)
+        : fIter(pipeline), fTransformedCoordVars(transformedCoordVars) {
+    while (fIter && !fIter->usesVaryingCoordsDirectly()) {
+        ++fIter;
+    }
+}
+
+const GrFragmentProcessor& GrGLSLGeometryProcessor::FPCoordTransformHandler::get() const {
+    return *fIter;
+}
+
+GrGLSLGeometryProcessor::FPCoordTransformHandler&
+GrGLSLGeometryProcessor::FPCoordTransformHandler::operator++() {
+    SkASSERT(fAddedCoord);
+    do {
+        ++fIter;
+    } while (fIter && !fIter->usesVaryingCoordsDirectly());
+    SkDEBUGCODE(fAddedCoord = false;)
+    return *this;
 }

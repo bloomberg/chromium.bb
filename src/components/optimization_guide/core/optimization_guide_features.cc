@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
+#include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/variations/hashing.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
@@ -61,12 +62,44 @@ const base::Feature kOptimizationTargetPrediction{
     "OptimizationTargetPrediction", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the downloading of models.
-const base::Feature kOptimizationGuideModelDownloading{
-    "OptimizationGuideModelDownloading", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOptimizationGuideModelDownloading {
+  "OptimizationGuideModelDownloading",
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else   // BUILD_WITH_TFLITE_LIB
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // !BUILD_WITH_TFLITE_LIB
+};
 
 // Enables page content to be annotated.
 const base::Feature kPageContentAnnotations{"PageContentAnnotations",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// This feature flag does not turn off any behavior, it is only used for
+// experiment parameters.
+const base::Feature kPageTextExtraction{
+    "OptimizationGuidePageContentExtraction", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the model file to be loaded for each execution, then unloaded on
+// completion.
+const base::Feature kLoadModelFileForEachExecution{
+    "LoadModelFileForEachExecution", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// The default value here is a bit of a guess.
+// TODO(crbug/1163244): This should be tuned once metrics are available.
+base::TimeDelta PageTextExtractionOutstandingRequestsGracePeriod() {
+  return base::TimeDelta::FromMilliseconds(GetFieldTrialParamByFeatureAsInt(
+      kPageTextExtraction, "outstanding_requests_grace_period_ms", 1000));
+}
+
+bool ShouldBatchUpdateHintsForActiveTabsAndTopHosts() {
+  if (base::FeatureList::IsEnabled(kRemoteOptimizationGuideFetching)) {
+    return GetFieldTrialParamByFeatureAsBool(kRemoteOptimizationGuideFetching,
+                                             "batch_update_hints_for_top_hosts",
+                                             true);
+  }
+  return false;
+}
 
 size_t MaxHintsFetcherTopHostBlocklistSize() {
   // The blocklist will be limited to the most engaged hosts and will hold twice
@@ -78,15 +111,6 @@ size_t MaxHintsFetcherTopHostBlocklistSize() {
                                           "top_host_blacklist_size_multiplier",
                                           3) *
          MaxHostsForOptimizationGuideServiceHintsFetch();
-}
-
-bool ShouldBatchUpdateHintsForTopHosts() {
-  if (base::FeatureList::IsEnabled(kRemoteOptimizationGuideFetching)) {
-    return GetFieldTrialParamByFeatureAsBool(kRemoteOptimizationGuideFetching,
-                                             "batch_update_hints_for_top_hosts",
-                                             true);
-  }
-  return false;
 }
 
 size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
@@ -212,10 +236,23 @@ GetMaxEffectiveConnectionTypeForNavigationHintsFetch() {
   return net::GetEffectiveConnectionTypeForName(param_value);
 }
 
-base::TimeDelta GetHintsFetchRefreshDuration() {
+base::TimeDelta GetHostHintsFetchRefreshDuration() {
   return base::TimeDelta::FromHours(GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching, "hints_fetch_refresh_duration_in_hours",
       72));
+}
+
+base::TimeDelta GetActiveTabsFetchRefreshDuration() {
+  return base::TimeDelta::FromHours(GetFieldTrialParamByFeatureAsInt(
+      kRemoteOptimizationGuideFetching,
+      "active_tabs_fetch_refresh_duration_in_hours", 1));
+}
+
+base::TimeDelta GetActiveTabsStalenessTolerance() {
+  // 90 days initially chosen since that's how long local history lasts for.
+  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+      kRemoteOptimizationGuideFetching,
+      "active_tabs_staleness_tolerance_in_days", 90));
 }
 
 size_t MaxConcurrentPageNavigationFetches() {
@@ -225,6 +262,16 @@ size_t MaxConcurrentPageNavigationFetches() {
   return GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching,
       "max_concurrent_page_navigation_fetches", 20);
+}
+
+int ActiveTabsHintsFetchRandomMinDelaySecs() {
+  return GetFieldTrialParamByFeatureAsInt(kRemoteOptimizationGuideFetching,
+                                          "fetch_random_min_delay_secs", 30);
+}
+
+int ActiveTabsHintsFetchRandomMaxDelaySecs() {
+  return GetFieldTrialParamByFeatureAsInt(kRemoteOptimizationGuideFetching,
+                                          "fetch_random_max_delay_secs", 60);
 }
 
 base::TimeDelta StoredHostModelFeaturesFreshnessDuration() {
@@ -294,6 +341,16 @@ int PredictionModelFetchRandomMaxDelaySecs() {
                                           "fetch_random_max_delay_secs", 60);
 }
 
+base::TimeDelta PredictionModelFetchRetryDelay() {
+  return base::TimeDelta::FromMinutes(GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction, "fetch_retry_minutes", 2));
+}
+
+base::TimeDelta PredictionModelFetchInterval() {
+  return base::TimeDelta::FromHours(GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction, "fetch_interval_hours", 24));
+}
+
 base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch() {
   std::string value = base::GetFieldTrialParamValueByFeature(
       kRemoteOptimizationGuideFetching, "approved_external_app_packages");
@@ -339,6 +396,15 @@ bool IsPageContentAnnotationEnabled() {
 uint64_t MaxSizeForPageContentTextDump() {
   return static_cast<uint64_t>(base::GetFieldTrialParamByFeatureAsInt(
       kPageContentAnnotations, "max_size_for_text_dump_in_bytes", 1024));
+}
+
+bool ShouldWriteContentAnnotationsToHistoryService() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kPageContentAnnotations, "write_to_history_service", true);
+}
+
+bool LoadModelFileForEachExecution() {
+  return base::FeatureList::IsEnabled(kLoadModelFileForEachExecution);
 }
 
 }  // namespace features

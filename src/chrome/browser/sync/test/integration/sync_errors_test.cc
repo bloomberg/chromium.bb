@@ -37,6 +37,19 @@ namespace {
 
 constexpr int64_t kUserEventTimeUsec = 123456;
 
+syncer::ModelTypeSet GetThrottledDataTypes(
+    syncer::ProfileSyncService* sync_service) {
+  base::RunLoop loop;
+  syncer::ModelTypeSet throttled_types;
+  sync_service->GetThrottledDataTypesForTest(
+      base::BindLambdaForTesting([&](syncer::ModelTypeSet result) {
+        throttled_types = result;
+        loop.Quit();
+      }));
+  loop.Run();
+  return throttled_types;
+}
+
 class SyncEngineStoppedChecker : public SingleClientStatusChangeChecker {
  public:
   explicit SyncEngineStoppedChecker(ProfileSyncService* service)
@@ -347,11 +360,6 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
 IN_PROC_BROWSER_TEST_F(SyncErrorTest,
                        ShouldResendUncommittedEntitiesAfterBrowserRestart) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // signin::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
-  // to get a non-empty refresh token on startup.
-  GetClient(0)->SignInPrimaryAccount();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
 
   const sync_pb::UserEventSpecifics expected_specifics =
@@ -402,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ShouldThrottleOneDatatypeButNotOthers) {
             "false");
 
   // PREFERENCES should now be throttled.
-  EXPECT_EQ(GetSyncService(0)->GetThrottledDataTypesForTest(),
+  EXPECT_EQ(GetThrottledDataTypes(GetSyncService(0)),
             syncer::ModelTypeSet{syncer::PREFERENCES});
 
   // Unthrottle PREFERENCES to verify that sync can resume.
@@ -413,8 +421,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ShouldThrottleOneDatatypeButNotOthers) {
   EXPECT_TRUE(
       FakeServerPrefMatchesValueChecker(prefs::kHomePageIsNewTabPage, "true")
           .Wait());
-  EXPECT_EQ(GetSyncService(0)->GetThrottledDataTypesForTest(),
-            syncer::ModelTypeSet());
+  EXPECT_EQ(GetThrottledDataTypes(GetSyncService(0)), syncer::ModelTypeSet());
 }
 
 }  // namespace

@@ -24,6 +24,22 @@
 #include "SkLoadICU.h"
 #endif
 
+// ubrk_clone added as draft in ICU69 and Android API 31 (first ICU NDK).
+// ubrk_safeClone deprecated in ICU69 and not exposed by Android.
+template<typename...> using void_t = void;
+template<typename T, typename = void>
+struct SkUbrkClone {
+    UBreakIterator* operator()(T bi, UErrorCode* status) {
+        return ubrk_safeClone(bi, nullptr, nullptr, status);
+    }
+};
+template<typename T>
+struct SkUbrkClone<T, void_t<decltype(ubrk_clone(std::declval<T>(), nullptr))>> {
+    UBreakIterator* operator()(T bi, UErrorCode* status) {
+        return ubrk_clone(bi, status);
+    }
+};
+
 using SkUnicodeBidi = std::unique_ptr<UBiDi, SkFunctionWrapper<decltype(ubidi_close), ubidi_close>>;
 using ICUUText = std::unique_ptr<UText, SkFunctionWrapper<decltype(utext_close), utext_close>>;
 using ICUBreakIterator = std::unique_ptr<UBreakIterator, SkFunctionWrapper<decltype(ubrk_close), ubrk_close>>;
@@ -179,8 +195,6 @@ class SkIcuBreakIteratorCache {
         return instance;
     }
 
-#ifdef SK_ENABLE_ICU_UBRK_SAFECLONE
-
     ICUBreakIterator makeBreakIterator(SkUnicode::BreakType type) {
         UErrorCode status = U_ZERO_ERROR;
         ICUBreakIterator* cachedIterator;
@@ -198,27 +212,13 @@ class SkIcuBreakIteratorCache {
         }
         ICUBreakIterator iterator;
         if (cachedIterator) {
-            iterator.reset(ubrk_safeClone(cachedIterator->get(), nullptr, nullptr, &status));
+            iterator.reset(SkUbrkClone<const UBreakIterator*>()(cachedIterator->get(), &status));
             if (U_FAILURE(status)) {
                 SkDEBUGF("Break error: %s", u_errorName(status));
             }
         }
         return iterator;
     }
-
-#else  // SK_ENABLE_ICU_UBRK_SAFECLONE
-
-    ICUBreakIterator makeBreakIterator(SkUnicode::BreakType type) {
-        UErrorCode status = U_ZERO_ERROR;
-        ICUBreakIterator iterator(ubrk_open(convertType(type), uloc_getDefault(), nullptr, 0, &status));
-        if (U_FAILURE(status)) {
-            SkDEBUGF("Break error: %s", u_errorName(status));
-        }
-        return iterator;
-    }
-
-#endif  // SK_ENABLE_ICU_UBRK_SAFECLONE
-
 };
 
 class SkScriptIterator_icu : public SkScriptIterator {
@@ -381,26 +381,6 @@ class SkUnicode_icu : public SkUnicode {
         return true;
     }
 
-    static bool extractWhitespaces(const char utf8[],
-                                   int utf8Units,
-                                   std::vector<Position>* whitespaces) {
-
-        const char* start = utf8;
-        const char* end = utf8 + utf8Units;
-        const char* ch = start;
-        while (ch < end) {
-            auto index = ch - start;
-            auto unichar = utf8_next(&ch, end);
-            if (u_isWhitespace(unichar)) {
-                auto ending = ch - start;
-                for (auto k = index; k < ending; ++k) {
-                  whitespaces->emplace_back(k);
-                }
-            }
-        }
-        return true;
-    }
-
     static int utf8ToUtf16(const char* utf8, size_t utf8Units, std::unique_ptr<uint16_t[]>* utf16) {
         int utf16Units = SkUTF::UTF8ToUTF16(nullptr, 0, utf8, utf8Units);
         if (utf16Units < 0) {
@@ -459,6 +439,10 @@ public:
         return u_isWhitespace(utf8);
     }
 
+    bool isSpace(SkUnichar utf8) override {
+        return u_isspace(utf8);
+    }
+
     static bool isHardLineBreak(SkUnichar utf8) {
         auto property = u_getIntPropertyValue(utf8, UCHAR_LINE_BREAK);
         return property == U_LB_LINE_FEED || property == U_LB_MANDATORY_BREAK;
@@ -510,11 +494,6 @@ public:
         return extractPositions(utf8, utf8Units, BreakType::kGraphemes,
             [results](int pos, int status) { results->emplace_back(pos);
         });
-    }
-
-    bool getWhitespaces(const char utf8[], int utf8Units, std::vector<Position>* results) override {
-
-        return extractWhitespaces(utf8, utf8Units, results);
     }
 
     void reorderVisual(const BidiLevel runLevels[],

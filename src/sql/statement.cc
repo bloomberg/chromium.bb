@@ -13,6 +13,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"  // TODO(crbug.com/866218): Remove this include.
 #include "third_party/sqlite/sqlite3.h"
 
@@ -182,6 +183,17 @@ bool Statement::BindDouble(int col, double val) {
   return is_valid() && CheckOk(sqlite3_bind_double(ref_->stmt(), col + 1, val));
 }
 
+bool Statement::BindTime(int col, base::Time val) {
+#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+#endif  // OS_ANDROID
+  DCHECK(!stepped_);
+
+  int64_t int_value = val.ToDeltaSinceWindowsEpoch().InMicroseconds();
+  return is_valid() &&
+         CheckOk(sqlite3_bind_int64(ref_->stmt(), col + 1, int_value));
+}
+
 bool Statement::BindCString(int col, const char* val) {
 #if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -290,6 +302,19 @@ double Statement::ColumnDouble(int col) const {
   return sqlite3_column_double(ref_->stmt(), col);
 }
 
+base::Time Statement::ColumnTime(int col) const {
+#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+#endif  // OS_ANDROID
+
+  if (!CheckValid())
+    return base::Time();
+
+  int64_t int_value = sqlite3_column_int64(ref_->stmt(), col);
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(int_value));
+}
+
 std::string Statement::ColumnString(int col) const {
 #if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -308,16 +333,16 @@ std::string Statement::ColumnString(int col) const {
   return result;
 }
 
-base::string16 Statement::ColumnString16(int col) const {
+std::u16string Statement::ColumnString16(int col) const {
 #if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #endif  // OS_ANDROID
 
   if (!CheckValid())
-    return base::string16();
+    return std::u16string();
 
   std::string s = ColumnString(col);
-  return !s.empty() ? base::UTF8ToUTF16(s) : base::string16();
+  return !s.empty() ? base::UTF8ToUTF16(s) : std::u16string();
 }
 
 int Statement::ColumnByteLength(int col) const {
@@ -359,7 +384,7 @@ bool Statement::ColumnBlobAsString(int col, std::string* blob) const {
   return true;
 }
 
-bool Statement::ColumnBlobAsString16(int col, base::string16* val) const {
+bool Statement::ColumnBlobAsString16(int col, std::u16string* val) const {
 #if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #endif  // OS_ANDROID
@@ -368,11 +393,11 @@ bool Statement::ColumnBlobAsString16(int col, base::string16* val) const {
     return false;
 
   const void* data = ColumnBlob(col);
-  size_t len = ColumnByteLength(col) / sizeof(base::char16);
+  size_t len = ColumnByteLength(col) / sizeof(char16_t);
   val->resize(len);
   if (val->size() != len)
     return false;
-  val->assign(reinterpret_cast<const base::char16*>(data), len);
+  val->assign(reinterpret_cast<const char16_t*>(data), len);
   return true;
 }
 

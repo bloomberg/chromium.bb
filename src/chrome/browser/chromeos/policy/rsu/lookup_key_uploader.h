@@ -13,18 +13,15 @@
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/attestation/enrollment_certificate_uploader.h"
+#include "chrome/browser/ash/attestation/enrollment_certificate_uploader.h"
+#include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 class PrefService;
 
 namespace chromeos {
-class CryptohomeClient;
+class CryptohomeMiscClient;
 }  // namespace chromeos
-
-namespace cryptohome {
-class BaseReply;
-}
 
 namespace policy {
 
@@ -36,10 +33,10 @@ class LookupKeyUploader : public CloudPolicyStore::Observer {
  public:
   // The observer immediately connects with DeviceCloudPolicyStoreChromeOS
   // to listen for policy load events.
-  LookupKeyUploader(DeviceCloudPolicyStoreChromeOS* policy_store,
-                    PrefService* pref_service,
-                    chromeos::attestation::EnrollmentCertificateUploader*
-                        certificate_uploader);
+  LookupKeyUploader(
+      DeviceCloudPolicyStoreChromeOS* policy_store,
+      PrefService* pref_service,
+      ash::attestation::EnrollmentCertificateUploader* certificate_uploader);
 
   ~LookupKeyUploader() override;
 
@@ -54,12 +51,13 @@ class LookupKeyUploader : public CloudPolicyStore::Observer {
 
   void Start();
   void GetDataFromCryptohome(bool available);
-  void OnRsuDeviceIdReceived(base::Optional<cryptohome::BaseReply> result);
+  void OnRsuDeviceIdReceived(
+      base::Optional<user_data_auth::GetRsuDeviceIdReply> result);
   void HandleRsuDeviceId(const std::string& rsu_device_id);
 
   void OnEnrollmentCertificateUploaded(
       const std::string& uploaded_key,
-      chromeos::attestation::EnrollmentCertificateUploader::Status status);
+      ash::attestation::EnrollmentCertificateUploader::Status status);
 
   void Result(const std::string& uploaded_key, bool success);
   // Used in tests.
@@ -67,8 +65,8 @@ class LookupKeyUploader : public CloudPolicyStore::Observer {
 
   DeviceCloudPolicyStoreChromeOS* policy_store_;
   PrefService* prefs_;
-  chromeos::attestation::EnrollmentCertificateUploader* certificate_uploader_;
-  chromeos::CryptohomeClient* cryptohome_client_;
+  ash::attestation::EnrollmentCertificateUploader* certificate_uploader_;
+  chromeos::CryptohomeMiscClient* cryptohome_misc_client_;
 
   // Whether we need to upload the lookup key right now. By default, it is set
   // to true. Later, it is set to false after first successful upload or finding

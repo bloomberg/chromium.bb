@@ -13,7 +13,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 class StubCrosSettingsProviderTest : public testing::Test {
  protected:
@@ -59,7 +59,6 @@ TEST_F(StubCrosSettingsProviderTest, Defaults) {
   AssertPref(kAccountsPrefAllowGuest, &kTrueValue);
   AssertPref(kAccountsPrefAllowNewUser, &kTrueValue);
   AssertPref(kAccountsPrefShowUserNamesOnSignIn, &kTrueValue);
-  AssertPref(kAccountsPrefSupervisedUsersEnabled, &kTrueValue);
 
   const base::Value kFalseValue(false);
   AssertPref(kAccountsPrefFamilyLinkAccountsAllowed, &kFalseValue);
@@ -91,4 +90,4 @@ TEST_F(StubCrosSettingsProviderTest, PrepareTrustedValues) {
   EXPECT_TRUE(closure);  // The |closure| was not taken or run.
 }
 
-}  // namespace chromeos
+}  // namespace ash

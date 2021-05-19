@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_controlling.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_consumer.h"
+#import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
 
 @class BubblePresenter;
 @class ContentSuggestionsSectionInformation;
@@ -36,7 +37,8 @@ extern NSString* const
 // CollectionViewController to display the suggestions items.
 @interface ContentSuggestionsViewController
     : CollectionViewController <ContentSuggestionsCollectionControlling,
-                                ContentSuggestionsConsumer>
+                                ContentSuggestionsConsumer,
+                                ThumbStripSupporting>
 
 // Inits view controller with |offset| to maintain scroll position if needed.
 // Offset is only required if Discover feed is visible.
@@ -84,7 +86,8 @@ extern NSString* const
 @property(nonatomic, strong)
     DiscoverFeedMetricsRecorder* discoverFeedMetricsRecorder;
 
-// The pan gesture handler for the hider view controller.
+// The pan gesture handler to notify of scroll events happening in this view
+// controller.
 @property(nonatomic, weak) ViewRevealingVerticalPanHandler* panGestureHandler;
 
 // Bubble presenter for displaying IPH bubbles relating to the NTP.

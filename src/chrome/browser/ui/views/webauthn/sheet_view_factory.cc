@@ -32,9 +32,9 @@ class PlaceholderSheetModel : public AuthenticatorSheetModelBase {
       ImageColorScheme color_scheme) const override {
     return gfx::kNoneIcon;
   }
-  base::string16 GetStepTitle() const override { return base::string16(); }
-  base::string16 GetStepDescription() const override {
-    return base::string16();
+  std::u16string GetStepTitle() const override { return std::u16string(); }
+  std::u16string GetStepDescription() const override {
+    return std::u16string();
   }
 };
 
@@ -190,7 +190,7 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
               dialog_model));
       break;
     case Step::kNotStarted:
-    case Step::kSubtleUI:
+    case Step::kLocationBarBubble:
     case Step::kClosed:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<PlaceholderSheetModel>(dialog_model));

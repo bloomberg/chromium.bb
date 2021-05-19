@@ -5,14 +5,13 @@
 #include "chrome/browser/ash/login/screens/locale_switch_screen.h"
 
 #include "base/time/time.h"
+#include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/chromeos/login/locale_switch_screen_handler.h"
-#include "chrome/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
@@ -67,12 +66,8 @@ bool LocaleSwitchScreen::MaybeSkip(WizardContext* wizard_context) {
     return false;
   }
 
-  // Only switch language if logging into a public account with the Terms of
-  // Service have been specified through policy. Otherwise advance to the
-  // session immediately.
-  if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount() &&
-      ProfileManager::GetActiveUserProfile()->GetPrefs()->IsManagedPreference(
-          prefs::kTermsOfServiceURL)) {
+  // Switch language if logging into a public account.
+  if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()) {
     return false;
   }
 
@@ -102,7 +97,7 @@ void LocaleSwitchScreen::ShowImpl() {
   }
 
   CoreAccountId primary_account_id =
-      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
 
   if (!identity_manager->HasAccountWithRefreshToken(primary_account_id)) {
     exit_callback_.Run(Result::LOCALE_FETCH_FAILED);

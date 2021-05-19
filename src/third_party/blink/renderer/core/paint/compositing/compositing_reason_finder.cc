@@ -122,6 +122,9 @@ static CompositingReasons BackfaceInvisibility3DAncestorReason(
 
 CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
     const LayoutObject& object) {
+  if (object.GetDocument().Printing())
+    return CompositingReason::kNone;
+
   // TODO(wangxianzhu): Don't depend on PaintLayer for CompositeAfterPaint.
   if (!object.HasLayer()) {
     if (object.IsSVGChild())
@@ -169,18 +172,19 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
           (object.IsLayoutView() &&
            ShouldPreferCompositingForLayoutView(To<LayoutView>(object)));
 
-      if (scrollable_area->ComputeNeedsCompositedScrolling(
-              force_prefer_compositing_to_lcd_text)) {
-        reasons |= CompositingReason::kOverflowScrolling;
-      }
-    } else if (scrollable_area->NeedsCompositedScrolling()) {
-      // For pre-CompositeAfterPaint, just let |reasons| reflect the current
-      // composited scrolling status.
-      reasons |= CompositingReason::kOverflowScrolling;
+      scrollable_area->UpdateNeedsCompositedScrolling(
+          force_prefer_compositing_to_lcd_text);
     }
+    if (scrollable_area->NeedsCompositedScrolling())
+      reasons |= CompositingReason::kOverflowScrolling;
   }
 
   reasons |= BackfaceInvisibility3DAncestorReason(*layer);
+
+  if (auto* element = DynamicTo<Element>(object.GetNode())) {
+    if (element->ShouldCompositeForDocumentTransition())
+      reasons |= CompositingReason::kDocumentTransitionSharedElement;
+  }
 
   if (object.CanHaveAdditionalCompositingReasons())
     reasons |= object.AdditionalCompositingReasons();
@@ -197,7 +201,12 @@ CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(
   if (object.IsText())
     return CompositingReason::kNone;
 
+  // Disable compositing of SVG if there is clip-path or mask to avoid hairline
+  // along the edges. TODO(crbug.com/1171601): Fix the root cause.
   const ComputedStyle& style = object.StyleRef();
+  if (style.HasClipPath() || style.HasMask())
+    return CompositingReason::kNone;
+
   auto reasons = CompositingReasonsForAnimation(object);
   reasons |= CompositingReasonsForWillChange(style);
   // Exclude will-change for other properties some of which don't apply to SVG
@@ -297,6 +306,11 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
 
   if (layout_object.CanHaveAdditionalCompositingReasons())
     direct_reasons |= layout_object.AdditionalCompositingReasons();
+
+  if (auto* element = DynamicTo<Element>(layout_object.GetNode())) {
+    if (element->ShouldCompositeForDocumentTransition())
+      direct_reasons |= CompositingReason::kDocumentTransitionSharedElement;
+  }
 
   direct_reasons |= BackfaceInvisibility3DAncestorReason(layer);
 

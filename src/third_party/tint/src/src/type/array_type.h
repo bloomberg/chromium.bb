@@ -15,12 +15,9 @@
 #ifndef SRC_TYPE_ARRAY_TYPE_H_
 #define SRC_TYPE_ARRAY_TYPE_H_
 
-#include <assert.h>
-
 #include <string>
-#include <utility>
 
-#include "src/ast/array_decoration.h"
+#include "src/ast/decoration.h"
 #include "src/type/type.h"
 
 namespace tint {
@@ -34,7 +31,7 @@ class Array : public Castable<Array, Type> {
   /// @param size the number of elements in the array. `0` represents a
   /// runtime-sized array.
   /// @param decorations the array decorations
-  Array(Type* subtype, uint32_t size, ast::ArrayDecorationList decorations);
+  Array(Type* subtype, uint32_t size, ast::DecorationList decorations);
   /// Move constructor
   Array(Array&&);
   ~Array() override;
@@ -43,23 +40,8 @@ class Array : public Castable<Array, Type> {
   /// i.e. the size is determined at runtime
   bool IsRuntimeArray() const { return size_ == 0; }
 
-  /// @param mem_layout type of memory layout to use in calculation.
-  /// @returns minimum size required for this type, in bytes.
-  ///          0 for non-host shareable types.
-  uint64_t MinBufferBindingSize(MemoryLayout mem_layout) const override;
-
-  /// @param mem_layout type of memory layout to use in calculation.
-  /// @returns base alignment for the type, in bytes.
-  ///          0 for non-host shareable types.
-  uint64_t BaseAlignment(MemoryLayout mem_layout) const override;
-
   /// @returns the array decorations
-  const ast::ArrayDecorationList& decorations() const { return decos_; }
-
-  /// @returns the array stride or 0 if none set.
-  uint32_t array_stride() const;
-  /// @returns true if the array has a stride set
-  bool has_array_stride() const;
+  const ast::DecorationList& decorations() const { return decos_; }
 
   /// @returns the array type
   Type* type() const { return subtype_; }
@@ -82,7 +64,7 @@ class Array : public Castable<Array, Type> {
  private:
   Type* const subtype_;
   uint32_t const size_;
-  ast::ArrayDecorationList const decos_;
+  ast::DecorationList const decos_;
 };
 
 }  // namespace type

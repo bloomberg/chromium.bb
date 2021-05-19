@@ -58,7 +58,7 @@ namespace dawn_native { namespace vulkan {
             Extent3D imageExtentDst = ComputeTextureCopyExtent(dstCopy, copySize);
             return imageExtentSrc.width == imageExtentDst.width &&
                    imageExtentSrc.height == imageExtentDst.height &&
-                   imageExtentSrc.depth == imageExtentDst.depth;
+                   imageExtentSrc.depthOrArrayLayers == imageExtentDst.depthOrArrayLayers;
         }
 
         VkImageCopy ComputeImageCopyRegion(const TextureCopy& srcCopy,
@@ -76,7 +76,7 @@ namespace dawn_native { namespace vulkan {
             region.srcSubresource.aspectMask = VulkanAspectMask(aspect);
             region.srcSubresource.mipLevel = srcCopy.mipLevel;
             region.srcSubresource.baseArrayLayer = srcCopy.origin.z;
-            region.srcSubresource.layerCount = copySize.depth;
+            region.srcSubresource.layerCount = copySize.depthOrArrayLayers;
 
             region.srcOffset.x = srcCopy.origin.x;
             region.srcOffset.y = srcCopy.origin.y;
@@ -85,7 +85,7 @@ namespace dawn_native { namespace vulkan {
             region.dstSubresource.aspectMask = VulkanAspectMask(aspect);
             region.dstSubresource.mipLevel = dstCopy.mipLevel;
             region.dstSubresource.baseArrayLayer = dstCopy.origin.z;
-            region.dstSubresource.layerCount = copySize.depth;
+            region.dstSubresource.layerCount = copySize.depthOrArrayLayers;
 
             region.dstOffset.x = dstCopy.origin.x;
             region.dstOffset.y = dstCopy.origin.y;
@@ -369,13 +369,36 @@ namespace dawn_native { namespace vulkan {
             return {};
         }
 
-        void ResetUsedQuerySets(Device* device,
-                                VkCommandBuffer commands,
-                                const std::set<QuerySetBase*>& usedQuerySets) {
-            // TODO(hao.x.li@intel.com): Reset the queries based on the used indexes.
-            for (QuerySetBase* querySet : usedQuerySets) {
-                device->fn.CmdResetQueryPool(commands, ToBackend(querySet)->GetHandle(), 0,
-                                             querySet->GetQueryCount());
+        // Reset the query sets used on render pass because the reset command must be called outside
+        // render pass.
+        void ResetUsedQuerySetsOnRenderPass(Device* device,
+                                            VkCommandBuffer commands,
+                                            QuerySetBase* querySet,
+                                            const std::vector<bool>& availability) {
+            ASSERT(availability.size() == querySet->GetQueryAvailability().size());
+
+            auto currentIt = availability.begin();
+            auto lastIt = availability.end();
+            // Traverse the used queries which availability are true.
+            while (currentIt != lastIt) {
+                auto firstTrueIt = std::find(currentIt, lastIt, true);
+                // No used queries need to be reset
+                if (firstTrueIt == lastIt) {
+                    break;
+                }
+
+                auto nextFalseIt = std::find(firstTrueIt, lastIt, false);
+
+                uint32_t queryIndex = std::distance(availability.begin(), firstTrueIt);
+                uint32_t queryCount = std::distance(firstTrueIt, nextFalseIt);
+
+                // Reset the queries between firstTrueIt and nextFalseIt (which is at most
+                // lastIt)
+                device->fn.CmdResetQueryPool(commands, ToBackend(querySet)->GetHandle(), queryIndex,
+                                             queryCount);
+
+                // Set current iterator to next false
+                currentIt = nextFalseIt;
             }
         }
 
@@ -425,7 +448,7 @@ namespace dawn_native { namespace vulkan {
                     destination->GetHandle(), resolveDestinationOffset, sizeof(uint64_t),
                     VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
 
-                // Set current interator to next false
+                // Set current iterator to next false
                 currentIt = nextFalseIt;
             }
         }
@@ -433,9 +456,9 @@ namespace dawn_native { namespace vulkan {
     }  // anonymous namespace
 
     // static
-    CommandBuffer* CommandBuffer::Create(CommandEncoder* encoder,
-                                         const CommandBufferDescriptor* descriptor) {
-        return new CommandBuffer(encoder, descriptor);
+    Ref<CommandBuffer> CommandBuffer::Create(CommandEncoder* encoder,
+                                             const CommandBufferDescriptor* descriptor) {
+        return AcquireRef(new CommandBuffer(encoder, descriptor));
     }
 
     CommandBuffer::CommandBuffer(CommandEncoder* encoder, const CommandBufferDescriptor* descriptor)
@@ -459,13 +482,15 @@ namespace dawn_native { namespace vulkan {
         // Create the temporary buffer. Note that We don't need to respect WebGPU's 256 alignment
         // because it isn't a hard constraint in Vulkan.
         uint64_t tempBufferSize =
-            widthInBlocks * heightInBlocks * copySize.depth * blockInfo.byteSize;
+            widthInBlocks * heightInBlocks * copySize.depthOrArrayLayers * blockInfo.byteSize;
         BufferDescriptor tempBufferDescriptor;
         tempBufferDescriptor.size = tempBufferSize;
         tempBufferDescriptor.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
 
         Device* device = ToBackend(GetDevice());
-        Ref<Buffer> tempBuffer = AcquireRef(ToBackend(device->CreateBuffer(&tempBufferDescriptor)));
+        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
+        Ref<Buffer> tempBuffer =
+            AcquireRef(ToBackend(device->APICreateBuffer(&tempBufferDescriptor)));
 
         BufferCopy tempBufferCopy;
         tempBufferCopy.buffer = tempBuffer.Get();
@@ -502,7 +527,8 @@ namespace dawn_native { namespace vulkan {
         Device* device = ToBackend(GetDevice());
         VkCommandBuffer commands = recordingContext->commandBuffer;
 
-        // Records the necessary barriers for the resource usage pre-computed by the frontend
+        // Records the necessary barriers for the resource usage pre-computed by the frontend.
+        // And resets the used query sets which are rewritten on the render pass.
         auto PrepareResourcesForRenderPass = [](Device* device,
                                                 CommandRecordingContext* recordingContext,
                                                 const PassResourceUsage& usages) {
@@ -544,6 +570,13 @@ namespace dawn_native { namespace vulkan {
                                               bufferBarriers.data(), imageBarriers.size(),
                                               imageBarriers.data());
             }
+
+            // Reset all query set used on current render pass together before beginning render pass
+            // because the reset command must be called outside render pass
+            for (size_t i = 0; i < usages.querySets.size(); ++i) {
+                ResetUsedQuerySetsOnRenderPass(device, recordingContext->commandBuffer,
+                                               usages.querySets[i], usages.queryAvailabilities[i]);
+            }
         };
 
         // TODO(jiawei.shao@intel.com): move the resource lazy clearing inside the barrier tracking
@@ -565,9 +598,6 @@ namespace dawn_native { namespace vulkan {
 
         const std::vector<PassResourceUsage>& passResourceUsages = GetResourceUsages().perPass;
         size_t nextPassNumber = 0;
-
-        // QuerySet must be reset between uses.
-        ResetUsedQuerySets(device, commands, GetResourceUsages().usedQuerySets);
 
         Command type;
         while (mCommands.NextCommandId(&type)) {
@@ -689,8 +719,8 @@ namespace dawn_native { namespace vulkan {
                         // subresources should all be GENERAL instead of what we set now. Currently
                         // it is not allowed to copy with overlapped subresources, but we still
                         // add the ASSERT here as a reminder for this possible misuse.
-                        ASSERT(
-                            !IsRangeOverlapped(src.origin.z, dst.origin.z, copy->copySize.depth));
+                        ASSERT(!IsRangeOverlapped(src.origin.z, dst.origin.z,
+                                                  copy->copySize.depthOrArrayLayers));
                     }
 
                     // TODO after Yunchao's CL
@@ -770,10 +800,15 @@ namespace dawn_native { namespace vulkan {
                     QuerySet* querySet = ToBackend(cmd->querySet.Get());
                     Buffer* destination = ToBackend(cmd->destination.Get());
 
+                    // TODO(hao.x.li@intel.com): Clear the resolve region of the buffer to 0 if at
+                    // least one query is unavailable for the resolving and the resolve buffer has
+                    // been initialized or fully used.
+
                     destination->EnsureDataInitializedAsDestination(
                         recordingContext, cmd->destinationOffset,
                         cmd->queryCount * sizeof(uint64_t));
-                    destination->TransitionUsageNow(recordingContext, wgpu::BufferUsage::CopyDst);
+                    destination->TransitionUsageNow(recordingContext,
+                                                    wgpu::BufferUsage::QueryResolve);
 
                     RecordResolveQuerySetCmd(commands, device, querySet, cmd->firstQuery,
                                              cmd->queryCount, destination, cmd->destinationOffset);
@@ -783,6 +818,10 @@ namespace dawn_native { namespace vulkan {
 
                 case Command::WriteTimestamp: {
                     WriteTimestampCmd* cmd = mCommands.NextCommand<WriteTimestampCmd>();
+
+                    // The query must be reset between uses.
+                    device->fn.CmdResetQueryPool(commands, ToBackend(cmd->querySet)->GetHandle(),
+                                                 cmd->queryIndex, 1);
 
                     RecordWriteTimestampCmd(recordingContext, device, cmd);
                     break;
@@ -957,6 +996,10 @@ namespace dawn_native { namespace vulkan {
 
                 case Command::WriteTimestamp: {
                     WriteTimestampCmd* cmd = mCommands.NextCommand<WriteTimestampCmd>();
+
+                    // The query must be reset between uses.
+                    device->fn.CmdResetQueryPool(commands, ToBackend(cmd->querySet)->GetHandle(),
+                                                 cmd->queryIndex, 1);
 
                     RecordWriteTimestampCmd(recordingContext, device, cmd);
                     break;

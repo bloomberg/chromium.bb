@@ -40,6 +40,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1252999807265626933">Mengecas daripada <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Bagaimanakah keadaan cuaca?</translation>
 <translation id="1267032506238418139">Perubahan pintasan</translation>
+<translation id="1269405891096105529">Peranti persisian tidak disokong dalam mod Tetamu</translation>
 <translation id="1270290102613614947">Papan kekunci pada skrin dilumpuhkan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1275285675049378717">Membekalkan kuasa kepada <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="2012624427112548395">Ctrl+Cari+H</translation>
 <translation id="2016340657076538683">Taip mesej</translation>
 <translation id="2018630726571919839">Beritahu saya jenaka</translation>
+<translation id="2021864487439853900">Klik untuk membuka kunci</translation>
 <translation id="2049240716062114887">Nama meja telah ditukar kepada <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Potret</translation>
 <translation id="2067602449040652523">Kecerahan papan kekunci</translation>
@@ -276,6 +278,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> masih dapat log masuk nanti.</translation>
 <translation id="3321628682574733415">Kod ibu bapa salah</translation>
 <translation id="332587331255250389">Sila gantikan bateri</translation>
+<translation id="3333741161915951567">Modem dibut semula. Tunggu 30 saat sebelum mencuba sekali lagi.</translation>
 <translation id="3341303451326249809">Tangkapan skrin ditangkap</translation>
 <translation id="334252345105450327">Ambil tangkapan skrin</translation>
 <translation id="3351879221545518001">Anda sedang menghantar skrin.</translation>
@@ -320,6 +323,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Pengguna terurus</translation>
 <translation id="3665889125180354336">Rakam mikrofon</translation>
 <translation id="36813544980941320">Rangkaian Wi-Fi akan dikongsi antara telefon anda dengan <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Memaparkan tetingkap daripada meja semasa, tekan kekunci Anak panah ke atas untuk memaparkan tetingkap daripada semua meja</translation>
 <translation id="3702846122927433391">Populasi di Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Memuatkan...</translation>
@@ -352,6 +356,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="394485226368336402">Tetapan audio</translation>
 <translation id="3945319193631853098">Ketik untuk menyelesaikan persediaan</translation>
 <translation id="3945867833895287237">Menyambung kepada tempat liputan...</translation>
+<translation id="3958465044488004317">Lihat hasil dalam Assistant</translation>
 <translation id="3962859241508114581">Lagu Sebelumnya</translation>
 <translation id="3969043077941541451">Mati</translation>
 <translation id="397105322502079400">Mengira...</translation>
@@ -408,10 +413,12 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4421231901400348175">Berkongsi kawalan skrin anda dengan <ph name="HELPER_NAME" /> melalui Bantuan Jauh.</translation>
 <translation id="4424159417645388645">Meja 5</translation>
 <translation id="4430019312045809116">Kelantangan</translation>
+<translation id="4445159312344259901">Log masuk untuk membuka kunci</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 pemberitahuan penting}other{# pemberitahuan penting}}</translation>
 <translation id="4450893287417543264">Jangan tunjukkan lagi</translation>
 <translation id="445864333228800152">Selamat petang,</translation>
 <translation id="4458688154122353284">Hentikan rakaman skrin</translation>
+<translation id="4467143075433126295">Tekan dan tahan [Esc] untuk keluar daripada skrin penuh</translation>
 <translation id="4472575034687746823">Bermula</translation>
 <translation id="4477350412780666475">Lagu Seterusnya</translation>
 <translation id="4477892968187500306">Peranti ini mungkin mengandungi apl yang belum disahkan oleh Google.</translation>
@@ -608,6 +615,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Google Assistant tidak tersedia dalam sesi tetamu.</translation>
 <translation id="6137566720514957455">Buka dialog alih keluar untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Peranti persisian tidak disokong</translation>
 <translation id="615957422585914272">Paparkan papan kekunci pada skrin</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="6179832488876878285">Anda boleh menyematkan fail penting anda di sini. Buka apl Files untuk bermula.</translation>
@@ -625,11 +633,11 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6297287540776456956">Gunakan stilus untuk memilih bahagian</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> telah diputarkan ke <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Suara</translation>
+<translation id="6330012934079202188">Memaparkan tetingkap daripada semua meja, tekan kekunci Anak panah ke atas untuk memaparkan tetingkap daripada meja semasa</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> ialah sesi terurus yang diurus oleh <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth dihidupkan</translation>
 <translation id="6381109794406942707">Untuk membuka kunci peranti, masukkan PIN anda.</translation>
 <translation id="639644700271529076">Kekunci CAPS LOCK dimatikan</translation>
-<translation id="6396835948284782440">Tekan dan tahan [Esc] untuk keluar.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Kosongkan semua pemberitahuan</translation>
@@ -795,7 +803,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7780159184141939021">Putarkan Skrin</translation>
 <translation id="7796353162336583443">Ketik butang stilus pada rak untuk mencatat nota, mengambil tangkapan skrin, menggunakan Google Assistant, penuding laser atau kanta pembesar.</translation>
 <translation id="7798302898096527229">Tekan Search atau Shift untuk membatalkan.</translation>
-<translation id="7807966291075028781">Peranti persisian tidak disokong dalam mod Tetamu atas sebab keselamatan</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> dan <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Isyarat kuat</translation>
 <translation id="7837740436429729974">Masa tamat</translation>
@@ -945,6 +952,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8936501819958976551">dinyahaktifkan</translation>
 <translation id="8938800817013097409">Peranti USB-C (port kanan di belakang)</translation>
 <translation id="8940956008527784070">Bateri lemah (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Hanya peranti Thunderbolt yang diluluskan serasi dengan Chromebook anda</translation>
 <translation id="8982906748181120328">Keterlihatan berdekatan</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Menggunakan <ph name="IME_NAME" /></translation>

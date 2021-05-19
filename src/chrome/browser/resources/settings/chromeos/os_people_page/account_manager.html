@@ -17,6 +17,7 @@
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../../people_page/account_manager_browser_proxy.html">
+<link rel="import" href="../parental_controls_page/parental_controls_browser_proxy.html">
 
 <dom-module id="settings-account-manager">
   <template>
@@ -46,7 +47,7 @@
 
       .profile-icon.device-account-icon {
         --profile-icon-size: 60px;
-        margin-top: 20px;
+        margin-top: 16px;
       }
 
       .device-account-container {
@@ -57,7 +58,8 @@
 
       .device-account-container .primary {
         font-weight: 500;
-        margin-top: 15px;
+        margin-bottom: 4px;
+        margin-top: 16px;
       }
 
       .account-list-item {
@@ -112,7 +114,7 @@
 
       #account-list-header > h2 {
         padding-bottom: 8px;
-        padding-top: 8px;
+        padding-top: 16px;
       }
 
       #account-list-header {
@@ -142,7 +144,7 @@
       }
 
       .error-badge {
-        background: url(chrome://resources/images/error_badge.svg)
+        background: url(chrome://os-settings/images/error_badge.svg)
             center / cover no-repeat;
         display: block;
         height: 20px;
@@ -187,9 +189,11 @@
       .managed-message {
         color: var(--cr-secondary-text-color);
         justify-content: center;
+        margin-top: 16px;
       }
 
-      .managed-message > iron-icon {
+      .managed-message > iron-icon,
+      .managed-message > cr-icon-button {
         margin-inline-end: 5px;
       }
 
@@ -240,9 +244,14 @@
       <!-- Managed account badge and message -->
       <template is="dom-if" if="[[isDeviceAccountManaged_]]">
         <div class="settings-box first managed-message">
-          <iron-icon icon="[[getManagedAccountTooltipIcon_(isChildUser_,
-                            isDeviceAccountManaged_)]]">
-          </iron-icon>
+          <template is="dom-if" if="[[!isChildUser_]]">
+            <iron-icon icon="cr20:domain"></iron-icon>
+          </template>
+          <template is="dom-if" if="[[isChildUser_]]">
+            <cr-icon-button iron-icon="cr20:kite"
+                on-click="onManagedIconClick_">
+            </cr-icon-button>
+          </template>
           <settings-localized-link
               localized-string=
                 "[[getManagementDescription_(isChildUser_, deviceAccount_)]]"

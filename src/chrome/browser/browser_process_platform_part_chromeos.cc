@@ -13,6 +13,8 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/ash/login/saml/in_session_password_change_manager.h"
+#include "chrome/browser/ash/login/session/chrome_session_manager.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/automatic_reboot_manager.h"
@@ -22,11 +24,9 @@
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
+#include "chrome/browser/chromeos/net/system_proxy_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/system_proxy_manager.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #include "chrome/common/chrome_switches.h"
@@ -92,8 +92,7 @@ void BrowserProcessPlatformPart::ShutdownAutomaticRebootManager() {
 
 void BrowserProcessPlatformPart::InitializeChromeUserManager() {
   DCHECK(!chrome_user_manager_);
-  chrome_user_manager_ =
-      chromeos::ChromeUserManagerImpl::CreateChromeUserManager();
+  chrome_user_manager_ = ash::ChromeUserManagerImpl::CreateChromeUserManager();
   chrome_user_manager_->Initialize();
 }
 
@@ -108,7 +107,7 @@ void BrowserProcessPlatformPart::InitializeDeviceDisablingManager() {
   device_disabling_manager_delegate_.reset(
       new ash::system::DeviceDisablingManagerDefaultDelegate);
   device_disabling_manager_.reset(new ash::system::DeviceDisablingManager(
-      device_disabling_manager_delegate_.get(), chromeos::CrosSettings::Get(),
+      device_disabling_manager_delegate_.get(), ash::CrosSettings::Get(),
       user_manager::UserManager::Get()));
   device_disabling_manager_->Init();
 }
@@ -176,9 +175,11 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
           ->Subscribe(base::BindRepeating(
               &BrowserProcessPlatformPart::ShutdownPrimaryProfileServices,
               base::Unretained(this)));
-  browser_policy_connector_chromeos()
-      ->GetSystemProxyManager()
-      ->StartObservingPrimaryProfilePrefs(primary_profile);
+
+  if (chromeos::SystemProxyManager::Get()) {
+    chromeos::SystemProxyManager::Get()->StartObservingPrimaryProfilePrefs(
+        primary_profile);
+  }
 
   auto* manager = arc::data_snapshotd::ArcDataSnapshotdManager::Get();
   if (manager) {
@@ -192,9 +193,8 @@ void BrowserProcessPlatformPart::ShutdownPrimaryProfileServices() {
   if (manager)
     manager->policy_service()->StopObservingPrimaryProfilePrefs();
 
-  browser_policy_connector_chromeos()
-      ->GetSystemProxyManager()
-      ->StopObservingPrimaryProfilePrefs();
+  if (chromeos::SystemProxyManager::Get())
+    chromeos::SystemProxyManager::Get()->StopObservingPrimaryProfilePrefs();
   in_session_password_change_manager_.reset();
 }
 

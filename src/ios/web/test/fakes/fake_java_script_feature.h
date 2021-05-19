@@ -5,19 +5,19 @@
 #ifndef IOS_WEB_TEST_FAKES_FAKE_JAVA_SCRIPT_FEATURE_H_
 #define IOS_WEB_TEST_FAKES_FAKE_JAVA_SCRIPT_FEATURE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/values.h"
 #import "ios/web/public/js_messaging/java_script_feature.h"
-
-@class WKScriptMessage;
+#include "ios/web/public/js_messaging/script_message.h"
 
 namespace web {
 
-class BrowserState;
 class WebFrame;
+class WebState;
 
 // The text added to the page by |kJavaScriptFeatureTestScript| on document
 // load.
@@ -47,22 +47,20 @@ class FakeJavaScriptFeature : public JavaScriptFeature {
   void GetErrorCount(WebFrame* web_frame,
                      base::OnceCallback<void(const base::Value*)> callback);
 
-  BrowserState* last_received_browser_state() const {
-    return last_received_browser_state_;
-  }
+  WebState* last_received_web_state() const { return last_received_web_state_; }
 
-  WKScriptMessage* last_received_message() const {
-    return last_received_message_;
+  const ScriptMessage* last_received_message() const {
+    return last_received_message_.get();
   }
 
  private:
   // JavaScriptFeature:
   base::Optional<std::string> GetScriptMessageHandlerName() const override;
-  void ScriptMessageReceived(BrowserState* browser_state,
-                             WKScriptMessage* message) override;
+  void ScriptMessageReceived(WebState* web_state,
+                             const ScriptMessage& message) override;
 
-  BrowserState* last_received_browser_state_ = nullptr;
-  WKScriptMessage* last_received_message_ = nil;
+  WebState* last_received_web_state_ = nullptr;
+  std::unique_ptr<const ScriptMessage> last_received_message_;
 };
 
 }  // namespace web

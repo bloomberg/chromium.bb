@@ -27,6 +27,9 @@ class TestTimelineBenchmark(benchmark.Benchmark):
   def CreateCoreTimelineBasedMeasurementOptions(self):
     options = timeline_based_measurement.Options()
     options.config.enable_chrome_trace = True
+    # Increase buffer size to deal with flaky test cases running into the
+    # buffer limit (crbug.com/1193748).
+    options.config.chrome_trace_config.SetTraceBufferSizeInKb(400 * 1024)
     options.SetTimelineBasedMetrics(['sampleMetric'])
     return options
 
@@ -52,6 +55,7 @@ class TimelineBasedMeasurementTest(unittest.TestCase):
     self.assertEqual(len(test_results), 1)
     return test_results[0]
 
+  @decorators.Disabled('chromeos')  # crbug.com/1191132
   @decorators.Isolated
   def testTraceCaptureUponSuccess(self):
     test_benchmark = TestTimelineBenchmark()

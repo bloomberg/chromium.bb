@@ -39,6 +39,16 @@ class SodaInstaller {
   // instance.
   static SodaInstaller* GetInstance();
 
+  // Initialize SODA if any SODA-utilising feature is enabled. Intended to be
+  // called during embedder startup. Checks whether SODA is due for
+  // uninstallation, and if so, triggers uninstallation.
+  void Init(PrefService* profile_prefs, PrefService* global_prefs);
+
+  // Schedules SODA for uninstallation if no SODA client features are
+  // currently enabled. Should be called when client features using SODA are
+  // disabled.
+  void SetUninstallTimer(PrefService* profile_prefs, PrefService* global_prefs);
+
   // Gets the directory path of the installed SODA lib bundle, or an empty path
   // if not installed. Currently Chrome OS only, returns empty path on other
   // platforms.
@@ -67,9 +77,10 @@ class SodaInstaller {
   // asynchronously returned an answer.
   virtual bool IsSodaInstalled() const = 0;
 
-  // Uninstalls SODA and associated language model(s). On some platforms, disc
-  // space may not be freed immediately.
-  virtual void UninstallSoda(PrefService* global_prefs) = 0;
+  // Returns whether or not the language pack for a given language or locale
+  // code is installed.
+  virtual bool IsLanguageInstalled(
+      const std::string& locale_or_language) const = 0;
 
   // Adds an observer to the observer list.
   void AddObserver(Observer* observer);
@@ -80,6 +91,10 @@ class SodaInstaller {
   void NotifySodaInstalledForTesting();
 
  protected:
+  // Uninstalls SODA and associated language model(s). On some platforms, disc
+  // space may not be freed immediately.
+  virtual void UninstallSoda(PrefService* global_prefs) = 0;
+
   // Notifies the observers that the SODA installation has completed.
   void NotifyOnSodaInstalled();
 
@@ -93,6 +108,10 @@ class SodaInstaller {
   base::ObserverList<Observer> observers_;
   bool soda_binary_installed_ = false;
   bool language_installed_ = false;
+
+ private:
+  // Any new feature using SODA should add its pref here.
+  bool IsAnyFeatureUsingSodaEnabled(PrefService* prefs);
 };
 
 }  // namespace speech

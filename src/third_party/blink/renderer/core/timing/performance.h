@@ -57,9 +57,10 @@ class TickClock;
 
 namespace blink {
 
-class PerformanceMarkOptions;
+class BackgroundTracingHelper;
 class EventCounts;
 class ExceptionState;
+class ExecutionContext;
 class LargestContentfulPaint;
 class LayoutShift;
 class MemoryInfo;
@@ -67,6 +68,7 @@ class Node;
 class PerformanceElementTiming;
 class PerformanceEventTiming;
 class PerformanceMark;
+class PerformanceMarkOptions;
 class PerformanceMeasure;
 class PerformanceNavigation;
 class PerformanceObserver;
@@ -104,17 +106,24 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   // Reduce the resolution to prevent timing attacks. See:
   // http://www.w3.org/TR/hr-time-2/#privacy-security
-  static double ClampTimeResolution(double time_seconds);
+  // This returns a DOMHighResTimeStamp (double), representing clamped, jittered
+  // time in milliseconds. The actual clamping resolution varies based on the
+  // provided CrossOriginIsolatedCapability.
+  static DOMHighResTimeStamp ClampTimeResolution(
+      base::TimeDelta time,
+      bool cross_origin_isolated_capability);
 
   static DOMHighResTimeStamp MonotonicTimeToDOMHighResTimeStamp(
       base::TimeTicks time_origin,
       base::TimeTicks monotonic_time,
-      bool allow_negative_value);
+      bool allow_negative_value,
+      bool cross_origin_isolated_capability);
 
   static base::TimeDelta MonotonicTimeToTimeDelta(
       base::TimeTicks time_origin,
       base::TimeTicks monotonic_time,
-      bool allow_negative_value);
+      bool allow_negative_value,
+      bool cross_origin_isolated_capability);
 
   // Translate given platform monotonic time in seconds into a high resolution
   // DOMHighResTimeStamp in milliseconds. The result timestamp is relative to
@@ -341,7 +350,9 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
  protected:
   Performance(base::TimeTicks time_origin,
-              scoped_refptr<base::SingleThreadTaskRunner>);
+              bool cross_origin_isolated_capability,
+              scoped_refptr<base::SingleThreadTaskRunner>,
+              ExecutionContext* context = nullptr);
 
   // Expect WindowPerformance to override this method,
   // WorkerPerformance doesn't have to override this.
@@ -381,8 +392,9 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   Member<PerformanceEventTiming> first_input_timing_;
 
   base::TimeTicks time_origin_;
-  DOMHighResTimeStamp unix_at_zero_monotonic_;
+  base::TimeDelta unix_at_zero_monotonic_;
   const base::TickClock* tick_clock_;
+  bool cross_origin_isolated_capability_;
 
   PerformanceEntryTypeMask observer_filter_options_;
   HeapLinkedHashSet<Member<PerformanceObserver>> observers_;
@@ -391,6 +403,9 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   HeapTaskRunnerTimer<Performance> deliver_observations_timer_;
   HeapTaskRunnerTimer<Performance> resource_timing_buffer_full_timer_;
+
+  // See crbug.com/1181774.
+  Member<BackgroundTracingHelper> background_tracing_helper_;
 };
 
 }  // namespace blink

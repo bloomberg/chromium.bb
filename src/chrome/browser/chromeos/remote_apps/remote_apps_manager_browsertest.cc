@@ -20,10 +20,10 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
-#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/remote_apps/id_generator.h"
 #include "chrome/browser/chromeos/remote_apps/remote_apps_manager_factory.h"
@@ -70,9 +70,8 @@ class AppUpdateWaiter : public apps::AppRegistryCache::Observer {
             return true;
           }))
       : id_(id), condition_(condition) {
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile);
-    app_registry_cache_ = &proxy->AppRegistryCache();
+    app_registry_cache_ = &apps::AppServiceProxyFactory::GetForProfile(profile)
+                               ->AppRegistryCache();
     app_registry_cache_observer_.Add(app_registry_cache_);
   }
 
@@ -302,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddApp) {
           ? apps::IconEffects::kCrOsStandardIcon
           : apps::IconEffects::kResizeAndPad;
   apps::ApplyIconEffects(icon_effects, 64, &icon);
-  CheckIconsEqual(icon, item->GetIcon(ash::AppListConfigType::kShared));
+  CheckIconsEqual(icon, item->GetDefaultIcon());
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddAppError) {

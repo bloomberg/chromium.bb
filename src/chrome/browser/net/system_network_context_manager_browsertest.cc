@@ -27,6 +27,7 @@
 #include "content/public/test/browser_test.h"
 #include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/secure_dns_mode.h"
+#include "net/net_buildflags.h"
 #include "services/cert_verifier/test_cert_verifier_service_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
@@ -392,7 +393,8 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerFreezeQUICUaBrowsertest,
   if (GetParam()) {  // if the UA Freeze feature is turned on
     EXPECT_EQ("", quic_ua);
   } else {
-    EXPECT_THAT(quic_ua, testing::HasSubstr(chrome::GetChannelName()));
+    EXPECT_THAT(quic_ua, testing::HasSubstr(chrome::GetChannelName(
+                             chrome::WithExtendedStable(false))));
     EXPECT_THAT(quic_ua,
                 testing::HasSubstr(
                     version_info::GetProductNameAndVersionForUserAgent()));
@@ -482,11 +484,11 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(base::nullopt, true, false));
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-class SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest
+class SystemNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest
     : public policy::PolicyTest,
       public testing::WithParamInterface<bool> {
  public:
-  SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest() {
+  SystemNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest() {
     bool use_builtin_cert_verifier = GetParam();
     cert_verifier_impl_ =
         use_builtin_cert_verifier
@@ -548,7 +550,7 @@ class SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest
 };
 
 IN_PROC_BROWSER_TEST_P(
-    SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+    SystemNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest,
     Test) {
   network::mojom::NetworkContextParamsPtr network_context_params_ptr;
 
@@ -591,6 +593,6 @@ IN_PROC_BROWSER_TEST_P(
 
 INSTANTIATE_TEST_SUITE_P(
     All,
-    SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+    SystemNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest,
     ::testing::Bool());
 #endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)

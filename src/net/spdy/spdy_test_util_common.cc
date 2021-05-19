@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/notreached.h"
 #include "base/optional.h"
+#include "base/strings/abseil_string_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -38,6 +39,7 @@
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_stream.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/gtest_util.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_alt_svc_wire_format.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
@@ -520,10 +522,12 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
   rv = callback.GetResult(rv);
   EXPECT_THAT(rv, IsOk());
 
-  base::WeakPtr<SpdySession> spdy_session =
+  base::WeakPtr<SpdySession> spdy_session;
+  rv =
       http_session->spdy_session_pool()->CreateAvailableSessionFromSocketHandle(
-          key, is_trusted_proxy, std::move(connection), net_log);
+          key, is_trusted_proxy, std::move(connection), net_log, &spdy_session);
   // Failure is reported asynchronously.
+  EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(spdy_session);
   EXPECT_TRUE(HasSpdySession(http_session->spdy_session_pool(), key));
   return spdy_session;
@@ -562,15 +566,14 @@ namespace {
 // A ClientSocket used for CreateFakeSpdySession() below.
 class FakeSpdySessionClientSocket : public MockClientSocket {
  public:
-  explicit FakeSpdySessionClientSocket(int read_result)
-      : MockClientSocket(NetLogWithSource()), read_result_(read_result) {}
+  FakeSpdySessionClientSocket() : MockClientSocket(NetLogWithSource()) {}
 
   ~FakeSpdySessionClientSocket() override = default;
 
   int Read(IOBuffer* buf,
            int buf_len,
            CompletionOnceCallback callback) override {
-    return read_result_;
+    return ERR_IO_PENDING;
   }
 
   int Write(IOBuffer* buf,
@@ -601,51 +604,35 @@ class FakeSpdySessionClientSocket : public MockClientSocket {
   }
 
   bool GetSSLInfo(SSLInfo* ssl_info) override {
-    ADD_FAILURE();
-    return false;
+    SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_3,
+                                  &ssl_info->connection_status);
+    SSLConnectionStatusSetCipherSuite(0x1301 /* TLS_CHACHA20_POLY1305_SHA256 */,
+                                      &ssl_info->connection_status);
+    return true;
   }
 
   int64_t GetTotalReceivedBytes() const override {
     NOTIMPLEMENTED();
     return 0;
   }
-
- private:
-  int read_result_;
 };
-
-base::WeakPtr<SpdySession> CreateFakeSpdySessionHelper(
-    SpdySessionPool* pool,
-    const SpdySessionKey& key,
-    Error expected_status) {
-  EXPECT_NE(expected_status, ERR_IO_PENDING);
-  EXPECT_FALSE(HasSpdySession(pool, key));
-  auto handle = std::make_unique<ClientSocketHandle>();
-  handle->SetSocket(std::make_unique<FakeSpdySessionClientSocket>(
-      expected_status == OK ? ERR_IO_PENDING : expected_status));
-  base::WeakPtr<SpdySession> spdy_session =
-      pool->CreateAvailableSessionFromSocketHandle(
-          key,
-          /*is_trusted_proxy=*/false, std::move(handle), NetLogWithSource());
-  // Failure is reported asynchronously.
-  EXPECT_TRUE(spdy_session);
-  EXPECT_TRUE(HasSpdySession(pool, key));
-  return spdy_session;
-}
 
 }  // namespace
 
 base::WeakPtr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
                                                  const SpdySessionKey& key) {
-  return CreateFakeSpdySessionHelper(pool, key, OK);
-}
-
-base::WeakPtr<SpdySession> TryCreateFakeSpdySessionExpectingFailure(
-    SpdySessionPool* pool,
-    const SpdySessionKey& key,
-    Error expected_status) {
-  DCHECK_LT(expected_status, ERR_IO_PENDING);
-  return CreateFakeSpdySessionHelper(pool, key, expected_status);
+  EXPECT_FALSE(HasSpdySession(pool, key));
+  auto handle = std::make_unique<ClientSocketHandle>();
+  handle->SetSocket(std::make_unique<FakeSpdySessionClientSocket>());
+  base::WeakPtr<SpdySession> spdy_session;
+  int rv = pool->CreateAvailableSessionFromSocketHandle(
+      key, /*is_trusted_proxy=*/false, std::move(handle), NetLogWithSource(),
+      &spdy_session);
+  // Failure is reported asynchronously.
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(spdy_session);
+  EXPECT_TRUE(HasSpdySession(pool, key));
+  return spdy_session;
 }
 
 SpdySessionPoolPeer::SpdySessionPoolPeer(SpdySessionPool* pool) : pool_(pool) {

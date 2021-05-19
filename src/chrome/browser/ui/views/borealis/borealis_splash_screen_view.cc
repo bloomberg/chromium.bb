@@ -6,9 +6,9 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/borealis/borealis_service.h"
-#include "chrome/browser/chromeos/borealis/borealis_util.h"
-#include "chrome/browser/chromeos/borealis/borealis_window_manager.h"
+#include "chrome/browser/ash/borealis/borealis_service.h"
+#include "chrome/browser/ash/borealis/borealis_util.h"
+#include "chrome/browser/ash/borealis/borealis_window_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "ui/views/controls/message_box_view.h"
@@ -22,7 +22,7 @@ borealis::BorealisSplashScreenView* delegate_ = nullptr;
 
 namespace borealis {
 
-// Declared in chrome/browser/chromeos/borealis/borealis_util.h.
+// Declared in chrome/browser/ash/borealis/borealis_util.h.
 void ShowBorealisSplashScreenView(Profile* profile) {
   return BorealisSplashScreenView::Show(profile);
 }
@@ -66,8 +66,8 @@ BorealisSplashScreenView::BorealisSplashScreenView(Profile* profile) {
   set_close_on_deactivate(false);
 
   // TODO: b/174589567 Make splash screen look like mockups.
-  views::MessageBoxView* message_box = new views::MessageBoxView(
-      base::UTF8ToUTF16("BOREALIS IS STARTING... PLEASE WAIT"));
+  views::MessageBoxView* message_box =
+      new views::MessageBoxView(u"BOREALIS IS STARTING... PLEASE WAIT");
   AddChildView(message_box);
 }
 

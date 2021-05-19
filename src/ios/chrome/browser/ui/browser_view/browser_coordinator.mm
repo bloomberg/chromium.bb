@@ -47,10 +47,13 @@
 #import "ios/chrome/browser/ui/commands/share_highlight_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/commands/whats_new_commands.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_promo_coordinator.h"
+#import "ios/chrome/browser/ui/default_promo/tailored_promo_coordinator.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -73,12 +76,11 @@
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
 #import "ios/chrome/browser/ui/translate/legacy_translate_infobar_coordinator.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/whats_new/default_browser_promo_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/features.h"
-#import "ios/chrome/browser/web/font_size_tab_helper.h"
-#import "ios/chrome/browser/web/print_tab_helper.h"
+#import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
+#import "ios/chrome/browser/web/print/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
@@ -196,6 +198,9 @@
 @property(nonatomic, strong)
     DefaultBrowserPromoCoordinator* defaultBrowserPromoCoordinator;
 
+// Coordinator that manages the tailored promo modals.
+@property(nonatomic, strong) TailoredPromoCoordinator* tailoredPromoCoordinator;
+
 // The container coordinators for the infobar modalities.
 @property(nonatomic, strong)
     OverlayContainerCoordinator* infobarBannerOverlayContainerCoordinator;
@@ -240,7 +245,7 @@
     @protocol(ActivityServiceCommands), @protocol(BrowserCoordinatorCommands),
     @protocol(FindInPageCommands), @protocol(PageInfoCommands),
     @protocol(PasswordBreachCommands), @protocol(PasswordProtectionCommands),
-    @protocol(TextZoomCommands), @protocol(WhatsNewCommands),
+    @protocol(TextZoomCommands), @protocol(DefaultPromoCommands),
     @protocol(PolicySignoutPromptCommands)
   ];
 
@@ -322,6 +327,21 @@
 }
 
 #pragma mark - Private
+
+// Shows a default promo with the passed type or nothing if a tailored promo is
+// already present.
+- (void)showTailoredPromoWithType:(DefaultPromoType)type {
+  if (self.tailoredPromoCoordinator) {
+    // Another promo is being shown, return early.
+    return;
+  }
+  self.tailoredPromoCoordinator = [[TailoredPromoCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                            type:type];
+  self.tailoredPromoCoordinator.handler = self;
+  [self.tailoredPromoCoordinator start];
+}
 
 // Instantiates a BrowserViewController.
 - (void)createViewController {
@@ -502,10 +522,16 @@
 
   [self.defaultBrowserPromoCoordinator stop];
   self.defaultBrowserPromoCoordinator = nil;
+
+  [self.tailoredPromoCoordinator stop];
+  self.tailoredPromoCoordinator = nil;
 }
 
 // Starts mediators owned by this coordinator.
 - (void)startMediators {
+  self.viewController.reauthHandler =
+      HandlerForProtocol(self.dispatcher, IncognitoReauthCommands);
+
   if (self.browser->GetBrowserState()->IsOffTheRecord()) {
     IncognitoReauthSceneAgent* reauthAgent = [IncognitoReauthSceneAgent
         agentFromScene:SceneStateBrowserAgent::FromBrowser(self.browser)
@@ -515,9 +541,6 @@
         [[IncognitoReauthMediator alloc] initWithConsumer:self.viewController
                                               reauthAgent:reauthAgent];
   }
-
-  self.viewController.reauthHandler =
-      HandlerForProtocol(self.dispatcher, IncognitoReauthCommands);
 }
 
 #pragma mark - ActivityServiceCommands
@@ -525,6 +548,9 @@
 - (void)sharePage {
   ActivityParams* params = [[ActivityParams alloc]
       initWithScenario:ActivityScenario::TabShareButton];
+
+  // Exit fullscreen if needed to make sure that share button is visible.
+  FullscreenController::FromBrowser(self.browser)->ExitFullscreen();
 
   self.sharingCoordinator = [[SharingCoordinator alloc]
       initWithBaseViewController:self.viewController
@@ -610,7 +636,19 @@
   [self.addCreditCardCoordinator start];
 }
 
-#pragma mark - WhatsNewCommands
+#pragma mark - DefaultPromoCommands
+
+- (void)showTailoredPromoStaySafe {
+  [self showTailoredPromoWithType:DefaultPromoTypeStaySafe];
+}
+
+- (void)showTailoredPromoMadeForIOS {
+  [self showTailoredPromoWithType:DefaultPromoTypeMadeForIOS];
+}
+
+- (void)showTailoredPromoAllTabs {
+  [self showTailoredPromoWithType:DefaultPromoTypeAllTabs];
+}
 
 - (void)showDefaultBrowserFullscreenPromo {
   if (!self.defaultBrowserPromoCoordinator) {

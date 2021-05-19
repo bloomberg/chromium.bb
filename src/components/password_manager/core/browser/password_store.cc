@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -20,7 +21,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
@@ -31,7 +31,6 @@
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/field_info_table.h"
 #include "components/password_manager/core/browser/insecure_credentials_consumer.h"
-#include "components/password_manager/core/browser/insecure_credentials_observer.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -311,7 +310,7 @@ void PasswordStore::GetLogins(const FormDigest& form,
   }
 
   if (affiliated_match_helper_) {
-    affiliated_match_helper_->GetAffiliatedAndroidRealms(
+    affiliated_match_helper_->GetAffiliatedAndroidAndWebRealms(
         form, base::BindOnce(
                   &PasswordStore::ScheduleGetFilteredLoginsWithAffiliations,
                   this, consumer->GetWeakPtr(), form, cutoff));
@@ -324,7 +323,7 @@ void PasswordStore::GetLogins(const FormDigest& form,
 }
 
 void PasswordStore::GetLoginsByPassword(
-    const base::string16& plain_text_password,
+    const std::u16string& plain_text_password,
     PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   PostLoginsTaskAndReplyToConsumerWithResult(
@@ -415,7 +414,7 @@ void PasswordStore::AddInsecureCredential(
 
 void PasswordStore::RemoveInsecureCredentials(
     const std::string& signon_realm,
-    const base::string16& username,
+    const std::u16string& username,
     RemoveInsecureCredentialsReason reason) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   auto callback = base::BindOnce(&PasswordStore::RemoveInsecureCredentialsImpl,
@@ -439,7 +438,7 @@ void PasswordStore::GetMatchingInsecureCredentials(
   if (affiliated_match_helper_) {
     FormDigest form(PasswordForm::Scheme::kHtml, signon_realm,
                     GURL(signon_realm));
-    affiliated_match_helper_->GetAffiliatedAndroidRealms(
+    affiliated_match_helper_->GetAffiliatedAndroidAndWebRealms(
         form,
         base::BindOnce(
             &PasswordStore::ScheduleGetInsecureCredentialsWithAffiliations,
@@ -548,7 +547,7 @@ void PasswordStore::SetSyncTaskTimeoutForTest(base::TimeDelta timeout) {
   sync_task_timeout_ = timeout;
 }
 
-void PasswordStore::CheckReuse(const base::string16& input,
+void PasswordStore::CheckReuse(const std::u16string& input,
                                const std::string& domain,
                                PasswordReuseDetectorConsumer* consumer) {
   ScheduleTask(base::BindOnce(&PasswordStore::CheckReuseImpl, this,
@@ -564,7 +563,7 @@ void PasswordStore::PreparePasswordHashData(const std::string& sync_username,
 }
 
 void PasswordStore::SaveGaiaPasswordHash(const std::string& username,
-                                         const base::string16& password,
+                                         const std::u16string& password,
                                          bool is_primary_account,
                                          GaiaPasswordHashChange event) {
   SaveProtectedPasswordHash(username, password, is_primary_account,
@@ -572,7 +571,7 @@ void PasswordStore::SaveGaiaPasswordHash(const std::string& username,
 }
 
 void PasswordStore::SaveEnterprisePasswordHash(const std::string& username,
-                                               const base::string16& password) {
+                                               const std::u16string& password) {
   SaveProtectedPasswordHash(
       username, password, /*is_primary_account=*/false,
       /*is_gaia_password=*/false,
@@ -580,7 +579,7 @@ void PasswordStore::SaveEnterprisePasswordHash(const std::string& username,
 }
 
 void PasswordStore::SaveProtectedPasswordHash(const std::string& username,
-                                              const base::string16& password,
+                                              const std::u16string& password,
                                               bool is_primary_account,
                                               bool is_gaia_password,
                                               GaiaPasswordHashChange event) {
@@ -769,20 +768,12 @@ void PasswordStore::NotifyLoginsChanged(
 
     if (reuse_detector_)
       reuse_detector_->OnLoginsChanged(changes);
+  }
 
-    ProcessLoginsChanged(
-        changes,
-        base::BindRepeating(
-            [](scoped_refptr<PasswordStore> store,
-               const std::string& signon_realm, const base::string16& username,
-               RemoveInsecureCredentialsReason reason) {
-              auto callback =
-                  base::BindOnce(&PasswordStore::RemoveInsecureCredentialsImpl,
-                                 store, signon_realm, username, reason);
-              store->InvokeAndNotifyAboutInsecureCredentialsChange(
-                  std::move(callback));
-            },
-            scoped_refptr<PasswordStore>(this)));
+  if (base::ranges::any_of(changes, [](const auto& change) {
+        return change.insecure_credentials_changed();
+      })) {
+    NotifyInsecureCredentialsChanged();
   }
 }
 
@@ -838,7 +829,7 @@ void PasswordStore::NotifyUnsyncedCredentialsWillBeDeleted(
 }
 
 void PasswordStore::CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
-                                   const base::string16& input,
+                                   const std::u16string& input,
                                    const std::string& domain) {
   if (reuse_detector_) {
     reuse_detector_->CheckReuse(input, domain, request.get());
@@ -1143,7 +1134,7 @@ std::vector<std::unique_ptr<PasswordForm>> PasswordStore::GetLoginsImpl(
 
 std::vector<std::unique_ptr<PasswordForm>>
 PasswordStore::GetLoginsByPasswordImpl(
-    const base::string16& plain_text_password) {
+    const std::u16string& plain_text_password) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("passwords", "PasswordStore::GetLoginsByPasswordImpl");
   return FillMatchingLoginsByPassword(plain_text_password);
@@ -1179,10 +1170,10 @@ std::vector<std::unique_ptr<PasswordForm>> PasswordStore::GetAllLoginsImpl() {
 std::vector<std::unique_ptr<PasswordForm>>
 PasswordStore::GetLoginsWithAffiliationsImpl(
     const FormDigest& form,
-    const std::vector<std::string>& additional_android_realms) {
+    const std::vector<std::string>& additional_affiliated_realms) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<PasswordForm>> results(FillMatchingLogins(form));
-  for (const std::string& realm : additional_android_realms) {
+  for (const std::string& realm : additional_affiliated_realms) {
     std::vector<std::unique_ptr<PasswordForm>> more_results(
         FillMatchingLogins({PasswordForm::Scheme::kHtml, realm, GURL()}));
     for (auto& result : more_results)
@@ -1198,11 +1189,11 @@ PasswordStore::GetLoginsWithAffiliationsImpl(
 std::vector<InsecureCredential>
 PasswordStore::GetInsecureCredentialsWithAffiliationsImpl(
     const std::string& signon_realm,
-    const std::vector<std::string>& additional_android_realms) {
+    const std::vector<std::string>& additional_affiliated_realms) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   std::vector<InsecureCredential> results(
       GetMatchingInsecureCredentialsImpl(signon_realm));
-  for (const std::string& realm : additional_android_realms) {
+  for (const std::string& realm : additional_affiliated_realms) {
     std::vector<InsecureCredential> more_results(
         GetMatchingInsecureCredentialsImpl(realm));
     results.insert(results.end(), std::make_move_iterator(more_results.begin()),
@@ -1228,12 +1219,12 @@ void PasswordStore::ScheduleGetFilteredLoginsWithAffiliations(
     base::WeakPtr<PasswordStoreConsumer> consumer,
     const PasswordStore::FormDigest& form,
     base::Time cutoff,
-    const std::vector<std::string>& additional_android_realms) {
+    const std::vector<std::string>& additional_affiliated_realms) {
   if (consumer) {
     PostLoginsTaskAndReplyToConsumerWithProcessedResult(
         "PasswordStore::GetLogins", consumer.get(),
         base::BindOnce(&PasswordStore::GetLoginsWithAffiliationsImpl, this,
-                       form, additional_android_realms),
+                       form, additional_affiliated_realms),
         base::BindOnce(FilterLogins, cutoff));
   }
 }
@@ -1241,13 +1232,13 @@ void PasswordStore::ScheduleGetFilteredLoginsWithAffiliations(
 void PasswordStore::ScheduleGetInsecureCredentialsWithAffiliations(
     base::WeakPtr<InsecureCredentialsConsumer> consumer,
     const std::string& signon_realm,
-    const std::vector<std::string>& additional_android_realms) {
+    const std::vector<std::string>& additional_affiliated_realms) {
   if (consumer) {
     PostInsecureCredentialsTaskAndReplyToConsumerWithResult(
         consumer.get(),
         base::BindOnce(
             &PasswordStore::GetInsecureCredentialsWithAffiliationsImpl, this,
-            signon_realm, additional_android_realms));
+            signon_realm, additional_affiliated_realms));
   }
 }
 

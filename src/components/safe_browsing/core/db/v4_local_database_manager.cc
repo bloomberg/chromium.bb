@@ -12,12 +12,14 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/fixed_flat_map.h"
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -44,6 +46,14 @@ const int kHighConfidenceAllowlistMinimumEntryCount = 100;
 
 const ThreatSeverity kLeastSeverity =
     std::numeric_limits<ThreatSeverity>::max();
+
+// This map contain pairs of the old and the new name for certain .store files.
+constexpr auto kStoreFilesToRename =
+    base::MakeFixedFlatMap<base::StringPiece, base::StringPiece>({
+        {"CertCsdDownloadWhitelist.store", "CertCsdDownloadAllowlist.store"},
+        {"UrlCsdDownloadWhitelist.store", "UrlCsdDownloadAllowlist.store"},
+        {"UrlCsdWhitelist.store", "UrlCsdAllowlist.store"},
+    });
 
 ListInfos GetListInfos() {
 // NOTE(vakh): When adding a store here, add the corresponding store-specific
@@ -72,8 +82,6 @@ ListInfos GetListInfos() {
   const bool kSyncAlways = true;
   const bool kSyncNever = false;
 
-  // TODO(jkarlin): Rename files on disk with 'whitelist' in them to
-  // 'allowlist'.
   return ListInfos({
       ListInfo(kSyncOnDesktopBuilds, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
@@ -87,17 +95,17 @@ ListInfos GetListInfos() {
                SB_THREAT_TYPE_URL_BINARY_MALWARE),
       ListInfo(kSyncOnDesktopBuilds, "ChromeExtMalware.store",
                GetChromeExtMalwareId(), SB_THREAT_TYPE_EXTENSION),
-      ListInfo(kSyncOnChromeDesktopBuilds, "CertCsdDownloadWhitelist.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "CertCsdDownloadAllowlist.store",
                GetCertCsdDownloadAllowlistId(), SB_THREAT_TYPE_UNUSED),
       ListInfo(kSyncOnChromeDesktopBuilds, "ChromeUrlClientIncident.store",
                GetChromeUrlClientIncidentId(),
                SB_THREAT_TYPE_BLOCKLISTED_RESOURCE),
       ListInfo(kSyncAlways, "UrlBilling.store", GetUrlBillingId(),
                SB_THREAT_TYPE_BILLING),
-      ListInfo(kSyncOnChromeDesktopBuilds, "UrlCsdDownloadWhitelist.store",
+      ListInfo(kSyncOnChromeDesktopBuilds, "UrlCsdDownloadAllowlist.store",
                GetUrlCsdDownloadAllowlistId(), SB_THREAT_TYPE_UNUSED),
       ListInfo(kSyncOnChromeDesktopBuilds || kSyncOnIos,
-               "UrlCsdWhitelist.store", GetUrlCsdAllowlistId(),
+               "UrlCsdAllowlist.store", GetUrlCsdAllowlistId(),
                SB_THREAT_TYPE_CSD_ALLOWLIST),
       ListInfo(kSyncOnChromeDesktopBuilds, "UrlSubresourceFilter.store",
                GetUrlSubresourceFilterId(), SB_THREAT_TYPE_SUBRESOURCE_FILTER),
@@ -207,12 +215,7 @@ enum StoreAvailabilityResult {
 };
 
 void RecordTimeSinceLastUpdateHistograms(const base::Time& last_response_time) {
-  bool response_received = !last_response_time.is_null();
-  UMA_HISTOGRAM_BOOLEAN(
-      "SafeBrowsing.V4LocalDatabaseManager.HasReceivedUpdateResponse",
-      response_received);
-
-  if (!response_received)
+  if (last_response_time.is_null())
     return;
 
   base::TimeDelta time_since_update = base::Time::Now() - last_response_time;
@@ -296,6 +299,10 @@ V4LocalDatabaseManager::V4LocalDatabaseManager(
                        : base::ThreadPool::CreateSequencedTaskRunner(
                              {base::MayBlock(),
                               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&V4LocalDatabaseManager::RenameOldStoreFiles,
+                                weak_factory_.GetWeakPtr()));
+
   DCHECK(!base_path_.empty());
   DCHECK(!list_infos_.empty());
 }
@@ -544,8 +551,6 @@ ThreatSource V4LocalDatabaseManager::GetThreatSource() const {
 }
 
 bool V4LocalDatabaseManager::IsDownloadProtectionEnabled() const {
-  // TODO(vakh): Investigate the possibility of using a command line switch for
-  // this instead.
   return true;
 }
 
@@ -645,10 +650,12 @@ void V4LocalDatabaseManager::DatabaseUpdated() {
     v4_database_->RecordFileSizeHistograms();
     UpdateListClientStates(GetStoreStateMap());
 
-    base::PostTask(
-        FROM_HERE, CreateTaskTraits(ThreadID::UI),
-        base::BindOnce(
-            &SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished, this));
+    GetTaskRunner(ThreadID::UI)
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished,
+                this));
   }
 }
 
@@ -831,16 +838,18 @@ void V4LocalDatabaseManager::ScheduleFullHashCheck(
         full_hash_infos.emplace_back(entry.first, list_id, next);
       }
     }
-    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
+    GetTaskRunner(ThreadID::IO)
+        ->PostTask(FROM_HERE,
                    base::BindOnce(&V4LocalDatabaseManager::OnFullHashResponse,
                                   weak_factory_.GetWeakPtr(), std::move(check),
                                   full_hash_infos));
   } else {
     // Post on the IO thread to enforce async behavior.
-    base::PostTask(
-        FROM_HERE, CreateTaskTraits(ThreadID::IO),
-        base::BindOnce(&V4LocalDatabaseManager::PerformFullHashCheck,
-                       weak_factory_.GetWeakPtr(), std::move(check)));
+    GetTaskRunner(ThreadID::IO)
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(&V4LocalDatabaseManager::PerformFullHashCheck,
+                           weak_factory_.GetWeakPtr(), std::move(check)));
   }
 }
 
@@ -923,6 +932,58 @@ void V4LocalDatabaseManager::ProcessQueuedChecks() {
       PerformFullHashCheck(std::move(it));
     }
   }
+}
+
+void V4LocalDatabaseManager::RenameOldStoreFiles() {
+  for (auto const& pair : kStoreFilesToRename) {
+    const base::StringPiece& old_name = pair.first;
+    const base::StringPiece& new_name = pair.second;
+
+    const base::FilePath old_store_path = base_path_.AppendASCII(old_name);
+    // Is the old filename also being used for a valid V4Store?
+    auto it = std::find_if(
+        std::begin(list_infos_), std::end(list_infos_),
+        [&old_name](ListInfo const& li) { return li.filename() == old_name; });
+    bool old_filename_in_use = list_infos_.end() != it;
+    base::UmaHistogramBoolean("SafeBrowsing.V4Store.OldFileNameInUse" +
+                                  GetUmaSuffixForStore(old_store_path),
+                              old_filename_in_use);
+    if (old_filename_in_use) {
+      NOTREACHED() << "Trying to rename a store file that's in use: "
+                   << old_name;
+      continue;
+    }
+
+    bool old_path_exists = base::PathExists(old_store_path);
+    base::UmaHistogramBoolean("SafeBrowsing.V4Store.OldFileNameExists" +
+                                  GetUmaSuffixForStore(old_store_path),
+                              old_path_exists);
+    if (!old_path_exists) {
+      continue;
+    }
+
+    const base::FilePath new_store_path = base_path_.AppendASCII(new_name);
+    bool new_path_exists = base::PathExists(new_store_path);
+    base::UmaHistogramBoolean("SafeBrowsing.V4Store.NewFileNameExists" +
+                                  GetUmaSuffixForStore(new_store_path),
+                              new_path_exists);
+    if (new_path_exists) {
+      continue;
+    }
+
+    RenameStoreFile(old_store_path, new_store_path);
+  }
+}
+
+// static
+void V4LocalDatabaseManager::RenameStoreFile(const base::FilePath& old_path,
+                                             const base::FilePath& new_path) {
+  base::File::Error error = base::File::FILE_OK;
+  base::ReplaceFile(old_path, new_path, &error);
+
+  base::UmaHistogramExactLinear(
+      "SafeBrowsing.V4Store.RenameStatus" + GetUmaSuffixForStore(new_path),
+      -error, -base::File::FILE_ERROR_MAX);
 }
 
 void V4LocalDatabaseManager::RespondSafeToQueuedChecks() {

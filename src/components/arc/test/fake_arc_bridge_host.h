@@ -51,9 +51,14 @@ class FakeArcBridgeHost : public mojom::ArcBridgeHost {
       mojo::PendingRemote<mojom::CertStoreInstance> instance_remote) override;
   void OnClipboardInstanceReady(
       mojo::PendingRemote<mojom::ClipboardInstance> clipboard_remote) override;
+  void OnCompatibilityModeInstanceReady(
+      mojo::PendingRemote<mojom::CompatibilityModeInstance>
+          compatibility_mode_remote) override;
   void OnCrashCollectorInstanceReady(
       mojo::PendingRemote<mojom::CrashCollectorInstance> crash_collector_remote)
       override;
+  void OnDarkThemeInstanceReady(
+      mojo::PendingRemote<mojom::DarkThemeInstance> dark_theme_remote) override;
   void OnDigitalGoodsInstanceReady(
       mojo::PendingRemote<mojom::DigitalGoodsInstance> digital_goods_remote)
       override;

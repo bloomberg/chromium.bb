@@ -12,8 +12,6 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
-#include "components/previews/core/previews_block_list.h"
-#include "components/previews/core/previews_experiments.h"
 
 namespace content {
 class NavigationHandle;
@@ -51,16 +49,7 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
  private:
   void RecordPreviewsTypes();
 
-  // The preview type that was actually committed and seen by the user.
-  PreviewsType committed_preview_;
-
-  bool defer_all_script_seen_ = false;
-  bool opt_out_occurred_ = false;
-  bool origin_opt_out_occurred_ = false;
   bool save_data_enabled_ = false;
-  bool previews_likely_ = false;
-  base::Optional<previews::PreviewsEligibilityReason>
-      defer_all_script_eligibility_reason_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -5,76 +5,70 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_UNDERLYING_SOURCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_UNDERLYING_SOURCE_H_
 
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_transferring_optimizer.h"
-#include "third_party/blink/renderer/core/streams/underlying_source_base.h"
+#include "third_party/blink/renderer/modules/mediastream/frame_queue_underlying_source.h"
+#include "third_party/blink/renderer/modules/mediastream/transferred_frame_queue_underlying_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
 class MediaStreamComponent;
 
 class MODULES_EXPORT MediaStreamVideoTrackUnderlyingSource
-    : public UnderlyingSourceBase,
+    : public VideoFrameQueueUnderlyingSource,
       public MediaStreamVideoSink {
  public:
-  explicit MediaStreamVideoTrackUnderlyingSource(ScriptState*,
-                                                 MediaStreamComponent*,
-                                                 wtf_size_t queue_size);
+  using CrossThreadFrameQueueSource =
+      CrossThreadPersistent<TransferredVideoFrameQueueUnderlyingSource>;
+
+  explicit MediaStreamVideoTrackUnderlyingSource(
+      ScriptState*,
+      MediaStreamComponent*,
+      ScriptWrappable* media_stream_track_processor,
+      wtf_size_t queue_size);
   MediaStreamVideoTrackUnderlyingSource(
       const MediaStreamVideoTrackUnderlyingSource&) = delete;
   MediaStreamVideoTrackUnderlyingSource& operator=(
       const MediaStreamVideoTrackUnderlyingSource&) = delete;
 
-  // UnderlyingSourceBase
-  ScriptPromise pull(ScriptState*) override;
-  ScriptPromise Start(ScriptState*) override;
-  ScriptPromise Cancel(ScriptState*, ScriptValue reason) override;
-
-  // ExecutionLifecycleObserver
-  void ContextDestroyed() override;
-
   MediaStreamComponent* Track() const { return track_.Get(); }
-  wtf_size_t MaxQueueSize() const { return max_queue_size_; }
 
-  bool IsPendingPullForTesting() const { return is_pending_pull_; }
-  const Deque<scoped_refptr<media::VideoFrame>>& QueueForTesting() const {
-    return queue_;
-  }
-  double DesiredSizeForTesting() const;
-
-  void Close();
   void Trace(Visitor*) const override;
 
   std::unique_ptr<ReadableStreamTransferringOptimizer>
   GetStreamTransferOptimizer();
 
  private:
+  scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner();
+
+  // FrameQueueUnderlyingSource implementation.
+  bool StartFrameDelivery() override;
+  void StopFrameDelivery() override;
+
+  void OnSourceTransferStarted(scoped_refptr<base::SequencedTaskRunner>,
+                               TransferredVideoFrameQueueUnderlyingSource*);
+
   void OnFrameFromTrack(
       scoped_refptr<media::VideoFrame> media_frame,
       std::vector<scoped_refptr<media::VideoFrame>> scaled_media_frames,
       base::TimeTicks estimated_capture_time);
-  void OnFrameFromTrackOnMainThread(
-      scoped_refptr<media::VideoFrame> media_frame,
-      base::TimeTicks estimated_capture_time);
-  void SendFrameToStream(scoped_refptr<media::VideoFrame> media_frame);
-  void ProcessPullRequest();
 
-  // Used when a stream endpoint was transferred to another realm, to
-  // automatically close frames as they are posted to the other stream.
-  bool stream_was_transferred_ = false;
+  scoped_refptr<base::SequencedTaskRunner> transferred_runner_;
+  CrossThreadFrameQueueSource transferred_source_;
 
-  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  // Only accessed on the IO runner.
+  bool was_transferred_ = false;
+
+  // Only used to prevent the gargabe collector from reclaiming the media
+  // stream track processor that created |this|.
+  const Member<ScriptWrappable> media_stream_track_processor_;
+
   const Member<MediaStreamComponent> track_;
 
-  // An internal deque prior to the stream controller's queue. It acts as a ring
-  // buffer and allows dropping old frames instead of new ones in case frames
-  // accumulate due to slow consumption.
-  Deque<scoped_refptr<media::VideoFrame>> queue_;
-  const wtf_size_t max_queue_size_;
-  bool is_pending_pull_ = false;
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace blink

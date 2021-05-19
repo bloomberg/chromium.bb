@@ -380,6 +380,21 @@ void TestSuite::InitializeFromCommandLine(int argc, wchar_t** argv) {
 void TestSuite::PreInitialize() {
   DCHECK(!is_initialized_);
 
+  // The default death_test_style of "fast" is a frequent source of subtle test
+  // flakiness. And on some platforms like macOS, use of system libraries after
+  // fork() but before exec() is unsafe. Using the threadsafe style by default
+  // alleviates these concerns.
+  //
+  // However, the threasafe style does not work reliably on Android, so that
+  // will keep the default of "fast". See https://crbug.com/815537,
+  // https://github.com/google/googletest/issues/1496, and
+  // https://github.com/google/googletest/issues/2093.
+  // TODO(danakj): Determine if all death tests should be skipped on Android
+  // (many already are, such as for DCHECK-death tests).
+#if !defined(OS_ANDROID)
+  testing::GTEST_FLAG(death_test_style) = "threadsafe";
+#endif
+
 #if defined(OS_WIN)
   testing::GTEST_FLAG(catch_exceptions) = false;
 #endif
@@ -396,7 +411,7 @@ void TestSuite::PreInitialize() {
   // On Android, AtExitManager is created in
   // testing/android/native_test_wrapper.cc before main() is called.
 #if !defined(OS_ANDROID)
-  at_exit_manager_.reset(new AtExitManager);
+  at_exit_manager_ = std::make_unique<AtExitManager>();
 #endif
 
   // Don't add additional code to this function.  Instead add it to
@@ -479,10 +494,18 @@ int TestSuite::Run() {
   test_listener_ios::RegisterTestEndListener();
 #endif
 
-  // Opts this test into synchronous MTE mode, where pointer mismatches
-  // will be detected immediately.
+#if defined(OS_LINUX)
+  // There's no standard way to opt processes into MTE on Linux just yet,
+  // so this call explicitly opts this test into synchronous MTE mode, where
+  // pointer mismatches are detected immediately.
   base::memory::ChangeMemoryTaggingModeForCurrentThread(
       base::memory::TagViolationReportingMode::kSynchronous);
+#elif defined(OS_ANDROID)
+    // On Android, the tests are opted into synchronous MTE mode by the
+    // memtagMode attribute in an AndroidManifest.xml file or via an `am compat`
+    // command, so and explicit call to ChangeMemoryTaggingModeForCurrentThread
+    // is not needed.
+#endif
 
   int result = RUN_ALL_TESTS();
 

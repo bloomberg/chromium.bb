@@ -4,6 +4,8 @@
 
 #include "content/browser/browser_main_runner_impl.h"
 
+#include <memory>
+
 #include "base/base_switches.h"
 #include "base/check.h"
 #include "base/command_line.h"
@@ -83,7 +85,7 @@ int BrowserMainRunnerImpl::Initialize(const MainFunctionParams& parameters) {
     if (parameters.command_line.HasSwitch(switches::kBrowserStartupDialog))
       WaitForDebugger("Browser");
 
-    notification_service_.reset(new NotificationServiceImpl);
+    notification_service_ = std::make_unique<NotificationServiceImpl>();
 
 #if defined(OS_WIN)
     // Ole must be initialized before starting message pump, so that TSF
@@ -94,8 +96,8 @@ int BrowserMainRunnerImpl::Initialize(const MainFunctionParams& parameters) {
 
     gfx::InitializeFonts();
 
-    main_loop_.reset(
-        new BrowserMainLoop(parameters, std::move(scoped_execution_fence_)));
+    main_loop_ = std::make_unique<BrowserMainLoop>(
+        parameters, std::move(scoped_execution_fence_));
 
     main_loop_->Init();
 
@@ -147,7 +149,7 @@ void BrowserMainRunnerImpl::SynchronouslyFlushStartupTasks() {
 int BrowserMainRunnerImpl::Run() {
   DCHECK(initialization_started_);
   DCHECK(!is_shutdown_);
-  main_loop_->RunMainMessageLoopParts();
+  main_loop_->RunMainMessageLoop();
   return main_loop_->GetResultCode();
 }
 

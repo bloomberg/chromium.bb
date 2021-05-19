@@ -47,7 +47,7 @@ fn entry() -> void {
   transforms.emplace_back(std::make_unique<FirstIndexOffset>(0, 0));
   transforms.emplace_back(std::make_unique<FirstIndexOffset>(1, 1));
 
-  auto got = Transform(src, std::move(transforms));
+  auto got = Run(src, std::move(transforms));
 
   EXPECT_EQ(expect, str(got));
 
@@ -64,7 +64,7 @@ TEST_F(FirstIndexOffsetTest, EmptyModule) {
   auto* src = "";
   auto* expect = "";
 
-  auto got = Transform<FirstIndexOffset>(src, 0, 0);
+  auto got = Run(src, std::make_unique<FirstIndexOffset>(0, 0));
 
   EXPECT_EQ(expect, str(got));
 
@@ -92,15 +92,14 @@ fn entry() -> void {
 )";
 
   auto* expect = R"(
-[[builtin(vertex_index)]] var<in> tint_first_index_offset_vert_idx : u32;
+[[block]]
+struct TintFirstIndexOffsetData {
+  tint_first_vertex_index : u32;
+};
 
 [[binding(1), group(2)]] var<uniform> tint_first_index_data : TintFirstIndexOffsetData;
 
-[[block]]
-struct TintFirstIndexOffsetData {
-  [[offset(0)]]
-  tint_first_vertex_index : u32;
-};
+[[builtin(vertex_index)]] var<in> tint_first_index_offset_vert_idx : u32;
 
 fn test() -> u32 {
   const vert_idx : u32 = (tint_first_index_offset_vert_idx + tint_first_index_data.tint_first_vertex_index);
@@ -113,7 +112,7 @@ fn entry() -> void {
 }
 )";
 
-  auto got = Transform<FirstIndexOffset>(src, 1, 2);
+  auto got = Run(src, std::make_unique<FirstIndexOffset>(1, 2));
 
   EXPECT_EQ(expect, str(got));
 
@@ -141,15 +140,14 @@ fn entry() -> void {
 )";
 
   auto* expect = R"(
-[[builtin(instance_index)]] var<in> tint_first_index_offset_inst_idx : u32;
+[[block]]
+struct TintFirstIndexOffsetData {
+  tint_first_instance_index : u32;
+};
 
 [[binding(1), group(7)]] var<uniform> tint_first_index_data : TintFirstIndexOffsetData;
 
-[[block]]
-struct TintFirstIndexOffsetData {
-  [[offset(0)]]
-  tint_first_instance_index : u32;
-};
+[[builtin(instance_index)]] var<in> tint_first_index_offset_inst_idx : u32;
 
 fn test() -> u32 {
   const inst_idx : u32 = (tint_first_index_offset_inst_idx + tint_first_index_data.tint_first_instance_index);
@@ -162,7 +160,7 @@ fn entry() -> void {
 }
 )";
 
-  auto got = Transform<FirstIndexOffset>(src, 1, 7);
+  auto got = Run(src, std::make_unique<FirstIndexOffset>(1, 7));
 
   EXPECT_EQ(expect, str(got));
 
@@ -191,19 +189,17 @@ fn entry() -> void {
 )";
 
   auto* expect = R"(
-[[builtin(instance_index)]] var<in> tint_first_index_offset_instance_idx : u32;
-
-[[builtin(vertex_index)]] var<in> tint_first_index_offset_vert_idx : u32;
+[[block]]
+struct TintFirstIndexOffsetData {
+  tint_first_vertex_index : u32;
+  tint_first_instance_index : u32;
+};
 
 [[binding(1), group(2)]] var<uniform> tint_first_index_data : TintFirstIndexOffsetData;
 
-[[block]]
-struct TintFirstIndexOffsetData {
-  [[offset(0)]]
-  tint_first_vertex_index : u32;
-  [[offset(4)]]
-  tint_first_instance_index : u32;
-};
+[[builtin(instance_index)]] var<in> tint_first_index_offset_instance_idx : u32;
+
+[[builtin(vertex_index)]] var<in> tint_first_index_offset_vert_idx : u32;
 
 fn test() -> u32 {
   const instance_idx : u32 = (tint_first_index_offset_instance_idx + tint_first_index_data.tint_first_instance_index);
@@ -217,7 +213,7 @@ fn entry() -> void {
 }
 )";
 
-  auto got = Transform<FirstIndexOffset>(src, 1, 2);
+  auto got = Run(src, std::make_unique<FirstIndexOffset>(1, 2));
 
   EXPECT_EQ(expect, str(got));
 
@@ -249,15 +245,14 @@ fn entry() -> void {
 )";
 
   auto* expect = R"(
-[[builtin(vertex_index)]] var<in> tint_first_index_offset_vert_idx : u32;
+[[block]]
+struct TintFirstIndexOffsetData {
+  tint_first_vertex_index : u32;
+};
 
 [[binding(1), group(2)]] var<uniform> tint_first_index_data : TintFirstIndexOffsetData;
 
-[[block]]
-struct TintFirstIndexOffsetData {
-  [[offset(0)]]
-  tint_first_vertex_index : u32;
-};
+[[builtin(vertex_index)]] var<in> tint_first_index_offset_vert_idx : u32;
 
 fn func1() -> u32 {
   const vert_idx : u32 = (tint_first_index_offset_vert_idx + tint_first_index_data.tint_first_vertex_index);
@@ -274,7 +269,7 @@ fn entry() -> void {
 }
 )";
 
-  auto got = Transform<FirstIndexOffset>(src, 1, 2);
+  auto got = Run(src, std::make_unique<FirstIndexOffset>(1, 2));
 
   EXPECT_EQ(expect, str(got));
 

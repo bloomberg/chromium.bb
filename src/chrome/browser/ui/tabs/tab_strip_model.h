@@ -10,6 +10,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/containers/span.h"
@@ -19,7 +20,6 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/tabs/tab_switch_event_latency_recorder.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/page_transition_types.h"
 
@@ -313,6 +314,9 @@ class TabStripModel : public TabGroupController {
   // notifications this method causes.
   void CloseAllTabs();
 
+  // Close all tabs in the given |group| at once.
+  void CloseAllTabsInGroup(const tab_groups::TabGroupId& group);
+
   // Returns true if there are any WebContentses that are currently loading.
   bool TabsAreLoading() const;
 
@@ -375,9 +379,9 @@ class TabStripModel : public TabGroupController {
   // Extends the selection from the anchor to |index|.
   void ExtendSelectionTo(int index);
 
-  // Returns true if the selection was toggled; this can fail if the tabstrip
-  // is not editable.
-  bool ToggleSelectionAt(int index);
+  // Toggles the selection at |index|. This does nothing if |index| is selected
+  // and there are no other selected tabs.
+  void ToggleSelectionAt(int index);
 
   // Makes sure the tabs from the anchor to |index| are selected. This only
   // adds to the selection.
@@ -530,7 +534,7 @@ class TabStripModel : public TabGroupController {
   void ExecuteAddToExistingWindowCommand(int context_index, int browser_index);
 
   // Get the list of existing windows that tabs can be moved to.
-  std::vector<base::string16> GetExistingWindowsForMoveMenu();
+  std::vector<std::u16string> GetExistingWindowsForMoveMenu();
 
   // Returns true if 'CommandToggleSiteMuted' will mute. |index| is the
   // index supplied to |ExecuteContextMenuCommand|.
@@ -580,6 +584,9 @@ class TabStripModel : public TabGroupController {
   // reset when _any_ active tab change occurs (rather than just one outside the
   // current tree of openers).
   bool ShouldResetOpenerOnActiveTabChange(content::WebContents* contents) const;
+
+  // Serialise this object into a trace.
+  void WriteIntoTracedValue(perfetto::TracedValue context) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TabStripModelTest, GetIndicesClosedByCommand);

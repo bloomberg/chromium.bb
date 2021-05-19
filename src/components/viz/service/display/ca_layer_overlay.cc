@@ -12,6 +12,7 @@
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/skia/include/core/SkDeferredDisplayList.h"
@@ -302,6 +303,81 @@ CALayerOverlay::~CALayerOverlay() = default;
 CALayerOverlay& CALayerOverlay::operator=(const CALayerOverlay& other) =
     default;
 
+bool CALayerOverlayProcessor::AreClipSettingsValid(
+    const CALayerOverlay& ca_layer_overlay,
+    CALayerOverlayList* ca_layer_overlay_list) const {
+  // It is not possible to correctly represent two different clipping
+  // settings within one sorting context.
+  if (!ca_layer_overlay_list->empty()) {
+    const CALayerOverlay& previous_ca_layer = ca_layer_overlay_list->back();
+    if (ca_layer_overlay.shared_state->sorting_context_id &&
+        previous_ca_layer.shared_state->sorting_context_id ==
+            ca_layer_overlay.shared_state->sorting_context_id) {
+      if (previous_ca_layer.shared_state->is_clipped !=
+              ca_layer_overlay.shared_state->is_clipped ||
+          previous_ca_layer.shared_state->clip_rect !=
+              ca_layer_overlay.shared_state->clip_rect) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+void CALayerOverlayProcessor::PutForcedOverlayContentIntoOverlays(
+    DisplayResourceProvider* resource_provider,
+    AggregatedRenderPass* render_pass,
+    const gfx::RectF& display_rect,
+    QuadList* quad_list,
+    const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
+        render_pass_filters,
+    const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
+        render_pass_backdrop_filters,
+    CALayerOverlayList* ca_layer_overlays) const {
+  bool failed = false;
+  CALayerOverlayProcessorInternal processor;
+
+  for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
+    const DrawQuad* quad = *it;
+    bool force_quad_to_overlay = false;
+
+    // Put hardware protected video into an overlay
+    if (quad->material == ContentDrawQuadBase::Material::kYuvVideoContent) {
+      const YUVVideoDrawQuad* video_quad = YUVVideoDrawQuad::MaterialCast(quad);
+      if (video_quad->protected_video_type ==
+          gfx::ProtectedVideoType::kHardwareProtected)
+        force_quad_to_overlay = true;
+    }
+
+    if (quad->material == ContentDrawQuadBase::Material::kTextureContent) {
+      const TextureDrawQuad* texture_quad = TextureDrawQuad::MaterialCast(quad);
+
+      // Put hardware protected video into an overlay
+      if (texture_quad->is_video_frame &&
+          texture_quad->protected_video_type ==
+              gfx::ProtectedVideoType::kHardwareProtected)
+        force_quad_to_overlay = true;
+
+      // Put HDR videos into an overlay
+      if (resource_provider->GetColorSpace(texture_quad->resource_id()).IsHDR())
+        force_quad_to_overlay = true;
+    }
+
+    if (force_quad_to_overlay) {
+      if (!PutQuadInSeparateOverlay(it, resource_provider, render_pass,
+                                    display_rect, quad, render_pass_filters,
+                                    render_pass_backdrop_filters,
+                                    ca_layer_overlays)) {
+        failed = true;
+        break;
+      }
+    }
+  }
+  if (failed)
+    ca_layer_overlays->clear();
+}
+
 bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
@@ -350,21 +426,9 @@ bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     if (skip)
       continue;
 
-    // It is not possible to correctly represent two different clipping settings
-    // within one sorting context.
-    if (!ca_layer_overlays->empty()) {
-      const CALayerOverlay& previous_ca_layer = ca_layer_overlays->back();
-      if (ca_layer.shared_state->sorting_context_id &&
-          previous_ca_layer.shared_state->sorting_context_id ==
-              ca_layer.shared_state->sorting_context_id) {
-        if (previous_ca_layer.shared_state->is_clipped !=
-                ca_layer.shared_state->is_clipped ||
-            previous_ca_layer.shared_state->clip_rect !=
-                ca_layer.shared_state->clip_rect) {
-          result = CA_LAYER_FAILED_DIFFERENT_CLIP_SETTINGS;
-          break;
-        }
-      }
+    if (!AreClipSettingsValid(ca_layer, ca_layer_overlays)) {
+      result = CA_LAYER_FAILED_DIFFERENT_CLIP_SETTINGS;
+      break;
     }
 
     ca_layer_overlays->push_back(ca_layer);
@@ -377,6 +441,39 @@ bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     ca_layer_overlays->clear();
     return false;
   }
+  return true;
+}
+
+bool CALayerOverlayProcessor::PutQuadInSeparateOverlay(
+    QuadList::Iterator at,
+    DisplayResourceProvider* resource_provider,
+    AggregatedRenderPass* render_pass,
+    const gfx::RectF& display_rect,
+    const DrawQuad* quad,
+    const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
+        render_pass_filters,
+    const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
+        render_pass_backdrop_filters,
+    CALayerOverlayList* ca_layer_overlays) const {
+  CALayerOverlayProcessorInternal processor;
+  CALayerOverlay ca_layer;
+  bool skip = false;
+  bool render_pass_draw_quad = false;
+  CALayerResult result = processor.FromDrawQuad(
+      resource_provider, display_rect, quad, render_pass_filters,
+      render_pass_backdrop_filters, &ca_layer, &skip, &render_pass_draw_quad);
+  if (result != CA_LAYER_SUCCESS)
+    return false;
+
+  if (skip)
+    return true;
+
+  if (!AreClipSettingsValid(ca_layer, ca_layer_overlays))
+    return true;
+
+  render_pass->ReplaceExistingQuadWithSolidColor(at, SK_ColorTRANSPARENT,
+                                                 SkBlendMode::kSrcOver);
+  ca_layer_overlays->push_back(ca_layer);
   return true;
 }
 

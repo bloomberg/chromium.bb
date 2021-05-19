@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
@@ -57,6 +58,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/context_menu_params.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -106,11 +108,21 @@ constexpr int kSupportedAcceleratorCommands[] = {
     IDC_CLOSE_TAB,       IDC_CLOSE_WINDOW, IDC_EXIT,  IDC_FULLSCREEN,
     IDC_MINIMIZE_WINDOW, IDC_BACK,         IDC_RELOAD};
 
+// Shows the customization bubble if possible. The bubble won't be shown if the
+// color is enforced by policy or downloaded through Sync. An IPH is shown after
+// the bubble, or right away if the bubble cannot be shown.
 void ShowCustomizationBubble(SkColor new_profile_color, Browser* browser) {
-  views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
-                                 ->toolbar_button_provider()
-                                 ->GetAvatarToolbarButton();
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  views::View* anchor_view =
+      browser_view->toolbar_button_provider()->GetAvatarToolbarButton();
   DCHECK(anchor_view);
+
+  // Don't show the customization bubble if a valid policy theme is set.
+  if (ThemeServiceFactory::GetForProfile(browser->profile())
+          ->UsingPolicyTheme()) {
+    browser_view->MaybeShowProfileSwitchIPH();
+    return;
+  }
 
   if (ProfileCustomizationBubbleSyncController::CanThemeSyncStart(
           browser->profile())) {
@@ -155,6 +167,11 @@ GURL GetSigninURL(bool dark_mode) {
   return signin_url;
 }
 
+GURL GetSyncConfirmationLoadingURL() {
+  return GURL(chrome::kChromeUISyncConfirmationURL)
+      .Resolve(chrome::kChromeUISyncConfirmationLoadingPath);
+}
+
 bool IsExternalURL(const GURL& url) {
   // Empty URL is used initially, about:blank is used to stop navigation after
   // sign-in succeeds.
@@ -179,7 +196,7 @@ void ContinueSAMLSignin(std::unique_ptr<content::WebContents> saml_wc,
   tab_helper->InitializeSigninFlow(
       GetSigninURL(browser_view->GetNativeTheme()->ShouldUseDarkColors()),
       signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
-      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+      signin_metrics::Reason::kSigninPrimaryAccount,
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
       GURL(chrome::kChromeUINewTabURL));
 
@@ -187,6 +204,15 @@ void ContinueSAMLSignin(std::unique_ptr<content::WebContents> saml_wc,
 
   ProfileMetrics::LogProfileAddSignInFlowOutcome(
       ProfileMetrics::ProfileAddSignInFlowOutcome::kSAML);
+}
+
+SkColor GetSignInColor(Profile* profile, SkColor profile_color) {
+  // The new profile theme may be overridden by an existing policy theme. This
+  // check ensures the correct theme is applied to the sync confirmation window.
+  auto* theme_service = ThemeServiceFactory::GetForProfile(profile);
+  if (theme_service->UsingPolicyTheme())
+    return theme_service->GetPolicyThemeColor();
+  return profile_color;
 }
 
 class ProfilePickerWidget : public views::Widget {
@@ -214,8 +240,9 @@ class SimpleBackButton : public ToolbarButton {
       : ToolbarButton(std::move(callback)) {
     SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
                              ui::EF_MIDDLE_MOUSE_BUTTON);
-    SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_PROFILE_PICKER_BACK_BUTTON_LABEL));
+    SetVectorIcons(vector_icons::kBackArrowIcon, kBackArrowTouchIcon);
+    SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_PROFILE_PICKER_BACK_BUTTON_SIGN_IN_LABEL));
     // Unlike toolbar buttons, this one should be focusable to make it
     // consistent with other screens of the flow where the back button is part
     // of the page.
@@ -224,14 +251,6 @@ class SimpleBackButton : public ToolbarButton {
   SimpleBackButton(const SimpleBackButton&) = delete;
   SimpleBackButton& operator=(const SimpleBackButton&) = delete;
   ~SimpleBackButton() override = default;
-
-  // ToolbarButton:
-  void UpdateIcon() override {
-    const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
-    const gfx::VectorIcon* image =
-        touch_ui ? &kBackArrowTouchIcon : &vector_icons::kBackArrowIcon;
-    UpdateIconsWithStandardColors(*image);
-  }
 };
 
 }  // namespace
@@ -251,6 +270,14 @@ GURL ProfilePicker::GetOnSelectProfileTargetUrl() {
     return g_profile_picker_view->GetOnSelectProfileTargetUrl();
   }
   return GURL();
+}
+
+// static
+base::FilePath ProfilePicker::GetSwitchProfilePath() {
+  if (g_profile_picker_view) {
+    return g_profile_picker_view->GetSwitchProfilePath();
+  }
+  return base::FilePath();
 }
 
 // static
@@ -274,6 +301,23 @@ void ProfilePicker::CancelSignIn() {
 void ProfilePicker::SwitchToSyncConfirmation() {
   if (g_profile_picker_view) {
     g_profile_picker_view->SwitchToSyncConfirmation();
+  }
+}
+
+// static
+void ProfilePicker::SwitchToProfileSwitch(const base::FilePath& profile_path) {
+  if (g_profile_picker_view) {
+    g_profile_picker_view->SwitchToProfileSwitch(profile_path);
+  }
+}
+
+// static
+void ProfilePicker::SwitchToEnterpriseProfileWelcome(
+    EnterpriseProfileWelcomeUI::ScreenType type,
+    base::OnceCallback<void(bool)> proceed_callback) {
+  if (g_profile_picker_view) {
+    g_profile_picker_view->SwitchToEnterpriseProfileWelcome(
+        type, std::move(proceed_callback));
   }
 }
 
@@ -365,30 +409,6 @@ void ProfilePicker::SetExtendedAccountInfoTimeoutForTesting(
 // -------------------------------------------------------------
 
 // static
-void ProfilePickerForceSigninDialog::ShowUnlockDialog(
-    content::BrowserContext* browser_context,
-    const std::string& email) {
-  ShowUnlockDialogWithProfilePath(browser_context, email, base::FilePath());
-}
-
-// static
-void ProfilePickerForceSigninDialog::ShowUnlockDialogWithProfilePath(
-    content::BrowserContext* browser_context,
-    const std::string& email,
-    const base::FilePath& profile_path) {
-  // This method should only be called if the profile picker is already showing.
-  if (!ProfilePicker::IsActive())
-    return;
-  // Load the re-auth URL, prepopulated with the user's email address.
-  // Add the index of the profile to the URL so that the inline login page
-  // knows which profile to load and update the credentials.
-  GURL url = signin::GetEmbeddedReauthURLWithEmail(
-      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
-      signin_metrics::Reason::REASON_UNLOCK, email);
-  ProfilePicker::ShowDialog(browser_context, url, profile_path);
-}
-
-// static
 void ProfilePickerForceSigninDialog::ShowForceSigninDialog(
     content::BrowserContext* browser_context,
     const base::FilePath& profile_path) {
@@ -397,7 +417,7 @@ void ProfilePickerForceSigninDialog::ShowForceSigninDialog(
 
   GURL url = signin::GetEmbeddedPromoURL(
       signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
-      signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT, true);
+      signin_metrics::Reason::kForcedSigninPrimaryAccount, true);
 
   ProfilePicker::ShowDialog(browser_context, url, profile_path);
 }
@@ -422,6 +442,28 @@ void ProfilePickerForceSigninDialog::DisplayErrorMessage() {
 // static
 void ProfilePickerForceSigninDialog::HideDialog() {
   ProfilePicker::HideDialog();
+}
+
+// ProfilePickerView::NavigationFinishedObserver ------------------------------
+
+ProfilePickerView::NavigationFinishedObserver::NavigationFinishedObserver(
+    const GURL& url,
+    base::OnceClosure closure,
+    content::WebContents* contents)
+    : content::WebContentsObserver(contents),
+      url_(url),
+      closure_(std::move(closure)) {}
+
+ProfilePickerView::NavigationFinishedObserver::~NavigationFinishedObserver() =
+    default;
+
+void ProfilePickerView::NavigationFinishedObserver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!closure_ || navigation_handle->GetURL() != url_ ||
+      !navigation_handle->HasCommitted()) {
+    return;
+  }
+  std::move(closure_).Run();
 }
 
 // ProfilePickerView ----------------------------------------------------------
@@ -450,8 +492,14 @@ ProfilePickerView::~ProfilePickerView() {
   if (system_profile_contents_)
     system_profile_contents_->SetDelegate(nullptr);
 
-  // Log profile creation flow abortion.
-  if (sign_in_ && state_ != kFinalizing) {
+  // Abort signed-in profile creation.
+  if (sign_in_ && !sign_in_->is_aborted && state_ != kFinalizing) {
+    // TODO(crbug.com/1196290): Schedule the profile for deletion here, it's not
+    // needed any more. This triggers a crash if the browser is shutting down
+    // completely. Figure a way how to delete the profile only if that does not
+    // compete with a shutdown.
+
+    // Log profile creation flow abortion.
     if (sign_in_->name_for_signed_in_profile.empty()) {
       ProfileMetrics::LogProfileAddSignInFlowOutcome(
           ProfileMetrics::ProfileAddSignInFlowOutcome::kAbortedBeforeSignIn);
@@ -510,8 +558,7 @@ void ProfilePickerView::Display(ProfilePicker::EntryPoint entry_point) {
     g_browser_process->profile_manager()->CreateProfileAsync(
         ProfileManager::GetSystemProfilePath(),
         base::BindRepeating(&ProfilePickerView::OnSystemProfileCreated,
-                            weak_ptr_factory_.GetWeakPtr()),
-        /*name=*/base::string16(), /*icon_url=*/std::string());
+                            weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -531,9 +578,8 @@ void ProfilePickerView::Clear() {
   DeleteDelegate();
 }
 
-void ProfilePickerView::OnSystemProfileCreated(
-    Profile* system_profile,
-    Profile::CreateStatus status) {
+void ProfilePickerView::OnSystemProfileCreated(Profile* system_profile,
+                                               Profile::CreateStatus status) {
   DCHECK_NE(status, Profile::CREATE_STATUS_LOCAL_FAIL);
   if (status != Profile::CREATE_STATUS_INITIALIZED)
     return;
@@ -589,6 +635,9 @@ void ProfilePickerView::SwitchToSignIn(
     // The profile is already created (the user went back and forth again). No
     // need to create it again.
     std::move(switch_finished_callback).Run(true);
+    // The color might be different for the second time (as the user could go to
+    // the local customization flow and change the color there) so update it.
+    sign_in_->profile_color = profile_color;
     // Do not load any url because the desired sign-in screen is still loaded in
     // `sign_in_->contents`.
     ShowScreen(sign_in_->contents.get(), GURL(),
@@ -603,7 +652,7 @@ void ProfilePickerView::SwitchToSignIn(
       g_browser_process->profile_manager()
           ->GetProfileAttributesStorage()
           .ChooseNameForNewProfile(icon_index),
-      profiles::GetDefaultAvatarIconUrl(icon_index),
+      icon_index,
       base::BindRepeating(&ProfilePickerView::OnProfileForSigninCreated,
                           weak_ptr_factory_.GetWeakPtr(), profile_color,
                           base::AdaptCallbackForRepeating(
@@ -612,7 +661,6 @@ void ProfilePickerView::SwitchToSignIn(
 
 void ProfilePickerView::CancelSignIn() {
   DCHECK(sign_in_);
-  DCHECK_EQ(web_view_->GetWebContents(), sign_in_->contents.get());
 
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
       sign_in_->profile->GetPath(), base::DoNothing());
@@ -636,6 +684,9 @@ void ProfilePickerView::CancelSignIn() {
       return;
     }
     case ProfilePicker::EntryPoint::kProfileMenuAddNewProfile: {
+      // Finished here, avoid aborting the flow again in the destructor (which
+      // is called as a result of Clear()).
+      sign_in_->is_aborted = true;
       Clear();
       return;
     }
@@ -719,19 +770,65 @@ void ProfilePickerView::OnProfileForSigninCreated(
 }
 
 void ProfilePickerView::SwitchToSyncConfirmation() {
-  // The sync confirmation screen cannot render in the system profile web
-  // contents and thus `sign_in_->contents` is used for this. As there is no
-  // back button on the confirmation screen, the performance of going back to
-  // the signin screen is no concern any more.
-  ShowScreen(sign_in_->contents.get(),
-             GURL(chrome::kChromeUISyncConfirmationURL),
-             /*show_toolbar=*/false,
-             /*enable_navigating_back=*/false);
+  ShowScreen(
+      sign_in_->contents.get(), GURL(chrome::kChromeUISyncConfirmationURL),
+      /*show_toolbar=*/false,
+      /*enable_navigating_back=*/false,
+      /*navigation_finished_closure=*/
+      base::BindOnce(&ProfilePickerView::SwitchToSyncConfirmationFinished,
+                     // Unretained is enough as the callback is called by a
+                     // member of this class appearing after `sign_in_`.
+                     base::Unretained(this)));
+}
 
+void ProfilePickerView::SwitchToSyncConfirmationFinished() {
+  // Initialize the WebUI page once we know it's committed.
   SyncConfirmationUI* sync_confirmation_ui = static_cast<SyncConfirmationUI*>(
       sign_in_->contents->GetWebUI()->GetController());
+
   sync_confirmation_ui->InitializeMessageHandlerForCreationFlow(
-      sign_in_->profile_color);
+      GetSignInColor(sign_in_->profile, sign_in_->profile_color));
+}
+
+void ProfilePickerView::SwitchToProfileSwitch(
+    const base::FilePath& profile_path) {
+  DCHECK(sign_in_);
+  sign_in_->is_aborted = true;
+
+  switch_profile_path_ = profile_path;
+  ShowScreen(system_profile_contents_.get(),
+             GURL(chrome::kChromeUIProfilePickerUrl).Resolve("profile-switch"),
+             /*show_toolbar=*/false,
+             /*enable_navigating_back=*/false);
+}
+
+void ProfilePickerView::SwitchToEnterpriseProfileWelcome(
+    EnterpriseProfileWelcomeUI::ScreenType type,
+    base::OnceCallback<void(bool)> proceed_callback) {
+  ShowScreen(sign_in_->contents.get(),
+             GURL(chrome::kChromeUIEnterpriseProfileWelcomeURL),
+             /*show_toolbar=*/false,
+             /*enable_navigating_back=*/false,
+             /*navigation_finished_closure=*/
+             base::BindOnce(
+                 &ProfilePickerView::SwitchToEnterpriseProfileWelcomeFinished,
+                 // Unretained is enough as the callback is called by a member
+                 // of this class appearing after `sign_in_`.
+                 base::Unretained(this), type, std::move(proceed_callback)));
+}
+
+void ProfilePickerView::SwitchToEnterpriseProfileWelcomeFinished(
+    EnterpriseProfileWelcomeUI::ScreenType type,
+    base::OnceCallback<void(bool)> proceed_callback) {
+  // Initialize the WebUI page once we know it's committed.
+  EnterpriseProfileWelcomeUI* enterprise_profile_welcome_ui =
+      sign_in_->contents->GetWebUI()
+          ->GetController()
+          ->GetAs<EnterpriseProfileWelcomeUI>();
+  enterprise_profile_welcome_ui->Initialize(
+      type, gaia::ExtractDomainName(sign_in_->email),
+      GetSignInColor(sign_in_->profile, sign_in_->profile_color),
+      std::move(proceed_callback));
 }
 
 void ProfilePickerView::WindowClosing() {
@@ -750,7 +847,7 @@ views::View* ProfilePickerView::GetContentsView() {
   return this;
 }
 
-base::string16 ProfilePickerView::GetAccessibleWindowTitle() const {
+std::u16string ProfilePickerView::GetAccessibleWindowTitle() const {
   if (!web_view_ || !web_view_->GetWebContents() ||
       web_view_->GetWebContents()->GetTitle().empty()) {
     return l10n_util::GetStringUTF16(IDS_PROFILE_PICKER_MAIN_VIEW_TITLE);
@@ -873,8 +970,10 @@ void ProfilePickerView::AddNewContents(
 void ProfilePickerView::NavigationStateChanged(
     content::WebContents* source,
     content::InvalidateTypes changed_flags) {
-  if (GetSigningIn() && IsExternalURL(sign_in_->contents->GetVisibleURL()))
+  if (GetSigningIn() && source == sign_in_->contents.get() &&
+      IsExternalURL(sign_in_->contents->GetVisibleURL())) {
     FinishSignedInCreationFlowForSAML();
+  }
 }
 
 void ProfilePickerView::BuildLayout() {
@@ -911,26 +1010,56 @@ void ProfilePickerView::UpdateToolbarColor() {
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
 }
 
-void ProfilePickerView::ShowScreen(content::WebContents* contents,
-                                   const GURL& url,
-                                   bool show_toolbar,
-                                   bool enable_navigating_back) {
+void ProfilePickerView::ShowScreen(
+    content::WebContents* contents,
+    const GURL& url,
+    bool show_toolbar,
+    bool enable_navigating_back,
+    base::OnceClosure navigation_finished_closure) {
+  if (url.is_empty()) {
+    DCHECK(!navigation_finished_closure);
+    ShowScreenFinished(contents, show_toolbar, enable_navigating_back);
+    return;
+  }
+
+  // Make sure to load the url as the last step so that the UI state is
+  // coherent upon the NavigationStateChanged notification.
+  contents->GetController().LoadURL(url, content::Referrer(),
+                                    ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                    std::string());
+  // Binding as Unretained as `this` outlives member
+  // `show_screen_finished_observer_`. If ShowScreen gets called twice in a
+  // short period of time, the first callback may never get called as the first
+  // observer gets destroyed here or later in ShowScreenFinished(). This is okay
+  // as all the previous values get replaced by the new values.
+  show_screen_finished_observer_ = std::make_unique<NavigationFinishedObserver>(
+      url,
+      base::BindOnce(&ProfilePickerView::ShowScreenFinished,
+                     base::Unretained(this), contents, show_toolbar,
+                     enable_navigating_back,
+                     std::move(navigation_finished_closure)),
+      contents);
+}
+
+void ProfilePickerView::ShowScreenFinished(
+    content::WebContents* contents,
+    bool show_toolbar,
+    bool enable_navigating_back,
+    base::OnceClosure navigation_finished_closure) {
+  // Stop observing for this (or any previous) navigation.
+  if (show_screen_finished_observer_)
+    show_screen_finished_observer_.reset();
+
   web_view_->SetWebContents(contents);
-  web_view_->RequestFocus();
+  contents->Focus();
 
   // Change visibility of the toolbar after swapping wc in `web_view_` to make
   // it easier for tests to detect changing of the screen.
   toolbar_->SetVisible(show_toolbar);
-
   enable_navigating_back_ = enable_navigating_back;
 
-  if (!url.is_empty()) {
-    // Make sure to load the url as the last step so that the UI state is
-    // coherent upon the NavigationStateChanged notification.
-    contents->GetController().LoadURL(url, content::Referrer(),
-                                      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                      std::string());
-  }
+  if (navigation_finished_closure)
+    std::move(navigation_finished_closure).Run();
 }
 
 void ProfilePickerView::BackButtonPressed(const ui::Event& event) {
@@ -954,12 +1083,15 @@ void ProfilePickerView::NavigateBack() {
 }
 
 bool ProfilePickerView::GetSigningIn() const {
-  return (state_ == kReady || state_ == kFinalizing) && toolbar_->GetVisible();
+  // We are in the sign-in flow if the sign_in_ struct exists but the email is
+  // not yet determined.
+  return sign_in_ && sign_in_->email.empty();
 }
 
 void ProfilePickerView::OnRefreshTokenUpdatedForAccount(
     const CoreAccountInfo& account_info) {
   DCHECK(!account_info.IsEmpty());
+  sign_in_->email = account_info.email;
 
   base::OnceClosure sync_consent_completed_closure = base::BindOnce(
       &ProfilePickerView::FinishSignedInCreationFlow,
@@ -967,12 +1099,12 @@ void ProfilePickerView::OnRefreshTokenUpdatedForAccount(
       base::BindOnce(&ShowCustomizationBubble, sign_in_->profile_color),
       /*enterprise_sync_consent_needed=*/false);
 
-  // Stop with the sign-in navigation, it is not needed any more and this avoids
-  // any glitches of the redirect page getting displayed. This is needed because
-  // in some cases (such as managed signed-in), there are further delays before
-  // any follow-up UI is shown.
-  ShowScreen(sign_in_->contents.get(), GURL(url::kAboutBlankURL),
-             /*show_toolbar=*/true, /*enable_navigating_back=*/false);
+  // Stop with the sign-in navigation and show a spinner instead. The spinner
+  // will be shown until DiceTurnSyncOnHelper (below) figures out whether it's a
+  // managed account and whether sync is disabled by policies (which in some
+  // cases involves fetching policies and can take a couple of seconds).
+  ShowScreen(sign_in_->contents.get(), GetSyncConfirmationLoadingURL(),
+             /*show_toolbar=*/false, /*enable_navigating_back=*/false);
 
   // Set up a timeout for extended account info (which cancels any existing
   // timeout closure).
@@ -987,8 +1119,7 @@ void ProfilePickerView::OnRefreshTokenUpdatedForAccount(
   new DiceTurnSyncOnHelper(
       sign_in_->profile, signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
-      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-      account_info.account_id,
+      signin_metrics::Reason::kSigninPrimaryAccount, account_info.account_id,
       DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
       std::make_unique<ProfilePickerViewSyncDelegate>(
           sign_in_->profile,
@@ -1057,6 +1188,10 @@ void ProfilePickerView::OnProfileNameAvailable() {
 void ProfilePickerView::FinishSignedInCreationFlow(
     BrowserOpenedCallback callback,
     bool enterprise_sync_consent_needed) {
+  DCHECK(sign_in_);
+  // Sign-in flow is aborted, do nothing.
+  if (sign_in_->is_aborted)
+    return;
   // This can get called first time from a special case handling (such as the
   // Settings link) and than second time when the consent flow finishes. We need
   // to make sure only the first call gets handled.
@@ -1077,17 +1212,25 @@ void ProfilePickerView::FinishSignedInCreationFlow(
 }
 
 void ProfilePickerView::FinishSignedInCreationFlowForSAML() {
+  // First, free up `sign_in_->contents` to be moved to a new browser window.
+  ShowScreen(
+      system_profile_contents_.get(), GURL(url::kAboutBlankURL),
+      /*show_toolbar=*/false, /*enable_navigating_back=*/false,
+      /*navigation_finished_closure=*/
+      base::BindOnce(&ProfilePickerView::OnSignInContentsFreedUp,
+                     // Unretained is enough as the callback is called by a
+                     // member of this class appearing after `sign_in_`.
+                     base::Unretained(this)));
+}
+
+void ProfilePickerView::OnSignInContentsFreedUp() {
   DCHECK_NE(state_, kFinalizing);
   state_ = kFinalizing;
   DCHECK(sign_in_->name_for_signed_in_profile.empty());
 
   sign_in_->name_for_signed_in_profile =
       profiles::GetDefaultNameForNewEnterpriseProfile();
-
-  // Free up `sign_in_->contents` to be moved to a new browser window.
   sign_in_->contents->SetDelegate(nullptr);
-  ShowScreen(system_profile_contents_.get(), GURL(url::kAboutBlankURL),
-             /*show_toolbar=*/false, /*enable_navigating_back=*/false);
   FinishSignedInCreationFlowImpl(
       base::BindOnce(&ContinueSAMLSignin, std::move(sign_in_->contents)),
       /*enterprise_sync_consent_needed=*/true);
@@ -1218,6 +1361,10 @@ base::FilePath ProfilePickerView::GetForceSigninProfilePath() const {
 
 GURL ProfilePickerView::GetOnSelectProfileTargetUrl() const {
   return on_select_profile_target_url_;
+}
+
+base::FilePath ProfilePickerView::GetSwitchProfilePath() const {
+  return switch_profile_path_;
 }
 
 BEGIN_METADATA(ProfilePickerView, views::WidgetDelegateView)

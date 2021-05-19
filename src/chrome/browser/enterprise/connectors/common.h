@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ENTERPRISE_CONNECTORS_COMMON_H_
 #define CHROME_BROWSER_ENTERPRISE_CONNECTORS_COMMON_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -35,6 +36,10 @@ constexpr char kKeyCustomMessagesMessage[] = "message";
 constexpr char kKeyCustomMessagesLearnMoreUrl[] = "learn_more_url";
 constexpr char kKeyMimeTypes[] = "mime_types";
 constexpr char kKeyEnterpriseId[] = "enterprise_id";
+constexpr char kKeyDomain[] = "domain";
+
+// A MIME type string that matches all MIME types.
+constexpr char kWildcardMimeType[] = "*";
 
 enum class ReportingConnector {
   SECURITY_EVENT,
@@ -66,7 +71,7 @@ struct AnalysisSettings {
   bool block_password_protected_files = false;
   bool block_large_files = false;
   bool block_unsupported_file_types = false;
-  base::string16 custom_message_text;
+  std::u16string custom_message_text;
   GURL custom_message_learn_more_url;
 
   // Minimum text size for BulkDataEntry scans. 0 means no minimum.
@@ -75,6 +80,14 @@ struct AnalysisSettings {
   // The DM token to be used for scanning. May be empty, for example if this
   // scan is initiated by APP.
   std::string dm_token = "";
+
+  // Indicates if the scan is made at the profile level, or at the browser level
+  // if false.
+  bool per_profile = false;
+
+  // ClientMetadata to include in the scanning request(s). This is populated
+  // based on OnSecurityEvent and the affiliation state of the browser.
+  std::unique_ptr<ClientMetadata> client_metadata = nullptr;
 };
 
 struct ReportingSettings {
@@ -105,6 +118,8 @@ struct FileSystemSettings {
   GURL home;
   GURL authorization_endpoint;
   GURL token_endpoint;
+  std::string enterprise_id;
+  std::string email_domain;
   std::string client_id;
   std::string client_secret;
   std::vector<std::string> scopes;

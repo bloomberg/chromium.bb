@@ -4,10 +4,11 @@
 
 #include "components/autofill/core/common/autofill_features.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -156,7 +157,7 @@ const base::Feature kAutofillEnableProfileDeduplication{
 // TODO(crbug.com/1098943): Remove once launched.
 const base::Feature kAutofillEnableSupportForMoreStructureInNames{
     "AutofillEnableSupportForMoreStructureInNames",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls if Autofill supports new structure in addresses.
 // TODO(crbug.com/1098943): Remove once launched.
@@ -224,7 +225,7 @@ const base::Feature kAutofillPruneSuggestions{
     "AutofillPruneSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillMetadataUploads{"AutofillMetadataUploads",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, Autofill will load remote patterns via the component updater.
 // TODO(crbug/1121990): Remove once launched.
@@ -273,13 +274,6 @@ const base::Feature kAutofillProfileImportFromUnfocusableFields{
 // with invalid data are not suggested.
 const base::Feature kAutofillProfileServerValidation{
     "AutofillProfileServerValidation", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether or not a group of fields not enclosed in a form can be
-// considered a form. If this is enabled, unowned fields will only constitute
-// a form if there are signals to suggest that this might a checkout page.
-const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout{
-    "AutofillRestrictUnownedFieldsToFormlessCheckout",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether or not overall prediction are retrieved from the cache.
 const base::Feature kAutofillRetrieveOverallPredictionsFromCache{

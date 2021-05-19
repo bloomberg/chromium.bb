@@ -25,6 +25,7 @@
 #include "extensions/common/hashed_extension_id.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/mojom/manifest.mojom-shared.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -156,7 +157,7 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   static const int kInitFromValueFlagBits;
 
   static scoped_refptr<Extension> Create(const base::FilePath& path,
-                                         Manifest::Location location,
+                                         mojom::ManifestLocation location,
                                          const base::DictionaryValue& value,
                                          int flags,
                                          std::string* error);
@@ -164,7 +165,7 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   // In a few special circumstances, we want to create an Extension and give it
   // an explicit id. Most consumers should just use the other Create() method.
   static scoped_refptr<Extension> Create(const base::FilePath& path,
-                                         Manifest::Location location,
+                                         mojom::ManifestLocation location,
                                          const base::DictionaryValue& value,
                                          int flags,
                                          const ExtensionId& explicit_id,
@@ -266,7 +267,7 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   const base::FilePath& path() const { return path_; }
   const GURL& url() const { return extension_url_; }
   url::Origin origin() const { return url::Origin::Create(extension_url_); }
-  Manifest::Location location() const;
+  mojom::ManifestLocation location() const;
   const ExtensionId& id() const;
   const HashedExtensionId& hashed_id() const;
   const ExtensionGuid& guid() const;
@@ -356,26 +357,26 @@ class Extension final : public base::RefCountedThreadSafe<Extension> {
   // of the underlying DictionaryValue in its members. We should decide to
   // either wrap the DictionaryValue and go with that only, or we should parse
   // into strong types and discard the value. But doing both is bad.
-  bool InitFromValue(int flags, base::string16* error);
+  bool InitFromValue(int flags, std::u16string* error);
 
   // The following are helpers for InitFromValue to load various features of the
   // extension from the manifest.
 
-  bool LoadRequiredFeatures(base::string16* error);
-  bool LoadName(base::string16* error);
-  bool LoadVersion(base::string16* error);
+  bool LoadRequiredFeatures(std::u16string* error);
+  bool LoadName(std::u16string* error);
+  bool LoadVersion(std::u16string* error);
 
-  bool LoadAppFeatures(base::string16* error);
+  bool LoadAppFeatures(std::u16string* error);
   bool LoadExtent(const char* key,
                   URLPatternSet* extent,
                   const char* list_error,
                   const char* value_error,
-                  base::string16* error);
+                  std::u16string* error);
 
-  bool LoadSharedFeatures(base::string16* error);
-  bool LoadDescription(base::string16* error);
-  bool LoadManifestVersion(base::string16* error);
-  bool LoadShortName(base::string16* error);
+  bool LoadSharedFeatures(std::u16string* error);
+  bool LoadDescription(std::u16string* error);
+  bool LoadManifestVersion(std::u16string* error);
+  bool LoadShortName(std::u16string* error);
 
   // The extension's human-readable name. Name is used for display purpose. It
   // might be wrapped with unicode bidi control characters so that it is
@@ -480,7 +481,7 @@ struct ExtensionInfo {
   ExtensionInfo(const base::DictionaryValue* manifest,
                 const ExtensionId& id,
                 const base::FilePath& path,
-                Manifest::Location location);
+                mojom::ManifestLocation location);
   ~ExtensionInfo();
 
   // Note: This may be null (e.g. for unpacked extensions retrieved from the
@@ -489,7 +490,7 @@ struct ExtensionInfo {
 
   ExtensionId extension_id;
   base::FilePath extension_path;
-  Manifest::Location extension_location;
+  mojom::ManifestLocation extension_location;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfo);

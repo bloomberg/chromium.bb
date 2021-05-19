@@ -15,9 +15,9 @@ using blink::scheduler::WebSchedulerTrackedFeature;
 
 std::string DescribeFeatures(uint64_t blocklisted_features) {
   std::vector<std::string> features;
-  for (size_t i = 0;
-       i <= static_cast<size_t>(WebSchedulerTrackedFeature::kMaxValue); ++i) {
-    if (blocklisted_features & (1 << i)) {
+  for (uint32_t i = 0;
+       i <= static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue); ++i) {
+    if (blocklisted_features & (1ULL << i)) {
       features.push_back(blink::scheduler::FeatureToHumanReadableString(
           static_cast<WebSchedulerTrackedFeature>(i)));
     }
@@ -30,6 +30,18 @@ std::string DescribeFeatures(uint64_t blocklisted_features) {
 bool BackForwardCacheCanStoreDocumentResult::CanStore() const {
   return not_stored_reasons_.none();
 }
+
+namespace {
+std::string DisabledReasonsToString(
+    const std::set<BackForwardCache::DisabledReason>& reasons) {
+  std::vector<std::string> descriptions;
+  for (const auto& reason : reasons) {
+    descriptions.push_back(base::StringPrintf(
+        "%d:%d:%s", reason.source, reason.id, reason.description.c_str()));
+  }
+  return base::JoinString(descriptions, ", ");
+}
+}  // namespace
 
 std::string BackForwardCacheCanStoreDocumentResult::ToString() const {
   using Reason = BackForwardCacheMetrics::NotRestoredReason;
@@ -72,10 +84,7 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "blocklisted features: " + DescribeFeatures(blocklisted_features_);
     case Reason::kDisableForRenderFrameHostCalled:
       return "BackForwardCache::DisableForRenderFrameHost() was called: " +
-             base::JoinString(
-                 std::vector<std::string>(disabled_reasons_.begin(),
-                                          disabled_reasons_.end()),
-                 ", ");
+             DisabledReasonsToString(disabled_reasons_);
     case Reason::kDomainNotAllowed:
       return "This domain is not allowed to be stored in BackForwardCache";
     case Reason::kHTTPMethodNotGET:
@@ -86,6 +95,8 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "timeout";
     case Reason::kCacheLimit:
       return "cache limit";
+    case Reason::kForegroundCacheLimit:
+      return "foreground cache limit";
     case Reason::kJavaScriptExecution:
       return "JavaScript execution";
     case Reason::kRendererProcessKilled:
@@ -133,9 +144,6 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
              "policy)";
     case Reason::kNavigationCancelledWhileRestoring:
       return "Navigation request was cancelled after js eviction was disabled";
-    case Reason::kNetworkRequestDatapipeDrained:
-      return "Network requests' datapipe is drained already upon bfcache "
-             "entrance";
     case Reason::kNetworkRequestRedirected:
       return "Network request is redirected in bfcache";
     case Reason::kNetworkRequestTimeout:
@@ -144,6 +152,12 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "Network request reads too much data and exceeds buffer limit";
     case Reason::kBackForwardCacheDisabledForPrerender:
       return "BackForwardCache is disabled for Prerender";
+    case Reason::kUserAgentOverrideDiffers:
+      return "User-agent override differs";
+    case Reason::kNetworkRequestDatapipeDrainedAsDatapipe:
+      return "Network requests' datapipe has been passed to ScriptStreamer";
+    case Reason::kNetworkRequestDatapipeDrainedAsBytesConsumer:
+      return "Network requests' datapipe has been passed as bytes consumer";
   }
 }
 
@@ -169,11 +183,11 @@ void BackForwardCacheCanStoreDocumentResult::NoDueToRelatedActiveContents(
 
 void BackForwardCacheCanStoreDocumentResult::
     NoDueToDisableForRenderFrameHostCalled(
-        const std::set<std::string>& reasons) {
+        const std::set<BackForwardCache::DisabledReason>& reasons) {
   not_stored_reasons_.set(
       static_cast<size_t>(BackForwardCacheMetrics::NotRestoredReason::
                               kDisableForRenderFrameHostCalled));
-  for (const std::string& reason : reasons)
+  for (const BackForwardCache::DisabledReason& reason : reasons)
     disabled_reasons_.insert(reason);
 }
 
@@ -185,7 +199,8 @@ void BackForwardCacheCanStoreDocumentResult::AddReasonsFrom(
     browsing_instance_not_swapped_reason_ =
         other.browsing_instance_not_swapped_reason();
   }
-  for (const std::string& reason : other.disabled_reasons()) {
+  for (const BackForwardCache::DisabledReason& reason :
+       other.disabled_reasons()) {
     disabled_reasons_.insert(reason);
   }
 }

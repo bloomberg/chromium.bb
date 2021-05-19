@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2020 The Khronos Group Inc.
+# Copyright (c) 2020-2021 The Khronos Group Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -130,6 +130,32 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
             {'vulkan' : 'VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR', 'layer' : 'workgroup_memory_explicit_layout_features'},
         ]
 
+        # Promoted features structure in state_tracker.cpp are put in the VkPhysicalDeviceVulkan*Features structs
+        # but the XML can still list them. This list all promoted structs to ignore since they are aliased.
+        # Tried to generate these, but no reliable way from vk.xml
+        self.promotedFeatures = [
+            # 1.1
+            "VkPhysicalDevice16BitStorageFeatures",
+            "VkPhysicalDeviceMultiviewFeatures",
+            "VkPhysicalDeviceVariablePointersFeatures",
+            "VkPhysicalDeviceProtectedMemoryFeatures",
+            "VkPhysicalDeviceSamplerYcbcrConversionFeatures",
+            "VkPhysicalDeviceShaderDrawParametersFeatures",
+            # 1.2
+            "VkPhysicalDevice8BitStorageFeatures",
+            "VkPhysicalDeviceShaderFloat16Int8Features",
+            "VkPhysicalDeviceDescriptorIndexingFeatures",
+            "VkPhysicalDeviceScalarBlockLayoutFeatures",
+            "VkPhysicalDeviceImagelessFramebufferFeatures",
+            "VkPhysicalDeviceUniformBufferStandardLayoutFeatures",
+            "VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures",
+            "VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures",
+            "VkPhysicalDeviceTimelineSemaphoreFeatures",
+            "VkPhysicalDeviceBufferDeviceAddressFeatures",
+            "VkPhysicalDeviceShaderAtomicInt64Features",
+            "VkPhysicalDeviceVulkanMemoryModelFeatures",
+        ]
+
         # Properties are harder to handle genearted without generating a template for every property struct type
         # The simpler solution is create strings that will be printed out as static comparisons at compile time
         # The Map is used to map Vulkan property structs with the state tracker variable name
@@ -152,7 +178,7 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
         copyright += '\n'
         copyright += '/***************************************************************************\n'
         copyright += ' *\n'
-        copyright += ' * Copyright (c) 2020 The Khronos Group Inc.\n'
+        copyright += ' * Copyright (c) 2020-2021 The Khronos Group Inc.\n'
         copyright += ' *\n'
         copyright += ' * Licensed under the Apache License, Version 2.0 (the "License");\n'
         copyright += ' * you may not use this file except in compliance with the License.\n'
@@ -170,7 +196,6 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
         copyright += ' *\n'
         copyright += ' ****************************************************************************/\n'
         write(copyright, file=self.outFile)
-        write('#include <unordered_map>', file=self.outFile)
         write('#include <string>', file=self.outFile)
         write('#include <functional>', file=self.outFile)
         write('#include <spirv/unified1/spirv.hpp>', file=self.outFile)
@@ -214,6 +239,8 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
             if 'version' in elem.attrib:
                 enable['version'] = elem.attrib['version']
             elif 'feature' in elem.attrib:
+                if elem.attrib['struct'] in self.promotedFeatures:
+                    continue
                 enable['feature'] = {
                     'feature' : elem.attrib['feature'],
                     'struct' : elem.attrib['struct']
@@ -298,12 +325,15 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
             propertyStruct = enable['property']['property']
             # Need to make sure to return a boolean value to prevent compiler warning for implicit conversions
             propertyLogic = "(" + propertyStruct + '::' + enable['property']['member'] + ' & ' + enable['property']['value'] + ") != 0"
+            # Property might have multiple items per capability/extension
+            if name not in self.propertyInfo:
+                self.propertyInfo[name] = []
             # Save info later to be printed out
-            self.propertyInfo[name] = {
+            self.propertyInfo[name].append({
                 "logic" : propertyLogic,
                 "struct" : propertyStruct,
                 "isExtension" : isExtension
-            }
+            })
             # For properties, this string is just for human readableness
             output = '{0, nullptr, nullptr, "' + propertyLogic + '"}'
         else:
@@ -345,140 +375,146 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
     # The main function to validate all the extensions and capabilities
     def validateFunction(self):
         output = '''
-bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE const *src) const {
+bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE const *src, spirv_inst_iter& insn) const {
     bool skip = false;
 
-    for (auto insn : *src) {
-        if (insn.opcode() == spv::OpCapability) {
-            // All capabilities are generated so if it is not in the list it is not supported by Vulkan
-            if (spirvCapabilities.count(insn.word(1)) == 0) {
-                skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-01090",
-                    "vkCreateShaderModule(): A SPIR-V Capability (%s) was declared that is not supported by Vulkan.", string_SpvCapability(insn.word(1)));
-                    continue;
-            }
+    if (insn.opcode() == spv::OpCapability) {
+        // All capabilities are generated so if it is not in the list it is not supported by Vulkan
+        if (spirvCapabilities.count(insn.word(1)) == 0) {
+            skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-01090",
+                "vkCreateShaderModule(): A SPIR-V Capability (%s) was declared that is not supported by Vulkan.", string_SpvCapability(insn.word(1)));
+            return skip; // no known capability to validate
+        }
 
-            // Each capability has one or more requirements to check
-            // Only one item has to be satisfied and an error only occurs
-            // when all are not satisfied
-            auto caps = spirvCapabilities.equal_range(insn.word(1));
-            bool has_support = false;
-            for (auto it = caps.first; (it != caps.second) && (has_support == false); ++it) {
-                if (it->second.version) {
-                    if (api_version >= it->second.version) {
-                        has_support = true;
-                    }
-                } else if (it->second.feature) {
-                    if (it->second.feature.IsEnabled(enabled_features)) {
-                        has_support = true;
-                    }
-                } else if (it->second.extension) {
-                    if (device_extensions.*(it->second.extension)) {
-                        has_support = true;
-                    }
-                } else if (it->second.property) {
-                    switch (insn.word(1)) {
-                        default:
-                            break;'''
+        // Each capability has one or more requirements to check
+        // Only one item has to be satisfied and an error only occurs
+        // when all are not satisfied
+        auto caps = spirvCapabilities.equal_range(insn.word(1));
+        bool has_support = false;
+        for (auto it = caps.first; (it != caps.second) && (has_support == false); ++it) {
+            if (it->second.version) {
+                if (api_version >= it->second.version) {
+                    has_support = true;
+                }
+            } else if (it->second.feature) {
+                if (it->second.feature.IsEnabled(enabled_features)) {
+                    has_support = true;
+                }
+            } else if (it->second.extension) {
+                if (device_extensions.*(it->second.extension)) {
+                    has_support = true;
+                }
+            } else if (it->second.property) {
+                // support is or'ed as only one has to be supported (if applicable)
+                switch (insn.word(1)) {'''
 
-        for name, info in sorted(self.propertyInfo.items()):
-            # Only capabilities here
-            if info['isExtension'] == True:
+        for name, infos in sorted(self.propertyInfo.items()):
+            # Only capabilities here (all items in array are the same)
+            if infos[0]['isExtension'] == True:
                 continue
-            # Need to string replace property string to create valid C++ logic
-            logic = info['logic'].replace('::', '.')
-            logic = logic.replace(info['struct'], self.propertyMap[info['struct']])
 
+            # use triple-tick syntax to keep tab alignment for generated code
             output += '''
-                        case spv::Capability{}:
-                            has_support = ({});
-                            break;'''.format(name, logic)
+                    case spv::Capability{}:'''.format(name)
+            for info in infos:
+                # Need to string replace property string to create valid C++ logic
+                logic = info['logic'].replace('::', '.')
+                logic = logic.replace(info['struct'], self.propertyMap[info['struct']])
+                output += '''
+                        has_support |= ({});'''.format(logic)
+            output += '''
+                        break;'''
 
         output += '''
-                    }
+                    default:
+                        break;
                 }
-            }
-
-            if (has_support == false) {
-                skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-01091",
-                    "vkCreateShaderModule(): The SPIR-V Capability (%s) was declared, but none of the requirements were met to use it.", string_SpvCapability(insn.word(1)));
-                    continue;
-            }
-
-            // Portability checks
-            if (IsExtEnabled(device_extensions.vk_khr_portability_subset)) {
-                if ((VK_FALSE == enabled_features.portability_subset_features.shaderSampleRateInterpolationFunctions) &&
-                    (spv::CapabilityInterpolationFunction == insn.word(1))) {
-                    skip |= LogError(device, kVUID_Portability_InterpolationFunction,
-                                     "Invalid shader capability (portability error): interpolation functions are not supported "
-                                     "by this platform");
-                }
-            }
-        } else if (insn.opcode() == spv::OpExtension) {
-            static const std::string spv_prefix = "SPV_";
-            std::string extension_name = (char const *)&insn.word(1);
-
-            if (0 == extension_name.compare(0, spv_prefix.size(), spv_prefix)) {
-                if (spirvExtensions.count(extension_name) == 0) {
-                    skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-04146",
-                        "vkCreateShaderModule(): A SPIR-V Extension (%s) was declared that is not supported by Vulkan.", extension_name.c_str());
-                   continue;
-                }
-            } else {
-                skip |= LogError(device, kVUID_Core_Shader_InvalidExtension,
-                    "vkCreateShaderModule(): The SPIR-V code uses the '%s' extension which is not a SPIR-V extension. Please use a SPIR-V"
-                    " extension (https://github.com/KhronosGroup/SPIRV-Registry) for OpExtension instructions. Non-SPIR-V extensions can be"
-                    " recorded in SPIR-V using the OpSourceExtension instruction.", extension_name.c_str());
-                continue;
-            }
-
-            // Each SPIR-V Extension has one or more requirements to check
-            // Only one item has to be satisfied and an error only occurs
-            // when all are not satisfied
-            auto ext = spirvExtensions.equal_range(extension_name);
-            bool has_support = false;
-            for (auto it = ext.first; (it != ext.second) && (has_support == false); ++it) {
-                if (it->second.version) {
-                    if (api_version >= it->second.version) {
-                        has_support = true;
-                    }
-                } else if (it->second.feature) {
-                    if (it->second.feature.IsEnabled(enabled_features)) {
-                        has_support = true;
-                    }
-                } else if (it->second.extension) {
-                    if (device_extensions.*(it->second.extension)) {
-                        has_support = true;
-                    }
-                } else if (it->second.property) {
-                    switch (insn.word(1)) {
-                        default:
-                            break;'''
-
-        for name, info in sorted(self.propertyInfo.items()):
-            # Only extensions here
-            if info['isExtension'] == False:
-                continue
-            # Need to string replace property string to create valid C++ logic
-            logic = info['logic'].replace('::', '.')
-            logic = logic.replace(info['struct'], self.propertyMap[info['struct']])
-
-            output += '''
-                        case spv::Capability{}:
-                            has_support = ({});
-                            break;'''.format(name, logic)
-
-        output += '''
-                    }
-                }
-            }
-
-            if (has_support == false) {
-                skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-04147",
-                    "vkCreateShaderModule(): The SPIR-V Extension (%s) was declared, but none of the requirements were met to use it.", extension_name.c_str());
-                    continue;
             }
         }
-    }
+
+        if (has_support == false) {
+            skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-01091",
+                "vkCreateShaderModule(): The SPIR-V Capability (%s) was declared, but none of the requirements were met to use it.", string_SpvCapability(insn.word(1)));
+        }
+
+        // Portability checks
+        if (IsExtEnabled(device_extensions.vk_khr_portability_subset)) {
+            if ((VK_FALSE == enabled_features.portability_subset_features.shaderSampleRateInterpolationFunctions) &&
+                (spv::CapabilityInterpolationFunction == insn.word(1))) {
+                skip |= LogError(device, kVUID_Portability_InterpolationFunction,
+                                    "Invalid shader capability (portability error): interpolation functions are not supported "
+                                    "by this platform");
+            }
+        }
+    } else if (insn.opcode() == spv::OpExtension) {
+        static const std::string spv_prefix = "SPV_";
+        std::string extension_name = (char const *)&insn.word(1);
+
+        if (0 == extension_name.compare(0, spv_prefix.size(), spv_prefix)) {
+            if (spirvExtensions.count(extension_name) == 0) {
+                skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-04146",
+                    "vkCreateShaderModule(): A SPIR-V Extension (%s) was declared that is not supported by Vulkan.", extension_name.c_str());
+                return skip; // no known extension to validate
+            }
+        } else {
+            skip |= LogError(device, kVUID_Core_Shader_InvalidExtension,
+                "vkCreateShaderModule(): The SPIR-V code uses the '%s' extension which is not a SPIR-V extension. Please use a SPIR-V"
+                " extension (https://github.com/KhronosGroup/SPIRV-Registry) for OpExtension instructions. Non-SPIR-V extensions can be"
+                " recorded in SPIR-V using the OpSourceExtension instruction.", extension_name.c_str());
+            return skip; // no known extension to validate
+        }
+
+        // Each SPIR-V Extension has one or more requirements to check
+        // Only one item has to be satisfied and an error only occurs
+        // when all are not satisfied
+        auto ext = spirvExtensions.equal_range(extension_name);
+        bool has_support = false;
+        for (auto it = ext.first; (it != ext.second) && (has_support == false); ++it) {
+            if (it->second.version) {
+                if (api_version >= it->second.version) {
+                    has_support = true;
+                }
+            } else if (it->second.feature) {
+                if (it->second.feature.IsEnabled(enabled_features)) {
+                    has_support = true;
+                }
+            } else if (it->second.extension) {
+                if (device_extensions.*(it->second.extension)) {
+                    has_support = true;
+                }
+            } else if (it->second.property) {
+                // support is or'ed as only one has to be supported (if applicable)
+                switch (insn.word(1)) {'''
+
+        for name, infos in sorted(self.propertyInfo.items()):
+            # Only extensions here (all items in array are the same)
+            if infos[0]['isExtension'] == False:
+                continue
+
+            # use triple-tick syntax to keep tab alignment for generated code
+            output += '''
+                    case spv::Capability{}:'''.format(name)
+            for info in infos:
+                # Need to string replace property string to create valid C++ logic
+                logic = info['logic'].replace('::', '.')
+                logic = logic.replace(info['struct'], self.propertyMap[info['struct']])
+                output += '''
+                    has_support |= ({});'''.format(logic)
+            output += '''
+                    break;'''
+
+        output += '''
+                    default:
+                        break;
+                }
+            }
+        }
+
+        if (has_support == false) {
+            skip |= LogError(device, "VUID-VkShaderModuleCreateInfo-pCode-04147",
+                "vkCreateShaderModule(): The SPIR-V Extension (%s) was declared, but none of the requirements were met to use it.", extension_name.c_str());
+        }
+    } //spv::OpExtension
     return skip;
 }'''
         return output

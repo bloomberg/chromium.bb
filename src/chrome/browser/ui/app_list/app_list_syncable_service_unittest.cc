@@ -52,7 +52,8 @@ scoped_refptr<extensions::Extension> MakeApp(
   value.SetString("version", "0.0");
   value.SetString("app.launch.web_url", "http://google.com");
   scoped_refptr<extensions::Extension> app = extensions::Extension::Create(
-      base::FilePath(), extensions::Manifest::INTERNAL, value, flags, id, &err);
+      base::FilePath(), extensions::mojom::ManifestLocation::kInternal, value,
+      flags, id, &err);
   EXPECT_EQ(err, "");
   return app;
 }
@@ -229,9 +230,6 @@ class AppListSyncableServiceTest : public AppListTestBase {
 
   void SetUp() override {
     AppListTestBase::SetUp();
-
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableDefaultApps);
 
     // Make sure we have a Profile Manager.
     DCHECK(temp_dir_.CreateUniqueTempDir());
@@ -569,8 +567,8 @@ class AppListInternalAppSyncableServiceTest
 
   void SetUp() override {
     AppListSyncableServiceTest::SetUp();
-    web_app::InstallDummyWebApp(testing_profile(), kOsSettingsUrl,
-                                GURL(kOsSettingsUrl));
+    web_app::test::InstallDummyWebApp(testing_profile(), kOsSettingsUrl,
+                                      GURL(kOsSettingsUrl));
   }
 
   ~AppListInternalAppSyncableServiceTest() override = default;
@@ -1254,7 +1252,7 @@ TEST_F(AppListSyncableServiceTest, FirstAvailablePosition) {
 
   // Populate the first page with items and leave 1 empty slot at the end.
   const int max_items_in_first_page =
-      ash::AppListConfig::instance().GetMaxNumOfItemsPerPage(0);
+      ash::SharedAppListConfig::instance().GetMaxNumOfItemsPerPage();
   syncer::StringOrdinal last_app_position =
       syncer::StringOrdinal::CreateInitialOrdinal();
   for (int i = 0; i < max_items_in_first_page - 1; ++i) {
@@ -1302,7 +1300,7 @@ TEST_F(AppListSyncableServiceTest, FirstAvailablePositionNotExist) {
 
   // Populate the first page with items and leave 1 empty slot at the end.
   const int max_items_in_first_page =
-      ash::AppListConfig::instance().GetMaxNumOfItemsPerPage(0);
+      ash::SharedAppListConfig::instance().GetMaxNumOfItemsPerPage();
   syncer::StringOrdinal last_app_position =
       syncer::StringOrdinal::CreateInitialOrdinal();
   for (int i = 0; i < max_items_in_first_page - 1; ++i) {

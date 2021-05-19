@@ -184,6 +184,8 @@ class EGLGpuSwitchingObserver;
 EGLDisplay g_egl_display = EGL_NO_DISPLAY;
 EGLDisplayPlatform g_native_display(EGL_DEFAULT_DISPLAY);
 
+DisplayType g_display_type = DisplayType::DEFAULT;
+
 const char* g_egl_client_extensions = nullptr;
 const char* g_egl_extensions = nullptr;
 bool g_egl_create_context_robustness_supported = false;
@@ -556,7 +558,7 @@ const char* DisplayTypeString(DisplayType display_type) {
     case ANGLE_D3D11on12:
       return "D3D11on12";
     case ANGLE_SWIFTSHADER:
-      return "SwiftShader";
+      return "SwANGLE";
     case ANGLE_OPENGL_EGL:
       return "OpenGLEGL";
     case ANGLE_OPENGLES_EGL:
@@ -792,19 +794,31 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
                         bool supports_angle_metal,
                         const base::CommandLine* command_line,
                         std::vector<DisplayType>* init_displays) {
+  bool usingSoftwareGLForTests =
+      command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests);
+  bool isSwANGLE = GetGLImplementationParts() == GetSoftwareGLImplementation();
+
   // SwiftShader does not use the platform extensions
+  // Note: Do not use SwiftShader if we've explicitly selected SwANGLE
   if (command_line->GetSwitchValueASCII(switches::kUseGL) ==
-      kGLImplementationSwiftShaderForWebGLName) {
+          kGLImplementationSwiftShaderForWebGLName &&
+      !(usingSoftwareGLForTests && isSwANGLE)) {
     AddInitDisplay(init_displays, SWIFT_SHADER);
     return;
   }
 
+  // If we're already requesting software GL, make sure we don't fallback to the
+  // GPU
+  bool forceSoftwareGL = IsSoftwareGLImplementation(GetGLImplementationParts());
+
   std::string requested_renderer =
-      command_line->GetSwitchValueASCII(switches::kUseANGLE);
+      forceSoftwareGL ? kANGLEImplementationSwiftShaderName
+                      : command_line->GetSwitchValueASCII(switches::kUseANGLE);
 
   bool use_angle_default =
-      !command_line->HasSwitch(switches::kUseANGLE) ||
-      requested_renderer == kANGLEImplementationDefaultName;
+      !forceSoftwareGL &&
+      (!command_line->HasSwitch(switches::kUseANGLE) ||
+       requested_renderer == kANGLEImplementationDefaultName);
 
   if (supports_angle_null &&
       requested_renderer == kANGLEImplementationNullName) {
@@ -1013,16 +1027,26 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
   g_egl_robust_resource_init_supported =
       HasEGLExtension("EGL_ANGLE_robust_resource_initialization");
 
-  // TODO(oetuaho@nvidia.com): Surfaceless is disabled on Android as a temporary
-  // workaround, since code written for Android WebView takes different paths
-  // based on whether GL surface objects have underlying EGL surface handles,
-  // conflicting with the use of surfaceless. See https://crbug.com/382349
-#if defined(OS_ANDROID)
-  DCHECK(!g_egl_surfaceless_context_supported);
-#else
   // Check if SurfacelessEGL is supported.
   g_egl_surfaceless_context_supported =
       HasEGLExtension("EGL_KHR_surfaceless_context");
+
+  // TODO(oetuaho@nvidia.com): Surfaceless is disabled on Android as a temporary
+  // workaround, since code written for Android WebView takes different paths
+  // based on whether GL surface objects have underlying EGL surface handles,
+  // conflicting with the use of surfaceless. ANGLE can still expose surfacelss
+  // because it is emulated with pbuffers if native support is not present. See
+  // https://crbug.com/382349.
+
+#if defined(OS_ANDROID)
+  // Use the WebGL compatibility extension for detecting ANGLE. ANGLE always
+  // exposes it.
+  bool is_angle = g_egl_create_context_webgl_compatability_supported;
+  if (!is_angle) {
+    g_egl_surfaceless_context_supported = false;
+  }
+#endif
+
   if (g_egl_surfaceless_context_supported) {
     // EGL_KHR_surfaceless_context is supported but ensure
     // GL_OES_surfaceless_context is also supported. We need a current context
@@ -1040,7 +1064,6 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
       context->ReleaseCurrent(surface.get());
     }
   }
-#endif
 
   // The native fence sync extension is a bit complicated. It's reported as
   // present for ChromeOS, but Android currently doesn't report this extension
@@ -1138,6 +1161,11 @@ EGLDisplay GLSurfaceEGL::GetHardwareDisplay() {
 // static
 EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
   return g_native_display.GetDisplay();
+}
+
+// static
+DisplayType GLSurfaceEGL::GetDisplayType() {
+  return g_display_type;
 }
 
 // static
@@ -1349,9 +1377,9 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
     }
 
     std::ostringstream display_type_string;
-    auto gl_implementation = GetGLImplementation();
-    display_type_string << GetGLImplementationName(gl_implementation);
-    if (gl_implementation == kGLImplementationEGLANGLE) {
+    auto gl_implementation = GetGLImplementationParts();
+    display_type_string << GetGLImplementationGLName(gl_implementation);
+    if (gl_implementation.gl == kGLImplementationEGLANGLE) {
       display_type_string << ":" << DisplayTypeString(display_type);
     }
 
@@ -1363,6 +1391,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
     UMA_HISTOGRAM_ENUMERATION("GPU.EGLDisplayType", display_type,
                               DISPLAY_TYPE_MAX);
     g_egl_display = display;
+    g_display_type = display_type;
     break;
   }
 

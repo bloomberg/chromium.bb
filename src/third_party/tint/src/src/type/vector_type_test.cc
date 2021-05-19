@@ -12,19 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/type/vector_type.h"
-
 #include "src/type/access_control_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/pointer_type.h"
-#include "src/type/struct_type.h"
 #include "src/type/test_helper.h"
 #include "src/type/texture_type.h"
-#include "src/type/u32_type.h"
 
 namespace tint {
 namespace type {
@@ -67,42 +57,6 @@ TEST_F(VectorTest, TypeName) {
 TEST_F(VectorTest, FriendlyName) {
   auto* v = ty.vec3<f32>();
   EXPECT_EQ(v->FriendlyName(Symbols()), "vec3<f32>");
-}
-
-TEST_F(VectorTest, MinBufferBindingSizeVec2) {
-  I32 i32;
-  Vector v{&i32, 2};
-  EXPECT_EQ(8u, v.MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(VectorTest, MinBufferBindingSizeVec3) {
-  I32 i32;
-  Vector v{&i32, 3};
-  EXPECT_EQ(12u, v.MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(VectorTest, MinBufferBindingSizeVec4) {
-  I32 i32;
-  Vector v{&i32, 4};
-  EXPECT_EQ(16u, v.MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(VectorTest, BaseAlignmentVec2) {
-  I32 i32;
-  Vector v{&i32, 2};
-  EXPECT_EQ(8u, v.BaseAlignment(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(VectorTest, BaseAlignmentVec3) {
-  I32 i32;
-  Vector v{&i32, 3};
-  EXPECT_EQ(16u, v.BaseAlignment(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(VectorTest, BaseAlignmentVec4) {
-  I32 i32;
-  Vector v{&i32, 4};
-  EXPECT_EQ(16u, v.BaseAlignment(MemoryLayout::kUniformBuffer));
 }
 
 }  // namespace

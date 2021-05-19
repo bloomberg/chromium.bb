@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
@@ -53,9 +52,10 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
       return true;
     }
     if (!urls_delayed_callback_[url]) {
-      base::PostTask(
-          FROM_HERE, CreateTaskTraits(ThreadID::IO),
-          base::BindOnce(&MockSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
+      GetTaskRunner(ThreadID::IO)
+          ->PostTask(FROM_HERE,
+                     base::BindOnce(
+                         &MockSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
                          this, gurl, client));
     } else {
       // If delayed callback is set to true, store the client in |urls_client_|.
@@ -94,9 +94,10 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
     std::string url = gurl.spec();
     DCHECK(base::Contains(urls_delayed_callback_, url));
     DCHECK_EQ(true, urls_delayed_callback_[url]);
-    base::PostTask(
-        FROM_HERE, CreateTaskTraits(ThreadID::IO),
-        base::BindOnce(&MockSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
+    GetTaskRunner(ThreadID::IO)
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(
+                       &MockSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
                        this, gurl, urls_client_[url]));
   }
 
@@ -173,18 +174,17 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupService {
       : RealTimeUrlLookupService(
             /*url_loader_factory=*/nullptr,
             /*cache_manager=*/nullptr,
-            /*is_history_sync_enabled_callback=*/base::BindRepeating([]() {
-              return false;
+            /*get_user_population_callback=*/base::BindRepeating([]() {
+              return ChromeUserPopulation();
             }),
             /*pref_service=*/nullptr,
             /*token_fetcher=*/nullptr,
             /*client_token_config_callback=*/base::BindRepeating([](bool) {
               return false;
             }),
-            ChromeUserPopulation::NOT_MANAGED,
-            /*is_under_advanced_protection=*/false,
             /*is_off_the_record=*/false,
-            /*variations_service=*/nullptr) {}
+            /*variations_service=*/nullptr,
+            /*referrer_chain_provider=*/nullptr) {}
   // Returns the threat type previously set by |SetThreatTypeForUrl|. It crashes
   // if the threat type for the |gurl| is not set in advance.
   void StartLookup(const GURL& gurl,
@@ -215,7 +215,8 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupService {
     threat_info.set_threat_type(threat_type);
     threat_info.set_verdict_type(verdict_type);
     *new_threat_info = threat_info;
-    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
+    GetTaskRunner(ThreadID::IO)
+        ->PostTask(FROM_HERE,
                    base::BindOnce(std::move(response_callback),
                                   /* is_rt_lookup_successful */ true,
                                   /* is_cached_response */ is_cached_response_,

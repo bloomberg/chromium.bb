@@ -13,13 +13,13 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
+#include "chrome/browser/ash/login/helper.h"
+#include "chrome/browser/ash/login/login_wizard.h"
+#include "chrome/browser/ash/login/mock_network_state_helper.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/mock_network_state_helper.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
@@ -81,7 +81,7 @@ class NetworkScreenTest : public InProcessBrowserTest {
   void SetDefaultNetworkStateHelperExpectations() {
     EXPECT_CALL(*network_state_helper(), GetCurrentNetworkName())
         .Times(AnyNumber())
-        .WillRepeatedly((Return(base::string16())));
+        .WillRepeatedly((Return(std::u16string())));
     EXPECT_CALL(*network_state_helper(), IsConnected())
         .Times(AnyNumber())
         .WillRepeatedly((Return(false)));

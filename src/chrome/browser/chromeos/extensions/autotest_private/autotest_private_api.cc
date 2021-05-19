@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <deque>
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -46,6 +47,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/scoped_observation.h"
 #include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -58,18 +60,27 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing.h"
+#include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing_session.h"
 #include "chrome/browser/ash/assistant/assistant_util.h"
+#include "chrome/browser/ash/borealis/borealis_installer.h"
+#include "chrome/browser/ash/borealis/borealis_metrics.h"
+#include "chrome/browser/ash/borealis/borealis_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_installer.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_installer_factory.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing.h"
-#include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing_session.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
@@ -77,12 +88,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer_factory.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -110,7 +115,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/api/autotest_private.h"
 #include "chrome/common/pref_names.h"
@@ -139,6 +144,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_action_manager.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -156,7 +162,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/accelerators/accelerator_history.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
@@ -179,6 +184,8 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 #include "url/gurl.h"
+
+using extensions::mojom::ManifestLocation;
 
 namespace extensions {
 namespace {
@@ -274,13 +281,16 @@ std::string GetPrinterType(PrinterClass type) {
 
 api::autotest_private::ShelfItemType GetShelfItemType(ash::ShelfItemType type) {
   switch (type) {
-    case ash::TYPE_APP:
-      return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_APP;
     case ash::TYPE_PINNED_APP:
       return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_PINNEDAPP;
     case ash::TYPE_BROWSER_SHORTCUT:
       return api::autotest_private::ShelfItemType::
           SHELF_ITEM_TYPE_BROWSERSHORTCUT;
+    case ash::TYPE_APP:
+      return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_APP;
+    case ash::TYPE_UNPINNED_BROWSER_SHORTCUT:
+      return api::autotest_private::ShelfItemType::
+          SHELF_ITEM_TYPE_UNPINNEDBROWSERSHORTCUT;
     case ash::TYPE_DIALOG:
       return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_DIALOG;
     case ash::TYPE_UNDEFINED:
@@ -318,6 +328,7 @@ api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
     case apps::mojom::AppType::kPluginVm:
       return api::autotest_private::AppType::APP_TYPE_PLUGINVM;
     case apps::mojom::AppType::kWeb:
+    case apps::mojom::AppType::kSystemWeb:
       return api::autotest_private::AppType::APP_TYPE_WEB;
     case apps::mojom::AppType::kUnknown:
       return api::autotest_private::AppType::APP_TYPE_NONE;
@@ -1278,11 +1289,13 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
                          GetHostPermissions(extension, true));
     extension_value->Set("apiPermissions", GetAPIPermissions(extension));
 
-    Manifest::Location location = extension->location();
-    extension_value->SetBoolean("isComponent", location == Manifest::COMPONENT);
-    extension_value->SetBoolean("isInternal", location == Manifest::INTERNAL);
+    ManifestLocation location = extension->location();
+    extension_value->SetBoolean("isComponent",
+                                location == ManifestLocation::kComponent);
+    extension_value->SetBoolean("isInternal",
+                                location == ManifestLocation::kInternal);
     extension_value->SetBoolean("isUserInstalled",
-                                location == Manifest::INTERNAL ||
+                                location == ManifestLocation::kInternal ||
                                     Manifest::IsUnpackedLocation(location));
     extension_value->SetBoolean("isEnabled", service->IsExtensionEnabled(id));
     extension_value->SetBoolean(
@@ -1950,7 +1963,7 @@ AutotestPrivateGetClipboardTextDataFunction::
 
 ExtensionFunction::ResponseAction
 AutotestPrivateGetClipboardTextDataFunction::Run() {
-  base::string16 data;
+  std::u16string data;
   // This clipboard data read is initiated an extension API, then the user
   // shouldn't see a notification if the clipboard is restricted by the rules of
   // data leak prevention policy.
@@ -1978,7 +1991,7 @@ AutotestPrivateSetClipboardTextDataFunction::Run() {
       api::autotest_private::SetClipboardTextData::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const base::string16 data = base::UTF8ToUTF16(params->data);
+  const std::u16string data = base::UTF8ToUTF16(params->data);
   ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
   clipboard_writer.WriteText(data);
 
@@ -2217,6 +2230,71 @@ AutotestPrivateShowPluginVMInstallerFunction::Run() {
   plugin_vm::ShowPluginVmInstallerView(profile);
 
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateInstallBorealisFunction
+///////////////////////////////////////////////////////////////////////////////
+
+class AutotestPrivateInstallBorealisFunction::InstallationObserver
+    : public borealis::BorealisInstaller::Observer {
+ public:
+  InstallationObserver(Profile* profile,
+                       base::OnceCallback<void(bool)> completion_callback)
+      : observation_(this),
+        completion_callback_(std::move(completion_callback)) {
+    observation_.Observe(
+        &borealis::BorealisService::GetForProfile(profile)->Installer());
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](Profile* profile) {
+                         borealis::BorealisService::GetForProfile(profile)
+                             ->Installer()
+                             .Start();
+                       },
+                       profile));
+  }
+
+  void OnProgressUpdated(double fraction_complete) override {}
+
+  void OnStateUpdated(
+      borealis::BorealisInstaller::InstallingState new_state) override {}
+
+  void OnInstallationEnded(borealis::BorealisInstallResult result) override {
+    std::move(completion_callback_)
+        .Run(result == borealis::BorealisInstallResult::kSuccess);
+  }
+
+  void OnCancelInitiated() override {}
+
+ private:
+  base::ScopedObservation<borealis::BorealisInstaller,
+                          borealis::BorealisInstaller::Observer>
+      observation_;
+  base::OnceCallback<void(bool)> completion_callback_;
+};
+
+AutotestPrivateInstallBorealisFunction::
+    AutotestPrivateInstallBorealisFunction() = default;
+
+AutotestPrivateInstallBorealisFunction::
+    ~AutotestPrivateInstallBorealisFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateInstallBorealisFunction::Run() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  installation_observer_ = std::make_unique<InstallationObserver>(
+      profile,
+      base::BindOnce(&AutotestPrivateInstallBorealisFunction::Complete, this));
+  return RespondLater();
+}
+
+void AutotestPrivateInstallBorealisFunction::Complete(bool was_successful) {
+  if (was_successful) {
+    Respond(NoArguments());
+  } else {
+    Respond(Error("Failed to install borealis"));
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2599,6 +2677,7 @@ void AutotestPrivateSetAssistantEnabledFunction::OnAssistantStatusChanged(
 }
 
 void AutotestPrivateSetAssistantEnabledFunction::Timeout() {
+  DCHECK(!did_respond());
   Respond(Error("Assistant service timed out"));
 }
 
@@ -2756,11 +2835,10 @@ class AssistantInteractionHelper
     result_.SetKey("openUrl", base::Value(url.possibly_invalid_spec()));
   }
 
-  bool OnOpenAppResponse(
+  void OnOpenAppResponse(
       const chromeos::assistant::AndroidAppInfo& app_info) override {
     result_.SetKey("openAppResponse", base::Value(app_info.package_name));
     CheckResponseIsValid(__FUNCTION__);
-    return false;
   }
 
   void OnSpeechRecognitionFinalResult(
@@ -2843,6 +2921,7 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
 
 void AutotestPrivateSendAssistantTextQueryFunction::
     OnInteractionFinishedCallback(const base::Optional<std::string>& error) {
+  DCHECK(!did_respond());
   if (error) {
     Respond(Error(error.value()));
   } else {
@@ -2856,7 +2935,11 @@ void AutotestPrivateSendAssistantTextQueryFunction::
 }
 
 void AutotestPrivateSendAssistantTextQueryFunction::Timeout() {
+  DCHECK(!did_respond());
   Respond(Error("Assistant response timeout."));
+
+  // Reset to unsubscribe OnInteractionFinishedCallback().
+  interaction_helper_.reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2901,6 +2984,7 @@ AutotestPrivateWaitForAssistantQueryStatusFunction::Run() {
 
 void AutotestPrivateWaitForAssistantQueryStatusFunction::
     OnInteractionFinishedCallback(const base::Optional<std::string>& error) {
+  DCHECK(!did_respond());
   if (error) {
     Respond(Error(error.value()));
   } else {
@@ -2914,7 +2998,11 @@ void AutotestPrivateWaitForAssistantQueryStatusFunction::
 }
 
 void AutotestPrivateWaitForAssistantQueryStatusFunction::Timeout() {
+  DCHECK(!did_respond());
   Respond(Error("No query response received before time out."));
+
+  // Reset to unsubscribe OnInteractionFinishedCallback().
+  interaction_helper_.reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3041,8 +3129,15 @@ AutotestPrivateSetTabletModeEnabledFunction::Run() {
   std::unique_ptr<api::autotest_private::SetTabletModeEnabled::Params> params(
       api::autotest_private::SetTabletModeEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
+  auto* tablet_mode = ash::TabletMode::Get();
+  if (tablet_mode->InTabletMode() == params->enabled) {
+    return RespondNow(
+        OneArgument(base::Value(ash::TabletMode::Get()->InTabletMode())));
+  }
+
   ash::TabletMode::Waiter waiter(params->enabled);
-  ash::TabletMode::Get()->ForceUiTabletModeState(params->enabled);
+  if (!tablet_mode->ForceUiTabletModeState(params->enabled))
+    return RespondNow(Error("failed to switch the tablet mode state"));
   waiter.Wait();
   return RespondNow(
       OneArgument(base::Value(ash::TabletMode::Get()->InTabletMode())));
@@ -3062,7 +3157,7 @@ AutotestPrivateGetAllInstalledAppsFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetAllInstalledAppsFunction";
 
   Profile* const profile = Profile::FromBrowserContext(browser_context());
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
   std::vector<api::autotest_private::App> installed_apps;
@@ -4378,15 +4473,15 @@ AutotestPrivateSetMetricsEnabledFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
 
   bool value;
-  if (chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                                &value) &&
+  if (ash::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                           &value) &&
       value == target_value_) {
     VLOG(1) << "Value at target; returning early";
     return RespondNow(NoArguments());
   }
 
-  chromeos::StatsReportingController* stats_reporting_controller =
-      chromeos::StatsReportingController::Get();
+  ash::StatsReportingController* stats_reporting_controller =
+      ash::StatsReportingController::Get();
 
   stats_reporting_controller->SetOnDeviceSettingsStoredCallBack(base::BindOnce(
       &AutotestPrivateSetMetricsEnabledFunction::OnDeviceSettingsStored, this));
@@ -4399,8 +4494,8 @@ AutotestPrivateSetMetricsEnabledFunction::Run() {
 
 void AutotestPrivateSetMetricsEnabledFunction::OnDeviceSettingsStored() {
   bool actual;
-  if (!chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                                 &actual)) {
+  if (!ash::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                            &actual)) {
     NOTREACHED() << "AutotestPrivateSetMetricsEnabledFunction: "
                  << "kStatsReportingPref should be set";
     Respond(Error(base::StrCat(

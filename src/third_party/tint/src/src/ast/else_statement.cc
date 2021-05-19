@@ -14,10 +14,9 @@
 
 #include "src/ast/else_statement.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::ElseStatement);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::ElseStatement);
 
 namespace tint {
 namespace ast {
@@ -25,7 +24,9 @@ namespace ast {
 ElseStatement::ElseStatement(const Source& source,
                              Expression* condition,
                              BlockStatement* body)
-    : Base(source), condition_(condition), body_(body) {}
+    : Base(source), condition_(condition), body_(body) {
+  TINT_ASSERT(body_);
+}
 
 ElseStatement::ElseStatement(ElseStatement&&) = default;
 
@@ -37,13 +38,6 @@ ElseStatement* ElseStatement::Clone(CloneContext* ctx) const {
   auto* cond = ctx->Clone(condition_);
   auto* b = ctx->Clone(body_);
   return ctx->dst->create<ElseStatement>(src, cond, b);
-}
-
-bool ElseStatement::IsValid() const {
-  if (body_ == nullptr || !body_->IsValid()) {
-    return false;
-  }
-  return condition_ == nullptr || condition_->IsValid();
 }
 
 void ElseStatement::to_str(const semantic::Info& sem,

@@ -103,24 +103,12 @@ gfx::ColorSpace GetColorSpace(const avifImage* image) {
 // color space of |image| to RGB.
 // media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels() uses libyuv
 // for the YUV-to-RGB conversion.
-//
-// NOTE: Ideally, this function should be a static method of
-// media::PaintCanvasVideoRenderer. We did not do that because
-// media::PaintCanvasVideoRenderer uses the JPEG matrix coefficients for all
-// full-range YUV color spaces, but we want to use the JPEG matrix coefficients
-// only for full-range BT.601 YUV.
 bool IsColorSpaceSupportedByPCVR(const avifImage* image) {
   SkYUVColorSpace yuv_color_space;
-  if (!GetColorSpace(image).ToSkYUVColorSpace(image->depth, &yuv_color_space))
-    return false;
-  const bool color_space_is_supported =
-      yuv_color_space == kJPEG_Full_SkYUVColorSpace ||
-      yuv_color_space == kRec601_Limited_SkYUVColorSpace ||
-      yuv_color_space == kRec709_Limited_SkYUVColorSpace ||
-      yuv_color_space == kBT2020_8bit_Limited_SkYUVColorSpace;
   // libyuv supports the alpha channel only with the I420 pixel format, which is
   // 8-bit YUV 4:2:0.
-  return color_space_is_supported &&
+  return GetColorSpace(image).ToSkYUVColorSpace(image->depth,
+                                                &yuv_color_space) &&
          (!image->alphaPlane ||
           (image->depth == 8 && image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420 &&
            image->alphaRange == AVIF_RANGE_FULL));
@@ -354,7 +342,6 @@ uint8_t AVIFImageDecoder::GetYUVBitDepth() const {
 void AVIFImageDecoder::DecodeToYUV() {
   DCHECK(image_planes_);
   DCHECK(CanDecodeToYUV());
-  DCHECK(IsAllDataReceived());
 
   if (Failed())
     return;
@@ -365,8 +352,10 @@ void AVIFImageDecoder::DecodeToYUV() {
   // libavif cannot decode to an external buffer. So we need to copy from
   // libavif's internal buffer to |image_planes_|.
   // TODO(crbug.com/1099825): Enhance libavif to decode to an external buffer.
-  if (DecodeImage(0) != AVIF_RESULT_OK) {
-    SetFailed();
+  auto ret = DecodeImage(0);
+  if (ret != AVIF_RESULT_OK) {
+    if (ret != AVIF_RESULT_WAITING_ON_IO)
+      SetFailed();
     return;
   }
 
@@ -842,13 +831,13 @@ bool AVIFImageDecoder::UpdateDemuxer() {
   // * Alpha channel is not supported.
   // * Multi-frame images (animations) are not supported. (The DecodeToYUV()
   //   method does not have an 'index' parameter.)
-  // * If ColorTransform() returns a non-null pointer, the decoder has to do a
-  //   color space conversion, so we don't decode to YUV.
-  allow_decode_to_yuv_ = avif_yuv_format_ != AVIF_PIXEL_FORMAT_YUV400 &&
-                         !decoder_->alphaPresent && decoded_frame_count_ == 1 &&
-                         GetColorSpace(container).ToSkYUVColorSpace(
-                             container->depth, &yuv_color_space_) &&
-                         !ColorTransform();
+  allow_decode_to_yuv_ =
+      avif_yuv_format_ != AVIF_PIXEL_FORMAT_YUV400 && !decoder_->alphaPresent &&
+      decoded_frame_count_ == 1 &&
+      GetColorSpace(container).ToSkYUVColorSpace(container->depth,
+                                                 &yuv_color_space_) &&
+      // TODO(crbug.com/911246): Support color space transforms for YUV decodes.
+      !ColorTransform();
   return SetSize(container->width, container->height);
 }
 

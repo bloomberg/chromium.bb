@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 import * as LinearMemoryInspector from '../../../../front_end/linear_memory_inspector/linear_memory_inspector.js';
-import {getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM} from '../helpers/DOMHelpers.js';
+import {dispatchClickEvent, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM} from '../helpers/DOMHelpers.js';
+
+export const DISPLAY_JUMP_TO_POINTER_BUTTON_SELECTOR = '[data-jump]';
 
 const {assert} = chai;
 
@@ -55,6 +57,14 @@ describe('ValueInterpreterDisplay', () => {
         case LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Float64:
           expectedValue = expectedFloatValue;
           view.setFloat64(0, expectedValue, isLittleEndian);
+          break;
+        case LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Pointer32:
+          expectedValue = '0x' + expectedIntValue.toString(16);
+          view.setInt32(0, expectedIntValue, isLittleEndian);
+          break;
+        case LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Pointer64:
+          expectedValue = '0x' + expectedIntValue.toString(16);
+          view.setBigUint64(0, BigInt(expectedIntValue), isLittleEndian);
           break;
         default:
           throw new Error(`Unknown type ${baseData.type}`);
@@ -129,6 +139,26 @@ describe('ValueInterpreterDisplay', () => {
        testNumberFormatCombinations(formatData, combinationsForNumbers);
      });
 
+  it('correctly formats endianness for Pointer 32-bit', () => {
+    const formatData = {
+      buffer: new ArrayBuffer(4),
+      type: LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Pointer32,
+      mode: LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypeMode.Hexadecimal,
+    };
+
+    testNumberFormatCombinations(formatData, combinationsForNumbers);
+  });
+
+  it('correctly formats endianness for Pointer 64-bit', () => {
+    const formatData = {
+      buffer: new ArrayBuffer(8),
+      type: LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Pointer64,
+      mode: LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypeMode.Hexadecimal,
+    };
+
+    testNumberFormatCombinations(formatData, combinationsForNumbers);
+  });
+
   it('correctly formats floats in decimal mode', () => {
     const expectedFloat = 341.34;
     const actualValue = LinearMemoryInspector.ValueInterpreterDisplayUtils.formatFloat(
@@ -157,11 +187,11 @@ describe('ValueInterpreterDisplay', () => {
     assert.strictEqual(actualValue, '0x10');
   });
 
-  it('correctly formats integers in octal mode', () => {
-    const expectedInteger = 16;
+  it('returns N/A for negative hex numbers', () => {
+    const negativeInteger = -16;
     const actualValue = LinearMemoryInspector.ValueInterpreterDisplayUtils.formatInteger(
-        expectedInteger, LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypeMode.Octal);
-    assert.strictEqual(actualValue, '20');
+        negativeInteger, LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypeMode.Hexadecimal);
+    assert.strictEqual(actualValue, 'N/A');
   });
 
   it('correctly formats integers in octal mode', () => {
@@ -169,6 +199,35 @@ describe('ValueInterpreterDisplay', () => {
     const actualValue = LinearMemoryInspector.ValueInterpreterDisplayUtils.formatInteger(
         expectedInteger, LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypeMode.Octal);
     assert.strictEqual(actualValue, '20');
+  });
+
+  it('returns N/A for negative octal numbers', () => {
+    const expectedInteger = -16;
+    const actualValue = LinearMemoryInspector.ValueInterpreterDisplayUtils.formatInteger(
+        expectedInteger, LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypeMode.Octal);
+    assert.strictEqual(actualValue, 'N/A');
+  });
+
+  it('renders pointer values in LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypes', () => {
+    const component = new LinearMemoryInspector.ValueInterpreterDisplay.ValueInterpreterDisplay();
+    const array = [1, 132, 172, 71, 43, 12, 12, 66];
+    component.data = {
+      buffer: new Uint8Array(array).buffer,
+      endianness: LinearMemoryInspector.ValueInterpreterDisplayUtils.Endianness.Little,
+      valueTypes: new Set([
+        LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Pointer32,
+        LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Pointer64,
+      ]),
+      memoryLength: array.length,
+    };
+    renderElementIntoDOM(component);
+
+    const dataValues = getElementsWithinComponent(component, '[data-value]', HTMLDivElement);
+    assert.lengthOf(dataValues, 2);
+
+    const actualValues = Array.from(dataValues).map(x => x.innerText);
+    const expectedValues = ['0x47AC8401', '0x420C0C2B47AC8401'];
+    assert.deepStrictEqual(actualValues, expectedValues);
   });
 
   it('renders value in selected LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypes', () => {
@@ -181,6 +240,7 @@ describe('ValueInterpreterDisplay', () => {
         LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Int16,
         LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Float32,
       ]),
+      memoryLength: array.length,
     };
     renderElementIntoDOM(component);
 
@@ -192,13 +252,50 @@ describe('ValueInterpreterDisplay', () => {
     assert.deepStrictEqual(actualValues, expectedValues);
   });
 
+  it('renders only unsigned values for Octal and Hexadecimal representation', () => {
+    const component = new LinearMemoryInspector.ValueInterpreterDisplay.ValueInterpreterDisplay();
+    const array = [0xC8, 0xC9, 0xCA, 0XCB];
+    component.data = {
+      buffer: new Uint8Array(array).buffer,
+      endianness: LinearMemoryInspector.ValueInterpreterDisplayUtils.Endianness.Little,
+      valueTypes: new Set([
+        LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Int8,
+        LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Int16,
+        LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Int32,
+      ]),
+      valueTypeModes: new Map([
+        [
+          LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Int8,
+          LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypeMode.Octal,
+        ],
+        [
+          LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Int16,
+          LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypeMode.Hexadecimal,
+        ],
+        [
+          LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Int32,
+          LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal,
+        ],
+      ]),
+      memoryLength: array.length,
+    };
+    renderElementIntoDOM(component);
+
+    const dataValues = getElementsWithinComponent(component, '[data-value]', HTMLSpanElement);
+    assert.lengthOf(dataValues, 4);
+
+    const actualValues = Array.from(dataValues).map(x => x.innerText);
+    const expectedValues = ['310', '0xC9C8', '3419064776', '-875902520'];
+    assert.deepStrictEqual(actualValues, expectedValues);
+  });
+
   it('triggers a value changed event on selecting a new mode', async () => {
     const component = new LinearMemoryInspector.ValueInterpreterDisplay.ValueInterpreterDisplay();
     const array = [1, 132, 172, 71];
     const oldMode = LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypeMode.Decimal;
     const newMode = LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueTypeMode.Scientific;
 
-    const mapping = LinearMemoryInspector.ValueInterpreterDisplayUtils.DEFAULT_MODE_MAPPING;
+    const mapping = LinearMemoryInspector.ValueInterpreterDisplayUtils.getDefaultValueTypeMapping();
     mapping.set(LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Float32, oldMode);
 
     component.data = {
@@ -208,6 +305,7 @@ describe('ValueInterpreterDisplay', () => {
         LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Float32,
       ]),
       valueTypeModes: mapping,
+      memoryLength: array.length,
     };
 
     const input = getElementWithinComponent(component, '[data-mode-settings]', HTMLSelectElement);
@@ -220,5 +318,67 @@ describe('ValueInterpreterDisplay', () => {
     const event = await eventPromise;
     assert.deepEqual(
         event.data, {type: LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Float32, mode: newMode});
+  });
+
+  it('triggers an event on jumping to an address from a 32-bit pointer', async () => {
+    const component = new LinearMemoryInspector.ValueInterpreterDisplay.ValueInterpreterDisplay();
+    const array = [1, 0, 0, 0];
+    component.data = {
+      buffer: new Uint8Array(array).buffer,
+      endianness: LinearMemoryInspector.ValueInterpreterDisplayUtils.Endianness.Little,
+      valueTypes: new Set([
+        LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Pointer32,
+      ]),
+      memoryLength: array.length,
+    };
+    renderElementIntoDOM(component);
+
+    const button = getElementWithinComponent(component, DISPLAY_JUMP_TO_POINTER_BUTTON_SELECTOR, HTMLButtonElement);
+    const eventPromise = getEventPromise<LinearMemoryInspector.ValueInterpreterDisplay.JumpToPointerAddressEvent>(
+        component, 'jump-to-pointer-address');
+    dispatchClickEvent(button);
+    const event = await eventPromise;
+    assert.deepEqual(event.data, 1);
+  });
+
+  it('triggers an event on jumping to an address from a 64-bit pointer', async () => {
+    const component = new LinearMemoryInspector.ValueInterpreterDisplay.ValueInterpreterDisplay();
+    const array = [1, 0, 0, 0, 0, 0, 0, 0];
+    component.data = {
+      buffer: new Uint8Array(array).buffer,
+      endianness: LinearMemoryInspector.ValueInterpreterDisplayUtils.Endianness.Little,
+      valueTypes: new Set([
+        LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Pointer64,
+      ]),
+      memoryLength: array.length,
+    };
+    renderElementIntoDOM(component);
+
+    const button = getElementWithinComponent(component, DISPLAY_JUMP_TO_POINTER_BUTTON_SELECTOR, HTMLButtonElement);
+    const eventPromise = getEventPromise<LinearMemoryInspector.ValueInterpreterDisplay.JumpToPointerAddressEvent>(
+        component, 'jump-to-pointer-address');
+    dispatchClickEvent(button);
+    const event = await eventPromise;
+    assert.deepEqual(event.data, 1);
+  });
+
+  it('renders a disabled jump-to-address button if address is invalid', () => {
+    const component = new LinearMemoryInspector.ValueInterpreterDisplay.ValueInterpreterDisplay();
+    const array = [8, 0, 0, 0, 0, 0, 0, 0];
+    component.data = {
+      buffer: new Uint8Array(array).buffer,
+      endianness: LinearMemoryInspector.ValueInterpreterDisplayUtils.Endianness.Little,
+      valueTypes: new Set([
+        LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Pointer32,
+        LinearMemoryInspector.ValueInterpreterDisplayUtils.ValueType.Pointer64,
+      ]),
+      memoryLength: array.length,
+    };
+    renderElementIntoDOM(component);
+
+    const buttons = getElementsWithinComponent(component, DISPLAY_JUMP_TO_POINTER_BUTTON_SELECTOR, HTMLButtonElement);
+    assert.lengthOf(buttons, 2);
+    assert.isTrue(buttons[0].disabled);
+    assert.isTrue(buttons[1].disabled);
   });
 });

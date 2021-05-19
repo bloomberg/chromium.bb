@@ -13,6 +13,7 @@ devtools_module("components") {
     "DataGridControllerIntegrator.ts",
     "DataGridRenderers.ts",
     "DataGridUtils.ts",
+    "ExpandableList.ts",
     "Icon.ts",
     "IconButton.ts",
     "Linkifier.ts",
@@ -23,15 +24,15 @@ devtools_module("components") {
     "TreeOutlineUtils.ts",
   ]
   deps = [
-    "../../bindings:bundle",
-    "../../common:bundle",
     "../../component_helpers:bundle",
-    "../../host:bundle",
-    "../../platform:bundle",
+    "../../core/common:bundle",
+    "../../core/host:bundle",
+    "../../core/platform:bundle",
+    "../../models/bindings:bundle",
+    "../../models/text_utils:bundle",
     "../../render_coordinator:bundle",
-    "../../text_utils:bundle",
     "../../third_party/lit-html:bundle",
-    "../../ui:bundle",
+    "../../ui/legacy:bundle",
   ]
 
   visibility = [ "../../../test/unittests/front_end/ui/components" ]

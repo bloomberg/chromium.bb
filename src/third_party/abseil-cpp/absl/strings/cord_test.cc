@@ -187,6 +187,18 @@ class CordTestPeer {
   static cord_internal::CordzInfo* GetCordzInfo(const Cord& c) {
     return c.contents_.cordz_info();
   }
+
+  static Cord MakeSubstring(Cord src, size_t offset, size_t length) {
+    Cord cord = src;
+    ABSL_RAW_CHECK(cord.contents_.is_tree(), "Can not be inlined");
+    auto* rep = new cord_internal::CordRepSubstring;
+    rep->tag = cord_internal::SUBSTRING;
+    rep->child = cord.contents_.tree();
+    rep->start = offset;
+    rep->length = length;
+    cord.contents_.replace_tree(rep);
+    return cord;
+  }
 };
 
 ABSL_NAMESPACE_END
@@ -466,8 +478,8 @@ TEST(TryFlat, SubstrInlined) {
 
 TEST(TryFlat, SubstrFlat) {
   absl::Cord c("longer than 15 bytes");
-  c.RemovePrefix(1);
-  EXPECT_EQ(c.TryFlat(), "onger than 15 bytes");
+  absl::Cord sub = absl::CordTestPeer::MakeSubstring(c, 1, c.size() - 1);
+  EXPECT_EQ(sub.TryFlat(), "onger than 15 bytes");
 }
 
 TEST(TryFlat, Concat) {
@@ -482,14 +494,44 @@ TEST(TryFlat, External) {
 
 TEST(TryFlat, SubstrExternal) {
   absl::Cord c = absl::MakeCordFromExternal("hell", [](absl::string_view) {});
-  c.RemovePrefix(1);
-  EXPECT_EQ(c.TryFlat(), "ell");
+  absl::Cord sub = absl::CordTestPeer::MakeSubstring(c, 1, c.size() - 1);
+  EXPECT_EQ(sub.TryFlat(), "ell");
 }
 
 TEST(TryFlat, SubstrConcat) {
   absl::Cord c = absl::MakeFragmentedCord({"hello", " world"});
+  absl::Cord sub = absl::CordTestPeer::MakeSubstring(c, 1, c.size() - 1);
+  EXPECT_EQ(sub.TryFlat(), absl::nullopt);
   c.RemovePrefix(1);
   EXPECT_EQ(c.TryFlat(), absl::nullopt);
+}
+
+TEST(TryFlat, CommonlyAssumedInvariants) {
+  // The behavior tested below is not part of the API contract of Cord, but it's
+  // something we intend to be true in our current implementation.  This test
+  // exists to detect and prevent accidental breakage of the implementation.
+  absl::string_view fragments[] = {"A fragmented test",
+                                   " cord",
+                                   " to test subcords",
+                                   " of ",
+                                   "a",
+                                   " cord for",
+                                   " each chunk "
+                                   "returned by the ",
+                                   "iterator"};
+  absl::Cord c = absl::MakeFragmentedCord(fragments);
+  int fragment = 0;
+  int offset = 0;
+  absl::Cord::CharIterator itc = c.char_begin();
+  for (absl::string_view sv : c.Chunks()) {
+    absl::string_view expected = fragments[fragment];
+    absl::Cord subcord1 = c.Subcord(offset, sv.length());
+    absl::Cord subcord2 = absl::Cord::AdvanceAndRead(&itc, sv.size());
+    EXPECT_EQ(subcord1.TryFlat(), expected);
+    EXPECT_EQ(subcord2.TryFlat(), expected);
+    ++fragment;
+    offset += sv.length();
+  }
 }
 
 static bool IsFlat(const absl::Cord& c) {
@@ -1272,6 +1314,26 @@ TEST(Cord, Concat_Append) {
   // 7465150 modifies s1 when it shouldn't.
   EXPECT_EQ(s1.size(), size);
   EXPECT_EQ(s2.size(), size + 1);
+}
+
+TEST(Cord, DiabolicalGrowth) {
+  // This test exercises a diabolical Append(<one char>) on a cord, making the
+  // cord shared before each Append call resulting in a terribly fragmented
+  // resulting cord.
+  // TODO(b/183983616): Apply some minimum compaction when copying a shared
+  // source cord into a mutable copy for updates in CordRepRing.
+  RandomEngine rng(testing::GTEST_FLAG(random_seed));
+  const std::string expected = RandomLowercaseString(&rng, 5000);
+  absl::Cord cord;
+  for (char c : expected) {
+    absl::Cord shared(cord);
+    cord.Append(absl::string_view(&c, 1));
+  }
+  std::string value;
+  absl::CopyCordToString(cord, &value);
+  EXPECT_EQ(value, expected);
+  ABSL_RAW_LOG(INFO, "Diabolical size allocated = %zu",
+               cord.EstimatedMemoryUsage());
 }
 
 TEST(MakeFragmentedCord, MakeFragmentedCordFromInitializerList) {

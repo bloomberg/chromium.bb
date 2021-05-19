@@ -2,37 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#animation-container-horizontal-mode,
-#animation-container-vertical-mode {
-  display: none;
-}
-
-@media screen and (orientation: portrait) {
-  oobe-adaptive-dialog {
-    --oobe-adaptive-dialog-content-top-padding: 0;
-  }
-
-  :host-context(html[new-layout]) #animation-container-vertical-mode {
-    display: block;
-  }
-}
-
-@media screen and (orientation: landscape) {
-  :host-context(html[new-layout]) #animation-container-horizontal-mode {
-    display: block;
-  }
-
-  :host-context(html[new-layout]) #content-container {
-    margin: auto;
-  }
-}
-
-/**
-  * TODO(crbug.com/1101320): remove this when style of gstatic animation is
-  * fixed
-  */
-#content-container {
-  z-index: 1;
+:host-context([orientation=vertical]) oobe-adaptive-dialog {
+  --oobe-adaptive-dialog-content-top-padding: 0;
 }
 
 #intro-title-text {

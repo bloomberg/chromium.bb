@@ -6,14 +6,14 @@
 // #import {FolderShortcutsDataModel} from './folder_shortcuts_data_model.m.js';
 // #import {DirectoryModel} from './directory_model.m.js';
 // #import {AndroidAppListModel} from './android_app_list_model.m.js';
-// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
-// #import {FilesAppEntry, FakeEntry} from '../../../externs/files_app_entry_interfaces.m.js';
-// #import {VolumeInfo} from '../../../externs/volume_info.m.js';
+// #import {VolumeManager} from '../../externs/volume_manager.m.js';
+// #import {FilesAppEntry, FakeEntry} from '../../externs/files_app_entry_interfaces.m.js';
+// #import {VolumeInfo} from '../../externs/volume_info.m.js';
 // #import {TrashRootEntry} from '../../common/js/trash.m.js';
 // #import {util, str} from '../../common/js/util.m.js';
 // #import {FakeEntryImpl, VolumeEntry, EntryList} from '../../common/js/files_app_entry_types.m.js';
 // #import {assertNotReached} from 'chrome://resources/js/assert.m.js';
-// #import {VolumeManagerCommon} from '../../../base/js/volume_manager_types.m.js';
+// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
 // #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // clang-format on

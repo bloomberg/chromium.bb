@@ -49,8 +49,8 @@ class GetUpdatesProcessorTest : public ::testing::Test {
 
   std::unique_ptr<GetUpdatesProcessor> BuildGetUpdatesProcessor(
       const GetUpdatesDelegate& delegate) {
-    return std::unique_ptr<GetUpdatesProcessor>(
-        new GetUpdatesProcessor(&update_handler_map_, delegate));
+    return std::make_unique<GetUpdatesProcessor>(&update_handler_map_,
+                                                 delegate);
   }
 
   void InitFakeUpdateResponse(sync_pb::GetUpdatesResponse* response) {
@@ -394,8 +394,7 @@ class GetUpdatesProcessorApplyUpdatesTest : public GetUpdatesProcessorTest {
   MockUpdateHandler* autofill_handler_;
 };
 
-// Verify that a normal cycle applies updates non-passively to the specified
-// types.
+// Verify that a normal cycle applies updates to the specified types.
 TEST_F(GetUpdatesProcessorApplyUpdatesTest, Normal) {
   NudgeTracker nudge_tracker;
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
@@ -411,37 +410,29 @@ TEST_F(GetUpdatesProcessorApplyUpdatesTest, Normal) {
   EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
   EXPECT_EQ(1, GetAppliedHandler()->GetApplyUpdatesCount());
 
-  EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
-  EXPECT_EQ(0, GetAppliedHandler()->GetPassiveApplyUpdatesCount());
-
   EXPECT_EQ(GetGuTypes(), status.get_updates_request_types());
 }
 
-// Verify that a configure cycle applies updates passively to the specified
-// types.
+// Verify that a configure cycle applies updates to the specified types.
 TEST_F(GetUpdatesProcessorApplyUpdatesTest, Configure) {
   ConfigureGetUpdatesDelegate configure_delegate(
       sync_pb::SyncEnums::RECONFIGURATION);
   std::unique_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(configure_delegate));
 
-  EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
-  EXPECT_EQ(0, GetAppliedHandler()->GetPassiveApplyUpdatesCount());
+  EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
+  EXPECT_EQ(0, GetAppliedHandler()->GetApplyUpdatesCount());
 
   StatusController status;
   processor->ApplyUpdates(GetGuTypes(), &status);
 
-  EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
-  EXPECT_EQ(1, GetAppliedHandler()->GetPassiveApplyUpdatesCount());
-
   EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
-  EXPECT_EQ(0, GetAppliedHandler()->GetApplyUpdatesCount());
+  EXPECT_EQ(1, GetAppliedHandler()->GetApplyUpdatesCount());
 
   EXPECT_EQ(GetGuTypes(), status.get_updates_request_types());
 }
 
-// Verify that a poll cycle applies updates non-passively to the specified
-// types.
+// Verify that a poll cycle applies updates to the specified types.
 TEST_F(GetUpdatesProcessorApplyUpdatesTest, Poll) {
   PollGetUpdatesDelegate poll_delegate;
   std::unique_ptr<GetUpdatesProcessor> processor(
@@ -455,9 +446,6 @@ TEST_F(GetUpdatesProcessorApplyUpdatesTest, Poll) {
 
   EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
   EXPECT_EQ(1, GetAppliedHandler()->GetApplyUpdatesCount());
-
-  EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
-  EXPECT_EQ(0, GetAppliedHandler()->GetPassiveApplyUpdatesCount());
 
   EXPECT_EQ(GetGuTypes(), status.get_updates_request_types());
 }

@@ -1,0 +1,15 @@
+{
+  "dependencies": [
+    "components",
+    "ui/legacy",
+    "data_grid",
+    "source_frame",
+    "perf_ui"
+  ],
+    "resources": [
+    "eventDisplayTable.css",
+    "playerListView.css",
+    "playerPropertiesView.css",
+    "playerMessagesView.css"
+  ]
+}

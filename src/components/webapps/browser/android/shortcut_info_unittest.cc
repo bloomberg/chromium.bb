@@ -4,8 +4,9 @@
 
 #include "components/webapps/browser/android/shortcut_info.h"
 
+#include <string>
+
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/webapps/browser/android/webapps_icon_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,11 +47,11 @@ class ShortcutInfoTest : public testing::Test {
 };
 
 TEST_F(ShortcutInfoTest, AllAttributesUpdate) {
-  info_.name = base::ASCIIToUTF16("old name");
-  manifest_.name = base::ASCIIToUTF16("new name");
+  info_.name = u"old name";
+  manifest_.name = u"new name";
 
-  info_.short_name = base::ASCIIToUTF16("old short name");
-  manifest_.short_name = base::ASCIIToUTF16("new short name");
+  info_.short_name = u"old short name";
+  manifest_.short_name = u"new short name";
 
   info_.url = GURL("https://old.com/start");
   manifest_.start_url = GURL("https://new.com/start");
@@ -86,22 +87,22 @@ TEST_F(ShortcutInfoTest, AllAttributesUpdate) {
 }
 
 TEST_F(ShortcutInfoTest, NameFallsBackToShortName) {
-  manifest_.short_name = base::ASCIIToUTF16("short_name");
+  manifest_.short_name = u"short_name";
   info_.UpdateFromManifest(manifest_);
 
   ASSERT_EQ(manifest_.short_name, info_.name);
 }
 
 TEST_F(ShortcutInfoTest, ShortNameFallsBackToName) {
-  manifest_.name = base::ASCIIToUTF16("name");
+  manifest_.name = u"name";
   info_.UpdateFromManifest(manifest_);
 
   ASSERT_EQ(manifest_.name, info_.short_name);
 }
 
 TEST_F(ShortcutInfoTest, UserTitleBecomesShortName) {
-  manifest_.short_name = base::ASCIIToUTF16("name");
-  info_.user_title = base::ASCIIToUTF16("title");
+  manifest_.short_name = u"name";
+  info_.user_title = u"title";
   info_.UpdateFromManifest(manifest_);
 
   ASSERT_EQ(manifest_.short_name, info_.user_title);
@@ -111,13 +112,13 @@ TEST_F(ShortcutInfoTest, UserTitleBecomesShortName) {
 // that ShortcutInfo::UpdateFromManifest() does not overwrite the current
 // ShortcutInfo::name and ShortcutInfo::short_name.
 TEST_F(ShortcutInfoTest, IgnoreEmptyNameAndShortName) {
-  base::string16 initial_name(base::ASCIIToUTF16("initial_name"));
-  base::string16 initial_short_name(base::ASCIIToUTF16("initial_short_name"));
+  std::u16string initial_name(u"initial_name");
+  std::u16string initial_short_name(u"initial_short_name");
 
   info_.name = initial_name;
   info_.short_name = initial_short_name;
   manifest_.display = blink::mojom::DisplayMode::kStandalone;
-  manifest_.name = base::string16();
+  manifest_.name = std::u16string();
   info_.UpdateFromManifest(manifest_);
 
   ASSERT_EQ(initial_name, info_.name);
@@ -158,7 +159,7 @@ TEST_F(ShortcutInfoTest, ShortcutShortNameBackfilled) {
   info_.UpdateFromManifest(manifest_);
 
   ASSERT_EQ(info_.shortcut_items.size(), 1u);
-  EXPECT_EQ(info_.shortcut_items[0].short_name, base::ASCIIToUTF16("name"));
+  EXPECT_EQ(info_.shortcut_items[0].short_name, u"name");
 }
 
 }  // namespace webapps

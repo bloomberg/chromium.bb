@@ -18,8 +18,8 @@
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/browser/autofill_util.h"
-#import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
@@ -35,9 +35,7 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_form_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_profile_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
-#import "ios/web_view/internal/autofill/cwv_credit_card_expiration_fixer_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
-#import "ios/web_view/internal/autofill/cwv_credit_card_name_fixer_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_saver_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_verifier_internal.h"
 #include "ios/web_view/internal/autofill/web_view_autocomplete_history_manager_factory.h"
@@ -66,9 +64,6 @@ using autofill::FieldRendererId;
 
   // Autofill client associated with |webState|.
   std::unique_ptr<autofill::WebViewAutofillClientIOS> _autofillClient;
-
-  // Javascript autofill manager associated with |webState|.
-  JsAutofillManager* _JSAutofillManager;
 
   // The |webState| which this autofill controller should observe.
   web::WebState* _webState;
@@ -106,7 +101,6 @@ using autofill::FieldRendererId;
            autofillClient:(std::unique_ptr<autofill::WebViewAutofillClientIOS>)
                               autofillClient
             autofillAgent:(AutofillAgent*)autofillAgent
-        JSAutofillManager:(JsAutofillManager*)JSAutofillManager
           passwordManager:(std::unique_ptr<password_manager::PasswordManager>)
                               passwordManager
     passwordManagerClient:
@@ -137,8 +131,6 @@ using autofill::FieldRendererId;
     autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
         _webState, _autofillClient.get(), self, applicationLocale,
         autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
-
-    _JSAutofillManager = JSAutofillManager;
 
     _passwordManagerClient = std::move(passwordManagerClient);
     _passwordManagerClient->set_bridge(self);
@@ -174,17 +166,14 @@ using autofill::FieldRendererId;
         completionHandler:(nullable void (^)(void))completionHandler {
   web::WebFrame* frame =
       web::GetWebFrameWithId(_webState, base::SysNSStringToUTF8(frameID));
-  [_JSAutofillManager
-      clearAutofilledFieldsForFormName:formName
-                          formUniqueID:_lastFormActivityUniqueFormID
-                       fieldIdentifier:fieldIdentifier
-                         fieldUniqueID:_lastFormActivityUniqueFieldID
-                               inFrame:frame
-                     completionHandler:^(NSString*) {
-                       if (completionHandler) {
-                         completionHandler();
-                       }
-                     }];
+  autofill::AutofillJavaScriptFeature::GetInstance()
+      ->ClearAutofilledFieldsForFormName(
+          frame, formName, _lastFormActivityUniqueFormID, fieldIdentifier,
+          _lastFormActivityUniqueFieldID, base::BindOnce(^(NSString*) {
+            if (completionHandler) {
+              completionHandler();
+            }
+          }));
 }
 
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
@@ -336,39 +325,6 @@ using autofill::FieldRendererId;
 
 - (bool)isQueryIDRelevant:(int)queryID {
   return [_autofillAgent isQueryIDRelevant:queryID];
-}
-
-- (void)
-    confirmCreditCardAccountName:(const base::string16&)name
-                        callback:
-                            (base::OnceCallback<void(const base::string16&)>)
-                                callback {
-  if (![_delegate respondsToSelector:@selector(autofillController:
-                                         confirmCreditCardNameWithFixer:)]) {
-    return;
-  }
-
-  CWVCreditCardNameFixer* fixer = [[CWVCreditCardNameFixer alloc]
-      initWithName:base::SysUTF16ToNSString(name)
-          callback:std::move(callback)];
-  [_delegate autofillController:self confirmCreditCardNameWithFixer:fixer];
-}
-
-- (void)confirmCreditCardExpirationWithCard:(const autofill::CreditCard&)card
-                                   callback:
-                                       (base::OnceCallback<void(
-                                            const base::string16&,
-                                            const base::string16&)>)callback {
-  if (![_delegate respondsToSelector:@selector
-                  (autofillController:confirmCreditCardExpirationWithFixer:)]) {
-    return;
-  }
-
-  CWVCreditCardExpirationFixer* fixer = [[CWVCreditCardExpirationFixer alloc]
-      initWithCreditCard:card
-                callback:std::move(callback)];
-  [_delegate autofillController:self
-      confirmCreditCardExpirationWithFixer:fixer];
 }
 
 - (void)

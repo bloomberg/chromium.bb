@@ -8,7 +8,8 @@
 #include "net/spdy/platform/impl/spdy_bug_tracker_impl.h"
 
 #define SPDY_BUG SPDY_BUG_IMPL
-#define SPDY_BUG_IF(condition) SPDY_BUG_IF_IMPL(condition)
+#define SPDY_BUG_IF(bug_id, condition) SPDY_BUG_IF_IMPL(bug_id, condition)
+
 #define FLAGS_spdy_always_log_bugs_for_tests \
   FLAGS_spdy_always_log_bugs_for_tests_impl
 

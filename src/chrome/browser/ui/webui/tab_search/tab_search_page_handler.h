@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
+#include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -48,9 +49,9 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   void CloseTab(int32_t tab_id) override;
   void GetProfileData(GetProfileDataCallback callback) override;
   void GetTabGroups(GetTabGroupsCallback callback) override;
-  void ShowFeedbackPage() override;
   void SwitchToTab(
       tab_search::mojom::SwitchToTabInfoPtr switch_to_tab_info) override;
+  void OpenRecentlyClosedTab(int32_t tab_id) override;
   void ShowUI() override;
   // TODO(tluk): Remove this once all uses of the CloseUI() interface are
   // removed from the Tab Search WebUI code.
@@ -87,9 +88,27 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
 
   tab_search::mojom::ProfileDataPtr CreateProfileData();
 
-  tab_search::mojom::TabPtr GetTabData(TabStripModel* tab_strip_model,
-                                       content::WebContents* contents,
-                                       int index);
+  // Adds recently closed tabs in a flattened list.
+  void AddRecentlyClosedTabs(
+      std::vector<tab_search::mojom::RecentlyClosedTabPtr>&
+          recently_closed_tabs,
+      std::set<std::string>& tab_urls);
+
+  // Tries to add a single recently closed tab to a flattened list. Returns
+  // whether the the tab fits within |max_tab_count|.
+  bool AddRecentlyClosedTab(
+      std::vector<tab_search::mojom::RecentlyClosedTabPtr>&
+          recently_closed_tabs,
+      sessions::TabRestoreService::Tab* tab,
+      std::set<std::string>& tab_urls,
+      size_t max_tab_count);
+
+  tab_search::mojom::TabPtr GetTab(TabStripModel* tab_strip_model,
+                                   content::WebContents* contents,
+                                   int index);
+  tab_search::mojom::RecentlyClosedTabPtr GetRecentlyClosedTab(
+      sessions::TabRestoreService::Tab* tab);
+
   // Returns tab details required to perform an action on the tab.
   base::Optional<TabDetails> GetTabDetails(int32_t tab_id);
 

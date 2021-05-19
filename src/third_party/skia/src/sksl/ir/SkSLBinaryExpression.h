@@ -8,7 +8,6 @@
 #ifndef SKSL_BINARYEXPRESSION
 #define SKSL_BINARYEXPRESSION
 
-#include "src/sksl/SkSLConstantFolder.h"
 #include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/SkSLLexer.h"
 #include "src/sksl/SkSLOperators.h"
@@ -18,29 +17,9 @@
 #include "src/sksl/ir/SkSLSwizzle.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
 
-namespace SkSL {
+#include <memory>
 
-static inline bool check_ref(const Expression& expr) {
-    switch (expr.kind()) {
-        case Expression::Kind::kFieldAccess:
-            return check_ref(*expr.as<FieldAccess>().base());
-        case Expression::Kind::kIndex:
-            return check_ref(*expr.as<IndexExpression>().base());
-        case Expression::Kind::kSwizzle:
-            return check_ref(*expr.as<Swizzle>().base());
-        case Expression::Kind::kTernary: {
-            const TernaryExpression& t = expr.as<TernaryExpression>();
-            return check_ref(*t.ifTrue()) && check_ref(*t.ifFalse());
-        }
-        case Expression::Kind::kVariableReference: {
-            const VariableReference& ref = expr.as<VariableReference>();
-            return ref.refKind() == VariableReference::RefKind::kWrite ||
-                   ref.refKind() == VariableReference::RefKind::kReadWrite;
-        }
-        default:
-            return false;
-    }
-}
+namespace SkSL {
 
 /**
  * A binary operation.
@@ -51,13 +30,35 @@ public:
 
     BinaryExpression(int offset, std::unique_ptr<Expression> left, Operator op,
                      std::unique_ptr<Expression> right, const Type* type)
-    : INHERITED(offset, kExpressionKind, type)
-    , fLeft(std::move(left))
-    , fOperator(op)
-    , fRight(std::move(right)) {
-        // If we are assigning to a VariableReference, ensure that it is set to Write or ReadWrite
-        SkASSERT(!op.isAssignment() || check_ref(*this->left()));
+        : INHERITED(offset, kExpressionKind, type)
+        , fLeft(std::move(left))
+        , fOperator(op)
+        , fRight(std::move(right)) {
+        // If we are assigning to a VariableReference, ensure that it is set to Write or ReadWrite.
+        SkASSERT(!op.isAssignment() || CheckRef(*this->left()));
     }
+
+    // Creates a potentially-simplified form of the expression. Determines the result type
+    // programmatically. Typechecks and coerces input expressions; reports errors via ErrorReporter.
+    static std::unique_ptr<Expression> Convert(const Context& context,
+                                               std::unique_ptr<Expression> left,
+                                               Operator op,
+                                               std::unique_ptr<Expression> right);
+
+    // Creates a potentially-simplified form of the expression. Determines the result type
+    // programmatically. Asserts if the expressions do not typecheck or are otherwise invalid.
+    static std::unique_ptr<Expression> Make(const Context& context,
+                                            std::unique_ptr<Expression> left,
+                                            Operator op,
+                                            std::unique_ptr<Expression> right);
+
+    // Creates a potentially-simplified form of the expression. Result type is passed in.
+    // Asserts if the expressions do not typecheck or are otherwise invalid.
+    static std::unique_ptr<Expression> Make(const Context& context,
+                                            std::unique_ptr<Expression> left,
+                                            Operator op,
+                                            std::unique_ptr<Expression> right,
+                                            const Type* resultType);
 
     std::unique_ptr<Expression>& left() {
         return fLeft;
@@ -83,12 +84,6 @@ public:
         return this->left()->isConstantOrUniform() && this->right()->isConstantOrUniform();
     }
 
-    std::unique_ptr<Expression> constantPropagate(const IRGenerator& irGenerator,
-                                                  const DefinitionMap& definitions) override {
-        return ConstantFolder::Simplify(irGenerator.fContext, fOffset, *this->left(),
-                                        this->getOperator(), *this->right());
-    }
-
     bool hasProperty(Property property) const override {
         if (property == Property::kSideEffects && this->getOperator().isAssignment()) {
             return true;
@@ -96,21 +91,13 @@ public:
         return this->left()->hasProperty(property) || this->right()->hasProperty(property);
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        return std::unique_ptr<Expression>(new BinaryExpression(fOffset,
-                                                                this->left()->clone(),
-                                                                this->getOperator(),
-                                                                this->right()->clone(),
-                                                                &this->type()));
-    }
+    std::unique_ptr<Expression> clone() const override;
 
-    String description() const override {
-        return "(" + this->left()->description() + " " +
-               this->getOperator().operatorName() + " " + this->right()->description() +
-               ")";
-    }
+    String description() const override;
 
 private:
+    static bool CheckRef(const Expression& expr);
+
     std::unique_ptr<Expression> fLeft;
     Operator fOperator;
     std::unique_ptr<Expression> fRight;

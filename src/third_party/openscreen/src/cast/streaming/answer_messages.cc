@@ -210,10 +210,15 @@ bool AudioConstraints::ParseAndValidate(const Json::Value& root,
   if (!json::ParseAndValidateInt(root[kMaxSampleRate],
                                  &(out->max_sample_rate)) ||
       !json::ParseAndValidateInt(root[kMaxChannels], &(out->max_channels)) ||
-      !json::ParseAndValidateInt(root[kMaxBitRate], &(out->max_bit_rate)) ||
-      !json::ParseAndValidateMilliseconds(root[kMaxDelay], &(out->max_delay))) {
+      !json::ParseAndValidateInt(root[kMaxBitRate], &(out->max_bit_rate))) {
     return false;
   }
+
+  std::chrono::milliseconds max_delay;
+  if (json::ParseAndValidateMilliseconds(root[kMaxDelay], &max_delay)) {
+    out->max_delay = max_delay;
+  }
+
   if (!json::ParseAndValidateInt(root[kMinBitRate], &(out->min_bit_rate))) {
     out->min_bit_rate = kDefaultAudioMinBitRate;
   }
@@ -227,7 +232,9 @@ Json::Value AudioConstraints::ToJson() const {
   root[kMaxChannels] = max_channels;
   root[kMinBitRate] = min_bit_rate;
   root[kMaxBitRate] = max_bit_rate;
-  root[kMaxDelay] = Json::Value::Int64(max_delay.count());
+  if (max_delay.has_value()) {
+    root[kMaxDelay] = Json::Value::Int64(max_delay->count());
+  }
   return root;
 }
 
@@ -262,16 +269,25 @@ Json::Value Dimensions::ToJson() const {
 // static
 bool VideoConstraints::ParseAndValidate(const Json::Value& root,
                                         VideoConstraints* out) {
-  if (!json::ParseAndValidateDouble(root[kMaxPixelsPerSecond],
-                                    &(out->max_pixels_per_second)) ||
-      !Dimensions::ParseAndValidate(root[kMaxDimensions],
+  if (!Dimensions::ParseAndValidate(root[kMaxDimensions],
                                     &(out->max_dimensions)) ||
       !json::ParseAndValidateInt(root[kMaxBitRate], &(out->max_bit_rate)) ||
-      !json::ParseAndValidateMilliseconds(root[kMaxDelay], &(out->max_delay)) ||
       !ParseOptional<Dimensions>(root[kMinDimensions],
                                  &(out->min_dimensions))) {
     return false;
   }
+
+  std::chrono::milliseconds max_delay;
+  if (json::ParseAndValidateMilliseconds(root[kMaxDelay], &max_delay)) {
+    out->max_delay = max_delay;
+  }
+
+  double max_pixels_per_second;
+  if (json::ParseAndValidateDouble(root[kMaxPixelsPerSecond],
+                                   &max_pixels_per_second)) {
+    out->max_pixels_per_second = max_pixels_per_second;
+  }
+
   if (!json::ParseAndValidateInt(root[kMinBitRate], &(out->min_bit_rate))) {
     out->min_bit_rate = kDefaultVideoMinBitRate;
   }
@@ -280,7 +296,8 @@ bool VideoConstraints::ParseAndValidate(const Json::Value& root,
 
 bool VideoConstraints::IsValid() const {
   return max_pixels_per_second > 0 && min_bit_rate > 0 &&
-         max_bit_rate > min_bit_rate && max_delay.count() > 0 &&
+         max_bit_rate > min_bit_rate &&
+         (!max_delay.has_value() || max_delay->count() > 0) &&
          max_dimensions.IsValid() &&
          (!min_dimensions.has_value() || min_dimensions->IsValid()) &&
          max_dimensions.frame_rate.numerator > 0;
@@ -289,14 +306,20 @@ bool VideoConstraints::IsValid() const {
 Json::Value VideoConstraints::ToJson() const {
   OSP_DCHECK(IsValid());
   Json::Value root;
-  root[kMaxPixelsPerSecond] = max_pixels_per_second;
-  if (min_dimensions.has_value()) {
-    root[kMinDimensions] = min_dimensions->ToJson();
-  }
   root[kMaxDimensions] = max_dimensions.ToJson();
   root[kMinBitRate] = min_bit_rate;
   root[kMaxBitRate] = max_bit_rate;
-  root[kMaxDelay] = Json::Value::Int64(max_delay.count());
+  if (max_pixels_per_second.has_value()) {
+    root[kMaxPixelsPerSecond] = max_pixels_per_second.value();
+  }
+
+  if (min_dimensions.has_value()) {
+    root[kMinDimensions] = min_dimensions->ToJson();
+  }
+
+  if (max_delay.has_value()) {
+    root[kMaxDelay] = Json::Value::Int64(max_delay->count());
+  }
   return root;
 }
 
@@ -346,9 +369,11 @@ bool DisplayDescription::IsValid() const {
   if (aspect_ratio.has_value() && !aspect_ratio->IsValid()) {
     return false;
   }
+
   if (dimensions.has_value() && !dimensions->IsValid()) {
     return false;
   }
+
   // Sender behavior is undefined if the aspect ratio is fixed but no
   // dimensions or aspect ratio are provided.
   if (aspect_ratio_constraint.has_value() &&

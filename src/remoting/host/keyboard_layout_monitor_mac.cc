@@ -8,6 +8,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -16,6 +17,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/proto/control.pb.h"
@@ -91,7 +93,7 @@ KeyboardLayoutMonitorMac::~KeyboardLayoutMonitorMac() {
 
 void KeyboardLayoutMonitorMac::Start() {
   DCHECK(!callback_context_);
-  callback_context_.reset(new CallbackContext{
+  callback_context_ = std::make_unique<CallbackContext>(CallbackContext{
       base::SequencedTaskRunnerHandle::Get(), weak_ptr_factory_.GetWeakPtr()});
   CFNotificationCenterAddObserver(
       CFNotificationCenterGetDistributedCenter(), callback_context_.get(),
@@ -205,8 +207,7 @@ void KeyboardLayoutMonitorMac::QueryLayoutOnMainLoop(
 
       key_actions[shift_level].set_character(
           base::UTF16ToUTF8(base::StringPiece16(
-              reinterpret_cast<const base::char16*>(result_array),
-              result_length)));
+              reinterpret_cast<const char16_t*>(result_array), result_length)));
     }
 
     if (key_actions.size() == 0) {

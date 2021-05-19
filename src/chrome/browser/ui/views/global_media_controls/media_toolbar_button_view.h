@@ -37,8 +37,9 @@ class MediaToolbarButtonView : public ToolbarButton,
   void Enable() override;
   void Disable() override;
 
-  // ToolbarButton implementation.
-  void UpdateIcon() override;
+  MediaToolbarButtonController* media_toolbar_button_controller() {
+    return controller_.get();
+  }
 
  private:
   void ButtonPressed();

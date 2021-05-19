@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
+import org.chromium.chrome.browser.continuous_search.ContinuousSearchContainerCoordinator;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationCoordinator;
 import org.chromium.chrome.browser.layouts.CompositorModelChangeProcessor;
@@ -74,6 +75,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.util.TokenHolder;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -219,6 +221,7 @@ public class LayoutManagerImpl implements ManagedLayoutManager, LayoutUpdateHost
             } else {
                 boolean incognito = tab.isIncognito();
                 boolean willBeSelected = launchType != TabLaunchType.FROM_LONGPRESS_BACKGROUND
+                                && launchType != TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP
                         || (!getTabModelSelector().isIncognitoSelected() && incognito);
                 float lastTapX = LocalizationUtils.isLayoutRtl() ? mHost.getWidth() * mPxToDp : 0.f;
                 float lastTapY = 0.f;
@@ -284,6 +287,7 @@ public class LayoutManagerImpl implements ManagedLayoutManager, LayoutUpdateHost
         // Overlays are ordered back (closest to the web content) to front.
         Class[] overlayOrder = new Class[] {
                 HistoryNavigationCoordinator.getSceneOverlayClass(),
+                ContinuousSearchContainerCoordinator.getSceneOverlayClass(),
                 TopToolbarOverlayCoordinator.class,
                 ScrollingBottomViewSceneLayer.class,
                 StripLayoutHelperManager.class,
@@ -792,9 +796,9 @@ public class LayoutManagerImpl implements ManagedLayoutManager, LayoutUpdateHost
         LayoutTab layoutTab = mTabCache.get(tabId);
         if (layoutTab == null) return;
 
-        String url = tab.getUrlString();
-        boolean isNativePage = tab.isNativePage()
-                || (url != null && url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX));
+        GURL url = tab.getUrl();
+        boolean isNativePage =
+                tab.isNativePage() || url.getScheme().equals(UrlConstants.CHROME_NATIVE_SCHEME);
 
         boolean canUseLiveTexture = tab.getWebContents() != null && !SadTab.isShowing(tab)
                 && !isNativePage && !tab.isHidden();

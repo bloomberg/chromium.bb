@@ -11,10 +11,12 @@ include_rules = [
   "-common_video",
   "-data",
   "-examples",
+  "-g3doc",
   "-ios",
   "-infra",
   "-logging",
   "-media",
+  "-net",
   "-modules",
   "-out",
   "-p2p",
@@ -60,6 +62,10 @@ specific_include_rules = {
 
   "async_resolver_factory\.h": [
     "+rtc_base/async_resolver_interface.h",
+  ],
+
+  "async_dns_resolver\.h": [
+    "+rtc_base/socket_address.h",
   ],
 
   "candidate\.h": [

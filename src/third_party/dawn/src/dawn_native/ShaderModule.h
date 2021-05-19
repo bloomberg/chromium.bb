@@ -19,6 +19,7 @@
 #include "common/ityp_array.h"
 #include "dawn_native/BindingInfo.h"
 #include "dawn_native/CachedObject.h"
+#include "dawn_native/CompilationMessages.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Format.h"
 #include "dawn_native/Forward.h"
@@ -60,30 +61,30 @@ namespace dawn_native {
         ShaderModuleParseResult(ShaderModuleParseResult&& rhs);
         ShaderModuleParseResult& operator=(ShaderModuleParseResult&& rhs);
 
-#ifdef DAWN_ENABLE_WGSL
+        bool HasParsedShader() const;
+
         std::unique_ptr<tint::Program> tintProgram;
-#endif
         std::vector<uint32_t> spirv;
+        std::unique_ptr<OwnedCompilationMessages> compilationMessages;
     };
 
-    ResultOrError<ShaderModuleParseResult> ValidateShaderModuleDescriptor(
-        DeviceBase* device,
-        const ShaderModuleDescriptor* descriptor);
+    MaybeError ValidateShaderModuleDescriptor(DeviceBase* device,
+                                              const ShaderModuleDescriptor* descriptor,
+                                              ShaderModuleParseResult* parseResult);
     MaybeError ValidateCompatibilityWithPipelineLayout(DeviceBase* device,
                                                        const EntryPointMetadata& entryPoint,
                                                        const PipelineLayoutBase* layout);
 
     RequiredBufferSizes ComputeRequiredBufferSizesForLayout(const EntryPointMetadata& entryPoint,
                                                             const PipelineLayoutBase* layout);
-#ifdef DAWN_ENABLE_WGSL
     ResultOrError<tint::Program> RunTransforms(tint::transform::Transform* transform,
-                                               tint::Program* program);
+                                               const tint::Program* program,
+                                               OwnedCompilationMessages* messages);
 
     std::unique_ptr<tint::transform::VertexPulling> MakeVertexPullingTransform(
-        const VertexStateDescriptor& vertexState,
+        const VertexState& vertexState,
         const std::string& entryPoint,
         BindGroupIndex pullingBufferBindingSet);
-#endif
 
     // Contains all the reflection data for a valid (ShaderModule, entryPoint, stage). They are
     // stored in the ShaderModuleBase and destroyed only when the shader program is destroyed so
@@ -128,7 +129,9 @@ namespace dawn_native {
         ShaderModuleBase(DeviceBase* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModuleBase() override;
 
-        static ShaderModuleBase* MakeError(DeviceBase* device);
+        static ShaderModuleBase* MakeError(
+            DeviceBase* device,
+            std::unique_ptr<OwnedCompilationMessages> compilationMessages);
 
         // Return true iff the program has an entrypoint called `entryPoint`.
         bool HasEntryPoint(const std::string& entryPoint) const;
@@ -145,34 +148,50 @@ namespace dawn_native {
         };
 
         const std::vector<uint32_t>& GetSpirv() const;
+        const tint::Program* GetTintProgram() const;
 
-#ifdef DAWN_ENABLE_WGSL
+        void APIGetCompilationInfo(wgpu::CompilationInfoCallback callback, void* userdata);
+
         ResultOrError<std::vector<uint32_t>> GeneratePullingSpirv(
             const std::vector<uint32_t>& spirv,
-            const VertexStateDescriptor& vertexState,
+            const VertexState& vertexState,
             const std::string& entryPoint,
             BindGroupIndex pullingBufferBindingSet) const;
 
         ResultOrError<std::vector<uint32_t>> GeneratePullingSpirv(
-            tint::Program* program,
-            const VertexStateDescriptor& vertexState,
+            const tint::Program* program,
+            const VertexState& vertexState,
             const std::string& entryPoint,
             BindGroupIndex pullingBufferBindingSet) const;
-#endif
+
+        OwnedCompilationMessages* CompilationMessages() {
+            return mCompilationMessages.get();
+        }
 
       protected:
         MaybeError InitializeBase(ShaderModuleParseResult* parseResult);
+        static ResultOrError<EntryPointMetadataTable> ReflectShaderUsingSPIRVCross(
+            DeviceBase* device,
+            const std::vector<uint32_t>& spirv);
 
       private:
-        ShaderModuleBase(DeviceBase* device, ObjectBase::ErrorTag tag);
+        ShaderModuleBase(DeviceBase* device,
+                         ObjectBase::ErrorTag tag,
+                         std::unique_ptr<OwnedCompilationMessages> compilationMessages);
 
+        // The original data in the descriptor for caching.
         enum class Type { Undefined, Spirv, Wgsl };
         Type mType;
         std::vector<uint32_t> mOriginalSpirv;
-        std::vector<uint32_t> mSpirv;
         std::string mWgsl;
 
+        // Data computed from what is in the descriptor. mSpirv is set iff !UseTintGenerator while
+        // mTintProgram is set iff UseTintGenerator.
         EntryPointMetadataTable mEntryPoints;
+        std::vector<uint32_t> mSpirv;
+        std::unique_ptr<tint::Program> mTintProgram;
+
+        std::unique_ptr<OwnedCompilationMessages> mCompilationMessages;
     };
 
 }  // namespace dawn_native

@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/animation/css_angle_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_aspect_ratio_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_basic_shape_interpolation_type.h"
@@ -52,8 +52,8 @@
 #include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
-#include "third_party/blink/renderer/core/feature_policy/layout_animations_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/permissions_policy/layout_animations_policy.h"
 
 namespace blink {
 
@@ -112,10 +112,10 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
   PropertyHandle used_property =
       property.IsCSSProperty() ? property : PropertyHandle(css_property);
   // TODO(crbug.com/838263): Support site-defined list of acceptable properties
-  // through feature policy declarations.
-  bool property_maybe_blocked_by_feature_policy =
+  // through permissions policy declarations.
+  bool property_maybe_blocked_by_permissions_policy =
       LayoutAnimationsPolicy::AffectedCSSProperties().Contains(&css_property);
-  if (allow_all_animations_ || !property_maybe_blocked_by_feature_policy) {
+  if (allow_all_animations_ || !property_maybe_blocked_by_permissions_policy) {
     switch (css_property.PropertyID()) {
       case CSSPropertyID::kBaselineShift:
       case CSSPropertyID::kBorderBottomWidth:

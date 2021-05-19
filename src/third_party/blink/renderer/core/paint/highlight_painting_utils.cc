@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
 
 #include "components/shared_highlighting/core/common/text_fragments_constants.h"
-#include "third_party/blink/renderer/core/css/pseudo_style_request.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_request.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -147,19 +147,17 @@ scoped_refptr<const ComputedStyle> HighlightPseudoStyle(Node* node,
   if (!element || element->IsPseudoElement())
     return nullptr;
 
-  PseudoElementStyleRequest request(pseudo);
-
   if (pseudo == kPseudoIdSelection &&
       element->GetDocument().GetStyleEngine().UsesWindowInactiveSelector() &&
       !element->GetDocument().GetPage()->GetFocusController().IsActive()) {
     // ::selection and ::selection:window-inactive styles may be different. Only
     // cache the styles for ::selection if there are no :window-inactive
     // selector, or if the page is active.
-    return element->UncachedStyleForPseudoElement(request,
-                                                  element->GetComputedStyle());
+    return element->UncachedStyleForPseudoElement(
+        StyleRequest(pseudo, element->GetComputedStyle()));
   }
 
-  return element->CachedStyleForPseudoElement(request);
+  return element->CachedStyleForPseudoElement(pseudo);
 }
 
 Color HighlightColor(const Document& document,

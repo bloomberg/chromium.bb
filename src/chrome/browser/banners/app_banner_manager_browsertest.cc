@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -83,8 +85,9 @@ class AppBannerManagerTest : public AppBannerManager {
   void Stop(InstallableStatusCode code) override {
     AppBannerManager::Stop(code);
     ASSERT_FALSE(banner_shown_.get());
-    banner_shown_.reset(new bool(false));
-    install_source_.reset(new WebappInstallSource(WebappInstallSource::COUNT));
+    banner_shown_ = std::make_unique<bool>(false);
+    install_source_ =
+        std::make_unique<WebappInstallSource>(WebappInstallSource::COUNT);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(on_done_));
   }
@@ -96,8 +99,8 @@ class AppBannerManagerTest : public AppBannerManager {
     RecordDidShowBanner();
 
     ASSERT_FALSE(banner_shown_.get());
-    banner_shown_.reset(new bool(true));
-    install_source_.reset(new WebappInstallSource(install_source));
+    banner_shown_ = std::make_unique<bool>(true);
+    install_source_ = std::make_unique<WebappInstallSource>(install_source);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(on_done_));
   }
@@ -129,16 +132,16 @@ class AppBannerManagerTest : public AppBannerManager {
   void InvalidateWeakPtrs() override { weak_factory_.InvalidateWeakPtrs(); }
 
   bool IsSupportedNonWebAppPlatform(
-      const base::string16& platform) const override {
+      const std::u16string& platform) const override {
     return base::EqualsASCII(platform, "chrome_web_store");
   }
 
   bool IsRelatedNonWebAppInstalled(
       const blink::Manifest::RelatedApplication& related_app) const override {
     // Corresponds to the id listed in manifest_listing_related_chrome_app.json.
-    return base::EqualsASCII(related_app.platform.value_or(base::string16()),
+    return base::EqualsASCII(related_app.platform.value_or(std::u16string()),
                              "chrome_web_store") &&
-           base::EqualsASCII(related_app.id.value_or(base::string16()),
+           base::EqualsASCII(related_app.id.value_or(std::u16string()),
                              "installed-extension-id");
   }
 

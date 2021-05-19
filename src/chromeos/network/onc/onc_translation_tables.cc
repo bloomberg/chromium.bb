@@ -20,10 +20,6 @@ namespace onc {
 
 namespace {
 
-// Cellular Service EID property.
-// TODO(crbug.com/1093185): Use dbus-constants when property is added in shill.
-const char kCellularEidProperty[] = "Cellular.EID";
-
 const FieldTranslationEntry eap_fields[] = {
     {::onc::eap::kAnonymousIdentity, shill::kEapAnonymousIdentityProperty},
     // This field is converted during translation, see onc_translator_*.
@@ -167,6 +163,7 @@ const FieldTranslationEntry cellular_apn_fields[] = {
     {::onc::cellular_apn::kAuthentication, shill::kApnAuthenticationProperty},
     {::onc::cellular_apn::kLocalizedName, shill::kApnLocalizedNameProperty},
     {::onc::cellular_apn::kLanguage, shill::kApnLanguageProperty},
+    {::onc::cellular_apn::kAttach, shill::kApnAttachProperty},
     {nullptr}};
 
 const FieldTranslationEntry cellular_found_network_fields[] = {
@@ -202,7 +199,7 @@ const FieldTranslationEntry cellular_fields[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kActivationState, shill::kActivationStateProperty},
     {::onc::cellular::kAutoConnect, shill::kAutoConnectProperty},
-    {::onc::cellular::kEID, kCellularEidProperty},
+    {::onc::cellular::kEID, shill::kEidProperty},
     {::onc::cellular::kICCID, shill::kIccidProperty},
     {::onc::cellular::kIMSI, shill::kImsiProperty},
     // This field is converted during translation, see onc_translator_*.

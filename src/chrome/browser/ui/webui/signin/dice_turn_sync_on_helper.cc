@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/no_destructor.h"
@@ -162,11 +161,10 @@ void SetCurrentDiceTurnSyncOnHelper(Profile* profile,
 
 // static
 void DiceTurnSyncOnHelper::Delegate::ShowLoginErrorForBrowser(
-    const base::string16& email,
-    const base::string16& error_message,
+    const SigninUIError& error,
     Browser* browser) {
   LoginUIServiceFactory::GetForProfile(browser->profile())
-      ->DisplayLoginResult(browser, error_message, email);
+      ->DisplayLoginResult(browser, error);
 }
 
 // static
@@ -283,8 +281,7 @@ DiceTurnSyncOnHelper::~DiceTurnSyncOnHelper() {
 
 bool DiceTurnSyncOnHelper::HasCanOfferSigninError() {
   SigninUIError can_offer_error =
-      CanOfferSignin(profile_, CAN_OFFER_SIGNIN_FOR_ALL_ACCOUNTS,
-                     account_info_.gaia, account_info_.email);
+      CanOfferSignin(profile_, account_info_.gaia, account_info_.email);
   if (can_offer_error.IsOk())
     return false;
 
@@ -319,8 +316,6 @@ void DiceTurnSyncOnHelper::OnMergeAccountConfirmation(SigninChoice choice) {
 
 void DiceTurnSyncOnHelper::OnEnterpriseAccountConfirmation(
     SigninChoice choice) {
-  UMA_HISTOGRAM_ENUMERATION("Enterprise.UserSigninChoice", choice,
-                            DiceTurnSyncOnHelper::SIGNIN_CHOICE_SIZE);
   switch (choice) {
     case SIGNIN_CHOICE_CANCEL:
       base::RecordAction(
@@ -442,7 +437,7 @@ void DiceTurnSyncOnHelper::CreateNewSignedInProfile() {
   dice_signed_in_profile_creator_ =
       std::make_unique<DiceSignedInProfileCreator>(
           profile_, account_info_.account_id,
-          /*local_profile_name=*/base::string16(), /*icon_index=*/base::nullopt,
+          /*local_profile_name=*/std::u16string(), /*icon_index=*/base::nullopt,
           /*use_guest=*/false,
           base::BindOnce(&DiceTurnSyncOnHelper::OnNewSignedInProfileCreated,
                          base::Unretained(this)));
@@ -596,14 +591,15 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
       DCHECK(primary_account_mutator);
       primary_account_mutator->RevokeSyncConsent(
           signin_metrics::ABORT_SIGNIN,
-          signin_metrics::SignoutDelete::IGNORE_METRIC);
+          signin_metrics::SignoutDelete::kIgnoreMetric);
       AbortAndDelete();
       return;
     }
     // No explicit action when the ui gets closed. If the embedder wants the
     // helper to abort sync in this case, it must redirect this action to
-    // ABORT_SYNC.
+    // ABORT_SYNC. For UI_CLOSED, also no final callback is sent.
     case LoginUIService::UI_CLOSED:
+      scoped_callback_runner_.ReplaceClosure(base::OnceClosure());
       break;
   }
   delete this;
@@ -626,9 +622,6 @@ void DiceTurnSyncOnHelper::SwitchToProfile(Profile* new_profile) {
           ->Subscribe(base::AdaptCallbackForRepeating(base::BindOnce(
               &DiceTurnSyncOnHelper::AbortAndDelete, base::Unretained(this))));
   delegate_->SwitchToProfile(new_profile);
-  // Since this is a fresh profile, it's better to remove the token if the user
-  // aborts the signin.
-  signin_aborted_mode_ = SigninAbortedMode::REMOVE_ACCOUNT;
 }
 
 void DiceTurnSyncOnHelper::AttachToProfile() {

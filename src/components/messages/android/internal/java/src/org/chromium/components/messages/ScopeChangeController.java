@@ -4,14 +4,16 @@
 
 package org.chromium.components.messages;
 
+import org.chromium.base.ActivityState;
 import org.chromium.components.messages.MessageScopeChange.ChangeType;
 import org.chromium.content_public.browser.LoadCommittedDetails;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.Visibility;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.base.WindowAndroid.ActivityStateObserver;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,8 +29,12 @@ class ScopeChangeController {
         void onScopeChange(MessageScopeChange change);
     }
 
+    interface ScopeObserver {
+        void destroy();
+    }
+
     private final Delegate mDelegate;
-    private final Map<ScopeKey, WebContentsObserver> mObservers;
+    private final Map<ScopeKey, ScopeObserver> mObservers;
 
     public ScopeChangeController(Delegate delegate) {
         mDelegate = delegate;
@@ -40,12 +46,11 @@ class ScopeChangeController {
      * @param scopeKey The scope key of the scope which the first message is enqueued.
      */
     void firstMessageEnqueued(ScopeKey scopeKey) {
-        WebContentsObserver observer = createObserver(scopeKey);
         assert !mObservers.containsKey(scopeKey) : "This scope key has already been observed.";
+        ScopeObserver observer = scopeKey.scopeType == MessageScopeType.NAVIGATION
+                ? new NavigationScopeObserver(mDelegate, scopeKey)
+                : new WindowScopeObserver(mDelegate, scopeKey);
         mObservers.put(scopeKey, observer);
-        mDelegate.onScopeChange(new MessageScopeChange(scopeKey.scopeType, scopeKey,
-                scopeKey.webContents.getVisibility() == Visibility.VISIBLE ? ChangeType.ACTIVE
-                                                                           : ChangeType.INACTIVE));
     }
 
     /**
@@ -53,57 +58,104 @@ class ScopeChangeController {
      * @param scopeKey The scope key of the scope which the last message is dismissed.
      */
     void lastMessageDismissed(ScopeKey scopeKey) {
-        WebContentsObserver observer = mObservers.remove(scopeKey);
+        ScopeObserver observer = mObservers.remove(scopeKey);
         observer.destroy();
     }
 
-    private WebContentsObserver createObserver(ScopeKey scopeKey) {
-        WebContents webContents = scopeKey.webContents;
-        @MessageScopeType
-        int scopeType = scopeKey.scopeType;
-        return new WebContentsObserver(webContents) {
-            @Override
-            public void wasShown() {
-                super.wasShown();
-                mDelegate.onScopeChange(
-                        new MessageScopeChange(scopeType, scopeKey, ChangeType.ACTIVE));
-            }
+    static class NavigationScopeObserver extends WebContentsObserver implements ScopeObserver {
+        private final Delegate mDelegate;
+        private final ScopeKey mScopeKey;
 
-            @Override
-            public void wasHidden() {
-                super.wasHidden();
-                mDelegate.onScopeChange(
-                        new MessageScopeChange(scopeKey.scopeType, scopeKey, ChangeType.INACTIVE));
-            }
+        public NavigationScopeObserver(Delegate delegate, ScopeKey scopeKey) {
+            super(scopeKey.webContents);
+            mDelegate = delegate;
+            mScopeKey = scopeKey;
+            mDelegate.onScopeChange(new MessageScopeChange(mScopeKey.scopeType, scopeKey,
+                    scopeKey.webContents.getVisibility() == Visibility.VISIBLE
+                            ? ChangeType.ACTIVE
+                            : ChangeType.INACTIVE));
+        }
 
-            @Override
-            public void navigationEntryCommitted(LoadCommittedDetails details) {
-                if (scopeKey.scopeType != MessageScopeType.NAVIGATION) {
-                    return;
-                }
-                if (!details.isMainFrame() || details.isSameDocument()
-                        || details.didReplaceEntry()) {
-                    return;
-                }
-                super.navigationEntryCommitted(details);
-                NavigationController controller = scopeKey.webContents.getNavigationController();
-                NavigationEntry entry =
-                        controller.getEntryAtIndex(controller.getLastCommittedEntryIndex());
+        @Override
+        public void wasShown() {
+            super.wasShown();
+            mDelegate.onScopeChange(
+                    new MessageScopeChange(mScopeKey.scopeType, mScopeKey, ChangeType.ACTIVE));
+        }
 
-                int transition = entry.getTransition();
-                if ((transition & PageTransition.RELOAD) != PageTransition.RELOAD
-                        && (transition & PageTransition.IS_REDIRECT_MASK) == 0) {
-                    destroy();
-                }
-            }
+        @Override
+        public void wasHidden() {
+            super.wasHidden();
+            mDelegate.onScopeChange(
+                    new MessageScopeChange(mScopeKey.scopeType, mScopeKey, ChangeType.INACTIVE));
+        }
 
-            @Override
-            public void destroy() {
-                super.destroy();
-                // #destroy will remove the observers.
-                mDelegate.onScopeChange(
-                        new MessageScopeChange(scopeType, scopeKey, ChangeType.DESTROY));
+        @Override
+        public void navigationEntryCommitted(LoadCommittedDetails details) {
+            if (mScopeKey.scopeType != MessageScopeType.NAVIGATION) {
+                return;
             }
-        };
+            if (!details.isMainFrame() || details.isSameDocument() || details.didReplaceEntry()) {
+                return;
+            }
+            super.navigationEntryCommitted(details);
+
+            NavigationController controller = mScopeKey.webContents.getNavigationController();
+            NavigationEntry entry =
+                    controller.getEntryAtIndex(controller.getLastCommittedEntryIndex());
+
+            int transition = entry.getTransition();
+            if ((transition & PageTransition.RELOAD) != PageTransition.RELOAD
+                    && (transition & PageTransition.IS_REDIRECT_MASK) == 0) {
+                destroy();
+            }
+        }
+
+        @Override
+        public void destroy() {
+            super.destroy();
+            // #destroy will remove the observers.
+            mDelegate.onScopeChange(
+                    new MessageScopeChange(mScopeKey.scopeType, mScopeKey, ChangeType.DESTROY));
+        }
+    }
+
+    static class WindowScopeObserver implements ScopeObserver, ActivityStateObserver {
+        private final Delegate mDelegate;
+        private final ScopeKey mScopeKey;
+
+        public WindowScopeObserver(Delegate delegate, ScopeKey scopeKey) {
+            mDelegate = delegate;
+            mScopeKey = scopeKey;
+            WindowAndroid windowAndroid = scopeKey.webContents.getTopLevelNativeWindow();
+            windowAndroid.addActivityStateObserver(this);
+            mDelegate.onScopeChange(new MessageScopeChange(scopeKey.scopeType, scopeKey,
+                    windowAndroid.getActivityState() == ActivityState.RESUMED
+                            ? ChangeType.ACTIVE
+                            : ChangeType.INACTIVE));
+        }
+
+        @Override
+        public void onActivityPaused() {
+            mDelegate.onScopeChange(
+                    new MessageScopeChange(mScopeKey.scopeType, mScopeKey, ChangeType.INACTIVE));
+        }
+
+        @Override
+        public void onActivityResumed() {
+            mDelegate.onScopeChange(
+                    new MessageScopeChange(mScopeKey.scopeType, mScopeKey, ChangeType.ACTIVE));
+        }
+
+        @Override
+        public void onActivityDestroyed() {
+            mDelegate.onScopeChange(
+                    new MessageScopeChange(mScopeKey.scopeType, mScopeKey, ChangeType.DESTROY));
+        }
+
+        @Override
+        public void destroy() {
+            mScopeKey.webContents.getTopLevelNativeWindow().removeActivityStateObserver(this);
+        }
     }
 }

@@ -12,7 +12,6 @@
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -196,7 +195,7 @@ VerificationStatus AddressComponent::GetVerificationStatus() const {
   return value_verification_status_;
 }
 
-const base::string16& AddressComponent::GetValue() const {
+const std::u16string& AddressComponent::GetValue() const {
   if (value_.has_value())
     return value_.value();
   return base::EmptyString16();
@@ -206,7 +205,7 @@ bool AddressComponent::IsValueAssigned() const {
   return value_.has_value();
 }
 
-void AddressComponent::SetValue(base::string16 value,
+void AddressComponent::SetValue(std::u16string value,
                                 VerificationStatus status) {
   value_ = std::move(value);
   value_verification_status_ = status;
@@ -234,18 +233,18 @@ void AddressComponent::GetSupportedTypes(
 
 bool AddressComponent::ConvertAndSetValueForAdditionalFieldTypeName(
     const std::string& field_type_name,
-    const base::string16& value,
+    const std::u16string& value,
     const VerificationStatus& status) {
   return false;
 }
 
 bool AddressComponent::ConvertAndGetTheValueForAdditionalFieldTypeName(
     const std::string& field_type_name,
-    base::string16* value) const {
+    std::u16string* value) const {
   return false;
 }
 
-base::string16 AddressComponent::GetBestFormatString() const {
+std::u16string AddressComponent::GetBestFormatString() const {
   // If the component is atomic, the format string is just the value.
   if (IsAtomic())
     return base::ASCIIToUTF16(GetPlaceholderToken(GetStorageTypeName()));
@@ -272,7 +271,7 @@ std::vector<ServerFieldType> AddressComponent::GetSubcomponentTypes() const {
 
 bool AddressComponent::SetValueForTypeIfPossible(
     const ServerFieldType& type,
-    const base::string16& value,
+    const std::u16string& value,
     const VerificationStatus& verification_status,
     bool invalidate_child_nodes,
     bool invalidate_parent_nodes) {
@@ -294,7 +293,7 @@ bool AddressComponent::SetValueForTypeIfPossible(
 
 bool AddressComponent::SetValueForTypeIfPossible(
     const std::string& type_name,
-    const base::string16& value,
+    const std::u16string& value,
     const VerificationStatus& verification_status,
     bool invalidate_child_nodes,
     bool invalidate_parent_nodes) {
@@ -353,7 +352,7 @@ void AddressComponent::UnsetSubcomponents() {
 
 bool AddressComponent::GetValueAndStatusForTypeIfPossible(
     const ServerFieldType& type,
-    base::string16* value,
+    std::u16string* value,
     VerificationStatus* status) const {
   return GetValueAndStatusForTypeIfPossible(
       AutofillType::ServerFieldTypeToString(type), value, status);
@@ -361,12 +360,12 @@ bool AddressComponent::GetValueAndStatusForTypeIfPossible(
 
 bool AddressComponent::GetValueAndStatusForTypeIfPossible(
     const std::string& type_name,
-    base::string16* value,
+    std::u16string* value,
     VerificationStatus* status) const {
   // If the value is the storage type, it can be simply returned.
   if (type_name == GetStorageTypeName()) {
     if (value)
-      *value = value_.value_or(base::string16());
+      *value = value_.value_or(std::u16string());
     if (status)
       *status = GetVerificationStatus();
     return true;
@@ -388,14 +387,14 @@ bool AddressComponent::GetValueAndStatusForTypeIfPossible(
   return false;
 }
 
-base::string16 AddressComponent::GetValueForType(
+std::u16string AddressComponent::GetValueForType(
     const ServerFieldType& type) const {
   return GetValueForType(AutofillType::ServerFieldTypeToString(type));
 }
 
-base::string16 AddressComponent::GetValueForType(
+std::u16string AddressComponent::GetValueForType(
     const std::string& type_name) const {
-  base::string16 value;
+  std::u16string value;
   bool success = GetValueAndStatusForTypeIfPossible(type_name, &value, nullptr);
   DCHECK(success) << type_name;
   return value;
@@ -444,7 +443,7 @@ void AddressComponent::ParseValueAndAssignSubcomponents() {
   // Set the values of all subcomponents to the empty string and set the
   // verification status to kParsed.
   for (auto* subcomponent : subcomponents_)
-    subcomponent->SetValue(base::string16(), VerificationStatus::kParsed);
+    subcomponent->SetValue(std::u16string(), VerificationStatus::kParsed);
 
   // First attempt, try to parse by method.
   if (ParseValueAndAssignSubcomponentsByMethod())
@@ -470,7 +469,7 @@ bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpressions() {
 }
 
 bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpression(
-    const base::string16& value,
+    const std::u16string& value,
     const RE2* parse_expression) {
   std::map<std::string, std::string> result_map;
   if (ParseValueByRegularExpression(base::UTF16ToUTF8(value), parse_expression,
@@ -479,7 +478,7 @@ bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpression(
     // to the structure.
     for (const auto& result_entry : result_map) {
       const std::string& field_type = result_entry.first;
-      base::string16 field_value = base::UTF8ToUTF16(result_entry.second);
+      std::u16string field_value = base::UTF8ToUTF16(result_entry.second);
       // Do not reassign the value of this node.
       if (field_type == GetStorageTypeName()) {
         continue;
@@ -505,9 +504,8 @@ void AddressComponent::ParseValueAndAssignSubcomponentsByFallbackMethod() {
     return;
 
   // Split the string by spaces.
-  std::vector<base::string16> space_separated_tokens =
-      base::SplitString(GetValue(), base::UTF8ToUTF16(" "),
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::u16string> space_separated_tokens = base::SplitString(
+      GetValue(), u" ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   auto token_iterator = space_separated_tokens.begin();
   auto subcomponent_types = GetSubcomponentTypes();
@@ -526,9 +524,9 @@ void AddressComponent::ParseValueAndAssignSubcomponentsByFallbackMethod() {
   }
 
   // Collect all remaining tokens in the last subcomponent.
-  base::string16 remaining_tokens = base::JoinString(
-      std::vector<base::string16>(token_iterator, space_separated_tokens.end()),
-      base::ASCIIToUTF16(" "));
+  std::u16string remaining_tokens = base::JoinString(
+      std::vector<std::u16string>(token_iterator, space_separated_tokens.end()),
+      u" ");
   // By design, it should be possible to assign the value unless the regular
   // expression is wrong.
   bool success = SetValueForTypeIfPossible(
@@ -552,7 +550,7 @@ bool AddressComponent::IsStructureValid() const {
   // information in the components is contained in the unstructured
   // representation.
   return base::ranges::all_of(Subcomponents(), [this](const auto* c) {
-    return GetValue().find(c->GetValue()) != base::string16::npos;
+    return GetValue().find(c->GetValue()) != std::u16string::npos;
   });
 }
 
@@ -564,9 +562,9 @@ bool AddressComponent::WipeInvalidStructure() {
   return false;
 }
 
-base::string16 AddressComponent::GetFormattedValueFromSubcomponents() {
+std::u16string AddressComponent::GetFormattedValueFromSubcomponents() {
   // Get the most suited format string.
-  base::string16 format_string = GetBestFormatString();
+  std::u16string format_string = GetBestFormatString();
 
   // Perform the following steps on a copy of the format string.
   // * Replace all the placeholders of the form ${TYPE_NAME} with the
@@ -574,7 +572,7 @@ base::string16 AddressComponent::GetFormattedValueFromSubcomponents() {
   // * Strip away double spaces as they may occur after replacing a placeholder
   // with an empty value.
 
-  base::string16 result = ReplacePlaceholderTypesWithValues(format_string);
+  std::u16string result = ReplacePlaceholderTypesWithValues(format_string);
   return base::CollapseWhitespace(result,
                                   /*trim_sequences_with_line_breaks=*/false);
 }
@@ -584,8 +582,8 @@ void AddressComponent::FormatValueFromSubcomponents() {
            VerificationStatus::kFormatted);
 }
 
-base::string16 AddressComponent::ReplacePlaceholderTypesWithValues(
-    const base::string16& format) const {
+std::u16string AddressComponent::ReplacePlaceholderTypesWithValues(
+    const std::u16string& format) const {
   // Replaces placeholders using the following rules.
   // Assumptions: Placeholder values are not nested.
   //
@@ -601,15 +599,11 @@ base::string16 AddressComponent::ReplacePlaceholderTypesWithValues(
   //
   // * If the corresponding value is empty, return false.
 
-  auto control_parmater = base::ASCIIToUTF16("$").at(0);
-  auto control_parmater_open_delimitor = base::ASCIIToUTF16("{").at(0);
-  auto control_parmater_close_delimitor = base::ASCIIToUTF16("}").at(0);
-
   // Create a result vector for the tokens that are joined in the end.
   std::vector<base::StringPiece16> result_pieces;
 
   // Store the token pieces that are joined in the end.
-  std::vector<base::string16> inserted_values;
+  std::vector<std::u16string> inserted_values;
   inserted_values.reserve(20);
 
   // Use a StringPiece rather than the string since this allows for getting
@@ -622,8 +616,8 @@ base::string16 AddressComponent::ReplacePlaceholderTypesWithValues(
 
   for (size_t i = 0; i < format_piece.size(); ++i) {
     // Check if a control sequence is started by '${'
-    if (format_piece[i] == control_parmater && i < format_piece.size() - 1 &&
-        format_piece[i + 1] == control_parmater_open_delimitor) {
+    if (format_piece[i] == u'$' && i < format_piece.size() - 1 &&
+        format_piece[i + 1] == u'{') {
       // A control sequence is started.
       started_control_sequence = true;
       // Append the preceding string since it can't be a valid placeholder.
@@ -633,31 +627,29 @@ base::string16 AddressComponent::ReplacePlaceholderTypesWithValues(
       }
       processed_until_index = i;
       ++i;
-    } else if (started_control_sequence &&
-               format_piece[i] == control_parmater_close_delimitor) {
+    } else if (started_control_sequence && format_piece[i] == u'}') {
       // The control sequence came to an end.
       started_control_sequence = false;
       size_t placeholder_start = processed_until_index + 2;
-      base::string16 placeholder(
+      std::u16string placeholder(
           format_piece.substr(placeholder_start, i - placeholder_start));
 
-      std::vector<base::string16> placeholder_tokens =
-          base::SplitString(placeholder, base::ASCIIToUTF16(";"),
-                            base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+      std::vector<std::u16string> placeholder_tokens = base::SplitString(
+          placeholder, u";", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
       DCHECK(placeholder_tokens.size() > 0);
 
       // By convention, the first token is the type of the placeholder.
-      base::string16 type_name = placeholder_tokens.at(0);
+      std::u16string type_name = placeholder_tokens.at(0);
       // If present, the second token is the prefix.
-      base::string16 prefix = placeholder_tokens.size() > 1
+      std::u16string prefix = placeholder_tokens.size() > 1
                                   ? placeholder_tokens.at(1)
-                                  : base::string16();
+                                  : std::u16string();
       // And the third token the suffix.
-      base::string16 suffix = placeholder_tokens.size() > 2
+      std::u16string suffix = placeholder_tokens.size() > 2
                                   ? placeholder_tokens.at(2)
-                                  : base::string16();
+                                  : std::u16string();
 
-      base::string16 value;
+      std::u16string value;
       if (GetValueAndStatusForTypeIfPossible(base::UTF16ToASCII(type_name),
                                              &value, nullptr)) {
         // The type is valid and should be substituted.
@@ -683,10 +675,10 @@ base::string16 AddressComponent::ReplacePlaceholderTypesWithValues(
   }
   // Append the rest of the string.
   inserted_values.emplace_back(
-      format_piece.substr(processed_until_index, base::string16::npos));
+      format_piece.substr(processed_until_index, std::u16string::npos));
 
   // Build the final result.
-  return base::JoinString(inserted_values, base::ASCIIToUTF16(""));
+  return base::JoinString(inserted_values, u"");
 }
 
 bool AddressComponent::CompleteFullTree() {
@@ -801,8 +793,8 @@ const std::vector<AddressToken> AddressComponent::GetSortedTokens() const {
 
 bool AddressComponent::IsMergeableWithComponent(
     const AddressComponent& newer_component) const {
-  const base::string16 value = ValueForComparison();
-  const base::string16 value_newer = newer_component.ValueForComparison();
+  const std::u16string value = ValueForComparison();
+  const std::u16string value_newer = newer_component.ValueForComparison();
 
   // If both components are the same, there is nothing to do.
   if (SameAs(newer_component))
@@ -852,8 +844,8 @@ bool AddressComponent::IsMergeableWithComponent(
   // If the one value is a substring of the other, use the substring of the
   // corresponding mode is active.
   if ((merge_mode_ & kUseMostRecentSubstring) &&
-      (value.find(value_newer) != base::string16::npos ||
-       value_newer.find(value) != base::string16::npos)) {
+      (value.find(value_newer) != std::u16string::npos ||
+       value_newer.find(value) != std::u16string::npos)) {
     return true;
   }
 
@@ -884,8 +876,8 @@ bool AddressComponent::MergeWithComponent(
     bool newer_was_more_recently_used) {
   // If both components are the same, there is nothing to do.
 
-  const base::string16 value = ValueForComparison();
-  const base::string16 value_newer = newer_component.ValueForComparison();
+  const std::u16string value = ValueForComparison();
+  const std::u16string value_newer = newer_component.ValueForComparison();
   if (SameAs(newer_component))
     return true;
 
@@ -978,8 +970,8 @@ bool AddressComponent::MergeWithComponent(
   // If the one value is a substring of the other, use the substring of the
   // corresponding mode is active.
   if ((merge_mode_ & kUseMostRecentSubstring) &&
-      (value.find(value_newer) != base::string16::npos ||
-       value_newer.find(value) != base::string16::npos)) {
+      (value.find(value_newer) != std::u16string::npos ||
+       value_newer.find(value) != std::u16string::npos)) {
     if (newer_was_more_recently_used &&
         !IsLessSignificantVerificationStatus(
             newer_component.GetVerificationStatus(), GetVerificationStatus()))
@@ -1025,7 +1017,7 @@ bool AddressComponent::MergeWithComponent(
       }
     } else {
       // Otherwise do a reformat from the subcomponents.
-      base::string16 formatted_value = GetFormattedValueFromSubcomponents();
+      std::u16string formatted_value = GetFormattedValueFromSubcomponents();
       // If the current value is maintained, keep the more significant
       // verification status.
       if (formatted_value == GetValue()) {
@@ -1163,12 +1155,12 @@ bool AddressComponent::MergeTokenEquivalentComponent(
 }
 
 void AddressComponent::ConsumeAdditionalToken(
-    const base::string16& token_value) {
+    const std::u16string& token_value) {
   if (IsAtomic()) {
     if (GetValue().empty()) {
       SetValue(token_value, VerificationStatus::kParsed);
     } else {
-      SetValue(base::StrCat({GetValue(), base::ASCIIToUTF16(" "), token_value}),
+      SetValue(base::StrCat({GetValue(), u" ", token_value}),
                VerificationStatus::kParsed);
     }
     return;
@@ -1183,9 +1175,8 @@ void AddressComponent::ConsumeAdditionalToken(
   }
 
   // Otherwise append the value to the first component.
-  subcomponents_[0]->SetValue(
-      base::StrCat({GetValue(), base::ASCIIToUTF16(" "), token_value}),
-      VerificationStatus::kParsed);
+  subcomponents_[0]->SetValue(base::StrCat({GetValue(), u" ", token_value}),
+                              VerificationStatus::kParsed);
 }
 
 bool AddressComponent::MergeSubsetComponent(
@@ -1194,7 +1185,7 @@ bool AddressComponent::MergeSubsetComponent(
   DCHECK(token_comparison_result.IsSingleTokenSuperset());
   DCHECK(token_comparison_result.additional_tokens.size() == 1);
 
-  base::string16 token_to_consume =
+  std::u16string token_to_consume =
       token_comparison_result.additional_tokens.back().value;
 
   int this_component_verification_score = 0;
@@ -1216,7 +1207,7 @@ bool AddressComponent::MergeSubsetComponent(
     AddressComponent* subcomponent = subcomponents_[i];
     const AddressComponent* subset_subcomponent = subset_subcomponents.at(i);
 
-    base::string16 additional_token;
+    std::u16string additional_token;
 
     // If the additional token is the value of this token. Just leave it in.
     if (!found_subset_component &&
@@ -1292,11 +1283,11 @@ int AddressComponent::GetStructureVerificationScore() const {
   return result;
 }
 
-base::string16 AddressComponent::NormalizedValue() const {
+std::u16string AddressComponent::NormalizedValue() const {
   return NormalizeValue(GetValue());
 }
 
-base::string16 AddressComponent::ValueForComparison() const {
+std::u16string AddressComponent::ValueForComparison() const {
   return NormalizedValue();
 }
 

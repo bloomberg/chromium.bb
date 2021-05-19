@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -180,13 +181,41 @@ func main() {
 		}()
 	}
 
-	var worker func(context.Context, []string, []string) int
-	worker = func(ctx context.Context, sources, flags []string) (failures int) {
+	// We'll pass `flag: value` as `--flag value` to FM.
+	// Such a short type name makes it easy to write out literals.
+	type F = map[string]string
+
+	flatten := func(flags F) (flat []string) {
+		// It's not strictly important that we sort, but it makes reading bot logs easier.
+		keys := []string{}
+		for k := range flags {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		for _, k := range keys {
+			v := flags[k]
+
+			if v == "true" {
+				flat = append(flat, "--"+k)
+			} else if v == "false" {
+				flat = append(flat, "--no"+k)
+			} else if len(k) == 1 {
+				flat = append(flat, "-"+k, v)
+			} else {
+				flat = append(flat, "--"+k, v)
+			}
+		}
+		return
+	}
+
+	var worker func(context.Context, []string, F) int
+	worker = func(ctx context.Context, sources []string, flags F) (failures int) {
 		stdout := &bytes.Buffer{}
 		stderr := &bytes.Buffer{}
 		cmd := &exec.Command{Name: fm, Stdout: stdout, Stderr: stderr}
 		cmd.Args = append(cmd.Args, "-i", *resources)
-		cmd.Args = append(cmd.Args, flags...)
+		cmd.Args = append(cmd.Args, flatten(flags)...)
 		cmd.Args = append(cmd.Args, "-s")
 		cmd.Args = append(cmd.Args, sources...)
 
@@ -264,7 +293,7 @@ func main() {
 		WG       *sync.WaitGroup
 		Failures *int32
 		Sources  []string // Passed to FM -s: names of gms/tests, paths to images, .skps, etc.
-		Flags    []string // Other flags to pass to FM: --ct 565, --msaa 16, etc.
+		Flags    F        // Other flags to pass to FM: --ct 565, --msaa 16, etc.
 	}
 	queue := make(chan Work, 1<<20) // Arbitrarily huge buffer to avoid ever blocking.
 
@@ -279,6 +308,9 @@ func main() {
 					defer endStep(ctx)
 					if failures := worker(ctx, w.Sources, w.Flags); failures > 0 {
 						atomic.AddInt32(w.Failures, int32(failures))
+						if !*local { // Uninteresting to see on local runs.
+							failStep(ctx, fmt.Errorf("%v reruns failed\n", failures))
+						}
 					}
 				}()
 			}
@@ -289,7 +321,7 @@ func main() {
 	pendingKickoffs := &sync.WaitGroup{}
 	var totalFailures int32 = 0
 
-	kickoff := func(sources, flags []string) {
+	kickoff := func(sources []string, flags F) {
 		if len(sources) == 0 {
 			return // A blank or commented job line from -script or the command line.
 		}
@@ -305,7 +337,7 @@ func main() {
 		// For organizational purposes, create a step representing this call to kickoff(),
 		// with each batch of sources nested inside.
 		ctx := startStep(ctx,
-			td.Props(fmt.Sprintf("%s, %s…", strings.Join(flags, " "), sources[0])))
+			td.Props(fmt.Sprintf("%s, %s…", strings.Join(flatten(flags), " "), sources[0])))
 		pendingBatches := &sync.WaitGroup{}
 		failures := new(int32)
 
@@ -327,7 +359,7 @@ func main() {
 			if *failures > 0 {
 				atomic.AddInt32(&totalFailures, *failures)
 				if !*local { // Uninteresting to see on local runs.
-					failStep(ctx, fmt.Errorf("%v runs failed\n", *failures))
+					failStep(ctx, fmt.Errorf("%v total reruns failed\n", *failures))
 				}
 			}
 			endStep(ctx)
@@ -336,7 +368,8 @@ func main() {
 	}
 
 	// Parse a job like "gms b=cpu ct=8888" into sources and flags for kickoff().
-	parse := func(job []string) (sources, flags []string) {
+	parse := func(job []string) (sources []string, flags F) {
+		flags = make(F)
 		for _, token := range job {
 			// Everything after # is a comment.
 			if strings.HasPrefix(token, "#") {
@@ -351,13 +384,7 @@ func main() {
 
 			// Is this a flag to pass through to FM?
 			if parts := strings.Split(token, "="); len(parts) == 2 {
-				f := "-"
-				if len(parts[0]) > 1 {
-					f += "-"
-				}
-				f += parts[0]
-
-				flags = append(flags, f, parts[1])
+				flags[parts[0]] = parts[1]
 				continue
 			}
 
@@ -394,10 +421,19 @@ func main() {
 		parts := strings.Split(*bot, "-")
 		OS, model, CPU_or_GPU := parts[1], parts[3], parts[4]
 
-		commonFlags := []string{}
+		// Bots use portable fonts except where we explicitly opt-in to native fonts.
+		defaultFlags := F{"nativeFonts": "false"}
 
-		run := func(sources []string, extraFlags string) {
-			kickoff(sources, append(strings.Fields(extraFlags), commonFlags...))
+		run := func(sources []string, extraFlags F) {
+			// Default then extra to allow overriding the defaults.
+			flags := F{}
+			for k, v := range defaultFlags {
+				flags[k] = v
+			}
+			for k, v := range extraFlags {
+				flags[k] = v
+			}
+			kickoff(sources, flags)
 		}
 
 		gms := shorthands["gms"]
@@ -420,34 +456,40 @@ func main() {
 			imgs = filter(imgs, func(s string) bool { return !rawExts[normalizedExt(s)] })
 		}
 
-		if CPU_or_GPU == "CPU" {
-			commonFlags = append(commonFlags, "-b", "cpu")
+		if strings.Contains(*bot, "TSAN") {
+			// Run each test a few times in parallel to uncover races.
+			defaultFlags["race"] = "4"
+		}
 
-			// Run GMs once using native fonts, then switch to portable fonts for everything else.
-			run(gms, "--nativeFonts true")
-			commonFlags = append(commonFlags, "--nativeFonts", "false")
+		if CPU_or_GPU == "CPU" {
+			defaultFlags["b"] = "cpu"
 
 			// FM's default ct/gamut/tf flags are equivalent to --config srgb in DM.
-			run(gms, "")
-			run(imgs, "")
-			run(svgs, "")
-			run(skps, "")
-			run(tests, "")
+			run(gms, F{})
+			run(gms, F{"nativeFonts": "true"})
+			run(imgs, F{})
+			run(svgs, F{})
+			run(skps, F{"clipW": "1000", "clipH": "1000"})
+			run(tests, F{"race": "0"}) // Several unit tests are not reentrant.
 
 			if model == "GCE" {
-				run(gms, "--ct g8 --legacy")                      // --config g8
-				run(gms, "--ct 565 --legacy")                     // --config 565
-				run(gms, "--ct 8888 --legacy")                    // --config 8888.
-				run(gms, "--ct f16")                              // --config esrgb
-				run(gms, "--ct f16 --tf linear")                  // --config f16
-				run(gms, "--ct 8888 --gamut p3")                  // --config p3
-				run(gms, "--ct 8888 --gamut narrow --tf 2.2")     // --config narrow
-				run(gms, "--ct f16 --gamut rec2020 --tf rec2020") // --config erec2020
+				run(gms, F{"ct": "g8", "legacy": "true"})                     // --config g8
+				run(gms, F{"ct": "565", "legacy": "true"})                    // --config 565
+				run(gms, F{"ct": "8888", "legacy": "true"})                   // --config 8888
+				run(gms, F{"ct": "f16"})                                      // --config esrgb
+				run(gms, F{"ct": "f16", "tf": "linear"})                      // --config f16
+				run(gms, F{"ct": "8888", "gamut": "p3"})                      // --config p3
+				run(gms, F{"ct": "8888", "gamut": "narrow", "tf": "2.2"})     // --config narrow
+				run(gms, F{"ct": "f16", "gamut": "rec2020", "tf": "rec2020"}) // --config erec2020
 
-				run(gms, "--skvm")
-				run(gms, "--skvm --ct f16")
+				run(gms, F{"skvm": "true"})
+				run(gms, F{"skvm": "true", "ct": "f16"})
 
-				run(imgs, "--decodeToDst --ct f16 --gamut rec2020 --tf rec2020")
+				run(imgs, F{
+					"decodeToDst": "true",
+					"ct":          "f16",
+					"gamut":       "rec2020",
+					"tf":          "rec2020"})
 			}
 
 			// TODO: pic-8888 equivalent?

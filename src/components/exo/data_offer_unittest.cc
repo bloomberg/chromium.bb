@@ -15,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
@@ -94,6 +93,11 @@ class TestDataTransferPolicyController : ui::DataTransferPolicyController {
     return true;
   }
 
+  void PasteIfAllowed(const ui::DataTransferEndpoint* const data_src,
+                      const ui::DataTransferEndpoint* const data_dst,
+                      content::WebContents* web_contents,
+                      base::OnceCallback<void(bool)> callback) override {}
+
   bool IsDragDropAllowed(const ui::DataTransferEndpoint* const data_src,
                          const ui::DataTransferEndpoint* const data_dst,
                          const bool is_drop) override {
@@ -119,7 +123,7 @@ bool ReadString(base::ScopedFD fd, std::string* out) {
   return true;
 }
 
-bool ReadString16(base::ScopedFD fd, base::string16* out) {
+bool ReadString16(base::ScopedFD fd, std::u16string* out) {
   std::array<char, 128> buffer;
   char* it = buffer.begin();
   while (it != buffer.end()) {
@@ -129,8 +133,8 @@ bool ReadString16(base::ScopedFD fd, base::string16* out) {
       break;
     it += result;
   }
-  *out = base::string16(reinterpret_cast<base::char16*>(buffer.data()),
-                        (it - buffer.begin()) / sizeof(base::char16));
+  *out = std::u16string(reinterpret_cast<char16_t*>(buffer.data()),
+                        (it - buffer.begin()) / sizeof(char16_t));
   return true;
 }
 
@@ -140,7 +144,7 @@ TEST_F(DataOfferTest, SetTextDropData) {
   source_actions.insert(DndAction::kMove);
 
   ui::OSExchangeData data;
-  data.SetString(base::string16(base::ASCIIToUTF16("Test data")));
+  data.SetString(std::u16string(u"Test data"));
 
   TestDataOfferDelegate delegate;
   DataOffer data_offer(&delegate);
@@ -198,7 +202,7 @@ TEST_F(DataOfferTest, SetHTMLDropData) {
   ReadString(std::move(read), &result);
   EXPECT_EQ(result, html_data);
 
-  base::string16 result16;
+  std::u16string result16;
   EXPECT_TRUE(base::CreatePipe(&read, &write));
   data_offer.Receive("text/html;charset=utf-16", std::move(write));
   ReadString16(std::move(read), &result16);
@@ -238,13 +242,28 @@ TEST_F(DataOfferTest, SetPickleDropData) {
   EXPECT_EQ(1u, delegate.mime_types().count("text/uri-list"));
 }
 
+TEST_F(DataOfferTest, SetFileContentsDropData) {
+  TestDataOfferDelegate delegate;
+  DataOffer data_offer(&delegate);
+
+  TestDataExchangeDelegate data_exchange_delegate;
+  ui::OSExchangeData data;
+  data.provider().SetFileContents(base::FilePath("\"test file\".jpg"),
+                                  std::string("test data"));
+  data_offer.SetDropData(&data_exchange_delegate, nullptr, data);
+
+  EXPECT_EQ(1u, delegate.mime_types().size());
+  EXPECT_EQ(1u, delegate.mime_types().count(
+                    "application/octet-stream;name=\"\\\"test file\\\".jpg\""));
+}
+
 TEST_F(DataOfferTest, ReceiveString) {
   TestDataOfferDelegate delegate;
   DataOffer data_offer(&delegate);
 
   TestDataExchangeDelegate data_exchange_delegate;
   ui::OSExchangeData data;
-  data.SetString(base::ASCIIToUTF16("Test data"));
+  data.SetString(u"Test data");
   data_offer.SetDropData(&data_exchange_delegate, nullptr, data);
 
   base::ScopedFD read_pipe;
@@ -260,9 +279,9 @@ TEST_F(DataOfferTest, ReceiveString) {
   base::ScopedFD write_pipe_16;
   ASSERT_TRUE(base::CreatePipe(&read_pipe_16, &write_pipe_16));
   data_offer.Receive("text/plain;charset=utf-16", std::move(write_pipe_16));
-  base::string16 result_16;
+  std::u16string result_16;
   ASSERT_TRUE(ReadString16(std::move(read_pipe_16), &result_16));
-  EXPECT_EQ(base::ASCIIToUTF16("Test data"), result_16);
+  EXPECT_EQ(u"Test data", result_16);
 
   base::ScopedFD read_pipe_8;
   base::ScopedFD write_pipe_8;
@@ -279,16 +298,16 @@ TEST_F(DataOfferTest, ReceiveHTML) {
 
   TestDataExchangeDelegate data_exchange_delegate;
   ui::OSExchangeData data;
-  data.SetHtml(base::ASCIIToUTF16("Test HTML data"), GURL());
+  data.SetHtml(u"Test HTML data", GURL());
   data_offer.SetDropData(&data_exchange_delegate, nullptr, data);
 
   base::ScopedFD read_pipe_16;
   base::ScopedFD write_pipe_16;
   ASSERT_TRUE(base::CreatePipe(&read_pipe_16, &write_pipe_16));
   data_offer.Receive("text/html;charset=utf-16", std::move(write_pipe_16));
-  base::string16 result_16;
+  std::u16string result_16;
   ASSERT_TRUE(ReadString16(std::move(read_pipe_16), &result_16));
-  EXPECT_EQ(base::ASCIIToUTF16("Test HTML data"), result_16);
+  EXPECT_EQ(u"Test HTML data", result_16);
 
   base::ScopedFD read_pipe_8;
   base::ScopedFD write_pipe_8;
@@ -390,9 +409,30 @@ TEST_F(DataOfferTest,
   urls.push_back(GURL(""));
   data_exchange_delegate.RunSendPickleCallback(urls);
 
-  base::string16 result;
+  std::u16string result;
   ASSERT_TRUE(ReadString16(std::move(read_pipe), &result));
-  EXPECT_EQ(base::ASCIIToUTF16(""), result);
+  EXPECT_EQ(u"", result);
+}
+
+TEST_F(DataOfferTest, ReceiveFileContentsDropData) {
+  TestDataOfferDelegate delegate;
+  DataOffer data_offer(&delegate);
+
+  TestDataExchangeDelegate data_exchange_delegate;
+  ui::OSExchangeData data;
+  const std::string expected = "test data";
+  data.provider().SetFileContents(base::FilePath("test.jpg"), expected);
+  data_offer.SetDropData(&data_exchange_delegate, nullptr, data);
+
+  base::ScopedFD read_pipe;
+  base::ScopedFD write_pipe;
+  ASSERT_TRUE(base::CreatePipe(&read_pipe, &write_pipe));
+
+  data_offer.Receive("application/octet-stream;name=\"test.jpg\"",
+                     std::move(write_pipe));
+  std::string result;
+  ASSERT_TRUE(ReadString(std::move(read_pipe), &result));
+  EXPECT_EQ(expected, result);
 }
 
 TEST_F(DataOfferTest, SetClipboardDataPlainText) {
@@ -402,7 +442,7 @@ TEST_F(DataOfferTest, SetClipboardDataPlainText) {
   TestDataExchangeDelegate data_exchange_delegate;
   {
     ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
-    writer.WriteText(base::UTF8ToUTF16("Test data"));
+    writer.WriteText(u"Test data");
   }
 
   auto* window = CreateTestWindowInShellWithBounds(gfx::Rect());
@@ -434,7 +474,7 @@ TEST_F(DataOfferTest, SetClipboardDataPlainText) {
   // Read as utf-16.
   ASSERT_TRUE(base::CreatePipe(&read_pipe, &write_pipe));
   data_offer.Receive("text/plain;charset=utf-16", std::move(write_pipe));
-  base::string16 result16;
+  std::u16string result16;
   ASSERT_TRUE(ReadString16(std::move(read_pipe), &result16));
   EXPECT_EQ("Test data", base::UTF16ToUTF8(result16));
 }
@@ -446,7 +486,7 @@ TEST_F(DataOfferTest, SetClipboardDataHTML) {
   TestDataExchangeDelegate data_exchange_delegate;
   {
     ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
-    writer.WriteHTML(base::UTF8ToUTF16("Test data"), "");
+    writer.WriteHTML(u"Test data", "");
   }
 
   auto* window = CreateTestWindowInShellWithBounds(gfx::Rect());
@@ -469,7 +509,7 @@ TEST_F(DataOfferTest, SetClipboardDataHTML) {
 
   ASSERT_TRUE(base::CreatePipe(&read_pipe, &write_pipe));
   data_offer.Receive("text/html;charset=utf-16", std::move(write_pipe));
-  base::string16 result16;
+  std::u16string result16;
   ASSERT_TRUE(ReadString16(std::move(read_pipe), &result16));
   EXPECT_EQ("Test data", base::UTF16ToUTF8(result16));
 }
@@ -603,7 +643,7 @@ TEST_F(DataOfferTest, SetClipboardDataWithTransferPolicy) {
     ui::ScopedClipboardWriter writer(
         ui::ClipboardBuffer::kCopyPaste,
         std::make_unique<ui::DataTransferEndpoint>(ui::EndpointType::kArc));
-    writer.WriteText(base::UTF8ToUTF16("Test data"));
+    writer.WriteText(u"Test data");
   }
 
   auto* window = CreateTestWindowInShellWithBounds(gfx::Rect());

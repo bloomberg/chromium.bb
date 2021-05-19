@@ -80,7 +80,7 @@ bool SystemMenuModelDelegate::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDC_RESTORE_TAB;
 }
 
-base::string16 SystemMenuModelDelegate::GetLabelForCommandId(
+std::u16string SystemMenuModelDelegate::GetLabelForCommandId(
     int command_id) const {
   DCHECK_EQ(command_id, IDC_RESTORE_TAB);
 
@@ -90,9 +90,14 @@ base::string16 SystemMenuModelDelegate::GetLabelForCommandId(
         TabRestoreServiceFactory::GetForProfile(browser_->profile());
     DCHECK(trs);
     trs->LoadTabsFromLastSession();
-    if (!trs->entries().empty() &&
-        trs->entries().front()->type == sessions::TabRestoreService::WINDOW)
-      string_id = IDS_RESTORE_WINDOW;
+    if (!trs->entries().empty()) {
+      if (trs->entries().front()->type == sessions::TabRestoreService::WINDOW) {
+        string_id = IDS_RESTORE_WINDOW;
+      } else if (trs->entries().front()->type ==
+                 sessions::TabRestoreService::GROUP) {
+        string_id = IDS_RESTORE_GROUP;
+      }
+    }
   }
   return l10n_util::GetStringUTF16(string_id);
 }

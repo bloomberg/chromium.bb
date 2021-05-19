@@ -10,8 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/strings/string16.h"
-#include "chrome/browser/chromeos/base/locale_util.h"
+#include "chrome/browser/ash/base/locale_util.h"
 
 namespace base {
 class ListValue;

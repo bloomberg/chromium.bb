@@ -11,13 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/location.h"
 #include "pdf/pdf_engine.h"
-
-namespace gfx {
-class Rect;
-class Vector2d;
-}  // namespace gfx
 
 namespace chrome_pdf {
 
@@ -31,7 +25,7 @@ class PreviewModeClient : public PDFEngine::Client {
   };
 
   explicit PreviewModeClient(Client* client);
-  ~PreviewModeClient() override {}
+  ~PreviewModeClient() override;
 
   // PDFEngine::Client implementation.
   void ProposeDocumentLayout(const DocumentLayout& layout) override;
@@ -43,7 +37,7 @@ class PreviewModeClient : public PDFEngine::Client {
   void ScrollToPage(int page) override;
   void NavigateTo(const std::string& url,
                   WindowOpenDisposition disposition) override;
-  void UpdateCursor(PP_CursorType_Dev cursor) override;
+  void UpdateCursor(ui::mojom::CursorType cursor_type) override;
   void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
@@ -64,8 +58,8 @@ class PreviewModeClient : public PDFEngine::Client {
                   const void* data,
                   int length) override;
   std::unique_ptr<UrlLoader> CreateUrlLoader() override;
-  std::vector<SearchStringResult> SearchString(const base::char16* string,
-                                               const base::char16* term,
+  std::vector<SearchStringResult> SearchString(const char16_t* string,
+                                               const char16_t* term,
                                                bool case_sensitive) override;
   void DocumentLoadComplete() override;
   void DocumentLoadFailed() override;
@@ -77,11 +71,10 @@ class PreviewModeClient : public PDFEngine::Client {
   void SetSelectedText(const std::string& selected_text) override;
   void SetLinkUnderCursor(const std::string& link_under_cursor) override;
   bool IsValidLink(const std::string& url) override;
-  void ScheduleTaskOnMainThread(
-      base::TimeDelta delay,
-      ResultCallback callback,
-      int32_t result,
-      const base::Location& from_here = base::Location::Current()) override;
+  void ScheduleTaskOnMainThread(const base::Location& from_here,
+                                ResultCallback callback,
+                                int32_t result,
+                                base::TimeDelta delay) override;
 
  private:
   Client* const client_;

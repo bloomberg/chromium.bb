@@ -33,6 +33,7 @@ static std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
   return std::make_unique<syncer::DeviceInfo>(
       id, name, "chrome_version", "user_agent", device_type, "device_id",
       manufacturer_name, model_name,
+      /*full_hardware_class=*/std::string(),
       /*last_updated_timestamp=*/base::Time::Now(),
       syncer::DeviceInfoUtil::GetPulseInterval(),
       /*send_tab_to_self_receiving_enabled=*/false,
@@ -41,6 +42,7 @@ static std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
           {"sender_id_fcm_token", "sender_id_p256dh", "sender_id_auth_secret"},
           std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
               sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2}),
+      /*paask_info=*/base::nullopt,
       /*fcm_registration_token=*/std::string(),
       /*interested_data_types=*/syncer::ModelTypeSet());
 }

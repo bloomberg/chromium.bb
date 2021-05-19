@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/mru_cache.h"
@@ -69,7 +70,7 @@ class URLDatabase;
 
 // Returns a formatted version of |url| with the HTTP/HTTPS scheme, port,
 // username/password, and any trivial subdomains (e.g., "www.", "m.") removed.
-base::string16 FormatUrlForRedirectComparison(const GURL& url);
+std::u16string FormatUrlForRedirectComparison(const GURL& url);
 
 // Advances (if |day| >= 0) or backtracks (if |day| < 0) from |time| by
 // abs(|day|) calendar days in local timezone and returns the midnight of the
@@ -171,7 +172,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // thread.
     virtual void NotifyKeywordSearchTermUpdated(const URLRow& row,
                                                 KeywordID keyword_id,
-                                                const base::string16& term) = 0;
+                                                const std::u16string& term) = 0;
 
     // Notify HistoryService that keyword search term has been deleted.
     // The event will be forwarded to the HistoryServiceObservers in the correct
@@ -236,13 +237,16 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // |request.time| must be unique with high probability.
   void AddPage(const HistoryAddPageArgs& request);
-  virtual void SetPageTitle(const GURL& url, const base::string16& title);
-  void AddPageNoVisitForBookmark(const GURL& url, const base::string16& title);
+  virtual void SetPageTitle(const GURL& url, const std::u16string& title);
+  void AddPageNoVisitForBookmark(const GURL& url, const std::u16string& title);
   void UpdateWithPageEndTime(ContextID context_id,
                              int nav_entry_id,
                              const GURL& url,
                              base::Time end_ts);
   void SetFlocAllowed(ContextID context_id, int nav_entry_id, const GURL& url);
+  void AddContentModelAnnotationsForVisit(
+      VisitID visit_id,
+      const VisitContentModelAnnotations& model_annotations);
 
   // Querying ------------------------------------------------------------------
 
@@ -252,7 +256,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback);
 
   QueryURLResult QueryURL(const GURL& url, bool want_visits);
-  QueryResults QueryHistory(const base::string16& text_query,
+  QueryResults QueryHistory(const std::u16string& text_query,
                             const QueryOptions& options);
 
   // Computes the most recent URL(s) that the given canonical URL has
@@ -320,9 +324,21 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // time range [|begin_time|, |end_time|). If the given host has not been
   // visited in the given time range, the result will have a null base::Time,
   // but still report success.
-  HistoryLastVisitToHostResult GetLastVisitToHost(const GURL& host,
-                                                  base::Time begin_time,
-                                                  base::Time end_time);
+  HistoryLastVisitResult GetLastVisitToHost(const GURL& host,
+                                            base::Time begin_time,
+                                            base::Time end_time);
+
+  // Gets the last time |url| was visited before |end_time|. If the given URL
+  // has not been visited in the past, the result will have a null base::Time,
+  // but still report success.
+  HistoryLastVisitResult GetLastVisitToURL(const GURL& url,
+                                           base::Time end_time);
+
+  // Gets counts for total visits and days visited for pages matching |host|'s
+  // scheme, port, and host. Counts only user-visible visits.
+  DailyVisitsResult GetDailyVisitsToHost(const GURL& host,
+                                         base::Time begin_time,
+                                         base::Time end_time);
 
   // Favicon -------------------------------------------------------------------
 
@@ -382,6 +398,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void SetFaviconsOutOfDateForPage(const GURL& page_url);
 
+  void SetFaviconsOutOfDateBetween(base::Time begin, base::Time end);
+
   void TouchOnDemandFavicon(const GURL& icon_url);
 
   void SetImportedFavicons(
@@ -399,14 +417,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void SetKeywordSearchTermsForURL(const GURL& url,
                                    KeywordID keyword_id,
-                                   const base::string16& term);
+                                   const std::u16string& term);
 
   void DeleteAllSearchTermsForKeyword(KeywordID keyword_id);
 
   void DeleteKeywordSearchTermForURL(const GURL& url);
 
   void DeleteMatchingURLsForKeyword(KeywordID keyword_id,
-                                    const base::string16& term);
+                                    const std::u16string& term);
 
   // Observers -----------------------------------------------------------------
 
@@ -672,7 +690,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       VisitSource visit_source,
       bool should_increment_typed_count,
       bool floc_allowed,
-      base::Optional<base::string16> title = base::nullopt);
+      base::Optional<std::u16string> title = base::nullopt);
 
   // Returns a redirect chain in |redirects| for the VisitID
   // |cur_visit|. |cur_visit| is assumed to be valid. Assumes that
@@ -698,7 +716,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // search for results which match the given text query.
   // Both functions assume QueryHistory already checked the DB for validity.
   void QueryHistoryBasic(const QueryOptions& options, QueryResults* result);
-  void QueryHistoryText(const base::string16& text_query,
+  void QueryHistoryText(const std::u16string& text_query,
                         const QueryOptions& options,
                         QueryResults* result);
 

@@ -12,7 +12,7 @@
 
 namespace ash {
 
-using ::chromeos::assistant::AssistantTimer;
+using chromeos::assistant::AssistantTimer;
 
 AssistantAlarmTimerModel::AssistantAlarmTimerModel() = default;
 
@@ -46,7 +46,7 @@ void AssistantAlarmTimerModel::AddOrUpdateTimer(
   timer.creation_time =
       timer.creation_time.value_or(timers_[timer.id].creation_time.value());
 
-  timers_[timer.id] = std::move(timer);
+  timers_[timer.id] = timer;
   NotifyTimerUpdated(timer);
 }
 

@@ -22,15 +22,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/login_web_dialog.h"
+#include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/extensions/file_manager/select_file_dialog_extension_user_data.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/select_file_dialog_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_view_host.h"
@@ -303,7 +303,7 @@ content::RenderFrameHost* SelectFileDialogExtension::GetMainFrame() {
 
 void SelectFileDialogExtension::SelectFileWithFileManagerParams(
     Type type,
-    const base::string16& title,
+    const std::u16string& title,
     const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,
@@ -434,7 +434,7 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
 
 void SelectFileDialogExtension::SelectFileImpl(
     Type type,
-    const base::string16& title,
+    const std::u16string& title,
     const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,

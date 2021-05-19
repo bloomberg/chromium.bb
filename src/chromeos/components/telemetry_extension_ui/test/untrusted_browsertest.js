@@ -122,15 +122,83 @@ UNTRUSTED_TEST(
 UNTRUSTED_TEST(
     'UntrustedDiagnosticsRequestRunBatteryCapacityRoutine', async () => {
       const response =
-          await chromeos.diagnostics.runBatteryCapacityRoutine();
+        await chromeos.diagnostics.runBatteryCapacityRoutine();
       assertDeepEquals({id: 123456789, status: 'ready'}, response);
     });
+
+// Tests that a routine is created and routine.{getStatus(), resume(), stop()}
+// return correct responses.
+UNTRUSTED_TEST(
+    'UntrustedDiagnosticsRoutineCommandWithInterceptor', async () => {
+      let expectedRoutineStatus = {
+        progressPercent: 0,
+        output: '',
+        status: 'ready',
+        statusMessage: 'Routine ran by Google.',
+        userMessage: ''
+      };
+
+      // The order must be kept.
+      // See UntrustedDiagnosticsRoutineCommandWithInterceptor test in
+      // telemetry_extension_ui_browsertests.js.
+
+      const routine = await dpsl.diagnostics.battery.runCapacityRoutine();
+      const routineGetStatus = await routine.getStatus();
+      const routineResume = await routine.resume();
+      const routineStop = await routine.stop();
+
+      assertDeepEquals(expectedRoutineStatus, routineGetStatus);
+      assertDeepEquals(expectedRoutineStatus, routineResume);
+      assertDeepEquals(expectedRoutineStatus, routineStop);
+    });
+
+// Tests that diagnostics routines are successfully created and run.
+UNTRUSTED_TEST('UntrustedDiagnosticsRunRoutineWithInterceptor', async () => {
+  // The order must be kept.
+  // See UntrustedDiagnosticsRunRoutineWithInterceptor test in
+  // telemetry_extension_ui_browsertests.js.
+
+  // dpsl.diagnostics.battery.* routines
+  await dpsl.diagnostics.battery.runCapacityRoutine();
+  await dpsl.diagnostics.battery.runHealthRoutine();
+  await dpsl.diagnostics.battery.runDischargeRoutine(
+      {lengthSeconds: 7, maximumDischargePercentAllowed: 50});
+  await dpsl.diagnostics.battery.runChargeRoutine(
+      {lengthSeconds: 13, minimumChargePercentRequired: 87});
+
+  // dpsl.diangostics.nvme.* routines
+  await dpsl.diagnostics.nvme.runSmartctlCheckRoutine();
+  await dpsl.diagnostics.nvme.runWearLevelRoutine({wearLevelThreshold: 37});
+  await dpsl.diagnostics.nvme.runShortSelfTestRoutine();
+  await dpsl.diagnostics.nvme.runLongSelfTestRoutine();
+
+  // dpsl.diangostics.power.* routines
+  await dpsl.diagnostics.power.runAcConnectedRoutine();
+  await dpsl.diagnostics.power.runAcDisconnectedRoutine();
+  await dpsl.diagnostics.power.runAcConnectedRoutine(
+      {expectedPowerType: 'Mains'});
+  await dpsl.diagnostics.power.runAcDisconnectedRoutine(
+      {expectedPowerType: 'Battery'});
+
+  // dpsl.diangostics.cpu.* tests
+  await dpsl.diagnostics.cpu.runCacheRoutine({duration: 30});
+  await dpsl.diagnostics.cpu.runStressRoutine({duration: 17});
+  await dpsl.diagnostics.cpu.runFloatingPointAccuracyRoutine({duration: 94});
+  await dpsl.diagnostics.cpu.runPrimeSearchRoutine(
+      {lengthSeconds: 45, maximumNumber: 1110987654321});
+
+  // dpsl.diangostics.disk.* tests
+  await dpsl.diagnostics.disk.runLinearReadRoutine(
+      {lengthSeconds: 44, fileSizeMB: 135});
+  await dpsl.diagnostics.disk.runRandomReadRoutine(
+      {lengthSeconds: 23, fileSizeMB: 1749});
+});
 
 // Tests that runBatteryHealthRoutine returns the correct Object.
 UNTRUSTED_TEST(
     'UntrustedDiagnosticsRequestRunBatteryHealthRoutine', async () => {
       const response =
-          await chromeos.diagnostics.runBatteryHealthRoutine();
+        await chromeos.diagnostics.runBatteryHealthRoutine();
       assertDeepEquals({id: 123456789, status: 'ready'}, response);
     });
 
@@ -446,86 +514,211 @@ UNTRUSTED_TEST(
       assertDeepEquals({id: 123456789, status: 'ready'}, response);
     });
 
-// Tests that addEventListener receives system bluetooth adapter added event.
+// Tests that:
+//   1) addEventListener receives system bluetooth adapter added event.
+//   2) removeEventListener stops receiving system bluetooth adapter added
+//      event.
 UNTRUSTED_TEST('UntrustedBluetoothAdapterAddedEventListener', async () => {
   await new Promise(
       (resolve) => chromeos.telemetry.addEventListener(
           'bluetooth-adapter-added', resolve));
+
+  dpsl.system_events.bluetooth.addOnAdapterAddedListener(
+      shouldNeverBeCalledCallback);
+  dpsl.system_events.bluetooth.removeOnAdapterAddedListener(
+      shouldNeverBeCalledCallback);
+
+  await new Promise(
+      (resolve) =>
+          dpsl.system_events.bluetooth.addOnAdapterAddedListener(resolve));
 });
 
-// Tests that addEventListener receives system bluetooth adapter removed event.
+// Tests that:
+//   1) addEventListener receives system bluetooth adapter removed event.
+//   2) removeEventListener stops receiving system bluetooth adapter removed
+//      event.
 UNTRUSTED_TEST('UntrustedBluetoothAdapterRemovedEventListener', async () => {
   await new Promise(
       (resolve) => chromeos.telemetry.addEventListener(
           'bluetooth-adapter-removed', resolve));
+
+  dpsl.system_events.bluetooth.addOnAdapterRemovedListener(
+      shouldNeverBeCalledCallback);
+  dpsl.system_events.bluetooth.removeOnAdapterRemovedListener(
+      shouldNeverBeCalledCallback);
+
+  await new Promise(
+      (resolve) =>
+          dpsl.system_events.bluetooth.addOnAdapterRemovedListener(resolve));
 });
 
-// Tests that addEventListener receives system bluetooth adapter property
-// changed event.
+// Tests that:
+//   1) addEventListener receives system bluetooth adapter property changed
+//      event.
+//   2) removeEventListener stops receiving system bluetooth adapter property
+//      changed event.
 UNTRUSTED_TEST(
     'UntrustedBluetoothAdapterPropertyChangedEventListener', async () => {
       await new Promise(
           (resolve) => chromeos.telemetry.addEventListener(
               'bluetooth-adapter-property-changed', resolve));
+
+      dpsl.system_events.bluetooth.addOnAdapterPropertyChangedListener(
+          shouldNeverBeCalledCallback);
+      dpsl.system_events.bluetooth.removeOnAdapterPropertyChangedListener(
+          shouldNeverBeCalledCallback);
+
+      await new Promise(
+          (resolve) =>
+              dpsl.system_events.bluetooth.addOnAdapterPropertyChangedListener(
+                  resolve));
     });
 
-// Tests that addEventListener receives system bluetooth device added event.
+// Tests that:
+//   1) addEventListener receives system bluetooth device added event.
+//   2) removeEventListener stops receiving system bluetooth device added event.
 UNTRUSTED_TEST('UntrustedBluetoothDeviceAddedEventListener', async () => {
   await new Promise(
       (resolve) => chromeos.telemetry.addEventListener(
           'bluetooth-device-added', resolve));
+
+  dpsl.system_events.bluetooth.addOnDeviceAddedListener(
+      shouldNeverBeCalledCallback);
+  dpsl.system_events.bluetooth.removeOnDeviceAddedListener(
+      shouldNeverBeCalledCallback);
+
+  await new Promise(
+      (resolve) =>
+          dpsl.system_events.bluetooth.addOnDeviceAddedListener(resolve));
 });
 
-// Tests that addEventListener receives system bluetooth device removed event.
+// Tests that:
+//   1) addEventListener receives system bluetooth device removed event.
+//   2) removeEventListener stops receiving system bluetooth device removed
+//      event.
 UNTRUSTED_TEST('UntrustedBluetoothDeviceRemovedEventListener', async () => {
   await new Promise(
       (resolve) => chromeos.telemetry.addEventListener(
           'bluetooth-device-removed', resolve));
+
+  dpsl.system_events.bluetooth.addOnDeviceRemovedListener(
+      shouldNeverBeCalledCallback);
+  dpsl.system_events.bluetooth.removeOnDeviceRemovedListener(
+      shouldNeverBeCalledCallback);
+
+  await new Promise(
+      (resolve) =>
+          dpsl.system_events.bluetooth.addOnDeviceRemovedListener(resolve));
 });
 
-// Tests that addEventListener receives system bluetooth device property changed
-// event.
+// Tests that:
+//   1) addEventListener receives system bluetooth device property changed
+//      event.
+//   2) removeEventListener stops receiving system bluetooth device property
+//      changed event.
 UNTRUSTED_TEST(
     'UntrustedBluetoothDevicePropertyChangedEventListener', async () => {
       await new Promise(
           (resolve) => chromeos.telemetry.addEventListener(
               'bluetooth-device-property-changed', resolve));
+
+      dpsl.system_events.bluetooth.addOnDevicePropertyChangedListener(
+          shouldNeverBeCalledCallback);
+      dpsl.system_events.bluetooth.removeOnDevicePropertyChangedListener(
+          shouldNeverBeCalledCallback);
+
+      await new Promise(
+          (resolve) =>
+              dpsl.system_events.bluetooth.addOnDevicePropertyChangedListener(
+                  resolve));
     });
 
-// Tests that addEventListener receives system lid closed event.
+// Tests that:
+//   1) addEventListener receives system lid closed event.
+//   2) removeEventListener stops receiving system lid closed event.
 UNTRUSTED_TEST('UntrustedLidClosedEventListener', async () => {
   await new Promise(
       (resolve) => chromeos.telemetry.addEventListener('lid-closed', resolve));
+
+  dpsl.system_events.lid.addOnLidClosedListener(shouldNeverBeCalledCallback);
+  dpsl.system_events.lid.removeOnLidClosedListener(shouldNeverBeCalledCallback);
+
+  await new Promise(
+      (resolve) => dpsl.system_events.lid.addOnLidClosedListener(resolve));
 });
 
-// Tests that addEventListener receives system lid opened event.
+// Tests that:
+//   1) addEventListener receives system lid opened event.
+//   2) removeEventListener stops receiving system lid opened event.
 UNTRUSTED_TEST('UntrustedLidOpenedEventListener', async () => {
   await new Promise(
       (resolve) => chromeos.telemetry.addEventListener('lid-opened', resolve));
+
+  dpsl.system_events.lid.addOnLidOpenedListener(shouldNeverBeCalledCallback);
+  dpsl.system_events.lid.removeOnLidOpenedListener(shouldNeverBeCalledCallback);
+
+  await new Promise(
+      (resolve) => dpsl.system_events.lid.addOnLidOpenedListener(resolve));
 });
 
-// Tests that addEventListener receives system ac inserted event.
+// Tests that:
+//   1) addEventListener receives system ac inserted event.
+//   2) removeEventListener stops receiving system ac inserted event.
 UNTRUSTED_TEST('UntrustedAcInsertedEventListener', async () => {
   await new Promise(
       (resolve) => chromeos.telemetry.addEventListener('ac-inserted', resolve));
+
+  dpsl.system_events.power.addOnAcInsertedListener(shouldNeverBeCalledCallback);
+  dpsl.system_events.power.removeOnAcInsertedListener(
+      shouldNeverBeCalledCallback);
+
+  await new Promise(
+      (resolve) => dpsl.system_events.power.addOnAcInsertedListener(resolve));
 });
 
-// Tests that addEventListener receives system ac removed event.
+// Tests that:
+//   1) addEventListener receives system ac removed event.
+//   2) removeEventListener stops receiving system ac removed event.
 UNTRUSTED_TEST('UntrustedAcRemovedEventListener', async () => {
   await new Promise(
       (resolve) => chromeos.telemetry.addEventListener('ac-removed', resolve));
+
+  dpsl.system_events.power.addOnAcRemovedListener(shouldNeverBeCalledCallback);
+  dpsl.system_events.power.removeOnAcRemovedListener(
+      shouldNeverBeCalledCallback);
+
+  await new Promise(
+      (resolve) => dpsl.system_events.power.addOnAcRemovedListener(resolve));
 });
 
-// Tests that addEventListener receives system os suspend event.
+// Tests that:
+//   1) addEventListener receives system os suspend event.
+//   2) removeEventListener stops receiving system os suspend event.
 UNTRUSTED_TEST('UntrustedOsSuspendEventListener', async () => {
   await new Promise(
       (resolve) => chromeos.telemetry.addEventListener('os-suspend', resolve));
+
+  dpsl.system_events.power.addOnOsSuspendListener(shouldNeverBeCalledCallback);
+  dpsl.system_events.power.removeOnOsSuspendListener(
+      shouldNeverBeCalledCallback);
+
+  await new Promise(
+      (resolve) => dpsl.system_events.power.addOnOsSuspendListener(resolve));
 });
 
-// Tests that addEventListener receives system os resume event.
+// Tests that:
+//   1) addEventListener receives system os resume event.
+//   2) removeEventListener stops receiving system os resume event.
 UNTRUSTED_TEST('UntrustedOsResumeEventListener', async () => {
   await new Promise(
       (resolve) => chromeos.telemetry.addEventListener('os-resume', resolve));
+
+  dpsl.system_events.power.addOnOsResumeListener(shouldNeverBeCalledCallback);
+  dpsl.system_events.power.removeOnOsResumeListener(
+      shouldNeverBeCalledCallback);
+
+  await new Promise(
+      (resolve) => dpsl.system_events.power.addOnOsResumeListener(resolve));
 });
 
 // Tests that TelemetryInfo throws an error if category is unknown.
@@ -706,38 +899,63 @@ UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
 });
 
 // Tests that sendCommandToRoutine returns the correct Object
-// for an interactive routine.
+// for an interactive routine and that interactive routine.getStatus()
+// returns the correct Object.
 UNTRUSTED_TEST(
-    'UntrustedDiagnosticsRequestInteractiveRoutineUpdate', async () => {
+    'UntrustedDiagnosticsInteractiveRoutineCommand', async () => {
+      const expectedResult = {
+        progressPercent: 0,
+        output: 'This routine is running!',
+        status: 'waiting',
+        statusMessage: '',
+        userMessage: 'unplug-ac-power'
+      };
       const response = await chromeos.diagnostics.sendCommandToRoutine(
           987654321, 'remove', true);
       assertDeepEquals(
           {
-            progressPercent: 0,
-            output: 'This routine is running!',
+            progressPercent: expectedResult.progressPercent,
+            output: expectedResult.output,
             routineUpdateUnion:
-                {interactiveUpdate: {userMessage: 'unplug-ac-power'}}
+                {interactiveUpdate: {userMessage: expectedResult.userMessage}}
           },
           response);
+      const dpslRoutine = await dpsl.diagnostics.power.runAcConnectedRoutine();
+      const routineStatus = await dpslRoutine.getStatus();
+      assertDeepEquals(expectedResult, routineStatus);
     });
 
 // Tests that sendCommandToRoutine returns the correct Object
-// for a non-interactive routine.
+// for a non-interactive routine and that a non-interactive routine.getStatus()
+// returns the correct Object.
+// Note: this is an end-to-end test using fake cros_healthd.
 UNTRUSTED_TEST(
-    'UntrustedDiagnosticsRequestNonInteractiveRoutineUpdate', async () => {
+    'UntrustedDiagnosticsNonInteractiveRoutineCommand', async () => {
+      const expectedResult = {
+        progressPercent: 3147483771,
+        output: '',
+        status: 'ready',
+        statusMessage: 'Routine ran by Google.',
+        userMessage: ''
+      }
       const response = await chromeos.diagnostics.sendCommandToRoutine(
           135797531, 'remove', true);
       assertDeepEquals(
           {
-            progressPercent: 3147483771,
-            output: '',
+            progressPercent: expectedResult.progressPercent,
+            output: expectedResult.output,
             routineUpdateUnion: {
-              noninteractiveUpdate:
-                  {status: 'ready', statusMessage: 'Routine ran by Google.'}
+              noninteractiveUpdate: {
+                status: expectedResult.status,
+                statusMessage: expectedResult.statusMessage
+              }
             }
           },
           response);
-    });
+      const dpslRoutine = await dpsl.diagnostics.battery.runCapacityRoutine();
+      const routineStatus = await dpslRoutine.getStatus();
+      assertDeepEquals(expectedResult, routineStatus);
+});
 
 // Tests that TelemetryInfo can be successfully requested from
 // from chrome-untrusted://.

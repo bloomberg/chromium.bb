@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 
 #include <algorithm>
+#include <memory>
 #include <unordered_set>
 #include <utility>
 
@@ -145,7 +146,7 @@ class ProfileAttributesSortComparator {
   }
 
  private:
-  base::string16 GetValue(const ProfileAttributesEntry* const entry) const {
+  std::u16string GetValue(const ProfileAttributesEntry* const entry) const {
     if (use_local_name_)
       return entry->GetLocalProfileName();
 
@@ -248,9 +249,7 @@ std::vector<ProfileAttributesEntry*>
 ProfileAttributesStorage::GetAllProfilesAttributes(bool include_guest_profile) {
   std::vector<ProfileAttributesEntry*> ret;
   for (const auto& path_and_entry : profile_attributes_entries_) {
-    // Initialize any entries that are not yet initialized.
-    ProfileAttributesEntry* entry =
-        GetProfileAttributesWithPath(base::FilePath(path_and_entry.first));
+    ProfileAttributesEntry* entry = path_and_entry.second.get();
     DCHECK(entry);
     if (!entry->IsGuest() || include_guest_profile)
       ret.push_back(entry);
@@ -290,9 +289,9 @@ ProfileAttributesStorage::GetAllProfilesAttributesSortedByLocalProfilName() {
   return GetAllProfilesAttributesSorted(true);
 }
 
-base::string16 ProfileAttributesStorage::ChooseNameForNewProfile(
+std::u16string ProfileAttributesStorage::ChooseNameForNewProfile(
     size_t icon_index) const {
-  base::string16 name;
+  std::u16string name;
   for (int name_index = 1; ; ++name_index) {
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
     // Using native digits will break IsDefaultProfileName() below because
@@ -332,11 +331,11 @@ base::string16 ProfileAttributesStorage::ChooseNameForNewProfile(
 }
 
 bool ProfileAttributesStorage::IsDefaultProfileName(
-    const base::string16& name,
+    const std::u16string& name,
     bool include_check_for_legacy_profile_name) const {
   // Check whether it's one of the "Person %d" style names.
-  std::string default_name_format = l10n_util::GetStringFUTF8(
-      IDS_NEW_NUMBERED_PROFILE_NAME, base::ASCIIToUTF16("%d"));
+  std::string default_name_format =
+      l10n_util::GetStringFUTF8(IDS_NEW_NUMBERED_PROFILE_NAME, u"%d");
   int generic_profile_number;  // Unused. Just a placeholder for sscanf.
   int assignments =
       sscanf(base::UTF16ToUTF8(name).c_str(), default_name_format.c_str(),
@@ -512,10 +511,10 @@ void ProfileAttributesStorage::DownloadHighResAvatar(
   // completes, or if that never happens, when the storage is destroyed.
   std::unique_ptr<ProfileAvatarDownloader>& current_downloader =
       avatar_images_downloads_in_progress_[file_name];
-  current_downloader.reset(new ProfileAvatarDownloader(
+  current_downloader = std::make_unique<ProfileAvatarDownloader>(
       icon_index,
       base::BindOnce(&ProfileAttributesStorage::SaveAvatarImageAtPathNoCallback,
-                     AsWeakPtr(), profile_path)));
+                     AsWeakPtr(), profile_path));
 
   current_downloader->Start();
 #endif

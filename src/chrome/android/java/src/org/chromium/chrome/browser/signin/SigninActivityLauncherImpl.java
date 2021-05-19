@@ -21,13 +21,13 @@ import org.chromium.components.signin.metrics.SigninAccessPoint;
  * SigninActivityLauncher creates the proper intent and then launches the
  * SigninActivity in different scenarios.
  */
-public class SigninActivityLauncherImpl implements SigninActivityLauncher {
-    private static SigninActivityLauncherImpl sLauncher;
+public final class SigninActivityLauncherImpl implements SigninActivityLauncher {
+    private static SigninActivityLauncher sLauncher;
 
     /**
      * Singleton instance getter
      */
-    public static SigninActivityLauncherImpl get() {
+    public static SigninActivityLauncher get() {
         if (sLauncher == null) {
             sLauncher = new SigninActivityLauncherImpl();
         }
@@ -35,7 +35,7 @@ public class SigninActivityLauncherImpl implements SigninActivityLauncher {
     }
 
     @VisibleForTesting
-    public static void setLauncherForTest(@Nullable SigninActivityLauncherImpl launcher) {
+    public static void setLauncherForTest(@Nullable SigninActivityLauncher launcher) {
         sLauncher = launcher;
     }
 
@@ -50,7 +50,7 @@ public class SigninActivityLauncherImpl implements SigninActivityLauncher {
     public void launchActivityForPromoDefaultFlow(
             Context context, @SigninAccessPoint int accessPoint, String accountName) {
         launchInternal(context,
-                SigninFragment.createArgumentsForPromoDefaultFlow(accessPoint, accountName));
+                SyncConsentFragment.createArgumentsForPromoDefaultFlow(accessPoint, accountName));
     }
 
     /**
@@ -63,7 +63,8 @@ public class SigninActivityLauncherImpl implements SigninActivityLauncher {
     public void launchActivityForPromoChooseAccountFlow(
             Context context, @SigninAccessPoint int accessPoint, String accountName) {
         launchInternal(context,
-                SigninFragment.createArgumentsForPromoChooseAccountFlow(accessPoint, accountName));
+                SyncConsentFragment.createArgumentsForPromoChooseAccountFlow(
+                        accessPoint, accountName));
     }
 
     /**
@@ -74,30 +75,22 @@ public class SigninActivityLauncherImpl implements SigninActivityLauncher {
     @Override
     public void launchActivityForPromoAddAccountFlow(
             Context context, @SigninAccessPoint int accessPoint) {
-        launchInternal(context, SigninFragment.createArgumentsForPromoAddAccountFlow(accessPoint));
+        launchInternal(
+                context, SyncConsentFragment.createArgumentsForPromoAddAccountFlow(accessPoint));
     }
 
     /**
-     * Launches the signin activity.
-     * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
-     */
-    @Override
-    public void launchActivity(Context context, @SigninAccessPoint int accessPoint) {
-        launchInternal(context, SigninFragment.createArguments(accessPoint));
-    }
-
-    /**
-     * Launches the {@link SigninActivity} if signin is allowed.
+     * Launches the {@link SyncConsentActivity} if signin is allowed.
      * @param context A {@link Context} object.
      * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
-     * @return a boolean indicating if the {@link SigninActivity} is launched.
+     * @return a boolean indicating if the {@link SyncConsentActivity} is launched.
      */
     @Override
     public boolean launchActivityIfAllowed(Context context, @SigninAccessPoint int accessPoint) {
         SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
                 Profile.getLastUsedRegularProfile());
         if (signinManager.isSignInAllowed()) {
-            launchActivity(context, accessPoint);
+            launchInternal(context, SyncConsentFragmentBase.createArguments(accessPoint, null));
             return true;
         }
         if (signinManager.isSigninDisabledByPolicy()) {
@@ -107,7 +100,7 @@ public class SigninActivityLauncherImpl implements SigninActivityLauncher {
     }
 
     private void launchInternal(Context context, Bundle fragmentArgs) {
-        Intent intent = SigninActivity.createIntent(context, fragmentArgs);
+        Intent intent = SyncConsentActivity.createIntent(context, fragmentArgs);
         context.startActivity(intent);
     }
 }

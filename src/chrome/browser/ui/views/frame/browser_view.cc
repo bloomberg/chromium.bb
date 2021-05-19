@@ -86,6 +86,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
+#include "chrome/browser/ui/views/download/download_shelf_web_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
@@ -110,6 +111,7 @@
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
+#include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "chrome/browser/ui/views/qrcode_generator/qrcode_generator_bubble.h"
@@ -124,7 +126,6 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_search_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
@@ -436,6 +437,24 @@ bool ShouldShowWindowIcon(const Browser* browser) {
   return browser->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
 }
 
+#if defined(OS_MAC)
+void GetAnyTabAudioStates(const Browser* browser,
+                          bool* any_tab_playing_audio,
+                          bool* any_tab_playing_muted_audio) {
+  const TabStripModel* model = browser->tab_strip_model();
+  for (int i = 0; i < model->count(); i++) {
+    auto* contents = model->GetWebContentsAt(i);
+    auto* helper = RecentlyAudibleHelper::FromWebContents(contents);
+    if (helper && helper->WasRecentlyAudible()) {
+      if (contents->IsAudioMuted())
+        *any_tab_playing_muted_audio = true;
+      else
+        *any_tab_playing_audio = true;
+    }
+  }
+}
+#endif  // OS_MAC
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -648,8 +667,14 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
 #if defined(OS_WIN)
   // Create a custom JumpList and add it to an observer of TabRestoreService
   // so we can update the custom JumpList when a tab is added or removed.
-  if (JumpList::Enabled())
-    load_complete_listener_ = std::make_unique<LoadCompleteListener>(this);
+  // JumpList is created asynchronously with a low priority to not delay the
+  // startup.
+  if (JumpList::Enabled()) {
+    content::BrowserThread::PostBestEffortTask(
+        FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
+        base::BindOnce(&BrowserView::CreateJumpList,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 #endif
 }
 
@@ -715,6 +740,10 @@ BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
   if (!browser->window() || !browser->window()->GetNativeWindow())
     return nullptr;
   return GetBrowserViewForNativeWindow(browser->window()->GetNativeWindow());
+}
+
+void BrowserView::SetDownloadShelfForTest(DownloadShelf* download_shelf) {
+  download_shelf_ = download_shelf;
 }
 
 // static
@@ -1003,6 +1032,10 @@ bool BrowserView::DoBrowserControlsShrinkRendererSize(
   return top_controls_slide_controller_ &&
          top_controls_slide_controller_->DoBrowserControlsShrinkRendererSize(
              contents);
+}
+
+ui::NativeTheme* BrowserView::GetNativeTheme() {
+  return views::ClientView::GetNativeTheme();
 }
 
 int BrowserView::GetTopControlsHeight() const {
@@ -1312,8 +1345,14 @@ void BrowserView::Restore() {
 void BrowserView::EnterFullscreen(const GURL& url,
                                   ExclusiveAccessBubbleType bubble_type,
                                   const int64_t display_id) {
-  if (IsFullscreen())
-    return;  // Nothing to do.
+  auto* screen = display::Screen::GetScreen();
+  auto display = screen->GetDisplayNearestWindow(GetNativeWindow());
+  const bool requesting_another_screen =
+      display_id != display.id() && display_id != display::kInvalidDisplayId;
+  if (IsFullscreen() && !requesting_another_screen) {
+    // Nothing to do.
+    return;
+  }
 
   ProcessFullscreen(true, url, bubble_type, display_id);
 }
@@ -1393,7 +1432,6 @@ void BrowserView::FullscreenStateChanging() {
           ? GetExclusiveAccessManager()->GetExclusiveAccessExitBubbleType()
           : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
       display::kInvalidDisplayId);
-  frame_->GetFrameView()->OnFullscreenStateChanged();
 }
 
 void BrowserView::FullscreenStateChanged() {
@@ -1493,14 +1531,7 @@ void BrowserView::FocusToolbar() {
 }
 
 ExtensionsContainer* BrowserView::GetExtensionsContainer() {
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
-    return toolbar_button_provider_->GetExtensionsToolbarContainer();
-
-  BrowserActionsContainer* container =
-      toolbar_button_provider_->GetBrowserActionsContainer();
-  // Note that in some cases (such as an app window), there is no extensions
-  // container.
-  return container ? container->toolbar_actions_bar() : nullptr;
+  return toolbar_button_provider_->GetExtensionsToolbarContainer();
 }
 
 void BrowserView::ToolbarSizeChanged(bool is_animating) {
@@ -1839,7 +1870,7 @@ ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 void BrowserView::ShowOneClickSigninConfirmation(
-    const base::string16& email,
+    const std::u16string& email,
     base::OnceCallback<void(bool)> confirmed_callback) {
   std::unique_ptr<OneClickSigninLinksDelegate> delegate(
       new OneClickSigninLinksDelegateImpl(browser()));
@@ -1865,9 +1896,14 @@ bool BrowserView::IsDownloadShelfVisible() const {
 
 DownloadShelf* BrowserView::GetDownloadShelf() {
   if (!download_shelf_) {
-    download_shelf_ =
-        AddChildView(std::make_unique<DownloadShelfView>(browser_.get(), this));
-    GetBrowserViewLayout()->set_download_shelf(download_shelf_);
+    if (base::FeatureList::IsEnabled(features::kWebUIDownloadShelf)) {
+      download_shelf_ = AddChildView(
+          std::make_unique<DownloadShelfWebView>(browser_.get(), this));
+    } else {
+      download_shelf_ = AddChildView(
+          std::make_unique<DownloadShelfView>(browser_.get(), this));
+    }
+    GetBrowserViewLayout()->set_download_shelf(download_shelf_->GetView());
   }
   return download_shelf_;
 }
@@ -1896,8 +1932,8 @@ void BrowserView::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
   // In Incognito, the usage of dark or normal hinges on the browser theme.
   if (theme_change_type == BrowserThemeChangeType::kBrowserTheme &&
       !GetRegularOrGuestSession()) {
-    ui::NativeTheme::GetInstanceForDarkUI()->NotifyObservers();
-    ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
+    ui::NativeTheme::GetInstanceForDarkUI()->NotifyOnNativeThemeUpdated();
+    ui::NativeTheme::GetInstanceForNativeUi()->NotifyOnNativeThemeUpdated();
 
     // Early exit. A native theme change will update all the
     // NativeThemeObservers, and then BrowserFrame will re-enter this method
@@ -2207,28 +2243,26 @@ bool BrowserView::CanActivate() const {
   return false;
 }
 
-base::string16 BrowserView::GetWindowTitle() const {
-  base::string16 title =
+std::u16string BrowserView::GetWindowTitle() const {
+  std::u16string title =
       browser_->GetWindowTitleForCurrentTab(true /* include_app_name */);
 #if defined(OS_MAC)
-  content::WebContents* contents = GetActiveWebContents();
-  if (contents) {
-    auto* helper = RecentlyAudibleHelper::FromWebContents(contents);
-    if (helper && helper->WasRecentlyAudible()) {
-      title =
-          contents->IsAudioMuted()
-              ? l10n_util::GetStringFUTF16(IDS_WINDOW_AUDIO_MUTING_MAC, title,
-                                           base::WideToUTF16(L"\U0001F507"))
-              : title = l10n_util::GetStringFUTF16(
-                    IDS_WINDOW_AUDIO_PLAYING_MAC, title,
-                    base::WideToUTF16(L"\U0001F50A"));
-    }
+  bool any_tab_playing_audio = false;
+  bool any_tab_playing_muted_audio = false;
+  GetAnyTabAudioStates(browser_.get(), &any_tab_playing_audio,
+                       &any_tab_playing_muted_audio);
+  if (any_tab_playing_audio) {
+    title = l10n_util::GetStringFUTF16(IDS_WINDOW_AUDIO_PLAYING_MAC, title,
+                                       u"\U0001F50A");
+  } else if (any_tab_playing_muted_audio) {
+    title = l10n_util::GetStringFUTF16(IDS_WINDOW_AUDIO_MUTING_MAC, title,
+                                       u"\U0001F507");
   }
 #endif
   return title;
 }
 
-base::string16 BrowserView::GetAccessibleWindowTitle() const {
+std::u16string BrowserView::GetAccessibleWindowTitle() const {
   // If there is a focused and visible tab-modal dialog, report the dialog's
   // title instead of the page title.
   views::Widget* tab_modal =
@@ -2241,14 +2275,14 @@ base::string16 BrowserView::GetAccessibleWindowTitle() const {
                                                       browser_->profile());
 }
 
-base::string16 BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
+std::u16string BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
     version_info::Channel channel,
     Profile* profile) const {
   // Start with the tab title, which includes properties of the tab
   // like playing audio or network error.
   const bool include_app_name = false;
   int active_index = browser_->tab_strip_model()->active_index();
-  base::string16 title;
+  std::u16string title;
   if (active_index > -1)
     title = GetAccessibleTabLabel(include_app_name, active_index);
   else
@@ -2286,7 +2320,7 @@ base::string16 BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
         IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT, title);
   } else if (profile->IsRegularProfile() &&
              profile_manager->GetNumberOfProfiles() > 1) {
-    base::string16 profile_name =
+    std::u16string profile_name =
         profiles::GetAvatarNameForProfile(profile->GetPath());
     if (!profile_name.empty()) {
       title = l10n_util::GetStringFUTF16(
@@ -2297,15 +2331,15 @@ base::string16 BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
   return title;
 }
 
-base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
+std::u16string BrowserView::GetAccessibleTabLabel(bool include_app_name,
                                                   int index) const {
-  base::string16 title =
+  std::u16string title =
       browser_->GetWindowTitleForTab(include_app_name, index);
 
   base::Optional<tab_groups::TabGroupId> group =
       tabstrip_->tab_at(index)->group();
   if (group.has_value()) {
-    base::string16 group_title = tabstrip_->GetGroupTitle(group.value());
+    std::u16string group_title = tabstrip_->GetGroupTitle(group.value());
     if (group_title.empty()) {
       title = l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_UNNAMED_GROUP_FORMAT,
                                          title);
@@ -2376,7 +2410,7 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
   }
 
   NOTREACHED();
-  return base::string16();
+  return std::u16string();
 }
 
 std::vector<views::NativeViewHost*>
@@ -2412,7 +2446,7 @@ void BrowserView::EnsureFocusOrder() {
   // focus order, but makes it easily accessible by using SHIFT-TAB (reverse
   // focus traversal) from the toolbar/omnibox.
   if (download_shelf_ && contents_container_)
-    download_shelf_->InsertAfterInFocusList(contents_container_);
+    download_shelf_->GetView()->InsertAfterInFocusList(contents_container_);
 
 #if DCHECK_IS_ON()
   // Make sure we didn't create any cycles in the focus order.
@@ -2768,7 +2802,7 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
   if (infobar_container_)
     panes->push_back(infobar_container_);
   if (download_shelf_)
-    panes->push_back(download_shelf_);
+    panes->push_back(download_shelf_->GetView());
 // TODO(crbug.com/1055150): Implement for mac.
 #if !defined(OS_MAC)
   // See if there is a caption bubble present.
@@ -2781,6 +2815,21 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
   panes->push_back(contents_web_view_);
   if (devtools_web_view_->GetVisible())
     panes->push_back(devtools_web_view_);
+}
+
+bool BrowserView::ShouldDescendIntoChildForEventHandling(
+    gfx::NativeView child,
+    const gfx::Point& location) {
+  // Window for PWAs with window-controls-overlay display override should claim
+  // mouse events that fall within the draggable region.
+  web_app::AppBrowserController* controller = browser()->app_controller();
+  if (controller && controller->IsWindowControlsOverlayEnabled() &&
+      controller->draggable_region().has_value() &&
+      controller->draggable_region()->contains(location.x(), location.y())) {
+    return false;
+  }
+
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3096,13 +3145,13 @@ void BrowserView::LoadingAnimationCallback() {
   }
 }
 
-void BrowserView::OnLoadCompleted() {
 #if defined(OS_WIN)
+void BrowserView::CreateJumpList() {
   // Ensure that this browser's Profile has a JumpList so that the JumpList is
   // kept up to date.
   JumpListFactory::GetForProfile(browser_->profile());
-#endif
 }
+#endif
 
 BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
   return static_cast<BrowserViewLayout*>(GetLayoutManager());
@@ -3174,9 +3223,8 @@ void BrowserView::UpdateDevToolsForContents(
       !devtools_focus_tracker_.get()) {
     // Install devtools focus tracker when dev tools window is shown for the
     // first time.
-    devtools_focus_tracker_.reset(
-        new views::ExternalFocusTracker(devtools_web_view_,
-                                        GetFocusManager()));
+    devtools_focus_tracker_ = std::make_unique<views::ExternalFocusTracker>(
+        devtools_web_view_, GetFocusManager());
   }
 
   // Restore focus to the last focused view when hiding devtools window.
@@ -3265,24 +3313,31 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   if (fullscreen && display_id != display::kInvalidDisplayId) {
     display::Screen* screen = display::Screen::GetScreen();
     display::Display display;
-    if (screen && screen->GetDisplayWithDisplayId(display_id, &display)) {
-      const gfx::Rect current_bounds = frame_->GetWindowBoundsInScreen();
-      const bool is_maximized = frame_->IsMaximized();
-      restore_pre_fullscreen_bounds_callback_ = base::BindOnce(
-          [](base::WeakPtr<BrowserView> view, const gfx::Rect& bounds,
-             bool maximize) {
-            if (view && view->frame()) {
-              // Adjust the restored bounds to be onscreen, in case the original
-              // screen was disconnected or repositioned during fullscreen.
-              view->frame()->SetBoundsConstrained(bounds);
-              if (maximize)
-                view->frame()->Maximize();
-            }
-          },
-          weak_ptr_factory_.GetWeakPtr(), current_bounds, is_maximized);
-      // Maximized windows must be restored to actually move between displays.
-      if (is_maximized)
-        frame_->Restore();
+    display::Display current_display =
+        screen->GetDisplayNearestWindow(GetNativeWindow());
+    if (screen && screen->GetDisplayWithDisplayId(display_id, &display) &&
+        current_display.id() != display_id) {
+      if (!IsFullscreen()) {
+        const gfx::Rect current_bounds = frame_->GetWindowBoundsInScreen();
+        const bool is_maximized = frame_->IsMaximized();
+        restore_pre_fullscreen_bounds_callback_ = base::BindOnce(
+            [](base::WeakPtr<BrowserView> view, const gfx::Rect& bounds,
+               bool maximize) {
+              if (view && view->frame()) {
+                // Adjust restored bounds to be on-screen, in case the original
+                // screen was disconnected or repositioned during fullscreen.
+                view->frame()->SetBoundsConstrained(bounds);
+                if (maximize)
+                  view->frame()->Maximize();
+              }
+            },
+            weak_ptr_factory_.GetWeakPtr(), current_bounds, is_maximized);
+        // Maximized windows must be restored to actually move between displays.
+        if (is_maximized)
+          frame_->Restore();
+      } else {
+        frame_->SetFullscreen(false);
+      }
       frame_->SetBounds({display.work_area().origin(),
                          frame_->GetWindowBoundsInScreen().size()});
     }
@@ -3321,6 +3376,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // Undo our anti-jankiness hacks and force a re-layout.
   in_process_fullscreen_ = false;
   ToolbarSizeChanged(false);
+  frame_->GetFrameView()->OnFullscreenStateChanged();
 }
 
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
@@ -3476,12 +3532,27 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
                                   focus_first_profile_button);
 }
 
-void BrowserView::ShowHatsDialog(const std::string& site_id,
-                                 base::OnceClosure success_callback,
-                                 base::OnceClosure failure_callback) {
+void BrowserView::MaybeShowProfileSwitchIPH() {
+  if (GetGuestSession() || GetIncognito())
+    return;
+  AvatarToolbarButton* avatar_button =
+      toolbar_button_provider_
+          ? toolbar_button_provider_->GetAvatarToolbarButton()
+          : nullptr;
+  if (avatar_button)
+    avatar_button->MaybeShowProfileSwitchIPH();
+}
+
+void BrowserView::ShowHatsDialog(
+    const std::string& site_id,
+    base::OnceClosure success_callback,
+    base::OnceClosure failure_callback,
+    const std::map<std::string, bool>& product_specific_data) {
   // Self deleting on close.
   new HatsNextWebDialog(browser(), site_id, std::move(success_callback),
-                        std::move(failure_callback));
+                        std::move(failure_callback), product_specific_data
+
+  );
 }
 
 ExclusiveAccessContext* BrowserView::GetExclusiveAccessContext() {

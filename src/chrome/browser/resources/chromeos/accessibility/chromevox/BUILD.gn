@@ -4,6 +4,7 @@
 
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
+import("//build/config/python.gni")
 import(
     "//chrome/browser/resources/chromeos/accessibility/common/run_jsbundler.gni")
 import("//chrome/common/features.gni")
@@ -54,8 +55,7 @@ chromevox_modules = [
   "background/injected_script_loader.js",
   "background/keyboard_handler.js",
   "background/keymaps/key_map.js",
-  "background/live_regions.js",
-  "background/locale_output_helper.js",
+  "background/output/locale_output_helper.js",
   "background/logging/event_stream_logger.js",
   "background/logging/log.js",
   "background/logging/log_store.js",
@@ -64,7 +64,8 @@ chromevox_modules = [
   "background/logging/tree_dumper.js",
   "background/math_handler.js",
   "background/pointer_handler.js",
-  "background/output.js",
+  "background/output/output.js",
+  "background/output/output_format_tree.js",
   "background/panel_command.js",
   "background/phonetic_data.js",
   "background/prefs.js",
@@ -117,10 +118,11 @@ chromevox_modules = [
 # ES6 modules.
 chromevox_es6_modules = [
   "background/background.js",
+  "background/live_regions.js",
   "background/es6_loader.js",
   "background/find_handler.js",
   "background/media_automation_handler.js",
-  "background/next_earcons.js",
+  "background/earcons.js",
   "background/range_automation_handler.js",
 ]
 
@@ -242,7 +244,8 @@ template("generate_deps_js") {
   }
 }
 
-action("chromevox_phonetic_dictionaries_js") {
+# TODO(crbug.com/1112471): Get this to run under Python3.
+python2_action("chromevox_phonetic_dictionaries_js") {
   script = "tools/phonetic_dictionaries.py"
   src_dir = [ "$root_out_dir/resources/chromeos/accessibility/_locales" ]
   output_file = "$chromevox_out_dir/phonetic_dictionaries.js"
@@ -323,7 +326,8 @@ if (is_chromeos_ash) {
     data += js2gtest_js_libraries
   }
 
-  action("chromevox_test_messages_js") {
+  # TODO(crbug.com/1112471): Get this to run under Python3.
+  python2_action("chromevox_test_messages_js") {
     script = "tools/generate_test_messages.py"
     sources = [ "$root_out_dir/resources/chromeos/accessibility/_locales/en/messages.json.gz" ]
     output_file = "$root_out_dir/test_data/chrome/browser/resources/chromeos/accessibility/chromevox/host/testing/test_messages.js"
@@ -411,14 +415,15 @@ if (is_chromeos_ash) {
       "background/background_test.js",
       "background/braille_command_data_test.js",
       "background/color_test.js",
+      "background/desktop_automation_handler_test.js",
       "background/download_handler_test.js",
       "background/editing/editing_test.js",
       "background/editing/intent_handler_test.js",
       "background/keyboard_handler_test.js",
       "background/live_regions_test.js",
-      "background/locale_output_helper_test.js",
       "background/logging/log_store_test.js",
-      "background/output_test.js",
+      "background/output/locale_output_helper_test.js",
+      "background/output/output_test.js",
       "background/portals_test.js",
       "background/settings_test.js",
       "background/smart_sticky_mode_test.js",
@@ -479,6 +484,7 @@ js_library("chromevox_library") {
     "$externs_path/login_state.js",
     "$externs_path/metrics_private.js",
     "$externs_path/settings_private.js",
+    "$externs_path/tts.js",
     "$externs_path/virtual_keyboard_private.js",
   ]
 }

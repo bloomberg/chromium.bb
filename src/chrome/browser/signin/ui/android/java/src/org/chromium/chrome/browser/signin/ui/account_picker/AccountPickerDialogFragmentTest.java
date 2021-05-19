@@ -11,7 +11,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import android.support.test.InstrumentationRegistry;
@@ -33,8 +32,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
@@ -42,6 +39,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.ProfileDataSource;
+import org.chromium.components.signin.identitymanager.AccountInfoService;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -55,7 +53,8 @@ import java.io.IOException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@DisableFeatures({ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY})
+@DisableFeatures(
+        {ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY, ChromeFeatureList.DEPRECATE_MENAGERIE_API})
 public class AccountPickerDialogFragmentTest extends DummyUiActivityTestCase {
     private static class DummyAccountPickerTargetFragment
             extends Fragment implements AccountPickerCoordinator.Listener {
@@ -78,12 +77,6 @@ public class AccountPickerDialogFragmentTest extends DummyUiActivityTestCase {
             new AccountManagerTestRule(new FakeProfileDataSource());
 
     @Mock
-    private Profile mProfileMock;
-
-    @Mock
-    private IdentityServicesProvider mIdentityServicesProviderMock;
-
-    @Mock
     private IdentityManager mIdentityManagerMock;
 
     @Spy
@@ -101,11 +94,7 @@ public class AccountPickerDialogFragmentTest extends DummyUiActivityTestCase {
     @Before
     public void setUp() {
         initMocks(this);
-        Profile.setLastUsedProfileForTesting(mProfileMock);
-        IdentityServicesProvider.setInstanceForTests(mIdentityServicesProviderMock);
-        when(mIdentityServicesProviderMock.getIdentityManager(mProfileMock))
-                .thenReturn(mIdentityManagerMock);
-
+        AccountInfoService.init(mIdentityManagerMock);
         addAccount(mAccountName1, mFullName1);
         addAccount(mAccountName2, "");
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -120,8 +109,7 @@ public class AccountPickerDialogFragmentTest extends DummyUiActivityTestCase {
         if (mDialog.getDialog() != null) {
             mDialog.dismiss();
         }
-        IdentityServicesProvider.setInstanceForTests(null);
-        Profile.setLastUsedProfileForTesting(null);
+        AccountInfoService.resetForTests();
     }
 
     @Test

@@ -43,10 +43,6 @@ bool TestTabStripModelDelegate::CanDuplicateContentsAt(int index) {
   return false;
 }
 
-bool TestTabStripModelDelegate::CanHighlightTabs() {
-  return true;
-}
-
 void TestTabStripModelDelegate::DuplicateContentsAt(int index) {
 }
 
@@ -54,9 +50,9 @@ void TestTabStripModelDelegate::MoveToExistingWindow(
     const std::vector<int>& indices,
     int browser_index) {}
 
-std::vector<base::string16>
+std::vector<std::u16string>
 TestTabStripModelDelegate::GetExistingWindowsForMoveMenu() {
-  std::vector<base::string16> existing_windows;
+  std::vector<std::u16string> existing_windows;
   return existing_windows;
 }
 
@@ -75,6 +71,12 @@ base::Optional<SessionID> TestTabStripModelDelegate::CreateHistoricalTab(
     content::WebContents* contents) {
   return base::nullopt;
 }
+
+void TestTabStripModelDelegate::CreateHistoricalGroup(
+    const tab_groups::TabGroupId& group) {}
+
+void TestTabStripModelDelegate::GroupCloseStopped(
+    const tab_groups::TabGroupId& group) {}
 
 bool TestTabStripModelDelegate::ShouldRunUnloadListenerBeforeClosing(
     content::WebContents* contents) {

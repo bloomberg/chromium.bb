@@ -250,11 +250,6 @@ void LayoutTheme::AdjustStyle(const Element* e, ComputedStyle& style) {
            style.Display() == EDisplay::kTable)
     style.SetDisplay(EDisplay::kBlock);
 
-  // TODO(tkent): We should not update Appearance, which is a source of
-  // getComputedStyle(). https://drafts.csswg.org/css-ui-4/#propdef-appearance
-  // says "Computed value: specified keyword".
-  style.SetAppearance(AdjustAppearanceWithAuthorStyle(original_part, style));
-
   ControlPart part = AdjustAppearanceWithAuthorStyle(
       AdjustAppearanceWithElementType(style, e), style);
   style.SetEffectiveAppearance(part);
@@ -292,26 +287,6 @@ void LayoutTheme::AdjustStyle(const Element* e, ComputedStyle& style) {
 }
 
 String LayoutTheme::ExtraDefaultStyleSheet() {
-  if (RuntimeEnabledFeatures::SummaryListItemEnabled()) {
-    // https://html.spec.whatwg.org/C/#the-details-and-summary-elements
-    // The specification doesn't have |details >| and |:first-of-type|.
-    // We add them because:
-    //  - We had provided |summary { display: block }| for a long time,
-    //    there are sites using <summary> without details, and they
-    //    expect that <summary> is not a list-item.
-    //  - Firefox does so.
-    return String(R"CSS(
-details > summary:first-of-type {
-    display: list-item;
-    counter-increment: list-item 0;
-    list-style: disclosure-closed inside;
-}
-
-details[open] > summary:first-of-type {
-    list-style-type: disclosure-open;
-}
-)CSS");
-  }
   return g_empty_string;
 }
 

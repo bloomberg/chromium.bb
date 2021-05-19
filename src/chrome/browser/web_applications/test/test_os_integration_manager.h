@@ -40,6 +40,8 @@ class TestOsIntegrationManager : public OsIntegrationManager {
                            UninstallOsHooksCallback callback) override;
   void UpdateOsHooks(const AppId& app_id,
                      base::StringPiece old_name,
+                     std::unique_ptr<ShortcutInfo> old_shortcut,
+                     bool file_handlers_need_os_update,
                      const WebApplicationInfo& web_app_info) override;
 
   size_t num_create_shortcuts_calls() const {
@@ -106,8 +108,19 @@ class TestShortcutManager : public AppShortcutManager {
   explicit TestShortcutManager(Profile* profile);
   ~TestShortcutManager() override;
   std::unique_ptr<ShortcutInfo> BuildShortcutInfo(const AppId& app_id) override;
+  void SetShortcutInfoForApp(const AppId& app_id,
+                             std::unique_ptr<ShortcutInfo> shortcut_info);
   void GetShortcutInfoForApp(const AppId& app_id,
                              GetShortcutInfoCallback callback) override;
+  void GetAppExistingShortCutLocation(
+      ShortcutLocationCallback callback,
+      std::unique_ptr<ShortcutInfo> shortcut_info) override;
+  void SetAppExistingShortcuts(GURL app_url, ShortcutLocations locations) {
+    existing_shortcut_locations_[app_url] = locations;
+  }
+
+  std::map<AppId, std::unique_ptr<ShortcutInfo>> shortcut_info_map_;
+  std::map<GURL, ShortcutLocations> existing_shortcut_locations_;
 };
 }  // namespace web_app
 

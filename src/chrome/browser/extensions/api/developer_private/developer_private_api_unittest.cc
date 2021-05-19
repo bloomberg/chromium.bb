@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -31,6 +31,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/web_contents_tester.h"
@@ -50,6 +51,7 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
@@ -84,9 +86,10 @@ bool HasPrefsPermission(bool (*has_pref)(const std::string&,
   return has_pref(id, context);
 }
 
-bool WasPermissionsUpdatedEventDispatched(
+bool WasItemChangedEventDispatched(
     const TestEventRouterObserver& observer,
-    const ExtensionId& extension_id) {
+    const ExtensionId& extension_id,
+    const api::developer_private::EventType event_type) {
   const std::string kEventName =
       api::developer_private::OnItemStateChanged::kEventName;
   const auto& event_map = observer.events();
@@ -104,8 +107,7 @@ bool WasPermissionsUpdatedEventDispatched(
     return false;
 
   if (event_data->item_id != extension_id ||
-      event_data->event_type !=
-          api::developer_private::EVENT_TYPE_PERMISSIONS_CHANGED) {
+      event_data->event_type != event_type) {
     return false;
   }
 
@@ -223,7 +225,7 @@ const Extension* DeveloperPrivateApiUnitTest::LoadSimpleExtension() {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(manifest.Build())
-          .SetLocation(Manifest::INTERNAL)
+          .SetLocation(mojom::ManifestLocation::kInternal)
           .SetID(id)
           .Build();
   service()->AddExtension(extension.get());
@@ -357,7 +359,7 @@ void DeveloperPrivateApiUnitTest::SetUp() {
   init_params.profile_is_supervised = ProfileIsSupervised();
   InitializeExtensionService(init_params);
 
-  browser_window_.reset(new TestBrowserWindow());
+  browser_window_ = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
   params.type = Browser::TYPE_NORMAL;
   params.window = browser_window_.get();
@@ -832,8 +834,8 @@ TEST_F(DeveloperPrivateApiUnitTest, ReloadBadExtensionToLoadUnpackedRetry) {
      public:
       UnloadedRegistryObserver(const base::FilePath& expected_path,
                                ExtensionRegistry* registry)
-          : expected_path_(expected_path), observer_(this) {
-        observer_.Add(registry);
+          : expected_path_(expected_path) {
+        observation_.Observe(registry);
       }
 
       void OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -848,7 +850,8 @@ TEST_F(DeveloperPrivateApiUnitTest, ReloadBadExtensionToLoadUnpackedRetry) {
      private:
       bool saw_unload_ = false;
       base::FilePath expected_path_;
-      ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
+      base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
+          observation_{this};
 
       DISALLOW_COPY_AND_ASSIGN(UnloadedRegistryObserver);
     };
@@ -998,7 +1001,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
   properties.extension_id = extension->id();
   properties.path_suffix = "manifest.json";
   properties.message = kErrorMessage;
-  properties.manifest_key.reset(new std::string("name"));
+  properties.manifest_key = std::make_unique<std::string>("name");
 
   scoped_refptr<ExtensionFunction> function(
       new api::DeveloperPrivateRequestFileSourceFunction());
@@ -1141,7 +1144,7 @@ TEST_F(DeveloperPrivateApiUnitTest, RepairPolicyExtension) {
   // Set up a mock provider with a policy extension.
   std::unique_ptr<MockExternalProvider> mock_provider =
       std::make_unique<MockExternalProvider>(
-          service(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
+          service(), mojom::ManifestLocation::kExternalPolicyDownload);
   MockExternalProvider* mock_provider_ptr = mock_provider.get();
   AddMockExternalProvider(std::move(mock_provider));
   mock_provider_ptr->UpdateOrAddExtension(extension_id, "1.0.0.0",
@@ -1685,8 +1688,9 @@ TEST_F(DeveloperPrivateApiUnitTest,
   event_router->AddEventListener(kEventName, process, listener_id);
 
   TestEventRouterObserver test_observer(event_router);
-  EXPECT_FALSE(
-      WasPermissionsUpdatedEventDispatched(test_observer, extension->id()));
+  EXPECT_FALSE(WasItemChangedEventDispatched(
+      test_observer, extension->id(),
+      api::developer_private::EVENT_TYPE_PERMISSIONS_CHANGED));
 
   URLPatternSet hosts({URLPattern(Extension::kValidHostPermissionSchemes,
                                   "https://example.com/*")});
@@ -1698,16 +1702,18 @@ TEST_F(DeveloperPrivateApiUnitTest,
   // The event router fetches icons from a blocking thread when sending the
   // update event; allow it to finish before verifying the event was dispatched.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(
-      WasPermissionsUpdatedEventDispatched(test_observer, extension->id()));
+  EXPECT_TRUE(WasItemChangedEventDispatched(
+      test_observer, extension->id(),
+      api::developer_private::EVENT_TYPE_PERMISSIONS_CHANGED));
 
   test_observer.ClearEvents();
 
   permissions_test_util::RevokeRuntimePermissionsAndWaitForCompletion(
       profile(), *extension, permissions);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(
-      WasPermissionsUpdatedEventDispatched(test_observer, extension->id()));
+  EXPECT_TRUE(WasItemChangedEventDispatched(
+      test_observer, extension->id(),
+      api::developer_private::EVENT_TYPE_PERMISSIONS_CHANGED));
 }
 
 TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
@@ -1731,11 +1737,12 @@ TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
           .Build();
 
   TestEventRouterObserver test_observer(event_router);
-  EXPECT_FALSE(WasPermissionsUpdatedEventDispatched(test_observer,
-                                                    dummy_extension->id()));
+  EXPECT_FALSE(WasItemChangedEventDispatched(
+      test_observer, dummy_extension->id(),
+      api::developer_private::EVENT_TYPE_PERMISSIONS_CHANGED));
 
   APIPermissionSet apis;
-  apis.insert(APIPermission::kTab);
+  apis.insert(extensions::mojom::APIPermissionID::kTab);
   PermissionSet permissions(std::move(apis), ManifestPermissionSet(),
                             URLPatternSet(), URLPatternSet());
   permissions_test_util::GrantOptionalPermissionsAndWaitForCompletion(
@@ -1744,8 +1751,9 @@ TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
   // The event router fetches icons from a blocking thread when sending the
   // update event; allow it to finish before verifying the event was dispatched.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(WasPermissionsUpdatedEventDispatched(test_observer,
-                                                   dummy_extension->id()));
+  EXPECT_TRUE(WasItemChangedEventDispatched(
+      test_observer, dummy_extension->id(),
+      api::developer_private::EVENT_TYPE_PERMISSIONS_CHANGED));
 
   test_observer.ClearEvents();
 
@@ -1753,8 +1761,9 @@ TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
       profile(), *dummy_extension, permissions,
       PermissionsUpdater::REMOVE_HARD);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(WasPermissionsUpdatedEventDispatched(test_observer,
-                                                   dummy_extension->id()));
+  EXPECT_TRUE(WasItemChangedEventDispatched(
+      test_observer, dummy_extension->id(),
+      api::developer_private::EVENT_TYPE_PERMISSIONS_CHANGED));
 }
 
 TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileZip) {
@@ -1778,6 +1787,69 @@ TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileZip) {
       observer.WaitForExtensionInstalled();
   ASSERT_TRUE(extension);
   EXPECT_EQ("Simple Empty Extension", extension->name());
+}
+
+class DeveloperPrivateApiAllowlistUnitTest
+    : public DeveloperPrivateApiUnitTest {
+ public:
+  DeveloperPrivateApiAllowlistUnitTest() {
+    feature_list_.InitAndEnableFeature(
+        extensions_features::kSafeBrowsingCrxAllowlistShowWarnings);
+  }
+};
+
+TEST_F(DeveloperPrivateApiAllowlistUnitTest,
+       ExtensionUpdatedEventOnAllowlistWarningChange) {
+  // We need to call DeveloperPrivateAPI::Get() in order to instantiate the
+  // keyed service, since it's not created by default in unit tests.
+  DeveloperPrivateAPI::Get(profile());
+  const ExtensionId listener_id = crx_file::id_util::GenerateId("listener");
+  EventRouter* event_router = EventRouter::Get(profile());
+
+  // The DeveloperPrivateEventRouter will only dispatch events if there's at
+  // least one listener to dispatch to. Create one.
+  content::RenderProcessHost* process = nullptr;
+  const char* kEventName =
+      api::developer_private::OnItemStateChanged::kEventName;
+  event_router->AddEventListener(kEventName, process, listener_id);
+
+  scoped_refptr<const Extension> dummy_extension = LoadSimpleExtension();
+  base::RunLoop().RunUntilIdle();
+
+  TestEventRouterObserver test_observer(event_router);
+  EXPECT_FALSE(WasItemChangedEventDispatched(
+      test_observer, dummy_extension->id(),
+      api::developer_private::EVENT_TYPE_PREFS_CHANGED));
+
+  safe_browsing::SetSafeBrowsingState(profile()->GetPrefs(),
+                                      safe_browsing::ENHANCED_PROTECTION);
+
+  base::RunLoop().RunUntilIdle();
+  // The warning state should not have changed since the allowlist state is not
+  // set yet.
+  EXPECT_FALSE(WasItemChangedEventDispatched(
+      test_observer, dummy_extension->id(),
+      api::developer_private::EVENT_TYPE_PREFS_CHANGED));
+
+  service()->allowlist()->SetExtensionAllowlistState(dummy_extension->id(),
+                                                     ALLOWLIST_NOT_ALLOWLISTED);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(WasItemChangedEventDispatched(
+      test_observer, dummy_extension->id(),
+      api::developer_private::EVENT_TYPE_PREFS_CHANGED));
+
+  test_observer.ClearEvents();
+
+  safe_browsing::SetSafeBrowsingState(profile()->GetPrefs(),
+                                      safe_browsing::STANDARD_PROTECTION);
+
+  base::RunLoop().RunUntilIdle();
+  // The warning is now hidden because the profile is no longer Enhanced
+  // Protection.
+  EXPECT_TRUE(WasItemChangedEventDispatched(
+      test_observer, dummy_extension->id(),
+      api::developer_private::EVENT_TYPE_PREFS_CHANGED));
 }
 
 class DeveloperPrivateApiSupervisedUserUnitTest

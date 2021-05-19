@@ -1,0 +1,67 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("../../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../../scripts/build/ninja/devtools_module.gni")
+
+devtools_module("console") {
+  sources = [
+    "ConsoleContextSelector.ts",
+    "ConsoleFilter.ts",
+    "ConsolePanel.ts",
+    "ConsolePinPane.ts",
+    "ConsolePrompt.ts",
+    "ConsoleSidebar.ts",
+    "ConsoleView.ts",
+    "ConsoleViewMessage.ts",
+    "ConsoleViewport.ts",
+  ]
+
+  deps = [
+    "../../browser_sdk:bundle",
+    "../../components:bundle",
+    "../../core/common:bundle",
+    "../../core/host:bundle",
+    "../../core/i18n:bundle",
+    "../../core/platform:bundle",
+    "../../core/sdk:bundle",
+    "../../data_grid:bundle",
+    "../../models/bindings:bundle",
+    "../../models/text_utils:bundle",
+    "../../object_ui:bundle",
+    "../../text_editor:bundle",
+    "../../theme_support:bundle",
+    "../../ui/components:bundle",
+    "../../ui/legacy:bundle",
+    "../console_counters:bundle",
+  ]
+}
+
+copy_to_gen("legacy_css") {
+  sources = [
+    "consoleContextSelector.css",
+    "consolePinPane.css",
+    "consolePrompt.css",
+    "consoleSidebar.css",
+    "consoleView.css",
+  ]
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "console.ts"
+
+  deps = [ ":console" ]
+}
+
+devtools_entrypoint("legacy") {
+  entrypoint = "console-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "console-meta.ts"
+
+  deps = [ ":bundle" ]
+}

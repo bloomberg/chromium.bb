@@ -59,12 +59,6 @@ OobeTypes.DemoCountryDsc;
 OobeTypes.A11yStatuses;
 
 /**
- * OOBE screen object (which is created in ui/login/screen.js )
- * @typedef {!Object}
- */
-OobeTypes.Screen;
-
-/**
  * Timezone ID.
  * @typedef {!String}
  */
@@ -82,7 +76,7 @@ OobeTypes.TimezoneDsc;
 
 /**
  * OOBE configuration, allows automation during OOBE.
- * Keys are also listed in chrome/browser/chromeos/login/configuration_keys.h
+ * Keys are also listed in chrome/browser/ash/login/configuration_keys.h
  * @typedef {{
  *   language: (string|undefined),
  *   inputMethod: (string|undefined),

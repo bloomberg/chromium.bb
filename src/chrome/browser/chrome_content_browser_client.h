@@ -32,7 +32,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 
 class ChromeContentBrowserClientParts;
 class PrefRegistrySimple;
@@ -57,16 +56,8 @@ namespace content {
 class BrowserContext;
 class FontAccessDelegate;
 class QuotaPermissionContext;
+enum class SmsFetchFailureType;
 }  // namespace content
-
-namespace data_reduction_proxy {
-class DataReductionProxyData;
-}  // namespace data_reduction_proxy
-
-namespace previews {
-class PreviewsDecider;
-class PreviewsUserData;
-}  // namespace previews
 
 namespace safe_browsing {
 class RealTimeUrlLookupServiceBase;
@@ -102,6 +93,7 @@ class ChromeBluetoothDelegate;
 class ChromeFontAccessDelegate;
 class ChromeHidDelegate;
 class ChromeSerialDelegate;
+class ChromeWebAuthenticationDelegate;
 
 #if BUILDFLAG(ENABLE_VR)
 namespace vr {
@@ -134,12 +126,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::OnceClosure task) override;
   bool IsBrowserStartupComplete() override;
   void SetBrowserStartupIsCompleteForTesting() override;
-  std::string GetStoragePartitionIdForSite(
+  content::StoragePartitionId GetStoragePartitionIdForSite(
       content::BrowserContext* browser_context,
       const GURL& site) override;
   bool IsShuttingDown() override;
-  bool IsValidStoragePartitionId(content::BrowserContext* browser_context,
-                                 const std::string& partition_id) override;
   content::StoragePartitionConfig GetStoragePartitionConfigForSite(
       content::BrowserContext* browser_context,
       const GURL& site) override;
@@ -183,8 +173,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       std::vector<std::string>* additional_schemes) override;
   void GetAdditionalViewSourceSchemes(
       std::vector<std::string>* additional_schemes) override;
-  void GetAdditionalLocalAddressSpaceSchemes(
-      std::vector<std::string>* additional_schemes) override;
+  network::mojom::IPAddressSpace DetermineAddressSpaceFromURL(
+      const GURL& url) override;
   bool LogWebUIUrl(const GURL& web_ui_url) override;
   bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin) override;
   bool IsHandledURL(const GURL& url) override;
@@ -384,7 +374,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const base::FilePath& storage_partition_path,
       std::vector<std::unique_ptr<storage::FileSystemBackend>>*
           additional_backends) override;
-  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  std::unique_ptr<content::DevToolsManagerDelegate>
+  CreateDevToolsManagerDelegate() override;
   void UpdateDevToolsBackgroundServiceExpiration(
       content::BrowserContext* browser_context,
       int service,
@@ -426,7 +417,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void RegisterBrowserInterfaceBindersForFrame(
       content::RenderFrameHost* render_frame_host,
       mojo::BinderMapWithContext<content::RenderFrameHost*>* map) override;
-  void RegisterMojoBinderPoliciesForPrerendering(
+  void RegisterMojoBinderPoliciesForSameOriginPrerendering(
       content::MojoBinderPolicyMap& policy_map) override;
   bool BindAssociatedReceiverFromFrame(
       content::RenderFrameHost* render_frame_host,
@@ -554,9 +545,14 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void CreateDeviceInfoService(
       content::RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::DeviceAPIService> receiver) override;
+  void CreateManagedConfigurationService(
+      content::RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::ManagedConfigurationService> receiver)
+      override;
   content::SerialDelegate* GetSerialDelegate() override;
   content::HidDelegate* GetHidDelegate() override;
   content::FontAccessDelegate* GetFontAccessDelegate() override;
+  content::WebAuthenticationDelegate* GetWebAuthenticationDelegate() override;
   std::unique_ptr<content::AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
       content::RenderFrameHost* render_frame_host) override;
@@ -580,6 +576,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url,
       content::WebContents::OnceGetter web_contents_getter,
       int child_id,
+      int frame_tree_node_id,
       content::NavigationUIData* navigation_data,
       bool is_main_frame,
       ui::PageTransition page_transition,
@@ -597,20 +594,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       network::OriginPolicyState error_reason,
       content::NavigationHandle* handle) override;
   bool CanAcceptUntrustedExchangesIfNeeded() override;
-  void OnNetworkServiceDataUseUpdate(int32_t network_traffic_annotation_id_hash,
+  void OnNetworkServiceDataUseUpdate(int process_id,
+                                     int routing_id,
+                                     int32_t network_traffic_annotation_id_hash,
                                      int64_t recv_bytes,
                                      int64_t sent_bytes) override;
   base::FilePath GetSandboxedStorageServiceDataDirectory() override;
   bool ShouldSandboxAudioService() override;
-  blink::PreviewsState DetermineAllowedPreviews(
-      blink::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle,
-      const GURL& current_navigation_url) override;
-
-  blink::PreviewsState DetermineCommittedPreviews(
-      blink::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle,
-      const net::HttpResponseHeaders* response_headers) override;
 
   void LogWebFeatureForCurrentPage(content::RenderFrameHost* render_frame_host,
                                    blink::mojom::WebFeature feature) override;
@@ -665,30 +655,14 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin) override;
 
-  blink::PreviewsState DetermineAllowedPreviewsWithoutHoldback(
-      blink::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle,
-      const GURL& current_navigation_url);
-
-  blink::PreviewsState DetermineCommittedPreviewsWithoutHoldback(
-      blink::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle,
-      const net::HttpResponseHeaders* response_headers);
-
-  // Determines the committed previews state for the passed in params.
-  static blink::PreviewsState DetermineCommittedPreviewsForURL(
-      const GURL& url,
-      data_reduction_proxy::DataReductionProxyData* drp_data,
-      previews::PreviewsUserData* previews_user_data,
-      const previews::PreviewsDecider* previews_decider,
-      blink::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle);
-
 #if !defined(OS_ANDROID)
-  void FetchRemoteSms(
-      content::BrowserContext* browser_context,
+  base::OnceClosure FetchRemoteSms(
+      content::WebContents* web_contents,
       const url::Origin& origin,
-      base::OnceCallback<void(base::Optional<std::string>)> callback) override;
+      base::OnceCallback<void(base::Optional<std::vector<url::Origin>>,
+                              base::Optional<std::string>,
+                              base::Optional<content::SmsFetchFailureType>)>
+          callback) override;
 #endif
 
   bool IsClipboardPasteAllowed(
@@ -828,6 +802,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<ChromeSerialDelegate> serial_delegate_;
   std::unique_ptr<ChromeHidDelegate> hid_delegate_;
   std::unique_ptr<ChromeFontAccessDelegate> font_access_delegate_;
+  std::unique_ptr<ChromeWebAuthenticationDelegate> web_authentication_delegate_;
 #endif
   std::unique_ptr<ChromeBluetoothDelegate> bluetooth_delegate_;
 

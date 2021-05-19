@@ -12,9 +12,9 @@ import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
-import '../settings_shared_css.m.js';
-import '../settings_vars_css.m.js';
-import '../controls/settings_textarea.m.js';
+import '../settings_shared_css.js';
+import '../settings_vars_css.js';
+import '../controls/settings_textarea.js';
 
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
@@ -92,6 +92,12 @@ Polymer({
           this.address.emailAddresses ? this.address.emailAddresses[0] : '';
 
       this.async(() => {
+        if (Object.keys(this.address).length === 0 && countryList.length > 0) {
+          // If the address is completely empty, the dialog is creating a new
+          // address. The first address in the country list is what we suspect
+          // the user's country is.
+          this.address.countryCode = countryList[0].countryCode;
+        }
         if (this.countryCode_ === this.address.countryCode) {
           this.updateAddressWrapper_();
         } else {

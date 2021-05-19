@@ -76,13 +76,11 @@ SyncerError HandleGetEncryptionKeyResponse(
 void PartitionUpdatesByType(const sync_pb::GetUpdatesResponse& gu_response,
                             ModelTypeSet requested_types,
                             TypeSyncEntityMap* updates_by_type) {
-  int update_count = gu_response.entries().size();
   for (ModelType type : requested_types) {
     updates_by_type->insert(std::make_pair(type, SyncEntityList()));
   }
-  for (int i = 0; i < update_count; ++i) {
-    const sync_pb::SyncEntity& update = gu_response.entries(i);
-    ModelType type = GetModelType(update);
+  for (const sync_pb::SyncEntity& update : gu_response.entries()) {
+    ModelType type = GetModelTypeFromSpecifics(update.specifics());
     if (!IsRealDataType(type)) {
       NOTREACHED() << "Received update with invalid type.";
       continue;
@@ -370,7 +368,11 @@ SyncerError GetUpdatesProcessor::ProcessGetUpdatesResponse(
 void GetUpdatesProcessor::ApplyUpdates(const ModelTypeSet& gu_types,
                                        StatusController* status_controller) {
   status_controller->set_get_updates_request_types(gu_types);
-  delegate_.ApplyUpdates(gu_types, status_controller, update_handler_map_);
+  for (const auto& kv : *update_handler_map_) {
+    if (gu_types.Has(kv.first)) {
+      kv.second->ApplyUpdates(status_controller);
+    }
+  }
 }
 
 }  // namespace syncer

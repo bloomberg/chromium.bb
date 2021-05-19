@@ -64,7 +64,8 @@ class EnableViaPrompt : public ExtensionEnableFlowDelegate {
   EnableViaPrompt& operator=(const EnableViaPrompt&) = delete;
 
   void Run() {
-    flow_.reset(new ExtensionEnableFlow(profile_, extension_id_, this));
+    flow_ =
+        std::make_unique<ExtensionEnableFlow>(profile_, extension_id_, this);
     flow_->Start();
   }
 
@@ -186,7 +187,8 @@ void ExtensionAppShimManagerDelegate::EnableExtension(
 void ExtensionAppShimManagerDelegate::LaunchApp(
     Profile* profile,
     const web_app::AppId& app_id,
-    const std::vector<base::FilePath>& files) {
+    const std::vector<base::FilePath>& files,
+    chrome::mojom::AppShimLoginItemRestoreState login_item_restore_state) {
   const Extension* extension = MaybeGetAppExtension(profile, app_id);
   DCHECK(extension);
   extensions::RecordAppLaunchType(extension_misc::APP_LAUNCH_CMD_LINE_APP,

@@ -15,11 +15,7 @@
 #ifndef SRC_AST_BINARY_EXPRESSION_H_
 #define SRC_AST_BINARY_EXPRESSION_H_
 
-#include <memory>
-#include <utility>
-
 #include "src/ast/expression.h"
-#include "src/ast/literal.h"
 
 namespace tint {
 namespace ast {
@@ -27,11 +23,11 @@ namespace ast {
 /// The operator type
 enum class BinaryOp {
   kNone = 0,
-  kAnd,
-  kOr,
+  kAnd,  // &
+  kOr,   // |
   kXor,
-  kLogicalAnd,
-  kLogicalOr,
+  kLogicalAnd,  // &&
+  kLogicalOr,   // ||
   kEqual,
   kNotEqual,
   kLessThan,
@@ -102,6 +98,14 @@ class BinaryExpression : public Castable<BinaryExpression, Expression> {
   bool IsDivide() const { return op_ == BinaryOp::kDivide; }
   /// @returns true if the op is modulo
   bool IsModulo() const { return op_ == BinaryOp::kModulo; }
+  /// @returns true if the op is an arithmetic operation
+  bool IsArithmetic() const;
+  /// @returns true if the op is a comparison operation
+  bool IsComparison() const;
+  /// @returns true if the op is a bitwise operation
+  bool IsBitwise() const;
+  /// @returns true if the op is a bit shift operation
+  bool IsBitshift() const;
 
   /// @returns the left side expression
   Expression* lhs() const { return lhs_; }
@@ -113,9 +117,6 @@ class BinaryExpression : public Castable<BinaryExpression, Expression> {
   /// @param ctx the clone context
   /// @return the newly cloned node
   BinaryExpression* Clone(CloneContext* ctx) const override;
-
-  /// @returns true if the node is valid
-  bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
   /// @param sem the semantic info for the program
@@ -133,66 +134,100 @@ class BinaryExpression : public Castable<BinaryExpression, Expression> {
   Expression* const rhs_;
 };
 
-inline std::ostream& operator<<(std::ostream& out, BinaryOp op) {
+inline bool BinaryExpression::IsArithmetic() const {
+  switch (op_) {
+    case ast::BinaryOp::kAdd:
+    case ast::BinaryOp::kSubtract:
+    case ast::BinaryOp::kMultiply:
+    case ast::BinaryOp::kDivide:
+    case ast::BinaryOp::kModulo:
+      return true;
+    default:
+      return false;
+  }
+}
+
+inline bool BinaryExpression::IsComparison() const {
+  switch (op_) {
+    case ast::BinaryOp::kEqual:
+    case ast::BinaryOp::kNotEqual:
+    case ast::BinaryOp::kLessThan:
+    case ast::BinaryOp::kLessThanEqual:
+    case ast::BinaryOp::kGreaterThan:
+    case ast::BinaryOp::kGreaterThanEqual:
+      return true;
+    default:
+      return false;
+  }
+}
+
+inline bool BinaryExpression::IsBitwise() const {
+  switch (op_) {
+    case ast::BinaryOp::kAnd:
+    case ast::BinaryOp::kOr:
+    case ast::BinaryOp::kXor:
+      return true;
+    default:
+      return false;
+  }
+}
+
+inline bool BinaryExpression::IsBitshift() const {
+  switch (op_) {
+    case ast::BinaryOp::kShiftLeft:
+    case ast::BinaryOp::kShiftRight:
+      return true;
+    default:
+      return false;
+  }
+}
+
+constexpr const char* FriendlyName(BinaryOp op) {
   switch (op) {
     case BinaryOp::kNone:
-      out << "none";
-      break;
+      return "none";
     case BinaryOp::kAnd:
-      out << "and";
-      break;
+      return "and";
     case BinaryOp::kOr:
-      out << "or";
-      break;
+      return "or";
     case BinaryOp::kXor:
-      out << "xor";
-      break;
+      return "xor";
     case BinaryOp::kLogicalAnd:
-      out << "logical_and";
-      break;
+      return "logical_and";
     case BinaryOp::kLogicalOr:
-      out << "logical_or";
-      break;
+      return "logical_or";
     case BinaryOp::kEqual:
-      out << "equal";
-      break;
+      return "equal";
     case BinaryOp::kNotEqual:
-      out << "not_equal";
-      break;
+      return "not_equal";
     case BinaryOp::kLessThan:
-      out << "less_than";
-      break;
+      return "less_than";
     case BinaryOp::kGreaterThan:
-      out << "greater_than";
-      break;
+      return "greater_than";
     case BinaryOp::kLessThanEqual:
-      out << "less_than_equal";
-      break;
+      return "less_than_equal";
     case BinaryOp::kGreaterThanEqual:
-      out << "greater_than_equal";
-      break;
+      return "greater_than_equal";
     case BinaryOp::kShiftLeft:
-      out << "shift_left";
-      break;
+      return "shift_left";
     case BinaryOp::kShiftRight:
-      out << "shift_right";
-      break;
+      return "shift_right";
     case BinaryOp::kAdd:
-      out << "add";
-      break;
+      return "add";
     case BinaryOp::kSubtract:
-      out << "subtract";
-      break;
+      return "subtract";
     case BinaryOp::kMultiply:
-      out << "multiply";
-      break;
+      return "multiply";
     case BinaryOp::kDivide:
-      out << "divide";
-      break;
+      return "divide";
     case BinaryOp::kModulo:
-      out << "modulo";
-      break;
+      return "modulo";
   }
+  return "INVALID";
+}
+
+inline std::ostream& operator<<(std::ostream& out, BinaryOp op) {
+  out << FriendlyName(op);
   return out;
 }
 

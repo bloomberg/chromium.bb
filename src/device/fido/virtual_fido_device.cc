@@ -343,6 +343,8 @@ VirtualFidoDevice::PrivateKey::FreshInvalidForTestingKey() {
 // VirtualFidoDevice::RegistrationData ----------------------------------------
 
 VirtualFidoDevice::RegistrationData::RegistrationData() = default;
+VirtualFidoDevice::RegistrationData::RegistrationData(const std::string& rp_id)
+    : application_parameter(fido_parsing_utils::CreateSHA256Hash(rp_id)) {}
 VirtualFidoDevice::RegistrationData::RegistrationData(
     std::unique_ptr<PrivateKey> private_key,
     base::span<const uint8_t, kRpIdHashLength> application_parameter,
@@ -371,18 +373,17 @@ VirtualFidoDevice::State::~State() = default;
 
 bool VirtualFidoDevice::State::InjectRegistration(
     base::span<const uint8_t> credential_id,
-    const std::string& relying_party_id) {
-  auto application_parameter =
-      fido_parsing_utils::CreateSHA256Hash(relying_party_id);
-
-  RegistrationData registration(PrivateKey::FreshP256Key(),
-                                std::move(application_parameter),
-                                0 /* signature counter */);
-
+    RegistrationData registration) {
   bool was_inserted;
   std::tie(std::ignore, was_inserted) = registrations.emplace(
       fido_parsing_utils::Materialize(credential_id), std::move(registration));
   return was_inserted;
+}
+
+bool VirtualFidoDevice::State::InjectRegistration(
+    base::span<const uint8_t> credential_id,
+    const std::string& relying_party_id) {
+  return InjectRegistration(credential_id, RegistrationData(relying_party_id));
 }
 
 bool VirtualFidoDevice::State::InjectResidentKey(
@@ -545,15 +546,14 @@ VirtualFidoDevice::GenerateAttestationCertificate(
       0b10000000 >> transport_bit,  // transport
   };
 
-  // https://www.w3.org/TR/webauthn/#packed-attestation-cert-requirements
+  // https://www.w3.org/TR/webauthn/#sctn-packed-attestation-cert-requirements
   // The Basic Constraints extension MUST have the CA component set to false.
+  // Since that is the default value, DER requires omitting it. Simply include
+  // an empty sequence.
   static constexpr uint8_t kBasicContraintsOID[] = {0x55, 0x1d, 0x13};
   static constexpr uint8_t kBasicContraintsContents[] = {
       0x30,  // SEQUENCE
-      0x03,  // three bytes long
-      0x01,  // BOOLEAN
-      0x01,  // one byte long
-      0x00,  // false
+      0x00,  // zero bytes long
   };
 
   const std::vector<net::x509_util::Extension> extensions = {

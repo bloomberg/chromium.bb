@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
@@ -56,8 +57,7 @@ const double kDefaultVolumeMultiplier = 1.0;
 const double kDuckingVolumeMultiplier = 0.2;
 const double kDifferentDuckingVolumeMultiplier = 0.018;
 
-const base::string16 kExpectedSourceTitlePrefix =
-    base::ASCIIToUTF16("http://example.com:");
+const std::u16string kExpectedSourceTitlePrefix = u"http://example.com:";
 
 constexpr gfx::Size kDefaultFaviconSize = gfx::Size(16, 16);
 
@@ -87,7 +87,7 @@ class MockAudioFocusDelegate : public content::AudioFocusDelegate {
   }
 
   void MediaSessionInfoChanged(
-      media_session::mojom::MediaSessionInfoPtr session_info) override {}
+      const media_session::mojom::MediaSessionInfoPtr& session_info) override {}
 
   MOCK_CONST_METHOD0(request_id, const base::UnguessableToken&());
 
@@ -225,6 +225,12 @@ class MediaSessionImplBrowserTest : public ContentBrowserTest {
     media_session_->Seek(base::TimeDelta::FromSeconds(-1));
   }
 
+  void UISeekTo() { media_session_->SeekTo(base::TimeDelta::FromSeconds(10)); }
+
+  void UIScrubTo() {
+    media_session_->ScrubTo(base::TimeDelta::FromSeconds(10));
+  }
+
   void UISetAudioSink(const std::string& sink_id) {
     media_session_->SetAudioSinkId(sink_id);
   }
@@ -234,8 +240,9 @@ class MediaSessionImplBrowserTest : public ContentBrowserTest {
   void SystemStopDucking() { media_session_->StopDucking(); }
 
   void EnsureMediaSessionService() {
-    mock_media_session_service_.reset(new NiceMock<MockMediaSessionServiceImpl>(
-        shell()->web_contents()->GetMainFrame()));
+    mock_media_session_service_ =
+        std::make_unique<NiceMock<MockMediaSessionServiceImpl>>(
+            shell()->web_contents()->GetMainFrame());
   }
 
   void SetPlaybackState(blink::mojom::MediaSessionPlaybackState state) {
@@ -279,8 +286,8 @@ class MediaSessionImplBrowserTest : public ContentBrowserTest {
 
   bool IsDucking() const { return media_session_->is_ducking_; }
 
-  base::string16 GetExpectedSourceTitle() {
-    base::string16 expected_title =
+  std::u16string GetExpectedSourceTitle() {
+    std::u16string expected_title =
         base::StrCat({kExpectedSourceTitlePrefix,
                       base::NumberToString16(embedded_test_server()->port())});
 
@@ -682,6 +689,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_EQ(0, player_observer->received_resume_calls());
   EXPECT_EQ(0, player_observer->received_seek_forward_calls());
   EXPECT_EQ(0, player_observer->received_seek_backward_calls());
+  EXPECT_EQ(0, player_observer->received_seek_to_calls());
 
   SystemSuspend(true);
   EXPECT_EQ(3, player_observer->received_suspend_calls());
@@ -694,6 +702,12 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 
   UISeekBackward();
   EXPECT_EQ(3, player_observer->received_seek_backward_calls());
+
+  UISeekTo();
+  EXPECT_EQ(3, player_observer->received_seek_to_calls());
+
+  UIScrubTo();
+  EXPECT_EQ(6, player_observer->received_seek_to_calls());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
@@ -724,6 +738,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_EQ(0, player_observer->received_resume_calls());
   EXPECT_EQ(0, player_observer->received_seek_forward_calls());
   EXPECT_EQ(0, player_observer->received_seek_backward_calls());
+  EXPECT_EQ(0, player_observer->received_seek_to_calls());
 
   SystemSuspend(true);
   EXPECT_EQ(3, player_observer->received_suspend_calls());
@@ -736,6 +751,12 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 
   UISeekBackward();
   EXPECT_EQ(3, player_observer->received_seek_backward_calls());
+
+  UISeekTo();
+  EXPECT_EQ(3, player_observer->received_seek_to_calls());
+
+  UIScrubTo();
+  EXPECT_EQ(6, player_observer->received_seek_to_calls());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
@@ -2250,16 +2271,16 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EnsureMediaSessionService();
 
   media_session::MediaMetadata expected_metadata;
-  expected_metadata.title = base::ASCIIToUTF16("title");
-  expected_metadata.artist = base::ASCIIToUTF16("artist");
-  expected_metadata.album = base::ASCIIToUTF16("album");
+  expected_metadata.title = u"title";
+  expected_metadata.artist = u"artist";
+  expected_metadata.album = u"album";
   expected_metadata.source_title = GetExpectedSourceTitle();
 
   blink::mojom::SpecMediaMetadataPtr spec_metadata(
       blink::mojom::SpecMediaMetadata::New());
-  spec_metadata->title = base::ASCIIToUTF16("title");
-  spec_metadata->artist = base::ASCIIToUTF16("artist");
-  spec_metadata->album = base::ASCIIToUTF16("album");
+  spec_metadata->title = u"title";
+  spec_metadata->artist = u"artist";
+  spec_metadata->album = u"album";
   mock_media_session_service_->SetMetadata(std::move(spec_metadata));
 
   // Make sure the service is routed,
@@ -2511,7 +2532,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, MetadataWhenFileUrlScheme) {
 
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = shell()->web_contents()->GetTitle();
-  expected_metadata.source_title = base::ASCIIToUTF16("Local File");
+  expected_metadata.source_title = u"Local File";
   observer.WaitForExpectedMetadata(expected_metadata);
 }
 

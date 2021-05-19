@@ -14,10 +14,9 @@
 
 #include "src/ast/stride_decoration.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::StrideDecoration);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::StrideDecoration);
 
 namespace tint {
 namespace ast {

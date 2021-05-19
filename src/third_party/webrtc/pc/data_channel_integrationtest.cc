@@ -40,6 +40,8 @@ class DataChannelIntegrationTest
       : PeerConnectionIntegrationBaseTest(GetParam()) {}
 };
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(DataChannelIntegrationTest);
+
 // Fake clock must be set before threads are started to prevent race on
 // Set/GetClockForTesting().
 // To achieve that, multiple inheritance is used as a mixin pattern
@@ -71,31 +73,14 @@ class DataChannelIntegrationTestPlanB
       : PeerConnectionIntegrationBaseTest(SdpSemantics::kPlanB) {}
 };
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
+    DataChannelIntegrationTestWithFakeClock);
+
 class DataChannelIntegrationTestUnifiedPlan
     : public PeerConnectionIntegrationBaseTest {
  protected:
   DataChannelIntegrationTestUnifiedPlan()
       : PeerConnectionIntegrationBaseTest(SdpSemantics::kUnifiedPlan) {}
-};
-
-class DummyDtmfObserver : public DtmfSenderObserverInterface {
- public:
-  DummyDtmfObserver() : completed_(false) {}
-
-  // Implements DtmfSenderObserverInterface.
-  void OnToneChange(const std::string& tone) override {
-    tones_.push_back(tone);
-    if (tone.empty()) {
-      completed_ = true;
-    }
-  }
-
-  const std::vector<std::string>& tones() const { return tones_; }
-  bool completed() const { return completed_; }
-
- private:
-  bool completed_;
-  std::vector<std::string> tones_;
 };
 
 #ifdef WEBRTC_HAVE_SCTP
@@ -390,6 +375,124 @@ TEST_P(DataChannelIntegrationTest, EndToEndCallWithSctpDataChannel) {
   callee()->data_channel()->Send(DataBuffer(data));
   EXPECT_EQ_WAIT(data, caller()->data_observer()->last_message(),
                  kDefaultTimeout);
+}
+
+// This test sets up a call between two parties with an SCTP
+// data channel only, and sends messages of various sizes.
+TEST_P(DataChannelIntegrationTest,
+       EndToEndCallWithSctpDataChannelVariousSizes) {
+  ASSERT_TRUE(CreatePeerConnectionWrappers());
+  ConnectFakeSignaling();
+  // Expect that data channel created on caller side will show up for callee as
+  // well.
+  caller()->CreateDataChannel();
+  caller()->CreateAndSetAndSignalOffer();
+  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
+  // Caller data channel should already exist (it created one). Callee data
+  // channel may not exist yet, since negotiation happens in-band, not in SDP.
+  ASSERT_NE(nullptr, caller()->data_channel());
+  ASSERT_TRUE_WAIT(callee()->data_channel() != nullptr, kDefaultTimeout);
+  EXPECT_TRUE_WAIT(caller()->data_observer()->IsOpen(), kDefaultTimeout);
+  EXPECT_TRUE_WAIT(callee()->data_observer()->IsOpen(), kDefaultTimeout);
+
+  for (int message_size = 1; message_size < 100000; message_size *= 2) {
+    std::string data(message_size, 'a');
+    caller()->data_channel()->Send(DataBuffer(data));
+    EXPECT_EQ_WAIT(data, callee()->data_observer()->last_message(),
+                   kDefaultTimeout);
+    callee()->data_channel()->Send(DataBuffer(data));
+    EXPECT_EQ_WAIT(data, caller()->data_observer()->last_message(),
+                   kDefaultTimeout);
+  }
+  // Specifically probe the area around the MTU size.
+  for (int message_size = 1100; message_size < 1300; message_size += 1) {
+    std::string data(message_size, 'a');
+    caller()->data_channel()->Send(DataBuffer(data));
+    EXPECT_EQ_WAIT(data, callee()->data_observer()->last_message(),
+                   kDefaultTimeout);
+    callee()->data_channel()->Send(DataBuffer(data));
+    EXPECT_EQ_WAIT(data, caller()->data_observer()->last_message(),
+                   kDefaultTimeout);
+  }
+}
+
+TEST_P(DataChannelIntegrationTest,
+       EndToEndCallWithSctpDataChannelLowestSafeMtu) {
+  // The lowest payload size limit that's tested and found safe for this
+  // application. Note that this is not the safe limit under all conditions;
+  // in particular, the default is not the largest DTLS signature, and
+  // this test does not use TURN.
+  const size_t kLowestSafePayloadSizeLimit = 1225;
+
+  ASSERT_TRUE(CreatePeerConnectionWrappers());
+  ConnectFakeSignaling();
+  // Expect that data channel created on caller side will show up for callee as
+  // well.
+  caller()->CreateDataChannel();
+  caller()->CreateAndSetAndSignalOffer();
+  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
+  // Caller data channel should already exist (it created one). Callee data
+  // channel may not exist yet, since negotiation happens in-band, not in SDP.
+  ASSERT_NE(nullptr, caller()->data_channel());
+  ASSERT_TRUE_WAIT(callee()->data_channel() != nullptr, kDefaultTimeout);
+  EXPECT_TRUE_WAIT(caller()->data_observer()->IsOpen(), kDefaultTimeout);
+  EXPECT_TRUE_WAIT(callee()->data_observer()->IsOpen(), kDefaultTimeout);
+
+  virtual_socket_server()->set_max_udp_payload(kLowestSafePayloadSizeLimit);
+  for (int message_size = 1140; message_size < 1240; message_size += 1) {
+    std::string data(message_size, 'a');
+    caller()->data_channel()->Send(DataBuffer(data));
+    ASSERT_EQ_WAIT(data, callee()->data_observer()->last_message(),
+                   kDefaultTimeout);
+    callee()->data_channel()->Send(DataBuffer(data));
+    ASSERT_EQ_WAIT(data, caller()->data_observer()->last_message(),
+                   kDefaultTimeout);
+  }
+}
+
+// This test verifies that lowering the MTU of the connection will cause
+// the datachannel to not transmit reliably.
+// The purpose of this test is to ensure that we know how a too-small MTU
+// error manifests itself.
+TEST_P(DataChannelIntegrationTest, EndToEndCallWithSctpDataChannelHarmfulMtu) {
+  // The lowest payload size limit that's tested and found safe for this
+  // application in this configuration (see test above).
+  const size_t kLowestSafePayloadSizeLimit = 1225;
+  // The size of the smallest message that fails to be delivered.
+  const size_t kMessageSizeThatIsNotDelivered = 1157;
+
+  ASSERT_TRUE(CreatePeerConnectionWrappers());
+  ConnectFakeSignaling();
+  caller()->CreateDataChannel();
+  caller()->CreateAndSetAndSignalOffer();
+  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
+  ASSERT_NE(nullptr, caller()->data_channel());
+  ASSERT_TRUE_WAIT(callee()->data_channel() != nullptr, kDefaultTimeout);
+  EXPECT_TRUE_WAIT(caller()->data_observer()->IsOpen(), kDefaultTimeout);
+  EXPECT_TRUE_WAIT(callee()->data_observer()->IsOpen(), kDefaultTimeout);
+
+  virtual_socket_server()->set_max_udp_payload(kLowestSafePayloadSizeLimit - 1);
+  // Probe for an undelivered or slowly delivered message. The exact
+  // size limit seems to be dependent on the message history, so make the
+  // code easily able to find the current value.
+  bool failure_seen = false;
+  for (size_t message_size = 1110; message_size < 1400; message_size++) {
+    const size_t message_count =
+        callee()->data_observer()->received_message_count();
+    const std::string data(message_size, 'a');
+    caller()->data_channel()->Send(DataBuffer(data));
+    // Wait a very short time for the message to be delivered.
+    // Note: Waiting only 10 ms is too short for Windows bots; they will
+    // flakily fail at a random frame.
+    WAIT(callee()->data_observer()->received_message_count() > message_count,
+         100);
+    if (callee()->data_observer()->received_message_count() == message_count) {
+      ASSERT_EQ(kMessageSizeThatIsNotDelivered, message_size);
+      failure_seen = true;
+      break;
+    }
+  }
+  ASSERT_TRUE(failure_seen);
 }
 
 // Ensure that when the callee closes an SCTP data channel, the closing

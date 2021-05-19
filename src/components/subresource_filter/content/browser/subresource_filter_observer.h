@@ -7,7 +7,6 @@
 
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_client.h"
-#include "components/subresource_filter/content/common/ad_evidence.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/common/load_policy.h"
 
@@ -56,11 +55,13 @@ class SubresourceFilterObserver {
       content::NavigationHandle* navigation_handle,
       LoadPolicy load_policy) {}
 
-  // Called when a frame is tagged as an ad, along with evidence for it being
-  // an ad at tagging time. This will be called after frame creation and prior
-  // to DidFinishNavigation.
-  virtual void OnAdSubframeDetected(content::RenderFrameHost* render_frame_host,
-                                    const FrameAdEvidence& ad_evidence) {}
+  // Called when a frame is tagged or untagged as an ad, along with the frame's
+  // current status as an ad subframe and the evidence which resulted in the
+  // change. This will be called prior to commit time in the case of an initial
+  // synchronous load or at ReadyToCommitNavigation otherwise.
+  virtual void OnIsAdSubframeChanged(
+      content::RenderFrameHost* render_frame_host,
+      bool is_ad_subframe) {}
 };
 
 }  // namespace subresource_filter

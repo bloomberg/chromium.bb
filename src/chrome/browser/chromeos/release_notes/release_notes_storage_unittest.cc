@@ -9,7 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/version.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -29,7 +29,7 @@ class ReleaseNotesStorageTest : public testing::Test,
   ReleaseNotesStorageTest()
       : user_manager_(new FakeChromeUserManager()),
         scoped_user_manager_(
-            std::unique_ptr<chromeos::FakeChromeUserManager>(user_manager_)) {}
+            std::unique_ptr<FakeChromeUserManager>(user_manager_)) {}
   ~ReleaseNotesStorageTest() override {}
 
   std::unique_ptr<Profile> CreateProfile(std::string email) {

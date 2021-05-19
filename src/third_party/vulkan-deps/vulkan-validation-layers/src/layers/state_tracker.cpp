@@ -23,7 +23,6 @@
  */
 
 #include <cmath>
-#include <set>
 
 #include "vk_enum_string_helper.h"
 #include "vk_format_utils.h"
@@ -354,7 +353,7 @@ void ValidationStateTracker::PostCallRecordGetAndroidHardwareBufferPropertiesAND
     if (VK_SUCCESS != result) return;
     auto ahb_format_props = LvlFindInChain<VkAndroidHardwareBufferFormatPropertiesANDROID>(pProperties->pNext);
     if (ahb_format_props) {
-        ahb_ext_formats_map.insert({ahb_format_props->externalFormat, ahb_format_props->formatFeatures});
+        ahb_ext_formats_map.emplace(ahb_format_props->externalFormat, ahb_format_props->formatFeatures);
     }
 }
 
@@ -466,8 +465,7 @@ void ValidationStateTracker::PostCallRecordCreateImage(VkDevice device, const Vk
     AddImageStateProps(*is_node, device, physical_device);
 
     is_node->unprotected = ((pCreateInfo->flags & VK_IMAGE_CREATE_PROTECTED_BIT) == 0);
-
-    imageMap.insert(std::make_pair(*pImage, std::move(is_node)));
+    imageMap.emplace(*pImage, std::move(is_node));
 }
 
 void ValidationStateTracker::PreCallRecordDestroyImage(VkDevice device, VkImage image, const VkAllocationCallbacks *pAllocator) {
@@ -476,13 +474,13 @@ void ValidationStateTracker::PreCallRecordDestroyImage(VkDevice device, VkImage 
     const VulkanTypedHandle obj_struct(image, kVulkanObjectTypeImage);
     InvalidateCommandBuffers(image_state->cb_bindings, obj_struct);
     // Clean up memory mapping, bindings and range references for image
-    for (auto mem_binding : image_state->GetBoundMemory()) {
-        RemoveImageMemoryRange(image, mem_binding);
+    for (auto *mem_binding : image_state->GetBoundMemory()) {
+        RemoveImageMemoryRange(image_state, mem_binding);
     }
     if (image_state->bind_swapchain) {
         auto swapchain = GetSwapchainState(image_state->bind_swapchain);
         if (swapchain) {
-            swapchain->images[image_state->bind_swapchain_imageIndex].bound_images.erase(image_state->image);
+            swapchain->images[image_state->bind_swapchain_imageIndex].bound_images.erase(image_state);
         }
     }
     RemoveAliasingImage(image_state);
@@ -598,7 +596,7 @@ void ValidationStateTracker::PostCallRecordCreateBuffer(VkDevice device, const V
 
     buffer_state->unprotected = ((pCreateInfo->flags & VK_BUFFER_CREATE_PROTECTED_BIT) == 0);
 
-    bufferMap.insert(std::make_pair(*pBuffer, std::move(buffer_state)));
+    bufferMap.emplace(*pBuffer, std::move(buffer_state));
 }
 
 void ValidationStateTracker::PostCallRecordCreateBufferView(VkDevice device, const VkBufferViewCreateInfo *pCreateInfo,
@@ -612,7 +610,7 @@ void ValidationStateTracker::PostCallRecordCreateBufferView(VkDevice device, con
     DispatchGetPhysicalDeviceFormatProperties(physical_device, pCreateInfo->format, &format_properties);
     buffer_view_state->format_features = format_properties.bufferFeatures;
 
-    bufferViewMap.insert(std::make_pair(*pView, std::move(buffer_view_state)));
+    bufferViewMap.emplace(*pView, std::move(buffer_view_state));
 }
 
 void ValidationStateTracker::PostCallRecordCreateImageView(VkDevice device, const VkImageViewCreateInfo *pCreateInfo,
@@ -639,6 +637,16 @@ void ValidationStateTracker::PostCallRecordCreateImageView(VkDevice device, cons
         VkDrmFormatModifierPropertiesListEXT drm_properties_list = {VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT,
                                                                     nullptr};
         format_properties_2.pNext = (void *)&drm_properties_list;
+
+        // First call is to get the number of modifiers compatible with the queried format
+        DispatchGetPhysicalDeviceFormatProperties2(physical_device, image_view_format, &format_properties_2);
+
+        std::vector<VkDrmFormatModifierPropertiesEXT> drm_properties;
+        drm_properties.resize(drm_properties_list.drmFormatModifierCount);
+        drm_properties_list.pDrmFormatModifierProperties = drm_properties.data();
+
+        // Second call, now with an allocated array in pDrmFormatModifierProperties, is to get the modifiers
+        // compatible with the queried format
         DispatchGetPhysicalDeviceFormatProperties2(physical_device, image_view_format, &format_properties_2);
 
         for (uint32_t i = 0; i < drm_properties_list.drmFormatModifierCount; i++) {
@@ -674,7 +682,7 @@ void ValidationStateTracker::PostCallRecordCreateImageView(VkDevice device, cons
 
         DispatchGetPhysicalDeviceImageFormatProperties2(physical_device, &image_format_info, &image_format_properties);
     }
-    imageViewMap.insert(std::make_pair(*pView, std::move(image_view_state)));
+    imageViewMap.emplace(*pView, std::move(image_view_state));
 }
 
 void ValidationStateTracker::PreCallRecordCmdCopyBuffer(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer,
@@ -717,9 +725,6 @@ void ValidationStateTracker::PreCallRecordDestroyBuffer(VkDevice device, VkBuffe
     const VulkanTypedHandle obj_struct(buffer, kVulkanObjectTypeBuffer);
 
     InvalidateCommandBuffers(buffer_state->cb_bindings, obj_struct);
-    for (auto mem_binding : buffer_state->GetBoundMemory()) {
-        RemoveBufferMemoryRange(buffer, mem_binding);
-    }
     ClearMemoryObjectBindings(obj_struct);
     buffer_state->destroyed = true;
     bufferMap.erase(buffer_state->buffer);
@@ -811,52 +816,32 @@ const IMAGE_VIEW_STATE *ValidationStateTracker::GetActiveAttachmentImageViewStat
     return cb->active_attachments->at(index);
 }
 
-void ValidationStateTracker::AddAliasingImage(IMAGE_STATE *image_state) {
-    std::unordered_set<VkImage> *bound_images = nullptr;
-
-    if (image_state->bind_swapchain) {
-        auto swapchain_state = GetSwapchainState(image_state->bind_swapchain);
-        if (swapchain_state) {
-            bound_images = &swapchain_state->images[image_state->bind_swapchain_imageIndex].bound_images;
-        }
-    } else {
-        if (image_state->binding.mem_state) {
-            bound_images = &image_state->binding.mem_state->bound_images;
-        }
-    }
-
-    if (bound_images) {
-        for (const auto &handle : *bound_images) {
-            if (handle != image_state->image) {
-                auto is = GetImageState(handle);
-                if (is && is->IsCompatibleAliasing(image_state)) {
-                    auto inserted = is->aliasing_images.emplace(image_state->image);
-                    if (inserted.second) {
-                        image_state->aliasing_images.emplace(handle);
-                    }
-                }
+void ValidationStateTracker::AddAliasingImage(IMAGE_STATE *image_state, layer_data::unordered_set<IMAGE_STATE *> *bound_images) {
+    assert(bound_images);
+    for (auto *bound_image : *bound_images) {
+        if (bound_image && (bound_image != image_state) && bound_image->IsCompatibleAliasing(image_state)) {
+            auto inserted = bound_image->aliasing_images.emplace(image_state);
+            if (inserted.second) {
+                image_state->aliasing_images.emplace(bound_image);
             }
         }
     }
 }
 
 void ValidationStateTracker::RemoveAliasingImage(IMAGE_STATE *image_state) {
-    for (const auto &image : image_state->aliasing_images) {
-        auto is = GetImageState(image);
-        if (is) {
-            is->aliasing_images.erase(image_state->image);
-        }
+    for (auto *alias_state : image_state->aliasing_images) {
+        assert(alias_state);
+        alias_state->aliasing_images.erase(image_state);
     }
     image_state->aliasing_images.clear();
 }
 
-void ValidationStateTracker::RemoveAliasingImages(const std::unordered_set<VkImage> &bound_images) {
+void ValidationStateTracker::RemoveAliasingImages(const layer_data::unordered_set<IMAGE_STATE *> &bound_images) {
     // This is one way clear. Because the bound_images include cross references, the one way clear loop could clear the whole
     // reference. It doesn't need two ways clear.
-    for (const auto &handle : bound_images) {
-        auto is = GetImageState(handle);
-        if (is) {
-            is->aliasing_images.clear();
+    for (auto *bound_image : bound_images) {
+        if (bound_image) {
+            bound_image->aliasing_images.clear();
         }
     }
 }
@@ -1005,7 +990,7 @@ void ValidationStateTracker::AddCommandBufferBindingImage(CMD_BUFFER_STATE *cb_n
         if (AddCommandBufferBinding(image_state->cb_bindings,
                                     VulkanTypedHandle(image_state->image, kVulkanObjectTypeImage, image_state), cb_node)) {
             // Now update CB binding in MemObj mini CB list
-            for (auto mem_binding : image_state->GetBoundMemory()) {
+            for (auto *mem_binding : image_state->GetBoundMemory()) {
                 // Now update CBInfo's Mem reference list
                 AddCommandBufferBinding(mem_binding->cb_bindings,
                                         VulkanTypedHandle(mem_binding->mem, kVulkanObjectTypeDeviceMemory, mem_binding), cb_node);
@@ -1040,7 +1025,7 @@ void ValidationStateTracker::AddCommandBufferBindingBuffer(CMD_BUFFER_STATE *cb_
     if (AddCommandBufferBinding(buffer_state->cb_bindings,
                                 VulkanTypedHandle(buffer_state->buffer, kVulkanObjectTypeBuffer, buffer_state), cb_node)) {
         // Now update CB binding in MemObj mini CB list
-        for (auto mem_binding : buffer_state->GetBoundMemory()) {
+        for (auto *mem_binding : buffer_state->GetBoundMemory()) {
             // Now update CBInfo's Mem reference list
             AddCommandBufferBinding(mem_binding->cb_bindings,
                                     VulkanTypedHandle(mem_binding->mem, kVulkanObjectTypeDeviceMemory, mem_binding), cb_node);
@@ -1074,7 +1059,7 @@ void ValidationStateTracker::AddCommandBufferBindingAccelerationStructure(CMD_BU
             as_state->cb_bindings,
             VulkanTypedHandle(as_state->acceleration_structure, kVulkanObjectTypeAccelerationStructureNV, as_state), cb_node)) {
         // Now update CB binding in MemObj mini CB list
-        for (auto mem_binding : as_state->GetBoundMemory()) {
+        for (auto *mem_binding : as_state->GetBoundMemory()) {
             // Now update CBInfo's Mem reference list
             AddCommandBufferBinding(mem_binding->cb_bindings,
                                     VulkanTypedHandle(mem_binding->mem, kVulkanObjectTypeDeviceMemory, mem_binding), cb_node);
@@ -1092,7 +1077,7 @@ void ValidationStateTracker::AddCommandBufferBindingAccelerationStructure(CMD_BU
             as_state->cb_bindings,
             VulkanTypedHandle(as_state->acceleration_structure, kVulkanObjectTypeAccelerationStructureKHR, as_state), cb_node)) {
         // Now update CB binding in MemObj mini CB list
-        for (auto mem_binding : as_state->GetBoundMemory()) {
+        for (auto *mem_binding : as_state->GetBoundMemory()) {
             // Now update CBInfo's Mem reference list
             AddCommandBufferBinding(mem_binding->cb_bindings,
                                     VulkanTypedHandle(mem_binding->mem, kVulkanObjectTypeDeviceMemory, mem_binding), cb_node);
@@ -1227,7 +1212,7 @@ void ValidationStateTracker::UpdateDrawState(CMD_BUFFER_STATE *cb_state, CMD_TYP
                     std::set_difference(binding_req_map.begin(), binding_req_map.end(),
                                         state.per_set[set_index].validated_set_binding_req_map.begin(),
                                         state.per_set[set_index].validated_set_binding_req_map.end(),
-                                        std::inserter(delta_reqs, delta_reqs.begin()));
+                                        layer_data::insert_iterator<BindingReqMap>(delta_reqs, delta_reqs.begin()));
                     descriptor_set->UpdateDrawState(this, cb_state, cmd_type, pipe, delta_reqs, function);
                 } else {
                     descriptor_set->UpdateDrawState(this, cb_state, cmd_type, pipe, binding_req_map, function);
@@ -1268,7 +1253,7 @@ void ValidationStateTracker::FreeDescriptorSet(cvdescriptorset::DescriptorSet *d
 void ValidationStateTracker::DeleteDescriptorSetPools() {
     for (auto ii = descriptorPoolMap.begin(); ii != descriptorPoolMap.end();) {
         // Remove this pools' sets from setMap and delete them
-        for (auto ds : ii->second->sets) {
+        for (auto *ds : ii->second->sets) {
             FreeDescriptorSet(ds);
         }
         ii->second->sets.clear();
@@ -1405,14 +1390,14 @@ VkFormatFeatureFlags ValidationStateTracker::GetPotentialFormatFeatures(VkFormat
 // Tie the VulkanTypedHandle to the cmd buffer which includes:
 //  Add object_binding to cmd buffer
 //  Add cb_binding to object
-bool ValidationStateTracker::AddCommandBufferBinding(small_unordered_map<CMD_BUFFER_STATE *, int, 8> &cb_bindings,
+bool ValidationStateTracker::AddCommandBufferBinding(BASE_NODE::BindingsType &cb_bindings,
                                                      const VulkanTypedHandle &obj, CMD_BUFFER_STATE *cb_node) {
     if (disabled[command_buffer_state]) {
         return false;
     }
     // Insert the cb_binding with a default 'index' of -1. Then push the obj into the object_bindings
     // vector, and update cb_bindings[cb_node] with the index of that element of the vector.
-    auto inserted = cb_bindings.insert({cb_node, -1});
+    auto inserted = cb_bindings.emplace(cb_node, -1);
     if (inserted.second) {
         cb_node->object_bindings.push_back(obj);
         inserted.first->second = static_cast<int>(cb_node->object_bindings.size()) - 1;
@@ -1481,7 +1466,7 @@ void ValidationStateTracker::ResetCommandBufferState(const VkCommandBuffer cb) {
         }
 
         // Remove reverse command buffer links.
-        for (auto sub_cb : cb_state->linkedCommandBuffers) {
+        for (auto *sub_cb : cb_state->linkedCommandBuffers) {
             sub_cb->linkedCommandBuffers.erase(cb_state);
         }
         cb_state->linkedCommandBuffers.clear();
@@ -1496,7 +1481,7 @@ void ValidationStateTracker::ResetCommandBufferState(const VkCommandBuffer cb) {
         }
         cb_state->object_bindings.clear();
         // Remove this cmdBuffer's reference from each FrameBuffer's CB ref list
-        for (auto framebuffer : cb_state->framebuffers) {
+        for (auto &framebuffer : cb_state->framebuffers) {
             framebuffer->cb_bindings.erase(cb_state);
         }
         cb_state->framebuffers.clear();
@@ -2126,10 +2111,8 @@ void ValidationStateTracker::PostCallRecordCreateDevice(VkPhysicalDevice gpu, co
     if (pCreateInfo->pQueueCreateInfos != nullptr) {
         for (uint32_t i = 0; i < pCreateInfo->queueCreateInfoCount; ++i) {
             const VkDeviceQueueCreateInfo &queue_create_info = pCreateInfo->pQueueCreateInfos[i];
-            state_tracker->queue_family_index_map.insert(
-                std::make_pair(queue_create_info.queueFamilyIndex, queue_create_info.queueCount));
-            state_tracker->queue_family_create_flags_map.insert(
-                std::make_pair(queue_create_info.queueFamilyIndex, queue_create_info.flags));
+            state_tracker->queue_family_index_map.emplace(queue_create_info.queueFamilyIndex, queue_create_info.queueCount);
+            state_tracker->queue_family_create_flags_map.emplace( queue_create_info.queueFamilyIndex, queue_create_info.flags);
         }
     }
 }
@@ -2160,7 +2143,7 @@ void ValidationStateTracker::PreCallRecordDestroyDevice(VkDevice device, const V
 
 // Loop through bound objects and increment their in_use counts.
 void ValidationStateTracker::IncrementBoundObjects(CMD_BUFFER_STATE const *cb_node) {
-    for (auto obj : cb_node->object_bindings) {
+    for (const auto &obj : cb_node->object_bindings) {
         auto base_obj = GetStateStructPtrFromObject(obj);
         if (base_obj) {
             base_obj->in_use.fetch_add(1);
@@ -2187,7 +2170,7 @@ void ValidationStateTracker::IncrementResources(CMD_BUFFER_STATE *cb_node) {
 // Decrement in-use count for objects bound to command buffer
 void ValidationStateTracker::DecrementBoundResources(CMD_BUFFER_STATE const *cb_node) {
     BASE_NODE *base_obj = nullptr;
-    for (auto obj : cb_node->object_bindings) {
+    for (const auto &obj : cb_node->object_bindings) {
         base_obj = GetStateStructPtrFromObject(obj);
         if (base_obj) {
             base_obj->in_use.fetch_sub(1);
@@ -2196,8 +2179,8 @@ void ValidationStateTracker::DecrementBoundResources(CMD_BUFFER_STATE const *cb_
 }
 
 void ValidationStateTracker::RetireWorkOnQueue(QUEUE_STATE *pQueue, uint64_t seq) {
-    std::unordered_map<VkQueue, uint64_t> other_queue_seqs;
-    std::unordered_map<VkSemaphore, uint64_t> timeline_semaphore_counters;
+    layer_data::unordered_map<VkQueue, uint64_t> other_queue_seqs;
+    layer_data::unordered_map<VkSemaphore, uint64_t> timeline_semaphore_counters;
 
     // Roll this queue forward, one submission at a time.
     while (pQueue->seq < seq) {
@@ -2253,7 +2236,7 @@ void ValidationStateTracker::RetireWorkOnQueue(QUEUE_STATE *pQueue, uint64_t seq
                 function(nullptr, /*do_validate*/ false, first_pool, submission.perf_submit_pass, &local_query_to_state_map);
             }
 
-            for (auto query_state_pair : local_query_to_state_map) {
+            for (const auto &query_state_pair : local_query_to_state_map) {
                 if (query_state_pair.second == QUERYSTATE_ENDED) {
                     queryToStateMap[query_state_pair.first] = QUERYSTATE_AVAILABLE;
                 }
@@ -2271,10 +2254,10 @@ void ValidationStateTracker::RetireWorkOnQueue(QUEUE_STATE *pQueue, uint64_t seq
     }
 
     // Roll other queues forward to the highest seq we saw a wait for
-    for (auto qs : other_queue_seqs) {
+    for (const auto &qs : other_queue_seqs) {
         RetireWorkOnQueue(GetQueueState(qs.first), qs.second);
     }
-    for (auto sc : timeline_semaphore_counters) {
+    for (const auto &sc : timeline_semaphore_counters) {
         RetireTimelineSemaphore(sc.first, sc.second);
     }
 }
@@ -2314,7 +2297,7 @@ void ValidationStateTracker::RecordSubmitCommandBuffer(CB_SUBMISSION &submission
     auto cb_node = GetCBState(command_buffer);
     if (cb_node) {
         submission.cbs.push_back(command_buffer);
-        for (auto secondary_cmd_buffer : cb_node->linkedCommandBuffers) {
+        for (auto *secondary_cmd_buffer : cb_node->linkedCommandBuffers) {
             submission.cbs.push_back(secondary_cmd_buffer->commandBuffer);
             IncrementResources(secondary_cmd_buffer);
         }
@@ -2327,15 +2310,15 @@ void ValidationStateTracker::RecordSubmitCommandBuffer(CB_SUBMISSION &submission
             function(nullptr, /*do_validate*/ false, first_pool, submission.perf_submit_pass, &local_query_to_state_map);
         }
 
-        for (auto query_state_pair : local_query_to_state_map) {
+        for (const auto &query_state_pair : local_query_to_state_map) {
             queryToStateMap[query_state_pair.first] = query_state_pair.second;
         }
 
-        for (auto &function : cb_node->eventUpdates) {
+        for (const auto &function : cb_node->eventUpdates) {
             function(nullptr, /*do_validate*/ false, &local_event_to_stage_map);
         }
 
-        for (auto eventStagePair : local_event_to_stage_map) {
+        for (const auto &eventStagePair : local_event_to_stage_map) {
             eventMap[eventStagePair.first]->stageMask = eventStagePair.second;
         }
     }
@@ -2415,13 +2398,21 @@ void ValidationStateTracker::PostCallRecordQueueSubmit(VkQueue queue, uint32_t s
         const uint64_t next_seq = queue_state->seq + queue_state->submissions.size() + 1;
         auto *timeline_semaphore_submit = LvlFindInChain<VkTimelineSemaphoreSubmitInfo>(submit->pNext);
         for (uint32_t i = 0; i < submit->waitSemaphoreCount; ++i) {
-            uint64_t value = timeline_semaphore_submit ? timeline_semaphore_submit->pWaitSemaphoreValues[i] : 0;
+            uint64_t value = 0;
+            if (timeline_semaphore_submit && timeline_semaphore_submit->pWaitSemaphoreValues != nullptr &&
+                (i < timeline_semaphore_submit->waitSemaphoreValueCount)) {
+                value = timeline_semaphore_submit->pWaitSemaphoreValues[i];
+            }
             RecordSubmitWaitSemaphore(submission, queue, submit->pWaitSemaphores[i], value, next_seq);
         }
 
         bool retire_early = false;
         for (uint32_t i = 0; i < submit->signalSemaphoreCount; ++i) {
-            uint64_t value = timeline_semaphore_submit ? timeline_semaphore_submit->pSignalSemaphoreValues[i] : 0;
+            uint64_t value = 0;
+            if (timeline_semaphore_submit && timeline_semaphore_submit->pSignalSemaphoreValues != nullptr &&
+                (i < timeline_semaphore_submit->signalSemaphoreValueCount)) {
+                value = timeline_semaphore_submit->pSignalSemaphoreValues[i];
+            }
             retire_early |= RecordSubmitSignalSemaphore(submission, queue, submit->pSignalSemaphores[i], value, next_seq);
         }
         if (retire_early) {
@@ -2800,67 +2791,18 @@ void ValidationStateTracker::PreCallRecordDestroyQueryPool(VkDevice device, VkQu
     queryPoolMap.erase(queryPool);
 }
 
-// Object with given handle is being bound to memory w/ given mem_info struct.
-//  Track the newly bound memory range with given memoryOffset
-//  Also scan any previous ranges, track aliased ranges with new range, and flag an error if a linear
-//  and non-linear range incorrectly overlap.
-void ValidationStateTracker::InsertMemoryRange(const VulkanTypedHandle &typed_handle, DEVICE_MEMORY_STATE *mem_info,
-                                               VkDeviceSize memoryOffset) {
-    if (typed_handle.type == kVulkanObjectTypeImage) {
-        mem_info->bound_images.insert(typed_handle.Cast<VkImage>());
-    } else if (typed_handle.type == kVulkanObjectTypeBuffer) {
-        mem_info->bound_buffers.insert(typed_handle.Cast<VkBuffer>());
-    } else if (typed_handle.type == kVulkanObjectTypeAccelerationStructureNV) {
-        mem_info->bound_acceleration_structures.insert(typed_handle.Cast<VkAccelerationStructureNV>());
-    } else {
-        // Unsupported object type
-        assert(false);
-    }
+void ValidationStateTracker::InsertImageMemoryRange(IMAGE_STATE *image_state, DEVICE_MEMORY_STATE *mem_info,
+                                                    VkDeviceSize mem_offset) {
+    mem_info->bound_images.insert(image_state);
 }
 
-void ValidationStateTracker::InsertImageMemoryRange(VkImage image, DEVICE_MEMORY_STATE *mem_info, VkDeviceSize mem_offset) {
-    InsertMemoryRange(VulkanTypedHandle(image, kVulkanObjectTypeImage), mem_info, mem_offset);
-}
-
-void ValidationStateTracker::InsertBufferMemoryRange(VkBuffer buffer, DEVICE_MEMORY_STATE *mem_info, VkDeviceSize mem_offset) {
-    InsertMemoryRange(VulkanTypedHandle(buffer, kVulkanObjectTypeBuffer), mem_info, mem_offset);
-}
-
-void ValidationStateTracker::InsertAccelerationStructureMemoryRange(VkAccelerationStructureNV as, DEVICE_MEMORY_STATE *mem_info,
-                                                                    VkDeviceSize mem_offset) {
-    InsertMemoryRange(VulkanTypedHandle(as, kVulkanObjectTypeAccelerationStructureNV), mem_info, mem_offset);
-}
-
-// This function will remove the handle-to-index mapping from the appropriate map.
-static void RemoveMemoryRange(const VulkanTypedHandle &typed_handle, DEVICE_MEMORY_STATE *mem_info) {
-    if (typed_handle.type == kVulkanObjectTypeImage) {
-        mem_info->bound_images.erase(typed_handle.Cast<VkImage>());
-    } else if (typed_handle.type == kVulkanObjectTypeBuffer) {
-        mem_info->bound_buffers.erase(typed_handle.Cast<VkBuffer>());
-    } else if (typed_handle.type == kVulkanObjectTypeAccelerationStructureNV) {
-        mem_info->bound_acceleration_structures.erase(typed_handle.Cast<VkAccelerationStructureNV>());
-    } else {
-        // Unsupported object type
-        assert(false);
-    }
-}
-
-void ValidationStateTracker::RemoveBufferMemoryRange(VkBuffer buffer, DEVICE_MEMORY_STATE *mem_info) {
-    RemoveMemoryRange(VulkanTypedHandle(buffer, kVulkanObjectTypeBuffer), mem_info);
-}
-
-void ValidationStateTracker::RemoveImageMemoryRange(VkImage image, DEVICE_MEMORY_STATE *mem_info) {
-    RemoveMemoryRange(VulkanTypedHandle(image, kVulkanObjectTypeImage), mem_info);
+void ValidationStateTracker::RemoveImageMemoryRange(IMAGE_STATE *image_state, DEVICE_MEMORY_STATE *mem_info) {
+    mem_info->bound_images.erase(image_state);
 }
 
 void ValidationStateTracker::UpdateBindBufferMemoryState(VkBuffer buffer, VkDeviceMemory mem, VkDeviceSize memoryOffset) {
     BUFFER_STATE *buffer_state = GetBufferState(buffer);
     if (buffer_state) {
-        // Track bound memory range information
-        auto mem_info = GetDevMemState(mem);
-        if (mem_info) {
-            InsertBufferMemoryRange(buffer, mem_info, memoryOffset);
-        }
         // Track objects tied to memory
         SetMemBinding(mem, buffer_state, memoryOffset, VulkanTypedHandle(buffer, kVulkanObjectTypeBuffer));
     }
@@ -3056,7 +2998,7 @@ void ValidationStateTracker::PreCallRecordDestroyDescriptorPool(VkDevice device,
         // Any bound cmd buffers are now invalid
         InvalidateCommandBuffers(desc_pool_state->cb_bindings, obj_struct);
         // Free sets that were in this pool
-        for (auto ds : desc_pool_state->sets) {
+        for (auto *ds : desc_pool_state->sets) {
             FreeDescriptorSet(ds);
         }
         desc_pool_state->destroyed = true;
@@ -3191,7 +3133,7 @@ void ValidationStateTracker::PostCallRecordResetFences(VkDevice device, uint32_t
 // InvalidateCommandBuffers and InvalidateLinkedCommandBuffers are essentially
 // the same, except one takes a map and one takes a set, and InvalidateCommandBuffers
 // can also unlink objects from command buffers.
-void ValidationStateTracker::InvalidateCommandBuffers(small_unordered_map<CMD_BUFFER_STATE *, int, 8> &cb_nodes,
+void ValidationStateTracker::InvalidateCommandBuffers(BASE_NODE::BindingsType &cb_nodes,
                                                       const VulkanTypedHandle &obj, bool unlink) {
     for (const auto &cb_node_pair : cb_nodes) {
         auto &cb_node = cb_node_pair.first;
@@ -3217,9 +3159,9 @@ void ValidationStateTracker::InvalidateCommandBuffers(small_unordered_map<CMD_BU
     }
 }
 
-void ValidationStateTracker::InvalidateLinkedCommandBuffers(std::unordered_set<CMD_BUFFER_STATE *> &cb_nodes,
+void ValidationStateTracker::InvalidateLinkedCommandBuffers(layer_data::unordered_set<CMD_BUFFER_STATE *> &cb_nodes,
                                                             const VulkanTypedHandle &obj) {
-    for (auto cb_node : cb_nodes) {
+    for (auto *cb_node : cb_nodes) {
         if (cb_node->state == CB_RECORDING) {
             cb_node->state = CB_INVALID_INCOMPLETE;
         } else if (cb_node->state == CB_RECORDED) {
@@ -3439,7 +3381,7 @@ PushConstantRangesId GetCanonicalId(const VkPipelineLayoutCreateInfo *info) {
 
     PushConstantRanges ranges;
     ranges.reserve(sorted.size());
-    for (const auto range : sorted) {
+    for (const auto *range : sorted) {
         ranges.emplace_back(*range);
     }
     return push_constant_ranges_dict.look_up(std::move(ranges));
@@ -3496,7 +3438,7 @@ void ValidationStateTracker::PostCallRecordResetDescriptorPool(VkDevice device, 
     DESCRIPTOR_POOL_STATE *pool = GetDescriptorPoolState(descriptorPool);
     // TODO: validate flags
     // For every set off of this pool, clear it, remove from setMap, and free cvdescriptorset::DescriptorSet
-    for (auto ds : pool->sets) {
+    for (auto *ds : pool->sets) {
         FreeDescriptorSet(ds);
     }
     pool->sets.clear();
@@ -3711,7 +3653,7 @@ void ValidationStateTracker::PostCallRecordEndCommandBuffer(VkCommandBuffer comm
     CMD_BUFFER_STATE *cb_state = GetCBState(commandBuffer);
     if (!cb_state) return;
     // Cached validation is specific to a specific recording of a specific command buffer.
-    for (auto descriptor_set : cb_state->validated_descriptor_sets) {
+    for (auto *descriptor_set : cb_state->validated_descriptor_sets) {
         descriptor_set->ClearCachedValidation(cb_state);
     }
     cb_state->validated_descriptor_sets.clear();
@@ -3970,11 +3912,6 @@ void ValidationStateTracker::PostCallRecordBindAccelerationStructureMemoryNV(
 
         ACCELERATION_STRUCTURE_STATE *as_state = GetAccelerationStructureStateNV(info.accelerationStructure);
         if (as_state) {
-            // Track bound memory range information
-            auto mem_info = GetDevMemState(info.memory);
-            if (mem_info) {
-                InsertAccelerationStructureMemoryRange(info.accelerationStructure, mem_info, info.memoryOffset);
-            }
             // Track objects tied to memory
             SetMemBinding(info.memory, as_state, info.memoryOffset,
                           VulkanTypedHandle(info.accelerationStructure, kVulkanObjectTypeAccelerationStructureNV));
@@ -4034,9 +3971,6 @@ void ValidationStateTracker::PreCallRecordDestroyAccelerationStructureKHR(VkDevi
     if (as_state) {
         const VulkanTypedHandle obj_struct(accelerationStructure, kVulkanObjectTypeAccelerationStructureKHR);
         InvalidateCommandBuffers(as_state->cb_bindings, obj_struct);
-        for (auto mem_binding : as_state->GetBoundMemory()) {
-            RemoveMemoryRange(obj_struct, mem_binding);
-        }
         ClearMemoryObjectBindings(obj_struct);
         as_state->destroyed = true;
         accelerationStructureMap_khr.erase(accelerationStructure);
@@ -4051,9 +3985,6 @@ void ValidationStateTracker::PreCallRecordDestroyAccelerationStructureNV(VkDevic
     if (as_state) {
         const VulkanTypedHandle obj_struct(accelerationStructure, kVulkanObjectTypeAccelerationStructureNV);
         InvalidateCommandBuffers(as_state->cb_bindings, obj_struct);
-        for (auto mem_binding : as_state->GetBoundMemory()) {
-            RemoveMemoryRange(obj_struct, mem_binding);
-        }
         ClearMemoryObjectBindings(obj_struct);
         as_state->destroyed = true;
         accelerationStructureMap.erase(accelerationStructure);
@@ -4259,7 +4190,7 @@ void ValidationStateTracker::RecordCmdPushDescriptorSetState(CMD_BUFFER_STATE *c
     }
 
     // We need a descriptor set to update the bindings with, compatible with the passed layout
-    const auto dsl = pipeline_layout->set_layouts[set];
+    const auto& dsl = pipeline_layout->set_layouts[set];
     const auto lv_bind_point = ConvertToLvlBindPoint(pipelineBindPoint);
     auto &last_bound = cb_state->lastBound[lv_bind_point];
     auto &push_descriptor_set = last_bound.push_descriptor_set;
@@ -4715,7 +4646,7 @@ void ValidationStateTracker::RecordCreateRenderPassState(RenderPassCreateVersion
         std::vector<bool> &first_is_transition;
         std::vector<uint32_t> &last;
         std::vector<std::vector<RENDER_PASS_STATE::AttachmentTransition>> &subpass_transitions;
-        std::unordered_map<uint32_t, bool> &first_read;
+        layer_data::unordered_map<uint32_t, bool> &first_read;
         const uint32_t attachment_count;
         std::vector<VkImageLayout> attachment_layout;
         std::vector<std::vector<VkImageLayout>> subpass_attachment_layout;
@@ -4751,7 +4682,7 @@ void ValidationStateTracker::RecordCreateRenderPassState(RenderPassCreateVersion
                 if (attachment != VK_ATTACHMENT_UNUSED) {
                     const auto layout = attach_ref[j].layout;
                     // Take advantage of the fact that insert won't overwrite, so we'll only write the first time.
-                    first_read.insert(std::make_pair(attachment, is_read));
+                    first_read.emplace(attachment, is_read);
                     if (first[attachment] == VK_SUBPASS_EXTERNAL) {
                         first[attachment] = subpass;
                         const auto initial_layout = rp->createInfo.pAttachments[attachment].initialLayout;
@@ -5060,25 +4991,35 @@ void ValidationStateTracker::UpdateBindImageMemoryState(const VkBindImageMemoryI
             std::unique_ptr<const subresource_adapter::ImageRangeEncoder>(new subresource_adapter::ImageRangeEncoder(*image_state));
         const auto swapchain_info = LvlFindInChain<VkBindImageMemorySwapchainInfoKHR>(bindInfo.pNext);
         if (swapchain_info) {
-            auto swapchain = GetSwapchainState(swapchain_info->swapchain);
+            auto *swapchain = GetSwapchainState(swapchain_info->swapchain);
             if (swapchain) {
-                swapchain->images[swapchain_info->imageIndex].bound_images.emplace(image_state->image);
+                SWAPCHAIN_IMAGE &swap_image = swapchain->images[swapchain_info->imageIndex];
+                if (swap_image.bound_images.empty()) {
+                    // If this is the first "binding" of an image to this swapchain index, get a fake allocation
+                    image_state->swapchain_fake_address = fake_memory.Alloc(image_state->fragment_encoder->TotalSize());
+                } else {
+                    image_state->swapchain_fake_address = (*swap_image.bound_images.cbegin())->swapchain_fake_address;
+                }
+                swap_image.bound_images.emplace(image_state);
                 image_state->bind_swapchain = swapchain_info->swapchain;
                 image_state->bind_swapchain_imageIndex = swapchain_info->imageIndex;
+
+                // All images bound to this swapchain and index are aliases
+                AddAliasingImage(image_state, &swap_image.bound_images);
             }
         } else {
             // Track bound memory range information
             auto mem_info = GetDevMemState(bindInfo.memory);
             if (mem_info) {
-                InsertImageMemoryRange(bindInfo.image, mem_info, bindInfo.memoryOffset);
+                InsertImageMemoryRange(image_state, mem_info, bindInfo.memoryOffset);
+                if (image_state->createInfo.flags & VK_IMAGE_CREATE_ALIAS_BIT) {
+                    AddAliasingImage(image_state, &mem_info->bound_images);
+                }
             }
 
             // Track objects tied to memory
             SetMemBinding(bindInfo.memory, image_state, bindInfo.memoryOffset,
                           VulkanTypedHandle(bindInfo.image, kVulkanObjectTypeImage));
-        }
-        if ((image_state->createInfo.flags & VK_IMAGE_CREATE_ALIAS_BIT) || swapchain_info) {
-            AddAliasingImage(image_state);
         }
     }
 }
@@ -5212,7 +5153,7 @@ void ValidationStateTracker::PostCallRecordCreateEvent(VkDevice device, const Vk
                                                        const VkAllocationCallbacks *pAllocator, VkEvent *pEvent, VkResult result) {
     if (VK_SUCCESS != result) return;
     const auto event = *pEvent;
-    eventMap.insert(std::make_pair(event, std::make_shared<EVENT_STATE>(event, pCreateInfo->flags)));
+    eventMap.emplace(event, std::make_shared<EVENT_STATE>(event, pCreateInfo->flags));
 }
 
 void ValidationStateTracker::RecordCreateSwapchainState(VkResult result, const VkSwapchainCreateInfoKHR *pCreateInfo,
@@ -5249,10 +5190,17 @@ void ValidationStateTracker::PreCallRecordDestroySwapchainKHR(VkDevice device, V
     if (!swapchain) return;
     auto swapchain_data = GetSwapchainState(swapchain);
     if (swapchain_data) {
-        for (const auto &swapchain_image : swapchain_data->images) {
-            ClearMemoryObjectBindings(VulkanTypedHandle(swapchain_image.image, kVulkanObjectTypeImage));
-            imageMap.erase(swapchain_image.image);
+        for (auto &swapchain_image : swapchain_data->images) {
+            // TODO: missing validation that the bound images are empty (except for image_state above)
+            // Clean up the aliases and the bound_images *before* erasing the image_state.
             RemoveAliasingImages(swapchain_image.bound_images);
+            swapchain_image.bound_images.clear();
+
+            if (swapchain_image.image_state) {
+                ClearMemoryObjectBindings(VulkanTypedHandle(swapchain_image.image_state->image, kVulkanObjectTypeImage));
+                imageMap.erase(swapchain_image.image_state->image);
+                swapchain_image.image_state = nullptr;
+            }
         }
 
         auto surface_state = GetSurfaceState(swapchain_data->createInfo.surface);
@@ -5293,8 +5241,7 @@ void ValidationStateTracker::PostCallRecordQueuePresentKHR(VkQueue queue, const 
         // Mark the image as having been released to the WSI
         auto swapchain_data = GetSwapchainState(pPresentInfo->pSwapchains[i]);
         if (swapchain_data && (swapchain_data->images.size() > pPresentInfo->pImageIndices[i])) {
-            auto image = swapchain_data->images[pPresentInfo->pImageIndices[i]].image;
-            auto image_state = GetImageState(image);
+            IMAGE_STATE *image_state = swapchain_data->images[pPresentInfo->pImageIndices[i]].image_state;
             if (image_state) {
                 image_state->acquired = false;
                 if (image_state->shared_presentable) {
@@ -5341,8 +5288,7 @@ void ValidationStateTracker::RecordAcquireNextImageState(VkDevice device, VkSwap
     // Mark the image as acquired.
     auto swapchain_data = GetSwapchainState(swapchain);
     if (swapchain_data && (swapchain_data->images.size() > *pImageIndex)) {
-        auto image = swapchain_data->images[*pImageIndex].image;
-        auto image_state = GetImageState(image);
+        IMAGE_STATE *image_state = swapchain_data->images[*pImageIndex].image_state;
         if (image_state) {
             image_state->acquired = true;
             image_state->shared_presentable = swapchain_data->shared_presentable;
@@ -6247,7 +6193,7 @@ void ValidationStateTracker::ResetCommandBufferPushConstantDataIfIncompatible(CM
         cb_state->push_constant_data.clear();
         cb_state->push_constant_data_update.clear();
         uint32_t size_needed = 0;
-        for (auto push_constant_range : *cb_state->push_constant_data_ranges) {
+        for (const auto &push_constant_range : *cb_state->push_constant_data_ranges) {
             auto size = push_constant_range.offset + push_constant_range.size;
             size_needed = std::max(size_needed, size);
 
@@ -6290,7 +6236,8 @@ void ValidationStateTracker::PostCallRecordGetSwapchainImagesKHR(VkDevice device
 
     if (pSwapchainImages) {
         for (uint32_t i = 0; i < *pSwapchainImageCount; ++i) {
-            if (swapchain_state->images[i].image != VK_NULL_HANDLE) continue;  // Already retrieved this.
+            SWAPCHAIN_IMAGE &swapchain_image = swapchain_state->images[i];
+            if (swapchain_image.image_state) continue;  // Already retrieved this.
 
             // Add imageMap entries for each swapchain image
             VkImageCreateInfo image_ci;
@@ -6325,14 +6272,30 @@ void ValidationStateTracker::PostCallRecordGetSwapchainImagesKHR(VkDevice device
             }
 
             imageMap[pSwapchainImages[i]] = std::make_shared<IMAGE_STATE>(device, pSwapchainImages[i], &image_ci);
-            auto &image_state = imageMap[pSwapchainImages[i]];
+            auto *image_state = imageMap[pSwapchainImages[i]].get();
+            assert(image_state);
             image_state->valid = false;
             image_state->create_from_swapchain = swapchain;
             image_state->bind_swapchain = swapchain;
             image_state->bind_swapchain_imageIndex = i;
             image_state->is_swapchain_image = true;
-            swapchain_state->images[i].image = pSwapchainImages[i];
-            swapchain_state->images[i].bound_images.emplace(pSwapchainImages[i]);
+
+            // Since swapchains can't be linear, we can create an encoder here, and SyncValNeeds a fake_base_address
+            image_state->fragment_encoder = std::unique_ptr<const subresource_adapter::ImageRangeEncoder>(
+                new subresource_adapter::ImageRangeEncoder(*image_state));
+
+            if (swapchain_image.bound_images.empty()) {
+                // First time "bind" allocates
+                image_state->swapchain_fake_address = fake_memory.Alloc(image_state->fragment_encoder->TotalSize());
+            } else {
+                // All others reuse
+                image_state->swapchain_fake_address = (*swapchain_image.bound_images.cbegin())->swapchain_fake_address;
+                // Since there are others, need to update the aliasing information
+                AddAliasingImage(image_state, &swapchain_image.bound_images);
+            }
+
+            swapchain_image.image_state = image_state;  // Don't move, it's already a reference to the imageMap
+            swapchain_image.bound_images.emplace(image_state);
 
             AddImageStateProps(*image_state, device, physical_device);
         }

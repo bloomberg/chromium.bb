@@ -35,11 +35,11 @@ class GpuMemorySyncTests : public DawnTest {
 
     std::tuple<wgpu::ComputePipeline, wgpu::BindGroup> CreatePipelineAndBindGroupForCompute(
         const wgpu::Buffer& buffer) {
-        wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
             [[block]] struct Data {
-                [[offset(0)]] a : i32;
+                a : i32;
             };
-            [[group(0), binding(0)]] var<storage_buffer> data : [[access(read_write)]] Data;
+            [[group(0), binding(0)]] var<storage> data : [[access(read_write)]] Data;
             [[stage(compute)]] fn main() -> void {
                 data.a = data.a + 1;
             })");
@@ -57,30 +57,30 @@ class GpuMemorySyncTests : public DawnTest {
     std::tuple<wgpu::RenderPipeline, wgpu::BindGroup> CreatePipelineAndBindGroupForRender(
         const wgpu::Buffer& buffer,
         wgpu::TextureFormat colorFormat) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(position)]] var<out> Position : vec4<f32>;
             [[stage(vertex)]] fn main() -> void {
                 Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
             })");
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
             [[block]] struct Data {
-                [[offset(0)]] i : i32;
+                i : i32;
             };
-            [[group(0), binding(0)]] var<storage_buffer> data : [[access(read_write)]] Data;
+            [[group(0), binding(0)]] var<storage> data : [[access(read_write)]] Data;
             [[location(0)]] var<out> fragColor : vec4<f32>;
             [[stage(fragment)]] fn main() -> void {
                 data.i = data.i + 1;
                 fragColor = vec4<f32>(f32(data.i) / 255.0, 0.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor rpDesc(device);
-        rpDesc.vertexStage.module = vsModule;
-        rpDesc.cFragmentStage.module = fsModule;
-        rpDesc.primitiveTopology = wgpu::PrimitiveTopology::PointList;
-        rpDesc.cColorStates[0].format = colorFormat;
+        utils::ComboRenderPipelineDescriptor2 rpDesc;
+        rpDesc.vertex.module = vsModule;
+        rpDesc.cFragment.module = fsModule;
+        rpDesc.primitive.topology = wgpu::PrimitiveTopology::PointList;
+        rpDesc.cTargets[0].format = colorFormat;
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&rpDesc);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&rpDesc);
 
         wgpu::BindGroup bindGroup =
             utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0), {{0, buffer}});
@@ -242,22 +242,22 @@ TEST_P(GpuMemorySyncTests, SampledAndROStorageTextureInComputePass) {
         wgpu::TextureUsage::Storage | wgpu::TextureUsage::Sampled | wgpu::TextureUsage::CopyDst;
     wgpu::Texture tex = device.CreateTexture(&texDesc);
 
-    wgpu::TextureCopyView copyView;
-    copyView.texture = tex;
+    wgpu::ImageCopyTexture copyDst;
+    copyDst.texture = tex;
     wgpu::TextureDataLayout layout;
     wgpu::Extent3D copySize = {1, 1, 1};
     uint32_t kOne = 1;
-    queue.WriteTexture(&copyView, &kOne, sizeof(kOne), &layout, &copySize);
+    queue.WriteTexture(&copyDst, &kOne, sizeof(kOne), &layout, &copySize);
 
     // Create a pipeline that loads the texture from both the sampled and storage paths.
     wgpu::ComputePipelineDescriptor pipelineDesc;
     pipelineDesc.computeStage.entryPoint = "main";
-    pipelineDesc.computeStage.module = utils::CreateShaderModuleFromWGSL(device, R"(
+    pipelineDesc.computeStage.module = utils::CreateShaderModule(device, R"(
         [[block]] struct Output {
-            [[offset(0)]] sampledOut: u32;
-            [[offset(4)]] storageOut: u32;
+            sampledOut: u32;
+            storageOut: u32;
         };
-        [[group(0), binding(0)]] var<storage_buffer> output : [[access(write)]] Output;
+        [[group(0), binding(0)]] var<storage> output : [[access(write)]] Output;
         [[group(0), binding(1)]] var sampledTex : texture_2d<u32>;
         [[group(0), binding(2)]] var storageTex : [[access(read)]] texture_storage_2d<r32uint>;
 
@@ -313,11 +313,11 @@ class StorageToUniformSyncTests : public DawnTest {
     }
 
     std::tuple<wgpu::ComputePipeline, wgpu::BindGroup> CreatePipelineAndBindGroupForCompute() {
-        wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
             [[block]] struct Data {
-                [[offset(0)]] a : f32;
+                a : f32;
             };
-            [[group(0), binding(0)]] var<storage_buffer> data : [[access(read_write)]] Data;
+            [[group(0), binding(0)]] var<storage> data : [[access(read_write)]] Data;
             [[stage(compute)]] fn main() -> void {
                 data.a = 1.0;
             })");
@@ -334,15 +334,15 @@ class StorageToUniformSyncTests : public DawnTest {
 
     std::tuple<wgpu::RenderPipeline, wgpu::BindGroup> CreatePipelineAndBindGroupForRender(
         wgpu::TextureFormat colorFormat) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(position)]] var<out> Position : vec4<f32>;
             [[stage(vertex)]] fn main() -> void {
                 Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
             })");
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
             [[block]] struct Contents {
-                [[offset(0)]] color : f32;
+                color : f32;
             };
             [[group(0), binding(0)]] var<uniform> contents : Contents;
 
@@ -351,13 +351,13 @@ class StorageToUniformSyncTests : public DawnTest {
                 fragColor = vec4<f32>(contents.color, 0.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor rpDesc(device);
-        rpDesc.vertexStage.module = vsModule;
-        rpDesc.cFragmentStage.module = fsModule;
-        rpDesc.primitiveTopology = wgpu::PrimitiveTopology::PointList;
-        rpDesc.cColorStates[0].format = colorFormat;
+        utils::ComboRenderPipelineDescriptor2 rpDesc;
+        rpDesc.vertex.module = vsModule;
+        rpDesc.cFragment.module = fsModule;
+        rpDesc.primitive.topology = wgpu::PrimitiveTopology::PointList;
+        rpDesc.cTargets[0].format = colorFormat;
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&rpDesc);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&rpDesc);
 
         wgpu::BindGroup bindGroup =
             utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0), {{0, mBuffer}});
@@ -493,6 +493,13 @@ constexpr int kVertexBufferStride = 4 * sizeof(float);
 
 class MultipleWriteThenMultipleReadTests : public DawnTest {
   protected:
+    void SetUp() {
+        DawnTest::SetUp();
+
+        // TODO(crbug.com/tint/686): error: unsupported struct member decoration
+        DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
+    }
+
     wgpu::Buffer CreateZeroedBuffer(uint64_t size, wgpu::BufferUsage usage) {
         wgpu::BufferDescriptor srcDesc;
         srcDesc.size = size;
@@ -512,26 +519,26 @@ class MultipleWriteThenMultipleReadTests : public DawnTest {
 // operation in compute pass.
 TEST_P(MultipleWriteThenMultipleReadTests, SeparateBuffers) {
     // Create pipeline, bind group, and different buffers for compute pass.
-    wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
         [[block]] struct VBContents {
-            [[offset(0)]] pos : [[stride(16)]] array<vec4<f32>, 4>;
+            pos : array<vec4<f32>, 4>;
         };
-        [[group(0), binding(0)]] var<storage_buffer> vbContents : [[access(read_write)]] VBContents;
+        [[group(0), binding(0)]] var<storage> vbContents : [[access(read_write)]] VBContents;
 
         [[block]] struct IBContents {
-            [[offset(0)]] indices : [[stride(16)]] array<vec4<i32>, 2>;
+            indices : array<vec4<i32>, 2>;
         };
-        [[group(0), binding(1)]] var<storage_buffer> ibContents : [[access(read_write)]] IBContents;
+        [[group(0), binding(1)]] var<storage> ibContents : [[access(read_write)]] IBContents;
 
         // TODO(crbug.com/tint/386): Use the same struct.
         [[block]] struct ColorContents1 {
-            [[offset(0)]] color : f32;
+            color : f32;
         };
         [[block]] struct ColorContents2 {
-            [[offset(0)]] color : f32;
+            color : f32;
         };
-        [[group(0), binding(2)]] var<storage_buffer> uniformContents : [[access(read_write)]] ColorContents1;
-        [[group(0), binding(3)]] var<storage_buffer> storageContents : [[access(read_write)]] ColorContents2;
+        [[group(0), binding(2)]] var<storage> uniformContents : [[access(read_write)]] ColorContents1;
+        [[group(0), binding(3)]] var<storage> storageContents : [[access(read_write)]] ColorContents2;
 
         [[stage(compute)]] fn main() -> void {
             vbContents.pos[0] = vec4<f32>(-1.0, 1.0, 0.0, 1.0);
@@ -573,20 +580,20 @@ TEST_P(MultipleWriteThenMultipleReadTests, SeparateBuffers) {
     pass0.EndPass();
 
     // Create pipeline, bind group, and reuse buffers in render pass.
-    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
         [[location(0)]] var<in> pos : vec4<f32>;
         [[builtin(position)]] var<out> Position: vec4<f32>;
         [[stage(vertex)]] fn main() -> void {
             Position = pos;
         })");
 
-    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
         [[block]] struct Buf {
-            [[offset(0)]] color : f32;
+            color : f32;
         };
 
         [[group(0), binding(0)]] var<uniform> uniformBuffer : Buf;
-        [[group(0), binding(1)]] var<storage_buffer> storageBuffer : [[access(read)]] Buf;
+        [[group(0), binding(1)]] var<storage> storageBuffer : [[access(read)]] Buf;
 
         [[location(0)]] var<out> fragColor : vec4<f32>;
         [[stage(fragment)]] fn main() -> void {
@@ -595,17 +602,17 @@ TEST_P(MultipleWriteThenMultipleReadTests, SeparateBuffers) {
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    utils::ComboRenderPipelineDescriptor rpDesc(device);
-    rpDesc.vertexStage.module = vsModule;
-    rpDesc.cFragmentStage.module = fsModule;
-    rpDesc.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
-    rpDesc.cVertexState.vertexBufferCount = 1;
-    rpDesc.cVertexState.cVertexBuffers[0].arrayStride = kVertexBufferStride;
-    rpDesc.cVertexState.cVertexBuffers[0].attributeCount = 1;
-    rpDesc.cVertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
-    rpDesc.cColorStates[0].format = renderPass.colorFormat;
+    utils::ComboRenderPipelineDescriptor2 rpDesc;
+    rpDesc.vertex.module = vsModule;
+    rpDesc.cFragment.module = fsModule;
+    rpDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+    rpDesc.vertex.bufferCount = 1;
+    rpDesc.cBuffers[0].arrayStride = kVertexBufferStride;
+    rpDesc.cBuffers[0].attributeCount = 1;
+    rpDesc.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
+    rpDesc.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline rp = device.CreateRenderPipeline(&rpDesc);
+    wgpu::RenderPipeline rp = device.CreateRenderPipeline2(&rpDesc);
 
     wgpu::BindGroup bindGroup1 = utils::MakeBindGroup(device, rp.GetBindGroupLayout(0),
                                                       {{0, uniformBuffer}, {1, storageBuffer}});
@@ -623,7 +630,7 @@ TEST_P(MultipleWriteThenMultipleReadTests, SeparateBuffers) {
     queue.Submit(1, &commandBuffer);
 
     // Verify the rendering result.
-    int min = 1, max = kRTSize - 3;
+    uint32_t min = 1, max = kRTSize - 3;
     EXPECT_PIXEL_RGBA8_EQ(RGBA8::kYellow, renderPass.color, min, min);
     EXPECT_PIXEL_RGBA8_EQ(RGBA8::kYellow, renderPass.color, max, min);
     EXPECT_PIXEL_RGBA8_EQ(RGBA8::kYellow, renderPass.color, min, max);
@@ -640,15 +647,15 @@ TEST_P(MultipleWriteThenMultipleReadTests, OneBuffer) {
     DAWN_SKIP_TEST_IF(IsOpenGLES());
 
     // Create pipeline, bind group, and a complex buffer for compute pass.
-    wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
         [[block]] struct Contents {
-            [[offset(0)]] pos : [[stride(16)]] array<vec4<f32>, 4>;
-            [[offset(256)]] indices : [[stride(16)]] array<vec4<i32>, 2>;
-            [[offset(512)]] color0 : f32;
-            [[offset(768)]] color1 : f32;
+            [[align(256)]] pos : array<vec4<f32>, 4>;
+            [[align(256)]] indices : array<vec4<i32>, 2>;
+            [[align(256)]] color0 : f32;
+            [[align(256)]] color1 : f32;
         };
 
-        [[group(0), binding(0)]] var<storage_buffer> contents : [[access(read_write)]] Contents;
+        [[group(0), binding(0)]] var<storage> contents : [[access(read_write)]] Contents;
 
         [[stage(compute)]] fn main() -> void {
             contents.pos[0] = vec4<f32>(-1.0, 1.0, 0.0, 1.0);
@@ -691,19 +698,19 @@ TEST_P(MultipleWriteThenMultipleReadTests, OneBuffer) {
     pass0.EndPass();
 
     // Create pipeline, bind group, and reuse the buffer in render pass.
-    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
         [[location(0)]] var<in> pos : vec4<f32>;
         [[builtin(position)]] var<out> Position : vec4<f32>;
         [[stage(vertex)]] fn main() -> void {
             Position = pos;
         })");
 
-    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
         [[block]] struct Buf {
-            [[offset(0)]] color : f32;
+            color : f32;
         };
         [[group(0), binding(0)]] var<uniform> uniformBuffer : Buf;
-        [[group(0), binding(1)]] var<storage_buffer> storageBuffer : [[access(read)]] Buf;
+        [[group(0), binding(1)]] var<storage> storageBuffer : [[access(read)]] Buf;
 
         [[location(0)]] var<out> fragColor : vec4<f32>;
         [[stage(fragment)]] fn main() -> void {
@@ -712,17 +719,17 @@ TEST_P(MultipleWriteThenMultipleReadTests, OneBuffer) {
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    utils::ComboRenderPipelineDescriptor rpDesc(device);
-    rpDesc.vertexStage.module = vsModule;
-    rpDesc.cFragmentStage.module = fsModule;
-    rpDesc.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
-    rpDesc.cVertexState.vertexBufferCount = 1;
-    rpDesc.cVertexState.cVertexBuffers[0].arrayStride = kVertexBufferStride;
-    rpDesc.cVertexState.cVertexBuffers[0].attributeCount = 1;
-    rpDesc.cVertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
-    rpDesc.cColorStates[0].format = renderPass.colorFormat;
+    utils::ComboRenderPipelineDescriptor2 rpDesc;
+    rpDesc.vertex.module = vsModule;
+    rpDesc.cFragment.module = fsModule;
+    rpDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+    rpDesc.vertex.bufferCount = 1;
+    rpDesc.cBuffers[0].arrayStride = kVertexBufferStride;
+    rpDesc.cBuffers[0].attributeCount = 1;
+    rpDesc.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
+    rpDesc.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline rp = device.CreateRenderPipeline(&rpDesc);
+    wgpu::RenderPipeline rp = device.CreateRenderPipeline2(&rpDesc);
 
     wgpu::BindGroup bindGroup1 =
         utils::MakeBindGroup(device, rp.GetBindGroupLayout(0),
@@ -742,7 +749,7 @@ TEST_P(MultipleWriteThenMultipleReadTests, OneBuffer) {
     queue.Submit(1, &commandBuffer);
 
     // Verify the rendering result.
-    int min = 1, max = kRTSize - 3;
+    uint32_t min = 1, max = kRTSize - 3;
     EXPECT_PIXEL_RGBA8_EQ(RGBA8::kYellow, renderPass.color, min, min);
     EXPECT_PIXEL_RGBA8_EQ(RGBA8::kYellow, renderPass.color, max, min);
     EXPECT_PIXEL_RGBA8_EQ(RGBA8::kYellow, renderPass.color, min, max);

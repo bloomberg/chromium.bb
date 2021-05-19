@@ -837,7 +837,11 @@ inline void GetHalfSubPixelFilter(__m128i* output) {
 template <int num_taps, int grade_x>
 inline void PrepareSourceVectors(const uint8_t* src, const __m128i src_indices,
                                  __m128i* const source /*[num_taps >> 1]*/) {
-  const __m128i src_vals = LoadUnaligned16(src);
+  // |used_bytes| is only computed in msan builds. Mask away unused bytes for
+  // msan because it incorrectly models the outcome of the shuffles in some
+  // cases. This has not been reproduced out of context.
+  const int used_bytes = _mm_extract_epi8(src_indices, 15) + 1 + num_taps - 2;
+  const __m128i src_vals = LoadUnaligned16Msan(src, 16 - used_bytes);
   source[0] = _mm_shuffle_epi8(src_vals, src_indices);
   if (grade_x == 1) {
     if (num_taps > 2) {
@@ -853,7 +857,7 @@ inline void PrepareSourceVectors(const uint8_t* src, const __m128i src_indices,
     assert(grade_x > 1);
     assert(num_taps != 4);
     // grade_x > 1 also means width >= 8 && num_taps != 4
-    const __m128i src_vals_ext = LoadLo8(src + 16);
+    const __m128i src_vals_ext = LoadLo8Msan(src + 16, 24 - used_bytes);
     if (num_taps > 2) {
       source[1] = _mm_shuffle_epi8(_mm_alignr_epi8(src_vals_ext, src_vals, 2),
                                    src_indices);
@@ -1068,14 +1072,10 @@ __m128i Sum2DVerticalTaps4x2(const __m128i* const src, const __m128i* taps_lo,
 // |width_class| is 2, 4, or 8, according to the Store function that should be
 // used.
 template <int num_taps, int width_class, bool is_compound>
-#if LIBGAV1_MSAN
-__attribute__((no_sanitize_memory)) void ConvolveVerticalScale(
-#else
-inline void ConvolveVerticalScale(
-#endif
-    const int16_t* src, const int width, const int subpixel_y,
-    const int filter_index, const int step_y, const int height, void* dest,
-    const ptrdiff_t dest_stride) {
+inline void ConvolveVerticalScale(const int16_t* src, const int width,
+                                  const int subpixel_y, const int filter_index,
+                                  const int step_y, const int height,
+                                  void* dest, const ptrdiff_t dest_stride) {
   constexpr ptrdiff_t src_stride = kIntermediateStride;
   constexpr int kernel_offset = (8 - num_taps) / 2;
   const int16_t* src_y = src;

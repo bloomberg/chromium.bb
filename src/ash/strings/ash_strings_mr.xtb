@@ -40,6 +40,7 @@
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> पासून चार्ज होत आहे</translation>
 <translation id="1255033239764210633">हवामान कसे आहे?</translation>
 <translation id="1267032506238418139">शॉर्टकट बदल</translation>
+<translation id="1269405891096105529">अतिथी मोडमध्ये पेरिफेरलला सपोर्ट नाही</translation>
 <translation id="1270290102613614947">ऑन-स्क्रीन कीबोर्ड अक्षम</translation>
 <translation id="1272079795634619415">थांबा</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> चार्ज करत आहे</translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">मेसेज टाइप करा</translation>
 <translation id="2018630726571919839">मला एक विनोद सांगा</translation>
+<translation id="2021864487439853900">अनलॉक करण्यासाठी क्लिक करा</translation>
 <translation id="2049240716062114887">डेस्कचे नाव <ph name="DESK_NAME" /> वर बदलले होते</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
 <translation id="2067602449040652523">कीबोर्डची चमक</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> नंतरही साइन इन करू शकतो.</translation>
 <translation id="3321628682574733415">चुकीचा पालक कोड</translation>
 <translation id="332587331255250389">कृपया बॅटरी बदला</translation>
+<translation id="3333741161915951567">मोडेम रीबूट करा. पुन्हा प्रयत्न करण्यापूर्वी ३० सेकंद प्रतीक्षा करा.</translation>
 <translation id="3341303451326249809">स्क्रीनशॉट कॅप्चर केला</translation>
 <translation id="334252345105450327">स्क्रीनशॉट घ्या</translation>
 <translation id="3351879221545518001">तुम्ही सध्या स्क्रीन कास्ट करत आहात.</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> व्यवस्थापित वापरकर्ता</translation>
 <translation id="3665889125180354336">मायक्रोफोन वापरून रेकॉर्ड करा</translation>
 <translation id="36813544980941320">तुमचा फोन आणि <ph name="DEVICE_NAME" /> यांच्या दरम्यान वाय-फाय नेटवर्क शेअर केली जातील</translation>
+<translation id="3702809606464356667">सध्याच्या डेस्कवरील विंडो दाखवत आहे, सर्व डेस्कवरील विंडो दाखवण्यासाठी अप अ‍ॅरो की दाबा</translation>
 <translation id="3702846122927433391">नायजेरियामधील लोकसंख्या</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">लोड करीत आहे...</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">ऑडिओ सेटिंग्ज</translation>
 <translation id="3945319193631853098">सेट करणे पूर्ण करण्यासाठी टॅप करा</translation>
 <translation id="3945867833895287237">हॉटस्पॉटशी कनेक्ट करत आहे...</translation>
+<translation id="3958465044488004317">Assistant मध्ये परिणाम पाहा</translation>
 <translation id="3962859241508114581">मागील ट्रॅक</translation>
 <translation id="3969043077941541451">बंद आहे</translation>
 <translation id="397105322502079400">गणना करत आहे...</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175">दूरस्त सहाय्याद्वारे <ph name="HELPER_NAME" /> सह आपल्या स्क्रीनचे नियंत्रण शेअर करत आहे.</translation>
 <translation id="4424159417645388645">डेस्‍क ५</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
+<translation id="4445159312344259901">अनलॉक करण्यासाठी साइन इन करा</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{एक महत्त्वाची सूचना}other{# महत्त्वाच्या सूचना}}</translation>
 <translation id="4450893287417543264">पुन्हा दाखवू नका</translation>
 <translation id="445864333228800152">शुभ संध्याकाळ,</translation>
 <translation id="4458688154122353284">स्क्रीन रेकॉर्डिंग थांबवा</translation>
+<translation id="4467143075433126295">फुल स्क्रीनमधून बाहेर पडण्यासाठी [Esc] दाबा आणि धरून ठेवा</translation>
 <translation id="4472575034687746823">सुरुवात करा</translation>
 <translation id="4477350412780666475">पुढील ट्रॅक</translation>
 <translation id="4477892968187500306">या डिव्हाइसवर कदाचित Google ने पडताळणी न केलेल्या ॲप्सचा समावेश असू शकतो.</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">अतिथी सत्रामध्ये Google असिस्टंट उपलब्ध नाही.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> साठी काढून टाकणे डायलॉग उघडा</translation>
+<translation id="6154006699632741460">पेरिफेरलला सपोर्ट नाही</translation>
 <translation id="615957422585914272">ऑन-स्‍क्रीन कीबोर्ड दर्शवा</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6179832488876878285">तुम्ही तुमच्या महत्त्वाच्या फाइल येथे पिन करू शकता. सुरुवात करण्यासाठी Files अ‍ॅप उघडा.</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">विभाग निवडण्यासाठी स्टायलस वापरा</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> वर फिरविले होते</translation>
 <translation id="6315170314923504164">Voice</translation>
+<translation id="6330012934079202188">सर्व डेस्कवरील विंडो दाखवत आहे, सध्याच्या डेस्कवरील विंडो दाखवण्यासाठी अप अ‍ॅरो की दाबा</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> हे सेशन <ph name="MANAGER" /> द्वारे व्यवस्थापित केले आहे</translation>
 <translation id="6376931439017688372">ब्लूटूथ सुरू आहे</translation>
 <translation id="6381109794406942707">डिव्हाइस अनलॉक करण्यासाठी, तुमचा पिन एंटर करा.</translation>
 <translation id="639644700271529076">CAPS LOCK बंद आहे</translation>
-<translation id="6396835948284782440">बाहेर पडण्यासाठी [Esc] दाबा आणि धरून ठेवा.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">सर्व सूचना साफ करा</translation>
@@ -794,7 +802,6 @@
 <translation id="7780159184141939021">स्क्रीन फिरवा</translation>
 <translation id="7796353162336583443">नोंद करून घेण्यासाठी, स्क्रीनशॉट घेण्यासाठी, Google असिस्टंट, लेझर पॉइंटर किंवा भिंग वापरण्यासाठी शेल्फवरील स्टायलस बटणावर टॅप करा.</translation>
 <translation id="7798302898096527229">रद्द करण्यासाठी Search किंवा Shift दाबा.</translation>
-<translation id="7807966291075028781">सुरक्षेच्या कारणामुळे पेरिफेरल हे अतिथी मोडमध्ये सपोर्ट करत नाही</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> आणि <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">मजबूत सिग्नल</translation>
 <translation id="7837740436429729974">वेळ संपली</translation>
@@ -944,6 +951,7 @@
 <translation id="8936501819958976551">डीॲक्टिव्हेट केले आहे</translation>
 <translation id="8938800817013097409">USB-C डिव्‍हाइस (मागील बाजूचे उजवे पोर्ट)</translation>
 <translation id="8940956008527784070">बॅटरी कमी झाली (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">तुमच्या Chromebook सह फक्त मंजुरी दिलेली थंडरबोल्ट डिव्हाइस कंपॅटिबल आहेत</translation>
 <translation id="8982906748181120328">Nearby असलेले</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> वापरत आहे</translation>

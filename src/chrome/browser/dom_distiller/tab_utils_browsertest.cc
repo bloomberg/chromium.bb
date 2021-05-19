@@ -4,6 +4,8 @@
 
 #include <string.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,11 +16,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
+#include "chrome/browser/dom_distiller/test_distillation_observers.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/browser/test_distillability_observer.h"
@@ -75,73 +79,6 @@ std::unique_ptr<content::WebContents> NewContentsWithSameParamsAs(
   DCHECK(new_web_contents);
   return new_web_contents;
 }
-
-// Helper class that blocks test execution until |observed_contents| enters a
-// certain state. Subclasses specify the precise state by calling
-// |new_url_loaded_runner_|.QuitClosure().Run() when |observed_contents| is
-// ready.
-class NavigationObserver : public content::WebContentsObserver {
- public:
-  explicit NavigationObserver(content::WebContents* observed_contents) {
-    content::WebContentsObserver::Observe(observed_contents);
-  }
-
-  void WaitUntilFinishedLoading() { new_url_loaded_runner_.Run(); }
-
- protected:
-  base::RunLoop new_url_loaded_runner_;
-};
-
-class OriginalPageNavigationObserver : public NavigationObserver {
- public:
-  using NavigationObserver::NavigationObserver;
-
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override {
-    if (!render_frame_host->GetParent())
-      new_url_loaded_runner_.QuitClosure().Run();
-  }
-};
-
-// DistilledPageObserver is used to detect if a distilled page has
-// finished loading. This is done by checking how many times the title has
-// been set rather than using "DidFinishLoad" directly due to the content
-// being set by JavaScript.
-class DistilledPageObserver : public NavigationObserver {
- public:
-  explicit DistilledPageObserver(content::WebContents* observed_contents)
-      : NavigationObserver(observed_contents),
-        title_set_count_(0),
-        loaded_distiller_page_(false) {}
-
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override {
-    if (!render_frame_host->GetParent() &&
-        validated_url.scheme() == kDomDistillerScheme) {
-      loaded_distiller_page_ = true;
-      MaybeNotifyLoaded();
-    }
-  }
-
-  void TitleWasSet(content::NavigationEntry* entry) override {
-    // The title will be set twice on distilled pages; once for the placeholder
-    // and once when the distillation has finished. Watch for the second time
-    // as a signal that the JavaScript that sets the content has run.
-    title_set_count_++;
-    MaybeNotifyLoaded();
-  }
-
- private:
-  int title_set_count_;
-  bool loaded_distiller_page_;
-
-  // DidFinishLoad() can come after the two title settings.
-  void MaybeNotifyLoaded() {
-    if (title_set_count_ >= 2 && loaded_distiller_page_) {
-      new_url_loaded_runner_.QuitClosure().Run();
-    }
-  }
-};
 
 // FaviconUpdateWaiter waits for favicons to be changed after navigation.
 // TODO(1064318): Combine with FaviconUpdateWaiter in
@@ -204,8 +141,8 @@ class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
   const GURL& article_url() const { return article_url_; }
@@ -391,7 +328,9 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
 
   EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
       process_id, frame_routing_id,
-      "browser::DomDistiller_SelfDeletingRequestDelegate"));
+      back_forward_cache::DisabledReason(
+          back_forward_cache::DisabledReasonId::
+              kDomDistiller_SelfDeletingRequestDelegate)));
 }
 
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, SecurityStateIsNone) {
@@ -541,11 +480,11 @@ class DomDistillerTabUtilsBrowserTestInsecureContent
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
-    https_server_expired_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_expired_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_expired_->SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
     https_server_expired_->ServeFilesFromSourceDirectory(
         GetChromeTestDataDir());

@@ -17,7 +17,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom-forward.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/autofill_assistant/browser/public/runtime_observer.h"
 #include "components/password_manager/content/browser/content_credential_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
@@ -105,6 +105,7 @@ class ChromePasswordManagerClient
   void HideManualFallbackForSaving() override;
   void FocusedInputChanged(
       password_manager::PasswordManagerDriver* driver,
+      autofill::FieldRendererId focused_field_id,
       autofill::mojom::FocusedFieldType focused_field_type) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<password_manager::PasswordForm>> local_forms,
@@ -116,7 +117,7 @@ class ChromePasswordManagerClient
 #if defined(OS_ANDROID)
   // Notifies `PasswordReuseDetectionManager` about passwords selected from
   // AllPasswordsBottomSheet.
-  void OnPasswordSelected(const base::string16& text) override;
+  void OnPasswordSelected(const std::u16string& text) override;
 #endif
 
   bool IsAutofillAssistantUIVisible() const override;
@@ -153,9 +154,8 @@ class ChromePasswordManagerClient
       const password_manager::PasswordFormManagerForUI* form_manager) override;
   void NotifyUserCredentialsWereLeaked(
       password_manager::CredentialLeakType leak_type,
-      password_manager::CompromisedSitesCount saved_sites,
       const GURL& origin,
-      const base::string16& username) override;
+      const std::u16string& username) override;
   void TriggerReauthForPrimaryAccount(
       signin_metrics::ReauthAccessPoint access_point,
       base::OnceCallback<void(ReauthSucceeded)> reauth_callback) override;
@@ -230,17 +230,17 @@ class ChromePasswordManagerClient
   void ShowPasswordEditingPopup(const gfx::RectF& bounds,
                                 const autofill::FormData& form_data,
                                 autofill::FieldRendererId field_renderer_id,
-                                const base::string16& password_value) override;
+                                const std::u16string& password_value) override;
   void PasswordGenerationRejectedByTyping() override;
   void PresaveGeneratedPassword(const autofill::FormData& form_data,
-                                const base::string16& password_value) override;
+                                const std::u16string& password_value) override;
   void PasswordNoLongerGenerated(const autofill::FormData& form_data) override;
   void FrameWasScrolled() override;
   void GenerationElementLostFocus() override;
 
 #if defined(OS_ANDROID)
-  void OnImeTextCommittedEvent(const base::string16& text_str) override;
-  void OnImeSetComposingTextEvent(const base::string16& text_str) override;
+  void OnImeTextCommittedEvent(const std::u16string& text_str) override;
+  void OnImeSetComposingTextEvent(const std::u16string& text_str) override;
   void OnImeFinishComposingTextEvent() override;
 #endif  // defined(OS_ANDROID)
 
@@ -355,7 +355,7 @@ class ChromePasswordManagerClient
   // Last composing text from ime, this is updated when ime set composing text
   // event is triggered. It is sent to password reuse detection manager and
   // reset when ime finish composing text event is triggered.
-  base::string16 last_composing_text_;
+  std::u16string last_composing_text_;
 
   // Whether a leak warning was shown. Used only for tests or when
   // kPasswordChange feature is enabled.

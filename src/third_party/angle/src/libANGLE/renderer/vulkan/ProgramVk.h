@@ -124,12 +124,6 @@ class ProgramVk : public ProgramImpl
     }
     void onProgramBind();
 
-    // Used in testing only.
-    vk::DynamicDescriptorPool *getDynamicDescriptorPool(uint32_t poolIndex)
-    {
-        return &mExecutable.mDynamicDescriptorPools[poolIndex];
-    }
-
     const ProgramExecutableVk &getExecutable() const { return mExecutable; }
     ProgramExecutableVk &getExecutable() { return mExecutable; }
 
@@ -208,8 +202,11 @@ class ProgramVk : public ProgramImpl
         // specialization constants.
         if (!programInfo->valid(shaderType))
         {
+            const bool isTransformFeedbackProgram =
+                !mState.getLinkedTransformFeedbackVaryings().empty();
             ANGLE_TRY(programInfo->initProgram(contextVk, shaderType, isLastPreFragmentStage,
-                                               mOriginalShaderInfo, optionBits, variableInfoMap));
+                                               isTransformFeedbackProgram, mOriginalShaderInfo,
+                                               optionBits, variableInfoMap));
         }
         ASSERT(programInfo->valid(shaderType));
 

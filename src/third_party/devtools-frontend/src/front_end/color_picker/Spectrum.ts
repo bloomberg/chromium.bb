@@ -32,19 +32,20 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../common/common.js';
-import * as Host from '../host/host.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Platform from '../platform/platform.js';
-import * as SDK from '../sdk/sdk.js';
+import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as SDK from '../core/sdk/sdk.js';
 import * as WebComponents from '../ui/components/components.js';
-import * as UI from '../ui/ui.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import {ContrastDetails, Events as ContrastDetailsEvents} from './ContrastDetails.js';
+
 import type {ContrastInfo} from './ContrastInfo.js';
 import {ContrastOverlay} from './ContrastOverlay.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Tooltip text that appears when hovering over largeicon eyedropper button in Spectrum of the Color Picker
   */
@@ -184,7 +185,7 @@ export class Spectrum extends UI.Widget.VBox {
   _colorFormat?: string;
   constructor(contrastInfo?: ContrastInfo|null) {
     super(true);
-    this.registerRequiredCSS('color_picker/spectrum.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('color_picker/spectrum.css', {enableLegacyPatching: false});
 
     this.contentElement.tabIndex = 0;
     this._colorElement = this.contentElement.createChild('div', 'spectrum-color');
@@ -518,7 +519,7 @@ export class Spectrum extends UI.Widget.VBox {
     const element = document.createElement('div') as HTMLElement;
     element.classList.add('spectrum-palette-color');
     element.style.background =
-        Platform.StringUtilities.sprintf('linear-gradient(%s, %s), url(Images/checker.png)', colorText, colorText);
+        Platform.StringUtilities.sprintf('linear-gradient(%s, %s), var(--image-file-checker)', colorText, colorText);
     if (animationDelay) {
       element.animate([{opacity: 0}, {opacity: 1}], {duration: 100, delay: animationDelay, fill: 'backwards'});
     }

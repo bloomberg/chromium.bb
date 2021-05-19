@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/api/virtual_keyboard.h"
@@ -46,7 +45,7 @@ class VirtualKeyboardDelegate {
   virtual bool HideKeyboard() = 0;
 
   // Insert |text| verbatim into a text area. Returns true if successful.
-  virtual bool InsertText(const base::string16& text) = 0;
+  virtual bool InsertText(const std::u16string& text) = 0;
 
   // Notifiy system that keyboard loading is complete. Used in UMA stats to
   // track loading performance. Returns true if the notification was handled.

@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [
     "account_manager.mojom",
+    "automation.mojom",
     "bitmap.mojom",
     "cert_database.mojom",
     "clipboard.mojom",
@@ -14,6 +15,7 @@ mojom("mojom") {
     "device_attributes.mojom",
     "feedback.mojom",
     "file_manager.mojom",
+    "idle_service.mojom",
     "keystore_service.mojom",
     "message_center.mojom",
     "metrics_reporting.mojom",
@@ -21,17 +23,24 @@ mojom("mojom") {
     "prefs.mojom",
     "screen_manager.mojom",
     "select_file.mojom",
+    "task_manager.mojom",
     "test_controller.mojom",
     "url_handler.mojom",
+    "video_capture.mojom",
   ]
   disable_variants = true
 
   public_deps = [
     "//chromeos/components/sensors/mojom",
+    "//chromeos/services/machine_learning/public/mojom",
+    "//media/capture/mojom:image_capture",
+    "//media/capture/mojom:video_capture_types",
     "//mojo/public/mojom/base",
     "//services/device/public/mojom:mojom",
     "//services/media_session/public/mojom:mojom",
+    "//ui/gfx/geometry/mojom",
     "//ui/gfx/image/mojom",
+    "//ui/gfx/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
 }

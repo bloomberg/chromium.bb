@@ -33,9 +33,9 @@
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/document_or_xml_http_request_body_init.h"
@@ -565,9 +565,9 @@ void XMLHttpRequest::DispatchReadyStateChangeEvent() {
 
   ScopedEventDispatchProtect protect(&event_dispatch_recursion_level_);
   if (async_ || (state_ <= kOpened || state_ == kDone)) {
-    TRACE_EVENT1("devtools.timeline", "XHRReadyStateChange", "data",
-                 inspector_xhr_ready_state_change_event::Data(
-                     GetExecutionContext(), this));
+    DEVTOOLS_TIMELINE_TRACE_EVENT("XHRReadyStateChange",
+                                  inspector_xhr_ready_state_change_event::Data,
+                                  GetExecutionContext(), this);
     XMLHttpRequestProgressEventThrottle::DeferredEventAction action =
         XMLHttpRequestProgressEventThrottle::kIgnore;
     if (state_ == kDone) {
@@ -581,8 +581,8 @@ void XMLHttpRequest::DispatchReadyStateChangeEvent() {
   }
 
   if (state_ == kDone && !error_) {
-    TRACE_EVENT1("devtools.timeline", "XHRLoad", "data",
-                 inspector_xhr_load_event::Data(GetExecutionContext(), this));
+    DEVTOOLS_TIMELINE_TRACE_EVENT("XHRLoad", inspector_xhr_load_event::Data,
+                                  GetExecutionContext(), this);
     DispatchProgressEventFromSnapshot(event_type_names::kLoad);
     DispatchProgressEventFromSnapshot(event_type_names::kLoadend);
   }
@@ -731,9 +731,9 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
 
   if (!async_) {
     if (GetExecutionContext()->IsWindow()) {
-      bool sync_xhr_disabled_by_feature_policy =
+      bool sync_xhr_disabled_by_permissions_policy =
           !GetExecutionContext()->IsFeatureEnabled(
-              mojom::blink::FeaturePolicyFeature::kSyncXHR,
+              mojom::blink::PermissionsPolicyFeature::kSyncXHR,
               ReportOptions::kReportOnFailure,
               "Synchronous requests are disabled by permissions policy.");
 
@@ -743,9 +743,9 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
               ReportOptions::kReportOnFailure,
               "Synchronous requests are disabled by document policy.");
 
-      // SyncXHR can be controlled by either feature policy or document policy
-      // during the migration period. See crbug.com/1146505.
-      if (sync_xhr_disabled_by_feature_policy ||
+      // SyncXHR can be controlled by either permissions policy or document
+      // policy during the migration period. See crbug.com/1146505.
+      if (sync_xhr_disabled_by_permissions_policy ||
           sync_xhr_disabled_by_document_policy) {
         HandleNetworkError();
         ThrowForLoadFailureIfNeeded(exception_state, String());
@@ -1463,17 +1463,17 @@ void XMLHttpRequest::setTrustToken(const TrustToken* trust_token,
     return;
   }
 
-  bool operation_requires_feature_policy =
+  bool operation_requires_permissions_policy =
       params->type ==
           network::mojom::blink::TrustTokenOperationType::kRedemption ||
       params->type == network::mojom::blink::TrustTokenOperationType::kSigning;
-  if (operation_requires_feature_policy &&
+  if (operation_requires_permissions_policy &&
       !GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kTrustTokenRedemption)) {
+          mojom::blink::PermissionsPolicyFeature::kTrustTokenRedemption)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
         "Trust Tokens redemption and signing require the "
-        "trust-token-redemption Feature Policy feature.");
+        "trust-token-redemption Permissions Policy feature.");
     return;
   }
 
@@ -1761,6 +1761,14 @@ void XMLHttpRequest::DidFinishLoadingInternal() {
 
   if (decoder_) {
     auto text = decoder_->Flush();
+
+    if (response_type_code_ == kResponseTypeJSON) {
+      // See https://crbug.com/1189627: We want to deprecate the BOM sniffing.
+      if (decoder_->Encoding() != UTF8Encoding()) {
+        GetExecutionContext()->CountUse(WebFeature::kXHRJSONEncodingDetection);
+      }
+    }
+
     if (!text.IsEmpty() && !response_text_overflow_) {
       response_text_.Concat(isolate_, text);
       response_text_overflow_ = response_text_.IsEmpty();

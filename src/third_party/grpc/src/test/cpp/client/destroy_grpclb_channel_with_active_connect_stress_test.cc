@@ -55,17 +55,16 @@ void TryConnectAndDestroy() {
       grpc_core::MakeRefCounted<grpc_core::FakeResolverResponseGenerator>();
   // Return a grpclb address with an IP address on the IPv6 discard prefix
   // (https://tools.ietf.org/html/rfc6666). This is important because
-  // the behavior we want in this test is for a TCP connect attempt to "hang",
+  // the behavior we want in this test is for a TCP connect attempt to "freeze",
   // i.e. we want to send SYN, and then *not* receive SYN-ACK or RST.
   // The precise behavior is dependant on the test runtime environment though,
   // since connect() attempts on this address may unfortunately result in
   // "network unreachable" errors in some test runtime environments.
-  const char* uri_str = "ipv6:[0100::1234]:443";
-  grpc_uri* lb_uri = grpc_uri_parse(uri_str, true);
-  ASSERT_NE(lb_uri, nullptr);
+  absl::StatusOr<grpc_core::URI> lb_uri =
+      grpc_core::URI::Parse("ipv6:[0100::1234]:443");
+  ASSERT_TRUE(lb_uri.ok());
   grpc_resolved_address address;
-  ASSERT_TRUE(grpc_parse_uri(lb_uri, &address));
-  grpc_uri_destroy(lb_uri);
+  ASSERT_TRUE(grpc_parse_uri(*lb_uri, &address));
   grpc_core::ServerAddressList addresses;
   addresses.emplace_back(address.addr, address.len, nullptr);
   grpc_core::Resolver::Result lb_address_result;
@@ -111,7 +110,7 @@ TEST(DestroyGrpclbChannelWithActiveConnectStressTest,
   for (int i = 0; i < kNumThreads; i++) {
     threads.emplace_back(new std::thread(TryConnectAndDestroy));
   }
-  for (int i = 0; i < threads.size(); i++) {
+  for (size_t i = 0; i < threads.size(); i++) {
     threads[i]->join();
   }
   grpc_shutdown();

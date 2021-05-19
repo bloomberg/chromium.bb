@@ -10,11 +10,14 @@
 #include <utility>
 
 #include "absl/base/macros.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "quic/core/crypto/null_encrypter.h"
 #include "quic/core/http/http_encoder.h"
 #include "quic/core/http/spdy_utils.h"
+#include "quic/core/http/web_transport_http3.h"
 #include "quic/core/quic_connection.h"
 #include "quic/core/quic_stream_sequencer_buffer.h"
 #include "quic/core/quic_utils.h"
@@ -22,7 +25,6 @@
 #include "quic/core/quic_write_blocked_list.h"
 #include "quic/platform/api/quic_expect_bug.h"
 #include "quic/platform/api/quic_map_util.h"
-#include "quic/platform/api/quic_ptr_util.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/test_tools/qpack/qpack_test_utils.h"
 #include "quic/test_tools/quic_config_peer.h"
@@ -33,7 +35,6 @@
 #include "quic/test_tools/quic_spdy_stream_peer.h"
 #include "quic/test_tools/quic_stream_peer.h"
 #include "quic/test_tools/quic_test_utils.h"
-#include "common/platform/api/quiche_text_utils.h"
 
 using spdy::kV3HighestPriority;
 using spdy::kV3LowestPriority;
@@ -255,7 +256,11 @@ class TestSession : public MockQuicSpdySession {
     return &crypto_stream_;
   }
 
+  bool ShouldNegotiateWebTransport() override { return enable_webtransport_; }
+  void EnableWebTransport() { enable_webtransport_ = true; }
+
  private:
+  bool enable_webtransport_ = false;
   StrictMock<TestCryptoStream> crypto_stream_;
 };
 
@@ -365,11 +370,11 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
     stream_ =
         new StrictMock<TestStream>(GetNthClientInitiatedBidirectionalId(0),
                                    session_.get(), stream_should_process_data);
-    session_->ActivateStream(QuicWrapUnique(stream_));
+    session_->ActivateStream(absl::WrapUnique(stream_));
     stream2_ =
         new StrictMock<TestStream>(GetNthClientInitiatedBidirectionalId(1),
                                    session_.get(), stream_should_process_data);
-    session_->ActivateStream(QuicWrapUnique(stream2_));
+    session_->ActivateStream(absl::WrapUnique(stream2_));
     QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(
         session_->config(), kMinimumFlowControlSendWindow);
     QuicConfigPeer::SetReceivedInitialMaxStreamDataBytesUnidirectional(
@@ -443,18 +448,30 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   // Construct PUSH_PROMISE frame with given payload.
+  // TODO(b/171463363): Remove.
   std::string SerializePushPromiseFrame(PushId push_id,
-                                        absl::string_view payload) {
-    PushPromiseFrame frame;
-    frame.push_id = push_id;
-    frame.headers = payload;
-    std::unique_ptr<char[]> push_promise_buffer;
-    QuicByteCount push_promise_frame_header_length =
-        HttpEncoder::SerializePushPromiseFrameWithOnlyPushId(
-            frame, &push_promise_buffer);
-    absl::string_view push_promise_frame_header(
-        push_promise_buffer.get(), push_promise_frame_header_length);
-    return absl::StrCat(push_promise_frame_header, payload);
+                                        absl::string_view headers) {
+    const QuicByteCount payload_length =
+        QuicDataWriter::GetVarInt62Len(push_id) + headers.length();
+
+    const QuicByteCount length_without_headers =
+        QuicDataWriter::GetVarInt62Len(
+            static_cast<uint64_t>(HttpFrameType::PUSH_PROMISE)) +
+        QuicDataWriter::GetVarInt62Len(payload_length) +
+        QuicDataWriter::GetVarInt62Len(push_id);
+
+    std::string push_promise_frame(length_without_headers, '\0');
+    QuicDataWriter writer(length_without_headers, &*push_promise_frame.begin());
+
+    QUICHE_CHECK(writer.WriteVarInt62(
+        static_cast<uint64_t>(HttpFrameType::PUSH_PROMISE)));
+    QUICHE_CHECK(writer.WriteVarInt62(payload_length));
+    QUICHE_CHECK(writer.WriteVarInt62(push_id));
+    QUICHE_CHECK_EQ(0u, writer.remaining());
+
+    absl::StrAppend(&push_promise_frame, headers);
+
+    return push_promise_frame;
   }
 
   std::string DataFrame(absl::string_view payload) {
@@ -550,6 +567,23 @@ TEST_P(QuicSpdyStreamTest, ProcessTooLargeHeaderList) {
 
   stream_->OnStreamFrame(frame);
   EXPECT_THAT(stream_->stream_error(), IsStreamError(QUIC_HEADERS_TOO_LARGE));
+}
+
+TEST_P(QuicSpdyStreamTest, QpackProcessLargeHeaderListDiscountOverhead) {
+  if (!UsesHttp3()) {
+    return;
+  }
+  // Setting this flag to false causes no per-entry overhead to be included
+  // in the header size.
+  SetQuicFlag(FLAGS_quic_header_size_limit_includes_overhead, false);
+  Initialize(kShouldProcessData);
+  session_->set_max_inbound_header_list_size(40);
+  std::string headers =
+      HeadersFrame({std::make_pair("foo", "too long headers")});
+
+  QuicStreamFrame frame(stream_->id(), false, 0, headers);
+  stream_->OnStreamFrame(frame);
+  EXPECT_THAT(stream_->stream_error(), IsStreamError(QUIC_STREAM_NO_ERROR));
 }
 
 TEST_P(QuicSpdyStreamTest, ProcessHeaderListWithFin) {
@@ -1276,8 +1310,7 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithOffset) {
   trailers_block["key1"] = "value1";
   trailers_block["key2"] = "value2";
   trailers_block["key3"] = "value3";
-  trailers_block[kFinalOffsetHeaderKey] =
-      quiche::QuicheTextUtils::Uint64ToString(data.size());
+  trailers_block[kFinalOffsetHeaderKey] = absl::StrCat(data.size());
 
   QuicHeaderList trailers = ProcessHeaders(true, trailers_block);
 
@@ -1578,7 +1611,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
   // on the headers stream.
   if (!UsesHttp3()) {
     expected_trailers[kFinalOffsetHeaderKey] =
-        quiche::QuicheTextUtils::Uint64ToString(body.length() + header_length);
+        absl::StrCat(body.length() + header_length);
   }
 
   EXPECT_CALL(*stream_, WriteHeadersMock(true));
@@ -1761,7 +1794,7 @@ TEST_P(QuicSpdyStreamTest, SetPriorityBeforeUpdateStreamPriority) {
                                      session->transport_version(), 0),
                                  session.get(),
                                  /*should_process_data=*/true);
-  session->ActivateStream(QuicWrapUnique(stream));
+  session->ActivateStream(absl::WrapUnique(stream));
 
   // QuicSpdyStream::SetPriority() should eventually call UpdateStreamPriority()
   // on the session. Make sure stream->priority() returns the updated priority
@@ -2736,6 +2769,7 @@ TEST_P(QuicSpdyStreamIncrementalConsumptionTest, UnknownFramesInterleaved) {
   EXPECT_EQ(unknown_frame4.size(), NewlyConsumedBytes());
 }
 
+// TODO(b/171463363): Remove.
 TEST_P(QuicSpdyStreamTest, PushPromiseOnDataStream) {
   Initialize(kShouldProcessData);
   if (!UsesHttp3()) {
@@ -2764,6 +2798,7 @@ TEST_P(QuicSpdyStreamTest, PushPromiseOnDataStream) {
 }
 
 // Regression test for b/152518220.
+// TODO(b/171463363): Remove.
 TEST_P(QuicSpdyStreamTest,
        OnStreamHeaderBlockArgumentDoesNotIncludePushedHeaderBlock) {
   Initialize(kShouldProcessData);
@@ -3069,6 +3104,52 @@ TEST_P(QuicSpdyStreamTest, TwoResetStreamFrames) {
         stream_->OnStreamReset(rst_frame2),
         "The stream should've already sent RST in response to STOP_SENDING");
   }
+}
+
+TEST_P(QuicSpdyStreamTest, ProcessOutgoingWebTransportHeaders) {
+  if (!UsesHttp3()) {
+    return;
+  }
+
+  InitializeWithPerspective(kShouldProcessData, Perspective::IS_CLIENT);
+  session_->EnableWebTransport();
+  QuicSpdySessionPeer::EnableWebTransport(*session_);
+
+  EXPECT_CALL(*stream_, WriteHeadersMock(false));
+  EXPECT_CALL(*session_, WritevData(stream_->id(), _, _, _, _, _))
+      .Times(AnyNumber());
+
+  spdy::SpdyHeaderBlock headers;
+  headers[":method"] = "CONNECT";
+  headers[":protocol"] = "webtransport";
+  headers["datagram-flow-id"] = absl::StrCat(session_->GetNextDatagramFlowId());
+  stream_->WriteHeaders(std::move(headers), /*fin=*/false, nullptr);
+  ASSERT_TRUE(stream_->web_transport() != nullptr);
+  EXPECT_EQ(stream_->id(), stream_->web_transport()->id());
+}
+
+TEST_P(QuicSpdyStreamTest, ProcessIncomingWebTransportHeaders) {
+  if (!UsesHttp3()) {
+    return;
+  }
+
+  Initialize(kShouldProcessData);
+  session_->EnableWebTransport();
+  QuicSpdySessionPeer::EnableWebTransport(*session_);
+
+  headers_[":method"] = "CONNECT";
+  headers_[":protocol"] = "webtransport";
+  headers_["datagram-flow-id"] =
+      absl::StrCat(session_->GetNextDatagramFlowId());
+
+  stream_->OnStreamHeadersPriority(
+      spdy::SpdyStreamPrecedence(kV3HighestPriority));
+  ProcessHeaders(false, headers_);
+  EXPECT_EQ("", stream_->data());
+  EXPECT_FALSE(stream_->header_list().empty());
+  EXPECT_FALSE(stream_->IsDoneReading());
+  ASSERT_TRUE(stream_->web_transport() != nullptr);
+  EXPECT_EQ(stream_->id(), stream_->web_transport()->id());
 }
 
 }  // namespace

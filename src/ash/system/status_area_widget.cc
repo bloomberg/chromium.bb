@@ -20,6 +20,8 @@
 #include "ash/system/holding_space/holding_space_tray.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/media/media_tray.h"
+#include "ash/system/model/clock_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/phonehub/phone_hub_tray.h"
@@ -48,6 +50,11 @@ namespace ash {
 StatusAreaWidget::ScopedTrayBubbleCounter::ScopedTrayBubbleCounter(
     StatusAreaWidget* status_area_widget)
     : status_area_widget_(status_area_widget->weak_ptr_factory_.GetWeakPtr()) {
+  if (status_area_widget_->tray_bubble_count_ == 0) {
+    status_area_widget_->shelf()
+        ->shelf_layout_manager()
+        ->OnShelfTrayBubbleVisibilityChanged(/*bubble_shown=*/true);
+  }
   ++status_area_widget_->tray_bubble_count_;
 }
 
@@ -57,6 +64,12 @@ StatusAreaWidget::ScopedTrayBubbleCounter::~ScopedTrayBubbleCounter() {
     return;
 
   --status_area_widget_->tray_bubble_count_;
+  if (status_area_widget_->tray_bubble_count_ == 0) {
+    status_area_widget_->shelf()
+        ->shelf_layout_manager()
+        ->OnShelfTrayBubbleVisibilityChanged(/*bubble_shown=*/false);
+  }
+
   DCHECK_GE(status_area_widget_->tray_bubble_count_, 0);
 }
 
@@ -151,6 +164,8 @@ void StatusAreaWidget::Initialize() {
 
   Shell::Get()->session_controller()->AddObserver(this);
 
+  Shell::Get()->system_tray_model()->clock()->AddObserver(this);
+
   // NOTE: Container may be hidden depending on login/display state.
   Show();
 
@@ -159,6 +174,7 @@ void StatusAreaWidget::Initialize() {
 
 StatusAreaWidget::~StatusAreaWidget() {
   Shell::Get()->session_controller()->RemoveObserver(this);
+  Shell::Get()->system_tray_model()->clock()->RemoveObserver(this);
 }
 
 // static
@@ -184,6 +200,18 @@ void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
     tray->CloseBubble();
     Hide();
   }
+}
+
+void StatusAreaWidget::OnDateFormatChanged() {
+  CalculateTargetBounds();
+  UpdateLayout(false /*animate*/);
+  UpdateCollapseState();
+}
+
+void StatusAreaWidget::OnSystemClockTimeUpdated() {
+  CalculateTargetBounds();
+  UpdateLayout(false /*animate*/);
+  UpdateCollapseState();
 }
 
 void StatusAreaWidget::OnSessionStateChanged(

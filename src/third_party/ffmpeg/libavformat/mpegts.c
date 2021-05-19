@@ -20,6 +20,7 @@
  */
 
 #include "libavutil/buffer.h"
+#include "libavutil/common.h"
 #include "libavutil/crc.h"
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
@@ -106,11 +107,19 @@ struct MpegTSFilter {
     } u;
 };
 
-#define MAX_PIDS_PER_PROGRAM 64
+struct Stream {
+    int idx;
+    int stream_identifier;
+};
+
+#define MAX_STREAMS_PER_PROGRAM 128
+#define MAX_PIDS_PER_PROGRAM (MAX_STREAMS_PER_PROGRAM + 2)
 struct Program {
     unsigned int id; // program id/service id
     unsigned int nb_pids;
     unsigned int pids[MAX_PIDS_PER_PROGRAM];
+    unsigned int nb_streams;
+    struct Stream streams[MAX_STREAMS_PER_PROGRAM];
 
     /** have we found pmt for this program */
     int pmt_found;
@@ -135,7 +144,7 @@ struct MpegTSContext {
     int fix_teletext_pts;
 
     int64_t cur_pcr;    /**< used to estimate the exact PCR */
-    int pcr_incr;       /**< used to estimate the exact PCR */
+    int64_t pcr_incr;   /**< used to estimate the exact PCR */
 
     /* data needed to handle file based ts */
     /** stop parsing loop */
@@ -285,16 +294,13 @@ static void clear_avprogram(MpegTSContext *ts, unsigned int programid)
     prg->nb_stream_indexes = 0;
 }
 
-static void clear_program(MpegTSContext *ts, unsigned int programid)
+static void clear_program(struct Program *p)
 {
-    int i;
-
-    clear_avprogram(ts, programid);
-    for (i = 0; i < ts->nb_prg; i++)
-        if (ts->prg[i].id == programid) {
-            ts->prg[i].nb_pids = 0;
-            ts->prg[i].pmt_found = 0;
-        }
+    if (!p)
+        return;
+    p->nb_pids = 0;
+    p->nb_streams = 0;
+    p->pmt_found = 0;
 }
 
 static void clear_programs(MpegTSContext *ts)
@@ -303,24 +309,24 @@ static void clear_programs(MpegTSContext *ts)
     ts->nb_prg = 0;
 }
 
-static void add_pat_entry(MpegTSContext *ts, unsigned int programid)
+static struct Program * add_program(MpegTSContext *ts, unsigned int programid)
 {
-    struct Program *p;
+    struct Program *p = get_program(ts, programid);
+    if (p)
+        return p;
     if (av_reallocp_array(&ts->prg, ts->nb_prg + 1, sizeof(*ts->prg)) < 0) {
         ts->nb_prg = 0;
-        return;
+        return NULL;
     }
     p = &ts->prg[ts->nb_prg];
     p->id = programid;
-    p->nb_pids = 0;
-    p->pmt_found = 0;
+    clear_program(p);
     ts->nb_prg++;
+    return p;
 }
 
-static void add_pid_to_pmt(MpegTSContext *ts, unsigned int programid,
-                           unsigned int pid)
+static void add_pid_to_program(struct Program *p, unsigned int pid)
 {
-    struct Program *p = get_program(ts, programid);
     int i;
     if (!p)
         return;
@@ -333,15 +339,6 @@ static void add_pid_to_pmt(MpegTSContext *ts, unsigned int programid,
             return;
 
     p->pids[p->nb_pids++] = pid;
-}
-
-static void set_pmt_found(MpegTSContext *ts, unsigned int programid)
-{
-    struct Program *p = get_program(ts, programid);
-    if (!p)
-        return;
-
-    p->pmt_found = 1;
 }
 
 static void update_av_program_info(AVFormatContext *s, unsigned int programid,
@@ -379,6 +376,9 @@ static int discard_pid(MpegTSContext *ts, unsigned int pid)
     int i, j, k;
     int used = 0, discarded = 0;
     struct Program *p;
+
+    if (pid == PAT_PID)
+        return 0;
 
     /* If none of the programs have .discard=AVDISCARD_ALL then there's
      * no way we have to discard this packet */
@@ -2202,25 +2202,20 @@ int ff_parse_mpeg2_descriptor(AVFormatContext *fc, AVStream *st, int stream_type
 }
 
 static AVStream *find_matching_stream(MpegTSContext *ts, int pid, unsigned int programid,
-                                      int stream_identifier, int pmt_stream_idx)
+                                      int stream_identifier, int pmt_stream_idx, struct Program *p)
 {
     AVFormatContext *s = ts->stream;
     int i;
     AVStream *found = NULL;
 
-    for (i = 0; i < s->nb_streams; i++) {
-        AVStream *st = s->streams[i];
-        if (st->program_num != programid)
-            continue;
-        if (stream_identifier != -1) { /* match based on "stream identifier descriptor" if present */
-            if (st->stream_identifier == stream_identifier+1) {
-                found = st;
-                break;
-            }
-        } else if (st->pmt_stream_idx == pmt_stream_idx) { /* match based on position within the PMT */
-            found = st;
-            break;
+    if (stream_identifier) { /* match based on "stream identifier descriptor" if present */
+        for (i = 0; i < p->nb_streams; i++) {
+            if (p->streams[i].stream_identifier == stream_identifier)
+                if (!found || pmt_stream_idx == i) /* fallback to idx based guess if multiple streams have the same identifier */
+                    found = s->streams[p->streams[i].idx];
         }
+    } else if (pmt_stream_idx < p->nb_streams) { /* match based on position within the PMT */
+        found = s->streams[p->streams[pmt_stream_idx].idx];
     }
 
     if (found) {
@@ -2279,6 +2274,7 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
 {
     MpegTSContext *ts = filter->u.section_filter.opaque;
     MpegTSSectionFilter *tssf = &filter->u.section_filter;
+    struct Program old_program;
     SectionHeader h1, *h = &h1;
     PESContext *pes;
     AVStream *st;
@@ -2287,6 +2283,7 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
     int desc_list_len;
     uint32_t prog_reg_desc = 0; /* registration descriptor */
     int stream_identifier = -1;
+    struct Program *prg;
 
     int mp4_descr_count = 0;
     Mp4Descr mp4_descr[MAX_MP4_DESCR_COUNT] = { { 0 } };
@@ -2310,16 +2307,26 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
     if (!ts->scan_all_pmts && ts->skip_changes)
         return;
 
-    if (ts->skip_unknown_pmt && !get_program(ts, h->id))
+    prg = get_program(ts, h->id);
+    if (prg)
+        old_program = *prg;
+    else
+        clear_program(&old_program);
+
+    if (ts->skip_unknown_pmt && !prg)
+        return;
+    if (prg && prg->nb_pids && prg->pids[0] != ts->current_pid)
         return;
     if (!ts->skip_clear)
-        clear_program(ts, h->id);
+        clear_avprogram(ts, h->id);
+    clear_program(prg);
+    add_pid_to_program(prg, ts->current_pid);
 
     pcr_pid = get16(&p, p_end);
     if (pcr_pid < 0)
         return;
     pcr_pid &= 0x1fff;
-    add_pid_to_pmt(ts, h->id, pcr_pid);
+    add_pid_to_program(prg, pcr_pid);
     update_av_program_info(ts->stream, h->id, pcr_pid, h->version);
 
     av_log(ts->stream, AV_LOG_TRACE, "pcr_pid=0x%x\n", pcr_pid);
@@ -2359,10 +2366,10 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
     if (!ts->pkt)
         ts->stop_parse = 2;
 
-    set_pmt_found(ts, h->id);
+    if (prg)
+        prg->pmt_found = 1;
 
-
-    for (i = 0; ; i++) {
+    for (i = 0; i < MAX_STREAMS_PER_PROGRAM; i++) {
         st = 0;
         pes = NULL;
         stream_type = get8(&p, p_end);
@@ -2375,14 +2382,13 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
         if (pid == ts->current_pid)
             goto out;
 
-        if (ts->merge_pmt_versions)
-            stream_identifier = parse_stream_identifier_desc(p, p_end);
+        stream_identifier = parse_stream_identifier_desc(p, p_end) + 1;
 
         /* now create stream */
         if (ts->pids[pid] && ts->pids[pid]->type == MPEGTS_PES) {
             pes = ts->pids[pid]->u.pes_filter.opaque;
             if (ts->merge_pmt_versions && !pes->st) {
-                st = find_matching_stream(ts, pid, h->id, stream_identifier, i);
+                st = find_matching_stream(ts, pid, h->id, stream_identifier, i, &old_program);
                 if (st) {
                     pes->st = st;
                     pes->stream_type = stream_type;
@@ -2394,9 +2400,6 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
                 if (!pes->st)
                     goto out;
                 pes->st->id = pes->pid;
-                pes->st->program_num = h->id;
-                pes->st->pmt_version = h->version;
-                pes->st->pmt_stream_idx = i;
             }
             st = pes->st;
         } else if (is_pes_stream(stream_type, prog_reg_desc)) {
@@ -2404,7 +2407,7 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
                 mpegts_close_filter(ts, ts->pids[pid]); // wrongly added sdt filter probably
             pes = add_pes_stream(ts, pid, pcr_pid);
             if (ts->merge_pmt_versions && pes && !pes->st) {
-                st = find_matching_stream(ts, pid, h->id, stream_identifier, i);
+                st = find_matching_stream(ts, pid, h->id, stream_identifier, i, &old_program);
                 if (st) {
                     pes->st = st;
                     pes->stream_type = stream_type;
@@ -2416,9 +2419,6 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
                 if (!st)
                     goto out;
                 st->id = pes->pid;
-                st->program_num = h->id;
-                st->pmt_version = h->version;
-                st->pmt_stream_idx = i;
             }
         } else {
             int idx = ff_find_stream_index(ts->stream, pid);
@@ -2426,16 +2426,13 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
                 st = ts->stream->streams[idx];
             }
             if (ts->merge_pmt_versions && !st) {
-                st = find_matching_stream(ts, pid, h->id, stream_identifier, i);
+                st = find_matching_stream(ts, pid, h->id, stream_identifier, i, &old_program);
             }
             if (!st) {
                 st = avformat_new_stream(ts->stream, NULL);
                 if (!st)
                     goto out;
                 st->id = pid;
-                st->program_num = h->id;
-                st->pmt_version = h->version;
-                st->pmt_stream_idx = i;
                 st->codecpar->codec_type = AVMEDIA_TYPE_DATA;
                 if (stream_type == 0x86 && prog_reg_desc == AV_RL32("CUEI")) {
                     mpegts_find_stream_type(st, stream_type, SCTE_types);
@@ -2450,7 +2447,12 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
         if (pes && !pes->stream_type)
             mpegts_set_stream_info(st, pes, stream_type, prog_reg_desc);
 
-        add_pid_to_pmt(ts, h->id, pid);
+        add_pid_to_program(prg, pid);
+        if (prg) {
+            prg->streams[i].idx = st->index;
+            prg->streams[i].stream_identifier = stream_identifier;
+            prg->nb_streams++;
+        }
 
         av_program_add_stream_index(ts->stream, h->id, st->index);
 
@@ -2492,6 +2494,7 @@ static void pat_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
     SectionHeader h1, *h = &h1;
     const uint8_t *p, *p_end;
     int sid, pmt_pid;
+    int nb_prg = 0;
     AVProgram *program;
 
     av_log(ts->stream, AV_LOG_TRACE, "PAT:\n");
@@ -2510,7 +2513,6 @@ static void pat_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
         return;
     ts->stream->ts_id = h->id;
 
-    clear_programs(ts);
     for (;;) {
         sid = get16(&p, p_end);
         if (sid < 0)
@@ -2529,6 +2531,7 @@ static void pat_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
             /* NIT info */
         } else {
             MpegTSFilter *fil = ts->pids[pmt_pid];
+            struct Program *prg;
             program = av_new_program(ts->stream, sid);
             if (program) {
                 program->program_num = sid;
@@ -2542,11 +2545,20 @@ static void pat_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
 
             if (!ts->pids[pmt_pid])
                 mpegts_open_section_filter(ts, pmt_pid, pmt_cb, ts, 1);
-            add_pat_entry(ts, sid);
-            add_pid_to_pmt(ts, sid, 0); // add pat pid to program
-            add_pid_to_pmt(ts, sid, pmt_pid);
+            prg = add_program(ts, sid);
+            if (prg) {
+                unsigned prg_idx = prg - ts->prg;
+                if (prg->nb_pids && prg->pids[0] != pmt_pid)
+                    clear_program(prg);
+                add_pid_to_program(prg, pmt_pid);
+                if (prg_idx > nb_prg)
+                    FFSWAP(struct Program, ts->prg[nb_prg], ts->prg[prg_idx]);
+                if (prg_idx >= nb_prg)
+                    nb_prg++;
+            }
         }
     }
+    ts->nb_prg = nb_prg;
 
     if (sid < 0) {
         int i,j;
@@ -3090,7 +3102,6 @@ static int mpegts_read_header(AVFormatContext *s)
         AVStream *st;
         int pcr_pid, pid, nb_packets, nb_pcrs, ret, pcr_l;
         int64_t pcrs[2], pcr_h;
-        int packet_count[2];
         uint8_t packet[TS_PACKET_SIZE];
         const uint8_t *data;
 
@@ -3116,7 +3127,6 @@ static int mpegts_read_header(AVFormatContext *s)
                 parse_pcr(&pcr_h, &pcr_l, data) == 0) {
                 finished_reading_packet(s, ts->raw_packet_size);
                 pcr_pid = pid;
-                packet_count[nb_pcrs] = nb_packets;
                 pcrs[nb_pcrs] = pcr_h * 300 + pcr_l;
                 nb_pcrs++;
                 if (nb_pcrs >= 2) {
@@ -3126,7 +3136,6 @@ static int mpegts_read_header(AVFormatContext *s)
                     } else {
                         av_log(ts->stream, AV_LOG_WARNING, "invalid pcr pair %"PRId64" >= %"PRId64"\n", pcrs[0], pcrs[1]);
                         pcrs[0] = pcrs[1];
-                        packet_count[0] = packet_count[1];
                         nb_pcrs--;
                     }
                 }
@@ -3138,12 +3147,12 @@ static int mpegts_read_header(AVFormatContext *s)
 
         /* NOTE1: the bitrate is computed without the FEC */
         /* NOTE2: it is only the bitrate of the start of the stream */
-        ts->pcr_incr = (pcrs[1] - pcrs[0]) / (packet_count[1] - packet_count[0]);
-        ts->cur_pcr  = pcrs[0] - ts->pcr_incr * packet_count[0];
+        ts->pcr_incr = pcrs[1] - pcrs[0];
+        ts->cur_pcr  = pcrs[0] - ts->pcr_incr * (nb_packets - 1);
         s->bit_rate  = TS_PACKET_SIZE * 8 * 27000000LL / ts->pcr_incr;
         st->codecpar->bit_rate = s->bit_rate;
         st->start_time      = ts->cur_pcr;
-        av_log(ts->stream, AV_LOG_TRACE, "start=%0.3f pcr=%0.3f incr=%d\n",
+        av_log(ts->stream, AV_LOG_TRACE, "start=%0.3f pcr=%0.3f incr=%"PRId64"\n",
                 st->start_time / 1000000.0, pcrs[0] / 27e6, ts->pcr_incr);
     }
 

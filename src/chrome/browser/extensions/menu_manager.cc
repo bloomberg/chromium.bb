@@ -33,6 +33,7 @@
 #include "extensions/browser/state_store.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/text_elider.h"
 
@@ -171,13 +172,12 @@ std::set<MenuItem::Id> MenuItem::RemoveAllDescendants() {
   return result;
 }
 
-base::string16 MenuItem::TitleWithReplacement(const base::string16& selection,
+std::u16string MenuItem::TitleWithReplacement(const std::u16string& selection,
                                               size_t max_length) const {
-  base::string16 result = base::UTF8ToUTF16(title_);
+  std::u16string result = base::UTF8ToUTF16(title_);
   // TODO(asargent) - Change this to properly handle %% escaping so you can
   // put "%s" in titles that won't get substituted.
-  base::ReplaceSubstringsAfterOffset(
-      &result, 0, base::ASCIIToUTF16("%s"), selection);
+  base::ReplaceSubstringsAfterOffset(&result, 0, u"%s", selection);
 
   if (result.length() > max_length)
     result = gfx::TruncateString(result, max_length, gfx::WORD_BREAK);
@@ -192,7 +192,7 @@ bool MenuItem::SetChecked(bool checked) {
 }
 
 void MenuItem::AddChild(std::unique_ptr<MenuItem> item) {
-  item->parent_id_.reset(new Id(id_));
+  item->parent_id_ = std::make_unique<Id>(id_);
   children_.push_back(std::move(item));
 }
 
@@ -313,11 +313,12 @@ const char MenuManager::kOnWebviewContextMenus[] =
 
 MenuManager::MenuManager(content::BrowserContext* context, StateStore* store)
     : browser_context_(context), store_(store) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
+  extension_registry_observation_.Observe(
+      ExtensionRegistry::Get(browser_context_));
   Profile* profile = Profile::FromBrowserContext(context);
-  observed_profiles_.Add(profile);
+  observed_profiles_.AddObservation(profile);
   if (profile->HasPrimaryOTRProfile())
-    observed_profiles_.Add(profile->GetPrimaryOTRProfile());
+    observed_profiles_.AddObservation(profile->GetPrimaryOTRProfile());
   if (store_)
     store_->RegisterKey(kContextMenusKey);
 }
@@ -880,11 +881,11 @@ void MenuManager::OnExtensionUnloaded(content::BrowserContext* browser_context,
 }
 
 void MenuManager::OnOffTheRecordProfileCreated(Profile* off_the_record) {
-  observed_profiles_.Add(off_the_record);
+  observed_profiles_.AddObservation(off_the_record);
 }
 
 void MenuManager::OnProfileWillBeDestroyed(Profile* profile) {
-  observed_profiles_.Remove(profile);
+  observed_profiles_.RemoveObservation(profile);
   if (profile->IsOffTheRecord())
     RemoveAllIncognitoContextItems();
 }

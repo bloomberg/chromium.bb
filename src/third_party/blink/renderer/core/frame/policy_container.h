@@ -7,6 +7,7 @@
 
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/policy_container.mojom-blink.h"
@@ -39,13 +40,26 @@ class CORE_EXPORT PolicyContainer {
       std::unique_ptr<WebPolicyContainer> container);
 
   // Change the Referrer Policy and sync the new policy with the corresponding
-  // PolicyContainer owned by the RenderFrameHost.
+  // PolicyContainerHost.
   void UpdateReferrerPolicy(network::mojom::blink::ReferrerPolicy policy);
   network::mojom::blink::ReferrerPolicy GetReferrerPolicy() const;
 
   network::mojom::blink::IPAddressSpace GetIPAddressSpace() const;
 
-  const mojom::blink::PolicyContainerPoliciesPtr& GetPolicies() const;
+  // This setter is used only by worklets and workers, which do not sync the
+  // PolicyContainer with the browser.
+  //
+  // TODO(https://crbug.com/1177199): Remove this when we implement policy
+  // inheritance for workers/worklets using the PolicyContainer.
+  void SetIPAddressSpace(
+      network::mojom::blink::IPAddressSpace ip_address_space);
+
+  // Append |policies| to the list of Content Security Policy and sync them with
+  // the PolicyContainerHost.
+  void AddContentSecurityPolicies(
+      Vector<network::mojom::blink::ContentSecurityPolicyPtr> policies);
+
+  const mojom::blink::PolicyContainerPolicies& GetPolicies() const;
 
   // Return a keep alive handle for the browser process' PolicyContainerHost. If
   // that PolicyContainerHost is owned by a RenderFrameHost, holding a keep

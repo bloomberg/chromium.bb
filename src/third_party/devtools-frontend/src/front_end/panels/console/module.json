@@ -1,0 +1,16 @@
+{
+  "dependencies": [
+    "components",
+    "data_grid",
+    "object_ui",
+    "browser_sdk",
+    "text_editor"
+  ],
+    "resources": [
+    "consoleContextSelector.css",
+    "consolePinPane.css",
+    "consolePrompt.css",
+    "consoleSidebar.css",
+    "consoleView.css"
+  ]
+}

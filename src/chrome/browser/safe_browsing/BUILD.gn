@@ -21,6 +21,7 @@ static_library("safe_browsing") {
     "//build:branding_buildflags",
     "//chrome/app:generated_resources",
     "//chrome/browser:browser_process",
+    "//chrome/browser/profiles",
     "//chrome/browser/profiles:profile",
     "//chrome/common",
     "//chrome/common:constants",
@@ -44,6 +45,7 @@ static_library("safe_browsing") {
     "//components/safe_browsing/core:ping_manager",
     "//components/safe_browsing/core/browser",
     "//components/safe_browsing/core/browser:referrer_chain_provider",
+    "//components/safe_browsing/core/browser/sync",
     "//components/safe_browsing/core/common:interfaces",
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:v4_local_database_manager",
@@ -356,6 +358,7 @@ source_set("verdict_cache_manager_factory") {
 
   deps = [
     "//chrome/browser:browser_process",
+    "//chrome/browser/profiles",
     "//chrome/browser/profiles:profile",
     "//chrome/common",
     "//components/content_settings/core/browser",
@@ -376,6 +379,7 @@ static_library("advanced_protection") {
   ]
 
   deps = [
+    "//chrome/browser/profiles",
     "//chrome/browser/profiles:profile",
     "//components/keyed_service/content",
     "//components/prefs",

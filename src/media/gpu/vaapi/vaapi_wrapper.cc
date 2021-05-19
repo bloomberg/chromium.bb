@@ -586,7 +586,8 @@ bool VADisplayState::InitializeVaDisplay_Locked() {
 
     default:
       LOG(WARNING) << "VAAPI video acceleration not available for "
-                   << gl::GetGLImplementationName(gl::GetGLImplementation());
+                   << gl::GetGLImplementationGLName(
+                          gl::GetGLImplementationParts());
       return false;
   }
 
@@ -1107,37 +1108,28 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
   }
 
   if (va_profile != VAProfileJPEGBaseline) {
-    // Deny unreasonably small resolutions (e.g. 0x0) for VA-API hardware video
-    // decode and encode acceleration.
+    // Set a reasonable minimum value for both encoding and decoding.
     profile_info->min_resolution.SetToMax(gfx::Size(16, 16));
-    if (entrypoint == VAEntrypointEncSliceLP ||
-        entrypoint == VAEntrypointEncSlice) {
-      // Using VA-API for accelerated encoding frames smaller than a certain
-      // size is less efficient than using a software encoder.
-      constexpr gfx::Size kMinEncodeResolution(320 + 1, 240 + 1);
-      if (!gfx::Rect(profile_info->min_resolution)
-               .Contains(gfx::Rect(kMinEncodeResolution))) {
-        profile_info->min_resolution.SetToMax(kMinEncodeResolution);
-        DVLOG(2) << "Setting the minimum supported encoding resolution to "
-                 << profile_info->min_resolution.ToString() << " for "
-                 << vaProfileStr(va_profile);
-      }
-    } else if (entrypoint == VAEntrypointVLD &&
-               IsUsingHybridDriverForDecoding(va_profile)) {
-      // Using the hybrid driver for accelerated decoding of frames smaller than
-      // a certain size is less efficient than using a software decoder. This
-      // minimum resolution is selected from the fact that the resolutions of
-      // videos in tile layout in Google Meet are QVGA.
-      constexpr gfx::Size kMinDecodeResolutionForHybridDecoder(320 + 1,
-                                                               240 + 1);
-      if (!gfx::Rect(profile_info->min_resolution)
-               .Contains(gfx::Rect(kMinDecodeResolutionForHybridDecoder))) {
-        profile_info->min_resolution.SetToMax(
-            kMinDecodeResolutionForHybridDecoder);
-        DVLOG(2) << "Setting the minimum supported decoding resolution to "
-                 << profile_info->min_resolution.ToString() << " for "
-                 << vaProfileStr(va_profile);
-      }
+
+    const bool is_encoding = entrypoint == VAEntrypointEncSliceLP ||
+                             entrypoint == VAEntrypointEncSlice;
+    const bool is_hybrid_decoding = entrypoint == VAEntrypointVLD &&
+                                    IsUsingHybridDriverForDecoding(va_profile);
+
+    // Using HW encoding for small resolutions is less efficient than using a SW
+    // encoder. Similarly, using the intel-hybrid-driver for decoding is less
+    // efficient than using a SW decoder. In both cases, increase
+    // |min_resolution| to QVGA + 1 which is an experimental lower threshold.
+    // This can be turned off with kVaapiVideoMinResolutionForPerformance for
+    // testing.
+    if ((is_encoding || is_hybrid_decoding) &&
+        base::FeatureList::IsEnabled(kVaapiVideoMinResolutionForPerformance)) {
+      constexpr gfx::Size kMinVideoResolution(320 + 1, 240 + 1);
+      profile_info->min_resolution.SetToMax(kMinVideoResolution);
+      DVLOG(2) << "Setting the minimum supported resolution for "
+               << vaProfileStr(va_profile)
+               << (is_encoding ? " encoding" : " decoding") << " to "
+               << profile_info->min_resolution.ToString();
     }
   }
 
@@ -2738,7 +2730,7 @@ void VaapiWrapper::PreSandboxInitialization() {
   static bool result = InitializeStubs(paths);
   if (!result) {
     static const char kErrorMsg[] = "Failed to initialize VAAPI libs";
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
     // When Chrome runs on Linux with target_os="chromeos", do not log error
     // message without VAAPI libraries.
     LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS()) << kErrorMsg;

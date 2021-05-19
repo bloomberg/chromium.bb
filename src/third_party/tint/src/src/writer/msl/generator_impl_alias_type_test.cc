@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/struct.h"
-#include "src/ast/struct_member.h"
-#include "src/program.h"
-#include "src/type/struct_type.h"
-#include "src/writer/msl/generator_impl.h"
 #include "src/writer/msl/test_helper.h"
 
 namespace tint {
@@ -37,23 +31,11 @@ TEST_F(MslGeneratorImplTest, EmitConstructedType_F32) {
 )");
 }
 
-TEST_F(MslGeneratorImplTest, EmitConstructedType_NameCollision) {
-  auto* alias = ty.alias("float", ty.f32());
-
-  GeneratorImpl& gen = Build();
-
-  ASSERT_TRUE(gen.EmitConstructedType(alias)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(typedef float float_tint_0;
-)");
-}
-
 TEST_F(MslGeneratorImplTest, EmitConstructedType_Struct) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.f32()),
-                            Member("b", ty.i32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
-
-  auto* s = ty.struct_("a", str);
+  auto* s = Structure("a", {
+                               Member("a", ty.f32()),
+                               Member("b", ty.i32()),
+                           });
 
   GeneratorImpl& gen = Build();
 
@@ -66,12 +48,11 @@ TEST_F(MslGeneratorImplTest, EmitConstructedType_Struct) {
 }
 
 TEST_F(MslGeneratorImplTest, EmitConstructedType_AliasStructIdent) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.f32()),
-                            Member("b", ty.i32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
+  auto* s = Structure("b", {
+                               Member("a", ty.f32()),
+                               Member("b", ty.i32()),
+                           });
 
-  auto* s = ty.struct_("b", str);
   auto* alias = ty.alias("a", s);
 
   GeneratorImpl& gen = Build();

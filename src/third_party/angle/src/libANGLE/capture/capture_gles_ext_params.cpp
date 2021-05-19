@@ -535,7 +535,7 @@ void CaptureGetIntegervRobustANGLE_length(const State &glState,
                                           GLint *data,
                                           ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = sizeof(GLsizei);
 }
 
 void CaptureGetIntegervRobustANGLE_data(const State &glState,
@@ -546,7 +546,7 @@ void CaptureGetIntegervRobustANGLE_data(const State &glState,
                                         GLint *data,
                                         ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureGetParameter(glState, pname, sizeof(GLint) * bufSize, paramCapture);
 }
 
 void CaptureGetProgramivRobustANGLE_length(const State &glState,
@@ -1954,7 +1954,9 @@ void CaptureGetTexLevelParameterivANGLE_params(const State &glState,
                                                GLint *params,
                                                ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    // page 190 https://www.khronos.org/registry/OpenGL/specs/es/3.2/es_spec_3.2.pdf
+    // TEXTURE_BORDER_COLOR: 4 floats, ints, uints
+    paramCapture->readBufferSizeBytes = sizeof(GLint) * 4;
 }
 
 void CaptureGetTexLevelParameterfvANGLE_params(const State &glState,
@@ -2355,6 +2357,26 @@ void CaptureGenQueriesEXT_idsPacked(const State &glState,
     CaptureGenHandles(n, ids, paramCapture);
 }
 
+// For each of the GetQueryObject functions below, the spec states:
+//
+//  There may be an indeterminate delay before a query object's
+//  result value is available. If pname is QUERY_RESULT_AVAILABLE,
+//  FALSE is returned if such a delay would be required; otherwise
+//  TRUE is returned. It must always be true that if any query
+//  object returns a result available of TRUE, all queries of the
+//  same type issued prior to that query must also return TRUE.
+//  Repeatedly querying QUERY_RESULT_AVAILABLE for any given query
+//  object is guaranteed to return TRUE eventually.
+//
+//  If pname is QUERY_RESULT, then the query object's result value is
+//  returned as a single integer in params. If the value is so large
+//  in magnitude that it cannot be represented with the requested
+//  type, then the nearest value representable using the requested type
+//  is returned. Querying QUERY_RESULT for any given query object
+//  forces that query to complete within a finite amount of time.
+//
+// Thus, return a single value for each param.
+//
 void CaptureGetQueryObjecti64vEXT_params(const State &glState,
                                          bool isCallValid,
                                          QueryID id,
@@ -2362,7 +2384,7 @@ void CaptureGetQueryObjecti64vEXT_params(const State &glState,
                                          GLint64 *params,
                                          ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = sizeof(GLint64);
 }
 
 void CaptureGetInteger64vEXT_data(const State &glState,
@@ -2381,7 +2403,7 @@ void CaptureGetQueryObjectivEXT_params(const State &glState,
                                        GLint *params,
                                        ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = sizeof(GLint);
 }
 
 void CaptureGetQueryObjectui64vEXT_params(const State &glState,
@@ -2391,7 +2413,7 @@ void CaptureGetQueryObjectui64vEXT_params(const State &glState,
                                           GLuint64 *params,
                                           ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = sizeof(GLuint64);
 }
 
 void CaptureGetQueryObjectuivEXT_params(const State &glState,
@@ -2442,7 +2464,7 @@ void CaptureCreateMemoryObjectsEXT_memoryObjectsPacked(const State &glState,
                                                        MemoryObjectID *memoryObjects,
                                                        ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureGenHandles(n, memoryObjects, paramCapture);
 }
 
 void CaptureDeleteMemoryObjectsEXT_memoryObjectsPacked(const State &glState,
@@ -2451,7 +2473,7 @@ void CaptureDeleteMemoryObjectsEXT_memoryObjectsPacked(const State &glState,
                                                        const MemoryObjectID *memoryObjects,
                                                        ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureMemory(memoryObjects, sizeof(MemoryObjectID) * n, paramCapture);
 }
 
 void CaptureGetMemoryObjectParameterivEXT_params(const State &glState,
@@ -2461,7 +2483,7 @@ void CaptureGetMemoryObjectParameterivEXT_params(const State &glState,
                                                  GLint *params,
                                                  ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    paramCapture->readBufferSizeBytes = sizeof(GLint);
 }
 
 void CaptureGetUnsignedBytevEXT_data(const State &glState,
@@ -2490,7 +2512,7 @@ void CaptureMemoryObjectParameterivEXT_params(const State &glState,
                                               const GLint *params,
                                               ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureMemory(params, sizeof(GLint), paramCapture);
 }
 
 void CaptureGetnUniformfvEXT_params(const State &glState,
@@ -3117,7 +3139,7 @@ void CapturePointSizePointerOES_pointer(const State &glState,
                                         const void *pointer,
                                         ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    CaptureVertexPointerGLES1(glState, ClientVertexArrayType::PointSize, pointer, paramCapture);
 }
 
 void CaptureQueryMatrixxOES_mantissa(const State &glState,
@@ -3380,7 +3402,22 @@ void CaptureGetTexImageANGLE_pixels(const State &glState,
                                     void *pixels,
                                     angle::ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    if (glState.getTargetBuffer(gl::BufferBinding::PixelPack))
+    {
+        // If a pixel pack buffer is bound, this is an offset, not a pointer
+        paramCapture->value.voidPointerVal = pixels;
+        return;
+    }
+
+    const Texture *texture = glState.getTargetTexture(TextureTargetToType(target));
+    ASSERT(texture);
+
+    // Use a conservative upper bound instead of an exact size to be simple.
+    static constexpr GLsizei kMaxPixelSize = 32;
+    size_t width                           = texture->getWidth(target, level);
+    size_t height                          = texture->getHeight(target, level);
+    size_t depth                           = texture->getDepth(target, level);
+    paramCapture->readBufferSizeBytes      = kMaxPixelSize * width * height * depth;
 }
 
 void CaptureGetRenderbufferImageANGLE_pixels(const State &glState,
@@ -3391,7 +3428,21 @@ void CaptureGetRenderbufferImageANGLE_pixels(const State &glState,
                                              void *pixels,
                                              angle::ParamCapture *paramCapture)
 {
-    UNIMPLEMENTED();
+    if (glState.getTargetBuffer(gl::BufferBinding::PixelPack))
+    {
+        // If a pixel pack buffer is bound, this is an offset, not a pointer
+        paramCapture->value.voidPointerVal = pixels;
+        return;
+    }
+
+    const Renderbuffer *renderbuffer = glState.getCurrentRenderbuffer();
+    ASSERT(renderbuffer);
+
+    // Use a conservative upper bound instead of an exact size to be simple.
+    static constexpr GLsizei kMaxPixelSize = 32;
+    size_t width                           = renderbuffer->getWidth();
+    size_t height                          = renderbuffer->getHeight();
+    paramCapture->readBufferSizeBytes      = kMaxPixelSize * width * height;
 }
 
 void CaptureBufferStorageEXT_data(const State &glState,

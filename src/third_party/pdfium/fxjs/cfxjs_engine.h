@@ -28,10 +28,6 @@ class CFXJS_ObjDefinition;
 class CJS_Object;
 class V8TemplateMap;
 
-// CFXJS_ENGINE places no restrictions on this class; it merely passes it
-// on to caller-provided methods.
-class IJS_EventContext;  // A description of the event that caused JS execution.
-
 enum FXJSOBJTYPE {
   FXJSOBJTYPE_DYNAMIC = 0,  // Created by native method and returned to JS.
   FXJSOBJTYPE_STATIC,       // Created by init and hung off of global object.
@@ -55,7 +51,7 @@ class FXJS_PerIsolateData {
   CFXJS_ObjDefinition* ObjDefinitionForID(uint32_t id) const;
   uint32_t AssignIDForObjDefinition(std::unique_ptr<CFXJS_ObjDefinition> pDefn);
 
-  const char* const m_Tag;
+  const char* const m_Tag;  // Raw, always a literal.
   std::vector<std::unique_ptr<CFXJS_ObjDefinition>> m_ObjectDefnArray;
   std::unique_ptr<V8TemplateMap> m_pDynamicObjsMap;
   std::unique_ptr<ExtensionIface> m_pFXJSERuntimeData;

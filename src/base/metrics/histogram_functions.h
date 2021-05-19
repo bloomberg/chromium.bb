@@ -31,19 +31,24 @@
 // in those cases.
 namespace base {
 
-// For histograms with linear buckets.
-// Used for capturing integer data with a linear bucketing scheme. This can be
-// used when you want the exact value of some small numeric count, with a max of
-// 100 or less. If you need to capture a range of greater than 100, we recommend
-// the use of the COUNT histograms below.
+// For numeric measurements where you want exact integer values up to
+// |exclusive_max|. |exclusive_max| itself is included in the overflow bucket.
+// Therefore, if you want an accurate measure up to kMax, then |exclusive_max|
+// should be set to kMax + 1.
+//
+// |exclusive_max| should be 101 or less. If you need to capture a larger range,
+// we recommend the use of the COUNT histograms below.
+//
 // Sample usage:
-//   base::UmaHistogramExactLinear("Histogram.Linear", some_value, 10);
+//   base::UmaHistogramExactLinear("Histogram.Linear", sample, kMax + 1);
+// In this case, buckets are 1, 2, .., kMax, kMax+1, where the kMax+1 bucket
+// captures everything kMax+1 and above.
 BASE_EXPORT void UmaHistogramExactLinear(const std::string& name,
                                          int sample,
-                                         int value_max);
+                                         int exclusive_max);
 BASE_EXPORT void UmaHistogramExactLinear(const char* name,
                                          int sample,
-                                         int value_max);
+                                         int exclusive_max);
 
 // For adding a sample to an enumerated histogram.
 // Sample usage:
@@ -260,7 +265,7 @@ BASE_EXPORT void UmaHistogramMemoryLargeMB(const char* name, int sample);
 // many distinct values to the server (across all users). Concretely, keep the
 // number of distinct values <= 100 ideally, definitely <= 1000. If you have no
 // guarantees on the range of your data, use clamping, e.g.:
-//   UmaHistogramSparse("MyHistogram", ClampToRange(value, 0, 200));
+//   UmaHistogramSparse("My.Histogram", ClampToRange(value, 0, 200));
 BASE_EXPORT void UmaHistogramSparse(const std::string& name, int sample);
 BASE_EXPORT void UmaHistogramSparse(const char* name, int sample);
 

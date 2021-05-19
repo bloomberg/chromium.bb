@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.contextmenu.RevampedContextMenuItemProperties.MENU_ID;
 import static org.chromium.chrome.browser.contextmenu.RevampedContextMenuItemProperties.TEXT;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.CONTEXT_MENU_OPEN_NEW_TAB_IN_GROUP_ITEM_FIRST;
 
 import android.app.Activity;
 import android.util.Pair;
@@ -37,7 +38,9 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuMode;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -487,6 +490,7 @@ public class ChromeContextMenuPopulatorTest {
                 R.id.contextmenu_read_later, R.id.contextmenu_share_link};
         checkMenuOptions(expected);
 
+        // Custom tab should include read later.
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB, params);
         int[] expected2 = {R.id.contextmenu_open_in_browser_id, R.id.contextmenu_copy_link_address,
                 R.id.contextmenu_copy_link_text, R.id.contextmenu_save_link_as,
@@ -509,5 +513,69 @@ public class ChromeContextMenuPopulatorTest {
                 R.id.contextmenu_copy_link_text, R.id.contextmenu_save_link_as,
                 R.id.contextmenu_share_link};
         checkMenuOptions(expected);
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testIncognito() {
+        FirstRunStatus.setFirstRunFlowComplete(true);
+
+        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
+        features.put(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET, false);
+        features.put(ChromeFeatureList.READ_LATER, true);
+        ChromeFeatureList.setTestFeatures(features);
+
+        ContextMenuParams params = new ContextMenuParams(0, 0, new GURL(PAGE_URL),
+                new GURL(LINK_URL), LINK_TEXT, GURL.emptyGURL(), GURL.emptyGURL(), "", null, false,
+                0, 0, MenuSourceType.MENU_SOURCE_TOUCH);
+
+        when(mItemDelegate.isIncognito()).thenReturn(true);
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.NORMAL, params);
+        int[] expectedIncognito = {R.id.contextmenu_open_in_new_tab,
+                R.id.contextmenu_open_in_other_window, R.id.contextmenu_copy_link_address,
+                R.id.contextmenu_copy_link_text, R.id.contextmenu_read_later,
+                R.id.contextmenu_share_link};
+        checkMenuOptions(expectedIncognito);
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testHttpLink_WithoutAutoGroupCreation() {
+        TabUiFeatureUtilities.ENABLE_TAB_GROUP_AUTO_CREATION.setForTesting(false);
+
+        FirstRunStatus.setFirstRunFlowComplete(true);
+
+        ContextMenuParams params = new ContextMenuParams(0, 0, new GURL(PAGE_URL),
+                new GURL(LINK_URL), LINK_TEXT, GURL.emptyGURL(), GURL.emptyGURL(), "", null, false,
+                0, 0, MenuSourceType.MENU_SOURCE_TOUCH);
+
+        // Show "open in new tab" item first
+        SharedPreferencesManager.getInstance().writeBoolean(
+                CONTEXT_MENU_OPEN_NEW_TAB_IN_GROUP_ITEM_FIRST, false);
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.NORMAL, params);
+        int[] expected = {R.id.contextmenu_open_in_new_tab,
+                R.id.contextmenu_open_in_new_tab_in_group, R.id.contextmenu_open_in_incognito_tab,
+                R.id.contextmenu_open_in_other_window, R.id.contextmenu_copy_link_address,
+                R.id.contextmenu_copy_link_text, R.id.contextmenu_save_link_as,
+                R.id.contextmenu_share_link};
+        checkMenuOptions(expected);
+
+        // Show "open in new tab in group" item first
+        SharedPreferencesManager.getInstance().writeBoolean(
+                CONTEXT_MENU_OPEN_NEW_TAB_IN_GROUP_ITEM_FIRST, true);
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.NORMAL, params);
+        int[] expected2 = {R.id.contextmenu_open_in_new_tab_in_group,
+                R.id.contextmenu_open_in_new_tab, R.id.contextmenu_open_in_incognito_tab,
+                R.id.contextmenu_open_in_other_window, R.id.contextmenu_copy_link_address,
+                R.id.contextmenu_copy_link_text, R.id.contextmenu_save_link_as,
+                R.id.contextmenu_share_link};
+        checkMenuOptions(expected2);
+
+        // Clean up
+        SharedPreferencesManager.getInstance().removeKey(
+                CONTEXT_MENU_OPEN_NEW_TAB_IN_GROUP_ITEM_FIRST);
+        TabUiFeatureUtilities.ENABLE_TAB_GROUP_AUTO_CREATION.setForTesting(true);
     }
 }

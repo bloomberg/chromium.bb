@@ -27,6 +27,7 @@
 
 #include <stdint.h>
 
+#include "config.h"
 #include "libavutil/avassert.h"
 #include "libavutil/dict.h"
 #include "libavutil/intreadwrite.h"
@@ -63,6 +64,17 @@ typedef struct WAVDemuxContext {
     int rifx; // RIFX: integer byte order for parameters is big endian
 } WAVDemuxContext;
 
+#define OFFSET(x) offsetof(WAVDemuxContext, x)
+#define DEC AV_OPT_FLAG_DECODING_PARAM
+static const AVOption demux_options[] = {
+#define W64_DEMUXER_OPTIONS_OFFSET (1 * CONFIG_WAV_DEMUXER)
+#if CONFIG_WAV_DEMUXER
+    { "ignore_length", "Ignore length", OFFSET(ignore_length), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, DEC },
+#endif
+    { "max_size",      "max size of single packet", OFFSET(max_size), AV_OPT_TYPE_INT, { .i64 = 4096 }, 1024, 1 << 22, DEC },
+    { NULL },
+};
+
 static void set_spdif(AVFormatContext *s, WAVDemuxContext *wav)
 {
 #if CONFIG_SPDIF_DEMUXER
@@ -72,7 +84,7 @@ static void set_spdif(AVFormatContext *s, WAVDemuxContext *wav)
         int ret = ffio_ensure_seekback(s->pb, len);
 
         if (ret >= 0) {
-            uint8_t *buf = av_malloc(len);
+            uint8_t *buf = av_malloc(len + AV_INPUT_BUFFER_PADDING_SIZE);
             if (!buf) {
                 ret = AVERROR(ENOMEM);
             } else {
@@ -645,7 +657,8 @@ break_loop:
     } else if (st->codecpar->codec_id == AV_CODEC_ID_XMA1 ||
                st->codecpar->codec_id == AV_CODEC_ID_XMA2) {
         st->codecpar->block_align = 2048;
-    } else if (st->codecpar->codec_id == AV_CODEC_ID_ADPCM_MS && st->codecpar->channels > 2) {
+    } else if (st->codecpar->codec_id == AV_CODEC_ID_ADPCM_MS && st->codecpar->channels > 2 &&
+               st->codecpar->block_align < INT_MAX / st->codecpar->channels) {
         st->codecpar->block_align *= st->codecpar->channels;
     }
 
@@ -803,14 +816,6 @@ static int wav_read_seek(AVFormatContext *s,
     return ff_pcm_read_seek(s, stream_index, timestamp, flags);
 }
 
-#define OFFSET(x) offsetof(WAVDemuxContext, x)
-#define DEC AV_OPT_FLAG_DECODING_PARAM
-static const AVOption demux_options[] = {
-    { "ignore_length", "Ignore length", OFFSET(ignore_length), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, DEC },
-    { "max_size",      "max size of single packet", OFFSET(max_size), AV_OPT_TYPE_INT, { .i64 = 4096 }, 1024, 1 << 22, DEC },
-    { NULL },
-};
-
 static const AVClass wav_demuxer_class = {
     .class_name = "WAV demuxer",
     .item_name  = av_default_item_name,
@@ -826,7 +831,7 @@ AVInputFormat ff_wav_demuxer = {
     .read_packet    = wav_read_packet,
     .read_seek      = wav_read_seek,
     .flags          = AVFMT_GENERIC_INDEX,
-    .codec_tag      = (const AVCodecTag * const []) { ff_codec_wav_tags,  0 },
+    .codec_tag      = ff_wav_codec_tags_list,
     .priv_class     = &wav_demuxer_class,
 };
 #endif /* CONFIG_WAV_DEMUXER */
@@ -923,11 +928,15 @@ static int w64_read_header(AVFormatContext *s)
                 if (chunk_size == UINT32_MAX || (filesize >= 0 && chunk_size > filesize))
                     return AVERROR_INVALIDDATA;
 
-                value = av_mallocz(chunk_size + 1);
+                value = av_malloc(chunk_size + 1);
                 if (!value)
                     return AVERROR(ENOMEM);
 
                 ret = avio_get_str16le(pb, chunk_size, value, chunk_size);
+                if (ret < 0) {
+                    av_free(value);
+                    return ret;
+                }
                 avio_skip(pb, chunk_size - ret);
 
                 av_dict_set(&s->metadata, chunk_key, value, AV_DICT_DONT_STRDUP_VAL);
@@ -956,17 +965,10 @@ static int w64_read_header(AVFormatContext *s)
     return 0;
 }
 
-#define OFFSET(x) offsetof(WAVDemuxContext, x)
-#define DEC AV_OPT_FLAG_DECODING_PARAM
-static const AVOption w64_demux_options[] = {
-    { "max_size", "max size of single packet", OFFSET(max_size), AV_OPT_TYPE_INT, { .i64 = 4096 }, 1024, 1 << 22, DEC },
-    { NULL }
-};
-
 static const AVClass w64_demuxer_class = {
     .class_name = "W64 demuxer",
     .item_name  = av_default_item_name,
-    .option     = w64_demux_options,
+    .option     = &demux_options[W64_DEMUXER_OPTIONS_OFFSET],
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
@@ -979,7 +981,7 @@ AVInputFormat ff_w64_demuxer = {
     .read_packet    = wav_read_packet,
     .read_seek      = wav_read_seek,
     .flags          = AVFMT_GENERIC_INDEX,
-    .codec_tag      = (const AVCodecTag * const []) { ff_codec_wav_tags, 0 },
+    .codec_tag      = ff_wav_codec_tags_list,
     .priv_class     = &w64_demuxer_class,
 };
 #endif /* CONFIG_W64_DEMUXER */

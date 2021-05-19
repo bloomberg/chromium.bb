@@ -43,12 +43,13 @@ namespace {
 
 void CompletePageFlip(
     base::WeakPtr<HardwareDisplayController> hardware_display_controller_,
+    int modeset_sequence,
     PresentationOnceCallback callback,
     DrmOverlayPlaneList plane_list,
     const gfx::PresentationFeedback& presentation_feedback) {
   if (hardware_display_controller_) {
-    hardware_display_controller_->OnPageFlipComplete(std::move(plane_list),
-                                                     presentation_feedback);
+    hardware_display_controller_->OnPageFlipComplete(
+        modeset_sequence, std::move(plane_list), presentation_feedback);
   }
   std::move(callback).Run(presentation_feedback);
 }
@@ -75,26 +76,24 @@ HardwareDisplayController::HardwareDisplayController(
 
 HardwareDisplayController::~HardwareDisplayController() = default;
 
-void HardwareDisplayController::GetModesetProps(
-    CommitRequest* commit_request,
-    const DrmOverlayPlaneList& modeset_planes,
-    const drmModeModeInfo& mode) {
-  GetModesetPropsForCrtcs(commit_request, modeset_planes,
+void HardwareDisplayController::GetModesetProps(CommitRequest* commit_request,
+                                                const DrmOverlayPlane& primary,
+                                                const drmModeModeInfo& mode) {
+  GetModesetPropsForCrtcs(commit_request, primary,
                           /*use_current_crtc_mode=*/false, mode);
 }
 
-void HardwareDisplayController::GetEnableProps(
-    CommitRequest* commit_request,
-    const DrmOverlayPlaneList& modeset_planes) {
+void HardwareDisplayController::GetEnableProps(CommitRequest* commit_request,
+                                               const DrmOverlayPlane& primary) {
   // TODO(markyacoub): Simplify and remove the use of empty_mode.
   drmModeModeInfo empty_mode = {};
-  GetModesetPropsForCrtcs(commit_request, modeset_planes,
+  GetModesetPropsForCrtcs(commit_request, primary,
                           /*use_current_crtc_mode=*/true, empty_mode);
 }
 
 void HardwareDisplayController::GetModesetPropsForCrtcs(
     CommitRequest* commit_request,
-    const DrmOverlayPlaneList& modeset_planes,
+    const DrmOverlayPlane& primary,
     bool use_current_crtc_mode,
     const drmModeModeInfo& mode) {
   DCHECK(commit_request);
@@ -105,7 +104,8 @@ void HardwareDisplayController::GetModesetPropsForCrtcs(
     drmModeModeInfo modeset_mode =
         use_current_crtc_mode ? controller->mode() : mode;
 
-    DrmOverlayPlaneList overlays = DrmOverlayPlane::Clone(modeset_planes);
+    DrmOverlayPlaneList overlays;
+    overlays.push_back(primary.Clone());
 
     CrtcCommitRequest request = CrtcCommitRequest::EnableCrtcRequest(
         controller->crtc(), controller->connector(), modeset_mode, origin_,
@@ -181,6 +181,7 @@ void HardwareDisplayController::SchedulePageFlip(
   // Everything was submitted successfully, wait for asynchronous completion.
   page_flip_request->TakeCallback(
       base::BindOnce(&CompletePageFlip, weak_ptr_factory_.GetWeakPtr(),
+                     GetDrmDevice()->modeset_sequence_id(),
                      std::move(presentation_callback), std::move(plane_list)));
   page_flip_request_ = std::move(page_flip_request);
 }
@@ -242,13 +243,23 @@ std::vector<uint64_t> HardwareDisplayController::GetFormatModifiers(
 }
 
 std::vector<uint64_t> HardwareDisplayController::GetSupportedModifiers(
-    uint32_t fourcc_format) const {
+    uint32_t fourcc_format,
+    bool is_modeset) const {
   if (preferred_format_modifier_.empty())
     return std::vector<uint64_t>();
 
   auto it = preferred_format_modifier_.find(fourcc_format);
-  if (it != preferred_format_modifier_.end())
-    return std::vector<uint64_t>{it->second};
+  if (it != preferred_format_modifier_.end()) {
+    uint64_t supported_modifier = it->second;
+    // AFBC for modeset buffers doesn't work correctly, as we can't fill it with
+    // a valid AFBC buffer (crbug.com/852675).
+    // For now, don't use AFBC for modeset buffers.
+    if (is_modeset &&
+        supported_modifier == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC) {
+      supported_modifier = DRM_FORMAT_MOD_LINEAR;
+    }
+    return std::vector<uint64_t>{supported_modifier};
+  }
 
   return GetFormatModifiers(fourcc_format);
 }
@@ -258,19 +269,7 @@ HardwareDisplayController::GetFormatModifiersForTestModeset(
     uint32_t fourcc_format) {
   // If we're about to test, clear the current preferred modifier.
   preferred_format_modifier_.clear();
-
-  std::vector<uint64_t> filtered_modifiers;
-  const auto& modifiers = GetFormatModifiers(fourcc_format);
-  for (auto modifier : modifiers) {
-    // AFBC for modeset buffers doesn't work correctly, as we can't fill it with
-    // a valid AFBC buffer. For now, don't use AFBC for modeset buffers.
-    // TODO: Use AFBC for modeset buffers if it is available.
-    // See https://crbug.com/852675.
-    if (modifier != DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC) {
-      filtered_modifiers.push_back(modifier);
-    }
-  }
-  return filtered_modifiers;
+  return GetFormatModifiers(fourcc_format);
 }
 
 void HardwareDisplayController::UpdatePreferredModiferForFormat(
@@ -404,15 +403,22 @@ scoped_refptr<DrmDevice> HardwareDisplayController::GetDrmDevice() const {
 }
 
 void HardwareDisplayController::OnPageFlipComplete(
+    int modeset_sequence,
     DrmOverlayPlaneList pending_planes,
     const gfx::PresentationFeedback& presentation_feedback) {
   if (!page_flip_request_)
     return;  // Modeset occured during this page flip.
+
   time_of_last_flip_ = presentation_feedback.timestamp;
   current_planes_ = std::move(pending_planes);
+
   for (const auto& controller : crtc_controllers_) {
-    GetDrmDevice()->plane_manager()->ResetModesetBufferOfCrtc(
-        controller->crtc());
+    // Only reset the modeset buffer of the crtcs for pageflips that were
+    // committed after the modeset.
+    if (modeset_sequence == GetDrmDevice()->modeset_sequence_id()) {
+      GetDrmDevice()->plane_manager()->ResetModesetBufferOfCrtc(
+          controller->crtc());
+    }
   }
   page_flip_request_ = nullptr;
 }
@@ -426,8 +432,6 @@ void HardwareDisplayController::OnModesetComplete(
   page_flip_request_ = nullptr;
   owned_hardware_planes_.legacy_page_flips.clear();
   current_planes_.clear();
-  // TODO(markyacoub): Once we support modesetting with more than just the
-  // primary plane, save all planes instead of the primary only.
   current_planes_.push_back(primary.Clone());
   time_of_last_flip_ = base::TimeTicks::Now();
 }

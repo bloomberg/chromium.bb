@@ -54,7 +54,7 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web/features.h"
-#import "ios/chrome/browser/web/font_size_tab_helper.h"
+#import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -1148,10 +1148,8 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
 // Returns YES if user is allowed to edit any bookmarks.
 - (BOOL)isEditBookmarksEnabled {
-  if (IsEditBookmarksIOSEnabled())
     return self.prefService->GetBoolean(
         bookmarks::prefs::kEditBookmarksEnabled);
-  return YES;
 }
 
 @end

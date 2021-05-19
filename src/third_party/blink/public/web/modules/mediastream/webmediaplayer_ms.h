@@ -166,13 +166,13 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
 
   bool HasAvailableVideoFrame() const override;
 
+  void SetVolumeMultiplier(double multiplier) override;
+  void SuspendForFrameClosed() override;
+
   // WebMediaPlayerDelegate::Observer implementation.
   void OnFrameHidden() override;
-  void OnFrameClosed() override;
   void OnFrameShown() override;
   void OnIdleTimeout() override;
-  void OnVolumeMultiplierUpdate(double multiplier) override;
-  void OnBecamePersistentVideo(bool value) override;
 
   void OnFirstFrameReceived(media::VideoRotation video_rotation,
                             bool is_opaque);
@@ -308,7 +308,7 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   const WebString initial_audio_output_device_id_;
 
   // The last volume received by setVolume() and the last volume multiplier from
-  // OnVolumeMultiplierUpdate().  The multiplier is typical 1.0, but may be less
+  // SetVolumeMultiplier().  The multiplier is typical 1.0, but may be less
   // if the WebMediaPlayerDelegate has requested a volume reduction
   // (ducking) for a transient sound.  Playout volume is derived by volume *
   // multiplier.

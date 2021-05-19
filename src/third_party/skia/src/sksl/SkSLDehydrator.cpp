@@ -9,10 +9,20 @@
 
 #include <map>
 
+#include "include/private/SkSLProgramElement.h"
+#include "include/private/SkSLStatement.h"
+#include "include/private/SkSLSymbol.h"
 #include "src/sksl/SkSLRehydrator.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
 #include "src/sksl/ir/SkSLBreakStatement.h"
 #include "src/sksl/ir/SkSLConstructor.h"
+#include "src/sksl/ir/SkSLConstructorArray.h"
+#include "src/sksl/ir/SkSLConstructorCompound.h"
+#include "src/sksl/ir/SkSLConstructorCompoundCast.h"
+#include "src/sksl/ir/SkSLConstructorDiagonalMatrix.h"
+#include "src/sksl/ir/SkSLConstructorMatrixResize.h"
+#include "src/sksl/ir/SkSLConstructorScalarCast.h"
+#include "src/sksl/ir/SkSLConstructorSplat.h"
 #include "src/sksl/ir/SkSLContinueStatement.h"
 #include "src/sksl/ir/SkSLDiscardStatement.h"
 #include "src/sksl/ir/SkSLDoStatement.h"
@@ -31,15 +41,12 @@
 #include "src/sksl/ir/SkSLInterfaceBlock.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
-#include "src/sksl/ir/SkSLProgramElement.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
 #include "src/sksl/ir/SkSLSetting.h"
-#include "src/sksl/ir/SkSLStatement.h"
 #include "src/sksl/ir/SkSLStructDefinition.h"
 #include "src/sksl/ir/SkSLSwitchCase.h"
 #include "src/sksl/ir/SkSLSwitchStatement.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
-#include "src/sksl/ir/SkSLSymbol.h"
 #include "src/sksl/ir/SkSLSymbolAlias.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
@@ -253,6 +260,13 @@ void Dehydrator::write(const SymbolTable& symbols) {
     }
 }
 
+void Dehydrator::writeExpressionSpan(const SkSpan<const std::unique_ptr<Expression>>& span) {
+    this->writeU8(span.size());
+    for (const auto& expr : span) {
+        this->write(expr.get());
+    }
+}
+
 void Dehydrator::write(const Expression* e) {
     if (e) {
         switch (e->kind()) {
@@ -262,7 +276,6 @@ void Dehydrator::write(const Expression* e) {
                 this->write(b.left().get());
                 this->writeU8((int) b.getOperator().kind());
                 this->write(b.right().get());
-                this->write(b.type());
                 break;
             }
             case Expression::Kind::kBoolLiteral: {
@@ -274,20 +287,54 @@ void Dehydrator::write(const Expression* e) {
             case Expression::Kind::kCodeString:
                 SkDEBUGFAIL("shouldn't be able to receive kCodeString here");
                 break;
-            case Expression::Kind::kConstructor: {
-                const Constructor& c = e->as<Constructor>();
-                this->writeCommand(Rehydrator::kConstructor_Command);
-                this->write(c.type());
-                this->writeU8(c.arguments().size());
-                for (const auto& a : c.arguments()) {
-                    this->write(a.get());
-                }
+
+            case Expression::Kind::kConstructorArray:
+                this->writeCommand(Rehydrator::kConstructorArray_Command);
+                this->write(e->type());
+                this->writeExpressionSpan(e->as<ConstructorArray>().argumentSpan());
                 break;
-            }
+
+            case Expression::Kind::kConstructorCompound:
+                this->writeCommand(Rehydrator::kConstructorCompound_Command);
+                this->write(e->type());
+                this->writeExpressionSpan(e->as<ConstructorCompound>().argumentSpan());
+                break;
+
+            case Expression::Kind::kConstructorCompoundCast:
+                this->writeCommand(Rehydrator::kConstructorCompoundCast_Command);
+                this->write(e->type());
+                this->writeExpressionSpan(e->as<ConstructorCompoundCast>().argumentSpan());
+                break;
+
+            case Expression::Kind::kConstructorDiagonalMatrix:
+                this->writeCommand(Rehydrator::kConstructorDiagonalMatrix_Command);
+                this->write(e->type());
+                this->writeExpressionSpan(e->as<ConstructorDiagonalMatrix>().argumentSpan());
+                break;
+
+            case Expression::Kind::kConstructorMatrixResize:
+                this->writeCommand(Rehydrator::kConstructorMatrixResize_Command);
+                this->write(e->type());
+                this->writeExpressionSpan(e->as<ConstructorMatrixResize>().argumentSpan());
+                break;
+
+            case Expression::Kind::kConstructorScalarCast:
+                this->writeCommand(Rehydrator::kConstructorScalarCast_Command);
+                this->write(e->type());
+                this->writeExpressionSpan(e->as<ConstructorScalarCast>().argumentSpan());
+                break;
+
+            case Expression::Kind::kConstructorSplat:
+                this->writeCommand(Rehydrator::kConstructorSplat_Command);
+                this->write(e->type());
+                this->writeExpressionSpan(e->as<ConstructorSplat>().argumentSpan());
+                break;
+
             case Expression::Kind::kExternalFunctionCall:
             case Expression::Kind::kExternalFunctionReference:
                 SkDEBUGFAIL("unimplemented--not expected to be used from within an include file");
                 break;
+
             case Expression::Kind::kFieldAccess: {
                 const FieldAccess& f = e->as<FieldAccess>();
                 this->writeCommand(Rehydrator::kFieldAccess_Command);
@@ -348,7 +395,6 @@ void Dehydrator::write(const Expression* e) {
                 const Setting& s = e->as<Setting>();
                 this->writeCommand(Rehydrator::kSetting_Command);
                 this->write(s.name());
-                this->write(s.type());
                 break;
             }
             case Expression::Kind::kSwizzle: {
@@ -464,12 +510,10 @@ void Dehydrator::write(const Statement* s) {
                 AutoDehydratorSymbolTable symbols(this, ss.symbols());
                 this->write(ss.value().get());
                 this->writeU8(ss.cases().size());
-                for (const std::unique_ptr<SwitchCase>& sc : ss.cases()) {
-                    this->write(sc->value().get());
-                    this->writeU8(sc->statements().size());
-                    for (const std::unique_ptr<Statement>& stmt : sc->statements()) {
-                        this->write(stmt.get());
-                    }
+                for (const std::unique_ptr<Statement>& stmt : ss.cases()) {
+                    const SwitchCase& sc = stmt->as<SwitchCase>();
+                    this->write(sc.value().get());
+                    this->write(sc.statement().get());
                 }
                 break;
             }
@@ -499,8 +543,7 @@ void Dehydrator::write(const ProgramElement& e) {
             this->write(en.typeName());
             AutoDehydratorSymbolTable symbols(this, en.symbols());
             for (const std::unique_ptr<const Symbol>& s : en.symbols()->fOwnedSymbols) {
-                SkASSERT(s->kind() == Symbol::Kind::kVariable);
-                Variable& v = (Variable&) *s;
+                const Variable& v = s->as<Variable>();
                 SkASSERT(v.initialValue());
                 const IntLiteral& i = v.initialValue()->as<IntLiteral>();
                 this->writeS32(i.value());

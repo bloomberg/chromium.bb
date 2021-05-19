@@ -23,7 +23,7 @@ void FakeLocalFrame::Init(blink::AssociatedInterfaceProvider* provider) {
 void FakeLocalFrame::GetTextSurroundingSelection(
     uint32_t max_length,
     GetTextSurroundingSelectionCallback callback) {
-  std::move(callback).Run(base::string16(), 0, 0);
+  std::move(callback).Run(std::u16string(), 0, 0);
 }
 
 void FakeLocalFrame::SendInterventionReport(const std::string& id,
@@ -98,8 +98,8 @@ void FakeLocalFrame::OnScreensChange() {}
 
 void FakeLocalFrame::PostMessageEvent(
     const base::Optional<blink::RemoteFrameToken>& source_frame_token,
-    const base::string16& source_origin,
-    const base::string16& target_origin,
+    const std::u16string& source_origin,
+    const std::u16string& target_origin,
     blink::TransferableMessage message) {}
 
 void FakeLocalFrame::GetSavableResourceLinks(
@@ -128,6 +128,16 @@ void FakeLocalFrame::MixedContentFound(
     const GURL& url_before_redirects,
     bool had_redirect,
     network::mojom::SourceLocationPtr source_location) {}
+
+void FakeLocalFrame::ActivateForPrerendering() {}
+
+#if defined(OS_ANDROID)
+void FakeLocalFrame::ExtractSmartClipData(
+    const gfx::Rect& rect,
+    ExtractSmartClipDataCallback callback) {
+  std::move(callback).Run(std::u16string(), std::u16string(), gfx::Rect());
+}
+#endif
 
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

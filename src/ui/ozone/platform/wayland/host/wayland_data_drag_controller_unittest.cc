@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -164,7 +163,7 @@ class WaylandDataDragControllerTest : public WaylandDragDropTest {
 
   WaylandWindow* window() { return window_.get(); }
 
-  base::string16 sample_text_for_dnd() const {
+  std::u16string sample_text_for_dnd() const {
     static auto text = base::ASCIIToUTF16(kSampleTextForDragAndDrop);
     return text;
   }
@@ -204,7 +203,10 @@ class WaylandDataDragControllerTest : public WaylandDragDropTest {
           // drag sessions end up with no data transfer (cancelled). Otherwise,
           // it might lead to issues like https://crbug.com/1109324.
           EXPECT_CALL(*self->drop_handler(), OnDragLeave).Times(1);
-          EXPECT_CALL(*self->drag_handler(), OnDragFinished).Times(1);
+          // If DnD was cancelled, or data was dropped where it was not
+          // accepted, the operation result must be None (0).
+          // Regression test for https://crbug.com/1136751.
+          EXPECT_CALL(*self->drag_handler(), OnDragFinished(0)).Times(1);
 
           self->Sync();
         },
@@ -478,7 +480,7 @@ TEST_P(WaylandDataDragControllerTest, ValidateDroppedXMozUrl) {
     } else {
       EXPECT_TRUE(dropped_data->HasURL(kFilenameToURLPolicy));
       GURL url;
-      base::string16 title;
+      std::u16string title;
       EXPECT_TRUE(
           dropped_data->GetURLAndTitle(kFilenameToURLPolicy, &url, &title));
       EXPECT_EQ(url.spec(), kCase.expected_url);

@@ -14,10 +14,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_tick_clock.h"
-#include "chrome/browser/chromeos/login/configuration_keys.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/wizard_context.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ash/login/configuration_keys.h"
+#include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/login/wizard_context.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -74,8 +74,6 @@ std::string HIDDetectionScreen::GetResultString(Result result) {
   switch (result) {
     case Result::NEXT:
       return "Next";
-    case Result::START_DEMO:
-      return "StartDemo";
     case Result::SKIP:
     case Result::SKIPPED_FOR_TESTS:
       return BaseScreen::kNotApplicable;
@@ -125,11 +123,6 @@ void HIDDetectionScreen::OnContinueButtonClicked() {
 
   CleanupOnExit();
   Exit(Result::NEXT);
-}
-
-void HIDDetectionScreen::OnShouldStartDemoMode() {
-  CleanupOnExit();
-  Exit(Result::START_DEMO);
 }
 
 void HIDDetectionScreen::CleanupOnExit() {
@@ -492,6 +485,10 @@ void HIDDetectionScreen::InputDeviceAdded(InputDeviceInfoPtr info) {
     SetKeyboardDeviceName(info_ref->name);
     SendKeyboardDeviceNotification();
   }
+}
+
+void HIDDetectionScreen::InputDeviceAddedForTesting(InputDeviceInfoPtr info) {
+  InputDeviceAdded(std::move(info));
 }
 
 void HIDDetectionScreen::InputDeviceRemoved(const std::string& id) {

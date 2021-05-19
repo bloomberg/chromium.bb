@@ -16,6 +16,7 @@
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
 #include "chrome/browser/nearby_sharing/text_attachment.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/nearby_share/shared_resources.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -71,6 +72,8 @@ NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
       "nearbyShareContactVisibilityNumUnreachable",
       IDS_NEARBY_CONTACT_VISIBILITY_NUM_UNREACHABLE);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
+  // Add the metrics handler to write uma stats.
+  web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
   content::WebUIDataSource::Add(profile, html_source);
 
@@ -79,15 +82,6 @@ NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
 }
 
 NearbyShareDialogUI::~NearbyShareDialogUI() = default;
-
-void NearbyShareDialogUI::AddObserver(NearbyShareDialogUI::Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void NearbyShareDialogUI::RemoveObserver(
-    NearbyShareDialogUI::Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
 
 void NearbyShareDialogUI::SetAttachments(
     std::vector<std::unique_ptr<Attachment>> attachments) {
@@ -119,8 +113,12 @@ void NearbyShareDialogUI::BindInterface(
 }
 
 void NearbyShareDialogUI::HandleClose(const base::ListValue* args) {
-  for (auto& observer : observers_) {
-    observer.OnClose();
+  if (sharesheet_controller_) {
+    sharesheet_controller_->CloseSharesheet();
+
+    // We need to clear out the controller here to protect against calling
+    // CloseShareSheet() more than once, which will cause a crash.
+    sharesheet_controller_ = nullptr;
   }
 }
 

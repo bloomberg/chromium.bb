@@ -7,8 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/chromeos_buildflags.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
@@ -18,8 +21,9 @@
 #endif
 
 namespace ui {
-
 namespace {
+
+using mojom::CursorType;
 
 class NullProxy : public DrmCursorProxy {
  public:
@@ -29,7 +33,7 @@ class NullProxy : public DrmCursorProxy {
   void CursorSet(gfx::AcceleratedWidget window,
                  const std::vector<SkBitmap>& bitmaps,
                  const gfx::Point& point,
-                 int frame_delay_ms) override {}
+                 base::TimeDelta frame_delay) override {}
   void Move(gfx::AcceleratedWidget window, const gfx::Point& point) override {}
   void InitializeOnEvdevIfNecessary() override {}
 
@@ -75,6 +79,7 @@ void DrmCursor::SetCursor(gfx::AcceleratedWidget window,
   TRACE_EVENT0("drmcursor", "DrmCursor::SetCursor");
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(window, gfx::kNullAcceleratedWidget);
+  DCHECK(platform_cursor);
 
   scoped_refptr<BitmapCursorOzone> bitmap =
       BitmapCursorFactoryOzone::GetBitmapCursor(platform_cursor);
@@ -206,7 +211,7 @@ void DrmCursor::MoveCursor(const gfx::Vector2dF& delta) {
 
 bool DrmCursor::IsCursorVisible() {
   base::AutoLock lock(lock_);
-  return static_cast<bool>(bitmap_);
+  return bitmap_ != nullptr && bitmap_->type() != CursorType::kNone;
 }
 
 gfx::PointF DrmCursor::GetLocation() {
@@ -239,21 +244,24 @@ void DrmCursor::SetCursorLocationLocked(const gfx::PointF& location) {
 }
 
 void DrmCursor::SendCursorShowLocked() {
-  if (!bitmap_) {
+  if (!bitmap_ || bitmap_->type() == CursorType::kNone) {
     SendCursorHideLocked();
     return;
   }
+
   CursorSetLockTested(window_, bitmap_->bitmaps(), GetBitmapLocationLocked(),
-                      bitmap_->frame_delay_ms());
+                      bitmap_->frame_delay());
 }
 
 void DrmCursor::SendCursorHideLocked() {
-  CursorSetLockTested(window_, std::vector<SkBitmap>(), gfx::Point(), 0);
+  CursorSetLockTested(window_, std::vector<SkBitmap>(), gfx::Point(),
+                      base::TimeDelta());
 }
 
 void DrmCursor::SendCursorMoveLocked() {
-  if (!bitmap_)
+  if (!bitmap_ || bitmap_->type() == CursorType::kNone)
     return;
+
   MoveLockTested(window_, GetBitmapLocationLocked());
 }
 
@@ -261,9 +269,9 @@ void DrmCursor::SendCursorMoveLocked() {
 void DrmCursor::CursorSetLockTested(gfx::AcceleratedWidget window,
                                     const std::vector<SkBitmap>& bitmaps,
                                     const gfx::Point& point,
-                                    int frame_delay_ms) {
+                                    base::TimeDelta frame_delay) {
   lock_.AssertAcquired();
-  proxy_->CursorSet(window, bitmaps, point, frame_delay_ms);
+  proxy_->CursorSet(window, bitmaps, point, frame_delay);
 }
 
 void DrmCursor::MoveLockTested(gfx::AcceleratedWidget window,

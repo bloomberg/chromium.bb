@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
-#include "components/content_capture/browser/content_capture_receiver_manager.h"
+#include "components/content_capture/browser/onscreen_content_provider.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -20,10 +20,10 @@ namespace content_capture {
 
 namespace {
 
-ContentCaptureReceiverManager* GetContentCaptureReceiverManager(
+OnscreenContentProvider* GetOnscreenContentProvider(
     content::RenderFrameHost* rfh) {
   if (auto* web_contents = content::WebContents::FromRenderFrameHost(rfh))
-    return ContentCaptureReceiverManager::FromWebContents(web_contents);
+    return OnscreenContentProvider::FromWebContents(web_contents);
   return nullptr;
 }
 
@@ -32,9 +32,7 @@ ContentCaptureReceiverManager* GetContentCaptureReceiverManager(
 ContentCaptureReceiver::ContentCaptureReceiver(content::RenderFrameHost* rfh)
     : rfh_(rfh), id_(GetIdFrom(rfh)) {}
 
-ContentCaptureReceiver::~ContentCaptureReceiver() {
-  RemoveSession();
-}
+ContentCaptureReceiver::~ContentCaptureReceiver() = default;
 
 int64_t ContentCaptureReceiver::GetIdFrom(content::RenderFrameHost* rfh) {
   return static_cast<int64_t>(rfh->GetProcess()->GetID()) << 32 |
@@ -50,8 +48,8 @@ void ContentCaptureReceiver::BindPendingReceiver(
 void ContentCaptureReceiver::DidCaptureContent(const ContentCaptureData& data,
                                                bool first_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* manager = GetContentCaptureReceiverManager(rfh_);
-  if (!manager)
+  auto* provider = GetOnscreenContentProvider(rfh_);
+  if (!provider)
     return;
 
   if (first_data) {
@@ -75,28 +73,28 @@ void ContentCaptureReceiver::DidCaptureContent(const ContentCaptureData& data,
   // be reset once activity is resumed, URL is needed to rebuild session.
   ContentCaptureFrame frame(frame_content_capture_data_);
   frame.children = data.children;
-  manager->DidCaptureContent(this, frame);
+  provider->DidCaptureContent(this, frame);
 }
 
 void ContentCaptureReceiver::DidUpdateContent(const ContentCaptureData& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* manager = GetContentCaptureReceiverManager(rfh_);
-  if (!manager)
+  auto* provider = GetOnscreenContentProvider(rfh_);
+  if (!provider)
     return;
 
   // We can't avoid copy the data here because frame needs to be replaced.
   ContentCaptureFrame frame(frame_content_capture_data_);
   frame.children = data.children;
-  manager->DidUpdateContent(this, frame);
+  provider->DidUpdateContent(this, frame);
 }
 
 void ContentCaptureReceiver::DidRemoveContent(
     const std::vector<int64_t>& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* manager = GetContentCaptureReceiverManager(rfh_);
-  if (!manager)
+  auto* provider = GetOnscreenContentProvider(rfh_);
+  if (!provider)
     return;
-  manager->DidRemoveContent(this, data);
+  provider->DidRemoveContent(this, data);
 }
 
 void ContentCaptureReceiver::StartCapture() {
@@ -128,8 +126,8 @@ void ContentCaptureReceiver::RemoveSession() {
 
   // TODO(crbug.com/995952): Find a way to notify of session being removed if
   // rfh isn't available.
-  if (auto* manager = GetContentCaptureReceiverManager(rfh_)) {
-    manager->DidRemoveSession(this);
+  if (auto* provider = GetOnscreenContentProvider(rfh_)) {
+    provider->DidRemoveSession(this);
     has_session_ = false;
     // We can reset the frame_content_capture_data_ here, because it could be
     // used by GetFrameContentCaptureDataLastSeen(), has_session_ is used to
@@ -145,7 +143,7 @@ void ContentCaptureReceiver::RemoveSession() {
   exponential_delay_ = 1;
 }
 
-void ContentCaptureReceiver::SetTitle(const base::string16& title) {
+void ContentCaptureReceiver::SetTitle(const std::u16string& title) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   frame_content_capture_data_.title = title;
   if (!has_session_)
@@ -173,8 +171,8 @@ void ContentCaptureReceiver::SetTitle(const base::string16& title) {
 void ContentCaptureReceiver::NotifyTitleUpdate() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (auto* manager = GetContentCaptureReceiverManager(rfh_))
-    manager->DidUpdateTitle(this);
+  if (auto* provider = GetOnscreenContentProvider(rfh_))
+    provider->DidUpdateTitle(this);
 
   // Reset the task after running.
   notify_title_update_callback_ = nullptr;
@@ -192,7 +190,7 @@ ContentCaptureReceiver::GetContentCaptureSender() {
 
 const ContentCaptureFrame& ContentCaptureReceiver::GetContentCaptureFrame() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::string16 url = base::UTF8ToUTF16(rfh_->GetLastCommittedURL().spec());
+  std::u16string url = base::UTF8ToUTF16(rfh_->GetLastCommittedURL().spec());
   if (url == frame_content_capture_data_.url && has_session_)
     return frame_content_capture_data_;
 

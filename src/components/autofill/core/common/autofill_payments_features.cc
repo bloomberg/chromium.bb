@@ -4,10 +4,11 @@
 
 #include "components/autofill/core/common/autofill_payments_features.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -53,7 +54,7 @@ const base::Feature kAutofillCreditCardUploadFeedback{
 // When enabled, shows the Google Pay logo on CVC prompt on Android.
 const base::Feature kAutofillDownstreamCvcPromptUseGooglePayLogo{
     "AutofillDownstreamCvcPromptUseGooglePayLogo",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether we show a Google-issued card in the suggestions list.
 const base::Feature kAutofillEnableGoogleIssuedCard{
@@ -64,6 +65,12 @@ const base::Feature kAutofillEnableGoogleIssuedCard{
 const base::Feature kAutofillEnableOfferNotification{
     "AutofillEnableOfferNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to track the cross-tab-status of the offer notification
+// bubble.
+const base::Feature kAutofillEnableOfferNotificationCrossTabTracking{
+    "AutofillEnableOfferNotificationCrossTabTracking",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, offers will be displayed in the Clank keyboard accessory during
 // downstream.
 const base::Feature kAutofillEnableOffersInClankKeyboardAccessory{
@@ -73,7 +80,7 @@ const base::Feature kAutofillEnableOffersInClankKeyboardAccessory{
 // When enabled, offer data will be retrieved during downstream and shown in
 // the dropdown list.
 const base::Feature kAutofillEnableOffersInDownstream{
-    "kAutofillEnableOffersInDownstream", base::FEATURE_DISABLED_BY_DEFAULT};
+    "kAutofillEnableOffersInDownstream", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled and user is signed in, a footer indicating user's e-mail address
 // and profile picture will appear at the bottom of SaveCardInfoBar.
@@ -91,6 +98,15 @@ const base::Feature kAutofillEnableToolbarStatusChip{
 const base::Feature kAutofillEnableVirtualCard{
     "AutofillEnableVirtualCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable the fix for the offer feature in Incognito mode.
+const base::Feature kAutofillFixOfferInIncognito{
+    "AutofillFixOfferInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, Autofill will attempt to find merchant promo/coupon/gift code
+// fields when parsing forms.
+const base::Feature kAutofillParseMerchantPromoCodeFields{
+    "AutofillParseMerchantPromoCodeFields", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, the Save Card infobar will be dismissed by a user initiated
 // navigation other than one caused by submitted form.
 const base::Feature kAutofillSaveCardDismissOnNavigation{
@@ -103,6 +119,12 @@ const base::Feature kAutofillSaveCardInfobarEditSupport{
 // When enabled, suggestions with offers will be shown at the top.
 const base::Feature kAutofillSortSuggestionsBasedOnOfferPresence{
     "AutofillSortSuggestionsBasedOnOfferPresence",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When enabled, if the Autofill Assistant is running, credit card save (both
+// local and upload) will not be offered.
+const base::Feature kAutofillSuppressCreditCardSaveForAssistant{
+    "AutofillSuppressCreditCardSaveForAssistant",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls offering credit card upload to Google Payments. Cannot ever be

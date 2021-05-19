@@ -12,22 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/stride_decoration.h"
-#include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
-#include "src/type/alias_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/pointer_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/sampler_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
 
 namespace tint {
 namespace reader {
@@ -358,7 +344,7 @@ TEST_F(ParserImplTest, TypeDecl_Array) {
   ASSERT_FALSE(a->IsRuntimeArray());
   ASSERT_EQ(a->size(), 5u);
   ASSERT_TRUE(a->type()->Is<type::F32>());
-  ASSERT_FALSE(a->has_array_stride());
+  EXPECT_EQ(a->decorations().size(), 0u);
 }
 
 TEST_F(ParserImplTest, TypeDecl_Array_Stride) {
@@ -374,8 +360,11 @@ TEST_F(ParserImplTest, TypeDecl_Array_Stride) {
   ASSERT_FALSE(a->IsRuntimeArray());
   ASSERT_EQ(a->size(), 5u);
   ASSERT_TRUE(a->type()->Is<type::F32>());
-  ASSERT_TRUE(a->has_array_stride());
-  EXPECT_EQ(a->array_stride(), 16u);
+
+  ASSERT_EQ(a->decorations().size(), 1u);
+  auto* stride = a->decorations()[0];
+  ASSERT_TRUE(stride->Is<ast::StrideDecoration>());
+  ASSERT_EQ(stride->As<ast::StrideDecoration>()->stride(), 16u);
 }
 
 TEST_F(ParserImplTest, TypeDecl_Array_Runtime_Stride) {
@@ -390,8 +379,11 @@ TEST_F(ParserImplTest, TypeDecl_Array_Runtime_Stride) {
   auto* a = t->As<type::Array>();
   ASSERT_TRUE(a->IsRuntimeArray());
   ASSERT_TRUE(a->type()->Is<type::F32>());
-  ASSERT_TRUE(a->has_array_stride());
-  EXPECT_EQ(a->array_stride(), 16u);
+
+  ASSERT_EQ(a->decorations().size(), 1u);
+  auto* stride = a->decorations()[0];
+  ASSERT_TRUE(stride->Is<ast::StrideDecoration>());
+  ASSERT_EQ(stride->As<ast::StrideDecoration>()->stride(), 16u);
 }
 
 TEST_F(ParserImplTest, TypeDecl_Array_MultipleDecorations_OneBlock) {

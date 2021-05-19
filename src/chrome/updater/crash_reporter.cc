@@ -6,15 +6,16 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/updater/constants.h"
@@ -60,8 +61,8 @@ void StartCrashReporter(const std::string& version) {
   base::FilePath handler_path;
   base::PathService::Get(base::FILE_EXE, &handler_path);
 
-  base::FilePath database_path;
-  if (!GetVersionedDirectory(&database_path)) {
+  base::Optional<base::FilePath> database_path = GetVersionedDirectory();
+  if (!database_path) {
     LOG(DFATAL) << "Failed to get the database path.";
     return;
   }
@@ -75,7 +76,7 @@ void StartCrashReporter(const std::string& version) {
 
   // TODO(crbug.com/1163583): use the production front end instead of staging.
   crashpad::CrashpadClient* client = GetCrashpadClient();
-  if (!client->StartHandler(handler_path, database_path,
+  if (!client->StartHandler(handler_path, *database_path,
                             /*metrics_dir=*/base::FilePath(),
                             CRASH_STAGING_UPLOAD_URL, annotations, arguments,
                             /*restartable=*/true,

@@ -11,10 +11,10 @@
 
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
-#include "chrome/browser/web_applications/components/system_web_app_types.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -167,6 +167,10 @@ struct ExternalInstallOptions {
 
   // The type of SystemWebApp, if this app is a System Web App.
   base::Optional<SystemAppType> system_app_type = base::nullopt;
+
+  // Whether the app was installed by an OEM and should be placed in a special
+  // OEM folder in the app launcher. Only used on Chrome OS.
+  bool oem_installed = false;
 };
 
 std::ostream& operator<<(std::ostream& out,

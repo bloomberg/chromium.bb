@@ -35,6 +35,7 @@ class PageLoadMetricsTestWaiter
     kFirstPaintAfterBackForwardCacheRestore = 1 << 9,
     kFirstInputDelayAfterBackForwardCacheRestore = 1 << 10,
     kLayoutShift = 1 << 11,
+    kRequestAnimationFrameAfterBackForwardCacheRestore = 1 << 12,
   };
   using FrameTreeNodeId =
       page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
@@ -58,9 +59,10 @@ class PageLoadMetricsTestWaiter
   // of |rect|. Subsequent calls overwrite unmet expectations.
   void AddMainFrameIntersectionExpectation(const gfx::Rect& rect);
 
-  // Adds a main frame intersection expectation for any main frame
-  // intersection update for the page load.
-  void AddMainFrameIntersectionExpectation();
+  // Indicates that we expect at least one main frame intersection update, with
+  // any rect allowed.
+  // TODO(skobes): Unify this API with AddMainFrameIntersectionExpectation.
+  void SetMainFrameIntersectionExpectation();
 
   // Add a single WebFeature expectation.
   void AddWebFeatureExpectation(blink::mojom::WebFeature web_feature);
@@ -81,7 +83,7 @@ class PageLoadMetricsTestWaiter
   // Add aggregate time spent in cpu for page expectation.
   void AddMinimumAggregateCpuTimeExpectation(base::TimeDelta minimum);
 
-  // Inserts `routing_id` into `expected_memory_update_frame_ids_`, the set of
+  // Inserts `routing_id` into `expected_.memory_update_frame_ids_`, the set of
   // frame routing IDs expected to receive a memory measurement update.
   void AddMemoryUpdateExpectation(int routing_id);
 
@@ -93,6 +95,7 @@ class PageLoadMetricsTestWaiter
 
   // Waits for PageLoadMetrics events that match the fields set by the add
   // expectation methods. All matching fields must be set to end this wait.
+  // All expectations are reset when the wait ends.
   void Wait();
 
   int64_t current_network_bytes() const { return current_network_bytes_; }
@@ -108,6 +111,9 @@ class PageLoadMetricsTestWaiter
   // conditions.
   virtual void HandleResourceUpdate(
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {}
+
+  // Resets all expectations.
+  virtual void ResetExpectations();
 
  private:
   // PageLoadMetricsObserver used by the PageLoadMetricsTestWaiter to observe
@@ -186,6 +192,11 @@ class PageLoadMetricsTestWaiter
       bitmask_ &= ~other.bitmask_;
     }
 
+    // Returns whether all the bits in this bitset are set in |other|.
+    bool AreAllSetIn(const TimingFieldBitSet& other) const {
+      return !((bitmask_ & other.bitmask_) ^ bitmask_);
+    }
+
    private:
     int bitmask_ = 0;
   };
@@ -224,7 +235,7 @@ class PageLoadMetricsTestWaiter
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources);
 
-  // Updates |observed_web_features_| to record any new feature observed.
+  // Updates |observed_.web_features_| to record any new feature observed.
   // Stops waiting if expectations are satisfied after update.
   void OnFeaturesUsageObserved(content::RenderFrameHost* rfh,
                                const mojom::PageLoadFeatures& features);
@@ -250,40 +261,42 @@ class PageLoadMetricsTestWaiter
   void OnRestoredFromBackForwardCache(
       page_load_metrics::PageLoadTracker* tracker) override;
 
+  // These methods check whether expectations are satisfied for specific fields
+  // inside the State object, by comparing them in expected_ and observed_.
   bool CpuTimeExpectationsSatisfied() const;
-
   bool ResourceUseExpectationsSatisfied() const;
-
   bool WebFeaturesExpectationsSatisfied() const;
-
   bool SubframeNavigationExpectationsSatisfied() const;
-
   bool SubframeDataExpectationsSatisfied() const;
-
+  bool MainFrameIntersectionExpectationsSatisfied() const;
   bool MemoryUpdateExpectationsSatisfied() const;
 
   void AddObserver(page_load_metrics::PageLoadTracker* tracker);
 
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  TimingFieldBitSet page_expected_fields_;
-  TimingFieldBitSet subframe_expected_fields_;
-  std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
-      expected_web_features_;
-  size_t expected_subframe_navigation_ = false;
-  bool expected_subframe_data_ = false;
+  // Holds information about events that can be expected or observed. Each call
+  // to Wait() compares expected_ to observed_, and resets both.
+  struct State {
+    State();
+    ~State();
+
+    TimingFieldBitSet page_fields_;
+    TimingFieldBitSet subframe_fields_;
+    std::bitset<static_cast<size_t>(
+        blink::mojom::WebFeature::kNumberOfFeatures)>
+        web_features_;
+    bool subframe_navigation_ = false;
+    bool subframe_data_ = false;
+    std::set<gfx::Size, FrameSizeComparator> frame_sizes_;
+    bool did_set_main_frame_intersection_ = false;
+    std::vector<gfx::Rect> main_frame_intersections_;
+    std::unordered_set<int> memory_update_frame_ids_;
+  };
+  State expected_;
+  State observed_;
 
   TimingFieldBitSet observed_page_fields_;
-  std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
-      observed_web_features_;
-
-  std::set<gfx::Size, FrameSizeComparator> expected_frame_sizes_;
-  std::set<gfx::Size, FrameSizeComparator> observed_frame_sizes_;
-
-  // Expectation for the main frame intersection. Has a value when
-  // an expectation has not been met.
-  base::Optional<gfx::Rect> expected_main_frame_intersection_;
-  bool expected_main_frame_intersection_update_ = false;
 
   int current_complete_resources_ = 0;
   int64_t current_network_bytes_ = 0;
@@ -301,9 +314,6 @@ class PageLoadMetricsTestWaiter
   bool did_add_observer_ = false;
 
   double last_main_frame_layout_shift_score_ = 0;
-
-  // Frame routing IDs of expected memory updates.
-  std::unordered_set<int> expected_memory_update_frame_ids_;
 
   base::WeakPtrFactory<PageLoadMetricsTestWaiter> weak_factory_{this};
 };

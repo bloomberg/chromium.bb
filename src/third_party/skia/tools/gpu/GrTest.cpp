@@ -25,7 +25,6 @@
 #include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/SkGr.h"
-#include "src/gpu/ccpr/GrCCPathCache.h"
 #include "src/gpu/ccpr/GrCoverageCountingPathRenderer.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/text/GrStrikeCache.h"
@@ -49,64 +48,6 @@ int GrResourceCache::countUniqueKeysWithTag(const char* tag) const {
     return count;
 }
 #endif
-
-//////////////////////////////////////////////////////////////////////////////
-
-void GrCoverageCountingPathRenderer::testingOnly_drawPathDirectly(const DrawPathArgs& args) {
-    // Call onDrawPath() directly: We want to test paths that might fail onCanDrawPath() simply for
-    // performance reasons, and GrPathRenderer::drawPath() assert that this call returns true.
-    // The test is responsible to not draw any paths that CCPR is not actually capable of.
-    this->onDrawPath(args);
-}
-
-const GrCCPerFlushResources*
-GrCoverageCountingPathRenderer::testingOnly_getCurrentFlushResources() {
-    SkASSERT(fFlushing);
-    if (fFlushingPaths.empty()) {
-        return nullptr;
-    }
-    // All pending paths should share the same resources.
-    const GrCCPerFlushResources* resources = fFlushingPaths.front()->fFlushResources.get();
-#ifdef SK_DEBUG
-    for (const auto& flushingPaths : fFlushingPaths) {
-        SkASSERT(flushingPaths->fFlushResources.get() == resources);
-    }
-#endif
-    return resources;
-}
-
-const GrCCPathCache* GrCoverageCountingPathRenderer::testingOnly_getPathCache() const {
-    return fPathCache.get();
-}
-
-const GrTexture* GrCCPerFlushResources::testingOnly_frontCopyAtlasTexture() const {
-    if (fCopyAtlasStack.empty()) {
-        return nullptr;
-    }
-    const GrTextureProxy* proxy = fCopyAtlasStack.front().textureProxy();
-    return (proxy) ? proxy->peekTexture() : nullptr;
-}
-
-const GrTexture* GrCCPerFlushResources::testingOnly_frontRenderedAtlasTexture() const {
-    if (fRenderedAtlasStack.empty()) {
-        return nullptr;
-    }
-    const GrTextureProxy* proxy = fRenderedAtlasStack.front().textureProxy();
-    return (proxy) ? proxy->peekTexture() : nullptr;
-}
-
-const SkTHashTable<GrCCPathCache::HashNode, const GrCCPathCache::Key&>&
-GrCCPathCache::testingOnly_getHashTable() const {
-    return fHashTable;
-}
-
-const SkTInternalLList<GrCCPathCacheEntry>& GrCCPathCache::testingOnly_getLRU() const {
-    return fLRU;
-}
-
-int GrCCPathCacheEntry::testingOnly_peekOnFlushRefCnt() const { return fOnFlushRefCnt; }
-
-int GrCCCachedAtlas::testingOnly_peekOnFlushRefCnt() const { return fOnFlushRefCnt; }
 
 //////////////////////////////////////////////////////////////////////////////
 

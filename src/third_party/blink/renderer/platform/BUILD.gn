@@ -102,7 +102,7 @@ executable("character_data_generator") {
   ]
   configs += [ "//third_party/blink/renderer:config" ]
   deps = [
-    # Default manifest on Windows (a no-op elsewhere).
+    # Default manifest on Windows(a no-op elsewhere).
     "//base",
     "//build/win:default_exe_manifest",
     "//third_party/icu",
@@ -166,6 +166,7 @@ group("blink_platform_public_deps") {
     "//third_party:jpeg",
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public/common",
+    "//third_party/blink/public/common:buildflags",
     "//third_party/blink/public/common:font_enumeration_table_proto",
     "//third_party/blink/public/mojom:mojom_platform_blink",
     "//third_party/blink/public/mojom:web_bluetooth_mojo_bindings_blink",
@@ -233,7 +234,7 @@ config("blink_platform_pch") {
 
       # Force include the header.
       cflags = [ "/FI$precompiled_header" ]
-    } else if (is_mac) {
+    } else if (is_mac || is_linux) {
       precompiled_source =
           "//third_party/blink/renderer/platform/precompile_platform.h"
     }
@@ -433,6 +434,10 @@ component("platform") {
     "bindings/microtask.cc",
     "bindings/microtask.h",
     "bindings/name_client.h",
+    "bindings/no_alloc_direct_call_exception_state.cc",
+    "bindings/no_alloc_direct_call_exception_state.h",
+    "bindings/no_alloc_direct_call_host.cc",
+    "bindings/no_alloc_direct_call_host.h",
     "bindings/origin_trial_features.cc",
     "bindings/origin_trial_features.h",
     "bindings/parkable_string.cc",
@@ -878,6 +883,7 @@ component("platform") {
     "graphics/decoding_image_generator.h",
     "graphics/deferred_image_decoder.cc",
     "graphics/deferred_image_decoder.h",
+    "graphics/document_transition_shared_element_id.h",
     "graphics/dom_node_id.h",
     "graphics/draw_looper_builder.cc",
     "graphics/draw_looper_builder.h",
@@ -1250,8 +1256,6 @@ component("platform") {
     "mojo/bluetooth_mojom_traits.h",
     "mojo/drag_mojom_traits.cc",
     "mojo/drag_mojom_traits.h",
-    "mojo/features.cc",
-    "mojo/features.h",
     "mojo/fetch_api_request_headers_mojom_traits.h",
     "mojo/heap_mojo_associated_receiver.h",
     "mojo/heap_mojo_associated_receiver_set.h",
@@ -1341,8 +1345,6 @@ component("platform") {
     "peerconnection/rtc_video_encoder_factory.cc",
     "peerconnection/rtc_video_encoder_factory.h",
     "peerconnection/rtc_void_request.h",
-    "peerconnection/stun_field_trial.cc",
-    "peerconnection/stun_field_trial.h",
     "peerconnection/transmission_encoding_info_handler.cc",
     "peerconnection/transmission_encoding_info_handler.h",
     "peerconnection/two_keys_adapter_map.h",
@@ -1450,8 +1452,6 @@ component("platform") {
     "transforms/transformation_matrix.h",
     "transforms/translate_transform_operation.cc",
     "transforms/translate_transform_operation.h",
-    "video_capture/local_video_capturer_source.cc",
-    "video_capture/local_video_capturer_source.h",
     "video_capture/video_capture_impl.cc",
     "video_capture/video_capture_impl.h",
     "web_test_support.cc",
@@ -1472,6 +1472,10 @@ component("platform") {
     "weborigin/security_origin_hash.h",
     "weborigin/security_policy.cc",
     "weborigin/security_policy.h",
+    "webrtc/convert_to_webrtc_video_frame_buffer.cc",
+    "webrtc/convert_to_webrtc_video_frame_buffer.h",
+    "webrtc/legacy_webrtc_video_frame_adapter.cc",
+    "webrtc/legacy_webrtc_video_frame_adapter.h",
     "webrtc/peer_connection_remote_audio_source.cc",
     "webrtc/peer_connection_remote_audio_source.h",
     "webrtc/track_observer.cc",
@@ -1775,6 +1779,15 @@ component("platform") {
     deps += [ "//third_party/libavif" ]
   }
 
+  if (enable_jxl_decoder) {
+    sources += [
+      "image-decoders/jxl/jxl_image_decoder.cc",
+      "image-decoders/jxl/jxl_image_decoder.h",
+    ]
+
+    deps += [ "//third_party/libjxl:libjxl" ]
+  }
+
   if (current_cpu == "x86" || current_cpu == "x64") {
     deps += [ ":blink_x86_avx" ]
     sources += [ "audio/cpu/x86/audio_delay_dsp_kernel_sse2.cc" ]
@@ -1873,6 +1886,7 @@ static_library("test_support") {
     "testing/weburl_loader_mock.h",
     "testing/weburl_loader_mock_factory_impl.cc",
     "testing/weburl_loader_mock_factory_impl.h",
+    "webrtc/testing/mock_webrtc_video_frame_adapter_shared_resources.h",
   ]
 
   # fuzzed_data_provider may not work with a custom toolchain.
@@ -2077,6 +2091,7 @@ source_set("blink_platform_unittests_sources") {
     "image-decoders/image_frame_test.cc",
     "image-decoders/jpeg/jpeg_image_decoder_test.cc",
     "image-decoders/png/png_image_decoder_test.cc",
+    "image-decoders/segment_reader_test.cc",
     "image-decoders/segment_stream_test.cc",
     "image-decoders/webp/webp_image_decoder_test.cc",
     "json/json_parser_test.cc",
@@ -2107,7 +2122,6 @@ source_set("blink_platform_unittests_sources") {
     "peerconnection/rtc_video_decoder_adapter_test.cc",
     "peerconnection/rtc_video_decoder_stream_adapter_test.cc",
     "peerconnection/rtc_video_encoder_test.cc",
-    "peerconnection/stun_field_trial_test.cc",
     "peerconnection/task_queue_factory_test.cc",
     "peerconnection/transmission_encoding_info_handler_test.cc",
     "peerconnection/two_keys_adapter_map_unittest.cc",
@@ -2146,6 +2160,8 @@ source_set("blink_platform_unittests_sources") {
     "weborigin/scheme_registry_test.cc",
     "weborigin/security_origin_test.cc",
     "weborigin/security_policy_test.cc",
+    "webrtc/convert_to_webrtc_video_frame_buffer_test.cc",
+    "webrtc/legacy_webrtc_video_frame_adapter_test.cc",
     "webrtc/webrtc_video_frame_adapter_test.cc",
     "widget/compositing/layer_tree_settings_unittest.cc",
     "widget/compositing/layer_tree_view_unittest.cc",
@@ -2182,6 +2198,10 @@ source_set("blink_platform_unittests_sources") {
 
   if (enable_av1_decoder) {
     sources += [ "image-decoders/avif/avif_image_decoder_test.cc" ]
+  }
+
+  if (enable_jxl_decoder) {
+    sources += [ "image-decoders/jxl/jxl_image_decoder_test.cc" ]
   }
 
   sources += [ "testing/run_all_tests.cc" ]
@@ -2222,6 +2242,7 @@ source_set("blink_platform_unittests_sources") {
     "//third_party/blink/renderer/platform/scheduler:unit_tests",
     "//third_party/blink/renderer/platform/wtf",
     "//third_party/libavif:libavif",
+    "//third_party/libjxl:libjxl",
     "//third_party/libyuv",
     "//third_party/webrtc/api/task_queue:task_queue_test",
     "//third_party/webrtc_overrides:webrtc_component",
@@ -2451,7 +2472,7 @@ fuzzer_test("blink_json_parser_fuzzer") {
   dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
 }
 
-# Fuzzer for blink::SecurityOrigin
+# Fuzzer for blink::SecurityOrigin.
 fuzzer_test("blink_security_origin_fuzzer") {
   sources = [ "weborigin/security_origin_fuzzer.cc" ]
   deps = [

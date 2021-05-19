@@ -19,28 +19,29 @@
 #include <utility>
 
 #include "src/ast/array_accessor_expression.h"
+#include "src/ast/assignment_statement.h"
 #include "src/ast/binary_expression.h"
 #include "src/ast/bool_literal.h"
 #include "src/ast/call_expression.h"
-#include "src/ast/expression.h"
+#include "src/ast/case_statement.h"
 #include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
+#include "src/ast/if_statement.h"
+#include "src/ast/loop_statement.h"
 #include "src/ast/member_accessor_expression.h"
 #include "src/ast/module.h"
+#include "src/ast/return_statement.h"
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
+#include "src/ast/stage_decoration.h"
 #include "src/ast/stride_decoration.h"
-#include "src/ast/struct.h"
-#include "src/ast/struct_member.h"
+#include "src/ast/struct_member_align_decoration.h"
 #include "src/ast/struct_member_offset_decoration.h"
+#include "src/ast/struct_member_size_decoration.h"
+#include "src/ast/switch_statement.h"
 #include "src/ast/type_constructor_expression.h"
 #include "src/ast/uint_literal.h"
-#include "src/ast/variable.h"
-#include "src/diagnostic/diagnostic.h"
+#include "src/ast/variable_decl_statement.h"
 #include "src/program.h"
-#include "src/semantic/info.h"
-#include "src/semantic/node.h"
-#include "src/symbol_table.h"
 #include "src/type/alias_type.h"
 #include "src/type/array_type.h"
 #include "src/type/bool_type.h"
@@ -49,7 +50,6 @@
 #include "src/type/matrix_type.h"
 #include "src/type/pointer_type.h"
 #include "src/type/struct_type.h"
-#include "src/type/type_manager.h"
 #include "src/type/u32_type.h"
 #include "src/type/vector_type.h"
 #include "src/type/void_type.h"
@@ -202,12 +202,11 @@ class ProgramBuilder {
     return diagnostics_;
   }
 
-  /// Controls whether the TypeDeterminer will be run on the program when it is
-  /// built.
+  /// Controls whether the Resolver will be run on the program when it is built.
   /// @param enable the new flag value (defaults to true)
   void SetResolveOnBuild(bool enable) { resolve_on_build_ = enable; }
 
-  /// @return true if the TypeDeterminer will be run on the program when it is
+  /// @return true if the Resolver will be run on the program when it is
   /// built.
   bool ResolveOnBuild() const { return resolve_on_build_; }
 
@@ -414,9 +413,8 @@ class ProgramBuilder {
     /// @param subtype the array element type
     /// @param n the array size. 0 represents a runtime-array.
     /// @return the tint AST type for a array of size `n` of type `T`
-    type::Array* array(type::Type* subtype, uint32_t n) const {
-      return builder->create<type::Array>(subtype, n,
-                                          ast::ArrayDecorationList{});
+    type::Array* array(type::Type* subtype, uint32_t n = 0) const {
+      return builder->create<type::Array>(subtype, n, ast::DecorationList{});
     }
 
     /// @param subtype the array element type
@@ -426,7 +424,7 @@ class ProgramBuilder {
     type::Array* array(type::Type* subtype, uint32_t n, uint32_t stride) const {
       return builder->create<type::Array>(
           subtype, n,
-          ast::ArrayDecorationList{
+          ast::DecorationList{
               builder->create<ast::StrideDecoration>(stride),
           });
     }
@@ -452,12 +450,20 @@ class ProgramBuilder {
                                           type);
     }
 
+    /// @return the tint AST pointer to `type` with the given ast::StorageClass
+    /// @param type the type of the pointer
+    /// @param storage_class the storage class of the pointer
+    type::Pointer* pointer(type::Type* type,
+                           ast::StorageClass storage_class) const {
+      return builder->create<type::Pointer>(type, storage_class);
+    }
+
     /// @return the tint AST pointer to type `T` with the given
     /// ast::StorageClass.
     /// @param storage_class the storage class of the pointer
     template <typename T>
     type::Pointer* pointer(ast::StorageClass storage_class) const {
-      return builder->create<type::Pointer>(Of<T>(), storage_class);
+      return pointer(Of<T>(), storage_class);
     }
 
     /// @param name the struct name
@@ -483,6 +489,14 @@ class ProgramBuilder {
   //////////////////////////////////////////////////////////////////////////////
   // AST helper methods
   //////////////////////////////////////////////////////////////////////////////
+
+  /// @param name the symbol string
+  /// @return a Symbol with the given name
+  Symbol Sym(const std::string& name) { return Symbols().Register(name); }
+
+  /// @param sym the symbol
+  /// @return `sym`
+  Symbol Sym(Symbol sym) { return sym; }
 
   /// @param expr the expression
   /// @return expr
@@ -622,6 +636,17 @@ class ProgramBuilder {
         type, ExprList(std::forward<ARGS>(args)...));
   }
 
+  /// Creates a constructor expression that constructs an object of
+  /// `type` filled with `elem_value`. For example,
+  /// ConstructValueFilledWith(ty.mat3x4<float>(), 5) returns a
+  /// TypeConstructorExpression for a Mat3x4 filled with 5.0f values.
+  /// @param type the type to construct
+  /// @param elem_value the initial or element value (for vec and mat) to
+  /// construct with
+  /// @return the constructor expression
+  ast::ConstructorExpression* ConstructValueFilledWith(type::Type* type,
+                                                       int elem_value = 0);
+
   /// @param args the arguments for the vector constructor
   /// @return an `ast::TypeConstructorExpression` of a 2-element vector of type
   /// `T`, constructed with the values `args`.
@@ -758,13 +783,14 @@ class ProgramBuilder {
   /// @param constructor constructor expression
   /// @param decorations variable decorations
   /// @returns a `ast::Variable` with the given name, storage and type
-  ast::Variable* Var(const std::string& name,
+  template <typename NAME>
+  ast::Variable* Var(NAME&& name,
                      type::Type* type,
                      ast::StorageClass storage,
                      ast::Expression* constructor = nullptr,
-                     ast::VariableDecorationList decorations = {}) {
-    return create<ast::Variable>(Symbols().Register(name), storage, type, false,
-                                 constructor, decorations);
+                     ast::DecorationList decorations = {}) {
+    return create<ast::Variable>(Sym(std::forward<NAME>(name)), storage, type,
+                                 false, constructor, decorations);
   }
 
   /// @param source the variable source
@@ -774,58 +800,28 @@ class ProgramBuilder {
   /// @param constructor constructor expression
   /// @param decorations variable decorations
   /// @returns a `ast::Variable` with the given name, storage and type
+  template <typename NAME>
   ast::Variable* Var(const Source& source,
-                     const std::string& name,
+                     NAME&& name,
                      type::Type* type,
                      ast::StorageClass storage,
                      ast::Expression* constructor = nullptr,
-                     ast::VariableDecorationList decorations = {}) {
-    return create<ast::Variable>(source, Symbols().Register(name), storage,
+                     ast::DecorationList decorations = {}) {
+    return create<ast::Variable>(source, Sym(std::forward<NAME>(name)), storage,
                                  type, false, constructor, decorations);
   }
 
-  /// @param symbol the variable symbol
-  /// @param type the variable type
-  /// @param storage the variable storage class
-  /// @param constructor constructor expression
-  /// @param decorations variable decorations
-  /// @returns a `ast::Variable` with the given symbol, storage and type
-  ast::Variable* Var(Symbol symbol,
-                     type::Type* type,
-                     ast::StorageClass storage,
-                     ast::Expression* constructor = nullptr,
-                     ast::VariableDecorationList decorations = {}) {
-    return create<ast::Variable>(symbol, storage, type, false, constructor,
-                                 decorations);
-  }
-
-  /// @param source the variable source
-  /// @param symbol the variable symbol
-  /// @param type the variable type
-  /// @param storage the variable storage class
-  /// @param constructor constructor expression
-  /// @param decorations variable decorations
-  /// @returns a `ast::Variable` with the given symbol, storage and type
-  ast::Variable* Var(const Source& source,
-                     Symbol symbol,
-                     type::Type* type,
-                     ast::StorageClass storage,
-                     ast::Expression* constructor = nullptr,
-                     ast::VariableDecorationList decorations = {}) {
-    return create<ast::Variable>(source, symbol, storage, type, false,
-                                 constructor, decorations);
-  }
-
   /// @param name the variable name
   /// @param type the variable type
   /// @param constructor optional constructor expression
   /// @param decorations optional variable decorations
   /// @returns a constant `ast::Variable` with the given name, storage and type
-  ast::Variable* Const(const std::string& name,
+  template <typename NAME>
+  ast::Variable* Const(NAME&& name,
                        type::Type* type,
                        ast::Expression* constructor = nullptr,
-                       ast::VariableDecorationList decorations = {}) {
-    return create<ast::Variable>(Symbols().Register(name),
+                       ast::DecorationList decorations = {}) {
+    return create<ast::Variable>(Sym(std::forward<NAME>(name)),
                                  ast::StorageClass::kNone, type, true,
                                  constructor, decorations);
   }
@@ -836,44 +832,15 @@ class ProgramBuilder {
   /// @param constructor optional constructor expression
   /// @param decorations optional variable decorations
   /// @returns a constant `ast::Variable` with the given name, storage and type
+  template <typename NAME>
   ast::Variable* Const(const Source& source,
-                       const std::string& name,
+                       NAME&& name,
                        type::Type* type,
                        ast::Expression* constructor = nullptr,
-                       ast::VariableDecorationList decorations = {}) {
-    return create<ast::Variable>(source, Symbols().Register(name),
+                       ast::DecorationList decorations = {}) {
+    return create<ast::Variable>(source, Sym(std::forward<NAME>(name)),
                                  ast::StorageClass::kNone, type, true,
                                  constructor, decorations);
-  }
-
-  /// @param symbol the variable symbol
-  /// @param type the variable type
-  /// @param constructor optional constructor expression
-  /// @param decorations optional variable decorations
-  /// @returns a constant `ast::Variable` with the given symbol, storage and
-  /// type
-  ast::Variable* Const(Symbol symbol,
-                       type::Type* type,
-                       ast::Expression* constructor = nullptr,
-                       ast::VariableDecorationList decorations = {}) {
-    return create<ast::Variable>(symbol, ast::StorageClass::kNone, type, true,
-                                 constructor, decorations);
-  }
-
-  /// @param source the variable source
-  /// @param symbol the variable symbol
-  /// @param type the variable type
-  /// @param constructor optional constructor expression
-  /// @param decorations optional variable decorations
-  /// @returns a constant `ast::Variable` with the given symbol, storage and
-  /// type
-  ast::Variable* Const(const Source& source,
-                       Symbol symbol,
-                       type::Type* type,
-                       ast::Expression* constructor = nullptr,
-                       ast::VariableDecorationList decorations = {}) {
-    return create<ast::Variable>(source, symbol, ast::StorageClass::kNone, type,
-                                 true, constructor, decorations);
   }
 
   /// @param args the arguments to pass to Var()
@@ -912,7 +879,7 @@ class ProgramBuilder {
   /// @param rhs the right hand argument to the addition operation
   /// @returns a `ast::BinaryExpression` summing the arguments `lhs` and `rhs`
   template <typename LHS, typename RHS>
-  ast::Expression* Add(LHS&& lhs, RHS&& rhs) {
+  ast::BinaryExpression* Add(LHS&& lhs, RHS&& rhs) {
     return create<ast::BinaryExpression>(ast::BinaryOp::kAdd,
                                          Expr(std::forward<LHS>(lhs)),
                                          Expr(std::forward<RHS>(rhs)));
@@ -922,7 +889,7 @@ class ProgramBuilder {
   /// @param rhs the right hand argument to the subtraction operation
   /// @returns a `ast::BinaryExpression` subtracting `rhs` from `lhs`
   template <typename LHS, typename RHS>
-  ast::Expression* Sub(LHS&& lhs, RHS&& rhs) {
+  ast::BinaryExpression* Sub(LHS&& lhs, RHS&& rhs) {
     return create<ast::BinaryExpression>(ast::BinaryOp::kSubtract,
                                          Expr(std::forward<LHS>(lhs)),
                                          Expr(std::forward<RHS>(rhs)));
@@ -932,8 +899,29 @@ class ProgramBuilder {
   /// @param rhs the right hand argument to the multiplication operation
   /// @returns a `ast::BinaryExpression` multiplying `rhs` from `lhs`
   template <typename LHS, typename RHS>
-  ast::Expression* Mul(LHS&& lhs, RHS&& rhs) {
+  ast::BinaryExpression* Mul(LHS&& lhs, RHS&& rhs) {
     return create<ast::BinaryExpression>(ast::BinaryOp::kMultiply,
+                                         Expr(std::forward<LHS>(lhs)),
+                                         Expr(std::forward<RHS>(rhs)));
+  }
+
+  /// @param source the source information
+  /// @param lhs the left hand argument to the multiplication operation
+  /// @param rhs the right hand argument to the multiplication operation
+  /// @returns a `ast::BinaryExpression` multiplying `rhs` from `lhs`
+  template <typename LHS, typename RHS>
+  ast::BinaryExpression* Mul(const Source& source, LHS&& lhs, RHS&& rhs) {
+    return create<ast::BinaryExpression>(source, ast::BinaryOp::kMultiply,
+                                         Expr(std::forward<LHS>(lhs)),
+                                         Expr(std::forward<RHS>(rhs)));
+  }
+
+  /// @param lhs the left hand argument to the division operation
+  /// @param rhs the right hand argument to the division operation
+  /// @returns a `ast::BinaryExpression` dividing `lhs` by `rhs`
+  template <typename LHS, typename RHS>
+  ast::Expression* Div(LHS&& lhs, RHS&& rhs) {
+    return create<ast::BinaryExpression>(ast::BinaryOp::kDivide,
                                          Expr(std::forward<LHS>(lhs)),
                                          Expr(std::forward<RHS>(rhs)));
   }
@@ -942,7 +930,7 @@ class ProgramBuilder {
   /// @param idx the index argument for the array accessor expression
   /// @returns a `ast::ArrayAccessorExpression` that indexes `arr` with `idx`
   template <typename ARR, typename IDX>
-  ast::Expression* IndexAccessor(ARR&& arr, IDX&& idx) {
+  ast::ArrayAccessorExpression* IndexAccessor(ARR&& arr, IDX&& idx) {
     return create<ast::ArrayAccessorExpression>(Expr(std::forward<ARR>(arr)),
                                                 Expr(std::forward<IDX>(idx)));
   }
@@ -963,23 +951,60 @@ class ProgramBuilder {
     return create<ast::StructMemberOffsetDecoration>(source_, val);
   }
 
+  /// Creates a ast::StructMemberSizeDecoration
+  /// @param source the source information
+  /// @param val the size value
+  /// @returns the size decoration pointer
+  ast::StructMemberSizeDecoration* MemberSize(const Source& source,
+                                              uint32_t val) {
+    return create<ast::StructMemberSizeDecoration>(source, val);
+  }
+
+  /// Creates a ast::StructMemberSizeDecoration
+  /// @param val the size value
+  /// @returns the size decoration pointer
+  ast::StructMemberSizeDecoration* MemberSize(uint32_t val) {
+    return create<ast::StructMemberSizeDecoration>(source_, val);
+  }
+
+  /// Creates a ast::StructMemberAlignDecoration
+  /// @param source the source information
+  /// @param val the align value
+  /// @returns the align decoration pointer
+  ast::StructMemberAlignDecoration* MemberAlign(const Source& source,
+                                                uint32_t val) {
+    return create<ast::StructMemberAlignDecoration>(source, val);
+  }
+
+  /// Creates a ast::StructMemberAlignDecoration
+  /// @param val the align value
+  /// @returns the align decoration pointer
+  ast::StructMemberAlignDecoration* MemberAlign(uint32_t val) {
+    return create<ast::StructMemberAlignDecoration>(source_, val);
+  }
+
   /// Creates an ast::Function and registers it with the ast::Module.
   /// @param source the source information
   /// @param name the function name
   /// @param params the function parameters
   /// @param type the function return type
   /// @param body the function body
-  /// @param decorations the function decorations
+  /// @param decorations the optional function decorations
+  /// @param return_type_decorations the optional function return type
+  /// decorations
   /// @returns the function pointer
-  ast::Function* Func(Source source,
-                      std::string name,
+  template <typename NAME>
+  ast::Function* Func(const Source& source,
+                      NAME&& name,
                       ast::VariableList params,
                       type::Type* type,
                       ast::StatementList body,
-                      ast::FunctionDecorationList decorations) {
+                      ast::DecorationList decorations = {},
+                      ast::DecorationList return_type_decorations = {}) {
     auto* func =
-        create<ast::Function>(source, Symbols().Register(name), params, type,
-                              create<ast::BlockStatement>(body), decorations);
+        create<ast::Function>(source, Sym(std::forward<NAME>(name)), params,
+                              type, create<ast::BlockStatement>(body),
+                              decorations, return_type_decorations);
     AST().AddFunction(func);
     return func;
   }
@@ -989,51 +1014,92 @@ class ProgramBuilder {
   /// @param params the function parameters
   /// @param type the function return type
   /// @param body the function body
-  /// @param decorations the function decorations
+  /// @param decorations the optional function decorations
+  /// @param return_type_decorations the optional function return type
+  /// decorations
   /// @returns the function pointer
-  ast::Function* Func(std::string name,
+  template <typename NAME>
+  ast::Function* Func(NAME&& name,
                       ast::VariableList params,
                       type::Type* type,
                       ast::StatementList body,
-                      ast::FunctionDecorationList decorations) {
-    auto* func =
-        create<ast::Function>(Symbols().Register(name), params, type,
-                              create<ast::BlockStatement>(body), decorations);
+                      ast::DecorationList decorations = {},
+                      ast::DecorationList return_type_decorations = {}) {
+    auto* func = create<ast::Function>(Sym(std::forward<NAME>(name)), params,
+                                       type, create<ast::BlockStatement>(body),
+                                       decorations, return_type_decorations);
     AST().AddFunction(func);
     return func;
+  }
+
+  /// Creates an ast::ReturnStatement with the input args
+  /// @param args arguments to construct a return statement with
+  /// @returns the return statement pointer
+  template <typename... Args>
+  ast::ReturnStatement* Return(Args&&... args) {
+    return create<ast::ReturnStatement>(std::forward<Args>(args)...);
+  }
+
+  /// Creates a ast::Struct and type::Struct, registering the type::Struct with
+  /// the AST().ConstructedTypes().
+  /// @param source the source information
+  /// @param name the struct name
+  /// @param members the struct members
+  /// @param decorations the optional struct decorations
+  /// @returns the struct type
+  type::Struct* Structure(const Source& source,
+                          const std::string& name,
+                          ast::StructMemberList members,
+                          ast::DecorationList decorations = {}) {
+    auto* impl =
+        create<ast::Struct>(source, std::move(members), std::move(decorations));
+    auto* type = ty.struct_(name, impl);
+    AST().AddConstructedType(type);
+    return type;
+  }
+
+  /// Creates a ast::Struct and type::Struct, registering the type::Struct with
+  /// the AST().ConstructedTypes().
+  /// @param name the struct name
+  /// @param members the struct members
+  /// @param decorations the optional struct decorations
+  /// @returns the struct type
+  type::Struct* Structure(const std::string& name,
+                          ast::StructMemberList members,
+                          ast::DecorationList decorations = {}) {
+    auto* impl =
+        create<ast::Struct>(std::move(members), std::move(decorations));
+    auto* type = ty.struct_(name, impl);
+    AST().AddConstructedType(type);
+    return type;
   }
 
   /// Creates a ast::StructMember
   /// @param source the source information
   /// @param name the struct member name
   /// @param type the struct member type
+  /// @param decorations the optional struct member decorations
   /// @returns the struct member pointer
+  template <typename NAME>
   ast::StructMember* Member(const Source& source,
-                            const std::string& name,
-                            type::Type* type) {
-    return create<ast::StructMember>(source, Symbols().Register(name), type,
-                                     ast::StructMemberDecorationList{});
-  }
-
-  /// Creates a ast::StructMember
-  /// @param name the struct member name
-  /// @param type the struct member type
-  /// @returns the struct member pointer
-  ast::StructMember* Member(const std::string& name, type::Type* type) {
-    return create<ast::StructMember>(source_, Symbols().Register(name), type,
-                                     ast::StructMemberDecorationList{});
-  }
-
-  /// Creates a ast::StructMember
-  /// @param name the struct member name
-  /// @param type the struct member type
-  /// @param decorations the struct member decorations
-  /// @returns the struct member pointer
-  ast::StructMember* Member(const std::string& name,
+                            NAME&& name,
                             type::Type* type,
-                            ast::StructMemberDecorationList decorations) {
-    return create<ast::StructMember>(source_, Symbols().Register(name), type,
-                                     decorations);
+                            ast::DecorationList decorations = {}) {
+    return create<ast::StructMember>(source, Sym(std::forward<NAME>(name)),
+                                     type, std::move(decorations));
+  }
+
+  /// Creates a ast::StructMember
+  /// @param name the struct member name
+  /// @param type the struct member type
+  /// @param decorations the optional struct member decorations
+  /// @returns the struct member pointer
+  template <typename NAME>
+  ast::StructMember* Member(NAME&& name,
+                            type::Type* type,
+                            ast::DecorationList decorations = {}) {
+    return create<ast::StructMember>(source_, Sym(std::forward<NAME>(name)),
+                                     type, std::move(decorations));
   }
 
   /// Creates a ast::StructMember with the given byte offset
@@ -1041,14 +1107,157 @@ class ProgramBuilder {
   /// @param name the struct member name
   /// @param type the struct member type
   /// @returns the struct member pointer
-  ast::StructMember* Member(uint32_t offset,
-                            const std::string& name,
-                            type::Type* type) {
+  template <typename NAME>
+  ast::StructMember* Member(uint32_t offset, NAME&& name, type::Type* type) {
     return create<ast::StructMember>(
-        source_, Symbols().Register(name), type,
-        ast::StructMemberDecorationList{
+        source_, Sym(std::forward<NAME>(name)), type,
+        ast::DecorationList{
             create<ast::StructMemberOffsetDecoration>(offset),
         });
+  }
+
+  /// Creates a ast::BlockStatement with input statements
+  /// @param statements statements of block
+  /// @returns the block statement pointer
+  template <typename... Statements>
+  ast::BlockStatement* Block(Statements&&... statements) {
+    return create<ast::BlockStatement>(
+        ast::StatementList{std::forward<Statements>(statements)...});
+  }
+
+  /// Creates a ast::ElseStatement with input condition and body
+  /// @param condition the else condition expression
+  /// @param body the else body
+  /// @returns the else statement pointer
+  ast::ElseStatement* Else(ast::Expression* condition,
+                           ast::BlockStatement* body) {
+    return create<ast::ElseStatement>(condition, body);
+  }
+
+  /// Creates a ast::IfStatement with input condition, body, and optional
+  /// variadic else statements
+  /// @param condition the if statement condition expression
+  /// @param body the if statement body
+  /// @param elseStatements optional variadic else statements
+  /// @returns the if statement pointer
+  template <typename... ElseStatements>
+  ast::IfStatement* If(ast::Expression* condition,
+                       ast::BlockStatement* body,
+                       ElseStatements&&... elseStatements) {
+    return create<ast::IfStatement>(
+        condition, body,
+        ast::ElseStatementList{
+            std::forward<ElseStatements>(elseStatements)...});
+  }
+
+  /// Creates a ast::AssignmentStatement with input lhs and rhs expressions
+  /// @param lhs the left hand side expression initializer
+  /// @param rhs the right hand side expression initializer
+  /// @returns the assignment statement pointer
+  template <typename LhsExpressionInit, typename RhsExpressionInit>
+  ast::AssignmentStatement* Assign(LhsExpressionInit&& lhs,
+                                   RhsExpressionInit&& rhs) {
+    return create<ast::AssignmentStatement>(
+        Expr(std::forward<LhsExpressionInit>(lhs)),
+        Expr(std::forward<RhsExpressionInit>(rhs)));
+  }
+
+  /// Creates a ast::LoopStatement with input body and optional continuing
+  /// @param body the loop body
+  /// @param continuing the optional continuing block
+  /// @returns the loop statement pointer
+  ast::LoopStatement* Loop(ast::BlockStatement* body,
+                           ast::BlockStatement* continuing = nullptr) {
+    return create<ast::LoopStatement>(body, continuing);
+  }
+
+  /// Creates a ast::VariableDeclStatement for the input variable
+  /// @param var the variable to wrap in a decl statement
+  /// @returns the variable decl statement pointer
+  ast::VariableDeclStatement* Decl(ast::Variable* var) {
+    return create<ast::VariableDeclStatement>(var);
+  }
+
+  /// Creates a ast::SwitchStatement with input expression and cases
+  /// @param condition the condition expression initializer
+  /// @param cases case statements
+  /// @returns the switch statement pointer
+  template <typename ExpressionInit, typename... Cases>
+  ast::SwitchStatement* Switch(ExpressionInit&& condition, Cases&&... cases) {
+    return create<ast::SwitchStatement>(
+        Expr(std::forward<ExpressionInit>(condition)),
+        ast::CaseStatementList{std::forward<Cases>(cases)...});
+  }
+
+  /// Creates a ast::CaseStatement with input list of selectors, and body
+  /// @param selectors list of selectors
+  /// @param body the case body
+  /// @returns the case statement pointer
+  ast::CaseStatement* Case(ast::CaseSelectorList selectors,
+                           ast::BlockStatement* body = nullptr) {
+    return create<ast::CaseStatement>(std::move(selectors),
+                                      body ? body : Block());
+  }
+
+  /// Convenient overload that takes a single selector
+  /// @param selector a single case selector
+  /// @param body the case body
+  /// @returns the case statement pointer
+  ast::CaseStatement* Case(ast::IntLiteral* selector,
+                           ast::BlockStatement* body = nullptr) {
+    return Case(ast::CaseSelectorList{selector}, body);
+  }
+
+  /// Convenience function that creates a 'default' ast::CaseStatement
+  /// @param body the case body
+  /// @returns the case statement pointer
+  ast::CaseStatement* DefaultCase(ast::BlockStatement* body = nullptr) {
+    return Case(ast::CaseSelectorList{}, body);
+  }
+
+  /// Creates an ast::BuiltinDecoration
+  /// @param source the source information
+  /// @param builtin the builtin value
+  /// @returns the builtin decoration pointer
+  ast::BuiltinDecoration* Builtin(const Source& source, ast::Builtin builtin) {
+    return create<ast::BuiltinDecoration>(source, builtin);
+  }
+
+  /// Creates an ast::BuiltinDecoration
+  /// @param builtin the builtin value
+  /// @returns the builtin decoration pointer
+  ast::BuiltinDecoration* Builtin(ast::Builtin builtin) {
+    return create<ast::BuiltinDecoration>(source_, builtin);
+  }
+
+  /// Creates an ast::LocationDecoration
+  /// @param source the source information
+  /// @param location the location value
+  /// @returns the location decoration pointer
+  ast::LocationDecoration* Location(const Source& source, uint32_t location) {
+    return create<ast::LocationDecoration>(source, location);
+  }
+
+  /// Creates an ast::LocationDecoration
+  /// @param location the location value
+  /// @returns the location decoration pointer
+  ast::LocationDecoration* Location(uint32_t location) {
+    return create<ast::LocationDecoration>(source_, location);
+  }
+
+  /// Creates an ast::StageDecoration
+  /// @param source the source information
+  /// @param stage the pipeline stage
+  /// @returns the stage decoration pointer
+  ast::StageDecoration* Stage(const Source& source, ast::PipelineStage stage) {
+    return create<ast::StageDecoration>(source, stage);
+  }
+
+  /// Creates an ast::StageDecoration
+  /// @param stage the pipeline stage
+  /// @returns the stage decoration pointer
+  ast::StageDecoration* Stage(ast::PipelineStage stage) {
+    return create<ast::StageDecoration>(source_, stage);
   }
 
   /// Sets the current builder source to `src`
@@ -1066,22 +1275,21 @@ class ProgramBuilder {
   }
 
   /// Helper for returning the resolved semantic type of the expression `expr`.
-  /// @note As the TypeDeterminator is run when the Program is built, this will
-  /// only be useful for the TypeDeterminer itself and tests that use their own
-  /// TypeDeterminer.
+  /// @note As the Resolver is run when the Program is built, this will only be
+  /// useful for the Resolver itself and tests that use their own Resolver.
   /// @param expr the AST expression
   /// @return the resolved semantic type for the expression, or nullptr if the
   /// expression has no resolved type.
   type::Type* TypeOf(ast::Expression* expr) const;
 
   /// Wraps the ast::Expression in a statement. This is used by tests that
-  /// construct a partial AST and require the TypeDeterminer to reach these
+  /// construct a partial AST and require the Resolver to reach these
   /// nodes.
   /// @param expr the ast::Expression to be wrapped by an ast::Statement
   /// @return the ast::Statement that wraps the ast::Expression
   ast::Statement* WrapInStatement(ast::Expression* expr);
   /// Wraps the ast::Variable in a ast::VariableDeclStatement. This is used by
-  /// tests that construct a partial AST and require the TypeDeterminer to reach
+  /// tests that construct a partial AST and require the Resolver to reach
   /// these nodes.
   /// @param v the ast::Variable to be wrapped by an ast::VariableDeclStatement
   /// @return the ast::VariableDeclStatement that wraps the ast::Variable
@@ -1092,16 +1300,18 @@ class ProgramBuilder {
   /// @return `stmt`
   ast::Statement* WrapInStatement(ast::Statement* stmt);
   /// Wraps the list of arguments in a simple function so that each is reachable
-  /// by the TypeDeterminer.
+  /// by the Resolver.
   /// @param args a mix of ast::Expression, ast::Statement, ast::Variables.
+  /// @returns the function
   template <typename... ARGS>
-  void WrapInFunction(ARGS&&... args) {
+  ast::Function* WrapInFunction(ARGS&&... args) {
     ast::StatementList stmts{WrapInStatement(std::forward<ARGS>(args))...};
-    WrapInFunction(stmts);
+    return WrapInFunction(std::move(stmts));
   }
   /// @param stmts a list of ast::Statement that will be wrapped by a function,
-  /// so that each statement is reachable by the TypeDeterminer.
-  void WrapInFunction(ast::StatementList stmts);
+  /// so that each statement is reachable by the Resolver.
+  /// @returns the function
+  ast::Function* WrapInFunction(ast::StatementList stmts);
 
   /// The builder types
   TypesBuilder const ty{this};
@@ -1123,7 +1333,7 @@ class ProgramBuilder {
   /// the first argument.
   Source source_;
 
-  /// Set by SetResolveOnBuild(). If set, the TypeDeterminer will be run on the
+  /// Set by SetResolveOnBuild(). If set, the Resolver will be run on the
   /// program when built.
   bool resolve_on_build_ = true;
 

@@ -3,7 +3,6 @@ import("../../../../third_party/typescript/typescript.gni")
 ts_library("elements") {
   testonly = true
   sources = [
-    "AccessibilityNode_test.ts",
     "AdornerManager_test.ts",
     "Adorner_test.ts",
     "CSSPropertyIconResolver_test.ts",
@@ -17,9 +16,10 @@ ts_library("elements") {
   ]
 
   deps = [
-    "../../../../front_end/elements:bundle",
     "../../../../front_end/inline_editor:bundle",
-    "../../../../front_end/ui:bundle",
+    "../../../../front_end/panels/elements:bundle",
+    "../../../../front_end/render_coordinator:bundle",
+    "../../../../front_end/ui/legacy:bundle",
     "../helpers",
   ]
 }

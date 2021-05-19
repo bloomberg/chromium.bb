@@ -5,10 +5,11 @@
 #ifndef WEBLAYER_TEST_WEBLAYER_BROWSER_TEST_UTILS_H_
 #define WEBLAYER_TEST_WEBLAYER_BROWSER_TEST_UTILS_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/values.h"
 #include "weblayer/public/navigation.h"
 #include "weblayer/public/navigation_observer.h"
@@ -59,7 +60,7 @@ void ExecuteScriptWithUserGesture(Shell* shell, const std::string& script);
 void ExecuteScriptWithUserGesture(Tab* tab, const std::string& script);
 
 /// Gets the title of the current webpage in |shell|.
-const base::string16& GetTitle(Shell* shell);
+const std::u16string& GetTitle(Shell* shell);
 
 // Sets up the autofill system to be one that simply forwards detected forms to
 // the passed-in callback.

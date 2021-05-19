@@ -18,6 +18,7 @@
 #include "ash/public/cpp/holding_space/holding_space_model_observer.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
 #include "ash/public/cpp/holding_space/holding_space_test_api.h"
+#include "base/callback_helpers.h"
 #include "base/scoped_observation.h"
 #include "base/scoped_observer.h"
 #include "base/test/bind.h"
@@ -85,9 +86,13 @@ void DoubleClick(const views::View* view) {
   event_generator.DoubleClickLeftButton();
 }
 
+using DragUpdateCallback =
+    base::RepeatingCallback<void(const gfx::Point& screen_location)>;
+
 // Performs a gesture drag between `from` and `to`.
 void GestureDrag(const views::View* from,
                  const views::View* to,
+                 DragUpdateCallback drag_update_callback = base::DoNothing(),
                  base::OnceClosure before_release_callback = base::DoNothing(),
                  base::OnceClosure after_release_callback = base::DoNothing()) {
   auto* root_window = HoldingSpaceBrowserTestBase::GetRootWindowForNewWindows();
@@ -102,11 +107,21 @@ void GestureDrag(const views::View* from,
       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   event_generator.Dispatch(&long_press);
 
+  // Generate multiple interpolated touch move events.
   // NOTE: The `ash::DragDropController` applies a vertical offset when
   // determining the target view for touch initiated dragging so that needs to
   // be compensated for here.
-  event_generator.MoveTouch(
-      gfx::Point(to->GetBoundsInScreen().CenterPoint() + gfx::Vector2d(0, 25)));
+  constexpr int kNumberOfTouchMoveEvents = 25;
+  constexpr gfx::Vector2d offset(0, 25);
+  const gfx::Point endpoint = to->GetBoundsInScreen().CenterPoint() + offset;
+  const gfx::Point origin = event_generator.current_screen_location();
+  const gfx::Vector2dF diff(endpoint - origin);
+  for (int i = 1; i <= kNumberOfTouchMoveEvents; ++i) {
+    gfx::Vector2dF step(diff);
+    step.Scale(i / static_cast<float>(kNumberOfTouchMoveEvents));
+    event_generator.MoveTouch(origin + gfx::ToRoundedVector2d(step));
+    drag_update_callback.Run(event_generator.current_screen_location());
+  }
 
   std::move(before_release_callback).Run();
   event_generator.ReleaseTouch();
@@ -123,6 +138,7 @@ void GestureTap(const views::View* view) {
 // Performs a mouse drag between `from` and `to`.
 void MouseDrag(const views::View* from,
                const views::View* to,
+               DragUpdateCallback drag_update_callback = base::DoNothing(),
                base::OnceClosure before_release_callback = base::DoNothing(),
                base::OnceClosure after_release_callback = base::DoNothing()) {
   auto* root_window = HoldingSpaceBrowserTestBase::GetRootWindowForNewWindows();
@@ -132,8 +148,15 @@ void MouseDrag(const views::View* from,
 
   // Generate multiple interpolated mouse move events so that views are notified
   // of mouse enter/exit as they would be in production.
-  event_generator.MoveMouseTo(to->GetBoundsInScreen().CenterPoint(),
-                              /*count=*/10);
+  constexpr int kNumberOfMouseMoveEvents = 25;
+  const gfx::Point origin = event_generator.current_screen_location();
+  const gfx::Vector2dF diff(to->GetBoundsInScreen().CenterPoint() - origin);
+  for (int i = 1; i <= kNumberOfMouseMoveEvents; ++i) {
+    gfx::Vector2dF step(diff);
+    step.Scale(i / static_cast<float>(kNumberOfMouseMoveEvents));
+    event_generator.MoveMouseTo(origin + gfx::ToRoundedVector2d(step));
+    drag_update_callback.Run(event_generator.current_screen_location());
+  }
 
   std::move(before_release_callback).Run();
   event_generator.ReleaseLeftButton();
@@ -495,6 +518,7 @@ class HoldingSpaceUiBrowserTest : public HoldingSpaceBrowserTestBase {
 using PerformDragAndDropCallback =
     base::RepeatingCallback<void(const views::View* from,
                                  const views::View* to,
+                                 DragUpdateCallback drag_update_callback,
                                  base::OnceClosure before_release_callback,
                                  base::OnceClosure after_release_callback)>;
 
@@ -522,17 +546,54 @@ class HoldingSpaceUiDragAndDropBrowserTest
               is_drop_target ? 0.f : 1.f);
     EXPECT_EQ(GetPreviewsTrayIcon()->layer()->GetTargetOpacity(),
               is_drop_target ? 0.f : 1.f);
+
+    // Cache a reference to preview layers.
+    const ui::Layer* previews_container_layer =
+        GetPreviewsTrayIcon()->layer()->children()[0];
+    const std::vector<ui::Layer*>& preview_layers =
+        previews_container_layer->children();
+
+    // Iterate over the layers for each preview.
+    for (size_t i = 0; i < preview_layers.size(); ++i) {
+      const ui::Layer* preview_layer = preview_layers[i];
+      const float preview_width = preview_layer->size().width();
+
+      // Previews layers are expected to be translated w/ incremental offset.
+      gfx::Vector2dF expected_translation(i * preview_width / 2.f, 0.f);
+
+      // When the holding space tray is a drop target, preview layers are
+      // expected to be translated by a fixed amount in addition to the standard
+      // incremental offset.
+      if (is_drop_target) {
+        constexpr int kPreviewIndexOffsetForDropTarget = 3;
+        expected_translation += gfx::Vector2dF(
+            kPreviewIndexOffsetForDropTarget * preview_width / 2.f, 0.f);
+      }
+
+      EXPECT_EQ(preview_layer->transform().To2dTranslation(),
+                expected_translation);
+    }
+  }
+
+  // Returns true if `screen_location` is within sufficient range of the holding
+  // space tray so as to make it present itself as a drop target.
+  bool IsWithinTrayDropTargetRange(const gfx::Point& screen_location) {
+    constexpr int kProximityThreshold = 20;
+    gfx::Rect screen_bounds(GetTray()->GetBoundsInScreen());
+    screen_bounds.Inset(gfx::Insets(-kProximityThreshold));
+    return screen_bounds.Contains(screen_location);
   }
 
   // Performs a drag-and-drop between `from` and `to`.
   void PerformDragAndDrop(
       const views::View* from,
       const views::View* to,
+      DragUpdateCallback drag_update_callback = base::DoNothing(),
       base::OnceClosure before_release_callback = base::DoNothing(),
       base::OnceClosure after_release_callback = base::DoNothing()) {
-    GetPerformDragAndDropCallback().Run(from, to,
-                                        std::move(before_release_callback),
-                                        std::move(after_release_callback));
+    GetPerformDragAndDropCallback().Run(
+        from, to, std::move(drag_update_callback),
+        std::move(before_release_callback), std::move(after_release_callback));
   }
 
   // Sets data on `sender()` at the storage location specified by test params.
@@ -699,6 +760,13 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest, DragAndDropToPin) {
     ExpectTrayIsDropTarget(false);
     PerformDragAndDrop(
         /*from=*/sender(), /*to=*/GetTray(),
+        /*drag_update_callback=*/
+        base::BindRepeating(
+            &HoldingSpaceUiDragAndDropBrowserTest::IsWithinTrayDropTargetRange,
+            base::Unretained(this))
+            .Then(base::BindRepeating(
+                &HoldingSpaceUiDragAndDropBrowserTest::ExpectTrayIsDropTarget,
+                base::Unretained(this))),
         /*before_release_callback=*/
         base::BindOnce(
             &HoldingSpaceUiDragAndDropBrowserTest::ExpectTrayIsDropTarget,
@@ -737,6 +805,13 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest, DragAndDropToPin) {
     ExpectTrayIsDropTarget(false);
     PerformDragAndDrop(
         /*from=*/sender(), /*to=*/GetTray(),
+        /*drag_update_callback=*/
+        base::BindRepeating(
+            &HoldingSpaceUiDragAndDropBrowserTest::IsWithinTrayDropTargetRange,
+            base::Unretained(this))
+            .Then(base::BindRepeating(
+                &HoldingSpaceUiDragAndDropBrowserTest::ExpectTrayIsDropTarget,
+                base::Unretained(this))),
         /*before_release_callback=*/
         base::BindOnce(
             &HoldingSpaceUiDragAndDropBrowserTest::ExpectTrayIsDropTarget,
@@ -767,6 +842,16 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceUiDragAndDropBrowserTest, DragAndDropToPin) {
     ExpectTrayIsDropTarget(false);
     PerformDragAndDrop(
         /*from=*/sender(), /*to=*/GetTray(),
+        /*drag_update_callback=*/
+        base::BindRepeating(
+            [](HoldingSpaceUiDragAndDropBrowserTest* test,
+               const gfx::Point& screen_location) {
+              // The drag payload cannot be handled by holding space so the tray
+              // should never indicate it is a drop target regardless of drag
+              // update `screen_location`.
+              test->ExpectTrayIsDropTarget(false);
+            },
+            base::Unretained(this)),
         /*before_release_callback=*/
         base::BindOnce(
             &HoldingSpaceUiDragAndDropBrowserTest::ExpectTrayIsDropTarget,
@@ -800,6 +885,9 @@ INSTANTIATE_TEST_SUITE_P(
 
 // Verifies that the holding space tray does not appear on the lock screen.
 IN_PROC_BROWSER_TEST_F(HoldingSpaceUiBrowserTest, LockScreen) {
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
   ASSERT_TRUE(IsShowingInShelf());
   RequestAndAwaitLockScreen();
   ASSERT_FALSE(IsShowingInShelf());

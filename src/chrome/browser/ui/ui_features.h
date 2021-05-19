@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/buildflags.h"
-#include "extensions/buildflags/buildflags.h"
 
 namespace features {
 
@@ -31,13 +30,7 @@ extern const base::Feature kCommander;
 
 extern const base::Feature kEvDetailsInPageInfo;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-extern const base::Feature kExtensionSettingsOverriddenDialogs;
-#endif
-
 extern const base::Feature kExtensionsToolbarMenu;
-
-extern const base::Feature kForceEnablePrivetPrinting;
 
 extern const base::Feature kNewProfilePicker;
 
@@ -45,12 +38,16 @@ extern const base::Feature kNewTabstripAnimation;
 
 extern const base::Feature kProminentDarkModeActiveTabTitle;
 
+extern const base::Feature kReadLaterNewBadgePromo;
+
 extern const base::Feature kScrollableTabStrip;
 extern const char kMinimumTabWidthFeatureParameterName[];
 
 extern const base::Feature kScrollableTabStripButtons;
 
 extern const base::Feature kSidePanel;
+
+extern const base::Feature kSidePanelPrototype;
 
 extern const base::Feature kSyncConfirmationUpdatedText;
 
@@ -70,12 +67,17 @@ extern const base::Feature kTabHoverCards;
 extern const char kTabHoverCardsFeatureParameterName[];
 
 extern const base::Feature kTabHoverCardImages;
+extern const char kTabHoverCardImagesNotReadyDelayParameterName[];
+extern const char kTabHoverCardImagesLoadingDelayParameterName[];
+extern const char kTabHoverCardImagesLoadedDelayParameterName[];
 
 extern const base::Feature kTabOutlinesInLowContrastThemes;
 
-extern const base::Feature kTabSearch;
+extern const base::Feature kTabSearchFuzzySearch;
 
 extern const base::Feature kTabSearchFeedback;
+
+extern const base::Feature kTabSearchRecentlyClosed;
 
 // Setting this to true will ignore the distance parameter when finding matches.
 // This means that it will not matter where in the string the pattern occurs.
@@ -102,9 +104,24 @@ extern const base::FeatureParam<double> kTabSearchTitleToHostnameWeightRatio;
 // Whether to move the active tab to the bottom of the list.
 extern const base::FeatureParam<bool> kTabSearchMoveActiveTabToBottom;
 
+// Default number of recently closed entries to display by default when no
+// search text is provided.
+extern const base::FeatureParam<int>
+    kTabSearchRecentlyClosedDefaultItemDisplayCount;
+
+// Maximum number of recently closed entries to send in the profile data
+// payload.
+extern const base::FeatureParam<int> kTabSearchRecentlyClosedMaxEntries;
+
+// Determines how screenshots of the toolbar uses Software or Hardware drawing.
+// Works on Android 10+.
+extern const base::Feature kToolbarUseHardwareBitmapDraw;
+
 extern const base::Feature kWebFooterExperiment;
 
 extern const base::Feature kWebUIBubblePerProfilePersistence;
+
+extern const base::Feature kWebUIDownloadShelf;
 
 extern const base::Feature kWebUITabStrip;
 
@@ -112,7 +129,6 @@ extern const base::Feature kWebUIFeedback;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const base::Feature kHiddenNetworkWarning;
-extern const base::Feature kSeparatePointingStickSettings;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace features

@@ -13,6 +13,7 @@
 #include "include/core/SkSurface.h"
 #include "include/effects/SkRuntimeEffect.h"
 #include "include/gpu/GrDirectContext.h"
+#include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkTLazy.h"
 #include "src/gpu/GrColor.h"
 #include "tests/Test.h"
@@ -42,9 +43,8 @@ DEF_TEST(SkRuntimeEffectInvalid_FPOnly, r) {
 }
 
 DEF_TEST(SkRuntimeEffectInvalid_LimitedUniformTypes, r) {
-    // Runtime SkSL supports a limited set of uniform types. No bool, or int, for example:
+    // Runtime SkSL supports a limited set of uniform types. No bool, for example:
     test_invalid_effect(r, "uniform bool b;" EMPTY_MAIN, "uniform");
-    test_invalid_effect(r, "uniform int i;"  EMPTY_MAIN, "uniform");
 }
 
 DEF_TEST(SkRuntimeEffectInvalid_NoInVariables, r) {
@@ -72,36 +72,10 @@ DEF_TEST(SkRuntimeEffectInvalid_UndefinedMain, r) {
     test_invalid_effect(r, "", "main");
 }
 
-DEF_TEST(SkRuntimeEffectInvalid_ShaderLimitations, r) {
-    // Various places that shaders (fragmentProcessors) should not be allowed
-    test_invalid_effect(r, "half4 main() { shader child; return sample(child); }",
-                        "must be global");
-    test_invalid_effect(r, "uniform shader child; half4 helper(shader fp) { return sample(fp); }"
-                           "half4 main() { return helper(child); }",
-                           "parameter");
-    test_invalid_effect(r, "uniform shader child; shader get_child() { return child; }"
-                           "half4 main() { return sample(get_child()); }",
-                           "return");
-    test_invalid_effect(r, "uniform shader child;"
-                           "half4 main() { return sample(shader(child)); }",
-                           "construct");
-    test_invalid_effect(r, "uniform shader child1; uniform shader child2;"
-                           "half4 main(float2 p) { return sample(p.x > 10 ? child1 : child2); }",
-                           "expression");
-}
-
 DEF_TEST(SkRuntimeEffectInvalid_SkCapsDisallowed, r) {
     // sk_Caps is an internal system. It should not be visible to runtime effects
     test_invalid_effect(r, "half4 main() { return sk_Caps.integerSupport ? half4(1) : half4(0); }",
                            "unknown identifier 'sk_Caps'");
-}
-
-DEF_TEST(SkRuntimeEffectInvalid_LateErrors, r) {
-    // Errors that aren't caught until later in the compilation process (during optimize())
-    test_invalid_effect(r, "half4 main() { return half4(1); return half4(0); }", "unreachable");
-    test_invalid_effect(r, "half4 badFunc() {}"
-                           "half4 main() { return badFunc(); }",
-                           "without returning");
 }
 
 DEF_TEST(SkRuntimeEffectInvalidColorFilters, r) {
@@ -221,6 +195,7 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     TestEffect effect(r, surface);
 
     using float4 = std::array<float, 4>;
+    using int4 = std::array<int, 4>;
 
     // Local coords
     effect.build("half4 main(float2 p) { return half4(half2(p - 0.5), 0, 1); }");
@@ -231,6 +206,13 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     effect.uniform("gColor") = float4{ 0.0f, 0.25f, 0.75f, 1.0f };
     effect.test(0xFFBF4000);
     effect.uniform("gColor") = float4{ 1.0f, 0.0f, 0.0f, 0.498f };
+    effect.test(0x7F00007F);  // Tests that we clamp to valid premul
+
+    // Same, with integer uniforms
+    effect.build("uniform int4 gColor; half4 main() { return half4(gColor) / 255.0; }");
+    effect.uniform("gColor") = int4{ 0x00, 0x40, 0xBF, 0xFF };
+    effect.test(0xFFBF4000);
+    effect.uniform("gColor") = int4{ 0xFF, 0x00, 0x00, 0x7F };
     effect.test(0x7F00007F);  // Tests that we clamp to valid premul
 
     // Test sk_FragCoord (device coords). Rotate the canvas to be sure we're seeing device coords.
@@ -291,12 +273,6 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
                  "half4 main() { return sample(child, float3x3(0, 1, 0, 1, 0, 0, 0, 0, 1)); }");
     effect.child("child") = rgbwShader;
     effect.test(0xFF0000FF, 0xFFFF0000, 0xFF00FF00, 0xFFFFFFFF);
-
-    // Legacy behavior - shaders can be declared 'in' rather than 'uniform'
-    effect.build("in shader child;"
-                 "half4 main() { return sample(child); }");
-    effect.child("child") = rgbwShader;
-    effect.test(0xFF0000FF, 0xFF00FF00, 0xFFFF0000, 0xFFFFFFFF);
 
     //
     // Helper functions

@@ -19,7 +19,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
@@ -87,12 +86,16 @@ std::vector<GUID> GetSideBySideInterfaces() {
 }
 
 std::vector<GUID> GetActiveInterfaces() {
-  return {
-      __uuidof(IAppBundleWeb),     __uuidof(IAppWeb),
-      __uuidof(ICompleteStatus),   __uuidof(ICurrentState),
-      __uuidof(IGoogleUpdate3Web), __uuidof(IUpdateState),
-      __uuidof(IUpdater),          __uuidof(IUpdaterObserver),
-  };
+  return {__uuidof(IAppBundleWeb),
+          __uuidof(IAppWeb),
+          __uuidof(ICompleteStatus),
+          __uuidof(ICurrentState),
+          __uuidof(IGoogleUpdate3Web),
+          __uuidof(IUpdateState),
+          __uuidof(IUpdater),
+          __uuidof(IUpdaterObserver),
+          __uuidof(IUpdaterRegisterAppCallback),
+          __uuidof(IUpdaterCallback)};
 }
 
 std::vector<CLSID> GetSideBySideServers() {
@@ -148,6 +151,7 @@ void AddInstallComInterfaceWorkItems(HKEY root,
 void AddInstallServerWorkItems(HKEY root,
                                CLSID clsid,
                                const base::FilePath& com_server_path,
+                               bool internal_service,
                                WorkItemList* list) {
   const std::wstring clsid_reg_path = GetComServerClsidRegistryPath(clsid);
 
@@ -165,6 +169,10 @@ void AddInstallServerWorkItems(HKEY root,
 
   base::CommandLine run_com_server_command(com_server_path);
   run_com_server_command.AppendSwitch(kServerSwitch);
+  run_com_server_command.AppendSwitchASCII(
+      kServerServiceSwitch, internal_service
+                                ? kServerUpdateServiceInternalSwitchValue
+                                : kServerUpdateServiceSwitchValue);
 #if !defined(NDEBUG)
   run_com_server_command.AppendSwitch(kEnableLoggingSwitch);
   run_com_server_command.AppendSwitchASCII(kLoggingModuleSwitch,
@@ -231,7 +239,9 @@ std::wstring GetComTypeLibResourceIndex(REFIID iid) {
       {__uuidof(ICompleteStatus), kUpdaterIndex},
       {__uuidof(IUpdater), kUpdaterIndex},
       {__uuidof(IUpdaterObserver), kUpdaterIndex},
+      {__uuidof(IUpdaterRegisterAppCallback), kUpdaterIndex},
       {__uuidof(IUpdateState), kUpdaterIndex},
+      {__uuidof(IUpdaterCallback), kUpdaterIndex},
 
       // Updater internal typelib.
       {__uuidof(IUpdaterInternal), kUpdaterInternalIndex},
@@ -252,8 +262,7 @@ std::vector<base::FilePath> ParseFilesFromDeps(const base::FilePath& deps) {
   std::string contents;
   if (!base::ReadFileToStringWithMaxSize(deps, &contents, kDepsFileSizeMax))
     return {};
-  const base::flat_set<const wchar_t*,
-                       CaseInsensitiveASCIICompare<std::wstring>>
+  const base::flat_set<const wchar_t*, CaseInsensitiveASCIICompare>
       exclude_extensions = {L".pdb", L".js"};
   std::vector<base::FilePath> result;
   for (const auto& line :

@@ -25,6 +25,7 @@
 #include "base/time/default_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/lookalikes/core/features.h"
 #include "components/security_interstitials/core/pref_names.h"
 #include "components/security_state/core/features.h"
@@ -77,6 +78,11 @@ const char* kDomainsPermittedInEndEmbeddings[] = {"office.com", "medium.com",
 // What separators can be used to separate tokens in target embedding spoofs?
 // e.g. www-google.com.example.com uses "-" (www-google) and "." (google.com).
 const char kTargetEmbeddingSeparators[] = "-.";
+
+// A small subset of private registries on the PSL that act like public
+// registries AND are a common source of false positives in lookalike checks. We
+// treat them as public for the purposes of lookalike checks.
+const char* kPrivateRegistriesTreatedAsPublic[] = {"com.de", "com.se"};
 
 bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
                     const url_formatter::Skeletons& skeletons2) {
@@ -444,17 +450,33 @@ DomainInfo GetDomainInfo(const GURL& url) {
 }
 
 std::string GetETLDPlusOne(const std::string& hostname) {
-  return net::registry_controlled_domains::GetDomainAndRegistry(
+  auto pub = net::registry_controlled_domains::GetDomainAndRegistry(
       hostname, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  auto priv = net::registry_controlled_domains::GetDomainAndRegistry(
+      hostname, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  // If there is no difference in eTLD+1 with/without private registries, then
+  // the domain uses a public registry and we can return the eTLD+1 safely.
+  if (pub == priv) {
+    return pub;
+  }
+  // Otherwise, the domain uses a private registry and |pub| is that private
+  // registry. If it's a de-facto-public registry, return the private eTLD+1.
+  for (auto* private_registry : kPrivateRegistriesTreatedAsPublic) {
+    if (private_registry == pub) {
+      return priv;
+    }
+  }
+  // Otherwise, ignore the normal private registry and return the public eTLD+1.
+  return pub;
 }
 
-bool IsEditDistanceAtMostOne(const base::string16& str1,
-                             const base::string16& str2) {
+bool IsEditDistanceAtMostOne(const std::u16string& str1,
+                             const std::u16string& str2) {
   if (str1.size() > str2.size() + 1 || str2.size() > str1.size() + 1) {
     return false;
   }
-  base::string16::const_iterator i = str1.begin();
-  base::string16::const_iterator j = str2.begin();
+  std::u16string::const_iterator i = str1.begin();
+  std::u16string::const_iterator j = str2.begin();
   size_t edit_count = 0;
   while (i != str1.end() && j != str2.end()) {
     if (*i == *j) {
@@ -572,10 +594,15 @@ bool ShouldBlockLookalikeUrlNavigation(LookalikeUrlMatchType match_type) {
   if (match_type == LookalikeUrlMatchType::kSiteEngagement) {
     return true;
   }
-  if (match_type == LookalikeUrlMatchType::kTargetEmbedding &&
-      base::FeatureList::IsEnabled(
-          lookalikes::features::kDetectTargetEmbeddingLookalikes)) {
-    return true;
+  if (match_type == LookalikeUrlMatchType::kTargetEmbedding) {
+#if defined(OS_IOS)
+    // TODO(crbug.com/1104384): Only enable target embedding on iOS once we can
+    //    check engaged sites. Otherwise, false positives are too high.
+    return false;
+#else
+    return base::FeatureList::IsEnabled(
+        lookalikes::features::kDetectTargetEmbeddingLookalikes);
+#endif
   }
   if (match_type == LookalikeUrlMatchType::kFailedSpoofChecks &&
       base::FeatureList::IsEnabled(

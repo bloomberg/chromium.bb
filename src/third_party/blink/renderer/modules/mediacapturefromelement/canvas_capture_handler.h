@@ -18,11 +18,14 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/video_frame_pool.h"
 #include "media/capture/video_capturer_source.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 class SkImage;
+
+namespace gfx {
+class Size;
+}  // namespace gfx
 
 namespace blink {
 
@@ -48,7 +51,7 @@ class MODULES_EXPORT CanvasCaptureHandler {
   // Creates a CanvasCaptureHandler instance and updates UMA histogram.
   static std::unique_ptr<CanvasCaptureHandler> CreateCanvasCaptureHandler(
       LocalFrame* frame,
-      const blink::WebSize& size,
+      const gfx::Size& size,
       double frame_rate,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       MediaStreamComponent** component);
@@ -66,6 +69,9 @@ class MODULES_EXPORT CanvasCaptureHandler {
       const media::VideoCapturerSource::RunningCallback& running_callback);
   void RequestRefreshFrame();
   void StopVideoCapture();
+  void SetCanDiscardAlpha(bool can_discard_alpha) {
+    can_discard_alpha_ = can_discard_alpha;
+  }
 
  private:
   // A VideoCapturerSource instance is created, which is responsible for handing
@@ -74,7 +80,7 @@ class MODULES_EXPORT CanvasCaptureHandler {
   // by the Blink side MediaStreamSource.
   CanvasCaptureHandler(
       LocalFrame* frame,
-      const blink::WebSize& size,
+      const gfx::Size& size,
       double frame_rate,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       MediaStreamComponent** component);
@@ -99,12 +105,8 @@ class MODULES_EXPORT CanvasCaptureHandler {
   void OnReleaseMailbox(scoped_refptr<StaticBitmapImage> image);
 
   scoped_refptr<media::VideoFrame> ConvertToYUVFrame(
-      bool is_opaque,
-      bool flip,
-      const uint8_t* source_ptr,
-      const gfx::Size& image_size,
-      int stride,
-      SkColorType source_color_type);
+      scoped_refptr<media::VideoFrame> argb_video_frame,
+      bool flip);
   void SendFrame(scoped_refptr<media::VideoFrame> video_frame,
                  base::TimeTicks this_frame_ticks,
                  const gfx::ColorSpace& color_space);
@@ -127,6 +129,7 @@ class MODULES_EXPORT CanvasCaptureHandler {
   class CanvasCaptureHandlerDelegate;
 
   media::VideoCaptureFormat capture_format_;
+  bool can_discard_alpha_ = true;
   bool ask_for_new_frame_;
   media::VideoFramePool frame_pool_;
   base::Optional<base::TimeTicks> first_frame_ticks_;

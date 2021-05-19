@@ -56,7 +56,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/renderer_context_menu/accessibility_labels_menu_observer.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_factory.h"
-#include "chrome/browser/renderer_context_menu/copy_link_to_text_menu_observer.h"
+#include "chrome/browser/renderer_context_menu/link_to_text_menu_observer.h"
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -154,6 +154,7 @@
 #include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
@@ -220,9 +221,9 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/intent_helper/open_with_menu.h"
-#include "chrome/browser/chromeos/arc/intent_helper/start_smart_selection_action_menu.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/intent_helper/open_with_menu.h"
+#include "chrome/browser/ash/arc/intent_helper/start_smart_selection_action_menu.h"
 #include "chrome/browser/renderer_context_menu/quick_answers_menu_observer.h"
 #endif
 
@@ -375,13 +376,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CLIPBOARD_HISTORY_MENU, 111},
        {IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, 112},
        {IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE, 113},
+       {IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT, 114},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 114}});
+       {0, 115}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -698,13 +700,13 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   if (!menu_manager)
     return;
 
-  base::string16 printable_selection_text = PrintableSelectionText();
+  std::u16string printable_selection_text = PrintableSelectionText();
   EscapeAmpersands(&printable_selection_text);
 
   // Get a list of extension id's that have context menu items, and sort by the
   // top level context menu title of the extension.
-  std::vector<base::string16> sorted_menu_titles;
-  std::map<base::string16, std::vector<const Extension*>>
+  std::vector<std::u16string> sorted_menu_titles;
+  std::map<std::u16string, std::vector<const Extension*>>
       title_to_extensions_map;
   for (const auto& id : menu_manager->ExtensionIds()) {
     const Extension* extension = registry->GetExtensionById(
@@ -712,7 +714,7 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
     // Platform apps have their context menus created directly in
     // AppendPlatformAppItems.
     if (extension && !extension->is_platform_app()) {
-      base::string16 menu_title = extension_items_.GetTopLevelContextMenuTitle(
+      std::u16string menu_title = extension_items_.GetTopLevelContextMenuTitle(
           id, printable_selection_text);
       title_to_extensions_map[menu_title].push_back(extension);
       sorted_menu_titles.push_back(menu_title);
@@ -769,7 +771,7 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-base::string16 RenderViewContextMenu::FormatURLForClipboard(const GURL& url) {
+std::u16string RenderViewContextMenu::FormatURLForClipboard(const GURL& url) {
   DCHECK(!url.is_empty());
   DCHECK(url.is_valid());
 
@@ -866,8 +868,13 @@ void RenderViewContextMenu::InitMenu() {
     AppendCopyItem();
 
     if (base::FeatureList::IsEnabled(features::kCopyLinkToText)) {
-      AppendCopyLinkToTextItem();
+      AppendLinkToTextItems();
     }
+  }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_EXISTING_LINK_TO_TEXT)) {
+    AppendLinkToTextItems();
   }
 
   if (!content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK))
@@ -1010,9 +1017,6 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
     } else if (doc_url == GURL(chrome::kChromeUIDownloadsURL)) {
       base::RecordAction(base::UserMetricsAction(
           "Downloads_OpenUrlOfDownloadedItemFromContextMenu"));
-    } else if (doc_url == GURL(chrome::kChromeSearchLocalNtpUrl)) {
-      base::RecordAction(
-          base::UserMetricsAction("NTP_LinkOpenedFromContextMenu"));
     } else if (doc_url.GetOrigin() == chrome::kChromeSearchMostVisitedUrl) {
       base::RecordAction(
           base::UserMetricsAction("MostVisited_ClickedFromContextMenu"));
@@ -1588,7 +1592,7 @@ void RenderViewContextMenu::AppendPageItems() {
             GetPrefs(browser_context_)));
     std::string locale = translate::TranslateManager::GetTargetLanguage(
         prefs.get(), language_model);
-    base::string16 language =
+    std::u16string language =
         l10n_util::GetDisplayNameForLocale(locale, locale, true);
     menu_model_.AddItem(
         IDC_CONTENT_CONTEXT_TRANSLATE,
@@ -1620,14 +1624,14 @@ void RenderViewContextMenu::AppendCopyItem() {
                                   IDS_CONTENT_CONTEXT_COPY);
 }
 
-void RenderViewContextMenu::AppendCopyLinkToTextItem() {
-  if (copy_link_to_text_menu_observer_)
+void RenderViewContextMenu::AppendLinkToTextItems() {
+  if (link_to_text_menu_observer_)
     return;
 
-  copy_link_to_text_menu_observer_ = CopyLinkToTextMenuObserver::Create(this);
-  if (copy_link_to_text_menu_observer_) {
-    observers_.AddObserver(copy_link_to_text_menu_observer_.get());
-    copy_link_to_text_menu_observer_->InitMenu(params_);
+  link_to_text_menu_observer_ = LinkToTextMenuObserver::Create(this);
+  if (link_to_text_menu_observer_) {
+    observers_.AddObserver(link_to_text_menu_observer_.get());
+    link_to_text_menu_observer_->InitMenu(params_);
   }
 }
 
@@ -1666,7 +1670,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
     return;
 
   base::ReplaceChars(params_.selection_text, AutocompleteMatch::kInvalidChars,
-                     base::ASCIIToUTF16(" "), &params_.selection_text);
+                     u" ", &params_.selection_text);
 
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(GetProfile())
@@ -1676,7 +1680,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
   if (!selection_navigation_url_.is_valid())
     return;
 
-  base::string16 printable_selection_text = PrintableSelectionText();
+  std::u16string printable_selection_text = PrintableSelectionText();
   EscapeAmpersands(&printable_selection_text);
 
   if (AutocompleteMatch::IsSearchType(match.type)) {
@@ -2604,14 +2608,13 @@ void RenderViewContextMenu::NotifyMenuShown() {
     std::move(*cb).Run(this);
 }
 
-base::string16 RenderViewContextMenu::PrintableSelectionText() {
+std::u16string RenderViewContextMenu::PrintableSelectionText() {
   return gfx::TruncateString(params_.selection_text, kMaxSelectionTextLength,
                              gfx::WORD_BREAK);
 }
 
-void RenderViewContextMenu::EscapeAmpersands(base::string16* text) {
-  base::ReplaceChars(*text, base::ASCIIToUTF16("&"), base::ASCIIToUTF16("&&"),
-                     text);
+void RenderViewContextMenu::EscapeAmpersands(std::u16string* text) {
+  base::ReplaceChars(*text, u"&", u"&&", text);
 }
 
 // Controller functions --------------------------------------------------------
@@ -2766,7 +2769,7 @@ bool RenderViewContextMenu::IsPasteEnabled() const {
   if (!(params_.edit_flags & ContextMenuDataEditFlags::kCanPaste))
     return false;
 
-  std::vector<base::string16> types;
+  std::vector<std::u16string> types;
   ui::Clipboard::GetForCurrentThread()->ReadAvailableTypes(
       ui::ClipboardBuffer::kCopyPaste,
       CreateDataEndpoint(/*notify_if_restricted=*/false).get(), &types);

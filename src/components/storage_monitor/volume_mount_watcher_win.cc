@@ -14,11 +14,11 @@
 #include <winioctl.h>
 
 #include <algorithm>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -174,7 +174,7 @@ bool GetDeviceDetails(const base::FilePath& device_path, StorageInfo* info) {
   // TODO(gbillock): if volume_label.empty(), get the vendor/model information
   // for the volume.
   *info = StorageInfo(device_id, mount_point, base::WideToUTF16(volume_label),
-                      base::string16(), base::string16(), total_size_in_bytes);
+                      std::u16string(), std::u16string(), total_size_in_bytes);
   return true;
 }
 

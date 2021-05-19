@@ -2,18 +2,50 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
-import * as Host from '../host/host.js';
-import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
-import * as Root from '../root/root.js';
-import * as SDK from '../sdk/sdk.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Root from '../core/root/root.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as MobileThrottling from '../panels/mobile_throttling/mobile_throttling.js';
+import * as UI from '../ui/legacy/legacy.js';
+
+const UIStrings = {
+  /**
+  * @description Text that refers to the main target. The main target is the primary webpage that
+  * DevTools is connected to. This text is used in various places in the UI as a label/name to inform
+  * the user which target/webpage they are currently connected to, as DevTools may connect to multiple
+  * targets at the same time in some scenarios.
+  */
+  main: 'Main',
+  /**
+  * @description A warning shown to the user when JavaScript is disabled on the webpage that
+  * DevTools is connected to.
+  */
+  javascriptIsDisabled: 'JavaScript is disabled',
+};
+const str_ = i18n.i18n.registerUIStrings('inspector_main/InspectorMain.js', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+/** @type {!InspectorMainImpl} */
+let inspectorMainImplInstance;
 
 /**
  * @implements {Common.Runnable.Runnable}
  */
 export class InspectorMainImpl extends Common.ObjectWrapper.ObjectWrapper {
+  /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!inspectorMainImplInstance || forceNew) {
+      inspectorMainImplInstance = new InspectorMainImpl();
+    }
+
+    return inspectorMainImplInstance;
+  }
+
   /**
    * @override
    */
@@ -24,7 +56,7 @@ export class InspectorMainImpl extends Common.ObjectWrapper.ObjectWrapper {
       const waitForDebuggerInPage =
           type === SDK.SDKModel.Type.Frame && Root.Runtime.Runtime.queryParam('panel') === 'sources';
       const target = SDK.SDKModel.TargetManager.instance().createTarget(
-          'main', Common.UIString.UIString('Main'), type, null, undefined, waitForDebuggerInPage);
+          'main', i18nString(UIStrings.main), type, null, undefined, waitForDebuggerInPage);
 
       // Only resume target during the first connection,
       // subsequent connections are due to connection hand-over,
@@ -58,6 +90,8 @@ export class InspectorMainImpl extends Common.ObjectWrapper.ObjectWrapper {
         });
   }
 }
+
+Common.Runnable.registerEarlyInitializationRunnable(InspectorMainImpl.instance);
 
 /** @type {!ReloadActionDelegate} */
 let reloadActionDelegateInstance;
@@ -147,7 +181,7 @@ export class NodeIndicator {
     element.addEventListener(
         'click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openNodeFrontend(), false);
     this._button = new UI.Toolbar.ToolbarItem(element);
-    this._button.setTitle(Common.UIString.UIString('Open dedicated DevTools for Node.js'));
+    this._button.setTitle(i18nString('Open dedicated DevTools for Node.js'));
     SDK.SDKModel.TargetManager.instance().addEventListener(
         SDK.SDKModel.Events.AvailableTargetsChanged,
         event => this._update(/** @type {!Array<!Protocol.Target.TargetInfo>} */ (event.data)));
@@ -198,7 +232,7 @@ export class SourcesPanelIndicator {
       const javaScriptDisabled = Common.Settings.Settings.instance().moduleSetting('javaScriptDisabled').get();
       if (javaScriptDisabled) {
         icon = UI.Icon.Icon.create('smallicon-warning');
-        UI.Tooltip.Tooltip.install(icon, Common.UIString.UIString('JavaScript is disabled'));
+        UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.javascriptIsDisabled));
       }
       UI.InspectorView.InspectorView.instance().setPanelIcon('sources', icon);
     }

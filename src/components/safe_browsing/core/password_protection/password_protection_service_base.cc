@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
+#include "components/safe_browsing/core/browser/sync/sync_utils.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/common/utils.h"
 #include "components/safe_browsing/core/db/database_manager.h"
@@ -45,9 +46,19 @@ const char kPasswordProtectionRequestUrl[] =
 PasswordProtectionServiceBase::PasswordProtectionServiceBase(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    history::HistoryService* history_service)
+    history::HistoryService* history_service,
+    PrefService* pref_service,
+    std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher,
+    bool is_off_the_record,
+    signin::IdentityManager* identity_manager,
+    bool try_token_fetch)
     : database_manager_(database_manager),
-      url_loader_factory_(url_loader_factory) {
+      url_loader_factory_(url_loader_factory),
+      pref_service_(pref_service),
+      token_fetcher_(std::move(token_fetcher)),
+      is_off_the_record_(is_off_the_record),
+      identity_manager_(identity_manager),
+      try_token_fetch_(try_token_fetch) {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
   if (history_service)
     history_service_observation_.Observe(history_service);
@@ -369,10 +380,7 @@ bool PasswordProtectionServiceBase::IsSupportedPasswordTypeForPinging(
 
 bool PasswordProtectionServiceBase::IsSupportedPasswordTypeForModalWarning(
     ReusedPasswordAccountType password_type) const {
-  if (password_type.account_type() ==
-          ReusedPasswordAccountType::SAVED_PASSWORD &&
-      base::FeatureList::IsEnabled(
-          safe_browsing::kPasswordProtectionForSavedPasswords))
+  if (password_type.account_type() == ReusedPasswordAccountType::SAVED_PASSWORD)
     return true;
 
 // Currently password reuse warnings are only supported for saved passwords on
@@ -392,6 +400,18 @@ bool PasswordProtectionServiceBase::IsSupportedPasswordTypeForModalWarning(
          base::FeatureList::IsEnabled(
              safe_browsing::kPasswordProtectionForSignedInUsers);
 #endif
+}
+
+bool PasswordProtectionServiceBase::CanGetAccessToken() {
+  if (!try_token_fetch_ || is_off_the_record_)
+    return false;
+
+  // Return true if the finch feature is enabled for an ESB user, and if the
+  // primary user account is signed in.
+  return base::FeatureList::IsEnabled(kPasswordProtectionWithToken) &&
+         pref_service_ && IsEnhancedProtectionEnabled(*pref_service_) &&
+         identity_manager_ &&
+         safe_browsing::SyncUtils::IsPrimaryAccountSignedIn(identity_manager_);
 }
 
 }  // namespace safe_browsing

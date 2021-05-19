@@ -94,8 +94,7 @@ LIBGAV1_ALWAYS_INLINE void ButterflyRotation_4(__m128i* a, __m128i* b,
       static_cast<uint16_t>(cos128) | (static_cast<uint32_t>(sin128) << 16));
   const __m128i ba = _mm_unpacklo_epi16(*a, *b);
   const __m128i ab = _mm_unpacklo_epi16(*b, *a);
-  const __m128i sign =
-      _mm_set_epi32(0x80000001, 0x80000001, 0x80000001, 0x80000001);
+  const __m128i sign = _mm_set1_epi32(static_cast<int>(0x80000001));
   // -sin cos, -sin cos, -sin cos, -sin cos
   const __m128i msin_pcos = _mm_sign_epi16(psin_pcos, sign);
   const __m128i x0 = _mm_madd_epi16(ba, msin_pcos);
@@ -121,8 +120,7 @@ LIBGAV1_ALWAYS_INLINE void ButterflyRotation_8(__m128i* a, __m128i* b,
   const int16_t sin128 = Sin128(angle);
   const __m128i psin_pcos = _mm_set1_epi32(
       static_cast<uint16_t>(cos128) | (static_cast<uint32_t>(sin128) << 16));
-  const __m128i sign =
-      _mm_set_epi32(0x80000001, 0x80000001, 0x80000001, 0x80000001);
+  const __m128i sign = _mm_set1_epi32(static_cast<int>(0x80000001));
   // -sin cos, -sin cos, -sin cos, -sin cos
   const __m128i msin_pcos = _mm_sign_epi16(psin_pcos, sign);
   const __m128i ba = _mm_unpacklo_epi16(*a, *b);
@@ -229,7 +227,8 @@ LIBGAV1_ALWAYS_INLINE bool DctDcOnly(void* dest, int adjusted_tx_height,
   const __m128i v_src_lo = _mm_shufflelo_epi16(_mm_cvtsi32_si128(dst[0]), 0);
   const __m128i v_src =
       (width == 4) ? v_src_lo : _mm_shuffle_epi32(v_src_lo, 0);
-  const __m128i v_mask = _mm_set1_epi16(should_round ? 0xffff : 0);
+  const __m128i v_mask =
+      _mm_set1_epi16(should_round ? static_cast<int16_t>(0xffff) : 0);
   const __m128i v_kTransformRowMultiplier =
       _mm_set1_epi16(kTransformRowMultiplier << 3);
   const __m128i v_src_round =
@@ -1039,7 +1038,8 @@ LIBGAV1_ALWAYS_INLINE bool Adst4DcOnly(void* dest, int adjusted_tx_height,
   auto* dst = static_cast<int16_t*>(dest);
   const __m128i v_src =
       _mm_shuffle_epi32(_mm_shufflelo_epi16(_mm_cvtsi32_si128(dst[0]), 0), 0);
-  const __m128i v_mask = _mm_set1_epi16(should_round ? 0xffff : 0);
+  const __m128i v_mask =
+      _mm_set1_epi16(should_round ? static_cast<int16_t>(0xffff) : 0);
   const __m128i v_kTransformRowMultiplier =
       _mm_set1_epi16(kTransformRowMultiplier << 3);
   const __m128i v_src_round =
@@ -1194,7 +1194,8 @@ LIBGAV1_ALWAYS_INLINE bool Adst8DcOnly(void* dest, int adjusted_tx_height,
   __m128i s[8];
 
   const __m128i v_src = _mm_shufflelo_epi16(_mm_cvtsi32_si128(dst[0]), 0);
-  const __m128i v_mask = _mm_set1_epi16(should_round ? 0xffff : 0);
+  const __m128i v_mask =
+      _mm_set1_epi16(should_round ? static_cast<int16_t>(0xffff) : 0);
   const __m128i v_kTransformRowMultiplier =
       _mm_set1_epi16(kTransformRowMultiplier << 3);
   const __m128i v_src_round =
@@ -1519,7 +1520,8 @@ LIBGAV1_ALWAYS_INLINE bool Adst16DcOnly(void* dest, int adjusted_tx_height,
   __m128i x[16];
 
   const __m128i v_src = _mm_shufflelo_epi16(_mm_cvtsi32_si128(dst[0]), 0);
-  const __m128i v_mask = _mm_set1_epi16(should_round ? 0xffff : 0);
+  const __m128i v_mask =
+      _mm_set1_epi16(should_round ? static_cast<int16_t>(0xffff) : 0);
   const __m128i v_kTransformRowMultiplier =
       _mm_set1_epi16(kTransformRowMultiplier << 3);
   const __m128i v_src_round =
@@ -1615,7 +1617,8 @@ LIBGAV1_ALWAYS_INLINE bool Identity4DcOnly(void* dest, int adjusted_tx_height,
 
   auto* dst = static_cast<int16_t*>(dest);
   const __m128i v_src0 = _mm_cvtsi32_si128(dst[0]);
-  const __m128i v_mask = _mm_set1_epi16(should_round ? 0xffff : 0);
+  const __m128i v_mask =
+      _mm_set1_epi16(should_round ? static_cast<int16_t>(0xffff) : 0);
   const __m128i v_kTransformRowMultiplier =
       _mm_set1_epi16(kTransformRowMultiplier << 3);
   const __m128i v_src_round =
@@ -1767,7 +1770,8 @@ LIBGAV1_ALWAYS_INLINE bool Identity8DcOnly(void* dest, int adjusted_tx_height,
 
   auto* dst = static_cast<int16_t*>(dest);
   const __m128i v_src0 = _mm_cvtsi32_si128(dst[0]);
-  const __m128i v_mask = _mm_set1_epi16(should_round ? 0xffff : 0);
+  const __m128i v_mask =
+      _mm_set1_epi16(should_round ? static_cast<int16_t>(0xffff) : 0);
   const __m128i v_kTransformRowMultiplier =
       _mm_set1_epi16(kTransformRowMultiplier << 3);
   const __m128i v_src_round =
@@ -1859,7 +1863,8 @@ LIBGAV1_ALWAYS_INLINE bool Identity16DcOnly(void* dest, int adjusted_tx_height,
 
   auto* dst = static_cast<int16_t*>(dest);
   const __m128i v_src0 = _mm_cvtsi32_si128(dst[0]);
-  const __m128i v_mask = _mm_set1_epi16(should_round ? 0xffff : 0);
+  const __m128i v_mask =
+      _mm_set1_epi16(should_round ? static_cast<int16_t>(0xffff) : 0);
   const __m128i v_kTransformRowMultiplier =
       _mm_set1_epi16(kTransformRowMultiplier << 3);
   const __m128i v_src_round0 =

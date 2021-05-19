@@ -267,16 +267,15 @@ std::unique_ptr<LinkEvent> ProgramVk::link(const gl::Context *context,
     reset(contextVk);
     mExecutable.clearVariableInfoMap();
 
-    // Gather variable info and transform sources.
-    gl::ShaderMap<std::string> shaderSources;
-    GlslangWrapperVk::GetShaderSource(contextVk->getRenderer()->getFeatures(), mState, resources,
-                                      &mGlslangProgramInterfaceInfo, &shaderSources,
-                                      &mExecutable.mVariableInfoMap);
+    // Gather variable info and compiled SPIR-V binaries.
+    gl::ShaderMap<const angle::spirv::Blob *> spirvBlobs;
+    GlslangWrapperVk::GetShaderCode(contextVk->getFeatures(), mState, resources,
+                                    &mGlslangProgramInterfaceInfo, &spirvBlobs,
+                                    &mExecutable.mVariableInfoMap);
 
     // Compile the shaders.
-    angle::Result status =
-        mOriginalShaderInfo.initShaders(contextVk, mState.getExecutable().getLinkedShaderStages(),
-                                        shaderSources, mExecutable.mVariableInfoMap);
+    angle::Result status = mOriginalShaderInfo.initShaders(
+        mState.getExecutable().getLinkedShaderStages(), spirvBlobs, mExecutable.mVariableInfoMap);
     if (status != angle::Result::Continue)
     {
         return std::make_unique<LinkEventDone>(status);
@@ -759,7 +758,7 @@ angle::Result ProgramVk::updateUniforms(ContextVk *contextVk)
         {
             const angle::MemoryBuffer &uniformData = mDefaultUniformBlocks[shaderType].uniformData;
             memcpy(&bufferData[offsets[shaderType]], uniformData.data(), uniformData.size());
-            mExecutable.mDynamicBufferOffsets[offsetIndex] =
+            mExecutable.mDynamicDescriptorOffsets[offsetIndex] =
                 static_cast<uint32_t>(bufferOffset + offsets[shaderType]);
             mDefaultUniformBlocksDirty.reset(shaderType);
         }
@@ -773,8 +772,8 @@ angle::Result ProgramVk::updateUniforms(ContextVk *contextVk)
     {
         // We need to reinitialize the descriptor sets if we newly allocated buffers since we can't
         // modify the descriptor sets once initialized.
-        vk::UniformsAndXfbDesc defaultUniformsDesc;
-        vk::UniformsAndXfbDesc *uniformsAndXfbBufferDesc;
+        vk::UniformsAndXfbDescriptorDesc defaultUniformsDesc;
+        vk::UniformsAndXfbDescriptorDesc *uniformsAndXfbBufferDesc;
 
         if (glExecutable.hasTransformFeedbackOutput())
         {

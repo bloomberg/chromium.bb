@@ -4,13 +4,13 @@
 
 #include "components/autofill/core/browser/payments/credit_card_fido_authenticator.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/base64.h"
 #include "base/containers/flat_set.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -414,9 +414,9 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
   if (current_flow_ == AUTHENTICATION_FLOW) {
     base::Value response =
         ParseAssertionResponse(std::move(assertion_response));
-    full_card_request_.reset(new payments::FullCardRequest(
+    full_card_request_ = std::make_unique<payments::FullCardRequest>(
         autofill_client_, autofill_client_->GetPaymentsClient(),
-        autofill_client_->GetPersonalDataManager(), form_parsed_timestamp_));
+        autofill_client_->GetPersonalDataManager(), form_parsed_timestamp_);
     full_card_request_->GetFullCardViaFIDO(
         *card_, AutofillClient::UNMASK_FOR_AUTOFILL,
         weak_ptr_factory_.GetWeakPtr(), std::move(response));
@@ -514,7 +514,7 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
 void CreditCardFIDOAuthenticator::OnFullCardRequestSucceeded(
     const payments::FullCardRequest& full_card_request,
     const CreditCard& card,
-    const base::string16& cvc) {
+    const std::u16string& cvc) {
   DCHECK_EQ(AUTHENTICATION_FLOW, current_flow_);
   current_flow_ = NONE_FLOW;
   requester_->OnFIDOAuthenticationComplete(/*did_succeed=*/true, &card, cvc);

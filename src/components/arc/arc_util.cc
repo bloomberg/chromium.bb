@@ -47,6 +47,10 @@ constexpr char kAlwaysStartWithNoPlayStore[] =
 
 constexpr const char kCrosSystemPath[] = "/usr/bin/crossystem";
 
+// ArcVmUreadaheadMode param value strings.
+constexpr char kGenerate[] = "generate";
+constexpr char kDisabled[] = "disabled";
+
 void SetArcCpuRestrictionCallback(
     login_manager::ContainerCpuRestrictionState state,
     bool success) {
@@ -187,6 +191,25 @@ bool IsArcVmRtVcpuEnabled(uint32_t cpus) {
 bool IsArcVmDevConfIgnored() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kIgnoreArcVmDevConf);
+}
+
+ArcVmUreadaheadMode GetArcVmUreadaheadMode() {
+  ArcVmUreadaheadMode mode = ArcVmUreadaheadMode::READAHEAD;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kArcVmUreadaheadMode)) {
+    const std::string value =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            chromeos::switches::kArcVmUreadaheadMode);
+    if (value == kGenerate) {
+      mode = ArcVmUreadaheadMode::GENERATE;
+    } else if (value == kDisabled) {
+      mode = ArcVmUreadaheadMode::DISABLED;
+    } else {
+      LOG(ERROR) << "Invalid parameter " << value << " for "
+                 << chromeos::switches::kArcVmUreadaheadMode;
+    }
+  }
+  return mode;
 }
 
 bool ShouldArcAlwaysStart() {

@@ -205,7 +205,7 @@ void AppLauncherHandler::CreateWebAppInfo(const web_app::AppId& app_id,
 
   auto& registrar = web_app_provider_->registrar();
 
-  base::string16 name = base::UTF8ToUTF16(registrar.GetAppShortName(app_id));
+  std::u16string name = base::UTF8ToUTF16(registrar.GetAppShortName(app_id));
   NewTabUI::SetUrlTitleAndDirection(value, name,
                                     registrar.GetAppStartUrl(app_id));
   NewTabUI::SetFullNameAndDirection(name, value);
@@ -314,14 +314,14 @@ void AppLauncherHandler::CreateExtensionInfo(const Extension* extension,
 
   // The Extension class 'helpfully' wraps bidi control characters that
   // impede our ability to determine directionality.
-  base::string16 short_name = base::UTF8ToUTF16(extension->short_name());
+  std::u16string short_name = base::UTF8ToUTF16(extension->short_name());
   base::i18n::UnadjustStringForLocaleDirection(&short_name);
   NewTabUI::SetUrlTitleAndDirection(
       value,
       short_name,
       extensions::AppLaunchInfo::GetFullLaunchURL(extension));
 
-  base::string16 name = base::UTF8ToUTF16(extension->name());
+  std::u16string name = base::UTF8ToUTF16(extension->name());
   base::i18n::UnadjustStringForLocaleDirection(&name);
   NewTabUI::SetFullNameAndDirection(name, value);
 
@@ -373,8 +373,9 @@ void AppLauncherHandler::CreateExtensionInfo(const Extension* extension,
           extensions::AppLaunchInfo::GetLaunchContainer(extension)));
   ExtensionPrefs* prefs = ExtensionPrefs::Get(extension_service_->profile());
   value->SetInteger("launch_type", extensions::GetLaunchType(prefs, extension));
-  value->SetBoolean("is_component",
-                    extension->location() == extensions::Manifest::COMPONENT);
+  value->SetBoolean(
+      "is_component",
+      extension->location() == extensions::mojom::ManifestLocation::kComponent);
   value->SetBoolean("is_webstore",
       extension->id() == extensions::kWebStoreAppId);
 
@@ -1136,7 +1137,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
   if (attempting_web_app_install_page_ordinal_.has_value())
     return;
 
-  base::string16 title;
+  std::u16string title;
   CHECK(args->GetString(1, &title));
 
   double page_index;
@@ -1224,7 +1225,7 @@ void AppLauncherHandler::OnFaviconForAppInstallFromLink(
   web_app->start_url = install_info->app_url;
 
   if (!image_result.image.IsEmpty()) {
-    web_app->icon_bitmaps_any[image_result.image.Width()] =
+    web_app->icon_bitmaps.any[image_result.image.Width()] =
         image_result.image.AsBitmap();
   }
 
@@ -1308,7 +1309,7 @@ void AppLauncherHandler::OnOsHooksInstalled(
 
 void AppLauncherHandler::OnExtensionUninstallDialogClosed(
     bool did_start_uninstall,
-    const base::string16& error) {
+    const std::u16string& error) {
   CleanupAfterUninstall();
 }
 

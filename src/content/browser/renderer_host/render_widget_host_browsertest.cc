@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -37,6 +38,7 @@
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/latency/latency_info.h"
@@ -99,12 +101,15 @@ class RenderWidgetHostBrowserTest : public ContentBrowserTest {
   }
 };
 
-// This test enables --site-per-porcess flag.
+// This test enables --site-per-process flag.
 class RenderWidgetHostSitePerProcessTest : public ContentBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
     IsolateAllSitesForTesting(command_line);
+    // Slow bots are flaky due to slower loading interacting with
+    // deferred commits.
+    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
   }
 
   void SetUpOnMainThread() override {
@@ -510,7 +515,7 @@ class DocumentLoadObserver : WebContentsObserver {
   void Wait() {
     if (loaded_)
       return;
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
   }
 
@@ -631,8 +636,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
     }
     // Ensure the renderer didn't explode :).
     {
-      base::string16 title_when_done[] = {base::UTF8ToUTF16("done 0"),
-                                          base::UTF8ToUTF16("done 1")};
+      std::u16string title_when_done[] = {u"done 0", u"done 1"};
       TitleWatcher title_watcher(shell()->web_contents(), title_when_done[i]);
       EXPECT_TRUE(ExecuteScript(root_frame_host,
                                 JsReplace("document.title='done $1'", i)));

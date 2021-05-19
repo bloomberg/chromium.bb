@@ -14,7 +14,6 @@
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
@@ -68,14 +67,9 @@ ArrowButtonView::ArrowButtonView(PressedCallback callback, int size)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  AshColorProvider::Get()->DecorateIconButton(
-      this, kLockScreenArrowIcon, /*toggled_=*/false, kArrowIconSizeDp);
   focus_ring()->SetPathGenerator(
       std::make_unique<views::FixedSizeCircleHighlightPathGenerator>(
           kArrowIconBackroundRadius));
-
-  SetBackgroundColor(AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive));
 }
 
 ArrowButtonView::~ArrowButtonView() = default;
@@ -86,7 +80,8 @@ void ArrowButtonView::PaintButtonContents(gfx::Canvas* canvas) {
   // Draw background.
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(background_color_);
+  flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), rect.width() / 2, flags);
 
@@ -105,11 +100,6 @@ void ArrowButtonView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetNameExplicitlyEmpty();
 }
 
-void ArrowButtonView::SetBackgroundColor(SkColor color) {
-  background_color_ = color;
-  SchedulePaint();
-}
-
 void ArrowButtonView::EnableLoadingAnimation(bool enabled) {
   if (!enabled) {
     if (!loading_animation_)
@@ -124,14 +114,19 @@ void ArrowButtonView::EnableLoadingAnimation(bool enabled) {
 
   // Use MultiAnimation in order to have a continuously running analog of
   // LinearAnimation.
-  loading_animation_ = std::make_unique<gfx::MultiAnimation>(
-      gfx::MultiAnimation::Parts{
+  loading_animation_ =
+      std::make_unique<gfx::MultiAnimation>(gfx::MultiAnimation::Parts{
           gfx::MultiAnimation::Part(kLoadingAnimationStepDuration,
                                     gfx::Tween::LINEAR),
-      },
-      gfx::MultiAnimation::kDefaultTimerInterval);
+      });
   loading_animation_->set_delegate(&loading_animation_delegate_);
   loading_animation_->Start();
+}
+
+void ArrowButtonView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  AshColorProvider::Get()->DecorateIconButton(
+      this, kLockScreenArrowIcon, /*toggled_=*/false, kArrowIconSizeDp);
 }
 
 ArrowButtonView::LoadingAnimationDelegate::LoadingAnimationDelegate(

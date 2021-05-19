@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -20,7 +21,6 @@
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +34,7 @@
 #include "components/services/storage/public/mojom/cache_storage_control.mojom.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -43,6 +44,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_context.h"
@@ -542,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, FetchPageWithSaveData) {
                      blink::ServiceWorkerStatusCode::kOk, base::DoNothing()));
   observer->Wait();
 
-  const base::string16 title1 = base::ASCIIToUTF16("save-data=on");
+  const std::u16string title1 = u"save-data=on";
   TitleWatcher title_watcher1(shell()->web_contents(), title1);
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl)));
   EXPECT_EQ(title1, title_watcher1.WaitAndGetTitle());
@@ -589,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
                      blink::ServiceWorkerStatusCode::kOk, base::DoNothing()));
   observer->Wait();
 
-  const base::string16 title = base::ASCIIToUTF16("PASS");
+  const std::u16string title = u"PASS";
   TitleWatcher title_watcher(shell()->web_contents(), title);
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(base::StringPrintf(
@@ -668,12 +670,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
                      blink::ServiceWorkerStatusCode::kOk, base::DoNothing()));
   observer->Wait();
 
-  const base::string16 title1 = base::ASCIIToUTF16("reload=false");
+  const std::u16string title1 = u"reload=false";
   TitleWatcher title_watcher1(shell()->web_contents(), title1);
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl)));
   EXPECT_EQ(title1, title_watcher1.WaitAndGetTitle());
 
-  const base::string16 title2 = base::ASCIIToUTF16("reload=true");
+  const std::u16string title2 = u"reload=true";
   TitleWatcher title_watcher2(shell()->web_contents(), title2);
   ReloadBlockUntilNavigationsComplete(shell(), 1);
   EXPECT_EQ(title2, title_watcher2.WaitAndGetTitle());
@@ -812,7 +814,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
     }
 
     // Wait until the page is appropriately served by the service worker.
-    const base::string16 title = base::ASCIIToUTF16("Title");
+    const std::u16string title = u"Title";
     TitleWatcher title_watcher(shell()->web_contents(), title);
     EXPECT_TRUE(NavigateToURL(shell(), https_server.GetURL(kPageUrl)));
     EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
@@ -834,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
     observer->Wait();
 
     // Wait until the page is appropriately served by the service worker.
-    const base::string16 title = base::ASCIIToUTF16("Title");
+    const std::u16string title = u"Title";
     TitleWatcher title_watcher(shell()->web_contents(), title);
     EXPECT_TRUE(NavigateToURL(shell(), https_server.GetURL(kPageUrl)));
     EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
@@ -871,7 +873,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
                      blink::ServiceWorkerStatusCode::kOk, base::DoNothing()));
   observer->Wait();
 
-  const base::string16 title = base::ASCIIToUTF16("Title");
+  const std::u16string title = u"Title";
   TitleWatcher title_watcher(shell()->web_contents(), title);
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl)));
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
@@ -896,13 +898,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, ImportsBustMemcache) {
   StartServerAndNavigateToSetup();
   const char kScopeUrl[] = "/service_worker/imports_bust_memcache_scope/";
   const char kPageUrl[] = "/service_worker/imports_bust_memcache.html";
-  const base::string16 kOKTitle(base::ASCIIToUTF16("OK"));
-  const base::string16 kFailTitle(base::ASCIIToUTF16("FAIL"));
+  const std::u16string kOKTitle(u"OK");
+  const std::u16string kFailTitle(u"FAIL");
 
   TitleWatcher title_watcher(shell()->web_contents(), kOKTitle);
   title_watcher.AlsoWaitForTitle(kFailTitle);
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl)));
-  base::string16 title = title_watcher.WaitAndGetTitle();
+  std::u16string title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(kOKTitle, title);
 
   // Verify the number of resources in the implicit script cache is correct.
@@ -1164,8 +1166,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerEagerCacheStorageSetupTest,
   observer->Wait();
 
   // Navigation should succeed.
-  const base::string16 title =
-      base::ASCIIToUTF16("ServiceWorker test - empty page");
+  const std::u16string title = u"ServiceWorker test - empty page";
   TitleWatcher title_watcher(shell()->web_contents(), title);
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("/service_worker/empty.html")));
@@ -1225,11 +1226,11 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
     StartServerAndNavigateToSetup();
     SetupForNavigationPreloadTest(page_url, worker_url);
 
-    const base::string16 title = base::ASCIIToUTF16("PASS");
+    const std::u16string title = u"PASS";
     TitleWatcher title_watcher(shell()->web_contents(), title);
-    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("ERROR"));
-    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("REJECTED"));
-    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("RESOLVED"));
+    title_watcher.AlsoWaitForTitle(u"ERROR");
+    title_watcher.AlsoWaitForTitle(u"REJECTED");
+    title_watcher.AlsoWaitForTitle(u"RESOLVED");
     EXPECT_TRUE(NavigateToURL(shell(), page_url));
     EXPECT_EQ(base::ASCIIToUTF16(expected_result),
               title_watcher.WaitAndGetTitle());
@@ -1274,7 +1275,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
     base::RunLoop run_loop;
     std::string text_content;
     shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16("document.body.textContent;"),
+        u"document.body.textContent;",
         base::BindOnce(&StoreString, &text_content, run_loop.QuitClosure()));
     run_loop.Run();
     return text_content;
@@ -1486,9 +1487,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, SetHeaderValue) {
   SetupForNavigationPreloadTest(page_url, worker_url);
 
   const std::string kPageUrl1 = kPageUrl + "?enable";
-  const base::string16 title1 = base::ASCIIToUTF16("ENABLED");
+  const std::u16string title1 = u"ENABLED";
   TitleWatcher title_watcher1(shell()->web_contents(), title1);
-  title_watcher1.AlsoWaitForTitle(base::ASCIIToUTF16("FROM_SERVER"));
+  title_watcher1.AlsoWaitForTitle(u"FROM_SERVER");
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl1)));
   EXPECT_EQ(title1, title_watcher1.WaitAndGetTitle());
@@ -1497,9 +1498,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, SetHeaderValue) {
   ASSERT_EQ(0, GetRequestCount(kPageUrl1));
 
   const std::string kPageUrl2 = kPageUrl + "?change";
-  const base::string16 title2 = base::ASCIIToUTF16("CHANGED");
+  const std::u16string title2 = u"CHANGED";
   TitleWatcher title_watcher2(shell()->web_contents(), title2);
-  title_watcher2.AlsoWaitForTitle(base::ASCIIToUTF16("FROM_SERVER"));
+  title_watcher2.AlsoWaitForTitle(u"FROM_SERVER");
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl2)));
   EXPECT_EQ(title2, title_watcher2.WaitAndGetTitle());
@@ -1511,9 +1512,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, SetHeaderValue) {
   EXPECT_EQ("true", GetNavigationPreloadHeader(request_log_[kPageUrl2][0]));
 
   const std::string kPageUrl3 = kPageUrl + "?disable";
-  const base::string16 title3 = base::ASCIIToUTF16("DISABLED");
+  const std::u16string title3 = u"DISABLED";
   TitleWatcher title_watcher3(shell()->web_contents(), title3);
-  title_watcher3.AlsoWaitForTitle(base::ASCIIToUTF16("FROM_SERVER"));
+  title_watcher3.AlsoWaitForTitle(u"FROM_SERVER");
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl3)));
   EXPECT_EQ(title3, title_watcher3.WaitAndGetTitle());
@@ -1524,9 +1525,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, SetHeaderValue) {
   EXPECT_EQ("Hello", GetNavigationPreloadHeader(request_log_[kPageUrl3][0]));
 
   const std::string kPageUrl4 = kPageUrl + "?test";
-  const base::string16 title4 = base::ASCIIToUTF16("TEST");
+  const std::u16string title4 = u"TEST";
   TitleWatcher title_watcher4(shell()->web_contents(), title4);
-  title_watcher4.AlsoWaitForTitle(base::ASCIIToUTF16("FROM_SERVER"));
+  title_watcher4.AlsoWaitForTitle(u"FROM_SERVER");
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl4)));
   EXPECT_EQ(title4, title_watcher4.WaitAndGetTitle());
@@ -1733,9 +1734,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, NetworkError) {
 
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
-  const base::string16 title = base::ASCIIToUTF16("REJECTED");
+  const std::u16string title = u"REJECTED";
   TitleWatcher title_watcher(shell()->web_contents(), title);
-  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("RESOLVED"));
+  title_watcher.AlsoWaitForTitle(u"RESOLVED");
   EXPECT_TRUE(NavigateToURL(shell(), page_url));
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   EXPECT_EQ(kNavigationPreloadNetworkError, GetTextContent());
@@ -1939,7 +1940,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
   // Navigate to a same-origin, out of scope URL that redirects to the target
   // URL. The navigation preload request should be the single request to the
   // target URL.
-  const base::string16 title1 = base::ASCIIToUTF16("?1");
+  const std::u16string title1 = u"?1";
   TitleWatcher title_watcher1(shell()->web_contents(), title1);
   GURL expected_commit_url1(embedded_test_server()->GetURL(kPageUrl + "?1"));
   EXPECT_TRUE(NavigateToURL(shell(), redirect_page_url, expected_commit_url1));
@@ -1949,7 +1950,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
   // Navigate to a same-origin, in-scope URL that redirects to the target URL.
   // The navigation preload request should be the single request to the target
   // URL.
-  const base::string16 title2 = base::ASCIIToUTF16("?2");
+  const std::u16string title2 = u"?2";
   TitleWatcher title_watcher2(shell()->web_contents(), title2);
   GURL expected_commit_url2(embedded_test_server()->GetURL(kPageUrl + "?2"));
   EXPECT_TRUE(
@@ -1959,7 +1960,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
 
   // Navigate to a cross-origin URL that redirects to the target URL. The
   // navigation preload request should be the single request to the target URL.
-  const base::string16 title3 = base::ASCIIToUTF16("?3");
+  const std::u16string title3 = u"?3";
   TitleWatcher title_watcher3(shell()->web_contents(), title3);
   GURL expected_commit_url3(embedded_test_server()->GetURL(kPageUrl + "?3"));
   EXPECT_TRUE(NavigateToURL(shell(), cross_origin_redirect_page_url,
@@ -2225,8 +2226,7 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
   }
 
   void NavigateToTestPage() {
-    const base::string16 title =
-        base::ASCIIToUTF16("Title was changed by the script.");
+    const std::u16string title = u"Title was changed by the script.";
     TitleWatcher title_watcher(shell()->web_contents(), title);
     EXPECT_TRUE(
         NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl)));
@@ -2577,7 +2577,7 @@ class ServiceWorkerDisableWebSecurityTest : public ServiceWorkerBrowserTest {
 
   void RunTestWithCrossOriginURL(const std::string& test_page,
                                  const std::string& cross_origin_url) {
-    const base::string16 title = base::ASCIIToUTF16("PASS");
+    const std::u16string title = u"PASS";
     TitleWatcher title_watcher(shell()->web_contents(), title);
     EXPECT_TRUE(NavigateToURL(
         shell(), embedded_test_server()->GetURL(
@@ -3240,5 +3240,251 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCrossOriginIsolatedBrowserTest,
 INSTANTIATE_TEST_SUITE_P(All,
                          ServiceWorkerCrossOriginIsolatedBrowserTest,
                          testing::Combine(testing::Bool(), testing::Bool()));
+
+// Tests with BackForwardCache and KeepActiveFreezing enabled.
+class ServiceWorkerBackForwardCacheBrowserTest
+    : public ServiceWorkerBrowserTest {
+ protected:
+  ServiceWorkerBackForwardCacheBrowserTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        {{{features::kBackForwardCache,
+           {{"TimeToLiveInBackForwardCacheInSeconds", "3600"},
+            {"enable_same_site", "true"},
+            {"process_binding_strength", "NORMAL"}}},
+          {blink::features::kFreezeWhileKeepActive, {}}}
+
+        },
+        {features::kBackForwardCacheMemoryControls});
+  }
+
+  WebContentsImpl* web_contents() const {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
+  RenderFrameHostImpl* current_frame_host() {
+    return web_contents()->GetFrameTree()->root()->current_frame_host();
+  }
+
+  const std::string kTryToTriggerEvictionScript = R"(
+    window.addEventListener('freeze', () => {
+      setTimeout(() => {
+        console.log('script that might cause eviction');
+      }, 0);
+    })
+  )";
+
+  const std::string kPostMessageScript = R"(
+    new Promise((resolve, reject) => {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        resolve(event.data);
+      });
+      navigator.serviceWorker.controller.postMessage(
+        "postMessage from the page");
+    });
+  )";
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests that a service worker that shares a renderer process with a
+// back-forward cached page and an active page still runs normally.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBackForwardCacheBrowserTest,
+                       ShareProcessWithBackForwardCachedPageAndLivePage) {
+  StartServerAndNavigateToSetup();
+
+  GURL url_1(embedded_test_server()->GetURL(
+      "/service_worker/create_service_worker.html"));
+  GURL url_2(embedded_test_server()->GetURL("/service_worker/empty.html"));
+  GURL service_worker_url(
+      embedded_test_server()->GetURL("/service_worker/hello.js"));
+
+  // 1) Navigate to |url_1|, and register a service worker for it.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  RenderFrameHostImpl* rfh_1 = current_frame_host();
+
+  {
+    WorkerRunningStatusObserver observer(public_context());
+    // Register service worker in the current page. This will run a new service
+    // worker.
+    EXPECT_EQ("DONE", EvalJs(rfh_1, "register('hello.js');"));
+    observer.WaitUntilRunning();
+  }
+
+  {
+    // Assert that there's only 1 service worker running.
+    const base::flat_map<int64_t, ServiceWorkerRunningInfo>& infos =
+        public_context()->GetRunningServiceWorkerInfos();
+    ASSERT_EQ(1u, infos.size());
+
+    // The service worker shares the process with the page that requested it.
+    const ServiceWorkerRunningInfo& running_info = infos.begin()->second;
+    EXPECT_EQ(service_worker_url, running_info.script_url);
+    EXPECT_EQ(rfh_1->GetProcess()->GetID(), running_info.render_process_id);
+  }
+
+  // Reload the page so that it would use the service worker.
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  rfh_1 = current_frame_host();
+
+  // Fetch something from the service worker.
+  EXPECT_EQ(
+      "hello from the service worker\n",
+      EvalJs(rfh_1, "fetch('./hello_sw').then(response => response.text())"));
+
+  // Send message to the service worker, and expect a reply.
+  EXPECT_EQ("postMessage from the service worker",
+            EvalJs(rfh_1, kPostMessageScript));
+
+  // When the page is about to be frozen before getting into the back-forward
+  // cache, set a timeout that will run script and cause the page to be evicted
+  // from the back-forward cache if the task queues are not properly frozen.
+  EXPECT_TRUE(ExecJs(rfh_1, kTryToTriggerEvictionScript));
+
+  // 2) Navigate to |url_2|, which is in-scope of the service worker.
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+  EXPECT_TRUE(rfh_1->IsInBackForwardCache());
+  RenderFrameHostImpl* rfh_2 = current_frame_host();
+
+  // |rfh_1| and |rfh_2| uses the same renderer process.
+  EXPECT_EQ(rfh_1->GetProcess(), rfh_2->GetProcess());
+
+  {
+    // Assert that there's still only 1 service worker running.
+    const base::flat_map<int64_t, ServiceWorkerRunningInfo>& infos =
+        public_context()->GetRunningServiceWorkerInfos();
+    ASSERT_EQ(1u, infos.size());
+
+    // The service worker also shares the same process as |rfh_2|.
+    const ServiceWorkerRunningInfo& running_info = infos.begin()->second;
+    EXPECT_EQ(service_worker_url, running_info.script_url);
+    EXPECT_EQ(rfh_2->GetProcess()->GetID(), running_info.render_process_id);
+  }
+
+  // Fetch something from the service worker.
+  EXPECT_EQ(
+      "hello from the service worker\n",
+      EvalJs(rfh_2, "fetch('./hello_sw').then(response => response.text())"));
+
+  // Send message to the service worker, and expect a reply.
+  EXPECT_EQ("postMessage from the service worker",
+            EvalJs(rfh_2, kPostMessageScript));
+
+  // This test passes if the service worker still runs and responds correctly,
+  // and |rfh_1| stays in the back-forward cache, and we're able to restore it
+  // from the back-forward cache when we go back.
+  EXPECT_TRUE(rfh_1->IsInBackForwardCache());
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(rfh_1, current_frame_host());
+}
+
+// Tests that a service worker that shares a renderer process with a
+// back-forward cached page and no active pages still runs normally.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBackForwardCacheBrowserTest,
+                       ShareProcessWithBackForwardCachedPageOnly) {
+  StartServerAndNavigateToSetup();
+
+  GURL url_1(embedded_test_server()->GetURL(
+      "/service_worker/create_service_worker.html"));
+  GURL url_2(embedded_test_server()->GetURL("/service_worker/empty.html"));
+  GURL webui_url(std::string(kChromeUIScheme) + "://" +
+                 std::string(kChromeUIGpuHost));
+  GURL service_worker_url(
+      embedded_test_server()->GetURL("/service_worker/hello.js"));
+
+  // 1) Navigate to |url_1|, and register a service worker for it.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  RenderFrameHostImpl* rfh_1 = current_frame_host();
+
+  {
+    WorkerRunningStatusObserver observer(public_context());
+    // Register service worker in the current page. This will run a new service
+    // worker.
+    EXPECT_EQ("DONE", EvalJs(rfh_1, "register('hello.js');"));
+    observer.WaitUntilRunning();
+  }
+
+  {
+    // Assert that there's only 1 service worker running.
+    const base::flat_map<int64_t, ServiceWorkerRunningInfo>& infos =
+        public_context()->GetRunningServiceWorkerInfos();
+    ASSERT_EQ(1u, infos.size());
+
+    // The service worker shares the process with the page that requested it.
+    const ServiceWorkerRunningInfo& running_info = infos.begin()->second;
+    EXPECT_EQ(service_worker_url, running_info.script_url);
+    EXPECT_EQ(rfh_1->GetProcess()->GetID(), running_info.render_process_id);
+  }
+
+  // Reload the page so that it would use the service worker.
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  rfh_1 = current_frame_host();
+
+  // Fetch something from the service worker.
+  EXPECT_EQ(
+      "hello from the service worker\n",
+      EvalJs(rfh_1, "fetch('./hello_sw').then(response => response.text())"));
+
+  // Send message to the service worker, and expect a reply.
+  EXPECT_EQ("postMessage from the service worker",
+            EvalJs(rfh_1, kPostMessageScript));
+
+  // When the page is about to be frozen before getting into the back-forward
+  // cache, set a timeout that will run script and cause the page to be evicted
+  // from the back-forward cache if the task queues are not properly frozen.
+  EXPECT_TRUE(ExecJs(rfh_1, kTryToTriggerEvictionScript));
+
+  // 2) Navigate to a WebUI page that will use a different process than |rfh_1|.
+  EXPECT_TRUE(NavigateToURL(shell(), webui_url));
+  // The previous page will get into the back-forward cache. At this point, the
+  // service worker does not share a process with any active pages.
+  EXPECT_TRUE(rfh_1->IsInBackForwardCache());
+  EXPECT_NE(rfh_1->GetProcess(), current_frame_host()->GetProcess());
+
+  // 3) Open a new tab and navigate it to |url_2|, which is in-scope of the
+  // service worker.
+  Shell* new_shell = Shell::CreateNewWindow(
+      web_contents()->GetController().GetBrowserContext(), GURL::EmptyGURL(),
+      nullptr, gfx::Size());
+  EXPECT_TRUE(NavigateToURL(new_shell, url_2));
+  RenderFrameHostImpl* rfh_2 = static_cast<RenderFrameHostImpl*>(
+      new_shell->web_contents()->GetMainFrame());
+
+  // |rfh_1| and |rfh_2| are in different renderer processes because they are
+  // in different tabs.
+  EXPECT_NE(rfh_1->GetProcess(), rfh_2->GetProcess());
+
+  {
+    // Assert that there's only 1 service worker running.
+    const base::flat_map<int64_t, ServiceWorkerRunningInfo>& infos =
+        public_context()->GetRunningServiceWorkerInfos();
+    ASSERT_EQ(1u, infos.size());
+
+    // The service worker is in a different process than |rfh_2| (it's still
+    // in |rfh_1|'s process).
+    const ServiceWorkerRunningInfo& running_info = infos.begin()->second;
+    EXPECT_EQ(service_worker_url, running_info.script_url);
+    EXPECT_NE(rfh_2->GetProcess()->GetID(), running_info.render_process_id);
+    EXPECT_EQ(rfh_1->GetProcess()->GetID(), running_info.render_process_id);
+  }
+
+  // Fetch something from the service worker.
+  EXPECT_EQ(
+      "hello from the service worker\n",
+      EvalJs(rfh_2, "fetch('./hello_sw').then(response => response.text())"));
+
+  // Send message to the service worker, and expect a reply.
+  EXPECT_EQ("postMessage from the service worker",
+            EvalJs(rfh_2, kPostMessageScript));
+
+  // This test passes if the service worker still runs and responds correctly,
+  // and |rfh_1| stays in the back-forward cache, and we're able to restore it
+  // from the back-forward cache when we go back.
+  EXPECT_TRUE(rfh_1->IsInBackForwardCache());
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(rfh_1, current_frame_host());
+}
 
 }  // namespace content

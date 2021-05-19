@@ -15,7 +15,6 @@
 #include "src/diagnostic/formatter.h"
 
 #include <algorithm>
-#include <sstream>
 #include <vector>
 
 #include "src/diagnostic/diagnostic.h"
@@ -27,8 +26,8 @@ namespace {
 
 const char* to_str(Severity severity) {
   switch (severity) {
-    case Severity::Info:
-      return "info";
+    case Severity::Note:
+      return "note";
     case Severity::Warning:
       return "warning";
     case Severity::Error:
@@ -173,7 +172,7 @@ void Formatter::format(const Diagnostic& diag, State& state) const {
 
   Color severity_color = Color::kDefault;
   switch (diag.severity) {
-    case Severity::Info:
+    case Severity::Note:
       break;
     case Severity::Warning:
       severity_color = Color::kYellow;

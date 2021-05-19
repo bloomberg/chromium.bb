@@ -17,9 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/process/process.h"
-#include "base/strings/string16.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
-#include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "ipc/ipc_sender.h"
@@ -87,7 +85,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
 
   // Returns the instances that match the specified process name.
   // It can only be called on the IO thread.
-  static void FindByName(const base::string16& name,
+  static void FindByName(const std::u16string& name,
                          std::vector<PpapiPluginProcessHost*>* hosts);
 
   // IPC::Sender implementation:
@@ -135,9 +133,6 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
 
   // IPC message handlers.
   void OnRendererPluginChannelCreated(const IPC::ChannelHandle& handle);
-
-  // Handles most requests from the plugin. May be NULL.
-  scoped_refptr<PepperMessageFilter> filter_;
 
   ppapi::PpapiPermissions permissions_;
   std::unique_ptr<BrowserPpapiHostImpl> host_impl_;

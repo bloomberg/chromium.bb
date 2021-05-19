@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/mojom/manifest.mojom-shared.h"
 
 class Profile;
 
@@ -45,8 +46,8 @@ class Provider : public extensions::ExternalProviderImpl {
   Provider(Profile* profile,
            VisitorInterface* service,
            scoped_refptr<extensions::ExternalLoader> loader,
-           extensions::Manifest::Location crx_location,
-           extensions::Manifest::Location download_location,
+           extensions::mojom::ManifestLocation crx_location,
+           extensions::mojom::ManifestLocation download_location,
            int creation_flags);
 
   // ExternalProviderImpl overrides:

@@ -4,13 +4,13 @@
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
 
+#include <string>
+
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -30,7 +30,6 @@
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
@@ -80,13 +79,13 @@ constexpr char kAppTimeLimitUpdateNotificationId[] = "time-limit-updated-id-";
 // formatted result will be one value or two values: for example if the time
 // delta is 2 hours 30 minutes: |cutoff| of <2 will result in "2 hours" and
 // |cutoff| of 3 will result in "2 hours and 30 minutes".
-base::string16 GetTimeLimitMessage(base::TimeDelta time_limit, int cutoff) {
+std::u16string GetTimeLimitMessage(base::TimeDelta time_limit, int cutoff) {
   return ui::TimeFormat::Detailed(ui::TimeFormat::Format::FORMAT_DURATION,
                                   ui::TimeFormat::Length::LENGTH_LONG, cutoff,
                                   time_limit);
 }
 
-base::string16 GetNotificationTitleFor(const base::string16& app_name,
+std::u16string GetNotificationTitleFor(const std::u16string& app_name,
                                        AppNotification notification) {
   switch (notification) {
     case AppNotification::kFiveMinutes:
@@ -105,8 +104,8 @@ base::string16 GetNotificationTitleFor(const base::string16& app_name,
   }
 }
 
-base::string16 GetNotificationMessageFor(
-    const base::string16& app_name,
+std::u16string GetNotificationMessageFor(
+    const std::u16string& app_name,
     AppNotification notification,
     base::Optional<base::TimeDelta> time_limit) {
   switch (notification) {
@@ -200,15 +199,6 @@ base::Time AppTimeController::TestApi::GetLastResetTime() const {
 
 AppActivityRegistry* AppTimeController::TestApi::app_registry() {
   return controller_->app_registry_.get();
-}
-
-// static
-bool AppTimeController::ArePerAppTimeLimitsEnabled() {
-  return base::FeatureList::IsEnabled(features::kPerAppTimeLimits);
-}
-
-bool AppTimeController::IsAppActivityReportingEnabled() {
-  return base::FeatureList::IsEnabled(features::kAppActivityReporting);
 }
 
 // static
@@ -617,13 +607,13 @@ void AppTimeController::ShowNotificationForApp(
          notification == AppNotification::kAvailable || time_limit.has_value());
 
   // Alright we have all the messages that we want.
-  const base::string16 app_name_16 = base::UTF8ToUTF16(app_name);
-  const base::string16 title =
+  const std::u16string app_name_16 = base::UTF8ToUTF16(app_name);
+  const std::u16string title =
       GetNotificationTitleFor(app_name_16, notification);
-  const base::string16 message =
+  const std::u16string message =
       GetNotificationMessageFor(app_name_16, notification, time_limit);
   // Family link display source.
-  const base::string16 notification_source =
+  const std::u16string notification_source =
       l10n_util::GetStringUTF16(IDS_TIME_LIMIT_NOTIFICATION_DISPLAY_SOURCE);
 
   std::string notification_id = GetNotificationIdFor(app_name, notification);

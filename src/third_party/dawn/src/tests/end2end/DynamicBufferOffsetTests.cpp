@@ -93,7 +93,7 @@ class DynamicBufferOffsetTests : public DawnTest {
     wgpu::Texture mColorAttachment;
 
     wgpu::RenderPipeline CreateRenderPipeline(bool isInheritedPipeline = false) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(vertex_index)]] var<in> VertexIndex : u32;
             [[builtin(position)]] var<out> Position : vec4<f32>;
             [[stage(vertex)]] fn main() -> void {
@@ -110,31 +110,31 @@ class DynamicBufferOffsetTests : public DawnTest {
         fs << R"(
             // TODO(crbug.com/tint/386):  Use the same struct.
             [[block]] struct Buffer1 {
-                [[offset(0)]] value : vec2<u32>;
+                value : vec2<u32>;
             };
 
             [[block]] struct Buffer2 {
-                [[offset(0)]] value : vec2<u32>;
+                value : vec2<u32>;
             };
 
             [[block]] struct Buffer3 {
-                [[offset(0)]] value : vec2<u32>;
+                value : vec2<u32>;
             };
 
             [[block]] struct Buffer4 {
-                [[offset(0)]] value : vec2<u32>;
+                value : vec2<u32>;
             };
 
             [[group(0), binding(0)]] var<uniform> uBufferNotDynamic : Buffer1;
-            [[group(0), binding(1)]] var<storage_buffer> sBufferNotDynamic : [[access(read_write)]] Buffer2;
+            [[group(0), binding(1)]] var<storage> sBufferNotDynamic : [[access(read_write)]] Buffer2;
             [[group(0), binding(3)]] var<uniform> uBuffer : Buffer3;
-            [[group(0), binding(4)]] var<storage_buffer> sBuffer : [[access(read_write)]] Buffer4;
+            [[group(0), binding(4)]] var<storage> sBuffer : [[access(read_write)]] Buffer4;
         )";
 
         if (isInheritedPipeline) {
             fs << R"(
                 [[block]] struct Buffer5 {
-                    [[offset(0)]] value : vec2<u32>;
+                    value : vec2<u32>;
                 };
 
                 [[group(1), binding(0)]] var<uniform> paddingBlock : Buffer5;
@@ -153,12 +153,12 @@ class DynamicBufferOffsetTests : public DawnTest {
             }
         )";
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, fs.str().c_str());
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fs.str().c_str());
 
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-        pipelineDescriptor.vertexStage.module = vsModule;
-        pipelineDescriptor.cFragmentStage.module = fsModule;
-        pipelineDescriptor.cColorStates[0].format = wgpu::TextureFormat::RGBA8Unorm;
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        pipelineDescriptor.vertex.module = vsModule;
+        pipelineDescriptor.cFragment.module = fsModule;
+        pipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
 
         wgpu::PipelineLayoutDescriptor pipelineLayoutDescriptor;
         if (isInheritedPipeline) {
@@ -169,7 +169,7 @@ class DynamicBufferOffsetTests : public DawnTest {
         pipelineLayoutDescriptor.bindGroupLayouts = mBindGroupLayouts;
         pipelineDescriptor.layout = device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 
-        return device.CreateRenderPipeline(&pipelineDescriptor);
+        return device.CreateRenderPipeline2(&pipelineDescriptor);
     }
 
     wgpu::ComputePipeline CreateComputePipeline(bool isInheritedPipeline = false) {
@@ -179,31 +179,31 @@ class DynamicBufferOffsetTests : public DawnTest {
         cs << R"(
             // TODO(crbug.com/tint/386):  Use the same struct.
             [[block]] struct Buffer1 {
-                [[offset(0)]] value : vec2<u32>;
+                value : vec2<u32>;
             };
 
             [[block]] struct Buffer2 {
-                [[offset(0)]] value : vec2<u32>;
+                value : vec2<u32>;
             };
 
             [[block]] struct Buffer3 {
-                [[offset(0)]] value : vec2<u32>;
+                value : vec2<u32>;
             };
 
             [[block]] struct Buffer4 {
-                [[offset(0)]] value : vec2<u32>;
+                value : vec2<u32>;
             };
 
             [[group(0), binding(0)]] var<uniform> uBufferNotDynamic : Buffer1;
-            [[group(0), binding(1)]] var<storage_buffer> sBufferNotDynamic : [[access(read_write)]] Buffer2;
+            [[group(0), binding(1)]] var<storage> sBufferNotDynamic : [[access(read_write)]] Buffer2;
             [[group(0), binding(3)]] var<uniform> uBuffer : Buffer3;
-            [[group(0), binding(4)]] var<storage_buffer> sBuffer : [[access(read_write)]] Buffer4;
+            [[group(0), binding(4)]] var<storage> sBuffer : [[access(read_write)]] Buffer4;
         )";
 
         if (isInheritedPipeline) {
             cs << R"(
                 [[block]] struct Buffer5 {
-                    [[offset(0)]] value : vec2<u32>;
+                    value : vec2<u32>;
                 };
 
                 [[group(1), binding(0)]] var<uniform> paddingBlock : Buffer5;
@@ -218,7 +218,7 @@ class DynamicBufferOffsetTests : public DawnTest {
             }
         )";
 
-        wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, cs.str().c_str());
+        wgpu::ShaderModule csModule = utils::CreateShaderModule(device, cs.str().c_str());
 
         wgpu::ComputePipelineDescriptor csDesc;
         csDesc.computeStage.module = csModule;

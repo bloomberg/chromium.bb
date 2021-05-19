@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/barrier_closure.h"
@@ -11,7 +12,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -89,7 +89,7 @@ class TestEffectiveConnectionTypeObserver
     run_loop_wait_effective_connection_type_ =
         run_loop_wait_effective_connection_type;
     run_loop_->Run();
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
  private:
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverBrowserTest, DataSaverDisabledInIncognito) {
 class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
  protected:
   void Init() {
-    test_server_.reset(new net::EmbeddedTestServer());
+    test_server_ = std::make_unique<net::EmbeddedTestServer>();
     test_server_->RegisterRequestHandler(base::BindRepeating(
         &DataSaverWithServerBrowserTest::VerifySaveDataHeader,
         base::Unretained(this)));
@@ -237,7 +237,7 @@ class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
 
     if (request.relative_url == "/favicon.ico") {
       // Favicon request could be received for the previous page load.
-      return std::unique_ptr<net::test_server::HttpResponse>();
+      return nullptr;
     }
 
     if (!expected_save_data_header_.empty()) {
@@ -249,7 +249,7 @@ class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
       EXPECT_TRUE(save_data_header_it == request.headers.end())
           << request.relative_url;
     }
-    return std::unique_ptr<net::test_server::HttpResponse>();
+    return nullptr;
   }
 
   std::unique_ptr<net::EmbeddedTestServer> test_server_;
@@ -552,8 +552,12 @@ IN_PROC_BROWSER_TEST_P(DataSaverForWorkerBrowserTest,
 
 class DataSaverWithImageServerBrowserTest : public InProcessBrowserTest {
  public:
+  DataSaverWithImageServerBrowserTest() {
+    scoped_feature_list_.InitWithFeatures({blink::features::kSaveDataImgSrcset},
+                                          {});
+  }
   void SetUp() override {
-    test_server_.reset(new net::EmbeddedTestServer());
+    test_server_ = std::make_unique<net::EmbeddedTestServer>();
     test_server_->RegisterRequestMonitor(base::BindRepeating(
         &DataSaverWithImageServerBrowserTest::MonitorImageRequest,
         base::Unretained(this)));
@@ -561,8 +565,6 @@ class DataSaverWithImageServerBrowserTest : public InProcessBrowserTest {
     LOG(WARNING) << GetChromeTestDataDir();
     ASSERT_TRUE(test_server_->Start());
 
-    scoped_feature_list_.InitWithFeatures({blink::features::kSaveDataImgSrcset},
-                                          {});
 
     InProcessBrowserTest::SetUp();
   }

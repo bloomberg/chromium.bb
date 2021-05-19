@@ -9,7 +9,11 @@
 
 #include "base/callback_forward.h"
 #include "base/observer_list_types.h"
+#include "base/types/pass_key.h"
+#include "content/browser/prerender/prerender_host.h"
+#include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -17,7 +21,6 @@
 namespace content {
 
 class FrameTreeNode;
-class PrerenderHost;
 class RenderFrameHostImpl;
 class WebContentsImpl;
 
@@ -31,14 +34,16 @@ class WebContentsImpl;
 // for activators.
 //
 // - Triggers (e.g., PrerenderProcessor) can request to create a new prerender
-//   host by CreateAndStartHost() and cancel it by AbandonHost(). Triggers
-//   cannot cancel the host after it's preserved by an activator.
+//   host by CreateAndStartHost() and cancel it by AbandonHost(Async)().
+//   Triggers cannot cancel the host after it's preserved by an activator.
 // - Activators (i.e., NavigationRequest) can reserve the prerender host on
 //   activation start by ReserveHostToActivate() and activate it by
 //   ActivateReservedHost(). They can abandon the host by
 //   AbandonPreservedHost().
 class CONTENT_EXPORT PrerenderHostRegistry {
  public:
+  using PassKey = base::PassKey<PrerenderHostRegistry>;
+
   PrerenderHostRegistry();
   ~PrerenderHostRegistry();
 
@@ -65,8 +70,7 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   // Creates and starts a host. Returns the root frame tree node id of the
   // prerendered page, which can be used as the id of the host.
   int CreateAndStartHost(blink::mojom::PrerenderAttributesPtr attributes,
-                         WebContentsImpl& web_contents,
-                         const url::Origin& initiator_origin);
+                         RenderFrameHostImpl& initiator_render_frame_host);
 
   // For triggers.
   // Destroys the host registered for `frame_tree_node_id`.
@@ -80,6 +84,17 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   // should destroy the PrerenderHost.
   void AbandonHost(int frame_tree_node_id);
 
+  // For triggers.
+  // This is the same with AbandonHost but destroys the prerender host
+  // asynchronously so that the prerendered page itself can cancel prerendering
+  // without concern for self destruction.
+  void AbandonHostAsync(int frame_tree_node_id,
+                        PrerenderHost::FinalStatus final_status);
+
+  // TODO(https://crbug.com/1194865): Remove the following method once the
+  // workaround in the call site is removed.
+  void AbandonAllHostsForWebContents(const WebContentsImpl& web_contents);
+
   // For activators.
   // Reserves the host to activate for a navigation for the given FrameTreeNode.
   // Returns the root frame tree node id of the prerendered page, which can be
@@ -91,22 +106,38 @@ class CONTENT_EXPORT PrerenderHostRegistry {
                             FrameTreeNode& frame_tree_node);
 
   // For activators.
-  // Activates the host reserved by ReserveHostToActivate(). Returns true if
-  // activation succeeded. `current_render_frame_host` is the
-  // RenderFrameHostImpl that will be swapped out and destroyed by the
-  // activation.
-  bool ActivateReservedHost(int frame_tree_node_id,
-                            RenderFrameHostImpl& current_render_frame_host);
+  // Activates the host reserved by ReserveHostToActivate().
+  // - For MPArch, this returns the BackForwardCacheImpl::Entry containing the
+  //   page that was activated on success, or nullptr on failure.
+  // - For multiple WebContents, this always returns nullptr.
+  // TODO(crbug.com/1183519): Remove multiple WebContents
+  // implementation after MPArch activation is sufficiently stable.
+  //
+  // `current_render_frame_host` is the RenderFrameHostImpl that will be swapped
+  // out and destroyed by the activation.
+  std::unique_ptr<BackForwardCacheImpl::Entry> ActivateReservedHost(
+      int frame_tree_node_id,
+      RenderFrameHostImpl& current_render_frame_host,
+      NavigationRequest& navigation_request);
+
+  RenderFrameHostImpl* GetRenderFrameHostForReservedHost(
+      int frame_tree_node_id);
 
   // For activators.
   // Abandons the host reserved by ReserveHostToActivate().
   void AbandonReservedHost(int frame_tree_node_id);
+
+  // Returns the non-reserved host. Returns nullptr if the frame tree node id
+  // doesn't match any host.
+  PrerenderHost* FindHostById(int frame_tree_node_id);
 
   // Returns the non-reserved host for `prerendering_url`. Returns nullptr if
   // the URL doesn't match any non-reserved host.
   PrerenderHost* FindHostByUrlForTesting(const GURL& prerendering_url);
 
  private:
+  std::unique_ptr<PrerenderHost> AbandonHostInternal(int frame_tree_node_id);
+
   void NotifyTrigger(const GURL& url);
 
   // Hosts that are not reserved for activation yet.

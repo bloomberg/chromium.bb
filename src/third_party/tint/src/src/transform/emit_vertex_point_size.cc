@@ -14,20 +14,10 @@
 
 #include "src/transform/emit_vertex_point_size.h"
 
-#include <memory>
 #include <utility>
 
 #include "src/ast/assignment_statement.h"
-#include "src/ast/block_statement.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/variable.h"
-#include "src/clone_context.h"
-#include "src/program.h"
 #include "src/program_builder.h"
-#include "src/type/f32_type.h"
-#include "src/type/type_manager.h"
 
 namespace tint {
 namespace transform {
@@ -40,7 +30,7 @@ const char kPointSizeVar[] = "tint_pointsize";
 EmitVertexPointSize::EmitVertexPointSize() = default;
 EmitVertexPointSize::~EmitVertexPointSize() = default;
 
-Transform::Output EmitVertexPointSize::Run(const Program* in) {
+Transform::Output EmitVertexPointSize::Run(const Program* in, const DataMap&) {
   if (!in->AST().Functions().HasStage(ast::PipelineStage::kVertex)) {
     // If the module doesn't have any vertex stages, then there's nothing to do.
     return Output(Program(in->Clone()));
@@ -57,31 +47,30 @@ Transform::Output EmitVertexPointSize::Run(const Program* in) {
       f32,                                    // type
       false,                                  // is_const
       nullptr,                                // constructor
-      ast::VariableDecorationList{
+      ast::DecorationList{
           out.create<ast::BuiltinDecoration>(Source{},
                                              ast::Builtin::kPointSize),
       });
   out.AST().AddGlobalVariable(pointsize_var);
 
   // Add the pointsize assignment statement to the front of all vertex stages.
-  CloneContext(&out, in)
-      .ReplaceAll(
-          [&](CloneContext* ctx, ast::Function* func) -> ast::Function* {
-            if (func->pipeline_stage() != ast::PipelineStage::kVertex) {
-              return nullptr;  // Just clone func
-            }
+  CloneContext ctx(&out, in);
+  ctx.ReplaceAll([&](ast::Function* func) -> ast::Function* {
+    if (func->pipeline_stage() != ast::PipelineStage::kVertex) {
+      return nullptr;  // Just clone func
+    }
 
-            // Build the AST expression & statement for assigning pointsize one.
-            auto* one = out.create<ast::ScalarConstructorExpression>(
-                Source{}, out.create<ast::FloatLiteral>(Source{}, f32, 1.0f));
-            auto* pointsize_ident = out.create<ast::IdentifierExpression>(
-                Source{}, out.Symbols().Register(kPointSizeVar));
-            auto* pointsize_assign = out.create<ast::AssignmentStatement>(
-                Source{}, pointsize_ident, one);
+    // Build the AST expression & statement for assigning pointsize one.
+    auto* one = out.create<ast::ScalarConstructorExpression>(
+        Source{}, out.create<ast::FloatLiteral>(Source{}, f32, 1.0f));
+    auto* pointsize_ident = out.create<ast::IdentifierExpression>(
+        Source{}, out.Symbols().Register(kPointSizeVar));
+    auto* pointsize_assign =
+        out.create<ast::AssignmentStatement>(Source{}, pointsize_ident, one);
 
-            return CloneWithStatementsAtStart(ctx, func, {pointsize_assign});
-          })
-      .Clone();
+    return CloneWithStatementsAtStart(&ctx, func, {pointsize_assign});
+  });
+  ctx.Clone();
 
   return Output(Program(std::move(out)));
 }

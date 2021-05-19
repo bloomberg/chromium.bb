@@ -118,7 +118,7 @@ public class DownloadManagerService implements DownloadController.Observer,
     /** Generic interface for notifying external UI components about downloads and their states. */
     public interface DownloadObserver extends DownloadSharedPreferenceHelper.Observer {
         /** Called in response to {@link DownloadManagerService#getAllDownloads(OTRProfileID)}. */
-        void onAllDownloadsRetrieved(final List<DownloadItem> list, boolean isOffTheRecord);
+        void onAllDownloadsRetrieved(final List<DownloadItem> list, ProfileKey profileKey);
 
         /** Called when a download is created. */
         void onDownloadItemCreated(DownloadItem item);
@@ -127,7 +127,7 @@ public class DownloadManagerService implements DownloadController.Observer,
         void onDownloadItemUpdated(DownloadItem item);
 
         /** Called when a download has been removed. */
-        void onDownloadItemRemoved(String guid, boolean isOffTheRecord);
+        void onDownloadItemRemoved(String guid);
 
         /** Only for testing */
         default void broadcastDownloadSuccessfulForTesting(DownloadInfo downloadInfo) {}
@@ -258,15 +258,6 @@ public class DownloadManagerService implements DownloadController.Observer,
         mHandler.postDelayed(() -> mDownloadNotifier.resumePendingDownloads(), RESUME_DELAY_MILLIS);
         // Clean up unused shared prefs. TODO(qinmin): remove this after M84.
         mSharedPrefs.removeKey(ChromePreferenceKeys.DOWNLOAD_UMA_ENTRY);
-    }
-
-    // TODO(https://crbug.com/1060940): Remove this function and update all use cases so that
-    // the profile would be available instead of isOffTheRecord boolean.
-    private static ProfileKey getProfileKey(boolean isOffTheRecord) {
-        // If off-the-record is not requested, the request might be before native initialization.
-        if (!isOffTheRecord) return ProfileKey.getLastUsedRegularProfileKey();
-
-        return Profile.getLastUsedRegularProfile().getPrimaryOTRProfile().getProfileKey();
     }
 
     /**
@@ -848,7 +839,7 @@ public class DownloadManagerService implements DownloadController.Observer,
     protected void openDownloadedContent(final DownloadInfo downloadInfo, final long downloadId,
             @DownloadOpenSource int source) {
         openDownloadedContent(ContextUtils.getApplicationContext(), downloadInfo.getFilePath(),
-                isSupportedMimeType(downloadInfo.getMimeType()), downloadInfo.isOffTheRecord(),
+                isSupportedMimeType(downloadInfo.getMimeType()), downloadInfo.getOTRProfileId(),
                 downloadInfo.getDownloadGuid(), downloadId, downloadInfo.getOriginalUrl(),
                 downloadInfo.getReferrer(), source, downloadInfo.getMimeType());
     }
@@ -860,7 +851,7 @@ public class DownloadManagerService implements DownloadController.Observer,
      * @param context             Context to use.
      * @param filePath            Path to the downloaded item.
      * @param isSupportedMimeType Whether the MIME type is supported by Chrome.
-     * @param isOffTheRecord      Whether the download was for a off the record profile.
+     * @param otrProfileID        The {@link OTRProfileID} of the download. Null if in regular mode.
      * @param downloadGuid        GUID of the download item in DownloadManager.
      * @param downloadId          ID of the download item in DownloadManager.
      * @param originalUrl         The original url of the downloaded file.
@@ -869,7 +860,7 @@ public class DownloadManagerService implements DownloadController.Observer,
      * @param mimeType            MIME type of the download, could be null.
      */
     protected static void openDownloadedContent(final Context context, final String filePath,
-            final boolean isSupportedMimeType, final boolean isOffTheRecord,
+            final boolean isSupportedMimeType, final OTRProfileID otrProfileID,
             final String downloadGuid, final long downloadId, final String originalUrl,
             final String referrer, @DownloadOpenSource int source, @Nullable String mimeType) {
         new AsyncTask<Intent>() {
@@ -892,7 +883,7 @@ public class DownloadManagerService implements DownloadController.Observer,
 
                 if (didLaunchIntent && hasDownloadManagerService()) {
                     DownloadManagerService.getDownloadManagerService().updateLastAccessTime(
-                            downloadGuid, isOffTheRecord);
+                            downloadGuid, otrProfileID);
                     DownloadManager manager =
                             (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
                     String mimeType = manager.getMimeTypeForDownloadedFile(downloadId);
@@ -926,11 +917,22 @@ public class DownloadManagerService implements DownloadController.Observer,
 
     /**
      * Open the Activity which shows a list of all downloads.
-     * @param context Application context
-     * @param source The source where the user action coming from.
+     * @see {@link #openDownloadsPage(Context, OTRProfileID, int)}.
      */
     public static void openDownloadsPage(Context context, @DownloadOpenSource int source) {
-        if (DownloadUtils.showDownloadManager(null, null, source)) return;
+        openDownloadsPage(context, null, source);
+    }
+
+    /**
+     * Open the Activity which shows a list of all downloads.
+     * @param context Application context
+     * @param otrProfileID The {@link OTRProfileID} to determine whether to open download page
+     * in incognito profile. If null, download page will be opened in normal profile.
+     * @param source The source where the user action coming from.
+     */
+    public static void openDownloadsPage(
+            Context context, OTRProfileID otrProfileID, @DownloadOpenSource int source) {
+        if (DownloadUtils.showDownloadManager(null, null, otrProfileID, source)) return;
 
         // Open the Android Download Manager.
         Intent pageView = new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS);
@@ -1092,11 +1094,10 @@ public class DownloadManagerService implements DownloadController.Observer,
 
     /**
      * Checks whether the download can be opened by the browser.
-     * @param isOffTheRecord Whether the download is off the record.
      * @param mimeType MIME type of the file.
      * @return Whether the download is openable by the browser.
      */
-    public boolean isDownloadOpenableInBrowser(boolean isOffTheRecord, String mimeType) {
+    public boolean isDownloadOpenableInBrowser(String mimeType) {
         // TODO(qinmin): for audio and video, check if the codec is supported by Chrome.
         return isSupportedMimeType(mimeType);
     }
@@ -1177,9 +1178,11 @@ public class DownloadManagerService implements DownloadController.Observer,
         }
 
         if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
-            Profile profile = info.isOffTheRecord()
-                    ? Profile.getLastUsedRegularProfile().getPrimaryOTRProfile()
-                    : Profile.getLastUsedRegularProfile();
+            Profile profile = Profile.getLastUsedRegularProfile();
+            if (OTRProfileID.isOffTheRecord(info.getOTRProfileId())) {
+                profile = profile.getOffTheRecordProfile(
+                        info.getOTRProfileId(), /*createIfNeeded=*/true);
+            }
             Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
             tracker.notifyEvent(EventConstants.DOWNLOAD_COMPLETED);
         }
@@ -1385,11 +1388,11 @@ public class DownloadManagerService implements DownloadController.Observer,
     // Deprecated after new download backend.
     public void broadcastDownloadAction(DownloadItem downloadItem, String action) {
         Context appContext = ContextUtils.getApplicationContext();
-            Intent intent = DownloadNotificationFactory.buildActionIntent(appContext, action,
-                    LegacyHelpers.buildLegacyContentId(false, downloadItem.getId()),
-                    downloadItem.getDownloadInfo().isOffTheRecord());
-            addCancelExtra(intent, downloadItem);
-            appContext.startService(intent);
+        Intent intent = DownloadNotificationFactory.buildActionIntent(appContext, action,
+                LegacyHelpers.buildLegacyContentId(false, downloadItem.getId()),
+                downloadItem.getDownloadInfo().getOTRProfileId());
+        addCancelExtra(intent, downloadItem);
+        appContext.startService(intent);
     }
 
     // Deprecated after new download backend.
@@ -1466,11 +1469,8 @@ public class DownloadManagerService implements DownloadController.Observer,
     // Deprecated after new download backend.
     @CalledByNative
     private void onAllDownloadsRetrieved(final List<DownloadItem> list, ProfileKey profileKey) {
-        // TODO(https://crbug.com/1099577): Pass the profileKey/profile to adapter instead of the
-        // boolean.
-        boolean isOffTheRecord = profileKey.isOffTheRecord();
         for (DownloadObserver adapter : mDownloadObservers) {
-            adapter.onAllDownloadsRetrieved(list, isOffTheRecord);
+            adapter.onAllDownloadsRetrieved(list, profileKey);
         }
         maybeShowMissingSdCardError(list);
     }
@@ -1574,8 +1574,7 @@ public class DownloadManagerService implements DownloadController.Observer,
         }
 
         for (DownloadObserver adapter : mDownloadObservers) {
-            // TODO(crbug.com/1099577): Pass OTRProfileID to support non-primary OTR profiles.
-            adapter.onDownloadItemRemoved(guid, OTRProfileID.isOffTheRecord(otrProfileID));
+            adapter.onDownloadItemRemoved(guid);
         }
     }
 
@@ -1585,7 +1584,7 @@ public class DownloadManagerService implements DownloadController.Observer,
         DownloadInfo downloadInfo = downloadItem.getDownloadInfo();
         boolean canOpen =
                 DownloadUtils.openFile(downloadInfo.getFilePath(), downloadInfo.getMimeType(),
-                        downloadInfo.getDownloadGuid(), downloadInfo.isOffTheRecord(),
+                        downloadInfo.getDownloadGuid(), downloadInfo.getOTRProfileId(),
                         downloadInfo.getOriginalUrl(), downloadInfo.getReferrer(), source);
         if (!canOpen) {
             openDownloadsPage(ContextUtils.getApplicationContext(), source);
@@ -1802,14 +1801,15 @@ public class DownloadManagerService implements DownloadController.Observer,
     /**
      * Updates the last access time of a download.
      * @param downloadGuid Download GUID.
-     * @param isOffTheRecord Whether the download is off the record.
+     * @param otrProfileID The {@link OTRProfileID} of the download. Null if in regular mode.
      */
     // Deprecated after new download backend.
-    public void updateLastAccessTime(String downloadGuid, boolean isOffTheRecord) {
+    public void updateLastAccessTime(String downloadGuid, OTRProfileID otrProfileID) {
         if (TextUtils.isEmpty(downloadGuid)) return;
 
         DownloadManagerServiceJni.get().updateLastAccessTime(getNativeDownloadManagerService(),
-                DownloadManagerService.this, downloadGuid, getProfileKey(isOffTheRecord));
+                DownloadManagerService.this, downloadGuid,
+                IncognitoUtils.getProfileKeyFromOTRProfileID(otrProfileID));
     }
 
     // Deprecated after native auto-resumption handler.

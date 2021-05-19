@@ -98,11 +98,11 @@ class HardwareDisplayController {
   // Gets the props required to modeset a CRTC with a |mode| onto
   // |commit_request|.
   void GetModesetProps(CommitRequest* commit_request,
-                       const DrmOverlayPlaneList& modeset_planes,
+                       const DrmOverlayPlane& primary,
                        const drmModeModeInfo& mode);
   // Gets the props required to enable/disable a CRTC onto |commit_request|.
   void GetEnableProps(CommitRequest* commit_request,
-                      const DrmOverlayPlaneList& modeset_planes);
+                      const DrmOverlayPlane& primary);
   void GetDisableProps(CommitRequest* commit_request);
 
   // Updates state of the controller after modeset/enable/disable is performed.
@@ -131,13 +131,9 @@ class HardwareDisplayController {
   bool TestPageFlip(const DrmOverlayPlaneList& plane_list);
 
   // Return the supported modifiers for |fourcc_format| for this controller.
-  std::vector<uint64_t> GetSupportedModifiers(uint32_t fourcc_format) const;
+  std::vector<uint64_t> GetSupportedModifiers(uint32_t fourcc_format,
+                                              bool is_modeset = false) const;
 
-  // Return the supported modifiers for |fourcc_format| for this
-  // controller to be used for modeset buffers. Currently, this only exists
-  // because we can't provide valid AFBC buffers during modeset.
-  // See https://crbug.com/852675
-  // TODO: Remove this.
   std::vector<uint64_t> GetFormatModifiersForTestModeset(
       uint32_t fourcc_format);
 
@@ -172,6 +168,7 @@ class HardwareDisplayController {
   scoped_refptr<DrmDevice> GetDrmDevice() const;
 
   void OnPageFlipComplete(
+      int modeset_sequence,
       DrmOverlayPlaneList pending_planes,
       const gfx::PresentationFeedback& presentation_feedback);
 
@@ -179,7 +176,7 @@ class HardwareDisplayController {
   // Loops over |crtc_controllers_| and save their props into |commit_request|
   // to be enabled/modeset.
   void GetModesetPropsForCrtcs(CommitRequest* commit_request,
-                               const DrmOverlayPlaneList& modeset_planes,
+                               const DrmOverlayPlane& primary,
                                bool use_current_crtc_mode,
                                const drmModeModeInfo& mode);
   void OnModesetComplete(const DrmOverlayPlane& primary);

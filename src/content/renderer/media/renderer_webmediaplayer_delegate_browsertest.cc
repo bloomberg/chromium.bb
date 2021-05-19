@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <tuple>
 
 #include "base/bind.h"
@@ -12,12 +13,12 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 #include "content/renderer/render_process.h"
 #include "media/base/media_content_type.h"
+#include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -40,12 +41,8 @@ class MockWebMediaPlayerDelegateObserver
 
   // WebMediaPlayerDelegate::Observer implementation.
   MOCK_METHOD0(OnFrameHidden, void());
-  MOCK_METHOD0(OnFrameClosed, void());
   MOCK_METHOD0(OnFrameShown, void());
   MOCK_METHOD0(OnIdleTimeout, void());
-  MOCK_METHOD1(OnVolumeMultiplierUpdate, void(double));
-  MOCK_METHOD1(OnBecamePersistentVideo, void(bool));
-  MOCK_METHOD0(OnPictureInPictureModeEnded, void());
 };
 
 class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
@@ -57,8 +54,8 @@ class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
     RenderViewTest::SetUp();
     // Start the tick clock off at a non-null value.
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1234));
-    delegate_manager_.reset(
-        new RendererWebMediaPlayerDelegate(view_->GetMainRenderFrame()));
+    delegate_manager_ = std::make_unique<RendererWebMediaPlayerDelegate>(
+        view_->GetMainRenderFrame());
     delegate_manager_->SetIdleCleanupParamsForTesting(
         kIdleTimeout, base::TimeDelta(), &tick_clock_, false);
   }
@@ -96,26 +93,6 @@ class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegateTest);
 };
-
-TEST_F(RendererWebMediaPlayerDelegateTest, DeliversObserverNotifications) {
-  const int delegate_id = delegate_manager_->AddObserver(&observer_1_);
-
-  EXPECT_CALL(observer_1_, OnFrameHidden());
-  delegate_manager_->WasHidden();
-
-  EXPECT_CALL(observer_1_, OnFrameShown());
-  delegate_manager_->WasShown();
-
-  const double kTestMultiplier = 0.5;
-  EXPECT_CALL(observer_1_, OnVolumeMultiplierUpdate(kTestMultiplier));
-  MediaPlayerDelegateMsg_UpdateVolumeMultiplier volume_msg(0, delegate_id,
-                                                           kTestMultiplier);
-  delegate_manager_->OnMessageReceived(volume_msg);
-
-  EXPECT_CALL(observer_1_, OnFrameClosed());
-  MediaPlayerDelegateMsg_SuspendAllMediaPlayers suspend_msg(0);
-  delegate_manager_->OnMessageReceived(suspend_msg);
-}
 
 TEST_F(RendererWebMediaPlayerDelegateTest, TheTimerIsInitiallyStopped) {
   ASSERT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
@@ -234,42 +211,5 @@ TEST_F(RendererWebMediaPlayerDelegateTest, PeakPlayerHistogram) {
   delegate_manager_.reset();
   histogram_tester.ExpectUniqueSample(kHistogramName, 2, 1);
 }
-
-#if defined(OS_ANDROID)
-
-TEST_F(RendererWebMediaPlayerDelegateTest, Histograms) {
-  NiceMock<MockWebMediaPlayerDelegateObserver> observer;
-  int delegate_id = delegate_manager_->AddObserver(&observer);
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 0);
-
-  delegate_manager_->DidMediaMetadataChange(
-      delegate_id, true, true, media::MediaContentType::Persistent);
-
-  // Play/pause while not hidden doesn't record anything.
-  delegate_manager_->DidPlay(delegate_id);
-  RunLoopOnce();
-  delegate_manager_->DidPause(delegate_id, false);
-  RunLoopOnce();
-  histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 0);
-
-  // Play/pause while hidden does.
-  delegate_manager_->SetFrameHiddenForTesting(true);
-  delegate_manager_->DidPlay(delegate_id);
-  RunLoopOnce();
-  delegate_manager_->DidPause(delegate_id, false);
-  RunLoopOnce();
-  histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 1);
-
-  // As does ending background playback by becoming visible.
-  delegate_manager_->SetFrameHiddenForTesting(true);
-  delegate_manager_->DidPlay(delegate_id);
-  RunLoopOnce();
-  delegate_manager_->SetFrameHiddenForTesting(false);
-  RunLoopOnce();
-  histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 2);
-}
-
-#endif  // OS_ANDROID
 
 }  // namespace media

@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/projector/model/projector_session_impl.h"
 #include "ash/public/cpp/projector/projector_controller.h"
-#include "chromeos/services/machine_learning/public/mojom/soda.mojom.h"
 
 namespace base {
 class FilePath;
@@ -32,10 +32,15 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
 
   // ProjectorController:
   void SetClient(ash::ProjectorClient* client) override;
-
-  // Shows projector toolbar.
-  void ShowToolbar();
-
+  void OnSpeechRecognitionAvailable(bool available) override;
+  void OnTranscription(const std::u16string& text,
+                       base::TimeDelta audio_start_time,
+                       base::TimeDelta audio_end_time,
+                       const std::vector<base::TimeDelta>& word_offsets,
+                       bool is_final) override;
+  void SetProjectorToolsVisible(bool is_visible) override;
+  void StartProjectorSession(SourceType scope, aura::Window* window) override;
+  bool IsEligible() const override;
   // Set caption on/off state.
   void SetCaptionState(bool is_on);
   // Mark a key idea.
@@ -49,15 +54,10 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   // Saves the screencast including metadata.
   void SaveScreencast(const base::FilePath& saved_video_path);
 
-  // TODO(crbug.com/1165437): Update the interface once SODA integration is
-  // available.
-  // Invoked when transcription result is available to record the transcript
-  // and maybe update the UI.
-  // TODO(yilkal): Make this method an inherited method from
-  // ProjectorController.
-  void OnTranscription(
-      chromeos::machine_learning::mojom::SpeechRecognizerEventPtr
-          speech_recognizer_event);
+  // Invoked when laser pointer button is pressed.
+  void OnLaserPointerPressed();
+  // Invoked when marker button is pressed.
+  void OnMarkerPressed();
 
   void SetProjectorUiControllerForTest(
       std::unique_ptr<ProjectorUiController> ui_controller);
@@ -65,6 +65,7 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
       std::unique_ptr<ProjectorMetadataController> metadata_controller);
 
   ProjectorUiController* ui_controller() { return ui_controller_.get(); }
+  ProjectorSessionImpl* projector_session() { return projector_session_.get(); }
 
  private:
   // Starts or stops the speech recognition session.
@@ -72,10 +73,17 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   void StopSpeechRecognition();
 
   ProjectorClient* client_ = nullptr;
+  std::unique_ptr<ProjectorSessionImpl> projector_session_;
   std::unique_ptr<ProjectorUiController> ui_controller_;
   std::unique_ptr<ProjectorMetadataController> metadata_controller_;
 
+  // Whether the caption bubble ui is being shown or not.
   bool is_caption_on_ = false;
+
+  // Whether SODA is available on the device.
+  bool is_speech_recognition_available_ = false;
+
+  // Whether speech recognition is taking place or not.
   bool is_speech_recognition_on_ = false;
 };
 

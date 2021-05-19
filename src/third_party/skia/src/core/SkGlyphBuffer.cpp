@@ -33,7 +33,7 @@ void SkDrawableGlyphBuffer::startSource(const SkZip<const SkGlyphID, const SkPoi
     memcpy(fPositions, positions.data(), positions.size() * sizeof(SkPoint));
 
     // Convert from SkGlyphIDs to SkPackedGlyphIDs.
-    SkGlyphVariant* packedIDCursor = fMultiBuffer;
+    SkGlyphVariant* packedIDCursor = fMultiBuffer.get();
     for (auto t : source) {
         *packedIDCursor++ = SkPackedGlyphID{std::get<0>(t)};
     }
@@ -61,7 +61,7 @@ void SkDrawableGlyphBuffer::startBitmapDevice(
     // Convert glyph ids and positions to packed glyph ids.
     SkZip<const SkGlyphID, const SkPoint> withMappedPos =
             SkMakeZip(source.get<0>(), fPositions.get());
-    SkGlyphVariant* packedIDCursor = fMultiBuffer;
+    SkGlyphVariant* packedIDCursor = fMultiBuffer.get();
     for (auto [glyphID, pos] : withMappedPos) {
         *packedIDCursor++ = SkPackedGlyphID{glyphID, pos, mask};
     }
@@ -70,17 +70,16 @@ void SkDrawableGlyphBuffer::startBitmapDevice(
 
 void SkDrawableGlyphBuffer::startGPUDevice(
         const SkZip<const SkGlyphID, const SkPoint>& source,
-        SkPoint origin, const SkMatrix& viewMatrix,
+        const SkMatrix& drawMatrix,
         const SkGlyphPositionRoundingSpec& roundingSpec) {
     fInputSize = source.size();
     fDrawableSize = 0;
 
     // Build up the mapping from source space to device space. Add the rounding constant
     // halfSampleFreq so we just need to floor to get the device result.
-    SkMatrix device = viewMatrix;
+    SkMatrix device = drawMatrix;
     SkPoint halfSampleFreq = roundingSpec.halfAxisSampleFreq;
     device.postTranslate(halfSampleFreq.x(), halfSampleFreq.y());
-    device.preTranslate(origin.x(), origin.y());
 
     auto positions = source.get<1>();
     device.mapPoints(fPositions, positions.data(), positions.size());
@@ -99,6 +98,16 @@ void SkDrawableGlyphBuffer::startGPUDevice(
     SkDEBUGCODE(fPhase = kInput);
 }
 
+SkString SkDrawableGlyphBuffer::dumpInput() const {
+    SkASSERT(fPhase == kInput);
+
+    SkString msg;
+    for (auto [packedGlyphID, pos]
+            : SkZip<SkGlyphVariant, SkPoint>{fInputSize, fMultiBuffer.get(), fPositions.get()}) {
+        msg.appendf("0x%x:(%a,%a), ", packedGlyphID.packedID().value(), pos.x(), pos.y());
+    }
+    return msg;
+}
 
 void SkDrawableGlyphBuffer::reset() {
     SkDEBUGCODE(fPhase = kReset);

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_WEBAUTHN_WEBAUTHN_HOVER_BUTTON_H_
 
 #include <memory>
+#include <string>
 
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 
@@ -39,8 +39,8 @@ class WebAuthnHoverButton : public HoverButton {
   // middle column resizes to fill the space.
   WebAuthnHoverButton(PressedCallback callback,
                       std::unique_ptr<views::ImageView> icon,
-                      const base::string16& title,
-                      const base::string16& subtitle,
+                      const std::u16string& title,
+                      const std::u16string& subtitle,
                       std::unique_ptr<views::View> secondary_icon,
                       bool force_two_line = false);
   WebAuthnHoverButton(const WebAuthnHoverButton&) = delete;

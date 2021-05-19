@@ -326,7 +326,7 @@ you can use it with the encoder:
 ~~~
 
 Please note that the default VMAF model
-("/usr/local/share/model/vmaf_v0.6.1.pkl")
+("/usr/local/share/model/vmaf_v0.6.1.json")
 will be used unless you set the following flag when running the encoder:
 
 ~~~

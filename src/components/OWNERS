@@ -7,6 +7,7 @@ tedchoc@chromium.org
 # For build configuration things and simple changes.
 thakis@chromium.org
 
+per-file arc_strings.grdp=file://components/arc/OWNERS
 per-file android_system_error_page_strings.grdp=file://components/android_system_error_page/OWNERS
 per-file autofill_assistant_strings.grdp=file://components/autofill_assistant/OWNERS
 per-file autofill_payments_strings.grdp=file://components/autofill/core/browser/payments/OWNERS
@@ -16,6 +17,7 @@ per-file browsing_data_strings.grdp=file://components/browsing_data/OWNERS
 per-file crash_strings.grdp=file://components/crash/OWNERS
 per-file dom_distiller_strings.grdp=file://components/dom_distiller/OWNERS
 per-file error_page_strings.grdp=file://components/error_page/OWNERS
+per-file heavy_ad_intervention_strings.grdp=file://components/heavy_ad_intervention/OWNERS
 per-file javascript_dialogs_strings.grdp=file://components/javascript_dialogs/OWNERS
 per-file management_mobile_strings.grdp=file://components/management/OWNERS
 per-file management_strings.grdp=file://docs/privacy/OWNERS
@@ -51,6 +53,9 @@ per-file webxr_strings.grdp=file://components/webxr/OWNERS
 # For web_dev_style related changes.
 per-file .eslintrc.js=file://ui/webui/PLATFORM_OWNERS
 per-file PRESUBMIT.py=file://ui/webui/PLATFORM_OWNERS
+
+# For adding or removing languages.
+per-file *.grd=claudiomagni@chromium.org
 
 # Translation artifacts:
 per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS

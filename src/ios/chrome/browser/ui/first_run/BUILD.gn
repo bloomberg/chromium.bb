@@ -24,6 +24,12 @@ source_set("field_trial") {
 source_set("first_run") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "first_run_coordinator.h",
+    "first_run_coordinator.mm",
+    "first_run_screen_delegate.h",
+    "first_run_screen_provider.h",
+    "first_run_screen_provider.mm",
+    "first_run_screen_type.h",
     "first_run_util.h",
     "first_run_util.mm",
     "location_permissions_commands.h",
@@ -35,6 +41,10 @@ source_set("first_run") {
     "orientation_limiting_navigation_controller.mm",
     "static_file_view_controller.h",
     "static_file_view_controller.mm",
+    "welcome_screen_coordinator.h",
+    "welcome_screen_coordinator.mm",
+    "welcome_screen_view_controller.h",
+    "welcome_screen_view_controller.mm",
     "welcome_to_chrome_view.h",
     "welcome_to_chrome_view.mm",
     "welcome_to_chrome_view_controller.h",
@@ -58,7 +68,7 @@ source_set("first_run") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/first_run",
-    "//ios/chrome/browser/geolocation:geolocation_internal",
+    "//ios/chrome/browser/geolocation",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui:feature_flags",

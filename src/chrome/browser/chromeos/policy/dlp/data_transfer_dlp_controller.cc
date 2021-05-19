@@ -4,12 +4,14 @@
 
 #include "chrome/browser/chromeos/policy/dlp/data_transfer_dlp_controller.h"
 
+#include "base/check_op.h"
 #include "base/notreached.h"
 #include "base/syslog_logging.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
@@ -97,6 +99,21 @@ DlpRulesManager::Level IsDataTransferAllowed(
   return level;
 }
 
+bool ShouldNotifyOnPaste(const ui::DataTransferEndpoint* const data_dst) {
+  bool notify_on_paste = !data_dst || data_dst->notify_if_restricted();
+
+  // Files Apps continuously reads the clipboard data which triggers a lot of
+  // notifications while the user isn't actually initiating any copy/paste.
+  // In BLOCK mode, data access by Files app will be denied silently.
+  // In WARN mode, data access by Files app will be allowed silently.
+  // TODO(crbug.com/1152475): Find a better way to handle File app.
+  // When ClipboardHistory tries to read the clipboard we should allow it
+  // silently.
+  if (IsFilesApp(data_dst) || IsClipboardHistory(data_dst))
+    notify_on_paste = false;
+
+  return notify_on_paste;
+}
 }  // namespace
 
 // static
@@ -113,16 +130,7 @@ bool DataTransferDlpController::IsClipboardReadAllowed(
   DlpRulesManager::Level level =
       IsDataTransferAllowed(dlp_rules_manager_, data_src, data_dst);
 
-  bool notify_on_paste = !data_dst || data_dst->notify_if_restricted();
-  // Files Apps continuously reads the clipboard data which triggers a lot of
-  // notifications while the user isn't actually initiating any copy/paste.
-  // In BLOCK mode, data access by Files app will be denied silently.
-  // In WARN mode, data access by Files app will be allowed silently.
-  // TODO(crbug.com/1152475): Find a better way to handle File app.
-  // When ClipboardHistory tries to read the clipboard we should allow it
-  // silently.
-  if (IsFilesApp(data_dst) || IsClipboardHistory(data_dst))
-    notify_on_paste = false;
+  bool notify_on_paste = ShouldNotifyOnPaste(data_dst);
 
   bool is_read_allowed = true;
 
@@ -144,7 +152,10 @@ bool DataTransferDlpController::IsClipboardReadAllowed(
                          data_dst->type() == ui::EndpointType::kPluginVm ||
                          data_dst->type() == ui::EndpointType::kCrostini)) {
           WarnOnPaste(data_src, data_dst);
-        } else if (!ShouldProceedOnWarn(data_dst)) {
+        } else if (ShouldCancelOnWarn(data_dst)) {
+          is_read_allowed = false;
+        } else if (!(data_dst && data_dst->IsUrlType()) &&
+                   !ShouldPasteOnWarn(data_dst)) {
           SYSLOG(INFO) << "DLP warned on paste from clipboard";
           WarnOnPaste(data_src, data_dst);
           is_read_allowed = false;
@@ -157,6 +168,45 @@ bool DataTransferDlpController::IsClipboardReadAllowed(
   }
   DlpBooleanHistogram(dlp::kClipboardReadBlockedUMA, !is_read_allowed);
   return is_read_allowed;
+}
+
+void DataTransferDlpController::PasteIfAllowed(
+    const ui::DataTransferEndpoint* const data_src,
+    const ui::DataTransferEndpoint* const data_dst,
+    content::WebContents* web_contents,
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK(data_dst);
+  DCHECK(data_dst->IsUrlType());
+
+  if (!web_contents) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  DlpRulesManager::Level level =
+      IsDataTransferAllowed(dlp_rules_manager_, data_src, data_dst);
+
+  // If it's blocked, the data should be empty & PasteIfAllowed should not be
+  // called.
+  DCHECK_NE(level, DlpRulesManager::Level::kBlock);
+
+  if (level == DlpRulesManager::Level::kAllow) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  DCHECK_EQ(level, DlpRulesManager::Level::kWarn);
+
+  if (ShouldNotifyOnPaste(data_dst)) {
+    if (ShouldPasteOnWarn(data_dst))
+      std::move(callback).Run(true);
+    else if (ShouldCancelOnWarn(data_dst))
+      std::move(callback).Run(false);
+    else
+      WarnOnBlinkPaste(data_src, data_dst, web_contents, std::move(callback));
+  } else {
+    std::move(callback).Run(true);
+  }
 }
 
 bool DataTransferDlpController::IsDragDropAllowed(
@@ -191,12 +241,27 @@ void DataTransferDlpController::NotifyBlockedPaste(
 void DataTransferDlpController::WarnOnPaste(
     const ui::DataTransferEndpoint* const data_src,
     const ui::DataTransferEndpoint* const data_dst) {
-  clipboard_notifier_.WarnOnAction(data_src, data_dst);
+  DCHECK(!(data_dst && data_dst->IsUrlType()));
+  clipboard_notifier_.WarnOnPaste(data_src, data_dst);
 }
 
-bool DataTransferDlpController::ShouldProceedOnWarn(
+void DataTransferDlpController::WarnOnBlinkPaste(
+    const ui::DataTransferEndpoint* const data_src,
+    const ui::DataTransferEndpoint* const data_dst,
+    content::WebContents* web_contents,
+    base::OnceCallback<void(bool)> paste_cb) {
+  clipboard_notifier_.WarnOnBlinkPaste(data_src, data_dst, web_contents,
+                                       std::move(paste_cb));
+}
+
+bool DataTransferDlpController::ShouldPasteOnWarn(
     const ui::DataTransferEndpoint* const data_dst) {
-  return clipboard_notifier_.DidUserProceedOnWarn(data_dst);
+  return clipboard_notifier_.DidUserApproveDst(data_dst);
+}
+
+bool DataTransferDlpController::ShouldCancelOnWarn(
+    const ui::DataTransferEndpoint* const data_dst) {
+  return clipboard_notifier_.DidUserCancelDst(data_dst);
 }
 
 void DataTransferDlpController::NotifyBlockedDrop(

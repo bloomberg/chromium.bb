@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 
+#include <memory>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -180,7 +181,8 @@ RenderFrameProxyHost::RenderFrameProxyHost(
     // parent. The same CrossProcessFrameConnector is used for subsequent cross-
     // process navigations, but it will be destroyed if the frame is
     // navigated back to the same SiteInstance as its parent.
-    cross_process_frame_connector_.reset(new CrossProcessFrameConnector(this));
+    cross_process_frame_connector_ =
+        std::make_unique<CrossProcessFrameConnector>(this);
   }
 
   if (!GetProxyHostCreatedCallback().is_null())
@@ -335,12 +337,7 @@ void RenderFrameProxyHost::OnAssociatedInterfaceRequest(
   // receivers by resetting them before binding.
   // TODO(dcheng): Maybe there should be an equivalent to RenderFrameHostImpl's
   // InvalidateMojoConnection()?
-  if (interface_name == mojom::RenderFrameProxyHost::Name_) {
-    frame_proxy_host_associated_receiver_.reset();
-    frame_proxy_host_associated_receiver_.Bind(
-        mojo::PendingAssociatedReceiver<mojom::RenderFrameProxyHost>(
-            std::move(handle)));
-  } else if (interface_name == blink::mojom::RemoteFrameHost::Name_) {
+  if (interface_name == blink::mojom::RemoteFrameHost::Name_) {
     remote_frame_host_receiver_.reset();
     remote_frame_host_receiver_.Bind(
         mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrameHost>(
@@ -376,11 +373,6 @@ RenderFrameProxyHost::GetRemoteAssociatedInterfaces() {
 }
 
 void RenderFrameProxyHost::SetRenderFrameProxyCreated(bool created) {
-  if (!created) {
-    // If the renderer process has gone away, created can be false. In that
-    // case, invalidate the mojo connection.
-    frame_proxy_host_associated_receiver_.reset();
-  }
   render_frame_proxy_created_ = created;
 }
 
@@ -396,13 +388,6 @@ RenderFrameProxyHost::GetAssociatedRemoteMainFrame() {
   if (!remote_main_frame_)
     GetRemoteAssociatedInterfaces()->GetInterface(&remote_main_frame_);
   return remote_main_frame_;
-}
-
-const mojo::AssociatedRemote<content::mojom::RenderFrameProxy>&
-RenderFrameProxyHost::GetAssociatedRenderFrameProxy() {
-  if (!render_frame_proxy_)
-    GetRemoteAssociatedInterfaces()->GetInterface(&render_frame_proxy_);
-  return render_frame_proxy_;
 }
 
 void RenderFrameProxyHost::SetInheritedEffectiveTouchAction(
@@ -492,7 +477,7 @@ void RenderFrameProxyHost::DidUpdateVisualProperties(
 }
 
 void RenderFrameProxyHost::ChildProcessGone() {
-  GetAssociatedRenderFrameProxy()->ChildProcessGone();
+  GetAssociatedRemoteFrame()->ChildProcessGone();
 }
 
 void RenderFrameProxyHost::DidFocusFrame() {
@@ -508,7 +493,7 @@ void RenderFrameProxyHost::CapturePaintPreviewOfCrossProcessSubframe(
     const base::UnguessableToken& guid) {
   RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();
   // Do not capture paint on behalf of inactive RenderFrameHost.
-  if (rfh->IsInactiveAndDisallowReactivation())
+  if (rfh->IsInactiveAndDisallowActivation())
     return;
   rfh->delegate()->CapturePaintPreviewOfCrossProcessSubframe(clip_rect, guid,
                                                              rfh);
@@ -520,8 +505,8 @@ void RenderFrameProxyHost::SetIsInert(bool inert) {
 
 void RenderFrameProxyHost::RouteMessageEvent(
     const base::Optional<blink::LocalFrameToken>& source_frame_token,
-    const base::string16& source_origin,
-    const base::string16& target_origin,
+    const std::u16string& source_origin,
+    const std::u16string& target_origin,
     blink::TransferableMessage message) {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
   if (!target_rfh->IsRenderFrameLive()) {
@@ -559,7 +544,7 @@ void RenderFrameProxyHost::RouteMessageEvent(
 
   // TODO(lukasza): Move opaque-ness check into ChildProcessSecurityPolicyImpl.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (source_origin != base::UTF8ToUTF16("null") &&
+  if (source_origin != u"null" &&
       !policy->CanAccessDataForOrigin(
           GetProcess()->GetID(), url::Origin::Create(GURL(source_origin)))) {
     bad_message::ReceivedBadMessage(
@@ -681,7 +666,7 @@ void RenderFrameProxyHost::RouteCloseEvent() {
   }
 }
 
-void RenderFrameProxyHost::OpenURL(mojom::OpenURLParamsPtr params) {
+void RenderFrameProxyHost::OpenURL(blink::mojom::OpenURLParamsPtr params) {
   // Verify and unpack IPC payload.
   GURL validated_url;
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
@@ -692,13 +677,17 @@ void RenderFrameProxyHost::OpenURL(mojom::OpenURLParamsPtr params) {
 
   RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
 
-  // Only active frames can navigate:
-  // - If the frame is in pending deletion, ignore the navigation, because the
-  // frame is going to disappear soon anyway.
-  // - If the frame is in back-forward cache, it's not allowed to navigate as it
-  // should remain frozen. Ignore the request and evict the document from
+  // Only active documents are allowed to navigate from frame proxy:
+  // - If the document is in pending deletion, ignore the navigation, because
+  // the frame is going to disappear soon anyway.
+  // - If the document is in back-forward cache, it's not allowed to navigate as
+  // it should remain frozen. Ignore the request and evict the document from
   // back-forward cache.
-  if (current_rfh->IsInactiveAndDisallowReactivation())
+  // - If the document is prerendering, we don't expect to get here because
+  // prerendering pages are expected to defer cross-origin iframes, so there
+  // should not be any OOPIFs. Just cancel prerendering if we get here.
+  // TODO(falken): Log a specific cancellation reason if this occurs.
+  if (current_rfh->IsInactiveAndDisallowActivation())
     return;
 
   // Verify that we are in the same BrowsingInstance as the current

@@ -29,9 +29,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as Common from '../common/common.js';
-import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
+import * as Common from '../core/common/common.js';
+import * as Platform from '../core/platform/platform.js';
+import * as Root from '../core/root/root.js';
 
 /**
  * @type {!ThemeSupport}
@@ -111,9 +111,9 @@ export class ThemeSupport {
    */
   injectHighlightStyleSheets(element) {
     this._injectingStyleSheet = true;
-    this._appendStyle(element, 'ui/inspectorSyntaxHighlight.css', {enableLegacyPatching: true});
+    this._appendStyle(element, 'ui/legacy/inspectorSyntaxHighlight.css', {enableLegacyPatching: true});
     if (this._themeName === 'dark') {
-      this._appendStyle(element, 'ui/inspectorSyntaxHighlightDark.css', {enableLegacyPatching: true});
+      this._appendStyle(element, 'ui/legacy/inspectorSyntaxHighlightDark.css', {enableLegacyPatching: true});
     }
     this._injectingStyleSheet = false;
   }

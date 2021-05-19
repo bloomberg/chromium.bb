@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 
+#include <memory>
+
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
@@ -4865,7 +4867,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerSharedStateCHROMIUM(
     GLint sorting_context_id,
     const GLfloat* transform) {
   if (!ca_layer_shared_state_) {
-    ca_layer_shared_state_.reset(new CALayerSharedState);
+    ca_layer_shared_state_ = std::make_unique<CALayerSharedState>();
   }
 
   ca_layer_shared_state_->opacity = opacity;
@@ -5202,60 +5204,6 @@ error::Error GLES2DecoderPassthroughImpl::DoSetEnableDCLayersCHROMIUM(
     return error::kLostContext;
   }
 
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoBeginRasterCHROMIUM(
-    GLuint texture_id,
-    GLuint sk_color,
-    GLuint msaa_sample_count,
-    GLboolean can_use_lcd_text,
-    GLint color_type) {
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoRasterCHROMIUM(
-    GLuint raster_shm_id,
-    GLuint raster_shm_offset,
-    GLsizeiptr raster_shm_size,
-    GLuint font_shm_id,
-    GLuint font_shm_offset,
-    GLsizeiptr font_shm_size) {
-  // TODO(enne): Add CHROMIUM_raster_transport extension support to the
-  // passthrough command buffer.
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoEndRasterCHROMIUM() {
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoCreateTransferCacheEntryINTERNAL(
-    GLuint entry_type,
-    GLuint entry_id,
-    GLuint handle_shm_id,
-    GLuint handle_shm_offset,
-    GLuint data_shm_id,
-    GLuint data_shm_offset,
-    GLuint data_size) {
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoUnlockTransferCacheEntryINTERNAL(
-    GLuint entry_type,
-    GLuint entry_id) {
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoDeleteTransferCacheEntryINTERNAL(
-    GLuint entry_type,
-    GLuint entry_id) {
-  NOTIMPLEMENTED();
   return error::kNoError;
 }
 

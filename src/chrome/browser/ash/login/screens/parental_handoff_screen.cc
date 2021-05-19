@@ -6,9 +6,8 @@
 
 #include <string>
 
-#include "base/strings/string16.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/chromeos/child_accounts/family_features.h"
-#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
@@ -25,11 +24,11 @@ namespace {
 
 constexpr char kUserActionNext[] = "next";
 
-base::string16 GetActiveUserName() {
+std::u16string GetActiveUserName() {
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetActiveUser();
   if (!user || !user->IsChild())
-    return base::string16();
+    return std::u16string();
   return user->GetDisplayName();
 }
 

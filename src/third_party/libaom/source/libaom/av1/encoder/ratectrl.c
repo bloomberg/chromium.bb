@@ -452,8 +452,9 @@ static const RATE_FACTOR_LEVEL rate_factor_levels[FRAME_UPDATE_TYPES] = {
   GF_ARF_LOW,    // INTNL_ARF_UPDATE
 };
 
-static RATE_FACTOR_LEVEL get_rate_factor_level(const GF_GROUP *const gf_group) {
-  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[gf_group->index];
+static RATE_FACTOR_LEVEL get_rate_factor_level(const GF_GROUP *const gf_group,
+                                               int gf_frame_index) {
+  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[gf_frame_index];
   assert(update_type < FRAME_UPDATE_TYPES);
   return rate_factor_levels[update_type];
 }
@@ -480,7 +481,8 @@ static double get_rate_correction_factor(const AV1_COMP *cpi, int width,
   if (cpi->common.current_frame.frame_type == KEY_FRAME) {
     rcf = rc->rate_correction_factors[KF_STD];
   } else if (is_stat_consumption_stage(cpi)) {
-    const RATE_FACTOR_LEVEL rf_lvl = get_rate_factor_level(&cpi->gf_group);
+    const RATE_FACTOR_LEVEL rf_lvl =
+        get_rate_factor_level(&cpi->gf_group, cpi->gf_frame_index);
     rcf = rc->rate_correction_factors[rf_lvl];
   } else {
     if ((refresh_frame_flags->alt_ref_frame ||
@@ -524,7 +526,8 @@ static void set_rate_correction_factor(AV1_COMP *cpi, double factor, int width,
   if (cpi->common.current_frame.frame_type == KEY_FRAME) {
     rc->rate_correction_factors[KF_STD] = factor;
   } else if (is_stat_consumption_stage(cpi)) {
-    const RATE_FACTOR_LEVEL rf_lvl = get_rate_factor_level(&cpi->gf_group);
+    const RATE_FACTOR_LEVEL rf_lvl =
+        get_rate_factor_level(&cpi->gf_group, cpi->gf_frame_index);
     rc->rate_correction_factors[rf_lvl] = factor;
   } else {
     if ((refresh_frame_flags->alt_ref_frame ||
@@ -1252,9 +1255,10 @@ static const double arf_layer_deltas[MAX_ARF_LAYERS + 1] = { 2.50, 2.00, 1.75,
                                                              1.0 };
 int av1_frame_type_qdelta(const AV1_COMP *cpi, int q) {
   const GF_GROUP *const gf_group = &cpi->gf_group;
-  const RATE_FACTOR_LEVEL rf_lvl = get_rate_factor_level(gf_group);
-  const FRAME_TYPE frame_type = gf_group->frame_type[gf_group->index];
-  const int arf_layer = AOMMIN(gf_group->layer_depth[gf_group->index], 6);
+  const RATE_FACTOR_LEVEL rf_lvl =
+      get_rate_factor_level(gf_group, cpi->gf_frame_index);
+  const FRAME_TYPE frame_type = gf_group->frame_type[cpi->gf_frame_index];
+  const int arf_layer = AOMMIN(gf_group->layer_depth[cpi->gf_frame_index], 6);
   const double rate_factor =
       (rf_lvl == INTER_NORMAL) ? 1.0 : arf_layer_deltas[arf_layer];
 
@@ -1597,7 +1601,7 @@ static int rc_pick_q_and_bounds(const AV1_COMP *cpi, int width, int height,
   const int bit_depth = cm->seq_params.bit_depth;
 
   if (oxcf->q_cfg.use_fixed_qp_offsets) {
-    return get_q_using_fixed_offsets(oxcf, rc, gf_group, gf_group->index,
+    return get_q_using_fixed_offsets(oxcf, rc, gf_group, cpi->gf_frame_index,
                                      cq_level, bit_depth);
   }
 
@@ -1760,7 +1764,7 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
   const RefreshFrameFlagsInfo *const refresh_frame_flags = &cpi->refresh_frame;
 
   const int is_intrnl_arf =
-      gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE;
+      gf_group->update_type[cpi->gf_frame_index] == INTNL_ARF_UPDATE;
 
   const int qindex = cm->quant_params.base_qindex;
 
@@ -2177,7 +2181,7 @@ void av1_set_reference_structure_one_pass_rt(AV1_COMP *cpi, int gf_update) {
   int gld_idx = 0;
   int alt_ref_idx = 0;
   ext_refresh_frame_flags->update_pending = 1;
-  svc->external_ref_frame_config = 1;
+  svc->set_ref_frame_config = 1;
   ext_flags->ref_frame_flags = 0;
   ext_refresh_frame_flags->last_frame = 1;
   ext_refresh_frame_flags->golden_frame = 0;
@@ -2367,7 +2371,7 @@ static int set_gf_interval_update_onepass_rt(AV1_COMP *cpi,
     rc->constrained_gf_group =
         (rc->baseline_gf_interval >= rc->frames_to_key) ? 1 : 0;
     rc->frames_till_gf_update_due = rc->baseline_gf_interval;
-    gf_group->index = 0;
+    cpi->gf_frame_index = 0;
     // SVC does not use GF as periodic boost.
     // TODO(marpan): Find better way to disable this for SVC.
     if (cpi->use_svc) {
@@ -2574,9 +2578,9 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
         cm->current_frame.frame_number != 0 && rc->frames_to_key == 0;
     rc->frames_to_key = cpi->oxcf.kf_cfg.key_freq_max;
     rc->kf_boost = DEFAULT_KF_BOOST_RT;
-    gf_group->update_type[gf_group->index] = KF_UPDATE;
-    gf_group->frame_type[gf_group->index] = KEY_FRAME;
-    gf_group->refbuf_state[gf_group->index] = REFBUF_RESET;
+    gf_group->update_type[cpi->gf_frame_index] = KF_UPDATE;
+    gf_group->frame_type[cpi->gf_frame_index] = KEY_FRAME;
+    gf_group->refbuf_state[cpi->gf_frame_index] = REFBUF_RESET;
     if (cpi->use_svc) {
       if (cm->current_frame.frame_number > 0)
         av1_svc_reset_temporal_layers(cpi, 1);
@@ -2584,9 +2588,9 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
     }
   } else {
     frame_params->frame_type = INTER_FRAME;
-    gf_group->update_type[gf_group->index] = LF_UPDATE;
-    gf_group->frame_type[gf_group->index] = INTER_FRAME;
-    gf_group->refbuf_state[gf_group->index] = REFBUF_UPDATE;
+    gf_group->update_type[cpi->gf_frame_index] = LF_UPDATE;
+    gf_group->frame_type[cpi->gf_frame_index] = INTER_FRAME;
+    gf_group->refbuf_state[cpi->gf_frame_index] = REFBUF_UPDATE;
     if (cpi->use_svc) {
       LAYER_CONTEXT *lc = &svc->layer_context[layer];
       lc->is_key_frame =
@@ -2628,14 +2632,14 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
       target = av1_calc_iframe_target_size_one_pass_cbr(cpi);
     } else {
       target = av1_calc_pframe_target_size_one_pass_cbr(
-          cpi, gf_group->update_type[gf_group->index]);
+          cpi, gf_group->update_type[cpi->gf_frame_index]);
     }
   } else {
     if (frame_params->frame_type == KEY_FRAME) {
       target = av1_calc_iframe_target_size_one_pass_vbr(cpi);
     } else {
       target = av1_calc_pframe_target_size_one_pass_vbr(
-          cpi, gf_group->update_type[gf_group->index]);
+          cpi, gf_group->update_type[cpi->gf_frame_index]);
     }
   }
   if (cpi->oxcf.rc_cfg.mode == AOM_Q)
@@ -2644,6 +2648,15 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
   av1_rc_set_frame_target(cpi, target, cm->width, cm->height);
   rc->base_frame_target = target;
   cm->current_frame.frame_type = frame_params->frame_type;
+  // For fixed mode SVC: if KSVC is enabled remove inter layer
+  // prediction on spatial enhancement layer frames for frames
+  // whose base is not KEY frame.
+  if (cpi->use_svc && !svc->use_flexible_mode && svc->ksvc_fixed_mode &&
+      svc->number_spatial_layers > 1 &&
+      !svc->layer_context[layer].is_key_frame) {
+    ExternalFlags *const ext_flags = &cpi->ext_flags;
+    ext_flags->ref_frame_flags ^= AOM_GOLD_FLAG;
+  }
 }
 
 int av1_encodedframe_overshoot_cbr(AV1_COMP *cpi, int *q) {

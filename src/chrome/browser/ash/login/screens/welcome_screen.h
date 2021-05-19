@@ -15,9 +15,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+// TODO(https://crbug.com/1164001): forward declare LanguageSwitchResult
+// after this file is moved to ash.
+#include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/wizard_context.h"
+#include "chrome/browser/ash/login/screens/chromevox_hint/chromevox_hint_detector.h"
+#include "chrome/browser/ash/login/wizard_context.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace chromeos {
@@ -25,13 +29,10 @@ namespace chromeos {
 class InputEventsBlocker;
 class WelcomeView;
 
-namespace locale_util {
-struct LanguageSwitchResult;
-}
-
 class WelcomeScreen : public BaseScreen,
                       public input_method::InputMethodManager::Observer,
-                      public DemoModeDetector::Observer {
+                      public DemoModeDetector::Observer,
+                      public ChromeVoxHintDetector::Observer {
  public:
   using TView = WelcomeView;
 
@@ -65,7 +66,7 @@ class WelcomeScreen : public BaseScreen,
     virtual void OnLanguageListReloaded() = 0;
   };
 
-  enum class Result { NEXT, START_DEMO, SETUP_DEMO, ENABLE_DEBUGGING };
+  enum class Result { NEXT, SETUP_DEMO, ENABLE_DEBUGGING };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
@@ -107,11 +108,9 @@ class WelcomeScreen : public BaseScreen,
     return &(context()->configuration);
   }
 
-  void CancelChromeVoxHintTimer();
-  void GiveChromeVoxHintForTesting();
-  bool GetChromeVoxHintTimerCancelledForTesting() {
-    return chromevox_hint_timer_cancelled_for_testing_;
-  }
+  // ChromeVox hint.
+  void CancelChromeVoxHintIdleDetection();
+  ChromeVoxHintDetector* GetChromeVoxHintDetectorForTesting();
 
  protected:
   // Exposes exit callback to test overrides.
@@ -124,8 +123,8 @@ class WelcomeScreen : public BaseScreen,
   void OnUserAction(const std::string& action_id) override;
   bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
 
-  // DemoModeDetector::Observer:
-  void OnShouldStartDemoMode() override;
+  // ChromeVoxHintDetector::Observer:
+  void OnShouldGiveChromeVoxHint() override;
 
   // InputMethodManager::Observer:
   void InputMethodChanged(input_method::InputMethodManager* manager,
@@ -164,14 +163,12 @@ class WelcomeScreen : public BaseScreen,
   void NotifyLocaleChange();
   void OnLocaleChangeResult(ash::LocaleNotificationResult result);
 
-  // ChromeVox hint.
-  void StartChromeVoxHintTimer();
-  void GiveChromeVoxHint();
-
   WelcomeView* view_ = nullptr;
   ScreenExitCallback exit_callback_;
 
   std::unique_ptr<DemoModeDetector> demo_mode_detector_;
+
+  std::unique_ptr<ChromeVoxHintDetector> chromevox_hint_detector_;
 
   std::string input_method_;
   std::string timezone_;
@@ -185,12 +182,6 @@ class WelcomeScreen : public BaseScreen,
   std::string selected_language_code_;
 
   base::ObserverList<Observer>::Unchecked observers_;
-
-  base::OneShotTimer chromevox_hint_timer_;
-
-  bool chromevox_hint_timer_activated_ = false;
-
-  bool chromevox_hint_timer_cancelled_for_testing_ = false;
 
   base::WeakPtrFactory<WelcomeScreen> weak_factory_{this};
 

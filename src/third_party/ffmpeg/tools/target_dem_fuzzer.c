@@ -88,7 +88,7 @@ static int64_t io_seek(void *opaque, int64_t offset, int whence)
 
 // Ensure we don't loop forever
 const uint32_t maxiteration = 8096;
-const int maxblocks= 100000;
+const int maxblocks= 50000;
 
 static const uint64_t FUZZ_TAG = 0x4741542D5A5A5546ULL;
 
@@ -200,7 +200,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             break;
         av_packet_unref(&pkt);
     }
-end:
+
     av_freep(&fuzzed_pb->buffer);
     avio_context_free(&fuzzed_pb);
     avformat_close_input(&avfmt);

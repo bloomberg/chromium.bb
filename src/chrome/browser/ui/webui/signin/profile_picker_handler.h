@@ -36,6 +36,13 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
 
  private:
   friend class ProfilePickerHandlerTest;
+  friend class ProfilePickerCreationFlowBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(
+      ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
+      CreateSignedInProfileSigninAlreadyExists_ConfirmSwitch);
+  FRIEND_TEST_ALL_PREFIXES(
+      ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
+      CreateSignedInProfileSigninAlreadyExists_CancelSwitch);
 
   void HandleMainViewInitialize(const base::ListValue* args);
   void HandleLaunchSelectedProfile(bool open_settings,
@@ -52,6 +59,11 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
   void HandleGetProfileThemeInfo(const base::ListValue* args);
   void HandleGetAvailableIcons(const base::ListValue* args);
   void HandleCreateProfile(const base::ListValue* args);
+
+  // Profile switch screen:
+  void HandleGetSwitchProfile(const base::ListValue* args);
+  void HandleConfirmProfileSwitch(const base::ListValue* args);
+  void HandleCancelProfileSwitch(const base::ListValue* args);
 
   // |args| is unused.
   void HandleRecordSignInPromoImpression(const base::ListValue* args);
@@ -82,13 +94,13 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
   // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
-                           const base::string16& profile_name) override;
+                           const std::u16string& profile_name) override;
   void OnProfileIsOmittedChanged(const base::FilePath& profile_path) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
   void OnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) override;
   void OnProfileNameChanged(const base::FilePath& profile_path,
-                            const base::string16& old_profile_name) override;
+                            const std::u16string& old_profile_name) override;
   void OnProfileHostedDomainChanged(
       const base::FilePath& profile_path) override;
 

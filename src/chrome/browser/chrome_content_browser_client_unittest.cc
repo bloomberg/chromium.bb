@@ -16,7 +16,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -64,15 +63,13 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "ash/content/scanning/url_constants.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/components/scanning/url_constants.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -144,12 +141,14 @@ TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
 //    and associated test.
 TEST_F(ChromeContentBrowserClientWindowTest, ShouldStayInParentProcessForNTP) {
   ChromeContentBrowserClient client;
+  // Remote 3P NTPs effectively have a URL chrome-search://remote-ntp. This
+  // is so an iframe with the src of chrome-search://most-visited/title.html can
+  // be embedded within the remote NTP.
   scoped_refptr<content::SiteInstance> site_instance =
-      content::SiteInstance::CreateForURL(
-          browser()->profile(),
-          GURL("chrome-search://local-ntp/local-ntp.html"));
+      content::SiteInstance::CreateForURL(browser()->profile(),
+                                          GURL("chrome-search://remote-ntp"));
   EXPECT_TRUE(client.ShouldStayInParentProcessForNTP(
-      GURL("chrome-search://local-ntp/local-ntp.html"), site_instance.get()));
+      GURL("chrome-search://remote-ntp"), site_instance.get()));
 
   site_instance = content::SiteInstance::CreateForURL(
       browser()->profile(), GURL("chrome://new-tab-page"));
@@ -168,9 +167,8 @@ TEST_F(ChromeContentBrowserClientWindowTest, OverrideNavigationParams) {
   base::Optional<url::Origin> initiator_origin = base::nullopt;
 
   scoped_refptr<content::SiteInstance> site_instance =
-      content::SiteInstance::CreateForURL(
-          browser()->profile(),
-          GURL("chrome-search://local-ntp/local-ntp.html"));
+      content::SiteInstance::CreateForURL(browser()->profile(),
+                                          GURL("chrome-search://remote-ntp"));
   transition = ui::PAGE_TRANSITION_LINK;
   is_renderer_initiated = true;
   // The origin is a placeholder to test that |initiator_origin| is set to
@@ -378,7 +376,7 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
     search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
 
     TemplateURLData data;
-    data.SetShortName(base::ASCIIToUTF16("foo.com"));
+    data.SetShortName(u"foo.com");
     data.SetURL("http://foo.com/url?bar={searchTerms}");
     data.new_tab_url = new_tab_page_url.spec();
     TemplateURL* template_url =
@@ -465,13 +463,9 @@ class ChromeContentSettingsRedirectTest
     : public ChromeContentBrowserClientTest {
  public:
   ChromeContentSettingsRedirectTest()
-      : testing_local_state_(TestingBrowserProcess::GetGlobal()) {
-    scoped_feature_list_.InitWithFeatures({chromeos::features::kScanningUI},
-                                          {});
-  }
+      : testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   ScopedTestingLocalState testing_local_state_;
 };
 
@@ -517,7 +511,7 @@ TEST_F(ChromeContentSettingsRedirectTest, RedirectSettingsURL) {
 
 TEST_F(ChromeContentSettingsRedirectTest, RedirectScanningAppURL) {
   TestChromeContentBrowserClient test_content_browser_client;
-  const GURL scanning_app_url(chromeos::kChromeUIScanningAppUrl);
+  const GURL scanning_app_url(ash::kChromeUIScanningAppUrl);
   GURL dest_url = scanning_app_url;
   test_content_browser_client.HandleWebUI(&dest_url, &profile_);
   EXPECT_EQ(scanning_app_url, dest_url);
@@ -585,8 +579,7 @@ class ChromeContentSettingsPolicyTrustAnchor
 
   void SetUp() override {
     // Add a profile
-    auto fake_user_manager =
-        std::make_unique<chromeos::FakeChromeUserManager>();
+    auto fake_user_manager = std::make_unique<ash::FakeChromeUserManager>();
     AccountId account_id = AccountId::FromUserEmailGaiaId(kEmail, "gaia_id");
     user_manager::User* user =
         fake_user_manager->AddUserWithAffiliationAndTypeAndProfile(

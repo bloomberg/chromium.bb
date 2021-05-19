@@ -52,7 +52,12 @@ class MockFidoHidConnection : public device::mojom::HidConnection {
   void SetNonce(base::span<uint8_t const> nonce);
 
   void ExpectWriteHidInit();
+  void ExpectWriteHidInit(const testing::Sequence& sequence);
   void ExpectHidWriteWithCommand(FidoHidDeviceCommand cmd);
+  void ExpectHidWriteWithCommand(const testing::Sequence& sequence,
+                                 FidoHidDeviceCommand cmd);
+  void ExpectReadAndReplyWith(const testing::Sequence& sequence,
+                              std::vector<uint8_t> response);
 
   const std::array<uint8_t, 4>& connection_channel_id() const {
     return connection_channel_id_;
@@ -119,6 +124,7 @@ class FakeFidoHidManager : public device::mojom::HidManager {
       device::mojom::HidDeviceInfoPtr device,
       mojo::PendingRemote<device::mojom::HidConnection> connection);
   void RemoveDevice(const std::string device_guid);
+  void ChangeDevice(device::mojom::HidDeviceInfoPtr device);
 
  private:
   std::map<std::string, device::mojom::HidDeviceInfoPtr> devices_;

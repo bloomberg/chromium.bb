@@ -113,6 +113,7 @@ class SKUNICODE_API SkUnicode {
 
         virtual bool isControl(SkUnichar utf8) = 0;
         virtual bool isWhitespace(SkUnichar utf8) = 0;
+        virtual bool isSpace(SkUnichar utf8) = 0;
         virtual SkString convertUtf16ToUtf8(const std::u16string& utf16) = 0;
 
         // Methods used in SkShaper
@@ -133,8 +134,19 @@ class SKUNICODE_API SkUnicode {
                (const char utf8[], int utf8Units, std::vector<Position>* results) = 0;
         virtual bool getGraphemes
                (const char utf8[], int utf8Units, std::vector<Position>* results) = 0;
-        virtual bool getWhitespaces
-               (const char utf8[], int utf8Units, std::vector<Position>* results) = 0;
+
+        template <typename Callback>
+        void forEachCodepoint(const char* utf8, int32_t utf8Units, Callback&& callback) {
+            const char* current = utf8;
+            const char* end = utf8 + utf8Units;
+            while (current < end) {
+                auto before = current - utf8;
+                SkUnichar unichar = SkUTF::NextUTF8(&current, end);
+                if (unichar < 0) unichar = 0xFFFD;
+                auto after = current - utf8;
+                callback(unichar, before, after);
+            }
+        }
 
         virtual void reorderVisual(const BidiLevel runLevels[], int levelsCount, int32_t logicalFromVisual[]) = 0;
 

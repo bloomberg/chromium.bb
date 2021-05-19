@@ -38,7 +38,7 @@ namespace testing {
 
 class TestParsedConfig1 : public ServiceConfigParser::ParsedConfig {
  public:
-  TestParsedConfig1(int value) : value_(value) {}
+  explicit TestParsedConfig1(int value) : value_(value) {}
 
   int value() const { return value_; }
 
@@ -518,7 +518,12 @@ TEST_F(ClientChannelParserTest, ValidLoadBalancingConfigXds) {
       "{\n"
       "  \"loadBalancingConfig\":[\n"
       "    { \"does_not_exist\":{} },\n"
-      "    { \"eds_experimental\":{ \"clusterName\": \"foo\" } }\n"
+      "    { \"xds_cluster_resolver_experimental\":{\n"
+      "      \"discoveryMechanisms\": [\n"
+      "      { \"clusterName\": \"foo\",\n"
+      "        \"type\": \"EDS\"\n"
+      "    } ]\n"
+      "    } }\n"
       "  ]\n"
       "}";
   grpc_error* error = GRPC_ERROR_NONE;
@@ -528,7 +533,7 @@ TEST_F(ClientChannelParserTest, ValidLoadBalancingConfigXds) {
       static_cast<grpc_core::internal::ClientChannelGlobalParsedConfig*>(
           svc_cfg->GetGlobalParsedConfig(0));
   auto lb_config = parsed_config->parsed_lb_config();
-  EXPECT_STREQ(lb_config->name(), "eds_experimental");
+  EXPECT_STREQ(lb_config->name(), "xds_cluster_resolver_experimental");
 }
 
 TEST_F(ClientChannelParserTest, UnknownLoadBalancingConfig) {
@@ -601,7 +606,8 @@ TEST_F(ClientChannelParserTest, UnknownLoadBalancingPolicy) {
 }
 
 TEST_F(ClientChannelParserTest, LoadBalancingPolicyXdsNotAllowed) {
-  const char* test_json = "{\"loadBalancingPolicy\":\"eds_experimental\"}";
+  const char* test_json =
+      "{\"loadBalancingPolicy\":\"xds_cluster_resolver_experimental\"}";
   grpc_error* error = GRPC_ERROR_NONE;
   auto svc_cfg = ServiceConfig::Create(nullptr, test_json, &error);
   EXPECT_THAT(grpc_error_string(error),
@@ -609,7 +615,8 @@ TEST_F(ClientChannelParserTest, LoadBalancingPolicyXdsNotAllowed) {
                   "Service config parsing error.*referenced_errors.*"
                   "Global Params.*referenced_errors.*"
                   "Client channel global parser.*referenced_errors.*"
-                  "field:loadBalancingPolicy error:eds_experimental requires "
+                  "field:loadBalancingPolicy "
+                  "error:xds_cluster_resolver_experimental requires "
                   "a config. Please use loadBalancingConfig instead."));
   GRPC_ERROR_UNREF(error);
 }
@@ -733,7 +740,8 @@ TEST_F(ClientChannelParserTest, InvalidTimeout) {
                   "Method Params.*referenced_errors.*"
                   "methodConfig.*referenced_errors.*"
                   "Client channel parser.*referenced_errors.*"
-                  "field:timeout error:Failed parsing"));
+                  "field:timeout error:type should be STRING of the form given "
+                  "by google.proto.Duration"));
   GRPC_ERROR_UNREF(error);
 }
 
@@ -876,7 +884,8 @@ TEST_F(ClientChannelParserTest, InvalidRetryPolicyInitialBackoff) {
                   "methodConfig.*referenced_errors.*"
                   "Client channel parser.*referenced_errors.*"
                   "retryPolicy.*referenced_errors.*"
-                  "field:initialBackoff error:Failed to parse"));
+                  "field:initialBackoff error:type should be STRING of the "
+                  "form given by google.proto.Duration"));
   GRPC_ERROR_UNREF(error);
 }
 
@@ -905,7 +914,8 @@ TEST_F(ClientChannelParserTest, InvalidRetryPolicyMaxBackoff) {
                   "methodConfig.*referenced_errors.*"
                   "Client channel parser.*referenced_errors.*"
                   "retryPolicy.*referenced_errors.*"
-                  "field:maxBackoff error:failed to parse"));
+                  "field:maxBackoff error:type should be STRING of the form "
+                  "given by google.proto.Duration"));
   GRPC_ERROR_UNREF(error);
 }
 
@@ -981,8 +991,8 @@ TEST_F(ClientChannelParserTest, ValidHealthCheck) {
       static_cast<grpc_core::internal::ClientChannelGlobalParsedConfig*>(
           svc_cfg->GetGlobalParsedConfig(0));
   ASSERT_NE(parsed_config, nullptr);
-  EXPECT_STREQ(parsed_config->health_check_service_name(),
-               "health_check_service_name");
+  EXPECT_EQ(parsed_config->health_check_service_name(),
+            "health_check_service_name");
 }
 
 TEST_F(ClientChannelParserTest, InvalidHealthCheckMultipleEntries) {

@@ -140,13 +140,13 @@ void ParkableImageManager::RecordStatisticsAfter5Minutes() const {
 }
 
 void ParkableImageManager::Remove(ParkableImage* image) {
-  DCHECK(IsMainThread());
-
   MutexLocker lock(lock_);
 
   // Image could be on disk or unparked. Remove it in either case.
-  unparked_images_.erase(image);
-  on_disk_images_.erase(image);
+  auto* map = image->is_on_disk() ? &on_disk_images_ : &unparked_images_;
+  auto it = map->find(image);
+  DCHECK(it != map->end());
+  map->erase(it);
 }
 
 void ParkableImageManager::MoveImage(ParkableImage* image,
@@ -157,6 +157,15 @@ void ParkableImageManager::MoveImage(ParkableImage* image,
   CHECK(!to->Contains(image));
   from->erase(it);
   to->insert(image);
+}
+
+bool ParkableImageManager::IsRegistered(ParkableImage* image) {
+  MutexLocker lock(lock_);
+
+  auto* map = image->is_on_disk() ? &on_disk_images_ : &unparked_images_;
+  auto it = map->find(image);
+
+  return it != map->end();
 }
 
 void ParkableImageManager::OnWrittenToDisk(ParkableImage* image) {
@@ -177,8 +186,9 @@ void ParkableImageManager::ScheduleDelayedParkingTaskIfNeeded() {
   if (has_pending_parking_task_)
     return;
 
+  auto* thread = Thread::MainThread();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      Thread::Current()->GetTaskRunner();
+      thread->GetTaskRunner();
   task_runner->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ParkableImageManager::MaybeParkImages,
@@ -209,14 +219,18 @@ void ParkableImageManager::MaybeParkImages() {
   // synchronously, which calls back into the manager.
   lock_.unlock();
 
-  for (auto image : unparked_images)
+  bool unfrozen_images = false;
+  for (auto image : unparked_images) {
+    if (!image->is_frozen())
+      unfrozen_images = true;
     image->MaybePark();
+  }
 
   lock_.lock();
 
   has_pending_parking_task_ = false;
 
-  if (unparked_images_.size() > 0)
+  if (unfrozen_images)
     ScheduleDelayedParkingTaskIfNeeded();
 }
 

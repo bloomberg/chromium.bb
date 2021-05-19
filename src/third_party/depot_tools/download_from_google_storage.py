@@ -254,9 +254,24 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
         continue
       extract_dir = output_filename[:-len('.tar.gz')]
     if os.path.exists(output_filename) and not force:
-      if not extract or os.path.exists(extract_dir):
-        if get_sha1(output_filename) == input_sha1_sum:
-          continue
+      skip = get_sha1(output_filename) == input_sha1_sum
+      if extract:
+        # Additional condition for extract:
+        # 1) extract_dir must exist
+        # 2) .tmp flag file mustn't exist
+        if not os.path.exists(extract_dir):
+          out_q.put('%d> Extract dir %s does not exist, re-downloading...' %
+                    (thread_num, extract_dir))
+          skip = False
+        # .tmp file is created just before extraction and removed just after
+        # extraction. If such file exists, it means the process was terminated
+        # mid-extraction and therefore needs to be extracted again.
+        elif os.path.exists(extract_dir + '.tmp'):
+          out_q.put('%d> Detected tmp flag file for %s, '
+                    're-downloading...' % (thread_num, output_filename))
+          skip = False
+      if skip:
+        continue
     # Check if file exists.
     file_url = '%s/%s' % (base_url, input_sha1_sum)
     (code, _, err) = gsutil.check_call('ls', file_url)
@@ -336,7 +351,9 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
         out_q.put('%d> Extracting %d entries from %s to %s' %
                   (thread_num, len(tar.getmembers()),output_filename,
                    extract_dir))
-        tar.extractall(path=dirname)
+        with open(extract_dir + '.tmp', 'a'):
+          tar.extractall(path=dirname)
+        os.remove(extract_dir + '.tmp')
     # Set executable bit.
     if sys.platform == 'cygwin':
       # Under cygwin, mark all files as executable. The executable flag in

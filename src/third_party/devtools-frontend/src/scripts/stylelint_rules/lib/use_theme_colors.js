@@ -10,9 +10,27 @@ const fs = require('fs');
 const RULE_NAME = 'plugin/use_theme_colors';
 
 const CSS_PROPS_TO_CHECK_FOR_COLOR_USAGE = new Set([
-  'color', 'box-shadow', 'text-shadow', 'outline-color', 'background-image', 'background-color', 'border-left-color',
-  'border-right-color', 'border-top-color', 'border-bottom-color', '-webkit-border-image', 'fill', 'stroke',
-  'border-left', 'border-right', 'border-top', 'border-bottom', 'background', 'border'
+  'color',
+  'box-shadow',
+  'text-shadow',
+  'outline-color',
+  'background-image',
+  'background-color',
+  'border-left-color',
+  'border-right-color',
+  'border-top-color',
+  'border-bottom-color',
+  '-webkit-border-image',
+  'fill',
+  'stroke',
+  'border-left',
+  'border-right',
+  'border-top',
+  'border-bottom',
+  'background',
+  'border',
+  'border-color',
+  'outline'
 ]);
 
 const COLOR_INDICATOR_REGEXES = new Set([
@@ -22,8 +40,10 @@ const COLOR_INDICATOR_REGEXES = new Set([
   /rgba?/,
 ]);
 
-const themeColorsPath = path.join(__dirname, '..', '..', '..', 'front_end', 'ui', 'themeColors.css');
-const inspectorStylesPath = path.join(__dirname, '..', '..', '..', 'front_end', 'ui', 'inspectorStyle.css');
+const CUSTOM_VARIABLE_OVERRIDE_PREFIX = '--override-';
+
+const themeColorsPath = path.join(__dirname, '..', '..', '..', 'front_end', 'ui', 'legacy', 'themeColors.css');
+const inspectorCommonPath = path.join(__dirname, '..', '..', '..', 'front_end', 'ui', 'legacy', 'inspectorCommon.css');
 
 function getRootVariableDeclarationsFromCSSFile(filePath) {
   const fileContents = fs.readFileSync(filePath, {encoding: 'utf-8'});
@@ -41,7 +61,7 @@ function getRootVariableDeclarationsFromCSSFile(filePath) {
 }
 
 const DEFINED_THEME_COLOR_VARIABLES = getRootVariableDeclarationsFromCSSFile(themeColorsPath);
-const DEFINED_INSPECTOR_STYLE_VARIABLES = getRootVariableDeclarationsFromCSSFile(inspectorStylesPath);
+const DEFINED_INSPECTOR_STYLE_VARIABLES = getRootVariableDeclarationsFromCSSFile(inspectorCommonPath);
 
 module.exports = stylelint.createPlugin(RULE_NAME, function(primary, secondary, context) {
   return function(postcssRoot, postcssResult) {
@@ -69,7 +89,7 @@ module.exports = stylelint.createPlugin(RULE_NAME, function(primary, secondary, 
         declaration.after(' /* stylelint-disable-line plugin/use_theme_colors */');
       } else {
         stylelint.utils.report({
-          message: 'All CSS color declarations should use a variable defined in ui/themeColors.css',
+          message: 'All CSS color declarations should use a variable defined in ui/legacy/themeColors.css',
           ruleName: RULE_NAME,
           node: declaration,
           result: postcssResult,
@@ -104,11 +124,13 @@ module.exports = stylelint.createPlugin(RULE_NAME, function(primary, secondary, 
          * - else every run would add more comments.
          */
         const declIndex = declaration.parent.nodes.indexOf(declaration);
-        const nextIndex = declIndex + 1;
-        const nextNode = declaration.parent.nodes[nextIndex];
-        const alreadyFixed =
-            (nextNode && nextNode.type === 'comment' &&
-             nextNode.text.startsWith('stylelint-disable-line plugin/use_theme_colors'));
+        const nextNode = declaration.parent.nodes[declIndex + 1];
+        const previousNode = declaration.parent.nodes[declIndex - 1];
+        const nextNodeIsDisableComment = nextNode && nextNode.type === 'comment' &&
+            nextNode.text.startsWith('stylelint-disable-line plugin/use_theme_colors');
+        const previousNodeIsDisableComment = previousNode && previousNode.type === 'comment' &&
+            previousNode.text.startsWith('stylelint-disable-next-line plugin/use_theme_colors');
+        const alreadyFixed = nextNodeIsDisableComment || previousNodeIsDisableComment;
 
         for (const indicator of COLOR_INDICATOR_REGEXES) {
           if (indicator.test(declaration.value)) {
@@ -116,11 +138,36 @@ module.exports = stylelint.createPlugin(RULE_NAME, function(primary, secondary, 
           }
         }
 
+        /**
+         * We exempt background-image from var() checks otherwise it will think
+         * that: background-image: var(--my-lovely-image) is bad when it's not.
+         *
+         * Additionally we load images via variables which always start with
+         * --image-file, so those variables are allowed regardless of where they
+         * are used.
+         */
+        const shouldAllowAnyVars =
+            declaration.prop === 'background-image' || declaration.value.startsWith('var(--image-file');
+        if (shouldAllowAnyVars) {
+          return;
+        }
         if (declaration.value.includes('var(')) {
           const [match, variableName] = /var\((--[\w-]+)/.exec(declaration.value);
           if (!match) {
             throw new Error(`Could not parse CSS variable usage: ${declaration.value}`);
           }
+
+          /**
+           * The override prefix acts as an escape hatch to allow custom-defined
+           * color variables to be applied. This option should only be used when
+           * there's no alternative. Example scenarios include using CSS
+           * variables to customize internal styles of a web component from its
+           * host environment.
+           */
+          if (variableName.startsWith(CUSTOM_VARIABLE_OVERRIDE_PREFIX)) {
+            return;
+          }
+
           const variableIsValid =
               DEFINED_INSPECTOR_STYLE_VARIABLES.has(variableName) || DEFINED_THEME_COLOR_VARIABLES.has(variableName);
           if (!variableIsValid) {

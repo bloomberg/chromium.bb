@@ -26,9 +26,6 @@
 namespace performance_manager {
 
 class FrameNodeImplDescriber;
-class PageNodeImpl;
-class ProcessNodeImpl;
-class WorkerNodeImpl;
 
 namespace execution_context {
 class ExecutionContextAccess;
@@ -76,6 +73,7 @@ class FrameNodeImpl
                 const blink::LocalFrameToken& frame_token,
                 int32_t browsing_instance_id,
                 int32_t site_instance_id);
+
   ~FrameNodeImpl() override;
 
   void Bind(mojo::PendingReceiver<mojom::DocumentCoordinationUnit> receiver);
@@ -84,8 +82,7 @@ class FrameNodeImpl
   void SetNetworkAlmostIdle() override;
   void SetLifecycleState(LifecycleState state) override;
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
-  void SetViewportIntersection(const gfx::Rect& viewport_intersection) override;
-  void SetIsAdFrame() override;
+  void SetIsAdFrame(bool is_ad_frame) override;
   void SetHadFormInteraction() override;
   void OnNonPersistentNotificationCreated() override;
   void OnFirstContentfulPaint(
@@ -132,6 +129,7 @@ class FrameNodeImpl
   void SetIsHoldingWebLock(bool is_holding_weblock);
   void SetIsHoldingIndexedDBLock(bool is_holding_indexeddb_lock);
   void SetIsAudible(bool is_audible);
+  void SetViewportIntersection(const gfx::Rect& viewport_intersection);
   void SetVisibility(Visibility visibility);
 
   // Invoked when a navigation is committed in the frame.
@@ -236,6 +234,7 @@ class FrameNodeImpl
   // NodeBase:
   void OnJoiningGraph() override;
   void OnBeforeLeavingGraph() override;
+  void RemoveNodeAttachedData() override;
 
   // Helper function to sever all opened page relationships. This is called
   // before destroying the frame node in "OnBeforeLeavingGraph". Note that this
@@ -296,7 +295,6 @@ class FrameNodeImpl
       &FrameNodeObserver::OnFrameLifecycleStateChanged>
       lifecycle_state_{LifecycleState::kRunning};
 
-  // This is a one way switch. Once marked an ad-frame, always an ad-frame.
   ObservedProperty::
       NotifiesOnlyOnChanges<bool, &FrameNodeObserver::OnIsAdFrameChanged>
           is_ad_frame_{false};

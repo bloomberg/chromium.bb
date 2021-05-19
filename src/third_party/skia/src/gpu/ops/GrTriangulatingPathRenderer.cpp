@@ -89,7 +89,7 @@ public:
 private:
     GrUniqueKeyInvalidatedMessage fMsg;
 
-    void changed() override { SkMessageBus<GrUniqueKeyInvalidatedMessage>::Post(fMsg); }
+    void changed() override { SkMessageBus<GrUniqueKeyInvalidatedMessage, uint32_t>::Post(fMsg); }
 };
 
 class StaticVertexAllocator : public GrEagerVertexAllocator {
@@ -594,7 +594,7 @@ private:
         }
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
         flushState->drawMesh(*fMesh);
     }
 

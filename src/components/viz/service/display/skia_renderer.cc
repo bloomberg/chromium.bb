@@ -35,6 +35,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/skia_helper.h"
+#include "components/viz/service/display/delegated_ink_handler.h"
 #include "components/viz/service/display/delegated_ink_point_renderer_skia.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
@@ -794,6 +795,10 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
   } else if (swap_buffer_rect_.IsEmpty() && allow_empty_swap_) {
     output_frame.sub_buffer_rect = gfx::Rect();
   }
+  if (delegated_ink_handler_ && !UsingSkiaForDelegatedInk()) {
+    output_frame.delegated_ink_metadata =
+        delegated_ink_handler_->TakeMetadata();
+  }
 
   skia_output_surface_->SwapBuffers(std::move(output_frame));
   swap_buffer_rect_ = gfx::Rect();
@@ -1399,7 +1404,15 @@ const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(
 
   // In order to concatenate the bypass'ed quads transform with RP itself, it
   // needs to be invertible.
-  if (!quad->shared_quad_state->quad_to_target_transform.IsInvertible())
+  // TODO(michaelludwig) - See crbug.com/1175981 and crbug.com/1186657;
+  // We can't use gfx::Transform.IsInvertible() since that checks the 4x4 matrix
+  // and the rest of skia_renderer->Skia flattens to a 3x3 matrix, which can
+  // change invertibility.
+  SkMatrix flattened;
+  gfx::TransformToFlattenedSkMatrix(
+      quad->shared_quad_state->quad_to_target_transform,
+      &flattened);
+  if (!flattened.invert(nullptr))
     return nullptr;
 
   // A renderpass normally draws its content into a transparent destination,
@@ -2283,7 +2296,7 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorSpaceConversionFilter(
     const char* hdr = R"(
 uniform half offset;
 uniform half multiplier;
-in shader child;
+uniform shader child;
 
 half4 main() {
   half4 color = sample(child);
@@ -2413,14 +2426,24 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
       if (clip_rect.IsEmpty()) {
         clip_rect = current_draw_rect_;
       }
-      const gfx::Transform& transform =
+      gfx::Transform transform =
           quad->shared_quad_state->quad_to_target_transform;
-      gfx::QuadF clip_quad = gfx::QuadF(gfx::RectF(clip_rect));
-      gfx::QuadF local_clip =
-          cc::MathUtil::InverseMapQuadToLocalSpace(transform, clip_quad);
+      transform.FlattenTo2d();
+      if (!transform.IsInvertible()) {
+        return rpdq_params;
+      }
 
-      rpdq_params.filter_bounds.Intersect(
-          gfx::ToEnclosingRect(local_clip.BoundingBox()));
+      // If the transform has perspective, there might be visible content
+      // outside of the bounds of the quad.
+      if (!transform.HasPerspective()) {
+        gfx::QuadF clip_quad = gfx::QuadF(gfx::RectF(clip_rect));
+        gfx::QuadF local_clip =
+            cc::MathUtil::InverseMapQuadToLocalSpace(transform, clip_quad);
+
+        rpdq_params.filter_bounds.Intersect(
+            gfx::ToEnclosingRect(local_clip.BoundingBox()));
+      }
+
       // If we've been fully clipped out (by crop rect or clipping), there's
       // nothing to draw.
       if (rpdq_params.filter_bounds.IsEmpty()) {
@@ -2609,7 +2632,7 @@ void SkiaRenderer::FinishDrawingQuadList() {
   // FlushBatchedQuads() call so that the trail can always be on top of
   // everything else that has already been drawn on the page. For the same
   // reason, it should only happen on the root render pass.
-  if (is_root_render_pass && delegated_ink_point_renderer_)
+  if (is_root_render_pass && UsingSkiaForDelegatedInk())
     DrawDelegatedInkTrail();
 
   base::OnceClosure on_finished_callback;
@@ -2899,22 +2922,47 @@ gfx::Size SkiaRenderer::GetRenderPassBackingPixelSize(
   return it->second.size;
 }
 
-bool SkiaRenderer::CreateDelegatedInkPointRenderer() {
-  DCHECK(!delegated_ink_point_renderer_);
-  delegated_ink_point_renderer_ =
-      std::make_unique<DelegatedInkPointRendererSkia>();
-  return true;
+void SkiaRenderer::SetDelegatedInkPointRendererSkiaForTest(
+    std::unique_ptr<DelegatedInkPointRendererSkia> renderer) {
+  DCHECK(!delegated_ink_handler_);
+  delegated_ink_handler_ = std::make_unique<DelegatedInkHandler>(
+      output_surface_->capabilities().supports_delegated_ink);
+  delegated_ink_handler_->SetDelegatedInkPointRendererForTest(
+      std::move(renderer));
 }
 
 void SkiaRenderer::DrawDelegatedInkTrail() {
-  delegated_ink_point_renderer_->DrawDelegatedInkTrail(current_canvas_);
+  if (!delegated_ink_handler_ || !delegated_ink_handler_->GetInkRenderer())
+    return;
+
+  delegated_ink_handler_->GetInkRenderer()->DrawDelegatedInkTrail(
+      current_canvas_);
 }
 
-DelegatedInkPointRendererBase* SkiaRenderer::GetDelegatedInkPointRenderer() {
-  if (!delegated_ink_point_renderer_ && !CreateDelegatedInkPointRenderer())
+DelegatedInkPointRendererBase* SkiaRenderer::GetDelegatedInkPointRenderer(
+    bool create_if_necessary) {
+  if (!delegated_ink_handler_ && !create_if_necessary)
     return nullptr;
 
-  return delegated_ink_point_renderer_.get();
+  if (!delegated_ink_handler_) {
+    delegated_ink_handler_ = std::make_unique<DelegatedInkHandler>(
+        output_surface_->capabilities().supports_delegated_ink);
+  }
+
+  return delegated_ink_handler_->GetInkRenderer();
+}
+
+void SkiaRenderer::SetDelegatedInkMetadata(
+    std::unique_ptr<gfx::DelegatedInkMetadata> metadata) {
+  if (!delegated_ink_handler_) {
+    delegated_ink_handler_ = std::make_unique<DelegatedInkHandler>(
+        output_surface_->capabilities().supports_delegated_ink);
+  }
+  delegated_ink_handler_->SetDelegatedInkMetadata(std::move(metadata));
+}
+
+bool SkiaRenderer::UsingSkiaForDelegatedInk() const {
+  return delegated_ink_handler_ && delegated_ink_handler_->GetInkRenderer();
 }
 
 #if defined(OS_APPLE)

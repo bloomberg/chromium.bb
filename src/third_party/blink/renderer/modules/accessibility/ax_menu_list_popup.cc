@@ -34,6 +34,10 @@ namespace blink {
 AXMenuListPopup::AXMenuListPopup(AXObjectCacheImpl& ax_object_cache)
     : AXMockObject(ax_object_cache), active_index_(-1) {}
 
+ax::mojom::blink::Role AXMenuListPopup::NativeRoleIgnoringAria() const {
+  return ax::mojom::blink::Role::kMenuListPopup;
+}
+
 bool AXMenuListPopup::IsVisible() const {
   return !IsOffScreen();
 }
@@ -149,14 +153,14 @@ void AXMenuListPopup::DidUpdateActiveOption(int option_index,
   if (old_index != option_index && old_index >= 0 &&
       old_index < static_cast<int>(children_.size())) {
     AXObject* previous_child = children_[old_index].Get();
-    cache.MarkAXObjectDirty(previous_child, false);
+    cache.MarkAXObjectDirtyWithCleanLayout(previous_child, false);
   }
 
   if (option_index >= 0 && option_index < static_cast<int>(children_.size())) {
     AXObject* child = children_[option_index].Get();
     cache.PostNotification(this, ax::mojom::Event::kChildrenChanged);
     cache.PostNotification(this, ax::mojom::Event::kActiveDescendantChanged);
-    cache.MarkAXObjectDirty(child, false);
+    cache.MarkAXObjectDirtyWithCleanLayout(child, false);
   }
 }
 
@@ -166,7 +170,7 @@ void AXMenuListPopup::DidHide() {
   cache.PostNotification(this, ax::mojom::Event::kHide);
   if (descendant) {
     cache.PostNotification(this, ax::mojom::Event::kChildrenChanged);
-    cache.MarkAXObjectDirty(descendant, false);
+    cache.MarkAXObjectDirtyWithCleanLayout(descendant, false);
   }
 }
 

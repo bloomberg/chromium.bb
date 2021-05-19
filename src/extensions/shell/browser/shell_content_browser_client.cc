@@ -216,9 +216,10 @@ void ShellContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
   additional_allowed_schemes->push_back(kExtensionScheme);
 }
 
-content::DevToolsManagerDelegate*
-ShellContentBrowserClient::GetDevToolsManagerDelegate() {
-  return new content::ShellDevToolsManagerDelegate(GetBrowserContext());
+std::unique_ptr<content::DevToolsManagerDelegate>
+ShellContentBrowserClient::CreateDevToolsManagerDelegate() {
+  return std::make_unique<content::ShellDevToolsManagerDelegate>(
+      GetBrowserContext());
 }
 
 std::vector<std::unique_ptr<content::NavigationThrottle>>
@@ -317,6 +318,7 @@ bool ShellContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
     content::WebContents::OnceGetter web_contents_getter,
     int child_id,
+    int frame_tree_node_id,
     content::NavigationUIData* navigation_data,
     bool is_main_frame,
     ui::PageTransition page_transition,

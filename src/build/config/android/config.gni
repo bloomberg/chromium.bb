@@ -9,6 +9,7 @@
 # toolchains. Checking |is_android| here would therefore be too restrictive.
 if (is_android || is_chromeos) {
   import("//build/config/chromecast_build.gni")
+  import("//build/config/dcheck_always_on.gni")
   import("//build_overrides/build.gni")
   import("abi.gni")
 
@@ -49,17 +50,23 @@ if (is_android || is_chromeos) {
     # not explicitly set it.
     default_min_sdk_version = 21
 
-    # Android API level for 32 bits platforms
-    android32_ndk_api_level = 16
-
-    # Android API level for 64 bits platforms
-    android64_ndk_api_level = 21
-
     # [WIP] Allows devs to achieve much faster edit-build-install cycles.
     # Currently only works for ChromeModern apks due to incremental install.
     # This needs to be in a separate declare_args as it determines some of the
     # args in the main declare_args block below.
     android_fast_local_dev = false
+  }
+
+  declare_args() {
+    # Android API level for 32 bits platforms
+    android32_ndk_api_level = default_min_sdk_version
+
+    # Android API level for 64 bits platforms
+    if (default_min_sdk_version < 21) {
+      android64_ndk_api_level = 21
+    } else {
+      android64_ndk_api_level = default_min_sdk_version
+    }
   }
 
   if (enable_chrome_android_internal) {
@@ -242,6 +249,9 @@ if (is_android || is_chromeos) {
 
     # The target to use as the system WebView implementation.
     system_webview_apk_target = "//android_webview:system_webview_apk"
+
+    # Where to write failed expectations for bots to read.
+    expectations_failure_dir = "$root_build_dir/failed_expectations"
   }
 
   # We need a second declare_args block to make sure we are using the overridden
@@ -252,6 +262,9 @@ if (is_android || is_chromeos) {
     } else {
       android_sdk_platform_version = android_sdk_version
     }
+
+    # Whether java assertions and Preconditions checks are enabled.
+    enable_java_asserts = is_java_debug || dcheck_always_on
 
     # Reduce build time by using d8 incremental build.
     enable_incremental_d8 = true

@@ -81,7 +81,8 @@ bool TestURLLoaderFactory::IsPending(const std::string& url,
     if (candidate.request.url == url) {
       if (request_out)
         *request_out = &candidate.request;
-      return candidate.client.is_connected();
+      if (candidate.client.is_connected())
+        return true;
     }
   }
   return false;
@@ -116,7 +117,6 @@ void TestURLLoaderFactory::SetInterceptor(const Interceptor& interceptor) {
 
 void TestURLLoaderFactory::CreateLoaderAndStart(
     mojo::PendingReceiver<mojom::URLLoader> receiver,
-    int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& url_request,
@@ -131,8 +131,10 @@ void TestURLLoaderFactory::CreateLoaderAndStart(
 
   PendingRequest pending_request;
   pending_request.client = std::move(client_remote);
-  pending_request.request = url_request;
+  pending_request.request_id = request_id;
   pending_request.options = options;
+  pending_request.request = url_request;
+  pending_request.traffic_annotation = traffic_annotation;
   pending_requests_.push_back(std::move(pending_request));
 }
 

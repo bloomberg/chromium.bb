@@ -6,16 +6,19 @@
 
 #include <memory>
 
+#include "base/base_paths.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_path_override.h"
 #include "base/test/task_environment.h"
 #include "chromeos/assistant/internal/test_support/fake_assistant_manager.h"
 #include "chromeos/assistant/internal/test_support/fake_assistant_manager_internal.h"
-#include "chromeos/services/assistant//public/cpp/migration/fake_assistant_manager_service_delegate.h"
-#include "chromeos/services/assistant/public/cpp/migration/libassistant_v1_api.h"
 #include "chromeos/services/libassistant/assistant_manager_observer.h"
 #include "chromeos/services/libassistant/public/mojom/service_controller.mojom.h"
+#include "chromeos/services/libassistant/public/mojom/settings_controller.mojom.h"
+#include "chromeos/services/libassistant/settings_controller.h"
+#include "chromeos/services/libassistant/test_support/fake_libassistant_factory.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/device_state_listener.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -46,6 +49,13 @@ using ::testing::StrictMock;
         << "Path '" << path << "' not found in config: " << config_string; \
     EXPECT_EQ(*actual, expected);                                          \
   })
+
+std::vector<mojom::AuthenticationTokenPtr> ToVector(
+    mojom::AuthenticationTokenPtr token) {
+  std::vector<mojom::AuthenticationTokenPtr> result;
+  result.push_back(std::move(token));
+  return result;
+}
 
 class StateObserverMock : public mojom::StateObserver {
  public:
@@ -93,13 +103,36 @@ class AssistantManagerObserverMock : public AssistantManagerObserver {
   MOCK_METHOD(void, OnAssistantManagerDestroyed, ());
 };
 
+class SettingsControllerMock : public mojom::SettingsController {
+ public:
+  SettingsControllerMock() = default;
+  SettingsControllerMock(const SettingsControllerMock&) = delete;
+  SettingsControllerMock& operator=(const SettingsControllerMock&) = delete;
+  ~SettingsControllerMock() override = default;
+
+  // mojom::SettingsController implementation:
+  MOCK_METHOD(void,
+              SetAuthenticationTokens,
+              (std::vector<mojom::AuthenticationTokenPtr> tokens));
+  MOCK_METHOD(void, SetListeningEnabled, (bool value));
+  MOCK_METHOD(void, SetLocale, (const std::string& value));
+  MOCK_METHOD(void, SetSpokenFeedbackEnabled, (bool value));
+  MOCK_METHOD(void, SetHotwordEnabled, (bool value));
+  MOCK_METHOD(void,
+              GetSettings,
+              (const std::string& selector, GetSettingsCallback callback));
+  MOCK_METHOD(void,
+              UpdateSettings,
+              (const std::string& settings, UpdateSettingsCallback callback));
+};
+
 class AssistantServiceControllerTest : public testing::Test {
  public:
   AssistantServiceControllerTest()
       : service_controller_(
-            std::make_unique<ServiceController>(&delegate_,
-                                                /*platform_api=*/nullptr)) {
-    service_controller_->Bind(client_.BindNewPipeAndPassReceiver());
+            std::make_unique<ServiceController>(&libassistant_factory_)) {
+    service_controller_->Bind(client_.BindNewPipeAndPassReceiver(),
+                              &settings_controller_);
   }
 
   mojo::Remote<mojom::ServiceController>& client() { return client_; }
@@ -144,7 +177,7 @@ class AssistantServiceControllerTest : public testing::Test {
 
   void SendOnStartFinished() {
     auto* device_state_listener =
-        delegate().assistant_manager()->device_state_listener();
+        libassistant_factory_.assistant_manager().device_state_listener();
     ASSERT_NE(device_state_listener, nullptr);
     device_state_listener->OnStartFinished();
     RunUntilIdle();
@@ -157,12 +190,12 @@ class AssistantServiceControllerTest : public testing::Test {
 
   void DestroyServiceController() { service_controller_.reset(); }
 
-  assistant::LibassistantV1Api* v1_api() {
-    return assistant::LibassistantV1Api::Get();
+  std::string libassistant_config() {
+    return libassistant_factory_.libassistant_config();
   }
 
-  assistant::FakeAssistantManagerServiceDelegate& delegate() {
-    return delegate_;
+  SettingsControllerMock& settings_controller_mock() {
+    return settings_controller_;
   }
 
  private:
@@ -173,10 +206,12 @@ class AssistantServiceControllerTest : public testing::Test {
   }
 
   base::test::SingleThreadTaskEnvironment environment_;
+  base::ScopedPathOverride home_override{base::DIR_HOME};
 
   network::TestURLLoaderFactory url_loader_factory_;
 
-  assistant::FakeAssistantManagerServiceDelegate delegate_;
+  FakeLibassistantFactory libassistant_factory_;
+  testing::NiceMock<SettingsControllerMock> settings_controller_;
   mojo::Remote<mojom::ServiceController> client_;
   std::unique_ptr<ServiceController> service_controller_;
 };
@@ -317,15 +352,12 @@ TEST_F(AssistantServiceControllerTest, ShouldAllowStartAfterStop) {
   Start();
   Stop();
 
-  // The second Initialize() call should create the AssistantManager and
-  // LibassistantV1Api.
+  // The second Initialize() call should create the AssistantManager.
 
   Initialize();
   EXPECT_NE(nullptr, service_controller().assistant_manager());
-  EXPECT_NE(nullptr, v1_api());
 
-  // The second Start() call should send out a state update and publish the
-  // v1_api
+  // The second Start() call should send out a state update.
 
   StateObserverMock observer;
   AddStateObserver(&observer);
@@ -334,10 +366,7 @@ TEST_F(AssistantServiceControllerTest, ShouldAllowStartAfterStop) {
 
   Start();
 
-  ASSERT_NE(nullptr, v1_api());
   EXPECT_NE(nullptr, service_controller().assistant_manager());
-  EXPECT_EQ(v1_api()->assistant_manager(),
-            service_controller().assistant_manager());
 }
 
 TEST_F(AssistantServiceControllerTest,
@@ -372,7 +401,6 @@ TEST_F(AssistantServiceControllerTest,
   Initialize();
 
   EXPECT_NE(nullptr, service_controller().assistant_manager_internal());
-  EXPECT_NE(nullptr, v1_api());
 }
 
 TEST_F(AssistantServiceControllerTest,
@@ -380,10 +408,7 @@ TEST_F(AssistantServiceControllerTest,
   Initialize();
   Start();
 
-  ASSERT_NE(nullptr, v1_api());
   EXPECT_NE(nullptr, service_controller().assistant_manager_internal());
-  EXPECT_EQ(v1_api()->assistant_manager_internal(),
-            service_controller().assistant_manager_internal());
 }
 
 TEST_F(AssistantServiceControllerTest,
@@ -396,7 +421,6 @@ TEST_F(AssistantServiceControllerTest,
   Stop();
 
   EXPECT_EQ(nullptr, service_controller().assistant_manager_internal());
-  EXPECT_EQ(nullptr, v1_api());
 }
 
 TEST_F(AssistantServiceControllerTest,
@@ -405,7 +429,7 @@ TEST_F(AssistantServiceControllerTest,
   bootup_config->s3_server_uri_override = "the-s3-server-uri-override";
   Initialize(std::move(bootup_config));
 
-  EXPECT_HAS_PATH_WITH_VALUE(delegate().libassistant_config(),
+  EXPECT_HAS_PATH_WITH_VALUE(libassistant_config(),
                              "testing.s3_grpc_server_uri",
                              "the-s3-server-uri-override");
 }
@@ -634,6 +658,27 @@ TEST_F(AssistantServiceControllerTest,
   EXPECT_CALL(observer, OnDestroyingAssistantManager);
   EXPECT_CALL(observer, OnAssistantManagerDestroyed);
   DestroyServiceController();
+}
+
+TEST_F(AssistantServiceControllerTest,
+       ShouldPassBootupConfigToSettingsController) {
+  const bool hotword_enabled = true;
+  const bool spoken_feedback_enabled = false;
+
+  EXPECT_CALL(settings_controller_mock(), SetLocale("locale"));
+  EXPECT_CALL(settings_controller_mock(), SetHotwordEnabled(hotword_enabled));
+  EXPECT_CALL(settings_controller_mock(),
+              SetSpokenFeedbackEnabled(spoken_feedback_enabled));
+  EXPECT_CALL(settings_controller_mock(), SetAuthenticationTokens);
+
+  auto bootup_config = mojom::BootupConfig::New();
+  bootup_config->locale = "locale";
+  bootup_config->hotword_enabled = hotword_enabled;
+  bootup_config->spoken_feedback_enabled = spoken_feedback_enabled;
+  bootup_config->authentication_tokens =
+      ToVector(mojom::AuthenticationToken::New("user", "token"));
+
+  Initialize(std::move(bootup_config));
 }
 
 }  // namespace libassistant

@@ -61,6 +61,8 @@ public class CableAuthenticatorUI
             "org.chromium.chrome.modules.cablev2_authenticator.NetworkContext";
     private static final String REGISTRATION_EXTRA =
             "org.chromium.chrome.modules.cablev2_authenticator.Registration";
+    private static final String SECRET_EXTRA =
+            "org.chromium.chrome.modules.cablev2_authenticator.Secret";
     private static final String SERVER_LINK_EXTRA =
             "org.chromium.chrome.browser.webauth.authenticator.ServerLink";
 
@@ -77,6 +79,8 @@ public class CableAuthenticatorUI
     private LinearLayout mUnlinkButton;
     private ImageView mHeader;
     private TextView mStatusText;
+    private View mErrorView;
+    private View mErrorCloseButton;
 
     // The following two members store a pending QR-scan result while Bluetooth
     // is enabled.
@@ -107,11 +111,12 @@ public class CableAuthenticatorUI
         final long networkContext = arguments.getLong(NETWORK_CONTEXT_EXTRA);
         final long registration = arguments.getLong(REGISTRATION_EXTRA);
         final String activityClassName = arguments.getString(ACTIVITY_CLASS_NAME_EXTRA);
+        final byte[] secret = arguments.getByteArray(SECRET_EXTRA);
 
         mPermissionDelegate = new ActivityAndroidPermissionDelegate(
                 new WeakReference<Activity>((Activity) context));
         mAuthenticator = new CableAuthenticator(getContext(), this, networkContext, registration,
-                activityClassName, mMode == Mode.FCM, accessory, serverLink);
+                activityClassName, secret, mMode == Mode.FCM, accessory, serverLink);
     }
 
     @Override
@@ -119,8 +124,11 @@ public class CableAuthenticatorUI
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.cablev2_activity_title);
         ViewGroup top = new LinearLayout(getContext());
-        View v = null;
 
+        // Inflate the error view in case it's needed later.
+        mErrorView = inflater.inflate(R.layout.cablev2_error, container, false);
+
+        View v = null;
         switch (mMode) {
             case USB:
                 v = inflater.inflate(R.layout.cablev2_usb_attached, container, false);
@@ -212,6 +220,9 @@ public class CableAuthenticatorUI
                             })
                     .setNegativeButton(android.R.string.cancel, null)
                     .show();
+            return;
+        } else if (v == mErrorCloseButton) {
+            getActivity().finish();
             return;
         }
 
@@ -355,29 +366,52 @@ public class CableAuthenticatorUI
      * @param ok true if the transaction completed successfully. Otherwise it
      *           indicates some form of error that could include tunnel server
      *           errors, handshake failures, etc.
+     * @param errorCode a value from cablev2::authenticator::Platform::Error.
      */
-    void onComplete(boolean ok) {
+    void onComplete(boolean ok, int errorCode) {
         ThreadUtils.assertOnUiThread();
 
-        // TODO: if !ok then show an error screen rather than ending the
-        // activity.
-        getActivity().finish();
+        if (ok) {
+            getActivity().finish();
+            return;
+        }
+
+        mErrorCloseButton = mErrorView.findViewById(R.id.error_close);
+        mErrorCloseButton.setOnClickListener(this);
+
+        String desc;
+        if (errorCode == 100 /* cablev2::authenticator::Platform::Error::UNEXPECTED_EOF */) {
+            desc = getResources().getString(R.string.cablev2_error_timeout);
+        } else {
+            TextView errorCodeTextView = (TextView) mErrorView.findViewById(R.id.error_code);
+            errorCodeTextView.setText(
+                    getResources().getString(R.string.cablev2_error_code, errorCode));
+
+            desc = getResources().getString(R.string.cablev2_error_generic);
+        }
+
+        TextView descriptionTextView = (TextView) mErrorView.findViewById(R.id.error_description);
+        descriptionTextView.setText(desc);
+
+        ViewGroup top = (ViewGroup) getView();
+        top.removeAllViews();
+        top.addView(mErrorView);
     }
 
     /**
      * onCloudMessage is called by {@link CableAuthenticatorModuleProvider} when a GCM message is
      * received.
      */
-    public static void onCloudMessage(
-            long event, long systemNetworkContext, long registration, String activityClassName) {
+    public static void onCloudMessage(long event, long systemNetworkContext, long registration,
+            String activityClassName, byte[] secret) {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         if (adapter.isEnabled()) {
             CableAuthenticator.onCloudMessage(event, systemNetworkContext, registration,
-                    activityClassName, /*needToDisableBluetooth=*/false);
+                    activityClassName, secret, /*needToDisableBluetooth=*/false);
             return;
         }
 
         new PendingCloudMessage(
-                adapter, event, systemNetworkContext, registration, activityClassName);
+                adapter, event, systemNetworkContext, registration, activityClassName, secret);
     }
 }

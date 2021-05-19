@@ -22,10 +22,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -124,7 +124,7 @@ class ShutdownPolicyInSessionTest
 
   // Returns true if the shutdown button's tooltip matches |tooltip|.
   bool HasShutdownButtonTooltip(const std::string& tooltip) {
-    base::string16 actual_tooltip =
+    std::u16string actual_tooltip =
         tray_test_api_->GetBubbleViewTooltip(ash::VIEW_ID_POWER_BUTTON);
     return base::UTF8ToUTF16(tooltip) == actual_tooltip;
   }

@@ -8,17 +8,20 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_controlling.h"
+#import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
 
 @class ContentSuggestionsHeaderViewController;
 @class ContentSuggestionsViewController;
 @class DiscoverFeedWrapperViewController;
 @protocol NewTabPageContentDelegate;
 @protocol OverscrollActionsControllerDelegate;
+@class ViewRevealingVerticalPanHandler;
 
 // View controller containing all the content presented on a standard,
 // non-incognito new tab page.
 @interface NewTabPageViewController
     : UIViewController <ContentSuggestionsCollectionControlling,
+                        ThumbStripSupporting,
                         UIScrollViewDelegate>
 
 // View controller wrapping the Discover feed.
@@ -34,6 +37,10 @@
 
 // Delegate for actions relating to the NTP content.
 @property(nonatomic, weak) id<NewTabPageContentDelegate> ntpContentDelegate;
+
+// The pan gesture handler to notify of scroll events happening in this view
+// controller.
+@property(nonatomic, weak) ViewRevealingVerticalPanHandler* panGestureHandler;
 
 // Identity disc shown in the NTP.
 // TODO(crbug.com/1170995): Remove once the Feed header properly supports

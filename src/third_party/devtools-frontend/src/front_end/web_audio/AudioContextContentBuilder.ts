@@ -3,18 +3,10 @@
 // found in the LICENSE file.
 
 /* eslint-disable rulesdir/no_underscored_properties */
-import * as i18n from '../i18n/i18n.js';
-import * as UI from '../ui/ui.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as UI from '../ui/legacy/legacy.js';
 
-export const UIStrings = {
-  /**
-  *@description Text in Audio Context Content Builder
-  */
-  audiocontext: 'AudioContext',
-  /**
-  *@description Text in Audio Context Content Builder
-  */
-  offlineaudiocontext: '`OfflineAudioContext`',
+const UIStrings = {
   /**
   *@description The current state of an item
   */
@@ -60,8 +52,8 @@ export class ContextDetailBuilder {
   }
 
   _build(context: Protocol.WebAudio.BaseAudioContext): void {
-    const title = context.contextType === 'realtime' ? i18nString(UIStrings.audiocontext) :
-                                                       i18nString(UIStrings.offlineaudiocontext);
+    const title = context.contextType === 'realtime' ? i18n.i18n.lockedString('AudioContext') :
+                                                       i18n.i18n.lockedString('OfflineAudioContext');
     this._addTitle(title, context.contextId);
     this._addEntry(i18nString(UIStrings.state), context.contextState);
     this._addEntry(i18nString(UIStrings.sampleRate), context.sampleRate, 'Hz');

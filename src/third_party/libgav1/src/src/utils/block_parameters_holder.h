@@ -17,18 +17,18 @@
 #ifndef LIBGAV1_SRC_UTILS_BLOCK_PARAMETERS_HOLDER_H_
 #define LIBGAV1_SRC_UTILS_BLOCK_PARAMETERS_HOLDER_H_
 
+#include <atomic>
 #include <memory>
 
 #include "src/utils/array_2d.h"
 #include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
-#include "src/utils/parameter_tree.h"
+#include "src/utils/dynamic_buffer.h"
 #include "src/utils/types.h"
 
 namespace libgav1 {
 
-// Holds a 2D array of |ParameterTree| objects. Each tree stores the parameters
-// corresponding to a superblock.
+// Holds the BlockParameters pointers to each 4x4 block in the frame.
 class BlockParametersHolder {
  public:
   BlockParametersHolder() = default;
@@ -37,10 +37,13 @@ class BlockParametersHolder {
   BlockParametersHolder(const BlockParametersHolder&) = delete;
   BlockParametersHolder& operator=(const BlockParametersHolder&) = delete;
 
-  // If |use_128x128_superblock| is true, 128x128 superblocks will be used,
-  // otherwise 64x64 superblocks will be used.
-  LIBGAV1_MUST_USE_RESULT bool Reset(int rows4x4, int columns4x4,
-                                     bool use_128x128_superblock);
+  LIBGAV1_MUST_USE_RESULT bool Reset(int rows4x4, int columns4x4);
+
+  // Returns a pointer to a BlockParameters object that can be used safely until
+  // the next call to Reset(). Returns nullptr on memory allocation failure. It
+  // also fills the cache matrix for the block starting at |row4x4|, |column4x4|
+  // of size |block_size| with the returned pointer.
+  BlockParameters* Get(int row4x4, int column4x4, BlockSize block_size);
 
   // Finds the BlockParameters corresponding to |row4x4| and |column4x4|. This
   // is done as a simple look up of the |block_parameters_cache_| matrix.
@@ -59,20 +62,24 @@ class BlockParametersHolder {
 
   int columns4x4() const { return columns4x4_; }
 
-  // Returns the ParameterTree corresponding to superblock starting at (|row|,
-  // |column|).
-  ParameterTree* Tree(int row, int column) { return trees_[row][column].get(); }
+ private:
+  // Needs access to FillCache for testing Cdef.
+  template <int bitdepth, typename Pixel>
+  friend class PostFilterApplyCdefTest;
 
-  // Fills the cache matrix for the block starting at |row4x4|, |column4x4| of
-  // size |block_size| with the pointer |bp|.
   void FillCache(int row4x4, int column4x4, BlockSize block_size,
                  BlockParameters* bp);
 
- private:
   int rows4x4_ = 0;
   int columns4x4_ = 0;
-  bool use_128x128_superblock_ = false;
-  Array2D<std::unique_ptr<ParameterTree>> trees_;
+
+  // Owns the memory of BlockParameters pointers for the entire frame. It can
+  // hold upto |rows4x4_| * |columns4x4_| objects. Each object will be allocated
+  // on demand and re-used across frames.
+  DynamicBuffer<std::unique_ptr<BlockParameters>> block_parameters_;
+
+  // Points to the next available index of |block_parameters_|.
+  std::atomic<int> index_;
 
   // This is a 2d array of size |rows4x4_| * |columns4x4_|. This is filled in by
   // FillCache() and used by Find() to perform look ups using exactly one look

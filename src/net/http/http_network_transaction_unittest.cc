@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -152,17 +153,17 @@ namespace net {
 
 namespace {
 
-const base::string16 kBar(ASCIIToUTF16("bar"));
-const base::string16 kBar2(ASCIIToUTF16("bar2"));
-const base::string16 kBar3(ASCIIToUTF16("bar3"));
-const base::string16 kBaz(ASCIIToUTF16("baz"));
-const base::string16 kFirst(ASCIIToUTF16("first"));
-const base::string16 kFoo(ASCIIToUTF16("foo"));
-const base::string16 kFoo2(ASCIIToUTF16("foo2"));
-const base::string16 kFoo3(ASCIIToUTF16("foo3"));
-const base::string16 kFou(ASCIIToUTF16("fou"));
-const base::string16 kSecond(ASCIIToUTF16("second"));
-const base::string16 kWrongPassword(ASCIIToUTF16("wrongpassword"));
+const std::u16string kBar(u"bar");
+const std::u16string kBar2(u"bar2");
+const std::u16string kBar3(u"bar3");
+const std::u16string kBaz(u"baz");
+const std::u16string kFirst(u"first");
+const std::u16string kFoo(u"foo");
+const std::u16string kFoo2(u"foo2");
+const std::u16string kFoo3(u"foo3");
+const std::u16string kFou(u"fou");
+const std::u16string kSecond(u"second");
+const std::u16string kWrongPassword(u"wrongpassword");
 
 const char kAlternativeServiceHttpHeader[] =
     "Alt-Svc: h2=\"mail.example.org:443\"\r\n";
@@ -1051,6 +1052,57 @@ TEST_F(HttpNetworkTransactionTest, ConnectedCallbackCalledOnEachRetry) {
   EXPECT_THAT(connected_handler.transports(),
               ElementsAre(EmbeddedHttpServerTransportInfo(),
                           EmbeddedHttpServerTransportInfo()));
+}
+
+TEST_F(HttpNetworkTransactionTest, ConnectedCallbackCalledAsync) {
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 200 OK\r\n"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  ConnectedHandler connected_handler;
+  connected_handler.set_run_callback(true);
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  auto request = DefaultRequestInfo();
+  HttpNetworkTransaction transaction(DEFAULT_PRIORITY, session.get());
+  transaction.SetConnectedCallback(connected_handler.Callback());
+
+  TestCompletionCallback callback;
+  EXPECT_THAT(
+      transaction.Start(&request, callback.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  EXPECT_THAT(connected_handler.transports(),
+              ElementsAre(EmbeddedHttpServerTransportInfo()));
+}
+
+TEST_F(HttpNetworkTransactionTest, ConnectedCallbackCalledAsyncError) {
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 200 OK\r\n"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  ConnectedHandler connected_handler;
+  connected_handler.set_run_callback(true);
+  connected_handler.set_result(ERR_FAILED);
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+  auto request = DefaultRequestInfo();
+  HttpNetworkTransaction transaction(DEFAULT_PRIORITY, session.get());
+  transaction.SetConnectedCallback(connected_handler.Callback());
+
+  TestCompletionCallback callback;
+  EXPECT_THAT(
+      transaction.Start(&request, callback.callback(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FAILED));
+
+  EXPECT_THAT(connected_handler.transports(),
+              ElementsAre(EmbeddedHttpServerTransportInfo()));
 }
 
 // Allow up to 4 bytes of junk to precede status line.
@@ -19715,12 +19767,13 @@ TEST_F(HttpNetworkTransactionTest, ProxyResolutionFailsSync) {
   proxy_config.set_pac_url(GURL("http://fooproxyurl"));
   proxy_config.set_pac_mandatory(true);
   MockAsyncProxyResolver resolver;
-  session_deps_.proxy_resolution_service.reset(
-      new ConfiguredProxyResolutionService(
+  session_deps_.proxy_resolution_service =
+      std::make_unique<ConfiguredProxyResolutionService>(
+
           std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
           std::make_unique<FailingProxyResolverFactory>(), nullptr,
-          /*quick_check_enabled=*/true));
+          /*quick_check_enabled=*/true);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -19746,12 +19799,13 @@ TEST_F(HttpNetworkTransactionTest, ProxyResolutionFailsAsync) {
   MockAsyncProxyResolverFactory* proxy_resolver_factory =
       new MockAsyncProxyResolverFactory(false);
   MockAsyncProxyResolver resolver;
-  session_deps_.proxy_resolution_service.reset(
-      new ConfiguredProxyResolutionService(
+  session_deps_.proxy_resolution_service =
+      std::make_unique<ConfiguredProxyResolutionService>(
+
           std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
               proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
           base::WrapUnique(proxy_resolver_factory), nullptr,
-          /*quick_check_enabled=*/true));
+          /*quick_check_enabled=*/true);
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
@@ -19796,11 +19850,17 @@ TEST_F(HttpNetworkTransactionTest, NoSupportedProxies) {
 // Reporting tests
 
 #if BUILDFLAG(ENABLE_REPORTING)
-class HttpNetworkTransactionReportingTest : public HttpNetworkTransactionTest {
+class HttpNetworkTransactionReportingTest
+    : public HttpNetworkTransactionTest,
+      public ::testing::WithParamInterface<bool> {
  protected:
   HttpNetworkTransactionReportingTest() {
-    feature_list_.InitAndEnableFeature(
-        features::kPartitionNelAndReportingByNetworkIsolationKey);
+    std::vector<base::Feature> required_features = {
+        features::kPartitionNelAndReportingByNetworkIsolationKey};
+    if (UseDocumentReporting()) {
+      required_features.push_back(features::kDocumentReporting);
+    }
+    feature_list_.InitWithFeatures(required_features, {});
   }
 
   void SetUp() override {
@@ -19821,7 +19881,8 @@ class HttpNetworkTransactionReportingTest : public HttpNetworkTransactionTest {
     test_reporting_context_ = nullptr;
   }
 
-  // Makes an HTTPS request that should install a valid Reporting policy.
+  // Makes an HTTPS request that should install a valid Reporting policy
+  // using either Report-To header or Reporting-Endpoints header.
   void RequestPolicy(CertStatus cert_status = 0) {
     HttpRequestInfo request;
     request.method = "GET";
@@ -19835,11 +19896,20 @@ class HttpNetworkTransactionReportingTest : public HttpNetworkTransactionTest {
                   "Host: www.example.org\r\n"
                   "Connection: keep-alive\r\n\r\n"),
     };
+
+    MockRead reporting_header;
+    if (UseDocumentReporting()) {
+      reporting_header = MockRead(
+          "Reporting-Endpoints: nel=\"https://www.example.org/upload/\"\r\n");
+    } else {
+      reporting_header = MockRead(
+          "Report-To: {\"group\": \"nel\", \"max_age\": 86400, "
+          "\"endpoints\": [{\"url\": "
+          "\"https://www.example.org/upload/\"}]}\r\n");
+    }
     MockRead data_reads[] = {
         MockRead("HTTP/1.0 200 OK\r\n"),
-        MockRead("Report-To: {\"group\": \"nel\", \"max_age\": 86400, "
-                 "\"endpoints\": [{\"url\": "
-                 "\"https://www.example.org/upload/\"}]}\r\n"),
+        std::move(reporting_header),
         MockRead("\r\n"),
         MockRead("hello world"),
         MockRead(SYNCHRONOUS, OK),
@@ -19865,6 +19935,7 @@ class HttpNetworkTransactionReportingTest : public HttpNetworkTransactionTest {
   }
 
  protected:
+  bool UseDocumentReporting() const { return GetParam(); }
   std::string url_ = "https://www.example.org/";
 
  private:
@@ -19872,20 +19943,20 @@ class HttpNetworkTransactionReportingTest : public HttpNetworkTransactionTest {
   TestReportingContext* test_reporting_context_;
 };
 
-TEST_F(HttpNetworkTransactionReportingTest,
+TEST_P(HttpNetworkTransactionReportingTest,
        DontProcessReportToHeaderNoService) {
   clear_reporting_service();
   RequestPolicy();
   // No crash.
 }
 
-TEST_F(HttpNetworkTransactionReportingTest, DontProcessReportToHeaderHttp) {
+TEST_P(HttpNetworkTransactionReportingTest, DontProcessReportToHeaderHttp) {
   url_ = "http://www.example.org/";
   RequestPolicy();
   EXPECT_EQ(0u, reporting_context()->cache()->GetEndpointCount());
 }
 
-TEST_F(HttpNetworkTransactionReportingTest, ProcessReportToHeaderHttps) {
+TEST_P(HttpNetworkTransactionReportingTest, ProcessReportToHeaderHttps) {
   RequestPolicy();
   ASSERT_EQ(1u, reporting_context()->cache()->GetEndpointCount());
   const ReportingEndpoint endpoint =
@@ -19897,12 +19968,17 @@ TEST_F(HttpNetworkTransactionReportingTest, ProcessReportToHeaderHttps) {
   EXPECT_TRUE(endpoint);
 }
 
-TEST_F(HttpNetworkTransactionReportingTest,
+TEST_P(HttpNetworkTransactionReportingTest,
        DontProcessReportToHeaderInvalidHttps) {
   CertStatus cert_status = CERT_STATUS_COMMON_NAME_INVALID;
   RequestPolicy(cert_status);
   EXPECT_EQ(0u, reporting_context()->cache()->GetEndpointCount());
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HttpNetworkTransactionReportingTest,
+                         ::testing::Bool());
+
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 //-----------------------------------------------------------------------------
@@ -21782,8 +21858,7 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   EXPECT_TRUE(
       CheckBasicSecureProxyAuth(trans->GetResponseInfo()->auth_challenge));
   rv = callback.GetResult(trans->RestartWithAuth(
-      AuthCredentials(ASCIIToUTF16("proxyuser"), ASCIIToUTF16("proxypass")),
-      callback.callback()));
+      AuthCredentials(u"proxyuser", u"proxypass"), callback.callback()));
 
   // Handle the origin client certificate challenge.
   ASSERT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
@@ -21802,8 +21877,7 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   EXPECT_TRUE(
       CheckBasicSecureServerAuth(trans->GetResponseInfo()->auth_challenge));
   rv = callback.GetResult(trans->RestartWithAuth(
-      AuthCredentials(ASCIIToUTF16("user"), ASCIIToUTF16("pass")),
-      callback.callback()));
+      AuthCredentials(u"user", u"pass"), callback.callback()));
 
   // The request completes.
   ASSERT_THAT(rv, IsOk());
@@ -22025,8 +22099,7 @@ TEST_F(HttpNetworkTransactionTest, AuthEverythingWithConnectClose) {
   EXPECT_TRUE(
       CheckBasicSecureProxyAuth(trans->GetResponseInfo()->auth_challenge));
   rv = callback.GetResult(trans->RestartWithAuth(
-      AuthCredentials(ASCIIToUTF16("proxyuser"), ASCIIToUTF16("proxypass")),
-      callback.callback()));
+      AuthCredentials(u"proxyuser", u"proxypass"), callback.callback()));
 
   // Handle the origin client certificate challenge.
   ASSERT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
@@ -22045,8 +22118,7 @@ TEST_F(HttpNetworkTransactionTest, AuthEverythingWithConnectClose) {
   EXPECT_TRUE(
       CheckBasicSecureServerAuth(trans->GetResponseInfo()->auth_challenge));
   rv = callback.GetResult(trans->RestartWithAuth(
-      AuthCredentials(ASCIIToUTF16("user"), ASCIIToUTF16("pass")),
-      callback.callback()));
+      AuthCredentials(u"user", u"pass"), callback.callback()));
 
   // The request completes.
   ASSERT_THAT(rv, IsOk());
@@ -22156,8 +22228,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyHTTPAndServerTLSAuth) {
   EXPECT_TRUE(
       CheckBasicSecureProxyAuth(trans->GetResponseInfo()->auth_challenge));
   rv = callback.GetResult(trans->RestartWithAuth(
-      AuthCredentials(ASCIIToUTF16("proxyuser"), ASCIIToUTF16("proxypass")),
-      callback.callback()));
+      AuthCredentials(u"proxyuser", u"proxypass"), callback.callback()));
 
   // Handle the origin client certificate challenge.
   ASSERT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));

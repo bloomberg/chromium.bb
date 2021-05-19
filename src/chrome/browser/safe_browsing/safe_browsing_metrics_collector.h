@@ -13,6 +13,10 @@
 
 class PrefService;
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace safe_browsing {
 
 // This class is for logging Safe Browsing metrics regularly. Metrics are logged
@@ -38,7 +42,7 @@ class SafeBrowsingMetricsCollector : public KeyedService {
     DATABASE_INTERSTITIAL_BYPASS = 2,
     // The user bypasses the interstitial that is triggered by client-side
     // detection.
-    CSD_INTERSITITAL_BYPASS = 3,
+    CSD_INTERSTITIAL_BYPASS = 3,
     // The user bypasses the interstitial that is triggered by real time URL
     // check.
     REAL_TIME_INTERSTITIAL_BYPASS = 4,
@@ -47,8 +51,16 @@ class SafeBrowsingMetricsCollector : public KeyedService {
     DANGEROUS_DOWNLOAD_BYPASS = 5,
     // The user bypasses the password reuse modal warning.
     PASSWORD_REUSE_MODAL_BYPASS = 6,
+    // The user accepts the extension install friction dialog (but does not
+    // necessarily install the extension).
+    // This dialog is only shown to ESB users. Added in M91.
+    EXTENSION_ALLOWLIST_INSTALL_BYPASS = 7,
+    // The user acknowledges and re-enables the extension that is not on the
+    // allowlist.
+    // This is only shown to ESB users. Added in M91.
+    NON_ALLOWLISTED_EXTENSION_RE_ENABLED = 8,
 
-    kMaxValue = PASSWORD_REUSE_MODAL_BYPASS
+    kMaxValue = NON_ALLOWLISTED_EXTENSION_RE_ENABLED
   };
 
   // Enum representing the current user state. They are used as keys of the
@@ -63,6 +75,12 @@ class SafeBrowsingMetricsCollector : public KeyedService {
     ENHANCED_PROTECTION = 1,
     // Safe Browsing is managed.
     MANAGED = 2
+  };
+
+  struct Event {
+    Event(EventType type, base::Time timestamp);
+    EventType type;
+    base::Time timestamp;
   };
 
   explicit SafeBrowsingMetricsCollector(PrefService* pref_service_);
@@ -81,11 +99,7 @@ class SafeBrowsingMetricsCollector : public KeyedService {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingMetricsCollectorTest, GetUserState);
-  struct Event {
-    Event(EventType type, base::Time timestamp);
-    EventType type;
-    base::Time timestamp;
-  };
+
   static bool IsBypassEventType(const EventType& type);
   static std::string GetUserStateMetricSuffix(const UserState& user_state);
   static std::string GetEventTypeMetricSuffix(const EventType& event_type);
@@ -104,6 +118,9 @@ class SafeBrowsingMetricsCollector : public KeyedService {
   // Helper functions for Safe Browsing events in pref.
   void AddSafeBrowsingEventAndUserStateToPref(UserState user_state,
                                               EventType event_type);
+  base::Optional<SafeBrowsingMetricsCollector::Event>
+  GetLatestEventFromEventType(UserState user_state, EventType event_type);
+  const base::Value* GetSafeBrowsingEventDictionary(UserState user_state);
   int GetEventCountSince(UserState user_state,
                          EventType event_type,
                          base::Time since_time);

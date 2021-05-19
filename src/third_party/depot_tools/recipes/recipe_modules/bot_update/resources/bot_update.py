@@ -711,6 +711,8 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
                    '--cache-dir', git_cache_dir, url, '--reset-fetch-config'])
   if no_fetch_tags:
     populate_cmd.extend(['--no-fetch-tags'])
+    if TAGS_REFSPEC in refs:
+      refs.remove(TAGS_REFSPEC)
   for ref in refs:
     populate_cmd.extend(['--ref', ref])
 
@@ -770,6 +772,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
   # Step 2: populate a checkout from local cache. All operations are local.
   mirror_dir = git(
       'cache', 'exists', '--quiet', '--cache-dir', git_cache_dir, url).strip()
+  _set_remote_head(mirror_dir)
   first_try = True
   while True:
     try:
@@ -789,6 +792,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
         git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
         git('fetch', 'origin', cwd=sln_dir)
       git('remote', 'set-url', '--push', 'origin', url, cwd=sln_dir)
+      _set_remote_head(sln_dir)
       for ref in refs:
         refspec = '%s:%s' % (ref, ref_to_remote_ref(ref.lstrip('+')))
         git('fetch', 'origin', refspec, cwd=sln_dir)
@@ -819,6 +823,19 @@ def _git_disable_gc(cwd):
   git('config', 'gc.auto', '0', cwd=cwd)
   git('config', 'gc.autodetach', '0', cwd=cwd)
   git('config', 'gc.autopacklimit', '0', cwd=cwd)
+
+
+def _set_remote_head(cwd):
+  if len(git('ls-remote', 'origin', 'HEAD', cwd=cwd)) > 0:
+    return
+  try:
+    git('remote', 'set-head', 'origin', '--auto', cwd=cwd)
+  except SubprocessFailed:
+    # If remote HEAD cannot be set automatically, prefer main over master.
+    try:
+      git('remote', 'set-head', 'origin', 'main', cwd=cwd)
+    except SubprocessFailed:
+      git('remote', 'set-head', 'origin', 'master', cwd=cwd)
 
 
 def get_commit_position(git_path, revision='HEAD'):

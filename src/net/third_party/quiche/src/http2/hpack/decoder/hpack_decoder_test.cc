@@ -15,7 +15,6 @@
 #include "http2/hpack/decoder/hpack_decoder_listener.h"
 #include "http2/hpack/decoder/hpack_decoder_state.h"
 #include "http2/hpack/decoder/hpack_decoder_tables.h"
-#include "http2/hpack/hpack_string.h"
 #include "http2/hpack/http2_hpack_constants.h"
 #include "http2/hpack/tools/hpack_block_builder.h"
 #include "http2/hpack/tools/hpack_example.h"
@@ -63,10 +62,12 @@ typedef std::vector<HpackHeaderEntry> HpackHeaderEntries;
 // and with VerifyDynamicTableContents.
 class MockHpackDecoderListener : public HpackDecoderListener {
  public:
-  MOCK_METHOD0(OnHeaderListStart, void());
-  MOCK_METHOD2(OnHeader,
-               void(const HpackString& name, const HpackString& value));
-  MOCK_METHOD0(OnHeaderListEnd, void());
+  MOCK_METHOD(void, OnHeaderListStart, (), (override));
+  MOCK_METHOD(void,
+              OnHeader,
+              (const std::string& name, const std::string& value),
+              (override));
+  MOCK_METHOD(void, OnHeaderListEnd, (), (override));
   MOCK_METHOD(void,
               OnHeaderErrorDetected,
               (absl::string_view error_message),
@@ -95,10 +96,10 @@ class HpackDecoderTest : public QuicheTestWithParam<bool>,
   // Called for each header name-value pair that is decoded, in the order they
   // appear in the HPACK block. Multiple values for a given key will be emitted
   // as multiple calls to OnHeader.
-  void OnHeader(const HpackString& name, const HpackString& value) override {
+  void OnHeader(const std::string& name, const std::string& value) override {
     ASSERT_TRUE(saw_start_);
     ASSERT_FALSE(saw_end_);
-    header_entries_.emplace_back(name.ToString(), value.ToString());
+    header_entries_.emplace_back(name, value);
   }
 
   // OnHeaderBlockEnd is called after successfully decoding an HPACK block. Will
@@ -190,8 +191,8 @@ class HpackDecoderTest : public QuicheTestWithParam<bool>,
     const HpackStringPair* entry =
         Lookup(dynamic_index + kFirstDynamicTableIndex - 1);
     VERIFY_NE(entry, nullptr);
-    VERIFY_EQ(entry->name.ToStringPiece(), name);
-    VERIFY_EQ(entry->value.ToStringPiece(), value);
+    VERIFY_EQ(entry->name, name);
+    VERIFY_EQ(entry->value, value);
     return AssertionSuccess();
   }
   AssertionResult VerifyNoEntry(size_t dynamic_index) {

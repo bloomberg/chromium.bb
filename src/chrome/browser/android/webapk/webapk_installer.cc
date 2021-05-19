@@ -5,6 +5,7 @@
 #include "chrome/browser/android/webapk/webapk_installer.h"
 
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -19,7 +20,6 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -236,7 +236,7 @@ std::unique_ptr<std::string> BuildProtoInBackground(
       webapk::ShareTargetParamsFile* share_files =
           share_target_params->add_files();
       share_files->set_name(base::UTF16ToUTF8(share_target_params_file.name));
-      for (base::string16 mime_type : share_target_params_file.accept) {
+      for (std::u16string mime_type : share_target_params_file.accept) {
         share_files->add_accept(base::UTF16ToUTF8(mime_type));
       }
     }
@@ -291,7 +291,7 @@ std::unique_ptr<std::string> BuildProtoInBackground(
     auto* shortcut_item = web_app_manifest->add_shortcuts();
     shortcut_item->set_name(base::UTF16ToUTF8(manifest_shortcut_item.name));
     shortcut_item->set_short_name(base::UTF16ToUTF8(
-        manifest_shortcut_item.short_name.value_or(base::string16())));
+        manifest_shortcut_item.short_name.value_or(std::u16string())));
     shortcut_item->set_url(manifest_shortcut_item.url.spec());
 
     for (const auto& manifest_icon : manifest_shortcut_item.icons) {

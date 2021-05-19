@@ -1,11 +1,10 @@
 
 out vec4 sk_FragColor;
-uniform int value;
-void main() {
-    vec4 _1_result = vec4(1.0);
-    for (int _2_x = 0;_2_x < 5; ++_2_x) {
-        if (_2_x == value) _1_result = vec4(0.5);
+uniform vec4 colorGreen;
+vec4 main() {
+    vec4 _0_result;
+    for (int _1_x = 0;_1_x < 4; ++_1_x) {
+        _0_result[_1_x] = colorGreen[_1_x];
     }
-    sk_FragColor = _1_result;
-
+    return _0_result;
 }

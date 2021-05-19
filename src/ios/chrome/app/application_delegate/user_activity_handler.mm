@@ -444,7 +444,7 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
   DCHECK(!defaultURL->url().empty());
   DCHECK(
       defaultURL->url_ref().IsValid(templateURLService->search_terms_data()));
-  base::string16 queryString = base::SysNSStringToUTF16(searchQuery);
+  std::u16string queryString = base::SysNSStringToUTF16(searchQuery);
   TemplateURLRef::SearchTermsArgs search_args(queryString);
 
   GURL result(defaultURL->url_ref().ReplaceSearchTerms(
@@ -465,6 +465,13 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
   if ([startupInformation isPresentingFirstRunUI]) {
     return;
   }
+
+  // Do not handle the parameters that are/were already handled.
+  if (connectionInformation.startupParametersAreBeingHandled) {
+    return;
+  }
+
+  connectionInformation.startupParametersAreBeingHandled = YES;
 
   if (!connectionInformation.startupParameters.URLs.empty() &&
       !connectionInformation.startupParameters.isUnexpectedMode) {

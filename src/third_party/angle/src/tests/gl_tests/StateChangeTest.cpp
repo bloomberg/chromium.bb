@@ -4157,6 +4157,8 @@ TEST_P(SimpleStateChangeTestES31, DrawWithTextureThenDrawWithImage)
 {
     // http://anglebug.com/5593
     ANGLE_SKIP_TEST_IF(IsD3D11());
+    // http://anglebug.com/5686
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsDesktopOpenGL());
 
     GLint maxFragmentImageUniforms;
     glGetIntegerv(GL_MAX_FRAGMENT_IMAGE_UNIFORMS, &maxFragmentImageUniforms);
@@ -4443,6 +4445,9 @@ void main()
 // In the Vulkan backend, the clear is deferred and should be flushed correctly.
 TEST_P(SimpleStateChangeTestES31, ClearThenSampleWithCompute)
 {
+    // http://anglebug.com/5687
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsDesktopOpenGL());
+
     constexpr GLsizei kSize = 1;
 
     GLTexture color;
@@ -4516,6 +4521,9 @@ void main()
 // it in a dispatch call works correctly.  This requires an implicit barrier in between the calls.
 TEST_P(SimpleStateChangeTestES31, TransformFeedbackThenReadWithCompute)
 {
+    // http://anglebug.com/5687
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsAMD() && IsVulkan());
+
     constexpr GLsizei kBufferSize = sizeof(float) * 4 * 6;
     GLBuffer buffer;
     glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, buffer);
@@ -6657,16 +6665,41 @@ TEST_P(WebGL2ValidationStateChangeTest, DrawElementsEmptyVertexArray)
 ANGLE_INSTANTIATE_TEST_ES2(StateChangeTest);
 ANGLE_INSTANTIATE_TEST_ES2(LineLoopStateChangeTest);
 ANGLE_INSTANTIATE_TEST_ES2(StateChangeRenderTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(StateChangeTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(StateChangeTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(StateChangeRenderTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(StateChangeRenderTestES3);
+
 ANGLE_INSTANTIATE_TEST_ES2(SimpleStateChangeTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SimpleStateChangeTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(SimpleStateChangeTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ImageRespecificationTest);
 ANGLE_INSTANTIATE_TEST_ES3(ImageRespecificationTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SimpleStateChangeTestES31);
 ANGLE_INSTANTIATE_TEST_ES31(SimpleStateChangeTestES31);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SimpleStateChangeTestComputeES31);
 ANGLE_INSTANTIATE_TEST_ES31(SimpleStateChangeTestComputeES31);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SimpleStateChangeTestComputeES31PPO);
 ANGLE_INSTANTIATE_TEST_ES31(SimpleStateChangeTestComputeES31PPO);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ValidationStateChangeTest);
 ANGLE_INSTANTIATE_TEST_ES3(ValidationStateChangeTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WebGL2ValidationStateChangeTest);
 ANGLE_INSTANTIATE_TEST_ES3(WebGL2ValidationStateChangeTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(RobustBufferAccessWebGL2ValidationStateChangeTest);
 ANGLE_INSTANTIATE_TEST_ES3(RobustBufferAccessWebGL2ValidationStateChangeTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ValidationStateChangeTestES31);
 ANGLE_INSTANTIATE_TEST_ES31(ValidationStateChangeTestES31);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WebGLComputeValidationStateChangeTest);
 ANGLE_INSTANTIATE_TEST_ES31(WebGLComputeValidationStateChangeTest);

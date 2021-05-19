@@ -20,7 +20,12 @@ const char kTranslateTranslationSourceLanguage[] =
 const char kTranslateTranslationStatus[] = "Translate.Translation.Status";
 const char kTranslateTranslationTargetLanguage[] =
     "Translate.Translation.TargetLanguage";
+const char kTranslateTranslationTargetLanguageOrigin[] =
+    "Translate.Translation.TargetLanguage.Origin";
 const char kTranslateTranslationType[] = "Translate.Translation.Type";
+
+// UI Interaction frequency UMA histograms.
+const char kTranslateUiInteractionEvent[] = "Translate.UiInteraction.Event";
 
 // Page-load frequency UMA histograms.
 const char kTranslatePageLoadAutofillAssistantDeferredTriggerDecision[] =
@@ -30,11 +35,15 @@ const char kTranslatePageLoadFinalSourceLanguage[] =
 const char kTranslatePageLoadFinalState[] = "Translate.PageLoad.FinalState";
 const char kTranslatePageLoadFinalTargetLanguage[] =
     "Translate.PageLoad.FinalTargetLanguage";
+const char kTranslatePageLoadHrefTriggerDecision[] =
+    "Translate.PageLoad.HrefHint.TriggerDecision";
 const char kTranslatePageLoadInitialSourceLanguage[] =
     "Translate.PageLoad.InitialSourceLanguage";
 const char kTranslatePageLoadInitialState[] = "Translate.PageLoad.InitialState";
 const char kTranslatePageLoadInitialTargetLanguage[] =
     "Translate.PageLoad.InitialTargetLanguage";
+const char kTranslatePageLoadInitialTargetLanguageOrigin[] =
+    "Translate.PageLoad.InitialTargetLanguage.Origin";
 const char kTranslatePageLoadIsInitialSourceLanguageInUsersContentLanguages[] =
     "Translate.PageLoad.IsInitialSourceLanguageInUsersContentLanguages";
 const char kTranslatePageLoadNumTargetLanguageChanges[] =
@@ -45,12 +54,16 @@ const char kTranslatePageLoadNumReversions[] =
     "Translate.PageLoad.NumReversions";
 const char kTranslatePageLoadRankerDecision[] =
     "Translate.PageLoad.Ranker.Decision";
+const char kTranslatePageLoadRankerTimerShouldOfferTranslation[] =
+    "Translate.PageLoad.Ranker.Timer.ShouldOffereTranslation";
 const char kTranslatePageLoadRankerVersion[] =
     "Translate.PageLoad.Ranker.Version";
 const char kTranslatePageLoadTriggerDecision[] =
     "Translate.PageLoad.TriggerDecision";
-const char kTranslatePageLoadHrefTriggerDecision[] =
-    "Translate.PageLoad.HrefHint.TriggerDecision";
+const char kTranslatePageLoadTriggerDecisionAllTriggerDecisions[] =
+    "Translate.PageLoad.TriggerDecision.AllTriggerDecisions";
+const char kTranslatePageLoadTriggerDecisionTotalCount[] =
+    "Translate.PageLoad.TriggerDecision.TotalCount";
 
 TranslationType NullTranslateMetricsLogger::GetNextManualTranslationType() {
   return TranslationType::kUninitialized;
@@ -169,8 +182,18 @@ void TranslateMetricsLoggerImpl::RecordPageLoadUmaMetrics(
                                 ranker_decision_);
   base::UmaHistogramSparse(kTranslatePageLoadRankerVersion,
                            int(ranker_version_));
+  if (ranker_duration_)
+    base::UmaHistogramTimes(kTranslatePageLoadRankerTimerShouldOfferTranslation,
+                            ranker_duration_.value());
+
   base::UmaHistogramEnumeration(kTranslatePageLoadTriggerDecision,
                                 trigger_decision_);
+  base::UmaHistogramCounts100(kTranslatePageLoadTriggerDecisionTotalCount,
+                              all_trigger_decisions_.size());
+  for (const auto& trigger_decision : all_trigger_decisions_) {
+    base::UmaHistogramEnumeration(
+        kTranslatePageLoadTriggerDecisionAllTriggerDecisions, trigger_decision);
+  }
   if (has_href_translate_target_) {
     base::UmaHistogramEnumeration(kTranslatePageLoadHrefTriggerDecision,
                                   trigger_decision_);
@@ -207,17 +230,22 @@ void TranslateMetricsLoggerImpl::RecordPageLoadUmaMetrics(
                            base::HashMetricName(current_target_language_));
   base::UmaHistogramCustomCounts(kTranslatePageLoadNumTargetLanguageChanges,
                                  num_target_language_changes_, 1, 50, 20);
+  base::UmaHistogramEnumeration(kTranslatePageLoadInitialTargetLanguageOrigin,
+                                initial_target_language_origin_);
 }
 
 void TranslateMetricsLoggerImpl::RecordTranslationHistograms(
     TranslationType translation_type,
     const std::string& source_language,
-    const std::string& target_language) {
+    const std::string& target_language,
+    TranslateBrowserMetrics::TargetLanguageOrigin target_language_origin) {
   base::UmaHistogramEnumeration(kTranslateTranslationType, translation_type);
   base::UmaHistogramSparse(kTranslateTranslationSourceLanguage,
                            base::HashMetricName(source_language));
   base::UmaHistogramSparse(kTranslateTranslationTargetLanguage,
                            base::HashMetricName(target_language));
+  base::UmaHistogramEnumeration(kTranslateTranslationTargetLanguageOrigin,
+                                target_language_origin);
 }
 
 void TranslateMetricsLoggerImpl::RecordTranslationStatus(
@@ -233,6 +261,16 @@ void TranslateMetricsLoggerImpl::LogRankerMetrics(
   ranker_version_ = ranker_version;
 }
 
+void TranslateMetricsLoggerImpl::LogRankerStart() {
+  if (!ranker_duration_)
+    ranker_start_time_ = clock_->NowTicks();
+}
+
+void TranslateMetricsLoggerImpl::LogRankerFinish() {
+  if (!ranker_duration_)
+    ranker_duration_ = clock_->NowTicks() - ranker_start_time_;
+}
+
 void TranslateMetricsLoggerImpl::LogTriggerDecision(
     TriggerDecision trigger_decision) {
   // Only stores the first non-kUninitialized trigger decision that is logged,
@@ -244,6 +282,8 @@ void TranslateMetricsLoggerImpl::LogTriggerDecision(
        trigger_decision_ != TriggerDecision::kAutomaticTranslationByHref)) {
     trigger_decision_ = trigger_decision;
   }
+
+  all_trigger_decisions_.push_back(trigger_decision);
 }
 
 void TranslateMetricsLoggerImpl::LogAutofillAssistantDeferredTriggerDecision() {
@@ -281,9 +321,9 @@ void TranslateMetricsLoggerImpl::LogTranslationStarted(
 
   time_of_last_translation_start_ = clock_->NowTicks();
 
-  RecordTranslationHistograms(current_translation_type_,
-                              current_source_language_,
-                              current_target_language_);
+  RecordTranslationHistograms(
+      current_translation_type_, current_source_language_,
+      current_target_language_, current_target_language_origin_);
 }
 
 void TranslateMetricsLoggerImpl::LogTranslationFinished(
@@ -368,9 +408,12 @@ void TranslateMetricsLoggerImpl::LogSourceLanguage(
 }
 
 void TranslateMetricsLoggerImpl::LogTargetLanguage(
-    const std::string& target_language_code) {
-  if (initial_target_language_ == "")
+    const std::string& target_language_code,
+    TranslateBrowserMetrics::TargetLanguageOrigin target_language_origin) {
+  if (initial_target_language_ == "") {
     initial_target_language_ = target_language_code;
+    initial_target_language_origin_ = target_language_origin;
+  }
 
   // Only increment |num_target_language_changes_| if |current_target_language_|
   // changes between two languages.
@@ -379,6 +422,7 @@ void TranslateMetricsLoggerImpl::LogTargetLanguage(
     num_target_language_changes_++;
 
   current_target_language_ = target_language_code;
+  current_target_language_origin_ = target_language_origin;
 }
 
 void TranslateMetricsLoggerImpl::LogUIInteraction(
@@ -387,6 +431,10 @@ void TranslateMetricsLoggerImpl::LogUIInteraction(
     first_ui_interaction_ = ui_interaction;
 
   num_ui_interactions_++;
+
+  // Record this UI interaction to the Translate.UiInteraction.Event UMA
+  // histogram immediately.
+  base::UmaHistogramEnumeration(kTranslateUiInteractionEvent, ui_interaction);
 }
 
 TranslationType TranslateMetricsLoggerImpl::GetNextManualTranslationType() {

@@ -12,12 +12,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "base/strings/nullable_string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -1786,7 +1786,7 @@ void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
 
   std::string title;
   int action_index = std::numeric_limits<int32_t>::min();
-  base::Optional<base::string16> reply;
+  base::Optional<std::u16string> reply;
 
   if (!args->GetNext(&title)) {
     args->ThrowError();
@@ -2143,7 +2143,12 @@ std::string TestRunnerBindings::TooltipText() {
 int TestRunnerBindings::WebHistoryItemCount() {
   if (invalid_)
     return 0;
-  return frame_->render_view()->GetLocalSessionHistoryLengthForTesting();
+
+  // Returns the length of the session history of this RenderView. Note that
+  // this only coincides with the actual length of the session history if this
+  // RenderView is the currently active RenderView of a WebContents.
+  return frame_->GetWebFrame()->View()->HistoryBackListCount() +
+         frame_->GetWebFrame()->View()->HistoryForwardListCount() + 1;
 }
 
 void TestRunnerBindings::ForceNextWebGLContextCreationToFail() {
@@ -2662,37 +2667,14 @@ void TestRunner::TestFinishedFromSecondaryRenderer() {
   NotifyDone();
 }
 
-void TestRunner::ResetRendererAfterWebTest(base::OnceClosure done_callback) {
-  // Instead of resetting for the next test here, delay until after the
-  // navigation to about:blank, which is heard about in in
-  // `DidCommitNavigationInMainFrame()`. This ensures we reset settings that are
-  // set between now and the load of about:blank, and that no new changes or
-  // loads can be started by the renderer.
-  waiting_for_reset_navigation_to_about_blank_ = std::move(done_callback);
-
+void TestRunner::ResetRendererAfterWebTest() {
   WebFrameTestProxy* main_frame = FindInProcessMainWindowMainFrame();
-  DCHECK(main_frame);
-  main_frame->GetWebFrame()->ResetForTesting();
-}
-
-void TestRunner::DidCommitNavigationInMainFrame(WebFrameTestProxy* main_frame) {
-  // This method is just meant to catch the about:blank navigation started in
-  // ResetRendererAfterWebTest().
-  if (!waiting_for_reset_navigation_to_about_blank_)
-    return;
-
-  // This would mean some other navigation was already happening when the test
-  // ended, the about:blank should still be coming.
-  GURL url = main_frame->GetWebFrame()->GetDocumentLoader()->GetUrl();
-  if (!url.IsAboutBlank())
-    return;
-
-  // Perform the reset now that the main frame is on about:blank.
-  main_frame->Reset();
+  // When the about:blank navigation happens in a new process, the new
+  // WebFrameTestProxy is not designated to be the "MainWindowMainFrame" one
+  // yet. It will be tracked later after receiving the SetTestConfiguration IPC.
+  if (main_frame)
+    main_frame->Reset();
   Reset();
-
-  // Ack to the browser.
-  std::move(waiting_for_reset_navigation_to_about_blank_).Run();
 }
 
 void TestRunner::AddMainFrame(WebFrameTestProxy* frame) {

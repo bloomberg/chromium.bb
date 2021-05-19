@@ -10,7 +10,6 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -31,11 +30,11 @@ namespace chromeos {
 
 namespace {
 
-inline base::string16 utf16(const char* ascii) {
+inline std::u16string utf16(const char* ascii) {
   return base::ASCIIToUTF16(ascii);
 }
 
-inline base::string16 GetTitleText(base::TimeDelta time_until_expiry) {
+inline std::u16string GetTitleText(base::TimeDelta time_until_expiry) {
   return PasswordExpiryNotification::GetTitleText(time_until_expiry);
 }
 

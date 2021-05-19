@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
@@ -67,7 +66,7 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
 
   // Gets a string representation of an expiration time of the access token in
   // |token_cache_value|.
-  base::string16 GetExpirationTime(
+  std::u16string GetExpirationTime(
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
   // Converts a pair of |access_tokens_key| and |token_cache_value| to a
@@ -201,7 +200,7 @@ std::string IdentityInternalsUIMessageHandler::GetStatus(
   return std::string();
 }
 
-base::string16 IdentityInternalsUIMessageHandler::GetExpirationTime(
+std::u16string IdentityInternalsUIMessageHandler::GetExpirationTime(
     const extensions::IdentityTokenCacheValue& token_cache_value) {
   return base::TimeFormatFriendlyDateAndTime(
       token_cache_value.expiration_time());

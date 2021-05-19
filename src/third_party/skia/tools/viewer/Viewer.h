@@ -12,8 +12,8 @@
 #include "include/core/SkExecutor.h"
 #include "include/core/SkFont.h"
 #include "include/gpu/GrContextOptions.h"
+#include "include/private/SkSLString.h"
 #include "src/core/SkScan.h"
-#include "src/sksl/SkSLString.h"
 #include "src/sksl/ir/SkSLProgram.h"
 #include "tools/gpu/MemoryCache.h"
 #include "tools/sk_app/Application.h"
@@ -119,6 +119,7 @@ private:
     void setCurrentSlide(int);
     void setupCurrentSlide();
     void listNames() const;
+    void dumpShadersToResources();
 
     void updateUIState();
 
@@ -200,7 +201,7 @@ private:
     PerspectiveMode        fPerspectiveMode;
     SkPoint                fPerspectivePoints[4];
 
-    SkTArray<std::function<void(void)>> fDeferredActions;
+    SkTArray<std::function<void()>> fDeferredActions;
 
     // fPaint contains override values, fPaintOverrides controls if overrides are applied.
     SkPaint fPaint;
@@ -220,6 +221,7 @@ private:
 
         sk_sp<const SkData> fKey;
         SkString            fKeyString;
+        SkString            fKeyDescription;
 
         SkFourByteTag         fShaderType;
         SkSL::String          fShader[kGrShaderTypeCount];
@@ -228,6 +230,14 @@ private:
 
     sk_gpu_test::MemoryCache fPersistentCache;
     SkTArray<CachedShader>   fCachedShaders;
+
+    enum ShaderOptLevel : int {
+        kShaderOptLevel_Source,
+        kShaderOptLevel_Compile,
+        kShaderOptLevel_Optimize,
+        kShaderOptLevel_Inline,
+    };
+    ShaderOptLevel fOptLevel = kShaderOptLevel_Source;
 };
 
 #endif

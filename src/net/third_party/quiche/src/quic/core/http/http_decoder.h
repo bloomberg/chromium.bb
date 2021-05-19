@@ -27,6 +27,11 @@ class QuicDataReader;
 // session.
 class QUIC_EXPORT_PRIVATE HttpDecoder {
  public:
+  struct QUIC_EXPORT_PRIVATE Options {
+    // Indicates that WEBTRANSPORT_STREAM should be parsed.
+    bool allow_web_transport_stream = false;
+  };
+
   class QUIC_EXPORT_PRIVATE Visitor {
    public:
     virtual ~Visitor() {}
@@ -109,6 +114,15 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
     // Called when an ACCEPT_CH frame has been successfully parsed.
     virtual bool OnAcceptChFrame(const AcceptChFrame& frame) = 0;
 
+    // Called when a WEBTRANSPORT_STREAM frame type and the session ID varint
+    // immediately following it has been received.  Any further parsing should
+    // be done by the stream itself, and not the parser. Note that this does not
+    // return bool, because WEBTRANSPORT_STREAM always causes the parsing
+    // process to cease.
+    virtual void OnWebTransportStreamFrameType(
+        QuicByteCount header_length,
+        WebTransportSessionId session_id) = 0;
+
     // Called when a frame of unknown type |frame_type| has been received.
     // Frame type might be reserved, Visitor must make sure to ignore.
     // |header_length| and |payload_length| are the length of the frame header
@@ -126,6 +140,7 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
 
   // |visitor| must be non-null, and must outlive HttpDecoder.
   explicit HttpDecoder(Visitor* visitor);
+  explicit HttpDecoder(Visitor* visitor, Options options);
 
   ~HttpDecoder();
 
@@ -162,6 +177,7 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
     STATE_READING_FRAME_TYPE,
     STATE_READING_FRAME_PAYLOAD,
     STATE_FINISH_PARSING,
+    STATE_PARSING_NO_LONGER_POSSIBLE,
     STATE_ERROR
   };
 
@@ -175,14 +191,17 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
   // if there are any errors.  Returns whether processing should continue.
   bool ReadFrameLength(QuicDataReader* reader);
 
-  // Reads the payload of the current frame from |reader| and processes it,
-  // possibly buffering the data or invoking the visitor.  Returns whether
-  // processing should continue.
+  // Depending on the frame type, reads and processes the payload of the current
+  // frame from |reader| and calls visitor methods, or calls
+  // BufferOrParsePayload().  Returns whether processing should continue.
   bool ReadFramePayload(QuicDataReader* reader);
 
-  // Optionally parses buffered data; calls visitor method to signal that frame
-  // had been parsed completely.  Returns whether processing should continue.
-  bool FinishParsing();
+  // For frame types parsed by BufferOrParsePayload(), this method is only
+  // called if frame payload is empty, at it calls BufferOrParsePayload().  For
+  // other frame types, this method directly calls visitor methods to signal
+  // that frame had been parsed completely.  Returns whether processing should
+  // continue.
+  bool FinishParsing(QuicDataReader* reader);
 
   // Read payload of unknown frame from |reader| and call
   // Visitor::OnUnknownFramePayload().  Returns true decoding should continue,
@@ -192,8 +211,16 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
   // Discards any remaining frame payload from |reader|.
   void DiscardFramePayload(QuicDataReader* reader);
 
-  // Buffers any remaining frame payload from |reader| into |buffer_|.
-  void BufferFramePayload(QuicDataReader* reader);
+  // Buffers any remaining frame payload from |*reader| into |buffer_| if
+  // necessary.  Parses the frame payload if complete.  Parses out of |*reader|
+  // without unnecessary copy if |*reader| has entire payload.
+  // Returns whether processing should continue.
+  bool BufferOrParsePayload(QuicDataReader* reader);
+
+  // Parses the entire payload of certain kinds of frames that are parsed in a
+  // single pass.  |reader| must have at least |current_frame_length_| bytes.
+  // Returns whether processing should continue.
+  bool ParseEntirePayload(QuicDataReader* reader);
 
   // Buffers any remaining frame length field from |reader| into
   // |length_buffer_|.
@@ -230,6 +257,8 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
 
   // Visitor to invoke when messages are parsed.
   Visitor* const visitor_;  // Unowned.
+  // Whether WEBTRANSPORT_STREAM should be parsed.
+  bool allow_web_transport_stream_;
   // Current state of the parsing.
   HttpDecoderState state_;
   // Type of the frame currently being parsed.

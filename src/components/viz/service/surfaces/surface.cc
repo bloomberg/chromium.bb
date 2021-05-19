@@ -318,6 +318,25 @@ void Surface::RequestCopyOfOutputOnRootRenderPass(
       *active_frame_data_->frame.render_pass_list.back());
 }
 
+bool Surface::RequestCopyOfOutputOnActiveFrameRenderPassId(
+    std::unique_ptr<CopyOutputRequest> copy_request,
+    CompositorRenderPassId render_pass_id) {
+  TRACE_EVENT1("viz", "Surface::RequestCopyOfOurpurRenderPassId",
+               "has_active_frame_data", !!active_frame_data_);
+  if (!active_frame_data_)
+    return false;
+
+  // Find a render pass with a given id, and attach the copy output request on
+  // it.
+  for (auto& render_pass : active_frame_data_->frame.render_pass_list) {
+    if (render_pass->id == render_pass_id) {
+      RequestCopyOfOutputOnRenderPass(std::move(copy_request), *render_pass);
+      return true;
+    }
+  }
+  return false;
+}
+
 void Surface::OnActivationDependencyResolved(
     const SurfaceId& activation_dependency,
     SurfaceAllocationGroup* group) {
@@ -614,9 +633,33 @@ const CompositorFrame& Surface::GetActiveFrame() const {
   return active_frame_data_->frame;
 }
 
+const CompositorFrame& Surface::GetActiveOrInterpolatedFrame() const {
+  DCHECK(active_frame_data_);
+  if (interpolated_frame_.has_value())
+    return *interpolated_frame_;
+  return active_frame_data_->frame;
+}
+
 const CompositorFrameMetadata& Surface::GetActiveFrameMetadata() const {
   DCHECK(active_frame_data_);
   return active_frame_data_->frame.metadata;
+}
+
+void Surface::ResetInterpolatedFrame() {
+  interpolated_frame_.reset();
+  has_damage_from_interpolated_frame_ = true;
+}
+
+void Surface::SetInterpolatedFrame(CompositorFrame frame) {
+  interpolated_frame_.emplace(std::move(frame));
+}
+
+bool Surface::HasSurfaceAnimationDamage() const {
+  return interpolated_frame_.has_value() || has_damage_from_interpolated_frame_;
+}
+
+void Surface::DidAggregate() {
+  has_damage_from_interpolated_frame_ = false;
 }
 
 const CompositorFrame& Surface::GetPendingFrame() {
@@ -672,6 +715,13 @@ void Surface::NotifyAggregatedDamage(const gfx::Rect& damage_rect,
   surface_client_->OnSurfaceAggregatedDamage(
       this, surface_id().local_surface_id(), active_frame_data_->frame,
       damage_rect, expected_display_time);
+}
+
+bool Surface::IsVideoCaptureOnFromClient() {
+  if (!surface_client_)
+    return false;
+
+  return surface_client_->IsVideoCaptureStarted();
 }
 
 void Surface::UnrefFrameResourcesAndRunCallbacks(
@@ -764,7 +814,7 @@ void Surface::ActivatePendingFrameForInheritedDeadline() {
   ActivatePendingFrameForDeadline();
 }
 
-std::unique_ptr<DelegatedInkMetadata> Surface::TakeDelegatedInkMetadata() {
+std::unique_ptr<gfx::DelegatedInkMetadata> Surface::TakeDelegatedInkMetadata() {
   DCHECK(active_frame_data_);
   return active_frame_data_->TakeDelegatedInkMetadata();
 }

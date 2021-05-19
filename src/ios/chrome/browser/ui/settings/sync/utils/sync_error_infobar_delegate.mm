@@ -14,6 +14,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/signin/public/base/account_consistency_method.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -72,7 +73,7 @@ SyncErrorInfoBarDelegate::GetIdentifier() const {
   return SYNC_ERROR_INFOBAR_DELEGATE_IOS;
 }
 
-base::string16 SyncErrorInfoBarDelegate::GetMessageText() const {
+std::u16string SyncErrorInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 
@@ -80,7 +81,7 @@ int SyncErrorInfoBarDelegate::GetButtons() const {
   return button_text_.empty() ? BUTTON_NONE : BUTTON_OK;
 }
 
-base::string16 SyncErrorInfoBarDelegate::GetButtonLabel(
+std::u16string SyncErrorInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK(button == BUTTON_OK);
   return button_text_;
@@ -94,7 +95,11 @@ bool SyncErrorInfoBarDelegate::Accept() {
   if (ShouldShowSyncSignin(error_state_)) {
     [presenter_ showReauthenticateSignin];
   } else if (ShouldShowSyncSettings(error_state_)) {
-    [presenter_ showGoogleServicesSettings];
+    if (signin::IsMobileIdentityConsistencyEnabled()) {
+      [presenter_ showAccountSettings];
+    } else {
+      [presenter_ showGoogleServicesSettings];
+    }
   } else if (ShouldShowSyncPassphraseSettings(error_state_)) {
     [presenter_ showSyncPassphraseSettings];
   } else if (ShouldShowTrustedVaultReauthentication(error_state_)) {

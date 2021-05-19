@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_UI_ACCESSIBILITY_UTIL_H_
 #define CHROME_BROWSER_UI_ACCESSIBILITY_UTIL_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 
 // Announces |message| as an accessibility alert in the currently active normal
 // browser window, if there is one. Otherwise, no announcement is made.
-void AnnounceInActiveBrowser(const base::string16& message);
+void AnnounceInActiveBrowser(const std::u16string& message);
 
 #endif  // CHROME_BROWSER_UI_ACCESSIBILITY_UTIL_H_

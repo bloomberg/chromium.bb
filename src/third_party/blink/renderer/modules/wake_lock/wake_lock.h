@@ -75,13 +75,11 @@ class MODULES_EXPORT WakeLock final : public ScriptWrappable,
       base::OnceCallback<void(mojom::blink::PermissionStatus)> callback);
   mojom::blink::PermissionService* GetPermissionService();
 
-  HeapMojoRemote<mojom::blink::PermissionService,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      permission_service_;
+  HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
 
-  // https://w3c.github.io/screen-wake-lock/#concepts-and-state-record
-  // Each platform wake lock (one per wake lock type) has an associated state
-  // record per responsible document [...] internal slots.
+  // https://w3c.github.io/screen-wake-lock/#dfn-activelocks
+  // An ordered map of wake lock types to a list of WakeLockSentinel objects
+  // associated with this Document.
   Member<WakeLockManager> managers_[kWakeLockTypeCount];
 
   FRIEND_TEST_ALL_PREFIXES(WakeLockSentinelTest, ContextDestruction);

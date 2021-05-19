@@ -7,6 +7,7 @@
 namespace lookalikes {
 namespace features {
 
+// Note: this flag is ignored on iOS. See lookalike_url_util.cc.
 const base::Feature kDetectTargetEmbeddingLookalikes{
     "TargetEmbeddingLookalikes", base::FEATURE_DISABLED_BY_DEFAULT};
 

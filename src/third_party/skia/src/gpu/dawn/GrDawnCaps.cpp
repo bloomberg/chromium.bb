@@ -169,20 +169,16 @@ GrProgramDesc GrDawnCaps::makeDesc(GrRenderTarget* rt,
                                    ProgramDescOverrideFlags overrideFlags) const {
     SkASSERT(overrideFlags == ProgramDescOverrideFlags::kNone);
     GrProgramDesc desc;
-    if (!GrProgramDesc::Build(&desc, rt, programInfo, *this)) {
-        SkASSERT(!desc.isValid());
-        return desc;
-    }
+    GrProgramDesc::Build(&desc, programInfo, *this);
 
     wgpu::TextureFormat format;
     if (!programInfo.backendFormat().asDawnFormat(&format)) {
-        desc.key().reset();
+        desc.reset();
         SkASSERT(!desc.isValid());
         return desc;
     }
 
-    GrProcessorKeyBuilder b(&desc.key());
-
+    GrProcessorKeyBuilder b(desc.key());
     GrStencilSettings stencil = programInfo.nonGLStencilSettings();
     stencil.genKey(&b, true);
 
@@ -193,6 +189,8 @@ GrProgramDesc GrDawnCaps::makeDesc(GrRenderTarget* rt,
     b.add32(static_cast<int32_t>(hasDepthStencil));
     b.add32(get_blend_info_key(programInfo.pipeline()));
     b.add32(programInfo.primitiveTypeKey());
+
+    b.flush();
     return desc;
 }
 

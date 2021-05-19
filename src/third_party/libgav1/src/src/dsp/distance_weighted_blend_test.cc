@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <type_traits>
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
@@ -87,12 +88,14 @@ class DistanceWeightedBlendTest : public ::testing::TestWithParam<TestParam>,
   void Test(const char* digest, int num_tests);
 
  private:
+  using PredType =
+      typename std::conditional<bitdepth == 8, int16_t, uint16_t>::type;
   static constexpr int kDestStride = kMaxSuperBlockSizeInPixels;
   const int width_ = GetParam().width;
   const int height_ = GetParam().height;
-  alignas(kMaxAlignment) uint16_t
+  alignas(kMaxAlignment) PredType
       source1_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels];
-  alignas(kMaxAlignment) uint16_t
+  alignas(kMaxAlignment) PredType
       source2_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels];
   Pixel dest_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels] = {};
   Pixel reference_[kMaxSuperBlockSizeInPixels * kMaxSuperBlockSizeInPixels] =
@@ -106,38 +109,34 @@ void DistanceWeightedBlendTest<bitdepth, Pixel>::Test(const char* digest,
                                                       int num_tests) {
   if (func_ == nullptr) return;
   libvpx_test::ACMRandom rnd(libvpx_test::ACMRandom::DeterministicSeed());
-  uint16_t* src_1 = source1_;
-  uint16_t* src_2 = source2_;
-  const int compound_round_offset = (bitdepth == 8) ? 0 : kCompoundOffset;
-  const int mask = (1 << bitdepth) - 1;
-  for (int y = 0; y < height_; ++y) {
-    for (int x = 0; x < width_; ++x) {
-      src_1[x] = rnd.Rand16() & mask;
-      src_2[x] = rnd.Rand16() & mask;
-    }
-    src_1 += width_;
-    src_2 += width_;
-  }
+  PredType* src_1 = source1_;
+  PredType* src_2 = source2_;
+
   const int index = rnd.Rand8() & 3;
   const uint8_t weight_0 = kQuantizedDistanceLookup[index][0];
   const uint8_t weight_1 = kQuantizedDistanceLookup[index][1];
-  src_1 = source1_;
-  src_2 = source2_;
   // In libgav1, predictors have an offset which are later subtracted and
   // clipped in distance weighted blending. Therefore we add the offset
   // here to match libaom's implementation.
   for (int y = 0; y < height_; ++y) {
     for (int x = 0; x < width_; ++x) {
-      src_1[x] = rnd.Rand16() & mask;
-      src_2[x] = rnd.Rand16() & mask;
-      // Tweak the input to match libaom.
-      src_1[x] <<= 4;
-      src_2[x] <<= 4;
-      // In libgav1, predictors have an offset which are later subtracted and
-      // clipped in distance weighted blending. Therefore we add the offset
-      // here to match libaom's implementation.
-      src_1[x] += compound_round_offset;
-      src_2[x] += compound_round_offset;
+      // distance_weighted_blend is applied to compound prediction values. This
+      // implies a range far exceeding that of pixel values.
+      // The ranges include kCompoundOffset in 10bpp and 12bpp.
+      // see: src/dsp/convolve.cc & src/dsp/warp.cc.
+      static constexpr int kCompoundPredictionRange[3][2] = {
+          // 8bpp
+          {-5132, 9212},
+          // 10bpp
+          {3988, 61532},
+          // 12bpp
+          {3974, 61559},
+      };
+      constexpr int bitdepth_index = (bitdepth - 8) >> 1;
+      const int min_val = kCompoundPredictionRange[bitdepth_index][0];
+      const int max_val = kCompoundPredictionRange[bitdepth_index][1];
+      src_1[x] = static_cast<PredType>(rnd(max_val - min_val) + min_val);
+      src_2[x] = static_cast<PredType>(rnd(max_val - min_val) + min_val);
     }
     src_1 += width_;
     src_2 += width_;
@@ -169,25 +168,37 @@ const TestParam kTestParam[] = {
 
 const char* GetDistanceWeightedBlendDigest8bpp(const TestParam block_size) {
   static const char* const kDigestsWidth4[] = {
-      "6a2c94e8e9382b567156a4a108a6a827", "a35689437df51359159d0e5975c4684a",
-      "d13e83101173da3df72a06e0c6609429"};
+      "ebf389f724f8ab46a2cac895e4e073ca",
+      "09acd567b6b12c8cf8eb51d8b86eb4bf",
+      "57bb4d65695d8ec6752f2bd8686b64fd",
+  };
   static const char* const kDigestsWidth8[] = {
-      "86a00fa110c47be0d335f5c32e719ee5", "e2c5c6f08e8b581ffb69882b163effc4",
-      "e49b3d913273e1f9c073041c7805a08d", "d79df57558542c83e9a02b4a4c883702"};
+      "270905ac76f9a2cba8a552eb0bf7c8c1",
+      "f0801c8574d2c271ef2bbea77a1d7352",
+      "e761b580e3312be33a227492a233ce72",
+      "ff214dab1a7e98e2285961d6421720c6",
+  };
   static const char* const kDigestsWidth16[] = {
-      "98b066f37ceb12bcd90a1abc3d35a56c", "b5ebfea4af16c36e304884ec86901f6f",
-      "a86e798abdfa9098d6260ca37c35a72e", "3a6afb2133b22c4582efd1d1b7e63a97",
-      "44675ce8d82c58d1dd1010dec668845e"};
+      "4f712609a36e817f9752326d58562ff8", "14243f5c5f7c7104160c1f2cef0a0fbc",
+      "3ac3f3161b7c8dd8436b02abfdde104a", "81a00b704e0e41a5dbe6436ac70c098d",
+      "af8fd02017c7acdff788be742d700baa",
+  };
   static const char* const kDigestsWidth32[] = {
-      "82dba8eef1f20ac476fa0ba69a5c8041", "5289aef739ee4169697070f099625090",
-      "256e870e3fa930dc6edfdaa967f40263", "33a86afaba1fbdb13b1b38cff094e332",
-      "f2c197f3bcc8ff077dafa8c48f92be0b"};
+      "ee34332c66a6d6ed8ce64031aafe776c", "b5e3d22bd2dbdb624c8b86a1afb5ce6d",
+      "607ffc22098d81b7e37a7bf62f4af5d3", "3823dbf043b4682f56d5ca698e755ea5",
+      "57f7e8d1e67645269ce760a2c8da4afc",
+  };
   static const char* const kDigestsWidth64[] = {
-      "e6da635ce252a3a5a52850caa9a47683", "addc101b8bbb8cc43be479e77f9d01db",
-      "4f1629f00f0c50117d21f76a581813c5", "72adca8d14f7662a9eeecf4b372b4952"};
+      "4acf556b921956c2bc24659cd5128401",
+      "a298c544c9c3b27924b4c23cc687ea5a",
+      "539e2df267782ce61c70103b23b7d922",
+      "3b0cb2a0b5d384efee4d81401025bec1",
+  };
   static const char* const kDigestsWidth128[] = {
-      "9e41fd8ce034d312b808381d443b40b2", "4c63699198404cb80611508a4f4cec88",
-      "e546f39118cf69f011f8cb1f7751c9c3"};
+      "d71ee689a40ff5f390d07717df4b7233",
+      "8b56b636dd712c2f8d138badb7219991",
+      "8cfc8836908902b8f915639b7bff45b3",
+  };
   const int height_index =
       FloorLog2(block_size.height) - FloorLog2(block_size.width) + 2;
   switch (block_size.width) {
@@ -234,25 +245,37 @@ INSTANTIATE_TEST_SUITE_P(SSE41, DistanceWeightedBlendTest8bpp,
 #if LIBGAV1_MAX_BITDEPTH >= 10
 const char* GetDistanceWeightedBlendDigest10bpp(const TestParam block_size) {
   static const char* const kDigestsWidth4[] = {
-      "7d227af2d7d47fa36a43c910d4f1afeb", "dcc14ebe2e60fe3165ea066108daa186",
-      "b5ed1e296ea7da13b1e797edbfbf7531"};
+      "55f594b56e16d5c401274affebbcc3d3",
+      "69df14da4bb33a8f7d7087921008e919",
+      "1b61f33604c54015794198a13bfebf46",
+  };
   static const char* const kDigestsWidth8[] = {
-      "3651b557ecc64cce211faddc0d8fdfb3", "1ae3d5d059c883f0a8fbd46a8428d41f",
-      "437a70cbc8b8e69f25e2c90082be0872", "bea9eaf591e982be46319eaa82f2348b"};
+      "825a938185b152f7cf09bf1c0723ce2b",
+      "85ea315c51d979bc9b45834d6b40ec6f",
+      "92ebde208e8c39f7ec6de2de82182dbb",
+      "520f84716db5b43684dbb703806383fe",
+  };
   static const char* const kDigestsWidth16[] = {
-      "b55cdb4ae880d55f942675212b0f6cf7", "11f0f422da267ab5beea6a07d96e59b5",
-      "a8a48c4ed58797d0b74741e6ae38d9d8", "26e932dbdbdbf43474c733bb529ba8a8",
-      "bc660c72d6d68fd50b2416a7688e7c51"};
+      "12ca23e3e2930005a0511646e8c83da4", "6208694a6744f4a3906f58c1add670e3",
+      "a33d63889df989a3bbf84ff236614267", "34830846ecb0572a98bbd192fed02b16",
+      "34bb2f79c0bd7f9a80691b8af597f2a8",
+  };
   static const char* const kDigestsWidth32[] = {
-      "3137b264303168628fd7ec5687ee6e64", "03f493d7864c77960701cab4d9f875ae",
-      "2d0d1ba3b80aeb3a5025846b442ed2fd", "068a972bc21ef71ebd211ba82e084a1e",
-      "fb5a0e0f2f602d3b3c2111dd7fd7c09c"};
+      "fa97f2d0e3143f1f44d3ac018b0d696d", "3df4a22456c9ab6ed346ab1b9750ae7d",
+      "6276a058b35c6131bc0c94a4b4a37ebc", "9ca42da5d2d5eb339df03ae2c7a26914",
+      "2ff0dc010a7b40830fb47423a9beb894",
+  };
   static const char* const kDigestsWidth64[] = {
-      "71c905c4e0758bf0c7919d038188a57f", "194957ac92ddbb1cf3dba8ab8b5bc0ed",
-      "8121f5720a0a6875179c014893522554", "b0a78fc63959988a06130a43dc361768"};
+      "800e692c520f99223bc24c1ac95a0166",
+      "818b6d20426585ef7fe844015a03aaf5",
+      "fb48691ccfff083e01d74826e88e613f",
+      "0bd350bc5bc604a224d77a5f5a422698",
+  };
   static const char* const kDigestsWidth128[] = {
-      "48499fac6af3ddf7df9d8034922f1ce6", "09d36c3b2aa67b704bf79d98eb580170",
-      "6865b5d9fbf71f31dcb61dd7e67881b9"};
+      "02aac5d5669c1245da876c5440c4d829",
+      "a130840813cd6bd69d09bcf5f8d0180f",
+      "6ece1846bea55e8f8f2ed7fbf73718de",
+  };
   const int height_index =
       FloorLog2(block_size.height) - FloorLog2(block_size.width) + 2;
   switch (block_size.width) {

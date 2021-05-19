@@ -10,13 +10,14 @@
 #import <objc/runtime.h>
 #include <stddef.h>
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -44,7 +45,7 @@
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "chrome/browser/ui/profile_picker.h"
-#include "chrome/browser/ui/search/local_ntp_test_utils.h"
+#include "chrome/browser/ui/search/ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/welcome/helpers.h"
@@ -132,8 +133,8 @@ Profile* CreateAndWaitForProfile(const base::FilePath& profile_dir) {
   ProfileManager::CreateCallback create_callback = base::BindRepeating(
       &CreateProfileCallback,
       base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(), &profile);
-  g_browser_process->profile_manager()->CreateProfileAsync(
-      profile_dir, create_callback, base::string16(), std::string());
+  g_browser_process->profile_manager()->CreateProfileAsync(profile_dir,
+                                                           create_callback);
   base::RunLoop().Run();
   return profile;
 }
@@ -623,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest,
   const base::FilePath profile_path =
       profile_manager->GenerateNextProfileDirectoryPath();
   profile_storage->AddProfile(
-      profile_path, base::ASCIIToUTF16("name_1"), "12345", base::string16(),
+      profile_path, u"name_1", "12345", std::u16string(),
       /*is_consented_primary_account=*/false, /*icon_index=*/0,
       /*supervised_user_id*/ std::string(), EmptyAccountId());
 
@@ -713,10 +714,10 @@ class AppControllerReplaceNTPBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(AppControllerReplaceNTPBrowserTest,
                        ReplaceNTPAfterStartup) {
   // Depending on network connectivity, the NTP URL can either be
-  // chrome://newtab/ or chrome-search://local-ntp/local-ntp.html. See
-  // local_ntp_test_utils::GetFinalNtpUrl for more details.
+  // chrome://newtab/ or chrome://new-tab-page-third-party. See
+  // ntp_test_utils::GetFinalNtpUrl for more details.
   std::string expected_url =
-      local_ntp_test_utils::GetFinalNtpUrl(browser()->profile()).spec();
+      ntp_test_utils::GetFinalNtpUrl(browser()->profile()).spec();
 
   // Ensure that there is exactly 1 tab showing, and the tab is the NTP.
   GURL ntp(expected_url);
@@ -794,10 +795,8 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
       profile_manager->GenerateNextProfileDirectoryPath();
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
-      profile2_path,
-      base::BindRepeating(&RunClosureWhenProfileInitialized,
-                          run_loop.QuitClosure()),
-      base::string16(), std::string());
+      profile2_path, base::BindRepeating(&RunClosureWhenProfileInitialized,
+                                         run_loop.QuitClosure()));
   run_loop.Run();
   Profile* profile2 = profile_manager->GetProfileByPath(profile2_path);
   ASSERT_TRUE(profile2);
@@ -859,10 +858,10 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   [ac mainMenuCreated];
 
   // Constants for bookmarks that we will create later.
-  const base::string16 title1(base::ASCIIToUTF16("Dinosaur Comics"));
+  const std::u16string title1(u"Dinosaur Comics");
   const GURL url1("http://qwantz.com//");
 
-  const base::string16 title2(base::ASCIIToUTF16("XKCD"));
+  const std::u16string title2(u"XKCD");
   const GURL url2("https://www.xkcd.com/");
 
   // Use the existing profile as profile 1.

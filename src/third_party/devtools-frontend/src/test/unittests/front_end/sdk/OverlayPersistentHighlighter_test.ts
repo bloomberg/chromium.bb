@@ -4,14 +4,14 @@
 
 const {assert} = chai;
 
-import * as Common from '../../../../front_end/common/common.js';
-import type * as SDKModule from '../../../../front_end/sdk/sdk.js';
+import * as Common from '../../../../front_end/core/common/common.js';
+import type * as SDKModule from '../../../../front_end/core/sdk/sdk.js';
 import {describeWithEnvironment} from '../helpers/EnvironmentHelpers.js';
 
 describeWithEnvironment('OverlayColorGenerator', () => {
   let SDK: typeof SDKModule;
   before(async () => {
-    SDK = await import('../../../../front_end/sdk/sdk.js');
+    SDK = await import('../../../../front_end/core/sdk/sdk.js');
   });
 
   const mockModel = {
@@ -28,6 +28,7 @@ describeWithEnvironment('OverlayColorGenerator', () => {
           return {
             invoke_setShowGridOverlays() {},
             invoke_setShowFlexOverlays() {},
+            invoke_setShowScrollSnapOverlays() {},
           };
         },
       };
@@ -55,5 +56,16 @@ describeWithEnvironment('OverlayColorGenerator', () => {
     assert(highlighter.colorOfGrid(nodeId) instanceof Common.Color.Color);
     highlighter.hideGridInOverlay(nodeId);
     assert(!highlighter.isGridHighlighted(nodeId));
+  });
+
+  it('is able to highlight scroll snal elements', () => {
+    const highlighter = new SDK.OverlayPersistentHighlighter.OverlayPersistentHighlighter(mockModel);
+    const nodeId = 1;
+    highlighter.highlightScrollSnapInOverlay(nodeId);
+    assert(highlighter.isScrollSnapHighlighted(nodeId));
+    assert(!highlighter.isFlexHighlighted(nodeId));
+    assert(!highlighter.isGridHighlighted(nodeId));
+    highlighter.hideScrollSnapInOverlay(nodeId);
+    assert(!highlighter.isScrollSnapHighlighted(nodeId));
   });
 });

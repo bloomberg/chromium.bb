@@ -16,12 +16,12 @@
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/ash/lock_screen_apps/state_controller.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
-#include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
 #include "chrome/browser/ui/ash/assistant/assistant_client_impl.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -34,9 +34,10 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
+#include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -75,7 +76,8 @@ class ScreenLockerUnitTest : public testing::Test {
     BiodClient::InitializeFake();
     CrasAudioClient::InitializeFake();
     TpmManagerClient::InitializeFake();
-    CryptohomeClient::InitializeFake();
+    CryptohomeMiscClient::InitializeFake();
+    UserDataAuthClient::InitializeFake();
 
     // MojoSystemInfoDispatcher dependency:
     bluez::BluezDBusManager::GetSetterForTesting();
@@ -138,7 +140,8 @@ class ScreenLockerUnitTest : public testing::Test {
     session_controller_client_.reset();
     LoginState::Shutdown();
     bluez::BluezDBusManager::Shutdown();
-    CryptohomeClient::Shutdown();
+    UserDataAuthClient::Shutdown();
+    CryptohomeMiscClient::Shutdown();
     TpmManagerClient::Shutdown();
     CrasAudioClient::Shutdown();
     BiodClient::Shutdown();

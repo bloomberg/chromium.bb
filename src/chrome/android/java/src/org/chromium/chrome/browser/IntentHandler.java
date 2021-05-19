@@ -136,6 +136,12 @@ public class IntentHandler {
     private static final String TRUSTED_APPLICATION_CODE_EXTRA = "trusted_application_code_extra";
 
     /**
+     * Intent extra used to deliver the original activity referrer.
+     */
+    public static final String EXTRA_ACTIVITY_REFERRER =
+            "org.chromium.chrome.browser.activity_referrer";
+
+    /**
      * A referrer id used for Chrome to Chrome referrer passing.
      */
     public static final String EXTRA_REFERRER_ID = "org.chromium.chrome.browser.referrer_id";
@@ -197,6 +203,13 @@ public class IntentHandler {
      **/
     public static final String EXTRA_INCOGNITO_CCT_CALLER_ID =
             "org.chromium.chrome.browser.customtabs.EXTRA_INCOGNITO_CCT_CALLER_ID";
+
+    /**
+     * A boolean to indicate whether the ChromeTabbedActivity task was started by this Intent. Only
+     * used for external View intents.
+     */
+    public static final String EXTRA_STARTED_TABBED_CHROME_TASK =
+            "org.chromium.chrome.browser.started_chrome_task";
 
     /**
      * Fake ComponentName used in constructing TRUSTED_APPLICATION_CODE_EXTRA.
@@ -268,7 +281,8 @@ public class IntentHandler {
      * When removing items, comment them out and keep existing numeric values stable.
      */
     @IntDef({IncognitoCCTCallerId.OTHER_APPS, IncognitoCCTCallerId.GOOGLE_APPS,
-            IncognitoCCTCallerId.OTHER_CHROME_FEATURES, IncognitoCCTCallerId.READER_MODE})
+            IncognitoCCTCallerId.OTHER_CHROME_FEATURES, IncognitoCCTCallerId.READER_MODE,
+            IncognitoCCTCallerId.READ_LATER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface IncognitoCCTCallerId {
         int OTHER_APPS = 0;
@@ -280,9 +294,10 @@ public class IntentHandler {
 
         // Chrome Features
         int READER_MODE = 3;
+        int READ_LATER = 4;
 
         // Update {@link IncognitoCCTCallerId} in enums.xml when adding new items.
-        int NUM_ENTRIES = 4;
+        int NUM_ENTRIES = 5;
     }
 
     private static ComponentName getFakeComponentName(String packageName) {
@@ -598,7 +613,7 @@ public class IntentHandler {
         if (isValidReferrerHeader(referrerExtra)) {
             return referrerExtra.toString();
         } else if (IntentHandler.notSecureIsIntentChromeOrFirstParty(intent)
-                || ChromeApplication.getComponent()
+                || ChromeApplicationImpl.getComponent()
                            .resolveSessionDataHolder()
                            .canActiveHandlerUseReferrer(customTabsSession, referrerExtra)) {
             return referrerExtra.toString();
@@ -1525,6 +1540,33 @@ public class IntentHandler {
     public static int getTabId(@Nullable Intent intent) {
         if (!wasIntentSenderChrome(intent)) return Tab.INVALID_TAB_ID;
         return IntentUtils.safeGetIntExtra(intent, EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
+    }
+
+    /**
+     * Handles an inconsistency in the Android platform, where if an Activity finishes itself, then
+     * is resumed from recents, it's re-launched with the original intent that launched the activity
+     * initially.
+     *
+     * @return the provided intent, if the intent is not from Android Recents. Otherwise, rewrites
+     *         the intent to be a consistent MAIN intent from recents.
+     */
+    public static Intent rewriteFromHistoryIntent(Intent intent) {
+        // When a self-finished Activity is created from recents, Android launches it with its
+        // original base intent (with FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY added). This can lead
+        // to duplicating actions when launched from recents, like re-launching tabs, or firing
+        // additional app redirects, etc.
+        // Instead of teaching all of Chrome about this, just make intents consistent when Chrome is
+        // created from recents.
+        if (0 != (intent.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)) {
+            Intent newIntent = new Intent(Intent.ACTION_MAIN);
+            // Make sure to carry over the FROM_HISTORY flag to avoid confusing metrics.
+            newIntent.setFlags(intent.getFlags());
+            newIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+            newIntent.setComponent(intent.getComponent());
+            newIntent.setPackage(intent.getPackage());
+            return newIntent;
+        }
+        return intent;
     }
 
     /**

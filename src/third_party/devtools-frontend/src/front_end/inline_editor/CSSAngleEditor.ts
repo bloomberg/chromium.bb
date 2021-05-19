@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
 import * as ComponentHelpers from '../component_helpers/component_helpers.js';
+import * as Common from '../core/common/common.js';
 import * as LitHtml from '../third_party/lit-html/lit-html.js';
 
 import {Angle, AngleUnit, get2DTranslationsForAngle, getAngleFromRadians, getNewAngleFromEvent, getRadiansFromAngle} from './CSSAngleUtils.js';
@@ -30,6 +30,7 @@ export class CSSAngleEditor extends HTMLElement {
   private clockRadius = 77 / 2;  // By default the clock is 77 * 77.
   private dialTemplates?: LitHtml.TemplateResult[];
   private mousemoveThrottler = new Common.Throttler.Throttler(16.67 /* 60fps */);
+  private mousemoveListener = this.onMousemove.bind(this);
 
   connectedCallback(): void {
     ComponentHelpers.SetCSSProperty.set(this, '--clock-dial-length', `${CLOCK_DIAL_LENGTH}px`);
@@ -67,13 +68,25 @@ export class CSSAngleEditor extends HTMLElement {
   private onEditorMousedown(event: MouseEvent): void {
     event.stopPropagation();
     this.updateAngleFromMousePosition(event.pageX, event.pageY, event.shiftKey);
+    const targetDocument = event.target instanceof Node && event.target.ownerDocument;
+    const editor = this.shadow.querySelector<HTMLElement>('.editor');
+    if (targetDocument && editor) {
+      targetDocument.addEventListener('mousemove', this.mousemoveListener, {capture: true});
+      editor.classList.add('interacting');
+      targetDocument.addEventListener('mouseup', () => {
+        targetDocument.removeEventListener('mousemove', this.mousemoveListener, {capture: true});
+        editor.classList.remove('interacting');
+      }, {once: true});
+    }
   }
 
-  private onEditorMousemove(event: MouseEvent): void {
+  private onMousemove(event: MouseEvent): void {
     const isPressed = event.buttons === 1;
     if (!isPressed) {
       return;
     }
+
+    event.preventDefault();
 
     this.mousemoveThrottler.schedule(() => {
       this.updateAngleFromMousePosition(event.pageX, event.pageY, event.shiftKey);
@@ -108,6 +121,12 @@ export class CSSAngleEditor extends HTMLElement {
     // clang-format off
     render(html`
       <style>
+        .editor.interacting::before {
+          content: '';
+          position: fixed;
+          inset: 0;
+        }
+
         .clock,
         .pointer,
         .center,
@@ -144,7 +163,8 @@ export class CSSAngleEditor extends HTMLElement {
           height: 0;
           border-style: solid;
           border-width: 0 0.9em 0.9em 0.9em;
-          border-color: transparent transparent var(--border-color) transparent;
+          border-color: transparent transparent var(--border-color) transparent; /* stylelint-disable-line plugin/use_theme_colors */
+          /* See: crbug.com/1152736 for color variable migration. */
         }
 
         .center,
@@ -185,7 +205,7 @@ export class CSSAngleEditor extends HTMLElement {
           left: -0.35em;
           width: 1em;
           height: 1em;
-          border-radius: 1em;
+          border-radius: 50%;
           cursor: pointer;
           box-shadow: 0 0 5px hsl(0deg 0% 0% / 30%); /* stylelint-disable-line plugin/use_theme_colors */
           /* See: crbug.com/1152736 for color variable migration. */
@@ -216,7 +236,6 @@ export class CSSAngleEditor extends HTMLElement {
           class="clock"
           style=${styleMap(clockStyles)}
           @mousedown=${this.onEditorMousedown}
-          @mousemove=${this.onEditorMousemove}
           @wheel=${this.onEditorWheel}>
           ${this.renderDials()}
           <div class="hand" style=${styleMap(handStyles)}></div>

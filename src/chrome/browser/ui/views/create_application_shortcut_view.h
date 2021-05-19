@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_CREATE_APPLICATION_SHORTCUT_VIEW_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -50,14 +50,14 @@ class CreateChromeApplicationShortcutView : public views::DialogDelegateView {
   // DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  base::string16 GetWindowTitle() const override;
+  std::u16string GetWindowTitle() const override;
 
  private:
   CreateChromeApplicationShortcutView(Profile* profile,
                                       base::OnceCallback<void(bool)> cb);
 
   // Creates a new check-box with the given text and checked state.
-  std::unique_ptr<views::Checkbox> AddCheckbox(const base::string16& text,
+  std::unique_ptr<views::Checkbox> AddCheckbox(const std::u16string& text,
                                                const std::string& pref_path);
 
   void CheckboxPressed(std::string pref_path, views::Checkbox* checkbox);

@@ -81,12 +81,15 @@ class FakePeripheral : public device::BluetoothDevice {
   uint16_t GetDeviceID() const override;
   uint16_t GetAppearance() const override;
   base::Optional<std::string> GetName() const override;
-  base::string16 GetNameForDisplay() const override;
+  std::u16string GetNameForDisplay() const override;
   bool IsPaired() const override;
   bool IsConnected() const override;
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
   bool IsConnecting() const override;
+#if defined(OS_CHROMEOS)
+  bool IsBlockedByPolicy() const override;
+#endif
   bool ExpectingPinCode() const override;
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;

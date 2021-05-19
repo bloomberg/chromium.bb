@@ -30,7 +30,6 @@
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsRenderPass.h"
 #include "src/gpu/GrPipeline.h"
-#include "src/gpu/GrPrimitiveProcessor.h"
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrProcessorSet.h"
 #include "src/gpu/GrProgramInfo.h"
@@ -44,7 +43,6 @@
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
-#include "src/gpu/glsl/GrGLSLPrimitiveProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/ops/GrDrawOp.h"
 #include "src/gpu/ops/GrOp.h"
@@ -89,7 +87,7 @@ public:
         b->add32(fReadSkFragCoord);
     }
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const final;
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const final;
 
     bool readSkFragCoord() const { return fReadSkFragCoord; }
 
@@ -106,26 +104,26 @@ private:
 };
 
 class GLSLClockwiseTestProcessor : public GrGLSLGeometryProcessor {
-    void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor&) override {}
+    void setData(const GrGLSLProgramDataManager&, const GrGeometryProcessor&) override {}
 
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-        const ClockwiseTestProcessor& proc = args.fGP.cast<ClockwiseTestProcessor>();
+        const ClockwiseTestProcessor& proc = args.fGeomProc.cast<ClockwiseTestProcessor>();
         args.fVaryingHandler->emitAttributes(proc);
         gpArgs->fPositionVar.set(kFloat2_GrSLType, "position");
         args.fFragBuilder->codeAppendf(
-                "%s = sk_Clockwise ? half4(0,1,0,1) : half4(1,0,0,1);", args.fOutputColor);
+                "half4 %s = sk_Clockwise ? half4(0,1,0,1) : half4(1,0,0,1);",
+                args.fOutputColor);
         if (!proc.readSkFragCoord()) {
-            args.fFragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+            args.fFragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
         } else {
             // Verify layout(origin_upper_left) on gl_FragCoord does not affect gl_FrontFacing.
-            args.fFragBuilder->codeAppendf("%s = half4(min(half(sk_FragCoord.y), 1));",
+            args.fFragBuilder->codeAppendf("half4 %s = half4(min(half(sk_FragCoord.y), 1));",
                                            args.fOutputCoverage);
         }
     }
 };
 
-GrGLSLPrimitiveProcessor* ClockwiseTestProcessor::createGLSLInstance(
-        const GrShaderCaps&) const {
+GrGLSLGeometryProcessor* ClockwiseTestProcessor::createGLSLInstance(const GrShaderCaps&) const {
     return new GLSLClockwiseTestProcessor;
 }
 
@@ -229,10 +227,10 @@ private:
     const bool      fReadSkFragCoord;
     const float     fY;
 
-    // The program info (and both the GrPipeline and GrPrimitiveProcessor it relies on), when
+    // The program info (and both the GrPipeline and GrGeometryProcessor it relies on), when
     // allocated, are allocated in either the ddl-record-time or flush-time arena. It is the
     // arena's job to free up their memory so we just have a bare programInfo pointer here. We
-    // don't even store the GrPipeline and GrPrimitiveProcessor pointers here bc they are
+    // don't even store the GrPipeline and GrGeometryProcessor pointers here bc they are
     // guaranteed to have the same lifetime as the program info.
     GrProgramInfo*  fProgramInfo = nullptr;
 

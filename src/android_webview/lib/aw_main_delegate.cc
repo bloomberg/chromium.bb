@@ -40,6 +40,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/metrics/unsent_log_store_metrics.h"
+#include "components/power_scheduler/power_scheduler.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
@@ -52,7 +53,6 @@
 #include "content/public/common/content_descriptor_keys.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/cpu_affinity.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/v8_initializer.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -143,6 +143,12 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // isn't much point in having the crash dumps there.
   cl->AppendSwitch(switches::kDisableOoprDebugCrashDump);
 
+  // Disable BackForwardCache for Android WebView as it is not supported.
+  // WebView-specific code hasn't been audited and fixed to ensure compliance
+  // with the changed API contracts around new navigation types and changes to
+  // the document lifecycle.
+  cl->AppendSwitch(switches::kDisableBackForwardCache);
+
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).
 
@@ -189,19 +195,13 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       features.EnableIfNotSet(autofill::features::kAutofillExtractAllDatalists);
       features.EnableIfNotSet(
           autofill::features::kAutofillSkipComparingInferredLabels);
-      features.DisableIfNotSet(
-          autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
     }
 
     if (cl->HasSwitch(switches::kWebViewLogJsConsoleMessages)) {
       features.EnableIfNotSet(::features::kLogJsConsoleMessages);
     }
 
-    if (cl->HasSwitch(switches::kWebViewDrawFunctorUsesVulkan)) {
-      // When draw functor uses vulkan, assume that it is safe to enable viz
-      // which depends on shared images.
-      features.EnableIfNotSet(::features::kEnableSharedImageForWebview);
-    } else {
+    if (!cl->HasSwitch(switches::kWebViewDrawFunctorUsesVulkan)) {
       // Not use ANGLE's Vulkan backend, if the draw functor is not using
       // Vulkan.
       features.DisableIfNotSet(::features::kDefaultANGLEVulkan);
@@ -390,13 +390,21 @@ void AwMainDelegate::PostFieldTrialInitialization() {
   ALLOW_UNUSED_LOCAL(is_canary_dev);
   ALLOW_UNUSED_LOCAL(is_browser_process);
 
-  // Enable LITTLE-cores only mode if the feature is enabled, but only for child
-  // processes, as the browser process is shared with the hosting app.
-  if (!is_browser_process &&
-      base::FeatureList::IsEnabled(
-          android_webview::features::
-              kWebViewCpuAffinityRestrictToLittleCores)) {
-    content::EnforceProcessCpuAffinity(base::CpuAffinityMode::kLittleCoresOnly);
+  // Enable LITTLE-cores only mode/idle power mode throttling if the features
+  // are enabled, but only for child processes, as the browser process is shared
+  // with the hosting app.
+  if (!is_browser_process) {
+    if (base::FeatureList::IsEnabled(
+            android_webview::features::
+                kWebViewCpuAffinityRestrictToLittleCores)) {
+      power_scheduler::PowerScheduler::GetInstance()->SetPolicy(
+          power_scheduler::SchedulingPolicy::kLittleCoresOnly);
+    } else if (base::FeatureList::IsEnabled(
+                   android_webview::features::
+                       kWebViewPowerSchedulerThrottleIdle)) {
+      power_scheduler::PowerScheduler::GetInstance()->SetPolicy(
+          power_scheduler::SchedulingPolicy::kThrottleIdle);
+    }
   }
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
@@ -430,11 +438,7 @@ gpu::SyncPointManager* GetSyncPointManager() {
 
 gpu::SharedImageManager* GetSharedImageManager() {
   DCHECK(GpuServiceWebView::GetInstance());
-  const bool enable_shared_image =
-      base::FeatureList::IsEnabled(::features::kEnableSharedImageForWebview);
-  return enable_shared_image
-             ? GpuServiceWebView::GetInstance()->shared_image_manager()
-             : nullptr;
+  return GpuServiceWebView::GetInstance()->shared_image_manager();
 }
 
 viz::VizCompositorThreadRunner* GetVizCompositorThreadRunner() {

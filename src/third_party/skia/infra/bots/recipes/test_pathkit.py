@@ -8,6 +8,8 @@ DEPS = [
   'checkout',
   'docker',
   'env',
+  'flavor',
+  'gold_upload',
   'infra',
   'recipe_engine/file',
   'recipe_engine/path',
@@ -19,12 +21,13 @@ DEPS = [
 ]
 
 
-DOCKER_IMAGE = 'gcr.io/skia-public/gold-karma-chrome-tests:87.0.4280.88_v1'
+DOCKER_IMAGE = 'gcr.io/skia-public/gold-karma-chrome-tests:87.0.4280.88_v2'
 INNER_KARMA_SCRIPT = 'skia/infra/pathkit/test_pathkit.sh'
 
 
 def RunSteps(api):
   api.vars.setup()
+  api.flavor.setup("dm")
   checkout_root = api.path['start_dir']
   out_dir = api.vars.swarming_out_dir
 
@@ -61,8 +64,6 @@ def RunSteps(api):
     '--builder',              api.vars.builder_name,
     '--git_hash',             api.properties['revision'],
     '--buildbucket_build_id', api.properties.get('buildbucket_build_id', ''),
-    '--bot_id',               api.vars.swarming_bot_id,
-    '--task_id',              api.vars.swarming_task_id,
     '--browser',              'Chrome',
     '--config',               api.vars.configuration,
     '--source_type',          'pathkit',
@@ -88,6 +89,8 @@ def RunSteps(api):
       attempts=3,
   )
 
+  api.gold_upload.upload()
+
 
 def GenTests(api):
   yield (
@@ -96,6 +99,7 @@ def GenTests(api):
                                   '-wasm-Debug-All-PathKit'),
                      repository='https://skia.googlesource.com/skia.git',
                      revision='abc123',
+                     gs_bucket='skia-infra-gm',
                      path_config='kitchen',
                      swarm_out_dir='[SWARM_OUT_DIR]')
   )
@@ -106,6 +110,7 @@ def GenTests(api):
                                   '-asmjs-Debug-All-PathKit'),
                      repository='https://skia.googlesource.com/skia.git',
                      revision='abc123',
+                     gs_bucket='skia-infra-gm',
                      path_config='kitchen',
                      swarm_out_dir='[SWARM_OUT_DIR]')
   )
@@ -116,6 +121,7 @@ def GenTests(api):
                                   '-asmjs-Release-All-PathKit'),
                      repository='https://skia.googlesource.com/skia.git',
                      revision='abc123',
+                     gs_bucket='skia-infra-gm',
                      path_config='kitchen',
                      swarm_out_dir='[SWARM_OUT_DIR]')
   )
@@ -126,6 +132,7 @@ def GenTests(api):
                                   '-wasm-Debug-All-PathKit'),
                      repository='https://skia.googlesource.com/skia.git',
                      revision='abc123',
+                     gs_bucket='skia-infra-gm',
                      path_config='kitchen',
                      swarm_out_dir='[SWARM_OUT_DIR]',
                      patch_ref='89/456789/12',

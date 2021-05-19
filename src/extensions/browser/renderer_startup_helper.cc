@@ -42,23 +42,6 @@ namespace extensions {
 
 namespace {
 
-// Returns whether the |extension| should be loaded in the given
-// |browser_context|.
-bool IsExtensionVisibleToContext(const Extension& extension,
-                                 content::BrowserContext* browser_context) {
-  // Renderers don't need to know about themes.
-  if (extension.is_theme())
-    return false;
-
-  // Only extensions enabled in incognito mode should be loaded in an incognito
-  // renderer. However extensions which can't be enabled in the incognito mode
-  // (e.g. platform apps) should also be loaded in an incognito renderer to
-  // ensure connections from incognito tabs to such extensions work.
-  return !browser_context->IsOffTheRecord() ||
-         !util::CanBeIncognitoEnabled(&extension) ||
-         util::IsIncognitoEnabled(extension.id(), browser_context);
-}
-
 // Returns the current ActivationSequence of |extension| if the extension is
 // Service Worker-based, otherwise returns base::nullopt.
 base::Optional<ActivationSequence> GetWorkerActivationSequence(
@@ -132,7 +115,7 @@ void RendererStartupHelper::InitializeProcess(
   // Scripting allowlist. This is modified by tests and must be communicated
   // to renderers.
   renderer->SetScriptingAllowlist(
-      extensions::ExtensionsClient::Get()->GetScriptingAllowlist());
+      ExtensionsClient::Get()->GetScriptingAllowlist());
 
   // If the new render process is a WebView guest process, propagate the WebView
   // partition ID to it.
@@ -159,7 +142,7 @@ void RendererStartupHelper::InitializeProcess(
     DCHECK(base::Contains(extension_process_map_, ext->id()));
     DCHECK(!base::Contains(extension_process_map_[ext->id()], process));
 
-    if (!IsExtensionVisibleToContext(*ext, renderer_context))
+    if (!util::IsExtensionVisibleToContext(*ext, renderer_context))
       continue;
 
     // TODO(kalman): Only include tab specific permissions for extension
@@ -218,7 +201,8 @@ void RendererStartupHelper::ActivateExtensionInProcess(
 #endif
   }
 
-  if (!IsExtensionVisibleToContext(extension, process->GetBrowserContext()))
+  if (!util::IsExtensionVisibleToContext(extension,
+                                         process->GetBrowserContext()))
     return;
 
   // Populate NetworkContext's OriginAccessList for this extension.
@@ -234,10 +218,8 @@ void RendererStartupHelper::ActivateExtensionInProcess(
   // Browser-side ordering will be replicated within the NetworkService because
   // SetCorsOriginAccessListsForOrigin and CreateURLLoaderFactory are 2 methods
   // of the same mojom::NetworkContext interface).
-  util::SetCorsOriginAccessListForExtension(
-      process->GetBrowserContext(), extension,
-      content::BrowserContext::TargetBrowserContexts::kSingleContext,
-      base::DoNothing::Once());
+  util::SetCorsOriginAccessListForExtension({process->GetBrowserContext()},
+                                            extension, base::DoNothing::Once());
 
   auto remote = process_mojo_map_.find(process);
   if (remote != process_mojo_map_.end()) {
@@ -259,8 +241,8 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
   std::set<content::RenderProcessHost*>& loaded_process_set =
       extension_process_map_[extension.id()];
 
-  // IsExtensionVisibleToContext() would filter out themes, but we choose to
-  // return early for performance reasons.
+  // util::IsExtensionVisibleToContext() would filter out themes, but we choose
+  // to return early for performance reasons.
   if (extension.is_theme())
     return;
 
@@ -274,7 +256,8 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
 
   for (auto& process_entry : process_mojo_map_) {
     content::RenderProcessHost* process = process_entry.first;
-    if (!IsExtensionVisibleToContext(extension, process->GetBrowserContext()))
+    if (!util::IsExtensionVisibleToContext(extension,
+                                           process->GetBrowserContext()))
       continue;
     process->Send(new ExtensionMsg_Loaded(params));
     loaded_process_set.insert(process);
@@ -297,10 +280,7 @@ void RendererStartupHelper::OnExtensionUnloaded(const Extension& extension) {
   }
 
   // Resets registered origin access lists in the BrowserContext asynchronously.
-  util::ResetCorsOriginAccessListForExtension(
-      browser_context_, extension,
-
-      content::BrowserContext::TargetBrowserContexts::kSingleContext);
+  util::ResetCorsOriginAccessListForExtension(browser_context_, extension);
 
   for (auto& process_extensions_pair : pending_active_extensions_)
     process_extensions_pair.second.erase(extension.id());

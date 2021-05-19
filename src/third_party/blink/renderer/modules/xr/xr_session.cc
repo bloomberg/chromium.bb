@@ -567,7 +567,7 @@ ScriptPromise XRSession::requestReferenceSpace(
     ScriptState* script_state,
     const String& type,
     ExceptionState& exception_state) {
-  DVLOG(2) << __func__;
+  DVLOG(2) << __func__ << ": type=" << type;
 
   if (ended_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -577,9 +577,6 @@ ScriptPromise XRSession::requestReferenceSpace(
 
   device::mojom::blink::XRReferenceSpaceType requested_type =
       XRReferenceSpace::StringToReferenceSpaceType(type);
-
-  UMA_HISTOGRAM_ENUMERATION("XR.WebXR.ReferenceSpace.Requested",
-                            requested_type);
 
   if (sensorless_session_ &&
       requested_type != device::mojom::blink::XRReferenceSpaceType::kViewer) {
@@ -603,6 +600,7 @@ ScriptPromise XRSession::requestReferenceSpace(
   }
 
   if (!IsFeatureEnabled(type_as_feature.value())) {
+    DVLOG(2) << __func__ << ": feature not enabled, type=" << type;
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       kReferenceSpaceNotSupported);
     return ScriptPromise();
@@ -656,6 +654,7 @@ ScriptPromise XRSession::CreateAnchorHelper(
     const blink::TransformationMatrix& native_origin_from_anchor,
     const device::mojom::blink::XRNativeOriginInformation&
         native_origin_information,
+    base::Optional<uint64_t> maybe_plane_id,
     ExceptionState& exception_state) {
   DVLOG(2) << __func__;
 
@@ -690,61 +689,19 @@ ScriptPromise XRSession::CreateAnchorHelper(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  xr_->xrEnvironmentProviderRemote()->CreateAnchor(
-      native_origin_information.Clone(), *maybe_native_origin_from_anchor_pose,
-      WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
-                WrapPersistent(resolver)));
-
-  create_anchor_promises_.insert(resolver);
-
-  return promise;
-}
-
-ScriptPromise XRSession::CreatePlaneAnchorHelper(
-    ScriptState* script_state,
-    const blink::TransformationMatrix& native_origin_from_anchor,
-    const device::mojom::blink::XRNativeOriginInformation&
-        native_origin_information,
-    uint64_t plane_id,
-    ExceptionState& exception_state) {
-  DVLOG(2) << __func__ << ", plane_id=" << plane_id;
-
-  if (ended_) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kSessionEnded);
-    return ScriptPromise();
+  if (maybe_plane_id) {
+    xr_->xrEnvironmentProviderRemote()->CreatePlaneAnchor(
+        native_origin_information.Clone(),
+        *maybe_native_origin_from_anchor_pose, *maybe_plane_id,
+        WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
+                  WrapPersistent(resolver)));
+  } else {
+    xr_->xrEnvironmentProviderRemote()->CreateAnchor(
+        native_origin_information.Clone(),
+        *maybe_native_origin_from_anchor_pose,
+        WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
+                  WrapPersistent(resolver)));
   }
-
-  // Reject the promise if device doesn't support the anchors API.
-  if (!xr_->xrEnvironmentProviderRemote()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kAnchorsNotSupportedByDevice);
-    return ScriptPromise();
-  }
-
-  auto maybe_native_origin_from_anchor_pose =
-      CreatePose(native_origin_from_anchor);
-
-  if (!maybe_native_origin_from_anchor_pose) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kUnableToDecomposeMatrix);
-    return ScriptPromise();
-  }
-
-  DVLOG(3) << __func__
-           << ": maybe_native_origin_from_anchor_pose->orientation()= "
-           << maybe_native_origin_from_anchor_pose->orientation().ToString()
-           << ", maybe_native_origin_from_anchor_pose->position()= "
-           << maybe_native_origin_from_anchor_pose->position().ToString();
-
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  xr_->xrEnvironmentProviderRemote()->CreatePlaneAnchor(
-      native_origin_information.Clone(), *maybe_native_origin_from_anchor_pose,
-      plane_id,
-      WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
-                WrapPersistent(resolver)));
 
   create_anchor_promises_.insert(resolver);
 

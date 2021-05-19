@@ -5,7 +5,8 @@
 package org.chromium.content_public.browser.test.mock;
 
 import org.chromium.base.Callback;
-import org.chromium.content_public.browser.FeaturePolicyFeature;
+import org.chromium.content_public.browser.GlobalFrameRoutingId;
+import org.chromium.content_public.browser.PermissionsPolicyFeature;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.mojo.bindings.Interface;
 import org.chromium.url.GURL;
@@ -29,7 +30,7 @@ public class MockRenderFrameHost implements RenderFrameHost {
     public void getCanonicalUrlForSharing(Callback<GURL> callback) {}
 
     @Override
-    public boolean isFeatureEnabled(@FeaturePolicyFeature int feature) {
+    public boolean isFeatureEnabled(@PermissionsPolicyFeature int feature) {
         return false;
     }
 
@@ -75,5 +76,10 @@ public class MockRenderFrameHost implements RenderFrameHost {
     public int performMakeCredentialWebAuthSecurityChecks(
             String relyingPartyId, Origin effectiveOrigin) {
         return 0;
+    }
+
+    @Override
+    public GlobalFrameRoutingId getGlobalFrameRoutingId() {
+        return new GlobalFrameRoutingId(-1, -1);
     }
 }

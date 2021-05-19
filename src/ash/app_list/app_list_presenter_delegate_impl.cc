@@ -4,6 +4,9 @@
 
 #include "ash/app_list/app_list_presenter_delegate_impl.h"
 
+#include <memory>
+#include <utility>
+
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/app_list_util.h"
@@ -28,8 +31,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm/container_finder.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
@@ -93,14 +94,16 @@ void AppListPresenterDelegateImpl::SetPresenter(
   presenter_ = presenter;
 }
 
-void AppListPresenterDelegateImpl::Init(AppListView* view, int64_t display_id) {
+void AppListPresenterDelegateImpl::SetView(AppListView* view) {
+  DCHECK(view);
   view_ = view;
-  view->InitView(controller_->GetContainerForDisplayId(display_id));
 }
 
 void AppListPresenterDelegateImpl::ShowForDisplay(
     AppListViewState preferred_state,
     int64_t display_id) {
+  DCHECK(view_);
+
   is_visible_ = true;
 
   controller_->UpdateLauncherContainer(display_id);
@@ -144,43 +147,6 @@ void AppListPresenterDelegateImpl::OnClosed() {
   if (!is_visible_)
     shelf_observation_.RemoveAllObservations();
   controller_->ViewClosed();
-}
-
-bool AppListPresenterDelegateImpl::IsTabletMode() const {
-  return Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
-
-AppListViewDelegate* AppListPresenterDelegateImpl::GetAppListViewDelegate() {
-  return controller_;
-}
-
-bool AppListPresenterDelegateImpl::GetOnScreenKeyboardShown() {
-  return controller_->onscreen_keyboard_shown();
-}
-
-aura::Window* AppListPresenterDelegateImpl::GetContainerForWindow(
-    aura::Window* window) {
-  return ash::GetContainerForWindow(window);
-}
-
-aura::Window* AppListPresenterDelegateImpl::GetRootWindowForDisplayId(
-    int64_t display_id) {
-  return Shell::Get()->GetRootWindowForDisplayId(display_id);
-}
-
-void AppListPresenterDelegateImpl::OnVisibilityChanged(bool visible,
-                                                       int64_t display_id) {
-  controller_->OnVisibilityChanged(visible, display_id);
-}
-
-void AppListPresenterDelegateImpl::OnVisibilityWillChange(bool visible,
-                                                          int64_t display_id) {
-  controller_->OnVisibilityWillChange(visible, display_id);
-}
-
-bool AppListPresenterDelegateImpl::IsVisible(
-    const base::Optional<int64_t>& display_id) {
-  return controller_->IsVisible(display_id);
 }
 
 void AppListPresenterDelegateImpl::OnDisplayMetricsChanged(
@@ -231,6 +197,11 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
         root_controller->GetContainer(kShellWindowId_VirtualKeyboardContainer);
     if (keyboard_container->Contains(target))
       return;
+
+    aura::Window* settings_bubble_container =
+        root_controller->GetContainer(kShellWindowId_SettingBubbleContainer);
+    if (settings_bubble_container->Contains(target))
+      return;
   }
 
   // If the event happened on the home button's widget, it'll get handled by the
@@ -257,8 +228,14 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
   }
 
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
-  if (!window->Contains(target) && !presenter_->HandleCloseOpenFolder() &&
-      !switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
+  if (window->Contains(target))
+    return;
+  // Try to close an open folder window: return if an open folder view was
+  // closed successfully.
+  if (presenter_->HandleCloseOpenFolder())
+    return;
+
+  if (!Shell::Get()->IsInTabletMode()) {
     // Do not dismiss the app list if the event is targeting shelf area
     // containing app icons.
     if (target == shelf->hotseat_widget()->GetNativeWindow() &&
@@ -268,11 +245,22 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
 
     // Don't dismiss the auto-hide shelf if event happened in status area. Then
     // the event can still be propagated.
-    base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
     const aura::Window* status_window =
         shelf->shelf_widget()->status_area_widget()->GetNativeWindow();
-    if (status_window && status_window->Contains(target))
-      auto_hide_lock.emplace(shelf);
+    if (status_window && status_window->Contains(target)) {
+      auto shelf_visibility_lock =
+          std::make_unique<ShelfLayoutManager::ScopedVisibilityLock>(
+              shelf->shelf_layout_manager());
+
+      // Use a task runner to delete the |shelf_visibility_lock| and update the
+      // shelf visibility after the current event has been handled by the shelf.
+      // This is important for the case where dismissing the app list might hide
+      // the shelf, which would stop the shelf from handling the event.
+      // TODO(crbug.com/1186479): Investigate whether there is a better way to
+      // do this, instead of using a task runner here.
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+          FROM_HERE, std::move(shelf_visibility_lock));
+    }
 
     // Record the current AppListViewState to be used later for metrics. The
     // AppListViewState will change on app launch, so this will record the
@@ -310,7 +298,7 @@ void AppListPresenterDelegateImpl::OnKeyEvent(ui::KeyEvent* event) {
     return;
 
   // If the home launcher is not shown in tablet mode, ignore events.
-  if (IsTabletMode() && !IsVisible(base::nullopt))
+  if (Shell::Get()->IsInTabletMode() && !controller_->IsVisible(base::nullopt))
     return;
 
   // Don't absorb the first event for the search box while it is open

@@ -95,6 +95,8 @@ app.use(morgan('dev'));
 
 // Serve the standalone runner directory
 app.use('/standalone', express.static(path.resolve(srcDir, '../standalone')));
+// Add out-wpt/ build dir for convenience
+app.use('/out-wpt', express.static(path.resolve(srcDir, '../out-wpt')));
 
 // Serve a suite's listing.js file by crawling the filesystem for all tests.
 app.get('/out/:suite/listing.js', async (req, res, next) => {
@@ -165,3 +167,6 @@ portfinder.getPort({ host, port }, (err, port) => {
     });
   });
 });
+
+// Serve everything else (not .js) as static, and directories as directory listings.
+app.use('/out', express.static(path.resolve(srcDir, '../src')));

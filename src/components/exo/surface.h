@@ -62,6 +62,10 @@ enum class Transform { NORMAL, ROTATE_90, ROTATE_180, ROTATE_270 };
 // A property key to store the surface Id set by the client.
 extern const ui::ClassProperty<std::string*>* const kClientSurfaceIdKey;
 
+// A property key to store the window session Id set by client or full_restore
+// component.
+extern const ui::ClassProperty<int32_t>* const kWindowSessionId;
+
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
 class Surface final : public ui::PropertyHandler {
@@ -310,6 +314,11 @@ class Surface final : public ui::PropertyHandler {
   // Triggers sending an occlusion update to observers.
   void OnWindowOcclusionChanged();
 
+  // Triggers sending a locking status to observers.
+  // true : lock a frame to normal or restore state
+  // false : unlock the previously locked frame
+  void SetFrameLocked(bool lock);
+
   // True if the window for this surface has its occlusion tracked.
   bool IsTrackingOcclusion();
 
@@ -318,6 +327,11 @@ class Surface final : public ui::PropertyHandler {
 
   // Requests that this surface should be made active (i.e. foregrounded).
   void RequestActivation();
+
+  // Requests that surface my have a window session ID assigned by client or
+  // full_restore component.
+  void SetWindowSessionId(int32_t window_session_id);
+  int32_t GetWindowSessionId();
 
  private:
   struct State {

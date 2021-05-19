@@ -209,7 +209,6 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     DCHECK(version_);
 
     // Dummy values.
-    int routing_id = 0;
     int request_id = 10;
     uint32_t options = 0;
     int64_t resource_id = GetNewResourceIdSync(context()->GetStorageControl());
@@ -224,10 +223,10 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
 
     *out_client = std::make_unique<network::TestURLLoaderClient>();
     *out_loader = ServiceWorkerNewScriptLoader::CreateAndStart(
-        routing_id, request_id, options, request, (*out_client)->CreateRemote(),
-        version_, helper_->url_loader_factory_getter()->GetNetworkFactory(),
+        request_id, options, request, (*out_client)->CreateRemote(), version_,
+        helper_->url_loader_factory_getter()->GetNetworkFactory(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        resource_id);
+        resource_id, /*is_throttle_needed=*/false);
   }
 
   // Returns false if the entry for |url| doesn't exist in the storage.

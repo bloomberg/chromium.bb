@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 (async function() {
   TestRunner.addResult('Tests accessibility in the Storage view using the axe-core linter.');
-  await TestRunner.loadModule('application_test_runner');
-  await TestRunner.loadModule('axe_core_test_runner');
+  await TestRunner.loadTestModule('application_test_runner');
+  await TestRunner.loadTestModule('axe_core_test_runner');
   await ApplicationTestRunner.resetState();
   await TestRunner.showPanel('resources');
   await UI.viewManager.showView('resources');
 
   const parent = UI.panels.resources._sidebar._applicationTreeElement;
-  const storageElement = parent.children().find(child => child.title === ls`Storage`);
+  const storageElement = parent.children().find(child => child.title === 'Storage');
   storageElement.select();
   const storageView = UI.panels.resources.visibleView;
   TestRunner.addResult('Storage view is visible: ' + ApplicationTestRunner.isStorageView(storageView));

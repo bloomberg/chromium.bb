@@ -24,6 +24,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -37,28 +38,28 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
+#include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/ash/login/test/js_checker.h"
+#include "chrome/browser/ash/login/test/kiosk_test_helpers.h"
+#include "chrome/browser/ash/login/test/local_state_mixin.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
+#include "chrome/browser/ash/login/test/network_portal_detector_mixin.h"
+#include "chrome/browser/ash/login/test/oobe_base_test.h"
+#include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/test/oobe_window_visibility_waiter.h"
+#include "chrome/browser/ash/login/test/test_condition_waiter.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/login_display_host_webui.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
-#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/kiosk_test_helpers.h"
-#include "chrome/browser/chromeos/login/test/local_state_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/test/oobe_window_visibility_waiter.h"
-#include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
@@ -70,7 +71,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -88,7 +89,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/tpm/stub_install_attributes.h"
@@ -126,6 +126,8 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/events/test/event_generator.h"
+
+using extensions::mojom::ManifestLocation;
 
 namespace em = enterprise_management;
 
@@ -618,7 +620,7 @@ class KioskTest : public OobeBaseTest {
     return GetInstalledApp()->version();
   }
 
-  extensions::Manifest::Location GetInstalledAppLocation() {
+  ManifestLocation GetInstalledAppLocation() {
     return GetInstalledApp()->location();
   }
 
@@ -879,7 +881,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, InstallAndLaunchApp) {
   KioskAppManager::App app;
   ASSERT_TRUE(KioskAppManager::Get()->GetApp(test_app_id(), &app));
   EXPECT_FALSE(app.was_auto_launched_with_zero_delay);
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
+  EXPECT_EQ(ManifestLocation::kExternalPref, GetInstalledAppLocation());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest,
@@ -1008,12 +1010,12 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, NotSignedInWithGAIAAccount) {
   StartAppLaunchFromLoginScreen(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
   WaitForAppLaunchSuccess();
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
+  EXPECT_EQ(ManifestLocation::kExternalPref, GetInstalledAppLocation());
 
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
   ASSERT_TRUE(app_profile);
   EXPECT_FALSE(IdentityManagerFactory::GetForProfile(app_profile)
-                   ->HasPrimaryAccount(signin::ConsentLevel::kNotRequired));
+                   ->HasPrimaryAccount(signin::ConsentLevel::kSignin));
 }
 
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, PRE_LaunchAppNetworkDown) {
@@ -1183,7 +1185,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningConfirm) {
   KioskAppManager::App app;
   ASSERT_TRUE(KioskAppManager::Get()->GetApp(test_app_id(), &app));
   EXPECT_TRUE(app.was_auto_launched_with_zero_delay);
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
+  EXPECT_EQ(ManifestLocation::kExternalPref, GetInstalledAppLocation());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
@@ -1957,7 +1959,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
+  EXPECT_EQ(ManifestLocation::kExternalPref, GetInstalledAppLocation());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
@@ -1977,7 +1979,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
+  EXPECT_EQ(ManifestLocation::kExternalPref, GetInstalledAppLocation());
 }
 
 // Network offline, app v1.0 has run before, has cached v2.0 crx and v2.0 should
@@ -2005,7 +2007,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
 
   // v2 app should have been installed.
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
+  EXPECT_EQ(ManifestLocation::kExternalPref, GetInstalledAppLocation());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchOfflineEnabledAppNoUpdate) {
@@ -2022,7 +2024,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
+  EXPECT_EQ(ManifestLocation::kExternalPref, GetInstalledAppLocation());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchOfflineEnabledAppHasUpdate) {
@@ -2040,7 +2042,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
+  EXPECT_EQ(ManifestLocation::kExternalPref, GetInstalledAppLocation());
 }
 
 // Pre-cache v1 kiosk app, then launch the app without network,
@@ -2557,7 +2559,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
   // Check installer status.
   EXPECT_EQ(chromeos::KioskAppLaunchError::Error::kNone,
             chromeos::KioskAppLaunchError::Get());
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_POLICY, GetInstalledAppLocation());
+  EXPECT_EQ(ManifestLocation::kExternalPolicy, GetInstalledAppLocation());
 
   // Wait for the window to appear.
   extensions::AppWindow* window =
@@ -2583,7 +2585,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
   ASSERT_TRUE(app_profile);
   EXPECT_FALSE(IdentityManagerFactory::GetForProfile(app_profile)
-                   ->HasPrimaryAccount(signin::ConsentLevel::kNotRequired));
+                   ->HasPrimaryAccount(signin::ConsentLevel::kSignin));
 
   // Terminate the app.
   window->GetBaseWindow()->Close();
@@ -2627,7 +2629,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
   // Private store should serve crx and CWS should not.
   DCHECK_GT(private_store.GetUpdateCheckCountAndReset(), 0);
   DCHECK_EQ(0, fake_cws()->GetUpdateCheckCountAndReset());
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_POLICY, GetInstalledAppLocation());
+  EXPECT_EQ(ManifestLocation::kExternalPolicy, GetInstalledAppLocation());
 }
 
 // A custom SoundsManagerTestImpl implements Initialize and Play only.
@@ -2758,10 +2760,10 @@ class KioskHiddenWebUITest : public KioskTest,
     LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
 
     KioskTest::SetUpOnMainThread();
-    WallpaperControllerClient::Get()->AddObserver(this);
+    WallpaperControllerClientImpl::Get()->AddObserver(this);
   }
   void TearDownOnMainThread() override {
-    WallpaperControllerClient::Get()->RemoveObserver(this);
+    WallpaperControllerClientImpl::Get()->RemoveObserver(this);
     KioskTest::TearDownOnMainThread();
   }
 

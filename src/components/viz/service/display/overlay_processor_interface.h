@@ -72,6 +72,9 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
     // Rect on the display to position to. This takes in account of Display's
     // rotation.
     gfx::RectF display_rect;
+    // Specifies the region within the buffer to be cropped and (maybe)scaled to
+    // place inside |display_rect|.
+    gfx::RectF uv_rect;
     // Size of output surface in pixels.
     gfx::Size resource_size;
     // Format of the buffer to scanout.
@@ -92,6 +95,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   // API.
   static OutputSurfaceOverlayPlane ProcessOutputSurfaceAsOverlay(
       const gfx::Size& viewport_size,
+      const gfx::Size& resource_size,
       const gfx::BufferFormat& buffer_format,
       const gfx::ColorSpace& color_space,
       bool has_alpha,
@@ -168,6 +172,9 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   // Overlay processor uses a frame counter to determine the potential power
   // benefits of individual overlay candidates.
   virtual void SetFrameSequenceNumber(uint64_t frame_sequence_number) {}
+
+  // If true, video capture is enabled for this frame.
+  virtual void SetIsVideoCaptureEnabled(bool enabled) {}
 
  protected:
   OverlayProcessorInterface() = default;

@@ -28,10 +28,11 @@
 
 namespace dawn_native {
 
-    MaybeError ValidateProgrammableStageDescriptor(DeviceBase* device,
-                                                   const ProgrammableStageDescriptor* descriptor,
-                                                   const PipelineLayoutBase* layout,
-                                                   SingleShaderStage stage);
+    MaybeError ValidateProgrammableStage(DeviceBase* device,
+                                         const ShaderModuleBase* module,
+                                         const std::string& entryPoint,
+                                         const PipelineLayoutBase* layout,
+                                         SingleShaderStage stage);
 
     struct ProgrammableStage {
         Ref<ShaderModuleBase> module;
@@ -49,7 +50,7 @@ namespace dawn_native {
         const ProgrammableStage& GetStage(SingleShaderStage stage) const;
         const PerStage<ProgrammableStage>& GetAllStages() const;
 
-        BindGroupLayoutBase* GetBindGroupLayout(uint32_t groupIndex);
+        BindGroupLayoutBase* APIGetBindGroupLayout(uint32_t groupIndex);
 
         // Helper functions for std::unordered_map-based pipeline caches.
         size_t ComputeContentHash() override;

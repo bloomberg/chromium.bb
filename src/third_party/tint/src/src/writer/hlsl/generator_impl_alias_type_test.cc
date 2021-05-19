@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/ast/struct.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_decoration.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/type/struct_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -47,13 +42,13 @@ TEST_F(HlslGeneratorImplTest_Alias, EmitAlias_NameCollision) {
 }
 
 TEST_F(HlslGeneratorImplTest_Alias, EmitAlias_Struct) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.f32()),
-                            Member("b", ty.i32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
-
-  auto* s = ty.struct_("A", str);
+  auto* s = Structure("A", {
+                               Member("a", ty.f32()),
+                               Member("b", ty.i32()),
+                           });
   auto* alias = ty.alias("B", s);
+  AST().AddConstructedType(alias);
+  Global("g", alias, ast::StorageClass::kPrivate);
 
   GeneratorImpl& gen = Build();
 

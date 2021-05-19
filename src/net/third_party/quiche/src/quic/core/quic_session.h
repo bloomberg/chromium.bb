@@ -145,6 +145,12 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // Adds a connection level WINDOW_UPDATE frame.
   void OnAckNeedsRetransmittableFrame() override;
   void SendAckFrequency(const QuicAckFrequencyFrame& frame) override;
+  void SendNewConnectionId(const QuicNewConnectionIdFrame& frame) override;
+  void SendRetireConnectionId(uint64_t sequence_number) override;
+  void OnServerConnectionIdIssued(
+      const QuicConnectionId& server_connection_id) override;
+  void OnServerConnectionIdRetired(
+      const QuicConnectionId& server_connection_id) override;
   bool WillingAndAbleToWrite() const override;
   std::string GetStreamsInfoForLogging() const override;
   void OnPathDegrading() override;
@@ -164,6 +170,10 @@ class QUIC_EXPORT_PRIVATE QuicSession
   void BeforeConnectionCloseSent() override {}
   bool ValidateToken(absl::string_view token) const override;
   void MaybeSendAddressToken() override;
+  bool IsKnownServerAddress(
+      const QuicSocketAddress& /*address*/) const override {
+    return false;
+  }
 
   // QuicStreamFrameDataProducer
   WriteStreamDataResult WriteStreamData(QuicStreamId id,
@@ -710,7 +720,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
 
   // Returns a stateless reset token which will be included in the public reset
   // packet.
-  virtual QuicUint128 GetStatelessResetToken() const;
+  virtual StatelessResetToken GetStatelessResetToken() const;
 
   QuicControlFrameManager& control_frame_manager() {
     return control_frame_manager_;
@@ -735,10 +745,11 @@ class QUIC_EXPORT_PRIVATE QuicSession
   size_t num_draining_streams() const { return num_draining_streams_; }
 
   // Processes the stream type information of |pending| depending on
-  // different kinds of sessions' own rules. Returns true if the pending stream
-  // is converted into a normal stream.
-  virtual bool ProcessPendingStream(PendingStream* /*pending*/) {
-    return false;
+  // different kinds of sessions' own rules. If the pending stream has been
+  // converted to a normal stream, returns a pointer to the new stream;
+  // otherwise, returns nullptr.
+  virtual QuicStream* ProcessPendingStream(PendingStream* /*pending*/) {
+    return nullptr;
   }
 
   // Called by applications to perform |action| on active streams.

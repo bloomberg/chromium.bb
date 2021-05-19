@@ -63,7 +63,6 @@
 #include "third_party/blink/public/platform/web_media_player_encrypted_media_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -143,7 +142,6 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD1(MediaSourceOpened, void(blink::WebMediaSource*));
   MOCK_METHOD2(RemotePlaybackCompatibilityChanged,
                void(const blink::WebURL&, bool));
-  MOCK_METHOD1(OnBecamePersistentVideo, void(bool));
   MOCK_METHOD0(WasAlwaysMuted, bool());
   MOCK_METHOD0(HasSelectedVideoTrack, bool());
   MOCK_METHOD0(GetSelectedVideoTrackId, blink::WebMediaPlayer::TrackId());
@@ -243,8 +241,6 @@ class MockWebMediaPlayerDelegate : public blink::WebMediaPlayerDelegate {
 
   bool IsFrameHidden() override { return is_hidden_; }
 
-  bool IsFrameClosed() override { return is_closed_; }
-
   void SetIdleForTesting(bool is_idle) { is_idle_ = is_idle; }
 
   void SetStaleForTesting(bool is_stale) {
@@ -264,8 +260,6 @@ class MockWebMediaPlayerDelegate : public blink::WebMediaPlayerDelegate {
 
   void SetFrameHiddenForTesting(bool is_hidden) { is_hidden_ = is_hidden; }
 
-  void SetFrameClosedForTesting(bool is_closed) { is_closed_ = is_closed; }
-
   int player_id() { return player_id_; }
 
  private:
@@ -274,7 +268,6 @@ class MockWebMediaPlayerDelegate : public blink::WebMediaPlayerDelegate {
   bool is_idle_ = false;
   bool is_stale_ = false;
   bool is_hidden_ = false;
-  bool is_closed_ = false;
 };
 
 class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
@@ -320,13 +313,15 @@ class WebMediaPlayerImplTest
       std::unique_ptr<blink::scheduler::WebAgentGroupScheduler>
           agent_group_scheduler)
       : media_thread_("MediaThreadForTest"),
-        web_view_(blink::WebView::Create(/*client=*/nullptr,
-                                         /*is_hidden=*/false,
-                                         /*is_inside_portal=*/false,
-                                         /*compositing_enabled=*/false,
-                                         /*opener=*/nullptr,
-                                         mojo::NullAssociatedReceiver(),
-                                         *agent_group_scheduler)),
+        web_view_(blink::WebView::Create(
+            /*client=*/nullptr,
+            /*is_hidden=*/false,
+            /*is_inside_portal=*/false,
+            /*compositing_enabled=*/false,
+            /*opener=*/nullptr,
+            mojo::NullAssociatedReceiver(),
+            *agent_group_scheduler,
+            /*session_storage_namespace_id=*/base::EmptyString())),
         web_local_frame_(
             blink::WebLocalFrame::CreateMainFrame(web_view_,
                                                   &web_frame_client_,
@@ -389,7 +384,7 @@ class WebMediaPlayerImplTest
 
     auto factory_selector = std::make_unique<RendererFactorySelector>();
     renderer_factory_selector_ = factory_selector.get();
-    decoder_factory_.reset(new media::DefaultDecoderFactory(nullptr));
+    decoder_factory_ = std::make_unique<media::DefaultDecoderFactory>(nullptr);
 #if defined(OS_ANDROID)
     factory_selector->AddBaseFactory(
         RendererFactoryType::kDefault,
@@ -426,7 +421,7 @@ class WebMediaPlayerImplTest
 
     audio_sink_ = base::WrapRefCounted(new NiceMock<MockAudioRendererSink>());
 
-    url_index_.reset(new UrlIndex(&mock_resource_fetch_context_));
+    url_index_ = std::make_unique<UrlIndex>(&mock_resource_fetch_context_);
 
     auto params = std::make_unique<WebMediaPlayerParams>(
         std::move(media_log), WebMediaPlayerParams::DeferLoadCB(), audio_sink_,
@@ -495,6 +490,9 @@ class WebMediaPlayerImplTest
   void SetEnded(bool is_ended) { wmpi_->ended_ = is_ended; }
   void SetTickClock(const base::TickClock* clock) {
     wmpi_->SetTickClockForTest(clock);
+  }
+  void SetWasSuspendedForFrameClosed(bool is_suspended) {
+    wmpi_->was_suspended_for_frame_closed_ = is_suspended;
   }
 
   void SetFullscreen(bool is_fullscreen) {
@@ -588,7 +586,7 @@ class WebMediaPlayerImplTest
         .WillOnce(RunClosure(loop.QuitClosure()));
 
     delegate_.SetFrameHiddenForTesting(true);
-    delegate_.SetFrameClosedForTesting(false);
+    SetWasSuspendedForFrameClosed(false);
 
     wmpi_->OnFrameHidden();
 
@@ -604,7 +602,7 @@ class WebMediaPlayerImplTest
         .WillOnce(RunClosure(loop.QuitClosure()));
 
     delegate_.SetFrameHiddenForTesting(false);
-    delegate_.SetFrameClosedForTesting(false);
+    SetWasSuspendedForFrameClosed(false);
 
     wmpi_->OnFrameShown();
 
@@ -804,10 +802,8 @@ class WebMediaPlayerImplTest
 
   void SetCdm() {
     DCHECK(web_cdm_);
-    auto* mock_cdm = mock_cdm_factory_.GetCreatedCdm();
-    EXPECT_CALL(*mock_cdm, GetCdmContext())
+    EXPECT_CALL(*mock_cdm_, GetCdmContext())
         .WillRepeatedly(Return(&mock_cdm_context_));
-
     wmpi_->SetCdmInternal(web_cdm_.get());
   }
 
@@ -847,7 +843,8 @@ class WebMediaPlayerImplTest
   MockWebMediaPlayerEncryptedMediaClient encrypted_client_;
 
   // Used to create the MockCdm to test encrypted playback.
-  MockCdmFactory mock_cdm_factory_;
+  scoped_refptr<MockCdm> mock_cdm_{new MockCdm()};
+  MockCdmFactory mock_cdm_factory_{mock_cdm_};
   std::unique_ptr<blink::WebContentDecryptionModule> web_cdm_;
   MockCdmContext mock_cdm_context_;
 
@@ -1378,7 +1375,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameClosed) {
   SetMetadata(true, true);
   SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
-  delegate_.SetFrameClosedForTesting(true);
+  SetWasSuspendedForFrameClosed(true);
   WebMediaPlayerImpl::PlayState state = ComputePlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_TRUE(state.is_idle);
@@ -1514,12 +1511,40 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Streaming) {
   EXPECT_FALSE(state.is_memory_reporting_enabled);
 
   // Streaming media should suspend when the tab is closed, regardless.
-  delegate_.SetFrameClosedForTesting(true);
+  SetWasSuspendedForFrameClosed(true);
   state = ComputePlayState_BackgroundedStreaming();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_TRUE(state.is_idle);
   EXPECT_TRUE(state.is_suspended);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
+}
+
+TEST_F(WebMediaPlayerImplTest, ResumeEnded) {
+  PipelineMetadata metadata;
+  metadata.has_video = true;
+  metadata.video_decoder_config = TestVideoConfig::Normal();
+  metadata.has_audio = true;
+  metadata.audio_decoder_config = TestAudioConfig::Normal();
+
+  SetUpMediaSuspend(true);
+  InitializeWebMediaPlayerImpl();
+
+  EXPECT_CALL(delegate_, DidMediaMetadataChange(_, true, true, _)).Times(2);
+
+  OnMetadata(metadata);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
+  Play();
+  // Cause PlayerGone
+  Pause();
+  BackgroundPlayer();
+
+  testing::Mock::VerifyAndClearExpectations(&delegate_);
+
+  // DidMediaMetadataChange should be called again after player gone.
+  EXPECT_CALL(delegate_, DidMediaMetadataChange(_, true, true, _));
+
+  ForegroundPlayer();
+  Play();
 }
 
 TEST_F(WebMediaPlayerImplTest, AutoplayMuted) {
@@ -1674,7 +1699,6 @@ TEST_F(WebMediaPlayerImplTest, Encrypted) {
   EXPECT_CALL(mock_cdm_context_, GetDecryptor())
       .Times(AnyNumber())
       .WillRepeatedly(Return(nullptr));
-  mock_cdm_context_.set_cdm_id(nullptr);
 
   {
     // Wait for kNetworkStateFormatError caused by Renderer initialization
@@ -2302,8 +2326,7 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, VideoOnly) {
   EXPECT_EQ(should_pause, ShouldPausePlaybackWhenHidden());
 }
 
-// TODO(crbug.com/1177112) Re-enable test
-TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, DISABLED_AudioVideo) {
+TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
   SetMetadata(true, true);
 
   // Optimization requirements are the same for all platforms.

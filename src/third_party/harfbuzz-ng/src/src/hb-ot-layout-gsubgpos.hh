@@ -659,7 +659,7 @@ struct hb_ot_apply_context_t :
   void replace_glyph (hb_codepoint_t glyph_index) const
   {
     _set_glyph_props (glyph_index);
-    buffer->replace_glyph (glyph_index);
+    (void) buffer->replace_glyph (glyph_index);
   }
   void replace_glyph_inplace (hb_codepoint_t glyph_index) const
   {
@@ -670,13 +670,13 @@ struct hb_ot_apply_context_t :
 				    unsigned int class_guess) const
   {
     _set_glyph_props (glyph_index, class_guess, true);
-    buffer->replace_glyph (glyph_index);
+    (void) buffer->replace_glyph (glyph_index);
   }
   void output_glyph_for_component (hb_codepoint_t glyph_index,
 				   unsigned int class_guess) const
   {
     _set_glyph_props (glyph_index, class_guess, false, true);
-    buffer->output_glyph (glyph_index);
+    (void) buffer->output_glyph (glyph_index);
   }
 };
 
@@ -1043,7 +1043,7 @@ static inline bool ligate_input (hb_ot_apply_context_t *c,
 				    hb_min (this_comp, last_num_components);
 	  _hb_glyph_info_set_lig_props_for_mark (&buffer->cur(), lig_id, new_lig_comp);
       }
-      buffer->next_glyph ();
+      (void) buffer->next_glyph ();
     }
 
     last_lig_id = _hb_glyph_info_get_lig_id (&buffer->cur());
@@ -1272,7 +1272,7 @@ static inline bool apply_lookup (hb_ot_apply_context_t *c,
       match_positions[next] += delta;
   }
 
-  buffer->move_to (end);
+  (void) buffer->move_to (end);
 
   return_trace (true);
 }
@@ -1882,8 +1882,8 @@ struct ContextFormat2
     const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
     bool ret = true;
     int non_zero_index = 0, index = 0;
-    for (const hb_pair_t<unsigned, const OffsetTo<RuleSet>&> _ : + hb_enumerate (ruleSet)
-								 | hb_filter (klass_map, hb_first))
+    for (const auto& _ : + hb_enumerate (ruleSet)
+			 | hb_filter (klass_map, hb_first))
     {
       auto *o = out->ruleSet.serialize_append (c->serializer);
       if (unlikely (!o))
@@ -2034,6 +2034,7 @@ struct ContextFormat3
 
     for (const OffsetTo<Coverage>& offset : coverages)
     {
+      /* TODO(subset) This looks like should not be necessary to write this way. */
       auto *o = c->serializer->allocate_size<OffsetTo<Coverage>> (OffsetTo<Coverage>::static_size);
       if (unlikely (!o)) return_trace (false);
       if (!o->serialize_subset (c, offset, this)) return_trace (false);
@@ -2322,11 +2323,7 @@ struct ChainRule
   {
     c->copy (len);
     for (const auto g : it)
-    {
-      HBUINT16 gid;
-      gid = g;
-      c->copy (gid);
-    }
+      c->copy ((HBUINT16) g);
   }
 
   ChainRule* copy (hb_serialize_context_t *c,
@@ -3436,9 +3433,12 @@ struct GSUBGPOS
       const Feature& f = get_feature (i);
 
       if (f.featureParams.is_null ()
-          && !f.intersects_lookup_indexes (lookup_indices)
-          && !alternate_feature_indices.has (i))
-        feature_indices->del (i);
+	  && !f.intersects_lookup_indexes (lookup_indices)
+#ifndef HB_NO_VAR
+          && !alternate_feature_indices.has (i)
+#endif
+	  )
+	feature_indices->del (i);
     }
   }
 

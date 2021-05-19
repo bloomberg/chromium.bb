@@ -12,12 +12,12 @@ devtools_module("security") {
   ]
 
   deps = [
-    "../common:bundle",
-    "../host:bundle",
-    "../i18n:bundle",
-    "../network:bundle",
-    "../sdk:bundle",
-    "../ui:bundle",
+    "../core/common:bundle",
+    "../core/host:bundle",
+    "../core/i18n:bundle",
+    "../core/sdk:bundle",
+    "../panels/network:bundle",
+    "../ui/legacy:bundle",
   ]
 }
 

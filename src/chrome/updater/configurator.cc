@@ -14,13 +14,14 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crx_downloader_factory.h"
 #include "chrome/updater/external_constants.h"
-#include "chrome/updater/patcher.h"
 #include "chrome/updater/prefs.h"
-#include "chrome/updater/unzipper.h"
+#include "chrome/updater/updater_scope.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/network.h"
+#include "components/update_client/patch/in_process_patcher.h"
 #include "components/update_client/patcher.h"
 #include "components/update_client/protocol_handler.h"
+#include "components/update_client/unzip/in_process_unzipper.h"
 #include "components/update_client/unzipper.h"
 #include "components/version_info/version_info.h"
 #include "url/gurl.h"
@@ -43,13 +44,15 @@ const int kDelayOneHour = kDelayOneMinute * 60;
 
 namespace updater {
 
-// TODO(crbug.com/1096654): Add support for machine `activity_data_service_`.
 Configurator::Configurator(std::unique_ptr<UpdaterPrefs> prefs)
     : prefs_(std::move(prefs)),
       external_constants_(CreateExternalConstants()),
-      activity_data_service_(std::make_unique<ActivityDataService>(false)),
-      unzip_factory_(base::MakeRefCounted<UnzipperFactory>()),
-      patch_factory_(base::MakeRefCounted<PatcherFactory>()) {}
+      activity_data_service_(
+          std::make_unique<ActivityDataService>(GetProcessScope())),
+      unzip_factory_(
+          base::MakeRefCounted<update_client::InProcessUnzipperFactory>()),
+      patch_factory_(
+          base::MakeRefCounted<update_client::InProcessPatcherFactory>()) {}
 Configurator::~Configurator() = default;
 
 double Configurator::InitialDelay() const {

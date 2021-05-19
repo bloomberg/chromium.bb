@@ -293,6 +293,8 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
                                        NGFragmentType type,
                                        unsigned sub_type)
     : has_floating_descendants_for_paint_(false),
+      children_valid_(true),
+      has_descendants_for_table_part_(false),
       layout_object_(builder->layout_object_),
       size_(ToPhysicalSize(builder->size_, builder->GetWritingMode())),
       type_(type),
@@ -314,9 +316,11 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        NGFragmentType type,
                                        unsigned sub_type)
     : has_floating_descendants_for_paint_(false),
+      children_valid_(true),
       has_layout_overflow_(false),
       has_inflow_bounds_(false),
       has_rare_data_(false),
+      has_descendants_for_table_part_(false),
       layout_object_(layout_object),
       size_(size),
       type_(type),
@@ -342,6 +346,7 @@ NGPhysicalFragment::NGPhysicalFragment(const NGPhysicalFragment& other)
           other.has_adjoining_object_descendants_),
       depends_on_percentage_block_size_(
           other.depends_on_percentage_block_size_),
+      children_valid_(other.children_valid_),
       has_propagated_descendants_(other.has_propagated_descendants_),
       has_hanging_(other.has_hanging_),
       is_inline_formatting_context_(other.is_inline_formatting_context_),
@@ -351,11 +356,13 @@ NGPhysicalFragment::NGPhysicalFragment(const NGPhysicalFragment& other)
       include_border_bottom_(other.include_border_bottom_),
       include_border_left_(other.include_border_left_),
       has_layout_overflow_(other.has_layout_overflow_),
+      ink_overflow_type_(other.ink_overflow_type_),
       has_borders_(other.has_borders_),
       has_padding_(other.has_padding_),
       has_inflow_bounds_(other.has_inflow_bounds_),
       has_rare_data_(other.has_rare_data_),
       is_first_for_node_(other.is_first_for_node_),
+      has_descendants_for_table_part_(other.has_descendants_for_table_part_),
       layout_object_(other.layout_object_),
       size_(other.size_),
       type_(other.type_),
@@ -477,15 +484,6 @@ void NGPhysicalFragment::CheckType() const {
       DCHECK(!IsAtomicInline());
       break;
   }
-}
-
-void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {
-  if (!GetLayoutObject())
-    return;
-  const DocumentLifecycle& lifecycle = GetDocument().Lifecycle();
-  DCHECK(lifecycle.GetState() >= DocumentLifecycle::kLayoutClean &&
-         lifecycle.GetState() < DocumentLifecycle::kCompositingAssignmentsClean)
-      << lifecycle.GetState();
 }
 #endif
 

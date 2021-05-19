@@ -4,9 +4,10 @@
 
 #include "components/policy/core/common/legacy_chrome_policy_migrator.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +55,7 @@ TEST(LegacyChromePolicyMigratorTest, CopyPolicyIfUnset) {
   EXPECT_EQ(base::Value(kOldValue), *chrome_map.GetValue(kNewPolicy));
   // Other Value should be unchanged.
   EXPECT_EQ(base::Value(kOtherValue), *chrome_map.GetValue(kOtherPolicy));
-  base::RepeatingCallback<base::string16(int)> l10nlookup =
+  base::RepeatingCallback<std::u16string(int)> l10nlookup =
       base::BindRepeating(&l10n_util::GetStringUTF16);
   // Old policy should always be marked deprecated
   EXPECT_FALSE(
@@ -98,7 +99,7 @@ TEST(LegacyChromePolicyMigratorTest, IgnoreOldIfNewIsSet) {
   // New Value is unchanged
   EXPECT_EQ(base::Value(kNewValue), *chrome_map.GetValue(kNewPolicy));
   // Should be no warning on new policy
-  base::RepeatingCallback<base::string16(int)> l10nlookup =
+  base::RepeatingCallback<std::u16string(int)> l10nlookup =
       base::BindRepeating(&l10n_util::GetStringUTF16);
   // Old policy should always be marked deprecated
   EXPECT_FALSE(

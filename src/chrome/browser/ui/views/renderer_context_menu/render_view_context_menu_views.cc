@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/views/renderer_context_menu/render_view_context_menu_views.h"
 
+#include <string>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
 #include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -244,6 +244,10 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
 #elif defined(OS_MAC)
       *accel = ui::Accelerator(ui::VKEY_SPACE,
                                ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
+      return true;
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
+      *accel = ui::Accelerator(ui::VKEY_SPACE,
+                               ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
       return true;
 #else
       return false;

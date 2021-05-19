@@ -33,6 +33,7 @@ export let BrowserReportingResponse;
  * @typedef {{
  *   browserManagementNotice: string,
  *   extensionReportingTitle: string,
+ *   managedWebsitesSubtitle: string,
  *   pageSubtitle: string,
  *   managed: boolean,
  *   overview: string,
@@ -76,6 +77,7 @@ export const DeviceReportingType = {
   APP_INFO_AND_ACTIVITY: 'app info and activity',
   LOGS: 'logs',
   PRINT: 'print',
+  PRINT_JOBS: 'print jobs',
   CROSTINI: 'crostini',
   USERNAME: 'username',
   EXTENSION: 'extension',
@@ -96,6 +98,9 @@ export let DeviceReportingResponse;
 export class ManagementBrowserProxy {
   /** @return {!Promise<!Array<!Extension>>} */
   getExtensions() {}
+
+  /** @return {!Promise<!Array<!String>>} */
+  getManagedWebsites() {}
 
   // <if expr="chromeos">
   /**
@@ -135,6 +140,11 @@ export class ManagementBrowserProxyImpl {
   /** @override */
   getExtensions() {
     return sendWithPromise('getExtensions');
+  }
+
+  /** @override */
+  getManagedWebsites() {
+    return sendWithPromise('getManagedWebsites');
   }
 
   // <if expr="chromeos">

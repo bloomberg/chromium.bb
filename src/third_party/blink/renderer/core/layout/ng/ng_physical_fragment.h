@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -122,6 +123,9 @@ class CORE_EXPORT NGPhysicalFragment
   // treatment (i.e. placed over the block-start border).
   bool IsRenderedLegend() const {
     return IsBox() && BoxType() == NGBoxType::kRenderedLegend;
+  }
+  bool IsMathML() const {
+    return IsBox() && GetSelfOrContainerLayoutObject()->IsMathML();
   }
   bool IsMathMLFraction() const { return IsBox() && is_math_fraction_; }
 
@@ -434,7 +438,6 @@ class CORE_EXPORT NGPhysicalFragment
   String ToString() const;
 
   void CheckType() const;
-  void CheckCanUpdateInkOverflow() const;
 
   enum DumpFlag {
     DumpHeaderText = 0x1,
@@ -485,6 +488,7 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned has_floating_descendants_for_paint_ : 1;
   unsigned has_adjoining_object_descendants_ : 1;
   unsigned depends_on_percentage_block_size_ : 1;
+  mutable unsigned children_valid_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalLineBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
@@ -500,11 +504,13 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned include_border_bottom_ : 1;
   unsigned include_border_left_ : 1;
   unsigned has_layout_overflow_ : 1;
+  unsigned ink_overflow_type_ : NGInkOverflow::kTypeBits;
   unsigned has_borders_ : 1;
   unsigned has_padding_ : 1;
   unsigned has_inflow_bounds_ : 1;
   unsigned has_rare_data_ : 1;
   unsigned is_first_for_node_ : 1;
+  unsigned has_descendants_for_table_part_ : 1;
 
   LayoutObject* layout_object_;
   const PhysicalSize size_;
@@ -553,7 +559,6 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGPhysicalFragment&);
 
 #if !DCHECK_IS_ON()
 inline void NGPhysicalFragment::CheckType() const {}
-inline void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {}
 #endif
 
 }  // namespace blink

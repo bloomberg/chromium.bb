@@ -1,0 +1,16 @@
+{
+  "dependencies": [
+    "components",
+    "ui/legacy",
+    "panels/mobile_throttling"
+  ],
+    "resources": [
+    "deviceModeToolbar.css",
+    "deviceModeView.css",
+    "devicesSettingsTab.css",
+    "inspectedPagePlaceholder.css",
+    "locationsSettingsTab.css",
+    "mediaQueryInspector.css",
+    "sensors.css"
+  ]
+}

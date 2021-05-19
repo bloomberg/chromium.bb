@@ -14,6 +14,7 @@
 
 #include "tests/unittests/validation/ValidationTest.h"
 
+#include "tests/MockCallback.h"
 #include "utils/ComboRenderBundleEncoderDescriptor.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/WGPUHelpers.h"
@@ -47,12 +48,12 @@ TEST_F(UnsafeAPIValidationTest, DrawIndexedIndirectDisallowed) {
     bundleDesc.colorFormatsCount = 1;
     bundleDesc.cColorFormats[0] = renderPass.attachmentFormat;
 
-    utils::ComboRenderPipelineDescriptor desc(device);
-    desc.vertexStage.module =
-        utils::CreateShaderModuleFromWGSL(device, "[[stage(vertex)]] fn main() -> void {}");
-    desc.cFragmentStage.module =
-        utils::CreateShaderModuleFromWGSL(device, "[[stage(fragment)]] fn main() -> void {}");
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&desc);
+    utils::ComboRenderPipelineDescriptor2 desc;
+    desc.vertex.module =
+        utils::CreateShaderModule(device, "[[stage(vertex)]] fn main() -> void {}");
+    desc.cFragment.module =
+        utils::CreateShaderModule(device, "[[stage(fragment)]] fn main() -> void {}");
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&desc);
 
     // Control cases: DrawIndirect and DrawIndexed are allowed inside a render pass.
     {
@@ -117,7 +118,7 @@ TEST_F(UnsafeAPIValidationTest, DispatchIndirectDisallowed) {
     wgpu::ComputePipelineDescriptor pipelineDesc;
     pipelineDesc.computeStage.entryPoint = "main";
     pipelineDesc.computeStage.module =
-        utils::CreateShaderModuleFromWGSL(device, "[[stage(compute)]] fn main() -> void {}");
+        utils::CreateShaderModule(device, "[[stage(compute)]] fn main() -> void {}");
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
 
     // Control case: dispatch is allowed.
@@ -210,55 +211,4 @@ TEST_F(UnsafeAPIValidationTest, OcclusionQueryDisallowed) {
         pass.EndPass();
         ASSERT_DEVICE_ERROR(encoder.Finish());
     }
-}
-
-// Check that CreateComputePipelineAsync is disallowed as part of unsafe APIs
-TEST_F(UnsafeAPIValidationTest, CreateComputePipelineAsyncDisallowed) {
-    wgpu::ComputePipelineDescriptor desc;
-    desc.computeStage.module = utils::CreateShaderModuleFromWGSL(device, R"(
-        [[stage(compute)]] fn main() -> void {
-        })");
-    desc.computeStage.entryPoint = "main";
-
-    // Control case: CreateComputePipeline is allowed.
-    device.CreateComputePipeline(&desc);
-
-    // Error case: CreateComputePipelineAsync is disallowed.
-    ASSERT_DEVICE_ERROR(device.CreateComputePipelineAsync(
-        &desc,
-        [](WGPUCreatePipelineAsyncStatus status, WGPUComputePipeline returnPipeline,
-           const char* message, void* userdata) {
-            // Status can be Error or Unkown (when using the wire).
-            EXPECT_NE(WGPUCreatePipelineAsyncStatus::WGPUCreatePipelineAsyncStatus_Success, status);
-        },
-        nullptr));
-}
-
-// Check that CreateRenderPipelineAsync is disallowed as part of unsafe APIs
-TEST_F(UnsafeAPIValidationTest, CreateRenderPipelineAsyncDisallowed) {
-    utils::ComboRenderPipelineDescriptor desc(device);
-    desc.vertexStage.module = utils::CreateShaderModuleFromWGSL(device, R"(
-        [[builtin(position)]] var<out> Position : vec4<f32>;
-        [[stage(vertex)]] fn main() -> void {
-            Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
-        })");
-    desc.cFragmentStage.module = utils::CreateShaderModuleFromWGSL(device, R"(
-        [[location(0)]] var<out> o_color : vec4<f32>;
-        [[stage(fragment)]] fn main() -> void {
-            o_color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
-        })");
-    desc.cColorStates[0].format = wgpu::TextureFormat::RGBA8Unorm;
-
-    // Control case: CreateRenderPipeline is allowed.
-    device.CreateRenderPipeline(&desc);
-
-    // Error case: CreateRenderPipelineAsync is disallowed.
-    ASSERT_DEVICE_ERROR(device.CreateRenderPipelineAsync(
-        &desc,
-        [](WGPUCreatePipelineAsyncStatus status, WGPURenderPipeline returnPipeline,
-           const char* message, void* userdata) {
-            // Status can be Error or Unkown (when using the wire).
-            EXPECT_NE(WGPUCreatePipelineAsyncStatus::WGPUCreatePipelineAsyncStatus_Success, status);
-        },
-        nullptr));
 }

@@ -7,8 +7,6 @@
 #include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/policy/core/browser/url_util.h"
 
-constexpr char kWildcardMimeType[] = "*";
-
 namespace enterprise_connectors {
 
 FileSystemServiceSettings::FileSystemServiceSettings(
@@ -37,6 +35,11 @@ FileSystemServiceSettings::FileSystemServiceSettings(
   } else {
     return;
   }
+
+  // The domain will not be present if the admin has not set it.
+  const std::string* domain = settings_value.FindStringKey(kKeyDomain);
+  if (domain)
+    email_domain_ = *domain;
 
   // Add the patterns to the settings, which configures settings.matcher and
   // settings.*_pattern_settings. No enable patterns implies the settings are
@@ -96,6 +99,8 @@ base::Optional<FileSystemSettings> FileSystemServiceSettings::GetSettings(
   settings.authorization_endpoint =
       GURL(service_provider_->fs_authorization_endpoint());
   settings.token_endpoint = GURL(service_provider_->fs_token_endpoint());
+  settings.enterprise_id = this->enterprise_id_;
+  settings.email_domain = this->email_domain_;
   settings.client_id = service_provider_->fs_client_id();
   settings.client_secret = service_provider_->fs_client_secret();
   settings.scopes = service_provider_->fs_scopes();

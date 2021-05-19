@@ -423,7 +423,7 @@ class TestSafeBrowsingBlockingPageFactory
         IsEnhancedProtectionEnabled(*prefs), is_proceed_anyway_disabled,
         true,  // should_open_links_in_new_tab
         always_show_back_to_safety_,
-        IsEnhancedProtectionMessageInInterstitialsEnabled(),
+        /*is_enhanced_protection_message_enabled=*/true,
         IsSafeBrowsingPolicyManaged(*prefs),
         "cpn_safe_browsing" /* help_center_article_link */);
     return new TestSafeBrowsingBlockingPage(
@@ -2686,7 +2686,7 @@ IN_PROC_BROWSER_TEST_P(
   ASSERT_TRUE(page_info);
   EXPECT_EQ(page_info->GetWindowTitle(),
             l10n_util::GetStringFUTF16(IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE,
-                                       base::ASCIIToUTF16("google.com")));
+                                       u"google.com"));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -2799,8 +2799,6 @@ class SafeBrowsingBlockingPageEnhancedProtectionMessageTest
   SafeBrowsingBlockingPageEnhancedProtectionMessageTest() = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        safe_browsing::kEnhancedProtectionMessageInInterstitials);
     InProcessBrowserTest::SetUp();
   }
 

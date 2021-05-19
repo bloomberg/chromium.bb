@@ -189,6 +189,114 @@ TEST_F(LanguageSettingsPrivateApiTest, GetSpellcheckDictionaryStatusesTest) {
   EXPECT_EQ(expected, *actual);
 }
 
+TEST_F(LanguageSettingsPrivateApiTest, SetLanguageAlwaysTranslateStateTest) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs_ =
+      ChromeTranslateClient::CreateTranslatePrefs(profile()->GetPrefs());
+
+  EXPECT_FALSE(translate_prefs_->HasLanguagePairsToAlwaysTranslate());
+
+  auto function = base::MakeRefCounted<
+      LanguageSettingsPrivateSetLanguageAlwaysTranslateStateFunction>();
+  api_test_utils::RunFunction(function.get(), "[\"af\", true]", profile());
+  EXPECT_TRUE(translate_prefs_->HasLanguagePairsToAlwaysTranslate());
+
+  function = base::MakeRefCounted<
+      LanguageSettingsPrivateSetLanguageAlwaysTranslateStateFunction>();
+  api_test_utils::RunFunction(function.get(), "[\"af\", false]", profile());
+  EXPECT_FALSE(translate_prefs_->HasLanguagePairsToAlwaysTranslate());
+}
+
+TEST_F(LanguageSettingsPrivateApiTest, GetAlwaysTranslateLanguagesListTest) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs_ =
+      ChromeTranslateClient::CreateTranslatePrefs(profile()->GetPrefs());
+
+  EXPECT_FALSE(translate_prefs_->HasLanguagePairsToAlwaysTranslate());
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("af", "en");
+  EXPECT_TRUE(translate_prefs_->HasLanguagePairsToAlwaysTranslate());
+
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("aa", "es");
+  // Use 'tl' as the translate language which is 'fil' as a Chrome language.
+  translate_prefs_->AddLanguagePairToAlwaysTranslateList("tl", "es");
+  std::vector<std::string> always_translate_languages =
+      translate_prefs_->GetAlwaysTranslateLanguages();
+  ASSERT_EQ(std::vector<std::string>({"aa", "af", "fil"}),
+            always_translate_languages);
+
+  auto function = base::MakeRefCounted<
+      LanguageSettingsPrivateGetAlwaysTranslateLanguagesFunction>();
+
+  std::unique_ptr<base::Value> result =
+      api_test_utils::RunFunctionAndReturnSingleResult(function.get(), "[]",
+                                                       profile());
+
+  ASSERT_NE(nullptr, result) << function->GetError();
+  EXPECT_TRUE(result->is_list());
+
+  ASSERT_EQ(result->GetList().size(), always_translate_languages.size());
+  for (size_t i = 0; i < result->GetList().size(); i++) {
+    EXPECT_EQ(result->GetList()[i].GetString(), always_translate_languages[i]);
+  }
+}
+
+TEST_F(LanguageSettingsPrivateApiTest, SetTranslateTargetLanguageTest) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs_ =
+      ChromeTranslateClient::CreateTranslatePrefs(profile()->GetPrefs());
+
+  std::vector<std::string> content_languages_before;
+  translate_prefs_->GetLanguageList(&content_languages_before);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ASSERT_EQ(std::vector<std::string>({"en-US"}), content_languages_before);
+#else
+  ASSERT_EQ(std::vector<std::string>({"en-US", "en"}),
+            content_languages_before);
+#endif
+  translate_prefs_->SetRecentTargetLanguage("en");
+  ASSERT_EQ(translate_prefs_->GetRecentTargetLanguage(), "en");
+
+  auto function = base::MakeRefCounted<
+      LanguageSettingsPrivateSetTranslateTargetLanguageFunction>();
+
+  std::unique_ptr<base::Value> result =
+      api_test_utils::RunFunctionAndReturnSingleResult(function.get(),
+                                                       "[\"af\"]", profile());
+  ASSERT_EQ(translate_prefs_->GetRecentTargetLanguage(), "af");
+
+  std::vector<std::string> content_languages_after;
+  translate_prefs_->GetLanguageList(&content_languages_after);
+  ASSERT_EQ(std::vector<std::string>({"en-US", "en", "af"}),
+            content_languages_after);
+}
+
+TEST_F(LanguageSettingsPrivateApiTest, GetNeverTranslateLanguagesListTest) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs_ =
+      ChromeTranslateClient::CreateTranslatePrefs(profile()->GetPrefs());
+
+  std::vector<std::string> never_translate_languages =
+      translate_prefs_->GetNeverTranslateLanguages();
+  ASSERT_EQ(std::vector<std::string>({"en"}), never_translate_languages);
+  translate_prefs_->BlockLanguage("af");
+  translate_prefs_->BlockLanguage("es");
+  never_translate_languages = translate_prefs_->GetNeverTranslateLanguages();
+  ASSERT_EQ(std::vector<std::string>({"en", "af", "es"}),
+            never_translate_languages);
+
+  auto function = base::MakeRefCounted<
+      LanguageSettingsPrivateGetNeverTranslateLanguagesFunction>();
+
+  std::unique_ptr<base::Value> result =
+      api_test_utils::RunFunctionAndReturnSingleResult(function.get(), "[]",
+                                                       profile());
+
+  ASSERT_NE(nullptr, result) << function->GetError();
+  EXPECT_TRUE(result->is_list());
+
+  ASSERT_EQ(result->GetList().size(), never_translate_languages.size());
+  for (size_t i = 0; i < result->GetList().size(); i++) {
+    EXPECT_EQ(result->GetList()[i].GetString(), never_translate_languages[i]);
+  }
+}
+
 TEST_F(LanguageSettingsPrivateApiTest, GetLanguageListTest) {
   translate::TranslateDownloadManager::GetInstance()->ResetForTesting();
   RunGetLanguageListTest();
@@ -339,17 +447,15 @@ class TestInputMethodManager : public input_method::MockInputMethodManager {
     TestState() {
       // Set up three IMEs
       std::string layout("us");
-      std::vector<std::string> languages({"en-US", "en"});
-      std::vector<std::string> arc_languages(
-          {chromeos::extension_ime_util::kArcImeLanguage});
       InputMethodDescriptor extension_ime(
-          GetExtensionImeId(), "ExtensionIme", "", layout, languages,
+          GetExtensionImeId(), "ExtensionIme", "", layout, {"vi"},
           false /* is_login_keyboard */, GURL(), GURL());
       InputMethodDescriptor component_extension_ime(
           GetComponentExtensionImeId(), "ComponentExtensionIme", "", layout,
-          languages, false /* is_login_keyboard */, GURL(), GURL());
+          {"en-US", "en"}, false /* is_login_keyboard */, GURL(), GURL());
       InputMethodDescriptor arc_ime(
-          GetArcImeId(), "ArcIme", "", layout, arc_languages,
+          GetArcImeId(), "ArcIme", "", layout,
+          {chromeos::extension_ime_util::kArcImeLanguage},
           false /* is_login_keyboard */, GURL(), GURL());
       input_methods_ = {extension_ime, component_extension_ime, arc_ime};
     }

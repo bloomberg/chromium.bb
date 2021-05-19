@@ -413,6 +413,7 @@ typedef enum SpvFPRoundingMode_ {
 typedef enum SpvLinkageType_ {
     SpvLinkageTypeExport = 0,
     SpvLinkageTypeImport = 1,
+    SpvLinkageTypeLinkOnceODR = 2,
     SpvLinkageTypeMax = 0x7fffffff,
 } SpvLinkageType;
 
@@ -1014,8 +1015,12 @@ typedef enum SpvCapability_ {
     SpvCapabilityFunctionPointersINTEL = 5603,
     SpvCapabilityIndirectReferencesINTEL = 5604,
     SpvCapabilityAsmINTEL = 5606,
+    SpvCapabilityAtomicFloat32MinMaxEXT = 5612,
+    SpvCapabilityAtomicFloat64MinMaxEXT = 5613,
+    SpvCapabilityAtomicFloat16MinMaxEXT = 5616,
     SpvCapabilityVectorComputeINTEL = 5617,
     SpvCapabilityVectorAnyINTEL = 5619,
+    SpvCapabilityExpectAssumeKHR = 5629,
     SpvCapabilitySubgroupAvcMotionEstimationINTEL = 5696,
     SpvCapabilitySubgroupAvcMotionEstimationIntraINTEL = 5697,
     SpvCapabilitySubgroupAvcMotionEstimationChromaINTEL = 5698,
@@ -1106,15 +1111,15 @@ typedef enum SpvFragmentShadingRateMask_ {
 } SpvFragmentShadingRateMask;
 
 typedef enum SpvFPDenormMode_ {
-  SpvFPDenormModePreserve = 0,
-  SpvFPDenormModeFlushToZero = 1,
-  SpvFPDenormModeMax = 0x7fffffff,
+    SpvFPDenormModePreserve = 0,
+    SpvFPDenormModeFlushToZero = 1,
+    SpvFPDenormModeMax = 0x7fffffff,
 } SpvFPDenormMode;
 
 typedef enum SpvFPOperationMode_ {
-  SpvFPOperationModeIEEE = 0,
-  SpvFPOperationModeALT = 1,
-  SpvFPOperationModeMax = 0x7fffffff,
+    SpvFPOperationModeIEEE = 0,
+    SpvFPOperationModeALT = 1,
+    SpvFPOperationModeMax = 0x7fffffff,
 } SpvFPOperationMode;
 
 typedef enum SpvOp_ {
@@ -1541,6 +1546,10 @@ typedef enum SpvOp_ {
     SpvOpAsmTargetINTEL = 5609,
     SpvOpAsmINTEL = 5610,
     SpvOpAsmCallINTEL = 5611,
+    SpvOpAtomicFMinEXT = 5614,
+    SpvOpAtomicFMaxEXT = 5615,
+    SpvOpAssumeTrueKHR = 5630,
+    SpvOpExpectKHR = 5631,
     SpvOpDecorateString = 5632,
     SpvOpDecorateStringGOOGLE = 5632,
     SpvOpMemberDecorateString = 5633,
@@ -2123,6 +2132,10 @@ inline void SpvHasResultAndType(SpvOp opcode, bool *hasResult, bool *hasResultTy
     case SpvOpAsmTargetINTEL: *hasResult = true; *hasResultType = true; break;
     case SpvOpAsmINTEL: *hasResult = true; *hasResultType = true; break;
     case SpvOpAsmCallINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpAtomicFMinEXT: *hasResult = true; *hasResultType = true; break;
+    case SpvOpAtomicFMaxEXT: *hasResult = true; *hasResultType = true; break;
+    case SpvOpAssumeTrueKHR: *hasResult = false; *hasResultType = false; break;
+    case SpvOpExpectKHR: *hasResult = true; *hasResultType = true; break;
     case SpvOpDecorateString: *hasResult = false; *hasResultType = false; break;
     case SpvOpMemberDecorateString: *hasResult = false; *hasResultType = false; break;
     case SpvOpVmeImageINTEL: *hasResult = true; *hasResultType = true; break;

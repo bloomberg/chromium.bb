@@ -31,66 +31,68 @@ namespace dawn_native { namespace d3d12 {
     namespace {
         DXGI_FORMAT VertexFormatType(wgpu::VertexFormat format) {
             switch (format) {
-                case wgpu::VertexFormat::UChar2:
+                case wgpu::VertexFormat::Uint8x2:
                     return DXGI_FORMAT_R8G8_UINT;
-                case wgpu::VertexFormat::UChar4:
+                case wgpu::VertexFormat::Uint8x4:
                     return DXGI_FORMAT_R8G8B8A8_UINT;
-                case wgpu::VertexFormat::Char2:
+                case wgpu::VertexFormat::Sint8x2:
                     return DXGI_FORMAT_R8G8_SINT;
-                case wgpu::VertexFormat::Char4:
+                case wgpu::VertexFormat::Sint8x4:
                     return DXGI_FORMAT_R8G8B8A8_SINT;
-                case wgpu::VertexFormat::UChar2Norm:
+                case wgpu::VertexFormat::Unorm8x2:
                     return DXGI_FORMAT_R8G8_UNORM;
-                case wgpu::VertexFormat::UChar4Norm:
+                case wgpu::VertexFormat::Unorm8x4:
                     return DXGI_FORMAT_R8G8B8A8_UNORM;
-                case wgpu::VertexFormat::Char2Norm:
+                case wgpu::VertexFormat::Snorm8x2:
                     return DXGI_FORMAT_R8G8_SNORM;
-                case wgpu::VertexFormat::Char4Norm:
+                case wgpu::VertexFormat::Snorm8x4:
                     return DXGI_FORMAT_R8G8B8A8_SNORM;
-                case wgpu::VertexFormat::UShort2:
+                case wgpu::VertexFormat::Uint16x2:
                     return DXGI_FORMAT_R16G16_UINT;
-                case wgpu::VertexFormat::UShort4:
+                case wgpu::VertexFormat::Uint16x4:
                     return DXGI_FORMAT_R16G16B16A16_UINT;
-                case wgpu::VertexFormat::Short2:
+                case wgpu::VertexFormat::Sint16x2:
                     return DXGI_FORMAT_R16G16_SINT;
-                case wgpu::VertexFormat::Short4:
+                case wgpu::VertexFormat::Sint16x4:
                     return DXGI_FORMAT_R16G16B16A16_SINT;
-                case wgpu::VertexFormat::UShort2Norm:
+                case wgpu::VertexFormat::Unorm16x2:
                     return DXGI_FORMAT_R16G16_UNORM;
-                case wgpu::VertexFormat::UShort4Norm:
+                case wgpu::VertexFormat::Unorm16x4:
                     return DXGI_FORMAT_R16G16B16A16_UNORM;
-                case wgpu::VertexFormat::Short2Norm:
+                case wgpu::VertexFormat::Snorm16x2:
                     return DXGI_FORMAT_R16G16_SNORM;
-                case wgpu::VertexFormat::Short4Norm:
+                case wgpu::VertexFormat::Snorm16x4:
                     return DXGI_FORMAT_R16G16B16A16_SNORM;
-                case wgpu::VertexFormat::Half2:
+                case wgpu::VertexFormat::Float16x2:
                     return DXGI_FORMAT_R16G16_FLOAT;
-                case wgpu::VertexFormat::Half4:
+                case wgpu::VertexFormat::Float16x4:
                     return DXGI_FORMAT_R16G16B16A16_FLOAT;
-                case wgpu::VertexFormat::Float:
+                case wgpu::VertexFormat::Float32:
                     return DXGI_FORMAT_R32_FLOAT;
-                case wgpu::VertexFormat::Float2:
+                case wgpu::VertexFormat::Float32x2:
                     return DXGI_FORMAT_R32G32_FLOAT;
-                case wgpu::VertexFormat::Float3:
+                case wgpu::VertexFormat::Float32x3:
                     return DXGI_FORMAT_R32G32B32_FLOAT;
-                case wgpu::VertexFormat::Float4:
+                case wgpu::VertexFormat::Float32x4:
                     return DXGI_FORMAT_R32G32B32A32_FLOAT;
-                case wgpu::VertexFormat::UInt:
+                case wgpu::VertexFormat::Uint32:
                     return DXGI_FORMAT_R32_UINT;
-                case wgpu::VertexFormat::UInt2:
+                case wgpu::VertexFormat::Uint32x2:
                     return DXGI_FORMAT_R32G32_UINT;
-                case wgpu::VertexFormat::UInt3:
+                case wgpu::VertexFormat::Uint32x3:
                     return DXGI_FORMAT_R32G32B32_UINT;
-                case wgpu::VertexFormat::UInt4:
+                case wgpu::VertexFormat::Uint32x4:
                     return DXGI_FORMAT_R32G32B32A32_UINT;
-                case wgpu::VertexFormat::Int:
+                case wgpu::VertexFormat::Sint32:
                     return DXGI_FORMAT_R32_SINT;
-                case wgpu::VertexFormat::Int2:
+                case wgpu::VertexFormat::Sint32x2:
                     return DXGI_FORMAT_R32G32_SINT;
-                case wgpu::VertexFormat::Int3:
+                case wgpu::VertexFormat::Sint32x3:
                     return DXGI_FORMAT_R32G32B32_SINT;
-                case wgpu::VertexFormat::Int4:
+                case wgpu::VertexFormat::Sint32x4:
                     return DXGI_FORMAT_R32G32B32A32_SINT;
+                default:
+                    UNREACHABLE();
             }
         }
 
@@ -205,16 +207,18 @@ namespace dawn_native { namespace d3d12 {
             return static_cast<uint8_t>(writeMask);
         }
 
-        D3D12_RENDER_TARGET_BLEND_DESC ComputeColorDesc(const ColorStateDescriptor* descriptor) {
+        D3D12_RENDER_TARGET_BLEND_DESC ComputeColorDesc(const ColorTargetState* state) {
             D3D12_RENDER_TARGET_BLEND_DESC blendDesc;
-            blendDesc.BlendEnable = BlendEnabled(descriptor);
-            blendDesc.SrcBlend = D3D12Blend(descriptor->colorBlend.srcFactor);
-            blendDesc.DestBlend = D3D12Blend(descriptor->colorBlend.dstFactor);
-            blendDesc.BlendOp = D3D12BlendOperation(descriptor->colorBlend.operation);
-            blendDesc.SrcBlendAlpha = D3D12Blend(descriptor->alphaBlend.srcFactor);
-            blendDesc.DestBlendAlpha = D3D12Blend(descriptor->alphaBlend.dstFactor);
-            blendDesc.BlendOpAlpha = D3D12BlendOperation(descriptor->alphaBlend.operation);
-            blendDesc.RenderTargetWriteMask = D3D12RenderTargetWriteMask(descriptor->writeMask);
+            blendDesc.BlendEnable = state->blend != nullptr;
+            if (blendDesc.BlendEnable) {
+                blendDesc.SrcBlend = D3D12Blend(state->blend->color.srcFactor);
+                blendDesc.DestBlend = D3D12Blend(state->blend->color.dstFactor);
+                blendDesc.BlendOp = D3D12BlendOperation(state->blend->color.operation);
+                blendDesc.SrcBlendAlpha = D3D12Blend(state->blend->alpha.srcFactor);
+                blendDesc.DestBlendAlpha = D3D12Blend(state->blend->alpha.dstFactor);
+                blendDesc.BlendOpAlpha = D3D12BlendOperation(state->blend->alpha.operation);
+            }
+            blendDesc.RenderTargetWriteMask = D3D12RenderTargetWriteMask(state->writeMask);
             blendDesc.LogicOpEnable = false;
             blendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
             return blendDesc;
@@ -252,8 +256,7 @@ namespace dawn_native { namespace d3d12 {
             return desc;
         }
 
-        D3D12_DEPTH_STENCIL_DESC ComputeDepthStencilDesc(
-            const DepthStencilStateDescriptor* descriptor) {
+        D3D12_DEPTH_STENCIL_DESC ComputeDepthStencilDesc(const DepthStencilState* descriptor) {
             D3D12_DEPTH_STENCIL_DESC mDepthStencilDescriptor;
             mDepthStencilDescriptor.DepthEnable = TRUE;
             mDepthStencilDescriptor.DepthWriteMask = descriptor->depthWriteEnabled
@@ -292,15 +295,15 @@ namespace dawn_native { namespace d3d12 {
 
     }  // anonymous namespace
 
-    ResultOrError<RenderPipeline*> RenderPipeline::Create(
+    ResultOrError<Ref<RenderPipeline>> RenderPipeline::Create(
         Device* device,
-        const RenderPipelineDescriptor* descriptor) {
+        const RenderPipelineDescriptor2* descriptor) {
         Ref<RenderPipeline> pipeline = AcquireRef(new RenderPipeline(device, descriptor));
         DAWN_TRY(pipeline->Initialize(descriptor));
-        return pipeline.Detach();
+        return pipeline;
     }
 
-    MaybeError RenderPipeline::Initialize(const RenderPipelineDescriptor* descriptor) {
+    MaybeError RenderPipeline::Initialize(const RenderPipelineDescriptor2* descriptor) {
         Device* device = ToBackend(GetDevice());
         uint32_t compileFlags = 0;
 #if defined(_DEBUG)
@@ -313,12 +316,12 @@ namespace dawn_native { namespace d3d12 {
         D3D12_GRAPHICS_PIPELINE_STATE_DESC descriptorD3D12 = {};
 
         PerStage<const char*> entryPoints;
-        entryPoints[SingleShaderStage::Vertex] = descriptor->vertexStage.entryPoint;
-        entryPoints[SingleShaderStage::Fragment] = descriptor->fragmentStage->entryPoint;
+        entryPoints[SingleShaderStage::Vertex] = descriptor->vertex.entryPoint;
+        entryPoints[SingleShaderStage::Fragment] = descriptor->fragment->entryPoint;
 
         PerStage<ShaderModule*> modules;
-        modules[SingleShaderStage::Vertex] = ToBackend(descriptor->vertexStage.module);
-        modules[SingleShaderStage::Fragment] = ToBackend(descriptor->fragmentStage->module);
+        modules[SingleShaderStage::Vertex] = ToBackend(descriptor->vertex.module);
+        modules[SingleShaderStage::Fragment] = ToBackend(descriptor->fragment->module);
 
         PerStage<D3D12_SHADER_BYTECODE*> shaders;
         shaders[SingleShaderStage::Vertex] = &descriptorD3D12.VS;
@@ -345,8 +348,8 @@ namespace dawn_native { namespace d3d12 {
             descriptorD3D12.InputLayout = ComputeInputLayout(&inputElementDescriptors);
         }
 
-        descriptorD3D12.IBStripCutValue = ComputeIndexBufferStripCutValue(
-            GetPrimitiveTopology(), GetVertexStateDescriptor()->indexFormat);
+        descriptorD3D12.IBStripCutValue =
+            ComputeIndexBufferStripCutValue(GetPrimitiveTopology(), GetStripIndexFormat());
 
         descriptorD3D12.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
         descriptorD3D12.RasterizerState.CullMode = D3D12CullMode(GetCullMode());
@@ -370,15 +373,14 @@ namespace dawn_native { namespace d3d12 {
             descriptorD3D12.RTVFormats[static_cast<uint8_t>(i)] =
                 D3D12TextureFormat(GetColorAttachmentFormat(i));
             descriptorD3D12.BlendState.RenderTarget[static_cast<uint8_t>(i)] =
-                ComputeColorDesc(GetColorStateDescriptor(i));
+                ComputeColorDesc(GetColorTargetState(i));
         }
         descriptorD3D12.NumRenderTargets = static_cast<uint32_t>(GetColorAttachmentsMask().count());
 
-        descriptorD3D12.BlendState.AlphaToCoverageEnable = descriptor->alphaToCoverageEnabled;
+        descriptorD3D12.BlendState.AlphaToCoverageEnable = IsAlphaToCoverageEnabled();
         descriptorD3D12.BlendState.IndependentBlendEnable = TRUE;
 
-        descriptorD3D12.DepthStencilState =
-            ComputeDepthStencilDesc(GetDepthStencilStateDescriptor());
+        descriptorD3D12.DepthStencilState = ComputeDepthStencilDesc(GetDepthStencilState());
 
         descriptorD3D12.SampleMask = GetSampleMask();
         descriptorD3D12.PrimitiveTopologyType = D3D12PrimitiveTopologyType(GetPrimitiveTopology());

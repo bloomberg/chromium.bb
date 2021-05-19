@@ -17,7 +17,6 @@
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
@@ -84,7 +83,6 @@ class StatusUploaderTest : public testing::Test {
     // Required for policy::DeviceStatusCollector
     chromeos::DBusThreadManager::Initialize();
 
-    chromeos::CryptohomeClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::TpmManagerClient::InitializeFake();
     client_.SetDMToken("dm_token");
@@ -99,7 +97,6 @@ class StatusUploaderTest : public testing::Test {
     content::RunAllTasksUntilIdle();
     chromeos::TpmManagerClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
-    chromeos::CryptohomeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -177,7 +174,7 @@ class StatusUploaderTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+  ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   std::unique_ptr<MockDeviceStatusCollector> collector_;
   MockDeviceStatusCollector* collector_ptr_;
   ui::UserActivityDetector detector_;

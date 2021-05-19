@@ -6,8 +6,8 @@
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {MAX_SIGNIN_PROMO_IMPRESSION, Router, routes, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-import {setupRouterWithSyncRoutes, simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.m.js';
-import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {setupRouterWithSyncRoutes, simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.js';
 import {isChildVisible, isVisible} from 'chrome://test/test_util.m.js';
 
 // clang-format on
@@ -344,7 +344,7 @@ suite('SyncAccountControl', function() {
     assertFalse(displayedText.includes('barName'));
     assertFalse(displayedText.includes('fooName'));
     assertFalse(displayedText.includes('Sync isn\'t working'));
-    assertTrue(displayedText.includes('Error syncing passwords'));
+    assertTrue(displayedText.includes('Password sync isn\'t working'));
     // The sync error button is shown to resolve the error.
     assertTrue(isChildVisible(testElement, '#sync-error-button'));
     assertTrue(isChildVisible(testElement, '#turn-off'));

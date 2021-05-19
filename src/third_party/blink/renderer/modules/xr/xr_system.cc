@@ -9,7 +9,7 @@
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_fullscreen_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_depth_state_init.h"
@@ -311,8 +311,8 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
   }
 }
 
-bool HasRequiredFeaturePolicy(const ExecutionContext* context,
-                              device::mojom::XRSessionFeature feature) {
+bool HasRequiredPermissionsPolicy(const ExecutionContext* context,
+                                  device::mojom::XRSessionFeature feature) {
   if (!context)
     return false;
 
@@ -333,7 +333,7 @@ bool HasRequiredFeaturePolicy(const ExecutionContext* context,
     case device::mojom::XRSessionFeature::IMAGE_TRACKING:
     case device::mojom::XRSessionFeature::HAND_INPUT:
       return context->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kWebXr,
+          mojom::blink::PermissionsPolicyFeature::kWebXr,
           ReportOptions::kReportOnFailure);
   }
 }
@@ -636,6 +636,10 @@ void XRSystem::PendingRequestSessionQuery::ReportRequestSessionResult(
       GetFeatureRequestStatus(XRSessionFeature::DOM_OVERLAY, session);
   auto feature_request_depth_sensing =
       GetFeatureRequestStatus(XRSessionFeature::DEPTH, session);
+  auto feature_request_plane_detection =
+      GetFeatureRequestStatus(XRSessionFeature::PLANE_DETECTION, session);
+  auto feature_request_image_tracking =
+      GetFeatureRequestStatus(XRSessionFeature::IMAGE_TRACKING, session);
 
   ukm::builders::XR_WebXR_SessionRequest(ukm_source_id_)
       .SetMode(static_cast<int64_t>(mode_))
@@ -665,6 +669,22 @@ void XRSystem::PendingRequestSessionQuery::ReportRequestSessionResult(
              << ": depth sensing was requested, logging a UseCounter";
     UseCounter::Count(session->GetExecutionContext(),
                       WebFeature::kXRDepthSensing);
+  }
+
+  if (session && status == SessionRequestStatus::kSuccess &&
+      IsFeatureRequested(feature_request_plane_detection)) {
+    DVLOG(2) << __func__
+             << ": plane detection was requested, logging a UseCounter";
+    UseCounter::Count(session->GetExecutionContext(),
+                      WebFeature::kXRPlaneDetection);
+  }
+
+  if (session && status == SessionRequestStatus::kSuccess &&
+      IsFeatureRequested(feature_request_image_tracking)) {
+    DVLOG(2) << __func__
+             << ": image tracking was requested, logging a UseCounter";
+    UseCounter::Count(session->GetExecutionContext(),
+                      WebFeature::kXRImageTracking);
   }
 
   if (session && metrics_recorder) {
@@ -1119,10 +1139,10 @@ ScriptPromise XRSystem::InternalIsSessionSupported(
   }
 
   if (!GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kWebXr,
+          mojom::blink::PermissionsPolicyFeature::kWebXr,
           ReportOptions::kReportOnFailure)) {
-    // Only allow the call to be made if the appropriate feature policy is in
-    // place.
+    // Only allow the call to be made if the appropriate permissions policy is
+    // in place.
     query->RejectWithSecurityError(kFeaturePolicyBlocked, &exception_state);
     return promise;
   }
@@ -1335,8 +1355,8 @@ XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
                                            "' is not supported for mode: " +
                                            SessionModeToString(session_mode));
         result.invalid_features = true;
-      } else if (!HasRequiredFeaturePolicy(GetExecutionContext(),
-                                           feature_enum.value())) {
+      } else if (!HasRequiredPermissionsPolicy(GetExecutionContext(),
+                                               feature_enum.value())) {
         AddConsoleMessage(error_level,
                           "Feature '" + feature_string +
                               "' is not permitted by permissions policy");
@@ -1425,11 +1445,11 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
   }
 
   for (const auto& feature : default_features) {
-    if (HasRequiredFeaturePolicy(GetExecutionContext(), feature)) {
+    if (HasRequiredPermissionsPolicy(GetExecutionContext(), feature)) {
       required_features.valid_features.insert(feature);
     } else {
       DVLOG(2) << __func__
-               << ": feature policy not satisfied for a default feature: "
+               << ": permissions policy not satisfied for a default feature: "
                << feature;
       required_features.invalid_features = true;
     }
@@ -1528,7 +1548,7 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
 void XRSystem::MakeXrCompatibleAsync(
     device::mojom::blink::VRService::MakeXrCompatibleCallback callback) {
   if (!GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kWebXr)) {
+          mojom::blink::PermissionsPolicyFeature::kWebXr)) {
     std::move(callback).Run(
         device::mojom::XrCompatibleResult::kWebXrFeaturePolicyBlocked);
     return;
@@ -1546,7 +1566,7 @@ void XRSystem::MakeXrCompatibleAsync(
 void XRSystem::MakeXrCompatibleSync(
     device::mojom::XrCompatibleResult* xr_compatible_result) {
   if (!GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kWebXr)) {
+          mojom::blink::PermissionsPolicyFeature::kWebXr)) {
     *xr_compatible_result =
         device::mojom::XrCompatibleResult::kWebXrFeaturePolicyBlocked;
     return;
@@ -1563,8 +1583,8 @@ void XRSystem::MakeXrCompatibleSync(
 // it might be able to support immersive sessions, where it couldn't before.
 void XRSystem::OnDeviceChanged() {
   ExecutionContext* context = GetExecutionContext();
-  if (context &&
-      context->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebXr)) {
+  if (context && context->IsFeatureEnabled(
+                     mojom::blink::PermissionsPolicyFeature::kWebXr)) {
     DispatchEvent(*blink::Event::Create(event_type_names::kDevicechange));
   }
 }

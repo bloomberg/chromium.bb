@@ -8,6 +8,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -20,6 +22,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/content/base_ui_manager.h"
 #include "components/safe_browsing/content/browser/threat_details_cache.h"
@@ -564,7 +567,7 @@ void ThreatDetails::AddDomElement(
 
 void ThreatDetails::StartCollection() {
   DVLOG(1) << "Starting to compute threat details.";
-  report_.reset(new ClientSafeBrowsingReportRequest());
+  report_ = std::make_unique<ClientSafeBrowsingReportRequest>();
 
   if (IsReportableUrl(resource_.url)) {
     report_->set_url(resource_.url.spec());
@@ -639,7 +642,9 @@ void ThreatDetails::StartCollection() {
 
 void ThreatDetails::RequestThreatDOMDetails(content::RenderFrameHost* frame) {
   content::BackForwardCache::DisableForRenderFrameHost(
-      frame, "safe_browsing::ThreatDetails");
+      frame,
+      back_forward_cache::DisabledReason(
+          back_forward_cache::DisabledReasonId::kSafeBrowsingThreatDetails));
   if (!frame->IsRenderFrameCreated()) {
     // A child frame may have been created browser-side but has not completed
     // setting up the renderer for it yet. In particular, this occurs if the
@@ -886,7 +891,7 @@ void ThreatDetails::AllDone() {
                                 base::Unretained(web_contents())));
 }
 
-void ThreatDetails::FrameDeleted(RenderFrameHost* render_frame_host) {
+void ThreatDetails::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   base::Erase(pending_render_frame_hosts_, render_frame_host);
 }
 

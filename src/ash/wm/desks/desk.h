@@ -6,6 +6,7 @@
 #define ASH_WM_DESKS_DESK_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -13,9 +14,9 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/strings/string16.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 
 namespace ash {
@@ -46,18 +47,20 @@ class ASH_EXPORT Desk {
     virtual void OnDeskDestroyed(const Desk* desk) = 0;
 
     // Called  when the desk's name changes.
-    virtual void OnDeskNameChanged(const base::string16& new_name) = 0;
+    virtual void OnDeskNameChanged(const std::u16string& new_name) = 0;
   };
 
-  explicit Desk(int associated_container_id);
+  explicit Desk(int associated_container_id, bool desk_being_restored = false);
   ~Desk();
+
+  static void SetWeeklyActiveDesks(int weekly_active_desks);
+  static int GetWeeklyActiveDesks();
 
   int container_id() const { return container_id_; }
 
   const std::vector<aura::Window*>& windows() const { return windows_; }
 
-
-  const base::string16& name() const { return name_; }
+  const std::u16string& name() const { return name_; }
 
   bool is_active() const { return is_active_; }
 
@@ -84,6 +87,11 @@ class ASH_EXPORT Desk {
     last_day_visited_ = last_day_visited;
   }
 
+  bool interacted_with_this_week() const { return interacted_with_this_week_; }
+  void set_interacted_with_this_week(bool interacted_with_this_week) {
+    interacted_with_this_week_ = interacted_with_this_week;
+  }
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -98,7 +106,7 @@ class ASH_EXPORT Desk {
   // Sets the desk's name to |new_name| and updates the observers.
   // |set_by_user| should be true if this name was given to the desk by the user
   // from its mini view in overview mode.
-  void SetName(base::string16 new_name, bool set_by_user);
+  void SetName(std::u16string new_name, bool set_by_user);
 
   // Prepares for the animation to activate this desk (i.e. this desk is not
   // active yet), by showing its containers on all root windows while setting
@@ -164,7 +172,8 @@ class ASH_EXPORT Desk {
   void RecordAndResetConsecutiveDailyVisits(bool being_removed);
 
   // Returns the time from base::Time::Now() to Jan 1, 2010 in the local
-  // timezeone in days as an int.
+  // timezeone in days as an int. We use Jan 1, 2010 as an arbitrary epoch
+  // since it is a well-known date in the past.
   int GetDaysFromLocalEpoch() const;
 
   // Overrides the |override_clock_| with |test_clock| for mocking time in
@@ -186,6 +195,10 @@ class ASH_EXPORT Desk {
   // false.
   bool MaybeResetContainersOpacities();
 
+  // If |this| has not been interacted with yet this week, increment
+  // |g_weekly_active_desks| and set |this| to interacted with.
+  void MaybeIncrementWeeklyActiveDesks();
+
   // The associated container ID with this desk.
   const int container_id_;
 
@@ -195,7 +208,7 @@ class ASH_EXPORT Desk {
   std::vector<aura::Window*> windows_;
 
   // The name given to this desk.
-  base::string16 name_;
+  std::u16string name_;
 
   // Maps all root windows to observer objects observing the containers
   // associated with this desk on those root windows.
@@ -238,6 +251,14 @@ class ASH_EXPORT Desk {
   int last_day_visited_ = -1;
 
   base::Clock* override_clock_ = nullptr;
+
+  // Tracks whether |this| has been interacted with this week. This value is
+  // reset by the DesksController.
+  bool interacted_with_this_week_ = false;
+
+  // A timer for marking |this| as interacted with only if the user remains on
+  // |this| for a brief period of time.
+  base::OneShotTimer active_desk_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(Desk);
 };

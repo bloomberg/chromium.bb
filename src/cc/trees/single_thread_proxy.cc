@@ -87,10 +87,12 @@ void SingleThreadProxy::Start() {
             CompositorTimingHistory::BROWSER_UMA,
             layer_tree_host_->rendering_stats_instrumentation(),
             host_impl_->compositor_frame_reporting_controller()));
-    scheduler_on_impl_thread_.reset(
-        new Scheduler(this, scheduler_settings, layer_tree_host_->GetId(),
-                      task_runner_provider_->MainThreadTaskRunner(),
-                      std::move(compositor_timing_history)));
+    scheduler_on_impl_thread_ = std::make_unique<Scheduler>(
+        this, scheduler_settings, layer_tree_host_->GetId(),
+        task_runner_provider_->MainThreadTaskRunner(),
+        std::move(compositor_timing_history),
+        layer_tree_host_->TakeMainPipeline(),
+        layer_tree_host_->TakeCompositorPipeline());
   }
 }
 
@@ -211,6 +213,9 @@ void SingleThreadProxy::DoCommit(const viz::BeginFrameArgs& commit_args) {
 
     IssueImageDecodeFinishedCallbacks();
     host_impl_->CommitComplete();
+
+    layer_tree_host_->NotifyTransitionRequestsFinished(
+        host_impl_->TakeFinishedTransitionRequestSequenceIds());
 
     // Commit goes directly to the active tree, but we need to synchronously
     // "activate" the tree still during commit to satisfy any potential
@@ -516,6 +521,9 @@ void SingleThreadProxy::NotifyImageDecodeRequestFinished() {
     DebugScopedSetImplThread impl(task_runner_provider_);
 
     IssueImageDecodeFinishedCallbacks();
+
+    layer_tree_host_->NotifyTransitionRequestsFinished(
+        host_impl_->TakeFinishedTransitionRequestSequenceIds());
     return;
   }
   SetNeedsCommitOnImplThread();
@@ -625,6 +633,7 @@ void SingleThreadProxy::CompositeImmediatelyForTest(
     // Note: We do not want to prevent SetNeedsAnimate from requesting
     // a commit here.
     commit_requested_ = true;
+    StopDeferringCommits(PaintHoldingCommitTrigger::kFeatureDisabled);
     DoBeginMainFrame(begin_frame_args);
     commit_requested_ = false;
     DoPainting();
@@ -712,7 +721,8 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
         if (scheduler_on_impl_thread_) {
           // Drawing implies we submitted a frame to the LayerTreeFrameSink.
           scheduler_on_impl_thread_->DidSubmitCompositorFrame(
-              frame->frame_token, host_impl_->TakeEventsMetrics());
+              frame->frame_token, host_impl_->TakeEventsMetrics(),
+              frame->has_missing_content);
         }
         single_thread_client_->DidSubmitCompositorFrame();
       }

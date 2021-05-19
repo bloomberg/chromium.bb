@@ -60,16 +60,25 @@ enum PreviewsTypes {
   // DEPRECATED: LITE_PAGE_REDIRECT_ON = 1 << 9,  // Allow the browser to
   // redirect the resource to a Lite Page server. Support for this functionality
   // has been removed.
-  DEFER_ALL_SCRIPT_ON = 1 << 10,  // Request that script execution be deferred
-                                  // until parsing completes.
-  kDeferAllScriptOn = DEFER_ALL_SCRIPT_ON,
+
+  // DEPRECATED DEFER_ALL_SCRIPT_ON = 1 << 10,  // Request that script execution
+  // be deferred until parsing completes. kDeferAllScriptOn =
+  // DEFER_ALL_SCRIPT_ON,
 
   SUBRESOURCE_REDIRECT_ON =
       1 << 11,  // Allow the subresources in the page to be redirected to
                 // serve better optimized resources. Set on subresources.
   kSubresourceRedirectOn = SUBRESOURCE_REDIRECT_ON,
 
-  PREVIEWS_STATE_LAST = SUBRESOURCE_REDIRECT_ON,
+  // Indicates this is a src video request. Multiple range requests are
+  // triggered for playing a src video element. This bit is set only for the
+  // first request for the resource (FRFR), subsequent range requests will not
+  // have this bit. Metrics recording and redirecting to its compressed version
+  // is enough to be done for the first range request, and subsequent range
+  // requests need not have this bit.
+  kSrcVideoRedirectOn = 1 << 12,
+
+  PREVIEWS_STATE_LAST = kSrcVideoRedirectOn,
   kPreviewsStateLast = PREVIEWS_STATE_LAST
 };
 

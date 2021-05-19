@@ -93,11 +93,6 @@ class QUICHE_EXPORT_PRIVATE HpackEncoder {
   // this encoder.
   void SetHeaderListener(HeaderListener listener) { listener_ = listener; }
 
-  void SetHeaderTableDebugVisitor(
-      std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
-    header_table_.set_debug_visitor(std::move(visitor));
-  }
-
   void DisableCompression() { enable_compression_ = false; }
 
   // Returns the estimate of dynamically allocated memory in bytes.
@@ -113,7 +108,7 @@ class QUICHE_EXPORT_PRIVATE HpackEncoder {
   void EncodeRepresentations(RepresentationIterator* iter, std::string* output);
 
   // Emits a static/dynamic indexed representation (Section 7.1).
-  void EmitIndex(const HpackEntry* entry);
+  void EmitIndex(size_t index);
 
   // Emits a literal representation (Section 7.2).
   void EmitIndexedLiteral(const Representation& representation);

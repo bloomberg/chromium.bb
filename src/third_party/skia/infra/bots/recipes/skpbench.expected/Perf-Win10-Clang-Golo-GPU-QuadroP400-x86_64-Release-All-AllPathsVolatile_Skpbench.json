@@ -78,12 +78,11 @@
       "--internalSamples",
       "8",
       "-v5",
-      "--pr",
-      "~nvpr",
       "--allPathsVolatile",
       "--suffix",
       "_volatile",
       "[START_DIR]\\skp\\desk_*svg.skp",
+      "[START_DIR]\\skp\\desk_motionmark*.skp",
       "[START_DIR]\\skp\\desk_chalkboard.skp"
     ],
     "env": {

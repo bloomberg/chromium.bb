@@ -1,5 +1,6 @@
 /* eslint-disable no-sparse-arrays */
 import { ResolveType, ZipKeysWithValues } from '../common/framework/util/types.js';
+import { assert } from '../common/framework/util/util.js';
 
 import { GPUConst } from './constants.js';
 
@@ -43,6 +44,11 @@ function makeTable<
   return result as any;
 }
 
+// Queries
+
+export const kMaxQueryCount = 8192;
+export const kQueryTypes = ['occlusion', 'pipeline-statistics', 'timestamp'] as const;
+
 // Buffers
 
 export const kBufferSizeAlignment = 4;
@@ -65,80 +71,91 @@ export const kBufferUsages = numericKeysOf<GPUBufferUsage>(kBufferUsageInfo);
 
 // Textures
 
+// Note that we repeat the header multiple times in order to make it easier to read.
 export const kRegularTextureFormatInfo = /* prettier-ignore */ makeTable(
-                          ['renderable', 'color', 'depth', 'stencil', 'storage', 'copySrc', 'copyDst', 'bytesPerBlock', 'blockWidth', 'blockHeight',              'extension'] as const,
-                          [            ,    true,   false,     false,          ,      true,      true,                ,            1,             1,                         ] as const, {
+                           ['renderable', 'multisample', 'color', 'depth', 'stencil', 'storage', 'copySrc', 'copyDst', 'bytesPerBlock', 'blockWidth', 'blockHeight',              'extension'] as const,
+                           [            ,              ,    true,   false,     false,          ,      true,      true,                ,            1,             1,                         ] as const, {
   // 8-bit formats
-  'r8unorm':              [        true,        ,        ,          ,     false,          ,          ,               1],
-  'r8snorm':              [       false,        ,        ,          ,     false,          ,          ,               1],
-  'r8uint':               [        true,        ,        ,          ,     false,          ,          ,               1],
-  'r8sint':               [        true,        ,        ,          ,     false,          ,          ,               1],
+  'r8unorm':               [        true,          true,        ,        ,          ,     false,          ,          ,               1],
+  'r8snorm':               [       false,         false,        ,        ,          ,     false,          ,          ,               1],
+  'r8uint':                [        true,          true,        ,        ,          ,     false,          ,          ,               1],
+  'r8sint':                [        true,          true,        ,        ,          ,     false,          ,          ,               1],
   // 16-bit formats
-  'r16uint':              [        true,        ,        ,          ,     false,          ,          ,               2],
-  'r16sint':              [        true,        ,        ,          ,     false,          ,          ,               2],
-  'r16float':             [        true,        ,        ,          ,     false,          ,          ,               2],
-  'rg8unorm':             [        true,        ,        ,          ,     false,          ,          ,               2],
-  'rg8snorm':             [       false,        ,        ,          ,     false,          ,          ,               2],
-  'rg8uint':              [        true,        ,        ,          ,     false,          ,          ,               2],
-  'rg8sint':              [        true,        ,        ,          ,     false,          ,          ,               2],
+  'r16uint':               [        true,          true,        ,        ,          ,     false,          ,          ,               2],
+  'r16sint':               [        true,          true,        ,        ,          ,     false,          ,          ,               2],
+  'r16float':              [        true,          true,        ,        ,          ,     false,          ,          ,               2],
+  'rg8unorm':              [        true,          true,        ,        ,          ,     false,          ,          ,               2],
+  'rg8snorm':              [       false,         false,        ,        ,          ,     false,          ,          ,               2],
+  'rg8uint':               [        true,          true,        ,        ,          ,     false,          ,          ,               2],
+  'rg8sint':               [        true,          true,        ,        ,          ,     false,          ,          ,               2],
   // 32-bit formats
-  'r32uint':              [        true,        ,        ,          ,      true,          ,          ,               4],
-  'r32sint':              [        true,        ,        ,          ,      true,          ,          ,               4],
-  'r32float':             [        true,        ,        ,          ,      true,          ,          ,               4],
-  'rg16uint':             [        true,        ,        ,          ,     false,          ,          ,               4],
-  'rg16sint':             [        true,        ,        ,          ,     false,          ,          ,               4],
-  'rg16float':            [        true,        ,        ,          ,     false,          ,          ,               4],
-  'rgba8unorm':           [        true,        ,        ,          ,      true,          ,          ,               4],
-  'rgba8unorm-srgb':      [        true,        ,        ,          ,     false,          ,          ,               4],
-  'rgba8snorm':           [       false,        ,        ,          ,      true,          ,          ,               4],
-  'rgba8uint':            [        true,        ,        ,          ,      true,          ,          ,               4],
-  'rgba8sint':            [        true,        ,        ,          ,      true,          ,          ,               4],
-  'bgra8unorm':           [        true,        ,        ,          ,     false,          ,          ,               4],
-  'bgra8unorm-srgb':      [        true,        ,        ,          ,     false,          ,          ,               4],
+  'r32uint':               [        true,          true,        ,        ,          ,      true,          ,          ,               4],
+  'r32sint':               [        true,          true,        ,        ,          ,      true,          ,          ,               4],
+  'r32float':              [        true,          true,        ,        ,          ,      true,          ,          ,               4],
+  'rg16uint':              [        true,          true,        ,        ,          ,     false,          ,          ,               4],
+  'rg16sint':              [        true,          true,        ,        ,          ,     false,          ,          ,               4],
+  'rg16float':             [        true,          true,        ,        ,          ,     false,          ,          ,               4],
+  'rgba8unorm':            [        true,          true,        ,        ,          ,      true,          ,          ,               4],
+  'rgba8unorm-srgb':       [        true,          true,        ,        ,          ,     false,          ,          ,               4],
+  'rgba8snorm':            [       false,         false,        ,        ,          ,      true,          ,          ,               4],
+  'rgba8uint':             [        true,          true,        ,        ,          ,      true,          ,          ,               4],
+  'rgba8sint':             [        true,          true,        ,        ,          ,      true,          ,          ,               4],
+  'bgra8unorm':            [        true,          true,        ,        ,          ,     false,          ,          ,               4],
+  'bgra8unorm-srgb':       [        true,          true,        ,        ,          ,     false,          ,          ,               4],
   // Packed 32-bit formats
-  'rgb10a2unorm':         [        true,        ,        ,          ,     false,          ,          ,               4],
-  'rg11b10ufloat':        [       false,        ,        ,          ,     false,          ,          ,               4],
-  'rgb9e5ufloat':         [       false,        ,        ,          ,     false,          ,          ,               4],
+  'rgb10a2unorm':          [        true,          true,        ,        ,          ,     false,          ,          ,               4],
+  'rg11b10ufloat':         [       false,         false,        ,        ,          ,     false,          ,          ,               4],
+  'rgb9e5ufloat':          [       false,         false,        ,        ,          ,     false,          ,          ,               4],
   // 64-bit formats
-  'rg32uint':             [        true,        ,        ,          ,      true,          ,          ,               8],
-  'rg32sint':             [        true,        ,        ,          ,      true,          ,          ,               8],
-  'rg32float':            [        true,        ,        ,          ,      true,          ,          ,               8],
-  'rgba16uint':           [        true,        ,        ,          ,      true,          ,          ,               8],
-  'rgba16sint':           [        true,        ,        ,          ,      true,          ,          ,               8],
-  'rgba16float':          [        true,        ,        ,          ,      true,          ,          ,               8],
+  'rg32uint':              [        true,          true,        ,        ,          ,      true,          ,          ,               8],
+  'rg32sint':              [        true,          true,        ,        ,          ,      true,          ,          ,               8],
+  'rg32float':             [        true,          true,        ,        ,          ,      true,          ,          ,               8],
+  'rgba16uint':            [        true,          true,        ,        ,          ,      true,          ,          ,               8],
+  'rgba16sint':            [        true,          true,        ,        ,          ,      true,          ,          ,               8],
+  'rgba16float':           [        true,          true,        ,        ,          ,      true,          ,          ,               8],
   // 128-bit formats
-  'rgba32uint':           [        true,        ,        ,          ,      true,          ,          ,              16],
-  'rgba32sint':           [        true,        ,        ,          ,      true,          ,          ,              16],
-  'rgba32float':          [        true,        ,        ,          ,      true,          ,          ,              16],
+  'rgba32uint':            [        true,          true,        ,        ,          ,      true,          ,          ,              16],
+  'rgba32sint':            [        true,          true,        ,        ,          ,      true,          ,          ,              16],
+  'rgba32float':           [        true,          true,        ,        ,          ,      true,          ,          ,              16],
 } as const);
 /* prettier-ignore */
-const kTexFmtInfoHeader = ['renderable', 'color', 'depth', 'stencil', 'storage', 'copySrc', 'copyDst', 'bytesPerBlock', 'blockWidth', 'blockHeight',              'extension'] as const;
+const kTexFmtInfoHeader =  ['renderable', 'multisample', 'color', 'depth', 'stencil', 'storage', 'copySrc', 'copyDst', 'bytesPerBlock', 'blockWidth', 'blockHeight',              'extension'] as const;
 export const kSizedDepthStencilFormatInfo = /* prettier-ignore */ makeTable(kTexFmtInfoHeader,
-                          [        true,   false,        ,          ,     false,          ,          ,                ,            1,             1,                         ] as const, {
-  'depth32float':         [        true,   false,    true,     false,          ,     false,     false,               4],
+                           [        true,          true,   false,        ,          ,     false,     false,     false,                ,            1,             1,                         ] as const, {
+  'depth32float':          [            ,              ,        ,    true,     false,          ,          ,          ,               4],
+  'depth16unorm':          [            ,              ,        ,    true,     false,          ,          ,          ,               2],
+  'stencil8':              [            ,              ,        ,   false,      true,          ,          ,          ,               1],
 } as const);
 export const kUnsizedDepthStencilFormatInfo = /* prettier-ignore */ makeTable(kTexFmtInfoHeader,
-                          [        true,   false,        ,          ,     false,          ,          ,       undefined,            1,             1,                         ] as const, {
-  'depth24plus':          [            ,        ,    true,     false,          ,     false,     false],
-  'depth24plus-stencil8': [            ,        ,    true,      true,          ,     false,     false],
+                           [        true,          true,   false,        ,          ,     false,     false,     false,       undefined,            1,             1,                         ] as const, {
+  'depth24plus':           [            ,              ,        ,    true,     false,          ,          ,          ],
+  'depth24plus-stencil8':  [            ,              ,        ,    true,      true,          ,          ,          ],
+  // bytesPerBlock only makes sense on a per-aspect basis. But this table can't express that. So we put depth24unorm-stencil8 and depth32float-stencil8 to be unsized formats for now.
+  'depth24unorm-stencil8': [            ,              ,        ,    true,      true,          ,          ,          ,                ,             ,              ,  'depth24unorm-stencil8'],
+  'depth32float-stencil8': [            ,              ,        ,    true,      true,          ,          ,          ,                ,             ,              ,  'depth32float-stencil8'],
 } as const);
 export const kCompressedTextureFormatInfo = /* prettier-ignore */ makeTable(kTexFmtInfoHeader,
-                          [       false,    true,   false,     false,     false,      true,      true,                ,            4,             4,                         ] as const, {
-  'bc1-rgba-unorm':       [            ,        ,        ,          ,          ,          ,          ,               8,            4,             4, 'texture-compression-bc'],
-  'bc1-rgba-unorm-srgb':  [            ,        ,        ,          ,          ,          ,          ,               8,            4,             4, 'texture-compression-bc'],
-  'bc2-rgba-unorm':       [            ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
-  'bc2-rgba-unorm-srgb':  [            ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
-  'bc3-rgba-unorm':       [            ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
-  'bc3-rgba-unorm-srgb':  [            ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
-  'bc4-r-unorm':          [            ,        ,        ,          ,          ,          ,          ,               8,            4,             4, 'texture-compression-bc'],
-  'bc4-r-snorm':          [            ,        ,        ,          ,          ,          ,          ,               8,            4,             4, 'texture-compression-bc'],
-  'bc5-rg-unorm':         [            ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
-  'bc5-rg-snorm':         [            ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
-  'bc6h-rgb-ufloat':      [            ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
-  'bc6h-rgb-float':       [            ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
-  'bc7-rgba-unorm':       [            ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
-  'bc7-rgba-unorm-srgb':  [            ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
+                           [       false,         false,    true,   false,     false,     false,      true,      true,                ,            4,             4,                         ] as const, {
+  'bc1-rgba-unorm':        [            ,              ,        ,        ,          ,          ,          ,          ,               8,            4,             4, 'texture-compression-bc'],
+  'bc1-rgba-unorm-srgb':   [            ,              ,        ,        ,          ,          ,          ,          ,               8,            4,             4, 'texture-compression-bc'],
+  'bc2-rgba-unorm':        [            ,              ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
+  'bc2-rgba-unorm-srgb':   [            ,              ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
+  'bc3-rgba-unorm':        [            ,              ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
+  'bc3-rgba-unorm-srgb':   [            ,              ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
+  'bc4-r-unorm':           [            ,              ,        ,        ,          ,          ,          ,          ,               8,            4,             4, 'texture-compression-bc'],
+  'bc4-r-snorm':           [            ,              ,        ,        ,          ,          ,          ,          ,               8,            4,             4, 'texture-compression-bc'],
+  'bc5-rg-unorm':          [            ,              ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
+  'bc5-rg-snorm':          [            ,              ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
+  'bc6h-rgb-ufloat':       [            ,              ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
+  'bc6h-rgb-float':        [            ,              ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
+  'bc7-rgba-unorm':        [            ,              ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
+  'bc7-rgba-unorm-srgb':   [            ,              ,        ,        ,          ,          ,          ,          ,              16,            4,             4, 'texture-compression-bc'],
 } as const);
+
+export type RegularTextureFormat = keyof typeof kRegularTextureFormatInfo;
+export type SizedDepthStencilFormat = keyof typeof kSizedDepthStencilFormatInfo;
+export type UnsizedDepthStencilFormat = keyof typeof kUnsizedDepthStencilFormatInfo;
+export type CompressedTextureFormat = keyof typeof kCompressedTextureFormatInfo;
 
 export const kRegularTextureFormats = keysOf(kRegularTextureFormatInfo);
 export const kSizedDepthStencilFormats = keysOf(kSizedDepthStencilFormatInfo);
@@ -212,6 +229,67 @@ export const kTextureAspectInfo: {
 };
 export const kTextureAspects = keysOf(kTextureAspectInfo);
 
+const kDepthStencilFormatCapabilityInBufferTextureCopy = {
+  // kUnsizedDepthStencilFormats
+  depth24plus: {
+    CopyB2T: [],
+    CopyT2B: [],
+    texelAspectSize: { 'depth-only': -1, 'stencil-only': -1 },
+  },
+  'depth24plus-stencil8': {
+    CopyB2T: ['stencil-only'],
+    CopyT2B: ['stencil-only'],
+    texelAspectSize: { 'depth-only': -1, 'stencil-only': 1 },
+  },
+
+  // kSizedDepthStencilFormats
+  depth16unorm: {
+    CopyB2T: ['all', 'depth-only'],
+    CopyT2B: ['all', 'depth-only'],
+    texelAspectSize: { 'depth-only': 2, 'stencil-only': -1 },
+  },
+  depth32float: {
+    CopyB2T: [],
+    CopyT2B: ['all', 'depth-only'],
+    texelAspectSize: { 'depth-only': 4, 'stencil-only': -1 },
+  },
+  'depth24unorm-stencil8': {
+    CopyB2T: ['stencil-only'],
+    CopyT2B: ['depth-only', 'stencil-only'],
+    texelAspectSize: { 'depth-only': 4, 'stencil-only': 1 },
+  },
+  'depth32float-stencil8': {
+    CopyB2T: ['stencil-only'],
+    CopyT2B: ['depth-only', 'stencil-only'],
+    texelAspectSize: { 'depth-only': 4, 'stencil-only': 1 },
+  },
+  stencil8: {
+    CopyB2T: ['all', 'stencil-only'],
+    CopyT2B: ['all', 'stencil-only'],
+    texelAspectSize: { 'depth-only': -1, 'stencil-only': 1 },
+  },
+} as const;
+
+export function depthStencilBufferTextureCopySupported(
+  type: 'CopyB2T' | 'CopyT2B',
+  format: DepthStencilFormat,
+  aspect: GPUTextureAspect
+): boolean {
+  const supportedAspects: readonly GPUTextureAspect[] =
+    kDepthStencilFormatCapabilityInBufferTextureCopy[format][type];
+  return supportedAspects.includes(aspect);
+}
+
+export function depthStencilFormatAspectSize(
+  format: DepthStencilFormat,
+  aspect: 'depth-only' | 'stencil-only'
+) {
+  const texelAspectSize =
+    kDepthStencilFormatCapabilityInBufferTextureCopy[format].texelAspectSize[aspect];
+  assert(texelAspectSize > 0);
+  return texelAspectSize;
+}
+
 export const kTextureUsageInfo: {
   readonly [k in GPUTextureUsage]: {};
 } = {
@@ -219,7 +297,7 @@ export const kTextureUsageInfo: {
   [GPUConst.TextureUsage.COPY_DST]: {},
   [GPUConst.TextureUsage.SAMPLED]: {},
   [GPUConst.TextureUsage.STORAGE]: {},
-  [GPUConst.TextureUsage.OUTPUT_ATTACHMENT]: {},
+  [GPUConst.TextureUsage.RENDER_ATTACHMENT]: {},
 };
 export const kTextureUsages = numericKeysOf<GPUTextureUsage>(kTextureUsageInfo);
 
@@ -252,6 +330,48 @@ export const kTextureViewDimensionInfo: {
 };
 export const kTextureViewDimensions = keysOf(kTextureViewDimensionInfo);
 
+// Vertex formats
+
+export const kVertexFormatInfo = /* prettier-ignore */ makeTable(
+               ['bytesPerComponent',  'type', 'componentCount'] as const,
+               [                   ,        ,                 ] as const, {
+  // 8 bit components
+  'uint8x2':   [                  1,  'uint',                2],
+  'uint8x4':   [                  1,  'uint',                4],
+  'sint8x2':   [                  1,  'sint',                2],
+  'sint8x4':   [                  1,  'sint',                4],
+  'unorm8x2':  [                  1, 'unorm',                2],
+  'unorm8x4':  [                  1, 'unorm',                4],
+  'snorm8x2':  [                  1, 'snorm',                2],
+  'snorm8x4':  [                  1, 'snorm',                4],
+  // 16 bit components
+  'uint16x2':  [                  2,  'uint',                2],
+  'uint16x4':  [                  2,  'uint',                4],
+  'sint16x2':  [                  2,  'sint',                2],
+  'sint16x4':  [                  2,  'sint',                4],
+  'unorm16x2': [                  2, 'unorm',                2],
+  'unorm16x4': [                  2, 'unorm',                4],
+  'snorm16x2': [                  2, 'snorm',                2],
+  'snorm16x4': [                  2, 'snorm',                4],
+  'float16x2': [                  2, 'float',                2],
+  'float16x4': [                  2, 'float',                4],
+  // 32 bit components
+  'float32':   [                  4, 'float',                1],
+  'float32x2': [                  4, 'float',                2],
+  'float32x3': [                  4, 'float',                3],
+  'float32x4': [                  4, 'float',                4],
+  'uint32':    [                  4,  'uint',                1],
+  'uint32x2':  [                  4,  'uint',                2],
+  'uint32x3':  [                  4,  'uint',                3],
+  'uint32x4':  [                  4,  'uint',                4],
+  'sint32':    [                  4,  'sint',                1],
+  'sint32x2':  [                  4,  'sint',                2],
+  'sint32x3':  [                  4,  'sint',                3],
+  'sint32x4':  [                  4,  'sint',                4]
+} as const);
+export type VertexFormat = keyof typeof kVertexFormatInfo;
+export const kVertexFormats = keysOf(kVertexFormatInfo);
+
 // Typedefs for bindings
 
 export type PerStageBindingLimitClass =
@@ -282,6 +402,9 @@ type TextureBindingType =
   | 'readonly-storage-texture';
 
 // Bindings
+
+// Dynamic buffer offsets require offset to be divisible by 256
+export const kMinDynamicBufferOffsetAlignment = 256;
 
 export const kMaxBindingsPerBindGroup = 16;
 
@@ -419,5 +542,11 @@ export const kShaderStageCombinations: readonly GPUShaderStageFlags[] = [0, 1, 2
 // TODO: Switch existing tests to use kTextureSampleCounts
 export const kTextureSampleCounts = [1, 4] as const;
 
+// Pipeline limits
+
 // TODO: Update maximum color attachments when defined
 export const kMaxColorAttachments = 4;
+
+export const kMaxVertexBuffers = 8;
+export const kMaxVertexAttributes = 16;
+export const kMaxVertexBufferArrayStride = 2048;

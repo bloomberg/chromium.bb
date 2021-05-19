@@ -21,8 +21,6 @@
 
 class GURL;
 struct ScreenshotArea;
-FORWARD_DECLARE_TEST(WebRtcScreenCaptureBrowserTestWithPicker,
-                     ScreenCaptureVideoWithDlp);
 
 namespace aura {
 class Window;
@@ -85,7 +83,7 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
   void OnScreenCaptureStarted(
       const std::string& label,
       std::vector<content::DesktopMediaID> screen_capture_ids,
-      const base::string16& application_title,
+      const std::u16string& application_title,
       content::MediaStreamUI::StateChangeCallback state_change_callback);
 
   // Called when screen capture is stopped.
@@ -101,21 +99,7 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
   static void ResetDlpContentManagerForTesting();
 
  private:
-  // TODO(crbug.com/1145954): Refactor to avoid adding tests as friends.
-  FRIEND_TEST_ALL_PREFIXES(DlpContentManagerBrowserTest, ScreenshotsRestricted);
-  FRIEND_TEST_ALL_PREFIXES(DlpContentManagerBrowserTest,
-                           VideoCaptureStoppedWhenConfidentialWindowResized);
-  FRIEND_TEST_ALL_PREFIXES(DlpContentManagerBrowserTest,
-                           VideoCaptureStoppedWhenNonConfidentialWindowResized);
-  FRIEND_TEST_ALL_PREFIXES(DlpContentManagerBrowserTest,
-                           VideoCaptureNotStoppedWhenConfidentialWindowHidden);
-  FRIEND_TEST_ALL_PREFIXES(DlpContentManagerPolicyBrowserTest,
-                           GetRestrictionSetForURL);
-  FRIEND_TEST_ALL_PREFIXES(DlpContentManagerBrowserTest,
-                           ScreenCaptureNotification);
-  FRIEND_TEST_ALL_PREFIXES(::WebRtcScreenCaptureBrowserTestWithPicker,
-                           ScreenCaptureVideoWithDlp);
-  friend class DlpContentManagerTest;
+  friend class DlpContentManagerTestHelper;
   friend class DlpContentTabHelper;
   friend class MockDlpContentManager;
 
@@ -125,7 +109,7 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
     ScreenCaptureInfo(
         const std::string& label,
         const content::DesktopMediaID& media_id,
-        const base::string16& application_title,
+        const std::u16string& application_title,
         content::MediaStreamUI::StateChangeCallback state_change_callback);
     ScreenCaptureInfo(const ScreenCaptureInfo& other);
     ScreenCaptureInfo& operator=(const ScreenCaptureInfo& other);
@@ -136,7 +120,7 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
 
     std::string label;
     content::DesktopMediaID media_id;
-    base::string16 application_title;
+    std::u16string application_title;
     content::MediaStreamUI::StateChangeCallback state_change_callback;
     bool is_running = true;
     bool showing_paused_notification = false;

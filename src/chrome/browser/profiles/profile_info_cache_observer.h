@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_OBSERVER_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_OBSERVER_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "ui/gfx/image/image.h"
 
 namespace base {
@@ -20,12 +21,20 @@ class ProfileInfoCacheObserver {
   ProfileInfoCacheObserver& operator=(const ProfileInfoCacheObserver&) = delete;
   virtual ~ProfileInfoCacheObserver() = default;
 
+  // Notifies observers that a new profile at `profile_path` was added to cache.
+  // It is guaranteed to be the first observer method that can observe a new
+  // profile being added to cache.
   virtual void OnProfileAdded(const base::FilePath& profile_path) {}
+  // Notifies observers that a profile at `profile_path` is going to be removed
+  // from cache soon.
   virtual void OnProfileWillBeRemoved(const base::FilePath& profile_path) {}
+  // Notifies observers that a profile at `profile_path` was removed from cache.
+  // It is guaranteed to be the first observer method that can observe the
+  // profile being removed from cache.
   virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
-                                   const base::string16& profile_name) {}
+                                   const std::u16string& profile_name) {}
   virtual void OnProfileNameChanged(const base::FilePath& profile_path,
-                                    const base::string16& old_profile_name) {}
+                                    const std::u16string& old_profile_name) {}
   virtual void OnProfileAuthInfoChanged(const base::FilePath& profile_path) {}
   virtual void OnProfileAvatarChanged(const base::FilePath& profile_path) {}
   virtual void OnProfileHighResAvatarLoaded(

@@ -33,6 +33,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/animation/bounds_animator.h"
+#include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/mouse_watcher.h"
@@ -43,7 +44,7 @@
 
 class StackedTabStripLayout;
 class Tab;
-class TabHoverCardBubbleView;
+class TabHoverCardController;
 class TabStripController;
 class TabStripObserver;
 class TabStripLayoutHelper;
@@ -78,6 +79,7 @@ class TabStrip : public views::View,
                  public views::ViewObserver,
                  public views::ViewTargeterDelegate,
                  public views::WidgetObserver,
+                 public views::BoundsAnimatorObserver,
                  public TabController,
                  public BrowserRootView::DropTarget {
  public:
@@ -122,9 +124,6 @@ class TabStrip : public views::View,
   // is being dragged or animated to prevent extensions from messing things up
   // while that's happening.
   bool IsTabStripEditable() const;
-
-  // Returns whether tab dragging is in progress.
-  bool CanHighlightTabs() const;
 
   // Returns information about tabs at given indices.
   bool IsTabCrashed(int tab_index) const;
@@ -187,7 +186,9 @@ class TabStrip : public views::View,
   // changes. This should be called when the result of
   // |TabStripController::GetGroupTitle(group)| or
   // |TabStripController::GetGroupColorId(group)| changes.
-  void OnGroupVisualsChanged(const tab_groups::TabGroupId& group);
+  void OnGroupVisualsChanged(const tab_groups::TabGroupId& group,
+                             const tab_groups::TabGroupVisualData* old_visuals,
+                             const tab_groups::TabGroupVisualData* new_visuals);
 
   // Handles animations relating to toggling the collapsed state of a group.
   void ToggleTabGroup(const tab_groups::TabGroupId& group,
@@ -310,7 +311,7 @@ class TabStrip : public views::View,
   const Tab* GetAdjacentTab(const Tab* tab, int offset) override;
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
-  void UpdateHoverCard(Tab* tab) override;
+  void UpdateHoverCard(Tab* tab, HoverCardUpdateType update_type) override;
   bool ShowDomainInHoverCards() const override;
   bool HoverCardIsShowingForTab(Tab* tab) override;
   int GetBackgroundOffset() const override;
@@ -325,13 +326,13 @@ class TabStrip : public views::View,
       BrowserFrameActiveState active_state) const override;
   SkColor GetTabForegroundColor(TabActive active,
                                 SkColor background_color) const override;
-  base::string16 GetAccessibleTabName(const Tab* tab) const override;
+  std::u16string GetAccessibleTabName(const Tab* tab) const override;
   base::Optional<int> GetCustomBackgroundId(
       BrowserFrameActiveState active_state) const override;
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
   float GetHoverOpacityForTab(float range_parameter) const override;
   float GetHoverOpacityForRadialHighlight() const override;
-  base::string16 GetGroupTitle(
+  std::u16string GetGroupTitle(
       const tab_groups::TabGroupId& group) const override;
   tab_groups::TabGroupColorId GetGroupColorId(
       const tab_groups::TabGroupId& group) const override;
@@ -365,7 +366,7 @@ class TabStrip : public views::View,
   friend class TabGroupEditorBubbleViewDialogBrowserTest;
   friend class TabHoverCardBubbleViewBrowserTest;
   friend class TabHoverCardBubbleViewInteractiveUiTest;
-  friend class TabStripTest;
+  friend class TabStripTestBase;
   friend class TabStripRegionViewTestBase;
 
   class TabContextMenuController : public views::ContextMenuController {
@@ -540,7 +541,10 @@ class TabStrip : public views::View,
   // Returns the bounds to render the drop at, in screen coordinates. Sets
   // |is_beneath| to indicate whether the arrow is beneath the tab, or above
   // it.
-  gfx::Rect GetDropBounds(int drop_index, bool drop_before, bool* is_beneath);
+  gfx::Rect GetDropBounds(int drop_index,
+                          bool drop_before,
+                          bool drop_in_group,
+                          bool* is_beneath);
 
   // Show drop arrow with passed |tab_data_index| and |drop_before|.
   // If |tab_data_index| is negative, the arrow will disappear.
@@ -635,12 +639,15 @@ class TabStrip : public views::View,
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 
   // views::ViewObserver:
-  void OnViewIsDeleting(views::View* observed_view) override;
   void OnViewFocused(views::View* observed_view) override;
   void OnViewBlurred(views::View* observed_view) override;
 
   // views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+
+  // views::BoundsAnimatorObserver:
+  void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override {}
+  void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
 
   void OnTouchUiChanged();
 
@@ -660,13 +667,6 @@ class TabStrip : public views::View,
   views::ViewModelT<Tab> tabs_;
 
   std::map<tab_groups::TabGroupId, std::unique_ptr<TabGroupViews>> group_views_;
-
-  // The view tracker is used to keep track of if the hover card has been
-  // destroyed by its widget.
-  TabHoverCardBubbleView* hover_card_ = nullptr;
-  base::ScopedObservation<views::View, views::ViewObserver>
-      hover_card_observation_{this};
-  std::unique_ptr<ui::EventHandler> hover_card_event_sniffer_;
 
   std::unique_ptr<TabStripController> controller_;
 
@@ -758,6 +758,8 @@ class TabStrip : public views::View,
   float radial_highlight_opacity_ = 1.0f;
 
   SkColor separator_color_ = gfx::kPlaceholderColor;
+
+  std::unique_ptr<TabHoverCardController> hover_card_controller_;
 
   const base::CallbackListSubscription subscription_ =
       ui::TouchUiController::Get()->RegisterCallback(

@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/media_router/cast_dialog_no_sinks_view.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

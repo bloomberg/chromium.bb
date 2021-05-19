@@ -19,12 +19,14 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_constants.h"
-#include "extensions/browser/process_map.h"
+#include "content/public/common/content_features.h"
 #include "extensions/buildflags/buildflags.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #endif
 
@@ -77,10 +79,6 @@ void GatherMetricsForRenderProcess(content::RenderProcessHost* host,
 ProcessMonitor::Metrics& operator+=(ProcessMonitor::Metrics& lhs,
                                     const ProcessMonitor::Metrics& rhs) {
   lhs.cpu_usage += rhs.cpu_usage;
-
-#if defined(OS_WIN)
-  lhs.disk_usage += rhs.disk_usage;
-#endif
 
 #if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
     defined(OS_AIX)
@@ -180,8 +178,10 @@ std::vector<ProcessMetadata> ProcessMonitor::GatherProcessesOnUIThread() {
 }
 
 // static
-std::vector<ProcessMetadata> ProcessMonitor::GatherProcessesOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+std::vector<ProcessMetadata> ProcessMonitor::GatherProcessesOnProcessThread() {
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
 
   std::vector<ProcessMetadata> processes;
 
@@ -192,8 +192,8 @@ std::vector<ProcessMetadata> ProcessMonitor::GatherProcessesOnIOThread() {
     child_process_data.handle = iter.GetData().GetProcess().Handle();
     child_process_data.process_type = iter.GetData().process_type;
 
-    if (iter.GetData().name == base::ASCIIToUTF16(content::kFlashPluginName)) {
-      child_process_data.process_subtype = kProcessSubtypePPAPIFlash;
+    if (iter.GetData().metrics_name == network::mojom::NetworkService::Name_) {
+      child_process_data.process_subtype = kProcessSubtypeNetworkProcess;
     }
 
     processes.push_back(child_process_data);
@@ -224,10 +224,14 @@ void ProcessMonitor::GatherProcesses() {
   std::vector<ProcessMetadata> ui_thread_processes =
       GatherProcessesOnUIThread();
 
-  // Then retrieve IO thread processes and invoke GatherMetrics() with both
+  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                         ? content::GetUIThreadTaskRunner({})
+                         : content::GetIOThreadTaskRunner({});
+  // Then retrieve process thread processes and invoke GatherMetrics() with both
   // set of processes.
-  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
-      FROM_HERE, base::BindOnce(&ProcessMonitor::GatherProcessesOnIOThread),
+  task_runner->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&ProcessMonitor::GatherProcessesOnProcessThread),
       base::BindOnce(&ProcessMonitor::GatherMetrics,
                      weak_ptr_factory_.GetWeakPtr(), current_update_sequence,
                      std::move(ui_thread_processes)));

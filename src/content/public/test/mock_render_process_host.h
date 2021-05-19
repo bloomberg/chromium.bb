@@ -97,7 +97,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void OnForegroundServiceWorkerAdded() override;
   void OnForegroundServiceWorkerRemoved() override;
   StoragePartition* GetStoragePartition() override;
-  virtual void AddWord(const base::string16& word);
+  virtual void AddWord(const std::u16string& word);
   bool Shutdown(int exit_code) override;
   bool ShutdownRequested() override;
   bool FastShutdownIfPossible(size_t page_count,
@@ -137,8 +137,6 @@ class MockRenderProcessHost : public RenderProcessHost {
       bool incoming,
       bool outgoing,
       WebRtcRtpPacketCallback packet_callback) override;
-  void EnableWebRtcEventLogOutput(int lid, int output_period_ms) override;
-  void DisableWebRtcEventLogOutput(int lid) override;
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
@@ -223,6 +221,7 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   void CleanupNetworkServicePluginExceptionsUponDestruction() override;
   std::string GetInfoForBrowserContextDestructionCrashReporting() override;
+  void WriteIntoTracedValue(perfetto::TracedValue context) override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;

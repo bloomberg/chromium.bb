@@ -269,12 +269,15 @@ void IntraPredTest<bitdepth, Pixel>::TestSaturatedValues() {
 
 template <int bitdepth, typename Pixel>
 void IntraPredTest<bitdepth, Pixel>::TestRandomValues() {
-  libvpx_test::ACMRandom rnd(libvpx_test::ACMRandom::DeterministicSeed());
+  // Use an alternate seed to differentiate this test from TestSpeed().
+  libvpx_test::ACMRandom rnd(test_utils::kAlternateDeterministicSeed);
   for (int i = 0; i < kNumIntraPredictors; ++i) {
     // Skip the 'C' test case as this is used as the reference.
     if (base_intrapreds_[i] == nullptr) continue;
     if (cur_intrapreds_[i] == nullptr) continue;
-    for (int n = 0; n < 100000; ++n) {
+    // It may be worthwhile to temporarily increase this loop size when testing
+    // changes that specifically affect this test.
+    for (int n = 0; n < 10000; ++n) {
       intra_pred_mem_.Reset(&rnd);
 
       memcpy(intra_pred_mem_.dst, intra_pred_mem_.ref_src,
@@ -613,7 +616,8 @@ template <int bitdepth, typename Pixel>
 void DirectionalIntraPredTest<bitdepth, Pixel>::TestRandomValues() {
   const Pixel* const left = intra_pred_mem_.left_mem + 16;
   const Pixel* const top = intra_pred_mem_.top_mem + 16;
-  libvpx_test::ACMRandom rnd(libvpx_test::ACMRandom::DeterministicSeed());
+  // Use an alternate seed to differentiate this test from TestSpeed().
+  libvpx_test::ACMRandom rnd(test_utils::kAlternateDeterministicSeed);
 
   for (int i = kZone1; i < kNumZones; ++i) {
     // Only run when there is a reference version (base) and a different
@@ -646,7 +650,7 @@ void DirectionalIntraPredTest<bitdepth, Pixel>::TestRandomValues() {
         GetZoneAngleRange(static_cast<Zone>(i), &min_angle, &max_angle));
 
     for (const auto& base_angle : kBaseAngles) {
-      for (int n = 0; n < 10000; ++n) {
+      for (int n = 0; n < 1000; ++n) {
         for (int filter_type = 0; filter_type <= 1; ++filter_type) {
           for (int angle_delta = kAngleDeltaStart;
                angle_delta <= kAngleDeltaStop; angle_delta += kAngleDeltaStep) {
@@ -832,9 +836,12 @@ void FilterIntraPredTest<bitdepth, Pixel>::TestRandomValues() {
   // Skip the 'C' test case as this is used as the reference.
   if (base_filter_intra_pred_ == nullptr) return;
 
-  libvpx_test::ACMRandom rnd(libvpx_test::ACMRandom::DeterministicSeed());
+  // Use an alternate seed to differentiate this test from TestSpeed().
+  libvpx_test::ACMRandom rnd(test_utils::kAlternateDeterministicSeed);
   for (int i = 0; i < kNumFilterIntraPredictors; ++i) {
-    for (int n = 0; n < 100000; ++n) {
+    // It may be worthwhile to temporarily increase this loop size when testing
+    // changes that specifically affect this test.
+    for (int n = 0; n < 10000; ++n) {
       intra_pred_mem_.Reset(&rnd);
 
       memcpy(intra_pred_mem_.dst, intra_pred_mem_.ref_src,
@@ -985,7 +992,8 @@ void CflIntraPredTest<bitdepth, Pixel>::TestRandomValues() {
   int16_t luma_buffer[kCflLumaBufferStride][kCflLumaBufferStride];
 
   const int max_luma = ((1 << bitdepth) - 1) << 3;
-  libvpx_test::ACMRandom rnd(libvpx_test::ACMRandom::DeterministicSeed());
+  // Use an alternate seed to differentiate this test from TestSpeed().
+  libvpx_test::ACMRandom rnd(test_utils::kAlternateDeterministicSeed);
   for (auto& line : luma_buffer) {
     for (auto& luma : line) luma = max_luma - rnd(max_luma << 1);
   }
@@ -1150,7 +1158,7 @@ void CflSubsamplerTest<bitdepth, Pixel, subsampling_type>::TestRandomValues() {
   if (base_cfl_subsampler_ == nullptr) return;
   const ptrdiff_t stride = kMaxBlockSize * sizeof(Pixel);
   // Use an alternate seed to differentiate this test from TestSpeed().
-  libvpx_test::ACMRandom rnd(0x9571);
+  libvpx_test::ACMRandom rnd(test_utils::kAlternateDeterministicSeed);
   for (int width = GetLumaWidth(block_width_, subsampling_type); width > 0;
        width -= 8) {
     for (int height = GetLumaHeight(block_height_, subsampling_type);
@@ -2635,13 +2643,23 @@ INSTANTIATE_TEST_SUITE_P(C, CflSubsamplerTest10bpp420,
 #if LIBGAV1_ENABLE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(SSE41, IntraPredTest10bpp,
                          ::testing::ValuesIn(kTransformSizes));
+INSTANTIATE_TEST_SUITE_P(SSE41, DirectionalIntraPredTest10bpp,
+                         ::testing::ValuesIn(kTransformSizes));
 INSTANTIATE_TEST_SUITE_P(SSE41, CflIntraPredTest10bpp,
+                         ::testing::ValuesIn(kTransformSizesSmallerThan32x32));
+INSTANTIATE_TEST_SUITE_P(SSE41, CflSubsamplerTest10bpp444,
+                         ::testing::ValuesIn(kTransformSizesSmallerThan32x32));
+INSTANTIATE_TEST_SUITE_P(SSE41, CflSubsamplerTest10bpp420,
                          ::testing::ValuesIn(kTransformSizesSmallerThan32x32));
 #endif  // LIBGAV1_ENABLE_SSE4_1
 #if LIBGAV1_ENABLE_NEON
 INSTANTIATE_TEST_SUITE_P(NEON, IntraPredTest10bpp,
                          ::testing::ValuesIn(kTransformSizes));
 INSTANTIATE_TEST_SUITE_P(NEON, CflIntraPredTest10bpp,
+                         ::testing::ValuesIn(kTransformSizesSmallerThan32x32));
+INSTANTIATE_TEST_SUITE_P(NEON, CflSubsamplerTest10bpp444,
+                         ::testing::ValuesIn(kTransformSizesSmallerThan32x32));
+INSTANTIATE_TEST_SUITE_P(NEON, CflSubsamplerTest10bpp420,
                          ::testing::ValuesIn(kTransformSizesSmallerThan32x32));
 #endif  // LIBGAV1_ENABLE_NEON
 

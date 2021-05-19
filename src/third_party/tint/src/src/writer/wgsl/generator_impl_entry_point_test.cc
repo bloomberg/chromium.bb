@@ -12,14 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/assignment_statement.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/stage_decoration.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/type/f32_type.h"
-#include "src/writer/wgsl/generator_impl.h"
 #include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
@@ -31,10 +26,10 @@ using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, Emit_EntryPoint_UnusedFunction) {
   Func("func_unused", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   Func("func_used", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   auto* call_func = Call("func_used");
 
@@ -42,7 +37,7 @@ TEST_F(WgslGeneratorImplTest, Emit_EntryPoint_UnusedFunction) {
        ast::StatementList{
            create<ast::CallStatement>(call_func),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kCompute),
        });
 
@@ -76,7 +71,7 @@ TEST_F(WgslGeneratorImplTest, Emit_EntryPoint_UnusedVariable) {
        ast::StatementList{
            create<ast::AssignmentStatement>(Expr("global_used"), Expr(1.f)),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kCompute),
        });
 
@@ -101,7 +96,7 @@ TEST_F(WgslGeneratorImplTest, Emit_EntryPoint_GlobalsInterleaved) {
   create<ast::VariableDeclStatement>(global0);
 
   auto* str0 = create<ast::Struct>(ast::StructMemberList{Member("a", ty.i32())},
-                                   ast::StructDecorationList{});
+                                   ast::DecorationList{});
   auto* s0 = ty.struct_("S0", str0);
   AST().AddConstructedType(s0);
 
@@ -109,13 +104,13 @@ TEST_F(WgslGeneratorImplTest, Emit_EntryPoint_GlobalsInterleaved) {
        ast::StatementList{
            create<ast::ReturnStatement>(Expr("a0")),
        },
-       ast::FunctionDecorationList{});
+       ast::DecorationList{});
 
   auto* global1 = Global("a1", ty.f32(), ast::StorageClass::kOutput);
   create<ast::VariableDeclStatement>(global1);
 
   auto* str1 = create<ast::Struct>(ast::StructMemberList{Member("a", ty.i32())},
-                                   ast::StructDecorationList{});
+                                   ast::DecorationList{});
   auto* s1 = ty.struct_("S1", str1);
   AST().AddConstructedType(s1);
 
@@ -129,7 +124,7 @@ TEST_F(WgslGeneratorImplTest, Emit_EntryPoint_GlobalsInterleaved) {
                Var("s1", s1, ast::StorageClass::kFunction)),
            create<ast::AssignmentStatement>(Expr("a1"), Expr(call_func)),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kCompute),
        });
 

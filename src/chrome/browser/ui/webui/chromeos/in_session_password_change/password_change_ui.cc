@@ -11,8 +11,8 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/saml/password_expiry_notification.h"
-#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_dialogs.h"
@@ -60,8 +60,8 @@ std::string GetPasswordChangeUrl(Profile* profile) {
       .password_change_url();
 }
 
-base::string16 GetHostedHeaderText(const std::string& password_change_url) {
-  base::string16 host =
+std::u16string GetHostedHeaderText(const std::string& password_change_url) {
+  std::u16string host =
       base::UTF8ToUTF16(net::GetHostAndOptionalPort(GURL(password_change_url)));
   DCHECK(!host.empty());
   return l10n_util::GetStringFUTF16(IDS_LOGIN_SAML_PASSWORD_CHANGE_NOTICE,
@@ -96,7 +96,6 @@ PasswordChangeUI::PasswordChangeUI(content::WebUI* web_ui)
 
   source->SetDefaultResource(IDR_PASSWORD_CHANGE_HTML);
 
-  source->AddResourcePath("password_change.css", IDR_PASSWORD_CHANGE_CSS);
   source->AddResourcePath("authenticator.js",
                           IDR_PASSWORD_CHANGE_AUTHENTICATOR_JS);
   source->AddResourcePath("webview_saml_injected.js",

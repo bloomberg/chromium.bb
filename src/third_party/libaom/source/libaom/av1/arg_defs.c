@@ -46,6 +46,7 @@ static const struct arg_enum_list tuning_enum[] = {
   { "vmaf_without_preprocessing", AOM_TUNE_VMAF_WITHOUT_PREPROCESSING },
   { "vmaf", AOM_TUNE_VMAF_MAX_GAIN },
   { "vmaf_neg", AOM_TUNE_VMAF_NEG_MAX_GAIN },
+  { "butteraugli", AOM_TUNE_BUTTERAUGLI },
   { NULL, 0 }
 };
 
@@ -139,7 +140,7 @@ const av1_codec_arg_definitions_t g_av1_codec_arg_defs = {
   .debugmode =
       ARG_DEF("D", "debug", 0, "Debug mode (makes output deterministic)"),
   .outputfile = ARG_DEF("o", "output", 1, "Output filename"),
-  .use_yv12 = ARG_DEF(NULL, "yv12", 0, "Input file is YV12 "),
+  .use_yv12 = ARG_DEF(NULL, "yv12", 0, "Input file is YV12"),
   .use_i420 = ARG_DEF(NULL, "i420", 0, "Input file is I420 (default)"),
   .use_i422 = ARG_DEF(NULL, "i422", 0, "Input file is I422"),
   .use_i444 = ARG_DEF(NULL, "i444", 0, "Input file is I444"),
@@ -190,7 +191,7 @@ const av1_codec_arg_definitions_t g_av1_codec_arg_defs = {
                                         "chroma subsampling y value."),
 
   .usage = ARG_DEF("u", "usage", 1,
-                   "Usage profile number to use (0: good, 1: rt, 2: allintra"),
+                   "Usage profile number to use (0: good, 1: rt, 2: allintra)"),
   .threads = ARG_DEF("t", "threads", 1, "Max number of threads to use"),
   .profile = ARG_DEF(NULL, "profile", 1, "Bitstream profile number to use"),
   .width = ARG_DEF("w", "width", 1, "Frame width"),
@@ -404,6 +405,10 @@ const av1_codec_arg_definitions_t g_av1_codec_arg_defs = {
   .enable_cfl_intra = ARG_DEF(NULL, "enable-cfl-intra", 1,
                               "Enable chroma from luma intra prediction mode "
                               "(0: false, 1: true (default))"),
+  .enable_diagonal_intra =
+      ARG_DEF(NULL, "enable-diagonal-intra", 1,
+              "Enable diagonal (D45 to D203) intra prediction modes "
+              "(0: false, 1: true (default))"),
   .force_video_mode = ARG_DEF(NULL, "force-video-mode", 1,
                               "Force video mode (0: false, 1: true (default))"),
   .enable_obmc = ARG_DEF(NULL, "enable-obmc", 1,

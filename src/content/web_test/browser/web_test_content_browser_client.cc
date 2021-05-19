@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -113,6 +114,11 @@ class BoundsMatchVideoSizeOverlayWindow : public OverlayWindow {
   void SetSkipAdButtonVisibility(bool is_visible) override {}
   void SetNextTrackButtonVisibility(bool is_visible) override {}
   void SetPreviousTrackButtonVisibility(bool is_visible) override {}
+  void SetMicrophoneMuted(bool muted) override {}
+  void SetCameraState(bool turned_on) override {}
+  void SetToggleMicrophoneButtonVisibility(bool is_visible) override {}
+  void SetToggleCameraButtonVisibility(bool is_visible) override {}
+  void SetHangUpButtonVisibility(bool is_visible) override {}
   void SetSurfaceId(const viz::SurfaceId& surface_id) override {}
   cc::Layer* GetLayerForTesting() override { return nullptr; }
 
@@ -425,8 +431,8 @@ PlatformNotificationService*
 WebTestContentBrowserClient::GetPlatformNotificationService(
     content::BrowserContext* browser_context) {
   if (!mock_platform_notification_service_) {
-    mock_platform_notification_service_.reset(
-        new MockPlatformNotificationService(browser_context));
+    mock_platform_notification_service_ =
+        std::make_unique<MockPlatformNotificationService>(browser_context);
   }
 
   return mock_platform_notification_service_.get();

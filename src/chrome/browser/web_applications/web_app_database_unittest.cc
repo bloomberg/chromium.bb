@@ -40,8 +40,6 @@ namespace web_app {
 
 namespace {
 
-const int kIconSize = 64;
-
 class RandomHelper {
  public:
   explicit RandomHelper(const uint32_t seed)
@@ -157,6 +155,7 @@ class WebAppDatabaseTest : public WebAppTest {
       apps::UrlHandlerInfo url_handler;
       url_handler.origin =
           url::Origin::Create(GURL("https://app-" + suffix_str + ".com/"));
+      url_handler.has_origin_wildcard = true;
       url_handlers.push_back(std::move(url_handler));
     }
 
@@ -169,36 +168,56 @@ class WebAppDatabaseTest : public WebAppTest {
   }
 
   static std::vector<WebApplicationShortcutsMenuItemInfo>
-  CreateShortcutsMenuItemInfos(const std::string& base_url, uint32_t suffix) {
+  CreateShortcutsMenuItemInfos(const std::string& base_url,
+                               RandomHelper& random) {
+    const uint32_t suffix = random.next_uint();
     std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos;
-    for (unsigned int i = 0; i < 3; ++i) {
+    for (int i = random.next_uint(4) + 1; i >= 0; --i) {
       std::string suffix_str =
           base::NumberToString(suffix) + base::NumberToString(i);
       WebApplicationShortcutsMenuItemInfo shortcut_info;
       shortcut_info.url = GURL(base_url + "/shortcut" + suffix_str);
       shortcut_info.name = base::UTF8ToUTF16("shortcut" + suffix_str);
-      for (unsigned int j = 0; j < i; ++j) {
+      std::vector<WebApplicationShortcutsMenuItemInfo::Icon> shortcut_icons_any;
+      std::vector<WebApplicationShortcutsMenuItemInfo::Icon>
+          shortcut_icons_maskable;
+      for (int j = random.next_uint(4) + 1; j >= 0; --j) {
         std::string icon_suffix_str = suffix_str + base::NumberToString(j);
         WebApplicationShortcutsMenuItemInfo::Icon shortcut_icon;
         shortcut_icon.url =
             GURL(base_url + "/shortcuts/icon" + icon_suffix_str);
-        shortcut_icon.square_size_px = kIconSize * (i + j);
-        shortcut_info.shortcut_icon_infos.emplace_back(
-            std::move(shortcut_icon));
+        // Within each shortcut_icons_*, square_size_px must be unique.
+        shortcut_icon.square_size_px = (j * 10) + random.next_uint(10);
+        if (random.next_bool())
+          shortcut_icons_any.push_back(std::move(shortcut_icon));
+        else
+          shortcut_icons_maskable.push_back(std::move(shortcut_icon));
       }
+      shortcut_info.SetShortcutIconInfosForPurpose(
+          IconPurpose::ANY, std::move(shortcut_icons_any));
+      shortcut_info.SetShortcutIconInfosForPurpose(
+          IconPurpose::MASKABLE, std::move(shortcut_icons_maskable));
       shortcuts_menu_item_infos.emplace_back(std::move(shortcut_info));
     }
     return shortcuts_menu_item_infos;
   }
 
-  static std::vector<std::vector<SquareSizePx>>
-  CreateDownloadedShortcutsMenuIconsSizes() {
-    std::vector<std::vector<SquareSizePx>> results;
+  static std::vector<IconSizes> CreateDownloadedShortcutsMenuIconsSizes(
+      RandomHelper& random) {
+    std::vector<IconSizes> results;
     for (unsigned int i = 0; i < 3; ++i) {
-      std::vector<SquareSizePx> result;
+      IconSizes result;
+      std::vector<SquareSizePx> shortcuts_menu_icon_sizes_any;
+      std::vector<SquareSizePx> shortcuts_menu_icon_sizes_maskable;
       for (unsigned int j = 0; j < i; ++j) {
-        result.emplace_back(kIconSize * (i + j));
+        shortcuts_menu_icon_sizes_any.emplace_back(random.next_uint(256) + 1);
+        shortcuts_menu_icon_sizes_maskable.emplace_back(random.next_uint(256) +
+                                                        1);
       }
+      result.SetSizesForPurpose(IconPurpose::ANY,
+                                std::move(shortcuts_menu_icon_sizes_any));
+      result.SetSizesForPurpose(IconPurpose::MASKABLE,
+                                std::move(shortcuts_menu_icon_sizes_maskable));
       results.emplace_back(std::move(result));
     }
     return results;
@@ -244,6 +263,11 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetIsInSyncInstall(random.next_bool());
     app->SetUserDisplayMode(random.next_bool() ? DisplayMode::kBrowser
                                                : DisplayMode::kStandalone);
+
+    const base::Time last_badging_time =
+        base::Time::UnixEpoch() +
+        base::TimeDelta::FromMilliseconds(random.next_uint());
+    app->SetLastBadgingTime(last_badging_time);
 
     const base::Time last_launch_time =
         base::Time::UnixEpoch() +
@@ -319,9 +343,9 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetAdditionalSearchTerms(std::move(additional_search_terms));
 
     app->SetShortcutsMenuItemInfos(
-        CreateShortcutsMenuItemInfos(base_url, random.next_uint()));
+        CreateShortcutsMenuItemInfos(base_url, random));
     app->SetDownloadedShortcutsMenuIconsSizes(
-        CreateDownloadedShortcutsMenuIconsSizes());
+        CreateDownloadedShortcutsMenuIconsSizes(random));
     app->SetManifestUrl(GURL(base_url + "manifest" + seed_str + ".json"));
 
     if (IsChromeOs()) {
@@ -330,6 +354,7 @@ class WebAppDatabaseTest : public WebAppTest {
       chromeos_data->show_in_search = random.next_bool();
       chromeos_data->show_in_management = random.next_bool();
       chromeos_data->is_disabled = random.next_bool();
+      chromeos_data->oem_installed = random.next_bool();
       app->SetWebAppChromeOsData(std::move(chromeos_data));
     }
 
@@ -603,12 +628,14 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->additional_search_terms().empty());
   EXPECT_TRUE(app->protocol_handlers().empty());
   EXPECT_TRUE(app->url_handlers().empty());
+  EXPECT_TRUE(app->last_badging_time().is_null());
   EXPECT_TRUE(app->last_launch_time().is_null());
   EXPECT_TRUE(app->install_time().is_null());
   EXPECT_TRUE(app->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app->downloaded_shortcuts_menu_icons_sizes().empty());
   EXPECT_EQ(app->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
   EXPECT_TRUE(app->manifest_url().is_empty());
+  EXPECT_FALSE(app->manifest_id().has_value());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -629,6 +656,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
     EXPECT_TRUE(chromeos_data->show_in_search);
     EXPECT_TRUE(chromeos_data->show_in_management);
     EXPECT_FALSE(chromeos_data->is_disabled);
+    EXPECT_FALSE(chromeos_data->oem_installed);
   } else {
     EXPECT_FALSE(chromeos_data.has_value());
   }
@@ -646,6 +674,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
   EXPECT_FALSE(app_copy->background_color().has_value());
+  EXPECT_TRUE(app_copy->last_badging_time().is_null());
   EXPECT_TRUE(app_copy->last_launch_time().is_null());
   EXPECT_TRUE(app_copy->install_time().is_null());
   EXPECT_TRUE(app_copy->icon_infos().empty());
@@ -665,6 +694,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->downloaded_shortcuts_menu_icons_sizes().empty());
   EXPECT_EQ(app_copy->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
   EXPECT_TRUE(app_copy->manifest_url().is_empty());
+  EXPECT_FALSE(app_copy->manifest_id().has_value());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
@@ -778,5 +808,38 @@ TEST_F(WebAppDatabaseTest, WebAppWithCaptureLinksRoundTrip) {
   Registry registry = database_factory().ReadRegistry();
   EXPECT_TRUE(IsRegistryEqual(mutable_registrar().registry(), registry));
 }
+
+TEST_F(WebAppDatabaseTest, WebAppWithUrlHandlersRoundTrip) {
+  controller().Init();
+
+  const std::string base_url = "https://example.com/path";
+  auto app = CreateWebApp(base_url, 0);
+  auto app_id = app->app_id();
+
+  app->SetUrlHandlers(CreateUrlHandlers(1));
+
+  controller().RegisterApp(std::move(app));
+
+  Registry registry = database_factory().ReadRegistry();
+  EXPECT_TRUE(IsRegistryEqual(mutable_registrar().registry(), registry));
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(WebAppDatabaseTest, WebAppOemInstalledRoundTrip) {
+  controller().Init();
+
+  const std::string base_url = "https://example.com/path";
+  auto app = CreateWebApp(base_url, 0);
+
+  auto chromeos_data = base::make_optional<WebAppChromeOsData>();
+  chromeos_data->oem_installed = true;
+  app->SetWebAppChromeOsData(std::move(chromeos_data));
+
+  controller().RegisterApp(std::move(app));
+
+  Registry registry = database_factory().ReadRegistry();
+  EXPECT_TRUE(IsRegistryEqual(mutable_registrar().registry(), registry));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace web_app

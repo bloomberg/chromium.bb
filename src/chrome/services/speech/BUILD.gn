@@ -13,6 +13,8 @@ buildflag_header("buildflags") {
 
 source_set("lib") {
   sources = [
+    "audio_source_fetcher_impl.cc",
+    "audio_source_fetcher_impl.h",
     "cloud_speech_recognition_client.cc",
     "cloud_speech_recognition_client.h",
     "speech_recognition_recognizer_impl.cc",
@@ -39,12 +41,14 @@ source_set("lib") {
     "//base",
     "//chrome/services/speech/soda",
     "//chrome/services/speech/soda:soda_api_proto",
+    "//components/soda:constants",
     "//components/speech",
     "//content/public/browser:proto",
     "//google_apis",
     "//media/mojo/common",
     "//mojo/public/cpp/bindings",
     "//net",
+    "//services/audio/public/cpp",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
   ]

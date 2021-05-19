@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/range/range.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
@@ -80,7 +79,7 @@ void ZWPTextInputWrapperV1::SetCursorRect(const gfx::Rect& rect) {
 }
 
 void ZWPTextInputWrapperV1::SetSurroundingText(
-    const base::string16& text,
+    const std::u16string& text,
     const gfx::Range& selection_range) {
   static constexpr size_t kWaylandMessageDataMaxLength = 4000;
   const std::string text_utf8 = base::UTF16ToUTF8(text);

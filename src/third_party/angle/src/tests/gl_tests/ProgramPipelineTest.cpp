@@ -395,10 +395,6 @@ TEST_P(ProgramPipelineTest31, DetachAndModifyShader)
 {
     ANGLE_SKIP_TEST_IF(!IsVulkan());
 
-    // TODO (timvp): Fix this test for Vulkan with PPO
-    // http://anglebug.com/3570
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     const GLchar *vertString = essl31_shaders::vs::Simple();
     const GLchar *fragString = essl31_shaders::fs::Green();
 
@@ -462,10 +458,6 @@ TEST_P(ProgramPipelineTest31, DifferentTextureTypes)
 {
     // Only the Vulkan backend supports PPO
     ANGLE_SKIP_TEST_IF(!IsVulkan());
-
-    // TODO (timvp): Fix this test for Vulkan with PPO
-    // http://anglebug.com/3570
-    ANGLE_SKIP_TEST_IF(IsVulkan());
 
     // Per the OpenGL ES 3.1 spec:
     //
@@ -650,7 +642,203 @@ void main()
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 }
 
+// Test that a shader IO block varying with separable program links
+// successfully.
+TEST_P(ProgramPipelineTest31, VaryingIOBlockSeparableProgram)
+{
+    // Only the Vulkan backend supports PPOs
+    ANGLE_SKIP_TEST_IF(!IsVulkan());
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_shader_io_blocks"));
+
+    constexpr char kVS[] =
+        R"(#version 310 es
+        #extension GL_EXT_shader_io_blocks : require
+
+        precision highp float;
+        in vec4 inputAttribute;
+        out Block_inout { vec4 value; } user_out;
+
+        void main()
+        {
+            gl_Position    = inputAttribute;
+            user_out.value = vec4(4.0, 5.0, 6.0, 7.0);
+        })";
+
+    constexpr char kFS[] =
+        R"(#version 310 es
+        #extension GL_EXT_shader_io_blocks : require
+
+        precision highp float;
+        layout(location = 0) out mediump vec4 color;
+        in Block_inout { vec4 value; } user_in;
+
+        void main()
+        {
+            color = vec4(1, 0, 0, 1);
+        })";
+
+    bindProgramPipeline(kVS, kFS);
+
+    drawQuadWithPPO("inputAttribute", 0.5f, 1.0f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
+// Test modifying a shader and re-linking it updates the PPO too
+TEST_P(ProgramPipelineTest31, ModifyAndRelinkShader)
+{
+    ANGLE_SKIP_TEST_IF(!IsVulkan());
+
+    const GLchar *vertString      = essl31_shaders::vs::Simple();
+    const GLchar *fragStringGreen = essl31_shaders::fs::Green();
+    const GLchar *fragStringRed   = essl31_shaders::fs::Red();
+
+    GLShader vertShader(GL_VERTEX_SHADER);
+    GLShader fragShader(GL_FRAGMENT_SHADER);
+    mVertProg = glCreateProgram();
+    mFragProg = glCreateProgram();
+
+    // Compile and link a separable vertex shader
+    glShaderSource(vertShader, 1, &vertString, nullptr);
+    glCompileShader(vertShader);
+    glProgramParameteri(mVertProg, GL_PROGRAM_SEPARABLE, GL_TRUE);
+    glAttachShader(mVertProg, vertShader);
+    glLinkProgram(mVertProg);
+    EXPECT_GL_NO_ERROR();
+
+    // Compile and link a separable fragment shader
+    glShaderSource(fragShader, 1, &fragStringGreen, nullptr);
+    glCompileShader(fragShader);
+    glProgramParameteri(mFragProg, GL_PROGRAM_SEPARABLE, GL_TRUE);
+    glAttachShader(mFragProg, fragShader);
+    glLinkProgram(mFragProg);
+    EXPECT_GL_NO_ERROR();
+
+    // Generate a program pipeline and attach the programs
+    glGenProgramPipelines(1, &mPipeline);
+    glUseProgramStages(mPipeline, GL_VERTEX_SHADER_BIT, mVertProg);
+    glUseProgramStages(mPipeline, GL_FRAGMENT_SHADER_BIT, mFragProg);
+    glBindProgramPipeline(mPipeline);
+    EXPECT_GL_NO_ERROR();
+
+    // Draw once to ensure this worked fine
+    drawQuadWithPPO("a_position", 0.5f, 1.0f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Detach the fragment shader and modify it such that it no longer fits with this pipeline
+    glDetachShader(mFragProg, fragShader);
+
+    // Modify the FS and re-link it
+    glShaderSource(fragShader, 1, &fragStringRed, nullptr);
+    glCompileShader(fragShader);
+    glProgramParameteri(mFragProg, GL_PROGRAM_SEPARABLE, GL_TRUE);
+    glAttachShader(mFragProg, fragShader);
+    glLinkProgram(mFragProg);
+    EXPECT_GL_NO_ERROR();
+
+    // Draw with the PPO again and verify it's now red
+    drawQuadWithPPO("a_position", 0.5f, 1.0f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
+// Test that a PPO can be used when the attached shader programs are created with glProgramBinary().
+// This validates the necessary programs' information is serialized/deserialized so they can be
+// linked by the PPO during glDrawArrays.
+TEST_P(ProgramPipelineTest31, ProgramBinary)
+{
+    ANGLE_SKIP_TEST_IF(!IsVulkan());
+
+    const GLchar *vertString = R"(#version 310 es
+precision highp float;
+in vec4 a_position;
+out vec2 texCoord;
+void main()
+{
+    gl_Position = a_position;
+    texCoord = vec2(a_position.x, a_position.y) * 0.5 + vec2(0.5);
+})";
+
+    const GLchar *fragString = R"(#version 310 es
+precision highp float;
+in vec2 texCoord;
+uniform sampler2D tex;
+out vec4 my_FragColor;
+void main()
+{
+    my_FragColor = texture(tex, texCoord);
+})";
+
+    std::array<GLColor, 4> colors = {
+        {GLColor::red, GLColor::green, GLColor::blue, GLColor::yellow}};
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    mVertProg = glCreateShaderProgramv(GL_VERTEX_SHADER, 1, &vertString);
+    ASSERT_NE(mVertProg, 0u);
+    mFragProg = glCreateShaderProgramv(GL_FRAGMENT_SHADER, 1, &fragString);
+    ASSERT_NE(mFragProg, 0u);
+
+    // Save the VS program binary out
+    std::vector<uint8_t> vsBinary(0);
+    GLint vsProgramLength = 0;
+    GLint vsWrittenLength = 0;
+    GLenum vsBinaryFormat = 0;
+    glGetProgramiv(mVertProg, GL_PROGRAM_BINARY_LENGTH, &vsProgramLength);
+    ASSERT_GL_NO_ERROR();
+    vsBinary.resize(vsProgramLength);
+    glGetProgramBinary(mVertProg, vsProgramLength, &vsWrittenLength, &vsBinaryFormat,
+                       vsBinary.data());
+    ASSERT_GL_NO_ERROR();
+
+    // Save the FS program binary out
+    std::vector<uint8_t> fsBinary(0);
+    GLint fsProgramLength = 0;
+    GLint fsWrittenLength = 0;
+    GLenum fsBinaryFormat = 0;
+    glGetProgramiv(mFragProg, GL_PROGRAM_BINARY_LENGTH, &fsProgramLength);
+    ASSERT_GL_NO_ERROR();
+    fsBinary.resize(fsProgramLength);
+    glGetProgramBinary(mFragProg, fsProgramLength, &fsWrittenLength, &fsBinaryFormat,
+                       fsBinary.data());
+    ASSERT_GL_NO_ERROR();
+
+    mVertProg = glCreateProgram();
+    glProgramBinary(mVertProg, vsBinaryFormat, vsBinary.data(), vsWrittenLength);
+    mFragProg = glCreateProgram();
+    glProgramBinary(mFragProg, fsBinaryFormat, fsBinary.data(), fsWrittenLength);
+
+    // Generate a program pipeline and attach the programs to their respective stages
+    glGenProgramPipelines(1, &mPipeline);
+    EXPECT_GL_NO_ERROR();
+    glUseProgramStages(mPipeline, GL_VERTEX_SHADER_BIT, mVertProg);
+    EXPECT_GL_NO_ERROR();
+    glUseProgramStages(mPipeline, GL_FRAGMENT_SHADER_BIT, mFragProg);
+    EXPECT_GL_NO_ERROR();
+    glBindProgramPipeline(mPipeline);
+    EXPECT_GL_NO_ERROR();
+
+    drawQuadWithPPO("a_position", 0.5f, 1.0f);
+    ASSERT_GL_NO_ERROR();
+
+    int w = getWindowWidth() - 2;
+    int h = getWindowHeight() - 2;
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+    EXPECT_PIXEL_COLOR_EQ(w, 0, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(0, h, GLColor::blue);
+    EXPECT_PIXEL_COLOR_EQ(w, h, GLColor::yellow);
+}
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ProgramPipelineTest);
 ANGLE_INSTANTIATE_TEST_ES3_AND_ES31(ProgramPipelineTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ProgramPipelineTest31);
 ANGLE_INSTANTIATE_TEST_ES31(ProgramPipelineTest31);
 
 }  // namespace

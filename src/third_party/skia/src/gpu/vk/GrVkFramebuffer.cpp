@@ -7,28 +7,31 @@
 
 #include "src/gpu/vk/GrVkFramebuffer.h"
 
+#include "src/gpu/vk/GrVkAttachment.h"
 #include "src/gpu/vk/GrVkGpu.h"
 #include "src/gpu/vk/GrVkImageView.h"
 #include "src/gpu/vk/GrVkRenderPass.h"
 
-GrVkFramebuffer* GrVkFramebuffer::Create(GrVkGpu* gpu,
-                                         int width, int height,
-                                         const GrVkRenderPass* renderPass,
-                                         const GrVkImageView* colorAttachment,
-                                         const GrVkImageView* resolveAttachment,
-                                         const GrVkImageView* stencilAttachment) {
+GrVkFramebuffer* GrVkFramebuffer::Create(
+        GrVkGpu* gpu,
+        int width, int height,
+        const GrVkRenderPass* renderPass,
+        const GrVkAttachment* colorAttachment,
+        const GrVkAttachment* resolveAttachment,
+        const GrVkAttachment* stencilAttachment,
+        GrVkResourceProvider::CompatibleRPHandle compatibleRenderPassHandle) {
     // At the very least we need a renderPass and a colorAttachment
     SkASSERT(renderPass);
     SkASSERT(colorAttachment);
 
     VkImageView attachments[3];
-    attachments[0] = colorAttachment->imageView();
+    attachments[0] = colorAttachment->framebufferView()->imageView();
     int numAttachments = 1;
     if (resolveAttachment) {
-        attachments[numAttachments++] = resolveAttachment->imageView();
+        attachments[numAttachments++] = resolveAttachment->framebufferView()->imageView();
     }
     if (stencilAttachment) {
-        attachments[numAttachments++] = stencilAttachment->imageView();
+        attachments[numAttachments++] = stencilAttachment->framebufferView()->imageView();
     }
 
     VkFramebufferCreateInfo createInfo;
@@ -51,8 +54,12 @@ GrVkFramebuffer* GrVkFramebuffer::Create(GrVkGpu* gpu,
         return nullptr;
     }
 
-    return new GrVkFramebuffer(gpu, framebuffer);
+    return new GrVkFramebuffer(gpu, framebuffer, sk_ref_sp(colorAttachment),
+                               sk_ref_sp(resolveAttachment), sk_ref_sp(stencilAttachment),
+                               compatibleRenderPassHandle);
 }
+
+GrVkFramebuffer::~GrVkFramebuffer() {}
 
 void GrVkFramebuffer::freeGPUData() const {
     SkASSERT(fFramebuffer);

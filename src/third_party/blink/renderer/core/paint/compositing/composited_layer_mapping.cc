@@ -89,17 +89,6 @@ static PhysicalRect ContentsRect(const LayoutObject& layout_object) {
   return To<LayoutBox>(layout_object).PhysicalContentBoxRect();
 }
 
-static inline bool IsTextureLayerCanvas(const LayoutObject& layout_object) {
-  if (layout_object.IsCanvas()) {
-    auto* canvas = To<HTMLCanvasElement>(layout_object.GetNode());
-    if (canvas->SurfaceLayerBridge())
-      return false;
-    if (CanvasRenderingContext* context = canvas->RenderingContext())
-      return context->IsComposited();
-  }
-  return false;
-}
-
 static bool HasBoxDecorationsOrBackgroundImage(const ComputedStyle& style) {
   return style.HasBoxDecorations() || style.HasBackgroundImage();
 }
@@ -138,11 +127,10 @@ static FloatPoint StickyPositionOffsetForLayer(PaintLayer& layer) {
 
 static bool NeedsDecorationOutlineLayer(const PaintLayer& paint_layer,
                                         const LayoutObject& layout_object) {
-  const int min_border_width = std::min(
-      layout_object.StyleRef().BorderTopWidth(),
-      std::min(layout_object.StyleRef().BorderLeftWidth(),
-               std::min(layout_object.StyleRef().BorderRightWidth(),
-                        layout_object.StyleRef().BorderBottomWidth())));
+  const ComputedStyle& style = layout_object.StyleRef();
+  const LayoutUnit min_border_width =
+      std::min(std::min(style.BorderLeftWidth(), style.BorderTopWidth()),
+               std::min(style.BorderRightWidth(), style.BorderBottomWidth()));
 
   bool could_obscure_decorations =
       (paint_layer.GetScrollableArea() &&
@@ -153,16 +141,13 @@ static bool NeedsDecorationOutlineLayer(const PaintLayer& paint_layer,
   // rings can be drawn with the center of the path aligned with the offset, so
   // only 2/3 of the width is outside of the offset.
   const int outline_drawn_inside =
-      layout_object.StyleRef().OutlineStyleIsAuto()
-          ? std::ceil(
-                layout_object.StyleRef().GetOutlineStrokeWidthForFocusRing() /
-                3.f) +
-                1
+      style.OutlineStyleIsAuto()
+          ? std::ceil(style.GetOutlineStrokeWidthForFocusRing() / 3.f) + 1
           : 0;
 
-  return could_obscure_decorations && layout_object.StyleRef().HasOutline() &&
-         (layout_object.StyleRef().OutlineOffsetInt() - outline_drawn_inside) <
-             -min_border_width;
+  return could_obscure_decorations && style.HasOutline() &&
+         (style.OutlineOffsetInt() - outline_drawn_inside) <
+             -min_border_width.ToInt();
 }
 
 CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
@@ -1330,11 +1315,6 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
   return PaintsChildren();
 }
 
-void CompositedLayerMapping::ContentChanged(ContentChangeType change_type) {
-  if (change_type == kCanvasChanged && IsTextureLayerCanvas(GetLayoutObject()))
-    graphics_layer_->InvalidateContents();
-}
-
 // Return the offset from the top-left of this compositing layer at which the
 // LayoutObject's contents are painted.
 PhysicalOffset CompositedLayerMapping::ContentOffsetInCompositingLayer() const {
@@ -1483,10 +1463,10 @@ void CompositedLayerMapping::UpdateLocalClipRectForSquashedLayer(
   // disallowed squashing.
   DCHECK(ancestor_paint_info);
 
+  const PaintLayer* ancestor_layer = ancestor_paint_info->paint_layer;
   ClipRectsContext clip_rects_context(
-      ancestor_paint_info->paint_layer,
-      &ancestor_paint_info->paint_layer->GetLayoutObject().FirstFragment(),
-      kUncachedClipRects);
+      ancestor_layer,
+      &ancestor_layer->GetLayoutObject().PrimaryStitchingFragment());
   ClipRect parent_clip_rect;
   paint_info.paint_layer
       ->Clipper(PaintLayer::GeometryMapperOption::kUseGeometryMapper)
@@ -1758,7 +1738,8 @@ IntRect CompositedLayerMapping::ComputeInterestRect(
 IntRect CompositedLayerMapping::PaintableRegion(
     const GraphicsLayer* graphics_layer) const {
   DCHECK(RuntimeEnabledFeatures::CullRectUpdateEnabled());
-  const auto& fragment = OwningLayer().GetLayoutObject().FirstFragment();
+  const auto& fragment =
+      OwningLayer().GetLayoutObject().PrimaryStitchingFragment();
   CullRect cull_rect = graphics_layer == scrolling_contents_layer_.get() ||
                                (graphics_layer == foreground_layer_.get() &&
                                 scrolling_contents_layer_)
@@ -1851,10 +1832,10 @@ void CompositedLayerMapping::PaintContents(
              .GetFrameView()
              ->LocalFrameTreeAllowsThrottling());
 
-  TRACE_EVENT1(
-      "devtools.timeline,rail", "Paint", "data",
-      inspector_paint_event::Data(&owning_layer_.GetLayoutObject(),
-                                  PhysicalRect(interest_rect), graphics_layer));
+  DEVTOOLS_TIMELINE_TRACE_EVENT_WITH_CATEGORIES(
+      "devtools.timeline,rail", "Paint", inspector_paint_event::Data,
+      &owning_layer_.GetLayoutObject(), PhysicalRect(interest_rect),
+      graphics_layer);
 
   PaintLayerFlags paint_layer_flags =
       PaintLayerFlagsFromGraphicsLayerPaintingPhase(
@@ -1916,6 +1897,9 @@ void CompositedLayerMapping::PaintScrollableArea(
     const GraphicsLayer* graphics_layer,
     GraphicsContext& context,
     const IntRect& interest_rect) const {
+  if (GetLayoutObject().StyleRef().Visibility() != EVisibility::kVisible)
+    return;
+
   // cull_rect is in the space of the containing scrollable area in which
   // Scrollbar::Paint() will paint the scrollbar.
   CullRect cull_rect(interest_rect);
@@ -1966,13 +1950,23 @@ bool CompositedLayerMapping::ShouldSkipPaintingSubtree() const {
 }
 
 bool CompositedLayerMapping::IsTrackingRasterInvalidations() const {
-  return GetLayoutObject().GetFrameView()->IsTrackingRasterInvalidations();
+  return GetLayoutObject()
+      .GetFrame()
+      ->LocalFrameRoot()
+      .View()
+      ->IsTrackingRasterInvalidations();
 }
 
 void CompositedLayerMapping::GraphicsLayersDidChange() {
   LocalFrameView* frame_view = GetLayoutObject().GetFrameView();
   DCHECK(frame_view);
   frame_view->SetPaintArtifactCompositorNeedsUpdate();
+}
+
+PaintArtifactCompositor* CompositedLayerMapping::GetPaintArtifactCompositor() {
+  LocalFrameView* frame_view = GetLayoutObject().GetFrameView();
+  DCHECK(frame_view);
+  return frame_view->GetPaintArtifactCompositor();
 }
 
 #if DCHECK_IS_ON()

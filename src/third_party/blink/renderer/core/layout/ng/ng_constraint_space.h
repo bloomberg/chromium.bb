@@ -46,19 +46,6 @@ enum NGAdjoiningObjectTypeValue {
 };
 typedef int NGAdjoiningObjectTypes;
 
-// Tables have two passes, a "measure" pass (for determining the table row
-// height), and a "layout" pass.
-// See: https://drafts.csswg.org/css-tables-3/#row-layout
-//
-// This enum is used for communicating to *direct* children of table cells,
-// which layout mode the table cell is in.
-enum class NGTableCellChildLayoutMode {
-  kNotTableCellChild,  // The node isn't a table cell child.
-  kMeasure,            // A table cell child, in the "measure" mode.
-  kMeasureRestricted,  // A table cell child, in the "restricted-measure" mode.
-  kLayout              // A table cell child, in the "layout" mode.
-};
-
 // Some layout algorithms (flow, tables) calculate their alignment baseline
 // differently if they are within an atomic-inline context.
 //
@@ -443,18 +430,22 @@ class CORE_EXPORT NGConstraintSpace final {
 
   bool IsFixedBlockSize() const { return bitfields_.is_fixed_block_size; }
 
-  // Whether the block size should be considered indefinite.
   // The constraint space can have any of the combinations:
-  // (1) !IsFixedBlockSize && !IsFixedBlockSizeIndefinite -- default. no special
-  //     handling needed.
+  // (1) !IsFixedBlockSize && !IsFixedBlockSizeIndefinite -- default
   // (2) !IsFixedBlockSize && IsFixedBlockSizeIndefinite -- Treat your height as
-  //     indefinite.
+  //     indefinite when calculating your intrinsic block size.
   // (3) IsFixedBlockSize && !IsFixedBlockSizeIndefinite -- You must be this
   //     size and your children can resolve % block size against it.
   // (4) IsFixedBlockSize && IsFixedBlockSizeIndefinite -- You must be this
   //     size but your children canNOT resolve % block size against it.
+  //
+  // The layout machinery (CalculateChildPercentageSize,
+  // CalculateInitialFragmentGeometry, etc) handles all this, so individual
+  // layout implementations don't need to do anything special UNLESS they let
+  // specified block sizes influence the value passed to
+  // SetIntrinsicBlock(intrinsic_block_size). If that happens, they need to
+  // explicitly handle case 2 above.
   // TODO(dgrogan): This method needs a new name now that #2 above exists.
-  // Either IsBlockSizeIndefinite or ForceBlockSizeToIndefinite.
   bool IsFixedBlockSizeIndefinite() const {
     return bitfields_.is_fixed_block_size_indefinite;
   }
@@ -466,6 +457,16 @@ class CORE_EXPORT NGConstraintSpace final {
   }
   bool StretchBlockSizeIfAuto() const {
     return bitfields_.stretch_block_size_if_auto;
+  }
+
+  // If this is a child of a table-cell.
+  bool IsTableCellChild() const { return bitfields_.is_table_cell_child; }
+
+  // If we should apply the restricted block-size measuring behaviour. See
+  // where this is set within |NGBlockLayoutAlgorithm| for the conditions when
+  // this applies.
+  bool IsMeasuringRestrictedBlockSizeTableCellChild() const {
+    return bitfields_.is_measuring_restricted_block_size_table_cell_child;
   }
 
   bool IsPaintedAtomically() const { return bitfields_.is_painted_atomically; }
@@ -494,22 +495,6 @@ class CORE_EXPORT NGConstraintSpace final {
   // the one established by the nearest ancestor multicol container.
   bool IsInColumnBfc() const {
     return HasRareData() && rare_data_->is_in_column_bfc;
-  }
-
-  // Get the appeal of the best breakpoint found so far. When progressing
-  // through layout, we know that we don't need to consider less appealing
-  // breakpoints than this.
-  NGBreakAppeal EarlyBreakAppeal() const {
-    if (!HasRareData())
-      return kBreakAppealLastResort;
-    return static_cast<NGBreakAppeal>(rare_data_->early_break_appeal);
-  }
-
-  // Returns if this node is a table cell child, and which table layout mode
-  // is occurring.
-  NGTableCellChildLayoutMode TableCellChildLayoutMode() const {
-    return static_cast<NGTableCellChildLayoutMode>(
-        bitfields_.table_cell_child_layout_mode);
   }
 
   // Return true if the block size of the table-cell should be considered
@@ -756,8 +741,7 @@ class CORE_EXPORT NGConstraintSpace final {
           block_direction_fragmentation_type(
               static_cast<unsigned>(kFragmentNone)),
           is_inside_balanced_columns(false),
-          is_in_column_bfc(false),
-          early_break_appeal(kBreakAppealLastResort) {}
+          is_in_column_bfc(false) {}
     RareData(const RareData& other)
         : percentage_resolution_size(other.percentage_resolution_size),
           replaced_percentage_resolution_block_size(
@@ -773,8 +757,7 @@ class CORE_EXPORT NGConstraintSpace final {
           block_direction_fragmentation_type(
               other.block_direction_fragmentation_type),
           is_inside_balanced_columns(other.is_inside_balanced_columns),
-          is_in_column_bfc(other.is_in_column_bfc),
-          early_break_appeal(other.early_break_appeal) {
+          is_in_column_bfc(other.is_in_column_bfc) {
       switch (data_union_type) {
         case kNone:
           break;
@@ -838,8 +821,7 @@ class CORE_EXPORT NGConstraintSpace final {
           block_direction_fragmentation_type !=
               other.block_direction_fragmentation_type ||
           is_inside_balanced_columns != other.is_inside_balanced_columns ||
-          is_in_column_bfc != other.is_in_column_bfc ||
-          early_break_appeal != other.early_break_appeal)
+          is_in_column_bfc != other.is_in_column_bfc)
         return false;
 
       switch (data_union_type) {
@@ -868,8 +850,7 @@ class CORE_EXPORT NGConstraintSpace final {
           fragmentainer_offset_at_bfc || is_restricted_block_size_table_cell ||
           hide_table_cell_if_empty ||
           block_direction_fragmentation_type != kFragmentNone ||
-          is_inside_balanced_columns || is_in_column_bfc ||
-          early_break_appeal != kBreakAppealLastResort)
+          is_inside_balanced_columns || is_in_column_bfc)
         return false;
 
       switch (data_union_type) {
@@ -1117,7 +1098,6 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned block_direction_fragmentation_type : 2;
     unsigned is_inside_balanced_columns : 1;
     unsigned is_in_column_bfc : 1;
-    unsigned early_break_appeal : 2;  // NGBreakAppeal
    private:
     struct BlockData {
       bool MaySkipLayout(const BlockData& other) const {
@@ -1319,8 +1299,8 @@ class CORE_EXPORT NGConstraintSpace final {
           is_fixed_inline_size(false),
           is_fixed_block_size(false),
           is_fixed_block_size_indefinite(false),
-          table_cell_child_layout_mode(static_cast<unsigned>(
-              NGTableCellChildLayoutMode::kNotTableCellChild)),
+          is_table_cell_child(false),
+          is_measuring_restricted_block_size_table_cell_child(false),
           percentage_inline_storage(kSameAsAvailable),
           percentage_block_storage(kSameAsAvailable),
           replaced_percentage_block_storage(kSameAsAvailable) {}
@@ -1352,7 +1332,9 @@ class CORE_EXPORT NGConstraintSpace final {
              is_fixed_block_size == other.is_fixed_block_size &&
              is_fixed_block_size_indefinite ==
                  other.is_fixed_block_size_indefinite &&
-             table_cell_child_layout_mode == other.table_cell_child_layout_mode;
+             is_table_cell_child == other.is_table_cell_child &&
+             is_measuring_restricted_block_size_table_cell_child ==
+                 other.is_measuring_restricted_block_size_table_cell_child;
     }
 
     unsigned has_rare_data : 1;
@@ -1382,7 +1364,8 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_fixed_inline_size : 1;
     unsigned is_fixed_block_size : 1;
     unsigned is_fixed_block_size_indefinite : 1;
-    unsigned table_cell_child_layout_mode : 2;  // NGTableCellChildLayoutMode
+    unsigned is_table_cell_child : 1;
+    unsigned is_measuring_restricted_block_size_table_cell_child : 1;
 
     unsigned percentage_inline_storage : 2;           // NGPercentageStorage
     unsigned percentage_block_storage : 2;            // NGPercentageStorage

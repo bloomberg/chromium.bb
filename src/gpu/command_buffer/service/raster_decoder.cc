@@ -623,6 +623,7 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   void DoLoseContextCHROMIUM(GLenum current, GLenum other);
   void DoBeginRasterCHROMIUM(GLuint sk_color,
+                             GLboolean needs_clear,
                              GLuint msaa_sample_count,
                              GLboolean can_use_lcd_text,
                              const volatile GLbyte* key);
@@ -965,8 +966,8 @@ ContextResult RasterDecoderImpl::Initialize(
   DCHECK_EQ(context.get(), shared_context_state_->context());
 
   // Create GPU Tracer for timing values.
-  gpu_tracer_.reset(
-      new gles2::GPUTracer(this, shared_context_state_->GrContextIsGL()));
+  gpu_tracer_ = std::make_unique<gles2::GPUTracer>(
+      this, shared_context_state_->GrContextIsGL());
 
   // Save the loseContextWhenOutOfMemory context creation attribute.
   lose_context_when_out_of_memory_ =
@@ -1895,8 +1896,8 @@ error::Error RasterDecoderImpl::HandleSetActiveURLCHROMIUM(
 bool RasterDecoderImpl::InitializeCopyTexImageBlitter() {
   if (!copy_tex_image_blit_.get()) {
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopySubTexture");
-    copy_tex_image_blit_.reset(
-        new gles2::CopyTexImageResourceManager(feature_info()));
+    copy_tex_image_blit_ =
+        std::make_unique<gles2::CopyTexImageResourceManager>(feature_info());
     copy_tex_image_blit_->Initialize(this);
     if (LOCAL_PEEK_GL_ERROR("glCopySubTexture") != GL_NO_ERROR)
       return false;
@@ -2247,6 +2248,9 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
       false /* unpack_unmultiply_alpha */, false /* dither */, method,
       copy_tex_image_blit_.get());
   dest_texture->SetLevelClearedRect(dest_target, dest_level, new_cleared_rect);
+  if (!dest_shared_image->IsCleared()) {
+    dest_shared_image->SetClearedRect(new_cleared_rect);
+  }
   in_copy_sub_texture_ = false;
   if (reset_texture_state_) {
     reset_texture_state_ = false;
@@ -2970,6 +2974,7 @@ void RasterDecoderImpl::DoClearPaintCacheINTERNAL() {
 }
 
 void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
+                                              GLboolean needs_clear,
                                               GLuint msaa_sample_count,
                                               GLboolean can_use_lcd_text,
                                               const volatile GLbyte* key) {
@@ -3062,15 +3067,18 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
       &end_semaphores_, error_state_.get());
 
   // All or nothing clearing, as no way to validate the client's input on what
-  // is the "used" part of the texture.
-  // TODO(enne): This doesn't handle the case where the background color
-  // changes and so any extra pixels outside the raster area that get
-  // sampled may be incorrect.
-  if (shared_image_->IsCleared())
-    return;
-
-  raster_canvas_->drawColor(sk_color);
-  shared_image_->SetCleared();
+  // is the "used" part of the texture.  A separate |needs_clear| flag is needed
+  // because clear tracking on the shared image cannot be used for this purpose
+  // with passthrough decoder shared images which are always considered cleared.
+  //
+  // TODO(enne): This doesn't handle the case where the background color changes
+  // and so any extra pixels outside the raster area that get sampled may be
+  // incorrect.
+  if (needs_clear) {
+    raster_canvas_->drawColor(sk_color, SkBlendMode::kSrc);
+    shared_image_->SetCleared();
+  }
+  DCHECK(shared_image_->IsCleared());
 }
 
 scoped_refptr<Buffer> RasterDecoderImpl::GetShmBuffer(uint32_t shm_id) {

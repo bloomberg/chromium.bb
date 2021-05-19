@@ -35,7 +35,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CustomTabs.ClientAppId" enum="ClientAppId"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>yusufo@chromium.org</owner>
   <summary>
     Android: AppId declared by the launching application in EXTRA_APPLICATION_ID
@@ -43,6 +43,26 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     instances of custom tabs created meanwhile binning them across launching
     apps that have identified themselves. Starting with M84 this is is also
     recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA data.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.ClientAppId.Incognito" enum="ClientAppId"
+    expires_after="2022-03-03">
+  <owner>roagarwal@chromium.org</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <owner>cct-team@google.com</owner>
+  <summary>
+    Android: This histogram is used as a means to count the total instances of
+    Incognito custom tabs created meanwhile binning them across launching first
+    party apps.
+
+    The launching first party apps are inferred by the package name they
+    provided when creating a custom tab connection and if we can't infer via
+    package name then as a fallback we rely on them declaring
+    EXTRA_APPLICATION_ID when launching Incognito custom tabs. If both fails,
+    then the launch is recorded in the Others entry.
+
+    This metric is never recorded for 3P apps.
   </summary>
 </histogram>
 
@@ -124,7 +144,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CustomTabs.IncognitoCCTCallerId" enum="IncognitoCCTCallerId"
-    expires_after="2021-07-11">
+    expires_after="2022-03-03">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <owner>cct-team@google.com</owner>
@@ -227,7 +247,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CustomTabs.ShareOptionLocation" enum="ShareOptionLocation"
-    expires_after="M91">
+    expires_after="M94">
   <owner>sophey@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <summary>Records the location of the share option in the Custom Tab.</summary>
@@ -303,7 +323,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CustomTabs.WarmupStateOnLaunch" enum="WarmupStateOnLaunch"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Recorded only on Android. Reports whether warmup() has been called when a

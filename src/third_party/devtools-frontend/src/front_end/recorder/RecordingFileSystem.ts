@@ -4,14 +4,15 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../common/common.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Persistence from '../persistence/persistence.js';
-import * as Platform from '../platform/platform.js';
-import type * as TextUtils from '../text_utils/text_utils.js';
+import * as Common from '../core/common/common.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as Persistence from '../models/persistence/persistence.js';
+
+import type * as TextUtils from '../models/text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   * @description Default name of a new recording
   * @example {1} nextId

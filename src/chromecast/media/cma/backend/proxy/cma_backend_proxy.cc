@@ -10,21 +10,13 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/notreached.h"
+#include "chromecast/media/cma/backend/proxy/media_pipeline_buffer_extension.h"
 #include "chromecast/media/cma/backend/proxy/multizone_audio_decoder_proxy_impl.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 
 namespace chromecast {
 namespace media {
-namespace {
-
-// The maximum allowed difference between the audio and video decoders used for
-// the CmaBackendProxy.
-// TODO(b/168748626): Determine the correct value for this variable
-// experimentally.
-int64_t kMaxAllowedPtsDrift = 500;
-
-}  // namespace
 
 CmaBackendProxy::CmaBackendProxy(const MediaPipelineDeviceParams& params,
                                  std::unique_ptr<CmaBackend> delegated_pipeline)
@@ -115,17 +107,7 @@ bool CmaBackendProxy::Resume() {
 }
 
 int64_t CmaBackendProxy::GetCurrentPts() {
-  if (audio_decoder_) {
-    const int64_t audio_pts = audio_decoder_->GetCurrentPts();
-    const int64_t video_pts = delegated_pipeline_->GetCurrentPts();
-    const int64_t min = std::min(audio_pts, video_pts);
-    LOG_IF(WARNING, std::max(audio_pts, video_pts) - min > kMaxAllowedPtsDrift);
-    return min;
-  } else if (has_video_decoder_) {
-    return delegated_pipeline_->GetCurrentPts();
-  } else {
-    return std::numeric_limits<int64_t>::min();
-  }
+  return delegated_pipeline_->GetCurrentPts();
 }
 
 bool CmaBackendProxy::SetPlaybackRate(float rate) {
@@ -165,8 +147,10 @@ CmaBackendProxy::CreateAudioDecoderProxy(
     const MediaPipelineDeviceParams& params) {
   CmaBackend::AudioDecoder* downstream_decoder =
       delegated_pipeline_->CreateAudioDecoder();
-  return std::make_unique<MultizoneAudioDecoderProxyImpl>(params,
-                                                          downstream_decoder);
+  auto buffer_extension = std::make_unique<MediaPipelineBufferExtension>(
+      params.task_runner, downstream_decoder);
+  return std::make_unique<MultizoneAudioDecoderProxyImpl>(
+      params, std::move(buffer_extension));
 }
 
 }  // namespace media

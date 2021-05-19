@@ -38,6 +38,7 @@
 <translation id="1662989795263954667">Apturēts — beigusies tinte</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">DNS atrisinātāja pieejamība</translation>
+<translation id="1715359911173058521">Savienojumā ar skeneri radās problēma. Pārbaudiet tīkla vai USB savienojumu un mēģiniet vēlreiz.</translation>
 <translation id="1717874160321062422">Pārvalda <ph name="FIRST_MANAGER" /> un <ph name="SECOND_MANAGER" /></translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1792647875738159689">Skenēšana tiek atcelta</translation>
@@ -95,6 +96,7 @@
 <translation id="3226405216343213872">Notiek skeneru meklēšana…</translation>
 <translation id="3246869037381808805">Drukas uzdevumi, kas ir vecāki par vienu dienu, tiks noņemti</translation>
 <translation id="3268178239013324452">Neizdevās — durtiņas ir atvērtas</translation>
+<translation id="3283504360622356314">{0,plural, =1{Rediģēt failu}zero{Rediģēt failus}one{Rediģēt failus}other{Rediģēt failus}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3310640316857623290">DNS latentums ievērojami pārsniedz pieļaujamo slieksni</translation>
 <translation id="3328783797891415197">Tiek veikta pārbaude</translation>
@@ -135,6 +137,7 @@
 <translation id="4227825898293920515">Paroles derīguma termiņš: <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nenotiek neviens drukas darbs</translation>
 <translation id="4297501883039923494">Apturēts — nezināma kļūda</translation>
+<translation id="4344214025510306853">Pievienot APN</translation>
 <translation id="4378373042927530923">Nav veikta izpilde</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Mans disks</translation>
@@ -162,7 +165,9 @@
 <translation id="4707579418881001319">L2TP/IPSec + lietotāja sertifikāts</translation>
 <translation id="4731797938093519117">Vecāku piekļuve</translation>
 <translation id="4773299976671772492">Pārtraukts</translation>
+<translation id="4794140124556169553">Centrālā procesora pārbaudes veikšana var ietekmēt jūsu sistēmas veiktspēju</translation>
 <translation id="4808449224298348341">Drukas uzdevums “<ph name="DOCUMENT_TITLE" />” tika atcelts</translation>
+<translation id="4813345808229079766">Savienojums</translation>
 <translation id="4832079907277790330">Atlasīt mapi lietotnē Faili…</translation>
 <translation id="4835901797422965222">Nav aktīvu tīklu</translation>
 <translation id="4848429997038228357">TIEK VEIKTA</translation>
@@ -177,6 +182,7 @@
 <translation id="4932733599132424254">Datums</translation>
 <translation id="498186245079027698">Pārbaudiet skeneri un mēģiniet vēlreiz. Vietējā krātuvē jābūt pietiekami daudz vietas skenēto failu saglabāšanai.</translation>
 <translation id="4985509611418653372">Izpildīt</translation>
+<translation id="4987769320337599931">Ugunsmūris</translation>
 <translation id="4999333166442584738">Paslēpt pārskatu</translation>
 <translation id="500920857929044050">Apturēt pārbaudi</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -211,6 +217,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="54609108002486618">Pārvaldītais</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Atlicis {0} mēģinājums.}zero{Atlikuši {0} mēģinājumi.}one{Atlicis {0} mēģinājums.}other{Atlikuši {0} mēģinājumi.}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
+<translation id="5499114900554609492">Nevarēja pabeigt skenēšanu</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Notiek aktivizācija</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -225,6 +232,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="5916084858004523819">Aizliegts</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Fails ir sekmīgi noskenēts un saglabāts mapē <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}zero{Faili ir sekmīgi noskenēti un saglabāti mapē <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}one{Faili ir sekmīgi noskenēti un saglabāti mapē <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Faili ir sekmīgi noskenēti un saglabāti mapē <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Fails nav atrasts</translation>
+<translation id="6037291330010597344">Skenera dokumentu padevējs ir tukšs. Pievienojiet dokumentus un mēģiniet vēlreiz.</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6040852767465482106">Anonīma identitāte</translation>
 <translation id="604124094241169006">Automātiski</translation>
@@ -247,6 +255,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />: pārbaude ir atcelta.</translation>
 <translation id="6325525973963619867">Neizdevās</translation>
 <translation id="636850387210749493">Uzņēmuma palaide</translation>
+<translation id="6388847657025262518">Skenera dokumentu padevējā ir iestrēdzis papīrs. Pārbaudiet padevēju un mēģiniet vēlreiz.</translation>
 <translation id="641081527798843608">Temata atbilstība</translation>
 <translation id="6423239382391657905">Atvērt VPN</translation>
 <translation id="6456394469623773452">Apmierinošs</translation>
@@ -268,7 +277,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="6766275201586212568">DNS atrisināšanas kļūmes</translation>
 <translation id="6768237774506518020">Biežas DNS atrisināšanas kļūmes</translation>
 <translation id="6853312040151791195">Izlādes ātrums</translation>
-<translation id="6898743098396957679">Nevarēja pabeigt skenēšanu</translation>
+<translation id="6910312834584889076">Skenera vāks ir atvērts. Aizveriet vāku un mēģiniet vēlreiz.</translation>
 <translation id="6911383237894364323">Nevar izveidot savienojumu ar multivides satura serveriem.</translation>
 <translation id="6957231940976260713">Pakalpojuma nosaukums</translation>
 <translation id="6977381486153291903">Aparātprogrammatūras pārskatīšana</translation>
@@ -276,12 +285,14 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7040230719604914234">Mobilo sakaru operators</translation>
 <translation id="7059230779847288458">Notiek uzlāde. Atlikušais laiks līdz pilnai uzlādei: <ph name="TIME_VALUE" /></translation>
 <translation id="708426984172631313">APTURĒTA</translation>
+<translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7143207342074048698">Notiek savienojuma izveide</translation>
 <translation id="7144878232160441200">Mēģināt vēlreiz</translation>
 <translation id="714876143603641390">LAN savienojamība</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7177485034254901881">Šo <ph name="DEVICE_TYPE" /> ierīci pārvalda <ph name="MANAGER" />. Administratori var attālināti konfigurēt ierīci.</translation>
 <translation id="7216409898977639127">Mobilo sakaru operators</translation>
+<translation id="7271040990581020067">Skeneris pašlaik tiek izmantots. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7343649194310845056">Tīkla ierīces</translation>
 <translation id="7359657277149375382">Faila tips</translation>
@@ -307,6 +318,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7769672763586021400">Modeļa ID</translation>
 <translation id="7805768142964895445">Statuss</translation>
 <translation id="7819857487979277519">PSK (WPA vai RSN)</translation>
+<translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Pakalpojumu sniedzēja veids</translation>
 <translation id="7936303884198020182">Netika atrasts neviens nosaukumu serveris</translation>
 <translation id="7960831585769876809">Temperatūra</translation>
@@ -336,6 +348,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="8483248364096924578">IP adrese</translation>
 <translation id="8503813439785031346">Lietotājvārds</translation>
 <translation id="8503836310948963452">Vēl tikai dažas minūtes...</translation>
+<translation id="8575298406870537639">Jūsu mobilo sakaru operators var pieprasīt šīs opcijas izmantošanu, lai varētu izveidot savienojumu ar attiecīgā operatora tīklu. Lai iegūtu detalizētu informāciju, sazinieties ar savu mobilo sakaru operatoru.</translation>
 <translation id="8576249514688522074">Pārbaude nav sākta</translation>
 <translation id="8620617069779373398">Viesabonēšanas statuss</translation>
 <translation id="8675354002693747642">Iepriekš kopīgota atslēga</translation>
@@ -348,6 +361,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="8798099450830957504">Noklusējums</translation>
 <translation id="8798441408945964110">Pakalpojumu sniedzēja nosaukums</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8818152010000655963">Fona tapete</translation>
 <translation id="8845001906332463065">Saņemt palīdzību</translation>
 <translation id="8881098542468797602">Pārbaude sekmīga</translation>
 <translation id="8898840733695078011">Signāla stiprums</translation>
@@ -365,6 +379,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="910415269708673980">Atsvaidziniet <ph name="PRINCIPAL_NAME" /> biļeti</translation>
 <translation id="9106415115617144481">Notiek <ph name="PAGE_NUMBER" />. lapas skenēšana</translation>
 <translation id="9111102763498581341">Atbloķēt</translation>
+<translation id="9137526406337347448">Google pakalpojumi</translation>
 <translation id="9149391708638971077">Veikt atmiņas pārbaudi</translation>
 <translation id="9173638680043580060">Atlicis mazāk par minūti</translation>
 <translation id="9190063653747922532">L2TP/IPSec + iepriekš kopīgota atslēga</translation>

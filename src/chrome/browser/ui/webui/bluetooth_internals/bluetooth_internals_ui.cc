@@ -17,7 +17,7 @@
 #include "ui/resources/grit/webui_generated_resources.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/bluetooth/debug_logs_manager_factory.h"
+#include "chrome/browser/ash/bluetooth/debug_logs_manager_factory.h"
 #endif
 
 BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
@@ -52,7 +52,7 @@ void BluetoothInternalsUI::BindInterface(
       std::make_unique<BluetoothInternalsHandler>(std::move(receiver));
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   page_handler_->set_debug_logs_manager(
-      chromeos::bluetooth::DebugLogsManagerFactory::GetForProfile(
+      ash::bluetooth::DebugLogsManagerFactory::GetForProfile(
           Profile::FromWebUI(web_ui())));
 #endif
 }

@@ -6,8 +6,9 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include "base/files/file_path.h"
-#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/geometry/size.h"

@@ -23,7 +23,6 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
@@ -422,19 +421,20 @@ class DownloadManagerTest : public testing::Test {
 
     mock_download_item_factory_ = (new MockDownloadItemFactory())->AsWeakPtr();
     mock_download_file_factory_ = (new MockDownloadFileFactory())->AsWeakPtr();
-    mock_download_manager_delegate_.reset(
-        new StrictMock<MockDownloadManagerDelegate>);
+    mock_download_manager_delegate_ =
+        std::make_unique<StrictMock<MockDownloadManagerDelegate>>();
     EXPECT_CALL(*mock_download_manager_delegate_.get(), Shutdown())
         .WillOnce(Return());
     browser_context_ = std::make_unique<TestBrowserContext>();
-    download_manager_.reset(new DownloadManagerImpl(browser_context_.get()));
+    download_manager_ =
+        std::make_unique<DownloadManagerImpl>(browser_context_.get());
     download_manager_->SetDownloadItemFactoryForTesting(
         std::unique_ptr<download::DownloadItemFactory>(
             mock_download_item_factory_.get()));
     download_manager_->SetDownloadFileFactoryForTesting(
         std::unique_ptr<download::DownloadFileFactory>(
             mock_download_file_factory_.get()));
-    observer_.reset(new MockDownloadManagerObserver());
+    observer_ = std::make_unique<MockDownloadManagerObserver>();
     download_manager_->AddObserver(observer_.get());
     download_manager_->SetDelegate(mock_download_manager_delegate_.get());
     download_urls_.push_back(GURL("http://www.url1.com"));

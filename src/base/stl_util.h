@@ -131,16 +131,6 @@ constexpr const T* data(const std::array<T, N>& array) noexcept {
   return !array.empty() ? &array[0] : nullptr;
 }
 
-// C++14 implementation of C++17's std::as_const():
-// https://en.cppreference.com/w/cpp/utility/as_const
-template <typename T>
-constexpr std::add_const_t<T>& as_const(T& t) noexcept {
-  return t;
-}
-
-template <typename T>
-void as_const(const T&& t) = delete;
-
 // Simplified C++14 implementation of  C++20's std::to_address.
 // Note: This does not consider specializations of pointer_traits<>::to_address,
 // since that member function may only be present in C++20 and later.
@@ -156,6 +146,17 @@ constexpr T* to_address(T* p) noexcept {
 template <typename Ptr>
 constexpr auto to_address(const Ptr& p) noexcept {
   return to_address(p.operator->());
+}
+
+// Implementation of C++23's std::to_underlying.
+//
+// Note: This has an additional `std::is_enum<EnumT>` requirement to be SFINAE
+// friendly prior to C++20.
+//
+// Reference: https://en.cppreference.com/w/cpp/utility/to_underlying
+template <typename EnumT, typename = std::enable_if_t<std::is_enum<EnumT>{}>>
+constexpr std::underlying_type_t<EnumT> to_underlying(EnumT e) noexcept {
+  return static_cast<std::underlying_type_t<EnumT>>(e);
 }
 
 // Returns a const reference to the underlying container of a container adapter.

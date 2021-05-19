@@ -58,7 +58,7 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//base/test:test_support",
-    "//chromeos/cryptohome:test_support",
+    "//chromeos/cryptohome:cryptohome",
     "//chromeos/dbus:test_support",
     "//chromeos/dbus/attestation",
     "//chromeos/dbus/attestation:attestation_proto",

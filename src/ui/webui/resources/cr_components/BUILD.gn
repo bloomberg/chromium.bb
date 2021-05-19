@@ -30,14 +30,11 @@ generate_grd("build_grdp") {
       "chromeos/multidevice_setup/all_set_2x.svg",
       "chromeos/multidevice_setup/start_setup_icon_1x.png",
       "chromeos/multidevice_setup/start_setup_icon_2x.png",
+      "chromeos/cellular_setup/sim_detect_error.svg",
       "chromeos/cellular_setup/error_1x.png",
       "chromeos/cellular_setup/error_2x.png",
       "chromeos/cellular_setup/final_page_success_1x.png",
       "chromeos/cellular_setup/final_page_success_2x.png",
-      "chromeos/cellular_setup/psim_1x.png",
-      "chromeos/cellular_setup/psim_2x.png",
-      "chromeos/cellular_setup/esim_1x.png",
-      "chromeos/cellular_setup/esim_2x.png",
       "chromeos/cellular_setup/default_esim_profile.svg",
       "chromeos/network/cellular_0_with_x.svg",
       "chromeos/network/cellular_0.svg",
@@ -65,9 +62,14 @@ generate_grd("build_grdp") {
   manifest_files = [
     "$target_gen_dir/$preprocess_gen_manifest",
     "$target_gen_dir/$preprocess_mojom_manifest",
-    "$target_gen_dir/$preprocess_polymer2_manifest",
     "$target_gen_dir/$preprocess_src_manifest",
   ]
+
+  # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
+  if (is_chromeos_ash) {
+    manifest_files += [ "$target_gen_dir/$preprocess_polymer2_manifest" ]
+  }
+
   resource_path_prefix = "cr_components"
 }
 
@@ -75,9 +77,13 @@ group("preprocess") {
   public_deps = [
     ":preprocess_generated",
     ":preprocess_mojom",
-    ":preprocess_polymer2",
     ":preprocess_src",
   ]
+
+  # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
+  if (is_chromeos_ash) {
+    public_deps += [ ":preprocess_polymer2" ]
+  }
 }
 
 preprocess_if_expr("preprocess_src") {
@@ -112,6 +118,7 @@ preprocess_if_expr("preprocess_generated") {
   in_files = [
     "customize_themes/customize_themes.js",
     "customize_themes/theme_icon.js",
+    "managed_dialog/managed_dialog.js",
     "managed_footnote/managed_footnote.m.js",
     "omnibox/cr_autocomplete_match_list.js",
   ]
@@ -154,7 +161,6 @@ preprocess_if_expr("preprocess_generated") {
       "chromeos/cellular_setup/profile_discovery_list_page.m.js",
       "chromeos/cellular_setup/provisioning_page.m.js",
       "chromeos/cellular_setup/psim_flow_ui.m.js",
-      "chromeos/cellular_setup/setup_selection_flow.m.js",
       "chromeos/cellular_setup/cellular_eid_popup.m.js",
       "chromeos/cellular_setup/setup_loading_page.m.js",
       "chromeos/cellular_setup/subflow_behavior.m.js",
@@ -207,6 +213,7 @@ preprocess_if_expr("preprocess_generated") {
       "chromeos/network/network_shared_css.m.js",
       "chromeos/network/network_siminfo.m.js",
       "chromeos/network/onc_mojo.m.js",
+      "chromeos/network/sim_lock_dialogs.m.js",
       "chromeos/quick_unlock/lock_screen_constants.m.js",
       "chromeos/quick_unlock/pin_keyboard_icon.m.js",
       "chromeos/quick_unlock/pin_keyboard.m.js",
@@ -261,6 +268,8 @@ preprocess_if_expr("preprocess_polymer2") {
         "chromeos/network/network_siminfo.html",
         "chromeos/network/network_siminfo.js",
         "chromeos/network/network_shared_css.html",
+        "chromeos/network/sim_lock_dialogs.html",
+        "chromeos/network/sim_lock_dialogs.js",
       ]
     }
     in_files += [
@@ -297,8 +306,6 @@ preprocess_if_expr("preprocess_polymer2") {
       "chromeos/cellular_setup/provisioning_page.js",
       "chromeos/cellular_setup/psim_flow_ui.html",
       "chromeos/cellular_setup/psim_flow_ui.js",
-      "chromeos/cellular_setup/setup_selection_flow.html",
-      "chromeos/cellular_setup/setup_selection_flow.js",
       "chromeos/cellular_setup/cellular_eid_popup.html",
       "chromeos/cellular_setup/cellular_eid_popup.js",
       "chromeos/cellular_setup/setup_loading_page.html",
@@ -387,6 +394,7 @@ group("closure_compile") {
   deps = [
     "certificate_manager:closure_compile_module",
     "customize_themes:closure_compile",
+    "managed_dialog:closure_compile",
     "managed_footnote:closure_compile",
     "managed_footnote:closure_compile_module",
     "omnibox:closure_compile",
@@ -401,6 +409,7 @@ group("polymer3_elements") {
   public_deps = [
     "certificate_manager:web_components",
     "customize_themes:web_components",
+    "managed_dialog:web_components",
     "managed_footnote:managed_footnote_module",
     "omnibox:web_components",
   ]

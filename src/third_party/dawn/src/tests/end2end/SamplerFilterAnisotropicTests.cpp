@@ -37,9 +37,9 @@ class SamplerFilterAnisotropicTest : public DawnTest {
         DawnTest::SetUp();
         mRenderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[block]] struct Uniforms {
-                [[offset(0)]] matrix : mat4x4<f32>;
+                matrix : mat4x4<f32>;
             };
 
             [[location(0)]] var<in> position : vec4<f32>;
@@ -55,7 +55,7 @@ class SamplerFilterAnisotropicTest : public DawnTest {
                 Position = uniforms.matrix * position;
             }
         )");
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
             [[group(0), binding(0)]] var sampler0 : sampler;
             [[group(0), binding(1)]] var texture0 : texture_2d<f32>;
 
@@ -69,22 +69,19 @@ class SamplerFilterAnisotropicTest : public DawnTest {
                 fragColor = textureSample(texture0, sampler0, fragUV);
             })");
 
-        utils::ComboVertexStateDescriptor vertexState;
-        vertexState.cVertexBuffers[0].attributeCount = 2;
-        vertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
-        vertexState.cAttributes[1].shaderLocation = 1;
-        vertexState.cAttributes[1].offset = 4 * sizeof(float);
-        vertexState.cAttributes[1].format = wgpu::VertexFormat::Float2;
-        vertexState.vertexBufferCount = 1;
-        vertexState.cVertexBuffers[0].arrayStride = 6 * sizeof(float);
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        pipelineDescriptor.vertex.module = vsModule;
+        pipelineDescriptor.cFragment.module = fsModule;
+        pipelineDescriptor.cBuffers[0].attributeCount = 2;
+        pipelineDescriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
+        pipelineDescriptor.cAttributes[1].shaderLocation = 1;
+        pipelineDescriptor.cAttributes[1].offset = 4 * sizeof(float);
+        pipelineDescriptor.cAttributes[1].format = wgpu::VertexFormat::Float32x2;
+        pipelineDescriptor.vertex.bufferCount = 1;
+        pipelineDescriptor.cBuffers[0].arrayStride = 6 * sizeof(float);
+        pipelineDescriptor.cTargets[0].format = mRenderPass.colorFormat;
 
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-        pipelineDescriptor.vertexStage.module = vsModule;
-        pipelineDescriptor.cFragmentStage.module = fsModule;
-        pipelineDescriptor.vertexState = &vertexState;
-        pipelineDescriptor.cColorStates[0].format = mRenderPass.colorFormat;
-
-        mPipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+        mPipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
         mBindGroupLayout = mPipeline.GetBindGroupLayout(0);
 
         InitTexture();
@@ -100,7 +97,7 @@ class SamplerFilterAnisotropicTest : public DawnTest {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = textureWidthLevel0;
         descriptor.size.height = textureHeightLevel0;
-        descriptor.size.depth = 1;
+        descriptor.size.depthOrArrayLayers = 1;
         descriptor.sampleCount = 1;
         descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
         descriptor.mipLevelCount = mipLevelCount;
@@ -121,12 +118,12 @@ class SamplerFilterAnisotropicTest : public DawnTest {
             std::vector<RGBA8> data(rowPixels * texHeight, color);
             wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
                 device, data.data(), data.size() * sizeof(RGBA8), wgpu::BufferUsage::CopySrc);
-            wgpu::BufferCopyView bufferCopyView =
-                utils::CreateBufferCopyView(stagingBuffer, 0, kTextureBytesPerRowAlignment);
-            wgpu::TextureCopyView textureCopyView =
-                utils::CreateTextureCopyView(texture, level, {0, 0, 0});
+            wgpu::ImageCopyBuffer imageCopyBuffer =
+                utils::CreateImageCopyBuffer(stagingBuffer, 0, kTextureBytesPerRowAlignment);
+            wgpu::ImageCopyTexture imageCopyTexture =
+                utils::CreateImageCopyTexture(texture, level, {0, 0, 0});
             wgpu::Extent3D copySize = {texWidth, texHeight, 1};
-            encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+            encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
         }
         wgpu::CommandBuffer copy = encoder.Finish();
         queue.Submit(1, &copy);
@@ -271,6 +268,11 @@ class SamplerFilterAnisotropicTest : public DawnTest {
 };
 
 TEST_P(SamplerFilterAnisotropicTest, SlantedPlaneMipmap) {
+    // TODO(crbug.com/tint/691): shader compiles, but output is unexpected
+    DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
+    // TODO(crbug.com/dawn/740): Test output is wrong with D3D12 + WARP.
+    DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP());
+
     DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
     const uint16_t maxAnisotropyLists[] = {1, 2, 16, 128};
     for (uint16_t t : maxAnisotropyLists) {

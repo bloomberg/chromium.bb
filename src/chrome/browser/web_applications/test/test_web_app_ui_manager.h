@@ -18,7 +18,8 @@ class TestWebAppUiManager : public WebAppUiManager {
   TestWebAppUiManager& operator=(const TestWebAppUiManager&) = delete;
   ~TestWebAppUiManager() override;
 
-  void SetSubsystems(AppRegistryController* app_registry_controller) override;
+  void SetSubsystems(AppRegistryController* app_registry_controller,
+                     OsIntegrationManager* os_integration_manager) override;
   void Start() override;
   void Shutdown() override;
 
@@ -44,6 +45,8 @@ class TestWebAppUiManager : public WebAppUiManager {
   void ReparentAppTabToWindow(content::WebContents* contents,
                               const AppId& app_id,
                               bool shortcut_created) override;
+  content::WebContents* NavigateExistingWindow(const AppId& app_id,
+                                               const GURL& url) override;
 
  private:
   std::map<AppId, size_t> app_id_to_num_windows_map_;

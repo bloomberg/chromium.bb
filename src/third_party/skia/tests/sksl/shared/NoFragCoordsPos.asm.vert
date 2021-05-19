@@ -10,6 +10,7 @@ OpName %main "main"
 OpMemberDecorate %sk_PerVertex 0 BuiltIn Position
 OpMemberDecorate %sk_PerVertex 1 BuiltIn PointSize
 OpDecorate %sk_PerVertex Block
+OpDecorate %pos Location 0
 %float = OpTypeFloat 32
 %v4float = OpTypeVector %float 4
 %sk_PerVertex = OpTypeStruct %v4float %float

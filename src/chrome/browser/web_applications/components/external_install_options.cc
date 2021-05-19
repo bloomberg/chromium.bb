@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/components/system_web_app_types.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 
 namespace web_app {
 
@@ -73,7 +73,9 @@ bool ExternalInstallOptions::operator==(
         options.uninstall_and_replace,
         options.additional_search_terms,
         options.only_use_app_info_factory,
-        options.app_info_factory
+        options.app_info_factory,
+        options.system_app_type,
+        options.oem_installed
         // clang-format on
     );
   };
@@ -160,7 +162,8 @@ std::ostream& operator<<(std::ostream& out,
          << "\n system_app_type: "
          << (install_options.system_app_type.has_value()
                  ? static_cast<int32_t>(install_options.system_app_type.value())
-                 : -1);
+                 : -1)
+         << "\n oem_installed: " << install_options.oem_installed;
 }
 
 InstallManager::InstallParams ConvertExternalInstallOptionsToParams(
@@ -193,6 +196,8 @@ InstallManager::InstallParams ConvertExternalInstallOptionsToParams(
   params.launch_query_params = install_options.launch_query_params;
 
   params.system_app_type = install_options.system_app_type;
+
+  params.oem_installed = install_options.oem_installed;
 
   return params;
 }

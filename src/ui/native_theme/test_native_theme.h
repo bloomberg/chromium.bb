@@ -16,8 +16,6 @@ class TestNativeTheme : public NativeTheme {
   ~TestNativeTheme() override;
 
   // NativeTheme:
-  SkColor GetSystemColor(ColorId color_id,
-                         ColorScheme color_scheme) const override;
   gfx::Size GetPartSize(Part part,
                         State state,
                         const ExtraParams& extra) const override;
@@ -26,7 +24,8 @@ class TestNativeTheme : public NativeTheme {
              State state,
              const gfx::Rect& rect,
              const ExtraParams& extra,
-             ColorScheme color_scheme) const override;
+             ColorScheme color_scheme,
+             const base::Optional<SkColor>& accent_color) const override;
   bool SupportsNinePatch(Part part) const override;
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
   gfx::Rect GetNinePatchAperture(Part part) const override;
@@ -43,6 +42,11 @@ class TestNativeTheme : public NativeTheme {
     is_platform_high_contrast_ = is_platform_high_contrast;
   }
   void AddColorSchemeNativeThemeObserver(NativeTheme* theme_to_update);
+
+ protected:
+  SkColor GetSystemColorDeprecated(ColorId color_id,
+                                   ColorScheme color_scheme,
+                                   bool apply_processing) const override;
 
  private:
   bool dark_mode_ = false;

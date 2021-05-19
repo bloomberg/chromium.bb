@@ -199,27 +199,19 @@ function makeTreeNodeHeaderHTML(
   onChange: (checked: boolean) => void
 ): [HTMLElement, SetCheckedRecursively] {
   const isLeaf = 'run' in n;
-  const div = $('<div>').addClass('nodeheader');
+  const div = $('<details>').addClass('nodeheader');
+  const header = $('<summary>').appendTo(div);
 
   const setChecked = () => {
-    if (checkbox) {
-      checkbox.prop('checked', true); // (does not fire onChange)
-      onChange(true);
-    }
+    div.prop('open', true); // (does not fire onChange)
+    onChange(true);
   };
 
-  let checkbox: JQuery<HTMLElement> | undefined;
   const href = `?${worker ? 'worker&' : ''}${debug ? 'debug&' : ''}q=${n.query.toString()}`;
   if (onChange) {
-    checkbox = $('<input>')
-      .attr('type', 'checkbox')
-      .addClass('collapsebtn')
-      .on('change', function (this) {
-        onChange((this as HTMLInputElement).checked);
-      })
-      .attr('alt', 'Expand')
-      .attr('title', 'Expand')
-      .appendTo(div);
+    div.on('toggle', function (this) {
+      onChange((this as HTMLDetailsElement).open);
+    });
 
     // Expand the shallower parts of the tree at load.
     // Also expand completely within subtrees that are at the same query level
@@ -236,14 +228,25 @@ function makeTreeNodeHeaderHTML(
     .on('click', async () => {
       await runSubtree();
     })
-    .appendTo(div);
+    .appendTo(header);
   $('<a>')
     .addClass('nodelink')
     .attr('href', href)
     .attr('alt', 'Open')
     .attr('title', 'Open')
-    .appendTo(div);
-  const nodetitle = $('<div>').addClass('nodetitle').appendTo(div);
+    .appendTo(header);
+  if ('testCreationStack' in n && n.testCreationStack) {
+    $('<button>')
+      .addClass('testcaselogbtn')
+      .attr('alt', 'Log test creation stack to console')
+      .attr('title', 'Log test creation stack to console')
+      .appendTo(header)
+      .on('click', () => {
+        /* eslint-disable-next-line no-console */
+        console.log(n.testCreationStack);
+      });
+  }
+  const nodetitle = $('<div>').addClass('nodetitle').appendTo(header);
   $('<input>')
     .attr('type', 'text')
     .prop('readonly', true)
@@ -255,7 +258,7 @@ function makeTreeNodeHeaderHTML(
     $('<pre>') //
       .addClass('nodedescription')
       .text(n.description)
-      .appendTo(nodetitle);
+      .appendTo(header);
   }
   return [div[0], setChecked];
 }

@@ -24,12 +24,20 @@ alignas(ThreadState) uint8_t
 
 // static
 ThreadState* ThreadState::AttachMainThread() {
-  return new (main_thread_state_storage_) ThreadState();
+  return new (main_thread_state_storage_) ThreadState(gin::V8Platform::Get());
+}
+
+// static
+ThreadState* ThreadState::AttachMainThreadForTesting(v8::Platform* platform) {
+  ThreadState* thread_state =
+      new (main_thread_state_storage_) ThreadState(platform);
+  thread_state->EnableDetachedGarbageCollectionsForTesting();
+  return thread_state;
 }
 
 // static
 ThreadState* ThreadState::AttachCurrentThread() {
-  return new ThreadState();
+  return new ThreadState(gin::V8Platform::Get());
 }
 
 // static
@@ -52,23 +60,10 @@ void ThreadState::DetachFromIsolate() {
   isolate_ = nullptr;
 }
 
-namespace {
-
-std::vector<std::unique_ptr<cppgc::CustomSpaceBase>> CreateCustomSpaces() {
-  std::vector<std::unique_ptr<cppgc::CustomSpaceBase>> spaces;
-  spaces.emplace_back(std::make_unique<HeapVectorBackingSpace>());
-  spaces.emplace_back(std::make_unique<HeapHashTableBackingSpace>());
-  spaces.emplace_back(std::make_unique<NodeSpace>());
-  spaces.emplace_back(std::make_unique<CSSValueSpace>());
-  return spaces;
-}
-
-}  // namespace
-
-ThreadState::ThreadState()
+ThreadState::ThreadState(v8::Platform* platform)
     : cpp_heap_(v8::CppHeap::Create(
-          gin::V8Platform::Get(),
-          {CreateCustomSpaces(),
+          platform,
+          {CustomSpaces::CreateCustomSpaces(),
            v8::WrapperDescriptor(kV8DOMWrapperTypeIndex,
                                  kV8DOMWrapperObjectIndex,
                                  gin::GinEmbedder::kEmbedderBlink)})),
@@ -105,20 +100,17 @@ void ThreadState::NotifyGarbageCollection(v8::GCType type,
     if (type == v8::kGCTypeScavenge) {
       forced_scheduled_gc_for_testing_ = true;
     } else if (type == v8::kGCTypeMarkSweepCompact) {
-      // TODO(1056170): Only need to schedule a forced GC if stack was scanned
-      // conservatively in previous GC.
-      forced_scheduled_gc_for_testing_ = true;
+      forced_scheduled_gc_for_testing_ =
+          cppgc::subtle::HeapState::PreviousGCWasConservative(heap_handle());
     }
   }
 }
 
 void ThreadState::CollectAllGarbageForTesting(BlinkGC::StackState stack_state) {
-  // Should only be used when attached to V8.
-  CHECK(isolate_);
   size_t previous_live_bytes = 0;
   for (size_t i = 0; i < 5; i++) {
-    // CppHeap registers itself as EmbedderHeapTracer internally.
-    isolate_->GetEmbedderHeapTracer()->GarbageCollectionForTesting(
+    // Either triggers unified heap or stand-alone garbage collections.
+    cpp_heap().CollectGarbageForTesting(
         stack_state == BlinkGC::kHeapPointersOnStack
             ? cppgc::EmbedderStackState::kMayContainHeapPointers
             : cppgc::EmbedderStackState::kNoHeapPointers);
@@ -140,4 +132,17 @@ void ThreadState::CollectNodeAndCssStatistics(
   std::move(callback).Run(0u, 0u);
 }
 
+void ThreadState::EnableDetachedGarbageCollectionsForTesting() {
+  cpp_heap().EnableDetachedGarbageCollectionsForTesting();
+  // Detached GCs cannot rely on the V8 platform being initialized which is
+  // needed by cppgc to perform a garbage collection.
+  v8::V8::InitializePlatform(gin::V8Platform::Get());
+}
+
+bool ThreadState::IsIncrementalMarking() {
+  return cppgc::subtle::HeapState::IsMarking(
+             ThreadState::Current()->heap_handle()) &&
+         !cppgc::subtle::HeapState::IsInAtomicPause(
+             ThreadState::Current()->heap_handle());
+}
 }  // namespace blink

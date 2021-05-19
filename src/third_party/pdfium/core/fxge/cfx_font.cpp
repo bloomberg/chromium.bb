@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_stream.h"
+#include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/cfx_fontcache.h"
 #include "core/fxge/cfx_fontmgr.h"
 #include "core/fxge/cfx_gemodule.h"
@@ -35,7 +36,7 @@ constexpr int kThousandthMinInt = std::numeric_limits<int>::min() / 1000;
 constexpr int kThousandthMaxInt = std::numeric_limits<int>::max() / 1000;
 
 struct OUTLINE_PARAMS {
-  CFX_PathData* m_pPath;
+  UnownedPtr<CFX_PathData> m_pPath;
   int m_CurX;
   int m_CurY;
   float m_CoordUnit;
@@ -634,8 +635,9 @@ void CFX_Font::AdjustMMParams(int glyph_index,
   FT_Set_MM_Design_Coordinates(m_Face->GetRec(), 2, coords);
 }
 
-CFX_PathData* CFX_Font::LoadGlyphPathImpl(uint32_t glyph_index,
-                                          int dest_width) const {
+std::unique_ptr<CFX_PathData> CFX_Font::LoadGlyphPathImpl(
+    uint32_t glyph_index,
+    int dest_width) const {
   if (!m_Face)
     return nullptr;
 
@@ -679,8 +681,8 @@ CFX_PathData* CFX_Font::LoadGlyphPathImpl(uint32_t glyph_index,
   funcs.shift = 0;
   funcs.delta = 0;
 
-  OUTLINE_PARAMS params;
   auto pPath = std::make_unique<CFX_PathData>();
+  OUTLINE_PARAMS params;
   params.m_pPath = pPath.get();
   params.m_CurX = params.m_CurY = 0;
   params.m_CoordUnit = 64 * 64.0;
@@ -692,8 +694,7 @@ CFX_PathData* CFX_Font::LoadGlyphPathImpl(uint32_t glyph_index,
 
   Outline_CheckEmptyContour(&params);
   pPath->ClosePath();
-
-  return pPath.release();
+  return pPath;
 }
 
 const CFX_GlyphBitmap* CFX_Font::LoadGlyphBitmap(

@@ -1,0 +1,69 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("../../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../../scripts/build/ninja/devtools_module.gni")
+
+ts_library("ColorUtils") {
+  sources = [ "ColorUtils.js" ]
+}
+
+devtools_module("common") {
+  sources = [
+    "App.js",
+    "AppProvider.js",
+    "Base64.js",
+    "CharacterIdMap.js",
+    "Color.js",
+    "Console.js",
+    "Debouncer.js",
+    "EventTarget.js",
+    "JavaScriptMetaData.js",
+    "Lazy.js",
+    "Linkifier.js",
+    "Object.js",
+    "ParsedURL.js",
+    "Progress.js",
+    "QueryParamHandler.js",
+    "ResourceType.js",
+    "Revealer.js",
+    "Runnable.js",
+    "SegmentedRange.js",
+    "SettingRegistration.ts",
+    "Settings.js",
+    "SimpleHistoryManager.js",
+    "StringOutputStream.js",
+    "TextDictionary.js",
+    "Throttler.js",
+    "Trie.js",
+    "WasmDisassembly.js",
+    "Worker.js",
+  ]
+
+  deps = [
+    ":ColorUtils",
+    "../../core/i18n:bundle",
+    "../../core/platform:bundle",
+    "../../core/root:bundle",
+  ]
+
+  # Add files built by ColorUtils ts_library so that they are included in layout tests.
+  data = filter_include(get_target_outputs(":ColorUtils"),
+                        [
+                          "*.js",
+                          "*.map",
+                        ])
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "common.js"
+
+  deps = [ ":common" ]
+}
+
+devtools_entrypoint("legacy") {
+  entrypoint = "common-legacy.js"
+
+  deps = [ ":bundle" ]
+}

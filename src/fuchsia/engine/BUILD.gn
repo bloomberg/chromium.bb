@@ -62,7 +62,7 @@ repack("web_engine_pak") {
   visibility = [ ":*" ]
 }
 
-foreach(locale, locales_with_fake_bidi) {
+foreach(locale, locales_with_pseudolocales) {
   repack("web_engine_locale_${locale}_pak") {
     # WebEngine requires the following locale-specific resources:
     # 1. Locale settings (e.g. default encoding, accept-languages per locale).
@@ -153,7 +153,7 @@ component("web_engine_core") {
   # package.
   deps += [ ":web_engine_pak" ]
   data = [ "$root_gen_dir/common_resources.pak" ]
-  foreach(locale, locales_with_fake_bidi) {
+  foreach(locale, locales_with_pseudolocales) {
     deps += [ ":web_engine_locale_${locale}_pak" ]
     data += [ "$root_gen_dir/locales/${locale}.pak" ]
   }
@@ -283,101 +283,6 @@ _web_engine_excluded_files = [
   "lib/libswiftshader_libGLESv2.so",
 ]
 
-# TODO(crbug.com/1174013): Remove exclusions when DevTools discontinues the
-# use of "data".
-# Devtools' build configuration currently generates "data" entries that
-# are inert in production but still increase the size of the production
-# package.
-_devtools_excluded_files = [
-  "common/App.js",
-  "common/App.js.map",
-  "common/AppProvider.js",
-  "common/AppProvider.js.map",
-  "common/Base64.js",
-  "common/Base64.js.map",
-  "common/CharacterIdMap.js",
-  "common/CharacterIdMap.js.map",
-  "common/Color.js",
-  "common/Color.js.map",
-  "common/ColorUtils.js",
-  "common/ColorUtils.js.map",
-  "common/common.js",
-  "common/Console.js",
-  "common/Console.js.map",
-  "common/Debouncer.js",
-  "common/Debouncer.js.map",
-  "common/EventTarget.js",
-  "common/EventTarget.js.map",
-  "common/JavaScriptMetaData.js",
-  "common/JavaScriptMetaData.js.map",
-  "common/Lazy.js",
-  "common/Lazy.js.map",
-  "common/Linkifier.js",
-  "common/Linkifier.js.map",
-  "common/Object.js",
-  "common/Object.js.map",
-  "common/ParsedURL.js",
-  "common/ParsedURL.js.map",
-  "common/Progress.js",
-  "common/Progress.js.map",
-  "common/QueryParamHandler.js",
-  "common/QueryParamHandler.js.map",
-  "common/ResourceType.js",
-  "common/ResourceType.js.map",
-  "common/Revealer.js",
-  "common/Revealer.js.map",
-  "common/Runnable.js",
-  "common/Runnable.js.map",
-  "common/SegmentedRange.js",
-  "common/SegmentedRange.js.map",
-  "common/SettingRegistration.js",
-  "common/SettingRegistration.js.map",
-  "common/Settings.js",
-  "common/Settings.js.map",
-  "common/SimpleHistoryManager.js",
-  "common/SimpleHistoryManager.js.map",
-  "common/StringOutputStream.js",
-  "common/StringOutputStream.js.map",
-  "common/TextDictionary.js",
-  "common/TextDictionary.js.map",
-  "common/Throttler.js",
-  "common/Throttler.js.map",
-  "common/Trie.js",
-  "common/Trie.js.map",
-  "common/WasmDisassembly.js",
-  "common/WasmDisassembly.js.map",
-  "common/Worker.js",
-  "common/Worker.js.map",
-  "platform/array-utilities.js",
-  "platform/array-utilities.js.map",
-  "platform/date-utilities.js",
-  "platform/date-utilities.js.map",
-  "platform/keyboard-utilities.js",
-  "platform/keyboard-utilities.js.map",
-  "platform/map-utilities.js",
-  "platform/map-utilities.js.map",
-  "platform/number-utilities.js",
-  "platform/number-utilities.js.map",
-  "platform/platform.js",
-  "platform/set-utilities.js",
-  "platform/set-utilities.js.map",
-  "platform/string-utilities.js",
-  "platform/string-utilities.js.map",
-  "platform/typescript-utilities.js",
-  "platform/typescript-utilities.js.map",
-  "platform/UIString.js",
-  "platform/UIString.js.map",
-  "platform/utilities.js",
-  "platform/utilities.js.map",
-  "root/root.js",
-  "root/Runtime.js",
-  "root/Runtime.js.map",
-]
-foreach(excluded, _devtools_excluded_files) {
-  _web_engine_excluded_files +=
-      [ "third_party/devtools-frontend/src/front_end/${excluded}" ]
-}
-
 # Definitions for the main web_engine package. The package contains the
 # context_provider component definition, and its dependencies.  An installer
 # script is declared for the package, for ease of development.
@@ -456,7 +361,9 @@ test("web_engine_browsertests") {
     "browser/headless_browsertest.cc",
     "browser/media_browsertest.cc",
     "browser/navigation_policy_browsertest.cc",
+    "browser/permissions_browsertest.cc",
     "browser/theme_manager_browsertest.cc",
+    "browser/virtual_keyboard_browsertest.cc",
   ]
 
   # TODO(crbug.com/1157909): Move to the list above when the bug is fixed.
@@ -483,9 +390,17 @@ test("web_engine_browsertests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.input.virtualkeyboard",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//ui/gfx",
     "//ui/ozone",
+  ]
+  additional_manifest_fragments = [
+    "//build/config/fuchsia/test/jit_capabilities.test-cmx",
+    "//build/config/fuchsia/test/network_capabilities.test-cmx",
+    "//build/config/fuchsia/test/present_view_capabilities.test-cmx",
+    "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
+    "//build/config/fuchsia/test/web_engine_required_capabilities.test-cmx",
   ]
 }
 
@@ -524,10 +439,18 @@ test("web_engine_unittests") {
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
   ]
+  additional_manifest_fragments = [
+    "//build/config/fuchsia/test/access_test_data_dir.test-cmx",
+
+    # TODO(crbug.com/1185811): Figure out why jit_capabilities is needed.
+    "//build/config/fuchsia/test/jit_capabilities.test-cmx",
+
+    "//build/config/fuchsia/test/network_capabilities.test-cmx",
+    "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
+  ]
 }
 
 test("web_engine_integration_tests") {
-  manifest = "web_engine_integration_tests.cmx"
   sources = [
     "test_debug_listener.cc",
     "test_debug_listener.h",
@@ -555,6 +478,12 @@ test("web_engine_integration_tests") {
         ":web_engine",
         "web_engine",
       ] ]
+  additional_manifest_fragments = [
+    "//build/config/fuchsia/test/network_capabilities.test-cmx",
+    "//build/config/fuchsia/test/read_debug_data.test-cmx",
+    "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
+    "//build/config/fuchsia/test/web_engine_required_capabilities.test-cmx",
+  ]
 }
 
 cr_fuchsia_package("web_engine_shell_pkg") {
@@ -581,6 +510,7 @@ fuchsia_package_runner("web_engine_shell") {
 }
 
 executable("web_engine_shell_exec") {
+  testonly = true
   sources = [ "test/web_engine_shell.cc" ]
 
   data = [ "test/shell_data" ]
@@ -594,6 +524,8 @@ executable("web_engine_shell_exec") {
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     "//url",
   ]
+
+  visibility = [ ":*" ]
 }
 
 if (is_official_build) {

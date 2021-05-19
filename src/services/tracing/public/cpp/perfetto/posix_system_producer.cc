@@ -29,7 +29,7 @@
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
-#include "mojo/public/cpp/bindings/shared_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/system_tracing_service.h"
 #endif
 
@@ -58,8 +58,9 @@ uint32_t IncreaseBackoff(uint32_t current, uint32_t max) {
 
 }  // namespace
 
-PosixSystemProducer::PosixSystemProducer(const char* socket,
-                                         PerfettoTaskRunner* task_runner)
+PosixSystemProducer::PosixSystemProducer(
+    const char* socket,
+    base::tracing::PerfettoTaskRunner* task_runner)
     : SystemProducer(task_runner),
       socket_name_(socket),
       connection_backoff_ms_(kInitialConnectionBackoffMs) {
@@ -293,7 +294,7 @@ void PosixSystemProducer::StartDataSource(
                   base::AutoLock lock(weak_ptr->lock_);
                   ++weak_ptr->data_sources_tracing_;
                 }
-                data_source->StartTracingWithID(
+                data_source->StartTracing(
                     id, weak_ptr.get(),
                     EnsureGuardRailsAreFollowed(data_source_config));
                 weak_ptr->GetService()->NotifyDataSourceStarted(id);
@@ -425,9 +426,8 @@ void PosixSystemProducer::ConnectSocket() {
 
 #if !defined(OS_ANDROID)
   // If the child process hasn't received the Mojo remote, try again later.
-  auto shared_remote =
-      TracedProcessImpl::GetInstance()->system_tracing_service();
-  if (!shared_remote.is_bound()) {
+  auto& remote = TracedProcessImpl::GetInstance()->system_tracing_service();
+  if (!remote.is_bound()) {
     DelayedReconnect();
     return;
   }
@@ -456,7 +456,7 @@ void PosixSystemProducer::ConnectSocket() {
       std::move(producer_name), weak_ptr_factory_.GetWeakPtr());
 
   // Open the socket remotely using Mojo.
-  shared_remote->OpenProducerSocket(std::move(callback));
+  remote->OpenProducerSocket(std::move(callback));
 #endif  // !defined(OS_ANDROID)
 }
 

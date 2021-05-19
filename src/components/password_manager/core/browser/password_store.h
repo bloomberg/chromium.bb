@@ -156,10 +156,10 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Sets the affiliation-based match |helper| that will be used by subsequent
   // GetLogins() calls to return credentials stored not only for the requested
-  // sign-on realm, but also for affiliated Android applications. If |helper| is
-  // null, clears the the currently set helper if any. Unless a helper is set,
-  // affiliation-based matching is disabled. The passed |helper| must already be
-  // initialized if it is non-null.
+  // sign-on realm, but also for affiliated Android applications and Web realms.
+  // If |helper| is null, clears the the currently set helper if any. Unless a
+  // helper is set, affiliation-based matching is disabled. The passed |helper|
+  // must already be initialized if it is non-null.
   void SetAffiliatedMatchHelper(std::unique_ptr<AffiliatedMatchHelper> helper);
   AffiliatedMatchHelper* affiliated_match_helper() const {
     return affiliated_match_helper_.get();
@@ -237,7 +237,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Searches for credentials with the specified |plain_text_password|, and
   // notifies |consumer| on completion. The request will be cancelled if the
   // consumer is destroyed.
-  void GetLoginsByPassword(const base::string16& plain_text_password,
+  void GetLoginsByPassword(const std::u16string& plain_text_password,
                            PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are not blocklist entries--and
@@ -283,7 +283,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Removes information about insecure credentials on |signon_realm| for
   // |username|.
   void RemoveInsecureCredentials(const std::string& signon_realm,
-                                 const base::string16& username,
+                                 const std::u16string& username,
                                  RemoveInsecureCredentialsReason reason);
 
   // Retrieves all insecure credentials and notifies |consumer| on
@@ -358,7 +358,7 @@ class PasswordStore : protected PasswordStoreSync,
   // If such suffix is found, |consumer|->OnReuseFound() is called on the same
   // sequence on which this method is called.
   // |consumer| must not be null.
-  virtual void CheckReuse(const base::string16& input,
+  virtual void CheckReuse(const std::u16string& input,
                           const std::string& domain,
                           PasswordReuseDetectorConsumer* consumer);
 
@@ -368,14 +368,14 @@ class PasswordStore : protected PasswordStoreSync,
   // |is_primary_account| is whether account belong to the password is a
   // primary account.
   virtual void SaveGaiaPasswordHash(const std::string& username,
-                                    const base::string16& password,
+                                    const std::u16string& password,
                                     bool is_primary_account,
                                     GaiaPasswordHashChange event);
 
   // Saves |username| and a hash of |password| for enterprise password reuse
   // checking.
   virtual void SaveEnterprisePasswordHash(const std::string& username,
-                                          const base::string16& password);
+                                          const std::u16string& password);
 
   // Saves |sync_password_data| for sync password reuse checking.
   // |event| is used for metric logging.
@@ -522,7 +522,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Finds and returns all not-blocklisted PasswordForms with the specified
   // |plain_text_password| stored in the credential database.
   virtual std::vector<std::unique_ptr<PasswordForm>>
-  FillMatchingLoginsByPassword(const base::string16& plain_text_password) = 0;
+  FillMatchingLoginsByPassword(const std::u16string& plain_text_password) = 0;
 
   // Overwrites |forms| with all stored non-blocklisted credentials. Returns
   // true on success.
@@ -548,7 +548,7 @@ class PasswordStore : protected PasswordStoreSync,
       const InsecureCredential& insecure_credential) = 0;
   virtual PasswordStoreChangeList RemoveInsecureCredentialsImpl(
       const std::string& signon_realm,
-      const base::string16& username,
+      const std::u16string& username,
       RemoveInsecureCredentialsReason reason) = 0;
   virtual std::vector<InsecureCredential> GetAllInsecureCredentialsImpl() = 0;
   virtual std::vector<InsecureCredential> GetMatchingInsecureCredentialsImpl(
@@ -603,14 +603,14 @@ class PasswordStore : protected PasswordStoreSync,
   // metric logging. |is_primary_account| is whether account belong to the
   // password is a primary account.
   void SaveProtectedPasswordHash(const std::string& username,
-                                 const base::string16& password,
+                                 const std::u16string& password,
                                  bool is_primary_account,
                                  bool is_gaia_password,
                                  GaiaPasswordHashChange event);
 
   // Synchronous implementation of CheckReuse().
   void CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
-                      const base::string16& input,
+                      const std::u16string& input,
                       const std::string& domain);
 
   // Synchronous implementation of SaveProtectedPasswordHash().
@@ -752,7 +752,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Finds all credentials with the specified |plain_text_password|.
   // Note: subclasses should implement FillMatchingLoginsByPassword() instead.
   std::vector<std::unique_ptr<PasswordForm>> GetLoginsByPasswordImpl(
-      const base::string16& plain_text_password);
+      const std::u16string& plain_text_password);
 
   // Finds all non-blocklist PasswordForms and returns the result.
   std::vector<std::unique_ptr<PasswordForm>> GetAutofillableLoginsImpl();
@@ -764,21 +764,22 @@ class PasswordStore : protected PasswordStoreSync,
   std::vector<std::unique_ptr<PasswordForm>> GetAllLoginsImpl();
 
   // Extended version of GetLoginsImpl that also returns credentials stored for
-  // the specified affiliated Android applications. That is, it finds all
-  // PasswordForms with a signon_realm that is either:
+  // the specified affiliated Android applications and Web realms. That is, it
+  // finds all PasswordForms with a signon_realm that is either:
   //  * equal to that of |form|,
   //  * is a PSL-match to the realm of |form|,
-  //  * is one of those in |additional_android_realms|,
+  //  * is one of those in |additional_affiliated_realms|,
   // and returns the result.
   std::vector<std::unique_ptr<PasswordForm>> GetLoginsWithAffiliationsImpl(
       const FormDigest& form,
-      const std::vector<std::string>& additional_android_realms);
+      const std::vector<std::string>& additional_affiliated_realms);
 
   // Extended version of GetMatchingInsecureCredentialsImpl that also returns
-  // credentials stored for the specified affiliated Android applications.
+  // credentials stored for the specified affiliated Android applications or Web
+  // realms.
   std::vector<InsecureCredential> GetInsecureCredentialsWithAffiliationsImpl(
       const std::string& signon_realm,
-      const std::vector<std::string>& additional_android_realms);
+      const std::vector<std::string>& additional_affiliated_realms);
 
   // Retrieves and fills in affiliation and branding information for Android
   // credentials in |forms| and invokes |callback| with the result. Called on
@@ -793,14 +794,14 @@ class PasswordStore : protected PasswordStoreSync,
       base::WeakPtr<PasswordStoreConsumer> consumer,
       const PasswordStore::FormDigest& form,
       base::Time cutoff,
-      const std::vector<std::string>& additional_android_realms);
+      const std::vector<std::string>& additional_affiliated_realms);
 
   // Schedules GetInsecureCredentialsWithAffiliationsImpl() to be run on the
   // background sequence.
   void ScheduleGetInsecureCredentialsWithAffiliations(
       base::WeakPtr<InsecureCredentialsConsumer> consumer,
       const std::string& signon_realm,
-      const std::vector<std::string>& additional_android_realms);
+      const std::vector<std::string>& additional_affiliated_realms);
 
   // Retrieves the currently stored form, if any, with the same primary key as
   // |form|, that is, with the same signon_realm, url, username_element,

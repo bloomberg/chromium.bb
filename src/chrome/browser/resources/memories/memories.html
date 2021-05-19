@@ -5,21 +5,25 @@
   <meta name="color-scheme" content="light dark">
   <title>$i18n{title}</title>
   <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
+  <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <style>
     html {
       background: var(--md-background-color);
-      overflow: hidden;
+    }
+
+    body {
+      font-size: 16px;  /* TODO(crbug.com/1173990): Remove once fixed. */
+      margin: 0;
     }
 
     html,
-    body {
+    body,
+    memories-app {
       height: 100%;
-      margin: 0;
     }
   </style>
 </head>
 <body>
-  <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <script type="module" src="memories.js"></script>
   <memories-app></memories-app>
 </body>

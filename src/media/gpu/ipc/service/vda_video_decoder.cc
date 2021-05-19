@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -207,12 +208,6 @@ VdaVideoDecoder::~VdaVideoDecoder() {
   DCHECK(!gpu_weak_vda_);
 }
 
-std::string VdaVideoDecoder::GetDisplayName() const {
-  DVLOG(3) << __func__;
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  return "VdaVideoDecoder";
-}
-
 VideoDecoderType VdaVideoDecoder::GetDecoderType() const {
   DVLOG(3) << __func__;
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
@@ -383,8 +378,9 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
     return;
   }
 
-  gpu_weak_vda_factory_.reset(
-      new base::WeakPtrFactory<VideoDecodeAccelerator>(vda_.get()));
+  gpu_weak_vda_factory_ =
+      std::make_unique<base::WeakPtrFactory<VideoDecodeAccelerator>>(
+          vda_.get());
   gpu_weak_vda_ = gpu_weak_vda_factory_->GetWeakPtr();
 
   vda_initialized_ = true;

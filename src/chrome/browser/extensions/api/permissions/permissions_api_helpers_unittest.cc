@@ -25,6 +25,7 @@
 #include "url/gurl.h"
 
 using extensions::api::permissions::Permissions;
+using extensions::mojom::APIPermissionID;
 using extensions::permissions_api_helpers::PackPermissionSet;
 using extensions::permissions_api_helpers::UnpackPermissionSet;
 using extensions::permissions_api_helpers::UnpackPermissionSetResult;
@@ -35,8 +36,8 @@ namespace extensions {
 // Tests that we can convert PermissionSets to the generated types.
 TEST(ExtensionPermissionsAPIHelpers, Pack) {
   APIPermissionSet apis;
-  apis.insert(APIPermission::kTab);
-  apis.insert(APIPermission::kFileBrowserHandler);
+  apis.insert(APIPermissionID::kTab);
+  apis.insert(APIPermissionID::kFileBrowserHandler);
   // Note: kFileBrowserHandler implies kFileBrowserHandlerInternal.
 
   URLPatternSet explicit_hosts(
@@ -75,7 +76,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_Basic) {
   std::string error;
 
   APIPermissionSet optional_apis;
-  optional_apis.insert(APIPermission::kTab);
+  optional_apis.insert(APIPermissionID::kTab);
   URLPatternSet optional_explicit_hosts(
       {URLPattern(Extension::kValidHostPermissionSchemes, "http://a.com/*")});
   PermissionSet optional_permissions(
@@ -95,7 +96,8 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_Basic) {
     ASSERT_TRUE(unpack_result);
     EXPECT_TRUE(error.empty());
     EXPECT_EQ(1u, unpack_result->optional_apis.size());
-    EXPECT_TRUE(unpack_result->optional_apis.count(APIPermission::kTab));
+    EXPECT_TRUE(
+        unpack_result->optional_apis.count(mojom::APIPermissionID::kTab));
   }
 
   // The api permissions don't need to be present either.
@@ -269,11 +271,11 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_HostSeparation) {
 // Tests that host permissions are properly partitioned according to the
 // required/optional permission sets.
 TEST(ExtensionPermissionsAPIHelpers, Unpack_APISeparation) {
-  constexpr APIPermission::ID kRequired1 = APIPermission::kTab;
-  constexpr APIPermission::ID kRequired2 = APIPermission::kStorage;
-  constexpr APIPermission::ID kOptional1 = APIPermission::kCookie;
-  constexpr APIPermission::ID kOptional2 = APIPermission::kAlarms;
-  constexpr APIPermission::ID kUnlisted1 = APIPermission::kIdle;
+  constexpr APIPermissionID kRequired1 = APIPermissionID::kTab;
+  constexpr APIPermissionID kRequired2 = APIPermissionID::kStorage;
+  constexpr APIPermissionID kOptional1 = APIPermissionID::kCookie;
+  constexpr APIPermissionID kOptional2 = APIPermissionID::kAlarms;
+  constexpr APIPermissionID kUnlisted1 = APIPermissionID::kIdle;
 
   APIPermissionSet required_apis;
   required_apis.insert(kRequired1);
@@ -474,7 +476,8 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_UsbDevicePermission) {
   ASSERT_TRUE(device_list) << "Failed to parse device list JSON.";
 
   auto usb_device_permission = std::make_unique<UsbDevicePermission>(
-      PermissionsInfo::GetInstance()->GetByID(APIPermission::ID::kUsbDevice));
+      PermissionsInfo::GetInstance()->GetByID(
+          mojom::APIPermissionID::kUsbDevice));
   std::string error;
   std::vector<std::string> unhandled_permissions;
   bool from_value_result = usb_device_permission->FromValue(
@@ -499,7 +502,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_UsbDevicePermission) {
   ASSERT_TRUE(unpack_result) << error;
 
   ASSERT_EQ(1U, unpack_result->optional_apis.size());
-  EXPECT_EQ(APIPermission::ID::kUsbDevice,
+  EXPECT_EQ(mojom::APIPermissionID::kUsbDevice,
             unpack_result->optional_apis.begin()->id());
   EXPECT_TRUE(unpack_result->optional_apis.begin()->Contains(
       usb_device_permission.get()));

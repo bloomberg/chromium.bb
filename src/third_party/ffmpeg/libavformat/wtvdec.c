@@ -794,7 +794,7 @@ static int parse_chunks(AVFormatContext *s, int mode, int64_t seekts, int *len_p
 
         ff_get_guid(pb, &g);
         len = avio_rl32(pb);
-        if (len < 32) {
+        if (len < 32 || len > INT_MAX - 7) {
             int ret;
             if (avio_feof(pb))
                 return AVERROR_EOF;
@@ -952,6 +952,9 @@ static int parse_chunks(AVFormatContext *s, int mode, int64_t seekts, int *len_p
             //ignore known guids
         } else
             av_log(s, AV_LOG_WARNING, "unsupported chunk:"FF_PRI_GUID"\n", FF_ARG_GUID(g));
+
+        if (avio_feof(pb))
+            break;
 
         avio_skip(pb, WTV_PAD8(len) - consumed);
     }

@@ -72,7 +72,7 @@ grpc_error* ServerLoadReportingChannelData::Init(
 
 void ServerLoadReportingCallData::Destroy(
     grpc_call_element* elem, const grpc_call_final_info* final_info,
-    grpc_closure* then_call_closure) {
+    grpc_closure* /*then_call_closure*/) {
   ServerLoadReportingChannelData* chand =
       reinterpret_cast<ServerLoadReportingChannelData*>(elem->channel_data);
   // Only record an end if we've recorded its corresponding start, which is
@@ -134,18 +134,18 @@ std::string ServerLoadReportingCallData::GetCensusSafeClientIpString() {
             "metadata.");
     return "";
   }
-  // Parse the client URI string into grpc_uri.
-  grpc_uri* client_uri = grpc_uri_parse(client_uri_str, true);
-  if (client_uri == nullptr) {
+  absl::StatusOr<grpc_core::URI> client_uri =
+      grpc_core::URI::Parse(client_uri_str);
+  if (!client_uri.ok()) {
     gpr_log(GPR_ERROR,
             "Unable to parse the client URI string (peer string) to a client "
-            "URI.");
+            "URI. Error: %s",
+            client_uri.status().ToString().c_str());
     return "";
   }
   // Parse the client URI into grpc_resolved_address.
   grpc_resolved_address resolved_address;
-  bool success = grpc_parse_uri(client_uri, &resolved_address);
-  grpc_uri_destroy(client_uri);
+  bool success = grpc_parse_uri(*client_uri, &resolved_address);
   if (!success) {
     gpr_log(GPR_ERROR,
             "Unable to parse client URI into a grpc_resolved_address.");
@@ -200,7 +200,7 @@ void ServerLoadReportingCallData::StoreClientIpAndLrToken(const char* lr_token,
     strncpy(cur_pos, lr_token, lr_token_len);
   }
   GPR_ASSERT(cur_pos + lr_token_len - client_ip_and_lr_token_ ==
-             client_ip_and_lr_token_len_);
+             long(client_ip_and_lr_token_len_));
 }
 
 grpc_filtered_mdelem ServerLoadReportingCallData::RecvInitialMetadataFilter(
@@ -265,7 +265,7 @@ void ServerLoadReportingCallData::RecvInitialMetadataReady(void* arg,
 }
 
 grpc_error* ServerLoadReportingCallData::Init(
-    grpc_call_element* elem, const grpc_call_element_args* args) {
+    grpc_call_element* elem, const grpc_call_element_args* /*args*/) {
   service_method_ = grpc_empty_slice();
   GRPC_CLOSURE_INIT(&recv_initial_metadata_ready_, RecvInitialMetadataReady,
                     elem, grpc_schedule_on_exec_ctx);

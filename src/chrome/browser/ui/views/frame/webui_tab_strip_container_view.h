@@ -105,17 +105,20 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   // Passed to the AutoCloser to handle closing.
   void CloseForEventOutsideTabStrip(TabStripUICloseAction reason);
 
-  // TabStripUI::Embedder:
+  // TabStripUIEmbedder:
   const ui::AcceleratorProvider* GetAcceleratorProvider() const override;
   void CloseContainer() override;
   void ShowContextMenuAtPoint(
       gfx::Point point,
-      std::unique_ptr<ui::MenuModel> menu_model) override;
+      std::unique_ptr<ui::MenuModel> menu_model,
+      base::RepeatingClosure on_menu_closed_callback) override;
+  void CloseContextMenu() override;
   void ShowEditDialogForGroupAtPoint(gfx::Point point,
                                      gfx::Rect rect,
                                      tab_groups::TabGroupId group) override;
   TabStripUILayout GetLayout() override;
   SkColor GetColor(int id) const override;
+  SkColor GetSystemColor(ui::NativeTheme::ColorId id) const override;
 
   // views::View:
   int GetHeightForWidth(int w) const override;

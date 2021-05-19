@@ -4,6 +4,7 @@
 
 #include "headless/lib/browser/headless_devtools.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -52,7 +53,7 @@ class TCPEndpointServerSocketFactory : public content::DevToolsSocketFactory {
       return socket;
     if (socket->ListenWithAddressAndPort("::1", port, kBackLog) == net::OK)
       return socket;
-    return std::unique_ptr<net::ServerSocket>();
+    return nullptr;
   }
 
   // content::DevToolsSocketFactory.
@@ -64,7 +65,7 @@ class TCPEndpointServerSocketFactory : public content::DevToolsSocketFactory {
     if (socket->ListenWithAddressAndPort(endpoint_.host(), endpoint_.port(),
                                          kBackLog) == net::OK)
       return socket;
-    return std::unique_ptr<net::ServerSocket>();
+    return nullptr;
   }
 
   std::unique_ptr<net::ServerSocket> CreateForTethering(
@@ -90,7 +91,7 @@ class TCPAdoptServerSocketFactory : public content::DevToolsSocketFactory {
         new net::TCPServerSocket(nullptr, net::NetLogSource()));
     if (tsock->AdoptSocket(socket_fd_) != net::OK) {
       LOG(ERROR) << "Failed to adopt open socket";
-      return std::unique_ptr<net::ServerSocket>();
+      return nullptr;
     }
     // Note that we assume that the socket is already listening, so unlike
     // TCPEndpointServerSocketFactory, we don't call Listen.
@@ -145,7 +146,7 @@ void StartLocalDevToolsHttpHandler(HeadlessBrowserImpl* browser) {
 
   std::unique_ptr<content::DevToolsSocketFactory> socket_factory;
   const net::HostPortPair& endpoint = options->devtools_endpoint;
-  socket_factory.reset(new TCPEndpointServerSocketFactory(endpoint));
+  socket_factory = std::make_unique<TCPEndpointServerSocketFactory>(endpoint);
 
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(socket_factory),

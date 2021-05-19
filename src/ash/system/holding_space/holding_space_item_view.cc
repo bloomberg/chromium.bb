@@ -8,7 +8,6 @@
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
-#include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/style/ash_color_provider.h"
@@ -99,7 +98,7 @@ HoldingSpaceItemView::HoldingSpaceItemView(
 
   // Accessibility.
   GetViewAccessibility().OverrideName(item->text());
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kButton);
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kListItem);
 
   // Background.
   SetBackground(views::CreateRoundedRectBackground(
@@ -183,8 +182,8 @@ void HoldingSpaceItemView::OnBlur() {
 }
 
 void HoldingSpaceItemView::OnGestureEvent(ui::GestureEvent* event) {
-  if (delegate_)
-    delegate_->OnHoldingSpaceItemViewGestureEvent(this, *event);
+  if (delegate_ && delegate_->OnHoldingSpaceItemViewGestureEvent(this, *event))
+    event->SetHandled();
 }
 
 bool HoldingSpaceItemView::OnKeyPressed(const ui::KeyEvent& event) {

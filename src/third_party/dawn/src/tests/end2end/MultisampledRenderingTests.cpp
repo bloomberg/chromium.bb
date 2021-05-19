@@ -23,6 +23,9 @@ class MultisampledRenderingTest : public DawnTest {
     void SetUp() override {
         DawnTest::SetUp();
 
+        // TODO(crbug.com/dawn/738): Test output is wrong with D3D12 + WARP.
+        DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP());
+
         InitTexturesForTest();
     }
 
@@ -41,26 +44,29 @@ class MultisampledRenderingTest : public DawnTest {
         uint32_t sampleMask = 0xFFFFFFFF,
         bool alphaToCoverageEnabled = false,
         bool flipTriangle = false) {
-        const char* kFsOneOutputWithDepth =
-            R"(#version 450
-            layout(location = 0) out vec4 fragColor;
-            layout (std140, set = 0, binding = 0) uniform uBuffer {
-                vec4 color;
-                float depth;
+        const char* kFsOneOutputWithDepth = R"(
+            [[block]] struct U {
+                color : vec4<f32>;
+                depth : f32;
             };
-            void main() {
-                fragColor = color;
-                gl_FragDepth = depth;
+            [[group(0), binding(0)]] var<uniform> uBuffer : U;
+            [[location(0)]] var<out> FragColor : vec4<f32>;
+            [[builtin(frag_depth)]] var<out> FragDepth : f32;
+
+            [[stage(fragment)]] fn main() -> void {
+                FragColor = uBuffer.color;
+                FragDepth = uBuffer.depth;
             })";
 
-        const char* kFsOneOutputWithoutDepth =
-            R"(#version 450
-            layout(location = 0) out vec4 fragColor;
-            layout (std140, set = 0, binding = 0) uniform uBuffer {
-                vec4 color;
+        const char* kFsOneOutputWithoutDepth = R"(
+            [[block]] struct U {
+                color : vec4<f32>;
             };
-            void main() {
-                fragColor = color;
+            [[group(0), binding(0)]] var<uniform> uBuffer : U;
+            [[location(0)]] var<out> FragColor : vec4<f32>;
+
+            [[stage(fragment)]] fn main() -> void {
+                FragColor = uBuffer.color;
             })";
 
         const char* fs = testDepth ? kFsOneOutputWithDepth : kFsOneOutputWithoutDepth;
@@ -72,17 +78,18 @@ class MultisampledRenderingTest : public DawnTest {
     wgpu::RenderPipeline CreateRenderPipelineWithTwoOutputsForTest(
         uint32_t sampleMask = 0xFFFFFFFF,
         bool alphaToCoverageEnabled = false) {
-        const char* kFsTwoOutputs =
-            R"(#version 450
-            layout(location = 0) out vec4 fragColor1;
-            layout(location = 1) out vec4 fragColor2;
-            layout (std140, set = 0, binding = 0) uniform uBuffer {
-                vec4 color1;
-                vec4 color2;
+        const char* kFsTwoOutputs = R"(
+            [[block]] struct U {
+                color0 : vec4<f32>;
+                color1 : vec4<f32>;
             };
-            void main() {
-                fragColor1 = color1;
-                fragColor2 = color2;
+            [[group(0), binding(0)]] var<uniform> uBuffer : U;
+            [[location(0)]] var<out> FragColor0 : vec4<f32>;
+            [[location(1)]] var<out> FragColor1 : vec4<f32>;
+
+            [[stage(fragment)]] fn main() -> void {
+                FragColor0 = uBuffer.color0;
+                FragColor1 = uBuffer.color1;
             })";
 
         return CreateRenderPipelineForTest(kFsTwoOutputs, 2, false, sampleMask,
@@ -97,7 +104,7 @@ class MultisampledRenderingTest : public DawnTest {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = kWidth << (mipLevelCount - 1);
         descriptor.size.height = kHeight << (mipLevelCount - 1);
-        descriptor.size.depth = arrayLayerCount;
+        descriptor.size.depthOrArrayLayers = arrayLayerCount;
         descriptor.sampleCount = sampleCount;
         descriptor.format = format;
         descriptor.mipLevelCount = mipLevelCount;
@@ -173,8 +180,8 @@ class MultisampledRenderingTest : public DawnTest {
         constexpr uint32_t kMiddleY = (kHeight - 1) / 2;
 
         RGBA8 expectedColor = ExpectedMSAAColor(inputColor, msaaCoverage);
-        EXPECT_TEXTURE_RGBA8_EQ(&expectedColor, resolveTexture, kMiddleX, kMiddleY, 1, 1,
-                                mipmapLevel, arrayLayer);
+        EXPECT_TEXTURE_EQ(&expectedColor, resolveTexture, {kMiddleX, kMiddleY, arrayLayer}, {1, 1},
+                          mipmapLevel);
     }
 
     constexpr static uint32_t kWidth = 3;
@@ -202,53 +209,62 @@ class MultisampledRenderingTest : public DawnTest {
                                                      uint32_t sampleMask = 0xFFFFFFFF,
                                                      bool alphaToCoverageEnabled = false,
                                                      bool flipTriangle = false) {
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
 
         // Draw a bottom-right triangle. In standard 4xMSAA pattern, for the pixels on diagonal,
         // only two of the samples will be touched.
-        const char* vs =
-            R"(#version 450
-            const vec2 pos[3] = vec2[3](vec2(-1.f, 1.f), vec2(1.f, 1.f), vec2(1.f, -1.f));
-            void main() {
-                gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
+        const char* vs = R"(
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
+
+            [[stage(vertex)]] fn main() -> void {
+                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    vec2<f32>(-1.0,  1.0),
+                    vec2<f32>( 1.0,  1.0),
+                    vec2<f32>( 1.0, -1.0)
+                );
+                Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
             })";
 
         // Draw a bottom-left triangle.
-        const char* vsFlipped =
-            R"(#version 450
-            const vec2 pos[3] = vec2[3](vec2(-1.f, 1.f), vec2(1.f, 1.f), vec2(-1.f, -1.f));
-            void main() {
-                gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
+        const char* vsFlipped = R"(
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
+
+            [[stage(vertex)]] fn main() -> void {
+                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    vec2<f32>(-1.0,  1.0),
+                    vec2<f32>( 1.0,  1.0),
+                    vec2<f32>(-1.0, -1.0)
+                );
+                Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
             })";
 
         if (flipTriangle) {
-            pipelineDescriptor.vertexStage.module =
-                utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vsFlipped);
+            pipelineDescriptor.vertex.module = utils::CreateShaderModule(device, vsFlipped);
         } else {
-            pipelineDescriptor.vertexStage.module =
-                utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vs);
+            pipelineDescriptor.vertex.module = utils::CreateShaderModule(device, vs);
         }
 
-        pipelineDescriptor.cFragmentStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fs);
+        pipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, fs);
 
         if (hasDepthStencilAttachment) {
-            pipelineDescriptor.cDepthStencilState.format = kDepthStencilFormat;
-            pipelineDescriptor.cDepthStencilState.depthWriteEnabled = true;
-            pipelineDescriptor.cDepthStencilState.depthCompare = wgpu::CompareFunction::Less;
-            pipelineDescriptor.depthStencilState = &pipelineDescriptor.cDepthStencilState;
+            wgpu::DepthStencilState* depthStencil =
+                pipelineDescriptor.EnableDepthStencil(kDepthStencilFormat);
+            depthStencil->depthWriteEnabled = true;
+            depthStencil->depthCompare = wgpu::CompareFunction::Less;
         }
 
-        pipelineDescriptor.sampleCount = kSampleCount;
-        pipelineDescriptor.sampleMask = sampleMask;
-        pipelineDescriptor.alphaToCoverageEnabled = alphaToCoverageEnabled;
+        pipelineDescriptor.multisample.count = kSampleCount;
+        pipelineDescriptor.multisample.mask = sampleMask;
+        pipelineDescriptor.multisample.alphaToCoverageEnabled = alphaToCoverageEnabled;
 
-        pipelineDescriptor.colorStateCount = numColorAttachments;
+        pipelineDescriptor.cFragment.targetCount = numColorAttachments;
         for (uint32_t i = 0; i < numColorAttachments; ++i) {
-            pipelineDescriptor.cColorStates[i].format = kColorFormat;
+            pipelineDescriptor.cTargets[i].format = kColorFormat;
         }
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
         return pipeline;
     }
 
@@ -741,6 +757,10 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithSampleMaskAndShaderOut
     // supported on some platforms.
     DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_sample_variables"));
 
+    // TODO(cwallez@chromium.org): Fails on Metal / D3D12 because SPIRV-Cross produces bad shaders
+    // for the SPIR-V outputted by Tint. Reenable once we use Tint's MSL / HLSL generators.
+    DAWN_SKIP_TEST_IF(IsD3D12() || IsMetal());
+
     constexpr bool kTestDepth = false;
     wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
 
@@ -751,15 +771,17 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithSampleMaskAndShaderOut
     // Thus the final mask includes only the third sample.
     constexpr float kMSAACoverage = 0.25f;
     constexpr uint32_t kSampleMask = kFirstSampleMaskBit | kThirdSampleMaskBit;
-    const char* fs =
-        R"(#version 450
-        layout(location = 0) out vec4 fragColor;
-        layout (std140, set = 0, binding = 0) uniform uBuffer {
-            vec4 color;
+    const char* fs = R"(
+        [[block]] struct U {
+            color : vec4<f32>;
         };
-        void main() {
-            fragColor = color;
-            gl_SampleMask[0] = 6;
+        [[group(0), binding(0)]] var<uniform> uBuffer : U;
+        [[location(0)]] var<out> FragColor : vec4<f32>;
+        [[builtin(sample_mask_out)]] var<out> SampleMask : u32;
+
+        [[stage(fragment)]] fn main() -> void {
+            FragColor = uBuffer.color;
+            SampleMask = 6u;
         })";
 
     wgpu::RenderPipeline pipeline = CreateRenderPipelineForTest(fs, 1, false, kSampleMask);
@@ -778,7 +800,7 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithSampleMaskAndShaderOut
     queue.Submit(1, &commandBuffer);
 
     RGBA8 expectedColor = ExpectedMSAAColor(kGreen, kMSAACoverage);
-    EXPECT_TEXTURE_RGBA8_EQ(&expectedColor, mResolveTexture, 1, 0, 1, 1, 0, 0);
+    EXPECT_TEXTURE_EQ(&expectedColor, mResolveTexture, {1, 0}, {1, 1});
 }
 
 // Test doing MSAA resolve into multiple resolve targets works correctly with a non-default
@@ -792,6 +814,10 @@ TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargetsWithShaderOut
     // supported on some platforms.
     DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_sample_variables"));
 
+    // TODO(cwallez@chromium.org): Fails on Metal / D3D12 because SPIRV-Cross produces bad shaders
+    // for the SPIR-V outputted by Tint. Reenable once we use Tint's MSL / HLSL generators.
+    DAWN_SKIP_TEST_IF(IsD3D12() || IsMetal());
+
     wgpu::TextureView multisampledColorView2 =
         CreateTextureForRenderAttachment(kColorFormat, kSampleCount).CreateView();
     wgpu::Texture resolveTexture2 = CreateTextureForRenderAttachment(kColorFormat, 1);
@@ -801,18 +827,20 @@ TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargetsWithShaderOut
     // The second and third samples are included in the shader-output mask,
     // only the first one is covered by the triangle.
     constexpr float kMSAACoverage = 0.25f;
-    const char* fs =
-        R"(#version 450
-        layout(location = 0) out vec4 fragColor1;
-        layout(location = 1) out vec4 fragColor2;
-        layout (std140, set = 0, binding = 0) uniform uBuffer {
-            vec4 color1;
-            vec4 color2;
+    const char* fs = R"(
+        [[block]] struct U {
+            color0 : vec4<f32>;
+            color1 : vec4<f32>;
         };
-        void main() {
-            fragColor1 = color1;
-            fragColor2 = color2;
-            gl_SampleMask[0] = 6;
+        [[group(0), binding(0)]] var<uniform> uBuffer : U;
+        [[location(0)]] var<out> FragColor0 : vec4<f32>;
+        [[location(1)]] var<out> FragColor1 : vec4<f32>;
+        [[builtin(sample_mask_out)]] var<out> SampleMask : u32;
+
+        [[stage(fragment)]] fn main() -> void {
+            FragColor0 = uBuffer.color0;
+            FragColor1 = uBuffer.color1;
+            SampleMask = 6u;
         })";
 
     wgpu::RenderPipeline pipeline = CreateRenderPipelineForTest(fs, 2, false);
@@ -881,7 +909,7 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithAlphaToCoverage) {
         }
 
         RGBA8 expectedColor = ExpectedMSAAColor(kGreen, msaaCoverage);
-        EXPECT_TEXTURE_RGBA8_EQ(&expectedColor, mResolveTexture, 1, 0, 1, 1, 0, 0);
+        EXPECT_TEXTURE_EQ(&expectedColor, mResolveTexture, {1, 0}, {1, 1});
     }
 }
 
@@ -934,8 +962,8 @@ TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargetsWithAlphaToCo
         // using only the first one.
         RGBA8 expectedRed = ExpectedMSAAColor(kRed, kMSAACoverage);
         RGBA8 expectedGreen = ExpectedMSAAColor(kGreen, kMSAACoverage);
-        EXPECT_TEXTURE_RGBA8_EQ(&expectedRed, mResolveTexture, 1, 0, 1, 1, 0, 0);
-        EXPECT_TEXTURE_RGBA8_EQ(&expectedGreen, resolveTexture2, 1, 0, 1, 1, 0, 0);
+        EXPECT_TEXTURE_EQ(&expectedRed, mResolveTexture, {1, 0}, {1, 1});
+        EXPECT_TEXTURE_EQ(&expectedGreen, resolveTexture2, {1, 0}, {1, 1});
     }
 }
 
@@ -996,7 +1024,7 @@ TEST_P(MultisampledRenderingTest, MultisampledRenderingWithDepthTestAndAlphaToCo
                                                (kGreen.a + kRed.a) / 2.0};
     RGBA8 expectedColor = ExpectedMSAAColor(kHalfGreenHalfRed, 1.0f);
 
-    EXPECT_TEXTURE_RGBA8_EQ(&expectedColor, mResolveTexture, 1, 0, 1, 1, 0, 0);
+    EXPECT_TEXTURE_EQ(&expectedColor, mResolveTexture, {1, 0}, {1, 1});
 }
 
 // Test using one multisampled color attachment with resolve target can render correctly
@@ -1040,7 +1068,7 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithAlphaToCoverageAndSamp
         queue.Submit(1, &commandBuffer);
 
         RGBA8 expectedColor = ExpectedMSAAColor(kGreen, kMSAACoverage * alpha);
-        EXPECT_TEXTURE_RGBA8_EQ(&expectedColor, mResolveTexture, 1, 0, 1, 1, 0, 0);
+        EXPECT_TEXTURE_EQ(&expectedColor, mResolveTexture, {1, 0}, {1, 1});
     }
 }
 

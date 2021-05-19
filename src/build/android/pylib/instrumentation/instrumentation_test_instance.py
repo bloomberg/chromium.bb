@@ -41,16 +41,6 @@ _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS = [
 _VALID_ANNOTATIONS = set(_DEFAULT_ANNOTATIONS +
                          _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS)
 
-_EXTRA_DRIVER_TEST_LIST = (
-    'org.chromium.test.driver.OnDeviceInstrumentationDriver.TestList')
-_EXTRA_DRIVER_TEST_LIST_FILE = (
-    'org.chromium.test.driver.OnDeviceInstrumentationDriver.TestListFile')
-_EXTRA_DRIVER_TARGET_PACKAGE = (
-    'org.chromium.test.driver.OnDeviceInstrumentationDriver.TargetPackage')
-_EXTRA_DRIVER_TARGET_CLASS = (
-    'org.chromium.test.driver.OnDeviceInstrumentationDriver.TargetClass')
-_EXTRA_TIMEOUT_SCALE = (
-    'org.chromium.test.driver.OnDeviceInstrumentationDriver.TimeoutScale')
 _TEST_LIST_JUNIT4_RUNNERS = [
     'org.chromium.base.test.BaseChromiumAndroidJUnitRunner']
 
@@ -77,7 +67,6 @@ _BUNDLE_STACK_ID = 'stack'
 
 # The ID of the bundle value Chrome uses to report the test duration.
 _BUNDLE_DURATION_ID = 'duration_ms'
-
 
 class MissingSizeAnnotationError(test_exception.TestException):
   def __init__(self, class_name):
@@ -532,17 +521,13 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._use_apk_under_test_flags_file = False
     self._initializeFlagAttributes(args)
 
-    self._driver_apk = None
-    self._driver_package = None
-    self._driver_name = None
-    self._initializeDriverAttributes()
-
     self._screenshot_dir = None
     self._timeout_scale = None
     self._wait_for_java_debugger = None
     self._initializeTestControlAttributes(args)
 
     self._coverage_directory = None
+    self._jacoco_coverage_type = None
     self._initializeTestCoverageAttributes(args)
 
     self._store_tombstones = False
@@ -731,17 +716,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
         not args.coverage_dir):
       self._flags.append('--strict-mode=' + args.strict_mode)
 
-  def _initializeDriverAttributes(self):
-    self._driver_apk = os.path.join(
-        constants.GetOutDirectory(), constants.SDK_BUILD_APKS_DIR,
-        'OnDeviceInstrumentationDriver.apk')
-    if os.path.exists(self._driver_apk):
-      driver_apk = apk_helper.ApkHelper(self._driver_apk)
-      self._driver_package = driver_apk.GetPackageName()
-      self._driver_name = driver_apk.GetInstrumentationName()
-    else:
-      self._driver_apk = None
-
   def _initializeTestControlAttributes(self, args):
     self._screenshot_dir = args.screenshot_dir
     self._timeout_scale = args.timeout_scale or 1
@@ -749,6 +723,12 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   def _initializeTestCoverageAttributes(self, args):
     self._coverage_directory = args.coverage_dir
+    if ("Batch", "UnitTests") in self._annotations and (
+        "Batch", "UnitTests") not in self._excluded_annotations:
+      self._jacoco_coverage_type = "unit_tests_only"
+    elif ("Batch", "UnitTests") not in self._annotations and (
+        "Batch", "UnitTests") in self._excluded_annotations:
+      self._jacoco_coverage_type = "unit_tests_excluded"
 
   def _initializeLogAttributes(self, args):
     self._enable_java_deobfuscation = args.enable_java_deobfuscation
@@ -815,18 +795,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._coverage_directory
 
   @property
-  def driver_apk(self):
-    return self._driver_apk
-
-  @property
-  def driver_package(self):
-    return self._driver_package
-
-  @property
-  def driver_name(self):
-    return self._driver_name
-
-  @property
   def edit_shared_prefs(self):
     return self._edit_shared_prefs
 
@@ -837,6 +805,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def flags(self):
     return self._flags
+
+  @property
+  def jacoco_coverage_type(self):
+    return self._jacoco_coverage_type
 
   @property
   def junit3_runner_class(self):
@@ -1048,23 +1020,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
           _setTestFlags(parameterized_t, _switchesToFlags(p))
           new_tests.append(parameterized_t)
     return tests + new_tests
-
-  def GetDriverEnvironmentVars(
-      self, test_list=None, test_list_file_path=None):
-    env = {
-      _EXTRA_DRIVER_TARGET_PACKAGE: self.test_package,
-      _EXTRA_DRIVER_TARGET_CLASS: self.junit3_runner_class,
-      _EXTRA_TIMEOUT_SCALE: self._timeout_scale,
-    }
-
-    if test_list:
-      env[_EXTRA_DRIVER_TEST_LIST] = ','.join(test_list)
-
-    if test_list_file_path:
-      env[_EXTRA_DRIVER_TEST_LIST_FILE] = (
-          os.path.basename(test_list_file_path))
-
-    return env
 
   @staticmethod
   def ParseAmInstrumentRawOutput(raw_output):

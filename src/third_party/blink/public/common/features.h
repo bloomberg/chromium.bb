@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "build/build_config.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/buildflags.h"
 #include "third_party/blink/public/common/common_export.h"
@@ -18,6 +19,8 @@ namespace features {
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingDownloadsInAdFrameWithoutUserActivation;
 BLINK_COMMON_EXPORT extern const base::Feature kCOLRV1Fonts;
+BLINK_COMMON_EXPORT extern const base::Feature kCSSContainerQueries;
+BLINK_COMMON_EXPORT extern const base::Feature kGMSCoreEmoji;
 BLINK_COMMON_EXPORT extern const base::Feature kPaintHolding;
 BLINK_COMMON_EXPORT extern const base::Feature kPaintHoldingCrossOrigin;
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -40,8 +43,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kTopLevelAwait;
 BLINK_COMMON_EXPORT extern const base::Feature kEditingNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGTable;
-BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGFieldset;
-BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGTextControl;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigatorPluginsEmpty;
@@ -57,6 +58,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<Prerender2Implementation>
 
 // Returns true when Prerender2 feature is enabled.
 BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
+BLINK_COMMON_EXPORT bool IsPrerenderMPArchEnabled();
+BLINK_COMMON_EXPORT bool IsPrerenderWebContentsEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kPreviewsResourceLoadingHintsSpecificResourceTypes;
@@ -88,6 +91,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebRtcH264WithOpenH264FFmpeg;
 
 BLINK_COMMON_EXPORT extern const base::Feature kResourceLoadViaDataPipe;
 BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerUpdateDelay;
+BLINK_COMMON_EXPORT extern const base::Feature kSpeculationRulesPrefetchProxy;
 BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature
     kFreezeBackgroundTabOnNetworkIdle;
@@ -148,11 +152,11 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kIgnoreCrossOriginWindowWhenNamedAccessOnWindow;
 
-BLINK_COMMON_EXPORT extern const base::Feature kDisableForceDeferInChildFrames;
-
 BLINK_COMMON_EXPORT extern const base::Feature kTransformInterop;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirect;
+
+BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirectSrcVideo;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSetLowPriorityForBeacon;
 
@@ -171,10 +175,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kDawn2dCanvas;
 BLINK_COMMON_EXPORT extern const base::Feature kWebviewAccelerateSmallCanvases;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDiscardCodeCacheAfterFirstUse;
-
-BLINK_COMMON_EXPORT extern const base::Feature kBlockHTMLParserOnStyleSheets;
-
-BLINK_COMMON_EXPORT extern const base::Feature kLinkDisabledNewSpecBehavior;
 
 BLINK_COMMON_EXPORT extern const base::Feature kFontPreloadingDelaysRendering;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
@@ -229,11 +229,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kThrottleInstallingServiceWorker;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kInstallingServiceWorkerOutstandingThrottledLimit;
 
-// Enables storing and loading security policies (for now, referrer policy) in
-// the policy container. The policy container for the current document is
-// attached to the RenderFrameHost and mirrored to the LocalFrame in Blink.
-BLINK_COMMON_EXPORT extern const base::Feature kPolicyContainer;
-
 // This flag is used to set field parameters to choose predictor we use when
 // kResamplingInputEvents is disabled. It's used for gatherig accuracy metrics
 // on finch and also for choosing predictor type for predictedEvents API without
@@ -244,6 +239,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kInputPredictorTypeChoice;
 // Enables resampling input events on main thread.
 BLINK_COMMON_EXPORT extern const base::Feature kResamplingInputEvents;
 
+// Elevates the InputTargetClient mojo interface to input, since its input
+// blocking.
+BLINK_COMMON_EXPORT extern const base::Feature kInputTargetClientHighPriority;
+
 // Enables resampling GestureScroll events on compositor thread.
 // Uses the kPredictorName* values in ui_base_features.h as the 'predictor'
 // feature param.
@@ -251,7 +250,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kResamplingScrollEvents;
 
 // Enables the device-memory, resource-width, viewport-width and DPR client
 // hints to be sent to third-party origins if the first-party has opted in to
-// receiving client hints, regardless of Feature Policy.
+// receiving client hints, regardless of Permissions Policy.
 BLINK_COMMON_EXPORT extern const base::Feature kAllowClientHintsToThirdParty;
 
 // Enables filtering of predicted scroll events on compositor thread.
@@ -301,9 +300,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kReducedReferrerGranularity;
 
 BLINK_COMMON_EXPORT extern const base::Feature kContentCaptureConstantStreaming;
 
-BLINK_COMMON_EXPORT extern const base::Feature
-    kContentCaptureUserActivatedDelay;
-
 BLINK_COMMON_EXPORT extern const base::Feature kCheckOfflineCapability;
 enum class CheckOfflineCapabilityMode {
   kWarnOnly,
@@ -331,6 +327,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableProtocolHandlers;
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcLibvpxEncodeNV12;
 
 BLINK_COMMON_EXPORT extern const base::Feature kLoadingTasksUnfreezable;
+
+BLINK_COMMON_EXPORT extern const base::Feature kFreezeWhileKeepActive;
 
 BLINK_COMMON_EXPORT extern const base::Feature kTargetBlankImpliesNoOpener;
 
@@ -360,7 +358,27 @@ BLINK_COMMON_EXPORT extern const base::Feature kScopeMemoryCachePerContext;
 
 BLINK_COMMON_EXPORT extern const base::Feature kEnablePenetratingImageSelection;
 
+// Used to configure a per-origin allowlist of performance.mark events that are
+// permitted to be included in slow reports traces. See crbug.com/1181774.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBackgroundTracingPerformanceMark;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
+    kBackgroundTracingPerformanceMark_AllowList;
+
 BLINK_COMMON_EXPORT extern const base::Feature kCLSM90Improvements;
+
+BLINK_COMMON_EXPORT extern const base::Feature kCompositeAfterPaint;
+
+BLINK_COMMON_EXPORT extern const base::Feature kSanitizerAPI;
+BLINK_COMMON_EXPORT extern const base::Feature kManagedConfiguration;
+
+// Kill switch for the blocking of the navigation of top from a cross origin
+// iframe to a different scheme. TODO(https://crbug.com/1151507): Remove in
+// M92.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBlockCrossOriginTopNavigationToDiffentScheme;
+
+BLINK_COMMON_EXPORT extern const base::Feature kJXL;
 
 }  // namespace features
 }  // namespace blink

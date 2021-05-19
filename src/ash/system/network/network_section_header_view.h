@@ -56,6 +56,8 @@ class NetworkSectionHeaderView : public views::View {
   // views::View:
   int GetHeightForWidth(int width) const override;
 
+  bool IsToggleVisible();
+
  private:
   void InitializeLayout();
   void AddToggleButton(bool enabled);
@@ -105,10 +107,6 @@ class MobileSectionHeaderView : public NetworkSectionHeaderView {
   void AddExtraButtons(bool enabled) override;
 
   void PerformAddExtraButtons(bool enabled);
-  void OnCellularNetworksFetched(
-      bool enabled,
-      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
-          networks);
 
   void AddCellularButtonPressed();
 

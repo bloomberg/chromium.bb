@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/predictor_database.h"
@@ -30,9 +29,6 @@
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 
 namespace {
 
@@ -92,12 +88,18 @@ AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
     table_ =
         PredictorDatabaseFactory::GetForProfile(profile_)->autocomplete_table();
 
-    // Observe all main frame loads so we can wait for the first to complete
-    // before accessing DB sequence of the AutocompleteActionPredictorTable and
-    // IO thread to build the local cache.
-    notification_registrar_.Add(this,
-                                content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                                content::NotificationService::AllSources());
+    // Create local caches using the database as loaded. We will garbage collect
+    // rows from the caches and the database once the history service is
+    // available.
+    auto rows =
+        std::make_unique<std::vector<AutocompleteActionPredictorTable::Row>>();
+    auto* rows_ptr = rows.get();
+    table_->GetTaskRunner()->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&AutocompleteActionPredictorTable::GetAllRows, table_,
+                       rows_ptr),
+        base::BindOnce(&AutocompleteActionPredictor::CreateCaches, AsWeakPtr(),
+                       std::move(rows)));
   }
 }
 
@@ -111,13 +113,13 @@ AutocompleteActionPredictor::~AutocompleteActionPredictor() {
 }
 
 void AutocompleteActionPredictor::RegisterTransitionalMatches(
-    const base::string16& user_text,
+    const std::u16string& user_text,
     const AutocompleteResult& result) {
   if (user_text.length() < kMinimumUserTextLength ||
       user_text.length() > kMaximumStringLength) {
     return;
   }
-  const base::string16 lower_user_text(base::i18n::ToLower(user_text));
+  const std::u16string lower_user_text(base::i18n::ToLower(user_text));
 
   // Merge this in to an existing match if we already saw |user_text|
   auto match_it = std::find(transitional_matches_.begin(),
@@ -178,9 +180,9 @@ void AutocompleteActionPredictor::StartPrerendering(
 }
 
 AutocompleteActionPredictor::Action
-    AutocompleteActionPredictor::RecommendAction(
-        const base::string16& user_text,
-        const AutocompleteMatch& match) const {
+AutocompleteActionPredictor::RecommendAction(
+    const std::u16string& user_text,
+    const AutocompleteMatch& match) const {
   bool is_in_db = false;
   const double confidence = CalculateConfidence(user_text, match, &is_in_db);
   DCHECK(confidence >= 0.0 && confidence <= 1.0);
@@ -253,7 +255,7 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
 
   const AutocompleteMatch& match = log.result.match_at(log.selected_index);
   const GURL& opened_url = match.destination_url;
-  const base::string16 lower_user_text(base::i18n::ToLower(log.text));
+  const std::u16string lower_user_text(base::i18n::ToLower(log.text));
 
   // Traverse transitional matches for those that have a user_text that is a
   // prefix of |lower_user_text|.
@@ -321,32 +323,6 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
     }
   }
   tracked_urls_.clear();
-}
-
-void AutocompleteActionPredictor::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME, type);
-  CreateLocalCachesFromDatabase();
-  notification_registrar_.Remove(
-      this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      content::NotificationService::AllSources());
-}
-
-void AutocompleteActionPredictor::CreateLocalCachesFromDatabase() {
-  // Create local caches using the database as loaded. We will garbage collect
-  // rows from the caches and the database once the history service is
-  // available.
-  auto rows =
-      std::make_unique<std::vector<AutocompleteActionPredictorTable::Row>>();
-  auto* rows_ptr = rows.get();
-  table_->GetTaskRunner()->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&AutocompleteActionPredictorTable::GetAllRows, table_,
-                     rows_ptr),
-      base::BindOnce(&AutocompleteActionPredictor::CreateCaches, AsWeakPtr(),
-                     std::move(rows)));
 }
 
 void AutocompleteActionPredictor::DeleteAllRows() {
@@ -583,7 +559,7 @@ void AutocompleteActionPredictor::FinishInitialization() {
 }
 
 double AutocompleteActionPredictor::CalculateConfidence(
-    const base::string16& user_text,
+    const std::u16string& user_text,
     const AutocompleteMatch& match,
     bool* is_in_db) const {
   const DBCacheKey key = { user_text, match.destination_url };
@@ -653,7 +629,7 @@ AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch() {
 }
 
 AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch(
-    const base::string16 in_user_text)
+    const std::u16string in_user_text)
     : user_text(in_user_text) {}
 
 AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch(

@@ -52,6 +52,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
   has_adjoining_object_descendants_ =
       builder->has_adjoining_object_descendants_;
   depends_on_percentage_block_size_ = DependsOnPercentageBlockSize(*builder);
+  children_valid_ = true;
 
   PhysicalSize size = Size();
   if (oof_positioned_descendants_) {
@@ -102,6 +103,8 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
                     *other.oof_positioned_descendants_)
               : nullptr),
       buffer_(buffer) {
+  DCHECK(other.children_valid_);
+  DCHECK(children_valid_);
   // To ensure the fragment tree is consistent, use the post-layout fragment.
   for (wtf_size_t i = 0; i < num_children_; ++i) {
     buffer[i].offset = other.buffer_[i].offset;
@@ -129,6 +132,19 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
 }
 
 NGPhysicalContainerFragment::~NGPhysicalContainerFragment() = default;
+
+void NGPhysicalContainerFragment::SetChildrenInvalid() const {
+  if (!children_valid_)
+    return;
+
+  for (const NGLink& child : Children()) {
+    if (const_cast<NGLink&>(child).fragment) {
+      const_cast<NGLink&>(child).fragment->Release();
+      const_cast<NGLink&>(child).fragment = nullptr;
+    }
+  }
+  children_valid_ = false;
+}
 
 // additional_offset must be offset from the containing_block.
 void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(

@@ -7,7 +7,9 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -19,7 +21,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
 #include "base/rand_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -148,9 +149,10 @@ TabManager::TabManager(TabLoadTracker* tab_load_tracker)
   delegate_.reset(new TabManagerDelegate(weak_ptr_factory_.GetWeakPtr()));
 #endif
   browser_tab_strip_tracker_.Init();
-  session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
+  session_restore_observer_ =
+      std::make_unique<TabManagerSessionRestoreObserver>(this);
 
-  stats_collector_.reset(new TabManagerStatsCollector());
+  stats_collector_ = std::make_unique<TabManagerStatsCollector>();
   tab_load_tracker_->AddObserver(this);
 }
 
@@ -167,7 +169,8 @@ void TabManager::Start() {
 
 // MemoryPressureMonitor is not implemented on Linux so far and tabs are never
 // discarded.
-#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
   // Don't handle memory pressure events here if this is done by
   // PerformanceManager.
   if (!base::FeatureList::IsEnabled(

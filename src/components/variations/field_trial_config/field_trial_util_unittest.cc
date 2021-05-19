@@ -31,7 +31,7 @@ namespace {
 
 class TestOverrideStringCallback {
  public:
-  typedef std::map<uint32_t, base::string16> OverrideMap;
+  typedef std::map<uint32_t, std::u16string> OverrideMap;
 
   TestOverrideStringCallback()
       : callback_(base::BindRepeating(&TestOverrideStringCallback::Override,
@@ -46,7 +46,7 @@ class TestOverrideStringCallback {
   const OverrideMap& overrides() const { return overrides_; }
 
  private:
-  void Override(uint32_t hash, const base::string16& string) {
+  void Override(uint32_t hash, const std::u16string& string) {
     overrides_[hash] = string;
   }
 
@@ -747,9 +747,9 @@ TEST_F(FieldTrialUtilTest,
       override_callback_.overrides();
   EXPECT_EQ(2u, overrides.size());
   auto it = overrides.find(1234);
-  EXPECT_EQ(base::ASCIIToUTF16("test1"), it->second);
+  EXPECT_EQ(u"test1", it->second);
   it = overrides.find(5678);
-  EXPECT_EQ(base::ASCIIToUTF16("test2"), it->second);
+  EXPECT_EQ(u"test2", it->second);
 }
 
 TEST_F(FieldTrialUtilTest,

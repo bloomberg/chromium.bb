@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/check.h"
@@ -19,7 +20,6 @@
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/multiprocess_test.h"

@@ -130,7 +130,7 @@ const NSTimeInterval kMemoryFootprintRecordingTimeInterval = 5;
 
 // This method is the first to be called when user launches the application.
 // Depending on the background tasks history, the state of the application is
-// either INITIALIZATION_STAGE_BASIC or INITIALIZATION_STAGE_BACKGROUND so this
+// INITIALIZATION_STAGE_BACKGROUND so this
 // step cannot be included in the |startUpBrowserToStage:| method.
 - (void)initializeUI;
 // Saves the current launch details to user defaults.
@@ -153,6 +153,19 @@ const NSTimeInterval kMemoryFootprintRecordingTimeInterval = 5;
 
 // Agents attached to this app state.
 @property(nonatomic, strong) NSMutableArray<id<AppStateAgent>>* agents;
+
+// A flag that tracks if the init stage is currently being incremented. Used to
+// prevent reentrant calls to queueTransitionToNextInitStage originating from
+// stage change notifications.
+@property(nonatomic, assign) BOOL isIncrementingInitStage;
+
+// A flag that tracks if another increment of init stage needs to happen after
+// this one is complete. Will be set if queueTransitionToNextInitStage is called
+// while queueTransitionToNextInitStage is already on the call stack.
+@property(nonatomic, assign) BOOL needsIncrementInitStage;
+
+// Redefined internaly as readwrite.
+@property(nonatomic, assign, readwrite) InitStage initStage;
 
 @end
 
@@ -218,6 +231,20 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         (uiBlockerTarget != nil) && (scene != uiBlockerTarget);
     scene.presentingModalOverlay = shouldPresentOverlay;
   }
+}
+
+// Do not use this setter directly, instead use -queueTransitionToInitStage:
+// that provides reentry guards.
+- (void)setInitStage:(InitStage)initStage {
+  DCHECK(initStage >= InitStageStart);
+  DCHECK(initStage <= InitStageFinal);
+  // It's probably a programming error to set the same init stage twice, except
+  // for InitStageStart to kick off the startup.
+  DCHECK(initStage == InitStageStart || _initStage != initStage);
+
+  [self.observers appState:self willTransitionToInitStage:initStage];
+  _initStage = initStage;
+  [self.observers appState:self didTransitionToInitStage:initStage];
 }
 
 #pragma mark - Public methods.
@@ -526,7 +553,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   [_browserLauncher setLaunchOptions:launchOptions];
   self.shouldPerformAdditionalDelegateHandling = YES;
 
-  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_BASIC];
+  [self queueTransitionToFirstInitStage];
+
   if (!stateBackground) {
     [self initializeUI];
   }
@@ -550,6 +578,37 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   DCHECK(agent);
   [self.agents addObject:agent];
   [agent setAppState:self];
+}
+
+- (void)queueTransitionToNextInitStage {
+  InitStage nextInitStage = static_cast<InitStage>(self.initStage + 1);
+  DCHECK(nextInitStage <= InitStageFinal);
+  [self queueTransitionToInitStage:nextInitStage];
+}
+
+- (void)queueTransitionToFirstInitStage {
+  [self queueTransitionToInitStage:InitStageStart];
+}
+
+- (void)queueTransitionToInitStage:(InitStage)initStage {
+  if (self.isIncrementingInitStage) {
+    // It is an error to queue more than one transition at once.
+    DCHECK(!self.needsIncrementInitStage);
+
+    // Set a flag to increment after the observers are notified of the current
+    // change.
+    self.needsIncrementInitStage = YES;
+    return;
+  }
+
+  self.isIncrementingInitStage = YES;
+  self.initStage = initStage;
+  self.isIncrementingInitStage = NO;
+
+  if (self.needsIncrementInitStage) {
+    self.needsIncrementInitStage = NO;
+    [self queueTransitionToNextInitStage];
+  }
 }
 
 #pragma mark - Multiwindow-related
@@ -602,6 +661,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 #pragma mark - SafeModeCoordinatorDelegate Implementation
 
+// TODO(crbug.com/1178809): Handle this with an app state agent when
+// transitioning out of safe mode.
 - (void)coordinatorDidExitSafeMode:(nonnull SafeModeCoordinator*)coordinator {
   [self stopSafeMode];
   [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
@@ -648,6 +709,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   _userInteracted = YES;
   [self saveLaunchDetailsToDefaults];
 
+  // TODO(crbug.com/1178809): Move this logic to the safe mode agent.
   if ([SafeModeCoordinator shouldStart]) {
     self.inSafeMode = YES;
     if (!base::ios::IsMultiwindowSupported()) {
@@ -657,6 +719,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     }
     return;
   }
+
+  // TODO(crbug.com/1178809): Move the logic below to a Final Init Stage agent
+  // to make sure that the logic is only executed when getting out of safe mode.
 
   // Don't add code here. Add it in MainController's
   // -startUpBrowserForegroundInitialization.
@@ -688,6 +753,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   // Start recording info about this session.
   [[PreviousSessionInfo sharedInstance] beginRecordingCurrentSession];
 }
+
 
 #pragma mark - UIBlockerManager
 
@@ -731,6 +797,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         // Safe mode can only be started when there's a window, so the actual
         // safe mode has been postponed until now.
         [self startSafeMode];
+      } else {
+        [MetricsMediator logStartupDuration:self.startupInformation
+                      connectionInformation:sceneState.controller];
       }
     }
     sceneState.presentingModalOverlay =

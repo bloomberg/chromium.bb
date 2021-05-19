@@ -10,9 +10,9 @@
 #include <stdint.h>
 
 #include <ctime>
+#include <string>
 
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +21,7 @@ namespace {
 
 struct MTPDeviceObjectEntryData {
   // Friendly name of the object, e.g. "IMG_9911.jpeg".
-  base::string16 name;
+  std::u16string name;
 
   // The object identifier, e.g. "o299".
   std::wstring object_id;
@@ -37,9 +37,9 @@ struct MTPDeviceObjectEntryData {
 };
 
 const MTPDeviceObjectEntryData kTestCases[] = {
-    {STRING16_LITERAL("File_1"), L"o100", false, 10023, 1121},
-    {STRING16_LITERAL("Directory_1"), L"o52", true, 99833, 2231},
-    {STRING16_LITERAL("File_2"), L"o230", false, 8733, 7372},
+    {u"File_1", L"o100", false, 10023, 1121},
+    {u"Directory_1", L"o52", true, 99833, 2231},
+    {u"File_2", L"o230", false, 8733, 7372},
 };
 
 void TestEnumeratorIsEmpty(MTPDeviceObjectEnumerator* enumerator) {

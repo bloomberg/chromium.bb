@@ -9,8 +9,8 @@
 #include "ash/constants/ash_features.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/update_screen.h"
-#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
@@ -93,8 +93,8 @@ void UpdateScreenHandler::SetUpdateState(UpdateView::UIState value) {
 
 void UpdateScreenHandler::SetUpdateStatus(
     int percent,
-    const base::string16& percent_message,
-    const base::string16& timeleft_message) {
+    const std::u16string& percent_message,
+    const std::u16string& timeleft_message) {
   CallJS("login.UpdateScreen.setUpdateStatus", percent, percent_message,
          timeleft_message);
 }

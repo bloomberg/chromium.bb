@@ -53,6 +53,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -740,14 +741,17 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNonPrimaryOTR) {
   Profile* regular_profile = browser()->profile();
   EXPECT_FALSE(regular_profile->HasAnyOffTheRecordProfile());
 
-  Profile* otr_profile =
-      regular_profile->GetOffTheRecordProfile(otr_profile_id);
+  EXPECT_FALSE(regular_profile->GetOffTheRecordProfile(
+      otr_profile_id, /*create_if_needed=*/false));
+  Profile* otr_profile = regular_profile->GetOffTheRecordProfile(
+      otr_profile_id, /*create_if_needed=*/true);
   EXPECT_TRUE(regular_profile->HasAnyOffTheRecordProfile());
   EXPECT_TRUE(otr_profile->IsOffTheRecord());
   EXPECT_EQ(otr_profile_id, otr_profile->GetOTRProfileID());
   EXPECT_TRUE(regular_profile->HasOffTheRecordProfile(otr_profile_id));
-  EXPECT_NE(otr_profile, regular_profile->GetOffTheRecordProfile(
-                             Profile::OTRProfileID::PrimaryID()));
+  EXPECT_NE(otr_profile,
+            regular_profile->GetOffTheRecordProfile(
+                Profile::OTRProfileID::PrimaryID(), /*create_if_needed=*/true));
 
   regular_profile->DestroyOffTheRecordProfile(otr_profile);
   EXPECT_FALSE(regular_profile->HasOffTheRecordProfile(otr_profile_id));
@@ -763,10 +767,14 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateTwoNonPrimaryOTRs) {
 
   Profile* regular_profile = browser()->profile();
 
-  Profile* otr_profile1 =
-      regular_profile->GetOffTheRecordProfile(otr_profile_id1);
-  Profile* otr_profile2 =
-      regular_profile->GetOffTheRecordProfile(otr_profile_id2);
+  Profile* otr_profile1 = regular_profile->GetOffTheRecordProfile(
+      otr_profile_id1, /*create_if_needed=*/true);
+
+  EXPECT_FALSE(regular_profile->GetOffTheRecordProfile(
+      otr_profile_id2, /*create_if_needed=*/false));
+
+  Profile* otr_profile2 = regular_profile->GetOffTheRecordProfile(
+      otr_profile_id2, /*create_if_needed=*/true);
 
   EXPECT_NE(otr_profile1, otr_profile2);
   EXPECT_TRUE(regular_profile->HasOffTheRecordProfile(otr_profile_id1));
@@ -808,10 +816,10 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTestWithoutDestroyProfile,
   // ensure this task runs to prevent a crash.
   FlushIoTaskRunnerAndSpinThreads();
 
-  Profile* otr_profile1 =
-      regular_profile->GetOffTheRecordProfile(otr_profile_id1);
-  Profile* otr_profile2 =
-      regular_profile->GetOffTheRecordProfile(otr_profile_id2);
+  Profile* otr_profile1 = regular_profile->GetOffTheRecordProfile(
+      otr_profile_id1, /*create_if_needed=*/true);
+  Profile* otr_profile2 = regular_profile->GetOffTheRecordProfile(
+      otr_profile_id2, /*create_if_needed=*/true);
 
   ProfileDestructionWatcher watcher1;
   ProfileDestructionWatcher watcher2;
@@ -846,8 +854,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTestWithDestroyProfile,
       regular_profile, ProfileKeepAliveOrigin::kOffTheRecordProfile));
 
   Profile::OTRProfileID otr_profile_id("profile::otr");
-  Profile* otr_profile =
-      regular_profile->GetOffTheRecordProfile(otr_profile_id);
+  Profile* otr_profile = regular_profile->GetOffTheRecordProfile(
+      otr_profile_id, /*create_if_needed=*/true);
 
   ProfileDestructionWatcher regular_watcher;
   ProfileDestructionWatcher otr_watcher;
@@ -884,12 +892,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestGetAllOffTheRecordProfiles) {
 
   Profile* regular_profile = browser()->profile();
 
-  Profile* otr_profile1 =
-      regular_profile->GetOffTheRecordProfile(otr_profile_id1);
-  Profile* otr_profile2 =
-      regular_profile->GetOffTheRecordProfile(otr_profile_id2);
+  Profile* otr_profile1 = regular_profile->GetOffTheRecordProfile(
+      otr_profile_id1, /*create_if_needed=*/true);
+  Profile* otr_profile2 = regular_profile->GetOffTheRecordProfile(
+      otr_profile_id2, /*create_if_needed=*/true);
   Profile* incognito_profile = regular_profile->GetOffTheRecordProfile(
-      Profile::OTRProfileID::PrimaryID());
+      Profile::OTRProfileID::PrimaryID(), /*create_if_needed=*/true);
 
   std::vector<Profile*> all_otrs =
       regular_profile->GetAllOffTheRecordProfiles();
@@ -905,8 +913,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestIsSameOrParent) {
   Profile::OTRProfileID otr_profile_id("profile::otr");
 
   Profile* regular_profile = browser()->profile();
-  Profile* otr_profile =
-      regular_profile->GetOffTheRecordProfile(otr_profile_id);
+  Profile* otr_profile = regular_profile->GetOffTheRecordProfile(
+      otr_profile_id, /*create_if_needed=*/true);
   Profile* incognito_profile = regular_profile->GetPrimaryOTRProfile();
 
   EXPECT_TRUE(regular_profile->IsSameOrParent(otr_profile));
@@ -923,11 +931,34 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestIsSameOrParent) {
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        TestCreatingBrowserUsingNonPrimaryOffTheRecordProfile) {
   Profile::OTRProfileID otr_profile_id("profile::otr");
-  Profile* otr_profile =
-      browser()->profile()->GetOffTheRecordProfile(otr_profile_id);
+  Profile* otr_profile = browser()->profile()->GetOffTheRecordProfile(
+      otr_profile_id, /*create_if_needed=*/true);
 
   EXPECT_EQ(Browser::CreationStatus::kErrorProfileUnsuitable,
             Browser::GetCreationStatusForProfile(otr_profile));
+}
+
+// Tests if profile type returned by |ProfileMetrics::GetBrowserProfileType| and
+// |profile_metrics::GetBrowserContextType| are correct.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestProfileTypes) {
+  Profile* regular_profile = browser()->profile();
+  EXPECT_EQ(profile_metrics::BrowserProfileType::kRegular,
+            profile_metrics::GetBrowserContextType(regular_profile));
+  EXPECT_EQ(profile_metrics::BrowserProfileType::kRegular,
+            ProfileMetrics::GetBrowserProfileType(regular_profile));
+
+  Profile* incognito_profile = browser()->profile()->GetPrimaryOTRProfile();
+  EXPECT_EQ(profile_metrics::BrowserProfileType::kIncognito,
+            profile_metrics::GetBrowserContextType(incognito_profile));
+  EXPECT_EQ(profile_metrics::BrowserProfileType::kIncognito,
+            ProfileMetrics::GetBrowserProfileType(incognito_profile));
+
+  Profile* otr_profile = browser()->profile()->GetOffTheRecordProfile(
+      Profile::OTRProfileID("profile::otr"));
+  EXPECT_EQ(profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile,
+            profile_metrics::GetBrowserContextType(otr_profile));
+  EXPECT_EQ(profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile,
+            ProfileMetrics::GetBrowserProfileType(otr_profile));
 }
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -951,6 +982,18 @@ class GuestProfileLifetimeBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+IN_PROC_BROWSER_TEST_P(GuestProfileLifetimeBrowserTest, TestProfileTypes) {
+  Browser* browser = CreateGuestBrowser();
+  profile_metrics::BrowserProfileType expected_type =
+      is_ephemeral() ? profile_metrics::BrowserProfileType::kEphemeralGuest
+                     : profile_metrics::BrowserProfileType::kGuest;
+
+  EXPECT_EQ(expected_type,
+            profile_metrics::GetBrowserContextType(browser->profile()));
+  EXPECT_EQ(expected_type,
+            ProfileMetrics::GetBrowserProfileType(browser->profile()));
+}
+
 IN_PROC_BROWSER_TEST_P(GuestProfileLifetimeBrowserTest, UnderOneMinute) {
   base::HistogramTester tester;
   Browser* browser = CreateGuestBrowser();
@@ -963,7 +1006,9 @@ IN_PROC_BROWSER_TEST_P(GuestProfileLifetimeBrowserTest, UnderOneMinute) {
   tester.ExpectUniqueSample("Profile.Guest.Ephemeral.Lifetime", 0,
                             is_ephemeral() ? 1 : 0);
   tester.ExpectUniqueSample("Profile.Guest.BlankState.Lifetime", 0, 1);
-  // TODO(https://crbug.com/1157764): Add test for |SigninTransferred| case.
+  tester.ExpectTotalCount("Profile.Guest.SigninTransferred.Lifetime", 0);
+  // To reduce boilerplate code, |Profile.Guest.SigninTransferred.Lifetime| is
+  // tested in DiceWebSigninInterceptorBrowserTest::SwitchToGuest.
 }
 
 IN_PROC_BROWSER_TEST_P(GuestProfileLifetimeBrowserTest, OneHour) {
@@ -980,7 +1025,7 @@ IN_PROC_BROWSER_TEST_P(GuestProfileLifetimeBrowserTest, OneHour) {
   tester.ExpectUniqueSample("Profile.Guest.Ephemeral.Lifetime", 60,
                             is_ephemeral() ? 1 : 0);
   tester.ExpectUniqueSample("Profile.Guest.BlankState.Lifetime", 60, 1);
-  // TODO(https://crbug.com/1157764): Add test for |SigninTransferred| case.
+  tester.ExpectTotalCount("Profile.Guest.SigninTransferred.Lifetime", 0);
 }
 
 INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
@@ -1129,7 +1174,6 @@ IN_PROC_BROWSER_TEST_F(
   FlushIoTaskRunnerAndSpinThreads();
 }
 
-// TODO(sinhak): Remove this test after launching go/cros-dent-1-lacros.
 IN_PROC_BROWSER_TEST_F(
     ProfileBrowserTest,
     IsMainProfileReturnsTrueForMainProfileInRegularSessions) {
@@ -1144,12 +1188,12 @@ IN_PROC_BROWSER_TEST_F(
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
   const base::FilePath profile_path =
       browser()->profile()->GetPath().DirName().Append(chrome::kInitialProfile);
-  // Creates a new Profile and (fake) signs in `kFakeGaiaId`.
-  profile_attributes_storage.AddProfile(
-      profile_path, base::UTF8ToUTF16(chrome::kInitialProfile), kFakeGaiaId,
-      base::UTF8ToUTF16(kFakePrimaryUsername),
-      /*is_consented_primary_account=*/false, /*icon_index=*/0,
-      /*supervised_user_id*/ std::string(), EmptyAccountId());
+  // Emulates a fake sign-in with `kFakeGaiaId`.
+  ProfileAttributesEntry* entry =
+      profile_attributes_storage.GetProfileAttributesWithPath(profile_path);
+  ASSERT_TRUE(entry);
+  entry->SetAuthInfo(kFakeGaiaId, base::UTF8ToUTF16(kFakePrimaryUsername),
+                     /*is_consented_primary_account=*/false);
 
   crosapi::mojom::BrowserInitParamsPtr init_params =
       crosapi::mojom::BrowserInitParams::New();
@@ -1178,12 +1222,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
   const base::FilePath profile_path =
       browser()->profile()->GetPath().DirName().Append(chrome::kInitialProfile);
-  // Creates a new Profile and (fake) signs in `kFakeGaiaId`.
-  profile_attributes_storage.AddProfile(
-      profile_path, base::UTF8ToUTF16(chrome::kInitialProfile), kFakeGaiaId,
-      base::UTF8ToUTF16(kFakePrimaryUsername),
-      /*is_consented_primary_account=*/false, /*icon_index=*/0,
-      /*supervised_user_id*/ std::string(), EmptyAccountId());
+  // Emulates a fake sign-in with `kFakeGaiaId`.
+  ProfileAttributesEntry* entry =
+      profile_attributes_storage.GetProfileAttributesWithPath(profile_path);
+  ASSERT_TRUE(entry);
+  entry->SetAuthInfo(kFakeGaiaId, base::UTF8ToUTF16(kFakePrimaryUsername),
+                     /*is_consented_primary_account=*/false);
 
   crosapi::mojom::BrowserInitParamsPtr init_params =
       crosapi::mojom::BrowserInitParams::New();

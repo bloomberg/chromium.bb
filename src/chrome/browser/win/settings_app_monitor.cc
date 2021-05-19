@@ -6,6 +6,7 @@
 
 #include <wrl/client.h>
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/pattern.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -94,9 +94,8 @@ ElementType DetectElementType(IUIAutomation* automation,
     return ElementType::DEFAULT_BROWSER;
   if (aid == L"SystemSettings_DefaultApps_Browser_App0_HyperlinkButton")
     return ElementType::SWITCH_ANYWAY;
-  if (base::MatchPattern(
-          base::AsString16(aid),
-          STRING16_LITERAL("SystemSettings_DefaultApps_Browser_*_Button"))) {
+  if (base::MatchPattern(base::AsString16(aid),
+                         u"SystemSettings_DefaultApps_Browser_*_Button")) {
     // This element type depends on the automation id of one of its ancestors.
     std::wstring automation_id =
         GetFlyoutParentAutomationId(automation, sender);

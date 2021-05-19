@@ -104,6 +104,7 @@ ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     const blink::MediaStreamDevice& device,
     bool disable_local_echo,
     const blink::AudioProcessingProperties& audio_processing_properties,
+    int num_requested_channels,
     ConstraintsOnceCallback started_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : blink::MediaStreamAudioSource(std::move(task_runner),
@@ -111,6 +112,7 @@ ProcessedLocalAudioSource::ProcessedLocalAudioSource(
                                     disable_local_echo),
       consumer_frame_(frame),
       audio_processing_properties_(audio_processing_properties),
+      num_requested_channels_(num_requested_channels),
       started_callback_(std::move(started_callback)),
       volume_(0),
       allow_invalid_render_frame_id_for_testing_(false) {
@@ -275,8 +277,10 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
 
   media::AudioSourceParameters source_params(device().session_id());
   blink::WebRtcLogMessage("Using APM in renderer process.");
+  bool use_multichannel_processing = num_requested_channels_ > 1;
   audio_processor_ = new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-      audio_processing_properties_, rtc_audio_device);
+      audio_processing_properties_, use_multichannel_processing,
+      rtc_audio_device);
   params.set_frames_per_buffer(GetBufferSize(device().input.sample_rate()));
   audio_processor_->OnCaptureFormatChanged(params);
   SetFormat(audio_processor_->OutputFormat());
@@ -455,9 +459,13 @@ void ProcessedLocalAudioSource::CaptureUsingProcessor(
   media::AudioBus* processed_data = nullptr;
   base::TimeDelta processed_data_audio_delay;
   int new_volume = 0;
+
+  // Maximum number of channels used by the sinks.
+  const int num_preferred_channels = NumPreferredChannels();
+
   while (audio_processor_->ProcessAndConsumeData(
-      current_volume, key_pressed, &processed_data, &processed_data_audio_delay,
-      &new_volume)) {
+      current_volume, num_preferred_channels, key_pressed, &processed_data,
+      &processed_data_audio_delay, &new_volume)) {
     DCHECK(processed_data);
 
     level_calculator_.Calculate(*processed_data, force_report_nonzero_energy);

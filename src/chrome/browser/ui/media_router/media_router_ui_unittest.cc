@@ -92,7 +92,7 @@ class MockMediaRouterFileDialog : public MediaRouterFileDialog {
   ~MockMediaRouterFileDialog() override {}
 
   MOCK_METHOD0(GetLastSelectedFileUrl, GURL());
-  MOCK_METHOD0(GetLastSelectedFileName, base::string16());
+  MOCK_METHOD0(GetLastSelectedFileName, std::u16string());
   MOCK_METHOD1(OpenFileDialog, void(Browser* browser));
 };
 
@@ -534,7 +534,7 @@ TEST_F(MediaRouterViewsUITest, RouteCreationTimeoutForPresentation) {
   StartCastingAndExpectTimeout(
       MediaCastMode::PRESENTATION,
       l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
-                                base::UTF8ToUTF16("frameurl.fakeurl")),
+                                u"frameurl.fakeurl"),
       20);
 }
 

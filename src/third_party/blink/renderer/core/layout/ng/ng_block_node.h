@@ -85,10 +85,11 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   // space is not optional.
   MinMaxSizesResult ComputeMinMaxSizes(
       WritingMode container_writing_mode,
-      const MinMaxSizesInput&,
-      const NGConstraintSpace* = nullptr) const;
+      const MinMaxSizesType,
+      const NGConstraintSpace&,
+      const MinMaxSizesFloatInput float_input = MinMaxSizesFloatInput()) const;
 
-  MinMaxSizes ComputeMinMaxSizesFromLegacy(const MinMaxSizesInput&,
+  MinMaxSizes ComputeMinMaxSizesFromLegacy(const MinMaxSizesType,
                                            const NGConstraintSpace&) const;
 
   NGLayoutInputNode FirstChild() const;
@@ -163,9 +164,7 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
       NGBaselineAlgorithmType baseline_algorithm_type =
           NGBaselineAlgorithmType::kInlineBlock);
 
-  // Called if this is an out-of-flow block which needs to be
-  // positioned with legacy layout.
-  void UseLegacyOutOfFlowPositioning() const;
+  void InsertIntoLegacyPositionedObjects() const;
 
   // Write back resolved margins to legacy.
   void StoreMargins(const NGConstraintSpace&, const NGBoxStrut& margins);
@@ -255,6 +254,19 @@ struct DowncastTraits<NGBlockNode> {
   static bool AllowFrom(const NGLayoutInputNode& node) {
     return node.IsBlock();
   }
+};
+
+// Devtools can trigger layout to collect devtools-specific data. We don't want
+// or need such devtools layouts to write to the fragment or layout trees. This
+// class sets a flag that is checked before storing the layout results. If the
+// flag is true, we bail before writing anything.
+class DevtoolsReadonlyLayoutScope {
+  STACK_ALLOCATED();
+
+ public:
+  DevtoolsReadonlyLayoutScope();
+  static bool InDevtoolsLayout();
+  ~DevtoolsReadonlyLayoutScope();
 };
 
 }  // namespace blink

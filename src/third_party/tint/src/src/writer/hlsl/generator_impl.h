@@ -19,29 +19,18 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "src/ast/array_accessor_expression.h"
 #include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
 #include "src/ast/bitcast_expression.h"
 #include "src/ast/break_statement.h"
-#include "src/ast/call_expression.h"
-#include "src/ast/case_statement.h"
 #include "src/ast/continue_statement.h"
 #include "src/ast/discard_statement.h"
-#include "src/ast/identifier_expression.h"
 #include "src/ast/if_statement.h"
-#include "src/ast/literal.h"
 #include "src/ast/loop_statement.h"
-#include "src/ast/member_accessor_expression.h"
 #include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/switch_statement.h"
-#include "src/ast/type_constructor_expression.h"
 #include "src/ast/unary_op_expression.h"
 #include "src/program_builder.h"
 #include "src/scope_stack.h"
-#include "src/semantic/intrinsic.h"
-#include "src/type/struct_type.h"
 #include "src/writer/hlsl/namer.h"
 #include "src/writer/text_generator.h"
 
@@ -131,6 +120,14 @@ class GeneratorImpl : public TextGenerator {
   bool EmitCall(std::ostream& pre,
                 std::ostream& out,
                 ast::CallExpression* expr);
+  /// Handles generating a barrier intrinsic call
+  /// @param pre the preamble for the expression stream
+  /// @param out the output of the expression stream
+  /// @param intrinsic the semantic information for the barrier intrinsic
+  /// @returns true if the call expression is emitted
+  bool EmitBarrierCall(std::ostream& pre,
+                       std::ostream& out,
+                       const semantic::Intrinsic* intrinsic);
   /// Handles generating a call to a texture function (`textureSample`,
   /// `textureSampleGrad`, etc)
   /// @param pre the preamble for the expression stream

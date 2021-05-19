@@ -44,6 +44,7 @@ using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::Contains;
+using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Field;
@@ -143,6 +144,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
 
   void TearDown() override {
     controller_->RemoveObserver(&mock_observer_);
+    controller_.reset();
     RenderViewHostTestHarness::TearDown();
   }
 
@@ -418,16 +420,14 @@ TEST_F(ControllerTest, RunDirectActionWithArguments) {
         std::move(callback).Run(true, "");
       }));
 
+  TriggerContext::Options options;
+  options.is_direct_action = true;
   EXPECT_TRUE(controller_->PerformUserActionWithContext(
       0, std::make_unique<TriggerContext>(
              /* parameters = */ std::make_unique<ScriptParameters>(
                  std::map<std::string, std::string>{{"required", "value"},
                                                     {"arg0", "value0"}}),
-             /* experiment_ids = */ std::string(),
-             /* is_cct = */ false,
-             /* onboarding_shown = */ false,
-             /* is_direct_action = */ true,
-             /* caller_account_hash = */ std::string())));
+             options)));
 }
 
 TEST_F(ControllerTest, NoScripts) {
@@ -2023,11 +2023,10 @@ TEST_F(ControllerTest, UserDataFormContactInfo) {
 
   autofill::AutofillProfile contact_profile;
   contact_profile.SetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS,
-                             base::UTF8ToUTF16("joedoe@example.com"));
-  contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FULL,
-                             base::UTF8ToUTF16("Joe Doe"));
+                             u"joedoe@example.com");
+  contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FULL, u"Joe Doe");
   contact_profile.SetRawInfo(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
-                             base::UTF8ToUTF16("+1 23 456 789 01"));
+                             u"+1 23 456 789 01");
   controller_->SetContactInfo(
       std::make_unique<autofill::AutofillProfile>(contact_profile));
   EXPECT_THAT(controller_->GetUserData()
@@ -2116,11 +2115,10 @@ TEST_F(ControllerTest, UserDataChangesByOutOfLoopWrite) {
       .Times(1);
   autofill::AutofillProfile contact_profile;
   contact_profile.SetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS,
-                             base::UTF8ToUTF16("joedoe@example.com"));
-  contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FULL,
-                             base::UTF8ToUTF16("Joe Doe"));
+                             u"joedoe@example.com");
+  contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FULL, u"Joe Doe");
   contact_profile.SetRawInfo(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
-                             base::UTF8ToUTF16("+1 23 456 789 01"));
+                             u"+1 23 456 789 01");
   controller_->SetContactInfo(
       std::make_unique<autofill::AutofillProfile>(contact_profile));
   EXPECT_THAT(controller_->GetUserData()
@@ -2847,9 +2845,9 @@ TEST_F(ControllerTest, RegularScriptShowsDefaultInitialStatusMessage) {
   SetupActionsForScript("script", actions_response);
 
   testing::InSequence seq;
-  EXPECT_CALL(mock_observer_, OnStatusMessageChanged(l10n_util::GetStringFUTF8(
-                                  IDS_AUTOFILL_ASSISTANT_LOADING,
-                                  base::UTF8ToUTF16("a.example.com"))))
+  EXPECT_CALL(mock_observer_,
+              OnStatusMessageChanged(l10n_util::GetStringFUTF8(
+                  IDS_AUTOFILL_ASSISTANT_LOADING, u"a.example.com")))
       .Times(1);
   EXPECT_CALL(mock_observer_, OnStatusMessageChanged("Hello World")).Times(1);
   Start("http://a.example.com/path");
@@ -2913,9 +2911,9 @@ TEST_F(ControllerTest, RuntimeManagerDestroyed) {
 }
 
 TEST_F(ControllerTest, OnGetScriptsFailedWillShutdown) {
-  EXPECT_CALL(mock_observer_, OnStatusMessageChanged(l10n_util::GetStringFUTF8(
-                                  IDS_AUTOFILL_ASSISTANT_LOADING,
-                                  base::UTF8ToUTF16("initialurl.com"))))
+  EXPECT_CALL(mock_observer_,
+              OnStatusMessageChanged(l10n_util::GetStringFUTF8(
+                  IDS_AUTOFILL_ASSISTANT_LOADING, u"initialurl.com")))
       .Times(1);
   EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
       .WillOnce(RunOnceCallback<2>(net::HTTP_NOT_FOUND, ""));

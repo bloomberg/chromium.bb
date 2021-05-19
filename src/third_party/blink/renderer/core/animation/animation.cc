@@ -513,6 +513,8 @@ bool Animation::PreCommit(
       CompositorAnimations::FailureReasons failure_reasons =
           CheckCanStartAnimationOnCompositor(paint_artifact_compositor,
                                              &unsupported_properties);
+      if (supplemental_failure_reasons_.has_value())
+        failure_reasons |= supplemental_failure_reasons_.value();
       RecordCompositorAnimationFailureReasons(failure_reasons);
 
       if (failure_reasons == CompositorAnimations::kNoFailure) {
@@ -525,9 +527,10 @@ bool Animation::PreCommit(
       DCHECK_EQ(kRunning, CalculateAnimationPlayState());
       TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
           "blink.animations,devtools.timeline,benchmark,rail", "Animation",
-          this, "data",
-          inspector_animation_compositor_event::Data(failure_reasons,
-                                                     unsupported_properties));
+          this, "data", [&](perfetto::TracedValue context) {
+            inspector_animation_compositor_event::Data(
+                std::move(context), failure_reasons, unsupported_properties);
+          });
     }
   }
 
@@ -1939,6 +1942,26 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
   return reasons;
 }
 
+base::TimeDelta Animation::ComputeCompositorTimeOffset() const {
+  if (start_time_ && !PendingInternal())
+    return base::TimeDelta();
+
+  double playback_rate = EffectivePlaybackRate();
+  if (!playback_rate)
+    return base::TimeDelta::Max();
+
+  bool reversed = playback_rate < 0;
+
+  base::Optional<AnimationTimeDelta> current_time = CurrentTimeInternal();
+  if (!current_time)
+    return base::TimeDelta();
+
+  double time_offset_s =
+      reversed ? EffectEnd().InSecondsF() - current_time.value().InSecondsF()
+               : current_time.value().InSecondsF();
+  return base::TimeDelta::FromSecondsD(time_offset_s / fabs(playback_rate));
+}
+
 void Animation::StartAnimationOnCompositor(
     const PaintArtifactCompositor* paint_artifact_compositor) {
   DCHECK_EQ(
@@ -1951,7 +1974,7 @@ void Animation::StartAnimationOnCompositor(
   bool reversed = EffectivePlaybackRate() < 0;
 
   base::Optional<AnimationTimeDelta> start_time;
-  AnimationTimeDelta time_offset = AnimationTimeDelta();
+  base::TimeDelta time_offset = base::TimeDelta();
   // Start the animation on the compositor with either a start time or time
   // offset. The start time is used for synchronous updates where the
   // compositor start time must be in precise alignment with the specified time
@@ -1966,11 +1989,7 @@ void Animation::StartAnimationOnCompositor(
           start_time.value() - (EffectEnd() / fabs(EffectivePlaybackRate()));
     }
   } else {
-    base::Optional<AnimationTimeDelta> current_time = CurrentTimeInternal();
-    DCHECK(current_time);
-    time_offset =
-        reversed ? EffectEnd() - current_time.value() : current_time.value();
-    time_offset = time_offset / fabs(EffectivePlaybackRate());
+    time_offset = ComputeCompositorTimeOffset();
   }
 
   DCHECK_NE(compositor_group_, 0);
@@ -1980,10 +1999,8 @@ void Animation::StartAnimationOnCompositor(
     start_time_s = start_time.value().InSecondsF();
   }
   To<KeyframeEffect>(content_.Get())
-      ->StartAnimationOnCompositor(
-          compositor_group_, start_time_s,
-          base::TimeDelta::FromSecondsD(time_offset.InSecondsF()),
-          EffectivePlaybackRate());
+      ->StartAnimationOnCompositor(compositor_group_, start_time_s, time_offset,
+                                   EffectivePlaybackRate());
 }
 
 // TODO(crbug.com/960944): Rename to SetPendingCommit. This method handles both
@@ -2057,6 +2074,11 @@ bool Animation::Update(TimingUpdateReason reason) {
   // time of an animation also involves:
   //   * Running the update an animation’s finished state procedure.
   //   * Queueing animation events.
+
+  if (!Outdated() && reason == kTimingUpdateForAnimationFrame &&
+      IsInDisplayLockedSubtree())
+    return true;
+
   ClearOutdated();
   bool idle = CalculateAnimationPlayState() == kIdle;
   if (!idle)
@@ -2403,15 +2425,21 @@ void Animation::NotifyProbe() {
     if (!was_active && is_active) {
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
           "blink.animations,devtools.timeline,benchmark,rail", "Animation",
-          this, "data", inspector_animation_event::Data(*this));
+          this, "data", [&](perfetto::TracedValue context) {
+            inspector_animation_event::Data(std::move(context), *this);
+          });
     } else if (was_active && !is_active) {
       TRACE_EVENT_NESTABLE_ASYNC_END1(
           "blink.animations,devtools.timeline,benchmark,rail", "Animation",
-          this, "endData", inspector_animation_state_event::Data(*this));
+          this, "endData", [&](perfetto::TracedValue context) {
+            inspector_animation_state_event::Data(std::move(context), *this);
+          });
     } else {
       TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
           "blink.animations,devtools.timeline,benchmark,rail", "Animation",
-          this, "data", inspector_animation_state_event::Data(*this));
+          this, "data", [&](perfetto::TracedValue context) {
+            inspector_animation_state_event::Data(std::move(context), *this);
+          });
     }
   }
 }

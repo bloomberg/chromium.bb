@@ -71,7 +71,8 @@ cronet_restricted_ports = [
 def can_connect(port):
     # this test is only really useful on unices where SO_REUSE_PORT is available
     # so on Windows, where this test is expensive, skip it
-    if platform.system() == 'Windows': return False
+    if platform.system() == 'Windows':
+        return False
     s = socket.socket()
     try:
         s.connect(('localhost', port))
@@ -102,7 +103,8 @@ def refill_pool(max_timeout, req):
     ]
     random.shuffle(chk)
     for i in chk:
-        if len(pool) > 100: break
+        if len(pool) > 100:
+            break
         if i in in_use:
             age = time.time() - in_use[i]
             if age < max_timeout:
@@ -157,7 +159,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             p = allocate_port(self)
             self.log_message('allocated port %d' % p)
-            self.wfile.write(bytes('%d' % p))
+            self.wfile.write(str(p).encode('ascii'))
         elif self.path[0:6] == '/drop/':
             self.send_response(200)
             self.send_header('Content-Type', 'text/plain')
@@ -177,7 +179,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'text/plain')
             self.end_headers()
-            self.wfile.write(bytes('%d' % _MY_VERSION))
+            self.wfile.write(str(_MY_VERSION).encode('ascii'))
         elif self.path == '/dump':
             # yaml module is not installed on Macs and Windows machines by default
             # so we import it lazily (/dump action is only used for debugging)
@@ -192,7 +194,7 @@ class Handler(BaseHTTPRequestHandler):
                 'in_use': dict((k, now - v) for k, v in in_use.items())
             })
             mu.release()
-            self.wfile.write(bytes(out))
+            self.wfile.write(out.encode('ascii'))
         elif self.path == '/quitquitquit':
             self.send_response(200)
             self.end_headers()

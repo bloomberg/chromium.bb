@@ -71,7 +71,7 @@ autofill::UserInfo TranslateCredentials(bool current_field_is_password,
   UserInfo user_info(credential.origin().Serialize(),
                      credential.is_public_suffix_match());
 
-  base::string16 username = GetDisplayUsername(credential);
+  std::u16string username = GetDisplayUsername(credential);
   user_info.add_field(
       UserInfo::Field(username, username, /*is_password=*/false,
                       /*selectable=*/!credential.username().empty() &&
@@ -86,8 +86,8 @@ autofill::UserInfo TranslateCredentials(bool current_field_is_password,
   return user_info;
 }
 
-base::string16 GetTitle(bool has_suggestions, const url::Origin& origin) {
-  const base::string16 elided_url =
+std::u16string GetTitle(bool has_suggestions, const url::Origin& origin) {
+  const std::u16string elided_url =
       url_formatter::FormatOriginForSecurityDisplay(
           origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
   return l10n_util::GetStringFUTF16(
@@ -147,7 +147,7 @@ PasswordAccessoryControllerImpl::GetSheetData() const {
       all_passwords_helper_.available_credentials().value() > 0 &&
       base::FeatureList::IsEnabled(
           password_manager::features::kFillingPasswordsFromAnyOrigin)) {
-    base::string16 button_title =
+    std::u16string button_title =
         is_password_field
             ? l10n_util::GetStringUTF16(
                   IDS_PASSWORD_MANAGER_ACCESSORY_USE_OTHER_PASSWORD)
@@ -160,14 +160,14 @@ PasswordAccessoryControllerImpl::GetSheetData() const {
 
   if (is_password_field &&
       last_focused_field_info_->is_manual_generation_available) {
-    base::string16 generate_password_title = l10n_util::GetStringUTF16(
+    std::u16string generate_password_title = l10n_util::GetStringUTF16(
         IDS_PASSWORD_MANAGER_ACCESSORY_GENERATE_PASSWORD_BUTTON_TITLE);
     footer_commands_to_add.push_back(
         FooterCommand(generate_password_title,
                       autofill::AccessoryAction::GENERATE_PASSWORD_MANUAL));
   }
 
-  base::string16 manage_passwords_title = l10n_util::GetStringUTF16(
+  std::u16string manage_passwords_title = l10n_util::GetStringUTF16(
       IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
   footer_commands_to_add.push_back(FooterCommand(
       manage_passwords_title, autofill::AccessoryAction::MANAGE_PASSWORDS));
@@ -193,6 +193,7 @@ PasswordAccessoryControllerImpl::GetSheetData() const {
 }
 
 void PasswordAccessoryControllerImpl::OnFillingTriggered(
+    autofill::FieldGlobalId focused_field_id,
     const autofill::UserInfo::Field& selection) {
   if (!AppearsInSuggestions(selection.display_text(), selection.is_obfuscated(),
                             GetFocusedFrameOrigin())) {
@@ -366,8 +367,9 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
     }
   }
 
-  if (source_observer_ && base::FeatureList::IsEnabled(
-                              autofill::features::kAutofillKeyboardAccessory)) {
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillKeyboardAccessory)) {
+    DCHECK(source_observer_);
     // The "Manage Passwords" entry point always justifies showing this fallback
     // sheet — given that the field is fillable at all.
     source_observer_.Run(this, IsFillingSourceAvailable(
@@ -431,7 +433,7 @@ void PasswordAccessoryControllerImpl::ChangeCurrentOriginSavePasswordsStatus(
 }
 
 bool PasswordAccessoryControllerImpl::AppearsInSuggestions(
-    const base::string16& suggestion,
+    const std::u16string& suggestion,
     bool is_password,
     const url::Origin& origin) const {
   if (origin.opaque())

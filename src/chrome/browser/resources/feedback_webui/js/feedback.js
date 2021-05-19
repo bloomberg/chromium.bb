@@ -2,20 +2,126 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(crbug.com/1167223
-// dummy data, use  temporarily until a message handler is implemented
-// real data shall be retrieved from backend or be passed via query string
-const feedbackInfo = {
-  categoryTag: '',
-  description: '',
-  descriptionPlaceholder: 'Please enter a description of your issue',
-  flow: 'regular',
-  pageUrl:
-      'https://superuser.com/questions/777213/copy-json-from-console-log-in-developer-tool-to-clipboard',
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {$} from 'chrome://resources/js/util.m.js';
+
+import {FEEDBACK_LANDING_PAGE, FEEDBACK_LANDING_PAGE_TECHSTOP, FEEDBACK_LEGAL_HELP_URL, FEEDBACK_PRIVACY_POLICY_URL, FEEDBACK_TERM_OF_SERVICE_URL, openUrlInAppWindow} from './feedback_util.js';
+import {takeScreenshot} from './take_screenshot.js';
+
+
+/** @type {string} */
+const dialogArgs = chrome.getVariableValue('dialogArguments');
+
+/**
+ * The object will be manipulated by feedbackHelper
+ *
+ * @type {chrome.feedbackPrivate.FeedbackInfo}
+ */
+let feedbackInfo = {
+  assistantDebugInfoAllowed: false,
+  attachedFile: undefined,
+  attachedFileBlobUuid: undefined,
+  categoryTag: undefined,
+  description: '...',
+  descriptionPlaceholder: undefined,
+  email: undefined,
+  flow: chrome.feedbackPrivate.FeedbackFlow.REGULAR,
+  fromAssistant: false,
+  includeBluetoothLogs: false,
+  pageUrl: undefined,
+  sendHistograms: undefined,
   systemInformation: [],
   useSystemWindowFrame: false,
-  screenshot: {}
 };
+
+
+class FeedbackHelper {
+  constructor() {
+    /**
+     * @type {boolean}
+     */
+    this.systemInformationLoaded = false;
+  }
+
+  getSystemInformation() {
+    return new Promise(
+        resolve => chrome.feedbackPrivate.getSystemInformation(resolve));
+  }
+
+  getFullSystemInformation() {
+    return new Promise(resolve => {
+      if (this.systemInformationLoaded) {
+        resolve(feedbackInfo.systemInformation);
+      } else {
+        this.getSystemInformation().then(function(sysInfo) {
+          if (feedbackInfo.systemInformation) {
+            feedbackInfo.systemInformation =
+                feedbackInfo.systemInformation.concat(sysInfo);
+          } else {
+            feedbackInfo.systemInformation = sysInfo;
+          }
+          this.systemInformationLoaded = true;
+          resolve(feedbackInfo.systemInformation);
+        });
+      }
+    });
+  }
+
+  getUserEmail() {
+    return new Promise(resolve => chrome.feedbackPrivate.getUserEmail(resolve));
+  }
+
+  /**
+   * @param {boolean} useSystemInfo
+   */
+  sendFeedbackReport(useSystemInfo) {
+    const ID = Math.round(Date.now() / 1000);
+    const FLOW = feedbackInfo.flow;
+    if (!useSystemInfo) {
+      this.systemInformationLoaded = false;
+      feedbackInfo.systemInformation = [];
+    }
+
+    chrome.feedbackPrivate.sendFeedback(
+        feedbackInfo, function(result, landingPageType) {
+          if (result == chrome.feedbackPrivate.Status.SUCCESS) {
+            if (FLOW != chrome.feedbackPrivate.FeedbackFlow.LOGIN &&
+                landingPageType !=
+                    chrome.feedbackPrivate.LandingPageType.NO_LANDING_PAGE) {
+              const landingPage = landingPageType ==
+                      chrome.feedbackPrivate.LandingPageType.NORMAL ?
+                  FEEDBACK_LANDING_PAGE :
+                  FEEDBACK_LANDING_PAGE_TECHSTOP;
+              window.open(landingPage, '_blank');
+            }
+          } else {
+            console.warn(
+                'Feedback: Report for request with ID ' + ID +
+                ' will be sent later.');
+          }
+          if (FLOW == chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
+            chrome.feedbackPrivate.loginFeedbackComplete();
+          }
+        });
+  }
+
+  // Send a message to show the WebDialog
+  showDialog() {
+    chrome.send('showDialog');
+  }
+
+  // Send a message to close the WebDialog
+  closeDialog() {
+    chrome.send('dialogClose');
+  }
+}
+
+/**
+ * @type {FeedbackHelper}
+ * @const
+ */
+const feedbackHelper = new FeedbackHelper();
 
 /** @type {number}
  * @const
@@ -50,6 +156,9 @@ const MAX_SCREENSHOT_WIDTH = 100;
  */
 const SYSINFO_WINDOW_ID = 'sysinfo_window';
 
+/**
+ * @type {Blob}
+ */
 let attachedFileBlob = null;
 const lastReader = null;
 
@@ -138,7 +247,7 @@ function onOpenFileDialog() {
 function clearAttachedFile() {
   $('custom-file-container').hidden = true;
   attachedFileBlob = null;
-  feedbackInfo.attachedFile = null;
+  feedbackInfo.attachedFile = undefined;
   $('attach-file').hidden = false;
 }
 
@@ -233,11 +342,10 @@ function sendReport() {
 
   // Prevent double clicking from sending additional reports.
   $('send-report-button').disabled = true;
-  console.log('Feedback: Sending report');
   if (!feedbackInfo.attachedFile && attachedFileBlob) {
     feedbackInfo.attachedFile = {
       name: $('attach-file').value,
-      data: attachedFileBlob
+      data: attachedFileBlob,
     };
   }
 
@@ -270,7 +378,7 @@ function sendReport() {
   }
   if ($('performance-info-checkbox') == null ||
       !($('performance-info-checkbox').checked)) {
-    feedbackInfo.traceId = null;
+    feedbackInfo.traceId = undefined;
   }
   // </if>
 
@@ -284,19 +392,17 @@ function sendReport() {
     feedbackInfo.screenshot = null;
   }
 
-  let productId = parseInt('' + feedbackInfo.productId);
+  let productId = parseInt('' + feedbackInfo.productId, 10);
   if (isNaN(productId)) {
     // For apps that still use a string value as the |productId|, we must clear
     // that value since the API uses an integer value, and a conflict in data
     // types will cause the report to fail to be sent.
-    productId = null;
+    productId = undefined;
   }
   feedbackInfo.productId = productId;
 
-  // Request sending the report, show the landing page (if allowed), and close
-  // this window right away. The FeedbackRequest object that represents this
-  // report will take care of sending the report in the background.
-  sendFeedbackReport(useSystemInfo);
+  // Request sending the report, show the landing page (if allowed)
+  feedbackHelper.sendFeedbackReport(useSystemInfo);
   scheduleWindowClose();
   return true;
 }
@@ -332,31 +438,9 @@ function performanceFeedbackChanged() {
 // </if>
 
 function resizeAppWindow() {
-  // We pick the width from the titlebar, which has no margins.
-  let width = $('title-bar').scrollWidth;
-  if (width < FEEDBACK_MIN_WIDTH) {
-    width = FEEDBACK_MIN_WIDTH;
-  }
-
-  // The Chrome App window's maxHeight is set to the available screen height. If
-  // |height| would result in a window that exceeds maxHeight a scrollbar will
-  // appear in the content-pane.
-  // |height| is calculated as the sum of the scrollHeights of the body's
-  // children. This is necessary as the content-pane is set to fill the
-  // remaining height of the body after its siblings have been laid out. Summing
-  // the children's scrollHeight gives us the desired height of the content area
-  // which the Chrome App window uses to size the window accordingly.
-  let height = Array.from(document.body.children)
-                   .reduce((acc, el) => acc + el.scrollHeight, 0);
-
-  let minHeight = FEEDBACK_MIN_HEIGHT;
-  if (feedbackInfo.flow == chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
-    minHeight = FEEDBACK_MIN_HEIGHT_LOGIN;
-  }
-  height = Math.max(height, minHeight);
-
-  window.innerWidth = width;
-  window.innerHeight = height;
+  // TODO(crbug.com/1167223): The UI is now controlled by a WebDialog delegate
+  // which is set to not resizable for now. If needed, a message handler can
+  // be added to respond to resize request.
 }
 
 /**
@@ -364,7 +448,7 @@ function resizeAppWindow() {
  */
 function scheduleWindowClose() {
   setTimeout(function() {
-    window.close();
+    feedbackHelper.closeDialog();
   }, 100);
 }
 
@@ -412,7 +496,7 @@ function initialize() {
         resizeAppWindow();
       });
 
-      window.focus();
+      feedbackHelper.showDialog();
 
       // Allow feedback to be sent even if the screenshot failed.
       if (!screenshotCanvas) {
@@ -434,7 +518,7 @@ function initialize() {
       });
     });
 
-    chrome.feedbackPrivate.getUserEmail(function(email) {
+    feedbackHelper.getUserEmail().then(function(email) {
       // Never add an empty option.
       if (!email) {
         return;
@@ -459,13 +543,11 @@ function initialize() {
       $('attach-file').hidden = true;
     }
 
-    // No URL, file attachment, or window minimizing for login screen
-    // feedback.
+    // No URL, file attachment for login screen feedback.
     if (feedbackInfo.flow == chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
       $('page-url').hidden = true;
       $('attach-file-container').hidden = true;
       $('attach-file-note').hidden = true;
-      $('minimize-button').hidden = true;
     }
 
     // <if expr="chromeos">
@@ -490,19 +572,7 @@ function initialize() {
             window.open('/html/sys_info.html', SYSINFO_WINDOW_ID, params);
 
         if (sysWin) {
-          sysWin.window.getFullSystemInfo = function(callback) {
-            chrome.feedbackPrivate.getSystemInformation(function(sysInfo) {
-              if (feedbackInfo.systemInformation) {
-                callback(sysInfo.concat(feedbackInfo.systemInformation));
-              } else {
-                callback(sysInfo);
-              }
-            });
-          };
-
-          sysWin.window.getLoadTimeData = function() {
-            return loadTimeData;
-          };
+          sysWin.window.getFullSystemInfo = feedbackHelper.getSystemInformation;
         }
       };
 
@@ -584,15 +654,14 @@ function initialize() {
   };
 
   window.addEventListener('DOMContentLoaded', function() {
-    // TODO(crbug.com/1167223
-    // feedbackInfo will be retrieved from backend or
-    // be passed as query string. This will be addressed via
-    // following CL.
-    // chrome.feedbackPrivate.getFeedbackInfo(function(feedbackInfo) {
-    //   applyData(feedbackInfo);
-    // });
+    if (dialogArgs) {
+      feedbackInfo = /** @type {chrome.feedbackPrivate.FeedbackInfo} */ (
+          JSON.parse(dialogArgs));
+    }
     applyData(feedbackInfo);
 
+    window.feedbackInfo = feedbackInfo;
+    window.feedbackHelper = feedbackHelper;
 
     // Setup our event handlers.
     $('attach-file').addEventListener('change', onFileSelected);

@@ -19,7 +19,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -27,29 +26,29 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
+#include "chrome/browser/ash/attestation/mock_machine_certificate_uploader.h"
+#include "chrome/browser/ash/attestation/tpm_challenge_key.h"
+#include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/saml/fake_saml_idp_mixin.h"
+#include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/login/test/enrollment_ui_mixin.h"
+#include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/ash/login/test/https_forwarder.h"
+#include "chrome/browser/ash/login/test/js_checker.h"
+#include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
+#include "chrome/browser/ash/login/test/oobe_base_test.h"
+#include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/test_users.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/chromeos/attestation/mock_machine_certificate_uploader.h"
-#include "chrome/browser/chromeos/attestation/tpm_challenge_key.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
-#include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
-#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
-#include "chrome/browser/chromeos/login/test/https_forwarder.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/test_users.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -72,14 +71,14 @@
 #include "chromeos/dbus/attestation/fake_attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
+#include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/saml_password_attributes.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -175,36 +174,31 @@ constexpr char kTestRefreshToken[] = "fake-refresh-token";
 
 constexpr char kAffiliationID[] = "some-affiliation-id";
 
-
-// A FakeCryptohomeClient that stores the salted and hashed secret passed to
+// A FakeUserDataAuthClient that stores the salted and hashed secret passed to
 // MountEx().
-class SecretInterceptingFakeCryptohomeClient : public FakeCryptohomeClient {
+class SecretInterceptingFakeUserDataAuthClient : public FakeUserDataAuthClient {
  public:
-  SecretInterceptingFakeCryptohomeClient();
+  SecretInterceptingFakeUserDataAuthClient();
 
-  void MountEx(const cryptohome::AccountIdentifier& id,
-               const cryptohome::AuthorizationRequest& auth,
-               const cryptohome::MountRequest& request,
-               DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void Mount(const ::user_data_auth::MountRequest& request,
+             MountCallback callback) override;
 
   const std::string& salted_hashed_secret() { return salted_hashed_secret_; }
 
  private:
   std::string salted_hashed_secret_;
 
-  DISALLOW_COPY_AND_ASSIGN(SecretInterceptingFakeCryptohomeClient);
+  DISALLOW_COPY_AND_ASSIGN(SecretInterceptingFakeUserDataAuthClient);
 };
 
-SecretInterceptingFakeCryptohomeClient::
-    SecretInterceptingFakeCryptohomeClient() {}
+SecretInterceptingFakeUserDataAuthClient::
+    SecretInterceptingFakeUserDataAuthClient() {}
 
-void SecretInterceptingFakeCryptohomeClient::MountEx(
-    const cryptohome::AccountIdentifier& id,
-    const cryptohome::AuthorizationRequest& auth,
-    const cryptohome::MountRequest& request,
-    DBusMethodCallback<cryptohome::BaseReply> callback) {
-  salted_hashed_secret_ = auth.key().secret();
-  FakeCryptohomeClient::MountEx(id, auth, request, std::move(callback));
+void SecretInterceptingFakeUserDataAuthClient::Mount(
+    const ::user_data_auth::MountRequest& request,
+    MountCallback callback) {
+  salted_hashed_secret_ = request.authorization().key().secret();
+  FakeUserDataAuthClient::Mount(request, std::move(callback));
 }
 
 }  // namespace
@@ -231,8 +225,8 @@ class SamlTest : public OobeBaseTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    // Creates a fake CryptohomeClient. Will be destroyed in browser shutdown.
-    cryptohome_client_ = new SecretInterceptingFakeCryptohomeClient();
+    // Creates a fake UserDataAuthClient. Will be destroyed in browser shutdown.
+    cryptohome_client_ = new SecretInterceptingFakeUserDataAuthClient();
 
     OobeBaseTest::SetUpInProcessBrowserTestFixture();
   }
@@ -332,8 +326,7 @@ class SamlTest : public OobeBaseTest {
   FakeSamlIdpMixin* fake_saml_idp() { return &fake_saml_idp_mixin_; }
 
  protected:
-
-  SecretInterceptingFakeCryptohomeClient* cryptohome_client_;
+  SecretInterceptingFakeUserDataAuthClient* cryptohome_client_;
 
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
@@ -421,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, IdpRequiresHttpAuth) {
   LoginHandler* handler = *login_prompt_observer.handlers().begin();
   // Note that the actual credentials don't matter because `fake_saml_idp()`
   // doesn't check those (only that something has been provided).
-  handler->SetAuth(base::UTF8ToUTF16("user"), base::UTF8ToUTF16("pwd"));
+  handler->SetAuth(u"user", u"pwd");
 
   // Now the SAML sign-in form should actually load.
   std::string message;
@@ -464,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
   Key key("actual_password");
   key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
                 SystemSaltGetter::ConvertRawSaltToHexString(
-                    FakeCryptohomeClient::GetStubSystemSalt()));
+                    FakeCryptohomeMiscClient::GetStubSystemSalt()));
   EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
 
   EXPECT_TRUE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
@@ -500,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPIWithoutConfirm) {
   Key key("last_password");
   key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
                 SystemSaltGetter::ConvertRawSaltToHexString(
-                    FakeCryptohomeClient::GetStubSystemSalt()));
+                    FakeCryptohomeMiscClient::GetStubSystemSalt()));
   EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
 
   EXPECT_TRUE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
@@ -978,20 +971,20 @@ void SAMLPolicyTest::SetUpOnMainThread() {
   // Give affiliated users appropriate affiliation IDs.
   std::set<std::string> user_affiliation_ids;
   user_affiliation_ids.insert(kAffiliationID);
-  chromeos::ChromeUserManager::Get()->SetUserAffiliation(
+  ChromeUserManager::Get()->SetUserAffiliation(
       AccountId::FromUserEmailGaiaId(
           saml_test_users::kFirstUserCorpExampleComEmail, kFirstSAMLUserGaiaId),
       user_affiliation_ids);
-  chromeos::ChromeUserManager::Get()->SetUserAffiliation(
+  ChromeUserManager::Get()->SetUserAffiliation(
       AccountId::FromUserEmailGaiaId(
           saml_test_users::kSecondUserCorpExampleComEmail,
           kSecondSAMLUserGaiaId),
       user_affiliation_ids);
-  chromeos::ChromeUserManager::Get()->SetUserAffiliation(
+  ChromeUserManager::Get()->SetUserAffiliation(
       AccountId::FromUserEmailGaiaId(
           saml_test_users::kThirdUserCorpExampleComEmail, kThirdSAMLUserGaiaId),
       user_affiliation_ids);
-  chromeos::ChromeUserManager::Get()->SetUserAffiliation(
+  ChromeUserManager::Get()->SetUserAffiliation(
       AccountId::FromUserEmailGaiaId(kNonSAMLUserEmail, kNonSAMLUserGaiaId),
       user_affiliation_ids);
 

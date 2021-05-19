@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
 
 namespace tint {
@@ -27,15 +25,15 @@ const diag::Formatter::Style formatter_style{
 
 class ParserImplErrorResyncTest : public ParserImplTest {};
 
-#define EXPECT(SOURCE, EXPECTED)                                          \
-  do {                                                                    \
-    std::string source = SOURCE;                                          \
-    std::string expected = EXPECTED;                                      \
-    auto p = parser(source);                                              \
-    EXPECT_EQ(false, p->Parse());                                         \
-    EXPECT_EQ(true, p->diagnostics().contains_errors());                  \
-    EXPECT_EQ(expected,                                                   \
-              diag::Formatter(formatter_style).format(p->diagnostics())); \
+#define EXPECT(SOURCE, EXPECTED)                                               \
+  do {                                                                         \
+    std::string source = SOURCE;                                               \
+    std::string expected = EXPECTED;                                           \
+    auto p = parser(source);                                                   \
+    EXPECT_EQ(false, p->Parse());                                              \
+    auto diagnostics = p->builder().Diagnostics();                             \
+    EXPECT_EQ(true, diagnostics.contains_errors());                            \
+    EXPECT_EQ(expected, diag::Formatter(formatter_style).format(diagnostics)); \
   } while (false)
 
 TEST_F(ParserImplErrorResyncTest, BadFunctionDecls) {
@@ -121,7 +119,7 @@ struct S {
     a : i32;
     blah blah blah;
     b : i32;
-    [[block]] x : i32;
+    [[]] x : i32;
     c : i32;
 }
 )",
@@ -133,10 +131,9 @@ struct S {
          "    blah blah blah;\n"
          "         ^^^^\n"
          "\n"
-         "test.wgsl:7:7 error: struct decoration type cannot be used for "
-         "struct member\n"
-         "    [[block]] x : i32;\n"
-         "      ^^^^^\n");
+         "test.wgsl:7:7 error: empty decoration list\n"
+         "    [[]] x : i32;\n"
+         "      ^^\n");
 }
 
 // Check that the forward scan in resynchronize() stop at nested sync points.

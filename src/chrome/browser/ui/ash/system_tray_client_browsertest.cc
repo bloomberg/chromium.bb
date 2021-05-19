@@ -11,14 +11,14 @@
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
+#include "chrome/browser/ash/login/login_manager_test.h"
+#include "chrome/browser/ash/login/test/local_state_mixin.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
+#include "chrome/browser/ash/login/test/user_policy_mixin.h"
+#include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/test/local_state_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
-#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -55,13 +55,12 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseTest, TrayEnterprise) {
   // Managed devices show an item in the menu.
   EXPECT_TRUE(test_api->IsBubbleViewVisible(ash::VIEW_ID_TRAY_ENTERPRISE,
                                             true /* open_tray */));
-  base::string16 expected_text =
+  std::u16string expected_text =
       ash::features::IsManagedDeviceUIRedesignEnabled()
-          ? l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY,
-                                       base::UTF8ToUTF16("example.com"))
+          ? l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY, u"example.com")
           : l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
                                        ui::GetChromeOSDeviceName(),
-                                       base::UTF8ToUTF16("example.com"));
+                                       u"example.com");
   EXPECT_EQ(expected_text,
             test_api->GetBubbleViewTooltip(ash::VIEW_ID_TRAY_ENTERPRISE));
 
@@ -180,7 +179,7 @@ class SystemTrayClientClockUnknownPrefTest
   }
 
  protected:
-  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+  ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   chromeos::LocalStateMixin local_state_{&mixin_host_, this};
 };
 

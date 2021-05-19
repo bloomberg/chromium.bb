@@ -194,11 +194,6 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
   if (name == "periodic-background-sync")
     return CreatePermissionDescriptor(PermissionName::PERIODIC_BACKGROUND_SYNC);
   if (name == "screen-wake-lock") {
-    if (!RuntimeEnabledFeatures::ScreenWakeLockEnabled(
-            ExecutionContext::From(script_state))) {
-      exception_state.ThrowTypeError("Screen Wake Lock is not enabled.");
-      return nullptr;
-    }
     return CreatePermissionDescriptor(PermissionName::SCREEN_WAKE_LOCK);
   }
   if (name == "system-wake-lock") {
@@ -247,6 +242,14 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
       return nullptr;
     }
     return CreatePermissionDescriptor(PermissionName::DISPLAY_CAPTURE);
+  }
+  if (name == "file-handling") {
+    if (!RuntimeEnabledFeatures::FileHandlingEnabled(
+            ExecutionContext::From(script_state))) {
+      exception_state.ThrowTypeError("File Handling is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::FILE_HANDLING);
   }
   return nullptr;
 }

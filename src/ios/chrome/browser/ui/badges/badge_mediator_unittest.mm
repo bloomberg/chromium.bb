@@ -39,11 +39,9 @@
 namespace {
 // The two infobar types used in tests.  Both support badges.
 InfobarType kFirstInfobarType = InfobarType::kInfobarTypePasswordSave;
-base::string16 kFirstInfobarMessageText =
-    base::ASCIIToUTF16("FakeInfobarDelegate1");
+std::u16string kFirstInfobarMessageText = u"FakeInfobarDelegate1";
 InfobarType kSecondInfobarType = InfobarType::kInfobarTypePasswordUpdate;
-base::string16 kSecondInfobarMessageText =
-    base::ASCIIToUTF16("FakeInfobarDelegate2");
+std::u16string kSecondInfobarMessageText = u"FakeInfobarDelegate2";
 // Parameters used for BadgeMediator test fixtures.
 enum class TestParam {
   kNormal,
@@ -111,7 +109,7 @@ class BadgeMediatorTest : public testing::TestWithParam<TestParam> {
 
   // Adds an Infobar of |type| to the InfoBarManager and returns the infobar.
   // Pass in different |message_text| to avoid replacing existing infobar.
-  InfoBarIOS* AddInfobar(InfobarType type, base::string16 message_text) {
+  InfoBarIOS* AddInfobar(InfobarType type, std::u16string message_text) {
     std::unique_ptr<InfoBarIOS> added_infobar =
         std::make_unique<FakeInfobarIOS>(type, message_text);
     InfoBarIOS* infobar = added_infobar.get();

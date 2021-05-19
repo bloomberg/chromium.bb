@@ -16,6 +16,7 @@
 #include "av1/encoder/aq_cyclicrefresh.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/segmentation.h"
+#include "av1/encoder/tokenize.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/system_state.h"
 
@@ -146,11 +147,13 @@ int av1_cyclic_refresh_rc_bits_per_mb(const AV1_COMP *cpi, int i,
   return bits_per_mb;
 }
 
-void av1_cyclic_refresh_update_segment(const AV1_COMP *cpi,
-                                       MB_MODE_INFO *const mbmi, int mi_row,
-                                       int mi_col, BLOCK_SIZE bsize,
-                                       int64_t rate, int64_t dist, int skip) {
+void av1_cyclic_refresh_update_segment(const AV1_COMP *cpi, MACROBLOCK *const x,
+                                       int mi_row, int mi_col, BLOCK_SIZE bsize,
+                                       int64_t rate, int64_t dist, int skip,
+                                       RUN_TYPE dry_run) {
   const AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
@@ -189,12 +192,37 @@ void av1_cyclic_refresh_update_segment(const AV1_COMP *cpi,
   // Update entries in the cyclic refresh map with new_map_value, and
   // copy mbmi->segment_id into global segmentation map.
   // 8x8 is smallest coding block size for non-key frames.
-  for (int y = 0; y < ymis; y += 2)
-    for (int x = 0; x < xmis; x += 2) {
-      int map_offset = block_index + y * cm->mi_params.mi_cols + x;
+  const int sh = bw << 1;
+  for (int mi_y = 0; mi_y < ymis; mi_y += 2) {
+    for (int mi_x = 0; mi_x < xmis; mi_x += 2) {
+      int map_offset = block_index + mi_y * cm->mi_params.mi_cols + mi_x;
       cr->map[map_offset] = new_map_value;
       cpi->enc_seg.map[map_offset] = mbmi->segment_id;
     }
+    // Accumulate cyclic refresh update counters.
+    if (!dry_run && !frame_is_intra_only(cm)) {
+      if (cyclic_refresh_segment_id(mbmi->segment_id) == CR_SEGMENT_ID_BOOST1)
+        x->actual_num_seg1_blocks += sh;
+      else if (cyclic_refresh_segment_id(mbmi->segment_id) ==
+               CR_SEGMENT_ID_BOOST2)
+        x->actual_num_seg2_blocks += sh;
+    }
+  }
+}
+
+// Initializes counters used for cyclic refresh.
+void av1_init_cyclic_refresh_counters(MACROBLOCK *const x) {
+  x->actual_num_seg1_blocks = 0;
+  x->actual_num_seg2_blocks = 0;
+  x->cnt_zeromv = 0;
+}
+
+// Accumulate cyclic refresh counters.
+void av1_accumulate_cyclic_refresh_counters(
+    CYCLIC_REFRESH *const cyclic_refresh, const MACROBLOCK *const x) {
+  cyclic_refresh->actual_num_seg1_blocks += x->actual_num_seg1_blocks;
+  cyclic_refresh->actual_num_seg2_blocks += x->actual_num_seg2_blocks;
+  cyclic_refresh->cnt_zeromv += x->cnt_zeromv;
 }
 
 void av1_cyclic_refresh_postencode(AV1_COMP *const cpi) {
@@ -203,41 +231,15 @@ void av1_cyclic_refresh_postencode(AV1_COMP *const cpi) {
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   RATE_CONTROL *const rc = &cpi->rc;
   SVC *const svc = &cpi->svc;
-  unsigned char *const seg_map = cpi->enc_seg.map;
-  int cnt_zeromv = 0;
-  cr->actual_num_seg1_blocks = 0;
-  cr->actual_num_seg2_blocks = 0;
-  // 8X8 blocks are smallest partition used on delta frames.
-  for (int mi_row = 0; mi_row < mi_params->mi_rows; mi_row += 2) {
-    MB_MODE_INFO **mi = mi_params->mi_grid_base + mi_row * mi_params->mi_stride;
-    int sh = 2;
-    for (int mi_col = 0; mi_col < mi_params->mi_cols; mi_col += sh) {
-      sh = mi_size_wide[mi[0]->bsize];
-      MV mv = mi[0]->mv[0].as_mv;
-      if (cm->seg.enabled) {
-        int map_index = mi_row * mi_params->mi_cols + mi_col;
-        if (cyclic_refresh_segment_id(seg_map[map_index]) ==
-            CR_SEGMENT_ID_BOOST1)
-          cr->actual_num_seg1_blocks += sh << 1;
-        else if (cyclic_refresh_segment_id(seg_map[map_index]) ==
-                 CR_SEGMENT_ID_BOOST2)
-          cr->actual_num_seg2_blocks += sh << 1;
-      }
-      // Accumulate low_content_frame.
-      if (is_inter_block(mi[0]) && mi[0]->ref_frame[0] == LAST_FRAME &&
-          abs(mv.row) < 8 && abs(mv.col) < 8)
-        cnt_zeromv += sh << 1;
-      if (mi_col + sh < mi_params->mi_cols) {
-        mi += sh;
-      }
-    }
-  }
-  cnt_zeromv = 100 * cnt_zeromv / (mi_params->mi_rows * mi_params->mi_cols);
+  const int avg_cnt_zeromv =
+      100 * cr->cnt_zeromv / (mi_params->mi_rows * mi_params->mi_cols);
+
   if (!cpi->use_svc ||
       (cpi->use_svc &&
        !cpi->svc.layer_context[cpi->svc.temporal_layer_id].is_key_frame &&
        cpi->svc.spatial_layer_id == cpi->svc.number_spatial_layers - 1)) {
-    rc->avg_frame_low_motion = (3 * rc->avg_frame_low_motion + cnt_zeromv) / 4;
+    rc->avg_frame_low_motion =
+        (3 * rc->avg_frame_low_motion + avg_cnt_zeromv) / 4;
     // For SVC: set avg_frame_low_motion (only computed on top spatial layer)
     // to all lower spatial layers.
     if (cpi->use_svc &&

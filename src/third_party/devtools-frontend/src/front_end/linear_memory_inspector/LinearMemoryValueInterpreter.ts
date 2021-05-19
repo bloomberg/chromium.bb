@@ -13,8 +13,8 @@ import type {ValueDisplayData} from './ValueInterpreterDisplay.js';
 import {Endianness, endiannessToLocalizedString, ValueType, ValueTypeMode} from './ValueInterpreterDisplayUtils.js';
 import type {TypeToggleEvent, ValueInterpreterSettingsData} from './ValueInterpreterSettings.js';
 
-import * as i18n from '../i18n/i18n.js';
-export const UIStrings = {
+import * as i18n from '../core/i18n/i18n.js';
+const UIStrings = {
   /**
   *@description Tooltip text that appears when hovering over the gear button to open and close settings in the Linear Memory Inspector
   */
@@ -53,6 +53,7 @@ export interface LinearMemoryValueInterpreterData {
   valueTypes: Set<ValueType>;
   endianness: Endianness;
   valueTypeModes?: Map<ValueType, ValueTypeMode>;
+  memoryLength: number;
 }
 
 export class LinearMemoryValueInterpreter extends HTMLElement {
@@ -61,12 +62,13 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
   private buffer = new ArrayBuffer(0);
   private valueTypes: Set<ValueType> = new Set();
   private valueTypeModeConfig: Map<ValueType, ValueTypeMode> = new Map();
+  private memoryLength = 0;
   private showSettings = false;
 
   constructor() {
     super();
     this.shadow.adoptedStyleSheets = [
-      ...getStyleSheets('ui/inspectorCommon.css', {enableLegacyPatching: true}),
+      ...getStyleSheets('ui/legacy/inspectorCommon.css', {enableLegacyPatching: true}),
     ];
   }
 
@@ -75,6 +77,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
     this.buffer = data.value;
     this.valueTypes = data.valueTypes;
     this.valueTypeModeConfig = data.valueTypeModes || new Map();
+    this.memoryLength = data.memoryLength;
     this.render();
   }
 
@@ -135,7 +138,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
           display: block;
           height: 1px;
           margin-bottom: 12px;
-          background-color: var(--divider-color, #d0d0d0); /* stylelint-disable-line plugin/use_theme_colors */
+          background-color: var(--color-details-hairline, #d0d0d0); /* stylelint-disable-line plugin/use_theme_colors */
           /* See: crbug.com/1152736 for color variable migration. */
         }
       </style>
@@ -163,6 +166,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
                   valueTypes: this.valueTypes,
                   endianness: this.endianness,
                   valueTypeModes: this.valueTypeModeConfig,
+                  memoryLength: this.memoryLength,
                 } as ValueDisplayData}
               </devtools-linear-memory-inspector-interpreter-display>`}
         </div>
@@ -182,16 +186,21 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
 
   private renderEndiannessSetting(): LitHtml.TemplateResult {
     const onEnumSettingChange = this.onEndiannessChange.bind(this);
+    // Disabled until https://crbug.com/1079231 is fixed.
+    // clang-format off
     return html`
     <label data-endianness-setting="true" title=${i18nString(UIStrings.changeEndianness)}>
-      <select class="chrome-select" data-endianness="true" @change=${onEnumSettingChange}>
+      <select class="chrome-select"
+        style="border: none; background-color: transparent; cursor: pointer;"
+        data-endianness="true" @change=${onEnumSettingChange}>
         ${[Endianness.Little, Endianness.Big].map(endianness => {
-      return html`<option value=${endianness} .selected=${this.endianness === endianness}>${
-          endiannessToLocalizedString(endianness)}</option>`;
-    })}
+            return html`<option value=${endianness} .selected=${this.endianness === endianness}>${
+                endiannessToLocalizedString(endianness)}</option>`;
+        })}
       </select>
     </label>
     `;
+    // clang-format on
   }
 
   private onSettingsToggle(): void {

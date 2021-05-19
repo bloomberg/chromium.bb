@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/bind.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -132,7 +133,7 @@ TEST_F(MetadataTest, TestFloatMetadataPropertyAccess) {
       GetMemberMetaData(&test_obj, "FloatProperty");
 
   ASSERT_TRUE(member_data);
-  base::string16 member_value = member_data->GetValueAsString(&test_obj);
+  std::u16string member_value = member_data->GetValueAsString(&test_obj);
   CHECK_EQ(member_value, base::NumberToString16(start_value));
 }
 
@@ -153,7 +154,7 @@ TEST_F(MetadataTest, TestFloatPropertyChangedCallback) {
 
   CHECK(float_property_changed());
 
-  base::string16 member_value = member_data->GetValueAsString(&test_obj);
+  std::u16string member_value = member_data->GetValueAsString(&test_obj);
   CHECK_EQ(member_value, base::NumberToString16(start_value));
 }
 
@@ -216,12 +217,12 @@ TEST_F(MetadataTest, TestClassPropertyMetaData) {
   ClassPropertyMetaDataTestView view;
   gfx::Insets insets1(8, 8, 8, 8), insets2 = insets1;
 
-  std::map<std::string, base::string16> expected_kv = {
-      {"kIntKey", base::ASCIIToUTF16("-1")},
-      {"kOwnedInsetsKey1", base::ASCIIToUTF16("(not assigned)")},
-      {"kOwnedInsetsKey2", base::ASCIIToUTF16("(not assigned)")},
-      {"kInsetsKey1", base::ASCIIToUTF16("(not assigned)")},
-      {"kInsetsKey2", base::ASCIIToUTF16("(not assigned)")}};
+  std::map<std::string, std::u16string> expected_kv = {
+      {"kIntKey", u"-1"},
+      {"kOwnedInsetsKey1", u"(not assigned)"},
+      {"kOwnedInsetsKey2", u"(not assigned)"},
+      {"kInsetsKey1", u"(not assigned)"},
+      {"kInsetsKey2", u"(not assigned)"}};
 
   auto verify = [&]() {
     views::metadata::ClassMetaData* metadata = view.GetClassMetaData();
@@ -243,11 +244,11 @@ TEST_F(MetadataTest, TestClassPropertyMetaData) {
   view.SetProperty(kInsetsKey1, &insets1);
   view.SetProperty(kInsetsKey2, &insets2);
 
-  expected_kv = {{"kIntKey", base::ASCIIToUTF16("1")},
-                 {"kOwnedInsetsKey1", base::ASCIIToUTF16("8,8,8,8")},
-                 {"kOwnedInsetsKey2", base::ASCIIToUTF16("(assigned)")},
-                 {"kInsetsKey1", base::ASCIIToUTF16("8,8,8,8")},
-                 {"kInsetsKey2", base::ASCIIToUTF16("(assigned)")}};
+  expected_kv = {{"kIntKey", u"1"},
+                 {"kOwnedInsetsKey1", u"8,8,8,8"},
+                 {"kOwnedInsetsKey2", u"(assigned)"},
+                 {"kInsetsKey1", u"8,8,8,8"},
+                 {"kInsetsKey2", u"(assigned)"}};
 
   verify();
 }

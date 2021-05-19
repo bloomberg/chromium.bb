@@ -4,6 +4,7 @@
 <translation id="1282031177488366470">Pomozte zlepšit funkce a výkon Chromu</translation>
 <translation id="1314663809820920746">Všechny záložky, historii, hesla a další nastavení na tomto zařízení nadále uvidíte. Pokud provedete nějaké změny, do účtu Google se synchronizovat nebudou.</translation>
 <translation id="1479202195792305274">Když se přihlásíte k účtu Google, může vám Chrome kontrolovat hesla</translation>
+<translation id="1493827051843127077">Nastavte si Chrome jako výchozí prohlížeč a karty, hesla a platební údaje se budou synchronizovat na všechna vaše zařízení</translation>
 <translation id="1504372625950710826">Chrome nemůže vyhledat dostupné aktualizace. Zkuste zkontrolovat připojení k internetu.</translation>
 <translation id="1682483655351012182">Synchronizovat data prohlížeče Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -14,6 +15,7 @@
 <translation id="2342919707875585281">Chrome sdílí vaši polohu s weby, u kterých to povolíte.</translation>
 <translation id="2347208864470321755">Pokud je tato funkce zapnutá, bude Chrome nabízet překlad stránek v jiných jazycích pomocí Překladače Google. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">Nastavení Chromu jako výchozího prohlížeče</translation>
+<translation id="2561231791489583059">Používejte Chrome jako výchozí prohlížeč – ochrání vás před nebezpečnými weby a vaše hesla budou v bezpečí</translation>
 <translation id="2574249610672786438">Chcete-li mít své karty k dispozici všude, kde používáte Chrome, na všech zařízeních se přihlaste</translation>
 <translation id="2576431527583832481">Chrome je opět o něco lepší. K dispozici je nová verze.</translation>
 <translation id="257708665678654955">Chcete, aby Google Chrome příště pro stránky v jazyce <ph name="LANGUAGE_NAME" /> z tohoto webu nabízel překlad?</translation>
@@ -30,13 +32,12 @@
 <translation id="3522659714780527202">Chcete-li mít své karty k dispozici všude, kde používáte Chrome, zapněte synchronizaci</translation>
 <translation id="3533694711092285624">Nemáte žádná uložená hesla. Chrome může hesla zkontrolovat, pouze když si je uložíte.</translation>
 <translation id="3706101708757577809">Nyní můžete Chrome použít pokaždé, když klepnete na odkazy ve zprávách, dokumentech a ostatních aplikacích.</translation>
+<translation id="3720541637541300822">Při zavření Chromu zamknout anonymní karty</translation>
 <translation id="384394811301901750">Google Chrome teď nemůže použít fotoaparát</translation>
-<translation id="38949020760388809">Zvolte, zda z tohoto zařízení chcete vymazat data prohlížeče Chrome, nebo je ponechat.</translation>
 <translation id="3980220367029651214">Přepínáte účet pro synchronizaci z <ph name="USER_EMAIL1" /> na <ph name="USER_EMAIL2" />. Vaše existující data prohlížeče Chrome jsou spravována doménou <ph name="DOMAIN" />. Touto akcí svá data smažete z tohoto zařízení, v účtu <ph name="USER_EMAIL1" /> však vaše data zůstanou.</translation>
 <translation id="3984746313391923992">Organizace vyžaduje, abyste zůstali odhlášeni z Chromu.</translation>
 <translation id="3988789688219830639">Google Chrome nemá přístup k vašim fotkám nebo videím. Povolte přístup v systému iOS v Nastavení &gt; Soukromí &gt; Fotky.</translation>
 <translation id="4099578267706723511">Pomozte Chrome zlepšovat – posílejte Googlu statistiky o využívání a zprávy o selhání.</translation>
-<translation id="415767770115540173">Služby Google mohou v prohlížeči Chrome díky údajům o poloze fungovat lépe.</translation>
 <translation id="417201473131094001">V Chrome Canary není podporováno</translation>
 <translation id="424864128008805179">Odhlásit se z Chromu?</translation>
 <translation id="4249068189593983585">Tip pro Chrome. Další možnosti karet zobrazíte přidržením tlačítka Zobrazit karty, které najdete v dolní nebo horní části obrazovky.</translation>
@@ -51,7 +52,9 @@
 <translation id="5642200033778930880">Google Chrome nemůže používat fotoaparát v režimu Split View</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Chrome nemůže vyhledat dostupné aktualizace, protože jste offline</translation>
+<translation id="5716154293141027663">Otevřít Chrome při každém klepnutí na odkaz v jiné aplikaci</translation>
 <translation id="5854621639439811139">Tip pro Chrome. Některá tlačítka, například Zpět, Vpřed a Hledat, jsou teď v dolní části obrazovky.</translation>
+<translation id="5876773482963502140">Když Chromu povolíte přístup k poloze, bude ji odesílat webům, u kterých to povolíte. Weby o vaši polohu mohou žádat, pokud pro vás mají místní informace, například seznamy obchodů v okolí nebo místní zprávy.</translation>
 <translation id="6036420186814142909">Google Chrome obsahuje funkce, které pomáhají spravovat přenosy dat z internetu a umožňují zrychlit načítání webových stránek.
 <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="6181930887571472871">Přepnout na Chrome</translation>
@@ -71,6 +74,7 @@
 <translation id="7261678641327190792">Chrome nemůže zkontrolovat hesla</translation>
 <translation id="7265369419224458312">Karty, které máte otevřené v počítači, můžete používat přímo tady. Stačí v počítači otevřít Chrome, přejít do nabídky a vybrat možnost Přihlásit se do prohlížeče Chrome…</translation>
 <translation id="7272930098487145294">Pokud chcete ukládat obrázky, klepněte na Nastavení a povolte Chromu přidávat obrázky do vašich fotek</translation>
+<translation id="7275945473750112644">Váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, proto budou data prohlížeče Chrome z tohoto zařízení vymazána</translation>
 <translation id="7400722733683201933">O aplikaci Google Chrome</translation>
 <translation id="7501046334262221972">Pokud chcete Chrome nastavit jako výchozí prohlížeč, otevřete Nastavení. Klepněte na Výchozí prohlížeč a vyberte Chrome.</translation>
 <translation id="756809126120519699">Vymazání údajů Chromu</translation>
@@ -79,8 +83,9 @@
 <translation id="766361182512894255">Vaše heslo bylo vyzrazeno při porušení zabezpečení údajů. Chrome doporučuje heslo okamžitě změnit.</translation>
 <translation id="7698568245838009292">Chrome potřebuje přístup k fotoaparátu</translation>
 <translation id="7855730255114109580">Google Chrome je aktuální</translation>
-<translation id="8109233255338845204">Váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, proto budou data prohlížeče Chrome z tohoto zařízení vymazána.</translation>
+<translation id="8022947259858476807">Používejte Chrome jako výchozí prohlížeč k otevírání odkazů, vyhledávání z widgetů a automatickému vyplňování hesel v jiných aplikacích</translation>
 <translation id="8160472928944011082">Chrome nelze aktualizovat</translation>
+<translation id="8357607116237445042">Zvolte, zda z tohoto zařízení chcete vymazat data prohlížeče Chrome, nebo je ponechat</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Všechna práva vyhrazena.</translation>
 <translation id="840168496893712993">Některé doplňky způsobují selhání prohlížeče Chrome. Zkuste je prosím odinstalovat.</translation>
 <translation id="8459495907675268833">Vybraná data byla z Chromu a synchronizovaných zařízení odstraněna. Na stránce history.google.com mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google, například vyhledávací dotazy a aktivita z ostatních služeb Google.</translation>
@@ -89,5 +94,6 @@
   2. Klepněte na Výchozí prohlížeč.
   3. Vyberte Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="9135668017386497357">Když Chromu povolíte přístup k poloze, bude ji odesílat výchozímu vyhledávači a webům, u kterých to povolíte. Weby o vaši polohu mohou žádat, pokud pro vás mají místní informace, například seznamy obchodů v okolí nebo místní zprávy.</translation>
+<translation id="8736550665979974340">S prohlížečem Google Chrome budete v bezpečí</translation>
+<translation id="9112744793181547300">Nastavit Chrome jako výchozí prohlížeč?</translation>
 </translationbundle>

@@ -18,8 +18,10 @@
 namespace blink {
 
 class Hyphenation;
+class NGBlockBreakToken;
 class NGInlineBreakToken;
 class NGInlineItem;
+class NGLineInfo;
 
 // The line breaker needs to know which mode its in to properly handle floats.
 enum class NGLineBreakerMode { kContent, kMinContent, kMaxContent };
@@ -50,17 +52,7 @@ class CORE_EXPORT NGLineBreaker {
 
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.
-  inline void NextLine(NGLineInfo* line_info) {
-    NextLine(kIndefiniteSize, line_info);
-  }
-
-  // During the min/max size calculation we need a special percentage
-  // resolution block-size to pass to children/pass to children.
-  // TODO(layout-dev): Split into two methods (NextLine/NextLineForMinMax) or,
-  // better yet, subclass or templetize the line-breaker for Min/Max computation
-  // if we can do that without incurring a performance penalty
-  void NextLine(LayoutUnit percentage_resolution_block_size_for_min_max,
-                NGLineInfo*);
+  void NextLine(NGLineInfo*);
 
   bool IsFinished() const { return item_index_ >= Items().size(); }
 
@@ -77,7 +69,7 @@ class CORE_EXPORT NGLineBreaker {
   // this when computing both |kMinContent| and |kMaxContent|.
   using MaxSizeCache = Vector<LayoutUnit, 64>;
   void SetIntrinsicSizeOutputs(MaxSizeCache* max_size_cache,
-                               bool* depends_on_percentage_block_size_out);
+                               bool* depends_on_block_constraints_out);
 
   // Compute NGInlineItemResult for an open tag item.
   // Returns true if this item has edge and may have non-zero inline size.
@@ -110,8 +102,7 @@ class CORE_EXPORT NGLineBreaker {
                               NGLineInfo*);
   NGInlineItemResult* AddItem(const NGInlineItem&, NGLineInfo*);
 
-  void BreakLine(LayoutUnit percentage_resolution_block_size_for_min_max,
-                 NGLineInfo*);
+  void BreakLine(NGLineInfo*);
   void PrepareNextLine(NGLineInfo*);
 
   void ComputeLineLocation(NGLineInfo*) const;
@@ -134,6 +125,9 @@ class CORE_EXPORT NGLineBreaker {
   };
 
   void HandleText(const NGInlineItem& item, const ShapeResult&, NGLineInfo*);
+  // Split |item| by glyphs, and add them to |line_info|.
+  // This is for SVG <text>.
+  void SplitTextByGlyphs(const NGInlineItem& item, NGLineInfo* line_info);
   enum BreakResult { kSuccess, kOverflow };
   BreakResult BreakText(NGInlineItemResult*,
                         const NGInlineItem&,
@@ -169,7 +163,6 @@ class CORE_EXPORT NGLineBreaker {
   void HandleBidiControlItem(const NGInlineItem&, NGLineInfo*);
   void HandleAtomicInline(
       const NGInlineItem&,
-      LayoutUnit percentage_resolution_block_size_for_min_max,
       NGLineInfo*);
   bool ShouldForceCanBreakAfter(const NGInlineItemResult& item_result) const;
   void HandleFloat(const NGInlineItem&,
@@ -244,6 +237,9 @@ class CORE_EXPORT NGLineBreaker {
 
   NGLineBreakerMode mode_;
 
+  // True if node_ is an SVG <text>.
+  const bool is_svg_text_;
+
   // True if this line is the "first formatted line".
   // https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
   bool is_first_formatted_line_ = false;
@@ -315,7 +311,7 @@ class CORE_EXPORT NGLineBreaker {
   // Cache for computing |MinMaxSize|. See |MaxSizeCache|.
   MaxSizeCache* max_size_cache_ = nullptr;
 
-  bool* depends_on_percentage_block_size_out_ = nullptr;
+  bool* depends_on_block_constraints_out_ = nullptr;
 
   // Keep the last item |HandleTextForFastMinContent()| has handled. This is
   // used to fallback the last word to |HandleText()|.

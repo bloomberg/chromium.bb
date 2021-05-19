@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/overlays/infobar_banner/confirm/confirm_infobar_banner_overlay_mediator.h"
 
+#include <string>
+
 #include "base/feature_list.h"
-#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
@@ -31,8 +32,7 @@ TEST_F(ConfirmInfobarBannerOverlayMediatorTest,
        SetUpConsumerWithTitleAndMessage) {
   // Create an InfoBarIOS with a ConfirmInfoBarDelegate.
   std::unique_ptr<FakeInfobarDelegate> passed_delegate =
-      std::make_unique<FakeInfobarDelegate>(base::ASCIIToUTF16("title"),
-                                            base::ASCIIToUTF16("message"));
+      std::make_unique<FakeInfobarDelegate>(u"title", u"message");
   FakeInfobarDelegate* delegate = passed_delegate.get();
   InfoBarIOS infobar(InfobarType::kInfobarTypeConfirm,
                      std::move(passed_delegate));

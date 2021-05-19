@@ -280,6 +280,7 @@ gfx::QuadF MathUtil::InverseMapQuadToLocalSpace(
     const gfx::QuadF& device_quad) {
   gfx::Transform inverse_device_transform(gfx::Transform::kSkipInitialization);
   DCHECK(device_transform.IsInvertible());
+  DCHECK(device_transform.IsFlat());
   bool did_invert = device_transform.GetInverse(&inverse_device_transform);
   DCHECK(did_invert);
   bool clipped = false;

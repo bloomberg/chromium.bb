@@ -60,11 +60,30 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:branch_configuration/tester",
+    use_bbagent = True,
+)
+
+build_recipe(
     name = "recipe:celab",
 )
 
 build_recipe(
     name = "recipe:chromium",
+)
+
+build_recipe(
+    name = "recipe:chromium (bbagent)",
+    recipe = "chromium",
+    use_bbagent = True,
+)
+
+build_recipe(
+    name = "recipe:chromium/orchestrator",
+)
+
+build_recipe(
+    name = "recipe:chromium/compilator",
 )
 
 build_recipe(

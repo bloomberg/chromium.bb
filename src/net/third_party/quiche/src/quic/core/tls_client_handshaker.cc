@@ -58,7 +58,7 @@ bool TlsClientHandshaker::CryptoConnect() {
     // TODO(b/154162689) add PSK support to QUIC+TLS.
     std::string error_details =
         "QUIC client pre-shared keys not yet supported with TLS";
-    QUIC_BUG << error_details;
+    QUIC_BUG(quic_bug_10576_1) << error_details;
     CloseConnection(QUIC_HANDSHAKE_FAILED, error_details);
     return false;
   }
@@ -116,7 +116,8 @@ bool TlsClientHandshaker::PrepareZeroRttConfig(
       handshaker_delegate()->ProcessTransportParameters(
           *(cached_state->transport_params),
           /*is_resumption = */ true, &error_details) != QUIC_NO_ERROR) {
-    QUIC_BUG << "Unable to parse cached transport parameters.";
+    QUIC_BUG(quic_bug_10576_2)
+        << "Unable to parse cached transport parameters.";
     CloseConnection(QUIC_HANDSHAKE_FAILED,
                     "Client failed to parse cached Transport Parameters.");
     return false;
@@ -130,7 +131,7 @@ bool TlsClientHandshaker::PrepareZeroRttConfig(
     if (!cached_state->application_state ||
         !session()->ResumeApplicationState(
             cached_state->application_state.get())) {
-      QUIC_BUG << "Unable to parse cached application state.";
+      QUIC_BUG(quic_bug_10576_3) << "Unable to parse cached application state.";
       CloseConnection(QUIC_HANDSHAKE_FAILED,
                       "Client failed to parse cached application state.");
       return false;
@@ -150,11 +151,11 @@ bool TlsClientHandshaker::SetAlpn() {
       return true;
     }
 
-    QUIC_BUG << "ALPN missing";
+    QUIC_BUG(quic_bug_10576_4) << "ALPN missing";
     return false;
   }
   if (!std::all_of(alpns.begin(), alpns.end(), IsValidAlpn)) {
-    QUIC_BUG << "ALPN too long";
+    QUIC_BUG(quic_bug_10576_5) << "ALPN too long";
     return false;
   }
 
@@ -170,19 +171,24 @@ bool TlsClientHandshaker::SetAlpn() {
   success =
       success && (SSL_set_alpn_protos(ssl(), alpn, alpn_writer.length()) == 0);
   if (!success) {
-    QUIC_BUG << "Failed to set ALPN: "
-             << quiche::QuicheTextUtils::HexDump(absl::string_view(
-                    alpn_writer.data(), alpn_writer.length()));
+    QUIC_BUG(quic_bug_10576_6)
+        << "Failed to set ALPN: "
+        << quiche::QuicheTextUtils::HexDump(
+               absl::string_view(alpn_writer.data(), alpn_writer.length()));
     return false;
   }
 
-  // Enable ALPS.
+  // Enable ALPS only for versions that use HTTP/3 frames.
   if (enable_alps_) {
     for (const std::string& alpn_string : alpns) {
+      ParsedQuicVersion version = ParseQuicVersionString(alpn_string);
+      if (!version.IsKnown() || !version.UsesHttp3()) {
+        continue;
+      }
       if (SSL_add_application_settings(
               ssl(), reinterpret_cast<const uint8_t*>(alpn_string.data()),
               alpn_string.size(), nullptr, /* settings_len = */ 0) != 1) {
-        QUIC_BUG << "Failed to enable ALPS.";
+        QUIC_BUG(quic_bug_10576_7) << "Failed to enable ALPS.";
         return false;
       }
     }
@@ -281,12 +287,12 @@ int TlsClientHandshaker::num_sent_client_hellos() const {
 }
 
 bool TlsClientHandshaker::IsResumption() const {
-  QUIC_BUG_IF(!one_rtt_keys_available());
+  QUIC_BUG_IF(quic_bug_12736_1, !one_rtt_keys_available());
   return SSL_session_reused(ssl()) == 1;
 }
 
 bool TlsClientHandshaker::EarlyDataAccepted() const {
-  QUIC_BUG_IF(!one_rtt_keys_available());
+  QUIC_BUG_IF(quic_bug_12736_2, !one_rtt_keys_available());
   return SSL_early_data_accepted(ssl()) == 1;
 }
 
@@ -295,7 +301,7 @@ ssl_early_data_reason_t TlsClientHandshaker::EarlyDataReason() const {
 }
 
 bool TlsClientHandshaker::ReceivedInchoateReject() const {
-  QUIC_BUG_IF(!one_rtt_keys_available());
+  QUIC_BUG_IF(quic_bug_12736_3, !one_rtt_keys_available());
   // REJ messages are a QUIC crypto feature, so TLS always returns false.
   return false;
 }
@@ -443,7 +449,8 @@ void TlsClientHandshaker::FinishHandshake() {
   // Fill crypto_negotiated_params_:
   const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl());
   if (cipher) {
-    crypto_negotiated_params_->cipher_suite = SSL_CIPHER_get_value(cipher);
+    crypto_negotiated_params_->cipher_suite =
+        SSL_CIPHER_get_protocol_id(cipher);
   }
   crypto_negotiated_params_->key_exchange_group = SSL_get_curve_id(ssl());
   crypto_negotiated_params_->peer_signature_algorithm =
@@ -505,6 +512,8 @@ void TlsClientHandshaker::FinishHandshake() {
     if (alps_length > 0) {
       auto error = session()->OnAlpsData(alps_data, alps_length);
       if (error) {
+        // Calling CloseConnection() is safe even in case OnAlpsData() has
+        // already closed the connection.
         CloseConnection(
             QUIC_HANDSHAKE_FAILED,
             absl::StrCat("Error processing ALPS data: ", error.value()));
@@ -546,7 +555,7 @@ void TlsClientHandshaker::HandleZeroRttReject() {
 
 void TlsClientHandshaker::InsertSession(bssl::UniquePtr<SSL_SESSION> session) {
   if (!received_transport_params_) {
-    QUIC_BUG << "Transport parameters isn't received";
+    QUIC_BUG(quic_bug_10576_8) << "Transport parameters isn't received";
     return;
   }
   if (session_cache_ == nullptr) {

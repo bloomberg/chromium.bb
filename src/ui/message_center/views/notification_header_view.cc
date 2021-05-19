@@ -65,7 +65,7 @@ constexpr int kExpandIconSize = 8;
 constexpr gfx::Insets kExpandIconViewPadding(13, 2, 9, 0);
 
 // Bullet character. The divider symbol between different parts of the header.
-constexpr wchar_t kNotificationHeaderDivider[] = L" \u2022 ";
+constexpr char16_t kNotificationHeaderDivider[] = u" \u2022 ";
 
 // "Roboto-Regular, 12sp" is specified in the mock.
 constexpr int kHeaderTextFontSize = 12;
@@ -220,7 +220,7 @@ NotificationHeaderView::NotificationHeaderView(PressedCallback callback)
 
   // Summary text divider
   summary_text_divider_ = create_label();
-  summary_text_divider_->SetText(base::WideToUTF16(kNotificationHeaderDivider));
+  summary_text_divider_->SetText(kNotificationHeaderDivider);
   summary_text_divider_->SetVisible(false);
   detail_views_->AddChildView(summary_text_divider_);
 
@@ -232,7 +232,7 @@ NotificationHeaderView::NotificationHeaderView(PressedCallback callback)
 
   // Timestamp divider
   timestamp_divider_ = create_label();
-  timestamp_divider_->SetText(base::WideToUTF16(kNotificationHeaderDivider));
+  timestamp_divider_->SetText(kNotificationHeaderDivider);
   timestamp_divider_->SetVisible(false);
   detail_views_->AddChildView(timestamp_divider_);
 
@@ -275,7 +275,7 @@ void NotificationHeaderView::ClearAppIcon() {
   UpdateColors();
 }
 
-void NotificationHeaderView::SetAppName(const base::string16& name) {
+void NotificationHeaderView::SetAppName(const std::u16string& name) {
   app_name_view_->SetText(name);
 }
 
@@ -291,7 +291,7 @@ void NotificationHeaderView::SetProgress(int progress) {
   UpdateSummaryTextVisibility();
 }
 
-void NotificationHeaderView::SetSummaryText(const base::string16& text) {
+void NotificationHeaderView::SetSummaryText(const std::u16string& text) {
   summary_text_view_->SetText(text);
   has_progress_ = false;
   UpdateSummaryTextVisibility();
@@ -309,8 +309,7 @@ void NotificationHeaderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   node_data->role = ax::mojom::Role::kGenericContainer;
   node_data->SetName(app_name_view_->GetText());
-  node_data->SetDescription(summary_text_view_->GetText() +
-                            base::ASCIIToUTF16(" ") +
+  node_data->SetDescription(summary_text_view_->GetText() + u" " +
                             timestamp_view_->GetText());
 
   if (is_expanded_)
@@ -323,7 +322,7 @@ void NotificationHeaderView::OnThemeChanged() {
 }
 
 void NotificationHeaderView::SetTimestamp(base::Time timestamp) {
-  base::string16 relative_time;
+  std::u16string relative_time;
   base::TimeDelta next_update;
   GetRelativeTimeStringAndNextUpdateTime(timestamp - base::Time::Now(),
                                          &relative_time, &next_update);
@@ -389,7 +388,7 @@ void NotificationHeaderView::SetAppIconVisible(bool visible) {
   app_icon_view_->SetVisible(visible);
 }
 
-const base::string16& NotificationHeaderView::app_name_for_testing() const {
+const std::u16string& NotificationHeaderView::app_name_for_testing() const {
   return app_name_view_->GetText();
 }
 

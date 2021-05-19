@@ -17,10 +17,6 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/fx_dib.h"
 
-#define FX_EDIT_ISLATINWORD(u)                  \
-  (u == 0x2D || (u <= 0x005A && u >= 0x0041) || \
-   (u <= 0x007A && u >= 0x0061) || (u <= 0x02AF && u >= 0x00C0))
-
 class CFFL_FormFiller;
 class CPWL_EditImpl;
 class CPWL_EditImpl_Iterator;
@@ -437,7 +433,7 @@ class CPWL_EditImpl_Iterator {
 
  private:
   UnownedPtr<CPWL_EditImpl> m_pEdit;
-  CPDF_VariableText::Iterator* m_pVTIterator;
+  UnownedPtr<CPDF_VariableText::Iterator> m_pVTIterator;
 };
 
 class CPWL_EditImpl_Provider final : public CPDF_VariableText::Provider {
@@ -445,20 +441,11 @@ class CPWL_EditImpl_Provider final : public CPDF_VariableText::Provider {
   explicit CPWL_EditImpl_Provider(IPVT_FontMap* pFontMap);
   ~CPWL_EditImpl_Provider() override;
 
-  IPVT_FontMap* GetFontMap() const;
-
   // CPDF_VariableText::Provider:
   int GetCharWidth(int32_t nFontIndex, uint16_t word) override;
-  int32_t GetTypeAscent(int32_t nFontIndex) override;
-  int32_t GetTypeDescent(int32_t nFontIndex) override;
   int32_t GetWordFontIndex(uint16_t word,
                            int32_t charset,
                            int32_t nFontIndex) override;
-  int32_t GetDefaultFontIndex() override;
-  bool IsLatinWord(uint16_t word) override;
-
- private:
-  IPVT_FontMap* m_pFontMap;
 };
 
 #endif  // FPDFSDK_PWL_CPWL_EDIT_IMPL_H_

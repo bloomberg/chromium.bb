@@ -8,8 +8,10 @@
 
 #include <algorithm>
 
+#include "base/callback_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -62,6 +64,7 @@
 #include "chrome/android/chrome_jni_headers/ChromeAutocompleteProviderClient_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_android_user_data.h"
+#include "chrome/browser/flags/android/chrome_session_state.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -70,6 +73,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
+#endif
+
+#if defined(OS_ANDROID)
+using chrome::android::ActivityType;
 #endif
 
 namespace {
@@ -92,7 +99,7 @@ class AutocompleteClientTabAndroidUserData
     initialized_ = true;
     if (url.is_valid()) {
       stripped_url_ = AutocompleteMatch::GURLToStrippedGURL(
-          url, AutocompleteInput(), template_url_service, base::string16());
+          url, AutocompleteInput(), template_url_service, std::u16string());
     }
   }
 
@@ -152,7 +159,7 @@ class AutocompleteClientWebContentsUserData
       // inputs.
       last_committed_stripped_url_ = AutocompleteMatch::GURLToStrippedGURL(
           last_committed_url, AutocompleteInput(), template_url_service,
-          base::string16());
+          std::u16string());
     }
   }
 
@@ -185,8 +192,13 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
       storage_partition_(nullptr),
       omnibox_triggered_feature_service_(
           std::make_unique<OmniboxTriggeredFeatureService>()) {
-  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled())
-    pedal_provider_ = std::make_unique<OmniboxPedalProvider>(*this);
+  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled()) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    pedal_provider_ = std::make_unique<OmniboxPedalProvider>(*this, true);
+#else
+    pedal_provider_ = std::make_unique<OmniboxPedalProvider>(*this, false);
+#endif
+  }
 }
 
 ChromeAutocompleteProviderClient::~ChromeAutocompleteProviderClient() {
@@ -304,20 +316,20 @@ ChromeAutocompleteProviderClient::GetEmbedderRepresentationOfAboutScheme()
   return content::kChromeUIScheme;
 }
 
-std::vector<base::string16> ChromeAutocompleteProviderClient::GetBuiltinURLs() {
+std::vector<std::u16string> ChromeAutocompleteProviderClient::GetBuiltinURLs() {
   std::vector<std::string> chrome_builtins(
       chrome::kChromeHostURLs,
       chrome::kChromeHostURLs + chrome::kNumberOfChromeHostURLs);
   std::sort(chrome_builtins.begin(), chrome_builtins.end());
 
-  std::vector<base::string16> builtins;
+  std::vector<std::u16string> builtins;
 
   for (auto i(chrome_builtins.begin()); i != chrome_builtins.end(); ++i)
     builtins.push_back(base::ASCIIToUTF16(*i));
 
 #if !defined(OS_ANDROID)
-  base::string16 settings(base::ASCIIToUTF16(chrome::kChromeUISettingsHost) +
-                          base::ASCIIToUTF16("/"));
+  std::u16string settings(base::ASCIIToUTF16(chrome::kChromeUISettingsHost) +
+                          u"/");
   for (size_t i = 0; i < base::size(kChromeSettingsSubPages); i++) {
     builtins.push_back(settings +
                        base::ASCIIToUTF16(kChromeSettingsSubPages[i]));
@@ -327,9 +339,9 @@ std::vector<base::string16> ChromeAutocompleteProviderClient::GetBuiltinURLs() {
   return builtins;
 }
 
-std::vector<base::string16>
+std::vector<std::u16string>
 ChromeAutocompleteProviderClient::GetBuiltinsToProvideAsUserTypes() {
-  std::vector<base::string16> builtins_to_provide;
+  std::vector<std::u16string> builtins_to_provide;
   builtins_to_provide.push_back(
       base::ASCIIToUTF16(chrome::kChromeUIChromeURLsURL));
 #if !defined(OS_ANDROID)
@@ -393,7 +405,7 @@ std::string ChromeAutocompleteProviderClient::ProfileUserName() const {
 }
 
 void ChromeAutocompleteProviderClient::Classify(
-    const base::string16& text,
+    const std::u16string& text,
     bool prefer_keyword,
     bool allow_exact_keyword_match,
     metrics::OmniboxEventProto::PageClassification page_classification,
@@ -407,7 +419,7 @@ void ChromeAutocompleteProviderClient::Classify(
 
 void ChromeAutocompleteProviderClient::DeleteMatchingURLsForKeywordFromHistory(
     history::KeywordID keyword_id,
-    const base::string16& term) {
+    const std::u16string& term) {
   GetHistoryService()->DeleteMatchingURLsForKeyword(keyword_id, term);
 }
 
@@ -453,7 +465,7 @@ bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
   if (!input)
     input = &empty_input;
   const GURL stripped_url = AutocompleteMatch::GURLToStrippedGURL(
-      url, *input, GetTemplateURLService(), base::string16());
+      url, *input, GetTemplateURLService(), std::u16string());
   Browser* active_browser = BrowserList::GetInstance()->GetLastActive();
   content::WebContents* active_tab = nullptr;
   if (active_browser)
@@ -501,9 +513,9 @@ bool ChromeAutocompleteProviderClient::StrippedURLsAreEqual(
     input = &empty_input;
   const TemplateURLService* template_url_service = GetTemplateURLService();
   return AutocompleteMatch::GURLToStrippedGURL(
-             url1, *input, template_url_service, base::string16()) ==
+             url1, *input, template_url_service, std::u16string()) ==
          AutocompleteMatch::GURLToStrippedGURL(
-             url2, *input, template_url_service, base::string16());
+             url2, *input, template_url_service, std::u16string());
 }
 
 bool ChromeAutocompleteProviderClient::IsStrippedURLEqualToWebContentsURL(
@@ -530,11 +542,10 @@ TabAndroid* ChromeAutocompleteProviderClient::GetTabOpenWithURL(
   if (!input)
     input = &empty_input;
   const GURL stripped_url = AutocompleteMatch::GURLToStrippedGURL(
-      url, *input, GetTemplateURLService(), base::string16());
+      url, *input, GetTemplateURLService(), std::u16string());
 
   std::vector<TabModel*> tab_models;
-  for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
-    TabModel* model = *it;
+  for (TabModel* model : TabModelList::models()) {
     if (profile_ != model->GetProfile())
       continue;
 
@@ -577,15 +588,20 @@ ChromeAutocompleteProviderClient::GetAllHiddenAndNonCCTTabs(
   jclass tab_model_clazz = TabModelJniBridge::GetClazz(env);
   base::android::ScopedJavaLocalRef<jobjectArray> j_tab_model_array(
       env, env->NewObjectArray(tab_models.size(), tab_model_clazz, nullptr));
+  // Get all the hidden and non CCT tabs. Filter the tabs in CCT tabmodel first.
   for (size_t i = 0; i < tab_models.size(); ++i) {
+    ActivityType type = tab_models[i]->activity_type();
+    if (type == ActivityType::kCustomTab ||
+        type == ActivityType::kTrustedWebActivity) {
+      continue;
+    }
     env->SetObjectArrayElement(j_tab_model_array.obj(), i,
                                tab_models[i]->GetJavaObject().obj());
   }
 
-  // Get all the hidden and non CCT tabs.
   base::android::ScopedJavaLocalRef<jobjectArray> j_tabs =
-      Java_ChromeAutocompleteProviderClient_getAllHiddenAndNonCCTTabs(
-          env, j_tab_model_array);
+      Java_ChromeAutocompleteProviderClient_getAllHiddenTabs(env,
+                                                             j_tab_model_array);
   if (j_tabs.is_null())
     return std::vector<TabAndroid*>();
 

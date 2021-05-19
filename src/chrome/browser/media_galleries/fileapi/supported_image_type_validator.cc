@@ -20,6 +20,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
+#include "components/download/public/common/quarantine_connection.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -44,7 +45,7 @@ std::unique_ptr<std::string> ReadOnFileThread(const base::FilePath& path) {
     return result;
   }
 
-  result.reset(new std::string);
+  result = std::make_unique<std::string>();
   result->resize(file_info.size);
   if (file.Read(0, base::data(*result), file_info.size) != file_info.size) {
     result.reset();
@@ -116,8 +117,9 @@ void SupportedImageTypeValidator::StartPreWriteValidation(
 }
 
 SupportedImageTypeValidator::SupportedImageTypeValidator(
-    const base::FilePath& path)
-    : path_(path) {}
+    const base::FilePath& path,
+    download::QuarantineConnectionCallback quarantine_connection_callback)
+    : AVScanningFileValidator(quarantine_connection_callback), path_(path) {}
 
 void SupportedImageTypeValidator::OnFileOpen(
     std::unique_ptr<std::string> data) {

@@ -15,12 +15,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/enterprise/signals/device_info_fetcher.h"
-#include "chrome/browser/extensions/api/enterprise_reporting_private/context_info_fetcher.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 
 namespace extensions {
 
 namespace {
+#if !defined(OS_CHROMEOS)
 const char kEndpointVerificationRetrievalFailed[] =
     "Failed to retrieve the endpoint verification data.";
 const char kEndpointVerificationStoreFailed[] =
@@ -57,9 +57,37 @@ api::enterprise_reporting_private::DeviceInfo ToDeviceInfo(
 
   return device_info;
 }
+#endif  // !defined(OS_CHROMEOS)
+
+api::enterprise_reporting_private::ContextInfo ToContextInfo(
+    const enterprise_signals::ContextInfo& signals) {
+  api::enterprise_reporting_private::ContextInfo info;
+
+  info.browser_affiliation_ids = signals.browser_affiliation_ids;
+  info.profile_affiliation_ids = signals.profile_affiliation_ids;
+  info.on_file_attached_providers = signals.on_file_attached_providers;
+  info.on_file_downloaded_providers = signals.on_file_downloaded_providers;
+  info.on_bulk_data_entry_providers = signals.on_bulk_data_entry_providers;
+  info.on_security_event_providers = signals.on_security_event_providers;
+  switch (signals.realtime_url_check_mode) {
+    case safe_browsing::REAL_TIME_CHECK_DISABLED:
+      info.realtime_url_check_mode = extensions::api::
+          enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED;
+      break;
+    case safe_browsing::REAL_TIME_CHECK_FOR_MAINFRAME_ENABLED:
+      info.realtime_url_check_mode =
+          extensions::api::enterprise_reporting_private::
+              REALTIME_URL_CHECK_MODE_ENABLED_MAIN_FRAME;
+      break;
+  }
+  info.browser_version = signals.browser_version;
+
+  return info;
+}
 
 }  // namespace
 
+#if !defined(OS_CHROMEOS)
 namespace enterprise_reporting {
 const char kDeviceIdNotFound[] = "Failed to retrieve the device id.";
 }  // namespace enterprise_reporting
@@ -269,6 +297,8 @@ void EnterpriseReportingPrivateGetDeviceInfoFunction::OnDeviceInfoRetrieved(
       base::Value::FromUniquePtrValue(ToDeviceInfo(device_signals).ToValue())));
 }
 
+#endif  // !defined(OS_CHROMEOS)
+
 // getContextInfo
 
 EnterpriseReportingPrivateGetContextInfoFunction::
@@ -284,7 +314,7 @@ EnterpriseReportingPrivateGetContextInfoFunction::Run() {
   DCHECK(connectors_service);
 
   context_info_fetcher_ =
-      enterprise_reporting::ContextInfoFetcher::CreateInstance(
+      enterprise_signals::ContextInfoFetcher::CreateInstance(
           browser_context(), connectors_service);
   context_info_fetcher_->Fetch(base::BindOnce(
       &EnterpriseReportingPrivateGetContextInfoFunction::OnContextInfoRetrieved,
@@ -294,8 +324,9 @@ EnterpriseReportingPrivateGetContextInfoFunction::Run() {
 }
 
 void EnterpriseReportingPrivateGetContextInfoFunction::OnContextInfoRetrieved(
-    api::enterprise_reporting_private::ContextInfo context_info) {
-  Respond(OneArgument(base::Value::FromUniquePtrValue(context_info.ToValue())));
+    enterprise_signals::ContextInfo context_info) {
+  Respond(OneArgument(
+      base::Value::FromUniquePtrValue(ToContextInfo(context_info).ToValue())));
 }
 
 }  // namespace extensions

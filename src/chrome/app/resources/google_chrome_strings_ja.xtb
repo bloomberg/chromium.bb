@@ -11,13 +11,12 @@
 <translation id="1125124144982679672">Chrome はどなたが使用しますか？</translation>
 <translation id="1142745911746664600">Chrome を更新できません</translation>
 <translation id="1154147086299354128">Chrome で開く(&amp;O)</translation>
-<translation id="123620459398936149">Chrome OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Google Chrome OS 利用規約を拡張、変更、制限するものではありません。</translation>
 <translation id="1302523850133262269">Chrome は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
 <translation id="137466361146087520">Google Chrome ベータ版</translation>
 <translation id="1399397803214730675">新しいバージョンの Google Chrome が既にインストールされています。ソフトウェアが動作しない場合は、Google Chrome をアンインストールしてからもう一度お試しください。</translation>
 <translation id="1434626383986940139">Chrome Canary アプリ</translation>
-<translation id="147727933880789532">この拡張機能は、現在、セーフ ブラウジング保護強化機能の基準を満たしていないため、無効にすることをおすすめします。</translation>
+<translation id="1507198376417198979">新しい Chrome プロフィールをカスタマイズ</translation>
 <translation id="1516530951338665275">Google Chrome でペアリングを続行するには、Bluetooth へのアクセスが必要です。<ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1553358976309200471">Chrome を更新</translation>
 <translation id="1583073672411044740"><ph name="EXISTING_USER" /> さんはこの Chrome プロファイルにすでにログインしています。<ph name="USER_EMAIL_ADDRESS" /> 用の新しい Chrome プロファイルが作成されます。</translation>
@@ -25,7 +24,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> は危険なファイルであるため、Chrome でブロックしました。</translation>
 <translation id="1597911401261118146">パスワードにデータ侵害などセキュリティに関する問題がないかどうかを確認するには、<ph name="BEGIN_LINK" />Chrome にログイン<ph name="END_LINK" />してください。</translation>
 <translation id="1619887657840448962">Chrome をより安全にご利用いただくために、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない次の拡張機能を無効にしました。これは知らないうちに追加された可能性があります。</translation>
-<translation id="162629503687514352">Chrome OS でパスワードを同期できませんでした。</translation>
 <translation id="1628000112320670027">Chrome のヘルプを見る</translation>
 <translation id="1666409074978194368">アップデートが適用されました。更新を完了するには Google Chrome を再起動してください。シークレット ウィンドウは、再起動後は自動的に開かれません。</translation>
 <translation id="1674870198290878346">Chrome のシークレット ウインドウでリンクを開く(&amp;G)</translation>
@@ -90,14 +88,12 @@
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
 <translation id="3100998948628680988">Chrome プロフィールの名前を設定</translation>
 <translation id="3114643501466072395">他のパスワードにデータ侵害などセキュリティに関する問題がないかどうかを確認するには、<ph name="BEGIN_LINK" />Chrome にログイン<ph name="END_LINK" />してください。</translation>
-<translation id="3127818369811890733">Chrome OS でデータを同期できませんでした。</translation>
 <translation id="3140883423282498090">変更内容は次に Google Chrome を再起動したときに有効になります。</translation>
 <translation id="3149510190863420837">Chrome アプリ</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome は今すぐ再起動されます}=1{Chrome は 1 秒後に再起動されます}other{Chrome は # 秒後に再起動されます}}</translation>
 <translation id="3395323229510056640">Chrome OS のヘルプを見る</translation>
 <translation id="3396977131400919238">インストール中にオペレーティング システム エラーが発生しました。Google Chrome をダウンロード直してください。</translation>
-<translation id="3398288718845740432">Chrome メニューで非表示</translation>
 <translation id="3434246496373299699">Google アカウントでログインすると、Chrome がパスワードを確認できます。</translation>
 <translation id="3451115285585441894">Chrome に追加...</translation>
 <translation id="345171907106878721">Chrome に自分を追加</translation>
@@ -145,7 +141,6 @@
 <translation id="4571503333518166079">Chrome の通知設定に移動</translation>
 <translation id="459622048091363950">Chrome にアクセスを許可すると、ウェブサイトからアクセスをリクエストできるようになります。</translation>
 <translation id="4600710005438004015">Chrome を最新版に更新できませんでした。新しい機能とセキュリティ修正は適用されていません。</translation>
-<translation id="4631713731678262610">Chrome メニューで非表示</translation>
 <translation id="4633000520311261472">Chrome をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
 <translation id="4666328473657283332">お使いのすべてのデバイスで Chrome の設定やデータを使用するには、ログインしてください。ログインすると同期を有効にできます。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
@@ -192,6 +187,7 @@
 <translation id="6070348360322141662">セキュリティ強化のため、データは Google Chrome で暗号化されます</translation>
 <translation id="608006075545470555">このブラウザに仕事用プロファイルを追加</translation>
 <translation id="6113794647360055231">進化する Chrome</translation>
+<translation id="6145313976051292476">Chrome で PDF を開く</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
 <translation id="61852838583753520">Chrome OS を更新(&amp;C)</translation>
@@ -204,7 +200,6 @@
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="6568793831116033768">Chrome OS システム</translation>
-<translation id="6650333065969705433">Rosetta を使用して、保護されたメディアを再生するには、Chrome を再起動する必要があります。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
 <translation id="6679975945624592337">Google Chrome をバックグラウンドで実行する</translation>
 <translation id="6739177684496155661">新しい Chrome プロファイルで続行しますか？</translation>
@@ -216,7 +211,7 @@
 <translation id="6943584222992551122">この操作を行うと、このユーザーの閲覧データがこのデバイスから削除されます。データを復元するには、<ph name="USER_EMAIL" /> として Chrome にログインしてください。</translation>
 <translation id="6967962315388095737">mDNS トラフィックを許可する Google Chrome ベータ版のインバウンド ルールです。</translation>
 <translation id="6989339256997917931">Google Chrome が更新されましたが、30 日間以上使用されていません。</translation>
-<translation id="7054640471403081847">このパソコンは、ハードウェアのサポートが終了しているため、まもなく Google Chrome アップデートの受信を停止します。</translation>
+<translation id="7025800014283535195">こちらで Chrome プロフィールを切り替えることができます</translation>
 <translation id="7062128746136194023">保護者が Chrome の「サイト、アプリ、拡張機能の権限」をオフにしました。この <ph name="EXTENSION_TYPE_PARAMETER" /> を追加することはできません。</translation>
 <translation id="7098166902387133879">Google Chrome がマイクを使用しています。</translation>
 <translation id="7106741999175697885">タスク マネージャ - Google Chrome</translation>
@@ -269,7 +264,6 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">この仕事用プロファイルは個人用プロファイルとは別に管理されます。</translation>
 <translation id="8556340503434111824">Google クロームブラウザがバージョンアップ！是非お試しください。</translation>
-<translation id="861359755029082151">Rosetta をインストールすると、このページ上の保護されたメディアを Chrome で再生できるようになります。</translation>
 <translation id="8614913330719544658">Google Chrome が応答しません。今すぐ再起動しますか？</translation>
 <translation id="861702415419836452">周囲の 3D マップを作成するには、Chrome にカメラの使用を許可する必要があります</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome は 1 分後に再起動されます}other{Chrome は # 分後に再起動されます}}</translation>
@@ -283,7 +277,6 @@
 <translation id="8834965163890861871">Google Chrome でパスワードを編集しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="884296878221830158">この拡張機能では、Chrome の起動時、またはホーム ボタンのクリック時に表示されるページも制御されます。</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
-<translation id="8907709077090383765">保護されたメディアを Chrome で再生できるようにするには、Rosetta をインストールする必要があります。今すぐインストールしますか？</translation>
 <translation id="8914504000324227558">Chrome の再起動</translation>
 <translation id="8922193594870374009"><ph name="ORIGIN" /> から Android スマートフォンに番号を送信するには、両方のデバイスで Chrome にログインしてください。</translation>
 <translation id="8986207147630327271">このブラウザに仕事用プロファイルを追加し、管理者がこの仕事用プロファイルのみを管理できるようにします。</translation>
@@ -293,6 +286,8 @@
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="9138603949443464873">変更を適用するには Chrome を再起動してください</translation>
 <translation id="919706545465235479">同期を開始するには、Chrome を更新します</translation>
+<translation id="922152298093051471">Chrome をカスタマイズ</translation>
 <translation id="940313311831216333">お使いのすべてのデバイスで Chrome の設定やデータを使用するには、ログインして同期を有効にしてください。</translation>
 <translation id="989369509083708165">既定のブラウザは Google Chrome です</translation>
+<translation id="989816563149873169">Chrome プロフィールを切り替えるには、<ph name="SHORTCUT" /> を使用します</translation>
 </translationbundle>

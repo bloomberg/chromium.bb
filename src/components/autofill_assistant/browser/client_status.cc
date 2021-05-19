@@ -130,9 +130,6 @@ std::ostream& operator<<(std::ostream& out,
     case ProcessedActionStatusProto::AUTOFILL_INCOMPLETE:
       out << "AUTOFILL_INCOMPLETE";
       break;
-    case ProcessedActionStatusProto::TOO_MANY_CANDIDATES:
-      out << "TOO_MANY_CANDIDATES";
-      break;
     case ProcessedActionStatusProto::ELEMENT_MISMATCH:
       out << "ELEMENT_MISMATCH";
       break;
@@ -141,6 +138,9 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case ProcessedActionStatusProto::CLIENT_ID_RESOLUTION_FAILED:
       out << "CLIENT_ID_RESOLUTION_FAILED";
+      break;
+    case ProcessedActionStatusProto::PASSWORD_ORIGIN_MISMATCH:
+      out << "PASSWORD_ORIGIN_MISMATCH";
       break;
 
       // Intentionally no default case to make compilation fail if a new value

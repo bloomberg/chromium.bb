@@ -15,6 +15,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/account_manager_facade_factory.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -41,6 +42,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/account_manager_core/account_manager_facade.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
@@ -444,8 +446,6 @@ void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_CHANGE_PIN_BUTTON},
       {"lockScreenEditFingerprintsDescription",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_EDIT_FINGERPRINTS_DESCRIPTION},
-      {"lockScreenNumberFingerprints",
-       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NUM_FINGERPRINTS},
       {"lockScreenNone", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NONE},
       {"lockScreenFingerprintNewName",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME},
@@ -483,6 +483,13 @@ void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
       "lockScreenHideSensitiveNotificationsSupported",
       ash::features::IsLockScreenHideSensitiveNotificationsSupported());
 
+  html_source->AddString("lockScreenFingerprintNotice",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_NOTICE,
+                             ui::GetChromeOSDeviceName()));
+  html_source->AddString("fingerprintLearnMoreLink",
+                         chrome::kFingerprintLearnMoreURL);
+
   if (chromeos::features::IsAccountManagementFlowsV2Enabled()) {
     html_source->AddLocalizedString(
         "lockScreenTitleLoginLock",
@@ -506,25 +513,12 @@ void AddFingerprintListStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
-void AddFingerprintStrings(content::WebUIDataSource* html_source,
-                           bool are_fingerprint_settings_allowed) {
+void AddFingerprintResources(content::WebUIDataSource* html_source,
+                             bool are_fingerprint_settings_allowed) {
   html_source->AddBoolean("fingerprintUnlockEnabled",
                           are_fingerprint_settings_allowed);
   if (are_fingerprint_settings_allowed) {
-    html_source->AddInteger(
-        "fingerprintReaderLocation",
-        static_cast<int32_t>(chromeos::quick_unlock::GetFingerprintLocation()));
-
-    // To use lottie, the worker-src CSP needs to be updated for the web ui that
-    // is using it. Since as of now there are only a couple of webuis using
-    // lottie animations, this update has to be performed manually. As the usage
-    // increases, set this as the default so manual override is no longer
-    // required.
-    html_source->OverrideContentSecurityPolicy(
-        network::mojom::CSPDirectiveName::WorkerSrc,
-        "worker-src blob: 'self';");
-    html_source->AddResourcePath("finger_print.json",
-                                 IDR_LOGIN_FINGER_PRINT_TABLET_ANIMATION);
+    chromeos::quick_unlock::AddFingerprintResources(html_source);
   }
 
   int instruction_id, aria_label_id;
@@ -554,6 +548,16 @@ void AddFingerprintStrings(content::WebUIDataSource* html_source,
       aria_label_id =
           IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD_TOP_RIGHT_ARIA_LABEL;
       break;
+    case FingerprintLocation::RIGHT_SIDE:
+    case FingerprintLocation::LEFT_SIDE:
+    case FingerprintLocation::UNKNOWN:
+      instruction_id =
+          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD;
+
+      // TODO(crbug.com/1195489): Use a general aria label for unhandled
+      // fingerprint locations
+      aria_label_id =
+          IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD;
   }
   html_source->AddLocalizedString(
       "configureFingerprintInstructionLocateScannerStep", instruction_id);
@@ -669,13 +673,13 @@ void AddParentalControlStrings(content::WebUIDataSource* html_source,
   bool is_child = user_manager::UserManager::Get()->IsLoggedInAsChildUser();
   html_source->AddBoolean("isChild", is_child);
 
-  base::string16 tooltip;
+  std::u16string tooltip;
   if (is_child) {
     std::string custodian = supervised_user_service->GetCustodianName();
     std::string second_custodian =
         supervised_user_service->GetSecondCustodianName();
 
-    base::string16 child_managed_tooltip;
+    std::u16string child_managed_tooltip;
     if (second_custodian.empty()) {
       child_managed_tooltip = l10n_util::GetStringFUTF16(
           IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_MANAGED_BY_ONE_PARENT_TOOLTIP,
@@ -734,8 +738,10 @@ PeopleSection::PeopleSection(
         g_browser_process->platform_part()->GetAccountManagerFactory();
     account_manager_ = factory->GetAccountManager(profile->GetPath().value());
     DCHECK(account_manager_);
-
-    account_manager_->AddObserver(this);
+    account_manager_facade_ =
+        ::GetAccountManagerFacade(profile->GetPath().value());
+    DCHECK(account_manager_facade_);
+    account_manager_facade_observation_.Observe(account_manager_facade_);
     FetchAccounts();
   }
 
@@ -788,9 +794,6 @@ PeopleSection::~PeopleSection() {
 
   if (chromeos::features::IsSplitSettingsSyncEnabled() && sync_service_)
     sync_service_->RemoveObserver(this);
-
-  if (account_manager_)
-    account_manager_->RemoveObserver(this);
 }
 
 void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
@@ -835,7 +838,7 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   // Toggles the Chrome OS Account Manager submenu in the People section.
   html_source->AddBoolean("isAccountManagerEnabled",
-                          account_manager_ != nullptr);
+                          account_manager_facade_ != nullptr);
   html_source->AddBoolean(
       "isAccountManagementFlowsV2Enabled",
       chromeos::features::IsAccountManagementFlowsV2Enabled());
@@ -884,7 +887,7 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       html_source, kerberos_credentials_manager_);
   AddLockScreenPageStrings(html_source, profile()->GetPrefs());
   AddFingerprintListStrings(html_source);
-  AddFingerprintStrings(html_source, AreFingerprintSettingsAllowed());
+  AddFingerprintResources(html_source, AreFingerprintSettingsAllowed());
   AddSetupFingerprintDialogStrings(html_source);
   AddSetupPinDialogStrings(html_source);
   AddSyncControlsStrings(html_source);
@@ -905,10 +908,10 @@ void PeopleSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(
       std::make_unique<::settings::ProfileInfoHandler>(profile()));
 
-  if (account_manager_) {
+  if (account_manager_facade_) {
     web_ui->AddMessageHandler(
         std::make_unique<chromeos::settings::AccountManagerUIHandler>(
-            account_manager_, identity_manager_));
+            account_manager_, account_manager_facade_, identity_manager_));
   }
 
   if (chromeos::features::IsSplitSettingsSyncEnabled())
@@ -1070,12 +1073,13 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 }
 
 void PeopleSection::FetchAccounts() {
-  account_manager_->GetAccounts(
+  account_manager_facade_->GetAccounts(
       base::BindOnce(&PeopleSection::UpdateAccountManagerSearchTags,
                      weak_factory_.GetWeakPtr()));
 }
 
-void PeopleSection::OnTokenUpserted(const ::account_manager::Account& account) {
+void PeopleSection::OnAccountUpserted(
+    const ::account_manager::Account& account) {
   FetchAccounts();
 }
 

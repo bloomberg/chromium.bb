@@ -14,20 +14,16 @@
 
 #include "src/type/sampled_texture_type.h"
 
-#include <cassert>
-#include <sstream>
-
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::SampledTexture);
+TINT_INSTANTIATE_TYPEINFO(tint::type::SampledTexture);
 
 namespace tint {
 namespace type {
 
 SampledTexture::SampledTexture(TextureDimension dim, Type* type)
     : Base(dim), type_(type) {
-  assert(type_);
+  TINT_ASSERT(type_);
 }
 
 SampledTexture::SampledTexture(SampledTexture&&) = default;

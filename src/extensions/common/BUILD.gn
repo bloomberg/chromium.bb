@@ -39,14 +39,22 @@ if (enable_extensions) {
     disable_variants = true
 
     sources = [
+      "mojom/action_type.mojom",
+      "mojom/api_permission_id.mojom",
       "mojom/app_window.mojom",
       "mojom/channel.mojom",
+      "mojom/css_origin.mojom",
       "mojom/feature_session_type.mojom",
       "mojom/frame.mojom",
       "mojom/guest_view.mojom",
+      "mojom/host_id.mojom",
+      "mojom/injection_type.mojom",
       "mojom/keep_alive.mojom",
+      "mojom/manifest.mojom",
       "mojom/renderer.mojom",
+      "mojom/run_location.mojom",
       "mojom/url_pattern_set.mojom",
+      "mojom/view_type.mojom",
     ]
 
     public_deps = [
@@ -210,8 +218,6 @@ if (enable_extensions) {
       "guest_view/extensions_guest_view_messages.h",
       "hashed_extension_id.cc",
       "hashed_extension_id.h",
-      "host_id.cc",
-      "host_id.h",
       "identifiability_metrics.cc",
       "identifiability_metrics.h",
       "image_util.cc",
@@ -339,8 +345,8 @@ if (enable_extensions) {
       "value_counter.h",
       "verifier_formats.cc",
       "verifier_formats.h",
-      "view_type.cc",
-      "view_type.h",
+      "view_type_util.cc",
+      "view_type_util.h",
     ]
 
     configs += [
@@ -541,7 +547,7 @@ if (enable_extensions) {
     }
 
     data = [
-      "//extensions/common/permissions/api_permission.h",
+      "//extensions/common/mojom/api_permission_id.mojom",
       "//tools/metrics/histograms/enums.xml",
     ]
   }

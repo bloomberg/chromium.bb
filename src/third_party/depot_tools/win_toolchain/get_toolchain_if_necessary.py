@@ -22,6 +22,7 @@ from __future__ import print_function
 
 import argparse
 import hashlib
+import filecmp
 import json
 import os
 import platform
@@ -575,8 +576,11 @@ def main():
         os.path.join(abs_toolchain_target_dir, 'sysarm64'),
       ],
   }
-  with open(os.path.join(target_dir, '..', 'data.json'), 'w') as f:
-    json.dump(data, f)
+  data_json = json.dumps(data)
+  data_path = os.path.join(target_dir, '..', 'data.json')
+  if not os.path.exists(data_path) or open(data_path).read() != data_json:
+    with open(data_path, 'w') as f:
+      f.write(data_json)
 
   if got_new_toolchain:
     current_hashes = CalculateToolchainHashes(target_dir, False)
@@ -589,8 +593,9 @@ def main():
     SaveTimestampsAndHash(target_dir, args.desired_hash)
 
   if args.output_json:
-    shutil.copyfile(os.path.join(target_dir, '..', 'data.json'),
-                    args.output_json)
+    if (not os.path.exists(args.output_json) or
+        not filecmp.cmp(data_path, args.output_json)):
+      shutil.copyfile(data_path, args.output_json)
 
   EnableCrashDumpCollection()
 

@@ -32,7 +32,11 @@ namespace ash {
 
 namespace {
 
-// The preview are animated in and shifted with a delay that increases
+// When in drop target state, previews are shifted to indices which are offset
+// from their standard positions by this fixed amount.
+constexpr int kPreviewIndexOffsetForDropTarget = 3;
+
+// The previews are animated in and shifted with a delay that increases
 // incrementally. This is the delay increment.
 constexpr base::TimeDelta kPreviewItemUpdateDelayIncrement =
     base::TimeDelta::FromMilliseconds(50);
@@ -49,9 +53,11 @@ int GetPreviewSize() {
 
 }  // namespace
 
+// HoldingSpaceTrayIcon::ResizeAnimation ---------------------------------------
+
 // Animation for resizing the previews icon. The animation updates the icon
 // view's preferred size, which causes the status area (and the shelf) to
-// relayout.
+// re-layout.
 class HoldingSpaceTrayIcon::ResizeAnimation
     : public views::AnimationDelegateViews {
  public:
@@ -189,12 +195,58 @@ void HoldingSpaceTrayIcon::InitLayout() {
   previews_container_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
 }
 
+void HoldingSpaceTrayIcon::UpdateDropTargetState(bool is_drop_target,
+                                                 bool did_drop_to_pin) {
+  if (is_drop_target_ == is_drop_target)
+    return;
+
+  is_drop_target_ = is_drop_target;
+
+  // If the user performed a drag-and-drop to pin action, no handling is needed
+  // to transition the holding space tray icon out of drop target state. When
+  // the model updates, an `UpdatePreviews()` event will follow which will
+  // restore standard indexing to the new and existing previews.
+  if (!is_drop_target_ && did_drop_to_pin)
+    return;
+
+  DCHECK(!did_drop_to_pin);
+
+  for (size_t i = 0; i < item_ids_.size(); ++i) {
+    auto* preview = previews_by_id_.find(item_ids_[i])->second.get();
+
+    DCHECK(preview->index());
+    DCHECK(!preview->pending_index());
+
+    size_t pending_index = i;
+    base::TimeDelta delay;
+
+    if (is_drop_target_) {
+      // When in drop target state, preview indices are offset from their
+      // standard positions by a fixed amount.
+      pending_index += kPreviewIndexOffsetForDropTarget;
+    } else {
+      // When transitioning into drop target state, all previews shift out in
+      // sync. When transitioning out of drop target state, previews shift in
+      // with incremental `delay`.
+      delay = i * kPreviewItemUpdateDelayIncrement;
+    }
+
+    preview->set_pending_index(pending_index);
+    preview->AnimateShift(delay);
+  }
+
+  EnsurePreviewLayerStackingOrder();
+}
+
 void HoldingSpaceTrayIcon::UpdatePreviews(
     const std::vector<const HoldingSpaceItem*> items) {
   // Cancel any in progress updates.
   previews_update_weak_factory_.InvalidateWeakPtrs();
 
   item_ids_.clear();
+
+  // When in drop target state, indices are offset from their standard position.
+  const int offset = is_drop_target_ ? kPreviewIndexOffsetForDropTarget : 0;
 
   // Go over the new item list, create previews for new items, and assign new
   // indices to existing items.
@@ -208,13 +260,13 @@ void HoldingSpaceTrayIcon::UpdatePreviews(
 
     auto preview_it = previews_by_id_.find(item->id());
     if (preview_it != previews_by_id_.end()) {
-      preview_it->second->set_pending_index(index);
+      preview_it->second->set_pending_index(index + offset);
       continue;
     }
 
     auto preview = std::make_unique<HoldingSpaceTrayIconPreview>(
         shelf_, previews_container_, item);
-    preview->set_pending_index(index);
+    preview->set_pending_index(index + offset);
     previews_by_id_.emplace(item->id(), std::move(preview));
   }
 
@@ -223,6 +275,12 @@ void HoldingSpaceTrayIcon::UpdatePreviews(
   for (const auto& preview_pair : previews_by_id_) {
     if (!base::Contains(item_ids, preview_pair.first))
       items_to_remove.push_back(preview_pair.first);
+  }
+
+  if (!should_animate_updates_) {
+    for (auto& item_id : items_to_remove)
+      previews_by_id_.erase(item_id);
+    items_to_remove.clear();
   }
 
   if (items_to_remove.empty()) {
@@ -323,59 +381,72 @@ void HoldingSpaceTrayIcon::OnOldItemsRemoved() {
     for (auto& preview_pair : previews_by_id_)
       preview_pair.second->AdjustTransformForContainerSizeChange(adjustment);
 
-    resize_animation_ = std::make_unique<ResizeAnimation>(
-        this, previews_container_, initial_size, target_size);
-    resize_animation_->Start();
+    if (should_animate_updates_) {
+      resize_animation_ = std::make_unique<ResizeAnimation>(
+          this, previews_container_, initial_size, target_size);
+      resize_animation_->Start();
+    } else {
+      SetPreferredSize(target_size);
+    }
   }
 
-  // Note: the order is important - `AnimateInNewItems()` will set the new item
-  // indices, and `ShiftExistingItems()` depends on the preview index value to
-  // detect whether an item is new.
-  ShiftExistingItems();
-  AnimateInNewItems();
-
-  // Ensure that preview layers stacking matches their order in the item list.
-  for (auto& item_id : item_ids_) {
-    auto preview_it = previews_by_id_.find(item_id);
-    HoldingSpaceTrayIconPreview* preview_ptr = preview_it->second.get();
-    if (preview_ptr->layer())
-      previews_container_->layer()->StackAtBottom(preview_ptr->layer());
+  // Shift existing items to their new positions. Note that this must be done
+  // *prior* to animating in new items as `CalculateAnimateShiftParams()` relies
+  // on index being unset in order to distinguish new items from existing items.
+  for (const PreviewAnimationParams& params : CalculateAnimateShiftParams()) {
+    params.preview->AnimateShift(params.delay);
+    if (!should_animate_updates_ && params.preview->layer())
+      params.preview->layer()->GetAnimator()->StopAnimating();
   }
+
+  // Add new items. Note that this must be done *after* animating existing items
+  // as `CalculateAnimateInParams()` relies on index being unset in order to
+  // distinguish new items from existing items.
+  for (const PreviewAnimationParams& params : CalculateAnimateInParams()) {
+    params.preview->AnimateIn(params.delay);
+    if (!should_animate_updates_ && params.preview->layer())
+      params.preview->layer()->GetAnimator()->StopAnimating();
+  }
+
+  EnsurePreviewLayerStackingOrder();
 }
 
-void HoldingSpaceTrayIcon::ShiftExistingItems() {
-  // Items shifting should do so with an incremental delay. For items shifting
-  // towards the end of the icon, the delay should decrease with the index. For
-  // items shifting towards the start of the icon, the delay should increase
-  // with the index. This ensures that items moving into the same direction do
-  // not fly over each other.
+std::vector<HoldingSpaceTrayIcon::PreviewAnimationParams>
+HoldingSpaceTrayIcon::CalculateAnimateShiftParams() {
+  // Items shift with an incremental delay. For items shifting towards the end
+  // of the icon, the delay should decrease with the index. For items shifting
+  // towards the start of the icon, the delay should increase with the index.
+  // This ensures items moving in the same direction do not fly over each other.
+  std::vector<PreviewAnimationParams> animation_params;
+
   // Calculate the starting delay for items that will be shifting towards the
   // end of the icon.
   base::TimeDelta shift_out_delay;
   for (size_t i = 0; i < item_ids_.size(); ++i) {
-    auto preview_it = previews_by_id_.find(item_ids_[i]);
-    if (!preview_it->second->index().has_value())
+    auto* preview = previews_by_id_.find(item_ids_[i])->second.get();
+    if (!preview->index().has_value())
       continue;
-    DCHECK(preview_it->second->pending_index());
 
-    if (*preview_it->second->index() <=
-            kHoldingSpaceTrayIconMaxVisiblePreviews &&
-        *preview_it->second->index() < *preview_it->second->pending_index()) {
+    DCHECK(preview->pending_index());
+
+    if (*preview->index() <= kHoldingSpaceTrayIconMaxVisiblePreviews &&
+        *preview->index() < *preview->pending_index()) {
       shift_out_delay += kPreviewItemUpdateDelayIncrement;
     }
   }
 
   base::TimeDelta shift_in_delay;
   for (auto& item_id : item_ids_) {
-    auto preview_it = previews_by_id_.find(item_id);
-    HoldingSpaceTrayIconPreview* preview_ptr = preview_it->second.get();
+    auto* preview = previews_by_id_.find(item_id)->second.get();
 
     // Existing items have current index set.
-    if (preview_ptr->index().has_value()) {
-      const bool shift_out =
-          *preview_ptr->index() < *preview_ptr->pending_index();
+    if (preview->index().has_value()) {
+      const bool shift_out = *preview->index() < *preview->pending_index();
 
-      preview_ptr->AnimateShift(shift_out ? shift_out_delay : shift_in_delay);
+      animation_params.emplace_back(PreviewAnimationParams{
+          .preview = preview,
+          .delay = shift_out ? shift_out_delay : shift_in_delay,
+      });
 
       if (shift_out) {
         shift_out_delay -= kPreviewItemUpdateDelayIncrement;
@@ -386,34 +457,52 @@ void HoldingSpaceTrayIcon::ShiftExistingItems() {
       }
     }
   }
+
+  return animation_params;
 }
 
-void HoldingSpaceTrayIcon::AnimateInNewItems() {
+std::vector<HoldingSpaceTrayIcon::PreviewAnimationParams>
+HoldingSpaceTrayIcon::CalculateAnimateInParams() {
   // Items animating in should do so with a delay that increases in order of
-  // addtion, which is reverse of order in `items_` - calculate the max delay,
-  // which will be used for the first item.
+  // addition, which is reverse of order in `items_`.
+  std::vector<PreviewAnimationParams> animation_params;
+
+  // Calculate the max delay which will be used for the first item.
+  // NOTE: When animating in, an extra preview may be visible before items
+  // before it drops into their position.
   base::TimeDelta addition_delay;
-  // NOTE: When animating in, an exta preview may be visible before items before
-  // it drop into their position.
   for (size_t i = 0;
        i < kHoldingSpaceTrayIconMaxVisiblePreviews + 1 && i < item_ids_.size();
        ++i) {
-    auto preview_it = previews_by_id_.find(item_ids_[i]);
-    if (!preview_it->second->index().has_value())
+    auto* preview = previews_by_id_.find(item_ids_[i])->second.get();
+    if (!preview->index().has_value())
       addition_delay += kPreviewItemUpdateDelayIncrement;
   }
 
   for (auto& item_id : item_ids_) {
-    auto preview_it = previews_by_id_.find(item_id);
-    HoldingSpaceTrayIconPreview* preview_ptr = preview_it->second.get();
+    auto* preview = previews_by_id_.find(item_id)->second.get();
 
     // New items do not have current index set.
-    if (!preview_ptr->index().has_value()) {
-      preview_ptr->AnimateIn(addition_delay);
+    if (!preview->index().has_value()) {
+      animation_params.emplace_back(PreviewAnimationParams{
+          .preview = preview,
+          .delay = addition_delay,
+      });
+
       addition_delay -= kPreviewItemUpdateDelayIncrement;
       if (addition_delay < base::TimeDelta())
         addition_delay = base::TimeDelta();
     }
+  }
+
+  return animation_params;
+}
+
+void HoldingSpaceTrayIcon::EnsurePreviewLayerStackingOrder() {
+  for (const auto& item_id : item_ids_) {
+    auto* preview = previews_by_id_.find(item_id)->second.get();
+    if (preview->layer())
+      previews_container_->layer()->StackAtBottom(preview->layer());
   }
 }
 

@@ -15,11 +15,14 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.base.SplitCompatUtils;
+import org.chromium.chrome.browser.feed.FeedImageFetchClient;
+import org.chromium.chrome.browser.feed.FeedServiceBridge;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.version.ChromeVersionInfo;
 import org.chromium.chrome.browser.xsurface.ImageFetchClient;
 import org.chromium.chrome.browser.xsurface.PersistentKeyValueCache;
 import org.chromium.chrome.browser.xsurface.ProcessScopeDependencyProvider;
@@ -64,7 +67,7 @@ public class FeedProcessScopeDependencyProvider implements ProcessScopeDependenc
         CoreAccountInfo primaryAccount =
                 IdentityServicesProvider.get()
                         .getIdentityManager(Profile.getLastUsedRegularProfile())
-                        .getPrimaryAccountInfo(ConsentLevel.NOT_REQUIRED);
+                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN);
         return (primaryAccount == null) ? "" : primaryAccount.getEmail();
     }
 
@@ -132,6 +135,11 @@ public class FeedProcessScopeDependencyProvider implements ProcessScopeDependenc
         }
         return ChromeFeatureList.isEnabled(ChromeFeatureList.XSURFACE_METRICS_REPORTING)
                 && manager.isMetricsReportingEnabled();
+    }
+
+    @Override
+    public boolean isStableChannel() {
+        return ChromeVersionInfo.isStableBuild();
     }
 
     public static Context createFeedContext(Context context) {

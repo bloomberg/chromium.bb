@@ -103,8 +103,9 @@ void ChromeCaptureModeDelegate::OpenScreenshotInImageEditor(
   if (!profile)
     return;
 
-  apps::AppServiceProxy* proxy = apps::AppServiceProxyFactory::GetForProfile(
-      profile->GetOriginalProfile());
+  apps::AppServiceProxyChromeOs* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(
+          profile->GetOriginalProfile());
   apps::mojom::FilePathsPtr file_paths_ptr =
       apps::mojom::FilePaths::New(std::vector<base::FilePath>({file_path}));
 
@@ -173,7 +174,7 @@ ChromeCaptureModeDelegate::LaunchRecordingService() {
 }
 
 void ChromeCaptureModeDelegate::BindAudioStreamFactory(
-    mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
+    mojo::PendingReceiver<media::mojom::AudioStreamFactory> receiver) {
   content::GetAudioService().BindStreamFactory(std::move(receiver));
 }
 

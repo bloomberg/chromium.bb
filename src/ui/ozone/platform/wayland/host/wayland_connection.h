@@ -22,8 +22,13 @@ namespace gfx {
 class Point;
 }
 
+namespace wl {
+class WaylandProxy;
+}
+
 namespace ui {
 
+class DeviceHotplugEventObserver;
 class WaylandBufferManagerHost;
 class WaylandCursor;
 class WaylandCursorBufferListener;
@@ -156,7 +161,8 @@ class WaylandConnection {
     return gtk_primary_selection_device_manager_.get();
   }
 
-  ZwpPrimarySelectionDeviceManager* zwp_primary_selection_device_manager() const {
+  ZwpPrimarySelectionDeviceManager* zwp_primary_selection_device_manager()
+      const {
     return zwp_primary_selection_device_manager_.get();
   }
 
@@ -189,6 +195,8 @@ class WaylandConnection {
   // Creates WaylandKeyboard with the currently acquired protocol objects, if
   // possible. Returns true iff WaylandKeyboard was created.
   bool CreateKeyboard();
+
+  DeviceHotplugEventObserver* GetHotplugEventObserver();
 
   // wl_registry_listener
   static void Global(void* data,
@@ -255,6 +263,11 @@ class WaylandConnection {
 
   std::unique_ptr<WaylandDataDragController> data_drag_controller_;
   std::unique_ptr<WaylandWindowDragController> window_drag_controller_;
+
+  // Helper class that lets input emulation access some data of objects
+  // that Wayland holds. For example, wl_surface and others. It's only
+  // created when platform window test config is set.
+  std::unique_ptr<wl::WaylandProxy> wayland_proxy_;
 
   // Manages Wayland windows.
   WaylandWindowManager wayland_window_manager_;

@@ -4,6 +4,8 @@
 
 #include "extensions/browser/sandboxed_unpacker.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -85,10 +87,10 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
   }
 
   base::FilePath temp_dir() const { return temp_dir_; }
-  base::string16 unpack_error_message() const {
+  std::u16string unpack_error_message() const {
     if (error_)
       return error_->message();
-    return base::string16();
+    return std::u16string();
   }
   CrxInstallErrorType unpack_error_type() const {
     if (error_)
@@ -155,8 +157,8 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   void SetUp() override {
     ExtensionsTest::SetUp();
     ASSERT_TRUE(extensions_dir_.CreateUniqueTempDir());
-    in_process_utility_thread_helper_.reset(
-        new content::InProcessUtilityThreadHelper);
+    in_process_utility_thread_helper_ =
+        std::make_unique<content::InProcessUtilityThreadHelper>();
     // It will delete itself.
     client_ = new MockSandboxedUnpackerClient;
 
@@ -170,9 +172,10 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   }
 
   void InitSandboxedUnpacker() {
-    sandboxed_unpacker_ = new SandboxedUnpacker(
-        Manifest::INTERNAL, Extension::NO_FLAGS, extensions_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get(), client_);
+    sandboxed_unpacker_ =
+        new SandboxedUnpacker(mojom::ManifestLocation::kInternal,
+                              Extension::NO_FLAGS, extensions_dir_.GetPath(),
+                              base::ThreadTaskRunnerHandle::Get(), client_);
   }
 
   void TearDown() override {
@@ -226,7 +229,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     return client_->temp_dir().AppendASCII(kTempExtensionName);
   }
 
-  base::string16 GetInstallErrorMessage() const {
+  std::u16string GetInstallErrorMessage() const {
     return client_->unpack_error_message();
   }
 
@@ -338,9 +341,8 @@ TEST_F(SandboxedUnpackerTest, MissingMessagesFile) {
   SetupUnpacker("missing_messages_file.crx", "");
   EXPECT_TRUE(base::MatchPattern(
       GetInstallErrorMessage(),
-      base::ASCIIToUTF16("*") +
-          base::ASCIIToUTF16(manifest_errors::kLocalesMessagesFileMissing) +
-          base::ASCIIToUTF16("*_locales?en_US?messages.json'.")))
+      u"*" + base::ASCIIToUTF16(manifest_errors::kLocalesMessagesFileMissing) +
+          u"*_locales?en_US?messages.json'."))
       << GetInstallErrorMessage();
   ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
             GetInstallErrorType());

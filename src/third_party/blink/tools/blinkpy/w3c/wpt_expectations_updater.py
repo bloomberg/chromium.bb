@@ -372,14 +372,18 @@ class WPTExpectationsUpdater(object):
                 elif target[key] == source[key]:
                     pass
                 else:
-                    # Temporary logging for https://crbug.com/1154650.
+                    # We have two different SimpleTestResults for the same test
+                    # from two different builders. This can happen when a CQ bot
+                    # and a blink-rel bot run on the same platform. We union the
+                    # actual statuses from both builders.
                     _log.info(
-                        'Error: mismatching key values in merge_dicts.\n'
-                        'target[key]: %s\nsource[key]: %s', target[key],
-                        source[key])
-                    raise ValueError(
-                        'The key: %s already exists in the target dictionary.'
-                        % '.'.join(path))
+                        "Joining differing results for path %s, key %s\n target:%s\nsource:%s"
+                        % (path, key, target[key], source[key]))
+                    target[key] = SimpleTestResult(
+                        expected=target[key].expected,
+                        actual='%s %s' %
+                        (target[key].actual, source[key].actual),
+                        bug=target[key].bug)
             else:
                 target[key] = source[key]
         return target
@@ -517,16 +521,15 @@ class WPTExpectationsUpdater(object):
             |test_name|.
         """
         lines = []
-        # The set of ports with no results is assumed to have have no
-        # overlap with the set of port names passed in here.
-        assert set(configs) & set(self.configs_with_no_results) == set()
-
         # The ports with no results are generally ports of builders that
-        # failed, maybe for unrelated reasons. At this point, we add ports
-        # with no results to the list of platforms because we're guessing
-        # that this new expectation might be cross-platform and should
-        # also apply to any ports that we weren't able to get results for.
-        configs = tuple(list(configs) + self.configs_with_no_results)
+        # failed, maybe for unrelated reasons. It is possible to have multiple
+        # builders using the same port, where one gets results while the other
+        # does not.
+        # At this point, we add ports with no results to the list of platforms
+        # because we're guessing that this new expectation might be
+        # cross-platform and should also apply to any ports that we weren't able
+        # to get results for.
+        configs = tuple(set(configs) | set(self.configs_with_no_results))
 
         expectations = '[ %s ]' % \
             ' '.join(self.get_expectations(result, test_name))

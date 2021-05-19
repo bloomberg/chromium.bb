@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
+import * as Common from '../core/common/common.js';
+import * as Root from '../core/root/root.js';
+import * as SDK from '../core/sdk/sdk.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
-import * as Root from '../root/root.js';
-import * as SDK from '../sdk/sdk.js';
+import * as QuickOpen from '../quick_open/quick_open.js';
 import * as TextEditor from '../text_editor/text_editor.js';
-import * as UI from '../ui/ui.js';
+import * as UI from '../ui/legacy/legacy.js';
 import * as Workspace from '../workspace/workspace.js';
 
 // eslint-disable-next-line rulesdir/es_modules_import
 import type * as Sources from './sources.js';
 
-import * as i18n from '../i18n/i18n.js';
-export const UIStrings = {
+import * as i18n from '../core/i18n/i18n.js';
+const UIStrings = {
   /**
   *@description Command for showing the 'Sources' tool
   */
@@ -220,17 +221,9 @@ export const UIStrings = {
   */
   nextCallFrame: 'Next call frame',
   /**
-  *@description Text in the Shortcuts page to explain a keyboard shortcut (increment CSS unit by 1 in Styles pane)
-  */
-  incrementCssUnitBy: 'Increment CSS unit by 1',
-  /**
   *@description Text in the Shortcuts page to explain a keyboard shortcut (increment CSS unit by 10 in Styles pane)
   */
   incrementCssUnitByTen: 'Increment CSS unit by 10',
-  /**
-  *@description Text in the Shortcuts page to explain a keyboard shortcut (decrement CSS unit by 1 in Styles pane)
-  */
-  decrementCssUnitBy: 'Decrement CSS unit by 1',
   /**
   *@description Text in the Shortcuts page to explain a keyboard shortcut (decrement CSS unit by 10 in Styles pane)
   */
@@ -260,11 +253,19 @@ export const UIStrings = {
   */
   disableJavascriptSourceMaps: 'Disable JavaScript source maps',
   /**
-  *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+  *@description Title of a setting that can be invoked through the Command Menu.
+  *'tab moves focus' is the name of the setting, which means that when the user
+  *hits the tab key, the focus in the UI will be moved to the next part of the
+  *text editor, as opposed to inserting a tab character into the text in the
+  *text editor.
   */
   enableTabMovesFocus: 'Enable tab moves focus',
   /**
-  *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+  *@description Title of a setting that can be invoked through the Command Menu.
+  *'tab moves focus' is the name of the setting, which means that when the user
+  *hits the tab key, the focus in the UI will be moved to the next part of the
+  *text editor, as opposed to inserting a tab character into the text in the
+  *text editor.
   */
   disableTabMovesFocus: 'Disable tab moves focus',
   /**
@@ -364,6 +365,14 @@ export const UIStrings = {
   *@description Title of a setting under the Sources category in Settings
   */
   disallowScrollingPastEndOfFile: 'Disallow scrolling past end of file',
+  /**
+  *@description Title of the Filtered List WidgetProvider of Quick Open
+  */
+  goToSymbol: 'Go to symbol',
+  /**
+  *@description Text to open a file
+  */
+  openFile: 'Open file',
 };
 const str_ = i18n.i18n.registerUIStrings('sources/sources-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -443,7 +452,7 @@ UI.ViewManager.registerViewExtension({
   title: i18nLazyString(UIStrings.recordings),
   order: 8,
   persistence: UI.ViewManager.ViewPersistence.PERMANENT,
-  experiment: 'recorder',
+  experiment: Root.Runtime.ExperimentName.RECORDER,
   async loadView() {
     const Sources = await loadSourcesModule();
     return Sources.SourcesNavigator.RecordingsNavigatorView.instance();
@@ -468,7 +477,7 @@ UI.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString(UIStrings.showThreads),
   title: i18nLazyString(UIStrings.threads),
   persistence: UI.ViewManager.ViewPersistence.PERMANENT,
-  condition: '!sources.hide_thread_sidebar',
+  condition: Root.Runtime.ConditionName.NOT_SOURCES_HIDE_ADD_FOLDER,
   async loadView() {
     const Sources = await loadSourcesModule();
     return Sources.ThreadsSidebarPane.ThreadsSidebarPane.instance();
@@ -791,7 +800,12 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
+      platform: UI.ActionRegistration.Platforms.WindowsLinux,
       shortcut: 'Ctrl+Shift+A',
+    },
+    {
+      platform: UI.ActionRegistration.Platforms.Mac,
+      shortcut: 'Meta+Shift+A',
     },
   ],
 });
@@ -809,7 +823,12 @@ UI.ActionRegistration.registerActionExtension({
   },
   bindings: [
     {
+      platform: UI.ActionRegistration.Platforms.WindowsLinux,
       shortcut: 'Ctrl+Shift+E',
+    },
+    {
+      platform: UI.ActionRegistration.Platforms.Mac,
+      shortcut: 'Meta+Shift+E',
     },
   ],
 });
@@ -1597,7 +1616,7 @@ UI.ContextMenu.registerProvider({
     const Sources = await loadSourcesModule();
     return Sources.ScopeChainSidebarPane.OpenLinearMemoryInspector.instance();
   },
-  experiment: Root.Runtime.ExperimentName.WASM_DWARF_DEBUGGING,
+  experiment: undefined,
   contextTypes() {
     return [
       ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement,
@@ -1717,4 +1736,31 @@ UI.ContextMenu.registerItem({
   location: UI.ContextMenu.ItemLocation.MAIN_MENU_DEFAULT,
   actionId: 'sources.search',
   order: undefined,
+});
+
+QuickOpen.FilteredListWidget.registerProvider({
+  prefix: '@',
+  title: i18nLazyString(UIStrings.goToSymbol),
+  async provider() {
+    const Sources = await loadSourcesModule();
+    return Sources.OutlineQuickOpen.OutlineQuickOpen.instance();
+  },
+});
+
+QuickOpen.FilteredListWidget.registerProvider({
+  prefix: ':',
+  title: i18nLazyString(UIStrings.goToLine),
+  async provider() {
+    const Sources = await loadSourcesModule();
+    return Sources.GoToLineQuickOpen.GoToLineQuickOpen.instance();
+  },
+});
+
+QuickOpen.FilteredListWidget.registerProvider({
+  prefix: '',
+  title: i18nLazyString(UIStrings.openFile),
+  async provider() {
+    const Sources = await loadSourcesModule();
+    return Sources.OpenFileQuickOpen.OpenFileQuickOpen.instance();
+  },
 });

@@ -36,6 +36,8 @@ void CopyToNewLayerOnCopyRequestFinished(
     const gfx::Size& layer_size,
     std::unique_ptr<viz::CopyOutputResult> copy_result) {
   if (!copy_result || copy_result->IsEmpty()) {
+    if (!layer_copy_callback.MaybeValid())
+      return;
     std::move(layer_copy_callback).Run(nullptr);
     return;
   }
@@ -67,7 +69,7 @@ void CopyToLayerOnCopyRequestFinished(
 std::unique_ptr<ui::Layer> CreateLayerFromCopyOutputResult(
     std::unique_ptr<viz::CopyOutputResult> copy_result,
     const gfx::Size& layer_size) {
-  auto copy_layer = std::make_unique<ui::Layer>();
+  auto copy_layer = std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
   copy_layer->SetBounds(gfx::Rect(layer_size));
   CopyCopyOutputResultToLayer(std::move(copy_result), copy_layer.get());
   return copy_layer;

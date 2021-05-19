@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -401,7 +402,8 @@ class DevToolsWindow::OwnedMainWebContents {
       : keep_alive_(KeepAliveOrigin::DEVTOOLS_WINDOW,
                     KeepAliveRestartOption::DISABLED),
         web_contents_(std::move(web_contents)) {
-    Profile* profile = GetProfileForDevToolsWindow(web_contents_.get());
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext());
     DCHECK(profile);
     if (!profile->IsOffTheRecord()) {
       // ScopedProfileKeepAlive does not support OTR profiles.
@@ -455,6 +457,7 @@ DevToolsWindow::~DevToolsWindow() {
   UpdateBrowserWindow();
   UpdateBrowserToolbar();
 
+  capture_handle_.RunAndReset();
   owned_toolbox_web_contents_.reset();
 
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
@@ -714,17 +717,6 @@ DevToolsWindow* DevToolsWindow::OpenNodeFrontendWindow(Profile* profile) {
 }
 
 // static
-Profile* DevToolsWindow::GetProfileForDevToolsWindow(
-    content::WebContents* web_contents) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsPrimaryOTRProfile()) {
-    return profile;
-  }
-  return profile->GetOriginalProfile();
-}
-
-// static
 void DevToolsWindow::ToggleDevToolsWindow(
     content::WebContents* inspected_web_contents,
     bool force_open,
@@ -736,7 +728,8 @@ void DevToolsWindow::ToggleDevToolsWindow(
   DevToolsWindow* window = FindDevToolsWindow(agent.get());
   bool do_open = force_open;
   if (!window) {
-    Profile* profile = GetProfileForDevToolsWindow(inspected_web_contents);
+    Profile* profile = Profile::FromBrowserContext(
+        inspected_web_contents->GetBrowserContext());
     base::RecordAction(base::UserMetricsAction("DevTools_InspectRenderer"));
     std::string panel;
     switch (action.type()) {
@@ -1036,8 +1029,8 @@ DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
 
   // There is no inspected_web_contents in case of various workers.
   if (inspected_web_contents)
-    inspected_contents_observer_.reset(
-        new ObserverWithAccessor(inspected_web_contents));
+    inspected_contents_observer_ =
+        std::make_unique<ObserverWithAccessor>(inspected_web_contents);
 
   // Initialize docked page to be of the right size.
   if (can_dock_ && inspected_web_contents) {
@@ -1049,7 +1042,7 @@ DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
     }
   }
 
-  event_forwarder_.reset(new DevToolsEventForwarder(this));
+  event_forwarder_ = std::make_unique<DevToolsEventForwarder>(this);
 
   // Tag the DevTools main WebContents with its TaskManager specific UserData
   // so that it shows up in the task manager.
@@ -1282,6 +1275,7 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
     CHECK(can_dock_);
 
     // Ownership will be passed in DevToolsWindow::AddNewContents.
+    capture_handle_.RunAndReset();
     if (owned_toolbox_web_contents_)
       owned_toolbox_web_contents_.reset();
     toolbox_web_contents_ = new_contents;
@@ -1296,8 +1290,10 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
     // is resized when the frame is rendered. Force rendering of the toolbox at
     // all times, to make sure that a frame can be rendered even when the
     // inspected WebContents fully covers the toolbox. https://crbug.com/828307
-    toolbox_web_contents_->IncrementCapturerCount(gfx::Size(),
-                                                  /* stay_hidden */ false);
+    capture_handle_ =
+        toolbox_web_contents_->IncrementCapturerCount(gfx::Size(),
+                                                      /*stay_hidden=*/false,
+                                                      /*stay_awake=*/false);
   }
 }
 

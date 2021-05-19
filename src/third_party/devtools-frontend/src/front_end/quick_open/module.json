@@ -1,11 +1,8 @@
 {
   "dependencies": [
-    "ui"
+    "ui/legacy"
   ],
-  "modules": [
-    "quick_open-legacy.js"
-  ],
-  "resources": [
+    "resources": [
     "filteredListWidget.css"
   ]
 }

@@ -4,12 +4,12 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as i18n from '../i18n/i18n.js';
-import * as Platform from '../platform/platform.js';
-import * as SDK from '../sdk/sdk.js';
-import * as UI from '../ui/ui.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as UI from '../ui/legacy/legacy.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   * @description Text shown in the console object preview. Shown when the user is inspecting a
   * JavaScript object and there are multiple empty properties on the object (x =
@@ -219,7 +219,7 @@ export class RemoteObjectPreviewFormatter {
     function appendUndefined(index: number): void {
       const span = parentElement.createChild('span', 'object-value-undefined');
       const count = index - lastNonEmptyArrayIndex - 1;
-      // TODO(l10n): Plurals
+      // TODO(l10n): Plurals. Tricky because of a bug in the presubmit check for plurals.
       span.textContent = count !== 1 ? i18nString(UIStrings.emptyD, {PH1: count}) : i18nString(UIStrings.empty);
       elementsAdded = true;
     }
@@ -286,7 +286,7 @@ export class RemoteObjectPreviewFormatter {
     }
 
     if (type === 'string') {
-      UI.UIUtils.createTextChildren(span, '"', description.replace(/\n/g, '\u21B5'), '"');
+      UI.UIUtils.createTextChildren(span, JSON.stringify(description));
       return span;
     }
 

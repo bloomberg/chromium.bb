@@ -63,8 +63,8 @@ using scanner::CameraState;
 
 + (void)overrideSearchEngine:(NSString*)templateURL {
   TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16("testSearchEngine"));
-  data.SetKeyword(base::ASCIIToUTF16("testSearchEngine"));
+  data.SetShortName(u"testSearchEngine");
+  data.SetKeyword(u"testSearchEngine");
   GURL searchableURL(base::SysNSStringToUTF8(templateURL));
   data.SetURL(searchableURL.possibly_invalid_spec());
   data.favicon_url = TemplateURL::GenerateFaviconURL(searchableURL);
@@ -185,7 +185,7 @@ using scanner::CameraState;
 
 // Returns the expected title for the dialog which is presented for |state|.
 + (NSString*)dialogTitleForState:(CameraState)state {
-  base::string16 appName = base::UTF8ToUTF16(version_info::GetProductName());
+  std::u16string appName = base::UTF8ToUTF16(version_info::GetProductName());
   switch (state) {
     case scanner::CAMERA_AVAILABLE:
     case scanner::CAMERA_NOT_LOADED:

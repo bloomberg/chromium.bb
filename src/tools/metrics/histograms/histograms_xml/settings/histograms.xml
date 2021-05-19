@@ -40,7 +40,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Settings.GivenShowHomeButton_HomePageIsNewTabPage"
-    enum="Boolean" expires_after="2021-07-04">
+    enum="Boolean" expires_after="2021-09-05">
   <owner>mpearson@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -71,7 +71,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Settings.HomePageEngineType" enum="OmniboxSearchEngineType"
-    expires_after="2021-06-30">
+    expires_after="2021-08-29">
   <owner>mpearson@chromium.org</owner>
   <owner>csharp@chromium.org</owner>
   <summary>
@@ -137,7 +137,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Settings.PinnedTabEngineTypes" enum="OmniboxSearchEngineType"
-    expires_after="2021-06-30">
+    expires_after="2021-08-29">
   <owner>mpearson@chromium.org</owner>
   <owner>csharp@chromium.org</owner>
   <summary>
@@ -297,7 +297,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Settings.ShowHomeButton" enum="BooleanEnabled"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>mpearson@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -363,7 +363,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Settings.StartupPageEngineTypes"
-    enum="OmniboxSearchEngineType" expires_after="2021-06-30">
+    enum="OmniboxSearchEngineType" expires_after="2021-08-29">
   <owner>mpearson@chromium.org</owner>
   <owner>csharp@chromium.org</owner>
   <summary>
@@ -376,7 +376,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Settings.StartupPageLoadSettings" enum="SessionStartupPref"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>mpearson@chromium.org</owner>
   <owner>ramyan@chromium.org</owner>
   <owner>tiborg@chromium.org</owner>

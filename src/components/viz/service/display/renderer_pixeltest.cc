@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
@@ -29,6 +30,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/service/display/delegated_ink_point_pixel_test_helper.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/software_renderer.h"
@@ -902,6 +904,9 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::ValuesIn(GetGpuRendererTypesNoDawn()),
                          testing::PrintToStringParamName());
 
+// GetGpuRendererTypesNoDawn() can return an empty list, e.g. on Fuchsia ARM64.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(GPURendererPixelTest);
+
 // Provides an exact comparator for GLRenderer and fuzzy comparator for Skia
 // based (eg. SoftwareRenderer and SkiaRenderer).
 class FuzzyForSkiaOnlyPixelComparator : public cc::PixelComparator {
@@ -1388,6 +1393,9 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::ValuesIn(GetGpuRendererTypesNoDawn()),
                          testing::PrintToStringParamName());
 
+// GetGpuRendererTypesNoDawn() can return an empty list, e.g. on Fuchsia ARM64.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(IntersectingVideoQuadPixelTest);
+
 class IntersectingQuadSoftwareTest : public IntersectingQuadPixelTest {};
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -1856,6 +1864,9 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::ValuesIn(GetGpuRendererTypesNoDawn()),
                          testing::PrintToStringParamName());
 
+// GetGpuRendererTypesNoDawn() can return an empty list, e.g. on Fuchsia ARM64.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(VideoRendererPixelTest);
+
 TEST_P(VideoRendererPixelTest, OffsetYUVRect) {
   gfx::Rect rect(this->device_viewport_size_);
 
@@ -2092,8 +2103,7 @@ TEST_P(VideoRendererPixelTest, TwoColorY16Rect) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
-TEST_P(RendererPixelTest, DISABLED_FastPassColorFilterAlpha) {
+TEST_P(RendererPixelTest, FastPassColorFilterAlpha) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   AggregatedRenderPassId root_pass_id{1};
@@ -2170,8 +2180,7 @@ TEST_P(RendererPixelTest, DISABLED_FastPassColorFilterAlpha) {
       FuzzyForSkiaOnlyPixelComparator(renderer_type())));
 }
 
-// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
-TEST_P(RendererPixelTest, DISABLED_FastPassSaturateFilter) {
+TEST_P(RendererPixelTest, FastPassSaturateFilter) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   AggregatedRenderPassId root_pass_id{1};
@@ -4305,6 +4314,10 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::ValuesIn(GetGpuRendererTypes()),
                          testing::PrintToStringParamName());
 
+// GetGpuRendererTypes() can return an empty list, e.g. on Fuchsia ARM64.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
+    RendererPixelTestWithFlippedOutputSurface);
+
 TEST_P(RendererPixelTestWithFlippedOutputSurface, ExplicitFlipTest) {
   // This draws a blue rect above a yellow rect with an inverted output surface.
   gfx::Rect viewport_rect(this->device_viewport_size_);
@@ -4964,6 +4977,10 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::ValuesIn(GetGpuRendererTypes()),
                          testing::PrintToStringParamName());
 
+// GetGpuRendererTypes() can return an empty list, e.g. on Fuchsia ARM64.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
+    RendererPixelTestWithOverdrawFeedback);
+
 using PrimaryID = gfx::ColorSpace::PrimaryID;
 using TransferID = gfx::ColorSpace::TransferID;
 
@@ -5169,6 +5186,9 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::ValuesIn(dst_color_spaces),
                      testing::Bool()));
 
+// GetGpuRendererTypesNoDawn() can return an empty list, e.g. on Fuchsia ARM64.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ColorTransformPixelTest);
+
 class DelegatedInkTest : public VizPixelTestWithParam,
                          public DelegatedInkPointPixelTestHelper {
  public:
@@ -5181,6 +5201,11 @@ class DelegatedInkTest : public VizPixelTestWithParam,
     EXPECT_TRUE(VizPixelTestWithParam::renderer_->use_partial_swap());
 
     SetRendererAndCreateInkRenderer(VizPixelTestWithParam::renderer_.get());
+  }
+
+  void EnablePrediction() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kDrawPredictedInkPoint, switches::kDraw1Point12Ms);
   }
 
   std::unique_ptr<AggregatedRenderPass> CreateTestRootRenderPass(
@@ -5224,9 +5249,13 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::ValuesIn(GetRendererTypesSkiaOnly()),
                          testing::PrintToStringParamName());
 
+// GetRendererTypesSkiaOnly() can return an empty list, e.g. on Fuchsia ARM64.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(DelegatedInkTest);
+
 // Draw a single trail and erase it, making sure that no bits of trail are left
 // behind.
 TEST_P(DelegatedInkTest, DrawOneTrailAndErase) {
+  EnablePrediction();
   // Send some DelegatedInkPoints, numbers arbitrary. This will predict no
   // points, so a trail made of 3 points will be drawn.
   const gfx::PointF kFirstPoint(10, 10);
@@ -5251,6 +5280,7 @@ TEST_P(DelegatedInkTest, DrawOneTrailAndErase) {
 
 // Confirm that drawing a second trail completely removes the first trail.
 TEST_P(DelegatedInkTest, DrawTwoTrailsAndErase) {
+  EnablePrediction();
   // TODO(crbug.com/1021566): Enable this test for SkiaRenderer Dawn.
   if (renderer_type() == RendererType::kSkiaDawn)
     return;
@@ -5288,6 +5318,7 @@ TEST_P(DelegatedInkTest, DrawTwoTrailsAndErase) {
 
 // Confirm that the trail can't be drawn beyond the presentation area.
 TEST_P(DelegatedInkTest, TrailExtendsBeyondPresentationArea) {
+  EnablePrediction();
   // TODO(crbug.com/1021566): Enable this test for SkiaRenderer Dawn.
   if (renderer_type() == RendererType::kSkiaDawn)
     return;
@@ -5318,6 +5349,7 @@ TEST_P(DelegatedInkTest, TrailExtendsBeyondPresentationArea) {
 // Confirm that the trail appears on top of everything, including batched quads
 // that are drawn as part of the call to FinishDrawingQuadList.
 TEST_P(DelegatedInkTest, DelegatedInkTrailAfterBatchedQuads) {
+  EnablePrediction();
   gfx::Rect rect(this->device_viewport_size_);
 
   AggregatedRenderPassId id{1};
@@ -5360,6 +5392,7 @@ TEST_P(DelegatedInkTest, DelegatedInkTrailAfterBatchedQuads) {
 
 // Confirm that delegated ink trails are not drawn on non-root render passes.
 TEST_P(DelegatedInkTest, SimpleTrailNonRootRenderPass) {
+  EnablePrediction();
   gfx::Rect rect(this->device_viewport_size_);
 
   AggregatedRenderPassId child_id{2};
@@ -5408,6 +5441,7 @@ TEST_P(DelegatedInkTest, SimpleTrailNonRootRenderPass) {
 // Draw two different trails that are made up of sets of DelegatedInkPoints with
 // different pointer IDs. All numbers arbitrarily chosen.
 TEST_P(DelegatedInkTest, DrawTrailsWithDifferentPointerIds) {
+  EnablePrediction();
   const int32_t kPointerId1 = 2;
   const int32_t kPointerId2 = 100;
 
@@ -5455,6 +5489,32 @@ TEST_P(DelegatedInkTest, DrawTrailsWithDifferentPointerIds) {
                         kPointerId2StartTime, kPresentationArea);
   EXPECT_TRUE(
       DrawAndTestTrail(FILE_PATH_LITERAL("delegated_ink_pointer_id_2.png")));
+
+  // The metadata should have been cleared after drawing, so confirm that there
+  // is no trail after another draw.
+  EXPECT_TRUE(DrawAndTestTrail(FILE_PATH_LITERAL("white.png")));
+}
+
+// Test to confirm that predicted points are not drawn if prediction is not
+// enabled, since it is disabled by default.
+TEST_P(DelegatedInkTest, DrawTrailWithPredictionDisabled) {
+  // Send some DelegatedInkPoints, numbers arbitrary. Sending 4 points will
+  // cause prediction to be available.
+  const gfx::PointF kFirstPoint(20, 35);
+  const base::TimeTicks kFirstTimestamp = base::TimeTicks::Now();
+  CreateAndSendPoint(kFirstPoint, kFirstTimestamp);
+  CreateAndSendPointFromLastPoint(gfx::PointF(56, 92));
+  CreateAndSendPointFromLastPoint(gfx::PointF(101, 145));
+  CreateAndSendPointFromLastPoint(gfx::PointF(106, 170));
+
+  // Provide the metadata required to draw the trail, matching the first
+  // DelegatedInkPoint sent.
+  CreateAndSendMetadata(kFirstPoint, 3.5f, SK_ColorCYAN, kFirstTimestamp,
+                        gfx::RectF(0, 0, 200, 200));
+
+  // Confirm that the trail was drawn without prediction.
+  EXPECT_TRUE(DrawAndTestTrail(
+      FILE_PATH_LITERAL("delegated_ink_trail_no_prediction.png")));
 
   // The metadata should have been cleared after drawing, so confirm that there
   // is no trail after another draw.

@@ -15,13 +15,16 @@
 # the string "cpython3/" and ends with the CIPD tag "version:VERSION".
 # It uses this to extract VERSION.
 
-$VerifiedPlatform windows-386 windows-amd64 linux-amd64 mac-amd64
+$VerifiedPlatform windows-amd64 linux-amd64 mac-amd64
 
+# TODO(https://crbug.com/1184768): Remove `=amd64` once mac/arm64 python exists
 @Subdir python
-infra/3pp/tools/cpython/${platform} version:2.7.17.chromium.22
+infra/3pp/tools/cpython/${os}-${arch=amd64} version:2.7.17.chromium.22
 
+# TODO(https://crbug.com/1103326): Remove `=amd64` once mac/arm64 python3 exists
 @Subdir python3
-infra/3pp/tools/cpython3/${os}-${arch} version:3.8.0.chromium.8
+infra/3pp/tools/cpython3/${os}-${arch=amd64} version:3.8.0.chromium.8
 
+# TODO(https://crbug.com/1184766): Remove `=amd64` once mac/arm64 git exists
 @Subdir git
-infra/3pp/tools/git/${os}-${arch} version:2.28.0.chromium.6
+infra/3pp/tools/git/${os}-${arch=amd64} version:2@2.30.2.chromium.6

@@ -91,8 +91,8 @@ void PrimaryAccountObserver::OnPrimaryAccountChanged(
 }
 
 void PrimaryAccountObserver::UpdatePrimaryAccountIfNeeded() {
-  CoreAccountInfo primary_account = identity_manager_->GetPrimaryAccountInfo(
-      signin::ConsentLevel::kNotRequired);
+  CoreAccountInfo primary_account =
+      identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
   if (primary_account == primary_account_) {
     return;
   }
@@ -173,7 +173,9 @@ StandaloneTrustedVaultClient::StandaloneTrustedVaultClient(
 StandaloneTrustedVaultClient::~StandaloneTrustedVaultClient() {
   if (backend_) {
     // |backend_| needs to be destroyed inside backend sequence, not the current
-    // one.
+    // one. Destroy |primary_account_observer_| that owns pointer to |backend_|
+    // as well and release |backend_| in |backend_task_runner_|.
+    primary_account_observer_.reset();
     backend_task_runner_->ReleaseSoon(FROM_HERE, std::move(backend_));
   }
 }

@@ -19,7 +19,6 @@
 #include "content/public/renderer/render_view.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_element_collection.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -42,12 +41,12 @@ const char kEmailPrefix[] = "mailto:";
 const char kPhoneNumberPrefix[] = "tel:";
 
 GURL GetAbsoluteUrl(const blink::WebNode& node,
-                    const base::string16& url_fragment) {
+                    const std::u16string& url_fragment) {
   return GURL(node.GetDocument().CompleteURL(
       blink::WebString::FromUTF16(url_fragment)));
 }
 
-base::string16 GetHref(const blink::WebElement& element) {
+std::u16string GetHref(const blink::WebElement& element) {
   // Get the actual 'href' attribute, which might relative if valid or can
   // possibly contain garbage otherwise, so not using absoluteLinkURL here.
   return element.GetAttribute("href").Utf16();
@@ -268,7 +267,7 @@ void AwRenderFrameExt::HitTest(const gfx::PointF& touch_center,
 
   const blink::WebHitTestResult result = webview->HitTestResultForTap(
       gfx::Point(touch_center.x(), touch_center.y()),
-      blink::WebSize(touch_area.width(), touch_area.height()));
+      gfx::Size(touch_area.width(), touch_area.height()));
   auto data = mojom::HitTestData::New();
 
   GURL absolute_image_url = result.AbsoluteImageURL();

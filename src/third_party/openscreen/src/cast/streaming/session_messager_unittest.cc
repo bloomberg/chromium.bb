@@ -125,24 +125,26 @@ class SessionMessagerTest : public ::testing::Test {
 };
 
 TEST_F(SessionMessagerTest, RpcMessaging) {
-  ASSERT_TRUE(sender_messager_
-                  .SendOutboundMessage(SenderMessage{
-                      SenderMessage::Type::kRpc, 123, true /* valid */,
-                      std::string("all your base are belong to us")})
-                  .ok());
+  static const std::vector<uint8_t> kSenderMessage{1, 2, 3, 4, 5};
+  static const std::vector<uint8_t> kReceiverResponse{6, 7, 8, 9};
+  ASSERT_TRUE(
+      sender_messager_
+          .SendOutboundMessage(SenderMessage{SenderMessage::Type::kRpc, 123,
+                                             true /* valid */, kSenderMessage})
+          .ok());
 
   ASSERT_EQ(1u, message_store_.sender_messages.size());
   ASSERT_TRUE(message_store_.receiver_messages.empty());
   EXPECT_EQ(SenderMessage::Type::kRpc, message_store_.sender_messages[0].type);
   ASSERT_TRUE(message_store_.sender_messages[0].valid);
-  EXPECT_EQ("all your base are belong to us",
-            absl::get<std::string>(message_store_.sender_messages[0].body));
+  EXPECT_EQ(kSenderMessage, absl::get<std::vector<uint8_t>>(
+                                message_store_.sender_messages[0].body));
 
   message_store_.sender_messages.clear();
   ASSERT_TRUE(
       receiver_messager_
           .SendMessage(ReceiverMessage{ReceiverMessage::Type::kRpc, 123,
-                                       true /* valid */, std::string("nuh uh")})
+                                       true /* valid */, kReceiverResponse})
           .ok());
 
   ASSERT_TRUE(message_store_.sender_messages.empty());
@@ -150,8 +152,8 @@ TEST_F(SessionMessagerTest, RpcMessaging) {
   EXPECT_EQ(ReceiverMessage::Type::kRpc,
             message_store_.receiver_messages[0].type);
   EXPECT_TRUE(message_store_.receiver_messages[0].valid);
-  EXPECT_EQ("nuh uh",
-            absl::get<std::string>(message_store_.receiver_messages[0].body));
+  EXPECT_EQ(kReceiverResponse, absl::get<std::vector<uint8_t>>(
+                                   message_store_.receiver_messages[0].body));
 }
 
 TEST_F(SessionMessagerTest, StatusMessaging) {
@@ -207,7 +209,9 @@ TEST_F(SessionMessagerTest, CapabilitiesMessaging) {
   ASSERT_TRUE(receiver_messager_
                   .SendMessage(ReceiverMessage{
                       ReceiverMessage::Type::kCapabilitiesResponse, 1337,
-                      true /* valid */, ReceiverCapability{47, {"ac3", "4k"}}})
+                      true /* valid */,
+                      ReceiverCapability{
+                          47, {MediaCapability::kAac, MediaCapability::k4k}}})
                   .ok());
 
   ASSERT_TRUE(message_store_.sender_messages.empty());
@@ -219,7 +223,8 @@ TEST_F(SessionMessagerTest, CapabilitiesMessaging) {
   const auto& capability =
       absl::get<ReceiverCapability>(message_store_.receiver_messages[0].body);
   EXPECT_EQ(47, capability.remoting_version);
-  EXPECT_THAT(capability.media_capabilities, ElementsAre("ac3", "4k"));
+  EXPECT_THAT(capability.media_capabilities,
+              ElementsAre(MediaCapability::kAac, MediaCapability::k4k));
 }
 
 TEST_F(SessionMessagerTest, OfferAnswerMessaging) {

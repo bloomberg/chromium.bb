@@ -14,19 +14,16 @@
 
 #include "src/type/alias_type.h"
 
-#include <assert.h>
-
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::Alias);
+TINT_INSTANTIATE_TYPEINFO(tint::type::Alias);
 
 namespace tint {
 namespace type {
 
 Alias::Alias(const Symbol& sym, Type* subtype)
     : symbol_(sym), subtype_(subtype) {
-  assert(subtype_);
+  TINT_ASSERT(subtype_);
 }
 
 Alias::Alias(Alias&&) = default;
@@ -39,14 +36,6 @@ std::string Alias::type_name() const {
 
 std::string Alias::FriendlyName(const SymbolTable& symbols) const {
   return symbols.NameFor(symbol_);
-}
-
-uint64_t Alias::MinBufferBindingSize(MemoryLayout mem_layout) const {
-  return subtype_->MinBufferBindingSize(mem_layout);
-}
-
-uint64_t Alias::BaseAlignment(MemoryLayout mem_layout) const {
-  return subtype_->BaseAlignment(mem_layout);
 }
 
 Alias* Alias::Clone(CloneContext* ctx) const {

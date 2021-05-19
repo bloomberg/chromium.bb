@@ -5,13 +5,14 @@
 #ifndef CHROME_BROWSER_SHELL_INTEGRATION_H_
 #define CHROME_BROWSER_SHELL_INTEGRATION_H_
 
+#include <map>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "ui/gfx/image/image_family.h"
 #include "url/gurl.h"
@@ -32,6 +33,34 @@ bool SetAsDefaultBrowser();
 // Prefer to use the DefaultProtocolClientWorker class below since it works on
 // all OSs.
 bool SetAsDefaultProtocolClient(const std::string& protocol);
+
+// Maps protocols to handler app ids. A protocol with no app id (base::nullopt)
+// will be handled by the browser which is useful for app protocols requiring
+// disambiguation.
+using AppProtocolMap = std::map<std::string, base::Optional<std::string>>;
+
+// Called with the outcome of an asynchronous app protocol operation.
+using AppProtocolWorkerCallback = base::OnceCallback<void(bool)>;
+
+// Registers the browser as the handler for all URL protocols in
+// `app_protocols`. Protocols with a corresponding handler app id will be
+// registered to launch that app. `protocol_worker_callback` will be run on the
+// caller's sequence to report the results.
+void AddAppProtocolClients(const AppProtocolMap& app_protocols,
+                           const base::FilePath& profile_path,
+                           AppProtocolWorkerCallback protocol_worker_callback);
+
+// Removes each protocol and its registered web app handler from the OS.
+void RemoveAppProtocolClients(const std::vector<std::string>& protocols,
+                              const base::FilePath& profile_path);
+
+// Determines if web app with `app_id` is the default client application for the
+// given protocol.
+void CheckAppIsProtocolClient(
+    const std::string& app_id,
+    const std::string& protocol,
+    const base::FilePath& profile_path,
+    AppProtocolWorkerCallback protocol_worker_callback);
 
 // The different types of permissions required to set a default web client.
 enum DefaultWebClientSetPermission {
@@ -62,7 +91,7 @@ bool IsElevationNeededForSettingDefaultProtocolClient();
 // protocol of the requested url. This string may be a name or a path, but
 // neither is guaranteed and it should only be used as a display string.
 // Returns an empty string on failure.
-base::string16 GetApplicationNameForProtocol(const GURL& url);
+std::u16string GetApplicationNameForProtocol(const GURL& url);
 
 // Chrome's default web client state as a browser as a protocol client. If the
 // current install mode is not default, the brand's other modes are
@@ -125,7 +154,8 @@ bool IsRunningInAppMode();
 base::CommandLine CommandLineArgsForLauncher(
     const GURL& url,
     const std::string& extension_app_id,
-    const base::FilePath& profile_path);
+    const base::FilePath& profile_path,
+    const std::string& run_on_os_login_mode);
 
 // Append command line arguments for launching a new chrome.exe process
 // based on the current process.
@@ -137,7 +167,7 @@ void AppendProfileArgs(const base::FilePath& profile_path,
 #if !defined(OS_WIN)
 // Gets the name of the Chrome Apps menu folder in which to place app
 // shortcuts. This is needed for Mac and Linux.
-base::string16 GetAppShortcutsSubdirName();
+std::u16string GetAppShortcutsSubdirName();
 #endif
 
 // The type of callback used to communicate processing state to consumers of

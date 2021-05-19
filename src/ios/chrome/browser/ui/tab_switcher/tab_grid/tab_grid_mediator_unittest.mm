@@ -89,6 +89,19 @@ class FakeTabRestoreService : public sessions::TabRestoreService {
     NOTREACHED();
   }
 
+  void CreateHistoricalGroup(sessions::LiveTabContext* context,
+                             const tab_groups::TabGroupId& group) override {
+    NOTREACHED();
+  }
+
+  void GroupClosed(const tab_groups::TabGroupId& group) override {
+    NOTREACHED();
+  }
+
+  void GroupCloseStopped(const tab_groups::TabGroupId& group) override {
+    NOTREACHED();
+  }
+
   void ClearEntries() override { NOTREACHED(); }
 
   void DeleteNavigationEntries(const DeletionPredicate& predicate) override {
@@ -252,7 +265,7 @@ class TabGridMediatorTest : public PlatformTest {
     ClosingWebStateObserverBrowserAgent::CreateForBrowser(browser_.get());
     SnapshotBrowserAgent::CreateForBrowser(browser_.get());
     SnapshotBrowserAgent::FromBrowser(browser_.get())
-        ->SetSessionID(base::SysNSStringToUTF8([[NSUUID UUID] UUIDString]));
+        ->SetSessionID([[NSUUID UUID] UUIDString]);
 
     // Insert some web states.
     for (int i = 0; i < 3; i++) {
@@ -302,6 +315,8 @@ class TabGridMediatorTest : public PlatformTest {
         [[TestSessionService alloc] init];
     SessionRestorationBrowserAgent::CreateForBrowser(browser_.get(),
                                                      test_session_service);
+    SessionRestorationBrowserAgent::FromBrowser(browser_.get())
+        ->SetSessionID([[NSUUID UUID] UUIDString]);
   }
 
  protected:

@@ -17,8 +17,8 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -62,6 +62,8 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "url/gurl.h"
+#include "url/third_party/mozilla/url_parse.h"
+#include "url/url_canon_ip.h"
 
 #if defined(OS_WIN)
 #include "base/win/shortcut.h"
@@ -260,7 +262,7 @@ class FileURLDirectoryLoader
     if (!wrote_header_) {
       wrote_header_ = true;
 
-      const base::string16& title = path_.AsUTF16Unsafe();
+      const std::u16string& title = path_.AsUTF16Unsafe();
       pending_data_.append(net::GetDirectoryListingHeader(title));
 
       // If not a top-level directory, add a link to the parent directory. To
@@ -464,6 +466,9 @@ class FileURLLoader : public network::mojom::URLLoader {
         &FileURLLoader::OnMojoDisconnct, base::Unretained(this)));
 
     client_.Bind(std::move(client_remote));
+    host_safety_status_ = url::CheckHostnameSafety(
+        request.url.host_piece().data(),
+        url::Component(0, request.url.host_piece().size()));
 
     base::FilePath path;
     if (!net::FileURLToFilePath(request.url, &path)) {
@@ -710,8 +715,19 @@ class FileURLLoader : public network::mojom::URLLoader {
     MaybeDeleteSelf();
   }
 
+  void RecordCompletionHistogram(net::Error net_error) {
+    if (net_error == net::OK) {
+      UMA_HISTOGRAM_ENUMERATION("Net.File.Request.Success.HostSafetyStatus",
+                                host_safety_status_);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Net.File.Request.Failure.HostSafetyStatus",
+                                host_safety_status_);
+    }
+  }
+
   void OnClientComplete(net::Error net_error,
                         std::unique_ptr<FileURLLoaderObserver> observer) {
+    RecordCompletionHistogram(net_error);
     client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
     client_.reset();
     if (observer) {
@@ -740,12 +756,14 @@ class FileURLLoader : public network::mojom::URLLoader {
 
     if (result == MOJO_RESULT_OK) {
       network::URLLoaderCompletionStatus status(net::OK);
+      RecordCompletionHistogram(net::OK);
       status.encoded_data_length = total_bytes_written_;
       status.encoded_body_length = total_bytes_written_;
       status.decoded_body_length = total_bytes_written_;
       client_->OnComplete(status);
     } else {
       client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
+      RecordCompletionHistogram(net::ERR_FAILED);
     }
     client_.reset();
     MaybeDeleteSelf();
@@ -762,6 +780,7 @@ class FileURLLoader : public network::mojom::URLLoader {
   // It is used to set some of the URLLoaderCompletionStatus data passed back
   // to the URLLoaderClients (eg SimpleURLLoader).
   uint64_t total_bytes_written_ = 0;
+  url::HostSafetyStatus host_safety_status_ = url::HostSafetyStatus::kOk;
 
   DISALLOW_COPY_AND_ASSIGN(FileURLLoader);
 };
@@ -785,7 +804,6 @@ FileURLLoaderFactory::~FileURLLoaderFactory() = default;
 
 void FileURLLoaderFactory::CreateLoaderAndStart(
     mojo::PendingReceiver<network::mojom::URLLoader> loader,
-    int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,

@@ -20,8 +20,11 @@
 #include "tests/DawnTest.h"
 
 #include "common/Constants.h"
+#include "common/VertexFormatUtils.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/WGPUHelpers.h"
+
+#include <cmath>
 
 class DeprecationTests : public DawnTest {
   protected:
@@ -164,6 +167,296 @@ TEST_P(DeprecationTests, GetDefaultQueueDeprecation) {
     EXPECT_EQ(deprecatedQueue.Get(), queue.Get());
 }
 
+// Test that fences are deprecated.
+TEST_P(DeprecationTests, CreateFence) {
+    EXPECT_DEPRECATION_WARNING(queue.CreateFence());
+}
+
+// Test GPUExtent3D.depth deprecation in TextureDescriptor.size
+TEST_P(DeprecationTests, GPUExtent3DDepthDeprecationTextureDescriptor) {
+    wgpu::TextureDescriptor kBaseDesc;
+    kBaseDesc.usage = wgpu::TextureUsage::Sampled;
+    kBaseDesc.size.width = 1;
+    kBaseDesc.size.height = 1;
+    kBaseDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+    kBaseDesc.dimension = wgpu::TextureDimension::e2D;
+
+    {
+        // Valid: default
+        wgpu::TextureDescriptor desc = kBaseDesc;
+        wgpu::Texture texture;
+        texture = device.CreateTexture(&desc);
+    }
+    {
+        // Warning: use deprecated depth but still valid
+        wgpu::TextureDescriptor desc = kBaseDesc;
+        desc.mipLevelCount = 2;
+        desc.size.width = 2;
+        desc.size.height = 2;
+        desc.size.depth = 2;
+        wgpu::Texture texture;
+        EXPECT_DEPRECATION_WARNING(texture = device.CreateTexture(&desc));
+    }
+    {
+        // Warning: use deprecated depth
+        // Error: use deprecated depth and the descriptor is invalid
+        // because 2D texture with depth == 0 is not allowed
+        // This is to verify the deprecated depth is picked up by the implementation.
+        wgpu::TextureDescriptor desc = kBaseDesc;
+        desc.size.depth = 0;
+        wgpu::Texture texture;
+        ASSERT_DEVICE_ERROR(EXPECT_DEPRECATION_WARNING(texture = device.CreateTexture(&desc)));
+    }
+    {
+        // Error: use both deprecated depth and depthOrArrayLayers
+        wgpu::TextureDescriptor desc = kBaseDesc;
+        desc.size.depth = 2;
+        desc.size.depthOrArrayLayers = 2;
+        wgpu::Texture texture;
+        ASSERT_DEVICE_ERROR(texture = device.CreateTexture(&desc));
+    }
+    {
+        // Valid: use updated depthOrArrayLayers
+        wgpu::TextureDescriptor desc = kBaseDesc;
+        desc.mipLevelCount = 2;
+        desc.size.width = 2;
+        desc.size.height = 2;
+        desc.size.depthOrArrayLayers = 2;
+        wgpu::Texture texture;
+        texture = device.CreateTexture(&desc);
+    }
+    {
+        // Error: use updated depthOrArrayLayers and the descriptor is invalid
+        // because 2D texture with depthOrArrayLayers == 0 is not allowed
+        wgpu::TextureDescriptor desc = kBaseDesc;
+        desc.size.depthOrArrayLayers = 0;
+        wgpu::Texture texture;
+        ASSERT_DEVICE_ERROR(texture = device.CreateTexture(&desc));
+    }
+}
+
+// Test GPUExtent3D.depth deprecation in CopyBufferToTexture, CopyTextureToBuffer, and
+// CopyTextureToTexture
+TEST_P(DeprecationTests, GPUExtent3DDepthDeprecationCopy) {
+    wgpu::BufferDescriptor bufferDesc;
+    bufferDesc.size = 4 * 256;
+    bufferDesc.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
+    wgpu::Buffer srcBuffer = device.CreateBuffer(&bufferDesc);
+
+    wgpu::TextureDescriptor dstTextureDesc;
+    dstTextureDesc.usage = wgpu::TextureUsage::CopyDst;
+    dstTextureDesc.size.width = 4;
+    dstTextureDesc.size.height = 4;
+    dstTextureDesc.size.depthOrArrayLayers = 1;
+    dstTextureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+    dstTextureDesc.dimension = wgpu::TextureDimension::e2D;
+    wgpu::Texture dstTexture = device.CreateTexture(&dstTextureDesc);
+
+    wgpu::TextureDescriptor srcTextureDesc = dstTextureDesc;
+    srcTextureDesc.usage = wgpu::TextureUsage::CopySrc;
+    wgpu::Texture srcTexture = device.CreateTexture(&srcTextureDesc);
+
+    wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(srcBuffer, 0, 256, 4);
+    wgpu::ImageCopyTexture imageCopyDstTexture =
+        utils::CreateImageCopyTexture(dstTexture, 0, {0, 0, 0}, wgpu::TextureAspect::All);
+    wgpu::ImageCopyTexture imageCopySrcTexture =
+        utils::CreateImageCopyTexture(srcTexture, 0, {0, 0, 0}, wgpu::TextureAspect::All);
+
+    wgpu::Extent3D kBaseExtent3D;
+    kBaseExtent3D.width = 4;
+    kBaseExtent3D.height = 4;
+
+    {
+        // Valid: default
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyDstTexture, &extent3D);
+        encoder.CopyTextureToBuffer(&imageCopySrcTexture, &imageCopyBuffer, &extent3D);
+        encoder.CopyTextureToTexture(&imageCopySrcTexture, &imageCopyDstTexture, &extent3D);
+        encoder.Finish();
+    }
+    {
+        // Warning: empty copy use deprecated depth == 0 but still valid
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        extent3D.width = 0;
+        extent3D.height = 0;
+        extent3D.depth = 0;
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        EXPECT_DEPRECATION_WARNING(
+            encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyDstTexture, &extent3D));
+        EXPECT_DEPRECATION_WARNING(
+            encoder.CopyTextureToBuffer(&imageCopySrcTexture, &imageCopyBuffer, &extent3D));
+        EXPECT_DEPRECATION_WARNING(
+            encoder.CopyTextureToTexture(&imageCopySrcTexture, &imageCopyDstTexture, &extent3D));
+        encoder.Finish();
+    }
+    {
+        // Warning: use deprecated depth
+        // Error: depth > 1
+        // This is to verify the deprecated depth is picked up by the implementation.
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        extent3D.depth = 2;
+        {
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            EXPECT_DEPRECATION_WARNING(
+                encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyDstTexture, &extent3D));
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+        {
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            EXPECT_DEPRECATION_WARNING(
+                encoder.CopyTextureToBuffer(&imageCopySrcTexture, &imageCopyBuffer, &extent3D));
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+        {
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            EXPECT_DEPRECATION_WARNING(encoder.CopyTextureToTexture(
+                &imageCopySrcTexture, &imageCopyDstTexture, &extent3D));
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+    }
+    {
+        // Error: use both deprecated depth and depthOrArrayLayers
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        extent3D.width = 0;
+        extent3D.height = 0;
+        extent3D.depth = 0;
+        extent3D.depthOrArrayLayers = 0;
+        {
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyDstTexture, &extent3D);
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+        {
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            encoder.CopyTextureToBuffer(&imageCopySrcTexture, &imageCopyBuffer, &extent3D);
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+        {
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            encoder.CopyTextureToTexture(&imageCopySrcTexture, &imageCopyDstTexture, &extent3D);
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+    }
+    {
+        // Valid: use updated depthOrArrayLayers
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        extent3D.width = 0;
+        extent3D.height = 0;
+        extent3D.depthOrArrayLayers = 0;
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyDstTexture, &extent3D);
+        encoder.CopyTextureToBuffer(&imageCopySrcTexture, &imageCopyBuffer, &extent3D);
+        encoder.CopyTextureToTexture(&imageCopySrcTexture, &imageCopyDstTexture, &extent3D);
+        encoder.Finish();
+    }
+    {
+        // Error: use updated depthOrArrayLayers and is invalid
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        extent3D.depthOrArrayLayers = 2;
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        {
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyDstTexture, &extent3D);
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+        {
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            encoder.CopyTextureToBuffer(&imageCopySrcTexture, &imageCopyBuffer, &extent3D);
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+        {
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+            encoder.CopyTextureToTexture(&imageCopySrcTexture, &imageCopyDstTexture, &extent3D);
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+    }
+}
+
+// Test GPUExtent3D.depth deprecation in WriteTexture
+TEST_P(DeprecationTests, GPUExtent3DDepthDeprecationWriteTexture) {
+    wgpu::TextureDescriptor dstTextureDesc;
+    dstTextureDesc.usage = wgpu::TextureUsage::CopyDst;
+    dstTextureDesc.size.width = 4;
+    dstTextureDesc.size.height = 4;
+    dstTextureDesc.size.depthOrArrayLayers = 1;
+    dstTextureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+    dstTextureDesc.dimension = wgpu::TextureDimension::e2D;
+    wgpu::Texture dstTexture = device.CreateTexture(&dstTextureDesc);
+
+    size_t dataSize = 4 * 256;
+    std::vector<uint8_t> data(dataSize);
+
+    wgpu::TextureDataLayout textureDataLayout;
+    textureDataLayout.offset = 0;
+    textureDataLayout.bytesPerRow = 256;
+    textureDataLayout.rowsPerImage = 4;
+
+    wgpu::ImageCopyTexture imageCopyDstTexture =
+        utils::CreateImageCopyTexture(dstTexture, 0, {0, 0, 0}, wgpu::TextureAspect::All);
+
+    wgpu::Extent3D kBaseExtent3D;
+    kBaseExtent3D.width = 4;
+    kBaseExtent3D.height = 4;
+
+    {
+        // Valid: default
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        wgpu::Queue queue = device.GetQueue();
+        queue.WriteTexture(&imageCopyDstTexture, data.data(), dataSize, &textureDataLayout,
+                           &extent3D);
+    }
+    {
+        // Warning: use deprecated depth == 0 but still valid
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        extent3D.width = 0;
+        extent3D.height = 0;
+        extent3D.depth = 0;
+        wgpu::Queue queue = device.GetQueue();
+        EXPECT_DEPRECATION_WARNING(queue.WriteTexture(&imageCopyDstTexture, data.data(), dataSize,
+                                                      &textureDataLayout, &extent3D));
+    }
+    {
+        // Warning: use deprecated depth
+        // Error: depth > 1 for 2D textures
+        // This is to verify the deprecated depth is picked up by the implementation.
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        extent3D.depth = 2;
+        wgpu::Queue queue = device.GetQueue();
+        ASSERT_DEVICE_ERROR(EXPECT_DEPRECATION_WARNING(queue.WriteTexture(
+            &imageCopyDstTexture, data.data(), dataSize, &textureDataLayout, &extent3D)));
+    }
+    {
+        // Error: use both deprecated depth and depthOrArrayLayers
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        extent3D.width = 0;
+        extent3D.height = 0;
+        extent3D.depth = 0;
+        extent3D.depthOrArrayLayers = 0;
+        wgpu::Queue queue = device.GetQueue();
+        ASSERT_DEVICE_ERROR(queue.WriteTexture(&imageCopyDstTexture, data.data(), dataSize,
+                                               &textureDataLayout, &extent3D));
+    }
+    {
+        // Valid: use updated depthOrArrayLayers
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        extent3D.width = 0;
+        extent3D.height = 0;
+        extent3D.depthOrArrayLayers = 0;
+        wgpu::Queue queue = device.GetQueue();
+        queue.WriteTexture(&imageCopyDstTexture, data.data(), dataSize, &textureDataLayout,
+                           &extent3D);
+    }
+    {
+        // Error: use updated depthOrArrayLayers and depthOrArrayLayers > 1 for 2D textures
+        wgpu::Extent3D extent3D = kBaseExtent3D;
+        extent3D.depthOrArrayLayers = 2;
+        wgpu::Queue queue = device.GetQueue();
+        ASSERT_DEVICE_ERROR(queue.WriteTexture(&imageCopyDstTexture, data.data(), dataSize,
+                                               &textureDataLayout, &extent3D));
+    }
+}
+
 DAWN_INSTANTIATE_TEST(DeprecationTests,
                       D3D12Backend(),
                       MetalBackend(),
@@ -172,16 +465,16 @@ DAWN_INSTANTIATE_TEST(DeprecationTests,
                       OpenGLESBackend(),
                       VulkanBackend());
 
-class BufferCopyViewDeprecationTests : public DeprecationTests {
+class ImageCopyBufferDeprecationTests : public DeprecationTests {
   protected:
-    wgpu::TextureCopyView MakeTextureCopyView() {
+    wgpu::ImageCopyTexture MakeImageCopyTexture() {
         wgpu::TextureDescriptor desc = {};
         desc.usage = wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
         desc.dimension = wgpu::TextureDimension::e2D;
         desc.size = {1, 1, 2};
         desc.format = wgpu::TextureFormat::RGBA8Unorm;
 
-        wgpu::TextureCopyView copy;
+        wgpu::ImageCopyTexture copy;
         copy.texture = device.CreateTexture(&desc);
         copy.origin = {0, 0, 1};
         return copy;
@@ -189,3 +482,76 @@ class BufferCopyViewDeprecationTests : public DeprecationTests {
 
     wgpu::Extent3D copySize = {1, 1, 1};
 };
+
+// Tests that deprecated vertex formats properly raise a deprecation warning when used
+class VertexFormatDeprecationTests : public DeprecationTests {
+  protected:
+    // Runs the test
+    void DoTest(const wgpu::VertexFormat vertexFormat, bool deprecated) {
+        std::string attribute = "[[location(0)]] var<in> a : ";
+        attribute += dawn::GetWGSLVertexFormatType(vertexFormat);
+        attribute += ";";
+
+        std::string attribAccess = dawn::VertexFormatNumComponents(vertexFormat) > 1
+                                       ? "vec4<f32>(f32(a.x), 0.0, 0.0, 1.0)"
+                                       : "vec4<f32>(f32(a), 0.0, 0.0, 1.0)";
+
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, (attribute + R"(
+                [[builtin(position)]] var<out> Position : vec4<f32>;
+
+                [[stage(vertex)]] fn main() -> void {
+                    Position = )" + attribAccess + R"(;
+                    return;
+                }
+            )")
+                                                                            .c_str());
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
+                [[location(0)]] var<out> outColor : vec4<f32>;
+
+                [[stage(fragment)]] fn main() -> void {
+                    outColor = vec4<f32>(1.0, 1.0, 1.0, 1.0);
+                    return;
+                }
+            )");
+
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
+        descriptor.vertex.bufferCount = 1;
+        descriptor.cBuffers[0].arrayStride = 32;
+        descriptor.cBuffers[0].attributeCount = 1;
+        descriptor.cAttributes[0].format = vertexFormat;
+        descriptor.cAttributes[0].offset = 0;
+        descriptor.cAttributes[0].shaderLocation = 0;
+        descriptor.cTargets[0].format = utils::BasicRenderPass::kDefaultColorFormat;
+
+        if (deprecated) {
+            EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline2(&descriptor));
+        } else {
+            device.CreateRenderPipeline2(&descriptor);
+        }
+    }
+};
+
+TEST_P(VertexFormatDeprecationTests, NewVertexFormats) {
+    // Using the new vertex formats does not emit a warning.
+    for (auto& format : dawn::kAllVertexFormats) {
+        DoTest(format, false);
+    }
+}
+
+TEST_P(VertexFormatDeprecationTests, DeprecatedVertexFormats) {
+    // Using deprecated vertex formats does emit a warning.
+    for (auto& format : dawn::kAllDeprecatedVertexFormats) {
+        DoTest(format, true);
+    }
+}
+
+DAWN_INSTANTIATE_TEST(VertexFormatDeprecationTests,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      NullBackend(),
+                      OpenGLBackend(),
+                      OpenGLESBackend(),
+                      VulkanBackend());

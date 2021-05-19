@@ -14,9 +14,9 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -53,7 +53,7 @@ const char kTestUserAccount[] = "user@test";
 class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
  public:
   ExternalProviderImplChromeOSTest()
-      : fake_user_manager_(new chromeos::FakeChromeUserManager()),
+      : fake_user_manager_(new ash::FakeChromeUserManager()),
         scoped_user_manager_(base::WrapUnique(fake_user_manager_)) {}
 
   ~ExternalProviderImplChromeOSTest() override {}
@@ -83,8 +83,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
 
     ProviderCollection providers;
     extensions::ExternalProviderImpl::CreateExternalProviders(
-        service_, profile_.get(), service_->pending_extension_manager(),
-        &providers);
+        service_, profile_.get(), &providers);
 
     for (std::unique_ptr<ExternalProviderInterface>& provider : providers)
       service_->AddProviderForTesting(std::move(provider));
@@ -127,20 +126,19 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
 
     ProviderCollection providers;
     extensions::ExternalProviderImpl::CreateExternalProviders(
-        service_, profile_.get(), service_->pending_extension_manager(),
-        &providers);
+        service_, profile_.get(), &providers);
 
     EXPECT_EQ(providers.size(), expected_count);
   }
 
-  chromeos::FakeChromeUserManager* fake_user_manager() const {
+  ash::FakeChromeUserManager* fake_user_manager() const {
     return fake_user_manager_;
   }
 
  private:
   std::unique_ptr<base::ScopedPathOverride> external_externsions_overrides_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
-  chromeos::FakeChromeUserManager* fake_user_manager_;
+  ash::FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager scoped_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProviderImplChromeOSTest);

@@ -35,6 +35,8 @@ class TerminaInstaller {
     // The install failed because it needed to download an image and the device
     // is offline.
     Offline,
+    // The device must be updated before termina can be installed.
+    NeedUpdate,
   };
 
   // This is really a bool, but std::vector<bool> has weird properties that stop
@@ -65,9 +67,16 @@ class TerminaInstaller {
   // Get the id of the installed DLC, or nullopt if DLC is not being used.
   base::Optional<std::string> GetDlcId();
 
+  // Attempt to cancel a pending install. Note that neither DLC service nor
+  // component updater support this, but we have some retry logic that can be
+  // aborted.
+  void Cancel();
+
  private:
-  void InstallDlc(base::OnceCallback<void(InstallResult)> callback);
+  void InstallDlc(base::OnceCallback<void(InstallResult)> callback,
+                  bool is_initial_install);
   void OnInstallDlc(base::OnceCallback<void(InstallResult)> callback,
+                    bool is_initial_install,
                     const chromeos::DlcserviceClient::InstallResult& result);
 
   void InstallComponent(base::OnceCallback<void(InstallResult)> callback);

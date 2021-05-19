@@ -14,15 +14,11 @@
 
 #include "src/program.h"
 
-#include <sstream>
 #include <utility>
 
-#include "src/ast/module.h"
-#include "src/clone_context.h"
 #include "src/demangler.h"
-#include "src/program_builder.h"
+#include "src/resolver/resolver.h"
 #include "src/semantic/expression.h"
-#include "src/type_determiner.h"
 
 namespace tint {
 
@@ -44,9 +40,9 @@ Program::Program(Program&& program)
 Program::Program(ProgramBuilder&& builder) {
   is_valid_ = builder.IsValid();
   if (builder.ResolveOnBuild() && builder.IsValid()) {
-    TypeDeterminer td(&builder);
-    if (!td.Determine()) {
-      diagnostics_.add_error(td.error());
+    resolver::Resolver resolver(&builder);
+    if (!resolver.Resolve()) {
+      diagnostics_.add_error(resolver.error());
       is_valid_ = false;
     }
   }
@@ -123,7 +119,7 @@ std::string Program::str(const ast::Node* node) const {
 }
 
 void Program::AssertNotMoved() const {
-  assert(!moved_);
+  TINT_ASSERT(!moved_);
 }
 
 }  // namespace tint

@@ -16,10 +16,10 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/login/login_manager_test.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
+#include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -739,8 +739,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   // Wait for the paste event to propagate to the web contents.
   // The web contents will notify us a paste occurred by updating page title.
   ignore_result(
-      content::TitleWatcher(web_contents, base ::UTF8ToUTF16("Paste 1"))
-          .WaitAndGetTitle());
+      content::TitleWatcher(web_contents, u"Paste 1").WaitAndGetTitle());
 
   // Confirm the expected paste data.
   base::ListValue last_paste = GetLastPaste();
@@ -760,8 +759,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   // Wait for the paste event to propagate to the web contents.
   // The web contents will notify us a paste occurred by updating page title.
   ignore_result(
-      content::TitleWatcher(web_contents, base ::UTF8ToUTF16("Paste 2"))
-          .WaitAndGetTitle());
+      content::TitleWatcher(web_contents, u"Paste 2").WaitAndGetTitle());
 
   // Confirm the expected paste data.
   last_paste = GetLastPaste();
@@ -789,7 +787,7 @@ class ClipboardHistoryTextfieldBrowserTest
     // Create a widget containing a single, focusable textfield.
     widget_ = CreateTestWidget();
     textfield_ = widget_->SetContentsView(std::make_unique<views::Textfield>());
-    textfield_->SetAccessibleName(base::UTF8ToUTF16("Textfield"));
+    textfield_->SetAccessibleName(u"Textfield");
     textfield_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 
     // Show the widget.
@@ -902,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryTextfieldBrowserTest,
   histogram_tester.ExpectTotalCount(
       "Ash.ClipboardHistory.ContextMenu.DisplayFormatPasted", 1);
 
-  textfield_->SetText(base::string16());
+  textfield_->SetText(std::u16string());
   EXPECT_TRUE(textfield_->GetText().empty());
 
   ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
@@ -915,7 +913,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryTextfieldBrowserTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ("C", base::UTF16ToUTF8(textfield_->GetText()));
 
-  textfield_->SetText(base::string16());
+  textfield_->SetText(std::u16string());
   EXPECT_TRUE(textfield_->GetText().empty());
 
   ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
@@ -929,7 +927,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryTextfieldBrowserTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ("A", base::UTF16ToUTF8(textfield_->GetText()));
 
-  textfield_->SetText(base::string16());
+  textfield_->SetText(std::u16string());
 
   EXPECT_TRUE(textfield_->GetText().empty());
 
@@ -962,7 +960,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryTextfieldBrowserTest,
   EXPECT_EQ("C", base::UTF16ToUTF8(textfield_->GetText()));
   Release(ui::KeyboardCode::VKEY_COMMAND);
 
-  textfield_->SetText(base::string16());
+  textfield_->SetText(std::u16string());
   EXPECT_TRUE(textfield_->GetText().empty());
 
   // Verify we can traverse clipboard history and paste the last history item
@@ -998,6 +996,11 @@ class FakeDataTransferPolicyController
     return data_src && data_src->IsUrlType() &&
            (*data_src->origin() == allowed_origin_);
   }
+
+  void PasteIfAllowed(const ui::DataTransferEndpoint* const data_src,
+                      const ui::DataTransferEndpoint* const data_dst,
+                      content::WebContents* web_contents,
+                      base::OnceCallback<void(bool)> callback) override {}
 
   bool IsDragDropAllowed(const ui::DataTransferEndpoint* const data_src,
                          const ui::DataTransferEndpoint* const data_dst,
@@ -1066,7 +1069,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMockDLPBrowserTest, Basics) {
   EXPECT_EQ("A", base::UTF16ToUTF8(textfield_->GetText()));
 
   // Clear `textfield_`'s contents.
-  textfield_->SetText(base::string16());
+  textfield_->SetText(std::u16string());
   ASSERT_TRUE(textfield_->GetText().empty());
 
   // Re-show the multipaste menu since the menu is closed after the previous

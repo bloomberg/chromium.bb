@@ -5,12 +5,12 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track_processor.h"
 
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_track_processor_init.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_audio_track_underlying_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_track_processor_init.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track_underlying_source.h"
@@ -61,40 +61,24 @@ class MediaStreamTrackProcessor::UnderlyingSourceCloser
     : public GarbageCollected<UnderlyingSourceCloser>,
       public MediaStreamTrack::Observer {
  public:
-  UnderlyingSourceCloser(
-      MediaStreamTrack* track,
-      MediaStreamAudioTrackUnderlyingSource* audio_underlying_source)
-      : track_(track),
-        audio_underlying_source_(audio_underlying_source),
-        video_underlying_source_() {}
-  UnderlyingSourceCloser(
-      MediaStreamTrack* track,
-      MediaStreamVideoTrackUnderlyingSource* video_underlying_source)
-      : track_(track),
-        audio_underlying_source_(),
-        video_underlying_source_(video_underlying_source) {}
+  UnderlyingSourceCloser(MediaStreamTrack* track,
+                         MediaStreamTrackProcessor* processor)
+      : track_(track), processor_(processor) {}
 
   void TrackChangedState() override {
     if (track_->GetReadyState() == MediaStreamSource::kReadyStateEnded) {
-      if (audio_underlying_source_ != nullptr) {
-        audio_underlying_source_->Close();
-      }
-      if (video_underlying_source_ != nullptr) {
-        video_underlying_source_->Close();
-      }
+      processor_->CloseSources();
     }
   }
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(track_);
-    visitor->Trace(audio_underlying_source_);
-    visitor->Trace(video_underlying_source_);
+    visitor->Trace(processor_);
   }
 
  private:
   Member<MediaStreamTrack> track_;
-  Member<MediaStreamAudioTrackUnderlyingSource> audio_underlying_source_;
-  Member<MediaStreamVideoTrackUnderlyingSource> video_underlying_source_;
+  Member<MediaStreamTrackProcessor> processor_;
 };
 
 MediaStreamTrackProcessor::MediaStreamTrackProcessor(
@@ -118,6 +102,10 @@ ReadableStream* MediaStreamTrackProcessor::readable(ScriptState* script_state) {
     CreateAudioSourceStream(script_state);
   }
 
+  source_closer_ =
+      MakeGarbageCollected<UnderlyingSourceCloser>(input_track_, this);
+  input_track_->AddObserver(source_closer_);
+
   return source_stream_;
 }
 
@@ -140,14 +128,11 @@ void MediaStreamTrackProcessor::CreateVideoSourceStream(
   DCHECK(!source_stream_);
   video_underlying_source_ =
       MakeGarbageCollected<MediaStreamVideoTrackUnderlyingSource>(
-          script_state, input_track_->Component(), buffer_size_);
+          script_state, input_track_->Component(), this, buffer_size_);
   source_stream_ = ReadableStream::CreateWithCountQueueingStrategy(
-      script_state, video_underlying_source_, /*high_water_mark=*/0,
+      script_state, video_underlying_source_,
+      /*high_water_mark=*/0,
       video_underlying_source_->GetStreamTransferOptimizer());
-
-  source_closer_ = MakeGarbageCollected<UnderlyingSourceCloser>(
-      input_track_, video_underlying_source_);
-  input_track_->AddObserver(source_closer_);
 }
 
 void MediaStreamTrackProcessor::CreateAudioSourceStream(
@@ -155,13 +140,9 @@ void MediaStreamTrackProcessor::CreateAudioSourceStream(
   DCHECK(!source_stream_);
   audio_underlying_source_ =
       MakeGarbageCollected<MediaStreamAudioTrackUnderlyingSource>(
-          script_state, input_track_->Component(), buffer_size_);
+          script_state, input_track_->Component(), this, buffer_size_);
   source_stream_ = ReadableStream::CreateWithCountQueueingStrategy(
       script_state, audio_underlying_source_, /*high_water_mark=*/0);
-
-  source_closer_ = MakeGarbageCollected<UnderlyingSourceCloser>(
-      input_track_, audio_underlying_source_);
-  input_track_->AddObserver(source_closer_);
 }
 
 void MediaStreamTrackProcessor::CreateVideoControlStream(
@@ -233,6 +214,15 @@ MediaStreamTrackProcessor* MediaStreamTrackProcessor::Create(
                   exception_state);
   }
   return Create(script_state, init->track(), exception_state);
+}
+
+void MediaStreamTrackProcessor::CloseSources() {
+  if (audio_underlying_source_ != nullptr) {
+    audio_underlying_source_->Close();
+  }
+  if (video_underlying_source_ != nullptr) {
+    video_underlying_source_->Close();
+  }
 }
 
 void MediaStreamTrackProcessor::Trace(Visitor* visitor) const {

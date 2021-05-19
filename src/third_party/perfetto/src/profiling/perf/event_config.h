@@ -29,6 +29,8 @@
 #include "perfetto/ext/base/optional.h"
 #include "perfetto/tracing/core/data_source_config.h"
 
+#include "protos/perfetto/common/perf_events.gen.h"
+
 namespace perfetto {
 namespace protos {
 namespace gen {
@@ -48,21 +50,27 @@ struct TargetFilter {
   uint32_t additional_cmdline_count = 0;
 };
 
-// Information to configure a counter via perf_event_open.
 struct PerfCounter {
-  // perf_event_attr.type
-  uint32_t type = 0;
-  // perf_event_attr.config
-  uint32_t config = 0;
+  // Either a predefined counter, or a tracepoint:
+  protos::gen::PerfEvents::Counter counter =
+      protos::gen::PerfEvents::PerfEvents::UNKNOWN_COUNTER;
+  protos::gen::PerfEvents::Tracepoint tracepoint;
 
-  // Optional filter, ignored unless type == PERF_TYPE_TRACEPOINT.
-  std::string tracepoint_filter;
+  // sycall-level description of the event:
+  uint32_t type = 0;    // perf_event_attr.type
+  uint32_t config = 0;  // perf_event_attr.config
 
-  PerfCounter() = default;
-  PerfCounter(uint32_t _type,
-              uint32_t _config,
-              std::string filter = std::string())
-      : type(_type), config(_config), tracepoint_filter(filter) {}
+  bool is_counter() const {
+    return counter != protos::gen::PerfEvents::PerfEvents::UNKNOWN_COUNTER;
+  }
+  bool is_tracepoint() const { return type == PERF_TYPE_TRACEPOINT; }
+
+  static PerfCounter Counter(protos::gen::PerfEvents::Counter counter,
+                             uint32_t type,
+                             uint32_t config);
+
+  static PerfCounter Tracepoint(protos::gen::PerfEvents::Tracepoint tracepoint,
+                                uint32_t id);
 };
 
 // Describes a single profiling configuration. Bridges the gap between the data
@@ -92,6 +100,9 @@ class EventConfig {
   uint32_t unwind_state_clear_period_ms() const {
     return unwind_state_clear_period_ms_;
   }
+  uint64_t max_enqueued_footprint_bytes() const {
+    return max_enqueued_footprint_bytes_;
+  }
   bool sample_callstacks() const { return sample_callstacks_; }
   const TargetFilter& filter() const { return target_filter_; }
   bool kernel_frames() const { return kernel_frames_; }
@@ -112,7 +123,8 @@ class EventConfig {
               uint32_t read_tick_period_ms,
               uint64_t samples_per_tick_limit,
               uint32_t remote_descriptor_timeout_ms,
-              uint32_t unwind_state_clear_period_ms);
+              uint32_t unwind_state_clear_period_ms,
+              uint64_t max_enqueued_footprint_bytes);
 
   // Parameter struct for the leader (timebase) perf_event_open syscall.
   perf_event_attr perf_event_attr_ = {};
@@ -149,6 +161,8 @@ class EventConfig {
 
   // Optional period for clearing cached unwinder state. Skipped if zero.
   const uint32_t unwind_state_clear_period_ms_;
+
+  const uint64_t max_enqueued_footprint_bytes_;
 
   // The raw data source config, as a pbzero-generated C++ class.
   const DataSourceConfig raw_ds_config_;

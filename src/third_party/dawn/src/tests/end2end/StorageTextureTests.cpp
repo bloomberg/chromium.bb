@@ -448,11 +448,11 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
         const wgpu::Extent3D copyExtent = {kWidth, kHeight, arrayLayerCount};
-        wgpu::BufferCopyView bufferCopyView =
-            utils::CreateBufferCopyView(uploadBuffer, 0, kTextureBytesPerRowAlignment, kHeight);
-        wgpu::TextureCopyView textureCopyView;
-        textureCopyView.texture = outputTexture;
-        encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copyExtent);
+        wgpu::ImageCopyBuffer imageCopyBuffer =
+            utils::CreateImageCopyBuffer(uploadBuffer, 0, kTextureBytesPerRowAlignment, kHeight);
+        wgpu::ImageCopyTexture imageCopyTexture;
+        imageCopyTexture.texture = outputTexture;
+        encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copyExtent);
 
         wgpu::CommandBuffer commandBuffer = encoder.Finish();
         queue.Submit(1, &commandBuffer);
@@ -461,7 +461,7 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
     }
 
     wgpu::ComputePipeline CreateComputePipeline(const char* computeShader) {
-        wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, computeShader);
+        wgpu::ShaderModule csModule = utils::CreateShaderModule(device, computeShader);
         wgpu::ComputePipelineDescriptor computeDescriptor;
         computeDescriptor.layout = nullptr;
         computeDescriptor.computeStage.module = csModule;
@@ -471,15 +471,15 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
 
     wgpu::RenderPipeline CreateRenderPipeline(const char* vertexShader,
                                               const char* fragmentShader) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, vertexShader);
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, fragmentShader);
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, vertexShader);
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fragmentShader);
 
-        utils::ComboRenderPipelineDescriptor desc(device);
-        desc.vertexStage.module = vsModule;
-        desc.cFragmentStage.module = fsModule;
-        desc.cColorStates[0].format = kRenderAttachmentFormat;
-        desc.primitiveTopology = wgpu::PrimitiveTopology::PointList;
-        return device.CreateRenderPipeline(&desc);
+        utils::ComboRenderPipelineDescriptor2 desc;
+        desc.vertex.module = vsModule;
+        desc.cFragment.module = fsModule;
+        desc.cTargets[0].format = kRenderAttachmentFormat;
+        desc.primitive.topology = wgpu::PrimitiveTopology::PointList;
+        return device.CreateRenderPipeline2(&desc);
     }
 
     void CheckDrawsGreen(const char* vertexShader,
@@ -622,11 +622,11 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
         const wgpu::Extent3D copyExtent = {kWidth, kHeight, arrayLayerCount};
-        wgpu::TextureCopyView textureCopyView =
-            utils::CreateTextureCopyView(writeonlyStorageTexture, 0, {0, 0, 0});
-        wgpu::BufferCopyView bufferCopyView =
-            utils::CreateBufferCopyView(resultBuffer, 0, kTextureBytesPerRowAlignment, kHeight);
-        encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &copyExtent);
+        wgpu::ImageCopyTexture imageCopyTexture =
+            utils::CreateImageCopyTexture(writeonlyStorageTexture, 0, {0, 0, 0});
+        wgpu::ImageCopyBuffer imageCopyBuffer =
+            utils::CreateImageCopyBuffer(resultBuffer, 0, kTextureBytesPerRowAlignment, kHeight);
+        encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &copyExtent);
         wgpu::CommandBuffer commandBuffer = encoder.Finish();
         queue.Submit(1, &commandBuffer);
 
@@ -709,10 +709,10 @@ TEST_P(StorageTextureTests, ReadonlyStorageTextureInComputeShader) {
         std::ostringstream csStream;
         csStream << R"(
 [[block]] struct DstBuffer {
-  [[offset(0)]] result : u32;
+  result : u32;
 };
 
-[[group(0), binding(1)]] var<storage_buffer> dstBuffer : DstBuffer;
+[[group(0), binding(1)]] var<storage> dstBuffer : [[access(read_write)]] DstBuffer;
 )" << CommonReadOnlyTestCode(format)
                  << R"(
 [[stage(compute)]] fn main() -> void {
@@ -934,10 +934,10 @@ TEST_P(StorageTextureTests, Readonly2DArrayStorageTexture) {
     std::ostringstream csStream;
     csStream << R"(
 [[block]] struct DstBuffer {
-  [[offset(0)]] result : u32;
+  result : u32;
 };
 
-[[group(0), binding(1)]] var<storage_buffer> dstBuffer : DstBuffer;
+[[group(0), binding(1)]] var<storage> dstBuffer : [[access(read_write)]] DstBuffer;
 )" << CommonReadOnlyTestCode(kTextureFormat, true)
              << R"(
 [[stage(compute)]] fn main() -> void {
@@ -982,7 +982,7 @@ TEST_P(StorageTextureTests, ReadonlyAndWriteonlyStorageTexturePingPong) {
     wgpu::Texture storageTexture2 = CreateTexture(
         kTextureFormat, wgpu::TextureUsage::Storage | wgpu::TextureUsage::CopySrc, 1u, 1u);
 
-    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
 [[group(0), binding(0)]] var Src : [[access(read)]]  texture_storage_2d<r32uint>;
 [[group(0), binding(1)]] var Dst : [[access(write)]] texture_storage_2d<r32uint>;
 [[stage(compute)]] fn main() -> void {
@@ -1032,12 +1032,12 @@ TEST_P(StorageTextureTests, ReadonlyAndWriteonlyStorageTexturePingPong) {
     bufferDescriptor.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
     wgpu::Buffer resultBuffer = device.CreateBuffer(&bufferDescriptor);
 
-    wgpu::TextureCopyView textureCopyView;
-    textureCopyView.texture = storageTexture1;
+    wgpu::ImageCopyTexture imageCopyTexture;
+    imageCopyTexture.texture = storageTexture1;
 
-    wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(resultBuffer, 0, 256, 1);
+    wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(resultBuffer, 0, 256, 1);
     wgpu::Extent3D extent3D = {1, 1, 1};
-    encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &extent3D);
+    encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &extent3D);
 
     wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
@@ -1049,6 +1049,9 @@ TEST_P(StorageTextureTests, ReadonlyAndWriteonlyStorageTexturePingPong) {
 // Test that multiple dispatches to increment values by ping-ponging between a sampled texture and
 // a write-only storage texture are synchronized in one pass.
 TEST_P(StorageTextureTests, SampledAndWriteonlyStorageTexturePingPong) {
+    // TODO(crbug.com/tint/690): shaders compile, but output is unexpected
+    DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
+
     constexpr wgpu::TextureFormat kTextureFormat = wgpu::TextureFormat::R32Uint;
     wgpu::Texture storageTexture1 = CreateTexture(
         kTextureFormat,
@@ -1056,11 +1059,11 @@ TEST_P(StorageTextureTests, SampledAndWriteonlyStorageTexturePingPong) {
         1u);
     wgpu::Texture storageTexture2 = CreateTexture(
         kTextureFormat, wgpu::TextureUsage::Sampled | wgpu::TextureUsage::Storage, 1u, 1u);
-    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
 [[group(0), binding(0)]] var Src : texture_2d<u32>;
 [[group(0), binding(1)]] var Dst : [[access(write)]] texture_storage_2d<r32uint>;
 [[stage(compute)]] fn main() -> void {
-  var srcValue : vec4<u32> = textureLoad(Src, vec2<i32>(0, 0));
+  var srcValue : vec4<u32> = textureLoad(Src, vec2<i32>(0, 0), 0);
   srcValue.x = srcValue.x + 1u;
   textureStore(Dst, vec2<i32>(0, 0), srcValue);
 }
@@ -1106,12 +1109,12 @@ TEST_P(StorageTextureTests, SampledAndWriteonlyStorageTexturePingPong) {
     bufferDescriptor.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
     wgpu::Buffer resultBuffer = device.CreateBuffer(&bufferDescriptor);
 
-    wgpu::TextureCopyView textureCopyView;
-    textureCopyView.texture = storageTexture1;
+    wgpu::ImageCopyTexture imageCopyTexture;
+    imageCopyTexture.texture = storageTexture1;
 
-    wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(resultBuffer, 0, 256, 1);
+    wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(resultBuffer, 0, 256, 1);
     wgpu::Extent3D extent3D = {1, 1, 1};
-    encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &extent3D);
+    encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &extent3D);
 
     wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
@@ -1203,11 +1206,11 @@ TEST_P(StorageTextureZeroInitTests, ReadonlyStorageTextureClearsToZeroInComputeP
     // to DstBuffer if they all have to expected value.
     const std::string kComputeShader = std::string(R"(
 [[block]] struct DstBuffer {
-  [[offset(0)]] result : u32;
+  result : u32;
 };
 
 [[group(0), binding(0)]] var srcImage : [[access(read)]] texture_storage_2d<r32uint>;
-[[group(0), binding(1)]] var<storage_buffer> dstBuffer : DstBuffer;
+[[group(0), binding(1)]] var<storage> dstBuffer : [[access(read_write)]] DstBuffer;
 )") + kCommonReadOnlyZeroInitTestCode + R"(
 [[stage(compute)]] fn main() -> void {
   if (doTest()) {

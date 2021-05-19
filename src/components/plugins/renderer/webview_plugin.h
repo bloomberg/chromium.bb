@@ -184,13 +184,14 @@ class WebViewPlugin : public blink::WebPlugin, public blink::WebViewObserver {
 
     // blink::mojom::WidgetHost implementation.
     void SetCursor(const ui::Cursor& cursor) override;
-    void SetToolTipText(const base::string16& tooltip_text,
+    void SetToolTipText(const std::u16string& tooltip_text,
                         base::i18n::TextDirection hint) override;
     void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override {}
     void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                                 base::i18n::TextDirection anchor_dir,
                                 const gfx::Rect& focus_rect,
                                 base::i18n::TextDirection focus_dir,
+                                const gfx::Rect& bounding_box,
                                 bool is_anchor_first) override {}
     void CreateFrameSink(
         mojo::PendingReceiver<viz::mojom::CompositorFrameSink>

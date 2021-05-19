@@ -15,6 +15,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AuthException;
@@ -28,8 +29,7 @@ import org.chromium.components.signin.ConnectionRetry.AuthTask;
  * AccountManagerFacade and forwards callbacks to native code.
  * <p/>
  */
-final class ProfileOAuth2TokenServiceDelegate
-        implements AccountTrackerService.OnSystemAccountsSeededListener {
+final class ProfileOAuth2TokenServiceDelegate {
     /**
      * A simple callback for getAccessToken.
      */
@@ -56,30 +56,16 @@ final class ProfileOAuth2TokenServiceDelegate
     private final AccountTrackerService mAccountTrackerService;
     private final AccountManagerFacade mAccountManagerFacade;
 
-    private boolean mPendingUpdate;
-    // TODO(crbug.com/934688) Once ProfileOAuth2TokenServiceDelegate.java is internalized, use
-    // CoreAccountId instead of String.
-    private String mPendingUpdateAccountId;
-
-    private ProfileOAuth2TokenServiceDelegate(long nativeProfileOAuth2TokenServiceDelegate,
-            AccountTrackerService accountTrackerService,
-            AccountManagerFacade accountManagerFacade) {
+    @VisibleForTesting
+    @CalledByNative
+    ProfileOAuth2TokenServiceDelegate(long nativeProfileOAuth2TokenServiceDelegate,
+            AccountTrackerService accountTrackerService) {
         assert nativeProfileOAuth2TokenServiceDelegate
                 != 0 : "nativeProfileOAuth2TokenServiceDelegate should not be zero!";
         assert accountTrackerService != null : "accountTrackerService should not be null!";
         mNativeProfileOAuth2TokenServiceDelegate = nativeProfileOAuth2TokenServiceDelegate;
         mAccountTrackerService = accountTrackerService;
-        mAccountManagerFacade = accountManagerFacade;
-        mAccountTrackerService.addSystemAccountsSeededListener(this);
-    }
-
-    @VisibleForTesting
-    @CalledByNative
-    static ProfileOAuth2TokenServiceDelegate create(long nativeProfileOAuth2TokenServiceDelegate,
-            AccountTrackerService accountTrackerService,
-            AccountManagerFacade accountManagerFacade) {
-        return new ProfileOAuth2TokenServiceDelegate(nativeProfileOAuth2TokenServiceDelegate,
-                accountTrackerService, accountManagerFacade);
+        mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
     }
 
     /**
@@ -180,35 +166,15 @@ final class ProfileOAuth2TokenServiceDelegate
                 != null;
     }
 
-    /**
-     * Continue pending accounts validation after system accounts have been seeded into
-     * AccountTrackerService.
-     */
-    @Override
-    public void onSystemAccountsSeedingComplete() {
-        if (mPendingUpdate) {
-            reloadAllAccountsWithPrimaryAccountAfterSeeding(mPendingUpdateAccountId);
-            mPendingUpdate = false;
-            mPendingUpdateAccountId = null;
-        }
-    }
-
     @VisibleForTesting
     @CalledByNative
     void seedAndReloadAccountsWithPrimaryAccount(@Nullable String accountId) {
         ThreadUtils.assertOnUiThread();
-        if (mAccountTrackerService.checkAndSeedSystemAccounts()) {
-            reloadAllAccountsWithPrimaryAccountAfterSeeding(accountId);
-        } else {
-            assert !mPendingUpdate && mPendingUpdateAccountId == null;
-            mPendingUpdate = true;
-            mPendingUpdateAccountId = accountId;
-        }
-    }
-
-    private void reloadAllAccountsWithPrimaryAccountAfterSeeding(@Nullable String accountId) {
-        ProfileOAuth2TokenServiceDelegateJni.get().reloadAllAccountsWithPrimaryAccountAfterSeeding(
-                mNativeProfileOAuth2TokenServiceDelegate, accountId);
+        mAccountTrackerService.seedAccountsIfNeeded(() -> {
+            ProfileOAuth2TokenServiceDelegateJni.get()
+                    .reloadAllAccountsWithPrimaryAccountAfterSeeding(
+                            mNativeProfileOAuth2TokenServiceDelegate, accountId);
+        });
     }
 
     @NativeMethods

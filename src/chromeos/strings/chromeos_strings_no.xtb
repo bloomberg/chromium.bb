@@ -38,6 +38,7 @@
 <translation id="1662989795263954667">Stoppet – tom for blekk</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">DNS-resolveren er til stede</translation>
+<translation id="1715359911173058521">Det er problemer med å kommunisere med skanneren. Sjekk nettverks- eller USB-forbindelsen, og prøv på nytt.</translation>
 <translation id="1717874160321062422">Administreres av <ph name="FIRST_MANAGER" /> og <ph name="SECOND_MANAGER" /></translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1792647875738159689">Avbryter skanningen</translation>
@@ -95,6 +96,7 @@
 <translation id="3226405216343213872">Ser etter skannere</translation>
 <translation id="3246869037381808805">Utskriftsjobber som er eldre enn 1 dag, blir fjernet</translation>
 <translation id="3268178239013324452">Mislykket – luken er åpen</translation>
+<translation id="3283504360622356314">{0,plural, =1{Rediger filen}other{Rediger filene}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3310640316857623290">DNS-forsinkelsen er betydelig høyere enn den tillatte grenseverdien</translation>
 <translation id="3328783797891415197">Testen kjøres</translation>
@@ -135,6 +137,7 @@
 <translation id="4227825898293920515">Passordet utløper om <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Ingen utskriftsjobber pågår</translation>
 <translation id="4297501883039923494">Stoppet – ukjent feil</translation>
+<translation id="4344214025510306853">Tilknytt APN</translation>
 <translation id="4378373042927530923">Ikke kjørt</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Min disk</translation>
@@ -162,7 +165,9 @@
 <translation id="4707579418881001319">L2TP/IPSec + brukersertifikat</translation>
 <translation id="4731797938093519117">Foreldretilgang</translation>
 <translation id="4773299976671772492">Stoppet</translation>
+<translation id="4794140124556169553">Kjøring av en prosessortest kan påvirke systemets ytelse</translation>
 <translation id="4808449224298348341">Avbrøt utskriftsjobben <ph name="DOCUMENT_TITLE" /></translation>
+<translation id="4813345808229079766">Tilkobling</translation>
 <translation id="4832079907277790330">Velg en mappe i Filer-appen …</translation>
 <translation id="4835901797422965222">Ingen aktive nettverk</translation>
 <translation id="4848429997038228357">KJØRER</translation>
@@ -177,6 +182,7 @@
 <translation id="4932733599132424254">Dato</translation>
 <translation id="498186245079027698">Sjekk skanneren, og prøv på nytt. Sørg for at det er nok lokal lagringsplass til å lagre skannede filer.</translation>
 <translation id="4985509611418653372">Kjør</translation>
+<translation id="4987769320337599931">Brannmur</translation>
 <translation id="4999333166442584738">Skjul rapporten</translation>
 <translation id="500920857929044050">Stans testen</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -211,6 +217,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="54609108002486618">Administrert</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} forsøk igjen}other{{0} forsøk igjen}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
+<translation id="5499114900554609492">Kunne ikke fullføre skanningen</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -225,6 +232,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="5916084858004523819">Forbudt</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Filen er skannet og lagret i <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Filene er skannet og lagret i <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Fant ikke filen</translation>
+<translation id="6037291330010597344">Skannerens dokumentmater er tom. Legg inn dokumenter, og prøv på nytt.</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="6040852767465482106">Anonym identitet</translation>
 <translation id="604124094241169006">Automatisk</translation>
@@ -247,6 +255,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />testen er avbrutt</translation>
 <translation id="6325525973963619867">Mislykket</translation>
 <translation id="636850387210749493">Bedriftsregistrering</translation>
+<translation id="6388847657025262518">Skannerens dokumentmater er tilstoppet. Sjekk materen, og prøv på nytt.</translation>
 <translation id="641081527798843608">Emnetreff</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6456394469623773452">Grei</translation>
@@ -268,7 +277,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6766275201586212568">Mislykkede DNS-oppslag</translation>
 <translation id="6768237774506518020">Høy feilfrekvens for DNS-oppslag</translation>
 <translation id="6853312040151791195">Utladingsfrekvens</translation>
-<translation id="6898743098396957679">Kunne ikke fullføre skanningen</translation>
+<translation id="6910312834584889076">Skannerens deksel er åpent. Lukk dekselet, og prøv på nytt.</translation>
 <translation id="6911383237894364323">Kan ikke koble til medietjenere</translation>
 <translation id="6957231940976260713">Tjenestenavn</translation>
 <translation id="6977381486153291903">Fastvareversjon</translation>
@@ -276,12 +285,14 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7040230719604914234">Operatør</translation>
 <translation id="7059230779847288458">Lader – fulladet om <ph name="TIME_VALUE" /></translation>
 <translation id="708426984172631313">STOPPET</translation>
+<translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7143207342074048698">Kobler til</translation>
 <translation id="7144878232160441200">Prøv på nytt</translation>
 <translation id="714876143603641390">LAN-tilkobling</translation>
 <translation id="7162487448488904999">Galleri</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> administreres av <ph name="MANAGER" />. Administratorer kan konfigurere enheten eksternt.</translation>
 <translation id="7216409898977639127">Mobiloperatør</translation>
+<translation id="7271040990581020067">Skanneren er i bruk for øyeblikket. Prøv igjen senere.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7343649194310845056">Nettverksenheter</translation>
 <translation id="7359657277149375382">Filtype</translation>
@@ -307,6 +318,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7769672763586021400">Modell-ID</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7819857487979277519">PSK (WPA eller RSN)</translation>
+<translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Leverandørtype</translation>
 <translation id="7936303884198020182">Fant ingen navnetjenere</translation>
 <translation id="7960831585769876809">Temperatur</translation>
@@ -336,6 +348,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8483248364096924578">IP-adresse</translation>
 <translation id="8503813439785031346">Brukernavn</translation>
 <translation id="8503836310948963452">Bare noen få minutter igjen …</translation>
+<translation id="8575298406870537639">Det kan hende operatøren din krever dette alternativet for at du skal kunne koble til nettverket deres Kontakt operatøren for mer informasjon.</translation>
 <translation id="8576249514688522074">Ikke initialisert</translation>
 <translation id="8620617069779373398">Status for roaming</translation>
 <translation id="8675354002693747642">Forhåndsdelt nøkkel</translation>
@@ -348,6 +361,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8798441408945964110">Leverandørnavn</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8818152010000655963">Bakgrunn</translation>
 <translation id="8845001906332463065">Få hjelp</translation>
 <translation id="8881098542468797602">Testen er fullført</translation>
 <translation id="8898840733695078011">Signalstyrke</translation>
@@ -365,6 +379,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="910415269708673980">Oppdater saken for <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Skanner side <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Lås opp</translation>
+<translation id="9137526406337347448">Google-tjenester</translation>
 <translation id="9149391708638971077">Kjør minnetest</translation>
 <translation id="9173638680043580060">Mindre enn et minutt igjen</translation>
 <translation id="9190063653747922532">L2TP/IPsec + forhåndsdelt nøkkel</translation>

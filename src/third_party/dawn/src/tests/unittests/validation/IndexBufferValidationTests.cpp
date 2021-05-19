@@ -22,26 +22,26 @@ class IndexBufferValidationTest : public ValidationTest {
     protected:
     wgpu::RenderPipeline MakeTestPipeline(wgpu::IndexFormat format,
         wgpu::PrimitiveTopology primitiveTopology) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(position)]] var<out> Position : vec4<f32>;
             [[stage(vertex)]] fn main() -> void {
                 Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
             })");
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
             [[location(0)]] var<out> fragColor : vec4<f32>;
             [[stage(fragment)]] fn main() -> void {
                 fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = primitiveTopology;
-        descriptor.cVertexState.indexFormat = format;
-        descriptor.cColorStates[0].format = wgpu::TextureFormat::RGBA8Unorm;
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = primitiveTopology;
+        descriptor.primitive.stripIndexFormat = format;
+        descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
 
-        return device.CreateRenderPipeline(&descriptor);
+        return device.CreateRenderPipeline2(&descriptor);
     }
 };
 

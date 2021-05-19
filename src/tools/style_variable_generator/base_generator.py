@@ -9,6 +9,7 @@ import re
 import textwrap
 import path_overrides
 from color import Color
+from opacity import Opacity
 import copy
 
 _FILE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -26,6 +27,10 @@ import jinja2
 class Modes:
     LIGHT = 'light'
     DARK = 'dark'
+    # The mode that colors will fallback to when not specified in a
+    # non-default mode. An error will be raised if a color in any mode is
+    # not specified in the default mode.
+    DEFAULT = LIGHT
     ALL = [LIGHT, DARK]
 
 
@@ -34,52 +39,46 @@ class VariableType:
     OPACITY = 'opacity'
 
 
-class ColorModel:
-    '''A dictionary of color names to their values in each mode.
-       e.g ColorModel['blue'][Modes.LIGHT] = Color(...)
-    '''
-
-    def __init__(self, default_mode, opacity_model):
+class ModeKeyedModel(object):
+    def __init__(self):
         self.variables = collections.OrderedDict()
-        self._default_mode = default_mode
-        self.opacity_model = opacity_model
 
-    def Add(self, mode, name, value):
+    def Add(self, name, value_obj):
         if name not in self.variables:
             self.variables[name] = {}
-        self.variables[name][mode] = value
 
-    # Returns the Color that |name| will have in |mode|. Resolves to the default
-    # mode's Color if the a Color for |mode| isn't specified. Always returns a
-    # Color.
+        if isinstance(value_obj, dict):
+            for mode in value_obj:
+                assert mode in Modes.ALL
+                self.variables[name][mode] = self._CreateValue(value_obj[mode])
+        else:
+            self.variables[name][Modes.DEFAULT] = self._CreateValue(value_obj)
+
+    # Returns the value that |name| will have in |mode|. Resolves to the default
+    # mode's value if the a value for |mode| isn't specified. Always returns a
+    # value.
     def Resolve(self, name, mode):
         if mode in self.variables[name]:
             return self.variables[name][mode]
 
-        return self.variables[name][self._default_mode]
+        return self.variables[name][Modes.DEFAULT]
 
-    # Returns a value from 0-1 representing the final opacity of |color|.
-    def ResolveOpacity(self, color):
-        if color.a != -1:
-            return color.a
+    def Flatten(self, resolve_missing=False):
+        '''Builds a name to variable dictionary for each mode.
+        If |resolve_missing| is true, colors that aren't specified in |mode|
+        will be resolved to their default mode value.'''
+        flattened = {}
+        for mode in Modes.ALL:
+            variables = collections.OrderedDict()
+            for name, mode_values in self.items():
+                if resolve_missing:
+                    variables[name] = self.Resolve(name, mode)
+                else:
+                    if mode in mode_values:
+                        variables[name] = mode_values[mode]
+            flattened[mode] = variables
 
-        assert (color.opacity_var)
-        return self.opacity_model[color.opacity_var]
-
-    # Returns a Color that is the final RGBA value for |name| in |mode|.
-    def ResolveToRGBA(self, name, mode):
-        c = self.Resolve(name, mode)
-        if c.var:
-            return self.ResolveToRGBA(c.var, mode)
-        result = Color()
-        result.a = self.ResolveOpacity(c)
-
-        rgb = c
-        if c.rgb_var:
-            rgb = self.ResolveToRGBA(c.RGBVarToVar(), mode)
-
-        (result.r, result.g, result.b) = (rgb.r, rgb.g, rgb.b)
-        return result
+        return flattened
 
     def keys(self):
         return self.variables.keys()
@@ -89,6 +88,54 @@ class ColorModel:
 
     def __getitem__(self, key):
         return self.variables[key]
+
+
+class OpacityModel(ModeKeyedModel):
+    '''A dictionary of opacity names to their values in each mode.
+       e.g OpacityModel['disabled_opacity'][Modes.LIGHT] = Opacity(...)
+    '''
+
+    def __init__(self):
+        super(OpacityModel, self).__init__()
+
+    # Returns a float from 0-1 representing the concrete value of |opacity|.
+    def ResolveOpacity(self, opacity, mode):
+        if opacity.a != -1:
+            return opacity
+
+        return self.ResolveOpacity(self.Resolve(opacity.var, mode), mode)
+
+    def _CreateValue(self, value):
+        return Opacity(value)
+
+
+class ColorModel(ModeKeyedModel):
+    '''A dictionary of color names to their values in each mode.
+       e.g ColorModel['blue'][Modes.LIGHT] = Color(...)
+    '''
+
+    def __init__(self, opacity_model):
+        super(ColorModel, self).__init__()
+        self.opacity_model = opacity_model
+
+    # Returns a Color that is the final RGBA value for |name| in |mode|.
+    def ResolveToRGBA(self, name, mode):
+        c = self.Resolve(name, mode)
+        if c.var:
+            return self.ResolveToRGBA(c.var, mode)
+        result = Color()
+        assert c.opacity
+        result.opacity = self.opacity_model.ResolveOpacity(c.opacity, mode)
+
+        rgb = c
+        if c.rgb_var:
+            rgb = self.ResolveToRGBA(c.RGBVarToVar(), mode)
+
+        (result.r, result.g, result.b) = (rgb.r, rgb.g, rgb.b)
+        return result
+
+    def _CreateValue(self, value):
+        return Color(value)
 
 
 class BaseGenerator:
@@ -110,13 +157,8 @@ class BaseGenerator:
         # If specified, only generates the given mode.
         self.generate_single_mode = None
 
-        # The mode that colors will fallback to when not specified in a
-        # non-default mode. An error will be raised if a color in any mode is
-        # not specified in the default mode.
-        self._default_mode = Modes.LIGHT
-
-        opacity_model = collections.OrderedDict()
-        color_model = ColorModel(self._default_mode, opacity_model)
+        opacity_model = OpacityModel()
+        color_model = ColorModel(opacity_model)
 
         # A dictionary of |VariableType| to models containing mappings of
         # variable names to values.
@@ -131,6 +173,10 @@ class BaseGenerator:
         # of all variable names,
         self.context_map = dict()
 
+        # A dictionary of options used to alter generator function. See
+        # ./README.md for each generators list of options.
+        self.generator_options = {}
+
     def _SetVariableContext(self, name, context):
         if name in self.context_map:
             raise ValueError('Variable name "%s" is reused' % name)
@@ -142,26 +188,17 @@ class BaseGenerator:
     def AddColor(self, name, value_obj, context=None):
         self._SetVariableContext(name, context)
         try:
-            # Python3's unicode class is just 'str'.
-            strtype = str if sys.version_info >= (3, ) else basestring
-
-            if isinstance(value_obj, strtype):
-                self.model[VariableType.COLOR].Add(self._default_mode, name,
-                                                   Color(value_obj))
-            elif isinstance(value_obj, dict):
-                for mode in Modes.ALL:
-                    if mode in value_obj:
-                        self.model[VariableType.COLOR].Add(
-                            mode, name, Color(value_obj[mode]))
+            self.model[VariableType.COLOR].Add(name, value_obj)
         except ValueError as err:
             raise ValueError('Error parsing color "%s": %s' % (value_obj, err))
 
     def AddOpacity(self, name, value_obj, context=None):
         self._SetVariableContext(name, context)
-        if not isinstance(value_obj, float) and value_obj.startswith('$'):
-            raise ValueError('Opacities cannot point to other opacities. '
-                             'File a bug if this would be useful for you.')
-        self.model[VariableType.OPACITY][name] = float(value_obj)
+        try:
+            self.model[VariableType.OPACITY].Add(name, value_obj)
+        except ValueError as err:
+            raise ValueError('Error parsing opacity "%s": %s' %
+                             (value_obj, err))
 
     def AddJSONFileToModel(self, path):
         try:
@@ -218,27 +255,36 @@ class BaseGenerator:
 
     def Validate(self):
         colors = self.model[VariableType.COLOR]
+        color_names = set(colors.keys())
         opacities = self.model[VariableType.OPACITY]
+        opacity_names = set(opacities.keys())
 
-        def CheckColorInDefaultMode(name):
-            if (name not in colors.variables
-                    or self._default_mode not in colors.variables[name]):
-                raise ValueError("%s not defined in default mode '%s'" %
-                                 (name, self._default_mode))
+        def CheckColorReference(name, referrer):
+            if name not in color_names:
+                raise ValueError("Cannot find color %s referenced by %s" %
+                                 (name, referrer))
+
+        def CheckOpacityReference(name, referrer):
+            if name not in opacity_names:
+                raise ValueError("Cannot find opacity %s referenced by %s" %
+                                 (name, referrer))
 
         # Check all colors in all modes refer to colors that exist in the
         # default mode.
-        for name, mode_values in colors.variables.items():
-            for mode, value in mode_values.items():
-                CheckColorInDefaultMode(name)
-                if value.var:
-                    CheckColorInDefaultMode(value.var)
-                if value.rgb_var:
-                    CheckColorInDefaultMode(value.RGBVarToVar())
-                if value.opacity_var and value.opacity_var not in opacities:
-                    raise ValueError("Opacity '%s' not defined" %
-                                 value.opacity_var)
+        for name, mode_values in colors.items():
+            if Modes.DEFAULT not in mode_values:
+                raise ValueError("Color %s not defined for default mode" % name)
+            for mode, color in mode_values.items():
+                if color.var:
+                    CheckColorReference(color.var, name)
+                if color.rgb_var:
+                    CheckColorReference(color.RGBVarToVar(), name)
+                if color.opacity and color.opacity.var:
+                    CheckOpacityReference(color.opacity.var, name)
+
+        for name, mode_values in opacities.items():
+            for mode, opacity in mode_values.items():
+                if opacity.var:
+                    CheckOpacityReference(opacity.var, name)
 
         # TODO(calamity): Check for circular references.
-
-    # TODO(crbug.com/1053372): Prune unused rgb values.

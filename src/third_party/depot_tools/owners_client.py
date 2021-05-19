@@ -13,28 +13,6 @@ import owners as owners_db
 import scm
 
 
-def _owner_combinations(owners, num_owners):
-  """Iterate owners combinations by decrasing score.
-
-  The score of an owner is its position on the owners list.
-  The score of a set of owners is the maximum score of all owners on the set.
-
-  Returns all combinations of up to `num_owners` sorted by decreasing score:
-    _owner_combinations(['0', '1', '2', '3'], 2) == [
-        # score 1
-        ('1', '0'),
-        # score 2
-        ('2', '0'),
-        ('2', '1'),
-        # score 3
-        ('3', '0'),
-        ('3', '1'),
-        ('3', '2'),
-    ]
-  """
-  return reversed(list(itertools.combinations(reversed(owners), num_owners)))
-
-
 class OwnersClient(object):
   """Interact with OWNERS files in a repository.
 
@@ -106,55 +84,38 @@ class OwnersClient(object):
 
   def ScoreOwners(self, paths, exclude=None):
     """Get sorted list of owners for the given paths."""
+    if not paths:
+      return []
     exclude = exclude or []
-    positions_by_owner = {}
-    owners_by_path = self.BatchListOwners(paths)
-    for owners in owners_by_path.values():
-      for i, owner in enumerate(owners):
-        if owner in exclude:
-          continue
-        # Gerrit API lists owners of a path sorted by an internal score, so
-        # owners that appear first should be prefered.
-        # We define the score of an owner based on the pair
-        # (# of files owned, minimum position on all owned files)
-        positions_by_owner.setdefault(owner, []).append(i)
-
-    # Sort owners by their score. Rank owners higher for more files owned and
-    # lower for a larger minimum position across all owned files. Randomize
-    # order for owners with same score to avoid bias.
-    return sorted(
-        positions_by_owner,
-        key=lambda o: (-len(positions_by_owner[o]),
-                       min(positions_by_owner[o]) + random.random()))
+    owners = []
+    queues = self.BatchListOwners(paths).values()
+    for i in range(max(len(q) for q in queues)):
+      for q in queues:
+        if i < len(q) and q[i] not in owners and q[i] not in exclude:
+          owners.append(q[i])
+    return owners
 
   def SuggestOwners(self, paths, exclude=None):
     """Suggest a set of owners for the given paths."""
     exclude = exclude or []
+
     paths_by_owner = {}
     owners_by_path = self.BatchListOwners(paths)
     for path, owners in owners_by_path.items():
       for owner in owners:
-        if owner not in exclude:
-          paths_by_owner.setdefault(owner, set()).add(path)
+        paths_by_owner.setdefault(owner, set()).add(path)
 
-    # Select the minimum number of owners that can approve all paths.
-    # We start at 2 to avoid sending all changes that require multiple
-    # reviewers to top-level owners.
-    owners = self.ScoreOwners(paths, exclude=exclude)
-    if len(owners) < 2:
-      return owners
+    selected = []
+    missing = set(paths)
+    for owner in self.ScoreOwners(paths, exclude=exclude):
+      missing_len = len(missing)
+      missing.difference_update(paths_by_owner[owner])
+      if missing_len > len(missing):
+        selected.append(owner)
+      if not missing:
+        break
 
-    # Note that we have to iterate up to len(owners) + 1.
-    # e.g. if there are only 2 owners, we should consider num_owners = 2.
-    for num_owners in range(2, len(owners) + 1):
-      # Iterate all combinations of `num_owners` by decreasing score, and
-      # select the first one that covers all paths.
-      for selected in _owner_combinations(owners, num_owners):
-        covered = set.union(*(paths_by_owner[o] for o in selected))
-        if len(covered) == len(paths):
-          return list(selected)
-
-    return []
+    return selected
 
 
 class DepotToolsClient(OwnersClient):
@@ -207,16 +168,22 @@ class GerritClient(OwnersClient):
     self._branch = branch
     self._owners_cache = {}
 
+    # Seed used by Gerrit to shuffle code owners that have the same score. Can
+    # be used to make the sort order stable across several requests, e.g. to get
+    # the same set of random code owners for different file paths that have the
+    # same code owners.
+    self._seed = random.getrandbits(30)
+
   def ListOwners(self, path):
     # Always use slashes as separators.
     path = path.replace(os.sep, '/')
     if path not in self._owners_cache:
       # GetOwnersForFile returns a list of account details sorted by order of
       # best reviewer for path. If owners have the same score, the order is
-      # random.
+      # random, seeded by `self._seed`.
       data = gerrit_util.GetOwnersForFile(
           self._host, self._project, self._branch, path,
-          resolve_all_users=False)
+          resolve_all_users=False, seed=self._seed)
       self._owners_cache[path] = [
         d['account']['email']
         for d in data['code_owners']
@@ -229,11 +196,11 @@ class GerritClient(OwnersClient):
     return self._owners_cache[path]
 
 
-def GetCodeOwnersClient(root, host, project, branch):
+def GetCodeOwnersClient(root, upstream, host, project, branch):
   """Get a new OwnersClient.
 
   Defaults to GerritClient, and falls back to DepotToolsClient if code-owners
   plugin is not available."""
-  if gerrit_util.IsCodeOwnersEnabled(host):
+  if gerrit_util.IsCodeOwnersEnabledOnHost(host):
     return GerritClient(host, project, branch)
-  return DepotToolsClient(root, branch)
+  return DepotToolsClient(root, upstream)

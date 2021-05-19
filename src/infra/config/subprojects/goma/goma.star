@@ -91,7 +91,7 @@ fyi_goma_rbe_canary_builder(
     name = "ios-device-goma-rbe-canary-clobber",
     cores = None,
     os = os.MAC_10_15,
-    xcode = xcode.x12a7209,
+    xcode = xcode.x12d4e,
 )
 
 fyi_goma_rbe_canary_builder(
@@ -108,6 +108,18 @@ fyi_goma_rbe_canary_builder(
     cores = 4,
     goma_jobs = goma.jobs.J80,
     os = os.MAC_DEFAULT,
+)
+
+fyi_goma_rbe_canary_builder(
+    name = "Win Builder (dbg) Goma RBE Canary",
+    goma_enable_ats = True,
+    os = os.WINDOWS_DEFAULT,
+)
+
+fyi_goma_rbe_canary_builder(
+    name = "Win Builder Goma RBE Canary",
+    goma_enable_ats = True,
+    os = os.WINDOWS_DEFAULT,
 )
 
 def fyi_goma_rbe_latest_client_builder(
@@ -168,7 +180,7 @@ fyi_goma_rbe_latest_client_builder(
     name = "ios-device-goma-rbe-latest-clobber",
     cores = None,
     os = os.MAC_10_15,
-    xcode = xcode.x12a7209,
+    xcode = xcode.x12d4e,
 )
 
 fyi_goma_rbe_latest_client_builder(
@@ -245,10 +257,6 @@ goma_builder(
 )
 
 goma_builder(
-    name = "Chromium Linux Goma Staging",
-)
-
-goma_builder(
     name = "Chromium Linux Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = False,
@@ -283,7 +291,7 @@ goma_mac_builder(
     name = "Chromium iOS Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
     os = os.MAC_10_15,
-    xcode = xcode.x12a7209,
+    xcode = xcode.x12d4e,
 )
 
 goma_mac_builder(
@@ -304,10 +312,6 @@ goma_mac_builder(
 goma_mac_builder(
     name = "Chromium Mac Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
-)
-
-goma_mac_builder(
-    name = "Chromium Mac Goma Staging",
 )
 
 def goma_windows_builder(
@@ -337,10 +341,4 @@ goma_windows_builder(
 goma_windows_builder(
     name = "Chromium Win Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
-)
-
-goma_windows_builder(
-    name = "CrWinGomaStaging",
-    cores = 8,
-    goma_enable_ats = False,
 )

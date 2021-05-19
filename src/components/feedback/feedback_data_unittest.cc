@@ -71,7 +71,7 @@ class FeedbackDataTest : public testing::Test {
         test_shared_loader_factory_,
         base::BindOnce(&FeedbackDataTest::set_send_report_callback,
                        base::Unretained(this)));
-    data_ = base::MakeRefCounted<FeedbackData>(uploader_.get());
+    data_ = base::MakeRefCounted<FeedbackData>(uploader_.get(), nullptr);
   }
 
   void Send() {
@@ -86,7 +86,7 @@ class FeedbackDataTest : public testing::Test {
   }
 
   void RunMessageLoop() {
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     quit_closure_ = run_loop_->QuitClosure();
     run_loop_->Run();
   }

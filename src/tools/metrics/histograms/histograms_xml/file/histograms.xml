@@ -389,7 +389,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.MediaImport.ErrorCount" units="count"
-    expires_after="M93">
+    expires_after="2021-09-19">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -398,7 +398,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.MediaImport.ImportCount" units="count"
-    expires_after="M93">
+    expires_after="2021-10-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -408,7 +408,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.MediaImport.ImportMB" units="MBytes"
-    expires_after="M93">
+    expires_after="2021-09-19">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -418,7 +418,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.MediaImport.Started" enum="BooleanAttempted"
-    expires_after="M93">
+    expires_after="2021-09-19">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -625,7 +625,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.Share.ActionSource" enum="SharingActionSource"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>lucmult@chromium.org</owner>
   <owner>majewski@chromium.org</owner>
   <summary>Chrome OS File Browser: the source of file sharing action.</summary>

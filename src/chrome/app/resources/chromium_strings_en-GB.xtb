@@ -12,7 +12,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1315551408014407711">Set up your new Chromium profile</translation>
 <translation id="1396446129537741364">Chromium is trying to show passwords.</translation>
 <translation id="1414495520565016063">You're signed in to Chromium!</translation>
-<translation id="1414973082589232775">To use Rosetta to play protected media, you must restart Chromium.</translation>
 <translation id="151962892725702025">Chromium OS could not sync your data because Sync is not available for your domain.</translation>
 <translation id="1524282610922162960">Share a Chromium tab</translation>
 <translation id="1553461853655228091">Chromium needs permission to access your camera to create a 3D map of your surroundings</translation>
@@ -27,8 +26,8 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1966382378801805537">Chromium cannot determine or set the default browser</translation>
 <translation id="2008474315282236005">This will delete 1 item from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="2020032459870799438">To check if your other passwords are safe from data breaches and other security issues, <ph name="BEGIN_LINK" />sign in to Chromium<ph name="END_LINK" />.</translation>
+<translation id="2174178932569897599">Customise Chromium</translation>
 <translation id="2185166961232948079">Chromium – Network sign-in – <ph name="PAGE_TITLE" /></translation>
-<translation id="2225696941839557119">Chromium OS could not sync your passwords.</translation>
 <translation id="2241627712206172106">If you share a computer, friends and family can browse separately and set up Chromium just the way they want.</translation>
 <translation id="2294245788148774212">Optional: Help improve Chromium OS features and performance by automatically sending diagnostic and usage data to Google.</translation>
 <translation id="2343156876103232566">To send a number from here to your Android phone, sign in to Chromium on both devices.</translation>
@@ -42,10 +41,8 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2577788541081224677">To access your Chromium stuff across all your devices, sign in so that you can turn on sync.</translation>
 <translation id="2583187216237139145">Any Chromium data that is generated during the use of this profile (such as the creation of bookmarks, history, passwords and other settings) can be removed by the work profile administrator. <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">Chromium OS needs to be restarted to apply the update.</translation>
-<translation id="2615699638672665509">This computer will soon stop receiving Chromium updates because its hardware is no longer supported.</translation>
 <translation id="2648074677641340862">An operating system error occurred during installation. Please download Chromium again.</translation>
 <translation id="2661879430930417727">If you share a device, friends and family can browse separately and set up Chromium just the way they want</translation>
-<translation id="270245676623587882">Chromium recommends disabling this extension because it does not currently meet Enhanced Safe Browsing standards.</translation>
 <translation id="2711502716910134313">Chromium Tab</translation>
 <translation id="2718390899429598676">For added security, Chromium will encrypt your data.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
@@ -65,6 +62,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3130323860337406239">Chromium is using your microphone.</translation>
 <translation id="3155163173539279776">Relaunch Chromium</translation>
 <translation id="3179665906251668410">Open Link in Chromium Inco&amp;gnito Window</translation>
+<translation id="3185330573522821672">Customise your new Chromium profile</translation>
 <translation id="3190315855212034486">Whoa! Chromium has crashed. Relaunch now?</translation>
 <translation id="3229526316128325841">Chromium wants to export your passwords.</translation>
 <translation id="3258596308407688501">Chromium cannot read and write to its data directory:
@@ -79,6 +77,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3430503420100763906">With Chromium profiles you can separate all of your Chromium stuff. Create profiles for friends and family, or split between work and fun.</translation>
 <translation id="347328004046849135">Chromium will notify you when you sign in with a compromised password</translation>
 <translation id="3474745554856756813">This will delete <ph name="ITEMS_COUNT" /> items from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
+<translation id="3497319089134299931"><ph name="SHORTCUT" /> can switch between Chromium profiles</translation>
 <translation id="3509308970982693815">Please close all Chromium windows and try again.</translation>
 <translation id="3575459661164320785">There's harmful software on your computer. Chromium can remove it, restore your settings and disable extensions to make your browser work normally again.</translation>
 <translation id="3639635944603682591">This person's browsing data will be deleted from this device. To recover the data, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
@@ -139,11 +138,11 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5480860683791598150">Chromium needs access to your location to share your location with this site</translation>
 <translation id="549669000822060376">Please wait while Chromium installs the latest system updates.</translation>
 <translation id="5496810170689441661">Chromium is trying to edit passwords. Type your Windows password to allow this.</translation>
+<translation id="5527463683072221100">Open PDFs in Chromium</translation>
 <translation id="5623402015214259806">{0,plural, =0{A Chromium update is available}=1{A Chromium update is available}other{A Chromium update has been available for # days}}</translation>
 <translation id="5634636535844844681">Chromium requires Windows 7 or higher.</translation>
 <translation id="5653831366781983928">Please restart Chromium now</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
-<translation id="5736967399513123100">To enable Chromium to play protected media, you need to install Rosetta. Do you want to install it now?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Welcome to Chromium</translation>
 <translation id="5895138241574237353">Restart</translation>
@@ -159,10 +158,10 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6120345080069858279">Chromium will save this password in your Google Account. You won’t have to remember it.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> is dangerous, so Chromium has blocked it.</translation>
 <translation id="6134968993075716475">Safe Browsing is off. Chromium recommends turning it on.</translation>
+<translation id="6145820983052037069">You can switch between Chromium profiles here</translation>
 <translation id="6183079672144801177">Make sure that you are signed in to Chromium on your <ph name="TARGET_DEVICE_NAME" /> and then try sending again.</translation>
 <translation id="6212496753309875659">This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium will relaunch now}=1{Chromium will relaunch in 1 second}other{Chromium will relaunch in # seconds}}</translation>
-<translation id="623836266260425961">Chromium OS could not sync your data.</translation>
 <translation id="6248213926982192922">Make Chromium the default browser</translation>
 <translation id="6266342355635466082">Chromium can't check for updates. Try checking your Internet connection.</translation>
 <translation id="6268381023930128611">Sign out of Chromium?</translation>
@@ -195,18 +194,15 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copied to Chromium)</translation>
 <translation id="6893813176749746474">Chromium has been updated, but you haven't used it for 30 days or more.</translation>
-<translation id="6897548120660295439">Rosetta enables Chromium to play the protected media on this page.</translation>
 <translation id="691026815377248078">Chromium needs Bluetooth access to continue pairing. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="6964305034639999644">Open link in Chromium inco&amp;gnito window</translation>
 <translation id="6978145336957848883">Weak passwords are easy to guess. Let Chromium <ph name="BEGIN_LINK" />create and remember strong passwords for you<ph name="END_LINK" />.</translation>
 <translation id="6990124437352146030">Chromium needs permission to access your microphone for this site</translation>
 <translation id="701244094609242530">Chromium can't check your extensions. Try again later.</translation>
 <translation id="705851970750939768">Update Chromium</translation>
-<translation id="7066436765290594559">Chromium OS could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="7067091210845072982">If an image doesn’t have a useful description, Chromium will try to provide one for you. To create descriptions, images are sent to Google.</translation>
 <translation id="7196312274710523067">Couldn't launch Chromium. Try again.</translation>
 <translation id="7197677400338048821">Chromium can't check your passwords. Try again after 24 hours.</translation>
-<translation id="7205698830395646142">Hide in Chromium Menu</translation>
 <translation id="7223968959479464213">Task Manager - Chromium</translation>
 <translation id="731644333568559921">Update &amp;Chromium OS</translation>
 <translation id="731795002583552498">Updating Chromium</translation>
@@ -243,7 +239,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7907774600618164274">Chromium OS didn't shut down correctly.</translation>
 <translation id="7937630085815544518">You were signed in to Chromium as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
 <translation id="7975919845073681630">This is a secondary installation of Chromium, and cannot be made your default browser.</translation>
-<translation id="7979877361127045932">Hide in Chromium menu</translation>
 <translation id="8013436988911883588">Once Chromium has access, websites will be able to ask you for access.</translation>
 <translation id="81770708095080097">This file is dangerous, so Chromium has blocked it.</translation>
 <translation id="8248265253516264921">If an image doesn’t have a useful description, Chromium will try to provide one for you. To create descriptions, images are sent to Google. You can turn this off in settings at any time.</translation>

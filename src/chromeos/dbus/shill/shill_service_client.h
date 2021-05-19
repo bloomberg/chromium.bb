@@ -75,12 +75,12 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
         const std::string& service_path) const = 0;
 
     // If the service referenced by |service_path| is not visible (according to
-    // its |shill::kVisibleProperty|, it is removed completely. If the service
-    // referenced by |service_path| is visible, keeps only its "intrinsic"
-    // properties and removes all other properties. Intrinsic properties are
-    // properties that describe the identity or the state of  the service and
-    // are not configurable, such as SSID (for wifi), signal strength (for
-    // wifi). All other properties are removed.
+    // its |shill::kVisibleProperty| or if it's VPN or Cellular service then,
+    // it is removed completely. Otherwise keeps only its "intrinsic" properties
+    // and removes all other properties. Intrinsic properties are properties
+    // that describe the identity or the state of  the service and are not
+    // configurable, such as SSID (for wifi), signal strength (for wifi). All
+    // other properties are removed.
     virtual bool ClearConfiguredServiceProperties(
         const std::string& service_path) = 0;
 
@@ -105,6 +105,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
     // observers and records them instead. Then if this is called again with
     // |hold_back| == false, sends all recorded property updates.
     virtual void SetHoldBackServicePropertyUpdates(bool hold_back) = 0;
+
+    // Sets whether the fake should fail if requested to fetch properties for a
+    // service that is not known by Shill.
+    virtual void SetRequireServiceToGetProperties(
+        bool require_service_to_get_properties) = 0;
 
    protected:
     virtual ~TestInterface() {}

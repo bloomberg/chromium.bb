@@ -35,10 +35,8 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.components.browser_ui.widget.test.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.DummyUiActivity;
@@ -238,36 +236,41 @@ public class RadioButtonWithEditTextTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "Flaky test - see: https://crbug.com/1177183")
     public void testFocusChange() {
         Assert.assertFalse(mRadioButtonWithEditText.hasFocus());
         TestThreadUtils.runOnUiThreadBlocking(() -> { mRadioButtonWithEditText.setChecked(true); });
-        Assert.assertFalse("Edit text should not gain focus when radio button is checked",
+        Assert.assertFalse("Edit text should not gain focus when radio button is checked.",
                 mEditText.hasFocus());
-        Assert.assertFalse("Cursor in EditText should be hidden", mEditText.isCursorVisible());
+        waitForCursorVisibility(false);
 
-        // Test requesting focus on the EditText
+        // Test requesting focus on the EditText.
         TestThreadUtils.runOnUiThreadBlocking(() -> { mEditText.requestFocus(); });
-        Assert.assertTrue("Cursor in EditText should be visible", mEditText.isCursorVisible());
+        waitForCursorVisibility(true);
 
-        // Requesting focus elsewhere
+        // Requesting focus elsewhere.
         TestThreadUtils.runOnUiThreadBlocking(() -> { mDummyButton.requestFocus(); });
-        Assert.assertFalse("Cursor in EditText should be visible", mEditText.isCursorVisible());
-        assertIsKeyboardShowing(false);
+        waitForCursorVisibility(false);
+        waitForKeyboardVisibility(false);
 
-        // Click EditText to show keyboard and checked the radio button.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mRadioButtonWithEditText.setChecked(false); });
-        TouchCommon.singleClickView(mEditText);
-        Assert.assertTrue("Cursor in EditText should be visible", mEditText.isCursorVisible());
-        assertIsKeyboardShowing(true);
+        // Uncheck the radio button, then click EditText to show keyboard and checked the radio
+        // button.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mRadioButtonWithEditText.setChecked(false);
+
+            // Request focus on EditText and show keyboard as if it is clicked.
+            // See https://crbug.com/1177183.
+            mEditText.requestFocus();
+            KeyboardVisibilityDelegate.getInstance().showKeyboard(mEditText);
+        });
+        waitForCursorVisibility(true);
+        waitForKeyboardVisibility(true);
         Assert.assertTrue("RadioButton should be checked after EditText gains focus.",
                 mRadioButtonWithEditText.isChecked());
 
-        // Test editor action
+        // Test editor action.
         InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
-        Assert.assertFalse("Cursor in EditText should be visible", mEditText.isCursorVisible());
-        assertIsKeyboardShowing(false);
+        waitForCursorVisibility(false);
+        waitForKeyboardVisibility(false);
     }
 
     @Test
@@ -291,12 +294,19 @@ public class RadioButtonWithEditTextTest {
                 mRadioButtonWithEditText.getRadioButtonView().isEnabled());
     }
 
-    private void assertIsKeyboardShowing(boolean isShowing) {
+    private void waitForKeyboardVisibility(boolean isVisible) {
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat("Keyboard visibility does not consist with test setting.",
                     KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
                             sActivity, mEditText),
-                    Matchers.is(isShowing));
+                    Matchers.is(isVisible));
         });
+    }
+
+    private void waitForCursorVisibility(boolean isVisible) {
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> Criteria.checkThat("Cursor visibility is different.",
+                                mEditText.isCursorVisible(), Matchers.is(isVisible)));
     }
 }

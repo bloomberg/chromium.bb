@@ -222,6 +222,7 @@
     self.ntpViewController = [[NewTabPageViewController alloc]
         initWithContentSuggestionsViewController:
             self.contentSuggestionsCoordinator.viewController];
+    self.ntpViewController.panGestureHandler = self.panGestureHandler;
     self.ntpMediator.ntpViewController = self.ntpViewController;
 
     UIViewController* discoverFeedViewController =
@@ -350,6 +351,12 @@
   }
 }
 
+- (id<ThumbStripSupporting>)thumbStripSupporting {
+  return [self isNTPRefactoredAndFeedVisible]
+             ? self.ntpViewController
+             : self.contentSuggestionsCoordinator.thumbStripSupporting;
+}
+
 #pragma mark - Public Methods
 
 - (void)dismissModals {
@@ -409,6 +416,9 @@
 }
 
 - (void)ntpDidChangeVisibility:(BOOL)visible {
+  if (visible) {
+    [self.contentSuggestionsCoordinator configureStartSurfaceIfNeeded];
+  }
   self.viewPresented = visible;
   [self updateVisible];
 }

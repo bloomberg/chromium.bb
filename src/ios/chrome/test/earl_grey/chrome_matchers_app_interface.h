@@ -433,6 +433,15 @@
 // the tab grid.
 + (id<GREYMatcher>)tabGridOtherDevicesPanelButton;
 
+// Returns the GREYMatcher for the background of the tab grid.
++ (id<GREYMatcher>)tabGridBackground;
+
+// Returns the GREYMatcher for the regular tab grid.
++ (id<GREYMatcher>)regularTabGrid;
+
+// Returns the GREYMatcher for the incognito tab grid.
++ (id<GREYMatcher>)incognitoTabGrid;
+
 // Returns the GREYMatcher for the button to close the cell at |index| in the
 // tab grid.
 + (id<GREYMatcher>)tabGridCloseButtonForCellAtIndex:(unsigned int)index;
@@ -536,6 +545,13 @@
 
 // Returns the matcher for the Activity View header.
 + (id<GREYMatcher>)activityViewHeaderWithTitle:(NSString*)pageTitle;
+
+// Returns a matcher for the button to trigger password generation on manual
+// fallback.
++ (id<GREYMatcher>)manualFallbackSuggestPasswordMatcher;
+
+// Returns a matcher for the button to accept the generated password.
++ (id<GREYMatcher>)useSuggestedPasswordMatcher;
 
 @end
 

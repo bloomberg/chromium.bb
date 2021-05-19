@@ -71,7 +71,8 @@ __m128i SumHorizontalTaps2x2(const uint8_t* src, const ptrdiff_t src_stride,
       v_src, _mm_set_epi32(0x0e0d0d0c, 0x0c0b0b0a, 0x06050504, 0x04030302));
   // 04 05 05 06 06 07 07 xx 14 15 15 16 16 17 17 xx
   const __m128i v_src_54 = _mm_shuffle_epi8(
-      v_src, _mm_set_epi32(0x800f0f0e, 0x0e0d0d0c, 0x80070706, 0x06050504));
+      v_src, _mm_set_epi32(static_cast<int>(0x800f0f0e), 0x0e0d0d0c,
+                           static_cast<int>(0x80070706), 0x06050504));
   const __m128i v_madd_32 = _mm_maddubs_epi16(v_src_32, v_tap[0]);  // k3k2
   const __m128i v_madd_54 = _mm_maddubs_epi16(v_src_54, v_tap[1]);  // k5k4
   const __m128i v_sum_5432 = _mm_add_epi16(v_madd_54, v_madd_32);

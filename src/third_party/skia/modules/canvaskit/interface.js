@@ -479,7 +479,8 @@ CanvasKit.onRuntimeInitialized = function() {
   // a Flat Float32Array of float colors or a 2d Array of Float32Array(4) (deprecated)
   // TODO(kjlubick) remove Builders - no longer needed now that Malloc is a thing.
   CanvasKit.Canvas.prototype.drawAtlas = function(atlas, srcRects, dstXforms, paint,
-                                       /*optional*/ blendMode, colors) {
+                                       /* optional */ blendMode, /* optional */ colors,
+                                       /* optional */ sampling) {
     if (!atlas || !paint || !srcRects || !dstXforms) {
       Debug('Doing nothing since missing a required input');
       return;
@@ -523,7 +524,28 @@ CanvasKit.onRuntimeInitialized = function() {
       }
     }
 
-    this._drawAtlas(atlas, dstXformPtr, srcRectPtr, colorPtr, count, blendMode, paint);
+    // We require one of these:
+    // 1. sampling is null (we default to linear/none)
+    // 2. sampling.B and sampling.C --> CubicResampler
+    // 3. sampling.filter [and sampling.mipmap] --> FilterOptions
+    //
+    // Thus if all fields are available, we will choose cubic (since we search for B,C first)
+
+    if (sampling && ('B' in sampling) && ('C' in sampling)) {
+        this._drawAtlasCubic(atlas, dstXformPtr, srcRectPtr, colorPtr, count, blendMode,
+                             sampling['B'], sampling['C'], paint);
+    } else {
+        let filter = CanvasKit.FilterMode.Linear;
+        let mipmap = CanvasKit.MipmapMode.None;
+        if (sampling) {
+            filter = sampling['filter'];    // 'filter' is a required field
+            if ('mipmap' in sampling) {     // 'mipmap' is optional
+                mipmap = sampling['mipmap'];
+            }
+        }
+        this._drawAtlasOptions(atlas, dstXformPtr, srcRectPtr, colorPtr, count, blendMode,
+                               filter, mipmap, paint);
+    }
 
     if (srcRectPtr && !srcRects.build) {
       freeArraysThatAreNotMallocedByUsers(srcRectPtr, srcRects);
@@ -590,6 +612,32 @@ CanvasKit.onRuntimeInitialized = function() {
     var oPtr = copyRectToWasm(oval);
     this._drawOval(oPtr, paint);
   };
+
+  CanvasKit.Canvas.prototype.drawPatch = function(cubics, colors, texs, mode, paint) {
+    if (cubics.length < 24) {
+        throw "Need 12 cubic points";
+    }
+    if (colors && colors.length < 4) {
+        throw "Need 4 colors";
+    }
+    if (texs && texs.length < 8) {
+        throw "Need 4 shader coordinates";
+    }
+
+    const cubics_ptr =          copy1dArray(cubics, 'HEAPF32');
+    const colors_ptr = colors ? copy1dArray(assureIntColors(colors), 'HEAPU32') : nullptr;
+    const texs_ptr   = texs   ? copy1dArray(texs,   'HEAPF32') : nullptr;
+    if (!mode) {
+        mode = CanvasKit.BlendMode.Modulate;
+    }
+
+    this._drawPatch(cubics_ptr, colors_ptr, texs_ptr, mode, paint);
+
+    freeArraysThatAreNotMallocedByUsers(texs_ptr,   texs);
+    freeArraysThatAreNotMallocedByUsers(colors_ptr, colors);
+    freeArraysThatAreNotMallocedByUsers(cubics_ptr, cubics);
+  };
+
 
   // points is a 1d array of length 2n representing n points where the even indices
   // will be treated as x coordinates and the odd indices will be treated as y coordinates.

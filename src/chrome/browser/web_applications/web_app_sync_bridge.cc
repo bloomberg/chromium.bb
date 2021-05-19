@@ -73,8 +73,21 @@ void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
     DLOG(ERROR) << "ApplySyncDataToApp: start_url parse error.";
     return;
   }
-  if (app->app_id() != GenerateAppIdFromURL(start_url)) {
-    DLOG(ERROR) << "ApplySyncDataToApp: app_id doesn't match start_url.";
+  base::Optional<std::string> manifest_id = base::nullopt;
+  if (sync_data.has_manifest_id())
+    manifest_id = base::Optional<std::string>(sync_data.manifest_id());
+
+  if (app->app_id() != GenerateAppId(manifest_id, start_url)) {
+    DLOG(ERROR) << "ApplySyncDataToApp: app_id doesn't match id generated "
+                   "from manifest id or start_url.";
+    return;
+  }
+
+  if (!app->manifest_id().has_value()) {
+    app->SetManifestId(manifest_id);
+  } else if (app->manifest_id() != manifest_id) {
+    DLOG(ERROR) << "ApplySyncDataToApp: existing manifest_id doesn't match "
+                   "manifest_id.";
     return;
   }
 
@@ -235,6 +248,13 @@ void WebAppSyncBridge::SetAppIsDisabled(const AppId& app_id, bool is_disabled) {
     registrar_->NotifyWebAppDisabledStateChanged(app_id, is_disabled);
 }
 
+void WebAppSyncBridge::UpdateAppsDisableMode() {
+  if (!IsChromeOs())
+    return;
+
+  registrar_->NotifyWebAppsDisabledModeChanged();
+}
+
 void WebAppSyncBridge::SetAppIsLocallyInstalled(const AppId& app_id,
                                                 bool is_locally_installed) {
   {
@@ -245,6 +265,14 @@ void WebAppSyncBridge::SetAppIsLocallyInstalled(const AppId& app_id,
   }
   registrar_->NotifyWebAppLocallyInstalledStateChanged(app_id,
                                                        is_locally_installed);
+}
+
+void WebAppSyncBridge::SetAppLastBadgingTime(const AppId& app_id,
+                                             const base::Time& time) {
+  ScopedRegistryUpdate update(this);
+  WebApp* web_app = update->UpdateApp(app_id);
+  if (web_app)
+    web_app->SetLastBadgingTime(time);
 }
 
 void WebAppSyncBridge::SetAppLastLaunchTime(const AppId& app_id,
@@ -651,11 +679,15 @@ std::string WebAppSyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_web_app());
 
-  const GURL start_url(entity_data.specifics.web_app().start_url());
+  const sync_pb::WebAppSpecifics& specifics = entity_data.specifics.web_app();
+  const GURL start_url(specifics.start_url());
   DCHECK(!start_url.is_empty());
   DCHECK(start_url.is_valid());
 
-  return GenerateAppIdFromURL(start_url);
+  base::Optional<std::string> manifest_id = base::nullopt;
+  if (specifics.has_manifest_id())
+    manifest_id = base::Optional<std::string>(specifics.manifest_id());
+  return GenerateAppId(manifest_id, start_url);
 }
 
 std::string WebAppSyncBridge::GetStorageKey(

@@ -28,6 +28,7 @@
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
+#include "base/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/scoped_window_targeter.h"
@@ -35,9 +36,11 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/animation_throughput_reporter.h"
+#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
+#include "ui/events/gestures/fling_curve.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
@@ -92,6 +95,9 @@ constexpr int kTabSliderContainerVerticalPaddingDp = 32;
 // window cycle list.
 constexpr int kNoRecentItemsLabelFontSizeDp = 14;
 
+// The amount the cycle list's fling curve's offsets are scaled down.
+constexpr float kFlingScaleDown = 3.f;
+
 // The UMA histogram that logs smoothness of the fade-in animation.
 constexpr char kShowAnimationSmoothness[] =
     "Ash.WindowCycleView.AnimationSmoothness.Show";
@@ -145,6 +151,19 @@ gfx::Point ConvertEventToScreen(const ui::LocatedEvent* event) {
   gfx::Point event_screen_point = event->root_location();
   wm::ConvertPointToScreen(event_root, &event_screen_point);
   return event_screen_point;
+}
+
+aura::Window* GetRootWindowForCycleView() {
+  // Returns the root window for initializing cycle view if tablet mode is
+  // enabled, or if the feature for alt-tab to follow the cursor is disabled.
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode() ||
+      !features::DoWindowsFollowCursor()) {
+    return Shell::GetRootWindowForNewWindows();
+  }
+
+  // Return the root window the cursor is currently on.
+  return Shell::GetRootWindowForDisplayId(
+      Shell::Get()->cursor_manager()->GetDisplay().id());
 }
 
 }  // namespace
@@ -253,9 +272,12 @@ class WindowCycleItemView : public WindowMiniView {
 
 // A view that shows a collection of windows the user can tab through.
 class WindowCycleView : public views::WidgetDelegateView,
-                        public ui::ImplicitAnimationObserver {
+                        public ui::ImplicitAnimationObserver,
+                        public ui::CompositorAnimationObserver {
  public:
-  explicit WindowCycleView(const WindowCycleList::WindowList& windows) {
+  explicit WindowCycleView(aura::Window* root_window,
+                           const WindowCycleList::WindowList& windows)
+      : root_window_(root_window) {
     DCHECK(!windows.empty());
 
     // Start the occlusion tracker pauser. It's used to increase smoothness for
@@ -407,8 +429,7 @@ class WindowCycleView : public views::WidgetDelegateView,
     // widget as some previews will be offscreen. In Layout() of |cycle_view_|
     // the mirror container will be slid back and forth depending on the target
     // window.
-    aura::Window* root_window = Shell::GetRootWindowForNewWindows();
-    gfx::Rect widget_rect = root_window->GetBoundsInScreen();
+    gfx::Rect widget_rect = root_window_->GetBoundsInScreen();
     widget_rect.ClampToCenteredSize(GetPreferredSize());
     return widget_rect;
   }
@@ -487,21 +508,31 @@ class WindowCycleView : public views::WidgetDelegateView,
     if (target_it != window_view_map_.end())
       target_it->second->UpdateBorderState(/*show=*/true);
 
-    // Focus the target window if the user is not currently switching the mode.
-    // During the mode switch, we want more informative a11y string than that
-    // automatically announced from the focus event, so we prevent the focus
-    // to avoid such auto announcement and send our own string in
-    // `WindowCycleController::OnModeChanged`.
-    auto* shell = Shell::Get();
-    const bool chromevox_enabled =
-        shell->accessibility_controller()->spoken_feedback().enabled();
-    const bool is_switching_mode =
-        shell->window_cycle_controller()->IsSwitchingMode();
-    if (target_window_ && (!chromevox_enabled || !is_switching_mode)) {
-      if (GetWidget())
+    // Focus the target window if the user is not currently switching the mode
+    // while ChromeVox is on.
+    // During the mode switch, we prevent ChromeVox auto-announce the window
+    // title from the focus and send our custom string to announce both window
+    // title and the selected mode together
+    // (see `WindowCycleController::OnModeChanged`).
+    auto* a11y_controller = Shell::Get()->accessibility_controller();
+    auto* window_cycle_controller = Shell::Get()->window_cycle_controller();
+    const bool chromevox_enabled = a11y_controller->spoken_feedback().enabled();
+    const bool is_switching_mode = window_cycle_controller->IsSwitchingMode();
+    if (target_window_ && !(chromevox_enabled && is_switching_mode)) {
+      if (GetWidget()) {
         window_view_map_[target_window_]->RequestFocus();
-      else
+      } else {
         SetInitiallyFocusedView(window_view_map_[target_window_]);
+        // When alt-tab mode selection is available, announce via ChromeVox the
+        // current mode and the directional cue for mode switching.
+        if (window_cycle_controller->IsInteractiveAltTabModeAllowed()) {
+          a11y_controller->TriggerAccessibilityAlertWithMessage(
+              l10n_util::GetStringUTF8(
+                  window_cycle_controller->IsAltTabPerActiveDesk()
+                      ? IDS_ASH_ALT_TAB_FOCUS_CURRENT_DESK_MODE
+                      : IDS_ASH_ALT_TAB_FOCUS_ALL_DESKS_MODE));
+        }
+      }
     }
   }
 
@@ -531,11 +562,25 @@ class WindowCycleView : public views::WidgetDelegateView,
     current_window_ = nullptr;
     defer_widget_bounds_update_ = false;
     RemoveAllChildViews(true);
+    EndFling();
   }
 
   void Drag(float delta_x) {
     horizontal_distance_dragged_ += delta_x;
     Layout();
+  }
+
+  void StartFling(float velocity_x) {
+    fling_velocity_ = gfx::Vector2dF(velocity_x, 0);
+    fling_curve_ = std::make_unique<ui::FlingCurve>(fling_velocity_,
+                                                    base::TimeTicks::Now());
+    layer()->GetCompositor()->AddAnimationObserver(this);
+  }
+
+  void EndFling() {
+    layer()->GetCompositor()->RemoveAnimationObserver(this);
+    fling_curve_.reset();
+    fling_last_offset_.reset();
   }
 
   // views::WidgetDelegateView:
@@ -545,12 +590,9 @@ class WindowCycleView : public views::WidgetDelegateView,
     // screen, but the window cycle view with a bandshield, cropping the
     // overflow window list, should remain within the specified horizontal
     // insets of the screen width.
-    size.set_width(
-        std::min(size.width(), Shell::GetRootWindowForNewWindows()
-                                       ->GetBoundsInScreen()
-                                       .size()
-                                       .width() -
-                                   2 * kBackgroundHorizontalInsetDp));
+    size.set_width(std::min(size.width(),
+                            root_window_->GetBoundsInScreen().size().width() -
+                                2 * kBackgroundHorizontalInsetDp));
     if (Shell::Get()
             ->window_cycle_controller()
             ->IsInteractiveAltTabModeAllowed()) {
@@ -598,10 +640,14 @@ class WindowCycleView : public views::WidgetDelegateView,
       if (features::IsInteractiveWindowCycleListEnabled()) {
         // Cap |horizontal_distance_dragged_| based on the available distance
         // from the container to the left and right boundaries.
-        horizontal_distance_dragged_ =
+        float clamped_horizontal_distance_dragged =
             base::ClampToRange(horizontal_distance_dragged_,
                                static_cast<float>(minimum_x - x_offset),
                                static_cast<float>(-x_offset));
+        if (horizontal_distance_dragged_ != clamped_horizontal_distance_dragged)
+          EndFling();
+
+        horizontal_distance_dragged_ = clamped_horizontal_distance_dragged;
         x_offset += horizontal_distance_dragged_;
       }
     }
@@ -705,6 +751,10 @@ class WindowCycleView : public views::WidgetDelegateView,
     return target_window_;
   }
 
+  bool IsCycleViewAnimatingForTesting() {
+    return layer()->GetAnimator()->is_animating();
+  }
+
   void OnModePrefsChanged() {
     if (tab_slider_container_)
       tab_slider_container_->OnModePrefsChanged();
@@ -722,7 +772,28 @@ class WindowCycleView : public views::WidgetDelegateView,
     }
   }
 
+  // ui::CompositorAnimationObserver:
+  void OnAnimationStep(base::TimeTicks timestamp) override {
+    gfx::Vector2dF offset;
+    bool continue_fling =
+        fling_curve_->ComputeScrollOffset(timestamp, &offset, &fling_velocity_);
+    offset.Scale(1 / kFlingScaleDown);
+    horizontal_distance_dragged_ +=
+        fling_last_offset_ ? offset.x() - fling_last_offset_->x() : offset.x();
+    fling_last_offset_ = base::make_optional(offset);
+    Layout();
+
+    if (!continue_fling)
+      EndFling();
+  }
+
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override {
+    DCHECK_EQ(compositor, layer()->GetCompositor());
+    EndFling();
+  }
+
  private:
+  aura::Window* const root_window_;
   std::map<aura::Window*, WindowCycleItemView*> window_view_map_;
   views::View* mirror_container_ = nullptr;
 
@@ -758,6 +829,17 @@ class WindowCycleView : public views::WidgetDelegateView,
   // |mirror_container_|. This should be reset only when a user cycles the
   // window cycle list or when the user switches alt-tab modes.
   float horizontal_distance_dragged_ = 0.f;
+
+  // Velocity of the fling that will gradually decrease during a fling.
+  gfx::Vector2dF fling_velocity_;
+
+  // Gesture curve of the current active fling. nullptr while a fling is not
+  // active.
+  std::unique_ptr<ui::FlingCurve> fling_curve_;
+
+  // Store the last computed fling offset during a fling. Used to compare to an
+  // updated offset and offset the |mirror_container_|.
+  base::Optional<gfx::Vector2dF> fling_last_offset_;
 };
 
 WindowCycleList::WindowCycleList(const WindowList& windows)
@@ -885,6 +967,11 @@ void WindowCycleList::Drag(float delta_x) {
   cycle_view_->Drag(delta_x);
 }
 
+void WindowCycleList::StartFling(float velocity_x) {
+  DCHECK(cycle_view_);
+  cycle_view_->StartFling(velocity_x);
+}
+
 void WindowCycleList::SetFocusedWindow(aura::Window* window) {
   if (windows_.empty())
     return;
@@ -988,8 +1075,8 @@ void WindowCycleList::RemoveAllWindows() {
 void WindowCycleList::InitWindowCycleView() {
   if (cycle_view_)
     return;
-
-  cycle_view_ = new WindowCycleView(windows_);
+  aura::Window* root_window = GetRootWindowForCycleView();
+  cycle_view_ = new WindowCycleView(root_window, windows_);
   cycle_view_->SetTargetWindow(windows_[current_index_]);
   cycle_view_->ScrollToWindow(windows_[current_index_]);
 
@@ -1014,7 +1101,6 @@ void WindowCycleList::InitWindowCycleView() {
   params.name = "WindowCycleList (Alt+Tab)";
   // TODO(estade): make sure nothing untoward happens when the lock screen
   // or a system modal dialog is shown.
-  aura::Window* root_window = Shell::GetRootWindowForNewWindows();
   params.parent = root_window->GetChildById(kShellWindowId_OverlayContainer);
   params.bounds = cycle_view_->GetTargetBounds();
 
@@ -1123,6 +1209,10 @@ WindowCycleList::GetWindowCycleNoRecentItemsLabelForTesting() const {
 
 const aura::Window* WindowCycleList::GetTargetWindowForTesting() const {
   return cycle_view_->GetTargetWindowForTesting();  // IN-TEST
+}
+
+bool WindowCycleList::IsCycleViewAnimatingForTesting() const {
+  return cycle_view_->IsCycleViewAnimatingForTesting();  // IN-TEST
 }
 
 }  // namespace ash

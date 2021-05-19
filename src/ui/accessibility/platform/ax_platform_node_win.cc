@@ -36,6 +36,7 @@
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/accessibility/ax_active_popup.h"
 #include "ui/accessibility/ax_constants.mojom.h"
 #include "ui/accessibility/ax_enum_util.h"
@@ -44,7 +45,6 @@
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_data.h"
-#include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_utils_win.h"
@@ -403,7 +403,7 @@ void AXPlatformNodeWin::HtmlAttributeToUIAAriaProperty(
     std::vector<std::wstring>& properties,
     const char* html_attribute_name,
     const char* uia_aria_property) {
-  base::string16 html_attribute_value;
+  std::u16string html_attribute_value;
   if (GetData().GetHtmlAttribute(html_attribute_name, &html_attribute_value)) {
     std::wstring wide_value = base::UTF16ToWide(html_attribute_value);
     SanitizeStringAttributeForUIAAriaProperty(wide_value, &wide_value);
@@ -682,7 +682,7 @@ gfx::Range AXPlatformNodeWin::GetActiveCompositionOffsets() const {
 
 void AXPlatformNodeWin::OnActiveComposition(
     const gfx::Range& range,
-    const base::string16& active_composition_text,
+    const std::u16string& active_composition_text,
     bool is_composition_committed) {
   // Cache the composition range that will be used when
   // GetActiveComposition and GetConversionTarget is called in
@@ -1491,7 +1491,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_localizedExtendedRole(
   COM_OBJECT_VALIDATE_1_ARG(localized_extended_role);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  base::string16 role_description =
+  std::u16string role_description =
       GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute();
   if (base::ContainsOnlyChars(role_description, base::kWhitespaceUTF16))
     return S_FALSE;
@@ -1798,20 +1798,20 @@ IFACEMETHODIMP AXPlatformNodeWin::Expand() {
 ExpandCollapseState AXPlatformNodeWin::ComputeExpandCollapseState() const {
   const AXNodeData& data = GetData();
 
-  // Since a menu button implies there is a popup and it is either expanded or
-  // collapsed, and it should not support ExpandCollapseState_LeafNode.
-  // According to the UIA spec, ExpandCollapseState_LeafNode indicates that the
-  // element neither expands nor collapses.
-  if (data.IsMenuButton()) {
-    if (data.IsButtonPressed())
-      return ExpandCollapseState_Expanded;
-    return ExpandCollapseState_Collapsed;
-  }
-
   if (data.HasState(ax::mojom::State::kExpanded)) {
     return ExpandCollapseState_Expanded;
   } else if (data.HasState(ax::mojom::State::kCollapsed)) {
     return ExpandCollapseState_Collapsed;
+  } else if (data.IsMenuButton()) {
+    // Since a menu button implies there is a popup and it is either expanded or
+    // collapsed, it should not support ExpandCollapseState_LeafNode.
+    // According to the UIA spec, ExpandCollapseState_LeafNode indicates that
+    // the element neither expands nor collapses.
+    if (data.IsButtonPressed()) {
+      return ExpandCollapseState_Expanded;
+    } else {
+      return ExpandCollapseState_Collapsed;
+    }
   } else {
     return ExpandCollapseState_LeafNode;
   }
@@ -3369,7 +3369,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_nCharacters(LONG* n_characters) {
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                                        AXMode::kInlineTextBoxes);
 
-  base::string16 text = GetHypertext();
+  std::u16string text = GetHypertext();
   *n_characters = static_cast<LONG>(text.size());
 
   return S_OK;
@@ -3453,14 +3453,14 @@ IFACEMETHODIMP AXPlatformNodeWin::get_text(LONG start_offset,
   if (start_offset > end_offset)
     std::swap(start_offset, end_offset);
 
-  const base::string16 str = GetHypertext();
+  const std::u16string str = GetHypertext();
   LONG str_len = static_cast<LONG>(str.length());
   if (start_offset < 0 || start_offset > str_len)
     return E_INVALIDARG;
   if (end_offset < 0 || end_offset > str_len)
     return E_INVALIDARG;
 
-  base::string16 substr = str.substr(start_offset, end_offset - start_offset);
+  std::u16string substr = str.substr(start_offset, end_offset - start_offset);
   if (substr.empty())
     return S_FALSE;
 
@@ -3490,7 +3490,7 @@ HRESULT AXPlatformNodeWin::IAccessibleTextGetTextForOffsetType(
   if (offset < 0)
     return E_INVALIDARG;
 
-  const base::string16& text_str = GetHypertext();
+  const std::u16string& text_str = GetHypertext();
   LONG text_len = text_str.length();
 
   // https://accessibility.linuxfoundation.org/a11yspecs/ia2/docs/html/interface_i_accessible_text.html
@@ -3960,8 +3960,8 @@ void AXPlatformNodeWin::GetRuntimeIdArray(
   AXTreeID tree_id = GetDelegate()->GetTreeData().tree_id;
   if (data.GetIntAttribute(ax::mojom::IntAttribute::kDOMNodeId, &dom_id) &&
       tree_id != AXTreeIDUnknown()) {
-    AXTreeIDRegistry::FrameID frame_id =
-        AXTreeIDRegistry::GetInstance()->GetFrameID(tree_id);
+    AXActionHandlerRegistry::FrameID frame_id =
+        AXActionHandlerRegistry::GetInstance()->GetFrameID(tree_id);
     runtime_id[1] = frame_id.first;
     runtime_id[2] = frame_id.second;
     runtime_id[3] = dom_id;
@@ -4283,7 +4283,7 @@ HRESULT AXPlatformNodeWin::GetPropertyValueImpl(PROPERTYID property_id,
       break;
 
     case UIA_LocalizedControlTypePropertyId: {
-      base::string16 localized_control_type = GetRoleDescription();
+      std::u16string localized_control_type = GetRoleDescription();
       if (!localized_control_type.empty()) {
         result->vt = VT_BSTR;
         result->bstrVal =
@@ -4440,7 +4440,7 @@ HRESULT AXPlatformNodeWin::GetPropertyValueImpl(PROPERTYID property_id,
     }
 
     case UIA_LocalizedLandmarkTypePropertyId: {
-      base::string16 localized_landmark_type =
+      std::u16string localized_landmark_type =
           GetDelegate()->GetLocalizedStringForLandmarkType();
       if (!localized_landmark_type.empty()) {
         result->vt = VT_BSTR;
@@ -4832,7 +4832,7 @@ HRESULT AXPlatformNodeWin::GetAnnotationTypesAttribute(
 }
 
 base::Optional<LCID> AXPlatformNodeWin::GetCultureAttributeAsLCID() const {
-  const base::string16 language =
+  const std::u16string language =
       GetInheritedString16Attribute(ax::mojom::StringAttribute::kLanguage);
   const LCID lcid =
       LocaleNameToLCID(base::as_wcstr(language), LOCALE_ALLOW_NEUTRAL_NAMES);
@@ -5334,7 +5334,6 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kImage:
-    case ax::mojom::Role::kImageMap:
       return ROLE_SYSTEM_GRAPHIC;
 
     case ax::mojom::Role::kInputTime:
@@ -5835,8 +5834,9 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
     case ax::mojom::Role::kIframe:
       ia2_role = IA2_ROLE_INTERNAL_FRAME;
       break;
-    case ax::mojom::Role::kImageMap:
-      ia2_role = IA2_ROLE_IMAGE_MAP;
+    case ax::mojom::Role::kImage:
+      if (IsImageWithMap())
+        ia2_role = IA2_ROLE_IMAGE_MAP;
       break;
     case ax::mojom::Role::kLabelText:
     case ax::mojom::Role::kLegend:
@@ -6166,9 +6166,6 @@ std::wstring AXPlatformNodeWin::UIAAriaRole() {
     case ax::mojom::Role::kImage:
       return L"img";
 
-    case ax::mojom::Role::kImageMap:
-      return L"document";
-
     case ax::mojom::Role::kImeCandidate:
       // Internal role, not used on Windows.
       return L"group";
@@ -6393,7 +6390,7 @@ std::wstring AXPlatformNodeWin::UIAAriaRole() {
       return L"listitem";
 
     case ax::mojom::Role::kTitleBar:
-      return L"document";
+      return L"group";
 
     case ax::mojom::Role::kToggleButton:
       return L"button";
@@ -6841,10 +6838,8 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kImage:
-      return UIA_ImageControlTypeId;
-
-    case ax::mojom::Role::kImageMap:
-      return UIA_DocumentControlTypeId;
+      return IsImageWithMap() ? UIA_DocumentControlTypeId
+                              : UIA_ImageControlTypeId;
 
     case ax::mojom::Role::kInputTime:
       return UIA_GroupControlTypeId;
@@ -7058,7 +7053,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_ListItemControlTypeId;
 
     case ax::mojom::Role::kTitleBar:
-      return UIA_DocumentControlTypeId;
+      return UIA_TitleBarControlTypeId;
 
     case ax::mojom::Role::kToggleButton:
       return UIA_ButtonControlTypeId;
@@ -7709,7 +7704,7 @@ BSTR AXPlatformNodeWin::GetValueAttributeAsBstr(AXPlatformNodeWin* target) {
 HRESULT AXPlatformNodeWin::GetStringAttributeAsBstr(
     ax::mojom::StringAttribute attribute,
     BSTR* value_bstr) const {
-  base::string16 str;
+  std::u16string str;
 
   if (!GetString16Attribute(attribute, &str))
     return S_FALSE;
@@ -7909,7 +7904,7 @@ BSTR AXPlatformNodeWin::GetFontNameAttributeAsBSTR() const {
 }
 
 BSTR AXPlatformNodeWin::GetStyleNameAttributeAsBSTR() const {
-  base::string16 style_name =
+  std::u16string style_name =
       GetDelegate()->GetStyleNameAttributeAsLocalizedString();
 
   return SysAllocString(base::as_wcstr(style_name));

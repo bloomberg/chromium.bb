@@ -124,7 +124,7 @@ TEST_F(NavigatorTest, SimpleBrowserInitiatedNavigationFromNonLiveRenderer) {
   navigation->Commit();
   EXPECT_TRUE(main_test_rfh()->IsCurrent());
   EXPECT_EQ(main_test_rfh()->lifecycle_state(),
-            RenderFrameHostImpl::LifecycleState::kActive);
+            RenderFrameHostImpl::LifecycleStateImpl::kActive);
   if (AreDefaultSiteInstancesEnabled()) {
     EXPECT_TRUE(main_test_rfh()->GetSiteInstance()->IsDefaultSiteInstance());
   } else {
@@ -463,7 +463,6 @@ TEST_F(NavigatorTest, BeginNavigation) {
           .IsEqualForTesting(subframe_loader->request_info()->isolation_info));
 
   EXPECT_FALSE(subframe_loader->request_info()->is_main_frame);
-  EXPECT_TRUE(subframe_loader->request_info()->parent_is_main_frame);
   EXPECT_TRUE(subframe_request->browser_initiated());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(root_node));
 
@@ -505,7 +504,6 @@ TEST_F(NavigatorTest, BeginNavigation) {
           net::SiteForCookies::FromUrl(kUrl3), std::set<net::SchemefulSite>())
           .IsEqualForTesting(main_loader->request_info()->isolation_info));
   EXPECT_TRUE(main_loader->request_info()->is_main_frame);
-  EXPECT_FALSE(main_loader->request_info()->parent_is_main_frame);
   EXPECT_TRUE(main_request->browser_initiated());
   // BeforeUnloadCompleted callback was invoked by the renderer so the
   // navigation should have started.
@@ -1135,7 +1133,7 @@ TEST_F(NavigatorTest, DataUrls) {
   // Isolate kUrl1 so it can't be mapped into a default SiteInstance along with
   // kUrl2. This ensures that the speculative RenderFrameHost will always be
   // used because the URLs map to different SiteInstances.
-  ChildProcessSecurityPolicy::GetInstance()->AddIsolatedOrigins(
+  ChildProcessSecurityPolicy::GetInstance()->AddFutureIsolatedOrigins(
       {url::Origin::Create(kUrl1)},
       ChildProcessSecurityPolicy::IsolatedOriginSource::TEST,
       browser_context());
@@ -1188,7 +1186,7 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
   GURL kUrl1("http://a.com");
   // Isolate one of the sites so the both can't be mapped to the default
   // site instance.
-  ChildProcessSecurityPolicy::GetInstance()->AddIsolatedOrigins(
+  ChildProcessSecurityPolicy::GetInstance()->AddFutureIsolatedOrigins(
       {url::Origin::Create(kUrl1)},
       ChildProcessSecurityPolicy::IsolatedOriginSource::TEST,
       browser_context());
@@ -1433,54 +1431,54 @@ TEST_F(NavigatorTest, NavigationRequestDeletedWhenCrossSiteCommits) {
   EXPECT_EQ(speculative_rfh, main_test_rfh());
 }
 
-// Feature Policy: Test that the feature policy is reset when navigating pages
-// within a site.
-TEST_F(NavigatorTest, FeaturePolicySameSiteNavigation) {
+// Permissions Policy: Test that the permissions policy is reset when navigating
+// pages within a site.
+TEST_F(NavigatorTest, PermissionsPolicySameSiteNavigation) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.chromium.org/Home");
 
   contents()->NavigateAndCommit(kUrl1);
 
-  // Check the feature policy before navigation.
-  const blink::FeaturePolicy* original_feature_policy =
-      main_test_rfh()->feature_policy();
-  ASSERT_TRUE(original_feature_policy);
+  // Check the permissions policy before navigation.
+  const blink::PermissionsPolicy* original_permissions_policy =
+      main_test_rfh()->permissions_policy();
+  ASSERT_TRUE(original_permissions_policy);
 
   // Navigate to the new URL.
   contents()->NavigateAndCommit(kUrl2);
 
-  // Check the feature policy after navigation.
-  const blink::FeaturePolicy* final_feature_policy =
-      main_test_rfh()->feature_policy();
-  ASSERT_TRUE(final_feature_policy);
-  ASSERT_NE(original_feature_policy, final_feature_policy);
+  // Check the permissions policy after navigation.
+  const blink::PermissionsPolicy* final_permissions_policy =
+      main_test_rfh()->permissions_policy();
+  ASSERT_TRUE(final_permissions_policy);
+  ASSERT_NE(original_permissions_policy, final_permissions_policy);
 }
 
-// Feature Policy: Test that the feature policy is not reset when navigating
-// within a page.
-TEST_F(NavigatorTest, FeaturePolicyFragmentNavigation) {
+// Permissions Policy: Test that the permissions policy is not reset when
+// navigating within a page.
+TEST_F(NavigatorTest, PermissionsPolicyFragmentNavigation) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.chromium.org/#Home");
 
   contents()->NavigateAndCommit(kUrl1);
 
-  // Check the feature policy before navigation.
-  const blink::FeaturePolicy* original_feature_policy =
-      main_test_rfh()->feature_policy();
-  ASSERT_TRUE(original_feature_policy);
+  // Check the permissions policy before navigation.
+  const blink::PermissionsPolicy* original_permissions_policy =
+      main_test_rfh()->permissions_policy();
+  ASSERT_TRUE(original_permissions_policy);
 
   // Navigate to the new URL.
   contents()->NavigateAndCommit(kUrl2);
 
-  // Check the feature policy after navigation.
-  const blink::FeaturePolicy* final_feature_policy =
-      main_test_rfh()->feature_policy();
-  ASSERT_EQ(original_feature_policy, final_feature_policy);
+  // Check the permissions policy after navigation.
+  const blink::PermissionsPolicy* final_permissions_policy =
+      main_test_rfh()->permissions_policy();
+  ASSERT_EQ(original_permissions_policy, final_permissions_policy);
 }
 
-// Feature Policy: Test that the feature policy is set correctly when inserting
-// a new child frame.
-TEST_F(NavigatorTest, FeaturePolicyNewChild) {
+// Permissions Policy: Test that the permissions policy is set correctly when
+// inserting a new child frame.
+TEST_F(NavigatorTest, PermissionsPolicyNewChild) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.chromium.org/Home");
 
@@ -1491,10 +1489,10 @@ TEST_F(NavigatorTest, FeaturePolicyNewChild) {
       contents()->GetMainFrame()->AppendChild("child");
   NavigationSimulator::NavigateAndCommitFromDocument(kUrl2, subframe_rfh);
 
-  const blink::FeaturePolicy* subframe_feature_policy =
-      subframe_rfh->feature_policy();
-  ASSERT_TRUE(subframe_feature_policy);
-  ASSERT_FALSE(subframe_feature_policy->GetOriginForTest().opaque());
+  const blink::PermissionsPolicy* subframe_permissions_policy =
+      subframe_rfh->permissions_policy();
+  ASSERT_TRUE(subframe_permissions_policy);
+  ASSERT_FALSE(subframe_permissions_policy->GetOriginForTest().opaque());
 }
 
 TEST_F(NavigatorTest, TwoNavigationsRacingCommit) {

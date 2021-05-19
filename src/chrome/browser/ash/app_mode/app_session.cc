@@ -19,7 +19,6 @@
 #include "chrome/browser/ash/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/ash/app_mode/kiosk_session_plugin_handler.h"
 #include "chrome/browser/ash/app_mode/kiosk_settings_navigation_throttle.h"
-#include "chrome/browser/ash/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -42,6 +41,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -76,8 +76,10 @@ void StartFloatingAccessibilityMenu() {
 
 // Sends a SIGFPE signal to plugin subprocesses that matches |child_ids|
 // to trigger a dump.
-void DumpPluginProcessOnIOThread(const std::set<int>& child_ids) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+void DumpPluginProcessOnProcessThread(const std::set<int>& child_ids) {
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? content::BrowserThread::UI
+                          : content::BrowserThread::IO);
 
   bool dump_requested = false;
 
@@ -136,16 +138,6 @@ class AppSession::AppWindowHandler : public AppWindowRegistry::Observer {
     if (!app_window_created_ ||
         !window_registry_->GetAppWindowsForApp(app_id_).empty()) {
       return;
-    }
-
-    if (DemoAppLauncher::IsDemoAppSession(user_manager::UserManager::Get()
-                                              ->GetActiveUser()
-                                              ->GetAccountId())) {
-      // If we were in demo mode, we disabled all our network technologies,
-      // re-enable them.
-      NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-          NetworkTypePattern::Physical(), true,
-          chromeos::network_handler::ErrorCallback());
     }
 
     app_session_->OnLastAppWindowClosed();
@@ -259,12 +251,6 @@ void AppSession::Init(Profile* profile, const std::string& app_id) {
 
   StartFloatingAccessibilityMenu();
 
-  // For a demo app, we don't need to either setup the update service or
-  // the idle app name notification.
-  if (DemoAppLauncher::IsDemoAppSession(
-          user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()))
-    return;
-
   // Set the app_id for the current instance of KioskAppUpdateService.
   KioskAppUpdateService* update_service =
       KioskAppUpdateServiceFactory::GetForProfile(profile);
@@ -334,8 +320,9 @@ void AppSession::OnLastAppWindowClosed() {
 }
 
 bool AppSession::ShouldHandlePlugin(const base::FilePath& plugin_path) const {
-  // Note that BrowserChildProcessHostIterator in DumpPluginProcessOnIOThread
-  // also needs to be updated when adding more plugin types here.
+  // Note that BrowserChildProcessHostIterator in
+  // DumpPluginProcessOnProcessThread also needs to be updated when adding more
+  // plugin types here.
   return IsPepperPlugin(plugin_path);
 }
 
@@ -354,8 +341,12 @@ void AppSession::OnPluginHung(const std::set<int>& hung_plugins) {
   is_shutting_down_ = true;
 
   LOG(ERROR) << "Plugin hung detected. Dump and reboot.";
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&DumpPluginProcessOnIOThread, hung_plugins));
+  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                         ? content::GetUIThreadTaskRunner({})
+                         : content::GetIOThreadTaskRunner({});
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DumpPluginProcessOnProcessThread, hung_plugins));
 }
 
 }  // namespace ash

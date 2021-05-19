@@ -2481,8 +2481,18 @@ void LayoutBlockFlow::AbsoluteQuads(Vector<FloatQuad>& quads,
   LayoutBoxModelObject::AbsoluteQuads(quads, mode);
 }
 
+void LayoutBlockFlow::LocalQuadsForSelf(Vector<FloatQuad>& quads) const {
+  return QuadsForSelfInternal(quads, 0, false);
+}
+
 void LayoutBlockFlow::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
                                            MapCoordinatesFlags mode) const {
+  return QuadsForSelfInternal(quads, mode, true);
+}
+
+void LayoutBlockFlow::QuadsForSelfInternal(Vector<FloatQuad>& quads,
+                                           MapCoordinatesFlags mode,
+                                           bool map_to_absolute) const {
   NOT_DESTROYED();
   // For blocks inside inlines, we go ahead and include margins so that we run
   // right up to the inline boxes above and below us (thus getting merged with
@@ -2491,7 +2501,10 @@ void LayoutBlockFlow::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
   // https://bugs.webkit.org/show_bug.cgi?id=46781
   PhysicalRect local_rect = PhysicalBorderBoxRect();
   local_rect.Expand(CollapsedMarginBoxLogicalOutsets());
-  quads.push_back(LocalRectToAbsoluteQuad(local_rect, mode));
+  if (map_to_absolute)
+    quads.push_back(LocalRectToAbsoluteQuad(local_rect, mode));
+  else
+    quads.push_back(FloatQuad(FloatRect(local_rect)));
 }
 
 LayoutObject* LayoutBlockFlow::HoverAncestor() const {
@@ -4546,6 +4559,8 @@ void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
   NOT_DESTROYED();
   DCHECK(ChildrenInline());
 
+  // TODO(crbug.com/1144203): This code path should be switch to
+  // |RecalcFragmentsVisualOverflow|.
   if (PhysicalFragmentCount()) {
     for (const NGPhysicalBoxFragment& fragment : PhysicalFragments()) {
       if (const NGFragmentItems* items = fragment.Items()) {
@@ -4751,6 +4766,13 @@ void LayoutBlockFlow::ShowLineTreeAndMark(const InlineBox* marked_box1,
                                           const char* marked_label2,
                                           const LayoutObject* obj) const {
   NOT_DESTROYED();
+  if (getenv("RUNNING_UNDER_RR")) {
+    // Printing timestamps requires an IPC to get the local time, which
+    // does not work in an rr replay session. Just disable timestamp printing,
+    // which we don't care about anyway.
+    logging::SetLogItems(true, true, false, false);
+  }
+
   StringBuilder string_blockflow;
   DumpLayoutObject(string_blockflow, true, kShowTreeCharacterOffset);
   for (const RootInlineBox* root = FirstRootBox(); root;

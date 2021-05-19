@@ -12,10 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/discard_statement.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -32,7 +28,7 @@ TEST_F(BuilderTest, Discard) {
   spirv::Builder& b = Build();
 
   b.push_function(Function{});
-  EXPECT_EQ(b.GenerateStatement(expr), 1u) << b.error();
+  EXPECT_TRUE(b.GenerateStatement(expr)) << b.error();
   EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()), R"(OpKill
 )");
 }

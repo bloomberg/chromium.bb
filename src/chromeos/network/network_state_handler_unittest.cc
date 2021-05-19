@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
@@ -28,8 +29,10 @@
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/fake_stub_cellular_networks_provider.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/tether_constants.h"
 #include "dbus/object_path.h"
@@ -50,6 +53,9 @@ const char kShillManagerClientStubCellular[] = "/service/cellular1";
 
 const char kWifiGuid1[] = "wifi1";
 const char kWifiName1[] = "WiFi 1";
+
+const char kCellularIccid[] = "iccid";
+const char kCellularEid[] = "eid";
 
 const char kTetherGuid1[] = "tether1";
 const char kTetherGuid2[] = "tether2";
@@ -85,6 +91,17 @@ bool NetworkListContainsPath(const NetworkStateHandler::NetworkStateList& list,
                       [path](const NetworkState* network) {
                         return network->path() == path;
                       }) != list.end();
+}
+
+// Creates a list of cellular SIM slots with a single primary slot whose eid is
+// |eid|.
+base::Value GenerateSimSlotInfosWithEid(const std::string& eid) {
+  base::Value::ListStorage sim_slot_infos;
+  base::Value slot_info_item(base::Value::Type::DICTIONARY);
+  slot_info_item.SetStringKey(shill::kSIMSlotInfoEID, eid);
+  slot_info_item.SetBoolKey(shill::kSIMSlotInfoPrimary, true);
+  sim_slot_infos.push_back(std::move(slot_info_item));
+  return base::Value(sim_slot_infos);
 }
 
 class TestObserver final : public chromeos::NetworkStateHandlerObserver {
@@ -149,9 +166,20 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
     scan_requests_.push_back(type);
   }
 
+  void ScanStarted(const DeviceState* device) override {
+    DCHECK(device);
+    scan_started_count_++;
+    if (run_loop_scan_started_) {
+      run_loop_scan_started_->Quit();
+    }
+  }
+
   void ScanCompleted(const DeviceState* device) override {
     DCHECK(device);
     scan_completed_count_++;
+    if (run_loop_scan_completed_) {
+      run_loop_scan_completed_->Quit();
+    }
   }
 
   void HostnameChanged(const std::string& hostname) override {
@@ -170,6 +198,7 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   const std::vector<NetworkTypePattern>& scan_requests() {
     return scan_requests_;
   }
+  size_t scan_started_count() { return scan_started_count_; }
   size_t scan_completed_count() { return scan_completed_count_; }
   const std::string& hostname() { return hostname_; }
   void reset_change_counts() {
@@ -179,6 +208,7 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
     device_list_changed_count_ = 0;
     network_list_changed_count_ = 0;
     scan_requests_.clear();
+    scan_started_count_ = 0;
     scan_completed_count_ = 0;
     connection_state_changes_.clear();
   }
@@ -214,6 +244,20 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
     return network_connection_state_[service_path];
   }
 
+  void WaitForScanStarted() {
+    DCHECK(!run_loop_scan_started_);
+    run_loop_scan_started_.emplace();
+    run_loop_scan_started_->Run();
+    run_loop_scan_started_.reset();
+  }
+
+  void WaitForScanCompleted() {
+    DCHECK(!run_loop_scan_completed_);
+    run_loop_scan_completed_.emplace();
+    run_loop_scan_completed_->Run();
+    run_loop_scan_completed_.reset();
+  }
+
  private:
   NetworkStateHandler* handler_;
   size_t active_network_change_count_ = 0;
@@ -223,6 +267,7 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   size_t network_list_changed_count_ = 0;
   size_t network_count_ = 0;
   std::vector<NetworkTypePattern> scan_requests_;
+  size_t scan_started_count_ = 0;
   size_t scan_completed_count_ = 0;
   std::string hostname_;
   std::vector<std::string> active_network_paths_;
@@ -233,6 +278,8 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   std::map<std::string, int> device_property_updates_;
   std::map<std::string, int> connection_state_changes_;
   std::map<std::string, std::string> network_connection_state_;
+  base::Optional<base::RunLoop> run_loop_scan_started_;
+  base::Optional<base::RunLoop> run_loop_scan_completed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -282,6 +329,8 @@ class NetworkStateHandlerTest : public testing::Test {
     test_observer_.reset(new TestObserver(network_state_handler_.get()));
     network_state_handler_->AddObserver(test_observer_.get(), FROM_HERE);
     network_state_handler_->InitShillPropertyHandler();
+    network_state_handler_->set_stub_cellular_networks_provider(
+        &fake_stub_cellular_networks_provider_);
     base::RunLoop().RunUntilIdle();
     test_observer_->reset_change_counts();
   }
@@ -313,6 +362,12 @@ class NetworkStateHandlerTest : public testing::Test {
                             "stub_wifi_device1");
     device_test_->AddDevice(kShillManagerClientStubCellularDevice,
                             shill::kTypeCellular, "stub_cellular_device1");
+    device_test_->SetDeviceProperty(
+        kShillManagerClientStubCellularDevice, shill::kIccidProperty,
+        base::Value(kCellularIccid), /*notify_changed=*/true);
+    device_test_->SetDeviceProperty(
+        kShillManagerClientStubCellularDevice, shill::kSIMSlotInfoProperty,
+        GenerateSimSlotInfosWithEid(kCellularEid), /*notify_changed=*/true);
 
     manager_test_ = ShillManagerClient::Get()->GetTestInterface();
     ASSERT_TRUE(manager_test_);
@@ -344,6 +399,17 @@ class NetworkStateHandlerTest : public testing::Test {
         base::BindOnce(&ErrorCallbackFunction));
   }
 
+  void SetDeviceProperty(const std::string& device_path,
+                         const std::string& key,
+                         const base::Value& value) {
+    device_test_->SetDeviceProperty(device_path, key, value,
+                                    /*notify_changed=*/true);
+  }
+
+  void RemoveDevice(const std::string& device_path) {
+    device_test_->RemoveDevice(device_path);
+  }
+
   void SetProperties(NetworkState* network, const base::Value& properties) {
     // UpdateNetworkStateProperties expects 'Type' and 'WiFi.HexSSID' to always
     // be set.
@@ -366,6 +432,7 @@ class NetworkStateHandlerTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<TestObserver> test_observer_;
+  FakeStubCellularNetworksProvider fake_stub_cellular_networks_provider_;
   ShillDeviceClient::TestInterface* device_test_;
   ShillManagerClient::TestInterface* manager_test_;
   ShillProfileClient::TestInterface* profile_test_;
@@ -881,6 +948,7 @@ TEST_F(NetworkStateHandlerTest, TetherScanningState) {
           NetworkTypePattern::Tether());
   EXPECT_TRUE(tether_device_state);
   EXPECT_FALSE(tether_device_state->scanning());
+  EXPECT_EQ(0u, test_observer_->scan_started_count());
   EXPECT_EQ(0u, test_observer_->scan_completed_count());
 
   network_state_handler_->SetTetherScanState(true /* is_scanning */);
@@ -888,6 +956,7 @@ TEST_F(NetworkStateHandlerTest, TetherScanningState) {
       NetworkTypePattern::Tether());
   EXPECT_TRUE(tether_device_state);
   EXPECT_TRUE(tether_device_state->scanning());
+  EXPECT_EQ(1u, test_observer_->scan_started_count());
   EXPECT_EQ(0u, test_observer_->scan_completed_count());
 
   network_state_handler_->SetTetherScanState(false /* is_scanning */);
@@ -895,6 +964,7 @@ TEST_F(NetworkStateHandlerTest, TetherScanningState) {
       NetworkTypePattern::Tether());
   EXPECT_TRUE(tether_device_state);
   EXPECT_FALSE(tether_device_state->scanning());
+  EXPECT_EQ(1u, test_observer_->scan_started_count());
   EXPECT_EQ(1u, test_observer_->scan_completed_count());
 }
 
@@ -1980,6 +2050,43 @@ TEST_F(NetworkStateHandlerTest, DeviceListChanged) {
   EXPECT_EQ(1, test_observer_->PropertyUpdatesForDevice(wifi_device));
 }
 
+TEST_F(NetworkStateHandlerTest, ScanPropertyChanges) {
+  EXPECT_EQ(0u, test_observer_->scan_started_count());
+  EXPECT_EQ(0u, test_observer_->scan_completed_count());
+
+  device_test_->SetDeviceProperty(kShillManagerClientStubWifiDevice,
+                                  shill::kScanningProperty, base::Value(true),
+                                  /*notify_changed=*/true);
+  test_observer_->WaitForScanStarted();
+  EXPECT_EQ(1u, test_observer_->scan_started_count());
+  EXPECT_EQ(0u, test_observer_->scan_completed_count());
+
+  // A redundant shill property change notification does not send out additional
+  // ScanStarted notifications.
+  device_test_->SetDeviceProperty(kShillManagerClientStubWifiDevice,
+                                  shill::kScanningProperty, base::Value(true),
+                                  /*notify_changed=*/true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, test_observer_->scan_started_count());
+  EXPECT_EQ(0u, test_observer_->scan_completed_count());
+
+  device_test_->SetDeviceProperty(kShillManagerClientStubWifiDevice,
+                                  shill::kScanningProperty, base::Value(false),
+                                  /*notify_changed=*/true);
+  test_observer_->WaitForScanCompleted();
+  EXPECT_EQ(1u, test_observer_->scan_started_count());
+  EXPECT_EQ(1u, test_observer_->scan_completed_count());
+
+  // A redundant shill property change notification does not send out additional
+  // ScanStarted notifications.
+  device_test_->SetDeviceProperty(kShillManagerClientStubWifiDevice,
+                                  shill::kScanningProperty, base::Value(false),
+                                  /*notify_changed=*/true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, test_observer_->scan_started_count());
+  EXPECT_EQ(1u, test_observer_->scan_completed_count());
+}
+
 TEST_F(NetworkStateHandlerTest, IPConfigChanged) {
   test_observer_->reset_updates();
   EXPECT_EQ(0, test_observer_->PropertyUpdatesForDevice(
@@ -2028,69 +2135,119 @@ TEST_F(NetworkStateHandlerTest, UpdateGuid) {
       kShillManagerClientStubDefaultWifi);
   ASSERT_TRUE(wifi1);
   EXPECT_EQ("wifi1_guid", wifi1->guid());
+}
 
-  const NetworkState* cellular =
-      network_state_handler_->GetNetworkState(kShillManagerClientStubCellular);
-  ASSERT_TRUE(cellular);
-  EXPECT_EQ("cellular1_guid", cellular->guid());
-  // Remove the cellular service. This should create a default network with the
-  // same GUID.
+TEST_F(NetworkStateHandlerTest, SyncStubCellularNetworks) {
+  const char kStubCellularIccid[] = "test_iccid";
+  // Clear existing cellular networks.
   service_test_->RemoveService(kShillManagerClientStubCellular);
   base::RunLoop().RunUntilIdle();
-  // No service matching kShillManagerClientStubCellular.
   EXPECT_FALSE(
       network_state_handler_->GetNetworkState(kShillManagerClientStubCellular));
-  // The default cellular network will have a unique assigned guid.
-  cellular = network_state_handler_->FirstNetworkByType(
+
+  test_observer_->reset_change_counts();
+  fake_stub_cellular_networks_provider_.AddStub(kStubCellularIccid);
+
+  // Verify that stub cellular network was added and notified.
+  network_state_handler_->SyncStubCellularNetworks();
+  const NetworkState* cellular = network_state_handler_->FirstNetworkByType(
       NetworkTypePattern::Cellular());
   ASSERT_TRUE(cellular);
   EXPECT_FALSE(cellular->guid().empty());
-  EXPECT_NE("cellular1_guid", cellular->guid());
+  EXPECT_TRUE(cellular->IsNonShillCellularNetwork());
+  EXPECT_EQ(kStubCellularIccid, cellular->iccid());
+  EXPECT_EQ(1u, test_observer_->network_list_changed_count());
+
+  // Set the test to fail if properties are requested from a service not backed
+  // by Shill, then update the profiles property and very that no test failure
+  // occurs. This verifies that stub networks do not have properties requested
+  // on profile change.
+  service_test_->SetRequireServiceToGetProperties(true);
+  network_state_handler_->shill_property_handler_->OnPropertyChanged(
+      shill::kProfilesProperty, base::Value(base::Value::Type::LIST));
+
+  // Verify that StubCellularNetworksProvider can remove existing
+  // networks.
+  test_observer_->reset_change_counts();
+  fake_stub_cellular_networks_provider_.RemoveStub(kStubCellularIccid);
+  network_state_handler_->SyncStubCellularNetworks();
+  NetworkStateHandler::NetworkStateList network_list;
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Cellular(), /*configured_only=*/false,
+      /*visible_only=*/false, /*limit=*/0, &network_list);
+  EXPECT_EQ(0u, network_list.size());
+  EXPECT_EQ(1u, test_observer_->network_list_changed_count());
 }
 
-TEST_F(NetworkStateHandlerTest, DefaultCellularNetwork) {
-  // ClearServices will trigger a kServiceCompleteListProperty property change
-  // which will create a default Cellular network.
-  service_test_->ClearServices();
-  base::RunLoop().RunUntilIdle();
-  NetworkStateHandler::NetworkStateList cellular_networks;
-  network_state_handler_->GetNetworkListByType(
-      NetworkTypePattern::Cellular(), false /* configured_only */,
-      false /* visible_only */, 0, &cellular_networks);
-  ASSERT_EQ(1u, cellular_networks.size());
-  EXPECT_TRUE(cellular_networks[0]->IsDefaultCellular());
+TEST_F(NetworkStateHandlerTest,
+       SyncStubCellularNetworks_ManagedStateListChange) {
+  const char kStubCellularIccid[] = "stub_iccid";
+  const char kTestCellularServicePath[] = "test_cellular_service_path";
+  const char kTestCellularServiceGuid[] = "test_cellular_guid";
+  const char kTestCellularServiceName[] = "test_cellular";
+  const char kTestCellularServiceIccid[] = "test_cellular_iccid";
 
-  // Add a Cellular service. This should replace the default cellular network.
-  AddService(kShillManagerClientStubCellular, "cellular1_guid", "cellular1",
-             shill::kTypeCellular, shill::kStateIdle);
+  // Clear existing cellular networks.
+  service_test_->RemoveService(kShillManagerClientStubCellular);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      network_state_handler_->GetNetworkState(kShillManagerClientStubCellular));
+
+  test_observer_->reset_change_counts();
+  fake_stub_cellular_networks_provider_.AddStub(kStubCellularIccid);
+
+  // Verify that change in network list causes stub cellular networks to be
+  // synced.
+  AddService(kTestCellularServicePath, kTestCellularServiceGuid,
+             kTestCellularServiceName, shill::kTypeCellular, shill::kStateIdle);
+  SetServiceProperty(kTestCellularServicePath, shill::kIccidProperty,
+                     base::Value(kTestCellularServiceIccid));
+  base::RunLoop().RunUntilIdle();
+  NetworkStateHandler::NetworkStateList network_list;
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Cellular(), /*configured_only=*/false,
+      /*visible_only=*/false, /*limit=*/0, &network_list);
+  EXPECT_EQ(2u, network_list.size());
+  EXPECT_EQ(1u, test_observer_->network_list_changed_count());
+
+  test_observer_->reset_change_counts();
+  fake_stub_cellular_networks_provider_.RemoveStub(kStubCellularIccid);
+
+  // Verify that change in device list causes stub cellular networks to be
+  // synced.
+  RemoveDevice(kShillManagerClientStubWifiDevice);
   base::RunLoop().RunUntilIdle();
   network_state_handler_->GetNetworkListByType(
-      NetworkTypePattern::Cellular(), false /* configured_only */,
-      false /* visible_only */, 0, &cellular_networks);
-  ASSERT_EQ(1u, cellular_networks.size());
-  EXPECT_FALSE(cellular_networks[0]->IsDefaultCellular());
-  EXPECT_EQ("/service/cellular1", cellular_networks[0]->path());
+      NetworkTypePattern::Cellular(), /*configured_only=*/false,
+      /*visible_only=*/false, /*limit=*/0, &network_list);
+  EXPECT_EQ(1u, network_list.size());
+  EXPECT_EQ(1u, test_observer_->network_list_changed_count());
 }
 
-TEST_F(NetworkStateHandlerTest, RemoveDefaultCellularNetwork) {
-  // ClearServices will trigger a kServiceCompleteListProperty property change
-  // which will create a default Cellular network.
-  service_test_->ClearServices();
+TEST_F(NetworkStateHandlerTest, SyncStubCellularNetworks_SimInfoChange) {
+  const char kStubCellularIccid[] = "test_iccid";
+  // Clear existing cellular networks.
+  service_test_->RemoveService(kShillManagerClientStubCellular);
   base::RunLoop().RunUntilIdle();
-  NetworkStateHandler::NetworkStateList cellular_networks;
-  network_state_handler_->GetNetworkListByType(
-      NetworkTypePattern::Cellular(), false /* configured_only */,
-      false /* visible_only */, 0, &cellular_networks);
-  ASSERT_EQ(1u, cellular_networks.size());
-  EXPECT_TRUE(cellular_networks[0]->IsDefaultCellular());
+  EXPECT_FALSE(
+      network_state_handler_->GetNetworkState(kShillManagerClientStubCellular));
 
-  // Removing the Cellular device should remove the default cellular network.
-  device_test_->RemoveDevice(kShillManagerClientStubCellularDevice);
+  test_observer_->reset_change_counts();
+  fake_stub_cellular_networks_provider_.AddStub(kStubCellularIccid);
+
+  // Verify that change in SIM slot info causes stub networks to be synced.
+  SetDeviceProperty(kShillManagerClientStubCellularDevice,
+                    shill::kSIMSlotInfoProperty,
+                    base::Value(base::Value::Type::LIST));
   base::RunLoop().RunUntilIdle();
+  NetworkStateHandler::NetworkStateList network_list;
   network_state_handler_->GetNetworkListByType(
-      NetworkTypePattern::Cellular(), false /* configured_only */,
-      false /* visible_only */, 0, &cellular_networks);
-  EXPECT_EQ(0u, cellular_networks.size());
+      NetworkTypePattern::Cellular(), /*configured_only=*/false,
+      /*visible_only=*/false, /*limit=*/0, &network_list);
+  EXPECT_EQ(1u, network_list.size());
+  EXPECT_EQ(kStubCellularIccid, network_list[0]->iccid());
+  EXPECT_TRUE(network_list[0]->IsNonShillCellularNetwork());
+  EXPECT_EQ(1u, test_observer_->network_list_changed_count());
 }
 
 TEST_F(NetworkStateHandlerTest, BlockedByPolicyBlocked) {

@@ -294,6 +294,14 @@ message SetInsetsRequest {
   int32 right = 4;
 }
 
+message GetUserAgentRequest {}
+
+message FocusRequest {}
+
+message GetUserAgentResponse {
+  string user_agent = 1;
+}
+
 message WebviewRequest {
   // Unique identifier for the request. For requests that will have a response,
   // the response id will match the request id.
@@ -341,6 +349,8 @@ message WebviewRequest {
     ResizeRequest resize = 21;
     ClearCookiesRequest clear_cookies = 22;
     SetInsetsRequest set_insets = 23;
+    GetUserAgentRequest get_user_agent = 24;
+    FocusRequest focus = 25;
   }
 }
 
@@ -365,6 +375,7 @@ message WebviewResponse {
     ClearCookiesResponse clear_cookies = 11;
     TextInputFocusEvent input_focus_event = 12;
     AssociateCastAppWindowResponse associate = 20;
+    GetUserAgentResponse get_user_agent = 21;
   }
 }
 

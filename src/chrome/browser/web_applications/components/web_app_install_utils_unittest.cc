@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -101,15 +100,14 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   {
     blink::Manifest::FileHandler handler;
     handler.action = GURL("http://example.com/open-files");
-    handler.accept[base::UTF8ToUTF16("image/png")].push_back(
-        base::UTF8ToUTF16(".png"));
-    handler.name = base::UTF8ToUTF16("Images");
+    handler.accept[u"image/png"].push_back(u".png");
+    handler.name = u"Images";
     manifest.file_handlers.push_back(handler);
   }
 
   {
     blink::Manifest::ProtocolHandler protocol_handler;
-    protocol_handler.protocol = base::UTF8ToUTF16("mailto");
+    protocol_handler.protocol = u"mailto";
     protocol_handler.url = GURL("http://example.com/handle=%s");
     manifest.protocol_handlers.push_back(protocol_handler);
   }
@@ -118,6 +116,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
     blink::Manifest::UrlHandler url_handler;
     url_handler.origin =
         url::Origin::Create(GURL("https://url_handlers_origin.com/"));
+    url_handler.has_origin_wildcard = false;
     manifest.url_handlers.push_back(url_handler);
   }
 
@@ -166,28 +165,28 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(1u, web_app_info.file_handlers.size());
   auto file_handler = web_app_info.file_handlers;
   EXPECT_EQ(manifest.file_handlers[0].action, file_handler[0].action);
-  ASSERT_EQ(file_handler[0].accept.count(base::UTF8ToUTF16("image/png")), 1u);
-  EXPECT_EQ(file_handler[0].accept[base::UTF8ToUTF16("image/png")][0],
-            base::UTF8ToUTF16(".png"));
-  EXPECT_EQ(file_handler[0].name, base::UTF8ToUTF16("Images"));
+  ASSERT_EQ(file_handler[0].accept.count(u"image/png"), 1u);
+  EXPECT_EQ(file_handler[0].accept[u"image/png"][0], u".png");
+  EXPECT_EQ(file_handler[0].name, u"Images");
 
   // Check protocol handlers were updated
   EXPECT_EQ(1u, web_app_info.protocol_handlers.size());
   auto protocol_handler = web_app_info.protocol_handlers[0];
-  EXPECT_EQ(protocol_handler.protocol, base::UTF8ToUTF16("mailto"));
+  EXPECT_EQ(protocol_handler.protocol, u"mailto");
   EXPECT_EQ(protocol_handler.url, GURL("http://example.com/handle=%s"));
 
   EXPECT_EQ(1u, web_app_info.url_handlers.size());
   auto url_handler = web_app_info.url_handlers[0];
   EXPECT_EQ(url_handler.origin,
             url::Origin::Create(GURL("https://url_handlers_origin.com/")));
+  EXPECT_FALSE(url_handler.has_origin_wildcard);
 }
 
 TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_EmptyName) {
   WebApplicationInfo web_app_info;
 
   blink::Manifest manifest;
-  manifest.name = base::string16();
+  manifest.name = std::u16string();
   manifest.short_name = base::ASCIIToUTF16(kAppShortName);
 
   UpdateWebAppInfoFromManifest(manifest, AppManifestUrl(), &web_app_info);
@@ -249,13 +248,13 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_ShareTarget) {
     share_target.method = blink::mojom::ManifestShareTarget_Method::kPost;
     share_target.enctype =
         blink::mojom::ManifestShareTarget_Enctype::kMultipartFormData;
-    share_target.params.title = base::ASCIIToUTF16("kTitle");
-    share_target.params.text = base::ASCIIToUTF16("kText");
+    share_target.params.title = u"kTitle";
+    share_target.params.text = u"kText";
 
     blink::Manifest::FileFilter file_filter;
-    file_filter.name = base::ASCIIToUTF16("kImages");
-    file_filter.accept.push_back(base::ASCIIToUTF16(".png"));
-    file_filter.accept.push_back(base::ASCIIToUTF16("image/png"));
+    file_filter.name = u"kImages";
+    file_filter.accept.push_back(u".png");
+    file_filter.accept.push_back(u"image/png");
     share_target.params.files.push_back(std::move(file_filter));
 
     manifest.share_target = std::move(share_target);
@@ -286,8 +285,8 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_ShareTarget) {
     share_target.method = blink::mojom::ManifestShareTarget_Method::kGet;
     share_target.enctype =
         blink::mojom::ManifestShareTarget_Enctype::kFormUrlEncoded;
-    share_target.params.text = base::ASCIIToUTF16("kText");
-    share_target.params.url = base::ASCIIToUTF16("kUrl");
+    share_target.params.text = u"kText";
+    share_target.params.url = u"kUrl";
 
     manifest.share_target = std::move(share_target);
   }
@@ -322,18 +321,20 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   info.url = AppIcon1();
   web_app_info.icon_infos.push_back(info);
 
-  for (int i = 1; i < 4; ++i) {
+  for (int i = 0; i < 3; ++i) {
     WebApplicationShortcutsMenuItemInfo shortcuts_menu_item_info;
     WebApplicationShortcutsMenuItemInfo::Icon icon;
     std::string shortcut_name = kShortcutItemName;
-    shortcut_name += base::NumberToString(i);
+    shortcut_name += base::NumberToString(i + 1);
     shortcuts_menu_item_info.name = base::UTF8ToUTF16(shortcut_name);
     shortcuts_menu_item_info.url = ShortcutItemUrl();
 
     icon.url = IconUrl1();
     icon.square_size_px = kIconSize;
-    shortcuts_menu_item_info.shortcut_icon_infos.push_back(std::move(icon));
-    web_app_info.shortcuts_menu_item_infos.push_back(shortcuts_menu_item_info);
+    shortcuts_menu_item_info.SetShortcutIconInfosForPurpose(
+        (i == 1) ? IconPurpose::MASKABLE : IconPurpose::ANY, {std::move(icon)});
+    web_app_info.shortcuts_menu_item_infos.push_back(
+        std::move(shortcuts_menu_item_info));
   }
 
   blink::Manifest manifest;
@@ -344,15 +345,14 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   {
     blink::Manifest::FileHandler handler;
     handler.action = GURL("http://example.com/open-files");
-    handler.accept[base::UTF8ToUTF16("image/png")].push_back(
-        base::UTF8ToUTF16(".png"));
-    handler.name = base::UTF8ToUTF16("Images");
+    handler.accept[u"image/png"].push_back(u".png");
+    handler.name = u"Images";
     manifest.file_handlers.push_back(handler);
   }
 
   {
     blink::Manifest::ProtocolHandler protocol_handler;
-    protocol_handler.protocol = base::UTF8ToUTF16("mailto");
+    protocol_handler.protocol = u"mailto";
     protocol_handler.url = GURL("http://example.com/handle=%s");
     manifest.protocol_handlers.push_back(protocol_handler);
   }
@@ -361,6 +361,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
     blink::Manifest::UrlHandler url_handler;
     url_handler.origin =
         url::Origin::Create(GURL("https://url_handlers_origin.com/"));
+    url_handler.has_origin_wildcard = true;
     manifest.url_handlers.push_back(url_handler);
   }
 
@@ -378,8 +379,15 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   // The shortcuts_menu_item_infos from |web_app_info| should be left as is,
   // since the manifest doesn't have any shortcut information.
   EXPECT_EQ(3u, web_app_info.shortcuts_menu_item_infos.size());
-  EXPECT_EQ(
-      1u, web_app_info.shortcuts_menu_item_infos[0].shortcut_icon_infos.size());
+  EXPECT_EQ(1u, web_app_info.shortcuts_menu_item_infos[0]
+                    .GetShortcutIconInfosForPurpose(IconPurpose::ANY)
+                    .size());
+  EXPECT_EQ(1u, web_app_info.shortcuts_menu_item_infos[1]
+                    .GetShortcutIconInfosForPurpose(IconPurpose::MASKABLE)
+                    .size());
+  EXPECT_EQ(1u, web_app_info.shortcuts_menu_item_infos[2]
+                    .GetShortcutIconInfosForPurpose(IconPurpose::ANY)
+                    .size());
 
   // Test that |manifest.name| takes priority over |manifest.short_name|, and
   // that icons provided by the manifest replace icons in |web_app_info|.
@@ -405,7 +413,8 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
   icon.src = IconUrl2();
   icon.sizes.emplace_back(10, 10);
-  shortcut_item.icons.push_back(std::move(icon));
+  icon.purpose = {Purpose::ANY};
+  shortcut_item.icons.push_back(icon);
 
   manifest.shortcuts.push_back(shortcut_item);
 
@@ -415,7 +424,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
   icon.src = IconUrl3();
   shortcut_item.icons.clear();
-  shortcut_item.icons.push_back(std::move(icon));
+  shortcut_item.icons.push_back(icon);
 
   manifest.shortcuts.push_back(shortcut_item);
 
@@ -428,31 +437,34 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   EXPECT_EQ(AppIcon3(), web_app_info.icon_infos[1].url);
 
   EXPECT_EQ(2u, web_app_info.shortcuts_menu_item_infos.size());
-  EXPECT_EQ(
-      1u, web_app_info.shortcuts_menu_item_infos[0].shortcut_icon_infos.size());
+  EXPECT_EQ(1u, web_app_info.shortcuts_menu_item_infos[0]
+                    .GetShortcutIconInfosForPurpose(IconPurpose::ANY)
+                    .size());
   WebApplicationShortcutsMenuItemInfo::Icon web_app_shortcut_icon =
-      web_app_info.shortcuts_menu_item_infos[0].shortcut_icon_infos[0];
+      web_app_info.shortcuts_menu_item_infos[0].GetShortcutIconInfosForPurpose(
+          IconPurpose::ANY)[0];
   EXPECT_EQ(IconUrl2(), web_app_shortcut_icon.url);
 
-  EXPECT_EQ(
-      1u, web_app_info.shortcuts_menu_item_infos[1].shortcut_icon_infos.size());
+  EXPECT_EQ(1u, web_app_info.shortcuts_menu_item_infos[1]
+                    .GetShortcutIconInfosForPurpose(IconPurpose::ANY)
+                    .size());
   web_app_shortcut_icon =
-      web_app_info.shortcuts_menu_item_infos[1].shortcut_icon_infos[0];
+      web_app_info.shortcuts_menu_item_infos[1].GetShortcutIconInfosForPurpose(
+          IconPurpose::ANY)[0];
   EXPECT_EQ(IconUrl3(), web_app_shortcut_icon.url);
 
   // Check file handlers were updated
   EXPECT_EQ(1u, web_app_info.file_handlers.size());
   auto file_handler = web_app_info.file_handlers;
   EXPECT_EQ(manifest.file_handlers[0].action, file_handler[0].action);
-  ASSERT_EQ(file_handler[0].accept.count(base::UTF8ToUTF16("image/png")), 1u);
-  EXPECT_EQ(file_handler[0].accept[base::UTF8ToUTF16("image/png")][0],
-            base::UTF8ToUTF16(".png"));
-  EXPECT_EQ(file_handler[0].name, base::UTF8ToUTF16("Images"));
+  ASSERT_EQ(file_handler[0].accept.count(u"image/png"), 1u);
+  EXPECT_EQ(file_handler[0].accept[u"image/png"][0], u".png");
+  EXPECT_EQ(file_handler[0].name, u"Images");
 
   // Check protocol handlers were updated
   EXPECT_EQ(1u, web_app_info.protocol_handlers.size());
   auto protocol_handler = web_app_info.protocol_handlers[0];
-  EXPECT_EQ(protocol_handler.protocol, base::UTF8ToUTF16("mailto"));
+  EXPECT_EQ(protocol_handler.protocol, u"mailto");
   EXPECT_EQ(protocol_handler.url, GURL("http://example.com/handle=%s"));
 
   // Check URL handlers were updated
@@ -460,6 +472,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   auto url_handler = web_app_info.url_handlers[0];
   EXPECT_EQ(url_handler.origin,
             url::Origin::Create(GURL("https://url_handlers_origin.com/")));
+  EXPECT_TRUE(url_handler.has_origin_wildcard);
 }
 
 // Tests that we limit the number of icons declared by a site.
@@ -492,6 +505,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
     blink::Manifest::ImageResource icon;
     icon.src = IconUrl1();
     icon.sizes.emplace_back(i, i);
+    icon.purpose.emplace_back(IconPurpose::ANY);
     shortcut_item.icons.push_back(std::move(icon));
 
     manifest.shortcuts.push_back(shortcut_item);
@@ -501,7 +515,8 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
   std::vector<WebApplicationShortcutsMenuItemInfo::Icon> all_icons;
   for (const auto& shortcut : web_app_info.shortcuts_menu_item_infos) {
-    for (const auto& icon_info : shortcut.shortcut_icon_infos) {
+    for (const auto& icon_info :
+         shortcut.GetShortcutIconInfosForPurpose(IconPurpose::ANY)) {
       all_icons.push_back(icon_info);
     }
   }
@@ -520,6 +535,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestIconsTooLarge) {
     icon.sizes.emplace_back(size, size);
     manifest.icons.push_back(std::move(icon));
   }
+
   WebApplicationInfo web_app_info;
   UpdateWebAppInfoFromManifest(manifest, AppManifestUrl(), &web_app_info);
 
@@ -542,6 +558,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
     blink::Manifest::ImageResource icon;
     icon.src = IconUrl1();
+    icon.purpose.push_back(Purpose::ANY);
     const int size = i * 100;
     icon.sizes.emplace_back(size, size);
     shortcut_item.icons.push_back(std::move(icon));
@@ -553,7 +570,8 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
   std::vector<WebApplicationShortcutsMenuItemInfo::Icon> all_icons;
   for (const auto& shortcut : web_app_info.shortcuts_menu_item_infos) {
-    for (const auto& icon_info : shortcut.shortcut_icon_infos) {
+    for (const auto& icon_info :
+         shortcut.GetShortcutIconInfosForPurpose(IconPurpose::ANY)) {
       all_icons.push_back(icon_info);
     }
   }
@@ -564,40 +582,56 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 // their own map in web_app_info.
 TEST(WebAppInstallUtils, PopulateShortcutItemIcons) {
   WebApplicationInfo web_app_info;
-  WebApplicationShortcutsMenuItemInfo shortcut_item;
   WebApplicationShortcutsMenuItemInfo::Icon icon;
-  std::string shortcut_name = kShortcutItemName;
-  shortcut_name += base::NumberToString(1);
-  shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
-  shortcut_item.url = ShortcutItemUrl();
-  icon.url = IconUrl1();
-  icon.square_size_px = kIconSize;
-  shortcut_item.shortcut_icon_infos.push_back(std::move(icon));
-  web_app_info.shortcuts_menu_item_infos.push_back(std::move(shortcut_item));
 
-  shortcut_name = kShortcutItemName;
-  shortcut_name += base::NumberToString(2);
-  shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
-  icon.url = IconUrl1();
-  icon.square_size_px = kIconSize;
-  shortcut_item.shortcut_icon_infos.push_back(std::move(icon));
-  icon.url = IconUrl2();
-  icon.square_size_px = 2 * kIconSize;
-  shortcut_item.shortcut_icon_infos.push_back(std::move(icon));
-  web_app_info.shortcuts_menu_item_infos.push_back(std::move(shortcut_item));
+  {
+    WebApplicationShortcutsMenuItemInfo shortcut_item;
+    std::vector<WebApplicationShortcutsMenuItemInfo::Icon> shortcut_icon_infos;
+    std::string shortcut_name = kShortcutItemName;
+    shortcut_name += base::NumberToString(1);
+    shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
+    shortcut_item.url = ShortcutItemUrl();
+    icon.url = IconUrl1();
+    icon.square_size_px = kIconSize;
+    shortcut_icon_infos.push_back(icon);
+    shortcut_item.SetShortcutIconInfosForPurpose(
+        IconPurpose::ANY, std::move(shortcut_icon_infos));
+    web_app_info.shortcuts_menu_item_infos.push_back(std::move(shortcut_item));
+  }
 
-  IconsMap icons_map;
-  std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
-  std::vector<SkBitmap> bmp2 = {CreateSquareIcon(32, SK_ColorBLUE)};
-  std::vector<SkBitmap> bmp3 = {CreateSquareIcon(32, SK_ColorRED)};
-  icons_map.emplace(IconUrl1(), bmp1);
-  icons_map.emplace(IconUrl2(), bmp2);
-  icons_map.emplace(AppIcon3(), bmp3);
-  PopulateShortcutItemIcons(&web_app_info, &icons_map);
+  {
+    WebApplicationShortcutsMenuItemInfo shortcut_item;
+    std::vector<WebApplicationShortcutsMenuItemInfo::Icon> shortcut_icon_infos;
+    std::string shortcut_name = kShortcutItemName;
+    shortcut_name += base::NumberToString(2);
+    shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
+    icon.url = IconUrl1();
+    icon.square_size_px = kIconSize;
+    shortcut_icon_infos.push_back(icon);
+    icon.url = IconUrl2();
+    icon.square_size_px = 2 * kIconSize;
+    shortcut_icon_infos.push_back(icon);
+    shortcut_item.SetShortcutIconInfosForPurpose(
+        IconPurpose::ANY, std::move(shortcut_icon_infos));
+    web_app_info.shortcuts_menu_item_infos.push_back(std::move(shortcut_item));
+  }
+
+  {
+    IconsMap icons_map;
+    std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
+    std::vector<SkBitmap> bmp2 = {CreateSquareIcon(32, SK_ColorBLUE)};
+    std::vector<SkBitmap> bmp3 = {CreateSquareIcon(32, SK_ColorRED)};
+    icons_map.emplace(IconUrl1(), bmp1);
+    icons_map.emplace(IconUrl2(), bmp2);
+    icons_map.emplace(AppIcon3(), bmp3);
+    PopulateShortcutItemIcons(&web_app_info, &icons_map);
+  }
 
   // Ensure that reused shortcut icons are processed correctly.
-  EXPECT_EQ(1U, web_app_info.shortcuts_menu_icons_bitmaps[0].size());
-  EXPECT_EQ(2U, web_app_info.shortcuts_menu_icons_bitmaps[1].size());
+  EXPECT_EQ(1U, web_app_info.shortcuts_menu_icon_bitmaps[0].any.size());
+  EXPECT_EQ(0U, web_app_info.shortcuts_menu_icon_bitmaps[0].maskable.size());
+  EXPECT_EQ(2U, web_app_info.shortcuts_menu_icon_bitmaps[1].any.size());
+  EXPECT_EQ(0U, web_app_info.shortcuts_menu_icon_bitmaps[1].maskable.size());
 }
 
 // Tests that when PopulateShortcutItemIcons is called with no shortcut icon
@@ -622,14 +656,14 @@ TEST(WebAppInstallUtils, PopulateShortcutItemIconsNoShortcutIcons) {
 // is correctly populated.
 TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
   WebApplicationInfo web_app_info;
-  web_app_info.title = base::ASCIIToUTF16("App Name");
+  web_app_info.title = u"App Name";
 
   IconsMap icons_map;
   std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
   icons_map.emplace(IconUrl1(), bmp1);
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 
-  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.any.size());
 }
 
 // Tests that when FilterAndResizeIconsGenerateMissing is called with maskable
@@ -645,7 +679,7 @@ TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissing_MaskableIcons) {
 
   // Construct |web_app_info| to pass icon infos.
   WebApplicationInfo web_app_info;
-  web_app_info.title = base::ASCIIToUTF16("App Name");
+  web_app_info.title = u"App Name";
   WebApplicationIconInfo info;
   // Icon at URL 1 has both ANY and MASKABLE purpose.
   info.url = IconUrl1();
@@ -660,12 +694,12 @@ TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissing_MaskableIcons) {
 
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 
-  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.any.size());
   // Expect only icon at URL 1 to be used and resized as.
-  for (const auto& icon_bitmap : web_app_info.icon_bitmaps_any) {
+  for (const auto& icon_bitmap : web_app_info.icon_bitmaps.any) {
     EXPECT_EQ(SK_ColorWHITE, icon_bitmap.second.getColor(0, 0));
   }
-  EXPECT_EQ(2u, web_app_info.icon_bitmaps_maskable.size());
+  EXPECT_EQ(2u, web_app_info.icon_bitmaps.maskable.size());
 }
 
 // Tests that when FilterAndResizeIconsGenerateMissing is called with maskable
@@ -679,7 +713,7 @@ TEST(WebAppInstallUtils,
 
   // Construct |web_app_info| to pass icon infos.
   WebApplicationInfo web_app_info;
-  web_app_info.title = base::ASCIIToUTF16("App Name");
+  web_app_info.title = u"App Name";
   WebApplicationIconInfo info;
   info.url = IconUrl1();
   info.purpose = Purpose::MASKABLE;
@@ -688,8 +722,8 @@ TEST(WebAppInstallUtils,
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 
   // Expect to fall back to using icon from icons_map.
-  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
-  for (const auto& icon_bitmap : web_app_info.icon_bitmaps_any) {
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.any.size());
+  for (const auto& icon_bitmap : web_app_info.icon_bitmaps.any) {
     EXPECT_EQ(SK_ColorWHITE, icon_bitmap.second.getColor(0, 0));
   }
 }
@@ -708,7 +742,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_InvalidManifestUrl) {
 TEST_F(WebAppInstallUtilsWithShortcutsMenu,
        FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
   WebApplicationInfo web_app_info;
-  web_app_info.title = base::ASCIIToUTF16("App Name");
+  web_app_info.title = u"App Name";
 
   IconsMap icons_map;
   std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
@@ -716,8 +750,8 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 
   // Expect to fall back to using icon from icons_map.
-  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
-  for (const auto& icon_bitmap : web_app_info.icon_bitmaps_any) {
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.any.size());
+  for (const auto& icon_bitmap : web_app_info.icon_bitmaps.any) {
     EXPECT_EQ(SK_ColorWHITE, icon_bitmap.second.getColor(0, 0));
   }
 }
@@ -736,7 +770,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
   // Construct |info| to add to |web_app_info.icon_infos|.
   WebApplicationInfo web_app_info;
-  web_app_info.title = base::ASCIIToUTF16("App Name");
+  web_app_info.title = u"App Name";
 
   WebApplicationIconInfo info;
   info.url = IconUrl1();
@@ -751,19 +785,21 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   WebApplicationShortcutsMenuItemInfo::Icon icon;
   icon.url = IconUrl2();
   icon.square_size_px = kIconSize;
-  shortcuts_menu_item_info.shortcut_icon_infos.push_back(std::move(icon));
+  shortcuts_menu_item_info.SetShortcutIconInfosForPurpose(IconPurpose::ANY,
+                                                          {std::move(icon)});
   web_app_info.shortcuts_menu_item_infos.push_back(
       std::move(shortcuts_menu_item_info));
   // Construct shortcut_icon_bitmap to add to
-  // |web_app_info.shortcuts_menu_icons_bitmaps|.
-  std::map<SquareSizePx, SkBitmap> shortcut_icon_bitmaps;
-  shortcut_icon_bitmaps[kIconSize] = CreateSquareIcon(kIconSize, SK_ColorBLUE);
-  web_app_info.shortcuts_menu_icons_bitmaps.emplace_back(shortcut_icon_bitmaps);
+  // |web_app_info.shortcuts_menu_icon_bitmaps|.
+  IconBitmaps shortcut_icon_bitmaps;
+  shortcut_icon_bitmaps.any[kIconSize] =
+      CreateSquareIcon(kIconSize, SK_ColorBLUE);
+  web_app_info.shortcuts_menu_icon_bitmaps.emplace_back(shortcut_icon_bitmaps);
 
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 
-  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
-  for (const auto& icon_bitmap : web_app_info.icon_bitmaps_any) {
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.any.size());
+  for (const auto& icon_bitmap : web_app_info.icon_bitmaps.any) {
     EXPECT_EQ(SK_ColorWHITE, icon_bitmap.second.getColor(0, 0));
   }
 }

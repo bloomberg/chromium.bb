@@ -10,54 +10,85 @@ import { validQueryPart } from '../framework/query/validQueryPart.js';
 import { TestSuiteListingEntry, TestSuiteListing } from '../framework/test_suite_listing.js';
 import { assert, unreachable } from '../framework/util/util.js';
 
-const fg = require('fast-glob');
+const specFileSuffix = __filename.endsWith('.ts') ? '.spec.ts' : '.spec.js';
 
-const specFileSuffix = '.spec.ts';
+async function crawlFilesRecursively(dir: string): Promise<string[]> {
+  const subpathInfo = await Promise.all(
+    (await fs.promises.readdir(dir)).map(async d => {
+      const p = path.join(dir, d);
+      const stats = await fs.promises.stat(p);
+      return {
+        path: p,
+        isDirectory: stats.isDirectory(),
+        isFile: stats.isFile(),
+      };
+    })
+  );
 
-export async function crawl(suite: string): Promise<TestSuiteListingEntry[]> {
-  const suiteDir = 'src/' + suite;
+  const files = subpathInfo
+    .filter(
+      i =>
+        i.isFile &&
+        (i.path.endsWith(specFileSuffix) ||
+          i.path.endsWith(`${path.sep}README.txt`) ||
+          i.path === 'README.txt')
+    )
+    .map(i => i.path);
+
+  return files.concat(
+    await subpathInfo
+      .filter(i => i.isDirectory)
+      .map(i => crawlFilesRecursively(i.path))
+      .reduce(async (a, b) => (await a).concat(await b), Promise.resolve([]))
+  );
+}
+
+export async function crawl(
+  suiteDir: string,
+  validate: boolean = true
+): Promise<TestSuiteListingEntry[]> {
   if (!fs.existsSync(suiteDir)) {
     console.error(`Could not find ${suiteDir}`);
     process.exit(1);
   }
 
-  const glob = `${suiteDir}/**/{README.txt,*${specFileSuffix}}`;
-  const filesToEnumerate: string[] = await fg(glob, { onlyFiles: true });
-  filesToEnumerate.sort();
+  // Crawl files and convert paths to be POSIX-style, relative to suiteDir.
+  const filesToEnumerate = (await crawlFilesRecursively(suiteDir))
+    .map(f => path.relative(suiteDir, f).replace(/\\/g, '/'))
+    .sort();
 
   const entries: TestSuiteListingEntry[] = [];
   for (const file of filesToEnumerate) {
-    const f = file.substring((suiteDir + '/').length); // Suite-relative file path
-    if (f.endsWith(specFileSuffix)) {
-      const filepathWithoutExtension = f.substring(0, f.length - specFileSuffix.length);
-      const filename = `../../../${suiteDir}/${filepathWithoutExtension}.spec.js`;
+    // |file| is the suite-relative file path.
+    if (file.endsWith(specFileSuffix)) {
+      const filepathWithoutExtension = file.substring(0, file.length - specFileSuffix.length);
 
-      let mod: SpecFile;
-      if (process.env.STANDALONE_DEV_SERVER) {
-        mod = require(filename) as SpecFile;
-        // Delete the cache so that changes to the file are picked up.
-        delete require.cache[require.resolve(filename)];
-      } else {
-        mod = (await import(filename)) as SpecFile;
+      const suite = path.basename(suiteDir);
+
+      if (validate) {
+        const filename = `../../${suite}/${filepathWithoutExtension}.spec.js`;
+
+        assert(!process.env.STANDALONE_DEV_SERVER);
+        const mod = (await import(filename)) as SpecFile;
+        assert(mod.description !== undefined, 'Test spec file missing description: ' + filename);
+        assert(mod.g !== undefined, 'Test spec file missing TestGroup definition: ' + filename);
+
+        mod.g.validate();
       }
-      assert(mod.description !== undefined, 'Test spec file missing description: ' + filename);
-      assert(mod.g !== undefined, 'Test spec file missing TestGroup definition: ' + filename);
 
-      mod.g.validate();
-
-      const path = filepathWithoutExtension.split('/');
-      for (const p of path) {
+      const pathSegments = filepathWithoutExtension.split('/');
+      for (const p of pathSegments) {
         assert(validQueryPart.test(p), `Invalid directory name ${p}; must match ${validQueryPart}`);
       }
-      entries.push({ file: path, description: mod.description.trim() });
+      entries.push({ file: pathSegments });
     } else if (path.basename(file) === 'README.txt') {
-      const filepathWithoutExtension = f.substring(0, f.length - '/README.txt'.length);
-      const readme = fs.readFileSync(file, 'utf8').trim();
+      const dirname = path.dirname(file);
+      const readme = fs.readFileSync(path.join(suiteDir, file), 'utf8').trim();
 
-      const path = filepathWithoutExtension ? filepathWithoutExtension.split('/') : [];
-      entries.push({ file: path, readme });
+      const pathSegments = dirname !== '.' ? dirname.split('/') : [];
+      entries.push({ file: pathSegments, readme });
     } else {
-      unreachable(`glob ${glob} matched an unrecognized filename ${file}`);
+      unreachable(`Matched an unrecognized filename ${file}`);
     }
   }
 
@@ -65,6 +96,7 @@ export async function crawl(suite: string): Promise<TestSuiteListingEntry[]> {
 }
 
 export function makeListing(filename: string): Promise<TestSuiteListing> {
-  const suite = path.basename(path.dirname(filename));
-  return crawl(suite);
+  // Don't validate. This path is only used for the dev server and running tests with Node.
+  // Validation is done for listing generation and presubmit.
+  return crawl(path.dirname(filename), false);
 }

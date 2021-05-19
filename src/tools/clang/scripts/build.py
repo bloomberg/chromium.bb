@@ -412,6 +412,8 @@ def main():
   parser = argparse.ArgumentParser(description='Build Clang.')
   parser.add_argument('--bootstrap', action='store_true',
                       help='first build clang with CC, then with itself.')
+  parser.add_argument('--build-mac-arm', action='store_true',
+                      help='Build arm binaries. Only valid on macOS.')
   parser.add_argument('--disable-asserts', action='store_true',
                       help='build with asserts disabled')
   parser.add_argument('--gcc-toolchain', help='what gcc toolchain to use for '
@@ -439,6 +441,13 @@ def main():
   parser.add_argument('--with-android', type=gn_arg, nargs='?', const=True,
                       help='build the Android ASan runtime (linux only)',
                       default=sys.platform.startswith('linux'))
+  parser.add_argument('--with-fuchsia',
+                      type=gn_arg,
+                      nargs='?',
+                      const=True,
+                      help='build the Fuchsia runtimes (linux and mac only)',
+                      default=sys.platform.startswith('linux')
+                      or sys.platform.startswith('darwin'))
   parser.add_argument('--without-android', action='store_false',
                       help='don\'t build Android ASan runtime (linux only)',
                       dest='with_android')
@@ -459,10 +468,6 @@ def main():
     print('for how to install the NDK, or pass --without-android.')
     return 1
 
-  if args.llvm_force_head_revision:
-    # Don't build fuchsia runtime on ToT bots at all.
-    args.with_fuchsia = False
-
   if args.with_fuchsia and not os.path.exists(FUCHSIA_SDK_DIR):
     print('Fuchsia SDK not found at ' + FUCHSIA_SDK_DIR)
     print('The Fuchsia SDK is needed to build libclang_rt for Fuchsia.')
@@ -475,6 +480,9 @@ def main():
     print('for general Fuchsia build instructions.')
     return 1
 
+  if args.build_mac_arm and sys.platform != 'darwin':
+    print('--build-mac-arm only valid on macOS')
+    return 1
 
   # Don't buffer stdout, so that print statements are immediately flushed.
   # LLVM tests print output without newlines, so with buffering they won't be
@@ -581,7 +589,6 @@ def main():
     base_cmake_args += [
         '-DLLVM_LOCAL_RPATH=' + os.path.join(args.gcc_toolchain, 'lib64')
     ]
-
 
   if sys.platform == 'darwin':
     # For libc++, we only want the headers.
@@ -804,48 +811,9 @@ def main():
         # iPhones). armv7k is Apple Watch, which we don't need.
         '-DDARWIN_ios_ARCHS=armv7;armv7s;arm64',
         '-DDARWIN_iossim_ARCHS=i386;x86_64;arm64',
+        # We don't need 32-bit intel support for macOS, we only ship 64-bit.
+        '-DDARWIN_osx_ARCHS=arm64;x86_64',
     ])
-    if args.bootstrap:
-      # mac/arm64 needs MacOSX11.0.sdk. System Xcode (+ SDK) may be something
-      # else, so use the hermetic Xcode.
-      # Options:
-      # - temporarily set system Xcode to Xcode 12 beta while running this
-      #   script, (cf build/swarming_xcode_install.py, but it looks unused)
-      # - use Xcode 12 beta for everything on tot bots, only need to fuzz with
-      #   scripts/slave/recipes/chromium_upload_clang.py then (but now the
-      #   chrome/ios build will use the 11.0 SDK too and we'd be on the hook for
-      #   keeping it green -- if it's currently green, who knows)
-      # - pass flags to cmake to try to coax it into using Xcode 12 beta for the
-      #   LLVM build without it being system Xcode.
-      #
-      # The last option seems best, so let's go with that. We need to pass
-      # -isysroot to the SDK and -B to the /usr/bin so that the new ld64 is
-      # used.
-      # The compiler-rt build overrides -isysroot flags set via cflags, and we
-      # only need to use the 11 SDK for the compiler-rt build. So set only
-      # DARWIN_macosx_CACHED_SYSROOT to the 11 SDK and use the regular SDK
-      # for the rest of the build. (The new ld is used for all links.)
-      sys.path.insert(1, os.path.join(CHROMIUM_DIR, 'build'))
-      import mac_toolchain
-      LLVM_XCODE = os.path.join(THIRD_PARTY_DIR, 'llvm-xcode')
-      mac_toolchain.InstallXcodeBinaries(LLVM_XCODE)
-      isysroot_11 = os.path.join(LLVM_XCODE, 'Contents', 'Developer',
-                                 'Platforms', 'MacOSX.platform', 'Developer',
-                                 'SDKs', 'MacOSX11.1.sdk')
-      xcode_bin = os.path.join(LLVM_XCODE, 'Contents', 'Developer',
-                               'Toolchains', 'XcodeDefault.xctoolchain', 'usr',
-                               'bin')
-      # Include an arm64 slice for libclang_rt.osx.a. This requires using
-      # MacOSX11.x.sdk (via -isysroot, via DARWIN_macosx_CACHED_SYSROOT) and
-      # the new ld, via -B
-      compiler_rt_args.extend([
-          # We don't need 32-bit intel support for macOS, we only ship 64-bit.
-          '-DDARWIN_osx_ARCHS=arm64;x86_64',
-          '-DDARWIN_macosx_CACHED_SYSROOT=' + isysroot_11,
-      ])
-      ldflags += ['-B', xcode_bin]
-    else:
-      compiler_rt_args.extend(['-DDARWIN_osx_ARCHS=x86_64'])
   else:
     compiler_rt_args.append('-DCOMPILER_RT_BUILD_BUILTINS=OFF')
 
@@ -904,9 +872,13 @@ def main():
     cmake_args.append('-DLLVM_ENABLE_LTO=Thin')
   if sys.platform == 'win32':
     cmake_args.append('-DLLVM_ENABLE_ZLIB=FORCE_ON')
+
   if sys.platform == 'darwin':
     cmake_args += ['-DCOMPILER_RT_ENABLE_IOS=ON',
                    '-DSANITIZER_MIN_OSX_VERSION=10.7']
+    if args.build_mac_arm:
+      cmake_args += ['-DCMAKE_OSX_ARCHITECTURES=arm64',
+                     '-DLLVM_USE_HOST_TOOLS=ON']
 
   # TODO(crbug.com/962988): Use -DLLVM_EXTERNAL_PROJECTS instead.
   CreateChromeToolsShim()
@@ -924,8 +896,9 @@ def main():
     # If any Chromium tools were built, install those now.
     RunCommand(['ninja', 'cr-install'], msvc_arch='x64')
 
-  VerifyVersionOfBuiltClangMatchesVERSION()
-  VerifyZlibSupport()
+  if not args.build_mac_arm:
+    VerifyVersionOfBuiltClangMatchesVERSION()
+    VerifyZlibSupport()
 
   if sys.platform == 'win32':
     platform = 'windows'
@@ -997,6 +970,9 @@ def main():
           # depends on a newer version of libxml2.so than what's available on
           # the bots. To make things work, use our just-built lld as linker.
           '-fuse-ld=lld',
+          # Clang defaults to compiler-rt when targeting android after
+          # a478b0a199f4. Stick with libgcc for now. (crbug.com/1184398).
+          '--rtlib=libgcc',
       ]
       android_args = base_cmake_args + [
         '-DCMAKE_C_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),
@@ -1045,14 +1021,20 @@ def main():
         os.mkdir(os.path.join(build_dir))
       os.chdir(build_dir)
       target_spec = target_arch + '-fuchsia'
+      if args.build_mac_arm:
+        # Just-built clang can't run (it's an arm binary), so use the bootstrap
+        # compiler instead.
+        host_path = LLVM_BOOTSTRAP_INSTALL_DIR
+      else:
+        host_path = LLVM_BUILD_DIR
       # TODO(thakis): Might have to pass -B here once sysroot contains
       # binaries (e.g. gas for arm64?)
       fuchsia_args = base_cmake_args + [
-        '-DCMAKE_C_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),
-        '-DCMAKE_CXX_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang++'),
-        '-DCMAKE_LINKER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),
-        '-DCMAKE_AR=' + os.path.join(LLVM_BUILD_DIR, 'bin/llvm-ar'),
-        '-DLLVM_CONFIG_PATH=' + os.path.join(LLVM_BUILD_DIR, 'bin/llvm-config'),
+        '-DCMAKE_C_COMPILER=' + os.path.join(host_path, 'bin/clang'),
+        '-DCMAKE_CXX_COMPILER=' + os.path.join(host_path, 'bin/clang++'),
+        '-DCMAKE_LINKER=' + os.path.join(host_path, 'bin/clang'),
+        '-DCMAKE_AR=' + os.path.join(host_path, 'bin/llvm-ar'),
+        '-DLLVM_CONFIG_PATH=' + os.path.join(host_path, 'bin/llvm-config'),
         '-DCMAKE_SYSTEM_NAME=Fuchsia',
         '-DCMAKE_C_COMPILER_TARGET=%s-fuchsia' % target_arch,
         '-DCMAKE_ASM_COMPILER_TARGET=%s-fuchsia' % target_arch,
@@ -1090,7 +1072,9 @@ def main():
                fuchsia_lib_dst_dir)
 
       # Build the Fuchsia profile runtime.
-      if target_arch == 'x86_64':
+      # TODO(thakis): Figure out why this doesn't build with the stage0
+      # compiler in arm builds.
+      if target_arch == 'x86_64' and not args.build_mac_arm:
         fuchsia_args.extend([
             '-DCOMPILER_RT_BUILD_BUILTINS=OFF',
             '-DCOMPILER_RT_BUILD_PROFILE=ON',
@@ -1111,10 +1095,11 @@ def main():
                               fuchsia_lib_dst_dir)
 
   # Run tests.
-  if args.run_tests or args.llvm_force_head_revision:
+  if (not args.build_mac_arm and
+      (args.run_tests or args.llvm_force_head_revision)):
     RunCommand(['ninja', '-C', LLVM_BUILD_DIR, 'cr-check-all'], msvc_arch='x64')
 
-  if args.run_tests:
+  if not args.build_mac_arm and args.run_tests:
     test_targets = [ 'check-all' ]
     if sys.platform == 'darwin':
       # TODO(thakis): Run check-all on Darwin too, https://crbug.com/959361

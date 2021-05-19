@@ -269,6 +269,8 @@ TEST_P(MultithreadingTest, MultiContextDrawWithSwapBuffers)
 
     // http://anglebug.com/5099
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+    // http://anglebug.com/5099
+    ANGLE_SKIP_TEST_IF(IsWindows() && isSwiftshader());
 
     EGLWindow *window = getEGLWindow();
     EGLDisplay dpy    = window->getDisplay();
@@ -701,6 +703,7 @@ ANGLE_INSTANTIATE_TEST(MultithreadingTest,
                        WithNoVirtualContexts(ES3_VULKAN()),
                        WithNoVirtualContexts(ES3_VULKAN_SWIFTSHADER()));
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MultithreadingTestES3);
 ANGLE_INSTANTIATE_TEST(MultithreadingTestES3,
                        WithNoVirtualContexts(ES3_OPENGL()),
                        WithNoVirtualContexts(ES3_OPENGLES()),

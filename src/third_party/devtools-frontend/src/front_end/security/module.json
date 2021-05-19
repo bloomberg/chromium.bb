@@ -1,9 +1,6 @@
 {
-  "modules": [
-    "security-legacy.js"
-  ],
-  "dependencies": [
-    "network"
+    "dependencies": [
+    "panels/network"
   ],
   "resources": [
     "lockIcon.css",

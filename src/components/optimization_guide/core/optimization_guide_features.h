@@ -26,6 +26,16 @@ extern const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent;
 extern const base::Feature kContextMenuPerformanceInfoAndRemoteHintFetching;
 extern const base::Feature kOptimizationTargetPrediction;
 extern const base::Feature kOptimizationGuideModelDownloading;
+extern const base::Feature kPageContentAnnotations;
+extern const base::Feature kPageTextExtraction;
+extern const base::Feature kLoadModelFileForEachExecution;
+
+// The grace period duration for how long to give outstanding page text dump
+// requests to respond after DidFinishLoad.
+base::TimeDelta PageTextExtractionOutstandingRequestsGracePeriod();
+
+// Whether hints for active tabs and top hosts should be batch updated.
+bool ShouldBatchUpdateHintsForActiveTabsAndTopHosts();
 
 // The maximum number of hosts that can be stored in the
 // |kHintsFetcherTopHostBlocklist| dictionary pref when initialized. The top
@@ -33,9 +43,6 @@ extern const base::Feature kOptimizationGuideModelDownloading;
 // engaged hosts in a user's history before DataSaver being enabled from being
 // requested until the user navigates to the host again.
 size_t MaxHintsFetcherTopHostBlocklistSize();
-
-// Whether hints for top hosts should be batch updated.
-bool ShouldBatchUpdateHintsForTopHosts();
 
 // The maximum number of hosts allowed to be requested by the client to the
 // remote Optimzation Guide Service.
@@ -102,12 +109,28 @@ GetMaxEffectiveConnectionTypeForNavigationHintsFetch();
 // Returns the duration of the time window before hints expiration during which
 // the hosts should be refreshed. Example: If the hints for a host expire at
 // time T, then they are eligible for refresh at T -
-// GetHintsFetchRefreshDuration().
-base::TimeDelta GetHintsFetchRefreshDuration();
+// GetHostHintsFetchRefreshDuration().
+base::TimeDelta GetHostHintsFetchRefreshDuration();
+
+// Returns the duration of the time window between fetches for hints for the
+// URLs opened in active tabs.
+base::TimeDelta GetActiveTabsFetchRefreshDuration();
+
+// Returns the max duration since the time a tab has to be shown to be
+// considered active for a hints refresh.
+base::TimeDelta GetActiveTabsStalenessTolerance();
 
 // Returns the max number of concurrent fetches to the remote Optimization Guide
 // Service that should be allowed.
 size_t MaxConcurrentPageNavigationFetches();
+
+// Returns the minimum number of seconds to randomly delay before starting to
+// fetch for hints for active tabs.
+int ActiveTabsHintsFetchRandomMinDelaySecs();
+
+// Returns the maximum number of seconds to randomly delay before starting to
+// fetch for hints for active tabs.
+int ActiveTabsHintsFetchRandomMaxDelaySecs();
 
 // The amount of time host model features will be considered fresh enough
 // to be used and remain in the OptimizationGuideStore.
@@ -155,6 +178,14 @@ int PredictionModelFetchRandomMinDelaySecs();
 // fetch for prediction models and host model features.
 int PredictionModelFetchRandomMaxDelaySecs();
 
+// Returns the time to wait before retrying a failed fetch for prediction
+// models.
+base::TimeDelta PredictionModelFetchRetryDelay();
+
+// Returns the time to wait after a successful fetch of prediction models to
+// refresh models.
+base::TimeDelta PredictionModelFetchInterval();
+
 // Returns a set of external Android app packages whose predictions have been
 // approved for fetching from the remote Optimization Guide Service.
 base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch();
@@ -176,6 +207,13 @@ bool IsPageContentAnnotationEnabled();
 
 // Returns the max size that should be requested for a page content text dump.
 uint64_t MaxSizeForPageContentTextDump();
+
+// Whether we should write content annotations to History Service.
+bool ShouldWriteContentAnnotationsToHistoryService();
+
+// Whether the model files that use |OptimizationTargetModelExecutor| should be
+// loaded for each execution, and then unloaded once complete.
+bool LoadModelFileForEachExecution();
 
 }  // namespace features
 }  // namespace optimization_guide

@@ -215,6 +215,20 @@ def _RemoveKeystoneKeys(plist):
   _RemoveKeys(plist, *tag_keys)
 
 
+def _AddGTMKeys(plist, platform):
+  """Adds the GTM metadata keys. This must be called AFTER _AddVersionKeys()."""
+  plist['GTMUserAgentID'] = plist['CFBundleName']
+  if platform == 'ios':
+    plist['GTMUserAgentVersion'] = plist['CFBundleVersion']
+  else:
+    plist['GTMUserAgentVersion'] = plist['CFBundleShortVersionString']
+
+
+def _RemoveGTMKeys(plist):
+  """Removes any set GTM metadata keys."""
+  _RemoveKeys(plist, 'GTMUserAgentID', 'GTMUserAgentVersion')
+
+
 def Main(argv):
   parser = optparse.OptionParser('%prog [options]')
   parser.add_option('--plist',
@@ -269,6 +283,12 @@ def Main(argv):
                     choices=('ios', 'mac'),
                     default='mac',
                     help='The target platform of the bundle')
+  parser.add_option('--add-gtm-metadata',
+                    dest='add_gtm_info',
+                    action='store',
+                    type='int',
+                    default=False,
+                    help='Add GTM metadata [1 or 0]')
   # TODO(crbug.com/1140474): Remove once iOS 14.2 reaches mass adoption.
   parser.add_option('--lock-to-version',
                     help='Set CFBundleVersion to given value + @MAJOR@@PATH@')
@@ -397,6 +417,12 @@ def Main(argv):
   if not _DoSCMKeys(plist, options.add_scm_info):
     return 3
 
+  # Add GTM metadata keys.
+  if options.add_gtm_info:
+    _AddGTMKeys(plist, options.platform)
+  else:
+    _RemoveGTMKeys(plist)
+
   output_path = options.plist_path
   if options.plist_output is not None:
     output_path = options.plist_output
@@ -414,4 +440,8 @@ def Main(argv):
 
 
 if __name__ == '__main__':
+  # TODO(https://crbug.com/941669): Temporary workaround until all scripts use
+  # python3 by default.
+  if sys.version_info[0] < 3:
+    os.execvp('python3', ['python3'] + sys.argv)
   sys.exit(Main(sys.argv[1:]))

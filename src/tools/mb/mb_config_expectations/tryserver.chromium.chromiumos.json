@@ -28,6 +28,16 @@
       "use_real_dbus_clients": false
     }
   },
+  "chromeos-amd64-generic-rel-dchecks": {
+    "args_file": "//build/args/chromeos/amd64-generic.gni",
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_chromeos_device": true,
+      "ozone_platform_headless": true,
+      "use_goma": true,
+      "use_real_dbus_clients": false
+    }
+  },
   "chromeos-arm-generic-dbg": {
     "args_file": "//build/args/chromeos/arm-generic.gni",
     "gn_args": {
@@ -115,7 +125,7 @@
       "use_pulseaudio": false,
       "use_system_libsync": false,
       "use_v8_context_snapshot": false,
-      "use_vaapi": false
+      "use_vaapi": true
     }
   },
   "linux-cfm-rel": {

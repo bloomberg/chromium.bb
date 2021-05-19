@@ -9,10 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/base/features.h"
 #include "components/power_scheduler/power_mode.h"
 #include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/power_scheduler/power_mode_voter.h"
@@ -65,7 +67,12 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
       allow_copy_output_requests_(is_root),
       animation_power_mode_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
-              "PowerModeVoter.Animation")) {
+              "PowerModeVoter.Animation")),
+      document_transitions_enabled_(features::IsDocumentTransitionEnabled()) {
+  surface_animation_manager_.SetDirectiveFinishedCallback(
+      base::BindRepeating(&CompositorFrameSinkSupport::
+                              OnCompositorFrameTransitionDirectiveProcessed,
+                          weak_factory_.GetWeakPtr()));
   // This may result in SetBeginFrameSource() being called.
   frame_sink_manager_->RegisterCompositorFrameSinkSupport(frame_sink_id_, this);
 }
@@ -149,30 +156,35 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
     UpdateNeedsBeginFramesInternal();
 
   // Let the animation manager process any new directives on the surface.
-  // TODO(vmpstr): Figure out if `last_frame_time_` is correct here.
-  // SurfaceAcitvation may have happened some time after we sent the last
-  // BeginFrame to the client (which is when the frame time is updated). We may
-  // need to keep track of a separate time that updates when OnBeginFrame
-  // happens whether or not it is sent to the client.
-  bool started_animation =
-      surface_animation_manager_.ProcessTransitionDirectives(
-          last_frame_time_,
-          surface->GetActiveFrameMetadata().transition_directives,
-          surface->GetSurfaceSavedFrameStorage());
-  // If processing the new directives caused us to start an animation, then
-  // interpoate the frame immediately. This is needed since if we wait until the
-  // next BeginFrame to do the first interpolation, then we maybe have already
-  // drawn this destination frame.
-  if (started_animation)
-    surface_animation_manager_.InterpolateFrame(surface);
+  const auto& transition_directives =
+      surface->GetActiveFrameMetadata().transition_directives;
+  if (document_transitions_enabled_ && !transition_directives.empty()) {
+    bool started_animation =
+        surface_animation_manager_.ProcessTransitionDirectives(
+            transition_directives, surface->GetSurfaceSavedFrameStorage());
 
-  // The above call can cause us to start an animation, meaning we need begin
-  // frames. If that's the case, make sure to update the begin frame
-  // observation.
-  // TODO(vmpstr): Note that if we need to produce an interpolation to the
-  // latest frame, then this is where we would do that.
+    // If we started an animation, then we must need a begin frame for the code
+    // below to work properly.
+    DCHECK(!started_animation || surface_animation_manager_.NeedsBeginFrame());
+
+    // The above call can cause us to start an animation, meaning we need begin
+    // frames. If that's the case, make sure to update the begin frame
+    // observation.
+    if (surface_animation_manager_.NeedsBeginFrame())
+      UpdateNeedsBeginFramesInternal();
+  }
+
+  // If surface animation manager needs a frame, then we should interpolate
+  // here. Note that we also interpolate in OnBeginFrame. The reason for two
+  // calls is that we might not receive and active a frame from the client in
+  // time to draw, which is why OnBeginFrame interpolates and damages the
+  // surface. Here, we only interpolate in case we did receive a new frame. We
+  // always use the latest frame, because it may have new resources that need to
+  // be reffed by SurfaceAggregator. If we don't do this, then they will be
+  // unreffed and cleaned up causing a DCHECK in subsequent frames that do use
+  // the frame.
   if (surface_animation_manager_.NeedsBeginFrame())
-    UpdateNeedsBeginFramesInternal();
+    surface_animation_manager_.InterpolateFrame(surface);
 
   if (surface->surface_id() == last_activated_surface_id_)
     return;
@@ -240,6 +252,14 @@ void CompositorFrameSinkSupport::OnSurfaceAggregatedDamage(
     client->OnFrameDamaged(frame_size_in_pixels, damage_rect,
                            expected_display_time, frame.metadata);
   }
+}
+
+bool CompositorFrameSinkSupport::IsVideoCaptureStarted() {
+  for (auto* client : capture_clients_) {
+    if (client->IsVideoCaptureStarted())
+      return true;
+  }
+  return false;
 }
 
 void CompositorFrameSinkSupport::OnSurfaceDestroyed(Surface* surface) {
@@ -717,7 +737,9 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
 
   CheckPendingSurfaces();
 
-  if (client_ && ShouldSendBeginFrame(args.frame_time)) {
+  bool send_begin_frame_to_client =
+      client_ && ShouldSendBeginFrame(args.frame_time);
+  if (send_begin_frame_to_client) {
     if (last_activated_surface_id_.is_valid())
       surface_manager_->SurfaceDamageExpected(last_activated_surface_id_, args);
     last_begin_frame_args_ = args;
@@ -732,6 +754,9 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
                            TRACE_ID_GLOBAL(copy_args.trace_id),
                            TRACE_EVENT_FLAG_FLOW_OUT, "step",
                            "IssueBeginFrame");
+    copy_args.frames_throttled_since_last = frames_throttled_since_last_;
+    frames_throttled_since_last_ = 0;
+
     last_frame_time_ = args.frame_time;
     client_->OnBeginFrame(copy_args, std::move(frame_timing_details_));
     begin_frame_tracker_.SentBeginFrame(args);
@@ -748,9 +773,35 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
     // animation.
     if (surface_animation_manager_.NeedsBeginFrame()) {
       if (last_activated_surface_id_.is_valid()) {
+        if (!send_begin_frame_to_client)
+          frame_sink_manager_->DidBeginFrame(frame_sink_id_, args);
+
         auto* surface =
             surface_manager_->GetSurfaceForId(last_activated_surface_id_);
         surface_animation_manager_.InterpolateFrame(surface);
+
+        BeginFrameAck ack =
+            surface->GetActiveOrInterpolatedFrame().metadata.begin_frame_ack;
+        // Ensure to mark this as having damage, even if the above call gives us
+        // the non-interpolated active frame with no damage. We need this to
+        // ensure we do a DrawAndSwap.
+        ack.has_damage = true;
+
+        // TODO(crbug.com/1182882): If a client frame is expected, we would not
+        // wait for it as a result of the SurfaceModified() call. This means
+        // that the client may end up delaying every other frame (essentially
+        // dropping any frame rate by half).
+        surface_manager_->SurfaceModified(last_activated_surface_id_, ack);
+
+        // If we didn't send a begin frame to the client, we should still finish
+        // the frame. Since we already finished interpolating, we should do that
+        // now. In cases where we did send a begin frame to client, this will be
+        // called from either `MaybeSubmitCompositorFrame()` or
+        // `DidNotProduceFrame()`.
+        if (!send_begin_frame_to_client && begin_frame_source_) {
+          begin_frame_source_->DidFinishFrame(this);
+          frame_sink_manager_->DidFinishFrame(frame_sink_id_, args);
+        }
       }
     } else {
       // If notifying causes us to stop needing frames, then update needs begin
@@ -888,8 +939,7 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
   // |begin_frame_interval_| since the last one was sent because clients have
   // requested to update at such rate.
   const bool should_throttle_as_requested =
-      begin_frame_interval_ > base::TimeDelta() &&
-      (frame_time - last_frame_time_) < begin_frame_interval_;
+      ShouldThrottleBeginFrameAsRequested(frame_time);
   // We might throttle this OnBeginFrame() if it's been less than a second since
   // the last one was sent, either because clients are unresponsive or have
   // submitted too many undrawn frames.
@@ -934,6 +984,7 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
   }
 
   if (should_throttle_as_requested) {
+    ++frames_throttled_since_last_;
     RecordShouldSendBeginFrame("ThrottleRequested");
     return false;
   }
@@ -979,6 +1030,18 @@ void CompositorFrameSinkSupport::CheckPendingSurfaces() {
   for (Surface* surface : pending_surfaces) {
     surface->ActivateIfDeadlinePassed();
   }
+}
+
+bool CompositorFrameSinkSupport::ShouldThrottleBeginFrameAsRequested(
+    base::TimeTicks frame_time) {
+  return begin_frame_interval_ > base::TimeDelta() &&
+         (frame_time - last_frame_time_) < begin_frame_interval_;
+}
+
+void CompositorFrameSinkSupport::OnCompositorFrameTransitionDirectiveProcessed(
+    uint32_t sequence_id) {
+  if (client_)
+    client_->OnCompositorFrameTransitionDirectiveProcessed(sequence_id);
 }
 
 }  // namespace viz

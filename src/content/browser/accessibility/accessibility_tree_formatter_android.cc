@@ -121,6 +121,14 @@ base::Value AccessibilityTreeFormatterAndroid::BuildTreeForSelector(
   return base::Value(base::Value::Type::DICTIONARY);
 }
 
+base::Value AccessibilityTreeFormatterAndroid::BuildNode(
+    ui::AXPlatformNodeDelegate* node) const {
+  CHECK(node);
+  base::DictionaryValue dict;
+  AddProperties(*BrowserAccessibility::FromAXPlatformNodeDelegate(node), &dict);
+  return std::move(dict);
+}
+
 void AccessibilityTreeFormatterAndroid::AddDefaultFilters(
     std::vector<AXPropertyFilter>* property_filters) {
   AddPropertyFilter(property_filters, "hint=*");
@@ -165,6 +173,7 @@ void AccessibilityTreeFormatterAndroid::AddProperties(
   dict->SetBoolean("collapsed", android_node->IsCollapsed());
   dict->SetBoolean("collection", android_node->IsCollection());
   dict->SetBoolean("collection_item", android_node->IsCollectionItem());
+  dict->SetBoolean("content_invalid", android_node->IsContentInvalid());
   dict->SetBoolean("disabled", !android_node->IsEnabled());
   dict->SetBoolean("dismissable", android_node->IsDismissable());
   dict->SetBoolean("editable_text", android_node->IsTextField());

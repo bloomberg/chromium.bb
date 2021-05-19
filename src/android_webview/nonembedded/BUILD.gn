@@ -9,8 +9,9 @@ import("//build/config/android/rules.gni")
 generate_jni("nonembedded_jni_headers") {
   sources = [
     "java/src/org/chromium/android_webview/nonembedded/AwComponentUpdateService.java",
-    "java/src/org/chromium/android_webview/nonembedded/DownloadFileTask.java",
+    "java/src/org/chromium/android_webview/nonembedded/NetworkFetcherTask.java",
     "java/src/org/chromium/android_webview/nonembedded/WebViewApkApplication.java",
+    "java/src/org/chromium/android_webview/services/ComponentsProviderPathUtil.java",
   ]
 }
 
@@ -20,9 +21,9 @@ android_library("nonembedded_java") {
   sources = [
     "java/src/org/chromium/android_webview/nonembedded/AwComponentUpdateService.java",
     "java/src/org/chromium/android_webview/nonembedded/AwNonembeddedUmaRecorder.java",
-    "java/src/org/chromium/android_webview/nonembedded/DownloadFileTask.java",
     "java/src/org/chromium/android_webview/nonembedded/LicenseActivity.java",
     "java/src/org/chromium/android_webview/nonembedded/LicenseContentProvider.java",
+    "java/src/org/chromium/android_webview/nonembedded/NetworkFetcherTask.java",
     "java/src/org/chromium/android_webview/nonembedded/WebViewApkApplication.java",
   ]
   deps = [
@@ -34,7 +35,6 @@ android_library("nonembedded_java") {
     "//android_webview/glue:glue_java",
     "//android_webview/proto:metrics_bridge_records_proto_java",
     "//base:base_java",
-    "//base:jni_java",
     "//components/about_ui/android:aboutui_java",
     "//components/embedder_support/android:application_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
@@ -90,6 +90,7 @@ android_library("services_java") {
     "java/src/org/chromium/android_webview/services/AwMinidumpUploadJobService.java",
     "java/src/org/chromium/android_webview/services/AwMinidumpUploaderDelegate.java",
     "java/src/org/chromium/android_webview/services/AwVariationsSeedFetcher.java",
+    "java/src/org/chromium/android_webview/services/ComponentsProviderPathUtil.java",
     "java/src/org/chromium/android_webview/services/ComponentsProviderService.java",
     "java/src/org/chromium/android_webview/services/CrashReceiverService.java",
     "java/src/org/chromium/android_webview/services/DeveloperModeContentProvider.java",
@@ -132,12 +133,10 @@ source_set("nonembedded") {
     "component_updater/installer_policies/aw_trust_token_key_commitments_component_installer_policy.h",
     "component_updater/registration.cc",
     "component_updater/registration.h",
-    "net/download_file_task.cc",
-    "net/download_file_task.h",
+    "net/network_fetcher_task.cc",
+    "net/network_fetcher_task.h",
     "net/network_impl.cc",
     "net/network_impl.h",
-    "net/network_task.cc",
-    "net/network_task.h",
     "webview_apk_application.cc",
     "webview_apk_process.cc",
     "webview_apk_process.h",
@@ -149,11 +148,9 @@ source_set("nonembedded") {
     "//components/component_updater",
     "//components/component_updater/installer_policies",
     "//components/prefs",
-    "//components/services/patch/content",
-    "//components/services/unzip/content",
     "//components/update_client",
-    "//components/update_client:patch_impl",
-    "//components/update_client:unzip_impl",
+    "//components/update_client:in_process_patcher",
+    "//components/update_client:in_process_unzipper",
     "//components/version_info",
     "//components/version_info/android:channel_getter",
     "//url",

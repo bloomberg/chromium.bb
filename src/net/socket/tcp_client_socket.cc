@@ -4,6 +4,7 @@
 
 #include "net/socket/tcp_client_socket.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -57,7 +58,7 @@ TCPClientSocket::TCPClientSocket(std::unique_ptr<TCPSocket> connected_socket,
 TCPClientSocket::~TCPClientSocket() {
   Disconnect();
 #if defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
-  base::PowerMonitor::RemoveObserver(this);
+  base::PowerMonitor::RemovePowerSuspendObserver(this);
 #endif  // defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
 }
 
@@ -89,7 +90,7 @@ int TCPClientSocket::Bind(const IPEndPoint& address) {
   if (result != OK)
     return result;
 
-  bind_address_.reset(new IPEndPoint(address));
+  bind_address_ = std::make_unique<IPEndPoint>(address);
   return OK;
 }
 
@@ -159,7 +160,7 @@ TCPClientSocket::TCPClientSocket(
   if (socket_->IsValid())
     socket_->SetDefaultOptionsForClient();
 #if defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
-  base::PowerMonitor::AddObserver(this);
+  base::PowerMonitor::AddPowerSuspendObserver(this);
 #endif  // defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
 }
 

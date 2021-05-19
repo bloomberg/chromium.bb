@@ -12,7 +12,10 @@
 #include "build/build_config.h"
 #include "components/payments/content/payment_credential_enrollment_model.h"
 #include "components/payments/content/payment_credential_enrollment_view.h"
+#include "components/strings/grit/components_strings.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace payments {
 
@@ -44,12 +47,14 @@ PaymentCredentialEnrollmentController::
 void PaymentCredentialEnrollmentController::ShowDialog(
     content::GlobalFrameRoutingId initiator_frame_routing_id,
     std::unique_ptr<SkBitmap> instrument_icon,
+    const std::u16string& instrument_name,
     ResponseCallback response_callback) {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #endif  // OS_ANDROID
   DCHECK(!view_);
 
+  is_user_response_recorded_ = false;
   initiator_frame_routing_id_ = initiator_frame_routing_id;
   response_callback_ = std::move(response_callback);
 
@@ -59,7 +64,25 @@ void PaymentCredentialEnrollmentController::ShowDialog(
   model_.set_accept_button_enabled(true);
   model_.set_cancel_button_enabled(true);
 
-  // TODO(crbug.com/1176368): Set dialog strings on the model.
+  model_.set_title(
+      l10n_util::GetStringUTF16(IDS_PAYMENT_CREDENTIAL_ENROLLMENT_TITLE));
+
+  model_.set_description(
+      l10n_util::GetStringUTF16(IDS_PAYMENT_CREDENTIAL_ENROLLMENT_DESCRIPTION));
+
+  model_.set_instrument_name(instrument_name);
+
+  model_.set_extra_description(
+      web_contents()->GetBrowserContext()->IsOffTheRecord()
+          ? l10n_util::GetStringUTF16(
+                IDS_PAYMENT_CREDENTIAL_ENROLLMENT_OFF_THE_RECORD_DESCRIPTION)
+          : std::u16string());
+
+  model_.set_accept_button_label(l10n_util::GetStringUTF16(
+      IDS_PAYMENT_CREDENTIAL_ENROLLMENT_ACCEPT_BUTTON_LABEL));
+
+  model_.set_cancel_button_label(l10n_util::GetStringUTF16(
+      IDS_PAYMENT_CREDENTIAL_ENROLLMENT_CANCEL_BUTTON_LABEL));
 
   view_ = PaymentCredentialEnrollmentView::Create();
   view_->ShowDialog(
@@ -84,11 +107,18 @@ void PaymentCredentialEnrollmentController::ShowProcessingSpinner() {
 }
 
 void PaymentCredentialEnrollmentController::CloseDialog() {
-  if (view_)
+  RecordFirstCloseReason(SecurePaymentConfirmationEnrollDialogResult::kClosed);
+
+  if (view_) {
     view_->HideDialog();
+    view_.reset();
+  }
 }
 
 void PaymentCredentialEnrollmentController::OnCancel() {
+  RecordFirstCloseReason(
+      SecurePaymentConfirmationEnrollDialogResult::kCanceled);
+
   // Prevent use-after-move on `response_callback_` due to CloseDialog()
   // re-entering into OnCancel().
   ResponseCallback callback = std::move(response_callback_);
@@ -103,6 +133,9 @@ void PaymentCredentialEnrollmentController::OnCancel() {
 
 void PaymentCredentialEnrollmentController::OnConfirm() {
   DCHECK(web_contents());
+
+  RecordFirstCloseReason(
+      SecurePaymentConfirmationEnrollDialogResult::kAccepted);
 
   ShowProcessingSpinner();
 
@@ -145,9 +178,17 @@ void PaymentCredentialEnrollmentController::RenderFrameDeleted(
   // Close the dialog if either the initiator frame (which may be an iframe) or
   // main frame was deleted.
   if (render_frame_host == web_contents()->GetMainFrame() ||
-      render_frame_host ==
-          content::RenderFrameHost::FromID(initiator_frame_routing_id_)) {
+      render_frame_host->GetGlobalFrameRoutingId() ==
+          initiator_frame_routing_id_) {
     CloseDialog();
+  }
+}
+
+void PaymentCredentialEnrollmentController::RecordFirstCloseReason(
+    SecurePaymentConfirmationEnrollDialogResult result) {
+  if (!is_user_response_recorded_ && view_) {
+    is_user_response_recorded_ = true;
+    RecordEnrollDialogResult(result);
   }
 }
 

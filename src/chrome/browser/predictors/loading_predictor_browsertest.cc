@@ -641,7 +641,7 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
   static std::unique_ptr<net::test_server::HttpResponse> HandleFaviconRequest(
       const net::test_server::HttpRequest& request) {
     if (request.relative_url != "/favicon.ico")
-      return std::unique_ptr<net::test_server::HttpResponse>();
+      return nullptr;
 
     auto http_response =
         std::make_unique<net::test_server::BasicHttpResponse>();
@@ -654,7 +654,7 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
   HandleCacheRedirectRequest(const net::test_server::HttpRequest& request) {
     if (!base::StartsWith(request.relative_url, "/cached-redirect?",
                           base::CompareCase::INSENSITIVE_ASCII)) {
-      return std::unique_ptr<net::test_server::HttpResponse>();
+      return nullptr;
     }
 
     GURL request_url = request.GetURL();
@@ -1058,9 +1058,8 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectNonCors) {
 }
 
 enum class NetworkIsolationKeyMode {
-  kNone,
-  kTopFrameOrigin,
-  kTopFrameAndFrameOrigins,
+  kDisabled,
+  kEnabled,
 };
 
 class LoadingPredictorNetworkIsolationKeyBrowserTest
@@ -1069,34 +1068,19 @@ class LoadingPredictorNetworkIsolationKeyBrowserTest
  public:
   LoadingPredictorNetworkIsolationKeyBrowserTest() {
     switch (GetParam()) {
-      case NetworkIsolationKeyMode::kNone:
+      case NetworkIsolationKeyMode::kDisabled:
         scoped_feature_list2_.InitWithFeatures(
             // enabled_features
             {features::kLoadingPreconnectToRedirectTarget},
             // disabled_features
             {net::features::kPartitionConnectionsByNetworkIsolationKey,
-             net::features::kSplitCacheByNetworkIsolationKey,
-             net::features::kAppendFrameOriginToNetworkIsolationKey});
+             net::features::kSplitCacheByNetworkIsolationKey});
         break;
-      case NetworkIsolationKeyMode::kTopFrameOrigin:
-        scoped_feature_list2_.InitWithFeatures(
-            // enabled_features
-            {net::features::kPartitionConnectionsByNetworkIsolationKey,
-             // While these tests are focusing on partitioning the socket pools,
-             // some depend on cache behavior, and it would be
-             // unfortunate if splitting the cache by the key as well broke
-             // them.
-             net::features::kSplitCacheByNetworkIsolationKey,
-             features::kLoadingPreconnectToRedirectTarget},
-            // disabled_features
-            {net::features::kAppendFrameOriginToNetworkIsolationKey});
-        break;
-      case NetworkIsolationKeyMode::kTopFrameAndFrameOrigins:
+      case NetworkIsolationKeyMode::kEnabled:
         scoped_feature_list2_.InitWithFeatures(
             // enabled_features
             {net::features::kPartitionConnectionsByNetworkIsolationKey,
              net::features::kSplitCacheByNetworkIsolationKey,
-             net::features::kAppendFrameOriginToNetworkIsolationKey,
              features::kLoadingPreconnectToRedirectTarget},
             // disabled_features
             {});
@@ -1210,12 +1194,10 @@ class LoadingPredictorNetworkIsolationKeyBrowserTest
   base::test::ScopedFeatureList scoped_feature_list2_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    LoadingPredictorNetworkIsolationKeyBrowserTest,
-    ::testing::Values(NetworkIsolationKeyMode::kNone,
-                      NetworkIsolationKeyMode::kTopFrameOrigin,
-                      NetworkIsolationKeyMode::kTopFrameAndFrameOrigins));
+INSTANTIATE_TEST_SUITE_P(All,
+                         LoadingPredictorNetworkIsolationKeyBrowserTest,
+                         ::testing::Values(NetworkIsolationKeyMode::kDisabled,
+                                           NetworkIsolationKeyMode::kEnabled));
 
 // Make sure that the right NetworkIsolationKey is used by the LoadingPredictor,
 // both when the predictor is populated and when it isn't.
@@ -1409,7 +1391,7 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
       preconnect_url.spec().c_str());
   // Fetch a resource from the test server from tab 2, without CORS.
   EXPECT_EQ(0, EvalJs(tab2->GetMainFrame(), fetch_resource));
-  if (GetParam() == NetworkIsolationKeyMode::kNone) {
+  if (GetParam() == NetworkIsolationKeyMode::kDisabled) {
     // When not using NetworkIsolationKeys, the preconnected socket from a tab
     // at one site is usable by a request from another site.
     EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
@@ -1478,7 +1460,7 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
 
   // Fetch a resource from the test server from tab 2 iframe, without CORS.
   EXPECT_EQ(0, EvalJs(tab2->GetMainFrame(), fetch_resource));
-  if (GetParam() == NetworkIsolationKeyMode::kNone) {
+  if (GetParam() == NetworkIsolationKeyMode::kDisabled) {
     // When not using NetworkIsolationKeys, the preconnected socket from the
     // iframe from the first tab can be used.
     EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
@@ -1492,11 +1474,8 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
   // Fetch a resource from the test server from the same-origin iframe, without
   // CORS.
   EXPECT_EQ(0, EvalJs(frames[1], fetch_resource));
-  if (GetParam() != NetworkIsolationKeyMode::kTopFrameAndFrameOrigins) {
+  if (GetParam() == NetworkIsolationKeyMode::kDisabled) {
     // When not using NetworkIsolationKeys, a new socket is created and used.
-    //
-    // When using the origin of the main frame, the preconnected socket from the
-    // cross-origin iframe can be used, since only the top frame origin matters.
     EXPECT_EQ(2u, connection_tracker()->GetAcceptedSocketCount());
     EXPECT_EQ(2u, connection_tracker()->GetReadSocketCount());
   } else {
@@ -1660,12 +1639,6 @@ class LoadingPredictorBrowserTestWithOptimizationGuide
       prefetch_feature_list_.InitAndDisableFeature(
           features::kLoadingPredictorPrefetch);
     }
-  }
-
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    LoadingPredictorBrowserTest::SetUpCommandLine(cmd);
-    cmd->AppendSwitch(
-        switches::kLoadingPredictorOptimizationGuideAllowNonGwsForTesting);
   }
 
   bool IsLocalPredictionEnabled() const { return std::get<0>(GetParam()); }

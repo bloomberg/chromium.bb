@@ -142,7 +142,6 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kIframePresentational, NSAccessibilityGroupRole},
       {ax::mojom::Role::kIgnored, NSAccessibilityUnknownRole},
       {ax::mojom::Role::kImage, NSAccessibilityImageRole},
-      {ax::mojom::Role::kImageMap, NSAccessibilityGroupRole},
       {ax::mojom::Role::kInputTime, @"AXTimeField"},
       {ax::mojom::Role::kLabelText, NSAccessibilityGroupRole},
       {ax::mojom::Role::kLayoutTable, NSAccessibilityGroupRole},
@@ -1293,7 +1292,7 @@ void AXPlatformNodeMac::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
   NotifyMacEvent(native_node_, event_type);
 }
 
-void AXPlatformNodeMac::AnnounceText(const base::string16& text) {
+void AXPlatformNodeMac::AnnounceText(const std::u16string& text) {
   PostAnnouncementNotification(base::SysUTF16ToNSString(text),
                                [native_node_ AXWindow], false);
 }

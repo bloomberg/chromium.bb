@@ -40,6 +40,7 @@
 <translation id="1252999807265626933">در حال شارژ شدن از <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">‏?‎What's the weather (آب‌وهوا چطور است؟)</translation>
 <translation id="1267032506238418139">تغییر میان‌بر</translation>
+<translation id="1269405891096105529">دستگاه جانبی در «حالت مهمان» پشتیبانی نمی‌شود</translation>
 <translation id="1270290102613614947">صفحه‌کلید مجازی غیرفعال شد</translation>
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1275285675049378717">درحال تأمین برق <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">پیامی تایپ کنید</translation>
 <translation id="2018630726571919839">‏Tell me a joke (لطیفه‌ای بگو)</translation>
+<translation id="2021864487439853900">قفل‌گشایی با کلیک کردن</translation>
 <translation id="2049240716062114887">نام میزکار به <ph name="DESK_NAME" /> تغییر کرد</translation>
 <translation id="2050339315714019657">عمودی</translation>
 <translation id="2067602449040652523">روشنایی صفحه‌کلید</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> همچنان می‌تواند بعداً به سیستم وارد شود.</translation>
 <translation id="3321628682574733415">کد والدین نادرست است</translation>
 <translation id="332587331255250389">لطفاً باتری را تعویض کنید</translation>
+<translation id="3333741161915951567">راه‌اندازی مجدد مودم. ۳۰ ثانیه صبر کنید و سپس دوباره امتحان کنید.</translation>
 <translation id="3341303451326249809">نماگرفت گرفته شد</translation>
 <translation id="334252345105450327">گرفتن نماگرفت</translation>
 <translation id="3351879221545518001">درحال ارسال محتوای صفحه هستید.</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> کاربر مدیریت‌شده</translation>
 <translation id="3665889125180354336">ضبط میکروفون</translation>
 <translation id="36813544980941320">‏تلفنتان و <ph name="DEVICE_NAME" /> باهم از شبکه‌های Wi-Fi استفاده خواهند کرد</translation>
+<translation id="3702809606464356667">درحال نمایش پنجره‌های میزکار کنونی، برای نمایش پنجره‌های همه میزکارها، کلید «جهت‌نمای بالا» را فشار دهید</translation>
 <translation id="3702846122927433391">‏Population in Nigeria (جمعیت نیجریه)</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">در حال بارکردن…</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">تنظیمات صوتی</translation>
 <translation id="3945319193631853098">برای تکمیل راه‌اندازی، ضربه بزنید</translation>
 <translation id="3945867833895287237">درحال اتصال به نقطه اتصال…</translation>
+<translation id="3958465044488004317">دیدن نتایج در «دستیار»</translation>
 <translation id="3962859241508114581">آهنگ قبلی</translation>
 <translation id="3969043077941541451">خاموش</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175">هم‌رسانی کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی ازراه‌دور.</translation>
 <translation id="4424159417645388645">میزکار ۵</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
+<translation id="4445159312344259901">قفل‌گشایی با ورود به سیستم</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{۱ اعلان مهم}one{# اعلان مهم}other{# اعلان مهم}}</translation>
 <translation id="4450893287417543264">دیگر نشان داده نشود</translation>
 <translation id="445864333228800152">عصر به‌خیر،</translation>
 <translation id="4458688154122353284">توقف ضبط صفحه‌نمایش</translation>
+<translation id="4467143075433126295">برای خروج از حالت تمام‌صفحه، [کلید گریز] را فشار دهید و نگه دارید</translation>
 <translation id="4472575034687746823">شروع به کار</translation>
 <translation id="4477350412780666475">آهنگ بعدی</translation>
 <translation id="4477892968187500306">‏ممکن است این دستگاه حاوی برنامه‌هایی باشد که Google آن‌ها را تأیید نکرده است.</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">‏«دستیار Google» در جلسه مهمان دردسترس نیست.</translation>
 <translation id="6137566720514957455">باز کردن کادر گفتگوی برداشتن <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">از دستگاه‌های جانبی پشتیبانی نمی‌شود</translation>
 <translation id="615957422585914272">نمایش صفحه‌کلید مجازی</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6179832488876878285">‏می‌توانید فایل‌های مهم را اینجا پین کنید. برای شروع کار، برنامه Files را باز کنید.</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">از قلم برای انتخاب منطقه استفاده کنید</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> به <ph name="ROTATION" /> چرخانده شد</translation>
 <translation id="6315170314923504164">صدا</translation>
+<translation id="6330012934079202188">درحال نمایش پنجره‌های همه میزکارها، برای نمایش پنجره‌های میزکار کنونی، کلید «جهت‌نمای بالا» را فشار دهید</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> جلسه مدیریت‌شده‌ای است که توسط <ph name="MANAGER" /> مدیریت می‌شود</translation>
 <translation id="6376931439017688372">بلوتوث روشن است</translation>
 <translation id="6381109794406942707">برای باز کردن قفل دستگاه، پین را وارد کنید.</translation>
 <translation id="639644700271529076">‏CAPS LOCK خاموش است</translation>
-<translation id="6396835948284782440">برای خروج، [کلید گریز] را فشار دهید و نگه دارید.</translation>
 <translation id="6406704438230478924">دگرساز راست</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">پاک کردن همه اعلان‌ها</translation>
@@ -794,7 +802,6 @@
 <translation id="7780159184141939021">چرخش صفحه</translation>
 <translation id="7796353162336583443">‏برای یادداشت‌برداری، گرفتن نماگرفت، استفاده از «دستیار Google»، نشانگر لیزری یا ذره‌بین، روی دکمه قلم در قفسه ضربه بزنید.</translation>
 <translation id="7798302898096527229">‏برای لغو کردن، Search یا Shift را فشار دهید.</translation>
-<translation id="7807966291075028781">به‌دلایل امنیتی از لوازم جانبی در «حالت مهمان» پشتیبانی نمی‌شود</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">سیگنال قوی</translation>
 <translation id="7837740436429729974">وقت تمام است</translation>
@@ -944,6 +951,7 @@
 <translation id="8936501819958976551">غیرفعال</translation>
 <translation id="8938800817013097409">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="8940956008527784070">باتری ضعیف است (<ph name="PERCENTAGE" />٪)</translation>
+<translation id="8951539504029375108">‏فقط دستگاه‌های Thunderbolt تأییدشده با Chromebook شما سازگار هستند</translation>
 <translation id="8982906748181120328">نمایان برای اطراف</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">درحال استفاده از <ph name="IME_NAME" /></translation>

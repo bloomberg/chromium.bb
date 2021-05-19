@@ -15,13 +15,13 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/borealis/borealis_service.h"
-#include "chrome/browser/chromeos/borealis/borealis_window_manager.h"
-#include "chrome/browser/chromeos/crosapi/browser_util.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/borealis/borealis_service.h"
+#include "chrome/browser/ash/borealis/borealis_window_manager.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_arc_tracker.h"
@@ -111,7 +111,7 @@ AppServiceAppWindowLauncherController::
 
   // We need to remove all Registry observers for added users.
   for (auto* profile : profile_list_) {
-    apps::AppServiceProxy* proxy =
+    apps::AppServiceProxyChromeOs* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile);
     proxy->InstanceRegistry().RemoveObserver(this);
   }
@@ -213,7 +213,7 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanged(
     return;
 
   if (arc_tracker_)
-    arc_tracker_->OnWindowVisibilityChanged(window);
+    arc_tracker_->HandleWindowVisibilityChanged(window);
 
   ash::ShelfID shelf_id = GetShelfId(window);
   if (shelf_id.IsNull())
@@ -292,7 +292,7 @@ void AppServiceAppWindowLauncherController::OnWindowDestroying(
   // controller on window destroying. Controller will be closed onTaskDestroyed
   // event which is generated when actual task is destroyed.
   if (arc_tracker_ && arc::GetWindowTaskId(window) != arc::kNoTaskId) {
-    arc_tracker_->OnWindowDestroying(window);
+    arc_tracker_->HandleWindowDestroying(window);
     aura_window_to_app_window_.erase(window);
     return;
   }
@@ -702,7 +702,7 @@ void AppServiceAppWindowLauncherController::UserHasAppOnActiveDesktop(
       MultiUserWindowManagerHelper::GetInstance();
   aura::Window* other_window = nullptr;
   for (auto* it : profile_list_) {
-    apps::AppServiceProxy* proxy =
+    apps::AppServiceProxyChromeOs* proxy =
         apps::AppServiceProxyFactory::GetForProfile(it);
     if (proxy == proxy_)
       continue;

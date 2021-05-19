@@ -16,6 +16,28 @@ declare_args() {
       is_win || is_linux || is_chromeos || is_android || is_apple || is_fuchsia
 }
 
+if (is_android && build_with_chromium) {
+  android_library("native_test_java") {
+    testonly = true
+    sources = [
+      "test_utils/runner/android/java/src/com/android/angle/test/AngleNativeTest.java",
+      "test_utils/runner/android/java/src/com/android/angle/test/AngleUnitTestActivity.java",
+      "test_utils/runner/android/java/src/com/android/angle/test/TestStatusReporter.java",
+    ]
+
+    deps = [
+      "//build/android:native_libraries_java",
+      "//build/android/gtest_apk:native_test_instrumentation_test_runner_java",
+    ]
+  }
+
+  angle_source_set("native_test_support_android") {
+    testonly = true
+    sources = [ "test_utils/runner/android/AngleNativeTest.cpp" ]
+    deps = [ "$angle_root:angle_common" ]
+  }
+}
+
 angle_test("test_utils_unittest_helper") {
   sources = [
     "../../util/test_utils_unittest_helper.cpp",
@@ -116,7 +138,9 @@ angle_test("angle_system_info_test") {
   sources = [ "angle_system_info_tests_main.cpp" ]
   deps = [
     "$angle_root:angle_gpu_info_util",
-    "$angle_root/util:angle_util",
+    "$angle_root:libEGL_static",
+    "$angle_root:libGLESv2_static",
+    "$angle_root/util:angle_util_static",
   ]
 }
 
@@ -133,13 +157,16 @@ angle_test("angle_unittests") {
     }
   }
 
+  defines = []
+
   if (angle_enable_hlsl) {
     sources += angle_unittests_hlsl_sources
-    defines = [ "ANGLE_ENABLE_HLSL" ]
+    defines += [ "ANGLE_ENABLE_HLSL" ]
   }
 
   deps = [
     ":angle_test_expectations",
+    "$angle_root:angle_json_serializer",
     "$angle_root:libANGLE",
     "$angle_root:libEGL_static",
     "$angle_root:libGLESv2_static",
@@ -148,6 +175,7 @@ angle_test("angle_unittests") {
     "$angle_root:translator",
     "$angle_root/util:angle_util_static",
   ]
+
   if (!is_android && !is_fuchsia) {
     # SystemUtils.RunApp, the only unittest using a helper binary, is not supported on these
     # platforms yet.
@@ -206,7 +234,13 @@ if (is_win || is_linux || is_chromeos || is_android || is_fuchsia || is_apple) {
     }
 
     if (is_fuchsia) {
-      manifest = "//build/config/fuchsia/gfx_tests.cmx"
+      additional_manifest_fragments = [
+        # TODO(crbug.com/1185811): Figure out why jit_capabilities is needed.
+        "//build/config/fuchsia/test/jit_capabilities.test-cmx",
+
+        "//build/config/fuchsia/test/present_view_capabilities.test-cmx",
+        "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
+      ]
     }
 
     if (is_ios) {

@@ -10,6 +10,9 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/test/test_widget_builder.h"
+#include "ash/wm/resize_shadow.h"
+#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller_test_api.h"
@@ -41,12 +44,10 @@
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
-
-#include "ash/wm/resize_shadow.h"
-#include "ash/wm/resize_shadow_controller.h"
 
 namespace exo {
 
@@ -347,14 +348,13 @@ TEST_F(ShellSurfaceTest, SetTitle) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
-  shell_surface->SetTitle(base::string16(base::ASCIIToUTF16("test")));
+  shell_surface->SetTitle(std::u16string(u"test"));
   surface->Attach(buffer.get());
   surface->Commit();
 
   // NativeWindow's title is used within the overview mode, so it should
   // have the specified title.
-  EXPECT_EQ(base::ASCIIToUTF16("test"),
-            shell_surface->GetWidget()->GetNativeWindow()->GetTitle());
+  EXPECT_EQ(u"test", shell_surface->GetWidget()->GetNativeWindow()->GetTitle());
   // The titlebar shouldn't show the title.
   EXPECT_FALSE(
       shell_surface->GetWidget()->widget_delegate()->ShouldShowWindowTitle());
@@ -1361,14 +1361,12 @@ TEST_F(ShellSurfaceTest, PropertyResolverTest) {
     TestPropertyResolver() = default;
     ~TestPropertyResolver() override = default;
     void PopulateProperties(
-        const std::string& app_id,
-        const std::string& startup_id,
-        bool for_creation,
+        const Params& params,
         ui::PropertyHandler& out_properties_container) override {
-      if (expected_app_id == app_id) {
+      if (expected_app_id == params.app_id) {
         out_properties_container.AcquireAllPropertiesFrom(
-            std::move(for_creation ? properties_for_creation
-                                   : properties_after_creation));
+            std::move(params.for_creation ? properties_for_creation
+                                          : properties_after_creation));
       }
     }
     std::string expected_app_id;
@@ -1435,6 +1433,68 @@ TEST_F(ShellSurfaceTest, PropertyResolverTest) {
     EXPECT_EQ(2, shell_surface->GetWidget()->GetNativeWindow()->GetProperty(
                      ash::kShelfItemTypeKey));
   }
+}
+
+TEST_F(ShellSurfaceTest, Overlay) {
+  auto shell_surface =
+      test::ShellSurfaceBuilder({100, 100}).BuildShellSurface();
+  shell_surface->GetWidget()->GetNativeWindow()->SetProperty(
+      aura::client::kSkipImeProcessing, true);
+
+  EXPECT_FALSE(shell_surface->HasOverlay());
+
+  auto textfield = std::make_unique<views::Textfield>();
+  auto* textfield_ptr = textfield.get();
+
+  ShellSurfaceBase::OverlayParams params(std::move(textfield));
+  shell_surface->AddOverlay(std::move(params));
+  EXPECT_TRUE(shell_surface->HasOverlay());
+  EXPECT_NE(shell_surface->GetWidget()->GetFocusManager()->GetFocusedView(),
+            textfield_ptr);
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::VKEY_X, 0);
+  generator->ReleaseKey(ui::VKEY_X, 0);
+  EXPECT_EQ(textfield_ptr->GetText(), u"");
+
+  generator->MoveMouseToCenterOf(shell_surface->GetWidget()->GetNativeWindow());
+  generator->ClickLeftButton();
+
+  // Test normal key input, which should go through IME.
+  EXPECT_EQ(shell_surface->GetWidget()->GetFocusManager()->GetFocusedView(),
+            textfield_ptr);
+  generator->PressKey(ui::VKEY_X, 0);
+  generator->ReleaseKey(ui::VKEY_X, 0);
+  EXPECT_EQ(textfield_ptr->GetText(), u"x");
+  EXPECT_TRUE(textfield_ptr->GetSelectedText().empty());
+
+  // Controls (Select all) should work.
+  generator->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator->ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(textfield_ptr->GetText(), u"x");
+  EXPECT_EQ(textfield_ptr->GetSelectedText(), u"x");
+
+  auto* widget = ash::TestWidgetBuilder()
+                     .SetBounds(gfx::Rect(200, 200))
+                     .BuildOwnedByNativeWidget();
+  ASSERT_TRUE(widget->IsActive());
+
+  generator->PressKey(ui::VKEY_Y, 0);
+  generator->ReleaseKey(ui::VKEY_Y, 0);
+
+  EXPECT_EQ(textfield_ptr->GetText(), u"x");
+  EXPECT_EQ(textfield_ptr->GetSelectedText(), u"x");
+
+  // Re-activate the surface and make sure that the overlay can still handle
+  // keys.
+  shell_surface->GetWidget()->Activate();
+  // The current text will be replaced with new character because
+  // the text is selected.
+  generator->PressKey(ui::VKEY_Y, 0);
+  generator->ReleaseKey(ui::VKEY_Y, 0);
+  EXPECT_EQ(textfield_ptr->GetText(), u"y");
+  EXPECT_TRUE(textfield_ptr->GetSelectedText().empty());
 }
 
 }  // namespace exo

@@ -33,7 +33,6 @@ class MEDIA_EXPORT Dav1dVideoDecoder : public OffloadableVideoDecoder {
 
   // VideoDecoder implementation.
   VideoDecoderType GetDecoderType() const override;
-  std::string GetDisplayName() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -42,6 +41,7 @@ class MEDIA_EXPORT Dav1dVideoDecoder : public OffloadableVideoDecoder {
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
+  bool IsOptimizedForRTC() const override;
 
   // OffloadableVideoDecoder implementation.
   void Detach() override;

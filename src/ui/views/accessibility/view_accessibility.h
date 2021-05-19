@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -100,9 +99,9 @@ class VIEWS_EXPORT ViewAccessibility {
 
   void OverrideRole(const ax::mojom::Role role);
   void OverrideName(const std::string& name);
-  void OverrideName(const base::string16& name);
+  void OverrideName(const std::u16string& name);
   void OverrideDescription(const std::string& description);
-  void OverrideDescription(const base::string16& description);
+  void OverrideDescription(const std::u16string& description);
 
   // Sets whether this View hides all its descendants from the accessibility
   // tree that is exposed to platform APIs. This is similar, but not exactly
@@ -136,6 +135,7 @@ class VIEWS_EXPORT ViewAccessibility {
   virtual bool IsAccessibilityEnabled() const;
 
   void OverrideBounds(const gfx::RectF& bounds);
+  void OverrideLabelledBy(View* labelled_by_view);
   void OverrideDescribedBy(View* described_by_view);
   void OverrideHasPopup(const ax::mojom::HasPopup has_popup);
 
@@ -157,6 +157,10 @@ class VIEWS_EXPORT ViewAccessibility {
   Widget* GetNextFocus() const;
   Widget* GetPreviousFocus() const;
 
+  // Override the child tree id.
+  void OverrideChildTreeID(ui::AXTreeID tree_id);
+  ui::AXTreeID GetChildTreeID() const;
+
   // Returns the accessibility object that represents the View whose
   // accessibility is managed by this instance. This may be an AXPlatformNode or
   // it may be a native accessible object implemented by another class.
@@ -166,7 +170,7 @@ class VIEWS_EXPORT ViewAccessibility {
 
   // Causes the screen reader to announce |text|. If the current user is not
   // using a screen reader, has no effect.
-  virtual void AnnounceText(const base::string16& text);
+  virtual void AnnounceText(const std::u16string& text);
 
   virtual const ui::AXUniqueId& GetUniqueId() const;
 
@@ -263,6 +267,9 @@ class VIEWS_EXPORT ViewAccessibility {
   // screen readers, transition focus from one widget to another.
   Widget* next_focus_ = nullptr;
   Widget* previous_focus_ = nullptr;
+
+  // This view's child tree id.
+  base::Optional<ui::AXTreeID> child_tree_id_;
 
 #if defined(USE_AURA) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Each instance of ViewAccessibility that's associated with a root View

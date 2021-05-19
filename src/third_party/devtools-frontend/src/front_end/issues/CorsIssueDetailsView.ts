@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as i18n from '../i18n/i18n.js';
-import * as SDK from '../sdk/sdk.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as SDK from '../core/sdk/sdk.js';
 
 import {AffectedResourcesView} from './AffectedResourcesView.js';
 import {AggregatedIssue} from './IssueAggregator.js';
 import {IssueView} from './IssueView.js';
 
-export const UIStrings = {
+const UIStrings = {
+  /**
+  *@description Label for number of affected resources indication in issue view
+  */
+  nItems: '{n, plural, =1 { item} other { items}}',
   /**
   *@description Label for number of affected resources indication in issue view
   */
@@ -19,7 +24,7 @@ export const UIStrings = {
   */
   items: 'items',
   /**
-  *@description Value for the status column in Shared Array Buffer issues
+  *@description Value for the status column in SharedArrayBuffer issues
   */
   warning: 'warning',
   /**
@@ -27,31 +32,31 @@ export const UIStrings = {
   */
   blocked: 'blocked',
   /**
-  *@description Text for the status of something
+  *@description Text for the status column in the item list in the CORS issue details view
   */
   status: 'Status',
   /**
-  *@description Text for the status of something
+  *@description Text for the column showing the associated network request in the item list in the CORS issue details view
   */
   request: 'Request',
   /**
-   *@description Text for the status of something
+   *@description Text for the column showing the resource's address in the item list in the CORS issue details view
    */
   resourceAddressSpace: 'Resource Address',
   /**
-   *@description Text for the status of something
+   *@description Text for the column showing the address of the resource load initiator in the item list in the CORS issue details view
    */
   initiatorAddressSpace: 'Initiator Address',
   /**
-  *@description Text for the status of something
+  *@description Text for the status of the initiator context
   */
   secure: 'secure',
   /**
-  *@description Text for the status of something
+  *@description Text for the status of the initiator context
   */
   insecure: 'insecure',
   /**
-  *@description Text for the status of something
+  *@description Title for a column showing the status of the initiator context. The initiator context is either secure or insecure depending on whether it was loaded via HTTP or HTTPS.
   */
   initiatorContext: 'Initiator Context',
 };
@@ -76,6 +81,10 @@ export class CorsIssueDetailsView extends AffectedResourcesView {
       status.textContent = i18nString(UIStrings.blocked);
     }
     element.appendChild(status);
+  }
+
+  protected getResourceName(count: number): Platform.UIString.LocalizedString {
+    return i18nString(UIStrings.nItems, {n: count});
   }
 
   private appendDetails(issues: Iterable<SDK.CorsIssue.CorsIssue>): void {

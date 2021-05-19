@@ -20,9 +20,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -35,10 +35,11 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
+#include "chromeos/dbus/userdataauth/fake_install_attributes_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
@@ -122,7 +123,7 @@ class TestingDeviceCloudPolicyManagerChromeOS
 };
 
 class DeviceCloudPolicyManagerChromeOSTest
-    : public chromeos::DeviceSettingsTestBase,
+    : public ash::DeviceSettingsTestBase,
       public chromeos::SessionManagerClient::Observer {
  protected:
   DeviceCloudPolicyManagerChromeOSTest()
@@ -153,12 +154,13 @@ class DeviceCloudPolicyManagerChromeOSTest
     base::RunLoop().RunUntilIdle();
 
     if (set_empty_system_salt_) {
-      chromeos::FakeCryptohomeClient::Get()->set_system_salt(
+      chromeos::FakeCryptohomeMiscClient::Get()->set_system_salt(
           std::vector<uint8_t>());
     }
 
+    chromeos::InstallAttributesClient::InitializeFake();
     install_attributes_ = std::make_unique<chromeos::InstallAttributes>(
-        chromeos::FakeCryptohomeClient::Get());
+        chromeos::FakeInstallAttributesClient::Get());
     store_ = new DeviceCloudPolicyStoreChromeOS(
         device_settings_service_.get(), install_attributes_.get(),
         base::ThreadTaskRunnerHandle::Get());
@@ -201,6 +203,7 @@ class DeviceCloudPolicyManagerChromeOSTest
 
     DeviceOAuth2TokenServiceFactory::Shutdown();
     chromeos::SystemSaltGetter::Shutdown();
+    chromeos::InstallAttributesClient::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 
     DeviceSettingsTestBase::TearDown();
@@ -550,8 +553,8 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
             device_management_service_.StartJobFullControl(&register_job)));
     AllowUninterestingRemoteCommandFetches();
 
-    chromeos::OwnerSettingsServiceChromeOS* owner_settings_service =
-        chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+    ash::OwnerSettingsServiceAsh* owner_settings_service =
+        ash::OwnerSettingsServiceAshFactory::GetForBrowserContext(
             profile_.get());
     ASSERT_TRUE(owner_settings_service);
 

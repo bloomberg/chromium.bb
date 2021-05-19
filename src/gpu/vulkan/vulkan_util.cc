@@ -16,10 +16,33 @@
 #include "gpu/config/vulkan_info.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 namespace gpu {
 namespace {
 uint64_t g_submit_count = 0u;
 uint64_t g_import_semaphore_into_gl_count = 0u;
+
+#if defined(OS_ANDROID)
+int GetEMUIVersion() {
+  const auto* build_info = base::android::BuildInfo::GetInstance();
+  base::StringPiece manufacturer(build_info->manufacturer());
+
+  // TODO(crbug.com/1096222): check Honor devices as well.
+  if (manufacturer != "HUAWEI")
+    return -1;
+
+  // Huawei puts EMUI version in the build version incremental.
+  // Example: 11.0.0.130C00
+  int version = 0;
+  if (sscanf(build_info->version_incremental(), "%d.", &version) != 1)
+    return -1;
+
+  return version;
+}
+#endif
 }
 
 bool SubmitSignalVkSemaphores(VkQueue vk_queue,
@@ -189,10 +212,13 @@ bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
   }
 
   if (device_info.properties.vendorID == kVendorARM) {
-    // https://crbug.com/1096222: Display problem with Huawei and Honor devices
-    // with Mali GPU. The Mali driver version is < 19.0.0.
-    if (device_info.properties.driverVersion < VK_MAKE_VERSION(19, 0, 0))
+    int emui_version = GetEMUIVersion();
+    // TODO(crbug.com/1096222) Display problem with Huawei EMUI < 11 and Honor
+    // devices with Mali GPU. The Mali driver version is < 19.0.0.
+    if (device_info.properties.driverVersion < VK_MAKE_VERSION(19, 0, 0) &&
+        emui_version < 11) {
       return false;
+    }
 
     // Remove "Mali-" prefix.
     base::StringPiece device_name(device_info.properties.deviceName);

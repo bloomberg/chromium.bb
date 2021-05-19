@@ -12,25 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/bool_literal.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/uint_literal.h"
-#include "src/type/bool_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -76,6 +57,12 @@ TEST_P(BinaryArithSignedIntegerTest, Scalar) {
 
 TEST_P(BinaryArithSignedIntegerTest, Vector) {
   auto param = GetParam();
+
+  // Skip ops that are illegal for this type
+  if (param.op == ast::BinaryOp::kAnd || param.op == ast::BinaryOp::kOr ||
+      param.op == ast::BinaryOp::kXor) {
+    return;
+  }
 
   auto* lhs = vec3<i32>(1, 1, 1);
   auto* rhs = vec3<i32>(1, 1, 1);
@@ -130,15 +117,13 @@ TEST_P(BinaryArithSignedIntegerTest, Scalar_Loads) {
 INSTANTIATE_TEST_SUITE_P(
     BuilderTest,
     BinaryArithSignedIntegerTest,
+    // NOTE: No left and right shift as they require u32 for rhs operand
     testing::Values(BinaryData{ast::BinaryOp::kAdd, "OpIAdd"},
                     BinaryData{ast::BinaryOp::kAnd, "OpBitwiseAnd"},
                     BinaryData{ast::BinaryOp::kDivide, "OpSDiv"},
                     BinaryData{ast::BinaryOp::kModulo, "OpSMod"},
                     BinaryData{ast::BinaryOp::kMultiply, "OpIMul"},
                     BinaryData{ast::BinaryOp::kOr, "OpBitwiseOr"},
-                    BinaryData{ast::BinaryOp::kShiftLeft, "OpShiftLeftLogical"},
-                    BinaryData{ast::BinaryOp::kShiftRight,
-                               "OpShiftRightArithmetic"},
                     BinaryData{ast::BinaryOp::kSubtract, "OpISub"},
                     BinaryData{ast::BinaryOp::kXor, "OpBitwiseXor"}));
 
@@ -167,6 +152,12 @@ TEST_P(BinaryArithUnsignedIntegerTest, Scalar) {
 }
 TEST_P(BinaryArithUnsignedIntegerTest, Vector) {
   auto param = GetParam();
+
+  // Skip ops that are illegal for this type
+  if (param.op == ast::BinaryOp::kAnd || param.op == ast::BinaryOp::kOr ||
+      param.op == ast::BinaryOp::kXor) {
+    return;
+  }
 
   auto* lhs = vec3<u32>(1u, 1u, 1u);
   auto* rhs = vec3<u32>(1u, 1u, 1u);

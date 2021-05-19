@@ -19,15 +19,15 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/icon_standardizer.h"
-#include "chrome/browser/chromeos/borealis/borealis_features.h"
-#include "chrome/browser/chromeos/borealis/borealis_service.h"
-#include "chrome/browser/chromeos/borealis/borealis_util.h"
+#include "chrome/browser/ash/borealis/borealis_features.h"
+#include "chrome/browser/ash/borealis/borealis_service.h"
+#include "chrome/browser/ash/borealis/borealis_util.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_features.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -128,7 +128,7 @@ scoped_refptr<extensions::Extension> MakeApp(const std::string& name,
   value.SetString("version", version);
   value.SetString("app.launch.web_url", url);
   scoped_refptr<extensions::Extension> app = extensions::Extension::Create(
-      base::FilePath(), extensions::Manifest::INTERNAL, value,
+      base::FilePath(), extensions::mojom::ManifestLocation::kInternal, value,
       extensions::Extension::WAS_INSTALLED_BY_DEFAULT, id, &err);
   EXPECT_EQ(err, "");
   return app;
@@ -139,7 +139,7 @@ scoped_refptr<extensions::Extension> MakeApp(const std::string& name,
 void RemoveApps(apps::mojom::AppType app_type,
                 Profile* profile,
                 FakeAppListModelUpdater* model_updater) {
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->FlushMojoCallsForTesting();
   proxy->AppRegistryCache().ForEachApp(
@@ -260,7 +260,8 @@ class ExtensionAppTest : public AppServiceAppModelBuilderTest {
     ASSERT_TRUE(extension);
 
     base::RunLoop run_loop;
-    int size_in_dip = ash::AppListConfig::instance().grid_icon_dimension();
+    int size_in_dip =
+        ash::SharedAppListConfig::instance().default_grid_icon_dimension();
     extensions::ImageLoader::Get(profile())->LoadImageAtEveryScaleFactorAsync(
         extension, gfx::Size(size_in_dip, size_in_dip),
         base::BindOnce(
@@ -308,15 +309,6 @@ class WebAppBuilderTest : public AppServiceAppModelBuilderTest {
   void SetUp() override {
     AppServiceAppModelBuilderTest::SetUp();
 
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableDefaultApps);
-
-    base::RunLoop run_loop;
-    web_app::WebAppProvider::Get(testing_profile())
-        ->on_registry_ready()
-        .Post(FROM_HERE, run_loop.QuitClosure());
-    run_loop.Run();
-
     CreateBuilder();
   }
 
@@ -344,7 +336,8 @@ class WebAppBuilderTest : public AppServiceAppModelBuilderTest {
                           gfx::ImageSkia& output_image_skia) {
     std::vector<int> icon_sizes_in_px;
     apps::ScaleToSize scale_to_size_in_px;
-    int size_in_dip = ash::AppListConfig::instance().grid_icon_dimension();
+    int size_in_dip =
+        ash::SharedAppListConfig::instance().default_grid_icon_dimension();
     for (auto scale_factor : ui::GetSupportedScaleFactors()) {
       int size_in_px =
           gfx::ScaleToFlooredSize(gfx::Size(size_in_dip, size_in_dip),
@@ -611,8 +604,8 @@ TEST_F(ExtensionAppTest, LoadCompressedIcon) {
   apps::mojom::IconValuePtr dst_icon;
   apps::LoadIconFromExtension(
       apps::mojom::IconType::kCompressed,
-      ash::AppListConfig::instance().grid_icon_dimension(), profile(),
-      kPackagedApp1Id, icon_effects,
+      ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
+      profile(), kPackagedApp1Id, icon_effects,
       base::BindOnce(
           [](apps::mojom::IconValuePtr* output_icon,
              base::OnceClosure load_app_icon_callback,

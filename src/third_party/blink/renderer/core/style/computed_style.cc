@@ -109,9 +109,7 @@ struct SameSizeAsComputedStyleBase {
 
 struct SameSizeAsComputedStyle : public SameSizeAsComputedStyleBase,
                                  public RefCounted<SameSizeAsComputedStyle> {
-  SameSizeAsComputedStyle() {
-    base::debug::Alias(&own_ptrs);
-  }
+  SameSizeAsComputedStyle() { base::debug::Alias(&own_ptrs); }
 
  private:
   void* own_ptrs[1];
@@ -123,44 +121,8 @@ struct SameSizeAsComputedStyle : public SameSizeAsComputedStyleBase,
 // ComputedStyle.
 ASSERT_SIZE(ComputedStyle, SameSizeAsComputedStyle);
 
-scoped_refptr<ComputedStyle> ComputedStyle::Create() {
-  return base::AdoptRef(new ComputedStyle(PassKey(), InitialStyle()));
-}
-
-scoped_refptr<ComputedStyle> ComputedStyle::CreateInitialStyle() {
+scoped_refptr<ComputedStyle> ComputedStyle::CreateInitialStyleSingleton() {
   return base::AdoptRef(new ComputedStyle(PassKey()));
-}
-
-ComputedStyle& ComputedStyle::MutableInitialStyle() {
-  LEAK_SANITIZER_DISABLED_SCOPE;
-  DEFINE_STATIC_REF(ComputedStyle, initial_style,
-                    (ComputedStyle::CreateInitialStyle()));
-  return *initial_style;
-}
-
-void ComputedStyle::InvalidateInitialStyle() {
-  MutableInitialStyle().SetTapHighlightColor(
-      ComputedStyleInitialValues::InitialTapHighlightColor());
-}
-
-scoped_refptr<ComputedStyle> ComputedStyle::CreateAnonymousStyleWithDisplay(
-    const ComputedStyle& parent_style,
-    EDisplay display) {
-  scoped_refptr<ComputedStyle> new_style = ComputedStyle::Create();
-  new_style->InheritFrom(parent_style);
-  new_style->SetUnicodeBidi(parent_style.GetUnicodeBidi());
-  new_style->SetDisplay(display);
-  return new_style;
-}
-
-scoped_refptr<ComputedStyle>
-ComputedStyle::CreateInheritedDisplayContentsStyleIfNeeded(
-    const ComputedStyle& parent_style,
-    const ComputedStyle& layout_parent_style) {
-  if (parent_style.InheritedEqual(layout_parent_style))
-    return nullptr;
-  return ComputedStyle::CreateAnonymousStyleWithDisplay(parent_style,
-                                                        EDisplay::kInline);
 }
 
 scoped_refptr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
@@ -168,8 +130,7 @@ scoped_refptr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
-    : ComputedStyleBase(), RefCounted<ComputedStyle>() {
-}
+    : ComputedStyleBase(), RefCounted<ComputedStyle>() {}
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
     : ComputedStyleBase(o), RefCounted<ComputedStyle>() {}
@@ -959,6 +920,11 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
       PotentialCompositingReasonsFor3DTransformChanged(other)) {
     diff.SetCompositingReasonsChanged();
   }
+
+  if (HasCurrentBackgroundColorAnimation() !=
+      other.HasCurrentBackgroundColorAnimation()) {
+    diff.SetCompositablePaintEffectChanged();
+  }
 }
 
 void ComputedStyle::AddPaintImage(StyleImage* image) {
@@ -1267,11 +1233,12 @@ void ComputedStyle::ApplyMotionPathTransform(
     // TODO(ericwilligers): crbug.com/641245 Support <size> for ray paths.
     float float_distance = FloatValueForLength(distance, 0);
 
-    path_position.tangent_in_degrees = To<StyleRay>(*path).Angle() - 90;
-    path_position.point.SetX(float_distance *
-                             cos(deg2rad(path_position.tangent_in_degrees)));
-    path_position.point.SetY(float_distance *
-                             sin(deg2rad(path_position.tangent_in_degrees)));
+    // Use clampTo() to convert infinite values to min/max finite ones.
+    path_position.tangent_in_degrees =
+        clampTo<float, float>(To<StyleRay>(*path).Angle() - 90);
+    float tangent_in_radians = deg2rad(path_position.tangent_in_degrees);
+    path_position.point.SetX(float_distance * cos(tangent_in_radians));
+    path_position.point.SetY(float_distance * sin(tangent_in_radians));
   } else {
     float zoom = EffectiveZoom();
     const StylePath& motion_path = To<StylePath>(*path);
@@ -2259,11 +2226,14 @@ TextEmphasisMark ComputedStyle::GetTextEmphasisMark() const {
 LayoutRectOutsets ComputedStyle::ImageOutsets(
     const NinePieceImage& image) const {
   return LayoutRectOutsets(
-      NinePieceImage::ComputeOutset(image.Outset().Top(), BorderTopWidth()),
-      NinePieceImage::ComputeOutset(image.Outset().Right(), BorderRightWidth()),
+      NinePieceImage::ComputeOutset(image.Outset().Top(),
+                                    BorderTopWidth().ToInt()),
+      NinePieceImage::ComputeOutset(image.Outset().Right(),
+                                    BorderRightWidth().ToInt()),
       NinePieceImage::ComputeOutset(image.Outset().Bottom(),
-                                    BorderBottomWidth()),
-      NinePieceImage::ComputeOutset(image.Outset().Left(), BorderLeftWidth()));
+                                    BorderBottomWidth().ToInt()),
+      NinePieceImage::ComputeOutset(image.Outset().Left(),
+                                    BorderLeftWidth().ToInt()));
 }
 
 void ComputedStyle::SetBorderImageSource(StyleImage* image) {
@@ -2421,6 +2391,13 @@ const AtomicString& ComputedStyle::ListStyleStringValue() const {
   if (!GetListStyleType() || !GetListStyleType()->IsString())
     return g_null_atom;
   return GetListStyleType()->GetStringValue();
+}
+
+base::Optional<Color> ComputedStyle::AccentColorResolved() const {
+  const StyleAutoColor& auto_color = AccentColor();
+  if (auto_color.IsAutoColor())
+    return base::nullopt;
+  return auto_color.Resolve(GetCurrentColor(), UsedColorScheme());
 }
 
 static const int kPaintOrderBitwidth = 2;

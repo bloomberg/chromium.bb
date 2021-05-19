@@ -23,6 +23,7 @@
 <translation id="1509960214886564027">বহুতো ছাইটৰ সুবিধাসমূহ ব্যাহত হ’ব পাৰে</translation>
 <translation id="1620510694547887537">কেমেৰা</translation>
 <translation id="1644574205037202324">ইতিহাস</translation>
+<translation id="1647582022260550163">আপুনি অনুমতিসমূহ ৰিছেট কৰি কুকি আৰু ছাইটৰ ডেটা মচিবলৈ বিচাৰে বুলি নিশ্চিতনে?</translation>
 <translation id="1660204651932907780">ছাইটবোৰক ধ্বনি প্লে’ কৰিবলৈ অনুমতি দিয়ক (চুপাৰিছ কৰা)</translation>
 <translation id="1677097821151855053">কুকিসমূহ আৰু ছাইটৰ অন্য ডেটা আপোনাক মনত ৰাখিবলৈ ব্যৱহাৰ কৰা হয়, উদাহৰণস্বৰূপে, আপোনাক ছাইন ইন কৰাবলৈ অথবা বিজ্ঞাপনসমূহ ব্যক্তিগতকৰণ কৰিবলৈ। সকলো ছাইটৰ বাবে কুকিসমূহ পৰিচালনা কৰিবলৈ <ph name="BEGIN_LINK" />ছেটিংসমূহ<ph name="END_LINK" /> চাওক।</translation>
 <translation id="1688867105868176567">ছাইটৰ ডেটা মচিবনে?</translation>
@@ -92,7 +93,6 @@
 <translation id="3386292677130313581">ছাইটসমূহে আপোনাৰ অৱস্থান জনাৰ অনুমতি দিয়াৰ পূৰ্বে সোধক (চুপাৰিছ কৰা হয়)</translation>
 <translation id="3538390592868664640">ছাইটসমূহক আপোনাৰ চৌপাশৰ এখন 3D মেপ সৃষ্টি কৰাৰ পৰা অথবা কেমেৰাৰ স্থান ট্ৰেক কৰাৰ পৰা অৱৰোধ কৰক</translation>
 <translation id="3586500876634962664">কেমেৰা আৰু মাইক্ৰ’ফ’নৰ ব্যৱহাৰ</translation>
-<translation id="3587482841069643663">সকলো</translation>
 <translation id="358794129225322306">এটা ছাইটক একাধিক ফাইল স্বয়ংক্ৰিয়ভাৱে ডাউনল’ড কৰাৰ অনুমতি দিয়ক।</translation>
 <translation id="3594780231884063836">ভিডিঅ' মিউট কৰক</translation>
 <translation id="3596414637720633074">ইনক'গনিট'ত তৃতীয় পক্ষৰ কুকিসমূহ অৱৰোধ কৰক</translation>
@@ -104,6 +104,7 @@
 <translation id="385051799172605136">উভতি যাওক</translation>
 <translation id="3859306556332390985">আগলৈ যাওক</translation>
 <translation id="3955193568934677022">ছাইটসমূহক সুৰক্ষিত সমল প্লে’ কৰিবলৈ অনুমতি দিয়ক (চুপাৰিছ কৰা হয়)</translation>
+<translation id="3967822245660637423">ডাউনল’ড সম্পূৰ্ণ হ’ল</translation>
 <translation id="3987993985790029246">লিংক প্ৰতিলিপি কৰক</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">শিৰোনাম</translation>
@@ -177,6 +178,7 @@
 <translation id="5916664084637901428">অন আছে</translation>
 <translation id="5922853908706496913">আপোনাৰ স্ক্ৰীন শ্বেয়াৰ কৰি থকা হৈছে</translation>
 <translation id="5939518447894949180">ৰিছেট কৰক</translation>
+<translation id="5975083100439434680">জুম আউট কৰক</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">আপোনাৰ ডিভাইচটোলৈ এই ছাইটটোৰ থকা এক্সেছ নিয়ন্ত্ৰণ কৰক</translation>
 <translation id="6040143037577758943">বন্ধ কৰক</translation>
@@ -296,6 +298,7 @@
 <translation id="8801436777607969138">কোনো নির্দিষ্ট ছাইটৰ বাবে JavaScript অৱৰোধ কৰক।</translation>
 <translation id="8816026460808729765">ছেন্সৰসমূহ এক্সেছ কৰাত ছাইটসমূহ অৱৰোধ কৰক</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8903921497873541725">জুম ইন কৰক</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">এই ডিভাইচটোৰ বাবে NFC অফ কৰা আছে। ইয়াক <ph name="BEGIN_LINK" />Android ছেটিংসমূহ<ph name="END_LINK" />লৈ গৈ অন কৰক।</translation>
 <translation id="8929372349074745002">সৰহভাগ লোকৰ বাবে এই ছাইটটো খোল খায় তথা সেইটোৱে দ্ৰুতভাৱে সঁহাৰি দিয়ে</translation>
@@ -303,10 +306,12 @@
 <translation id="894871326938397531">ইনক’গনিট’ ম’ডৰ পৰা বাহিৰ হ’বনে?</translation>
 <translation id="8958424370300090006">কোনো বিশেষ ছাইটৰ বাবে কুকিসমূহ অৱৰোধ কৰক।</translation>
 <translation id="8959122750345127698">ইয়ালৈ নেভিগেশ্বন পাব পৰা অৱস্থাত নাই: <ph name="URL" /></translation>
+<translation id="8986362086234534611">পাহৰক</translation>
 <translation id="9019902583201351841">আপোনাৰ অভিভাৱকৰ দ্বাৰা পৰিচালিত</translation>
 <translation id="9074739597929991885">ব্লুটুথ</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> আৰু <ph name="NUM_MORE" /> টা}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> আৰু <ph name="NUM_MORE" /> টা}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> আৰু <ph name="NUM_MORE" /> টা}}</translation>
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android ছেটিংসমূহ<ph name="END_LINK" />ত <ph name="APP_NAME" />ৰ বাবে অনুমতিসমূহ অন কৰক।</translation>
+<translation id="930525582205581608">এই ছাইটটো পাহৰি যাব নেকি?</translation>
 <translation id="965817943346481315">কোনো ছাইটে অননুমোদিত বা বিভ্ৰান্তিকৰ বিজ্ঞাপন দেখুৱালে সেয়া অৱৰোধ কৰক ( চুপাৰিছ কৰা)</translation>
 <translation id="967624055006145463">ডেটা সঞ্চয় কৰা হ’ল</translation>
 </translationbundle>

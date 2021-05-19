@@ -15,38 +15,17 @@
 #ifndef SRC_AST_DECORATION_H_
 #define SRC_AST_DECORATION_H_
 
-#include <memory>
-#include <ostream>
 #include <vector>
 
 #include "src/ast/node.h"
-#include "src/source.h"
 
 namespace tint {
 namespace ast {
-
-/// The decoration kind enumerator
-enum class DecorationKind {
-  kArray,
-  kFunction,
-  kStruct,
-  kStructMember,
-  kType,
-  kVariable,
-};
-
-std::ostream& operator<<(std::ostream& out, DecorationKind data);
 
 /// The base class for all decorations
 class Decoration : public Castable<Decoration, Node> {
  public:
   ~Decoration() override;
-
-  /// @return the decoration kind
-  virtual DecorationKind GetKind() const = 0;
-
-  /// @returns true if the node is valid
-  bool IsValid() const override;
 
  protected:
   /// Constructor

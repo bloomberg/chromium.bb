@@ -8,6 +8,7 @@
 # the old stories are removed: https://crbug.com/878390.
 # pylint: disable=too-many-lines
 
+import re
 
 from page_sets.system_health import platforms
 from page_sets.system_health import story_tags
@@ -21,6 +22,9 @@ from page_sets.login_helpers import tumblr_login
 
 from page_sets.helpers import override_online
 
+from py_utils import TimeoutException
+
+from telemetry.core import exceptions
 from telemetry.util import js_template
 
 
@@ -96,30 +100,45 @@ class _ArticleBrowsingStory(_BrowsingStory):
   # On some pages (for ex: facebook) articles appear only after we start
   # scrolling. This specifies if we need scroll main page.
   SCROLL_BEFORE_BROWSE = False
+  # In some cases we want to measure performance while we're loading. This
+  # introduces a lot of variability and should be used cautiously.
+  SCROLL_DURING_LOADING = False
 
   def _DidLoadDocument(self, action_runner):
+    self._AfterNavigate(action_runner)
     # Scroll main page if needed before we start browsing articles.
     if self.SCROLL_BEFORE_BROWSE:
       self._ScrollMainPage(action_runner)
     for i in xrange(self.ITEMS_TO_VISIT):
       self._NavigateToItem(action_runner, i)
+      self._AfterNavigate(action_runner)
       self._ReadNextArticle(action_runner)
       self._NavigateBack(action_runner)
+      self._AfterNavigate(action_runner)
       self._ScrollMainPage(action_runner)
 
+  def _AfterNavigate(self, action_runner):
+    pass
+
   def _ReadNextArticle(self, action_runner):
-    if self.COMPLETE_STATE_WAIT_TIMEOUT is not None:
-      action_runner.tab.WaitForDocumentReadyStateToBeComplete(
-          timeout=self.COMPLETE_STATE_WAIT_TIMEOUT)
+    if not self.SCROLL_DURING_LOADING:
+      if self.COMPLETE_STATE_WAIT_TIMEOUT is not None:
+        action_runner.tab.WaitForDocumentReadyStateToBeComplete(
+            timeout=self.COMPLETE_STATE_WAIT_TIMEOUT)
+      else:
+        action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+      action_runner.Wait(self.ITEM_READ_TIME_IN_SECONDS / 2.0)
     else:
-      action_runner.tab.WaitForDocumentReadyStateToBeComplete()
-    action_runner.Wait(self.ITEM_READ_TIME_IN_SECONDS/2.0)
+      action_runner.tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
     action_runner.RepeatableBrowserDrivenScroll(
         repeat_count=self.ITEM_SCROLL_REPEAT)
     action_runner.Wait(self.ITEM_READ_TIME_IN_SECONDS/2.0)
 
   def _ScrollMainPage(self, action_runner):
-    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    if not self.SCROLL_DURING_LOADING:
+      action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    else:
+      action_runner.tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
     action_runner.RepeatableBrowserDrivenScroll(
         repeat_count=self.MAIN_PAGE_SCROLL_REPEAT)
 
@@ -138,6 +157,74 @@ class CnnStory2021(_ArticleBrowsingStory):
   TAGS = [
       story_tags.HEALTH_CHECK, story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2021
   ]
+
+
+class BusinessInsiderMobile2021(_ArticleBrowsingStory):
+  """A newsite where we've seen janky performance in bug reports"""
+  NAME = 'browse:news:businessinsider:2021'
+  URL = 'https://www.businessinsider.com/'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  ITEM_SELECTOR = '.three-column > .tout-title-link'
+  ITEMS_TO_VISIT = 3
+  MAIN_PAGE_SCROLL_REPEAT = 2
+  ITEM_SCROLL_REPEAT = 4
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2021]
+  SCROLL_BEFORE_BROWSE = True
+  SCROLL_DURING_LOADING = False
+  _ACCEPTED_COOKIE = {
+      'businessinsider': '#sp_message_iframe_364841',
+      'insider': '#sp_message_iframe_364844'
+  }
+
+  def _GetCookieContextId(self, tab):
+    contexts = tab.EnableAllContexts().copy()
+    for context in contexts:
+      try:
+        result = tab.EvaluateJavaScript(
+            'document.querySelector(".message-button") != null;',
+            context_id=context)
+      except exceptions.EvaluateException:
+        continue
+      if result:
+        return context
+    return None
+
+  def _AfterNavigate(self, action_runner):
+    if self.SCROLL_DURING_LOADING:
+      action_runner.tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
+    else:
+      action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    # We want to clear any cookie.
+    url = re.search(r'https://(www\.)?([^.]+\.)?([^.]+)\.com.*',
+                    action_runner.tab.GetUrl())
+    if url is None:
+      raise RuntimeError("no matching for " + action_runner.tab.GetUrl() +
+                         " using " + url.group(2))
+    iframe = self._ACCEPTED_COOKIE[url.group(3)]
+    if iframe != '':
+      try:
+        action_runner.WaitForElement(iframe, timeout_in_seconds=1)
+      except TimeoutException:
+        # Sometimes the cookie pop up doesn't appear.
+        return
+      cookie_context = self._GetCookieContextId(action_runner.tab)
+      if cookie_context is not None:
+        self._ACCEPTED_COOKIE[url.group(3)] = ''
+        action_runner.ExecuteJavaScript(
+            ('document.querySelectorAll(".message-button")[0].dispatchEvent('
+             'new MouseEvent("click", {bubbles: true, cancellable: true}));'),
+            context_id=cookie_context,
+            user_gesture=True)
+
+
+class BusinessInsiderScrollWhileLoadingMobile2021(BusinessInsiderMobile2021):
+  """A newsite where we've seen janky performance in bug reports"""
+  NAME = 'browse:news:businessinsider:loading:2021'
+  SCROLL_DURING_LOADING = True
+  # This is only used in system_health.scroll_jank at the moment. So to avoid
+  # running it on all bots we say no platform and explicitly add it in
+  # janky_story_set.py.
+  SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS
 
 
 class FacebookMobileStory2019(_ArticleBrowsingStory):
@@ -562,6 +649,32 @@ class ImgurDesktopStory(_MediaBrowsingStory):
   TAGS = [story_tags.YEAR_2016]
 
 
+class TikTokMobileStory2021(_BrowsingStory):
+  NAME = 'browse:media:tiktok_infinite_scroll:2021'
+  URL = 'https://tiktok.com/'
+  TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2021]
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+  _TIME_TO_WAIT_BEFORE_STARTING_IN_SECONDS = 2
+  _TIME_TO_WAIT_BETWEEN_VIDEOS = 1
+  _ACCEPT_ALL_SELECTOR = 'div[class$=" cookie-banner"]>div[class$=" button-wrapper"]>button'
+
+  def _DidLoadDocument(self, action_runner):
+    # Accept all cookies
+    action_runner.WaitForElement(selector=self._ACCEPT_ALL_SELECTOR)
+    action_runner.ClickElement(selector=self._ACCEPT_ALL_SELECTOR)
+    action_runner.Wait(self._TIME_TO_WAIT_BEFORE_STARTING_IN_SECONDS)
+
+    # TikTok doesn't scroll like a traditional page but responds to vertical
+    # swipe gestures.
+    for direction in ['down', 'up', 'down']:
+      for _ in range(0, 3):
+        scroll_dist = action_runner.EvaluateJavaScript(
+            'window.innerHeight') * 0.8
+        action_runner.ScrollPage(distance=scroll_dist, direction=direction)
+        action_runner.Wait(self._TIME_TO_WAIT_BETWEEN_VIDEOS)
+
+
 class YouTubeMobileStory2019(_MediaBrowsingStory):
   """Load a typical YouTube video then navigate to a next few videos. Stop and
   watch each video for few seconds.
@@ -601,7 +714,7 @@ class AutoCADDesktopStory2021(_MediaBrowsingStory):
   TODO: add a description here.
   """
   NAME = 'browse:tools:autocad:2021'
-  URL = 'https://web.autocad.com'
+  URL = 'https://web.autocad.com/?user=wasm-benchmark'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
   TAGS = [
       story_tags.YEAR_2021, story_tags.WEBASSEMBLY, story_tags.WEBGL,
@@ -619,9 +732,6 @@ class AutoCADDesktopStory2021(_MediaBrowsingStory):
     action_runner.WaitForElement(text="Sign in")
     action_runner.ClickElement(text="Sign in")
     # Now we are done with the login.
-    action_runner.WaitForElement(text="OK")
-    action_runner.ClickElement(text="OK")
-
     action_runner.WaitForElement(text="Samples")
     action_runner.ClickElement(text="Samples")
 
@@ -1822,12 +1932,12 @@ class FlickrMobileStory2019(_InfiniteScrollStory):
   TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2019]
 
 
-class PinterestMobileStory2019(_InfiniteScrollStory):
-  NAME = 'browse:social:pinterest_infinite_scroll:2019'
+class PinterestMobileStory2021(_InfiniteScrollStory):
+  NAME = 'browse:social:pinterest_infinite_scroll:2021'
   URL = 'https://www.pinterest.co.uk'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [
-      story_tags.HEALTH_CHECK, story_tags.INFINITE_SCROLL, story_tags.YEAR_2019
+      story_tags.HEALTH_CHECK, story_tags.INFINITE_SCROLL, story_tags.YEAR_2021
   ]
   # TODO(crbug.com/862077): Story breaks if login is skipped during replay.
   SKIP_LOGIN = False

@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="Stability.Android.OomKillReverseRank" units="rank"
-    expires_after="2021-06-27">
+    expires_after="2021-08-29">
   <owner>boliu@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -46,8 +46,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.Android.ProcessedCrashCounts"
-    enum="AndroidProcessedCrashCounts" expires_after="2021-07-11">
+    enum="AndroidProcessedCrashCounts" expires_after="never">
+<!-- expires-never: Critical stability metric that includes OOM rate. -->
+
   <owner>boliu@chromium.org</owner>
+  <owner>ssid@chromium.org</owner>
+  <owner>wnwen@chromium.org</owner>
   <summary>
     Individual enum counts specific conditions of child process terminations.
     There are too many individual states to enumerate into a single histogram,
@@ -119,8 +123,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram base="true" name="Stability.Android.SystemExitReason"
+    enum="AndroidProcessExitReason" expires_after="2022-03-01">
+  <owner>boliu@chromium.org</owner>
+  <owner>ssid@chromium.org</owner>
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    Reason given by Android ActivityManager for the exit of the process, only
+    recorded in Android R+. Recorded on the next browser startup for browser
+    exits, or right after the process died for child processes.
+  </summary>
+</histogram>
+
 <histogram name="Stability.BadMessageTerminated.Chrome"
-    enum="BadMessageReasonChrome" expires_after="2021-07-18">
+    enum="BadMessageReasonChrome" expires_after="2021-10-04">
   <owner>creis@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
   <summary>
@@ -131,7 +147,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.BadMessageTerminated.Content"
-    enum="BadMessageReasonContent" expires_after="2021-07-11">
+    enum="BadMessageReasonContent" expires_after="2021-09-12">
   <owner>jam@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
   <summary>
@@ -253,6 +269,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Stability.DebugScenario.Navigation" enum="DebugScenario"
+    expires_after="2022-03-19">
+  <owner>nasko@chromium.org</owner>
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Logged at the time when a complex debugging scenario is encountered. The
+    enum value is the type of scenario encountered. This metric will give us two
+    benefits: 1. It will tell us the magnitute of the scenario being debugged
+    since crash reports are throttled client side and cannot presently expess
+    magnitude. 2. If the client is configured to report traces based on this
+    metric, it will upload Chrometto trace for analysis by developers.
+  </summary>
+</histogram>
+
 <histogram name="Stability.ExitFunnel" units="ms" expires_after="M85">
   <obsolete>
     Removed 10/2020 although this has been dead for many years.
@@ -298,7 +328,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.Experimental.PageLoads" enum="StabilityPageLoadType"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>fdoray@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -412,7 +442,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.TabCountBefore{Event}" units="tabs"
-    expires_after="2021-05-05">
+    expires_after="2022-05-05">
   <owner>djean@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -423,7 +453,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="Event">
     <variant name="CleanShutdown" summary="a clean shutdown"/>
     <variant name="Crash"
-        summary="a crash. This metric is a superset of these 3 methrics:
+        summary="a crash. This metric is a superset of these 3 metrics:
                  Stability.iOS.TabCountBeforeFreeze,
                  Stability.iOS.TabCountBeforeSignalCrash,
                  Stability.iOS.TabCountBeforeUTE"/>
@@ -502,7 +532,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.MobileSessionAppState" enum="IOSAppState"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -513,7 +543,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.MobileSessionAppWillTerminateWasReceived"
-    enum="AppWillTerminateReceived" expires_after="2021-07-11">
+    enum="AppWillTerminateReceived" expires_after="2021-09-12">
   <owner>eugenebut@google.com</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>

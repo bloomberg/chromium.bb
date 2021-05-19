@@ -526,5 +526,24 @@ struct ObuFrameHeader {
   FilmGrainParams film_grain_params;
 };
 
+// Structure used for traversing the partition tree.
+struct PartitionTreeNode {
+  PartitionTreeNode() = default;
+  PartitionTreeNode(int row4x4, int column4x4, BlockSize block_size)
+      : row4x4(row4x4), column4x4(column4x4), block_size(block_size) {}
+  int row4x4 = -1;
+  int column4x4 = -1;
+  BlockSize block_size = kBlockInvalid;
+};
+
+// Structure used for storing the transform parameters in a superblock.
+struct TransformParameters {
+  TransformParameters() = default;
+  TransformParameters(TransformType type, int non_zero_coeff_count)
+      : type(type), non_zero_coeff_count(non_zero_coeff_count) {}
+  TransformType type;
+  int non_zero_coeff_count;
+};
+
 }  // namespace libgav1
 #endif  // LIBGAV1_SRC_UTILS_TYPES_H_

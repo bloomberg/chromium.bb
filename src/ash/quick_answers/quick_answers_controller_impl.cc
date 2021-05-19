@@ -27,10 +27,7 @@ constexpr char kAssistantRelatedInfoUrl[] =
 constexpr char kDogfoodUrl[] =
     "https://goto.google.com/quick-answers-dogfood-bugs";
 
-// TODO(yanxiao): move the string to grd source file.
-constexpr char kNoResult[] = "See result in Assistant";
-
-base::string16 IntentTypeToString(IntentType intent_type) {
+std::u16string IntentTypeToString(IntentType intent_type) {
   switch (intent_type) {
     case IntentType::kUnit:
       return l10n_util::GetStringUTF16(
@@ -41,7 +38,7 @@ base::string16 IntentTypeToString(IntentType intent_type) {
       return l10n_util::GetStringUTF16(
           IDS_ASH_QUICK_ANSWERS_TRANSLATION_INTENT);
     case IntentType::kUnknown:
-      return base::string16();
+      return std::u16string();
   }
 }
 
@@ -153,7 +150,7 @@ void QuickAnswersControllerImpl::OnQuickAnswerReceived(
         std::make_unique<chromeos::quick_answers::QuickAnswerText>(title_));
     quick_answer_with_no_result.first_answer_row.push_back(
         std::make_unique<chromeos::quick_answers::QuickAnswerResultText>(
-            kNoResult));
+            l10n_util::GetStringUTF8(IDS_ASH_QUICK_ANSWERS_VIEW_NO_RESULT)));
     quick_answers_ui_controller_->RenderQuickAnswersViewWithResult(
         anchor_bounds_, quick_answer_with_no_result);
     // Fallback query to title if no result is available.
@@ -257,8 +254,8 @@ bool QuickAnswersControllerImpl::ShouldShowUserNotice() const {
 }
 
 void QuickAnswersControllerImpl::ShowUserNotice(
-    const base::string16& intent_type,
-    const base::string16& intent_text) {
+    const std::u16string& intent_type,
+    const std::u16string& intent_text) {
   // Show notice informing user about the feature if required.
   if (!quick_answers_ui_controller_->is_showing_user_notice_view()) {
     quick_answers_ui_controller_->CreateUserNoticeView(

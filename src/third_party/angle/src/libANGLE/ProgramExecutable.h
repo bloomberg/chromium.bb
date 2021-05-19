@@ -115,8 +115,8 @@ class ProgramExecutable final : public angle::Subject
 
     void reset();
 
-    void save(gl::BinaryOutputStream *stream) const;
-    void load(gl::BinaryInputStream *stream);
+    void save(bool isSeparable, gl::BinaryOutputStream *stream) const;
+    void load(bool isSeparable, gl::BinaryInputStream *stream);
 
     int getInfoLogLength() const;
     InfoLog &getInfoLog() { return mInfoLog; }
@@ -312,15 +312,19 @@ class ProgramExecutable final : public angle::Subject
     GLuint getUniformIndexFromImageIndex(GLuint imageIndex) const;
 
     void saveLinkedStateInfo(const ProgramState &state);
-    std::vector<sh::ShaderVariable> getLinkedOutputVaryings(ShaderType shaderType)
+    const std::vector<sh::ShaderVariable> &getLinkedOutputVaryings(ShaderType shaderType) const
     {
         return mLinkedOutputVaryings[shaderType];
     }
-    std::vector<sh::ShaderVariable> getLinkedInputVaryings(ShaderType shaderType)
+    const std::vector<sh::ShaderVariable> &getLinkedInputVaryings(ShaderType shaderType) const
     {
         return mLinkedInputVaryings[shaderType];
     }
-    int getLinkedShaderVersion(ShaderType shaderType) { return mLinkedShaderVersions[shaderType]; }
+
+    int getLinkedShaderVersion(ShaderType shaderType) const
+    {
+        return mLinkedShaderVersions[shaderType];
+    }
 
     bool isYUVOutput() const;
 
@@ -339,6 +343,20 @@ class ProgramExecutable final : public angle::Subject
     int getGeometryShaderMaxVertices() const { return mGeometryShaderMaxVertices; }
 
     GLenum getTessGenMode() const { return mTessGenMode; }
+
+    void resetCachedValidateSamplersResult() { mCachedValidateSamplersResult.reset(); }
+    bool validateSamplers(InfoLog *infoLog, const Caps &caps) const
+    {
+        // Use the cache if:
+        // - we aren't using an infolog (which gives the full error).
+        // - The sample mapping hasn't changed and we've already validated.
+        if (infoLog == nullptr && mCachedValidateSamplersResult.valid())
+        {
+            return mCachedValidateSamplersResult.value();
+        }
+
+        return validateSamplersImpl(infoLog, caps);
+    }
 
   private:
     // TODO(timvp): http://anglebug.com/3570: Investigate removing these friend
@@ -372,6 +390,8 @@ class ProgramExecutable final : public angle::Subject
         const std::vector<std::string> &transformFeedbackVaryingNames);
 
     void updateTransformFeedbackStrides();
+
+    bool validateSamplersImpl(InfoLog *infoLog, const Caps &caps) const;
 
     InfoLog mInfoLog;
 
@@ -477,6 +497,9 @@ class ProgramExecutable final : public angle::Subject
     GLenum mTessGenSpacing;
     GLenum mTessGenVertexOrder;
     GLenum mTessGenPointMode;
+
+    // Cache for sampler validation
+    mutable Optional<bool> mCachedValidateSamplersResult;
 };
 }  // namespace gl
 

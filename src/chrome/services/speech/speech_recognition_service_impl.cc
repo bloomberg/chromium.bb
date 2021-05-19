@@ -5,6 +5,7 @@
 #include "chrome/services/speech/speech_recognition_service_impl.h"
 
 #include "base/files/file_util.h"
+#include "chrome/services/speech/audio_source_fetcher_impl.h"
 #include "chrome/services/speech/speech_recognition_recognizer_impl.h"
 #include "media/base/media_switches.h"
 
@@ -68,6 +69,29 @@ void SpeechRecognitionServiceImpl::BindRecognizer(
   SpeechRecognitionRecognizerImpl::Create(
       std::move(receiver), std::move(client), weak_factory_.GetWeakPtr(),
       binary_path_, config_path_);
+  std::move(callback).Run(
+      SpeechRecognitionRecognizerImpl::IsMultichannelSupported());
+}
+
+void SpeechRecognitionServiceImpl::BindAudioSourceFetcher(
+    mojo::PendingReceiver<media::mojom::AudioSourceFetcher> fetcher_receiver,
+    mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> client,
+    BindRecognizerCallback callback) {
+  // Destroy the speech recognition service if the SODA files haven't been
+  // downloaded yet.
+  // TODO(crbug.com/1173135): Pass enable_soda as an options parameter instead
+  // of using media::kUseSodaForLiveCaption.
+  if (base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption) &&
+      (!base::PathExists(binary_path_) || !base::PathExists(config_path_))) {
+    speech_recognition_contexts_.Clear();
+    receiver_.reset();
+    return;
+  }
+  AudioSourceFetcherImpl::Create(
+      std::move(fetcher_receiver),
+      std::make_unique<SpeechRecognitionRecognizerImpl>(
+          std::move(client), weak_factory_.GetWeakPtr(), binary_path_,
+          config_path_));
   std::move(callback).Run(
       SpeechRecognitionRecognizerImpl::IsMultichannelSupported());
 }

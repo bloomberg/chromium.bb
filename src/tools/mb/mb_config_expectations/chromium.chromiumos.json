@@ -64,7 +64,7 @@
       "use_pulseaudio": false,
       "use_system_libsync": false,
       "use_v8_context_snapshot": false,
-      "use_vaapi": false
+      "use_vaapi": true
     }
   },
   "chromeos-amd64-generic-rel": {
@@ -126,7 +126,7 @@
       "use_pulseaudio": false,
       "use_system_libsync": false,
       "use_v8_context_snapshot": false,
-      "use_vaapi": false
+      "use_vaapi": true
     }
   },
   "lacros-amd64-generic-rel": {
@@ -154,7 +154,17 @@
       "use_pulseaudio": false,
       "use_system_libsync": false,
       "use_v8_context_snapshot": false,
-      "use_vaapi": false
+      "use_vaapi": true
+    }
+  },
+  "linux-ash-chromium-generator-rel": {
+    "gn_args": {
+      "ffmpeg_branding": "ChromeOS",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "target_os": "chromeos",
+      "use_goma": true
     }
   },
   "linux-cfm-rel": {

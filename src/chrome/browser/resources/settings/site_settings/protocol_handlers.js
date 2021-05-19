@@ -10,14 +10,19 @@
 
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
-import '../settings_shared_css.m.js';
+import '../controls/settings_toggle_button.js';
+import '../prefs/prefs.js';
+import '../privacy_page/collapse_radio_button.js';
+import '../settings_shared_css.js';
 import '../site_favicon.js';
 
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -55,14 +60,12 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
-  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
+  behaviors: [
+    SiteSettingsBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
-    /**
-     * Represents the state of the main toggle shown for the category.
-     */
-    categoryEnabled: Boolean,
-
     /**
      * Array of protocols and their handlers.
      * @type {!Array<!ProtocolEntry>}
@@ -84,6 +87,25 @@ Polymer({
      * @type {!Array<!HandlerEntry>}
      */
     ignoredProtocols: Array,
+
+    /** @private */
+    enableContentSettingsRedesign_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enableContentSettingsRedesign');
+      }
+    },
+
+    /** @private {chrome.settingsPrivate.PrefObject} */
+    handlersEnabledPref_: {
+      type: Object,
+      value() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */ ({
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: false,
+        });
+      },
+    },
   },
 
   /** @override */
@@ -98,18 +120,14 @@ Polymer({
     this.browserProxy.observeProtocolHandlers();
   },
 
-  /** @private */
-  categoryLabelClicked_() {
-    this.$.toggle.click();
-  },
-
   /**
    * Obtains the description for the main toggle.
    * @return {string} The description to use.
    * @private
    */
   computeHandlersDescription_() {
-    return this.categoryEnabled ? this.toggleOnLabel : this.toggleOffLabel;
+    return this.handlersEnabledPref_.value ? this.toggleOnLabel :
+                                             this.toggleOffLabel;
   },
 
   /**
@@ -118,7 +136,7 @@ Polymer({
    * @private
    */
   setHandlersEnabled_(enabled) {
-    this.categoryEnabled = enabled;
+    this.set('handlersEnabledPref_.value', enabled);
   },
 
   /**
@@ -153,8 +171,9 @@ Polymer({
    * A handler when the toggle is flipped.
    * @private
    */
-  onToggleChange_(event) {
-    this.browserProxy.setProtocolHandlerDefault(this.categoryEnabled);
+  onToggleChange_() {
+    this.browserProxy.setProtocolHandlerDefault(
+        !!this.handlersEnabledPref_.value);
   },
 
   /**

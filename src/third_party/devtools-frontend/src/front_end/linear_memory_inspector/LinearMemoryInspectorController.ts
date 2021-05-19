@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
-import * as SDK from '../sdk/sdk.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as UI from '../ui/legacy/legacy.js';
 
+import {Settings} from './LinearMemoryInspector.js';
 import {LinearMemoryInspectorPaneImpl} from './LinearMemoryInspectorPane.js';
+import {Endianness, getDefaultValueTypeMapping, ValueType, ValueTypeMode} from './ValueInterpreterDisplayUtils.js';
 
 const LINEAR_MEMORY_INSPECTOR_OBJECT_GROUP = 'linear-memory-inspector';
 const MEMORY_TRANSFER_MIN_CHUNK_SIZE = 1000;
@@ -47,7 +50,7 @@ async function getBufferFromObject(obj: SDK.RemoteObject.RemoteObject): Promise<
   const response = await obj.runtimeModel()._agent.invoke_callFunctionOn({
     objectId: obj.objectId,
     functionDeclaration:
-        'function() { return this instanceof ArrayBuffer || this instanceof SharedArrayBuffer ? this : this.buffer; }',
+        'function() { return this instanceof ArrayBuffer || (typeof SharedArrayBuffer !== \'undefined\' && this instanceof SharedArrayBuffer) ? this : this.buffer; }',
     silent: true,
     // Set object group in order to bind the object lifetime to the linear memory inspector.
     objectGroup: LINEAR_MEMORY_INSPECTOR_OBJECT_GROUP,
@@ -61,9 +64,16 @@ async function getBufferFromObject(obj: SDK.RemoteObject.RemoteObject): Promise<
   return new SDK.RemoteObject.RemoteArrayBuffer(obj);
 }
 
+type SerializableSettings = {
+  valueTypes: ValueType[],
+  valueTypeModes: [ValueType, ValueTypeMode][],
+  endianness: Endianness,
+};
+
 export class LinearMemoryInspectorController extends SDK.SDKModel.SDKModelObserver<SDK.RuntimeModel.RuntimeModel> {
   private paneInstance = LinearMemoryInspectorPaneImpl.instance();
   private bufferIdToRemoteObject: Map<string, SDK.RemoteObject.RemoteObject> = new Map();
+  private settings: Common.Settings.Setting<SerializableSettings>;
 
   private constructor() {
     super();
@@ -74,6 +84,14 @@ export class LinearMemoryInspectorController extends SDK.SDKModel.SDKModelObserv
 
     SDK.SDKModel.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this.onDebuggerPause, this);
+
+    const defaultValueTypeModes = getDefaultValueTypeMapping();
+    const defaultSettings: SerializableSettings = {
+      valueTypes: Array.from(defaultValueTypeModes.keys()),
+      valueTypeModes: Array.from(defaultValueTypeModes),
+      endianness: Endianness.Little,
+    };
+    this.settings = Common.Settings.Settings.instance().createSetting('lmiInterpreterSettings', defaultSettings);
   }
 
   static instance(): LinearMemoryInspectorController {
@@ -107,7 +125,35 @@ export class LinearMemoryInspectorController extends SDK.SDKModel.SDKModelObserv
     return await memoryWrapper.getRange(start, chunkEnd);
   }
 
-  async openInspectorView(obj: SDK.RemoteObject.RemoteObject, address: number): Promise<void> {
+  saveSettings(data: Settings): void {
+    const valueTypes = Array.from(data.valueTypes);
+    const modes = [...data.modes];
+    this.settings.set({valueTypes, valueTypeModes: modes, endianness: data.endianness});
+  }
+
+  loadSettings(): Settings {
+    const settings = this.settings.get();
+    return {
+      valueTypes: new Set(settings.valueTypes),
+      modes: new Map(settings.valueTypeModes),
+      endianness: settings.endianness,
+    };
+  }
+
+  async openInspectorView(obj: SDK.RemoteObject.RemoteObject, address?: number): Promise<void> {
+    if (address !== undefined) {
+      Host.userMetrics.linearMemoryInspectorTarget(
+          Host.UserMetrics.LinearMemoryInspectorTarget.DWARFInspectableAddress);
+    } else if (obj.subtype === Protocol.Runtime.RemoteObjectSubtype.Arraybuffer) {
+      Host.userMetrics.linearMemoryInspectorTarget(Host.UserMetrics.LinearMemoryInspectorTarget.ArrayBuffer);
+    } else if (obj.subtype === Protocol.Runtime.RemoteObjectSubtype.Dataview) {
+      Host.userMetrics.linearMemoryInspectorTarget(Host.UserMetrics.LinearMemoryInspectorTarget.DataView);
+    } else if (obj.subtype === Protocol.Runtime.RemoteObjectSubtype.Typedarray) {
+      Host.userMetrics.linearMemoryInspectorTarget(Host.UserMetrics.LinearMemoryInspectorTarget.TypedArray);
+    } else {
+      console.assert(obj.subtype === Protocol.Runtime.RemoteObjectSubtype.Webassemblymemory);
+      Host.userMetrics.linearMemoryInspectorTarget(Host.UserMetrics.LinearMemoryInspectorTarget.WebAssemblyMemory);
+    }
     const buffer = await getBufferFromObject(obj);
     const {internalProperties} = await buffer.object().getOwnProperties(false);
     const idProperty = internalProperties?.find(({name}) => name === '[[ArrayBufferData]]');

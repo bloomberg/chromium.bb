@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
-import * as Root from '../root/root.js';
-import * as SDK from '../sdk/sdk.js';
+import * as Common from '../core/common/common.js';
+import * as Root from '../core/root/root.js';
+import * as SDK from '../core/sdk/sdk.js';
 
 let contrastCheckTriggerInstance: ContrastCheckTrigger|null = null;
 
@@ -51,7 +51,7 @@ export class ContrastCheckTrigger extends Common.ObjectWrapper.ObjectWrapper {
     if (!Root.Runtime.experiments.isEnabled('contrastIssues')) {
       return;
     }
-    resourceTreeModel.target().auditsAgent().invoke_checkContrast();
+    resourceTreeModel.target().auditsAgent().invoke_checkContrast({});
   }
 
   private pageLoaded(event: Common.EventTarget.EventTargetEvent): void {

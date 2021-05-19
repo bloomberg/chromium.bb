@@ -9,6 +9,9 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.ParcelFileDescriptor;
+import android.os.SystemClock;
+
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.provider.FontRequest;
@@ -18,6 +21,7 @@ import androidx.core.provider.FontsContractCompat.FontInfo;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.blink.mojom.AndroidFontLookup;
@@ -46,9 +50,20 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
     private static final String TAG = "AndroidFontLookup";
     private static final String READ_ONLY_MODE = "r";
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static final String FETCH_FONT_NAME_HISTOGRAM = "Android.FontLookup.FetchFontName";
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static final String FETCH_FONT_RESULT_HISTOGRAM = "Android.FontLookup.FetchFontResult";
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static final String MATCH_LOCAL_FONT_BY_UNIQUE_NAME_HISTOGRAM =
+            "Android.FontLookup.MatchLocalFontByUniqueName.Time";
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static final String GMS_FONT_REQUEST_HISTOGRAM = "Android.FontLookup.GmsFontRequest.Time";
+
     private static final String GOOGLE_SANS_REGULAR = "google sans regular";
     private static final String GOOGLE_SANS_MEDIUM = "google sans medium";
     private static final String GOOGLE_SANS_BOLD = "google sans bold";
+    private static final String NOTO_COLOR_EMOJI_COMPAT = "noto color emoji compat";
 
     private final Context mAppContext;
     private final FontsContractWrapper mFontsContract;
@@ -59,7 +74,7 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
     /**
      * Collection of fonts (by ICU case folded full font name) that may be available
      * locally from GMS Core. This collection of Android Downloadable fonts should initially match
-     * the fonts listed in preloaded_fonts.xml. If/when fonts are determined to be unavailable
+     * the fonts listed in {@link FontPreloader}. If/when fonts are determined to be unavailable
      * on-device they will be removed from this set.
      */
     private final Set<String> mExpectedFonts;
@@ -75,6 +90,39 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
         mFontsContract = fontsContract;
         mFullFontNameToQuery = fullFontNameToQuery;
         mExpectedFonts = new HashSet<>(mFullFontNameToQuery.keySet());
+    }
+
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused. These values must stay in sync with enums.xml.
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @IntDef({FetchFontName.GOOGLE_SANS_REGULAR, FetchFontName.GOOGLE_SANS_MEDIUM,
+            FetchFontName.GOOGLE_SANS_BOLD, FetchFontName.NOTO_COLOR_EMOJI_COMPAT})
+    @interface FetchFontName {
+        int OTHER = 0;
+        int GOOGLE_SANS_REGULAR = 1;
+        int GOOGLE_SANS_MEDIUM = 2;
+        int GOOGLE_SANS_BOLD = 3;
+        int NOTO_COLOR_EMOJI_COMPAT = 4;
+        int COUNT = 5;
+    }
+
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused. These values must stay in sync with enums.xml.
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @IntDef({FetchFontResult.SUCCESS, FetchFontResult.FAILED_UNEXPECTED_NAME,
+            FetchFontResult.FAILED_STATUS_CODE, FetchFontResult.FAILED_NON_UNIQUE_RESULT,
+            FetchFontResult.FAILED_RESULT_CODE, FetchFontResult.FAILED_FILE_OPEN,
+            FetchFontResult.FAILED_EXCEPTION, FetchFontResult.FAILED_AVOID_RETRY})
+    @interface FetchFontResult {
+        int SUCCESS = 0;
+        int FAILED_UNEXPECTED_NAME = 1;
+        int FAILED_STATUS_CODE = 2;
+        int FAILED_NON_UNIQUE_RESULT = 3;
+        int FAILED_RESULT_CODE = 4;
+        int FAILED_FILE_OPEN = 5;
+        int FAILED_EXCEPTION = 6;
+        int FAILED_AVOID_RETRY = 7;
+        int COUNT = 8;
     }
 
     /**
@@ -107,6 +155,10 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
     @Override
     public void matchLocalFontByUniqueName(
             @NonNull String fontUniqueName, MatchLocalFontByUniqueNameResponse callback) {
+        long startTimeMs = SystemClock.elapsedRealtime();
+
+        logFetchFontName(fontUniqueName);
+
         // Get executor associated with the current thread for running Mojo callback.
         Core core = CoreImpl.getInstance();
         Executor executor = ExecutorFactory.getExecutorForCurrentThread(core);
@@ -127,6 +179,8 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
             }
 
             final ReadOnlyFile result = file;
+            RecordHistogram.recordTimesHistogram(MATCH_LOCAL_FONT_BY_UNIQUE_NAME_HISTOGRAM,
+                    SystemClock.elapsedRealtime() - startTimeMs);
             executor.execute(() -> callback.call(result));
         });
     }
@@ -135,7 +189,8 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
      * Tries to fetch the specified font from GMS Core (the Android Downloadable fonts provider).
      *
      * This method makes a synchronous request to GMS Core and should not be called from the IO
-     * thread.
+     * thread. This requirement may be re-evaluated based on the timing results of {@link
+     * #GMS_FONT_REQUEST_HISTOGRAM}.
      *
      * @param fontUniqueName The ICU case folded unique full font name to fetch.
      * @return An opened font file descriptor, or null if the font file is not available.
@@ -144,11 +199,13 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
         String query = mFullFontNameToQuery.get(fontUniqueName);
         if (query == null) {
             Log.d(TAG, "Query format not found for full font name: %s", fontUniqueName);
+            logFetchFontResult(FetchFontResult.FAILED_UNEXPECTED_NAME);
             return null;
         }
 
         if (!mExpectedFonts.contains(fontUniqueName)) {
             Log.d(TAG, "Skipping fetch for font that previously failed: %s", fontUniqueName);
+            logFetchFontResult(FetchFontResult.FAILED_AVOID_RETRY);
             return null;
         }
 
@@ -156,12 +213,16 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
                 "com.google.android.gms", query, R.array.ui_com_google_android_gms_fonts_certs);
 
         try {
+            long startTimeMs = SystemClock.elapsedRealtime();
             FontFamilyResult fontFamilyResult =
                     mFontsContract.fetchFonts(mAppContext, null, request);
+            RecordHistogram.recordTimesHistogram(
+                    GMS_FONT_REQUEST_HISTOGRAM, SystemClock.elapsedRealtime() - startTimeMs);
 
             if (fontFamilyResult.getStatusCode() != FontFamilyResult.STATUS_OK) {
                 Log.d(TAG, "Font fetch failed with status code: %d",
                         fontFamilyResult.getStatusCode());
+                logFetchFontResult(FetchFontResult.FAILED_STATUS_CODE);
                 return null;
             }
 
@@ -169,12 +230,14 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
             if (fontInfos.length != 1) {
                 Log.d(TAG, "Font fetch did not return a unique result: length = %d",
                         fontInfos.length);
+                logFetchFontResult(FetchFontResult.FAILED_NON_UNIQUE_RESULT);
                 return null;
             }
 
             FontInfo fontInfo = fontInfos[0];
             if (fontInfo.getResultCode() != FontsContractCompat.Columns.RESULT_CODE_OK) {
                 Log.d(TAG, "Returned font has failed status code: %d", fontInfo.getResultCode());
+                logFetchFontResult(FetchFontResult.FAILED_RESULT_CODE);
                 return null;
             }
 
@@ -183,12 +246,15 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
                     contentResolver.openFileDescriptor(fontInfo.getUri(), READ_ONLY_MODE);
             if (fileDescriptor == null) {
                 Log.d(TAG, "Unable to open font file at: %s", fontInfo.getUri());
+                logFetchFontResult(FetchFontResult.FAILED_FILE_OPEN);
                 return null;
             }
 
+            logFetchFontResult(FetchFontResult.SUCCESS);
             return fileDescriptor;
         } catch (NameNotFoundException | IOException | OutOfMemoryError e) {
             Log.d(TAG, "Failed to get font with: %s", e.toString());
+            logFetchFontResult(FetchFontResult.FAILED_EXCEPTION);
             return null;
         }
     }
@@ -198,12 +264,12 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
      * for a selected subset of Android Downloadable fonts.
      *
      * When adding additional fonts to this map:
-     * 1. Add the font to preloaded_fonts.xml, or consider alternatives to prefetch new fonts
-     *    programmatically at a different time in initialization as this may affect startup
-     *    performance.
+     * 1. Add the font to the array in {@link FontPreloader} to prefetch new fonts programmatically
+     *    async during startup.
      * 2. Keys should be ICU case folded full font name. This can be done manually with
      *    icu_fold_case_util.cc, or in Java by importing the ICU4J third_party library. (The
      *    CaseMap.Fold Java API is only available in Android API 29+.)
+     * 3. Update the {@link FetchFontName} enum entries.
      *
      * @return The created map from font names to queries.
      */
@@ -212,6 +278,7 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
         map.put(GOOGLE_SANS_REGULAR, createFontQuery("Google Sans", 400));
         map.put(GOOGLE_SANS_MEDIUM, createFontQuery("Google Sans", 500));
         map.put(GOOGLE_SANS_BOLD, createFontQuery("Google Sans", 700));
+        map.put(NOTO_COLOR_EMOJI_COMPAT, createFontQuery("Noto Color Emoji Compat", 400));
         return map;
     }
 
@@ -225,6 +292,34 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
      */
     private static String createFontQuery(String name, int weight) {
         return String.format(Locale.US, "name=%s&weight=%d&besteffort=false", name, weight);
+    }
+
+    private static void logFetchFontResult(@FetchFontResult int result) {
+        RecordHistogram.recordEnumeratedHistogram(
+                FETCH_FONT_RESULT_HISTOGRAM, result, FetchFontResult.COUNT);
+    }
+
+    private static void logFetchFontName(String fontName) {
+        @FetchFontName
+        int result;
+        switch (fontName) {
+            case GOOGLE_SANS_REGULAR:
+                result = FetchFontName.GOOGLE_SANS_REGULAR;
+                break;
+            case GOOGLE_SANS_MEDIUM:
+                result = FetchFontName.GOOGLE_SANS_MEDIUM;
+                break;
+            case GOOGLE_SANS_BOLD:
+                result = FetchFontName.GOOGLE_SANS_BOLD;
+                break;
+            case NOTO_COLOR_EMOJI_COMPAT:
+                result = FetchFontName.NOTO_COLOR_EMOJI_COMPAT;
+                break;
+            default:
+                result = FetchFontName.OTHER;
+        }
+        RecordHistogram.recordEnumeratedHistogram(
+                FETCH_FONT_NAME_HISTOGRAM, result, FetchFontName.COUNT);
     }
 
     @Override

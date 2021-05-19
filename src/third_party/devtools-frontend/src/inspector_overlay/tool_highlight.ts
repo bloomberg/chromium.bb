@@ -28,12 +28,13 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 //  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import {contrastRatio, contrastRatioAPCA, getAPCAThreshold, getContrastThreshold} from '../front_end/common/ColorUtils.js';
+import {contrastRatio, contrastRatioAPCA, getAPCAThreshold, getContrastThreshold} from '../front_end/core/common/ColorUtils.js';
 
 import {Bounds, constrainNumber, createChild, createElement, createTextChild, ellipsify, Overlay, PathCommands, ResetData} from './common.js';
-import {buildPath, emptyBounds, formatColor, formatRgba, parseHexa, PathBounds} from './highlight_common.js';
+import {drawPath, emptyBounds, formatColor, formatRgba, parseHexa, PathBounds} from './highlight_common.js';
 import {drawLayoutFlexContainerHighlight, drawLayoutFlexItemHighlight, FlexContainerHighlight, FlexItemHighlight} from './highlight_flex_common.js';
 import {drawLayoutGridHighlight, GridHighlight} from './highlight_grid_common.js';
+import {ScrollSnapHighlight} from './highlight_scroll_snap.js';
 import {PersistentOverlay} from './tool_persistent.js';
 
 interface Path {
@@ -127,6 +128,7 @@ export class HighlightOverlay extends Overlay {
 
     const bounds = emptyBounds();
     let contentPath: PathCommands|null = null;
+    let borderPath: PathCommands|null = null;
 
     for (let paths = highlight.paths.slice(); paths.length;) {
       const path = paths.pop();
@@ -134,15 +136,20 @@ export class HighlightOverlay extends Overlay {
         continue;
       }
       this.context.save();
-      drawPath(this.context, path.path, path.fillColor, path.outlineColor, bounds, this.emulationScaleFactor);
+      drawPath(
+          this.context, path.path, path.fillColor, path.outlineColor, undefined, bounds, this.emulationScaleFactor);
       if (paths.length) {
         this.context.globalCompositeOperation = 'destination-out';
-        drawPath(this.context, paths[paths.length - 1].path, 'red', undefined, bounds, this.emulationScaleFactor);
+        drawPath(
+            this.context, paths[paths.length - 1].path, 'red', undefined, undefined, bounds, this.emulationScaleFactor);
       }
       this.context.restore();
 
       if (path.name === 'content') {
         contentPath = path.path;
+      }
+      if (path.name === 'border') {
+        borderPath = path.path;
       }
     }
     this.context.restore();
@@ -183,15 +190,20 @@ export class HighlightOverlay extends Overlay {
       }
     }
 
-    // Draw the highlight for flex item only if the element isn't also a flex container.
-    const isFlexContainer = highlight.flexInfo?.length;
-    if (highlight.flexItemInfo && contentPath && !isFlexContainer) {
+    // Draw the highlight for flex item only if the element isn't also a flex container that already has some highlight
+    // config.
+    const isVisibleFlexContainer = highlight.flexInfo?.length && highlight.flexInfo.some(config => {
+      return Object.keys(config.flexContainerHighlightConfig).length > 0;
+    });
+
+    if (highlight.flexItemInfo && !isVisibleFlexContainer) {
       for (const flexItem of highlight.flexItemInfo) {
-        // TODO: both flex-basis and width/height determine the base size of the content-box by default, but if
-        // box-sizing is set to border-box, then they determine the base size of the border-box. So we should use the
-        // border-box path here in this case.
+        const path = flexItem.boxSizing === 'content' ? contentPath : borderPath;
+        if (!path) {
+          continue;
+        }
         drawLayoutFlexItemHighlight(
-            flexItem, contentPath, this.context, this.deviceScaleFactor, this.canvasWidth, this.canvasHeight,
+            flexItem, path, this.context, this.deviceScaleFactor, this.canvasWidth, this.canvasHeight,
             this.emulationScaleFactor);
       }
     }
@@ -210,6 +222,10 @@ export class HighlightOverlay extends Overlay {
     if (this.persistentOverlay) {
       this.persistentOverlay.drawFlexContainerHighlight(highlight);
     }
+  }
+
+  drawScrollSnapHighlight(highlight: ScrollSnapHighlight) {
+    this.persistentOverlay?.drawScrollSnapHighlight(highlight);
   }
 
   private drawAxis(context: CanvasRenderingContext2D, rulerAtRight: boolean, rulerAtBottom: boolean) {
@@ -613,24 +629,6 @@ function drawElementTitle(
   // When tooltip is on-top remove 1px from the arrow's top value to get rid of whitespace produced by the tooltip's border.
   tooltipContent.style.setProperty('--arrow-top', (onTop ? titleHeight - 1 : -arrowHalfWidth) + 'px');
   tooltipContent.style.setProperty('--arrow-left', (arrowX - boxX) + 'px');
-}
-
-function drawPath(
-    context: CanvasRenderingContext2D, commands: PathCommands, fillColor: string|undefined,
-    outlineColor: string|undefined, bounds: PathBounds, emulationScaleFactor: number) {
-  context.save();
-  const path = buildPath(commands, bounds, emulationScaleFactor);
-  if (fillColor) {
-    context.fillStyle = fillColor;
-    context.fill(path);
-  }
-  if (outlineColor) {
-    context.lineWidth = 2;
-    context.strokeStyle = outlineColor;
-    context.stroke(path);
-  }
-  context.restore();
-  return path;
 }
 
 const DEFAULT_RULER_COLOR = 'rgba(128, 128, 128, 0.3)';

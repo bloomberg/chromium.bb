@@ -31,7 +31,6 @@
 #include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/navigation_observer.h"
 #include "chrome/browser/extensions/shared_module_service.h"
-#include "chrome/browser/extensions/state_store_notification_observer.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/update_install_gate.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
@@ -113,13 +112,11 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   // Two state stores. The latter, which contains declarative rules, must be
   // loaded immediately so that the rules are ready before we issue network
   // requests.
-  state_store_.reset(new StateStore(
-      profile_, store_factory_, ValueStoreFrontend::BackendType::STATE, true));
-  state_store_notification_observer_.reset(
-      new StateStoreNotificationObserver(state_store_.get()));
+  state_store_ = std::make_unique<StateStore>(
+      profile_, store_factory_, ValueStoreFrontend::BackendType::STATE, true);
 
-  rules_store_.reset(new StateStore(
-      profile_, store_factory_, ValueStoreFrontend::BackendType::RULES, false));
+  rules_store_ = std::make_unique<StateStore>(
+      profile_, store_factory_, ValueStoreFrontend::BackendType::RULES, false);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // We can not perform check for Signin Profile here, as it would result in
@@ -165,7 +162,7 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
 }
 
 void ExtensionSystemImpl::Shared::InitInstallGates() {
-  update_install_gate_.reset(new UpdateInstallGate(profile_));
+  update_install_gate_ = std::make_unique<UpdateInstallGate>(profile_);
   extension_service_->RegisterInstallGate(
       ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE, update_install_gate_.get());
   extension_service_->RegisterInstallGate(
@@ -190,7 +187,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
-  navigation_observer_.reset(new NavigationObserver(profile_));
+  navigation_observer_ = std::make_unique<NavigationObserver>(profile_);
 
   bool allow_noisy_errors =
       !command_line->HasSwitch(::switches::kNoErrorDialogs);
@@ -199,12 +196,13 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   content_verifier_ = new ContentVerifier(
       profile_, std::make_unique<ChromeContentVerifierDelegate>(profile_));
 
-  service_worker_manager_.reset(new ServiceWorkerManager(profile_));
+  service_worker_manager_ = std::make_unique<ServiceWorkerManager>(profile_);
 
   user_script_manager_ = std::make_unique<UserScriptManager>(profile_);
 
   // ExtensionService depends on RuntimeData.
-  runtime_data_.reset(new RuntimeData(ExtensionRegistry::Get(profile_)));
+  runtime_data_ =
+      std::make_unique<RuntimeData>(ExtensionRegistry::Get(profile_));
 
   // TODO(https://crbug.com/1125475): Enable Extensions for Ephemeral Guest
   // profiles.
@@ -217,11 +215,11 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
     autoupdate_enabled = false;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  extension_service_.reset(new ExtensionService(
+  extension_service_ = std::make_unique<ExtensionService>(
       profile_, base::CommandLine::ForCurrentProcess(),
       profile_->GetPath().AppendASCII(extensions::kInstallDirectoryName),
       ExtensionPrefs::Get(profile_), Blocklist::Get(profile_),
-      autoupdate_enabled, extensions_enabled, &ready_));
+      autoupdate_enabled, extensions_enabled, &ready_);
 
   uninstall_ping_sender_ = std::make_unique<UninstallPingSender>(
       ExtensionRegistry::Get(profile_),
@@ -254,13 +252,13 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
           ExtensionRegistry::Get(profile_), profile_));
     }
 #endif
-    management_policy_.reset(new ManagementPolicy);
+    management_policy_ = std::make_unique<ManagementPolicy>();
     RegisterManagementPolicyProviders();
   }
 
   // Extension API calls require QuotaService, so create it before loading any
   // extensions.
-  quota_service_.reset(new QuotaService);
+  quota_service_ = std::make_unique<QuotaService>();
 
   bool skip_session_extensions = false;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -282,7 +280,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       skip_session_extensions);
 #endif
 
-  app_sorting_.reset(new ChromeAppSorting(profile_));
+  app_sorting_ = std::make_unique<ChromeAppSorting>(profile_);
 
   InitInstallGates();
 
@@ -488,7 +486,7 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
     const Extension* extension,
     base::OnceClosure callback) {
   base::Time install_time;
-  if (extension->location() != Manifest::COMPONENT) {
+  if (extension->location() != mojom::ManifestLocation::kComponent) {
     install_time = ExtensionPrefs::Get(profile_)->
         GetInstallTime(extension->id());
   }

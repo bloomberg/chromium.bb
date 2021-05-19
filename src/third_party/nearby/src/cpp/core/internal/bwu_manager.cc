@@ -275,9 +275,9 @@ void BwuManager::Revert() {
   NEARBY_LOG(INFO, "Revert reseting medium %d", medium_);
   if (handler_) {
     handler_->Revert();
-    medium_ = Medium::UNKNOWN_MEDIUM;
     handler_ = nullptr;
   }
+  medium_ = Medium::UNKNOWN_MEDIUM;
 }
 
 void BwuManager::OnBwuNegotiationFrame(ClientProxy* client,
@@ -717,10 +717,12 @@ void BwuManager::ProcessSafeToClosePriorChannelEvent(
   previous_endpoint_channel->DisableEncryption();
   previous_endpoint_channel->Write(parser::ForDisconnection());
 
-  // TODO(b/172380349): Match the Java implementation with no sleep call
-
-  // Wait for in-flight messages to reach their peers.
-  SystemClock::Sleep(absl::Seconds(1));
+  // Attempt to read the disconnect message from the previous channel. We don't
+  // care whether we successfully read it or whether we get an exception here.
+  // The idea is just to make sure the other side has had a chance to receive
+  // the full SAFE_TO_CLOSE_PRIOR_CHANNEL message before we actually close the
+  // channel. See b/172380349 for more context.
+  previous_endpoint_channel->Read();
   previous_endpoint_channel->Close(DisconnectionReason::UPGRADED);
 
   // Now that the old channel has been drained, we can unpause the new channel
@@ -946,10 +948,13 @@ void BwuManager::CancelRetryUpgradeAlarm(const std::string& endpoint_id) {
 
 void BwuManager::CancelAllRetryUpgradeAlarms() {
   NEARBY_LOG(INFO, "CancelAllRetryUpgradeAlarms invoked");
-  for (const auto& item : retry_upgrade_alarms_) {
+  for (auto& item : retry_upgrade_alarms_) {
     const std::string& endpoint_id = item.first;
-    CancelRetryUpgradeAlarm(endpoint_id);
+    CancelableAlarm& cancellable_alarm = item.second.first;
+    NEARBY_LOG(INFO, "CancelRetryUpgradeAlarm for %s", endpoint_id.c_str());
+    cancellable_alarm.Cancel();
   }
+  retry_upgrade_alarms_.clear();
 }
 
 Medium BwuManager::GetEndpointMedium(const std::string& endpoint_id) {

@@ -23,11 +23,8 @@
 #include "xfa/fwl/ifwl_widgetdelegate.h"
 
 class CFWL_App;
-class CFWL_AppImp;
 class CFWL_Event;
-class CFWL_MessageKey;
 class CFWL_Widget;
-class CFWL_WidgetMgr;
 class IFWL_ThemeProvider;
 
 enum class FWL_Type {
@@ -58,7 +55,7 @@ class CFWL_Widget : public cppgc::GarbageCollected<CFWL_Widget>,
  public:
   class AdapterIface {
    public:
-    virtual ~AdapterIface() {}
+    virtual ~AdapterIface() = default;
     virtual CFX_Matrix GetRotateMatrix() = 0;
     virtual void DisplayCaret(bool bVisible, const CFX_RectF* pRtAnchor) = 0;
     virtual void GetBorderColorAndThickness(FX_ARGB* cr, float* fWidth) = 0;

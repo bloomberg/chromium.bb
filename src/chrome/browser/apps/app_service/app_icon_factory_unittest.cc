@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -44,7 +45,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/apps/icon_standardizer.h"
-#include "chrome/browser/chromeos/arc/icon_decode_request.h"
+#include "chrome/browser/ash/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
@@ -559,7 +560,7 @@ class WebAppIconFactoryTest : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ(sizes_px.size(), colors.size());
     ASSERT_TRUE(!purposes.empty());
 
-    web_app::IconBitmaps icon_bitmaps;
+    IconBitmaps icon_bitmaps;
     for (size_t i = 0; i < sizes_px.size(); ++i) {
       if (base::Contains(purposes, IconPurpose::ANY)) {
         web_app::AddGeneratedIcon(&icon_bitmaps.any, sizes_px[i], colors[i]);

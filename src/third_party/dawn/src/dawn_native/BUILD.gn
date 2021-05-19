@@ -146,6 +146,7 @@ source_set("dawn_native_sources") {
     "${dawn_root}/third_party/gn/spirv_cross:spirv_cross",
     "${dawn_spirv_tools_dir}:spvtools_opt",
     "${dawn_spirv_tools_dir}:spvtools_val",
+    "${dawn_tint_dir}/src:libtint",
   ]
   defines = []
   libs = []
@@ -193,6 +194,8 @@ source_set("dawn_native_sources") {
     "CommandValidation.h",
     "Commands.cpp",
     "Commands.h",
+    "CompilationMessages.cpp",
+    "CompilationMessages.h",
     "ComputePassEncoder.cpp",
     "ComputePassEncoder.h",
     "ComputePipeline.cpp",
@@ -219,6 +222,8 @@ source_set("dawn_native_sources") {
     "ErrorScope.h",
     "Extensions.cpp",
     "Extensions.h",
+    "ExternalTexture.cpp",
+    "ExternalTexture.h",
     "Fence.cpp",
     "Fence.h",
     "Format.cpp",
@@ -286,6 +291,8 @@ source_set("dawn_native_sources") {
     "SwapChain.h",
     "Texture.cpp",
     "Texture.h",
+    "TintUtils.cpp",
+    "TintUtils.h",
     "ToBackend.h",
     "Toggles.cpp",
     "Toggles.h",
@@ -624,10 +631,6 @@ source_set("dawn_native_sources") {
       "${dawn_angle_dir}:libEGL",
       "${dawn_angle_dir}:libGLESv2",
     ]
-  }
-
-  if (dawn_enable_wgsl) {
-    deps += [ "${dawn_tint_dir}:libtint" ]
   }
 }
 

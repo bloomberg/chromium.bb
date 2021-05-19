@@ -1,16 +1,13 @@
 
 out vec4 sk_FragColor;
-uniform vec4 color;
-float count = 0.0;
-vec4 trueSide(vec4 v) {
-    count += 1.0;
-    return vec4(sin(v.x), sin(v.y), sin(v.z), sin(v.w));
+uniform vec4 colorGreen;
+uniform vec4 colorRed;
+vec4 trueSide_h4h4(vec4 v) {
+    return vec4(v.x, 1.0, v.zw);
 }
-vec4 falseSide(vec4 v) {
-    count += 1.0;
-    return vec4(cos(v.y), cos(v.z), cos(v.w), cos(v.z));
+vec4 falseSide_h4h4(vec4 v) {
+    return vec4(v.x, 0.0, v.zw);
 }
-void main() {
-    sk_FragColor = color.x <= 0.5 ? trueSide(color) : falseSide(color);
-    sk_FragColor *= count;
+vec4 main() {
+    return bool(colorGreen.y) ? trueSide_h4h4(colorGreen) : falseSide_h4h4(colorRed);
 }

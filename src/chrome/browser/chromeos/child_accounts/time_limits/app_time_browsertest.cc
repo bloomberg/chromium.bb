@@ -10,9 +10,12 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
+#include "chrome/browser/ash/login/test/scoped_policy_update.h"
+#include "chrome/browser/ash/login/test/user_policy_mixin.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
@@ -20,9 +23,6 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
-#include "chrome/browser/chromeos/login/test/logged_in_user_mixin.h"
-#include "chrome/browser/chromeos/login/test/scoped_policy_update.h"
-#include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -81,7 +81,7 @@ class AppTimeTest : public MixinBasedInProcessBrowserTest {
 
   // MixinBasedInProcessBrowserTest:
   void SetUp() override {
-    std::vector<base::Feature> enabled_features{features::kPerAppTimeLimits};
+    std::vector<base::Feature> enabled_features;
     std::vector<base::Feature> disabled_features;
     if (ShouldEnableWebTimeLimit())
       enabled_features.push_back(features::kWebTimeLimits);

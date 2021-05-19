@@ -10,6 +10,8 @@
 
 #include "base/containers/contains.h"
 #include "base/i18n/icu_string_conversions.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -51,7 +53,7 @@ void GetAtomIntersection(const std::vector<x11::Atom>& desired,
   }
 }
 
-void AddString16ToVector(const base::string16& str,
+void AddString16ToVector(const std::u16string& str,
                          std::vector<unsigned char>* bytes) {
   const unsigned char* front =
       reinterpret_cast<const unsigned char*>(str.data());
@@ -81,19 +83,19 @@ std::string RefCountedMemoryToString(
   return std::string(reinterpret_cast<const char*>(front), size);
 }
 
-base::string16 RefCountedMemoryToString16(
+std::u16string RefCountedMemoryToString16(
     const scoped_refptr<base::RefCountedMemory>& memory) {
   if (!memory.get()) {
     NOTREACHED();
-    return base::string16();
+    return std::u16string();
   }
 
   size_t size = memory->size();
   if (!size)
-    return base::string16();
+    return std::u16string();
 
   const unsigned char* front = memory->front();
-  return base::string16(reinterpret_cast<const base::char16*>(front), size / 2);
+  return std::u16string(reinterpret_cast<const char16_t*>(front), size / 2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -188,17 +190,17 @@ std::string SelectionData::GetText() const {
   }
 }
 
-base::string16 SelectionData::GetHtml() const {
-  base::string16 markup;
+std::u16string SelectionData::GetHtml() const {
+  std::u16string markup;
 
   if (type_ == x11::GetAtom(kMimeTypeHTML)) {
     const unsigned char* data = GetData();
     size_t size = GetSize();
 
-    // If the data starts with 0xFEFF, i.e., Byte Order Mark, assume it is
+    // If the data starts with U+FEFF, i.e., Byte Order Mark, assume it is
     // UTF-16, otherwise assume UTF-8.
-    if (size >= 2 && reinterpret_cast<const base::char16*>(data)[0] == 0xFEFF) {
-      markup.assign(reinterpret_cast<const base::char16*>(data) + 1,
+    if (size >= 2 && reinterpret_cast<const char16_t*>(data)[0] == u'\uFEFF') {
+      markup.assign(reinterpret_cast<const char16_t*>(data) + 1,
                     (size / 2) - 1);
     } else {
       base::UTF8ToUTF16(reinterpret_cast<const char*>(data), size, &markup);
@@ -219,8 +221,17 @@ void SelectionData::AssignTo(std::string* result) const {
   *result = RefCountedMemoryToString(memory_);
 }
 
-void SelectionData::AssignTo(base::string16* result) const {
+void SelectionData::AssignTo(std::u16string* result) const {
   *result = RefCountedMemoryToString16(memory_);
+}
+
+scoped_refptr<base::RefCountedBytes> SelectionData::TakeBytes() {
+  if (!memory_.get())
+    return nullptr;
+
+  auto* memory = memory_.release();
+  return base::MakeRefCounted<base::RefCountedBytes>(memory->data(),
+                                                     memory->size());
 }
 
 }  // namespace ui

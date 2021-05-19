@@ -12,6 +12,7 @@ import argparse
 import fnmatch
 import itertools
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -90,9 +91,11 @@ def RunGsutil(args):
   return subprocess.call([sys.executable, GetGsutilPath()] + args)
 
 
-def MaybeUpload(do_upload, filename, platform, extra_gsutil_args=[]):
-  gsutil_args = ['cp'] + extra_gsutil_args + ['-a', 'public-read', filename,
-      'gs://chromium-browser-clang-staging/%s/%s' % (platform, filename)]
+def MaybeUpload(do_upload, filename, gcs_platform, extra_gsutil_args=[]):
+  gsutil_args = ['cp'] + extra_gsutil_args + [
+      '-a', 'public-read', filename,
+      'gs://chromium-browser-clang-staging/%s/%s' % (gcs_platform, filename)
+  ]
   if do_upload:
     print('Uploading %s to Google Cloud Storage...' % filename)
     exit_code = RunGsutil(gsutil_args)
@@ -156,18 +159,33 @@ def main():
   parser = argparse.ArgumentParser(description='build and package clang')
   parser.add_argument('--upload', action='store_true',
                       help='Upload the target archive to Google Cloud Storage.')
+  parser.add_argument('--build-mac-arm', action='store_true',
+                      help='Build arm binaries. Only valid on macOS.')
   args = parser.parse_args()
+
+  if args.build_mac_arm and sys.platform != 'darwin':
+    print('--build-mac-arm only valid on macOS')
+    return 1
 
   expected_stamp = GetExpectedStamp()
   pdir = 'clang-' + expected_stamp
   print(pdir)
 
   if sys.platform == 'darwin':
-    platform = 'Mac'
+    # When we need to run this script on an arm machine, we need to add a
+    # --build-mac-intel switch to pick which clang to build, pick the
+    # 'Mac_arm64' here when there's no flag and 'Mac' when --build-mac-intel is
+    # passed. Also update the build script to explicitly pass a default triple
+    # then.
+    assert platform.machine() != 'arm64'
+    if args.build_mac_arm:
+      gcs_platform = 'Mac_arm64'
+    else:
+      gcs_platform = 'Mac'
   elif sys.platform == 'win32':
-    platform = 'Win'
+    gcs_platform = 'Win'
   else:
-    platform = 'Linux_x64'
+    gcs_platform = 'Linux_x64'
 
   with open('buildlog.txt', 'w') as log:
     Tee('Starting build\n', log)
@@ -182,6 +200,8 @@ def main():
         os.path.join(THIS_DIR, 'build.py'), '--bootstrap', '--disable-asserts',
         '--run-tests', '--pgo'
     ]
+    if args.build_mac_arm:
+      build_cmd.append('--build-mac-arm')
     if sys.platform != 'darwin':
       build_cmd.append('--thinlto')
 
@@ -219,8 +239,11 @@ def main():
       # Include libclang_rt.builtins.a for Fuchsia targets.
       'lib/clang/$V/lib/aarch64-fuchsia/libclang_rt.builtins.a',
       'lib/clang/$V/lib/x86_64-fuchsia/libclang_rt.builtins.a',
-      'lib/clang/$V/lib/x86_64-fuchsia/libclang_rt.profile.a',
     ])
+    if not args.build_mac_arm:
+      # TODO(thakis): Figure out why this doesn't build in --build-mac-arm
+      # builds.
+      want.append('lib/clang/$V/lib/x86_64-fuchsia/libclang_rt.profile.a')
   if sys.platform == 'darwin':
     want.extend([
       # AddressSanitizer runtime.
@@ -243,74 +266,77 @@ def main():
     ])
   elif sys.platform.startswith('linux'):
     want.extend([
-      # Copy the stdlibc++.so.6 we linked the binaries against.
-      'lib/libstdc++.so.6',
+        # Copy the stdlibc++.so.6 we linked the binaries against.
+        'lib/libstdc++.so.6',
 
-      # Add LLD.
-      'bin/lld',
+        # Add LLD.
+        'bin/lld',
 
-      # Add llvm-ar for LTO.
-      'bin/llvm-ar',
+        # Add llvm-ar for LTO.
+        'bin/llvm-ar',
 
-      # Add llvm-objcopy for partition extraction on Android.
-      'bin/llvm-objcopy',
+        # Add llvm-objcopy for partition extraction on Android.
+        'bin/llvm-objcopy',
 
-      # AddressSanitizer C runtime (pure C won't link with *_cxx).
-      'lib/clang/$V/lib/linux/libclang_rt.asan-i386.a',
-      'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a',
-      'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a.syms',
+        # Add llvm-nm.
+        'bin/llvm-nm',
 
-      # AddressSanitizer C++ runtime.
-      'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-i386.a',
-      'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a',
-      'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a.syms',
+        # AddressSanitizer C runtime (pure C won't link with *_cxx).
+        'lib/clang/$V/lib/linux/libclang_rt.asan-i386.a',
+        'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a',
+        'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a.syms',
 
-      # AddressSanitizer Android runtime.
-      'lib/clang/$V/lib/linux/libclang_rt.asan-aarch64-android.so',
-      'lib/clang/$V/lib/linux/libclang_rt.asan-arm-android.so',
-      'lib/clang/$V/lib/linux/libclang_rt.asan-i686-android.so',
+        # AddressSanitizer C++ runtime.
+        'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-i386.a',
+        'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a',
+        'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a.syms',
 
-      # HWASAN Android runtime.
-      'lib/clang/$V/lib/linux/libclang_rt.hwasan-aarch64-android.so',
+        # AddressSanitizer Android runtime.
+        'lib/clang/$V/lib/linux/libclang_rt.asan-aarch64-android.so',
+        'lib/clang/$V/lib/linux/libclang_rt.asan-arm-android.so',
+        'lib/clang/$V/lib/linux/libclang_rt.asan-i686-android.so',
 
-      # MemorySanitizer C runtime (pure C won't link with *_cxx).
-      'lib/clang/$V/lib/linux/libclang_rt.msan-x86_64.a',
-      'lib/clang/$V/lib/linux/libclang_rt.msan-x86_64.a.syms',
+        # HWASAN Android runtime.
+        'lib/clang/$V/lib/linux/libclang_rt.hwasan-aarch64-android.so',
 
-      # MemorySanitizer C++ runtime.
-      'lib/clang/$V/lib/linux/libclang_rt.msan_cxx-x86_64.a',
-      'lib/clang/$V/lib/linux/libclang_rt.msan_cxx-x86_64.a.syms',
+        # MemorySanitizer C runtime (pure C won't link with *_cxx).
+        'lib/clang/$V/lib/linux/libclang_rt.msan-x86_64.a',
+        'lib/clang/$V/lib/linux/libclang_rt.msan-x86_64.a.syms',
 
-      # Profile runtime (used by profiler and code coverage).
-      'lib/clang/$V/lib/linux/libclang_rt.profile-i386.a',
-      'lib/clang/$V/lib/linux/libclang_rt.profile-x86_64.a',
-      'lib/clang/$V/lib/linux/libclang_rt.profile-aarch64-android.a',
-      'lib/clang/$V/lib/linux/libclang_rt.profile-arm-android.a',
+        # MemorySanitizer C++ runtime.
+        'lib/clang/$V/lib/linux/libclang_rt.msan_cxx-x86_64.a',
+        'lib/clang/$V/lib/linux/libclang_rt.msan_cxx-x86_64.a.syms',
 
-      # ThreadSanitizer C runtime (pure C won't link with *_cxx).
-      'lib/clang/$V/lib/linux/libclang_rt.tsan-x86_64.a',
-      'lib/clang/$V/lib/linux/libclang_rt.tsan-x86_64.a.syms',
+        # Profile runtime (used by profiler and code coverage).
+        'lib/clang/$V/lib/linux/libclang_rt.profile-i386.a',
+        'lib/clang/$V/lib/linux/libclang_rt.profile-x86_64.a',
+        'lib/clang/$V/lib/linux/libclang_rt.profile-aarch64-android.a',
+        'lib/clang/$V/lib/linux/libclang_rt.profile-arm-android.a',
 
-      # ThreadSanitizer C++ runtime.
-      'lib/clang/$V/lib/linux/libclang_rt.tsan_cxx-x86_64.a',
-      'lib/clang/$V/lib/linux/libclang_rt.tsan_cxx-x86_64.a.syms',
+        # ThreadSanitizer C runtime (pure C won't link with *_cxx).
+        'lib/clang/$V/lib/linux/libclang_rt.tsan-x86_64.a',
+        'lib/clang/$V/lib/linux/libclang_rt.tsan-x86_64.a.syms',
 
-      # UndefinedBehaviorSanitizer C runtime (pure C won't link with *_cxx).
-      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-i386.a',
-      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a',
-      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a.syms',
+        # ThreadSanitizer C++ runtime.
+        'lib/clang/$V/lib/linux/libclang_rt.tsan_cxx-x86_64.a',
+        'lib/clang/$V/lib/linux/libclang_rt.tsan_cxx-x86_64.a.syms',
 
-      # UndefinedBehaviorSanitizer C++ runtime.
-      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-i386.a',
-      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a',
-      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a.syms',
+        # UndefinedBehaviorSanitizer C runtime (pure C won't link with *_cxx).
+        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-i386.a',
+        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a',
+        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a.syms',
 
-      # UndefinedBehaviorSanitizer Android runtime, needed for CFI.
-      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-aarch64-android.so',
-      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-arm-android.so',
+        # UndefinedBehaviorSanitizer C++ runtime.
+        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-i386.a',
+        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a',
+        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a.syms',
 
-      # Blacklist for MemorySanitizer (used on Linux only).
-      'lib/clang/$V/share/msan_blacklist.txt',
+        # UndefinedBehaviorSanitizer Android runtime, needed for CFI.
+        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-aarch64-android.so',
+        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-arm-android.so',
+
+        # Blacklist for MemorySanitizer (used on Linux only).
+        'lib/clang/$V/share/msan_blacklist.txt',
     ])
   elif sys.platform == 'win32':
     want.extend([
@@ -392,8 +418,8 @@ def main():
   if sys.platform.startswith('linux'):
     os.symlink('lld', os.path.join(pdir, 'bin', 'ld.lld'))
     os.symlink('lld', os.path.join(pdir, 'bin', 'ld64.lld'))
-    os.symlink('lld', os.path.join(pdir, 'bin', 'ld64.lld.darwinnew'))
     os.symlink('lld', os.path.join(pdir, 'bin', 'lld-link'))
+    os.symlink('llvm-objcopy', os.path.join(pdir, 'bin', 'llvm-strip'))
 
   # Copy libc++ headers.
   if sys.platform == 'darwin':
@@ -407,11 +433,13 @@ def main():
   with tarfile.open(pdir + '.tgz', 'w:gz') as tar:
     for entry in tar_entries:
       tar.add(os.path.join(pdir, entry), arcname=entry, filter=PrintTarProgress)
-  MaybeUpload(args.upload, pdir + '.tgz', platform)
+  MaybeUpload(args.upload, pdir + '.tgz', gcs_platform)
 
   # Upload build log next to it.
   os.rename('buildlog.txt', pdir + '-buildlog.txt')
-  MaybeUpload(args.upload, pdir + '-buildlog.txt', platform,
+  MaybeUpload(args.upload,
+              pdir + '-buildlog.txt',
+              gcs_platform,
               extra_gsutil_args=['-z', 'txt'])
   os.remove(pdir + '-buildlog.txt')
 
@@ -425,7 +453,7 @@ def main():
   with tarfile.open(code_coverage_dir + '.tgz', 'w:gz') as tar:
     tar.add(os.path.join(code_coverage_dir, 'bin'), arcname='bin',
             filter=PrintTarProgress)
-  MaybeUpload(args.upload, code_coverage_dir + '.tgz', platform)
+  MaybeUpload(args.upload, code_coverage_dir + '.tgz', gcs_platform)
 
   # Zip up llvm-objdump and related tools for sanitizer coverage and Supersize.
   objdumpdir = 'llvmobjdump-' + stamp
@@ -447,7 +475,7 @@ def main():
             filter=PrintTarProgress)
     tar.add(llvmobjdump_stamp_file, arcname=llvmobjdump_stamp_file_base,
             filter=PrintTarProgress)
-  MaybeUpload(args.upload, objdumpdir + '.tgz', platform)
+  MaybeUpload(args.upload, objdumpdir + '.tgz', gcs_platform)
 
   # Zip up clang-tidy for users who opt into it, and Tricium.
   clang_tidy_dir = 'clang-tidy-' + stamp
@@ -458,7 +486,7 @@ def main():
   with tarfile.open(clang_tidy_dir + '.tgz', 'w:gz') as tar:
     tar.add(os.path.join(clang_tidy_dir, 'bin'), arcname='bin',
             filter=PrintTarProgress)
-  MaybeUpload(args.upload, clang_tidy_dir + '.tgz', platform)
+  MaybeUpload(args.upload, clang_tidy_dir + '.tgz', gcs_platform)
 
   # On Mac, lld isn't part of the main zip.  Upload it in a separate zip.
   if sys.platform == 'darwin':
@@ -476,7 +504,7 @@ def main():
     with tarfile.open(llddir + '.tgz', 'w:gz') as tar:
       tar.add(os.path.join(llddir, 'bin'), arcname='bin',
               filter=PrintTarProgress)
-    MaybeUpload(args.upload, llddir + '.tgz', platform)
+    MaybeUpload(args.upload, llddir + '.tgz', gcs_platform)
 
     # dsymutil isn't part of the main zip either, and it gets periodically
     # deployed to CIPD (manually, not as part of clang rolls) for use in the
@@ -489,7 +517,7 @@ def main():
     with tarfile.open(dsymdir + '.tgz', 'w:gz') as tar:
       tar.add(os.path.join(dsymdir, 'bin'), arcname='bin',
               filter=PrintTarProgress)
-    MaybeUpload(args.upload, dsymdir + '.tgz', platform)
+    MaybeUpload(args.upload, dsymdir + '.tgz', gcs_platform)
 
   # Zip up the translation_unit tool.
   translation_unit_dir = 'translation_unit-' + stamp
@@ -501,7 +529,7 @@ def main():
   with tarfile.open(translation_unit_dir + '.tgz', 'w:gz') as tar:
     tar.add(os.path.join(translation_unit_dir, 'bin'), arcname='bin',
             filter=PrintTarProgress)
-  MaybeUpload(args.upload, translation_unit_dir + '.tgz', platform)
+  MaybeUpload(args.upload, translation_unit_dir + '.tgz', gcs_platform)
 
   # Zip up the libclang binaries.
   libclang_dir = 'libclang-' + stamp
@@ -520,7 +548,7 @@ def main():
     for entry in tar_entries:
       tar.add(os.path.join(libclang_dir, entry), arcname=entry,
               filter=PrintTarProgress)
-  MaybeUpload(args.upload, libclang_dir + '.tgz', platform)
+  MaybeUpload(args.upload, libclang_dir + '.tgz', gcs_platform)
 
   if sys.platform == 'win32' and args.upload:
     binaries = [f for f in want if f.endswith('.exe') or f.endswith('.dll')]

@@ -73,8 +73,17 @@ bool ShouldTriggerSafetyTipFromLookalike(
     return false;
   }
 
-  *safe_url = GURL(std::string(url::kHttpScheme) +
-                   url::kStandardSchemeSeparator + matched_domain);
+  // Use https: scheme for top domain matches. Otherwise, use the lookalike
+  // URL's scheme.
+  // TODO(crbug.com/1190309): If the match is against an engaged site, this
+  // should use the scheme of the engaged site instead.
+  const std::string scheme =
+      (match_type == LookalikeUrlMatchType::kEditDistance ||
+       match_type == LookalikeUrlMatchType::kSkeletonMatchTop500 ||
+       match_type == LookalikeUrlMatchType::kSkeletonMatchTop5k)
+          ? url::kHttpsScheme
+          : url.scheme();
+  *safe_url = GURL(scheme + url::kStandardSchemeSeparator + matched_domain);
   // Safety Tips can be enabled by several features, with slightly different
   // behavior for different experiments. The
   // |kSafetyTipUIForSimplifiedDomainDisplay| feature enables specific lookalike
@@ -142,6 +151,8 @@ bool HostnameContainsKeyword(const GURL& url,
     return false;
   }
 
+  // TODO(jdeblasio): This should use GetETLDPlusOne() from Lookalike Utils to
+  // benefit from de-facto-private registries.
   size_t registry_length = net::registry_controlled_domains::GetRegistryLength(
       url, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
       net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);

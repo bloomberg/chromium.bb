@@ -406,7 +406,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.DelayedPacketOutageEventMs" units="ms"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>hlundin@chromium.org</owner>
   <summary>
     Measures the duration of each packet loss concealment (a.k.a. expand) event
@@ -418,7 +418,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.DelayedPacketOutageEventsPerMinute"
-    units="events/minute" expires_after="2021-06-27">
+    units="events/minute" expires_after="2021-08-29">
   <owner>hlundin@chromium.org</owner>
   <summary>
     Counts the number of delayed packet outage events per minute. The range is
@@ -721,7 +721,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.Encoder.CodecType" enum="WebRtcAudioCodecs"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>aleloi@chromium.org</owner>
   <summary>
     Histogram of audio codec usage. Every sample corresponds to 5 seconds of
@@ -730,7 +730,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.ExpandRatePercent" units="%"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>hlundin@chromium.org</owner>
   <summary>
     Measures the expand rate for an incoming WebRTC audio stream. The expand
@@ -753,7 +753,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.ReceiverDeviceDelayMs" units="ms"
-    expires_after="2021-06-27">
+    expires_after="2021-08-29">
   <owner>hlundin@chromium.org</owner>
   <summary>
     The sound card's buffering delay for the receiving side. Sampled once every
@@ -762,7 +762,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.ReceiverJitterBufferDelayMs" units="ms"
-    expires_after="2021-06-27">
+    expires_after="2021-08-29">
   <owner>hlundin@chromium.org</owner>
   <summary>
     The jitter buffer delay for the receiving side. Sampled once every 10 ms
@@ -787,7 +787,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.SpeechExpandRatePercent" units="%"
-    expires_after="2021-07-27">
+    expires_after="2021-09-26">
   <owner>hlundin@chromium.org</owner>
   <summary>
     Measures the audible expand rate for an incoming WebRTC audio stream. The
@@ -799,7 +799,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Audio.TargetBitrateInKbps" units="kbps"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>hlundin@chromium.org</owner>
   <summary>
     The target bitrate in kbps that the audio codec should try to produce on
@@ -839,7 +839,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.AudioOutputSampleRate" enum="AudioSampleRate"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>henrika@chromium.org</owner>
   <owner>webrtc-audio@google.com</owner>
   <summary>Audio output sample rate for WebRTC (in Hz).</summary>
@@ -855,7 +855,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.BWE.InitialBandwidthEstimate" units="kbps"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>holmer@chromium.org</owner>
   <summary>The bandwidth estimate 2 seconds into a WebRTC call.</summary>
 </histogram>
@@ -914,7 +914,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.BWE.Probing.ProbeClusterSizeInBytes" units="bytes"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>jonasolsson@chromium.org</owner>
   <owner>crodbro@chromium.org</owner>
   <summary>
@@ -924,7 +924,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.BWE.Probing.ProbesPerCluster" units="units"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>jonasolsson@chromium.org</owner>
   <owner>crodbro@chromium.org</owner>
   <summary>
@@ -934,7 +934,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.BWE.Probing.TimePerProbeCluster" units="ms"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>jonasolsson@chromium.org</owner>
   <owner>crodbro@chromium.org</owner>
   <summary>
@@ -954,7 +954,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.BWE.Probing.TotalProbeClustersRequested" units="units"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>jonasolsson@chromium.org</owner>
   <owner>crodbro@chromium.org</owner>
   <summary>
@@ -1059,7 +1059,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.Call.TimeReceivingAudioRtpPacketsInSeconds" units="s"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>saza@chromium.org</owner>
   <summary>
     The amount of time between the arrival of the first and last audio RTP
@@ -1192,9 +1192,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
-    Determines whether BUNDLE is configured. Recorded during DTLS connection
-    establishment which usually happens only once per connection. Values are
-    specified in https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy
+    Determines whether BUNDLE is configured. Recorded during the first DTLS
+    connection establishment. Values are specified in
+    https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy
   </summary>
 </histogram>
 
@@ -1219,6 +1219,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
   <token key="IPProtocolType" variants="IPProtocolType">
     <variant name=""/>
+  </token>
+</histogram>
+
+<histogram name="WebRTC.PeerConnection.CandidatePoolUsage.{BundlePolicy}"
+    units="components" expires_after="2022-01-01">
+  <owner>hta@chromium.org</owner>
+  <owner>webrtc-dev@chromium.org</owner>
+  <summary>
+    Measures the configured ice candidate poolsize for the {BundlePolicy}
+    bundlePolicy:
+    https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-icecandidatepoolsize
+    Recorded during the first DTLS connection establishment. See also
+    WebRTC.PeerConnection.BundlePolicy.
+  </summary>
+  <token key="BundlePolicy">
+    <variant name="Balanced"/>
+    <variant name="MaxBundle"/>
+    <variant name="MaxCompat"/>
   </token>
 </histogram>
 
@@ -1319,7 +1337,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.KeyProtocol"
-    enum="PeerConnectionKeyProtocol" expires_after="2021-07-01">
+    enum="PeerConnectionKeyProtocol" expires_after="2021-09-05">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1330,7 +1348,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.KeyProtocolByMedia"
-    enum="PeerConnectionKeyProtocolByMedia" expires_after="2021-07-01">
+    enum="PeerConnectionKeyProtocolByMedia" expires_after="2021-09-05">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1341,7 +1359,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.OfferExtmapAllowMixed"
-    enum="PeerConnectionOfferExtmapAllowMixed" expires_after="2021-06-28">
+    enum="PeerConnectionOfferExtmapAllowMixed" expires_after="2021-08-29">
   <owner>kron@chromium.org</owner>
   <summary>
     What setting for the SDP attribute extmap-allow-mixed has been asked for by
@@ -1362,7 +1380,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.SdpComplexUsage.CreateAnswer"
-    enum="PeerConnectionSdpUsageCategory" expires_after="2021-07-01">
+    enum="PeerConnectionSdpUsageCategory" expires_after="2021-09-05">
   <owner>hbos@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1467,7 +1485,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.SdpSemanticNegotiated"
-    enum="PeerConnectionSdpSemanticNegotiated" expires_after="2021-07-01">
+    enum="PeerConnectionSdpSemanticNegotiated" expires_after="2021-09-05">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1480,7 +1498,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.SdpSemanticRequested"
-    enum="PeerConnectionSdpSemanticRequested" expires_after="2021-07-27">
+    enum="PeerConnectionSdpSemanticRequested" expires_after="2021-10-04">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1572,7 +1590,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.ThermalState" enum="ThermalState"
-    expires_after="2021-07-27">
+    expires_after="2021-10-04">
   <owner>eshr@google.com</owner>
   <owner>hbos@chromium.org</owner>
   <summary>
@@ -1601,7 +1619,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.UsagePattern"
-    enum="WebRtcPeerConnectionUsagePattern" expires_after="2021-08-01">
+    enum="WebRtcPeerConnectionUsagePattern" expires_after="2021-10-04">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1612,7 +1630,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.ReceivedAudioTrackDuration" units="ms"
-    expires_after="2021-07-27">
+    expires_after="2021-09-26">
   <owner>perkj@chromium.org</owner>
   <summary>
     Durations of audio tracks received over a PeerConnection. The stopwatch
@@ -1622,7 +1640,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.ReceivedVideoTrackDuration" units="ms"
-    expires_after="2021-07-27">
+    expires_after="2021-09-26">
   <owner>perkj@chromium.org</owner>
   <summary>
     Durations of video tracks received over a PeerConnection. The stopwatch
@@ -1632,7 +1650,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.ReliableDataChannelMessageSize" units="bytes"
-    expires_after="2021-07-27">
+    expires_after="2021-10-04">
   <owner>perkj@chromium.org</owner>
   <summary>
     Sizes of messages sent over reliable data channels. The size of an
@@ -1648,7 +1666,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.SentAudioTrackDuration" units="ms"
-    expires_after="2021-07-27">
+    expires_after="2021-09-26">
   <owner>perkj@chromium.org</owner>
   <summary>
     Durations of audio tracks sent over a PeerConnection. The stopwatch starts
@@ -1658,7 +1676,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.SentVideoTrackDuration" units="ms"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>perkj@chromium.org</owner>
   <summary>
     Durations of video tracks sent over a PeerConnection. The stopwatch starts
@@ -1760,7 +1778,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.UnreliableDataChannelMessageSize" units="bytes"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>perkj@chromium.org</owner>
   <summary>
     Sizes of messages sent over unreliable data channels. The size of an
@@ -3567,7 +3585,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.webkitApiCount" enum="RTCAPIName"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>guidou@chromium.org</owner>
   <owner>hbos@chromium.org</owner>
   <owner>mcasas@chromium.org</owner>
@@ -3577,9 +3595,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRTC.webkitApiCountPerSession" enum="RTCAPIName"
-    expires_after="2021-03-07">
+    expires_after="2022-03-07">
   <owner>guidou@chromium.org</owner>
-  <owner>armax@chromium.org</owner>
+  <owner>hbos@chromium.org</owner>
   <summary>
     Counts the number of calls to WebRTC APIs from JavaScript once per session.
     A session is a crude estimate since its implemented as the lifetime of the
@@ -3593,7 +3611,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRtcEventLogging.Api" enum="WebRtcEventLoggingApiEnum"
-    expires_after="2021-07-07">
+    expires_after="2021-09-05">
   <owner>eladalon@chromium.org</owner>
   <owner>saeedj@google.com</owner>
   <owner>manj@google.com</owner>
@@ -3617,7 +3635,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebRtcEventLogging.Upload" enum="WebRtcEventLoggingUploadEnum"
-    expires_after="2021-07-07">
+    expires_after="2021-09-12">
   <owner>eladalon@chromium.org</owner>
   <owner>saeedj@google.com</owner>
   <owner>manj@google.com</owner>

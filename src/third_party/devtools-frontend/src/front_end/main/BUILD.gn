@@ -7,27 +7,27 @@ import("../../scripts/build/ninja/devtools_module.gni")
 
 devtools_module("main") {
   sources = [
-    "ExecutionContextSelector.js",
-    "MainImpl.js",
-    "SimpleApp.js",
+    "ExecutionContextSelector.ts",
+    "MainImpl.ts",
+    "SimpleApp.ts",
   ]
 
   deps = [
-    "../bindings:bundle",
-    "../common:bundle",
     "../components:bundle",
-    "../extensions:bundle",
-    "../host:bundle",
-    "../i18n:bundle",
-    "../persistence:bundle",
-    "../platform:bundle",
-    "../protocol_client:bundle",
+    "../core/common:bundle",
+    "../core/host:bundle",
+    "../core/i18n:bundle",
+    "../core/platform:bundle",
+    "../core/protocol_client:bundle",
+    "../core/sdk:bundle",
+    "../models/bindings:bundle",
+    "../models/extensions:bundle",
+    "../models/persistence:bundle",
     "../recorder:bundle",
-    "../sdk:bundle",
     "../snippets:bundle",
     "../theme_support:bundle",
     "../timeline:bundle",
-    "../ui:bundle",
+    "../ui/legacy:bundle",
     "../workspace:bundle",
   ]
 }
@@ -39,7 +39,7 @@ devtools_entrypoint("bundle") {
 }
 
 devtools_entrypoint("legacy") {
-  entrypoint = "main-legacy.js"
+  entrypoint = "main-legacy.ts"
 
   deps = [ ":bundle" ]
 }

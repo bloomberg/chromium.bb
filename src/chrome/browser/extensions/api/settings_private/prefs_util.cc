@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 
+#include <memory>
+
 #include "base/feature_list.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -57,16 +59,16 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ash_pref_names.h"  // nogncheck
+#include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/supervised_user_cros_settings_provider.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_prefs.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
@@ -80,7 +82,7 @@ namespace {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 bool IsPrivilegedCrosSetting(const std::string& pref_name) {
-  if (!chromeos::CrosSettings::IsCrosSettings(pref_name))
+  if (!ash::CrosSettings::IsCrosSettings(pref_name))
     return false;
   if (!ash::system::PerUserTimezoneEnabled()) {
     // kSystemTimezone should be changeable by all users.
@@ -97,7 +99,7 @@ bool IsRestrictedCrosSettingForChildUser(Profile* profile,
   if (!profile->IsChild())
     return false;
 
-  return chromeos::CrosSettings::Get()
+  return ash::CrosSettings::Get()
       ->supervised_user_cros_settings_provider()
       ->HandlesSetting(pref_name);
 }
@@ -109,7 +111,7 @@ const base::Value* GetRestrictedCrosSettingValueForChildUser(
   // pre-set.
   DCHECK(IsRestrictedCrosSettingForChildUser(profile, pref_name));
 
-  return chromeos::CrosSettings::Get()
+  return ash::CrosSettings::Get()
       ->supervised_user_cros_settings_provider()
       ->Get(pref_name);
 }
@@ -186,6 +188,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   // Appearance settings.
   (*s_allowlist)[::prefs::kCurrentThemeID] =
       settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_allowlist)[::prefs::kPolicyThemeColor] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -314,6 +318,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[language::prefs::kFluentLanguages] =
       settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_allowlist)[language::prefs::kSelectedLanguages] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_allowlist)[language::prefs::kForcedLanguages] =
+      settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_allowlist)[translate::TranslatePrefs::kPrefTranslateRecentTarget] =
+      settings_api::PrefType::PREF_TYPE_STRING;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   (*s_allowlist)[::prefs::kLanguageImeMenuActivated] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -409,6 +419,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
 #if !defined(OS_ANDROID)
   (*s_allowlist)[::prefs::kLiveCaptionEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kLiveCaptionLanguageCode] =
+      settings_api::PrefType::PREF_TYPE_STRING;
 #endif
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   (*s_allowlist)[::prefs::kAccessibilityFocusHighlightEnabled] =
@@ -420,8 +432,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Accounts / Users / People.
   (*s_allowlist)[chromeos::kAccountsPrefAllowGuest] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[chromeos::kAccountsPrefSupervisedUsersEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[chromeos::kAccountsPrefShowUserNamesOnSignIn] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -822,7 +832,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetCrosSettingsPref(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   const base::Value* value = CrosSettings::Get()->GetPref(name);
   if (!value) {
-    LOG(ERROR) << "Cros settings pref not found: " << name;
+    LOG(WARNING) << "Cros settings pref not found: " << name;
     return nullptr;
   }
   pref_object->key = name;
@@ -855,7 +865,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref = pref_service->FindPreference(name);
     if (!pref)
       return nullptr;
-    pref_object.reset(new settings_api::PrefObject());
+    pref_object = std::make_unique<settings_api::PrefObject>();
     pref_object->key = pref->name();
     pref_object->type = GetType(name, pref->GetType());
     pref_object->value.reset(pref->GetValue()->DeepCopy());
@@ -944,12 +954,14 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_EXTENSION;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->extension_id.reset(new std::string(extension->id()));
-    pref_object->controlled_by_name.reset(new std::string(extension->name()));
+    pref_object->extension_id = std::make_unique<std::string>(extension->id());
+    pref_object->controlled_by_name =
+        std::make_unique<std::string>(extension->name());
     bool can_be_disabled =
         !ExtensionSystem::Get(profile_)->management_policy()->MustRemainEnabled(
             extension, nullptr);
-    pref_object->extension_can_be_disabled.reset(new bool(can_be_disabled));
+    pref_object->extension_can_be_disabled =
+        std::make_unique<bool>(can_be_disabled);
     return pref_object;
   }
 
@@ -1042,9 +1054,8 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
     return settings_private::SetPrefResult::PREF_NOT_MODIFIABLE;
   }
 
-  chromeos::OwnerSettingsServiceChromeOS* service =
-      chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-          profile_);
+  ash::OwnerSettingsServiceAsh* service =
+      ash::OwnerSettingsServiceAshFactory::GetForBrowserContext(profile_);
 
   if (service && service->HandlesSetting(pref_name) &&
       service->Set(pref_name, *value)) {
@@ -1060,9 +1071,8 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
 bool PrefsUtil::AppendToListCrosSetting(const std::string& pref_name,
                                         const base::Value& value) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::OwnerSettingsServiceChromeOS* service =
-      chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-          profile_);
+  ash::OwnerSettingsServiceAsh* service =
+      ash::OwnerSettingsServiceAshFactory::GetForBrowserContext(profile_);
 
   return service && service->HandlesSetting(pref_name) &&
          service->AppendToList(pref_name, value);
@@ -1075,9 +1085,8 @@ bool PrefsUtil::AppendToListCrosSetting(const std::string& pref_name,
 bool PrefsUtil::RemoveFromListCrosSetting(const std::string& pref_name,
                                           const base::Value& value) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::OwnerSettingsServiceChromeOS* service =
-      chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-          profile_);
+  ash::OwnerSettingsServiceAsh* service =
+      ash::OwnerSettingsServiceAshFactory::GetForBrowserContext(profile_);
 
   return service && service->HandlesSetting(pref_name) &&
          service->RemoveFromList(pref_name, value);

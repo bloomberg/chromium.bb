@@ -4,20 +4,17 @@
 
 #include "chrome/browser/ui/hats/hats_helper.h"
 
+#include "base/callback_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/common/chrome_features.h"
-#include "components/search/search.h"
 #include "content/public/browser/web_contents.h"
 
 HatsHelper::~HatsHelper() = default;
 
 HatsHelper::HatsHelper(content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
-  DCHECK(search::IsInstantExtendedAPIEnabled());
-}
+    : WebContentsObserver(web_contents) {}
 
 void HatsHelper::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                                const GURL& validated_url) {
@@ -34,14 +31,16 @@ void HatsHelper::DidFinishLoad(content::RenderFrameHost* render_frame_host,
           true)
           .Get();
 
-  if (!render_frame_host->GetParent() &&
-      (search::IsInstantNTP(web_contents()) || demo_enabled)) {
+  if (!render_frame_host->GetParent() && demo_enabled) {
     HatsService* hats_service = HatsServiceFactory::GetForProfile(
         profile(), /*create_if_necessary=*/true);
 
     if (hats_service) {
-      hats_service->LaunchSurvey(demo_enabled ? kHatsSurveyTriggerTesting
-                                              : kHatsSurveyTriggerSatisfaction);
+        hats_service->LaunchSurvey(kHatsSurveyTriggerTesting, base::DoNothing(),
+                                   base::DoNothing(),
+                                   {{"Test Field 1", true},
+                                    {"Test Field 2", false},
+                                    {"Test Field 3", true}});
     }
   }
 }

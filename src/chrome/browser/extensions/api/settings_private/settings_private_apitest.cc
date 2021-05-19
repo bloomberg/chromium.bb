@@ -60,8 +60,10 @@ class SettingsPrivateApiTest : public ExtensionApiTest {
 
  protected:
   bool RunSettingsSubtest(const std::string& subtest) {
-    return RunExtensionSubtest("settings_private", "main.html?" + subtest,
-                               kFlagNone, kFlagLoadAsComponent);
+    const std::string page_url = "main.html?" + subtest;
+    return RunExtensionTest({.name = "settings_private",
+                             .page_url = page_url.c_str(),
+                             .load_as_component = true});
   }
 
   void SetPrefPolicy(const std::string& key, policy::PolicyLevel level) {
@@ -78,7 +80,7 @@ class SettingsPrivateApiTest : public ExtensionApiTest {
   testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+  ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateApiTest);

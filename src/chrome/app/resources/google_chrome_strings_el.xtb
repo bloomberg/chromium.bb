@@ -11,13 +11,12 @@
 <translation id="1125124144982679672">Ποιος χρησιμοποιεί το Chrome;</translation>
 <translation id="1142745911746664600">Δεν είναι δυνατή η ενημέρωση του Chrome</translation>
 <translation id="1154147086299354128">&amp;Άνοιγμα στο Chrome</translation>
-<translation id="123620459398936149">Το Chrome OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας. Ενημερώστε τη φράση πρόσβασης συγχρονισμού.</translation>
 <translation id="1293325835983155583">Το <ph name="MANAGER" /> απαιτεί να διαβάσετε και να αποδεχτείτε τους παρακάτω Όρους Παροχής Υπηρεσιών πριν από τη χρήση αυτής της συσκευής. Οι συγκεκριμένοι όροι δεν επεκτείνουν, τροποποιούν ή περιορίζουν τους Όρους του Google Chrome OS.</translation>
 <translation id="1302523850133262269">Περιμένετε μέχρι να γίνει εγκατάσταση των πιο πρόσφατων ενημερώσεων συστήματος από το Chrome.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, απεγκαταστήστε το Google Chrome και δοκιμάστε ξανά.</translation>
 <translation id="1434626383986940139">Εφαρμογές Chrome Canary</translation>
-<translation id="147727933880789532">Το Chrome συνιστά την απενεργοποίηση αυτής της επέκτασης επειδή δεν πληροί αυτήν τη στιγμή τα πρότυπα της Βελτιωμένης Ασφαλούς περιήγησης.</translation>
+<translation id="1507198376417198979">Προσαρμόστε το νέο σας προφίλ Chrome</translation>
 <translation id="1516530951338665275">Το Google Chrome χρειάζεται πρόσβαση στο Bluetooth για να συνεχιστεί 
  η σύζευξη. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
@@ -26,7 +25,6 @@
 <translation id="1587325591171447154">Το αρχείο <ph name="FILE_NAME" /> είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chrome.</translation>
 <translation id="1597911401261118146">Για να ελέγξετε αν οι κωδικοί πρόσβασής σας είναι ασφαλείς από παραβιάσεις δεδομένων και άλλα ζητήματα ασφαλείας, <ph name="BEGIN_LINK" />συνδεθείτε στο Chrome<ph name="END_LINK" />.</translation>
 <translation id="1619887657840448962">Για να κάνουμε το Chrome πιο ασφαλές, απενεργοποιήσαμε τις ακόλουθες επεκτάσεις που δεν αναφέρονται στο <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> και ενδέχεται να έχουν προστεθεί εν αγνοία σας.</translation>
-<translation id="162629503687514352">Το Chrome OS δεν μπόρεσε να συγχρονίσει τους κωδικούς πρόσβασής σας.</translation>
 <translation id="1628000112320670027">Λήψη βοήθειας σχετικά με το Chrome</translation>
 <translation id="1666409074978194368">Σχεδόν ενημερώθηκε! Επανεκκινήστε το Google Chrome για να ολοκληρωθεί η διαδικασία ενημέρωσης. Τα παράθυρα για ανώνυμη περιήγηση δεν θα ανοίξουν ξανά.</translation>
 <translation id="1674870198290878346">Άνοιγμα Συνδέσμου σε Παράθυρο ανών&amp;υμης περιήγησης Chrome</translation>
@@ -93,14 +91,12 @@
 <translation id="3089968997497233615">Υπάρχει μια νέα, ασφαλέστερη έκδοση του Google Chrome.</translation>
 <translation id="3100998948628680988">Ονομάστε το προφίλ σας στο Chrome</translation>
 <translation id="3114643501466072395">Για να ελέγξετε αν οι άλλοι κωδικοί πρόσβασής σας είναι ασφαλείς από παραβιάσεις δεδομένων και άλλα ζητήματα ασφαλείας, <ph name="BEGIN_LINK" />συνδεθείτε στο Chrome<ph name="END_LINK" />.</translation>
-<translation id="3127818369811890733">Το Chrome OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας.</translation>
 <translation id="3140883423282498090">Οι αλλαγές που πραγματοποιήσατε θα ισχύσουν την επόμενη φορά που θα επανεκκινήσετε το Google Chrome.</translation>
 <translation id="3149510190863420837">Εφαρμογές Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Η επανεκκίνηση του Chrome θα γίνει τώρα}=1{Η επανεκκίνηση του Chrome θα γίνει σε 1 δευτερόλεπτο}other{Η επανεκκίνηση του Chrome θα γίνει σε # δευτερόλεπτα}}</translation>
 <translation id="3395323229510056640">Λήψη βοήθειας σχετικά με το Chrome OS</translation>
 <translation id="3396977131400919238">Παρουσιάστηκε σφάλμα στο λειτουργικό σύστημα κατά την εγκατάσταση. Κατεβάστε το Google Chrome ξανά.</translation>
-<translation id="3398288718845740432">Απόκρυψη στο μενού του Chrome</translation>
 <translation id="3434246496373299699">Το Chrome μπορεί να ελέγξει τους κωδικούς πρόσβασής σας όταν συνδέεστε με τον Λογαριασμό σας Google.</translation>
 <translation id="3451115285585441894">Προσθήκη στο Chrome...</translation>
 <translation id="345171907106878721">Προσθήκη του εαυτού σας στο Chrome</translation>
@@ -148,7 +144,6 @@
 <translation id="4571503333518166079">Μετάβαση στις ρυθμίσεις ειδοποιήσεων του Chrome</translation>
 <translation id="459622048091363950">Όταν το Chrome αποκτήσει πρόσβαση, οι ιστότοποι θα μπορούν να σας ζητήσουν πρόσβαση.</translation>
 <translation id="4600710005438004015">Δεν ήταν δυνατή η ενημέρωση του Chrome στην πιο πρόσφατη έκδοση και έτσι δεν θα έχετε πρόσβαση στις νέες λειτουργίες και στις επιδιορθώσεις ασφαλείας.</translation>
-<translation id="4631713731678262610">Απόκρυψη από το μενού του Chrome</translation>
 <translation id="4633000520311261472">Για να κάνουμε το Chrome πιο ασφαλές, απενεργοποιήσαμε ορισμένες επεκτάσεις που δεν αναφέρονται στο <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> και ενδέχεται να έχουν προστεθεί εν αγνοία σας.</translation>
 <translation id="4666328473657283332">Για να αποκτήσετε πρόσβαση στο περιεχόμενό σας στο Chrome σε όλες τις συσκευές σας, συνδεθείτε έτσι ώστε να ενεργοποιήσετε τον συγχρονισμό.</translation>
 <translation id="4728575227883772061">Η εγκατάσταση απέτυχε λόγω απροσδιόριστου σφάλματος. Αν το Google Chrome εκτελείται αυτήν τη στιγμή, κλείστε το και δοκιμάστε ξανά.</translation>
@@ -197,6 +192,7 @@
 <translation id="6070348360322141662">Για επιπλέον ασφάλεια, το Google Chrome θα κρυπτογραφήσει τα δεδομένα σας</translation>
 <translation id="608006075545470555">Προσθήκη προφίλ εργασίας σε αυτό το πρόγραμμα περιήγησης</translation>
 <translation id="6113794647360055231">Το Chrome έγινε ακόμα καλύτερο</translation>
+<translation id="6145313976051292476">Άνοιγμα αρχείων PDF στο Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
 <translation id="61852838583753520">&amp;Ενημέρωση του Chrome OS</translation>
@@ -209,7 +205,6 @@
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Ενημέρωση του Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">Σύστημα Chrome OS</translation>
-<translation id="6650333065969705433">Για να χρησιμοποιήσετε την εφαρμογή Rosetta για την αναπαραγωγή προστατευμένων μέσων, θα πρέπει να επανεκκινήσετε το Chrome.</translation>
 <translation id="6676384891291319759">Πρόσβαση στο Διαδίκτυο</translation>
 <translation id="6679975945624592337">Να επιτρέπεται στο Google Chrome να εκτελείται στο παρασκήνιο</translation>
 <translation id="6739177684496155661">Συνέχεια σε νέο προφίλ Chrome;</translation>
@@ -221,7 +216,7 @@
 <translation id="6943584222992551122">Τα δεδομένα περιήγησης αυτού του ατόμου θα διαγραφούν από αυτήν τη συσκευή. Για να επαναφέρετε τα δεδομένα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Εισερχόμενος κανόνας για το Google Chrome Beta για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="6989339256997917931">Το Google Chrome έχει ενημερωθεί, αλλά δεν το έχετε χρησιμοποιήσει για 30 ημέρες τουλάχιστον.</translation>
-<translation id="7054640471403081847">Αυτός ο υπολογιστής θα σταματήσει σύντομα να λαμβάνει ενημερώσεις για το Google Chrome, επειδή το υλικό του δεν υποστηρίζεται πλέον.</translation>
+<translation id="7025800014283535195">Μπορείτε εδώ να κάνετε εναλλαγή μεταξύ των προφίλ του Chrome</translation>
 <translation id="7062128746136194023">Ο γονέας σου απενεργοποίησε την επιλογή "Άδειες για ιστοτόπους, εφαρμογές και επεκτάσεις" για το Chrome. Η προσθήκη του στοιχείου <ph name="EXTENSION_TYPE_PARAMETER" /> δεν επιτρέπεται.</translation>
 <translation id="7098166902387133879">Το Google Chrome χρησιμοποιεί το μικρόφωνό σας.</translation>
 <translation id="7106741999175697885">Διαχείριση Εργασιών - Google Chrome</translation>
@@ -274,7 +269,6 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">Αυτό το προφίλ εργασίας είναι εντελώς ξεχωριστό από το προσωπικό προφίλ σας.</translation>
 <translation id="8556340503434111824">Υπάρχει μια νέα έκδοση του Google Chrome και είναι ταχύτερη από ποτέ.</translation>
-<translation id="861359755029082151">Η εφαρμογή Rosetta επιτρέπει στο Chrome την αναπαραγωγή προστατευμένων μέσων σε αυτήν τη σελίδα.</translation>
 <translation id="8614913330719544658">Το Google Chrome δεν αποκρίνεται. Επανεκκίνηση τώρα;</translation>
 <translation id="861702415419836452">Το Chrome χρειάζεται άδεια πρόσβασης στην κάμερά σας, για να δημιουργήσει έναν τρισδιάστατο χάρτη του περιβάλλοντα χώρου σας.</translation>
 <translation id="8625237574518804553">{0,plural, =1{Η επανεκκίνηση του Chrome θα γίνει σε 1 λεπτό}other{Η επανεκκίνηση του Chrome θα γίνει σε # λεπτά}}</translation>
@@ -288,7 +282,6 @@
 <translation id="8834965163890861871">Το Google Chrome προσπαθεί να επεξεργαστεί κωδικούς πρόσβασης. Για να επιτρέψετε αυτήν την ενέργεια, πληκτρολογήστε τον κωδικό πρόσβασης των Windows.</translation>
 <translation id="884296878221830158">Επίσης, ελέγχει τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome ή όταν κάνετε κλικ στο κουμπί αρχικής σελίδας.</translation>
 <translation id="8862326446509486874">Δεν έχετε τα απαραίτητα δικαιώματα για εγκατάσταση σε επίπεδο συστήματος. Δοκιμάστε να εκτελέσετε ξανά το πρόγραμμα εγκατάστασης ως Διαχειριστής.</translation>
-<translation id="8907709077090383765">Για να επιτρέψετε την αναπαραγωγή προστατευμένων μέσων από το Chrome, θα πρέπει να εγκαταστήσετε την εφαρμογή Rosetta. Θέλετε να την εγκαταστήσετε τώρα;</translation>
 <translation id="8914504000324227558">Επανεκκίνηση του Chrome</translation>
 <translation id="8922193594870374009">Για να στείλετε έναν αριθμό από το <ph name="ORIGIN" /> στο τηλέφωνό σας Android, συνδεθείτε στο Chrome και στις δύο συσκευές.</translation>
 <translation id="8986207147630327271">Προσθέτετε ένα προφίλ εργασίας σε αυτό το πρόγραμμα περιήγησης και παραχωρείτε τον έλεγχο στον διαχειριστή σας μόνο για το προφίλ εργασίας.</translation>
@@ -298,6 +291,8 @@
 <translation id="911206726377975832">Να γίνει διαγραφή και των δεδομένων περιήγησης;</translation>
 <translation id="9138603949443464873">Για να εφαρμόσετε τις αλλαγές σας, επανεκκινήστε το Chrome</translation>
 <translation id="919706545465235479">Για να ξεκινήσει ο συγχρονισμός, ενημερώστε το Chrome</translation>
+<translation id="922152298093051471">Προσαρμογή του Chrome</translation>
 <translation id="940313311831216333">Για να αποκτήσετε πρόσβαση στο περιεχόμενό σας στο Chrome σε όλες τις συσκευές σας, συνδεθείτε και, στη συνέχεια, ενεργοποιήστε τον συγχρονισμό.</translation>
 <translation id="989369509083708165">Το Google Chrome είναι το προεπιλεγμένο πρόγραμμα περιήγησης</translation>
+<translation id="989816563149873169">Με τη συντόμευση <ph name="SHORTCUT" /> μπορείτε να κάνετε εναλλαγή μεταξύ των προφίλ Chrome</translation>
 </translationbundle>

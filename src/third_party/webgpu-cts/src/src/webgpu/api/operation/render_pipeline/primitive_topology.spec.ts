@@ -216,13 +216,13 @@ class PrimitiveTopologyTest extends GPUTest {
   makeAttachmentTexture(): GPUTexture {
     return this.device.createTexture({
       format: kColorFormat,
-      size: { width: kRTSize, height: kRTSize, depth: 1 },
-      usage: GPUTextureUsage.OUTPUT_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+      size: { width: kRTSize, height: kRTSize, depthOrArrayLayers: 1 },
+      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
     });
   }
 
   run(
-    primitiveTopology: GPUPrimitiveTopology,
+    topology: GPUPrimitiveTopology,
     testLocations: TestLocation[],
     usePrimitiveRestart: boolean
   ): void {
@@ -239,9 +239,9 @@ class PrimitiveTopologyTest extends GPUTest {
       ],
     });
 
-    let indexFormat = undefined;
-    if (primitiveTopology === 'triangle-strip' || primitiveTopology === 'line-strip') {
-      indexFormat = 'uint32' as const;
+    let stripIndexFormat = undefined;
+    if (topology === 'triangle-strip' || topology === 'line-strip') {
+      stripIndexFormat = 'uint32' as const;
     }
 
     // Draw a primitive using 6 vertices based on the type.
@@ -251,7 +251,7 @@ class PrimitiveTopologyTest extends GPUTest {
     // Output color is solid green.
     renderPass.setPipeline(
       this.device.createRenderPipeline({
-        vertexStage: {
+        vertex: {
           module: this.device.createShaderModule({
             code: `
               [[location(0)]] var<in> pos : vec4<f32>;
@@ -263,8 +263,20 @@ class PrimitiveTopologyTest extends GPUTest {
               }`,
           }),
           entryPoint: 'main',
+          buffers: [
+            {
+              arrayStride: 4 * Float32Array.BYTES_PER_ELEMENT,
+              attributes: [
+                {
+                  format: 'float32x4',
+                  offset: 0,
+                  shaderLocation: 0,
+                },
+              ],
+            },
+          ],
         },
-        fragmentStage: {
+        fragment: {
           module: this.device.createShaderModule({
             code: `
               [[location(0)]] var<out> fragColor : vec4<f32>;
@@ -274,23 +286,11 @@ class PrimitiveTopologyTest extends GPUTest {
               }`,
           }),
           entryPoint: 'main',
+          targets: [{ format: kColorFormat }],
         },
-        primitiveTopology,
-        colorStates: [{ format: kColorFormat }],
-        vertexState: {
-          indexFormat,
-          vertexBuffers: [
-            {
-              arrayStride: 4 * Float32Array.BYTES_PER_ELEMENT,
-              attributes: [
-                {
-                  format: 'float4',
-                  offset: 0,
-                  shaderLocation: 0,
-                },
-              ],
-            },
-          ],
+        primitive: {
+          topology,
+          stripIndexFormat,
         },
       })
     );
@@ -314,7 +314,7 @@ class PrimitiveTopologyTest extends GPUTest {
 
     renderPass.endPass();
 
-    this.device.defaultQueue.submit([encoder.finish()]);
+    this.device.queue.submit([encoder.finish()]);
 
     for (const testPixel of testLocations) {
       this.expectSinglePixelIn2DTexture(

@@ -14,10 +14,9 @@
 
 #include "src/ast/break_statement.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::BreakStatement);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::BreakStatement);
 
 namespace tint {
 namespace ast {
@@ -32,10 +31,6 @@ BreakStatement* BreakStatement::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
   auto src = ctx->Clone(source());
   return ctx->dst->create<BreakStatement>(src);
-}
-
-bool BreakStatement::IsValid() const {
-  return true;
 }
 
 void BreakStatement::to_str(const semantic::Info&,

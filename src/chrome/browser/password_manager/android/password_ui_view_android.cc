@@ -123,8 +123,8 @@ ScopedJavaLocalRef<jobject> PasswordUIViewAndroid::GetSavedPasswordEntry(
   if (!form) {
     return Java_PasswordUIView_createSavedPasswordEntry(
         env, ConvertUTF8ToJavaString(env, std::string()),
-        ConvertUTF16ToJavaString(env, base::string16()),
-        ConvertUTF16ToJavaString(env, base::string16()));
+        ConvertUTF16ToJavaString(env, std::u16string()),
+        ConvertUTF16ToJavaString(env, std::u16string()));
   }
   return Java_PasswordUIView_createSavedPasswordEntry(
       env,
@@ -215,7 +215,25 @@ void PasswordUIViewAndroid::HandleShowPasswordEntryEditingView(
   if (form && !credential_edit_bridge_) {
     credential_edit_bridge_ = CredentialEditBridge::MaybeCreate(
         form, password_manager_presenter_.GetUsernamesForRealm(index),
-        &saved_passwords_presenter_,
+        &saved_passwords_presenter_, &password_manager_presenter_,
+        base::BindOnce(&PasswordUIViewAndroid::OnEditUIDismissed,
+                       base::Unretained(this)),
+        context, settings_launcher);
+  }
+}
+
+void PasswordUIViewAndroid::HandleShowBlockedCredentialView(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& context,
+    const base::android::JavaRef<jobject>& settings_launcher,
+    int index,
+    const JavaParamRef<jobject>& obj) {
+  const password_manager::PasswordForm* form =
+      password_manager_presenter_.GetPasswordException(index);
+  if (form && !credential_edit_bridge_) {
+    credential_edit_bridge_ = CredentialEditBridge::MaybeCreate(
+        form, password_manager_presenter_.GetUsernamesForRealm(index),
+        &saved_passwords_presenter_, &password_manager_presenter_,
         base::BindOnce(&PasswordUIViewAndroid::OnEditUIDismissed,
                        base::Unretained(this)),
         context, settings_launcher);

@@ -26,6 +26,8 @@ constexpr char kFilePathsKey[] = "file_paths";
 constexpr char kActivationIndexKey[] = "index";
 constexpr char kDeskIdKey[] = "desk_id";
 constexpr char kVisibleOnAllWorkspacesKey[] = "all_desk";
+// TODO(sammiequon): This may not be needed as restore bounds are saved in
+// current_bounds if needed. See WindowInfo for more details.
 constexpr char kRestoreBoundsKey[] = "restore_bounds";
 constexpr char kCurrentBoundsKey[] = "current_bounds";
 constexpr char kWindowStateTypeKey[] = "window_state_type";
@@ -299,6 +301,15 @@ void AppRestoreData::ModifyWindowInfo(const WindowInfo& window_info) {
 
   if (window_info.display_id.has_value())
     display_id = window_info.display_id.value();
+}
+
+void AppRestoreData::ClearWindowInfo() {
+  activation_index.reset();
+  desk_id.reset();
+  visible_on_all_workspaces.reset();
+  restore_bounds.reset();
+  current_bounds.reset();
+  window_state_type.reset();
 }
 
 std::unique_ptr<WindowInfo> AppRestoreData::GetWindowInfo() const {

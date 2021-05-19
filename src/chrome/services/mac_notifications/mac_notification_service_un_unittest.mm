@@ -4,11 +4,11 @@
 
 #import <UserNotifications/UserNotifications.h>
 
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -211,8 +211,7 @@ TEST_F(MacNotificationServiceUNTest, DisplayNotification) {
 
     std::vector<mac_notifications::mojom::NotificationActionButtonPtr> buttons;
     auto notification = mac_notifications::mojom::Notification::New(
-        std::move(meta), STRING16_LITERAL("title"),
-        STRING16_LITERAL("subtitle"), STRING16_LITERAL("body"),
+        std::move(meta), u"title", u"subtitle", u"body",
         /*renotify=*/true,
         /*show_settings_button=*/true, std::move(buttons),
         /*icon=*/gfx::ImageSkia());

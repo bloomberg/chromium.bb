@@ -15,7 +15,6 @@
 #include "src/intrinsic_table.h"
 
 #include "gmock/gmock.h"
-#include "gtest/gtest.h"
 #include "src/program_builder.h"
 #include "src/type/access_control_type.h"
 #include "src/type/depth_texture_type.h"
@@ -73,14 +72,15 @@ TEST_F(IntrinsicTableTest, MatchI32) {
   auto* tex =
       create<type::SampledTexture>(type::TextureDimension::k1d, ty.f32());
   auto result = table->Lookup(*this, IntrinsicType::kTextureLoad,
-                              {tex, ty.i32()}, Source{});
+                              {tex, ty.i32(), ty.i32()}, Source{});
   ASSERT_NE(result.intrinsic, nullptr);
   ASSERT_EQ(result.diagnostics.str(), "");
   EXPECT_THAT(result.intrinsic->Type(), IntrinsicType::kTextureLoad);
   EXPECT_THAT(result.intrinsic->ReturnType(), ty.vec4<f32>());
   EXPECT_THAT(result.intrinsic->Parameters(),
               ElementsAre(Parameter{tex, Parameter::Usage::kTexture},
-                          Parameter{ty.i32(), Parameter::Usage::kCoords}));
+                          Parameter{ty.i32(), Parameter::Usage::kCoords},
+                          Parameter{ty.i32(), Parameter::Usage::kLevel}));
 }
 
 TEST_F(IntrinsicTableTest, MismatchI32) {
@@ -250,15 +250,15 @@ TEST_F(IntrinsicTableTest, MatchSampledTexture) {
   auto* tex =
       create<type::SampledTexture>(type::TextureDimension::k2d, ty.f32());
   auto result = table->Lookup(*this, IntrinsicType::kTextureLoad,
-                              {tex, ty.vec2<i32>()}, Source{});
+                              {tex, ty.vec2<i32>(), ty.i32()}, Source{});
   ASSERT_NE(result.intrinsic, nullptr);
   ASSERT_EQ(result.diagnostics.str(), "");
   EXPECT_THAT(result.intrinsic->Type(), IntrinsicType::kTextureLoad);
   EXPECT_THAT(result.intrinsic->ReturnType(), ty.vec4<f32>());
-  EXPECT_THAT(
-      result.intrinsic->Parameters(),
-      ElementsAre(Parameter{tex, Parameter::Usage::kTexture},
-                  Parameter{ty.vec2<i32>(), Parameter::Usage::kCoords}));
+  EXPECT_THAT(result.intrinsic->Parameters(),
+              ElementsAre(Parameter{tex, Parameter::Usage::kTexture},
+                          Parameter{ty.vec2<i32>(), Parameter::Usage::kCoords},
+                          Parameter{ty.i32(), Parameter::Usage::kLevel}));
 }
 
 TEST_F(IntrinsicTableTest, MatchMultisampledTexture) {
@@ -279,15 +279,15 @@ TEST_F(IntrinsicTableTest, MatchMultisampledTexture) {
 TEST_F(IntrinsicTableTest, MatchDepthTexture) {
   auto* tex = create<type::DepthTexture>(type::TextureDimension::k2d);
   auto result = table->Lookup(*this, IntrinsicType::kTextureLoad,
-                              {tex, ty.vec2<i32>()}, Source{});
+                              {tex, ty.vec2<i32>(), ty.i32()}, Source{});
   ASSERT_NE(result.intrinsic, nullptr);
   ASSERT_EQ(result.diagnostics.str(), "");
   EXPECT_THAT(result.intrinsic->Type(), IntrinsicType::kTextureLoad);
   EXPECT_THAT(result.intrinsic->ReturnType(), ty.f32());
-  EXPECT_THAT(
-      result.intrinsic->Parameters(),
-      ElementsAre(Parameter{tex, Parameter::Usage::kTexture},
-                  Parameter{ty.vec2<i32>(), Parameter::Usage::kCoords}));
+  EXPECT_THAT(result.intrinsic->Parameters(),
+              ElementsAre(Parameter{tex, Parameter::Usage::kTexture},
+                          Parameter{ty.vec2<i32>(), Parameter::Usage::kCoords},
+                          Parameter{ty.i32(), Parameter::Usage::kLevel}));
 }
 
 TEST_F(IntrinsicTableTest, MatchROStorageTexture) {

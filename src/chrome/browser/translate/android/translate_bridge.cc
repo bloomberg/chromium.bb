@@ -254,6 +254,34 @@ static void JNI_TranslateBridge_GetAlwaysTranslateLanguages(
                            translate_prefs->GetAlwaysTranslateLanguages()));
 }
 
+// Gets all languages for which translation should not be prompted.
+static void JNI_TranslateBridge_GetNeverTranslateLanguages(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& list) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+
+  Java_TranslateBridge_copyStringArrayToList(
+      env, list,
+      ToJavaArrayOfStrings(env, translate_prefs->GetNeverTranslateLanguages()));
+}
+
+// Sets the always translate state for a language.
+// The always translate language list is actually a dict mapping
+// source_language -> target_language.  We use the current target language when
+// adding |language| to the dict.
+static void JNI_TranslateBridge_SetLanguageAlwaysTranslateState(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& language,
+    jboolean alwaysTranslate) {
+  std::string language_code(ConvertJavaStringToUTF8(env, language));
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+
+  translate_prefs->SetLanguageAlwaysTranslateState(language_code,
+                                                   alwaysTranslate);
+}
+
 // static
 // Input |locales| is a comma separated locale representation that consists of
 // language tags (BCP47 compliant format). Each language tag contains a language
@@ -337,7 +365,7 @@ static void JNI_TranslateBridge_ResetAcceptLanguages(
 
   TranslateBridge::PrependToAcceptLanguagesIfNecessary(locale_string,
                                                        &accept_languages);
-  GetPrefService()->SetString(language::prefs::kAcceptLanguages,
+  GetPrefService()->SetString(language::prefs::kSelectedLanguages,
                               accept_languages);
 }
 
@@ -352,20 +380,12 @@ static void JNI_TranslateBridge_GetChromeAcceptLanguages(
   translate_prefs->GetLanguageInfoList(
       app_locale, translate_prefs->IsTranslateAllowedByPolicy(), &languages);
 
-  language::ToTranslateLanguageSynonym(&app_locale);
   for (const auto& info : languages) {
-    // If the language comes from the same language family as the app locale,
-    // translate for this language won't be supported on this device.
-    std::string lang_code = info.code;
-    language::ToTranslateLanguageSynonym(&lang_code);
-    bool supports_translate =
-        info.supports_translate && lang_code != app_locale;
-
     Java_TranslateBridge_addNewLanguageItemToList(
         env, list, ConvertUTF8ToJavaString(env, info.code),
         ConvertUTF8ToJavaString(env, info.display_name),
         ConvertUTF8ToJavaString(env, info.native_display_name),
-        supports_translate);
+        info.supports_translate);
   }
 }
 

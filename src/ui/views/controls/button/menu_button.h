@@ -5,7 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/view_factory.h"
@@ -25,7 +26,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
  public:
   METADATA_HEADER(MenuButton);
   explicit MenuButton(PressedCallback callback = PressedCallback(),
-                      const base::string16& text = base::string16(),
+                      const std::u16string& text = std::u16string(),
                       int button_context = style::CONTEXT_BUTTON);
   MenuButton(const MenuButton&) = delete;
   MenuButton& operator=(const MenuButton&) = delete;

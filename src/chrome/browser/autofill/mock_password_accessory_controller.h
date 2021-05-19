@@ -23,7 +23,7 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
   MOCK_METHOD(
       void,
       SavePasswordsForOrigin,
-      ((const std::map<base::string16, const password_manager::PasswordForm*>&),
+      ((const std::map<std::u16string, const password_manager::PasswordForm*>&),
        (const url::Origin&)));
   MOCK_METHOD(void,
               RefreshSuggestionsForField,
@@ -44,7 +44,7 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
               (const, override));
   MOCK_METHOD(void,
               OnFillingTriggered,
-              (const autofill::UserInfo::Field&),
+              (autofill::FieldGlobalId, const autofill::UserInfo::Field&),
               (override));
   MOCK_METHOD(void,
               OnOptionSelected,

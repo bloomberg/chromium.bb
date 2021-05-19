@@ -70,7 +70,7 @@ class MockHttpAuthObserver : public HttpAuthObserver {
 
   MOCK_METHOD0(OnLoginModelDestroying, void());
   MOCK_METHOD2(OnAutofillDataAvailable,
-               void(const base::string16&, const base::string16&));
+               void(const std::u16string&, const std::u16string&));
 
   DISALLOW_COPY_AND_ASSIGN(MockHttpAuthObserver);
 };
@@ -152,8 +152,8 @@ TEST_F(HttpAuthManagerTest, HttpAuthFilling) {
     observed_form.signon_realm = "proxy.com/realm";
 
     PasswordForm stored_form = observed_form;
-    stored_form.username_value = ASCIIToUTF16("user");
-    stored_form.password_value = ASCIIToUTF16("1234");
+    stored_form.username_value = u"user";
+    stored_form.password_value = u"1234";
 
     MockHttpAuthObserver observer;
 
@@ -194,8 +194,8 @@ TEST_F(HttpAuthManagerTest, HttpAuthSaving) {
                                                          observed_form);
     // Emulate that http auth credentials submitted.
     PasswordForm submitted_form = observed_form;
-    submitted_form.username_value = ASCIIToUTF16("user");
-    submitted_form.password_value = ASCIIToUTF16("1234");
+    submitted_form.username_value = u"user";
+    submitted_form.password_value = u"1234";
     httpauth_manager()->OnPasswordFormSubmitted(submitted_form);
     httpauth_manager()->OnPasswordFormDismissed();
 
@@ -225,8 +225,8 @@ TEST_F(HttpAuthManagerTest, DontSaveEmptyPasswords) {
                                                        observed_form);
   // Emulate that http auth credentials submitted with an empty password.
   PasswordForm submitted_form = observed_form;
-  submitted_form.username_value = ASCIIToUTF16("user");
-  submitted_form.password_value = base::string16();
+  submitted_form.username_value = u"user";
+  submitted_form.password_value = std::u16string();
   httpauth_manager()->OnPasswordFormSubmitted(submitted_form);
   httpauth_manager()->OnPasswordFormDismissed();
 
@@ -275,8 +275,8 @@ TEST_F(HttpAuthManagerTest, NavigationWhenMatchingNotReady) {
                                                        observed_form);
 
   PasswordForm submitted_form = observed_form;
-  submitted_form.username_value = ASCIIToUTF16("user");
-  submitted_form.password_value = ASCIIToUTF16("1234");
+  submitted_form.username_value = u"user";
+  submitted_form.password_value = u"1234";
   httpauth_manager()->OnPasswordFormSubmitted(submitted_form);
   httpauth_manager()->OnPasswordFormDismissed();
 

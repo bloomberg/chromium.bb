@@ -1187,7 +1187,7 @@ policies and contribution forms [3].
             let stack = null;
             try {
                 if (settings.debug) {
-                    console.debug("ASSERT", name, tests.current_test.name, args);
+                    console.debug("ASSERT", name, tests.current_test && tests.current_test.name, args);
                 }
                 if (tests.output) {
                     tests.set_assert(name, ...args);
@@ -1929,7 +1929,10 @@ policies and contribution forms [3].
             throw new AssertionError(errors.join("\n\n"));
         }
     }
-    expose_assert(assert_any, "assert_any");
+    // FIXME: assert_any cannot use expose_assert, because assert_wrapper does
+    // not support nested assert calls (e.g. to assert_func). We need to
+    // support bypassing assert_wrapper for the inner asserts here.
+    expose(assert_any, "assert_any");
 
     /**
      * Assert that a feature is implemented, based on a 'truthy' condition.
@@ -2839,6 +2842,8 @@ policies and contribution forms [3].
                     this.hide_test_state = value;
                 } else if (p == "output") {
                     this.output = value;
+                } else if (p === "debug") {
+                    settings.debug = value;
                 }
             }
         }
@@ -2863,7 +2868,7 @@ policies and contribution forms [3].
         this.wait_for_finish = true;
         this.file_is_test = true;
         // Create the test, which will add it to the list of tests
-        async_test();
+        tests.current_test = async_test();
     };
 
     Tests.prototype.set_status = function(status, message, stack)

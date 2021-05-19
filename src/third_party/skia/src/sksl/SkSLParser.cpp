@@ -10,8 +10,8 @@
 #include <memory>
 #include "stdio.h"
 
+#include "include/private/SkSLModifiers.h"
 #include "src/sksl/SkSLASTNode.h"
-#include "src/sksl/ir/SkSLModifiers.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLType.h"
 
@@ -52,6 +52,7 @@ static int parse_modifier_token(Token::Kind token) {
         case Token::Kind::TK_HASSIDEEFFECTS: return Modifiers::kHasSideEffects_Flag;
         case Token::Kind::TK_VARYING:        return Modifiers::kVarying_Flag;
         case Token::Kind::TK_INLINE:         return Modifiers::kInline_Flag;
+        case Token::Kind::TK_NOINLINE:       return Modifiers::kNoInline_Flag;
         default:                             return 0;
     }
 }
@@ -95,6 +96,7 @@ void Parser::InitLayoutMap() {
     TOKEN(INPUT_ATTACHMENT_INDEX,       "input_attachment_index");
     TOKEN(ORIGIN_UPPER_LEFT,            "origin_upper_left");
     TOKEN(OVERRIDE_COVERAGE,            "override_coverage");
+    TOKEN(EARLY_FRAGMENT_TESTS,         "early_fragment_tests");
     TOKEN(BLEND_SUPPORT_ALL_EQUATIONS,  "blend_support_all_equations");
     TOKEN(PUSH_CONSTANT,                "push_constant");
     TOKEN(POINTS,                       "points");
@@ -125,7 +127,7 @@ void Parser::InitLayoutMap() {
 }
 
 Parser::Parser(const char* text, size_t length, SymbolTable& symbols, ErrorReporter& errors)
-: fText(text)
+: fText(text, length)
 , fPushback(Token::Kind::TK_NONE, -1, -1)
 , fSymbols(symbols)
 , fErrors(errors) {
@@ -155,6 +157,7 @@ void Parser::createEmptyChild(ASTNode::ID target) {
 /* (directive | section | declaration)* END_OF_FILE */
 std::unique_ptr<ASTFile> Parser::compilationUnit() {
     fFile = std::make_unique<ASTFile>();
+    fFile->fNodes.reserve(fText.size() / 10);  // a typical program is approx 10:1 for chars:nodes
     ASTNode::ID result = this->createNode(/*offset=*/0, ASTNode::Kind::kFile);
     fFile->fRoot = result;
     for (;;) {
@@ -273,7 +276,7 @@ bool Parser::expectIdentifier(Token* result) {
 }
 
 StringFragment Parser::text(Token token) {
-    return StringFragment(fText + token.fOffset, token.fLength);
+    return StringFragment(fText.begin() + token.fOffset, token.fLength);
 }
 
 void Parser::error(Token token, String msg) {
@@ -348,7 +351,7 @@ ASTNode::ID Parser::section() {
     Token codeStart = this->nextRawToken();
     size_t startOffset = codeStart.fOffset;
     this->pushback(codeStart);
-    text.fChars = fText + startOffset;
+    text.fChars = fText.begin() + startOffset;
     int level = 1;
     for (;;) {
         Token next = this->nextRawToken();
@@ -568,7 +571,7 @@ ASTNode::ID Parser::structDeclaration() {
             return ASTNode::ID::Invalid();
         }
         ASTNode& declsNode = getNode(decls);
-        Modifiers modifiers = declsNode.begin()->getModifiers();
+        const Modifiers& modifiers = declsNode.begin()->getModifiers();
         if (modifiers.fFlags != Modifiers::kNo_Flag) {
             String desc = modifiers.description();
             desc.pop_back();  // remove trailing space
@@ -586,7 +589,7 @@ ASTNode::ID Parser::structDeclaration() {
 
         for (auto iter = declsNode.begin() + 2; iter != declsNode.end(); ++iter) {
             ASTNode& var = *iter;
-            ASTNode::VarData vd = var.getVarData();
+            const ASTNode::VarData& vd = var.getVarData();
 
             // Read array size if one is present.
             if (vd.fIsArray) {
@@ -798,7 +801,7 @@ StringFragment Parser::layoutCode() {
     Token start = this->nextRawToken();
     this->pushback(start);
     StringFragment code;
-    code.fChars = fText + start.fOffset;
+    code.fChars = fText.begin() + start.fOffset;
     int level = 1;
     bool done = false;
     while (!done) {
@@ -913,6 +916,9 @@ Layout Parser::layout() {
                         break;
                     case LayoutToken::OVERRIDE_COVERAGE:
                         setFlag(Layout::kOverrideCoverage_Flag);
+                        break;
+                    case LayoutToken::EARLY_FRAGMENT_TESTS:
+                        setFlag(Layout::kEarlyFragmentTests_Flag);
                         break;
                     case LayoutToken::PUSH_CONSTANT:
                         setFlag(Layout::kPushConstant_Flag);

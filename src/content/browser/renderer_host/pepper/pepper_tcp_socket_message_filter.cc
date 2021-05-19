@@ -43,6 +43,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/tcp_socket_resource_constants.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
+#include "ppapi/shared_impl/private/ppb_x509_util_shared.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/network/firewall_hole.h"
@@ -1114,6 +1115,14 @@ void PepperTCPSocketMessageFilter::OnAcceptCompletedOnIOThread(
     PP_NetAddress_Private pp_remote_addr) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  if (!host_->IsValidInstance(instance_)) {
+    // The instance has been removed while Accept was in progress. This object
+    // should be destroyed and cleaned up after we release the reference we're
+    // holding as a part of this function running so we just return without
+    // doing anything.
+    return;
+  }
+
   // |factory_| is guaranteed to be non-NULL here. Only those instances created
   // in CONNECTED state have a NULL |factory_|, while getting here requires
   // LISTENING state.
@@ -1249,8 +1258,8 @@ void PepperTCPSocketMessageFilter::SendSSLHandshakeReply(
   if (pp_result == PP_OK) {
     DCHECK(ssl_info);
     if (ssl_info->cert.get()) {
-      pepper_socket_utils::GetCertificateFields(*ssl_info->cert,
-                                                &certificate_fields);
+      ppapi::PPB_X509Util_Shared::GetCertificateFields(*ssl_info->cert,
+                                                       &certificate_fields);
     }
   }
   SendReply(reply_context,

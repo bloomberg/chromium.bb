@@ -999,12 +999,10 @@ PaintFlagsPaintFilter::PaintFlagsPaintFilter(PaintFlags flags,
     shader = SkShaders::Color(paint.getColor());
   }
 
-  // TODO(michaelludwig): Remove SkFilterQuality arg once all image shaders are
-  // created with explicit filter settings
   using Dither = SkImageFilters::Dither;
   cached_sk_filter_ = SkImageFilters::Shader(
       std::move(shader), paint.isDither() ? Dither::kYes : Dither::kNo,
-      paint.getFilterQuality(), crop_rect);
+      crop_rect);
 }
 
 PaintFlagsPaintFilter::~PaintFlagsPaintFilter() = default;
@@ -1034,7 +1032,10 @@ MatrixPaintFilter::MatrixPaintFilter(const SkMatrix& matrix,
       filter_quality_(filter_quality),
       input_(std::move(input)) {
   cached_sk_filter_ = SkImageFilters::MatrixTransform(
-      matrix_, filter_quality_, GetSkFilter(input_.get()));
+      matrix_,
+      SkSamplingOptions(filter_quality_,
+                        SkSamplingOptions::kMedium_asMipmapLinear),
+      GetSkFilter(input_.get()));
 }
 
 MatrixPaintFilter::~MatrixPaintFilter() = default;

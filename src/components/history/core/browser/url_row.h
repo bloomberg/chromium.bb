@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/query_parser/snippet.h"
 #include "url/gurl.h"
@@ -48,10 +48,8 @@ class URLRow {
   void set_url(const GURL& url) { url_ = url; }
   const GURL& url() const { return url_; }
 
-  const base::string16& title() const {
-    return title_;
-  }
-  void set_title(const base::string16& title) {
+  const std::u16string& title() const { return title_; }
+  void set_title(const std::u16string& title) {
     // The title is frequently set to the same thing, so we don't bother
     // updating unless the string has changed.
     if (title != title_) {
@@ -130,7 +128,7 @@ class URLRow {
   // the constructor to make a new one.
   GURL url_;
 
-  base::string16 title_;
+  std::u16string title_;
 
   // Total number of times this URL has been visited.
   int visit_count_ = 0;
@@ -146,10 +144,70 @@ class URLRow {
   // is usually for subframes.
   bool hidden_ = false;
 
-  // We support the implicit copy constuctor and operator=.
+  // We support the implicit copy constructor and operator=.
 };
 typedef std::vector<URLRow> URLRows;
 
+// Annotations -----------------------------------------------------------------
+
+// A set of binary state related to a page visit. To be used for bit masking
+// operations.
+enum VisitContentAnnotationFlag : uint64_t {
+  kNone = 0,
+
+  // Indicates that the annotated page can be included in FLoC clustering
+  // (https://github.com/WICG/floc) based on a relaxed opt-in condition. A page
+  // visit is eligible for FLoC clustering if all of the conditions hold:
+  // 1. The IP of this visit is publicly routable, i.e. the IP is NOT within
+  // the ranges reserved for "private" internet
+  // (https://tools.ietf.org/html/rfc1918).
+  // 2. The interest-cohort Permissions Policy feature is allowed in the page.
+  // 3. Page opted in / Either one of the following holds:
+  //      - document.interestCohort API is used in the page
+  //      - the page has heuristically detected ad resources
+  kFlocEligibleRelaxed = 1 << 0,
+};
+
+using VisitContentAnnotationFlags = uint64_t;
+
+// A structure containing the annotations made by the ML model to page content
+// for a visit. Be cautious when changing the default values as they may already
+// have been written to the storage.
+struct VisitContentModelAnnotations {
+  struct Category {
+    Category();
+    Category(int id, int weight);
+    bool operator==(const Category& other) const;
+    bool operator!=(const Category& other) const;
+
+    int id = 0;
+    int weight = 0;
+  };
+
+  VisitContentModelAnnotations();
+  VisitContentModelAnnotations(float floc_protected_score,
+                               const std::vector<Category>& categories,
+                               int64_t page_topics_model_version);
+  VisitContentModelAnnotations(const VisitContentModelAnnotations& other);
+  ~VisitContentModelAnnotations();
+
+  // A value from 0 to 1 that represents whether the page content is
+  // FLoC-protected.
+  float floc_protected_score = -1.0;
+  // A vector that contains category IDs and their weights. It is guaranteed
+  // that there will not be duplicates in the category IDs contained in this
+  // field.
+  std::vector<Category> categories;
+  // The version of the page topics model that was used to annotate content.
+  int64_t page_topics_model_version = -1;
+};
+
+// A structure containing the annotations made to page content for a visit.
+struct VisitContentAnnotations {
+  VisitContentAnnotationFlags annotation_flags =
+      VisitContentAnnotationFlag::kNone;
+  VisitContentModelAnnotations model_annotations;
+};
 
 class URLResult : public URLRow {
  public:
@@ -165,8 +223,13 @@ class URLResult : public URLRow {
   base::Time visit_time() const { return visit_time_; }
   void set_visit_time(base::Time visit_time) { visit_time_ = visit_time; }
 
-  bool floc_allowed() const { return floc_allowed_; }
-  void set_floc_allowed(bool floc_allowed) { floc_allowed_ = floc_allowed; }
+  const VisitContentAnnotations& content_annotations() const {
+    return content_annotations_;
+  }
+  void set_content_annotations(
+      const VisitContentAnnotations& content_annotations) {
+    content_annotations_ = content_annotations;
+  }
 
   const query_parser::Snippet& snippet() const { return snippet_; }
 
@@ -192,9 +255,8 @@ class URLResult : public URLRow {
   // The time that this result corresponds to.
   base::Time visit_time_;
 
-  // Indicates whether this URL visit can be included in FLoC computation. See
-  // VisitRow::floc_allowed for details.
-  bool floc_allowed_ = false;
+  // The annotations made to the page content for this visit.
+  VisitContentAnnotations content_annotations_;
 
   // These values are typically set by HistoryBackend.
   query_parser::Snippet snippet_;

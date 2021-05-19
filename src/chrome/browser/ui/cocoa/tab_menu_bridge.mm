@@ -30,13 +30,13 @@ void UpdateItemForWebContents(NSMenuItem* item,
     // speaker-playing-sound icon or a muted-speaker icon to its title to make
     // it easy to find the tabs playing sound in the Tab menu.
     int title_id;
-    base::string16 emoji;
+    std::u16string emoji;
     if (web_contents->IsAudioMuted()) {
       title_id = IDS_WINDOW_AUDIO_MUTING_MAC;
-      emoji = base::WideToUTF16(L"\U0001F507");
+      emoji = u"\U0001F507";
     } else {
       title_id = IDS_WINDOW_AUDIO_PLAYING_MAC;
-      emoji = base::WideToUTF16(L"\U0001F50A");
+      emoji = u"\U0001F50A";
     }
 
     item.title =

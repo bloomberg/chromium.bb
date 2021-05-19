@@ -13,7 +13,7 @@
           "dimension_sets": [
             {
               "cpu": "arm64",
-              "os": "Mac-11.0",
+              "os": "Mac-11",
               "pool": "chromium.tests.mac-arm64"
             }
           ],
@@ -21,28 +21,6 @@
         },
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "os": "Mac-11.0",
-              "pool": "chromium.tests.mac-arm64"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
       }
     ]
   },
@@ -66,27 +44,6 @@
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
       }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Mac-10.11",
-              "pool": "chromium.updater.mac"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
-      }
     ]
   },
   "mac10.12-updater-tester-rel": {
@@ -108,27 +65,6 @@
         },
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Mac-10.12",
-              "pool": "chromium.updater.mac"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
       }
     ]
   },
@@ -152,27 +88,6 @@
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
       }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Mac-10.13",
-              "pool": "chromium.updater.mac"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
-      }
     ]
   },
   "mac10.14-updater-tester-rel": {
@@ -194,27 +109,6 @@
         },
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Mac-10.14",
-              "pool": "chromium.updater.mac"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
       }
     ]
   },
@@ -238,27 +132,6 @@
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
       }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Mac-10.15",
-              "pool": "chromium.updater.mac"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
-      }
     ]
   },
   "mac10.15-updater-tester-rel": {
@@ -280,16 +153,12 @@
         },
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
-      }
-    ],
-    "isolated_scripts": [
+      },
       {
-        "isolate_name": "updater_integration_tests",
         "merge": {
           "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "updater_integration_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -300,7 +169,8 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
+        "test": "updater_tests_system",
+        "test_id_prefix": "ninja://chrome/updater:updater_tests_system/"
       }
     ]
   },
@@ -325,28 +195,6 @@
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
       }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11",
-              "pool": "chromium.updater.mac"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
-      }
     ]
   },
   "win10-updater-tester-dbg": {
@@ -369,28 +217,6 @@
         },
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "integrity": "high",
-              "os": "Windows-10-18363"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
       }
     ]
   },
@@ -415,28 +241,6 @@
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
       }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "integrity": "high",
-              "os": "Windows-10-18363"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
-      }
     ]
   },
   "win7(32)-updater-tester-dbg": {
@@ -459,28 +263,6 @@
         },
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-32",
-              "integrity": "high",
-              "os": "Windows-7-SP1"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
       }
     ]
   },
@@ -505,28 +287,6 @@
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
       }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-32",
-              "integrity": "high",
-              "os": "Windows-7-SP1"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
-      }
     ]
   },
   "win7-updater-tester-dbg": {
@@ -550,28 +310,6 @@
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
       }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "integrity": "high",
-              "os": "Windows-7-SP1"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
-      }
     ]
   },
   "win7-updater-tester-rel": {
@@ -594,28 +332,6 @@
         },
         "test": "updater_tests",
         "test_id_prefix": "ninja://chrome/updater:updater_tests/"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "updater_integration_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "updater_integration_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "integrity": "high",
-              "os": "Windows-7-SP1"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/updater:updater_integration_tests/"
       }
     ]
   }

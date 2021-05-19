@@ -13,13 +13,12 @@
 <translation id="1125124144982679672">‏Chrome کون استعمال کر رہا ہے؟</translation>
 <translation id="1142745911746664600">‏Chrome اپ ڈیٹ نہیں ہو سکتا</translation>
 <translation id="1154147086299354128">‏Chrome میں &amp;کھولیں</translation>
-<translation id="123620459398936149">‏Chrome OS آپ کے ڈیٹا کی مطابقت پذیری نہیں کر سکا۔ براہ کرم اپنے Sync پاس فریز کو اپ ڈیٹ کریں۔</translation>
 <translation id="1293325835983155583">‏<ph name="MANAGER" /> تقاضہ کرتا ہے کہ آپ یہ آلہ استعمال کرنے سے پہلے مندرجہ ذیل سروس کی شرائط کو پڑھیں اور قبول کریں۔ یہ شرائط Google Chrome OS کی شرائط کی توسیع، ان میں ترمیم یا انہیں محدود نہیں کرتی ہیں۔</translation>
 <translation id="1302523850133262269">‏Chrome کے ذریعے تازہ ترین سسٹم اپ ڈیٹس کو انسٹال کرتے ہوئے براہ کرم انتظار کریں۔</translation>
 <translation id="137466361146087520">‏Google Chrome بی ٹا</translation>
 <translation id="1399397803214730675">‏اس کمپیوٹر پر Google Chrome کا ایک مزید تازہ ترین ورژن پہلے سے ہی ہے۔ اگر سافٹ ویئر کام نہیں کر رہا ہے تو براہ کرم Google Chrome کو ان انسٹال کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="1434626383986940139">‏Chrome کینیری ایپس</translation>
-<translation id="147727933880789532">‏Chrome اس ایکسٹینشن کو غیر فعال کرنے کی تجویز دیتا ہے کیونکہ فی الوقت یہ بہتر کردہ محفوظ براؤزنگ کے معیارات پر پورا نہیں اترتا ہے۔</translation>
+<translation id="1507198376417198979">‏اپنی نئی Chrome پروفائل کو حسب ضرورت بنائیں</translation>
 <translation id="1516530951338665275">‏جوڑا بنانا جاری رکھنے کیلئے Google Chrome کو بلوٹوتھ رسائی کی ضرورت ہے۔ <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1553358976309200471">‏Chrome کو اپ ڈیٹ کریں</translation>
 <translation id="1583073672411044740">‏<ph name="EXISTING_USER" /> اس Chrome پروفائل میں پہلے سے سائن ان ہے۔ اس سے <ph name="USER_EMAIL_ADDRESS" /> کیلئے ایک نئی Chrome پروفائل تخلیق ہو جائے گی</translation>
@@ -27,7 +26,6 @@
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> خطرناک ہے، اس لیے Chrome نے اسے مسدود کر دیا ہے۔</translation>
 <translation id="1597911401261118146">‏یہ دیکھنے کے لئے کہ آیا آپ کے پاس ورڈز ڈیٹا کی خلاف ورزیوں اور دیگر سیکیورٹی مسائل سے محفوظ ہیں، <ph name="BEGIN_LINK" />Chrome میں سائن ان کریں<ph name="END_LINK" />۔</translation>
 <translation id="1619887657840448962">‏Chrome کو محفوظ تر بنانے کیلئے، ہم نے مندرجہ ذیل ایکسٹینشن کو غیر فعال کر دیا ہے جو <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> میں مندرج نہیں ہے اور ممکن ہے کہ اسے آپ کے علم کے بغیر شامل کر دیا گیا ہو۔</translation>
-<translation id="162629503687514352">‏Chrome OS آپ کے پاس ورڈز کی مطابقت پذیری نہیں کر سکا۔</translation>
 <translation id="1628000112320670027">‏Chrome کے بارے میں مدد حاصل کریں</translation>
 <translation id="1666409074978194368">‏تقریباً اپ ٹو ڈیٹ! اپ ڈیٹ کا عمل مکمل کرنے کیلئے، Google Chrome کو بند کر کے دوبارہ چلائیں۔ پوشیدگی ونڈوز دوبارہ نہیں کھلیں گی۔</translation>
 <translation id="1674870198290878346">‏لنک کو Chrome &amp;پوشیدگی ونڈو میں کھولیں</translation>
@@ -94,14 +92,12 @@
 <translation id="3089968997497233615">‏Google Chrome کا ایک نیا، محفوظ تر ورژن دستیاب ہے۔</translation>
 <translation id="3100998948628680988">‏اپنی Chrome پروفائل کو نام دیں</translation>
 <translation id="3114643501466072395">‏یہ چیک کرنے کے لئے کہ آیا آپ کے دیگر پاس ورڈز ڈیٹا کی خلاف ورزیوں اور دیگر سیکیورٹی مسائل سے محفوظ ہیں، <ph name="BEGIN_LINK" />Chrome میں سائن ان کریں<ph name="END_LINK" />۔</translation>
-<translation id="3127818369811890733">‏Chrome OS آپ کے ڈیٹا کی مطابقت پذیری نہیں کر سکا۔</translation>
 <translation id="3140883423282498090">‏آپ کی تبدیلیاں Google Chrome اگلی بار آپ کے دوبارہ شروع کرنے کے وقت نافذ ہوں گی۔</translation>
 <translation id="3149510190863420837">‏Chrome ایپس</translation>
 <translation id="3360895254066713204">‏Chrome مدد کنندہ</translation>
 <translation id="3379938682270551431">{0,plural, =0{‏ابھی Chrome دوبارہ لانچ ہوگا}=1{‏1 سیکنڈ میں Chrome دوبارہ لانچ ہوگا}other{‏# سیکنڈ میں Chrome دوبارہ لانچ ہوگا}}</translation>
 <translation id="3395323229510056640">‏Chromium OS کے بارے میں مدد حاصل کریں</translation>
 <translation id="3396977131400919238">‏انسٹالیشن کے دوران آپریٹنگ سسٹم کی ایک خرابی پیش آ گئی۔ براہ کرم Google Chrome دوبارہ ڈاؤن لوڈ کریں۔</translation>
-<translation id="3398288718845740432">‏Chrome مینو میں مخفی کریں</translation>
 <translation id="3434246496373299699">‏جب آپ اپنے Google اکاؤنٹ سے سائن ان ہوتے ہیں تو Chrome آپ کے پاس ورڈز کو چیک کر سکتا ہے</translation>
 <translation id="3451115285585441894">‏Chrome میں شامل کیا جا رہا ہے…</translation>
 <translation id="345171907106878721">‏خود کو Chrome میں شامل کریں</translation>
@@ -149,7 +145,6 @@
 <translation id="4571503333518166079">‏Chrome کی اطلاع کی ترتیبات پر جائیں</translation>
 <translation id="459622048091363950">‏Chrome کو رسائی مل جانے کے بعد، ویب سائٹس آپ سے رسائی طلب کر سکیں گی۔</translation>
 <translation id="4600710005438004015">‏Chrome تازہ ترین ورژن میں اپ ڈیٹ نہیں ہو سکا اسلئے آپ نئی خصوصیات اور سیکیورٹی کی اصلاحات سے محروم ہو رہے ہیں۔</translation>
-<translation id="4631713731678262610">‏Chrome مینو میں مخفی کریں</translation>
 <translation id="4633000520311261472">‏Chrome کو محفوظ تر بنانے کیلئے، ہم نے کچھ ایکسٹینشنز کو غیر فعال کر دیا ہے جو <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> میں مندرج نہیں ہیں اور ممکن ہے ان کو آپ کو بتائے بغیر شامل کیا گیا ہو۔</translation>
 <translation id="4666328473657283332">‏اپنے تمام آلات پر اپنی Chrome کی چیزوں تک رسائی حاصل کرنے کیلئے، سائن ان کریں تاکہ آپ مطابقت پذیری کو آن کر سکیں۔</translation>
 <translation id="4728575227883772061">‏غیر متعینہ خرابی کی وجہ سے انسٹالیشن ناکام ہوگیا۔ اگر فی الحال Google Chrome چل رہا ہے تو براہ کرم اسے بند کر دیں اور دوبارہ کوشش کریں۔</translation>
@@ -200,6 +195,7 @@ Google Chrome آپ کی ترتیبات کو بازیافت کرنے سے قاص�
 <translation id="6070348360322141662">‏اضافی سیکیورٹی کیلئے، Google Chrome آپ کا ڈیٹا مرموز کر دے گا</translation>
 <translation id="608006075545470555">اس براؤزر میں دفتری پروفائل شامل کریں</translation>
 <translation id="6113794647360055231">‏Chrome اور بھی بہتر ہوگیا ہے</translation>
+<translation id="6145313976051292476">‏Chrome میں PDFs کھولیں</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878">‏<ph name="PAGE_TITLE" /> - Google Chrome بی ٹا</translation>
 <translation id="61852838583753520">‏Chrome OS&amp; کو اپ ڈیٹ کریں</translation>
@@ -212,7 +208,6 @@ Google Chrome آپ کی ترتیبات کو بازیافت کرنے سے قاص�
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">‏Google Chrome کو اپ ڈیٹ کیا جا رہا ہے (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">‏Chrome OS سسٹم</translation>
-<translation id="6650333065969705433">‏تحفظ یافتہ میڈیا چلانے کی خاطر Rosetta استعمال کرنے کیلئے آپ کو Chrome ری سٹارٹ کرنا ضروری ہے۔</translation>
 <translation id="6676384891291319759">انٹرنیٹ تک رسائی حاصل کریں</translation>
 <translation id="6679975945624592337">‏Google Chrome کو پس منظر میں چلنے دیں</translation>
 <translation id="6739177684496155661">‏ایک نئی Chrome پروفائل میں جاری رکھیں؟</translation>
@@ -224,7 +219,7 @@ Google Chrome آپ کی ترتیبات کو بازیافت کرنے سے قاص�
 <translation id="6943584222992551122">‏اس شخص کا براؤزنگ ڈیٹا اس آلے سے حذف کر دیا جائے گا۔ ڈیٹا بحال کرنے کیلئے، Chrome میں بطور <ph name="USER_EMAIL" /> سائن ان کریں۔</translation>
 <translation id="6967962315388095737">‏mDNS ٹریفک کی اجازت دینے کے لیے Google Chrome بی ٹا کے لیے ان باؤنڈ اصول۔</translation>
 <translation id="6989339256997917931">‏Google Chrome کو اپ ڈیٹ کر دیا گیا ہے لیکن آپ نے کم از کم 30 دن سے اسے استعمال نہیں کیا ہے۔</translation>
-<translation id="7054640471403081847">‏یہ کمپیوٹر جلد ہی Google Chrome اپ ڈيٹس کو موصول کرنا روک دے گا کیونکہ اس کا ہارڈ ویئر مزید تعاون یافتہ نہیں ہے۔</translation>
+<translation id="7025800014283535195">‏آپ یہاں Chrome پروفائلز کے درمیان سوئچ کر سکتے ہیں</translation>
 <translation id="7062128746136194023">‏آپ کے والدین نے "Chrome کی خاطر سائٹس، ایپس اور ایکسٹینشنز کے لیے اجازتوں" کو آف کر دیا ہے۔ اس <ph name="EXTENSION_TYPE_PARAMETER" /> کو شامل کرنے کی اجازت نہیں ہے۔</translation>
 <translation id="7098166902387133879">‏Google Chrome آپ کا مائیکروفون استعمال کر رہا ہے۔</translation>
 <translation id="7106741999175697885">‏ٹاسک مینیجر - Google Chrome</translation>
@@ -277,7 +272,6 @@ Google Chrome آپ کی ترتیبات کو بازیافت کرنے سے قاص�
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">یہ دفتری پروفائل آپ کی ذاتی پروفائل سے پوری طرح علیحدہ ہے۔</translation>
 <translation id="8556340503434111824">‏Google Chrome کا ایک نیا ورژن دستیاب ہے اور پہلے سے کہیں زیادہ تیز ہے۔</translation>
-<translation id="861359755029082151">‏اس صفحے پر تحفظ یافتہ میڈیا چلانے کیلئے Rosetta‏ Chrome کو فعال کرتا ہے۔</translation>
 <translation id="8614913330719544658">‏Google Chrome جواب نہیں دے رہا ہے۔ ابھی دوبارہ شروع کریں؟</translation>
 <translation id="861702415419836452">‏اپنے اطراف کا 3D نقشہ تخلیق کرنے کی خاطر Chrome کو آپ کے کیمرے تک رسائی کی اجازت درکار ہے</translation>
 <translation id="8625237574518804553">{0,plural, =1{‏1 منٹ میں Chrome دوبارہ لانچ ہوگا}other{‏# منٹ میں Chrome دوبارہ لانچ ہوگا}}</translation>
@@ -291,7 +285,6 @@ Google Chrome آپ کی ترتیبات کو بازیافت کرنے سے قاص�
 <translation id="8834965163890861871">‏Google Chrome پاس ورڈز میں ترمیم کرنے کی کوشش کر رہا ہے۔ اس کی اجازت دینے کے لیے اپنا Windows پاس ورڈ ٹائپ کریں۔</translation>
 <translation id="884296878221830158">‏یہ آپ کی جانب سے Chrome شروع کرنے یا ہوم بٹن کلک کرنے پر دکھائی دینے والے صفحہ کو بھی کنٹرول کرتا ہے۔</translation>
 <translation id="8862326446509486874">سسٹم کی سطح پر انسٹال کرنے کیلئے آپ کے پاس مناسب حقوق نہیں ہیں۔ انسٹالر کو دوبارہ منتظم کے بطور چلانے کی کوشش کریں۔</translation>
-<translation id="8907709077090383765">‏تحفظ یافتہ میڈیا چلانے کی خاطر Chrome کو فعال کرنے کیلئے، آپ کو Rosetta انسٹال کرنے کی ضرورت ہے۔ کیا آپ اسے ابھی انسٹال کرنا چاہتے ہیں؟</translation>
 <translation id="8914504000324227558">‏Chrome کو دوبارہ شروع کریں</translation>
 <translation id="8922193594870374009">‏<ph name="ORIGIN" /> سے اپنے Android فون پر نمبر بھیجنے کے لئے دونوں آلات پر Chrome میں سائن ان کریں۔</translation>
 <translation id="8986207147630327271">آپ اس براؤزر میں ایک دفتری پروفائل شامل کر رہے ہیں اور اپنے منتظم کو صرف دفتری پروفائل پر کنٹرول فراہم کر رہے ہیں۔</translation>
@@ -301,6 +294,8 @@ Google Chrome آپ کی ترتیبات کو بازیافت کرنے سے قاص�
 <translation id="911206726377975832">نیز آپ کا براؤزنگ ڈیٹا حذف کریں؟</translation>
 <translation id="9138603949443464873">‏اپنی تبدیلیوں کو لاگو کرنے کیلئے، Chrome کو دوبارہ شروع کریں</translation>
 <translation id="919706545465235479">‏مطابقت پذیری شروع کرنے کیلئے Chrome کو اپ ڈیٹ کریں</translation>
+<translation id="922152298093051471">‏Chrome کو حسب ضرورت بنائیں</translation>
 <translation id="940313311831216333">‏اپنے تمام آلات پر اپنی Chrome کی چیزوں تک رسائی حاصل کرنے کیلئے، سائن ان کریں اور پھر مطابقت پذیری کو آن کریں۔</translation>
 <translation id="989369509083708165">‏Google Chrome آپ کا ڈیفالٹ براؤزر ہے</translation>
+<translation id="989816563149873169">‏<ph name="SHORTCUT" /> سے Chrome پروفائلز کے درمیان میں سوئچ کیا جا سکتا ہے</translation>
 </translationbundle>

@@ -1097,6 +1097,8 @@ TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
   // To determine the state, WindowWorkspaceResizer determines the display by
   // checking the CursorManager for the correct display. EventGenerator does not
   // update the display in the CursorManager, so we manually do it here.
+  // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+  // without having to call |CursorManager::SetDisplay|.
   const gfx::Point drag_location = gfx::Point(472, -462);
   Shell::Get()->cursor_manager()->SetDisplay(
       display::Screen::GetScreen()->GetDisplayNearestPoint(drag_location));
@@ -1221,6 +1223,43 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_FALSE(overview_controller->InOverviewSession());
+}
+
+// Test that if window destroyed during resize/dragging, no crash should happen.
+TEST_F(ToplevelWindowEventHandlerDragTest, WindowDestroyedDuringDragging) {
+  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(700, 500), 700, 500,
+                   ui::ET_GESTURE_SCROLL_UPDATE);
+  EXPECT_TRUE(WindowState::Get(dragged_window_.get())->is_dragged());
+  ToplevelWindowEventHandler* event_handler =
+      Shell::Get()->toplevel_window_event_handler();
+  EXPECT_TRUE(event_handler->is_drag_in_progress());
+
+  dragged_window_.reset();
+  EXPECT_FALSE(event_handler->is_drag_in_progress());
+}
+
+// Test that if window destroyed during resize/dragging in tablet mode, no crash
+// should happen.
+TEST_F(ToplevelWindowEventHandlerDragTest,
+       WindowDestroyedDuringDraggingInTabletMode) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(700, 500), 700, 500,
+                   ui::ET_GESTURE_SCROLL_UPDATE);
+  EXPECT_TRUE(WindowState::Get(dragged_window_.get())->is_dragged());
+  ToplevelWindowEventHandler* event_handler =
+      Shell::Get()->toplevel_window_event_handler();
+  EXPECT_TRUE(event_handler->is_drag_in_progress());
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(overview_controller->overview_session()->IsWindowInOverview(
+      dragged_window_.get()));
+
+  dragged_window_.reset();
+  EXPECT_FALSE(event_handler->is_drag_in_progress());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 }
 
 // Showing the resize shadows when the mouse is over the window edges is

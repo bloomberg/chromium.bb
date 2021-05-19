@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
@@ -688,11 +689,8 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
 
   mouse_down_ = event.Event();
 
-  if (RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
-          frame_->DomWindow())) {
-    if (frame_->View())
-      frame_->View()->DismissFragmentAnchor();
-  }
+  if (frame_->View() && TextFragmentAnchor::ShouldDismissOnScrollOrClick())
+    frame_->View()->DismissFragmentAnchor();
 
   if (frame_->GetDocument()->IsSVGDocument() &&
       frame_->GetDocument()->AccessSVGExtensions().ZoomAndPanEnabled()) {
@@ -746,6 +744,12 @@ WebInputEventResult MouseEventManager::HandleMouseReleaseEvent(
   AutoscrollController* controller = scroll_manager_->GetAutoscrollController();
   if (controller && controller->SelectionAutoscrollInProgress())
     scroll_manager_->StopAutoscroll();
+
+  // |SelectionController| calls |PositionForPoint()| which requires
+  // |kPrePaintClean|. |FocusDocumentView| above is the last possible
+  // modifications before we call |SelectionController|.
+  if (LocalFrameView* frame_view = frame_->View())
+    frame_view->UpdateLifecycleToPrePaintClean(DocumentUpdateReason::kInput);
 
   return frame_->GetEventHandler()
                  .GetSelectionController()

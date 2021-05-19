@@ -183,6 +183,12 @@ void aura_surface_unset_snap(wl_client* client, wl_resource* resource) {
   GetUserDataAs<AuraSurface>(resource)->UnsetSnap();
 }
 
+void aura_surface_set_window_session_id(wl_client* client,
+                                        wl_resource* resource,
+                                        int32_t id) {
+  GetUserDataAs<AuraSurface>(resource)->SetWindowSessionId(id);
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_frame,
     aura_surface_set_parent,
@@ -200,7 +206,8 @@ const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_intent_to_snap,
     aura_surface_set_snap_left,
     aura_surface_set_snap_right,
-    aura_surface_unset_snap};
+    aura_surface_unset_snap,
+    aura_surface_set_window_session_id};
 
 }  // namespace
 
@@ -319,6 +326,10 @@ void AuraSurface::UnsetSnap() {
   surface_->UnsetSnap();
 }
 
+void AuraSurface::SetWindowSessionId(int32_t window_session_id) {
+  surface_->SetWindowSessionId(window_session_id);
+}
+
 // Overridden from SurfaceObserver:
 void AuraSurface::OnSurfaceDestroying(Surface* surface) {
   surface->RemoveSurfaceObserver(this);
@@ -331,6 +342,13 @@ void AuraSurface::OnWindowOcclusionChanged(Surface* surface) {
   auto* window = surface_->window();
   ComputeAndSendOcclusionFraction(window->occlusion_state(),
                                   window->occluded_region_in_root());
+}
+
+void AuraSurface::OnFrameLockingChanged(Surface* surface, bool lock) {
+  if (lock)
+    zaura_surface_send_lock_frame_normal(resource_);
+  else
+    zaura_surface_send_unlock_frame_normal(resource_);
 }
 
 void AuraSurface::OnWindowActivating(ActivationReason reason,

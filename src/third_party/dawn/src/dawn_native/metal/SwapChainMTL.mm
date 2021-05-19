@@ -26,6 +26,11 @@ namespace dawn_native { namespace metal {
 
     // OldSwapChain
 
+    // static
+    Ref<OldSwapChain> OldSwapChain::Create(Device* device, const SwapChainDescriptor* descriptor) {
+        return AcquireRef(new OldSwapChain(device, descriptor));
+    }
+
     OldSwapChain::OldSwapChain(Device* device, const SwapChainDescriptor* descriptor)
         : OldSwapChainBase(device, descriptor) {
         const auto& im = GetImplementation();
@@ -58,14 +63,13 @@ namespace dawn_native { namespace metal {
     // SwapChain
 
     // static
-    ResultOrError<SwapChain*> SwapChain::Create(Device* device,
-                                                Surface* surface,
-                                                NewSwapChainBase* previousSwapChain,
-                                                const SwapChainDescriptor* descriptor) {
-        std::unique_ptr<SwapChain> swapchain =
-            std::make_unique<SwapChain>(device, surface, descriptor);
+    ResultOrError<Ref<SwapChain>> SwapChain::Create(Device* device,
+                                                    Surface* surface,
+                                                    NewSwapChainBase* previousSwapChain,
+                                                    const SwapChainDescriptor* descriptor) {
+        Ref<SwapChain> swapchain = AcquireRef(new SwapChain(device, surface, descriptor));
         DAWN_TRY(swapchain->Initialize(previousSwapChain));
-        return swapchain.release();
+        return swapchain;
     }
 
     SwapChain::~SwapChain() {
@@ -113,7 +117,7 @@ namespace dawn_native { namespace metal {
         ASSERT(mCurrentDrawable != nullptr);
         [*mCurrentDrawable present];
 
-        mTexture->Destroy();
+        mTexture->APIDestroy();
         mTexture = nullptr;
 
         mCurrentDrawable = nullptr;
@@ -127,16 +131,18 @@ namespace dawn_native { namespace metal {
 
         TextureDescriptor textureDesc = GetSwapChainBaseTextureDescriptor(this);
 
+        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
         mTexture = AcquireRef(
             new Texture(ToBackend(GetDevice()), &textureDesc, [*mCurrentDrawable texture]));
-        return mTexture->CreateView();
+        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
+        return mTexture->APICreateView();
     }
 
     void SwapChain::DetachFromSurfaceImpl() {
         ASSERT((mTexture == nullptr) == (mCurrentDrawable == nullptr));
 
         if (mTexture != nullptr) {
-            mTexture->Destroy();
+            mTexture->APIDestroy();
             mTexture = nullptr;
 
             mCurrentDrawable = nullptr;

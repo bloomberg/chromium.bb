@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,28 @@ const http = require('http');
 const path = require('path');
 const parseURL = require('url').parse;
 const {argv} = require('yargs');
+const {getTestRunnerConfigSetting} = require('../test/test_config_helpers.js');
+
 
 const serverPort = parseInt(process.env.PORT, 10) || 8090;
+const target = argv.target || process.env.TARGET || 'Default';
 
-const target = argv.target || 'Default';
+/**
+ * This configures the base of the URLs that are injected into each component
+ * doc example to load. By default it's /, so that we load /front_end/..., but
+ * this can be configured if you have a different file structure.
+ */
+const sharedResourcesBase =
+    argv.sharedResourcesBase || getTestRunnerConfigSetting('component-server-shared-resources-path', '/');
+
+/**
+ * The server assumes that examples live in
+ * devtoolsRoot/out/Target/gen/front_end/component_docs, but if you need to add a
+ * prefix you can pass this argument. Passing `foo` will redirect the server to
+ * look in devtoolsRoot/out/Target/gen/foo/front_end/component_docs.
+ */
+const componentDocsBaseArg = argv.componentDocsBase || process.env.COMPONENT_DOCS_BASE ||
+    getTestRunnerConfigSetting('component-server-base-path', '');
 
 /**
  * When you run npm run components-server we run the script as is from scripts/,
@@ -18,11 +36,25 @@ const target = argv.target || 'Default';
  * out/Default/gen/scripts, so we have to do a bit of path mangling to figure
  * out where we are.
  */
-const isRunningInGen = __dirname.includes(path.join(path.sep, 'gen', path.sep, 'scripts'));
+const isRunningInGen = __dirname.includes(path.join('out', path.sep, target));
 
-const pathToBuiltOutTargetDirectory = isRunningInGen ? path.resolve(path.join(__dirname), '..', '..', '..') :
-                                                       path.resolve(path.join(__dirname, '..', '..', 'out', target));
+let pathToOutTargetDir = __dirname;
+/**
+ * If we are in the gen directory, we need to find the out/Default folder to use
+ * as our base to find files from. We could do this with path.join(x, '..',
+ * '..') until we get the right folder, but that's brittle. It's better to
+ * search up for out/Default to be robust to any folder structures.
+ */
+while (isRunningInGen && !pathToOutTargetDir.endsWith(`out${path.sep}${target}`)) {
+  pathToOutTargetDir = path.resolve(pathToOutTargetDir, '..');
+}
+
+/* If we are not running in out/Default, we'll assume the script is running from the repo root, and navigate to {CWD}/out/Target */
+const pathToBuiltOutTargetDirectory =
+    isRunningInGen ? pathToOutTargetDir : path.resolve(path.join(process.cwd(), 'out', target));
+
 const devtoolsRootFolder = path.resolve(path.join(pathToBuiltOutTargetDirectory, 'gen'));
+const componentDocsBaseFolder = path.join(devtoolsRootFolder, componentDocsBaseArg);
 
 if (!fs.existsSync(devtoolsRootFolder)) {
   console.error(`ERROR: Generated front_end folder (${devtoolsRootFolder}) does not exist.`);
@@ -39,6 +71,8 @@ server.once('listening', () => {
     process.send(serverPort);
   }
   console.log(`Started components server at http://localhost:${serverPort}\n`);
+  console.log(`component_docs location: ${
+      path.relative(process.cwd(), path.join(componentDocsBaseFolder, 'front_end', 'component_docs'))}`);
 });
 
 server.once('error', error => {
@@ -137,7 +171,7 @@ function createServerIndexFile(componentNames) {
 }
 
 async function getExamplesForPath(filePath) {
-  const componentDirectory = path.join(devtoolsRootFolder, filePath);
+  const componentDirectory = path.join(componentDocsBaseFolder, filePath);
   const allFiles = await fs.promises.readdir(componentDirectory);
   const htmlExampleFiles = allFiles.filter(file => {
     return path.extname(file) === '.html';
@@ -168,25 +202,6 @@ async function checkFileExists(filePath) {
   }
 }
 
-/**
- * In Devtools-Frontend we load images without a leading slash, e.g.
- * url(Images/checker.png). This works within devtools, but breaks this component
- * server as the path ends up as /component_docs/my_component/Images/checker.png.
- * So we check if the path ends in Images/*.* and if so, remove anything before
- * it. Then it will be resolved correctly.
- */
-function normalizeImagePathIfRequired(filePath) {
-  const imagePathRegex = /\/Images\/(\S+)\.(\w{3})/;
-  const match = imagePathRegex.exec(filePath);
-  if (!match) {
-    return filePath;
-  }
-
-  const [, imageName, imageExt] = match;
-  const normalizedPath = path.join('front_end', 'Images', `${imageName}.${imageExt}`);
-  return normalizedPath;
-}
-
 async function requestHandler(request, response) {
   const filePath = parseURL(request.url).pathname;
   if (filePath === '/favicon.ico') {
@@ -195,9 +210,9 @@ async function requestHandler(request, response) {
   }
 
   if (filePath === '/' || filePath === '/index.html') {
-    const components = await fs.promises.readdir(path.join(devtoolsRootFolder, 'front_end', 'component_docs'));
+    const components = await fs.promises.readdir(path.join(componentDocsBaseFolder, 'front_end', 'component_docs'));
     const html = createServerIndexFile(components.filter(filePath => {
-      const stats = fs.lstatSync(path.join(devtoolsRootFolder, 'front_end', 'component_docs', filePath));
+      const stats = fs.lstatSync(path.join(componentDocsBaseFolder, 'front_end', 'component_docs', filePath));
       // Filter out some build config files (tsconfig, d.ts, etc), and just list the directories.
       return stats.isDirectory();
     }));
@@ -213,22 +228,36 @@ async function requestHandler(request, response) {
      *  example we inject themeColors.css into the page so all CSS variables
      *  that components use are available.
      */
-    const fileContents = await fs.promises.readFile(path.join(devtoolsRootFolder, filePath), {encoding: 'utf8'});
-    const themeColoursLink = '<link rel="stylesheet" href="/front_end/ui/themeColors.css" type="text/css" />';
-    const inspectorStyleLink = '<link rel="stylesheet" href="/front_end/ui/inspectorStyle.css" type="text/css" />';
-    const toggleDarkModeScript = '<script type="module" src="/front_end/component_docs/component_docs.js"></script>';
-    const newFileContents = fileContents.replace('<style>', `${themeColoursLink}\n${inspectorStyleLink}\n<style>`)
+
+    /**
+    * We also let the user provide a different base path for any shared
+    * resources that we load. But if this is provided along with the
+    * componentDocsBaseArg, and the two are the same, we don't want to use the
+    * shared resources base, as it's part of the componentDocsBaseArg and
+    * therefore the URL is already correct.
+    *
+    * If we didn't get a componentDocsBaseArg or we did and it's different to
+    * the sharedResourcesBase, we use sharedResourcesBase.
+    */
+    const baseUrlForSharedResource =
+        componentDocsBaseArg && componentDocsBaseArg.endsWith(sharedResourcesBase) ? '/' : `/${sharedResourcesBase}`;
+    const fileContents = await fs.promises.readFile(path.join(componentDocsBaseFolder, filePath), {encoding: 'utf8'});
+    const themeColoursLink = `<link rel="stylesheet" href="${
+        path.join(baseUrlForSharedResource, 'front_end', 'ui', 'legacy', 'themeColors.css')}" type="text/css" />`;
+    const inspectorCommonLink = `<link rel="stylesheet" href="${
+        path.join(baseUrlForSharedResource, 'front_end', 'ui', 'legacy', 'inspectorCommon.css')}" type="text/css" />`;
+    const toggleDarkModeScript = `<script type="module" src="${
+        path.join(baseUrlForSharedResource, 'front_end', 'component_docs', 'component_docs.js')}"></script>`;
+    const newFileContents = fileContents.replace('<style>', `${themeColoursLink}\n${inspectorCommonLink}\n<style>`)
                                 .replace('<script', toggleDarkModeScript + '\n<script');
     respondWithHtml(response, newFileContents);
 
   } else {
     // This means it's an asset like a JS file or an image.
-    const normalizedPath = normalizeImagePathIfRequired(filePath);
-
-    let fullPath = path.join(devtoolsRootFolder, normalizedPath);
+    let fullPath = path.join(componentDocsBaseFolder, filePath);
     if (fullPath.endsWith(path.join('locales', 'en-US.json'))) {
       // Rewrite this path so we can load up the locale in the component-docs
-      fullPath = path.join(devtoolsRootFolder, 'front_end', 'i18n', 'locales', 'en-US.json');
+      fullPath = path.join(componentDocsBaseFolder, 'front_end', 'core', 'i18n', 'locales', 'en-US.json');
     }
 
     if (!fullPath.startsWith(devtoolsRootFolder) && !fileIsInTestFolder) {
@@ -244,14 +273,6 @@ async function requestHandler(request, response) {
     }
 
     let encoding = 'utf8';
-    if (fullPath.endsWith('.wasm') || fullPath.endsWith('.png') || fullPath.endsWith('.jpg') ||
-        fullPath.endsWith('.avif')) {
-      encoding = 'binary';
-    }
-
-    const fileContents = await fs.promises.readFile(fullPath, encoding);
-
-    encoding = 'utf8';
     if (fullPath.endsWith('.js')) {
       response.setHeader('Content-Type', 'text/javascript; charset=utf-8');
     } else if (fullPath.endsWith('.css')) {
@@ -270,8 +291,12 @@ async function requestHandler(request, response) {
     } else if (fullPath.endsWith('.avif')) {
       response.setHeader('Content-Type', 'image/avif');
       encoding = 'binary';
+    } else if (fullPath.endsWith('.gz')) {
+      response.setHeader('Content-Type', 'application/gzip');
+      encoding = 'binary';
     }
 
+    const fileContents = await fs.promises.readFile(fullPath, encoding);
     response.writeHead(200);
     response.write(fileContents, encoding);
     response.end();

@@ -224,11 +224,18 @@ PlatformSensorConfiguration PlatformSensorChromeOS::GetDefaultConfiguration() {
   return default_configuration_;
 }
 
+void PlatformSensorChromeOS::SensorReplaced() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  VLOG(1) << "SensorReplaced with id: " << iio_device_id_;
+  ResetReadingBuffer();
+  ResetOnError();
+}
+
 void PlatformSensorChromeOS::ResetOnError() {
   LOG(ERROR) << "ResetOnError of sensor with id: " << iio_device_id_;
-  NotifySensorError();
   sensor_device_remote_.reset();
   receiver_.reset();
+  NotifySensorError();
 }
 
 void PlatformSensorChromeOS::StartReadingIfReady() {
@@ -253,7 +260,7 @@ mojo::PendingRemote<chromeos::sensors::mojom::SensorDeviceSamplesObserver>
 PlatformSensorChromeOS::BindNewPipeAndPassRemote() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!receiver_.is_bound());
-  auto pending_remote = receiver_.BindNewPipeAndPassRemote(task_runner_);
+  auto pending_remote = receiver_.BindNewPipeAndPassRemote(main_task_runner());
 
   receiver_.set_disconnect_handler(
       base::BindOnce(&PlatformSensorChromeOS::OnObserverDisconnect,

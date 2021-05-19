@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/struct.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_decoration.h"
-#include "src/type/struct_type.h"
-#include "src/writer/wgsl/generator_impl.h"
 #include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
@@ -37,12 +31,11 @@ TEST_F(WgslGeneratorImplTest, EmitAlias_F32) {
 }
 
 TEST_F(WgslGeneratorImplTest, EmitConstructedType_Struct) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.f32()),
-                            Member("b", ty.i32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
+  auto* s = Structure("A", {
+                               Member("a", ty.f32()),
+                               Member("b", ty.i32()),
+                           });
 
-  auto* s = ty.struct_("A", str);
   auto* alias = ty.alias("B", s);
 
   GeneratorImpl& gen = Build();
@@ -51,7 +44,6 @@ TEST_F(WgslGeneratorImplTest, EmitConstructedType_Struct) {
   ASSERT_TRUE(gen.EmitConstructedType(alias)) << gen.error();
   EXPECT_EQ(gen.result(), R"(struct A {
   a : f32;
-  [[offset(4)]]
   b : i32;
 };
 type B = A;
@@ -59,12 +51,11 @@ type B = A;
 }
 
 TEST_F(WgslGeneratorImplTest, EmitAlias_ToStruct) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("a", ty.f32()),
-                            Member("b", ty.i32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
+  auto* s = Structure("A", {
+                               Member("a", ty.f32()),
+                               Member("b", ty.i32()),
+                           });
 
-  auto* s = ty.struct_("A", str);
   auto* alias = ty.alias("B", s);
 
   GeneratorImpl& gen = Build();

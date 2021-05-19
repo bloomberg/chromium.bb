@@ -126,11 +126,10 @@ bool AddSupervisionDialog::OnDialogCloseRequested() {
   return !showing_confirm_dialog;
 }
 
-bool AddSupervisionDialog::DeprecatedOnDialogCloseRequested() {
+void AddSupervisionDialog::OnDialogWillClose() {
   // Record UMA metric that user has closed the Add Supervision dialog.
   AddSupervisionMetricsRecorder::GetInstance()->RecordAddSupervisionEnrollment(
       AddSupervisionMetricsRecorder::EnrollmentState::kClosed);
-  return true;
 }
 
 bool AddSupervisionDialog::ShouldCloseDialogOnEscape() const {
@@ -139,7 +138,7 @@ bool AddSupervisionDialog::ShouldCloseDialogOnEscape() const {
 
 AddSupervisionDialog::AddSupervisionDialog()
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIAddSupervisionURL),
-                              base::string16()) {}
+                              std::u16string()) {}
 
 AddSupervisionDialog::~AddSupervisionDialog() = default;
 

@@ -174,6 +174,9 @@ void main()
 
     void testSetUp() override
     {
+        // http://anglebug.com/5725
+        ANGLE_SKIP_TEST_IF(IsOzone());
+
         setUp2DProgram();
 
         setUpCubeProgram();
@@ -750,6 +753,9 @@ TEST_P(MipmapTestES3, GenerateMipmapLongNPOTTexture)
 // the 'normal' texture are copied during conversion.
 TEST_P(MipmapTest, GenerateMipmapFromInitDataThenRender)
 {
+    // http://anglebug.com/5725
+    ANGLE_SKIP_TEST_IF(IsOzone());
+
     // Pass in initial data so the texture is blue.
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getWindowWidth(), getWindowHeight(), 0, GL_RGB,
@@ -803,6 +809,9 @@ TEST_P(MipmapTest, GenerateMipmapFromInitDataThenRender)
 // Test that generating mipmap after the image is already created for a single level works.
 TEST_P(MipmapTest, GenerateMipmapAfterSingleLevelDraw)
 {
+    // http://anglebug.com/5725
+    ANGLE_SKIP_TEST_IF(IsOzone());
+
     uint32_t width  = getWindowWidth();
     uint32_t height = getWindowHeight();
 
@@ -832,6 +841,9 @@ TEST_P(MipmapTest, GenerateMipmapAfterSingleLevelDraw)
 // Test that generating mipmaps, then modifying the base level and generating mipmaps again works.
 TEST_P(MipmapTest, GenerateMipmapAfterModifyingBaseLevel)
 {
+    // http://anglebug.com/5725
+    ANGLE_SKIP_TEST_IF(IsOzone());
+
     uint32_t width  = getWindowWidth();
     uint32_t height = getWindowHeight();
 
@@ -873,6 +885,9 @@ TEST_P(MipmapTest, GenerateMipmapAfterModifyingBaseLevel)
 // copied into the mipped texture before the mipmaps are generated.
 TEST_P(MipmapTest, GenerateMipmapFromRenderedImage)
 {
+    // http://anglebug.com/5725
+    ANGLE_SKIP_TEST_IF(IsOzone());
+
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
     // Clear the texture to blue.
     clearTextureLevel0(GL_TEXTURE_2D, mTexture2D, 0.0f, 0.0f, 1.0f, 1.0f);
@@ -904,6 +919,8 @@ TEST_P(MipmapTest, RenderOntoLevelZeroAfterGenerateMipmap)
 {
     // TODO(geofflang): Figure out why this is broken on AMD OpenGL
     ANGLE_SKIP_TEST_IF(IsAMD() && IsOpenGL());
+    // http://anglebug.com/5725
+    ANGLE_SKIP_TEST_IF(IsOzone());
 
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
 
@@ -971,6 +988,9 @@ TEST_P(MipmapTest, RenderOntoLevelZeroAfterGenerateMipmap)
 // already uploaded before. The test expects that mip to be usable.
 TEST_P(MipmapTest, DefineValidExtraLevelAndUseItLater)
 {
+    // http://anglebug.com/5725
+    ANGLE_SKIP_TEST_IF(IsOzone());
+
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
 
     GLubyte *levels[] = {mLevelZeroBlueInitData.data(), mLevelOneGreenInitData.data(),
@@ -1048,6 +1068,9 @@ TEST_P(MipmapTest, MipMapGenerationD3D9Bug)
                        !IsGLExtensionEnabled("GL_OES_rgb8_rgba8") ||
                        !IsGLExtensionEnabled("GL_ANGLE_texture_usage"));
 
+    // http://anglebug.com/5725
+    ANGLE_SKIP_TEST_IF(IsOzone());
+
     const GLColor mip0Color[4] = {
         GLColor::red,
         GLColor::green,
@@ -1076,12 +1099,12 @@ TEST_P(MipmapTest, TextureCubeGeneralLevelZero)
 {
     // http://anglebug.com/3145
     ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
-
     // http://anglebug.com/2822
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
-
     // http://issuetracker.google.com/159666631
     ANGLE_SKIP_TEST_IF(isSwiftshader());
+    // http://anglebug.com/5725
+    ANGLE_SKIP_TEST_IF(IsOzone());
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureCube);
 
@@ -1124,9 +1147,10 @@ TEST_P(MipmapTest, TextureCubeRenderToLevelZero)
 {
     // http://anglebug.com/3145
     ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
-
     // http://anglebug.com/2822
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
+    // http://anglebug.com/5725
+    ANGLE_SKIP_TEST_IF(IsOzone());
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureCube);
 
@@ -1156,6 +1180,8 @@ TEST_P(MipmapTest, MipmapsForTexture3DOES)
 
     // http://anglebug.com/4927
     ANGLE_SKIP_TEST_IF((IsPixel2() || IsNexus5X()) && IsOpenGLES());
+    // http://anglebug.com/5725
+    ANGLE_SKIP_TEST_IF(IsOzone());
 
     int px = getWindowWidth() / 2;
     int py = getWindowHeight() / 2;
@@ -2051,14 +2077,15 @@ ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(MipmapTest);
 namespace extraPlatforms
 {
 ANGLE_INSTANTIATE_TEST(MipmapTest, WithNoGenMultipleMipsPerPass(ES2_METAL()));
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Mipmap3DBoxFilterTest);
 ANGLE_INSTANTIATE_TEST(Mipmap3DBoxFilterTest,
                        ES2_METAL(),
                        WithNoGenMultipleMipsPerPass(ES2_METAL()));
-
-// This test suite is not instantiated on some OSes.
-GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Mipmap3DBoxFilterTest);
-
 }  // namespace extraPlatforms
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MipmapTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(MipmapTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MipmapTestES31);
 ANGLE_INSTANTIATE_TEST_ES31(MipmapTestES31);

@@ -192,8 +192,6 @@
         return 'Prohibited';
       case DeviceStateType.kUnavailable:
         return 'Unavailable';
-      case DeviceStateType.kInhibited:
-        return 'Inhibited';
     }
     assertNotReached('Unexpected enum value: ' + OncMojo.getEnumString(value));
     return '';
@@ -210,8 +208,6 @@
       case DeviceStateType.kDisabling:
       case DeviceStateType.kEnabling:
       case DeviceStateType.kUnavailable:
-      case DeviceStateType.kInhibited:
-        return true;
       case DeviceStateType.kDisabled:
       case DeviceStateType.kEnabled:
       case DeviceStateType.kProhibited:
@@ -219,6 +215,19 @@
     }
     assertNotReached('Unexpected enum value: ' + OncMojo.getEnumString(value));
     return false;
+  }
+
+  /**
+   * @param {?chromeos.networkConfig.mojom.DeviceStateProperties} device
+   * @return {boolean}
+   */
+  static deviceIsInhibited(device) {
+    if (!device) {
+      return false;
+    }
+
+    return device.inhibitReason !==
+        chromeos.networkConfig.mojom.InhibitReason.kNotInhibited;
   }
 
   /**
@@ -691,6 +700,10 @@
     switch (properties.type) {
       case mojom.NetworkType.kCellular:
         const cellularProperties = properties.typeProperties.cellular;
+        networkState.typeState.cellular.iccid =
+            cellularProperties.iccid || '';
+        networkState.typeState.cellular.eid =
+            cellularProperties.eid || '';
         networkState.typeState.cellular.activationState =
             cellularProperties.activationState;
         networkState.typeState.cellular.networkTechnology =
@@ -699,6 +712,8 @@
             cellularProperties.roamingState === 'Roaming';
         networkState.typeState.cellular.signalStrength =
             cellularProperties.signalStrength;
+        networkState.typeState.cellular.simLocked =
+            cellularProperties.simLocked;
         break;
       case mojom.NetworkType.kEthernet:
         networkState.typeState.ethernet.authentication =
@@ -1175,6 +1190,31 @@
   }
 
   /**
+   * Returns true if the SIMInfos match.
+   * @param {?Array<chromeos.networkConfig.mojom.SIMInfo>|undefined} a
+   * @param {?Array<chromeos.networkConfig.mojom.SIMInfo>|undefined} b
+   */
+  static simInfosMatch(a, b) {
+    if (!a || !b) {
+      return !!a === !!b;
+    }
+    if (a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+      const acurrent = a[i];
+      const bcurrent = b[i];
+      if (acurrent.slotId !== bcurrent.slotId ||
+          acurrent.eid !== bcurrent.eid ||
+          acurrent.iccid !== bcurrent.iccid ||
+          acurrent.isPrimary !== bcurrent.isPrimary) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Returns true if the APN properties match.
    * @param {chromeos.networkConfig.mojom.ApnProperties} a
    * @param {chromeos.networkConfig.mojom.ApnProperties} b
@@ -1229,6 +1269,12 @@
     return false;
   }
 }
+
+/**
+ * The value of ApnProperties.attach must be equivalent to this value
+ * in order for an Attach APN to occur.
+ */
+OncMojo.USE_ATTACH_APN_NAME = "attach";
 
 /** @typedef {chromeos.networkConfig.mojom.DeviceStateProperties} */
 OncMojo.DeviceStateProperties;

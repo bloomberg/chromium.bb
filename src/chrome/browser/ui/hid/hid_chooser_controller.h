@@ -11,7 +11,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "content/public/browser/hid_chooser.h"
@@ -44,12 +43,12 @@ class HidChooserController : public ChooserController,
 
   // ChooserController:
   bool ShouldShowHelpButton() const override;
-  base::string16 GetNoOptionsText() const override;
-  base::string16 GetOkButtonLabel() const override;
-  std::pair<base::string16, base::string16> GetThrobberLabelAndTooltip()
+  std::u16string GetNoOptionsText() const override;
+  std::u16string GetOkButtonLabel() const override;
+  std::pair<std::u16string, std::u16string> GetThrobberLabelAndTooltip()
       const override;
   size_t NumOptions() const override;
-  base::string16 GetOption(size_t index) const override;
+  std::u16string GetOption(size_t index) const override;
   bool IsPaired(size_t index) const override;
   void Select(const std::vector<size_t>& indices) override;
   void Cancel() override;
@@ -59,6 +58,8 @@ class HidChooserController : public ChooserController,
   // HidChooserContext::DeviceObserver:
   void OnDeviceAdded(const device::mojom::HidDeviceInfo& device_info) override;
   void OnDeviceRemoved(
+      const device::mojom::HidDeviceInfo& device_info) override;
+  void OnDeviceChanged(
       const device::mojom::HidDeviceInfo& device_info) override;
   void OnHidManagerConnectionError() override;
   void OnHidChooserContextShutdown() override;
@@ -79,10 +80,13 @@ class HidChooserController : public ChooserController,
   // is not in the chooser item. Returns true if an item was removed.
   bool RemoveDeviceInfo(const device::mojom::HidDeviceInfo& device_info);
 
+  // Update the information for the device described by |device_info| in the
+  // |device_map_|.
+  void UpdateDeviceInfo(const device::mojom::HidDeviceInfo& device_info);
+
   std::vector<blink::mojom::HidDeviceFilterPtr> filters_;
   content::HidChooser::Callback callback_;
-  const url::Origin requesting_origin_;
-  const url::Origin embedding_origin_;
+  const url::Origin origin_;
   const int frame_tree_node_id_;
 
   // The lifetime of the chooser context is tied to the browser context used to

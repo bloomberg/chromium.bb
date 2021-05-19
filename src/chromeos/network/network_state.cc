@@ -11,9 +11,13 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chromeos/network/cellular_utils.h"
+#include "chromeos/network/device_state.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -28,12 +32,6 @@
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace {
-
-// Cellular Service EID property.
-// TODO(crbug.com/1093185): Use dbus-constants when property is added in shill.
-const char kCellularEidProperty[] = "Cellular.EID";
-
-const char kDefaultCellularNetworkPath[] = "/cellular";
 
 // TODO(tbarzic): Add payment portal method values to shill/dbus-constants.
 constexpr char kPaymentPortalMethodPost[] = "POST";
@@ -147,7 +145,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetBooleanValue(key, value, &cellular_out_of_credits_);
   } else if (key == shill::kIccidProperty) {
     return GetStringValue(key, value, &iccid_);
-  } else if (key == kCellularEidProperty) {
+  } else if (key == shill::kEidProperty) {
     return GetStringValue(key, value, &eid_);
   } else if (key == shill::kProxyConfigProperty) {
     std::string proxy_config_str;
@@ -454,7 +452,7 @@ bool NetworkState::IsInProfile() const {
 }
 
 bool NetworkState::IsNonProfileType() const {
-  return type() == kTypeTether || IsDefaultCellular();
+  return type() == kTypeTether || IsNonShillCellularNetwork();
 }
 
 bool NetworkState::IsPrivate() const {
@@ -462,9 +460,8 @@ bool NetworkState::IsPrivate() const {
          profile_path_ != NetworkProfileHandler::GetSharedProfilePath();
 }
 
-bool NetworkState::IsDefaultCellular() const {
-  return type() == shill::kTypeCellular &&
-         path() == kDefaultCellularNetworkPath;
+bool NetworkState::IsNonShillCellularNetwork() const {
+  return type() == shill::kTypeCellular && IsStubCellularServicePath(path());
 }
 
 bool NetworkState::IsShillCaptivePortal() const {
@@ -523,7 +520,8 @@ std::string NetworkState::GetSpecifier() const {
   }
   if (type() == shill::kTypeWifi)
     return name() + "_" + security_class_;
-  // TODO(b/154014577): Use IMSI for Cellular once available.
+  if (type() == shill::kTypeCellular && !iccid().empty())
+    return iccid();
   if (!name().empty())
     return type() + "_" + name();
   return type();  // For unnamed networks, i.e. Ethernet.
@@ -536,7 +534,7 @@ void NetworkState::SetGuid(const std::string& guid) {
 network_config::mojom::ActivationStateType
 NetworkState::GetMojoActivationState() const {
   using network_config::mojom::ActivationStateType;
-  if (IsDefaultCellular())
+  if (IsNonShillCellularNetwork())
     return ActivationStateType::kNoService;
   if (activation_state_.empty())
     return ActivationStateType::kUnknown;
@@ -615,13 +613,18 @@ bool NetworkState::ErrorIsValid(const std::string& error) {
 }
 
 // static
-std::unique_ptr<NetworkState> NetworkState::CreateDefaultCellular(
-    const std::string& device_path) {
-  auto new_state = std::make_unique<NetworkState>(kDefaultCellularNetworkPath);
+std::unique_ptr<NetworkState> NetworkState::CreateNonShillCellularNetwork(
+    const std::string& iccid,
+    const std::string& eid,
+    const DeviceState* cellular_device) {
+  std::string path = GenerateStubCellularServicePath(iccid);
+  auto new_state = std::make_unique<NetworkState>(path);
   new_state->set_type(shill::kTypeCellular);
   new_state->set_update_received();
   new_state->set_visible(true);
-  new_state->device_path_ = device_path;
+  new_state->device_path_ = cellular_device->path();
+  new_state->iccid_ = iccid;
+  new_state->eid_ = eid;
   return new_state;
 }
 

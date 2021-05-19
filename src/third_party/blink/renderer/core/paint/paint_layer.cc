@@ -51,7 +51,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
-#include "third_party/blink/renderer/core/css/pseudo_style_request.h"
+#include "third_party/blink/renderer/core/css/style_request.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -116,7 +116,7 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
   // has only 8-bit data.
   unsigned bit_fields1 : 24;
   unsigned bit_fields2;
-  void* pointers[11];
+  void* pointers[10];
 #if DCHECK_IS_ON()
   void* pointer;
 #endif
@@ -294,10 +294,7 @@ PaintLayerCompositor* PaintLayer::Compositor() const {
 }
 
 void PaintLayer::ContentChanged(ContentChangeType change_type) {
-  // Content changes in CAP are reflected in changes to what is painted, nothing
-  // to do here.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   // updateLayerCompositingState will query compositingReasons for accelerated
   // overflow scrolling.  This is tripped by
@@ -305,12 +302,9 @@ void PaintLayer::ContentChanged(ContentChangeType change_type) {
   DisableCompositingQueryAsserts disabler;
 
   if (Compositor()) {
-    if (change_type == kCanvasChanged)
-      SetNeedsCompositingInputsUpdate();
+    SetNeedsCompositingInputsUpdate();
 
     if (change_type == kCanvasContextChanged) {
-      SetNeedsCompositingInputsUpdate();
-
       // Although we're missing test coverage, we need to call
       // GraphicsLayer::SetContentsToCcLayer with the new cc::Layer for this
       // canvas. See http://crbug.com/349195
@@ -320,10 +314,6 @@ void PaintLayer::ContentChanged(ContentChangeType change_type) {
       }
     }
   }
-
-  if (CompositedLayerMapping* composited_layer_mapping =
-          GetCompositedLayerMapping())
-    composited_layer_mapping->ContentChanged(change_type);
 }
 
 bool PaintLayer::PaintsWithFilters() const {
@@ -357,7 +347,6 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
       V8PerIsolateData::MainThreadIsolate(),
       RuntimeCallStats::CounterId::kUpdateLayerPositionsAfterLayout);
 
-  ClearClipRects();
   const LayoutBlock* enclosing_scrollport_box =
       GetLayoutObject().EnclosingScrollportBox();
   UpdateLayerPositionRecursive(
@@ -539,12 +528,6 @@ void PaintLayer::UpdateTransform(const ComputedStyle* old_style,
       EnsureRareData().transform = std::make_unique<TransformationMatrix>();
     else
       rare_data_->transform.reset();
-
-    // PaintLayers with transforms act as clip rects roots, so clear the cached
-    // clip rects here.
-    ClearClipRects();
-  } else if (has_transform) {
-    ClearClipRects(kAbsoluteClipRectsIgnoringViewportClip);
   }
 
   UpdateTransformationMatrix();
@@ -667,7 +650,8 @@ void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
 
   // Move the point into the source_state transform space, map to dest_state
   // transform space, then move into squashing layer state.
-  point += paint_invalidation_container.FirstFragment().PaintOffset();
+  point +=
+      paint_invalidation_container.PrimaryStitchingFragment().PaintOffset();
   point = PhysicalOffset::FromFloatPointRound(
       GeometryMapper::SourceToDestinationProjection(source_state.Transform(),
                                                     dest_state.Transform())
@@ -1092,6 +1076,33 @@ bool PaintLayer::CanBeCompositedForDirectReasons() const {
   return DirectCompositingReasons() && IsSelfPaintingLayer();
 }
 
+bool PaintLayer::CanBeComposited() const {
+  LocalFrameView* frame_view = GetLayoutObject().GetFrameView();
+  // Elements within an invisible frame must not be composited because they are
+  // not drawn.
+  if (frame_view && !frame_view->IsVisible())
+    return false;
+
+  DCHECK(!frame_view->ShouldThrottleRendering());
+
+  const bool has_compositor_animation =
+      CompositingReasonFinder::CompositingReasonsForAnimation(
+          GetLayoutObject()) != CompositingReason::kNone;
+
+  return frame_view->GetFrame()
+             .GetSettings()
+             ->GetAcceleratedCompositingEnabled() &&
+         (has_compositor_animation || !SubtreeIsInvisible()) &&
+         IsSelfPaintingLayer() && !GetLayoutObject().IsLayoutFlowThread() &&
+         // Don't composite <foreignObject> for the moment, to reduce instances
+         // of the "fundamental compositing bug" breaking painting order.
+         // With CompositeSVG, foreignObjects will be correctly composited after
+         // paint in PaintArtifactCompositor without a GraphicsLayer.
+         // Composited descendants of foreignObject will still break painting
+         // order which will be fixed in CompositeAfterPaint.
+         !GetLayoutObject().IsSVGForeignObject();
+}
+
 PaintLayer*
 PaintLayer::EnclosingDirectlyCompositableLayerCrossingFrameBoundaries() const {
   const PaintLayer* layer = this;
@@ -1167,29 +1178,15 @@ void PaintLayer::SetChildNeedsCompositingInputsUpdateUpToAncestor(
 }
 
 const IntRect PaintLayer::ClippedAbsoluteBoundingBox() const {
-  if (RuntimeEnabledFeatures::CompositingOptimizationsEnabled()) {
-    PhysicalRect mapping_rect = LocalBoundingBoxForCompositingOverlapTest();
-    GetLayoutObject().MapToVisualRectInAncestorSpace(
-        GetLayoutObject().View(), mapping_rect, kUseGeometryMapper);
-    // We use PixelSnappedIntRect here to match the behavior in
-    // CIU:: UpdateAncestorDependentCompositingInputs, even though the code
-    // in UnclippedAbsoluteBoundingBox and its equivalent in
-    // CIU::UpdateAncestorDependentCompositingInputs uses EnclosingIntRect.
-    return PixelSnappedIntRect(mapping_rect);
-  } else {
-    return GetAncestorDependentCompositingInputs()
-        .clipped_absolute_bounding_box;
-  }
+  PhysicalRect mapping_rect = LocalBoundingBoxForCompositingOverlapTest();
+  GetLayoutObject().MapToVisualRectInAncestorSpace(
+      GetLayoutObject().View(), mapping_rect, kUseGeometryMapper);
+  return PixelSnappedIntRect(mapping_rect);
 }
 const IntRect PaintLayer::UnclippedAbsoluteBoundingBox() const {
-  if (RuntimeEnabledFeatures::CompositingOptimizationsEnabled()) {
-    return EnclosingIntRect(GetLayoutObject().LocalToAbsoluteRect(
+  return EnclosingIntRect(GetLayoutObject().LocalToAbsoluteRect(
       LocalBoundingBoxForCompositingOverlapTest(),
       kUseGeometryMapperMode | kIgnoreScrollOffsetOfAncestor));
-  } else {
-    return GetAncestorDependentCompositingInputs()
-        .unclipped_absolute_bounding_box;
-  }
 }
 
 void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
@@ -1434,11 +1431,6 @@ void PaintLayer::RemoveChild(PaintLayer* old_child) {
     old_child->ClearPaginationRecursive();
 }
 
-void PaintLayer::ClearClipRects(ClipRectsCacheSlot cache_slot) {
-  Clipper(GeometryMapperOption::kDoNotUseGeometryMapper)
-      .ClearClipRectsIncludingDescendants(cache_slot);
-}
-
 void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
     const ComputedStyle* old_style) {
   if (!parent_)
@@ -1474,8 +1466,6 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
             parent_->EnclosingSelfPaintingLayer())
       enclosing_self_painting_layer->MergeNeedsPaintPhaseFlagsFrom(*this);
   }
-
-  ClearClipRects();
 
   PaintLayer* next_sib = NextSibling();
 
@@ -1515,9 +1505,6 @@ void PaintLayer::InsertOnlyThisLayerAfterStyleChange() {
             parent_->EnclosingSelfPaintingLayer())
       MergeNeedsPaintPhaseFlagsFrom(*enclosing_self_painting_layer);
   }
-
-  // Clear out all the clip rects.
-  ClearClipRects();
 }
 
 // Returns the layer reached on the walk up towards the ancestor.
@@ -1655,10 +1642,12 @@ bool PaintLayer::RequiresScrollableArea() const {
   // PaintLayerScrollableArea.
   if (GetLayoutBox()->CanResize())
     return true;
-  // When scrollbar-gutter is "force" we need a PaintLayerScrollableArea
-  // in order to calculate the size of scrollbar gutters.
-  if (GetLayoutObject().StyleRef().IsScrollbarGutterForce())
+  // With custom scrollbars, we need a PaintLayerScrollableArea
+  // so we can calculate the size of scrollbar gutters.
+  if (GetLayoutObject().StyleRef().IsScrollbarGutterForce() &&
+      GetLayoutObject().StyleRef().HasPseudoElementStyle(kPseudoIdScrollbar)) {
     return true;
+  }
   return false;
 }
 
@@ -1700,8 +1689,8 @@ void PaintLayer::AppendSingleFragmentIgnoringPagination(
   PaintLayerFragment fragment;
   ClipRectsContext clip_rects_context(
       root_layer, &root_layer->GetLayoutObject().FirstFragment(),
-      kUncachedClipRects, overlay_scrollbar_clip_behavior,
-      respect_overflow_clip, sub_pixel_accumulation);
+      overlay_scrollbar_clip_behavior, respect_overflow_clip,
+      sub_pixel_accumulation);
   Clipper(GeometryMapperOption::kUseGeometryMapper)
       .CalculateRects(clip_rects_context, &GetLayoutObject().FirstFragment(),
                       cull_rect, fragment.layer_bounds,
@@ -1795,9 +1784,8 @@ void PaintLayer::CollectFragments(
     }
 
     ClipRectsContext clip_rects_context(
-        root_layer, root_fragment_data, kUncachedClipRects,
-        overlay_scrollbar_clip_behavior, respect_overflow_clip,
-        sub_pixel_accumulation);
+        root_layer, root_fragment_data, overlay_scrollbar_clip_behavior,
+        respect_overflow_clip, sub_pixel_accumulation);
 
     base::Optional<CullRect> fragment_cull_rect;
     if (cull_rect) {
@@ -2092,8 +2080,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
           .CalculateBackgroundClipRect(
               ClipRectsContext(
                   root_layer, &root_layer->GetLayoutObject().FirstFragment(),
-                  kUncachedClipRects, kExcludeOverlayScrollbarSizeForHitTesting,
-                  clip_behavior),
+                  kExcludeOverlayScrollbarSizeForHitTesting, clip_behavior),
               clip_rect);
       // Go ahead and test the enclosing clip now.
       if (!clip_rect.Intersects(recursion_data.location))
@@ -2597,10 +2584,6 @@ void PaintLayer::UpdateFilterReferenceBox() {
   ExpandRectForSelfPaintingDescendants(
       *this, result, kIncludeTransforms | kIncludeCompositedChildLayers);
   FloatRect reference_box = FloatRect(result);
-
-  float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
-  if (zoom != 1)
-    reference_box.Scale(1 / zoom);
   if (!ResourceInfo() || ResourceInfo()->FilterReferenceBox() != reference_box)
     GetLayoutObject().SetNeedsPaintPropertyUpdate();
   EnsureResourceInfo().SetFilterReferenceBox(reference_box);
@@ -2608,8 +2591,8 @@ void PaintLayer::UpdateFilterReferenceBox() {
 
 FloatRect PaintLayer::FilterReferenceBox() const {
 #if DCHECK_IS_ON()
-  DCHECK(GetLayoutObject().GetDocument().Lifecycle().GetState() >=
-         DocumentLifecycle::kInPrePaint);
+  DCHECK_GE(GetLayoutObject().GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kInPrePaint);
 #endif
   if (ResourceInfo())
     return ResourceInfo()->FilterReferenceBox();
@@ -2617,23 +2600,17 @@ FloatRect PaintLayer::FilterReferenceBox() const {
 }
 
 FloatRect PaintLayer::BackdropFilterReferenceBox() const {
-  FloatRect reference_box(GetLayoutObject().BorderBoundingBox());
-  float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
-  if (zoom != 1)
-    reference_box.Scale(1 / zoom);
-  return reference_box;
+  return FloatRect(GetLayoutObject().BorderBoundingBox());
 }
 
-gfx::RRectF PaintLayer::BackdropFilterBounds(
-    const FloatRect& reference_box) const {
-  auto& style = GetLayoutObject().StyleRef();
-  FloatRect scaled_reference_box(reference_box);
-  scaled_reference_box.Scale(style.EffectiveZoom());
+gfx::RRectF PaintLayer::BackdropFilterBounds() const {
   gfx::RRectF backdrop_filter_bounds =
       gfx::RRectF(RoundedBorderGeometry::PixelSnappedRoundedBorder(
-          style, PhysicalRect::EnclosingRect(scaled_reference_box)));
+          GetLayoutObject().StyleRef(),
+          PhysicalRect::EnclosingRect(BackdropFilterReferenceBox())));
   return backdrop_filter_bounds;
 }
+
 bool PaintLayer::HitTestClippedOutByClipPath(
     PaintLayer* root_layer,
     const HitTestLocation& hit_test_location) const {
@@ -2797,9 +2774,6 @@ IntRect PaintLayer::ExpandedBoundingBoxForCompositingOverlapTest(
       !IsAffectedByScrollOf(root_layer)) {
     PaintLayerScrollableArea* scrollable_area = root_layer->GetScrollableArea();
     ScrollOffset current_scroll_offset = scrollable_area->GetScrollOffset();
-    // Move the bounds to absolute coords
-    if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled())
-      abs_bounds.Move(RoundedIntSize(current_scroll_offset));
 
     if (IsTopMostNotAffectedByScrollOf(root_layer)) {
       // For overlap testing, expand the rect used for fixed-pos content in
@@ -3525,44 +3499,47 @@ FilterOperations PaintLayer::FilterOperationsIncludingReflection() const {
 }
 
 void PaintLayer::UpdateCompositorFilterOperationsForFilter(
-    CompositorFilterOperations& operations) const {
+    CompositorFilterOperations& operations) {
   auto filter = FilterOperationsIncludingReflection();
   FloatRect reference_box = FilterReferenceBox();
+
+  // CompositorFilter needs the reference box to be unzoomed.
+  float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
+  if (zoom != 1)
+    reference_box.Scale(1 / zoom);
+
+  // Use the existing |operations| if there is no change.
   if (!operations.IsEmpty() && !filter_on_effect_node_dirty_ &&
       reference_box == operations.ReferenceBox())
     return;
-  float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
+
   operations =
       FilterEffectBuilder(reference_box, zoom).BuildFilterOperations(filter);
+  filter_on_effect_node_dirty_ = false;
 }
 
 void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
     CompositorFilterOperations& operations,
-    base::Optional<gfx::RRectF>* backdrop_filter_bounds) const {
-  DCHECK(backdrop_filter_bounds);
+    gfx::RRectF& backdrop_filter_bounds) {
   const auto& style = GetLayoutObject().StyleRef();
   if (style.BackdropFilter().IsEmpty()) {
     operations.Clear();
-    backdrop_filter_bounds->reset();
+    backdrop_filter_on_effect_node_dirty_ = false;
     return;
   }
-  FloatRect reference_box = BackdropFilterReferenceBox();
-  *backdrop_filter_bounds = BackdropFilterBounds(reference_box);
-  if (operations.IsEmpty() || backdrop_filter_on_effect_node_dirty_ ||
-      reference_box != operations.ReferenceBox()) {
-    operations = CreateCompositorFilterOperationsForBackdropFilter();
-  }
-}
 
-CompositorFilterOperations
-PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
-  const auto& style = GetLayoutObject().StyleRef();
-  CompositorFilterOperations return_value;
-  if (style.BackdropFilter().IsEmpty()) {
-    return return_value;
-  }
-  float zoom = style.EffectiveZoom();
   FloatRect reference_box = BackdropFilterReferenceBox();
+  backdrop_filter_bounds = BackdropFilterBounds();
+  // CompositorFilter needs the reference box to be unzoomed.
+  float zoom = style.EffectiveZoom();
+  if (zoom != 1)
+    reference_box.Scale(1 / zoom);
+
+  // Use the existing |operations| if there is no change.
+  if (!operations.IsEmpty() && !backdrop_filter_on_effect_node_dirty_ &&
+      reference_box == operations.ReferenceBox())
+    return;
+
   // Tack on regular filter values here - they need to be applied to the
   // backdrop image as well, in addition to being applied to the painted content
   // and children of the element. This is a bit of a hack - according to the
@@ -3576,13 +3553,13 @@ PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
   filter_operations.Operations().AppendVector(style.Filter().Operations());
   // Use kClamp tile mode to avoid pixel moving filters bringing in black
   // transparent pixels from the viewport edge.
-  return_value = FilterEffectBuilder(reference_box, zoom, nullptr, nullptr,
-                                     SkTileMode::kClamp)
-                     .BuildFilterOperations(filter_operations);
-  // Note that return_value may be empty here, if the |filter_operations| list
+  operations = FilterEffectBuilder(reference_box, zoom, nullptr, nullptr,
+                                   SkTileMode::kClamp)
+                   .BuildFilterOperations(filter_operations);
+  // Note that |operations| may be empty here, if the |filter_operations| list
   // contains only invalid filters (e.g. invalid reference filters). See
   // https://crbug.com/983157 for details.
-  return return_value;
+  backdrop_filter_on_effect_node_dirty_ = false;
 }
 
 PaintLayerResourceInfo& PaintLayer::EnsureResourceInfo() {
@@ -3657,19 +3634,6 @@ bool PaintLayer::HasFilterThatMovesPixels() const {
 
 void PaintLayer::SetNeedsRepaint() {
   SetSelfNeedsRepaint();
-
-  LocalFrameView* frame_view = GetLayoutObject().GetDocument().View();
-  if (frame_view) {
-    // If you need repaint, then you might do layerization and isue raster
-    // invalidations. In CompositeAfterPaint mode, and in CompositeSVG mode for
-    // SVG roots, we do these in PAC::Update(). TODO(paint-team): distinguish
-    // requirements for layerization and non-geometry raster invalidations.
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-        (RuntimeEnabledFeatures::CompositeSVGEnabled() &&
-         GetLayoutObject().IsSVGRoot()))
-      frame_view->SetPaintArtifactCompositorNeedsUpdate();
-  }
-
   // Do this unconditionally to ensure container chain is marked when
   // compositing status of the layer changes.
   MarkCompositingContainerChainForNeedsRepaint();

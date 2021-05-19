@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_compute_pipeline_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_device_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_feature_name.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pipeline_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_uncaptured_error_event_init.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -41,12 +42,15 @@ namespace blink {
 namespace {
 
 #ifdef USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY
-Vector<String> ToStringVector(
-    const Vector<V8GPUExtensionName>& gpu_extension_names) {
-  Vector<String> result;
-  for (auto& name : gpu_extension_names)
-    result.push_back(IDLEnumAsString(name));
-  return result;
+Vector<String> ToStringVector(const Vector<V8GPUFeatureName>& features) {
+  Vector<String> str_features;
+  for (auto&& feature : features)
+    str_features.push_back(IDLEnumAsString(feature));
+  return str_features;
+}
+#else
+const Vector<String>& ToStringVector(const Vector<String>& features) {
+  return features;
 }
 #endif
 
@@ -61,11 +65,7 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
     : ExecutionContextClient(execution_context),
       DawnObject(dawn_control_client, dawn_device),
       adapter_(adapter),
-#ifdef USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY
       feature_name_list_(ToStringVector(descriptor->nonGuaranteedFeatures())),
-#else
-      feature_name_list_(descriptor->nonGuaranteedFeatures()),
-#endif
       queue_(MakeGarbageCollected<GPUQueue>(
           this,
           GetProcs().deviceGetDefaultQueue(GetHandle()))),
@@ -293,15 +293,23 @@ ScriptPromise GPUDevice::createRenderPipelineAsync(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  OwnedRenderPipelineDescriptor dawn_desc_info;
+  if (!descriptor->hasVertex()) {
+    // Shim asynchronous pipeline compilation with the deprecated shape of the
+    // GPURenderPipelineDescriptor by immediately creating a pipeline and
+    // resolving the promise.
+    resolver->Resolve(
+        GPURenderPipeline::Create(script_state, this, descriptor));
+    return promise;
+  }
+
   v8::Isolate* isolate = script_state->GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
-                                 "GPUVertexStateDescriptor");
-  ConvertToDawnType(isolate, descriptor, &dawn_desc_info, exception_state);
+  ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
+                                 "GPUDevice", "createRenderPipelineAsync");
+  OwnedRenderPipelineDescriptor2 dawn_desc_info;
+  ConvertToDawnType(isolate, this, descriptor, &dawn_desc_info,
+                    exception_state);
   if (exception_state.HadException()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kOperationError,
-        "Error in parsing GPURenderPipelineDescriptor"));
+    resolver->Reject(exception_state);
   } else {
     auto* callback =
         BindDawnCallback(&GPUDevice::OnCreateRenderPipelineAsyncCallback,
@@ -311,9 +319,6 @@ ScriptPromise GPUDevice::createRenderPipelineAsync(
         callback->AsUserdata());
   }
 
-  // WebGPU guarantees that promises are resolved in finite time so we need to
-  // ensure commands are flushed.
-  EnsureFlush();
   return promise;
 }
 

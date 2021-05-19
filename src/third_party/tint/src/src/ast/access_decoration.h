@@ -15,16 +15,14 @@
 #ifndef SRC_AST_ACCESS_DECORATION_H_
 #define SRC_AST_ACCESS_DECORATION_H_
 
-#include <stddef.h>
-
 #include "src/ast/access_control.h"
-#include "src/ast/type_decoration.h"
+#include "src/ast/decoration.h"
 
 namespace tint {
 namespace ast {
 
 /// An access decoration
-class AccessDecoration : public Castable<AccessDecoration, TypeDecoration> {
+class AccessDecoration : public Castable<AccessDecoration, Decoration> {
  public:
   /// constructor
   /// @param source the source of this decoration

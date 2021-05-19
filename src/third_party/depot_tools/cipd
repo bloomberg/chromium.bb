@@ -30,7 +30,11 @@ case "${UNAME}" in
     ;;
   darwin)
     OS=mac
-    ARCH=amd64  # use amd64 binaries even on arm64, see crbug.com/1102967
+    # use amd64 binaries even on arm64 for now, see crbug.com/1102967
+    # Once we have arm binaries of everything, this will change to "arm64"
+    # Run `echo "mac-arm64" > .cipd_client_platform` to force arm64 binaries
+    # before everything is ready, for testing.
+    ARCH=amd64
     ;;
   *)
     >&2 echo "CIPD not supported on ${UNAME}"

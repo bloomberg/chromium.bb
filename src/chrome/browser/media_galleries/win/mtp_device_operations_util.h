@@ -18,7 +18,6 @@
 #include <string>
 
 #include "base/files/file.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
 
 namespace media_transfer_protocol {
@@ -75,7 +74,7 @@ DWORD CopyDataChunkToLocalFile(IStream* stream,
 // |object_name| specifies the friendly name of the object.
 std::wstring GetObjectIdFromName(IPortableDevice* device,
                                  const std::wstring& parent_id,
-                                 const base::string16& object_name);
+                                 const std::u16string& object_name);
 
 }  // namespace media_transfer_protocol
 

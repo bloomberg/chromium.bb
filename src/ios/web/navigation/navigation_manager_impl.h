@@ -124,13 +124,6 @@ class NavigationManagerImpl : public NavigationManager {
   NavigationManagerImpl(const NavigationManagerImpl&) = delete;
   NavigationManagerImpl& operator=(const NavigationManagerImpl&) = delete;
 
-  // Returns the most recent Committed Item that is not the result of a client
-  // or server-side redirect from the given Navigation Manager. Returns nullptr
-  // if there's an error condition on the input |nav_manager|, such as nullptr
-  // or no non-redirect items.
-  static NavigationItem* GetLastCommittedNonRedirectedItem(
-      const NavigationManager* nav_manager);
-
   // Setters for NavigationManagerDelegate and BrowserState.
   void SetDelegate(NavigationManagerDelegate* delegate);
   void SetBrowserState(BrowserState* browser_state);
@@ -198,8 +191,8 @@ class NavigationManagerImpl : public NavigationManager {
   // matches |url|.  Applies the workaround for crbug.com/997182
   void SetWKWebViewNextPendingUrlNotSerializable(const GURL& url);
 
-  // Returns true if specific URL is blocked from session restore.
-  bool ShouldBlockUrlDuringRestore(const GURL& url);
+  // Returns true if URL was restored via session restoration cache.
+  bool RestoreSessionFromCache(const GURL& url);
 
   // Resets the transient url rewriter list.
   void RemoveTransientURLRewriters();

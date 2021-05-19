@@ -97,13 +97,63 @@ std::string GetEncryptionKeyName(const sync_pb::SyncEntity& entity) {
   return std::string();
 }
 
+// Attempts to decrypt the given specifics and return them in the |out|
+// parameter. The cryptographer must know the decryption key, i.e.
+// cryptographer.CanDecrypt(specifics.encrypted()) must return true.
+//
+// Returns false if the decryption failed. There are no guarantees about the
+// contents of |out| when that happens.
+//
+// In theory, this should never fail. Only corrupt or invalid entries could
+// cause this to fail, and no clients are known to create such entries. The
+// failure case is an attempt to be defensive against bad input.
+bool DecryptSpecifics(const Cryptographer& cryptographer,
+                      const sync_pb::EntitySpecifics& in,
+                      sync_pb::EntitySpecifics* out) {
+  DCHECK(!in.has_password());
+  DCHECK(in.has_encrypted());
+  DCHECK(cryptographer.CanDecrypt(in.encrypted()));
+
+  if (!cryptographer.Decrypt(in.encrypted(), out)) {
+    DLOG(ERROR) << "Failed to decrypt a decryptable specifics";
+    return false;
+  }
+  return true;
+}
+
+// Attempts to decrypt the given password specifics and return them in the
+// |out| parameter. The cryptographer must know the decryption key, i.e.
+// cryptographer.CanDecrypt(in.password().encrypted()) must return true.
+//
+// Returns false if the decryption failed. There are no guarantees about the
+// contents of |out| when that happens.
+//
+// In theory, this should never fail. Only corrupt or invalid entries could
+// cause this to fail, and no clients are known to create such entries. The
+// failure case is an attempt to be defensive against bad input.
+bool DecryptPasswordSpecifics(const Cryptographer& cryptographer,
+                              const sync_pb::EntitySpecifics& in,
+                              sync_pb::EntitySpecifics* out) {
+  DCHECK(in.has_password());
+  DCHECK(in.password().has_encrypted());
+  DCHECK(cryptographer.CanDecrypt(in.password().encrypted()));
+
+  if (!cryptographer.Decrypt(
+          in.password().encrypted(),
+          out->mutable_password()->mutable_client_only_encrypted_data())) {
+    DLOG(ERROR) << "Failed to decrypt a decryptable password";
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 ModelTypeWorker::ModelTypeWorker(
     ModelType type,
     const sync_pb::ModelTypeState& initial_state,
     bool trigger_initial_sync,
-    std::unique_ptr<Cryptographer> cryptographer,
+    Cryptographer* cryptographer,
     PassphraseType passphrase_type,
     NudgeHandler* nudge_handler,
     std::unique_ptr<ModelTypeProcessor> model_type_processor,
@@ -111,7 +161,7 @@ ModelTypeWorker::ModelTypeWorker(
     : type_(type),
       model_type_state_(initial_state),
       model_type_processor_(std::move(model_type_processor)),
-      cryptographer_(std::move(cryptographer)),
+      cryptographer_(cryptographer),
       passphrase_type_(passphrase_type),
       nudge_handler_(nudge_handler),
       min_gu_responses_to_ignore_key_(kMinGuResponsesToIgnoreKey),
@@ -133,17 +183,17 @@ ModelTypeWorker::ModelTypeWorker(
   // type state that has already done its initial sync, and is going to be
   // tracking metadata changes, however it does not have the most recent
   // encryption key name. The cryptographer was updated while the worker was not
-  // around, and we're not going to receive the normal UpdateCryptographer() or
+  // around, and we're not going to receive the usual OnCryptographerChange() or
   // EncryptionAcceptedApplyUpdates() calls to drive this process.
   //
   // If |cryptographer_->CanEncrypt()| is false, all the rest of this logic can
-  // be safely skipped, since |UpdateCryptographer(...)| must be called first
+  // be safely skipped, since |OnCryptographerChange()| must be called first
   // and things should be driven normally after that.
   //
   // If |model_type_state_.initial_sync_done()| is false, |model_type_state_|
-  // may still need to be updated, since UpdateCryptographer() is never going to
-  // happen, but we can assume PassiveApplyUpdates(...) will push the state to
-  // the processor, and we should not push it now. In fact, doing so now would
+  // may still need to be updated, since OnCryptographerChange() will never
+  // happen, but we can assume ApplyUpdates(...) will push the state to the
+  // processor, and we should not push it now. In fact, doing so now would
   // violate the processor's assumption that the first OnUpdateReceived is will
   // be changing initial sync done to true.
   if (cryptographer_ && cryptographer_->CanEncrypt() &&
@@ -165,20 +215,27 @@ ModelType ModelTypeWorker::GetModelType() const {
   return type_;
 }
 
-void ModelTypeWorker::UpdateCryptographer(
-    std::unique_ptr<Cryptographer> cryptographer) {
+void ModelTypeWorker::EnableEncryption(Cryptographer* cryptographer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!cryptographer_);
   DCHECK(cryptographer);
-  cryptographer_ = std::move(cryptographer);
+  cryptographer_ = cryptographer;
+  OnCryptographerChange();
+}
+
+void ModelTypeWorker::SetFallbackCryptographerForUma(
+    Cryptographer* fallback_cryptographer_for_uma) {
+  DCHECK(!fallback_cryptographer_for_uma_);
+  DCHECK(fallback_cryptographer_for_uma);
+  fallback_cryptographer_for_uma_ = fallback_cryptographer_for_uma;
+}
+
+void ModelTypeWorker::OnCryptographerChange() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(cryptographer_);
   UpdateEncryptionKeyName();
   DecryptStoredEntities();
   NudgeIfReadyToCommit();
-}
-
-void ModelTypeWorker::UpdateFallbackCryptographerForUma(
-    std::unique_ptr<Cryptographer> fallback_cryptographer_for_uma) {
-  DCHECK(fallback_cryptographer_for_uma);
-  fallback_cryptographer_for_uma_ = std::move(fallback_cryptographer_for_uma);
 }
 
 void ModelTypeWorker::UpdatePassphraseType(PassphraseType type) {
@@ -231,8 +288,8 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     }
 
     UpdateResponseData response_data;
-    switch (PopulateUpdateResponseData(cryptographer_.get(), type_,
-                                       *update_entity, &response_data)) {
+    switch (PopulateUpdateResponseData(cryptographer_, type_, *update_entity,
+                                       &response_data)) {
       case SUCCESS:
         pending_updates_.push_back(std::move(response_data));
         // Override any previously undecryptable update for the same id.
@@ -385,17 +442,12 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status) {
   // sync technically isn't done yet but by the time this value is persisted to
   // disk on the model thread it will be.
   //
-  // This should be mostly relevant for the call from PassiveApplyUpdates(), but
-  // in rare cases we may end up receiving initial updates outside configuration
+  // This should be mostly relevant for the call from ApplyUpdates(), but in
+  // rare cases we may end up receiving initial updates outside configuration
   // cycles (e.g. polling cycles).
   model_type_state_.set_initial_sync_done(true);
   // Download cycle is done, pass all updates to the processor.
   ApplyPendingUpdates();
-}
-
-void ModelTypeWorker::PassiveApplyUpdates(StatusController* status) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ApplyUpdates(status);
 }
 
 void ModelTypeWorker::EncryptionAcceptedMaybeApplyUpdates() {
@@ -439,12 +491,15 @@ void ModelTypeWorker::ApplyPendingUpdates() {
 
 void ModelTypeWorker::NudgeForCommit() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  has_local_changes_ = true;
+  has_local_changes_state_ = kNewlyNudgedLocalChanges;
   NudgeIfReadyToCommit();
 }
 
 void ModelTypeWorker::NudgeIfReadyToCommit() {
-  if (has_local_changes_ && CanCommitItems())
+  // TODO(crbug.com/1188034): |kNoNudgedLocalChanges| is used to keep the
+  // existing behaviour. But perhaps there is no need to nudge for commit if all
+  // known changes are already in flight.
+  if (has_local_changes_state_ != kNoNudgedLocalChanges && CanCommitItems())
     nudge_handler_->NudgeForCommit(GetModelType());
 }
 
@@ -463,8 +518,9 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   DCHECK(entries_pending_decryption_.empty());
 
   // Pull local changes from the processor (in the model thread/sequence). Note
-  // that this takes place independently of nudges (i.e. |has_local_changes_|),
-  // in case the processor decided a local change was not worth a nudge.
+  // that this takes place independently of nudges (i.e.
+  // |has_local_changes_state_|), in case the processor decided a local change
+  // was not worth a nudge.
   scoped_refptr<GetLocalChangesRequest> request =
       base::MakeRefCounted<GetLocalChangesRequest>(cancelation_signal_);
   model_type_processor_->GetLocalChanges(
@@ -475,23 +531,33 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   if (!request->WasCancelled())
     response = request->ExtractResponse();
   if (response.empty()) {
-    has_local_changes_ = false;
+    has_local_changes_state_ = kNoNudgedLocalChanges;
     return std::unique_ptr<CommitContribution>();
   }
 
   DCHECK(response.size() <= max_entries);
+  if (response.size() < max_entries) {
+    // In case when response.size() equals to |max_entries|, there will be
+    // another commit request (see CommitProcessor::GatherCommitContributions).
+    // Hence, in general it should be normal if |has_local_changes_state_| is
+    // |kNewlyNudgedLocalChanges| (even if there are no more items in the
+    // processor). In other words, |kAllNudgedLocalChangesInFlight| means that
+    // there might not be another commit request in the current sync cycle (but
+    // still possible if some other data type contributes |max_entities|).
+    has_local_changes_state_ = kAllNudgedLocalChangesInFlight;
+  }
+
   return std::make_unique<CommitContributionImpl>(
       GetModelType(), model_type_state_.type_context(), std::move(response),
       base::BindOnce(&ModelTypeWorker::OnCommitResponse,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&ModelTypeWorker::OnFullCommitFailure,
                      weak_ptr_factory_.GetWeakPtr()),
-      cryptographer_.get(), passphrase_type_,
-      CommitOnlyTypes().Has(GetModelType()));
+      cryptographer_, passphrase_type_, CommitOnlyTypes().Has(GetModelType()));
 }
 
 bool ModelTypeWorker::HasLocalChangesForTest() const {
-  return has_local_changes_;
+  return has_local_changes_state_ != kNoNudgedLocalChanges;
 }
 
 void ModelTypeWorker::OnCommitResponse(
@@ -504,6 +570,11 @@ void ModelTypeWorker::OnCommitResponse(
   // permanent storage) and which failed (it can e.g. notify the user).
   model_type_processor_->OnCommitCompleted(
       model_type_state_, committed_response_list, error_response_list);
+
+  if (has_local_changes_state_ == kAllNudgedLocalChangesInFlight) {
+    // There are no new nudged changes since last commit.
+    has_local_changes_state_ = kNoNudgedLocalChanges;
+  }
 }
 
 void ModelTypeWorker::OnFullCommitFailure(SyncCommitError commit_error) {
@@ -563,8 +634,8 @@ void ModelTypeWorker::DecryptStoredEntities() {
     const sync_pb::SyncEntity& encrypted_update = it->second;
 
     UpdateResponseData response_data;
-    switch (PopulateUpdateResponseData(cryptographer_.get(), type_,
-                                       encrypted_update, &response_data)) {
+    switch (PopulateUpdateResponseData(cryptographer_, type_, encrypted_update,
+                                       &response_data)) {
       case SUCCESS:
         pending_updates_.push_back(std::move(response_data));
         it = entries_pending_decryption_.erase(it);
@@ -684,39 +755,6 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
   }
 }
 
-// static
-bool ModelTypeWorker::DecryptSpecifics(const Cryptographer& cryptographer,
-                                       const sync_pb::EntitySpecifics& in,
-                                       sync_pb::EntitySpecifics* out) {
-  DCHECK(!in.has_password());
-  DCHECK(in.has_encrypted());
-  DCHECK(cryptographer.CanDecrypt(in.encrypted()));
-
-  if (!cryptographer.Decrypt(in.encrypted(), out)) {
-    DLOG(ERROR) << "Failed to decrypt a decryptable specifics";
-    return false;
-  }
-  return true;
-}
-
-// static
-bool ModelTypeWorker::DecryptPasswordSpecifics(
-    const Cryptographer& cryptographer,
-    const sync_pb::EntitySpecifics& in,
-    sync_pb::EntitySpecifics* out) {
-  DCHECK(in.has_password());
-  DCHECK(in.password().has_encrypted());
-  DCHECK(cryptographer.CanDecrypt(in.password().encrypted()));
-
-  if (!cryptographer.Decrypt(
-          in.password().encrypted(),
-          out->mutable_password()->mutable_client_only_encrypted_data())) {
-    DLOG(ERROR) << "Failed to decrypt a decryptable password";
-    return false;
-  }
-  return true;
-}
-
 bool ModelTypeWorker::ShouldIgnoreUpdatesEncryptedWith(
     const std::string& key_name) {
   if (!base::Contains(unknown_encryption_keys_by_name_, key_name)) {
@@ -785,7 +823,7 @@ void ModelTypeWorker::RecordBlockedByUndecryptableUpdate() {
   // |fallback_cryptographer_for_uma_| can decrypt the data.
   for (const auto& id_and_pending_update : entries_pending_decryption_) {
     UpdateResponseData ignored;
-    if (PopulateUpdateResponseData(fallback_cryptographer_for_uma_.get(), type_,
+    if (PopulateUpdateResponseData(fallback_cryptographer_for_uma_, type_,
                                    id_and_pending_update.second,
                                    &ignored) == SUCCESS) {
       base::UmaHistogramEnumeration(
@@ -802,7 +840,7 @@ GetLocalChangesRequest::GetLocalChangesRequest(
       response_accepted_(base::WaitableEvent::ResetPolicy::MANUAL,
                          base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
-GetLocalChangesRequest::~GetLocalChangesRequest() {}
+GetLocalChangesRequest::~GetLocalChangesRequest() = default;
 
 void GetLocalChangesRequest::OnCancelationSignalReceived() {
   response_accepted_.Signal();

@@ -164,12 +164,15 @@ void AecDumpBasedSimulator::PrepareProcessStreamCall(
     }
   }
 
-  if (!settings_.use_ts) {
+  if (!settings_.use_ts || *settings_.use_ts == 1) {
+    // Transient suppressor activated (1) or not specified.
     if (msg.has_keypress()) {
       ap_->set_stream_key_pressed(msg.keypress());
     }
   } else {
-    ap_->set_stream_key_pressed(*settings_.use_ts);
+    // Transient suppressor deactivated (0) or activated with continuous key
+    // events (2).
+    ap_->set_stream_key_pressed(*settings_.use_ts == 2);
   }
 
   // Level is always logged in AEC dumps.
@@ -596,8 +599,23 @@ void AecDumpBasedSimulator::HandleMessage(
   RTC_CHECK(ap_.get());
   if (msg.has_capture_pre_gain()) {
     // Handle capture pre-gain runtime setting only if not overridden.
-    if ((!settings_.use_pre_amplifier || *settings_.use_pre_amplifier) &&
-        !settings_.pre_amplifier_gain_factor) {
+    const bool pre_amplifier_overridden =
+        (!settings_.use_pre_amplifier || *settings_.use_pre_amplifier) &&
+        !settings_.pre_amplifier_gain_factor;
+    const bool capture_level_adjustment_overridden =
+        (!settings_.use_capture_level_adjustment ||
+         *settings_.use_capture_level_adjustment) &&
+        !settings_.pre_gain_factor;
+    if (pre_amplifier_overridden || capture_level_adjustment_overridden) {
+      ap_->SetRuntimeSetting(
+          AudioProcessing::RuntimeSetting::CreateCapturePreGain(
+              msg.capture_pre_gain()));
+    }
+  } else if (msg.has_capture_post_gain()) {
+    // Handle capture post-gain runtime setting only if not overridden.
+    if ((!settings_.use_capture_level_adjustment ||
+         *settings_.use_capture_level_adjustment) &&
+        !settings_.post_gain_factor) {
       ap_->SetRuntimeSetting(
           AudioProcessing::RuntimeSetting::CreateCapturePreGain(
               msg.capture_pre_gain()));

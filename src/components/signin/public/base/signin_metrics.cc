@@ -603,8 +603,7 @@ void LogSigninAccessPointCompleted(AccessPoint access_point,
 }
 
 void LogSigninReason(Reason reason) {
-  UMA_HISTOGRAM_ENUMERATION("Signin.SigninReason", static_cast<int>(reason),
-                            static_cast<int>(Reason::REASON_MAX));
+  UMA_HISTOGRAM_ENUMERATION("Signin.SigninReason", reason);
 }
 
 void LogSigninAccountReconciliation(int total_number_accounts,
@@ -659,10 +658,10 @@ void LogSigninAccountReconciliationDuration(base::TimeDelta duration,
 void LogSignout(ProfileSignout source_metric, SignoutDelete delete_metric) {
   UMA_HISTOGRAM_ENUMERATION("Signin.SignoutProfile", source_metric,
                             NUM_PROFILE_SIGNOUT_METRICS);
-  if (delete_metric != SignoutDelete::IGNORE_METRIC) {
+  if (delete_metric != SignoutDelete::kIgnoreMetric) {
     UMA_HISTOGRAM_BOOLEAN(
         "Signin.SignoutDeleteProfile",
-        delete_metric == SignoutDelete::DELETED ? true : false);
+        delete_metric == SignoutDelete::kDeleted ? true : false);
   }
 }
 

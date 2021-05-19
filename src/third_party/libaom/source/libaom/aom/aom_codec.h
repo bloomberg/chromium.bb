@@ -149,7 +149,7 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define AOM_CODEC_ABI_VERSION (6 + AOM_IMAGE_ABI_VERSION) /**<\hideinitializer*/
+#define AOM_CODEC_ABI_VERSION (7 + AOM_IMAGE_ABI_VERSION) /**<\hideinitializer*/
 
 /*!\brief Algorithm return codes */
 typedef enum {

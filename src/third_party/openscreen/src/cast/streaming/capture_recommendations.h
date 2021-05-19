@@ -29,7 +29,7 @@ namespace capture_recommendations {
 
 // Default maximum delay for both audio and video. Used if the sender fails
 // to provide any constraints.
-constexpr std::chrono::milliseconds kDefaultMaxDelayMs(4000);
+constexpr std::chrono::milliseconds kDefaultMaxDelayMs(400);
 
 // Bit rate limits, used for both audio and video streams.
 struct BitRateLimits {

@@ -9,11 +9,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/store.pb.h"
-#include "components/feed/core/proto/v2/wire/discover_actions_service.pb.h"
+#include "components/feed/core/proto/v2/wire/upload_actions_request.pb.h"
+#include "components/feed/core/proto/v2/wire/upload_actions_response.pb.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/feedstore_util.h"
 #include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/request_throttler.h"
 
@@ -116,6 +118,7 @@ UploadActionsTask::UploadActionsTask(
       (base::Time::Now() - base::Time::UnixEpoch()).InSeconds());
   client_data->set_action_surface(
       feedwire::FeedAction::ClientData::ANDROID_CHROME_NEW_TAB);
+  gaia_ = stream_->GetSyncSignedInGaia();
 }
 
 UploadActionsTask::UploadActionsTask(
@@ -124,26 +127,36 @@ UploadActionsTask::UploadActionsTask(
     base::OnceCallback<void(UploadActionsTask::Result)> callback)
     : stream_(stream),
       pending_actions_(std::move(pending_actions)),
-      callback_(std::move(callback)) {}
+      callback_(std::move(callback)) {
+  gaia_ = stream_->GetSyncSignedInGaia();
+}
 
 UploadActionsTask::UploadActionsTask(
     FeedStream* stream,
     base::OnceCallback<void(UploadActionsTask::Result)> callback)
     : stream_(stream),
       read_pending_actions_(true),
-      callback_(std::move(callback)) {}
+      callback_(std::move(callback)) {
+  gaia_ = stream_->GetSyncSignedInGaia();
+}
 
 UploadActionsTask::~UploadActionsTask() = default;
 
 void UploadActionsTask::Run() {
-  consistency_token_ = stream_->GetMetadata()->GetConsistencyToken();
+  if (stream_->ClearAllInProgress()) {
+    Done(UploadActionsStatus::kAbortUploadActionsWithPendingClearAll);
+    return;
+  }
+
+  consistency_token_ = stream_->GetMetadata().consistency_token();
 
   // From constructor 1: If there is an action to store, store it and maybe try
   // to upload all pending actions.
   if (wire_action_) {
     StoredAction action;
-    int32_t action_id =
-        stream_->GetMetadata()->GetNextActionId().GetUnsafeValue();
+    feedstore::Metadata metadata = stream_->GetMetadata();
+    int32_t action_id = feedstore::GetNextActionId(metadata).GetUnsafeValue();
+    stream_->SetMetadata(std::move(metadata));
     action.set_id(action_id);
     wire_action_->mutable_client_data()->set_sequence_number(action_id);
     *action.mutable_action() = std::move(*wire_action_);
@@ -209,6 +222,11 @@ void UploadActionsTask::UploadPendingActions() {
     Done(UploadActionsStatus::kAbortUploadForSignedOutUser);
     return;
   }
+  // Can't upload actions for another user, so abort.
+  if (stream_->GetSyncSignedInGaia() != gaia_) {
+    Done(UploadActionsStatus::kAbortUploadForWrongUser);
+    return;
+  }
   if (!stream_->CanUploadActions()) {
     Done(UploadActionsStatus::kAbortUploadBecauseDisabled);
     return;
@@ -258,7 +276,7 @@ void UploadActionsTask::OnUpdateActionsFinished(
   DCHECK(network);
 
   network->SendApiRequest<UploadActionsDiscoverApi>(
-      *request,
+      *request, gaia_,
       base::BindOnce(&UploadActionsTask::OnUploadFinished,
                      weak_ptr_factory_.GetWeakPtr(), std::move(batch)));
 }
@@ -300,13 +318,14 @@ void UploadActionsTask::BatchComplete(UploadActionsBatchStatus status) {
 void UploadActionsTask::UpdateTokenAndFinish() {
   if (consistency_token_.empty())
     return Done(UploadActionsStatus::kFinishedWithoutUpdatingConsistencyToken);
-
-  stream_->GetMetadata()->SetConsistencyToken(consistency_token_);
+  feedstore::Metadata metadata = stream_->GetMetadata();
+  metadata.set_consistency_token(consistency_token_);
+  stream_->SetMetadata(metadata);
   Done(UploadActionsStatus::kUpdatedConsistencyToken);
 }
 
 void UploadActionsTask::Done(UploadActionsStatus status) {
-  stream_->GetMetricsReporter()->OnUploadActions(status);
+  stream_->GetMetricsReporter().OnUploadActions(status);
   Result result;
   result.status = status;
   result.upload_attempt_count = upload_attempt_count_;

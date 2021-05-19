@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
-#include "src/type/struct_type.h"
 
 namespace tint {
 namespace reader {
@@ -27,7 +24,7 @@ TEST_F(ParserImplTest, StructDecl_Parses) {
   auto p = parser(R"(
 struct S {
   a : i32;
-  [[offset(4)]] b : f32;
+  b : f32;
 })");
   auto decos = p->decoration_list();
   EXPECT_FALSE(decos.errored);
@@ -164,7 +161,7 @@ TEST_F(ParserImplTest, StructDecl_InvalidStructBody) {
   EXPECT_EQ(p->error(), "1:16: unknown constructed type 'B'");
 }
 
-TEST_F(ParserImplTest, StructDecl_InvalidStructDecorationDecl) {
+TEST_F(ParserImplTest, StructDecl_InvalidDecorationDecl) {
   auto p = parser("[[block struct S { a : i32; }");
   auto decos = p->decoration_list();
   EXPECT_TRUE(decos.errored);

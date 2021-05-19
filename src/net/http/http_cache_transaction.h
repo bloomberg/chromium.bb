@@ -92,7 +92,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // Virtual so it can be extended for testing.
   virtual Mode mode() const;
 
-  std::string& method() { return method_; }
+  const std::string& method() const { return method_; }
 
   const std::string& key() const { return cache_key_; }
 
@@ -158,6 +158,8 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   void SetConnectedCallback(const ConnectedCallback& callback) override;
   void SetRequestHeadersCallback(RequestHeadersCallback callback) override;
   void SetResponseHeadersCallback(ResponseHeadersCallback callback) override;
+  void SetEarlyResponseHeadersCallback(
+      ResponseHeadersCallback callback) override;
   int ResumeNetworkStart() override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void CloseConnectionOnDestruction() override;
@@ -674,6 +676,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   BeforeNetworkStartCallback before_network_start_callback_;
   ConnectedCallback connected_callback_;
   RequestHeadersCallback request_headers_callback_;
+  ResponseHeadersCallback early_response_headers_callback_;
   ResponseHeadersCallback response_headers_callback_;
 
   // True if the Transaction is currently processing the DoLoop.

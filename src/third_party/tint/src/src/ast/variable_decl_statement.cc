@@ -14,17 +14,18 @@
 
 #include "src/ast/variable_decl_statement.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::VariableDeclStatement);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::VariableDeclStatement);
 
 namespace tint {
 namespace ast {
 
 VariableDeclStatement::VariableDeclStatement(const Source& source,
                                              Variable* variable)
-    : Base(source), variable_(variable) {}
+    : Base(source), variable_(variable) {
+  TINT_ASSERT(variable_);
+}
 
 VariableDeclStatement::VariableDeclStatement(VariableDeclStatement&&) = default;
 
@@ -35,10 +36,6 @@ VariableDeclStatement* VariableDeclStatement::Clone(CloneContext* ctx) const {
   auto src = ctx->Clone(source());
   auto* var = ctx->Clone(variable());
   return ctx->dst->create<VariableDeclStatement>(src, var);
-}
-
-bool VariableDeclStatement::IsValid() const {
-  return variable_ != nullptr && variable_->IsValid();
 }
 
 void VariableDeclStatement::to_str(const semantic::Info& sem,

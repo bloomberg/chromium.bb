@@ -170,8 +170,6 @@ enum {
  */
 typedef struct {
   /*!\cond */
-  // The frame processing order within a GOP
-  unsigned char index;
   // Frame update type, e.g. ARF/GF/LF/Overlay
   FRAME_UPDATE_TYPE update_type[MAX_STATIC_GF_GROUP_LENGTH];
   unsigned char arf_src_offset[MAX_STATIC_GF_GROUP_LENGTH];

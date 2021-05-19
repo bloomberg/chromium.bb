@@ -29,7 +29,9 @@ enum class AutocorrectActions {
   kUnderlined = 1,
   kReverted = 2,
   kUserAcceptedAutocorrect = 3,
-  kMaxValue = kUserAcceptedAutocorrect,
+  kUserActionClearedUnderline = 4,
+  kUserExitedTextFieldWithUnderline = 5,
+  kMaxValue = kUserExitedTextFieldWithUnderline,
 };
 
 bool IsCurrentInputMethodExperimentalMultilingual() {
@@ -75,8 +77,9 @@ AutocorrectManager::AutocorrectManager(
     SuggestionHandlerInterface* suggestion_handler)
     : suggestion_handler_(suggestion_handler) {}
 
-void AutocorrectManager::HandleAutocorrect(gfx::Range autocorrect_range,
-                                           const std::string& original_text) {
+void AutocorrectManager::HandleAutocorrect(const gfx::Range autocorrect_range,
+                                           const std::u16string& original_text,
+                                           const std::u16string& current_text) {
   // TODO(crbug/1111135): call setAutocorrectTime() (for metrics)
   // TODO(crbug/1111135): record metric (coverage)
   ui::IMEInputContextHandlerInterface* input_context =
@@ -84,9 +87,14 @@ void AutocorrectManager::HandleAutocorrect(gfx::Range autocorrect_range,
   if (!input_context)
     return;
 
+  // TODO(crbug/1159297): Record diacritics-related metrics for multilingual
+  // experiment, based on `current_text` and `original_text`.
+
   original_text_ = original_text;
   key_presses_until_underline_hide_ = kKeysUntilAutocorrectWindowHides;
-  ClearUnderline();
+  if (!input_context->GetAutocorrectRange().is_empty()) {
+    ClearUnderline();
+  }
 
   input_context->SetAutocorrectRange(autocorrect_range);
   LogAssistiveAutocorrectAction(AutocorrectActions::kUnderlined);
@@ -103,9 +111,8 @@ bool AutocorrectManager::OnKeyEvent(const ui::KeyEvent& event) {
     auto button = ui::ime::AssistiveWindowButton();
     button.id = ui::ime::ButtonId::kUndo;
     button.window_type = ui::ime::AssistiveWindowType::kUndoWindow;
-    button.announce_string =
-        l10n_util::GetStringFUTF8(IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON,
-                                  base::UTF8ToUTF16(original_text_));
+    button.announce_string = l10n_util::GetStringFUTF8(
+        IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON, original_text_);
     suggestion_handler_->SetButtonHighlighted(context_id_, button, true,
                                               &error);
     button_highlighted = true;
@@ -131,10 +138,13 @@ void AutocorrectManager::ClearUnderline() {
   if (input_context && !input_context->GetAutocorrectRange().is_empty()) {
     input_context->SetAutocorrectRange(gfx::Range());
     LogAssistiveAutocorrectAction(AutocorrectActions::kUserAcceptedAutocorrect);
+  } else {
+    LogAssistiveAutocorrectAction(
+        AutocorrectActions::kUserActionClearedUnderline);
   }
 }
 
-void AutocorrectManager::OnSurroundingTextChanged(const base::string16& text,
+void AutocorrectManager::OnSurroundingTextChanged(const std::u16string& text,
                                                   const int cursor_pos,
                                                   const int anchpr_pos) {
   std::string error;
@@ -144,15 +154,14 @@ void AutocorrectManager::OnSurroundingTextChanged(const base::string16& text,
   if (!range.is_empty() && cursor_pos >= range.start() &&
       cursor_pos <= range.end()) {
     if (!window_visible) {
-      const std::string autocorrected_text =
-          base::UTF16ToUTF8(text.substr(range.start(), range.length()));
+      const std::u16string autocorrected_text =
+          text.substr(range.start(), range.length());
       chromeos::AssistiveWindowProperties properties;
       properties.type = ui::ime::AssistiveWindowType::kUndoWindow;
       properties.visible = true;
       properties.announce_string = l10n_util::GetStringFUTF8(
-          IDS_SUGGESTION_AUTOCORRECT_UNDO_WINDOW_SHOWN,
-          base::UTF8ToUTF16(original_text_),
-          base::UTF8ToUTF16(autocorrected_text));
+          IDS_SUGGESTION_AUTOCORRECT_UNDO_WINDOW_SHOWN, original_text_,
+          autocorrected_text);
       window_visible = true;
       button_highlighted = false;
       suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties,
@@ -173,6 +182,12 @@ void AutocorrectManager::OnSurroundingTextChanged(const base::string16& text,
 }
 
 void AutocorrectManager::OnFocus(int context_id) {
+  if (key_presses_until_underline_hide_ > 0) {
+    // TODO(b/149796494): move this to onblur()
+    LogAssistiveAutocorrectAction(
+        AutocorrectActions::kUserExitedTextFieldWithUnderline);
+    key_presses_until_underline_hide_ = -1;
+  }
   context_id_ = context_id;
 }
 
@@ -191,33 +206,46 @@ void AutocorrectManager::UndoAutocorrect() {
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   const gfx::Range range = input_context->GetAutocorrectRange();
-  const ui::SurroundingTextInfo surrounding_text =
-      input_context->GetSurroundingTextInfo();
 
-  // TODO(crbug/1111135): Can we get away with deleting less text?
-  // This will not quite work properly if there is text actually highlighted,
-  // and cursor is at end of the highlight block, but no easy way around it.
-  // First delete everything before cursor.
-  input_context->DeleteSurroundingText(
-      -static_cast<int>(surrounding_text.selection_range.start()),
-      surrounding_text.surrounding_text.length());
+  if (input_context->HasCompositionText()) {
+    input_context->SetComposingRange(range.start(), range.end(), {});
+    input_context->CommitText(
+        original_text_,
+        ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+  } else {
+    // NOTE: GetSurroundingTextInfo() could return a stale cache that no longer
+    // reflects reality, due to async-ness between IMF and TextInputClient.
+    // TODO(crbug/1194424): Work around the issue or fix
+    // GetSurroundingTextInfo().
+    const ui::SurroundingTextInfo surrounding_text =
+        input_context->GetSurroundingTextInfo();
 
-  // Submit the text after the cursor in composition mode to leave the cursor at
-  // the start
-  ui::CompositionText composition_text;
-  composition_text.text = surrounding_text.surrounding_text.substr(range.end());
-  input_context->UpdateCompositionText(composition_text,
-                                       /*cursor_pos=*/0, /*visible=*/true);
-  input_context->ConfirmCompositionText(/*reset_engine=*/false,
-                                        /*keep_selection=*/true);
+    // TODO(crbug/1111135): Can we get away with deleting less text?
+    // This will not quite work properly if there is text actually highlighted,
+    // and cursor is at end of the highlight block, but no easy way around it.
+    // First delete everything before cursor.
+    input_context->DeleteSurroundingText(
+        -static_cast<int>(surrounding_text.selection_range.start()),
+        surrounding_text.surrounding_text.length());
 
-  // Insert the text before the cursor - now there should be the correct text
-  // and the cursor position will not have changed.
-  input_context->CommitText(
-      (base::UTF16ToUTF8(
-           surrounding_text.surrounding_text.substr(0, range.start())) +
-       original_text_),
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+    // Submit the text after the cursor in composition mode to leave the cursor
+    // at the start
+    ui::CompositionText composition_text;
+    composition_text.text =
+        surrounding_text.surrounding_text.substr(range.end());
+    input_context->UpdateCompositionText(composition_text,
+                                         /*cursor_pos=*/0, /*visible=*/true);
+    input_context->ConfirmCompositionText(/*reset_engine=*/false,
+                                          /*keep_selection=*/true);
+
+    // Insert the text before the cursor - now there should be the correct text
+    // and the cursor position will not have changed.
+    input_context->CommitText(
+        surrounding_text.surrounding_text.substr(0, range.start()) +
+            original_text_,
+        ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+  }
+
   LogAssistiveAutocorrectAction(AutocorrectActions::kReverted);
   RecordAssistiveCoverage(AssistiveType::kAutocorrectReverted);
   RecordAssistiveSuccess(AssistiveType::kAutocorrectReverted);

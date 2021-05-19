@@ -225,7 +225,7 @@ class ThreadedWorkletMessagingProxyForTest
             mojom::blink::V8CacheOptions::kDefault,
             MakeGarbageCollected<WorkletModuleResponsesMap>(),
             mojo::NullRemote() /* browser_interface_broker */,
-            BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
+            BeginFrameProviderParams(), nullptr /* parent_permissions_policy */,
             GetExecutionContext()->GetAgentClusterID(), ukm::kInvalidSourceId,
             GetExecutionContext()->GetExecutionContextToken()),
         base::nullopt, base::nullopt);
@@ -314,7 +314,7 @@ TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
                         *(GetExecutionContext()->GetSecurityOrigin()),
                         network::mojom::ContentSecurityPolicyType::kEnforce,
                         network::mojom::ContentSecurityPolicySource::kHTTP);
-  GetExecutionContext()->GetSecurityContext().SetContentSecurityPolicy(csp);
+  GetExecutionContext()->SetContentSecurityPolicy(csp);
 
   MessagingProxy()->Start();
 
@@ -332,7 +332,7 @@ TEST_F(ThreadedWorkletTest, InvalidContentSecurityPolicy) {
                         *(GetExecutionContext()->GetSecurityOrigin()),
                         network::mojom::ContentSecurityPolicyType::kEnforce,
                         network::mojom::ContentSecurityPolicySource::kHTTP);
-  GetExecutionContext()->GetSecurityContext().SetContentSecurityPolicy(csp);
+  GetExecutionContext()->SetContentSecurityPolicy(csp);
 
   MessagingProxy()->Start();
 

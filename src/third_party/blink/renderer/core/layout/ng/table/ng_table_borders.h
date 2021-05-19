@@ -66,6 +66,7 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
 #if DCHECK_IS_ON()
   String DumpEdges();
   void ShowEdges();
+  bool operator==(const NGTableBorders& other) const;
 #endif
 
 
@@ -203,11 +204,7 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
   // visual overflow rect use different borders.
   // Border rect uses inline start/end of the first row.
   // Visual rect uses largest inline start/end of the entire table.
-  std::pair<LayoutUnit, LayoutUnit> GetCollapsedBorderVisualInlineStrut()
-      const {
-    return std::make_pair(collapsed_visual_inline_start_,
-                          collapsed_visual_inline_end_);
-  }
+  NGBoxStrut GetCollapsedBorderVisualSizeDiff() const;
 
   NGBoxStrut CellBorder(const NGBlockNode& cell,
                         wtf_size_t row,
@@ -344,5 +341,7 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
 }  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::NGTableBorders::Edge)
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
+    blink::NGTableBorders::Section)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_NG_TABLE_BORDERS_H_

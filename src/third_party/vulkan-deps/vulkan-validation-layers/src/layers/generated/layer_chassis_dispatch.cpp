@@ -1101,7 +1101,7 @@ void DispatchGetPrivateDataEXT(
     layer_data->device_dispatch_table.GetPrivateDataEXT(device, objectType, objectHandle, privateDataSlot, pData);
 }
 
-std::unordered_map<VkCommandBuffer, VkCommandPool> secondary_cb_map{};
+layer_data::unordered_map<VkCommandBuffer, VkCommandPool> secondary_cb_map{};
 
 ReadWriteLock dispatch_secondary_cb_map_mutex;
 
@@ -1129,7 +1129,7 @@ VkResult DispatchAllocateCommandBuffers(VkDevice device, const VkCommandBufferAl
     if ((result == VK_SUCCESS) && pAllocateInfo && (pAllocateInfo->level == VK_COMMAND_BUFFER_LEVEL_SECONDARY)) {
         auto lock = dispatch_cb_write_lock();
         for (uint32_t cb_index = 0; cb_index < pAllocateInfo->commandBufferCount; cb_index++) {
-            secondary_cb_map.insert({ pCommandBuffers[cb_index], pAllocateInfo->commandPool });
+            secondary_cb_map.emplace(pCommandBuffers[cb_index], pAllocateInfo->commandPool);
         }
     }
     return result;
@@ -8066,6 +8066,38 @@ VkBool32 DispatchGetPhysicalDeviceDirectFBPresentationSupportEXT(
     return result;
 }
 #endif // VK_USE_PLATFORM_DIRECTFB_EXT
+
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+
+VkResult DispatchCreateScreenSurfaceQNX(
+    VkInstance                                  instance,
+    const VkScreenSurfaceCreateInfoQNX*         pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSurfaceKHR*                               pSurface)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(instance), layer_data_map);
+    if (!wrap_handles) return layer_data->instance_dispatch_table.CreateScreenSurfaceQNX(instance, pCreateInfo, pAllocator, pSurface);
+    VkResult result = layer_data->instance_dispatch_table.CreateScreenSurfaceQNX(instance, pCreateInfo, pAllocator, pSurface);
+    if (VK_SUCCESS == result) {
+        *pSurface = layer_data->WrapNew(*pSurface);
+    }
+    return result;
+}
+#endif // VK_USE_PLATFORM_SCREEN_QNX
+
+#ifdef VK_USE_PLATFORM_SCREEN_QNX
+
+VkBool32 DispatchGetPhysicalDeviceScreenPresentationSupportQNX(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t                                    queueFamilyIndex,
+    struct _screen_window*                      window)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(physicalDevice), layer_data_map);
+    VkBool32 result = layer_data->instance_dispatch_table.GetPhysicalDeviceScreenPresentationSupportQNX(physicalDevice, queueFamilyIndex, window);
+
+    return result;
+}
+#endif // VK_USE_PLATFORM_SCREEN_QNX
 
 VkResult DispatchCreateAccelerationStructureKHR(
     VkDevice                                    device,

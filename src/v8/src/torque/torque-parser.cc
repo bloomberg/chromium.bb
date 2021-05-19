@@ -1834,7 +1834,18 @@ base::Optional<ParseResult> MakeNumberLiteralExpression(
   // Meanwhile, we type it as constexpr float64 when out of int32 range.
   double value = 0;
   try {
+#if defined(V8_OS_SOLARIS)
+    // stod() on Solaris does not currently support hex strings. Use strtol()
+    // specifically for hex literals until stod() support is available.
+    if (number.find("0x") == std::string::npos &&
+        number.find("0X") == std::string::npos) {
+      value = std::stod(number);
+    } else {
+      value = static_cast<double>(strtol(number.c_str(), nullptr, 0));
+    }
+#else
     value = std::stod(number);
+#endif  // !defined(V8_OS_SOLARIS)
   } catch (const std::out_of_range&) {
     Error("double literal out-of-range").Throw();
   }
@@ -1976,10 +1987,27 @@ base::Optional<ParseResult> MakeClassField(ParseResultIterator* child_results) {
   auto weak = child_results->NextAs<bool>();
   auto const_qualified = child_results->NextAs<bool>();
   auto name = child_results->NextAs<Identifier*>();
+  auto optional = child_results->NextAs<bool>();
   auto index = child_results->NextAs<base::Optional<Expression*>>();
+  if (optional && !index) {
+    Error(
+        "Fields using optional specifier must also provide an expression "
+        "indicating the condition for whether the field is present");
+  }
+  base::Optional<ClassFieldIndexInfo> index_info;
+  if (index) {
+    if (optional) {
+      // Internally, an optional field is just an indexed field where the count
+      // is zero or one.
+      index = MakeNode<ConditionalExpression>(
+          *index, MakeNode<NumberLiteralExpression>(1),
+          MakeNode<NumberLiteralExpression>(0));
+    }
+    index_info = ClassFieldIndexInfo{*index, optional};
+  }
   auto type = child_results->NextAs<TypeExpression*>();
   return ParseResult{ClassFieldExpression{{name, type},
-                                          index,
+                                          index_info,
                                           std::move(conditions),
                                           weak,
                                           const_qualified,
@@ -2257,7 +2285,8 @@ struct TorqueGrammar : Grammar {
   // Result: ClassFieldExpression
   Symbol classField = {
       Rule({annotations, CheckIf(Token("weak")), CheckIf(Token("const")), &name,
-            optionalArraySpecifier, Token(":"), &type, Token(";")},
+            CheckIf(Token("?")), optionalArraySpecifier, Token(":"), &type,
+            Token(";")},
            MakeClassField)};
 
   // Result: StructFieldExpression

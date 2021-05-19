@@ -32,6 +32,8 @@ const char kPciePeripheralLimitedPerformanceGuestModeNotificationId[] =
     "cros_pcie_peripheral_limited_performance_guest_mode_notification_id";
 const char kPciePeripheralGuestModeNotSupportedNotificationId[] =
     "cros_pcie_peripheral_guest_mode_not_supported_notifcation_id";
+const char kPciePeripheralDeviceBlockedNotificationId[] =
+    "cros_pcie_peripheral_device_blocked_notifcation_id";
 const char kLearnMoreHelpUrl[] =
     "https://www.support.google.com/chromebook?p=connect_thblt_usb4_accy";
 
@@ -49,7 +51,12 @@ class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
 
 class PciePeripheralNotificationControllerTest : public AshTestBase {
  public:
-  PciePeripheralNotificationControllerTest() = default;
+  PciePeripheralNotificationControllerTest() {
+    auto delegate = std::make_unique<MockNewWindowDelegate>();
+    new_window_delegate_ = delegate.get();
+    delegate_provider_ =
+        std::make_unique<TestNewWindowDelegateProvider>(std::move(delegate));
+  }
   PciePeripheralNotificationControllerTest(
       const PciePeripheralNotificationControllerTest&) = delete;
   PciePeripheralNotificationControllerTest& operator=(
@@ -60,7 +67,7 @@ class PciePeripheralNotificationControllerTest : public AshTestBase {
     return Shell::Get()->pcie_peripheral_notification_controller();
   }
 
-  MockNewWindowDelegate& new_window_delegate() { return new_window_delegate_; }
+  MockNewWindowDelegate& new_window_delegate() { return *new_window_delegate_; }
 
   message_center::Notification* GetLimitedPerformanceNotification() {
     return MessageCenter::Get()->FindVisibleNotificationById(
@@ -75,6 +82,11 @@ class PciePeripheralNotificationControllerTest : public AshTestBase {
   message_center::Notification* GetGuestModeNotSupportedNotification() {
     return MessageCenter::Get()->FindVisibleNotificationById(
         kPciePeripheralGuestModeNotSupportedNotificationId);
+  }
+
+  message_center::Notification* GetPeripheralBlockedNotification() {
+    return MessageCenter::Get()->FindVisibleNotificationById(
+        kPciePeripheralDeviceBlockedNotificationId);
   }
 
   int GetNumOsPrivacySettingsOpened() {
@@ -121,7 +133,8 @@ class PciePeripheralNotificationControllerTest : public AshTestBase {
   }
 
  private:
-  MockNewWindowDelegate new_window_delegate_;
+  MockNewWindowDelegate* new_window_delegate_;
+  std::unique_ptr<TestNewWindowDelegateProvider> delegate_provider_;
 };
 
 TEST_F(PciePeripheralNotificationControllerTest, GuestNotificationTbtOnly) {
@@ -173,6 +186,31 @@ TEST_F(PciePeripheralNotificationControllerTest, GuestNotificationTbtAltMode) {
         EXPECT_TRUE(from_user_interaction);
       });
   ClickGuestNotification(/*is_thunderbolt_only=*/false);
+  EXPECT_EQ(0u, MessageCenter::Get()->NotificationCount());
+}
+
+TEST_F(PciePeripheralNotificationControllerTest,
+       PeripheralBlockedNotification) {
+  EXPECT_EQ(0u, MessageCenter::Get()->NotificationCount());
+
+  controller()->NotifyPeripheralBlockedNotification();
+  EXPECT_EQ(1u, MessageCenter::Get()->NotificationCount());
+
+  message_center::Notification* notification =
+      GetPeripheralBlockedNotification();
+  ASSERT_TRUE(notification);
+
+  // This notification has no buttons.
+  EXPECT_EQ(0u, notification->buttons().size());
+
+  // Click on the notification and expect the Learn More page to page to appear.
+  EXPECT_CALL(new_window_delegate(), NewTabWithUrl)
+      .WillOnce([](const GURL& url, bool from_user_interaction) {
+        EXPECT_EQ(GURL(kLearnMoreHelpUrl), url);
+        EXPECT_TRUE(from_user_interaction);
+      });
+  MessageCenter::Get()->ClickOnNotification(
+      kPciePeripheralDeviceBlockedNotificationId);
   EXPECT_EQ(0u, MessageCenter::Get()->NotificationCount());
 }
 

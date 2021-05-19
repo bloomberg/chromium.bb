@@ -176,7 +176,8 @@ const uint8_t* InitialSaltForVersion(const ParsedQuicVersion& version,
     *out_len = ABSL_ARRAYSIZE(kReservedForNegotiationSalt);
     return kReservedForNegotiationSalt;
   }
-  QUIC_BUG << "No initial obfuscation salt for version " << version;
+  QUIC_BUG(quic_bug_10699_1)
+      << "No initial obfuscation salt for version " << version;
   *out_len = ABSL_ARRAYSIZE(kReservedForNegotiationSalt);
   return kReservedForNegotiationSalt;
 }
@@ -219,8 +220,9 @@ bool RetryIntegrityKeysForVersion(const ParsedQuicVersion& version,
   static_assert(SupportedVersions().size() == 6u,
                 "Supported versions out of sync with retry integrity keys");
   if (!version.UsesTls()) {
-    QUIC_BUG << "Attempted to get retry integrity keys for invalid version "
-             << version;
+    QUIC_BUG(quic_bug_10699_2)
+        << "Attempted to get retry integrity keys for invalid version "
+        << version;
     return false;
   } else if (version == ParsedQuicVersion::RFCv1()) {
     *key = absl::string_view(
@@ -256,7 +258,8 @@ bool RetryIntegrityKeysForVersion(const ParsedQuicVersion& version,
         ABSL_ARRAYSIZE(kReservedForNegotiationRetryIntegrityNonce));
     return true;
   }
-  QUIC_BUG << "Attempted to get retry integrity keys for version " << version;
+  QUIC_BUG(quic_bug_10699_3)
+      << "Attempted to get retry integrity keys for version " << version;
   return false;
 }
 
@@ -277,8 +280,8 @@ void CryptoUtils::CreateInitialObfuscators(Perspective perspective,
     crypters->decrypter = std::make_unique<NullDecrypter>(perspective);
     return;
   }
-  QUIC_BUG_IF(!QuicUtils::IsConnectionIdValidForVersion(
-      connection_id, version.transport_version))
+  QUIC_BUG_IF(quic_bug_12871_1, !QuicUtils::IsConnectionIdValidForVersion(
+                                    connection_id, version.transport_version))
       << "CreateTlsInitialCrypters: attempted to use connection ID "
       << connection_id << " which is invalid with version " << version;
   const EVP_MD* hash = EVP_sha256();
@@ -292,7 +295,7 @@ void CryptoUtils::CreateInitialObfuscators(Perspective perspective,
       HKDF_extract(handshake_secret.data(), &handshake_secret_len, hash,
                    reinterpret_cast<const uint8_t*>(connection_id.data()),
                    connection_id.length(), salt, salt_len);
-  QUIC_BUG_IF(!hkdf_extract_success)
+  QUIC_BUG_IF(quic_bug_12871_2, !hkdf_extract_success)
       << "HKDF_extract failed when creating initial crypters";
   handshake_secret.resize(handshake_secret_len);
 
@@ -325,18 +328,21 @@ bool CryptoUtils::ValidateRetryIntegrityTag(
     absl::string_view integrity_tag) {
   unsigned char computed_integrity_tag[kRetryIntegrityTagLength];
   if (integrity_tag.length() != ABSL_ARRAYSIZE(computed_integrity_tag)) {
-    QUIC_BUG << "Invalid retry integrity tag length " << integrity_tag.length();
+    QUIC_BUG(quic_bug_10699_4)
+        << "Invalid retry integrity tag length " << integrity_tag.length();
     return false;
   }
   char retry_pseudo_packet[kMaxIncomingPacketSize + 256];
   QuicDataWriter writer(ABSL_ARRAYSIZE(retry_pseudo_packet),
                         retry_pseudo_packet);
   if (!writer.WriteLengthPrefixedConnectionId(original_connection_id)) {
-    QUIC_BUG << "Failed to write original connection ID in retry pseudo packet";
+    QUIC_BUG(quic_bug_10699_5)
+        << "Failed to write original connection ID in retry pseudo packet";
     return false;
   }
   if (!writer.WriteStringPiece(retry_without_tag)) {
-    QUIC_BUG << "Failed to write retry without tag in retry pseudo packet";
+    QUIC_BUG(quic_bug_10699_6)
+        << "Failed to write retry without tag in retry pseudo packet";
     return false;
   }
   absl::string_view key;
@@ -351,7 +357,7 @@ bool CryptoUtils::ValidateRetryIntegrityTag(
   absl::string_view plaintext;  // Plaintext is empty.
   if (!crypter.Encrypt(nonce, associated_data, plaintext,
                        computed_integrity_tag)) {
-    QUIC_BUG << "Failed to compute retry integrity tag";
+    QUIC_BUG(quic_bug_10699_7) << "Failed to compute retry integrity tag";
     return false;
   }
   if (CRYPTO_memcmp(computed_integrity_tag, integrity_tag.data(),
@@ -484,7 +490,8 @@ bool CryptoUtils::DeriveKeys(const ParsedQuicVersion& version,
     }
     case Diversification::PENDING: {
       if (perspective == Perspective::IS_SERVER) {
-        QUIC_BUG << "Pending diversification is only for clients.";
+        QUIC_BUG(quic_bug_10699_8)
+            << "Pending diversification is only for clients.";
         return false;
       }
 
@@ -502,7 +509,8 @@ bool CryptoUtils::DeriveKeys(const ParsedQuicVersion& version,
     }
     case Diversification::NOW: {
       if (perspective == Perspective::IS_CLIENT) {
-        QUIC_BUG << "Immediate diversification is only for servers.";
+        QUIC_BUG(quic_bug_10699_9)
+            << "Immediate diversification is only for servers.";
         return false;
       }
 
@@ -734,7 +742,8 @@ std::string CryptoUtils::EarlyDataReasonToString(
     RETURN_STRING_LITERAL(ssl_early_data_quic_parameter_mismatch);
   }
 #endif
-  QUIC_BUG_IF(reason < 0 || reason > ssl_early_data_reason_max_value)
+  QUIC_BUG_IF(quic_bug_12871_3,
+              reason < 0 || reason > ssl_early_data_reason_max_value)
       << "Unknown ssl_early_data_reason_t " << reason;
   return "unknown ssl_early_data_reason_t";
 }

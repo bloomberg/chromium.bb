@@ -13,23 +13,22 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/task/current_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/login/existing_user_controller.h"
+#include "chrome/browser/ash/login/helper.h"
+#include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/ash/login/test/oobe_base_test.h"
+#include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
@@ -362,10 +361,8 @@ class MultiProfilePolicyProviderHelper {
         profile_manager->GenerateNextProfileDirectoryPath();
     base::RunLoop run_loop;
     profile_manager->CreateProfileAsync(
-        path_profile,
-        base::BindRepeating(&OnProfileInitialized, &profile_2_,
-                            run_loop.QuitClosure()),
-        base::string16(), std::string());
+        path_profile, base::BindRepeating(&OnProfileInitialized, &profile_2_,
+                                          run_loop.QuitClosure()));
 
     // Run the message loop to allow profile creation to take place; the loop is
     // terminated by OnProfileInitialized calling the loop's QuitClosure when
@@ -470,19 +467,21 @@ void IsCertInNSSDatabaseOnIOThreadWithCertDb(
       out_system_slot_available, std::move(done_closure)));
 }
 
-void IsCertInNSSDatabaseOnIOThread(content::ResourceContext* resource_context,
+void IsCertInNSSDatabaseOnIOThread(NssCertDatabaseGetter database_getter,
                                    const std::string& subject_common_name,
                                    bool* out_cert_found,
                                    base::OnceClosure done_closure) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  auto did_get_cert_db_callback = base::BindRepeating(
+  auto did_get_cert_db_split_callback = base::SplitOnceCallback(base::BindOnce(
       &IsCertInNSSDatabaseOnIOThreadWithCertDb, subject_common_name,
-      out_cert_found, base::AdaptCallbackForRepeating(std::move(done_closure)));
+      out_cert_found, std::move(done_closure)));
 
-  net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
-      resource_context, did_get_cert_db_callback);
-  if (cert_db)
-    did_get_cert_db_callback.Run(cert_db);
+  net::NSSCertDatabase* cert_db =
+      std::move(database_getter)
+          .Run(std::move(did_get_cert_db_split_callback.first));
+  if (cert_db) {
+    std::move(did_get_cert_db_split_callback.second).Run(cert_db);
+  }
 }
 
 // Returns true if a certificate with subject CommonName |common_name| is
@@ -495,7 +494,7 @@ bool IsCertInNSSDatabase(Profile* profile,
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(IsCertInNSSDatabaseOnIOThread,
-                     profile->GetResourceContext(), subject_common_name,
+                     CreateNSSCertDatabaseGetter(profile), subject_common_name,
                      &cert_found, run_loop.QuitClosure()));
   run_loop.Run();
   return cert_found;

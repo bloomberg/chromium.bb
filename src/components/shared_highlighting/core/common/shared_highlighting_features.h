@@ -17,6 +17,7 @@ extern const base::Feature kPreemptiveLinkToTextGeneration;
 // If enabled, a blocklist will disable link generation on certain pages where
 // the feature is unlikely to work correctly.
 extern const base::Feature kSharedHighlightingUseBlocklist;
+extern const base::Feature kSharedHighlightingV2;
 
 }  // namespace shared_highlighting
 

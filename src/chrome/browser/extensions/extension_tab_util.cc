@@ -5,7 +5,9 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 
 #include <stddef.h>
+
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/containers/contains.h"
@@ -59,6 +61,7 @@
 
 using content::NavigationEntry;
 using content::WebContents;
+using extensions::mojom::APIPermissionID;
 
 namespace extensions {
 
@@ -151,11 +154,11 @@ ExtensionTabUtil::ScrubTabBehaviorType GetScrubTabBehaviorImpl(
   if (extension) {
     bool api_permission = false;
     if (tab_id == api::tabs::TAB_ID_NONE) {
-      api_permission =
-          extension->permissions_data()->HasAPIPermission(APIPermission::kTab);
+      api_permission = extension->permissions_data()->HasAPIPermission(
+          APIPermissionID::kTab);
     } else {
       api_permission = extension->permissions_data()->HasAPIPermissionForTab(
-          tab_id, APIPermission::kTab);
+          tab_id, APIPermissionID::kTab);
     }
 
     bool host_permission = extension->permissions_data()
@@ -197,7 +200,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
                                                  bool user_gesture,
                                                  std::string* error) {
   ChromeExtensionFunctionDetails chrome_details(function);
-  Profile* profile = chrome_details.GetProfile();
+  Profile* profile = Profile::FromBrowserContext(function->browser_context());
   // windowId defaults to "current" window.
   int window_id = extension_misc::kCurrentWindowId;
   if (params.window_id.get())
@@ -362,8 +365,8 @@ Browser* ExtensionTabUtil::GetBrowserFromWindowID(
     return result;
   } else {
     return GetBrowserInProfileWithId(
-        details.GetProfile(), window_id,
-        details.function()->include_incognito_information(), error);
+        Profile::FromBrowserContext(details.function()->browser_context()),
+        window_id, details.function()->include_incognito_information(), error);
   }
 }
 
@@ -824,9 +827,9 @@ bool ExtensionTabUtil::PrepareURLForNavigation(const std::string& url_string,
   // they have applicable permissions.
   if (url.SchemeIs(content::kChromeDevToolsScheme) &&
       !(extension->permissions_data()->HasAPIPermission(
-            APIPermission::kDevtools) ||
+            APIPermissionID::kDevtools) ||
         extension->permissions_data()->HasAPIPermission(
-            APIPermission::kDebugger))) {
+            APIPermissionID::kDebugger))) {
     *error = tabs_constants::kCannotNavigateToDevtools;
     return false;
   }
@@ -918,8 +921,8 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
   std::unique_ptr<chrome::ScopedTabbedBrowserDisplayer> displayer;
   if (browser->profile()->IsOffTheRecord() &&
       !IncognitoInfo::IsSplitMode(extension)) {
-    displayer.reset(new chrome::ScopedTabbedBrowserDisplayer(
-        browser->profile()->GetOriginalProfile()));
+    displayer = std::make_unique<chrome::ScopedTabbedBrowserDisplayer>(
+        browser->profile()->GetOriginalProfile());
     browser = displayer->browser();
   }
 

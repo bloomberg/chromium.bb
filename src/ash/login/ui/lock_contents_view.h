@@ -22,7 +22,7 @@
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_types.h"
-#include "ash/public/cpp/system_tray_focus_observer.h"
+#include "ash/public/cpp/system_tray_observer.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -65,7 +65,7 @@ enum class TrayActionState;
 class ASH_EXPORT LockContentsView
     : public NonAccessibleView,
       public LoginDataDispatcher::Observer,
-      public SystemTrayFocusObserver,
+      public SystemTrayObserver,
       public display::DisplayObserver,
       public KeyboardControllerObserver,
       public chromeos::PowerManagerClient::Observer {
@@ -154,6 +154,7 @@ class ASH_EXPORT LockContentsView
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void OnThemeChanged() override;
 
   // LoginDataDispatcher::Observer:
   void OnUsersChanged(const std::vector<LoginUserInfo>& users) override;
@@ -179,7 +180,7 @@ class ASH_EXPORT LockContentsView
   void OnForceOnlineSignInForUser(const AccountId& user) override;
   void OnShowEasyUnlockIcon(const AccountId& user,
                             const EasyUnlockIconOptions& icon) override;
-  void OnWarningMessageUpdated(const base::string16& message) override;
+  void OnWarningMessageUpdated(const std::u16string& message) override;
   void OnSystemInfoChanged(bool show,
                            bool enforced,
                            const std::string& os_version_label_text,
@@ -207,7 +208,7 @@ class ASH_EXPORT LockContentsView
   void MaybeUpdateExpandedView(const AccountId& account_id,
                                const LoginUserInfo& user_info);
 
-  // SystemTrayFocusObserver:
+  // SystemTrayObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
 
   // display::DisplayObserver:
@@ -407,6 +408,12 @@ class ASH_EXPORT LockContentsView
   // factors including policy settings, channel and Alt-V accelerator.
   bool GetSystemInfoVisibility() const;
 
+  // Updates the colors of the system info view.
+  void UpdateSystemInfoColors();
+
+  // Updates the colors of the bottom status indicator.
+  void UpdateBottomStatusIndicatorColors();
+
   // Toggles the visibility of the |bottom_status_indicator_| based on its
   // content type and whether the extension UI window is opened.
   void UpdateBottomStatusIndicatorVisibility();
@@ -511,7 +518,7 @@ class ASH_EXPORT LockContentsView
   std::unique_ptr<AutoLoginUserActivityHandler>
       auto_login_user_activity_handler_;
 
-  BottomIndicatorState bottom_status_indicator_status_ =
+  BottomIndicatorState bottom_status_indicator_state_ =
       BottomIndicatorState::kNone;
 
   base::WeakPtrFactory<LockContentsView> weak_ptr_factory_{this};

@@ -39,8 +39,6 @@ static_library("core") {
     "optimization_guide_permissions_util.h",
     "optimization_guide_prefs.cc",
     "optimization_guide_prefs.h",
-    "optimization_guide_session_statistic.cc",
-    "optimization_guide_session_statistic.h",
     "optimization_guide_store.cc",
     "optimization_guide_store.h",
     "optimization_guide_switches.cc",
@@ -61,12 +59,16 @@ static_library("core") {
     "prediction_model_file.h",
     "store_update_data.cc",
     "store_update_data.h",
+    "tab_url_provider.h",
     "top_host_provider.h",
     "url_pattern_with_wildcards.cc",
     "url_pattern_with_wildcards.h",
   ]
 
-  public_deps = [ "//third_party/re2" ]
+  public_deps = [
+    "//components/optimization_guide:machine_learning_tflite_buildflags",
+    "//third_party/re2",
+  ]
 
   deps = [
     "//base",
@@ -130,9 +132,9 @@ source_set("unit_tests") {
     "optimization_filter_unittest.cc",
     "optimization_guide_features_unittest.cc",
     "optimization_guide_permissions_util_unittest.cc",
-    "optimization_guide_session_statistic_unittest.cc",
     "optimization_guide_store_unittest.cc",
     "optimization_guide_switches_unittest.cc",
+    "optimization_guide_util_unittest.cc",
     "optimization_hints_component_update_listener_unittest.cc",
     "optimization_metadata_unittest.cc",
     "prediction_model_fetcher_unittest.cc",

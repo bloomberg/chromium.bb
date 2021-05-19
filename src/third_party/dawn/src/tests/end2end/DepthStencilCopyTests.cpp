@@ -28,7 +28,7 @@ class DepthStencilCopyTests : public DawnTest {
         DawnTest::SetUp();
 
         // Draw a square in the bottom left quarter of the screen.
-        mVertexModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        mVertexModule = utils::CreateShaderModule(device, R"(
             [[builtin(vertex_index)]] var<in> VertexIndex : u32;
             [[builtin(position)]] var<out> Position : vec4<f32>;
 
@@ -68,10 +68,10 @@ class DepthStencilCopyTests : public DawnTest {
         return device.CreateTexture(&texDescriptor);
     }
 
-    void PopulatePipelineDescriptorWriteDepth(utils::ComboRenderPipelineDescriptor* desc,
+    void PopulatePipelineDescriptorWriteDepth(utils::ComboRenderPipelineDescriptor2* desc,
                                               wgpu::TextureFormat format,
                                               float regionDepth) {
-        desc->vertexStage.module = mVertexModule;
+        desc->vertex.module = mVertexModule;
 
         std::string fsSource = R"(
         [[builtin(frag_depth)]] var<out> FragDepth : f32;
@@ -79,11 +79,10 @@ class DepthStencilCopyTests : public DawnTest {
             FragDepth = )" + std::to_string(regionDepth) +
                                ";\n}";
 
-        desc->cFragmentStage.module = utils::CreateShaderModuleFromWGSL(device, fsSource.c_str());
-        desc->cDepthStencilState.format = format;
-        desc->cDepthStencilState.depthWriteEnabled = true;
-        desc->depthStencilState = &desc->cDepthStencilState;
-        desc->colorStateCount = 0;
+        desc->cFragment.module = utils::CreateShaderModule(device, fsSource.c_str());
+        wgpu::DepthStencilState* depthStencil = desc->EnableDepthStencil(format);
+        depthStencil->depthWriteEnabled = true;
+        desc->cFragment.targetCount = 0;
     }
 
     // Initialize the depth/stencil values for the texture using a render pass.
@@ -100,11 +99,11 @@ class DepthStencilCopyTests : public DawnTest {
         utils::ComboRenderPassDescriptor renderPassDesc({}, texture.CreateView(&viewDesc));
         renderPassDesc.cDepthStencilAttachmentInfo.clearDepth = clearDepth;
 
-        utils::ComboRenderPipelineDescriptor renderPipelineDesc(device);
+        utils::ComboRenderPipelineDescriptor2 renderPipelineDesc;
         PopulatePipelineDescriptorWriteDepth(&renderPipelineDesc, wgpu::TextureFormat::Depth32Float,
                                              regionDepth);
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&renderPipelineDesc);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&renderPipelineDesc);
         wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
         wgpu::RenderPassEncoder pass = commandEncoder.BeginRenderPass(&renderPassDesc);
         pass.SetPipeline(pipeline);
@@ -132,13 +131,12 @@ class DepthStencilCopyTests : public DawnTest {
         renderPassDesc.cDepthStencilAttachmentInfo.clearDepth = clearDepth;
         renderPassDesc.cDepthStencilAttachmentInfo.clearStencil = clearStencil;
 
-        utils::ComboRenderPipelineDescriptor renderPipelineDesc(device);
+        utils::ComboRenderPipelineDescriptor2 renderPipelineDesc;
         PopulatePipelineDescriptorWriteDepth(&renderPipelineDesc,
                                              wgpu::TextureFormat::Depth24PlusStencil8, regionDepth);
+        renderPipelineDesc.cDepthStencil.stencilFront.passOp = wgpu::StencilOperation::Replace;
 
-        renderPipelineDesc.cDepthStencilState.stencilFront.passOp = wgpu::StencilOperation::Replace;
-
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&renderPipelineDesc);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&renderPipelineDesc);
 
         // Draw the quad (two triangles)
         wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
@@ -173,8 +171,10 @@ class DepthStencilCopyTests : public DawnTest {
         // Perform a T2T copy of all aspects
         {
             wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-            wgpu::TextureCopyView srcView = utils::CreateTextureCopyView(src, mipLevel, {0, 0, 0});
-            wgpu::TextureCopyView dstView = utils::CreateTextureCopyView(dst, mipLevel, {0, 0, 0});
+            wgpu::ImageCopyTexture srcView =
+                utils::CreateImageCopyTexture(src, mipLevel, {0, 0, 0});
+            wgpu::ImageCopyTexture dstView =
+                utils::CreateImageCopyTexture(dst, mipLevel, {0, 0, 0});
             wgpu::Extent3D copySize = {width >> mipLevel, height >> mipLevel, 1};
             commandEncoder.CopyTextureToTexture(&srcView, &dstView, &copySize);
 
@@ -229,16 +229,16 @@ class DepthStencilCopyTests : public DawnTest {
         }
         uploadBuffer.Unmap();
 
-        wgpu::BufferCopyView bufferCopy =
-            utils::CreateBufferCopyView(uploadBuffer, 0, bytesPerRow, height);
-        wgpu::TextureCopyView textureCopy =
-            utils::CreateTextureCopyView(depthDataTexture, 0, {0, 0, 0}, wgpu::TextureAspect::All);
+        wgpu::ImageCopyBuffer bufferCopy =
+            utils::CreateImageCopyBuffer(uploadBuffer, 0, bytesPerRow, height);
+        wgpu::ImageCopyTexture textureCopy =
+            utils::CreateImageCopyTexture(depthDataTexture, 0, {0, 0, 0}, wgpu::TextureAspect::All);
         commandEncoder.CopyBufferToTexture(&bufferCopy, &textureCopy, &depthDataDesc.size);
 
         // Pipeline for a full screen quad.
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
 
-        pipelineDescriptor.vertexStage.module = utils::CreateShaderModuleFromWGSL(device, R"(
+        pipelineDescriptor.vertex.module = utils::CreateShaderModule(device, R"(
             [[builtin(vertex_index)]] var<in> VertexIndex : u32;
             [[builtin(position)]] var<out> Position : vec4<f32>;
 
@@ -252,7 +252,7 @@ class DepthStencilCopyTests : public DawnTest {
 
         // Sample the input texture and write out depth. |result| will only be set to 1 if we
         // pass the depth test.
-        pipelineDescriptor.cFragmentStage.module = utils::CreateShaderModuleFromWGSL(device, R"(
+        pipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
             [[group(0), binding(0)]] var texture0 : texture_2d<f32>;
             [[builtin(frag_coord)]] var<in> FragCoord : vec4<f32>;
 
@@ -265,16 +265,15 @@ class DepthStencilCopyTests : public DawnTest {
             })");
 
         // Pass the depth test only if the depth is equal.
-        pipelineDescriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
-        pipelineDescriptor.depthStencilState = &pipelineDescriptor.cDepthStencilState;
-        pipelineDescriptor.cDepthStencilState.format = depthFormat;
-        pipelineDescriptor.cDepthStencilState.depthCompare = wgpu::CompareFunction::Equal;
-        pipelineDescriptor.cColorStates[0].format = colorTexDesc.format;
+        pipelineDescriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+        wgpu::DepthStencilState* depthStencil = pipelineDescriptor.EnableDepthStencil(depthFormat);
+        depthStencil->depthCompare = wgpu::CompareFunction::Equal;
+        pipelineDescriptor.cTargets[0].format = colorTexDesc.format;
 
         // TODO(jiawei.shao@intel.com): The Intel Mesa Vulkan driver can't set gl_FragDepth unless
         // depthWriteEnabled == true. This either needs to be fixed in the driver or restricted by
         // the WebGPU API.
-        pipelineDescriptor.cDepthStencilState.depthWriteEnabled = true;
+        depthStencil->depthWriteEnabled = true;
 
         wgpu::TextureViewDescriptor viewDesc = {};
         viewDesc.baseMipLevel = mipLevel;
@@ -285,7 +284,7 @@ class DepthStencilCopyTests : public DawnTest {
         passDescriptor.cDepthStencilAttachmentInfo.depthLoadOp = wgpu::LoadOp::Load;
         passDescriptor.cDepthStencilAttachmentInfo.stencilLoadOp = wgpu::LoadOp::Load;
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
 
         // Bind the depth data texture.
         wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
@@ -301,7 +300,7 @@ class DepthStencilCopyTests : public DawnTest {
         queue.Submit(1, &commands);
 
         std::vector<uint32_t> colorData(width * height, 1u);
-        EXPECT_TEXTURE_EQ(colorData.data(), colorTexture, 0, 0, width, height, 0, 0);
+        EXPECT_TEXTURE_EQ(colorData.data(), colorTexture, {0, 0}, {width, height});
     }
 
     wgpu::ShaderModule mVertexModule;
@@ -324,7 +323,7 @@ TEST_P(DepthStencilCopyTests, FromDepthAspect) {
         0.3, 0.3, 0.0, 0.0,  //
         0.3, 0.3, 0.0, 0.0,  //
     };
-    EXPECT_TEXTURE_EQ(expectedData.data(), depthTexture, 0, 0, kWidth, kHeight, 0, 0,
+    EXPECT_TEXTURE_EQ(expectedData.data(), depthTexture, {0, 0}, {kWidth, kHeight}, 0,
                       wgpu::TextureAspect::DepthOnly);
 }
 
@@ -349,7 +348,7 @@ TEST_P(DepthStencilCopyTests, FromStencilAspect) {
         1u, 1u, 0u, 0u,  //
         1u, 1u, 0u, 0u,  //
     };
-    EXPECT_TEXTURE_EQ(expectedData.data(), depthStencilTexture, 0, 0, kWidth, kHeight, 0, 0,
+    EXPECT_TEXTURE_EQ(expectedData.data(), depthStencilTexture, {0, 0}, {kWidth, kHeight}, 0,
                       wgpu::TextureAspect::StencilOnly);
 }
 
@@ -374,7 +373,7 @@ TEST_P(DepthStencilCopyTests, FromNonZeroMipStencilAspect) {
         1u, 1u, 0u, 0u,  //
         1u, 1u, 0u, 0u,  //
     };
-    EXPECT_TEXTURE_EQ(expectedData.data(), depthStencilTexture, 0, 0, 4, 4, 1, 0,
+    EXPECT_TEXTURE_EQ(expectedData.data(), depthStencilTexture, {0, 0}, {4, 4}, 1,
                       wgpu::TextureAspect::StencilOnly);
 }
 
@@ -392,7 +391,7 @@ TEST_P(DepthStencilCopyTests, FromNonZeroMipDepthAspect) {
         0.4, 0.4, 0.0, 0.0,  //
         0.4, 0.4, 0.0, 0.0,  //
     };
-    EXPECT_TEXTURE_EQ(expectedData.data(), depthTexture, 0, 0, 4, 4, 1, 0,
+    EXPECT_TEXTURE_EQ(expectedData.data(), depthTexture, {0, 0}, {4, 4}, 1,
                       wgpu::TextureAspect::DepthOnly);
 }
 
@@ -421,7 +420,7 @@ TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyStencil) {
         3u, 3u, 1u, 1u,  //
         3u, 3u, 1u, 1u,  //
     };
-    EXPECT_TEXTURE_EQ(expectedData.data(), texture, 0, 0, kWidth, kHeight, 0, 0,
+    EXPECT_TEXTURE_EQ(expectedData.data(), texture, {0, 0}, {kWidth, kHeight}, 0,
                       wgpu::TextureAspect::StencilOnly);
 }
 
@@ -444,7 +443,7 @@ TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyNonRenderableStencil) {
         3u, 3u, 1u, 1u,  //
         3u, 3u, 1u, 1u,  //
     };
-    EXPECT_TEXTURE_EQ(expectedData.data(), texture, 0, 0, kWidth, kHeight, 0, 0,
+    EXPECT_TEXTURE_EQ(expectedData.data(), texture, {0, 0}, {kWidth, kHeight}, 0,
                       wgpu::TextureAspect::StencilOnly);
 }
 
@@ -470,7 +469,7 @@ TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyNonRenderableNonZeroMipStenc
         3u, 3u, 1u, 1u,  //
         3u, 3u, 1u, 1u,  //
     };
-    EXPECT_TEXTURE_EQ(expectedData.data(), texture, 0, 0, 4, 4, 1, 0,
+    EXPECT_TEXTURE_EQ(expectedData.data(), texture, {0, 0}, {4, 4}, 1,
                       wgpu::TextureAspect::StencilOnly);
 }
 
@@ -526,7 +525,7 @@ TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyStencilThenDepth) {
         3u, 3u, 1u, 1u,  //
         3u, 3u, 1u, 1u,  //
     };
-    EXPECT_TEXTURE_EQ(expectedData.data(), texture, 0, 0, kWidth, kHeight, 0, 0,
+    EXPECT_TEXTURE_EQ(expectedData.data(), texture, {0, 0}, {kWidth, kHeight}, 0,
                       wgpu::TextureAspect::StencilOnly);
 
     // Check the depth
@@ -575,7 +574,7 @@ TEST_P(DepthStencilCopyTests, T2TBothAspectsThenCopyDepthThenStencil) {
         3u, 3u, 1u, 1u,  //
         3u, 3u, 1u, 1u,  //
     };
-    EXPECT_TEXTURE_EQ(expectedData.data(), texture, 0, 0, kWidth, kHeight, 0, 0,
+    EXPECT_TEXTURE_EQ(expectedData.data(), texture, {0, 0}, {kWidth, kHeight}, 0,
                       wgpu::TextureAspect::StencilOnly);
 }
 
@@ -588,10 +587,6 @@ TEST_P(DepthStencilCopyTests, ToStencilAspect) {
     // TODO(enga): Figure out why this fails on MacOS Intel Iris.
     // It passes on AMD Radeon Pro and Intel HD Graphics 630.
     DAWN_SKIP_TEST_IF(IsMetal() && IsIntel());
-
-    // TODO(enga): Figure out why this fails on Windows Intel Vulkan.
-    // Reading back the depth does not work.
-    DAWN_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
 
     // Create a stencil texture
     constexpr uint32_t kWidth = 4;
@@ -636,11 +631,11 @@ TEST_P(DepthStencilCopyTests, ToStencilAspect) {
     wgpu::TextureDataLayout stencilDataLayout = {};
     stencilDataLayout.bytesPerRow = kWidth * sizeof(uint8_t);
 
-    wgpu::TextureCopyView stencilDataCopyView = utils::CreateTextureCopyView(
+    wgpu::ImageCopyTexture stencilDataCopyTexture = utils::CreateImageCopyTexture(
         depthStencilTexture, 0, {0, 0, 0}, wgpu::TextureAspect::StencilOnly);
 
     wgpu::Extent3D writeSize = {kWidth, kHeight, 1};
-    queue.WriteTexture(&stencilDataCopyView, stencilData.data(),
+    queue.WriteTexture(&stencilDataCopyTexture, stencilData.data(),
                        stencilData.size() * sizeof(uint8_t), &stencilDataLayout, &writeSize);
 
     // Decrement the stencil value in a render pass to ensure the data is visible to the pipeline.
@@ -648,18 +643,17 @@ TEST_P(DepthStencilCopyTests, ToStencilAspect) {
         wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
         // Create a render pipline which decrements the stencil value for passing fragments.
         // A quad is drawn in the bottom left.
-        utils::ComboRenderPipelineDescriptor renderPipelineDesc(device);
-        renderPipelineDesc.vertexStage.module = mVertexModule;
-        renderPipelineDesc.cFragmentStage.module = utils::CreateShaderModuleFromWGSL(device, R"(
+        utils::ComboRenderPipelineDescriptor2 renderPipelineDesc;
+        renderPipelineDesc.vertex.module = mVertexModule;
+        renderPipelineDesc.cFragment.module = utils::CreateShaderModule(device, R"(
             [[stage(fragment)]] fn main() -> void {
             })");
-        renderPipelineDesc.cDepthStencilState.format = wgpu::TextureFormat::Depth24PlusStencil8;
-        renderPipelineDesc.cDepthStencilState.stencilFront.passOp =
-            wgpu::StencilOperation::DecrementClamp;
-        renderPipelineDesc.depthStencilState = &renderPipelineDesc.cDepthStencilState;
-        renderPipelineDesc.colorStateCount = 0;
+        wgpu::DepthStencilState* depthStencil =
+            renderPipelineDesc.EnableDepthStencil(wgpu::TextureFormat::Depth24PlusStencil8);
+        depthStencil->stencilFront.passOp = wgpu::StencilOperation::DecrementClamp;
+        renderPipelineDesc.cFragment.targetCount = 0;
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&renderPipelineDesc);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&renderPipelineDesc);
 
         // Create a render pass which loads the stencil. We want to load the values we
         // copied in. Also load the canary depth values so they're not lost.
@@ -678,7 +672,7 @@ TEST_P(DepthStencilCopyTests, ToStencilAspect) {
     }
 
     // Copy back the stencil data and check it is correct.
-    EXPECT_TEXTURE_EQ(expectedStencilData.data(), depthStencilTexture, 0, 0, kWidth, kHeight, 0, 0,
+    EXPECT_TEXTURE_EQ(expectedStencilData.data(), depthStencilTexture, {0, 0}, {kWidth, kHeight}, 0,
                       wgpu::TextureAspect::StencilOnly);
 
     ExpectDepthData(depthStencilTexture, wgpu::TextureFormat::Depth24PlusStencil8, kWidth, kHeight,

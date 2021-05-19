@@ -10,10 +10,11 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/containers/span.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/continuous_search/internal/jni_headers/SearchResultExtractorProducer_jni.h"
-#include "chrome/browser/continuous_search/internal/search_result_category.h"
 #include "chrome/browser/continuous_search/internal/search_result_extractor_producer_interface.h"
 #include "chrome/browser/continuous_search/internal/search_url_helper.h"
+#include "chrome/browser/continuous_search/page_category.h"
 #include "content/public/browser/web_contents.h"
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
@@ -94,6 +95,10 @@ void SearchResultExtractorProducer::OnResultsCallback(
     const std::string& query,
     SearchResultExtractorClientStatus status,
     mojom::CategoryResultsPtr results) {
+  base::UmaHistogramEnumeration(
+      "Browser.ContinuousSearch.SearchResultExtractionStatus", status,
+      SearchResultExtractorClientStatus::kMaxValue);
+
   JNIEnv* env = base::android::AttachCurrentThread();
   if (status != SearchResultExtractorClientStatus::kSuccess) {
     java_interface_->OnError(env, java_ref_, status);
@@ -104,6 +109,8 @@ void SearchResultExtractorProducer::OnResultsCallback(
   for (const mojom::ResultGroupPtr& group : results->groups) {
     result_count += group->results.size();
   }
+  base::UmaHistogramCounts100(
+      "Browser.ContinuousSearch.NumberOfSearchResultsExtracted", result_count);
 
   std::vector<std::string> labels;
   std::vector<int> group_sizes;
@@ -115,7 +122,7 @@ void SearchResultExtractorProducer::OnResultsCallback(
   labels.reserve(results->groups.size());
   group_sizes.reserve(results->groups.size());
 
-  std::vector<std::string> titles;
+  std::vector<std::u16string> titles;
   std::vector<base::android::ScopedJavaLocalRef<jobject>> urls;
   titles.reserve(result_count);
   urls.reserve(result_count);
@@ -134,13 +141,13 @@ void SearchResultExtractorProducer::OnResultsCallback(
   // The SearchResultExtractorClient has already verified `document_url` matches
   // the last committed URL of the web contents when the request returned.
   // Document URL must also be a SRP url.
-  DCHECK(GetResultCategoryForUrl(results->document_url) !=
-         SearchResultCategory::kNone);
+  DCHECK(GetSrpPageCategoryForUrl(results->document_url) !=
+         PageCategory::kNone);
   java_interface_->OnResultsAvailable(
       env, java_ref_,
       url::GURLAndroid::FromNativeGURL(env, results->document_url),
       base::android::ConvertUTF8ToJavaString(env, query),
-      static_cast<jint>(GetResultCategoryForUrl(results->document_url)),
+      static_cast<jint>(GetSrpPageCategoryForUrl(results->document_url)),
       base::android::ToJavaArrayOfStrings(env, labels),
       base::android::ToJavaBooleanArray(env, groups_are_ad_type.get(),
                                         results->groups.size()),

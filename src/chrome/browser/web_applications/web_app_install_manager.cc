@@ -35,10 +35,12 @@ constexpr bool kLocallyInstallWebAppsOnSync = false;
 #endif
 
 InstallManager::InstallParams CreateSyncInstallParams(
+    const base::Optional<std::string>& manifest_id,
     const GURL& start_url,
-    const base::string16& app_name,
+    const std::u16string& app_name,
     DisplayMode user_display_mode) {
   InstallManager::InstallParams params;
+  params.override_manifest_id = manifest_id;
   params.user_display_mode = user_display_mode;
   params.fallback_start_url = start_url;
   params.fallback_app_name = app_name;
@@ -252,7 +254,7 @@ void WebAppInstallManager::EnqueueInstallAppFromSync(
 
   task->ExpectAppId(sync_app_id);
   task->SetInstallParams(CreateSyncInstallParams(
-      start_url, web_application_info->title,
+      web_application_info->manifest_id, start_url, web_application_info->title,
       web_application_info->open_as_window ? DisplayMode::kStandalone
                                            : DisplayMode::kBrowser));
 
@@ -273,6 +275,19 @@ void WebAppInstallManager::EnqueueInstallAppFromSync(
   EnqueueTask(std::move(task), std::move(start_task));
 }
 
+std::set<AppId> WebAppInstallManager::GetEnqueuedInstallAppIdsForTesting() {
+  std::set<AppId> app_ids;
+  if (current_queued_task_ &&
+      current_queued_task_->app_id_to_expect().has_value()) {
+    app_ids.insert(current_queued_task_->app_id_to_expect().value());
+  }
+  for (const std::unique_ptr<WebAppInstallTask>& task : tasks_) {
+    if (task && task->app_id_to_expect().has_value())
+      app_ids.insert(task->app_id_to_expect().value());
+  }
+  return app_ids;
+}
+
 bool WebAppInstallManager::IsAppIdAlreadyEnqueued(const AppId& app_id) const {
   if (TaskExpectsAppId(current_queued_task_, app_id))
     return true;
@@ -288,6 +303,7 @@ bool WebAppInstallManager::IsAppIdAlreadyEnqueued(const AppId& app_id) const {
 void WebAppInstallManager::UpdateWebAppFromInfo(
     const AppId& app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
+    bool redownload_app_icons,
     OnceInstallCallback callback) {
   DCHECK(started_);
 
@@ -298,6 +314,7 @@ void WebAppInstallManager::UpdateWebAppFromInfo(
   base::OnceClosure start_task = base::BindOnce(
       &WebAppInstallTask::UpdateWebAppFromInfo, task->GetWeakPtr(),
       EnsureWebContentsCreated(), app_id, std::move(web_application_info),
+      redownload_app_icons,
       base::BindOnce(&WebAppInstallManager::OnQueuedTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 
@@ -316,6 +333,7 @@ void WebAppInstallManager::InstallWebAppsAfterSync(
     DCHECK(web_app->is_in_sync_install());
 
     auto web_application_info = std::make_unique<WebApplicationInfo>();
+    web_application_info->manifest_id = web_app->manifest_id();
     web_application_info->start_url = web_app->start_url();
     web_application_info->title =
         base::UTF8ToUTF16(web_app->sync_fallback_data().name);
@@ -389,6 +407,9 @@ void WebAppInstallManager::
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), os_integration_manager(), finalizer(),
       data_retriever_factory_.Run(), registrar());
+  // Set the expect app id for fallback install too. This can avoid duplicate
+  // installs.
+  task->ExpectAppId(sync_app_id);
 
   InstallFinalizer::FinalizeOptions finalize_options;
   finalize_options.install_source = webapps::WebappInstallSource::SYNC;

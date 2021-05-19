@@ -8,6 +8,7 @@ import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../os_settings.gni")
 
 js_type_check("closure_compile_module") {
+  closure_flags = os_settings_closure_flags
   is_polymer3 = true
   deps = [
     ":kerberos_accounts.m",
@@ -24,8 +25,8 @@ js_library("kerberos_accounts.m") {
     "..:deep_linking_behavior.m",
     "..:metrics_recorder.m",
     "..:os_route.m",
-    "../..:router.m",
-    "../../people_page:account_manager_browser_proxy.m",
+    "../..:router",
+    "../../people_page:account_manager_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/js:cr.m",
@@ -50,7 +51,7 @@ js_library("kerberos_add_account_dialog.m") {
   deps = [
     ":kerberos_accounts_browser_proxy.m",
     "..:metrics_recorder.m",
-    "//chrome/browser/resources/settings/controls:settings_textarea.m",
+    "//chrome/browser/resources/settings/controls:settings_textarea",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
     "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
@@ -66,8 +67,8 @@ js_library("kerberos_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/kerberos_page/kerberos_page.m.js" ]
   deps = [
     "..:os_route.m",
-    "../..:router.m",
-    "../../settings_page:settings_animated_pages.m",
+    "../..:router",
+    "../../settings_page:settings_animated_pages",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
@@ -82,7 +83,7 @@ group("polymer3_elements") {
     ":kerberos_add_account_dialog_module",
     ":kerberos_page_module",
     ":modulize",
-    "../../people_page:polymer3_elements",
+    "../../people_page:web_components",
   ]
 }
 

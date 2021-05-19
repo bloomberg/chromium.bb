@@ -31,6 +31,7 @@
 #include "chrome/browser/file_system_access/file_system_access_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/browser/history_clusters/history_clusters_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lite_video/lite_video_observer.h"
 #include "chrome/browser/login_detection/login_detection_tab_helper.h"
@@ -43,6 +44,7 @@
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/optimization_guide/blink/blink_optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
+#include "chrome/browser/optimization_guide/page_content_annotations_service_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/performance_hints/performance_hints_features.h"
@@ -52,8 +54,6 @@
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_tab_helper.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_tab_helper.h"
-#include "chrome/browser/previews/previews_ui_tab_helper.h"
-#include "chrome/browser/previews/resource_loading_hints/resource_loading_hints_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
@@ -71,7 +71,6 @@
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/sync/sync_encryption_keys_tab_helper.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
-#include "chrome/browser/tflite_experiment/tflite_experiment_switches.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
@@ -102,8 +101,8 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "components/optimization_guide/content/browser/page_content_annotations_web_contents_helper.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
-#include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/performance_manager/public/performance_manager.h"
@@ -161,11 +160,6 @@
 #include "chrome/browser/ui/cocoa/screentime/tab_helper.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/media/feeds/media_feeds_contents_observer.h"
-#include "chrome/browser/media/feeds/media_feeds_service.h"
-#endif
-
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "components/captive_portal/content/captive_portal_tab_helper.h"
 #endif
@@ -179,6 +173,7 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -198,10 +193,6 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
-#endif
-
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-#include "chrome/browser/tflite_experiment/tflite_experiment_observer.h"
 #endif
 
 using content::WebContents;
@@ -269,18 +260,13 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   history::WebContentsTopSitesObserver::CreateForWebContents(
       web_contents, TopSitesFactory::GetForProfile(profile).get());
   HistoryTabHelper::CreateForWebContents(web_contents);
+  HistoryClustersTabHelper::CreateForWebContents(web_contents);
   InfoBarService::CreateForWebContents(web_contents);
   webapps::InstallableManager::CreateForWebContents(web_contents);
   PrefetchProxyTabHelper::CreateForWebContents(web_contents);
   LiteVideoObserver::MaybeCreateForWebContents(web_contents);
   login_detection::LoginDetectionTabHelper::MaybeCreateForWebContents(
       web_contents);
-
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-  if (tflite_experiment::switches::GetTFLiteModelPath())
-    TFLiteExperimentObserver::CreateForWebContents(web_contents);
-#endif
-
   if (MediaEngagementService::IsEnabled())
     MediaEngagementService::CreateWebContentsObserver(web_contents);
   if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
@@ -294,6 +280,13 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     optimization_guide::BlinkOptimizationGuideWebContentsObserver::
         CreateForWebContents(web_contents);
     OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents);
+  }
+  optimization_guide::PageContentAnnotationsService*
+      page_content_annotations_service =
+          PageContentAnnotationsServiceFactory::GetForProfile(profile);
+  if (page_content_annotations_service) {
+    optimization_guide::PageContentAnnotationsWebContentsHelper::
+        CreateForWebContents(web_contents, page_content_annotations_service);
   }
   OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
@@ -310,13 +303,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     predictors::LoadingPredictorTabHelper::CreateForWebContents(web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
   prerender::NoStatePrefetchTabHelper::CreateForWebContents(web_contents);
-  PreviewsUITabHelper::CreateForWebContents(web_contents);
   RecentlyAudibleHelper::CreateForWebContents(web_contents);
   // TODO(siggi): Remove this once the Resource Coordinator refactoring is done.
   //     See https://crbug.com/910288.
   resource_coordinator::ResourceCoordinatorTabHelper::CreateForWebContents(
       web_contents);
-  ResourceLoadingHintsWebContentsObserver::CreateForWebContents(web_contents);
   safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
       web_contents);
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);
@@ -392,8 +383,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     LastTabStandingTrackerTabHelper::CreateForWebContents(web_contents);
   }
   ManagePasswordsUIController::CreateForWebContents(web_contents);
-  if (media_feeds::MediaFeedsService::IsEnabled())
-    MediaFeedsContentsObserver::CreateForWebContents(web_contents);
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
       web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
   SadTabHelper::CreateForWebContents(web_contents);
@@ -411,7 +400,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if defined(OS_MAC)
-  if (screentime::TabHelper::IsScreentimeEnabled())
+  if (screentime::TabHelper::IsScreentimeEnabledForProfile(profile))
     screentime::TabHelper::CreateForWebContents(web_contents);
 #endif
 
@@ -432,8 +421,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(
-          features::kHappinessTrackingSurveysForDesktop) ||
-      base::FeatureList::IsEnabled(
           features::kHappinessTrackingSurveysForDesktopDemo)) {
     HatsHelper::CreateForWebContents(web_contents);
   }
@@ -451,7 +438,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::SetViewType(web_contents, extensions::VIEW_TYPE_TAB_CONTENTS);
+  extensions::SetViewType(web_contents,
+                          extensions::mojom::ViewType::kTabContents);
 
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);

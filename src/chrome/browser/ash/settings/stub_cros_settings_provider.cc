@@ -11,7 +11,7 @@
 #include "chrome/browser/ash/settings/device_settings_provider.h"
 #include "chromeos/settings/cros_settings_names.h"
 
-namespace chromeos {
+namespace ash {
 
 StubCrosSettingsProvider::StubCrosSettingsProvider(
     const NotifyObserversCallback& notify_cb)
@@ -96,7 +96,6 @@ void StubCrosSettingsProvider::SetDefaults() {
   values_.SetBoolean(kAccountsPrefAllowGuest, true);
   values_.SetBoolean(kAccountsPrefAllowNewUser, true);
   values_.SetBoolean(kAccountsPrefFamilyLinkAccountsAllowed, false);
-  values_.SetBoolean(kAccountsPrefSupervisedUsersEnabled, true);
   values_.SetBoolean(kAccountsPrefShowUserNamesOnSignIn, true);
   values_.SetValue(kAccountsPrefUsers, base::Value(base::Value::Type::LIST));
   values_.SetBoolean(kAllowBluetooth, true);
@@ -109,4 +108,4 @@ void StubCrosSettingsProvider::SetDefaults() {
   // |kDeviceOwner| will be set to the logged-in user by |UserManager|.
 }
 
-}  // namespace chromeos
+}  // namespace ash

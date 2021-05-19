@@ -584,11 +584,12 @@ WorkerGlobalScope::WorkerGlobalScope(
         GetTaskRunner(TaskType::kInternalDefault));
   }
 
-  // A FeaturePolicy is created by FeaturePolicy::CreateFromParentPolicy, even
-  // if the parent policy is null.
-  DCHECK(creation_params->worker_feature_policy);
-  GetSecurityContext().SetFeaturePolicy(
-      std::move(creation_params->worker_feature_policy));
+  // A PermissionsPolicy is created by
+  // PermissionsPolicy::CreateFromParentPolicy, even if the parent policy is
+  // null.
+  DCHECK(creation_params->worker_permissions_policy);
+  GetSecurityContext().SetPermissionsPolicy(
+      std::move(creation_params->worker_permissions_policy));
 }
 
 void WorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {

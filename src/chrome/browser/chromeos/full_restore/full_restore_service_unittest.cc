@@ -10,9 +10,9 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_prefs.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_service_factory.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/common/pref_names.h"
@@ -63,8 +63,7 @@ syncer::SyncData CreatePrefSyncData(const std::string& name,
 class FullRestoreServiceTest : public testing::Test {
  protected:
   FullRestoreServiceTest()
-      : user_manager_enabler_(
-            std::make_unique<chromeos::FakeChromeUserManager>()) {}
+      : user_manager_enabler_(std::make_unique<FakeChromeUserManager>()) {}
 
   ~FullRestoreServiceTest() override = default;
 
@@ -97,7 +96,7 @@ class FullRestoreServiceTest : public testing::Test {
   void TearDown() override { profile_.reset(); }
 
   FakeChromeUserManager* GetFakeUserManager() const {
-    return static_cast<chromeos::FakeChromeUserManager*>(
+    return static_cast<FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 

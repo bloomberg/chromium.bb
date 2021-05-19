@@ -677,9 +677,9 @@ TEST_F(LocalStorageImplTest, DeleteStorageWithPendingWrites) {
 TEST_F(LocalStorageImplTest, Migration) {
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
   url::Origin origin2 = url::Origin::Create(GURL("http://example.com"));
-  base::string16 key = base::ASCIIToUTF16("key");
-  base::string16 value = base::ASCIIToUTF16("value");
-  base::string16 key2 = base::ASCIIToUTF16("key2");
+  std::u16string key = u"key";
+  std::u16string value = u"value";
+  std::u16string key2 = u"key2";
   key2.push_back(0xd83d);
   key2.push_back(0xde00);
 
@@ -696,8 +696,8 @@ TEST_F(LocalStorageImplTest, Migration) {
         old_db_path, std::make_unique<FilesystemProxy>(
                          FilesystemProxy::UNRESTRICTED, local_storage_path));
     LegacyDomStorageValuesMap data;
-    data[key] = base::NullableString16(value, false);
-    data[key2] = base::NullableString16(value, false);
+    data[key] = value;
+    data[key2] = value;
     db.CommitChanges(false, data);
   }
   EXPECT_TRUE(base::PathExists(old_db_path));
@@ -751,12 +751,12 @@ TEST_F(LocalStorageImplTest, Migration) {
 }
 
 static std::string EncodeKeyAsUTF16(const std::string& origin,
-                                    const base::string16& key) {
+                                    const std::u16string& key) {
   std::string result = '_' + origin + '\x00' + '\x00';
-  std::copy(reinterpret_cast<const char*>(key.data()),
-            reinterpret_cast<const char*>(key.data()) +
-                key.size() * sizeof(base::char16),
-            std::back_inserter(result));
+  std::copy(
+      reinterpret_cast<const char*>(key.data()),
+      reinterpret_cast<const char*>(key.data()) + key.size() * sizeof(char16_t),
+      std::back_inserter(result));
   return result;
 }
 
@@ -768,14 +768,10 @@ TEST_F(LocalStorageImplTest, FixUp) {
   // deleted.
   SetDatabaseEntry(std::string("_http://foobar.com") + '\x00' + "\x01key",
                    "value1");
-  SetDatabaseEntry(
-      EncodeKeyAsUTF16("http://foobar.com", base::ASCIIToUTF16("key")),
-      "value2");
+  SetDatabaseEntry(EncodeKeyAsUTF16("http://foobar.com", u"key"), "value2");
   // Also add mock data for the "foo" key, this time only with the incorrec
   // encoding. This should be updated to the correct encoding.
-  SetDatabaseEntry(
-      EncodeKeyAsUTF16("http://foobar.com", base::ASCIIToUTF16("foo")),
-      "value3");
+  SetDatabaseEntry(EncodeKeyAsUTF16("http://foobar.com", u"foo"), "value3");
 
   mojo::Remote<blink::mojom::StorageArea> area;
   mojo::Remote<blink::mojom::StorageArea>

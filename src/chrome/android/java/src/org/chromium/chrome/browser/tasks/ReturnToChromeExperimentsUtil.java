@@ -25,15 +25,13 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.ntp.FakeboxDelegate;
+import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -54,22 +52,22 @@ public final class ReturnToChromeExperimentsUtil {
     private static class TabStateObserver implements UrlFocusChangeListener {
         private final Tab mNewTab;
         private final TabModel mCurrentTabModel;
-        private final FakeboxDelegate mFakeboxDelegate;
+        private final OmniboxStub mOmniboxStub;
         private final @Nullable Runnable mEmptyTabCloseCallback;
         private final ActivityTabProvider mActivityTabProvider;
         private boolean mIsOmniboxFocused;
 
         TabStateObserver(@NonNull Tab newTab, @NonNull TabModel currentTabModel,
-                @NonNull FakeboxDelegate fakeboxDelegate, @Nullable Runnable emptyTabCloseCallback,
+                @NonNull OmniboxStub omniboxStub, @Nullable Runnable emptyTabCloseCallback,
                 ActivityTabProvider activityTabProvider) {
             mNewTab = newTab;
             mCurrentTabModel = currentTabModel;
             mEmptyTabCloseCallback = emptyTabCloseCallback;
-            mFakeboxDelegate = fakeboxDelegate;
+            mOmniboxStub = omniboxStub;
             mActivityTabProvider = activityTabProvider;
             mIsOmniboxFocused =
-                    fakeboxDelegate.isUrlBarFocused() && activityTabProvider.get() == newTab;
-            mFakeboxDelegate.addUrlFocusChangeListener(this);
+                    mOmniboxStub.isUrlBarFocused() && activityTabProvider.get() == newTab;
+            mOmniboxStub.addUrlFocusChangeListener(this);
         }
 
         @Override
@@ -102,7 +100,7 @@ public final class ReturnToChromeExperimentsUtil {
                 // No matter whether the back button is tapped or the Tab navigates,
                 // {@link onUrlFocusChanged} with focus == false is always called.
                 // Removes the observer here.
-                mFakeboxDelegate.removeUrlFocusChangeListener(this);
+                mOmniboxStub.removeUrlFocusChangeListener(this);
             }
         }
     }
@@ -302,7 +300,7 @@ public final class ReturnToChromeExperimentsUtil {
             // This observer lives for as long as the user is focused in the Omnibox. It stops
             // observing once the focus is cleared, e.g, Tab navigates or user taps the back button.
             new TabStateObserver(newTab, currentTabModel,
-                    chromeActivity.getToolbarManager().getFakeboxDelegate(), emptyTabCloseCallback,
+                    chromeActivity.getToolbarManager().getOmniboxStub(), emptyTabCloseCallback,
                     chromeActivity.getActivityTabProvider());
         }
 
@@ -401,8 +399,7 @@ public final class ReturnToChromeExperimentsUtil {
         String homePageUrl = HomepageManager.getHomepageUri();
         return StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled()
                 && (TextUtils.isEmpty(homePageUrl) || isCanonicalizedNTPUrl(homePageUrl))
-                && (!ChromeAccessibilityUtil.get().isAccessibilityEnabled()
-                        || TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled())
+                && !StartSurfaceConfiguration.shouldHideStartSurfaceWithAccessibilityOn()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                         ContextUtils.getApplicationContext());
     }

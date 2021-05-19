@@ -4,6 +4,7 @@
 
 #include "content/browser/utility_process_host.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/base_switches.h"
@@ -48,6 +49,10 @@
 #include "components/os_crypt/os_crypt_switches.h"
 #endif
 
+#if defined(OS_WIN)
+#include "media/capture/capture_switches.h"
+#endif
+
 namespace content {
 
 UtilityMainThreadFactoryFunction g_utility_main_thread_factory = nullptr;
@@ -68,14 +73,19 @@ UtilityProcessHost::UtilityProcessHost(std::unique_ptr<Client> client)
       child_flags_(ChildProcessHost::CHILD_NORMAL),
 #endif
       started_(false),
-      name_(base::ASCIIToUTF16("utility process")),
+      name_(u"utility process"),
       client_(std::move(client)) {
-  process_.reset(new BrowserChildProcessHostImpl(
-      PROCESS_TYPE_UTILITY, this, ChildProcessHost::IpcMode::kNormal));
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
+  process_ = std::make_unique<BrowserChildProcessHostImpl>(
+      PROCESS_TYPE_UTILITY, this, ChildProcessHost::IpcMode::kNormal);
 }
 
 UtilityProcessHost::~UtilityProcessHost() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   if (client_ && launch_state_ == LaunchState::kLaunchComplete)
     client_->OnProcessTerminatedNormally();
 }
@@ -133,7 +143,7 @@ void UtilityProcessHost::SetMetricsName(const std::string& metrics_name) {
   metrics_name_ = metrics_name;
 }
 
-void UtilityProcessHost::SetName(const base::string16& name) {
+void UtilityProcessHost::SetName(const std::u16string& name) {
   name_ = name;
 }
 
@@ -227,7 +237,6 @@ bool UtilityProcessHost::StartProcess() {
       network::switches::kIgnoreUrlFetcherCertRequests,
       network::switches::kLogNetLog,
       network::switches::kNetLogCaptureMode,
-      network::switches::kExplicitlyAllowedPorts,
       sandbox::policy::switches::kNoSandbox,
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
@@ -240,6 +249,7 @@ bool UtilityProcessHost::StartProcess() {
       os_crypt::switches::kUseMockKeychain,
 #endif
       switches::kDisableTestCerts,
+      switches::kEnableBackgroundThreadPool,
       switches::kEnableExperimentalCookieFeatures,
       switches::kEnableLogging,
       switches::kForceTextDirection,
@@ -256,6 +266,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kUseMockCertVerifierForTesting,
       switches::kMockCertVerifierDefaultResultForTesting,
       switches::kUtilityStartupDialog,
+      switches::kUseANGLE,
       switches::kUseGL,
       switches::kV,
       switches::kVModule,
@@ -311,15 +322,16 @@ bool UtilityProcessHost::StartProcess() {
     for (const auto& extra_switch : extra_switches_)
       cmd_line->AppendSwitch(extra_switch);
 
+#if defined(OS_WIN)
+    if (base::FeatureList::IsEnabled(
+            media::kMediaFoundationD3D11VideoCapture)) {
+      cmd_line->AppendSwitch(switches::kVideoCaptureUseGpuMemoryBuffer);
+    }
+#endif
+
     std::unique_ptr<UtilitySandboxedProcessLauncherDelegate> delegate =
         std::make_unique<UtilitySandboxedProcessLauncherDelegate>(
             sandbox_type_, env_, *cmd_line);
-
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
-    if (child_flags == ChildProcessHost::CHILD_LAUNCH_X86_64) {
-      delegate->set_launch_x86_64(true);
-    }
-#endif  // OS_MAC && ARCH_CPU_ARM64
 
     process_->LaunchWithPreloadedFiles(std::move(delegate), std::move(cmd_line),
                                        GetV8SnapshotFilesToPreload(), true);

@@ -38,7 +38,7 @@
 
 namespace em = enterprise_management;
 
-namespace chromeos {
+namespace ash {
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -105,6 +105,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_storage_status(enable_reporting);
     proto->set_report_board_status(enable_reporting);
     proto->set_report_app_info(enable_reporting);
+    proto->set_report_print_jobs(enable_reporting);
     proto->set_device_status_frequency(frequency);
     BuildAndInstallDevicePolicy();
   }
@@ -181,6 +182,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
         kReportDeviceGraphicsStatus,
         kReportDeviceCrashReportInfo,
         kReportDeviceAppInfo,
+        kReportDevicePrintJobs,
         kReportOsUpdateStatus,
         kReportRunningKioskApp,
     };
@@ -472,9 +474,8 @@ TEST_F(DeviceSettingsProviderTest, InitializationTest) {
   EXPECT_TRUE(closure);  // Ownership of |closure| was not taken.
   const base::Value* value = provider_->Get(kStatsReportingPref);
   ASSERT_TRUE(value);
-  bool bool_value;
-  EXPECT_TRUE(value->GetAsBoolean(&bool_value));
-  EXPECT_FALSE(bool_value);
+  ASSERT_TRUE(value->is_bool());
+  EXPECT_FALSE(value->GetBool());
 }
 
 TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
@@ -518,9 +519,8 @@ TEST_F(DeviceSettingsProviderTestEnterprise, NoPolicyDefaultsOn) {
   SetMetricsReportingSettings(REMOVE_METRICS_POLICY);
   const base::Value* saved_value = provider_->Get(kStatsReportingPref);
   ASSERT_TRUE(saved_value);
-  bool bool_value;
-  EXPECT_TRUE(saved_value->GetAsBoolean(&bool_value));
-  EXPECT_TRUE(bool_value);
+  ASSERT_TRUE(saved_value->is_bool());
+  EXPECT_TRUE(saved_value->GetBool());
 }
 
 TEST_F(DeviceSettingsProviderTest, NoPolicyDefaultsOff) {
@@ -529,9 +529,8 @@ TEST_F(DeviceSettingsProviderTest, NoPolicyDefaultsOff) {
   SetMetricsReportingSettings(REMOVE_METRICS_POLICY);
   const base::Value* saved_value = provider_->Get(kStatsReportingPref);
   ASSERT_TRUE(saved_value);
-  bool bool_value;
-  EXPECT_TRUE(saved_value->GetAsBoolean(&bool_value));
-  EXPECT_FALSE(bool_value);
+  ASSERT_TRUE(saved_value->is_bool());
+  EXPECT_FALSE(saved_value->GetBool());
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
@@ -551,9 +550,8 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
   // Verify the change has not been applied.
   const base::Value* saved_value = provider_->Get(kStatsReportingPref);
   ASSERT_TRUE(saved_value);
-  bool bool_value;
-  EXPECT_TRUE(saved_value->GetAsBoolean(&bool_value));
-  EXPECT_FALSE(bool_value);
+  ASSERT_TRUE(saved_value->is_bool());
+  EXPECT_FALSE(saved_value->GetBool());
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
@@ -581,9 +579,8 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
   // Verify the change has been applied.
   const base::Value* saved_value = provider_->Get(kStatsReportingPref);
   ASSERT_TRUE(saved_value);
-  bool bool_value;
-  EXPECT_TRUE(saved_value->GetAsBoolean(&bool_value));
-  EXPECT_TRUE(bool_value);
+  ASSERT_TRUE(saved_value->is_bool());
+  EXPECT_TRUE(saved_value->GetBool());
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
@@ -1191,7 +1188,7 @@ TEST_F(DeviceSettingsProviderTestEnterprise,
 TEST_F(DeviceSettingsProviderTest, DeviceFamilyLinkAccountsAllowedDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
-      chromeos::features::kFamilyLinkOnSchoolDevice);
+      features::kFamilyLinkOnSchoolDevice);
 
   base::Value default_value(false);
   VerifyPolicyValue(kAccountsPrefFamilyLinkAccountsAllowed, &default_value);
@@ -1206,8 +1203,7 @@ TEST_F(DeviceSettingsProviderTest, DeviceFamilyLinkAccountsAllowedDisabled) {
 // Tests DeviceFamilyLinkAccountsAllowed policy with the feature enabled.
 TEST_F(DeviceSettingsProviderTest, DeviceFamilyLinkAccountsAllowedEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      chromeos::features::kFamilyLinkOnSchoolDevice);
+  scoped_feature_list.InitAndEnableFeature(features::kFamilyLinkOnSchoolDevice);
 
   base::Value default_value(false);
   VerifyPolicyValue(kAccountsPrefFamilyLinkAccountsAllowed, &default_value);
@@ -1239,4 +1235,27 @@ TEST_F(DeviceSettingsProviderTest, FeatureFlags) {
   EXPECT_EQ(expected_feature_flags, *provider_->Get(kFeatureFlags));
 }
 
-}  // namespace chromeos
+TEST_F(DeviceSettingsProviderTest, DecodeBorealisAllowed) {
+  device_policy_->payload().mutable_device_borealis_allowed()->set_allowed(
+      true);
+  BuildAndInstallDevicePolicy();
+  EXPECT_EQ(base::Value(true), *provider_->Get(kBorealisAllowedForDevice));
+}
+
+TEST_F(DeviceSettingsProviderTest, DecodeBorealisDisallowed) {
+  device_policy_->payload().mutable_device_borealis_allowed()->set_allowed(
+      false);
+  BuildAndInstallDevicePolicy();
+  EXPECT_EQ(base::Value(false), *provider_->Get(kBorealisAllowedForDevice));
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceAllowedBluetoothServices) {
+  em::DeviceAllowedBluetoothServicesProto* proto =
+      device_policy_->payload().mutable_device_allowed_bluetooth_services();
+  proto->add_allowlist("0x1124");
+  BuildAndInstallDevicePolicy();
+  base::ListValue allowlist;
+  allowlist.Append(base::Value("0x1124"));
+  EXPECT_EQ(allowlist, *provider_->Get(kDeviceAllowedBluetoothServices));
+}
+}  // namespace ash

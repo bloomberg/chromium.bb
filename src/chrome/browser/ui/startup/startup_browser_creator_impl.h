@@ -98,6 +98,7 @@ class StartupBrowserCreatorImpl {
                            DetermineBrowserOpenBehavior_NotStartup);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineStartupTabs_ExtensionCheckupPage);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest, ShouldLaunch);
 
   enum class WelcomeRunType {
     NONE,                // Do not inject the welcome page for this run.
@@ -125,8 +126,8 @@ class StartupBrowserCreatorImpl {
   // Creates a tab for each of the Tabs in |tabs|. If browser is non-null
   // and a tabbed browser, the tabs are added to it. Otherwise a new tabbed
   // browser is created and the tabs are added to it. The browser the tabs
-  // are added to is returned, which is either |browser| or the newly created
-  // browser.
+  // are added to is returned, which is either |browser|, the newly created
+  // browser, or nullptr if browser could not be created.
   Browser* OpenTabsInBrowser(Browser* browser,
                              bool process_startup,
                              const StartupTabs& tabs);
@@ -163,9 +164,11 @@ class StartupBrowserCreatorImpl {
   // this may attempt a session restore or create a new browser. May also allow
   // DOM Storage to begin cleanup once it's clear it is not needed anymore.
   Browser* RestoreOrCreateBrowser(
-    const StartupTabs& tabs, BrowserOpenBehavior behavior,
-    SessionRestore::BehaviorBitmask restore_options, bool process_startup,
-    bool is_post_crash_launch);
+      const StartupTabs& tabs,
+      BrowserOpenBehavior behavior,
+      SessionRestore::BehaviorBitmask restore_options,
+      bool process_startup,
+      bool is_post_crash_launch);
 
   // Adds any startup infobars to the selected tab of the given browser.
   void AddInfoBarsIfNecessary(
@@ -183,6 +186,9 @@ class StartupBrowserCreatorImpl {
       bool has_create_browser_default,
       bool has_create_browser_switch,
       bool was_mac_login_or_resume);
+
+  // Returns whether or not a browser window should be created/restored.
+  static bool ShouldLaunch(const base::CommandLine& command_line);
 
   const base::FilePath cur_dir_;
   const base::CommandLine& command_line_;

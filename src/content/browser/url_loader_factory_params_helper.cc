@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/optional.h"
+#include "content/browser/devtools/network_service_devtools_observer.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/content_browser_client.h"
@@ -47,8 +48,9 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
     bool allow_universal_access_from_file_urls,
     bool is_for_isolated_world,
     mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
-    mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
-        auth_cert_observer,
+    mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
+        url_loader_network_observer,
+    mojo::PendingRemote<network::mojom::DevToolsObserver> devtools_observer,
     network::mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy,
     base::StringPiece debug_tag) {
   DCHECK(process);
@@ -94,8 +96,14 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
       process->GetBrowserContext(), origin, is_for_isolated_world,
       params.get());
 
+  // If we have a URLLoaderNetworkObserver, request loading state updates.
+  if (url_loader_network_observer) {
+    params->provide_loading_state_updates = true;
+  }
+
   params->cookie_observer = std::move(cookie_observer);
-  params->auth_cert_observer = std::move(auth_cert_observer);
+  params->url_loader_network_observer = std::move(url_loader_network_observer);
+  params->devtools_observer = std::move(devtools_observer);
 
   params->debug_tag = debug_tag.as_string();
 
@@ -127,7 +135,9 @@ URLLoaderFactoryParamsHelper::CreateForFrame(
           ->GetOrCreateWebPreferences()
           .allow_universal_access_from_file_urls,
       false,  // is_for_isolated_world
-      frame->CreateCookieAccessObserver(), frame->CreateAuthAndCertObserver(),
+      frame->CreateCookieAccessObserver(),
+      frame->CreateURLLoaderNetworkObserver(),
+      NetworkServiceDevToolsObserver::MakeSelfOwned(frame->frame_tree_node()),
       trust_token_redemption_policy, debug_tag);
 }
 
@@ -152,7 +162,9 @@ URLLoaderFactoryParamsHelper::CreateForIsolatedWorld(
           ->GetOrCreateWebPreferences()
           .allow_universal_access_from_file_urls,
       true,  // is_for_isolated_world
-      frame->CreateCookieAccessObserver(), frame->CreateAuthAndCertObserver(),
+      frame->CreateCookieAccessObserver(),
+      frame->CreateURLLoaderNetworkObserver(),
+      NetworkServiceDevToolsObserver::MakeSelfOwned(frame->frame_tree_node()),
       trust_token_redemption_policy, "ParamHelper::CreateForIsolatedWorld");
 }
 
@@ -164,22 +176,24 @@ URLLoaderFactoryParamsHelper::CreateForPrefetch(
   // each separate request (rather than forcing the client to use the key
   // specified in URLLoaderFactoryParams).
   const url::Origin& frame_origin = frame->GetLastCommittedOrigin();
-  return CreateParams(frame->GetProcess(),
-                      frame_origin,  // origin
-                      frame_origin,  // request_initiator_origin_lock
-                      true,          // is_trusted
-                      frame->GetTopFrameToken(),
-                      net::IsolationInfo(),  // isolation_info
-                      std::move(client_security_state),
-                      mojo::NullRemote(),  // coep_reporter
-                      WebContents::FromRenderFrameHost(frame)
-                          ->GetOrCreateWebPreferences()
-                          .allow_universal_access_from_file_urls,
-                      false,  // is_for_isolated_world
-                      frame->CreateCookieAccessObserver(),
-                      frame->CreateAuthAndCertObserver(),
-                      network::mojom::TrustTokenRedemptionPolicy::kForbid,
-                      "ParamHelper::CreateForPrefetch");
+  return CreateParams(
+      frame->GetProcess(),
+      frame_origin,  // origin
+      frame_origin,  // request_initiator_origin_lock
+      true,          // is_trusted
+      frame->GetTopFrameToken(),
+      net::IsolationInfo(),  // isolation_info
+      std::move(client_security_state),
+      mojo::NullRemote(),  // coep_reporter
+      WebContents::FromRenderFrameHost(frame)
+          ->GetOrCreateWebPreferences()
+          .allow_universal_access_from_file_urls,
+      false,  // is_for_isolated_world
+      frame->CreateCookieAccessObserver(),
+      frame->CreateURLLoaderNetworkObserver(),
+      NetworkServiceDevToolsObserver::MakeSelfOwned(frame->frame_tree_node()),
+      network::mojom::TrustTokenRedemptionPolicy::kForbid,
+      "ParamHelper::CreateForPrefetch");
 }
 
 // static
@@ -190,8 +204,9 @@ URLLoaderFactoryParamsHelper::CreateForWorker(
     const net::IsolationInfo& isolation_info,
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter,
-    mojo::PendingRemote<network::mojom::AuthenticationAndCertificateObserver>
-        auth_cert_observer,
+    mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
+        url_loader_network_observer,
+    mojo::PendingRemote<network::mojom::DevToolsObserver> devtools_observer,
     base::StringPiece debug_tag) {
   return CreateParams(
       process,
@@ -206,11 +221,11 @@ URLLoaderFactoryParamsHelper::CreateForWorker(
       false,  // is_for_isolated_world
       static_cast<StoragePartitionImpl*>(process->GetStoragePartition())
           ->CreateCookieAccessObserverForServiceWorker(),
-      std::move(auth_cert_observer),
+      std::move(url_loader_network_observer), std::move(devtools_observer),
       // Since ExecutionContext::IsFeatureEnabled returns
       // false in non-Document contexts, no worker should ever
       // execute a trust token redemption or signing operation,
-      // as these operations require the Feature Policy feature.
+      // as these operations require the Permissions Policy feature.
       network::mojom::TrustTokenRedemptionPolicy::kForbid, debug_tag);
 }
 
@@ -243,7 +258,7 @@ URLLoaderFactoryParamsHelper::CreateForRendererProcess(
       mojo::NullRemote(),  // coep_reporter
       false,               // allow_universal_access_from_file_urls
       false,               // is_for_isolated_world
-      mojo::NullRemote(), mojo::NullRemote(),
+      mojo::NullRemote(), mojo::NullRemote(), mojo::NullRemote(),
       network::mojom::TrustTokenRedemptionPolicy::kForbid,
       "ParamHelper::CreateForRendererProcess");
 }

@@ -48,7 +48,6 @@
   readonly attribute unsigned long long? duration;
 
   // TODO(sandersd): color space metadata.
-  // TODO(sandersd): rotation metadata.
 
   // DEPRECATED: use close() instead.
   // Release held resources immediately.

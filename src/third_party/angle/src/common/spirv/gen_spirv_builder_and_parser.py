@@ -41,7 +41,7 @@ HEADER_TEMPLATE = """// GENERATED FILE - DO NOT EDIT.
 #ifndef COMMON_SPIRV_{file_name_capitalized}AUTOGEN_H_
 #define COMMON_SPIRV_{file_name_capitalized}AUTOGEN_H_
 
-#include <vector>
+#include <spirv/unified1/spirv.hpp>
 
 #include "spirv_types.h"
 
@@ -92,7 +92,34 @@ uint32_t MakeLengthOp(size_t length, spv::Op op)
 
     return static_cast<uint32_t>(length) << 16 | op;
 }
-}  // anonymous namespace"""
+}  // anonymous namespace
+
+void WriteSpirvHeader(std::vector<uint32_t> *blob, uint32_t idCount)
+{
+    // Header:
+    //
+    //  - Magic number
+    //  - Version (1.0)
+    //  - ANGLE's Generator number:
+    //     * 24 for tool id (higher 16 bits)
+    //     * 0 for tool version (lower 16 bits))
+    //  - Bound (idCount)
+    //  - 0 (reserved)
+    constexpr uint32_t kANGLEGeneratorId = 24;
+
+    ASSERT(blob->empty());
+
+    blob->push_back(spv::MagicNumber);
+    blob->push_back(0x00010000);
+    blob->push_back(kANGLEGeneratorId << 16 | 0);
+    blob->push_back(idCount);
+    blob->push_back(0x00000000);
+}
+"""
+
+BUILDER_HELPER_FUNCTION_PROTOTYPE = """
+    void WriteSpirvHeader(std::vector<uint32_t> *blob, uint32_t idCount);
+"""
 
 PARSER_FIXED_FUNCTIONS_PROTOTYPES = """void GetInstructionOpAndLength(const uint32_t *_instruction,
     spv::Op *opOut, uint32_t *lengthOut);
@@ -107,7 +134,7 @@ PARSER_FIXED_FUNCTIONS = """void GetInstructionOpAndLength(const uint32_t *_inst
 }
 """
 
-TEMPLATE_BUILDER_FUNCTION_PROTOTYPE = """void Write{op}(std::vector<uint32_t> *blob {param_list})"""
+TEMPLATE_BUILDER_FUNCTION_PROTOTYPE = """void Write{op}(Blob *blob {param_list})"""
 TEMPLATE_BUILDER_FUNCTION_BODY = """{{
     const size_t startSize = blob->size();
     blob->push_back(0);
@@ -159,7 +186,7 @@ class Writer:
         self.bit_mask_types = set([])
 
         # List of generated instructions builder/parser functions so far.
-        self.instruction_builder_prototypes = []
+        self.instruction_builder_prototypes = [BUILDER_HELPER_FUNCTION_PROTOTYPE]
         self.instruction_builder_impl = []
         self.instruction_parser_prototypes = [PARSER_FIXED_FUNCTIONS_PROTOTYPES]
         self.instruction_parser_impl = [PARSER_FIXED_FUNCTIONS]

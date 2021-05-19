@@ -184,8 +184,8 @@ void ContentAnalysisDelegate::BypassWarnings() {
     std::fill(result_.text_results.begin(), result_.text_results.end(), true);
 
     int64_t content_size = 0;
-    for (const base::string16& entry : data_.text)
-      content_size += (entry.size() * sizeof(base::char16));
+    for (const std::u16string& entry : data_.text)
+      content_size += (entry.size() * sizeof(char16_t));
 
     ReportAnalysisConnectorWarningBypass(
         profile_, url_, "Text data", std::string(), "text/plain",
@@ -236,6 +236,7 @@ bool ContentAnalysisDelegate::ResultShouldAllowDataUse(
     case BinaryUploadService::Result::UPLOAD_FAILURE:
     case BinaryUploadService::Result::TIMEOUT:
     case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
+    case BinaryUploadService::Result::TOO_MANY_REQUESTS:
     // UNAUTHORIZED allows data usage since it's a result only obtained if the
     // browser is not authorized to perform deep scanning. It does not make
     // sense to block data in this situation since no actual scanning of the
@@ -370,8 +371,8 @@ void ContentAnalysisDelegate::StringRequestCallback(
     BinaryUploadService::Result result,
     enterprise_connectors::ContentAnalysisResponse response) {
   int64_t content_size = 0;
-  for (const base::string16& entry : data_.text)
-    content_size += (entry.size() * sizeof(base::char16));
+  for (const std::u16string& entry : data_.text)
+    content_size += (entry.size() * sizeof(char16_t));
   RecordDeepScanMetrics(access_point_,
                         base::TimeTicks::Now() - upload_start_time_,
                         content_size, result, response);
@@ -447,6 +448,9 @@ void ContentAnalysisDelegate::FileRequestCallback(
     base::FilePath path,
     BinaryUploadService::Result result,
     enterprise_connectors::ContentAnalysisResponse response) {
+  if (result == BinaryUploadService::Result::TOO_MANY_REQUESTS)
+    throttled_ = true;
+
   // Find the path in the set of files that are being scanned.
   auto it = std::find(data_.paths.begin(), data_.paths.end(), path);
   DCHECK(it != data_.paths.end());
@@ -531,8 +535,11 @@ void ContentAnalysisDelegate::PrepareRequest(
   request->set_email(safe_browsing::GetProfileEmail(profile_));
   request->set_url(data_.url.spec());
   request->set_tab_url(data_.url);
+  request->set_per_profile_request(data_.settings.per_profile);
   for (const std::string& tag : data_.settings.tags)
     request->add_tag(tag);
+  if (data_.settings.client_metadata)
+    request->set_client_metadata(*data_.settings.client_metadata);
 }
 
 void ContentAnalysisDelegate::FillAllResultsWith(bool status) {
@@ -606,6 +613,14 @@ void ContentAnalysisDelegate::OnGotFileInfo(
   // upload pointless, so the request should finish early.
   if (result != BinaryUploadService::Result::SUCCESS) {
     request->FinishRequest(result,
+                           enterprise_connectors::ContentAnalysisResponse());
+    return;
+  }
+
+  // If |throttled_| is true, then the file shouldn't be upload since the server
+  // is receiving too many requests.
+  if (throttled_) {
+    request->FinishRequest(BinaryUploadService::Result::TOO_MANY_REQUESTS,
                            enterprise_connectors::ContentAnalysisResponse());
     return;
   }

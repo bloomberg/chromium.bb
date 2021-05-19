@@ -70,7 +70,7 @@ namespace web_app {
 namespace {
 
 WebAppInstallManager::InstallParams MakeParams(
-    web_app::DisplayMode display_mode = DisplayMode::kUndefined) {
+    DisplayMode display_mode = DisplayMode::kUndefined) {
   WebAppInstallManager::InstallParams params;
   params.fallback_start_url = GURL("https://example.com/fallback");
   params.user_display_mode = display_mode;
@@ -211,7 +211,7 @@ class WebAppInstallTaskTest : public WebAppTest {
 
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = url;
-    manifest->short_name = base::ASCIIToUTF16("Manifest Name");
+    manifest->short_name = u"Manifest Name";
     data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
 
     data_retriever_->SetIcons(IconsMap{});
@@ -455,7 +455,7 @@ TEST_F(WebAppInstallTaskTest, ForceReinstall) {
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = url;
     manifest->scope = url;
-    manifest->short_name = base::ASCIIToUTF16("Manifest Name2");
+    manifest->short_name = u"Manifest Name2";
 
     data_retriever().SetManifest(std::move(manifest), /*is_installable=*/true);
   }
@@ -552,7 +552,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
 
   {
     auto manifest = std::make_unique<blink::Manifest>();
-    manifest->short_name = base::ASCIIToUTF16("Short Name from Manifest");
+    manifest->short_name = u"Short Name from Manifest";
     manifest->name = base::ASCIIToUTF16(manifest_name);
     manifest->start_url = manifest_start_url;
     manifest->scope = manifest_scope;
@@ -616,7 +616,7 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
       test_install_finalizer().web_app_info();
 
   // Make sure that icons have been generated for all sub sizes.
-  EXPECT_TRUE(ContainsOneIconOfEachSize(web_app_info->icon_bitmaps_any));
+  EXPECT_TRUE(ContainsOneIconOfEachSize(web_app_info->icon_bitmaps.any));
 
   // Generated icons are not considered part of the manifest icons.
   EXPECT_TRUE(web_app_info->icon_infos.empty());
@@ -641,7 +641,7 @@ TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
       test_install_finalizer().web_app_info();
 
   // Make sure that icons have been generated for all sizes.
-  EXPECT_TRUE(ContainsOneIconOfEachSize(web_app_info->icon_bitmaps_any));
+  EXPECT_TRUE(ContainsOneIconOfEachSize(web_app_info->icon_bitmaps.any));
 
   // Generated icons are not considered part of the manifest icons.
   EXPECT_TRUE(web_app_info->icon_infos.empty());
@@ -666,7 +666,7 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
   const int original_icon_size_px = icon_size::k512;
 
   // Generate one icon as if it was fetched from renderer.
-  AddGeneratedIcon(&data_retriever_->web_app_info().icon_bitmaps_any,
+  AddGeneratedIcon(&data_retriever_->web_app_info().icon_bitmaps.any,
                    original_icon_size_px, color);
 
   const AppId app_id = InstallWebAppFromManifestWithFallback();
@@ -837,7 +837,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
 
   auto manifest = std::make_unique<blink::Manifest>();
   manifest->start_url = url;
-  manifest->short_name = base::ASCIIToUTF16("Server Name");
+  manifest->short_name = u"Server Name";
 
   data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
 
@@ -866,7 +866,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->start_url = url;
   web_app_info->open_as_window = true;
-  web_app_info->title = base::ASCIIToUTF16("App Name");
+  web_app_info->title = u"App Name";
 
   base::RunLoop run_loop;
 
@@ -894,10 +894,10 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->start_url = GURL("https://example.com/path");
   web_app_info->open_as_window = false;
-  web_app_info->title = base::ASCIIToUTF16("App Name");
+  web_app_info->title = u"App Name";
 
   // Add square yellow icon.
-  AddGeneratedIcon(&web_app_info->icon_bitmaps_any, icon_size::k256,
+  AddGeneratedIcon(&web_app_info->icon_bitmaps.any, icon_size::k256,
                    SK_ColorYELLOW);
 
   base::RunLoop run_loop;
@@ -912,11 +912,11 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
 
         // Make sure that icons have been generated for all sub sizes.
         EXPECT_TRUE(
-            ContainsOneIconOfEachSize(final_web_app_info->icon_bitmaps_any));
+            ContainsOneIconOfEachSize(final_web_app_info->icon_bitmaps.any));
 
         // Make sure they're all derived from the yellow icon.
         for (const std::pair<const SquareSizePx, SkBitmap>& icon :
-             final_web_app_info->icon_bitmaps_any) {
+             final_web_app_info->icon_bitmaps.any) {
           EXPECT_FALSE(icon.second.drawsNothing());
           EXPECT_EQ(SK_ColorYELLOW, icon.second.getColor(0, 0));
         }
@@ -949,9 +949,9 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
             test_install_finalizer().web_app_info();
         // Make sure that icons have been generated for all sub sizes.
         EXPECT_TRUE(
-            ContainsOneIconOfEachSize(final_web_app_info->icon_bitmaps_any));
+            ContainsOneIconOfEachSize(final_web_app_info->icon_bitmaps.any));
         for (const std::pair<const SquareSizePx, SkBitmap>& icon :
-             final_web_app_info->icon_bitmaps_any) {
+             final_web_app_info->icon_bitmaps.any) {
           EXPECT_FALSE(icon.second.drawsNothing());
         }
 
@@ -980,8 +980,8 @@ TEST_F(WebAppInstallTaskTest, IntentToPlayStore) {
     manifest->start_url = url;
     manifest->scope = scope;
     blink::Manifest::RelatedApplication related_app;
-    related_app.platform = base::ASCIIToUTF16("chromeos_play");
-    related_app.id = base::ASCIIToUTF16("com.app.id");
+    related_app.platform = u"chromeos_play";
+    related_app.id = u"com.app.id";
     manifest->related_applications.push_back(std::move(related_app));
 
     data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
@@ -1196,7 +1196,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebApplicationInfoWithIcons) {
     EXPECT_TRUE(result);
     EXPECT_EQ(result->start_url, start_url);
     EXPECT_TRUE(result->icon_infos.empty());
-    EXPECT_FALSE(result->icon_bitmaps_any.empty());
+    EXPECT_FALSE(result->icon_bitmaps.any.empty());
   }
   ResetInstallTask();
   {
@@ -1345,7 +1345,7 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = start_url;
     manifest->theme_color = theme_color;
-    manifest->name = base::ASCIIToUTF16("Manifest Name");
+    manifest->name = u"Manifest Name";
 
     // Add shortcuts to manifest.
     blink::Manifest::ShortcutItem shortcut_item;
@@ -1354,6 +1354,7 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
     blink::Manifest::ImageResource icon;
     icon.src = icon_src;
     icon.sizes.emplace_back(gfx::Size(icon_size, icon_size));
+    icon.purpose.emplace_back(IconPurpose::ANY);
     shortcut_item.icons.emplace_back(icon);
     manifest->shortcuts.emplace_back(shortcut_item);
 
@@ -1381,13 +1382,20 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
           EXPECT_EQ(shortcut_url,
                     final_web_app_info->shortcuts_menu_item_infos[0].url);
           EXPECT_EQ(1u, final_web_app_info->shortcuts_menu_item_infos[0]
-                            .shortcut_icon_infos.size());
-          EXPECT_EQ(icon_size, final_web_app_info->shortcuts_menu_item_infos[0]
-                                   .shortcut_icon_infos[0]
-                                   .square_size_px);
-          EXPECT_EQ(icon_src, final_web_app_info->shortcuts_menu_item_infos[0]
-                                  .shortcut_icon_infos[0]
-                                  .url);
+                            .GetShortcutIconInfosForPurpose(IconPurpose::ANY)
+                            .size());
+          EXPECT_EQ(icon_size,
+                    final_web_app_info->shortcuts_menu_item_infos[0]
+                        .GetShortcutIconInfosForPurpose(IconPurpose::ANY)[0]
+                        .square_size_px);
+          EXPECT_EQ(icon_src,
+                    final_web_app_info->shortcuts_menu_item_infos[0]
+                        .GetShortcutIconInfosForPurpose(IconPurpose::ANY)[0]
+                        .url);
+          EXPECT_EQ(0u,
+                    final_web_app_info->shortcuts_menu_item_infos[0]
+                        .GetShortcutIconInfosForPurpose(IconPurpose::MASKABLE)
+                        .size());
 
           callback_called = true;
           run_loop.Quit();
@@ -1416,7 +1424,7 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
     web_app_info->start_url = url;
     web_app_info->open_as_window = true;
     web_app_info->theme_color = theme_color;
-    web_app_info->title = base::ASCIIToUTF16("App Name");
+    web_app_info->title = u"App Name";
 
     WebApplicationShortcutsMenuItemInfo shortcut_item;
     WebApplicationShortcutsMenuItemInfo::Icon icon;
@@ -1425,7 +1433,8 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
 
     icon.url = icon_src;
     icon.square_size_px = icon_size;
-    shortcut_item.shortcut_icon_infos.emplace_back(std::move(icon));
+    shortcut_item.SetShortcutIconInfosForPurpose(IconPurpose::MASKABLE,
+                                                 {std::move(icon)});
     web_app_info->shortcuts_menu_item_infos.emplace_back(
         std::move(shortcut_item));
 
@@ -1436,6 +1445,7 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
 
     install_task_->UpdateWebAppFromInfo(
         web_contents(), app_id, std::move(web_app_info),
+        /*redownload_app_icons=*/false,
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        InstallResultCode code) {
           result.app_id = installed_app_id;
@@ -1448,13 +1458,20 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
                     final_web_app_info->shortcuts_menu_item_infos[0].name);
           EXPECT_EQ(shortcut_url,
                     final_web_app_info->shortcuts_menu_item_infos[0].url);
-          EXPECT_EQ(1u, final_web_app_info->shortcuts_menu_item_infos[0]
-                            .shortcut_icon_infos.size());
+          EXPECT_EQ(0u, final_web_app_info->shortcuts_menu_item_infos[0]
+                            .GetShortcutIconInfosForPurpose(IconPurpose::ANY)
+                            .size());
+          EXPECT_EQ(1u,
+                    final_web_app_info->shortcuts_menu_item_infos[0]
+                        .GetShortcutIconInfosForPurpose(IconPurpose::MASKABLE)
+                        .size());
           EXPECT_EQ(icon_size, final_web_app_info->shortcuts_menu_item_infos[0]
-                                   .shortcut_icon_infos[0]
+                                   .GetShortcutIconInfosForPurpose(
+                                       IconPurpose::MASKABLE)[0]
                                    .square_size_px);
           EXPECT_EQ(icon_src, final_web_app_info->shortcuts_menu_item_infos[0]
-                                  .shortcut_icon_infos[0]
+                                  .GetShortcutIconInfosForPurpose(
+                                      IconPurpose::MASKABLE)[0]
                                   .url);
 
           callback_called = true;

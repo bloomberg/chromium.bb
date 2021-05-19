@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as i18n from '../i18n/i18n.js';
-import * as Root from '../root/root.js';
-import * as UI from '../ui/ui.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Root from '../core/root/root.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 // eslint-disable-next-line rulesdir/es_modules_import
 import type * as WebAudio from './web_audio.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Title of the WebAudio tool
   */
@@ -24,7 +24,7 @@ export const UIStrings = {
   showWebaudio: 'Show WebAudio',
 };
 const str_ = i18n.i18n.registerUIStrings('web_audio/web_audio-meta.ts', UIStrings);
-const i18nString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
+const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
 let loadedWebAudioModule: (typeof WebAudio|undefined);
 
@@ -40,13 +40,13 @@ async function loadWebAudioModule(): Promise<typeof WebAudio> {
 UI.ViewManager.registerViewExtension({
   location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: 'web-audio',
-  title: i18nString(UIStrings.webaudio),
-  commandPrompt: i18nString(UIStrings.showWebaudio),
+  title: i18nLazyString(UIStrings.webaudio),
+  commandPrompt: i18nLazyString(UIStrings.showWebaudio),
   persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   order: 100,
   async loadView() {
     const WebAudio = await loadWebAudioModule();
     return WebAudio.WebAudioView.WebAudioView.instance();
   },
-  tags: [i18nString(UIStrings.audio)],
+  tags: [i18nLazyString(UIStrings.audio)],
 });

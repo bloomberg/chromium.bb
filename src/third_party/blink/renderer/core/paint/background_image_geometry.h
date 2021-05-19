@@ -93,7 +93,7 @@ class BackgroundImageGeometry {
 
   const ImageResourceObserver& ImageClient() const;
   const Document& ImageDocument() const;
-  const ComputedStyle& ImageStyle() const;
+  const ComputedStyle& ImageStyle(const ComputedStyle& fragment_style) const;
   InterpolationQuality ImageInterpolationQuality() const;
 
  private:

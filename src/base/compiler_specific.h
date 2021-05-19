@@ -24,6 +24,13 @@
 #define HAS_CPP_ATTRIBUTE(x) 0
 #endif
 
+// A wrapper around `__has_builtin`, similar to HAS_CPP_ATTRIBUTE.
+#if defined(__has_builtin)
+#define HAS_BUILTIN(x) __has_builtin(x)
+#else
+#define HAS_BUILTIN(x) 0
+#endif
+
 // Annotate a variable indicating it's ok if the variable is not used.
 // (Typically used to silence a compiler warning when the assignment
 // is important for some other reason.)
@@ -333,10 +340,37 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
 #endif  // defined(__clang_analyzer__)
 
 // Use nomerge attribute to disable optimization of merging multiple same calls.
-#if defined(__clang__) && __has_attribute(nomerge) && !defined(OS_CHROMEOS)
+#if defined(__clang__) && __has_attribute(nomerge)
 #define NOMERGE [[clang::nomerge]]
 #else
 #define NOMERGE
+#endif
+
+// Marks a type as being eligible for the "trivial" ABI despite having a
+// non-trivial destructor or copy/move constructor. Such types can be relocated
+// after construction by simply copying their memory, which makes them eligible
+// to be passed in registers. The canonical example is std::unique_ptr.
+//
+// Use with caution; this has some subtle effects on constructor/destructor
+// ordering and will be very incorrect if the type relies on its address
+// remaining constant. When used as a function argument (by value), the value
+// may be constructed in the caller's stack frame, passed in a register, and
+// then used and destructed in the callee's stack frame. A similar thing can
+// occur when values are returned.
+//
+// TRIVIAL_ABI is not needed for types which have a trivial destructor and
+// copy/move constructors, such as base::TimeTicks and other POD.
+//
+// It is also not likely to be effective on types too large to be passed in one
+// or two registers on typical target ABIs.
+//
+// See also:
+//   https://clang.llvm.org/docs/AttributeReference.html#trivial-abi
+//   https://libcxx.llvm.org/docs/DesignDocs/UniquePtrTrivialAbi.html
+#if defined(__clang__) && __has_attribute(trivial_abi)
+#define TRIVIAL_ABI [[clang::trivial_abi]]
+#else
+#define TRIVIAL_ABI
 #endif
 
 #endif  // BASE_COMPILER_SPECIFIC_H_

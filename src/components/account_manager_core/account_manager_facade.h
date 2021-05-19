@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ACCOUNT_MANAGER_CORE_ACCOUNT_MANAGER_FACADE_H_
 #define COMPONENTS_ACCOUNT_MANAGER_CORE_ACCOUNT_MANAGER_FACADE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -12,6 +13,9 @@
 #include "base/observer_list_types.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_addition_result.h"
+
+class OAuth2AccessTokenFetcher;
+class OAuth2AccessTokenConsumer;
 
 namespace account_manager {
 
@@ -34,9 +38,9 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacade {
     ~Observer() override;
 
     // Invoked when an account is added or updated.
-    virtual void OnAccountUpserted(const AccountKey& account) = 0;
+    virtual void OnAccountUpserted(const Account& account) = 0;
     // Invoked when an account is removed.
-    virtual void OnAccountRemoved(const AccountKey& account) = 0;
+    virtual void OnAccountRemoved(const Account& account) = 0;
   };
 
   // The source UI surface used for launching the account addition /
@@ -70,12 +74,6 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacade {
   AccountManagerFacade& operator=(const AccountManagerFacade&) = delete;
   virtual ~AccountManagerFacade() = 0;
 
-  // Returns |true| if |AccountManager| is connected and has been fully
-  // initialized.
-  // Note: For out-of-process implementations, it returns |false| if the IPC
-  // pipe to |AccountManager| is disconnected.
-  virtual bool IsInitialized() = 0;
-
   // Registers an observer. Ensures the observer wasn't already registered.
   virtual void AddObserver(Observer* observer) = 0;
   // Unregisters an observer that was registered using AddObserver.
@@ -85,6 +83,15 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacade {
   // support this call, an empty list of accounts will be returned.
   virtual void GetAccounts(
       base::OnceCallback<void(const std::vector<Account>&)> callback) = 0;
+
+  // If `account` is in an error state (for example, if the refresh token is
+  // known to be invalid), `callback` will get the corresponding
+  // GoogleServiceAuthError.  If there's no known persistent error for
+  // `account`, `callback` will receive `GoogleServiceAuthError` with `NONE`
+  // state (Note: fetching an access token might still fail in this case).
+  virtual void GetPersistentErrorForAccount(
+      const AccountKey& account,
+      base::OnceCallback<void(const GoogleServiceAuthError&)> callback) = 0;
 
   // Launches account addition dialog.
   virtual void ShowAddAccountDialog(const AccountAdditionSource& source) = 0;
@@ -103,6 +110,14 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacade {
 
   // Launches OS Settings > Accounts.
   virtual void ShowManageAccountsSettings() = 0;
+
+  // Creates an access token fetcher for `account`.
+  // Currently, `account` must be a Gaia account.
+  // The returned object should not outlive `AccountManagerFacade` itself.
+  virtual std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
+      const AccountKey& account,
+      const std::string& oauth_consumer_name,
+      OAuth2AccessTokenConsumer* consumer) = 0;
 };
 
 }  // namespace account_manager

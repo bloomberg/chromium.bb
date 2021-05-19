@@ -14,9 +14,8 @@
 
 #include "src/ast/bitcast_expression.h"
 
-#include "src/ast/identifier_expression.h"
+#include "gtest/gtest-spi.h"
 #include "src/ast/test_helper.h"
-#include "src/type/f32_type.h"
 
 namespace tint {
 namespace ast {
@@ -49,29 +48,22 @@ TEST_F(BitcastExpressionTest, IsBitcast) {
   EXPECT_TRUE(exp->Is<BitcastExpression>());
 }
 
-TEST_F(BitcastExpressionTest, IsValid) {
-  auto* expr = Expr("expr");
-
-  auto* exp = create<BitcastExpression>(ty.f32(), expr);
-  EXPECT_TRUE(exp->IsValid());
+TEST_F(BitcastExpressionTest, Assert_NullType) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.create<BitcastExpression>(nullptr, b.Expr("idx"));
+      },
+      "internal compiler error");
 }
 
-TEST_F(BitcastExpressionTest, IsValid_MissingType) {
-  auto* expr = Expr("expr");
-
-  auto* exp = create<BitcastExpression>(nullptr, expr);
-  EXPECT_FALSE(exp->IsValid());
-}
-
-TEST_F(BitcastExpressionTest, IsValid_MissingExpr) {
-  auto* exp = create<BitcastExpression>(ty.f32(), nullptr);
-  EXPECT_FALSE(exp->IsValid());
-}
-
-TEST_F(BitcastExpressionTest, IsValid_InvalidExpr) {
-  auto* expr = Expr("");
-  auto* e = create<BitcastExpression>(ty.f32(), expr);
-  EXPECT_FALSE(e->IsValid());
+TEST_F(BitcastExpressionTest, Assert_NullExpr) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.create<BitcastExpression>(b.ty.f32(), nullptr);
+      },
+      "internal compiler error");
 }
 
 TEST_F(BitcastExpressionTest, ToStr) {

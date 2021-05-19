@@ -19,10 +19,10 @@
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
+#include "chrome/browser/ash/login/ui/input_events_blocker.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -208,6 +208,22 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
                IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_LAPTOP);
   builder->Add("chromeVoxHintAnnouncementTextTablet",
                IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_TABLET);
+
+  // Strings for the device requisition prompt.
+  builder->Add("deviceRequisitionPromptCancel",
+               IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_CANCEL);
+  builder->Add("deviceRequisitionPromptOk",
+               IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_OK);
+  builder->Add("deviceRequisitionPromptText",
+               IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_TEXT);
+  builder->Add("deviceRequisitionRemoraPromptCancel",
+               IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+  builder->Add("deviceRequisitionRemoraPromptOk",
+               IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
+  builder->Add("deviceRequisitionRemoraPromptText",
+               IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TEXT);
+  builder->Add("deviceRequisitionSharkPromptText",
+               IDS_ENTERPRISE_DEVICE_REQUISITION_SHARK_PROMPT_TEXT);
 }
 
 void WelcomeScreenHandler::DeclareJSCallbacks() {
@@ -318,6 +334,10 @@ void WelcomeScreenHandler::GiveChromeVoxHint() {
   CallJS("login.WelcomeScreen.maybeGiveChromeVoxHint");
 }
 
+void WelcomeScreenHandler::CancelChromeVoxHintIdleDetection() {
+  screen_->CancelChromeVoxHintIdleDetection();
+}
+
 void WelcomeScreenHandler::HandleRecordChromeVoxHintSpokenSuccess() {
   base::UmaHistogramBoolean("OOBE.WelcomeScreen.ChromeVoxHintSpokenSuccess",
                             true);
@@ -351,7 +371,7 @@ void WelcomeScreenHandler::UpdateA11yState() {
   a11y_info.SetBoolean("virtualKeyboardEnabled",
                        AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
   if (screen_ && AccessibilityManager::Get()->IsSpokenFeedbackEnabled())
-    screen_->CancelChromeVoxHintTimer();
+    CancelChromeVoxHintIdleDetection();
   CallJS("login.WelcomeScreen.refreshA11yInfo", a11y_info);
 }
 

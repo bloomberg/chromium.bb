@@ -21,6 +21,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/extensions/workspace_extension.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -121,6 +122,17 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
 
   if (params.parent && params.parent->GetHost())
     properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
+
+#if defined(USE_OZONE)
+  if (properties.type == ui::PlatformWindowType::kTooltip &&
+      features::IsUsingOzonePlatform() &&
+      ui::OzonePlatform::GetInstance()
+          ->GetPlatformProperties()
+          .set_parent_for_non_top_level_windows) {
+    properties.parent_widget =
+        params.context->GetHost()->GetAcceleratedWidget();
+  }
+#endif
 
   return properties;
 }
@@ -529,7 +541,7 @@ bool DesktopWindowTreeHostPlatform::IsVisibleOnAllWorkspaces() const {
 }
 
 bool DesktopWindowTreeHostPlatform::SetWindowTitle(
-    const base::string16& title) {
+    const std::u16string& title) {
   if (window_title_ == title)
     return false;
 
@@ -557,8 +569,8 @@ Widget::MoveLoopResult DesktopWindowTreeHostPlatform::RunMoveLoop(
     Widget::MoveLoopEscapeBehavior escape_behavior) {
   auto* move_loop_handler = ui::GetWmMoveLoopHandler(*platform_window());
   if (move_loop_handler && move_loop_handler->RunMoveLoop(drag_offset))
-    return Widget::MOVE_LOOP_SUCCESSFUL;
-  return Widget::MOVE_LOOP_CANCELED;
+    return Widget::MoveLoopResult::kSuccessful;
+  return Widget::MoveLoopResult::kCanceled;
 }
 
 void DesktopWindowTreeHostPlatform::EndMoveLoop() {
@@ -609,10 +621,7 @@ void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen) {
   if (IsFullscreen() == fullscreen)
     return;
 
-  auto weak_ptr = GetWeakPtr();
   platform_window()->ToggleFullscreen();
-  if (!weak_ptr)
-    return;
 
   // The state must change synchronously to let media react on fullscreen
   // changes.

@@ -25,7 +25,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #else
@@ -50,17 +50,17 @@ void GetCloudPolicyClient(
     return;
   }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::CloudPolicyManager* cloud_policy_manager =
+  policy::CloudPolicyManager* const cloud_policy_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
           ->GetDeviceCloudPolicyManager();
 #elif defined(OS_ANDROID)
   // Android doesn't have access to a device level CloudPolicyClient, so get the
   // PrimaryUserProfile CloudPolicyClient.
-  policy::CloudPolicyManager* cloud_policy_manager =
+  policy::CloudPolicyManager* const cloud_policy_manager =
       ProfileManager::GetPrimaryUserProfile()->GetUserCloudPolicyManager();
 #else
-  policy::CloudPolicyManager* cloud_policy_manager =
+  policy::CloudPolicyManager* const cloud_policy_manager =
       g_browser_process->browser_policy_connector()
           ->machine_level_user_cloud_policy_manager();
 #endif

@@ -9,6 +9,8 @@
 #include "ash/public/cpp/toast_data.h"
 #include "ash/public/cpp/toast_manager.h"
 #include "ash/public/cpp/window_tree_host_lookup.h"
+#include "base/bind.h"
+#include "base/notreached.h"
 #include "chrome/browser/chromeos/policy/dlp/clipboard_bubble.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_clipboard_bubble_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -59,6 +61,22 @@ void SynthesizePaste() {
   host->DeliverEventToSink(&control_release);
 }
 
+bool HasEndpoint(const std::vector<ui::DataTransferEndpoint>& saved_endpoints,
+                 const ui::DataTransferEndpoint* const endpoint) {
+  const ui::EndpointType endpoint_type =
+      endpoint ? endpoint->type() : ui::EndpointType::kDefault;
+
+  for (const auto& ept : saved_endpoints) {
+    if (ept.type() == endpoint_type) {
+      if (endpoint_type != ui::EndpointType::kUrl)
+        return true;
+      else if (ept.IsSameOriginWith(*endpoint))
+        return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 DlpClipboardNotifier::DlpClipboardNotifier() {
@@ -74,7 +92,7 @@ void DlpClipboardNotifier::NotifyBlockedAction(
     const ui::DataTransferEndpoint* const data_dst) {
   DCHECK(data_src);
   DCHECK(data_src->origin());
-  const base::string16 host_name =
+  const std::u16string host_name =
       base::UTF8ToUTF16(data_src->origin()->host());
   if (data_dst) {
     if (data_dst->type() == ui::EndpointType::kCrostini) {
@@ -104,12 +122,15 @@ void DlpClipboardNotifier::NotifyBlockedAction(
       IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_PASTE, host_name));
 }
 
-void DlpClipboardNotifier::WarnOnAction(
+void DlpClipboardNotifier::WarnOnPaste(
     const ui::DataTransferEndpoint* const data_src,
     const ui::DataTransferEndpoint* const data_dst) {
   DCHECK(data_src);
   DCHECK(data_src->origin());
-  const base::string16 host_name =
+
+  CloseWidget(widget_.get(), views::Widget::ClosedReason::kUnspecified);
+
+  const std::u16string host_name =
       base::UTF8ToUTF16(data_src->origin()->host());
 
   if (data_dst) {
@@ -137,30 +158,61 @@ void DlpClipboardNotifier::WarnOnAction(
   }
 
   auto proceed_cb =
-      base::BindRepeating(&DlpClipboardNotifier::ProceedOnWarn,
+      base::BindRepeating(&DlpClipboardNotifier::ProceedPressed,
                           base::Unretained(this), CloneEndpoint(data_dst));
+  auto cancel_cb =
+      base::BindRepeating(&DlpClipboardNotifier::CancelWarningPressed,
+                          base::Unretained(this), CloneEndpoint(data_dst));
+
   ShowWarningBubble(l10n_util::GetStringFUTF16(
                         IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_PASTE, host_name),
-                    proceed_cb);
+                    std::move(proceed_cb), std::move(cancel_cb));
 }
 
-bool DlpClipboardNotifier::DidUserProceedOnWarn(
+void DlpClipboardNotifier::WarnOnBlinkPaste(
+    const ui::DataTransferEndpoint* const data_src,
+    const ui::DataTransferEndpoint* const data_dst,
+    content::WebContents* web_contents,
+    base::OnceCallback<void(bool)> paste_cb) {
+  DCHECK(data_src);
+  DCHECK(data_src->origin());
+
+  CloseWidget(widget_.get(), views::Widget::ClosedReason::kUnspecified);
+
+  const std::u16string host_name =
+      base::UTF8ToUTF16(data_src->origin()->host());
+
+  blink_paste_cb_ = std::move(paste_cb);
+  Observe(web_contents);
+
+  auto proceed_cb =
+      base::BindRepeating(&DlpClipboardNotifier::BlinkProceedPressed,
+                          base::Unretained(this), CloneEndpoint(data_dst));
+  auto cancel_cb =
+      base::BindRepeating(&DlpClipboardNotifier::CancelWarningPressed,
+                          base::Unretained(this), CloneEndpoint(data_dst));
+
+  ShowWarningBubble(l10n_util::GetStringFUTF16(
+                        IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_PASTE, host_name),
+                    std::move(proceed_cb), std::move(cancel_cb));
+}
+
+bool DlpClipboardNotifier::DidUserApproveDst(
     const ui::DataTransferEndpoint* const data_dst) {
-  const ui::EndpointType dst_type =
-      data_dst ? data_dst->type() : ui::EndpointType::kDefault;
-
-  for (const auto& endpoint : approved_dsts_) {
-    if (endpoint.type() == dst_type) {
-      if (dst_type != ui::EndpointType::kUrl)
-        return true;
-      else if (endpoint.IsSameOriginWith(*data_dst))
-        return true;
-    }
-  }
-  return false;
+  return HasEndpoint(approved_dsts_, data_dst);
 }
 
-void DlpClipboardNotifier::ProceedOnWarn(
+bool DlpClipboardNotifier::DidUserCancelDst(
+    const ui::DataTransferEndpoint* const data_dst) {
+  return HasEndpoint(cancelled_dsts_, data_dst);
+}
+
+void DlpClipboardNotifier::SetBlinkPasteCallbackForTesting(
+    base::OnceCallback<void(bool)> paste_cb) {
+  blink_paste_cb_ = std::move(paste_cb);
+}
+
+void DlpClipboardNotifier::ProceedPressed(
     const ui::DataTransferEndpoint& data_dst,
     views::Widget* widget) {
   CloseWidget(widget, views::Widget::ClosedReason::kAcceptButtonClicked);
@@ -168,12 +220,30 @@ void DlpClipboardNotifier::ProceedOnWarn(
   SynthesizePaste();
 }
 
+void DlpClipboardNotifier::BlinkProceedPressed(
+    const ui::DataTransferEndpoint& data_dst,
+    views::Widget* widget) {
+  DCHECK(!blink_paste_cb_.is_null());
+
+  approved_dsts_.push_back(data_dst);
+  std::move(blink_paste_cb_).Run(true);
+  CloseWidget(widget, views::Widget::ClosedReason::kAcceptButtonClicked);
+}
+
+void DlpClipboardNotifier::CancelWarningPressed(
+    const ui::DataTransferEndpoint& data_dst,
+    views::Widget* widget) {
+  cancelled_dsts_.push_back(data_dst);
+  CloseWidget(widget, views::Widget::ClosedReason::kCancelButtonClicked);
+}
+
 void DlpClipboardNotifier::ResetUserWarnSelection() {
   approved_dsts_.clear();
+  cancelled_dsts_.clear();
 }
 
 void DlpClipboardNotifier::ShowToast(const std::string& id,
-                                     const base::string16& text) const {
+                                     const std::u16string& text) const {
   ash::ToastData toast(id, text, kClipboardDlpBlockDurationMs,
                        /*dismiss_text=*/base::nullopt);
   toast.is_managed = true;
@@ -183,6 +253,19 @@ void DlpClipboardNotifier::ShowToast(const std::string& id,
 void DlpClipboardNotifier::OnClipboardDataChanged() {
   CloseWidget(widget_.get(), views::Widget::ClosedReason::kUnspecified);
   ResetUserWarnSelection();
+}
+
+void DlpClipboardNotifier::OnWidgetClosing(views::Widget* widget) {
+  if (!blink_paste_cb_.is_null()) {
+    std::move(blink_paste_cb_).Run(false);
+    Observe(nullptr);
+  }
+  DlpDataTransferNotifier::OnWidgetClosing(widget);
+}
+
+void DlpClipboardNotifier::WebContentsDestroyed() {
+  std::move(blink_paste_cb_);
+  CloseWidget(widget_.get(), views::Widget::ClosedReason::kUnspecified);
 }
 
 }  // namespace policy

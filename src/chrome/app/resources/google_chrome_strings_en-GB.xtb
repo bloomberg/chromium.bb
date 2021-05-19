@@ -13,13 +13,12 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1125124144982679672">Who's using Chrome?</translation>
 <translation id="1142745911746664600">Can't update Chrome</translation>
 <translation id="1154147086299354128">&amp;Open in Chrome</translation>
-<translation id="123620459398936149">Chrome OS could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> requires that you read and accept the following Terms of Service before using this device. These Terms do not expand, modify or limit the Google Chrome OS Terms.</translation>
 <translation id="1302523850133262269">Please wait while Chrome installs the latest system updates.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.</translation>
 <translation id="1434626383986940139">Chrome Canary Apps</translation>
-<translation id="147727933880789532">Chrome recommends disabling this extension because it does not currently meet Enhanced Safe Browsing standards.</translation>
+<translation id="1507198376417198979">Customise your new Chrome profile</translation>
 <translation id="1516530951338665275">Google Chrome needs Bluetooth access to continue pairing. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1583073672411044740"><ph name="EXISTING_USER" /> is already signed in to this Chrome profile. This will create a new Chrome profile for <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -27,7 +26,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is dangerous, so Chrome has blocked it.</translation>
 <translation id="1597911401261118146">To check if your passwords are safe from data breaches and other security issues, <ph name="BEGIN_LINK" />sign in to Chrome<ph name="END_LINK" />.</translation>
 <translation id="1619887657840448962">To make Chrome safer, we disabled the following extension that isn't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
-<translation id="162629503687514352">Chrome OS could not sync your passwords.</translation>
 <translation id="1628000112320670027">Get help with Chrome</translation>
 <translation id="1666409074978194368">Nearly up to date! Relaunch Google Chrome to finish updating. Incognito windows won't reopen.</translation>
 <translation id="1674870198290878346">Open Link in Chrome Inco&amp;gnito Window</translation>
@@ -94,14 +92,12 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
 <translation id="3100998948628680988">Name your Chrome profile</translation>
 <translation id="3114643501466072395">To check if your other passwords are safe from data breaches and other security issues, <ph name="BEGIN_LINK" />sign in to Chrome<ph name="END_LINK" />.</translation>
-<translation id="3127818369811890733">Chrome OS could not sync your data.</translation>
 <translation id="3140883423282498090">Your changes will take effect the next time you relaunch Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome will relaunch now}=1{Chrome will relaunch in 1 second}other{Chrome will relaunch in # seconds}}</translation>
 <translation id="3395323229510056640">Get help with Chrome OS</translation>
 <translation id="3396977131400919238">An operating system error occurred during installation. Please download Google Chrome again.</translation>
-<translation id="3398288718845740432">Hide in Chrome Menu</translation>
 <translation id="3434246496373299699">Chrome can check your passwords when you sign in with your Google Account</translation>
 <translation id="3451115285585441894">Adding to Chrome...</translation>
 <translation id="345171907106878721">Add yourself to Chrome</translation>
@@ -149,7 +145,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4571503333518166079">Go to Chrome notification settings</translation>
 <translation id="459622048091363950">Once Chrome has access, websites will be able to ask you for access.</translation>
 <translation id="4600710005438004015">Chrome couldn't update to the latest version, so you're missing out on new features and security fixes.</translation>
-<translation id="4631713731678262610">Hide in Chrome menu</translation>
 <translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="4666328473657283332">To access your Chrome stuff across all your devices, sign in so that you can turn on sync.</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
@@ -200,6 +195,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6070348360322141662">For added security, Google Chrome will encrypt your data</translation>
 <translation id="608006075545470555">Add work profile to this browser</translation>
 <translation id="6113794647360055231">Chrome just got better</translation>
+<translation id="6145313976051292476">Open PDFs in Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Beta</translation>
 <translation id="61852838583753520">Update the &amp;Chrome OS</translation>
@@ -212,7 +208,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Updating Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">Chrome OS system</translation>
-<translation id="6650333065969705433">To use Rosetta to play protected media, you must restart Chrome.</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
 <translation id="6679975945624592337">Let Google Chrome Run in the Background</translation>
 <translation id="6739177684496155661">Continue in a new Chrome profile?</translation>
@@ -224,7 +219,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6943584222992551122">This person's browsing data will be deleted from this device. To recover the data, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Inbound rule for Google Chrome Beta to allow mDNS traffic.</translation>
 <translation id="6989339256997917931">Google Chrome has been updated, but you haven't used it for at least 30 days.</translation>
-<translation id="7054640471403081847">This computer will soon stop receiving Google Chrome updates because its hardware is no longer supported.</translation>
+<translation id="7025800014283535195">You can switch between Chrome profiles here</translation>
 <translation id="7062128746136194023">Your parent has turned off 'Permissions for sites, apps and extensions' for Chrome. Adding this <ph name="EXTENSION_TYPE_PARAMETER" /> is not allowed.</translation>
 <translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
@@ -277,7 +272,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">This work profile is completely separate from your personal profile.</translation>
 <translation id="8556340503434111824">There's a new version of Google Chrome available and it's faster than ever.</translation>
-<translation id="861359755029082151">Rosetta enables Chrome to play the protected media on this page.</translation>
 <translation id="8614913330719544658">Google Chrome is unresponsive. Relaunch now?</translation>
 <translation id="861702415419836452">Chrome needs permission to access your camera to create a 3D map of your surroundings</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome will relaunch in 1 minute}other{Chrome will relaunch in # minutes}}</translation>
@@ -291,7 +285,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8834965163890861871">Google Chrome is trying to edit passwords. Type your Windows password to allow this.</translation>
 <translation id="884296878221830158">It also controls what page is shown when you start Chrome or click the Home button.</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
-<translation id="8907709077090383765">To enable Chrome to play protected media, you need to install Rosetta. Do you want to install it now?</translation>
 <translation id="8914504000324227558">Relaunch Chrome</translation>
 <translation id="8922193594870374009">To send a number from <ph name="ORIGIN" /> to your Android phone, sign in to Chrome on both devices.</translation>
 <translation id="8986207147630327271">You are adding a work profile to this browser and giving your administrator control over just the work profile.</translation>
@@ -301,6 +294,8 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="9138603949443464873">To apply your changes, relaunch Chrome</translation>
 <translation id="919706545465235479">Update Chrome to start sync</translation>
+<translation id="922152298093051471">Customise Chrome</translation>
 <translation id="940313311831216333">To access your Chrome stuff across all your devices, sign in, then turn on sync.</translation>
 <translation id="989369509083708165">Google Chrome is your default browser</translation>
+<translation id="989816563149873169"><ph name="SHORTCUT" /> can switch between Chrome profiles</translation>
 </translationbundle>

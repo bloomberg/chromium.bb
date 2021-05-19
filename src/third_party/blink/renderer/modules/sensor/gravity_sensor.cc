@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/sensor/gravity_sensor.h"
 
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 
 using device::mojom::blink::SensorType;
 
@@ -32,7 +32,7 @@ GravitySensor::GravitySensor(ExecutionContext* execution_context,
                     options,
                     exception_state,
                     SensorType::GRAVITY,
-                    {mojom::blink::FeaturePolicyFeature::kAccelerometer}) {}
+                    {mojom::blink::PermissionsPolicyFeature::kAccelerometer}) {}
 
 void GravitySensor::Trace(Visitor* visitor) const {
   Accelerometer::Trace(visitor);

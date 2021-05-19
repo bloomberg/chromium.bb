@@ -4,6 +4,7 @@
 <translation id="1282031177488366470">Ajudar a melhorar os recursos e o desempenho do Chrome</translation>
 <translation id="1314663809820920746">Ainda é possível ver seus favoritos, seu histórico, suas senhas e outras configurações neste dispositivo. Se você fizer mudanças, elas não serão sincronizadas com sua Conta do Google.</translation>
 <translation id="1479202195792305274">O Chrome pode verificar suas senhas quando você faz login com sua Conta do Google.</translation>
+<translation id="1493827051843127077">Defina o Chrome como padrão para sincronizar guias, senhas e informações de pagamento em todos os seus dispositivos</translation>
 <translation id="1504372625950710826">Não foi possível verificar se há atualizações. Verifique sua conexão de Internet.</translation>
 <translation id="1682483655351012182">Sincronizar seus dados do Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -14,6 +15,7 @@
 <translation id="2342919707875585281">O Chrome compartilha sua localização com os sites aos quais você concede permissão.</translation>
 <translation id="2347208864470321755">Quando este recurso está ativado, o Google Chrome disponibiliza a tradução de páginas escritas em outros idiomas usando o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">Defina o Chrome como seu navegador padrão</translation>
+<translation id="2561231791489583059">Use o Chrome como navegador padrão para se proteger contra sites perigosos e garantir a segurança das suas senhas</translation>
 <translation id="2574249610672786438">Para ver suas guias em qualquer lugar onde você usar o Chrome, faça login em todos os seus dispositivos</translation>
 <translation id="2576431527583832481">O Google Chrome ficou ainda melhor! Uma nova versão está disponível.</translation>
 <translation id="257708665678654955">Quer que na próxima vez o Google Chrome ofereça a tradução de páginas em <ph name="LANGUAGE_NAME" /> deste site?</translation>
@@ -30,13 +32,12 @@
 <translation id="3522659714780527202">Para ver suas guias em qualquer lugar onde você usar o Chrome, ative a sincronização</translation>
 <translation id="3533694711092285624">Nenhuma senha salva. O Chrome poderá verificar suas senhas quando elas forem salvas.</translation>
 <translation id="3706101708757577809">Agora você pode usar o Chrome sempre que toca em links em mensagens, documentos e outros apps.</translation>
+<translation id="3720541637541300822">Bloquear guias anônimas ao fechar o Chrome</translation>
 <translation id="384394811301901750">O Google Chrome não pode usar a câmera agora</translation>
-<translation id="38949020760388809">Escolha se você quer apagar ou manter os dados do Chrome neste dispositivo.</translation>
 <translation id="3980220367029651214">Você está trocando de contas de sincronização de <ph name="USER_EMAIL1" /> para <ph name="USER_EMAIL2" />. Seus dados já existentes do Chrome são gerenciados por <ph name="DOMAIN" />. Seus dados serão excluídos desse dispositivo, mas permanecerão em <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">Sua organização exige que a conta permaneça desconectada do Chrome.</translation>
 <translation id="3988789688219830639">O Google Chrome não têm acesso às suas fotos ou vídeos. Permita o acesso em "Configurações do iOS" &gt; "Privacidade" &gt; "Fotos".</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome. Envie estatísticas de uso e relatórios de falhas ao Google.</translation>
-<translation id="415767770115540173">Melhore sua experiência do Google no Chrome de acordo com seu local.</translation>
 <translation id="417201473131094001">Indisponível no Chrome Canary</translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4249068189593983585">Dica do Chrome. Para ver mais opções de guia, toque no botão "Mostrar guias" na barra de ferramentas localizada na parte superior ou inferior da tela e mantenha-o pressionado.</translation>
@@ -51,7 +52,9 @@
 <translation id="5642200033778930880">O Google Chrome não pode usar a câmera no modo Visualização dividida</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Off-line. Não é possível verificar se há atualizações</translation>
+<translation id="5716154293141027663">Abrir o Chrome sempre que você tocar nos links em outros apps</translation>
 <translation id="5854621639439811139">Dica do Chrome. Alguns botões agora estão na parte inferior da tela, como "Voltar", "Avançar" e "Pesquisar".</translation>
+<translation id="5876773482963502140">Se você permitir que o Chrome saiba sua localização, ele a enviará para os sites autorizados. Os sites podem solicitar sua localização para enviar informações locais para você, como notícias ou lojas próximas.</translation>
 <translation id="6036420186814142909">O Google Chrome tem recursos que ajudam a gerenciar seus dados de Internet e a velocidade de carregamento de páginas da Web.
 <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="6181930887571472871">Mudar para o Chrome</translation>
@@ -71,6 +74,7 @@
 <translation id="7261678641327190792">Não é possível verificar suas senhas com o Chrome.</translation>
 <translation id="7265369419224458312">Acesse as guias que você abriu no seu computador, bem aqui. Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login no Google Chrome…”</translation>
 <translation id="7272930098487145294">Para salvar imagens, toque em "Configurações" e permita que o Chrome as adicione às suas fotos</translation>
+<translation id="7275945473750112644">Sua conta é gerenciada por <ph name="HOSTED_DOMAIN" />. Por isso, seus dados do Chrome serão apagados deste dispositivo</translation>
 <translation id="7400722733683201933">Sobre o Google Chrome</translation>
 <translation id="7501046334262221972">Para definir o Chrome como o navegador padrão, abra as configurações. Toque em "App do navegador padrão" e selecione o Chrome.</translation>
 <translation id="756809126120519699">Dados do Chrome apagados</translation>
@@ -79,8 +83,9 @@
 <translation id="766361182512894255">Sua senha foi exposta em uma violação de dados. Por recomendação do Chrome, mude a senha imediatamente.</translation>
 <translation id="7698568245838009292">Solicitação do Chrome para acessar a câmera</translation>
 <translation id="7855730255114109580">O Google Chrome está atualizado</translation>
-<translation id="8109233255338845204">Sua conta é gerenciada por <ph name="HOSTED_DOMAIN" />. Por isso, seus dados do Chrome serão apagados deste dispositivo.</translation>
+<translation id="8022947259858476807">Use o Chrome como padrão para abrir links, pesquisar em widgets e preencher senhas automaticamente em outros apps</translation>
 <translation id="8160472928944011082">Não é possível atualizar o Chrome</translation>
+<translation id="8357607116237445042">Você quer apagar ou manter os dados do Chrome neste dispositivo?</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Todos os direitos reservados.</translation>
 <translation id="840168496893712993">Alguns complementos causam a falha do Google Chrome. Tente desinstalá-los.</translation>
 <translation id="8459495907675268833">Os dados selecionados foram removidos do Chrome e dos dispositivos sincronizados. É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em history.google.com.</translation>
@@ -89,5 +94,6 @@
   2. Toque em "App do navegador padrão".
   3. Selecione o Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="9135668017386497357">Se você permitir que o Chrome saiba sua localização, ele a enviará para o mecanismo de pesquisa padrão e para os sites aos quais você concedeu permissão. Os sites podem solicitar sua localização para enviar informações locais para você, como notícias ou lojas próximas.</translation>
+<translation id="8736550665979974340">Proteja-se com o Google Chrome</translation>
+<translation id="9112744793181547300">Definir o Chrome como padrão?</translation>
 </translationbundle>

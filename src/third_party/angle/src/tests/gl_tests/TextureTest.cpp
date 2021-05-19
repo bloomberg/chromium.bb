@@ -480,7 +480,7 @@ class Texture2DBaseMaxTestES3 : public ANGLETest
         }
     }
 
-    void initTest()
+    void initTest(bool immutable)
     {
         // Set up program to sample from specific lod level.
         mProgram.makeRaster(essl3_shaders::vs::Texture2DLod(), essl3_shaders::fs::Texture2DLod());
@@ -501,11 +501,24 @@ class Texture2DBaseMaxTestES3 : public ANGLETest
         std::array<GLColor, getTotalMipDataSize(kMip0Size)> mipData;
         fillMipData(mipData.data(), kMip0Size, kMipColors);
 
-        for (size_t mip = 0; mip < kMipCount; ++mip)
+        if (immutable)
         {
-            glTexImage2D(GL_TEXTURE_2D, mip, GL_RGBA8, kMip0Size >> mip, kMip0Size >> mip, 0,
-                         GL_RGBA, GL_UNSIGNED_BYTE,
-                         mipData.data() + getMipDataOffset(kMip0Size, mip));
+            glTexStorage2D(GL_TEXTURE_2D, kMipCount, GL_RGBA8, kMip0Size, kMip0Size);
+            for (size_t mip = 0; mip < kMipCount; ++mip)
+            {
+                glTexSubImage2D(GL_TEXTURE_2D, mip, 0, 0, kMip0Size >> mip, kMip0Size >> mip,
+                                GL_RGBA, GL_UNSIGNED_BYTE,
+                                mipData.data() + getMipDataOffset(kMip0Size, mip));
+            }
+        }
+        else
+        {
+            for (size_t mip = 0; mip < kMipCount; ++mip)
+            {
+                glTexImage2D(GL_TEXTURE_2D, mip, GL_RGBA8, kMip0Size >> mip, kMip0Size >> mip, 0,
+                             GL_RGBA, GL_UNSIGNED_BYTE,
+                             mipData.data() + getMipDataOffset(kMip0Size, mip));
+            }
         }
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
@@ -515,6 +528,9 @@ class Texture2DBaseMaxTestES3 : public ANGLETest
     }
 
     void setLodUniform(uint32_t lod) { glUniform1f(mLodLocation, lod); }
+
+    void testPingPongBaseLevel(bool immutable);
+    void testGenerateMipmapAfterRebase(bool immutable);
 
     GLProgram mProgram;
     GLTexture mTexture;
@@ -1118,6 +1134,9 @@ class Texture3DTestES2 : public TexCoordDrawTest
 
     void testSetUp() override
     {
+        // http://anglebug.com/5728
+        ANGLE_SKIP_TEST_IF(IsOzone());
+
         TexCoordDrawTest::testSetUp();
 
         glGenTextures(1, &mTexture3D);
@@ -2992,6 +3011,10 @@ TEST_P(Texture2DTest, NPOTSubImageParameters)
 TEST_P(Texture3DTestES2, RGBA)
 {
     ANGLE_SKIP_TEST_IF(!hasTexture3DExt());
+
+    // http://anglebug.com/5728
+    ANGLE_SKIP_TEST_IF(IsOzone());
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, mTexture3D);
     std::vector<GLColor> texDataGreen(2u * 2u * 2u, GLColor::green);
@@ -3014,6 +3037,10 @@ TEST_P(Texture3DTestES2, RGBA)
 TEST_P(Texture3DTestES2, Luminance)
 {
     ANGLE_SKIP_TEST_IF(!hasTexture3DExt());
+
+    // http://anglebug.com/5728
+    ANGLE_SKIP_TEST_IF(IsOzone());
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, mTexture3D);
     std::vector<GLubyte> texData(2u * 2u * 2u, 125);
@@ -3034,6 +3061,9 @@ TEST_P(Texture3DTestES2, Luminance)
 TEST_P(Texture3DTestES2, CopySubImageRGBA)
 {
     ANGLE_SKIP_TEST_IF(!hasTexture3DExt());
+
+    // http://anglebug.com/5728
+    ANGLE_SKIP_TEST_IF(IsOzone());
 
     glClearColor(0, 0, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -3069,6 +3099,9 @@ TEST_P(Texture3DTestES2, CopySubImageLuminance)
 {
     ANGLE_SKIP_TEST_IF(!hasTexture3DExt());
 
+    // http://anglebug.com/5728
+    ANGLE_SKIP_TEST_IF(IsOzone());
+
     glClearColor(1, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -3101,6 +3134,9 @@ TEST_P(Texture3DTestES2, CopySubImageLuminance)
 TEST_P(Texture3DTestES2, CopySubImageAlpha)
 {
     ANGLE_SKIP_TEST_IF(!hasTexture3DExt());
+
+    // http://anglebug.com/5728
+    ANGLE_SKIP_TEST_IF(IsOzone());
 
     glClearColor(1, 0, 0, 0.5);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -3378,6 +3414,14 @@ TEST_P(Texture2DBaseMaxTestES3, ExtendMipChainAfterRedefine)
 // Test that changing the base level of a texture multiple times preserves the data.
 TEST_P(Texture2DBaseMaxTestES3, PingPongBaseLevel)
 {
+    testPingPongBaseLevel(false);
+}
+TEST_P(Texture2DBaseMaxTestES3, PingPongBaseLevelImmutable)
+{
+    testPingPongBaseLevel(true);
+}
+void Texture2DBaseMaxTestES3::testPingPongBaseLevel(bool immutable)
+{
     // http://anglebug.com/4710
     ANGLE_SKIP_TEST_IF(IsD3D());
 
@@ -3387,7 +3431,7 @@ TEST_P(Texture2DBaseMaxTestES3, PingPongBaseLevel)
     // http://anglebug.com/4701
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && IsOSX());
 
-    initTest();
+    initTest(immutable);
 
     // Ping pong a few times.
     for (uint32_t tries = 0; tries < 2; ++tries)
@@ -3422,7 +3466,7 @@ TEST_P(Texture2DBaseMaxTestES3, PingPongBaseLevel)
 // after the redefine data.
 TEST_P(Texture2DBaseMaxTestES3, SubImageAfterRedefine)
 {
-    initTest();
+    initTest(false);
 
     // Test that all mips have the expected data initially (this makes sure the texture image is
     // created already).
@@ -3483,7 +3527,7 @@ TEST_P(Texture2DBaseMaxTestES3, SubImageAfterRedefine)
 // Test that incompatibly redefining a level then redefining it back to its original size works.
 TEST_P(Texture2DBaseMaxTestES3, IncompatiblyRedefineLevelThenRevert)
 {
-    initTest();
+    initTest(false);
 
     // Test that all mips have the expected data initially (this makes sure the texture image is
     // created already).
@@ -3523,7 +3567,7 @@ TEST_P(Texture2DBaseMaxTestES3, IncompatiblyRedefineLevelThenRevert)
 // bits per component, to ensure alignment requirements for the new format are taken into account.
 TEST_P(Texture2DBaseMaxTestES3, RedefineEveryLevelToAnotherFormat)
 {
-    initTest();
+    initTest(false);
 
     // Test that all mips have the expected data initially (this makes sure the texture image is
     // created already).
@@ -3567,10 +3611,85 @@ TEST_P(Texture2DBaseMaxTestES3, RedefineEveryLevelToAnotherFormat)
     }
 }
 
+// Test that generating mipmaps after change base level.
+TEST_P(Texture2DBaseMaxTestES3, GenerateMipmapAfterRebase)
+{
+    testGenerateMipmapAfterRebase(false);
+}
+TEST_P(Texture2DBaseMaxTestES3, GenerateMipmapAfterRebaseImmutable)
+{
+    // http://anglebug.com/4710
+    ANGLE_SKIP_TEST_IF(IsD3D());
+
+    // http://anglebug.com/5798
+    ANGLE_SKIP_TEST_IF(IsOpenGL() && IsNVIDIA());
+
+    testGenerateMipmapAfterRebase(true);
+}
+void Texture2DBaseMaxTestES3::testGenerateMipmapAfterRebase(bool immutable)
+{
+    initTest(immutable);
+
+    // Test that all mips have the expected data initially (this makes sure the texture image is
+    // created already).
+    for (uint32_t lod = 0; lod < kMipCount; ++lod)
+    {
+        setLodUniform(lod);
+        drawQuad(mProgram, essl3_shaders::PositionAttrib(), 0.5f);
+        EXPECT_PIXEL_COLOR_EQ(0, 0, kMipColors[lod]);
+    }
+
+    // Update level 1 (any level would do other than 0) with new data
+    const GLColor kNewMipColor = GLColor::yellow;
+    std::array<GLColor, getMipDataSize(kMip0Size >> 1, 0)> newMipData;
+    std::fill(newMipData.begin(), newMipData.end(), kNewMipColor);
+
+    glTexSubImage2D(GL_TEXTURE_2D, 1, 0, 0, kMip0Size >> 1, kMip0Size >> 1, GL_RGBA,
+                    GL_UNSIGNED_BYTE, newMipData.data());
+
+    // Change base level and max level and then generate mipmaps. This should redefine level 1 and 2
+    // with kNewMipColor and leave levels 0 and 3 unchanged.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, kMipCount - 2);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, kMipCount - 1);
+
+    // Test that the texture looks as expected.
+    const int w = getWindowWidth() - 1;
+    const int h = getWindowHeight() - 1;
+    for (uint32_t lod = 0; lod < kMipCount; ++lod)
+    {
+        setLodUniform(lod);
+        drawQuad(mProgram, essl3_shaders::PositionAttrib(), 0.5f);
+        if (lod == 0)
+        {
+            EXPECT_PIXEL_COLOR_EQ(0, 0, kMipColors[lod]);
+            EXPECT_PIXEL_COLOR_EQ(w, 0, kMipColors[lod]);
+            EXPECT_PIXEL_COLOR_EQ(0, h, kMipColors[lod]);
+            EXPECT_PIXEL_COLOR_EQ(w, h, kMipColors[lod]);
+        }
+        else if (lod == kMipCount - 1)
+        {
+            EXPECT_PIXEL_COLOR_EQ(0, 0, kMipColors[lod]);
+            EXPECT_PIXEL_COLOR_EQ(w, 0, kMipColors[lod]);
+            EXPECT_PIXEL_COLOR_EQ(0, h, kMipColors[lod]);
+            EXPECT_PIXEL_COLOR_EQ(w, h, kMipColors[lod]);
+        }
+        else
+        {
+            EXPECT_PIXEL_COLOR_EQ(0, 0, kNewMipColor);
+            EXPECT_PIXEL_COLOR_EQ(w, 0, kNewMipColor);
+            EXPECT_PIXEL_COLOR_EQ(0, h, kNewMipColor);
+            EXPECT_PIXEL_COLOR_EQ(w, h, kNewMipColor);
+        }
+    }
+}
+
 // Test that generating mipmaps after incompatibly redefining a level works.
 TEST_P(Texture2DBaseMaxTestES3, GenerateMipmapAfterRedefine)
 {
-    initTest();
+    initTest(false);
 
     // Test that all mips have the expected data initially (this makes sure the texture image is
     // created already).
@@ -3619,7 +3738,7 @@ TEST_P(Texture2DBaseMaxTestES3, GenerateMipmapAfterRedefineAndRebase)
     // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
 
-    initTest();
+    initTest(false);
 
     // Test that all mips have the expected data initially (this makes sure the texture image is
     // created already).
@@ -3680,7 +3799,7 @@ TEST_P(Texture2DBaseMaxTestES3, GenerateMipmapAfterRedefineAndRebase)
 // Test that generating mipmaps after incompatibly redefining the base level of the texture works.
 TEST_P(Texture2DBaseMaxTestES3, GenerateMipmapAfterRedefiningBase)
 {
-    initTest();
+    initTest(false);
 
     // Test that all mips have the expected data initially (this makes sure the texture image is
     // created already).
@@ -3720,7 +3839,7 @@ TEST_P(Texture2DBaseMaxTestES3, GenerateMipmapAfterRedefiningBase)
 // changing MAX_LEVEL works.
 TEST_P(Texture2DBaseMaxTestES3, GenerateMipmapAfterRedefiningBaseAndChangingMax)
 {
-    initTest();
+    initTest(false);
 
     // Test that all mips have the expected data initially (this makes sure the texture image is
     // created already).
@@ -3764,7 +3883,7 @@ TEST_P(Texture2DBaseMaxTestES3, StageInvalidLevels)
     constexpr uint32_t kMaxLevel           = 2;
     const GLColor kMipColor[kMaxLevel + 1] = {GLColor::red, GLColor::green, GLColor::blue};
 
-    initTest();
+    initTest(false);
 
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -3800,6 +3919,114 @@ TEST_P(Texture2DBaseMaxTestES3, StageInvalidLevels)
         EXPECT_PIXEL_COLOR_EQ(w, 0, kMipColor[lod]);
         EXPECT_PIXEL_COLOR_EQ(0, h, kMipColor[lod]);
         EXPECT_PIXEL_COLOR_EQ(w, h, kMipColor[lod]);
+    }
+}
+
+// Test redefine a mutable texture into an immutable texture.
+TEST_P(Texture2DBaseMaxTestES3, RedefineMutableToImmutable)
+{
+    // http://anglebug.com/4710
+    ANGLE_SKIP_TEST_IF(IsD3D());
+
+    // http://anglebug.com/4701
+    ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && IsOSX());
+
+    constexpr uint32_t kBaseLevel          = 1;
+    const GLColor kNewMipColors[kMipCount] = {
+        GLColor::yellow,
+        GLColor::cyan,
+        GLColor::white,
+        GLColor(127u, 127u, 127u, 255u),
+    };
+
+    initTest(false);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, kBaseLevel);
+
+    // Test that all mips have the expected data
+    for (uint32_t lod = kBaseLevel; lod < kMipCount; ++lod)
+    {
+        setLodUniform(lod - kBaseLevel);
+        drawQuad(mProgram, essl3_shaders::PositionAttrib(), 0.5f);
+        EXPECT_PIXEL_COLOR_EQ(0, 0, kMipColors[lod]);
+    }
+
+    glTexStorage2D(GL_TEXTURE_2D, kMipCount, GL_RGBA8, kMip0Size, kMip0Size);
+    std::array<GLColor, getTotalMipDataSize(kMip0Size)> mipData;
+    fillMipData(mipData.data(), kMip0Size, kNewMipColors);
+    for (size_t mip = 0; mip < kMipCount; ++mip)
+    {
+        glTexSubImage2D(GL_TEXTURE_2D, mip, 0, 0, kMip0Size >> mip, kMip0Size >> mip, GL_RGBA,
+                        GL_UNSIGNED_BYTE, mipData.data() + getMipDataOffset(kMip0Size, mip));
+    }
+
+    // Test that all enabled mips have the expected data
+    for (uint32_t lod = kBaseLevel; lod < kMipCount; ++lod)
+    {
+        setLodUniform(lod - kBaseLevel);
+        drawQuad(mProgram, essl3_shaders::PositionAttrib(), 0.5f);
+        EXPECT_PIXEL_COLOR_EQ(0, 0, kNewMipColors[lod]);
+    }
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+    for (uint32_t lod = 0; lod < kBaseLevel; ++lod)
+    {
+        setLodUniform(lod);
+        drawQuad(mProgram, essl3_shaders::PositionAttrib(), 0.5f);
+        EXPECT_PIXEL_COLOR_EQ(0, 0, kNewMipColors[lod]);
+    }
+}
+
+// Test that redefine a level with incompatible size beyond the max level.
+TEST_P(Texture2DBaseMaxTestES3, RedefineIncompatibleLevelBeyondMaxLevel)
+{
+    initTest(false);
+
+    // Test that all mips have the expected data initially (this makes sure the texture image is
+    // created already).
+    for (uint32_t lod = 0; lod < kMipCount; ++lod)
+    {
+        setLodUniform(lod);
+        drawQuad(mProgram, essl3_shaders::PositionAttrib(), 0.5f);
+        EXPECT_PIXEL_COLOR_EQ(0, 0, kMipColors[lod]);
+    }
+
+    uint32_t maxLevel = 1;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, maxLevel);
+
+    // Update level 0
+    const GLColor kNewMipLevle0Color = GLColor::yellow;
+    std::array<GLColor, getMipDataSize(kMip0Size, 0)> newMipData;
+    std::fill(newMipData.begin(), newMipData.end(), kNewMipLevle0Color);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, kMip0Size, kMip0Size, GL_RGBA, GL_UNSIGNED_BYTE,
+                    newMipData.data());
+
+    // Update level 2 with incompatible data
+    glTexImage2D(GL_TEXTURE_2D, 2, GL_RGBA8, 10, 10, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 newMipData.data());
+    EXPECT_GL_NO_ERROR();
+
+    // Test that the texture looks as expected.
+    const int w = getWindowWidth() - 1;
+    const int h = getWindowHeight() - 1;
+    for (uint32_t lod = 0; lod < maxLevel; ++lod)
+    {
+        setLodUniform(lod);
+        drawQuad(mProgram, essl3_shaders::PositionAttrib(), 0.5f);
+        if (lod == 0)
+        {
+            EXPECT_PIXEL_COLOR_EQ(0, 0, kNewMipLevle0Color);
+            EXPECT_PIXEL_COLOR_EQ(w, 0, kNewMipLevle0Color);
+            EXPECT_PIXEL_COLOR_EQ(0, h, kNewMipLevle0Color);
+            EXPECT_PIXEL_COLOR_EQ(w, h, kNewMipLevle0Color);
+        }
+        else
+        {
+            EXPECT_PIXEL_COLOR_EQ(0, 0, kMipColors[lod]);
+            EXPECT_PIXEL_COLOR_EQ(w, 0, kMipColors[lod]);
+            EXPECT_PIXEL_COLOR_EQ(0, h, kMipColors[lod]);
+            EXPECT_PIXEL_COLOR_EQ(w, h, kMipColors[lod]);
+        }
     }
 }
 
@@ -8744,17 +8971,39 @@ ANGLE_INSTANTIATE_TEST_ES2(Texture2DTestWithDrawScale);
 ANGLE_INSTANTIATE_TEST_ES2(Sampler2DAsFunctionParameterTest);
 ANGLE_INSTANTIATE_TEST_ES2(SamplerArrayTest);
 ANGLE_INSTANTIATE_TEST_ES2(SamplerArrayAsFunctionParameterTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DTestES3);
 ANGLE_INSTANTIATE_TEST_ES3_AND(Texture2DTestES3, WithAllocateNonZeroMemory(ES3_VULKAN()));
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DTestES31PPO);
 ANGLE_INSTANTIATE_TEST_ES31(Texture2DTestES31PPO);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DBaseMaxTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture2DBaseMaxTestES3);
+
 ANGLE_INSTANTIATE_TEST_ES2(Texture3DTestES2);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture3DTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture3DTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DIntegerAlpha1TestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture2DIntegerAlpha1TestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DUnsignedIntegerAlpha1TestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture2DUnsignedIntegerAlpha1TestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ShadowSamplerPlusSampler3DTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(ShadowSamplerPlusSampler3DTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SamplerTypeMixTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(SamplerTypeMixTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DArrayTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture2DArrayTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TextureSizeTextureArrayTest);
 ANGLE_INSTANTIATE_TEST_ES3(TextureSizeTextureArrayTest);
+
 ANGLE_INSTANTIATE_TEST_ES2(SamplerInStructTest);
 ANGLE_INSTANTIATE_TEST_ES2(SamplerInStructAsFunctionParameterTest);
 ANGLE_INSTANTIATE_TEST_ES2(SamplerInStructArrayAsFunctionParameterTest);
@@ -8762,28 +9011,58 @@ ANGLE_INSTANTIATE_TEST_ES2(SamplerInNestedStructAsFunctionParameterTest);
 ANGLE_INSTANTIATE_TEST_ES2(SamplerInStructAndOtherVariableTest);
 ANGLE_INSTANTIATE_TEST_ES2(TextureAnisotropyTest);
 ANGLE_INSTANTIATE_TEST_ES2(TextureBorderClampTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TextureBorderClampTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(TextureBorderClampTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TextureBorderClampIntegerTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(TextureBorderClampIntegerTestES3);
+
 ANGLE_INSTANTIATE_TEST_ES2(TextureLimitsTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DNorm16TestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture2DNorm16TestES3);
+
 ANGLE_INSTANTIATE_TEST(Texture2DRGTest,
                        ANGLE_ALL_TEST_PLATFORMS_ES2,
                        ANGLE_ALL_TEST_PLATFORMS_ES3,
                        ES2_EMULATE_COPY_TEX_IMAGE(),
                        ES3_EMULATE_COPY_TEX_IMAGE());
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DFloatTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture2DFloatTestES3);
+
 ANGLE_INSTANTIATE_TEST_ES2(Texture2DFloatTestES2);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TextureCubeTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(TextureCubeTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DIntegerTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture2DIntegerTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TextureCubeIntegerTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(TextureCubeIntegerTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TextureCubeIntegerEdgeTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(TextureCubeIntegerEdgeTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DIntegerProjectiveOffsetTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture2DIntegerProjectiveOffsetTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DArrayIntegerTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture2DArrayIntegerTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture3DIntegerTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture3DIntegerTestES3);
+
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(Texture2DDepthTest);
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(PBOCompressedTextureTest);
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(ETC1CompressedTextureTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TextureBufferTestES31);
 ANGLE_INSTANTIATE_TEST_ES31(TextureBufferTestES31);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CopyImageTestES31);
 ANGLE_INSTANTIATE_TEST_ES31(CopyImageTestES31);
 
 }  // anonymous namespace

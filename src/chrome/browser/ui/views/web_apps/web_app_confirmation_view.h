@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_CONFIRMATION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_CONFIRMATION_VIEW_H_
 
+#include <string>
+
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -43,10 +44,10 @@ class WebAppConfirmationView : public views::DialogDelegateView,
 
   // Overridden from views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
-                       const base::string16& new_contents) override;
+                       const std::u16string& new_contents) override;
 
   // Get the trimmed contents of the title text field.
-  base::string16 GetTrimmedTitle() const;
+  std::u16string GetTrimmedTitle() const;
 
   // The WebApplicationInfo that the user is editing.
   // Cleared when the dialog completes (Accept/WindowClosing).

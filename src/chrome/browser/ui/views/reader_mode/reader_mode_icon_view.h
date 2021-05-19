@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_READER_MODE_READER_MODE_ICON_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_READER_MODE_READER_MODE_ICON_VIEW_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -40,12 +41,13 @@ class ReaderModeIconView : public PageActionIconView,
       content::NavigationHandle* navigation_handle) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DocumentAvailableInMainFrame() override;
+  void DocumentAvailableInMainFrame(
+      content::RenderFrameHost* render_frame_host) override;
 
   // PageActionIconView overrides:
   void UpdateImpl() override;
   const gfx::VectorIcon& GetVectorIcon() const override;
-  base::string16 GetTextForTooltipAndAccessibleName() const override;
+  std::u16string GetTextForTooltipAndAccessibleName() const override;
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
 
   // GetBubble() is required by PageActionIconView; however, the icon

@@ -127,10 +127,6 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         Account[] accounts = mAccountManager.getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
         long elapsed = SystemClock.elapsedRealtime() - now;
         recordElapsedTimeHistogram("Signin.AndroidGetAccountsTime_AccountManager", elapsed);
-        if (ThreadUtils.runningOnUiThread()) {
-            recordElapsedTimeHistogram(
-                    "Signin.AndroidGetAccountsTimeUiThread_AccountManager", elapsed);
-        }
         return accounts;
     }
 
@@ -170,19 +166,20 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         return mAccountManager.getAuthenticatorTypes();
     }
 
-    @Override
-    public boolean hasFeatures(Account account, String[] features) {
-        if (!hasGetAccountsPermission()) {
-            return false;
-        }
-        try {
-            return mAccountManager.hasFeatures(account, features, null, null).getResult();
-        } catch (AuthenticatorException | IOException e) {
-            Log.e(TAG, "Error while checking features: ", e);
-        } catch (OperationCanceledException e) {
-            Log.e(TAG, "Checking features was cancelled. This should not happen.");
+    protected boolean hasFeatures(Account account, String[] features) {
+        if (hasGetAccountsPermission()) {
+            try {
+                return mAccountManager.hasFeatures(account, features, null, null).getResult();
+            } catch (AuthenticatorException | IOException | OperationCanceledException e) {
+                Log.e(TAG, "Error while checking features: ", e);
+            }
         }
         return false;
+    }
+
+    @Override
+    public boolean hasFeature(Account account, String feature) {
+        return hasFeatures(account, new String[] {feature});
     }
 
     /**

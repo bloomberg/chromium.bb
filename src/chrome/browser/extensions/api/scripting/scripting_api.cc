@@ -18,6 +18,10 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/mojom/action_type.mojom-shared.h"
+#include "extensions/common/mojom/css_origin.mojom-shared.h"
+#include "extensions/common/mojom/host_id.mojom.h"
+#include "extensions/common/mojom/run_location.mojom-shared.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -32,19 +36,20 @@ constexpr char kExactlyOneOfCssAndFilesError[] =
 // Note: CSS always injects as soon as possible, so we default to
 // document_start. Because of tab loading, there's no guarantee this will
 // *actually* inject before page load, but it will at least inject "soon".
-constexpr UserScript::RunLocation kCSSRunLocation = UserScript::DOCUMENT_START;
+constexpr mojom::RunLocation kCSSRunLocation =
+    mojom::RunLocation::kDocumentStart;
 
 // Converts the given `style_origin` to a CSSOrigin.
-CSSOrigin ConvertStyleOriginToCSSOrigin(
+mojom::CSSOrigin ConvertStyleOriginToCSSOrigin(
     api::scripting::StyleOrigin style_origin) {
-  CSSOrigin css_origin = CSSOrigin::kAuthor;
+  mojom::CSSOrigin css_origin = mojom::CSSOrigin::kAuthor;
   switch (style_origin) {
     case api::scripting::STYLE_ORIGIN_NONE:
     case api::scripting::STYLE_ORIGIN_AUTHOR:
-      css_origin = CSSOrigin::kAuthor;
+      css_origin = mojom::CSSOrigin::kAuthor;
       break;
     case api::scripting::STYLE_ORIGIN_USER:
-      css_origin = CSSOrigin::kUser;
+      css_origin = mojom::CSSOrigin::kUser;
       break;
   }
 
@@ -89,7 +94,7 @@ bool HasPermissionToInjectIntoFrame(const PermissionsData& permissions,
     const url::SchemeHostPort& tuple_or_precursor_tuple =
         origin.GetTupleOrPrecursorTupleIfOpaque();
     if (!tuple_or_precursor_tuple.IsValid()) {
-      if (permissions.HasAPIPermission(APIPermission::kTab)) {
+      if (permissions.HasAPIPermission(mojom::APIPermissionID::kTab)) {
         *error = ErrorUtils::FormatErrorMessage(
             manifest_errors::kCannotAccessPageWithUrl, url.spec());
       } else {
@@ -114,7 +119,7 @@ bool CanAccessTarget(const PermissionsData& permissions,
                      bool include_incognito_information,
                      ScriptExecutor** script_executor_out,
                      ScriptExecutor::FrameScope* frame_scope_out,
-                     std::vector<int>* frame_ids_out,
+                     std::set<int>* frame_ids_out,
                      std::string* error_out) {
   content::WebContents* tab = nullptr;
   TabHelper* tab_helper = nullptr;
@@ -139,15 +144,11 @@ bool CanAccessTarget(const PermissionsData& permissions,
           ? ScriptExecutor::INCLUDE_SUB_FRAMES
           : ScriptExecutor::SPECIFIED_FRAMES;
 
-  std::vector<int> frame_ids;
+  std::set<int> frame_ids;
   if (target.frame_ids) {
-    // Ensure IDs are unique.
-    frame_ids = *target.frame_ids;
-    std::sort(frame_ids.begin(), frame_ids.end());
-    auto new_end = std::unique(frame_ids.begin(), frame_ids.end());
-    frame_ids.erase(new_end, frame_ids.end());
+    frame_ids.insert(target.frame_ids->begin(), target.frame_ids->end());
   } else {
-    frame_ids.push_back(ExtensionApiFrameIdMap::kTopFrameId);
+    frame_ids.insert(ExtensionApiFrameIdMap::kTopFrameId);
   }
 
   // TODO(devlin): If `allFrames` is true, we error out if the extension
@@ -285,7 +286,7 @@ bool ScriptingExecuteScriptFunction::Execute(std::string code_to_execute,
                                              std::string* error) {
   ScriptExecutor* script_executor = nullptr;
   ScriptExecutor::FrameScope frame_scope = ScriptExecutor::SPECIFIED_FRAMES;
-  std::vector<int> frame_ids;
+  std::set<int> frame_ids;
   if (!CanAccessTarget(*extension()->permissions_data(), injection_.target,
                        browser_context(), include_incognito_information(),
                        &script_executor, &frame_scope, &frame_ids, error)) {
@@ -293,12 +294,12 @@ bool ScriptingExecuteScriptFunction::Execute(std::string code_to_execute,
   }
 
   script_executor->ExecuteScript(
-      HostID(HostID::EXTENSIONS, extension()->id()), UserScript::ADD_JAVASCRIPT,
-      std::move(code_to_execute), frame_scope, frame_ids,
-      ScriptExecutor::MATCH_ABOUT_BLANK, UserScript::DOCUMENT_IDLE,
-      ScriptExecutor::DEFAULT_PROCESS,
+      mojom::HostID(mojom::HostID::HostType::kExtensions, extension()->id()),
+      mojom::ActionType::kAddJavascript, std::move(code_to_execute),
+      frame_scope, frame_ids, ScriptExecutor::MATCH_ABOUT_BLANK,
+      mojom::RunLocation::kDocumentIdle, ScriptExecutor::DEFAULT_PROCESS,
       /* webview_src */ GURL(), std::move(script_url), user_gesture(),
-      CSSOrigin::kAuthor, ScriptExecutor::JSON_SERIALIZED_RESULT,
+      mojom::CSSOrigin::kAuthor, ScriptExecutor::JSON_SERIALIZED_RESULT,
       base::BindOnce(&ScriptingExecuteScriptFunction::OnScriptExecuted, this));
 
   return true;
@@ -399,7 +400,7 @@ bool ScriptingInsertCSSFunction::Execute(std::string code_to_execute,
                                          std::string* error) {
   ScriptExecutor* script_executor = nullptr;
   ScriptExecutor::FrameScope frame_scope = ScriptExecutor::SPECIFIED_FRAMES;
-  std::vector<int> frame_ids;
+  std::set<int> frame_ids;
   if (!CanAccessTarget(*extension()->permissions_data(), injection_.target,
                        browser_context(), include_incognito_information(),
                        &script_executor, &frame_scope, &frame_ids, error)) {
@@ -408,9 +409,9 @@ bool ScriptingInsertCSSFunction::Execute(std::string code_to_execute,
   DCHECK(script_executor);
 
   script_executor->ExecuteScript(
-      HostID(HostID::EXTENSIONS, extension()->id()), UserScript::ADD_CSS,
-      std::move(code_to_execute), frame_scope, frame_ids,
-      ScriptExecutor::MATCH_ABOUT_BLANK, kCSSRunLocation,
+      mojom::HostID(mojom::HostID::HostType::kExtensions, extension()->id()),
+      mojom::ActionType::kAddCss, std::move(code_to_execute), frame_scope,
+      frame_ids, ScriptExecutor::MATCH_ABOUT_BLANK, kCSSRunLocation,
       ScriptExecutor::DEFAULT_PROCESS,
       /* webview_src */ GURL(), std::move(script_url), user_gesture(),
       ConvertStyleOriginToCSSOrigin(injection_.origin),
@@ -465,7 +466,7 @@ ExtensionFunction::ResponseAction ScriptingRemoveCSSFunction::Run() {
 
   ScriptExecutor* script_executor = nullptr;
   ScriptExecutor::FrameScope frame_scope = ScriptExecutor::SPECIFIED_FRAMES;
-  std::vector<int> frame_ids;
+  std::set<int> frame_ids;
   if (!CanAccessTarget(*extension()->permissions_data(), injection.target,
                        browser_context(), include_incognito_information(),
                        &script_executor, &frame_scope, &frame_ids, &error)) {
@@ -476,8 +477,8 @@ ExtensionFunction::ResponseAction ScriptingRemoveCSSFunction::Run() {
   DCHECK(code.empty() || !script_url.is_valid());
 
   script_executor->ExecuteScript(
-      HostID(HostID::EXTENSIONS, extension()->id()), UserScript::REMOVE_CSS,
-      std::move(code), frame_scope, frame_ids,
+      mojom::HostID(mojom::HostID::HostType::kExtensions, extension()->id()),
+      mojom::ActionType::kRemoveCss, std::move(code), frame_scope, frame_ids,
       ScriptExecutor::MATCH_ABOUT_BLANK, kCSSRunLocation,
       ScriptExecutor::DEFAULT_PROCESS,
       /* webview_src */ GURL(), std::move(script_url), user_gesture(),

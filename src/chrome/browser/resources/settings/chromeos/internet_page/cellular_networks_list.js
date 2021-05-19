@@ -13,6 +13,7 @@ Polymer({
   behaviors: [
     ESimManagerListenerBehavior,
     I18nBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -34,10 +35,24 @@ Polymer({
     showTechnologyBadge: Boolean,
 
     /**
-     * Device state for the network type.
+     * Device state for the cellular network type.
      * @type {!OncMojo.DeviceStateProperties|undefined}
      */
-    deviceState: Object,
+    cellularDeviceState: Object,
+
+    isConnectedToNonCellularNetwork: {
+      type: Boolean,
+    },
+
+    /**
+     * Device state for the tether network type. This device state should be
+     * used for instant tether networks.
+     * @type {!OncMojo.DeviceStateProperties|undefined}
+     */
+    tetherDeviceState: Object,
+
+    /** @type {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
+    globalPolicy: Object,
 
     /**
      * The list of eSIM network state properties for display.
@@ -130,6 +145,27 @@ Polymer({
       type: Object,
       value: null,
     },
+
+    /**
+     * The error code returned when eSIM profile install attempt was made.
+     * @type {?chromeos.cellularSetup.mojom.ProfileInstallResult}
+     * @private
+     */
+    eSimProfileInstallError_: {
+      type: Object,
+      value: null,
+    },
+
+    /**
+     * Multi-device page data used to determine if the tether section should be
+     * shown or not.
+     * @type {?settings.MultiDevicePageContentData}
+     * @private
+     */
+    multiDevicePageContentData_: {
+      type: Object,
+      value: null,
+    },
   },
 
   listeners: {
@@ -145,6 +181,17 @@ Polymer({
     this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
     this.fetchESimPendingProfileList_();
+  },
+
+  /** @override */
+  ready() {
+    this.addWebUIListener(
+        'settings.updateMultidevicePageContentData',
+        this.onMultiDevicePageContentDataChanged_.bind(this));
+
+    const browserProxy = settings.MultiDeviceBrowserProxyImpl.getInstance();
+    browserProxy.getPageContentData().then(
+        this.onMultiDevicePageContentDataChanged_.bind(this));
   },
 
   /**
@@ -184,6 +231,15 @@ Polymer({
       this.euicc_ = euicc;
       this.fetchESimPendingProfileListForEuicc_(euicc);
     });
+  },
+
+  /**
+   * Return true if esim section should be shown.
+   * @return {boolean}
+   * @private
+   */
+  shouldShowEsimSection_() {
+    return !!this.euicc_;
   },
 
   /**
@@ -244,7 +300,7 @@ Polymer({
   /**
    * @private
    */
-  async onNetworksListChanged_() {
+  onNetworksListChanged_() {
     const mojom = chromeos.networkConfig.mojom;
 
     const pSimNetworks = [];
@@ -257,16 +313,7 @@ Polymer({
         continue;
       }
 
-      const managedPropertiesResponse =
-          await this.networkConfig_.getManagedProperties(network.guid);
-      if (!managedPropertiesResponse || !managedPropertiesResponse.result) {
-        console.error(
-            'Unable to get managed properties for network. guid=',
-            network.guid);
-        continue;
-      }
-
-      if (managedPropertiesResponse.result.typeProperties.cellular.eid) {
+      if (network.typeState.cellular && network.typeState.cellular.eid) {
         eSimNetworks.push(network);
       } else {
         pSimNetworks.push(network);
@@ -290,6 +337,37 @@ Polymer({
   },
 
   /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} cellularDeviceState
+   * @returns {boolean}
+   * @private
+   */
+  shouldShowPSimSection_(cellularDeviceState) {
+    const {pSimSlots} = getSimSlotCount(cellularDeviceState);
+    return pSimSlots > 0;
+  },
+
+  /**
+   * @param {!settings.MultiDevicePageContentData} newData
+   * @private
+   */
+  onMultiDevicePageContentDataChanged_(newData) {
+    this.multiDevicePageContentData_ = newData;
+  },
+
+  /**
+   * @param {?settings.MultiDevicePageContentData} pageContentData
+   * @returns {boolean}
+   * @private
+   */
+  shouldShowTetherSection_(pageContentData) {
+    if (!pageContentData) {
+      return false;
+    }
+    return pageContentData.instantTetheringState ===
+        settings.MultiDeviceFeatureState.ENABLED_BY_USER;
+  },
+
+  /**
    * @param {Event} event
    * @private
    */
@@ -301,20 +379,6 @@ Polymer({
         'show-cellular-setup',
         {pageName: cellularSetup.CellularSetupPageName.ESIM_FLOW_UI});
   },
-
-  /**
-   * @param {Event} event
-   * @private
-   */
-  onPsimLearnMoreClicked_(event) {
-    event.detail.event.preventDefault();
-    event.stopPropagation();
-
-    this.fire(
-        'show-cellular-setup',
-        {pageName: cellularSetup.CellularSetupPageName.PSIM_FLOW_UI});
-  },
-
 
   /** @private */
   toggleEidPopup_() {
@@ -332,12 +396,18 @@ Polymer({
    * @private
    */
   installProfile_(event) {
+    if (!this.isConnectedToNonCellularNetwork) {
+      this.fire('show-error-toast', this.i18n('eSimNoConnectionErrorToast'));
+      return;
+    }
     this.installingESimProfile_ = this.profilesMap_.get(event.detail.iccid);
     this.installingESimProfile_.installProfile('').then((response) => {
-      // TODO(crbug.com/1093185) Show error if install fails.
       if (response.result ===
-          chromeos.cellularSetup.mojom.ProfileInstallResult
-              .kErrorNeedsConfirmationCode) {
+          chromeos.cellularSetup.mojom.ProfileInstallResult.kSuccess) {
+        this.eSimProfileInstallError_ = null;
+        this.installingESimProfile_ = null;
+      } else {
+        this.eSimProfileInstallError_ = response.result;
         this.showInstallErrorDialog_();
       }
     });
@@ -351,5 +421,57 @@ Polymer({
   /** @private */
   onCloseInstallErrorDialog_() {
     this.shouldShowInstallErrorDialog_ = false;
+  },
+
+  /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} cellularDeviceState
+   * @param {!chromeos.networkConfig.mojom.GlobalPolicy} globalPolicy
+   * @return {boolean}
+   * @private
+   */
+  showAddESimButton_(cellularDeviceState, globalPolicy) {
+    assert(!!this.euicc_);
+    if (!this.deviceIsEnabled_(cellularDeviceState)) {
+      return false;
+    }
+    return globalPolicy && !globalPolicy.allowOnlyPolicyNetworksToConnect;
+  },
+
+  /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} cellularDeviceState
+   * @return {boolean} True if the device is enabled.
+   * @private
+   */
+  deviceIsEnabled_(cellularDeviceState) {
+    const mojom = chromeos.networkConfig.mojom;
+    return !!cellularDeviceState &&
+        cellularDeviceState.deviceState === mojom.DeviceStateType.kEnabled;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isDeviceInhibited_() {
+    if (!this.cellularDeviceState) {
+      return false;
+    }
+    return OncMojo.deviceIsInhibited(this.cellularDeviceState);
+  },
+
+  /** @private */
+  onAddEsimButtonTap_() {
+    this.fire(
+        'show-cellular-setup',
+        {pageName: cellularSetup.CellularSetupPageName.ESIM_FLOW_UI});
+  },
+
+  /*
+   * Returns the add esim button. If the device does not have an EUICC or
+   * policies prohibit users from adding a network, null is returned.
+   * @return {?CrIconButtonElement}
+   */
+  getAddEsimButton() {
+    return /** @type {?CrIconButtonElement} */ (this.$$('#addESimButton'));
   },
 });

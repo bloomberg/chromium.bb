@@ -37,6 +37,7 @@
 
 #include <string>
 #include <vulkan/vulkan.h>
+#include "vk_layer_data.h"
 
 
 static inline const char* string_VkResult(VkResult input_value)
@@ -1006,6 +1007,8 @@ static inline const char* string_VkStructureType(VkStructureType input_value)
             return "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO";
         case VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT:
             return "VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT";
+        case VK_STRUCTURE_TYPE_SCREEN_SURFACE_CREATE_INFO_QNX:
+            return "VK_STRUCTURE_TYPE_SCREEN_SURFACE_CREATE_INFO_QNX";
         case VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO:
             return "VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO";
         case VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR:

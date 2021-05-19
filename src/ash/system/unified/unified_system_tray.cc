@@ -22,6 +22,7 @@
 #include "ash/system/privacy_screen/privacy_screen_toast_controller.h"
 #include "ash/system/time/time_tray_item_view.h"
 #include "ash/system/time/time_view.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/camera_mic_tray_item_view.h"
@@ -53,7 +54,7 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
   void OnMessageCenterContentsChanged() override;
   bool ShowPopups() override;
   void HidePopups() override;
-  bool ShowMessageCenter(bool show_by_click) override;
+  bool ShowMessageCenter() override;
   void HideMessageCenter() override;
 
   MessageCenterUiController* ui_controller() { return ui_controller_.get(); }
@@ -107,11 +108,11 @@ void UnifiedSystemTray::UiDelegate::HidePopups() {
   message_popup_collection_->SetTrayBubbleHeight(0);
 }
 
-bool UnifiedSystemTray::UiDelegate::ShowMessageCenter(bool show_by_click) {
+bool UnifiedSystemTray::UiDelegate::ShowMessageCenter() {
   if (owner_->IsBubbleShown())
     return false;
 
-  owner_->ShowBubbleInternal(show_by_click);
+  owner_->ShowBubbleInternal();
   return true;
 }
 
@@ -206,7 +207,7 @@ bool UnifiedSystemTray::IsBubbleActive() const {
 
 void UnifiedSystemTray::ActivateBubble() {
   if (bubble_)
-    bubble_->ActivateBubble();
+    bubble_->GetBubbleWidget()->Activate();
 }
 
 void UnifiedSystemTray::CloseSecondaryBubbles() {
@@ -246,12 +247,12 @@ void UnifiedSystemTray::ShowVolumeSliderBubble() {
 
 void UnifiedSystemTray::ShowAudioDetailedViewBubble() {
   // The settings menu bubble gains focus when |show_by_click| is true.
-  ShowBubble(true /* show_by_click */);
+  ShowBubble();
   bubble_->ShowAudioDetailedView();
 }
 
-void UnifiedSystemTray::ShowNetworkDetailedViewBubble(bool show_by_click) {
-  ShowBubble(show_by_click);
+void UnifiedSystemTray::ShowNetworkDetailedViewBubble() {
+  ShowBubble();
   bubble_->ShowNetworkDetailedView(true /* force */);
 }
 
@@ -334,6 +335,10 @@ bool UnifiedSystemTray::ShouldEnableExtraKeyboardAccessibility() {
   return Shell::Get()->accessibility_controller()->spoken_feedback().enabled();
 }
 
+views::Widget* UnifiedSystemTray::GetBubbleWidget() const {
+  return bubble_ ? bubble_->GetBubbleWidget() : nullptr;
+}
+
 const char* UnifiedSystemTray::GetClassName() const {
   return "UnifiedSystemTray";
 }
@@ -361,21 +366,12 @@ void UnifiedSystemTray::SetTargetNotification(
   model_->SetTargetNotification(notification_id);
 }
 
-bool UnifiedSystemTray::PerformAction(const ui::Event& event) {
-  if (bubble_) {
-    CloseBubble();
-  } else {
-    ShowBubble(event.IsMouseEvent() || event.IsGestureEvent());
-    if (event.IsKeyEvent() || (event.flags() & ui::EF_TOUCH_ACCESSIBILITY))
-      ActivateBubble();
-  }
-  return true;
-}
-
-void UnifiedSystemTray::ShowBubble(bool show_by_click) {
+void UnifiedSystemTray::ShowBubble() {
   // ShowBubbleInternal will be called from UiDelegate.
-  if (!bubble_)
-    ui_delegate_->ui_controller()->ShowMessageCenterBubble(show_by_click);
+  if (!bubble_) {
+    ui_delegate_->ui_controller()->ShowMessageCenterBubble();
+    Shell::Get()->system_tray_notifier()->NotifySystemTrayBubbleShown();
+  }
 }
 
 void UnifiedSystemTray::CloseBubble() {
@@ -385,14 +381,14 @@ void UnifiedSystemTray::CloseBubble() {
   HideBubbleInternal();
 }
 
-base::string16 UnifiedSystemTray::GetAccessibleNameForBubble() {
+std::u16string UnifiedSystemTray::GetAccessibleNameForBubble() {
   if (IsBubbleShown())
     return GetAccessibleNameForQuickSettingsBubble();
   else
     return GetAccessibleNameForTray();
 }
 
-base::string16 UnifiedSystemTray::GetAccessibleNameForQuickSettingsBubble() {
+std::u16string UnifiedSystemTray::GetAccessibleNameForQuickSettingsBubble() {
   if (bubble_->unified_view()->IsDetailedViewShown())
     return bubble_->unified_view()->GetDetailedViewAccessibleName();
 
@@ -405,13 +401,13 @@ void UnifiedSystemTray::HandleLocaleChange() {
     item->HandleLocaleChange();
 }
 
-base::string16 UnifiedSystemTray::GetAccessibleNameForTray() {
-  base::string16 time = base::TimeFormatTimeOfDayWithHourClockType(
+std::u16string UnifiedSystemTray::GetAccessibleNameForTray() {
+  std::u16string time = base::TimeFormatTimeOfDayWithHourClockType(
       base::Time::Now(),
       Shell::Get()->system_tray_model()->clock()->hour_clock_type(),
       base::kKeepAmPm);
-  base::string16 battery = PowerStatus::Get()->GetAccessibleNameString(false);
-  std::vector<base::string16> status = {time, battery};
+  std::u16string battery = PowerStatus::Get()->GetAccessibleNameString(false);
+  std::vector<std::u16string> status = {time, battery};
 
   status.push_back(network_tray_view_->GetVisible()
                        ? network_tray_view_->GetAccessibleNameString()
@@ -450,17 +446,20 @@ void UnifiedSystemTray::UpdateLayout() {
   time_view_->UpdateAlignmentForShelf(shelf());
 }
 
-void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
+void UnifiedSystemTray::ShowBubbleInternal() {
   // Never show System Tray bubble in kiosk app mode.
   if (Shell::Get()->session_controller()->IsRunningInAppMode())
     return;
 
   CloseSecondaryBubbles();
 
-  bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this, show_by_click);
+  bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this);
 
   message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
   message_center_bubble_->ShowBubble();
+
+  if (Shell::Get()->accessibility_controller()->spoken_feedback().enabled())
+    ActivateBubble();
 
   first_interaction_recorded_ = false;
 

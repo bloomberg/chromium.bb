@@ -49,7 +49,8 @@ namespace {
             const auto& copy = copySplit.copies[i];
             ASSERT_LE(copy.bufferOffset.x + copy.copySize.width, copy.bufferSize.width);
             ASSERT_LE(copy.bufferOffset.y + copy.copySize.height, copy.bufferSize.height);
-            ASSERT_LE(copy.bufferOffset.z + copy.copySize.depth, copy.bufferSize.depth);
+            ASSERT_LE(copy.bufferOffset.z + copy.copySize.depthOrArrayLayers,
+                      copy.bufferSize.depthOrArrayLayers);
         }
     }
 
@@ -75,9 +76,9 @@ namespace {
                 bool overlapY =
                     RangesOverlap(a.textureOffset.y, a.textureOffset.y + a.copySize.height,
                                   b.textureOffset.y, b.textureOffset.y + b.copySize.height);
-                bool overlapZ =
-                    RangesOverlap(a.textureOffset.z, a.textureOffset.z + a.copySize.depth,
-                                  b.textureOffset.z, b.textureOffset.z + b.copySize.depth);
+                bool overlapZ = RangesOverlap(
+                    a.textureOffset.z, a.textureOffset.z + a.copySize.depthOrArrayLayers,
+                    b.textureOffset.z, b.textureOffset.z + b.copySize.depthOrArrayLayers);
                 ASSERT_TRUE(!overlapX || !overlapY || !overlapZ);
             }
         }
@@ -93,7 +94,8 @@ namespace {
         uint32_t minZ = copySplit.copies[0].textureOffset.z;
         uint32_t maxX = copySplit.copies[0].textureOffset.x + copySplit.copies[0].copySize.width;
         uint32_t maxY = copySplit.copies[0].textureOffset.y + copySplit.copies[0].copySize.height;
-        uint32_t maxZ = copySplit.copies[0].textureOffset.z + copySplit.copies[0].copySize.depth;
+        uint32_t maxZ =
+            copySplit.copies[0].textureOffset.z + copySplit.copies[0].copySize.depthOrArrayLayers;
 
         for (uint32_t i = 1; i < copySplit.count; ++i) {
             const auto& copy = copySplit.copies[i];
@@ -102,7 +104,7 @@ namespace {
             minZ = std::min(minZ, copy.textureOffset.z);
             maxX = std::max(maxX, copy.textureOffset.x + copy.copySize.width);
             maxY = std::max(maxY, copy.textureOffset.y + copy.copySize.height);
-            maxZ = std::max(maxZ, copy.textureOffset.z + copy.copySize.depth);
+            maxZ = std::max(maxZ, copy.textureOffset.z + copy.copySize.depthOrArrayLayers);
         }
 
         ASSERT_EQ(minX, textureSpec.x);
@@ -119,7 +121,7 @@ namespace {
         uint32_t count = 0;
         for (uint32_t i = 0; i < copySplit.count; ++i) {
             const auto& copy = copySplit.copies[i];
-            count += copy.copySize.width * copy.copySize.height * copy.copySize.depth;
+            count += copy.copySize.width * copy.copySize.height * copy.copySize.depthOrArrayLayers;
         }
         ASSERT_EQ(count, textureSpec.width * textureSpec.height * textureSpec.depth);
     }
@@ -141,8 +143,9 @@ namespace {
             uint32_t absoluteTexelOffset =
                 copySplit.offset / textureSpec.texelBlockSizeInBytes * texelsPerBlock +
                 copy.bufferOffset.x / textureSpec.blockWidth * texelsPerBlock +
-                copy.bufferOffset.y / textureSpec.blockHeight * bytesPerRowInTexels +
-                copy.bufferOffset.z * slicePitchInTexels;
+                copy.bufferOffset.y / textureSpec.blockHeight * bytesPerRowInTexels;
+
+            ASSERT_EQ(copy.bufferOffset.z, 0u);
 
             ASSERT(absoluteTexelOffset >=
                    bufferSpec.offset / textureSpec.texelBlockSizeInBytes * texelsPerBlock);
@@ -191,11 +194,12 @@ namespace {
             const auto& copy = copySplit.copies[i];
             os << "  " << i << ": Texture at (" << copy.textureOffset.x << ", "
                << copy.textureOffset.y << ", " << copy.textureOffset.z << "), size ("
-               << copy.copySize.width << ", " << copy.copySize.height << ", " << copy.copySize.depth
-               << ")" << std::endl;
+               << copy.copySize.width << ", " << copy.copySize.height << ", "
+               << copy.copySize.depthOrArrayLayers << ")" << std::endl;
             os << "  " << i << ": Buffer at (" << copy.bufferOffset.x << ", " << copy.bufferOffset.y
                << ", " << copy.bufferOffset.z << "), footprint (" << copy.bufferSize.width << ", "
-               << copy.bufferSize.height << ", " << copy.bufferSize.depth << ")" << std::endl;
+               << copy.bufferSize.height << ", " << copy.bufferSize.depthOrArrayLayers << ")"
+               << std::endl;
         }
         return os;
     }
@@ -203,6 +207,7 @@ namespace {
     // Define base texture sizes and offsets to test with: some aligned, some unaligned
     constexpr TextureSpec kBaseTextureSpecs[] = {
         {0, 0, 0, 1, 1, 1, 4},
+        {0, 0, 0, 64, 1, 1, 4},
         {31, 16, 0, 1, 1, 1, 4},
         {64, 16, 0, 1, 1, 1, 4},
         {64, 16, 8, 1, 1, 1, 4},
@@ -237,7 +242,7 @@ namespace {
 
     // Define base buffer sizes to work with: some offsets aligned, some unaligned. bytesPerRow is
     // the minimum required
-    std::array<BufferSpec, 13> BaseBufferSpecs(const TextureSpec& textureSpec) {
+    std::array<BufferSpec, 14> BaseBufferSpecs(const TextureSpec& textureSpec) {
         uint32_t bytesPerRow = Align(textureSpec.texelBlockSizeInBytes * textureSpec.width,
                                      kTextureBytesPerRowAlignment);
 
@@ -265,6 +270,8 @@ namespace {
             BufferSpec{alignNonPow2(31, textureSpec.texelBlockSizeInBytes), bytesPerRow,
                        textureSpec.height},
             BufferSpec{alignNonPow2(257, textureSpec.texelBlockSizeInBytes), bytesPerRow,
+                       textureSpec.height},
+            BufferSpec{alignNonPow2(384, textureSpec.texelBlockSizeInBytes), bytesPerRow,
                        textureSpec.height},
             BufferSpec{alignNonPow2(511, textureSpec.texelBlockSizeInBytes), bytesPerRow,
                        textureSpec.height},

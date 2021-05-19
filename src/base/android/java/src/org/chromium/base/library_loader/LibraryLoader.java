@@ -19,7 +19,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BaseSwitches;
-import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.JNIUtils;
@@ -35,6 +34,8 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
+import org.chromium.build.BuildConfig;
+import org.chromium.build.NativeLibraries;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -70,6 +71,9 @@ public class LibraryLoader {
 
     // Default sampling interval for reached code profiler in microseconds.
     private static final int DEFAULT_REACHED_CODE_SAMPLING_INTERVAL_US = 10000;
+
+    // Shared preferences key for the background thread pool setting.
+    private static final String BACKGROUND_THREAD_POOL_KEY = "background_thread_pool_enabled";
 
     // The singleton instance of LibraryLoader. Never null (not final for tests).
     private static LibraryLoader sInstance = new LibraryLoader();
@@ -309,7 +313,7 @@ public class LibraryLoader {
      *
      * @param useChromiumLinker Whether to use a chromium linker.
      * @param useModernLinker Given that one of the Chromium linkers is used, whether to use
-     *                        ModernLinker instea of the LegacyLinker.
+     *                        ModernLinker instead of the LegacyLinker.
      */
     public void setLinkerImplementation(boolean useChromiumLinker, boolean useModernLinker) {
         assert !mInitialized;
@@ -317,8 +321,8 @@ public class LibraryLoader {
         mUseChromiumLinker = useChromiumLinker;
         mUseModernLinker = useModernLinker;
 
-        Log.d(TAG, "Configuration, useChromiumLinker = %b, useModernLinker = %b",
-                mUseChromiumLinker, mUseModernLinker);
+        Log.d(TAG, "Configuration: useChromiumLinker() = %b, mUseModernLinker = %b",
+                useChromiumLinker(), mUseModernLinker);
         mConfigurationSet = true;
     }
 
@@ -326,7 +330,7 @@ public class LibraryLoader {
     private void setLinkerImplementationIfNeededAlreadyLocked() {
         if (mConfigurationSet) return;
 
-        // Cannot use initializers for the fields below, as this makes roboelectric tests fail,
+        // Cannot use initial values for the fields below, as this makes robolectric tests fail,
         // since they don't have a NativeLibraries class.
         mUseChromiumLinker = NativeLibraries.sUseLinker;
         mUseModernLinker = NativeLibraries.sUseModernLinker;
@@ -381,7 +385,7 @@ public class LibraryLoader {
      *
      * @return the Linker implementation instance.
      */
-    private Linker getLinker(ApplicationInfo info) {
+    private Linker getLinker() {
         // A non-monochrome APK (such as ChromePublic.apk) can be installed on N+ in these
         // circumstances:
         // * installing APK manually
@@ -399,29 +403,17 @@ public class LibraryLoader {
         // either Chrome{,Modern} or Trichrome.
         synchronized (mLock) {
             if (mLinker == null) {
-                // With incremental install, it's important to fall back to the "normal"
-                // library loading path in order for the libraries to be found.
-                String appClass = info.className;
-                boolean isIncrementalInstall =
-                        appClass != null && appClass.contains("incrementalinstall");
-                if (mUseModernLinker && !isIncrementalInstall) {
-                    mLinker = new ModernLinker();
-                } else {
-                    mLinker = new LegacyLinker();
-                }
+                mLinker = mUseModernLinker ? new ModernLinker() : new LegacyLinker();
                 Log.i(TAG, "Using linker: %s", mLinker.getClass().getName());
             }
             return mLinker;
         }
     }
 
-    private Linker getLinker() {
-        return getLinker(ContextUtils.getApplicationContext().getApplicationInfo());
-    }
-
-    @CheckDiscard("Can't use @RemovableInRelease because Release build with DCHECK_IS_ON needs it")
+    @CheckDiscard(
+            "Can't use @RemovableInRelease because Release build with ENABLE_ASSERTS needs it")
     public void enableJniChecks() {
-        if (!BuildConfig.DCHECK_IS_ON) return;
+        if (!BuildConfig.ENABLE_ASSERTS) return;
 
         NativeLibraryLoadedStatus.setProvider(new NativeLibraryLoadedStatusProvider() {
             @Override
@@ -489,7 +481,7 @@ public class LibraryLoader {
     public void preloadNowOverridePackageName(String packageName) {
         synchronized (mLock) {
             setLinkerImplementationIfNeededAlreadyLocked();
-            if (mUseChromiumLinker) return;
+            if (useChromiumLinker()) return;
             preloadAlreadyLocked(packageName, false /* inZygote */);
         }
     }
@@ -600,30 +592,45 @@ public class LibraryLoader {
         }
     }
 
-    // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
-    private void loadLibraryWithCustomLinker(Linker linker, String library) {
-        // Attempt shared RELROs, and if that fails then retry without.
-        try {
-            linker.loadLibrary(library, true /* isFixedAddressPermitted */);
-        } catch (UnsatisfiedLinkError e) {
-            Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
-            linker.loadLibrary(library, false /* isFixedAddressPermitted */);
+    /**
+     * Enables the background priority thread pool group. The value comes from the
+     * "BackgroundThreadPool" finch experiment, and is pushed on every run, to take effect on the
+     * subsequent run. I.e. the effect of the finch experiment lags by one run, which is the best we
+     * can do considering that the thread pool has to be configured before finch is initialized.
+     * Note that since LibraryLoader is in //base, it can't depend on ChromeFeatureList, and has to
+     * rely on external code pushing the value.
+     *
+     * @param enabled whether to enable the background priority thread pool group.
+     */
+    public static void setBackgroundThreadPoolEnabledOnNextRuns(boolean enabled) {
+        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        editor.putBoolean(BACKGROUND_THREAD_POOL_KEY, enabled).apply();
+    }
+
+    /**
+     * @return whether the background priority thread pool group should be enabled. (see
+     *         setBackgroundThreadPoolEnabledOnNextRuns()).
+     */
+    @VisibleForTesting
+    public static boolean isBackgroundThreadPoolEnabled() {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            return ContextUtils.getAppSharedPreferences().getBoolean(
+                    BACKGROUND_THREAD_POOL_KEY, false);
         }
     }
 
     private void loadWithChromiumLinker(ApplicationInfo appInfo, String library) {
-        Linker linker = getLinker(appInfo);
+        Linker linker = getLinker();
 
         if (isInZipFile()) {
             String sourceDir = appInfo.sourceDir;
             linker.setApkFilePath(sourceDir);
-            Log.i(TAG, " Loading %s from within %s", library, sourceDir);
+            Log.i(TAG, "Loading %s from within %s", library, sourceDir);
         } else {
             Log.i(TAG, "Loading %s", library);
         }
 
-        // Load the library using this Linker. May throw UnsatisfiedLinkError.
-        loadLibraryWithCustomLinker(linker, library);
+        linker.loadLibrary(library); // May throw UnsatisfiedLinkError.
     }
 
     @GuardedBy("mLock")
@@ -647,7 +654,6 @@ public class LibraryLoader {
                 boolean crazyPrefix = forceSystemLinker(); // See comment in this function.
                 String fullPath = zipFilePath + "!/"
                         + makeLibraryPathInZipFile(library, crazyPrefix, is64Bit);
-
                 Log.i(TAG, "libraryName: %s", fullPath);
                 System.load(fullPath);
             }
@@ -768,7 +774,7 @@ public class LibraryLoader {
     }
 
     /**
-     * Assert that library process type in the LibraryLoarder is compatible with provided type.
+     * Assert that library process type in the LibraryLoader is compatible with provided type.
      *
      * @param libraryProcessType a library process type to assert.
      */
@@ -782,15 +788,22 @@ public class LibraryLoader {
         if (mInitialized) return;
         assert mLibraryProcessType != LibraryProcessType.PROCESS_UNINITIALIZED;
 
-        // Add a switch for the reached code profiler as late as possible since it requires a read
-        // from the shared preferences. At this point the shared preferences are usually warmed up.
         if (mLibraryProcessType == LibraryProcessType.PROCESS_BROWSER) {
+            // Add a switch for the reached code profiler as late as possible since it requires a
+            // read from the shared preferences. At this point the shared preferences are usually
+            // warmed up.
             int reachedCodeSamplingIntervalUs = getReachedCodeSamplingIntervalUs();
             if (reachedCodeSamplingIntervalUs > 0) {
                 CommandLine.getInstance().appendSwitch(BaseSwitches.ENABLE_REACHED_CODE_PROFILER);
                 CommandLine.getInstance().appendSwitchWithValue(
                         BaseSwitches.REACHED_CODE_SAMPLING_INTERVAL_US,
                         Integer.toString(reachedCodeSamplingIntervalUs));
+            }
+
+            // Similarly, append a switch to enable the background thread pool group if the cached
+            // preference indicates it should be enabled.
+            if (isBackgroundThreadPoolEnabled()) {
+                CommandLine.getInstance().appendSwitch(BaseSwitches.ENABLE_BACKGROUND_THREAD_POOL);
             }
         }
 
@@ -829,7 +842,7 @@ public class LibraryLoader {
     // Called after all native initializations are complete.
     public void onBrowserNativeInitializationComplete() {
         synchronized (mLock) {
-            if (mUseChromiumLinker) {
+            if (useChromiumLinker()) {
                 RecordHistogram.recordTimesHistogram(
                         "ChromiumAndroidLinker.BrowserLoadTime", mLibraryLoadTimeMs);
             }
@@ -841,7 +854,7 @@ public class LibraryLoader {
     // time they are captured. This function stores a pending value, so that a later call to
     // RecordChromiumAndroidLinkerRendererHistogram() will record it correctly.
     public void registerRendererProcessHistogram() {
-        if (!mUseChromiumLinker) return;
+        if (!useChromiumLinker()) return;
         synchronized (mLock) {
             LibraryLoaderJni.get().recordRendererLibraryLoadTime(mLibraryLoadTimeMs);
         }

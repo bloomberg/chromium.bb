@@ -74,10 +74,7 @@ class TimestampTest
   TimestampTest() : EncoderTest(GET_PARAM(0)) {}
   virtual ~TimestampTest() {}
 
-  virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
-  }
+  virtual void SetUp() { InitializeConfig(GET_PARAM(1)); }
 };
 
 // Tests encoding in millisecond timebase.

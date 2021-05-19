@@ -51,6 +51,10 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       WebContents* web_contents);
+  WebContentsAccessibilityAndroid(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong ax_tree_update_ptr);
   ~WebContentsAccessibilityAndroid() override;
 
   // Notify the root BrowserAccessibilityManager that this is the
@@ -71,6 +75,10 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   base::android::ScopedJavaLocalRef<jstring> GetSupportedHtmlElementTypes(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+
+  void SetIsRunningAsWebView(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj,
+                             jboolean is_webview);
 
   // Tree methods.
   jint GetRootId(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -98,6 +106,10 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint id);
+  base::android::ScopedJavaLocalRef<jintArray> GetAbsolutePositionForNode(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint unique_id);
 
   // Populate Java accessibility data structures with info about a node.
   jboolean UpdateCachedAccessibilityNodeInfo(
@@ -287,6 +299,9 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // Reset count of content changed events fired this atomic update.
   void ResetContentChangedEventsCounter() { content_changed_events_ = 0; }
 
+  // Call the BrowserAccessibilityManager to trigger an kEndOfTest event.
+  void SignalEndOfTestForTesting(JNIEnv* env);
+
   // --------------------------------------------------------------------------
   // Methods called from the BrowserAccessibilityManager
   // --------------------------------------------------------------------------
@@ -300,7 +315,7 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   void HandleClicked(int32_t unique_id);
   void HandleScrollPositionChanged(int32_t unique_id);
   void HandleScrolledToAnchor(int32_t unique_id);
-  void AnnounceLiveRegionText(const base::string16& text);
+  void AnnounceLiveRegionText(const std::u16string& text);
   void HandleTextSelectionChanged(int32_t unique_id);
   void HandleEditableTextChanged(int32_t unique_id);
   void HandleSliderChanged(int32_t unique_id);
@@ -309,6 +324,7 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   void HandleHover(int32_t unique_id);
   void HandleNavigate();
   void ClearNodeInfoCacheForGivenId(int32_t unique_id);
+  void HandleEndOfTestSignal();
 
   base::WeakPtr<WebContentsAccessibilityAndroid> GetWeakPtr();
 
@@ -348,6 +364,9 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // Owns itself, and destroyed upon WebContentsObserver::WebContentsDestroyed.
   class Connector;
   Connector* connector_ = nullptr;
+  // This isn't associated with a real WebContents and is only populated when
+  // this class is constructed with a ui::AXTreeUpdate.
+  std::unique_ptr<BrowserAccessibilityManagerAndroid> manager_;
 
   base::WeakPtrFactory<WebContentsAccessibilityAndroid> weak_ptr_factory_{this};
 

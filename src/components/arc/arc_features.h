@@ -15,8 +15,8 @@ namespace arc {
 extern const base::Feature kBootCompletedBroadcastFeature;
 extern const base::Feature kCleanArcDataOnRegularToChildTransitionFeature;
 extern const base::Feature kCustomTabsExperimentFeature;
+extern const base::Feature kDocumentsProviderUnknownSizeFeature;
 extern const base::Feature kEnableChildToRegularTransitionFeature;
-extern const base::Feature kEnableDocumentsProviderInFilesAppFeature;
 extern const base::Feature kEnableRegularToChildTransitionFeature;
 extern const base::Feature kEnableUnifiedAudioFocusFeature;
 extern const base::Feature kEnableUsap;

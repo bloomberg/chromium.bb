@@ -6,7 +6,7 @@
 // #import '../constants/routes.mojom-lite.js';
 
 // #import {OsSettingsRoutes} from './os_settings_routes.m.js';
-// #import {Route, Router} from '../router.m.js';
+// #import {Route, Router} from '../router.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 cr.define('settings', function() {
@@ -163,8 +163,6 @@ cr.define('settings', function() {
       r.CHANGE_PICTURE = createSubpage(
           r.PERSONALIZATION, mojom.CHANGE_PICTURE_SUBPAGE_PATH,
           Subpage.kChangePicture);
-      r.WALLPAPER = createSubpage(
-          r.PERSONALIZATION, mojom.WALLPAPER_SUBPAGE_PATH, Subpage.kWallpaper);
       r.AMBIENT_MODE = createSubpage(
           r.PERSONALIZATION, mojom.AMBIENT_MODE_SUBPAGE_PATH,
           Subpage.kAmbientMode);

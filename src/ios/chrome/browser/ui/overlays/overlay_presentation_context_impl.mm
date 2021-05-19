@@ -30,6 +30,13 @@ OverlayPresentationContextImpl* OverlayPresentationContextImpl::FromBrowser(
       ->PresentationContextForModality(modality);
 }
 
+// static
+OverlayPresentationContext* OverlayPresentationContext::FromBrowser(
+    Browser* browser,
+    OverlayModality modality) {
+  return OverlayPresentationContextImpl::FromBrowser(browser, modality);
+}
+
 #pragma mark - OverlayPresentationContextImpl::Container
 
 OVERLAY_USER_DATA_SETUP_IMPL(OverlayPresentationContextImpl::Container);
@@ -127,6 +134,20 @@ void OverlayPresentationContextImpl::SetPresentationContextViewController(
   UpdatePresentationCapabilities();
 }
 
+void OverlayPresentationContextImpl::SetUIDisabled(bool disabled) {
+  if (ui_disabled_ == disabled) {
+    return;
+  }
+  ui_disabled_ = disabled;
+  UpdatePresentationCapabilities();
+
+  if (!disabled) {
+    for (auto& observer : observers_) {
+      observer.OverlayPresentationContextDidEnableUI(this);
+    }
+  }
+}
+
 #pragma mark OverlayPresentationContext
 
 void OverlayPresentationContextImpl::AddObserver(
@@ -219,7 +240,6 @@ void OverlayPresentationContextImpl::CancelOverlayUI(
     return;
   }
 
-  DCHECK(CanShowUIForRequest(request));
   DismissPresentedUI(OverlayDismissalReason::kCancellation);
 }
 
@@ -289,15 +309,7 @@ OverlayPresentationContextImpl::GetRequiredPresentationCapabilities(
 }
 
 void OverlayPresentationContextImpl::UpdatePresentationCapabilities() {
-  UIPresentationCapabilities capabilities = UIPresentationCapabilities::kNone;
-  if (container_view_controller_) {
-    capabilities = static_cast<UIPresentationCapabilities>(
-        capabilities | UIPresentationCapabilities::kContained);
-  }
-  if (presentation_context_view_controller_) {
-    capabilities = static_cast<UIPresentationCapabilities>(
-        capabilities | UIPresentationCapabilities::kPresented);
-  }
+  UIPresentationCapabilities capabilities = ConstructPresentationCapabilities();
   bool capabilities_changed = presentation_capabilities_ != capabilities;
 
   if (capabilities_changed) {
@@ -315,6 +327,24 @@ void OverlayPresentationContextImpl::UpdatePresentationCapabilities() {
           this);
     }
   }
+}
+
+OverlayPresentationContext::UIPresentationCapabilities
+OverlayPresentationContextImpl::ConstructPresentationCapabilities() {
+  if (ui_disabled_) {
+    return UIPresentationCapabilities::kNone;
+  }
+
+  UIPresentationCapabilities capabilities = UIPresentationCapabilities::kNone;
+  if (container_view_controller_) {
+    capabilities = static_cast<UIPresentationCapabilities>(
+        capabilities | UIPresentationCapabilities::kContained);
+  }
+  if (presentation_context_view_controller_) {
+    capabilities = static_cast<UIPresentationCapabilities>(
+        capabilities | UIPresentationCapabilities::kPresented);
+  }
+  return capabilities;
 }
 
 #pragma mark Presentation and Dismissal helpers

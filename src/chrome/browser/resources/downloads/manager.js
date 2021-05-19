@@ -7,14 +7,14 @@ import './item.js';
 import './toolbar.js';
 import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_page_host_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_page_host_style_css.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
 import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
-import {FindShortcutBehavior} from 'chrome://resources/cr_elements/find_shortcut_behavior.m.js';
+import {FindShortcutBehavior} from 'chrome://resources/cr_elements/find_shortcut_behavior.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';

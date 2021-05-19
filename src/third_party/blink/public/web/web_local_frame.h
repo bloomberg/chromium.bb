@@ -18,26 +18,25 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/context_menu_data/untrustworthy_context_menu_params.h"
 #include "third_party/blink/public/common/css/page_size_type.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-shared.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-shared.h"
 #include "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -53,6 +52,7 @@
 
 namespace gfx {
 class Point;
+class ScrollOffset;
 }  // namespace gfx
 
 namespace ui {
@@ -540,11 +540,6 @@ class WebLocalFrame : public WebFrame {
   // pairs in the requested range.
   virtual void DeleteSurroundingTextInCodePoints(int before, int after) = 0;
 
-  virtual void ExtractSmartClipData(const gfx::Rect& rect_in_viewport,
-                                    WebString& clip_text,
-                                    WebString& clip_html,
-                                    gfx::Rect& clip_rect) = 0;
-
   // Spell-checking support -------------------------------------------------
   virtual void SetTextCheckClient(WebTextCheckClient*) = 0;
   virtual void SetSpellCheckPanelHostClient(WebSpellCheckPanelHostClient*) = 0;
@@ -569,6 +564,10 @@ class WebLocalFrame : public WebFrame {
   // Returns false if this frame, or any parent frame is sandboxed and does not
   // have the flag "allow-downloads" set.
   virtual bool IsAllowedToDownload() const = 0;
+
+  // Returns true if a frame is a subframe and it is cross-origin to the main
+  // frame.
+  virtual bool IsCrossOriginToMainFrame() const = 0;
 
   // Find-in-page -----------------------------------------------------------
 
@@ -678,11 +677,11 @@ class WebLocalFrame : public WebFrame {
   // not be accurate if the page layout is out-of-date.
 
   // The scroll offset from the top-left corner of the frame in pixels.
-  virtual WebSize GetScrollOffset() const = 0;
-  virtual void SetScrollOffset(const WebSize&) = 0;
+  virtual gfx::ScrollOffset GetScrollOffset() const = 0;
+  virtual void SetScrollOffset(const gfx::ScrollOffset&) = 0;
 
   // The size of the document in this frame.
-  virtual WebSize DocumentSize() const = 0;
+  virtual gfx::Size DocumentSize() const = 0;
 
   // Returns true if the contents (minus scrollbars) has non-zero area.
   virtual bool HasVisibleContent() const = 0;
@@ -833,8 +832,8 @@ class WebLocalFrame : public WebFrame {
   virtual void UpdateCurrentHistoryItem() = 0;
   virtual PageState CurrentHistoryItemToPageState() = 0;
   virtual const WebHistoryItem& GetCurrentHistoryItem() const = 0;
-  // Reset TextFinder state and loads about:blank.
-  virtual void ResetForTesting() = 0;
+  // Reset TextFinder state for the web test runner in between two tests.
+  virtual void ClearActiveFindMatchForTesting() = 0;
 
  protected:
   explicit WebLocalFrame(mojom::TreeScopeType scope,

@@ -746,7 +746,7 @@ static void tf_normalize_filtered_frame(
 
 int av1_get_q(const AV1_COMP *cpi) {
   const GF_GROUP *gf_group = &cpi->gf_group;
-  const FRAME_TYPE frame_type = gf_group->frame_type[gf_group->index];
+  const FRAME_TYPE frame_type = gf_group->frame_type[cpi->gf_frame_index];
   const int q = (int)av1_convert_qindex_to_q(
       cpi->rc.avg_frame_qindex[frame_type], cpi->common.seq_params.bit_depth);
   return q;
@@ -937,10 +937,10 @@ static void tf_setup_filtering_buffer(AV1_COMP *cpi,
   int num_before = 0;  // Number of filtering frames before the to-filter frame.
   int num_after = 0;   // Number of filtering frames after the to-filer frame.
   const int lookahead_depth =
-      av1_lookahead_depth(cpi->lookahead, cpi->compressor_stage);
+      av1_lookahead_depth(cpi->ppi->lookahead, cpi->compressor_stage);
 
-  int arf_src_offset = cpi->gf_group.arf_src_offset[cpi->gf_group.index];
-  const FRAME_TYPE frame_type = cpi->gf_group.frame_type[cpi->gf_group.index];
+  int arf_src_offset = cpi->gf_group.arf_src_offset[cpi->gf_frame_index];
+  const FRAME_TYPE frame_type = cpi->gf_group.frame_type[cpi->gf_frame_index];
 
   // Temporal filtering should not go beyond key frames
   const int key_to_curframe =
@@ -957,7 +957,7 @@ static void tf_setup_filtering_buffer(AV1_COMP *cpi,
 
   // Estimate noises for each plane.
   const struct lookahead_entry *to_filter_buf = av1_lookahead_peek(
-      cpi->lookahead, filter_frame_lookahead_idx, cpi->compressor_stage);
+      cpi->ppi->lookahead, filter_frame_lookahead_idx, cpi->compressor_stage);
   assert(to_filter_buf != NULL);
   const YV12_BUFFER_CONFIG *to_filter_frame = &to_filter_buf->img;
   const int num_planes = av1_num_planes(&cpi->common);
@@ -1042,7 +1042,7 @@ static void tf_setup_filtering_buffer(AV1_COMP *cpi,
   for (int frame = 0; frame < num_frames; ++frame) {
     const int lookahead_idx = frame - num_before + filter_frame_lookahead_idx;
     struct lookahead_entry *buf = av1_lookahead_peek(
-        cpi->lookahead, lookahead_idx, cpi->compressor_stage);
+        cpi->ppi->lookahead, lookahead_idx, cpi->compressor_stage);
     assert(buf != NULL);
     frames[frame] = &buf->img;
   }
@@ -1175,7 +1175,7 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
   MultiThreadInfo *const mt_info = &cpi->mt_info;
   // Basic informaton of the current frame.
   const GF_GROUP *const gf_group = &cpi->gf_group;
-  const uint8_t group_idx = gf_group->index;
+  const uint8_t group_idx = cpi->gf_frame_index;
   TemporalFilterCtx *tf_ctx = &cpi->tf_ctx;
   TemporalFilterData *tf_data = &cpi->td.tf_data;
   // Filter one more ARF if the lookahead index is leq 7 (w.r.t. 9-th frame).

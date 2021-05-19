@@ -133,6 +133,12 @@ TrackId TrackTracker::InternLegacyChromeAsyncTrack(
   return id;
 }
 
+TrackId TrackTracker::CreateGlobalAsyncTrack(StringId name) {
+  tables::TrackTable::Row row(name);
+  auto id = context_->storage->mutable_track_table()->Insert(row).id;
+  return id;
+}
+
 TrackId TrackTracker::CreateAndroidAsyncTrack(StringId name, UniquePid upid) {
   tables::ProcessTrackTable::Row row(name);
   row.upid = upid;
@@ -304,6 +310,17 @@ TrackId TrackTracker::CreateGpuCounterTrack(StringId name,
   row.unit = unit;
 
   return context_->storage->mutable_gpu_counter_track_table()->Insert(row).id;
+}
+
+TrackId TrackTracker::CreatePerfCounterTrack(StringId name,
+                                             uint32_t perf_session_id,
+                                             uint32_t cpu,
+                                             bool is_timebase) {
+  tables::PerfCounterTrackTable::Row row(name);
+  row.perf_session_id = perf_session_id;
+  row.cpu = cpu;
+  row.is_timebase = is_timebase;
+  return context_->storage->mutable_perf_counter_track_table()->Insert(row).id;
 }
 
 }  // namespace trace_processor

@@ -60,7 +60,7 @@ namespace testing {
 
 namespace {
 
-void* tag(int i) { return (void*)static_cast<intptr_t>(i); }
+void* tag(int t) { return reinterpret_cast<void*>(t); }
 int detag(void* p) { return static_cast<int>(reinterpret_cast<intptr_t>(p)); }
 
 class Verifier {
@@ -1495,9 +1495,9 @@ class AsyncEnd2endServerTryCancelTest : public AsyncEnd2endTest {
     EXPECT_EQ(::grpc::StatusCode::CANCELLED, recv_status.error_code());
 
     cli_cq.Shutdown();
-    void* dummy_tag;
-    bool dummy_ok;
-    while (cli_cq.Next(&dummy_tag, &dummy_ok)) {
+    void* phony_tag;
+    bool phony_ok;
+    while (cli_cq.Next(&phony_tag, &phony_ok)) {
     }
   }
 
@@ -1644,9 +1644,9 @@ class AsyncEnd2endServerTryCancelTest : public AsyncEnd2endTest {
     EXPECT_EQ(::grpc::StatusCode::CANCELLED, recv_status.error_code());
 
     cli_cq.Shutdown();
-    void* dummy_tag;
-    bool dummy_ok;
-    while (cli_cq.Next(&dummy_tag, &dummy_ok)) {
+    void* phony_tag;
+    bool phony_ok;
+    while (cli_cq.Next(&phony_tag, &phony_ok)) {
     }
   }
 

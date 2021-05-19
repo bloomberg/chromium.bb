@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/back_forward_cache.h"
 
 namespace url {
 class Origin;
@@ -86,13 +87,18 @@ class BackForwardCacheMetrics
     // cases where the embedder disabled it due to, e.g., enterprise policy).
     kBackForwardCacheDisabledByCommandLine = 35,
     // 36: kFrameTreeNodeStateReset was removed.
-    kNetworkRequestDatapipeDrained = 37,
+    // 37: kNetworkRequestDatapipeDrained = 37 was removed and broken into 43
+    // and 44.
     kNetworkRequestRedirected = 38,
     kNetworkRequestTimeout = 39,
     kNetworkExceedsBufferLimit = 40,
     kNavigationCancelledWhileRestoring = 41,
     kBackForwardCacheDisabledForPrerender = 42,
-    kMaxValue = kBackForwardCacheDisabledForPrerender,
+    kUserAgentOverrideDiffers = 43,
+    kNetworkRequestDatapipeDrainedAsDatapipe = 44,
+    kNetworkRequestDatapipeDrainedAsBytesConsumer = 45,
+    kForegroundCacheLimit = 46,
+    kMaxValue = kForegroundCacheLimit,
   };
 
   using NotRestoredReasons =
@@ -188,6 +194,10 @@ class BackForwardCacheMetrics
   // e.g., to prioritize the tasks to improve cache-hit rate.
   void MarkNotRestoredWithReason(
       const BackForwardCacheCanStoreDocumentResult& can_store);
+
+  // Exported for testing.
+  // The DisabledReason's source and id combined to give a unique uint64.
+  CONTENT_EXPORT static uint64_t MetricValue(BackForwardCache::DisabledReason);
 
   // Injects a clock for mocking time.
   // Should be called only from the UI thread.

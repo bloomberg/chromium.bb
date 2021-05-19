@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "components"
+  ],
+    "resources": [
+    "editFileSystemView.css",
+    "workspaceSettingsTab.css"
+  ]
+}

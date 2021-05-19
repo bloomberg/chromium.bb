@@ -16,6 +16,7 @@
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "third_party/libgav1/src/src/gav1/decoder.h"
 #include "third_party/libgav1/src/src/gav1/decoder_settings.h"
 #include "third_party/libgav1/src/src/gav1/frame_buffer.h"
@@ -253,10 +254,6 @@ Gav1VideoDecoder::~Gav1VideoDecoder() {
   CloseDecoder();
 }
 
-std::string Gav1VideoDecoder::GetDisplayName() const {
-  return "Gav1VideoDecoder";
-}
-
 VideoDecoderType Gav1VideoDecoder::GetDecoderType() const {
   return VideoDecoderType::kGav1;
 }
@@ -288,6 +285,12 @@ void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,
   settings.release_input_buffer = ReleaseInputBufferImpl;
   settings.callback_private_data = this;
 
+  if (low_delay || config.is_rtc()) {
+    // The `frame_parallel` setting is false by default, so this serves more as
+    // documentation that it should be false for low delay decoding.
+    settings.frame_parallel = false;
+  }
+
   libgav1_decoder_ = std::make_unique<libgav1::Decoder>();
   libgav1::StatusCode status = libgav1_decoder_->Init(&settings);
   if (status != kLibgav1StatusOk) {
@@ -300,7 +303,7 @@ void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,
   output_cb_ = output_cb;
   state_ = DecoderState::kDecoding;
   color_space_ = config.color_space_info();
-  natural_size_ = config.natural_size();
+  pixel_aspect_ratio_ = config.GetPixelAspectRatio();
   std::move(bound_init_cb).Run(OkStatus());
 }
 
@@ -418,6 +421,10 @@ void Gav1VideoDecoder::Reset(base::OnceClosure reset_cb) {
   }
 }
 
+bool Gav1VideoDecoder::IsOptimizedForRTC() const {
+  return true;
+}
+
 void Gav1VideoDecoder::Detach() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!bind_callbacks_);
@@ -435,8 +442,9 @@ scoped_refptr<VideoFrame> Gav1VideoDecoder::CreateVideoFrame(
   //   The buffer for the new frame will be zero initialized.  Reused frames
   //   will not be zero initialized.
   // The zero initialization is necessary for FFmpeg but not for libgav1.
-  return frame_pool_.CreateFrame(format, coded_size, visible_rect,
-                                 natural_size_, kNoTimestamp);
+  return frame_pool_.CreateFrame(
+      format, coded_size, visible_rect,
+      GetNaturalSize(visible_rect, pixel_aspect_ratio_), kNoTimestamp);
 }
 
 void Gav1VideoDecoder::CloseDecoder() {

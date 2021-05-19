@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -75,7 +76,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/viz/public/mojom/compositing/delegated_ink_point.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
@@ -119,6 +119,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/mojom/delegated_ink_point.mojom.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/wm/core/window_util.h"
 
@@ -1276,7 +1277,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
   ActivateViewForTextInputManager(view_, ui::TEXT_INPUT_TYPE_TEXT);
 
   ui::CompositionText composition_text;
-  composition_text.text = base::ASCIIToUTF16("|a|b");
+  composition_text.text = u"|a|b";
 
   // Focused segment
   composition_text.ime_text_spans.push_back(
@@ -1320,7 +1321,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusedNodeChanged) {
   ActivateViewForTextInputManager(view_, ui::TEXT_INPUT_TYPE_TEXT);
 
   ui::CompositionText composition_text;
-  composition_text.text = base::ASCIIToUTF16("hello");
+  composition_text.text = u"hello";
   view_->SetCompositionText(composition_text);
   EXPECT_TRUE(view_->has_composition_text_);
 
@@ -1336,7 +1337,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
   ActivateViewForTextInputManager(view_, ui::TEXT_INPUT_TYPE_TEXT);
 
   ui::CompositionText composition_text;
-  composition_text.text = base::ASCIIToUTF16("|a|b");
+  composition_text.text = u"|a|b";
 
   // Focused segment
   composition_text.ime_text_spans.push_back(
@@ -2663,7 +2664,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     EXPECT_EQ(gfx::Size(50, 50), visual_properties.min_size_for_auto_resize);
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.max_size_for_auto_resize);
     // Default DSF is 1.
-    EXPECT_EQ(1, visual_properties.screen_info.device_scale_factor);
+    EXPECT_EQ(1, visual_properties.screen_infos.current().device_scale_factor);
     // Passed the original LocalSurfaceId.
     EXPECT_TRUE(visual_properties.local_surface_id.has_value());
     EXPECT_EQ(host_local_surface_id,
@@ -2699,7 +2700,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     EXPECT_EQ(gfx::Size(50, 50), visual_properties.min_size_for_auto_resize);
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.max_size_for_auto_resize);
     // Updated DSF for the renderer.
-    EXPECT_EQ(2, visual_properties.screen_info.device_scale_factor);
+    EXPECT_EQ(2, visual_properties.screen_infos.current().device_scale_factor);
     // The LocalSurfaceId has changed to the one from the renderer.
     EXPECT_TRUE(visual_properties.local_surface_id.has_value());
     EXPECT_NE(host_local_surface_id,
@@ -2766,7 +2767,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
     EXPECT_EQ(gfx::Size(50, 50), visual_properties.min_size_for_auto_resize);
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.max_size_for_auto_resize);
     EXPECT_EQ(gfx::Size(120, 120), visual_properties.new_size);
-    EXPECT_EQ(1, visual_properties.screen_info.device_scale_factor);
+    EXPECT_EQ(1, visual_properties.screen_infos.current().device_scale_factor);
     // A newly generated LocalSurfaceId is sent.
     EXPECT_TRUE(visual_properties.local_surface_id.has_value());
     EXPECT_NE(host_local_surface_id,
@@ -2885,8 +2886,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ConflictingAllocationsResolve) {
 
 // Checks that WidgetInputHandler::CursorVisibilityChange IPC messages are
 // dispatched to the renderer at the correct times.
-// TODO(crbug.com/1177138) Re-enable test
-TEST_F(RenderWidgetHostViewAuraTest, DISABLED_CursorVisibilityChange) {
+TEST_F(RenderWidgetHostViewAuraTest, CursorVisibilityChange) {
   InitViewForFrame(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(),
@@ -2962,8 +2962,14 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_CursorVisibilityChange) {
   // a message is expected to be sent.
   view_->Show();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("CursorVisibilityChanged",
-            GetMessageNames(GetAndResetDispatchedMessages()));
+  auto events = GetAndResetDispatchedMessages();
+#if defined(OS_CHROMEOS)
+  // TODO(crbug.com/1164453): Investigate occasional extra mousemoves in CrOS.
+  EXPECT_GE(1u, events.size());
+#else
+  EXPECT_EQ(1u, events.size());
+#endif
+  EXPECT_EQ("CursorVisibilityChanged", events[0]->name());
 
   cursor_client.RemoveObserver(view_);
 }
@@ -5363,7 +5369,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OcclusionHidesTooltip) {
   EXPECT_TRUE(view_->UsesNativeWindowFrame());
 
   // Simulate a tooltip.
-  base::string16 tooltip_text(base::ASCIIToUTF16("The tooltip!"));
+  std::u16string tooltip_text(u"The tooltip!");
   view_->SetTooltipText(tooltip_text);
   EXPECT_FALSE(widget_host_->is_hidden());
   EXPECT_EQ(tooltip_text, view_->tooltip_);
@@ -5371,7 +5377,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OcclusionHidesTooltip) {
   // Simulate occlusion, which should clear the tooltip.
   view_->WasOccluded();
   EXPECT_TRUE(widget_host_->is_hidden());
-  EXPECT_EQ(base::string16(), view_->tooltip_);
+  EXPECT_EQ(std::u16string(), view_->tooltip_);
 }
 #endif
 
@@ -5907,7 +5913,7 @@ class InputMethodAuraTestBase : public RenderWidgetHostViewAuraTest {
 
   void SetHasCompositionTextToTrue() {
     ui::CompositionText composition_text;
-    composition_text.text = base::ASCIIToUTF16("text");
+    composition_text.text = u"text";
     tab_view()->SetCompositionText(composition_text);
     EXPECT_TRUE(has_composition_text());
   }
@@ -6045,7 +6051,7 @@ TEST_F(InputMethodResultAuraTest, ClearCompositionText) {
 TEST_F(InputMethodResultAuraTest, FinishComposingText) {
   base::RepeatingClosure ime_call = base::BindRepeating(
       &ui::TextInputClient::InsertText, base::Unretained(text_input_client()),
-      base::string16(),
+      std::u16string(),
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
@@ -6063,8 +6069,23 @@ TEST_F(InputMethodResultAuraTest, FinishComposingText) {
 TEST_F(InputMethodResultAuraTest, CommitText) {
   base::RepeatingClosure ime_call = base::BindRepeating(
       &ui::TextInputClient::InsertText, base::Unretained(text_input_client()),
-      base::UTF8ToUTF16("hello"),
+      u"hello",
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    ime_call.Run();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ("CommitText",
+              GetMessageNames(widget_hosts_[index]
+                                  ->input_handler()
+                                  ->GetAndResetDispatchedMessages()));
+  }
+}
+
+TEST_F(InputMethodResultAuraTest, CommitTextWithEmptyText) {
+  base::RepeatingClosure ime_call = base::BindRepeating(
+      &ui::TextInputClient::InsertText, base::Unretained(text_input_client()),
+      u"", ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     ime_call.Run();
@@ -6079,7 +6100,7 @@ TEST_F(InputMethodResultAuraTest, CommitText) {
 TEST_F(InputMethodResultAuraTest, CommitTextBeforeCursor) {
   base::RepeatingClosure ime_call = base::BindRepeating(
       &ui::TextInputClient::InsertText, base::Unretained(text_input_client()),
-      base::UTF8ToUTF16("hello"),
+      u"hello",
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorBeforeText);
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
@@ -6093,8 +6114,8 @@ TEST_F(InputMethodResultAuraTest, CommitTextBeforeCursor) {
     MockWidgetInputHandler::DispatchedIMEMessage* ime_message =
         events[0]->ToIME();
     EXPECT_TRUE(ime_message);
-    EXPECT_TRUE(ime_message->Matches(base::ASCIIToUTF16("hello"), {},
-                                     gfx::Range::InvalidRange(), -5, -5));
+    EXPECT_TRUE(
+        ime_message->Matches(u"hello", {}, gfx::Range::InvalidRange(), -5, -5));
   }
 }
 
@@ -6218,7 +6239,7 @@ TEST_F(InputMethodStateAuraTest, GetCompositionCharacterBounds) {
 
 // This test is for selected text.
 TEST_F(InputMethodStateAuraTest, GetSelectedText) {
-  base::string16 text = base::ASCIIToUTF16("some text of length 22");
+  std::u16string text = u"some text of length 22";
   size_t offset = 0U;
   gfx::Range selection_range(20, 21);
 
@@ -6226,7 +6247,7 @@ TEST_F(InputMethodStateAuraTest, GetSelectedText) {
     render_widget_host_delegate()->set_focused_widget(
         RenderWidgetHostImpl::From(views_[index]->GetRenderWidgetHost()));
     views_[index]->SelectionChanged(text, offset, selection_range);
-    base::string16 expected_text = text.substr(
+    std::u16string expected_text = text.substr(
         selection_range.GetMin() - offset, selection_range.length());
 
     EXPECT_EQ(expected_text, views_[index]->GetSelectedText());
@@ -6239,7 +6260,7 @@ TEST_F(InputMethodStateAuraTest, GetSelectedText) {
 
 // This test is for text range.
 TEST_F(InputMethodStateAuraTest, GetTextRange) {
-  const base::string16 text = base::ASCIIToUTF16("some text of length 22");
+  const std::u16string text = u"some text of length 22";
 
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
@@ -6301,7 +6322,7 @@ TEST_F(InputMethodStateAuraTest, GetEditableSelectionRange) {
 }
 
 TEST_F(InputMethodStateAuraTest, GetTextFromRange) {
-  const base::string16 text = base::ASCIIToUTF16("some text of length 22");
+  const std::u16string text = u"some text of length 22";
 
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
@@ -6312,7 +6333,7 @@ TEST_F(InputMethodStateAuraTest, GetTextFromRange) {
 
     gfx::Range request_range(std::min(index, text.length() - 1),
                              std::min(index + 3, text.length() - 1));
-    base::string16 result;
+    std::u16string result;
     EXPECT_TRUE(text_input_client()->GetTextFromRange(request_range, &result));
     EXPECT_EQ(text.substr(request_range.start(), request_range.length()),
               result);
@@ -6340,11 +6361,11 @@ TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
 
     // Change the selection of the currently focused widget. It suffices to just
     // call the method on the view.
-    base::string16 expected_text = base::ASCIIToUTF16(texts[index]);
+    std::u16string expected_text = base::ASCIIToUTF16(texts[index]);
     views_[index]->SelectionChanged(expected_text, 0U, gfx::Range(0, 5));
 
     // Retrieve the selected text from clipboard and verify it is as expected.
-    base::string16 result_text;
+    std::u16string result_text;
     clipboard->ReadText(ui::ClipboardBuffer::kSelection,
                         /* data_dst = */ nullptr, &result_text);
     EXPECT_EQ(expected_text, result_text);
@@ -6501,7 +6522,7 @@ TEST_F(RenderWidgetHostViewAuraInputMethodTest, OnCaretBoundsChanged) {
   input_method->SetFocusedTextInputClient(parent_view_);
   input_method->AddObserver(this);
 
-  parent_view_->SelectionChanged(base::string16(), 0, gfx::Range());
+  parent_view_->SelectionChanged(std::u16string(), 0, gfx::Range());
   EXPECT_EQ(parent_view_, text_input_client_);
 
   text_input_client_ = nullptr;
@@ -6533,7 +6554,7 @@ TEST_F(RenderWidgetHostViewAuraInputMethodTest,
   ui::mojom::TextInputState state;
   state.type = ui::TEXT_INPUT_TYPE_TEXT;
   state.mode = ui::TEXT_INPUT_MODE_NONE;
-  state.value = base::ASCIIToUTF16("a");
+  state.value = u"a";
   state.selection = gfx::Range(1, 1);
 
   GetTextInputManager(parent_view_)->UpdateTextInputState(parent_view_, state);
@@ -6715,14 +6736,14 @@ class MockDelegatedInkPointRenderer
       mojo::PendingReceiver<viz::mojom::DelegatedInkPointRenderer> receiver)
       : receiver_(this, std::move(receiver)) {}
 
-  void StoreDelegatedInkPoint(const viz::DelegatedInkPoint& point) override {
+  void StoreDelegatedInkPoint(const gfx::DelegatedInkPoint& point) override {
     delegated_ink_point_ = point;
   }
 
   bool HasDelegatedInkPoint() { return delegated_ink_point_.has_value(); }
 
-  viz::DelegatedInkPoint GetDelegatedInkPoint() {
-    viz::DelegatedInkPoint point = delegated_ink_point_.value();
+  gfx::DelegatedInkPoint GetDelegatedInkPoint() {
+    gfx::DelegatedInkPoint point = delegated_ink_point_.value();
     delegated_ink_point_.reset();
     return point;
   }
@@ -6743,7 +6764,7 @@ class MockDelegatedInkPointRenderer
 
  private:
   mojo::Receiver<viz::mojom::DelegatedInkPointRenderer> receiver_;
-  base::Optional<viz::DelegatedInkPoint> delegated_ink_point_;
+  base::Optional<gfx::DelegatedInkPoint> delegated_ink_point_;
   bool prediction_reset_ = false;
 };
 
@@ -6819,31 +6840,57 @@ class DelegatedInkPointTest
   void SendEvent(bool match_test_hovering_state,
                  gfx::PointF point,
                  base::TimeTicks timestamp = ui::EventTimeForNow()) {
-    if (GetEventParam() == TestEvent::kTouchEvent) {
-      ui::EventPointerType pointer_type = ui::EventPointerType::kTouch;
-      if (GetHoverParam() == HoveringState::kHovering)
-        pointer_type = ui::EventPointerType::kPen;
+    SendEvent(match_test_hovering_state, point, timestamp,
+              /*use_enter_event*/ false, /*use_exit_event*/ false);
+  }
+
+  void SendEvent(bool match_test_hovering_state,
+                 const gfx::PointF& point,
+                 base::TimeTicks timestamp,
+                 bool use_enter_event,
+                 bool use_exit_event) {
+    DCHECK(!(use_enter_event && use_exit_event));
+
+    // Hovering creates and sends ui::MouseEvents with
+    // ET_MOUSE_{MOVED,ENTERED,EXITED} types, so do the same here in hovering
+    // scenarios.
+    if (GetEventParam() == TestEvent::kTouchEvent &&
+        !Hovering(match_test_hovering_state)) {
+      ui::EventType event_type = ui::ET_TOUCH_MOVED;
+      if (use_enter_event)
+        event_type = ui::ET_TOUCH_PRESSED;
+      if (use_exit_event)
+        event_type = ui::ET_TOUCH_RELEASED;
 
       // Touch needs a pressed event first to properly handle future move
       // events.
-      SendTouchPress(pointer_type);
+      SendTouchPress(point);
 
-      ui::TouchEvent touch_event(ui::ET_TOUCH_MOVED, point, point, timestamp,
-                                 ui::PointerDetails(pointer_type, kPointerId));
-      if ((GetHoverParam() == HoveringState::kHovering &&
-           match_test_hovering_state) ||
-          (GetHoverParam() == HoveringState::kNotHovering &&
-           !match_test_hovering_state)) {
-        touch_event.set_hovering(true);
-      }
+      ui::TouchEvent touch_event(
+          event_type, point, point, timestamp,
+          ui::PointerDetails(ui::EventPointerType::kTouch, kPointerId));
       view_->OnTouchEvent(&touch_event);
+
+      // Need to send a new press event after ending the previous touch.
+      if (use_exit_event)
+        sent_touch_press_ = false;
     } else {
-      int flags = match_test_hovering_state ? 0 : ui::EF_LEFT_MOUSE_BUTTON;
-      if (GetHoverParam() == HoveringState::kNotHovering)
-        flags = match_test_hovering_state ? ui::EF_LEFT_MOUSE_BUTTON : 0;
-      ui::MouseEvent mouse_event(
-          ui::ET_MOUSE_MOVED, point, point, timestamp, flags, 0,
-          ui::PointerDetails(ui::EventPointerType::kMouse, kPointerId));
+      ui::EventPointerType pointer_type = ui::EventPointerType::kMouse;
+      if (GetEventParam() == TestEvent::kTouchEvent) {
+        DCHECK(Hovering(match_test_hovering_state));
+        pointer_type = ui::EventPointerType::kPen;
+      }
+
+      ui::EventType event_type = ui::ET_MOUSE_MOVED;
+      if (use_enter_event)
+        event_type = ui::ET_MOUSE_ENTERED;
+      if (use_exit_event)
+        event_type = ui::ET_MOUSE_EXITED;
+
+      int flags =
+          Hovering(match_test_hovering_state) ? 0 : ui::EF_LEFT_MOUSE_BUTTON;
+      ui::MouseEvent mouse_event(event_type, point, point, timestamp, flags, 0,
+                                 ui::PointerDetails(pointer_type, kPointerId));
       view_->OnMouseEvent(&mouse_event);
     }
   }
@@ -6853,20 +6900,30 @@ class DelegatedInkPointTest
   int32_t GetExpectedPointerId() const { return kPointerId; }
 
  private:
-  void SendTouchPress(ui::EventPointerType pointer_type) {
+  void SendTouchPress(const gfx::PointF& requested_touch_location) {
     DCHECK(GetEventParam() == TestEvent::kTouchEvent);
     if (sent_touch_press_)
       return;
 
-    // Location of the point doesn't matter, chosen arbitrarily.
-    ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::PointF(15, 15),
-                         gfx::PointF(15, 15), ui::EventTimeForNow(),
-                         ui::PointerDetails(pointer_type, kPointerId));
-    if (GetHoverParam() == HoveringState::kHovering)
-      press.set_hovering(true);
+    // Location of the press event doesn't matter, so long as it doesn't exactly
+    // match the location of the subsequent move event. If they match, then the
+    // move event is dropped.
+    gfx::PointF point(requested_touch_location.x() + 2.f,
+                      requested_touch_location.y() + 2.f);
+
+    ui::TouchEvent press(
+        ui::ET_TOUCH_PRESSED, point, point, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, kPointerId));
 
     view_->OnTouchEvent(&press);
     sent_touch_press_ = true;
+  }
+
+  bool Hovering(bool match_test_hovering_state) {
+    return (GetHoverParam() == HoveringState::kHovering &&
+            match_test_hovering_state) ||
+           (GetHoverParam() == HoveringState::kNotHovering &&
+            !match_test_hovering_state);
   }
 
   // Pointer id to use in these tests. It must be consistent throughout a single
@@ -6884,13 +6941,33 @@ class DelegatedInkPointTest
   std::unique_ptr<MockCompositor> compositor_;
 };
 
+struct DelegatedInkPointTestPassToString {
+  std::string operator()(
+      const testing::TestParamInfo<std::tuple<TestEvent, HoveringState>> type)
+      const {
+    std::string suffix;
+
+    if (std::get<0>(type.param) == TestEvent::kMouseEvent)
+      suffix.append("Mouse");
+    else
+      suffix.append("Touch");
+
+    if (std::get<1>(type.param) == HoveringState::kHovering)
+      suffix.append("Hovering");
+    else
+      suffix.append("NotHovering");
+
+    return suffix;
+  }
+};
+
 INSTANTIATE_TEST_SUITE_P(
     DelegatedInkTrails,
     DelegatedInkPointTest,
-    testing::Combine(testing::Values(TestEvent::kMouseEvent,
-                                     TestEvent::kTouchEvent),
-                     testing::Values(HoveringState::kHovering,
-                                     HoveringState::kNotHovering)));
+    testing::Combine(
+        testing::Values(TestEvent::kMouseEvent, TestEvent::kTouchEvent),
+        testing::Values(HoveringState::kHovering, HoveringState::kNotHovering)),
+    DelegatedInkPointTestPassToString());
 
 // Tests to confirm that input events are correctly forwarded to the UI
 // Compositor when DelegatedInkTrails should be drawn, and stops forwarding when
@@ -6906,7 +6983,7 @@ TEST_P(DelegatedInkPointTest, EventForwardedToCompositor) {
   // Then set it to true and confirm that the DelegatedInkPointRenderer is
   // initialized, the connection is made and the point makes it to the renderer.
   SetInkMetadataFlagOnRenderFrameMetadata(true);
-  viz::DelegatedInkPoint expected_point(
+  gfx::DelegatedInkPoint expected_point(
       gfx::PointF(10, 10), base::TimeTicks::Now(), GetExpectedPointerId());
   SendEvent(true, expected_point.point(), expected_point.timestamp());
 
@@ -6915,7 +6992,7 @@ TEST_P(DelegatedInkPointTest, EventForwardedToCompositor) {
   delegated_ink_point_renderer->FlushForTesting();
 
   EXPECT_TRUE(delegated_ink_point_renderer->HasDelegatedInkPoint());
-  viz::DelegatedInkPoint actual_point =
+  gfx::DelegatedInkPoint actual_point =
       delegated_ink_point_renderer->GetDelegatedInkPoint();
   EXPECT_EQ(expected_point.point(), actual_point.point());
   EXPECT_EQ(expected_point.timestamp(), actual_point.timestamp());
@@ -6932,7 +7009,7 @@ TEST_P(DelegatedInkPointTest, EventForwardedToCompositor) {
   delegated_ink_point_renderer->FlushForTesting();
 
   unscaled_point.Scale(scale);
-  expected_point = viz::DelegatedInkPoint(unscaled_point, unscaled_time,
+  expected_point = gfx::DelegatedInkPoint(unscaled_point, unscaled_time,
                                           GetExpectedPointerId());
 
   EXPECT_TRUE(delegated_ink_point_renderer->HasDelegatedInkPoint());
@@ -7024,6 +7101,54 @@ TEST_P(DelegatedInkPointTest, StopForwardingOnHoverStateChange) {
 
   EXPECT_TRUE(delegated_ink_point_renderer->HasDelegatedInkPoint());
   EXPECT_FALSE(delegated_ink_point_renderer->GetPredictionState());
+}
+
+// Confirm that only move events are forwarded, not enter/exit or equivalent
+// events.
+TEST_P(DelegatedInkPointTest, IgnoreEnterAndExitEvents) {
+  // First set everything up and try forwarding a point, confirming that it is
+  // sent as expected.
+  SetInkMetadataFlagOnRenderFrameMetadata(true);
+  gfx::DelegatedInkPoint expected_point(
+      gfx::PointF(10, 10), base::TimeTicks::Now(), GetExpectedPointerId());
+  SendEvent(true, expected_point.point(), expected_point.timestamp());
+
+  MockDelegatedInkPointRenderer* delegated_ink_point_renderer =
+      compositor()->delegated_ink_point_renderer();
+  EXPECT_TRUE(delegated_ink_point_renderer);
+  delegated_ink_point_renderer->FlushForTesting();
+
+  EXPECT_TRUE(delegated_ink_point_renderer->HasDelegatedInkPoint());
+  gfx::DelegatedInkPoint actual_point =
+      delegated_ink_point_renderer->GetDelegatedInkPoint();
+  EXPECT_EQ(expected_point.point(), actual_point.point());
+  EXPECT_EQ(expected_point.timestamp(), actual_point.timestamp());
+  EXPECT_EQ(GetExpectedPointerId(), actual_point.pointer_id());
+
+  // Try sending an enter event and confirm it is not forwarded.
+  SendEvent(true, gfx::PointF(12, 12), base::TimeTicks::Now(),
+            /*use_enter_event*/ true, /*use_exit_event*/ false);
+  delegated_ink_point_renderer->FlushForTesting();
+  EXPECT_FALSE(delegated_ink_point_renderer->HasDelegatedInkPoint());
+
+  // Now try with an exit event.
+  SendEvent(true, gfx::PointF(42, 19), base::TimeTicks::Now(),
+            /*use_enter_event*/ false, /*use_exit_event*/ true);
+  delegated_ink_point_renderer->FlushForTesting();
+  EXPECT_FALSE(delegated_ink_point_renderer->HasDelegatedInkPoint());
+
+  // Finally, confirm that sending move events will work again without issue.
+  expected_point = gfx::DelegatedInkPoint(
+      gfx::PointF(20, 21), base::TimeTicks::Now(), GetExpectedPointerId());
+  SendEvent(true, expected_point.point(), expected_point.timestamp());
+
+  delegated_ink_point_renderer->FlushForTesting();
+
+  EXPECT_TRUE(delegated_ink_point_renderer->HasDelegatedInkPoint());
+  actual_point = delegated_ink_point_renderer->GetDelegatedInkPoint();
+  EXPECT_EQ(expected_point.point(), actual_point.point());
+  EXPECT_EQ(expected_point.timestamp(), actual_point.timestamp());
+  EXPECT_EQ(GetExpectedPointerId(), actual_point.pointer_id());
 }
 
 }  // namespace content

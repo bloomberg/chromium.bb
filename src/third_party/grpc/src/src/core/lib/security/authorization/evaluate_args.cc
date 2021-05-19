@@ -20,6 +20,8 @@
 
 #include "src/core/lib/security/authorization/evaluate_args.h"
 
+#include "absl/strings/str_join.h"
+
 #include "src/core/lib/iomgr/parse_address.h"
 #include "src/core/lib/iomgr/resolve_address.h"
 #include "src/core/lib/iomgr/sockaddr_utils.h"
@@ -72,6 +74,14 @@ std::multimap<absl::string_view, absl::string_view> EvaluateArgs::GetHeaders()
   return headers;
 }
 
+absl::optional<absl::string_view> EvaluateArgs::GetHeaderValue(
+    absl::string_view key, std::string* concatenated_value) const {
+  if (metadata_ == nullptr) {
+    return absl::nullopt;
+  }
+  return grpc_metadata_batch_get_value(metadata_, key, concatenated_value);
+}
+
 absl::string_view EvaluateArgs::GetLocalAddress() const {
   absl::string_view addr = grpc_endpoint_get_local_address(endpoint_);
   size_t first_colon = addr.find(":");
@@ -87,14 +97,12 @@ int EvaluateArgs::GetLocalPort() const {
   if (endpoint_ == nullptr) {
     return 0;
   }
-  grpc_uri* uri = grpc_uri_parse(
-      std::string(grpc_endpoint_get_local_address(endpoint_)).c_str(), true);
+  absl::StatusOr<URI> uri =
+      URI::Parse(grpc_endpoint_get_local_address(endpoint_));
   grpc_resolved_address resolved_addr;
-  if (uri == nullptr || !grpc_parse_uri(uri, &resolved_addr)) {
-    grpc_uri_destroy(uri);
+  if (!uri.ok() || !grpc_parse_uri(*uri, &resolved_addr)) {
     return 0;
   }
-  grpc_uri_destroy(uri);
   return grpc_sockaddr_get_port(&resolved_addr);
 }
 
@@ -113,14 +121,11 @@ int EvaluateArgs::GetPeerPort() const {
   if (endpoint_ == nullptr) {
     return 0;
   }
-  grpc_uri* uri = grpc_uri_parse(
-      std::string(grpc_endpoint_get_peer(endpoint_)).c_str(), true);
+  absl::StatusOr<URI> uri = URI::Parse(grpc_endpoint_get_peer(endpoint_));
   grpc_resolved_address resolved_addr;
-  if (uri == nullptr || !grpc_parse_uri(uri, &resolved_addr)) {
-    grpc_uri_destroy(uri);
+  if (!uri.ok() || !grpc_parse_uri(*uri, &resolved_addr)) {
     return 0;
   }
-  grpc_uri_destroy(uri);
   return grpc_sockaddr_get_port(&resolved_addr);
 }
 

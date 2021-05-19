@@ -133,7 +133,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       const override;
   void SendPings(const WebURL& destination_url) override;
   void StartReload(WebFrameLoadType) override;
-  void ResetForTesting() override;
+  void ClearActiveFindMatchForTesting() override;
   void EnableViewSourceMode(bool enable) override;
   bool IsViewSourceModeEnabled() const override;
   WebDocumentLoader* GetDocumentLoader() const override;
@@ -240,10 +240,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void ReplaceSelection(const WebString&) override;
   void DeleteSurroundingText(int before, int after) override;
   void DeleteSurroundingTextInCodePoints(int before, int after) override;
-  void ExtractSmartClipData(const gfx::Rect& rect_in_viewport,
-                            WebString& clip_text,
-                            WebString& clip_html,
-                            gfx::Rect& clip_rect) override;
   void SetTextCheckClient(WebTextCheckClient*) override;
   void SetSpellCheckPanelHostClient(WebSpellCheckPanelHostClient*) override;
   WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const override {
@@ -257,6 +253,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetContentSettingsClient(WebContentSettingsClient*) override;
   void ReloadImage(const WebNode&) override;
   bool IsAllowedToDownload() const override;
+  bool IsCrossOriginToMainFrame() const override;
   bool FindForTesting(int identifier,
                       const WebString& search_text,
                       bool match_case,
@@ -284,9 +281,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   std::unique_ptr<WebAssociatedURLLoader> CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) override;
   void DeprecatedStopLoading() override;
-  WebSize GetScrollOffset() const override;
-  void SetScrollOffset(const WebSize&) override;
-  WebSize DocumentSize() const override;
+  gfx::ScrollOffset GetScrollOffset() const override;
+  void SetScrollOffset(const gfx::ScrollOffset&) override;
+  gfx::Size DocumentSize() const override;
   bool HasVisibleContent() const override;
   gfx::Rect VisibleContentRect() const override;
   void DispatchBeforePrintEvent(

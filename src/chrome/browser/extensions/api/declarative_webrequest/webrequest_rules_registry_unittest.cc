@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/url_matcher/url_matcher_constants.h"
@@ -31,6 +32,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-message.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/lacros/scoped_lacros_chrome_service_test_helper.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extensions::declarative_webrequest_constants;
@@ -128,8 +133,8 @@ class WebRequestRulesRegistryTest : public testing::Test {
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
     api::events::Rule rule;
-    rule.id.reset(new std::string(kRuleId1));
-    rule.priority.reset(new int(100));
+    rule.id = std::make_unique<std::string>(kRuleId1);
+    rule.priority = std::make_unique<int>(100);
     rule.actions.push_back(action_dict.CreateDeepCopy());
     http_condition_dict->Set(keys2::kSchemesKey, std::move(scheme_http));
     http_condition_url_filter.Set(keys::kUrlKey,
@@ -148,8 +153,8 @@ class WebRequestRulesRegistryTest : public testing::Test {
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
     api::events::Rule rule;
-    rule.id.reset(new std::string(kRuleId2));
-    rule.priority.reset(new int(100));
+    rule.id = std::make_unique<std::string>(kRuleId2);
+    rule.priority = std::make_unique<int>(100);
     rule.actions.push_back(action_dict.CreateDeepCopy());
     rule.conditions.push_back(condition_dict.CreateDeepCopy());
     return rule;
@@ -164,8 +169,8 @@ class WebRequestRulesRegistryTest : public testing::Test {
     action_dict.SetString(keys::kRedirectUrlKey, destination);
 
     api::events::Rule rule;
-    rule.id.reset(new std::string(kRuleId3));
-    rule.priority.reset(new int(100));
+    rule.id = std::make_unique<std::string>(kRuleId3);
+    rule.priority = std::make_unique<int>(100);
     rule.actions.push_back(action_dict.CreateDeepCopy());
     rule.conditions.push_back(condition_dict.CreateDeepCopy());
     return rule;
@@ -185,8 +190,8 @@ class WebRequestRulesRegistryTest : public testing::Test {
     action_dict.SetInteger(keys::kLowerPriorityThanKey, 150);
 
     api::events::Rule rule;
-    rule.id.reset(new std::string(kRuleId4));
-    rule.priority.reset(new int(200));
+    rule.id = std::make_unique<std::string>(kRuleId4);
+    rule.priority = std::make_unique<int>(200);
     rule.actions.push_back(action_dict.CreateDeepCopy());
     rule.conditions.push_back(condition_dict.CreateDeepCopy());
     return rule;
@@ -214,8 +219,8 @@ class WebRequestRulesRegistryTest : public testing::Test {
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
     api::events::Rule rule;
-    rule.id.reset(new std::string(rule_id));
-    rule.priority.reset(new int(1));
+    rule.id = std::make_unique<std::string>(rule_id);
+    rule.priority = std::make_unique<int>(1);
     rule.actions.push_back(action_dict.CreateDeepCopy());
     for (auto it = attributes.cbegin(); it != attributes.cend(); ++it)
       rule.conditions.push_back(CreateCondition(**it));
@@ -230,6 +235,11 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // |extension2_|.
   scoped_refptr<Extension> extension_;
   scoped_refptr<Extension> extension2_;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  chromeos::ScopedLacrosChromeServiceTestHelper
+      scoped_lacros_chrome_service_test_helper_;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 };
 
 void WebRequestRulesRegistryTest::SetUp() {
@@ -238,17 +248,13 @@ void WebRequestRulesRegistryTest::SetUp() {
   std::string error;
   extension_ = LoadManifestUnchecked("permissions",
                                      "web_request_all_host_permissions.json",
-                                     Manifest::INVALID_LOCATION,
-                                     Extension::NO_FLAGS,
-                                     kExtensionId,
-                                     &error);
+                                     mojom::ManifestLocation::kInvalidLocation,
+                                     Extension::NO_FLAGS, kExtensionId, &error);
   ASSERT_TRUE(extension_.get()) << error;
-  extension2_ = LoadManifestUnchecked("permissions",
-                                      "web_request_all_host_permissions.json",
-                                      Manifest::INVALID_LOCATION,
-                                      Extension::NO_FLAGS,
-                                      kExtensionId2,
-                                      &error);
+  extension2_ = LoadManifestUnchecked(
+      "permissions", "web_request_all_host_permissions.json",
+      mojom::ManifestLocation::kInvalidLocation, Extension::NO_FLAGS,
+      kExtensionId2, &error);
   ASSERT_TRUE(extension2_.get()) << error;
   CHECK(ExtensionRegistry::Get(&profile_));
   ExtensionRegistry::Get(&profile_)->AddEnabled(extension_);

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "content/public/renderer/plugin_ax_tree_source.h"
@@ -266,11 +267,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   PluginAXTreeSource* plugin_tree_source_;
   blink::WebAXObject plugin_host_node_;
 
-  // The most recently observed scroll offset of the root document element.
-  // TODO(dmazzoni): remove once https://bugs.webkit.org/show_bug.cgi?id=73460
-  // is fixed.
-  gfx::Size last_scroll_offset_;
-
   // Current event scheduling status
   EventScheduleStatus event_schedule_status_;
 
@@ -298,7 +294,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // The longest amount of time spent serializing the accessibility tree
   // in SendPendingAccessibilityEvents. This is periodically uploaded as
   // a UKM and then reset.
-  int slowest_serialization_ms_ = 0;
+  base::TimeDelta slowest_serialization_time_;
 
   // The amount of time since the last UKM upload.
   std::unique_ptr<base::ElapsedTimer> ukm_timer_;

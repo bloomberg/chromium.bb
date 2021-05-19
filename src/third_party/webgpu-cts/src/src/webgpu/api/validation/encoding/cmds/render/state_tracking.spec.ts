@@ -16,7 +16,7 @@ class F extends ValidationTest {
 
   createRenderPipeline(bufferCount: number): GPURenderPipeline {
     return this.device.createRenderPipeline({
-      vertexStage: {
+      vertex: {
         module: this.device.createShaderModule({
           code: `
             ${range(
@@ -30,8 +30,18 @@ class F extends ValidationTest {
             }`,
         }),
         entryPoint: 'main',
+        buffers: [
+          {
+            arrayStride: 3 * 4,
+            attributes: range(bufferCount, i => ({
+              format: 'float32x3',
+              offset: 0,
+              shaderLocation: i,
+            })),
+          },
+        ],
       },
-      fragmentStage: {
+      fragment: {
         module: this.device.createShaderModule({
           code: `
             [[location(0)]] var<out> fragColor : vec4<f32>;
@@ -41,29 +51,17 @@ class F extends ValidationTest {
             }`,
         }),
         entryPoint: 'main',
+        targets: [{ format: 'rgba8unorm' }],
       },
-      primitiveTopology: 'triangle-list',
-      colorStates: [{ format: 'rgba8unorm' }],
-      vertexState: {
-        vertexBuffers: [
-          {
-            arrayStride: 3 * 4,
-            attributes: range(bufferCount, i => ({
-              format: 'float3',
-              offset: 0,
-              shaderLocation: i,
-            })),
-          },
-        ],
-      },
+      primitive: { topology: 'triangle-list' },
     });
   }
 
   beginRenderPass(commandEncoder: GPUCommandEncoder): GPURenderPassEncoder {
     const attachmentTexture = this.device.createTexture({
       format: 'rgba8unorm',
-      size: { width: 16, height: 16, depth: 1 },
-      usage: GPUTextureUsage.OUTPUT_ATTACHMENT,
+      size: { width: 16, height: 16, depthOrArrayLayers: 1 },
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     return commandEncoder.beginRenderPass({

@@ -4,8 +4,9 @@
 
 #include "chrome/updater/win/user_info.h"
 
+#include <string>
+
 #include "base/check.h"
-#include "base/strings/string16.h"
 #include "chrome/updater/win/util.h"
 
 namespace updater {

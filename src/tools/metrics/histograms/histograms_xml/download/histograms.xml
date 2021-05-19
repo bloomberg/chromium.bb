@@ -69,7 +69,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.ContentType.Text" enum="DownloadTextType"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>xingliu@chromium.org</owner>
   <summary>Types of text files that are downloaded.</summary>
 </histogram>
@@ -83,7 +83,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Download.Counts" enum="DownloadCountType"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
 <!-- Name completed by histogram_suffixes name="DownloadSource" -->
 
   <owner>xingliu@chromium.org</owner>
@@ -150,7 +150,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.DownloadDangerPrompt"
-    enum="SBClientDownloadExtensions" expires_after="2021-07-04">
+    enum="SBClientDownloadExtensions" expires_after="2021-09-05">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -270,18 +270,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.IOSDownloadARModelState.USDZ"
-    enum="DownloadARModelState" expires_after="2021-05-08">
-  <owner>mahmadi@chromium.org</owner>
+    enum="DownloadARModelState" expires_after="2022-03-20">
+  <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>
     Logged at different stages of downloading a USDZ MIME type AR model on iOS.
   </summary>
 </histogram>
 
 <histogram name="Download.IOSDownloadedFileAction" enum="DownloadedFileAction"
-    expires_after="2021-07-11">
+    expires_after="2022-03-20">
   <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>
     The action that a user takes on a file after it has been successfully
     downloaded on iOS.
@@ -289,9 +291,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.IOSDownloadedFileNetError" enum="NetErrorCodes"
-    expires_after="2021-05-08">
-  <owner>ewannpv@chromium.org</owner>
-  <owner>mrefaat@chromium.org</owner>
+    expires_after="2022-03-20">
+  <owner>sdefresne@chromium.org</owner>
+  <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>
     Positive net error codes that happen in the case of download content fetch
     failure.
@@ -310,9 +313,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.IOSDownloadFileInBackground"
-    enum="DownloadFileInBackground" expires_after="2021-05-08">
+    enum="DownloadFileInBackground" expires_after="2022-03-20">
   <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>
     Logged when the download is completed (successfully or not) or in-progress
     download was cancelled because of the app termination. This histogram
@@ -322,16 +326,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.IOSDownloadFileResult" enum="DownloadFileResult"
-    expires_after="2021-07-26">
-  <owner>ewannpv@chromium.org</owner>
+    expires_after="2022-03-20">
   <owner>sdefresne@chromium.org</owner>
+  <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>Result when a user attempts to download a file on iOS.</summary>
 </histogram>
 
 <histogram name="Download.IOSDownloadFileUI" enum="DownloadFileUI"
-    expires_after="2021-08-15">
-  <owner>ewannpv@chromium.org</owner>
+    expires_after="2022-03-20">
   <owner>sdefresne@chromium.org</owner>
+  <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>
     Result when a user attempts to present the download UI on iOS. Looged when
     download is created.
@@ -339,9 +345,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.IOSDownloadFileUIGoogleDrive"
-    enum="DownloadFileUIGoogleDrive" expires_after="2021-11-29">
-  <owner>ewannpv@chromium.org</owner>
+    enum="DownloadFileUIGoogleDrive" expires_after="2022-03-20">
   <owner>sdefresne@chromium.org</owner>
+  <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>
     Result when the download UI is prexsented on iOS. Values indicate if Google
     Drive is installed and whether or not Install Google Drive promo was shown.
@@ -350,9 +357,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.IOSDownloadMimeType" enum="DownloadMimeTypeResult"
-    expires_after="2021-08-15">
-  <owner>ewannpv@chromium.org</owner>
+    expires_after="2022-03-20">
   <owner>sdefresne@chromium.org</owner>
+  <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>
     MIME type of a download response. Logged when the download UI was offered by
     the browser to the user.
@@ -360,18 +368,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.IOSDownloadPassKitResult"
-    enum="DownloadPassKitResult" expires_after="2021-05-08">
-  <owner>ewannpv@chromium.org</owner>
+    enum="DownloadPassKitResult" expires_after="2022-03-20">
   <owner>sdefresne@chromium.org</owner>
+  <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>
     Recorded when a user attempts to download a PassKit file on iOS.
   </summary>
 </histogram>
 
 <histogram name="Download.IOSDownloadReplaced" enum="BooleanReplaced"
-    expires_after="2021-07-15">
-  <owner>ewannpv@chromium.org</owner>
+    expires_after="2022-03-20">
   <owner>sdefresne@chromium.org</owner>
+  <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>
     The user discarded in-progress download and replaced with the new one. Only
     recorded after the user interacts with a dialog offering the choice between
@@ -381,22 +391,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.IOSPresentAddPassesDialogResult"
-    enum="PresentAddPassesDialogResult" expires_after="2021-05-01">
-  <owner>ewannpv@chromium.org</owner>
+    enum="PresentAddPassesDialogResult" expires_after="2022-03-20">
   <owner>sdefresne@chromium.org</owner>
+  <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>Result of an attempt to present Add Passes dialog on iOS.</summary>
 </histogram>
 
 <histogram name="Download.IOSPresentQLPreviewControllerResult"
-    enum="PresentQLPreviewController" expires_after="M81">
-  <owner>mahmadi@chromium.org</owner>
+    enum="PresentQLPreviewController" expires_after="2022-03-20">
+  <owner>sdefresne@chromium.org</owner>
+  <owner>ewannpv@chromium.com</owner>
+  <owner>mrefaat@chromium.com</owner>
   <summary>
-    Result of an attempt to present a USDZ MIME type AR model on iOS.
+    Result when a user attempts to present a USDZ MIME type AR model on iOS.
   </summary>
 </histogram>
 
 <histogram name="Download.Later.Events" enum="DownloadLaterEvent"
-    expires_after="2021-07-01">
+    expires_after="2021-09-05">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -415,7 +428,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Download.Later.UI.DialogChoice"
-    enum="DownloadLaterDialogChoice" expires_after="2021-07-01">
+    enum="DownloadLaterDialogChoice" expires_after="2021-09-05">
 <!-- Name completed by histogram_suffixes name="DownloadDialogSource" -->
 
   <owner>xingliu@chromium.org</owner>
@@ -428,7 +441,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Later.UI.Events" enum="DownloadLaterUiEvent"
-    expires_after="2021-07-01">
+    expires_after="2021-09-05">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -518,7 +531,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.OverwrittenDownloadRemovedFromHistory"
-    units="downloads" expires_after="2021-08-01">
+    units="downloads" expires_after="2021-10-04">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-downloads@google.com</owner>
   <summary>
@@ -819,7 +832,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Service.Files.FreeDiskSpace" units="%"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>xingliu@chromium.org</owner>
   <summary>
     The percentage of free disk space to total disk space. Recorded during
@@ -848,7 +861,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Service.Finish.Type"
-    enum="Download.Service.CompletionType" expires_after="2021-07-27">
+    enum="Download.Service.CompletionType" expires_after="2021-10-04">
   <owner>xingliu@chromium.org</owner>
   <summary>The completion type for downloads in download service.</summary>
 </histogram>
@@ -960,7 +973,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.ShowedDownloadWarning" enum="DownloadItem.DangerType"
-    expires_after="2021-08-22">
+    expires_after="2022-03-08">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@chromium.org</owner>
   <summary>
@@ -968,6 +981,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     be shown on the shelf, e.g., if chrome://downloads is already open when the
     download completes, or if an extension is using the downloads API. Grouped
     by the type of danger.
+
+    This metric is used to populate a dashboard on go/crsb-site.
   </summary>
 </histogram>
 
@@ -990,7 +1005,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.Start.ContentType.NormalProfile"
-    enum="DownloadContentType" expires_after="2021-06-27">
+    enum="DownloadContentType" expires_after="2021-08-29">
   <owner>shaktisahu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -1009,12 +1024,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.UserValidatedDangerousDownload"
-    enum="DownloadItem.DangerType" expires_after="2021-08-22">
+    enum="DownloadItem.DangerType" expires_after="2022-03-08">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-team@chromium.org</owner>
   <summary>
     User chose to save a download which was marked dangerous. Grouped by the
     type of danger.
+
+    This metric is used to populate a dashboard on go/crsb-site.
   </summary>
 </histogram>
 

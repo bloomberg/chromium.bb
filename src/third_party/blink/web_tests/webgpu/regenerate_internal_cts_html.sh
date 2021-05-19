@@ -7,7 +7,8 @@
 # checked-out version of the WebGPU CTS. It does the following:
 #
 #   - Extracts the "name" part of every expectation from WebGPUExpectations.
-#   - Prepares the WebGPU checkout to run the gen_wpt_cts_html tool.
+#   - Transpiles the WebGPU checkout into a tmp directory to run the
+#     gen_wpt_cts_html tool.
 #   - Runs gen_wpt_cts_html with the appropriate metadata and the extracted
 #     expectations names. This generates a cts.html file with the necessary
 #     variants to cover the expectations in WebGPUExpectations.
@@ -21,28 +22,54 @@ set -e
 cd "$(dirname "$0")"/../../../..  # cd to [chromium]/src/
 
 expectations=$(mktemp)
-trap "{ rm -f $expectations; }" EXIT
-echo $expectations
+out_dir=$(mktemp -d)
+out_cts_html=$(realpath $(dirname "$0")/../wpt_internal/webgpu/cts.html)
 
-pushd third_party/blink > /dev/null
+echo "Expectations names: $expectations"
+echo "JS output dir: $out_dir"
+echo "Output CTS html: $out_cts_html"
 
-  echo 'Extracting expectation names...'
-  tools/extract_expectation_names.py web_tests/WebGPUExpectations > $expectations
+function check_output() {
+  if [ ! -f $out_cts_html ]; then
+    echo "Failed to generate $out_cts_html"
+    exit 1
+  fi
+}
 
-popd > /dev/null
+function cleanup() {
+  rm -f $expectations
+  rm -rf $out_dir
+  check_output
+}
+
+trap cleanup EXIT
+
+rm -f $out_cts_html
+
+echo 'Extracting expectation names...'
+third_party/webgpu-cts/scripts/extract_expectation_names_for_variant_generation.py \
+    third_party/blink/web_tests/WebGPUExpectations > $expectations
+
+cat third_party/blink/web_tests/webgpu/internal_cts_test_splits.txt >> $expectations
 
 pushd third_party/webgpu-cts/src > /dev/null
 
-  echo 'Updating node for webgpu-cts...'
-  npm install --frozen-lockfile
-  npx grunt run:generate-listings
+  echo 'Transpiling WebGPU CTS...'
+  ../scripts/tsc_ignore_errors.py \
+    --project node.tsconfig.json \
+    --outDir $out_dir \
+    --noEmit false \
+    --declaration false \
+    --sourceMap false
 
-  echo 'Regenerating expectations...'
-  npm run gen_wpt_cts_html \
-    ../../blink/web_tests/wpt_internal/webgpu/cts.html \
+  echo 'Regenerating cts.html...'
+  ../../node/node.py $out_dir/common/tools/gen_wpt_cts_html.js \
+    $out_cts_html \
     ../../blink/web_tests/webgpu/ctshtml-template.txt \
     ../../blink/web_tests/webgpu/argsprefixes.txt \
     $expectations \
     'wpt_internal/webgpu/cts.html' webgpu
 
 popd > /dev/null
+
+check_output

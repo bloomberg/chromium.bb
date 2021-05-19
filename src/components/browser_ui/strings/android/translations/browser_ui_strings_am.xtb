@@ -23,6 +23,7 @@
 <translation id="1509960214886564027">በበርካታ ጣቢያዎች ላይ ያሉ ባሕሪያት ሊሰበሩ ይችላሉ</translation>
 <translation id="1620510694547887537">ካሜራ</translation>
 <translation id="1644574205037202324">ታሪክ</translation>
+<translation id="1647582022260550163">እርግጠኛ ነዎት ፈቃዶችን ዳግም ማስጀመር እና ኩኪዎችን እና የጣቢያ ውሂብን ማጽዳት ይፈልጋሉ?</translation>
 <translation id="1660204651932907780">ጣቢያዎች ድምጽን እንዲያጫውቱ ፍቀድ (የሚመከር)</translation>
 <translation id="1677097821151855053">ኩኪዎች እና ሌላ የጣቢያ ውሂብ እርስዎን ለማስታወስ ያገለግላሉ፣ ለምሳሌ እርስዎን ለማስገባት ወይም ማስታወቂያዎችን ግላዊ ለማድረግ። ለሁሉም ጣቢያዎች ኩኪዎችን ለማቀናበር፣ <ph name="BEGIN_LINK" />ቅንብሮችን<ph name="END_LINK" /> ይመልከቱ።</translation>
 <translation id="1688867105868176567">የጣቢያ ውሂብ ይጸዳ?</translation>
@@ -92,7 +93,6 @@
 <translation id="3386292677130313581">ጣቢያዎች አካባቢዎን እንዲያውቁ ከመፍቀድዎ በፊት ይጠይቅ (የሚመከር)</translation>
 <translation id="3538390592868664640">ጣቢያዎች የዙሪያዎ የ3ል ካርታ እንዳይፈጥሩ ወይም የካሜራ ቦታን እንዳይከታተሉ ያግዷቸው</translation>
 <translation id="3586500876634962664">የካሜራ እና ማይክሮፎን ጥቅም</translation>
-<translation id="3587482841069643663">ሁሉም</translation>
 <translation id="358794129225322306">አንድ ጣቢያ በራስ-ሰር በርካታ ፋይሎችን እንዲያወርድ ይፍቀዱ።</translation>
 <translation id="3594780231884063836">ቪዲዮ ላይ ድምጸ-ከል አድርግ</translation>
 <translation id="3596414637720633074">ማንነትን በማያሳውቅ ሁነታ ሦስተኛ ወገን ኩኪዎች ያግዱ</translation>
@@ -104,6 +104,7 @@
 <translation id="385051799172605136">ተመለስ</translation>
 <translation id="3859306556332390985">ወደፊት ፈልግ</translation>
 <translation id="3955193568934677022">ጥበቃ የሚደረግበትን ይዘት እንዲያጫውቱ ለጣቢያዎች ፍቀድ (የሚመከር)</translation>
+<translation id="3967822245660637423">ማውረድ ተጠናቅቋል</translation>
 <translation id="3987993985790029246">አገናኝ ቅዳ</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ርዕስ</translation>
@@ -177,6 +178,7 @@
 <translation id="5916664084637901428">በርቷል</translation>
 <translation id="5922853908706496913">ማያ ገጽዎን በማጋራት ላይ</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
+<translation id="5975083100439434680">አሳንስ</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" />፣ <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">ይህ ጣቢያ የሚኖረው የመሣሪያዎን መዳረሻ ይቆጣጠሩ</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
@@ -297,6 +299,7 @@
 <translation id="8801436777607969138">ጃቫስክሪፕትን ለአንድ የተወሰነ ጣቢያ አግድ።</translation>
 <translation id="8816026460808729765">ጣቢያዎች ዳሳሾችን እንዳይደርሱ ያግዱ</translation>
 <translation id="8847988622838149491">ዩ ኤስ ቢ</translation>
+<translation id="8903921497873541725">አጉላ</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC ለዚህ መሣሪያ ጠፍቷል። በ<ph name="BEGIN_LINK" />Android ቅንበሮች<ph name="END_LINK" /> ውስጥ ያብሩት።</translation>
 <translation id="8929372349074745002">ይህ ጣቢያ ለአብዛኛዎቹ ሰዎች በፍጥነት ይከፍታል እና ምላሽ ይሰጣል</translation>
@@ -304,10 +307,12 @@
 <translation id="894871326938397531">ከማንነት የማያሳውቅ ሁነታ ይውጣ?</translation>
 <translation id="8958424370300090006">የአንድ የተወሰነ ጣቢያ ኩኪዎችን ያግዱ።</translation>
 <translation id="8959122750345127698">ዳሰሳ ሊደረስበት አይችልም፦ <ph name="URL" /></translation>
+<translation id="8986362086234534611">እርሳ</translation>
 <translation id="9019902583201351841">በእርስዎ ወላጆች የሚቀናበር</translation>
 <translation id="9074739597929991885">ብሉቱዝ</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />፣ <ph name="PERMISSION_2" />፣ እና <ph name="NUM_MORE" /> ተጨማሪ}one{<ph name="PERMISSION_1" />፣ <ph name="PERMISSION_2" />፣ እና <ph name="NUM_MORE" /> ተጨማሪ}other{<ph name="PERMISSION_1" />፣ <ph name="PERMISSION_2" />፣ እና <ph name="NUM_MORE" /> ተጨማሪ}}</translation>
 <translation id="913657688200966289">ለ <ph name="APP_NAME" /> በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ፈቃዶችን ያብሩ።</translation>
+<translation id="930525582205581608">ይህ ጣቢያ ይረሳ?</translation>
 <translation id="965817943346481315">ጣቢያው ረባሽ ወይም አሳሳች ማስታወቂያዎችን የሚያሳይ ከሆነ ማገድ (የሚመከር)</translation>
 <translation id="967624055006145463">የተከማቸ ውሂብ</translation>
 </translationbundle>

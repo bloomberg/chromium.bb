@@ -218,7 +218,7 @@ bool FileSelectorImpl::StartSelectFile(
 
   dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE,
-      base::string16() /* dialog title*/, suggested_name, &allowed_file_info,
+      std::u16string() /* dialog title*/, suggested_name, &allowed_file_info,
       0 /* file type index */, std::string() /* default file extension */,
       browser->window()->GetNativeWindow(), nullptr /* params */);
 
@@ -348,9 +348,7 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
   file_manager::util::ConvertFileDefinitionToEntryDefinition(
       file_manager::util::GetFileSystemContextForExtensionId(profile,
                                                              origin_id),
-      url::Origin::Create(
-          extensions::Extension::GetBaseURLFromExtensionId(origin_id)),
-      file_definition,
+      url::Origin::Create(source_url().GetOrigin()), file_definition,
       base::BindOnce(
           &FileBrowserHandlerInternalSelectFileFunction::RespondEntryDefinition,
           this));

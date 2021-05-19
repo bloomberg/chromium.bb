@@ -28,6 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/new_tab_page_resources.h"
 #include "chrome/grit/new_tab_page_resources_map.h"
@@ -57,7 +58,9 @@ using content::WebContents;
 
 namespace {
 
-content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
+content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
+    Profile* profile,
+    const base::Time& navigation_start_time) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUINewTabPageHost);
 
@@ -70,6 +73,7 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
                              ->search_terms_data()
                              .GoogleBaseURLValue())
                         .spec());
+  source->AddDouble("navigationStartTime", navigation_start_time.ToJsTime());
 
   // Realbox.
   source->AddBoolean(
@@ -104,6 +108,8 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       base::FeatureList::IsEnabled(ntp_features::kNtpMiddleSlotPromo));
   source->AddBoolean("modulesEnabled",
                      base::FeatureList::IsEnabled(ntp_features::kModules));
+  source->AddBoolean("modulesLoadEnabled", base::FeatureList::IsEnabled(
+                                               ntp_features::kNtpModulesLoad));
   source->AddInteger("modulesLoadTimeout",
                      ntp_features::GetModulesLoadTimeout().InMilliseconds());
 
@@ -198,6 +204,9 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
 
       // Theme.
       {"themeCreatedBy", IDS_NEW_TAB_ATTRIBUTION_INTRO},
+      {"themeManagedDialogTitle", IDS_NTP_THEME_MANAGED_DIALOG_TITLE},
+      {"themeManagedDialogBody", IDS_NTP_THEME_MANAGED_DIALOG_BODY},
+      {"ok", IDS_OK},
 
       // Modules.
       {"dismissModuleToastMessage", IDS_NTP_MODULES_DISMISS_TOAST_MESSAGE},
@@ -236,24 +245,39 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
        IDS_NTP_MODULES_CART_CART_MENU_REMOVE_MERCHANT},
       {"modulesCartCartMenuRemoveMerchantToastMessage",
        IDS_NTP_MODULES_CART_CART_MENU_REMOVE_MERCHANT_TOAST_MESSAGE},
+      {"modulesCartDiscountChipAmount",
+       IDS_NTP_MODULES_CART_DISCOUNT_CHIP_AMOUNT},
+      {"modulesCartDiscountChipUpToAmount",
+       IDS_NTP_MODULES_CART_DISCOUNT_CHIP_UP_TO_AMOUNT},
+      {"modulesCartDiscountConsentContent",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONTENT},
+      {"modulesCartDiscountConsentAccept",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_ACCEPT},
+      {"modulesCartDiscountConsentAcceptConfirmation",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_ACCEPT_CONFIRMATION},
+      {"modulesCartDiscountConsentReject",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_REJECT},
+      {"modulesCartDiscountConsentRejectConfirmation",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_REJECT_CONFIRMATION},
+      {"modulesCartDiscountConsentConfirmationDismiss",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONFIRMATION_DISMISS},
   };
   source->AddLocalizedStrings(kStrings);
 
-  source->AddString("modulesTasksInfo1",
-                    l10n_util::GetStringFUTF16(
-                        IDS_NTP_MODULES_SHOPPING_TASKS_INFO_1,
-                        base::UTF8ToUTF16("https://myactivity.google.com/")));
-  source->AddString("modulesTasksInfo2",
-                    l10n_util::GetStringFUTF16(
-                        IDS_NTP_MODULES_SHOPPING_TASKS_INFO_2,
-                        base::UTF8ToUTF16("https://policies.google.com/")));
+  source->AddString(
+      "modulesTasksInfo1",
+      l10n_util::GetStringFUTF16(IDS_NTP_MODULES_SHOPPING_TASKS_INFO_1,
+                                 u"https://myactivity.google.com/"));
+  source->AddString(
+      "modulesTasksInfo2",
+      l10n_util::GetStringFUTF16(IDS_NTP_MODULES_SHOPPING_TASKS_INFO_2,
+                                 u"https://policies.google.com/"));
 
   // Register images that are purposefully not inlined in the HTML and instead
   // are set in Javascript.
   static constexpr webui::ResourcePath kImages[] = {
       {omnibox::kGoogleGIconResourceName,
        IDR_WEBUI_IMAGES_200_LOGO_GOOGLEG_PNG},
-      {omnibox::kBookmarkIconResourceName, IDR_LOCAL_NTP_ICONS_BOOKMARK},
       {omnibox::kCalculatorIconResourceName, IDR_LOCAL_NTP_ICONS_CALCULATOR},
       {omnibox::kClockIconResourceName, IDR_LOCAL_NTP_ICONS_CLOCK},
       {omnibox::kDriveDocsIconResourceName, IDR_LOCAL_NTP_ICONS_DRIVE_DOCS},
@@ -322,7 +346,7 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
       // for the unlikely case where the NewTabPageHandler is created before we
       // received the DidStartNavigation event.
       navigation_start_time_(base::Time::Now()) {
-  auto* source = CreateNewTabPageUiHtmlSource(profile_);
+  auto* source = CreateNewTabPageUiHtmlSource(profile_, navigation_start_time_);
   source->AddBoolean("customBackgroundDisabledByPolicy",
                      instant_service_->IsCustomBackgroundDisabledByPolicy());
   source->AddBoolean(
@@ -451,6 +475,10 @@ void NewTabPageUI::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame()) {
     navigation_start_time_ = base::Time::Now();
+    std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);
+    update->SetDouble("navigationStartTime", navigation_start_time_.ToJsTime());
+    content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
+                                     std::move(update));
   }
 }
 

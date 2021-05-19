@@ -140,16 +140,6 @@ def gen_cc_metrics_descriptor(target):
 custom_actions = {
     gn_utils.GEN_VERSION_TARGET: gen_version_header,
     '//src/trace_processor/metrics:gen_merged_sql_metrics': gen_sql_metrics,
-    '//src/trace_processor/metrics:gen_cc_metrics_descriptor':
-      gen_cc_metrics_descriptor,
-    '//src/trace_processor/metrics:gen_cc_all_chrome_metrics_descriptor':
-      gen_cc_metrics_descriptor,
-    '//src/trace_processor/importers:gen_cc_config_descriptor':
-      gen_cc_metrics_descriptor,
-    '//src/trace_processor/importers:gen_cc_chrome_track_event_descriptor':
-      gen_cc_metrics_descriptor,
-    '//src/trace_processor/importers:gen_cc_track_event_descriptor':
-      gen_cc_metrics_descriptor,
 }
 
 # ------------------------------------------------------------------------------
@@ -351,6 +341,8 @@ def gen_target(gn_target):
   elif gn_target.type == 'action':
     if gn_target.name in custom_actions:
       return custom_actions[gn_target.name](gn_target)
+    elif re.match('.*gen_cc_.*_descriptor$', gn_target.name):
+      return gen_cc_metrics_descriptor(gn_target)
     return []
   elif gn_target.type == 'group':
     return []
@@ -420,6 +412,8 @@ def gen_target_str(gn_target):
 
 def generate_build(gn_desc, targets, extras):
   gn = gn_utils.GnParser(gn_desc)
+  project_root = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+  tool_name = os.path.relpath(os.path.abspath(__file__), project_root)
   res = '''
 # Copyright (C) 2019 The Android Open Source Project
 #
@@ -462,7 +456,7 @@ licenses(["notice"])
 
 exports_files(["NOTICE"])
 
-'''.format(__file__).lstrip()
+'''.format(tool_name).lstrip()
 
   # Public targets need to be computed at the beginning (to figure out the
   # intermediate deps) but printed at the end (because declaration order matters

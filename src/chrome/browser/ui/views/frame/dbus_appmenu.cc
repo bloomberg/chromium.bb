@@ -193,7 +193,7 @@ struct DbusAppmenu::HistoryItem {
   HistoryItem() : session_id(SessionID::InvalidValue()) {}
 
   // The title for the menu item.
-  base::string16 title;
+  std::u16string title;
   // The URL that will be navigated to if the user selects this item.
   GURL url;
 
@@ -344,7 +344,7 @@ std::unique_ptr<DbusAppmenu::HistoryItem> DbusAppmenu::HistoryItemForTab(
 void DbusAppmenu::AddHistoryItemToMenu(std::unique_ptr<HistoryItem> item,
                                        ui::SimpleMenuModel* menu,
                                        int index) {
-  base::string16 title = item->title;
+  std::u16string title = item->title;
   std::string url_string = item->url.possibly_invalid_spec();
 
   if (title.empty())
@@ -354,6 +354,35 @@ void DbusAppmenu::AddHistoryItemToMenu(std::unique_ptr<HistoryItem> item,
   int command_id = NextCommandId();
   menu->InsertItemAt(index, command_id, title);
   history_items_[command_id] = std::move(item);
+}
+
+void DbusAppmenu::AddEntryToHistoryMenu(
+    SessionID id,
+    std::u16string title,
+    int index,
+    const std::vector<std::unique_ptr<sessions::TabRestoreService::Tab>>&
+        tabs) {
+  // Create the item for the parent/window.
+  auto item = std::make_unique<HistoryItem>();
+  item->session_id = id;
+
+  auto parent_menu = std::make_unique<ui::SimpleMenuModel>(this);
+  int command = NextCommandId();
+  history_menu_->InsertSubMenuAt(index, command, title, parent_menu.get());
+  parent_menu->AddItemWithStringId(command,
+                                   IDS_HISTORY_CLOSED_RESTORE_WINDOW_LINUX);
+  parent_menu->AddSeparator(ui::MenuSeparatorType::NORMAL_SEPARATOR);
+
+  // Loop over the tabs and add them to the submenu.
+  int subindex = 2;
+  for (const auto& tab : tabs) {
+    std::unique_ptr<HistoryItem> tab_item = HistoryItemForTab(*tab);
+    item->tabs.push_back(tab_item.get());
+    AddHistoryItemToMenu(std::move(tab_item), parent_menu.get(), subindex++);
+  }
+
+  history_items_[command] = std::move(item);
+  recently_closed_window_menus_.push_back(std::move(parent_menu));
 }
 
 void DbusAppmenu::GetTopSitesData() {
@@ -399,7 +428,7 @@ void DbusAppmenu::RebuildProfilesMenu() {
   active_profile_index_ = -1;
   for (size_t i = 0; i < avatar_menu_->GetNumberOfItems(); ++i) {
     const AvatarMenu::Item& item = avatar_menu_->GetItemAt(i);
-    base::string16 title = item.name;
+    std::u16string title = item.name;
     gfx::ElideString(title, kMaximumMenuWidthInChars, &title);
 
     if (item.active)
@@ -486,43 +515,43 @@ void DbusAppmenu::TabRestoreServiceChanged(
     sessions::TabRestoreService::Entry* entry = it->get();
 
     if (entry->type == sessions::TabRestoreService::WINDOW) {
-      sessions::TabRestoreService::Window* entry_win =
+      sessions::TabRestoreService::Window* window =
           static_cast<sessions::TabRestoreService::Window*>(entry);
-      auto& tabs = entry_win->tabs;
+
+      auto& tabs = window->tabs;
       if (tabs.empty())
         continue;
 
-      // Create the item for the parent/window.
-      auto item = std::make_unique<HistoryItem>();
-      item->session_id = entry_win->id;
-
-      base::string16 title = l10n_util::GetPluralStringFUTF16(
+      std::u16string title = l10n_util::GetPluralStringFUTF16(
           IDS_RECENTLY_CLOSED_WINDOW, tabs.size());
 
-      auto parent_menu = std::make_unique<ui::SimpleMenuModel>(this);
-      int command = NextCommandId();
-      history_menu_->InsertSubMenuAt(index++, command, title,
-                                     parent_menu.get());
-      parent_menu->AddItemWithStringId(command,
-                                       IDS_HISTORY_CLOSED_RESTORE_WINDOW_LINUX);
-      parent_menu->AddSeparator(ui::MenuSeparatorType::NORMAL_SEPARATOR);
-
-      // Loop over the window's tabs and add them to the submenu.
-      int subindex = 2;
-      for (const auto& tab : tabs) {
-        std::unique_ptr<HistoryItem> tab_item = HistoryItemForTab(*tab);
-        item->tabs.push_back(tab_item.get());
-        AddHistoryItemToMenu(std::move(tab_item), parent_menu.get(),
-                             subindex++);
-      }
-
-      history_items_[command] = std::move(item);
-      recently_closed_window_menus_.push_back(std::move(parent_menu));
+      AddEntryToHistoryMenu(window->id, title, index++, tabs);
       ++added_count;
     } else if (entry->type == sessions::TabRestoreService::TAB) {
       sessions::TabRestoreService::Tab* tab =
           static_cast<sessions::TabRestoreService::Tab*>(entry);
       AddHistoryItemToMenu(HistoryItemForTab(*tab), history_menu_, index++);
+      ++added_count;
+    } else if (entry->type == sessions::TabRestoreService::GROUP) {
+      sessions::TabRestoreService::Group* group =
+          static_cast<sessions::TabRestoreService::Group*>(entry);
+
+      auto& tabs = group->tabs;
+      if (tabs.empty())
+        continue;
+
+      std::u16string title;
+      if (group->visual_data.title().empty()) {
+        title = l10n_util::GetPluralStringFUTF16(
+            IDS_RECENTLY_CLOSED_GROUP_UNNAMED, tabs.size());
+      } else {
+        title = l10n_util::GetPluralStringFUTF16(IDS_RECENTLY_CLOSED_GROUP,
+                                                 tabs.size());
+        title = base::ReplaceStringPlaceholders(
+            title, {group->visual_data.title()}, nullptr);
+      }
+
+      AddEntryToHistoryMenu(group->id, title, index++, tabs);
       ++added_count;
     }
   }

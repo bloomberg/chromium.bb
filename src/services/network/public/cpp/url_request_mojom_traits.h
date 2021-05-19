@@ -25,13 +25,14 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/site_for_cookies_mojom_traits.h"
-#include "services/network/public/mojom/auth_and_certificate_observer.mojom.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/client_security_state.mojom-forward.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
+#include "services/network/public/mojom/url_loader_network_service_observer.mojom.h"
+#include "services/network/public/mojom/url_request.mojom.h"
 #include "services/network/public/mojom/web_bundle_handle.mojom-shared.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
@@ -52,6 +53,14 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       net::ReferrerPolicy policy);
   static bool FromMojom(network::mojom::URLRequestReferrerPolicy in,
                         net::ReferrerPolicy* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    EnumTraits<network::mojom::SourceType, net::SourceStream::SourceType> {
+  static network::mojom::SourceType ToMojom(net::SourceStream::SourceType type);
+  static bool FromMojom(network::mojom::SourceType in,
+                        net::SourceStream::SourceType* out);
 };
 
 template <>
@@ -79,19 +88,36 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
         const_cast<network::ResourceRequest::TrustedParams&>(trusted_params)
             .cookie_observer);
   }
-  static mojo::PendingRemote<
-      network::mojom::AuthenticationAndCertificateObserver>
-  auth_cert_observer(
+  static mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
+  url_loader_network_observer(
       const network::ResourceRequest::TrustedParams& trusted_params) {
-    if (!trusted_params.auth_cert_observer)
+    if (!trusted_params.url_loader_network_observer)
       return mojo::NullRemote();
     return std::move(
         const_cast<network::ResourceRequest::TrustedParams&>(trusted_params)
-            .auth_cert_observer);
+            .url_loader_network_observer);
+  }
+  static mojo::PendingRemote<network::mojom::DevToolsObserver>
+  devtools_observer(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    if (!trusted_params.devtools_observer)
+      return mojo::NullRemote();
+    return std::move(
+        const_cast<network::ResourceRequest::TrustedParams&>(trusted_params)
+            .devtools_observer);
   }
   static const network::mojom::ClientSecurityStatePtr& client_security_state(
       const network::ResourceRequest::TrustedParams& trusted_params) {
     return trusted_params.client_security_state;
+  }
+  static mojo::PendingRemote<network::mojom::AcceptCHFrameObserver>
+  accept_ch_frame_observer(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    if (!trusted_params.accept_ch_frame_observer)
+      return mojo::NullRemote();
+    return std::move(
+        const_cast<network::ResourceRequest::TrustedParams&>(trusted_params)
+            .accept_ch_frame_observer);
   }
 
   static bool Read(network::mojom::TrustedUrlRequestParamsDataView data,
@@ -236,9 +262,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static bool do_not_prompt_for_login(const network::ResourceRequest& request) {
     return request.do_not_prompt_for_login;
   }
-  static int32_t render_frame_id(const network::ResourceRequest& request) {
-    return request.render_frame_id;
-  }
   static bool is_main_frame(const network::ResourceRequest& request) {
     return request.is_main_frame;
   }
@@ -293,6 +316,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   }
   static bool obey_origin_policy(const network::ResourceRequest& request) {
     return request.obey_origin_policy;
+  }
+  static const base::Optional<std::vector<net::SourceStream::SourceType>>&
+  devtools_accepted_stream_types(const network::ResourceRequest& request) {
+    return request.devtools_accepted_stream_types;
   }
   static const base::Optional<network::ResourceRequest::TrustedParams>&
   trusted_params(const network::ResourceRequest& request) {

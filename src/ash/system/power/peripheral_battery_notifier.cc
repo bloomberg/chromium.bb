@@ -4,6 +4,7 @@
 
 #include "ash/system/power/peripheral_battery_notifier.h"
 
+#include <string>
 #include <vector>
 
 #include "ash/power/hid_battery_util.h"
@@ -16,7 +17,6 @@
 #include "ash/system/model/system_tray_model.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -37,7 +37,7 @@ namespace {
 
 // When a peripheral device's battery level is <= kLowBatteryLevel, consider
 // it to be in low battery condition.
-const uint8_t kLowBatteryLevel = 15;
+const uint8_t kLowBatteryLevel = 16;
 
 // Don't show 2 low battery notification within |kNotificationInterval|.
 constexpr base::TimeDelta kNotificationInterval =
@@ -45,8 +45,6 @@ constexpr base::TimeDelta kNotificationInterval =
 
 constexpr char kNotifierStylusBattery[] = "ash.stylus-battery";
 
-// TODO(sammiequon): Add a notification url to chrome://settings/stylus once
-// battery related information is shown there.
 constexpr char kNotificationOriginUrl[] = "chrome://peripheral-battery";
 constexpr char kNotifierNonStylusBattery[] = "power.peripheral-battery";
 
@@ -58,15 +56,15 @@ constexpr char kPeripheralDeviceIdPrefix[] = "battery_notification-";
 // stylus notifications and the non stylus notifications.
 struct NotificationParams {
   std::string id;
-  base::string16 title;
-  base::string16 message;
+  std::u16string title;
+  std::u16string message;
   std::string notifier_name;
   GURL url;
   const gfx::VectorIcon* icon;
 };
 
 NotificationParams GetNonStylusNotificationParams(const std::string& map_key,
-                                                  const base::string16& name,
+                                                  const std::u16string& name,
                                                   uint8_t battery_level,
                                                   bool is_bluetooth) {
   return NotificationParams{
@@ -239,7 +237,7 @@ void PeripheralBatteryNotifier::ShowOrUpdateNotification(
 
   auto notification = CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, params.id, params.title,
-      params.message, base::string16(), params.url,
+      params.message, std::u16string(), params.url,
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  params.notifier_name),
       message_center::RichNotificationData(), std::move(delegate), *params.icon,

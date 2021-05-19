@@ -553,7 +553,6 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 // Computes the appropriate error info to be displayed in the updates popover.
 - (NSAttributedString*)updateCheckErrorInfoString {
   NSString* message;
-  GURL linkURL;
 
   switch (self.updateCheckRowState) {
     case UpdateCheckRowStateDefault:
@@ -573,7 +572,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
     case UpdateCheckRowStateChannel:
       break;
   }
-  return [self attributedStringWithText:message link:linkURL];
+  return [self attributedStringWithText:message link:GURL()];
 }
 
 // Computes the appropriate error info to be displayed in the passwords popover.
@@ -627,30 +626,21 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 // Configures check error info with a link for popovers.
 - (NSAttributedString*)attributedStringWithText:(NSString*)text
                                            link:(GURL)link {
-  NSRange range;
+  NSDictionary* textAttributes = @{
+    NSFontAttributeName :
+        [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline],
+    NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor]
+  };
 
-  NSString* strippedText = ParseStringWithLink(text, &range);
-
-  NSRange fullRange = NSMakeRange(0, strippedText.length);
-  NSMutableAttributedString* attributedText =
-      [[NSMutableAttributedString alloc] initWithString:strippedText];
-  [attributedText addAttribute:NSForegroundColorAttributeName
-                         value:[UIColor colorNamed:kTextSecondaryColor]
-                         range:fullRange];
-
-  [attributedText
-      addAttribute:NSFontAttributeName
-             value:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
-             range:fullRange];
-
-  if (range.location != NSNotFound && range.length != 0) {
-    NSURL* URL = net::NSURLWithGURL(link);
-    id linkValue = URL ? URL : @"";
-    [attributedText addAttribute:NSLinkAttributeName
-                           value:linkValue
-                           range:range];
+  if (link.is_empty()) {
+    return [[NSMutableAttributedString alloc] initWithString:text
+                                                  attributes:textAttributes];
   }
-  return attributedText;
+  NSDictionary* linkAttributes =
+      @{NSLinkAttributeName : net::NSURLWithGURL(link)};
+
+  return AttributedStringFromStringWithLink(text, textAttributes,
+                                            linkAttributes);
 }
 
 // Upon a tap of checkStartItem either starts or cancels a safety check.
@@ -1217,7 +1207,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 
   base::TimeDelta elapsedTime = base::Time::Now() - lastCompletedCheck;
 
-  base::string16 timestamp;
+  std::u16string timestamp;
   // If check found issues less than 1 minuete ago.
   if (elapsedTime < base::TimeDelta::FromMinutes(1)) {
     timestamp = l10n_util::GetStringUTF16(IDS_IOS_CHECK_FINISHED_JUST_NOW);

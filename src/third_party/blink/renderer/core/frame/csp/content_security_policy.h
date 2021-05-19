@@ -194,14 +194,19 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   bool IsBound();
   void BindToDelegate(ContentSecurityPolicyDelegate&);
-  void CopyStateFrom(const ContentSecurityPolicy*);
 
-  void DidReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
-  void DidReceiveHeader(const String&,
-                        const SecurityOrigin& self_origin,
-                        network::mojom::ContentSecurityPolicyType,
-                        network::mojom::ContentSecurityPolicySource);
-  void ReportAccumulatedHeaders() const;
+  // Parse and store Content Security Policies from the received headers. Return
+  // a copy of the policies which have just been parsed.
+  Vector<network::mojom::blink::ContentSecurityPolicyPtr> DidReceiveHeaders(
+      const ContentSecurityPolicyResponseHeaders&);
+
+  // Parse and store Content Security Policies from a raw string. Return
+  // a copy of the policies which have just been parsed.
+  Vector<network::mojom::blink::ContentSecurityPolicyPtr> DidReceiveHeader(
+      const String&,
+      const SecurityOrigin& self_origin,
+      network::mojom::ContentSecurityPolicyType,
+      network::mojom::ContentSecurityPolicySource);
 
   void AddPolicies(
       Vector<network::mojom::blink::ContentSecurityPolicyPtr> policies);
@@ -221,9 +226,9 @@ class CORE_EXPORT ContentSecurityPolicy final
   bool AllowEval(ReportingDisposition,
                  ExceptionStatus,
                  const String& script_content);
-  bool AllowWasmEval(ReportingDisposition,
-                     ExceptionStatus,
-                     const String& script_content);
+  bool AllowWasmCodeGeneration(ReportingDisposition,
+                               ExceptionStatus,
+                               const String& script_content);
 
   // AllowFromSource() wrappers.
   bool AllowBaseURI(const KURL&);

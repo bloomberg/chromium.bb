@@ -55,6 +55,7 @@ js_modulizer("modulize") {
     "app_management/test_util.js",
     "app_management/uninstall_button_test.js",
     "bluetooth_page_tests.js",
+    "cellular_banner_test.js",
     "cellular_networks_list_test.js",
     "cellular_setup_dialog_test.js",
     "crostini_page_test.js",
@@ -156,7 +157,6 @@ js_modulizer("modulize") {
     "timezone_subpage_test.js",
     "tts_subpage_test.js",
     "user_page_tests.js",
-    "wallpaper_subpage_test.js",
   ]
   namespace_rewrites = os_settings_namespace_rewrites +
                        os_test_namespace_rewrites +

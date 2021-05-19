@@ -9,7 +9,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
-#include "components/viz/common/delegated_ink_point.h"
 #include "components/viz/common/features.h"
 #include "content/browser/renderer_host/hit_test_debug_key_event_observer.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
@@ -35,6 +34,7 @@
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/gfx/delegated_ink_point.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
 #if defined(OS_WIN)
@@ -363,13 +363,19 @@ void RenderWidgetHostViewEventHandler::HandleMouseWheelEvent(
   }
 }
 
+bool IsMoveEvent(ui::EventType type) {
+  return type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_DRAGGED ||
+         type == ui::ET_TOUCH_MOVED;
+}
+
 void RenderWidgetHostViewEventHandler::ForwardDelegatedInkPoint(
     ui::LocatedEvent* event,
     bool hovering,
     int32_t pointer_id) {
   const cc::RenderFrameMetadata& last_metadata =
       host_->render_frame_metadata_provider()->LastRenderFrameMetadata();
-  if (last_metadata.delegated_ink_metadata.has_value() &&
+  if (IsMoveEvent(event->type()) &&
+      last_metadata.delegated_ink_metadata.has_value() &&
       hovering == last_metadata.delegated_ink_metadata.value()
                       .delegated_ink_is_hovering) {
     if (!delegated_ink_point_renderer_.is_bound()) {
@@ -392,7 +398,7 @@ void RenderWidgetHostViewEventHandler::ForwardDelegatedInkPoint(
 
     gfx::PointF point = event->root_location_f();
     point.Scale(host_view_->GetDeviceScaleFactor());
-    viz::DelegatedInkPoint delegated_ink_point(point, event->time_stamp(),
+    gfx::DelegatedInkPoint delegated_ink_point(point, event->time_stamp(),
                                                pointer_id);
     TRACE_EVENT_INSTANT1("input",
                          "Forwarding delegated ink point from browser.",

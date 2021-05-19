@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
@@ -232,13 +232,13 @@ bool IsCrostiniShelfAppId(const Profile* profile,
              ->FindKey(shelf_app_id) != nullptr;
 }
 
-base::string16 GetCrostiniShelfTitle(base::StringPiece shelf_app_id) {
+std::u16string GetCrostiniShelfTitle(base::StringPiece shelf_app_id) {
   if (shelf_app_id == kCrostiniInstallerShelfId) {
     return l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_INSTALLING);
   } else if (shelf_app_id == kCrostiniUpgraderShelfId) {
     return l10n_util::GetStringUTF16(IDS_CROSTINI_UPGRADING_LABEL);
   }
-  return base::string16();
+  return std::u16string();
 }
 
 }  // namespace crostini

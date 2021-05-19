@@ -64,7 +64,7 @@ public:
             , fCoverage(0xff) {}
 
         void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-            const DefaultGeoProc& gp = args.fGP.cast<DefaultGeoProc>();
+            const DefaultGeoProc& gp = args.fGeomProc.cast<DefaultGeoProc>();
             GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
             GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
             GrGLSLVaryingHandler* varyingHandler = args.fVaryingHandler;
@@ -77,6 +77,7 @@ public:
             SkASSERT(!tweakAlpha || gp.hasVertexCoverage());
 
             // Setup pass through color
+            fragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
             if (gp.hasVertexColor() || tweakAlpha) {
                 GrGLSLVarying varying(kHalf4_GrSLType);
                 varyingHandler->addVarying("color", &varying);
@@ -127,9 +128,9 @@ public:
             if (gp.hasVertexCoverage() && !tweakAlpha) {
                 fragBuilder->codeAppendf("half alpha = 1.0;");
                 varyingHandler->addPassThroughAttribute(gp.fInCoverage, "alpha");
-                fragBuilder->codeAppendf("%s = half4(alpha);", args.fOutputCoverage);
+                fragBuilder->codeAppendf("half4 %s = half4(alpha);", args.fOutputCoverage);
             } else if (gp.coverage() == 0xff) {
-                fragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+                fragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
             } else {
                 const char* fragCoverage;
                 fCoverageUniform = uniformHandler->addUniform(nullptr,
@@ -137,7 +138,8 @@ public:
                                                               kHalf_GrSLType,
                                                               "Coverage",
                                                               &fragCoverage);
-                fragBuilder->codeAppendf("%s = half4(%s);", args.fOutputCoverage, fragCoverage);
+                fragBuilder->codeAppendf("half4 %s = half4(%s);",
+                                         args.fOutputCoverage, fragCoverage);
             }
         }
 
@@ -157,8 +159,8 @@ public:
         }
 
         void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrPrimitiveProcessor& gp) override {
-            const DefaultGeoProc& dgp = gp.cast<DefaultGeoProc>();
+                     const GrGeometryProcessor& geomProc) override {
+            const DefaultGeoProc& dgp = geomProc.cast<DefaultGeoProc>();
 
             this->setTransform(pdman, fViewMatrixUniform, dgp.viewMatrix(), &fViewMatrixPrev);
             this->setTransform(pdman, fLocalMatrixUniform, dgp.localMatrix(), &fLocalMatrixPrev);
@@ -191,7 +193,7 @@ public:
         GLSLProcessor::GenKey(*this, caps, b);
     }
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override {
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
         return new GLSLProcessor();
     }
 

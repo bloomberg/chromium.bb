@@ -101,11 +101,8 @@ void CredentialLeakDialogView::AddedToWidget() {
   auto image_view = std::make_unique<ThemeTrackingNonAccessibleImageView>(
       *bundle.GetImageSkiaNamed(IDR_PASSWORD_CHECK),
       *bundle.GetImageSkiaNamed(IDR_PASSWORD_CHECK_DARK),
-      base::BindRepeating(
-          [](CredentialLeakDialogView* view) {
-            return view->GetBubbleFrameView()->GetBackgroundColor();
-          },
-          this));
+      base::BindRepeating(&views::BubbleFrameView::GetBackgroundColor,
+                          base::Unretained(GetBubbleFrameView())));
 
   gfx::Size preferred_size = image_view->GetPreferredSize();
   if (!preferred_size.IsEmpty()) {
@@ -125,10 +122,10 @@ void CredentialLeakDialogView::AddedToWidget() {
   GetBubbleFrameView()->SetHeaderView(std::move(image_view));
 }
 
-base::string16 CredentialLeakDialogView::GetWindowTitle() const {
+std::u16string CredentialLeakDialogView::GetWindowTitle() const {
   // |controller_| can be nullptr when the framework calls this method after a
   // button click.
-  return controller_ ? controller_->GetTitle() : base::string16();
+  return controller_ ? controller_->GetTitle() : std::u16string();
 }
 
 void CredentialLeakDialogView::InitWindow() {

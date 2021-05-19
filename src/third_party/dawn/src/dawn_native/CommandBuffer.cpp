@@ -66,18 +66,26 @@ namespace dawn_native {
                                        const uint32_t mipLevel) {
         Extent3D extent = texture->GetMipLevelPhysicalSize(mipLevel);
 
-        ASSERT(texture->GetDimension() == wgpu::TextureDimension::e2D);
-        if (extent.width == copySize.width && extent.height == copySize.height) {
-            return true;
+        ASSERT(texture->GetDimension() != wgpu::TextureDimension::e1D);
+        switch (texture->GetDimension()) {
+            case wgpu::TextureDimension::e2D:
+                return extent.width == copySize.width && extent.height == copySize.height;
+            case wgpu::TextureDimension::e3D:
+                return extent.width == copySize.width && extent.height == copySize.height &&
+                       extent.depthOrArrayLayers == copySize.depthOrArrayLayers;
+            default:
+                UNREACHABLE();
         }
-        return false;
     }
 
     SubresourceRange GetSubresourcesAffectedByCopy(const TextureCopy& copy,
                                                    const Extent3D& copySize) {
         switch (copy.texture->GetDimension()) {
             case wgpu::TextureDimension::e2D:
-                return {copy.aspect, {copy.origin.z, copySize.depth}, {copy.mipLevel, 1}};
+                return {
+                    copy.aspect, {copy.origin.z, copySize.depthOrArrayLayers}, {copy.mipLevel, 1}};
+            case wgpu::TextureDimension::e3D:
+                return {copy.aspect, {0, 1}, {copy.mipLevel, 1}};
             default:
                 UNREACHABLE();
         }
@@ -181,7 +189,7 @@ namespace dawn_native {
         }
 
         const uint64_t overwrittenRangeSize =
-            copyTextureDataSizePerRow * heightInBlocks * copy->copySize.depth;
+            copyTextureDataSizePerRow * heightInBlocks * copy->copySize.depthOrArrayLayers;
         if (copy->destination.buffer->GetSize() > overwrittenRangeSize) {
             return false;
         }

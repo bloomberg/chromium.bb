@@ -67,6 +67,10 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
   }
 
   // network::mojom::URLLoaderClient implementation:
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
+    client_sink_->OnReceiveEarlyHints(std::move(early_hints));
+  }
+
   void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
     client_sink_->OnReceiveResponse(std::move(head));
   }
@@ -237,6 +241,14 @@ network::mojom::URLLoaderFactory* ChildURLLoaderFactoryBundle::GetFactory(
   if (base_result)
     return base_result;
 
+  // TODO(https://crbug.com/1184292): Add a
+  // `DCHECK(!is_deprecated_process_wide_factory_)` assertion below (and later a
+  // DwoC with ScopedRequestCrashKeys) once we know of no more cases when the
+  // assertion may fire.  After confirming that the assertion (and a DwoC) no
+  // longer fire, it may be possible to remove `direct_network_factory_` and
+  // `is_deprecated_process_wide_factory_` and the ScopedOriginCrashKey in the
+  // anonymous namespace above.
+
   InitDirectNetworkFactoryIfNecessary();
   DCHECK(direct_network_factory_);
   return direct_network_factory_.get();
@@ -244,7 +256,6 @@ network::mojom::URLLoaderFactory* ChildURLLoaderFactoryBundle::GetFactory(
 
 void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
     mojo::PendingReceiver<network::mojom::URLLoader> loader,
-    int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
@@ -278,14 +289,14 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
     // This is no-state prefetch (see
     // WebURLRequest::GetLoadFlagsForWebUrlRequest).
     prefetch_loader_factory_->CreateLoaderAndStart(
-        std::move(loader), routing_id, request_id, options, request,
-        std::move(client), traffic_annotation);
+        std::move(loader), request_id, options, request, std::move(client),
+        traffic_annotation);
     return;
   }
 
   URLLoaderFactoryBundle::CreateLoaderAndStart(
-      std::move(loader), routing_id, request_id, options, request,
-      std::move(client), traffic_annotation);
+      std::move(loader), request_id, options, request, std::move(client),
+      traffic_annotation);
 }
 
 std::unique_ptr<network::PendingSharedURLLoaderFactory>

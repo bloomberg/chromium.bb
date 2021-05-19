@@ -96,10 +96,11 @@ void GoogleTtsStream::SelectVoice(const std::string& voice_name,
 }
 
 void GoogleTtsStream::Speak(const std::vector<uint8_t>& text_jspb,
-                            const std::string& speaker_name,
+                            const std::vector<uint8_t>& speaker_params_jspb,
                             SpeakCallback callback) {
   bool status = libchrometts_.GoogleTtsInitBuffered(
-      &text_jspb[0], speaker_name.c_str(), text_jspb.size());
+      &text_jspb[0], &speaker_params_jspb[0], text_jspb.size(),
+      speaker_params_jspb.size());
   if (!status) {
     stream_receiver_.reset();
     owner_->MaybeExit();
@@ -118,7 +119,6 @@ void GoogleTtsStream::Speak(const std::vector<uint8_t>& text_jspb,
 void GoogleTtsStream::Stop() {
   owner_->Stop();
   is_buffering_ = false;
-  libchrometts_.GoogleTtsFinalizeBuffered();
 }
 
 void GoogleTtsStream::SetVolume(float volume) {
@@ -164,7 +164,6 @@ void GoogleTtsStream::ReadMoreFrames(bool is_first_buffer) {
   // Ensure we always clean up given status 0 (done) or -1 (error).
   if (status <= 0) {
     is_buffering_ = false;
-    libchrometts_.GoogleTtsFinalizeBuffered();
     return;
   }
 

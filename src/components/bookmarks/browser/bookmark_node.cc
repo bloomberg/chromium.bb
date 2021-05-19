@@ -5,6 +5,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/check.h"
@@ -22,12 +23,10 @@ namespace bookmarks {
 namespace {
 
 // Whitespace characters to strip from bookmark titles.
-const base::char16 kInvalidChars[] = {
-  '\n', '\r', '\t',
-  0x2028,  // Line separator
-  0x2029,  // Paragraph separator
-  0
-};
+const char16_t kInvalidChars[] = {'\n',   '\r', '\t',
+                                  0x2028,  // Line separator
+                                  0x2029,  // Paragraph separator
+                                  0};
 
 }  // namespace
 
@@ -50,12 +49,11 @@ BookmarkNode::BookmarkNode(int64_t id, const base::GUID& guid, const GURL& url)
 
 BookmarkNode::~BookmarkNode() = default;
 
-void BookmarkNode::SetTitle(const base::string16& title) {
+void BookmarkNode::SetTitle(const std::u16string& title) {
   // Replace newlines and other problematic whitespace characters in
   // folder/bookmark names with spaces.
-  base::string16 trimmed_title;
-  base::ReplaceChars(title, kInvalidChars, base::ASCIIToUTF16(" "),
-                     &trimmed_title);
+  std::u16string trimmed_title;
+  base::ReplaceChars(title, kInvalidChars, u" ", &trimmed_title);
   ui::TreeNode<BookmarkNode>::SetTitle(trimmed_title);
 }
 
@@ -79,7 +77,7 @@ bool BookmarkNode::GetMetaInfo(const std::string& key,
 bool BookmarkNode::SetMetaInfo(const std::string& key,
                                const std::string& value) {
   if (!meta_info_map_)
-    meta_info_map_.reset(new MetaInfoMap);
+    meta_info_map_ = std::make_unique<MetaInfoMap>();
 
   auto it = meta_info_map_->find(key);
   if (it == meta_info_map_->end()) {
@@ -106,14 +104,14 @@ void BookmarkNode::SetMetaInfoMap(const MetaInfoMap& meta_info_map) {
   if (meta_info_map.empty())
     meta_info_map_.reset();
   else
-    meta_info_map_.reset(new MetaInfoMap(meta_info_map));
+    meta_info_map_ = std::make_unique<MetaInfoMap>(meta_info_map);
 }
 
 const BookmarkNode::MetaInfoMap* BookmarkNode::GetMetaInfoMap() const {
   return meta_info_map_.get();
 }
 
-const base::string16& BookmarkNode::GetTitledUrlNodeTitle() const {
+const std::u16string& BookmarkNode::GetTitledUrlNodeTitle() const {
   return GetTitle();
 }
 
@@ -158,7 +156,7 @@ BookmarkPermanentNode::CreateManagedBookmarks(int64_t id) {
   // base::WrapUnique() used because the constructor is private.
   return base::WrapUnique(new BookmarkPermanentNode(
       id, FOLDER, base::GUID::ParseLowercase(kManagedNodeGuid),
-      base::string16(),
+      std::u16string(),
       /*visible_when_empty=*/false));
 }
 
@@ -204,7 +202,7 @@ BookmarkPermanentNode::CreateMobileBookmarks(int64_t id,
 BookmarkPermanentNode::BookmarkPermanentNode(int64_t id,
                                              Type type,
                                              const base::GUID& guid,
-                                             const base::string16& title,
+                                             const std::u16string& title,
                                              bool visible_when_empty)
     : BookmarkNode(id, guid, GURL(), type, /*is_permanent_node=*/true),
       visible_when_empty_(visible_when_empty) {

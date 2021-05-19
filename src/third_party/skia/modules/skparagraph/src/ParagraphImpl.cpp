@@ -265,14 +265,20 @@ bool ParagraphImpl::computeCodeUnitProperties() {
         return false;
     }
 
-    // Get white spaces
-    std::vector<SkUnicode::Position> whitespaces;
-    if (!fUnicode->getWhitespaces(fText.c_str(), fText.size(), &whitespaces)) {
-        return false;
-    }
-    for (auto whitespace : whitespaces) {
-        fCodeUnitProperties[whitespace] |= CodeUnitFlags::kPartOfWhiteSpace;
-    }
+    // Get all spaces
+    fUnicode->forEachCodepoint(fText.c_str(), fText.size(),
+       [this](SkUnichar unichar, int32_t start, int32_t end) {
+            if (fUnicode->isWhitespace(unichar)) {
+                for (auto i = start; i < end; ++i) {
+                    fCodeUnitProperties[i] |=  CodeUnitFlags::kPartOfWhiteSpaceBreak;
+                }
+            }
+            if (fUnicode->isSpace(unichar)) {
+                for (auto i = start; i < end; ++i) {
+                    fCodeUnitProperties[i] |=  CodeUnitFlags::kPartOfIntraWordBreak;
+                }
+            }
+       });
 
     // Get line breaks
     std::vector<SkUnicode::LineBreakBefore> lineBreaks;
@@ -295,6 +301,84 @@ bool ParagraphImpl::computeCodeUnitProperties() {
     }
 
     return true;
+}
+
+static bool is_ascii_7bit_space(int c) {
+    SkASSERT(c >= 0 && c <= 127);
+
+    // Extracted from https://en.wikipedia.org/wiki/Whitespace_character
+    //
+    enum WS {
+        kHT    = 9,
+        kLF    = 10,
+        kVT    = 11,
+        kFF    = 12,
+        kCR    = 13,
+        kSP    = 32,    // too big to use as shift
+    };
+#define M(shift)    (1 << (shift))
+    constexpr uint32_t kSpaceMask = M(kHT) | M(kLF) | M(kVT) | M(kFF) | M(kCR);
+    // we check for Space (32) explicitly, since it is too large to shift
+    return (c == kSP) || (c <= 31 && (kSpaceMask & M(c)));
+#undef M
+}
+
+Cluster::Cluster(ParagraphImpl* owner,
+                 RunIndex runIndex,
+                 size_t start,
+                 size_t end,
+                 SkSpan<const char> text,
+                 SkScalar width,
+                 SkScalar height)
+        : fOwner(owner)
+        , fRunIndex(runIndex)
+        , fTextRange(text.begin() - fOwner->text().begin(), text.end() - fOwner->text().begin())
+        , fGraphemeRange(EMPTY_RANGE)
+        , fStart(start)
+        , fEnd(end)
+        , fWidth(width)
+        , fSpacing(0)
+        , fHeight(height)
+        , fHalfLetterSpacing(0.0) {
+    size_t whiteSpacesBreakLen = 0;
+    size_t intraWordBreakLen = 0;
+
+    const char* ch = text.begin();
+    if (text.end() - ch == 1 && *(unsigned char*)ch <= 0x7F) {
+        // I am not even sure it's worth it if we do not save a unicode call
+        if (is_ascii_7bit_space(*ch)) {
+            ++whiteSpacesBreakLen;
+        }
+    } else {
+        for (auto i = fTextRange.start; i < fTextRange.end; ++i) {
+            if (fOwner->codeUnitHasProperty(i, CodeUnitFlags::kPartOfWhiteSpaceBreak)) {
+                ++whiteSpacesBreakLen;
+            }
+            if (fOwner->codeUnitHasProperty(i, CodeUnitFlags::kPartOfIntraWordBreak)) {
+                ++intraWordBreakLen;
+            }
+        }
+    }
+
+    fIsWhiteSpaceBreak = whiteSpacesBreakLen == fTextRange.width();
+    fIsIntraWordBreak = intraWordBreakLen == fTextRange.width();
+    fIsHardBreak = fOwner->codeUnitHasProperty(fTextRange.end, CodeUnitFlags::kHardLineBreakBefore);
+}
+
+SkScalar Run::calculateWidth(size_t start, size_t end, bool clip) const {
+    SkASSERT(start <= end);
+    // clip |= end == size();  // Clip at the end of the run?
+    SkScalar shift = 0;
+    if (fSpaced && end > start) {
+        shift = fShifts[clip ? end - 1 : end] - fShifts[start];
+    }
+    auto correction = 0.0f;
+    if (end > start && !fJustificationShifts.empty()) {
+        // This is not a typo: we are using Point as a pair of SkScalars
+        correction = fJustificationShifts[end - 1].fX -
+                     fJustificationShifts[start].fY;
+    }
+    return posX(end) - posX(start) + shift + correction;
 }
 
 // Clusters in the order of the input text
@@ -371,7 +455,7 @@ void ParagraphImpl::spaceGlyphs() {
 
             // Process word spacing
             if (currentStyle->fStyle.getWordSpacing() != 0) {
-                if (cluster->isWhitespaces() && cluster->isSoftBreak()) {
+                if (cluster->isWhitespaceBreak() && cluster->isSoftBreak()) {
                     if (!soFarWhitespacesOnly) {
                         shift += run.addSpacesAtTheEnd(currentStyle->fStyle.getWordSpacing(), cluster);
                     }
@@ -382,7 +466,7 @@ void ParagraphImpl::spaceGlyphs() {
                 shift += run.addSpacesEvenly(currentStyle->fStyle.getLetterSpacing(), cluster);
             }
 
-            if (soFarWhitespacesOnly && !cluster->isWhitespaces()) {
+            if (soFarWhitespacesOnly && !cluster->isWhitespaceBreak()) {
                 soFarWhitespacesOnly = false;
             }
         });
@@ -409,6 +493,13 @@ bool ParagraphImpl::shapeTextIntoEndlessLine() {
     OneLineShaper oneLineShaper(this);
     auto result = oneLineShaper.shape();
     fUnresolvedGlyphs = oneLineShaper.unresolvedGlyphs();
+
+    // It's possible that one grapheme includes few runs; we cannot handle it
+    // so we break graphemes by the runs instead
+    // It's not the ideal solution and has to be revisited later
+    for (auto& run : fRuns) {
+        fCodeUnitProperties[run.fTextRange.start] |= CodeUnitFlags::kGraphemeStart;
+    }
 
     if (!result) {
         return false;
@@ -709,31 +800,6 @@ SkRange<size_t> ParagraphImpl::getWordBoundary(unsigned offset) {
 
     //SkDebugf("getWordBoundary(%d): %d - %d\n", offset, start, end);
     return { SkToU32(start), SkToU32(end) };
-}
-
-void ParagraphImpl::forEachCodeUnitPropertyRange(CodeUnitFlags property, CodeUnitRangeVisitor visitor) {
-
-    size_t first = 0;
-    for (size_t i = 1; i < fText.size(); ++i) {
-        auto properties = fCodeUnitProperties[i];
-        if (properties & property) {
-            visitor({first, i});
-            first = i;
-        }
-
-    }
-    visitor({first, fText.size()});
-}
-
-size_t ParagraphImpl::getWhitespacesLength(TextRange textRange) {
-    size_t len = 0;
-    for (auto i = textRange.start; i < textRange.end; ++i) {
-        auto properties = fCodeUnitProperties[i];
-        if (properties & CodeUnitFlags::kPartOfWhiteSpace) {
-            ++len;
-        }
-    }
-    return len;
 }
 
 void ParagraphImpl::getLineMetrics(std::vector<LineMetrics>& metrics) {

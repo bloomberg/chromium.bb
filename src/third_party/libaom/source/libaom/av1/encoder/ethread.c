@@ -14,6 +14,7 @@
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encoder_alloc.h"
+#include "av1/encoder/encodeframe_utils.h"
 #include "av1/encoder/ethread.h"
 #if !CONFIG_REALTIME_ONLY
 #include "av1/encoder/firstpass.h"
@@ -625,16 +626,16 @@ static AOM_INLINE void create_enc_workers(AV1_COMP *cpi, int num_workers) {
 
       alloc_compound_type_rd_buffers(cm, &thread_data->td->comp_rd_buffer);
 
-      CHECK_MEM_ERROR(
-          cm, thread_data->td->tmp_conv_dst,
-          aom_memalign(32, MAX_SB_SIZE * MAX_SB_SIZE *
-                               sizeof(*thread_data->td->tmp_conv_dst)));
       for (int j = 0; j < 2; ++j) {
         CHECK_MEM_ERROR(
             cm, thread_data->td->tmp_pred_bufs[j],
             aom_memalign(32, 2 * MAX_MB_PLANE * MAX_SB_SQUARE *
                                  sizeof(*thread_data->td->tmp_pred_bufs[j])));
       }
+
+      CHECK_MEM_ERROR(cm, thread_data->td->pixel_gradient_info,
+                      aom_malloc(sizeof(*thread_data->td->pixel_gradient_info) *
+                                 PLANE_TYPES * MAX_SB_SQUARE));
 
       if (cpi->sf.part_sf.partition_search_type == VAR_BASED_PARTITION) {
         const int num_64x64_blocks =
@@ -680,6 +681,10 @@ void av1_create_workers(AV1_COMP *cpi, int num_workers) {
 
       // Set up shared coeff buffers.
       av1_setup_shared_coeff_buffer(cm, &thread_data->td->shared_coeff_buf);
+      CHECK_MEM_ERROR(
+          cm, thread_data->td->tmp_conv_dst,
+          aom_memalign(32, MAX_SB_SIZE * MAX_SB_SIZE *
+                               sizeof(*thread_data->td->tmp_conv_dst)));
     }
     ++mt_info->num_workers;
   }
@@ -775,14 +780,20 @@ static AOM_INLINE void accumulate_counters_enc_workers(AV1_COMP *cpi,
     EncWorkerData *const thread_data = (EncWorkerData *)worker->data1;
     cpi->intrabc_used |= thread_data->td->intrabc_used;
     cpi->deltaq_used |= thread_data->td->deltaq_used;
-    if (thread_data->td->mb.txfm_search_info.txb_rd_records) {
-      aom_free(thread_data->td->mb.txfm_search_info.txb_rd_records);
-      thread_data->td->mb.txfm_search_info.txb_rd_records = NULL;
+    // Accumulate cyclic refresh params.
+    if (cpi->oxcf.q_cfg.aq_mode == CYCLIC_REFRESH_AQ &&
+        !frame_is_intra_only(&cpi->common))
+      av1_accumulate_cyclic_refresh_counters(cpi->cyclic_refresh,
+                                             &thread_data->td->mb);
+    if (thread_data->td != &cpi->td) {
+      if (cpi->oxcf.cost_upd_freq.mv < COST_UPD_OFF) {
+        aom_free(thread_data->td->mb.mv_costs);
+      }
+      if (cpi->oxcf.cost_upd_freq.dv < COST_UPD_OFF) {
+        aom_free(thread_data->td->mb.dv_costs);
+      }
     }
-    if (thread_data->td != &cpi->td &&
-        cpi->oxcf.cost_upd_freq.mv < COST_UPD_OFF) {
-      aom_free(thread_data->td->mb.mv_costs);
-    }
+    av1_dealloc_mb_data(&cpi->common, &thread_data->td->mb);
 
     // Accumulate counters.
     if (i > 0) {
@@ -841,11 +852,18 @@ static AOM_INLINE void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
         memcpy(thread_data->td->mb.mv_costs, cpi->td.mb.mv_costs,
                sizeof(MvCosts));
       }
+      if (cpi->oxcf.cost_upd_freq.dv < COST_UPD_OFF) {
+        CHECK_MEM_ERROR(cm, thread_data->td->mb.dv_costs,
+                        (IntraBCMVCosts *)aom_malloc(sizeof(IntraBCMVCosts)));
+        memcpy(thread_data->td->mb.dv_costs, cpi->td.mb.dv_costs,
+               sizeof(IntraBCMVCosts));
+      }
     }
-    if (!cpi->sf.rt_sf.use_nonrd_pick_mode) {
-      CHECK_MEM_ERROR(cm, thread_data->td->mb.txfm_search_info.txb_rd_records,
-                      (TxbRdRecords *)aom_malloc(sizeof(TxbRdRecords)));
-    }
+    av1_alloc_mb_data(cm, &thread_data->td->mb,
+                      cpi->sf.rt_sf.use_nonrd_pick_mode);
+
+    // Reset cyclic refresh counters.
+    av1_init_cyclic_refresh_counters(&thread_data->td->mb);
 
     if (thread_data->td->counts != &cpi->counts) {
       memcpy(thread_data->td->counts, &cpi->counts, sizeof(cpi->counts));
@@ -859,6 +877,8 @@ static AOM_INLINE void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
         thread_data->td->mb.tmp_pred_bufs[j] =
             thread_data->td->tmp_pred_bufs[j];
       }
+      thread_data->td->mb.pixel_gradient_info =
+          thread_data->td->pixel_gradient_info;
 
       thread_data->td->mb.e_mbd.tmp_conv_dst = thread_data->td->mb.tmp_conv_dst;
       for (int j = 0; j < 2; ++j) {
@@ -896,11 +916,16 @@ static AOM_INLINE void fp_prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
         memcpy(thread_data->td->mb.mv_costs, cpi->td.mb.mv_costs,
                sizeof(MvCosts));
       }
+      if (cpi->oxcf.cost_upd_freq.dv < COST_UPD_OFF) {
+        CHECK_MEM_ERROR(cm, thread_data->td->mb.dv_costs,
+                        (IntraBCMVCosts *)aom_malloc(sizeof(IntraBCMVCosts)));
+        memcpy(thread_data->td->mb.dv_costs, cpi->td.mb.dv_costs,
+               sizeof(IntraBCMVCosts));
+      }
     }
-    if (!cpi->sf.rt_sf.use_nonrd_pick_mode) {
-      CHECK_MEM_ERROR(cm, thread_data->td->mb.txfm_search_info.txb_rd_records,
-                      (TxbRdRecords *)aom_malloc(sizeof(TxbRdRecords)));
-    }
+
+    av1_alloc_mb_data(cm, &thread_data->td->mb,
+                      cpi->sf.rt_sf.use_nonrd_pick_mode);
   }
 }
 #endif
@@ -1183,13 +1208,15 @@ void av1_fp_encode_tiles_row_mt(AV1_COMP *cpi) {
   sync_enc_workers(&cpi->mt_info, cm, num_workers);
   for (int i = num_workers - 1; i >= 0; i--) {
     EncWorkerData *const thread_data = &cpi->mt_info.tile_thr_data[i];
-    if (thread_data->td != &cpi->td &&
-        cpi->oxcf.cost_upd_freq.mv < COST_UPD_OFF) {
-      aom_free(thread_data->td->mb.mv_costs);
+    if (thread_data->td != &cpi->td) {
+      if (cpi->oxcf.cost_upd_freq.mv < COST_UPD_OFF) {
+        aom_free(thread_data->td->mb.mv_costs);
+      }
+      if (cpi->oxcf.cost_upd_freq.dv < COST_UPD_OFF) {
+        aom_free(thread_data->td->mb.dv_costs);
+      }
     }
-    if (thread_data->td->mb.txfm_search_info.txb_rd_records) {
-      aom_free(thread_data->td->mb.txfm_search_info.txb_rd_records);
-    }
+    av1_dealloc_mb_data(cm, &thread_data->td->mb);
   }
 }
 
@@ -1269,11 +1296,15 @@ static int tpl_worker_hook(void *arg1, void *unused) {
   AV1_COMMON *cm = &cpi->common;
   MACROBLOCK *x = &thread_data->td->mb;
   MACROBLOCKD *xd = &x->e_mbd;
+  TplTxfmStats *tpl_txfm_stats = &thread_data->td->tpl_txfm_stats;
   CommonModeInfoParams *mi_params = &cm->mi_params;
   BLOCK_SIZE bsize = convert_length_to_bsize(cpi->tpl_data.tpl_bsize_1d);
   TX_SIZE tx_size = max_txsize_lookup[bsize];
   int mi_height = mi_size_high[bsize];
   int num_active_workers = cpi->tpl_data.tpl_mt_sync.num_threads_working;
+
+  memset(tpl_txfm_stats, 0, sizeof(*tpl_txfm_stats));
+
   for (int mi_row = thread_data->start * mi_height; mi_row < mi_params->mi_rows;
        mi_row += num_active_workers * mi_height) {
     // Motion estimation row boundary
@@ -1282,7 +1313,7 @@ static int tpl_worker_hook(void *arg1, void *unused) {
     xd->mb_to_top_edge = -GET_MV_SUBPEL(mi_row * MI_SIZE);
     xd->mb_to_bottom_edge =
         GET_MV_SUBPEL((mi_params->mi_rows - mi_height - mi_row) * MI_SIZE);
-    av1_mc_flow_dispenser_row(cpi, x, mi_row, bsize, tx_size);
+    av1_mc_flow_dispenser_row(cpi, tpl_txfm_stats, x, mi_row, bsize, tx_size);
   }
   return 1;
 }
@@ -1362,6 +1393,28 @@ static AOM_INLINE void prepare_tpl_workers(AV1_COMP *cpi, AVxWorkerHook hook,
       // OBMC buffers are used only to init MS params and remain unused when
       // called from tpl, hence set the buffers to defaults.
       av1_init_obmc_buffer(&thread_data->td->mb.obmc_buffer);
+      thread_data->td->mb.tmp_conv_dst = thread_data->td->tmp_conv_dst;
+      thread_data->td->mb.e_mbd.tmp_conv_dst = thread_data->td->mb.tmp_conv_dst;
+    }
+  }
+}
+
+// Accumulate transform stats after tpl.
+static void tpl_accumulate_txfm_stats(AV1_COMP *cpi, int num_workers) {
+  double *total_abs_coeff_sum = cpi->td.tpl_txfm_stats.abs_coeff_sum;
+  int *txfm_block_count = &cpi->td.tpl_txfm_stats.txfm_block_count;
+  TplParams *tpl_data = &cpi->tpl_data;
+  int coeff_num = tpl_data->tpl_frame[tpl_data->frame_idx].coeff_num;
+  for (int i = num_workers - 1; i >= 0; i--) {
+    AVxWorker *const worker = &cpi->mt_info.workers[i];
+    EncWorkerData *const thread_data = (EncWorkerData *)worker->data1;
+    ThreadData *td = thread_data->td;
+    if (td != &cpi->td) {
+      TplTxfmStats *tpl_txfm_stats = &td->tpl_txfm_stats;
+      *txfm_block_count += tpl_txfm_stats->txfm_block_count;
+      for (int j = 0; j < coeff_num; j++) {
+        total_abs_coeff_sum[j] += tpl_txfm_stats->abs_coeff_sum[j];
+      }
     }
   }
 }
@@ -1390,6 +1443,7 @@ void av1_mc_flow_dispenser_mt(AV1_COMP *cpi) {
   prepare_tpl_workers(cpi, tpl_worker_hook, num_workers);
   launch_workers(&cpi->mt_info, num_workers);
   sync_enc_workers(&cpi->mt_info, cm, num_workers);
+  tpl_accumulate_txfm_stats(cpi, num_workers);
 }
 
 // Deallocate memory for temporal filter multi-thread synchronization.

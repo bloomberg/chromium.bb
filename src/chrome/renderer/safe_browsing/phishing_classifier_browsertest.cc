@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
@@ -54,7 +53,7 @@ class PhishingClassifierTest : public ChromeRenderViewTest {
         page_link_domain_phishing_(features::kPageLinkDomain +
                                    std::string("phishing.com")),
         page_term_login_(features::kPageTerm + std::string("login")),
-        page_text_(base::ASCIIToUTF16("login")),
+        page_text_(u"login"),
         phishy_score_(PhishingClassifier::kInvalidScore) {}
 
   void SetUp() override {
@@ -121,7 +120,7 @@ class PhishingClassifierTest : public ChromeRenderViewTest {
   }
 
   // Helper method to start phishing classification.
-  void RunPhishingClassifier(const base::string16* page_text) {
+  void RunPhishingClassifier(const std::u16string* page_text) {
     feature_map_.Clear();
 
     classifier_->BeginClassification(
@@ -166,7 +165,7 @@ class PhishingClassifierTest : public ChromeRenderViewTest {
   const std::string url_tld_token_net_;
   const std::string page_link_domain_phishing_;
   const std::string page_term_login_;
-  base::string16 page_text_;
+  std::u16string page_text_;
 
   // Outputs of phishing classifier.
   FeatureMap feature_map_;

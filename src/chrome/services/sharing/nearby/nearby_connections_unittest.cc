@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -58,6 +59,7 @@ mojom::AdvertisingOptionsPtr CreateAdvertisingOptions() {
       /*auto_upgrade_bandwidth=*/true,
       /*enforce_topology_constraints=*/true,
       /*enable_bluetooth_listening=*/use_ble,
+      /*enable_webrtc_listening=*/false,
       /*fast_advertisement_service_uuid=*/
       device::BluetoothUUID(kFastAdvertisementServiceUuid));
 }
@@ -193,7 +195,7 @@ class NearbyConnectionsTest : public testing::Test {
         webrtc_dependencies_.messenger_.BindNewPipeAndPassRemote());
     auto dependencies = mojom::NearbyConnectionsDependencies::New(
         bluetooth_adapter_.adapter_.BindNewPipeAndPassRemote(),
-        std::move(webrtc_dependencies));
+        std::move(webrtc_dependencies), api::LogMessage::Severity::kInfo);
     auto service_controller =
         std::make_unique<testing::NiceMock<MockServiceController>>();
     service_controller_ptr_ = service_controller.get();
@@ -201,7 +203,8 @@ class NearbyConnectionsTest : public testing::Test {
         remote_.BindNewPipeAndPassReceiver(), std::move(dependencies),
         /*io_task_runner=*/nullptr,
         base::BindOnce(&NearbyConnectionsTest::OnDisconnect,
-                       base::Unretained(this)),
+                       base::Unretained(this)));
+    nearby_connections_->SetServiceControllerForTesting(
         std::move(service_controller));
   }
 

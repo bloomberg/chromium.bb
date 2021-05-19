@@ -67,7 +67,7 @@ void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setColor(color_);
   const int corner_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MEDIUM);
+      views::Emphasis::kMedium);
   canvas->sk_canvas()->drawRoundRect(gfx::RectToSkRect(gfx::Rect(size())),
                                      corner_radius, corner_radius, flags);
 }
@@ -93,7 +93,7 @@ class RoundedCornerImageView : public views::ImageView {
 void RoundedCornerImageView::OnPaint(gfx::Canvas* canvas) {
   SkPath mask;
   const int corner_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MEDIUM);
+      views::Emphasis::kMedium);
   mask.addRoundRect(gfx::RectToSkRect(GetImageBounds()), corner_radius,
                     corner_radius);
   canvas->ClipPath(mask, true);
@@ -206,7 +206,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
   SetTailSuggestCommonPrefixWidth(
       (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL)
           ? match.tail_suggest_common_prefix  // Used for indent calculation.
-          : base::string16());
+          : std::u16string());
 }
 
 void OmniboxMatchCellView::SetImage(const gfx::ImageSkia& image) {
@@ -299,7 +299,7 @@ gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
 }
 
 void OmniboxMatchCellView::SetTailSuggestCommonPrefixWidth(
-    const base::string16& common_prefix) {
+    const std::u16string& common_prefix) {
   InvalidateLayout();
   if (common_prefix.empty()) {
     tail_suggest_common_prefix_width_ = 0;

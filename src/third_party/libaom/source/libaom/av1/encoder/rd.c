@@ -354,11 +354,11 @@ static const int rd_layer_depth_factor[7] = {
   160, 160, 160, 160, 192, 208, 224
 };
 
-int av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
-  const int q = av1_dc_quant_QTX(qindex, 0, cpi->common.seq_params.bit_depth);
+int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth, int qindex) {
+  const int q = av1_dc_quant_QTX(qindex, 0, bit_depth);
   int rdmult = (int)(((int64_t)88 * q * q) / 24);
 
-  switch (cpi->common.seq_params.bit_depth) {
+  switch (bit_depth) {
     case AOM_BITS_8: break;
     case AOM_BITS_10: rdmult = ROUND_POWER_OF_TWO(rdmult, 4); break;
     case AOM_BITS_12: rdmult = ROUND_POWER_OF_TWO(rdmult, 8); break;
@@ -370,12 +370,14 @@ int av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
 }
 
 int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
-  int64_t rdmult = av1_compute_rd_mult_based_on_qindex(cpi, qindex);
+  int64_t rdmult = av1_compute_rd_mult_based_on_qindex(
+      cpi->common.seq_params.bit_depth, qindex);
   if (is_stat_consumption_stage(cpi) &&
       (cpi->common.current_frame.frame_type != KEY_FRAME)) {
     const GF_GROUP *const gf_group = &cpi->gf_group;
     const int boost_index = AOMMIN(15, (cpi->rc.gfu_boost / 100));
-    const int layer_depth = AOMMIN(gf_group->layer_depth[gf_group->index], 6);
+    const int layer_depth =
+        AOMMIN(gf_group->layer_depth[cpi->gf_frame_index], 6);
 
     // Layer depth adjustment
     rdmult = (rdmult * rd_layer_depth_factor[layer_depth]) >> 7;
@@ -559,7 +561,7 @@ void av1_fill_coeff_costs(CoeffCosts *coeff_costs, FRAME_CONTEXT *fc,
   }
 }
 
-void av1_fill_mv_costs(const FRAME_CONTEXT *fc, int integer_mv, int usehp,
+void av1_fill_mv_costs(const nmv_context *nmvc, int integer_mv, int usehp,
                        MvCosts *mv_costs) {
   mv_costs->nmv_cost[0] = &mv_costs->nmv_cost_alloc[0][MV_MAX];
   mv_costs->nmv_cost[1] = &mv_costs->nmv_cost_alloc[1][MV_MAX];
@@ -568,13 +570,20 @@ void av1_fill_mv_costs(const FRAME_CONTEXT *fc, int integer_mv, int usehp,
   if (integer_mv) {
     mv_costs->mv_cost_stack = (int **)&mv_costs->nmv_cost;
     av1_build_nmv_cost_table(mv_costs->nmv_joint_cost, mv_costs->mv_cost_stack,
-                             &fc->nmvc, MV_SUBPEL_NONE);
+                             nmvc, MV_SUBPEL_NONE);
   } else {
     mv_costs->mv_cost_stack =
         usehp ? mv_costs->nmv_cost_hp : mv_costs->nmv_cost;
     av1_build_nmv_cost_table(mv_costs->nmv_joint_cost, mv_costs->mv_cost_stack,
-                             &fc->nmvc, usehp);
+                             nmvc, usehp);
   }
+}
+
+void av1_fill_dv_costs(const nmv_context *ndvc, IntraBCMVCosts *dv_costs) {
+  dv_costs->dv_costs[0] = &dv_costs->dv_costs_alloc[0][MV_MAX];
+  dv_costs->dv_costs[1] = &dv_costs->dv_costs_alloc[1][MV_MAX];
+  av1_build_nmv_cost_table(dv_costs->joint_mv, dv_costs->dv_costs, ndvc,
+                           MV_SUBPEL_NONE);
 }
 
 void av1_initialize_rd_consts(AV1_COMP *cpi) {
@@ -599,7 +608,7 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   if ((!use_nonrd_pick_mode && cost_upd_freq.mv != COST_UPD_OFF) ||
       cost_upd_freq.mv == COST_UPD_TILE || fill_costs)
-    av1_fill_mv_costs(cm->fc, cm->features.cur_frame_force_integer_mv,
+    av1_fill_mv_costs(&cm->fc->nmvc, cm->features.cur_frame_force_integer_mv,
                       cm->features.allow_high_precision_mv, mv_costs);
 
   if ((!use_nonrd_pick_mode && cost_upd_freq.coeff != COST_UPD_OFF) ||
@@ -610,14 +619,9 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
       cost_upd_freq.mode == COST_UPD_TILE || fill_costs)
     av1_fill_mode_rates(cm, &x->mode_costs, cm->fc);
 
-  if (!use_nonrd_pick_mode && frame_is_intra_only(cm) &&
-      cm->features.allow_screen_content_tools &&
+  if (!use_nonrd_pick_mode && av1_allow_intrabc(cm) &&
       !is_stat_generation_stage(cpi)) {
-    IntraBCMVCosts *const dv_costs = &cpi->dv_costs;
-    int *dvcost[2] = { &dv_costs->mv_component[0][MV_MAX],
-                       &dv_costs->mv_component[1][MV_MAX] };
-    av1_build_nmv_cost_table(dv_costs->joint_mv, dvcost, &cm->fc->ndvc,
-                             MV_SUBPEL_NONE);
+    av1_fill_dv_costs(&cm->fc->ndvc, x->dv_costs);
   }
 }
 

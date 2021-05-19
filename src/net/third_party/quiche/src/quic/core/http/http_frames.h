@@ -16,6 +16,7 @@
 #include "absl/strings/string_view.h"
 #include "quic/core/http/http_constants.h"
 #include "quic/core/quic_types.h"
+#include "spdy/core/spdy_protocol.h"
 
 namespace quic {
 
@@ -33,6 +34,8 @@ enum class HttpFrameType {
   ACCEPT_CH = 0x89,
   // https://tools.ietf.org/html/draft-ietf-httpbis-priority-02
   PRIORITY_UPDATE_REQUEST_STREAM = 0xF0700,
+  // https://www.ietf.org/archive/id/draft-ietf-webtrans-http3-00.html
+  WEBTRANSPORT_STREAM = 0x41,
 };
 
 // 7.2.1.  DATA
@@ -102,6 +105,7 @@ struct QUIC_EXPORT_PRIVATE SettingsFrame {
 //
 //   The PUSH_PROMISE frame (type=0x05) is used to carry a request header
 //   set from server to client, as in HTTP/2.
+// TODO(b/171463363): Remove.
 struct QUIC_EXPORT_PRIVATE PushPromiseFrame {
   PushId push_id;
   absl::string_view headers;
@@ -182,15 +186,7 @@ struct QUIC_EXPORT_PRIVATE PriorityUpdateFrame {
 // https://tools.ietf.org/html/draft-davidben-http-client-hint-reliability-02
 //
 struct QUIC_EXPORT_PRIVATE AcceptChFrame {
-  struct QUIC_EXPORT_PRIVATE OriginValuePair {
-    std::string origin;
-    std::string value;
-    bool operator==(const OriginValuePair& rhs) const {
-      return origin == rhs.origin && value == rhs.value;
-    }
-  };
-
-  std::vector<OriginValuePair> entries;
+  std::vector<spdy::AcceptChOriginValuePair> entries;
 
   bool operator==(const AcceptChFrame& rhs) const {
     return entries.size() == rhs.entries.size() &&

@@ -7,6 +7,7 @@
 //   Various tests related for Frambuffers.
 //
 
+#include "common/mathutil.h"
 #include "platform/FeaturesD3D.h"
 #include "test_utils/ANGLETest.h"
 #include "test_utils/gl_raii.h"
@@ -2468,6 +2469,314 @@ void main()
     EXPECT_PIXEL_COLOR_EQ(kSize - 1, kSize - 1, GLColor::blue);
 }
 
+// Tests that we can support a color texture also attached to the color attachment but
+// with different LOD. From GLES3.0 spec section 4.4.3.2, if min_filter is GL_NEAREST_MIPMAP_NEAREST
+// and the lod is within the [base_level, max_level] range, and it is possible to sample from a LOD
+// that is rendering to then it does form a feedback loop. But if it is using textureLOD to
+// explicitly fetching texture on different LOD, there is no loop and should still work. Aztec_ruins
+// (https://issuetracker.google.com/175584609) is doing exactly this.
+TEST_P(FramebufferTest_ES3, SampleFromAttachedTextureWithDifferentLOD)
+{
+    // TODO: https://anglebug.com/5760
+    ANGLE_SKIP_TEST_IF(IsD3D());
+
+    constexpr GLuint kLevel0Size = 4;
+    constexpr GLuint kLevel1Size = kLevel0Size / 2;
+    constexpr GLuint kLevel2Size = kLevel1Size / 2;
+    std::array<GLColor, kLevel0Size * kLevel0Size> gData;
+
+    GLTexture colorTexture;
+    glBindTexture(GL_TEXTURE_2D, colorTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexStorage2D(GL_TEXTURE_2D, 3, GL_RGBA8, kLevel0Size, kLevel0Size);
+    gData.fill(GLColor::red);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, kLevel0Size, kLevel0Size, GL_RGBA, GL_UNSIGNED_BYTE,
+                    gData.data());
+    gData.fill(GLColor::green);
+    glTexSubImage2D(GL_TEXTURE_2D, 1, 0, 0, kLevel1Size, kLevel1Size, GL_RGBA, GL_UNSIGNED_BYTE,
+                    gData.data());
+    gData.fill(GLColor::blue);
+    glTexSubImage2D(GL_TEXTURE_2D, 2, 0, 0, kLevel2Size, kLevel2Size, GL_RGBA, GL_UNSIGNED_BYTE,
+                    gData.data());
+
+    // Attach level 1 to a FBO
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 1);
+    ASSERT_GL_NO_ERROR();
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    // Render to FBO with color texture level 1 and textureLod from level 0.
+    const GLenum discard[] = {GL_COLOR_ATTACHMENT0};
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, discard);
+    glViewport(0, 0, kLevel1Size, kLevel1Size);
+    glScissor(0, 0, kLevel1Size, kLevel1Size);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glDisable(GL_BLEND);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, colorTexture);
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Texture2DLod(), essl3_shaders::fs::Texture2DLod());
+    glUseProgram(program);
+    GLint textureLoc = glGetUniformLocation(program, essl3_shaders::Texture2DUniform());
+    GLint lodLoc     = glGetUniformLocation(program, essl3_shaders::LodUniform());
+    ASSERT_NE(-1, textureLoc);
+    ASSERT_NE(-1, lodLoc);
+    glUniform1i(textureLoc, 0);  // texture unit 0
+    glUniform1f(lodLoc, 0);      // with Lod=0
+    drawQuad(program, essl3_shaders::PositionAttrib(), 0.5f);
+
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    glDisable(GL_SCISSOR_TEST);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
+// Test render to a texture level that is excluded from [base_level, max_level]. This specific test
+// renders to an immutable texture at the level that is bigger than GL_TEXTURE_MAX_LEVEL. The
+// texture itself has not been initialized with any data before rendering (TexSubImage call may
+// initialize a VkImage object).
+TEST_P(FramebufferTest_ES3, RenderAndInvalidateImmutableTextureWithBeyondMaxLevel)
+{
+    // ToDo: https://issuetracker.google.com/181800403
+    ANGLE_SKIP_TEST_IF(IsMetal());
+
+    constexpr GLuint kLevel0Size = 4;
+    constexpr GLuint kLevel1Size = kLevel0Size / 2;
+
+    GLTexture colorTexture;
+    glBindTexture(GL_TEXTURE_2D, colorTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexStorage2D(GL_TEXTURE_2D, 2, GL_RGBA8, kLevel0Size, kLevel0Size);
+    // set max_level to 0
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
+    // Attach level 1 to a FBO
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 1);
+    ASSERT_GL_NO_ERROR();
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    // Render to FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    const GLenum discard[] = {GL_COLOR_ATTACHMENT0};
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, discard);
+    glViewport(0, 0, kLevel1Size, kLevel1Size);
+    glScissor(0, 0, kLevel1Size, kLevel1Size);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glDisable(GL_BLEND);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), essl3_shaders::fs::Red());
+    glUseProgram(program);
+    drawQuad(program, essl3_shaders::PositionAttrib(), 0.5f);
+
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    glDisable(GL_SCISSOR_TEST);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
+// Test render to a texture level that is excluded from [base_level, max_level]. This specific test
+// renders to an immutable texture at the level that is bigger than GL_TEXTURE_MAX_LEVEL. The
+// texture itself has been initialized with data before rendering.
+TEST_P(FramebufferTest_ES3, RenderAndInvalidateImmutableTextureWithSubImageWithBeyondMaxLevel)
+{
+    // ToDo: https://issuetracker.google.com/181800403
+    ANGLE_SKIP_TEST_IF(IsMetal());
+
+    constexpr GLuint kLevel0Size = 4;
+    constexpr GLuint kLevel1Size = kLevel0Size / 2;
+    std::array<GLColor, kLevel0Size * kLevel0Size> gData;
+
+    GLTexture colorTexture;
+    glBindTexture(GL_TEXTURE_2D, colorTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexStorage2D(GL_TEXTURE_2D, 2, GL_RGBA8, kLevel0Size, kLevel0Size);
+    // set max_level to 0
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    // Initialize with TexSubImage call
+    gData.fill(GLColor::blue);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, kLevel0Size, kLevel0Size, GL_RGBA, GL_UNSIGNED_BYTE,
+                    gData.data());
+
+    // Attach level 1 to a FBO
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 1);
+    ASSERT_GL_NO_ERROR();
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    // Render to FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    const GLenum discard[] = {GL_COLOR_ATTACHMENT0};
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, discard);
+    glViewport(0, 0, kLevel1Size, kLevel1Size);
+    glScissor(0, 0, kLevel1Size, kLevel1Size);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glDisable(GL_BLEND);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), essl3_shaders::fs::Red());
+    glUseProgram(program);
+    drawQuad(program, essl3_shaders::PositionAttrib(), 0.5f);
+
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    glDisable(GL_SCISSOR_TEST);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
+// Test render to a texture level that is excluded from [base_level, max_level]. This specific test
+// renders to an immutable texture at the level that is smaller than GL_TEXTURE_BASE_LEVEL. The
+// texture itself has been initialized with data before rendering. Filament is using it this way
+// https://issuetracker.google.com/181800403.
+TEST_P(FramebufferTest_ES3, RenderAndInvalidateImmutableTextureWithBellowBaseLevelLOD)
+{
+    // ToDo: https://issuetracker.google.com/181800403
+    ANGLE_SKIP_TEST_IF(IsMetal());
+
+    constexpr GLuint kLevel0Size = 4;
+    constexpr GLuint kLevel1Size = kLevel0Size / 2;
+    std::array<GLColor, kLevel0Size * kLevel0Size> gData;
+
+    GLTexture colorTexture;
+    glBindTexture(GL_TEXTURE_2D, colorTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexStorage2D(GL_TEXTURE_2D, 2, GL_RGBA8, kLevel0Size, kLevel0Size);
+    // set base_level to 1
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 1);
+    gData.fill(GLColor::blue);
+    glTexSubImage2D(GL_TEXTURE_2D, 1, 0, 0, kLevel1Size, kLevel1Size, GL_RGBA, GL_UNSIGNED_BYTE,
+                    gData.data());
+
+    // Attach level 0 to a FBO
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
+    ASSERT_GL_NO_ERROR();
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    // Render to FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    const GLenum discard[] = {GL_COLOR_ATTACHMENT0};
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, discard);
+    glViewport(0, 0, kLevel0Size, kLevel0Size);
+    glScissor(0, 0, kLevel0Size, kLevel0Size);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glDisable(GL_BLEND);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), essl3_shaders::fs::Red());
+    glUseProgram(program);
+    drawQuad(program, essl3_shaders::PositionAttrib(), 0.5f);
+
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    glDisable(GL_SCISSOR_TEST);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
+// Test render to a texture level that is excluded from [base_level, max_level]. This specific test
+// renders to an immutable texture at the level that is bigger than GL_TEXTURE_MAX_LEVEL. The
+// texture level that we render to has been initialized with data before rendering. This test if
+// render to that level will get flush the level update even though it is outside [base, max]
+// levels.
+TEST_P(FramebufferTest_ES3, RenderImmutableTextureWithSubImageWithBeyondMaxLevel)
+{
+    // ToDo: https://issuetracker.google.com/181800403
+    ANGLE_SKIP_TEST_IF(IsMetal());
+
+    // Set up program to sample from specific lod level.
+    GLProgram textureLodProgram;
+    textureLodProgram.makeRaster(essl3_shaders::vs::Texture2DLod(),
+                                 essl3_shaders::fs::Texture2DLod());
+    ASSERT(textureLodProgram.valid());
+    glUseProgram(textureLodProgram);
+
+    GLint textureLocation =
+        glGetUniformLocation(textureLodProgram, essl3_shaders::Texture2DUniform());
+    ASSERT_NE(-1, textureLocation);
+    GLint lodLocation = glGetUniformLocation(textureLodProgram, essl3_shaders::LodUniform());
+    ASSERT_NE(-1, lodLocation);
+
+    constexpr GLuint kLevel0Size = 4;
+    constexpr GLuint kLevel1Size = kLevel0Size / 2;
+    std::array<GLColor, kLevel0Size * kLevel0Size> gData;
+
+    GLTexture colorTexture;
+    glBindTexture(GL_TEXTURE_2D, colorTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexStorage2D(GL_TEXTURE_2D, 2, GL_RGBA8, kLevel0Size, kLevel0Size);
+    // Initialize level 0 with blue
+    gData.fill(GLColor::blue);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, kLevel0Size, kLevel0Size, GL_RGBA, GL_UNSIGNED_BYTE,
+                    gData.data());
+    // set max_level to 0
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    // Draw with level 0
+    glUniform1f(lodLocation, 0);
+    drawQuad(textureLodProgram, essl3_shaders::PositionAttrib(), 0.5f);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
+
+    // Initalize level 1 with green
+    gData.fill(GLColor::green);
+    glTexSubImage2D(GL_TEXTURE_2D, 1, 0, 0, kLevel1Size, kLevel1Size, GL_RGBA, GL_UNSIGNED_BYTE,
+                    gData.data());
+    // Attach level 1 to a FBO
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 1);
+    ASSERT_GL_NO_ERROR();
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+    // Render to FBO (i.e. level 1) with Red and blend with existing texture level data
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glViewport(0, 0, kLevel1Size, kLevel1Size);
+    glScissor(0, 0, kLevel1Size, kLevel1Size);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    ANGLE_GL_PROGRAM(redProgram, essl3_shaders::vs::Simple(), essl3_shaders::fs::Red());
+    glUseProgram(redProgram);
+    drawQuad(redProgram, essl3_shaders::PositionAttrib(), 0.5f);
+
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    glDisable(GL_SCISSOR_TEST);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    ASSERT_GL_NO_ERROR();
+    // Expect to see Red + Green, which is Yellow
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::yellow);
+}
+
 // Covers a bug in ANGLE's Vulkan back-end. Our VkFramebuffer cache would in some cases forget to
 // check the draw states when computing a cache key.
 TEST_P(FramebufferTest_ES3, DisabledAttachmentRedefinition)
@@ -2792,8 +3101,12 @@ TEST_P(FramebufferTest, BindAndDrawDifferentSizedFBOs)
 ANGLE_INSTANTIATE_TEST_ES2(AddMockTextureNoRenderTargetTest);
 ANGLE_INSTANTIATE_TEST_ES2(FramebufferTest);
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(FramebufferFormatsTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(FramebufferTest_ES3);
 ANGLE_INSTANTIATE_TEST_ES3_AND(FramebufferTest_ES3,
                                WithEmulatedPrerotation(ES3_VULKAN(), 90),
                                WithEmulatedPrerotation(ES3_VULKAN(), 180),
                                WithEmulatedPrerotation(ES3_VULKAN(), 270));
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(FramebufferTest_ES31);
 ANGLE_INSTANTIATE_TEST_ES31(FramebufferTest_ES31);

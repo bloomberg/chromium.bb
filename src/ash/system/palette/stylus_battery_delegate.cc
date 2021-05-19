@@ -4,6 +4,8 @@
 
 #include "ash/system/palette/stylus_battery_delegate.h"
 
+#include <string>
+
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -11,7 +13,6 @@
 #include "ash/system/power/peripheral_battery_listener.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/tray/tray_constants.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"

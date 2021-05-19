@@ -115,6 +115,9 @@ class TextureFormatTest : public DawnTest {
   protected:
     void SetUp() {
         DawnTest::SetUp();
+
+        // TODO(crbug.com/tint/689): shaders compile, but produces unexpected output.
+        DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
     }
 
     // Structure containing all the information that tests need to know about the format.
@@ -144,9 +147,9 @@ class TextureFormatTest : public DawnTest {
     // bindgroup and output its decompressed values to the render target.
     wgpu::RenderPipeline CreateSamplePipeline(FormatTestInfo sampleFormatInfo,
                                               FormatTestInfo renderFormatInfo) {
-        utils::ComboRenderPipelineDescriptor desc(device);
+        utils::ComboRenderPipelineDescriptor2 desc;
 
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(vertex_index)]] var<in> VertexIndex : u32;
             [[builtin(position)]] var<out> Position : vec4<f32>;
 
@@ -170,14 +173,13 @@ class TextureFormatTest : public DawnTest {
         fsSource << "    fragColor = textureLoad(myTexture, vec2<i32>(FragCoord.xy), 0);\n";
         fsSource << "}";
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModuleFromWGSL(device, fsSource.str().c_str());
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fsSource.str().c_str());
 
-        desc.vertexStage.module = vsModule;
-        desc.cFragmentStage.module = fsModule;
-        desc.cColorStates[0].format = renderFormatInfo.format;
+        desc.vertex.module = vsModule;
+        desc.cFragment.module = fsModule;
+        desc.cTargets[0].format = renderFormatInfo.format;
 
-        return device.CreateRenderPipeline(&desc);
+        return device.CreateRenderPipeline2(&desc);
     }
 
     // The sampling test uploads the sample data in a texture with the sampleFormatInfo.format.
@@ -235,9 +237,9 @@ class TextureFormatTest : public DawnTest {
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
         {
-            wgpu::BufferCopyView bufferView = utils::CreateBufferCopyView(uploadBuffer, 0, 256);
-            wgpu::TextureCopyView textureView =
-                utils::CreateTextureCopyView(sampleTexture, 0, {0, 0, 0});
+            wgpu::ImageCopyBuffer bufferView = utils::CreateImageCopyBuffer(uploadBuffer, 0, 256);
+            wgpu::ImageCopyTexture textureView =
+                utils::CreateImageCopyTexture(sampleTexture, 0, {0, 0, 0});
             wgpu::Extent3D extent{width, 1, 1};
             encoder.CopyBufferToTexture(&bufferView, &textureView, &extent);
         }
@@ -250,9 +252,9 @@ class TextureFormatTest : public DawnTest {
         renderPass.EndPass();
 
         {
-            wgpu::BufferCopyView bufferView = utils::CreateBufferCopyView(readbackBuffer, 0, 256);
-            wgpu::TextureCopyView textureView =
-                utils::CreateTextureCopyView(renderTarget, 0, {0, 0, 0});
+            wgpu::ImageCopyBuffer bufferView = utils::CreateImageCopyBuffer(readbackBuffer, 0, 256);
+            wgpu::ImageCopyTexture textureView =
+                utils::CreateImageCopyTexture(renderTarget, 0, {0, 0, 0});
             wgpu::Extent3D extent{width, 1, 1};
             encoder.CopyTextureToBuffer(&textureView, &bufferView, &extent);
         }

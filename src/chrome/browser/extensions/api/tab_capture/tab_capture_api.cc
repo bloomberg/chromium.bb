@@ -173,13 +173,13 @@ void AddMediaStreamSourceConstraints(content::WebContents* target_contents,
 
   if (options->audio && *options->audio) {
     if (!options->audio_constraints)
-      options->audio_constraints.reset(new MediaStreamConstraint);
+      options->audio_constraints = std::make_unique<MediaStreamConstraint>();
     constraints_to_modify[0] = options->audio_constraints.get();
   }
 
   if (options->video && *options->video) {
     if (!options->video_constraints)
-      options->video_constraints.reset(new MediaStreamConstraint);
+      options->video_constraints = std::make_unique<MediaStreamConstraint>();
     constraints_to_modify[1] = options->video_constraints.get();
   }
 
@@ -248,7 +248,7 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   // extension icon click or our extension is allowlisted.
   if (!extension()->permissions_data()->HasAPIPermissionForTab(
           sessions::SessionTabHelper::IdForTab(target_contents).id(),
-          APIPermission::kTabCaptureForTab) &&
+          mojom::APIPermissionID::kTabCaptureForTab) &&
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kAllowlistedExtensionID) != extension_id &&
       !SimpleFeature::IsIdInArray(extension_id, kMediaRouterExtensionIds,
@@ -439,7 +439,7 @@ ExtensionFunction::ResponseAction TabCaptureGetMediaStreamIdFunction::Run() {
   // extension icon click or our extension is allowlisted.
   if (!extension()->permissions_data()->HasAPIPermissionForTab(
           sessions::SessionTabHelper::IdForTab(target_contents).id(),
-          APIPermission::kTabCaptureForTab) &&
+          mojom::APIPermissionID::kTabCaptureForTab) &&
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kAllowlistedExtensionID) != extension_id) {
     return RespondNow(Error(kGrantError));

@@ -76,7 +76,7 @@ bool IssueMatches(const Issue& issue, const UIMediaSink& ui_sink) {
           issue.info().route_id == ui_sink.route->media_route_id());
 }
 
-base::string16 GetSinkFriendlyName(const MediaSink& sink) {
+std::u16string GetSinkFriendlyName(const MediaSink& sink) {
   // Use U+2010 (HYPHEN) instead of ASCII hyphen to avoid problems with RTL
   // languages.
   const char* separator = u8" \u2010 ";
@@ -444,7 +444,9 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
 
 void MediaRouterUI::TerminateRoute(const MediaRoute::Id& route_id) {
   logger_->LogInfo(mojom::LogCategory::kUi, kLoggerComponent,
-                   "TerminateRoute requested by MediaRouterUI.", "", "",
+                   "TerminateRoute requested by MediaRouterUI.",
+                   MediaRoute::GetSinkIdFromMediaRouteId(route_id),
+                   MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
                    MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
   GetMediaRouter()->TerminateRoute(route_id);
 }
@@ -489,7 +491,7 @@ std::vector<MediaSinkWithCastModes> MediaRouterUI::GetEnabledSinks() const {
   return enabled_sinks;
 }
 
-base::string16 MediaRouterUI::GetPresentationRequestSourceName() const {
+std::u16string MediaRouterUI::GetPresentationRequestSourceName() const {
   GURL gurl = GetFrameURL();
   // Presentation URLs are only possible on https: and other secure contexts,
   // so we can omit http/https schemes here.
@@ -506,14 +508,19 @@ void MediaRouterUI::AddIssue(const IssueInfo& issue) {
   switch (issue.severity) {
     case IssueInfo::Severity::NOTIFICATION:
       logger_->LogInfo(
-          mojom::LogCategory::kUi, kLoggerComponent, issue.message,
+          mojom::LogCategory::kUi, kLoggerComponent,
+          base::StrCat({"Sink button shows an issue in NOTIFICATION level: ",
+                        issue.title}),
           issue.sink_id,
-          MediaRoute::GetPresentationIdFromMediaRouteId(issue.route_id),
-          MediaRoute::GetMediaSourceIdFromMediaRouteId(issue.route_id));
+          MediaRoute::GetMediaSourceIdFromMediaRouteId(issue.route_id),
+          MediaRoute::GetPresentationIdFromMediaRouteId(issue.route_id));
       break;
     default:
       logger_->LogError(
-          mojom::LogCategory::kUi, kLoggerComponent, issue.message,
+          mojom::LogCategory::kUi, kLoggerComponent,
+          base::StrCat(
+              {"Sink button shows an issue in WARNING or FATAL level: ",
+               issue.title}),
           issue.sink_id,
           MediaRoute::GetMediaSourceIdFromMediaRouteId(issue.route_id),
           MediaRoute::GetPresentationIdFromMediaRouteId(issue.route_id));
@@ -546,7 +553,7 @@ void MediaRouterUI::LogMediaSinkStatus() {
   logger_->LogInfo(
       mojom::LogCategory::kUi, kLoggerComponent,
       base::StrCat(
-          {base::StringPrintf("%zu sinks available on CastDialogView closed: ",
+          {base::StringPrintf("%zu sinks shown on CastDialogView closed: ",
                               sink_ids.size()),
            base::JoinString(sink_ids, ",")}),
       "", "", "");
@@ -801,7 +808,7 @@ GURL MediaRouterUI::GetFrameURL() const {
 void MediaRouterUI::SendIssueForRouteTimeout(
     MediaCastMode cast_mode,
     const MediaSink::Id& sink_id,
-    const base::string16& presentation_request_source_name) {
+    const std::u16string& presentation_request_source_name) {
   std::string issue_title;
   switch (cast_mode) {
     case PRESENTATION:
@@ -935,7 +942,7 @@ void MediaRouterUI::OnRouteResponseReceived(
     int route_request_id,
     const MediaSink::Id& sink_id,
     MediaCastMode cast_mode,
-    const base::string16& presentation_request_source_name,
+    const std::u16string& presentation_request_source_name,
     const RouteRequestResult& result) {
   // If we receive a new route that we aren't expecting, do nothing.
   if (!current_route_request_ || route_request_id != current_route_request_->id)
@@ -962,8 +969,8 @@ void MediaRouterUI::OnRouteResponseReceived(
 }
 
 void MediaRouterUI::UpdateModelHeader() {
-  const base::string16 source_name = GetPresentationRequestSourceName();
-  const base::string16 header_text =
+  const std::u16string source_name = GetPresentationRequestSourceName();
+  const std::u16string header_text =
       source_name.empty()
           ? l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE)
           : l10n_util::GetStringFUTF16(IDS_MEDIA_ROUTER_PRESENTATION_CAST_MODE,
@@ -1073,8 +1080,7 @@ content::WebContents* MediaRouterUI::OpenTabWithUrl(const GURL& url) {
   // Check if the current page is a new tab. If so open file in current page.
   // If not then open a new page.
   auto initiatorOrigin = initiator_->GetVisibleURL().GetOrigin();
-  if (initiatorOrigin == GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin() ||
-      initiatorOrigin == GURL(chrome::kChromeUINewTabPageURL).GetOrigin() ||
+  if (initiatorOrigin == GURL(chrome::kChromeUINewTabPageURL).GetOrigin() ||
       initiatorOrigin == GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
     content::NavigationController::LoadURLParams load_params(url);
     load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;

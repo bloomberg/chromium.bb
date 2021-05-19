@@ -11,6 +11,7 @@ Unit tests for the contents of device_utils.py (mostly DeviceUtils).
 
 import collections
 import contextlib
+import io
 import json
 import logging
 import os
@@ -18,6 +19,8 @@ import posixpath
 import stat
 import sys
 import unittest
+
+import six
 
 from devil import devil_env
 from devil.android import device_errors
@@ -117,9 +120,10 @@ class DeviceUtilsInitTest(unittest.TestCase):
     self.assertEqual(serial_as_str, d.adb.GetDeviceSerial())
 
   def testInitWithUnicode(self):
-    serial_as_unicode = unicode('fedcba9876543210')
-    d = device_utils.DeviceUtils(serial_as_unicode)
-    self.assertEqual(serial_as_unicode, d.adb.GetDeviceSerial())
+    if six.PY2:
+      serial_as_unicode = unicode('fedcba9876543210')
+      d = device_utils.DeviceUtils(serial_as_unicode)
+      self.assertEqual(serial_as_unicode, d.adb.GetDeviceSerial())
 
   def testInitWithAdbWrapper(self):
     serial = '123456789abcdef0'
@@ -162,12 +166,12 @@ class DeviceUtilsRestartServerTest(mock_calls.TestCase):
             ['pgrep', 'adb']),
          (1, '')), (mock.call.devil.utils.cmd_helper.GetCmdStatusAndOutput(
              ['pgrep', 'adb']), (0, '123\n'))):
-      device_utils.RestartServer()
+      adb_wrapper.RestartServer()
 
 
 class MockTempFile(object):
   def __init__(self, name='/tmp/some/file'):
-    self.file = mock.MagicMock(spec=file)
+    self.file = mock.MagicMock(spec=io.BufferedIOBase)
     self.file.name = name
     self.file.name_quoted = cmd_helper.SingleQuote(name)
 
@@ -216,6 +220,12 @@ class DeviceUtilsTest(mock_calls.TestCase):
     self.device = device_utils.DeviceUtils(
         self.adb, default_timeout=10, default_retries=0)
     self.watchMethodCalls(self.call.adb, ignore=['GetDeviceSerial'])
+
+  def safeAssertItemsEqual(self, expected, actual):
+    if six.PY2:
+      self.assertItemsEqual(expected, actual)
+    else:
+      self.assertCountEqual(expected, actual) # pylint: disable=no-member
 
   def AdbCommandError(self, args=None, output=None, status=None, msg=None):
     if args is None:
@@ -2199,6 +2209,11 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsTest):
     def mock_zip_temp_dir():
       yield '/test/temp/dir'
 
+    expected_cmd = ''.join([
+        '\n  /data/local/tmp/bin/unzip %s &&',
+        ' (for dir in %s\n  do\n    chmod -R 777 "$dir" || exit 1\n',
+        '  done)\n'
+    ]) % ('/sdcard/foo123.zip', ' '.join(test_dirs))
     with self.assertCalls(
         (self.call.device._MaybeInstallCommands(), True),
         (mock.call.py_utils.tempfile_ext.NamedTemporaryDirectory(),
@@ -2210,16 +2225,11 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsTest):
             self.adb, suffix='.zip'), MockTempFile('/sdcard/foo123.zip')),
         self.call.adb.Push('/test/temp/dir/tmp.zip', '/sdcard/foo123.zip'),
         (mock.call.devil.android.device_temp_file.DeviceTempFile(
-            self.adb), MockTempFile('/sdcard/bar123')),
-        self.call.device._WriteFileWithPush('/sdcard/bar123',
-                                            ' '.join(test_dirs)),
-        self.call.device.RunShellCommand(
-            'unzip /sdcard/foo123.zip && '
-            'cat /sdcard/bar123 | xargs chmod -R 777',
-            shell=True,
-            as_root=True,
-            env={'PATH': '/data/local/tmp/bin:$PATH'},
-            check_return=True)):
+            self.adb, suffix='.sh'), MockTempFile('/sdcard/temp-123.sh')),
+        self.call.device.WriteFile('/sdcard/temp-123.sh', expected_cmd),
+        (self.call.device.RunShellCommand(['source', '/sdcard/temp-123.sh'],
+                                          check_return=True,
+                                          as_root=True))):
       self.assertTrue(
           self.device._PushChangedFilesZipped(test_files, test_dirs))
 
@@ -2381,7 +2391,8 @@ class DeviceUtilsReadFileTest(DeviceUtilsTest):
     with self.assertCalls(
         (mock.call.tempfile.mkdtemp(), tmp_host_dir),
         (self.call.adb.Pull('/path/to/device/file', mock.ANY)),
-        (mock.call.__builtin__.open(mock.ANY, 'r'), tmp_host),
+        (mock.call.__builtin__.open(mock.ANY, 'r'), tmp_host) if six.PY2 else \
+            (mock.call.builtins.open(mock.ANY, 'r'), tmp_host),
         (mock.call.os.path.exists(tmp_host_dir), True),
         (mock.call.shutil.rmtree(tmp_host_dir), None)):
       self.assertEquals('some interesting contents',
@@ -2594,8 +2605,8 @@ class DeviceUtilsStatDirectoryTest(DeviceUtilsTest):
     self.getStatEntries(path_given='/foo/bar', path_listed='/foo/bar/')
 
   def testStatDirectory_fileList(self):
-    self.assertItemsEqual(self.getStatEntries().keys(), self.FILENAMES)
-    self.assertItemsEqual(self.getListEntries(), self.FILENAMES)
+    self.safeAssertItemsEqual(self.getStatEntries().keys(), self.FILENAMES)
+    self.safeAssertItemsEqual(self.getListEntries(), self.FILENAMES)
 
   def testStatDirectory_fileModes(self):
     expected_modes = (
@@ -2663,7 +2674,7 @@ class DeviceUtilsStatDirectoryTest(DeviceUtilsTest):
   def testStatDirectory_symbolicLinks(self):
     entries = self.getStatEntries()
     self.assertEqual(entries['lnk']['symbolic_link_to'], '/a/path')
-    for d in entries.itervalues():
+    for d in entries.values():
       self.assertEqual('symbolic_link_to' in d, stat.S_ISLNK(d['st_mode']))
 
 
@@ -3470,7 +3481,7 @@ class DeviceUtilsHealthyDevicesTest(mock_calls.TestCase):
         device_utils.DeviceUtils.HealthyDevices(device_arg=[], retries=0)
 
   @mock.patch('time.sleep')
-  @mock.patch('devil.android.device_utils.RestartServer')
+  @mock.patch('devil.android.sdk.adb_wrapper.RestartServer')
   def testHealthyDevices_EmptyListDeviceArg_no_attached_with_retry(
       self, mock_restart, mock_sleep):
     with self.assertCalls(
@@ -3488,7 +3499,7 @@ class DeviceUtilsHealthyDevicesTest(mock_calls.TestCase):
          mock.call(8), mock.call(16)])
 
   @mock.patch('time.sleep')
-  @mock.patch('devil.android.device_utils.RestartServer')
+  @mock.patch('devil.android.sdk.adb_wrapper.RestartServer')
   def testHealthyDevices_EmptyListDeviceArg_no_attached_with_resets(
       self, mock_restart, mock_sleep):
     # The reset_usb import fails on windows. Mock the full import here so it can
@@ -3564,7 +3575,7 @@ class DeviceUtilsGrantPermissionsTest(DeviceUtilsTest):
   def _PmGrantShellCall(self, package, permissions):
     fragment = 'p=%s;for q in %s;' % (package, ' '.join(sorted(permissions)))
     results = []
-    for permission, result in sorted(permissions.iteritems()):
+    for permission, result in sorted(permissions.items()):
       if result:
         output, status = result + '\n', 1
       else:
@@ -3615,6 +3626,23 @@ class DeviceUtilsGrantPermissionsTest(DeviceUtilsTest):
                 WRITE: 0
             })):
           self.device.GrantPermissions('package', [WRITE])
+      self.assertEqual(logger.warnings, [])
+
+  def testGrantPermissions_ManageExtrnalStorage(self):
+    with PatchLogger() as logger:
+      with self.patch_call(self.call.device.build_version_sdk,
+                           return_value=version_codes.R):
+        with self.assertCalls(
+            (self.call.device.RunShellCommand(
+                AnyStringWith('appops set pkg MANAGE_EXTERNAL_STORAGE allow'),
+                shell=True,
+                raw_output=True,
+                large_output=True,
+                check_return=True),
+             '{sep}MANAGE_EXTERNAL_STORAGE{sep}0{sep}\n'.format(
+                 sep=device_utils._SHELL_OUTPUT_SEPARATOR))):
+          self.device.GrantPermissions(
+              'pkg', ['android.permission.MANAGE_EXTERNAL_STORAGE'])
       self.assertEqual(logger.warnings, [])
 
   def testGrantPermissions_DenyList(self):
@@ -3873,6 +3901,12 @@ class IterPushableComponentsTest(unittest.TestCase):
 
       yield Layout(layout_root, basic_file, symlink, symlink_dir, dir1, dir2)
 
+  def safeAssertItemsEqual(self, expected, actual):
+    if six.PY2:
+      self.assertItemsEqual(expected, actual)
+    else:
+      self.assertCountEqual(expected, actual) # pylint: disable=no-member
+
   def testFile(self):
     with self.sampleLayout() as layout:
       device_path = '/sdcard/basic_file'
@@ -3880,7 +3914,7 @@ class IterPushableComponentsTest(unittest.TestCase):
       expected = [(layout.basic_file, device_path, True)]
       actual = list(
           device_utils._IterPushableComponents(layout.basic_file, device_path))
-      self.assertItemsEqual(expected, actual)
+      self.safeAssertItemsEqual(expected, actual)
 
   def testSymlinkFile(self):
     with self.sampleLayout() as layout:
@@ -3890,7 +3924,7 @@ class IterPushableComponentsTest(unittest.TestCase):
       actual = list(
           device_utils._IterPushableComponents(layout.symlink_file,
                                                device_path))
-      self.assertItemsEqual(expected, actual)
+      self.safeAssertItemsEqual(expected, actual)
 
   def testDirectoryWithNoSymlink(self):
     with self.sampleLayout() as layout:
@@ -3900,7 +3934,7 @@ class IterPushableComponentsTest(unittest.TestCase):
       actual = list(
           device_utils._IterPushableComponents(layout.dir_without_symlinks,
                                                device_path))
-      self.assertItemsEqual(expected, actual)
+      self.safeAssertItemsEqual(expected, actual)
 
   def testDirectoryWithSymlink(self):
     with self.sampleLayout() as layout:
@@ -3917,7 +3951,7 @@ class IterPushableComponentsTest(unittest.TestCase):
       actual = list(
           device_utils._IterPushableComponents(layout.dir_with_symlinks,
                                                device_path))
-      self.assertItemsEqual(expected, actual)
+      self.safeAssertItemsEqual(expected, actual)
 
   def testSymlinkDirectory(self):
     with self.sampleLayout() as layout:
@@ -3926,7 +3960,7 @@ class IterPushableComponentsTest(unittest.TestCase):
       expected = [(os.path.realpath(layout.symlink_dir), device_path, False)]
       actual = list(
           device_utils._IterPushableComponents(layout.symlink_dir, device_path))
-      self.assertItemsEqual(expected, actual)
+      self.safeAssertItemsEqual(expected, actual)
 
   def testDirectoryWithNestedSymlink(self):
     with self.sampleLayout() as layout:
@@ -3954,7 +3988,7 @@ class IterPushableComponentsTest(unittest.TestCase):
       ]
       actual = list(
           device_utils._IterPushableComponents(layout.root, device_path))
-      self.assertItemsEqual(expected, actual)
+      self.safeAssertItemsEqual(expected, actual)
 
 
 class DeviceUtilsGetTracingPathTest(DeviceUtilsTest):

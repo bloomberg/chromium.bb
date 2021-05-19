@@ -951,31 +951,19 @@ void SuspendX11ScreenSaver(bool suspend) {
   x11::Connection::Get()->screensaver().Suspend({suspend});
 }
 
-base::Value GpuExtraInfoAsListValue(x11::VisualId system_visual,
-                                    x11::VisualId rgba_visual) {
-  base::Value result(base::Value::Type::LIST);
-  result.Append(
+void StoreGpuExtraInfoIntoListValue(x11::VisualId system_visual,
+                                    x11::VisualId rgba_visual,
+                                    base::Value& list_value) {
+  list_value.Append(
       NewDescriptionValuePair("Window manager", ui::GuessWindowManagerName()));
-  {
-    std::unique_ptr<base::Environment> env(base::Environment::Create());
-    std::string value;
-    const char kXDGCurrentDesktop[] = "XDG_CURRENT_DESKTOP";
-    if (env->GetVar(kXDGCurrentDesktop, &value))
-      result.Append(NewDescriptionValuePair(kXDGCurrentDesktop, value));
-    const char kGDMSession[] = "GDMSESSION";
-    if (env->GetVar(kGDMSession, &value))
-      result.Append(NewDescriptionValuePair(kGDMSession, value));
-    result.Append(NewDescriptionValuePair(
-        "Compositing manager",
-        ui::IsCompositingManagerPresent() ? "Yes" : "No"));
-  }
-  result.Append(NewDescriptionValuePair(
+  list_value.Append(NewDescriptionValuePair(
+      "Compositing manager", ui::IsCompositingManagerPresent() ? "Yes" : "No"));
+  list_value.Append(NewDescriptionValuePair(
       "System visual ID",
       base::NumberToString(static_cast<uint32_t>(system_visual))));
-  result.Append(NewDescriptionValuePair(
+  list_value.Append(NewDescriptionValuePair(
       "RGBA visual ID",
       base::NumberToString(static_cast<uint32_t>(rgba_visual))));
-  return result;
 }
 
 bool WmSupportsHint(x11::Atom atom) {
@@ -1106,6 +1094,49 @@ bool DoesVisualHaveAlphaForTest() {
     DCHECK_EQ(32, depth);
 
   return visual_has_alpha;
+}
+
+gfx::ImageSkia GetNativeWindowIcon(intptr_t target_window_id) {
+  std::vector<uint32_t> data;
+  if (!GetArrayProperty(static_cast<x11::Window>(target_window_id),
+                        x11::GetAtom("_NET_WM_ICON"), &data)) {
+    return gfx::ImageSkia();
+  }
+
+  // The format of |data| is concatenation of sections like
+  // [width, height, pixel data of size width * height], and the total bytes
+  // number of |data| is |size|. And here we are picking the largest icon.
+  int width = 0;
+  int height = 0;
+  int start = 0;
+  size_t i = 0;
+  while (i + 1 < data.size()) {
+    if ((static_cast<int>(data[i] * data[i + 1]) > width * height) &&
+        (i + 1 + data[i] * data[i + 1] < data.size())) {
+      width = static_cast<int>(data[i]);
+      height = static_cast<int>(data[i + 1]);
+      start = i + 2;
+    }
+    i += 2 + static_cast<int>(data[i] * data[i + 1]);
+  }
+
+  if (width == 0 || height == 0)
+    return gfx::ImageSkia();
+
+  SkBitmap result;
+  SkImageInfo info = SkImageInfo::MakeN32(width, height, kUnpremul_SkAlphaType);
+  result.allocPixels(info);
+
+  uint32_t* pixels_data = reinterpret_cast<uint32_t*>(result.getPixels());
+
+  for (long y = 0; y < height; ++y) {
+    for (long x = 0; x < width; ++x) {
+      pixels_data[result.rowBytesAsPixels() * y + x] =
+          static_cast<uint32_t>(data[start + width * y + x]);
+    }
+  }
+
+  return gfx::ImageSkia::CreateFrom1xBitmap(result);
 }
 
 // static

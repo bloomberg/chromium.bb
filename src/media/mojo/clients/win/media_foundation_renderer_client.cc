@@ -84,19 +84,20 @@ void MediaFoundationRendererClient::OnConnectionError() {
 void MediaFoundationRendererClient::OnRemoteRendererInitialized(
     PipelineStatus status) {
   DVLOG_FUNC(1) << "status=" << status;
-
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(!init_cb_.is_null());
+
   if (status != media::PipelineStatus::PIPELINE_OK) {
-    DCHECK(!init_cb_.is_null());
     std::move(init_cb_).Run(status);
     return;
   }
 
   if (has_video_) {
     // TODO(frankli): Add code to init DCOMPTextureWrapper.
-  } else {
-    std::move(init_cb_).Run(status);
+    NOTIMPLEMENTED() << "Video compositing not implemented yet";
   }
+
+  std::move(init_cb_).Run(status);
 }
 
 void MediaFoundationRendererClient::OnDCOMPSurfaceHandleCreated(bool success) {
@@ -385,7 +386,7 @@ void MediaFoundationRendererClient::OnVideoFrameRateChange(
 scoped_refptr<media::VideoFrame> MediaFoundationRendererClient::Render(
     base::TimeTicks deadline_min,
     base::TimeTicks deadline_max,
-    bool background_rendering) {
+    RenderingMode mode) {
   // Returns no video frame as it is rendered independently by Windows Direct
   // Composition.
   return nullptr;

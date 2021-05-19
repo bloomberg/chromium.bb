@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_text_change_delegate.h"
@@ -21,7 +22,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/whats_new/default_browser_utils.h"
 #import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
@@ -640,7 +640,7 @@ const CGFloat kClearButtonSize = 28.0f;
 - (void)visitCopiedLink:(id)sender {
   // A search using clipboard link is activity that should indicate a user
   // that would be interested in setting Chrome as the default browser.
-  LogLikelyInterestedDefaultBrowserUserActivity();
+  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeGeneral);
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.VisitCopiedLink"));
   self.omniboxInteractedWhileFocused = YES;
   ClipboardRecentContent::GetInstance()->GetRecentURLFromClipboard(
@@ -659,11 +659,11 @@ const CGFloat kClearButtonSize = 28.0f;
 - (void)searchCopiedText:(id)sender {
   // A search using clipboard text is activity that should indicate a user
   // that would be interested in setting Chrome as the default browser.
-  LogLikelyInterestedDefaultBrowserUserActivity();
+  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeGeneral);
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedText"));
   self.omniboxInteractedWhileFocused = YES;
   ClipboardRecentContent::GetInstance()->GetRecentTextFromClipboard(
-      base::BindOnce(^(base::Optional<base::string16> optionalText) {
+      base::BindOnce(^(base::Optional<std::u16string> optionalText) {
         if (!optionalText) {
           return;
         }

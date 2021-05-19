@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
@@ -219,7 +218,7 @@ class WebApkInstaller {
 
   bool is_primary_icon_maskable_;
 
-  base::string16 short_name_;
+  std::u16string short_name_;
 
   // WebAPK server URL.
   GURL server_url_;

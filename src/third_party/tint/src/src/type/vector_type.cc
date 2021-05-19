@@ -14,20 +14,16 @@
 
 #include "src/type/vector_type.h"
 
-#include <assert.h>
-#include <cmath>
-
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::Vector);
+TINT_INSTANTIATE_TYPEINFO(tint::type::Vector);
 
 namespace tint {
 namespace type {
 
 Vector::Vector(Type* subtype, uint32_t size) : subtype_(subtype), size_(size) {
-  assert(size_ > 1);
-  assert(size_ < 5);
+  TINT_ASSERT(size_ > 1);
+  TINT_ASSERT(size_ < 5);
 }
 
 Vector::Vector(Vector&&) = default;
@@ -42,20 +38,6 @@ std::string Vector::FriendlyName(const SymbolTable& symbols) const {
   std::ostringstream out;
   out << "vec" << size_ << "<" << subtype_->FriendlyName(symbols) << ">";
   return out.str();
-}
-
-uint64_t Vector::MinBufferBindingSize(MemoryLayout mem_layout) const {
-  return size_ * subtype_->MinBufferBindingSize(mem_layout);
-}
-
-uint64_t Vector::BaseAlignment(MemoryLayout mem_layout) const {
-  if (size_ == 2) {
-    return 2 * subtype_->BaseAlignment(mem_layout);
-  } else if (size_ == 3 || size_ == 4) {
-    return 4 * subtype_->BaseAlignment(mem_layout);
-  }
-
-  return 0;  // vectors are only supposed to have 2, 3, or 4 elements.
 }
 
 Vector* Vector::Clone(CloneContext* ctx) const {

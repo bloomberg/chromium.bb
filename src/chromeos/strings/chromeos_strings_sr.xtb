@@ -38,6 +38,7 @@
 <translation id="1662989795263954667">Заустављено – нема више мастила</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Присутан је DNS разрешивач</translation>
+<translation id="1715359911173058521">Дошло је до проблема у комуникацији са скенером. Проверите мрежну или USB везу и пробајте поново.</translation>
 <translation id="1717874160321062422">Управљају <ph name="FIRST_MANAGER" /> и <ph name="SECOND_MANAGER" /></translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1792647875738159689">Отказује се скенирање</translation>
@@ -95,6 +96,7 @@
 <translation id="3226405216343213872">Траже се скенери</translation>
 <translation id="3246869037381808805">Задаци штампања старији од 1 дана се уклањају</translation>
 <translation id="3268178239013324452">Није успело – врата су отворена</translation>
+<translation id="3283504360622356314">{0,plural, =1{Измени фајл}one{Измени фајлове}few{Измени фајлове}other{Измени фајлове}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3310640316857623290">Кашњење DNS-а знатно премашује дозвољену граничну вредност</translation>
 <translation id="3328783797891415197">Тест је у току</translation>
@@ -135,6 +137,7 @@
 <translation id="4227825898293920515">Лозинка истиче за <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Ниједан задатак штампања није у току</translation>
 <translation id="4297501883039923494">Заустављено – непозната грешка</translation>
+<translation id="4344214025510306853">Приложи назив приступне тачке</translation>
 <translation id="4378373042927530923">Није покренуто</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Мој диск</translation>
@@ -162,7 +165,9 @@
 <translation id="4707579418881001319">L2TP/IPsec + сертификат корисника</translation>
 <translation id="4731797938093519117">Родитељски приступ</translation>
 <translation id="4773299976671772492">Заустављено је</translation>
+<translation id="4794140124556169553">Покретање теста процесора може да утиче на учинак система</translation>
 <translation id="4808449224298348341">Отказан је задатак штампања <ph name="DOCUMENT_TITLE" /></translation>
+<translation id="4813345808229079766">Веза</translation>
 <translation id="4832079907277790330">Изаберите фолдер у апликацији Фајлови...</translation>
 <translation id="4835901797422965222">Нема активних мрежа</translation>
 <translation id="4848429997038228357">У ТОКУ</translation>
@@ -177,6 +182,7 @@
 <translation id="4932733599132424254">Датум</translation>
 <translation id="498186245079027698">Проверите скенер и пробајте поново. Уверите се да има довољно локалне меморије за чување скенираних фајлова.</translation>
 <translation id="4985509611418653372">Покрени</translation>
+<translation id="4987769320337599931">Заштитни зид</translation>
 <translation id="4999333166442584738">Сакриј извештај</translation>
 <translation id="500920857929044050">Заустави тест</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -211,6 +217,7 @@
 <translation id="54609108002486618">Управљани</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Преостаје {0} покушај}one{Преостаје {0} покушај}few{Преостају {0} покушаја}other{Преостаје {0} покушаја}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
+<translation id="5499114900554609492">Нисмо успели да довршимо скенирање</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Активирање</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -225,6 +232,7 @@
 <translation id="5916084858004523819">Забрањено</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Фајл је скениран и сачуван у фолдеру <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}one{Фајлови су скенирани и сачувани у фолдеру <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}few{Фајлови су скенирани и сачувани у фолдеру <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Фајлови су скенирани и сачувани у фолдеру <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Фајл није пронађен</translation>
+<translation id="6037291330010597344">Механизам за увлачење докумената на скенеру је празан. Додајте документе и пробајте поново.</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6040852767465482106">Непознати идентитет</translation>
 <translation id="604124094241169006">Аутоматски</translation>
@@ -247,6 +255,7 @@
 <translation id="6302401976930124515">Тест <ph name="TEST_NAME" /> је отказан</translation>
 <translation id="6325525973963619867">Неуспешно</translation>
 <translation id="636850387210749493">Пријављивање за издање за предузећа</translation>
+<translation id="6388847657025262518">Механизам за увлачење докумената на скенеру је заглављен. Проверите механизам и пробајте поново.</translation>
 <translation id="641081527798843608">Подударање наслова</translation>
 <translation id="6423239382391657905">Отворена VPN</translation>
 <translation id="6456394469623773452">Добар</translation>
@@ -268,7 +277,7 @@
 <translation id="6766275201586212568">Неуспешна DNS разрешавања</translation>
 <translation id="6768237774506518020">Велика стопа неуспеха DNS разрешавања</translation>
 <translation id="6853312040151791195">Брзина пражњења</translation>
-<translation id="6898743098396957679">Довршавање скенирања није успело</translation>
+<translation id="6910312834584889076">Поклопац скенера је отворен. Затворите га и пробајте поново.</translation>
 <translation id="6911383237894364323">Повезивање са медијским серверима није успело</translation>
 <translation id="6957231940976260713">Назив услуге</translation>
 <translation id="6977381486153291903">Ревизија фирмвера</translation>
@@ -276,12 +285,14 @@
 <translation id="7040230719604914234">Мобилни оператер</translation>
 <translation id="7059230779847288458">Пуни се. <ph name="TIME_VALUE" /> до краја пуњења</translation>
 <translation id="708426984172631313">ЗАУСТАВЉЕНО</translation>
+<translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7143207342074048698">Повезивање</translation>
 <translation id="7144878232160441200">Пробај поново</translation>
 <translation id="714876143603641390">Повезивање LAN-а</translation>
 <translation id="7162487448488904999">Галерија</translation>
 <translation id="7177485034254901881"><ph name="MANAGER" /> управља овим <ph name="DEVICE_TYPE" /> уређајем. Администратори могу да конфигуришу уређај даљински.</translation>
 <translation id="7216409898977639127">Мобилни оператер</translation>
+<translation id="7271040990581020067">Скенер се тренутно користи. Пробајте поново касније.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7343649194310845056">Мрежни уређаји</translation>
 <translation id="7359657277149375382">Тип датотеке</translation>
@@ -307,6 +318,7 @@
 <translation id="7769672763586021400">ИД модела</translation>
 <translation id="7805768142964895445">Статус</translation>
 <translation id="7819857487979277519">PSK (WPA или RSN)</translation>
+<translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Тип добављача</translation>
 <translation id="7936303884198020182">Није пронађен ниједан сервер за имена</translation>
 <translation id="7960831585769876809">Температура</translation>
@@ -336,6 +348,7 @@
 <translation id="8483248364096924578">IP адреса</translation>
 <translation id="8503813439785031346">Корисничко име</translation>
 <translation id="8503836310948963452">Још само пар минута…</translation>
+<translation id="8575298406870537639">Мобилни оператер може да затражи ову опцију ради повезивања на мрежу. Обратите се мобилном оператеру за детаље.</translation>
 <translation id="8576249514688522074">Није покренуто</translation>
 <translation id="8620617069779373398">Статус роминга</translation>
 <translation id="8675354002693747642">Тајни кључ</translation>
@@ -348,6 +361,7 @@
 <translation id="8798099450830957504">Подразумевано</translation>
 <translation id="8798441408945964110">Назив добављача</translation>
 <translation id="8814190375133053267">WiFi</translation>
+<translation id="8818152010000655963">Позадина</translation>
 <translation id="8845001906332463065">Затражите помоћ</translation>
 <translation id="8881098542468797602">Тест је успео</translation>
 <translation id="8898840733695078011">Јачина сигнала</translation>
@@ -365,6 +379,7 @@
 <translation id="910415269708673980">Освежите тикет за <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Скенира се <ph name="PAGE_NUMBER" />. страница</translation>
 <translation id="9111102763498581341">Откључај</translation>
+<translation id="9137526406337347448">Google услуге</translation>
 <translation id="9149391708638971077">Покрени тест меморије</translation>
 <translation id="9173638680043580060">Преостало је мање од минута</translation>
 <translation id="9190063653747922532">L2TP/IPsec + тајни кључ</translation>

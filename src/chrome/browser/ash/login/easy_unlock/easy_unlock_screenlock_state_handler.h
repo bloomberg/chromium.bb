@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/components/proximity_auth/screenlock_state.h"
 #include "components/account_id/account_id.h"
@@ -92,7 +91,7 @@ class EasyUnlockScreenlockStateHandler
 
   // Gets the name to be used for the device. The name depends on the device
   // type (example values: Chromebook and Chromebox).
-  base::string16 GetDeviceName();
+  std::u16string GetDeviceName();
 
   // Updates the screenlock auth type if it has to be changed.
   void UpdateScreenlockAuthType();

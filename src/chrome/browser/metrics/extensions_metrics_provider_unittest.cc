@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/strings/string16.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -33,11 +32,12 @@
 #include "third_party/metrics_proto/extension_install.pb.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
-using metrics::ExtensionInstallProto;
+using extensions::DictionaryBuilder;
 using extensions::Extension;
 using extensions::ExtensionBuilder;
 using extensions::Manifest;
-using extensions::DictionaryBuilder;
+using extensions::mojom::ManifestLocation;
+using metrics::ExtensionInstallProto;
 
 namespace {
 
@@ -45,7 +45,7 @@ void StoreNoClientInfoBackup(const metrics::ClientInfo& /* client_info */) {
 }
 
 std::unique_ptr<metrics::ClientInfo> ReturnNoBackup() {
-  return std::unique_ptr<metrics::ClientInfo>();
+  return nullptr;
 }
 
 class TestExtensionsMetricsProvider : public ExtensionsMetricsProvider {
@@ -189,7 +189,9 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
     // Test basic prototype construction. All fields should be present, except
     // disable reasons (which should be empty).
     scoped_refptr<const Extension> extension =
-        ExtensionBuilder("test").SetLocation(Manifest::INTERNAL).Build();
+        ExtensionBuilder("test")
+            .SetLocation(ManifestLocation::kInternal)
+            .Build();
     add_extension(extension.get());
     ExtensionInstallProto install = ConstructProto(*extension);
     EXPECT_TRUE(install.has_type());
@@ -249,7 +251,7 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
     // as such.
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("app", ExtensionBuilder::Type::PLATFORM_APP)
-            .SetLocation(Manifest::INTERNAL)
+            .SetLocation(ManifestLocation::kInternal)
             .Build();
     add_extension(extension.get());
     ExtensionInstallProto install = ConstructProto(*extension);
@@ -259,7 +261,9 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
   {
     // Test the install location.
     scoped_refptr<const Extension> extension =
-        ExtensionBuilder("unpacked").SetLocation(Manifest::UNPACKED).Build();
+        ExtensionBuilder("unpacked")
+            .SetLocation(ManifestLocation::kUnpacked)
+            .Build();
     add_extension(extension.get());
     ExtensionInstallProto install = ConstructProto(*extension);
     EXPECT_EQ(ExtensionInstallProto::UNPACKED, install.install_location());
@@ -269,7 +273,7 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
     // Test the extension action as a browser action.
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("browser_action")
-            .SetLocation(Manifest::INTERNAL)
+            .SetLocation(ManifestLocation::kInternal)
             .SetAction(ExtensionBuilder::ActionType::BROWSER_ACTION)
             .Build();
     add_extension(extension.get());
@@ -281,7 +285,7 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
     // Test the extension action as a page action.
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("page_action")
-            .SetLocation(Manifest::INTERNAL)
+            .SetLocation(ManifestLocation::kInternal)
             .SetAction(ExtensionBuilder::ActionType::PAGE_ACTION)
             .Build();
     add_extension(extension.get());
@@ -293,7 +297,7 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
     // Test the disable reasons field.
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("disable_reasons")
-            .SetLocation(Manifest::INTERNAL)
+            .SetLocation(ManifestLocation::kInternal)
             .Build();
     add_extension(extension.get());
     prefs()->SetExtensionDisabled(
@@ -336,7 +340,7 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
         .Set("scripts", extensions::ListBuilder().Append("script.js").Build());
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("event_page")
-            .SetLocation(Manifest::INTERNAL)
+            .SetLocation(ManifestLocation::kInternal)
             .MergeManifest(DictionaryBuilder()
                                .Set("background", background.Build())
                                .Build())
@@ -354,7 +358,7 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
         .Set("scripts", extensions::ListBuilder().Append("script.js").Build());
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("persisent_background")
-            .SetLocation(Manifest::INTERNAL)
+            .SetLocation(ManifestLocation::kInternal)
             .MergeManifest(DictionaryBuilder()
                                .Set("background", background.Build())
                                .Build())
@@ -380,7 +384,9 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
   {
     // Test changing the blacklist state.
     scoped_refptr<const Extension> extension =
-        ExtensionBuilder("blacklist").SetLocation(Manifest::INTERNAL).Build();
+        ExtensionBuilder("blacklist")
+            .SetLocation(ManifestLocation::kInternal)
+            .Build();
     add_extension(extension.get());
     prefs()->SetExtensionBlocklistState(
         extension->id(), extensions::BLOCKLISTED_SECURITY_VULNERABILITY);
@@ -393,7 +399,9 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
     // Test that the installed_in_this_sample_period boolean is correctly
     // reported.
     scoped_refptr<const Extension> extension =
-        ExtensionBuilder("installtime").SetLocation(Manifest::INTERNAL).Build();
+        ExtensionBuilder("installtime")
+            .SetLocation(ManifestLocation::kInternal)
+            .Build();
     add_extension(extension.get());
     set_last_sample_time(base::Time::Now() + base::TimeDelta::FromMinutes(60));
     ExtensionInstallProto install = ConstructProto(*extension);

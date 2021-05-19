@@ -8,6 +8,20 @@
 
 namespace autofill_assistant {
 
+TriggerContext::Options::Options(const std::string& _experiment_ids,
+                                 bool _is_cct,
+                                 bool _onboarding_shown,
+                                 bool _is_direct_action,
+                                 const std::string& _initial_url)
+    : experiment_ids(_experiment_ids),
+      is_cct(_is_cct),
+      onboarding_shown(_onboarding_shown),
+      is_direct_action(_is_direct_action),
+      initial_url(_initial_url) {}
+
+TriggerContext::Options::Options() = default;
+TriggerContext::Options::~Options() = default;
+
 TriggerContext::TriggerContext()
     : script_parameters_(std::make_unique<ScriptParameters>()) {}
 
@@ -19,7 +33,7 @@ TriggerContext::TriggerContext(
                      options.is_cct,
                      options.onboarding_shown,
                      options.is_direct_action,
-                     options.caller_account_hash) {}
+                     options.initial_url) {}
 
 TriggerContext::TriggerContext(
     std::unique_ptr<ScriptParameters> script_parameters,
@@ -27,13 +41,13 @@ TriggerContext::TriggerContext(
     bool is_cct,
     bool onboarding_shown,
     bool is_direct_action,
-    const std::string& caller_account_hash)
+    const std::string& initial_url)
     : script_parameters_(std::move(script_parameters)),
       experiment_ids_(std::move(experiment_ids)),
       cct_(is_cct),
       onboarding_shown_(onboarding_shown),
       direct_action_(is_direct_action),
-      caller_account_hash_(caller_account_hash) {}
+      initial_url_(initial_url) {}
 
 TriggerContext::TriggerContext(std::vector<const TriggerContext*> contexts)
     : TriggerContext() {
@@ -53,8 +67,8 @@ TriggerContext::TriggerContext(std::vector<const TriggerContext*> contexts)
     cct_ |= context->GetCCT();
     onboarding_shown_ |= context->GetOnboardingShown();
     direct_action_ |= context->GetDirectAction();
-    if (caller_account_hash_.empty()) {
-      caller_account_hash_ = context->GetCallerAccountHash();
+    if (initial_url_.empty()) {
+      initial_url_ = context->GetInitialUrl();
     }
   }
 }
@@ -67,6 +81,10 @@ const ScriptParameters& TriggerContext::GetScriptParameters() const {
 
 std::string TriggerContext::GetExperimentIds() const {
   return experiment_ids_;
+}
+
+std::string TriggerContext::GetInitialUrl() const {
+  return initial_url_;
 }
 
 bool TriggerContext::HasExperimentId(const std::string& experiment_id) const {
@@ -85,12 +103,12 @@ bool TriggerContext::GetOnboardingShown() const {
   return onboarding_shown_;
 }
 
-bool TriggerContext::GetDirectAction() const {
-  return direct_action_;
+void TriggerContext::SetOnboardingShown(bool onboarding_shown) {
+  onboarding_shown_ = onboarding_shown;
 }
 
-std::string TriggerContext::GetCallerAccountHash() const {
-  return caller_account_hash_;
+bool TriggerContext::GetDirectAction() const {
+  return direct_action_;
 }
 
 }  // namespace autofill_assistant

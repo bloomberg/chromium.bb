@@ -7,9 +7,9 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -60,7 +60,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
 
  protected:
   // views::WidgetDelegate:
-  base::string16 GetWindowTitle() const override;
+  std::u16string GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
 
   // views::BubbleDialogDelegateView:

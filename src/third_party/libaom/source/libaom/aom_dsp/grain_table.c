@@ -244,7 +244,7 @@ int aom_film_grain_table_lookup(aom_film_grain_table_t *t, int64_t time_stamp,
       // If segments aren't aligned, delete from the beggining of subsequent
       // segments
       if (end_time > entry_end_time) {
-        aom_film_grain_table_lookup(t, entry->end_time, end_time, 1, 0);
+        aom_film_grain_table_lookup(t, entry_end_time, end_time, 1, 0);
       }
       return 1;
     }

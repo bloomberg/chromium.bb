@@ -409,6 +409,7 @@ enum class FPRoundingMode : unsigned {
 enum class LinkageType : unsigned {
     Export = 0,
     Import = 1,
+    LinkOnceODR = 2,
     Max = 0x7fffffff,
 };
 
@@ -1010,8 +1011,12 @@ enum class Capability : unsigned {
     FunctionPointersINTEL = 5603,
     IndirectReferencesINTEL = 5604,
     AsmINTEL = 5606,
+    AtomicFloat32MinMaxEXT = 5612,
+    AtomicFloat64MinMaxEXT = 5613,
+    AtomicFloat16MinMaxEXT = 5616,
     VectorComputeINTEL = 5617,
     VectorAnyINTEL = 5619,
+    ExpectAssumeKHR = 5629,
     SubgroupAvcMotionEstimationINTEL = 5696,
     SubgroupAvcMotionEstimationIntraINTEL = 5697,
     SubgroupAvcMotionEstimationChromaINTEL = 5698,
@@ -1537,6 +1542,10 @@ enum class Op : unsigned {
     OpAsmTargetINTEL = 5609,
     OpAsmINTEL = 5610,
     OpAsmCallINTEL = 5611,
+    OpAtomicFMinEXT = 5614,
+    OpAtomicFMaxEXT = 5615,
+    OpAssumeTrueKHR = 5630,
+    OpExpectKHR = 5631,
     OpDecorateString = 5632,
     OpDecorateStringGOOGLE = 5632,
     OpMemberDecorateString = 5633,
@@ -2119,6 +2128,10 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case Op::OpAsmTargetINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpAsmINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpAsmCallINTEL: *hasResult = true; *hasResultType = true; break;
+    case Op::OpAtomicFMinEXT: *hasResult = true; *hasResultType = true; break;
+    case Op::OpAtomicFMaxEXT: *hasResult = true; *hasResultType = true; break;
+    case Op::OpAssumeTrueKHR: *hasResult = false; *hasResultType = false; break;
+    case Op::OpExpectKHR: *hasResult = true; *hasResultType = true; break;
     case Op::OpDecorateString: *hasResult = false; *hasResultType = false; break;
     case Op::OpMemberDecorateString: *hasResult = false; *hasResultType = false; break;
     case Op::OpVmeImageINTEL: *hasResult = true; *hasResultType = true; break;

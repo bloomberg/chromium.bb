@@ -5,17 +5,17 @@
 #ifndef CHROME_BROWSER_FLAGS_ANDROID_CHROME_FEATURE_LIST_H_
 #define CHROME_BROWSER_FLAGS_ANDROID_CHROME_FEATURE_LIST_H_
 
-#include <base/feature_list.h>
 #include <jni.h>
+
+#include "base/feature_list.h"
 
 namespace chrome {
 namespace android {
 
 // Alphabetical:
-extern const base::Feature kAdjustWebApkInstallationSpace;
+extern const base::Feature kAddToHomescreenIPH;
 extern const base::Feature kAllowNewIncognitoTabIntents;
 extern const base::Feature kAllowRemoteContextForNotifications;
-extern const base::Feature kAndroidDefaultBrowserPromo;
 extern const base::Feature kAndroidLayoutChangeTabReparenting;
 extern const base::Feature kAndroidManagedByMenuItem;
 extern const base::Feature kAndroidPartnerCustomizationPhenotype;
@@ -24,9 +24,10 @@ extern const base::Feature kAssistantIntentExperimentId;
 extern const base::Feature kAssistantIntentPageUrl;
 extern const base::Feature kAssistantIntentTranslateInfo;
 extern const base::Feature kAppLaunchpad;
+extern const base::Feature kAppMenuMobileSiteOption;
 extern const base::Feature kBackgroundTaskComponentUpdate;
+extern const base::Feature kBackgroundThreadPool;
 extern const base::Feature kBentoOffline;
-extern const base::Feature kBookmarkBottomSheet;
 extern const base::Feature kCloseTabSuggestions;
 extern const base::Feature kCriticalPersistedTabData;
 extern const base::Feature kCastDeviceFilter;
@@ -49,6 +50,7 @@ extern const base::Feature kChromeShareScreenshot;
 extern const base::Feature kChromeSharingHub;
 extern const base::Feature kChromeSharingHubV15;
 extern const base::Feature kChromeStartupDelegate;
+extern const base::Feature kChromeSurveyNextAndroid;
 extern const base::Feature kCommandLineOnNonRooted;
 extern const base::Feature kConditionalTabStripAndroid;
 extern const base::Feature kContextMenuEnableLensShoppingAllowlist;
@@ -63,7 +65,6 @@ extern const base::Feature kContextualSearchDebug;
 extern const base::Feature kContextualSearchForceCaption;
 extern const base::Feature kContextualSearchLegacyHttpPolicy;
 extern const base::Feature kContextualSearchLiteralSearchTap;
-extern const base::Feature kContextualSearchLongpressPanelHelp;
 extern const base::Feature kContextualSearchLongpressResolve;
 extern const base::Feature kContextualSearchMlTapSuppression;
 extern const base::Feature kContextualSearchSecondTap;
@@ -110,7 +111,6 @@ extern const base::Feature kSearchEnginePromoNewDevice;
 extern const base::Feature kServiceManagerForBackgroundPrefetch;
 extern const base::Feature kServiceManagerForDownload;
 extern const base::Feature kShareButtonInTopToolbar;
-extern const base::Feature kShareByDefaultInCCT;
 extern const base::Feature kShoppingAssist;
 extern const base::Feature kSpannableInlineAutocomplete;
 extern const base::Feature kSpecialLocaleWrapper;
@@ -124,9 +124,6 @@ extern const base::Feature kTabGridLayoutAndroid;
 extern const base::Feature kTabReparenting;
 extern const base::Feature kTabSwitcherOnReturn;
 extern const base::Feature kTabToGTSAnimation;
-extern const base::Feature kTabbedAppOverflowMenuIcons;
-extern const base::Feature kTabbedAppOverflowMenuRegroup;
-extern const base::Feature kTabbedAppOverflowMenuThreeButtonActionbar;
 extern const base::Feature kTestDefaultDisabled;
 extern const base::Feature kTestDefaultEnabled;
 extern const base::Feature kThemeRefactorAndroid;
@@ -139,6 +136,8 @@ extern const base::Feature kToolbarIphAndroidCohort5;
 extern const base::Feature kToolbarIphAndroidCohort6;
 extern const base::Feature kToolbarIphAndroidCohort7;
 extern const base::Feature kToolbarIphAndroidCohort8;
+extern const base::Feature kToolbarMicIphAndroid;
+extern const base::Feature kToolbarUseHardwareBitmapDraw;
 extern const base::Feature kTrustedWebActivityLocationDelegation;
 extern const base::Feature kTrustedWebActivityNewDisclosure;
 extern const base::Feature kTrustedWebActivityPostMessage;

@@ -4,10 +4,13 @@
 <translation id="1175958423215084756">检测到链接。<ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">图库图片</translation>
 <translation id="1430915738399379752">打印</translation>
+<translation id="1467231725790366244"><ph name="CAMERA" />已拔出。</translation>
 <translation id="1473110567575736769">3 秒计时器</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">未记录任何数据</translation>
+<translation id="1838104802459806957">向上倾斜</translation>
+<translation id="1851169887664797861">已推出新的相机控件</translation>
 <translation id="1851616744363735765">已暂停</translation>
 <translation id="1862930711583847113">无法导出“<ph name="FILE" />”</translation>
 <translation id="1899697626337024495">照片分辨率</translation>
@@ -17,15 +20,18 @@
 <translation id="2064538373111010176">已切换到<ph name="CAMERA" /></translation>
 <translation id="2144806332417375165">自定义视频参数</translation>
 <translation id="229579744168541441">导出到磁盘</translation>
+<translation id="2320741269052147773">向左平移</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2501853267655415902">已停止录制</translation>
 <translation id="2501953888035679275">使用相机拍照和录制视频。</translation>
 <translation id="2549985041256363841">开始录制</translation>
 <translation id="2599796128805996109">后置摄像头</translation>
+<translation id="2879583609344924966"><ph name="CAMERA" />已插入。</translation>
 <translation id="2912439424121107408">此设备不支持专家模式</translation>
 <translation id="2968794441791257519">使用此相机拍摄的照片和视频将被移至“下载内容”文件夹。您可在“文件”中访问它们。
 
         具有存储权限的应用将有权访问您的照片和视频。</translation>
+<translation id="3067436040345934772">向右平移</translation>
 <translation id="3081586908890909590">切换到录制视频模式</translation>
 <translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">网格类型</translation>
@@ -34,6 +40,7 @@
 <translation id="3259149966178251584">摄像头分辨率</translation>
 <translation id="3517926952904427380">无法拍摄纵向照片</translation>
 <translation id="3569311554794739032">确定要移除“<ph name="FILE" />”吗？</translation>
+<translation id="3733597664308256288">已推出新的相机控件。使用搜索键 + 向右键即可访问这些控件。</translation>
 <translation id="3810838688059735925">视频</translation>
 <translation id="3838931309141338733">扫描条形码</translation>
 <translation id="3892148308691398805">复制文字</translation>
@@ -56,6 +63,7 @@
 <translation id="5671277269877808209">方形</translation>
 <translation id="5775960006311140197">专家模式</translation>
 <translation id="5869546221129391014">网格</translation>
+<translation id="5975083100439434680">缩小</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6073451960410192870">停止录制</translation>
 <translation id="6197807149213783179">保存元数据</translation>
@@ -84,16 +92,19 @@
 <translation id="7974782136796202581">显示平移/倾斜/缩放选项</translation>
 <translation id="7983668134180549431">检测到文字。</translation>
 <translation id="8067883171444229417">播放视频</translation>
+<translation id="8120146556401698679">平移，倾斜，缩放</translation>
 <translation id="8131740175452115882">确认</translation>
 <translation id="8145038249676204903">切换到拍照模式</translation>
 <translation id="8239780215768881278">拍摄视频快照</translation>
 <translation id="8261506727792406068">删除</translation>
+<translation id="8425673304802773841">向下倾斜</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8687491812650032292">高清 <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">预览元数据</translation>
 <translation id="8815966864175525708">切换到纵向照片拍摄模式</translation>
 <translation id="8828441885228359828">继续录制</translation>
 <translation id="8870695351537079478">无法开始录制</translation>
+<translation id="8903921497873541725">放大</translation>
 <translation id="9045155556724273246">10 秒</translation>
 <translation id="945522503751344254">发送反馈</translation>
 </translationbundle>

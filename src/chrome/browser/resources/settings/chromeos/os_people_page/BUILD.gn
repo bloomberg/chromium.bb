@@ -8,6 +8,7 @@ import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../os_settings.gni")
 
 js_type_check("closure_compile_module") {
+  closure_flags = os_settings_closure_flags
   is_polymer3 = true
   deps = [
     ":account_manager.m",
@@ -33,8 +34,8 @@ js_library("account_manager.m") {
     "..:deep_linking_behavior.m",
     "..:metrics_recorder.m",
     "..:os_route.m",
-    "../..:router.m",
-    "../../people_page:account_manager_browser_proxy.m",
+    "../..:router",
+    "../../people_page:account_manager_browser_proxy",
     "../localized_link:localized_link.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
@@ -62,7 +63,7 @@ js_library("fingerprint_list.m") {
     "..:deep_linking_behavior.m",
     "..:metrics_recorder.m",
     "..:os_route.m",
-    "../..:router.m",
+    "../..:router",
     "//third_party/polymer/v3_0/components-chromium/iron-resizable-behavior:iron-resizable-behavior",
     "//third_party/polymer/v3_0/components-chromium/paper-ripple:paper-ripple",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -83,14 +84,15 @@ js_library("lock_screen.m") {
     ":lock_state_behavior.m",
     "..:deep_linking_behavior.m",
     "..:os_route.m",
-    "../..:router.m",
-    "../../controls:settings_dropdown_menu.m",
-    "../../controls:settings_toggle_button.m",
+    "../..:router",
+    "../../controls:settings_dropdown_menu",
+    "../../controls:settings_toggle_button",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:plural_string_proxy",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
@@ -101,7 +103,7 @@ js_library("lock_screen_password_prompt_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/lock_screen_password_prompt_dialog.m.js" ]
   deps = [
     ":lock_state_behavior.m",
-    "../../controls:password_prompt_dialog.m",
+    "../../controls:password_prompt_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants.m",
   ]
@@ -111,7 +113,7 @@ js_library("lock_screen_password_prompt_dialog.m") {
 js_library("lock_state_behavior.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/lock_state_behavior.m.js" ]
   deps = [
-    "../..:router.m",
+    "../..:router",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
@@ -131,15 +133,15 @@ js_library("os_people_page.m") {
     "..:deep_linking_behavior.m",
     "..:os_page_visibility.m",
     "..:os_route.m",
-    "../..:router.m",
-    "../../settings_page:settings_animated_pages.m",
+    "../..:router",
+    "../../settings_page:settings_animated_pages",
     "../kerberos_page:kerberos_accounts.m",
     "../localized_link:localized_link.m",
     "../parental_controls_page:parental_controls_page.m",
-    "//chrome/browser/resources/settings/people_page:profile_info_browser_proxy.m",
-    "//chrome/browser/resources/settings/people_page:signout_dialog.m",
-    "//chrome/browser/resources/settings/people_page:sync_browser_proxy.m",
-    "//chrome/browser/resources/settings/people_page:sync_page.m",
+    "//chrome/browser/resources/settings/people_page:profile_info_browser_proxy",
+    "//chrome/browser/resources/settings/people_page:signout_dialog",
+    "//chrome/browser/resources/settings/people_page:sync_browser_proxy",
+    "//chrome/browser/resources/settings/people_page:sync_page",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants.m",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:png.m",
@@ -170,7 +172,7 @@ js_library("os_sync_controls.m") {
     "..:deep_linking_behavior.m",
     "..:metrics_recorder.m",
     "..:os_route.m",
-    "../../:router.m",
+    "../../:router",
     "../localized_link:localized_link.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
@@ -198,7 +200,7 @@ js_library("setup_pin_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/setup_pin_dialog.m.js" ]
   deps = [
     ":lock_screen_password_prompt_dialog.m",
-    "../..:router.m",
+    "../..:router",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_components/chromeos/quick_unlock:setup_pin_keyboard.m",
     "//ui/webui/resources/js:i18n_behavior.m",
@@ -210,7 +212,7 @@ js_library("user_list.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_people_page/user_list.m.js" ]
   deps = [
     "..:os_route.m",
-    "../..:router.m",
+    "../..:router",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior.m",
     "//ui/webui/resources/js:i18n_behavior.m",
@@ -240,7 +242,7 @@ js_library("users_page.m") {
     ":users_add_user_dialog.m",
     "..:deep_linking_behavior.m",
     "..:os_route.m",
-    "../..:router.m",
+    "../..:router",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
@@ -263,8 +265,8 @@ group("polymer3_elements") {
     ":user_list_module",
     ":users_add_user_dialog_module",
     ":users_page_module",
-    "../../:icons_module",
-    "../../people_page:polymer3_elements",
+    "../..:web_components_local",
+    "../../people_page:web_components",
     "../../privacy_page:polymer3_elements",
     "../kerberos_page:polymer3_elements",
   ]
@@ -274,7 +276,7 @@ polymer_modulizer("account_manager") {
   js_file = "account_manager.js"
   html_file = "account_manager.html"
   html_type = "dom-module"
-  migrated_imports = settings_migrated_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
   auto_imports = os_settings_auto_imports
 }
@@ -337,6 +339,7 @@ polymer_modulizer("pin_autosubmit_dialog") {
   js_file = "pin_autosubmit_dialog.js"
   html_file = "pin_autosubmit_dialog.html"
   html_type = "dom-module"
+  migrated_imports = os_settings_migrated_imports
 }
 
 polymer_modulizer("setup_pin_dialog") {

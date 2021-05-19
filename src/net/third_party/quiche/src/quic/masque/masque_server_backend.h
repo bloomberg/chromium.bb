@@ -6,6 +6,7 @@
 #define QUICHE_QUIC_MASQUE_MASQUE_SERVER_BACKEND_H_
 
 #include "absl/container/flat_hash_map.h"
+#include "quic/masque/masque_utils.h"
 #include "quic/platform/api/quic_export.h"
 #include "quic/tools/quic_memory_cache_backend.h"
 
@@ -27,7 +28,8 @@ class QUIC_NO_EXPORT MasqueServerBackend : public QuicMemoryCacheBackend {
     virtual ~BackendClient() = default;
   };
 
-  explicit MasqueServerBackend(const std::string& server_authority,
+  explicit MasqueServerBackend(MasqueMode masque_mode,
+                               const std::string& server_authority,
                                const std::string& cache_directory);
 
   // Disallow copy and assign.
@@ -57,11 +59,16 @@ class QUIC_NO_EXPORT MasqueServerBackend : public QuicMemoryCacheBackend {
       const std::string& request_body,
       QuicSimpleServerBackend::RequestHandler* request_handler);
 
+  MasqueMode masque_mode_;
   std::string server_authority_;
-  absl::flat_hash_map<std::string, std::unique_ptr<QuicBackendResponse>>
-      active_response_map_;
-  absl::flat_hash_map<QuicConnectionId, BackendClient*, QuicConnectionIdHash>
-      backend_clients_;
+
+  struct QUIC_NO_EXPORT BackendClientState {
+    BackendClient* backend_client;
+    std::vector<std::unique_ptr<QuicBackendResponse>> responses;
+  };
+  absl::
+      flat_hash_map<QuicConnectionId, BackendClientState, QuicConnectionIdHash>
+          backend_client_states_;
 };
 
 }  // namespace quic

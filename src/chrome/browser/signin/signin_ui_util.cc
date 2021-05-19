@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -164,7 +166,7 @@ std::string GetReauthAccessPointHistogramSuffix(
 
 namespace signin_ui_util {
 
-base::string16 GetAuthenticatedUsername(Profile* profile) {
+std::u16string GetAuthenticatedUsername(Profile* profile) {
   DCHECK(profile);
   std::string user_display_name;
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
@@ -282,8 +284,7 @@ void EnableSyncFromPromo(
                                                        promo_action);
   std::move(create_dice_turn_sync_on_helper_callback)
       .Run(profile, browser, access_point, promo_action,
-           signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-           account.account_id,
+           signin_metrics::Reason::kSigninPrimaryAccount, account.account_id,
            DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
 }
 }  // namespace internal
@@ -297,7 +298,7 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
 
   // Compute the default account.
   CoreAccountId default_account_id =
-      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
 
   // Fetch account information for each id and make sure that the first account
   // in the list matches the unconsented primary account (if available).
@@ -325,14 +326,14 @@ AccountInfo GetSingleAccountForDicePromos(Profile* profile) {
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-base::string16 GetShortProfileIdentityToDisplay(
+std::u16string GetShortProfileIdentityToDisplay(
     const ProfileAttributesEntry& profile_attributes_entry,
     Profile* profile) {
   DCHECK(profile);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  CoreAccountInfo core_info = identity_manager->GetPrimaryAccountInfo(
-      signin::ConsentLevel::kNotRequired);
+  CoreAccountInfo core_info =
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
   // If there's no unconsented primary account, simply return the name of the
   // profile according to profile attributes.
   if (core_info.IsEmpty())
@@ -419,6 +420,9 @@ void RecordProfileMenuViewShown(Profile* profile) {
   base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened"));
   if (profile->IsRegularProfile()) {
     base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened_Regular"));
+    // Record usage for profile switch promo.
+    feature_engagement::TrackerFactory::GetForBrowserContext(profile)
+        ->NotifyEvent("profile_menu_shown");
   } else if (profile->IsGuestSession()) {
     base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened_Guest"));
   } else if (profile->IsIncognitoProfile()) {

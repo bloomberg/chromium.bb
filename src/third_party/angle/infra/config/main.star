@@ -120,6 +120,7 @@ def angle_standalone_builder(name, clang, debug, cpu, uwp = False, trace_tests =
     properties = {
         "debug": debug,
         "target_cpu": cpu,
+        "builder_group": "angle",
     }
     os = get_os_from_name(name)
     dimensions = {}
@@ -142,7 +143,7 @@ def angle_standalone_builder(name, clang, debug, cpu, uwp = False, trace_tests =
         # Cache for mac_toolchain tool and XCode.app
         caches += [swarming.cache(name = "osx_sdk", path = "osx_sdk")]
         properties["$depot_tools/osx_sdk"] = {
-            "sdk_version": "12a7209"
+            "sdk_version": "12D4e"
         }
 
     if not clang:
@@ -203,14 +204,14 @@ def angle_standalone_builder(name, clang, debug, cpu, uwp = False, trace_tests =
     short_name = "dbg" if debug else "rel"
 
     luci.console_view_entry(
-        console_view = "CI Console View",
+        console_view = "ci",
         builder = "ci/" + name,
         category = config + "|" + os + "|" + compiler + "|" + cpu,
         short_name = short_name,
     )
 
     luci.list_view_entry(
-        list_view = "Try List View",
+        list_view = "try",
         builder = "try/" + name,
     )
 
@@ -297,19 +298,19 @@ angle_standalone_builder("winuwp-x64-rel", clang = False, debug = False, cpu = "
 # Views
 
 luci.console_view(
-    name = "CI Console View",
+    name = "ci",
     title = "ANGLE CI Builders",
     repo = "https://chromium.googlesource.com/angle/angle",
     refs = ["refs/heads/master"],
 )
 
 luci.list_view(
-    name = "Try List View",
+    name = "try",
     title = "ANGLE Try Builders",
 )
 
 luci.list_view_entry(
-    list_view = "Try List View",
+    list_view = "try",
     builder = "try/presubmit",
 )
 
@@ -355,6 +356,9 @@ luci.cq_group(
             builder = 'chromium:try/fuchsia-angle-rel',
         ),
         luci.cq_tryjob_verifier(
+            builder = 'chromium:try/fuchsia-angle-try',
+        ),
+        luci.cq_tryjob_verifier(
             builder = 'chromium:try/linux_angle_deqp_rel_ng',
         ),
         luci.cq_tryjob_verifier(
@@ -364,13 +368,19 @@ luci.cq_group(
             builder = 'chromium:try/linux-angle-rel',
         ),
         luci.cq_tryjob_verifier(
+            builder = 'chromium:try/linux-angle-chromium-try',
+        ),
+        luci.cq_tryjob_verifier(
+            builder = 'chromium:try/linux-angle-try',
+        ),
+        luci.cq_tryjob_verifier(
+            builder = 'chromium:try/linux-ozone-angle-try',
+        ),
+        luci.cq_tryjob_verifier(
             builder = 'chromium:try/linux-swangle-try-tot-angle-x64',
         ),
         luci.cq_tryjob_verifier(
             builder = 'chromium:try/mac-angle-chromium-try',
-        ),
-        luci.cq_tryjob_verifier(
-            builder = 'chromium:try/mac-angle-rel',
         ),
         luci.cq_tryjob_verifier(
             builder = 'chromium:try/mac-angle-try',
@@ -379,13 +389,13 @@ luci.cq_group(
             builder = 'chromium:try/win-angle-chromium-x64-try',
         ),
         luci.cq_tryjob_verifier(
-            builder = 'chromium:try/win-angle-deqp-rel-32',
-        ),
-        luci.cq_tryjob_verifier(
-            builder = 'chromium:try/win-angle-rel-32',
+            builder = 'chromium:try/win-angle-chromium-x86-try',
         ),
         luci.cq_tryjob_verifier(
             builder = 'chromium:try/win-angle-x64-try',
+        ),
+        luci.cq_tryjob_verifier(
+            builder = 'chromium:try/win-angle-x86-try',
         ),
         luci.cq_tryjob_verifier(
             builder = 'chromium:try/win-swangle-try-tot-angle-x86',

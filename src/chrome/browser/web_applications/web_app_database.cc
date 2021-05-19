@@ -12,12 +12,12 @@
 #include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/web_applications/components/system_web_app_types.h"
 #include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
@@ -170,7 +170,6 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   DCHECK(!start_url.is_empty() && start_url.is_valid());
 
   DCHECK(!web_app.app_id().empty());
-  DCHECK_EQ(web_app.app_id(), GenerateAppIdFromURL(start_url));
 
   // Set sync data to sync proto.
   *(local_data->mutable_sync_data()) = WebAppToSyncProto(web_app);
@@ -209,6 +208,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     local_data->set_theme_color(web_app.theme_color().value());
   if (web_app.background_color().has_value())
     local_data->set_background_color(web_app.background_color().value());
+  if (!web_app.last_badging_time().is_null()) {
+    local_data->set_last_badging_time(
+        syncer::TimeToProtoTime(web_app.last_badging_time()));
+  }
   if (!web_app.last_launch_time().is_null()) {
     local_data->set_last_launch_time(
         syncer::TimeToProtoTime(web_app.last_launch_time()));
@@ -226,6 +229,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     mutable_chromeos_data->set_show_in_management(
         chromeos_data.show_in_management);
     mutable_chromeos_data->set_is_disabled(chromeos_data.is_disabled);
+    mutable_chromeos_data->set_oem_installed(chromeos_data.oem_installed);
   }
 
   if (web_app.client_data().system_web_app_data.has_value()) {
@@ -234,7 +238,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     auto* mutable_swa_data =
         local_data->mutable_client_data()->mutable_system_web_app_data();
     mutable_swa_data->set_system_app_type(
-        static_cast<::web_app::SystemWebAppDataProto_SystemAppType>(
+        static_cast<SystemWebAppDataProto_SystemAppType>(
             swa_data.system_app_type));
   }
 
@@ -297,28 +301,42 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     }
   }
 
+  // TODO (crbug.com/1114638): Support Monochrome icons.
+  std::array<IconPurpose, 2> purposes = {IconPurpose::ANY,
+                                         IconPurpose::MASKABLE};
   for (const WebApplicationShortcutsMenuItemInfo& shortcut_info :
        web_app.shortcuts_menu_item_infos()) {
     WebAppShortcutsMenuItemInfoProto* shortcut_info_proto =
         local_data->add_shortcuts_menu_item_infos();
     shortcut_info_proto->set_name(base::UTF16ToUTF8(shortcut_info.name));
     shortcut_info_proto->set_url(shortcut_info.url.spec());
-    for (const WebApplicationShortcutsMenuItemInfo::Icon& icon_info :
-         shortcut_info.shortcut_icon_infos) {
-      sync_pb::WebAppIconInfo* shortcut_icon_info_proto =
-          shortcut_info_proto->add_shortcut_icon_infos();
-      DCHECK(!icon_info.url.is_empty());
-      shortcut_icon_info_proto->set_url(icon_info.url.spec());
-      shortcut_icon_info_proto->set_size_in_px(icon_info.square_size_px);
+    for (IconPurpose purpose : purposes) {
+      for (const WebApplicationShortcutsMenuItemInfo::Icon& icon_info :
+           shortcut_info.GetShortcutIconInfosForPurpose(purpose)) {
+        // TODO (crbug.com/1114638): Add Monochrome support.
+        sync_pb::WebAppIconInfo* shortcut_icon_info_proto =
+            (purpose == IconPurpose::ANY)
+                ? shortcut_info_proto->add_shortcut_icon_infos()
+                : shortcut_info_proto->add_shortcut_icon_infos_maskable();
+        DCHECK(!icon_info.url.is_empty());
+        shortcut_icon_info_proto->set_url(icon_info.url.spec());
+        shortcut_icon_info_proto->set_size_in_px(icon_info.square_size_px);
+      }
     }
   }
 
-  for (const std::vector<SquareSizePx>& icon_sizes :
+  for (const IconSizes& icon_sizes :
        web_app.downloaded_shortcuts_menu_icons_sizes()) {
     DownloadedShortcutsMenuIconSizesProto* icon_sizes_proto =
         local_data->add_downloaded_shortcuts_menu_icons_sizes();
-    for (const SquareSizePx& icon_size : icon_sizes) {
+    // TODO (crbug.com/1114638): Add Monochrome support.
+    for (const SquareSizePx& icon_size :
+         icon_sizes.GetSizesForPurpose(IconPurpose::ANY)) {
       icon_sizes_proto->add_icon_sizes(icon_size);
+    }
+    for (const SquareSizePx& icon_size :
+         icon_sizes.GetSizesForPurpose(IconPurpose::MASKABLE)) {
+      icon_sizes_proto->add_icon_sizes_maskable(icon_size);
     }
   }
 
@@ -338,6 +356,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   for (const auto& url_handler : web_app.url_handlers()) {
     WebAppUrlHandlerProto* url_handler_proto = local_data->add_url_handlers();
     url_handler_proto->set_origin(url_handler.origin.Serialize());
+    url_handler_proto->set_has_origin_wildcard(url_handler.has_origin_wildcard);
   }
 
   if (web_app.capture_links() != blink::mojom::CaptureLinks::kUndefined)
@@ -369,10 +388,16 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     return nullptr;
   }
 
-  const AppId app_id = GenerateAppIdFromURL(start_url);
+  base::Optional<std::string> manifest_id = base::nullopt;
+  if (sync_data.has_manifest_id())
+    manifest_id = base::Optional<std::string>(sync_data.manifest_id());
+
+  const AppId app_id = GenerateAppId(manifest_id, start_url);
 
   auto web_app = std::make_unique<WebApp>(app_id);
   web_app->SetStartUrl(start_url);
+
+  web_app->SetManifestId(manifest_id);
 
   // Required fields:
   if (!local_data.has_sources()) {
@@ -445,6 +470,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     chromeos_data->show_in_management =
         chromeos_data_proto.show_in_management();
     chromeos_data->is_disabled = chromeos_data_proto.is_disabled();
+    chromeos_data->oem_installed = chromeos_data_proto.oem_installed();
     web_app->SetWebAppChromeOsData(std::move(chromeos_data));
   }
 
@@ -492,6 +518,10 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   if (local_data.has_is_in_sync_install())
     web_app->SetIsInSyncInstall(local_data.is_in_sync_install());
 
+  if (local_data.has_last_badging_time()) {
+    web_app->SetLastBadgingTime(
+        syncer::ProtoTimeToTime(local_data.last_badging_time()));
+  }
   if (local_data.has_last_launch_time()) {
     web_app->SetLastLaunchTime(
         syncer::ProtoTimeToTime(local_data.last_launch_time()));
@@ -604,32 +634,50 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
 
   std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos;
+  // TODO (crbug.com/1114638): Support Monochrome icons.
+  std::array<IconPurpose, 2> purposes = {IconPurpose::ANY,
+                                         IconPurpose::MASKABLE};
   for (const auto& shortcut_info_proto :
        local_data.shortcuts_menu_item_infos()) {
     WebApplicationShortcutsMenuItemInfo shortcut_info;
     shortcut_info.name = base::UTF8ToUTF16(shortcut_info_proto.name());
     shortcut_info.url = GURL(shortcut_info_proto.url());
-    for (const auto& icon_info_proto :
-         shortcut_info_proto.shortcut_icon_infos()) {
-      WebApplicationShortcutsMenuItemInfo::Icon shortcut_icon_info;
-      shortcut_icon_info.square_size_px = icon_info_proto.size_in_px();
-      shortcut_icon_info.url = GURL(icon_info_proto.url());
-      shortcut_info.shortcut_icon_infos.emplace_back(
-          std::move(shortcut_icon_info));
+    for (IconPurpose purpose : purposes) {
+      // TODO (crbug.com/1114638): Add Monochrome support.
+      const auto& shortcut_icon_infos =
+          (purpose == IconPurpose::ANY)
+              ? shortcut_info_proto.shortcut_icon_infos()
+              : shortcut_info_proto.shortcut_icon_infos_maskable();
+      std::vector<WebApplicationShortcutsMenuItemInfo::Icon> icon_infos;
+      for (const auto& icon_info_proto : shortcut_icon_infos) {
+        WebApplicationShortcutsMenuItemInfo::Icon shortcut_icon_info;
+        shortcut_icon_info.square_size_px = icon_info_proto.size_in_px();
+        shortcut_icon_info.url = GURL(icon_info_proto.url());
+        icon_infos.emplace_back(std::move(shortcut_icon_info));
+      }
+      shortcut_info.SetShortcutIconInfosForPurpose(purpose,
+                                                   std::move(icon_infos));
     }
     shortcuts_menu_item_infos.emplace_back(std::move(shortcut_info));
   }
   web_app->SetShortcutsMenuItemInfos(std::move(shortcuts_menu_item_infos));
 
-  std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes;
+  std::vector<IconSizes> shortcuts_menu_icons_sizes;
   for (const auto& shortcuts_icon_sizes_proto :
        local_data.downloaded_shortcuts_menu_icons_sizes()) {
-    std::vector<SquareSizePx> shortcuts_menu_icon_sizes;
-    for (const auto& icon_size : shortcuts_icon_sizes_proto.icon_sizes()) {
-      shortcuts_menu_icon_sizes.emplace_back(icon_size);
-    }
-    shortcuts_menu_icons_sizes.emplace_back(
-        std::move(shortcuts_menu_icon_sizes));
+    IconSizes icon_sizes;
+    // TODO (crbug.com/1114638): Support Monochrome icons.
+    icon_sizes.SetSizesForPurpose(
+        IconPurpose::ANY, std::vector<SquareSizePx>(
+                              shortcuts_icon_sizes_proto.icon_sizes().begin(),
+                              shortcuts_icon_sizes_proto.icon_sizes().end()));
+    icon_sizes.SetSizesForPurpose(
+        IconPurpose::MASKABLE,
+        std::vector<SquareSizePx>(
+            shortcuts_icon_sizes_proto.icon_sizes_maskable().begin(),
+            shortcuts_icon_sizes_proto.icon_sizes_maskable().end()));
+
+    shortcuts_menu_icons_sizes.push_back(std::move(icon_sizes));
   }
   web_app->SetDownloadedShortcutsMenuIconsSizes(
       std::move(shortcuts_menu_icons_sizes));
@@ -677,6 +725,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
       return nullptr;
     }
     url_handler.origin = std::move(origin);
+    url_handler.has_origin_wildcard = url_handler_proto.has_origin_wildcard();
     url_handlers.push_back(std::move(url_handler));
   }
   web_app->SetUrlHandlers(std::move(url_handlers));

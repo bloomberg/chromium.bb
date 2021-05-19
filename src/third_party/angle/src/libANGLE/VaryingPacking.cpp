@@ -13,6 +13,7 @@
 
 #include "common/utilities.h"
 #include "libANGLE/Program.h"
+#include "libANGLE/ProgramExecutable.h"
 #include "libANGLE/Shader.h"
 
 namespace gl
@@ -790,8 +791,8 @@ void VaryingPacking::collectTFVarying(const std::string &tfVarying,
                 collectUserVaryingFieldTF(ref, *field, fieldIndex, GL_INVALID_INDEX);
             }
             (*uniqueFullNames)[ref.frontShaderStage].insert(tfVarying);
+            (*uniqueFullNames)[ref.frontShaderStage].insert(input->name);
         }
-        (*uniqueFullNames)[ref.frontShaderStage].insert(input->name);
     }
     // Array as a whole and array element conflict has already been checked in
     // linkValidateTransformFeedback.
@@ -851,9 +852,20 @@ bool VaryingPacking::collectAndPackUserVaryings(gl::InfoLog &infoLog,
         // not active. GLES specs are a bit vague on whether it's allowed to only pack active
         // varyings, though GLES 3.1 spec section 11.1.2.1 says that "device-dependent
         // optimizations" may be used to make vertex shader outputs fit.
-        if ((input && output && output->staticUse) || isActiveBuiltInInput ||
-            isActiveBuiltInOutput ||
-            (isSeparableProgram && ((input && input->active) || (output && output->active))))
+        //
+        // When separable programs are linked, varyings at the separable program's boundary are
+        // treated as active. See section 7.4.1 in
+        // https://www.khronos.org/registry/OpenGL/specs/es/3.2/es_spec_3.2.pdf
+        bool matchedInputOutputStaticUse = (input && output && output->staticUse);
+        bool activeBuiltIn               = (isActiveBuiltInInput || isActiveBuiltInOutput);
+
+        // Separable program requirements
+        bool separableActiveInput  = (input && (input->active || !output));
+        bool separableActiveOutput = (output && (output->active || !input));
+        bool separableActiveVarying =
+            (isSeparableProgram && (separableActiveInput || separableActiveOutput));
+
+        if (matchedInputOutputStaticUse || activeBuiltIn || separableActiveVarying)
         {
             const sh::ShaderVariable *varying = output ? output : input;
 
@@ -871,6 +883,11 @@ bool VaryingPacking::collectAndPackUserVaryings(gl::InfoLog &infoLog,
             if (!output->isBuiltIn())
             {
                 mInactiveVaryingMappedNames[ref.backShaderStage].push_back(output->mappedName);
+                if (output->isShaderIOBlock)
+                {
+                    mInactiveVaryingMappedNames[ref.backShaderStage].push_back(
+                        output->mappedStructOrBlockName);
+                }
             }
             continue;
         }
@@ -885,11 +902,21 @@ bool VaryingPacking::collectAndPackUserVaryings(gl::InfoLog &infoLog,
             uniqueFullNames[ref.frontShaderStage].count(input->name) == 0)
         {
             mInactiveVaryingMappedNames[ref.frontShaderStage].push_back(input->mappedName);
+            if (input->isShaderIOBlock)
+            {
+                mInactiveVaryingMappedNames[ref.frontShaderStage].push_back(
+                    input->mappedStructOrBlockName);
+            }
         }
         if (output && !output->isBuiltIn() &&
             uniqueFullNames[ref.backShaderStage].count(output->name) == 0)
         {
             mInactiveVaryingMappedNames[ref.backShaderStage].push_back(output->mappedName);
+            if (output->isShaderIOBlock)
+            {
+                mInactiveVaryingMappedNames[ref.backShaderStage].push_back(
+                    output->mappedStructOrBlockName);
+            }
         }
     }
 
@@ -962,17 +989,18 @@ const VaryingPacking &ProgramVaryingPacking::getOutputPacking(ShaderType frontSh
 bool ProgramVaryingPacking::collectAndPackUserVaryings(InfoLog &infoLog,
                                                        const Caps &caps,
                                                        PackMode packMode,
-                                                       const ShaderBitSet &attachedShadersMask,
+                                                       const ShaderBitSet &activeShadersMask,
                                                        const ProgramMergedVaryings &mergedVaryings,
                                                        const std::vector<std::string> &tfVaryings,
                                                        bool isSeparableProgram)
 {
     mBackToFrontStageMap.fill(ShaderType::InvalidEnum);
 
-    ShaderBitSet attachedShaders = attachedShadersMask;
+    ShaderBitSet activeShaders = activeShadersMask;
 
-    ShaderType frontShaderStage       = attachedShaders.first();
-    attachedShaders[frontShaderStage] = false;
+    ASSERT(activeShaders.any());
+    ShaderType frontShaderStage     = activeShaders.first();
+    activeShaders[frontShaderStage] = false;
 
     // Special case for start-after-vertex.
     if (frontShaderStage != ShaderType::Vertex)
@@ -993,7 +1021,7 @@ bool ProgramVaryingPacking::collectAndPackUserVaryings(InfoLog &infoLog,
     }
 
     // Process input/output shader pairs.
-    for (ShaderType backShaderStage : attachedShaders)
+    for (ShaderType backShaderStage : activeShaders)
     {
         GLint maxVaryingVectors;
         if (frontShaderStage == ShaderType::Vertex && backShaderStage == ShaderType::Fragment)
@@ -1040,56 +1068,63 @@ bool ProgramVaryingPacking::collectAndPackUserVaryings(InfoLog &infoLog,
     return true;
 }
 
-ProgramMergedVaryings GetMergedVaryingsFromShaders(const HasAttachedShaders &programOrPipeline)
+ProgramMergedVaryings GetMergedVaryingsFromShaders(const HasAttachedShaders &programOrPipeline,
+                                                   const ProgramExecutable &programExecutable)
 {
-    Shader *frontShader = nullptr;
+    ShaderType frontShaderType = ShaderType::InvalidEnum;
     ProgramMergedVaryings merged;
 
-    for (ShaderType shaderType : kAllGraphicsShaderTypes)
+    for (ShaderType backShaderType : kAllGraphicsShaderTypes)
     {
-        Shader *backShader = programOrPipeline.getAttachedShader(shaderType);
-        if (!backShader)
+        Shader *backShader = programOrPipeline.getAttachedShader(backShaderType);
+
+        if (!backShader && !programExecutable.hasLinkedShaderStage(backShaderType))
         {
             continue;
         }
 
-        ASSERT(backShader->getType() != ShaderType::Compute);
+        const std::vector<sh::ShaderVariable> &backShaderOutputVaryings =
+            backShader ? backShader->getOutputVaryings()
+                       : programExecutable.getLinkedOutputVaryings(backShaderType);
+        const std::vector<sh::ShaderVariable> &backShaderInputVaryings =
+            backShader ? backShader->getInputVaryings()
+                       : programExecutable.getLinkedInputVaryings(backShaderType);
 
         // Add outputs. These are always unmatched since we walk shader stages sequentially.
-        for (const sh::ShaderVariable &frontVarying : backShader->getOutputVaryings())
+        for (const sh::ShaderVariable &frontVarying : backShaderOutputVaryings)
         {
             ProgramVaryingRef ref;
             ref.frontShader      = &frontVarying;
-            ref.frontShaderStage = backShader->getType();
+            ref.frontShaderStage = backShaderType;
             merged.push_back(ref);
         }
 
-        if (!frontShader)
+        if (frontShaderType == ShaderType::InvalidEnum)
         {
             // If this is our first shader stage, and not a VS, we might have unmatched inputs.
-            for (const sh::ShaderVariable &backVarying : backShader->getInputVaryings())
+            for (const sh::ShaderVariable &backVarying : backShaderInputVaryings)
             {
                 ProgramVaryingRef ref;
                 ref.backShader      = &backVarying;
-                ref.backShaderStage = backShader->getType();
+                ref.backShaderStage = backShaderType;
                 merged.push_back(ref);
             }
         }
         else
         {
             // Match inputs with the prior shader stage outputs.
-            for (const sh::ShaderVariable &backVarying : backShader->getInputVaryings())
+            for (const sh::ShaderVariable &backVarying : backShaderInputVaryings)
             {
                 bool found = false;
                 for (ProgramVaryingRef &ref : merged)
                 {
-                    if (ref.frontShader && ref.frontShaderStage == frontShader->getType() &&
+                    if (ref.frontShader && ref.frontShaderStage == frontShaderType &&
                         InterfaceVariablesMatch(*ref.frontShader, backVarying))
                     {
                         ASSERT(ref.backShader == nullptr);
 
                         ref.backShader      = &backVarying;
-                        ref.backShaderStage = backShader->getType();
+                        ref.backShaderStage = backShaderType;
                         found               = true;
                         break;
                     }
@@ -1100,14 +1135,14 @@ ProgramMergedVaryings GetMergedVaryingsFromShaders(const HasAttachedShaders &pro
                 {
                     ProgramVaryingRef ref;
                     ref.backShader      = &backVarying;
-                    ref.backShaderStage = backShader->getType();
+                    ref.backShaderStage = backShaderType;
                     merged.push_back(ref);
                 }
             }
         }
 
         // Save the current back shader to use as the next front shader.
-        frontShader = backShader;
+        frontShaderType = backShaderType;
     }
 
     return merged;

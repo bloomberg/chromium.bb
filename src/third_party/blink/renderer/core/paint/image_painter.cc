@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/paint/image_painter.h"
 
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
-#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/policy_value.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -231,10 +231,10 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
         image->SizeAsFloat(respect_orientation), src_rect);
   }
 
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
-               "data",
-               inspector_paint_image_event::Data(layout_image_, src_rect,
-                                                 FloatRect(dest_rect)));
+  DEVTOOLS_TIMELINE_TRACE_EVENT_WITH_CATEGORIES(
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
+      inspector_paint_image_event::Data, layout_image_, src_rect,
+      FloatRect(dest_rect));
 
   ScopedInterpolationQuality interpolation_quality_scope(
       context, layout_image_.StyleRef().GetInterpolationQuality());

@@ -13,12 +13,12 @@ devtools_module("snippets") {
   ]
 
   deps = [
-    "../common:bundle",
-    "../i18n:bundle",
-    "../persistence:bundle",
+    "../core/common:bundle",
+    "../core/i18n:bundle",
+    "../core/sdk:bundle",
+    "../models/persistence:bundle",
+    "../models/text_utils:bundle",
     "../quick_open:bundle",
-    "../sdk:bundle",
-    "../text_utils:bundle",
     "../workspace:bundle",
   ]
 }

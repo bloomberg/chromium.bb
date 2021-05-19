@@ -155,6 +155,10 @@ constexpr char kOfflineManifestThemeColorArgbHex[] = "theme_color_argb_hex";
 // gets updated if browser's binary milestone number goes from <M to >=M.
 constexpr char kForceReinstallForMilestone[] = "force_reinstall_for_milestone";
 
+// Contains boolean indicating whether the app installation is requested by
+// the device OEM.
+constexpr char kOemInstalled[] = "oem_installed";
+
 }  // namespace
 
 OptionsOrError ParseConfig(FileUtilsWrapper& file_utils,
@@ -373,6 +377,16 @@ OptionsOrError ParseConfig(FileUtilsWrapper& file_utils,
     options.force_reinstall_for_milestone = value->GetInt();
   }
 
+  // oem_installed
+  value = app_config.FindKey(kOemInstalled);
+  if (value) {
+    if (!value->is_bool()) {
+      return base::StrCat(
+          {file.AsUTF8Unsafe(), " had an invalid ", kOemInstalled});
+    }
+    options.oem_installed = value->GetBool();
+  }
+
   return options;
 }
 
@@ -486,9 +500,9 @@ WebApplicationInfoFactoryOrError ParseOfflineManifest(
            base::NumberToString(bitmap.height())});
     }
 
-    app_info.icon_bitmaps_any[bitmap.width()] = std::move(bitmap);
+    app_info.icon_bitmaps.any[bitmap.width()] = std::move(bitmap);
   }
-  DCHECK(!app_info.icon_bitmaps_any.empty());
+  DCHECK(!app_info.icon_bitmaps.any.empty());
 
   // theme_color_argb_hex (optional)
   const base::Value* theme_color_value =

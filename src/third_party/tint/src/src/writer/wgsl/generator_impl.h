@@ -15,7 +15,6 @@
 #ifndef SRC_WRITER_WGSL_GENERATOR_IMPL_H_
 #define SRC_WRITER_WGSL_GENERATOR_IMPL_H_
 
-#include <sstream>
 #include <string>
 
 #include "src/ast/array_accessor_expression.h"
@@ -23,13 +22,9 @@
 #include "src/ast/binary_expression.h"
 #include "src/ast/bitcast_expression.h"
 #include "src/ast/break_statement.h"
-#include "src/ast/call_expression.h"
-#include "src/ast/case_statement.h"
-#include "src/ast/constructor_expression.h"
 #include "src/ast/continue_statement.h"
 #include "src/ast/discard_statement.h"
 #include "src/ast/fallthrough_statement.h"
-#include "src/ast/identifier_expression.h"
 #include "src/ast/if_statement.h"
 #include "src/ast/loop_statement.h"
 #include "src/ast/member_accessor_expression.h"
@@ -38,12 +33,9 @@
 #include "src/ast/switch_statement.h"
 #include "src/ast/type_constructor_expression.h"
 #include "src/ast/unary_op_expression.h"
-#include "src/ast/variable.h"
-#include "src/diagnostic/diagnostic.h"
 #include "src/program.h"
 #include "src/type/storage_texture_type.h"
 #include "src/type/struct_type.h"
-#include "src/type/type.h"
 #include "src/writer/text_generator.h"
 
 namespace tint {
@@ -201,13 +193,17 @@ class GeneratorImpl : public TextGenerator {
   /// @param var the variable to generate
   /// @returns true if the variable was emitted
   bool EmitVariable(ast::Variable* var);
-  /// Handles generating variable decorations
-  /// @param var the decorated variable
-  /// @returns true if the variable decoration was emitted
-  bool EmitVariableDecorations(const semantic::Variable* var);
+  /// Handles generating a decoration list
+  /// @param decos the decoration list
+  /// @returns true if the decorations were emitted
+  bool EmitDecorations(const ast::DecorationList& decos);
 
  private:
+  /// @return a new, unique, valid WGSL identifier with the given suffix.
+  std::string UniqueIdentifier(const std::string& suffix = "");
+
   Program const* const program_;
+  uint32_t next_unique_identifier_suffix = 0;
 };
 
 }  // namespace wgsl

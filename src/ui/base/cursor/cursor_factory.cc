@@ -34,10 +34,9 @@ CursorFactory* CursorFactory::GetInstance() {
   return g_instance;
 }
 
-base::Optional<PlatformCursor> CursorFactory::GetDefaultCursor(
-    mojom::CursorType type) {
+PlatformCursor CursorFactory::GetDefaultCursor(mojom::CursorType type) {
   NOTIMPLEMENTED();
-  return base::nullopt;
+  return nullptr;
 }
 
 PlatformCursor CursorFactory::CreateImageCursor(mojom::CursorType type,
@@ -51,7 +50,7 @@ PlatformCursor CursorFactory::CreateAnimatedCursor(
     mojom::CursorType type,
     const std::vector<SkBitmap>& bitmaps,
     const gfx::Point& hotspot,
-    int frame_delay_ms) {
+    base::TimeDelta frame_delay) {
   NOTIMPLEMENTED();
   return 0;
 }
@@ -67,6 +66,8 @@ void CursorFactory::UnrefImageCursor(PlatformCursor cursor) {
 void CursorFactory::ObserveThemeChanges() {
   NOTIMPLEMENTED();
 }
+
+void CursorFactory::SetDeviceScaleFactor(float scale) {}
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 
@@ -117,7 +118,7 @@ std::vector<std::string> CursorNamesFromType(mojom::CursorType type) {
     case mojom::CursorType::kWestResize:
       return {"w-resize", "left_side"};
     case mojom::CursorType::kNone:
-      return {"none"};
+      return {};
     case mojom::CursorType::kGrab:
       return {"openhand", "grab"};
     case mojom::CursorType::kGrabbing:
@@ -163,6 +164,10 @@ std::vector<std::string> CursorNamesFromType(mojom::CursorType type) {
     case mojom::CursorType::kCopy:
       return {"copy"};
     case mojom::CursorType::kNotAllowed:
+    case mojom::CursorType::kNorthSouthNoResize:
+    case mojom::CursorType::kEastWestNoResize:
+    case mojom::CursorType::kNorthEastSouthWestNoResize:
+    case mojom::CursorType::kNorthWestSouthEastNoResize:
       return {"not-allowed", "crossed_circle"};
     case mojom::CursorType::kDndNone:
       return {"dnd-none", "hand2"};

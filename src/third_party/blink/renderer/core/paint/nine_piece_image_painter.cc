@@ -105,9 +105,9 @@ void PaintPieces(GraphicsContext& context,
   FloatSize slice_scale(image_size.Width() / unzoomed_image_size.Width(),
                         image_size.Height() / unzoomed_image_size.Height());
 
-  IntRectOutsets border_widths(style.BorderTopWidth(), style.BorderRightWidth(),
-                               style.BorderBottomWidth(),
-                               style.BorderLeftWidth());
+  IntRectOutsets border_widths(
+      style.BorderTopWidth().ToInt(), style.BorderRightWidth().ToInt(),
+      style.BorderBottomWidth().ToInt(), style.BorderLeftWidth().ToInt());
   NinePieceImageGrid grid(
       nine_piece_image, image_size, slice_scale, style.EffectiveZoom(),
       PixelSnappedIntRect(border_image_rect), border_widths, sides_to_include);
@@ -204,11 +204,10 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
       document, 1, default_object_size.ScaledBy(1 / style.EffectiveZoom()),
       kRespectImageOrientation);
 
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
-               "data",
-               inspector_paint_image_event::Data(node, *style_image,
-                                                 FloatRect(image->Rect()),
-                                                 FloatRect(border_image_rect)));
+  DEVTOOLS_TIMELINE_TRACE_EVENT_WITH_CATEGORIES(
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
+      inspector_paint_image_event::Data, node, *style_image,
+      FloatRect(image->Rect()), FloatRect(border_image_rect));
   PaintPieces(graphics_context, border_image_rect, style, nine_piece_image,
               image.get(), unzoomed_image_size, sides_to_include);
   return true;

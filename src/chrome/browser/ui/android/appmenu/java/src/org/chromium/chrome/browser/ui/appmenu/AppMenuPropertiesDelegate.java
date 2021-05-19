@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.Nullable;
 
 import java.util.List;
@@ -117,11 +118,12 @@ public interface AppMenuPropertiesDelegate {
     boolean shouldShowIconBeforeItem();
 
     /**
-     * Record the user selections if users make selected similar MenuItems.
-     *
-     * @param previousMenuItemId The previous selected MenuItem Id.
-     * @param currentMenuItemId The current selected MenuItem Id.
-     * @return Whether the pattern is recorded.
+     * Called to record that the menu item {@code menuItemId} was highlighted.
      */
-    boolean recordAppMenuSimilarSelectionIfNeeded(int previousMenuItemId, int currentMenuItemId);
+    void recordHighlightedMenuItemShown(@Nullable @IdRes Integer menuItemId);
+
+    /**
+     * Called to record that user clicked on highlighted menu item {@code menuItemId}.
+     */
+    void recordHighlightedMenuItemClicked(@Nullable @IdRes Integer menuItemId);
 }

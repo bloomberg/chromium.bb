@@ -50,6 +50,9 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 // Returns YES if running on an iPad.
 - (BOOL)isIPadIdiom;
 
+// YES if the current interface language uses RTL layout.
+- (BOOL)isRTL;
+
 // Returns YES if the main application window's rootViewController has a compact
 // horizontal size class.
 - (BOOL)isCompactWidth;
@@ -429,6 +432,11 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 // GREYAssert is induced.
 - (void)waitForIncognitoTabCount:(NSUInteger)count
               inWindowWithNumber:(int)windowNumber;
+
+// Waits for the JavaScript query |javaScriptCondition| to return |boolValue|
+// YES. If the condition is not met within kWaitForActionTimeout a GREYAssert is
+// induced.
+- (void)waitForJavaScriptCondition:(NSString*)javaScriptCondition;
 
 #pragma mark - SignIn Utilities (EG2)
 

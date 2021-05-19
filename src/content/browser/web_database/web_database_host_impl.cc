@@ -17,6 +17,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "storage/browser/database/database_tracker.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/database/vfs_backend.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -53,8 +54,8 @@ void ValidateOriginOnUIThread(
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanAccessDataForOrigin(
           process_id, origin)) {
     callback_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(error_callback), "Unauthorized origin."));
+        FROM_HERE, base::BindOnce(std::move(error_callback),
+                                  "WebDatabaseHost: Unauthorized origin."));
     return;
   }
 
@@ -95,7 +96,7 @@ void WebDatabaseHostImpl::Create(
       std::move(receiver));
 }
 
-void WebDatabaseHostImpl::OpenFile(const base::string16& vfs_file_name,
+void WebDatabaseHostImpl::OpenFile(const std::u16string& vfs_file_name,
                                    int32_t desired_flags,
                                    OpenFileCallback callback) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
@@ -105,7 +106,7 @@ void WebDatabaseHostImpl::OpenFile(const base::string16& vfs_file_name,
                                 desired_flags, std::move(callback)));
 }
 
-void WebDatabaseHostImpl::OpenFileValidated(const base::string16& vfs_file_name,
+void WebDatabaseHostImpl::OpenFileValidated(const std::u16string& vfs_file_name,
                                             int32_t desired_flags,
                                             OpenFileCallback callback) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
@@ -113,7 +114,7 @@ void WebDatabaseHostImpl::OpenFileValidated(const base::string16& vfs_file_name,
   base::File file;
   const base::File* tracked_file = nullptr;
   std::string origin_identifier;
-  base::string16 database_name;
+  std::u16string database_name;
 
   // When in Incognito mode, we want to make sure that all DB files are
   // removed when the Incognito browser context goes away, so we add the
@@ -156,7 +157,7 @@ void WebDatabaseHostImpl::OpenFileValidated(const base::string16& vfs_file_name,
   std::move(callback).Run(std::move(result));
 }
 
-void WebDatabaseHostImpl::DeleteFile(const base::string16& vfs_file_name,
+void WebDatabaseHostImpl::DeleteFile(const std::u16string& vfs_file_name,
                                      bool sync_dir,
                                      DeleteFileCallback callback) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
@@ -168,7 +169,7 @@ void WebDatabaseHostImpl::DeleteFile(const base::string16& vfs_file_name,
 }
 
 void WebDatabaseHostImpl::GetFileAttributes(
-    const base::string16& vfs_file_name,
+    const std::u16string& vfs_file_name,
     GetFileAttributesCallback callback) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
   ValidateOrigin(
@@ -179,7 +180,7 @@ void WebDatabaseHostImpl::GetFileAttributes(
 }
 
 void WebDatabaseHostImpl::GetFileAttributesValidated(
-    const base::string16& vfs_file_name,
+    const std::u16string& vfs_file_name,
     GetFileAttributesCallback callback) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
 
@@ -192,30 +193,7 @@ void WebDatabaseHostImpl::GetFileAttributesValidated(
   std::move(callback).Run(attributes);
 }
 
-void WebDatabaseHostImpl::GetFileSize(const base::string16& vfs_file_name,
-                                      GetFileSizeCallback callback) {
-  DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
-  ValidateOrigin(vfs_file_name,
-                 base::BindOnce(&WebDatabaseHostImpl::GetFileSizeValidated,
-                                weak_ptr_factory_.GetWeakPtr(), vfs_file_name,
-                                std::move(callback)));
-}
-
-void WebDatabaseHostImpl::GetFileSizeValidated(
-    const base::string16& vfs_file_name,
-    GetFileSizeCallback callback) {
-  DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
-
-  int64_t size = 0LL;
-  base::FilePath db_file =
-      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_.get(), vfs_file_name);
-  if (!db_file.empty()) {
-    size = VfsBackend::GetFileSize(db_file);
-  }
-  std::move(callback).Run(size);
-}
-
-void WebDatabaseHostImpl::SetFileSize(const base::string16& vfs_file_name,
+void WebDatabaseHostImpl::SetFileSize(const std::u16string& vfs_file_name,
                                       int64_t expected_size,
                                       SetFileSizeCallback callback) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
@@ -226,7 +204,7 @@ void WebDatabaseHostImpl::SetFileSize(const base::string16& vfs_file_name,
 }
 
 void WebDatabaseHostImpl::SetFileSizeValidated(
-    const base::string16& vfs_file_name,
+    const std::u16string& vfs_file_name,
     int64_t expected_size,
     SetFileSizeCallback callback) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
@@ -275,7 +253,7 @@ void WebDatabaseHostImpl::GetSpaceAvailableValidated(
 }
 
 void WebDatabaseHostImpl::DatabaseDeleteFile(
-    const base::string16& vfs_file_name,
+    const std::u16string& vfs_file_name,
     bool sync_dir,
     DeleteFileCallback callback,
     int reschedule_count) {
@@ -290,8 +268,8 @@ void WebDatabaseHostImpl::DatabaseDeleteFile(
     // In order to delete a journal file in Incognito mode, we only need to
     // close the open handle to it that's stored in the database tracker.
     if (db_tracker_->IsIncognitoProfile()) {
-      const base::string16 wal_suffix(base::ASCIIToUTF16("-wal"));
-      base::string16 sqlite_suffix;
+      const std::u16string wal_suffix(u"-wal");
+      std::u16string sqlite_suffix;
 
       // WAL files can be deleted without having previously been opened.
       if (!db_tracker_->HasSavedIncognitoFileHandle(vfs_file_name) &&
@@ -323,9 +301,8 @@ void WebDatabaseHostImpl::DatabaseDeleteFile(
 }
 
 void WebDatabaseHostImpl::Opened(const url::Origin& origin,
-                                 const base::string16& database_name,
-                                 const base::string16& database_description,
-                                 int64_t estimated_size) {
+                                 const std::u16string& database_name,
+                                 const std::u16string& database_description) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
 
   if (!observer_added_) {
@@ -335,15 +312,13 @@ void WebDatabaseHostImpl::Opened(const url::Origin& origin,
 
   ValidateOrigin(origin, base::BindOnce(&WebDatabaseHostImpl::OpenedValidated,
                                         weak_ptr_factory_.GetWeakPtr(), origin,
-                                        database_name, database_description,
-                                        estimated_size));
+                                        database_name, database_description));
 }
 
 void WebDatabaseHostImpl::OpenedValidated(
     const url::Origin& origin,
-    const base::string16& database_name,
-    const base::string16& database_description,
-    int64_t estimated_size) {
+    const std::u16string& database_name,
+    const std::u16string& database_description) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
 
   // TODO(https://crbug.com/1158302): Use IsOriginPotentiallyTrustworthy?
@@ -353,8 +328,7 @@ void WebDatabaseHostImpl::OpenedValidated(
   int64_t database_size = 0;
   std::string origin_identifier(storage::GetIdentifierFromOrigin(origin));
   db_tracker_->DatabaseOpened(origin_identifier, database_name,
-                              database_description, estimated_size,
-                              &database_size);
+                              database_description, &database_size);
 
   database_connections_.AddConnection(origin_identifier, database_name);
 
@@ -362,7 +336,7 @@ void WebDatabaseHostImpl::OpenedValidated(
 }
 
 void WebDatabaseHostImpl::Modified(const url::Origin& origin,
-                                   const base::string16& database_name) {
+                                   const std::u16string& database_name) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
 
   ValidateOrigin(origin, base::BindOnce(&WebDatabaseHostImpl::ModifiedValidated,
@@ -372,12 +346,12 @@ void WebDatabaseHostImpl::Modified(const url::Origin& origin,
 
 void WebDatabaseHostImpl::ModifiedValidated(
     const url::Origin& origin,
-    const base::string16& database_name) {
+    const std::u16string& database_name) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
   std::string origin_identifier(storage::GetIdentifierFromOrigin(origin));
   if (!database_connections_.IsDatabaseOpened(origin_identifier,
                                               database_name)) {
-    mojo::ReportBadMessage("Database not opened on modify");
+    mojo::ReportBadMessage("WebDatabaseHost: Database not opened on modify");
     return;
   }
 
@@ -385,7 +359,7 @@ void WebDatabaseHostImpl::ModifiedValidated(
 }
 
 void WebDatabaseHostImpl::Closed(const url::Origin& origin,
-                                 const base::string16& database_name) {
+                                 const std::u16string& database_name) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
 
   ValidateOrigin(origin, base::BindOnce(&WebDatabaseHostImpl::ClosedValidated,
@@ -394,13 +368,13 @@ void WebDatabaseHostImpl::Closed(const url::Origin& origin,
 }
 
 void WebDatabaseHostImpl::ClosedValidated(const url::Origin& origin,
-                                          const base::string16& database_name) {
+                                          const std::u16string& database_name) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
 
   std::string origin_identifier(storage::GetIdentifierFromOrigin(origin));
   if (!database_connections_.IsDatabaseOpened(origin_identifier,
                                               database_name)) {
-    mojo::ReportBadMessage("Database not opened on close");
+    mojo::ReportBadMessage("WebDatabaseHost: Database not opened on close");
     return;
   }
 
@@ -409,7 +383,7 @@ void WebDatabaseHostImpl::ClosedValidated(const url::Origin& origin,
 }
 
 void WebDatabaseHostImpl::HandleSqliteError(const url::Origin& origin,
-                                            const base::string16& database_name,
+                                            const std::u16string& database_name,
                                             int32_t error) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
   ValidateOrigin(
@@ -421,7 +395,7 @@ void WebDatabaseHostImpl::HandleSqliteError(const url::Origin& origin,
 
 void WebDatabaseHostImpl::OnDatabaseSizeChanged(
     const std::string& origin_identifier,
-    const base::string16& database_name,
+    const std::u16string& database_name,
     int64_t database_size) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
   if (!database_connections_.IsOriginUsed(origin_identifier)) {
@@ -435,7 +409,7 @@ void WebDatabaseHostImpl::OnDatabaseSizeChanged(
 
 void WebDatabaseHostImpl::OnDatabaseScheduledForDeletion(
     const std::string& origin_identifier,
-    const base::string16& database_name) {
+    const std::u16string& database_name) {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
 
   GetWebDatabase().CloseImmediately(
@@ -464,7 +438,7 @@ blink::mojom::WebDatabase& WebDatabaseHostImpl::GetWebDatabase() {
 void WebDatabaseHostImpl::ValidateOrigin(const url::Origin& origin,
                                          base::OnceClosure callback) {
   if (origin.opaque()) {
-    mojo::ReportBadMessage("Invalid origin.");
+    mojo::ReportBadMessage("WebDatabaseHost: Invalid origin.");
     return;
   }
 
@@ -475,7 +449,7 @@ void WebDatabaseHostImpl::ValidateOrigin(const url::Origin& origin,
                      std::move(callback), mojo::GetBadMessageCallback()));
 }
 
-void WebDatabaseHostImpl::ValidateOrigin(const base::string16& vfs_file_name,
+void WebDatabaseHostImpl::ValidateOrigin(const std::u16string& vfs_file_name,
                                          base::OnceClosure callback) {
   std::string origin_identifier;
   if (vfs_file_name.empty()) {

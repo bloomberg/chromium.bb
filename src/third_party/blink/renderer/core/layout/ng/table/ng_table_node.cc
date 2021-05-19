@@ -17,6 +17,12 @@ scoped_refptr<const NGTableBorders> NGTableNode::GetTableBorders() const {
   if (!table_borders) {
     table_borders = NGTableBorders::ComputeTableBorders(*this);
     layout_table->SetCachedTableBorders(table_borders.get());
+  } else {
+#if DCHECK_IS_ON()
+    // TODO(crbug.com/1191742) remove these DCHECKs as soon as bug is found.
+    auto duplicate_table_borders = NGTableBorders::ComputeTableBorders(*this);
+    DCHECK(*duplicate_table_borders == *table_borders);
+#endif
   }
   return table_borders;
 }
@@ -46,6 +52,14 @@ LayoutUnit NGTableNode::ComputeTableInlineSize(
                                                         border_padding);
 }
 
+LayoutUnit NGTableNode::ComputeCaptionBlockSize(
+    const NGConstraintSpace& space) const {
+  LayoutUnit table_inline_size = CalculateInitialFragmentGeometry(space, *this)
+                                     .border_box_size.inline_size;
+  return NGTableLayoutAlgorithm::ComputeCaptionBlockSize(*this, space,
+                                                         table_inline_size);
+}
+
 bool NGTableNode::AllowColumnPercentages(bool is_layout_pass) const {
   if (Style().LogicalWidth().IsMaxContent())
     return false;
@@ -62,19 +76,6 @@ bool NGTableNode::AllowColumnPercentages(bool is_layout_pass) const {
         block->IsLayoutGridIncludingNG())
       return false;
 
-    block = block->ContainingBlock();
-  }
-  return true;
-}
-
-// True if table's intrinsic max size can be infinite.
-// Infinite intrinsic sizes are ok inside block layout, but cannot work
-// inside flex and grid layouts.
-bool NGTableNode::AllowsInfiniteMaxInlineSize() const {
-  const LayoutBlock* block = box_->ContainingBlock();
-  while (!block->IsLayoutView()) {
-    if (block->IsFlexibleBoxIncludingNG() || block->IsLayoutGridIncludingNG())
-      return false;
     block = block->ContainingBlock();
   }
   return true;

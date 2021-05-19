@@ -12,7 +12,7 @@
 #include "base/i18n/message_formatter.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -47,12 +47,12 @@ class UsbDeviceInfo : public DevicePermissionsPrompt::Prompt::DeviceInfo {
       : device_(std::move(device)) {
     name_ = DevicePermissionsManager::GetPermissionMessage(
         device_->vendor_id, device_->product_id,
-        device_->manufacturer_name.value_or(base::string16()),
-        device_->product_name.value_or(base::string16()),
-        base::string16(),  // Serial number is displayed separately.
+        device_->manufacturer_name.value_or(std::u16string()),
+        device_->product_name.value_or(std::u16string()),
+        std::u16string(),  // Serial number is displayed separately.
         true);
     serial_number_ =
-        device_->serial_number ? *(device_->serial_number) : base::string16();
+        device_->serial_number ? *(device_->serial_number) : std::u16string();
   }
 
   ~UsbDeviceInfo() override {}
@@ -74,11 +74,10 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
       DevicePermissionsPrompt::UsbDevicesCallback callback)
       : Prompt(extension, context, multiple),
         filters_(std::move(filters)),
-        callback_(std::move(callback)),
-        manager_observer_(this) {}
+        callback_(std::move(callback)) {}
 
  private:
-  ~UsbDevicePermissionsPrompt() override { manager_observer_.RemoveAll(); }
+  ~UsbDevicePermissionsPrompt() override { manager_observation_.Reset(); }
 
   // DevicePermissionsPrompt::Prompt implementation:
   void SetObserver(
@@ -87,10 +86,11 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
 
     if (observer) {
       auto* device_manager = UsbDeviceManager::Get(browser_context());
-      if (device_manager && !manager_observer_.IsObserving(device_manager)) {
+      if (device_manager &&
+          !manager_observation_.IsObservingSource(device_manager)) {
         device_manager->GetDevices(base::BindOnce(
             &UsbDevicePermissionsPrompt::OnDevicesEnumerated, this));
-        manager_observer_.Add(device_manager);
+        manager_observation_.Observe(device_manager);
       }
     }
   }
@@ -125,7 +125,7 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
       UsbDeviceInfo* entry = static_cast<UsbDeviceInfo*>((*it).get());
       if (entry->device()->guid == device.guid) {
         size_t index = it - devices_.begin();
-        base::string16 device_name = (*it)->name();
+        std::u16string device_name = (*it)->name();
         devices_.erase(it);
         if (observer())
           observer()->OnDeviceRemoved(index, device_name);
@@ -178,8 +178,8 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
   std::vector<UsbDeviceFilterPtr> filters_;
   size_t remaining_initial_devices_ = 0;
   DevicePermissionsPrompt::UsbDevicesCallback callback_;
-  ScopedObserver<UsbDeviceManager, UsbDeviceManager::Observer>
-      manager_observer_;
+  base::ScopedObservation<UsbDeviceManager, UsbDeviceManager::Observer>
+      manager_observation_{this};
 };
 
 class HidDeviceInfo : public DevicePermissionsPrompt::Prompt::DeviceInfo {
@@ -188,9 +188,9 @@ class HidDeviceInfo : public DevicePermissionsPrompt::Prompt::DeviceInfo {
       : device_(std::move(device)) {
     name_ = DevicePermissionsManager::GetPermissionMessage(
         device_->vendor_id, device_->product_id,
-        base::string16(),  // HID devices include manufacturer in product name.
+        std::u16string(),  // HID devices include manufacturer in product name.
         base::UTF8ToUTF16(device_->product_name),
-        base::string16(),  // Serial number is displayed separately.
+        std::u16string(),  // Serial number is displayed separately.
         false);
     serial_number_ = base::UTF8ToUTF16(device_->serial_number);
   }
@@ -283,7 +283,7 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
       HidDeviceInfo* entry = static_cast<HidDeviceInfo*>((*it).get());
       if (entry->device()->guid == device->guid) {
         size_t index = it - devices_.begin();
-        base::string16 device_name = (*it)->name();
+        std::u16string device_name = (*it)->name();
         devices_.erase(it);
         if (observer())
           observer()->OnDeviceRemoved(index, device_name);
@@ -292,11 +292,27 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     }
   }
 
+  void DeviceChanged(device::mojom::HidDeviceInfoPtr device) override {
+    for (const auto& device_info : devices_) {
+      auto* hid_device_info =
+          reinterpret_cast<HidDeviceInfo*>(device_info.get());
+      if (hid_device_info->device()->guid == device->guid) {
+        // The device is already present in |devices_|. Update its device
+        // information.
+        hid_device_info->device() = std::move(device);
+        return;
+      }
+    }
+
+    // The device was not previously added to |devices_|, possibly due to
+    // filters or protected collections. Try adding it again.
+    MaybeAddDevice(std::move(device), /*initial_enumeration=*/false);
+  }
+
   void OnDevicesEnumerated(
       std::vector<device::mojom::HidDeviceInfoPtr> devices) {
     for (auto& device : devices)
       MaybeAddDevice(std::move(device), /*initial_enumeration=*/true);
-    ;
   }
 
   bool HasUnprotectedCollections(const device::mojom::HidDeviceInfo& device) {
@@ -372,13 +388,13 @@ void DevicePermissionsPrompt::Prompt::SetObserver(Observer* observer) {
   observer_ = observer;
 }
 
-base::string16 DevicePermissionsPrompt::Prompt::GetDeviceName(
+std::u16string DevicePermissionsPrompt::Prompt::GetDeviceName(
     size_t index) const {
   DCHECK_LT(index, devices_.size());
   return devices_[index]->name();
 }
 
-base::string16 DevicePermissionsPrompt::Prompt::GetDeviceSerialNumber(
+std::u16string DevicePermissionsPrompt::Prompt::GetDeviceSerialNumber(
     size_t index) const {
   DCHECK_LT(index, devices_.size());
   return devices_[index]->serial_number();
@@ -394,7 +410,7 @@ DevicePermissionsPrompt::Prompt::~Prompt() {
 
 void DevicePermissionsPrompt::Prompt::AddDevice(
     std::unique_ptr<DeviceInfo> device) {
-  base::string16 device_name = device->name();
+  std::u16string device_name = device->name();
   devices_.push_back(std::move(device));
   if (observer_)
     observer_->OnDeviceAdded(devices_.size() - 1, device_name);

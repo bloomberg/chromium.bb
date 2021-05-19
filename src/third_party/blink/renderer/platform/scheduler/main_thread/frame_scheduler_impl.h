@@ -96,7 +96,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void SetCrossOriginToMainFrame(bool cross_origin) override;
   bool IsCrossOriginToMainFrame() const override;
 
-  void SetIsAdFrame() override;
+  void SetIsAdFrame(bool is_ad_frame) override;
   bool IsAdFrame() const override;
 
   void TraceUrlChange(const String& url) override;
@@ -306,6 +306,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   static MainThreadTaskQueue::QueueTraits UnfreezableLoadingTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits LoadingControlTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits FindInPageTaskQueueTraits();
+  static MainThreadTaskQueue::QueueTraits InputBlockingQueueTraits();
 
   const FrameScheduler::FrameType frame_type_;
 
@@ -359,6 +360,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   base::sequence_manager::TaskQueue::QueuePriority
       default_loading_task_priority_ =
           base::sequence_manager::TaskQueue::QueuePriority::kNormalPriority;
+  // Whether we should freeze task queues or not when KeepActive is true.
+  TraceableState<bool, TracingCategoryName::kInfo>
+      is_freeze_while_keep_active_enabled_;
 
   // These are the states of the Page.
   // They should be accessed via GetPageScheduler()->SetPageState().

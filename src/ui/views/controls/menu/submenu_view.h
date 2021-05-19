@@ -102,14 +102,17 @@ class VIEWS_EXPORT SubmenuView : public View,
   int GetRowCount() override;
   int GetSelectedRow() override;
   void SetSelectedRow(int row) override;
-  base::string16 GetTextForRow(int row) override;
+  std::u16string GetTextForRow(int row) override;
 
   // Returns true if the menu is showing.
   virtual bool IsShowing() const;
 
   // Shows the menu at the specified location. Coordinates are in screen
   // coordinates. max_width gives the max width the view should be.
-  void ShowAt(Widget* parent, const gfx::Rect& bounds, bool do_capture);
+  void ShowAt(Widget* parent,
+              const gfx::Rect& bounds,
+              bool do_capture,
+              gfx::NativeView native_view_for_gestures = nullptr);
 
   // Resets the bounds of the submenu to |bounds|.
   void Reposition(const gfx::Rect& bounds);

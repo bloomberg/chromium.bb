@@ -25,6 +25,7 @@
 #include "ash/system/holding_space/holding_space_item_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/files/file_path.h"
 #include "base/strings/strcat.h"
@@ -76,24 +77,34 @@ void GestureTap(const views::View* view) {
   event_generator.GestureTapAt(view->GetBoundsInScreen().CenterPoint());
 }
 
+ui::GestureEvent BuildGestureEvent(const gfx::Point& event_location,
+                                   ui::EventType gesture_type) {
+  return ui::GestureEvent(event_location.x(), event_location.y(), ui::EF_NONE,
+                          ui::EventTimeForNow(),
+                          ui::GestureEventDetails(gesture_type));
+}
+
 void LongPress(const views::View* view) {
   auto* root_window = view->GetWidget()->GetNativeWindow()->GetRootWindow();
   ui::test::EventGenerator event_generator(root_window);
   event_generator.MoveTouch(view->GetBoundsInScreen().CenterPoint());
-  ui::GestureEvent long_press(
-      event_generator.current_screen_location().x(),
-      event_generator.current_screen_location().y(), ui::EF_NONE,
-      ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+  const gfx::Point& press_location = event_generator.current_screen_location();
+  ui::GestureEvent long_press =
+      BuildGestureEvent(press_location, ui::ET_GESTURE_LONG_PRESS);
   event_generator.Dispatch(&long_press);
+
+  ui::GestureEvent gesture_end =
+      BuildGestureEvent(press_location, ui::ET_GESTURE_END);
+  event_generator.Dispatch(&gesture_end);
 }
 
-void PressKey(const views::View* view,
-              ui::KeyboardCode key_code,
-              int flags = ui::EF_NONE) {
+void PressAndReleaseKey(const views::View* view,
+                        ui::KeyboardCode key_code,
+                        int flags = ui::EF_NONE) {
   auto* root_window = view->GetWidget()->GetNativeWindow()->GetRootWindow();
   ui::test::EventGenerator event_generator(root_window);
   event_generator.PressKey(key_code, flags);
+  event_generator.ReleaseKey(key_code, flags);
 }
 
 bool PressTabUntilFocused(const views::View* view, int max_count = 10) {
@@ -158,6 +169,98 @@ class MockHoldingSpaceClient : public HoldingSpaceClient {
               (override));
 };
 
+// TransformRecordingLayerDelegate ---------------------------------------------
+
+// A scoped `ui::LayerDelegate` which records information about transforms.
+class ScopedTransformRecordingLayerDelegate : public ui::LayerDelegate {
+ public:
+  explicit ScopedTransformRecordingLayerDelegate(ui::Layer* layer)
+      : layer_(layer), layer_delegate_(layer_->delegate()) {
+    layer_->set_delegate(this);
+    Reset();
+  }
+
+  ScopedTransformRecordingLayerDelegate(
+      const ScopedTransformRecordingLayerDelegate&) = delete;
+  ScopedTransformRecordingLayerDelegate& operator=(
+      const ScopedTransformRecordingLayerDelegate&) = delete;
+
+  ~ScopedTransformRecordingLayerDelegate() override {
+    layer_->set_delegate(layer_delegate_);
+  }
+
+  // Resets recorded information.
+  void Reset() {
+    const gfx::Transform& transform = layer_->transform();
+    start_scale_ = end_scale_ = min_scale_ = max_scale_ = transform.Scale2d();
+    start_translation_ = end_translation_ = min_translation_ =
+        max_translation_ = transform.To2dTranslation();
+  }
+
+  // Returns true if a scale occurred.
+  bool DidScale() const {
+    return start_scale_ != min_scale_ || start_scale_ != max_scale_;
+  }
+
+  // Returns true if a translation occurred.
+  bool DidTranslate() const {
+    return start_translation_ != min_translation_ ||
+           start_translation_ != max_translation_;
+  }
+
+  // Returns true if `layer_` scaled from `start` to `end`.
+  bool ScaledFrom(const gfx::Vector2dF& start,
+                  const gfx::Vector2dF& end) const {
+    return start == start_scale_ && end == end_scale_;
+  }
+
+  // Returns true if `layer_` scaled within `min` and `max`.
+  bool ScaledInRange(const gfx::Vector2dF& min,
+                     const gfx::Vector2dF& max) const {
+    return min == min_scale_ && max == max_scale_;
+  }
+
+  // Returns true if `layer_` translated from `start` to `end`.
+  bool TranslatedFrom(const gfx::Vector2dF& start,
+                      const gfx::Vector2dF& end) const {
+    return start == start_translation_ && end == end_translation_;
+  }
+
+  // Returns true if `layer_` translated within `min` to `max`.
+  bool TranslatedInRange(const gfx::Vector2dF& min,
+                         const gfx::Vector2dF& max) const {
+    return min == min_translation_ && max == max_translation_;
+  }
+
+ private:
+  // ui::LayerDelegate:
+  void OnPaintLayer(const ui::PaintContext& context) override {}
+  void OnDeviceScaleFactorChanged(float old_scale, float new_scale) override {}
+
+  void OnLayerTransformed(const gfx::Transform& old_transform,
+                          ui::PropertyChangeReason reason) override {
+    const gfx::Transform& transform = layer_->transform();
+    end_scale_ = transform.Scale2d();
+    end_translation_ = transform.To2dTranslation();
+    min_scale_.SetToMin(end_scale_);
+    max_scale_.SetToMax(end_scale_);
+    min_translation_.SetToMin(end_translation_);
+    max_translation_.SetToMax(end_translation_);
+  }
+
+  ui::Layer* const layer_;
+  ui::LayerDelegate* const layer_delegate_;
+
+  gfx::Vector2dF start_scale_;
+  gfx::Vector2dF start_translation_;
+  gfx::Vector2dF end_scale_;
+  gfx::Vector2dF end_translation_;
+  gfx::Vector2dF min_scale_;
+  gfx::Vector2dF max_scale_;
+  gfx::Vector2dF min_translation_;
+  gfx::Vector2dF max_translation_;
+};
+
 }  // namespace
 
 // HoldingSpaceTrayTest --------------------------------------------------------
@@ -216,6 +319,7 @@ class HoldingSpaceTrayTest : public AshTestBase,
     target_model->AddItem(std::move(item));
     return item_ptr;
   }
+
   HoldingSpaceItem* AddPartiallyInitializedItem(HoldingSpaceItem::Type type,
                                                 const base::FilePath& path) {
     // Create a holding space item, and use it to create a serialized item
@@ -235,6 +339,11 @@ class HoldingSpaceTrayTest : public AshTestBase,
     HoldingSpaceItem* deserialized_item_ptr = deserialized_item.get();
     model()->AddItem(std::move(deserialized_item));
     return deserialized_item_ptr;
+  }
+
+  void RemoveAllItems() {
+    model()->RemoveIf(
+        base::BindRepeating([](const HoldingSpaceItem* item) { return true; }));
   }
 
   // The holding space tray is only visible in the shelf after the first holding
@@ -1915,7 +2024,7 @@ TEST_P(HoldingSpaceTrayTest, EnterKeyOpensDownloads) {
   // app. There should be *no* attempts to open an holding space items.
   EXPECT_CALL(*client(), OpenItems).Times(0);
   EXPECT_CALL(*client(), OpenDownloads);
-  PressKey(downloads_section_header, ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(downloads_section_header, ui::KeyboardCode::VKEY_RETURN);
 }
 
 // User should be able to launch selected holding space items by pressing the
@@ -1942,7 +2051,7 @@ TEST_P(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
 
   // Press the enter key. The client should *not* attempt to open any items.
   EXPECT_CALL(*client(), OpenItems).Times(0);
-  PressKey(item_views[0], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_RETURN);
   testing::Mock::VerifyAndClearExpectations(client());
 
   // Click an item. The view should be selected.
@@ -1954,7 +2063,7 @@ TEST_P(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   // Press the enter key. We expect the client to open the selected item.
   EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[0]->item()),
                                    testing::_));
-  PressKey(item_views[0], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_RETURN);
   testing::Mock::VerifyAndClearExpectations(client());
 
   // Shift-click on the second item. Both views should be selected.
@@ -1966,7 +2075,7 @@ TEST_P(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[0]->item(),
                                                         item_views[1]->item()),
                                    testing::_));
-  PressKey(item_views[1], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(item_views[1], ui::KeyboardCode::VKEY_RETURN);
   testing::Mock::VerifyAndClearExpectations(client());
 
   // Tab traverse to the last item.
@@ -1976,7 +2085,7 @@ TEST_P(HoldingSpaceTrayTest, EnterKeyOpensSelectedFiles) {
   // it was *not* selected prior to pressing the enter key.
   EXPECT_CALL(*client(), OpenItems(testing::ElementsAre(item_views[2]->item()),
                                    testing::_));
-  PressKey(item_views[2], ui::KeyboardCode::VKEY_RETURN);
+  PressAndReleaseKey(item_views[2], ui::KeyboardCode::VKEY_RETURN);
   EXPECT_FALSE(item_views[0]->selected());
   EXPECT_FALSE(item_views[1]->selected());
   EXPECT_TRUE(item_views[2]->selected());
@@ -2193,7 +2302,7 @@ TEST_P(HoldingSpaceTrayTest, MultiselectInTouchMode) {
 
   // Close the context menu. The view that was long pressed should still be
   // selected.
-  PressKey(item_views[0], ui::KeyboardCode::VKEY_ESCAPE);
+  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_ESCAPE);
   EXPECT_FALSE(views::MenuController::GetActiveInstance());
   EXPECT_TRUE(item_views[0]->selected());
   EXPECT_FALSE(item_views[1]->selected());
@@ -2209,33 +2318,33 @@ TEST_P(HoldingSpaceTrayTest, MultiselectInTouchMode) {
 
   // Close the context menu. Both views that were long pressed should still be
   // selected.
-  PressKey(item_views[0], ui::KeyboardCode::VKEY_ESCAPE);
+  PressAndReleaseKey(item_views[0], ui::KeyboardCode::VKEY_ESCAPE);
   EXPECT_FALSE(views::MenuController::GetActiveInstance());
   EXPECT_TRUE(item_views[0]->selected());
   EXPECT_TRUE(item_views[1]->selected());
   EXPECT_FALSE(item_views[2]->selected());
 
-  // Tap one of the selected views. Both items should be opened.
-  EXPECT_CALL(*client(), OpenItems)
-      .WillOnce(
-          testing::Invoke([&](const std::vector<const HoldingSpaceItem*>& items,
-                              HoldingSpaceClient::SuccessCallback callback) {
-            ASSERT_EQ(items.size(), 2u);
-            EXPECT_EQ(item_views[0]->item(), items[0]);
-            EXPECT_EQ(item_views[1]->item(), items[1]);
-          }));
+  // Tap one of the selected views. It should no longer be selected.
   GestureTap(item_views[0]);
-  testing::Mock::VerifyAndClearExpectations(client());
-
-  // Long press the same two views to reselect them.
-  LongPress(item_views[0]);
-  LongPress(item_views[1]);
-  EXPECT_TRUE(item_views[0]->selected());
+  EXPECT_FALSE(item_views[0]->selected());
   EXPECT_TRUE(item_views[1]->selected());
   EXPECT_FALSE(item_views[2]->selected());
 
-  // Tap an unselected view. Only the view which was previously unselected
-  // should be open.
+  // Tap one of the unselected views. It should become selected.
+  GestureTap(item_views[2]);
+  EXPECT_FALSE(item_views[0]->selected());
+  EXPECT_TRUE(item_views[1]->selected());
+  EXPECT_TRUE(item_views[2]->selected());
+
+  // Tap both selected views. No views should be selected.
+  GestureTap(item_views[1]);
+  GestureTap(item_views[2]);
+  EXPECT_FALSE(item_views[0]->selected());
+  EXPECT_FALSE(item_views[1]->selected());
+  EXPECT_FALSE(item_views[2]->selected());
+
+  // Tap an unselected view. This is the only way to open an item via touch.
+  // There must be *no* views currently selected when tapping a view.
   EXPECT_CALL(*client(), OpenItems)
       .WillOnce(
           testing::Invoke([&](const std::vector<const HoldingSpaceItem*>& items,
@@ -2474,6 +2583,116 @@ TEST_P(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
   Click(item_views[0]);
   DoubleClick(item_views[1], ui::EF_SHIFT_DOWN);
   testing::Mock::VerifyAndClearExpectations(client());
+}
+
+// Verifies that the holding space tray animates in and out as expected.
+TEST_P(HoldingSpaceTrayTest, EnterAndExitAnimations) {
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+  // Prior to session start, the tray should not be showing.
+  EXPECT_FALSE(test_api()->IsShowingInShelf());
+
+  views::View* const tray = test_api()->GetTray();
+  ASSERT_TRUE(tray && tray->layer());
+
+  // Record transforms performed to the `tray` layer.
+  ScopedTransformRecordingLayerDelegate transform_recorder(tray->layer());
+
+  // Start the session. Because a holding space item was added in a previous
+  // session (according to prefs state), the tray should animate in.
+  StartSession();
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  // The entry animation should be the default entry animation in which the
+  // tray translates in from the right without scaling.
+  EXPECT_FALSE(transform_recorder.DidScale());
+  EXPECT_TRUE(transform_recorder.TranslatedFrom({0.f, 0.f}, {0.f, 0.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedInRange({0.f, 0.f}, {44.f, 0.f}));
+  transform_recorder.Reset();
+
+  // Pin a holding space item. Because the tray was already showing there
+  // should be no change in tray visibility.
+  AddItem(HoldingSpaceItem::Type::kPinnedFile, base::FilePath("/tmp/fake1"));
+  MarkTimeOfFirstPin();
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  // Because there was no change in visibility, there should be no transform.
+  EXPECT_FALSE(transform_recorder.DidScale());
+  EXPECT_FALSE(transform_recorder.DidTranslate());
+  transform_recorder.Reset();
+
+  // Remove all holding space items. Because a holding space item was
+  // previously pinned, the tray should animate out.
+  RemoveAllItems();
+  EXPECT_FALSE(test_api()->IsShowingInShelf());
+
+  // The exit animation should be the default exit animation in which the tray
+  // scales down and pivots about its center point.
+  EXPECT_TRUE(transform_recorder.ScaledFrom({1.f, 1.f}, {0.5f, 0.5f}));
+  EXPECT_TRUE(transform_recorder.ScaledInRange({0.5f, 0.5f}, {1.f, 1.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedFrom({0.f, 0.f}, {11.f, 12.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedInRange({0.f, 0.f}, {11.f, 12.f}));
+  transform_recorder.Reset();
+
+  // Pin a holding space item. The tray should animate in.
+  AddItem(HoldingSpaceItem::Type::kPinnedFile, base::FilePath("/tmp/fake2"));
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  // The entry animation should be the bounce in animation in which the tray
+  // translates in vertically with scaling (since it previously scaled out).
+  EXPECT_TRUE(transform_recorder.ScaledFrom({0.5f, 0.5f}, {1.f, 1.f}));
+  EXPECT_TRUE(transform_recorder.ScaledInRange({0.5f, 0.5f}, {1.f, 1.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedFrom({11.f, 12.f}, {0.f, 0.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedInRange({0.f, -16.f}, {11.f, 12.f}));
+  transform_recorder.Reset();
+
+  // Lock the screen. The tray should animate out.
+  auto* session_controller =
+      ash_test_helper()->test_session_controller_client();
+  session_controller->LockScreen();
+  EXPECT_FALSE(test_api()->IsShowingInShelf());
+
+  // The exit animation should be the default exit animation in which the tray
+  // scales down and pivots about its center point.
+  EXPECT_TRUE(transform_recorder.ScaledFrom({1.0f, 1.0f}, {0.5f, 0.5f}));
+  EXPECT_TRUE(transform_recorder.ScaledInRange({0.5f, 0.5f}, {1.f, 1.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedFrom({0.f, 0.f}, {11.f, 12.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedInRange({0.f, 0.f}, {11.f, 12.f}));
+  transform_recorder.Reset();
+
+  // Unlock the screen. The tray should animate in.
+  session_controller->UnlockScreen();
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  // The entry animation should be the default entry animation in which the
+  // tray translates in from the right.
+  EXPECT_TRUE(transform_recorder.ScaledFrom({0.5f, 0.5f}, {1.f, 1.f}));
+  EXPECT_TRUE(transform_recorder.ScaledInRange({0.5f, 0.5f}, {1.f, 1.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedFrom({11.f, 12.f}, {0.f, 0.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedInRange({0.f, 0.f}, {44.f, 12.f}));
+  transform_recorder.Reset();
+
+  // Switch to another user with a populated model. The tray should animate in.
+  constexpr char kSecondaryUserId[] = "user@secondary";
+  HoldingSpaceModel secondary_holding_space_model;
+  AddItemToModel(&secondary_holding_space_model,
+                 HoldingSpaceItem::Type::kPinnedFile,
+                 base::FilePath("/tmp/fake3"));
+  SwitchToSecondaryUser(kSecondaryUserId, /*client=*/nullptr,
+                        &secondary_holding_space_model);
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  // The entry animation should be the default entry animation in which the
+  // tray translates in from the right.
+  EXPECT_TRUE(transform_recorder.ScaledFrom({1.f, 1.f}, {1.f, 1.f}));
+  EXPECT_TRUE(transform_recorder.ScaledInRange({0.5f, 0.5f}, {1.f, 1.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedFrom({0.f, 0.f}, {0.f, 0.f}));
+  EXPECT_TRUE(transform_recorder.TranslatedInRange({0.f, 0.f}, {44.f, 12.f}));
+  transform_recorder.Reset();
+
+  // Clean up.
+  UnregisterModelForUser(kSecondaryUserId);
 }
 
 INSTANTIATE_TEST_SUITE_P(All, HoldingSpaceTrayTest, testing::Bool());

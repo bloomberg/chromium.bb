@@ -553,6 +553,12 @@ static int cuvid_output_frame(AVCodecContext *avctx, AVFrame *frame)
 
             tmp_frame->format        = AV_PIX_FMT_CUDA;
             tmp_frame->hw_frames_ctx = av_buffer_ref(ctx->hwframe);
+            if (!tmp_frame->hw_frames_ctx) {
+                ret = AVERROR(ENOMEM);
+                av_frame_free(&tmp_frame);
+                goto error;
+            }
+
             tmp_frame->width         = avctx->width;
             tmp_frame->height        = avctx->height;
 
@@ -628,6 +634,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
     }
 
 error:
+    if (ret < 0)
+        av_frame_unref(frame);
+
     if (mapped_frame)
         eret = CHECK_CU(ctx->cvdl->cuvidUnmapVideoFrame(ctx->cudecoder, mapped_frame));
 
@@ -990,7 +999,7 @@ static av_cold int cuvid_decode_init(AVCodecContext *avctx)
     }
 
     ctx->cuparseinfo.ulMaxNumDecodeSurfaces = ctx->nb_surfaces;
-    ctx->cuparseinfo.ulMaxDisplayDelay = 4;
+    ctx->cuparseinfo.ulMaxDisplayDelay = (avctx->flags & AV_CODEC_FLAG_LOW_DELAY) ? 0 : 4;
     ctx->cuparseinfo.pUserData = avctx;
     ctx->cuparseinfo.pfnSequenceCallback = cuvid_handle_video_sequence;
     ctx->cuparseinfo.pfnDecodePicture = cuvid_handle_picture_decode;

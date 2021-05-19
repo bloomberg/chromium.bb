@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -36,7 +35,7 @@ std::unique_ptr<views::ColorTrackingIconView> CreateIcon(
   return icon;
 }
 
-base::string16 GetLastUpdatedTime(const TargetDeviceInfo& device_info) {
+std::u16string GetLastUpdatedTime(const TargetDeviceInfo& device_info) {
   int time_in_days =
       (base::Time::Now() - device_info.last_updated_timestamp).InDays();
   if (time_in_days == 0) {

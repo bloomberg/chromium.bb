@@ -8,7 +8,6 @@
 #include <tuple>
 #include <utility>
 
-#include "base/strings/string16.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -115,7 +114,7 @@ class DeviceAutoUpdateTimeRestrictionsUtilTest : public testing::Test {
 
   base::SimpleTestClock test_clock_;
   // These initialize CrosSettings and then tear down when the test is done.
-  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+  ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
  private:
   std::unique_ptr<icu::TimeZone> timezone_;

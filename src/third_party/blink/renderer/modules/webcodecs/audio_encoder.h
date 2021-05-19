@@ -68,6 +68,10 @@ class MODULES_EXPORT AudioEncoder final
     return Base::encode(frame, nullptr, exception_state);
   }
 
+  static ScriptPromise isConfigSupported(ScriptState*,
+                                         const AudioEncoderConfig*,
+                                         ExceptionState&);
+
  private:
   using Base = EncoderBase<AudioEncoderTraits>;
   using ParsedConfig = AudioEncoderTraits::ParsedConfig;
@@ -89,8 +93,6 @@ class MODULES_EXPORT AudioEncoder final
       uint32_t reset_count,
       media::EncodedAudioBuffer encoded_buffer,
       base::Optional<media::AudioEncoder::CodecDescription> codec_desc);
-
-  bool produced_first_output_ = false;
 };
 
 }  // namespace blink

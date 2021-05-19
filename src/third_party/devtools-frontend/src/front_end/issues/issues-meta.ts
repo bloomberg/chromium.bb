@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
-import * as Root from '../root/root.js';
-import * as SDK from '../sdk/sdk.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as Root from '../core/root/root.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 // eslint-disable-next-line rulesdir/es_modules_import
 import type * as Issues from './issues.js';
 
-import * as i18n from '../i18n/i18n.js';
-export const UIStrings = {
+import * as i18n from '../core/i18n/i18n.js';
+const UIStrings = {
   /**
   *@description Label for the issues pane
   */
@@ -30,7 +30,7 @@ export const UIStrings = {
   showCspViolations: 'Show CSP Violations',
 };
 const str_ = i18n.i18n.registerUIStrings('issues/issues-meta.ts', UIStrings);
-const i18nString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
+const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 let loadedIssuesModule: (typeof Issues|undefined);
 
 async function loadIssuesModule(): Promise<typeof Issues> {
@@ -45,8 +45,8 @@ async function loadIssuesModule(): Promise<typeof Issues> {
 UI.ViewManager.registerViewExtension({
   location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: 'issues-pane',
-  title: i18nString(UIStrings.issues),
-  commandPrompt: i18nString(UIStrings.showIssues),
+  title: i18nLazyString(UIStrings.issues),
+  commandPrompt: i18nLazyString(UIStrings.showIssues),
   order: 100,
   persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   async loadView() {
@@ -58,8 +58,8 @@ UI.ViewManager.registerViewExtension({
 UI.ViewManager.registerViewExtension({
   location: UI.ViewManager.ViewLocationValues.DRAWER_VIEW,
   id: 'csp-violations-pane',
-  title: i18nString(UIStrings.cspViolations),
-  commandPrompt: i18nString(UIStrings.showCspViolations),
+  title: i18nLazyString(UIStrings.cspViolations),
+  commandPrompt: i18nLazyString(UIStrings.showCspViolations),
   order: 100,
   persistence: UI.ViewManager.ViewPersistence.CLOSEABLE,
   async loadView() {

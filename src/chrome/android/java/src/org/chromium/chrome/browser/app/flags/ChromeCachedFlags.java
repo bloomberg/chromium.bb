@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.app.flags;
 import android.text.TextUtils;
 
 import org.chromium.base.annotations.RemovableInRelease;
-import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
@@ -17,6 +16,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lens.LensFeature;
 import org.chromium.chrome.browser.page_annotations.PageAnnotationsServiceConfig;
 import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
+import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceConfig;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
@@ -67,11 +67,12 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR,
                 ChromeFeatureList.ANDROID_MANAGED_BY_MENU_ITEM,
                 ChromeFeatureList.ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE,
-                ChromeFeatureList.BOOKMARK_BOTTOM_SHEET,
+                ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION,
                 ChromeFeatureList.CCT_INCOGNITO,
                 ChromeFeatureList.CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY,
                 ChromeFeatureList.CCT_REMOVE_REMOTE_VIEW_IDS,
                 ChromeFeatureList.CHROME_STARTUP_DELEGATE,
+                ChromeFeatureList.CLIPBOARD_SUGGESTION_CONTENT_HIDDEN,
                 ChromeFeatureList.CLOSE_TAB_SUGGESTIONS,
                 ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA,
                 ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED,
@@ -85,19 +86,16 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.PAINT_PREVIEW_DEMO,
                 ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP,
                 ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS,
-                ChromeFeatureList.REPORT_FEED_USER_ACTIONS,
-                ChromeFeatureList.SHARE_BY_DEFAULT_IN_CCT,
-                ChromeFeatureList.READ_LATER,
                 ChromeFeatureList.START_SURFACE_ANDROID,
                 ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                 ChromeFeatureList.TAB_GROUPS_ANDROID,
                 ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
                 ChromeFeatureList.TAB_TO_GTS_ANIMATION,
-                ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_ICONS,
-                ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_REGROUP,
-                ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_THREE_BUTTON_ACTIONBAR,
+                ChromeFeatureList.THEME_REFACTOR_ANDROID,
+                ChromeFeatureList.TOOLBAR_USE_HARDWARE_BITMAP_DRAW,
                 ChromeFeatureList.USE_CHIME_ANDROID_SDK,
+                ChromeFeatureList.READ_LATER,
                 ChromeFeatureList.OFFLINE_MEASUREMENTS_BACKGROUND_TASK);
         // clang-format on
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);
@@ -106,8 +104,6 @@ public class ChromeCachedFlags {
         // clang-format off
         List<CachedFieldTrialParameter> fieldTrialsToCache = Arrays.asList(
                 AdaptiveToolbarFeatures.MODE_PARAM,
-                AppMenuPropertiesDelegateImpl.ACTION_BAR_VARIATION,
-                AppMenuPropertiesDelegateImpl.THREE_BUTTON_ACTION_BAR_VARIATION,
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT,
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_PERIOD,
                 ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_SESSION_TIME_MS,
@@ -131,11 +127,14 @@ public class ChromeCachedFlags {
                 StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
                 StartSurfaceConfiguration.START_SURFACE_VARIATION,
                 StartSurfaceConfiguration.START_SURFACE_OMNIBOX_SCROLL_MODE,
+                StartSurfaceConfiguration.SUPPORT_ACCESSIBILITY,
                 StartSurfaceConfiguration.TRENDY_ENABLED,
                 StartSurfaceConfiguration.TRENDY_ENDPOINT,
                 StartSurfaceConfiguration.TRENDY_FAILURE_MIN_PERIOD_MS,
                 StartSurfaceConfiguration.TRENDY_SUCCESS_MIN_PERIOD_MS,
                 StartupPaintPreviewHelper.ACCESSIBILITY_SUPPORT_PARAM,
+                CommerceSubscriptionsServiceConfig.STALE_TAB_LOWER_BOUND_SECONDS,
+                CommerceSubscriptionsServiceConfig.SUBSCRIPTIONS_SERVICE_BASE_URL,
                 TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION,
                 TabUiFeatureUtilities.ENABLE_LAUNCH_BUG_FIX,
                 TabUiFeatureUtilities.ENABLE_LAUNCH_POLISH,
@@ -143,6 +142,7 @@ public class ChromeCachedFlags {
                 TabUiFeatureUtilities.ENABLE_PRICE_NOTIFICATION,
                 TabUiFeatureUtilities.ENABLE_PRICE_TRACKING,
                 TabUiFeatureUtilities.ENABLE_SEARCH_CHIP_ADAPTIVE,
+                TabUiFeatureUtilities.ENABLE_TAB_GROUP_AUTO_CREATION,
                 TabUiFeatureUtilities.ZOOMING_MIN_MEMORY,
                 TabUiFeatureUtilities.ZOOMING_MIN_SDK,
                 TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,

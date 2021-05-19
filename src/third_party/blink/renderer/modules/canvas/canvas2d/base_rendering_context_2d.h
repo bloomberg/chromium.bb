@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/bindings/modules/v8/canvas_image_source.h"
+#include "third_party/blink/renderer/bindings/modules/v8/string_or_canvas_filter.h"
 #include "third_party/blink/renderer/bindings/modules/v8/string_or_canvas_gradient_or_canvas_pattern.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
@@ -72,8 +73,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   String globalCompositeOperation() const;
   void setGlobalCompositeOperation(const String&);
 
-  String filter() const;
-  void setFilter(const ExecutionContext*, const String&);
+  void filter(StringOrCanvasFilter&) const;
+  void setFilter(const ExecutionContext*, StringOrCanvasFilter input);
 
   void save();
   void restore();
@@ -375,6 +376,12 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
  protected:
   BaseRenderingContext2D();
 
+  // API entry points that need access to ModifiableState() and use the
+  // [NoAllocDirectCall] IDL attribute, must call FallbackForUnrealizedSaves
+  // before calling ModifiableState(), and return immediately if
+  // FallbackForUnrealizedSaves returns true.
+  inline bool NoAllocFallbackForUnrealizedSaves();
+
   CanvasRenderingContext2DState& ModifiableState();
   const CanvasRenderingContext2DState& GetState() const {
     return *state_stack_.back();
@@ -665,6 +672,14 @@ void BaseRenderingContext2D::AdjustRectForCanvas(T& x,
     height = -height;
     y -= height;
   }
+}
+
+inline bool BaseRenderingContext2D::NoAllocFallbackForUnrealizedSaves() {
+  if (LIKELY(!GetState().HasUnrealizedSaves()))
+    return false;
+  if (LIKELY(!GetState().HasRealizedFont()))
+    return false;
+  return NoAllocFallbackForAllocation();
 }
 
 }  // namespace blink

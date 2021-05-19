@@ -7,3 +7,5 @@
 #include "xfa/fwl/cfwl_themepart.h"
 
 CFWL_ThemePart::CFWL_ThemePart() = default;
+
+CFWL_ThemePart::~CFWL_ThemePart() = default;

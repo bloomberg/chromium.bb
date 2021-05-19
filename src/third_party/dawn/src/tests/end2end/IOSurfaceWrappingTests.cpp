@@ -182,7 +182,7 @@ TEST_P(IOSurfaceValidationTests, InvalidMipLevelCount) {
 // Test an error occurs if the descriptor depth isn't 1
 TEST_P(IOSurfaceValidationTests, InvalidDepth) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    descriptor.size.depth = 2;
+    descriptor.size.depthOrArrayLayers = 2;
 
     ASSERT_DEVICE_ERROR(wgpu::Texture texture =
                             WrapIOSurface(&descriptor, defaultIOSurface.get(), 0));
@@ -247,7 +247,7 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
         // The simplest texture sampling pipeline.
         wgpu::RenderPipeline pipeline;
         {
-            wgpu::ShaderModule vs = utils::CreateShaderModuleFromWGSL(device, R"(
+            wgpu::ShaderModule vs = utils::CreateShaderModule(device, R"(
                 [[builtin(vertex_index)]] var<in> VertexIndex : u32;
                 [[location(0)]] var<out> o_texCoord : vec2<f32>;
                 [[builtin(position)]] var<out> Position : vec4<f32>;
@@ -273,7 +273,7 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
                     o_texCoord = texCoord[VertexIndex];
                 }
             )");
-            wgpu::ShaderModule fs = utils::CreateShaderModuleFromWGSL(device, R"(
+            wgpu::ShaderModule fs = utils::CreateShaderModule(device, R"(
                 [[group(0), binding(0)]] var sampler0 : sampler;
                 [[group(0), binding(1)]] var texture0 : texture_2d<f32>;
 
@@ -285,12 +285,12 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
                 }
             )");
 
-            utils::ComboRenderPipelineDescriptor descriptor(device);
-            descriptor.vertexStage.module = vs;
-            descriptor.cFragmentStage.module = fs;
-            descriptor.cColorStates[0].format = wgpu::TextureFormat::RGBA8Unorm;
+            utils::ComboRenderPipelineDescriptor2 descriptor;
+            descriptor.vertex.module = vs;
+            descriptor.cFragment.module = fs;
+            descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
 
-            pipeline = device.CreateRenderPipeline(&descriptor);
+            pipeline = device.CreateRenderPipeline2(&descriptor);
         }
 
         // The bindgroup containing the texture view for the ioSurface as well as the sampler.

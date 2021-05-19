@@ -1482,7 +1482,7 @@ void second_pass(char *stats, size_t stats_len) {
  only pops if either the "flush" variable is set, or the buffer is at maximum
  capacity.
 
- The buffer is stored in the \ref AV1_COMP::lookahead field.
+ The buffer is stored in the \ref AV1_PRIMARY::lookahead field.
  It is initialized in the first call to \ref aom_codec_encode(), in the
  \ref av1_receive_raw_frame() sub-routine. The buffer size is defined by
  the g_lag_in_frames parameter set in the

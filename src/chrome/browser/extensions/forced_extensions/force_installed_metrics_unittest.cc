@@ -37,8 +37,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "components/arc/arc_prefs.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -99,7 +99,8 @@ constexpr char kSandboxUnpackFailureReason[] =
 constexpr char kFailureSessionStats[] =
     "Extensions.ForceInstalledFailureSessionType";
 constexpr char kStuckInCreateStageSessionType[] =
-    "Extensions.ForceInstalledFailureSessionType.ExtensionStuckInCreatedStage";
+    "Extensions.ForceInstalledFailureSessionType."
+    "ExtensionStuckInInitialCreationStage";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kPossibleNonMisconfigurationFailures[] =
     "Extensions.ForceInstalledSessionsWithNonMisconfigurationFailureOccured";
@@ -132,7 +133,8 @@ constexpr char kCrxHeaderInvalidFailureIsCWS[] =
 constexpr char kCrxHeaderInvalidFailureFromCache[] =
     "Extensions.ForceInstalledFailureWithCrxHeaderInvalidIsFromCache";
 constexpr char kStuckInCreatedStageAreExtensionsEnabled[] =
-    "Extensions.ForceInstalledFailureStuckInCreatedStageAreExtensionsEnabled";
+    "Extensions."
+    "ForceInstalledFailureStuckInInitialCreationStageAreExtensionsEnabled";
 
 }  // namespace
 
@@ -593,11 +595,11 @@ TEST_F(ForceInstalledMetricsTest,
   install_stage_tracker()->ReportSandboxedUnpackerFailureReason(
       kExtensionId1,
       CrxInstallError(SandboxedUnpackerFailureReason::CRX_FILE_NOT_READABLE,
-                      base::string16()));
+                      std::u16string()));
   install_stage_tracker()->ReportSandboxedUnpackerFailureReason(
       kExtensionId2,
       CrxInstallError(SandboxedUnpackerFailureReason::UNZIP_FAILED,
-                      base::string16()));
+                      std::u16string()));
   // ForceInstalledMetrics shuts down timer because all extension are either
   // loaded or failed.
   EXPECT_FALSE(fake_timer_->IsRunning());
@@ -619,7 +621,7 @@ TEST_F(ForceInstalledMetricsTest, ExtensionsCrxHeaderInvalidFromCache) {
   install_stage_tracker()->ReportSandboxedUnpackerFailureReason(
       kExtensionId1,
       CrxInstallError(SandboxedUnpackerFailureReason::CRX_HEADER_INVALID,
-                      base::string16()));
+                      std::u16string()));
   scoped_refptr<const Extension> ext2 = CreateNewExtension(
       kExtensionName2, kExtensionId2, ExtensionStatus::kPending);
   registry()->AddEnabled(ext2.get());
@@ -645,7 +647,7 @@ TEST_F(ForceInstalledMetricsTest, ExtensionsCrxHeaderInvalidNotFromCache) {
   install_stage_tracker()->ReportSandboxedUnpackerFailureReason(
       kExtensionId1,
       CrxInstallError(SandboxedUnpackerFailureReason::CRX_HEADER_INVALID,
-                      base::string16()));
+                      std::u16string()));
   scoped_refptr<const Extension> ext2 = CreateNewExtension(
       kExtensionName2, kExtensionId2, ExtensionStatus::kPending);
   registry()->AddEnabled(ext2.get());
@@ -672,7 +674,7 @@ TEST_F(ForceInstalledMetricsTest,
   install_stage_tracker()->ReportSandboxedUnpackerFailureReason(
       kExtensionId1,
       CrxInstallError(SandboxedUnpackerFailureReason::CRX_HEADER_INVALID,
-                      base::string16()));
+                      std::u16string()));
   scoped_refptr<const Extension> ext2 = CreateNewExtension(
       kExtensionName2, kExtensionId2, ExtensionStatus::kPending);
   registry()->AddEnabled(ext2.get());
@@ -890,8 +892,7 @@ TEST_F(ForceInstalledMetricsTest, ExtensionStuckInCreatedStage) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(ForceInstalledMetricsTest, ReportManagedGuestSessionOnExtensionFailure) {
-  chromeos::FakeChromeUserManager* fake_user_manager =
-      new chromeos::FakeChromeUserManager();
+  auto* fake_user_manager = new ash::FakeChromeUserManager();
   user_manager::ScopedUserManager scoped_user_manager(
       base::WrapUnique(fake_user_manager));
   const AccountId account_id =
@@ -918,8 +919,7 @@ TEST_F(ForceInstalledMetricsTest, ReportManagedGuestSessionOnExtensionFailure) {
 }
 
 TEST_F(ForceInstalledMetricsTest, ReportGuestSessionOnExtensionFailure) {
-  chromeos::FakeChromeUserManager* fake_user_manager =
-      new chromeos::FakeChromeUserManager();
+  auto* fake_user_manager = new ash::FakeChromeUserManager();
   user_manager::ScopedUserManager scoped_user_manager(
       base::WrapUnique(fake_user_manager));
   const AccountId account_id =
@@ -948,8 +948,7 @@ TEST_F(ForceInstalledMetricsTest, ReportGuestSessionOnExtensionFailure) {
 // extension stuck in NOTIFIED_FROM_MANAGEMENT_INITIAL_CREATION_FORCED stage.
 TEST_F(ForceInstalledMetricsTest,
        ReportGuestSessionForExtensionsStuckInCreatedStage) {
-  chromeos::FakeChromeUserManager* fake_user_manager =
-      new chromeos::FakeChromeUserManager();
+  auto* fake_user_manager = new ash::FakeChromeUserManager();
   user_manager::ScopedUserManager scoped_user_manager(
       base::WrapUnique(fake_user_manager));
   const AccountId account_id =

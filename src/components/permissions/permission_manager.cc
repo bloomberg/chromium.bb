@@ -131,6 +131,8 @@ ContentSettingsType PermissionTypeToContentSettingSafe(
       return ContentSettingsType::FONT_ACCESS;
     case PermissionType::DISPLAY_CAPTURE:
       return ContentSettingsType::DISPLAY_CAPTURE;
+    case PermissionType::FILE_HANDLING:
+      return ContentSettingsType::FILE_HANDLING;
     case PermissionType::NUM:
       break;
   }
@@ -222,29 +224,29 @@ class PermissionManager::PendingRequest {
 class PermissionManager::PermissionResponseCallback {
  public:
   PermissionResponseCallback(PermissionManager* permission_manager,
-                             int request_id,
+                             PendingRequestLocalId request_local_id,
                              int permission_id)
       : permission_manager_(permission_manager),
-        request_id_(request_id),
+        request_local_id_(request_local_id),
         permission_id_(permission_id),
         request_answered_(false) {}
 
   ~PermissionResponseCallback() {
     if (!request_answered_ &&
-        permission_manager_->pending_requests_.Lookup(request_id_)) {
-      permission_manager_->pending_requests_.Remove(request_id_);
+        permission_manager_->pending_requests_.Lookup(request_local_id_)) {
+      permission_manager_->pending_requests_.Remove(request_local_id_);
     }
   }
 
   void OnPermissionsRequestResponseStatus(ContentSetting content_setting) {
     request_answered_ = true;
     permission_manager_->OnPermissionsRequestResponseStatus(
-        request_id_, permission_id_, content_setting);
+        request_local_id_, permission_id_, content_setting);
   }
 
  private:
   PermissionManager* permission_manager_;
-  int request_id_;
+  PendingRequestLocalId request_local_id_;
   int permission_id_;
   bool request_answered_;
 
@@ -321,19 +323,19 @@ GURL PermissionManager::GetCanonicalOrigin(ContentSettingsType permission,
   return embedding_origin;
 }
 
-int PermissionManager::RequestPermission(
+void PermissionManager::RequestPermission(
     ContentSettingsType content_settings_type,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
     base::OnceCallback<void(ContentSetting)> callback) {
-  return RequestPermissions(
+  RequestPermissions(
       std::vector<ContentSettingsType>(1, content_settings_type),
       render_frame_host, requesting_origin, user_gesture,
       base::BindOnce(&ContentSettingCallbackWrapper, std::move(callback)));
 }
 
-int PermissionManager::RequestPermissions(
+void PermissionManager::RequestPermissions(
     const std::vector<ContentSettingsType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -342,16 +344,19 @@ int PermissionManager::RequestPermissions(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (permissions.empty()) {
     std::move(callback).Run(std::vector<ContentSetting>());
-    return content::PermissionController::kNoPendingOperation;
+    return;
   }
 
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
 
-  int request_id = pending_requests_.Add(std::make_unique<PendingRequest>(
-      render_frame_host, permissions, std::move(callback)));
+  auto request_local_id = request_local_id_generator_.GenerateNextId();
+  pending_requests_.AddWithID(
+      std::make_unique<PendingRequest>(render_frame_host, permissions,
+                                       std::move(callback)),
+      request_local_id);
 
-  const PermissionRequestID request(render_frame_host, request_id);
+  const PermissionRequestID request_id(render_frame_host, request_local_id);
   const GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
 
   for (size_t i = 0; i < permissions.size(); ++i) {
@@ -360,7 +365,7 @@ int PermissionManager::RequestPermissions(
         GetCanonicalOrigin(permission, requesting_origin, embedding_origin);
 
     auto response_callback =
-        std::make_unique<PermissionResponseCallback>(this, request_id, i);
+        std::make_unique<PermissionResponseCallback>(this, request_local_id, i);
     auto status = GetPermissionOverrideForDevTools(
         url::Origin::Create(canonical_requesting_origin), permission);
     if (status != CONTENT_SETTING_DEFAULT) {
@@ -373,17 +378,11 @@ int PermissionManager::RequestPermissions(
     DCHECK(context);
 
     context->RequestPermission(
-        web_contents, request, canonical_requesting_origin, user_gesture,
+        web_contents, request_id, canonical_requesting_origin, user_gesture,
         base::BindOnce(
             &PermissionResponseCallback::OnPermissionsRequestResponseStatus,
             std::move(response_callback)));
   }
-
-  // The request might have been resolved already.
-  if (!pending_requests_.Lookup(request_id))
-    return content::PermissionController::kNoPendingOperation;
-
-  return request_id;
 }
 
 PermissionResult PermissionManager::GetPermissionStatus(
@@ -411,7 +410,7 @@ PermissionResult PermissionManager::GetPermissionStatusForFrame(
                                    requesting_origin, embedding_origin);
 }
 
-int PermissionManager::RequestPermission(
+void PermissionManager::RequestPermission(
     PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -419,13 +418,13 @@ int PermissionManager::RequestPermission(
     base::OnceCallback<void(PermissionStatus)> callback) {
   ContentSettingsType content_settings_type =
       PermissionTypeToContentSetting(permission);
-  return RequestPermissions(
+  RequestPermissions(
       std::vector<ContentSettingsType>(1, content_settings_type),
       render_frame_host, requesting_origin, user_gesture,
       base::BindOnce(&PermissionStatusCallbackWrapper, std::move(callback)));
 }
 
-int PermissionManager::RequestPermissions(
+void PermissionManager::RequestPermissions(
     const std::vector<PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -435,11 +434,10 @@ int PermissionManager::RequestPermissions(
   std::transform(permissions.begin(), permissions.end(),
                  back_inserter(content_settings_types),
                  PermissionTypeToContentSetting);
-  return RequestPermissions(
-      content_settings_types, render_frame_host, requesting_origin,
-      user_gesture,
-      base::BindOnce(&PermissionStatusVectorCallbackWrapper,
-                     std::move(callback)));
+  RequestPermissions(content_settings_types, render_frame_host,
+                     requesting_origin, user_gesture,
+                     base::BindOnce(&PermissionStatusVectorCallbackWrapper,
+                                    std::move(callback)));
 }
 
 PermissionContextBase* PermissionManager::GetPermissionContext(
@@ -449,10 +447,10 @@ PermissionContextBase* PermissionManager::GetPermissionContext(
 }
 
 void PermissionManager::OnPermissionsRequestResponseStatus(
-    int request_id,
+    PendingRequestLocalId request_local_id,
     int permission_id,
     ContentSetting content_setting) {
-  PendingRequest* pending_request = pending_requests_.Lookup(request_id);
+  PendingRequest* pending_request = pending_requests_.Lookup(request_local_id);
   if (!pending_request)
     return;
 
@@ -462,7 +460,7 @@ void PermissionManager::OnPermissionsRequestResponseStatus(
     return;
 
   pending_request->TakeCallback().Run(pending_request->results());
-  pending_requests_.Remove(request_id);
+  pending_requests_.Remove(request_local_id);
 }
 
 void PermissionManager::ResetPermission(PermissionType permission,

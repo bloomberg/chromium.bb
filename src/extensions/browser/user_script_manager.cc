@@ -8,6 +8,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/user_script_loader.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
+#include "extensions/common/mojom/host_id.mojom.h"
 
 namespace extensions {
 
@@ -16,18 +17,19 @@ UserScriptManager::UserScriptManager(content::BrowserContext* browser_context)
                               ExtensionId(),
                               true /* listen_for_extension_system_loaded */),
       browser_context_(browser_context) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
+  extension_registry_observation_.Observe(
+      ExtensionRegistry::Get(browser_context_));
 }
 
 UserScriptManager::~UserScriptManager() = default;
 
 UserScriptLoader* UserScriptManager::GetUserScriptLoaderByID(
-    const HostID& host_id) {
-  switch (host_id.type()) {
-    case HostID::EXTENSIONS:
-      return GetUserScriptLoaderForExtension(host_id.id());
-    case HostID::WEBUI:
-      return GetUserScriptLoaderForWebUI(GURL(host_id.id()));
+    const mojom::HostID& host_id) {
+  switch (host_id.type) {
+    case mojom::HostID::HostType::kExtensions:
+      return GetUserScriptLoaderForExtension(host_id.id);
+    case mojom::HostID::HostType::kWebUi:
+      return GetUserScriptLoaderForWebUI(GURL(host_id.id));
   }
 }
 
@@ -50,7 +52,8 @@ WebUIUserScriptLoader* UserScriptManager::GetUserScriptLoaderForWebUI(
 void UserScriptManager::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  manifest_script_loader_.AddScripts(GetManifestScriptsMetadata(extension));
+  manifest_script_loader_.AddScripts(GetManifestScriptsMetadata(extension),
+                                     UserScriptLoader::ScriptsLoadedCallback());
 }
 
 void UserScriptManager::OnExtensionUnloaded(
@@ -62,11 +65,13 @@ void UserScriptManager::OnExtensionUnloaded(
   std::set<UserScriptIDPair> scripts_to_remove;
   for (const std::unique_ptr<UserScript>& script : script_list)
     scripts_to_remove.insert(UserScriptIDPair(script->id(), script->host_id()));
-  manifest_script_loader_.RemoveScripts(scripts_to_remove);
+  manifest_script_loader_.RemoveScripts(
+      scripts_to_remove, UserScriptLoader::ScriptsLoadedCallback());
 
-  auto it = extension_script_loaders_.find(extension->id());
-  if (it != extension_script_loaders_.end())
-    it->second->ClearScripts();
+  // The renderer will clean up its scripts from an IPC message which is sent
+  // when the extension is unloaded. All we need to do here is to remove the
+  // unloaded extension's loader.
+  extension_script_loaders_.erase(extension->id());
 }
 
 std::unique_ptr<UserScriptList> UserScriptManager::GetManifestScriptsMetadata(

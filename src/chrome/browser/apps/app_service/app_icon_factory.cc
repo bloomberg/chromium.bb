@@ -56,7 +56,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/apps/icon_standardizer.h"
-#include "chrome/browser/chromeos/arc/icon_decode_request.h"
+#include "chrome/browser/ash/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -276,7 +276,8 @@ void LoadCompressedDataFromExtension(
       extensions::IconsInfo::GetIconResource(extension, size_hint_in_px,
                                              ExtensionIconSet::MATCH_BIGGER);
 
-  if (extension && extension->location() == extensions::Manifest::COMPONENT) {
+  if (extension && extension->location() ==
+                       extensions::mojom::ManifestLocation::kComponent) {
     int resource_id = 0;
     const extensions::ComponentExtensionResourceManager* manager =
         extensions::ExtensionsBrowserClient::Get()
@@ -1154,8 +1155,7 @@ void ArcRawIconPngDataToImageSkia(
   if (!icon->is_adaptive_icon) {
     base::UmaHistogramBoolean("Arc.AdaptiveIconLoad.FromNonArcAppIcon", false);
 
-    if (!icon->icon_png_data.has_value() ||
-        icon->icon_png_data.value().empty()) {
+    if (!icon->icon_png_data.has_value()) {
       std::move(callback).Run(gfx::ImageSkia());
       return;
     }
@@ -1231,7 +1231,7 @@ gfx::ImageSkia ConvertSquareBitmapsToImageSkia(
     SkBitmap bitmap = it->second;
     // Resize |bitmap| to match |icon_scale|.
     //
-    // TODO(crbug.com/1140356): All conversions in app_icon_factory.cc must
+    // TODO(crbug.com/1189994): All conversions in app_icon_factory.cc must
     // perform CPU-heavy operations off the Browser UI thread.
     if (bitmap.width() != icon_size_in_px) {
       bitmap = skia::ImageOperations::Resize(

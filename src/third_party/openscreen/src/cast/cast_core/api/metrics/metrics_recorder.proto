@@ -1,19 +1,24 @@
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// **** DO NOT EDIT - this .proto was automatically generated. ****
 syntax = "proto3";
 
 package cast.metrics;
-
-import "google/protobuf/empty.proto";
 
 option optimize_for = LITE_RUNTIME;
 
 service MetricsRecorderService {
   // Record a set of|Event|
-  rpc Record(RecordRequest) returns (google.protobuf.Empty);
+  rpc Record(RecordRequest) returns (RecordResponse);
 }
 
 message RecordRequest {
   repeated Event event = 1;
 }
+
+message RecordResponse {}
 
 // This repliciates the Fuchsia approach to Cast metrics; for documentation on
 // event structure, refer to
@@ -28,7 +33,7 @@ message Event {
 
 message UserActionEvent {
   string name = 1;
-  optional int64 time = 2;
+  int64 time = 2;
 }
 
 message Histogram {
@@ -45,5 +50,5 @@ message HistogramBucket {
 
 message ImplementationDefinedEvent {
   bytes data = 1;
-  optional string name = 2;
+  string name = 2;
 }

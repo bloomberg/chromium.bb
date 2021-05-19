@@ -9,12 +9,12 @@
 #include <wrl.h>
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -92,7 +92,7 @@ class DWriteFontCollectionProxy
   // Gets the family at the specified index with the expected name. This can be
   // used to avoid an IPC call when both the index and family name are known.
   bool GetFontFamily(UINT32 family_index,
-                     const base::string16& family_name,
+                     const std::u16string& family_name,
                      IDWriteFontFamily** font_family);
 
   bool LoadFamilyNames(UINT32 family_index, IDWriteLocalizedStrings** strings);

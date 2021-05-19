@@ -938,49 +938,66 @@ void WriteShaderVar(BinaryOutputStream *stream, const sh::ShaderVariable &var)
     stream->writeIntVector(var.arraySizes);
     stream->writeBool(var.staticUse);
     stream->writeBool(var.active);
-    stream->writeInt(var.binding);
+    stream->writeInt<size_t>(var.fields.size());
+    for (const sh::ShaderVariable &shaderVariable : var.fields)
+    {
+        WriteShaderVar(stream, shaderVariable);
+    }
     stream->writeString(var.structOrBlockName);
     stream->writeString(var.mappedStructOrBlockName);
-    stream->writeInt(var.hasParentArrayIndex() ? var.parentArrayIndex() : -1);
-
+    stream->writeBool(var.isRowMajorLayout);
+    stream->writeInt(var.location);
+    stream->writeBool(var.hasImplicitLocation);
+    stream->writeInt(var.binding);
     stream->writeInt(var.imageUnitFormat);
     stream->writeInt(var.offset);
     stream->writeBool(var.readonly);
     stream->writeBool(var.writeonly);
     stream->writeBool(var.isFragmentInOut);
-    if (var.isFragmentInOut)
-    {
-        stream->writeInt(var.location);
-    }
+    stream->writeInt(var.index);
+    stream->writeBool(var.yuv);
+    stream->writeEnum(var.interpolation);
+    stream->writeBool(var.isInvariant);
+    stream->writeBool(var.isShaderIOBlock);
+    stream->writeBool(var.isPatch);
     stream->writeBool(var.texelFetchStaticUse);
-
-    ASSERT(var.fields.empty());
+    stream->writeInt(var.getFlattenedOffsetInParentArrays());
 }
 
-void LoadShaderVar(BinaryInputStream *stream, sh::ShaderVariable *var)
+void LoadShaderVar(gl::BinaryInputStream *stream, sh::ShaderVariable *var)
 {
-    var->type       = stream->readInt<GLenum>();
-    var->precision  = stream->readInt<GLenum>();
-    var->name       = stream->readString();
-    var->mappedName = stream->readString();
+    var->type      = stream->readInt<GLenum>();
+    var->precision = stream->readInt<GLenum>();
+    stream->readString(&var->name);
+    stream->readString(&var->mappedName);
     stream->readIntVector<unsigned int>(&var->arraySizes);
-    var->staticUse               = stream->readBool();
-    var->active                  = stream->readBool();
-    var->binding                 = stream->readInt<int>();
-    var->structOrBlockName       = stream->readString();
-    var->mappedStructOrBlockName = stream->readString();
-    var->setParentArrayIndex(stream->readInt<int>());
-
-    var->imageUnitFormat = stream->readInt<GLenum>();
-    var->offset          = stream->readInt<int>();
-    var->readonly        = stream->readBool();
-    var->writeonly       = stream->readBool();
-    var->isFragmentInOut = stream->readBool();
-    if (var->isFragmentInOut)
+    var->staticUse      = stream->readBool();
+    var->active         = stream->readBool();
+    size_t elementCount = stream->readInt<size_t>();
+    var->fields.resize(elementCount);
+    for (sh::ShaderVariable &variable : var->fields)
     {
-        var->location = stream->readInt<int>();
+        LoadShaderVar(stream, &variable);
     }
+    stream->readString(&var->structOrBlockName);
+    stream->readString(&var->mappedStructOrBlockName);
+    var->isRowMajorLayout    = stream->readBool();
+    var->location            = stream->readInt<int>();
+    var->hasImplicitLocation = stream->readBool();
+    var->binding             = stream->readInt<int>();
+    var->imageUnitFormat     = stream->readInt<GLenum>();
+    var->offset              = stream->readInt<int>();
+    var->readonly            = stream->readBool();
+    var->writeonly           = stream->readBool();
+    var->isFragmentInOut     = stream->readBool();
+    var->index               = stream->readInt<int>();
+    var->yuv                 = stream->readBool();
+    var->interpolation       = stream->readEnum<sh::InterpolationType>();
+    var->isInvariant         = stream->readBool();
+    var->isShaderIOBlock     = stream->readBool();
+    var->isPatch             = stream->readBool();
     var->texelFetchStaticUse = stream->readBool();
+    var->setParentArrayIndex(stream->readInt<int>());
 }
 
 // VariableLocation implementation.
@@ -1152,7 +1169,6 @@ ImageBinding::~ImageBinding() = default;
 ProgramState::ProgramState()
     : mLabel(),
       mAttachedShaders{},
-      mAttachedShadersMarkedForDetach{},
       mLocationsUsedForXfbExtension(0),
       mAtomicCounterUniformRange(0, 0),
       mYUVOutput(false),
@@ -1328,8 +1344,7 @@ void Program::onDestroy(const Context *context)
         if (mState.mAttachedShaders[shaderType])
         {
             mState.mAttachedShaders[shaderType]->release(context);
-            mState.mAttachedShaders[shaderType]                = nullptr;
-            mState.mAttachedShadersMarkedForDetach[shaderType] = false;
+            mState.mAttachedShaders[shaderType] = nullptr;
         }
     }
 
@@ -1358,20 +1373,10 @@ const std::string &Program::getLabel() const
     return mState.mLabel;
 }
 
-void Program::attachShader(const Context *context, Shader *shader)
+void Program::attachShader(Shader *shader)
 {
-    ASSERT(!mLinkingState);
     ShaderType shaderType = shader->getType();
     ASSERT(shaderType != ShaderType::InvalidEnum);
-
-    // Since detachShader doesn't actually detach anymore, we need to do that work when attaching a
-    // new shader to make sure we don't lose track of it and free the resources.
-    if (mState.mAttachedShaders[shaderType])
-    {
-        mState.mAttachedShaders[shaderType]->release(context);
-        mState.mAttachedShaders[shaderType]                = nullptr;
-        mState.mAttachedShadersMarkedForDetach[shaderType] = false;
-    }
 
     mState.mAttachedShaders[shaderType] = shader;
     mState.mAttachedShaders[shaderType]->addRef();
@@ -1379,24 +1384,13 @@ void Program::attachShader(const Context *context, Shader *shader)
 
 void Program::detachShader(const Context *context, Shader *shader)
 {
-    ASSERT(!mLinkingState);
+    resolveLink(context);
     ShaderType shaderType = shader->getType();
     ASSERT(shaderType != ShaderType::InvalidEnum);
 
     ASSERT(mState.mAttachedShaders[shaderType] == shader);
-
-    if (isSeparable())
-    {
-        // Don't actually detach the shader since we still need it in case this
-        // Program is part of a Program Pipeline Object. Instead, leave a mark
-        // that indicates we intended to.
-        mState.mAttachedShadersMarkedForDetach[shaderType] = true;
-        return;
-    }
-
     shader->release(context);
-    mState.mAttachedShaders[shaderType]                = nullptr;
-    mState.mAttachedShadersMarkedForDetach[shaderType] = false;
+    mState.mAttachedShaders[shaderType] = nullptr;
 }
 
 int Program::getAttachedShadersCount() const
@@ -1616,7 +1610,7 @@ angle::Result Program::linkImpl(const Context *context)
         InitUniformBlockLinker(mState, &resources.uniformBlockLinker);
         InitShaderStorageBlockLinker(mState, &resources.shaderStorageBlockLinker);
 
-        mergedVaryings = GetMergedVaryingsFromShaders(*this);
+        mergedVaryings = GetMergedVaryingsFromShaders(*this, getExecutable());
         if (!mState.mExecutable->linkMergedVaryings(context, *this, mergedVaryings,
                                                     mState.mTransformFeedbackVaryingNames,
                                                     isSeparable(), &resources.varyingPacking))
@@ -3037,34 +3031,6 @@ void Program::validate(const Caps &caps)
     {
         infoLog << "Program has not been successfully linked.";
     }
-}
-
-bool Program::validateSamplersImpl(InfoLog *infoLog, const Caps &caps)
-{
-    const ProgramExecutable *executable = mState.mExecutable.get();
-    ASSERT(!mLinkingState);
-
-    // if any two active samplers in a program are of different types, but refer to the same
-    // texture image unit, and this is the current program, then ValidateProgram will fail, and
-    // DrawArrays and DrawElements will issue the INVALID_OPERATION error.
-    for (size_t textureUnit : executable->mActiveSamplersMask)
-    {
-        if (executable->mActiveSamplerTypes[textureUnit] == TextureType::InvalidEnum)
-        {
-            if (infoLog)
-            {
-                (*infoLog) << "Samplers of conflicting types refer to the same texture "
-                              "image unit ("
-                           << textureUnit << ").";
-            }
-
-            mCachedValidateSamplersResult = false;
-            return false;
-        }
-    }
-
-    mCachedValidateSamplersResult = true;
-    return true;
 }
 
 bool Program::isValidated() const
@@ -4488,7 +4454,9 @@ void Program::updateSamplerUniform(Context *context,
     }
 
     // Invalidate the validation cache.
-    mCachedValidateSamplersResult.reset();
+    getExecutable().resetCachedValidateSamplersResult();
+    // Inform any PPOs this Program may be bound to.
+    onStateChange(angle::SubjectMessage::SamplerUniformsUpdated);
 }
 
 void ProgramState::setSamplerUniformTextureTypeAndFormat(size_t textureUnitIndex)
@@ -4625,7 +4593,10 @@ angle::Result Program::serialize(const Context *context, angle::MemoryBuffer *bi
         stream.writeInt(0);
     }
 
-    mState.mExecutable->save(&stream);
+    // Must be before mExecutable->save(), since it uses the value.
+    stream.writeBool(mState.mSeparable);
+
+    mState.mExecutable->save(mState.mSeparable, &stream);
 
     const auto &computeLocalSize = mState.getComputeShaderLocalSize();
 
@@ -4711,7 +4682,10 @@ angle::Result Program::deserialize(const Context *context,
         return angle::Result::Stop;
     }
 
-    mState.mExecutable->load(&stream);
+    // Must be before mExecutable->load(), since it uses the value.
+    mState.mSeparable = stream.readBool();
+
+    mState.mExecutable->load(mState.mSeparable, &stream);
 
     mState.mComputeShaderLocalSize[0] = stream.readInt<int>();
     mState.mComputeShaderLocalSize[1] = stream.readInt<int>();

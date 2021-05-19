@@ -20,13 +20,17 @@
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/posix/safe_strerror.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_chromeos_version_info.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -35,6 +39,7 @@
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/file_system_status.h"
@@ -47,8 +52,7 @@ namespace {
 
 constexpr const char kArcVmPerBoardFeaturesJobName[] =
     "arcvm_2dper_2dboard_2dfeatures";
-constexpr const size_t kUnixMaxPathLen = sizeof(sockaddr_un::sun_path);
-constexpr const char kArcVmBootNotificationServerAddress[kUnixMaxPathLen] =
+constexpr const char kArcVmBootNotificationServerAddressPrefix[] =
     "\0test_arcvm_boot_notification_server";
 constexpr char kArcVmPreLoginServicesJobName[] =
     "arcvm_2dpre_2dlogin_2dservices";
@@ -86,6 +90,13 @@ UpgradeParams GetPopulatedUpgradeParams() {
   params.is_demo_session = true;
   params.demo_session_apps_path = base::FilePath("/pato/to/demo.apk");
   return params;
+}
+
+std::string GenerateAbstractAddress() {
+  std::string address(kArcVmBootNotificationServerAddressPrefix,
+                      sizeof(kArcVmBootNotificationServerAddressPrefix) - 1);
+  return address.append("-" +
+                        base::GUID::GenerateRandomV4().AsLowercaseString());
 }
 
 // A debugd client that can fail to start Concierge.
@@ -182,19 +193,26 @@ class TestArcVmBootNotificationServer
 
   // Creates a socket and binds it to a name in the abstract namespace, then
   // starts listening to the socket on another thread.
-  void Start() {
+  void Start(const std::string& abstract_addr) {
     fd_.reset(socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0));
-    ASSERT_TRUE(fd_.is_valid());
+    ASSERT_TRUE(fd_.is_valid())
+        << "open failed with " << base::safe_strerror(errno);
 
     sockaddr_un addr{.sun_family = AF_UNIX};
-    memcpy(addr.sun_path, kArcVmBootNotificationServerAddress,
-           sizeof(kArcVmBootNotificationServerAddress));
+    ASSERT_LT(abstract_addr.size(), sizeof(addr.sun_path))
+        << "abstract_addr is too long: " << abstract_addr;
+    ASSERT_EQ('\0', abstract_addr[0])
+        << "abstract_addr is not abstract: " << abstract_addr;
+    memset(addr.sun_path, 0, sizeof(addr.sun_path));
+    memcpy(addr.sun_path, abstract_addr.data(), abstract_addr.size());
+    LOG(INFO) << "Abstract address: \\0" << &(addr.sun_path[1]);
 
     ASSERT_EQ(HANDLE_EINTR(bind(fd_.get(), reinterpret_cast<sockaddr*>(&addr),
                                 sizeof(sockaddr_un))),
-              0);
-    ASSERT_EQ(HANDLE_EINTR(listen(fd_.get(), 5)), 0);
-
+              0)
+        << "bind failed with " << base::safe_strerror(errno);
+    ASSERT_EQ(HANDLE_EINTR(listen(fd_.get(), 5)), 0)
+        << "listen failed with " << base::safe_strerror(errno);
     controller_.reset(new base::MessagePumpForUI::FdWatchController(FROM_HERE));
     ASSERT_TRUE(base::CurrentUIThread::Get()->WatchFileDescriptor(
         fd_.get(), true, base::MessagePumpForUI::WATCH_READ, controller_.get(),
@@ -308,11 +326,11 @@ class ArcVmClientAdapterTest : public testing::Test,
     RemoveUpstartStartStopJobFailures();
     SetArcVmBootNotificationServerFdForTesting(base::nullopt);
 
+    const std::string abstract_addr(GenerateAbstractAddress());
     boot_server_ = std::make_unique<TestArcVmBootNotificationServer>();
-    boot_server_->Start();
+    boot_server_->Start(abstract_addr);
     SetArcVmBootNotificationServerAddressForTesting(
-        std::string(kArcVmBootNotificationServerAddress,
-                    sizeof(kArcVmBootNotificationServerAddress)),
+        abstract_addr,
         // connect_timeout_limit
         base::TimeDelta::FromMilliseconds(100),
         // connect_sleep_duration_initial
@@ -591,6 +609,15 @@ class ArcVmClientAdapterTest : public testing::Test,
 // Tests that SetUserInfo() doesn't crash.
 TEST_F(ArcVmClientAdapterTest, SetUserInfo) {
   SetUserInfo(kUserIdHash, kSerialNumber);
+}
+
+// Tests that SetUserInfo() doesn't crash even when empty strings are passed.
+// Currently, ArcSessionRunner's tests call SetUserInfo() that way.
+// TODO(yusukes): Once ASR's tests are fixed, remove this test and use DCHECKs
+// in SetUserInfo().
+TEST_F(ArcVmClientAdapterTest, SetUserInfoEmpty) {
+  adapter()->SetUserInfo(cryptohome::Identification(), std::string(),
+                         std::string());
 }
 
 // Tests that StartMiniArc() succeeds by default.
@@ -1172,7 +1199,8 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_DemoMode) {
 
   class TestDemoDelegate : public ArcClientAdapter::DemoModeDelegate {
    public:
-    TestDemoDelegate(base::FilePath apps_path) : apps_path_(apps_path) {}
+    explicit TestDemoDelegate(base::FilePath apps_path)
+        : apps_path_(apps_path) {}
     ~TestDemoDelegate() override = default;
 
     void EnsureOfflineResourcesLoaded(base::OnceClosure callback) override {
@@ -1237,6 +1265,19 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_DisableMediaStoreMaintenance) {
   EXPECT_TRUE(
       base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
                      "androidboot.disable_media_store_maintenance=1"));
+}
+
+TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_ArcVmUreadaheadModeReadahead) {
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeParams params(GetPopulatedUpgradeParams());
+  UpgradeArcWithParams(true, std::move(params));
+  EXPECT_TRUE(GetTestConciergeClient()->start_arc_vm_called());
+  EXPECT_FALSE(arc_instance_stopped_called());
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.arcvm_ureadahead_mode=readahead"));
 }
 
 TEST_F(ArcVmClientAdapterTest, StartMiniArc_EnablePaiGeneration) {
@@ -1557,6 +1598,49 @@ TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNoNativeBridgeExperiment) {
                      "androidboot.native_bridge=libhoudini.so"));
 }
 
+// Tests that "readahead" mode is used by default.
+TEST_F(ArcVmClientAdapterTest, TestGetArcVmUreadaheadModeDefault) {
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.arcvm_ureadahead_mode=readahead"));
+  EXPECT_FALSE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.arcvm_ureadahead_mode=generate"));
+}
+
+// Tests that the "generate" command line switches the mode.
+TEST_F(ArcVmClientAdapterTest, TestGetArcVmUreadaheadModeGenerate) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arcvm-ureadahead-mode=generate"});
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_FALSE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.arcvm_ureadahead_mode=readahead"));
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.arcvm_ureadahead_mode=generate"));
+}
+
+// Tests that the "disabled" command line disables both readahead and generate.
+TEST_F(ArcVmClientAdapterTest, TestGetArcVmUreadaheadModeDisabled) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arcvm-ureadahead-mode=disabled"});
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_FALSE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.arcvm_ureadahead_mode=readahead"));
+  EXPECT_FALSE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.arcvm_ureadahead_mode=generate"));
+}
+
 // Tests that ArcVmClientAdapter connects to the boot notification server
 // twice: once in StartMiniArc to check that it is listening, and the second
 // time in UpgradeArc to send props.
@@ -1626,6 +1710,27 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_SendPropFailNotWritable) {
   ExpectArcStopped(/*stale_full_vm_stopped=*/true);
 }
 
+TEST_F(ArcVmClientAdapterTest, DisableDownloadProviderDefault) {
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  // Not expected arc_disable_download_provider in properties.
+  for (const auto& param : request.params())
+    EXPECT_EQ(std::string::npos, param.find("disable_download_provider"));
+}
+
+TEST_F(ArcVmClientAdapterTest, DisableDownloadProviderEnforced) {
+  StartParams start_params(GetPopulatedStartParams());
+  start_params.disable_download_provider = true;
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.disable_download_provider=1"));
+}
+
 struct DalvikMemoryProfileTestParam {
   // Requested profile.
   StartParams::DalvikMemoryProfile profile;
@@ -1648,6 +1753,10 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::ValuesIn(kDalvikMemoryProfileTestCases));
 
 TEST_P(ArcVmClientAdapterDalvikMemoryProfileTest, Profile) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(arc::kUseHighMemoryDalvikProfile,
+                                    true /* use */);
+
   const auto& test_param = GetParam();
   StartParams start_params(GetPopulatedStartParams());
   start_params.dalvik_memory_profile = test_param.profile;

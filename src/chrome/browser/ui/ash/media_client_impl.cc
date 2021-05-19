@@ -12,6 +12,7 @@
 #include "ash/public/cpp/toast_data.h"
 #include "ash/public/cpp/toast_manager.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -21,8 +22,8 @@
 #include "base/system/sys_info.h"
 #include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ash/camera_mic/vm_camera_mic_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/camera_mic/vm_camera_mic_manager.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
@@ -201,7 +202,7 @@ MediaClientImpl::MediaClientImpl() {
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
   BrowserList::AddObserver(this);
 
-  chromeos::VmCameraMicManager::Get()->AddObserver(this);
+  ash::VmCameraMicManager::Get()->AddObserver(this);
 
   // Camera service does not behave in non ChromeOS environment (e.g. testing,
   // linux chromeos).
@@ -228,7 +229,7 @@ MediaClientImpl::~MediaClientImpl() {
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
   BrowserList::RemoveObserver(this);
 
-  chromeos::VmCameraMicManager::Get()->RemoveObserver(this);
+  ash::VmCameraMicManager::Get()->RemoveObserver(this);
   if (base::SysInfo::IsRunningOnChromeOS() &&
       base::FeatureList::IsEnabled(
           chromeos::features::kCameraPrivacySwitchNotifications) &&
@@ -332,8 +333,8 @@ void MediaClientImpl::OnBrowserSetLastActive(Browser* browser) {
 }
 
 void MediaClientImpl::OnVmCameraMicActiveChanged(
-    chromeos::VmCameraMicManager* manager) {
-  using DeviceType = chromeos::VmCameraMicManager::DeviceType;
+    ash::VmCameraMicManager* manager) {
+  using DeviceType = ash::VmCameraMicManager::DeviceType;
   vm_media_capture_state_ = MediaCaptureState::kNone;
   if (manager->IsDeviceActive(DeviceType::kCamera))
     vm_media_capture_state_ |= MediaCaptureState::kVideo;
@@ -342,11 +343,10 @@ void MediaClientImpl::OnVmCameraMicActiveChanged(
 
   media_controller_->NotifyVmMediaNotificationState(
       manager->IsNotificationActive(
-          chromeos::VmCameraMicManager::kCameraNotification),
+          ash::VmCameraMicManager::kCameraNotification),
+      manager->IsNotificationActive(ash::VmCameraMicManager::kMicNotification),
       manager->IsNotificationActive(
-          chromeos::VmCameraMicManager::kMicNotification),
-      manager->IsNotificationActive(
-          chromeos::VmCameraMicManager::kCameraAndMicNotification));
+          ash::VmCameraMicManager::kCameraAndMicNotification));
 }
 
 void MediaClientImpl::OnCameraPrivacySwitchStatusChanged(
@@ -543,7 +543,7 @@ void MediaClientImpl::ShowCameraOffNotification() {
               IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_TITLE),
           l10n_util::GetStringUTF16(
               IDS_CAMERA_PRIVACY_SWITCH_ON_NOTIFICATION_MESSAGE),
-          base::string16(), GURL(),
+          std::u16string(), GURL(),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
               kCameraPrivacySwitchNotifierId),

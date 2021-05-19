@@ -38,6 +38,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   bool IsInstalled(const web_app::AppId& app_id) const override;
   bool IsLocallyInstalled(const web_app::AppId& app_id) const override;
   bool WasInstalledByUser(const web_app::AppId& app_id) const override;
+  bool WasInstalledByOem(const web_app::AppId& app_id) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const web_app::AppId& app_id) const override;
   std::string GetAppDescription(const web_app::AppId& app_id) const override;
@@ -52,6 +53,8 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   blink::mojom::CaptureLinks GetAppCaptureLinks(
       const web_app::AppId& app_id) const override;
+  const apps::FileHandlers* GetAppFileHandlers(
+      const web_app::AppId& app_id) const override;
   base::Optional<GURL> GetAppScopeInternal(
       const web_app::AppId& app_id) const override;
   web_app::DisplayMode GetAppDisplayMode(
@@ -63,6 +66,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   apps::UrlHandlers GetAppUrlHandlers(
       const web_app::AppId& app_id) const override;
   GURL GetAppManifestUrl(const web_app::AppId& app_id) const override;
+  base::Time GetAppLastBadgingTime(const web_app::AppId& app_id) const override;
   base::Time GetAppLastLaunchTime(const web_app::AppId& app_id) const override;
   base::Time GetAppInstallTime(const web_app::AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
@@ -71,8 +75,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   std::vector<WebApplicationShortcutsMenuItemInfo> GetAppShortcutsMenuItemInfos(
       const web_app::AppId& app_id) const override;
-  std::vector<std::vector<SquareSizePx>>
-  GetAppDownloadedShortcutsMenuIconsSizes(
+  std::vector<IconSizes> GetAppDownloadedShortcutsMenuIconsSizes(
       const web_app::AppId& app_id) const override;
   web_app::RunOnOsLoginMode GetAppRunOnOsLoginMode(
       const web_app::AppId& app_id) const override;

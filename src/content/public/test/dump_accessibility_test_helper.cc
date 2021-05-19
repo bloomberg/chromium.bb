@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/platform/inspect/ax_inspect_scenario.h"
 #include "ui/base/buildflags.h"
 
 #if defined(OS_WIN)
@@ -133,13 +134,14 @@ DumpAccessibilityTestHelper::DumpAccessibilityTestHelper(
     : expectation_type_(expectation_type) {}
 
 base::FilePath DumpAccessibilityTestHelper::GetExpectationFilePath(
-    const base::FilePath& test_file_path) {
+    const base::FilePath& test_file_path,
+    const base::FilePath::StringType& expectations_qualifier) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath expected_file_path;
 
   // Try to get version specific expected file.
   base::FilePath::StringType expected_file_suffix =
-      GetVersionSpecificExpectedFileSuffix();
+      GetVersionSpecificExpectedFileSuffix(expectations_qualifier);
   if (expected_file_suffix != FILE_PATH_LITERAL("")) {
     expected_file_path = base::FilePath(
         test_file_path.RemoveExtension().value() + expected_file_suffix);
@@ -148,7 +150,7 @@ base::FilePath DumpAccessibilityTestHelper::GetExpectationFilePath(
   }
 
   // If a version specific file does not exist, get the generic one.
-  expected_file_suffix = GetExpectedFileSuffix();
+  expected_file_suffix = GetExpectedFileSuffix(expectations_qualifier);
   expected_file_path = base::FilePath(test_file_path.RemoveExtension().value() +
                                       expected_file_suffix);
   if (base::PathExists(expected_file_path))
@@ -172,116 +174,14 @@ void DumpAccessibilityTestHelper::SetUpCommandLine(
   }
 }
 
-DumpAccessibilityTestHelper::Scenario::Scenario(
-    const std::vector<ui::AXPropertyFilter>& default_filters)
-    : property_filters(default_filters) {}
-DumpAccessibilityTestHelper::Scenario::Scenario(Scenario&&) = default;
-DumpAccessibilityTestHelper::Scenario::~Scenario() = default;
-DumpAccessibilityTestHelper::Scenario&
-DumpAccessibilityTestHelper::Scenario::operator=(Scenario&&) = default;
-
-DumpAccessibilityTestHelper::Scenario
-DumpAccessibilityTestHelper::ParseScenario(
+ui::AXInspectScenario DumpAccessibilityTestHelper::ParseScenario(
     const std::vector<std::string>& lines,
     const std::vector<ui::AXPropertyFilter>& default_filters) {
-  Scenario scenario(default_filters);
-  for (const std::string& line : lines) {
-    // Directives have format of @directive:value.
-    if (!base::StartsWith(line, "@")) {
-      continue;
-    }
-
-    auto directive_end_pos = line.find_first_of(':');
-    if (directive_end_pos == std::string::npos) {
-      continue;
-    }
-
-    Directive directive = ParseDirective(line.substr(0, directive_end_pos));
-    if (directive == kNone)
-      continue;
-
-    std::string value = line.substr(directive_end_pos + 1);
-    ProcessDirective(directive, value, &scenario);
-  }
-  return scenario;
-}
-
-void DumpAccessibilityTestHelper::ProcessDirective(Directive directive,
-                                                   const std::string& value,
-                                                   Scenario* scenario) const {
-  switch (directive) {
-    case kNoLoadExpected:
-      scenario->no_load_expected.push_back(value);
-      break;
-    case kWaitFor:
-      scenario->wait_for.push_back(value);
-      break;
-    case kExecuteAndWaitFor:
-      scenario->execute.push_back(value);
-      break;
-    case kRunUntil:
-      scenario->run_until.push_back(value);
-      break;
-    case kDefaultActionOn:
-      scenario->default_action_on.push_back(value);
-      break;
-    case kPropertyFilterAllow:
-      scenario->property_filters.emplace_back(value, AXPropertyFilter::ALLOW);
-      break;
-    case kPropertyFilterAllowEmpty:
-      scenario->property_filters.emplace_back(value,
-                                              AXPropertyFilter::ALLOW_EMPTY);
-      break;
-    case kPropertyFilterDeny:
-      scenario->property_filters.emplace_back(value, AXPropertyFilter::DENY);
-      break;
-    case kScript:
-      scenario->property_filters.emplace_back(value, AXPropertyFilter::SCRIPT);
-      break;
-    case kNodeFilter: {
-      const auto& parts = base::SplitString(value, "=", base::TRIM_WHITESPACE,
-                                            base::SPLIT_WANT_NONEMPTY);
-      if (parts.size() == 2)
-        scenario->node_filters.emplace_back(parts[0], parts[1]);
-      else
-        LOG(WARNING) << "Failed to parse node filter " << value;
-      break;
-    }
-    default:
-      NOTREACHED() << "Unrecognized " << directive << " directive";
-      break;
-  }
-}
-
-DumpAccessibilityTestHelper::Directive
-DumpAccessibilityTestHelper::ParseDirective(
-    const std::string& directive) const {
   const TypeInfo::Mapping* mapping = TypeMapping(expectation_type_);
   if (!mapping)
-    return kNone;
-
-  if (directive == "@NO-LOAD-EXPECTED")
-    return kNoLoadExpected;
-  if (directive == "@WAIT-FOR")
-    return kWaitFor;
-  if (directive == "@EXECUTE-AND-WAIT-FOR")
-    return kExecuteAndWaitFor;
-  if (directive == mapping->directive_prefix + "-RUN-UNTIL-EVENT")
-    return kRunUntil;
-  if (directive == "@DEFAULT-ACTION-ON")
-    return kDefaultActionOn;
-  if (directive == mapping->directive_prefix + "-ALLOW")
-    return kPropertyFilterAllow;
-  if (directive == mapping->directive_prefix + "-ALLOW-EMPTY")
-    return kPropertyFilterAllowEmpty;
-  if (directive == mapping->directive_prefix + "-DENY")
-    return kPropertyFilterDeny;
-  if (directive == mapping->directive_prefix + "-SCRIPT")
-    return kScript;
-  if (directive == mapping->directive_prefix + "-DENY-NODE")
-    return kNodeFilter;
-
-  return kNone;
+    return ui::AXInspectScenario();
+  return ui::AXInspectScenario::From(mapping->directive_prefix, lines,
+                                     default_filters);
 }
 
 // static
@@ -405,22 +305,31 @@ bool DumpAccessibilityTestHelper::ValidateAgainstExpectation(
   return !is_different;
 }
 
-FilePath::StringType DumpAccessibilityTestHelper::GetExpectedFileSuffix()
-    const {
+FilePath::StringType DumpAccessibilityTestHelper::GetExpectedFileSuffix(
+    const base::FilePath::StringType& expectations_qualifier) const {
   const TypeInfo::Mapping* mapping = TypeMapping(expectation_type_);
   if (!mapping) {
     return FILE_PATH_LITERAL("");
   }
-  return FILE_PATH_LITERAL("-expected") + mapping->expectations_file_postfix +
-         FILE_PATH_LITERAL(".txt");
+
+  FilePath::StringType suffix;
+  if (!expectations_qualifier.empty())
+    suffix = FILE_PATH_LITERAL("-") + expectations_qualifier;
+
+  return suffix + FILE_PATH_LITERAL("-expected") +
+         mapping->expectations_file_postfix + FILE_PATH_LITERAL(".txt");
 }
 
 FilePath::StringType
-DumpAccessibilityTestHelper::GetVersionSpecificExpectedFileSuffix() const {
+DumpAccessibilityTestHelper::GetVersionSpecificExpectedFileSuffix(
+    const base::FilePath::StringType& expectations_qualifier) const {
 #if defined(OS_WIN)
   if (expectation_type_ == "uia" &&
       base::win::GetVersion() == base::win::Version::WIN7) {
-    return FILE_PATH_LITERAL("-expected-uia-win7.txt");
+    FilePath::StringType suffix;
+    if (!expectations_qualifier.empty())
+      suffix = FILE_PATH_LITERAL("-") + expectations_qualifier;
+    return suffix + FILE_PATH_LITERAL("-expected-uia-win7.txt");
   }
 #endif
   return FILE_PATH_LITERAL("");

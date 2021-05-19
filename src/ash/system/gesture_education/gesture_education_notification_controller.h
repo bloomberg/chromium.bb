@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_GESTURE_EDUCATION_GESTURE_EDUCATION_NOTIFICATION_CONTROLLER_H_
 #define ASH_SYSTEM_GESTURE_EDUCATION_GESTURE_EDUCATION_NOTIFICATION_CONTROLLER_H_
 
+#include <string>
+
 #include "ash/ash_export.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
@@ -13,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
 
 class PrefRegistrySimple;
 
@@ -47,8 +48,8 @@ class ASH_EXPORT GestureEducationNotificationController
   friend class GestureEducationNotificationControllerTest;
 
   void GenerateGestureEducationNotification();
-  base::string16 GetNotificationTitle() const;
-  base::string16 GetNotificationMessage() const;
+  std::u16string GetNotificationTitle() const;
+  std::u16string GetNotificationMessage() const;
   void HandleNotificationClick();
 
   void ResetPrefForTest();

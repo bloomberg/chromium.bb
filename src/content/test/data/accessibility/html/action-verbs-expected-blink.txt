@@ -27,8 +27,8 @@ rootWebArea name='Action verbs'
 ++++++details
 ++++++++genericContainer ignored
 ++++++++++disclosureTriangle collapsed name='Summary' defaultActionVerb=press
-++++++++++++listMarker ignored name='▸ '
-++++++++++++++staticText ignored name='▸ '
+++++++++++++listMarker ignored
+++++++++++++++staticText ignored name='%E2%96%B8 '
 ++++++++++++staticText name='Summary'
 ++++++++++++++inlineTextBox name='Summary'
 ++++++++genericContainer ignored invisible

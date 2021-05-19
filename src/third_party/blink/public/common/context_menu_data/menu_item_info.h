@@ -31,10 +31,10 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_CONTEXT_MENU_DATA_MENU_ITEM_INFO_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_CONTEXT_MENU_DATA_MENU_ITEM_INFO_H_
 
+#include <string>
 #include <vector>
 
 #include "base/i18n/rtl.h"
-#include "base/strings/string16.h"
 
 namespace blink {
 
@@ -49,8 +49,8 @@ struct MenuItemInfo {
         enabled(false),
         checked(false) {}
 
-  base::string16 label;
-  base::string16 tool_tip;
+  std::u16string label;
+  std::u16string tool_tip;
   Type type;
   unsigned action;
   base::i18n::TextDirection text_direction;

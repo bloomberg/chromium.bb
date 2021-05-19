@@ -119,6 +119,13 @@ struct PublicKeyInfo {
 void BuildWebCryptoRSAAlgorithmDictionary(const PublicKeyInfo& key_info,
                                           base::DictionaryValue* algorithm);
 
+// Builds a partial WebCrypto Algorithm object from the parameters available in
+// |key_info|, which must be the info of an EC key. For more information about
+// EcKeyAlgorithm dictionary, please refer to:
+// https://www.w3.org/TR/WebCryptoAPI/#EcKeyAlgorithm-dictionary
+void BuildWebCryptoEcdsaAlgorithmDictionary(const PublicKeyInfo& key_info,
+                                            base::DictionaryValue* algorithm);
+
 // Obtains information about the public key in |certificate|.
 // If |certificate| contains an RSA key, sets |key_size_bits| to the modulus
 // length, and |key_type| to type RSA and returns true.
@@ -156,5 +163,18 @@ struct ClientCertificateRequest {
 
 }  // namespace platform_keys
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when
+// //chrome/browser/chromeos/platform_keys moved to ash
+namespace ash {
+namespace platform_keys {
+using ::chromeos::platform_keys::GetSubjectPublicKeyInfo;
+using ::chromeos::platform_keys::HashAlgorithm;
+using ::chromeos::platform_keys::KeyAttributeType;
+using ::chromeos::platform_keys::Status;
+using ::chromeos::platform_keys::StatusToString;
+using ::chromeos::platform_keys::TokenId;
+}  // namespace platform_keys
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_H_

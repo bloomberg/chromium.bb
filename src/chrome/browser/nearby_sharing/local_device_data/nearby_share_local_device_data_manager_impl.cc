@@ -4,13 +4,13 @@
 
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager_impl.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
@@ -220,8 +220,8 @@ void NearbyShareLocalDeviceDataManagerImpl::OnStop() {
 
 std::string NearbyShareLocalDeviceDataManagerImpl::GetDefaultDeviceName()
     const {
-  base::string16 device_type = ui::GetChromeOSDeviceName();
-  base::Optional<base::string16> given_name =
+  std::u16string device_type = ui::GetChromeOSDeviceName();
+  base::Optional<std::u16string> given_name =
       profile_info_provider_->GetGivenName();
   if (!given_name)
     return base::UTF16ToUTF8(device_type);

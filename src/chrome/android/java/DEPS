@@ -56,6 +56,8 @@ include_rules = [
   "+components/sync/android/java/src/org/chromium/components/sync",
   "+components/query_tiles/android/java",
   "+components/thin_webview/java",
+  "+components/ukm/android/java",
+  "+components/webauthn/android/java",
   "+components/webxr/android/java",
 
   "-content/public/android",
@@ -66,7 +68,7 @@ include_rules = [
 
 specific_include_rules = {
   # Special-case where monochrome composes chrome+webview
-  "MonochromeApplication\.java": [
+  "MonochromeApplicationImpl\.java": [
     "+android_webview/nonembedded/java/src/org/chromium/android_webview/nonembedded/WebViewApkApplication.java",
   ],
   "SplitMonochromeApplication\.java": [

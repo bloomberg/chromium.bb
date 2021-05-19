@@ -143,7 +143,7 @@ class DiscoveryE2ETest : public testing::Test {
     // Sleep to let any packets clear off the network before further tests.
     std::this_thread::sleep_for(milliseconds(500));
 
-    PlatformClientPosix::Create(milliseconds(50), milliseconds(50));
+    PlatformClientPosix::Create(milliseconds(50));
     task_runner_ = PlatformClientPosix::GetInstance()->GetTaskRunner();
   }
 

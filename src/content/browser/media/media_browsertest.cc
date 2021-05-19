@@ -4,6 +4,8 @@
 
 #include "content/browser/media/media_browsertest.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -55,7 +57,7 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
     features::kAudioServiceOutOfProcess,
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
     media::kDeprecateLowUsageCodecs,
 #endif
   };
@@ -71,7 +73,7 @@ void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
   std::string query = media::GetURLQueryString(query_params);
   std::unique_ptr<net::EmbeddedTestServer> http_test_server;
   if (http) {
-    http_test_server.reset(new net::EmbeddedTestServer);
+    http_test_server = std::make_unique<net::EmbeddedTestServer>();
     http_test_server->ServeFilesFromSourceDirectory(media::GetTestDataPath());
     CHECK(http_test_server->Start());
     gurl = http_test_server->GetURL("/" + html_page + "?" + query);
@@ -90,7 +92,7 @@ std::string MediaBrowserTest::RunTest(const GURL& gurl,
                              base::ASCIIToUTF16(expected_title));
   AddTitlesToAwait(&title_watcher);
   EXPECT_TRUE(NavigateToURL(shell(), gurl));
-  base::string16 result = title_watcher.WaitAndGetTitle();
+  std::u16string result = title_watcher.WaitAndGetTitle();
 
   CleanupTest();
   return base::UTF16ToASCII(result);
@@ -100,12 +102,12 @@ void MediaBrowserTest::CleanupTest() {
 #if defined(OS_ANDROID)
   // We only do this cleanup on Android, as a workaround for a test-only OOM
   // bug. See http://crbug.com/727542
-  const base::string16 cleaner_title = base::ASCIIToUTF16(kClean);
+  const std::u16string cleaner_title = base::ASCIIToUTF16(kClean);
   TitleWatcher clean_title_watcher(shell()->web_contents(), cleaner_title);
   GURL cleaner_url = content::GetFileUrlWithQuery(
       media::GetTestDataFilePath("cleaner.html"), "");
   EXPECT_TRUE(NavigateToURL(shell(), cleaner_url));
-  base::string16 cleaner_result = clean_title_watcher.WaitAndGetTitle();
+  std::u16string cleaner_result = clean_title_watcher.WaitAndGetTitle();
   EXPECT_EQ(cleaner_result, cleaner_title);
 #endif
 }

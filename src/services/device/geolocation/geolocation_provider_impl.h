@@ -75,7 +75,7 @@ class GeolocationProviderImpl : public GeolocationProvider,
       const std::string& api_key,
       const CustomLocationProviderCallback& custom_location_provider_getter,
       GeolocationSystemPermissionManager* system_permission_manager,
-      bool use_gms_core_location_provider = false);
+      bool use_gms_core_location_provider);
 
   void BindGeolocationControlReceiver(
       mojo::PendingReceiver<mojom::GeolocationControl> receiver);
@@ -124,8 +124,10 @@ class GeolocationProviderImpl : public GeolocationProvider,
   void Init() override;
   void CleanUp() override;
 
-  base::CallbackList<void(const mojom::Geoposition&)> high_accuracy_callbacks_;
-  base::CallbackList<void(const mojom::Geoposition&)> low_accuracy_callbacks_;
+  base::RepeatingCallbackList<void(const mojom::Geoposition&)>
+      high_accuracy_callbacks_;
+  base::RepeatingCallbackList<void(const mojom::Geoposition&)>
+      low_accuracy_callbacks_;
 
   bool user_did_opt_into_location_services_;
   mojom::Geoposition position_;

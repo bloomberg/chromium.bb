@@ -383,14 +383,14 @@ class PDFiumEngine : public PDFEngine,
 
   // Search a page using PDFium's methods.  Doesn't work with unicode.  This
   // function is just kept arount in case PDFium code is fixed.
-  void SearchUsingPDFium(const base::string16& term,
+  void SearchUsingPDFium(const std::u16string& term,
                          bool case_sensitive,
                          bool first_search,
                          int character_to_start_searching_from,
                          int current_page);
 
   // Search a page ourself using ICU.
-  void SearchUsingICU(const base::string16& term,
+  void SearchUsingICU(const std::u16string& term,
                       bool case_sensitive,
                       bool first_search,
                       int character_to_start_searching_from,
@@ -406,8 +406,8 @@ class PDFiumEngine : public PDFEngine,
   bool OnChar(const KeyboardInputEvent& event);
 
   // Decide what cursor should be displayed.
-  PP_CursorType_Dev DetermineCursorType(PDFiumPage::Area area,
-                                        int form_type) const;
+  ui::mojom::CursorType DetermineCursorType(PDFiumPage::Area area,
+                                            int form_type) const;
 
   bool ExtendSelection(int page_index, int char_index);
 

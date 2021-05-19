@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/thumb_strip_commands.h"
 #import "ios/chrome/browser/ui/gestures/view_controller_trait_collection_observer.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/history/history_coordinator.h"
@@ -65,6 +66,7 @@
                                   TabGridMediatorDelegate,
                                   TabPresentationDelegate,
                                   TabGridViewControllerDelegate,
+                                  SceneStateObserver,
                                   ViewControllerTraitCollectionObserver> {
   // Use an explicit ivar instead of synthesizing as the setter isn't using the
   // ivar.
@@ -413,6 +415,11 @@
   thumbStripCoordinator.incognitoBrowser = self.incognitoBrowser;
   [thumbStripCoordinator start];
 
+  self.baseViewController.regularThumbStripHandler = HandlerForProtocol(
+      self.regularBrowser->GetCommandDispatcher(), ThumbStripCommands);
+  self.baseViewController.incognitoThumbStripHandler = HandlerForProtocol(
+      self.incognitoBrowser->GetCommandDispatcher(), ThumbStripCommands);
+
   ViewRevealingVerticalPanHandler* panHandler =
       thumbStripCoordinator.panHandler;
   DCHECK(panHandler);
@@ -572,6 +579,10 @@
     [self installThumbStrip];
   }
 
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.regularBrowser)->GetSceneState();
+  [sceneState addObserver:self];
+
   // Once the mediators are set up, stop keeping pointers to the browsers used
   // to initialize them.
   _regularBrowser = nil;
@@ -579,6 +590,10 @@
 }
 
 - (void)stop {
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.regularBrowser)->GetSceneState();
+  [sceneState removeObserver:self];
+
   if ([self isThumbStripEnabled]) {
     [self uninstallThumbStrip];
   }
@@ -809,6 +824,24 @@
     (NSInteger)sectionIdentifier {
   return [self.baseViewController.remoteTabsViewController
       sessionForSectionIdentifier:sectionIdentifier];
+}
+
+#pragma mark - SceneStateObserver
+
+- (void)sceneState:(SceneState*)sceneState
+    transitionedToActivationLevel:(SceneActivationLevel)level {
+  // If the scene is going to background, it will trigger trait collection
+  // changes, presumably to take screenshots for the system. These changes will
+  // cause the thumb strip to be installed and uninstalled. And thumb strip
+  // doesn't support being installed in peeked state. Hidden state is set here
+  // so the screenshots match the interface when the user comes back.
+  ViewRevealingVerticalPanHandler* panHandler =
+      self.thumbStripCoordinator.panHandler;
+  BOOL isInPeekState = panHandler.currentState == ViewRevealState::Peeked;
+  if ([self isThumbStripEnabled] && isInPeekState &&
+      level <= SceneActivationLevelBackground) {
+    [panHandler setNextState:ViewRevealState::Hidden animated:NO];
+  }
 }
 
 #pragma mark - ViewControllerTraitCollectionObserver

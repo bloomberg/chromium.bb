@@ -541,6 +541,12 @@ void ExtractArg(sqlite3_context* ctx, int argc, sqlite3_value** argv) {
     sqlite3_result_error(ctx, "EXTRACT_ARG: 2 args required", -1);
     return;
   }
+
+  // If the arg set id is null, just return null as the result.
+  if (sqlite3_value_type(argv[0]) == SQLITE_NULL) {
+    sqlite3_result_null(ctx);
+    return;
+  }
   if (sqlite3_value_type(argv[0]) != SQLITE_INTEGER) {
     sqlite3_result_error(ctx, "EXTRACT_ARG: 1st argument should be arg set id",
                          -1);
@@ -768,6 +774,7 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
 
   RegisterDbTable(storage->slice_table());
   RegisterDbTable(storage->flow_table());
+  RegisterDbTable(storage->thread_slice_table());
   RegisterDbTable(storage->sched_slice_table());
   RegisterDbTable(storage->instant_table());
   RegisterDbTable(storage->gpu_slice_table());
@@ -787,6 +794,7 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
   RegisterDbTable(storage->softirq_counter_track_table());
   RegisterDbTable(storage->gpu_counter_track_table());
   RegisterDbTable(storage->gpu_counter_group_table());
+  RegisterDbTable(storage->perf_counter_track_table());
 
   RegisterDbTable(storage->heap_graph_object_table());
   RegisterDbTable(storage->heap_graph_reference_table());

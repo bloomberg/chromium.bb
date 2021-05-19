@@ -92,6 +92,7 @@ class FakeNavigationClient : public mojom::NavigationClient {
       mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
+      int extended_error_code,
       const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<std::string>& error_page_content,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_loaders,
@@ -370,8 +371,7 @@ scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(
   // * Default run loop doesn't execute nested tasks. Tests will hang when
   //   default run loop is used.
   // TODO(bashi): Figure out a way to avoid using nested loop as it's
-  // problematic especially on the IO thread. This function is called on the IO
-  // thread when ServiceWorkerOnUI is disabled.
+  // problematic.
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   registry->CreateNewRegistration(
       options,

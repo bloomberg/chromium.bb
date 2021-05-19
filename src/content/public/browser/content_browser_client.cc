@@ -13,6 +13,7 @@
 
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -35,6 +37,7 @@
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/quota_permission_context.h"
+#include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
@@ -191,6 +194,11 @@ void ContentBrowserClient::OverrideURLLoaderFactoryParams(
 void ContentBrowserClient::GetAdditionalViewSourceSchemes(
     std::vector<std::string>* additional_schemes) {
   GetAdditionalWebUISchemes(additional_schemes);
+}
+
+network::mojom::IPAddressSpace
+ContentBrowserClient::DetermineAddressSpaceFromURL(const GURL& url) {
+  return network::mojom::IPAddressSpace::kUnknown;
 }
 
 bool ContentBrowserClient::LogWebUIUrl(const GURL& web_ui_url) {
@@ -512,21 +520,11 @@ bool ContentBrowserClient::ShouldUseGmsCoreGeolocationProvider() {
 }
 #endif
 
-std::string ContentBrowserClient::GetStoragePartitionIdForSite(
+StoragePartitionId ContentBrowserClient::GetStoragePartitionIdForSite(
     BrowserContext* browser_context,
     const GURL& site) {
   DCHECK(browser_context);
-  return std::string();
-}
-
-bool ContentBrowserClient::IsValidStoragePartitionId(
-    BrowserContext* browser_context,
-    const std::string& partition_id) {
-  DCHECK(browser_context);
-
-  // Since the GetStoragePartitionIdForChildProcess() only generates empty
-  // strings, we should only ever see empty strings coming back.
-  return partition_id.empty();
+  return StoragePartitionId(browser_context);
 }
 
 StoragePartitionConfig ContentBrowserClient::GetStoragePartitionConfigForSite(
@@ -534,7 +532,7 @@ StoragePartitionConfig ContentBrowserClient::GetStoragePartitionConfigForSite(
     const GURL& site) {
   DCHECK(browser_context);
 
-  return StoragePartitionConfig::CreateDefault();
+  return StoragePartitionConfig::CreateDefault(browser_context);
 }
 
 MediaObserver* ContentBrowserClient::GetMediaObserver() {
@@ -636,7 +634,8 @@ ContentBrowserClient::CreateSelectFilePolicy(WebContents* web_contents) {
   return std::unique_ptr<ui::SelectFilePolicy>();
 }
 
-DevToolsManagerDelegate* ContentBrowserClient::GetDevToolsManagerDelegate() {
+std::unique_ptr<content::DevToolsManagerDelegate>
+ContentBrowserClient::CreateDevToolsManagerDelegate() {
   return nullptr;
 }
 
@@ -895,6 +894,11 @@ void ContentBrowserClient::CreateDeviceInfoService(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::DeviceAPIService> receiver) {}
 
+void ContentBrowserClient::CreateManagedConfigurationService(
+    RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::ManagedConfigurationService> receiver) {
+}
+
 #if !defined(OS_ANDROID)
 SerialDelegate* ContentBrowserClient::GetSerialDelegate() {
   return nullptr;
@@ -927,6 +931,12 @@ bool ContentBrowserClient::CreateThreadPool(base::StringPiece name) {
 }
 
 #if !defined(OS_ANDROID)
+WebAuthenticationDelegate*
+ContentBrowserClient::GetWebAuthenticationDelegate() {
+  static base::NoDestructor<WebAuthenticationDelegate> delegate;
+  return delegate.get();
+}
+
 std::unique_ptr<AuthenticatorRequestClientDelegate>
 ContentBrowserClient::GetWebAuthenticationRequestDelegate(
     RenderFrameHost* render_frame_host) {
@@ -955,6 +965,7 @@ bool ContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
     WebContents::OnceGetter web_contents_getter,
     int child_id,
+    int frame_tree_node_id,
     NavigationUIData* navigation_data,
     bool is_main_frame,
     ui::PageTransition page_transition,
@@ -987,6 +998,8 @@ bool ContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
 }
 
 void ContentBrowserClient::OnNetworkServiceDataUseUpdate(
+    int process_id,
+    int route_id,
     int32_t network_traffic_annotation_id_hash,
     int64_t recv_bytes,
     int64_t sent_bytes) {}
@@ -1100,10 +1113,15 @@ bool ContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
   return false;
 }
 
-void ContentBrowserClient::FetchRemoteSms(
-    content::BrowserContext* browser_context,
+base::OnceClosure ContentBrowserClient::FetchRemoteSms(
+    content::WebContents* web_contents,
     const url::Origin& origin,
-    base::OnceCallback<void(base::Optional<std::string>)> callback) {}
+    base::OnceCallback<void(base::Optional<std::vector<url::Origin>>,
+                            base::Optional<std::string>,
+                            base::Optional<content::SmsFetchFailureType>)>
+        callback) {
+  return base::NullCallback();
+}
 
 bool ContentBrowserClient::IsClipboardPasteAllowed(
     content::RenderFrameHost* render_frame_host) {
@@ -1185,7 +1203,7 @@ bool ContentBrowserClient::HasErrorPage(int http_status_code) {
 
 std::unique_ptr<IdentityRequestDialogController>
 ContentBrowserClient::CreateIdentityRequestDialogController() {
-  return nullptr;
+  return std::make_unique<IdentityRequestDialogController>();
 }
 
 bool ContentBrowserClient::SuppressDifferentOriginSubframeJSDialogs(

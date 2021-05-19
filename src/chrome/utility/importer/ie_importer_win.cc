@@ -25,7 +25,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -475,7 +474,7 @@ void IEImporter::ImportFavorites() {
   ParseFavoritesFolder(info, &bookmarks, &favicons);
 
   if (!bookmarks.empty() && !cancelled()) {
-    const base::string16& first_folder_name =
+    const std::u16string& first_folder_name =
         edge_import_mode_
             ? l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_EDGE)
             : l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_IE);
@@ -551,7 +550,7 @@ void IEImporter::ImportSearchEngines() {
   // Software\Microsoft\Internet Explorer\SearchScopes
   // Each key represents a search engine. The URL value contains the URL and
   // the DisplayName the name.
-  typedef std::map<std::string, base::string16> SearchEnginesMap;
+  typedef std::map<std::string, std::u16string> SearchEnginesMap;
   SearchEnginesMap search_engines_map;
   for (base::win::RegistryKeyIterator key_iter(HKEY_CURRENT_USER,
                                                kSearchScopePath);
@@ -632,7 +631,7 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {
     // Source path exists during testing as well as when importing from Edge.
     info->path = source_path_;
     info->path = info->path.AppendASCII("Favorites");
-    info->links_folder = STRING16_LITERAL("Links");
+    info->links_folder = u"Links";
     return true;
   }
 
@@ -648,7 +647,7 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {
   // under Favorites folder since it looks like there is not name different in
   // every language version of Windows.
   info->path = base::FilePath(buffer);
-  info->links_folder = STRING16_LITERAL("Links");
+  info->links_folder = u"Links";
 
   return true;
 }

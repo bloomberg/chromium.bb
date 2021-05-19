@@ -100,7 +100,11 @@ ExternalInstallOptions GetConfigForGoogleCalendar() {
   ExternalInstallOptions options(
       /*install_url=*/GURL("https://calendar.google.com/calendar/"
                            "installwebapp?usp=chrome_default"),
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      /*user_display_mode=*/DisplayMode::kStandalone,
+#else
       /*user_display_mode=*/DisplayMode::kBrowser,
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       /*install_source=*/ExternalInstallSource::kExternalDefault);
 
   options.user_type_allowlist = {"unmanaged", "managed", "child"};
@@ -118,7 +122,7 @@ ExternalInstallOptions GetConfigForGoogleCalendar() {
     info->start_url = GURL("https://calendar.google.com/calendar/r");
     info->scope = GURL("https://calendar.google.com/calendar/");
     info->display_mode = DisplayMode::kStandalone;
-    info->icon_bitmaps_any = LoadBundledIcons(
+    info->icon_bitmaps.any = LoadBundledIcons(
         {IDR_PREINSTALLED_WEB_APPS_GOOGLE_CALENDAR_ICON_192_PNG});
     return info;
   });

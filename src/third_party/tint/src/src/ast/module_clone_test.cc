@@ -15,10 +15,6 @@
 #include <unordered_set>
 
 #include "gtest/gtest.h"
-#include "src/ast/case_statement.h"
-#include "src/ast/module.h"
-#include "src/program.h"
-#include "src/program_builder.h"
 #include "src/reader/wgsl/parser.h"
 #include "src/writer/wgsl/generator.h"
 
@@ -32,9 +28,8 @@ TEST(ModuleCloneTest, Clone) {
   // See also fuzzers/tint_ast_clone_fuzzer.cc for further coverage of cloning.
   Source::File file("test.wgsl", R"([[block]]
 struct S {
-  [[offset(0)]]
+  [[size(4)]]
   m0 : u32;
-  [[offset(4)]]
   m1 : array<u32>;
 };
 
@@ -42,7 +37,7 @@ const c0 : i32 = 10;
 const c1 : bool = true;
 
 type t0 = [[stride(16)]] array<vec4<f32>>;
-type t1 = [[stride(32)]] array<vec4<f32>>;
+type t1 = array<vec4<f32>>;
 
 var<uniform> g0 : u32 = 20u;
 var<out> g1 : f32 = 123.0;
@@ -53,10 +48,10 @@ var g5 : [[access(read)]] texture_storage_2d<r32uint>;
 var g6 : [[access(write)]] texture_storage_2d<rg32float>;
 
 [[builtin(position)]] var<uniform> g7 : vec3<f32>;
-[[group(10), binding(20)]] var<storage> g7 : S;
-[[group(10), binding(20)]] var<storage> g8 : [[access(read)]]
+[[group(10), binding(20)]] var<storage> g8 : S;
+[[group(10), binding(20)]] var<storage> g9 : [[access(read)]]
 S;
-[[group(10), binding(20)]] var<storage> g9 : [[access(read_write)]]
+[[group(10), binding(20)]] var<storage> g10 : [[access(read_write)]]
 S;
 
 fn f0(p0 : bool) -> f32 {
@@ -68,9 +63,9 @@ fn f0(p0 : bool) -> f32 {
 
 fn f1(p0 : f32, p1 : i32) -> f32 {
   var l0 : i32 = 3;
-  var l1 : f32 = 8;
+  var l1 : f32 = 8.0;
   var l2 : u32 = bitcast<u32>(4);
-  var l3 : vec2<u32> = vec2<u32>(l0, l1);
+  var l3 : vec2<u32> = vec2<u32>(u32(l0), u32(l1));
   var l4 : S;
   var l5 : u32 = l4.m1[5];
   var l6 : ptr<private, u32>;
@@ -89,10 +84,10 @@ fn f1(p0 : f32, p1 : i32) -> f32 {
     }
   }
   switch(l2) {
-    case 0: {
+    case 0u: {
       break;
     }
-    case 1: {
+    case 1u: {
       return f0(true);
     }
     default: {

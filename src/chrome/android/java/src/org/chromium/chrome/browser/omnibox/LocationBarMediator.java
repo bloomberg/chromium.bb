@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.lens.LensEntryPoint;
 import org.chromium.chrome.browser.lens.LensIntentParams;
 import org.chromium.chrome.browser.lens.LensQueryParams;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
@@ -79,11 +78,10 @@ import java.util.List;
  * Mediator for the LocationBar component. Intended location for LocationBar business logic;
  * currently, migration of this logic out of LocationBarLayout is in progress.
  */
-class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDelegate,
-                                     VoiceRecognitionHandler.Delegate,
-                                     VoiceRecognitionHandler.Observer,
-                                     AssistantVoiceSearchService.Observer, UrlBarDelegate,
-                                     OnKeyListener, ComponentCallbacks, TemplateUrlServiceObserver {
+class LocationBarMediator
+        implements LocationBarDataProvider.Observer, OmniboxStub, VoiceRecognitionHandler.Delegate,
+                   VoiceRecognitionHandler.Observer, AssistantVoiceSearchService.Observer,
+                   UrlBarDelegate, OnKeyListener, ComponentCallbacks, TemplateUrlServiceObserver {
     private static final int ICON_FADE_ANIMATION_DURATION_MS = 150;
     private static final int ICON_FADE_ANIMATION_DELAY_MS = 75;
     private static final long NTP_KEYBOARD_FOCUS_DURATION_MS = 200;
@@ -168,7 +166,8 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
             @NonNull OneshotSupplier<TemplateUrlService> templateUrlServiceSupplier,
             @NonNull BackKeyBehaviorDelegate backKeyBehavior, @NonNull WindowAndroid windowAndroid,
             boolean isTablet, @NonNull SearchEngineLogoUtils searchEngineLogoUtils,
-            @NonNull LensController lensController) {
+            @NonNull LensController lensController,
+            @NonNull Runnable launchAssistanceSettingsAction) {
         mContext = context;
         mLocationBarLayout = locationBarLayout;
         mLocationBarDataProvider = locationBarDataProvider;
@@ -176,7 +175,8 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
         mOverrideUrlLoadingDelegate = overrideUrlLoadingDelegate;
         mLocaleManager = localeManager;
         mVoiceRecognitionHandler =
-                new VoiceRecognitionHandler(this, mAssistantVoiceSearchServiceSupplier);
+                new VoiceRecognitionHandler(this, mAssistantVoiceSearchServiceSupplier,
+                        launchAssistanceSettingsAction, profileSupplier);
         mVoiceRecognitionHandler.addObserver(this);
         mProfileSupplier = profileSupplier;
         mProfileSupplier.addObserver(mCallbackController.makeCancelable(this::setProfile));
@@ -224,7 +224,6 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
         mUrlCoordinator = null;
         mPrivacyPreferencesManager = null;
         mVoiceRecognitionHandler.removeObserver(this);
-        mVoiceRecognitionHandler.destroy();
         mVoiceRecognitionHandler = null;
         mLocationBarDataProvider.removeObserver(this);
         mDeferredNativeRunnables.clear();
@@ -435,13 +434,12 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
         }
 
         if (currentTab != null
-                && (currentTab.isNativePage()
-                        || UrlUtilities.isNTPUrl(currentTab.getUrlString()))) {
+                && (currentTab.isNativePage() || UrlUtilities.isNTPUrl(currentTab.getUrl()))) {
             NewTabPageUma.recordOmniboxNavigation(url, transition);
             // Passing in an empty string should not do anything unless the user is at the NTP.
             // Since the NTP has no url, pressing enter while clicking on the URL bar should refresh
             // the page as it does when you click and press enter on any other site.
-            if (url.isEmpty()) url = currentTab.getUrlString();
+            if (url.isEmpty()) url = currentTab.getUrl().getSpec();
         }
 
         // Loads the |url| in a new tab or the current ContentView and gives focus to the
@@ -1159,7 +1157,7 @@ class LocationBarMediator implements LocationBarDataProvider.Observer, FakeboxDe
         mAutocompleteCoordinator.prefetchZeroSuggestResults();
     }
 
-    // FakeboxDelegate implementation.
+    // OmniboxStub implementation.
 
     @Override
     public void setUrlBarFocus(boolean shouldBeFocused, @Nullable String pastedText, int reason) {

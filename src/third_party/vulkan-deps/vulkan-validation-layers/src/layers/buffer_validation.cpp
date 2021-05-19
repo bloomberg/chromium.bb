@@ -243,6 +243,7 @@ IMAGE_STATE::IMAGE_STATE(VkDevice dev, VkImage img, const VkImageCreateInfo *pCr
       subresource_encoder(full_range),
       fragment_encoder(nullptr),
       store_device_as_workaround(dev),  // TODO REMOVE WHEN encoder can be const
+      swapchain_fake_address(0U),
       sparse_requirements{} {
     if ((createInfo.sharingMode == VK_SHARING_MODE_CONCURRENT) && (createInfo.queueFamilyIndexCount > 0)) {
         uint32_t *queue_family_indices = new uint32_t[createInfo.queueFamilyIndexCount];
@@ -291,7 +292,7 @@ bool IMAGE_STATE::IsCreateInfoDedicatedAllocationImageAliasingCompatible(const V
     return is_compatible;
 }
 
-bool IMAGE_STATE::IsCompatibleAliasing(IMAGE_STATE *other_image_state) {
+bool IMAGE_STATE::IsCompatibleAliasing(IMAGE_STATE *other_image_state) const {
     if (!is_swapchain_image && !other_image_state->is_swapchain_image &&
         !(createInfo.flags & other_image_state->createInfo.flags & VK_IMAGE_CREATE_ALIAS_BIT)) {
         return false;
@@ -473,11 +474,8 @@ uint32_t FullMipChainLevels(VkExtent3D extent) { return FullMipChainLevels(exten
 
 uint32_t FullMipChainLevels(VkExtent2D extent) { return FullMipChainLevels(extent.height, extent.width); }
 
-bool CoreChecks::FindLayouts(VkImage image, std::vector<VkImageLayout> &layouts) const {
-    auto image_state = GetImageState(image);
-    if (!image_state) return false;
-
-    const auto *layout_range_map = GetLayoutRangeMap(imageLayoutMap, image);
+bool CoreChecks::FindLayouts(const IMAGE_STATE &image_state, std::vector<VkImageLayout> &layouts) const {
+    const auto *layout_range_map = GetLayoutRangeMap(imageLayoutMap, image_state.image);
     if (!layout_range_map) return false;
     // TODO: FindLayouts function should mutate into a ValidatePresentableLayout with the loop wrapping the LogError
     //       from the caller. You can then use decode to add the subresource of the range::begin to the error message.
@@ -485,11 +483,11 @@ bool CoreChecks::FindLayouts(VkImage image, std::vector<VkImageLayout> &layouts)
     // TODO: what is this test and what is it supposed to do?! -- the logic doesn't match the comment below?!
 
     // TODO: Make this robust for >1 aspect mask. Now it will just say ignore potential errors in this case.
-    if (layout_range_map->size() >= (image_state->createInfo.arrayLayers * image_state->createInfo.mipLevels + 1)) {
+    if (layout_range_map->size() >= (image_state.createInfo.arrayLayers * image_state.createInfo.mipLevels + 1)) {
         return false;
     }
 
-    for (auto entry : *layout_range_map) {
+    for (const auto &entry : *layout_range_map) {
         layouts.push_back(entry.second);
     }
     return true;
@@ -504,8 +502,8 @@ void CoreChecks::SetImageLayout(CMD_BUFFER_STATE *cb_node, const IMAGE_STATE &im
     if (subresource_map->SetSubresourceRangeLayout(*cb_node, image_subresource_range, layout, expected_layout)) {
         cb_node->image_layout_change_count++;  // Change the version of this data to force revalidation
     }
-    for (const auto &image : image_state.aliasing_images) {
-        auto alias_state = GetImageState(image);
+    for (const auto *alias_state : image_state.aliasing_images) {
+        assert(alias_state);
         // The map state of the aliases should all be in sync, so no need to check the return value
         subresource_map = GetImageSubresourceLayoutMap(cb_node, *alias_state);
         assert(subresource_map);
@@ -521,9 +519,9 @@ void CoreChecks::SetImageViewInitialLayout(CMD_BUFFER_STATE *cb_node, const IMAG
     IMAGE_STATE *image_state = view_state.image_state.get();
     auto *subresource_map = GetImageSubresourceLayoutMap(cb_node, *image_state);
     subresource_map->SetSubresourceRangeInitialLayout(*cb_node, layout, view_state);
-    for (const auto &image : image_state->aliasing_images) {
-        image_state = GetImageState(image);
-        subresource_map = GetImageSubresourceLayoutMap(cb_node, *image_state);
+    for (const auto *alias_state : image_state->aliasing_images) {
+        assert(alias_state);
+        subresource_map = GetImageSubresourceLayoutMap(cb_node, *alias_state);
         subresource_map->SetSubresourceRangeInitialLayout(*cb_node, layout, view_state);
     }
 }
@@ -534,8 +532,8 @@ void CoreChecks::SetImageInitialLayout(CMD_BUFFER_STATE *cb_node, const IMAGE_ST
     auto *subresource_map = GetImageSubresourceLayoutMap(cb_node, image_state);
     assert(subresource_map);
     subresource_map->SetSubresourceRangeInitialLayout(*cb_node, NormalizeSubresourceRange(image_state, range), layout);
-    for (const auto &image : image_state.aliasing_images) {
-        auto alias_state = GetImageState(image);
+    for (const auto *alias_state : image_state.aliasing_images) {
+        assert(alias_state);
         subresource_map = GetImageSubresourceLayoutMap(cb_node, *alias_state);
         assert(subresource_map);
         subresource_map->SetSubresourceRangeInitialLayout(*cb_node, NormalizeSubresourceRange(*alias_state, range), layout);
@@ -949,7 +947,7 @@ bool VerifyAspectsPresent(VkImageAspectFlags aspect_mask, VkFormat format) {
 }
 
 // Verify an ImageMemoryBarrier's old/new ImageLayouts are compatible with the Image's ImageUsageFlags.
-bool CoreChecks::ValidateBarrierLayoutToImageUsage(const CoreErrorLocation &loc, VkImage image, VkImageLayout layout,
+bool CoreChecks::ValidateBarrierLayoutToImageUsage(const Location &loc, VkImage image, VkImageLayout layout,
                                                    VkImageUsageFlags usage_flags) const {
     bool skip = false;
     bool is_error = false;
@@ -998,7 +996,7 @@ bool CoreChecks::ValidateBarrierLayoutToImageUsage(const CoreErrorLocation &loc,
 
 // Verify image barriers are compatible with the images they reference.
 template <typename ImageBarrier>
-bool CoreChecks::ValidateBarriersToImages(const CoreErrorLocation &outer_loc, const CMD_BUFFER_STATE *cb_state,
+bool CoreChecks::ValidateBarriersToImages(const Location &outer_loc, const CMD_BUFFER_STATE *cb_state,
                                           uint32_t imageMemoryBarrierCount, const ImageBarrier *pImageMemoryBarriers) const {
     bool skip = false;
     using sync_vuid_maps::GetImageBarrierVUID;
@@ -1014,9 +1012,9 @@ bool CoreChecks::ValidateBarriersToImages(const CoreErrorLocation &outer_loc, co
     // Adding a struct wrapper is their recommend solution for the expanded type name growing too long
     // when creating maps full of maps.
     struct ImageBarrierScoreboardSubresMap {
-        std::unordered_map<VkImageSubresourceRange, ImageBarrierScoreboardEntry> map;
+        layer_data::unordered_map<VkImageSubresourceRange, ImageBarrierScoreboardEntry> map;
     };
-    using ImageBarrierScoreboardImageMap = std::unordered_map<VkImage, ImageBarrierScoreboardSubresMap>;
+    using ImageBarrierScoreboardImageMap = layer_data::unordered_map<VkImage, ImageBarrierScoreboardSubresMap>;
 
     // Scoreboard for duplicate layout transition barriers within the list
     // Pointers retained in the scoreboard only have the lifetime of *this* call (i.e. within the scope of the API call)
@@ -1183,8 +1181,7 @@ bool CoreChecks::ValidateBarriersToImages(const CoreErrorLocation &outer_loc, co
 }
 
 template <typename Barrier, typename TransferBarrier>
-bool CoreChecks::ValidateQFOTransferBarrierUniqueness(const CoreErrorLocation &loc, const CMD_BUFFER_STATE *cb_state,
-                                                      const Barrier &barrier,
+bool CoreChecks::ValidateQFOTransferBarrierUniqueness(const Location &loc, const CMD_BUFFER_STATE *cb_state, const Barrier &barrier,
                                                       const QFOTransferBarrierSets<TransferBarrier> &barrier_sets) const {
     bool skip = false;
     auto pool = cb_state->command_pool.get();
@@ -1253,7 +1250,7 @@ const BUFFER_STATE *BarrierHandleState(const ValidationStateTracker &device_stat
 }
 
 template <typename Barrier, typename TransferBarrier>
-void CoreChecks::RecordBarrierValidationInfo(const CoreErrorLocation &loc, CMD_BUFFER_STATE *cb_state, const Barrier &barrier,
+void CoreChecks::RecordBarrierValidationInfo(const Location &loc, CMD_BUFFER_STATE *cb_state, const Barrier &barrier,
                                              QFOTransferBarrierSets<TransferBarrier> &barrier_sets) {
     auto pool = cb_state->command_pool.get();
     if (IsTransferOp(barrier)) {
@@ -1275,7 +1272,7 @@ void CoreChecks::RecordBarrierValidationInfo(const CoreErrorLocation &loc, CMD_B
         bool mode_concurrent = handle_state ? handle_state->createInfo.sharingMode == VK_SHARING_MODE_CONCURRENT : false;
         if (!mode_concurrent) {
             const auto typed_handle = BarrierTypedHandle(barrier);
-            CoreErrorLocationCapture loc_capture(loc);
+            core_error::LocationCapture loc_capture(loc);
             cb_state->queue_submit_functions.emplace_back(
                 [loc_capture, cb_state, typed_handle, src_queue_family, dst_queue_family](const ValidationStateTracker *device_data,
                                                                                           const QUEUE_STATE *queue_state) {
@@ -1288,7 +1285,7 @@ void CoreChecks::RecordBarrierValidationInfo(const CoreErrorLocation &loc, CMD_B
 
 // Verify image barrier image state and that the image is consistent with FB image
 template <typename ImgBarrier>
-bool CoreChecks::ValidateImageBarrierAttachment(const CoreErrorLocation &loc, CMD_BUFFER_STATE const *cb_state,
+bool CoreChecks::ValidateImageBarrierAttachment(const Location &loc, CMD_BUFFER_STATE const *cb_state,
                                                 const FRAMEBUFFER_STATE *framebuffer, uint32_t active_subpass,
                                                 const safe_VkSubpassDescription2 &sub_desc, const VkRenderPass rp_handle,
                                                 const ImgBarrier &img_barrier, const CMD_BUFFER_STATE *primary_cb_state) const {
@@ -1382,19 +1379,19 @@ bool CoreChecks::ValidateImageBarrierAttachment(const CoreErrorLocation &loc, CM
     return skip;
 }
 // explictly instantiate so these can be used in core_validation.cpp
-template bool CoreChecks::ValidateImageBarrierAttachment(const CoreErrorLocation &loc, CMD_BUFFER_STATE const *cb_state,
+template bool CoreChecks::ValidateImageBarrierAttachment(const Location &loc, CMD_BUFFER_STATE const *cb_state,
                                                          const FRAMEBUFFER_STATE *framebuffer, uint32_t active_subpass,
                                                          const safe_VkSubpassDescription2 &sub_desc, const VkRenderPass rp_handle,
                                                          const VkImageMemoryBarrier &img_barrier,
                                                          const CMD_BUFFER_STATE *primary_cb_state) const;
-template bool CoreChecks::ValidateImageBarrierAttachment(const CoreErrorLocation &loc, CMD_BUFFER_STATE const *cb_state,
+template bool CoreChecks::ValidateImageBarrierAttachment(const Location &loc, CMD_BUFFER_STATE const *cb_state,
                                                          const FRAMEBUFFER_STATE *framebuffer, uint32_t active_subpass,
                                                          const safe_VkSubpassDescription2 &sub_desc, const VkRenderPass rp_handle,
                                                          const VkImageMemoryBarrier2KHR &img_barrier,
                                                          const CMD_BUFFER_STATE *primary_cb_state) const;
 
 template <typename ImgBarrier>
-void CoreChecks::EnqueueSubmitTimeValidateImageBarrierAttachment(const CoreErrorLocation &loc, CMD_BUFFER_STATE *cb_state,
+void CoreChecks::EnqueueSubmitTimeValidateImageBarrierAttachment(const Location &loc, CMD_BUFFER_STATE *cb_state,
                                                                  const ImgBarrier &barrier) {
     // Secondary CBs can have null framebuffer so queue up validation in that case 'til FB is known
     if ((cb_state->activeRenderPass) && (VK_NULL_HANDLE == cb_state->activeFramebuffer) &&
@@ -1404,7 +1401,7 @@ void CoreChecks::EnqueueSubmitTimeValidateImageBarrierAttachment(const CoreError
         const auto &sub_desc = rp_state->createInfo.pSubpasses[active_subpass];
         // Secondary CB case w/o FB specified delay validation
         auto *this_ptr = this;  // Required for older compilers with c++20 compatibility
-        CoreErrorLocationCapture loc_capture(loc);
+        core_error::LocationCapture loc_capture(loc);
         const auto render_pass = rp_state->renderPass;
         cb_state->cmd_execute_commands_functions.emplace_back(
             [this_ptr, loc_capture, cb_state, active_subpass, sub_desc, render_pass, barrier](const CMD_BUFFER_STATE *primary_cb,
@@ -1415,28 +1412,28 @@ void CoreChecks::EnqueueSubmitTimeValidateImageBarrierAttachment(const CoreError
     }
 }
 
-void CoreChecks::RecordBarriers(ErrFunc func_name, CMD_BUFFER_STATE *cb_state, uint32_t bufferBarrierCount,
+void CoreChecks::RecordBarriers(Func func_name, CMD_BUFFER_STATE *cb_state, uint32_t bufferBarrierCount,
                                 const VkBufferMemoryBarrier *pBufferMemBarriers, uint32_t imageMemBarrierCount,
                                 const VkImageMemoryBarrier *pImageMemBarriers) {
     for (uint32_t i = 0; i < bufferBarrierCount; i++) {
-        CoreErrorLocation loc(func_name, RefPage::VkBufferMemoryBarrier, Field::pBufferMemoryBarriers, i);
+        Location loc(func_name, Struct::VkBufferMemoryBarrier, Field::pBufferMemoryBarriers, i);
         RecordBarrierValidationInfo(loc, cb_state, pBufferMemBarriers[i], cb_state->qfo_transfer_buffer_barriers);
     }
     for (uint32_t i = 0; i < imageMemBarrierCount; i++) {
-        CoreErrorLocation loc(func_name, RefPage::VkImageMemoryBarrier, Field::pImageMemoryBarriers, i);
+        Location loc(func_name, Struct::VkImageMemoryBarrier, Field::pImageMemoryBarriers, i);
         const auto &img_barrier = pImageMemBarriers[i];
         RecordBarrierValidationInfo(loc, cb_state, img_barrier, cb_state->qfo_transfer_image_barriers);
         EnqueueSubmitTimeValidateImageBarrierAttachment(loc, cb_state, img_barrier);
     }
 }
 
-void CoreChecks::RecordBarriers(ErrFunc func_name, CMD_BUFFER_STATE *cb_state, const VkDependencyInfoKHR &dep_info) {
+void CoreChecks::RecordBarriers(Func func_name, CMD_BUFFER_STATE *cb_state, const VkDependencyInfoKHR &dep_info) {
     for (uint32_t i = 0; i < dep_info.bufferMemoryBarrierCount; i++) {
-        CoreErrorLocation loc(func_name, RefPage::VkBufferMemoryBarrier2KHR, Field::pBufferMemoryBarriers, i);
+        Location loc(func_name, Struct::VkBufferMemoryBarrier2KHR, Field::pBufferMemoryBarriers, i);
         RecordBarrierValidationInfo(loc, cb_state, dep_info.pBufferMemoryBarriers[i], cb_state->qfo_transfer_buffer_barriers);
     }
     for (uint32_t i = 0; i < dep_info.imageMemoryBarrierCount; i++) {
-        CoreErrorLocation loc(func_name, RefPage::VkImageMemoryBarrier2KHR, Field::pImageMemoryBarriers, i);
+        Location loc(func_name, Struct::VkImageMemoryBarrier2KHR, Field::pImageMemoryBarriers, i);
         const auto &img_barrier = dep_info.pImageMemoryBarriers[i];
         RecordBarrierValidationInfo(loc, cb_state, img_barrier, cb_state->qfo_transfer_image_barriers);
         EnqueueSubmitTimeValidateImageBarrierAttachment(loc, cb_state, img_barrier);
@@ -1449,7 +1446,7 @@ bool CoreChecks::ValidateAndUpdateQFOScoreboard(const debug_report_data *report_
                                                 Scoreboard *scoreboard) const {
     // Record to the scoreboard or report that we have a duplication
     bool skip = false;
-    auto inserted = scoreboard->insert(std::make_pair(barrier, cb_state));
+    auto inserted = scoreboard->emplace(barrier, cb_state);
     if (!inserted.second && inserted.first->second != cb_state) {
         // This is a duplication (but don't report duplicates from the same CB, as we do that at record time
         LogObjectList objlist(cb_state->commandBuffer);
@@ -4406,10 +4403,9 @@ void CoreChecks::PreCallRecordCmdBlitImage2KHR(VkCommandBuffer commandBuffer, co
                        pBlitImageInfo->filter);
 }
 
-GlobalImageLayoutRangeMap *GetLayoutRangeMap(GlobalImageLayoutMap *map, const IMAGE_STATE &image_state) {
-    assert(map);
+GlobalImageLayoutRangeMap *GetLayoutRangeMap(GlobalImageLayoutMap &map, const IMAGE_STATE &image_state) {
     // This approach allows for a single hash lookup or/create new
-    auto &layout_map = (*map)[image_state.image];
+    auto &layout_map = map[image_state.image];
     if (!layout_map) {
         layout_map.emplace(image_state.subresource_encoder.SubresourceCount());
     }
@@ -4426,10 +4422,9 @@ const GlobalImageLayoutRangeMap *GetLayoutRangeMap(const GlobalImageLayoutMap &m
 
 // This validates that the initial layout specified in the command buffer for the IMAGE is the same as the global IMAGE layout
 bool CoreChecks::ValidateCmdBufImageLayouts(const CMD_BUFFER_STATE *pCB, const GlobalImageLayoutMap &globalImageLayoutMap,
-                                            GlobalImageLayoutMap *overlayLayoutMap_arg) const {
+                                            GlobalImageLayoutMap &overlayLayoutMap) const {
     if (disabled[image_layout_validation]) return false;
     bool skip = false;
-    GlobalImageLayoutMap &overlay_layout_map = *overlayLayoutMap_arg;
     // Iterate over the layout maps for each referenced image
     GlobalImageLayoutRangeMap empty_map(1);
     for (const auto &layout_map_entry : pCB->image_layout_map) {
@@ -4441,7 +4436,7 @@ bool CoreChecks::ValidateCmdBufImageLayouts(const CMD_BUFFER_STATE *pCB, const G
         // Validate the initial_uses for each subresource referenced
         if (initial_layout_map.empty()) continue;
 
-        auto *overlay_map = GetLayoutRangeMap(&overlay_layout_map, *image_state);
+        auto *overlay_map = GetLayoutRangeMap(overlayLayoutMap, *image_state);
         const auto *global_map = GetLayoutRangeMap(globalImageLayoutMap, image);
         if (global_map == nullptr) {
             global_map = &empty_map;
@@ -4507,7 +4502,7 @@ void CoreChecks::UpdateCmdBufImageLayouts(CMD_BUFFER_STATE *pCB) {
         const auto &subres_map = layout_map_entry.second;
         const auto *image_state = GetImageState(image);
         if (!image_state) continue;  // Can't set layouts of a dead image
-        auto *global_map = GetLayoutRangeMap(&imageLayoutMap, *image_state);
+        auto *global_map = GetLayoutRangeMap(imageLayoutMap, *image_state);
         sparse_container::splice(global_map, subres_map->GetCurrentLayoutMap(), sparse_container::value_precedence::prefer_source);
     }
 }
@@ -5091,10 +5086,10 @@ bool CoreChecks::ValidateCmdClearDepthSubresourceRange(const IMAGE_STATE *image_
                                          subresource_range_error_codes);
 }
 
-bool CoreChecks::ValidateImageBarrierSubresourceRange(const CoreErrorLocation &loc, const IMAGE_STATE *image_state,
+bool CoreChecks::ValidateImageBarrierSubresourceRange(const Location &loc, const IMAGE_STATE *image_state,
                                                       const VkImageSubresourceRange &subresourceRange) const {
     return ValidateImageSubresourceRange(image_state->createInfo.mipLevels, image_state->createInfo.arrayLayers, subresourceRange,
-                                         loc.StringFuncName().c_str(), loc.StringField().c_str(), "arrayLayers", image_state->image,
+                                         loc.StringFunc().c_str(), loc.StringField().c_str(), "arrayLayers", image_state->image,
                                          sync_vuid_maps::GetSubResourceVUIDs(loc));
 }
 
@@ -5105,7 +5100,7 @@ using sync_vuid_maps::QueueError;
 
 class ValidatorState {
   public:
-    ValidatorState(const ValidationStateTracker *device_data, LogObjectList &&obj, const CoreErrorLocation &location,
+    ValidatorState(const ValidationStateTracker *device_data, LogObjectList &&obj, const core_error::Location &location,
                    const VulkanTypedHandle &barrier_handle, const VkSharingMode sharing_mode)
         : device_data_(device_data),
           objects_(std::move(obj)),
@@ -5195,7 +5190,7 @@ class ValidatorState {
   protected:
     const ValidationStateTracker *device_data_;
     const LogObjectList objects_;
-    const CoreErrorLocation loc_;
+    const core_error::Location loc_;
     const VulkanTypedHandle barrier_handle_;
     const VkSharingMode sharing_mode_;
     const uint32_t limit_;
@@ -5250,7 +5245,7 @@ bool Validate(const CoreChecks *device_data, const CMD_BUFFER_STATE *cb_state, c
 }
 }  // namespace barrier_queue_families
 
-bool CoreChecks::ValidateConcurrentBarrierAtSubmit(const CoreErrorLocation &loc, const ValidationStateTracker *state_data,
+bool CoreChecks::ValidateConcurrentBarrierAtSubmit(const Location &loc, const ValidationStateTracker *state_data,
                                                    const QUEUE_STATE *queue_state, const CMD_BUFFER_STATE *cb_state,
                                                    const VulkanTypedHandle &typed_handle, uint32_t src_queue_family,
                                                    uint32_t dst_queue_family) {
@@ -5261,8 +5256,8 @@ bool CoreChecks::ValidateConcurrentBarrierAtSubmit(const CoreErrorLocation &loc,
 
 // Type specific wrapper for image barriers
 template <typename ImgBarrier>
-bool CoreChecks::ValidateBarrierQueueFamilies(const CoreErrorLocation &loc, const CMD_BUFFER_STATE *cb_state,
-                                              const ImgBarrier &barrier, const IMAGE_STATE *state_data) const {
+bool CoreChecks::ValidateBarrierQueueFamilies(const Location &loc, const CMD_BUFFER_STATE *cb_state, const ImgBarrier &barrier,
+                                              const IMAGE_STATE *state_data) const {
     // State data is required
     if (!state_data) {
         return false;
@@ -5279,8 +5274,8 @@ bool CoreChecks::ValidateBarrierQueueFamilies(const CoreErrorLocation &loc, cons
 
 // Type specific wrapper for buffer barriers
 template <typename BufBarrier>
-bool CoreChecks::ValidateBarrierQueueFamilies(const CoreErrorLocation &loc, const CMD_BUFFER_STATE *cb_state,
-                                              const BufBarrier &barrier, const BUFFER_STATE *state_data) const {
+bool CoreChecks::ValidateBarrierQueueFamilies(const Location &loc, const CMD_BUFFER_STATE *cb_state, const BufBarrier &barrier,
+                                              const BUFFER_STATE *state_data) const {
     // State data is required
     if (!state_data) {
         return false;
@@ -5296,7 +5291,7 @@ bool CoreChecks::ValidateBarrierQueueFamilies(const CoreErrorLocation &loc, cons
 }
 
 template <typename Barrier>
-bool CoreChecks::ValidateBufferBarrier(const LogObjectList &objects, const CoreErrorLocation &loc, const CMD_BUFFER_STATE *cb_state,
+bool CoreChecks::ValidateBufferBarrier(const LogObjectList &objects, const Location &loc, const CMD_BUFFER_STATE *cb_state,
                                        const Barrier &mem_barrier) const {
     using sync_vuid_maps::BufferError;
     using sync_vuid_maps::GetBufferBarrierVUID;
@@ -5310,7 +5305,7 @@ bool CoreChecks::ValidateBufferBarrier(const LogObjectList &objects, const CoreE
     if (buffer_state) {
         auto buf_loc = loc.dot(Field::buffer);
         const auto &mem_vuid = GetBufferBarrierVUID(buf_loc, BufferError::kNoMemory);
-        skip |= ValidateMemoryIsBoundToBuffer(buffer_state, loc.StringFuncName().c_str(), mem_vuid.c_str());
+        skip |= ValidateMemoryIsBoundToBuffer(buffer_state, loc.StringFunc().c_str(), mem_vuid.c_str());
 
         skip |= ValidateBarrierQueueFamilies(buf_loc, cb_state, mem_barrier, buffer_state);
 
@@ -5342,7 +5337,7 @@ bool CoreChecks::ValidateBufferBarrier(const LogObjectList &objects, const CoreE
 }
 
 template <typename Barrier>
-bool CoreChecks::ValidateImageBarrier(const LogObjectList &objects, const CoreErrorLocation &loc, const CMD_BUFFER_STATE *cb_state,
+bool CoreChecks::ValidateImageBarrier(const LogObjectList &objects, const Location &loc, const CMD_BUFFER_STATE *cb_state,
                                       const Barrier &mem_barrier) const {
     bool skip = false;
 
@@ -5372,16 +5367,16 @@ bool CoreChecks::ValidateImageBarrier(const LogObjectList &objects, const CoreEr
         skip |= ValidateBarrierQueueFamilies(image_loc, cb_state, mem_barrier, image_data);
 
         skip |= ValidateImageAspectMask(image_data->image, image_data->createInfo.format, mem_barrier.subresourceRange.aspectMask,
-                                        loc.StringFuncName().c_str());
+                                        loc.StringFunc().c_str());
 
         skip |= ValidateImageBarrierSubresourceRange(loc.dot(Field::subresourceRange), image_data, mem_barrier.subresourceRange);
     }
     return skip;
 }
 
-bool CoreChecks::ValidateBarriers(const CoreErrorLocation &outer_loc, const CMD_BUFFER_STATE *cb_state,
-                                  VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask,
-                                  uint32_t memBarrierCount, const VkMemoryBarrier *pMemBarriers, uint32_t bufferBarrierCount,
+bool CoreChecks::ValidateBarriers(const Location &outer_loc, const CMD_BUFFER_STATE *cb_state, VkPipelineStageFlags src_stage_mask,
+                                  VkPipelineStageFlags dst_stage_mask, uint32_t memBarrierCount,
+                                  const VkMemoryBarrier *pMemBarriers, uint32_t bufferBarrierCount,
                                   const VkBufferMemoryBarrier *pBufferMemBarriers, uint32_t imageMemBarrierCount,
                                   const VkImageMemoryBarrier *pImageMemBarriers) const {
     bool skip = false;
@@ -5390,38 +5385,32 @@ bool CoreChecks::ValidateBarriers(const CoreErrorLocation &outer_loc, const CMD_
     auto op_type =
         ComputeBarrierOperationsType(cb_state, bufferBarrierCount, pBufferMemBarriers, imageMemBarrierCount, pImageMemBarriers);
 
-    // NOTE: for vkCmdPipelineBarrier() and vkCmdWaitEvents() the access mask checks use the function name for {refpage}
     for (uint32_t i = 0; i < memBarrierCount; ++i) {
         const auto &mem_barrier = pMemBarriers[i];
-        CoreErrorLocation loc(outer_loc.func_name, outer_loc.refpage, Field::pMemoryBarriers, i);
+        auto loc = outer_loc.dot(Struct::VkMemoryBarrier, Field::pMemoryBarriers, i);
         skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier, src_stage_mask, dst_stage_mask);
     }
     for (uint32_t i = 0; i < imageMemBarrierCount; ++i) {
         const auto &mem_barrier = pImageMemBarriers[i];
-        CoreErrorLocation loc(outer_loc.func_name, outer_loc.refpage, Field::pImageMemoryBarriers, i);
+        auto loc = outer_loc.dot(Struct::VkImageMemoryBarrier, Field::pImageMemoryBarriers, i);
         skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier, src_stage_mask, dst_stage_mask);
-
-        loc.refpage = RefPage::VkImageMemoryBarrier;
         skip |= ValidateImageBarrier(objects, loc, cb_state, mem_barrier);
     }
     {
-        CoreErrorLocation loc(outer_loc.func_name, RefPage::VkImageMemoryBarrier);
+        Location loc(outer_loc.function, Struct::VkImageMemoryBarrier);
         skip |= ValidateBarriersToImages(loc, cb_state, imageMemBarrierCount, pImageMemBarriers);
     }
     for (uint32_t i = 0; i < bufferBarrierCount; ++i) {
         const auto &mem_barrier = pBufferMemBarriers[i];
-        CoreErrorLocation loc(outer_loc.func_name, outer_loc.refpage, Field::pBufferMemoryBarriers, i);
+        auto loc = outer_loc.dot(Struct::VkBufferMemoryBarrier, Field::pMemoryBarriers, i);
         skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier, src_stage_mask, dst_stage_mask);
-
-        loc.refpage = RefPage::VkBufferMemoryBarrier;
         skip |= ValidateBufferBarrier(objects, loc, cb_state, mem_barrier);
     }
     return skip;
 }
 
-bool CoreChecks::ValidateDependencyInfo(const LogObjectList &objects, const CoreErrorLocation &outer_loc,
-                                        const CMD_BUFFER_STATE *cb_state, BarrierOperationsType op_type,
-                                        const VkDependencyInfoKHR *dep_info) const {
+bool CoreChecks::ValidateDependencyInfo(const LogObjectList &objects, const Location &outer_loc, const CMD_BUFFER_STATE *cb_state,
+                                        BarrierOperationsType op_type, const VkDependencyInfoKHR *dep_info) const {
     bool skip = false;
 
     if (cb_state->activeRenderPass) {
@@ -5431,26 +5420,23 @@ bool CoreChecks::ValidateDependencyInfo(const LogObjectList &objects, const Core
     auto queue_flags = GetQueueFlags(*cb_state);
     for (uint32_t i = 0; i < dep_info->memoryBarrierCount; ++i) {
         const auto &mem_barrier = dep_info->pMemoryBarriers[i];
-        CoreErrorLocation loc = outer_loc.dot(Field::pMemoryBarriers, i);
-        loc.refpage = RefPage::VkMemoryBarrier2KHR;
+        auto loc = outer_loc.dot(Struct::VkMemoryBarrier2KHR, Field::pMemoryBarriers, i);
         skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier);
     }
     for (uint32_t i = 0; i < dep_info->imageMemoryBarrierCount; ++i) {
         const auto &mem_barrier = dep_info->pImageMemoryBarriers[i];
-        CoreErrorLocation loc = outer_loc.dot(Field::pImageMemoryBarriers, i);
-        loc.refpage = RefPage::VkImageMemoryBarrier2KHR;
+        auto loc = outer_loc.dot(Struct::VkImageMemoryBarrier2KHR, Field::pImageMemoryBarriers, i);
         skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier);
         skip |= ValidateImageBarrier(objects, loc, cb_state, mem_barrier);
     }
     {
-        CoreErrorLocation loc(outer_loc.func_name, RefPage::VkImageMemoryBarrier2KHR);
+        Location loc(outer_loc.function, Struct::VkImageMemoryBarrier2KHR);
         skip |= ValidateBarriersToImages(loc, cb_state, dep_info->imageMemoryBarrierCount, dep_info->pImageMemoryBarriers);
     }
 
     for (uint32_t i = 0; i < dep_info->bufferMemoryBarrierCount; ++i) {
         const auto &mem_barrier = dep_info->pBufferMemoryBarriers[i];
-        CoreErrorLocation loc = outer_loc.dot(Field::pBufferMemoryBarriers, i);
-        loc.refpage = RefPage::VkBufferMemoryBarrier2KHR;
+        auto loc = outer_loc.dot(Struct::VkBufferMemoryBarrier2KHR, Field::pBufferMemoryBarriers, i);
         skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier);
         skip |= ValidateBufferBarrier(objects, loc, cb_state, mem_barrier);
     }
@@ -5459,7 +5445,7 @@ bool CoreChecks::ValidateDependencyInfo(const LogObjectList &objects, const Core
 }
 
 template <typename Barrier>
-bool CoreChecks::ValidateMemoryBarrier(const LogObjectList &objects, const CoreErrorLocation &loc, BarrierOperationsType op_type,
+bool CoreChecks::ValidateMemoryBarrier(const LogObjectList &objects, const Location &loc, BarrierOperationsType op_type,
                                        VkQueueFlags queue_flags, const Barrier &barrier, VkPipelineStageFlags src_stage_mask,
                                        VkPipelineStageFlags dst_stage_mask) const {
     bool skip = false;
@@ -5473,7 +5459,7 @@ bool CoreChecks::ValidateMemoryBarrier(const LogObjectList &objects, const CoreE
 }
 
 template <typename Barrier>
-bool CoreChecks::ValidateMemoryBarrier(const LogObjectList &objects, const CoreErrorLocation &loc, BarrierOperationsType op_type,
+bool CoreChecks::ValidateMemoryBarrier(const LogObjectList &objects, const Location &loc, BarrierOperationsType op_type,
                                        VkQueueFlags queue_flags, const Barrier &barrier) const {
     bool skip = false;
     if (op_type == kAllRelease || op_type == kGeneral) {
@@ -5489,7 +5475,7 @@ bool CoreChecks::ValidateMemoryBarrier(const LogObjectList &objects, const CoreE
     return skip;
 }
 
-bool CoreChecks::ValidateSubpassBarrier(const LogObjectList &objects, const CoreErrorLocation &loc, VkQueueFlags queue_flags,
+bool CoreChecks::ValidateSubpassBarrier(const LogObjectList &objects, const Location &loc, VkQueueFlags queue_flags,
                                         const VkSubpassDependency2 &barrier) const {
     bool skip = false;
     const auto *mem_barrier = LvlFindInChain<VkMemoryBarrier2KHR>(barrier.pNext);
@@ -5550,6 +5536,12 @@ bool CoreChecks::ValidateImageViewFormatFeatures(const IMAGE_STATE *image_state,
         VkDrmFormatModifierPropertiesListEXT drm_properties_list = {VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT,
                                                                     nullptr};
         format_properties_2.pNext = (void *)&drm_properties_list;
+        DispatchGetPhysicalDeviceFormatProperties2(physical_device, view_format, &format_properties_2);
+
+        std::vector<VkDrmFormatModifierPropertiesEXT> drm_properties;
+        drm_properties.resize(drm_properties_list.drmFormatModifierCount);
+        drm_properties_list.pDrmFormatModifierProperties = drm_properties.data();
+
         DispatchGetPhysicalDeviceFormatProperties2(physical_device, view_format, &format_properties_2);
 
         for (uint32_t i = 0; i < drm_properties_list.drmFormatModifierCount; i++) {
@@ -5700,7 +5692,10 @@ bool CoreChecks::PreCallValidateCreateImageView(VkDevice device, const VkImageVi
             } else {
                 if (!(image_flags & VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT)) {
                     // Format MUST be compatible (in the same format compatibility class) as the format the image was created with
-                    if (FormatCompatibilityClass(image_format) != FormatCompatibilityClass(view_format)) {
+                    const VkFormatCompatibilityClass imageClass = FormatCompatibilityClass(image_format);
+                    const VkFormatCompatibilityClass viewClass = FormatCompatibilityClass(view_format);
+                    // Need to only check if one is NONE_BIT to handle edge case both are NONE_BIT
+                    if ((imageClass != viewClass) || (imageClass == VK_FORMAT_COMPATIBILITY_CLASS_NONE_BIT)) {
                         const char *error_vuid;
                         if ((!device_extensions.vk_khr_maintenance2) && (!device_extensions.vk_khr_sampler_ycbcr_conversion)) {
                             error_vuid = "VUID-VkImageViewCreateInfo-image-01018";

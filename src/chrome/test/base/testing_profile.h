@@ -316,19 +316,16 @@ class TestingProfile : public Profile {
   content::BackgroundSyncController* GetBackgroundSyncController() override;
   content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()
       override;
-  void SetCorsOriginAccessListForOrigin(
-      TargetBrowserContexts target_mode,
-      const url::Origin& source_origin,
-      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-      base::OnceClosure closure) override;
 
   TestingProfile* AsTestingProfile() override;
 
   // Profile
   std::string GetProfileUserName() const override;
 
-  Profile* GetOffTheRecordProfile(const OTRProfileID& otr_profile_id) override;
+  // TODO(https://crbug.com/1191315): Remove default value after auditing and
+  // updating use cases.
+  Profile* GetOffTheRecordProfile(const OTRProfileID& otr_profile_id,
+                                  bool create_if_needed = true) override;
   std::vector<Profile*> GetAllOffTheRecordProfiles() override;
   void DestroyOffTheRecordProfile(Profile* otr_profile) override;
   bool HasOffTheRecordProfile(const OTRProfileID& otr_profile_id) override;
@@ -382,7 +379,7 @@ class TestingProfile : public Profile {
   void ChangeAppLocale(const std::string&, AppLocaleChangedVia) override;
   void OnLogin() override {}
   void InitChromeOSPreferences() override {}
-  chromeos::ScopedCrosSettingsTestHelper* ScopedCrosSettingsTestHelper();
+  ash::ScopedCrosSettingsTestHelper* ScopedCrosSettingsTestHelper();
 
   base::Optional<std::string> requested_locale() { return requested_locale_; }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -433,6 +430,10 @@ class TestingProfile : public Profile {
 
   // Finishes initialization when a profile is created asynchronously.
   void FinishInit();
+
+  // TODO(https://crbug.com/1169142): Update when profile type variables are
+  // removed (is_guest_session_, is_system_profile_, ...)
+  void UpdateBrowserProfileType();
 
   // Creates a TestingPrefService and associates it with the TestingProfile.
   void CreateTestingPrefService();
@@ -512,7 +513,7 @@ class TestingProfile : public Profile {
   base::Optional<OTRProfileID> otr_profile_id_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  std::unique_ptr<chromeos::ScopedCrosSettingsTestHelper>
+  std::unique_ptr<ash::ScopedCrosSettingsTestHelper>
       scoped_cros_settings_test_helper_;
 
   base::Optional<std::string> requested_locale_;

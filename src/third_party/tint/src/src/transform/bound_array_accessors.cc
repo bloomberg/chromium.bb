@@ -15,40 +15,10 @@
 #include "src/transform/bound_array_accessors.h"
 
 #include <algorithm>
-#include <memory>
 #include <utility>
 
-#include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/bitcast_expression.h"
-#include "src/ast/block_statement.h"
-#include "src/ast/break_statement.h"
-#include "src/ast/call_expression.h"
-#include "src/ast/call_statement.h"
-#include "src/ast/case_statement.h"
-#include "src/ast/continue_statement.h"
-#include "src/ast/discard_statement.h"
-#include "src/ast/else_statement.h"
-#include "src/ast/fallthrough_statement.h"
-#include "src/ast/if_statement.h"
-#include "src/ast/loop_statement.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
-#include "src/ast/switch_statement.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/uint_literal.h"
-#include "src/ast/unary_op_expression.h"
-#include "src/ast/variable.h"
-#include "src/ast/variable_decl_statement.h"
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 #include "src/semantic/expression.h"
-#include "src/type/array_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
 
 namespace tint {
 namespace transform {
@@ -56,13 +26,13 @@ namespace transform {
 BoundArrayAccessors::BoundArrayAccessors() = default;
 BoundArrayAccessors::~BoundArrayAccessors() = default;
 
-Transform::Output BoundArrayAccessors::Run(const Program* in) {
+Transform::Output BoundArrayAccessors::Run(const Program* in, const DataMap&) {
   ProgramBuilder out;
-  CloneContext(&out, in)
-      .ReplaceAll([&](CloneContext* ctx, ast::ArrayAccessorExpression* expr) {
-        return Transform(expr, ctx);
-      })
-      .Clone();
+  CloneContext ctx(&out, in);
+  ctx.ReplaceAll([&](ast::ArrayAccessorExpression* expr) {
+    return Transform(expr, &ctx);
+  });
+  ctx.Clone();
   return Output(Program(std::move(out)));
 }
 
@@ -99,7 +69,12 @@ ast::ArrayAccessorExpression* BoundArrayAccessors::Transform(
 
   if (size == 0) {
     if (is_arr) {
-      auto* arr_len = b.Call("arrayLength", ctx->Clone(expr->array()));
+      // Call Cloneable::Clone() instead of CloneContext::Clone() to ensure the
+      // AST node is duplicated. CloneContext::Clone() will ensure that repeated
+      // calls with the same pointer return the *same* cloned node - in this
+      // case we actually want two copies.
+      auto* arr = static_cast<ast::Expression*>(expr->array()->Clone(ctx));
+      auto* arr_len = b.Call("arrayLength", arr);
       auto* limit = b.Sub(arr_len, b.Expr(1u));
       new_idx = b.Call("min", b.Construct<u32>(ctx->Clone(old_idx)), limit);
     } else {

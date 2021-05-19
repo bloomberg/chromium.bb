@@ -11,6 +11,7 @@
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/network/cellular_esim_connection_handler.h"
 #include "chromeos/network/cellular_esim_uninstall_handler.h"
 #include "chromeos/network/cellular_inhibitor.h"
 #include "chromeos/network/fake_network_connection_handler.h"
@@ -28,7 +29,8 @@ namespace cellular_setup {
 const char* ESimTestBase::kTestEuiccPath = "/org/chromium/Hermes/Euicc/0";
 const char* ESimTestBase::kTestEid = "12345678901234567890123456789012";
 
-ESimTestBase::ESimTestBase() {
+ESimTestBase::ESimTestBase()
+    : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
   if (!ShillManagerClient::Get())
     shill_clients::InitializeFakes();
   if (!HermesManagerClient::Get())
@@ -53,18 +55,27 @@ void ESimTestBase::SetUp() {
   cellular_inhibitor_ = std::make_unique<CellularInhibitor>();
   cellular_inhibitor_->Init(network_state_handler_.get(),
                             network_device_handler_.get());
+  cellular_esim_profile_handler_ =
+      std::make_unique<TestCellularESimProfileHandler>();
+  cellular_esim_profile_handler_->Init(network_state_handler_.get(),
+                                       cellular_inhibitor_.get());
+  cellular_esim_connection_handler_ =
+      std::make_unique<CellularESimConnectionHandler>();
+  cellular_esim_connection_handler_->Init(network_state_handler_.get(),
+                                          cellular_inhibitor_.get(),
+                                          cellular_esim_profile_handler_.get());
   cellular_esim_uninstall_handler_ =
       std::make_unique<CellularESimUninstallHandler>();
   cellular_esim_uninstall_handler_->Init(
-      cellular_inhibitor_.get(), network_configuration_handler_.get(),
-      network_connection_handler_.get(), network_state_handler_.get());
-  cellular_esim_profile_handler_ =
-      std::make_unique<TestCellularESimProfileHandler>();
-  cellular_esim_profile_handler_->Init();
+      cellular_inhibitor_.get(), cellular_esim_profile_handler_.get(),
+      network_configuration_handler_.get(), network_connection_handler_.get(),
+      network_state_handler_.get());
 
   esim_manager_ = std::make_unique<ESimManager>(
+      cellular_esim_connection_handler_.get(),
       cellular_esim_profile_handler_.get(),
-      cellular_esim_uninstall_handler_.get(), cellular_inhibitor_.get());
+      cellular_esim_uninstall_handler_.get(), cellular_inhibitor_.get(),
+      network_connection_handler_.get(), network_state_handler_.get());
   observer_ = std::make_unique<ESimManagerTestObserver>();
   esim_manager_->AddObserver(observer_->GenerateRemote());
 }

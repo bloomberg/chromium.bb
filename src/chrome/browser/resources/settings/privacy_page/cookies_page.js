@@ -9,12 +9,12 @@
  */
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
-import '../controls/settings_toggle_button.m.js';
-import '../icons.m.js';
-import '../prefs/prefs.m.js';
-import '../settings_shared_css.m.js';
+import '../controls/settings_toggle_button.js';
+import '../icons.js';
+import '../prefs/prefs.js';
+import '../settings_shared_css.js';
 import '../site_settings/site_list.js';
 import './collapse_radio_button.js';
 import './do_not_track_toggle.js';
@@ -26,9 +26,9 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
-import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.js';
 import {routes} from '../route.js';
-import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.js';
 import {ContentSetting, ContentSettingsTypes} from '../site_settings/constants.js';
 
 /**

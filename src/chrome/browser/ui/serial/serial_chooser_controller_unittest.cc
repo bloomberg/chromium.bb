@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -152,8 +153,7 @@ TEST_F(SerialChooserControllerTest, PortsAddedAndRemoved) {
     run_loop.Run();
   }
   EXPECT_EQ(1u, controller->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("Test Port 1 (ttyS0)"),
-            controller->GetOption(0));
+  EXPECT_EQ(u"Test Port 1 (ttyS0)", controller->GetOption(0));
 
   AddPort("Test Port 2", base::FilePath(FILE_PATH_LITERAL("/dev/ttyS1")));
   {
@@ -165,10 +165,8 @@ TEST_F(SerialChooserControllerTest, PortsAddedAndRemoved) {
     run_loop.Run();
   }
   EXPECT_EQ(2u, controller->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("Test Port 1 (ttyS0)"),
-            controller->GetOption(0));
-  EXPECT_EQ(base::ASCIIToUTF16("Test Port 2 (ttyS1)"),
-            controller->GetOption(1));
+  EXPECT_EQ(u"Test Port 1 (ttyS0)", controller->GetOption(0));
+  EXPECT_EQ(u"Test Port 2 (ttyS1)", controller->GetOption(1));
 
   port_manager().RemovePort(port1_token);
   {
@@ -180,8 +178,7 @@ TEST_F(SerialChooserControllerTest, PortsAddedAndRemoved) {
     run_loop.Run();
   }
   EXPECT_EQ(1u, controller->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("Test Port 2 (ttyS1)"),
-            controller->GetOption(0));
+  EXPECT_EQ(u"Test Port 2 (ttyS1)", controller->GetOption(0));
 
   controller.reset();
   histogram_tester.ExpectUniqueSample("Permissions.Serial.ChooserClosed",
@@ -206,8 +203,7 @@ TEST_F(SerialChooserControllerTest, PortSelected) {
     base::RunLoop run_loop;
     EXPECT_CALL(view, OnOptionsInitialized).WillOnce(Invoke([&] {
       EXPECT_EQ(1u, controller->NumOptions());
-      EXPECT_EQ(base::ASCIIToUTF16("Test Port (ttyS0)"),
-                controller->GetOption(0));
+      EXPECT_EQ(u"Test Port (ttyS0)", controller->GetOption(0));
       run_loop.Quit();
     }));
     run_loop.Run();
@@ -220,8 +216,7 @@ TEST_F(SerialChooserControllerTest, PortSelected) {
         // Regression test for https://crbug.com/1069057. Ensure that the set of
         // options is still valid after the callback is run.
         EXPECT_EQ(1u, controller->NumOptions());
-        EXPECT_EQ(base::ASCIIToUTF16("Test Port (ttyS0)"),
-                  controller->GetOption(0));
+        EXPECT_EQ(u"Test Port (ttyS0)", controller->GetOption(0));
       }));
   controller->Select({0});
   histogram_tester.ExpectUniqueSample(
@@ -260,8 +255,7 @@ TEST_F(SerialChooserControllerTest, PortFiltered) {
     EXPECT_CALL(view, OnOptionsInitialized).WillOnce(Invoke([&] {
       // Expect that only the first port is shown thanks to the filter.
       EXPECT_EQ(1u, controller->NumOptions());
-      EXPECT_EQ(base::ASCIIToUTF16("Test Port 1 (ttyS0)"),
-                controller->GetOption(0));
+      EXPECT_EQ(u"Test Port 1 (ttyS0)", controller->GetOption(0));
       run_loop.Quit();
     }));
     run_loop.Run();
@@ -317,8 +311,7 @@ TEST_F(SerialChooserControllerTest, Blocklist) {
     EXPECT_CALL(view, OnOptionsInitialized).WillOnce(Invoke([&] {
       // Expect that only the first port is shown thanks to the filter.
       EXPECT_EQ(1u, controller->NumOptions());
-      EXPECT_EQ(base::ASCIIToUTF16("Test Port 1 (ttyS0)"),
-                controller->GetOption(0));
+      EXPECT_EQ(u"Test Port 1 (ttyS0)", controller->GetOption(0));
       run_loop.Quit();
     }));
     run_loop.Run();

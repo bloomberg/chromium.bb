@@ -54,8 +54,6 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     BrowserAccessibilityDelegate* delegate)
     : BrowserAccessibilityManager(delegate) {
   Initialize(initial_tree);
-  // Some tests are temporarily allowed disable extra mac nodes.
-  ax_tree()->SetEnableExtraMacNodes(!GetExtraMacNodesDisabled());
 }
 
 BrowserAccessibilityManagerMac::~BrowserAccessibilityManagerMac() {}
@@ -317,8 +315,8 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       DCHECK(node->IsTextField());
       mac_notification = NSAccessibilityValueChangedNotification;
       if (!text_edits_.empty()) {
-        base::string16 deleted_text;
-        base::string16 inserted_text;
+        std::u16string deleted_text;
+        std::u16string inserted_text;
         int32_t node_id = node->GetId();
         const auto iterator = text_edits_.find(node_id);
         id edit_text_marker = nil;
@@ -498,8 +496,8 @@ NSDictionary* BrowserAccessibilityManagerMac::
 NSDictionary*
 BrowserAccessibilityManagerMac::GetUserInfoForValueChangedNotification(
     const BrowserAccessibilityCocoa* native_node,
-    const base::string16& deleted_text,
-    const base::string16& inserted_text,
+    const std::u16string& deleted_text,
+    const std::u16string& inserted_text,
     id edit_text_marker) const {
   DCHECK(native_node);
   if (deleted_text.empty() && inserted_text.empty())

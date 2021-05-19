@@ -174,7 +174,6 @@ void GrStrokeTessellateOp::prePrepareTessellator(GrPathShader::ProgramArgs&& arg
         ((fShaderFlags & ShaderFlags::kDynamicColor) || fTotalCombinedVerbCnt > 50)) {
         SkASSERT(!this->nextInChain());  // We never chain when hw tessellation is an option.
         fTessellator = arena->make<GrStrokeHardwareTessellator>(fShaderFlags, &fPathStrokeList,
-                                                                fTotalCombinedVerbCnt,
                                                                 *caps.shaderCaps());
         shaderMode = GrStrokeTessellateShader::Mode::kTessellation;
     } else {
@@ -259,18 +258,18 @@ void GrStrokeTessellateOp::onPrepare(GrOpFlushState* flushState) {
                                     flushState->detachAppliedClip());
     }
     SkASSERT(fTessellator);
-    fTessellator->prepare(flushState, fViewMatrix);
+    fTessellator->prepare(flushState, fViewMatrix, fTotalCombinedVerbCnt);
 }
 
 void GrStrokeTessellateOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) {
     if (fStencilProgram) {
         flushState->bindPipelineAndScissorClip(*fStencilProgram, chainBounds);
-        flushState->bindTextures(fStencilProgram->primProc(), nullptr, fStencilProgram->pipeline());
+        flushState->bindTextures(fStencilProgram->geomProc(), nullptr, fStencilProgram->pipeline());
         fTessellator->draw(flushState);
     }
     if (fFillProgram) {
         flushState->bindPipelineAndScissorClip(*fFillProgram, chainBounds);
-        flushState->bindTextures(fFillProgram->primProc(), nullptr, fFillProgram->pipeline());
+        flushState->bindTextures(fFillProgram->geomProc(), nullptr, fFillProgram->pipeline());
         fTessellator->draw(flushState);
     }
 }

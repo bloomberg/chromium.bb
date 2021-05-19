@@ -272,6 +272,15 @@ void WindowCycleEventFilter::ProcessGestureEvent(ui::GestureEvent* event) {
           event->details().scroll_x());
       break;
     }
+    case ui::ET_SCROLL_FLING_START: {
+      tapped_window_ = nullptr;
+      auto* window_cycle_controller = Shell::Get()->window_cycle_controller();
+      if (!window_cycle_controller->IsEventInCycleView(event))
+        return;
+
+      window_cycle_controller->StartFling(event->details().velocity_x());
+      break;
+    }
     case ui::ET_GESTURE_END: {
       if (tapped_window_) {
         // Defer calling WindowCycleController::CompleteCycling() until we've

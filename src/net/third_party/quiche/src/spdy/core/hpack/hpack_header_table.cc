@@ -6,30 +6,12 @@
 
 #include <algorithm>
 
-#include "common/platform/api/quiche_string_piece.h"
 #include "spdy/core/hpack/hpack_constants.h"
 #include "spdy/core/hpack/hpack_static_table.h"
-#include "spdy/platform/api/spdy_containers.h"
 #include "spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "spdy/platform/api/spdy_logging.h"
 
 namespace spdy {
-
-size_t HpackHeaderTable::EntryHasher::operator()(
-    const HpackEntry* entry) const {
-  return quiche::QuicheHashStringPair(entry->name(), entry->value());
-}
-
-bool HpackHeaderTable::EntriesEq::operator()(const HpackEntry* lhs,
-                                             const HpackEntry* rhs) const {
-  if (lhs == nullptr) {
-    return rhs == nullptr;
-  }
-  if (rhs == nullptr) {
-    return false;
-  }
-  return lhs->name() == rhs->name() && lhs->value() == rhs->value();
-}
 
 HpackHeaderTable::HpackHeaderTable()
     : static_entries_(ObtainHpackStaticTable().GetStaticEntries()),
@@ -38,79 +20,42 @@ HpackHeaderTable::HpackHeaderTable()
       settings_size_bound_(kDefaultHeaderTableSizeSetting),
       size_(0),
       max_size_(kDefaultHeaderTableSizeSetting),
-      total_insertions_(static_entries_.size()) {}
+      dynamic_table_insertions_(0) {}
 
 HpackHeaderTable::~HpackHeaderTable() = default;
 
-const HpackEntry* HpackHeaderTable::GetByIndex(size_t index) {
-  if (index == 0) {
-    return nullptr;
-  }
-  index -= 1;
-  if (index < static_entries_.size()) {
-    return &static_entries_[index];
-  }
-  index -= static_entries_.size();
-  if (index < dynamic_entries_.size()) {
-    const HpackEntry* result = &dynamic_entries_[index];
-    if (debug_visitor_ != nullptr) {
-      debug_visitor_->OnUseEntry(*result);
-    }
-    return result;
-  }
-  return nullptr;
-}
-
-const HpackEntry* HpackHeaderTable::GetByName(absl::string_view name) {
+size_t HpackHeaderTable::GetByName(absl::string_view name) {
   {
     auto it = static_name_index_.find(name);
     if (it != static_name_index_.end()) {
-      return it->second;
+      return 1 + it->second;
     }
   }
   {
     NameToEntryMap::const_iterator it = dynamic_name_index_.find(name);
     if (it != dynamic_name_index_.end()) {
-      const HpackEntry* result = it->second;
-      if (debug_visitor_ != nullptr) {
-        debug_visitor_->OnUseEntry(*result);
-      }
-      return result;
+      return dynamic_table_insertions_ - it->second + kStaticTableSize;
     }
   }
-  return nullptr;
+  return kHpackEntryNotFound;
 }
 
-const HpackEntry* HpackHeaderTable::GetByNameAndValue(absl::string_view name,
-                                                      absl::string_view value) {
-  HpackEntry query(name, value);
+size_t HpackHeaderTable::GetByNameAndValue(absl::string_view name,
+                                           absl::string_view value) {
+  HpackLookupEntry query{name, value};
   {
-    auto it = static_index_.find(&query);
+    auto it = static_index_.find(query);
     if (it != static_index_.end()) {
-      return *it;
+      return 1 + it->second;
     }
   }
   {
-    auto it = dynamic_index_.find(&query);
+    auto it = dynamic_index_.find(query);
     if (it != dynamic_index_.end()) {
-      const HpackEntry* result = *it;
-      if (debug_visitor_ != nullptr) {
-        debug_visitor_->OnUseEntry(*result);
-      }
-      return result;
+      return dynamic_table_insertions_ - it->second + kStaticTableSize;
     }
   }
-  return nullptr;
-}
-
-size_t HpackHeaderTable::IndexOf(const HpackEntry* entry) const {
-  if (entry->IsLookup()) {
-    return 0;
-  } else if (entry->IsStatic()) {
-    return 1 + entry->InsertionIndex();
-  } else {
-    return total_insertions_ - entry->InsertionIndex() + static_entries_.size();
-  }
+  return kHpackEntryNotFound;
 }
 
 void HpackHeaderTable::SetMaxSize(size_t max_size) {
@@ -130,8 +75,8 @@ void HpackHeaderTable::SetSettingsHeaderTableSize(size_t settings_size) {
 
 void HpackHeaderTable::EvictionSet(absl::string_view name,
                                    absl::string_view value,
-                                   EntryTable::iterator* begin_out,
-                                   EntryTable::iterator* end_out) {
+                                   DynamicEntryTable::iterator* begin_out,
+                                   DynamicEntryTable::iterator* end_out) {
   size_t eviction_count = EvictionCountForEntry(name, value);
   *begin_out = dynamic_entries_.end() - eviction_count;
   *end_out = dynamic_entries_.end();
@@ -161,15 +106,17 @@ size_t HpackHeaderTable::EvictionCountToReclaim(size_t reclaim_size) const {
 void HpackHeaderTable::Evict(size_t count) {
   for (size_t i = 0; i != count; ++i) {
     QUICHE_CHECK(!dynamic_entries_.empty());
+
     HpackEntry* entry = &dynamic_entries_.back();
+    const size_t index = dynamic_table_insertions_ - dynamic_entries_.size();
 
     size_ -= entry->Size();
-    auto it = dynamic_index_.find(entry);
+    auto it = dynamic_index_.find({entry->name(), entry->value()});
     QUICHE_DCHECK(it != dynamic_index_.end());
     // Only remove an entry from the index if its insertion index matches;
     // otherwise, the index refers to another entry with the same name and
     // value.
-    if ((*it)->InsertionIndex() == entry->InsertionIndex()) {
+    if (it->second == index) {
       dynamic_index_.erase(it);
     }
     auto name_it = dynamic_name_index_.find(entry->name());
@@ -177,7 +124,7 @@ void HpackHeaderTable::Evict(size_t count) {
     // Only remove an entry from the literal index if its insertion index
     /// matches; otherwise, the index refers to another entry with the same
     // name.
-    if (name_it->second->InsertionIndex() == entry->InsertionIndex()) {
+    if (name_it->second == index) {
       dynamic_name_index_.erase(name_it);
     }
     dynamic_entries_.pop_back();
@@ -186,6 +133,9 @@ void HpackHeaderTable::Evict(size_t count) {
 
 const HpackEntry* HpackHeaderTable::TryAddEntry(absl::string_view name,
                                                 absl::string_view value) {
+  // Since |dynamic_entries_| has iterator stability, |name| and |value| are
+  // valid even after evicting other entries and push_front() making room for
+  // the new one.
   Evict(EvictionCountForEntry(name, value));
 
   size_t entry_size = HpackEntry::Size(name, value);
@@ -195,75 +145,45 @@ const HpackEntry* HpackHeaderTable::TryAddEntry(absl::string_view name,
     QUICHE_DCHECK_EQ(0u, size_);
     return nullptr;
   }
-  dynamic_entries_.push_front(HpackEntry(name, value,
-                                         false,  // is_static
-                                         total_insertions_));
+
+  const size_t index = dynamic_table_insertions_;
+  dynamic_entries_.push_front(
+      HpackEntry(std::string(name), std::string(value)));
   HpackEntry* new_entry = &dynamic_entries_.front();
-  auto index_result = dynamic_index_.insert(new_entry);
+  auto index_result = dynamic_index_.insert(std::make_pair(
+      HpackLookupEntry{new_entry->name(), new_entry->value()}, index));
   if (!index_result.second) {
     // An entry with the same name and value already exists in the dynamic
     // index. We should replace it with the newly added entry.
-    SPDY_DVLOG(1) << "Found existing entry: "
-                  << (*index_result.first)->GetDebugString()
-                  << " replacing with: " << new_entry->GetDebugString();
-    QUICHE_DCHECK_GT(new_entry->InsertionIndex(),
-                     (*index_result.first)->InsertionIndex());
+    SPDY_DVLOG(1) << "Found existing entry at: " << index_result.first->second
+                  << " replacing with: " << new_entry->GetDebugString()
+                  << " at: " << index;
+    QUICHE_DCHECK_GT(index, index_result.first->second);
     dynamic_index_.erase(index_result.first);
-    QUICHE_CHECK(dynamic_index_.insert(new_entry).second);
+    auto insert_result = dynamic_index_.insert(std::make_pair(
+        HpackLookupEntry{new_entry->name(), new_entry->value()}, index));
+    QUICHE_CHECK(insert_result.second);
   }
 
   auto name_result =
-      dynamic_name_index_.insert(std::make_pair(new_entry->name(), new_entry));
+      dynamic_name_index_.insert(std::make_pair(new_entry->name(), index));
   if (!name_result.second) {
     // An entry with the same name already exists in the dynamic index. We
     // should replace it with the newly added entry.
-    SPDY_DVLOG(1) << "Found existing entry: "
-                  << name_result.first->second->GetDebugString()
-                  << " replacing with: " << new_entry->GetDebugString();
-    QUICHE_DCHECK_GT(new_entry->InsertionIndex(),
-                     name_result.first->second->InsertionIndex());
+    SPDY_DVLOG(1) << "Found existing entry at: " << name_result.first->second
+                  << " replacing with: " << new_entry->GetDebugString()
+                  << " at: " << index;
+    QUICHE_DCHECK_GT(index, name_result.first->second);
     dynamic_name_index_.erase(name_result.first);
-    auto insert_result = dynamic_name_index_.insert(
-        std::make_pair(new_entry->name(), new_entry));
+    auto insert_result =
+        dynamic_name_index_.insert(std::make_pair(new_entry->name(), index));
     QUICHE_CHECK(insert_result.second);
   }
 
   size_ += entry_size;
-  ++total_insertions_;
-  if (debug_visitor_ != nullptr) {
-    // Call |debug_visitor_->OnNewEntry()| to get the current time.
-    HpackEntry& entry = dynamic_entries_.front();
-    entry.set_time_added(debug_visitor_->OnNewEntry(entry));
-    SPDY_DVLOG(2) << "HpackHeaderTable::OnNewEntry: name=" << entry.name()
-                  << ",  value=" << entry.value()
-                  << ",  insert_index=" << entry.InsertionIndex()
-                  << ",  time_added=" << entry.time_added();
-  }
+  ++dynamic_table_insertions_;
 
   return &dynamic_entries_.front();
-}
-
-void HpackHeaderTable::DebugLogTableState() const {
-  SPDY_DVLOG(2) << "Dynamic table:";
-  for (auto it = dynamic_entries_.begin(); it != dynamic_entries_.end(); ++it) {
-    SPDY_DVLOG(2) << "  " << it->GetDebugString();
-  }
-  SPDY_DVLOG(2) << "Full Static Index:";
-  for (const auto* entry : static_index_) {
-    SPDY_DVLOG(2) << "  " << entry->GetDebugString();
-  }
-  SPDY_DVLOG(2) << "Full Static Name Index:";
-  for (const auto& it : static_name_index_) {
-    SPDY_DVLOG(2) << "  " << it.first << ": " << it.second->GetDebugString();
-  }
-  SPDY_DVLOG(2) << "Full Dynamic Index:";
-  for (const auto* entry : dynamic_index_) {
-    SPDY_DVLOG(2) << "  " << entry->GetDebugString();
-  }
-  SPDY_DVLOG(2) << "Full Dynamic Name Index:";
-  for (const auto& it : dynamic_name_index_) {
-    SPDY_DVLOG(2) << "  " << it.first << ": " << it.second->GetDebugString();
-  }
 }
 
 size_t HpackHeaderTable::EstimateMemoryUsage() const {

@@ -19,10 +19,10 @@
 #include <utility>
 
 #include "gtest/gtest.h"
-#include "src/ast/module.h"
-#include "src/diagnostic/formatter.h"
 #include "src/program_builder.h"
-#include "src/type_determiner.h"
+#include "src/transform/canonicalize_entry_point_io.h"
+#include "src/transform/manager.h"
+#include "src/transform/msl.h"
 #include "src/writer/msl/generator_impl.h"
 
 namespace tint {
@@ -53,6 +53,39 @@ class TestHelperBase : public BASE, public ProgramBuilder {
       ASSERT_TRUE(program->IsValid())
           << diag::Formatter().format(program->Diagnostics());
     }();
+    gen_ = std::make_unique<GeneratorImpl>(program.get());
+    return *gen_;
+  }
+
+  /// Builds the program, runs the program through the transform::Msl sanitizer
+  /// and returns a GeneratorImpl from the sanitized program.
+  /// @note The generator is only built once. Multiple calls to Build() will
+  /// return the same GeneratorImpl without rebuilding.
+  /// @return the built generator
+  GeneratorImpl& SanitizeAndBuild() {
+    if (gen_) {
+      return *gen_;
+    }
+    [&]() {
+      ASSERT_TRUE(IsValid()) << "Builder program is not valid\n"
+                             << diag::Formatter().format(Diagnostics());
+    }();
+    program = std::make_unique<Program>(std::move(*this));
+    [&]() {
+      ASSERT_TRUE(program->IsValid())
+          << diag::Formatter().format(program->Diagnostics());
+    }();
+
+    tint::transform::Manager transform_manager;
+    transform_manager.append(
+        std::make_unique<tint::transform::CanonicalizeEntryPointIO>());
+    transform_manager.append(std::make_unique<tint::transform::Msl>());
+    auto result = transform_manager.Run(program.get());
+    [&]() {
+      ASSERT_TRUE(result.program.IsValid())
+          << diag::Formatter().format(result.program.Diagnostics());
+    }();
+    *program = std::move(result.program);
     gen_ = std::make_unique<GeneratorImpl>(program.get());
     return *gen_;
   }

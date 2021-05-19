@@ -104,6 +104,9 @@ class FrameImpl : public fuchsia::web::Frame,
   CastStreamingSessionClient* cast_streaming_session_client_for_test() {
     return cast_streaming_session_client_.get();
   }
+  FrameWindowTreeHost* window_tree_host_for_test() {
+    return window_tree_host_.get();
+  }
 
   // Enables explicit sites filtering and set the error page. If |error_page| is
   // empty, the default error page will be used.
@@ -227,9 +230,9 @@ class FrameImpl : public fuchsia::web::Frame,
   void CloseContents(content::WebContents* source) override;
   bool DidAddMessageToConsole(content::WebContents* source,
                               blink::mojom::ConsoleMessageLevel log_level,
-                              const base::string16& message,
+                              const std::u16string& message,
                               int32_t line_no,
-                              const base::string16& source_id) override;
+                              const std::u16string& source_id) override;
   bool IsWebContentsCreationOverridden(
       content::SiteInstance* source_site_instance,
       content::mojom::WindowContainerType window_container_type,

@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -56,9 +57,9 @@ class MockWebContentsDelegate : public WebContentsDelegate {
 
   bool DidAddMessageToConsole(WebContents* source,
                               blink::mojom::ConsoleMessageLevel log_level,
-                              const base::string16& message,
+                              const std::u16string& message,
                               int32_t line_no,
-                              const base::string16& source_id) override;
+                              const std::u16string& source_id) override;
 
  private:
   WebContents* web_contents_;
@@ -83,8 +84,8 @@ class ManifestBrowserTest : public ContentBrowserTest,
     ContentBrowserTest::SetUpOnMainThread();
     DCHECK(shell()->web_contents());
 
-    mock_web_contents_delegate_.reset(
-        new MockWebContentsDelegate(shell()->web_contents(), this));
+    mock_web_contents_delegate_ = std::make_unique<MockWebContentsDelegate>(
+        shell()->web_contents(), this);
     shell()->web_contents()->SetDelegate(mock_web_contents_delegate_.get());
     Observe(shell()->web_contents());
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -185,9 +186,9 @@ class ManifestBrowserTest : public ContentBrowserTest,
 bool MockWebContentsDelegate::DidAddMessageToConsole(
     WebContents* source,
     blink::mojom::ConsoleMessageLevel log_level,
-    const base::string16& message,
+    const std::u16string& message,
     int32_t line_no,
-    const base::string16& source_id) {
+    const std::u16string& source_id) {
   DCHECK(source == web_contents_);
 
   if (log_level == blink::mojom::ConsoleMessageLevel::kError ||
@@ -643,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, UseCredentialsSendCookies) {
 
   // The custom embedded test server will fill the name field with the cookie
   // content.
-  EXPECT_EQ(base::ASCIIToUTF16("foobar"), manifest().name);
+  EXPECT_EQ(u"foobar", manifest().name);
 }
 
 namespace {
@@ -703,7 +704,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, NoUseCredentialsNoCookies) {
 
   // The custom embedded test server will fill set the name to 'no cookies' if
   // it did not find cookies.
-  EXPECT_EQ(base::ASCIIToUTF16("no cookies"), manifest().name);
+  EXPECT_EQ(u"no cookies", manifest().name);
 }
 
 // This tests that fetching a Manifest from a unique origin always fails,

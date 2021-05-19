@@ -12,32 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/bitcast_expression.h"
-#include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
-#include "src/ast/else_statement.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/function.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/if_statement.h"
-#include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/program.h"
-#include "src/type/bool_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type/void_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -59,6 +35,14 @@ inline std::ostream& operator<<(std::ostream& out, BinaryData data) {
 using HlslBinaryTest = TestParamHelper<BinaryData>;
 TEST_P(HlslBinaryTest, Emit_f32) {
   auto params = GetParam();
+
+  // Skip ops that are illegal for this type
+  if (params.op == ast::BinaryOp::kAnd || params.op == ast::BinaryOp::kOr ||
+      params.op == ast::BinaryOp::kXor ||
+      params.op == ast::BinaryOp::kShiftLeft ||
+      params.op == ast::BinaryOp::kShiftRight) {
+    return;
+  }
 
   Global("left", ty.f32(), ast::StorageClass::kFunction);
   Global("right", ty.f32(), ast::StorageClass::kFunction);
@@ -95,6 +79,12 @@ TEST_P(HlslBinaryTest, Emit_u32) {
 }
 TEST_P(HlslBinaryTest, Emit_i32) {
   auto params = GetParam();
+
+  // Skip ops that are illegal for this type
+  if (params.op == ast::BinaryOp::kShiftLeft ||
+      params.op == ast::BinaryOp::kShiftRight) {
+    return;
+  }
 
   Global("left", ty.i32(), ast::StorageClass::kFunction);
   Global("right", ty.i32(), ast::StorageClass::kFunction);
@@ -208,7 +198,7 @@ TEST_F(HlslGeneratorImplTest_Binary, Multiply_MatrixVector) {
   GeneratorImpl& gen = Build();
 
   EXPECT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
-  EXPECT_EQ(result(), "mul(mat, float3(1.0f, 1.0f, 1.0f))");
+  EXPECT_EQ(result(), "mul(float3(1.0f, 1.0f, 1.0f), mat)");
 }
 
 TEST_F(HlslGeneratorImplTest_Binary, Multiply_VectorMatrix) {
@@ -223,7 +213,7 @@ TEST_F(HlslGeneratorImplTest_Binary, Multiply_VectorMatrix) {
   GeneratorImpl& gen = Build();
 
   EXPECT_TRUE(gen.EmitExpression(pre, out, expr)) << gen.error();
-  EXPECT_EQ(result(), "mul(float3(1.0f, 1.0f, 1.0f), mat)");
+  EXPECT_EQ(result(), "mul(mat, float3(1.0f, 1.0f, 1.0f))");
 }
 
 TEST_F(HlslGeneratorImplTest_Binary, Multiply_MatrixMatrix) {
@@ -422,6 +412,10 @@ a = (_tint_tmp_0);
 TEST_F(HlslGeneratorImplTest_Binary, Decl_WithLogical) {
   // var a : bool = (b && c) || d;
 
+  auto* b_decl = Decl(Var("b", ty.bool_(), ast::StorageClass::kFunction));
+  auto* c_decl = Decl(Var("c", ty.bool_(), ast::StorageClass::kFunction));
+  auto* d_decl = Decl(Var("d", ty.bool_(), ast::StorageClass::kFunction));
+
   auto* b = Expr("b");
   auto* c = Expr("c");
   auto* d = Expr("d");
@@ -432,11 +426,12 @@ TEST_F(HlslGeneratorImplTest_Binary, Decl_WithLogical) {
           ast::BinaryOp::kLogicalOr,
           create<ast::BinaryExpression>(ast::BinaryOp::kLogicalAnd, b, c), d));
 
-  auto* expr = create<ast::VariableDeclStatement>(var);
+  auto* decl = Decl(var);
+  WrapInFunction(b_decl, c_decl, d_decl, Decl(var));
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitStatement(out, expr)) << gen.error();
+  ASSERT_TRUE(gen.EmitStatement(out, decl)) << gen.error();
   EXPECT_EQ(result(), R"(bool _tint_tmp = b;
 if (_tint_tmp) {
   _tint_tmp = c;
@@ -481,11 +476,11 @@ TEST_F(HlslGeneratorImplTest_Binary, Call_WithLogical) {
   // foo(a && b, c || d, (a || c) && (b || d))
 
   Func("foo", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::FunctionDecorationList{});
-  Global("a", ty.bool_(), ast::StorageClass::kNone);
-  Global("b", ty.bool_(), ast::StorageClass::kNone);
-  Global("c", ty.bool_(), ast::StorageClass::kNone);
-  Global("d", ty.bool_(), ast::StorageClass::kNone);
+       ast::DecorationList{});
+  Global("a", ty.bool_(), ast::StorageClass::kInput);
+  Global("b", ty.bool_(), ast::StorageClass::kInput);
+  Global("c", ty.bool_(), ast::StorageClass::kInput);
+  Global("d", ty.bool_(), ast::StorageClass::kInput);
 
   ast::ExpressionList params;
   params.push_back(create<ast::BinaryExpression>(ast::BinaryOp::kLogicalAnd,

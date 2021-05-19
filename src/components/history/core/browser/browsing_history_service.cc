@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <map>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,7 +16,6 @@
 #include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -94,7 +94,7 @@ struct BrowsingHistoryService::QueryHistoryState
     : public base::RefCounted<BrowsingHistoryService::QueryHistoryState> {
   QueryHistoryState() = default;
 
-  base::string16 search_text;
+  std::u16string search_text;
   QueryOptions original_options;
 
   QuerySourceStatus local_status = UNINITIALIZED;
@@ -115,11 +115,11 @@ struct BrowsingHistoryService::QueryHistoryState
 BrowsingHistoryService::HistoryEntry::HistoryEntry(
     BrowsingHistoryService::HistoryEntry::EntryType entry_type,
     const GURL& url,
-    const base::string16& title,
+    const std::u16string& title,
     base::Time time,
     const std::string& client_id,
     bool is_search_result,
-    const base::string16& snippet,
+    const std::u16string& snippet,
     bool blocked_visit,
     const GURL& remote_icon_url_for_uma,
     int visit_count,
@@ -226,7 +226,7 @@ void BrowsingHistoryService::WebHistoryTimeout(
                             NUM_WEB_HISTORY_QUERY_BUCKETS);
 }
 
-void BrowsingHistoryService::QueryHistory(const base::string16& search_text,
+void BrowsingHistoryService::QueryHistory(const std::u16string& search_text,
                                           const QueryOptions& options) {
   scoped_refptr<QueryHistoryState> state =
       base::MakeRefCounted<QueryHistoryState>();
@@ -653,9 +653,9 @@ void BrowsingHistoryService::WebHistoryQueryComplete(
         const base::DictionaryValue* result = nullptr;
         const base::ListValue* results = nullptr;
         const base::ListValue* ids = nullptr;
-        base::string16 url;
-        base::string16 title;
-        base::string16 favicon_url;
+        std::u16string url;
+        std::u16string title;
+        std::u16string favicon_url;
 
         if (!(events->GetDictionary(i, &event) &&
               event->GetList("result", &results) &&
@@ -698,7 +698,7 @@ void BrowsingHistoryService::WebHistoryQueryComplete(
 
           state->remote_results.emplace_back(HistoryEntry(
               HistoryEntry::REMOTE_ENTRY, gurl, title, time, client_id,
-              !state->search_text.empty(), base::string16(),
+              !state->search_text.empty(), std::u16string(),
               /* blocked_visit */ false, GURL(favicon_url), 0, 0));
         }
       }

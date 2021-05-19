@@ -211,8 +211,8 @@ class StorageHandler::IndexedDBObserver
 
   void OnIndexedDBContentChanged(
       const url::Origin& origin,
-      const base::string16& database_name,
-      const base::string16& object_store_name) override {
+      const std::u16string& database_name,
+      const std::u16string& object_store_name) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!owner_)
       return;
@@ -523,8 +523,8 @@ void StorageHandler::NotifyIndexedDBListChanged(const std::string& origin) {
 
 void StorageHandler::NotifyIndexedDBContentChanged(
     const std::string& origin,
-    const base::string16& database_name,
-    const base::string16& object_store_name) {
+    const std::u16string& database_name,
+    const std::u16string& object_store_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   frontend_->IndexedDBContentUpdated(origin, base::UTF16ToUTF8(database_name),
                                      base::UTF16ToUTF8(object_store_name));
@@ -553,11 +553,10 @@ void SendTrustTokens(
   auto result =
       std::make_unique<protocol::Array<protocol::Storage::TrustTokens>>();
   for (auto const& token : tokens) {
-    auto protocol_token =
-        protocol::Storage::TrustTokens::Create()
-            .SetIssuerOrigin(token->issuer.GetURL().GetContent())
-            .SetCount(token->count)
-            .Build();
+    auto protocol_token = protocol::Storage::TrustTokens::Create()
+                              .SetIssuerOrigin(token->issuer.Serialize())
+                              .SetCount(token->count)
+                              .Build();
     result->push_back(std::move(protocol_token));
   }
 
@@ -575,6 +574,45 @@ void StorageHandler::GetTrustTokens(
 
   storage_partition_->GetNetworkContext()->GetStoredTrustTokenCounts(
       base::BindOnce(&SendTrustTokens, std::move(callback)));
+}
+
+namespace {
+
+void SendClearTrustTokensStatus(
+    std::unique_ptr<StorageHandler::ClearTrustTokensCallback> callback,
+    network::mojom::DeleteStoredTrustTokensStatus status) {
+  switch (status) {
+    case network::mojom::DeleteStoredTrustTokensStatus::kSuccessTokensDeleted:
+      callback->sendSuccess(/* didDeleteTokens */ true);
+      break;
+    case network::mojom::DeleteStoredTrustTokensStatus::kSuccessNoTokensDeleted:
+      callback->sendSuccess(/* didDeleteTokens */ false);
+      break;
+    case network::mojom::DeleteStoredTrustTokensStatus::kFailureFeatureDisabled:
+      callback->sendFailure(
+          Response::ServerError("The Trust Tokens feature is disabled."));
+      break;
+    case network::mojom::DeleteStoredTrustTokensStatus::kFailureInvalidOrigin:
+      callback->sendFailure(
+          Response::InvalidParams("The provided issuerOrigin is invalid. It "
+                                  "must be a HTTP/HTTPS trustworthy origin."));
+      break;
+  }
+}
+
+}  // namespace
+
+void StorageHandler::ClearTrustTokens(
+    const std::string& issuerOrigin,
+    std::unique_ptr<ClearTrustTokensCallback> callback) {
+  if (!storage_partition_) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
+
+  storage_partition_->GetNetworkContext()->DeleteStoredTrustTokens(
+      url::Origin::Create(GURL(issuerOrigin)),
+      base::BindOnce(&SendClearTrustTokensStatus, std::move(callback)));
 }
 
 }  // namespace protocol

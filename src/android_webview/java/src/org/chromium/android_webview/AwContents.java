@@ -76,7 +76,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.components.autofill.AutofillActionModeCallback;
 import org.chromium.components.autofill.AutofillProvider;
-import org.chromium.components.content_capture.ContentCaptureConsumer;
+import org.chromium.components.content_capture.OnscreenContentProvider;
 import org.chromium.components.embedder_support.util.WebResourceResponseInfo;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
@@ -162,10 +162,6 @@ public class AwContents implements SmartClipProvider {
 
     private static final String SAMSUNG_WORKAROUND_BASE_URL = "email://";
     private static final int SAMSUNG_WORKAROUND_DELAY = 200;
-
-    @VisibleForTesting
-    public static final String DATA_BASE_URL_SCHEME_HISTOGRAM_NAME =
-            "Android.WebView.LoadDataWithBaseUrl.BaseUrl";
 
     @VisibleForTesting
     public static final String LOAD_URL_SCHEME_HISTOGRAM_NAME = "Android.WebView.LoadUrl.UrlScheme";
@@ -483,7 +479,7 @@ public class AwContents implements SmartClipProvider {
 
     private JavascriptInjector mJavascriptInjector;
 
-    private ContentCaptureConsumer mContentCaptureConsumer;
+    private OnscreenContentProvider mOnscreenContentProvider;
 
     private AwDisplayCutoutController mDisplayCutoutController;
     private final AwDisplayModeController mDisplayModeController;
@@ -693,7 +689,8 @@ public class AwContents implements SmartClipProvider {
             // UI thread. Using sendMessage here (instead of calling onPageStarted directly)
             // will allow those to run in order.
             if (!AwFeatureList.pageStartedOnCommitEnabled(navigationParams.isRendererInitiated)) {
-                mContentsClient.getCallbackHelper().postOnPageStarted(navigationParams.url);
+                mContentsClient.getCallbackHelper().postOnPageStarted(
+                        navigationParams.url.getPossiblyInvalidSpec());
             }
             return false;
         }
@@ -1350,8 +1347,8 @@ public class AwContents implements SmartClipProvider {
             setNewAwContentsPreO(newAwContentsPtr);
             if (textClassifier != null) setTextClassifier(textClassifier);
         }
-        if (mContentCaptureConsumer != null) {
-            mContentCaptureConsumer.onWebContentsChanged(mWebContents);
+        if (mOnscreenContentProvider != null) {
+            mOnscreenContentProvider.onWebContentsChanged(mWebContents);
         }
     }
 
@@ -1543,9 +1540,9 @@ public class AwContents implements SmartClipProvider {
         if (TRACE) Log.i(TAG, "%s destroy", this);
         if (isDestroyed(NO_WARN)) return;
 
-        if (mContentCaptureConsumer != null) {
-            mContentCaptureConsumer.onWebContentsChanged(null);
-            mContentCaptureConsumer = null;
+        if (mOnscreenContentProvider != null) {
+            mOnscreenContentProvider.destroy();
+            mOnscreenContentProvider = null;
         }
 
         // Remove pending messages
@@ -1691,8 +1688,8 @@ public class AwContents implements SmartClipProvider {
         return sLocalGlobalVisibleRect;
     }
 
-    public void setContentCaptureConsumer(ContentCaptureConsumer consumer) {
-        mContentCaptureConsumer = consumer;
+    public void setOnscreenContentProvider(OnscreenContentProvider onscreenContentProvider) {
+        mOnscreenContentProvider = onscreenContentProvider;
     }
 
     //--------------------------------------------------------------------------------------------
@@ -1903,11 +1900,6 @@ public class AwContents implements SmartClipProvider {
         return "base64".equals(encoding);
     }
 
-    private static void recordBaseUrl(@UrlScheme int value) {
-        RecordHistogram.recordEnumeratedHistogram(
-                DATA_BASE_URL_SCHEME_HISTOGRAM_NAME, value, UrlScheme.COUNT);
-    }
-
     private static void recordLoadUrlScheme(@UrlScheme int value) {
         RecordHistogram.recordEnumeratedHistogram(
                 LOAD_URL_SCHEME_HISTOGRAM_NAME, value, UrlScheme.COUNT);
@@ -2001,8 +1993,6 @@ public class AwContents implements SmartClipProvider {
         LoadUrlParams loadUrlParams;
         baseUrl = fixupBase(baseUrl);
         historyUrl = fixupHistory(historyUrl);
-
-        recordBaseUrl(schemeForUrl(baseUrl));
 
         if (baseUrl.startsWith("data:")) {
             // For backwards compatibility with WebViewClassic, we use the value of |encoding|
@@ -2621,9 +2611,9 @@ public class AwContents implements SmartClipProvider {
      * Add a JavaScript snippet that will run after the document has been created, but before any
      * script in the document executes. Note that calling this method multiple times will add
      * multiple scripts. Added scripts will take effect from the next navigation. If want to remove
-     * previously set script, use the returned ScriptReference object to do so. Any JavaScript
+     * previously set script, use the returned ScriptHandler object to do so. Any JavaScript
      * objects injected by addWebMessageListener() or addJavascriptInterface() will be available to
-     * use in this script. Scripts can be removed using the ScriptReference object returned when
+     * use in this script. Scripts can be removed using the ScriptHandler object returned when
      * they were added. The DOM tree may not be ready at the moment that the script runs.
      *
      * If multiple scripts are added, they will be executed in the same order they were added.
@@ -2634,9 +2624,9 @@ public class AwContents implements SmartClipProvider {
      *
      * @throws IllegalArgumentException if one of the allowedOriginRules is invalid or one of
      *                                  jsObjectName and allowedOriginRules is {@code null}.
-     * @return A {@link ScriptReference} for removing the script.
+     * @return A {@link ScriptHandler} for removing the script.
      */
-    public ScriptReference addDocumentStartJavaScript(
+    public ScriptHandler addDocumentStartJavaScript(
             @NonNull String script, @NonNull String[] allowedOriginRules) {
         if (script == null) {
             throw new IllegalArgumentException("script shouldn't be null.");
@@ -2649,7 +2639,7 @@ public class AwContents implements SmartClipProvider {
             }
         }
 
-        return new ScriptReference(AwContents.this,
+        return new ScriptHandler(AwContents.this,
                 AwContentsJni.get().addDocumentStartJavaScript(
                         mNativeAwContents, AwContents.this, script, allowedOriginRules));
     }

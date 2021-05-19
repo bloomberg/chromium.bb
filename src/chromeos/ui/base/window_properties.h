@@ -5,8 +5,9 @@
 #ifndef CHROMEOS_UI_BASE_WINDOW_PROPERTIES_H_
 #define CHROMEOS_UI_BASE_WINDOW_PROPERTIES_H_
 
+#include <string>
+
 #include "base/component_export.h"
-#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/class_property.h"
 
@@ -99,7 +100,7 @@ extern const ui::ClassProperty<WindowPinType>* const kWindowPinTypeKey;
 // A property key whose value is shown in alt-tab/overview mode. If non-value
 // is set, the window's title is used.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
-extern const ui::ClassProperty<base::string16*>* const kWindowOverviewTitleKey;
+extern const ui::ClassProperty<std::u16string*>* const kWindowOverviewTitleKey;
 
 // Alphabetical sort.
 

@@ -4,15 +4,19 @@
 
 #include "media/mojo/services/mojo_video_decoder_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/elapsed_timer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/simple_sync_token_client.h"
 #include "media/base/video_decoder.h"
@@ -42,6 +46,18 @@ static int32_t g_num_active_mvd_instances = 0;
 const char kInitializeTraceName[] = "MojoVideoDecoderService::Initialize";
 const char kDecodeTraceName[] = "MojoVideoDecoderService::Decode";
 const char kResetTraceName[] = "MojoVideoDecoderService::Reset";
+
+void RecordTimingHistogram(VideoDecoderImplementation impl,
+                           const char* method,
+                           base::TimeDelta elapsed) {
+  base::UmaHistogramTimes(
+      base::StringPrintf("Media.MojoVideoDecoderServiceTiming.%s.%s",
+                         impl == VideoDecoderImplementation::kDefault
+                             ? "Default"
+                             : "Alternate",
+                         method),
+      elapsed);
+}
 
 }  // namespace
 
@@ -99,6 +115,7 @@ MojoVideoDecoderService::MojoVideoDecoderService(
 
 MojoVideoDecoderService::~MojoVideoDecoderService() {
   DVLOG(1) << __func__;
+  base::ElapsedTimer elapsed;
 
   if (init_cb_) {
     OnDecoderInitialized(
@@ -111,6 +128,14 @@ MojoVideoDecoderService::~MojoVideoDecoderService() {
 
   if (is_active_instance_)
     g_num_active_mvd_instances--;
+
+  // Destruct the VideoDecoder here so its destruction duration is included by
+  // the histogram timer below.
+  weak_factory_.InvalidateWeakPtrs();
+  decoder_.reset();
+
+  if (implementation_)
+    RecordTimingHistogram(*implementation_, "Destruct", elapsed.Elapsed());
 }
 
 void MojoVideoDecoderService::GetSupportedConfigs(
@@ -139,6 +164,9 @@ void MojoVideoDecoderService::Construct(
     return;
   }
 
+  base::ElapsedTimer elapsed;
+  implementation_ = implementation;
+
   client_.Bind(std::move(client));
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -151,8 +179,8 @@ void MojoVideoDecoderService::Construct(
       std::make_unique<VideoFrameHandleReleaserImpl>(),
       std::move(video_frame_handle_releaser_receiver));
 
-  mojo_decoder_buffer_reader_.reset(
-      new MojoDecoderBufferReader(std::move(decoder_buffer_pipe)));
+  mojo_decoder_buffer_reader_ =
+      std::make_unique<MojoDecoderBufferReader>(std::move(decoder_buffer_pipe));
 
   decoder_ = mojo_media_client_->CreateVideoDecoder(
       task_runner, media_log_.get(), std::move(command_buffer_id),
@@ -160,6 +188,8 @@ void MojoVideoDecoderService::Construct(
       base::BindRepeating(
           &MojoVideoDecoderService::OnDecoderRequestedOverlayInfo, weak_this_),
       target_color_space);
+
+  RecordTimingHistogram(*implementation_, "Construct", elapsed.Elapsed());
 }
 
 void MojoVideoDecoderService::Initialize(
@@ -281,7 +311,9 @@ void MojoVideoDecoderService::OnDecoderInitialized(Status status) {
                          status.code());
 
   if (!status.is_ok()) {
-    std::move(init_cb_).Run(status, false, 1, VideoDecoderType::kUnknown);
+    std::move(init_cb_).Run(
+        status, false, 1,
+        decoder_ ? decoder_->GetDecoderType() : VideoDecoderType::kUnknown);
     return;
   }
   std::move(init_cb_).Run(status, decoder_->NeedsBitstreamConversion(),

@@ -6,12 +6,13 @@
 
 #include <utility>
 
+#include "absl/memory/memory.h"
+#include "quic/core/http/quic_server_initiated_spdy_stream.h"
 #include "quic/core/http/quic_spdy_session.h"
 #include "quic/core/quic_connection.h"
 #include "quic/core/quic_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
-#include "quic/platform/api/quic_ptr_util.h"
 #include "quic/tools/quic_simple_server_stream.h"
 
 namespace quic {
@@ -51,7 +52,7 @@ QuicSimpleServerSession::CreateQuicCryptoServerStream(
 }
 
 void QuicSimpleServerSession::OnStreamFrame(const QuicStreamFrame& frame) {
-  if (!IsIncomingStream(frame.stream_id)) {
+  if (!IsIncomingStream(frame.stream_id) && !WillNegotiateWebTransport()) {
     QUIC_LOG(WARNING) << "Client shouldn't send data on server push stream";
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID, "Client sent data on server push stream",
@@ -101,7 +102,7 @@ QuicSpdyStream* QuicSimpleServerSession::CreateIncomingStream(QuicStreamId id) {
 
   QuicSpdyStream* stream = new QuicSimpleServerStream(
       id, this, BIDIRECTIONAL, quic_simple_server_backend_);
-  ActivateStream(QuicWrapUnique(stream));
+  ActivateStream(absl::WrapUnique(stream));
   return stream;
 }
 
@@ -109,14 +110,26 @@ QuicSpdyStream* QuicSimpleServerSession::CreateIncomingStream(
     PendingStream* pending) {
   QuicSpdyStream* stream = new QuicSimpleServerStream(
       pending, this, BIDIRECTIONAL, quic_simple_server_backend_);
-  ActivateStream(QuicWrapUnique(stream));
+  ActivateStream(absl::WrapUnique(stream));
   return stream;
 }
 
-QuicSimpleServerStream*
-QuicSimpleServerSession::CreateOutgoingBidirectionalStream() {
-  QUICHE_DCHECK(false);
-  return nullptr;
+QuicSpdyStream* QuicSimpleServerSession::CreateOutgoingBidirectionalStream() {
+  if (!WillNegotiateWebTransport()) {
+    QUIC_BUG(QuicSimpleServerSession CreateOutgoingBidirectionalStream without
+                 WebTransport support)
+        << "QuicSimpleServerSession::CreateOutgoingBidirectionalStream called "
+           "in a session without WebTransport support.";
+    return nullptr;
+  }
+  if (!ShouldCreateOutgoingBidirectionalStream()) {
+    return nullptr;
+  }
+
+  QuicServerInitiatedSpdyStream* stream = new QuicServerInitiatedSpdyStream(
+      GetNextOutgoingBidirectionalStreamId(), this, BIDIRECTIONAL);
+  ActivateStream(absl::WrapUnique(stream));
+  return stream;
 }
 
 QuicSimpleServerStream*
@@ -128,7 +141,7 @@ QuicSimpleServerSession::CreateOutgoingUnidirectionalStream() {
   QuicSimpleServerStream* stream = new QuicSimpleServerStream(
       GetNextOutgoingUnidirectionalStreamId(), this, WRITE_UNIDIRECTIONAL,
       quic_simple_server_backend_);
-  ActivateStream(QuicWrapUnique(stream));
+  ActivateStream(absl::WrapUnique(stream));
   return stream;
 }
 

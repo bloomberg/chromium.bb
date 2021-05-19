@@ -16,12 +16,10 @@
 #define SRC_READER_SPIRV_PARSER_IMPL_TEST_HELPER_H_
 
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "source/opt/ir_context.h"
 #include "src/demangler.h"
 #include "src/reader/spirv/parser_impl.h"
 
@@ -41,7 +39,7 @@ class SpvParserTestBase : public T {
   /// @returns a parser for the given binary
   std::unique_ptr<ParserImpl> parser(const std::vector<uint32_t>& input) {
     auto parser = std::make_unique<ParserImpl>(input);
-    // Don't run the TypeDeterminer when building the program.
+    // Don't run the Resolver when building the program.
     // We're not interested in type information with these tests.
     parser->builder().SetResolveOnBuild(false);
     return parser;

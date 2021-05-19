@@ -40,11 +40,11 @@
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
-#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/federated_learning/floc.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/permissions_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -64,8 +64,6 @@
 #include "third_party/blink/renderer/core/frame/fragment_directive.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/font_preload_manager.h"
-#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
-#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
@@ -107,6 +105,7 @@ class ChromeClient;
 class Comment;
 class CompositorAnimationTimeline;
 class ComputedAccessibleNode;
+class DOMWrapperWorld;
 class DisplayLockDocumentState;
 class DocumentData;
 class ElementIntersectionObserverData;
@@ -136,6 +135,7 @@ class EventFactoryBase;
 class EventListener;
 template <typename EventType>
 class EventWithHitTestResults;
+class ExceptionState;
 class FloatQuad;
 class FloatRect;
 class FontMatchingMetrics;
@@ -260,7 +260,7 @@ using DocumentClassFlags = unsigned char;
 // storage, but only store a single element vector which is DCHECKED at the
 // calling site.
 using ExplicitlySetAttrElementsMap =
-    HeapHashMap<QualifiedName, Member<HeapVector<Member<Element>>>>;
+    HeapHashMap<QualifiedName, Member<HeapLinkedHashSet<WeakMember<Element>>>>;
 
 // A document (https://dom.spec.whatwg.org/#concept-document) is the root node
 // of a tree of DOM nodes, generally resulting from the parsing of an markup
@@ -305,7 +305,7 @@ class CORE_EXPORT Document : public ContainerNode,
   static Range* CreateRangeAdjustedToTreeScope(const TreeScope&,
                                                const Position&);
 
-  // Support JS introspection of frame policy (e.g. feature policy).
+  // Support JS introspection of frame policy (e.g. permissions policy).
   DOMFeaturePolicy* featurePolicy();
 
   MediaQueryMatcher& GetMediaQueryMatcher();
@@ -357,6 +357,7 @@ class CORE_EXPORT Document : public ContainerNode,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(securitypolicyviolation,
                                   kSecuritypolicyviolation)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(visibilitychange, kVisibilitychange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(prerenderingchange, kPrerenderingchange)
 
   ViewportData& GetViewportData() const { return *viewport_data_; }
 
@@ -448,6 +449,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsPageVisible() const;
   bool hidden() const;
   void DidChangeVisibilityState();
+
+  bool prerendering() const;
 
   bool wasDiscarded() const;
   void SetWasDiscarded(bool);
@@ -1081,7 +1084,7 @@ class CORE_EXPORT Document : public ContainerNode,
       ExecutionContext* execution_context);
 
   // Sends a query via Mojo to ask for the interest cohort. This can reject on
-  // permissions errors (e.g. preferences, content settings, feature policy,
+  // permissions errors (e.g. preferences, content settings, permissions policy,
   // etc.) or when the interest cohort is unavailable.
   // https://github.com/jkarlin/floc
   ScriptPromise interestCohort(ScriptState* script_state, ExceptionState&);
@@ -1672,6 +1675,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetFindInPageActiveMatchNode(Node*);
   const Node* GetFindInPageActiveMatchNode() const;
 
+  void ActivateForPrerendering();
+
   class CORE_EXPORT PaintPreviewScope {
     STACK_ALLOCATED();
 
@@ -1792,7 +1797,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ClearFocusedElementSoon();
   void ClearFocusedElementTimerFired(TimerBase*);
-  bool HasNonEmptyFragment() const;
 
   bool HaveScriptBlockingStylesheetsLoaded() const;
 
@@ -1819,7 +1823,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetBodyAttribute(const QualifiedName&, const AtomicString&);
 
   // Returns true if use of |method_name| for markup insertion is allowed by
-  // feature policy; otherwise returns false and throws a DOM exception.
+  // permissions policy; otherwise returns false and throws a DOM exception.
   bool AllowedToUseDynamicMarkUpInsertion(const char* method_name,
                                           ExceptionState&);
 
@@ -1843,7 +1847,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Track the prerendering state.
   // TODO(crbug.com/1169032): Update the flag on the prerendering activation.
   // Also, we will merge the state into the lifecycle state eventually.
-  const bool is_prerendering_;
+  // TODO(bokan): This should eventually be based on the document loading-mode:
+  // https://github.com/jeremyroman/alternate-loading-modes/blob/main/prerendering-state.md#documentprerendering
+  bool is_prerendering_;
 
   bool evaluate_media_queries_on_style_recalc_;
 
@@ -1904,8 +1910,9 @@ class CORE_EXPORT Document : public ContainerNode,
   struct PendingJavascriptUrl {
    public:
     PendingJavascriptUrl(const KURL& input_url,
-                         scoped_refptr<const DOMWrapperWorld> world)
-        : url(input_url), world(std::move(world)) {}
+                         scoped_refptr<const DOMWrapperWorld> world);
+    ~PendingJavascriptUrl();
+
     KURL url;
 
     // The world in which the navigation to |url| initiated. Non-null.
@@ -2130,7 +2137,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // TODO(tkent): Should it be moved to LocalFrame or LocalFrameView?
   Member<ViewportData> viewport_data_;
 
-  // This is set through feature policy 'vertical-scroll'.
+  // This is set through permissions policy 'vertical-scroll'.
   bool is_vertical_scroll_enforced_ = false;
 
   // The number of canvas elements on the document
@@ -2160,11 +2167,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<LazyLoadImageObserver> lazy_load_image_observer_;
 
-  // Tracks which feature policies have already been parsed, so as not to count
-  // them multiple times.
-  // The size of this vector is 0 until FeaturePolicyFeatureObserved is called.
-  Vector<bool> parsed_feature_policies_;
-
+  // Tracks which document policies have already been parsed, so as not to
+  // count them multiple times. The size of this vector is 0 until
+  // `DocumentPolicyFeatureObserved` is called.
   Vector<bool> parsed_document_policies_;
 
   AtomicString override_last_modified_;

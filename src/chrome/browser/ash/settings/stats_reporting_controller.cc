@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/ownership/owner_settings_service.h"
@@ -24,7 +24,7 @@ constexpr char kPendingPref[] = "pending.cros.metrics.reportingEnabled";
 
 }  // namespace
 
-namespace chromeos {
+namespace ash {
 
 static StatsReportingController* g_stats_reporting_controller = nullptr;
 
@@ -220,7 +220,7 @@ StatsReportingController::GetOwnershipStatus() {
 
 ownership::OwnerSettingsService*
 StatsReportingController::GetOwnerSettingsService(Profile* profile) {
-  return OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile);
+  return OwnerSettingsServiceAshFactory::GetForBrowserContext(profile);
 }
 
 bool StatsReportingController::GetPendingValue(bool* result) {
@@ -240,4 +240,4 @@ bool StatsReportingController::GetSignedStoredValue(bool* result) {
   return CrosSettings::Get()->GetBoolean(kStatsReportingPref, result);
 }
 
-}  // namespace chromeos
+}  // namespace ash

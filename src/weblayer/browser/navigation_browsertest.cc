@@ -5,6 +5,7 @@
 #include "weblayer/test/weblayer_browser_test.h"
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -448,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, PageSeesUserAgentString) {
 
   base::RunLoop run_loop;
   shell()->tab()->ExecuteScript(
-      base::ASCIIToUTF16("navigator.userAgent;"), false,
+      u"navigator.userAgent;", false,
       base::BindLambdaForTesting([&](base::Value value) {
         ASSERT_TRUE(value.is_string());
         EXPECT_EQ(custom_ua, value.GetString());
@@ -466,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, Reload) {
   observer.WaitForNavigation();
 
   OneShotNavigationObserver observer2(shell());
-  shell()->tab()->ExecuteScript(base::ASCIIToUTF16("location.reload();"), false,
+  shell()->tab()->ExecuteScript(u"location.reload();", false,
                                 base::DoNothing());
   observer2.WaitForNavigation();
   EXPECT_TRUE(observer2.completed());

@@ -382,13 +382,17 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
   is_printing = doc.Printing();
 
   should_paint_image = image && image->CanRender();
-  should_paint_color =
-      is_bottom_layer && color.Alpha() &&
-      (!should_paint_image || !layer.ImageOccludesNextLayers(doc, style));
-  should_paint_color_with_paint_worklet_image =
-      should_paint_color &&
+  bool composite_bgcolor_animation =
       RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
       style.HasCurrentBackgroundColorAnimation();
+  // When background color animation is running on the compositor thread, we
+  // need to trigger repaint even if the background is transparent to collect
+  // artifacts in order to run the animation on the compositor.
+  should_paint_color =
+      is_bottom_layer && (color.Alpha() || composite_bgcolor_animation) &&
+      (!should_paint_image || !layer.ImageOccludesNextLayers(doc, style));
+  should_paint_color_with_paint_worklet_image =
+      should_paint_color && composite_bgcolor_animation;
 }
 
 namespace {
@@ -556,19 +560,20 @@ void DrawTiledBackground(GraphicsContext& context,
                          respect_orientation);
 }
 
-// Returning false meaning that we need to fall back to the main thread for the
-// background color animation.
+// Returning false meaning that we cannot paint background color with
+// BackgroundColorPaintWorklet.
 bool GetBGColorPaintWorkletParams(const BoxPainterBase::FillLayerInfo& info,
                                   const Document* document,
                                   Node* node,
                                   Vector<Color>* animated_colors,
-                                  Vector<double>* offsets) {
+                                  Vector<double>* offsets,
+                                  base::Optional<double>* progress) {
   if (!info.should_paint_color_with_paint_worklet_image)
     return false;
   BackgroundColorPaintImageGenerator* generator =
       document->GetFrame()->GetBackgroundColorPaintImageGenerator();
-  return generator->GetBGColorPaintWorkletParams(node, animated_colors,
-                                                 offsets);
+  return generator->GetBGColorPaintWorkletParams(node, animated_colors, offsets,
+                                                 progress);
 }
 
 void FillRectWithPaintWorklet(const Document* document,
@@ -577,16 +582,37 @@ void FillRectWithPaintWorklet(const Document* document,
                               const FloatRoundedRect& dest_rect,
                               GraphicsContext& context,
                               const Vector<Color>& animated_colors,
-                              const Vector<double>& offsets) {
+                              const Vector<double>& offsets,
+                              const base::Optional<double>& progress) {
   FloatRect src_rect(FloatPoint(), dest_rect.Rect().Size());
   BackgroundColorPaintImageGenerator* generator =
       document->GetFrame()->GetBackgroundColorPaintImageGenerator();
-  scoped_refptr<Image> paint_worklet_image =
-      generator->Paint(src_rect.Size(), node, animated_colors, offsets);
+  scoped_refptr<Image> paint_worklet_image = generator->Paint(
+      src_rect.Size(), node, animated_colors, offsets, progress);
   context.DrawImageRRect(
       paint_worklet_image.get(), Image::kSyncDecode, dest_rect, src_rect,
       node && node->ComputedStyleRef().HasFilterInducingProperty(),
       SkBlendMode::kSrcOver, info.respect_image_orientation);
+}
+
+// Returns true if we can paint the background color with paint worklet.
+bool PaintBGColorWithPaintWorklet(const Document* document,
+                                  const BoxPainterBase::FillLayerInfo& info,
+                                  Node* node,
+                                  const FloatRoundedRect& dest_rect,
+                                  GraphicsContext& context) {
+  // TODO(xidachen): Consider merge this into GetBGColorPaintWorkletParams, so
+  // that function doesn't need to return these parameters.
+  Vector<Color> animated_colors;
+  Vector<double> offsets;
+  base::Optional<double> progress;
+  if (GetBGColorPaintWorkletParams(info, document, node, &animated_colors,
+                                   &offsets, &progress)) {
+    FillRectWithPaintWorklet(document, info, node, dest_rect, context,
+                             animated_colors, offsets, progress);
+    return true;
+  }
+  return false;
 }
 
 inline bool PaintFastBottomLayer(const Document* document,
@@ -676,13 +702,10 @@ inline bool PaintFastBottomLayer(const Document* document,
 
   // Paint the color if needed.
   if (info.should_paint_color) {
-    Vector<Color> animated_colors;
-    Vector<double> offsets;
-    if (GetBGColorPaintWorkletParams(info, document, node, &animated_colors,
-                                     &offsets)) {
-      FillRectWithPaintWorklet(document, info, node, color_border, context,
-                               animated_colors, offsets);
-    } else {
+    // Try to paint the background with a paint worklet first in case it will be
+    // animated. Otherwise, paint it directly into the context.
+    if (!PaintBGColorWithPaintWorklet(document, info, node, color_border,
+                                      context)) {
       context.FillRoundedRect(color_border, info.color);
     }
   }
@@ -729,11 +752,10 @@ inline bool PaintFastBottomLayer(const Document* document,
         image->CorrectSrcRectForImageOrientation(intrinsic_tile_size, src_rect);
   }
 
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
-               "data",
-               inspector_paint_image_event::Data(
-                   node, *info.image, FloatRect(image->Rect()),
-                   FloatRect(image_border.Rect())));
+  DEVTOOLS_TIMELINE_TRACE_EVENT_WITH_CATEGORIES(
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
+      inspector_paint_image_event::Data, node, *info.image,
+      FloatRect(image->Rect()), FloatRect(image_border.Rect()));
 
   // Since there is no way for the developer to specify decode behavior, use
   // kSync by default.
@@ -858,14 +880,10 @@ void PaintFillLayerBackground(const Document* document,
   // painting area.
   if (info.is_bottom_layer && info.color.Alpha() && info.should_paint_color) {
     IntRect background_rect(PixelSnappedIntRect(scrolled_paint_rect));
-    Vector<Color> animated_colors;
-    Vector<double> offsets;
-    if (GetBGColorPaintWorkletParams(info, document, node, &animated_colors,
-                                     &offsets)) {
-      FillRectWithPaintWorklet(document, info, node,
-                               FloatRoundedRect(background_rect), context,
-                               animated_colors, offsets);
-    } else {
+    // Try to paint the background with a paint worklet first in case it will be
+    // animated. Otherwise, paint it directly into the context.
+    if (!PaintBGColorWithPaintWorklet(
+            document, info, node, FloatRoundedRect(background_rect), context)) {
       context.FillRect(background_rect, info.color);
     }
   }
@@ -875,11 +893,10 @@ void PaintFillLayerBackground(const Document* document,
   // resource locator is given such as "//:0", so still check for image.
   if (info.should_paint_image && !geometry.SnappedDestRect().IsEmpty() &&
       !geometry.TileSize().IsEmpty() && image) {
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
-                 "data",
-                 inspector_paint_image_event::Data(
-                     node, *info.image, FloatRect(image->Rect()),
-                     FloatRect(scrolled_paint_rect)));
+    DEVTOOLS_TIMELINE_TRACE_EVENT_WITH_CATEGORIES(
+        TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
+        inspector_paint_image_event::Data, node, *info.image,
+        FloatRect(image->Rect()), FloatRect(scrolled_paint_rect));
     DrawTiledBackground(
         context, image, FloatSize(geometry.UnsnappedDestRect().size),
         FloatRect(geometry.SnappedDestRect()), geometry.Phase(),
@@ -964,8 +981,8 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
                        paint_info.GetGlobalPaintFlags(), bg_layer,
                        scrolled_paint_rect);
     image = info.image->GetImage(
-        geometry.ImageClient(), geometry.ImageDocument(), geometry.ImageStyle(),
-        FloatSize(geometry.TileSize()));
+        geometry.ImageClient(), geometry.ImageDocument(),
+        geometry.ImageStyle(style_), FloatSize(geometry.TileSize()));
     interpolation_quality_context.emplace(context,
                                           geometry.ImageInterpolationQuality());
 

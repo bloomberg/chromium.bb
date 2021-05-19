@@ -158,12 +158,6 @@ constexpr char kCommandPrefix[] = "passwordForm";
   _formActivityObserverBridge.reset();
 }
 
-- (void)webState:(web::WebState*)webState
-    didFinishNavigation:(web::NavigationContext*)navigation {
-  // Delete collected field data.
-  _fieldDataManager->ClearData();
-}
-
 #pragma mark - FormActivityObserver
 
 - (void)webState:(web::WebState*)webState
@@ -179,14 +173,16 @@ constexpr char kCommandPrefix[] = "passwordForm";
     // origin.
     return;
   }
-  if (!self.delegate || formData.empty())
+  if (!self.delegate || formData.empty()) {
     return;
+  }
   std::vector<FormData> forms;
   NSString* nsFormData = [NSString stringWithUTF8String:formData.c_str()];
-  autofill::ExtractFormsData(nsFormData, false, base::string16(), pageURL,
+  autofill::ExtractFormsData(nsFormData, false, std::u16string(), pageURL,
                              pageURL.GetOrigin(), &forms);
-  if (forms.size() != 1)
+  if (forms.size() != 1) {
     return;
+  }
 
   // Extract FieldDataManager data for observed fields.
   [self extractKnownFieldData:forms[0]];
@@ -214,7 +210,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
   }
 
   FormData form;
-  if (!autofill::ExtractFormData(JSONCommand, false, base::string16(), pageURL,
+  if (!autofill::ExtractFormData(JSONCommand, false, std::u16string(), pageURL,
                                  pageURL.GetOrigin(), &form)) {
     return NO;
   }
@@ -234,13 +230,14 @@ constexpr char kCommandPrefix[] = "passwordForm";
                 fromJSON:(NSString*)JSONString
                  pageURL:(const GURL&)pageURL {
   std::vector<FormData> formsData;
-  if (!autofill::ExtractFormsData(JSONString, false, base::string16(), pageURL,
+  if (!autofill::ExtractFormsData(JSONString, false, std::u16string(), pageURL,
                                   pageURL.GetOrigin(), &formsData)) {
     return;
   }
   // Extract FieldDataManager data for observed form fields.
-  for (FormData& form : formsData)
+  for (FormData& form : formsData) {
     [self extractKnownFieldData:form];
+  }
   *forms = std::move(formsData);
 }
 
@@ -286,11 +283,13 @@ constexpr char kCommandPrefix[] = "passwordForm";
                // Find the maximum extracted value.
                uint32_t maxID = 0;
                for (const auto& form : forms) {
-                 if (form.unique_renderer_id)
+                 if (form.unique_renderer_id) {
                    maxID = std::max(maxID, form.unique_renderer_id.value());
+                 }
                  for (const auto& field : form.fields) {
-                   if (field.unique_renderer_id)
+                   if (field.unique_renderer_id) {
                      maxID = std::max(maxID, field.unique_renderer_id.value());
+                   }
                  }
                }
                completionHandler(forms, maxID);
@@ -302,8 +301,8 @@ constexpr char kCommandPrefix[] = "passwordForm";
   // Necessary copy so the values can be used inside a block.
   FieldRendererId usernameID = formData.username_field.unique_renderer_id;
   FieldRendererId passwordID = formData.password_field.unique_renderer_id;
-  base::string16 usernameValue = formData.username_field.value;
-  base::string16 passwordValue = formData.password_field.value;
+  std::u16string usernameValue = formData.username_field.value;
+  std::u16string passwordValue = formData.password_field.value;
 
   // Don't fill if:
   // 1. Waiting for the user to type a username.
@@ -378,8 +377,8 @@ constexpr char kCommandPrefix[] = "passwordForm";
   // Necessary copy so the values can be used inside a block.
   FieldRendererId usernameID = fillData.username_element_id;
   FieldRendererId passwordID = fillData.password_element_id;
-  base::string16 usernameValue = fillData.username_value;
-  base::string16 passwordValue = fillData.password_value;
+  std::u16string usernameValue = fillData.username_value;
+  std::u16string passwordValue = fillData.password_value;
 
   // Do not fill the username if filling was triggered on a password field and
   // the username field has user typed input.

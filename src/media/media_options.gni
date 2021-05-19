@@ -11,32 +11,6 @@ import("//media/gpu/args.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/libgav1/options.gni")
 
-# Do not expand this list without double-checking with OWNERS, this is a list of
-# all targets which roll up into the //media component. It controls visibility
-# of subcomponent targets and public_deps for //media.
-media_subcomponent_deps = [
-  "//media/audio",
-  "//media/base",
-
-  # TODO(crbug.com/583067): These files should not be in //media/base.
-  "//media/base/android",
-  "//media/capabilities",
-  "//media/cdm",
-  "//media/device_monitors",
-  "//media/filters",
-  "//media/formats",
-  "//media/muxers",
-  "//media/renderers",
-  "//media/video",
-]
-
-if (is_fuchsia) {
-  media_subcomponent_deps += [
-    "//media/fuchsia/cdm",
-    "//media/fuchsia/common",
-  ]
-}
-
 declare_args() {
   # Allows distributions to link pulseaudio directly (DT_NEEDED) instead of
   # using dlopen. This helps with automated detection of ABI mismatches and
@@ -112,10 +86,6 @@ declare_args() {
 # enable_hls_sample_aes can only be true if enable_mse_mpeg2ts_stream_parser is.
 assert(enable_mse_mpeg2ts_stream_parser || !enable_hls_sample_aes)
 
-if (media_use_ffmpeg) {
-  media_subcomponent_deps += [ "//media/ffmpeg" ]
-}
-
 # Use a second declare_args() to pick up possible overrides of |use_cras|.
 declare_args() {
   # Enables runtime selection of PulseAudio library.
@@ -144,8 +114,8 @@ declare_args() {
   }
 }
 
-# Use another declare_args() to pick up possible overrides of media_use_ffmpeg
-# from --args command line flags. See "gn help declare_args".
+# Use another declare_args() to include possible overrides of media_use_ffmpeg
+# from --args command line flags in the evaluation. See "gn help declare_args".
 declare_args() {
   # On Android, FFMpeg is built without video decoders by default.
   # This flag gives the option to override that decision in case there are no
@@ -154,13 +124,13 @@ declare_args() {
   enable_ffmpeg_video_decoders = media_use_ffmpeg && !is_android
 }
 
-# Enables the use of library CDMs that implements the interface defined at
-# media/cdm/api/content_decryption_module.h. If true, the actually library CDM
-# will be hosted in the mojo CDM service running in the CDM (utility) process.
-# On Fuchsia, this is only enabled to build libclearkeycdm.so, the mojo CDM
-# service is not used.
-enable_library_cdms = (is_linux && !is_chromecast) || is_chromeos_lacros ||
-                      is_chromeos_ash || is_mac || is_win || is_fuchsia
+declare_args() {
+  # Enables the use of library CDMs that implements the interface defined at
+  # media/cdm/api/content_decryption_module.h. If true, the actually library CDM
+  # will be hosted in the mojo CDM service running in the CDM (utility) process.
+  enable_library_cdms = (is_linux && !is_chromecast) || is_chromeos_lacros ||
+                        is_chromeos_ash || is_mac || is_win
+}
 
 declare_args() {
   # When enabled, this feature allows developers to use a runtime flag to
@@ -214,11 +184,9 @@ if (is_chromecast) {
 }
 
 # When |enable_library_cdms| is true, the "cdm" service will run in a separate
-# CdmService in the CDM (utility) process. Therefor there's no need to specify
+# CdmService in the CDM (utility) process. Therefore there's no need to specify
 # |_default_mojo_media_host| which controls where the MediaService runs in.
-# On Fuchsia, |enable_library_cdms| is only enabled to build libclearkeycdm.so,
-# the mojo CDM service is not used.
-if (enable_library_cdms && !is_fuchsia) {
+if (enable_library_cdms) {
   _default_mojo_media_services += [ "cdm" ]
 }
 
@@ -258,4 +226,38 @@ declare_args() {
   # Media Remoting RPC is disabled on Android since it's unused but increases
   # the native binary size by ~70Kb.
   enable_media_remoting_rpc = enable_media_remoting && !is_android
+}
+
+# Do not expand this list without double-checking with OWNERS, this is a list of
+# all targets which roll up into the //media component. It controls visibility
+# of subcomponent targets and public_deps for //media.
+media_subcomponent_deps = [
+  "//media/audio",
+  "//media/base",
+
+  # TODO(crbug.com/583067): These files should not be in //media/base.
+  "//media/base/android",
+  "//media/capabilities",
+  "//media/cdm",
+  "//media/device_monitors",
+  "//media/filters",
+  "//media/formats",
+  "//media/muxers",
+  "//media/renderers",
+  "//media/video",
+]
+
+if (is_fuchsia) {
+  media_subcomponent_deps += [
+    "//media/fuchsia/cdm",
+    "//media/fuchsia/common",
+  ]
+}
+
+if (media_use_ffmpeg) {
+  media_subcomponent_deps += [ "//media/ffmpeg" ]
+}
+
+if (enable_library_cdms) {
+  media_subcomponent_deps += [ "//media/cdm:cdm_type_conversion" ]
 }

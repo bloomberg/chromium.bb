@@ -101,11 +101,12 @@ class WebEncryptedMediaClientImpl::Reporter {
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
     CdmFactory* cdm_factory,
     MediaPermission* media_permission,
-    blink::WebContentSettingsClient* content_settings_client)
+    std::unique_ptr<KeySystemConfigSelector::WebLocalFrameDelegate>
+        web_frame_delegate)
     : cdm_factory_(cdm_factory),
       key_system_config_selector_(KeySystems::GetInstance(),
                                   media_permission,
-                                  content_settings_client) {
+                                  std::move(web_frame_delegate)) {
   DCHECK(cdm_factory_);
 }
 
@@ -143,16 +144,12 @@ void WebEncryptedMediaClientImpl::OnConfigSelected(
   // and kUnsupportedConfigs.
   const char kUnsupportedKeySystemOrConfigMessage[] =
       "Unsupported keySystem or supportedConfigurations.";
-  const char kUnsupportedPlatformMessage[] = "Unsupported platform.";
 
   // Handle unsupported cases first.
   switch (status) {
     case KeySystemConfigSelector::Status::kUnsupportedKeySystem:
     case KeySystemConfigSelector::Status::kUnsupportedConfigs:
       request.RequestNotSupported(kUnsupportedKeySystemOrConfigMessage);
-      return;
-    case KeySystemConfigSelector::Status::kUnsupportedPlatform:
-      request.RequestNotSupported(kUnsupportedPlatformMessage);
       return;
     case KeySystemConfigSelector::Status::kSupported:
       break;  // Handled below.

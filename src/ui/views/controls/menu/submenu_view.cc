@@ -374,9 +374,9 @@ void SubmenuView::SetSelectedRow(int row) {
       GetMenuItemAt(row), MenuController::SELECTION_DEFAULT);
 }
 
-base::string16 SubmenuView::GetTextForRow(int row) {
+std::u16string SubmenuView::GetTextForRow(int row) {
   return MenuItemView::GetAccessibleNameForMenuItem(
-      GetMenuItemAt(row)->title(), base::string16(),
+      GetMenuItemAt(row)->title(), std::u16string(),
       GetMenuItemAt(row)->ShouldShowNewBadge());
 }
 
@@ -386,7 +386,8 @@ bool SubmenuView::IsShowing() const {
 
 void SubmenuView::ShowAt(Widget* parent,
                          const gfx::Rect& bounds,
-                         bool do_capture) {
+                         bool do_capture,
+                         gfx::NativeView native_view_for_gestures) {
   if (host_) {
     host_->SetMenuHostBounds(bounds);
     host_->ShowMenuHost(do_capture);
@@ -397,7 +398,8 @@ void SubmenuView::ShowAt(Widget* parent,
     // Force a layout since our preferred size may not have changed but our
     // content may have.
     InvalidateLayout();
-    host_->InitMenuHost(parent, bounds, scroll_view_container_, do_capture);
+    host_->InitMenuHost(parent, bounds, scroll_view_container_, do_capture,
+                        native_view_for_gestures);
   }
 
   // Only fire kMenuStart for the top level menu, not for each submenu.

@@ -40,6 +40,7 @@
 <translation id="1252999807265626933">正在使用「<ph name="POWER_SOURCE" />」充電</translation>
 <translation id="1255033239764210633">天氣如何？</translation>
 <translation id="1267032506238418139">快速鍵異動</translation>
+<translation id="1269405891096105529">訪客模式不支援周邊裝置</translation>
 <translation id="1270290102613614947">螢幕小鍵盤已停用</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1275285675049378717">為「<ph name="POWER_SOURCE" />」供電</translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl 鍵 + 搜尋鍵 + H 鍵</translation>
 <translation id="2016340657076538683">輸入訊息</translation>
 <translation id="2018630726571919839">講個笑話</translation>
+<translation id="2021864487439853900">按一下即可解鎖</translation>
 <translation id="2049240716062114887">已將桌面名稱變更為「<ph name="DESK_NAME" />」</translation>
 <translation id="2050339315714019657">直向</translation>
 <translation id="2067602449040652523">鍵盤亮度</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> 日後仍可登入。</translation>
 <translation id="3321628682574733415">家長存取碼不正確</translation>
 <translation id="332587331255250389">請更換電池</translation>
+<translation id="3333741161915951567">已重新啟動數據機。請等待 30 秒後再試一次。</translation>
 <translation id="3341303451326249809">已擷取螢幕截圖</translation>
 <translation id="334252345105450327">擷取螢幕畫面</translation>
 <translation id="3351879221545518001">你目前正在投放畫面。</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733">受管理的使用者：<ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3665889125180354336">錄音麥克風</translation>
 <translation id="36813544980941320">你的手機和「<ph name="DEVICE_NAME" />」將共用 Wi-Fi 網路</translation>
+<translation id="3702809606464356667">現在是以目前的桌面模式查看視窗，按下向上鍵即可改以所有桌面模式查看視窗</translation>
 <translation id="3702846122927433391">奈及利亞的人口</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">載入中…</translation>
@@ -335,7 +339,7 @@
 <translation id="3799080171973636491">你按下了全螢幕放大鏡的鍵盤快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="380165613292957338">你好，需要什麼協助嗎？</translation>
 <translation id="3826099427150913765">切換為密碼</translation>
-<translation id="383058930331066723">節約耗電量模式已開啟</translation>
+<translation id="383058930331066723">省電模式已開啟</translation>
 <translation id="383629559565718788">顯示鍵盤設定</translation>
 <translation id="3846214748874656680">結束全螢幕</translation>
 <translation id="3846575436967432996">沒有可用的網路資訊</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">音訊設定</translation>
 <translation id="3945319193631853098">輕觸即可完成設定</translation>
 <translation id="3945867833895287237">正在連線到無線基地台...</translation>
+<translation id="3958465044488004317">查看 Google 助理中的結果</translation>
 <translation id="3962859241508114581">上一首曲目</translation>
 <translation id="3969043077941541451">關閉</translation>
 <translation id="397105322502079400">計算中…</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175">透過遠端協助與<ph name="HELPER_NAME" />分享螢幕控制功能。</translation>
 <translation id="4424159417645388645">桌面 5</translation>
 <translation id="4430019312045809116">音量</translation>
+<translation id="4445159312344259901">登入即可解鎖</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 則重要通知}other{# 則重要通知}}</translation>
 <translation id="4450893287417543264">不要再顯示</translation>
 <translation id="445864333228800152">晚安，</translation>
 <translation id="4458688154122353284">停止錄製螢幕畫面</translation>
+<translation id="4467143075433126295">按住 Esc 鍵即可結束全螢幕模式</translation>
 <translation id="4472575034687746823">開始使用</translation>
 <translation id="4477350412780666475">下一首曲目</translation>
 <translation id="4477892968187500306">這個裝置可能包含尚未經 Google 驗證的應用程式。</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />。<ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Google 助理不支援訪客工作階段。</translation>
 <translation id="6137566720514957455">開啟移除 <ph name="USER_EMAIL_ADDRESS" /> 的對話方塊</translation>
+<translation id="6154006699632741460">不支援周邊裝置</translation>
 <translation id="615957422585914272">顯示螢幕小鍵盤</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6179832488876878285">你可以將重要的檔案固定在這裡，只要開啟「檔案」應用程式即可開始使用。</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">使用觸控筆選取擷取範圍</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> 已旋轉到<ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">語音</translation>
+<translation id="6330012934079202188">現在是以所有桌面模式查看視窗，按下向上鍵即可改以目前的桌面模式查看視窗</translation>
 <translation id="6338485349199627913">「<ph name="DISPLAY_NAME" />」是由 <ph name="MANAGER" /> 管理的工作階段</translation>
 <translation id="6376931439017688372">藍牙已開啟</translation>
 <translation id="6381109794406942707">如要解鎖裝置，請輸入你的 PIN 碼。</translation>
 <translation id="639644700271529076">大寫鍵已關閉</translation>
-<translation id="6396835948284782440">按住 Esc 鍵即可結束。</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />，訊號強度 <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">清除所有通知</translation>
@@ -740,7 +748,7 @@
 <translation id="7377169924702866686">大寫鍵已啟用。</translation>
 <translation id="7378203170292176219">拖曳選取要錄影的區域</translation>
 <translation id="7378594059915113390">媒體控制項</translation>
-<translation id="7378889811480108604">節約耗電量模式已關閉</translation>
+<translation id="7378889811480108604">省電模式已關閉</translation>
 <translation id="7392563512730092880">你稍後可以隨時前往「設定」頁面進行設定。</translation>
 <translation id="7398254312354928459">已切換網路連線</translation>
 <translation id="7405710164030118432">如要將這部裝置解鎖，請輸入你的 Family Link 家長存取碼</translation>
@@ -794,7 +802,6 @@
 <translation id="7780159184141939021">旋轉螢幕</translation>
 <translation id="7796353162336583443">輕觸檔案櫃的觸控筆圖示即可寫筆記、擷取螢幕畫面，以及使用 Google 助理、雷射筆和放大鏡。</translation>
 <translation id="7798302898096527229">按下搜尋鍵或 Shift 鍵即可取消。</translation>
-<translation id="7807966291075028781">基於安全考量，訪客模式不支援使用周邊裝置</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘</translation>
 <translation id="7829386189513694949">訊號穩定</translation>
 <translation id="7837740436429729974">時間到</translation>
@@ -944,6 +951,7 @@
 <translation id="8936501819958976551">已停用</translation>
 <translation id="8938800817013097409">USB-C 裝置 (背面右側連接埠)</translation>
 <translation id="8940956008527784070">電池電量不足 (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">只有得到認證的 Thunderbolt 裝置能夠與 Chromebook 相容</translation>
 <translation id="8982906748181120328">鄰近分享瀏覽權限</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">目前使用<ph name="IME_NAME" /></translation>

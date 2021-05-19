@@ -12,18 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/ast/module.h"
-
-#include <sstream>
-#include <utility>
-
-#include "gmock/gmock.h"
-#include "src/ast/function.h"
+#include "gtest/gtest-spi.h"
 #include "src/ast/test_helper.h"
-#include "src/ast/variable.h"
-#include "src/type/alias_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/struct_type.h"
 
 namespace tint {
 namespace ast {
@@ -43,7 +33,7 @@ TEST_F(ModuleTest, ToStrEmitsPreambleAndPostamble) {
 
 TEST_F(ModuleTest, LookupFunction) {
   auto* func = Func("main", VariableList{}, ty.f32(), StatementList{},
-                    ast::FunctionDecorationList{});
+                    ast::DecorationList{});
 
   Program program(std::move(*this));
   EXPECT_EQ(func,
@@ -56,78 +46,40 @@ TEST_F(ModuleTest, LookupFunctionMissing) {
             program.AST().Functions().Find(program.Symbols().Get("Missing")));
 }
 
-TEST_F(ModuleTest, IsValid_Empty) {
-  Program program(std::move(*this));
-  EXPECT_TRUE(program.AST().IsValid());
+TEST_F(ModuleTest, Assert_Null_GlobalVariable) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder builder;
+        builder.AST().AddGlobalVariable(nullptr);
+      },
+      "internal compiler error");
 }
 
-TEST_F(ModuleTest, IsValid_GlobalVariable) {
-  Global("var", ty.f32(), StorageClass::kInput);
-  Program program(std::move(*this));
-  EXPECT_TRUE(program.AST().IsValid());
+TEST_F(ModuleTest, Assert_Invalid_GlobalVariable) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder builder;
+        builder.Global("var", nullptr, StorageClass::kInput);
+      },
+      "internal compiler error");
 }
 
-TEST_F(ModuleTest, IsValid_Null_GlobalVariable) {
-  AST().AddGlobalVariable(nullptr);
-  Program program(std::move(*this));
-  EXPECT_FALSE(program.AST().IsValid());
+TEST_F(ModuleTest, Assert_Null_ConstructedType) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder builder;
+        builder.AST().AddConstructedType(nullptr);
+      },
+      "internal compiler error");
 }
 
-TEST_F(ModuleTest, IsValid_Invalid_GlobalVariable) {
-  Global("var", nullptr, StorageClass::kInput);
-  Program program(std::move(*this));
-  EXPECT_FALSE(program.AST().IsValid());
-}
-
-TEST_F(ModuleTest, IsValid_Alias) {
-  auto* alias = ty.alias("alias", ty.f32());
-  AST().AddConstructedType(alias);
-  Program program(std::move(*this));
-  EXPECT_TRUE(program.AST().IsValid());
-}
-
-TEST_F(ModuleTest, IsValid_Null_Alias) {
-  AST().AddConstructedType(nullptr);
-  Program program(std::move(*this));
-  EXPECT_FALSE(program.AST().IsValid());
-}
-
-TEST_F(ModuleTest, IsValid_Struct) {
-  auto* st = ty.struct_("name", {});
-  auto* alias = ty.alias("name", st);
-  AST().AddConstructedType(alias);
-  Program program(std::move(*this));
-  EXPECT_TRUE(program.AST().IsValid());
-}
-
-TEST_F(ModuleTest, IsValid_Struct_EmptyName) {
-  auto* st = ty.struct_("", {});
-  auto* alias = ty.alias("name", st);
-  AST().AddConstructedType(alias);
-  Program program(std::move(*this));
-  EXPECT_FALSE(program.AST().IsValid());
-}
-
-TEST_F(ModuleTest, IsValid_Function) {
-  Func("main", VariableList(), ty.f32(), StatementList{},
-       ast::FunctionDecorationList{});
-
-  Program program(std::move(*this));
-  EXPECT_TRUE(program.AST().IsValid());
-}
-
-TEST_F(ModuleTest, IsValid_Null_Function) {
-  AST().AddFunction(nullptr);
-  Program program(std::move(*this));
-  EXPECT_FALSE(program.AST().IsValid());
-}
-
-TEST_F(ModuleTest, IsValid_Invalid_Function) {
-  Func("main", VariableList{}, nullptr, StatementList{},
-       ast::FunctionDecorationList{});
-
-  Program program(std::move(*this));
-  EXPECT_FALSE(program.AST().IsValid());
+TEST_F(ModuleTest, Assert_Null_Function) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder builder;
+        builder.AST().AddFunction(nullptr);
+      },
+      "internal compiler error");
 }
 
 }  // namespace

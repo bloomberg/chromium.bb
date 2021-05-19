@@ -25,7 +25,8 @@ helpful to branch early and to branch often in Git. Use the command
 You may also want to set another local branch as the upstream branch. You can do
 that with `git checkout -b <branch_name> --track <upstream_branch>`. Do this if
 you want to split your work across multiple CLs, but some CLs have dependencies
-on others.
+on others. Use `git new-branch --upstream_current <new_branch_name>` to create a
+new branch while setting the current branch as the upstream.
 
 Mark the associated crbug as "started" so that other people know that you have
 started working on the bug. Taking this step can avoid duplicated work.
@@ -77,6 +78,11 @@ Test your changes manually by running the Chrome binary or deploying your
 changes to a test device. If you're testing Chrome for ChromeOS, follow the
 [Simple Chrome][simple-chrome] instructions to deploy your changes to a test
 device. Make sure you hit every code path you changed.
+
+Some testing tips:
+*   Use LOG(ERROR) << "debug print statement" to for debugging. You can find
+    the logs in /var/logs/chrome/ on the ChromeOS device.
+*   Use GDB for setting breakpoints while debugging.
 
 Think about testing any edge cases that could break your code. Some common edge
 cases to consider:
@@ -155,17 +161,23 @@ Run `git cl upload`. Some useful options include:
     good idea to run try jobs for each new patchset with significant changes.
 *   `-r <chromium_username>` will add reviewers.
 *   `-b <bug_number>` automatically populates the bug reference line of the
-    commit message. Use `-b None` is there is no relevant crbug.
+    commit message. Use `-b None` if there is no relevant crbug.
 *   `--edit-description` will let you update the commit message. Using square
     brackets in the commit message title, like [hashtag], will add a hashtag to
     your CL. This feature is useful for grouping related CLs together.
 
+Check `git cl issue` to ensure that you are uploading to the correct Gerrit CL.
+If you are uploading a new CL, then the issue number will be none. Uploading
+will automatically create a new CL. Use `git cl issue <issue_number>` to target
+an existing CL for uploading new patches.
+
 To help guide your reviewers, it is also recommended to provide a title for each
 patchset summarizing the changes and indicating whose comments the patchset
 addresses. Running `git cl upload` will upload a new patchset and prompt you for
-a brief patchset title. The title defaults to your most recent commit summary,
-so if you tend to squash all your commits into one, try to enter a new summary
-each time you upload. You can also modify the patchset title directly in Gerrit.
+a brief patchset title. The title defaults to your most recent commit summary
+(the `-T` option will use this without prompting). If you tend to squash all
+your commits into one, try to enter a new summary each time you upload. You can
+also modify the patchset title directly in Gerrit.
 
 ## 14. Check the CL again in Gerrit
 
@@ -239,5 +251,5 @@ branches. Mark the associated crbug as "fixed".
 [build-instructions]: https://chromium.googlesource.com/chromium/src.git/+/master/docs/#Checking-Out-and-Building
 [chromium-tree]: https://ci.chromium.org/p/chromium/g/main/console
 [contributing]: contributing.md
-[simple-chrome]: https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md
+[simple-chrome]: https://chromium.googlesource.com/chromiumos/docs/+/HEAD/simple_chrome_workflow.md
 [uploading-a-change-for-review]: contributing.md#Uploading-a-change-for-review

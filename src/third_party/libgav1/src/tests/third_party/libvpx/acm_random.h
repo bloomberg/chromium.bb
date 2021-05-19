@@ -80,7 +80,7 @@ class ACMRandom {
 
   int operator()(int n) { return PseudoUniform(n); }
 
-  static int DeterministicSeed(void) { return 0xbaba; }
+  static constexpr int DeterministicSeed(void) { return 0xbaba; }
 
  private:
   testing::internal::Random random_;

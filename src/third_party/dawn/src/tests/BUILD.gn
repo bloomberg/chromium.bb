@@ -192,6 +192,7 @@ test("dawn_unittests") {
     "unittests/validation/DrawIndirectValidationTests.cpp",
     "unittests/validation/DynamicStateCommandValidationTests.cpp",
     "unittests/validation/ErrorScopeValidationTests.cpp",
+    "unittests/validation/ExternalTextureTests.cpp",
     "unittests/validation/FenceValidationTests.cpp",
     "unittests/validation/GetBindGroupLayoutValidationTests.cpp",
     "unittests/validation/IndexBufferValidationTests.cpp",
@@ -238,6 +239,10 @@ test("dawn_unittests") {
     "unittests/wire/WireWGPUDevicePropertiesTests.cpp",
   ]
 
+  if (is_win) {
+    sources += [ "unittests/WindowsUtilsTests.cpp" ]
+  }
+
   if (dawn_enable_d3d12) {
     sources += [ "unittests/d3d12/CopySplitTests.cpp" ]
   }
@@ -264,7 +269,9 @@ source_set("dawn_end2end_tests_sources") {
     "${dawn_root}/src/common",
     "${dawn_root}/src/dawn:dawn_proc",
     "${dawn_root}/src/dawn:dawncpp",
-    "${dawn_root}/src/dawn_native",
+
+    # Statically linked because the end2end white_box tests use Dawn internals.
+    "${dawn_root}/src/dawn_native:dawn_native_static",
     "${dawn_root}/src/dawn_wire",
     "${dawn_root}/src/utils:dawn_utils",
   ]
@@ -302,6 +309,7 @@ source_set("dawn_end2end_tests_sources") {
     "end2end/DrawTests.cpp",
     "end2end/DynamicBufferOffsetTests.cpp",
     "end2end/EntryPointTests.cpp",
+    "end2end/ExternalTextureTests.cpp",
     "end2end/FenceTests.cpp",
     "end2end/FirstIndexOffsetTests.cpp",
     "end2end/GpuMemorySynchronizationTests.cpp",
@@ -313,6 +321,7 @@ source_set("dawn_end2end_tests_sources") {
     "end2end/ObjectCachingTests.cpp",
     "end2end/OpArrayLengthTests.cpp",
     "end2end/PipelineLayoutTests.cpp",
+    "end2end/PrimitiveStateTests.cpp",
     "end2end/PrimitiveTopologyTests.cpp",
     "end2end/QueryTests.cpp",
     "end2end/QueueTests.cpp",
@@ -331,6 +340,7 @@ source_set("dawn_end2end_tests_sources") {
     "end2end/TextureSubresourceTests.cpp",
     "end2end/TextureViewTests.cpp",
     "end2end/TextureZeroInitTests.cpp",
+    "end2end/VertexBufferRobustnessTests.cpp",
     "end2end/VertexFormatTests.cpp",
     "end2end/VertexStateTests.cpp",
     "end2end/ViewportOrientationTests.cpp",
@@ -362,10 +372,6 @@ source_set("dawn_end2end_tests_sources") {
     frameworks = [ "IOSurface.framework" ]
   }
 
-  if (dawn_enable_wgsl) {
-    sources += [ "end2end/VertexBufferRobustnessTests.cpp" ]
-  }
-
   if (dawn_enable_opengl) {
     assert(dawn_supports_glfw_for_windowing)
   }
@@ -390,12 +396,11 @@ source_set("dawn_white_box_tests_sources") {
     "${dawn_root}/src/dawn:dawn_proc",
     "${dawn_root}/src/dawn:dawncpp",
     "${dawn_root}/src/dawn_native:dawn_native_sources",
+
+    # Statically linked because the end2end white_box tests use Dawn internals.
+    "${dawn_root}/src/dawn_native:dawn_native_static",
     "${dawn_root}/src/dawn_wire",
     "${dawn_root}/src/utils:dawn_utils",
-
-    # Static because the tests both link against and have dawn_native
-    # sources. MSVC errors when both importing and exporting symbols.
-    "${dawn_root}/src/dawn_native:dawn_native_static",
   ]
 
   sources = [ "DawnTest.h" ]
@@ -448,7 +453,7 @@ test("dawn_end2end_tests") {
     "${dawn_root}/src/common",
     "${dawn_root}/src/dawn:dawn_proc",
     "${dawn_root}/src/dawn:dawncpp",
-    "${dawn_root}/src/dawn_native",
+    "${dawn_root}/src/dawn_native:dawn_native_static",
     "${dawn_root}/src/dawn_wire",
     "${dawn_root}/src/utils:dawn_utils",
   ]

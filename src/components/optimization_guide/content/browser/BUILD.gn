@@ -14,6 +14,8 @@ static_library("browser") {
     "page_content_annotations_service.h",
     "page_content_annotations_web_contents_helper.cc",
     "page_content_annotations_web_contents_helper.h",
+    "page_text_dump_result.cc",
+    "page_text_dump_result.h",
     "page_text_observer.cc",
     "page_text_observer.h",
   ]
@@ -24,11 +26,14 @@ static_library("browser") {
       "bert_model_executor.cc",
       "bert_model_executor.h",
       "optimization_target_model_executor.h",
+      "page_content_annotations_model_manager.cc",
+      "page_content_annotations_model_manager.h",
     ]
   }
 
   public_deps = [
     "//base",
+    "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/optimization_guide:machine_learning_tflite_buildflags",
     "//components/optimization_guide/content/mojom:mojo_interfaces",
@@ -64,12 +69,14 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "page_content_annotations_web_contents_helper_unittest.cc",
+    "page_text_dump_result_unittest.cc",
     "page_text_observer_unittest.cc",
   ]
   if (build_with_tflite_lib) {
     sources += [
       "bert_model_executor_unittest.cc",
       "optimization_target_model_executor_unittest.cc",
+      "page_content_annotations_model_manager_unittest.cc",
     ]
   }
   deps = [

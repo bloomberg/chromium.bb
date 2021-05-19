@@ -11,10 +11,14 @@
 
 namespace blink {
 
-class CounterStyleMapTest : public PageTestBase,
-                            private ScopedCSSAtRuleCounterStyleForTest {
+class CounterStyleMapTest
+    : public PageTestBase,
+      private ScopedCSSAtRuleCounterStyleForTest,
+      private ScopedCSSAtRuleCounterStyleInShadowDOMForTest {
  public:
-  CounterStyleMapTest() : ScopedCSSAtRuleCounterStyleForTest(true) {}
+  CounterStyleMapTest()
+      : ScopedCSSAtRuleCounterStyleForTest(true),
+        ScopedCSSAtRuleCounterStyleInShadowDOMForTest(true) {}
 
   ShadowRoot& AttachShadowTo(const char* host_id) {
     Element* host = GetElementById(host_id);

@@ -24,12 +24,18 @@ namespace features {
 // If enabled, calculate native window occlusion - Windows-only.
 const base::Feature kCalculateNativeWinOcclusion{
     "CalculateNativeWinOcclusion", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, listen for screen power state change and factor into the native
+// window occlusion detection - Windows-only.
+const base::Feature kScreenPowerListenerForNativeWinOcclusion{
+    "ScreenPowerListenerForNativeWinOcclusion",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // OW_WIN
 
 // Whether or not filenames are supported on the clipboard.
 // https://crbug.com/1175483
 const base::Feature kClipboardFilenames{"ClipboardFilenames",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether or not to delegate color queries to the color provider.
 const base::Feature kColorProviderRedirection = {
@@ -60,6 +66,20 @@ bool IsImprovedKeyboardShortcutsEnabled() {
   return base::FeatureList::IsEnabled(kImprovedKeyboardShortcuts);
 }
 
+const base::Feature kDeprecateAltClick = {"DeprecateAltClick",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsDeprecateAltClickEnabled() {
+  return base::FeatureList::IsEnabled(kDeprecateAltClick);
+}
+
+const base::Feature kShortcutCustomizationApp = {
+    "ShortcutCustomizationApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsShortcutCustomizationAppEnabled() {
+  return base::FeatureList::IsEnabled(kShortcutCustomizationApp);
+}
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Update of the virtual keyboard settings UI as described in
@@ -84,8 +104,8 @@ const base::Feature kSystemCaptionStyle{"SystemCaptionStyle",
 const base::Feature kSystemKeyboardLock{"SystemKeyboardLock",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kNotificationIndicator = {
-    "EnableNotificationIndicator", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNotificationIndicator = {"EnableNotificationIndicator",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsNotificationIndicatorEnabled() {
   return base::FeatureList::IsEnabled(kNotificationIndicator);
@@ -184,11 +204,12 @@ bool IsForcedColorsEnabled() {
   return forced_colors_enabled;
 }
 
-// Enables the eye-dropper in the refresh color-picker for Windows and Mac.
-// This feature will be released for other platforms in later milestones.
+// Enables the eye-dropper in the refresh color-picker for Windows, Mac
+// and Linux. This feature will be released for other platforms in later
+// milestones.
 const base::Feature kEyeDropper {
   "EyeDropper",
-#if defined(OS_WIN) || defined(OS_MAC)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

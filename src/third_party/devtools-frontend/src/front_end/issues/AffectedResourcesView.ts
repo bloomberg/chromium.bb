@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
-import * as Host from '../host/host.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Network from '../network/network.js';
-import * as SDK from '../sdk/sdk.js';
+import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as Network from '../panels/network/network.js';
 import * as WebComponents from '../ui/components/components.js';
-import * as UI from '../ui/ui.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import {IssueView} from './IssueView.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Text in Object Properties Section
   */
@@ -99,7 +99,7 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
     return affectedResources;
   }
 
-  private getResourceName(count: number): string {
+  protected getResourceName(count: number): string {
     if (count === 1) {
       return this.resourceName.singular;
     }
@@ -201,9 +201,9 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
     frameCell.classList.add('affected-resource-cell');
     if (frame) {
       const icon = new WebComponents.Icon.Icon();
-      icon.data = {iconName: 'elements_panel_icon', color: 'var(--issue-link)', width: '16px', height: '16px'};
+      icon.data = {iconName: 'elements_panel_icon', color: 'var(--color-link)', width: '16px', height: '16px'};
       icon.classList.add('link', 'elements-panel');
-      icon.onclick = async (): Promise<void> => {
+      icon.onclick = async(): Promise<void> => {
         Host.userMetrics.issuesPanelResourceOpened(issue.getCategory(), AffectedItem.Element);
         const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
         if (frame) {
@@ -233,7 +233,7 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
     const requestCell = document.createElement('td');
     requestCell.classList.add('affected-resource-cell');
     const icon = new WebComponents.Icon.Icon();
-    icon.data = {iconName: 'network_panel_icon', color: 'var(--issue-link)', width: '16px', height: '16px'};
+    icon.data = {iconName: 'network_panel_icon', color: 'var(--color-link)', width: '16px', height: '16px'};
     icon.classList.add('network-panel');
     requestCell.appendChild(icon);
 
@@ -260,7 +260,9 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
   }
 
   protected appendSourceLocation(
-      element: HTMLElement, sourceLocation: Protocol.Audits.SourceCodeLocation|undefined,
+      element: HTMLElement,
+      sourceLocation: {url: string, scriptId: string|undefined, lineNumber: number, columnNumber: number|undefined}|
+      undefined,
       target: SDK.SDKModel.Target|null|undefined): void {
     const sourceCodeLocation = document.createElement('td');
     sourceCodeLocation.classList.add('affected-source-location');
@@ -269,7 +271,8 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
       // TODO(crbug.com/1108503): Add some mechanism to be able to add telemetry to this element.
       const linkifier = new Components.Linkifier.Linkifier(maxLengthForDisplayedURLs);
       const sourceAnchor = linkifier.linkifyScriptLocation(
-          target || null, sourceLocation.scriptId || null, sourceLocation.url, sourceLocation.lineNumber);
+          target || null, sourceLocation.scriptId || null, sourceLocation.url, sourceLocation.lineNumber,
+          {columnNumber: sourceLocation.columnNumber, inlineFrameIndex: 0, className: undefined, tabStop: undefined});
       sourceCodeLocation.appendChild(sourceAnchor);
     }
     element.appendChild(sourceCodeLocation);

@@ -61,8 +61,7 @@ class AltRefFramePresenceTestLarge
   virtual ~AltRefFramePresenceTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(altref_test_params_.encoding_mode);
+    InitializeConfig(altref_test_params_.encoding_mode);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = rc_end_usage_;
@@ -155,8 +154,7 @@ class GoldenFrameIntervalTestLarge
   virtual ~GoldenFrameIntervalTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(gf_interval_param_.encoding_mode);
+    InitializeConfig(gf_interval_param_.encoding_mode);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = rc_end_usage_;

@@ -45,9 +45,6 @@ extern const bool kOmniboxMaxURLMatchesEnabledByDefault;
 extern const base::Feature kOmniboxMaxURLMatches;
 extern const base::Feature kDynamicMaxAutocomplete;
 
-// Ranking
-extern const base::Feature kBubbleUrlSuggestions;
-
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kClobberTriggersContextualWebZeroSuggest;
 extern const base::Feature kOmniboxLocalZeroSuggestAgeThreshold;
@@ -77,12 +74,15 @@ extern const base::Feature kShortBookmarkSuggestionsByTotalInputLength;
 // Suggestions UI - these affect the UI or function of the suggestions popup.
 extern const base::Feature kAdaptiveSuggestionsCount;
 extern const base::Feature kBookmarkPaths;
+extern const base::Feature kClipboardSuggestionContentHidden;
 extern const base::Feature kCompactSuggestions;
 extern const base::Feature kMostVisitedTiles;
 extern const base::Feature kRichAutocompletion;
 extern const base::Feature kOmniboxSearchReadyIncognito;
 extern const base::Feature kOmniboxSuggestionButtonRow;
 extern const base::Feature kOmniboxPedalSuggestions;
+extern const base::Feature kOmniboxPedalsBatch2;
+extern const base::Feature kOmniboxPedalsDefaultIconColored;
 extern const base::Feature kOmniboxKeywordSearchButton;
 extern const base::Feature kOmniboxRefinedFocusState;
 extern const base::Feature kWebUIOmniboxPopup;
@@ -91,6 +91,7 @@ extern const base::Feature kWebUIOmniboxPopup;
 // popup).
 extern const base::Feature kIntranetRedirectBehaviorPolicyRollout;
 extern const base::Feature kOmniboxAssistantVoiceSearch;
+extern const base::Feature kKeywordSpaceTriggering;
 
 // Path-hiding experiments - these hide the path and other URL components in
 // some circumstances in the steady-state omnibox.

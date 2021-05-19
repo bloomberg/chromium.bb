@@ -68,9 +68,7 @@ static void overlap_test(skiatest::Reporter* reporter, GrResourceProvider* resou
     alloc.addInterval(p2.get(), 1, 2, GrResourceAllocator::ActualUse::kYes);
     alloc.incOps();
 
-    GrResourceAllocator::AssignError error;
-    alloc.assign(&error);
-    REPORTER_ASSERT(reporter, GrResourceAllocator::AssignError::kNoError == error);
+    REPORTER_ASSERT(reporter, alloc.assign());
 
     REPORTER_ASSERT(reporter, p1->peekSurface());
     REPORTER_ASSERT(reporter, p2->peekSurface());
@@ -95,9 +93,7 @@ static void non_overlap_test(skiatest::Reporter* reporter, GrResourceProvider* r
     alloc.addInterval(p1.get(), 0, 2, GrResourceAllocator::ActualUse::kYes);
     alloc.addInterval(p2.get(), 3, 5, GrResourceAllocator::ActualUse::kYes);
 
-    GrResourceAllocator::AssignError error;
-    alloc.assign(&error);
-    REPORTER_ASSERT(reporter, GrResourceAllocator::AssignError::kNoError == error);
+    REPORTER_ASSERT(reporter, alloc.assign());
 
     REPORTER_ASSERT(reporter, p1->peekSurface());
     REPORTER_ASSERT(reporter, p2->peekSurface());
@@ -143,10 +139,13 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ResourceAllocatorTest, reporter, ctxInfo) {
             {{64, kNotRT, kRGBA, kA, 1, kNotB}, {64, kNotRT, kRGBA, kA, 1, kNotB}, kDontShare},
     };
 
-    for (auto test : gOverlappingTests) {
+    for (size_t i = 0; i < SK_ARRAY_COUNT(gOverlappingTests); i++) {
+        auto test = gOverlappingTests[i];
         sk_sp<GrSurfaceProxy> p1 = make_deferred(proxyProvider, caps, test.fP1);
         sk_sp<GrSurfaceProxy> p2 = make_deferred(proxyProvider, caps, test.fP2);
+        reporter->push(SkStringPrintf("case %d", SkToInt(i)));
         overlap_test(reporter, resourceProvider, std::move(p1), std::move(p2), test.fExpectation);
+        reporter->pop();
     }
 
     auto beFormat = caps->getDefaultBackendFormat(GrColorType::kRGBA_8888, GrRenderable::kYes);
@@ -188,7 +187,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ResourceAllocatorTest, reporter, ctxInfo) {
             {{64, kRT, kRGBA, kA, 1, kNotB}, {64, kRT, kRGBA, kA, 1, kNotB}, kShare},
     };
 
-    for (auto test : gNonOverlappingTests) {
+    for (size_t i = 0; i < SK_ARRAY_COUNT(gNonOverlappingTests); i++) {
+        auto test = gNonOverlappingTests[i];
         sk_sp<GrSurfaceProxy> p1 = make_deferred(proxyProvider, caps, test.fP1);
         sk_sp<GrSurfaceProxy> p2 = make_deferred(proxyProvider, caps, test.fP2);
 
@@ -196,8 +196,10 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ResourceAllocatorTest, reporter, ctxInfo) {
             continue; // creation can fail (i.e., for msaa4 on iOS)
         }
 
+        reporter->push(SkStringPrintf("case %d", SkToInt(i)));
         non_overlap_test(reporter, resourceProvider, std::move(p1), std::move(p2),
                          test.fExpectation);
+        reporter->pop();
     }
 
     {
@@ -208,8 +210,10 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ResourceAllocatorTest, reporter, ctxInfo) {
         sk_sp<GrSurfaceProxy> p1 = make_backend(direct, t[0].fP1);
         sk_sp<GrSurfaceProxy> p2 = make_deferred(proxyProvider, caps, t[0].fP2);
 
+        reporter->push(SkString("wrapped case"));
         non_overlap_test(reporter, resourceProvider, std::move(p1), std::move(p2),
                          t[0].fExpectation);
+        reporter->pop();
     }
 }
 

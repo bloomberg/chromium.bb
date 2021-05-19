@@ -14,9 +14,7 @@
 
 #include "src/semantic/expression.h"
 
-#include "src/type/type.h"
-
-TINT_INSTANTIATE_CLASS_ID(tint::semantic::Expression);
+TINT_INSTANTIATE_TYPEINFO(tint::semantic::Expression);
 
 namespace tint {
 namespace semantic {

@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +24,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -44,6 +46,12 @@ using ::testing::Return;
 class FeaturePromoDialogTest : public DialogBrowserTest {
  public:
   FeaturePromoDialogTest() {
+    // TODO(crbug.com/1182859): Update this test to enable the
+    // kUseSodaForLiveCaption feature.
+    scoped_feature_list_.InitWithFeatures(
+        {}, {media::kLiveCaption, media::kUseSodaForLiveCaption,
+             feature_engagement::kIPHLiveCaptionFeature});
+
     // TODO(crbug.com/1141984): fix cause of bubbles overflowing the
     // screen and remove this.
     set_should_verify_dialog_bounds(false);
@@ -84,6 +92,8 @@ class FeaturePromoDialogTest : public DialogBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   static void RegisterMockTracker(content::BrowserContext* context) {
     feature_engagement::TrackerFactory::GetInstance()->SetTestingFactory(
         context, base::BindRepeating(CreateMockTracker));
@@ -170,6 +180,13 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_LiveCaption) {
   ShowAndVerifyUi();
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_ProfileSwitch) {
+  set_baseline("2787107");
+  ShowAndVerifyUi();
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
 IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_ReopenTab) {
   set_baseline("2473537");
   ShowAndVerifyUi();
@@ -198,6 +215,12 @@ class FeaturePromoDialogReadLaterTest : public FeaturePromoDialogTest {
 IN_PROC_BROWSER_TEST_F(FeaturePromoDialogReadLaterTest,
                        InvokeUi_IPH_ReadingListDiscovery) {
   set_baseline("2723691");
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(FeaturePromoDialogReadLaterTest,
+                       InvokeUi_IPH_ReadingListEntryPoint) {
+  set_baseline("2749474");
   ShowAndVerifyUi();
 }
 

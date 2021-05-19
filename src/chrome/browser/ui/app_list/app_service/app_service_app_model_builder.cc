@@ -6,7 +6,7 @@
 
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
 #include "chrome/browser/web_applications/components/external_app_install_features.h"
@@ -83,7 +83,7 @@ AppServiceAppModelBuilder::~AppServiceAppModelBuilder() {
 }
 
 void AppServiceAppModelBuilder::BuildModel() {
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
   proxy->AppRegistryCache().ForEachApp(
       [this](const apps::AppUpdate& update) { OnAppUpdate(update); });

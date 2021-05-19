@@ -21,6 +21,8 @@
 #error This file must be compiled with Arc. Use -fobjc-arc flag
 #endif
 
+GR_NORETAIN_BEGIN
+
 GrMtlPipelineState::SamplerBindings::SamplerBindings(GrSamplerState state,
                                                      GrTexture* texture,
                                                      GrMtlGpu* gpu)
@@ -29,16 +31,16 @@ GrMtlPipelineState::SamplerBindings::SamplerBindings(GrSamplerState state,
 }
 
 GrMtlPipelineState::GrMtlPipelineState(
-        GrMtlGpu* gpu,
-        id<MTLRenderPipelineState> pipelineState,
-        MTLPixelFormat pixelFormat,
-        const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
-        const UniformInfoArray& uniforms,
-        uint32_t uniformBufferSize,
-        uint32_t numSamplers,
-        std::unique_ptr<GrGLSLPrimitiveProcessor> geometryProcessor,
-        std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
-        std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls)
+            GrMtlGpu* gpu,
+            id<MTLRenderPipelineState> pipelineState,
+            MTLPixelFormat pixelFormat,
+            const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
+            const UniformInfoArray& uniforms,
+            uint32_t uniformBufferSize,
+            uint32_t numSamplers,
+            std::unique_ptr<GrGLSLGeometryProcessor> geometryProcessor,
+            std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
+            std::vector<std::unique_ptr<GrGLSLFragmentProcessor>> fpImpls)
         : fGpu(gpu)
         , fPipelineState(pipelineState)
         , fPixelFormat(pixelFormat)
@@ -54,7 +56,7 @@ GrMtlPipelineState::GrMtlPipelineState(
 void GrMtlPipelineState::setData(const GrRenderTarget* renderTarget,
                                  const GrProgramInfo& programInfo) {
     this->setRenderTargetState(renderTarget, programInfo.origin());
-    fGeometryProcessor->setData(fDataManager, programInfo.primProc());
+    fGeometryProcessor->setData(fDataManager, programInfo.geomProc());
 
     for (int i = 0; i < programInfo.pipeline().numFragmentProcessors(); ++i) {
         auto& fp = programInfo.pipeline().getFragmentProcessor(i);
@@ -82,14 +84,14 @@ void GrMtlPipelineState::setData(const GrRenderTarget* renderTarget,
     fStencil = programInfo.nonGLStencilSettings();
 }
 
-void GrMtlPipelineState::setTextures(const GrPrimitiveProcessor& primProc,
+void GrMtlPipelineState::setTextures(const GrGeometryProcessor& geomProc,
                                      const GrPipeline& pipeline,
-                                     const GrSurfaceProxy* const primProcTextures[]) {
+                                     const GrSurfaceProxy* const geomProcTextures[]) {
     fSamplerBindings.reset();
-    for (int i = 0; i < primProc.numTextureSamplers(); ++i) {
-        SkASSERT(primProcTextures[i]->asTextureProxy());
-        const auto& sampler = primProc.textureSampler(i);
-        auto texture = static_cast<GrMtlTexture*>(primProcTextures[i]->peekTexture());
+    for (int i = 0; i < geomProc.numTextureSamplers(); ++i) {
+        SkASSERT(geomProcTextures[i]->asTextureProxy());
+        const auto& sampler = geomProc.textureSampler(i);
+        auto texture = static_cast<GrMtlTexture*>(geomProcTextures[i]->peekTexture());
         fSamplerBindings.emplace_back(sampler.samplerState(), texture, fGpu);
     }
 
@@ -227,3 +229,5 @@ bool GrMtlPipelineState::doesntSampleAttachment(
     }
     return true;
 }
+
+GR_NORETAIN_END

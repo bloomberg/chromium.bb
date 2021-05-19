@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
@@ -82,7 +83,7 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
                      base::UTF8ToWide(app_name), profile->GetPath(),
                      file_extensions_wide, app_name_extension),
       base::BindOnce(&CheckAndUpdateExternalInstallations, profile->GetPath(),
-                     app_id));
+                     app_id, base::DoNothing::Once()));
 }
 
 void UnregisterFileHandlersWithOsTask(const AppId& app_id,
@@ -101,14 +102,17 @@ void UnregisterFileHandlersWithOsTask(const AppId& app_id,
   base::DeleteFile(app_specific_launcher_path);
 }
 
-void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
+void UnregisterFileHandlersWithOs(const AppId& app_id,
+                                  Profile* profile,
+                                  std::unique_ptr<ShortcutInfo> info,
+                                  base::OnceCallback<void()> callback) {
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&UnregisterFileHandlersWithOsTask, app_id,
                      profile->GetPath()),
       base::BindOnce(&CheckAndUpdateExternalInstallations, profile->GetPath(),
-                     app_id));
+                     app_id, std::move(callback)));
 }
 
 }  // namespace web_app

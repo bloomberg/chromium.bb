@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.CharacterStyle;
 import android.text.style.ParagraphStyle;
 import android.text.style.UpdateAppearance;
@@ -26,6 +27,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
@@ -34,6 +36,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.compat.ApiHelperForO;
+import org.chromium.base.compat.ApiHelperForP;
+import org.chromium.base.compat.ApiHelperForS;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.ui.R;
@@ -62,10 +66,22 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
 
     private ImageFileProvider mImageFileProvider;
 
+    private ImageFileProvider.ClipboardFileMetadata mPendingCopiedImageMetadata;
+
     /**
      * Interface to be implemented for sharing image through FileProvider.
      */
     public interface ImageFileProvider {
+        /** The helper class to load Clipboard file metadata. */
+        public class ClipboardFileMetadata {
+            public static final long INVALID_TIMESTAMP = 0;
+            public final Uri uri;
+            public final long timestamp;
+            public ClipboardFileMetadata(Uri uri, long timestamp) {
+                this.uri = uri;
+                this.timestamp = timestamp;
+            }
+        }
         /**
          * Saves the given set of image bytes and provides that URI to a callback for
          * sharing the image.
@@ -78,21 +94,25 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
                 final byte[] imageData, String fileExtension, Callback<Uri> callback);
 
         /**
-         * Store the last image uri we put in the sytstem clipboard, this is special case for
-         * Android O.
+         * Store the last image uri and its timestamp we put in the sytstem clipboard.
+         * On Android O and O_MR1, URI is stored for revoking permissions later.
+         * @param clipboardFileMetadata The metadata needs to be stored.
          */
-        void storeLastCopiedImageUri(@NonNull Uri uri);
+        void storeLastCopiedImageMetadata(@NonNull ClipboardFileMetadata clipboardFileMetadata);
 
         /**
-         * Get stored the last image uri, this is special case for Android O.
+         * Get stored the last image uri and its timestamp.
          */
         @Nullable
-        Uri getLastCopiedImageUri();
+        ClipboardFileMetadata getLastCopiedImageMetadata();
 
         /**
-         * Clear the image uri which stored by |storeLastCopiedImageUri|.
+         * Clear the image uri and its timestamp which are stored by |storeLastCopiedImageMetadata|.
+         * This can be called any time after the system clipboard does not contain the uri we
+         * stored. On Android O and O_MR1, this can be called either after the permission is
+         * revoked.
          */
-        void clearLastCopiedImageUri();
+        void clearLastCopiedImageMetadata();
     }
 
     /**
@@ -145,6 +165,22 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         }
     }
 
+    @CalledByNative
+    private boolean hasCoercedText() {
+        ClipDescription description = mClipboardManager.getPrimaryClipDescription();
+        if (description == null) return false;
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            // On Pre-P, {@link clear()} uses an empty ClipData#newPlainText to clear the clipboard,
+            // which will create an empty MIMETYPE_TEXT_PLAIN in the clipboard, so we need to read
+            // the real clipboard data to check.
+            return !TextUtils.isEmpty(getCoercedText());
+        }
+
+        return description.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)
+                || description.hasMimeType(ClipDescription.MIMETYPE_TEXT_HTML);
+    }
+
     private boolean hasStyleSpan(Spanned spanned) {
         Class<?>[] styleClasses = {
                 CharacterStyle.class, ParagraphStyle.class, UpdateAppearance.class};
@@ -193,6 +229,22 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     }
 
     /**
+     * Check if the system clipboard contains HTML text or plain text with stlyed text.
+     * Since Spanned could be copied to Clipboard as plain_text MIME type, and it can be converted
+     * to HTML by android.text.Html#toHtml().
+     * @return True if the system clipboard contains the html text or the styled text.
+     */
+    @CalledByNative
+    public boolean hasHTMLOrStyledText() {
+        ClipDescription description = mClipboardManager.getPrimaryClipDescription();
+        if (description == null) return false;
+
+        boolean isPlainType = description.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN);
+        return (isPlainType && hasStyledText(description))
+                || description.hasMimeType(ClipDescription.MIMETYPE_TEXT_HTML);
+    }
+
+    /**
      * Gets the Uri of top item on the primary clip on the Android clipboard if the mime type is
      * image.
      *
@@ -204,10 +256,8 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         // crbug.com/654802).
         try {
             ClipData clipData = mClipboardManager.getPrimaryClip();
-            if (clipData == null || clipData.getItemCount() == 0) return null;
-
-            ClipDescription description = clipData.getDescription();
-            if (description == null || !description.hasMimeType("image/*")) {
+            if (clipData == null || clipData.getItemCount() == 0
+                    || !hasImageMimeType(clipData.getDescription())) {
                 return null;
             }
 
@@ -215,6 +265,41 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * Return the image URI in the system clipboard if the URI is shared by this app
+     */
+    public @Nullable Uri getImageUriIfSharedByThisApp() {
+        if (mImageFileProvider == null) return null;
+
+        ImageFileProvider.ClipboardFileMetadata imageMetadata =
+                mImageFileProvider.getLastCopiedImageMetadata();
+        if (imageMetadata == null || imageMetadata.uri == null) return null;
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            // ClipDescription#getTimestamp() only exist in O+, so we just check if getImageUri()
+            // same as the stored URI.
+            if (!imageMetadata.uri.equals(getImageUri())) {
+                mImageFileProvider.clearLastCopiedImageMetadata();
+                return null;
+            }
+            return imageMetadata.uri;
+        }
+
+        long clipboardTimeStamp = getImageTimestamp();
+        if (clipboardTimeStamp == ImageFileProvider.ClipboardFileMetadata.INVALID_TIMESTAMP
+                || mImageFileProvider == null) {
+            return null;
+        }
+
+        if (clipboardTimeStamp != imageMetadata.timestamp) {
+            // The system clipboard does not contain uri from us, we can clean up the data.
+            mImageFileProvider.clearLastCopiedImageMetadata();
+            return null;
+        }
+
+        return imageMetadata.uri;
     }
 
     @CalledByNative
@@ -248,6 +333,34 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         }
     }
 
+    @CalledByNative
+    private boolean hasImage() {
+        ClipDescription description = mClipboardManager.getPrimaryClipDescription();
+        return hasImageMimeType(description);
+    }
+
+    private static boolean hasImageMimeType(ClipDescription description) {
+        return (description != null) && (description.hasMimeType("image/*"));
+    }
+
+    /**
+     * Return the timestamp for the content in the clipboard if the clipboard contains an image.
+     * return 0 on Android Pre O since the ClipDescription#getTimestamp() only exist in O+.
+     */
+    private long getImageTimestamp() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            // ClipDescription#getTimestamp() only exist in O+, so we just return 0.
+            return ImageFileProvider.ClipboardFileMetadata.INVALID_TIMESTAMP;
+        }
+
+        ClipDescription description = mClipboardManager.getPrimaryClipDescription();
+        if (description == null || !description.hasMimeType("image/*")) {
+            return ImageFileProvider.ClipboardFileMetadata.INVALID_TIMESTAMP;
+        }
+
+        return ApiHelperForO.getTimestamp(description);
+    }
+
     /**
      * Emulates the behavior of the now-deprecated
      * {@link android.text.ClipboardManager#setText(CharSequence)}, setting the
@@ -268,7 +381,8 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      * @param text  Plain-text representation of the HTML content.
      */
     @CalledByNative
-    private void setHTMLText(final String html, final String text) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void setHTMLText(final String html, final String text) {
         setPrimaryClipNoException(ClipData.newHtmlText("html", text, html));
     }
 
@@ -297,6 +411,23 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
             @Override
             protected void onPostExecute(ClipData clipData) {
                 setPrimaryClipNoException(clipData);
+
+                // Storing timestamp is for avoiding accessing the system clipboard data, which may
+                // cause the clipboard access notification to show up, when we try to clean up the
+                // image file. There is a small chance that the clipboard image is updated between
+                // |setPrimaryClipNoException| and |getImageTimestamp|, and we will get a wrong
+                // timestamp. But it is okay since the timestamp is for deciding if the image file
+                // need to be deleted. If the timestamp is wrong here, we just keep the image file a
+                // little longer than expected.
+                long imageTimestamp = getImageTimestamp();
+
+                if (mImageFileProvider == null) {
+                    mPendingCopiedImageMetadata =
+                            new ImageFileProvider.ClipboardFileMetadata(uri, imageTimestamp);
+                } else {
+                    mImageFileProvider.storeLastCopiedImageMetadata(
+                            new ImageFileProvider.ClipboardFileMetadata(uri, imageTimestamp));
+                }
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -319,16 +450,18 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
                 imageData, extension, (Uri uri) -> { setImageUri(uri); });
     }
 
-    /**
-     * Clears the Clipboard Primary clip.
-     *
-     */
+    /** Clears the Clipboard Primary clip. */
     @CalledByNative
     private void clear() {
-        setPrimaryClipNoException(ClipData.newPlainText(null, null));
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            setPrimaryClipNoException(ClipData.newPlainText(null, null));
+            return;
+        }
+        ApiHelperForP.clearPrimaryClip(mClipboardManager);
     }
 
-    private boolean setPrimaryClipNoException(ClipData clip) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    boolean setPrimaryClipNoException(ClipData clip) {
         final String manufacturer = Build.MANUFACTURER.toLowerCase(Locale.US);
         // See crbug.com/1123727, there are OEM devices having strict mode violations in their
         // Android framework code. Disabling strict mode for non-google devices.
@@ -360,6 +493,11 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      */
     public void setImageFileProvider(ImageFileProvider imageFileProvider) {
         mImageFileProvider = imageFileProvider;
+
+        if (mPendingCopiedImageMetadata != null) {
+            mImageFileProvider.storeLastCopiedImageMetadata(mPendingCopiedImageMetadata);
+            mPendingCopiedImageMetadata = null;
+        }
     }
 
     /**
@@ -434,8 +572,6 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
             return;
         }
 
-        // Cache the Uri for revoking permission later.
-        mImageFileProvider.storeLastCopiedImageUri(uri);
         List<PackageInfo> installedPackages = mContext.getPackageManager().getInstalledPackages(0);
         for (PackageInfo installedPackage : installedPackages) {
             mContext.grantUriPermission(
@@ -464,18 +600,22 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
             return;
         }
 
-        Uri uri = mImageFileProvider.getLastCopiedImageUri();
+        ImageFileProvider.ClipboardFileMetadata imageMetadata =
+                mImageFileProvider.getLastCopiedImageMetadata();
         // Exit early if the URI is empty or event onPrimaryClipChanges was caused by sharing
         // image.
-        if (uri == null || uri.equals(Uri.EMPTY) || uri.equals(getImageUri())) return;
+        if (imageMetadata == null || imageMetadata.uri == null
+                || imageMetadata.uri.equals(Uri.EMPTY) || imageMetadata.uri.equals(getImageUri())) {
+            return;
+        }
 
         // https://developer.android.com/reference/android/content/Context#revokeUriPermission(android.net.Uri,%20int)
         // According to the above link, it is not necessary to enumerate all of the packages like
         // what was done in |grantUriPermission|. Context#revokeUriPermission(Uri, int) will revoke
         // all permissions.
-        mContext.revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        mContext.revokeUriPermission(imageMetadata.uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         // Clear uri to avoid revoke over and over.
-        mImageFileProvider.clearLastCopiedImageUri();
+        mImageFileProvider.clearLastCopiedImageMetadata();
     }
 
     /**
@@ -497,6 +637,45 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         ClipboardManager oldManager = mClipboardManager;
         mClipboardManager = manager;
         return oldManager;
+    }
+
+    /**
+     * Check if the system clipboard has content to be pasted.
+     * @return True if the system clipboard contains anything, otherwise, return false.
+     */
+    public boolean canPaste() {
+        return mClipboardManager.hasPrimaryClip();
+    }
+
+    /**
+     * Check Whether the ClipDescription has stypled text.
+     * @param description The {@link ClipDescription} to check if it has stytled text.
+     * @return True if the system clipboard contain a styled text, otherwise, false.
+     */
+    private boolean hasStyledText(ClipDescription description) {
+        if (BuildInfo.isAtLeastS()) {
+            return ApiHelperForS.isStyleText(description);
+        } else {
+            return hasStyledTextOnPreS();
+        }
+    }
+
+    private boolean hasStyledTextOnPreS() {
+        CharSequence text;
+        try {
+            // getPrimaryClip() has been observed to throw unexpected exceptions for some devices
+            // (see crbug.com/654802 and b/31501780)
+            text = mClipboardManager.getPrimaryClip().getItemAt(0).getText();
+        } catch (Exception e) {
+            return false;
+        }
+
+        if (text instanceof Spanned) {
+            Spanned spanned = (Spanned) text;
+            return hasStyleSpan(spanned);
+        }
+
+        return false;
     }
 
     @NativeMethods

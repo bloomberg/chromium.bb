@@ -6,10 +6,18 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/check.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "ui/color/color_provider.h"
+#include "ui/color/color_provider_utils.h"
+
+#if !defined(OS_ANDROID)
+#include "ui/color/color_mixers.h"
+#endif
 
 namespace ui {
 
@@ -34,15 +42,42 @@ base::Optional<GlobalManager>& GetGlobalManager() {
 
 }  // namespace
 
-ColorProviderManager::ColorProviderManager() = default;
+ColorProviderManager::ColorProviderManager() {
+  ResetColorProviderInitializerList();
+}
+
 ColorProviderManager::~ColorProviderManager() = default;
 
 // static
 ColorProviderManager& ColorProviderManager::Get() {
   base::Optional<GlobalManager>& manager = GetGlobalManager();
+  if (!manager.has_value()) {
+    manager.emplace();
+#if !defined(OS_ANDROID)
+    manager.value().AppendColorProviderInitializer(base::BindRepeating(
+        [](ColorProvider* provider, ColorProviderManager::ColorMode color_mode,
+           ColorProviderManager::ContrastMode contrast_mode) {
+          const bool dark_mode =
+              color_mode == ColorProviderManager::ColorMode::kDark;
+          const bool high_contrast =
+              contrast_mode == ColorProviderManager::ContrastMode::kHigh;
+          ui::AddCoreDefaultColorMixer(provider, dark_mode, high_contrast);
+          ui::AddNativeCoreColorMixer(provider, dark_mode, high_contrast);
+          ui::AddUiColorMixer(provider, dark_mode, high_contrast);
+          ui::AddNativeUiColorMixer(provider, dark_mode, high_contrast);
+          ui::AddNativePostprocessingMixer(provider);
+        }));
+#endif  // !defined(OS_ANDROID)
+  }
+
+  return manager.value();
+}
+
+// static
+ColorProviderManager& ColorProviderManager::GetForTesting() {
+  base::Optional<GlobalManager>& manager = GetGlobalManager();
   if (!manager.has_value())
     manager.emplace();
-
   return manager.value();
 }
 
@@ -51,22 +86,36 @@ void ColorProviderManager::ResetForTesting() {
   GetGlobalManager().reset();
 }
 
-void ColorProviderManager::SetColorProviderInitializer(
-    ColorProviderInitializer initializer) {
-  DCHECK(initializer_.is_null());
-  DCHECK(color_providers_.empty());
-  initializer_ = std::move(initializer);
+void ColorProviderManager::ResetColorProviderInitializerList() {
+  if (!color_providers_.empty())
+    color_providers_.clear();
+  initializer_list_ = std::make_unique<ColorProviderInitializerList>();
+  initializer_subscriptions_.clear();
 }
 
-ColorProvider* ColorProviderManager::GetColorProviderFor(
-    ColorMode color_mode,
-    ContrastMode contrast_mode) {
-  auto key = ColorProviderKey(color_mode, contrast_mode);
+void ColorProviderManager::AppendColorProviderInitializer(
+    ColorProviderInitializerList::CallbackType initializer) {
+  DCHECK(initializer_list_);
+  if (!color_providers_.empty())
+    color_providers_.clear();
+
+  initializer_subscriptions_.push_back(
+      initializer_list_->Add(std::move(initializer)));
+}
+
+ColorProvider* ColorProviderManager::GetColorProviderFor(ColorProviderKey key) {
   auto iter = color_providers_.find(key);
   if (iter == color_providers_.end()) {
     auto provider = std::make_unique<ColorProvider>();
-    if (!initializer_.is_null())
-      initializer_.Run(provider.get(), color_mode, contrast_mode);
+    DCHECK(initializer_list_);
+    if (!initializer_list_->empty()) {
+      DVLOG(2) << "ColorProviderManager: Initializing Color Provider"
+               << " - ColorMode: " << ColorModeName(std::get<ColorMode>(key))
+               << " - ContrastMode: "
+               << ContrastModeName(std::get<ContrastMode>(key));
+      initializer_list_->Notify(provider.get(), std::get<ColorMode>(key),
+                                std::get<ContrastMode>(key));
+    }
 
     iter = color_providers_.emplace(key, std::move(provider)).first;
   }

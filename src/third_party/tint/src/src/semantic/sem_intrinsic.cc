@@ -14,7 +14,7 @@
 
 #include "src/semantic/intrinsic.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::semantic::Intrinsic);
+TINT_INSTANTIATE_TYPEINFO(tint::semantic::Intrinsic);
 
 namespace tint {
 namespace semantic {
@@ -28,177 +28,110 @@ const char* Intrinsic::str() const {
   return semantic::str(type_);
 }
 
-const char* str(IntrinsicType i) {
-  /// The emitted name matches the spelling in the WGSL spec.
-  /// including case.
-  switch (i) {
-    case IntrinsicType::kNone:
-      return "<not-an-intrinsic>";
-    case IntrinsicType::kAbs:
-      return "abs";
-    case IntrinsicType::kAcos:
-      return "acos";
-    case IntrinsicType::kAll:
-      return "all";
-    case IntrinsicType::kAny:
-      return "any";
-    case IntrinsicType::kArrayLength:
-      return "arrayLength";
-    case IntrinsicType::kAsin:
-      return "asin";
-    case IntrinsicType::kAtan:
-      return "atan";
-    case IntrinsicType::kAtan2:
-      return "atan2";
-    case IntrinsicType::kCeil:
-      return "ceil";
-    case IntrinsicType::kClamp:
-      return "clamp";
-    case IntrinsicType::kCos:
-      return "cos";
-    case IntrinsicType::kCosh:
-      return "cosh";
-    case IntrinsicType::kCountOneBits:
-      return "countOneBits";
-    case IntrinsicType::kCross:
-      return "cross";
-    case IntrinsicType::kDeterminant:
-      return "determinant";
-    case IntrinsicType::kDistance:
-      return "distance";
-    case IntrinsicType::kDot:
-      return "dot";
-    case IntrinsicType::kDpdx:
-      return "dpdx";
-    case IntrinsicType::kDpdxCoarse:
-      return "dpdxCoarse";
-    case IntrinsicType::kDpdxFine:
-      return "dpdxFine";
-    case IntrinsicType::kDpdy:
-      return "dpdy";
-    case IntrinsicType::kDpdyCoarse:
-      return "dpdyCoarse";
-    case IntrinsicType::kDpdyFine:
-      return "dpdyFine";
-    case IntrinsicType::kExp:
-      return "exp";
-    case IntrinsicType::kExp2:
-      return "exp2";
-    case IntrinsicType::kFaceForward:
-      return "faceForward";
-    case IntrinsicType::kFloor:
-      return "floor";
-    case IntrinsicType::kFma:
-      return "fma";
-    case IntrinsicType::kFract:
-      return "fract";
-    case IntrinsicType::kFrexp:
-      return "frexp";
-    case IntrinsicType::kFwidth:
-      return "fwidth";
-    case IntrinsicType::kFwidthCoarse:
-      return "fwidthCoarse";
-    case IntrinsicType::kFwidthFine:
-      return "fwidthFine";
-    case IntrinsicType::kInverseSqrt:
-      return "inverseSqrt";
-    case IntrinsicType::kIsFinite:
-      return "isFinite";
-    case IntrinsicType::kIsInf:
-      return "isInf";
-    case IntrinsicType::kIsNan:
-      return "isNan";
-    case IntrinsicType::kIsNormal:
-      return "isNormal";
-    case IntrinsicType::kLdexp:
-      return "ldexp";
-    case IntrinsicType::kLength:
-      return "length";
-    case IntrinsicType::kLog:
-      return "log";
-    case IntrinsicType::kLog2:
-      return "log2";
-    case IntrinsicType::kMax:
-      return "max";
-    case IntrinsicType::kMin:
-      return "min";
-    case IntrinsicType::kMix:
-      return "mix";
-    case IntrinsicType::kModf:
-      return "modf";
-    case IntrinsicType::kNormalize:
-      return "normalize";
-    case IntrinsicType::kPack4x8Snorm:
-      return "pack4x8snorm";
-    case IntrinsicType::kPack4x8Unorm:
-      return "pack4x8unorm";
-    case IntrinsicType::kPack2x16Snorm:
-      return "pack2x16snorm";
-    case IntrinsicType::kPack2x16Unorm:
-      return "pack2x16unorm";
-    case IntrinsicType::kPack2x16Float:
-      return "pack2x16float";
-    case IntrinsicType::kPow:
-      return "pow";
-    case IntrinsicType::kReflect:
-      return "reflect";
-    case IntrinsicType::kReverseBits:
-      return "reverseBits";
-    case IntrinsicType::kRound:
-      return "round";
-    case IntrinsicType::kSelect:
-      return "select";
-    case IntrinsicType::kSign:
-      return "sign";
-    case IntrinsicType::kSin:
-      return "sin";
-    case IntrinsicType::kSinh:
-      return "sinh";
-    case IntrinsicType::kSmoothStep:
-      return "smoothStep";
-    case IntrinsicType::kSqrt:
-      return "sqrt";
-    case IntrinsicType::kStep:
-      return "step";
-    case IntrinsicType::kTan:
-      return "tan";
-    case IntrinsicType::kTanh:
-      return "tanh";
-    case IntrinsicType::kTextureDimensions:
-      return "textureDimensions";
-    case IntrinsicType::kTextureLoad:
-      return "textureLoad";
-    case IntrinsicType::kTextureNumLayers:
-      return "textureNumLayers";
-    case IntrinsicType::kTextureNumLevels:
-      return "textureNumLevels";
-    case IntrinsicType::kTextureNumSamples:
-      return "textureNumSamples";
-    case IntrinsicType::kTextureSample:
-      return "textureSample";
-    case IntrinsicType::kTextureSampleBias:
-      return "textureSampleBias";
-    case IntrinsicType::kTextureSampleCompare:
-      return "textureSampleCompare";
-    case IntrinsicType::kTextureSampleGrad:
-      return "textureSampleGrad";
-    case IntrinsicType::kTextureSampleLevel:
-      return "textureSampleLevel";
-    case IntrinsicType::kTextureStore:
-      return "textureStore";
-    case IntrinsicType::kTrunc:
-      return "trunc";
-    case IntrinsicType::kUnpack4x8Snorm:
-      return "unpack4x8snorm";
-    case IntrinsicType::kUnpack4x8Unorm:
-      return "unpack4x8unorm";
-    case IntrinsicType::kUnpack2x16Snorm:
-      return "unpack2x16snorm";
-    case IntrinsicType::kUnpack2x16Unorm:
-      return "unpack2x16unorm";
-    case IntrinsicType::kUnpack2x16Float:
-      return "unpack2x16float";
+/// Name matches the spelling in the WGSL spec including case.
+#define INTRINSIC_LIST()                                                  \
+  INTRINSIC(IntrinsicType::kNone, "<not-an-intrinsic>")                   \
+  INTRINSIC(IntrinsicType::kAbs, "abs")                                   \
+  INTRINSIC(IntrinsicType::kAcos, "acos")                                 \
+  INTRINSIC(IntrinsicType::kAll, "all")                                   \
+  INTRINSIC(IntrinsicType::kAny, "any")                                   \
+  INTRINSIC(IntrinsicType::kArrayLength, "arrayLength")                   \
+  INTRINSIC(IntrinsicType::kAsin, "asin")                                 \
+  INTRINSIC(IntrinsicType::kAtan, "atan")                                 \
+  INTRINSIC(IntrinsicType::kAtan2, "atan2")                               \
+  INTRINSIC(IntrinsicType::kCeil, "ceil")                                 \
+  INTRINSIC(IntrinsicType::kClamp, "clamp")                               \
+  INTRINSIC(IntrinsicType::kCos, "cos")                                   \
+  INTRINSIC(IntrinsicType::kCosh, "cosh")                                 \
+  INTRINSIC(IntrinsicType::kCountOneBits, "countOneBits")                 \
+  INTRINSIC(IntrinsicType::kCross, "cross")                               \
+  INTRINSIC(IntrinsicType::kDeterminant, "determinant")                   \
+  INTRINSIC(IntrinsicType::kDistance, "distance")                         \
+  INTRINSIC(IntrinsicType::kDot, "dot")                                   \
+  INTRINSIC(IntrinsicType::kDpdx, "dpdx")                                 \
+  INTRINSIC(IntrinsicType::kDpdxCoarse, "dpdxCoarse")                     \
+  INTRINSIC(IntrinsicType::kDpdxFine, "dpdxFine")                         \
+  INTRINSIC(IntrinsicType::kDpdy, "dpdy")                                 \
+  INTRINSIC(IntrinsicType::kDpdyCoarse, "dpdyCoarse")                     \
+  INTRINSIC(IntrinsicType::kDpdyFine, "dpdyFine")                         \
+  INTRINSIC(IntrinsicType::kExp, "exp")                                   \
+  INTRINSIC(IntrinsicType::kExp2, "exp2")                                 \
+  INTRINSIC(IntrinsicType::kFaceForward, "faceForward")                   \
+  INTRINSIC(IntrinsicType::kFloor, "floor")                               \
+  INTRINSIC(IntrinsicType::kFma, "fma")                                   \
+  INTRINSIC(IntrinsicType::kFract, "fract")                               \
+  INTRINSIC(IntrinsicType::kFrexp, "frexp")                               \
+  INTRINSIC(IntrinsicType::kFwidth, "fwidth")                             \
+  INTRINSIC(IntrinsicType::kFwidthCoarse, "fwidthCoarse")                 \
+  INTRINSIC(IntrinsicType::kFwidthFine, "fwidthFine")                     \
+  INTRINSIC(IntrinsicType::kInverseSqrt, "inverseSqrt")                   \
+  INTRINSIC(IntrinsicType::kIsFinite, "isFinite")                         \
+  INTRINSIC(IntrinsicType::kIsInf, "isInf")                               \
+  INTRINSIC(IntrinsicType::kIsNan, "isNan")                               \
+  INTRINSIC(IntrinsicType::kIsNormal, "isNormal")                         \
+  INTRINSIC(IntrinsicType::kLdexp, "ldexp")                               \
+  INTRINSIC(IntrinsicType::kLength, "length")                             \
+  INTRINSIC(IntrinsicType::kLog, "log")                                   \
+  INTRINSIC(IntrinsicType::kLog2, "log2")                                 \
+  INTRINSIC(IntrinsicType::kMax, "max")                                   \
+  INTRINSIC(IntrinsicType::kMin, "min")                                   \
+  INTRINSIC(IntrinsicType::kMix, "mix")                                   \
+  INTRINSIC(IntrinsicType::kModf, "modf")                                 \
+  INTRINSIC(IntrinsicType::kNormalize, "normalize")                       \
+  INTRINSIC(IntrinsicType::kPack4x8Snorm, "pack4x8snorm")                 \
+  INTRINSIC(IntrinsicType::kPack4x8Unorm, "pack4x8unorm")                 \
+  INTRINSIC(IntrinsicType::kPack2x16Snorm, "pack2x16snorm")               \
+  INTRINSIC(IntrinsicType::kPack2x16Unorm, "pack2x16unorm")               \
+  INTRINSIC(IntrinsicType::kPack2x16Float, "pack2x16float")               \
+  INTRINSIC(IntrinsicType::kPow, "pow")                                   \
+  INTRINSIC(IntrinsicType::kReflect, "reflect")                           \
+  INTRINSIC(IntrinsicType::kReverseBits, "reverseBits")                   \
+  INTRINSIC(IntrinsicType::kRound, "round")                               \
+  INTRINSIC(IntrinsicType::kSelect, "select")                             \
+  INTRINSIC(IntrinsicType::kSign, "sign")                                 \
+  INTRINSIC(IntrinsicType::kSin, "sin")                                   \
+  INTRINSIC(IntrinsicType::kSinh, "sinh")                                 \
+  INTRINSIC(IntrinsicType::kSmoothStep, "smoothStep")                     \
+  INTRINSIC(IntrinsicType::kSqrt, "sqrt")                                 \
+  INTRINSIC(IntrinsicType::kStep, "step")                                 \
+  INTRINSIC(IntrinsicType::kStorageBarrier, "storageBarrier")             \
+  INTRINSIC(IntrinsicType::kTan, "tan")                                   \
+  INTRINSIC(IntrinsicType::kTanh, "tanh")                                 \
+  INTRINSIC(IntrinsicType::kTextureDimensions, "textureDimensions")       \
+  INTRINSIC(IntrinsicType::kTextureLoad, "textureLoad")                   \
+  INTRINSIC(IntrinsicType::kTextureNumLayers, "textureNumLayers")         \
+  INTRINSIC(IntrinsicType::kTextureNumLevels, "textureNumLevels")         \
+  INTRINSIC(IntrinsicType::kTextureNumSamples, "textureNumSamples")       \
+  INTRINSIC(IntrinsicType::kTextureSample, "textureSample")               \
+  INTRINSIC(IntrinsicType::kTextureSampleBias, "textureSampleBias")       \
+  INTRINSIC(IntrinsicType::kTextureSampleCompare, "textureSampleCompare") \
+  INTRINSIC(IntrinsicType::kTextureSampleGrad, "textureSampleGrad")       \
+  INTRINSIC(IntrinsicType::kTextureSampleLevel, "textureSampleLevel")     \
+  INTRINSIC(IntrinsicType::kTextureStore, "textureStore")                 \
+  INTRINSIC(IntrinsicType::kTrunc, "trunc")                               \
+  INTRINSIC(IntrinsicType::kUnpack2x16Float, "unpack2x16float")           \
+  INTRINSIC(IntrinsicType::kUnpack2x16Snorm, "unpack2x16snorm")           \
+  INTRINSIC(IntrinsicType::kUnpack2x16Unorm, "unpack2x16unorm")           \
+  INTRINSIC(IntrinsicType::kUnpack4x8Snorm, "unpack4x8snorm")             \
+  INTRINSIC(IntrinsicType::kUnpack4x8Unorm, "unpack4x8unorm")             \
+  INTRINSIC(IntrinsicType::kWorkgroupBarrier, "workgroupBarrier")
+
+IntrinsicType ParseIntrinsicType(const std::string& name) {
+#define INTRINSIC(ENUM, NAME) \
+  if (name == NAME) {         \
+    return ENUM;              \
   }
+  INTRINSIC_LIST()
+#undef INTRINSIC
+  return IntrinsicType::kNone;
+}
+
+const char* str(IntrinsicType i) {
+#define INTRINSIC(ENUM, NAME) \
+  case ENUM:                  \
+    return NAME;
+  switch (i) { INTRINSIC_LIST() }
+#undef INTRINSIC
   return "<unknown>";
 }
 
@@ -256,6 +189,11 @@ bool IsDataUnpackingIntrinsic(IntrinsicType i) {
          i == IntrinsicType::kUnpack2x16Float;
 }
 
+bool IsBarrierIntrinsic(IntrinsicType i) {
+  return i == IntrinsicType::kWorkgroupBarrier ||
+         i == IntrinsicType::kStorageBarrier;
+}
+
 Intrinsic::Intrinsic(IntrinsicType type,
                      type::Type* return_type,
                      const ParameterList& parameters)
@@ -293,6 +231,10 @@ bool Intrinsic::IsDataPacking() const {
 
 bool Intrinsic::IsDataUnpacking() const {
   return IsDataUnpackingIntrinsic(type_);
+}
+
+bool Intrinsic::IsBarrier() const {
+  return IsBarrierIntrinsic(type_);
 }
 
 }  // namespace semantic

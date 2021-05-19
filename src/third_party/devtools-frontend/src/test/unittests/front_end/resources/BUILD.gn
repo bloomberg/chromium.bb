@@ -8,13 +8,14 @@ ts_library("resources") {
   testonly = true
   sources = [
     "FrameDetailsView_test.ts",
-    "ServiceWorkerUpdateCycleHelper_test.ts",
+    "ServiceWorkerUpdateCycleView_test.ts",
+    "StackTrace_test.ts",
     "TrustTokensView_test.ts",
   ]
 
   deps = [
+    "../../../../front_end/panels/application:bundle",
     "../../../../front_end/render_coordinator:bundle",
-    "../../../../front_end/resources:bundle",
     "../../../../front_end/ui/components:bundle",
     "../helpers",
     "../ui/components",

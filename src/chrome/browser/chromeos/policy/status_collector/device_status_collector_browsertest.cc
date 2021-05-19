@@ -38,15 +38,15 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/login/users/mock_user_manager.h"
+#include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/common/chrome_content_client.h"
@@ -67,6 +67,7 @@
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -344,7 +345,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
       override {
     if (kiosk_account_)
       return std::make_unique<policy::DeviceLocalAccount>(*kiosk_account_);
-    return std::unique_ptr<policy::DeviceLocalAccount>();
+    return nullptr;
   }
 
   std::string GetAppVersion(const std::string& app_id) override {
@@ -755,7 +756,7 @@ namespace policy {
 class DeviceStatusCollectorTest : public testing::Test {
  public:
   DeviceStatusCollectorTest()
-      : user_manager_(new chromeos::MockUserManager()),
+      : user_manager_(new ash::MockUserManager()),
         user_manager_enabler_(base::WrapUnique(user_manager_)),
         got_session_status_(false),
         fake_kiosk_device_local_account_(
@@ -838,7 +839,7 @@ class DeviceStatusCollectorTest : public testing::Test {
         base::WrapUnique<chromeos::UpdateEngineClient>(update_engine_client_));
 
     chromeos::CrasAudioHandler::InitializeForTesting();
-    chromeos::CryptohomeClient::InitializeFake();
+    chromeos::UserDataAuthClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::AttestationClient::InitializeFake();
     chromeos::TpmManagerClient::InitializeFake();
@@ -850,7 +851,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     chromeos::TpmManagerClient::Shutdown();
     chromeos::AttestationClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
-    chromeos::CryptohomeClient::Shutdown();
+    chromeos::UserDataAuthClient::Shutdown();
     chromeos::CrasAudioHandler::Shutdown();
     ash::KioskAppManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
@@ -1085,8 +1086,8 @@ class DeviceStatusCollectorTest : public testing::Test {
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   DiskMountManager::MountPointMap mount_point_map_;
   chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
-  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
-  chromeos::FakeOwnerSettingsService owner_settings_service_{
+  ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+  ash::FakeOwnerSettingsService owner_settings_service_{
       scoped_testing_cros_settings_.device_settings(), nullptr};
   // local_state_ should be destructed after TestingProfile.
   TestingPrefServiceSimple local_state_;
@@ -1096,7 +1097,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   std::unique_ptr<chromeos::ArcKioskAppManager> arc_kiosk_app_manager_;
   // Only set after MockAutoLaunchWebKioskApp was called.
   std::unique_ptr<ash::WebKioskAppManager> web_kiosk_app_manager_;
-  chromeos::MockUserManager* const user_manager_;
+  ash::MockUserManager* const user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
   em::DeviceStatusReportRequest device_status_;
   em::SessionStatusReportRequest session_status_;

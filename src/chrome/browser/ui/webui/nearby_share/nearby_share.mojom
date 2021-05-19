@@ -93,6 +93,30 @@ enum TransferStatus {
   kNotEnoughSpace,
   // The file type is not supported for sharing.
   kUnsupportedAttachmentType,
+  // The advertisement failed to decode.
+  kDecodeAdvertisementFailed,
+  // The share target doesn't have a transfer update callback.
+  kMissingTransferUpdateCallback,
+  // Could not find the appropriate share target.
+  kMissingShareTarget,
+  // Could not find the appropriate endpoint id.
+  kMissingEndpointId,
+  // The transfer doesn't have any payloads.
+  kMissingPayloads,
+  // The Paired Key Verification step failed.
+  kPairedKeyVerificationFailed,
+  // The introduction frame is invalid.
+  kInvalidIntroductionFrame,
+  // The completed transfer didn't complete all expected payloads.
+  kIncompletePayloads,
+  // Could not create a share target for transfer.
+  kFailedToCreateShareTarget,
+  // The outgoing connection failed to initiate.
+  kFailedToInitiateOutgoingConnection,
+  // The outgoing connection response couldn't be read.
+  kFailedToReadOutgoingConnectionResponse,
+  // The connection unexpectedly disconnected.
+  kUnexpectedDisconnection,
 };
 
 // Metadata associated with the current transfer.
@@ -165,8 +189,13 @@ interface DiscoveryManager {
   // Starts discovering nearby devices. The passed |listener| will be called
   // with any discovered devices. Returns before discovery has actually
   // started; see |DiscoveryObserver.OnStartDiscoveryResult()|.
+  // Ensure StopDiscovery is called before invoking StartDiscovery again.
   StartDiscovery(pending_remote<ShareTargetListener> listener)
       => (StartDiscoveryResult result);
+
+  // Stops the current discovery session. Call StartDiscovery to start
+  // the session again.
+  StopDiscovery() => ();
 
   // Select a previously discovered |share_target_id| to send data to. On
   // success this will return valid ConfirmationManager and
@@ -209,6 +238,12 @@ interface ReceiveObserver {
 
   // Called when the Nearby utility process stops.
   OnNearbyProcessStopped();
+
+  // Called when advertising fails to start. If advertising fails, then high
+  // visibility will not be turned on.
+  // |ReceiveManager.RegisterForegroundReceiveSurface()| may be called again
+  // to reattempt.
+  OnStartAdvertisingFailure();
 };
 
 // Allows the caller to observe changes to or query high visibility, or

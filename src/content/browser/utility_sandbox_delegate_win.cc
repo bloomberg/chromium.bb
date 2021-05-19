@@ -62,6 +62,19 @@ bool AudioPreSpawnTarget(sandbox::TargetPolicy* policy) {
 
 // Sets the sandbox policy for the network service process.
 bool NetworkPreSpawnTarget(sandbox::TargetPolicy* policy) {
+  if (base::FeatureList::IsEnabled(
+          sandbox::policy::features::kNetworkServiceSandboxLPAC)) {
+    // LPAC sandbox is enabled, so do not use a restricted token.
+    if (sandbox::SBOX_ALL_OK !=
+        policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
+                              sandbox::USER_UNPROTECTED)) {
+      return false;
+    }
+    // All other app container policies are set in
+    // SandboxWin::StartSandboxedProcess.
+    return true;
+  }
+
   // USER_LIMITED is as tight as this sandbox can be, because
   // DNS running in-process is blocked by USER_RESTRICTED and
   // below as it can't connect to the service.
@@ -100,10 +113,28 @@ bool NetworkPreSpawnTarget(sandbox::TargetPolicy* policy) {
   }
   return true;
 }
+
+// Sets the sandbox policy for the print backend service process.
+bool PrintBackendPreSpawnTarget(sandbox::TargetPolicy* policy) {
+  // Print Backend policy lockdown level must be at least USER_LIMITED and
+  // delayed integrity level INTEGRITY_LEVEL_LOW, otherwise ::OpenPrinter()
+  // will fail with error code ERROR_ACCESS_DENIED (0x5).
+  policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                        sandbox::USER_LIMITED);
+  policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+  return true;
+}
 }  // namespace
 
 bool UtilitySandboxedProcessLauncherDelegate::GetAppContainerId(
     std::string* appcontainer_id) {
+  if (sandbox_type_ == sandbox::policy::SandboxType::kNetwork) {
+    DCHECK(base::FeatureList::IsEnabled(
+        sandbox::policy::features::kNetworkServiceSandboxLPAC));
+    *appcontainer_id = base::WideToUTF8(cmd_line_.GetProgram().value());
+    return true;
+  }
+
   if ((sandbox_type_ == sandbox::policy::SandboxType::kXrCompositing &&
        base::FeatureList::IsEnabled(sandbox::policy::features::kXRSandbox)) ||
       sandbox_type_ == sandbox::policy::SandboxType::kMediaFoundationCdm) {
@@ -126,6 +157,11 @@ bool UtilitySandboxedProcessLauncherDelegate::DisableDefaultPolicy() {
       // Default policy is disabled for MF Cdm process to allow the application
       // of specific LPAC sandbox policies.
       return true;
+    case sandbox::policy::SandboxType::kNetwork:
+      // If LPAC is enabled for network sandbox then LPAC-specific policy is set
+      // elsewhere.
+      return base::FeatureList::IsEnabled(
+          sandbox::policy::features::kNetworkServiceSandboxLPAC);
     default:
       return false;
   }
@@ -138,10 +174,8 @@ bool UtilitySandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
 
 bool UtilitySandboxedProcessLauncherDelegate::PreSpawnTarget(
     sandbox::TargetPolicy* policy) {
-  if (sandbox_type_ == sandbox::policy::SandboxType::kNetwork) {
-    if (!NetworkPreSpawnTarget(policy))
-      return false;
-  }
+  if (sandbox_type_ == sandbox::policy::SandboxType::kNetwork)
+    return NetworkPreSpawnTarget(policy);
 
   if (sandbox_type_ == sandbox::policy::SandboxType::kAudio) {
     if (!AudioPreSpawnTarget(policy))
@@ -226,6 +260,11 @@ bool UtilitySandboxedProcessLauncherDelegate::PreSpawnTarget(
     delayed_flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
     result = policy->SetDelayedProcessMitigations(delayed_flags);
     if (result != sandbox::SBOX_ALL_OK)
+      return false;
+  }
+
+  if (sandbox_type_ == sandbox::policy::SandboxType::kPrintBackend) {
+    if (!PrintBackendPreSpawnTarget(policy))
       return false;
   }
 

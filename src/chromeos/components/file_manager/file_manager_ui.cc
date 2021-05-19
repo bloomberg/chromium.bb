@@ -50,7 +50,6 @@ content::WebUIDataSource* FileManagerUI::CreateTrustedAppDataSource() {
 
   // Setup chrome://file-manager main and default page.
   source->AddResourcePath("", IDR_FILE_MANAGER_SWA_MAIN_HTML);
-  source->SetDefaultResource(IDR_FILE_MANAGER_SWA_MAIN_HTML);
 
   // Add chrome://file-manager content.
   source->AddResourcePaths(base::make_span(kChromeosFileManagerResources,
@@ -69,6 +68,7 @@ content::WebUIDataSource* FileManagerUI::CreateTrustedAppDataSource() {
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj "
+      "chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp "
       "chrome://resources "
       "'self' ;");
 

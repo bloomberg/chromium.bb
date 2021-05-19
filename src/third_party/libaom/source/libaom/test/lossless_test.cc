@@ -35,8 +35,7 @@ class LosslessTestLarge
   virtual ~LosslessTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     cfg_.rc_end_usage = rc_end_usage_;
   }
 

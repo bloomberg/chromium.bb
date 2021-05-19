@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
@@ -130,8 +131,8 @@ class NativeMediaFileUtilTest : public testing::Test {
 
     std::vector<std::unique_ptr<storage::FileSystemBackend>>
         additional_providers;
-    additional_providers.push_back(
-        std::make_unique<MediaFileSystemBackend>(data_dir_.GetPath()));
+    additional_providers.push_back(std::make_unique<MediaFileSystemBackend>(
+        data_dir_.GetPath(), base::NullCallback()));
 
     file_system_context_ = base::MakeRefCounted<storage::FileSystemContext>(
         content::GetIOThreadTaskRunner({}).get(),

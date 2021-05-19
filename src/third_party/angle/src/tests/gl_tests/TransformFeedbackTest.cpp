@@ -751,6 +751,79 @@ TEST_P(TransformFeedbackTest, VertexOnly)
     EXPECT_GL_NO_ERROR();
 }
 
+// Test that we can link inactive structure type vayrings with xfb and capture varyings only used in
+// the vertex shader.
+TEST_P(TransformFeedbackTest, InactiveStructureVarying)
+{
+    // TODO(anglebug.com/4533) This fails after the upgrade to the 26.20.100.7870 driver.
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
+
+    constexpr char kVS[] =
+        R"(#version 300 es
+        in vec2 position;
+        in float attrib;
+        flat out struct
+        {
+            int test1;
+            float test2;
+        } outStruct;
+        out float varyingAttrib;
+        void main() {
+          gl_Position = vec4(position, 0, 1);
+          varyingAttrib = attrib;
+        })";
+
+    constexpr char kFS[] =
+        R"(#version 300 es
+        out mediump vec4 color;
+        void main() {
+          color = vec4(0.0, 1.0, 0.0, 1.0);
+        })";
+
+    std::vector<std::string> tfVaryings;
+    tfVaryings.push_back("varyingAttrib");
+
+    mProgram = CompileProgramWithTransformFeedback(kVS, kFS, tfVaryings, GL_INTERLEAVED_ATTRIBS);
+    ASSERT_NE(0u, mProgram);
+
+    glUseProgram(mProgram);
+
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, mTransformFeedback);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, mTransformFeedbackBuffer);
+
+    std::vector<float> attribData;
+    for (unsigned int cnt = 0; cnt < 100; ++cnt)
+    {
+        attribData.push_back(static_cast<float>(cnt));
+    }
+
+    GLint attribLocation = glGetAttribLocation(mProgram, "attrib");
+    ASSERT_NE(-1, attribLocation);
+
+    glVertexAttribPointer(attribLocation, 1, GL_FLOAT, GL_FALSE, 4, &attribData[0]);
+    glEnableVertexAttribArray(attribLocation);
+
+    glBeginTransformFeedback(GL_TRIANGLES);
+    drawQuad(mProgram, "position", 0.5f);
+    glEndTransformFeedback();
+    ASSERT_GL_NO_ERROR();
+
+    glUseProgram(0);
+
+    void *mappedBuffer =
+        glMapBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(float) * 6, GL_MAP_READ_BIT);
+    ASSERT_NE(nullptr, mappedBuffer);
+
+    float *mappedFloats = static_cast<float *>(mappedBuffer);
+    for (unsigned int cnt = 0; cnt < 6; ++cnt)
+    {
+        EXPECT_EQ(attribData[cnt], mappedFloats[cnt]);
+    }
+    glUnmapBuffer(GL_TRANSFORM_FEEDBACK_BUFFER);
+
+    EXPECT_GL_NO_ERROR();
+}
+
 // Test that multiple paused transform feedbacks do not generate errors or crash
 TEST_P(TransformFeedbackTest, MultiplePaused)
 {
@@ -851,6 +924,9 @@ TEST_P(TransformFeedbackTest, MultiContext)
 
     // Flaky on Win Intel Vulkan. http://anglebug.com/4497
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
+
+    // Flaky on Metal. http://anglebug.com/5713
+    ANGLE_SKIP_TEST_IF(IsMetal());
 
     EGLint contextAttributes[] = {
         EGL_CONTEXT_MAJOR_VERSION_KHR,
@@ -3005,17 +3081,18 @@ void main()
     }
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these
-// tests should be run against.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TransformFeedbackTest);
 ANGLE_INSTANTIATE_TEST_ES3(TransformFeedbackTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TransformFeedbackLifetimeTest);
 ANGLE_INSTANTIATE_TEST_ES3(TransformFeedbackLifetimeTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TransformFeedbackTestES31);
 ANGLE_INSTANTIATE_TEST_ES31(TransformFeedbackTestES31);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TransformFeedbackTestES32);
 ANGLE_INSTANTIATE_TEST_ES32(TransformFeedbackTestES32);
 
-ANGLE_INSTANTIATE_TEST(TransformFeedbackWithDepthBufferTest, ES3_METAL());
-
-// These test suites are not instantiated on some OSes.
-GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TransformFeedbackTestES32);
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TransformFeedbackWithDepthBufferTest);
-
+ANGLE_INSTANTIATE_TEST(TransformFeedbackWithDepthBufferTest, ES3_METAL());
 }  // anonymous namespace

@@ -27,6 +27,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method flush
 [Worker]     method reset
 [Worker] interface AudioEncoder
+[Worker]     static method isConfigSupported
 [Worker]     attribute @@toStringTag
 [Worker]     getter encodeQueueSize
 [Worker]     getter state
@@ -130,6 +131,9 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method keys
 [Worker]     method match
 [Worker]     method open
+[Worker] interface CanvasFilter
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
 [Worker] interface CanvasGradient
 [Worker]     attribute @@toStringTag
 [Worker]     method addColorStop
@@ -545,6 +549,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter featureSettings
 [Worker]     getter lineGapOverride
 [Worker]     getter loaded
+[Worker]     getter sizeAdjust
 [Worker]     getter status
 [Worker]     getter stretch
 [Worker]     getter style
@@ -559,6 +564,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter family
 [Worker]     setter featureSettings
 [Worker]     setter lineGapOverride
+[Worker]     setter sizeAdjust
 [Worker]     setter stretch
 [Worker]     setter style
 [Worker]     setter unicodeRange
@@ -755,17 +761,31 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method getSettings
 [Worker] interface ImageDecoder
-[Worker]     static method canDecodeType
+[Worker]     static method isTypeSupported
 [Worker]     attribute @@toStringTag
 [Worker]     getter complete
-[Worker]     getter frameCount
-[Worker]     getter repetitionCount
 [Worker]     getter tracks
 [Worker]     getter type
+[Worker]     method close
 [Worker]     method constructor
 [Worker]     method decode
 [Worker]     method decodeMetadata
-[Worker]     method selectTrack
+[Worker]     method reset
+[Worker] interface ImageTrack
+[Worker]     attribute @@toStringTag
+[Worker]     getter animated
+[Worker]     getter frameCount
+[Worker]     getter repetitionCount
+[Worker]     getter selected
+[Worker]     method constructor
+[Worker]     setter selected
+[Worker] interface ImageTrackList
+[Worker]     attribute @@toStringTag
+[Worker]     getter length
+[Worker]     getter selectedIndex
+[Worker]     getter selectedTrack
+[Worker]     method @@iterator
+[Worker]     method constructor
 [Worker] interface Lock
 [Worker]     attribute @@toStringTag
 [Worker]     getter mode
@@ -1208,7 +1228,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter stride
 [Worker]     method constructor
 [Worker]     method readInto
-[Worker] interface Profiler
+[Worker] interface Profiler : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter sampleInterval
 [Worker]     getter stopped
@@ -1606,6 +1626,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter username
 [Worker] interface URLPattern
 [Worker]     attribute @@toStringTag
+[Worker]     getter hash
+[Worker]     getter hostname
+[Worker]     getter password
+[Worker]     getter pathname
+[Worker]     getter port
+[Worker]     getter protocol
+[Worker]     getter search
+[Worker]     getter username
 [Worker]     method constructor
 [Worker]     method exec
 [Worker]     method test
@@ -1746,6 +1774,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method flush
 [Worker]     method reset
 [Worker] interface VideoEncoder
+[Worker]     static method isConfigSupported
 [Worker]     attribute @@toStringTag
 [Worker]     getter encodeQueueSize
 [Worker]     getter state

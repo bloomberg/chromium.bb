@@ -52,7 +52,10 @@ const char kSbEnterpriseUploadUrl[] =
 const char kSbAppUploadUrl[] =
     "https://safebrowsing.google.com/safebrowsing/uploads/app";
 
-bool IsAdvancedProtectionRequest(const BinaryUploadService::Request& request) {
+const char kSbConsumerUploadUrl[] =
+    "https://safebrowsing.google.com/safebrowsing/uploads/consumer";
+
+bool IsConsumerScanRequest(const BinaryUploadService::Request& request) {
   for (const std::string& tag : request.content_analysis_request().tags()) {
     if (tag == "dlp")
       return false;
@@ -80,6 +83,8 @@ std::string ResultToString(BinaryUploadService::Result result) {
       return "FILE_ENCRYPTED";
     case BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE:
       return "DLP_SCAN_UNSUPPORTED_FILE_TYPE";
+    case BinaryUploadService::Result::TOO_MANY_REQUESTS:
+      return "TOO_MANY_REQUESTS";
   }
 }
 
@@ -207,12 +212,21 @@ BinaryUploadService::~BinaryUploadService() {}
 void BinaryUploadService::MaybeUploadForDeepScanning(
     std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (IsAdvancedProtectionRequest(*request)) {
-    MaybeUploadForDeepScanningCallback(
-        std::move(request),
-        /*authorized=*/safe_browsing::AdvancedProtectionStatusManagerFactory::
-            GetForProfile(profile_)
-                ->IsUnderAdvancedProtection());
+  if (IsConsumerScanRequest(*request)) {
+    const bool is_advanced_protection =
+        safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
+            profile_)
+            ->IsUnderAdvancedProtection();
+    const bool is_enhanced_protection =
+        profile_ && IsEnhancedProtectionEnabled(*profile_->GetPrefs());
+
+    const bool is_deep_scan_authorized =
+        is_advanced_protection ||
+        (base::FeatureList::IsEnabled(
+             safe_browsing::kPromptEsbForDeepScanning) &&
+         is_enhanced_protection);
+    MaybeUploadForDeepScanningCallback(std::move(request),
+                                       /*authorized=*/is_deep_scan_authorized);
     return;
   }
 
@@ -333,15 +347,16 @@ void BinaryUploadService::OnGetRequestData(Request* request,
 
   GURL url = request->GetUrlWithParams();
   if (!url.is_valid())
-    url = GetUploadUrl(IsAdvancedProtectionRequest(*request));
+    url = GetUploadUrl(IsConsumerScanRequest(*request));
   auto upload_request = MultipartUploadRequest::Create(
       url_loader_factory_, std::move(url), metadata, data.contents,
-      GetTrafficAnnotationTag(IsAdvancedProtectionRequest(*request)),
+      GetTrafficAnnotationTag(IsConsumerScanRequest(*request)),
       base::BindOnce(&BinaryUploadService::OnUploadComplete,
                      weakptr_factory_.GetWeakPtr(), request));
 
   WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
-      request->tab_url(), request->content_analysis_request());
+      request->tab_url(), request->per_profile_request(),
+      request->content_analysis_request());
 
   // |request| might have been deleted by the call to Start() in tests, so don't
   // dereference it afterwards.
@@ -351,9 +366,16 @@ void BinaryUploadService::OnGetRequestData(Request* request,
 
 void BinaryUploadService::OnUploadComplete(Request* request,
                                            bool success,
+                                           int http_status,
                                            const std::string& response_data) {
   if (!IsActive(request))
     return;
+
+  if (http_status == net::HTTP_TOO_MANY_REQUESTS) {
+    FinishRequest(request, Result::TOO_MANY_REQUESTS,
+                  enterprise_connectors::ContentAnalysisResponse());
+    return;
+  }
 
   if (!success) {
     FinishRequest(request, Result::UPLOAD_FAILURE,
@@ -428,7 +450,8 @@ void BinaryUploadService::FinishRequest(
   // We add the request here in case we never actually uploaded anything, so it
   // wasn't added in OnGetRequestData
   WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
-      request->tab_url(), request->content_analysis_request());
+      request->tab_url(), request->per_profile_request(),
+      request->content_analysis_request());
   WebUIInfoSingleton::GetInstance()->AddToDeepScanResponses(
       active_tokens_[request], ResultToString(result), response);
 
@@ -529,6 +552,15 @@ const GURL& BinaryUploadService::Request::tab_url() const {
   return tab_url_;
 }
 
+void BinaryUploadService::Request::set_per_profile_request(
+    bool per_profile_request) {
+  per_profile_request_ = per_profile_request;
+}
+
+bool BinaryUploadService::Request::per_profile_request() const {
+  return per_profile_request_;
+}
+
 void BinaryUploadService::Request::set_fcm_token(const std::string& token) {
   content_analysis_request_.set_fcm_notification_token(token);
 }
@@ -576,6 +608,11 @@ void BinaryUploadService::Request::add_tag(const std::string& tag) {
 
 void BinaryUploadService::Request::set_email(const std::string& email) {
   content_analysis_request_.mutable_request_data()->set_email(email);
+}
+
+void BinaryUploadService::Request::set_client_metadata(
+    enterprise_connectors::ClientMetadata metadata) {
+  *content_analysis_request_.mutable_client_metadata() = std::move(metadata);
 }
 
 enterprise_connectors::AnalysisConnector
@@ -766,9 +803,16 @@ void BinaryUploadService::SetAuthForTesting(const std::string& dm_token,
 }
 
 // static
-GURL BinaryUploadService::GetUploadUrl(bool is_advanced_protection) {
-  return is_advanced_protection ? GURL(kSbAppUploadUrl)
-                                : GURL(kSbEnterpriseUploadUrl);
+GURL BinaryUploadService::GetUploadUrl(bool is_consumer_scan_eligible) {
+  if (is_consumer_scan_eligible) {
+    if (base::FeatureList::IsEnabled(
+            safe_browsing::kPromptEsbForDeepScanning)) {
+      return GURL(kSbConsumerUploadUrl);
+    }
+    return GURL(kSbAppUploadUrl);
+  } else {
+    return GURL(kSbEnterpriseUploadUrl);
+  }
 }
 
 }  // namespace safe_browsing

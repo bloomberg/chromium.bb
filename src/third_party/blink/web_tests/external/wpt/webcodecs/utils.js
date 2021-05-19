@@ -1,11 +1,36 @@
-function makeImageBitmap(width, height) {
-  let canvas = new OffscreenCanvas(width, height);
+function make_audio_frame(timestamp, channels, sampleRate, length) {
+  let buffer = new AudioBuffer({
+    length: length,
+    numberOfChannels: channels,
+    sampleRate: sampleRate
+  });
 
-  let ctx = canvas.getContext('2d');
+  for (var channel = 0; channel < buffer.numberOfChannels; channel++) {
+    // This gives us the actual array that contains the data
+    var array = buffer.getChannelData(channel);
+    let hz = 100 + channel * 50; // sound frequency
+    for (var i = 0; i < array.length; i++) {
+      let t = (i / sampleRate) * hz * (Math.PI * 2);
+      array[i] = Math.sin(t);
+    }
+  }
+
+  return new AudioFrame({
+    timestamp: timestamp,
+    buffer: buffer
+  });
+}
+
+function makeOffscreenCanvas(width, height, options) {
+  let canvas = new OffscreenCanvas(width, height);
+  let ctx = canvas.getContext('2d', options);
   ctx.fillStyle = 'rgba(50, 100, 150, 255)';
   ctx.fillRect(0, 0, width, height);
+  return canvas;
+}
 
-  return canvas.transferToImageBitmap();
+function makeImageBitmap(width, height) {
+  return makeOffscreenCanvas(width, height).transferToImageBitmap();
 }
 
 // Gives a chance to pending output and error callbacks to complete before

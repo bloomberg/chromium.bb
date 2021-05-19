@@ -6,10 +6,12 @@
 
 #include <dispatch/dispatch.h>
 
+#include "base/bind.h"
 #include "base/check.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "components/autofill/ios/browser/autofill_java_script_feature.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/components/webui/web_ui_url_constants.h"
@@ -17,13 +19,16 @@
 #include "ios/web/public/security/ssl_status.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
+#import "ios/web_view/internal/cwv_ssl_error_handler_internal.h"
 #import "ios/web_view/internal/cwv_ssl_status_internal.h"
+#import "ios/web_view/internal/cwv_ssl_util.h"
 #import "ios/web_view/internal/cwv_web_view_internal.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/internal/web_view_early_page_script_provider.h"
 #import "ios/web_view/internal/web_view_web_main_parts.h"
 #import "ios/web_view/public/cwv_navigation_delegate.h"
 #import "ios/web_view/public/cwv_web_view.h"
+#import "net/base/mac/url_conversions.h"
 #include "net/cert/cert_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -72,8 +77,12 @@ bool WebViewWebClient::IsAppSpecificURL(const GURL& url) const {
 }
 
 std::string WebViewWebClient::GetUserAgent(web::UserAgentType type) const {
-  return web::BuildMobileUserAgent(
-      base::SysNSStringToUTF8([CWVWebView userAgentProduct]));
+  if (CWVWebView.customUserAgent) {
+    return base::SysNSStringToUTF8(CWVWebView.customUserAgent);
+  } else {
+    return web::BuildMobileUserAgent(
+        base::SysNSStringToUTF8([CWVWebView userAgentProduct]));
+  }
 }
 
 base::StringPiece WebViewWebClient::GetDataResource(
@@ -87,6 +96,11 @@ base::RefCountedMemory* WebViewWebClient::GetDataResourceBytes(
     int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);
+}
+
+std::vector<web::JavaScriptFeature*> WebViewWebClient::GetJavaScriptFeatures(
+    web::BrowserState* browser_state) const {
+  return {autofill::AutofillJavaScriptFeature::GetInstance()};
 }
 
 NSString* WebViewWebClient::GetDocumentStartScriptForAllFrames(
@@ -107,59 +121,47 @@ NSString* WebViewWebClient::GetDocumentStartScriptForMainFrame(
   return [scripts componentsJoinedByString:@";"];
 }
 
-base::string16 WebViewWebClient::GetPluginNotSupportedText() const {
+std::u16string WebViewWebClient::GetPluginNotSupportedText() const {
   return l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED);
 }
 
-void WebViewWebClient::AllowCertificateError(
+bool WebViewWebClient::IsLegacyTLSAllowedForHost(web::WebState* web_state,
+                                                 const std::string& hostname) {
+  // TODO(crbug.com/1191799): Legacy TLS should be supported via an interstitial
+  // UI that allows the user to override if desired.
+  return true;
+}
+
+void WebViewWebClient::PrepareErrorPage(
     web::WebState* web_state,
-    int net_error,
-    const net::SSLInfo& ssl_info,
-    const GURL& request_url,
-    bool overridable,
+    const GURL& url,
+    NSError* error,
+    bool is_post,
+    bool is_off_the_record,
+    const base::Optional<net::SSLInfo>& info,
     int64_t navigation_id,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(NSString*)> callback) {
+  DCHECK(error);
+
+  // TODO(crbug.com/1191799): Add support for handling legacy TLS.
   CWVWebView* web_view = [CWVWebView webViewForWebState:web_state];
-
-  SEL selector = @selector
-      (webView:didFailNavigationWithSSLError:overridable:decisionHandler:);
-  if ([web_view.navigationDelegate respondsToSelector:selector]) {
-    CWVCertStatus cert_status =
-        CWVCertStatusFromNetCertStatus(ssl_info.cert_status);
-    ssl_errors::ErrorInfo error_info = ssl_errors::ErrorInfo::CreateError(
-        ssl_errors::ErrorInfo::NetErrorToErrorType(net_error),
-        ssl_info.cert.get(), request_url);
-    NSString* error_description =
-        base::SysUTF16ToNSString(error_info.short_description());
-    NSError* error =
-        [NSError errorWithDomain:NSURLErrorDomain
-                            code:NSURLErrorSecureConnectionFailed
-                        userInfo:@{
-                          NSLocalizedDescriptionKey : error_description,
-                          CWVCertStatusKey : @(cert_status),
-                        }];
-
-    __block base::OnceCallback<void(bool)> local_callback = std::move(callback);
-    void (^decisionHandler)(CWVSSLErrorDecision) =
-        ^(CWVSSLErrorDecision decision) {
-          switch (decision) {
-            case CWVSSLErrorDecisionOverrideErrorAndReload: {
-              std::move(local_callback).Run(true);
-              break;
-            }
-            case CWVSSLErrorDecisionDoNothing: {
-              std::move(local_callback).Run(false);
-              break;
-            }
-          }
-        };
-
+  if (info.has_value() &&
+      [web_view.navigationDelegate
+          respondsToSelector:@selector(webView:handleSSLErrorWithHandler:)]) {
+    __block base::OnceCallback<void(NSString*)> error_html_callback =
+        std::move(callback);
+    CWVSSLErrorHandler* handler =
+        [[CWVSSLErrorHandler alloc] initWithWebState:web_state
+                                                 URL:net::NSURLWithGURL(url)
+                                               error:error
+                                             SSLInfo:info.value()
+                               errorPageHTMLCallback:^(NSString* HTML) {
+                                 std::move(error_html_callback).Run(HTML);
+                               }];
     [web_view.navigationDelegate webView:web_view
-           didFailNavigationWithSSLError:error
-                             overridable:overridable
-                         decisionHandler:decisionHandler];
+               handleSSLErrorWithHandler:handler];
   } else {
-    std::move(callback).Run(false);
+    std::move(callback).Run(error.localizedDescription);
   }
 }
 

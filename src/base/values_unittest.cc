@@ -15,10 +15,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/as_const.h"
 #include "base/bits.h"
 #include "base/containers/adapters.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -97,6 +97,18 @@ TEST(ValuesTest, ConstructBool) {
   EXPECT_FALSE(false_value.GetBool());
 }
 
+TEST(ValuesTest, ConstructFromPtrs) {
+  static_assert(!std::is_constructible<Value, int*>::value, "");
+  static_assert(!std::is_constructible<Value, const int*>::value, "");
+  static_assert(!std::is_constructible<Value, wchar_t*>::value, "");
+  static_assert(!std::is_constructible<Value, const wchar_t*>::value, "");
+
+  static_assert(std::is_constructible<Value, char*>::value, "");
+  static_assert(std::is_constructible<Value, const char*>::value, "");
+  static_assert(std::is_constructible<Value, char16_t*>::value, "");
+  static_assert(std::is_constructible<Value, const char16_t*>::value, "");
+}
+
 TEST(ValuesTest, ConstructInt) {
   Value value(-37);
   EXPECT_EQ(Value::Type::INTEGER, value.type());
@@ -139,7 +151,7 @@ TEST(ValuesTest, ConstructStringFromStdStringRRef) {
 }
 
 TEST(ValuesTest, ConstructStringFromConstChar16Ptr) {
-  string16 str = ASCIIToUTF16("foobar");
+  std::u16string str = u"foobar";
   Value value(str.c_str());
   EXPECT_EQ(Value::Type::STRING, value.type());
   EXPECT_THAT(value.GetIfString(), testing::Pointee(std::string("foobar")));
@@ -147,7 +159,7 @@ TEST(ValuesTest, ConstructStringFromConstChar16Ptr) {
 }
 
 TEST(ValuesTest, ConstructStringFromStringPiece16) {
-  string16 str = ASCIIToUTF16("foobar");
+  std::u16string str = u"foobar";
   Value value{StringPiece16(str)};
   EXPECT_EQ(Value::Type::STRING, value.type());
   EXPECT_THAT(value.GetIfString(), testing::Pointee(std::string("foobar")));
@@ -515,7 +527,7 @@ TEST(ValuesTest, Append) {
   value.Append(std::move(str));
   EXPECT_TRUE(value.GetList().back().is_string());
 
-  string16 str16 = ASCIIToUTF16("bar");
+  std::u16string str16 = u"bar";
   value.Append(str16.c_str());
   EXPECT_TRUE(value.GetList().back().is_string());
 
@@ -1234,7 +1246,7 @@ TEST(ValuesTest, SetStringPath) {
 
   ASSERT_TRUE(root.SetStringPath("foo.bar", StringPiece("rah rah")));
   ASSERT_TRUE(root.SetStringPath("foo.bar", std::string("temp string")));
-  ASSERT_TRUE(root.SetStringPath("foo.bar", UTF8ToUTF16("temp string")));
+  ASSERT_TRUE(root.SetStringPath("foo.bar", u"temp string"));
 
   // Can't change existing non-dictionary keys.
   ASSERT_FALSE(root.SetStringPath("foo.bar.zoo", "ola mundo"));
@@ -1441,30 +1453,30 @@ TEST(ValuesTest, StringValue) {
   std::unique_ptr<Value> narrow_value(new Value("narrow"));
   ASSERT_TRUE(narrow_value.get());
   ASSERT_TRUE(narrow_value->is_string());
-  std::unique_ptr<Value> utf16_value(new Value(ASCIIToUTF16("utf16")));
+  std::unique_ptr<Value> utf16_value(new Value(u"utf16"));
   ASSERT_TRUE(utf16_value.get());
   ASSERT_TRUE(utf16_value->is_string());
 
   // Test overloaded GetAsString.
   std::string narrow = "http://google.com";
-  string16 utf16 = ASCIIToUTF16("http://google.com");
+  std::u16string utf16 = u"http://google.com";
   const Value* string_value = nullptr;
   ASSERT_TRUE(narrow_value->GetAsString(&narrow));
   ASSERT_TRUE(narrow_value->GetAsString(&utf16));
   ASSERT_TRUE(narrow_value->GetAsString(&string_value));
   ASSERT_EQ(std::string("narrow"), narrow);
-  ASSERT_EQ(ASCIIToUTF16("narrow"), utf16);
+  ASSERT_EQ(u"narrow", utf16);
   ASSERT_EQ(string_value->GetString(), narrow);
 
   ASSERT_TRUE(utf16_value->GetAsString(&narrow));
   ASSERT_TRUE(utf16_value->GetAsString(&utf16));
   ASSERT_TRUE(utf16_value->GetAsString(&string_value));
   ASSERT_EQ(std::string("utf16"), narrow);
-  ASSERT_EQ(ASCIIToUTF16("utf16"), utf16);
+  ASSERT_EQ(u"utf16", utf16);
   ASSERT_EQ(string_value->GetString(), narrow);
 
   // Don't choke on NULL values.
-  ASSERT_TRUE(narrow_value->GetAsString(static_cast<string16*>(nullptr)));
+  ASSERT_TRUE(narrow_value->GetAsString(static_cast<std::u16string*>(nullptr)));
   ASSERT_TRUE(narrow_value->GetAsString(static_cast<std::string*>(nullptr)));
   ASSERT_TRUE(narrow_value->GetAsString(static_cast<const Value**>(nullptr)));
 }
@@ -1562,7 +1574,7 @@ TEST(ValuesTest, DictionarySetReturnsPointer) {
 
   {
     DictionaryValue dict;
-    Value* string16_ptr = dict.SetString("foo.bar", ASCIIToUTF16("baz"));
+    Value* string16_ptr = dict.SetString("foo.bar", u"baz");
     EXPECT_EQ(Value::Type::STRING, string16_ptr->type());
     EXPECT_EQ("baz", string16_ptr->GetString());
   }
@@ -1692,8 +1704,8 @@ TEST(ValuesTest, DeepCopy) {
       original_dict.Set("double", std::make_unique<Value>(3.14));
   Value* string_weak =
       original_dict.Set("string", std::make_unique<Value>("hello"));
-  Value* string16_weak = original_dict.Set(
-      "string16", std::make_unique<Value>(ASCIIToUTF16("hello16")));
+  Value* string16_weak =
+      original_dict.Set("string16", std::make_unique<Value>(u"hello16"));
 
   Value* binary_weak = original_dict.Set(
       "binary", std::make_unique<Value>(Value::BlobStorage(42, '!')));
@@ -1753,11 +1765,11 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_NE(copy_string, string_weak);
   ASSERT_TRUE(copy_string->is_string());
   std::string copy_string_value;
-  string16 copy_string16_value;
+  std::u16string copy_string16_value;
   ASSERT_TRUE(copy_string->GetAsString(&copy_string_value));
   ASSERT_TRUE(copy_string->GetAsString(&copy_string16_value));
   ASSERT_EQ(std::string("hello"), copy_string_value);
-  ASSERT_EQ(ASCIIToUTF16("hello"), copy_string16_value);
+  ASSERT_EQ(u"hello", copy_string16_value);
 
   Value* copy_string16 = nullptr;
   ASSERT_TRUE(copy_dict->Get("string16", &copy_string16));
@@ -1767,7 +1779,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_string16->GetAsString(&copy_string_value));
   ASSERT_TRUE(copy_string16->GetAsString(&copy_string16_value));
   ASSERT_EQ(std::string("hello16"), copy_string_value);
-  ASSERT_EQ(ASCIIToUTF16("hello16"), copy_string16_value);
+  ASSERT_EQ(u"hello16", copy_string16_value);
 
   Value* copy_binary = nullptr;
   ASSERT_TRUE(copy_dict->Get("binary", &copy_binary));
@@ -1828,7 +1840,7 @@ TEST(ValuesTest, Equals) {
   dv.SetIntKey("b", 2);
   dv.SetDoubleKey("c", 2.5);
   dv.SetStringKey("d1", "string");
-  dv.SetStringKey("d2", ASCIIToUTF16("http://google.com"));
+  dv.SetStringKey("d2", u"http://google.com");
   dv.Set("e", std::make_unique<Value>());
 
   auto copy = dv.CreateDeepCopy();
@@ -1989,8 +2001,7 @@ TEST(ValuesTest, DeepCopyCovariantReturnTypes) {
   Value* int_weak = original_dict.SetKey("int", Value(42));
   Value* double_weak = original_dict.SetKey("double", Value(3.14));
   Value* string_weak = original_dict.SetKey("string", Value("hello"));
-  Value* string16_weak =
-      original_dict.SetKey("string16", Value(ASCIIToUTF16("hello16")));
+  Value* string16_weak = original_dict.SetKey("string16", Value(u"hello16"));
   Value* binary_weak =
       original_dict.SetKey("binary", Value(Value::BlobStorage(42, '!')));
 
@@ -2345,14 +2356,22 @@ TEST(ValuesTest, GetWithNullOutValue) {
   EXPECT_FALSE(main_dict.GetString("list", static_cast<std::string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetString("DNE", static_cast<std::string*>(nullptr)));
 
-  EXPECT_FALSE(main_dict.GetString("bool", static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_dict.GetString("int", static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_dict.GetString("double", static_cast<string16*>(nullptr)));
-  EXPECT_TRUE(main_dict.GetString("string", static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_dict.GetString("binary", static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_dict.GetString("dict", static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_dict.GetString("list", static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_dict.GetString("DNE", static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(
+      main_dict.GetString("bool", static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(
+      main_dict.GetString("int", static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(
+      main_dict.GetString("double", static_cast<std::u16string*>(nullptr)));
+  EXPECT_TRUE(
+      main_dict.GetString("string", static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(
+      main_dict.GetString("binary", static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(
+      main_dict.GetString("dict", static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(
+      main_dict.GetString("list", static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(
+      main_dict.GetString("DNE", static_cast<std::u16string*>(nullptr)));
 
   EXPECT_FALSE(main_dict.GetBinary("bool", nullptr));
   EXPECT_FALSE(main_dict.GetBinary("int", nullptr));
@@ -2435,21 +2454,21 @@ TEST(ValuesTest, GetWithNullOutValue) {
       "DNE", static_cast<std::string*>(nullptr)));
 
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "bool", static_cast<string16*>(nullptr)));
+      "bool", static_cast<std::u16string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "int", static_cast<string16*>(nullptr)));
+      "int", static_cast<std::u16string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "double", static_cast<string16*>(nullptr)));
+      "double", static_cast<std::u16string*>(nullptr)));
   EXPECT_TRUE(main_dict.GetStringWithoutPathExpansion(
-      "string", static_cast<string16*>(nullptr)));
+      "string", static_cast<std::u16string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "binary", static_cast<string16*>(nullptr)));
+      "binary", static_cast<std::u16string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "dict", static_cast<string16*>(nullptr)));
+      "dict", static_cast<std::u16string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "list", static_cast<string16*>(nullptr)));
+      "list", static_cast<std::u16string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "DNE", static_cast<string16*>(nullptr)));
+      "DNE", static_cast<std::u16string*>(nullptr)));
 
   // There is no GetBinaryWithoutPathExpansion for some reason, but if there
   // were it should be tested here...
@@ -2517,14 +2536,14 @@ TEST(ValuesTest, GetWithNullOutValue) {
   EXPECT_FALSE(main_list.GetString(6, static_cast<std::string*>(nullptr)));
   EXPECT_FALSE(main_list.GetString(7, static_cast<std::string*>(nullptr)));
 
-  EXPECT_FALSE(main_list.GetString(0, static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_list.GetString(1, static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_list.GetString(2, static_cast<string16*>(nullptr)));
-  EXPECT_TRUE(main_list.GetString(3, static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_list.GetString(4, static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_list.GetString(5, static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_list.GetString(6, static_cast<string16*>(nullptr)));
-  EXPECT_FALSE(main_list.GetString(7, static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(0, static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(1, static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(2, static_cast<std::u16string*>(nullptr)));
+  EXPECT_TRUE(main_list.GetString(3, static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(4, static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(5, static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(6, static_cast<std::u16string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(7, static_cast<std::u16string*>(nullptr)));
 
   EXPECT_FALSE(main_list.GetDictionary(0, nullptr));
   EXPECT_FALSE(main_list.GetDictionary(1, nullptr));

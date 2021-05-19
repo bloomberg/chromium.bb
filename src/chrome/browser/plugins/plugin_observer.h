@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/plugin.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -37,7 +36,7 @@ class PluginObserver : public content::WebContentsObserver,
 
   // Public for tests only.
   static void CreatePluginObserverInfoBar(InfoBarService* infobar_service,
-                                          const base::string16& plugin_name);
+                                          const std::u16string& plugin_name);
 
  private:
   class PluginPlaceholderHost;

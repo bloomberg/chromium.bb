@@ -48,6 +48,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/port_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
@@ -83,7 +84,6 @@
 #include "services/network/network_service.h"
 #include "services/network/network_service_network_delegate.h"
 #include "services/network/network_service_proxy_delegate.h"
-#include "services/network/network_usage_accumulator.h"
 #include "services/network/p2p/socket_manager.h"
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/proxy_lookup_request.h"
@@ -125,7 +125,7 @@
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "services/network/expect_ct_reporter.h"
-#include "services/network/sct_auditing_cache.h"
+#include "services/network/sct_auditing/sct_auditing_cache.h"
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
@@ -608,10 +608,6 @@ void NetworkContext::GetRestrictedCookieManager(
     const url::Origin& origin,
     const net::IsolationInfo& isolation_info,
     mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer) {
-  mojom::NetworkServiceClient* network_service_client = nullptr;
-  if (network_service())
-    network_service_client = network_service()->client();
-
   restricted_cookie_manager_receivers_.Add(
       std::make_unique<RestrictedCookieManager>(
           role, url_request_context_->cookie_store(),
@@ -662,6 +658,36 @@ void NetworkContext::GetStoredTrustTokenCounts(
   }
 }
 
+void NetworkContext::DeleteStoredTrustTokens(
+    const url::Origin& issuer,
+    DeleteStoredTrustTokensCallback callback) {
+  if (!trust_token_store_) {
+    std::move(callback).Run(
+        mojom::DeleteStoredTrustTokensStatus::kFailureFeatureDisabled);
+    return;
+  }
+
+  base::Optional<SuitableTrustTokenOrigin> suitable_issuer_origin =
+      SuitableTrustTokenOrigin::Create(issuer);
+  if (!suitable_issuer_origin) {
+    std::move(callback).Run(
+        mojom::DeleteStoredTrustTokensStatus::kFailureInvalidOrigin);
+    return;
+  }
+
+  trust_token_store_->ExecuteOrEnqueue(base::BindOnce(
+      [](SuitableTrustTokenOrigin issuer,
+         DeleteStoredTrustTokensCallback callback, TrustTokenStore* store) {
+        const bool did_delete_tokens = store->DeleteStoredTrustTokens(issuer);
+        const auto status =
+            did_delete_tokens
+                ? mojom::DeleteStoredTrustTokensStatus::kSuccessTokensDeleted
+                : mojom::DeleteStoredTrustTokensStatus::kSuccessNoTokensDeleted;
+        std::move(callback).Run(status);
+      },
+      std::move(*suitable_issuer_origin), std::move(callback)));
+}
+
 void NetworkContext::OnProxyLookupComplete(
     ProxyLookupRequest* proxy_lookup_request) {
   auto it = proxy_lookup_requests_.find(proxy_lookup_request);
@@ -675,23 +701,9 @@ void NetworkContext::DisableQuic() {
 
 void NetworkContext::DestroyURLLoaderFactory(
     cors::CorsURLLoaderFactory* url_loader_factory) {
-  const int32_t process_id = url_loader_factory->process_id();
-
   auto it = url_loader_factories_.find(url_loader_factory);
   DCHECK(it != url_loader_factories_.end());
   url_loader_factories_.erase(it);
-
-  // Reset bytes transferred for the process if |url_loader_factory| is the
-  // last factory associated with the process.
-  if (network_service() &&
-      std::none_of(url_loader_factories_.cbegin(), url_loader_factories_.cend(),
-                   [process_id](const auto& factory) {
-                     return factory->process_id() == process_id;
-                   })) {
-    network_service()
-        ->network_usage_accumulator()
-        ->ClearBytesTransferredForProcess(process_id);
-  }
 }
 
 void NetworkContext::Remove(QuicTransport* transport) {
@@ -1035,9 +1047,9 @@ void NetworkContext::SetNetworkConditions(
     mojom::NetworkConditionsPtr conditions) {
   std::unique_ptr<NetworkConditions> network_conditions;
   if (conditions) {
-    network_conditions.reset(new NetworkConditions(
+    network_conditions = std::make_unique<NetworkConditions>(
         conditions->offline, conditions->latency.InMillisecondsF(),
-        conditions->download_throughput, conditions->upload_throughput));
+        conditions->download_throughput, conditions->upload_throughput);
   }
   ThrottlingController::SetConditions(throttling_profile_id,
                                       std::move(network_conditions));
@@ -1206,8 +1218,10 @@ void NetworkContext::MaybeEnqueueSCTReport(
     const net::X509Certificate* validated_certificate_chain,
     const net::SignedCertificateTimestampAndStatusList&
         signed_certificate_timestamps) {
+  if (!this->is_sct_auditing_enabled())
+    return;
   network_service()->sct_auditing_cache()->MaybeEnqueueReport(
-      this, host_port_pair, validated_certificate_chain,
+      host_port_pair, validated_certificate_chain,
       signed_certificate_timestamps);
 }
 
@@ -1313,8 +1327,8 @@ void NetworkContext::CreateWebSocket(
     uint32_t options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
-    mojo::PendingRemote<mojom::AuthenticationAndCertificateObserver>
-        auth_cert_observer,
+    mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
+        url_loader_network_observer,
     mojo::PendingRemote<mojom::WebSocketAuthenticationHandler> auth_handler,
     mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) {
 #if !defined(OS_IOS)
@@ -1327,7 +1341,7 @@ void NetworkContext::CreateWebSocket(
       url, requested_protocols, site_for_cookies, isolation_info,
       std::move(additional_headers), process_id, origin, options,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(handshake_client), std::move(auth_cert_observer),
+      std::move(handshake_client), std::move(url_loader_network_observer),
       std::move(auth_handler), std::move(header_client));
 #endif  // !defined(OS_IOS)
 }
@@ -1443,7 +1457,7 @@ void NetworkContext::ParseHeaders(
     const GURL& url,
     const scoped_refptr<net::HttpResponseHeaders>& headers,
     ParseHeadersCallback callback) {
-  std::move(callback).Run(PopulateParsedHeaders(headers, url));
+  std::move(callback).Run(PopulateParsedHeaders(headers.get(), url));
 }
 
 void NetworkContext::NotifyExternalCacheHit(

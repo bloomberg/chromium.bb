@@ -136,7 +136,7 @@ std::unique_ptr<base::Value> DecodeIntegerValue(google::protobuf::int64 value) {
       value > std::numeric_limits<int>::max()) {
     LOG(WARNING) << "Integer value " << value
                  << " out of numeric limits, ignoring.";
-    return std::unique_ptr<base::Value>();
+    return nullptr;
   }
 
   return std::unique_ptr<base::Value>(new base::Value(static_cast<int>(value)));
@@ -798,6 +798,11 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kReportDeviceSystemInfo, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                     base::Value(container.report_system_info()), nullptr);
+    }
+    if (container.has_report_print_jobs()) {
+      policies->Set(key::kReportDevicePrintJobs, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    base::Value(container.report_print_jobs()), nullptr);
     }
   }
 
@@ -1918,6 +1923,25 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_SOURCE_CLOUD, base::Value(container.enabled()),
                     nullptr);
     }
+  }
+
+  if (policy.has_device_borealis_allowed() &&
+      policy.device_borealis_allowed().has_allowed()) {
+    policies->Set(key::kDeviceBorealisAllowed, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  base::Value(policy.device_borealis_allowed().allowed()),
+                  nullptr);
+  }
+
+  if (policy.has_device_allowed_bluetooth_services()) {
+    const em::DeviceAllowedBluetoothServicesProto& container(
+        policy.device_allowed_bluetooth_services());
+    base::Value allowlist(base::Value::Type::LIST);
+    for (const auto& entry : container.allowlist())
+      allowlist.Append(entry);
+    policies->Set(key::kDeviceAllowedBluetoothServices, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  std::move(allowlist), nullptr);
   }
 }
 

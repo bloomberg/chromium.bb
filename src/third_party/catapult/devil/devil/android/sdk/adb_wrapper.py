@@ -18,6 +18,8 @@ import posixpath
 import re
 import subprocess
 
+import six
+
 from devil import base_error
 from devil import devil_env
 from devil.android import decorators
@@ -125,6 +127,30 @@ def _IsExtraneousLine(line, send_cmd):
       send_cmd: Command that was sent to adb persistent shell.
   """
   return send_cmd.rstrip() in line
+
+
+@decorators.WithExplicitTimeoutAndRetries(timeout=30, retries=3)
+def RestartServer():
+  """Restarts the adb server.
+
+  Raises:
+    CommandFailedError if we fail to kill or restart the server.
+  """
+
+  def adb_killed():
+    return not AdbWrapper.IsServerOnline()
+
+  def adb_started():
+    return AdbWrapper.IsServerOnline()
+
+  AdbWrapper.KillServer()
+  if not timeout_retry.WaitFor(adb_killed, wait_period=1, max_tries=5):
+    # TODO(crbug.com/442319): Switch this to raise an exception if we
+    # figure out why sometimes not all adb servers on bots get killed.
+    logger.warning('Failed to kill adb server')
+  AdbWrapper.StartServer()
+  if not timeout_retry.WaitFor(adb_started, wait_period=1, max_tries=5):
+    raise device_errors.CommandFailedError('Failed to start adb server')
 
 
 class AdbWrapper(object):
@@ -1105,7 +1131,7 @@ class AdbWrapper(object):
     Returns:
       The output of the emulator console command.
     """
-    if isinstance(cmd, basestring):
+    if isinstance(cmd, six.string_types):
       cmd = [cmd]
     return self._RunDeviceAdbCmd(['emu'] + cmd, timeout, retries)
 

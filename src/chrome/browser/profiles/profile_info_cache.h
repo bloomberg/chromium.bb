@@ -17,7 +17,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -59,9 +58,9 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // be shown in the menu.
   // Deprecated. Use AddProfile instead.
   void AddProfileToCache(const base::FilePath& profile_path,
-                         const base::string16& name,
+                         const std::u16string& name,
                          const std::string& gaia_id,
-                         const base::string16& user_name,
+                         const std::u16string& user_name,
                          bool is_consented_primary_account,
                          size_t icon_index,
                          const std::string& supervised_user_id,
@@ -111,9 +110,9 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   // ProfileAttributesStorage:
   void AddProfile(const base::FilePath& profile_path,
-                  const base::string16& name,
+                  const std::u16string& name,
                   const std::string& gaia_id,
-                  const base::string16& user_name,
+                  const std::u16string& user_name,
                   bool is_consented_primary_account,
                   size_t icon_index,
                   const std::string& supervised_user_id,
@@ -147,7 +146,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   std::string CacheKeyFromProfilePath(const base::FilePath& profile_path) const;
   std::vector<std::string>::iterator FindPositionForProfile(
       const std::string& search_key,
-      const base::string16& search_name);
+      const std::u16string& search_name);
 
   // Updates the position of the profile at the given index so that the list
   // of profiles is still sorted.
@@ -177,6 +176,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
 #if !defined(OS_ANDROID)
   void LoadGAIAPictureIfNeeded();
 #endif
+
+  ProfileAttributesEntry* InitEntryWithKey(const std::string& key);
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Migrate any legacy profile names ("First user", "Default Profile") to

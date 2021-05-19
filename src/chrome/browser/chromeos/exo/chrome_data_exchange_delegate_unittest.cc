@@ -4,18 +4,19 @@
 
 #include "chrome/browser/chromeos/exo/chrome_data_exchange_delegate.h"
 
+#include <string>
+
 #include "ash/public/cpp/app_types.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/pickle.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/guest_os/guest_os_share_path.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_seneschal_client.h"
@@ -53,7 +54,7 @@ void Capture(std::string* result, scoped_refptr<base::RefCountedMemory> data) {
 
 void CaptureUTF16(std::string* result,
                   scoped_refptr<base::RefCountedMemory> data) {
-  base::UTF16ToUTF8(data->front_as<base::char16>(), data->size() / 2, result);
+  base::UTF16ToUTF8(data->front_as<char16_t>(), data->size() / 2, result);
 }
 
 }  // namespace
@@ -447,16 +448,16 @@ TEST_F(ChromeDataExchangeDelegateTest, ClipboardFilenamesPickle) {
       Data("file:///mnt/chromeos/MyFiles/shared/file1\n"
            "file:///mnt/chromeos/MyFiles/shared/file2"));
 
-  std::unordered_map<base::string16, base::string16> m;
+  std::unordered_map<std::u16string, std::u16string> m;
   ui::ReadCustomDataIntoMap(pickle.data(), pickle.size(), &m);
   EXPECT_EQ(2, m.size());
-  EXPECT_EQ("exo", base::UTF16ToUTF8(m[STRING16_LITERAL("fs/tag")]));
+  EXPECT_EQ("exo", base::UTF16ToUTF8(m[u"fs/tag"]));
   EXPECT_EQ(
       "filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/external/"
       "Downloads-test%2540example.com-hash/shared/file1\n"
       "filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/external/"
       "Downloads-test%2540example.com-hash/shared/file2",
-      base::UTF16ToUTF8(m[STRING16_LITERAL("fs/sources")]));
+      base::UTF16ToUTF8(m[u"fs/sources"]));
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   {

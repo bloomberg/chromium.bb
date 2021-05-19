@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -2998,7 +2999,7 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
         &client_, std::move(recording));
     root_layer_->SetBounds(gfx::Size(50, 50));
 
-    recording.reset(new FakeRecordingSource);
+    recording = std::make_unique<FakeRecordingSource>();
     child_layer_ = FakePictureLayer::CreateWithRecordingSource(
         &client_, std::move(recording));
     child_layer_->SetBounds(gfx::Size(25, 25));
@@ -3047,13 +3048,13 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
                 host_impl->active_tree()->LayerById(child_layer_->id()));
         // We remove tilings pretty aggressively if they are not ideal. Add this
         // back in so that we can compare
-        // child_layer_impl->visible_drawable_content_rect() to the damage.
+        // child_layer_impl->GetEnclosingRectInTargetSpace to the damage.
         child_layer_impl->AddTilingUntilNextDraw(1.3f);
 
-        EXPECT_EQ(gfx::Rect(25, 25), root_damage_rect);
-        EXPECT_EQ(child_layer_impl->visible_drawable_content_rect(),
+        EXPECT_EQ(gfx::Rect(26, 26), root_damage_rect);
+        EXPECT_EQ(child_layer_impl->GetEnclosingRectInTargetSpace(),
                   root_damage_rect);
-        EXPECT_TRUE(child_layer_impl->visible_drawable_content_rect().Contains(
+        EXPECT_TRUE(child_layer_impl->GetEnclosingRectInTargetSpace().Contains(
             gfx::Rect(child_layer_->bounds())));
         break;
       }
@@ -8903,10 +8904,10 @@ class LayerTreeHostTestDelegatedInkMetadataOnAndOff
     base::TimeTicks timestamp = base::TimeTicks::Now();
     bool is_hovering = true;
 
-    expected_metadata_ = viz::DelegatedInkMetadata(
+    expected_metadata_ = gfx::DelegatedInkMetadata(
         point, diameter, color, timestamp, area, is_hovering);
     layer_tree_host()->SetDelegatedInkMetadata(
-        std::make_unique<viz::DelegatedInkMetadata>(
+        std::make_unique<gfx::DelegatedInkMetadata>(
             expected_metadata_.value()));
   }
 
@@ -8928,7 +8929,7 @@ class LayerTreeHostTestDelegatedInkMetadataOnAndOff
 
   void ExpectMetadata(base::Optional<DelegatedInkBrowserMetadata>
                           browser_delegated_ink_metadata,
-                      viz::DelegatedInkMetadata* actual_metadata) {
+                      gfx::DelegatedInkMetadata* actual_metadata) {
     if (expected_metadata_.has_value()) {
       EXPECT_TRUE(browser_delegated_ink_metadata.has_value());
       EXPECT_TRUE(actual_metadata);
@@ -8965,7 +8966,7 @@ class LayerTreeHostTestDelegatedInkMetadataOnAndOff
   }
 
  private:
-  base::Optional<viz::DelegatedInkMetadata> expected_metadata_;
+  base::Optional<gfx::DelegatedInkMetadata> expected_metadata_;
   FakeContentLayerClient client_;
   scoped_refptr<Layer> layer_;
   bool set_needs_display_ = true;
@@ -9464,10 +9465,11 @@ class LayerTreeHostTestDocumentTransitionsPropagatedToMetadata
     layer_tree_host()->AddDocumentTransitionRequest(
         DocumentTransitionRequest::CreatePrepare(
             DocumentTransitionRequest::Effect::kExplode,
-            base::TimeDelta::FromMilliseconds(123),
+            /*document_tag=*/0, /*shared_element_count=*/0,
             base::BindLambdaForTesting([this]() { CommitLambdaCalled(); })));
     layer_tree_host()->AddDocumentTransitionRequest(
         DocumentTransitionRequest::CreateStart(
+            /*document_tag=*/0, /*shared_element_count=*/0,
             base::BindLambdaForTesting([this]() { CommitLambdaCalled(); })));
   }
 
@@ -9477,23 +9479,29 @@ class LayerTreeHostTestDocumentTransitionsPropagatedToMetadata
       const viz::CompositorFrame& frame) override {
     ASSERT_EQ(2u, frame.metadata.transition_directives.size());
     const auto& save = frame.metadata.transition_directives[0];
+    submitted_sequence_ids_.push_back(save.sequence_id());
 
     EXPECT_EQ(save.type(),
               viz::CompositorFrameTransitionDirective::Type::kSave);
     EXPECT_EQ(save.effect(),
               viz::CompositorFrameTransitionDirective::Effect::kExplode);
-    EXPECT_EQ(save.duration(), base::TimeDelta::FromMilliseconds(123));
 
     const auto& animate = frame.metadata.transition_directives[1];
     EXPECT_GT(animate.sequence_id(), save.sequence_id());
     EXPECT_EQ(animate.type(),
               viz::CompositorFrameTransitionDirective::Type::kAnimate);
+    submitted_sequence_ids_.push_back(animate.sequence_id());
+  }
 
+  void DidReceiveCompositorFrameAck() override {
+    layer_tree_host()->NotifyTransitionRequestsFinished(
+        submitted_sequence_ids_);
     EndTest();
   }
 
   void AfterTest() override { EXPECT_EQ(2, num_lambda_calls_); }
 
+  std::vector<uint32_t> submitted_sequence_ids_;
   int num_lambda_calls_ = 0;
 };
 

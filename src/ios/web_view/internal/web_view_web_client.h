@@ -27,18 +27,23 @@ class WebViewWebClient : public web::WebClient {
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
+  std::vector<web::JavaScriptFeature*> GetJavaScriptFeatures(
+      web::BrowserState* browser_state) const override;
   NSString* GetDocumentStartScriptForAllFrames(
       web::BrowserState* browser_state) const override;
   NSString* GetDocumentStartScriptForMainFrame(
       web::BrowserState* browser_state) const override;
-  base::string16 GetPluginNotSupportedText() const override;
-  void AllowCertificateError(web::WebState* web_state,
-                             int cert_error,
-                             const net::SSLInfo& ssl_info,
-                             const GURL& request_url,
-                             bool overridable,
-                             int64_t navigation_id,
-                             base::OnceCallback<void(bool)> callback) override;
+  std::u16string GetPluginNotSupportedText() const override;
+  bool IsLegacyTLSAllowedForHost(web::WebState* web_state,
+                                 const std::string& hostname) override;
+  void PrepareErrorPage(web::WebState* web_state,
+                        const GURL& url,
+                        NSError* error,
+                        bool is_post,
+                        bool is_off_the_record,
+                        const base::Optional<net::SSLInfo>& info,
+                        int64_t navigation_id,
+                        base::OnceCallback<void(NSString*)> callback) override;
   bool EnableLongPressAndForceTouchHandling() const override;
 
  private:

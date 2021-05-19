@@ -7,6 +7,7 @@
 #include <unicode/uscript.h>
 
 #include "base/stl_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,6 +25,14 @@
 #include "third_party/blink/renderer/platform/text/text_run.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
+#if defined(OS_MAC)
+#include "base/mac/mac_util.h"
+#endif
 
 using testing::ElementsAre;
 
@@ -107,6 +116,14 @@ class HarfBuzzShaperTest : public testing::Test {
     return blink::test::CreateTestFont(
         "Ahem", blink::test::PlatformTestDataPath("Ahem.woff"), size,
         &ligatures);
+  }
+
+  Font CreateNotoColorEmoji() {
+    return blink::test::CreateTestFont(
+        "NotoColorEmoji",
+        blink::test::BlinkRootDir() +
+            "/web_tests/third_party/NotoColorEmoji/NotoColorEmoji.ttf",
+        12);
   }
 
   scoped_refptr<ShapeResult> SplitRun(scoped_refptr<ShapeResult> shape_result,
@@ -687,6 +704,17 @@ TEST_P(ShapeParameterTest, ZeroWidthSpace) {
 #if DCHECK_IS_ON()
   result->CheckConsistency();
 #endif
+}
+
+TEST_F(HarfBuzzShaperTest, IdeographicSpace) {
+  String string(
+      u"\u3001"    // IDEOGRAPHIC COMMA
+      u"\u3000");  // IDEOGRAPHIC SPACE
+  HarfBuzzShaper shaper(string);
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+  Vector<ShapeResult::RunFontData> run_font_data;
+  result->GetRunFontData(&run_font_data);
+  EXPECT_EQ(run_font_data.size(), 1u);
 }
 
 TEST_F(HarfBuzzShaperTest, NegativeLetterSpacing) {
@@ -1482,13 +1510,13 @@ TEST_F(HarfBuzzShaperTest, MAYBE_SafeToBreakArabicCommonLigatures) {
   EXPECT_EQ(3u, result->NextSafeToBreakOffset(3));
   EXPECT_EQ(4u, result->NextSafeToBreakOffset(4));
 #if defined(OS_MAC)
-  EXPECT_EQ(12u, result->NextSafeToBreakOffset(5));
-  EXPECT_EQ(12u, result->NextSafeToBreakOffset(6));
-  EXPECT_EQ(12u, result->NextSafeToBreakOffset(7));
-  EXPECT_EQ(12u, result->NextSafeToBreakOffset(8));
-  EXPECT_EQ(12u, result->NextSafeToBreakOffset(9));
-  EXPECT_EQ(12u, result->NextSafeToBreakOffset(10));
-  EXPECT_EQ(12u, result->NextSafeToBreakOffset(11));
+  EXPECT_EQ(5u, result->NextSafeToBreakOffset(5));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(6));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(7));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(8));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(9));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(10));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(11));
 #else
   EXPECT_EQ(5u, result->NextSafeToBreakOffset(5));
   EXPECT_EQ(7u, result->NextSafeToBreakOffset(6));
@@ -1506,13 +1534,13 @@ TEST_F(HarfBuzzShaperTest, MAYBE_SafeToBreakArabicCommonLigatures) {
   EXPECT_EQ(3u, result->PreviousSafeToBreakOffset(3));
   EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(4));
 #if defined(OS_MAC)
-  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(5));
-  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(6));
-  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(7));
-  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(8));
-  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(9));
-  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(10));
-  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(11));
+  EXPECT_EQ(5u, result->PreviousSafeToBreakOffset(5));
+  EXPECT_EQ(5u, result->PreviousSafeToBreakOffset(6));
+  EXPECT_EQ(5u, result->PreviousSafeToBreakOffset(7));
+  EXPECT_EQ(5u, result->PreviousSafeToBreakOffset(8));
+  EXPECT_EQ(5u, result->PreviousSafeToBreakOffset(9));
+  EXPECT_EQ(5u, result->PreviousSafeToBreakOffset(10));
+  EXPECT_EQ(11u, result->PreviousSafeToBreakOffset(11));
 #else
   EXPECT_EQ(5u, result->PreviousSafeToBreakOffset(5));
   EXPECT_EQ(5u, result->PreviousSafeToBreakOffset(6));
@@ -1814,6 +1842,53 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalWithSubpixelPositionIsRounded) {
     EXPECT_EQ(round(position), position)
         << "Position not rounded at offset " << i;
   }
+}
+
+TEST_F(HarfBuzzShaperTest, EmojiPercentage) {
+#if defined(OS_MAC)
+  if (base::mac::IsOS11())
+    GTEST_SKIP() << "Broken on macOS 11: https://crbug.com/1194323";
+#endif
+  // This test relies on Noto Color Emoji from the third_party directory to not
+  // contain sequences and single codepoint emoji from Unicode 13 and 13.1 such
+  // as:
+  // * Couple with Heart: Woman, Man, Medium-Light Skin Tone, Medium-Dark Skin
+  // Tone
+  // * Disguised Face U+1F978
+  // * Anatomical Heart U+1FAC0
+  String string(
+      u"aa👩🏼‍❤️‍👨🏾😶👩🏼‍❤️‍👨🏾aa👩🏼‍❤️‍👨🏾😶"
+      u"👩🏼‍❤️‍👨🏾aa🫀🫀🥸🥸😶😶");
+
+  struct Expectation {
+    unsigned expected_clusters;
+    unsigned expected_broken_clusters;
+  };
+
+  Expectation expectations[] = {{3, 2}, {3, 2}, {6, 4}};
+#if defined(OS_ANDROID)
+  // On Android 11, SDK level 30, fallback occurs to an emoji
+  // font that has coverage for the last segment. Adjust the expectation.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SdkVersion::SDK_VERSION_R) {
+    expectations[2].expected_broken_clusters = 0;
+  }
+#endif
+  unsigned num_calls = 0;
+  HarfBuzzShaper::EmojiMetricsCallback metrics_callback =
+      base::BindLambdaForTesting(
+          [&](unsigned num_clusters, unsigned num_broken_clusters) {
+            CHECK_EQ(num_clusters, expectations[num_calls].expected_clusters);
+            CHECK_EQ(num_broken_clusters,
+                     expectations[num_calls].expected_broken_clusters);
+
+            num_calls++;
+          });
+  HarfBuzzShaper shaper(string, metrics_callback);
+  Font emoji_font = CreateNotoColorEmoji();
+  scoped_refptr<ShapeResult> result =
+      shaper.Shape(&emoji_font, TextDirection::kLtr);
+  CHECK_EQ(num_calls, base::size(expectations));
 }
 
 }  // namespace blink

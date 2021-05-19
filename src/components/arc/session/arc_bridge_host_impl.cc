@@ -26,7 +26,9 @@
 #include "components/arc/mojom/cast_receiver.mojom.h"
 #include "components/arc/mojom/cert_store.mojom.h"
 #include "components/arc/mojom/clipboard.mojom.h"
+#include "components/arc/mojom/compatibility_mode.mojom.h"
 #include "components/arc/mojom/crash_collector.mojom.h"
+#include "components/arc/mojom/dark_theme.mojom.h"
 #include "components/arc/mojom/digital_goods.mojom.h"
 #include "components/arc/mojom/disk_quota.mojom.h"
 #include "components/arc/mojom/enterprise_reporting.mojom.h"
@@ -166,10 +168,23 @@ void ArcBridgeHostImpl::OnClipboardInstanceReady(
                   std::move(clipboard_remote));
 }
 
+void ArcBridgeHostImpl::OnCompatibilityModeInstanceReady(
+    mojo::PendingRemote<mojom::CompatibilityModeInstance>
+        compatibility_mode_remote) {
+  OnInstanceReady(arc_bridge_service_->compatibility_mode(),
+                  std::move(compatibility_mode_remote));
+}
+
 void ArcBridgeHostImpl::OnCrashCollectorInstanceReady(
     mojo::PendingRemote<mojom::CrashCollectorInstance> crash_collector_remote) {
   OnInstanceReady(arc_bridge_service_->crash_collector(),
                   std::move(crash_collector_remote));
+}
+
+void ArcBridgeHostImpl::OnDarkThemeInstanceReady(
+    mojo::PendingRemote<mojom::DarkThemeInstance> dark_theme_remote) {
+  OnInstanceReady(arc_bridge_service_->dark_theme(),
+                  std::move(dark_theme_remote));
 }
 
 void ArcBridgeHostImpl::OnDigitalGoodsInstanceReady(
@@ -411,6 +426,10 @@ void ArcBridgeHostImpl::OnWallpaperInstanceReady(
     mojo::PendingRemote<mojom::WallpaperInstance> wallpaper_remote) {
   OnInstanceReady(arc_bridge_service_->wallpaper(),
                   std::move(wallpaper_remote));
+}
+
+size_t ArcBridgeHostImpl::GetNumMojoChannelsForTesting() const {
+  return mojo_channels_.size();
 }
 
 void ArcBridgeHostImpl::OnClosed() {

@@ -26,6 +26,7 @@
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -51,7 +52,7 @@ using content::ContentClient;
 using content::IsUseZoomForDSFEnabled;
 using content::OneShotAccessibilityTreeSearch;
 using ui::AXNodeData;
-using ui::AXTreeIDRegistry;
+using ui::AXActionHandlerRegistry;
 
 static_assert(
     std::is_trivially_copyable<BrowserAccessibility::SerializedPosition>::value,
@@ -712,8 +713,8 @@ bool IsSelectedStateRelevant(BrowserAccessibility* item) {
 namespace content {
 
 AXTextEdit::AXTextEdit() = default;
-AXTextEdit::AXTextEdit(base::string16 inserted_text,
-                       base::string16 deleted_text,
+AXTextEdit::AXTextEdit(std::u16string inserted_text,
+                       std::u16string deleted_text,
                        id edit_text_marker)
     : inserted_text(inserted_text),
       deleted_text(deleted_text),
@@ -1207,7 +1208,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
     case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
     case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
     case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed: {
-      base::string16 status_string =
+      std::u16string status_string =
           _owner->GetLocalizedStringForImageAnnotationStatus(status);
       AppendTextToString(base::UTF16ToUTF8(status_string), &name);
       break;
@@ -1908,8 +1909,8 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   // Starting from macOS 10.11, if the user has edited some text we need to
   // dispatch the actual text that changed on the value changed notification.
   // We run this code on all macOS versions to get the highest test coverage.
-  base::string16 oldValue = _oldValue;
-  base::string16 newValue = _owner->GetValueForControl();
+  std::u16string oldValue = _oldValue;
+  std::u16string newValue = _owner->GetValueForControl();
   _oldValue = newValue;
   if (oldValue.empty() && newValue.empty())
     return content::AXTextEdit();
@@ -1935,8 +1936,8 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   DCHECK_LE(i + j, oldValue.length());
   DCHECK_LE(i + j, newValue.length());
 
-  base::string16 deletedText = oldValue.substr(i, oldValue.length() - i - j);
-  base::string16 insertedText = newValue.substr(i, newValue.length() - i - j);
+  std::u16string deletedText = oldValue.substr(i, oldValue.length() - i - j);
+  std::u16string insertedText = newValue.substr(i, newValue.length() - i - j);
 
   // Heuristic for editable combobox. If more than 1 character is inserted or
   // deleted, and the caret is at the end of the field, assume the entire text
@@ -1951,7 +1952,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
     if (size_t{sel_start} == newValue.length() &&
         size_t{sel_end} == newValue.length()) {
       // Don't include oldValue as it would be announced -- very confusing.
-      return content::AXTextEdit(newValue, base::string16(), nil);
+      return content::AXTextEdit(newValue, std::u16string(), nil);
     }
   }
   return content::AXTextEdit(insertedText, deletedText,
@@ -1981,6 +1982,9 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 
 // Returns a string indicating the NSAccessibility role of this object.
 - (NSString*)role {
+  content::BrowserAccessibilityStateImpl::GetInstance()
+      ->OnAccessibilityApiUsage();
+
   if (![self instanceActive]) {
     TRACE_EVENT0("accessibility", "BrowserAccessibilityCocoa::role nil");
     return nil;
@@ -1995,6 +1999,9 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
               _owner->HasState(ax::mojom::State::kMultiline)) ||
              (_owner->IsRichTextField() && !ui::IsComboBox(role))) {
     cocoa_role = NSAccessibilityTextAreaRole;
+  } else if (role == ax::mojom::Role::kImage && _owner->GetChildCount()) {
+    // An image map is an image with children, and exposed on Mac as a group.
+    cocoa_role = NSAccessibilityGroupRole;
   } else if (role == ax::mojom::Role::kImage &&
              _owner->HasExplicitlyEmptyName()) {
     cocoa_role = NSAccessibilityUnknownRole;
@@ -2500,14 +2507,14 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 
     // Append the selection state as a string, because VoiceOver will not
     // automatically report selection state when an individual item is focused.
-    base::string16 name =
+    std::u16string name =
         _owner->GetString16Attribute(ax::mojom::StringAttribute::kName);
     bool is_selected =
         _owner->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
     int msg_id =
         is_selected ? IDS_AX_OBJECT_SELECTED : IDS_AX_OBJECT_NOT_SELECTED;
     ContentClient* content_client = content::GetContentClient();
-    base::string16 name_with_selection = base::ReplaceStringPlaceholders(
+    std::u16string name_with_selection = base::ReplaceStringPlaceholders(
         content_client->GetLocalizedString(msg_id), {name}, nullptr);
 
     return base::SysUTF16ToNSString(name_with_selection);
@@ -2677,7 +2684,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (![self instanceActive])
     return nil;
 
-  base::string16 innerText = _owner->GetInnerText();
+  std::u16string innerText = _owner->GetInnerText();
   if (NSMaxRange(range) > innerText.length())
     return nil;
 
@@ -2692,7 +2699,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (![self instanceActive])
     return nil;
 
-  base::string16 innerText = _owner->GetInnerText();
+  std::u16string innerText = _owner->GetInnerText();
   if (NSMaxRange(range) > innerText.length())
     return nil;
 
@@ -2785,7 +2792,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 
     int lineIndex = [(NSNumber*)parameter intValue];
     const std::vector<int> lineBreaks = _owner->GetLineStartOffsets();
-    base::string16 value = _owner->GetValueForControl();
+    std::u16string value = _owner->GetValueForControl();
     int valueLength = int{value.size()};
 
     int lineCount = static_cast<int>(lineBreaks.size()) + 1;

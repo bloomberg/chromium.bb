@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SUPERVISED_USER_EXTENSION_INSTALL_BLOCKED_BY_PARENT_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_SUPERVISED_USER_EXTENSION_INSTALL_BLOCKED_BY_PARENT_DIALOG_VIEW_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
@@ -45,7 +46,7 @@ class ExtensionInstallBlockedByParentDialogView
  private:
   void ConfigureTitle();
   void CreateContents();
-  base::string16 GetExtensionTypeString() const;
+  std::u16string GetExtensionTypeString() const;
 
   const extensions::Extension* extension_ = nullptr;
   chrome::ExtensionInstalledBlockedByParentDialogAction action_;

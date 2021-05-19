@@ -56,7 +56,6 @@ ChromeIdentityService::PresentWebAndAppSettingDetailsController(
 
 ChromeIdentityInteractionManager*
 ChromeIdentityService::CreateChromeIdentityInteractionManager(
-    ChromeBrowserState* browser_state,
     id<ChromeIdentityInteractionManagerDelegate> delegate) const {
   return nil;
 }

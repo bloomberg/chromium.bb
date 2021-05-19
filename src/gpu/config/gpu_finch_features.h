@@ -34,8 +34,6 @@ GPU_EXPORT extern const base::Feature kCanvasOopRasterization;
 
 #if defined(OS_WIN)
 GPU_EXPORT extern const base::Feature kGpuProcessHighPriorityWin;
-
-GPU_EXPORT extern const base::Feature kDirectCompositionUseOverlayDamageList;
 #endif
 
 GPU_EXPORT extern const base::Feature kGpuUseDisplayThreadPriority;
@@ -55,8 +53,6 @@ GPU_EXPORT extern const base::Feature kVaapiWebPImageDecodeAcceleration;
 GPU_EXPORT extern const base::Feature kVulkan;
 
 GPU_EXPORT extern const base::Feature kSkiaDawn;
-
-GPU_EXPORT extern const base::Feature kEnableSharedImageForWebview;
 
 GPU_EXPORT extern const base::Feature kEnableGrShaderCacheForVulkan;
 

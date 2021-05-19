@@ -34,6 +34,7 @@
 #include "media/capture/mojom/video_capture_types.mojom-blink.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -368,7 +369,10 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
                 ->CreateGpuMemoryBufferImplFromHandle(
                     buffer_context_->TakeGpuMemoryBufferHandle(),
                     gfx::Size(frame_info_->coded_size), gfx_format,
-                    gfx::BufferUsage::SCANOUT_VEA_CPU_READ, base::DoNothing());
+                    gfx::BufferUsage::SCANOUT_VEA_CPU_READ, base::DoNothing(),
+                    video_capture_impl_.gpu_factories_
+                        ->GpuMemoryBufferManager(),
+                    video_capture_impl_.pool_);
         buffer_context_->SetGpuMemoryBuffer(std::move(gmb));
       }
       CHECK(buffer_context_->GetGpuMemoryBuffer());
@@ -380,7 +384,8 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
                   buffer_context_->GetGpuMemoryBuffer()->CloneHandle(),
                   buffer_context_->GetGpuMemoryBuffer()->GetSize(),
                   buffer_context_->GetGpuMemoryBuffer()->GetFormat(),
-                  gfx::BufferUsage::SCANOUT_VEA_CPU_READ, base::DoNothing());
+                  gfx::BufferUsage::SCANOUT_VEA_CPU_READ, base::DoNothing(),
+                  video_capture_impl_.gpu_factories_->GpuMemoryBufferManager());
     }
   }
   // After initializing, either |frame_| or |gpu_memory_buffer_| has been set.
@@ -488,24 +493,27 @@ struct VideoCaptureImpl::ClientInfo {
 
 VideoCaptureImpl::VideoCaptureImpl(
     media::VideoCaptureSessionId session_id,
-    scoped_refptr<base::SequencedTaskRunner> main_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> main_task_runner,
+    BrowserInterfaceBrokerProxy* browser_interface_broker)
     : device_id_(session_id),
       session_id_(session_id),
       video_capture_host_for_testing_(nullptr),
       state_(blink::VIDEO_CAPTURE_STATE_STOPPED),
       main_task_runner_(std::move(main_task_runner)),
-      gpu_memory_buffer_support_(new gpu::GpuMemoryBufferSupport()) {
+      gpu_memory_buffer_support_(new gpu::GpuMemoryBufferSupport()),
+      pool_(base::MakeRefCounted<base::UnsafeSharedMemoryPool>()) {
   CHECK(!session_id.is_empty());
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   DETACH_FROM_THREAD(io_thread_checker_);
 
-  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+  browser_interface_broker->GetInterface(
       pending_video_capture_host_.InitWithNewPipeAndPassReceiver());
 
   gpu_factories_ = Platform::Current()->GetGpuFactories();
   if (gpu_factories_) {
     media_task_runner_ = gpu_factories_->GetTaskRunner();
   }
+  weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 void VideoCaptureImpl::OnGpuContextLost(
@@ -736,10 +744,10 @@ void VideoCaptureImpl::OnBufferReady(
     OnFrameDropped(
         media::VideoCaptureFrameDropReason::kVideoCaptureImplNotInStartedState);
     GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer->buffer_id,
-                                         media::VideoFrameFeedback());
+                                         media::VideoCaptureFeedback());
     for (auto& scaled_buffer : scaled_buffers) {
       GetVideoCaptureHost()->ReleaseBuffer(device_id_, scaled_buffer->buffer_id,
-                                           media::VideoFrameFeedback());
+                                           media::VideoCaptureFeedback());
     }
     return;
   }
@@ -870,11 +878,11 @@ void VideoCaptureImpl::OnVideoFrameReady(
                        kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame);
     // Release all buffers.
     GetVideoCaptureHost()->ReleaseBuffer(
-        device_id_, frame_preparer->buffer_id(), media::VideoFrameFeedback());
+        device_id_, frame_preparer->buffer_id(), media::VideoCaptureFeedback());
     for (const auto& scaled_frame_preparer : scaled_frame_preparers) {
       GetVideoCaptureHost()->ReleaseBuffer(device_id_,
                                            scaled_frame_preparer->buffer_id(),
-                                           media::VideoFrameFeedback());
+                                           media::VideoCaptureFeedback());
     }
     return;
   }
@@ -897,6 +905,7 @@ void VideoCaptureImpl::OnVideoFrameReady(
 }
 
 void VideoCaptureImpl::OnBufferDestroyed(int32_t buffer_id) {
+  DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   const auto& cb_iter = client_buffers_.find(buffer_id);
@@ -940,7 +949,7 @@ void VideoCaptureImpl::OnAllClientsFinishedConsumingFrame(
 #endif
 
   GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id, feedback_);
-  feedback_ = media::VideoFrameFeedback();
+  feedback_ = media::VideoCaptureFeedback();
 }
 
 void VideoCaptureImpl::StopDevice() {
@@ -1055,9 +1064,13 @@ void VideoCaptureImpl::DidFinishConsumingFrame(
 }
 
 void VideoCaptureImpl::ProcessFeedback(
-    const media::VideoFrameFeedback& feedback) {
+    const media::VideoCaptureFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   feedback_ = feedback;
+}
+
+base::WeakPtr<VideoCaptureImpl> VideoCaptureImpl::GetWeakPtr() {
+  return weak_this_;
 }
 
 }  // namespace blink

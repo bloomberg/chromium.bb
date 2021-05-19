@@ -7,8 +7,10 @@
 
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/heap/v8_wrapper/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "v8-cppgc.h"
+#include "v8.h"
 #include "v8/include/cppgc/testing.h"
 
 namespace blink {
@@ -35,18 +37,62 @@ class HeapPointersOnStackScope final {
 
 class TestSupportingGC : public testing::Test {
  public:
+  ~TestSupportingGC() override;
+
   // Performs a precise garbage collection with eager sweeping.
-  static void PreciselyCollectGarbage() {
-    // TODO(1056170): Implement.
-  }
+  static void PreciselyCollectGarbage();
 
   // Performs a conservative garbage collection with eager sweeping.
-  static void ConservativelyCollectGarbage() {
-    // TODO(1056170): Implement.
-  }
+  static void ConservativelyCollectGarbage();
+
+  // Performs multiple rounds of garbage collections until no more memory can be
+  // freed. This is useful to avoid other garbage collections having to deal
+  // with stale memory.
+  static void ClearOutOldGarbage();
 
  protected:
   base::test::TaskEnvironment task_environment_;
+};
+
+// Test driver for compaction.
+class CompactionTestDriver {
+ public:
+  explicit CompactionTestDriver(ThreadState*);
+
+  void ForceCompactionForNextGC();
+
+ protected:
+  cppgc::testing::StandaloneTestingHeap heap_;
+};
+
+// Test driver for incremental marking. Assumes that no stack handling is
+// required.
+class IncrementalMarkingTestDriver {
+ public:
+  explicit IncrementalMarkingTestDriver(ThreadState*);
+  ~IncrementalMarkingTestDriver();
+
+  virtual void StartGC();
+  virtual void TriggerMarkingSteps(
+      BlinkGC::StackState stack_state =
+          BlinkGC::StackState::kNoHeapPointersOnStack);
+  virtual void FinishGC();
+
+ protected:
+  cppgc::testing::StandaloneTestingHeap heap_;
+};
+
+// Test driver for concurrent marking. Assumes that no stack handling is
+// required.
+class ConcurrentMarkingTestDriver : public IncrementalMarkingTestDriver {
+ public:
+  explicit ConcurrentMarkingTestDriver(ThreadState*);
+
+  void StartGC() override;
+  void TriggerMarkingSteps(
+      BlinkGC::StackState stack_state =
+          BlinkGC::StackState::kNoHeapPointersOnStack) override;
+  void FinishGC() override;
 };
 
 }  // namespace blink

@@ -30,6 +30,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/hats/hats_service.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/webui/realbox/realbox.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/search/instant_types.h"
@@ -67,15 +69,7 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   }
   auto background_image = new_tab_page::mojom::BackgroundImage::New();
   if (!ntp_theme.custom_background_url.is_empty()) {
-    base::StringPiece url = ntp_theme.custom_background_url.spec();
-    // TODO(crbug.com/1041125): Clean up when chrome-search://local-ntp removed.
-    if (base::StartsWith(url, "chrome-search://local-ntp/")) {
-      background_image->url =
-          GURL("chrome-untrusted://new-tab-page/" +
-               url.substr(strlen("chrome-search://local-ntp/")).as_string());
-    } else {
-      background_image->url = ntp_theme.custom_background_url;
-    }
+    background_image->url = ntp_theme.custom_background_url;
   } else if (ntp_theme.has_theme_image) {
     theme->shortcut_use_title_pill = true;
     background_image->url =
@@ -357,8 +351,6 @@ NewTabPageHandler::NewTabPageHandler(
   instant_service_->UpdateNtpTheme();
   promo_service_observation_.Observe(promo_service_);
   one_google_bar_service_observation_.Observe(one_google_bar_service_);
-  logger_.SetModulesVisible(
-      profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesVisible));
 }
 
 NewTabPageHandler::~NewTabPageHandler() {
@@ -556,12 +548,12 @@ void NewTabPageHandler::ChooseLocalCustomBackground(
   file_types.extensions[0].push_back(FILE_PATH_LITERAL("png"));
   file_types.extension_description_overrides.push_back(
       l10n_util::GetStringUTF16(IDS_UPLOAD_IMAGE_FORMAT));
+  choose_local_custom_background_callback_ = std::move(callback);
   select_file_dialog_->SelectFile(
-      ui::SelectFileDialog::SELECT_OPEN_FILE, base::string16(),
+      ui::SelectFileDialog::SELECT_OPEN_FILE, std::u16string(),
       profile_->last_selected_directory(), &file_types, 0,
       base::FilePath::StringType(), web_contents_->GetTopLevelNativeWindow(),
       nullptr);
-  choose_local_custom_background_callback_ = std::move(callback);
 }
 
 void NewTabPageHandler::GetOneGoogleBarParts(
@@ -659,6 +651,14 @@ void NewTabPageHandler::UpdateDisabledModules() {
   page_->SetDisabledModules(
       !profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesVisible),
       std::move(module_ids));
+}
+
+void NewTabPageHandler::OnModulesLoadedWithData() {
+  HatsService* hats_service =
+      HatsServiceFactory::GetForProfile(profile_, /*create_if_necessary=*/true);
+  CHECK(hats_service);
+  hats_service->LaunchDelayedSurveyForWebContents(kHatsSurveyTriggerNtpModules,
+                                                  web_contents_, 0);
 }
 
 void NewTabPageHandler::OnPromoDataUpdated() {
@@ -966,29 +966,6 @@ void NewTabPageHandler::OnVoiceSearchError(
   LogEvent(event);
 }
 
-void NewTabPageHandler::OnModuleImpression(const std::string& module_id,
-                                           double time) {
-  logger_.LogModuleImpression(
-      module_id, base::Time::FromJsTime(time) - ntp_navigation_start_time_);
-}
-
-void NewTabPageHandler::OnModuleLoaded(const std::string& module_id,
-                                       base::TimeDelta duration,
-                                       double time) {
-  logger_.LogModuleLoaded(
-      module_id, base::Time::FromJsTime(time) - ntp_navigation_start_time_,
-      duration);
-}
-
-void NewTabPageHandler::OnModuleUsage(const std::string& module_id) {
-  logger_.LogModuleUsage(module_id);
-}
-
-void NewTabPageHandler::OnModulesRendered(double time) {
-  logger_.LogEvent(NTP_MODULES_SHOWN,
-                   base::Time::FromJsTime(time) - ntp_navigation_start_time_);
-}
-
 void NewTabPageHandler::NtpThemeChanged(const NtpTheme& ntp_theme) {
   page_->SetTheme(MakeTheme(ntp_theme));
 }
@@ -1139,6 +1116,7 @@ void NewTabPageHandler::OnOneGoogleBarServiceShuttingDown() {
 void NewTabPageHandler::FileSelected(const base::FilePath& path,
                                      int index,
                                      void* params) {
+  DCHECK(choose_local_custom_background_callback_);
   if (instant_service_) {
     profile_->set_last_selected_directory(path.DirName());
     instant_service_->SelectLocalBackgroundImage(path);
@@ -1150,16 +1128,19 @@ void NewTabPageHandler::FileSelected(const base::FilePath& path,
   LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_DONE);
   LogEvent(NTP_BACKGROUND_UPLOAD_DONE);
 
-  std::move(choose_local_custom_background_callback_).Run(true);
+  if (choose_local_custom_background_callback_)
+    std::move(choose_local_custom_background_callback_).Run(true);
 }
 
 void NewTabPageHandler::FileSelectionCanceled(void* params) {
+  DCHECK(choose_local_custom_background_callback_);
   select_file_dialog_ = nullptr;
   // File selection can happen at any time after NTP load, and is not logged
   // with the event.
   LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_CANCEL);
   LogEvent(NTP_BACKGROUND_UPLOAD_CANCEL);
-  std::move(choose_local_custom_background_callback_).Run(false);
+  if (choose_local_custom_background_callback_)
+    std::move(choose_local_custom_background_callback_).Run(false);
 }
 
 void NewTabPageHandler::OnLogoAvailable(

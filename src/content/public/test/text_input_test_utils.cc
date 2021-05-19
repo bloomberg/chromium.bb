@@ -4,6 +4,7 @@
 
 #include "content/public/test/text_input_test_utils.h"
 
+#include <memory>
 #include <unordered_set>
 
 #include "base/strings/utf_string_conversions.h"
@@ -112,7 +113,8 @@ class TextInputManagerTester::InternalObserver
     const gfx::Range* range =
         text_input_manager_->GetCompositionRangeForTesting();
     DCHECK(range);
-    last_composition_range_.reset(new gfx::Range(range->start(), range->end()));
+    last_composition_range_ =
+        std::make_unique<gfx::Range>(range->start(), range->end());
     if (!on_ime_composition_range_changed_callback_.is_null())
       on_ime_composition_range_changed_callback_.Run();
   }
@@ -273,7 +275,7 @@ bool DoesFrameHaveFocusedEditableElement(RenderFrameHost* frame) {
 
 void SendImeCommitTextToWidget(
     RenderWidgetHost* rwh,
-    const base::string16& text,
+    const std::u16string& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int relative_cursor_pos) {
@@ -283,7 +285,7 @@ void SendImeCommitTextToWidget(
 
 void SendImeSetCompositionTextToWidget(
     RenderWidgetHost* rwh,
-    const base::string16& text,
+    const std::u16string& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int selection_start,

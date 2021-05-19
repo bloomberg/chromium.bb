@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/auto_reset.h"
@@ -254,7 +255,7 @@ void WebViewPlugin::DidFinishLoading() {
 
 void WebViewPlugin::DidFailLoading(const WebURLError& error) {
   DCHECK(!error_);
-  error_.reset(new WebURLError(error));
+  error_ = std::make_unique<WebURLError>(error);
 }
 
 WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
@@ -269,7 +270,8 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
                       /*is_inside_portal=*/false,
                       /*compositing_enabled=*/false,
                       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
-                      *agent_group_scheduler_);
+                      *agent_group_scheduler_,
+                      /*session_storage_namespace_id=*/base::EmptyString());
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   blink::WebView::ApplyWebPreferences(preferences, web_view_);
@@ -305,7 +307,7 @@ bool WebViewPlugin::WebViewHelper::CanUpdateLayout() {
 }
 
 void WebViewPlugin::WebViewHelper::SetToolTipText(
-    const base::string16& tooltip_text,
+    const std::u16string& tooltip_text,
     base::i18n::TextDirection hint) {
   if (plugin_->container_) {
     plugin_->container_->GetElement().SetAttribute(
@@ -386,6 +388,14 @@ void WebViewPlugin::OnZoomLevelChanged() {
 void WebViewPlugin::LoadHTML(const std::string& html_data, const GURL& url) {
   auto params = std::make_unique<blink::WebNavigationParams>();
   params->url = url;
+  // The |html_data| comes from files in: chrome/renderer/resources/plugins/
+  // Executing scripts is the only capability required.
+  //
+  // WebSandboxFlags is a bit field. This removes all the capabilities, except
+  // script execution.
+  using network::mojom::WebSandboxFlags;
+  params->sandbox_flags = static_cast<WebSandboxFlags>(
+      ~static_cast<int>(WebSandboxFlags::kScripts));
   blink::WebNavigationParams::FillStaticResponse(params.get(), "text/html",
                                                  "UTF-8", html_data);
   web_view_helper_.main_frame()->CommitNavigation(std::move(params),

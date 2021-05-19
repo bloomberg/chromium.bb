@@ -24,6 +24,7 @@
 #include <string>
 #include <thread>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 
 #include <grpc/grpc.h>
@@ -180,8 +181,8 @@ class ClientChannelStressTest {
       port_ = grpc_pick_unused_port_or_die();
       gpr_log(GPR_INFO, "starting %s server on port %d", type_.c_str(), port_);
       grpc::internal::CondVar cond;
-      thread_.reset(new std::thread(
-          std::bind(&ServerThread::Start, this, server_host, &mu, &cond)));
+      thread_ = absl::make_unique<std::thread>(
+          std::bind(&ServerThread::Start, this, server_host, &mu, &cond));
       cond.Wait(&mu);
       gpr_log(GPR_INFO, "%s server startup complete", type_.c_str());
     }
@@ -225,16 +226,15 @@ class ClientChannelStressTest {
     grpc_core::ServerAddressList addresses;
     for (const auto& addr : address_data) {
       std::string lb_uri_str = absl::StrCat("ipv4:127.0.0.1:", addr.port);
-      grpc_uri* lb_uri = grpc_uri_parse(lb_uri_str.c_str(), true);
-      GPR_ASSERT(lb_uri != nullptr);
+      absl::StatusOr<grpc_core::URI> lb_uri = grpc_core::URI::Parse(lb_uri_str);
+      GPR_ASSERT(lb_uri.ok());
       grpc_resolved_address address;
-      GPR_ASSERT(grpc_parse_uri(lb_uri, &address));
+      GPR_ASSERT(grpc_parse_uri(*lb_uri, &address));
       grpc_arg arg = grpc_core::CreateAuthorityOverrideChannelArg(
           addr.balancer_name.c_str());
       grpc_channel_args* args =
           grpc_channel_args_copy_and_add(nullptr, &arg, 1);
       addresses.emplace_back(address.addr, address.len, args);
-      grpc_uri_destroy(lb_uri);
     }
     return addresses;
   }

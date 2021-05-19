@@ -229,6 +229,31 @@ interface AnimationTimeline
     getter duration
     getter phase
     method constructor
+interface AppHistory : EventTarget
+    attribute @@toStringTag
+    getter current
+    getter onnavigate
+    getter onnavigateerror
+    getter onnavigatesuccess
+    method constructor
+    setter onnavigate
+    setter onnavigateerror
+    setter onnavigatesuccess
+interface AppHistoryEntry : EventTarget
+    attribute @@toStringTag
+    getter id
+    getter key
+    getter sameDocument
+    getter url
+    method constructor
+interface AppHistoryNavigateEvent : Event
+    attribute @@toStringTag
+    getter canRespond
+    getter formData
+    getter hashChange
+    getter userInitiated
+    method constructor
+    method respondWith
 interface Attr : Node
     attribute @@toStringTag
     getter localName
@@ -294,6 +319,7 @@ interface AudioDestinationNode : AudioNode
     getter maxChannelCount
     method constructor
 interface AudioEncoder
+    static method isConfigSupported
     attribute @@toStringTag
     getter encodeQueueSize
     getter state
@@ -968,6 +994,9 @@ interface CanvasCaptureMediaStreamTrack : MediaStreamTrack
     getter canvas
     method constructor
     method requestFrame
+interface CanvasFilter
+    attribute @@toStringTag
+    method constructor
 interface CanvasFormattedText
     attribute @@toStringTag
     getter length
@@ -1618,16 +1647,6 @@ interface DeviceOrientationEvent : Event
     getter beta
     getter gamma
     method constructor
-interface DeviceService : EventTarget
-    attribute @@toStringTag
-    getter onmanagedconfigurationchange
-    method constructor
-    method getAnnotatedAssetId
-    method getAnnotatedLocation
-    method getDirectoryId
-    method getManagedConfiguration
-    method getSerialNumber
-    setter onmanagedconfigurationchange
 interface Document : Node
     attribute @@toStringTag
     attribute @@unscopables
@@ -2583,6 +2602,7 @@ interface FontFace
     getter featureSettings
     getter lineGapOverride
     getter loaded
+    getter sizeAdjust
     getter status
     getter stretch
     getter style
@@ -2597,6 +2617,7 @@ interface FontFace
     setter family
     setter featureSettings
     setter lineGapOverride
+    setter sizeAdjust
     setter stretch
     setter style
     setter unicodeRange
@@ -2750,6 +2771,7 @@ interface HTMLAllCollection
 interface HTMLAnchorElement : HTMLElement
     attribute @@toStringTag
     getter charset
+    getter conversionDestination
     getter coords
     getter download
     getter hash
@@ -2758,6 +2780,8 @@ interface HTMLAnchorElement : HTMLElement
     getter href
     getter hrefTranslate
     getter hreflang
+    getter impressionData
+    getter impressionExpiry
     getter name
     getter origin
     getter password
@@ -2768,6 +2792,7 @@ interface HTMLAnchorElement : HTMLElement
     getter referrerPolicy
     getter rel
     getter relList
+    getter reportingOrigin
     getter rev
     getter search
     getter shape
@@ -2778,6 +2803,7 @@ interface HTMLAnchorElement : HTMLElement
     method constructor
     method toString
     setter charset
+    setter conversionDestination
     setter coords
     setter download
     setter hash
@@ -2786,6 +2812,8 @@ interface HTMLAnchorElement : HTMLElement
     setter href
     setter hrefTranslate
     setter hreflang
+    setter impressionData
+    setter impressionExpiry
     setter name
     setter password
     setter pathname
@@ -2795,6 +2823,7 @@ interface HTMLAnchorElement : HTMLElement
     setter referrerPolicy
     setter rel
     setter relList
+    setter reportingOrigin
     setter rev
     setter search
     setter shape
@@ -4381,6 +4410,35 @@ interface Headers
     method keys
     method set
     method values
+interface Highlight
+    attribute @@toStringTag
+    getter name
+    getter priority
+    getter size
+    method @@iterator
+    method add
+    method clear
+    method constructor
+    method delete
+    method entries
+    method forEach
+    method has
+    method keys
+    method values
+    setter priority
+interface HighlightRegistry
+    attribute @@toStringTag
+    getter size
+    method @@iterator
+    method add
+    method clear
+    method constructor
+    method delete
+    method entries
+    method forEach
+    method has
+    method keys
+    method values
 interface History
     attribute @@toStringTag
     getter length
@@ -4625,17 +4683,31 @@ interface ImageData
     method constructor
     method getSettings
 interface ImageDecoder
-    static method canDecodeType
+    static method isTypeSupported
     attribute @@toStringTag
     getter complete
-    getter frameCount
-    getter repetitionCount
     getter tracks
     getter type
+    method close
     method constructor
     method decode
     method decodeMetadata
-    method selectTrack
+    method reset
+interface ImageTrack
+    attribute @@toStringTag
+    getter animated
+    getter frameCount
+    getter repetitionCount
+    getter selected
+    method constructor
+    setter selected
+interface ImageTrackList
+    attribute @@toStringTag
+    getter length
+    getter selectedIndex
+    getter selectedTrack
+    method @@iterator
+    method constructor
 interface Ink
     attribute @@toStringTag
     method constructor
@@ -5340,7 +5412,7 @@ interface MimeTypeArray
     method constructor
     method item
     method namedItem
-interface ModalCloseWatcher
+interface ModalCloseWatcher : EventTarget
     attribute @@toStringTag
     getter onbeforeclose
     getter onclose
@@ -5537,18 +5609,17 @@ interface Navigator
     getter contacts
     getter cookieEnabled
     getter credentials
-    getter device
     getter deviceMemory
     getter doNotTrack
     getter geolocation
     getter hardwareConcurrency
     getter hid
-    getter id
     getter ink
     getter keyboard
     getter language
     getter languages
     getter locks
+    getter managed
     getter maxTouchPoints
     getter mediaCapabilities
     getter mediaDevices
@@ -5599,6 +5670,17 @@ interface Navigator
     method unregisterProtocolHandler
     method vibrate
     method webkitGetUserMedia
+interface NavigatorManagedData : EventTarget
+    attribute @@toStringTag
+    getter onmanagedconfigurationchange
+    method constructor
+    method getAnnotatedAssetId
+    method getAnnotatedLocation
+    method getDirectoryId
+    method getHostname
+    method getManagedConfiguration
+    method getSerialNumber
+    setter onmanagedconfigurationchange
 interface NavigatorUAData
     attribute @@toStringTag
     getter brands
@@ -6319,7 +6401,7 @@ interface ProcessingInstruction : CharacterData
     getter sheet
     getter target
     method constructor
-interface Profiler
+interface Profiler : EventTarget
     attribute @@toStringTag
     getter sampleInterval
     getter stopped
@@ -8027,6 +8109,13 @@ interface ScreenOrientation : EventTarget
     method lock
     method unlock
     setter onchange
+interface Screens
+    attribute @@toStringTag
+    getter currentScreen
+    getter onchange
+    getter screens
+    method constructor
+    setter onchange
 interface ScriptProcessorNode : AudioNode
     attribute @@toStringTag
     getter bufferSize
@@ -8421,6 +8510,10 @@ interface TaskController : AbortController
     attribute @@toStringTag
     method constructor
     method setPriority
+interface TaskPriorityChangeEvent : Event
+    attribute @@toStringTag
+    getter previousPriority
+    method constructor
 interface TaskSignal : AbortSignal
     attribute @@toStringTag
     getter onprioritychange
@@ -8716,6 +8809,14 @@ interface URL
     setter username
 interface URLPattern
     attribute @@toStringTag
+    getter hash
+    getter hostname
+    getter password
+    getter pathname
+    getter port
+    getter protocol
+    getter search
+    getter username
     method constructor
     method exec
     method test
@@ -8910,6 +9011,7 @@ interface VideoDecoder
     method flush
     method reset
 interface VideoEncoder
+    static method isConfigSupported
     attribute @@toStringTag
     getter encodeQueueSize
     getter state
@@ -8968,11 +9070,6 @@ interface VideoTrackList : EventTarget
     setter onaddtrack
     setter onchange
     setter onremovetrack
-interface VideoTrackReader
-    attribute @@toStringTag
-    method constructor
-    method start
-    method stop
 interface VirtualKeyboard : EventTarget
     attribute @@toStringTag
     getter boundingRect
@@ -10305,11 +10402,6 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
-interface WebId
-    attribute @@toStringTag
-    method constructor
-    method get
-    method provide
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a
@@ -10711,7 +10803,6 @@ interface XRPlane
     getter planeSpace
     getter polygon
     method constructor
-    method createAnchor
 interface XRPlaneSet
     attribute @@toStringTag
     getter size
@@ -11009,8 +11100,6 @@ interface webkitSpeechRecognitionError : Event
     getter message
 interface webkitSpeechRecognitionEvent : Event
     attribute @@toStringTag
-    getter emma
-    getter interpretation
     getter resultIndex
     getter results
 interface webkitURL
@@ -11046,6 +11135,7 @@ interface webkitURL
 namespace CSS
     attribute @@toStringTag
     getter animationWorklet
+    getter highlights
     getter layoutWorklet
     getter paintWorklet
     method Hz
@@ -11092,6 +11182,7 @@ namespace CSS
     attribute propertyNamesInGlobal
     attribute testRunner
     attribute textInputController
+    getter appHistory
     getter caches
     getter clientInformation
     getter closed
@@ -11290,7 +11381,9 @@ namespace CSS
     method getComputedAccessibleNode
     method getComputedStyle
     method getDigitalGoodsService
+    method getLockScreenData
     method getScreens
+    method getScreensDeprecated
     method getSelection
     method getWindowSegments
     method isMultiScreen

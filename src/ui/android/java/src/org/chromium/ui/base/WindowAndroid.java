@@ -171,6 +171,11 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
          * Called when the activity goes into resumed state.
          */
         void onActivityResumed();
+
+        /**
+         * Called when the activity goes into destroyed state.
+         */
+        void onActivityDestroyed();
     }
 
     private ObserverList<ActivityStateObserver> mActivityStateObservers = new ObserverList<>();
@@ -202,15 +207,15 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
             new ObserverList<>();
 
     /**
-     * @param context The application context.
+     * @param context The application {@link Context}.
      */
     public WindowAndroid(Context context) {
         this(context, DisplayAndroid.getNonMultiDisplay(context));
     }
 
     /**
-     * @param context The application context.
-     * @param display
+     * @param context The application {@link Context}.
+     * @param display The application {@link DisplayAndroid}.
      */
     @SuppressLint("UseSparseArrays")
     protected WindowAndroid(Context context, DisplayAndroid display) {
@@ -567,6 +572,12 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
 
     protected void onActivityResumed() {
         for (ActivityStateObserver observer : mActivityStateObservers) observer.onActivityResumed();
+    }
+
+    protected void onActivityDestroyed() {
+        for (ActivityStateObserver observer : mActivityStateObservers) {
+            observer.onActivityDestroyed();
+        }
     }
 
     /**

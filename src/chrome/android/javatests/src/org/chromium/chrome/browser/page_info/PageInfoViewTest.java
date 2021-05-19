@@ -8,21 +8,29 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.Batch.PER_CLASS;
+import static org.chromium.chrome.test.util.ViewUtils.hasBackgroundColor;
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
 
+import android.content.Context;
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.view.View;
 
 import androidx.test.filters.MediumTest;
@@ -48,6 +56,7 @@ import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
@@ -121,22 +130,22 @@ public class PageInfoViewTest {
     }
 
     private void loadUrlAndOpenPageInfo(String url) {
-        sActivityTestRule.loadUrl(url);
-        openPageInfo();
+        loadUrlAndOpenPageInfoWithPermission(url, PageInfoController.NO_HIGHLIGHTED_PERMISSION);
     }
 
-    private void openPageInfo() {
-        Tab tab = sActivityTestRule.getActivity().getActivityTab();
+    private void loadUrlAndOpenPageInfoWithPermission(
+            String url, @ContentSettingsType int highlightedPermission) {
+        sActivityTestRule.loadUrl(url);
+        openPageInfo(highlightedPermission);
+    }
+
+    private void openPageInfo(@ContentSettingsType int highlightedPermission) {
+        ChromeActivity activity = sActivityTestRule.getActivity();
+        Tab tab = activity.getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PageInfoController.show(sActivityTestRule.getActivity(), tab.getWebContents(), null,
-                    PageInfoController.OpenedFromSource.TOOLBAR,
-                    new ChromePageInfoControllerDelegate(sActivityTestRule.getActivity(),
-                            tab.getWebContents(),
-                            sActivityTestRule.getActivity().getModalDialogManagerSupplier(),
-                            /*offlinePageLoadUrlDelegate=*/
-                            new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)),
-                    new ChromePermissionParamsListBuilderDelegate(),
-                    PageInfoController.NO_HIGHLIGHTED_PERMISSION);
+            new ChromePageInfo(activity.getModalDialogManagerSupplier(), null,
+                    PageInfoController.OpenedFromSource.TOOLBAR)
+                    .show(tab, highlightedPermission);
         });
 
         if (PageInfoFeatureList.isEnabled(PageInfoFeatureList.PAGE_INFO_V2)) {
@@ -236,6 +245,8 @@ public class PageInfoViewTest {
     @After
     public void tearDown() throws TimeoutException {
         LocationUtils.setFactory(null);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(null); });
         // Notification channels don't get cleaned up automatically.
         // TODO(crbug.com/951402): Find a general solution to avoid leaking channels between tests.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -457,7 +468,7 @@ public class PageInfoViewTest {
         createCookies();
         expectHasCookies(true);
         // Go to cookies subpage.
-        openPageInfo();
+        openPageInfo(PageInfoController.NO_HIGHLIGHTED_PERMISSION);
         onView(withId(R.id.page_info_cookies_row)).perform(click());
         // Check that cookies usage is displayed.
         onViewWaiting(allOf(withText(containsString("stored data")), isDisplayed()));
@@ -483,7 +494,7 @@ public class PageInfoViewTest {
         addSomePermissions(url);
         expectHasPermissions(url, true);
         // Go to permissions subpage.
-        openPageInfo();
+        openPageInfo(PageInfoController.NO_HIGHLIGHTED_PERMISSION);
         onView(withId(R.id.page_info_permissions_row)).perform(click());
         // Clear permissions in page info.
         onViewWaiting(allOf(withText("Reset permissions"), isDisplayed())).perform(click());
@@ -521,6 +532,79 @@ public class PageInfoViewTest {
                     PageInfoController.NO_HIGHLIGHTED_PERMISSION);
         });
         onViewWaiting(allOf(withText(R.string.page_info_connection_paint_preview), isDisplayed()));
+    }
+
+    /**
+     * Tests PageInfo on a website with permissions and no particular row highlight.
+     */
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(
+            {PageInfoFeatureList.PAGE_INFO_V2, PageInfoFeatureList.PAGE_INFO_DISCOVERABILITY})
+    public void
+    testShowWithPermissionsAndWithoutHighlight() throws IOException {
+        addSomePermissions(mTestServerRule.getServer().getURL("/"));
+        loadUrlAndOpenPageInfoWithPermission(mTestServerRule.getServer().getURL(sSimpleHtml),
+                PageInfoController.NO_HIGHLIGHTED_PERMISSION);
+        onView(withId(R.id.page_info_permissions_row))
+                .check(matches(not(hasBackgroundColor(R.color.iph_highlight_blue))));
+    }
+
+    /**
+     * Tests PageInfo on a website with permissions and a particular permission row highlight.
+     * Geolocation is blocked system wide in this test.
+     */
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(
+            {PageInfoFeatureList.PAGE_INFO_V2, PageInfoFeatureList.PAGE_INFO_DISCOVERABILITY})
+    public void
+    testShowWithPermissionsAndHighlight() throws IOException {
+        addSomePermissions(mTestServerRule.getServer().getURL("/"));
+        loadUrlAndOpenPageInfoWithPermission(
+                mTestServerRule.getServer().getURL(sSimpleHtml), ContentSettingsType.GEOLOCATION);
+        onView(withId(R.id.page_info_permissions_row))
+                .check(matches(hasBackgroundColor(R.color.iph_highlight_blue)));
+    }
+
+    /**
+     * Tests the permissions page of the new PageInfo UI with permissions and a particular
+     * permission row highlight.
+     */
+    @Test
+    @MediumTest
+    @Features.
+    EnableFeatures({PageInfoFeatureList.PAGE_INFO_V2, PageInfoFeatureList.PAGE_INFO_DISCOVERABILITY,
+            SiteSettingsFeatureList.ACTIONABLE_CONTENT_SETTINGS})
+    public void
+    testShowPermissionsSubpageWithHighlight() throws IOException {
+        addSomePermissions(mTestServerRule.getServer().getURL("/"));
+        loadUrlAndOpenPageInfoWithPermission(
+                mTestServerRule.getServer().getURL(sSimpleHtml), ContentSettingsType.GEOLOCATION);
+        onView(withId(R.id.page_info_permissions_row)).perform(click());
+        onViewWaiting(allOf(withText("Control this site's access to your device"), isDisplayed()));
+        Context context = InstrumentationRegistry.getTargetContext();
+        // Find the preference and check its background color.
+        onView(allOf(withParent(withId(R.id.recycler_view)),
+                       hasDescendant(withText(
+                               context.getString(R.string.website_settings_device_location)))))
+                .check(matches(hasBackgroundColor(R.color.iph_highlight_blue)));
+    }
+
+    /**
+     * Tests that a close button is shown with accessibility enabled and that it closes the dialog.
+     */
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
+    public void testCloseButton() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true); });
+        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
+        PageInfoController controller = PageInfoController.getLastPageInfoControllerForTesting();
+        assertTrue(controller.isDialogShowingForTesting());
+        onView(withId(R.id.page_info_close)).perform(click());
+        assertFalse(controller.isDialogShowingForTesting());
     }
 
     // TODO(1071762): Add tests for preview pages, offline pages, offline state and other states.

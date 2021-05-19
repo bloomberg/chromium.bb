@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_PERMISSION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_PERMISSION_VIEW_H_
 
+#include <string>
+
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -47,7 +48,7 @@ class FileSystemAccessPermissionView : public views::DialogDelegateView {
       content::WebContents* web_contents);
 
   // views::DialogDelegateView:
-  base::string16 GetWindowTitle() const override;
+  std::u16string GetWindowTitle() const override;
   views::View* GetInitiallyFocusedView() override;
 
  private:

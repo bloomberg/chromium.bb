@@ -10,15 +10,16 @@
 // #import {fileOperationUtil} from './file_operation_util.m.js';
 // #import {taskQueue} from './task_queue.m.js';
 // #import {metrics} from '../../common/js/metrics.m.js';
+// #import {xfm} from '../../common/js/xfm.m.js';
 
 // #import {importer} from '../../common/js/importer_common.m.js';
-// #import {DriveSyncHandler} from '../../../externs/background/drive_sync_handler.m.js';
-// #import {importerHistoryInterfaces} from '../../../externs/background/import_history.m.js';
-// #import {duplicateFinderInterfaces} from '../../../externs/background/duplicate_finder.m.js';
-// #import {mediaScannerInterfaces} from '../../../externs/background/media_scanner.m.js';
-// #import {mediaImportInterfaces} from '../../../externs/background/media_import_handler.m.js';
-// #import {taskQueueInterfaces} from '../../../externs/background/task_queue.m.js';
-// #import {ProgressCenter} from '../../../externs/background/progress_center.m.js';
+// #import {DriveSyncHandler} from '../../externs/background/drive_sync_handler.m.js';
+// #import {importerHistoryInterfaces} from '../../externs/background/import_history.m.js';
+// #import {duplicateFinderInterfaces} from '../../externs/background/duplicate_finder.m.js';
+// #import {mediaScannerInterfaces} from '../../externs/background/media_scanner.m.js';
+// #import {mediaImportInterfaces} from '../../externs/background/media_import_handler.m.js';
+// #import {taskQueueInterfaces} from '../../externs/background/task_queue.m.js';
+// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
 // clang-format on
 
 
@@ -52,10 +53,10 @@ mediaImport.MediaImportHandlerImpl = class {
 
     // Prevent the system from sleeping while imports are active.
     this.queue_.setActiveCallback(() => {
-      chrome.power.requestKeepAwake('system');
+      xfm.power.requestKeepAwake('system');
     });
     this.queue_.setIdleCallback(() => {
-      chrome.power.releaseKeepAwake();
+      xfm.power.releaseKeepAwake();
     });
 
     /** @private {number} */

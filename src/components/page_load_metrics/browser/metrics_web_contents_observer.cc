@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -64,6 +65,18 @@ UserInitiatedInfo CreateUserInitiatedInfo(
       !navigation_handle->NavigationInputStart().is_null());
 }
 
+bool ShouldProcessNavigation(content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return false;
+  // Ignore navigations not happening in the primary FrameTree. Using IsCurrent
+  // as a proxy for "is in primary FrameTree".
+  // TODO(https://crbug.com/1190112): Add proper support for prerendering when
+  // there are better content APIs.
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      navigation_handle->GetPreviousRenderFrameHostId());
+  return !rfh || rfh->IsCurrent();
+}
+
 }  // namespace
 
 // static
@@ -103,6 +116,11 @@ void MetricsWebContentsObserver::WebContentsDestroyed() {
   // TODO(csharrison): Use a more user-initiated signal for CLOSE.
   NotifyPageEndAllLoads(END_CLOSE, UserInitiatedInfo::NotUserInitiated());
 
+  // Do this before clearing committed_load_, so that the observers don't hit
+  // the DCHECK in MetricsWebContentsObserver::GetDelegateForCommittedLoad.
+  for (auto& observer : testing_observers_)
+    observer.OnGoingAway();
+
   // We tear down PageLoadTrackers in WebContentsDestroyed, rather than in the
   // destructor, since |web_contents()| returns nullptr in the destructor, and
   // PageLoadMetricsObservers can cause code to execute that wants to be able to
@@ -111,9 +129,6 @@ void MetricsWebContentsObserver::WebContentsDestroyed() {
   ukm_smoothness_data_ = {};
   provisional_loads_.clear();
   aborted_provisional_loads_.clear();
-
-  for (auto& observer : testing_observers_)
-    observer.OnGoingAway();
 }
 
 void MetricsWebContentsObserver::RegisterInputEventObserver(
@@ -135,16 +150,17 @@ void MetricsWebContentsObserver::RenderViewHostChanged(
   RegisterInputEventObserver(new_host);
 }
 
-void MetricsWebContentsObserver::FrameDeleted(content::RenderFrameHost* rfh) {
-  if (auto* memory_tracker = GetMemoryTracker())
-    memory_tracker->OnFrameDeleted(rfh, this);
-
+void MetricsWebContentsObserver::FrameDeleted(int frame_tree_node_id) {
   if (committed_load_)
-    committed_load_->FrameDeleted(rfh);
+    committed_load_->FrameDeleted(frame_tree_node_id);
 }
 
 void MetricsWebContentsObserver::RenderFrameDeleted(
     content::RenderFrameHost* rfh) {
+  if (auto* memory_tracker = GetMemoryTracker())
+    memory_tracker->OnRenderFrameDeleted(rfh, this);
+  if (committed_load_)
+    committed_load_->RenderFrameDeleted(rfh);
   // PageLoadTracker can be associated only with a main frame.
   if (rfh->GetParent())
     return;
@@ -154,14 +170,17 @@ void MetricsWebContentsObserver::RenderFrameDeleted(
 void MetricsWebContentsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
     const content::MediaPlayerId& id) {
-  if (!id.render_frame_host->GetMainFrame()->IsCurrent()) {
+  auto* render_frame_host =
+      content::RenderFrameHost::FromID(id.frame_routing_id);
+
+  if (!render_frame_host || !render_frame_host->GetMainFrame()->IsCurrent()) {
     // Ignore media that starts playing in a page that was navigated away
     // from.
     return;
   }
 
   if (committed_load_)
-    committed_load_->MediaStartedPlaying(video_type, id.render_frame_host);
+    committed_load_->MediaStartedPlaying(video_type, render_frame_host);
 }
 
 void MetricsWebContentsObserver::WillStartNavigationRequest(
@@ -170,8 +189,11 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
   // WillStartNavigationRequest.
   DCHECK(!navigation_handle->IsSameDocument());
 
-  if (!navigation_handle->IsInMainFrame())
+  // TODO(https://crbug.com/1190112): Add support for Prerender
+  if (!ShouldProcessNavigation(navigation_handle)) {
+    uninteresting_loads_.insert(navigation_handle);
     return;
+  }
 
   WillStartNavigationRequestImpl(navigation_handle);
   has_navigated_ = true;
@@ -349,10 +371,10 @@ void MetricsWebContentsObserver::ResourceLoadComplete(
   }
 }
 
-void MetricsWebContentsObserver::FrameReceivedFirstUserActivation(
+void MetricsWebContentsObserver::FrameReceivedUserActivation(
     content::RenderFrameHost* render_frame_host) {
   if (committed_load_)
-    committed_load_->FrameReceivedFirstUserActivation(render_frame_host);
+    committed_load_->FrameReceivedUserActivation(render_frame_host);
 }
 
 void MetricsWebContentsObserver::FrameDisplayStateChanged(
@@ -373,6 +395,8 @@ void MetricsWebContentsObserver::FrameSizeChanged(
 void MetricsWebContentsObserver::OnCookiesAccessed(
     content::NavigationHandle* navigation,
     const content::CookieAccessDetails& details) {
+  if (base::Contains(uninteresting_loads_, navigation))
+    return;
   OnCookiesAccessedImpl(details);
 }
 
@@ -436,12 +460,17 @@ MetricsWebContentsObserver::GetDelegateForCommittedLoad() {
 
 void MetricsWebContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (base::Contains(uninteresting_loads_, navigation_handle))
+    return;
   if (committed_load_)
     committed_load_->ReadyToCommitNavigation(navigation_handle);
 }
 
 void MetricsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (uninteresting_loads_.erase(navigation_handle)) {
+    return;
+  }
   if (!navigation_handle->IsInMainFrame()) {
     if (committed_load_ && navigation_handle->GetParentFrame() &&
         navigation_handle->GetParentFrame()->GetMainFrame()->IsCurrent()) {
@@ -576,6 +605,11 @@ void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
 void MetricsWebContentsObserver::MaybeStorePageLoadTrackerForBackForwardCache(
     content::NavigationHandle* next_navigation_handle,
     std::unique_ptr<PageLoadTracker> previously_committed_load) {
+  TRACE_EVENT1("loading",
+               "MetricsWebContentsObserver::"
+               "MaybeRestorePageLoadTrackerForBackForwardCache",
+               "next_navigation", next_navigation_handle);
+
   if (!previously_committed_load)
     return;
 
@@ -587,7 +621,8 @@ void MetricsWebContentsObserver::MaybeStorePageLoadTrackerForBackForwardCache(
       // 1. the frame being navigated away from was not already deleted
       previous_frame &&
       // 2. the previous frame is in the BFCache
-      previous_frame->IsInBackForwardCache();
+      (previous_frame->GetLifecycleState() ==
+       content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
   if (!is_back_forward_cache)
     return;
@@ -600,6 +635,11 @@ void MetricsWebContentsObserver::MaybeStorePageLoadTrackerForBackForwardCache(
 
 bool MetricsWebContentsObserver::MaybeRestorePageLoadTrackerForBackForwardCache(
     content::NavigationHandle* navigation_handle) {
+  TRACE_EVENT1("loading",
+               "MetricsWebContentsObserver::"
+               "MaybeRestorePageLoadTrackerForBackForwardCache",
+               "navigation", navigation_handle);
+
   if (!navigation_handle->IsServedFromBackForwardCache())
     return false;
 
@@ -824,6 +864,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
   // from. We simply ignore them.
   // TODO(crbug.com/1061060): We should not ignore page timings if the page is
   // in bfcache.
+  // TODO(https://crbug.com/1190112): Add support for Prerender
   if (!render_frame_host->GetMainFrame()->IsCurrent()) {
     RecordInternalError(ERR_IPC_FROM_WRONG_FRAME);
     return;
@@ -887,6 +928,7 @@ void MetricsWebContentsObserver::UpdateTiming(
 
 void MetricsWebContentsObserver::SetUpSharedMemoryForSmoothness(
     base::ReadOnlySharedMemoryRegion shared_memory) {
+  // TODO(https://crbug.com/1190112): Add support for Prerender
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_receiver_.GetCurrentTargetFrame();
   const bool is_main_frame = render_frame_host->GetParent() == nullptr;
@@ -981,9 +1023,9 @@ void MetricsWebContentsObserver::TestingObserver::OnGoingAway() {
   observer_ = nullptr;
 }
 
-const PageLoadMetricsObserverDelegate&
+const PageLoadMetricsObserverDelegate*
 MetricsWebContentsObserver::TestingObserver::GetDelegateForCommittedLoad() {
-  return observer_->GetDelegateForCommittedLoad();
+  return observer_ ? &observer_->GetDelegateForCommittedLoad() : nullptr;
 }
 
 void MetricsWebContentsObserver::BroadcastEventToObservers(

@@ -14,39 +14,6 @@
 
 namespace blink {
 
-namespace {
-
-const char* predefined_symbol_markers[] = {
-    "disc", "square", "circle", "disclosure-open", "disclosure-closed"};
-
-CounterStyleMap* CreateUACounterStyleMap() {
-  CounterStyleMap* map =
-      MakeGarbageCollected<CounterStyleMap>(nullptr, nullptr);
-  map->AddCounterStyles(*CSSDefaultStyleSheets::Instance().DefaultStyle());
-  map->SetIsPredefined();
-  for (const char* symbol_marker : predefined_symbol_markers) {
-    map->FindCounterStyleAcrossScopes(symbol_marker)
-        ->SetIsPredefinedSymbolMarker();
-  }
-  HeapHashSet<Member<CounterStyleMap>> dummy_visited;
-  map->ResolveReferences(dummy_visited);
-  return map;
-}
-
-}  // namespace
-
-void CounterStyleMap::SetIsPredefined() {
-  for (CounterStyle* counter_style : counter_styles_.Values())
-    counter_style->SetIsPredefined();
-}
-
-// static
-CounterStyleMap* CounterStyleMap::GetUACounterStyleMap() {
-  DEFINE_STATIC_LOCAL(Persistent<CounterStyleMap>, ua_counter_style_map,
-                      (CreateUACounterStyleMap()));
-  return ua_counter_style_map;
-}
-
 // static
 CounterStyleMap* CounterStyleMap::GetUserCounterStyleMap(Document& document) {
   return document.GetStyleEngine().GetUserCounterStyleMap();
@@ -82,24 +49,22 @@ CounterStyleMap::CounterStyleMap(Document* document, TreeScope* tree_scope)
 }
 
 void CounterStyleMap::AddCounterStyles(const RuleSet& rule_set) {
+  DCHECK(owner_document_);
+
   if (!rule_set.CounterStyleRules().size())
     return;
 
   for (StyleRuleCounterStyle* rule : rule_set.CounterStyleRules()) {
     CounterStyle* counter_style = CounterStyle::Create(*rule);
-    if (!counter_style) {
-      DCHECK(owner_document_) << "Predefined counter style " << rule->GetName()
-                              << " has invalid symbols";
+    if (!counter_style)
       continue;
-    }
     AtomicString name = rule->GetName();
     if (CounterStyle* replaced = counter_styles_.at(name))
       replaced->SetIsDirty();
     counter_styles_.Set(rule->GetName(), counter_style);
   }
 
-  if (owner_document_)
-    owner_document_->GetStyleEngine().MarkCounterStylesNeedUpdate();
+  owner_document_->GetStyleEngine().MarkCounterStylesNeedUpdate();
 }
 
 CounterStyleMap* CounterStyleMap::GetAncestorMap() const {
@@ -126,13 +91,18 @@ CounterStyleMap* CounterStyleMap::GetAncestorMap() const {
 
 CounterStyle* CounterStyleMap::FindCounterStyleAcrossScopes(
     const AtomicString& name) const {
+  if (!owner_document_) {
+    const auto& iter = counter_styles_.find(name);
+    if (iter == counter_styles_.end())
+      return nullptr;
+    if (iter->value)
+      return iter->value;
+    return &const_cast<CounterStyleMap*>(this)->CreateUACounterStyle(name);
+  }
+
   if (CounterStyle* style = counter_styles_.at(name))
     return style;
-
-  if (CounterStyleMap* ancestor_map = GetAncestorMap())
-    return ancestor_map->FindCounterStyleAcrossScopes(name);
-
-  return nullptr;
+  return GetAncestorMap()->FindCounterStyleAcrossScopes(name);
 }
 
 void CounterStyleMap::ResolveExtendsFor(CounterStyle& counter_style) {
@@ -153,6 +123,11 @@ void CounterStyleMap::ResolveExtendsFor(CounterStyle& counter_style) {
   // all of the counter styles participating in the cycle must be treated as if
   // they were extending the 'decimal' counter style instead.
   if (extends_chain.back() && extends_chain.back()->HasUnresolvedExtends()) {
+    // Predefined counter styles should not have 'extends' cycles, otherwise
+    // we'll enter an infinite recursion to look for 'decimal'.
+    DCHECK(owner_document_)
+        << "'extends' cycle detected for predefined counter style "
+        << counter_style.GetName();
     CounterStyle* cycle_start = extends_chain.back();
     do {
       extends_chain.back()->ResolveExtends(CounterStyle::GetDecimal());
@@ -166,6 +141,12 @@ void CounterStyleMap::ResolveExtendsFor(CounterStyle& counter_style) {
     if (next) {
       extends_chain.back()->ResolveExtends(*next);
     } else {
+      // Predefined counter styles should not use inexistent 'extends' names,
+      // otherwise we'll enter an infinite recursion to look for 'decimal'.
+      DCHECK(owner_document_) << "Can't resolve 'extends: "
+                              << extends_chain.back()->GetExtendsName()
+                              << "' for predefined counter style "
+                              << extends_chain.back()->GetName();
       extends_chain.back()->ResolveExtends(CounterStyle::GetDecimal());
       extends_chain.back()->SetHasInexistentReferences();
     }
@@ -181,6 +162,11 @@ void CounterStyleMap::ResolveFallbackFor(CounterStyle& counter_style) {
   if (fallback_style) {
     counter_style.ResolveFallback(*fallback_style);
   } else {
+    // UA counter styles shouldn't use inexistent fallback style names,
+    // otherwise we'll enter an infinite recursion to look for 'decimal'.
+    DCHECK(owner_document_)
+        << "Can't resolve fallback " << fallback_name
+        << " for predefined counter style " << counter_style.GetName();
     counter_style.ResolveFallback(CounterStyle::GetDecimal());
     counter_style.SetHasInexistentReferences();
   }

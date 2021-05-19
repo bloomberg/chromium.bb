@@ -12,13 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/variable.h"
-#include "src/ast/variable_decoration.h"
-#include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
-#include "src/type/f32_type.h"
 
 namespace tint {
 namespace reader {
@@ -37,7 +31,7 @@ TEST_F(ParserImplTest, GlobalVariableDecl_WithoutConstructor) {
   ASSERT_NE(e.value, nullptr);
 
   EXPECT_EQ(e->symbol(), p->builder().Symbols().Get("a"));
-  EXPECT_TRUE(e->type()->Is<type::F32>());
+  EXPECT_TRUE(e->declared_type()->Is<type::F32>());
   EXPECT_EQ(e->declared_storage_class(), ast::StorageClass::kOutput);
 
   EXPECT_EQ(e->source().range.begin.line, 1u);
@@ -60,7 +54,7 @@ TEST_F(ParserImplTest, GlobalVariableDecl_WithConstructor) {
   ASSERT_NE(e.value, nullptr);
 
   EXPECT_EQ(e->symbol(), p->builder().Symbols().Get("a"));
-  EXPECT_TRUE(e->type()->Is<type::F32>());
+  EXPECT_TRUE(e->declared_type()->Is<type::F32>());
   EXPECT_EQ(e->declared_storage_class(), ast::StorageClass::kOutput);
 
   EXPECT_EQ(e->source().range.begin.line, 1u);
@@ -85,8 +79,8 @@ TEST_F(ParserImplTest, GlobalVariableDecl_WithDecoration) {
   ASSERT_NE(e.value, nullptr);
 
   EXPECT_EQ(e->symbol(), p->builder().Symbols().Get("a"));
-  ASSERT_NE(e->type(), nullptr);
-  EXPECT_TRUE(e->type()->Is<type::F32>());
+  ASSERT_NE(e->declared_type(), nullptr);
+  EXPECT_TRUE(e->declared_type()->Is<type::F32>());
   EXPECT_EQ(e->declared_storage_class(), ast::StorageClass::kOutput);
 
   EXPECT_EQ(e->source().range.begin.line, 1u);
@@ -115,8 +109,8 @@ TEST_F(ParserImplTest, GlobalVariableDecl_WithDecoration_MulitpleGroups) {
   ASSERT_NE(e.value, nullptr);
 
   EXPECT_EQ(e->symbol(), p->builder().Symbols().Get("a"));
-  ASSERT_NE(e->type(), nullptr);
-  EXPECT_TRUE(e->type()->Is<type::F32>());
+  ASSERT_NE(e->declared_type(), nullptr);
+  EXPECT_TRUE(e->declared_type()->Is<type::F32>());
   EXPECT_EQ(e->declared_storage_class(), ast::StorageClass::kOutput);
 
   EXPECT_EQ(e->source().range.begin.line, 1u);
@@ -186,7 +180,7 @@ TEST_F(ParserImplTest, GlobalVariableDecl_SamplerImplicitStorageClass) {
   ASSERT_NE(e.value, nullptr);
 
   EXPECT_EQ(e->symbol(), p->builder().Symbols().Get("s"));
-  EXPECT_TRUE(e->type()->Is<type::Sampler>());
+  EXPECT_TRUE(e->declared_type()->Is<type::Sampler>());
   EXPECT_EQ(e->declared_storage_class(), ast::StorageClass::kUniformConstant);
 }
 
@@ -202,7 +196,7 @@ TEST_F(ParserImplTest, GlobalVariableDecl_TextureImplicitStorageClass) {
   ASSERT_NE(e.value, nullptr);
 
   EXPECT_EQ(e->symbol(), p->builder().Symbols().Get("s"));
-  EXPECT_TRUE(e->type()->UnwrapAll()->Is<type::Texture>());
+  EXPECT_TRUE(e->declared_type()->UnwrapAll()->Is<type::Texture>());
   EXPECT_EQ(e->declared_storage_class(), ast::StorageClass::kUniformConstant);
 }
 

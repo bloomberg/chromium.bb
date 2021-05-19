@@ -171,6 +171,7 @@
     "cmd": [],
     "name": "TRYJOB DO NOT RETRY",
     "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@$recipe_engine/cq/output@{\"retry\": \"OUTPUT_RETRY_DENIED\"}@@@",
       "@@@SET_BUILD_PROPERTY@do_not_retry@true@@@"
     ]
   },

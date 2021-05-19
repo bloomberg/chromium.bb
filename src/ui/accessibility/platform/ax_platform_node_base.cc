@@ -63,8 +63,7 @@ bool FindDescendantRoleWithMaxDepth(AXPlatformNodeBase* node,
 
 }  // namespace
 
-const base::char16 AXPlatformNodeBase::kEmbeddedCharacter =
-    STRING16_LITERAL('\xfffc');
+const char16_t AXPlatformNodeBase::kEmbeddedCharacter = u'\xfffc';
 
 // Map from each AXPlatformNode's unique id to its instance.
 using UniqueIdMap = std::unordered_map<int32_t, AXPlatformNode*>;
@@ -313,7 +312,7 @@ void AXPlatformNodeBase::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
 }
 
 #if defined(OS_APPLE)
-void AXPlatformNodeBase::AnnounceText(const base::string16& text) {}
+void AXPlatformNodeBase::AnnounceText(const std::u16string& text) {}
 #endif
 
 AXPlatformNodeDelegate* AXPlatformNodeBase::GetDelegate() const {
@@ -468,16 +467,16 @@ bool AXPlatformNodeBase::GetStringAttribute(
   return GetData().GetStringAttribute(attribute, value);
 }
 
-base::string16 AXPlatformNodeBase::GetString16Attribute(
+std::u16string AXPlatformNodeBase::GetString16Attribute(
     ax::mojom::StringAttribute attribute) const {
   if (!delegate_)
-    return base::string16();
+    return std::u16string();
   return GetData().GetString16Attribute(attribute);
 }
 
 bool AXPlatformNodeBase::GetString16Attribute(
     ax::mojom::StringAttribute attribute,
-    base::string16* value) const {
+    std::u16string* value) const {
   if (!delegate_)
     return false;
   return GetData().GetString16Attribute(attribute, value);
@@ -521,7 +520,7 @@ const std::string& AXPlatformNodeBase::GetInheritedStringAttribute(
   return base::EmptyString();
 }
 
-base::string16 AXPlatformNodeBase::GetInheritedString16Attribute(
+std::u16string AXPlatformNodeBase::GetInheritedString16Attribute(
     ax::mojom::StringAttribute attribute) const {
   return base::UTF8ToUTF16(GetInheritedStringAttribute(attribute));
 }
@@ -548,7 +547,7 @@ bool AXPlatformNodeBase::GetInheritedStringAttribute(
 
 bool AXPlatformNodeBase::GetInheritedString16Attribute(
     ax::mojom::StringAttribute attribute,
-    base::string16* value) const {
+    std::u16string* value) const {
   std::string value_utf8;
   if (!GetInheritedStringAttribute(attribute, &value_utf8))
     return false;
@@ -657,9 +656,9 @@ bool AXPlatformNodeBase::IsText() const {
   return delegate_ && delegate_->IsText();
 }
 
-base::string16 AXPlatformNodeBase::GetHypertext() const {
+std::u16string AXPlatformNodeBase::GetHypertext() const {
   if (!delegate_)
-    return base::string16();
+    return std::u16string();
 
   // Hypertext of platform leaves, which internally are composite objects, are
   // represented with the inner text of the internal composite object. These
@@ -672,13 +671,13 @@ base::string16 AXPlatformNodeBase::GetHypertext() const {
   return hypertext_.hypertext;
 }
 
-base::string16 AXPlatformNodeBase::GetInnerText() const {
+std::u16string AXPlatformNodeBase::GetInnerText() const {
   if (!delegate_)
-    return base::string16();
+    return std::u16string();
   return delegate_->GetInnerText();
 }
 
-base::string16
+std::u16string
 AXPlatformNodeBase::GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute()
     const {
   if (GetData().role == ax::mojom::Role::kImage &&
@@ -692,8 +691,8 @@ AXPlatformNodeBase::GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute()
   return GetString16Attribute(ax::mojom::StringAttribute::kRoleDescription);
 }
 
-base::string16 AXPlatformNodeBase::GetRoleDescription() const {
-  base::string16 role_description =
+std::u16string AXPlatformNodeBase::GetRoleDescription() const {
+  std::u16string role_description =
       GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute();
 
   if (!role_description.empty()) {
@@ -701,6 +700,12 @@ base::string16 AXPlatformNodeBase::GetRoleDescription() const {
   }
 
   return GetDelegate()->GetLocalizedStringForRoleDescription();
+}
+
+bool AXPlatformNodeBase::IsImageWithMap() const {
+  DCHECK_EQ(GetData().role, ax::mojom::Role::kImage)
+      << "Only call IsImageWithMap() on an image";
+  return GetChildCount();
 }
 
 AXPlatformNodeBase* AXPlatformNodeBase::GetSelectionContainer() const {
@@ -957,9 +962,9 @@ bool AXPlatformNodeBase::IsVerticallyScrollable() const {
              GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
 }
 
-base::string16 AXPlatformNodeBase::GetValueForControl() const {
+std::u16string AXPlatformNodeBase::GetValueForControl() const {
   if (!delegate_)
-    return base::string16();
+    return std::u16string();
   return delegate_->GetValueForControl();
 }
 
@@ -986,7 +991,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
     AddAttributeToList("autocomplete", "list", attributes);
   }
 
-  base::string16 role_description =
+  std::u16string role_description =
       GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute();
   if (!role_description.empty() ||
       HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription)) {
@@ -1345,7 +1350,7 @@ void AXPlatformNodeBase::UpdateComputedHypertext() const {
   // embedded object character for all the other children. Build up a map from
   // the character index of each embedded object character to the id of the
   // child object it points to.
-  base::string16 hypertext;
+  std::u16string hypertext;
   for (AXPlatformNodeChildIterator child_iter = AXPlatformNodeChildrenBegin();
        child_iter != AXPlatformNodeChildrenEnd(); ++child_iter) {
     // Similar to Firefox, we don't expose text nodes in IAccessible2 and ATK
@@ -1737,8 +1742,8 @@ bool AXPlatformNodeBase::IsSameHypertextCharacter(
 
   // For anything other than the "embedded character", we just compare the
   // characters directly.
-  base::char16 old_ch = old_hypertext.hypertext[old_char_index];
-  base::char16 new_ch = hypertext_.hypertext[new_char_index];
+  char16_t old_ch = old_hypertext.hypertext[old_char_index];
+  char16_t new_ch = hypertext_.hypertext[new_char_index];
   if (old_ch != new_ch)
     return false;
   if (new_ch != kEmbeddedCharacter)
@@ -1770,7 +1775,7 @@ bool AXPlatformNodeBase::IsSameHypertextCharacter(
 }
 
 // Return true if the index represents a text character.
-bool AXPlatformNodeBase::IsText(const base::string16& text,
+bool AXPlatformNodeBase::IsText(const std::u16string& text,
                                 size_t index,
                                 bool is_indexed_from_end) {
   size_t text_len = text.size();
@@ -1799,8 +1804,8 @@ void AXPlatformNodeBase::ComputeHypertextRemovedAndInserted(
   if (IsText())
     return;
 
-  const base::string16& old_text = old_hypertext.hypertext;
-  const base::string16& new_text = hypertext_.hypertext;
+  const std::u16string& old_text = old_hypertext.hypertext;
+  const std::u16string& new_text = hypertext_.hypertext;
 
   // TODO(accessibility) Plumb through which part of text changed so we don't
   // have to guess what changed based on character differences. This can be

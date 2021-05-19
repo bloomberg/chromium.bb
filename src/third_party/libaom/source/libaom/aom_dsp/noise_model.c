@@ -214,6 +214,7 @@ static void set_chroma_coefficient_fallback_soln(aom_equation_system_t *eqns) {
 
 int aom_noise_strength_lut_init(aom_noise_strength_lut_t *lut, int num_points) {
   if (!lut) return 0;
+  if (num_points < 0) return 0;
   lut->num_points = 0;
   lut->points = (double(*)[2])aom_malloc(num_points * sizeof(*lut->points));
   if (!lut->points) return 0;

@@ -18,7 +18,6 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/optional.h"
-#include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/notifications/mac_notification_provider_factory.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
+#include "chrome/browser/notifications/notification_platform_bridge_mac_metrics.h"
 #include "chrome/browser/notifications/notification_platform_bridge_mac_utils.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -125,10 +125,10 @@ void NotificationPlatformBridgeMac::Display(
   [builder setTitle:base::SysUTF16ToNSString(
                         CreateMacNotificationTitle(notification))];
 
-  base::string16 context_message =
+  std::u16string context_message =
       notification.items().empty()
           ? notification.message()
-          : (notification.items().at(0).title + base::UTF8ToUTF16(" - ") +
+          : (notification.items().at(0).title + u" - " +
              notification.items().at(0).message);
 
   [builder setContextMessage:base::SysUTF16ToNSString(context_message)];
@@ -138,6 +138,7 @@ void NotificationPlatformBridgeMac::Display(
       notification_type != NotificationHandler::Type::EXTENSION;
 
   bool is_alert = IsAlertNotificationMac(notification);
+  LogMacNotificationDelivered(is_alert, /*sucess=*/true);
 
   [builder setSubTitle:base::SysUTF16ToNSString(CreateMacNotificationContext(
                            is_alert, notification, requires_attribution))];
@@ -301,7 +302,8 @@ void NotificationPlatformBridgeMac::CloseAllNotificationsForProfile(
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
        didActivateNotification:(NSUserNotification*)notification {
   NSDictionary* notificationResponse =
-      [NotificationResponseBuilder buildActivatedDictionary:notification];
+      [NotificationResponseBuilder buildActivatedDictionary:notification
+                                                  fromAlert:NO];
   ProcessMacNotificationResponse(notificationResponse);
 }
 
@@ -314,7 +316,8 @@ void NotificationPlatformBridgeMac::CloseAllNotificationsForProfile(
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
                didDismissAlert:(NSUserNotification*)notification {
   NSDictionary* notificationResponse =
-      [NotificationResponseBuilder buildDismissedDictionary:notification];
+      [NotificationResponseBuilder buildDismissedDictionary:notification
+                                                  fromAlert:NO];
   ProcessMacNotificationResponse(notificationResponse);
 }
 
@@ -326,7 +329,8 @@ void NotificationPlatformBridgeMac::CloseAllNotificationsForProfile(
     didRemoveDeliveredNotifications:(NSArray*)notifications {
   for (NSUserNotification* notification in notifications) {
     NSDictionary* notificationResponse =
-        [NotificationResponseBuilder buildDismissedDictionary:notification];
+        [NotificationResponseBuilder buildDismissedDictionary:notification
+                                                    fromAlert:NO];
     ProcessMacNotificationResponse(notificationResponse);
   }
 }

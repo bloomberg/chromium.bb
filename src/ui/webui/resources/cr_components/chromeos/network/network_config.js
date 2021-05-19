@@ -335,6 +335,8 @@ Polymer({
     'updateIsConfigured_(selectedUserCertHash_)',
   ],
 
+  listeners: {'enter': 'onEnterEvent_'},
+
   /** @const */
   MIN_PASSPHRASE_LENGTH: 5,
 
@@ -457,6 +459,18 @@ Polymer({
     }
   },
 
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onEnterEvent_(event) {
+    if (event.path[0].localName === 'network-config-input' ||
+        event.path[0].localName === 'network-password-input') {
+      this.onEnterPressedInInput_();
+      event.stopPropagation();
+    }
+  },
+
   /** @private */
   onEnterPressedInInput_() {
     if (!this.isConfigured_) {
@@ -507,9 +521,9 @@ Polymer({
       this.set('serverCaCerts_', caCerts);
 
       let userCerts = response.userCerts.slice();
-      // Only hardware backed user certs are supported.
+      // Only certs available for network authentication can be used.
       userCerts.forEach(function(cert) {
-        if (!cert.hardwareBacked) {
+        if (!cert.availableForNetworkAuth) {
           cert.hash = '';
         }  // Clear the hash to invalidate the certificate.
       });
@@ -545,6 +559,7 @@ Polymer({
       issuedBy: desc,
       issuedTo: '',
       pemOrId: '',
+      availableForNetworkAuth: false,
       hardwareBacked: false,
       // Default cert entries should always be shown, even in the login UI,
       // so treat thiem as device-wide.
@@ -583,7 +598,7 @@ Polymer({
   getManagedPropertiesCallback_(managedProperties) {
     if (!managedProperties) {
       // The network no longer exists; close the page.
-      console.error('Network no longer exists: ' + this.guid);
+      console.warn('Network no longer exists: ' + this.guid);
       this.close_();
       return;
     }
@@ -646,11 +661,13 @@ Polymer({
       return;
     }
     if (this.shareAllowEnable) {
-      // New insecure WiFi networks are always shared.
-      if (this.mojoType_ === mojom.NetworkType.kWiFi &&
-          this.managedProperties_.typeProperties.wifi.security ===
-              mojom.SecurityType.kNone) {
-        this.shareNetwork_ = true;
+      // By default, Wi-Fi networks which require passwords are not shared,
+      // but "insecure" networks with no passwords are shared. In either case,
+      // the user can change the sharing setting by updating the toggle in the
+      // UI.
+
+      if (this.mojoType_ === mojom.NetworkType.kWiFi) {
+        this.shareNetwork_ = this.securityType_ === mojom.SecurityType.kNone;
         return;
       }
     }
@@ -1076,7 +1093,8 @@ Polymer({
     // If |this.error| was set to something other than a cert error, do not
     // change it.
     /** @const */ const noCertsError = 'networkErrorNoUserCertificate';
-    /** @const */ const noValidCertsError = 'networkErrorNotHardwareBacked';
+    /** @const */ const noValidCertsError =
+        'networkErrorNotAvailableForNetworkAuth';
     if (this.error && this.error !== noCertsError &&
         this.error !== noValidCertsError) {
       return;
@@ -1747,4 +1765,13 @@ Polymer({
     assertNotReached();
     return undefined;
   },
+
+  /** @private */
+  onWifiPasswordInputKeypress_() {
+    // bad-passphrase corresponds to kErrorBadPassphrase in shill
+    if (this.error === 'bad-passphrase') {
+      // Reset error if user starts typing new password.
+      this.setError_('');
+    }
+  }
 });

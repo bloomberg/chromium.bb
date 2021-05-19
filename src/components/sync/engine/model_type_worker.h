@@ -60,10 +60,27 @@ class ModelTypeWorker : public UpdateHandler,
   // Public for testing.
   enum DecryptionStatus { SUCCESS, DECRYPTION_PENDING, FAILED_TO_DECRYPT };
 
+  // This enum reflects the processor's state of having local changes.
+  enum HasLocalChangesState {
+    // There are no new nudged pending changes in the processor.
+    kNoNudgedLocalChanges,
+
+    // There are new pending changes in the processor which are not committed
+    // yet.
+    kNewlyNudgedLocalChanges,
+
+    // All known local changes are contributed in the last commit request (and
+    // there is no commit response yet).
+    kAllNudgedLocalChangesInFlight,
+  };
+
+  // |nudge_handler| and |cancelation_signal| must outlive this object.
+  // |cryptographer| must either outlive this object or be null. Passing a
+  // a null cryptographer means this type won't use encryption.
   ModelTypeWorker(ModelType type,
                   const sync_pb::ModelTypeState& initial_state,
                   bool trigger_initial_sync,
-                  std::unique_ptr<Cryptographer> cryptographer,
+                  Cryptographer* cryptographer,
                   PassphraseType passphrase_type,
                   NudgeHandler* nudge_handler,
                   std::unique_ptr<ModelTypeProcessor> model_type_processor,
@@ -81,12 +98,22 @@ class ModelTypeWorker : public UpdateHandler,
 
   ModelType GetModelType() const;
 
-  void UpdateCryptographer(std::unique_ptr<Cryptographer> cryptographer);
-  // Causes a worker without cryptographer to record whether
-  // |fallback_cryptographer_for_uma| would have been able to decrypt incoming
-  // encrypted updates. |fallback_cryptographer_for_uma| must be non-null.
-  void UpdateFallbackCryptographerForUma(
-      std::unique_ptr<Cryptographer> fallback_cryptographer_for_uma);
+  // Will start using |cryptographer| to encrypt/decrypt data. Must be called at
+  // most once, if the type transitioned from non-encrypted to encrypted.
+  // |cryptographer| must outlive this object.
+  void EnableEncryption(Cryptographer* cryptographer);
+
+  // Always called in production, may not be called in tests. Causes a worker
+  // without cryptographer to log whether |fallback_cryptographer_for_uma| would
+  // have been able to decrypt incoming encrypted updates.
+  // |fallback_cryptographer_for_uma| must outlive this object.
+  void SetFallbackCryptographerForUma(
+      Cryptographer* fallback_cryptographer_for_uma);
+
+  // Must only be called if there is a cryptographer. Called on every change to
+  // its state.
+  void OnCryptographerChange();
+
   void UpdatePassphraseType(PassphraseType type);
 
   // UpdateHandler implementation.
@@ -99,7 +126,6 @@ class ModelTypeWorker : public UpdateHandler,
       const SyncEntityList& applicable_updates,
       StatusController* status) override;
   void ApplyUpdates(StatusController* status) override;
-  void PassiveApplyUpdates(StatusController* status) override;
 
   // CommitQueue implementation.
   void NudgeForCommit() override;
@@ -134,34 +160,6 @@ class ModelTypeWorker : public UpdateHandler,
     // (cf. Cryptographer::CanEncrypt()).
     int gu_responses_while_should_have_been_known = 0;
   };
-
-  // Attempts to decrypt the given specifics and return them in the |out|
-  // parameter. The cryptographer must know the decryption key, i.e.
-  // cryptographer.CanDecrypt(specifics.encrypted()) must return true.
-  //
-  // Returns false if the decryption failed. There are no guarantees about the
-  // contents of |out| when that happens.
-  //
-  // In theory, this should never fail. Only corrupt or invalid entries could
-  // cause this to fail, and no clients are known to create such entries. The
-  // failure case is an attempt to be defensive against bad input.
-  static bool DecryptSpecifics(const Cryptographer& cryptographer,
-                               const sync_pb::EntitySpecifics& in,
-                               sync_pb::EntitySpecifics* out);
-
-  // Attempts to decrypt the given password specifics and return them in the
-  // |out| parameter. The cryptographer must know the decryption key, i.e.
-  // cryptographer.CanDecrypt(in.password().encrypted()) must return true.
-  //
-  // Returns false if the decryption failed. There are no guarantees about the
-  // contents of |out| when that happens.
-  //
-  // In theory, this should never fail. Only corrupt or invalid entries could
-  // cause this to fail, and no clients are known to create such entries. The
-  // failure case is an attempt to be defensive against bad input.
-  static bool DecryptPasswordSpecifics(const Cryptographer& cryptographer,
-                                       const sync_pb::EntitySpecifics& in,
-                                       sync_pb::EntitySpecifics* out);
 
   // Helper function to actually send |pending_updates_| to the processor.
   void ApplyPendingUpdates();
@@ -237,24 +235,23 @@ class ModelTypeWorker : public UpdateHandler,
   // Pointer to the ModelTypeProcessor associated with this worker. Never null.
   std::unique_ptr<ModelTypeProcessor> model_type_processor_;
 
-  // A private copy of the most recent cryptographer known to sync.
-  // Initialized at construction time and updated with UpdateCryptographer().
-  // null if encryption is not enabled for this type.
-  std::unique_ptr<Cryptographer> cryptographer_;
+  // Initialized on construction or later via InitCryptographer(). Null as long
+  // as encryption is not enabled for this type.
+  Cryptographer* cryptographer_ = nullptr;
 
   // Used to investigate an issue where the worker receives encrypted updates
   // despite not having a |cryptographer_| (|type_| is not an encrypted type).
   // In those cases, this will eventually hold the underlying cryptographer used
   // by other types. The worker then records whether that cryptographer is able
   // to decrypt the updates. See crbug.com/1178418.
-  std::unique_ptr<Cryptographer> fallback_cryptographer_for_uma_;
+  Cryptographer* fallback_cryptographer_for_uma_ = nullptr;
 
   // A private copy of the most recent passphrase type. Initialized at
   // construction time and updated with UpdatePassphraseType().
   PassphraseType passphrase_type_;
 
   // Interface used to access and send nudges to the sync scheduler. Not owned.
-  NudgeHandler* nudge_handler_;
+  NudgeHandler* const nudge_handler_;
 
   // A map of sync entities, keyed by server_id. Holds updates encrypted with
   // pending keys. Entries are stored in a map for de-duplication (applying only
@@ -277,7 +274,7 @@ class ModelTypeWorker : public UpdateHandler,
 
   // Indicates if processor has local changes. Processor only nudges worker once
   // and worker might not be ready to commit entities at the time.
-  bool has_local_changes_ = false;
+  HasLocalChangesState has_local_changes_state_ = kNoNudgedLocalChanges;
 
   // Remains constant in production code. Can be overridden in tests.
   // |UnknownEncryptionKeyInfo::gu_responses_while_should_have_been_known| must
@@ -286,7 +283,7 @@ class ModelTypeWorker : public UpdateHandler,
 
   // Cancellation signal is used to cancel blocking operation on engine
   // shutdown.
-  CancelationSignal* cancelation_signal_;
+  CancelationSignal* const cancelation_signal_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -28,16 +28,16 @@ class ComputeDispatchTests : public DawnTest {
         // Write workgroup number into the output buffer if we saw the biggest dispatch
         // This is a workaround since D3D12 doesn't have gl_NumWorkGroups
         // To make sure the dispatch was not called, write maximum u32 value for 0 dispatches
-        wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
             [[block]] struct InputBuf {
-                [[offset(0)]] expectedDispatch : vec3<u32>;
+                expectedDispatch : vec3<u32>;
             };
             [[block]] struct OutputBuf {
-                [[offset(0)]] workGroups : vec3<u32>;
+                workGroups : vec3<u32>;
             };
 
             [[group(0), binding(0)]] var<uniform> input : InputBuf;
-            [[group(0), binding(1)]] var<storage_buffer> output : OutputBuf;
+            [[group(0), binding(1)]] var<storage> output : [[access(read_write)]] OutputBuf;
 
             [[builtin(global_invocation_id)]] var<in> GlobalInvocationID : vec3<u32>;
 
@@ -45,7 +45,7 @@ class ComputeDispatchTests : public DawnTest {
             fn main() -> void {
                 const dispatch : vec3<u32> = input.expectedDispatch;
 
-                if (dispatch.x == 0 || dispatch.y == 0 || dispatch.z == 0) {
+                if (dispatch.x == 0u || dispatch.y == 0u || dispatch.z == 0u) {
                     output.workGroups = vec3<u32>(0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu);
                     return;
                 }

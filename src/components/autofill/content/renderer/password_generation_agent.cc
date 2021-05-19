@@ -212,7 +212,7 @@ bool PasswordGenerationAgent::ShouldIgnoreBlur() const {
 }
 
 void PasswordGenerationAgent::GeneratedPasswordAccepted(
-    const base::string16& password) {
+    const std::u16string& password) {
   // static cast is workaround for linker error.
   DCHECK_LE(static_cast<size_t>(kMinimumLengthForEditedPassword),
             password.size());
@@ -238,10 +238,10 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
   }
 
   std::unique_ptr<FormData> presaved_form_data(CreateFormDataToPresave());
-  base::string16 generated_password =
+  std::u16string generated_password =
       current_generation_item_->generation_element_.Value().Utf16();
   if (presaved_form_data) {
-    DCHECK_NE(base::string16(), generated_password);
+    DCHECK_NE(std::u16string(), generated_password);
     GetPasswordGenerationDriver()->PresaveGeneratedPassword(*presaved_form_data,
                                                             generated_password);
   }
@@ -445,7 +445,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
         element.Form() ==
             current_generation_item_->generation_element_.Form()) {
       std::unique_ptr<FormData> presaved_form_data(CreateFormDataToPresave());
-      base::string16 generated_password =
+      std::u16string generated_password =
           current_generation_item_->generation_element_.Value().Utf16();
       if (presaved_form_data) {
         GetPasswordGenerationDriver()->PresaveGeneratedPassword(
@@ -486,7 +486,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
       CopyElementValueToOtherInputElements(
           &element, &current_generation_item_->password_elements_);
       std::unique_ptr<FormData> presaved_form_data(CreateFormDataToPresave());
-      base::string16 generated_password =
+      std::u16string generated_password =
           current_generation_item_->generation_element_.Value().Utf16();
       if (presaved_form_data) {
         GetPasswordGenerationDriver()->PresaveGeneratedPassword(
@@ -552,7 +552,7 @@ void PasswordGenerationAgent::ShowEditingPopup() {
   FieldRendererId generation_element_renderer_id(
       current_generation_item_->generation_element_
           .UniqueRendererFormControlId());
-  base::string16 password_value =
+  std::u16string password_value =
       current_generation_item_->generation_element_.Value().Utf16();
 
   GetPasswordGenerationDriver()->ShowPasswordEditingPopup(
@@ -620,8 +620,8 @@ void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
       passwords.push_back(*input);
   }
 
-  current_generation_item_.reset(new GenerationItemInfo(
-      generation_element, std::move(*form_data), std::move(passwords)));
+  current_generation_item_ = std::make_unique<GenerationItemInfo>(
+      generation_element, std::move(*form_data), std::move(passwords));
 
   generation_element.SetHasBeenPasswordField();
 

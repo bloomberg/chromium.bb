@@ -41,7 +41,7 @@ extern "C" {
  * fields to structures
  */
 #define AOM_ENCODER_ABI_VERSION \
-  (8 + AOM_CODEC_ABI_VERSION) /**<\hideinitializer*/
+  (9 + AOM_CODEC_ABI_VERSION) /**<\hideinitializer*/
 
 /*! \brief Encoder capabilities bitfield
  *
@@ -142,15 +142,8 @@ typedef struct aom_codec_cx_pkt {
       double psnr_hbd[4];
     } psnr;              /**< data for PSNR packet */
     aom_fixed_buf_t raw; /**< data for arbitrary packets */
-
-    /* This packet size is fixed to allow codecs to extend this
-     * interface without having to manage storage for raw packets,
-     * i.e., if it's smaller than 128 bytes, you can store in the
-     * packet list directly.
-     */
-    char pad[128 - sizeof(enum aom_codec_cx_pkt_kind)]; /**< fixed sz */
-  } data;                                               /**< packet data */
-} aom_codec_cx_pkt_t; /**< alias for struct aom_codec_cx_pkt */
+  } data;                /**< packet data */
+} aom_codec_cx_pkt_t;    /**< alias for struct aom_codec_cx_pkt */
 
 /*!\brief Rational Number
  *
@@ -300,6 +293,10 @@ typedef struct cfg_options {
    *
    */
   unsigned int disable_smooth_intra;
+  /*!\brief disable D45 to D203 intra modes
+   *
+   */
+  unsigned int disable_diagonal_intra;
   /*!\brief disable filter intra
    *
    */

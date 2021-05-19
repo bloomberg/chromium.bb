@@ -5,6 +5,7 @@
 #include "content/browser/web_database/web_database_host_impl.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,12 +25,11 @@ namespace content {
 
 namespace {
 
-base::string16 ConstructVfsFileName(const url::Origin& origin,
-                                    const base::string16& name,
-                                    const base::string16& suffix) {
+std::u16string ConstructVfsFileName(const url::Origin& origin,
+                                    const std::u16string& name,
+                                    const std::u16string& suffix) {
   std::string identifier = storage::GetIdentifierFromOrigin(origin);
-  return base::UTF8ToUTF16(identifier) + base::ASCIIToUTF16("/") + name +
-         base::ASCIIToUTF16("#") + suffix;
+  return base::UTF8ToUTF16(identifier) + u"/" + name + u"#" + suffix;
 }
 
 }  // namespace
@@ -71,7 +71,8 @@ class WebDatabaseHostImplTest : public ::testing::Test {
         }));
     run_loop.Run();
     RunUntilIdle();
-    EXPECT_EQ("Unauthorized origin.", bad_message_observer.WaitForBadMessage());
+    EXPECT_EQ("WebDatabaseHost: Unauthorized origin.",
+              bad_message_observer.WaitForBadMessage());
   }
 
   template <typename Callable>
@@ -86,7 +87,8 @@ class WebDatabaseHostImplTest : public ::testing::Test {
         }));
     run_loop.Run();
     RunUntilIdle();
-    EXPECT_EQ("Invalid origin.", bad_message_observer.WaitForBadMessage());
+    EXPECT_EQ("WebDatabaseHost: Invalid origin.",
+              bad_message_observer.WaitForBadMessage());
   }
 
   void CallRenderProcessHostCleanup() { render_process_host_.reset(); }
@@ -119,13 +121,13 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
   const url::Origin correct_origin = url::Origin::Create(correct_url);
   const url::Origin incorrect_origin =
       url::Origin::Create(GURL("http://incorrect.net"));
-  const base::string16 db_name(base::ASCIIToUTF16("db_name"));
-  const base::string16 suffix(base::ASCIIToUTF16("suffix"));
-  const base::string16 bad_vfs_file_name =
+  const std::u16string db_name(u"db_name");
+  const std::u16string suffix(u"suffix");
+  const std::u16string bad_vfs_file_name =
       ConstructVfsFileName(incorrect_origin, db_name, suffix);
 
   auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  security_policy->AddIsolatedOrigins(
+  security_policy->AddFutureIsolatedOrigins(
       {correct_origin, incorrect_origin},
       ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
   LockProcessToURL(correct_url);
@@ -137,36 +139,29 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
 
   CheckUnauthorizedOrigin([&]() {
     host()->OpenFile(bad_vfs_file_name,
-                     /*desired_flags=*/0, base::BindOnce([](base::File) {}));
+                     /*desired_flags=*/0, base::DoNothing());
   });
 
   CheckUnauthorizedOrigin([&]() {
     host()->DeleteFile(bad_vfs_file_name,
-                       /*sync_dir=*/false, base::BindOnce([](int32_t) {}));
+                       /*sync_dir=*/false, base::DoNothing());
   });
 
   CheckUnauthorizedOrigin([&]() {
-    host()->GetFileAttributes(bad_vfs_file_name,
-                              base::BindOnce([](int32_t) {}));
-  });
-
-  CheckUnauthorizedOrigin([&]() {
-    host()->GetFileSize(bad_vfs_file_name, base::BindOnce([](int64_t) {}));
+    host()->GetFileAttributes(bad_vfs_file_name, base::DoNothing());
   });
 
   CheckUnauthorizedOrigin([&]() {
     host()->SetFileSize(bad_vfs_file_name, /*expected_size=*/0,
-                        base::BindOnce([](bool) {}));
+                        base::DoNothing());
   });
 
   CheckUnauthorizedOrigin([&]() {
-    host()->GetSpaceAvailable(incorrect_origin, base::BindOnce([](int64_t) {}));
+    host()->GetSpaceAvailable(incorrect_origin, base::DoNothing());
   });
 
-  CheckUnauthorizedOrigin([&]() {
-    host()->Opened(incorrect_origin, db_name, base::ASCIIToUTF16("description"),
-                   /*estimated_size=*/0);
-  });
+  CheckUnauthorizedOrigin(
+      [&]() { host()->Opened(incorrect_origin, db_name, u"description"); });
 
   CheckUnauthorizedOrigin(
       [&]() { host()->Modified(incorrect_origin, db_name); });
@@ -180,16 +175,13 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
 
 TEST_F(WebDatabaseHostImplTest, BadMessagesInvalid) {
   const url::Origin opaque_origin;
-  const base::string16 db_name(base::ASCIIToUTF16("db_name"));
+  const std::u16string db_name(u"db_name");
 
-  CheckInvalidOrigin([&]() {
-    host()->GetSpaceAvailable(opaque_origin, base::BindOnce([](int64_t) {}));
-  });
+  CheckInvalidOrigin(
+      [&]() { host()->GetSpaceAvailable(opaque_origin, base::DoNothing()); });
 
-  CheckInvalidOrigin([&]() {
-    host()->Opened(opaque_origin, db_name, base::ASCIIToUTF16("description"),
-                   /*estimated_size=*/0);
-  });
+  CheckInvalidOrigin(
+      [&]() { host()->Opened(opaque_origin, db_name, u"description"); });
 
   CheckInvalidOrigin([&]() { host()->Modified(opaque_origin, db_name); });
 
@@ -205,13 +197,13 @@ TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
   const url::Origin correct_origin = url::Origin::Create(correct_url);
   const url::Origin incorrect_origin =
       url::Origin::Create(GURL("http://incorrect.net"));
-  const base::string16 db_name(base::ASCIIToUTF16("db_name"));
-  const base::string16 suffix(base::ASCIIToUTF16("suffix"));
-  const base::string16 bad_vfs_file_name =
+  const std::u16string db_name(u"db_name");
+  const std::u16string suffix(u"suffix");
+  const std::u16string bad_vfs_file_name =
       ConstructVfsFileName(incorrect_origin, db_name, suffix);
 
   auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  security_policy->AddIsolatedOrigins(
+  security_policy->AddFutureIsolatedOrigins(
       {correct_origin, incorrect_origin},
       ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
   LockProcessToURL(correct_url);
@@ -239,7 +231,8 @@ TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
 
     EXPECT_FALSE(success_callback_was_called);
     EXPECT_TRUE(error_callback_message.has_value());
-    EXPECT_EQ("Unauthorized origin.", error_callback_message.value());
+    EXPECT_EQ("WebDatabaseHost: Unauthorized origin.",
+              error_callback_message.value());
   }
 
   success_callback_was_called = false;

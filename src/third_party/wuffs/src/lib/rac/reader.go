@@ -114,7 +114,7 @@ type Reader struct {
 	//
 	//  - "State B" (decompressor is non-zero, inImplicitZeroes is zero): a RAC
 	//    chunk is loaded, but not fully exhausted: decompressing the e.g. zlib
-	//    stream has not hit io.EOF yet.
+	//    stream has not seen io.EOF yet.
 	//
 	//  - "State C" (decompressor is zero, inImplicitZeroes is non-zero): a RAC
 	//    chunk was exhausted, and we now serve the implicit NUL bytes after a
@@ -318,7 +318,7 @@ func (r *Reader) transitionFromStateBToStateC() error {
 
 // readImplicitZeroes serves the implicit NUL bytes after a chunk's explicit
 // data. As
-// https://github.com/google/wuffs/blob/master/doc/spec/rac-spec.md#decompressing-a-leaf-node
+// https://github.com/google/wuffs/blob/main/doc/spec/rac-spec.md#decompressing-a-leaf-node
 // says, "The Codec may produce fewer bytes than the DRange size. In that case,
 // the remaining bytes (in DSpace) are set to NUL (memset to zero)."
 func (r *Reader) readImplicitZeroes(p []byte) (int, error) {

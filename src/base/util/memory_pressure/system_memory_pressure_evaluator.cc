@@ -15,9 +15,7 @@
 #elif defined(OS_WIN)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_win.h"
 #include "base/win/windows_version.h"
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_linux.h"
 #endif
 
@@ -48,9 +46,7 @@ SystemMemoryPressureEvaluator::CreateDefaultSystemEvaluator(
     evaluator->CreateOSSignalPressureEvaluator(monitor->CreateVoter());
   }
   return evaluator;
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
   return std::make_unique<util::os_linux::SystemMemoryPressureEvaluator>(
       monitor->CreateVoter());
 #endif

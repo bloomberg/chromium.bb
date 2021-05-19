@@ -166,6 +166,9 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   explicit TestURLLoaderClient(Observer* observer) : observer_(observer) {}
   ~TestURLLoaderClient() override {}
 
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
+  }
+
   void OnReceiveResponse(
       network::mojom::URLResponseHeadPtr response_head) override {
     observer_->OnReceiveResponse(std::move(response_head));
@@ -833,7 +836,7 @@ int64_t OfflinePageRequestHandlerTest::SavePage(const GURL& url,
 
   auto archiver = std::make_unique<OfflinePageTestArchiver>(
       nullptr, url, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
-      base::string16(), file_size, digest, base::ThreadTaskRunnerHandle::Get());
+      std::u16string(), file_size, digest, base::ThreadTaskRunnerHandle::Get());
   archiver->set_filename(file_path);
 
   async_operation_completed_ = false;

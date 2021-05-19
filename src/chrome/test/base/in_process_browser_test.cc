@@ -62,6 +62,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/captive_portal/core/buildflags.h"
+#include "components/embedder_support/switches.h"
 #include "components/google/core/common/google_util.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -159,7 +160,7 @@ FakeDeviceSyncImplFactory* GetFakeDeviceSyncImplFactory() {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 // An observer that returns back to test code after a new profile is
 // initialized.
 void UnblockOnProfileCreation(base::RunLoop* run_loop,
@@ -269,8 +270,9 @@ void InProcessBrowserTest::SetUp() {
 
   // Auto-reload breaks many browser tests, which assume error pages won't be
   // reloaded out from under them. Tests that expect or desire this behavior can
-  // append switches::kEnableAutoReload, which will override the disable here.
-  command_line->AppendSwitch(switches::kDisableAutoReload);
+  // append embedder_support::kEnableAutoReload, which will override the disable
+  // here.
+  command_line->AppendSwitch(embedder_support::kDisableAutoReload);
 
   // Allow subclasses to change the command line before running any tests.
   SetUpCommandLine(command_line);
@@ -359,14 +361,17 @@ void InProcessBrowserTest::SetUp() {
   // Using a screenshot for clamshell to tablet mode transitions makes the flow
   // async which we want to disable for most tests.
   ash::ShellTestApi::SetTabletControllerUseScreenshotForTest(false);
+
+  // Disable the notification delay timer used to prevent non system
+  // notifications from showing up right after login.
+  ash::ShellTestApi::SetUseLoginNotificationDelayForTest(false);
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Redirect the default download directory to a temporary directory.
   ASSERT_TRUE(default_download_dir_.CreateUniqueTempDir());
   CHECK(base::PathService::Override(chrome::DIR_DEFAULT_DOWNLOADS,
                                     default_download_dir_.GetPath()));
-
-  AfterStartupTaskUtils::DisableScheduleTaskDelayForTesting();
 
 #if defined(TOOLKIT_VIEWS)
   // Prevent hover cards from appearing when the mouse is over the tab. Tests
@@ -554,7 +559,7 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(const std::string& app_name,
 }
 #endif  // !defined(OS_MAC)
 
-#if !defined(OS_ANDROID) && !defined(CHROME_OS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 Browser* InProcessBrowserTest::CreateGuestBrowser() {
   // Get Guest profile.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -562,20 +567,23 @@ Browser* InProcessBrowserTest::CreateGuestBrowser() {
 
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
-      guest_path, base::BindRepeating(&UnblockOnProfileCreation, &run_loop),
-      base::string16(), std::string());
+      guest_path, base::BindRepeating(&UnblockOnProfileCreation, &run_loop));
   run_loop.Run();
 
   Profile* profile = profile_manager->GetProfileByPath(guest_path);
   if (!profile->IsEphemeralGuestProfile())
     profile = profile->GetPrimaryOTRProfile();
 
+  const bool is_ephemeral = Profile::IsEphemeralGuestProfileEnabled();
+  EXPECT_EQ(is_ephemeral, profile->IsEphemeralGuestProfile());
+  EXPECT_NE(is_ephemeral, profile->IsGuestSession());
+
   // Create browser and add tab.
   Browser* browser = Browser::Create(Browser::CreateParams(profile, true));
   AddBlankTabAndShow(browser);
   return browser;
 }
-#endif  // !defined(OS_ANDROID) && !defined(CHROME_OS)
+#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   content::WindowedNotificationObserver observer(

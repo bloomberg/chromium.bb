@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cctype>
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -84,7 +85,7 @@
 #include "ash/components/audio/cras_audio_handler.h"
 #include "content/browser/gpu/chromeos/video_capture_dependencies.h"
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
-#include "media/capture/video/chromeos/ash/camera_hal_dispatcher_impl.h"
+#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/public/cros_features.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #endif
@@ -530,12 +531,12 @@ class MediaStreamManager::DeviceRequest {
         requested_video_device_id.c_str()));
     target_process_id_ = requesting_process_id;
     target_frame_id_ = requesting_frame_id;
-    ui_request_.reset(new MediaStreamRequest(
+    ui_request_ = std::make_unique<MediaStreamRequest>(
         requesting_process_id, requesting_frame_id, page_request_id,
         salt_and_origin.origin.GetURL(), user_gesture, request_type_,
         requested_audio_device_id, requested_video_device_id, audio_type_,
         video_type_, controls.disable_local_echo,
-        controls.request_pan_tilt_zoom_permission));
+        controls.request_pan_tilt_zoom_permission);
   }
 
   // Creates a tab capture specific MediaStreamRequest object that is used by
@@ -545,11 +546,11 @@ class MediaStreamManager::DeviceRequest {
     DCHECK(!ui_request_);
     target_process_id_ = target_render_process_id;
     target_frame_id_ = target_render_frame_id;
-    ui_request_.reset(new MediaStreamRequest(
+    ui_request_ = std::make_unique<MediaStreamRequest>(
         target_render_process_id, target_render_frame_id, page_request_id,
         salt_and_origin.origin.GetURL(), user_gesture, request_type_, "", "",
         audio_type_, video_type_, controls.disable_local_echo,
-        /*request_pan_tilt_zoom_permission=*/false));
+        /*request_pan_tilt_zoom_permission=*/false);
   }
 
   bool HasUIRequest() const { return ui_request_.get() != nullptr; }
@@ -790,14 +791,16 @@ MediaStreamManager::MediaStreamManager(
 
   audio_service_listener_ = std::make_unique<AudioServiceListener>();
 
-  base::PowerMonitor::AddObserver(this);
+  base::PowerMonitor::AddPowerSuspendObserver(this);
+  base::PowerMonitor::AddPowerThermalObserver(this);
 }
 
 MediaStreamManager::~MediaStreamManager() {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO));
   DCHECK(requests_.empty());
 
-  base::PowerMonitor::RemoveObserver(this);
+  base::PowerMonitor::RemovePowerSuspendObserver(this);
+  base::PowerMonitor::RemovePowerThermalObserver(this);
 }
 
 VideoCaptureManager* MediaStreamManager::video_capture_manager() {
@@ -2004,12 +2007,12 @@ void MediaStreamManager::InitializeMaybeAsync(
 
   // Using base::Unretained(this) is safe because |this| owns and therefore
   // outlives |media_devices_manager_|.
-  media_devices_manager_.reset(new MediaDevicesManager(
+  media_devices_manager_ = std::make_unique<MediaDevicesManager>(
       audio_system_, video_capture_manager_,
       base::BindRepeating(&MediaStreamManager::StopRemovedDevice,
                           base::Unretained(this)),
       base::BindRepeating(&MediaStreamManager::NotifyDevicesChanged,
-                          base::Unretained(this))));
+                          base::Unretained(this)));
 }
 
 void MediaStreamManager::Opened(
@@ -2151,7 +2154,7 @@ void MediaStreamManager::OnResume() {
 }
 
 void MediaStreamManager::OnThermalStateChange(
-    base::PowerObserver::DeviceThermalState new_state) {
+    base::PowerThermalObserver::DeviceThermalState new_state) {
   const char* state_name =
       base::PowerMonitorSource::DeviceThermalStateToString(new_state);
   SendLogMessage(base::StringPrintf(

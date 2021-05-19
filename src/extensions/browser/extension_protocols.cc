@@ -125,6 +125,10 @@ class ResultRecordingClient : public network::mojom::URLLoaderClient {
         ukm_source_id_(ukm_source_id),
         real_client_(std::move(real_client)) {}
 
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
+    real_client_->OnReceiveEarlyHints(std::move(early_hints));
+  }
+
   void OnReceiveResponse(
       network::mojom::URLResponseHeadPtr response_head) override {
     real_client_->OnReceiveResponse(std::move(response_head));
@@ -410,7 +414,7 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
 
   void OnStart() override {
     base::AutoLock auto_lock(lock_);
-    request_timer_.reset(new base::ElapsedTimer());
+    request_timer_ = std::make_unique<base::ElapsedTimer>();
   }
 
   void OnSeekComplete(int64_t result) override {
@@ -523,7 +527,6 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,

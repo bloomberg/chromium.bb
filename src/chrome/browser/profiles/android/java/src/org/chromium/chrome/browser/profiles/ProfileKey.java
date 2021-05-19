@@ -6,11 +6,12 @@ package org.chromium.chrome.browser.profiles;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.embedder_support.simple_factory_key.SimpleFactoryKeyHandle;
 
 /**
  * Wrapper that allows passing a ProfileKey reference around in the Java layer.
  */
-public class ProfileKey {
+public class ProfileKey implements SimpleFactoryKeyHandle {
     /** Whether this wrapper corresponds to an off the record ProfileKey. */
     private final boolean mIsOffTheRecord;
 
@@ -34,12 +35,33 @@ public class ProfileKey {
         return ProfileKeyJni.get().getLastUsedRegularProfileKey();
     }
 
+    /**
+     * Handles type conversion of Java side {@link SimpleFactoryKeyHandle} to {@link ProfileKey}.
+     * @param simpleFactoryKeyHandle Java reference to native SimpleFactoryKey.
+     * @return A strongly typed reference the {@link ProfileKey}.
+     */
+    public static ProfileKey fromSimpleFactoryKeyHandle(
+            SimpleFactoryKeyHandle simpleFactoryKeyHandle) {
+        return (ProfileKey) simpleFactoryKeyHandle;
+    }
+
+    /**
+     * @return The original (not off the record) profile key.
+     */
     public ProfileKey getOriginalKey() {
         return ProfileKeyJni.get().getOriginalKey(mNativeProfileKeyAndroid);
     }
 
+    /**
+     * @return Whether this profile is off the record and should avoid writing to durable records.
+     */
     public boolean isOffTheRecord() {
         return mIsOffTheRecord;
+    }
+
+    @Override
+    public long getNativeSimpleFactoryKeyPointer() {
+        return ProfileKeyJni.get().getSimpleFactoryKeyPointer(mNativeProfileKeyAndroid);
     }
 
     @CalledByNative
@@ -62,5 +84,6 @@ public class ProfileKey {
         ProfileKey getLastUsedRegularProfileKey();
         ProfileKey getOriginalKey(long nativeProfileKeyAndroid);
         boolean isOffTheRecord(long nativeProfileKeyAndroid);
+        long getSimpleFactoryKeyPointer(long nativeProfileKeyAndroid);
     }
 }

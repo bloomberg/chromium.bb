@@ -45,10 +45,11 @@
     do {                                                                                          \
         FlushWire();                                                                              \
         size_t warningsBefore = dawn_native::GetDeprecationWarningCountForTesting(backendDevice); \
+        EXPECT_EQ(mLastWarningCount, warningsBefore);                                             \
         statement;                                                                                \
         FlushWire();                                                                              \
         size_t warningsAfter = dawn_native::GetDeprecationWarningCountForTesting(backendDevice);  \
-        EXPECT_EQ(mLastWarningCount, warningsBefore);                                             \
+        EXPECT_EQ(warningsAfter, warningsBefore + 1);                                             \
         mLastWarningCount = warningsAfter;                                                        \
     } while (0)
 
@@ -91,7 +92,6 @@ class ValidationTest : public testing::Test {
         wgpu::RenderPassColorAttachmentDescriptor mColorAttachment;
     };
 
-    bool HasWGSL() const;
     bool HasToggleEnabled(const char* toggle) const;
 
   protected:

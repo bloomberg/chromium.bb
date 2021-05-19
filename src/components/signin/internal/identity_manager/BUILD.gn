@@ -89,6 +89,8 @@ source_set("identity_manager") {
     sources += [
       "profile_oauth2_token_service_delegate_chromeos.cc",
       "profile_oauth2_token_service_delegate_chromeos.h",
+      "profile_oauth2_token_service_delegate_chromeos_legacy.cc",
+      "profile_oauth2_token_service_delegate_chromeos_legacy.h",
     ]
     public_deps += [ "//ash/components/account_manager" ]
 
@@ -171,6 +173,8 @@ source_set("unit_tests") {
 
   if (is_android) {
     sources += [ "profile_oauth2_token_service_delegate_android_unittest.cc" ]
+
+    deps += [ "//components/signin/public/identity_manager:test_support" ]
   }
 
   if (is_chromeos_ash) {
@@ -210,6 +214,7 @@ static_library("test_support") {
       "test_profile_oauth2_token_service_delegate_chromeos.cc",
       "test_profile_oauth2_token_service_delegate_chromeos.h",
     ]
+    deps = [ "//chromeos/crosapi/mojom" ]
   }
 
   public_deps = [

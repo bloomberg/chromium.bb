@@ -11,6 +11,7 @@ async function configureAndEncode(encoder, config) {
 
   let frame = await createFrame(defaultWidth, defaultHeight, ++frameNumber);
   encoder.encode(frame, { keyFrame : true });
+  frame.close();
   return encoder.flush()
 }
 
@@ -20,7 +21,8 @@ function cycleAvcOutputFormats(acc, desc) {
 
     let encoderInit = {
       error: () => t.unreached_func("Unexpected error"),
-      output: (chunk, config) => {
+      output: (chunk, metadata) => {
+        let config = metadata.decoderConfig;
         assert_equals(output, undefined, "output undefined sanity");
         output = {
           chunk: chunk,
@@ -65,9 +67,7 @@ function cycleAvcOutputFormats(acc, desc) {
     assert_equals(startCode[2], 0x00, "startCode [2]");
     assert_equals(startCode[3], 0x01, "startCode [3]");
 
-    // No config needs to be emitted for annexb, but we always emit one for now.
     // There should not be an avcC 'description' with annexb.
-    // TODO: Update this if we only output configs when they change.
     assert_not_equals(output.config, null, "config annexb");
     assert_equals(output.config.description, undefined, "desc annexb");
 

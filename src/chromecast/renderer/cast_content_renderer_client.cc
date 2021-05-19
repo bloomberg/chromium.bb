@@ -74,15 +74,18 @@ bool IsSupportedBitstreamAudioCodecHelper(::media::AudioCodec codec, int mask) {
 }  // namespace
 
 #if defined(OS_ANDROID)
-// Audio renderer algorithm maximum capacity.
+// Audio renderer algorithm maximum capacity. 5s buffer is already large enough,
+// we don't need a larger capacity. Otherwise audio renderer will double the
+// buffer size when underrun happens, which will cause the playback paused to
+// wait long time for enough buffers.
 constexpr base::TimeDelta kAudioRendererMaxCapacity =
-    base::TimeDelta::FromSeconds(10);
+    base::TimeDelta::FromSeconds(5);
 // Audio renderer algorithm starting capacity.  Configure large enough to
 // prevent underrun.
 constexpr base::TimeDelta kAudioRendererStartingCapacity =
-    base::TimeDelta::FromMilliseconds(5000);
+    base::TimeDelta::FromSeconds(5);
 constexpr base::TimeDelta kAudioRendererStartingCapacityEncrypted =
-    base::TimeDelta::FromMilliseconds(5500);
+    base::TimeDelta::FromSeconds(5);
 #endif  // defined(OS_ANDROID)
 
 CastContentRendererClient::CastContentRendererClient()
@@ -378,15 +381,15 @@ void CastContentRendererClient::OnSupportedBitstreamAudioCodecsChanged(
   supported_bitstream_audio_codecs_info_ = info;
 }
 
-std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
 CastContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return std::make_unique<CastWebSocketHandshakeThrottleProvider>(
       activity_url_filter_manager_.get());
 }
 
-std::unique_ptr<content::URLLoaderThrottleProvider>
+std::unique_ptr<blink::URLLoaderThrottleProvider>
 CastContentRendererClient::CreateURLLoaderThrottleProvider(
-    content::URLLoaderThrottleProviderType type) {
+    blink::URLLoaderThrottleProviderType type) {
   return std::make_unique<CastURLLoaderThrottleProvider>(
       type, activity_url_filter_manager(), this);
 }

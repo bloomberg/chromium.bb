@@ -12,25 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/discard_statement.h"
-#include "src/ast/function.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/pipeline_stage.h"
-#include "src/ast/return_statement.h"
 #include "src/ast/stage_decoration.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
 #include "src/ast/workgroup_decoration.h"
-#include "src/program.h"
 #include "src/type/access_control_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/void_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/wgsl/generator_impl.h"
 #include "src/writer/wgsl/test_helper.h"
 
 namespace tint {
@@ -46,7 +32,7 @@ TEST_F(WgslGeneratorImplTest, Emit_Function) {
                         create<ast::DiscardStatement>(),
                         create<ast::ReturnStatement>(),
                     },
-                    ast::FunctionDecorationList{});
+                    ast::DecorationList{});
 
   GeneratorImpl& gen = Build();
 
@@ -70,7 +56,7 @@ TEST_F(WgslGeneratorImplTest, Emit_Function_WithParams) {
                create<ast::DiscardStatement>(),
                create<ast::ReturnStatement>(),
            },
-           ast::FunctionDecorationList{});
+           ast::DecorationList{});
 
   GeneratorImpl& gen = Build();
 
@@ -90,7 +76,7 @@ TEST_F(WgslGeneratorImplTest, Emit_Function_WithDecoration_WorkgroupSize) {
                         create<ast::DiscardStatement>(),
                         create<ast::ReturnStatement>(),
                     },
-                    ast::FunctionDecorationList{
+                    ast::DecorationList{
                         create<ast::WorkgroupDecoration>(2u, 4u, 6u),
                     });
 
@@ -114,7 +100,7 @@ TEST_F(WgslGeneratorImplTest, Emit_Function_WithDecoration_Stage) {
                create<ast::DiscardStatement>(),
                create<ast::ReturnStatement>(),
            },
-           ast::FunctionDecorationList{
+           ast::DecorationList{
                create<ast::StageDecoration>(ast::PipelineStage::kFragment),
            });
 
@@ -138,7 +124,7 @@ TEST_F(WgslGeneratorImplTest, Emit_Function_WithDecoration_Multiple) {
                create<ast::DiscardStatement>(),
                create<ast::ReturnStatement>(),
            },
-           ast::FunctionDecorationList{
+           ast::DecorationList{
                create<ast::StageDecoration>(ast::PipelineStage::kFragment),
                create<ast::WorkgroupDecoration>(2u, 4u, 6u),
            });
@@ -157,11 +143,60 @@ TEST_F(WgslGeneratorImplTest, Emit_Function_WithDecoration_Multiple) {
 )");
 }
 
+TEST_F(WgslGeneratorImplTest, Emit_Function_EntryPoint_Parameters) {
+  auto* vec4 = ty.vec4<f32>();
+  auto* coord = Var("coord", vec4, ast::StorageClass::kInput, nullptr,
+                    {create<ast::BuiltinDecoration>(ast::Builtin::kFragCoord)});
+  auto* loc1 = Var("loc1", ty.f32(), ast::StorageClass::kInput, nullptr,
+                   {create<ast::LocationDecoration>(1u)});
+  auto* func =
+      Func("frag_main", ast::VariableList{coord, loc1}, ty.void_(),
+           ast::StatementList{},
+           ast::DecorationList{
+               create<ast::StageDecoration>(ast::PipelineStage::kFragment),
+           });
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitFunction(func));
+  EXPECT_EQ(gen.result(), R"(  [[stage(fragment)]]
+  fn frag_main([[builtin(frag_coord)]] coord : vec4<f32>, [[location(1)]] loc1 : f32) -> void {
+  }
+)");
+}
+
+TEST_F(WgslGeneratorImplTest, Emit_Function_EntryPoint_ReturnValue) {
+  auto* func =
+      Func("frag_main", ast::VariableList{}, ty.f32(),
+           ast::StatementList{
+               create<ast::ReturnStatement>(Expr(1.f)),
+           },
+           ast::DecorationList{
+               create<ast::StageDecoration>(ast::PipelineStage::kFragment),
+           },
+           ast::DecorationList{
+               create<ast::LocationDecoration>(1u),
+           });
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitFunction(func));
+  EXPECT_EQ(gen.result(), R"(  [[stage(fragment)]]
+  fn frag_main() -> [[location(1)]] f32 {
+    return 1.0;
+  }
+)");
+}
+
 // https://crbug.com/tint/297
 TEST_F(WgslGeneratorImplTest,
        Emit_Function_Multiple_EntryPoint_With_Same_ModuleVar) {
   // [[block]] struct Data {
-  //   [[offset(0)]] d : f32;
+  //   d : f32;
   // };
   // [[binding(0), group(0)]] var<storage> data : Data;
   //
@@ -175,18 +210,13 @@ TEST_F(WgslGeneratorImplTest,
   //   return;
   // }
 
-  ast::StructDecorationList s_decos;
-  s_decos.push_back(create<ast::StructBlockDecoration>());
+  auto* s = Structure("Data", {Member("d", ty.f32())},
+                      {create<ast::StructBlockDecoration>()});
 
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("d", ty.f32(), {MemberOffset(0)})}, s_decos);
-
-  auto* s = ty.struct_("Data", str);
   type::AccessControl ac(ast::AccessControl::kReadWrite, s);
-  AST().AddConstructedType(s);
 
   Global("data", &ac, ast::StorageClass::kStorage, nullptr,
-         ast::VariableDecorationList{
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
@@ -201,7 +231,7 @@ TEST_F(WgslGeneratorImplTest,
              create<ast::VariableDeclStatement>(var),
              create<ast::ReturnStatement>(),
          },
-         ast::FunctionDecorationList{
+         ast::DecorationList{
              create<ast::StageDecoration>(ast::PipelineStage::kCompute),
          });
   }
@@ -216,7 +246,7 @@ TEST_F(WgslGeneratorImplTest,
              create<ast::VariableDeclStatement>(var),
              create<ast::ReturnStatement>(),
          },
-         ast::FunctionDecorationList{
+         ast::DecorationList{
              create<ast::StageDecoration>(ast::PipelineStage::kCompute),
          });
   }
@@ -226,7 +256,6 @@ TEST_F(WgslGeneratorImplTest,
   ASSERT_TRUE(gen.Generate(nullptr)) << gen.error();
   EXPECT_EQ(gen.result(), R"([[block]]
 struct Data {
-  [[offset(0)]]
   d : f32;
 };
 

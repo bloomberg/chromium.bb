@@ -11,6 +11,7 @@
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "device/fido/cable/v2_constants.h"
+#include "device/fido/cable/v2_discovery.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 
 namespace device {
@@ -19,14 +20,12 @@ class VirtualCtap2Device;
 
 namespace cablev2 {
 
-class Discovery;
-
 // ContactCallback is called when a mock tunnel server (see
 // |NewMockTunnelServer|) is asked to contact a phone. This simulates a tunnel
 // server using a cloud messaging solution to wake a device.
 using ContactCallback = base::RepeatingCallback<void(
     base::span<const uint8_t, kTunnelIdSize> tunnel_id,
-    base::span<const uint8_t> pairing_id,
+    base::span<const uint8_t, kPairingIDSize> pairing_id,
     base::span<const uint8_t, kClientNonceSize> client_nonce)>;
 
 // NewMockTunnelServer returns a |NetworkContext| that implements WebSocket
@@ -42,9 +41,9 @@ class Platform;
 
 // NewMockPlatform returns a |Platform| that implements the makeCredential
 // operation by forwarding it to |ctap2_device|. Transmitted BLE adverts are
-// forwarded to |discovery|.
+// forwarded to |ble_advert_callback|.
 std::unique_ptr<Platform> NewMockPlatform(
-    Discovery* discovery,
+    Discovery::AdvertEventStream::Callback ble_advert_callback,
     device::VirtualCtap2Device* ctap2_device);
 
 }  // namespace authenticator

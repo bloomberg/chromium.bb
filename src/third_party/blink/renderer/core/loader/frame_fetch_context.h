@@ -153,7 +153,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
   bool AllowScriptFromSource(const KURL&) const override;
   bool ShouldBlockRequestByInspector(const KURL&) const override;
   void DispatchDidBlockRequest(const ResourceRequest&,
-                               const FetchInitiatorInfo&,
+                               const ResourceLoaderOptions&,
                                ResourceRequestBlockedReason,
                                ResourceType) const override;
   ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
@@ -182,13 +182,13 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
   Settings* GetSettings() const;
   String GetUserAgent() const;
   base::Optional<UserAgentMetadata> GetUserAgentMetadata() const;
-  const FeaturePolicy* GetFeaturePolicy() const override;
+  const PermissionsPolicy* GetPermissionsPolicy() const override;
   const ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
 
   enum class ClientHintsMode { kLegacy, kStandard };
   bool ShouldSendClientHint(ClientHintsMode mode,
-                            const FeaturePolicy*,
+                            const PermissionsPolicy*,
                             const url::Origin& resource_origin,
                             bool is_1p_origin,
                             network::mojom::blink::WebClientHintsType,

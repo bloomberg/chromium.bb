@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2020 The Khronos Group Inc.
- * Copyright (c) 2015-2020 Valve Corporation
- * Copyright (c) 2015-2020 LunarG, Inc.
- * Copyright (C) 2015-2020 Google Inc.
+/* Copyright (c) 2015-2021 The Khronos Group Inc.
+ * Copyright (c) 2015-2021 Valve Corporation
+ * Copyright (c) 2015-2021 LunarG, Inc.
+ * Copyright (C) 2015-2021 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ struct ObjTrackState {
     VulkanObjectType object_type;                                  // Object type identifier
     ObjectStatusFlags status;                                      // Object state
     uint64_t parent_object;                                        // Parent object
-    std::unique_ptr<std::unordered_set<uint64_t> > child_objects;  // Child objects (used for VkDescriptorPool only)
+    std::unique_ptr<layer_data::unordered_set<uint64_t> > child_objects;  // Child objects (used for VkDescriptorPool only)
 };
 
 typedef vl_concurrent_unordered_map<uint64_t, std::shared_ptr<ObjTrackState>, 6> object_map_type;
@@ -129,7 +129,7 @@ class ObjectLifetimes : public ValidationObject {
                                  const char *wrong_device_code) const;
 
     ObjectLifetimes *GetObjectLifetimeData(std::vector<ValidationObject *> &object_dispatch) const {
-        for (auto layer_object : object_dispatch) {
+        for (auto *layer_object : object_dispatch) {
             if (layer_object->container_type == LayerObjectTypeObjectTracker) {
                 return (reinterpret_cast<ObjectLifetimes *>(layer_object));
             }
@@ -144,8 +144,8 @@ class ObjectLifetimes : public ValidationObject {
             // If object is an image, also look for it in the swapchain image map
             if ((object_type != kVulkanObjectTypeImage) || (swapchainImageMap.find(object_handle) == swapchainImageMap.end())) {
                 // Object not found, look for it in other device object maps
-                for (auto other_device_data : layer_data_map) {
-                    for (auto layer_object_data : other_device_data.second->object_dispatch) {
+                for (const auto &other_device_data : layer_data_map) {
+                    for (auto *layer_object_data : other_device_data.second->object_dispatch) {
                         if (layer_object_data->container_type == LayerObjectTypeObjectTracker) {
                             auto object_lifetime_data = reinterpret_cast<ObjectLifetimes *>(layer_object_data);
                             if (object_lifetime_data && (object_lifetime_data != this)) {
@@ -207,7 +207,7 @@ class ObjectLifetimes : public ValidationObject {
             num_total_objects++;
 
             if (object_type == kVulkanObjectTypeDescriptorPool) {
-                pNewObjNode->child_objects.reset(new std::unordered_set<uint64_t>);
+                pNewObjNode->child_objects.reset(new layer_data::unordered_set<uint64_t>);
             }
         }
     }

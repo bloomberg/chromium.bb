@@ -2,25 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as i18n from '../i18n/i18n.js';
-import * as Platform from '../platform/platform.js';
-import * as UI from '../ui/ui.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import {CSSLength, CSSShadowModel} from './CSSShadowModel.js';  // eslint-disable-line no-unused-vars
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Text that refers to some types
   */
   type: 'Type',
-  /**
-  *@description Outset button text content in CSSShadow Editor of the inline editor in the Styles tab
-  */
-  outset: 'Outset',
-  /**
-  *@description Inset button text content in CSSShadow Editor of the inline editor in the Styles tab
-  */
-  inset: 'Inset',
   /**
   *@description Text in CSSShadow Editor of the inline editor in the Styles tab
   */
@@ -30,7 +22,8 @@ export const UIStrings = {
   */
   yOffset: 'Y offset',
   /**
-  *@description Text in CSSShadow Editor of the inline editor in the Styles tab
+  * @description Text in CSSShadow Editor of the inline editor in the Styles tab. Noun which is a
+  * label for an input that allows the user to specify how blurred the box-shadow should be.
   */
   blur: 'Blur',
   /**
@@ -60,10 +53,10 @@ export class CSSShadowEditor extends UI.Widget.VBox {
     this._typeField = this.contentElement.createChild('div', 'shadow-editor-field shadow-editor-flex-field');
     this._typeField.createChild('label', 'shadow-editor-label').textContent = i18nString(UIStrings.type);
     this._outsetButton = this._typeField.createChild('button', 'shadow-editor-button-left');
-    this._outsetButton.textContent = i18nString(UIStrings.outset);
+    this._outsetButton.textContent = i18n.i18n.lockedString('Outset');
     this._outsetButton.addEventListener('click', this._onButtonClick.bind(this), false);
     this._insetButton = this._typeField.createChild('button', 'shadow-editor-button-right');
-    this._insetButton.textContent = i18nString(UIStrings.inset);
+    this._insetButton.textContent = i18n.i18n.lockedString('Inset');
     this._insetButton.addEventListener('click', this._onButtonClick.bind(this), false);
 
     const xField = this.contentElement.createChild('div', 'shadow-editor-field');

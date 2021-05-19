@@ -13,6 +13,7 @@
 #include "quic/core/quic_framer.h"
 #include "quic/core/quic_packets.h"
 #include "quic/core/quic_stream_sequencer.h"
+#include "quic/core/quic_types.h"
 #include "quic/platform/api/quic_export.h"
 
 namespace quic {
@@ -156,7 +157,8 @@ class QUIC_NO_EXPORT TlsChloExtractor
     return true;
   }
   void OnPacketComplete() override {}
-  bool IsValidStatelessResetToken(QuicUint128 /*token*/) const override {
+  bool IsValidStatelessResetToken(
+      const StatelessResetToken& /*token*/) const override {
     return true;
   }
   void OnAuthenticatedIetfStatelessResetPacket(

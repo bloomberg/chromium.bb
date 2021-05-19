@@ -21,11 +21,11 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
-class PrefService;
-
 class Profile;
 
 namespace safe_browsing {
+
+class ReferrerChainProvider;
 
 // This class implements the real time lookup feature for a given user/profile.
 // It is separated from the base class for logic that is related to enterprise
@@ -37,13 +37,10 @@ class ChromeEnterpriseRealTimeUrlLookupService
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       VerdictCacheManager* cache_manager,
       Profile* profile,
-      const IsHistorySyncEnabledCallback& is_history_sync_enabled_callback,
+      base::RepeatingCallback<ChromeUserPopulation()>
+          get_user_population_callback,
       enterprise_connectors::ConnectorsService* connectors_service,
-      PrefService* pref_service,
-      const ChromeUserPopulation::ProfileManagementStatus&
-          profile_management_status,
-      bool is_under_advanced_protection,
-      bool is_off_the_record);
+      ReferrerChainProvider* referrer_chain_provider);
   ~ChromeEnterpriseRealTimeUrlLookupService() override;
 
   // RealTimeUrlLookupServiceBase:
@@ -56,6 +53,8 @@ class ChromeEnterpriseRealTimeUrlLookupService
   GURL GetRealTimeLookupUrl() const override;
   net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const override;
   bool CanPerformFullURLLookupWithToken() const override;
+  bool CanAttachReferrerChain() const override;
+  int GetReferrerUserGestureLimit() const override;
   void GetAccessToken(const GURL& url,
                       RTLookupRequestCallback request_callback,
                       RTLookupResponseCallback response_callback) override;

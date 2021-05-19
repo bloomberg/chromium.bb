@@ -34,7 +34,21 @@ extern const char kOnFileDownloadedScopePref[];
 extern const char kOnBulkDataEntryScopePref[];
 extern const char kOnSecurityEventScopePref[];
 
+// The pref name where this class stores the encrypted private key.
+// If the machine supports storage in TPM, the private key will be
+// stored there; otherwise, it will be stored in the local state.
+extern const char kDeviceTrustPrivateKeyPref[];
+// The pref name where this class stores the public key;
+// If the machine supports storage in TPM, the public key will be
+// stored there; owtherwise, it will be stored in the local state.
+extern const char kDeviceTrustPublicKeyPref[];
+
+// Template to store the service provider's "folder_id" for caching purposes.
+extern const char kFileSystemUploadFolderIdPref[];
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+void RegisterLocalPrefs(PrefRegistrySimple* registry);
 
 }  // namespace enterprise_connectors
 

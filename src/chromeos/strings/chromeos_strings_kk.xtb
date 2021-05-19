@@ -38,6 +38,7 @@
 <translation id="1662989795263954667">Тоқтатылды: сия бітіп қалды</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">DNS түрлендіргіші бар</translation>
+<translation id="1715359911173058521">Сканермен байланысу кезінде ақау пайда болды. Желі немесе USB байланысын тексеріп, әрекетті қайталаңыз.</translation>
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" /> және <ph name="SECOND_MANAGER" /> арқылы басқарылады.</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1792647875738159689">Сканерлеу тоқтатылуда</translation>
@@ -95,6 +96,7 @@
 <translation id="3226405216343213872">Сканерлер ізделуде</translation>
 <translation id="3246869037381808805">1 күннен асқан баспа жұмыстары өшіріледі.</translation>
 <translation id="3268178239013324452">Сәтсіз: есігі ашық</translation>
+<translation id="3283504360622356314">{0,plural, =1{Файлды өзгерту}other{Файлдарды өзгерту}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> ГГц</translation>
 <translation id="3310640316857623290">DNS кідірісі рұқсат етілетін шектен әлдеқайда жоғары.</translation>
 <translation id="3328783797891415197">Тексерілуде</translation>
@@ -135,6 +137,7 @@
 <translation id="4227825898293920515">Құпия сөздің мерзімі <ph name="TIME" /> өткен соң аяқталады.</translation>
 <translation id="4238516577297848345">Ешқандай баспа жұмысы орындалып жатқан жоқ.</translation>
 <translation id="4297501883039923494">Тоқтатылды: белгісіз қате</translation>
+<translation id="4344214025510306853">APN тіркеу</translation>
 <translation id="4378373042927530923">Іске қосылмаған</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Менің Drive дискім</translation>
@@ -162,7 +165,9 @@
 <translation id="4707579418881001319">L2TP/IPsec + пайдаланушы сертификаты</translation>
 <translation id="4731797938093519117">Ата-ананың кіру рұқсаты</translation>
 <translation id="4773299976671772492">Тоқтатылды</translation>
+<translation id="4794140124556169553">Орталық процессор сынағын қоссаңыз, жүйенің өнімділігіне кері әсер болуы мүмкін.</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> құжатын басып шығарудан бас тартылды.</translation>
+<translation id="4813345808229079766">Байланыс</translation>
 <translation id="4832079907277790330">Files қолданбасында қалта таңдау...</translation>
 <translation id="4835901797422965222">Ешқандай белсенді желі жоқ.</translation>
 <translation id="4848429997038228357">ТЕКСЕРІЛУДЕ</translation>
@@ -177,6 +182,7 @@
 <translation id="4932733599132424254">Күні</translation>
 <translation id="498186245079027698">Сканерді тексеріп, әрекетті қайталаңыз. Сканерленген файлдарды сақтайтын орынның жеткілікті екенін тексеріңіз.</translation>
 <translation id="4985509611418653372">Іске қосу</translation>
+<translation id="4987769320337599931">Брандмауэр</translation>
 <translation id="4999333166442584738">Есепті жасыру</translation>
 <translation id="500920857929044050">Тексеруді тоқтату</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -210,6 +216,7 @@
 <translation id="54609108002486618">Басқарылады</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} әрекет қалды.}other{{0} мүмкіндік қалды}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
+<translation id="5499114900554609492">Сканерлеу аяқталмады</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Белсендірілуде</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -224,6 +231,7 @@
 <translation id="5916084858004523819">Тыйым салынды</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Файлыңыз сканерленді және <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> қалтасына сақталды.}other{Файлдарыңыз сканерленді және <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> қалтасына сақталды.}}</translation>
 <translation id="5931523347251946569">Файл табылмады.</translation>
+<translation id="6037291330010597344">Сканердің құжат бергіші бос. Құжаттар қосып, әрекетті қайталаңыз.</translation>
 <translation id="6040143037577758943">Жабу</translation>
 <translation id="6040852767465482106">Анонимді сәйкестік</translation>
 <translation id="604124094241169006">Автоматты</translation>
@@ -246,6 +254,7 @@
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> тексерісінен бас тартылды.</translation>
 <translation id="6325525973963619867">Қате шықты</translation>
 <translation id="636850387210749493">Кәсіпорынды тіркеу</translation>
+<translation id="6388847657025262518">Сканердің құжат бергіші кептеліп қалды. Құжат бергішті тексеріп, әрекетті қайталаңыз.</translation>
 <translation id="641081527798843608">Тақырып сәйкестігі</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6456394469623773452">Жақсы</translation>
@@ -267,7 +276,7 @@
 <translation id="6766275201586212568">DNS ажыратымдылықтары сәтсіз болды.</translation>
 <translation id="6768237774506518020">DNS ажыратымдылығының ақау көрсеткіші жоғары.</translation>
 <translation id="6853312040151791195">Заряд азаюының жылдамдығы</translation>
-<translation id="6898743098396957679">Сканерлеуді аяқтау мүмкін болмады</translation>
+<translation id="6910312834584889076">Сканердің жапқышы ашық. Оның жапқышын жауып, әрекетті қайталаңыз.</translation>
 <translation id="6911383237894364323">Медиасерверлерге қосылмады.</translation>
 <translation id="6957231940976260713">Қызмет атауы</translation>
 <translation id="6977381486153291903">Микробағдарлама нұсқасы</translation>
@@ -275,12 +284,14 @@
 <translation id="7040230719604914234">Оператор</translation>
 <translation id="7059230779847288458">Зарядталуда, толғанға дейінгі уақыт: <ph name="TIME_VALUE" /></translation>
 <translation id="708426984172631313">ТОҚТАТЫЛДЫ</translation>
+<translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="7143207342074048698">Қосылып жатыр</translation>
 <translation id="7144878232160441200">Қайталау</translation>
 <translation id="714876143603641390">LAN қосылу мүмкіндігі</translation>
 <translation id="7162487448488904999">Галерея</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> құрылғысын <ph name="MANAGER" /> басқарады. Әкімшілер құрылғыны қашықтан конфигурациялай алады.</translation>
 <translation id="7216409898977639127">Ұялы байланыс провайдері</translation>
+<translation id="7271040990581020067">Сканер пайдаланылуда. Кейінірек қайталап көріңіз.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7343649194310845056">Желілік құрылғылар</translation>
 <translation id="7359657277149375382">Файл түрі</translation>
@@ -306,6 +317,7 @@
 <translation id="7769672763586021400">Үлгі идентификаторы</translation>
 <translation id="7805768142964895445">Күйі</translation>
 <translation id="7819857487979277519">PSK (WPA немесе RSN)</translation>
+<translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Провайдер түрі</translation>
 <translation id="7936303884198020182">Атау серверлері табылмады.</translation>
 <translation id="7960831585769876809">Температура</translation>
@@ -335,6 +347,7 @@
 <translation id="8483248364096924578">IP мекенжайы</translation>
 <translation id="8503813439785031346">Пайдаланушы аты</translation>
 <translation id="8503836310948963452">Бірнеше минут қана…</translation>
+<translation id="8575298406870537639">Желіге қосылу үшін оператор осы опцияны талап етуі мүмкін. Мәліметтер алу үшін операторыңызға хабарласыңыз.</translation>
 <translation id="8576249514688522074">Бастаудан бас тартылды</translation>
 <translation id="8620617069779373398">Роуминг күйі</translation>
 <translation id="8675354002693747642">Алдын ала бөлісілген код</translation>
@@ -347,6 +360,7 @@
 <translation id="8798099450830957504">Әдепкі</translation>
 <translation id="8798441408945964110">Провайдер аты</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8818152010000655963">Тұсқағаз</translation>
 <translation id="8845001906332463065">Анықтама алу</translation>
 <translation id="8881098542468797602">Тексеріс сәтті аяқталды.</translation>
 <translation id="8898840733695078011">Сигнал күші</translation>
@@ -364,6 +378,7 @@
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> үшін билетті жаңарту</translation>
 <translation id="9106415115617144481"><ph name="PAGE_NUMBER" />-бет сканерленуде</translation>
 <translation id="9111102763498581341">Құлпын ашу</translation>
+<translation id="9137526406337347448">Google қызметтері</translation>
 <translation id="9149391708638971077">Жад тексерісін іске қосу</translation>
 <translation id="9173638680043580060">Бір минутқа жетпейтін уақыт қалды.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + алдын ала бөлісілген кілт</translation>

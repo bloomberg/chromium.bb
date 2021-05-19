@@ -143,7 +143,7 @@ void ValidateGetServers(size_t expected_servers) {
 
 class ChannelFixture {
  public:
-  ChannelFixture(int max_tracer_event_memory = 0) {
+  explicit ChannelFixture(int max_tracer_event_memory = 0) {
     grpc_arg client_a[] = {
         grpc_channel_arg_integer_create(
             const_cast<char*>(GRPC_ARG_MAX_CHANNEL_TRACE_EVENT_MEMORY_PER_NODE),
@@ -200,8 +200,8 @@ void ValidateChildInteger(const Json::Object& object, const std::string& key,
   }
   ASSERT_NE(it, object.end());
   ASSERT_EQ(it->second.type(), Json::Type::STRING);
-  int64_t gotten_number =
-      (int64_t)strtol(it->second.string_value().c_str(), nullptr, 0);
+  int64_t gotten_number = static_cast<int64_t>(
+      strtol(it->second.string_value().c_str(), nullptr, 0));
   EXPECT_EQ(gotten_number, expected);
 }
 
@@ -417,7 +417,7 @@ TEST_F(ChannelzRegistryBasedTest, GetTopChannelsMiddleUuidCheck) {
   Json& array = (*parsed_json.mutable_object())["channel"];
   ValidateJsonArraySize(array, kNumChannels - kMidQuery + 1);
   std::vector<intptr_t> uuids = GetUuidListFromArray(array.array_value());
-  for (int i = 0; i < uuids.size(); ++i) {
+  for (size_t i = 0; i < uuids.size(); ++i) {
     EXPECT_EQ(static_cast<intptr_t>(kMidQuery + i), uuids[i]);
   }
 }
@@ -439,7 +439,7 @@ TEST_F(ChannelzRegistryBasedTest, GetTopChannelsNoHitUuid) {
   Json& array = (*parsed_json.mutable_object())["channel"];
   ValidateJsonArraySize(array, 10);
   std::vector<intptr_t> uuids = GetUuidListFromArray(array.array_value());
-  for (int i = 0; i < uuids.size(); ++i) {
+  for (size_t i = 0; i < uuids.size(); ++i) {
     EXPECT_EQ(static_cast<intptr_t>(51 + i), uuids[i]);
   }
 }

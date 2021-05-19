@@ -139,6 +139,9 @@ struct AdvertisingOptions {
   // By default, this option is false. If true, this allows listening on
   // incoming Bluetooth Classic connections while BLE advertising.
   bool enable_bluetooth_listening = false;
+  // By default, this option is false. If true, this allows listening on
+  // incoming Web RTC connections while advertising.
+  bool enable_webrtc_listening = false;
   // Optional. If set, BLE advertisements will be in their "fast advertisement"
   // form, use this UUID, and non-connectable; if empty, BLE advertisements
   // will otherwise be normal and connectable.
@@ -259,4 +262,16 @@ enum Medium {
   kNfc = 7,
   kWifiDirect = 8,
   kWebRtc = 9,
+};
+
+// Log severity levels. This is passed as a member of
+// NearbyConnectionsDependencies to set the minimum log level in the Nearby
+// Connections library. Entries should be kept in sync with the values in
+// location::nearby::api::LogMessage::Severity.
+enum LogSeverity {
+  kVerbose = -1,
+  kInfo = 0,
+  kWarning = 1,
+  kError = 2,
+  kFatal = 3,
 };

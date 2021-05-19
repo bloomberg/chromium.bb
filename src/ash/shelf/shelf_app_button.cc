@@ -434,11 +434,6 @@ void ShelfAppButton::ShowContextMenu(const gfx::Point& p,
 
   auto weak_this = weak_factory_.GetWeakPtr();
 
-  if (source_type == ui::MenuSourceType::MENU_SOURCE_MOUSE ||
-      source_type == ui::MenuSourceType::MENU_SOURCE_KEYBOARD) {
-    GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
-  }
-
   ShelfButton::ShowContextMenu(p, source_type);
 
   // This object may have been destroyed by ShowContextMenu.
@@ -456,7 +451,7 @@ void ShelfAppButton::ShowContextMenu(const gfx::Point& p,
 
 void ShelfAppButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ShelfButton::GetAccessibleNodeData(node_data);
-  const base::string16 title = shelf_view_->GetTitleForView(this);
+  const std::u16string title = shelf_view_->GetTitleForView(this);
   node_data->SetName(title.empty() ? GetAccessibleName() : title);
 
   switch (app_status_) {

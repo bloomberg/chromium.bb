@@ -18,6 +18,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
+#include "content/public/browser/global_routing_id.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -38,30 +39,42 @@ class FidoAuthenticator;
 class FidoDiscoveryFactory;
 }  // namespace device
 
+// ChromeWebAuthenticationDelegate is the //chrome layer implementation of
+// content::WebAuthenticationDelegate.
+class ChromeWebAuthenticationDelegate
+    : public content::WebAuthenticationDelegate {
+ public:
+#if defined(OS_MAC)
+  // Returns a configuration struct for instantiating the macOS WebAuthn
+  // platform authenticator for the given Profile.
+  static TouchIdAuthenticatorConfig TouchIdAuthenticatorConfigForProfile(
+      Profile* profile);
+#endif  // defined(OS_MAC)
+
+  ~ChromeWebAuthenticationDelegate() override;
+
+  // content::WebAuthenticationDelegate:
+#if defined(OS_MAC)
+  base::Optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig(
+      content::BrowserContext* browser_context) override;
+#endif  // defined(OS_MAC)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ChromeOSGenerateRequestIdCallback GetGenerateRequestIdCallback(
+      content::RenderFrameHost* render_frame_host) override;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  base::Optional<bool> IsUserVerifyingPlatformAuthenticatorAvailableOverride(
+      content::RenderFrameHost* render_frame_host) override;
+};
+
 class ChromeAuthenticatorRequestDelegate
     : public content::AuthenticatorRequestClientDelegate,
       public AuthenticatorRequestDialogModel::Observer {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-#if defined(OS_MAC)
-  static TouchIdAuthenticatorConfig TouchIdAuthenticatorConfigForProfile(
-      Profile* profile);
-#endif  // defined(OS_MAC)
-
   // The |render_frame_host| must outlive this instance.
   explicit ChromeAuthenticatorRequestDelegate(
       content::RenderFrameHost* render_frame_host);
   ~ChromeAuthenticatorRequestDelegate() override;
-
-#if defined(OS_MAC)
-  base::Optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig()
-      override;
-#endif  // defined(OS_MAC)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  ChromeOSGenerateRequestIdCallback GetGenerateRequestIdCallback(
-      content::RenderFrameHost* render_frame_host) override;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   base::WeakPtr<ChromeAuthenticatorRequestDelegate> AsWeakPtr();
 
@@ -97,10 +110,6 @@ class ChromeAuthenticatorRequestDelegate
       base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
           callback) override;
   bool IsFocused() override;
-  base::Optional<bool> IsUserVerifyingPlatformAuthenticatorAvailableOverride()
-      override;
-  void UpdateLastTransportUsed(
-      device::FidoTransportProtocol transport) override;
   void DisableUI() override;
   bool IsWebAuthnUIEnabled() override;
   void SetConditionalRequest(bool is_conditional) override;
@@ -117,7 +126,7 @@ class ChromeAuthenticatorRequestDelegate
   bool SupportsPIN() const override;
   void CollectPIN(
       CollectPINOptions options,
-      base::OnceCallback<void(base::string16)> provide_pin_cb) override;
+      base::OnceCallback<void(std::u16string)> provide_pin_cb) override;
   void StartBioEnrollment(base::OnceClosure next_callback) override;
   void OnSampleCollected(int bio_samples_remaining) override;
   void FinishCollectToken() override;
@@ -134,10 +143,11 @@ class ChromeAuthenticatorRequestDelegate
   FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
                            TestPairedDeviceAddressPreference);
 
-  content::RenderFrameHost* render_frame_host() const {
-    return render_frame_host_;
-  }
-  content::BrowserContext* browser_context() const;
+  // GetRenderFrameHost returns a pointer to the RenderFrameHost that was given
+  // to the constructor.
+  content::RenderFrameHost* GetRenderFrameHost() const;
+
+  content::BrowserContext* GetBrowserContext() const;
 
   base::Optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
 
@@ -152,7 +162,7 @@ class ChromeAuthenticatorRequestDelegate
 
   void HandleCablePairingEvent(device::cablev2::PairingEvent pairing);
 
-  content::RenderFrameHost* const render_frame_host_;
+  const content::GlobalFrameRoutingId render_frame_host_id_;
   // Holds ownership of AuthenticatorRequestDialogModel until
   // OnTransportAvailabilityEnumerated() is invoked, at which point the
   // ownership of the model is transferred to AuthenticatorRequestDialogView and

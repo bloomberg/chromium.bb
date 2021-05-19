@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 576 tests; 409 PASS, 167 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 596 tests; 412 PASS, 184 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Parsing: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -417,8 +417,8 @@ FAIL Parsing: <non-special://a>b> against <about:blank> assert_throws_js: functi
 FAIL Parsing: <non-special://a^b> against <about:blank> assert_throws_js: function "function() {
           bURL(expected.input, expected.base)
         }" did not throw
-FAIL Parsing: <http://!"$&'()*+,-.;=_`{|}~/> against <about:blank> Failed to construct 'URL': Invalid URL
-FAIL Parsing: <sc://!"$&'()*+,-.;=_`{|}~/> against <about:blank> assert_equals: host expected "%1F!\"$&'()*+,-.;=_`{|}~" but got ""
+FAIL Parsing: <http://!"$&'()*+,-.;=_`{}~/> against <about:blank> Failed to construct 'URL': Invalid URL
+FAIL Parsing: <sc://!"$&'()*+,-.;=_`{}~/> against <about:blank> assert_equals: host expected "%1F!\"$&'()*+,-.;=_`{}~" but got ""
 PASS Parsing: <ftp://example.com%80/> against <about:blank>
 PASS Parsing: <ftp://example.com%A0/> against <about:blank>
 PASS Parsing: <https://example.com%80/> against <about:blank>
@@ -464,6 +464,26 @@ PASS Parsing: <https://0x100000000/test> against <about:blank>
 PASS Parsing: <https://256.0.0.1/test> against <about:blank>
 PASS Parsing: <file:///C%3A/> against <about:blank>
 PASS Parsing: <file:///C%7C/> against <about:blank>
+PASS Parsing: <file://%43%3A> against <about:blank>
+FAIL Parsing: <file://%43%7C> against <about:blank> assert_throws_js: function "function() {
+          bURL(expected.input, expected.base)
+        }" did not throw
+FAIL Parsing: <file://%43|> against <about:blank> assert_throws_js: function "function() {
+          bURL(expected.input, expected.base)
+        }" did not throw
+FAIL Parsing: <file://C%7C> against <about:blank> assert_throws_js: function "function() {
+          bURL(expected.input, expected.base)
+        }" did not throw
+FAIL Parsing: <file://%43%7C/> against <about:blank> assert_throws_js: function "function() {
+          bURL(expected.input, expected.base)
+        }" did not throw
+FAIL Parsing: <https://%43%7C/> against <about:blank> assert_throws_js: function "function() {
+          bURL(expected.input, expected.base)
+        }" did not throw
+FAIL Parsing: <asdf://%43|/> against <about:blank> assert_throws_js: function "function() {
+          bURL(expected.input, expected.base)
+        }" did not throw
+FAIL Parsing: <asdf://%43%7C/> against <about:blank> assert_equals: host expected "%43%7C" but got ""
 PASS Parsing: <pix/submit.gif> against <file:///C:/Users/Domenic/Dropbox/GitHub/tmpvar/jsdom/test/level2/html/files/anchor.html>
 PASS Parsing: <..> against <file:///C:/>
 PASS Parsing: <..> against <file:///>
@@ -648,5 +668,17 @@ PASS Parsing: <#link> against <https://example.org/##link>
 PASS Parsing: <non-special:cannot-be-a-base-url-\0~> against <about:blank>
 PASS Parsing: <https://www.example.com/path{path.html?query'=query#fragment<fragment> against <about:blank>
 PASS Parsing: <https://user:pass[@foo/bar> against <http://example.org>
+FAIL Parsing: <foo:// !"$%&'()*+,-.;<=>@[\]^_`{|}~@host/> against <about:blank> assert_equals: href expected "foo://%20!%22$%&'()*+,-.%3B%3C%3D%3E%40%5B%5C%5D%5E_%60%7B%7C%7D~@host/" but got "foo:// !\"$%&'()*+,-.;<=>@[\\]^_`{|}~@host/"
+FAIL Parsing: <wss:// !"$%&'()*+,-.;<=>@[]^_`{|}~@host/> against <about:blank> assert_equals: href expected "wss://%20!%22$%&'()*+,-.%3B%3C%3D%3E%40%5B%5D%5E_%60%7B%7C%7D~@host/" but got "wss://%20!%22$%&%27()*+,-.%3B%3C%3D%3E%40%5B%5D%5E_%60%7B%7C%7D~@host/"
+FAIL Parsing: <foo://joe: !"$%&'()*+,-.:;<=>@[\]^_`{|}~@host/> against <about:blank> assert_equals: href expected "foo://joe:%20!%22$%&'()*+,-.%3A%3B%3C%3D%3E%40%5B%5C%5D%5E_%60%7B%7C%7D~@host/" but got "foo://joe: !\"$%&'()*+,-.:;<=>@[\\]^_`{|}~@host/"
+FAIL Parsing: <wss://joe: !"$%&'()*+,-.:;<=>@[]^_`{|}~@host/> against <about:blank> assert_equals: href expected "wss://joe:%20!%22$%&'()*+,-.%3A%3B%3C%3D%3E%40%5B%5D%5E_%60%7B%7C%7D~@host/" but got "wss://joe:%20!%22$%&%27()*+,-.%3A%3B%3C%3D%3E%40%5B%5D%5E_%60%7B%7C%7D~@host/"
+FAIL Parsing: <foo://!"$%&'()*+,-.;=_`{}~/> against <about:blank> assert_equals: host expected "!\"$%&'()*+,-.;=_`{}~" but got ""
+FAIL Parsing: <wss://!"$&'()*+,-.;=_`{}~/> against <about:blank> Failed to construct 'URL': Invalid URL
+FAIL Parsing: <foo://host/ !"$%&'()*+,-./:;<=>@[\]^_`{|}~> against <about:blank> assert_equals: href expected "foo://host/%20!%22$%&'()*+,-./:;%3C=%3E@[\\]^_%60%7B|%7D~" but got "foo://host/ !\"$%&'()*+,-./:;<=>@[\\]^_`{|}~"
+FAIL Parsing: <wss://host/ !"$%&'()*+,-./:;<=>@[\]^_`{|}~> against <about:blank> assert_equals: href expected "wss://host/%20!%22$%&'()*+,-./:;%3C=%3E@[/]^_%60%7B|%7D~" but got "wss://host/%20!%22$%&'()*+,-./:;%3C=%3E@[/]%5E_%60%7B%7C%7D~"
+FAIL Parsing: <foo://host/dir/? !"$%&'()*+,-./:;<=>?@[\]^_`{|}~> against <about:blank> assert_equals: href expected "foo://host/dir/?%20!%22$%&'()*+,-./:;%3C=%3E?@[\\]^_`{|}~" but got "foo://host/dir/? !\"$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+PASS Parsing: <wss://host/dir/? !"$%&'()*+,-./:;<=>?@[\]^_`{|}~> against <about:blank>
+FAIL Parsing: <foo://host/dir/# !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~> against <about:blank> assert_equals: href expected "foo://host/dir/#%20!%22#$%&'()*+,-./:;%3C=%3E?@[\\]^_%60{|}~" but got "foo://host/dir/# !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+PASS Parsing: <wss://host/dir/# !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~> against <about:blank>
 Harness: the test ran to completion.
 

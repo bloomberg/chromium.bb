@@ -13,13 +13,12 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1125124144982679672">Kdo uporablja Chrome?</translation>
 <translation id="1142745911746664600">Chroma ni mogoče posodobiti</translation>
 <translation id="1154147086299354128">&amp;Odpri v Chromu</translation>
-<translation id="123620459398936149">Chrome OS ne more sinhronizirati vaših podatkov. Posodobite geslo za Google Sync.</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> zahteva, da preberete in sprejmete pogoje storitve, preden začnete uporabljati napravo. Ti pogoji ne dopolnjujejo, spreminjajo ali omejujejo pogojev za Google Chrome OS.</translation>
 <translation id="1302523850133262269">Počakajte, da Chrome namesti najnovejše sistemske posodobitve.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">V tem računalniku je že nameščena novejša različica Google Chroma. Če programska oprema ne deluje, odstranite Google Chrome in poskusite znova.</translation>
 <translation id="1434626383986940139">Delovne različice aplikacij za Chrome</translation>
-<translation id="147727933880789532">Chrome priporoča, da to razširitev onemogočite, ker trenutno ne ustreza standardom izboljšanega varnega brskanja.</translation>
+<translation id="1507198376417198979">Prilagajanje novega profila v Chromu</translation>
 <translation id="1516530951338665275">Google Chrome potrebuje dostop do Bluetootha za nadaljevanje 
  seznanjanja. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1553358976309200471">Posodobi Chrome</translation>
@@ -28,7 +27,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1587325591171447154">Datoteka <ph name="FILE_NAME" /> je nevarna, zato jo je Chrome blokiral.</translation>
 <translation id="1597911401261118146">Če želite preveriti, ali so gesla varna pred podatkovnimi kršitvami in drugimi varnostnimi težavami, <ph name="BEGIN_LINK" />se prijavite v Chrome<ph name="END_LINK" />.</translation>
 <translation id="1619887657840448962">Zaradi večje varnosti smo v Chromu onemogočili to razširitev, ki ni navedena tukaj in je bila morda dodana brez vaše vednosti: <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />.</translation>
-<translation id="162629503687514352">Chrome OS ni mogel sinhronizirati gesel.</translation>
 <translation id="1628000112320670027">Pomoč za Chrome</translation>
 <translation id="1666409074978194368">Skoraj je posodobljen. Znova zaženite Google Chrome, da dokončate posodobitev. Anonimna okna se ne bodo znova odprla.</translation>
 <translation id="1674870198290878346">Odpiranje povezave v Chromovem oknu brez belež&amp;enja zgodovine</translation>
@@ -95,14 +93,12 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3089968997497233615">Na voljo je nova, varnejša različica Google Chroma.</translation>
 <translation id="3100998948628680988">Poimenujte profil v Chromu</translation>
 <translation id="3114643501466072395">Če želite preveriti, ali so druga gesla varna pred podatkovnimi kršitvami in drugimi varnostnimi težavami, <ph name="BEGIN_LINK" />se prijavite v Chrome<ph name="END_LINK" />.</translation>
-<translation id="3127818369811890733">Chrome OS ni mogel sinhronizirati podatkov.</translation>
 <translation id="3140883423282498090">Spremembe bodo začele veljati ob naslednjem zagonu Google Chroma.</translation>
 <translation id="3149510190863420837">Aplikacije za Chrome</translation>
 <translation id="3360895254066713204">Pomočnik za Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome se bo zdaj znova zagnal}=1{Chrome se bo znova zagnal čez eno sekundo}one{Chrome se bo znova zagnal čez # sekundo}two{Chrome se bo znova zagnal čez # sekundi}few{Chrome se bo znova zagnal čez # sekunde}other{Chrome se bo znova zagnal čez # sekund}}</translation>
 <translation id="3395323229510056640">Pomoč za OS Chrome</translation>
 <translation id="3396977131400919238">Med namestitvijo je prišlo do napake v operacijskem sistemu. Ponovno prenesite program Google Chrome.</translation>
-<translation id="3398288718845740432">Skrij v meniju Chroma</translation>
 <translation id="3434246496373299699">Chrome lahko preveri vaša gesla, ko se prijavite z računom Google</translation>
 <translation id="3451115285585441894">Dodajanje v Chrome ...</translation>
 <translation id="345171907106878721">Dodajte se v Chrome</translation>
@@ -150,7 +146,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4571503333518166079">Odpri nastavitve obvestil v Chromu</translation>
 <translation id="459622048091363950">Ko bo imel Chrome dostop, vas bodo spletna mesta lahko pozvala k omogočanju dostopa.</translation>
 <translation id="4600710005438004015">Chroma ni bilo mogoče posodobiti na najnovejšo različico, zato nimate novih funkcij in popravkov varnosti.</translation>
-<translation id="4631713731678262610">Skrij v meniju Chroma</translation>
 <translation id="4633000520311261472">Zaradi večje varnosti smo v Chromu onemogočili nekatere razširitve, ki niso navedene v storitvi <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> in so bile morda dodane brez vaše vednosti.</translation>
 <translation id="4666328473657283332">Če želite do stvari v Chromu dostopati v vseh svojih napravah, se prijavite, da boste lahko vklopili sinhronizacijo.</translation>
 <translation id="4728575227883772061">Namestitev ni bila izvedena zaradi nedoločene napake. Če je Google Chrome trenutno vklopljen, ga zaprite in poskusite znova.</translation>
@@ -201,6 +196,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6070348360322141662">Zaradi večje varnosti bo Google Chrome šifriral vaše podatke</translation>
 <translation id="608006075545470555">Dodajanje delovnega profila v ta brskalnik</translation>
 <translation id="6113794647360055231">Chrome je pravkar postal še boljši</translation>
+<translation id="6145313976051292476">Odpiranje datotek PDF v Chromu</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> – Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> različica beta Google Chroma</translation>
 <translation id="61852838583753520">Posodobitev &amp;sistema Chrome OS</translation>
@@ -213,7 +209,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> različica Google Chroma za razvijalce</translation>
 <translation id="6566149418543181476">Posodabljanje Google Chroma (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">Sistem Chrome OS</translation>
-<translation id="6650333065969705433">Če želite uporabljati program Rosetta za predvajanje zaščitene predstavnosti, morate znova zagnati Chrome.</translation>
 <translation id="6676384891291319759">Dostop do interneta</translation>
 <translation id="6679975945624592337">Naj se Google Chrome izvaja v ozadju</translation>
 <translation id="6739177684496155661">Želite nadaljevati v novem profilu v Chromu?</translation>
@@ -225,7 +220,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6943584222992551122">Podatki brskanja te osebe bodo izbrisani iz te naprave. Če želite podatke obnoviti, se prijavite v Chrome kot <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Pravilo za dohodni promet za Google Chrome Beta, ki dovoli promet mDNS.</translation>
 <translation id="6989339256997917931">Google Chrome je posodobljen, a ga niste uporabljali že vsaj 30 dni.</translation>
-<translation id="7054640471403081847">Ta računalnik bo kmalu prenehal prejemati posodobitve za Google Chrome, ker njegova strojna oprema ni več podprta.</translation>
+<translation id="7025800014283535195">Med profili v Chromu lahko preklapljate tukaj</translation>
 <translation id="7062128746136194023">Tvoj starš je izklopil »Dovoljenja za spletna mesta, aplikacije in razširitve« za Chrome. Dodajanje tega ni dovoljeno: <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="7098166902387133879">Google Chrome uporablja vaš mikrofon.</translation>
 <translation id="7106741999175697885">Upravitelj opravil – Google Chrome</translation>
@@ -278,7 +273,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">Ta delovni profil je v celoti ločen od osebnega profila.</translation>
 <translation id="8556340503434111824">Na voljo je nova različica Google Chroma, ki je najhitrejša doslej.</translation>
-<translation id="861359755029082151">Program Rosetta Chromu omogoča predvajanje zaščitene predstavnosti na tej strani.</translation>
 <translation id="8614913330719544658">Google Chrome se ne odziva. Ga želite znova zagnati?</translation>
 <translation id="861702415419836452">Chrome potrebuje dovoljenje za dostop do fotoaparata zaradi ustvarjanja tridimenzionalnega zemljevida okolice.</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome se bo znova zagnal čez eno minuto}one{Chrome se bo znova zagnal čez # minuto}two{Chrome se bo znova zagnal čez # minuti}few{Chrome se bo znova zagnal čez # minute}other{Chrome se bo znova zagnal čez # minut}}</translation>
@@ -292,7 +286,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="8834965163890861871">Google Chrome poskuša urejati gesla. Če želite to omogočiti, vnesite geslo za Windows.</translation>
 <translation id="884296878221830158">Določa tudi, katera stran je prikazana, ko zaženete Chrome ali kliknete gumb za domačo stran.</translation>
 <translation id="8862326446509486874">Nimate ustreznih pravic za namestitev na ravni sistema. Poskusite znova zagnati namestitveni program kot skrbnik.</translation>
-<translation id="8907709077090383765">Če želite v Chromu omogočiti predvajanje zaščitene predstavnosti, morate namestiti program Rosetta. Ali ga želite namestiti zdaj?</translation>
 <translation id="8914504000324227558">Znova zaženi Chrome</translation>
 <translation id="8922193594870374009">Če želite telefonsko številko iz <ph name="ORIGIN" /> poslati v telefon Android, se prijavite v Chrome v obeh napravah.</translation>
 <translation id="8986207147630327271">V ta brskalnik dodajate delovni profil in skrbniku omogočate nadzor samo nad delovnim profilom.</translation>
@@ -302,6 +295,8 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
 <translation id="9138603949443464873">Če želite uporabiti spremembe, znova zaženite Chrome</translation>
 <translation id="919706545465235479">Posodobite Chrome, če želite začeti sinhronizacijo</translation>
+<translation id="922152298093051471">Prilagodi Chrome</translation>
 <translation id="940313311831216333">Če želite do stvari v Chromu dostopati v vseh svojih napravah, se prijavite in nato vklopite sinhronizacijo.</translation>
 <translation id="989369509083708165">Google Chrome je privzeti brskalnik</translation>
+<translation id="989816563149873169">Bližnjica <ph name="SHORTCUT" /> omogoča preklop med profili v Chromu</translation>
 </translationbundle>

@@ -40,6 +40,7 @@ import re
 import sys
 import tempfile
 
+import six
 from six.moves import zip_longest
 
 from blinkpy.common import exit_codes
@@ -418,7 +419,7 @@ class Port(object):
 
     def default_max_locked_shards(self):
         """Returns the number of "locked" shards to run in parallel (like the http tests)."""
-        max_locked_shards = int(self.default_child_processes()) / 4
+        max_locked_shards = int(self.default_child_processes()) // 4
         if not max_locked_shards:
             return 1
         return max_locked_shards
@@ -437,7 +438,8 @@ class Port(object):
     def baseline_search_path(self):
         return (self.get_option('additional_platform_directory', []) +
                 self._flag_specific_baseline_search_path() +
-                self._compare_baseline() + self.default_baseline_search_path())
+                self._compare_baseline() +
+                list(self.default_baseline_search_path()))
 
     def default_baseline_search_path(self):
         """Returns a list of absolute paths to directories to search under for baselines.
@@ -842,7 +844,10 @@ class Port(object):
         baseline_path = self.expected_filename(test_name, '.txt')
         if not self._filesystem.exists(baseline_path):
             return None
-        text = self._filesystem.read_binary_file(baseline_path)
+        if six.PY2:
+            text = self._filesystem.read_binary_file(baseline_path)
+        else:
+            text = self._filesystem.read_text_file(baseline_path)
         return text.replace('\r\n', '\n')
 
     def reference_files(self, test_name):
@@ -1332,7 +1337,8 @@ class Port(object):
         return self.results_directory()
 
     def inspector_build_directory(self):
-        return self._build_path('resources', 'inspector')
+        return self._build_path('gen', 'third_party', 'devtools-frontend',
+                                'src', 'front_end')
 
     def generated_sources_directory(self):
         return self._build_path('gen')

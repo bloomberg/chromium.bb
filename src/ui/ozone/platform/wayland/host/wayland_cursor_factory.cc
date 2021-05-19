@@ -20,11 +20,12 @@ namespace {
 
 wl_cursor_theme* LoadCursorTheme(const std::string& name,
                                  int size,
+                                 float scale,
                                  wl_shm* shm) {
   // wl_cursor_theme_load() can return nullptr.  We don't check that here but
   // have to be cautious when we actually load the shape.
-  return wl_cursor_theme_load((name.empty() ? nullptr : name.c_str()), size,
-                              shm);
+  return wl_cursor_theme_load((name.empty() ? nullptr : name.c_str()),
+                              size * scale, shm);
 }
 
 }  // namespace
@@ -47,11 +48,7 @@ void WaylandCursorFactory::ObserveThemeChanges() {
   cursor_theme_observer_.Observe(cursor_theme_manager);
 }
 
-base::Optional<PlatformCursor> WaylandCursorFactory::GetDefaultCursor(
-    mojom::CursorType type) {
-  if (type == mojom::CursorType::kNone)
-    return nullptr;  // nullptr is used for the hidden cursor.
-
+PlatformCursor WaylandCursorFactory::GetDefaultCursor(mojom::CursorType type) {
   if (current_theme_->cache.count(type) == 0) {
     for (const std::string& name : CursorNamesFromType(type)) {
       wl_cursor* cursor = GetCursorFromTheme(name);
@@ -72,6 +69,14 @@ base::Optional<PlatformCursor> WaylandCursorFactory::GetDefaultCursor(
     return BitmapCursorFactoryOzone::GetDefaultCursor(type);
 
   return static_cast<PlatformCursor>(current_theme_->cache[type].get());
+}
+
+void WaylandCursorFactory::SetDeviceScaleFactor(float scale) {
+  if (scale_ == scale)
+    return;
+
+  scale_ = scale;
+  ReloadThemeCursors();
 }
 
 wl_cursor* WaylandCursorFactory::GetCursorFromTheme(const std::string& name) {
@@ -134,11 +139,11 @@ void WaylandCursorFactory::ReloadThemeCursors() {
   if (!base::ThreadPoolInstance::Get())
     return;
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(LoadCursorTheme, name_, size_, connection_->shm()->get()),
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(LoadCursorTheme, name_, size_, scale_,
+                     connection_->shm()->get()),
       base::BindOnce(&WaylandCursorFactory::OnThemeLoaded,
                      weak_factory_.GetWeakPtr(), name_, size_));
 }

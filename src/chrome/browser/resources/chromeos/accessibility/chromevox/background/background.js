@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Earcons} from './earcons.js';
 import {FindHandler} from './find_handler.js';
+import {LiveRegions} from './live_regions.js';
 import {MediaAutomationHandler} from './media_automation_handler.js';
-import {NextEarcons} from './next_earcons.js';
 import {RangeAutomationHandler} from './range_automation_handler.js';
 
 /**
@@ -36,12 +37,12 @@ export class Background extends ChromeVoxState {
     this.currentRange_ = null;
 
     /** @type {!AbstractEarcons} @private */
-    this.nextEarcons_ = new NextEarcons();
+    this.earcons_ = new Earcons();
 
     // Read-only earcons.
     Object.defineProperty(ChromeVox, 'earcons', {
       get: (function() {
-             return this.nextEarcons_;
+             return this.earcons_;
            }).bind(this)
     });
 
@@ -125,16 +126,10 @@ export class Background extends ChromeVoxState {
         chrome.chromeosInfoPrivate.get(['deviceType'], (result) => {
           if (result['deviceType'] ===
               chrome.chromeosInfoPrivate.DeviceType.CHROMEBOOK) {
-            chrome.chromeosInfoPrivate.isTabletModeEnabled((enabled) => {
-              // Start the tutorial if all of the following are true:
-              // 1. We are in the OOBE.
-              // 2. The device is a Chromebook.
-              // 3. The device is not in tablet mode, since a tutorial for
-              // ChromeVox touch is still under development.
-              if (!enabled) {
-                (new PanelCommand(PanelCommandType.TUTORIAL)).send();
-              }
-            });
+            // Start the tutorial if the following are true:
+            // 1. We are in the OOBE.
+            // 2. The device is a Chromebook.
+            (new PanelCommand(PanelCommandType.TUTORIAL)).send();
           }
         });
       }

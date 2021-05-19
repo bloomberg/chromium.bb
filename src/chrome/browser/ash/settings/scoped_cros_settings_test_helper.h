@@ -20,7 +20,7 @@ namespace base {
 class Value;
 }
 
-namespace chromeos {
+namespace ash {
 
 class FakeOwnerSettingsService;
 class ScopedTestCrosSettings;
@@ -82,10 +82,11 @@ class ScopedCrosSettingsTestHelper {
 
   // Get the scoped install attributes to change them as needed for the
   // current test.
-  StubInstallAttributes* InstallAttributes();
+  chromeos::StubInstallAttributes* InstallAttributes();
 
  private:
-  std::unique_ptr<ScopedStubInstallAttributes> test_install_attributes_;
+  std::unique_ptr<chromeos::ScopedStubInstallAttributes>
+      test_install_attributes_;
   std::unique_ptr<ScopedTestDeviceSettingsService>
       test_device_settings_service_;
   std::unique_ptr<ScopedTestCrosSettings> test_cros_settings_;
@@ -98,11 +99,12 @@ class ScopedCrosSettingsTestHelper {
   DISALLOW_COPY_AND_ASSIGN(ScopedCrosSettingsTestHelper);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-// TODO(https://crbug.com/1164001): remove when moved to chrome/browser/ash/.
-namespace ash {
-using ::chromeos::ScopedCrosSettingsTestHelper;
-}
+// TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::ScopedCrosSettingsTestHelper;
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_SETTINGS_SCOPED_CROS_SETTINGS_TEST_HELPER_H_

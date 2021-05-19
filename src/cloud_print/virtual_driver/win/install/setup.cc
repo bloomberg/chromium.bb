@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <iomanip>
+#include <string>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -16,7 +17,6 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
 #include "cloud_print/common/win/cloud_print_utils.h"
@@ -220,7 +220,7 @@ HRESULT InstallPrinter(void) {
   printer_info.pPrinterName = const_cast<LPWSTR>(driver_name.c_str());
   printer_info.pComment = const_cast<LPWSTR>(driver_name.c_str());
   printer_info.pLocation = const_cast<LPWSTR>(kGcpUrl);
-  base::string16 port_name;
+  std::u16string port_name;
   printer_info.pPortName = const_cast<LPWSTR>(kPortName);
   printer_info.Attributes = PRINTER_ATTRIBUTE_DIRECT | PRINTER_ATTRIBUTE_LOCAL;
   printer_info.pPrintProcessor = const_cast<LPWSTR>(L"winprint");

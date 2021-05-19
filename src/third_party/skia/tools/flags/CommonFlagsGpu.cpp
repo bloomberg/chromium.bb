@@ -25,11 +25,9 @@ static DEFINE_bool(hwtess, false, "Enables support for tessellation shaders (if 
 static DEFINE_int(maxTessellationSegments, 0,
                   "Overrides the max number of tessellation segments supported by the caps.");
 
-static DEFINE_bool(cc, false, "Allow coverage counting shortcuts to render paths?");
-
 static DEFINE_string(pr, "",
               "Set of enabled gpu path renderers. Defined as a list of: "
-              "[~]none [~]dashline [~]nvpr [~]ccpr [~]aahairline [~]aaconvex [~]aalinearizing "
+              "[~]none [~]dashline [~]ccpr [~]aahairline [~]aaconvex [~]aalinearizing "
               "[~]small [~]tri [~]tess [~]all");
 
 static DEFINE_int(internalSamples, 4,
@@ -46,8 +44,6 @@ static GpuPathRenderers get_named_pathrenderers_flags(const char* name) {
         return GpuPathRenderers::kNone;
     } else if (!strcmp(name, "dashline")) {
         return GpuPathRenderers::kDashLine;
-    } else if (!strcmp(name, "nvpr")) {
-        return GpuPathRenderers::kStencilAndCover;
     } else if (!strcmp(name, "ccpr")) {
         return GpuPathRenderers::kCoverageCounting;
     } else if (!strcmp(name, "aahairline")) {
@@ -94,11 +90,10 @@ void SetCtxOptionsFromCommonFlags(GrContextOptions* ctxOptions) {
         : nullptr;
 
     ctxOptions->fExecutor                            = gGpuExecutor.get();
-    ctxOptions->fDisableCoverageCountingPaths        = !FLAGS_cc;
     ctxOptions->fAllowPathMaskCaching                = FLAGS_cachePathMasks;
     ctxOptions->fAllPathsVolatile                    = FLAGS_allPathsVolatile;
     ctxOptions->fSuppressGeometryShaders             = !FLAGS_gs;
-    ctxOptions->fSuppressTessellationShaders         = !FLAGS_hwtess;
+    ctxOptions->fEnableExperimentalHardwareTessellation = FLAGS_hwtess;
     ctxOptions->fMaxTessellationSegmentsOverride     = FLAGS_maxTessellationSegments;
     ctxOptions->fGpuPathRenderers                    = collect_gpu_path_renderers_from_flags();
     ctxOptions->fInternalMultisampleCount            = FLAGS_internalSamples;

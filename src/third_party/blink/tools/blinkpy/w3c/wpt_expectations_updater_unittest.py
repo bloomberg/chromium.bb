@@ -661,33 +661,30 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                                            DesktopConfig('test-win-win10')]),
             ['Win'])
 
-    def test_merge_dicts_with_conflict_raise_exception(self):
+    def test_merge_dicts_with_differing_status_is_merged(self):
         updater = WPTExpectationsUpdater(self.mock_host())
-        # Both dicts here have the key "one", and the value is not equal.
-        with self.assertRaises(ValueError):
-            updater.merge_dicts({
+        # Both dicts here have the key "one", and the value is not equal. The
+        # actual fields get joined together.
+        result = updater.merge_dicts(
+            {
                 'external/wpt/test/path.html': {
-                    'one': {
-                        'expected': 'FAIL',
-                        'actual': 'PASS'
-                    },
-                    'two': {
-                        'expected': 'FAIL',
-                        'actual': 'TIMEOUT'
-                    },
-                    'three': {
-                        'expected': 'FAIL',
-                        'actual': 'PASS'
-                    },
+                    'one': SimpleTestResult('FAIL', 'PASS', 'bug'),
+                    'two': SimpleTestResult('FAIL', 'TIMEOUT', 'bug'),
+                    'three': SimpleTestResult('FAIL', 'PASS', 'bug'),
                 },
             }, {
                 'external/wpt/test/path.html': {
-                    'one': {
-                        'expected': 'FAIL',
-                        'actual': 'TIMEOUT'
-                    },
+                    'one': SimpleTestResult('FAIL', 'TIMEOUT', 'bug'),
                 }
             })
+        expected_result = {
+            'external/wpt/test/path.html': {
+                'one': SimpleTestResult('FAIL', 'PASS TIMEOUT', 'bug'),
+                'two': SimpleTestResult('FAIL', 'TIMEOUT', 'bug'),
+                'three': SimpleTestResult('FAIL', 'PASS', 'bug'),
+            },
+        }
+        self.assertEqual(result, expected_result)
 
     def test_merge_dicts_merges_second_dict_into_first(self):
         updater = WPTExpectationsUpdater(self.mock_host())
@@ -1286,6 +1283,36 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 'external/wpt/x.html': [
                     'crbug.com/test [ Linux ] external/wpt/x.html [ Failure ]',
                     'crbug.com/test [ Mac ] external/wpt/x.html [ Failure ]',
+                ]
+            })
+
+    def test_same_platform_one_without_results(self):
+        # In this example, there are two configs using the same platform
+        # (Mac10.10), and one of them has no results while the other one does.
+        # The specifiers are "filled in" and the failure is assumed to apply
+        # to the platform with missing results.
+        host = self.mock_host()
+        updater = WPTExpectationsUpdater(host)
+        results = {
+            'external/wpt/x.html': {
+                (
+                    DesktopConfig(port_name='test-linux-precise'),
+                    DesktopConfig(port_name='test-linux-trusty'),
+                    DesktopConfig(port_name='test-mac-mac10.10'),
+                ):
+                SimpleTestResult(expected='PASS',
+                                 actual='TEXT',
+                                 bug='crbug.com/test')
+            }
+        }
+        updater.configs_with_no_results = [
+            DesktopConfig(port_name='test-mac-mac10.10')
+        ]
+        self.assertEqual(
+            updater.create_line_dict(results), {
+                'external/wpt/x.html': [
+                    'crbug.com/test [ Linux ] external/wpt/x.html [ Failure ]',
+                    'crbug.com/test [ Mac10.10 ] external/wpt/x.html [ Failure ]',
                 ]
             })
 

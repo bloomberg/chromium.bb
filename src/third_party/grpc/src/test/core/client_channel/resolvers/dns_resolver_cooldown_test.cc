@@ -31,8 +31,6 @@
 #include "test/core/util/test_config.h"
 
 constexpr int kMinResolutionPeriodMs = 1000;
-// Provide some slack when checking intervals, to allow for test timing issues.
-constexpr int kMinResolutionPeriodForCheckMs = 900;
 
 extern grpc_address_resolver_vtable* grpc_resolve_address_impl;
 static grpc_address_resolver_vtable* default_resolve_address;
@@ -76,9 +74,16 @@ static void test_resolve_address_impl(const char* name,
   } else {
     grpc_millis now =
         grpc_timespec_to_millis_round_up(gpr_now(GPR_CLOCK_MONOTONIC));
-    GPR_ASSERT(now - last_resolution_time >= kMinResolutionPeriodForCheckMs);
+    GPR_ASSERT(now - last_resolution_time >= kMinResolutionPeriodMs);
     last_resolution_time = now;
   }
+  // For correct time diff comparisons, make sure that any subsequent calls
+  // to grpc_core::ExecCtx::Get()->Now() on this thread don't return a time
+  // which is earlier than that returned by the call(s) to
+  // gpr_now(GPR_CLOCK_MONOTONIC) within this function. This is important
+  // because the resolver's last_resolution_timestamp_ will be taken from
+  // grpc_core::ExecCtx::Get()->Now() right after this returns.
+  grpc_core::ExecCtx::Get()->InvalidateNow();
 }
 
 static grpc_error* test_blocking_resolve_address_impl(
@@ -109,14 +114,21 @@ static grpc_ares_request* test_dns_lookup_ares_locked(
   gpr_log(GPR_DEBUG,
           "last_resolution_time:%" PRId64 " now:%" PRId64
           " min_time_between:%d",
-          last_resolution_time, now, kMinResolutionPeriodForCheckMs);
+          last_resolution_time, now, kMinResolutionPeriodMs);
   if (last_resolution_time == 0) {
     last_resolution_time =
         grpc_timespec_to_millis_round_up(gpr_now(GPR_CLOCK_MONOTONIC));
   } else {
-    GPR_ASSERT(now - last_resolution_time >= kMinResolutionPeriodForCheckMs);
+    GPR_ASSERT(now - last_resolution_time >= kMinResolutionPeriodMs);
     last_resolution_time = now;
   }
+  // For correct time diff comparisons, make sure that any subsequent calls
+  // to grpc_core::ExecCtx::Get()->Now() on this thread don't return a time
+  // which is earlier than that returned by the call(s) to
+  // gpr_now(GPR_CLOCK_MONOTONIC) within this function. This is important
+  // because the resolver's last_resolution_timestamp_ will be taken from
+  // grpc_core::ExecCtx::Get()->Now() right after this returns.
+  grpc_core::ExecCtx::Get()->InvalidateNow();
   return result;
 }
 
@@ -174,7 +186,7 @@ static void poll_pollset_until_request_done(iomgr_args* args) {
     gpr_mu_unlock(args->mu);
     grpc_core::ExecCtx::Get()->Flush();
   }
-  gpr_event_set(&args->ev, (void*)1);
+  gpr_event_set(&args->ev, reinterpret_cast<void*>(1));
 }
 
 struct OnResolutionCallbackArg;
@@ -280,12 +292,16 @@ static void start_test_under_work_serializer(void* arg) {
   res_cb_arg->result_handler = new ResultHandler();
   grpc_core::ResolverFactory* factory =
       grpc_core::ResolverRegistry::LookupResolverFactory("dns");
-  grpc_uri* uri = grpc_uri_parse(res_cb_arg->uri_str, false);
+  absl::StatusOr<grpc_core::URI> uri =
+      grpc_core::URI::Parse(res_cb_arg->uri_str);
   gpr_log(GPR_DEBUG, "test: '%s' should be valid for '%s'", res_cb_arg->uri_str,
           factory->scheme());
-  GPR_ASSERT(uri != nullptr);
+  if (!uri.ok()) {
+    gpr_log(GPR_ERROR, "%s", uri.status().ToString().c_str());
+    GPR_ASSERT(uri.ok());
+  }
   grpc_core::ResolverArgs args;
-  args.uri = uri;
+  args.uri = std::move(*uri);
   args.work_serializer = *g_work_serializer;
   args.result_handler = std::unique_ptr<grpc_core::Resolver::ResultHandler>(
       res_cb_arg->result_handler);
@@ -298,7 +314,6 @@ static void start_test_under_work_serializer(void* arg) {
   args.args = &cooldown_args;
   res_cb_arg->resolver = factory->CreateResolver(std::move(args));
   GPR_ASSERT(res_cb_arg->resolver != nullptr);
-  grpc_uri_destroy(uri);
   // First resolution, would incur in system-level resolution.
   res_cb_arg->result_handler->SetCallback(on_first_resolution, res_cb_arg);
   res_cb_arg->resolver->StartLocked();

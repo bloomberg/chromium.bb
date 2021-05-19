@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/shell.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "components/exo/data_device_delegate.h"
@@ -132,7 +131,7 @@ class DataDeviceTest : public test::ExoTestBase {
     test::ExoTestBase::SetUp();
     seat_ = std::make_unique<TestSeat>();
     device_ = std::make_unique<DataDevice>(&delegate_, seat_.get());
-    data_.SetString(base::string16(base::ASCIIToUTF16("Test data")));
+    data_.SetString(std::u16string(u"Test data"));
     surface_ = std::make_unique<Surface>();
   }
 

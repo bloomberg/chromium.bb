@@ -4,10 +4,13 @@
 <translation id="1175958423215084756">Phát hiện thấy đường liên kết. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Ảnh trong thư viện</translation>
 <translation id="1430915738399379752">In</translation>
+<translation id="1467231725790366244">Đã rút <ph name="CAMERA" /> khỏi thiết bị.</translation>
 <translation id="1473110567575736769">Đồng hồ hẹn giờ 3 giây</translation>
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Chưa ghi dữ liệu nào</translation>
+<translation id="1838104802459806957">Xoay lên</translation>
+<translation id="1851169887664797861">Hiện đã có thêm các tùy chọn điều khiển máy ảnh</translation>
 <translation id="1851616744363735765">ĐÃ TẠM DỪNG</translation>
 <translation id="1862930711583847113">Không thể xuất <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Độ phân giải của ảnh</translation>
@@ -17,15 +20,18 @@
 <translation id="2064538373111010176"><ph name="CAMERA" /> đang hoạt động</translation>
 <translation id="2144806332417375165">Thông số video tùy chỉnh</translation>
 <translation id="229579744168541441">Xuất ra đĩa</translation>
+<translation id="2320741269052147773">Xoay trái</translation>
 <translation id="2501278716633472235">Quay lại</translation>
 <translation id="2501853267655415902">Đã dừng quay</translation>
 <translation id="2501953888035679275">Chụp ảnh và quay video bằng máy ảnh.</translation>
 <translation id="2549985041256363841">Bắt đầu ghi</translation>
 <translation id="2599796128805996109">Máy ảnh mặt sau</translation>
+<translation id="2879583609344924966">Đã cắm <ph name="CAMERA" /> vào thiết bị.</translation>
 <translation id="2912439424121107408">Thiết bị này không hỗ trợ chế độ Chuyên gia</translation>
 <translation id="2968794441791257519">Ảnh và video mà bạn chụp và quay bằng máy ảnh sẽ được chuyển đến thư mục Tệp đã tải xuống. Bạn có thể truy cập vào những nội dung này trong ứng dụng Files.
 
         Ứng dụng có quyền truy cập vào bộ nhớ sẽ có quyền truy cập vào ảnh và video của bạn.</translation>
+<translation id="3067436040345934772">Xoay phải</translation>
 <translation id="3081586908890909590">Chuyển sang quay video</translation>
 <translation id="313467653172006084">30 khung hình/giây</translation>
 <translation id="3183731565330012717">Loại lưới</translation>
@@ -34,6 +40,7 @@
 <translation id="3259149966178251584">Độ phân giải của máy ảnh</translation>
 <translation id="3517926952904427380">Không thể chụp ảnh chân dung</translation>
 <translation id="3569311554794739032">Bạn có thực sự muốn xóa <ph name="FILE" /> không?</translation>
+<translation id="3733597664308256288">Hiện đã có thêm các tùy chọn điều khiển máy ảnh. Hãy nhấn tổ hợp phím Tìm kiếm + Mũi tên phải để truy cập.</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Quét mã vạch</translation>
 <translation id="3892148308691398805">Sao chép văn bản</translation>
@@ -56,6 +63,7 @@
 <translation id="5671277269877808209">Vuông</translation>
 <translation id="5775960006311140197">Chế độ Chuyên gia</translation>
 <translation id="5869546221129391014">Lưới</translation>
+<translation id="5975083100439434680">Thu nhỏ</translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6073451960410192870">Dừng ghi</translation>
 <translation id="6197807149213783179">Lưu siêu dữ liệu</translation>
@@ -84,16 +92,19 @@ Nếu ý kiến phản hồi của bạn là về chất lượng ảnh hoặc v
 <translation id="7974782136796202581">Hiện các tùy chọn xoay, nghiêng, thu phóng</translation>
 <translation id="7983668134180549431">Phát hiện thấy văn bản.</translation>
 <translation id="8067883171444229417">Phát video</translation>
+<translation id="8120146556401698679">Xoay, nghiêng, thu phóng</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
 <translation id="8145038249676204903">Chuyển sang chụp ảnh</translation>
 <translation id="8239780215768881278">Chụp ảnh từ video</translation>
 <translation id="8261506727792406068">Xóa</translation>
+<translation id="8425673304802773841">Xoay xuống</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Xem trước siêu dữ liệu</translation>
 <translation id="8815966864175525708">Chuyển sang chụp ảnh chân dung</translation>
 <translation id="8828441885228359828">Tiếp tục quay</translation>
 <translation id="8870695351537079478">Không thể bắt đầu quay</translation>
+<translation id="8903921497873541725">Phóng to</translation>
 <translation id="9045155556724273246">10 giây</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>
 </translationbundle>

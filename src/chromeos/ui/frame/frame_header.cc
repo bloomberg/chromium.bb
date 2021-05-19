@@ -149,14 +149,18 @@ void FrameHeader::FrameAnimatorView::OnViewBoundsChanged(
 }
 
 void FrameHeader::FrameAnimatorView::OnImplicitAnimationsCompleted() {
-  RemoveLayerBeneathView(layer_owner_->root());
-  layer_owner_ = nullptr;
+  // TODO(crbug.com/1172694): Remove this DCHECK if this is indeed the cause.
+  DCHECK(layer_owner_);
+  if (layer_owner_) {
+    RemoveLayerBeneathView(layer_owner_->root());
+    layer_owner_.reset();
+  }
 }
 
 void FrameHeader::FrameAnimatorView::StopAnimation() {
   if (layer_owner_) {
     layer_owner_->root()->GetAnimator()->StopAnimating();
-    layer_owner_ = nullptr;
+    layer_owner_.reset();
   }
 }
 
@@ -227,7 +231,7 @@ void FrameHeader::SetPaintAsActive(bool paint_as_active) {
 
   caption_button_container_->SetPaintAsActive(paint_as_active);
   if (back_button_)
-    back_button_->set_paint_as_active(paint_as_active);
+    back_button_->SetPaintAsActive(paint_as_active);
   UpdateCaptionButtonColors();
 }
 
@@ -261,7 +265,7 @@ const chromeos::CaptionButtonModel* FrameHeader::GetCaptionButtonModel() const {
 }
 
 void FrameHeader::SetFrameTextOverride(
-    const base::string16& frame_text_override) {
+    const std::u16string& frame_text_override) {
   frame_text_override_ = frame_text_override;
   SchedulePaintForTitle();
 }
@@ -297,7 +301,7 @@ void FrameHeader::UpdateCaptionButtonColors() {
 }
 
 void FrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
-  base::string16 text = frame_text_override_;
+  std::u16string text = frame_text_override_;
   views::WidgetDelegate* target_widget_delegate =
       target_widget_->widget_delegate();
   if (text.empty() && target_widget_delegate &&

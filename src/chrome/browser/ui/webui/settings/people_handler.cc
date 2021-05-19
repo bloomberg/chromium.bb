@@ -180,7 +180,7 @@ base::Value GetAccountValue(const AccountInfo& account) {
   return dictionary;
 }
 
-base::string16 GetEnterPassphraseBody(syncer::PassphraseType passphrase_type,
+std::u16string GetEnterPassphraseBody(syncer::PassphraseType passphrase_type,
                                       base::Time passphrase_time) {
   DCHECK(syncer::IsExplicitPassphrase(passphrase_type));
   switch (passphrase_type) {
@@ -204,10 +204,10 @@ base::string16 GetEnterPassphraseBody(syncer::PassphraseType passphrase_type,
       break;
   }
   NOTREACHED();
-  return base::string16();
+  return std::u16string();
 }
 
-base::string16 GetFullEncryptionBody(syncer::PassphraseType passphrase_type,
+std::u16string GetFullEncryptionBody(syncer::PassphraseType passphrase_type,
                                      base::Time passphrase_time) {
   DCHECK(syncer::IsExplicitPassphrase(passphrase_type));
   if (passphrase_time.is_null()) {
@@ -226,7 +226,7 @@ base::string16 GetFullEncryptionBody(syncer::PassphraseType passphrase_type,
       break;
   }
   NOTREACHED();
-  return base::string16();
+  return std::u16string();
 }
 
 }  // namespace
@@ -378,7 +378,7 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     // then sign in again.
     identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
         signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
-        signin_metrics::SignoutDelete::IGNORE_METRIC);
+        signin_metrics::SignoutDelete::kIgnoreMetric);
   }
 
   // If the identity manager already has a primary account, this is a
@@ -491,7 +491,7 @@ base::Value PeopleHandler::GetStoredAccountsList() {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   base::Optional<AccountInfo> primary_account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager->GetPrimaryAccountInfo(ConsentLevel::kNotRequired));
+          identity_manager->GetPrimaryAccountInfo(ConsentLevel::kSignin));
   if (primary_account_info.has_value())
     accounts.Append(GetAccountValue(primary_account_info.value()));
   return accounts;
@@ -641,7 +641,7 @@ void PeopleHandler::HandleTurnOffSync(const base::ListValue* args) {
 
   identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
       signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
-      signin_metrics::SignoutDelete::IGNORE_METRIC);
+      signin_metrics::SignoutDelete::kIgnoreMetric);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -677,8 +677,8 @@ void PeopleHandler::HandleSignout(const base::ListValue* args) {
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
     if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
       signin_metrics::SignoutDelete delete_metric =
-          delete_profile ? signin_metrics::SignoutDelete::DELETED
-                         : signin_metrics::SignoutDelete::KEEPING;
+          delete_profile ? signin_metrics::SignoutDelete::kDeleted
+                         : signin_metrics::SignoutDelete::kKeeping;
 
       // Only revoke the sync consent.
       // * If the primary account is still valid, then it will be removed by
@@ -776,7 +776,7 @@ void PeopleHandler::CloseSyncSetup() {
                 ->GetPrimaryAccountMutator()
                 ->RevokeSyncConsent(
                     signin_metrics::ABORT_SIGNIN,
-                    signin_metrics::SignoutDelete::IGNORE_METRIC);
+                    signin_metrics::SignoutDelete::kIgnoreMetric);
           }
 #endif
         }

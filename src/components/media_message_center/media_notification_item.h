@@ -38,6 +38,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem {
   // The name of the histogram used when recording the source.
   static const char kSourceHistogramName[];
 
+  // The name of the histogram used for recording starting and stopping casting.
+  static const char kCastStartStopHistogramName[];
+
   // The source of the media session. This is used in metrics so new values must
   // only be added to the end.
   enum class Source {
@@ -61,6 +64,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem {
   // Called by MediaNotificationView when a button is pressed.
   virtual void OnMediaSessionActionButtonPressed(
       media_session::mojom::MediaSessionAction action) = 0;
+
+  // Called by MediaNotificationViewImpl when progress bar is clicked to seek.
+  virtual void SeekTo(base::TimeDelta time) = 0;
 
   // Hides the media notification.
   virtual void Dismiss() = 0;

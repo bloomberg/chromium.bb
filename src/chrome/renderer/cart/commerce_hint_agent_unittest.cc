@@ -34,7 +34,6 @@ const char* kAddToCart[] = {
   "cnc/checkout/cartItems/addItemToCart", // kohls.com
   "\"event\":\"product_added_to_cart\"", // staples.com
   "checkout/basket/add_and_show", // wayfair.com
-  "isQuickAddToCartButton=true", // costco.com
 };
 
 const char* kNotAddToCart[] = {

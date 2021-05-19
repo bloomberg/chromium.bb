@@ -18,8 +18,14 @@ const base::Feature kInterestFeedContentSuggestions{
 const base::Feature kInterestFeedV2{"InterestFeedV2",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kInterestFeedV2Autoplay{"InterestFeedV2Autoplay",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kInterestFeedV2Hearts{"InterestFeedV2Hearts",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kInterestFeedV2Scrolling{"InterestFeedV2Scrolling",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::FeatureParam<std::string> kDisableTriggerTypes{
     &kInterestFeedContentSuggestions, "disable_trigger_types", ""};
@@ -32,9 +38,6 @@ const base::FeatureParam<bool> kThrottleBackgroundFetches{
 const base::FeatureParam<bool> kOnlySetLastRefreshAttemptOnSuccess{
     &kInterestFeedContentSuggestions,
     "only_set_last_refresh_attempt_on_success", true};
-
-const base::Feature kReportFeedUserActions{"ReportFeedUserActions",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kInterestFeedV1ClicksAndViewsConditionalUpload{
     "InterestFeedV1ClickAndViewActionsConditionalUpload",

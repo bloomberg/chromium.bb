@@ -167,6 +167,14 @@ class VIZ_SERVICE_EXPORT Surface final {
   const CompositorFrame& GetActiveFrame() const;
   const CompositorFrameMetadata& GetActiveFrameMetadata() const;
 
+  void ResetInterpolatedFrame();
+  void SetInterpolatedFrame(CompositorFrame frame);
+  const CompositorFrame& GetActiveOrInterpolatedFrame() const;
+  // Returns true if the active or interpolated frame has damage due to a
+  // surface animation. This means that the damage should be respected even if
+  // the active frame index has not changed.
+  bool HasSurfaceAnimationDamage() const;
+
   // Returns the currently pending frame. You must check where HasPendingFrame()
   // returns true before calling this method.
   const CompositorFrame& GetPendingFrame();
@@ -187,6 +195,13 @@ class VIZ_SERVICE_EXPORT Surface final {
   void MarkAsDrawn();
   void NotifyAggregatedDamage(const gfx::Rect& damage_rect,
                               base::TimeTicks expected_display_time);
+
+  // True if video capture has been started. False if it has been stopped.
+  // This information is used by direct composition overlays to decide whether
+  // overlay should be used. Not all frames have copy requests after video
+  // capture. We don't want to constantly switch between overlay and non-overlay
+  // during video playback.
+  bool IsVideoCaptureOnFromClient();
 
   const base::flat_set<SurfaceId>& active_referenced_surfaces() const {
     return active_referenced_surfaces_;
@@ -243,21 +258,24 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   void ActivateIfDeadlinePassed();
 
-  std::unique_ptr<DelegatedInkMetadata> TakeDelegatedInkMetadata();
+  std::unique_ptr<gfx::DelegatedInkMetadata> TakeDelegatedInkMetadata();
 
   SurfaceSavedFrameStorage* GetSurfaceSavedFrameStorage();
 
   base::WeakPtr<Surface> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
-  // Places the copy-of-output request on the render pass defined by
-  // |PendingCopyOutputRequest::subtree_capture_id| if such a render pass
-  // exists, otherwise the request will be ignored.
-  void RequestCopyOfOutput(
-      PendingCopyOutputRequest pending_copy_output_request);
-
   // Always placed the given |copy_request| on the root render pass.
   void RequestCopyOfOutputOnRootRenderPass(
       std::unique_ptr<CopyOutputRequest> copy_request);
+
+  // Places the copy-of-output request on the render pass defined by the given
+  // id. Returns true if the request has been successfully queued and false
+  // otherwise.
+  bool RequestCopyOfOutputOnActiveFrameRenderPassId(
+      std::unique_ptr<CopyOutputRequest> copy_request,
+      CompositorRenderPassId render_pass_id);
+
+  void DidAggregate();
 
  private:
   struct FrameData {
@@ -268,7 +286,7 @@ class VIZ_SERVICE_EXPORT Surface final {
 
     // Delegated ink metadata should only be used for a single frame, so it
     // should be taken from the FrameData to use.
-    std::unique_ptr<DelegatedInkMetadata> TakeDelegatedInkMetadata() {
+    std::unique_ptr<gfx::DelegatedInkMetadata> TakeDelegatedInkMetadata() {
       return std::move(frame.metadata.delegated_ink_metadata);
     }
 
@@ -282,6 +300,12 @@ class VIZ_SERVICE_EXPORT Surface final {
     // for a callback that will supply presentation feedback to the client.
     bool will_be_notified_of_presentation = false;
   };
+
+  // Places the copy-of-output request on the render pass defined by
+  // |PendingCopyOutputRequest::subtree_capture_id| if such a render pass
+  // exists, otherwise the request will be ignored.
+  void RequestCopyOfOutput(
+      PendingCopyOutputRequest pending_copy_output_request);
 
   // Updates surface references of the surface using the referenced
   // surfaces from the most recent CompositorFrame.
@@ -329,6 +353,7 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   base::Optional<FrameData> pending_frame_data_;
   base::Optional<FrameData> active_frame_data_;
+  base::Optional<CompositorFrame> interpolated_frame_;
   bool seen_first_frame_activation_ = false;
   bool seen_first_surface_embedding_ = false;
 
@@ -362,6 +387,8 @@ class VIZ_SERVICE_EXPORT Surface final {
   SurfaceAllocationGroup* const allocation_group_;
 
   SurfaceSavedFrameStorage surface_saved_frame_storage_{this};
+
+  bool has_damage_from_interpolated_frame_ = false;
 
   base::WeakPtrFactory<Surface> weak_factory_{this};
 

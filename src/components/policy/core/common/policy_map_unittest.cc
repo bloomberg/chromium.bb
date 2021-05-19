@@ -93,7 +93,7 @@ TEST_F(PolicyMapTest, SetAndGet) {
   EXPECT_EQ(POLICY_SOURCE_CLOUD, entry->source);
   std::string error_string = base::StrCat({"Validation error: ", kTestError});
   PolicyMap::Entry::L10nLookupFunction lookup = base::BindRepeating(
-      static_cast<base::string16 (*)(int)>(&base::NumberToString16));
+      static_cast<std::u16string (*)(int)>(&base::NumberToString16));
   EXPECT_EQ(
       base::UTF8ToUTF16(error_string),
       entry->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
@@ -108,7 +108,7 @@ TEST_F(PolicyMapTest, SetAndGet) {
   EXPECT_EQ(POLICY_LEVEL_RECOMMENDED, entry->level);
   EXPECT_EQ(POLICY_SCOPE_MACHINE, entry->scope);
   EXPECT_EQ(POLICY_SOURCE_ENTERPRISE_DEFAULT, entry->source);
-  EXPECT_EQ(base::string16(), entry->GetLocalizedMessages(
+  EXPECT_EQ(std::u16string(), entry->GetLocalizedMessages(
                                   PolicyMap::MessageType::kError, lookup));
   EXPECT_FALSE(entry->external_data_fetcher);
 }
@@ -118,13 +118,12 @@ TEST_F(PolicyMapTest, AddMessage_Error) {
   SetPolicy(&map, kTestPolicyName1, base::Value(0));
   PolicyMap::Entry* entry1 = map.GetMutable(kTestPolicyName1);
   PolicyMap::Entry::L10nLookupFunction lookup = base::BindRepeating(
-      static_cast<base::string16 (*)(int)>(&base::NumberToString16));
-  EXPECT_EQ(base::string16(), entry1->GetLocalizedMessages(
+      static_cast<std::u16string (*)(int)>(&base::NumberToString16));
+  EXPECT_EQ(std::u16string(), entry1->GetLocalizedMessages(
                                   PolicyMap::MessageType::kError, lookup));
   map.AddMessage(kTestPolicyName1, PolicyMap::MessageType::kError, 1234);
-  EXPECT_EQ(
-      base::UTF8ToUTF16("1234"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
+  EXPECT_EQ(u"1234", entry1->GetLocalizedMessages(
+                         PolicyMap::MessageType::kError, lookup));
   map.AddMessage(kTestPolicyName1, PolicyMap::MessageType::kError, 5678);
   EXPECT_EQ(
       base::UTF8ToUTF16("1234\n5678"),
@@ -135,8 +134,7 @@ TEST_F(PolicyMapTest, AddMessage_Error) {
   PolicyMap::Entry* entry2 = map.GetMutable(kTestPolicyName2);
   // Test adding Error message with placeholder replacement (one arg)
   map.AddMessage(kTestPolicyName2, PolicyMap::MessageType::kError,
-                 IDS_POLICY_MIGRATED_OLD_POLICY,
-                 {base::UTF8ToUTF16("SomeNewPolicy")});
+                 IDS_POLICY_MIGRATED_OLD_POLICY, {u"SomeNewPolicy"});
   EXPECT_EQ(
       base::UTF8ToUTF16("1234\n5678"),
       entry1->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
@@ -153,10 +151,9 @@ TEST_F(PolicyMapTest, AddMessage_Error) {
                         "the SomeNewPolicy policy instead."),
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
   // Test adding Error message with placeholder replacement (two args)
-  map.AddMessage(
-      kTestPolicyName1, PolicyMap::MessageType::kError,
-      IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM,
-      {base::UTF8ToUTF16("SomeSource"), base::UTF8ToUTF16("SomeDestination")});
+  map.AddMessage(kTestPolicyName1, PolicyMap::MessageType::kError,
+                 IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM,
+                 {u"SomeSource", u"SomeDestination"});
   EXPECT_EQ(
       base::UTF8ToUTF16(
           "1234\n5678\nSharing from SomeSource to SomeDestination has "
@@ -168,9 +165,9 @@ TEST_F(PolicyMapTest, AddMessage_Error) {
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kError, lookup));
 
   // Ensure other message types are empty
-  EXPECT_EQ(base::string16(), entry2->GetLocalizedMessages(
+  EXPECT_EQ(std::u16string(), entry2->GetLocalizedMessages(
                                   PolicyMap::MessageType::kWarning, lookup));
-  EXPECT_EQ(base::string16(), entry2->GetLocalizedMessages(
+  EXPECT_EQ(std::u16string(), entry2->GetLocalizedMessages(
                                   PolicyMap::MessageType::kInfo, lookup));
 }
 
@@ -179,13 +176,12 @@ TEST_F(PolicyMapTest, AddMessage_Warning) {
   SetPolicy(&map, kTestPolicyName1, base::Value(0));
   PolicyMap::Entry* entry1 = map.GetMutable(kTestPolicyName1);
   PolicyMap::Entry::L10nLookupFunction lookup = base::BindRepeating(
-      static_cast<base::string16 (*)(int)>(&base::NumberToString16));
-  EXPECT_EQ(base::string16(), entry1->GetLocalizedMessages(
+      static_cast<std::u16string (*)(int)>(&base::NumberToString16));
+  EXPECT_EQ(std::u16string(), entry1->GetLocalizedMessages(
                                   PolicyMap::MessageType::kWarning, lookup));
   entry1->AddMessage(PolicyMap::MessageType::kWarning, 1234);
-  EXPECT_EQ(
-      base::UTF8ToUTF16("1234"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kWarning, lookup));
+  EXPECT_EQ(u"1234", entry1->GetLocalizedMessages(
+                         PolicyMap::MessageType::kWarning, lookup));
   entry1->AddMessage(PolicyMap::MessageType::kWarning, 5678);
   EXPECT_EQ(
       base::UTF8ToUTF16("1234\n5678"),
@@ -196,8 +192,7 @@ TEST_F(PolicyMapTest, AddMessage_Warning) {
   PolicyMap::Entry* entry2 = map.GetMutable(kTestPolicyName2);
   // Test adding Warning message with placeholder replacement (one arg)
   entry2->AddMessage(PolicyMap::MessageType::kWarning,
-                     IDS_POLICY_MIGRATED_OLD_POLICY,
-                     {base::UTF8ToUTF16("SomeNewPolicy")});
+                     IDS_POLICY_MIGRATED_OLD_POLICY, {u"SomeNewPolicy"});
   EXPECT_EQ(
       base::UTF8ToUTF16("1234\n5678"),
       entry1->GetLocalizedMessages(PolicyMap::MessageType::kWarning, lookup));
@@ -214,10 +209,9 @@ TEST_F(PolicyMapTest, AddMessage_Warning) {
                         "the SomeNewPolicy policy instead."),
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kWarning, lookup));
   // Test adding Warning message with placeholder replacement (two args)
-  entry1->AddMessage(
-      PolicyMap::MessageType::kWarning,
-      IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM,
-      {base::UTF8ToUTF16("SomeSource"), base::UTF8ToUTF16("SomeDestination")});
+  entry1->AddMessage(PolicyMap::MessageType::kWarning,
+                     IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM,
+                     {u"SomeSource", u"SomeDestination"});
   EXPECT_EQ(
       base::UTF8ToUTF16(
           "1234\n5678\nSharing from SomeSource to SomeDestination has "
@@ -229,9 +223,9 @@ TEST_F(PolicyMapTest, AddMessage_Warning) {
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kWarning, lookup));
 
   // Ensure other message types are empty
-  EXPECT_EQ(base::string16(), entry2->GetLocalizedMessages(
+  EXPECT_EQ(std::u16string(), entry2->GetLocalizedMessages(
                                   PolicyMap::MessageType::kError, lookup));
-  EXPECT_EQ(base::string16(), entry2->GetLocalizedMessages(
+  EXPECT_EQ(std::u16string(), entry2->GetLocalizedMessages(
                                   PolicyMap::MessageType::kInfo, lookup));
 }
 
@@ -240,13 +234,12 @@ TEST_F(PolicyMapTest, AddMessage_Info) {
   SetPolicy(&map, kTestPolicyName1, base::Value(0));
   PolicyMap::Entry* entry1 = map.GetMutable(kTestPolicyName1);
   PolicyMap::Entry::L10nLookupFunction lookup = base::BindRepeating(
-      static_cast<base::string16 (*)(int)>(&base::NumberToString16));
-  EXPECT_EQ(base::string16(), entry1->GetLocalizedMessages(
+      static_cast<std::u16string (*)(int)>(&base::NumberToString16));
+  EXPECT_EQ(std::u16string(), entry1->GetLocalizedMessages(
                                   PolicyMap::MessageType::kInfo, lookup));
   entry1->AddMessage(PolicyMap::MessageType::kInfo, 1234);
-  EXPECT_EQ(
-      base::UTF8ToUTF16("1234"),
-      entry1->GetLocalizedMessages(PolicyMap::MessageType::kInfo, lookup));
+  EXPECT_EQ(u"1234", entry1->GetLocalizedMessages(PolicyMap::MessageType::kInfo,
+                                                  lookup));
   entry1->AddMessage(PolicyMap::MessageType::kInfo, 5678);
   EXPECT_EQ(
       base::UTF8ToUTF16("1234\n5678"),
@@ -257,8 +250,7 @@ TEST_F(PolicyMapTest, AddMessage_Info) {
   PolicyMap::Entry* entry2 = map.GetMutable(kTestPolicyName2);
   // Test adding Info message with placeholder replacement (one arg)
   entry2->AddMessage(PolicyMap::MessageType::kInfo,
-                     IDS_POLICY_MIGRATED_OLD_POLICY,
-                     {base::UTF8ToUTF16("SomeNewPolicy")});
+                     IDS_POLICY_MIGRATED_OLD_POLICY, {u"SomeNewPolicy"});
   EXPECT_EQ(
       base::UTF8ToUTF16("1234\n5678"),
       entry1->GetLocalizedMessages(PolicyMap::MessageType::kInfo, lookup));
@@ -275,10 +267,9 @@ TEST_F(PolicyMapTest, AddMessage_Info) {
                         "the SomeNewPolicy policy instead."),
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kInfo, lookup));
   // Test adding Info message with placeholder replacement (two args)
-  entry1->AddMessage(
-      PolicyMap::MessageType::kInfo,
-      IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM,
-      {base::UTF8ToUTF16("SomeSource"), base::UTF8ToUTF16("SomeDestination")});
+  entry1->AddMessage(PolicyMap::MessageType::kInfo,
+                     IDS_POLICY_DLP_CLIPBOARD_BLOCKED_ON_COPY_VM,
+                     {u"SomeSource", u"SomeDestination"});
   EXPECT_EQ(
       base::UTF8ToUTF16(
           "1234\n5678\nSharing from SomeSource to SomeDestination has "
@@ -290,9 +281,9 @@ TEST_F(PolicyMapTest, AddMessage_Info) {
       entry2->GetLocalizedMessages(PolicyMap::MessageType::kInfo, lookup));
 
   // Ensure other message types are empty
-  EXPECT_EQ(base::string16(), entry2->GetLocalizedMessages(
+  EXPECT_EQ(std::u16string(), entry2->GetLocalizedMessages(
                                   PolicyMap::MessageType::kError, lookup));
-  EXPECT_EQ(base::string16(), entry2->GetLocalizedMessages(
+  EXPECT_EQ(std::u16string(), entry2->GetLocalizedMessages(
                                   PolicyMap::MessageType::kWarning, lookup));
 }
 

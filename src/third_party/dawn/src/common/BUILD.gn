@@ -75,10 +75,6 @@ config("dawn_internal") {
     defines += [ "DAWN_ENABLE_BACKEND_VULKAN" ]
   }
 
-  if (dawn_enable_wgsl) {
-    defines += [ "DAWN_ENABLE_WGSL" ]
-  }
-
   if (dawn_use_x11) {
     defines += [ "DAWN_USE_X11" ]
   }
@@ -110,16 +106,11 @@ config("dawn_internal") {
       "-Wnon-c-typedef-for-linkage",
       "-Wpessimizing-move",
       "-Wrange-loop-analysis",
+      "-Wredundant-move",
       "-Wshadow-field",
       "-Wstrict-prototypes",
       "-Wtautological-unsigned-zero-compare",
     ]
-
-    # Allow comparison against type limits that might be tautological on 32bit
-    # or 64bit systems. Without this the following produces an error on 64bit:
-    #
-    #   if (myUint64 > std::numeric_limits<size_t>::max()) {...}
-    cflags += [ "-Wno-tautological-type-limit-compare" ]
 
     if (is_win) {
       cflags += [
@@ -190,18 +181,30 @@ if (is_win || is_linux || is_chromeos || is_mac || is_fuchsia || is_android) {
       "TypeTraits.h",
       "TypedInteger.h",
       "UnderlyingType.h",
+      "VertexFormatUtils.cpp",
+      "VertexFormatUtils.h",
       "ityp_array.h",
       "ityp_bitset.h",
       "ityp_span.h",
       "ityp_stack_vec.h",
       "ityp_vector.h",
       "vulkan_platform.h",
-      "windows_with_undefs.h",
       "xlib_with_undefs.h",
     ]
 
     public_configs = [ ":dawn_internal" ]
-    deps = [ "${dawn_root}/src/dawn:dawn_headers" ]
+    deps = [
+      "${dawn_root}/src/dawn:dawn_headers",
+      "${dawn_root}/src/dawn:dawncpp_headers",
+    ]
+
+    if (is_win) {
+      sources += [
+        "WindowsUtils.cpp",
+        "WindowsUtils.h",
+        "windows_with_undefs.h",
+      ]
+    }
     if (dawn_enable_vulkan) {
       public_deps = [ "${dawn_root}/third_party/khronos:vulkan_headers" ]
     }

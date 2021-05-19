@@ -90,6 +90,16 @@ struct FeaturesVk : FeatureSetBase
         "supportsIncrementalPresent", FeatureCategory::VulkanFeatures,
         "VkDevice supports the VK_KHR_incremental_present extension", &members};
 
+    // Whether the Vulkan presentation engine rotates the present region rectangles of the
+    // VK_KHR_incremental_present extension in pre-rotation situations.  The Android presentation
+    // engine assumes that these rectangles need to be rotated, and thus ANGLE should not also
+    // pre-rotate them.
+    Feature disablePreRotateIncrementalPresentRectangles = {
+        "disablePreRotateIncrementalPresentRectangles", FeatureCategory::VulkanFeatures,
+        "Presentation engine performs necessary rotation for present region rectangles of the "
+        "VK_KHR_incremental_present extension",
+        &members};
+
     // Whether texture copies on cube map targets should be done on GPU.  This is a workaround for
     // Intel drivers on windows that have an issue with creating single-layer views on cube map
     // textures.
@@ -478,6 +488,14 @@ struct FeaturesVk : FeatureSetBase
     Feature supportsNegativeViewport = {
         "supportsNegativeViewport", FeatureCategory::VulkanFeatures,
         "The driver supports inverting the viewport with a negative height.", &members};
+
+    // The EGL_EXT_buffer_age implementation causes
+    // android.graphics.cts.BitmapTest#testDrawingHardwareBitmapNotLeaking to fail on Cuttlefish
+    // with SwANGLE. Needs investigation whether this is a race condition which could affect other
+    // Vulkan drivers, or if it's a SwiftShader bug.
+    // http://anglebug.com/3529
+    Feature enableBufferAge = {"enableBufferAge", FeatureCategory::VulkanWorkarounds,
+                               "Expose EGL_EXT_buffer_age", &members, "http://anglebug.com/3529"};
 };
 
 inline FeaturesVk::FeaturesVk()  = default;

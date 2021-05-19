@@ -86,7 +86,7 @@ class ScreenshotGrabberNotificationDelegate
 
   // message_center::NotificationDelegate:
   void Click(const base::Optional<int>& button_index,
-             const base::Optional<base::string16>& reply) override {
+             const base::Optional<std::u16string>& reply) override {
     if (!button_index) {
       // TODO(estade): this conditional can be a DCHECK after
       // NotificationDelegate::Click() is not called for notifications that are
@@ -474,7 +474,7 @@ void ChromeScreenshotGrabber::DecodeScreenshotFileForPreview(
   // external storage.
   data_decoder::DecodeImageIsolated(
       std::vector<uint8_t>(image_data.begin(), image_data.end()),
-      data_decoder::mojom::ImageCodec::DEFAULT, false,
+      data_decoder::mojom::ImageCodec::kDefault, false,
       data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
       base::BindOnce(
           &ChromeScreenshotGrabber::OnScreenshotFileForPreviewDecoded,
@@ -528,7 +528,7 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
           kNotificationId,
           l10n_util::GetStringUTF16(GetScreenshotNotificationTitle(result)),
           l10n_util::GetStringUTF16(GetScreenshotNotificationText(result)),
-          /*display_source=*/base::string16() /*system name*/,
+          /*display_source=*/std::u16string() /*system name*/,
           GURL(kNotificationOriginUrl),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,

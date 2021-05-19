@@ -23,7 +23,7 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
+#include "base/template_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
@@ -37,7 +37,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_type.h"
 #include "content/public/test/fake_frame_widget.h"
@@ -480,7 +479,7 @@ RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents);
 // with a malformed or unexpected value).
 //
 // See also:
-// - ExecJs (preferred replacement with better errror handling)
+// - ExecJs (preferred replacement with better error handling)
 // - EvalJs (if you want to retrieve a value)
 // - ExecuteScriptAsync (if you don't want to block for |script| completion)
 // - DOMMessageQueue (to manually wait for domAutomationController.send(...))
@@ -590,7 +589,7 @@ template <typename T, typename... Args>
 void ConvertToBaseValueList(base::Value::ListStorage* list,
                             T&& first,
                             Args&&... rest) {
-  using ValueType = std::remove_cv_t<std::remove_reference_t<T>>;
+  using ValueType = base::remove_cvref_t<T>;
   list->push_back(JsLiteralHelper<ValueType>::Convert(std::forward<T>(first)));
   ConvertToBaseValueList(list, std::forward<Args>(rest)...);
 }
@@ -862,6 +861,9 @@ EvalJsResult EvalJsAfterLifecycleUpdate(
 // AssertionFailure() if |script| contained a syntax error or threw an
 // exception.
 //
+// As with EvalJs(), if the script passed evaluates to a Promise, this waits
+// until it resolves.
+//
 // Unlike ExecuteScript(), this catches syntax errors and uncaught exceptions,
 // and gives more useful error messages when things go wrong. Prefer ExecJs to
 // ExecuteScript(), unless your page has a CSP.
@@ -1060,17 +1062,16 @@ class TitleWatcher : public WebContentsObserver {
   // |web_contents| must be non-NULL and needs to stay alive for the
   // entire lifetime of |this|. |expected_title| is the title that |this|
   // will wait for.
-  TitleWatcher(WebContents* web_contents,
-               const base::string16& expected_title);
+  TitleWatcher(WebContents* web_contents, const std::u16string& expected_title);
   ~TitleWatcher() override;
 
   // Adds another title to watch for.
-  void AlsoWaitForTitle(const base::string16& expected_title);
+  void AlsoWaitForTitle(const std::u16string& expected_title);
 
   // Waits until the title matches either expected_title or one of the titles
   // added with AlsoWaitForTitle. Returns the value of the most recently
   // observed matching title.
-  const base::string16& WaitAndGetTitle() WARN_UNUSED_RESULT;
+  const std::u16string& WaitAndGetTitle() WARN_UNUSED_RESULT;
 
  private:
   // Overridden WebContentsObserver methods.
@@ -1079,11 +1080,11 @@ class TitleWatcher : public WebContentsObserver {
 
   void TestTitle();
 
-  std::vector<base::string16> expected_titles_;
+  std::vector<std::u16string> expected_titles_;
   base::RunLoop run_loop_;
 
   // The most recently observed expected title, if any.
-  base::string16 observed_title_;
+  std::u16string observed_title_;
 
   DISALLOW_COPY_AND_ASSIGN(TitleWatcher);
 };
@@ -1637,9 +1638,9 @@ class WebContentsConsoleObserver : public WebContentsObserver {
   struct Message {
     RenderFrameHost* source_frame;
     blink::mojom::ConsoleMessageLevel log_level;
-    base::string16 message;
+    std::u16string message;
     int32_t line_no;
-    base::string16 source_id;
+    std::u16string source_id;
   };
 
   // A filter to apply to incoming console messages to determine whether to
@@ -1673,10 +1674,10 @@ class WebContentsConsoleObserver : public WebContentsObserver {
   void OnDidAddMessageToConsole(
       RenderFrameHost* source_frame,
       blink::mojom::ConsoleMessageLevel log_level,
-      const base::string16& message,
+      const std::u16string& message,
       int32_t line_no,
-      const base::string16& source_id,
-      const base::Optional<base::string16>& untrusted_stack_trace) override;
+      const std::u16string& source_id,
+      const base::Optional<std::u16string>& untrusted_stack_trace) override;
 
   Filter filter_;
   std::string pattern_;

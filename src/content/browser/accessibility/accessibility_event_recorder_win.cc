@@ -27,6 +27,7 @@
 namespace content {
 
 using ui::AccessibilityEventToString;
+using ui::GetHWNDBySelector;
 using ui::IAccessible2StateToString;
 using ui::IAccessibleRoleToString;
 using ui::IAccessibleStateToString;
@@ -68,7 +69,7 @@ std::string BstrToPrettyUTF8(BSTR bstr) {
   // Pretty-print the embedded object character as <obj> so that test output
   // is human-readable.
   std::wstring embedded_character = base::UTF16ToWide(
-      base::string16(1, BrowserAccessibilityComWin::kEmbeddedCharacter));
+      std::u16string(1, BrowserAccessibilityComWin::kEmbeddedCharacter));
   base::ReplaceChars(wstr, embedded_character, L"<obj>", &wstr);
 
   return base::WideToUTF8(wstr);
@@ -102,10 +103,21 @@ CALLBACK void AccessibilityEventRecorderWin::WinEventHookThunk(
 AccessibilityEventRecorderWin::AccessibilityEventRecorderWin(
     BrowserAccessibilityManager* manager,
     base::ProcessId pid,
-    const base::StringPiece& application_name_match_pattern)
+    const ui::AXTreeSelector& selector)
     : AccessibilityEventRecorder(manager) {
   CHECK(!instance_) << "There can be only one instance of"
                     << " AccessibilityEventRecorder at a time.";
+
+  // Get pid by a selector if the selectors specifies a valid process.
+  HWND hwnd_by_selector = GetHWNDBySelector(selector);
+  if (hwnd_by_selector != NULL) {
+    DWORD pid_by_selector = 0;
+    GetWindowThreadProcessId(hwnd_by_selector, &pid_by_selector);
+    if (pid_by_selector != 0) {
+      pid = static_cast<DWORD>(pid_by_selector);
+    }
+  }
+
   // For now, just use out of context events when running as a utility to watch
   // events (no BrowserAccessibilityManager), because otherwise Chrome events
   // are not getting reported. Being in context is better so that for

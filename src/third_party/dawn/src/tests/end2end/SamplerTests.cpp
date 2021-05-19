@@ -54,7 +54,7 @@ class SamplerTest : public DawnTest {
         DawnTest::SetUp();
         mRenderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-        auto vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        auto vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(vertex_index)]] var<in> VertexIndex : u32;
             [[builtin(position)]] var<out> Position : vec4<f32>;
 
@@ -69,7 +69,7 @@ class SamplerTest : public DawnTest {
                 Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
             }
         )");
-        auto fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        auto fsModule = utils::CreateShaderModule(device, R"(
             [[group(0), binding(0)]] var sampler0 : sampler;
             [[group(0), binding(1)]] var texture0 : texture_2d<f32>;
 
@@ -81,19 +81,19 @@ class SamplerTest : public DawnTest {
                 fragColor = textureSample(texture0, sampler0, FragCoord.xy / vec2<f32>(2.0, 2.0));
             })");
 
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-        pipelineDescriptor.vertexStage.module = vsModule;
-        pipelineDescriptor.cFragmentStage.module = fsModule;
-        pipelineDescriptor.cColorStates[0].format = mRenderPass.colorFormat;
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        pipelineDescriptor.vertex.module = vsModule;
+        pipelineDescriptor.cFragment.module = fsModule;
+        pipelineDescriptor.cTargets[0].format = mRenderPass.colorFormat;
 
-        mPipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+        mPipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
         mBindGroupLayout = mPipeline.GetBindGroupLayout(0);
 
         wgpu::TextureDescriptor descriptor;
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = 2;
         descriptor.size.height = 2;
-        descriptor.size.depth = 1;
+        descriptor.size.depthOrArrayLayers = 1;
         descriptor.sampleCount = 1;
         descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
         descriptor.mipLevelCount = 1;
@@ -108,12 +108,13 @@ class SamplerTest : public DawnTest {
 
         wgpu::Buffer stagingBuffer =
             utils::CreateBufferFromData(device, data, sizeof(data), wgpu::BufferUsage::CopySrc);
-        wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(stagingBuffer, 0, 256);
-        wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+        wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(stagingBuffer, 0, 256);
+        wgpu::ImageCopyTexture imageCopyTexture =
+            utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
         wgpu::Extent3D copySize = {2, 2, 1};
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+        encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
 
         wgpu::CommandBuffer copy = encoder.Finish();
         queue.Submit(1, &copy);

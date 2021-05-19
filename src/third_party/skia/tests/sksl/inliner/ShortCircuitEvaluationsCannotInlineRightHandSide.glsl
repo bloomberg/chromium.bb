@@ -1,20 +1,19 @@
 
 out vec4 sk_FragColor;
-uniform vec4 color;
-bool testA(vec4 v) {
-    return v.x <= 0.5;
+uniform vec4 colorWhite;
+bool testA_bh4(vec4 v) {
+    return bool(v.x);
 }
-bool testB(vec4 v) {
-    return v.x > 0.5;
+bool testB_bh4(vec4 v) {
+    return bool(v.y);
 }
-void main() {
-    sk_FragColor = vec4(0.0);
-    if (color.x <= 0.5 && testB(color)) {
-        sk_FragColor = vec4(0.5);
+vec4 main() {
+    vec4 result = vec4(0.0);
+    if (bool(colorWhite.x) && testB_bh4(colorWhite)) {
+        result.y = 1.0;
     }
-
-    if (color.x > 0.5 || testA(color)) {
-        sk_FragColor = vec4(1.0);
+    if (bool(colorWhite.y) || testA_bh4(colorWhite)) {
+        result.w = 1.0;
     }
-
+    return result;
 }

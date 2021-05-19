@@ -8,10 +8,10 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_features.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
@@ -178,7 +178,7 @@ AppsSection::AppsSection(Profile* profile,
                          SearchTagRegistry* search_tag_registry,
                          PrefService* pref_service,
                          ArcAppListPrefs* arc_app_list_prefs,
-                         apps::AppServiceProxy* app_service_proxy)
+                         apps::AppServiceProxyChromeOs* app_service_proxy)
     : OsSettingsSection(profile, search_tag_registry),
       pref_service_(pref_service),
       arc_app_list_prefs_(arc_app_list_prefs),

@@ -10,4 +10,4 @@ BufferMapStatesToTest = {
   created mapped-at-creation,
 }
 
-Note writeTexture is tested in copyBetweenLinearDataAndTexture.
+Note writeTexture is tested in image_copy.

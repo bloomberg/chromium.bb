@@ -69,13 +69,11 @@ CrasAudioHandler::AudioObserver::~AudioObserver() = default;
 
 void CrasAudioHandler::AudioObserver::OnOutputNodeVolumeChanged(
     uint64_t /* node_id */,
-    int /* volume */) {
-}
+    int /* volume */) {}
 
 void CrasAudioHandler::AudioObserver::OnInputNodeGainChanged(
     uint64_t /* node_id */,
-    int /* gain */) {
-}
+    int /* gain */) {}
 
 void CrasAudioHandler::AudioObserver::OnOutputMuteChanged(bool /* mute_on */) {}
 
@@ -955,13 +953,11 @@ void CrasAudioHandler::SetupAudioOutputState() {
   // Mute the output during HDMI re-discovering grace period.
   if (hdmi_rediscovering_ && !IsHDMIPrimaryOutputDevice()) {
     VLOG(1) << "Mute the output during HDMI re-discovering grace period";
-    output_mute_on_ = true;
+    SetOutputMuteInternal(true);
   } else {
-    output_mute_on_ = audio_pref_handler_->GetMuteValue(*device);
+    SetOutputMuteInternal(audio_pref_handler_->GetMuteValue(*device));
   }
   output_volume_ = audio_pref_handler_->GetOutputVolumeValue(device);
-
-  SetOutputMuteInternal(output_mute_on_);
 
   if (initializing_audio_state_) {
     // During power up, InitializeAudioState() could be called twice, first
@@ -1077,7 +1073,7 @@ void CrasAudioHandler::SetOutputNodeVolumePercent(uint64_t node_id,
     SetOutputNodeVolume(node_id, volume_percent);
 }
 
-bool  CrasAudioHandler::SetOutputMuteInternal(bool mute_on) {
+bool CrasAudioHandler::SetOutputMuteInternal(bool mute_on) {
   if (output_mute_locked_)
     return false;
 
@@ -1704,8 +1700,9 @@ void CrasAudioHandler::StartHDMIRediscoverGracePeriod() {
   hdmi_rediscovering_ = true;
   hdmi_rediscover_timer_.Stop();
   hdmi_rediscover_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(
-                     hdmi_rediscover_grace_period_duration_in_ms_),
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(
+          hdmi_rediscover_grace_period_duration_in_ms_),
       this, &CrasAudioHandler::UpdateAudioAfterHDMIRediscoverGracePeriod);
 }
 
@@ -1893,6 +1890,18 @@ void CrasAudioHandler::HandleGetSystemAecGroupId(
     return;
   }
   system_aec_group_id_ = system_aec_group_id.value();
+}
+
+ScopedCrasAudioHandlerForTesting::ScopedCrasAudioHandlerForTesting() {
+  CrasAudioHandler::InitializeForTesting();
+}
+
+ScopedCrasAudioHandlerForTesting::~ScopedCrasAudioHandlerForTesting() {
+  CrasAudioHandler::Shutdown();
+}
+
+CrasAudioHandler& ScopedCrasAudioHandlerForTesting::Get() {
+  return *CrasAudioHandler::Get();
 }
 
 }  // namespace ash

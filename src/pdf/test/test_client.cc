@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/location.h"
 #include "base/time/time.h"
 #include "pdf/document_layout.h"
 #include "pdf/ppapi_migration/url_loader.h"
@@ -44,8 +43,8 @@ std::unique_ptr<UrlLoader> TestClient::CreateUrlLoader() {
 }
 
 std::vector<PDFEngine::Client::SearchStringResult> TestClient::SearchString(
-    const base::char16* string,
-    const base::char16* term,
+    const char16_t* string,
+    const char16_t* term,
     bool case_sensitive) {
   return std::vector<SearchStringResult>();
 }
@@ -70,9 +69,9 @@ bool TestClient::IsValidLink(const std::string& url) {
   return !url.empty();
 }
 
-void TestClient::ScheduleTaskOnMainThread(base::TimeDelta delay,
+void TestClient::ScheduleTaskOnMainThread(const base::Location& from_here,
                                           ResultCallback callback,
                                           int32_t result,
-                                          const base::Location& from_here) {}
+                                          base::TimeDelta delay) {}
 
 }  // namespace chrome_pdf

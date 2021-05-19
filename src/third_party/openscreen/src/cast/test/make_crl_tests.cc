@@ -54,7 +54,7 @@ TbsCrl MakeTbsCrl(uint64_t not_before,
   // NOTE: Include default serial number range at device-level, which should not
   // include any of our certs.
   ErrorOr<uint64_t> maybe_serial =
-      ParseDerUint64(device_cert->cert_info->serialNumber);
+      ParseDerUint64(X509_get0_serialNumber(device_cert));
   OSP_DCHECK(maybe_serial);
   uint64_t serial = maybe_serial.value();
   OSP_DCHECK_LE(serial, UINT64_MAX - 200);
@@ -178,7 +178,7 @@ int CastMain() {
     TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
                                 device_cert.get(), inter_cert.get());
     ErrorOr<uint64_t> maybe_serial =
-        ParseDerUint64(inter_cert->cert_info->serialNumber);
+        ParseDerUint64(X509_get0_serialNumber(inter_cert.get()));
     OSP_DCHECK(maybe_serial);
     uint64_t serial = maybe_serial.value();
     OSP_DCHECK_GE(serial, 10);
@@ -193,7 +193,7 @@ int CastMain() {
     TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
                                 device_cert.get(), inter_cert.get());
     ErrorOr<uint64_t> maybe_serial =
-        ParseDerUint64(device_cert->cert_info->serialNumber);
+        ParseDerUint64(X509_get0_serialNumber(device_cert.get()));
     OSP_DCHECK(maybe_serial);
     uint64_t serial = maybe_serial.value();
     OSP_DCHECK_GE(serial, 10);

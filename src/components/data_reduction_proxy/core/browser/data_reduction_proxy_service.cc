@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -29,7 +30,6 @@
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_experiments.h"
 
 namespace data_reduction_proxy {
 
@@ -92,8 +92,8 @@ DataReductionProxyService::DataReductionProxyService(
                             base::BindOnce(&DBDataOwner::InitializeOnDBThread,
                                            db_data_owner_->GetWeakPtr()));
   if (prefs_) {
-    compression_stats_.reset(
-        new DataReductionProxyCompressionStats(this, prefs_, commit_delay));
+    compression_stats_ = std::make_unique<DataReductionProxyCompressionStats>(
+        this, prefs_, commit_delay);
   }
   if (data_use_measurement_) {  // null in unit tests.
     data_use_measurement_->AddServicesDataUseObserver(this);

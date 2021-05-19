@@ -144,7 +144,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleScaleAndLocationChanged(Document*) override;
   void HandleTextMarkerDataAdded(Node* start, Node* end) override;
   void HandleValueChanged(Node*) override;
-  void HandleUpdateActiveMenuOption(LayoutObject*, int option_index) override;
+  void HandleUpdateActiveMenuOption(Node*) override;
   void DidShowMenuListPopup(LayoutObject*) override;
   void DidHideMenuListPopup(LayoutObject*) override;
   void HandleLoadComplete(Document*) override;
@@ -231,6 +231,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   void StyleChangedWithCleanLayout(Node*);
   void HandleScrollPositionChangedWithCleanLayout(Node*);
   void HandleValidationMessageVisibilityChangedWithCleanLayout(const Node*);
+  void HandleUpdateActiveMenuOptionWithCleanLayout(Node*);
+  void HandleEditableTextContentChangedWithCleanLayout(Node*);
 
   bool InlineTextBoxAccessibilityEnabled();
 
@@ -249,8 +251,11 @@ class MODULES_EXPORT AXObjectCacheImpl
   // TODO(accessibility) Find out if we can merge with EnsurePostNotification().
   void PostNotification(Node*, ax::mojom::blink::Event);
   void PostNotification(AXObject*, ax::mojom::blink::Event);
-  void MarkAXObjectDirty(AXObject*, bool subtree);
-  void MarkElementDirty(const Node*, bool subtree);
+  void MarkAXObjectDirtyWithCleanLayout(
+      AXObject*,
+      bool subtree,
+      ax::mojom::blink::Action event_from_action =
+          ax::mojom::blink::Action::kNone);
 
   //
   // Aria-owns support.
@@ -407,6 +412,18 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   ax::mojom::blink::EventFrom ComputeEventFrom();
 
+  void UpdateCachedAttributeValuesWithCleanLayout(Node* node, AXObject* obj);
+  void MarkAXObjectDirtyHelper(AXObject* obj,
+                               bool subtree,
+                               ax::mojom::blink::Action event_from_action);
+  void MarkAXObjectDirty(AXObject*,
+                         bool subtree,
+                         ax::mojom::blink::Action event_from_action =
+                             ax::mojom::blink::Action::kNone);
+  void MarkElementDirty(const Node*, bool subtree);
+  void MarkAXSubtreeDirtyWithCleanLayout(AXObject*);
+  void MarkElementDirtyWithCleanLayout(const Node*, bool subtree);
+
   Member<Document> document_;
   HeapHashMap<AXID, Member<AXObject>> objects_;
   // LayoutObject and AbstractInlineTextBox are not on the Oilpan heap so we
@@ -506,7 +523,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   // Provide either a DOM node or AXObject. If both are provided, then they must
   // match, meaning that the AXObject's DOM node must equal the provided node.
   void DeferTreeUpdate(void (AXObjectCacheImpl::*method)(Node*, AXObject*),
-                       Node* node,
                        AXObject* obj);
 
   void DeferTreeUpdateInternal(base::OnceClosure callback, const Node* node);

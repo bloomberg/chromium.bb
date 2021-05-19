@@ -27,11 +27,11 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_frame_feedback.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/mojom/image_capture.mojom.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
+#include "media/capture/video/video_capture_feedback.h"
 #include "media/capture/video_capture_types.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -64,7 +64,7 @@ class CAPTURE_EXPORT VideoFrameConsumerFeedbackObserver {
   // It is used to indicate which particular frame the reported utilization
   // corresponds to.
   virtual void OnUtilizationReport(int frame_feedback_id,
-                                   media::VideoFrameFeedback feedback) {}
+                                   media::VideoCaptureFeedback feedback) {}
 };
 
 struct CAPTURE_EXPORT CapturedExternalVideoBuffer {
@@ -323,6 +323,10 @@ class CAPTURE_EXPORT VideoCaptureDevice
   // would be sequenced through the same task runner, so that deallocation
   // happens first.
   virtual void StopAndDeAllocate() = 0;
+
+  // Hints to the source that if it has an alpha channel, that alpha channel
+  // will be ignored and can be discarded.
+  virtual void SetCanDiscardAlpha(bool can_discard_alpha) {}
 
   // Retrieve the photo capabilities and settings of the device (e.g. zoom
   // levels etc). On success, invokes |callback|. On failure, drops callback

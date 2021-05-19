@@ -68,6 +68,7 @@ class CounterStyleMap;
 class CSSFontSelector;
 class CSSStyleSheet;
 class FontSelector;
+class HTMLSelectElement;
 class MediaQueryEvaluator;
 class Node;
 class RuleFeatureSet;
@@ -427,7 +428,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void UpdateStyleAndLayoutTreeForContainer(Element& container,
                                             const LogicalSize&,
                                             LogicalAxes contained_axes);
-  void RecalcStyle() { RecalcStyle({}, StyleRecalcContext()); }
+  void RecalcStyle();
 
   void ClearEnsuredDescendantStyles(Element& element);
   void RebuildLayoutTree();
@@ -436,6 +437,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool InContainerQueryStyleRecalc() const {
     return in_container_query_style_recalc_;
   }
+  void ChangeRenderingForHTMLSelect(HTMLSelectElement& select);
 
   void SetColorSchemeFromMeta(const CSSValue* color_scheme);
   const CSSValue* GetMetaColorSchemeValue() const { return meta_color_scheme_; }
@@ -580,8 +582,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // (parser-inserted scripts may not run until all pending stylesheets have
   // loaded). See:
   // https://html.spec.whatwg.org/multipage/semantics.html#interactions-of-styling-and-scripting
-  // Once the BlockHTMLParserOnStyleSheets flag has shipped, this is the same
-  // as pending_parser_blocking_stylesheets_.
   int pending_script_blocking_stylesheets_{0};
 
   // Tracks the number of currently loading top-level stylesheets which block

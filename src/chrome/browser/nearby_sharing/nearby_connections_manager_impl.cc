@@ -4,6 +4,7 @@
 
 #include "chrome/browser/nearby_sharing/nearby_connections_manager_impl.h"
 
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/browser/nearby_sharing/constants.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
+#include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chromeos/services/nearby/public/mojom/nearby_connections_types.mojom.h"
 #include "crypto/random.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -113,7 +115,10 @@ void NearbyConnectionsManagerImpl::StartAdvertising(
   bool use_ble = !is_high_power;
   auto allowed_mediums = MediumSelection::New(
       /*bluetooth=*/is_high_power, /*ble=*/use_ble,
-      ShouldEnableWebRtc(data_usage, power_level),
+      // Using kHighPower here rather than power_level to signal that power
+      // level isn't a factor when deciding whether or not to allow WebRTC
+      // upgrades from this advertisement.
+      ShouldEnableWebRtc(data_usage, PowerLevel::kHighPower),
       /*wifi_lan=*/is_high_power && kIsWifiLanSupported);
   NS_LOG(VERBOSE) << __func__ << ": "
                   << "is_high_power=" << (is_high_power ? "yes" : "no")
@@ -140,6 +145,8 @@ void NearbyConnectionsManagerImpl::StartAdvertising(
           kStrategy, std::move(allowed_mediums), auto_upgrade_bandwidth,
           /*enforce_topology_constraints=*/true,
           /*enable_bluetooth_listening=*/use_ble,
+          /*enable_webrtc_listening=*/
+          ShouldEnableWebRtc(data_usage, power_level),
           /*fast_advertisement_service_uuid=*/
           device::BluetoothUUID(kFastAdvertisementServiceUuid)),
       std::move(lifecycle_listener), std::move(callback));
@@ -307,9 +314,10 @@ void NearbyConnectionsManagerImpl::Disconnect(const std::string& endpoint_id) {
   NS_LOG(INFO) << "Disconnected from " << endpoint_id;
 }
 
-void NearbyConnectionsManagerImpl::Send(const std::string& endpoint_id,
-                                        PayloadPtr payload,
-                                        PayloadStatusListener* listener) {
+void NearbyConnectionsManagerImpl::Send(
+    const std::string& endpoint_id,
+    PayloadPtr payload,
+    base::WeakPtr<PayloadStatusListener> listener) {
   // TODO(https://crbug.com/1177088): Determine if we should attempt to bind to
   // process.
   if (!process_reference_)
@@ -332,7 +340,7 @@ void NearbyConnectionsManagerImpl::Send(const std::string& endpoint_id,
 
 void NearbyConnectionsManagerImpl::RegisterPayloadStatusListener(
     int64_t payload_id,
-    PayloadStatusListener* listener) {
+    base::WeakPtr<PayloadStatusListener> listener) {
   payload_status_listeners_.insert_or_assign(payload_id, listener);
 }
 
@@ -382,17 +390,20 @@ void NearbyConnectionsManagerImpl::Cancel(int64_t payload_id) {
 
   auto it = payload_status_listeners_.find(payload_id);
   if (it != payload_status_listeners_.end()) {
-    it->second->OnStatusUpdate(
-        PayloadTransferUpdate::New(payload_id, PayloadStatus::kCanceled,
-                                   /*total_bytes=*/0,
-                                   /*bytes_transferred=*/0),
-        /*upgraded_medium=*/base::nullopt);
-
-    // Erase using the payload ID key instead of the iterator. The
-    // OnStatusUpdate() call might result in iterator invalidation, for example,
-    // if the listener map entry is removed during a resulting payload clean-up.
+    base::WeakPtr<PayloadStatusListener> listener = it->second;
     payload_status_listeners_.erase(payload_id);
+
+    // Note: The listener might be invalidated, for example, if it is shared
+    // with another payload in the same transfer.
+    if (listener) {
+      listener->OnStatusUpdate(
+          PayloadTransferUpdate::New(payload_id, PayloadStatus::kCanceled,
+                                     /*total_bytes=*/0,
+                                     /*bytes_transferred=*/0),
+          /*upgraded_medium=*/base::nullopt);
+    }
   }
+
   process_reference_->GetNearbyConnections()->CancelPayload(
       kServiceId, payload_id,
       base::BindOnce(
@@ -633,20 +644,26 @@ void NearbyConnectionsManagerImpl::OnPayloadTransferUpdate(
     return;
 
   // If this is a payload we've registered for, then forward its status to the
-  // PayloadStatusListener. We don't need to do anything more with the payload.
+  // PayloadStatusListener if it still exists. We don't need to do anything more
+  // with the payload.
   auto listener_it = payload_status_listeners_.find(update->payload_id);
   if (listener_it != payload_status_listeners_.end()) {
-    PayloadStatusListener* listener = listener_it->second;
+    base::WeakPtr<PayloadStatusListener> listener = listener_it->second;
     switch (update->status) {
       case PayloadStatus::kInProgress:
         break;
       case PayloadStatus::kSuccess:
       case PayloadStatus::kCanceled:
       case PayloadStatus::kFailure:
-        payload_status_listeners_.erase(listener_it);
+        payload_status_listeners_.erase(update->payload_id);
         break;
     }
-    listener->OnStatusUpdate(std::move(update), GetUpgradedMedium(endpoint_id));
+    // Note: The listener might be invalidated, for example, if it is shared
+    // with another payload in the same transfer.
+    if (listener) {
+      listener->OnStatusUpdate(std::move(update),
+                               GetUpgradedMedium(endpoint_id));
+    }
     return;
   }
 

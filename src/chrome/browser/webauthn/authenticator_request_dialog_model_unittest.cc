@@ -4,6 +4,7 @@
 
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,16 +13,22 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/strings/string_util.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
+#include "device/fido/authenticator_data.h"
+#include "device/fido/authenticator_get_assertion_response.h"
+#include "device/fido/public_key_credential_user_entity.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 using testing::ElementsAre;
+using RequestType = device::FidoRequestHandlerBase::RequestType;
 
 const base::flat_set<AuthenticatorTransport> kAllTransports = {
     AuthenticatorTransport::kUsbHumanInterfaceDevice,
@@ -76,12 +83,45 @@ class BluetoothAdapterPowerOnCallbackReceiver {
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterPowerOnCallbackReceiver);
 };
 
+base::StringPiece RequestTypeToString(RequestType req_type) {
+  switch (req_type) {
+    case RequestType::kGetAssertion:
+      return "GetAssertion";
+    case RequestType::kMakeCredential:
+      return "MakeCredential";
+  }
+}
+
+enum class TransportAvailabilityParam {
+  kHasPlatformCredential,
+  kHasWinNativeAuthenticator,
+  kHasCableExtension,
+};
+
+base::StringPiece TransportAvailabilityParamToString(
+    TransportAvailabilityParam param) {
+  switch (param) {
+    case TransportAvailabilityParam::kHasPlatformCredential:
+      return "kHasPlatformCredential";
+    case TransportAvailabilityParam::kHasWinNativeAuthenticator:
+      return "kHasWinNativeAuthenticator";
+    case TransportAvailabilityParam::kHasCableExtension:
+      return "kHasCableExtension";
+  }
+}
+
+template <typename T, base::StringPiece (*F)(T)>
+std::string SetToString(base::flat_set<T> s) {
+  std::vector<base::StringPiece> names;
+  std::transform(s.begin(), s.end(), std::back_inserter(names), F);
+  return base::JoinString(names, ", ");
+}
+
 }  // namespace
 
 class AuthenticatorRequestDialogModelTest : public ::testing::Test {
  public:
   using Step = AuthenticatorRequestDialogModel::Step;
-  using RequestType = ::device::FidoRequestHandlerBase::RequestType;
 
   AuthenticatorRequestDialogModelTest() = default;
 
@@ -94,99 +134,63 @@ class AuthenticatorRequestDialogModelTest : public ::testing::Test {
 };
 
 TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
-  enum class TransportAvailabilityParam {
-    kHasPlatformCredential,
-    kHasWinNativeAuthenticator,
-    kHasCableExtension,
-  };
   const struct {
     RequestType request_type;
     base::flat_set<AuthenticatorTransport> available_transports;
-    base::Optional<AuthenticatorTransport> last_used_transport;
     base::flat_set<TransportAvailabilityParam> transport_params;
     Step expected_first_step;
   } kTestCases[] = {
       // Only a single transport is available for a GetAssertion call.
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice},
-       base::nullopt,
        {},
        Step::kUsbInsertAndActivate},
       {RequestType::kGetAssertion,
-       {AuthenticatorTransport::kNearFieldCommunication},
-       base::nullopt,
-       {},
-       Step::kTransportSelection},
-      {RequestType::kGetAssertion,
        {AuthenticatorTransport::kInternal},
-       AuthenticatorTransport::kUsbHumanInterfaceDevice,
        {},
        Step::kErrorInternalUnrecognized},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kInternal},
-       {},
        {TransportAvailabilityParam::kHasPlatformCredential},
        Step::kNotStarted},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
-       base::nullopt,
        {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
 
-      // The last used transport is available (and caBLE is not).
       {RequestType::kGetAssertion,
        kAllTransportsWithoutCable,
-       AuthenticatorTransport::kUsbHumanInterfaceDevice,
        {},
-       Step::kUsbInsertAndActivate},
+       Step::kTransportSelection},
 
-      // The last used transport is not available.
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kInternal,
         AuthenticatorTransport::kUsbHumanInterfaceDevice},
-       AuthenticatorTransport::kNearFieldCommunication,
        {},
        Step::kTransportSelection},
 
       // The KeyChain contains an allowed Touch ID credential.
       {RequestType::kGetAssertion,
        kAllTransports,
-       AuthenticatorTransport::kUsbHumanInterfaceDevice,
        {TransportAvailabilityParam::kHasPlatformCredential},
        Step::kNotStarted},
 
       // The KeyChain does not contain an allowed Touch ID credential.
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kInternal},
-       AuthenticatorTransport::kUsbHumanInterfaceDevice,
        {},
        Step::kErrorInternalUnrecognized},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kInternal},
-       AuthenticatorTransport::kInternal,
        {},
        Step::kErrorInternalUnrecognized},
       {RequestType::kGetAssertion,
        kAllTransportsWithoutCable,
-       base::nullopt,
        {},
        Step::kTransportSelection},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice,
         AuthenticatorTransport::kInternal},
-       AuthenticatorTransport::kUsbHumanInterfaceDevice,
-       {},
-       Step::kUsbInsertAndActivate},
-      {RequestType::kGetAssertion,
-       {AuthenticatorTransport::kUsbHumanInterfaceDevice,
-        AuthenticatorTransport::kInternal},
-       AuthenticatorTransport::kBluetoothLowEnergy,
-       {},
-       Step::kTransportSelection},
-      {RequestType::kGetAssertion,
-       {AuthenticatorTransport::kUsbHumanInterfaceDevice,
-        AuthenticatorTransport::kInternal},
-       AuthenticatorTransport::kInternal,
        {},
        Step::kTransportSelection},
 
@@ -194,28 +198,24 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       // not enabled by the relying party.
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice},
-       base::nullopt,
        {TransportAvailabilityParam::kHasPlatformCredential},
        Step::kUsbInsertAndActivate},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice,
         AuthenticatorTransport::kNearFieldCommunication},
-       base::nullopt,
        {TransportAvailabilityParam::kHasPlatformCredential},
        Step::kTransportSelection},
 
       // If caBLE is one of the allowed transports, it has second-highest
       // priority after Touch ID, and is auto-selected for GetAssertion
-      // operations even if the last used transport was something else.
+      // operations.
       {RequestType::kGetAssertion,
        kAllTransports,
-       base::nullopt,
        {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy,
         AuthenticatorTransport::kUsbHumanInterfaceDevice},
-       AuthenticatorTransport::kUsbHumanInterfaceDevice,
        {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
 
@@ -223,22 +223,15 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       // calls.
       {RequestType::kMakeCredential,
        kAllTransports,
-       base::nullopt,
        {},
        Step::kTransportSelection},
 
       // No transports available.
-      {RequestType::kGetAssertion,
-       {},
-       AuthenticatorTransport::kNearFieldCommunication,
-       {},
-       Step::kErrorNoAvailableTransports},
+      {RequestType::kGetAssertion, {}, {}, Step::kErrorNoAvailableTransports},
 
-      // Even when last transport used is available, we default to transport
-      // selection modal for MakeCredential.
+      // We default to transport selection modal for MakeCredential.
       {RequestType::kMakeCredential,
        kAllTransports,
-       AuthenticatorTransport::kUsbHumanInterfaceDevice,
        {},
        Step::kTransportSelection},
 
@@ -246,40 +239,43 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       // selection view for MakeCredential call.
       {RequestType::kMakeCredential,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice},
-       base::nullopt,
        {},
        Step::kUsbInsertAndActivate},
       {RequestType::kMakeCredential,
        {AuthenticatorTransport::kInternal},
-       base::nullopt,
        {},
        Step::kNotStarted},
       {RequestType::kMakeCredential,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
-       base::nullopt,
        {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
       {RequestType::kMakeCredential,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice},
-       base::nullopt,
        {},
        Step::kUsbInsertAndActivate},
 
-      // Windows authenticator will bypass the UI unless BLE is also available.
+      // Windows authenticator will bypass the UI unless caBLE is also
+      // available.
       {RequestType::kGetAssertion,
        {},
-       base::nullopt,
        {TransportAvailabilityParam::kHasWinNativeAuthenticator},
        Step::kNotStarted},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
-       base::nullopt,
        {TransportAvailabilityParam::kHasWinNativeAuthenticator,
         TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
   };
 
   for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(static_cast<int>(test_case.expected_first_step));
+    SCOPED_TRACE((SetToString<TransportAvailabilityParam,
+                              TransportAvailabilityParamToString>(
+        test_case.transport_params)));
+    SCOPED_TRACE((SetToString<device::FidoTransportProtocol, device::ToString>(
+        test_case.available_transports)));
+    SCOPED_TRACE(RequestTypeToString(test_case.request_type));
+
     TransportAvailabilityInfo transports_info;
     transports_info.is_ble_powered = true;
     transports_info.request_type = test_case.request_type;
@@ -303,8 +299,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       model.set_cable_transport_info(true, false, base::nullopt);
     }
 
-    model.StartFlow(std::move(transports_info), test_case.last_used_transport,
-                    /*is_conditional=*/false);
+    model.StartFlow(std::move(transports_info),
+                    /*use_location_bar_bubble=*/false);
     EXPECT_EQ(test_case.expected_first_step, model.current_step());
 
     if (!model.offer_try_again_in_ui()) {
@@ -324,8 +320,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportList) {
     model.set_cable_transport_info(cable_extension_provided,
                                    /*has_paired_phones=*/false,
                                    /*cable_qr_string=*/base::nullopt);
-    model.StartFlow(std::move(transports_info), base::nullopt,
-                    /*is_conditional=*/false);
+    model.StartFlow(std::move(transports_info),
+                    /*use_location_bar_bubble=*/false);
     EXPECT_THAT(model.available_transports(),
                 ::testing::UnorderedElementsAre(
                     AuthenticatorTransport::kUsbHumanInterfaceDevice,
@@ -342,7 +338,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, NoAvailableTransports) {
 
   EXPECT_CALL(mock_observer, OnStepTransition());
   model.StartFlow(TransportAvailabilityInfo(),
-                  AuthenticatorTransport::kInternal, /*is_conditional=*/false);
+                  /*use_location_bar_bubble=*/false);
   EXPECT_EQ(Step::kErrorNoAvailableTransports, model.current_step());
   testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
@@ -379,8 +375,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, AwaitingAcknowledgement) {
     transports_info.available_transports = kAllTransportsWithoutCable;
 
     EXPECT_CALL(mock_observer, OnStepTransition());
-    model.StartFlow(std::move(transports_info), base::nullopt,
-                    /*is_conditional=*/false);
+    model.StartFlow(std::move(transports_info),
+                    /*use_location_bar_bubble=*/false);
     EXPECT_EQ(Step::kTransportSelection, model.current_step());
     testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
@@ -418,8 +414,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterAlreadyPowered) {
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
     model.set_cable_transport_info(true, false, base::nullopt);
-    model.StartFlow(std::move(transports_info), base::nullopt,
-                    /*is_conditional=*/false);
+    model.StartFlow(std::move(transports_info),
+                    /*use_location_bar_bubble=*/false);
     EXPECT_EQ(test_case.expected_final_step, model.current_step());
     EXPECT_TRUE(model.ble_adapter_is_powered());
     EXPECT_FALSE(power_receiver.was_called());
@@ -447,8 +443,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterNeedToBeManuallyPowered) {
     model.AddObserver(&mock_observer);
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
     model.set_cable_transport_info(true, false, base::nullopt);
-    model.StartFlow(std::move(transports_info), base::nullopt,
-                    /*is_conditional=*/false);
+    model.StartFlow(std::move(transports_info),
+                    /*use_location_bar_bubble=*/false);
 
     EXPECT_EQ(Step::kBlePowerOnManual, model.current_step());
     EXPECT_FALSE(model.ble_adapter_is_powered());
@@ -487,8 +483,8 @@ TEST_F(AuthenticatorRequestDialogModelTest,
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
     model.set_cable_transport_info(true, false, base::nullopt);
-    model.StartFlow(std::move(transports_info), base::nullopt,
-                    /*is_conditional=*/false);
+    model.StartFlow(std::move(transports_info),
+                    /*use_location_bar_bubble=*/false);
 
     EXPECT_EQ(Step::kBlePowerOnAutomatic, model.current_step());
 
@@ -519,12 +515,11 @@ TEST_F(AuthenticatorRequestDialogModelTest,
   model.SetRequestCallback(base::BindRepeating(
       [](int* i, const std::string& authenticator_id) { ++(*i); },
       &num_called));
-  model.saved_authenticators().AddAuthenticator(
-      AuthenticatorReference("authenticator" /* authenticator_id */,
-                             AuthenticatorTransport::kInternal));
+  model.saved_authenticators().AddAuthenticator(AuthenticatorReference(
+      /*device_id=*/"authenticator", AuthenticatorTransport::kInternal));
 
-  model.StartFlow(std::move(transports_info), base::nullopt,
-                  /*is_conditional=*/false);
+  model.StartFlow(std::move(transports_info),
+                  /*use_location_bar_bubble=*/false);
   EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kTransportSelection,
             model.current_step());
   EXPECT_EQ(0, num_called);
@@ -566,10 +561,96 @@ TEST_F(AuthenticatorRequestDialogModelTest,
       },
       &dispatched_authenticator_ids));
 
-  model.StartFlow(std::move(transports_info), base::nullopt,
-                  /*is_conditional=*/false);
+  model.StartFlow(std::move(transports_info),
+                  /*use_location_bar_bubble=*/false);
 
   EXPECT_TRUE(model.should_dialog_be_hidden());
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_THAT(dispatched_authenticator_ids, ElementsAre(kWinAuthenticatorId));
+}
+
+TEST_F(AuthenticatorRequestDialogModelTest,
+       ConditionalUINoRecognizedCredential) {
+  AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
+
+  int num_called = 0;
+  model.SetRequestCallback(base::BindRepeating(
+      [](int* i, const std::string& authenticator_id) { ++(*i); },
+      &num_called));
+  model.saved_authenticators().AddAuthenticator(
+      AuthenticatorReference(/*device_id=*/"authenticator",
+                             AuthenticatorTransport::kUsbHumanInterfaceDevice));
+  model.saved_authenticators().AddAuthenticator(AuthenticatorReference(
+      /*device_id=*/"authenticator", AuthenticatorTransport::kInternal));
+
+  TransportAvailabilityInfo transports_info;
+  transports_info.available_transports = kAllTransports;
+  transports_info.has_recognized_platform_authenticator_credential = true;
+  model.StartFlow(std::move(transports_info),
+                  /*use_location_bar_bubble=*/true);
+  EXPECT_EQ(model.current_step(), Step::kLocationBarBubble);
+  EXPECT_TRUE(model.should_dialog_be_hidden());
+  EXPECT_EQ(num_called, 0);
+}
+
+TEST_F(AuthenticatorRequestDialogModelTest, ConditionalUIRecognizedCredential) {
+  AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
+
+  int num_called = 0;
+  model.SetRequestCallback(base::BindRepeating(
+      [](int* i, const std::string& authenticator_id) {
+        EXPECT_EQ(authenticator_id, "internal");
+        ++(*i);
+      },
+      &num_called));
+  model.saved_authenticators().AddAuthenticator(AuthenticatorReference(
+      /*device_id=*/"usb", AuthenticatorTransport::kUsbHumanInterfaceDevice));
+  model.saved_authenticators().AddAuthenticator(AuthenticatorReference(
+      /*device_id=*/"internal", AuthenticatorTransport::kInternal));
+
+  TransportAvailabilityInfo transports_info;
+  transports_info.available_transports = kAllTransports;
+  transports_info.has_recognized_platform_authenticator_credential = true;
+  device::PublicKeyCredentialUserEntity user_1({1, 2, 3, 4});
+  device::PublicKeyCredentialUserEntity user_2({5, 6, 7, 8});
+  transports_info.recognized_platform_authenticator_credentials = {user_1,
+                                                                   user_2};
+  model.StartFlow(std::move(transports_info),
+                  /*is_location_bar_bubble_ui==*/true);
+  EXPECT_EQ(model.current_step(), Step::kLocationBarBubble);
+  EXPECT_TRUE(model.should_dialog_be_hidden());
+  EXPECT_EQ(num_called, 0);
+
+  // After selecting an account, the request should be dispatched to the
+  // platform authenticator.
+  model.OnAccountSelected(0);
+  task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(num_called, 1);
+
+  static const uint8_t kAppParam[32] = {0};
+  static const uint8_t kSignatureCounter[4] = {0};
+  device::AuthenticatorData auth_data(kAppParam, /*flags=*/0, kSignatureCounter,
+                                      base::nullopt);
+  device::AuthenticatorGetAssertionResponse response_1(
+      device::AuthenticatorData(kAppParam, /*flags=*/0, kSignatureCounter,
+                                base::nullopt),
+      /*signature=*/{1});
+  response_1.user_entity = user_1;
+  device::AuthenticatorGetAssertionResponse response_2(
+      device::AuthenticatorData(kAppParam, /*flags=*/0, kSignatureCounter,
+                                base::nullopt),
+      /*signature=*/{2});
+  response_2.user_entity = user_2;
+
+  uint8_t selected_id = -1;
+  std::vector<device::AuthenticatorGetAssertionResponse> responses;
+  responses.push_back(std::move(response_1));
+  responses.push_back(std::move(response_2));
+  model.SelectAccount(
+      std::move(responses),
+      base::BindLambdaForTesting(
+          [&](device::AuthenticatorGetAssertionResponse selected) {
+            selected_id = selected.signature[0];
+          }));
+  EXPECT_EQ(selected_id, 1);
 }

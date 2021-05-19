@@ -6,20 +6,27 @@
 
 #include "chrome/browser/enterprise/connectors/device_trust/signal_reporter.h"
 
+#include "base/json/json_reader.h"
+#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/policy/messaging_layer/public/mock_report_queue.h"
+#include "chrome/browser/enterprise/connectors/device_trust/mock_signal_reporter.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #include "components/policy/core/common/cloud/dm_token.h"
+#include "components/reporting/client/mock_report_queue.h"
+#include "components/reporting/client/report_queue.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 using testing::Invoke;
+
 namespace enterprise_connectors {
 
-class DeviceTrustSignalReporterForTest : public DeviceTrustSignalReporter {
+class DeviceTrustSignalReporterForTest
+    : public DeviceTrustSignalReporterForTestBase {
  public:
-  using DeviceTrustSignalReporter::DeviceTrustSignalReporter;
+  using DeviceTrustSignalReporterForTestBase::
+      DeviceTrustSignalReporterForTestBase;
   reporting::MockReportQueue* GetReportQueue() { return mock_queue_; }
 
   // Mocking this method because 1) it replies on CloudPolicyClient in
@@ -27,46 +34,22 @@ class DeviceTrustSignalReporterForTest : public DeviceTrustSignalReporter {
   // failure.
   MOCK_METHOD(void,
               PostCreateReportQueueTask,
-              (reporting::ReportingClient::CreateReportQueueCallback,
+              (reporting::ReportQueueProvider::CreateReportQueueCallback,
                std::unique_ptr<reporting::ReportQueueConfiguration>));
 
   // Invoke this method upon calling PostCreateReportQueueTask to mock queue
   // creation success.
-  void CreateMockReportQueueAndCallback(
-      reporting::ReportingClient::CreateReportQueueCallback create_queue_cb,
-      std::unique_ptr<reporting::ReportQueueConfiguration> config) {
-    mock_queue_ = new testing::StrictMock<reporting::MockReportQueue>();
-    std::move(create_queue_cb)
-        .Run({std::unique_ptr<reporting::ReportQueue>(mock_queue_)});
-  }
-
+  using DeviceTrustSignalReporterForTestBase::CreateMockReportQueueAndCallback;
   // Invoke this method upon calling PostCreateReportQueueTask to mock queue
-  // creation success.
-  void FailCreateReportQueueAndCallback(
-      reporting::ReportingClient::CreateReportQueueCallback create_queue_cb,
-      std::unique_ptr<reporting::ReportQueueConfiguration> config) {
-    std::move(create_queue_cb)
-        .Run(
-            reporting::Status(reporting::error::INTERNAL,
-                              "Mocked ReportQueue creation failure for tests"));
-  }
-
- protected:
-  // Overriding this method as it relies on CloudPolicyClient in production.
-  policy::DMToken GetDmToken() const override {
-    return policy::DMToken::CreateValidTokenForTesting("dummy_token");
-  }
-
- private:
-  reporting::MockReportQueue* mock_queue_{nullptr};
-  base::OnceCallback<void(void)> create_queue_cb_;
+  // creation failure.
+  using DeviceTrustSignalReporterForTestBase::FailCreateReportQueueAndCallback;
 };
 
 class DeviceTrustSignalReporterTest : public testing::Test {
  public:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        reporting::ReportingClient::kEncryptedReportingPipeline);
+        reporting::ReportQueueProvider::kEncryptedReportingPipeline);
   }
 
   void InitQueue() {
@@ -91,11 +74,16 @@ class DeviceTrustSignalReporterTest : public testing::Test {
 
     if (success) {
       ASSERT_NE(reporter_.GetReportQueue(), nullptr);
-      EXPECT_CALL(*(reporter_.GetReportQueue()), ValueEnqueue_(_, _, _))
-          .WillRepeatedly(Invoke(
-              [this](const base::Value& val, reporting::Priority priority,
-                     reporting::MockReportQueue::EnqueueCallback cb) {
-                msg_received_ = val.Clone();
+      // Mock AddRecord() to store message received so that its content can be
+      // verified.
+      EXPECT_CALL(*(reporter_.GetReportQueue()), AddRecord(_, _, _))
+          .WillRepeatedly(
+              Invoke([this](base::StringPiece val, reporting::Priority priority,
+                            reporting::MockReportQueue::EnqueueCallback cb) {
+                base::Optional<base::Value> msg_result =
+                    base::JSONReader::Read(val);
+                ASSERT_TRUE(msg_result.has_value());
+                msg_received_ = std::move(msg_result.value());
                 std::move(cb).Run(reporting::Status::StatusOK());
               }));
     }

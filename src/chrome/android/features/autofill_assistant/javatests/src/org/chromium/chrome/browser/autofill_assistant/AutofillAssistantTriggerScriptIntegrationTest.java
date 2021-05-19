@@ -117,13 +117,12 @@ public class AutofillAssistantTriggerScriptIntegrationTest {
 
     private void startAutofillAssistantOnTabWithParams(
             String pageToLoad, Map<String, Object> scriptParameters) {
-        AutofillAssistantArguments.Builder argsBuilder =
-                AutofillAssistantArguments.newBuilder().fromBundle(null).withInitialUrl(
-                        getURL(pageToLoad));
+        TriggerContext.Builder argsBuilder =
+                TriggerContext.newBuilder().fromBundle(null).withInitialUrl(getURL(pageToLoad));
         for (Map.Entry<String, Object> param : scriptParameters.entrySet()) {
             argsBuilder.addParameter(param.getKey(), param.getValue());
         }
-        argsBuilder.addParameter(AutofillAssistantArguments.PARAMETER_START_IMMEDIATELY, false);
+        argsBuilder.addParameter(TriggerContext.PARAMETER_START_IMMEDIATELY, false);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> AutofillAssistantFacade.start(mTestRule.getActivity(), argsBuilder.build()));
     }
@@ -234,10 +233,10 @@ public class AutofillAssistantTriggerScriptIntegrationTest {
         startAutofillAssistantOnTab(TEST_PAGE_A);
 
         Assert.assertTrue(
-                AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeLiteScriptUser());
+                AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeTriggerScriptUser());
         waitUntilViewMatchesCondition(withText("First time user"), isCompletelyDisplayed());
         Assert.assertFalse(
-                AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeLiteScriptUser());
+                AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeTriggerScriptUser());
 
         onView(withText("Not now")).perform(click());
         waitUntilViewMatchesCondition(withText("Returning user"), isCompletelyDisplayed());

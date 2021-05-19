@@ -10,10 +10,10 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -147,11 +147,11 @@ LauncherControllerHelper::LauncherControllerHelper(Profile* profile)
 LauncherControllerHelper::~LauncherControllerHelper() {}
 
 // static
-base::string16 LauncherControllerHelper::GetAppTitle(
+std::u16string LauncherControllerHelper::GetAppTitle(
     Profile* profile,
     const std::string& app_id) {
   if (app_id.empty())
-    return base::string16();
+    return std::u16string();
 
   // Get the title if the app is an ARC app. ARC shortcuts could call this
   // function when it's created, so AppService can't be used for ARC shortcuts,
@@ -164,12 +164,12 @@ base::string16 LauncherControllerHelper::GetAppTitle(
     return base::UTF8ToUTF16(app_info->name);
   }
 
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
-
   std::string name;
-  proxy->AppRegistryCache().ForOneApp(
-      app_id, [&name](const apps::AppUpdate& update) { name = update.Name(); });
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->AppRegistryCache()
+      .ForOneApp(app_id, [&name](const apps::AppUpdate& update) {
+        name = update.Name();
+      });
   if (!name.empty())
     return base::UTF8ToUTF16(name);
 
@@ -177,7 +177,7 @@ base::string16 LauncherControllerHelper::GetAppTitle(
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
   if (!registry)
-    return base::string16();
+    return std::u16string();
 
   auto* extension = registry->GetExtensionById(
       app_id, extensions::ExtensionRegistry::EVERYTHING);
@@ -187,7 +187,7 @@ base::string16 LauncherControllerHelper::GetAppTitle(
   if (crostini::IsUnmatchedCrostiniShelfAppId(app_id))
     return crostini::GetCrostiniShelfTitle(app_id);
 
-  return base::string16();
+  return std::u16string();
 }
 
 // static
@@ -213,23 +213,9 @@ ash::AppStatus LauncherControllerHelper::GetAppStatus(
 
 std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {
   DCHECK(tab);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (profile_manager) {
-    const std::vector<Profile*> profile_list =
-        profile_manager->GetLoadedProfiles();
-    if (!profile_list.empty()) {
-      for (auto* i : profile_list) {
-        base::Optional<std::string> app_id = GetAppIdForTab(i, tab);
-        if (app_id.has_value())
-          return *app_id;
-      }
-      return std::string();
-    }
-  }
-
-  // If there is no profile manager we only use the known profile.
-  base::Optional<std::string> app_id = GetAppIdForTab(profile_, tab);
-  return app_id.has_value() ? *app_id : std::string();
+  base::Optional<std::string> app_id = GetAppIdForTab(
+      Profile::FromBrowserContext(tab->GetBrowserContext()), tab);
+  return app_id.value_or(std::string());
 }
 
 bool LauncherControllerHelper::IsValidIDForCurrentUser(
@@ -251,7 +237,7 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
   }
 
   const std::string& app_id = id.app_id;
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
 
   // Launch apps with AppServiceProxy.Launch.
@@ -349,12 +335,10 @@ bool LauncherControllerHelper::IsValidIDFromAppService(
     return true;
   }
 
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-
   bool is_valid = false;
-  proxy->AppRegistryCache().ForOneApp(
-      app_id, [&is_valid](const apps::AppUpdate& update) {
+  apps::AppServiceProxyFactory::GetForProfile(profile_)
+      ->AppRegistryCache()
+      .ForOneApp(app_id, [&is_valid](const apps::AppUpdate& update) {
         if (update.AppType() != apps::mojom::AppType::kArc &&
             update.AppType() != apps::mojom::AppType::kUnknown &&
             update.Readiness() != apps::mojom::Readiness::kUnknown &&

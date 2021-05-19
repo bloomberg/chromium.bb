@@ -31,6 +31,13 @@ message AndroidStartupMetric {
     optional int64 interruptible_sleep_dur_ns = 4;
   }
 
+  message McyclesByCoreType {
+    optional int64 little = 1;
+    optional int64 big = 2;
+    optional int64 bigger = 3;
+    optional int64 unknown = 4;
+  }
+
   message Slice {
     optional int64 dur_ns = 1;
     optional double dur_ms = 2;
@@ -38,11 +45,19 @@ message AndroidStartupMetric {
 
   // Timing information spanning the intent received by the
   // activity manager to the first frame drawn.
-  // Next id: 22.
+  // Next id: 29.
   message ToFirstFrame {
+    // The duration between the intent received and first frame.
     optional int64 dur_ns = 1;
     optional double dur_ms = 17;
+
+    // Breakdown of time to first frame by task state for the main thread of
+    // the process starting up.
     optional TaskStateBreakdown main_thread_by_task_state = 2;
+
+    // The mcycles taken by this startup across all CPUs (broken down by core
+    // type).
+    optional McyclesByCoreType mcycles_by_core_type = 26;
 
     // In this timespan, how many processes (apart from the main activity) were
     // spawned.
@@ -59,6 +74,8 @@ message AndroidStartupMetric {
     optional Slice time_activity_resume = 8;
     optional Slice time_activity_restart = 21;
     optional Slice time_choreographer = 9;
+    optional Slice time_inflate = 22;
+    optional Slice time_get_resources = 23;
 
     // If we are starting a new process, record the duration from the
     // intent being received to the time we call the zygote.
@@ -72,6 +89,17 @@ message AndroidStartupMetric {
     optional Slice to_bind_application = 20;
 
     optional Slice time_post_fork = 16;
+
+    // The total time spent on opening dex files.
+    optional Slice time_dex_open = 24;
+    // Total time spent verifying classes during app startup.
+    optional Slice time_verify_class = 25;
+
+    // Number of methods that were compiled by JIT during app startup.
+    optional uint32 jit_compiled_methods = 27;
+
+    // Time spent running CPU on jit thread pool.
+    optional Slice time_jit_thread_pool_on_cpu = 28;
 
     // Deprecated was other_process_to_activity_cpu_ratio
     reserved 12;
@@ -88,7 +116,32 @@ message AndroidStartupMetric {
     optional Slice full_startup = 1;
   }
 
-  // Next id: 8
+  message Activity {
+    optional string name = 1;
+    optional string method = 2;
+    optional Slice slice = 3;
+  }
+
+  // Metrics with information about the status of odex files and the outcome
+  // of the loading process.
+  // Multiple files might be loaded for a single startup. Platform might also
+  // decide to discard an odex file and instead load a fallback, for example
+  // in case the OS or apk were updated.
+  message OptimizationStatus {
+    optional string odex_status = 1;
+    optional string compilation_filter = 2;
+    optional string compilation_reason = 3;
+    optional string location = 4;
+  }
+
+  // Contains timestamps of important events which occurred during the
+  // startup.
+  message EventTimestamps {
+    optional int64 intent_received = 1;
+    optional int64 first_frame = 2;
+  }
+
+  // Next id: 14
   message Startup {
     // Random id uniquely identifying an app startup in this trace.
     optional uint32 startup_id = 1;
@@ -99,6 +152,9 @@ message AndroidStartupMetric {
     // Name of the process launched
     optional string process_name = 3;
 
+    // Details about the activities launched
+    repeated Activity activities = 11;
+
     // Did we ask the zygote for a new process
     optional bool zygote_new_process = 4;
 
@@ -108,17 +164,30 @@ message AndroidStartupMetric {
     // it.
     optional uint32 activity_hosting_process_count = 6;
 
+    // Contains timestamps of important events which happened during
+    // the startup.
+    optional EventTimestamps event_timestamps = 13;
+
+    // Timing information spanning the intent received by the
+    // activity manager to the first frame drawn.
     optional ToFirstFrame to_first_frame = 5;
 
     // Details about the process (uid, version, etc)
     optional AndroidProcessMetadata process = 7;
 
+    // Metrics about startup which were developed by looking at experiments
+    // using high-speed cameras (HSC).
     optional HscMetrics hsc = 8;
 
     // The time taken in the startup from intent recieved to the start time
     // of the reportFullyDrawn slice. This should be longer than the time to
     // first frame as the application decides this after it starts rendering.
     optional Slice report_fully_drawn = 9;
+
+    // Conntains information about the status of odex files.
+    repeated OptimizationStatus optimization_status = 12;
+
+    reserved 10;
   }
 
   repeated Startup startup = 1;

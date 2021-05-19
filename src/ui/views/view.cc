@@ -29,6 +29,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -1198,8 +1199,13 @@ Border* View::GetBorder() const {
 }
 
 const ui::ThemeProvider* View::GetThemeProvider() const {
-  const Widget* widget = GetWidget();
+  const auto* widget = GetWidget();
   return widget ? widget->GetThemeProvider() : nullptr;
+}
+
+const ui::ColorProvider* View::GetColorProvider() const {
+  const auto* widget = GetWidget();
+  return widget ? widget->GetColorProvider() : nullptr;
 }
 
 const ui::NativeTheme* View::GetNativeTheme() const {
@@ -1682,8 +1688,8 @@ FocusTraversable* View::GetPaneFocusTraversable() {
 
 // Tooltips --------------------------------------------------------------------
 
-base::string16 View::GetTooltipText(const gfx::Point& p) const {
-  return base::string16();
+std::u16string View::GetTooltipText(const gfx::Point& p) const {
+  return std::u16string();
 }
 
 // Context menus ---------------------------------------------------------------
@@ -2303,7 +2309,7 @@ void View::SetHeight(int height) {
   SetBounds(x(), y(), width(), height);
 }
 
-base::string16 View::GetTooltip() const {
+std::u16string View::GetTooltip() const {
   return GetTooltipText(gfx::Point());
 }
 
@@ -3221,11 +3227,9 @@ int View::DefaultFillLayout::GetPreferredHeightForWidth(const View* host,
 
 DEFINE_ENUM_CONVERTERS(View::FocusBehavior,
                        {View::FocusBehavior::ACCESSIBLE_ONLY,
-                        base::ASCIIToUTF16("ACCESSIBLE_ONLY")},
-                       {View::FocusBehavior::ALWAYS,
-                        base::ASCIIToUTF16("ALWAYS")},
-                       {View::FocusBehavior::NEVER,
-                        base::ASCIIToUTF16("NEVER")})
+                        u"ACCESSIBLE_ONLY"},
+                       {View::FocusBehavior::ALWAYS, u"ALWAYS"},
+                       {View::FocusBehavior::NEVER, u"NEVER"})
 
 // This block requires the existence of METADATA_HEADER(View) in the class
 // declaration for View.
@@ -3244,7 +3248,7 @@ ADD_READONLY_PROPERTY_METADATA(gfx::Size, MaximumSize)
 ADD_READONLY_PROPERTY_METADATA(gfx::Size, MinimumSize)
 ADD_PROPERTY_METADATA(bool, Mirrored)
 ADD_PROPERTY_METADATA(bool, NotifyEnterExitOnChild)
-ADD_READONLY_PROPERTY_METADATA(base::string16, Tooltip)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, Tooltip)
 ADD_PROPERTY_METADATA(bool, Visible)
 ADD_PROPERTY_METADATA(bool, CanProcessEventsWithinSubtree)
 ADD_PROPERTY_METADATA(bool, UseDefaultFillLayout)

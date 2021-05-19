@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_refptr.h"
@@ -20,7 +19,6 @@
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -42,7 +40,7 @@ namespace {
 //            languageCode: "|locale|",
 //       }
 //     }
-std::string BuildDocumentSuggestionRequest(const base::string16& query) {
+std::string BuildDocumentSuggestionRequest(const std::u16string& query) {
   base::Value root(base::Value::Type::DICTIONARY);
   root.SetKey("query", base::Value(query));
   // The API supports pagination. We're always concerned with the first N
@@ -76,7 +74,7 @@ DocumentSuggestionsService::DocumentSuggestionsService(
 DocumentSuggestionsService::~DocumentSuggestionsService() {}
 
 void DocumentSuggestionsService::CreateDocumentSuggestionsRequest(
-    const base::string16& query,
+    const std::u16string& query,
     bool is_incognito,
     StartCallback start_callback,
     CompletionCallback completion_callback) {

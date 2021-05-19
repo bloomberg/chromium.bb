@@ -360,21 +360,6 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
   auto result = mojom::NetworkStateProperties::New();
   result->type = type;
   result->connectable = network->connectable();
-  if (type == mojom::NetworkType::kCellular) {
-    // Ensure that a cellular network that has a locked sim state or is scanning
-    // is not connectable.
-    const DeviceState* device =
-        network_state_handler->GetDeviceState(network->device_path());
-    if (!device) {
-      // When a device is removed or SIM is replaced, the Shill Service may
-      // outlive the Device. Such services are not connectable.
-      NET_LOG(DEBUG) << "Cellular device is not available: "
-                     << network->device_path();
-      result->connectable = false;
-    } else if (device->IsSimLocked() || device->scanning()) {
-      result->connectable = false;
-    }
-  }
   result->connect_requested = network->connect_requested();
   bool technology_enabled = network->Matches(NetworkTypePattern::VPN()) ||
                             network_state_handler->IsTechnologyEnabled(
@@ -413,7 +398,9 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
 
       const DeviceState* cellular_device =
           network_state_handler->GetDeviceState(network->device_path());
-      cellular->sim_locked = cellular_device && cellular_device->IsSimLocked();
+      cellular->sim_locked = cellular_device &&
+                             IsSimPrimary(network->iccid(), cellular_device) &&
+                             cellular_device->IsSimLocked();
       result->type_state =
           mojom::NetworkTypeStateProperties::NewCellular(std::move(cellular));
       break;
@@ -488,8 +475,32 @@ std::vector<mojom::SIMInfoPtr> CellularSIMInfosToMojo(
   return sim_info_mojos;
 }
 
+mojom::InhibitReason GetInhibitReason(CellularInhibitor* cellular_inhibitor) {
+  if (!cellular_inhibitor)
+    return mojom::InhibitReason::kNotInhibited;
+
+  base::Optional<CellularInhibitor::InhibitReason> inhibit_reason =
+      cellular_inhibitor->GetInhibitReason();
+  if (!inhibit_reason)
+    return mojom::InhibitReason::kNotInhibited;
+
+  switch (*inhibit_reason) {
+    case CellularInhibitor::InhibitReason::kInstallingProfile:
+      return mojom::InhibitReason::kInstallingProfile;
+    case CellularInhibitor::InhibitReason::kRenamingProfile:
+      return mojom::InhibitReason::kRenamingProfile;
+    case CellularInhibitor::InhibitReason::kRemovingProfile:
+      return mojom::InhibitReason::kRemovingProfile;
+    case CellularInhibitor::InhibitReason::kConnectingToProfile:
+      return mojom::InhibitReason::kConnectingToProfile;
+    case CellularInhibitor::InhibitReason::kRefreshingProfileList:
+      return mojom::InhibitReason::kRefreshingProfileList;
+  }
+}
+
 mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
     const DeviceState* device,
+    CellularInhibitor* cellular_inhibitor,
     mojom::DeviceStateType technology_state) {
   mojom::NetworkType type = ShillTypeToMojo(device->type());
   if (type == mojom::NetworkType::kAll) {
@@ -534,6 +545,7 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
   }
   if (type == mojom::NetworkType::kCellular) {
     result->sim_infos = CellularSIMInfosToMojo(device);
+    result->inhibit_reason = GetInhibitReason(cellular_inhibitor);
   }
   return result;
 }
@@ -953,6 +965,7 @@ mojom::ApnPropertiesPtr GetApnProperties(const base::Value* dict) {
   apn->name = GetString(dict, ::onc::cellular_apn::kName);
   apn->password = GetString(dict, ::onc::cellular_apn::kPassword);
   apn->username = GetString(dict, ::onc::cellular_apn::kUsername);
+  apn->attach = GetString(dict, ::onc::cellular_apn::kAttach);
   return apn;
 }
 
@@ -977,6 +990,7 @@ mojom::ManagedApnPropertiesPtr GetManagedApnProperties(const base::Value* dict,
   apn->name = GetManagedString(apn_dict, ::onc::cellular_apn::kName);
   apn->password = GetManagedString(apn_dict, ::onc::cellular_apn::kPassword);
   apn->username = GetManagedString(apn_dict, ::onc::cellular_apn::kUsername);
+  apn->attach = GetManagedString(apn_dict, ::onc::cellular_apn::kAttach);
   return apn;
 }
 
@@ -1278,6 +1292,7 @@ mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
 
 mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
     NetworkStateHandler* network_state_handler,
+    CellularESimProfileHandler* cellular_esim_profile_handler,
     const NetworkState* network_state,
     const std::vector<mojom::VpnProviderPtr>& vpn_providers,
     const base::Value* properties) {
@@ -1337,6 +1352,13 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
   result->metered =
       GetManagedBoolean(properties, ::onc::network_config::kMetered);
   result->name = GetManagedString(properties, ::onc::network_config::kName);
+  if (result->name->policy_source == mojom::PolicySource::kNone) {
+    base::Optional<std::string> profile_name =
+        GetESimProfileName(cellular_esim_profile_handler, network_state);
+    if (profile_name)
+      result->name->active_value = *profile_name;
+  }
+
   result->name_servers_config_type = GetRequiredManagedString(
       properties, ::onc::network_config::kNameServersConfigType);
   result->priority =
@@ -1640,6 +1662,7 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
       SetString(::onc::cellular_apn::kName, apn.name, &apn_dict);
       SetString(::onc::cellular_apn::kPassword, apn.password, &apn_dict);
       SetString(::onc::cellular_apn::kUsername, apn.username, &apn_dict);
+      SetString(::onc::cellular_apn::kAttach, apn.attach, &apn_dict);
       type_dict.SetKey(::onc::cellular::kAPN, std::move(apn_dict));
     }
   } else if (properties->type_config->is_ethernet()) {
@@ -1828,7 +1851,7 @@ mojom::NetworkCertificatePtr GetMojoCert(
   result->hash = cert.hash;
   result->issued_by = cert.issued_by;
   result->issued_to = cert.issued_to;
-  result->hardware_backed = cert.hardware_backed;
+  result->available_for_network_auth = cert.available_for_network_auth;
   result->device_wide = cert.device_wide;
   if (type == mojom::CertificateType::kServerCA)
     result->pem_or_id = cert.pem;
@@ -1843,6 +1866,7 @@ CrosNetworkConfig::CrosNetworkConfig()
     : CrosNetworkConfig(
           NetworkHandler::Get()->network_state_handler(),
           NetworkHandler::Get()->network_device_handler(),
+          NetworkHandler::Get()->cellular_inhibitor(),
           NetworkHandler::Get()->cellular_esim_profile_handler(),
           NetworkHandler::Get()->managed_network_configuration_handler(),
           NetworkHandler::Get()->network_connection_handler(),
@@ -1851,12 +1875,14 @@ CrosNetworkConfig::CrosNetworkConfig()
 CrosNetworkConfig::CrosNetworkConfig(
     NetworkStateHandler* network_state_handler,
     NetworkDeviceHandler* network_device_handler,
+    CellularInhibitor* cellular_inhibitor,
     CellularESimProfileHandler* cellular_esim_profile_handler,
     ManagedNetworkConfigurationHandler* network_configuration_handler,
     NetworkConnectionHandler* network_connection_handler,
     NetworkCertificateHandler* network_certificate_handler)
     : network_state_handler_(network_state_handler),
       network_device_handler_(network_device_handler),
+      cellular_inhibitor_(cellular_inhibitor),
       cellular_esim_profile_handler_(cellular_esim_profile_handler),
       network_configuration_handler_(network_configuration_handler),
       network_connection_handler_(network_connection_handler),
@@ -1871,6 +1897,8 @@ CrosNetworkConfig::~CrosNetworkConfig() {
       network_certificate_handler_->HasObserver(this)) {
     network_certificate_handler_->RemoveObserver(this);
   }
+  if (cellular_inhibitor_ && cellular_inhibitor_->HasObserver(this))
+    cellular_inhibitor_->RemoveObserver(this);
 }
 
 void CrosNetworkConfig::BindReceiver(
@@ -1887,6 +1915,8 @@ void CrosNetworkConfig::AddObserver(
       !network_certificate_handler_->HasObserver(this)) {
     network_certificate_handler_->AddObserver(this);
   }
+  if (cellular_inhibitor_ && !cellular_inhibitor_->HasObserver(this))
+    cellular_inhibitor_->AddObserver(this);
   observers_.Add(std::move(observer));
 }
 
@@ -1966,12 +1996,8 @@ void CrosNetworkConfig::GetDeviceStateList(
       NET_LOG(ERROR) << "Device state unavailable: " << device->name();
       continue;
     }
-    if (technology_state == mojom::DeviceStateType::kEnabled &&
-        device->inhibited()) {
-      technology_state = mojom::DeviceStateType::kInhibited;
-    }
     mojom::DeviceStatePropertiesPtr mojo_device =
-        DeviceStateToMojo(device, technology_state);
+        DeviceStateToMojo(device, cellular_inhibitor_, technology_state);
     if (mojo_device)
       result.emplace_back(std::move(mojo_device));
   }
@@ -2034,9 +2060,9 @@ void CrosNetworkConfig::OnGetManagedProperties(
     std::move(callback).Run(nullptr);
     return;
   }
-  mojom::ManagedPropertiesPtr managed_properties =
-      ManagedPropertiesToMojo(network_state_handler_, network_state,
-                              vpn_providers_, &properties.value());
+  mojom::ManagedPropertiesPtr managed_properties = ManagedPropertiesToMojo(
+      network_state_handler_, cellular_esim_profile_handler_, network_state,
+      vpn_providers_, &properties.value());
 
   if (managed_properties->type == mojom::NetworkType::kCellular) {
     std::vector<mojom::ApnPropertiesPtr> custom_apn_list =
@@ -2529,6 +2555,8 @@ void CrosNetworkConfig::UpdateCustomAPNList(
             cellular_config.apn->localized_name, &custom_apn);
   SetString(::onc::cellular_apn::kLanguage, cellular_config.apn->language,
             &custom_apn);
+  SetString(::onc::cellular_apn::kAttach, cellular_config.apn->attach,
+            &custom_apn);
 
   // The UI currently only supports setting a single custom apn.
   base::Value custom_apn_list(base::Value::Type::LIST);
@@ -2565,6 +2593,7 @@ std::vector<mojom::ApnPropertiesPtr> CrosNetworkConfig::GetCustomAPNList(
     mojo_apn->localized_name =
         GetString(&apn, ::onc::cellular_apn::kLocalizedName);
     mojo_apn->language = GetString(&apn, ::onc::cellular_apn::kLanguage);
+    mojo_apn->attach = GetString(&apn, ::onc::cellular_apn::kAttach);
     mojo_custom_apns.push_back(std::move(mojo_apn));
   }
   return mojo_custom_apns;
@@ -2784,6 +2813,10 @@ void CrosNetworkConfig::OnShuttingDown() {
 void CrosNetworkConfig::OnCertificatesChanged() {
   for (auto& observer : observers_)
     observer->OnNetworkCertificatesChanged();
+}
+
+void CrosNetworkConfig::OnInhibitStateChanged() {
+  DeviceListChanged();
 }
 
 const std::string& CrosNetworkConfig::GetServicePathFromGuid(

@@ -14,8 +14,6 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/home_screen/home_screen_controller.h"
-#include "ash/home_screen/swipe_home_to_overview_controller.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -37,6 +35,7 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/shelf/swipe_home_to_overview_controller.h"
 #include "ash/shell.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/system/status_area_widget.h"
@@ -73,7 +72,6 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/types/event_type.h"
-#include "ui/message_center/message_center.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -349,6 +347,23 @@ ShelfLayoutManager::ScopedSuspendWorkAreaUpdate::
   manager_->ResumeWorkAreaUpdate();
 }
 
+// ShelfLayoutManager::ScopedVisibilityLock ------------------------------------
+
+ShelfLayoutManager::ScopedVisibilityLock::ScopedVisibilityLock(
+    ShelfLayoutManager* shelf)
+    : shelf_(shelf->weak_factory_.GetWeakPtr()) {
+  ++shelf_->suspend_visibility_update_;
+}
+
+ShelfLayoutManager::ScopedVisibilityLock::~ScopedVisibilityLock() {
+  if (!shelf_)
+    return;
+  --shelf_->suspend_visibility_update_;
+  DCHECK_GE(shelf_->suspend_visibility_update_, 0);
+  if (shelf_->suspend_visibility_update_ == 0)
+    shelf_->UpdateVisibilityState();
+}
+
 // ShelfLayoutManager ----------------------------------------------------------
 
 ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
@@ -394,7 +409,6 @@ void ShelfLayoutManager::InitObservers() {
   shelf_background_type_ = GetShelfBackgroundType();
   wallpaper_controller_observation_.Observe(shell->wallpaper_controller());
   display::Screen::GetScreen()->AddObserver(this);
-  message_center::MessageCenter::Get()->AddObserver(this);
 
   // DesksController could be null when virtual desks feature is not enabled.
   if (DesksController::Get())
@@ -419,8 +433,6 @@ void ShelfLayoutManager::PrepareForShutdown() {
 
   SplitViewController::Get(shelf_widget_->GetNativeWindow())
       ->RemoveObserver(this);
-
-  message_center::MessageCenter::Get()->RemoveObserver(this);
 }
 
 bool ShelfLayoutManager::IsVisible() const {
@@ -460,6 +472,8 @@ gfx::Rect ShelfLayoutManager::GetIdealBoundsForWorkAreaCalculation() const {
 }
 
 void ShelfLayoutManager::LayoutShelf(bool animate) {
+  // Do not animate if the shelf container is animating.
+  animate &= !IsShelfContainerAnimating();
   // The ShelfWidget may be partially closed (no native widget) during shutdown
   // or before it's been fully initialized so skip layout.
   if (in_shutdown_ || !shelf_widget_->native_widget())
@@ -1075,7 +1089,11 @@ void ShelfLayoutManager::OnSessionStateChanged(
   const bool was_adding_user = state_.IsAddingSecondaryUser();
   const bool was_locked = state_.IsScreenLocked();
   state_.session_state = state;
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+
+  // Animate shelf layout if the container is not animating.
+  bool animate = !IsShelfContainerAnimating();
+  MaybeUpdateShelfBackground(animate ? AnimationChangeType::ANIMATE
+                                     : AnimationChangeType::IMMEDIATE);
   HideContextualNudges();
   if (was_adding_user != state_.IsAddingSecondaryUser()) {
     UpdateShelfVisibilityAfterLoginUIChange();
@@ -1088,7 +1106,7 @@ void ShelfLayoutManager::OnSessionStateChanged(
     UpdateShelfVisibilityAfterLoginUIChange();
 
   CalculateTargetBoundsAndUpdateWorkArea();
-  UpdateBoundsAndOpacity(true /* animate */);
+  UpdateBoundsAndOpacity(animate);
   UpdateVisibilityState();
   UpdateContextualNudges();
 }
@@ -1148,23 +1166,6 @@ void ShelfLayoutManager::OnShelfConfigUpdated() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
-
-void ShelfLayoutManager::OnCenterVisibilityChanged(
-    message_center::Visibility visibility) {
-  // Uses base::CancelableOnceClosure to handle two edge cases: (1)
-  // ShelfLayoutManager is destructed before the callback runs. (2) The previous
-  // callback is still pending.
-  visibility_update_for_tray_callback_.Reset(base::BindOnce(
-      &ShelfLayoutManager::UpdateVisibilityStateForSystemTrayChange,
-      base::Unretained(this), visibility));
-
-  // OnCenterVisibilityChanged is called when the visibility of system tray
-  // is set, which is before the tray bubble is created/destructed. Meanwhile,
-  // we rely on the state of tray bubble to calculate the auto-hide state.
-  // Use ThreadTaskRunnerHandle to specify that the task runs on the UI thread.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, visibility_update_for_tray_callback_.callback());
-}
 
 void ShelfLayoutManager::SuspendWorkAreaUpdate() {
   ++suspend_work_area_update_;
@@ -1618,6 +1619,10 @@ void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea() {
 
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     HotseatState hotseat_target_state) {
+  // Home launcher style shelf should not be able to be pulled up.
+  if (hotseat_target_state == HotseatState::kShownHomeLauncher)
+    return;
+
   // TODO(https://crbug.com/1002132): Add tests for the hotseat bounds logic.
   CHECK_EQ(kDragInProgress, drag_status_);
   const bool horizontal = shelf_->IsHorizontalAlignment();
@@ -1944,7 +1949,7 @@ bool ShelfLayoutManager::IsStatusAreaWindow(aura::Window* window) {
 
 void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
   UpdateVisibilityState();
-  LayoutShelf();
+  LayoutShelf(/*animate=*/false);
 }
 
 float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
@@ -1985,6 +1990,12 @@ bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {
   // hidden.
   if (!Shell::Get()->IsInTabletMode() &&
       Shell::Get()->app_list_controller()->GetTargetVisibility(display_.id())) {
+    return false;
+  }
+
+  // The shelf should be shown when any bubble in the status area is shown.
+  if (shelf_widget_->status_area_widget() &&
+      shelf_widget_->status_area_widget()->ShouldShowShelf()) {
     return false;
   }
 
@@ -2306,7 +2317,7 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
 
   const bool transitioned_from_overview_to_home =
       MaybeEndDragFromOverviewToHome(event_in_screen);
-  allow_fling_from_overview_to_home_ = false;
+  allow_fling_from_overview_to_home_ = true;
 
   // Fling from overview to home should be allowed only if window_drag_handler_
   // is not handling a window.
@@ -2662,7 +2673,7 @@ bool ShelfLayoutManager::MaybeEndDragFromOverviewToHome(
       return false;
   }
 
-  Shell::Get()->home_screen_controller()->GoHome(display_.id());
+  Shell::Get()->app_list_controller()->GoHome(display_.id());
   return true;
 }
 
@@ -2679,18 +2690,48 @@ bool ShelfLayoutManager::IsWindowDragInProgress() const {
   return window_drag_controller_ && window_drag_controller_->drag_started();
 }
 
-void ShelfLayoutManager::UpdateVisibilityStateForSystemTrayChange(
-    message_center::Visibility visibility) {
+void ShelfLayoutManager::UpdateVisibilityStateForTrayBubbleChange(
+    bool bubble_shown) {
   base::Optional<base::AutoReset<bool>> reset;
 
   // Hides the hotseat when the hotseat is in kExtended mode and the system tray
   // shows.
-  if (visibility == message_center::Visibility::VISIBILITY_MESSAGE_CENTER &&
-      hotseat_state() == HotseatState::kExtended) {
+  if (bubble_shown && hotseat_state() == HotseatState::kExtended) {
     reset.emplace(&should_hide_hotseat_, true);
   }
 
   UpdateVisibilityState();
+}
+
+void ShelfLayoutManager::OnShelfTrayBubbleVisibilityChanged(bool bubble_shown) {
+  // Uses base::CancelableOnceClosure to handle two edge cases: (1)
+  // ShelfLayoutManager is destructed before the callback runs. (2) The previous
+  // callback is still pending.
+  visibility_update_for_tray_callback_.Reset(base::BindOnce(
+      &ShelfLayoutManager::UpdateVisibilityStateForTrayBubbleChange,
+      base::Unretained(this), /*bubble_shown=*/bubble_shown));
+
+  // OnShelfTrayBubbleVisibilityChanged is called when the visibility of a
+  // status area tray bubble is set, which is before the tray bubble is
+  // created/destructed. Meanwhile, we rely on the state of tray bubble to
+  // calculate the auto-hide state.
+  // Use ThreadTaskRunnerHandle to specify that the task runs on the UI thread.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, visibility_update_for_tray_callback_.callback());
+}
+
+bool ShelfLayoutManager::IsShelfContainerAnimating() const {
+  // TODO(oshima): We're re-layouting during shelf construction. We probably
+  // should wait and then layout once after shelf is fully constructed.
+  if (!shelf_widget_ || !shelf_widget_->native_widget_private() ||
+      !shelf_widget_->GetNativeWindow()) {
+    return false;
+  }
+  return shelf_widget_->GetNativeWindow()
+      ->parent()
+      ->layer()
+      ->GetAnimator()
+      ->is_animating();
 }
 
 }  // namespace ash

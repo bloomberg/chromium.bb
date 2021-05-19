@@ -22,7 +22,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_core_service_impl.h"
@@ -100,7 +100,7 @@ MockNearbySharingService* CreateAndUseMockNearbySharingService(
 }
 
 std::string GetClipboardText() {
-  base::string16 text;
+  std::u16string text;
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &text);
   return base::UTF16ToUTF8(text);
@@ -321,7 +321,7 @@ class NearbyNotificationManagerConnectionRequestTest
     : public NearbyNotificationManagerTest,
       public testing::WithParamInterface<ConnectionRequestTestParam> {};
 
-base::string16 FormatNotificationTitle(
+std::u16string FormatNotificationTitle(
     int resource_id,
     const AttachmentsTestParamInternal& param,
     const std::string& device_name,
@@ -385,7 +385,7 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsNotification) {
 
   const message_center::Notification& notification = notifications[0];
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_PROGRESS, notification.type());
-  EXPECT_EQ(base::string16(), notification.message());
+  EXPECT_EQ(std::u16string(), notification.message());
   EXPECT_TRUE(notification.icon().IsEmpty());
   EXPECT_EQ(GURL(), notification.origin_url());
   EXPECT_TRUE(notification.never_timeout());
@@ -438,6 +438,19 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_UpdatesProgress) {
   EXPECT_EQ(progress, notification.progress());
 }
 
+TEST_F(NearbyNotificationManagerTest, ShowProgress_DeviceNameEncoding) {
+  ShareTarget share_target;
+  share_target.device_name = u8"\xf0\x9f\x8c\xb5";  // Cactus emoji.
+  TransferMetadata transfer_metadata =
+      TransferMetadataBuilder().set_progress(75.0).build();
+
+  manager()->ShowProgress(share_target, transfer_metadata);
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  std::string title = base::UTF16ToUTF8(notifications[0].title());
+  EXPECT_TRUE(title.find(share_target.device_name) != std::string::npos);
+}
+
 TEST_P(NearbyNotificationManagerAttachmentsTest, ShowProgress) {
   const AttachmentsTestParamInternal& param = std::get<0>(GetParam());
   bool is_incoming = std::get<1>(GetParam());
@@ -456,7 +469,7 @@ TEST_P(NearbyNotificationManagerAttachmentsTest, ShowProgress) {
   TransferMetadata transfer_metadata = TransferMetadataBuilder().build();
   manager()->ShowProgress(share_target, transfer_metadata);
 
-  base::string16 expected = FormatNotificationTitle(
+  std::u16string expected = FormatNotificationTitle(
       is_incoming ? IDS_NEARBY_NOTIFICATION_RECEIVE_PROGRESS_TITLE
                   : IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE,
       param, device_name, /*use_capitalized_resource=*/false);
@@ -486,7 +499,7 @@ TEST_P(NearbyNotificationManagerAttachmentsTest, ShowSuccess) {
 
   manager()->ShowSuccess(share_target);
 
-  base::string16 expected = FormatNotificationTitle(
+  std::u16string expected = FormatNotificationTitle(
       is_incoming ? IDS_NEARBY_NOTIFICATION_RECEIVE_SUCCESS_TITLE
                   : IDS_NEARBY_NOTIFICATION_SEND_SUCCESS_TITLE,
       param, device_name, /*use_capitalized_resource=*/true);
@@ -514,26 +527,36 @@ TEST_P(NearbyNotificationManagerAttachmentsTest, ShowFailure) {
   for (FileAttachment::Type type : param.file_attachments)
     share_target.file_attachments.push_back(CreateFileAttachment(type));
 
-  for (std::pair<TransferMetadata::Status, int> error :
-       std::vector<std::pair<TransferMetadata::Status, int>>{
-           {TransferMetadata::Status::kNotEnoughSpace,
-            IDS_NEARBY_ERROR_NOT_ENOUGH_SPACE},
-           {TransferMetadata::Status::kTimedOut, IDS_NEARBY_ERROR_TIME_OUT},
-           {TransferMetadata::Status::kUnsupportedAttachmentType,
-            IDS_NEARBY_ERROR_UNSUPPORTED_FILE_TYPE},
-           {TransferMetadata::Status::kFailed, 0},
+  for (base::Optional<std::pair<TransferMetadata::Status, int>> error :
+       std::vector<base::Optional<std::pair<TransferMetadata::Status, int>>>{
+           std::make_pair(TransferMetadata::Status::kNotEnoughSpace,
+                          IDS_NEARBY_ERROR_NOT_ENOUGH_SPACE),
+           std::make_pair(TransferMetadata::Status::kTimedOut,
+                          IDS_NEARBY_ERROR_TIME_OUT),
+           std::make_pair(TransferMetadata::Status::kUnsupportedAttachmentType,
+                          IDS_NEARBY_ERROR_UNSUPPORTED_FILE_TYPE),
+           std::make_pair(TransferMetadata::Status::kFailed, 0),
+           base::nullopt,
        }) {
-    manager()->ShowFailure(
-        share_target,
-        TransferMetadataBuilder().set_status(error.first).build());
+    if (error) {
+      manager()->ShowFailure(
+          share_target,
+          TransferMetadataBuilder().set_status(error->first).build());
+    } else {
+      manager()->OnTransferUpdate(
+          share_target, TransferMetadataBuilder()
+                            .set_status(TransferMetadata::Status::kInProgress)
+                            .build());
+      manager()->OnNearbyProcessStopped();
+    }
 
-    base::string16 expected_title = FormatNotificationTitle(
+    std::u16string expected_title = FormatNotificationTitle(
         is_incoming ? IDS_NEARBY_NOTIFICATION_RECEIVE_FAILURE_TITLE
                     : IDS_NEARBY_NOTIFICATION_SEND_FAILURE_TITLE,
         param, device_name, /*use_capitalized_resource=*/false);
-    base::string16 expected_message =
-        error.second ? l10n_util::GetStringUTF16(error.second)
-                     : base::string16();
+    std::u16string expected_message =
+        error && error->second ? l10n_util::GetStringUTF16(error->second)
+                               : std::u16string();
 
     std::vector<message_center::Notification> notifications =
         GetDisplayedNotifications();
@@ -582,12 +605,12 @@ TEST_P(NearbyNotificationManagerConnectionRequestTest,
 
   const message_center::Notification& notification = notifications[0];
 
-  base::string16 expected_title = l10n_util::GetStringUTF16(
+  std::u16string expected_title = l10n_util::GetStringUTF16(
       IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_TITLE);
-  base::string16 plural_message = l10n_util::GetPluralStringFUTF16(
+  std::u16string plural_message = l10n_util::GetPluralStringFUTF16(
       IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE, 1);
 
-  base::string16 expected_message = base::ReplaceStringPlaceholders(
+  std::u16string expected_message = base::ReplaceStringPlaceholders(
       plural_message,
       {base::ASCIIToUTF16(device_name),
        l10n_util::GetPluralStringFUTF16(
@@ -612,7 +635,7 @@ TEST_P(NearbyNotificationManagerConnectionRequestTest,
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
             notification.display_source());
 
-  std::vector<base::string16> expected_button_titles;
+  std::vector<std::u16string> expected_button_titles;
   if (status == TransferMetadata::Status::kAwaitingLocalConfirmation) {
     expected_button_titles.push_back(
         l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION));
@@ -635,6 +658,19 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Values(TransferMetadata::Status::kAwaitingLocalConfirmation,
                         TransferMetadata::Status::kAwaitingRemoteAcceptance),
         testing::Bool()));
+
+TEST_F(NearbyNotificationManagerTest,
+       ShowConnectionRequest_DeviceNameEncoding) {
+  ShareTarget share_target;
+  share_target.device_name = u8"\xf0\x9f\x8c\xb5";  // Cactus emoji.
+
+  manager()->ShowConnectionRequest(share_target,
+                                   TransferMetadataBuilder().build());
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  std::string message = base::UTF16ToUTF8(notifications[0].message());
+  EXPECT_TRUE(message.find(share_target.device_name) != std::string::npos);
+}
 
 TEST_F(NearbyNotificationManagerTest, ShowOnboarding_ShowsNotification) {
   manager()->ShowOnboarding();
@@ -670,7 +706,7 @@ TEST_F(NearbyNotificationManagerTest, ShowSuccess_ShowsNotification) {
   const message_center::Notification& notification = notifications[0];
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE, notification.type());
 
-  EXPECT_EQ(base::string16(), notification.message());
+  EXPECT_EQ(std::u16string(), notification.message());
   EXPECT_TRUE(notification.icon().IsEmpty());
   EXPECT_EQ(GURL(), notification.origin_url());
   EXPECT_FALSE(notification.never_timeout());
@@ -679,6 +715,37 @@ TEST_F(NearbyNotificationManagerTest, ShowSuccess_ShowsNotification) {
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
             notification.display_source());
   EXPECT_EQ(0u, notification.buttons().size());
+}
+
+TEST_F(NearbyNotificationManagerTest, ShowSuccess_DeviceNameEncoding) {
+  ShareTarget share_target;
+  share_target.device_name = u8"\xf0\x9f\x8c\xb5";  // Cactus emoji.
+
+  manager()->ShowSuccess(share_target);
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  std::string title = base::UTF16ToUTF8(notifications[0].title());
+  EXPECT_TRUE(title.find(share_target.device_name) != std::string::npos);
+}
+
+TEST_F(NearbyNotificationManagerTest, ShowCancelled_ShowsNotification) {
+  ShareTarget share_target;
+  manager()->ShowCancelled(share_target);
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+}
+
+TEST_F(NearbyNotificationManagerTest, ShowCancelled_DeviceNameEncoding) {
+  ShareTarget share_target;
+  share_target.device_name = u8"\xf0\x9f\x8c\xb5";  // Cactus emoji.
+
+  manager()->ShowCancelled(share_target);
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+  std::string title = base::UTF16ToUTF8(notifications[0].title());
+  EXPECT_TRUE(title.find(share_target.device_name) != std::string::npos);
 }
 
 TEST_F(NearbyNotificationManagerTest, ShowFailure_ShowsNotification) {
@@ -691,7 +758,7 @@ TEST_F(NearbyNotificationManagerTest, ShowFailure_ShowsNotification) {
   const message_center::Notification& notification = notifications[0];
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE, notification.type());
 
-  EXPECT_EQ(base::string16(), notification.message());
+  EXPECT_EQ(std::u16string(), notification.message());
   EXPECT_TRUE(notification.icon().IsEmpty());
   EXPECT_EQ(GURL(), notification.origin_url());
   EXPECT_FALSE(notification.never_timeout());
@@ -700,6 +767,17 @@ TEST_F(NearbyNotificationManagerTest, ShowFailure_ShowsNotification) {
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
             notification.display_source());
   EXPECT_EQ(0u, notification.buttons().size());
+}
+
+TEST_F(NearbyNotificationManagerTest, ShowFailure_DeviceNameEncoding) {
+  ShareTarget share_target;
+  share_target.device_name = u8"\xf0\x9f\x8c\xb5";  // Cactus emoji.
+
+  manager()->ShowFailure(share_target, TransferMetadataBuilder().build());
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  std::string title = base::UTF16ToUTF8(notifications[0].title());
+  EXPECT_TRUE(title.find(share_target.device_name) != std::string::npos);
 }
 
 TEST_F(NearbyNotificationManagerTest,
@@ -812,8 +890,8 @@ TEST_F(NearbyNotificationManagerTest, ProgressNotification_Cancelled) {
                         .set_status(TransferMetadata::Status::kCancelled)
                         .build());
 
-  // Notification should be closed.
-  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+  // Cancelled notification should be shown.
+  EXPECT_EQ(1u, GetDisplayedNotifications().size());
 }
 
 TEST_F(NearbyNotificationManagerTest, ConnectionRequest_Accept) {
@@ -1252,7 +1330,7 @@ class NearbyFilesHoldingSpaceTest : public testing::Test {
  public:
   NearbyFilesHoldingSpaceTest()
       : session_controller_(std::make_unique<TestSessionController>()),
-        user_manager_(new chromeos::FakeChromeUserManager) {
+        user_manager_(new ash::FakeChromeUserManager) {
     scoped_feature_list_.InitWithFeatures(
         {features::kNearbySharing, ash::features::kTemporaryHoldingSpace}, {});
 
@@ -1291,7 +1369,7 @@ class NearbyFilesHoldingSpaceTest : public testing::Test {
   std::unique_ptr<NearbyNotificationManager> manager_;
   std::unique_ptr<TestSessionController> session_controller_;
   std::unique_ptr<ash::HoldingSpaceController> holding_space_controller_;
-  chromeos::FakeChromeUserManager* user_manager_;
+  ash::FakeChromeUserManager* user_manager_;
 };
 
 TEST_F(NearbyFilesHoldingSpaceTest, ShowSuccess_Files) {

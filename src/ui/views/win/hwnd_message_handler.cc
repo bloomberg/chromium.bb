@@ -15,7 +15,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/debug/alias.h"
+#include "base/debug/gdi_debug_util_win.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
@@ -849,7 +849,7 @@ void HWNDMessageHandler::SetVisibilityChangedAnimationsEnabled(bool enabled) {
                         sizeof(dwm_value));
 }
 
-bool HWNDMessageHandler::SetTitle(const base::string16& title) {
+bool HWNDMessageHandler::SetTitle(const std::u16string& title) {
   std::wstring current_title;
   size_t len_with_null = GetWindowTextLength(hwnd()) + 1;
   if (len_with_null == 1 && title.length() == 0)
@@ -896,10 +896,7 @@ void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
 
 void HWNDMessageHandler::SetFullscreen(bool fullscreen) {
   background_fullscreen_hack_ = false;
-  auto ref = msg_handler_weak_factory_.GetWeakPtr();
   fullscreen_handler()->SetFullscreen(fullscreen);
-  if (!ref)
-    return;
 
   // Add the fullscreen window to the fullscreen window map which is used to
   // handle window activations.
@@ -997,6 +994,8 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
                 perfetto::protos::pbzero::ChromeWindowHandleEventInfo* args =
                     ctx.event()->set_chrome_window_handle_event_info();
                 args->set_message_id(message);
+                args->set_hwnd_ptr(
+                    static_cast<uint64_t>(reinterpret_cast<uintptr_t>(hwnd())));
               });
 
   HWND window = hwnd();
@@ -1401,10 +1400,8 @@ void HWNDMessageHandler::ClientAreaSizeChanged() {
   // Ignore size changes due to fullscreen windows losing activation.
   if (background_fullscreen_hack_ && !sent_window_size_changing_)
     return;
-  auto ref = msg_handler_weak_factory_.GetWeakPtr();
-  delegate_->HandleClientSizeChanged(GetClientAreaBounds().size());
-  if (!ref)
-    return;
+  gfx::Size s = GetClientAreaBounds().size();
+  delegate_->HandleClientSizeChanged(s);
 
   current_window_size_message_++;
   sent_window_size_changing_ = false;
@@ -2412,22 +2409,11 @@ void HWNDMessageHandler::OnPaint(HDC dc) {
   HDC display_dc = BeginPaint(hwnd(), &ps);
 
   if (!display_dc) {
-    // Collect some information as to why this may have happened and preserve
-    // it on the stack so it shows up in a dump.
-    // This is temporary data collection code in service of
-    // http://crbug.com/512945
-    DWORD last_error = GetLastError();
-    size_t current_gdi_objects =
-        GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS);
-    size_t peak_gdi_objects =
-        GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS_PEAK);
-    base::debug::Alias(&last_error);
-    base::debug::Alias(&current_gdi_objects);
-    base::debug::Alias(&peak_gdi_objects);
-
-    LOG(FATAL) << "Failed to create DC in BeginPaint(). GLE = " << last_error
-               << ", GDI object count: " << current_gdi_objects
-               << ", GDI peak count: " << peak_gdi_objects;
+    // Failing to get a DC during BeginPaint() means we won't be able to
+    // actually get any pixels to the screen and is very bad. This is often
+    // caused by handle exhaustion. Collecting some GDI statistics may aid
+    // tracking down the cause.
+    base::debug::CollectGDIUsageAndDie();
   }
 
   if (!IsRectEmpty(&ps.rcPaint)) {
@@ -2733,6 +2719,8 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         touch_ids_.insert(input[i].dwID);
         GenerateTouchEvent(ui::ET_TOUCH_PRESSED, touch_point, touch_id,
                            event_time, &touch_events);
+        ui::ComputeEventLatencyOSWinFromTickCount(ui::ET_TOUCH_PRESSED,
+                                                  input[i].dwTime, event_time);
         touch_down_contexts_++;
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
@@ -2743,12 +2731,16 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         if (input[i].dwFlags & TOUCHEVENTF_MOVE) {
           GenerateTouchEvent(ui::ET_TOUCH_MOVED, touch_point, touch_id,
                              event_time, &touch_events);
+          ui::ComputeEventLatencyOSWinFromTickCount(
+              ui::ET_TOUCH_MOVED, input[i].dwTime, event_time);
         }
 
         if (input[i].dwFlags & TOUCHEVENTF_UP) {
           touch_ids_.erase(input[i].dwID);
           GenerateTouchEvent(ui::ET_TOUCH_RELEASED, touch_point, touch_id,
                              event_time, &touch_events);
+          ui::ComputeEventLatencyOSWinFromTickCount(
+              ui::ET_TOUCH_RELEASED, input[i].dwTime, event_time);
           id_generator_.ReleaseNumber(input[i].dwID);
         }
       }
@@ -2938,11 +2930,8 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
 void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
   TRACE_EVENT0("ui", "HWNDMessageHandler::OnWindowPosChanged");
 
-  base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   if (DidClientAreaSizeChange(window_pos))
     ClientAreaSizeChanged();
-  if (!ref)
-    return;
   if (window_pos->flags & SWP_FRAMECHANGED)
     SetDwmFrameExtension(DwmFrameState::kOn);
   if (window_pos->flags & SWP_SHOWWINDOW) {
@@ -3242,6 +3231,13 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouchOrNonClient(
       ui::PointerDetails(ui::EventPointerType::kTouch, mapped_pointer_id,
                          radius_x, radius_y, pressure, rotation_angle),
       ui::GetModifiersFromKeyState());
+  if (pointer_info.PerformanceCount) {
+    ui::ComputeEventLatencyOSWinFromPerformanceCounter(
+        event_type, pointer_info.PerformanceCount, event_time);
+  } else {
+    ui::ComputeEventLatencyOSWinFromTickCount(event_type, pointer_info.dwTime,
+                                              event_time);
+  }
 
   event.latency()->AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, event_time);

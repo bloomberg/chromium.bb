@@ -209,6 +209,11 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     return popup_->GetScreenInfo();
   }
 
+  const ScreenInfos& GetScreenInfos(LocalFrame&) const override {
+    // LocalFrame is ignored since there is only 1 frame in a popup.
+    return popup_->GetScreenInfos();
+  }
+
   IntSize MinimumWindowSize() const override { return IntSize(0, 0); }
 
   void SetEventListenerProperties(
@@ -390,8 +395,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* opener_web_view,
       /* Frame* previous_sibling */ nullptr,
       FrameInsertType::kInsertInConstructor, LocalFrameToken(),
       window_agent_factory,
-      /* InterfaceRegistry* */ nullptr,
-      /* policy_container */ nullptr);
+      /* InterfaceRegistry* */ nullptr);
   frame->SetPagePopupOwner(popup_client_->OwnerElement());
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
 
@@ -407,7 +411,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* opener_web_view,
         owner_settings->GetAllowUniversalAccessFromFileURLs());
   }
 
-  frame->Init(nullptr);
+  frame->Init(/*opener=*/nullptr, /*policy_container=*/nullptr);
   frame->View()->SetParentVisible(true);
   frame->View()->SetSelfVisible(true);
 
@@ -448,16 +452,19 @@ void WebPagePopupImpl::DidSetBounds() {
 void WebPagePopupImpl::InitializeCompositing(
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
-    const ScreenInfo& screen_info,
+    const ScreenInfos& screen_infos,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
-    const cc::LayerTreeSettings* settings) {
+    const cc::LayerTreeSettings* settings,
+    gfx::RenderingPipeline* main_thread_pipeline,
+    gfx::RenderingPipeline* compositor_thread_pipeline) {
   // Careful Initialize() is called after InitializeCompositing, so don't do
   // much work here.
-  widget_base_->InitializeCompositing(agent_group_scheduler, task_graph_runner,
-                                      /*for_child_local_root_frame=*/false,
-                                      screen_info,
-                                      std::move(ukm_recorder_factory), settings,
-                                      /*frame_widget_input_handler=*/nullptr);
+  widget_base_->InitializeCompositing(
+      agent_group_scheduler, task_graph_runner,
+      /*for_child_local_root_frame=*/false, screen_infos,
+      std::move(ukm_recorder_factory), settings,
+      /*frame_widget_input_handler=*/nullptr, main_thread_pipeline,
+      compositor_thread_pipeline);
   cc::LayerTreeDebugState debug_state =
       widget_base_->LayerTreeHost()->GetDebugState();
   debug_state.TurnOffHudInfoDisplay();
@@ -523,6 +530,18 @@ void WebPagePopupImpl::ApplyVisualProperties(
 
 const ScreenInfo& WebPagePopupImpl::GetScreenInfo() {
   return widget_base_->GetScreenInfo();
+}
+
+const ScreenInfos& WebPagePopupImpl::GetScreenInfos() {
+  return widget_base_->screen_infos();
+}
+
+const ScreenInfo& WebPagePopupImpl::GetOriginalScreenInfo() {
+  return widget_base_->GetScreenInfo();
+}
+
+const ScreenInfos& WebPagePopupImpl::GetOriginalScreenInfos() {
+  return widget_base_->screen_infos();
 }
 
 gfx::Rect WebPagePopupImpl::WindowRect() {
@@ -607,6 +626,13 @@ void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
   }
 
   gfx::Rect window_rect = rect_in_screen;
+  // Do not set the same |window_rect| more than once. In case of backends that
+  // can reposition native windows during initialization of popups, |this| can
+  // override position of the popup on screen, which will result in
+  // RenderWidgetHostViewAura setting wrong bounds for aura::Window. In turn,
+  // that can result in offset and the content will not be properly positioned.
+  if (window_rect == WindowRectInScreen())
+    return;
 
   // Popups aren't emulated, but the WidgetScreenRect and WindowScreenRect
   // given to them are. When they set the WindowScreenRect it is based on those
@@ -658,8 +684,8 @@ void WebPagePopupImpl::Resize(const gfx::Size& new_size_in_viewport) {
   SetWindowRect(IntRect(window_rect_in_dips));
 
   if (page_) {
-    MainFrame().View()->Resize(WebSize(new_size_in_viewport));
-    page_->GetVisualViewport().SetSize(WebSize(new_size_in_viewport));
+    MainFrame().View()->Resize(IntSize(new_size_in_viewport));
+    page_->GetVisualViewport().SetSize(IntSize(new_size_in_viewport));
   }
 }
 
@@ -878,7 +904,7 @@ void WebPagePopupImpl::UpdateVisualProperties(
   widget_base_->UpdateSurfaceAndScreenInfo(
       visual_properties.local_surface_id.value_or(viz::LocalSurfaceId()),
       visual_properties.compositor_viewport_pixel_rect,
-      visual_properties.screen_info);
+      visual_properties.screen_infos);
   widget_base_->SetVisibleViewportSizeInDIPs(
       visual_properties.visible_viewport_size);
 
@@ -891,10 +917,6 @@ void WebPagePopupImpl::UpdateVisualProperties(
       combined_scale_factor, visual_properties.is_pinch_gesture_active);
 
   Resize(widget_base_->DIPsToCeiledBlinkSpace(visual_properties.new_size));
-}
-
-const ScreenInfo& WebPagePopupImpl::GetOriginalScreenInfo() {
-  return widget_base_->GetScreenInfo();
 }
 
 gfx::Rect WebPagePopupImpl::ViewportVisibleRect() {

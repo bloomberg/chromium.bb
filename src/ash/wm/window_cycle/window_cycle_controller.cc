@@ -169,7 +169,7 @@ void WindowCycleController::HandleKeyboardNavigation(
     // Pressing the Up arrow key moves the focus from the window cycle list
     // to the tab slider button.
     case KeyboardNavDirection::kUp:
-      DCHECK(!IsTabSliderFocused());
+      DCHECK(!IsTabSliderFocused() && IsInteractiveAltTabModeAllowed());
       window_cycle_list_->SetFocusTabSlider(true);
       // Focusing the alt-tab mode button announces the current mode.
       Shell::Get()
@@ -232,6 +232,11 @@ void WindowCycleController::Scroll(WindowCyclingDirection direction) {
 void WindowCycleController::Drag(float delta_x) {
   DCHECK(window_cycle_list_);
   window_cycle_list_->Drag(delta_x);
+}
+
+void WindowCycleController::StartFling(float velocity_x) {
+  DCHECK(window_cycle_list_);
+  window_cycle_list_->StartFling(velocity_x);
 }
 
 void WindowCycleController::StartCycling() {
@@ -415,7 +420,6 @@ void WindowCycleController::Step(WindowCyclingDirection direction) {
 }
 
 void WindowCycleController::StopCycling() {
-  const bool has_window_targeter = window_cycle_list_->HasWindowTargeter();
   window_cycle_list_.reset();
 
   // We can't use the MRU window list here to get the active window, since
@@ -439,19 +443,6 @@ void WindowCycleController::StopCycling() {
   active_window_before_window_cycle_ = nullptr;
   active_desk_container_id_before_cycle_ = kShellWindowId_Invalid;
   Shell::Get()->event_rewriter_controller()->SetAltDownRemappingEnabled(true);
-
-  if (has_window_targeter) {
-    // Resend the alt-key release, dropped by |window_targeter_|, to the
-    // accelerator controller to cancel out the alt-key press in its
-    // history from using the accelerator, prior to the targeter creation.
-    // Without this resending, the future key events will be interpreted
-    // incorrectly as if the user still holds the alt key (crbug.com/1160676).
-    ui::Accelerator alt_release(ui::VKEY_MENU, ui::EF_NONE,
-                                ui::Accelerator::KeyState::RELEASED);
-    AcceleratorController::Get()
-        ->GetAcceleratorHistory()
-        ->StoreCurrentAccelerator(alt_release);
-  }
 }
 
 void WindowCycleController::InitFromUserPrefs() {

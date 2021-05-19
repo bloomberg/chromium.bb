@@ -335,8 +335,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       const DevToolsToggleAction& action,
       const std::string& settings,
       DevToolsOpenedByAction opened_by = DevToolsOpenedByAction::kUnknown);
-  static Profile* GetProfileForDevToolsWindow(
-      content::WebContents* web_contents);
 
   // content::WebContentsDelegate:
   void ActivateContents(content::WebContents* contents) override;
@@ -474,6 +472,8 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   base::OnceCallback<void()> reattach_complete_callback_;
 
   PrefChangeRegistrar pref_change_registrar_;
+
+  base::ScopedClosureRunner capture_handle_;
 
   friend class DevToolsEventForwarder;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);

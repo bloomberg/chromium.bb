@@ -28,7 +28,7 @@ std::ostream& operator<<(std::ostream& out, Http2FrameDecoder::State v) {
   // Since the value doesn't come over the wire, only a programming bug should
   // result in reaching this point.
   int unknown = static_cast<int>(v);
-  HTTP2_BUG << "Http2FrameDecoder::State " << unknown;
+  HTTP2_BUG(http2_bug_155_1) << "Http2FrameDecoder::State " << unknown;
   return out << "Http2FrameDecoder::State(" << unknown << ")";
 }
 
@@ -158,12 +158,7 @@ DecodeStatus Http2FrameDecoder::StartDecodingPayload(DecodeBuffer* db) {
       break;
 
     case Http2FrameType::PRIORITY_UPDATE:
-      if (GetHttp2RestartFlag(http2_parse_priority_update_frame)) {
-        HTTP2_RESTART_FLAG_COUNT_N(http2_parse_priority_update_frame, 1, 2);
-        status = StartDecodingPriorityUpdatePayload(&subset);
-      } else {
-        status = StartDecodingUnknownPayload(&subset);
-      }
+      status = StartDecodingPriorityUpdatePayload(&subset);
       break;
 
     default:
@@ -237,12 +232,7 @@ DecodeStatus Http2FrameDecoder::ResumeDecodingPayload(DecodeBuffer* db) {
       break;
 
     case Http2FrameType::PRIORITY_UPDATE:
-      if (GetHttp2RestartFlag(http2_parse_priority_update_frame)) {
-        HTTP2_RESTART_FLAG_COUNT_N(http2_parse_priority_update_frame, 2, 2);
-        status = ResumeDecodingPriorityUpdatePayload(&subset);
-      } else {
-        status = ResumeDecodingUnknownPayload(&subset);
-      }
+      status = ResumeDecodingPriorityUpdatePayload(&subset);
       break;
 
     default:

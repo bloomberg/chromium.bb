@@ -35,18 +35,17 @@ public:
         (void)clampRGBOutput;
         auto premulOutput = _outer.premulOutput;
         (void)premulOutput;
-        mVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag, kHalf4x4_GrSLType,
-                                                "m");
-        vVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag, kHalf4_GrSLType,
-                                                "v");
+        mVar = args.fUniformHandler->addUniform(
+                &_outer, kFragment_GrShaderFlag, kHalf4x4_GrSLType, "m");
+        vVar = args.fUniformHandler->addUniform(
+                &_outer, kFragment_GrShaderFlag, kHalf4_GrSLType, "v");
         SkString _sample0 = this->invokeChild(0, args);
         fragBuilder->codeAppendf(
                 R"SkSL(half4 color = %s;
 @if (%s) {
     color = half4(color.xyz / max(color.w, 9.9999997473787516e-05), color.w);
-
 }
-color = %s * color + %s;
+color = (sk_Caps.rewriteMatrixVectorMultiply ? ((%s[0] * color.x + %s[1] * color.y) + %s[2] * color.z) + %s[3] * color.w : %s * color) + %s;
 @if (%s) {
     color = clamp(color, 0.0, 1.0);
 } else {
@@ -57,7 +56,12 @@ color = %s * color + %s;
 }
 return color;
 )SkSL",
-                _sample0.c_str(), (_outer.unpremulInput ? "true" : "false"),
+                _sample0.c_str(),
+                (_outer.unpremulInput ? "true" : "false"),
+                args.fUniformHandler->getUniformCStr(mVar),
+                args.fUniformHandler->getUniformCStr(mVar),
+                args.fUniformHandler->getUniformCStr(mVar),
+                args.fUniformHandler->getUniformCStr(mVar),
                 args.fUniformHandler->getUniformCStr(mVar),
                 args.fUniformHandler->getUniformCStr(vVar),
                 (_outer.clampRGBOutput ? "true" : "false"),
@@ -92,9 +96,9 @@ std::unique_ptr<GrGLSLFragmentProcessor> GrColorMatrixFragmentProcessor::onMakeP
 }
 void GrColorMatrixFragmentProcessor::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                            GrProcessorKeyBuilder* b) const {
-    b->add32((uint32_t)unpremulInput);
-    b->add32((uint32_t)clampRGBOutput);
-    b->add32((uint32_t)premulOutput);
+    b->addBool(unpremulInput, "unpremulInput");
+    b->addBool(clampRGBOutput, "clampRGBOutput");
+    b->addBool(premulOutput, "premulOutput");
 }
 bool GrColorMatrixFragmentProcessor::onIsEqual(const GrFragmentProcessor& other) const {
     const GrColorMatrixFragmentProcessor& that = other.cast<GrColorMatrixFragmentProcessor>();
@@ -124,10 +128,29 @@ SkString GrColorMatrixFragmentProcessor::onDumpInfo() const {
     return SkStringPrintf(
             "(m=half4x4(%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f), "
             "v=half4(%f, %f, %f, %f), unpremulInput=%s, clampRGBOutput=%s, premulOutput=%s)",
-            m.rc(0, 0), m.rc(1, 0), m.rc(2, 0), m.rc(3, 0), m.rc(0, 1), m.rc(1, 1), m.rc(2, 1),
-            m.rc(3, 1), m.rc(0, 2), m.rc(1, 2), m.rc(2, 2), m.rc(3, 2), m.rc(0, 3), m.rc(1, 3),
-            m.rc(2, 3), m.rc(3, 3), v.x, v.y, v.z, v.w, (unpremulInput ? "true" : "false"),
-            (clampRGBOutput ? "true" : "false"), (premulOutput ? "true" : "false"));
+            m.rc(0, 0),
+            m.rc(1, 0),
+            m.rc(2, 0),
+            m.rc(3, 0),
+            m.rc(0, 1),
+            m.rc(1, 1),
+            m.rc(2, 1),
+            m.rc(3, 1),
+            m.rc(0, 2),
+            m.rc(1, 2),
+            m.rc(2, 2),
+            m.rc(3, 2),
+            m.rc(0, 3),
+            m.rc(1, 3),
+            m.rc(2, 3),
+            m.rc(3, 3),
+            v.x,
+            v.y,
+            v.z,
+            v.w,
+            (unpremulInput ? "true" : "false"),
+            (clampRGBOutput ? "true" : "false"),
+            (premulOutput ? "true" : "false"));
 }
 #endif
 GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrColorMatrixFragmentProcessor);

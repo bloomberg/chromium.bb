@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 #include <memory>
+
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -126,11 +127,10 @@ class ResourceFetcherTest : public testing::Test {
    public:
     // ResourceLoadObserver implementation.
     void DidStartRequest(const FetchParameters&, ResourceType) override {}
-    void WillSendRequest(uint64_t identifier,
-                         const ResourceRequest& request,
+    void WillSendRequest(const ResourceRequest& request,
                          const ResourceResponse& redirect_response,
                          ResourceType,
-                         const FetchInitiatorInfo&,
+                         const ResourceLoaderOptions&,
                          RenderBlockingBehavior) override {
       request_ = PartialResourceRequest(request);
     }

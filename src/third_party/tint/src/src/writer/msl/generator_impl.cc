@@ -15,46 +15,24 @@
 #include "src/writer/msl/generator_impl.h"
 
 #include <algorithm>
-#include <limits>
+#include <iomanip>
 #include <utility>
 #include <vector>
 
-#include "src/ast/array_accessor_expression.h"
-#include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/bitcast_expression.h"
-#include "src/ast/block_statement.h"
 #include "src/ast/bool_literal.h"
-#include "src/ast/break_statement.h"
-#include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
-#include "src/ast/case_statement.h"
 #include "src/ast/constant_id_decoration.h"
-#include "src/ast/continue_statement.h"
-#include "src/ast/else_statement.h"
 #include "src/ast/fallthrough_statement.h"
 #include "src/ast/float_literal.h"
-#include "src/ast/function.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/if_statement.h"
-#include "src/ast/location_decoration.h"
-#include "src/ast/loop_statement.h"
-#include "src/ast/member_accessor_expression.h"
 #include "src/ast/module.h"
-#include "src/ast/return_statement.h"
 #include "src/ast/sint_literal.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/switch_statement.h"
 #include "src/ast/uint_literal.h"
-#include "src/ast/unary_op_expression.h"
-#include "src/ast/variable.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/debug.h"
-#include "src/program.h"
+#include "src/semantic/array.h"
 #include "src/semantic/call.h"
-#include "src/semantic/expression.h"
 #include "src/semantic/function.h"
 #include "src/semantic/member_accessor_expression.h"
+#include "src/semantic/struct.h"
 #include "src/semantic/variable.h"
 #include "src/type/access_control_type.h"
 #include "src/type/alias_type.h"
@@ -67,9 +45,7 @@
 #include "src/type/multisampled_texture_type.h"
 #include "src/type/pointer_type.h"
 #include "src/type/sampled_texture_type.h"
-#include "src/type/sampler_type.h"
 #include "src/type/storage_texture_type.h"
-#include "src/type/struct_type.h"
 #include "src/type/u32_type.h"
 #include "src/type/vector_type.h"
 #include "src/type/void_type.h"
@@ -82,8 +58,8 @@ namespace {
 
 const char kInStructNameSuffix[] = "in";
 const char kOutStructNameSuffix[] = "out";
-const char kTintStructInVarPrefix[] = "tint_in";
-const char kTintStructOutVarPrefix[] = "tint_out";
+const char kTintStructInVarPrefix[] = "_tint_in";
+const char kTintStructOutVarPrefix[] = "_tint_out";
 
 bool last_is_break_or_fallthrough(const ast::BlockStatement* stmts) {
   if (stmts->empty()) {
@@ -94,14 +70,6 @@ bool last_is_break_or_fallthrough(const ast::BlockStatement* stmts) {
          stmts->last()->Is<ast::FallthroughStatement>();
 }
 
-uint32_t adjust_for_alignment(uint32_t count, uint32_t alignment) {
-  const auto spill = count % alignment;
-  if (spill == 0) {
-    return count;
-  }
-  return count + alignment - spill;
-}
-
 }  // namespace
 
 GeneratorImpl::GeneratorImpl(const Program* program)
@@ -109,19 +77,9 @@ GeneratorImpl::GeneratorImpl(const Program* program)
 
 GeneratorImpl::~GeneratorImpl() = default;
 
-std::string GeneratorImpl::generate_name(const std::string& prefix) {
-  std::string name = prefix;
-  uint32_t i = 0;
-  while (namer_.IsMapped(name)) {
-    name = prefix + "_" + std::to_string(i);
-    ++i;
-  }
-  namer_.RegisterRemappedName(name);
-  return name;
-}
-
 bool GeneratorImpl::Generate() {
   out_ << "#include <metal_stdlib>" << std::endl << std::endl;
+  out_ << "using namespace metal;" << std::endl;
 
   for (auto* global : program_->AST().GlobalVariables()) {
     auto* sem = program_->Sem().Get(global);
@@ -176,89 +134,6 @@ bool GeneratorImpl::Generate() {
   return true;
 }
 
-uint32_t GeneratorImpl::calculate_largest_alignment(type::Struct* type) {
-  auto* stct = type->As<type::Struct>()->impl();
-  uint32_t largest_alignment = 0;
-  for (auto* mem : stct->members()) {
-    auto align = calculate_alignment_size(mem->type());
-    if (align == 0) {
-      return 0;
-    }
-    if (!mem->type()->Is<type::Struct>()) {
-      largest_alignment = std::max(largest_alignment, align);
-    } else {
-      largest_alignment = std::max(
-          largest_alignment,
-          calculate_largest_alignment(mem->type()->As<type::Struct>()));
-    }
-  }
-  return largest_alignment;
-}
-
-uint32_t GeneratorImpl::calculate_alignment_size(type::Type* type) {
-  if (auto* alias = type->As<type::Alias>()) {
-    return calculate_alignment_size(alias->type());
-  }
-  if (auto* ary = type->As<type::Array>()) {
-    // TODO(dsinclair): Handle array stride and adjust for alignment.
-    uint32_t type_size = calculate_alignment_size(ary->type());
-    return ary->size() * type_size;
-  }
-  if (type->Is<type::Bool>()) {
-    return 1;
-  }
-  if (type->Is<type::Pointer>()) {
-    return 0;
-  }
-  if (type->Is<type::F32>() || type->Is<type::I32>() || type->Is<type::U32>()) {
-    return 4;
-  }
-  if (auto* mat = type->As<type::Matrix>()) {
-    // TODO(dsinclair): Handle MatrixStride
-    // https://github.com/gpuweb/gpuweb/issues/773
-    uint32_t type_size = calculate_alignment_size(mat->type());
-    return mat->rows() * mat->columns() * type_size;
-  }
-  if (auto* stct_ty = type->As<type::Struct>()) {
-    auto* stct = stct_ty->impl();
-    uint32_t count = 0;
-    uint32_t largest_alignment = 0;
-    // Offset decorations in WGSL must be in increasing order.
-    for (auto* mem : stct->members()) {
-      for (auto* deco : mem->decorations()) {
-        if (auto* offset = deco->As<ast::StructMemberOffsetDecoration>()) {
-          count = offset->offset();
-        }
-      }
-      auto align = calculate_alignment_size(mem->type());
-      if (align == 0) {
-        return 0;
-      }
-      if (auto* str = mem->type()->As<type::Struct>()) {
-        largest_alignment =
-            std::max(largest_alignment, calculate_largest_alignment(str));
-      } else {
-        largest_alignment = std::max(largest_alignment, align);
-      }
-
-      // Round up to the alignment size
-      count = adjust_for_alignment(count, align);
-      count += align;
-    }
-    // Round struct up to largest align size
-    count = adjust_for_alignment(count, largest_alignment);
-    return count;
-  }
-  if (auto* vec = type->As<type::Vector>()) {
-    uint32_t type_size = calculate_alignment_size(vec->type());
-    if (vec->size() == 2) {
-      return 2 * type_size;
-    }
-    return 4 * type_size;
-  }
-  return 0;
-}
-
 bool GeneratorImpl::EmitConstructedType(const type::Type* ty) {
   make_indent();
 
@@ -267,8 +142,8 @@ bool GeneratorImpl::EmitConstructedType(const type::Type* ty) {
     if (!EmitType(alias->type(), "")) {
       return false;
     }
-    out_ << " " << namer_.NameFor(program_->Symbols().NameFor(alias->symbol()))
-         << ";" << std::endl;
+    out_ << " " << program_->Symbols().NameFor(alias->symbol()) << ";"
+         << std::endl;
   } else if (auto* str = ty->As<type::Struct>()) {
     if (!EmitStructType(str)) {
       return false;
@@ -464,6 +339,18 @@ bool GeneratorImpl::EmitCall(ast::CallExpression* expr) {
       out_ << "))";
       return true;
     }
+    // TODO(crbug.com/tint/661): Combine sequential barriers to a single
+    // instruction.
+    if (intrinsic->Type() == semantic::IntrinsicType::kStorageBarrier) {
+      make_indent();
+      out_ << "threadgroup_barrier(mem_flags::mem_device)";
+      return true;
+    }
+    if (intrinsic->Type() == semantic::IntrinsicType::kWorkgroupBarrier) {
+      make_indent();
+      out_ << "threadgroup_barrier(mem_flags::mem_threadgroup)";
+      return true;
+    }
     auto name = generate_builtin_name(intrinsic);
     if (name.empty()) {
       return false;
@@ -587,7 +474,10 @@ bool GeneratorImpl::EmitTextureCall(ast::CallExpression* expr,
   };
 
   auto* texture = arg(Usage::kTexture);
-  assert(texture);
+  if (!texture) {
+    TINT_ICE(diagnostics_) << "missing texture arg";
+    return false;
+  }
 
   auto* texture_type = TypeOf(texture)->UnwrapAll()->As<type::Texture>();
 
@@ -789,7 +679,7 @@ bool GeneratorImpl::EmitTextureCall(ast::CallExpression* expr,
 
 std::string GeneratorImpl::generate_builtin_name(
     const semantic::Intrinsic* intrinsic) {
-  std::string out = "metal::";
+  std::string out = "";
   switch (intrinsic->Type()) {
     case semantic::IntrinsicType::kAcos:
     case semantic::IntrinsicType::kAll:
@@ -985,7 +875,7 @@ bool GeneratorImpl::EmitContinue(ast::ContinueStatement*) {
 }
 
 bool GeneratorImpl::EmitTypeConstructor(ast::TypeConstructorExpression* expr) {
-  if (expr->type()->Is<type::Array>()) {
+  if (expr->type()->IsAnyOf<type::Array, type::Struct>()) {
     out_ << "{";
   } else {
     if (!EmitType(expr->type(), "")) {
@@ -1014,7 +904,7 @@ bool GeneratorImpl::EmitTypeConstructor(ast::TypeConstructorExpression* expr) {
     }
   }
 
-  if (expr->type()->Is<type::Array>()) {
+  if (expr->type()->IsAnyOf<type::Array, type::Struct>()) {
     out_ << "}";
   } else {
     out_ << ")";
@@ -1072,12 +962,13 @@ bool GeneratorImpl::EmitLiteral(ast::Literal* lit) {
   return true;
 }
 
+// TODO(crbug.com/tint/697): Remove this when we remove support for entry point
+// params as module-scope globals.
 bool GeneratorImpl::EmitEntryPointData(ast::Function* func) {
   auto* func_sem = program_->Sem().Get(func);
 
-  std::vector<std::pair<ast::Variable*, uint32_t>> in_locations;
-  std::vector<std::pair<ast::Variable*, ast::VariableDecoration*>>
-      out_variables;
+  std::vector<std::pair<const ast::Variable*, uint32_t>> in_locations;
+  std::vector<std::pair<const ast::Variable*, ast::Decoration*>> out_variables;
 
   for (auto data : func_sem->ReferencedLocationVariables()) {
     auto* var = data.first;
@@ -1101,9 +992,8 @@ bool GeneratorImpl::EmitEntryPointData(ast::Function* func) {
 
   if (!in_locations.empty()) {
     auto in_struct_name =
-        generate_name(program_->Symbols().NameFor(func->symbol()) + "_" +
-                      kInStructNameSuffix);
-    auto in_var_name = generate_name(kTintStructInVarPrefix);
+        program_->Symbols().NameFor(func->symbol()) + "_" + kInStructNameSuffix;
+    auto* in_var_name = kTintStructInVarPrefix;
     ep_sym_to_in_data_[func->symbol()] = {in_struct_name, in_var_name};
 
     make_indent();
@@ -1116,7 +1006,8 @@ bool GeneratorImpl::EmitEntryPointData(ast::Function* func) {
       uint32_t loc = data.second;
 
       make_indent();
-      if (!EmitType(var->type(), program_->Symbols().NameFor(var->symbol()))) {
+      if (!EmitType(program_->Sem().Get(var)->Type(),
+                    program_->Symbols().NameFor(var->symbol()))) {
         return false;
       }
 
@@ -1138,10 +1029,9 @@ bool GeneratorImpl::EmitEntryPointData(ast::Function* func) {
   }
 
   if (!out_variables.empty()) {
-    auto out_struct_name =
-        generate_name(program_->Symbols().NameFor(func->symbol()) + "_" +
-                      kOutStructNameSuffix);
-    auto out_var_name = generate_name(kTintStructOutVarPrefix);
+    auto out_struct_name = program_->Symbols().NameFor(func->symbol()) + "_" +
+                           kOutStructNameSuffix;
+    auto* out_var_name = kTintStructOutVarPrefix;
     ep_sym_to_out_data_[func->symbol()] = {out_struct_name, out_var_name};
 
     make_indent();
@@ -1153,7 +1043,8 @@ bool GeneratorImpl::EmitEntryPointData(ast::Function* func) {
       auto* deco = data.second;
 
       make_indent();
-      if (!EmitType(var->type(), program_->Symbols().NameFor(var->symbol()))) {
+      if (!EmitType(program_->Sem().Get(var)->Type(),
+                    program_->Symbols().NameFor(var->symbol()))) {
         return false;
       }
 
@@ -1322,14 +1213,11 @@ bool GeneratorImpl::EmitFunctionInternal(ast::Function* func,
   if (emit_duplicate_functions) {
     auto func_name = name;
     auto ep_name = ep_sym.to_str();
-    // TODO(dsinclair): The SymbolToName should go away and just use
-    // to_str() here when the conversion is complete.
-    name = generate_name(program_->Symbols().NameFor(func->symbol()) + "_" +
-                         program_->Symbols().NameFor(ep_sym));
+    name = program_->Symbols().NameFor(func->symbol()) + "_" +
+           program_->Symbols().NameFor(ep_sym);
     ep_func_name_remapped_[ep_name + "_" + func_name] = name;
   } else {
-    // TODO(dsinclair): this should be updated to a remapped name
-    name = namer_.NameFor(program_->Symbols().NameFor(func->symbol()));
+    name = program_->Symbols().NameFor(func->symbol());
   }
   out_ << name << "(";
 
@@ -1369,7 +1257,7 @@ bool GeneratorImpl::EmitFunctionInternal(ast::Function* func,
     first = false;
 
     out_ << "thread ";
-    if (!EmitType(var->Declaration()->type(), "")) {
+    if (!EmitType(var->Type(), "")) {
       return false;
     }
     out_ << "& " << program_->Symbols().NameFor(var->Declaration()->symbol());
@@ -1384,7 +1272,7 @@ bool GeneratorImpl::EmitFunctionInternal(ast::Function* func,
 
     out_ << "constant ";
     // TODO(dsinclair): Can arrays be uniform? If so, fix this ...
-    if (!EmitType(var->Declaration()->type(), "")) {
+    if (!EmitType(var->Type(), "")) {
       return false;
     }
     out_ << "& " << program_->Symbols().NameFor(var->Declaration()->symbol());
@@ -1397,7 +1285,7 @@ bool GeneratorImpl::EmitFunctionInternal(ast::Function* func,
     }
     first = false;
 
-    auto* ac = var->Declaration()->type()->As<type::AccessControl>();
+    auto* ac = var->Type()->As<type::AccessControl>();
     if (ac == nullptr) {
       diagnostics_.add_error(
           "invalid type for storage buffer, expected access control");
@@ -1420,11 +1308,13 @@ bool GeneratorImpl::EmitFunctionInternal(ast::Function* func,
     }
     first = false;
 
-    if (!EmitType(v->type(), program_->Symbols().NameFor(v->symbol()))) {
+    auto* type = program_->Sem().Get(v)->Type();
+
+    if (!EmitType(type, program_->Symbols().NameFor(v->symbol()))) {
       return false;
     }
     // Array name is output as part of the type
-    if (!v->type()->Is<type::Array>()) {
+    if (!type->Is<type::Array>()) {
       out_ << " " << program_->Symbols().NameFor(v->symbol());
     }
   }
@@ -1489,14 +1379,19 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
   auto out_data = ep_sym_to_out_data_.find(current_ep_sym_);
   bool has_out_data = out_data != ep_sym_to_out_data_.end();
   if (has_out_data) {
+    // TODO(crbug.com/tint/697): Remove this.
+    if (!func->return_type()->Is<type::Void>()) {
+      TINT_ICE(diagnostics_) << "Mixing module-scope variables and return "
+                                "types for shader outputs";
+    }
     out_ << out_data->second.struct_name;
   } else {
-    out_ << "void";
+    out_ << func->return_type()->FriendlyName(program_->Symbols());
   }
-  out_ << " " << namer_.NameFor(program_->Symbols().NameFor(func->symbol()))
-       << "(";
+  out_ << " " << program_->Symbols().NameFor(func->symbol()) << "(";
 
   bool first = true;
+  // TODO(crbug.com/tint/697): Remove this.
   auto in_data = ep_sym_to_in_data_.find(current_ep_sym_);
   if (in_data != ep_sym_to_in_data_.end()) {
     out_ << in_data->second.struct_name << " " << in_data->second.var_name
@@ -1504,6 +1399,48 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
     first = false;
   }
 
+  // Emit entry point parameters.
+  for (auto* var : func->params()) {
+    if (!first) {
+      out_ << ", ";
+    }
+    first = false;
+
+    auto* type = program_->Sem().Get(var)->Type();
+
+    if (!EmitType(type, "")) {
+      return false;
+    }
+
+    out_ << " " << program_->Symbols().NameFor(var->symbol());
+
+    if (type->Is<type::Struct>()) {
+      out_ << " [[stage_in]]";
+    } else {
+      auto& decos = var->decorations();
+      bool builtin_found = false;
+      for (auto* deco : decos) {
+        auto* builtin = deco->As<ast::BuiltinDecoration>();
+        if (!builtin) {
+          continue;
+        }
+
+        builtin_found = true;
+
+        auto attr = builtin_to_attribute(builtin->value());
+        if (attr.empty()) {
+          diagnostics_.add_error("unknown builtin");
+          return false;
+        }
+        out_ << " [[" << attr << "]]";
+      }
+      if (!builtin_found) {
+        TINT_ICE(diagnostics_) << "Unsupported entry point parameter";
+      }
+    }
+  }
+
+  // TODO(crbug.com/tint/697): Remove this.
   for (auto data : func_sem->ReferencedBuiltinVariables()) {
     auto* var = data.first;
     if (var->StorageClass() != ast::StorageClass::kInput) {
@@ -1517,7 +1454,7 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
 
     auto* builtin = data.second;
 
-    if (!EmitType(var->Declaration()->type(), "")) {
+    if (!EmitType(var->Type(), "")) {
       return false;
     }
 
@@ -1552,7 +1489,7 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
     out_ << "constant ";
     // TODO(dsinclair): Can you have a uniform array? If so, this needs to be
     // updated to handle arrays property.
-    if (!EmitType(var->Declaration()->type(), "")) {
+    if (!EmitType(var->Type(), "")) {
       return false;
     }
     out_ << "& " << program_->Symbols().NameFor(var->Declaration()->symbol())
@@ -1572,7 +1509,7 @@ bool GeneratorImpl::EmitEntryPointFunction(ast::Function* func) {
     auto* binding = data.second.binding;
     // auto* set = data.second.set;
 
-    auto* ac = var->Declaration()->type()->As<type::AccessControl>();
+    auto* ac = var->Type()->As<type::AccessControl>();
     if (ac == nullptr) {
       diagnostics_.add_error(
           "invalid type for storage buffer, expected access control");
@@ -1652,7 +1589,7 @@ bool GeneratorImpl::EmitIdentifier(ast::IdentifierExpression* expr) {
     }
   }
 
-  out_ << namer_.NameFor(program_->Symbols().NameFor(ident->symbol()));
+  out_ << program_->Symbols().NameFor(ident->symbol());
 
   return true;
 }
@@ -1660,8 +1597,8 @@ bool GeneratorImpl::EmitIdentifier(ast::IdentifierExpression* expr) {
 bool GeneratorImpl::EmitLoop(ast::LoopStatement* stmt) {
   loop_emission_counter_++;
 
-  std::string guard = namer_.NameFor("tint_msl_is_first_" +
-                                     std::to_string(loop_emission_counter_));
+  std::string guard =
+      "tint_msl_is_first_" + std::to_string(loop_emission_counter_);
 
   if (stmt->has_continuing()) {
     make_indent();
@@ -1717,7 +1654,7 @@ bool GeneratorImpl::EmitLoop(ast::LoopStatement* stmt) {
           return false;
         }
       } else {
-        if (!EmitZeroValue(var->type())) {
+        if (!EmitZeroValue(program_->Sem().Get(var)->Type())) {
           return false;
         }
       }
@@ -1811,12 +1748,14 @@ bool GeneratorImpl::EmitReturn(ast::ReturnStatement* stmt) {
 
   out_ << "return";
 
+  // TODO(crbug.com/tint/697): Remove this conditional.
   if (generating_entry_point_) {
     auto out_data = ep_sym_to_out_data_.find(current_ep_sym_);
     if (out_data != ep_sym_to_out_data_.end()) {
       out_ << " " << out_data->second.var_name;
     }
-  } else if (stmt->has_value()) {
+  }
+  if (stmt->has_value()) {
     out_ << " ";
     if (!EmitExpression(stmt->value())) {
       return false;
@@ -1950,7 +1889,7 @@ bool GeneratorImpl::EmitType(type::Type* type, const std::string& name) {
   }
 
   if (auto* alias = type->As<type::Alias>()) {
-    out_ << namer_.NameFor(program_->Symbols().NameFor(alias->symbol()));
+    out_ << program_->Symbols().NameFor(alias->symbol());
   } else if (auto* ary = type->As<type::Array>()) {
     type::Type* base_type = ary;
     std::vector<uint32_t> sizes;
@@ -1966,7 +1905,7 @@ bool GeneratorImpl::EmitType(type::Type* type, const std::string& name) {
       return false;
     }
     if (!name.empty()) {
-      out_ << " " << namer_.NameFor(name);
+      out_ << " " << name;
     }
     for (uint32_t size : sizes) {
       out_ << "[" << size << "]";
@@ -2068,52 +2007,157 @@ bool GeneratorImpl::EmitType(type::Type* type, const std::string& name) {
   return true;
 }
 
+bool GeneratorImpl::EmitPackedType(type::Type* type, const std::string& name) {
+  if (auto* alias = type->As<type::Alias>()) {
+    return EmitPackedType(alias->type(), name);
+  }
+
+  if (auto* vec = type->As<type::Vector>()) {
+    out_ << "packed_";
+    if (!EmitType(vec->type(), "")) {
+      return false;
+    }
+    out_ << vec->size();
+    return true;
+  }
+
+  return EmitType(type, name);
+}
+
 bool GeneratorImpl::EmitStructType(const type::Struct* str) {
   // TODO(dsinclair): Block decoration?
-  // if (str->impl()->decoration() != ast::StructDecoration::kNone) {
+  // if (str->impl()->decoration() != ast::Decoration::kNone) {
   // }
   out_ << "struct " << program_->Symbols().NameFor(str->symbol()) << " {"
        << std::endl;
 
-  increment_indent();
-  uint32_t current_offset = 0;
+  auto* sem_str = program_->Sem().Get(str);
+  if (!sem_str) {
+    TINT_ICE(diagnostics_) << "struct  missing semantic info";
+    return false;
+  }
+
+  bool is_host_shareable = sem_str->IsHostShareable();
+
+  // Emits a `/* 0xnnnn */` byte offset comment for a struct member.
+  auto add_byte_offset_comment = [&](uint32_t offset) {
+    std::ios_base::fmtflags saved_flag_state(out_.flags());
+    out_ << "/* 0x" << std::hex << std::setfill('0') << std::setw(4) << offset
+         << " */ ";
+    out_.flags(saved_flag_state);
+  };
+
   uint32_t pad_count = 0;
+  auto add_padding = [&](uint32_t size) {
+    out_ << "int8_t _tint_pad_" << pad_count << "[" << size << "];"
+         << std::endl;
+    pad_count++;
+  };
+
+  increment_indent();
+  uint32_t msl_offset = 0;
   for (auto* mem : str->impl()->members()) {
     make_indent();
-    for (auto* deco : mem->decorations()) {
-      if (auto* o = deco->As<ast::StructMemberOffsetDecoration>()) {
-        uint32_t offset = o->offset();
-        if (offset != current_offset) {
-          out_ << "int8_t pad_" << pad_count << "[" << (offset - current_offset)
-               << "];" << std::endl;
-          pad_count++;
-          make_indent();
-        }
-        current_offset = offset;
-      } else {
-        diagnostics_.add_error("unsupported member decoration: " +
-                               program_->str(deco));
+
+    auto* sem_mem = program_->Sem().Get(mem);
+    if (!sem_mem) {
+      TINT_ICE(diagnostics_) << "struct member missing semantic info";
+      return false;
+    }
+
+    auto wgsl_offset = sem_mem->Offset();
+
+    if (is_host_shareable) {
+      if (wgsl_offset < msl_offset) {
+        // Unimplementable layout
+        TINT_ICE(diagnostics_)
+            << "Structure member WGSL offset (" << wgsl_offset
+            << ") is behind MSL offset (" << msl_offset << ")";
+        return false;
+      }
+
+      // Generate padding if required
+      if (auto padding = wgsl_offset - msl_offset) {
+        add_byte_offset_comment(msl_offset);
+        add_padding(padding);
+        msl_offset += padding;
+        make_indent();
+      }
+
+      add_byte_offset_comment(msl_offset);
+
+      if (!EmitPackedType(mem->type(),
+                          program_->Symbols().NameFor(mem->symbol()))) {
+        return false;
+      }
+    } else {
+      if (!EmitType(mem->type(), program_->Symbols().NameFor(mem->symbol()))) {
         return false;
       }
     }
 
-    if (!EmitType(mem->type(), program_->Symbols().NameFor(mem->symbol()))) {
-      return false;
-    }
-    auto size = calculate_alignment_size(mem->type());
-    if (size == 0) {
-      diagnostics_.add_error("unable to calculate byte size for: " +
-                             mem->type()->type_name());
-      return false;
-    }
-    current_offset += size;
+    auto* ty = mem->type()->UnwrapAliasIfNeeded();
 
     // Array member name will be output with the type
-    if (!mem->type()->Is<type::Array>()) {
-      out_ << " " << namer_.NameFor(program_->Symbols().NameFor(mem->symbol()));
+    if (!ty->Is<type::Array>()) {
+      out_ << " " << program_->Symbols().NameFor(mem->symbol());
     }
+
+    // Emit decorations
+    for (auto* deco : mem->decorations()) {
+      if (auto* builtin = deco->As<ast::BuiltinDecoration>()) {
+        auto attr = builtin_to_attribute(builtin->value());
+        if (attr.empty()) {
+          diagnostics_.add_error("unknown builtin");
+          return false;
+        }
+        out_ << " [[" << attr << "]]";
+      } else if (auto* loc = deco->As<ast::LocationDecoration>()) {
+        auto& pipeline_stage_uses =
+            program_->Sem().Get(str)->PipelineStageUses();
+        if (pipeline_stage_uses.size() != 1) {
+          TINT_ICE(diagnostics_) << "invalid entry point IO struct uses";
+        }
+
+        if (pipeline_stage_uses.count(
+                semantic::PipelineStageUsage::kVertexInput)) {
+          out_ << " [[attribute(" + std::to_string(loc->value()) + ")]]";
+        } else if (pipeline_stage_uses.count(
+                       semantic::PipelineStageUsage::kVertexOutput)) {
+          out_ << " [[user(locn" + std::to_string(loc->value()) + ")]]";
+        } else if (pipeline_stage_uses.count(
+                       semantic::PipelineStageUsage::kFragmentInput)) {
+          out_ << " [[user(locn" + std::to_string(loc->value()) + ")]]";
+        } else if (pipeline_stage_uses.count(
+                       semantic::PipelineStageUsage::kFragmentOutput)) {
+          out_ << " [[color(" + std::to_string(loc->value()) + ")]]";
+        } else {
+          TINT_ICE(diagnostics_) << "invalid use of location decoration";
+        }
+      }
+    }
+
     out_ << ";" << std::endl;
+
+    if (is_host_shareable) {
+      // Calculate new MSL offset
+      auto size_align = MslPackedTypeSizeAndAlign(ty);
+      if (msl_offset % size_align.align) {
+        TINT_ICE(diagnostics_) << "Misaligned MSL structure member "
+                               << ty->FriendlyName(program_->Symbols()) << " "
+                               << program_->Symbols().NameFor(mem->symbol());
+        return false;
+      }
+      msl_offset += size_align.size;
+    }
   }
+
+  if (is_host_shareable && sem_str->Size() != msl_offset) {
+    make_indent();
+    add_byte_offset_comment(msl_offset);
+    add_padding(sem_str->Size() - msl_offset);
+  }
+
   decrement_indent();
   make_indent();
 
@@ -2155,10 +2199,10 @@ bool GeneratorImpl::EmitVariable(const semantic::Variable* var,
   if (decl->is_const()) {
     out_ << "const ";
   }
-  if (!EmitType(decl->type(), program_->Symbols().NameFor(decl->symbol()))) {
+  if (!EmitType(var->Type(), program_->Symbols().NameFor(decl->symbol()))) {
     return false;
   }
-  if (!decl->type()->Is<type::Array>()) {
+  if (!var->Type()->Is<type::Array>()) {
     out_ << " " << program_->Symbols().NameFor(decl->symbol());
   }
 
@@ -2172,7 +2216,7 @@ bool GeneratorImpl::EmitVariable(const semantic::Variable* var,
                var->StorageClass() == ast::StorageClass::kFunction ||
                var->StorageClass() == ast::StorageClass::kNone ||
                var->StorageClass() == ast::StorageClass::kOutput) {
-      if (!EmitZeroValue(decl->type())) {
+      if (!EmitZeroValue(var->Type())) {
         return false;
       }
     }
@@ -2197,10 +2241,11 @@ bool GeneratorImpl::EmitProgramConstVariable(const ast::Variable* var) {
   }
 
   out_ << "constant ";
-  if (!EmitType(var->type(), program_->Symbols().NameFor(var->symbol()))) {
+  auto* type = program_->Sem().Get(var)->Type();
+  if (!EmitType(type, program_->Symbols().NameFor(var->symbol()))) {
     return false;
   }
-  if (!var->type()->Is<type::Array>()) {
+  if (!type->Is<type::Array>()) {
     out_ << " " << program_->Symbols().NameFor(var->symbol());
   }
 
@@ -2215,6 +2260,84 @@ bool GeneratorImpl::EmitProgramConstVariable(const ast::Variable* var) {
   out_ << ";" << std::endl;
 
   return true;
+}
+
+GeneratorImpl::SizeAndAlign GeneratorImpl::MslPackedTypeSizeAndAlign(
+    type::Type* ty) {
+  ty = ty->UnwrapAliasIfNeeded();
+
+  if (ty->IsAnyOf<type::U32, type::I32, type::F32>()) {
+    // https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
+    // 2.1 Scalar Data Types
+    return {4, 4};
+  }
+
+  if (auto* vec = ty->As<type::Vector>()) {
+    // https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
+    // 2.2.3 Packed Vector Types
+    auto num_els = vec->size();
+    auto* el_ty = vec->type()->UnwrapAll();
+    if (el_ty->IsAnyOf<type::U32, type::I32, type::F32>()) {
+      return SizeAndAlign{num_els * 4, 4};
+    }
+  }
+
+  if (auto* mat = ty->As<type::Matrix>()) {
+    // https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
+    // 2.3 Matrix Data Types
+    auto cols = mat->columns();
+    auto rows = mat->rows();
+    auto* el_ty = mat->type()->UnwrapAll();
+    if (el_ty->IsAnyOf<type::U32, type::I32, type::F32>()) {
+      static constexpr SizeAndAlign table[] = {
+          /* float2x2 */ {16, 8},
+          /* float2x3 */ {32, 16},
+          /* float2x4 */ {32, 16},
+          /* float3x2 */ {24, 8},
+          /* float3x3 */ {48, 16},
+          /* float3x4 */ {48, 16},
+          /* float4x2 */ {32, 8},
+          /* float4x3 */ {64, 16},
+          /* float4x4 */ {64, 16},
+      };
+      if (cols >= 2 && cols <= 4 && rows >= 2 && rows <= 4) {
+        return table[(3 * (cols - 2)) + (rows - 2)];
+      }
+    }
+  }
+
+  if (auto* arr = ty->As<type::Array>()) {
+    auto* sem = program_->Sem().Get(arr);
+    if (!sem) {
+      TINT_ICE(diagnostics_) << "Array missing semantic info";
+      return {};
+    }
+    auto el_size_align = MslPackedTypeSizeAndAlign(arr->type());
+    if (sem->Stride() != el_size_align.size) {
+      // TODO(crbug.com/tint/649): transform::Msl needs to replace these arrays
+      // with a new array type that has the element type padded to the required
+      // stride.
+      TINT_UNIMPLEMENTED(diagnostics_)
+          << "Arrays with custom strides not yet implemented";
+      return {};
+    }
+    auto num_els = std::max<uint32_t>(arr->size(), 1);
+    return SizeAndAlign{el_size_align.size * num_els, el_size_align.align};
+  }
+
+  if (auto* str = ty->As<type::Struct>()) {
+    // TODO(crbug.com/tint/650): There's an assumption here that MSL's default
+    // structure size and alignment matches WGSL's. We need to confirm this.
+    auto* sem = program_->Sem().Get(str);
+    if (!sem) {
+      TINT_ICE(diagnostics_) << "Array missing semantic info";
+      return {};
+    }
+    return SizeAndAlign{sem->Size(), sem->Align()};
+  }
+
+  TINT_UNREACHABLE(diagnostics_) << "Unhandled type " << ty->TypeInfo().name;
+  return {};
 }
 
 }  // namespace msl

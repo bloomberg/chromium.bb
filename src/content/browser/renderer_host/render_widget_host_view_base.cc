@@ -145,7 +145,7 @@ RenderWidgetHostViewBase* RenderWidgetHostViewBase::GetRootView() {
   return this;
 }
 
-void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
+void RenderWidgetHostViewBase::SelectionChanged(const std::u16string& text,
                                                 size_t offset,
                                                 const gfx::Range& range) {
   if (GetTextInputManager())
@@ -280,9 +280,9 @@ RenderWidgetHostViewBase::CreateVideoCapturer() {
   return video_capturer;
 }
 
-base::string16 RenderWidgetHostViewBase::GetSelectedText() {
+std::u16string RenderWidgetHostViewBase::GetSelectedText() {
   if (!GetTextInputManager())
-    return base::string16();
+    return std::u16string();
   return GetTextInputManager()->GetTextSelection(this)->selected_text();
 }
 
@@ -312,6 +312,33 @@ base::Optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() {
   if (content_background_color_)
     return content_background_color_;
   return default_background_color_;
+}
+
+bool RenderWidgetHostViewBase::IsBackgroundColorOpaque() {
+  base::Optional<SkColor> bg_color = GetBackgroundColor();
+  return bg_color ? SkColorGetA(*bg_color) == SK_AlphaOPAQUE : true;
+}
+
+void RenderWidgetHostViewBase::CopyBackgroundColorIfPresentFrom(
+    const RenderWidgetHostView& other) {
+  const RenderWidgetHostViewBase& other_base =
+      static_cast<const RenderWidgetHostViewBase&>(other);
+  if (!other_base.content_background_color_ &&
+      !other_base.default_background_color_) {
+    return;
+  }
+  if (content_background_color_ == other_base.content_background_color_ &&
+      default_background_color_ == other_base.default_background_color_) {
+    return;
+  }
+  bool was_opaque = IsBackgroundColorOpaque();
+  content_background_color_ = other_base.content_background_color_;
+  default_background_color_ = other_base.default_background_color_;
+  UpdateBackgroundColor();
+  bool opaque = IsBackgroundColorOpaque();
+  if (was_opaque != opaque && host()->owner_delegate()) {
+    host()->owner_delegate()->SetBackgroundOpaque(opaque);
+  }
 }
 
 bool RenderWidgetHostViewBase::IsMouseLocked() {
@@ -469,16 +496,23 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
 bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   auto* screen = display::Screen::GetScreen();
   auto display = screen->GetDisplayNearestView(view);
-  if (current_display_.work_area() == display.work_area() &&
+  bool display_is_extended = screen->GetNumDisplays() > 1;
+  bool display_is_primary = screen->GetPrimaryDisplay().id() == display.id();
+  if (current_display_.id() == display.id() &&
+      current_display_.bounds() == display.bounds() &&
+      current_display_.work_area() == display.work_area() &&
       current_display_.device_scale_factor() == display.device_scale_factor() &&
       current_display_.rotation() == display.rotation() &&
       current_display_.color_spaces() == display.color_spaces() &&
-      current_display_is_extended_ == screen->GetNumDisplays() > 1) {
+      current_display_.IsInternal() == display.IsInternal() &&
+      current_display_is_extended_ == display_is_extended &&
+      current_display_is_primary_ == display_is_primary) {
     return false;
   }
 
   current_display_ = display;
-  current_display_is_extended_ = screen->GetNumDisplays() > 1;
+  current_display_is_extended_ = display_is_extended;
+  current_display_is_primary_ = display_is_primary;
   return true;
 }
 

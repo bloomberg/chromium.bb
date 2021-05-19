@@ -5,11 +5,11 @@
 #ifndef UI_SHELL_DIALOGS_EXECUTE_SELECT_FILE_WIN_H_
 #define UI_SHELL_DIALOGS_EXECUTE_SELECT_FILE_WIN_H_
 
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/strings/string16.h"
 #include "base/win/windows_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
@@ -29,11 +29,11 @@ SHELL_DIALOGS_EXPORT std::wstring AppendExtensionIfNeeded(
 // Describes a filter for a file dialog.
 struct FileFilterSpec {
   // A human readable description of this filter. E.g. "HTML Files."
-  base::string16 description;
+  std::u16string description;
   // The different extensions that map to this spec. This is a semicolon-
   // separated list of extensions that contains a wildcard and the separator.
   // E.g. "*.html;*.htm"
-  base::string16 extension_spec;
+  std::u16string extension_spec;
 };
 
 using OnSelectFileExecutedCallback =
@@ -45,7 +45,7 @@ using OnSelectFileExecutedCallback =
 SHELL_DIALOGS_EXPORT
 void ExecuteSelectFile(
     SelectFileDialog::Type type,
-    const base::string16& title,
+    const std::u16string& title,
     const base::FilePath& default_path,
     const std::vector<FileFilterSpec>& filter,
     int file_type_index,

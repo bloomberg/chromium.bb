@@ -6,10 +6,12 @@
 
 #include <stdint.h>
 
+#include <cmath>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/check_op.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "pdf/ppapi_migration/callback.h"
@@ -21,6 +23,7 @@
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/blit.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -81,22 +84,30 @@ void PepperGraphics::SetLayerTransform(float scale,
 }
 
 // static
-std::unique_ptr<SkiaGraphics> SkiaGraphics::Create(const gfx::Size& size) {
-  auto graphics = base::WrapUnique(new SkiaGraphics(size));
+std::unique_ptr<SkiaGraphics> SkiaGraphics::Create(Client* client,
+                                                   const gfx::Size& size) {
+  auto graphics = base::WrapUnique(new SkiaGraphics(client, size));
   if (!graphics->skia_graphics_)
     return nullptr;
 
   return graphics;
 }
 
-SkiaGraphics::SkiaGraphics(const gfx::Size& size)
+SkiaGraphics::SkiaGraphics(Client* client, const gfx::Size& size)
     : Graphics(size),
+      client_(client),
       skia_graphics_(
           SkSurface::MakeRasterN32Premul(size.width(), size.height())) {}
 
 SkiaGraphics::~SkiaGraphics() = default;
 
 bool SkiaGraphics::Flush(ResultCallback callback) {
+  sk_sp<SkImage> snapshot = skia_graphics_->makeImageSnapshot();
+  skia_graphics_->getCanvas()->drawImage(
+      snapshot.get(), /*x=*/0, /*y=*/0, SkSamplingOptions(), /*paint=*/nullptr);
+
+  client_->UpdateSnapshot(std::move(snapshot));
+
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), 0));
   return true;
@@ -110,7 +121,14 @@ void SkiaGraphics::PaintImage(const Image& image, const gfx::Rect& src_rect) {
 }
 
 void SkiaGraphics::Scroll(const gfx::Rect& clip, const gfx::Vector2d& amount) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  // If we are being asked to scroll by more than the graphics' rect size, just
+  // ignore the scroll command.
+  if (std::abs(amount.x()) >= skia_graphics_->width() ||
+      std::abs(amount.y()) >= skia_graphics_->height()) {
+    return;
+  }
+
+  gfx::ScrollCanvas(skia_graphics_->getCanvas(), clip, amount);
 }
 
 void SkiaGraphics::SetScale(float scale) {
@@ -121,10 +139,6 @@ void SkiaGraphics::SetLayerTransform(float scale,
                                      const gfx::Point& origin,
                                      const gfx::Vector2d& translate) {
   NOTIMPLEMENTED_LOG_ONCE();
-}
-
-sk_sp<SkImage> SkiaGraphics::CreateSnapshot() {
-  return skia_graphics_->makeImageSnapshot();
 }
 
 }  // namespace chrome_pdf

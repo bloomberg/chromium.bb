@@ -34,7 +34,12 @@ class CORE_EXPORT NGGridLayoutAlgorithm
     kForMaxContentMinimums,
     kForIntrinsicMaximums,
     kForMaxContentMaximums,
-    kForFreeSpace
+    kForFreeSpace,
+  };
+
+  enum class BaselineType {
+    kMajor,
+    kMinor,
   };
 
   struct ItemSetIndices {
@@ -65,6 +70,12 @@ class CORE_EXPORT NGGridLayoutAlgorithm
     bool IsSpanningIntrinsicTrack(
         GridTrackSizingDirection track_direction) const;
 
+    bool IsBaselineAlignedForDirection(
+        GridTrackSizingDirection track_direction) const;
+    void SetAlignmentFallback(
+        const NGGridLayoutAlgorithmTrackCollection& track_collection,
+        const ComputedStyle& container_style);
+
     // For this item and track direction, computes and stores the pair of
     // indices "begin" and "end" such that the item spans every set from the
     // respective collection's |sets_| with an index in the range [begin, end).
@@ -77,8 +88,6 @@ class CORE_EXPORT NGGridLayoutAlgorithm
     const NGBlockNode node;
     GridArea resolved_position;
 
-    NGBoxStrut margins;
-
     AxisEdge inline_axis_alignment;
     AxisEdge block_axis_alignment;
 
@@ -86,6 +95,10 @@ class CORE_EXPORT NGGridLayoutAlgorithm
 
     bool is_inline_axis_stretched;
     bool is_block_axis_stretched;
+
+    bool has_baseline_alignment;
+    BaselineType row_baseline_type;
+    BaselineType column_baseline_type;
 
     TrackSpanProperties column_span_properties;
     TrackSpanProperties row_span_properties;
@@ -187,14 +200,43 @@ class CORE_EXPORT NGGridLayoutAlgorithm
 
   // Typically we pass around both the column, and row geometry together.
   struct GridGeometry {
+    GridGeometry(SetGeometry&& column_geometry, SetGeometry&& row_geometry)
+        : column_geometry(column_geometry),
+          row_geometry(row_geometry),
+          major_inline_baselines(column_geometry.sets.size(),
+                                 LayoutUnit::Min()),
+          minor_inline_baselines(column_geometry.sets.size(),
+                                 LayoutUnit::Min()),
+          major_block_baselines(row_geometry.sets.size(), LayoutUnit::Min()),
+          minor_block_baselines(row_geometry.sets.size(), LayoutUnit::Min()) {}
+
+    GridGeometry() = default;
+
+    const SetGeometry& Geometry(GridTrackSizingDirection track_direction) const;
+
+    // Updates stored major/minor baseline value.
+    void UpdateBaseline(const GridItemData& grid_item,
+                        LayoutUnit candidate_baseline,
+                        GridTrackSizingDirection track_direction);
+
+    // Retrieves major/minor baseline.
+    LayoutUnit Baseline(const GridItemData& grid_item,
+                        GridTrackSizingDirection track_direction) const;
+
     SetGeometry column_geometry;
     SetGeometry row_geometry;
+
+    Vector<LayoutUnit> major_inline_baselines;
+    Vector<LayoutUnit> minor_inline_baselines;
+    Vector<LayoutUnit> major_block_baselines;
+    Vector<LayoutUnit> minor_block_baselines;
   };
 
   explicit NGGridLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
-  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
+  MinMaxSizesResult ComputeMinMaxSizes(
+      const MinMaxSizesFloatInput&) const override;
 
  private:
   friend class NGGridLayoutAlgorithmTest;
@@ -207,7 +249,8 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       const GridGeometry& grid_geometry,
       const GridItemData& grid_item,
       GridTrackSizingDirection track_direction,
-      GridItemContributionType contribution_type) const;
+      GridItemContributionType contribution_type,
+      bool* needs_additional_pass) const;
 
   wtf_size_t ComputeAutomaticRepetitions(
       GridTrackSizingDirection track_direction) const;
@@ -223,12 +266,6 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       NGGridBlockTrackCollection* row_track_collection,
       NGGridPlacement* grid_placement) const;
 
-  void BuildAlgorithmTrackCollections(
-      GridItems* grid_items,
-      NGGridLayoutAlgorithmTrackCollection* column_track_collection,
-      NGGridLayoutAlgorithmTrackCollection* row_track_collection,
-      NGGridPlacement* grid_placement) const;
-
   // Ensure coverage in block collection after grid items have been placed.
   void EnsureTrackCoverageForGridItems(
       const GridItems& grid_items,
@@ -240,23 +277,31 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       const NGGridLayoutAlgorithmTrackCollection& track_collection,
       GridItems* grid_items) const;
 
+  // Determines the major/minor alignment baselines for each row/column based on
+  // each item in |grid_items|, and stores the results in |grid_geometry|.
+  void CalculateAlignmentBaselines(GridItems& grid_items,
+                                   GridGeometry& grid_geometry,
+                                   GridTrackSizingDirection direction) const;
+
   // Initializes the given track collection, and returns the base set geometry.
   SetGeometry InitializeTrackSizes(
       NGGridLayoutAlgorithmTrackCollection* track_collection) const;
 
   // Calculates from the min and max track sizing functions the used track size.
-  void ComputeUsedTrackSizes(
+  SetGeometry ComputeUsedTrackSizes(
       SizingConstraint sizing_constraint,
       const GridGeometry& grid_geometry,
       NGGridLayoutAlgorithmTrackCollection* track_collection,
-      GridItems* grid_items) const;
+      GridItems* grid_items,
+      bool* needs_additional_pass) const;
 
   // These methods implement the steps of the algorithm for intrinsic track size
   // resolution defined in https://drafts.csswg.org/css-grid-2/#algo-content.
   void ResolveIntrinsicTrackSizes(
       const GridGeometry& grid_geometry,
       NGGridLayoutAlgorithmTrackCollection* track_collection,
-      GridItems* grid_items) const;
+      GridItems* grid_items,
+      bool* needs_additional_pass) const;
 
   void IncreaseTrackSizesToAccommodateGridItems(
       const GridGeometry& grid_geometry,
@@ -264,19 +309,26 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       GridItems::Iterator group_end,
       const bool is_group_spanning_flex_track,
       GridItemContributionType contribution_type,
-      NGGridLayoutAlgorithmTrackCollection* track_collection) const;
+      NGGridLayoutAlgorithmTrackCollection* track_collection,
+      bool* needs_additional_pass) const;
 
   void MaximizeTracks(
       SizingConstraint sizing_constraint,
       NGGridLayoutAlgorithmTrackCollection* track_collection) const;
 
-  void StretchAutoTracks(
+  void StretchAutoTracks(SizingConstraint sizing_constraint,
+                         NGGridLayoutAlgorithmTrackCollection* track_collection,
+                         bool* needs_additional_pass) const;
+
+  void ExpandFlexibleTracks(
       SizingConstraint sizing_constraint,
-      NGGridLayoutAlgorithmTrackCollection* track_collection) const;
+      const GridGeometry& grid_geometry,
+      NGGridLayoutAlgorithmTrackCollection* track_collection,
+      GridItems* grid_items,
+      bool* needs_additional_pass) const;
 
   SetGeometry ComputeSetGeometry(
-      const NGGridLayoutAlgorithmTrackCollection& track_collection,
-      const LayoutUnit available_size) const;
+      const NGGridLayoutAlgorithmTrackCollection& track_collection) const;
 
   // Gets the row or column gap of the grid.
   LayoutUnit GridGap(GridTrackSizingDirection track_direction,
@@ -290,7 +342,8 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       const GridGeometry& grid_geometry,
       const GridItemData& grid_item,
       NGCacheSlot cache_slot,
-      LogicalRect* rect) const;
+      LogicalRect* rect,
+      const LayoutUnit* opt_fixed_size = nullptr) const;
 
   // Layout the |grid_items| based on the offsets provided.
   void PlaceGridItems(const GridItems& grid_items,
@@ -326,12 +379,9 @@ class CORE_EXPORT NGGridLayoutAlgorithm
                             LayoutUnit* start_offset,
                             LayoutUnit* size) const;
 
-  // Determines the position of the out of flow item's container.
-  void DeterminePositionOfOutOfFlowContainer(
-      Vector<GridItemData>* out_of_flow_items,
-      const GridTrackSizingDirection track_direction) const;
-
-  GridTrackSizingDirection AutoFlowDirection() const;
+  NGGridData::TrackCollectionGeometry ConvertSetGeometry(
+      const SetGeometry& set_geometry,
+      const NGGridLayoutAlgorithmTrackCollection& track_collection) const;
 
   LogicalSize border_box_size_;
 

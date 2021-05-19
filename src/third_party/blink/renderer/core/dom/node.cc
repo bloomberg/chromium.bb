@@ -1346,11 +1346,11 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   if (ShouldSkipMarkingStyleDirty())
     return;
 
-  TRACE_EVENT_INSTANT1(
+  DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT_WITH_CATEGORIES(
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
-      "StyleRecalcInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",
-      inspector_style_recalc_invalidation_tracking_event::Data(
-          this, change_type, reason));
+      "StyleRecalcInvalidationTracking",
+      inspector_style_recalc_invalidation_tracking_event::Data, this,
+      change_type, reason);
 
   StyleChangeType existing_change_type = GetStyleChangeType();
   if (change_type > existing_change_type)
@@ -3292,8 +3292,15 @@ void Node::FlatTreeParentChanged() {
   // box may have changed.
   SetForceReattachLayoutTree();
 
-  if (auto* element = DynamicTo<HTMLElement>(this))
-    element->AddCandidateDirectionalityForSlot();
+  AddCandidateDirectionalityForSlot();
+}
+
+void Node::AddCandidateDirectionalityForSlot() {
+  ShadowRoot* root = ShadowRootOfParent();
+  if (!root || !root->HasSlotAssignment())
+    return;
+
+  root->GetSlotAssignment().GetCandidateDirectionality().insert(this);
 }
 
 void Node::RemovedFromFlatTree() {

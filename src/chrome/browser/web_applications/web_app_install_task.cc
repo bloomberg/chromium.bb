@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
 #include <utility>
 
 #include "chrome/browser/web_applications/components/install_finalizer.h"
@@ -13,7 +14,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/favicon/favicon_utils.h"
@@ -213,6 +213,7 @@ void UpdateFinalizerClientData(
       options->chromeos_data->show_in_search = params->add_to_search;
       options->chromeos_data->show_in_management = params->add_to_management;
       options->chromeos_data->is_disabled = params->is_disabled;
+      options->chromeos_data->oem_installed = params->oem_installed;
     }
     if (params->system_app_type.has_value()) {
       options->system_web_app_data.emplace();
@@ -273,6 +274,7 @@ void WebAppInstallTask::UpdateWebAppFromInfo(
     content::WebContents* web_contents,
     const AppId& app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
+    bool redownload_app_icons,
     InstallManager::OnceInstallCallback callback) {
   CheckInstallPreconditions();
   Observe(web_contents);
@@ -289,7 +291,8 @@ void WebAppInstallTask::UpdateWebAppFromInfo(
       web_contents, std::move(icon_urls),
       /*skip_page_favicons=*/true, WebAppIconDownloader::Histogram::kForUpdate,
       base::BindOnce(&WebAppInstallTask::OnIconsRetrievedFinalizeUpdate,
-                     base::Unretained(this), std::move(web_application_info)));
+                     base::Unretained(this), std::move(web_application_info),
+                     redownload_app_icons));
 }
 
 void WebAppInstallTask::LoadAndRetrieveWebApplicationInfoWithIcons(
@@ -496,7 +499,9 @@ void WebAppInstallTask::ApplyParamsToWebApplicationInfo(
     web_app_info.open_as_window =
         install_params.user_display_mode != DisplayMode::kBrowser;
   }
-
+  if (!install_params.override_manifest_id.has_value()) {
+    web_app_info.manifest_id = install_params.override_manifest_id;
+  }
   // If `additional_search_terms` was a manifest property, it would be
   // sanitized while parsing the manifest. Since it's not, we sanitize it
   // here.
@@ -538,7 +543,8 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
   if (manifest)
     UpdateWebAppInfoFromManifest(*manifest, manifest_url, web_app_info.get());
 
-  AppId app_id = GenerateAppIdFromURL(web_app_info->start_url);
+  AppId app_id =
+      GenerateAppId(web_app_info->manifest_id, web_app_info->start_url);
 
   // Do the app_id expectation check if requested.
   if (expected_app_id_.has_value() && *expected_app_id_ != app_id) {
@@ -577,8 +583,8 @@ void WebAppInstallTask::CheckForPlayStoreIntentOrGetIcons(
       !background_installation_ && manifest) {
     for (const auto& application : manifest->related_applications) {
       std::string id =
-          base::UTF16ToUTF8(application.id.value_or(base::string16()));
-      if (!base::EqualsASCII(application.platform.value_or(base::string16()),
+          base::UTF16ToUTF8(application.id.value_or(std::u16string()));
+      if (!base::EqualsASCII(application.platform.value_or(std::u16string()),
                              kChromeOsPlayPlatform)) {
         continue;
       }
@@ -734,6 +740,7 @@ void WebAppInstallTask::OnIconsRetrievedShowDialog(
 
 void WebAppInstallTask::OnIconsRetrievedFinalizeUpdate(
     std::unique_ptr<WebApplicationInfo> web_app_info,
+    bool redownload_app_icons,
     IconsMap icons_map) {
   if (ShouldStopInstall())
     return;
@@ -741,10 +748,19 @@ void WebAppInstallTask::OnIconsRetrievedFinalizeUpdate(
   DCHECK(web_app_info);
 
   // TODO(crbug.com/926083): Abort update if icons fail to download.
-  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map);
+  if (redownload_app_icons) {
+    FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map);
+  } else if (base::FeatureList::IsEnabled(
+                 features::kDesktopPWAsAppIconShortcutsMenu)) {
+    // FilterAndResizeIconsGenerateMissing calls PopulateShortcutItemIcons. We
+    // need that call to happen still if redownloading app icons is disabled, so
+    // manually call that here.
+    web_app_info->shortcuts_menu_icon_bitmaps.clear();
+    PopulateShortcutItemIcons(web_app_info.get(), &icons_map);
+  }
 
   install_finalizer_->FinalizeUpdate(
-      *web_app_info,
+      *web_app_info, web_contents(),
       base::BindOnce(&WebAppInstallTask::CallInstallCallback, GetWeakPtr()));
 }
 
@@ -846,9 +862,9 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
   options.os_hooks[OsHookType::kUninstallationViaOsSettings] = true;
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
-  options.os_hooks[web_app::OsHookType::kUrlHandlers] = true;
+  options.os_hooks[OsHookType::kUrlHandlers] = true;
 #else
-  options.os_hooks[web_app::OsHookType::kUrlHandlers] = false;
+  options.os_hooks[OsHookType::kUrlHandlers] = false;
 #endif
 
   if (install_source_ == webapps::WebappInstallSource::SYNC)

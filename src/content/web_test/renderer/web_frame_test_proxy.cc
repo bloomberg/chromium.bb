@@ -164,14 +164,9 @@ class TestRenderFrameObserver : public RenderFrameObserver {
       test_runner_->PrintMessage(description + " - didCommitLoadForFrame\n");
     }
 
-    if (render_frame()->IsMainFrame()) {
-      // Track main frames once they are swapped in, if they started
-      // provisional.
+    // Track main frames once they are swapped in, if they started provisional.
+    if (render_frame()->IsMainFrame())
       test_runner_->AddMainFrame(frame_proxy());
-
-      // Looking for navigations to about:blank after a test completes.
-      test_runner_->DidCommitNavigationInMainFrame(frame_proxy());
-    }
   }
 
   void DidFinishSameDocumentNavigation() override {
@@ -215,7 +210,7 @@ class TestRenderFrameObserver : public RenderFrameObserver {
   void ScriptedPrint(bool user_initiated) override {
     // This is using the main frame for the size, but maybe it should be using
     // the frame's size.
-    blink::WebSize page_size_in_pixels =
+    gfx::Size page_size_in_pixels =
         frame_proxy()->GetLocalRootWebFrameWidget()->Size();
     if (page_size_in_pixels.IsEmpty())
       return;
@@ -270,6 +265,7 @@ void WebFrameTestProxy::Reset() {
   CHECK(IsMainFrame());
 
   if (IsMainFrame()) {
+    GetWebFrame()->ClearActiveFindMatchForTesting();
     GetWebFrame()->SetName(blink::WebString());
     GetWebFrame()->ClearOpener();
 

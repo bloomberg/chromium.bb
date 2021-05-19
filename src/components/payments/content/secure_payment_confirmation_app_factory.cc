@@ -228,7 +228,7 @@ void SecurePaymentConfirmationAppFactory::OnWebDataServiceRequestDone(
   auto* instrument_ptr = instrument.get();
   // Decode the icon in a sandboxed process off the main thread.
   data_decoder::DecodeImageIsolated(
-      instrument_ptr->icon, data_decoder::mojom::ImageCodec::DEFAULT,
+      instrument_ptr->icon, data_decoder::mojom::ImageCodec::kDefault,
       /*shrink_to_fit=*/false, data_decoder::kDefaultMaxSizeInBytes,
       /*desired_image_frame_size=*/gfx::Size(),
       base::BindOnce(&SecurePaymentConfirmationAppFactory::OnAppIconDecoded,
@@ -241,8 +241,10 @@ void SecurePaymentConfirmationAppFactory::OnAppIconDecoded(
     std::unique_ptr<Request> request,
     const SkBitmap& decoded_icon) {
   DCHECK(request);
-  if (!request->delegate || !request->web_contents() ||
-      !request->delegate->GetSpec() || !request->authenticator ||
+  if (!request->delegate || !request->web_contents())
+    return;
+
+  if (!request->delegate->GetSpec() || !request->authenticator ||
       request->authenticator->GetRenderFrameHost() !=
           request->web_contents()->GetMainFrame()) {
     request->delegate->OnDoneCreatingPaymentApps();

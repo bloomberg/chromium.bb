@@ -40,7 +40,7 @@ public class SplitChromeApplication extends SplitCompatApplication {
 
     public SplitChromeApplication() {
         this(SplitCompatUtils.getIdentifierName(
-                "org.chromium.chrome.browser.ChromeApplication$ChromeApplicationImpl"));
+                "org.chromium.chrome.browser.ChromeApplicationImpl"));
     }
 
     public SplitChromeApplication(String chromeApplicationClassName) {
@@ -165,6 +165,11 @@ public class SplitChromeApplication extends SplitCompatApplication {
                     @Override
                     public void onActivityStateChange(
                             Activity activity, @ActivityState int newState) {
+                        // Some tests pass an activity without a base context.
+                        if (activity.getBaseContext() == null) {
+                            return;
+                        }
+
                         if (newState != ActivityState.CREATED) {
                             return;
                         }

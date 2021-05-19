@@ -173,6 +173,8 @@ const char kDesksNamesList[] = "ash.desks.desks_names_list";
 // list stores entries in the same order of the desks in the overview desks bar.
 // Values are stored as dictionaries.
 const char kDesksMetricsList[] = "ash.desks.desks_metrics_list";
+// A dict pref storing the metrics related to the weekly active desks of a user.
+const char kDesksWeeklyActiveDesksMetrics[] = "ash.desks.weekly_active_desks";
 // An integer index of a user's active desk.
 const char kDesksActiveDesk[] = "ash.desks.active_desk";
 
@@ -456,6 +458,10 @@ const char kLogoutDialogDurationMs[] = "logout_dialog_duration_ms";
 
 // A dictionary pref that maps usernames to wallpaper info.
 const char kUserWallpaperInfo[] = "user_wallpaper_info";
+
+// A dictionary pref that maps usernames to wallpaper info.
+// This is for wallpapers that are syncable across devices.
+const char kSyncableWallpaperInfo[] = "syncable_wallpaper_info";
 
 // A dictionary pref that maps wallpaper file paths to their prominent colors.
 const char kWallpaperColors[] = "ash.wallpaper.prominent_colors";

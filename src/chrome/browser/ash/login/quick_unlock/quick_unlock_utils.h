@@ -9,6 +9,10 @@ namespace base {
 class TimeDelta;
 }
 
+namespace content {
+class WebUIDataSource;
+}  // namespace content
+
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
@@ -33,6 +37,9 @@ enum class FingerprintLocation {
   KEYBOARD_BOTTOM_LEFT = 1,
   KEYBOARD_BOTTOM_RIGHT = 2,
   KEYBOARD_TOP_RIGHT = 3,
+  RIGHT_SIDE = 4,
+  LEFT_SIDE = 5,
+  UNKNOWN = 6,
 };
 
 base::TimeDelta PasswordConfirmationFrequencyToTimeDelta(
@@ -46,6 +53,9 @@ bool IsPinDisabledByPolicy(PrefService* pref_service);
 
 // Returns true if the quick unlock feature flag is present.
 bool IsPinEnabled(PrefService* pref_service);
+
+// Returns true if the fingerprint is supported by the device.
+bool IsFingerprintSupported();
 
 // Returns true if the fingerprint is allowed for specified profile.
 bool IsFingerprintEnabled(Profile* profile);
@@ -65,6 +75,10 @@ bool IsEnabledForTesting();
 
 // Forcibly disable PIN for testing purposes.
 void DisablePinByPolicyForTesting(bool disable);
+
+// Add fingerprint animations and illustrations. Used for the Fingerprint setup
+// screen and the settings.
+void AddFingerprintResources(content::WebUIDataSource* html_source);
 
 }  // namespace quick_unlock
 }  // namespace chromeos

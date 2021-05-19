@@ -17,7 +17,7 @@
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
-#include "chrome/browser/chromeos/login/version_updater/version_updater.h"
+#include "chrome/browser/ash/login/version_updater/version_updater.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 
 namespace base {
@@ -80,9 +80,6 @@ class UpdateScreen : public BaseScreen,
   base::OneShotTimer* GetErrorMessageTimerForTesting();
   VersionUpdater* GetVersionUpdaterForTesting();
 
-  void set_ignore_update_deadlines_for_testing(bool ignore_update_deadlines) {
-    ignore_update_deadlines_ = ignore_update_deadlines;
-  }
 
   // VersionUpdater::Delegate:
   void OnWaitForRebootTimeElapsed() override;
@@ -166,9 +163,6 @@ class UpdateScreen : public BaseScreen,
   ErrorScreen* error_screen_;
   ScreenExitCallback exit_callback_;
 
-  // If true, update deadlines are ignored.
-  // Note, this is false by default.
-  bool ignore_update_deadlines_ = false;
   // Whether the update screen is shown.
   bool is_shown_ = false;
 

@@ -66,6 +66,10 @@ class WebBundleURLLoaderClient : public network::mojom::URLLoaderClient {
 
  private:
   // network::mojom::URLLoaderClient implementation:
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
+    wrapped_->OnReceiveEarlyHints(std::move(early_hints));
+  }
+
   void OnReceiveResponse(
       network::mojom::URLResponseHeadPtr response_head) override {
     std::string error_message;
@@ -627,6 +631,10 @@ void WebBundleURLLoaderFactory::OnResponseParsed(
     loader->OnFail(net::ERR_INVALID_WEB_BUNDLE);
     return;
   }
+  // Add an artificial "X-Content-Type-Options: "nosniff" header, which is
+  // explained at
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#name-responses.
+  response->response_headers["X-Content-Type-Options"] = "nosniff";
   const std::string header_string = web_package::CreateHeaderString(response);
   if (!loader->trusted_header_client()) {
     SendResponseToLoader(loader, header_string, response->payload_offset,
@@ -677,10 +685,6 @@ void WebBundleURLLoaderFactory::SendResponseToLoader(
   }
 
   response_head->web_bundle_url = bundle_url_;
-  // Add an artifical "X-Content-Type-Options: "nosniff" header, which is
-  // explained at
-  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#name-responses.
-  response_head->headers->SetHeader("X-Content-Type-Options", "nosniff");
 
   auto corb_analyzer =
       std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(

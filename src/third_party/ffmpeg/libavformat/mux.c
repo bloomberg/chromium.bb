@@ -1046,30 +1046,32 @@ int ff_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
     }
 }
 
-int ff_interleaved_peek(AVFormatContext *s, int stream,
-                        AVPacket *pkt, int add_offset)
+int ff_get_muxer_ts_offset(AVFormatContext *s, int stream_index, int64_t *offset)
+{
+    AVStream *st;
+
+    if (stream_index < 0 || stream_index >= s->nb_streams)
+        return AVERROR(EINVAL);
+
+    st = s->streams[stream_index];
+    *offset = st->internal->mux_ts_offset;
+
+    if (s->output_ts_offset)
+        *offset += av_rescale_q(s->output_ts_offset, AV_TIME_BASE_Q, st->time_base);
+
+    return 0;
+}
+
+const AVPacket *ff_interleaved_peek(AVFormatContext *s, int stream)
 {
     AVPacketList *pktl = s->internal->packet_buffer;
     while (pktl) {
         if (pktl->pkt.stream_index == stream) {
-            *pkt = pktl->pkt;
-            if (add_offset) {
-                AVStream *st = s->streams[pkt->stream_index];
-                int64_t offset = st->internal->mux_ts_offset;
-
-                if (s->output_ts_offset)
-                    offset += av_rescale_q(s->output_ts_offset, AV_TIME_BASE_Q, st->time_base);
-
-                if (pkt->dts != AV_NOPTS_VALUE)
-                    pkt->dts += offset;
-                if (pkt->pts != AV_NOPTS_VALUE)
-                    pkt->pts += offset;
-            }
-            return 0;
+            return &pktl->pkt;
         }
         pktl = pktl->next;
     }
-    return AVERROR(ENOENT);
+    return NULL;
 }
 
 /**

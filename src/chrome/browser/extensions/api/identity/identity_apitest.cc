@@ -79,7 +79,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/network/network_handler.h"
@@ -133,7 +133,8 @@ class AsyncFunctionRunner {
   void RunFunctionAsync(ExtensionFunction* function,
                         const std::string& args,
                         content::BrowserContext* browser_context) {
-    response_delegate_.reset(new api_test_utils::SendResponseHelper(function));
+    response_delegate_ =
+        std::make_unique<api_test_utils::SendResponseHelper>(function);
     std::unique_ptr<base::ListValue> parsed_args(utils::ParseList(args));
     ASSERT_TRUE(parsed_args.get())
         << "Could not parse extension function arguments: " << args;
@@ -2781,7 +2782,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, GranularPermissionsResponse) {
 class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
  public:
   GetAuthTokenFunctionPublicSessionTest()
-      : user_manager_(new chromeos::MockUserManager) {}
+      : user_manager_(new ash::MockUserManager) {}
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
@@ -2793,8 +2794,8 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
     EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*user_manager_, GetLoggedInUsers())
-        .WillRepeatedly(testing::Invoke(user_manager_,
-                                        &chromeos::MockUserManager::GetUsers));
+        .WillRepeatedly(
+            testing::Invoke(user_manager_, &ash::MockUserManager::GetUsers));
   }
 
   scoped_refptr<const Extension> CreateTestExtension(const std::string& id) {
@@ -2815,7 +2816,7 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
                                                           "fake-id")};
 
   // Owned by |user_manager_enabler|.
-  chromeos::MockUserManager* user_manager_;
+  ash::MockUserManager* user_manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, NonAllowlisted) {

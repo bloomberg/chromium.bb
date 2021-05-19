@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -19,7 +20,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -30,27 +30,27 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
+#include "chrome/browser/ash/login/error_screens_histogram_helper.h"
+#include "chrome/browser/ash/login/help_app_launcher.h"
+#include "chrome/browser/ash/login/hwid_checker.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
+#include "chrome/browser/ash/login/lock_screen_utils.h"
+#include "chrome/browser/ash/login/reauth_stats.h"
 #include "chrome/browser/ash/login/screens/gaia_screen.h"
 #include "chrome/browser/ash/login/screens/network_error.h"
+#include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/login_display_host_webui.h"
+#include "chrome/browser/ash/login/ui/login_display_webui.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
+#include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/system_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
-#include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/login/hwid_checker.h"
-#include "chrome/browser/chromeos/login/lock_screen_utils.h"
-#include "chrome/browser/chromeos/login/reauth_stats.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
-#include "chrome/browser/chromeos/login/ui/login_display_webui.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
-#include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
@@ -304,15 +304,15 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_4);
   builder->Add("publicSessionSelectLanguage", IDS_LANGUAGE_SELECTION_SELECT);
   builder->Add("publicSessionSelectKeyboard", IDS_KEYBOARD_SELECTION_SELECT);
-  builder->Add("removeUserWarningTextNonSyncNoStats", base::string16());
-  builder->Add("removeUserWarningTextNonSyncCalculating", base::string16());
-  builder->Add("removeUserWarningTextHistory", base::string16());
-  builder->Add("removeUserWarningTextPasswords", base::string16());
-  builder->Add("removeUserWarningTextBookmarks", base::string16());
-  builder->Add("removeUserWarningTextAutofill", base::string16());
-  builder->Add("removeUserWarningTextCalculating", base::string16());
-  builder->Add("removeUserWarningTextSyncNoStats", base::string16());
-  builder->Add("removeUserWarningTextSyncCalculating", base::string16());
+  builder->Add("removeUserWarningTextNonSyncNoStats", std::u16string());
+  builder->Add("removeUserWarningTextNonSyncCalculating", std::u16string());
+  builder->Add("removeUserWarningTextHistory", std::u16string());
+  builder->Add("removeUserWarningTextPasswords", std::u16string());
+  builder->Add("removeUserWarningTextBookmarks", std::u16string());
+  builder->Add("removeUserWarningTextAutofill", std::u16string());
+  builder->Add("removeUserWarningTextCalculating", std::u16string());
+  builder->Add("removeUserWarningTextSyncNoStats", std::u16string());
+  builder->Add("removeUserWarningTextSyncCalculating", std::u16string());
   builder->Add("removeNonOwnerUserWarningText",
                IDS_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING);
   builder->Add("removeUserWarningButtonTitle",

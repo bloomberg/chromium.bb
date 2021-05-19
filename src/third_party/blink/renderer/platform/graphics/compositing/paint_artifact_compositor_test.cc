@@ -1948,6 +1948,30 @@ TEST_P(PaintArtifactCompositorTest, MightOverlap) {
       MightOverlap(pending_layer, PendingLayer(chunks, chunks.begin() + 4)));
 }
 
+TEST_P(PaintArtifactCompositorTest, MightOverlapCommonClipAncestor) {
+  auto common_clip = CreateClip(c0(), t0(), FloatRoundedRect(0, 0, 100, 100));
+  auto c1 = CreateClip(*common_clip, t0(), FloatRoundedRect(0, 100, 100, 100));
+  auto c2 = CreateClip(*common_clip, t0(), FloatRoundedRect(50, 100, 100, 100));
+  auto c3 =
+      CreateClip(*common_clip, t0(), FloatRoundedRect(100, 100, 100, 100));
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *c1, e0())
+      .Bounds(IntRect(0, 100, 200, 100))
+      .Chunk(t0(), *c2, e0())
+      .Bounds(IntRect(0, 100, 200, 100))
+      .Chunk(t0(), *c3, e0())
+      .Bounds(IntRect(0, 100, 200, 100));
+  PaintChunkSubset chunks(artifact.Build());
+
+  PendingLayer pending_layer1(chunks, chunks.begin());
+  PendingLayer pending_layer2(chunks, chunks.begin() + 1);
+  PendingLayer pending_layer3(chunks, chunks.begin() + 2);
+  EXPECT_FALSE(MightOverlap(pending_layer1, pending_layer3));
+  EXPECT_TRUE(MightOverlap(pending_layer1, pending_layer2));
+  EXPECT_TRUE(MightOverlap(pending_layer2, pending_layer3));
+}
+
 TEST_P(PaintArtifactCompositorTest, UniteRectsKnownToBeOpaque) {
   // X aligned and intersect: unite.
   EXPECT_EQ(FloatRect(10, 20, 30, 60),
@@ -2197,13 +2221,12 @@ TEST_P(PaintArtifactCompositorTest, EffectWithElementIdWithAlias) {
             ElementIdToEffectNodeIndex(real_effect->GetCompositorElementId()));
 }
 
-TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleLuminanceMask) {
+TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleMask) {
   auto masked = CreateOpacityEffect(
       e0(), 1.0, CompositingReason::kIsolateCompositedDescendants);
   EffectPaintPropertyNode::State masking_state;
   masking_state.local_transform_space = &t0();
   masking_state.output_clip = &c0();
-  masking_state.color_filter = kColorFilterLuminanceToAlpha;
   masking_state.blend_mode = SkBlendMode::kDstIn;
   auto masking =
       EffectPaintPropertyNode::Create(*masked, std::move(masking_state));
@@ -2230,84 +2253,6 @@ TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleLuminanceMask) {
   EXPECT_TRUE(masked_group->filters.IsEmpty());
   // It's the last effect node. |masking| has been decomposited.
   EXPECT_EQ(masked_group, GetPropertyTrees().effect_tree.back());
-}
-
-TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMaskOneChild) {
-  auto masked = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kIsolateCompositedDescendants);
-  EffectPaintPropertyNode::State masking_state;
-  masking_state.local_transform_space = &t0();
-  masking_state.output_clip = &c0();
-  masking_state.color_filter = kColorFilterLuminanceToAlpha;
-  masking_state.blend_mode = SkBlendMode::kDstIn;
-  masking_state.direct_compositing_reasons = CompositingReason::kLayerForMask;
-  auto masking =
-      EffectPaintPropertyNode::Create(*masked, std::move(masking_state));
-
-  TestPaintArtifact artifact;
-  artifact.Chunk(t0(), c0(), *masked)
-      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
-  artifact.Chunk(t0(), c0(), *masking)
-      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
-  Update(artifact.Build());
-  ASSERT_EQ(2u, LayerCount());
-
-  const cc::Layer* masking_layer = LayerAt(1);
-  const cc::EffectNode* masking_group =
-      GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
-
-  // Render surface is not needed for one child.
-  EXPECT_FALSE(masking_group->HasRenderSurface());
-  ASSERT_EQ(1u, masking_group->filters.size());
-  EXPECT_EQ(cc::FilterOperation::REFERENCE,
-            masking_group->filters.at(0).type());
-  EXPECT_EQ(SkBlendMode::kDstIn, masking_group->blend_mode);
-
-  // The parent also has a render surface to define the scope of the backdrop
-  // of the kDstIn blend mode.
-  EXPECT_TRUE(
-      GetPropertyTrees().effect_tree.parent(masking_group)->HasRenderSurface());
-}
-
-TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMaskTwoChildren) {
-  auto masked = CreateOpacityEffect(
-      e0(), 1.0, CompositingReason::kIsolateCompositedDescendants);
-  EffectPaintPropertyNode::State masking_state;
-  masking_state.local_transform_space = &t0();
-  masking_state.output_clip = &c0();
-  masking_state.color_filter = kColorFilterLuminanceToAlpha;
-  masking_state.blend_mode = SkBlendMode::kDstIn;
-  auto masking =
-      EffectPaintPropertyNode::Create(*masked, std::move(masking_state));
-
-  auto child_of_masked = CreateOpacityEffect(
-      *masking, 1.0, CompositingReason::kIsolateCompositedDescendants);
-
-  TestPaintArtifact artifact;
-  artifact.Chunk(t0(), c0(), *masked)
-      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
-  artifact.Chunk(t0(), c0(), *child_of_masked)
-      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
-  artifact.Chunk(t0(), c0(), *masking)
-      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
-  Update(artifact.Build());
-  ASSERT_EQ(3u, LayerCount());
-
-  const cc::Layer* masking_layer = LayerAt(2);
-  const cc::EffectNode* masking_group =
-      GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
-
-  // There is a render surface because there are two children.
-  EXPECT_TRUE(masking_group->HasRenderSurface());
-  ASSERT_EQ(1u, masking_group->filters.size());
-  EXPECT_EQ(cc::FilterOperation::REFERENCE,
-            masking_group->filters.at(0).type());
-  EXPECT_EQ(SkBlendMode::kDstIn, masking_group->blend_mode);
-
-  // The parent also has a render surface to define the scope of the backdrop
-  // of the kDstIn blend mode.
-  EXPECT_TRUE(
-      GetPropertyTrees().effect_tree.parent(masking_group)->HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest, CompositedMaskOneChild) {
@@ -3811,15 +3756,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBackdropFilter) {
   auto t1 = Create2DTranslation(t0(), 10, 20);
   CompositorFilterOperations blur_filter;
   blur_filter.AppendBlurFilter(5);
-  EffectPaintPropertyNode::State state;
-  state.local_transform_space = t1.get();
-  state.output_clip = c2.get();
-  state.backdrop_filter.AppendBlurFilter(5);
-  state.direct_compositing_reasons = CompositingReason::kBackdropFilter;
-  state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-      NewUniqueObjectId(), CompositorElementIdNamespace::kPrimary);
-  state.opacity = 0.5;
-  auto e1 = EffectPaintPropertyNode::Create(e0(), std::move(state));
+  auto e1 = CreateBackdropFilterEffect(e0(), *t1, c2.get(), blur_filter, 0.5f);
 
   TestPaintArtifact artifact;
   artifact.Chunk(*t1, *c1, e0())

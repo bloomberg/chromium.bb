@@ -94,12 +94,39 @@ class VIZ_SERVICE_EXPORT CALayerOverlayProcessor {
   CALayerOverlayProcessor() = default;
   virtual ~CALayerOverlayProcessor() = default;
 
+  bool AreClipSettingsValid(const CALayerOverlay& ca_layer_overlay,
+                            CALayerOverlayList* ca_layer_overlay_list) const;
+  void PutForcedOverlayContentIntoOverlays(
+      DisplayResourceProvider* resource_provider,
+      AggregatedRenderPass* render_pass,
+      const gfx::RectF& display_rect,
+      QuadList* quad_list,
+      const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
+          render_pass_filters,
+      const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
+          render_pass_backdrop_filters,
+      CALayerOverlayList* ca_layer_overlays) const;
+
   // Returns true if all quads in the root render pass have been replaced by
   // CALayerOverlays. Virtual for testing.
   virtual bool ProcessForCALayerOverlays(
       DisplayResourceProvider* resource_provider,
       const gfx::RectF& display_rect,
       const QuadList& quad_list,
+      const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
+          render_pass_filters,
+      const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
+          render_pass_backdrop_filters,
+      CALayerOverlayList* ca_layer_overlays) const;
+
+ private:
+  // Returns whether future candidate quads should be considered
+  bool PutQuadInSeparateOverlay(
+      QuadList::Iterator at,
+      DisplayResourceProvider* resource_provider,
+      AggregatedRenderPass* render_pass,
+      const gfx::RectF& display_rect,
+      const DrawQuad* quad,
       const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
           render_pass_filters,
       const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&

@@ -21,6 +21,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -51,7 +52,6 @@ class MockNavigationHandle : public NavigationHandle {
   bool IsInMainFrame() override {
     return render_frame_host_ ? !render_frame_host_->GetParent() : true;
   }
-  MOCK_METHOD0(IsParentMainFrame, bool());
   // By default, MockNavigationHandles are renderer-initiated navigations.
   bool IsRendererInitiated() override { return is_renderer_initiated_; }
   MOCK_METHOD0(GetFrameTreeNodeId, int());
@@ -149,7 +149,6 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD(void,
               RegisterSubresourceOverride,
               (blink::mojom::TransferrableURLLoaderPtr));
-  MOCK_METHOD(bool, FromDownloadCrossOriginRedirect, ());
   MOCK_METHOD(bool, IsSameProcess, ());
   MOCK_METHOD(NavigationEntry*, GetNavigationEntry, ());
   MOCK_METHOD(int, GetNavigationEntryOffset, ());
@@ -161,6 +160,10 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD(void, SetSilentlyIgnoreErrors, ());
   MOCK_METHOD(network::mojom::WebSandboxFlags, SandboxFlagsToCommit, ());
   MOCK_METHOD(bool, IsWaitingToCommit, ());
+  MOCK_METHOD(bool, WasEarlyHintsPreloadLinkHeaderReceived, ());
+  void WriteIntoTracedValue(perfetto::TracedValue context) override {
+    auto dict = std::move(context).WriteDictionary();
+  }
 
   void set_url(const GURL& url) { url_ = url; }
   void set_previous_main_frame_url(const GURL& previous_main_frame_url) {

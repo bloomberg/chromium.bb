@@ -109,7 +109,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
           NULL, web_contents(), ContentSettingsType::COOKIES));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
-  base::string16 title = bubble_content.title;
+  std::u16string title = bubble_content.title;
   EXPECT_FALSE(title.empty());
   ASSERT_EQ(2U, bubble_content.radio_group.radio_items.size());
   EXPECT_FALSE(bubble_content.custom_link.empty());
@@ -549,8 +549,9 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
                                                std::string(),
                                                std::string(),
                                                std::string());
-  content_setting_bubble_model.reset(
-      new ContentSettingMediaStreamBubbleModel(nullptr, web_contents()));
+  content_setting_bubble_model =
+      std::make_unique<ContentSettingMediaStreamBubbleModel>(nullptr,
+                                                             web_contents());
   const ContentSettingBubbleModel::BubbleContent& new_bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(new_bubble_content.title,
@@ -622,8 +623,9 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
                                                GetDefaultVideoDevice(),
                                                std::string(),
                                                std::string());
-  content_setting_bubble_model.reset(
-      new ContentSettingMediaStreamBubbleModel(nullptr, web_contents()));
+  content_setting_bubble_model =
+      std::make_unique<ContentSettingMediaStreamBubbleModel>(nullptr,
+                                                             web_contents());
   const ContentSettingBubbleModel::BubbleContent& new_bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(new_bubble_content.title,
@@ -696,8 +698,9 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
                                                std::string(),
                                                std::string());
 
-  content_setting_bubble_model.reset(
-      new ContentSettingMediaStreamBubbleModel(nullptr, web_contents()));
+  content_setting_bubble_model =
+      std::make_unique<ContentSettingMediaStreamBubbleModel>(nullptr,
+                                                             web_contents());
   const ContentSettingBubbleModel::BubbleContent& new_bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(new_bubble_content.title,
@@ -1019,9 +1022,9 @@ TEST_F(ContentSettingBubbleModelTest, FileURL) {
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           nullptr, web_contents(), ContentSettingsType::IMAGES));
-  base::string16 title =
+  std::u16string title =
       content_setting_bubble_model->bubble_content().radio_group.radio_items[0];
-  ASSERT_NE(base::string16::npos, title.find(base::UTF8ToUTF16(file_url)));
+  ASSERT_NE(std::u16string::npos, title.find(base::UTF8ToUTF16(file_url)));
 }
 
 TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {

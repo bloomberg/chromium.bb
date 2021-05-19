@@ -15,11 +15,11 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/crosapi/fake_browser_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/crosapi/fake_browser_manager.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/ui/ash/assistant/assistant_client_impl.h"
@@ -40,7 +40,6 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using chromeos::FakeChromeUserManager;
 using session_manager::SessionState;
 
 namespace {
@@ -56,7 +55,7 @@ std::unique_ptr<KeyedService> CreateTestPolicyCertService(
 
 // A user manager that does not set profiles as loaded and notifies observers
 // when users being added to a session.
-class TestChromeUserManager : public FakeChromeUserManager {
+class TestChromeUserManager : public ash::FakeChromeUserManager {
  public:
   TestChromeUserManager() = default;
   ~TestChromeUserManager() override = default;
@@ -66,8 +65,8 @@ class TestChromeUserManager : public FakeChromeUserManager {
                     const std::string& user_id_hash,
                     bool browser_restart,
                     bool is_child) override {
-    FakeChromeUserManager::UserLoggedIn(account_id, user_id_hash,
-                                        browser_restart, is_child);
+    ash::FakeChromeUserManager::UserLoggedIn(account_id, user_id_hash,
+                                             browser_restart, is_child);
     active_user_ = const_cast<user_manager::User*>(FindUser(account_id));
     NotifyUserAddedToSession(active_user_, false);
     NotifyOnLogin();
@@ -287,7 +286,7 @@ TEST_F(SessionControllerClientImplTest, MultiProfileDisallowedByUserPolicy) {
 
   user_profile->GetPrefs()->SetString(
       prefs::kMultiProfileUserBehavior,
-      chromeos::MultiProfileUserController::kBehaviorNotAllowed);
+      ash::MultiProfileUserController::kBehaviorNotAllowed);
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
             SessionControllerClientImpl::GetAddUserSessionPolicy());
 }
@@ -395,7 +394,7 @@ TEST_F(SessionControllerClientImplTest,
   user_manager()->LoginUser(account_id);
   user_profile->GetPrefs()->SetString(
       prefs::kMultiProfileUserBehavior,
-      chromeos::MultiProfileUserController::kBehaviorNotAllowed);
+      ash::MultiProfileUserController::kBehaviorNotAllowed);
   user_manager()->AddUser(
       AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,

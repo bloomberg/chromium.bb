@@ -11,13 +11,12 @@
 <translation id="1125124144982679672">Kes kasutab Chrome'i?</translation>
 <translation id="1142745911746664600">Chrome'i ei saa värskendada</translation>
 <translation id="1154147086299354128">&amp;Ava Chrome'is</translation>
-<translation id="123620459398936149">Chrome OS ei saanud teie andmeid sünkroonida. Värskendage oma sünkroonimisparooli.</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> nõuab, et loete enne selle seadme kasutamist läbi järgmised teenusetingimused ja nõustute nendega. Need tingimused ei laienda, muuda ega piira Google Chrome OS-i tingimusi.</translation>
 <translation id="1302523850133262269">Oodake, kuni Chrome installib uusimad süsteemivärskendused.</translation>
 <translation id="137466361146087520">Google Chrome'i beetaversioon</translation>
 <translation id="1399397803214730675">Selles arvutis on juba Google Chrome'i uuem versioon. Kui tarkvara ei tööta, desinstallige Google Chrome ja proovige uuesti.</translation>
 <translation id="1434626383986940139">Chrome Canary rakendused</translation>
-<translation id="147727933880789532">Chrome soovitab selle laienduse keelata, kuna see ei järgi praegu täiustatud ohutu sirvimise standardeid.</translation>
+<translation id="1507198376417198979">Kohandage oma uut Chrome'i profiili</translation>
 <translation id="1516530951338665275">Google Chrome vajab sidumise jätkamiseks juurdepääsu Bluetoothile. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1553358976309200471">Värskenda Chrome'i</translation>
 <translation id="1583073672411044740"><ph name="EXISTING_USER" /> on juba sellele Chrome'i profiilile sisse logitud. See loob konto <ph name="USER_EMAIL_ADDRESS" /> jaoks uue Chrome'i profiili.</translation>
@@ -25,7 +24,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> on ohtlik, mistõttu Chrome blokeeris selle.</translation>
 <translation id="1597911401261118146">Kui soovite kontrollida, kas teie paroolid on andmetega seotud rikkumiste ja muude turvaprobleemide eest kaitstud, <ph name="BEGIN_LINK" />logige Chrome'i sisse<ph name="END_LINK" />.</translation>
 <translation id="1619887657840448962">Chrome'i turvalisemaks muutmiseks keelasime järgmise laienduse, mida ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja mis võidi lisada teie teadmata.</translation>
-<translation id="162629503687514352">Chrome OS ei saanud teie paroole sünkroonida.</translation>
 <translation id="1628000112320670027">Chrome'i puhul abi hankimine</translation>
 <translation id="1666409074978194368">Peaaegu värskendatud! Värskendamise lõpuleviimiseks taaskäivitage Google Chrome. Inkognito aknaid ei avata uuesti.</translation>
 <translation id="1674870198290878346">Ava link Chrome'i inko&amp;gnito aknas</translation>
@@ -92,14 +90,12 @@
 <translation id="3089968997497233615">Saadaval on uus ja turvalisem Google Chrome'i versioon.</translation>
 <translation id="3100998948628680988">Andke oma Chrome'i profiilile nimi</translation>
 <translation id="3114643501466072395">Kui soovite kontrollida, kas teie muud paroolid on andmetega seotud rikkumiste ja muude turvaprobleemide eest kaitstud, <ph name="BEGIN_LINK" />logige Chrome'i sisse<ph name="END_LINK" />.</translation>
-<translation id="3127818369811890733">Chrome OS ei saanud teie andmeid sünkroonida.</translation>
 <translation id="3140883423282498090">Teie muudatused jõustuvad järgmine kord, kui avate Google Chrome'i.</translation>
 <translation id="3149510190863420837">Chrome'i rakendused</translation>
 <translation id="3360895254066713204">Chrome'i abistaja</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome käivitatakse kohe uuesti}=1{Chrome käivitatakse uuesti 1 sekundi pärast}other{Chrome käivitatakse uuesti # sekundi pärast}}</translation>
 <translation id="3395323229510056640">Chrome OS-i puhul abi hankimine</translation>
 <translation id="3396977131400919238">Installimisel ilmnes operatsioonisüsteemi viga. Palun laadige Google Chrome uuesti alla.</translation>
-<translation id="3398288718845740432">Chrome'i menüüs peitmine</translation>
 <translation id="3434246496373299699">Chrome saab teie paroole kontrollida siis, kui logite sisse oma Google'i kontoga</translation>
 <translation id="3451115285585441894">Chrome'i lisamine ...</translation>
 <translation id="345171907106878721">Lisa Chrome'i</translation>
@@ -147,7 +143,6 @@
 <translation id="4571503333518166079">Ava Chrome'i märguandeseaded</translation>
 <translation id="459622048091363950">Kui annate Chrome'ile juurdepääsu, saavad veebisaidid küsida teilt juurdepääsuluba.</translation>
 <translation id="4600710005438004015">Chrome'i ei saanud uusimale versioonile värskendada, mistõttu jääte ilma uutest funktsioonidest ja turvaparandustest.</translation>
-<translation id="4631713731678262610">Chrome'i menüüs peitmine</translation>
 <translation id="4633000520311261472">Chrome'i turvalisemaks muutmiseks keelasime mõned laiendused, mida ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja mille lisamisest te ei pruugi teadlik olla.</translation>
 <translation id="4666328473657283332">Selleks et oma Chrome'i sisule kõigis oma seadmetes juurde pääseda, logige sisse, et saaksite sünkroonimise sisse lülitada.</translation>
 <translation id="4728575227883772061">Install ebaõnnestus määramata vea tõttu. Kui Google Chrome parasjagu töötab, siis palun sulgege see ja proovige uuesti.</translation>
@@ -196,6 +191,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6070348360322141662">Turvalisuse suurendamiseks krüpteerib Google Chrome teie andmed</translation>
 <translation id="608006075545470555">Tööprofiili lisamine sellesse brauserisse</translation>
 <translation id="6113794647360055231">Chrome muutus just paremaks</translation>
+<translation id="6145313976051292476">Ava PDF-id Chrome'is</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome'i beetaversioon</translation>
 <translation id="61852838583753520">Värskenda &amp;Chrome OS-i</translation>
@@ -208,7 +204,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome'i värskendamine (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">Chrome OS-i süsteem</translation>
-<translation id="6650333065969705433">Rosettaga kaitstud meedia esitamiseks peate Chrome'i taaskäivitama.</translation>
 <translation id="6676384891291319759">Pääs Internetti</translation>
 <translation id="6679975945624592337">Luba Google Chrome'il taustal töötada</translation>
 <translation id="6739177684496155661">Kas jätkata uuel Chrome'i profiilil?</translation>
@@ -220,7 +215,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6943584222992551122">Selle isiku sirvimisandmed kustutatakse seadmest. Andmete taastamiseks logige Chrome'i sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Sissetuleku reegel Google Chrome'i beetaversioonile mDNS-liikluse lubamiseks.</translation>
 <translation id="6989339256997917931">Google Chrome'i on värskendatud, aga te pole seda kasutanud vähemalt 30 päeva.</translation>
-<translation id="7054640471403081847">See arvuti ei saa enam peagi Google Chrome'i värskendusi, kuna selle riistvara ei toetata enam.</translation>
+<translation id="7025800014283535195">Chrome'i profiili saate vahetada siin</translation>
 <translation id="7062128746136194023">Sinu vanem lülitas valiku „Saitide, rakenduste ja laienduste load” Chrome'i puhul välja. Laienduse <ph name="EXTENSION_TYPE_PARAMETER" /> lubamine on keelatud.</translation>
 <translation id="7098166902387133879">Google Chrome kasutab teie mikrofoni.</translation>
 <translation id="7106741999175697885">Tegumihaldur - Google Chrome</translation>
@@ -273,7 +268,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">See tööprofiil on teie isiklikust profiilist täielikult eraldi.</translation>
 <translation id="8556340503434111824">Saadaval on uus Google Chrome'i versioon ja see on senistest kiireim.</translation>
-<translation id="861359755029082151">Rosetta võimaldab Chrome'il esitada sellel lehel olevat kaitstud meediat.</translation>
 <translation id="8614913330719544658">Google Chrome ei reageeri. Kas soovite kohe taaskäivitada?</translation>
 <translation id="861702415419836452">Chrome vajab luba teie kaamerale juurdepääsemiseks, et luua teid ümbritsevast 3D-kaart</translation>
 <translation id="8625237574518804553">{0,plural, =1{Chrome käivitatakse uuesti 1 minuti pärast}other{Chrome käivitatakse uuesti # minuti pärast}}</translation>
@@ -287,7 +281,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8834965163890861871">Google Chrome proovib muuta paroole. Selle lubamiseks sisestage Windowsi parool.</translation>
 <translation id="884296878221830158">Lisaks juhib see Chrome'i käivitamise lehte või avalehe nupu  klõpsamist.</translation>
 <translation id="8862326446509486874">Teil ei ole süsteemi tasemel installimiseks sobivaid õigusi. Proovige installijat administraatorina uuesti käivitada.</translation>
-<translation id="8907709077090383765">Kui soovite, et Chrome esitaks kaitstud meediat, peate installima Rosetta. Kas soovite kohe installida?</translation>
 <translation id="8914504000324227558">Käivita Chrome uuesti</translation>
 <translation id="8922193594870374009">Numbri saatmiseks asukohast <ph name="ORIGIN" /> Android-telefoni logige mõlemas seadmes Chrome'i sisse.</translation>
 <translation id="8986207147630327271">Lisate sellesse brauserisse tööprofiili ja annate administraatorile kontrolli vaid oma tööprofiili üle.</translation>
@@ -297,6 +290,8 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="9138603949443464873">Muudatuste rakendamiseks käivitage Chrome uuesti</translation>
 <translation id="919706545465235479">Sünkroonimise alustamiseks värskendage Chrome'i</translation>
+<translation id="922152298093051471">Chrome'i kohandamine</translation>
 <translation id="940313311831216333">Selleks et oma Chrome'i sisule kõigis oma seadmetes juurde pääseda, logige sisse ja lülitage siis sisse sünkroonimine.</translation>
 <translation id="989369509083708165">Google Chrome on teie vaikebrauser</translation>
+<translation id="989816563149873169">Chrome'i profiilide vahel vahetamiseks vajutage klahve <ph name="SHORTCUT" /></translation>
 </translationbundle>

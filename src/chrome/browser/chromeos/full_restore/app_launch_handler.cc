@@ -14,8 +14,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/full_restore/app_launch_info.h"
 #include "components/full_restore/full_restore_read_handler.h"
@@ -95,13 +95,11 @@ void AppLaunchHandler::OnGetRestoreData(
     std::unique_ptr<::full_restore::RestoreData> restore_data) {
   restore_data_ = std::move(restore_data);
 
-  // After reading the restore data, the restore data can be cleared from the
-  // restore file to save the new restore data.
-  ::full_restore::FullRestoreSaveHandler::GetInstance()->Flush(
-      profile_->GetPath());
-
   if (ProfileHelper::Get()->GetUserByProfile(profile_) ==
       user_manager::UserManager::Get()->GetPrimaryUser()) {
+    ::full_restore::FullRestoreSaveHandler::GetInstance()
+        ->SetPrimaryProfilePath(profile_->GetPath());
+
     // In Multi-Profile mode, only set for the primary user. For other users,
     // active profile path is set when switch users.
     ::full_restore::SetActiveProfilePath(profile_->GetPath());
@@ -196,6 +194,7 @@ void AppLaunchHandler::LaunchApp(apps::mojom::AppType app_type,
       // app.
       FALLTHROUGH;
     case apps::mojom::AppType::kWeb:
+    case apps::mojom::AppType::kSystemWeb:
       LaunchSystemWebAppOrChromeApp(app_id, it->second);
       break;
     case apps::mojom::AppType::kBuiltIn:
@@ -248,7 +247,16 @@ void AppLaunchHandler::LaunchArcApp(
   for (const auto& it : launch_list) {
     DCHECK(it.second->event_flag.has_value());
     apps::mojom::WindowInfoPtr window_info = it.second->GetAppWindowInfo();
-    window_info->window_id = it.first;
+
+    // Set an ARC session id to find the restore window id based on the new
+    // created ARC task id in FullRestoreReadHandler.
+    int32_t arc_session_id =
+        ::full_restore::FullRestoreReadHandler::GetInstance()
+            ->GetArcSessionId();
+    window_info->window_id = arc_session_id;
+    ::full_restore::FullRestoreReadHandler::GetInstance()
+        ->SetArcSessionIdForWindowId(arc_session_id, it.first);
+
     if (it.second->intent.has_value()) {
       proxy->LaunchAppWithIntent(app_id, it.second->event_flag.value(),
                                  std::move(it.second->intent.value()),

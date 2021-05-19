@@ -30,9 +30,9 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.metrics.UkmRecorder;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
+import org.chromium.components.ukm.UkmRecorder;
 import org.chromium.ui.display.DisplayAndroidManager;
 
 import java.lang.annotation.Retention;

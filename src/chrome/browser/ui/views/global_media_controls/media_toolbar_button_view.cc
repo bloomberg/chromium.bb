@@ -43,6 +43,7 @@ MediaToolbarButtonView::MediaToolbarButtonView(BrowserView* browser_view)
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::kOnPress);
   SetFlipCanvasOnPaintForRTLUI(false);
+  SetVectorIcons(kMediaToolbarButtonIcon, kMediaToolbarButtonTouchIcon);
   SetTooltipText(
       l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_ICON_TOOLTIP_TEXT));
   GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kDialog);
@@ -90,20 +91,26 @@ void MediaToolbarButtonView::Hide() {
 void MediaToolbarButtonView::Enable() {
   SetEnabled(true);
 
-  // Live Caption only works for English-language speech for now, so we only
-  // show the promo to users whose fluent languages include english. Fluent
-  // languages are set in chrome://settings/languages.
-  // TODO(crbug.com/1161569): Remove this when Live Caption supports additional
-  // languages.
-  language::LanguageModel* language_model =
-      LanguageModelManagerFactory::GetForBrowserContext(browser_->profile())
-          ->GetPrimaryModel();
-  for (const auto& lang : language_model->GetLanguages()) {
-    if (base::MatchPattern(lang.lang_code, "en*") &&
-        base::FeatureList::IsEnabled(media::kLiveCaption)) {
+  if (base::FeatureList::IsEnabled(media::kLiveCaption)) {
+    // Live Caption multi language is only enabled when SODA is also enabled.
+    if (base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage) &&
+        base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption)) {
       feature_promo_controller_->MaybeShowPromo(
           feature_engagement::kIPHLiveCaptionFeature);
-      break;
+    } else {
+      // Live Caption only works for English-language speech for now, so we only
+      // show the promo to users whose fluent languages include english. Fluent
+      // languages are set in chrome://settings/languages.
+      language::LanguageModel* language_model =
+          LanguageModelManagerFactory::GetForBrowserContext(browser_->profile())
+              ->GetPrimaryModel();
+      for (const auto& lang : language_model->GetLanguages()) {
+        if (base::MatchPattern(lang.lang_code, "en*")) {
+          feature_promo_controller_->MaybeShowPromo(
+              feature_engagement::kIPHLiveCaptionFeature);
+          break;
+        }
+      }
     }
   }
 
@@ -121,18 +128,12 @@ void MediaToolbarButtonView::Disable() {
     observer.OnMediaButtonDisabled();
 }
 
-void MediaToolbarButtonView::UpdateIcon() {
-  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
-  const gfx::VectorIcon& icon =
-      touch_ui ? kMediaToolbarButtonTouchIcon : kMediaToolbarButtonIcon;
-  UpdateIconsWithStandardColors(icon);
-}
-
 void MediaToolbarButtonView::ButtonPressed() {
   if (MediaDialogView::IsShowing()) {
     MediaDialogView::HideDialog();
   } else {
-    MediaDialogView::ShowDialog(this, service_, browser_->profile());
+    MediaDialogView::ShowDialog(this, service_, browser_->profile(),
+                                GlobalMediaControlsEntryPoint::kToolbarIcon);
 
     feature_promo_controller_->CloseBubble(
         feature_engagement::kIPHLiveCaptionFeature);

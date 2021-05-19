@@ -82,8 +82,8 @@ class LinkToTextMediatorTest : public PlatformTest {
     web_frames_manager_ = web_frames_manager.get();
     web_state_->SetWebFramesManager(std::move(web_frames_manager));
 
-    auto main_frame = std::make_unique<web::FakeWebFrame>(
-        web::kMainFakeFrameId, true, GURL("https://chromium.org/"));
+    auto main_frame = web::FakeWebFrame::Create(web::kMainFakeFrameId, true,
+                                                GURL("https://chromium.org/"));
     main_frame_ = main_frame.get();
     web_frames_manager_->AddWebFrame(std::move(main_frame));
 
@@ -113,10 +113,8 @@ class LinkToTextMediatorTest : public PlatformTest {
                                                 consumer:mocked_consumer_];
   }
 
-  void SetLinkToTextResponse(std::unique_ptr<base::Value> value,
-                             CGFloat zoom_scale) {
-    main_frame_->AddJsResultForFunctionCall(std::move(value),
-                                            kJavaScriptFunctionName);
+  void SetLinkToTextResponse(base::Value* value, CGFloat zoom_scale) {
+    main_frame_->AddJsResultForFunctionCall(value, kJavaScriptFunctionName);
 
     fake_scroll_view_.contentInset =
         UIEdgeInsetsMake(kFakeTopInset, kFakeLeftInset, 0, 0);
@@ -196,25 +194,11 @@ class LinkToTextMediatorTest : public PlatformTest {
   id mocked_consumer_;
 };
 
-// Tests that the mediator should offer link to text to HTML pages that can
-// call JavaScript functions.
-TEST_F(LinkToTextMediatorTest, ShouldOfferLinkToText) {
-  // In the single-threaded test environment, the JS callback can't fire until
-  // after the dispatched timeout, so this returns false. However, JS execution
-  // is the last step, so we can verify that the right method was invoked, and
-  // infer from this that all the other browser-side checks passed as well.
-  [mediator_ shouldOfferLinkToText];
-  EXPECT_EQ(main_frame_->GetLastJavaScriptCall(),
-            "__gCrWeb.linkToText.checkPreconditions();");
-}
-
 // Tests that the mediator should not offer link to text to pages that are not
 // HTML.
 TEST_F(LinkToTextMediatorTest, ShouldNotOfferLinkToTextNotHTML) {
   web_state_->SetContentIsHTML(false);
   EXPECT_FALSE([mediator_ shouldOfferLinkToText]);
-  // JavaScript shouldn't be invoked for non-HTML pages.
-  EXPECT_EQ(main_frame_->GetLastJavaScriptCall(), "");
 }
 
 // Tests that the mediator should not offer link to text when, for some reason,
@@ -223,7 +207,6 @@ TEST_F(LinkToTextMediatorTest,
        ShouldNotOfferLinkToTextCannotExecuteJavaScript) {
   main_frame_->set_can_call_function(false);
   EXPECT_FALSE([mediator_ shouldOfferLinkToText]);
-  EXPECT_EQ(main_frame_->GetLastJavaScriptCall(), "");
 }
 
 // Tests that the shareHighlight command is triggered with the right parameters
@@ -237,7 +220,7 @@ TEST_F(LinkToTextMediatorTest, HandleLinkToTextSelectionTriggersCommandNoZoom) {
 
   std::unique_ptr<base::Value> fake_response =
       CreateSuccessResponse(kTestQuote, selection_rect);
-  SetLinkToTextResponse(std::move(fake_response), zoom);
+  SetLinkToTextResponse(fake_response.get(), zoom);
 
   __block BOOL callback_invoked = NO;
 
@@ -282,7 +265,7 @@ TEST_F(LinkToTextMediatorTest,
 
   std::unique_ptr<base::Value> fake_response =
       CreateSuccessResponse(kTestQuote, selection_rect);
-  SetLinkToTextResponse(std::move(fake_response), zoom);
+  SetLinkToTextResponse(fake_response.get(), zoom);
 
   __block BOOL callback_invoked = NO;
 
@@ -322,7 +305,7 @@ TEST_F(LinkToTextMediatorTest, LinkGenerationError) {
 
   std::unique_ptr<base::Value> error_response =
       CreateErrorResponse(LinkGenerationOutcome::kInvalidSelection);
-  SetLinkToTextResponse(std::move(error_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(error_response.get(), /*zoom=*/1.0);
 
   __block BOOL callback_invoked = NO;
   [[[mocked_consumer_ expect] andDo:^(NSInvocation*) {
@@ -355,7 +338,7 @@ TEST_F(LinkToTextMediatorTest, EmptyResponseLinkGenerationError) {
   base::HistogramTester histogram_tester;
 
   std::unique_ptr<base::Value> empty_response = std::make_unique<base::Value>();
-  SetLinkToTextResponse(std::move(empty_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(empty_response.get(), /*zoom=*/1.0);
 
   __block BOOL callback_invoked = NO;
   [[[mocked_consumer_ expect] andDo:^(NSInvocation*) {
@@ -390,7 +373,7 @@ TEST_F(LinkToTextMediatorTest, BadResponseLinkGenerationError) {
   std::unique_ptr<base::Value> malformed_response =
       std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
   malformed_response->SetStringKey("somethingElse", "abc");
-  SetLinkToTextResponse(std::move(malformed_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(malformed_response.get(), /*zoom=*/1.0);
 
   __block BOOL callback_invoked = NO;
   [[[mocked_consumer_ expect] andDo:^(NSInvocation*) {
@@ -424,7 +407,7 @@ TEST_F(LinkToTextMediatorTest, StringResponseLinkGenerationError) {
 
   std::unique_ptr<base::Value> string_response =
       std::make_unique<base::Value>("someValue");
-  SetLinkToTextResponse(std::move(string_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(string_response.get(), /*zoom=*/1.0);
 
   __block BOOL callback_invoked = NO;
   [[[mocked_consumer_ expect] andDo:^(NSInvocation*) {
@@ -458,7 +441,7 @@ TEST_F(LinkToTextMediatorTest, LinkGenerationSuccessButNoPayload) {
 
   std::unique_ptr<base::Value> success_response =
       CreateErrorResponse(LinkGenerationOutcome::kSuccess);
-  SetLinkToTextResponse(std::move(success_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(success_response.get(), /*zoom=*/1.0);
 
   __block BOOL callback_invoked = NO;
   [[[mocked_consumer_ expect] andDo:^(NSInvocation*) {
@@ -494,7 +477,7 @@ TEST_F(LinkToTextMediatorTest, LinkGenerationTimeout) {
   // will simply invoke the callback with nullptr (due to a timeout).
   std::unique_ptr<base::Value> success_response =
       CreateErrorResponse(LinkGenerationOutcome::kSuccess);
-  SetLinkToTextResponse(std::move(success_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(success_response.get(), /*zoom=*/1.0);
 
   main_frame_->set_force_timeout(true);
 
@@ -537,7 +520,7 @@ TEST_F(LinkToTextMediatorTest, WithHttpsAndCanonicalUrl) {
       CreateSuccessResponse(kTestQuote, selection_rect);
   std::string canonical_url = "https://www.example.com/";
   SetCanonicalUrl(fake_response.get(), canonical_url);
-  SetLinkToTextResponse(std::move(fake_response), zoom);
+  SetLinkToTextResponse(fake_response.get(), zoom);
 
   __block BOOL callback_invoked = NO;
 
@@ -575,7 +558,7 @@ TEST_F(LinkToTextMediatorTest, NotHttpsAndCanonicalUrl) {
       CreateSuccessResponse(kTestQuote, selection_rect);
   std::string canonical_url = "https://www.example.com/";
   SetCanonicalUrl(fake_response.get(), canonical_url);
-  SetLinkToTextResponse(std::move(fake_response), zoom);
+  SetLinkToTextResponse(fake_response.get(), zoom);
 
   __block BOOL callback_invoked = NO;
 

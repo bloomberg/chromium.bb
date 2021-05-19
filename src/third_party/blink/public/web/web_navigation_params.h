@@ -20,7 +20,6 @@
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-shared.h"
-#include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/policy_container.mojom-forward.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -135,14 +134,6 @@ struct BLINK_EXPORT WebNavigationInfo {
   // the input start time.
   base::TimeTicks input_start;
 
-  // This is the navigation relevant CSP to be used during request and response
-  // checks.
-  WebVector<WebContentSecurityPolicy> initiator_csp;
-
-  // The navigation initiator, if any.
-  CrossVariantMojoRemote<mojom::NavigationInitiatorInterfaceBase>
-      navigation_initiator_remote;
-
   // Specifies whether or not a MHTML Archive can be used to load a subframe
   // resource instead of doing a network request.
   enum class ArchiveStatus { Absent, Present };
@@ -167,6 +158,8 @@ struct BLINK_EXPORT WebNavigationInfo {
 
   // The frame policy specified by the frame owner element.
   // For top-level window with no opener, this is the default lax FramePolicy.
+  // This attribute is used for the synchronous re-navigation to about:blank
+  // only.
   FramePolicy frame_policy;
 
   // The frame token of the initiator Frame.
@@ -191,6 +184,11 @@ struct BLINK_EXPORT WebNavigationParams {
   explicit WebNavigationParams(const base::UnguessableToken&);
 
   // Shortcut for navigating based on WebNavigationInfo parameters.
+  //
+  // This is used only for navigations not driven by the browser process:
+  // - the re-navigation to about:blank when creating a new subframe or window
+  //   with initial location == about:blank (see https://crbug.com/778318)
+  // - unit tests.
   static std::unique_ptr<WebNavigationParams> CreateFromInfo(
       const WebNavigationInfo&);
 
@@ -310,7 +308,18 @@ struct BLINK_EXPORT WebNavigationParams {
   // The origin in which a navigation should commit. When provided, Blink
   // should use this origin directly and not compute locally the new document
   // origin.
+  // TODO(arthursonzogni): Always provide origin_to_commit.
   WebSecurityOrigin origin_to_commit;
+
+  // The sandbox flags to apply to the new document. This is the union of:
+  // - the frame's current sandbox attribute, taken when the navigation started.
+  // - the navigation response's CSP sandbox flags.
+  // - the result of CSP embedded enforcement required CSP sandbox flags.
+  // - Various edge cases: MHTML document, error pages, ...
+  // See content/browser/renderer_host/sandbox_flags.md
+  network::mojom::WebSandboxFlags sandbox_flags =
+      network::mojom::WebSandboxFlags::kAll;
+
   // The devtools token for this navigation. See DocumentLoader
   // for details.
   base::UnguessableToken devtools_navigation_token;
@@ -401,14 +410,11 @@ struct BLINK_EXPORT WebNavigationParams {
   bool origin_agent_cluster = false;
 
   // List of client hints enabled for top-level frame. These still need to be
-  // checked against feature policy before use.
+  // checked against permissions policy before use.
   WebVector<network::mojom::WebClientHintsType> enabled_client_hints;
 
   // Whether the navigation is cross browsing context group (browsing instance).
   bool is_cross_browsing_context_group_navigation = false;
-
-  // A list of additional content security policies to be enforced by blink.
-  WebVector<WebString> forced_content_security_policies;
 
   // Blink's copy of the policy container containing security policies to be
   // enforced on the document created by this navigation.

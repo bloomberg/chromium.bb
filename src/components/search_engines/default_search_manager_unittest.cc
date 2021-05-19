@@ -83,7 +83,8 @@ class DefaultSearchManagerTest : public testing::Test {
   DefaultSearchManagerTest() {}
 
   void SetUp() override {
-    pref_service_.reset(new sync_preferences::TestingPrefServiceSyncable);
+    pref_service_ =
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     DefaultSearchManager::RegisterProfilePrefs(pref_service_->registry());
     TemplateURLPrepopulateData::RegisterProfilePrefs(pref_service_->registry());
   }
@@ -103,8 +104,8 @@ TEST_F(DefaultSearchManagerTest, ReadAndWritePref) {
   DefaultSearchManager manager(pref_service(),
                                DefaultSearchManager::ObserverCallback());
   TemplateURLData data;
-  data.SetShortName(base::UTF8ToUTF16("name1"));
-  data.SetKeyword(base::UTF8ToUTF16("key1"));
+  data.SetShortName(u"name1");
+  data.SetKeyword(u"key1");
   data.SetURL("http://foo1/{searchTerms}");
   data.suggestions_url = "http://sugg1";
   data.alternate_urls.push_back("http://foo1/alt");

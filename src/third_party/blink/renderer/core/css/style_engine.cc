@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -116,14 +117,13 @@ StyleEngine::StyleEngine(Document& document)
       is_html_import_(document.IsHTMLImport()),
       document_style_sheet_collection_(
           MakeGarbageCollected<DocumentStyleSheetCollection>(document)),
+      resolver_(MakeGarbageCollected<StyleResolver>(document)),
       owner_color_scheme_(mojom::blink::ColorScheme::kLight) {
   if (document.GetFrame()) {
     // We don't need to create CSSFontSelector for imported document or
     // HTMLTemplateElement's document, because those documents have no frame.
-    // Likewise for the StyleResolver.
     font_selector_ = CreateCSSFontSelectorFor(document);
     font_selector_->RegisterForInvalidationCallbacks(this);
-    resolver_ = MakeGarbageCollected<StyleResolver>(document);
     if (const auto* owner = document.GetFrame()->Owner())
       owner_color_scheme_ = owner->GetColorScheme();
   }
@@ -248,8 +248,7 @@ void StyleEngine::AddPendingSheet(StyleEngineContext& context) {
 
   context.AddingPendingSheet(GetDocument());
 
-  if (context.AddedPendingSheetBeforeBody() &&
-      !RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
+  if (context.AddedPendingSheetBeforeBody()) {
     pending_render_blocking_stylesheets_++;
   } else {
     pending_parser_blocking_stylesheets_++;
@@ -263,8 +262,7 @@ void StyleEngine::RemovePendingSheet(Node& style_sheet_candidate_node,
   if (style_sheet_candidate_node.isConnected())
     SetNeedsActiveStyleUpdate(style_sheet_candidate_node.GetTreeScope());
 
-  if (context.AddedPendingSheetBeforeBody() &&
-      !RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
+  if (context.AddedPendingSheetBeforeBody()) {
     DCHECK_GT(pending_render_blocking_stylesheets_, 0);
     pending_render_blocking_stylesheets_--;
   } else {
@@ -474,7 +472,9 @@ void StyleEngine::MediaQueryAffectingValueChanged(MediaValueChange change) {
 void StyleEngine::UpdateActiveStyleSheetsInImport(
     StyleEngine& root_engine,
     DocumentStyleSheetCollector& parent_collector) {
-  DCHECK(RuntimeEnabledFeatures::HTMLImportsEnabled());
+  // TODO(crbug.com/937746): Anything caught by this DCHECK is using the
+  // now-removed HTML Imports feature.
+  DCHECK(false) << "HTML Imports has been removed.";
   DCHECK(IsHTMLImport());
   HeapVector<Member<StyleSheet>> sheets_for_list;
   ImportedDocumentStyleSheetCollector subcollector(parent_collector,
@@ -539,13 +539,6 @@ void StyleEngine::UpdateActiveStyleSheets() {
       UpdateActiveStyleSheetsInShadow(tree_scope, tree_scopes_removed);
     for (TreeScope* tree_scope : tree_scopes_removed)
       active_tree_scopes_.erase(tree_scope);
-  }
-
-  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
-    // TODO(crbug.com/687225): We initialize the predefined counter styles here.
-    // Moving the initialization to other places causes test failures, which
-    // needs investigation and fixing.
-    CounterStyleMap::GetUACounterStyleMap();
   }
 
   probe::ActiveStyleSheetsUpdated(document_);
@@ -823,7 +816,7 @@ CSSStyleSheet* StyleEngine::ParseSheet(Element& element,
   CSSStyleSheet* style_sheet = nullptr;
   style_sheet = CSSStyleSheet::CreateInline(element, NullURL(), start_position,
                                             GetDocument().Encoding());
-  style_sheet->Contents()->ParseStringAtPosition(text, start_position);
+  style_sheet->Contents()->ParseString(text);
   return style_sheet;
 }
 
@@ -2070,6 +2063,17 @@ void StyleEngine::RecalcStyle(StyleRecalcChange change,
     PropagateWritingModeAndDirectionToHTMLRoot();
 }
 
+void StyleEngine::RecalcStyle() {
+  Element& root_element = style_recalc_root_.RootElement();
+
+  auto style_recalc_context =
+      RuntimeEnabledFeatures::CSSContainerQueriesEnabled()
+          ? StyleRecalcContext::FromAncestors(root_element)
+          : StyleRecalcContext();
+
+  RecalcStyle({}, style_recalc_context);
+}
+
 void StyleEngine::ClearEnsuredDescendantStyles(Element& root) {
   Node* current = &root;
   while (current) {
@@ -2453,6 +2457,27 @@ const CounterStyle& StyleEngine::FindCounterStyleAcrossScopes(
   if (CounterStyle* result = target_map->FindCounterStyleAcrossScopes(name))
     return *result;
   return CounterStyle::GetDecimal();
+}
+
+void StyleEngine::ChangeRenderingForHTMLSelect(HTMLSelectElement& select) {
+  // TODO(crbug.com/1191353): SetForceReattachLayoutTree() should be the correct
+  // way to create a new layout tree for a select element that changes rendering
+  // and not style, but the code for updating the selected index relies on the
+  // layout tree to be deleted. To work around that, we do a synchronous
+  // DetachLayoutTree as if the subtree is taken out of the flat tree.
+  // DetachLayoutTree will clear dirty bits which means we also need to simulate
+  // that we are in a dom removal to make the style recalc root be updated
+  // correctly.
+  StyleEngine::DOMRemovalScope removal_scope(*this);
+  auto& element = To<Element>(select);
+  element.DetachLayoutTree();
+  // If the recalc root is in this subtree, DetachLayoutTree() above clears the
+  // bits and we need to update the root. Otherwise the AssertRootNodeInvariants
+  // will fail for SetNeedsStyleRecalc below.
+  style_recalc_root_.SubtreeModified(element);
+  element.SetNeedsStyleRecalc(
+      kLocalStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kControl));
 }
 
 void StyleEngine::Trace(Visitor* visitor) const {

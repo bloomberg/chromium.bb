@@ -36,7 +36,7 @@ static const AVOption dnn_native_options[] = {
     { NULL },
 };
 
-const AVClass dnn_native_class = {
+static const AVClass dnn_native_class = {
     .class_name = "dnn_native",
     .item_name  = av_default_item_name,
     .option     = dnn_native_options,
@@ -50,7 +50,7 @@ static DNNReturnType execute_model_native(const DNNModel *model, const char *inp
 
 static DNNReturnType get_input_native(void *model, DNNData *input, const char *input_name)
 {
-    NativeModel *native_model = (NativeModel *)model;
+    NativeModel *native_model = model;
     NativeContext *ctx = &native_model->ctx;
 
     for (int i = 0; i < native_model->operands_num; ++i) {
@@ -78,7 +78,7 @@ static DNNReturnType get_output_native(void *model, const char *input_name, int 
                                        const char *output_name, int *output_width, int *output_height)
 {
     DNNReturnType ret;
-    NativeModel *native_model = (NativeModel *)model;
+    NativeModel *native_model = model;
     NativeContext *ctx = &native_model->ctx;
     AVFrame *in_frame = av_frame_alloc();
     AVFrame *out_frame = NULL;
@@ -112,7 +112,7 @@ static DNNReturnType get_output_native(void *model, const char *input_name, int 
 // layers_num,layer_type,layer_parameterss,layer_type,layer_parameters...
 // For CONV layer: activation_function, input_num, output_num, kernel_size, kernel, biases
 // For DEPTH_TO_SPACE layer: block_size
-DNNModel *ff_dnn_load_model_native(const char *model_filename, const char *options, void *userdata)
+DNNModel *ff_dnn_load_model_native(const char *model_filename, DNNFunctionType func_type, const char *options, AVFilterContext *filter_ctx)
 {
     DNNModel *model = NULL;
     char header_expected[] = "FFMPEGDNNNATIVE";
@@ -208,7 +208,7 @@ DNNModel *ff_dnn_load_model_native(const char *model_filename, const char *optio
         }
 
         native_model->layers[layer].type = layer_type;
-        parsed_size = layer_funcs[layer_type].pf_load(&native_model->layers[layer], model_file_context, file_size, native_model->operands_num);
+        parsed_size = ff_layer_funcs[layer_type].pf_load(&native_model->layers[layer], model_file_context, file_size, native_model->operands_num);
         if (!parsed_size) {
             goto fail;
         }
@@ -255,7 +255,8 @@ DNNModel *ff_dnn_load_model_native(const char *model_filename, const char *optio
 
     model->get_input = &get_input_native;
     model->get_output = &get_output_native;
-    model->userdata = userdata;
+    model->filter_ctx = filter_ctx;
+    model->func_type = func_type;
 
     return model;
 
@@ -269,7 +270,7 @@ static DNNReturnType execute_model_native(const DNNModel *model, const char *inp
                                           const char **output_names, uint32_t nb_output, AVFrame *out_frame,
                                           int do_ioproc)
 {
-    NativeModel *native_model = (NativeModel *)model->model;
+    NativeModel *native_model = model->model;
     NativeContext *ctx = &native_model->ctx;
     int32_t layer;
     DNNData input, output;
@@ -300,7 +301,7 @@ static DNNReturnType execute_model_native(const DNNModel *model, const char *inp
     oprd->dims[2] = in_frame->width;
 
     av_freep(&oprd->data);
-    oprd->length = calculate_operand_data_length(oprd);
+    oprd->length = ff_calculate_operand_data_length(oprd);
     if (oprd->length <= 0) {
         av_log(ctx, AV_LOG_ERROR, "The input data length overflow\n");
         return DNN_ERROR;
@@ -318,22 +319,22 @@ static DNNReturnType execute_model_native(const DNNModel *model, const char *inp
     input.dt = oprd->data_type;
     if (do_ioproc) {
         if (native_model->model->pre_proc != NULL) {
-            native_model->model->pre_proc(in_frame, &input, native_model->model->userdata);
+            native_model->model->pre_proc(in_frame, &input, native_model->model->filter_ctx);
         } else {
-            proc_from_frame_to_dnn(in_frame, &input, ctx);
+            ff_proc_from_frame_to_dnn(in_frame, &input, native_model->model->func_type, ctx);
         }
     }
 
     if (nb_output != 1) {
         // currently, the filter does not need multiple outputs,
         // so we just pending the support until we really need it.
-        av_log(ctx, AV_LOG_ERROR, "do not support multiple outputs\n");
+        avpriv_report_missing_feature(ctx, "multiple outputs");
         return DNN_ERROR;
     }
 
     for (layer = 0; layer < native_model->layers_num; ++layer){
         DNNLayerType layer_type = native_model->layers[layer].type;
-        if (layer_funcs[layer_type].pf_exec(native_model->operands,
+        if (ff_layer_funcs[layer_type].pf_exec(native_model->operands,
                                             native_model->layers[layer].input_operand_indexes,
                                             native_model->layers[layer].output_operand_index,
                                             native_model->layers[layer].params,
@@ -366,9 +367,9 @@ static DNNReturnType execute_model_native(const DNNModel *model, const char *inp
 
         if (do_ioproc) {
             if (native_model->model->post_proc != NULL) {
-                native_model->model->post_proc(out_frame, &output, native_model->model->userdata);
+                native_model->model->post_proc(out_frame, &output, native_model->model->filter_ctx);
             } else {
-                proc_from_dnn_to_frame(out_frame, &output, ctx);
+                ff_proc_from_dnn_to_frame(out_frame, &output, ctx);
             }
         } else {
             out_frame->width = output.width;
@@ -382,7 +383,7 @@ static DNNReturnType execute_model_native(const DNNModel *model, const char *inp
 DNNReturnType ff_dnn_execute_model_native(const DNNModel *model, const char *input_name, AVFrame *in_frame,
                                           const char **output_names, uint32_t nb_output, AVFrame *out_frame)
 {
-    NativeModel *native_model = (NativeModel *)model->model;
+    NativeModel *native_model = model->model;
     NativeContext *ctx = &native_model->ctx;
 
     if (!in_frame) {
@@ -398,7 +399,7 @@ DNNReturnType ff_dnn_execute_model_native(const DNNModel *model, const char *inp
     return execute_model_native(model, input_name, in_frame, output_names, nb_output, out_frame, 1);
 }
 
-int32_t calculate_operand_dims_count(const DnnOperand *oprd)
+int32_t ff_calculate_operand_dims_count(const DnnOperand *oprd)
 {
     int32_t result = 1;
     for (int i = 0; i < 4; ++i)
@@ -407,7 +408,7 @@ int32_t calculate_operand_dims_count(const DnnOperand *oprd)
     return result;
 }
 
-int32_t calculate_operand_data_length(const DnnOperand* oprd)
+int32_t ff_calculate_operand_data_length(const DnnOperand* oprd)
 {
     // currently, we just support DNN_FLOAT
     uint64_t len = sizeof(float);
@@ -428,7 +429,7 @@ void ff_dnn_free_model_native(DNNModel **model)
     if (*model)
     {
         if ((*model)->model) {
-            native_model = (NativeModel *)(*model)->model;
+            native_model = (*model)->model;
             if (native_model->layers) {
                 for (layer = 0; layer < native_model->layers_num; ++layer){
                     if (native_model->layers[layer].type == DLT_CONV2D){

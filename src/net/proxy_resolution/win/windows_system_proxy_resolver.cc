@@ -5,11 +5,11 @@
 #include "net/proxy_resolution/win/windows_system_proxy_resolver.h"
 
 #include <cwchar>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -72,7 +72,7 @@ bool GetProxyServerFromWinHttpResultEntry(
                          wcslen(result_entry.pwszProxy));
   if (!base::IsStringASCII(host_wide)) {
     const int kInitialBufferSize = 256;
-    url::RawCanonOutputT<base::char16, kInitialBufferSize> punycode_output;
+    url::RawCanonOutputT<char16_t, kInitialBufferSize> punycode_output;
     if (!url::IDNToASCII(base::as_u16cstr(host_wide), host_wide.length(),
                          &punycode_output))
       return false;

@@ -1486,7 +1486,6 @@ TEST_F(AnimationAnimationTestCompositing, BackgroundColorComposited) {
   animation->play();
   // A basic condition for an animation to be compositable is that it is set so
   // by BackgroundColorPaintWorklet::GetBGColorPaintWorkletParams.
-  animation->SetCanCompositeBGColorAnim();
   EXPECT_EQ(animation->CheckCanStartAnimationOnCompositor(nullptr),
             CompositorAnimations::kNoFailure);
 }
@@ -1686,7 +1685,8 @@ TEST_F(AnimationAnimationTestCompositing,
       scroll_timeline, exception_state);
 
   model->SnapshotAllCompositorKeyframesIfNecessary(
-      *element, *ComputedStyle::Create(), nullptr);
+      *element, *GetDocument().GetStyleResolver().CreateComputedStyle(),
+      nullptr);
 
   UpdateAllLifecyclePhasesForTest();
   scroll_animation->play();
@@ -1754,7 +1754,8 @@ TEST_F(AnimationAnimationTestCompositing,
       Animation::Create(keyframe_effect, scroll_timeline, exception_state);
 
   model->SnapshotAllCompositorKeyframesIfNecessary(
-      *element, *ComputedStyle::Create(), nullptr);
+      *element, *GetDocument().GetStyleResolver().CreateComputedStyle(),
+      nullptr);
 
   UpdateAllLifecyclePhasesForTest();
   const double TEST_START_TIME = 10;
@@ -1886,7 +1887,8 @@ TEST_F(AnimationAnimationTestCompositing,
   Animation* scroll_animation =
       Animation::Create(keyframe_effect, scroll_timeline, exception_state);
   model->SnapshotAllCompositorKeyframesIfNecessary(
-      *element, *ComputedStyle::Create(), nullptr);
+      *element, *GetDocument().GetStyleResolver().CreateComputedStyle(),
+      nullptr);
   UpdateAllLifecyclePhasesForTest();
 
   scroll_animation->play();
@@ -2229,7 +2231,8 @@ TEST_F(AnimationAnimationTestCompositing,
       scroll_timeline, exception_state);
 
   model->SnapshotAllCompositorKeyframesIfNecessary(
-      *element, *ComputedStyle::Create(), nullptr);
+      *element, *GetDocument().GetStyleResolver().CreateComputedStyle(),
+      nullptr);
 
   UpdateAllLifecyclePhasesForTest();
   scroll_animation->play();

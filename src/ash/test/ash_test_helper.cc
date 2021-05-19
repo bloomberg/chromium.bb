@@ -23,6 +23,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
+#include "ash/system/message_center/session_state_notification_blocker.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_views_delegate.h"
@@ -85,10 +86,8 @@ class AshTestHelper::PowerPolicyControllerInitializer {
   }
 };
 
-AshTestHelper::AshTestHelper(ConfigType config_type,
-                             ui::ContextFactory* context_factory)
-    : AuraTestHelper(context_factory, config_type == kUnitTest),
-      config_type_(config_type) {
+AshTestHelper::AshTestHelper(ui::ContextFactory* context_factory)
+    : AuraTestHelper(context_factory) {
   views::ViewsTestHelperAura::SetFallbackTestViewsDelegateFactory(
       &MakeTestViewsDelegate);
 
@@ -103,11 +102,9 @@ AshTestHelper::AshTestHelper(ConfigType config_type,
         ::switches::kHostWindowBounds, "10+10-800x600");
   }
 
-  if (config_type_ == kUnitTest)
-    TabletModeController::SetUseScreenshotForTest(false);
+  TabletModeController::SetUseScreenshotForTest(false);
 
-  if (config_type_ != kShell)
-    display::ResetDisplayIdForTest();
+  display::ResetDisplayIdForTest();
 
   chromeos::CrasAudioClient::InitializeFake();
   // Create CrasAudioHandler for testing since g_browser_process is not
@@ -171,7 +168,7 @@ void AshTestHelper::TearDown() {
   test_keyboard_controller_observer_.reset();
   session_controller_client_.reset();
   test_views_delegate_.reset();
-  new_window_delegate_.reset();
+  new_window_delegate_provider_.reset();
   bluez_dbus_manager_initializer_.reset();
   system_tray_client_.reset();
   assistant_service_.reset();
@@ -226,8 +223,11 @@ void AshTestHelper::SetUp(InitParams init_params) {
     power_policy_controller_initializer_ =
         std::make_unique<PowerPolicyControllerInitializer>();
   }
-  if (!NewWindowDelegate::GetInstance())
-    new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
+  if (!NewWindowDelegate::GetInstance()) {
+    new_window_delegate_provider_ =
+        std::make_unique<TestNewWindowDelegateProvider>(
+            std::make_unique<TestNewWindowDelegate>());
+  }
   if (!views::ViewsDelegate::GetInstance())
     test_views_delegate_ = MakeTestViewsDelegate();
 
@@ -245,6 +245,12 @@ void AshTestHelper::SetUp(InitParams init_params) {
       std::make_unique<TestKeyboardUIFactory>();
   Shell::CreateInstance(std::move(shell_init_params));
   Shell* shell = Shell::Get();
+
+  // Disable the notification delay timer used to prevent non system
+  // notifications from showing up right after login. This needs to be done
+  // before any user sessions are added since the delay timer starts right
+  // after that.
+  SessionStateNotificationBlocker::SetUseLoginNotificationDelayForTest(false);
 
   // Cursor is visible by default in tests.
   shell->cursor_manager()->ShowCursor();
@@ -265,11 +271,6 @@ void AshTestHelper::SetUp(InitParams init_params) {
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
-  if (config_type_ == kShell) {
-    shell->wallpaper_controller()->ShowDefaultWallpaperForTesting();
-    return;
-  }
-
   // Don't change the display size due to host size resize.
   display::test::DisplayManagerTestApi(shell->display_manager())
       .DisableChangeDisplayUponHostResize();
@@ -279,9 +280,6 @@ void AshTestHelper::SetUp(InitParams init_params) {
   test_keyboard_controller_observer_ =
       std::make_unique<TestKeyboardControllerObserver>(
           shell->keyboard_controller());
-
-  if (config_type_ != kUnitTest)
-    return;
 
   // Tests that change the display configuration generally don't care about the
   // notifications and the popup UI can interfere with things like cursors.

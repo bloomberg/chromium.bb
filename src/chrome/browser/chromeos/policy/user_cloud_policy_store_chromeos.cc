@@ -10,10 +10,9 @@
 #include "base/callback_helpers.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/chromeos/crosapi/browser_manager.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/chromeos/policy/cached_policy_key_loader_chromeos.h"
 #include "chrome/browser/chromeos/policy/value_validation/onc_user_policy_value_validator.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -38,7 +37,7 @@ std::string ExtractDomain(const std::string& username) {
 }  // namespace
 
 UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
-    chromeos::CryptohomeClient* cryptohome_client,
+    chromeos::CryptohomeMiscClient* cryptohome_misc_client,
     chromeos::SessionManagerClient* session_manager_client,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const AccountId& account_id,
@@ -51,7 +50,7 @@ UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
       account_id_(account_id),
       is_active_directory_(is_active_directory),
       cached_policy_key_loader_(std::make_unique<CachedPolicyKeyLoaderChromeOS>(
-          cryptohome_client,
+          cryptohome_misc_client,
           background_task_runner,
           account_id,
           user_policy_key_dir)) {}
@@ -70,7 +69,7 @@ void UserCloudPolicyStoreChromeOS::Store(
       new em::PolicyFetchResponse(policy));
   cached_policy_key_loader_->EnsurePolicyKeyLoaded(
       base::BindOnce(&UserCloudPolicyStoreChromeOS::ValidatePolicyForStore,
-                     weak_factory_.GetWeakPtr(), base::Passed(&response)));
+                     weak_factory_.GetWeakPtr(), std::move(response)));
 }
 
 void UserCloudPolicyStoreChromeOS::Load() {
@@ -174,10 +173,6 @@ void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
     UserCloudPolicyValidator* validator) {
   DCHECK(!is_active_directory_);
 
-  UMA_HISTOGRAM_ENUMERATION("Enterprise.UserPolicyValidationStoreStatus",
-                            validator->status(),
-                            UserCloudPolicyValidator::VALIDATION_STATUS_SIZE);
-
   validation_result_ = validator->GetValidationResult();
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
@@ -253,7 +248,7 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
   } else {
     cached_policy_key_loader_->EnsurePolicyKeyLoaded(
         base::BindOnce(&UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy,
-                       weak_factory_.GetWeakPtr(), base::Passed(&policy)));
+                       weak_factory_.GetWeakPtr(), std::move(policy)));
   }
 }
 
@@ -267,10 +262,6 @@ void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
 
 void UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated(
     UserCloudPolicyValidator* validator) {
-  UMA_HISTOGRAM_ENUMERATION("Enterprise.UserPolicyValidationLoadStatus",
-                            validator->status(),
-                            UserCloudPolicyValidator::VALIDATION_STATUS_SIZE);
-
   validation_result_ = validator->GetValidationResult();
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;

@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
-import {BrowserProxy} from '../browser_proxy.js';
+import {NewTabPageProxy} from '../new_tab_page_proxy.js';
 import {ModuleDescriptor} from './module_descriptor.js';
 
 /**
@@ -11,7 +10,20 @@ import {ModuleDescriptor} from './module_descriptor.js';
  * provides management function such as instantiating the local module UIs.
  */
 
+/** @type {ModuleRegistry} */
+let instance = null;
+
 export class ModuleRegistry {
+  /** @return {!ModuleRegistry} */
+  static getInstance() {
+    return instance || (instance = new ModuleRegistry());
+  }
+
+  /** @param {ModuleRegistry} newInstance */
+  static setInstance(newInstance) {
+    instance = newInstance;
+  }
+
   constructor() {
     /** @private {!Array<!ModuleDescriptor>} */
     this.descriptors_ = [];
@@ -42,13 +54,13 @@ export class ModuleRegistry {
     // Capture updateDisabledModules -> setDisabledModules round trip in a
     // promise for convenience.
     const disabledIds = await new Promise((resolve, _) => {
-      const callbackRouter = BrowserProxy.getInstance().callbackRouter;
+      const callbackRouter = NewTabPageProxy.getInstance().callbackRouter;
       const listenerId =
           callbackRouter.setDisabledModules.addListener((all, ids) => {
             callbackRouter.removeListener(listenerId);
             resolve(all ? this.descriptors_.map(({id}) => id) : ids);
           });
-      BrowserProxy.getInstance().handler.updateDisabledModules();
+      NewTabPageProxy.getInstance().handler.updateDisabledModules();
     });
     await Promise.all(
         this.descriptors_.filter(d => disabledIds.indexOf(d.id) < 0)
@@ -56,5 +68,3 @@ export class ModuleRegistry {
     return this.descriptors_.filter(descriptor => !!descriptor.element);
   }
 }
-
-addSingletonGetter(ModuleRegistry);

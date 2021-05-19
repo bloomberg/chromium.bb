@@ -10,10 +10,11 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_lottie/cr_lottie.html">
 
 <link rel="import" href="/components/common_styles.html">
-<link rel="import" href="/components/hd_iron_icon.html">
 <link rel="import" href="/components/oobe_adaptive_dialog.html">
 <link rel="import" href="/components/oobe_i18n_behavior.html">
 <link rel="import" href="/components/oobe_dialog_host_behavior.html">
+<link rel="import" href="/components/login_screen_behavior.html">
+<link rel="import" href="/components/multi_step_behavior.html">
 
 <dom-module id="fingerprint-setup-element">
   <template>
@@ -25,7 +26,7 @@
 
       #sensorLocation {
         background-image:
-            url(chrome://oobe/fingerprint_scanner_animation.png);
+            url(chrome://oobe/fingerprint_scanner_illustration.svg);
         background-size: 352px 242px;
         height: 100%;
         width: 100%;
@@ -40,9 +41,7 @@
       <p slot="subtitle">
         [[i18nDynamic(locale, 'setupFingerprintScreenDescription')]]
       </p>
-      <hd-iron-icon slot="icon"
-          icon1x="oobe-32:fingerprint" icon2x="oobe-64:fingerprint">
-      </hd-iron-icon>
+      <iron-icon slot="icon" icon="oobe-32:fingerprint"></iron-icon>
       <div slot="content" class="flex layout vertical center center-justified">
         <div id="sensorLocationContainer" class="oobe-illustration">
           <template is="dom-if" if="[[shouldUseLottieAnimation_]]">
@@ -65,9 +64,7 @@
     <oobe-adaptive-dialog id="startFingerprintEnroll" role="dialog" for-step="progress"
         footer-shrinkable
         aria-label$="[[i18nDynamic(locale, 'enrollmentProgressScreenTitle')]]">
-      <hd-iron-icon slot="icon"
-          icon1x="oobe-32:fingerprint" icon2x="oobe-64:fingerprint">
-      </hd-iron-icon>
+      <iron-icon slot="icon" icon="oobe-32:fingerprint"></iron-icon>
       <h1 slot="title" hidden="[[complete_]]">
         [[i18nDynamic(locale, 'enrollmentProgressScreenTitle')]]
       </h1>

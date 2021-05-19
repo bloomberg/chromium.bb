@@ -72,12 +72,12 @@ interface FrameWidget {
   DragTargetDrop(DragData drag_data,
                  gfx.mojom.PointF point_in_viewport,
                  gfx.mojom.PointF screen_point,
-                 uint32 key_modifiers);
+                 uint32 key_modifiers) => ();
 
   // Notifies the Widget that a drag has terminated.
   DragSourceEndedAt(gfx.mojom.PointF point_in_viewport,
                     gfx.mojom.PointF screen_point,
-                    ui.mojom.DragOperation drag_operation);
+                    ui.mojom.DragOperation drag_operation) => ();
 
   // Notifies the Widget that the system drag and drop operation has ended.
   DragSourceSystemDragEnded();
@@ -254,6 +254,7 @@ interface WidgetHost {
              mojo_base.mojom.TextDirection anchor_dir,
              gfx.mojom.Rect focus_rect,
              mojo_base.mojom.TextDirection focus_dir,
+             gfx.mojom.Rect bounding_box_rect,
              bool is_anchor_first);
 
   // Create a CompositorFrameSink that is associated with this widget.

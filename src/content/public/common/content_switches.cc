@@ -334,6 +334,16 @@ const char kEnableExperimentalWebAssemblyFeatures[] =
 const char kEnableExperimentalWebPlatformFeatures[] =
     "enable-experimental-web-platform-features";
 
+// Forces the V8/blink bindings to call all API entry points that use the
+// [NoAllocDirectCall] extended IDL attribute as if V8 were using the fast call
+// code path.  Using this flag will not make API calls use the true fast path,
+// it will probably even make things a bit slower.  Its purpose is to guarantee
+// test coverage for the blink side of V8 Fast API calls, independently of
+// whether or not V8 actually activates the fast path, which depends on
+// heuristics.
+const char kEnableFakeNoAllocDirectCallForTesting[] =
+    "enable-fake-no-alloc-direct-call-for-testing";
+
 // Enables blink runtime enabled features with status:"test" or
 // status:"experimental", which are enabled when running web tests.
 const char kEnableBlinkTestFeatures[] = "enable-blink-test-features";
@@ -401,6 +411,16 @@ const char kEnableStrictPowerfulFeatureRestrictions[] =
 
 // Enabled threaded compositing for web tests.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
+
+// When specified along with a value in the range (0,1] will --enable-tracing
+// for (roughly) that percentage of tests being run. This is done in a stable
+// manner such that the same tests are chosen each run, and under the assumption
+// that tests hash equally across the range of possible values.
+// The flag will enable all tracing categories for those tests, and none for the
+// rest. This flag could be used with other tracing switches like
+// --enable-tracing-format, but any other switches that will enable tracing will
+// turn tracing on for all tests.
+const char kEnableTracingFraction[] = "enable-tracing-fraction";
 
 // Enable screen capturing support for MediaStream API.
 const char kEnableUserMediaScreenCapturing[] =
@@ -481,10 +501,6 @@ const char kGpuSandboxStartEarly[] = "gpu-sandbox-start-early";
 
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
-
-// Start the renderer with an initial virtual time override specified in
-// seconds since the epoch.
-const char kInitialVirtualTime[] = "initial-virtual-time";
 
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
@@ -672,6 +688,13 @@ const char kRunManualTestsFlag[] = "run-manual";
 
 // Causes the process to run as a sandbox IPC subprocess.
 const char kSandboxIPCProcess[]             = "sandbox-ipc";
+
+// Enables shared array buffer on desktop, gated by an Enterprise Policy.
+// TODO(crbug.com/1144104) Remove when migration to COOP+COEP is complete.
+#if !defined(OS_ANDROID)
+const char kSharedArrayBufferUnrestrictedAccessAllowed[] =
+    "shared-array-buffer-unrestricted-access-allowed";
+#endif
 
 // Describes the file descriptors passed to a child process in the following
 // list format:
@@ -868,11 +891,6 @@ const char kWebRtcMaxCaptureFramerate[] = "max-gum-fps";
 // throttling of the capture.
 const char kWebRtcMaxCpuConsumptionPercentage[] =
     "webrtc-max-cpu-consumption-percentage";
-
-// Renderer process parameter for WebRTC Stun probe trial to determine the
-// interval. Please see SetupStunProbeTrial in
-// chrome_browser_field_trials_desktop.cc for more detail.
-const char kWebRtcStunProbeTrialParameter[] = "webrtc-stun-probe-trial";
 
 // Enable capture and local storage of WebRTC event logs without visiting
 // chrome://webrtc-internals. This is useful for automated testing. It accepts

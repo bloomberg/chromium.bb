@@ -1,10 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 '''Implements Chrome-Fuchsia package binary size checks.'''
 
+from __future__ import division
 from __future__ import print_function
 
 import argparse
@@ -33,8 +34,8 @@ PackageSizes = collections.namedtuple('PackageSizes',
 
 # Structure representing a Fuchsia package blob and its compressed and
 # uncompressed sizes.
-Blob = collections.namedtuple('Blob',
-                              ['name', 'hash', 'compressed', 'uncompressed'])
+Blob = collections.namedtuple(
+    'Blob', ['name', 'hash', 'compressed', 'uncompressed', 'is_counted'])
 
 
 def CreateSizesExternalDiagnostic(sizes_guid):
@@ -171,9 +172,44 @@ def WriteTestResults(results_path, test_completed, test_status, timestamp):
   else:
     WriteSimpleTestResults(results_path, test_completed)
 
-  test_results = CreateTestResults(test_status, timestamp)
-  with open(results_path, 'w') as results_file:
-    json.dump(test_results, results_file)
+
+def WriteGerritPluginSizeData(output_path, package_sizes):
+  """Writes a package size dictionary in json format for the Gerrit binary
+  sizes plugin."""
+
+  with open(output_path, 'w') as sizes_file:
+    sizes_data = {name: size.compressed for name, size in package_sizes.items()}
+    json.dump(sizes_data, sizes_file)
+
+
+def WritePackageBlobsJson(json_path, package_blobs):
+  """Writes package blob information in human-readable JSON format.
+
+  The json data is an array of objects containing these keys:
+    'path': string giving blob location in the local file system
+    'merkle': the blob's Merkle hash
+    'bytes': the number of uncompressed bytes in the blod
+    'size': the size of the compressed blob in bytes.  A multiple of the blobfs
+        block size (8192)
+    'is_counted: true if the blob counts towards the package budget, or false
+        if not (for ICU blobs or blobs distributed in the SDK)"""
+
+  formatted_blob_stats_per_package = {}
+  for package in package_blobs:
+    blob_data = []
+    for blob_name in package_blobs[package]:
+      blob = package_blobs[package][blob_name]
+      blob_data.append({
+          'path': blob.name,
+          'merkle': blob.hash,
+          'bytes': blob.uncompressed,
+          'size': blob.compressed,
+          'is_counted': blob.is_counted
+      })
+    formatted_blob_stats_per_package[package] = blob_data
+
+  with (open(json_path, 'w')) as json_file:
+    json.dump(formatted_blob_stats_per_package, json_file, indent=2)
 
 
 def GetCompressedSize(file_path):
@@ -183,7 +219,12 @@ def GetCompressedSize(file_path):
   try:
     temp_dir = tempfile.mkdtemp()
     compressed_file_path = os.path.join(temp_dir, os.path.basename(file_path))
-    proc = subprocess.Popen([compressor_path, file_path, compressed_file_path],
+    compressor_cmd = [
+        compressor_path,
+        '--source_file=%s' % file_path,
+        '--compressed_file=%s' % compressed_file_path
+    ]
+    proc = subprocess.Popen(compressor_cmd,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
     proc.wait()
@@ -203,7 +244,10 @@ def GetCompressedSize(file_path):
     print(compressor_output, file=sys.stderr)
     raise Exception('Could not get compressed bytes for %s' % file_path)
 
-  return int(match.group('bytes'))
+  # Round the compressed file size up to an integer number of blobfs blocks.
+  BLOBFS_BLOCK_SIZE = 8192  # Fuchsia's blobfs file system uses 8KiB blocks.
+  blob_bytes = int(match.group('bytes'))
+  return int(math.ceil(blob_bytes / BLOBFS_BLOCK_SIZE)) * BLOBFS_BLOCK_SIZE
 
 
 def ExtractFarFile(file_path, extract_dir):
@@ -215,8 +259,6 @@ def ExtractFarFile(file_path, extract_dir):
     raise Exception('Could not find FAR host tool "%s".' % far_tool)
   if not os.path.isfile(file_path):
     raise Exception('Could not find FAR file "%s".' % file_path)
-  if os.path.isdir(extract_dir):
-    raise Exception('Could not find extraction directory "%s".' % extract_dir)
 
   subprocess.check_call([
       far_tool, 'extract',
@@ -239,25 +281,11 @@ def GetBlobNameHashes(meta_dir):
   return blob_name_hashes
 
 
-def CommitPositionFromBuildProperty(value):
-  """Extracts the chromium commit position from a builders got_revision_cp
-  property."""
-
-  # Match a commit position from a build properties commit string like
-  # "refs/heads/master@{#819458}"
-  test_arg_commit_position_re = r'\{#(?P<position>\d+)\}'
-
-  match = re.search(test_arg_commit_position_re, value)
-  if match:
-    return int(match.group('position'))
-  raise RuntimeError('Could not get chromium commit position from test arg.')
-
-
 # Compiled regular expression matching strings like *.so, *.so.1, *.so.2, ...
 SO_FILENAME_REGEXP = re.compile(r'\.so(\.\d+)?$')
 
 
-def GetSdkModulesForExclusion():
+def GetSdkModules():
   """Finds shared objects (.so) under the Fuchsia SDK arch directory in dist or
   lib subdirectories.
 
@@ -286,12 +314,22 @@ def FarBaseName(name):
   return name
 
 
-def GetBlobs(far_file, build_out_dir, extract_dir):
-  """Calculates compressed and uncompressed blob sizes for specified FAR file.
-  Does not count blobs from SDK libraries."""
+def GetPackageMerkleRoot(far_file_path):
+  """Returns a package's Merkle digest."""
 
-  #TODO(crbug.com/1126177): Use partial sizes for blobs shared by packages.
+  # The digest is the first word on the first line of the merkle tool's output.
+  merkle_tool = GetHostToolPathFromPlatform('merkleroot')
+  output = subprocess.check_output([merkle_tool, far_file_path])
+  return output.splitlines()[0].split()[0]
+
+
+def GetBlobs(far_file, build_out_dir):
+  """Calculates compressed and uncompressed blob sizes for specified FAR file.
+  Marks ICU blobs and blobs from SDK libraries as not counted."""
+
   base_name = FarBaseName(far_file)
+
+  extract_dir = tempfile.mkdtemp()
 
   # Extract files and blobs from the specified Fuchsia archive.
   far_file_path = os.path.join(build_out_dir, far_file)
@@ -306,34 +344,43 @@ def GetBlobs(far_file, build_out_dir, extract_dir):
   # Map Linux filesystem blob names to blob hashes.
   blob_name_hashes = GetBlobNameHashes(meta_far_extract_dir)
 
-  # File names whose sizes are not charged against component's size budgets.
-  # Fuchsia SDK modules and the ICU icudtl.dat file are excluded from sizes.
-  excluded_files = GetSdkModulesForExclusion() | set(['icudtl.dat'])
+  # "System" files whose sizes are not charged against component size budgets.
+  # Fuchsia SDK modules and the ICU icudtl.dat file sizes are not counted.
+  system_files = GetSdkModules() | set(['icudtl.dat'])
 
-  # Sum compresses and uncompressed blob sizes, except for SDK blobs.
+  # Add the meta.far file blob.
   blobs = {}
+  meta_name = 'meta.far'
+  meta_hash = GetPackageMerkleRoot(meta_far_file_path)
+  compressed = GetCompressedSize(meta_far_file_path)
+  uncompressed = os.path.getsize(meta_far_file_path)
+  blobs[meta_name] = Blob(meta_name, meta_hash, compressed, uncompressed, True)
+
+  # Add package blobs.
   for blob_name, blob_hash in blob_name_hashes.items():
-    if os.path.basename(blob_name) not in excluded_files:
-      extracted_blob_path = os.path.join(far_extract_dir, blob_hash)
-      compressed = GetCompressedSize(extracted_blob_path)
-      uncompressed = os.path.getsize(extracted_blob_path)
-      blobs[blob_name] = Blob(blob_name, blob_hash, compressed, uncompressed)
+    extracted_blob_path = os.path.join(far_extract_dir, blob_hash)
+    compressed = GetCompressedSize(extracted_blob_path)
+    uncompressed = os.path.getsize(extracted_blob_path)
+    is_counted = os.path.basename(blob_name) not in system_files
+    blobs[blob_name] = Blob(blob_name, blob_hash, compressed, uncompressed,
+                            is_counted)
+
+  shutil.rmtree(extract_dir)
 
   return blobs
 
 
-def GetPackageSizes(far_files, build_out_dir, extract_dir):
-  """Calculates compressed and uncompressed package sizes from blob sizes.
-  Does not count blobs from SDK libraries."""
+def GetPackageBlobs(far_files, build_out_dir):
+  """Returns dictionary mapping package names to blobs contained in the package.
 
-  #TODO(crbug.com/1126177): Use partial sizes for blobs shared by
-  # non Chrome-Fuchsia packages.
+  Prints package blob size statistics."""
 
-  # Get sizes for blobs contained in packages.
   package_blobs = {}
   for far_file in far_files:
     package_name = FarBaseName(far_file)
-    package_blobs[package_name] = GetBlobs(far_file, build_out_dir, extract_dir)
+    if package_name in package_blobs:
+      raise Exception('Duplicate FAR file base name "%s".' % package_name)
+    package_blobs[package_name] = GetBlobs(far_file, build_out_dir)
 
   # Print package blob sizes (does not count sharing).
   for package_name in sorted(package_blobs.keys()):
@@ -342,11 +389,19 @@ def GetPackageSizes(far_files, build_out_dir, extract_dir):
           ('blob hash', 'compressed', 'uncompressed', 'path'))
     print('%s %s %s %s' % (64 * '-', 12 * '-', 12 * '-', 20 * '-'))
     for blob_name in sorted(package_blobs[package_name].keys()):
-      blob_hash = package_blobs[package_name][blob_name].hash
-      compressed = package_blobs[package_name][blob_name].compressed
-      uncompressed = package_blobs[package_name][blob_name].uncompressed
-      print('%64s %12d %12d %s' %
-            (blob_hash, compressed, uncompressed, blob_name))
+      blob = package_blobs[package_name][blob_name]
+      if blob.is_counted:
+        print('%64s %12d %12d %s' %
+              (blob.hash, blob.compressed, blob.uncompressed, blob.name))
+
+  return package_blobs
+
+
+def GetPackageSizes(package_blobs):
+  """Calculates compressed and uncompressed package sizes from blob sizes."""
+
+  # TODO(crbug.com/1126177): Use partial sizes for blobs shared by
+  # non Chrome-Fuchsia packages.
 
   # Count number of packages sharing blobs (a count of 1 is not shared).
   blob_counts = collections.defaultdict(int)
@@ -360,28 +415,26 @@ def GetPackageSizes(far_files, build_out_dir, extract_dir):
     compressed_total = 0
     uncompressed_total = 0
     for blob_name in package_blobs[package_name]:
-      count = blob_counts[blob_name]
       blob = package_blobs[package_name][blob_name]
-      compressed_total += blob.compressed / count
-      uncompressed_total += blob.uncompressed / count
+      if blob.is_counted:
+        count = blob_counts[blob_name]
+        compressed_total += blob.compressed // count
+        uncompressed_total += blob.uncompressed // count
     package_sizes[package_name] = PackageSizes(compressed_total,
                                                uncompressed_total)
 
   return package_sizes
 
 
-def GetBinarySizes(args, sizes_config):
-  """Get binary size data for packages specified in args.
+def GetBinarySizesAndBlobs(args, sizes_config):
+  """Get binary size data and contained blobs for packages specified in args.
 
   If "total_size_name" is set, then computes a synthetic package size which is
-  the aggregated sizes across all blobs."""
+  the aggregated sizes across all packages."""
 
   # Calculate compressed and uncompressed package sizes.
-  extract_dir = args.extract_dir if args.extract_dir else tempfile.mkdtemp()
-  package_sizes = GetPackageSizes(sizes_config['far_files'], args.build_out_dir,
-                                  extract_dir)
-  if not args.extract_dir:
-    shutil.rmtree(extract_dir)
+  package_blobs = GetPackageBlobs(sizes_config['far_files'], args.build_out_dir)
+  package_sizes = GetPackageSizes(package_blobs)
 
   # Optionally calculate total compressed and uncompressed package sizes.
   if 'far_total_name' in sizes_config:
@@ -394,7 +447,7 @@ def GetBinarySizes(args, sizes_config):
     print('%s: compressed size %d, uncompressed size %d' %
           (name, size.compressed, size.uncompressed))
 
-  return package_sizes
+  return package_sizes, package_blobs
 
 
 def main():
@@ -407,30 +460,19 @@ def main():
       help='Location of the build artifacts.',
   )
   parser.add_argument(
-      '--extract-dir',
-      help='Debugging option, specifies directory for extracted FAR files.'
-      'If present, extracted files will not be deleted after use.')
-  parser.add_argument(
       '--isolated-script-test-output',
       type=os.path.realpath,
       help='File to which simplified JSON results will be written.')
   parser.add_argument(
-      '--output-dir',
-      help='Optional directory for histogram output file.  This argument is '
-      'automatically supplied by the recipe infrastructure when this script '
-      'is invoked by a recipe call to api.chromium.runtest().')
+      '--size-plugin-json-path',
+      help='Optional path for json size data for the Gerrit binary size plugin',
+  )
   parser.add_argument(
       '--sizes-path',
       default=os.path.join('fuchsia', 'release', 'size_tests',
                            'fyi_sizes.json'),
       help='path to package size limits json file.  The path is relative to '
       'the workspace src directory')
-  parser.add_argument(
-      '--test-revision-cp',
-      help='Set the chromium commit point NNNNNN from a build property value '
-      'like "refs/heads/master@{#NNNNNNN}".  Intended for use in recipes with '
-      'the build property got_revision_cp',
-  )
   parser.add_argument('--verbose',
                       '-v',
                       action='store_true',
@@ -448,18 +490,9 @@ def main():
     for var in vars(args):
       print('  {}: {}'.format(var, getattr(args, var) or ''))
 
-  # Optionally prefix the output_dir to the histogram_path.
-  if args.output_dir and args.histogram_path:
-    args.histogram_path = os.path.join(args.output_dir, args.histogram_path)
-
   if not os.path.isdir(args.build_out_dir):
     raise Exception('Could not find build output directory "%s".' %
                     args.build_out_dir)
-
-  if args.extract_dir and not os.path.isdir(args.extract_dir):
-    raise Exception(
-        'Could not find FAR file extraction output directory "%s".' %
-        args.extract_dir)
 
   with open(os.path.join(DIR_SOURCE_ROOT, args.sizes_path)) as sizes_file:
     sizes_config = json.load(sizes_file)
@@ -478,6 +511,8 @@ def main():
   test_completed = False
   all_tests_passed = False
   test_status = {}
+  package_sizes = {}
+  package_blobs = {}
   sizes_histogram = []
 
   results_directory = None
@@ -488,7 +523,7 @@ def main():
       os.makedirs(results_directory)
 
   try:
-    package_sizes = GetBinarySizes(args, sizes_config)
+    package_sizes, package_blobs = GetBinarySizesAndBlobs(args, sizes_config)
     sizes_histogram = CreateSizesHistogram(package_sizes)
     test_completed = True
   except:
@@ -496,19 +531,23 @@ def main():
     traceback.print_tb(trace)
     print(str(value))
   finally:
-    if test_completed:
-      all_tests_passed, test_status = GetTestStatus(package_sizes, sizes_config,
-                                                    test_completed)
+    all_tests_passed, test_status = GetTestStatus(package_sizes, sizes_config,
+                                                  test_completed)
 
     if results_directory:
       WriteTestResults(os.path.join(results_directory, 'test_results.json'),
                        test_completed, test_status, timestamp)
       with open(os.path.join(results_directory, 'perf_results.json'), 'w') as f:
         json.dump(sizes_histogram, f)
+      WritePackageBlobsJson(
+          os.path.join(results_directory, 'package_blobs.json'), package_blobs)
 
     if args.isolated_script_test_output:
       WriteTestResults(args.isolated_script_test_output, test_completed,
                        test_status, timestamp)
+
+    if args.size_plugin_json_path:
+      WriteGerritPluginSizeData(args.size_plugin_json_path, package_sizes)
 
     return 0 if all_tests_passed else 1
 

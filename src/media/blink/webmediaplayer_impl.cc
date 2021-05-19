@@ -67,7 +67,6 @@
 #include "third_party/blink/public/platform/web_media_source.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/platform/web_texttrack_metadata.h"
@@ -2460,9 +2459,10 @@ void WebMediaPlayerImpl::OnFrameHidden() {
                      base::Unretained(compositor_.get()), !IsHidden()));
 }
 
-void WebMediaPlayerImpl::OnFrameClosed() {
+void WebMediaPlayerImpl::SuspendForFrameClosed() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  was_suspended_for_frame_closed_ = true;
   UpdatePlayState();
 }
 
@@ -2472,6 +2472,8 @@ void WebMediaPlayerImpl::OnFrameShown() {
 
   // Foreground videos don't require user gesture to continue playback.
   video_locked_when_paused_when_hidden_ = false;
+
+  was_suspended_for_frame_closed_ = false;
 
   if (watch_time_reporter_)
     watch_time_reporter_->OnShown();
@@ -2511,18 +2513,17 @@ void WebMediaPlayerImpl::OnIdleTimeout() {
   UpdatePlayState();
 }
 
-void WebMediaPlayerImpl::OnVolumeMultiplierUpdate(double multiplier) {
+void WebMediaPlayerImpl::SetVolumeMultiplier(double multiplier) {
   volume_multiplier_ = multiplier;
   SetVolume(volume_);
 }
 
-void WebMediaPlayerImpl::OnBecamePersistentVideo(bool value) {
-  client_->OnBecamePersistentVideo(value);
+void WebMediaPlayerImpl::SetPersistentState(bool value) {
   overlay_info_.is_persistent_video = value;
   MaybeSendOverlayInfoToDecoder();
 }
 
-void WebMediaPlayerImpl::OnPowerExperimentState(bool state) {
+void WebMediaPlayerImpl::SetPowerExperimentState(bool state) {
   if (power_status_helper_)
     power_status_helper_->UpdatePowerExperimentState(state);
 }
@@ -2975,6 +2976,11 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
       delegate_->PlayerGone(delegate_id_);
       break;
     case DelegateState::PLAYING: {
+      // When delegate get PlayerGone it removes all state, need to make sure
+      // it is up-to-date before calling DidPlay.
+      delegate_->DidMediaMetadataChange(
+          delegate_id_, delegate_has_audio_, HasVideo(),
+          DurationToMediaContentType(GetPipelineMediaDuration()));
       if (HasVideo())
         client_->DidPlayerSizeChange(NaturalSize());
       client_->DidPlayerStartPlaying();
@@ -3041,7 +3047,7 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
                                                      bool is_backgrounded) {
   PlayState result;
 
-  bool must_suspend = delegate_->IsFrameClosed();
+  bool must_suspend = was_suspended_for_frame_closed_;
   bool is_stale = delegate_->IsStale(delegate_id_);
 
   if (stale_state_override_for_testing_.has_value() &&
@@ -3370,7 +3376,7 @@ void WebMediaPlayerImpl::UpdateSecondaryProperties() {
 bool WebMediaPlayerImpl::IsHidden() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  return delegate_->IsFrameHidden() && !delegate_->IsFrameClosed();
+  return delegate_->IsFrameHidden() && !was_suspended_for_frame_closed_;
 }
 
 bool WebMediaPlayerImpl::IsStreaming() const {

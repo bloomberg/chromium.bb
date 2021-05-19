@@ -12,11 +12,10 @@ import android.view.ViewGroup;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
-import org.chromium.chrome.browser.feed.FeedV1ActionOptions;
 import org.chromium.chrome.browser.feed.StreamLifecycleManager;
-import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ScrollableContainerDelegate;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -101,31 +100,20 @@ class ExploreSurfaceCoordinator implements FeedSurfaceDelegate {
         SectionHeaderView sectionHeaderView = null;
         if (hasHeader) {
             LayoutInflater inflater = LayoutInflater.from(mActivity);
-            // This should be kept in sync with NewTabPage#initializeMainView().
-            if (FeedFeatures.isV2Enabled()) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)) {
                 sectionHeaderView = (SectionHeaderView) inflater.inflate(
-                        R.layout.new_tab_page_feed_v2_expandable_header, null, false);
-
-            } else if (FeedFeatures.isReportingUserActions()) {
-                sectionHeaderView = (SectionHeaderView) inflater.inflate(
-                        R.layout.new_tab_page_snippets_expandable_header_with_menu, null, false);
+                        org.chromium.chrome.R.layout.new_tab_page_multi_feed_header, null, false);
             } else {
-                sectionHeaderView =
-                        (SectionHeaderView) inflater.inflate(R.layout.ss_feed_header, null, false);
+                sectionHeaderView = (SectionHeaderView) inflater.inflate(
+                        org.chromium.chrome.R.layout.new_tab_page_feed_v2_expandable_header, null,
+                        false);
             }
         }
 
-        FeedV1ActionOptions feedActionOptions = new FeedV1ActionOptions();
-        feedActionOptions.inhibitDownload = true;
-        feedActionOptions.inhibitOpenInIncognito = true;
-        feedActionOptions.inhibitOpenInNewTab = true;
-        feedActionOptions.inhibitLearnMore = true;
-
         FeedSurfaceCoordinator feedSurfaceCoordinator = new FeedSurfaceCoordinator(mActivity,
-                mActivity.getSnackbarManager(), mActivity.getTabModelSelector(),
-                mActivity.getWindowAndroid(), null, null, sectionHeaderView, feedActionOptions,
-                isInNightMode, this, mExploreSurfaceNavigationDelegate, profile, isPlaceholderShown,
-                bottomSheetController, mActivity.getShareDelegateSupplier(),
+                mActivity.getSnackbarManager(), mActivity.getWindowAndroid(), null, null,
+                sectionHeaderView, isInNightMode, this, mExploreSurfaceNavigationDelegate, profile,
+                isPlaceholderShown, bottomSheetController, mActivity.getShareDelegateSupplier(),
                 scrollableContainerDelegate);
         feedSurfaceCoordinator.getView().setId(R.id.start_surface_explore_view);
         return feedSurfaceCoordinator;

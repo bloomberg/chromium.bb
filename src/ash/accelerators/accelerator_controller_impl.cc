@@ -10,9 +10,11 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
-#include "ash/accelerators/accelerator_confirmation_dialog.h"
 #include "ash/accelerators/debug_commands.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/magnifier/docked_magnifier_controller_impl.h"
+#include "ash/accessibility/magnifier/magnification_controller.h"
+#include "ash/accessibility/ui/accessibility_confirmation_dialog.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/model/assistant_ui_model.h"
@@ -28,12 +30,9 @@
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/focus_cycler.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/ime_switch_type.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/magnifier/docked_magnifier_controller_impl.h"
-#include "ash/magnifier/magnification_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_profile_uma.h"
@@ -188,17 +187,16 @@ void RecordTabletVolumeAdjustTypeHistogram(TabletModeVolumeAdjustType type) {
 
 // Ensures that there are no word breaks at the "+"s in the shortcut texts such
 // as "Ctrl+Shift+Space".
-void EnsureNoWordBreaks(base::string16* shortcut_text) {
-  std::vector<base::string16> keys =
-      base::SplitString(*shortcut_text, base::ASCIIToUTF16("+"),
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+void EnsureNoWordBreaks(std::u16string* shortcut_text) {
+  std::vector<std::u16string> keys = base::SplitString(
+      *shortcut_text, u"+", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   if (keys.size() < 2U)
     return;
 
   // The plus sign surrounded by the word joiner to guarantee an non-breaking
   // shortcut.
-  const base::string16 non_breaking_plus =
+  const std::u16string non_breaking_plus =
       base::UTF8ToUTF16("\xe2\x81\xa0+\xe2\x81\xa0");
   shortcut_text->clear();
   for (size_t i = 0; i < keys.size() - 1; ++i) {
@@ -211,11 +209,11 @@ void EnsureNoWordBreaks(base::string16* shortcut_text) {
 
 // Gets the notification message after it formats it in such a way that there
 // are no line breaks in the middle of the shortcut texts.
-base::string16 GetNotificationText(int message_id,
+std::u16string GetNotificationText(int message_id,
                                    int old_shortcut_id,
                                    int new_shortcut_id) {
-  base::string16 old_shortcut = l10n_util::GetStringUTF16(old_shortcut_id);
-  base::string16 new_shortcut = l10n_util::GetStringUTF16(new_shortcut_id);
+  std::u16string old_shortcut = l10n_util::GetStringUTF16(old_shortcut_id);
+  std::u16string new_shortcut = l10n_util::GetStringUTF16(new_shortcut_id);
   EnsureNoWordBreaks(&old_shortcut);
   EnsureNoWordBreaks(&new_shortcut);
 
@@ -227,7 +225,7 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
                                            int message_id,
                                            int old_shortcut_id,
                                            int new_shortcut_id) {
-  const base::string16 message =
+  const std::u16string message =
       GetNotificationText(message_id, old_shortcut_id, new_shortcut_id);
   auto delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
@@ -239,7 +237,7 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
   std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       l10n_util::GetStringUTF16(IDS_DEPRECATED_SHORTCUT_TITLE), message,
-      base::string16(), GURL(),
+      std::u16string(), GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierAccelerator),
       message_center::RichNotificationData(), std::move(delegate),
@@ -248,7 +246,7 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
       std::move(notification));
 }
 
-void ShowToast(std::string id, const base::string16& text) {
+void ShowToast(std::string id, const std::u16string& text) {
   ToastData toast(id, text, kToastDurationMs, base::nullopt,
                   /*visible_on_lock_screen=*/true);
   Shell::Get()->toast_manager()->Show(toast);
@@ -298,32 +296,22 @@ void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
       WindowCycleController::WindowCyclingDirection::kForward);
 }
 
-void HandleActivateDesk(const ui::Accelerator& accelerator) {
+void HandleActivateDesk(const ui::Accelerator& accelerator,
+                        bool activate_left) {
   auto* desks_controller = DesksController::Get();
   const bool success = desks_controller->ActivateAdjacentDesk(
-      /*going_left=*/
-      (accelerator.key_code() == ui::VKEY_OEM_4 ||
-       accelerator.key_code() == ui::VKEY_LEFT),
-      DesksSwitchSource::kDeskSwitchShortcut);
+      activate_left, DesksSwitchSource::kDeskSwitchShortcut);
   if (!success)
     return;
 
-  switch (accelerator.key_code()) {
-    case ui::VKEY_OEM_4:
-    case ui::VKEY_LEFT:
-      base::RecordAction(base::UserMetricsAction("Accel_Desks_ActivateLeft"));
-      break;
-    case ui::VKEY_OEM_6:
-    case ui::VKEY_RIGHT:
-      base::RecordAction(base::UserMetricsAction("Accel_Desks_ActivateRight"));
-      break;
-
-    default:
-      NOTREACHED();
+  if (activate_left) {
+    base::RecordAction(base::UserMetricsAction("Accel_Desks_ActivateLeft"));
+  } else {
+    base::RecordAction(base::UserMetricsAction("Accel_Desks_ActivateRight"));
   }
 }
 
-void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
+void HandleMoveActiveItem(const ui::Accelerator& accelerator, bool going_left) {
   auto* desks_controller = DesksController::Get();
   if (desks_controller->AreDesksBeingModified())
     return;
@@ -342,14 +330,10 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
     return;
 
   Desk* target_desk = nullptr;
-  bool going_left = accelerator.key_code() == ui::VKEY_OEM_4 ||
-                    accelerator.key_code() == ui::VKEY_LEFT;
   if (going_left) {
     target_desk = desks_controller->GetPreviousDesk();
     base::RecordAction(base::UserMetricsAction("Accel_Desks_MoveWindowLeft"));
   } else {
-    DCHECK(accelerator.key_code() == ui::VKEY_OEM_6 ||
-           accelerator.key_code() == ui::VKEY_RIGHT);
     target_desk = desks_controller->GetNextDesk();
     base::RecordAction(base::UserMetricsAction("Accel_Desks_MoveWindowRight"));
   }
@@ -358,9 +342,8 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
     return;
 
   if (!in_overview) {
-    desks_animations::PerformWindowMoveToDeskAnimation(
-        window_to_move,
-        /*going_left=*/going_left);
+    desks_animations::PerformWindowMoveToDeskAnimation(window_to_move,
+                                                       going_left);
   }
 
   if (!desks_controller->MoveWindowFromActiveDeskTo(
@@ -532,18 +515,18 @@ bool CanHandleNewIncognitoWindow() {
 
 void HandleNewIncognitoWindow() {
   base::RecordAction(UserMetricsAction("Accel_New_Incognito_Window"));
-  NewWindowDelegate::GetInstance()->NewWindow(true /* is_incognito */);
+  NewWindowDelegate::GetPrimary()->NewWindow(/*is_incognito=*/true);
 }
 
 void HandleNewTab(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_T)
     base::RecordAction(UserMetricsAction("Accel_NewTab_T"));
-  NewWindowDelegate::GetInstance()->NewTab();
+  NewWindowDelegate::GetPrimary()->NewTab();
 }
 
 void HandleNewWindow() {
   base::RecordAction(UserMetricsAction("Accel_New_Window"));
-  NewWindowDelegate::GetInstance()->NewWindow(false /* is_incognito */);
+  NewWindowDelegate::GetPrimary()->NewWindow(/*is_incognito=*/false);
 }
 
 bool CanCycleInputMethod() {
@@ -732,7 +715,7 @@ void HandleRotateScreen() {
 
 void HandleRestoreTab() {
   base::RecordAction(UserMetricsAction("Accel_Restore_Tab"));
-  NewWindowDelegate::GetInstance()->RestoreTab();
+  NewWindowDelegate::GetPrimary()->RestoreTab();
 }
 
 // Rotate the active window.
@@ -831,7 +814,7 @@ void HandleToggleSystemTrayBubbleInternal(bool focus_message_center) {
   if (tray->IsBubbleShown()) {
     tray->CloseBubble();
   } else {
-    tray->ShowBubble(false /* show_by_click */);
+    tray->ShowBubble();
     tray->ActivateBubble();
 
     if (focus_message_center)
@@ -1015,7 +998,7 @@ void HandleShowImeMenuBubble() {
     ImeMenuTray* ime_menu_tray = status_area_widget->ime_menu_tray();
     if (ime_menu_tray && ime_menu_tray->GetVisible() &&
         !ime_menu_tray->GetBubbleView()) {
-      ime_menu_tray->ShowBubble(false /* show_by_click */);
+      ime_menu_tray->ShowBubble();
     }
   }
 }
@@ -1071,7 +1054,7 @@ PaletteTray* GetPaletteTray() {
 
 void HandleShowStylusTools() {
   base::RecordAction(UserMetricsAction("Accel_Show_Stylus_Tools"));
-  GetPaletteTray()->ShowBubble(false /* show_by_click */);
+  GetPaletteTray()->ShowBubble();
 }
 
 bool CanHandleShowStylusTools() {
@@ -1270,13 +1253,13 @@ bool CanHandleToggleOverview() {
   return true;
 }
 
-void CreateAndShowStickyNotification(const base::string16& title,
-                                     const base::string16& message,
+void CreateAndShowStickyNotification(const std::u16string& title,
+                                     const std::u16string& message,
                                      const std::string& notification_id,
                                      const gfx::VectorIcon& icon) {
   std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title, message,
-      base::string16() /* display source */, GURL(),
+      std::u16string() /* display source */, GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierAccelerator),
       message_center::RichNotificationData(), nullptr, icon,
@@ -1300,7 +1283,7 @@ void NotifyAccessibilityFeatureDisabledByAdmin(
     int feature_name_id,
     bool feature_state,
     const std::string& notification_id) {
-  const base::string16 organization_manager =
+  const std::u16string organization_manager =
       base::UTF8ToUTF16(Shell::Get()
                             ->system_tray_model()
                             ->enterprise_domain()
@@ -1681,7 +1664,7 @@ AcceleratorControllerImpl::TestApi::GetDeprecatedAcceleratorData(
   return it->second;
 }
 
-AcceleratorConfirmationDialog*
+AccessibilityConfirmationDialog*
 AcceleratorControllerImpl::TestApi::GetConfirmationDialog() {
   return controller_->confirmation_dialog_.get();
 }
@@ -1700,7 +1683,7 @@ void AcceleratorControllerImpl::TestApi::SetSideVolumeButtonLocation(
 
 AcceleratorControllerImpl::AcceleratorControllerImpl()
     : accelerator_manager_(std::make_unique<ui::AcceleratorManager>()),
-      accelerator_history_(std::make_unique<ui::AcceleratorHistory>()),
+      accelerator_history_(std::make_unique<AcceleratorHistoryImpl>()),
       side_volume_button_location_file_path_(
           base::FilePath(kSideVolumeButtonLocationFilePath)) {
   Init();
@@ -1747,7 +1730,7 @@ bool AcceleratorControllerImpl::Process(const ui::Accelerator& accelerator) {
 
 bool AcceleratorControllerImpl::IsDeprecated(
     const ui::Accelerator& accelerator) const {
-  return deprecated_accelerators_.count(accelerator) != 0;
+  return base::Contains(deprecated_accelerators_, accelerator);
 }
 
 bool AcceleratorControllerImpl::PerformActionIfEnabled(
@@ -1769,7 +1752,7 @@ bool AcceleratorControllerImpl::OnMenuAccelerator(
     return false;  // Menu shouldn't be closed for an invalid accelerator.
 
   AcceleratorAction action = itr->second;
-  return actions_keeping_menu_open_.count(action) == 0;
+  return !base::Contains(actions_keeping_menu_open_, action);
 }
 
 bool AcceleratorControllerImpl::IsRegistered(
@@ -1777,7 +1760,7 @@ bool AcceleratorControllerImpl::IsRegistered(
   return accelerator_manager_->IsRegistered(accelerator);
 }
 
-ui::AcceleratorHistory* AcceleratorControllerImpl::GetAcceleratorHistory() {
+AcceleratorHistoryImpl* AcceleratorControllerImpl::GetAcceleratorHistory() {
   return accelerator_history_.get();
 }
 
@@ -1787,7 +1770,7 @@ bool AcceleratorControllerImpl::IsPreferred(
   if (iter == accelerators_.end())
     return false;  // not an accelerator.
 
-  return preferred_actions_.find(iter->second) != preferred_actions_.end();
+  return base::Contains(preferred_actions_, iter->second);
 }
 
 bool AcceleratorControllerImpl::IsReserved(
@@ -1796,7 +1779,7 @@ bool AcceleratorControllerImpl::IsReserved(
   if (iter == accelerators_.end())
     return false;  // not an accelerator.
 
-  return reserved_actions_.find(iter->second) != reserved_actions_.end();
+  return base::Contains(reserved_actions_, iter->second);
 }
 
 AcceleratorControllerImpl::AcceleratorProcessingRestriction
@@ -1870,7 +1853,10 @@ void AcceleratorControllerImpl::Init() {
 
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
 
-  if (::features::IsNewShortcutMappingEnabled()) {
+  if (::features::IsImprovedKeyboardShortcutsEnabled()) {
+    RegisterAccelerators(kEnableWithPositionalAcceleratorsData,
+                         kEnableWithPositionalAcceleratorsDataLength);
+  } else if (::features::IsNewShortcutMappingEnabled()) {
     RegisterAccelerators(kEnableWithNewMappingAcceleratorData,
                          kEnableWithNewMappingAcceleratorDataLength);
   } else {
@@ -1933,7 +1919,7 @@ void AcceleratorControllerImpl::RegisterDeprecatedAccelerators() {
 bool AcceleratorControllerImpl::CanPerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) const {
-  if (accelerator.IsRepeat() && !repeatable_actions_.count(action))
+  if (accelerator.IsRepeat() && !base::Contains(repeatable_actions_, action))
     return false;
 
   AcceleratorProcessingRestriction restriction =
@@ -1951,8 +1937,10 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case CYCLE_BACKWARD_MRU:
     case CYCLE_FORWARD_MRU:
       return CanHandleCycleMru(accelerator);
-    case DESKS_ACTIVATE_DESK:
-    case DESKS_MOVE_ACTIVE_ITEM:
+    case DESKS_ACTIVATE_DESK_LEFT:
+    case DESKS_ACTIVATE_DESK_RIGHT:
+    case DESKS_MOVE_ACTIVE_ITEM_LEFT:
+    case DESKS_MOVE_ACTIVE_ITEM_RIGHT:
     case DESKS_NEW_DESK:
     case DESKS_REMOVE_CURRENT_DESK:
       return true;
@@ -2150,11 +2138,17 @@ void AcceleratorControllerImpl::PerformAction(
     case CYCLE_FORWARD_MRU:
       HandleCycleForwardMRU(accelerator);
       break;
-    case DESKS_ACTIVATE_DESK:
-      HandleActivateDesk(accelerator);
+    case DESKS_ACTIVATE_DESK_LEFT:
+      HandleActivateDesk(accelerator, /*activate_left=*/true);
       break;
-    case DESKS_MOVE_ACTIVE_ITEM:
-      HandleMoveActiveItem(accelerator);
+    case DESKS_ACTIVATE_DESK_RIGHT:
+      HandleActivateDesk(accelerator, /*activate_left=*/false);
+      break;
+    case DESKS_MOVE_ACTIVE_ITEM_LEFT:
+      HandleMoveActiveItem(accelerator, /*going_left=*/true);
+      break;
+    case DESKS_MOVE_ACTIVE_ITEM_RIGHT:
+      HandleMoveActiveItem(accelerator, /*going_left=*/false);
       break;
     case DESKS_NEW_DESK:
       HandleNewDesk();
@@ -2494,18 +2488,15 @@ AcceleratorControllerImpl::AcceleratorProcessingRestriction
 AcceleratorControllerImpl::GetAcceleratorProcessingRestriction(
     int action) const {
   if (Shell::Get()->screen_pinning_controller()->IsPinned() &&
-      actions_allowed_in_pinned_mode_.find(action) ==
-          actions_allowed_in_pinned_mode_.end()) {
+      !base::Contains(actions_allowed_in_pinned_mode_, action)) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
   if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted() &&
-      actions_allowed_at_login_screen_.find(action) ==
-          actions_allowed_at_login_screen_.end()) {
+      !base::Contains(actions_allowed_at_login_screen_, action)) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
   if (Shell::Get()->session_controller()->IsScreenLocked() &&
-      actions_allowed_at_lock_screen_.find(action) ==
-          actions_allowed_at_lock_screen_.end()) {
+      !base::Contains(actions_allowed_at_lock_screen_, action)) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
   if (Shell::Get()->power_button_controller()->IsMenuOpened() &&
@@ -2513,13 +2504,11 @@ AcceleratorControllerImpl::GetAcceleratorProcessingRestriction(
     return RESTRICTION_PREVENT_PROCESSING;
   }
   if (Shell::Get()->session_controller()->IsRunningInAppMode() &&
-      actions_allowed_in_app_mode_.find(action) ==
-          actions_allowed_in_app_mode_.end()) {
+      !base::Contains(actions_allowed_in_app_mode_, action)) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
   if (Shell::IsSystemModalWindowOpen() &&
-      actions_allowed_at_modal_window_.find(action) ==
-          actions_allowed_at_modal_window_.end()) {
+      !base::Contains(actions_allowed_at_modal_window_, action)) {
     // Note we prevent the shortcut from propagating so it will not
     // be passed to the modal window. This is important for things like
     // Alt+Tab that would cause an undesired effect in the modal window by
@@ -2552,7 +2541,7 @@ AcceleratorControllerImpl::MaybeDeprecatedAcceleratorPressed(
   // This action is associated with new and deprecated accelerators, find which
   // one is |accelerator|.
   const DeprecatedAcceleratorData* data = itr->second;
-  if (!deprecated_accelerators_.count(accelerator)) {
+  if (!base::Contains(deprecated_accelerators_, accelerator)) {
     // This is a new accelerator replacing the old deprecated one.
     // Record UMA stats and proceed normally to perform it.
     RecordUmaHistogram(data->uma_histogram_name, NEW_USED);
@@ -2585,9 +2574,10 @@ void AcceleratorControllerImpl::MaybeShowConfirmationDialog(
   if (confirmation_dialog_)
     return;
 
-  auto* dialog = new AcceleratorConfirmationDialog(
-      window_title_text_id, dialog_text_id, std::move(on_accept_callback),
-      std::move(on_cancel_callback));
+  auto* dialog = new AccessibilityConfirmationDialog(
+      l10n_util::GetStringUTF16(window_title_text_id),
+      l10n_util::GetStringUTF16(dialog_text_id), std::move(on_accept_callback),
+      std::move(on_cancel_callback), /* on close */ base::DoNothing());
   confirmation_dialog_ = dialog->GetWeakPtr();
 }
 

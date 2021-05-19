@@ -14,10 +14,10 @@ Polymer({
   ],
 
   properties: {
-    /** @type {string} */
-    iccid: {
-      type: String,
-      value: '',
+    /** @type {?OncMojo.NetworkStateProperties} */
+    networkState: {
+      type: Object,
+      value: null,
     },
 
     /** @type {boolean} */
@@ -31,18 +31,6 @@ Polymer({
       type: String,
       value: '',
     },
-
-    /** @private {string} */
-    errorMessage_: {
-      type: String,
-      value: '',
-    },
-
-    /** @private {boolean} */
-    isRemoveInProgress_: {
-      type: Boolean,
-      value: false,
-    }
   },
 
   /** @private {?chromeos.cellularSetup.mojom.ESimProfileRemote} */
@@ -55,11 +43,20 @@ Polymer({
 
   /** @private */
   async init_() {
-    this.esimProfileRemote_ = await cellular_setup.getESimProfile(this.iccid);
-    const profileProperties = await this.esimProfileRemote_.getProperties();
-    this.esimProfileName_ = profileProperties.properties.nickname ?
-        this.convertString16ToJSString_(profileProperties.properties.nickname) :
-        this.convertString16ToJSString_(profileProperties.properties.name);
+    if (!(this.networkState &&
+          this.networkState.type ===
+              chromeos.networkConfig.mojom.NetworkType.kCellular)) {
+      return;
+    }
+    this.esimProfileRemote_ = await cellular_setup.getESimProfile(
+        this.networkState.typeState.cellular.iccid);
+    // Fail gracefully if init is incomplete, see crbug/1194729.
+    if (!this.esimProfileRemote_) {
+      this.fire('show-error-toast', this.i18n('eSimRemoveProfileDialogError'));
+      this.$.dialog.close();
+      return;
+    }
+    this.esimProfileName_ = this.networkState.name;
   },
 
   /**
@@ -85,23 +82,21 @@ Polymer({
    * @private
    */
   onRemoveProfileTap_(event) {
-    this.isRemoveInProgress_ = true;
-    this.esimProfileRemote_.uninstallProfile().then(response => {
-      this.handleRemoveProfileResponse(response.result);
+    this.esimProfileRemote_.uninstallProfile().then((response) => {
+      if (response.result ===
+          chromeos.cellularSetup.mojom.ESimOperationResult.kFailure) {
+        this.fire(
+            'show-error-toast', this.i18n('eSimRemoveProfileDialogError'));
+      }
     });
-  },
-
-  /**
-   * @param {chromeos.cellularSetup.mojom.ESimOperationResult} result
-   * @private
-   */
-  handleRemoveProfileResponse(result) {
-    this.isRemoveInProgress_ = false;
-    if (result === chromeos.cellularSetup.mojom.ESimOperationResult.kFailure) {
-      this.errorMessage_ = this.i18n('eSimRemoveProfileDialogError');
-      return;
-    }
     this.$.dialog.close();
+    const params = new URLSearchParams;
+    params.append(
+        'type',
+        OncMojo.getNetworkTypeString(
+            chromeos.networkConfig.mojom.NetworkType.kCellular));
+    settings.Router.getInstance().setCurrentRoute(
+        settings.routes.INTERNET_NETWORKS, params, /*isPopState=*/ true);
   },
 
   /**

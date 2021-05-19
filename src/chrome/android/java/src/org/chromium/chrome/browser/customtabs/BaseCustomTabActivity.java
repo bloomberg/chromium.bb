@@ -21,11 +21,12 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeApplicationImpl;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.app.tabmodel.TabModelOrchestrator;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.WebappExtras;
 import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.browserservices.ui.trustedwebactivity.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
@@ -39,8 +40,8 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTab
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
-import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
@@ -54,7 +55,6 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.webapps.SameTaskWebApkActivity;
 import org.chromium.chrome.browser.webapps.WebappActivityCoordinator;
-import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 
 /**
@@ -64,6 +64,9 @@ import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndr
  */
 public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTabActivityComponent> {
     protected static Integer sOverrideCoreCountForTesting;
+
+    // Fallback study name used for experiments ids.
+    private static final String GSA_FALLBACK_STUDY_NAME = "GsaExperiments";
 
     protected BrowserServicesIntentDataProvider mIntentDataProvider;
     protected CustomTabDelegateFactory mDelegateFactory;
@@ -167,7 +170,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                 mIntentDataProvider, getStartupTabPreloader(), mNightModeStateController,
                 intentIgnoringCriterion, getTopUiThemeColorProvider());
         BaseCustomTabActivityComponent component =
-                ChromeApplication.getComponent().createBaseCustomTabActivityComponent(
+                ChromeApplicationImpl.getComponent().createBaseCustomTabActivityComponent(
                         commonsModule, baseCustomTabsModule);
 
         mDelegateFactory = component.resolveTabDelegateFactory();
@@ -349,7 +352,6 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                 mIntentDataProvider.shouldShowShareMenuItem(),
                 mIntentDataProvider.shouldShowStarButton(),
                 mIntentDataProvider.shouldShowDownloadButton(), mIntentDataProvider.isIncognito(),
-                getModalDialogManager(), new WebFeedBridge(),
                 mIntentDataProvider.shouldShowOpenInChromeMenuItem());
     }
 
@@ -516,5 +518,18 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
      */
     public boolean isInTwaMode() {
         return mTwaCoordinator == null ? false : mTwaCoordinator.shouldUseAppModeUi();
+    }
+
+    @Override
+    public void maybePreconnect() {
+        // The ids need to be set early on, this way prewarming will pick them up.
+        int[] experimentIds = mIntentDataProvider.getGsaExperimentIds();
+        if (experimentIds != null) {
+            // When ids are set through the intent, we don't want them to override the existing ids.
+            boolean override = false;
+            UmaSessionStats.registerExternalExperiment(
+                    GSA_FALLBACK_STUDY_NAME, experimentIds, override);
+        }
+        super.maybePreconnect();
     }
 }

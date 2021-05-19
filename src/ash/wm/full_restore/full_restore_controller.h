@@ -9,18 +9,33 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
+#include "components/full_restore/full_restore_info.h"
 #include "components/full_restore/window_info.h"
 
 class PrefService;
+
+namespace aura {
+class Window;
+}
+
+namespace views {
+class Widget;
+}
 
 namespace ash {
 
 class WindowState;
 
-class ASH_EXPORT FullRestoreController : public SessionObserver,
-                                         public TabletModeObserver {
+class ASH_EXPORT FullRestoreController
+    : public SessionObserver,
+      public TabletModeObserver,
+      public full_restore::FullRestoreInfo::Observer {
  public:
+  using ReadWindowCallback =
+      base::RepeatingCallback<std::unique_ptr<full_restore::WindowInfo>(
+          aura::Window*)>;
   using SaveWindowCallback =
       base::RepeatingCallback<void(const full_restore::WindowInfo&)>;
 
@@ -37,8 +52,10 @@ class ASH_EXPORT FullRestoreController : public SessionObserver,
   // calculated in SaveWindowImpl.
   void SaveWindow(WindowState* window_state);
 
-  // Saves all windows in the MRU window tracker.
-  void SaveAllWindows();
+  // Called from MruWindowTracker when |gained_active| gets activation. This is
+  // not done as an observer to ensure changes to the MRU list get handled first
+  // before this is called.
+  void OnWindowActivated(aura::Window* gained_active);
 
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
@@ -48,8 +65,16 @@ class ASH_EXPORT FullRestoreController : public SessionObserver,
   void OnTabletModeEnded() override;
   void OnTabletControllerDestroyed() override;
 
+  // full_restore::FullRestoreInfo::Observer:
+  void OnAppLaunched(aura::Window* window) override;
+  void OnWidgetInitialized(views::Widget* widget) override;
+
  private:
   friend class FullRestoreControllerTest;
+
+  // Gets all windows on all desk in the MRU window tracker and saves them to
+  // file.
+  void SaveAllWindows();
 
   // Calls full_restore::FullRestoreSaveHandler to save to file. The handler has
   // timer to prevent too many writes, but we should limit calls regardless if
@@ -60,15 +85,23 @@ class ASH_EXPORT FullRestoreController : public SessionObserver,
   void SaveWindowImpl(WindowState* window_state,
                       base::Optional<int> activation_index);
 
+  // Sets a callback for testing that will be read from in
+  // `OnWidgetInitialized()`.
+  void SetReadWindowCallbackForTesting(ReadWindowCallback callback);
+
   // Sets a callback for testing that will be fired immediately when
   // SaveWindowImpl is about to notify the full restore component we want to
   // write to file.
   void SetSaveWindowCallbackForTesting(SaveWindowCallback callback);
 
-  base::ScopedObservation<TabletModeController, TabletModeObserver>
-      tablet_mode_observeration_{this};
-
   ScopedSessionObserver scoped_session_observer_{this};
+
+  base::ScopedObservation<TabletModeController, TabletModeObserver>
+      tablet_mode_observation_{this};
+
+  base::ScopedObservation<full_restore::FullRestoreInfo,
+                          full_restore::FullRestoreInfo::Observer>
+      full_restore_info_observation_{this};
 };
 
 }  // namespace ash

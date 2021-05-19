@@ -22,6 +22,11 @@ source_set("base") {
   visibility = media_subcomponent_deps
   visibility += [ "//media" ]
 
+  if (!enable_library_cdms) {
+    # cdm_type_conversion is not part of media_subcomponent_deps.
+    visibility += [ "//media/cdm:cdm_type_conversion" ]
+  }
+
   # TODO(dalecurtis): Replace this with empty targets on non-mac so
   # we can just include //media/base/mac in media_subcomponent_deps.
   if (is_apple) {
@@ -265,8 +270,6 @@ source_set("base") {
     "seekable_buffer.h",
     "serial_runner.cc",
     "serial_runner.h",
-    "shared_memory_pool.cc",
-    "shared_memory_pool.h",
     "silent_sink_suspender.cc",
     "silent_sink_suspender.h",
     "simple_sync_token_client.cc",
@@ -324,8 +327,6 @@ source_set("base") {
     "video_encoder.h",
     "video_frame.cc",
     "video_frame.h",
-    "video_frame_feedback.cc",
-    "video_frame_feedback.h",
     "video_frame_layout.cc",
     "video_frame_layout.h",
     "video_frame_metadata.cc",
@@ -338,8 +339,6 @@ source_set("base") {
     "video_thumbnail_decoder.h",
     "video_transformation.cc",
     "video_transformation.h",
-    "video_types.cc",
-    "video_types.h",
     "video_util.cc",
     "video_util.h",
     "wait_and_replace_sync_token_client.cc",
@@ -592,7 +591,6 @@ source_set("unit_tests") {
     "renderer_factory_selector_unittest.cc",
     "seekable_buffer_unittest.cc",
     "serial_runner_unittest.cc",
-    "shared_memory_pool_unittest.cc",
     "silent_sink_suspender_unittest.cc",
     "sinc_resampler_unittest.cc",
     "status_unittest.cc",

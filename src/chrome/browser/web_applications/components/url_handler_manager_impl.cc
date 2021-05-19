@@ -9,73 +9,57 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/optional.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/url_handler_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_origin_association_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/prefs/pref_service.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/url_constants.h"
 
 namespace web_app {
 
 UrlHandlerManagerImpl::UrlHandlerManagerImpl(Profile* profile)
-    : UrlHandlerManager(profile),
-      association_manager_(std::make_unique<WebAppOriginAssociationManager>()) {
-}
+    : UrlHandlerManager(profile) {}
 
 UrlHandlerManagerImpl::~UrlHandlerManagerImpl() = default;
 
 // static
-std::vector<web_app::UrlHandlerLaunchParams>
-UrlHandlerManagerImpl::GetUrlHandlerMatches(
-    PrefService* local_state,
+std::vector<UrlHandlerLaunchParams> UrlHandlerManagerImpl::GetUrlHandlerMatches(
     const base::CommandLine& command_line) {
-  std::vector<web_app::UrlHandlerLaunchParams> results;
-
   if (!base::FeatureList::IsEnabled(blink::features::kWebAppEnableUrlHandlers))
-    return results;
+    return {};
 
   // Return early to not interfere with switch based app launches.
   if (command_line.HasSwitch(switches::kApp) ||
       command_line.HasSwitch(switches::kAppId)) {
-    return results;
+    return {};
   }
 
-  std::vector<GURL> urls;
-  for (const auto& arg : command_line.GetArgs()) {
-    GURL potential_url(arg);
-    if (potential_url.is_valid() && potential_url.IsStandard())
-      urls.push_back(potential_url);
-  }
   // Only handle commandline with single URL. If multiple URLs are found, return
   // early so they can be handled normally. If the OS calls the system default
   // browser to handle a URL activation, this is usually with a single URL.
-  if (urls.empty() || urls.size() > 1)
-    return results;
+  if (command_line.GetArgs().size() != 1)
+    return {};
 
-  if (!urls.front().SchemeIs(url::kHttpsScheme))
-    return results;
+#if defined(OS_WIN)
+  GURL url(base::WideToUTF16(command_line.GetArgs()[0]));
+#else
+  GURL url(command_line.GetArgs()[0]);
+#endif
 
-  // TODO(crbug/1072058): Refactor UrlHandlerPrefs to provide functions instead
-  // of being a class that can be instantiated.
-  UrlHandlerPrefs url_handler_prefs(local_state);
-  base::Optional<std::vector<UrlHandlerPrefs::Match>> prefs_matches =
-      url_handler_prefs.FindMatchingUrlHandlers(urls.front());
-  if (!prefs_matches || prefs_matches->empty())
-    return results;
+  if (!url.is_valid() || !url.IsStandard() || !url.SchemeIs(url::kHttpsScheme))
+    return {};
 
-  for (const auto& prefs_match : *prefs_matches) {
-    const auto& target_app_id = prefs_match.app_id;
-    const auto& target_profile_path = prefs_match.profile_path;
-    if (target_app_id.empty())
-      continue;
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return {};
 
-    results.emplace_back(target_profile_path, target_app_id, urls.front());
-  }
-  return results;
+  return url_handler_prefs::FindMatchingUrlHandlers(local_state, url);
 }
 
 void UrlHandlerManagerImpl::RegisterUrlHandlers(
@@ -94,7 +78,7 @@ void UrlHandlerManagerImpl::RegisterUrlHandlers(
     return;
   }
 
-  association_manager_->GetWebAppOriginAssociations(
+  association_manager().GetWebAppOriginAssociations(
       registrar()->GetAppManifestUrl(app_id), std::move(url_handlers),
       base::BindOnce(&UrlHandlerManagerImpl::OnDidGetAssociationsAtInstall,
                      weak_ptr_factory_.GetWeakPtr(), app_id,
@@ -106,47 +90,48 @@ void UrlHandlerManagerImpl::OnDidGetAssociationsAtInstall(
     base::OnceCallback<void(bool success)> callback,
     apps::UrlHandlers url_handlers) {
   if (!url_handlers.empty()) {
-    UrlHandlerPrefs url_handler_prefs(GetLocalState());
-    url_handler_prefs.AddWebApp(app_id, profile()->GetPath(),
-                                std::move(url_handlers));
+    url_handler_prefs::AddWebApp(g_browser_process->local_state(), app_id,
+                                 profile()->GetPath(), std::move(url_handlers));
   }
   std::move(callback).Run(true);
 }
 
 bool UrlHandlerManagerImpl::UnregisterUrlHandlers(const AppId& app_id) {
-  UrlHandlerPrefs url_handler_prefs(GetLocalState());
-  url_handler_prefs.RemoveWebApp(app_id, profile()->GetPath());
+  url_handler_prefs::RemoveWebApp(g_browser_process->local_state(), app_id,
+                                  profile()->GetPath());
   return true;
 }
 
-bool UrlHandlerManagerImpl::UpdateUrlHandlers(const AppId& app_id) {
+void UrlHandlerManagerImpl::UpdateUrlHandlers(
+    const AppId& app_id,
+    base::OnceCallback<void(bool success)> callback) {
   auto url_handlers = registrar()->GetAppUrlHandlers(app_id);
-  UrlHandlerPrefs url_handler_prefs(GetLocalState());
 
   if (!base::FeatureList::IsEnabled(
           blink::features::kWebAppEnableUrlHandlers)) {
-    url_handler_prefs.RemoveWebApp(app_id, profile()->GetPath());
-    return false;
-  } else {
-    url_handler_prefs.UpdateWebApp(app_id, profile()->GetPath(), url_handlers);
-    return true;
+    url_handler_prefs::RemoveWebApp(g_browser_process->local_state(), app_id,
+                                    profile()->GetPath());
+    std::move(callback).Run(false);
+    return;
   }
+
+  association_manager().GetWebAppOriginAssociations(
+      registrar()->GetAppManifestUrl(app_id), std::move(url_handlers),
+      base::BindOnce(&UrlHandlerManagerImpl::OnDidGetAssociationsAtUpdate,
+                     weak_ptr_factory_.GetWeakPtr(), app_id,
+                     std::move(callback)));
 }
 
-void UrlHandlerManagerImpl::SetLocalStateForTesting(PrefService* local_state) {
-  override_pref_service_ = local_state;
-}
-
-void UrlHandlerManagerImpl::SetAssociationManagerForTesting(
-    std::unique_ptr<WebAppOriginAssociationManager> manager) {
-  association_manager_ = std::move(manager);
-}
-
-PrefService* UrlHandlerManagerImpl::GetLocalState() {
-  if (override_pref_service_)
-    return override_pref_service_;
-
-  return g_browser_process->local_state();
+void UrlHandlerManagerImpl::OnDidGetAssociationsAtUpdate(
+    const AppId& app_id,
+    base::OnceCallback<void(bool success)> callback,
+    apps::UrlHandlers url_handlers) {
+  // TODO(crbug/1072058): Only overwrite existing url_handlers if associations
+  // changed. Allow this after user permission is implemented.
+  url_handler_prefs::UpdateWebApp(g_browser_process->local_state(), app_id,
+                                  profile()->GetPath(),
+                                  std::move(url_handlers));
+  std::move(callback).Run(true);
 }
 
 }  // namespace web_app

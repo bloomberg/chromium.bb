@@ -45,8 +45,27 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/screens/terms_of_service_screen.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
+#include "chrome/browser/ash/login/session/user_session_manager_test_api.h"
+#include "chrome/browser/ash/login/signin_specifics.h"
+#include "chrome/browser/ash/login/test/js_checker.h"
+#include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/ash/login/test/oobe_base_test.h"
+#include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
+#include "chrome/browser/ash/login/test/test_predicate_waiter.h"
+#include "chrome/browser/ash/login/test/webview_content_extractor.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/webui_login_view.h"
+#include "chrome/browser/ash/login/users/avatar/user_image_manager.h"
+#include "chrome/browser/ash/login/users/avatar/user_image_manager_impl.h"
+#include "chrome/browser/ash/login/users/avatar/user_image_manager_test_util.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager_impl.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
@@ -54,25 +73,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
-#include "chrome/browser/chromeos/login/signin_specifics.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
-#include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
-#include "chrome/browser/chromeos/login/test/webview_content_extractor.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image_manager_test_util.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -347,7 +347,7 @@ TestingUpdateManifestProvider::HandleRequest(
   base::AutoLock auto_lock(lock_);
   const GURL url("http://localhost" + request.relative_url);
   if (url.path() != relative_update_url_)
-    return std::unique_ptr<net::test_server::HttpResponse>();
+    return nullptr;
 
   std::string content = kUpdateManifestHeader;
   for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
@@ -384,7 +384,7 @@ bool DoesInstallFailureReferToId(const std::string& id,
                                  const content::NotificationDetails& details) {
   return content::Details<const extensions::CrxInstallError>(details)
              ->message()
-             .find(base::UTF8ToUTF16(id)) != base::string16::npos;
+             .find(base::UTF8ToUTF16(id)) != std::u16string::npos;
 }
 
 bool IsSessionStarted() {
@@ -1028,7 +1028,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
   ASSERT_TRUE(profile);
   EXPECT_FALSE(
       IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount(
-          signin::ConsentLevel::kNotRequired));
+          signin::ConsentLevel::kSignin));
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenAllowed) {
@@ -1348,8 +1348,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   // verify that the underlying policy subsystem will start a fetch
   // without this request as well, the user_manager::UserManager must be
   // prevented from seeing the policy change.
-  static_cast<chromeos::ChromeUserManagerImpl*>(
-      user_manager::UserManager::Get())
+  static_cast<ash::ChromeUserManagerImpl*>(user_manager::UserManager::Get())
       ->StopPolicyObserverForTesting();
 
   UploadDeviceLocalAccountPolicy();
@@ -1461,7 +1460,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(base::ReadFileToString(
-        test_dir.Append(chromeos::test::kUserAvatarImage1RelativePath),
+        test_dir.Append(ash::test::kUserAvatarImage1RelativePath),
         &image_data));
   }
 
@@ -1470,7 +1469,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
       *test::ConstructExternalDataReference(
           embedded_test_server()
               ->GetURL(std::string("/") +
-                       chromeos::test::kUserAvatarImage1RelativePath)
+                       ash::test::kUserAvatarImage1RelativePath)
               .spec(),
           image_data),
       &policy);
@@ -1488,8 +1487,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   WaitUntilLocalStateChanged();
 
   gfx::ImageSkia policy_image =
-      chromeos::test::ImageLoader(
-          test_dir.Append(chromeos::test::kUserAvatarImage1RelativePath))
+      ash::test::ImageLoader(
+          test_dir.Append(ash::test::kUserAvatarImage1RelativePath))
           .Load();
   ASSERT_FALSE(policy_image.isNull());
 
@@ -1504,7 +1503,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
-  EXPECT_TRUE(chromeos::test::AreImagesEqual(policy_image, user->GetImage()));
+  EXPECT_TRUE(ash::test::AreImagesEqual(policy_image, user->GetImage()));
   const base::DictionaryValue* images_pref =
       g_browser_process->local_state()->GetDictionary("user_image_info");
   ASSERT_TRUE(images_pref);
@@ -1518,8 +1517,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, image_index);
   EXPECT_EQ(saved_image_path.value(), image_path);
 
-  gfx::ImageSkia saved_image =
-      chromeos::test::ImageLoader(saved_image_path).Load();
+  gfx::ImageSkia saved_image = ash::test::ImageLoader(saved_image_path).Load();
   ASSERT_FALSE(saved_image.isNull());
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
@@ -1572,8 +1570,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
 
   // Start the platform app, causing it to open a window.
   run_loop_.reset(new base::RunLoop);
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->FlushMojoCallsForTesting();
   proxy->Launch(
       app->id(),
@@ -1758,8 +1755,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ManagedSessionTimezoneChange) {
 
   std::string timezone_id1("America/Los_Angeles");
   std::string timezone_id2("Europe/Berlin");
-  base::string16 timezone_id1_utf16(base::UTF8ToUTF16(timezone_id1));
-  base::string16 timezone_id2_utf16(base::UTF8ToUTF16(timezone_id2));
+  std::u16string timezone_id1_utf16(base::UTF8ToUTF16(timezone_id1));
+  std::u16string timezone_id2_utf16(base::UTF8ToUTF16(timezone_id2));
 
   chromeos::system::TimezoneSettings* timezone_settings =
       chromeos::system::TimezoneSettings::GetInstance();
@@ -2115,6 +2112,28 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
                 .id());
 }
 
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PublicSessionWithLocaleSwitch) {
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  WaitForPolicy();
+  ExpandPublicSessionPod(false);
+
+  // Select a different locale.
+  EXPECT_NE(kPublicSessionLocale, g_browser_process->GetApplicationLocale());
+  ash::LoginScreenTestApi::SetPublicSessionLocale(kPublicSessionLocale);
+
+  // Submit the locale change.
+  ash::LoginScreenTestApi::ClickPublicExpandedSubmitButton();
+
+  WaitForSessionStart();
+
+  // Verify that the locale.
+  EXPECT_EQ(kPublicSessionLocale, g_browser_process->GetApplicationLocale());
+  EXPECT_EQ(l10n_util::GetLanguage(kPublicSessionLocale),
+            icu::Locale::getDefault().getLanguage());
+}
+
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   // Set up a test update server for the Show Managed Storage app.
   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
@@ -2368,14 +2387,12 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ManagedSessionsDisabled) {
 
   // Check that managed sessions mode is disabled.
   EXPECT_FALSE(
-      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
-          *user));
+      ash::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(*user));
 
   // Check that disabled managed sessions mode hides full management disclosure
   // warning.
   EXPECT_FALSE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
+      ash::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
 }
 
 IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ManagedSessionsEnabledNonRisky) {
@@ -2395,14 +2412,12 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ManagedSessionsEnabledNonRisky) {
 
   // Check that managed sessions mode is enabled.
   ASSERT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
-          *user));
+      ash::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(*user));
 
   // Management disclosure warning is shown in the beginning, because
   // kManagedSessionUseFullLoginWarning pref is set to true in the beginning.
   ASSERT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
+      ash::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
 
   ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
   WaitForSessionStart();
@@ -2411,8 +2426,7 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ManagedSessionsEnabledNonRisky) {
   // Check that management disclosure warning is not shown when managed sessions
   // are enabled, but policy settings are not risky.
   ASSERT_FALSE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
+      ash::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
 }
 
 IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledSafeExtension) {
@@ -2435,14 +2449,12 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledSafeExtension) {
   // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
   // correctly.
   EXPECT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
-          *user));
+      ash::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(*user));
 
   // Management disclosure warning is shown in the beginning, because
   // kManagedSessionUseFullLoginWarning pref is set to true in the beginning.
   ASSERT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
+      ash::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
 
   ExtensionInstallObserver install_observer(kHostedAppID);
 
@@ -2455,8 +2467,7 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledSafeExtension) {
   // Check that force-installed extension activates managed session mode for
   // device-local users.
   EXPECT_FALSE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
+      ash::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
 }
 
 IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledUnsafeExtension) {
@@ -2479,14 +2490,12 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledUnsafeExtension) {
   // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
   // correctly.
   EXPECT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
-          *user));
+      ash::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(*user));
 
   // Management disclosure warning is shown in the beginning, because
   // kManagedSessionUseFullLoginWarning pref is set to true in the beginning.
   ASSERT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
+      ash::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
 
   ExtensionInstallObserver install_observer(kGoodExtensionID);
 
@@ -2499,8 +2508,7 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledUnsafeExtension) {
   // Check that force-installed extension activates managed session mode for
   // device-local users.
   EXPECT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
+      ash::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
 }
 
 IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, WhitelistedExtension) {
@@ -2523,14 +2531,12 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, WhitelistedExtension) {
   // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
   // correctly.
   EXPECT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
-          *user));
+      ash::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(*user));
 
   // Management disclosure warning is shown in the beginning, because
   // kManagedSessionUseFullLoginWarning pref is set to true in the beginning.
   ASSERT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
+      ash::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
 
   ExtensionInstallObserver install_observer(kShowManagedStorageID);
 
@@ -2543,8 +2549,7 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, WhitelistedExtension) {
   // Check that white-listed extension is not considered risky and doesn't
   // activate managed session mode.
   EXPECT_FALSE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
+      ash::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
 }
 
 IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, NetworkCertificate) {
@@ -2568,14 +2573,12 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, NetworkCertificate) {
   // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
   // correctly.
   EXPECT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
-          *user));
+      ash::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(*user));
 
   // Check that network certificate pushed via policy activates managed sessions
   // mode.
   EXPECT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
+      ash::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
 }
 
 IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, AllowCrossOriginAuthPrompt) {
@@ -2600,14 +2603,12 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, AllowCrossOriginAuthPrompt) {
   // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
   // correctly.
   ASSERT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
-          *user));
+      ash::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(*user));
 
   // Check that setting a value to 'AllowCrossOriginAuthPrompt' activates
   // managed sessions mode.
   ASSERT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
+      ash::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
 }
 
 class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,

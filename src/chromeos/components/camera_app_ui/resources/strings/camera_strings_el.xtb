@@ -4,10 +4,13 @@
 <translation id="1175958423215084756">Εντοπίστηκε σύνδεσμος. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Εικόνες gallery</translation>
 <translation id="1430915738399379752">Εκτύπωση</translation>
+<translation id="1467231725790366244">Η κάμερα <ph name="CAMERA" /> είναι αποσυνδεδεμένη.</translation>
 <translation id="1473110567575736769">Χρονόμετρο 3 δευτερολέπτων</translation>
 <translation id="1620510694547887537">Κάμερα</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Καμία εγγραφή</translation>
+<translation id="1838104802459806957">Κλίση προς τα πάνω</translation>
+<translation id="1851169887664797861">Υπάρχουν διαθέσιμα επιπλέον στοιχεία ελέγχου κάμερας</translation>
 <translation id="1851616744363735765">ΣΕ ΠΑΥΣΗ</translation>
 <translation id="1862930711583847113">Δεν είναι δυνατή η εξαγωγή του αρχείου <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Ανάλυση φωτογραφίας</translation>
@@ -17,15 +20,18 @@
 <translation id="2064538373111010176"><ph name="CAMERA" /> ενεργή</translation>
 <translation id="2144806332417375165">Προσαρμοσμένες παράμετροι βίντεο</translation>
 <translation id="229579744168541441">Εξαγωγή σε δίσκο</translation>
+<translation id="2320741269052147773">Μετακίνηση αριστερά</translation>
 <translation id="2501278716633472235">Επιστροφή</translation>
 <translation id="2501853267655415902">Η εγγραφή διακόπηκε</translation>
 <translation id="2501953888035679275">Τραβήξτε φωτογραφίες και βίντεο με την κάμερά σας.</translation>
 <translation id="2549985041256363841">Έναρξη εγγραφής</translation>
 <translation id="2599796128805996109">Πίσω κάμερα</translation>
+<translation id="2879583609344924966">Η κάμερα <ph name="CAMERA" /> είναι συνδεδεμένη.</translation>
 <translation id="2912439424121107408">Η λειτουργία Expert δεν υποστηρίζεται σε αυτήν τη συσκευή.</translation>
 <translation id="2968794441791257519">Οι φωτογραφίες και τα βίντεο που λήφθηκαν με την κάμερα θα μετακινηθούν στον φάκελο "Λήψεις". Μπορείτε να αποκτήσετε πρόσβαση σε αυτά στα Αρχεία.
 
         Οι εφαρμογές με άδειες αποθηκευτικού χώρου θα έχουν πρόσβαση στις φωτογραφίες και τα βίντεό σας.</translation>
+<translation id="3067436040345934772">Μετακίνηση δεξιά</translation>
 <translation id="3081586908890909590">Μετάβαση στη λειτουργία εγγραφής βίντεο</translation>
 <translation id="313467653172006084">30 καρέ ανά δευτερόλεπτο</translation>
 <translation id="3183731565330012717">Τύπος πλέγματος</translation>
@@ -34,6 +40,7 @@
 <translation id="3259149966178251584">Ανάλυση κάμερας</translation>
 <translation id="3517926952904427380">Δεν είναι δυνατή η λήψη φωτογραφίας πορτραίτου.</translation>
 <translation id="3569311554794739032">Είστε βέβαιοι ότι θέλετε να καταργήσετε το αρχείο <ph name="FILE" />;</translation>
+<translation id="3733597664308256288">Υπάρχουν διαθέσιμα επιπλέον στοιχεία ελέγχου κάμερας. Πατήστε Αναζήτηση + Δεξί βέλος για να αποκτήσετε πρόσβαση.</translation>
 <translation id="3810838688059735925">Βίντεο</translation>
 <translation id="3838931309141338733">Σάρωση γραμμωτού κώδικα</translation>
 <translation id="3892148308691398805">Αντιγραφή κειμένου</translation>
@@ -56,6 +63,7 @@
 <translation id="5671277269877808209">Τετράγωνο</translation>
 <translation id="5775960006311140197">Λειτουργία Expert</translation>
 <translation id="5869546221129391014">Πλέγμα</translation>
+<translation id="5975083100439434680">Σμίκρυνση</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6073451960410192870">Διακοπή εγγραφής</translation>
 <translation id="6197807149213783179">Αποθήκευση μεταδεδομένων</translation>
@@ -84,16 +92,19 @@
 <translation id="7974782136796202581">Εμφάνιση επιλογών μετακίνησης, κλίσης, εστίασης</translation>
 <translation id="7983668134180549431">Εντοπίστηκε κείμενο.</translation>
 <translation id="8067883171444229417">Αναπαραγωγή βίντεο</translation>
+<translation id="8120146556401698679">Μετακίνηση, κλίση και εστίαση</translation>
 <translation id="8131740175452115882">Επιβεβαίωση</translation>
 <translation id="8145038249676204903">Μετάβαση στη λειτουργία λήψης φωτογραφίας</translation>
 <translation id="8239780215768881278">Λήψη στιγμιότυπου βίντεο</translation>
 <translation id="8261506727792406068">Διαγραφή</translation>
+<translation id="8425673304802773841">Κλίση προς τα κάτω</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Προεπισκόπηση μεταδεδομένων</translation>
 <translation id="8815966864175525708">Μετάβαση στη λειτουργία λήψης φωτογραφίας πορτραίτου</translation>
 <translation id="8828441885228359828">Συνέχιση εγγραφής</translation>
 <translation id="8870695351537079478">Δεν είναι δυνατή η έναρξη της εγγραφής</translation>
+<translation id="8903921497873541725">Μεγέθυνση</translation>
 <translation id="9045155556724273246">10 δευτερόλεπτα</translation>
 <translation id="945522503751344254">Αποστολή σχολίων</translation>
 </translationbundle>

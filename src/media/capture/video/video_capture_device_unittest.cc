@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/video_frame.h"
 #include "media/capture/video/create_video_capture_device_factory.h"
 #include "media/capture/video/mock_video_capture_device_client.h"
 #include "media/capture/video_capture_types.h"
@@ -51,8 +52,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "media/capture/video/chromeos/ash/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
+#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/public/cros_features.h"
 #include "media/capture/video/chromeos/video_capture_device_chromeos_halv3.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
@@ -204,9 +205,9 @@ class MockImageCaptureClient
       // The first two bytes must be the SOI marker.
       // The next two bytes must be a marker, such as APPn, DTH etc.
       // cf. Section B.2 at https://www.w3.org/Graphics/JPEG/itu-t81.pdf
-      EXPECT_EQ(0xFF, blob->data[0]);         // First SOI byte
-      EXPECT_EQ(0xD8, blob->data[1]);         // Second SOI byte
-      EXPECT_EQ(0xFF, blob->data[2]);         // First byte of the next marker
+      EXPECT_EQ(0xFF, blob->data[0]);  // First SOI byte
+      EXPECT_EQ(0xD8, blob->data[1]);  // Second SOI byte
+      EXPECT_EQ(0xFF, blob->data[2]);  // First byte of the next marker
       OnCorrectPhotoTaken();
     } else if (strcmp("image/png", blob->mime_type.c_str()) == 0) {
       ASSERT_GT(blob->data.size(), 4u);
@@ -321,7 +322,8 @@ class VideoCaptureDeviceTest
 
 #if defined(OS_WIN)
   bool UseWinMediaFoundation() {
-    return std::get<1>(GetParam()) == WIN_MEDIA_FOUNDATION;
+    return std::get<1>(GetParam()) == WIN_MEDIA_FOUNDATION &&
+           VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation();
   }
 #endif
 
@@ -367,8 +369,8 @@ class VideoCaptureDeviceTest
   }
 
   void WaitForCapturedFrame() {
-    run_loop_.reset(
-        new base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed));
+    run_loop_ = std::make_unique<base::RunLoop>(
+        base::RunLoop::Type::kNestableTasksAllowed);
     run_loop_->Run();
   }
 
@@ -700,7 +702,8 @@ void VideoCaptureDeviceTest::RunCaptureMjpegTestCase() {
   // @ 30 fps, so we don't care about the exact resolution we get.
   EXPECT_EQ(last_format().pixel_format, PIXEL_FORMAT_MJPEG);
   EXPECT_GE(static_cast<size_t>(1280 * 720),
-            last_format().ImageAllocationSize());
+            media::VideoFrame::AllocationSize(last_format().pixel_format,
+                                              last_format().frame_size));
   device->StopAndDeAllocate();
 }
 

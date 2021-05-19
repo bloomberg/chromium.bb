@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,6 +26,8 @@
 #include "net/base/ip_endpoint.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_test_backend.h"
+#include "net/tools/quic/quic_simple_server.h"
 #include "net/tools/quic/quic_transport_simple_server.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,9 +51,8 @@ class QuicTransportSimpleServerWithThread final {
   ~QuicTransportSimpleServerWithThread() {
     io_thread_->task_runner()->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            [](std::unique_ptr<net::QuicTransportSimpleServer> server) {},
-            std::move(server_)));
+        base::BindOnce([](std::unique_ptr<net::QuicSimpleServer> server) {},
+                       std::move(server_)));
 
     base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait_for_thread_join;
     io_thread_.reset();
@@ -71,11 +71,16 @@ class QuicTransportSimpleServerWithThread final {
     net::IPEndPoint server_address;
     io_thread_->task_runner()->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
-          server_ = std::make_unique<net::QuicTransportSimpleServer>(
-              /*port=*/0, origins_,
-              quic::test::crypto_test_utils::ProofSourceForTesting());
-          const auto result = server_->Start();
-          CHECK_EQ(EXIT_SUCCESS, result);
+          backend_ = std::make_unique<quic::test::QuicTestBackend>();
+          backend_->set_enable_webtransport(true);
+          server_ = std::make_unique<net::QuicSimpleServer>(
+              quic::test::crypto_test_utils::ProofSourceForTesting(),
+              quic::QuicConfig(), quic::QuicCryptoServerConfig::ConfigOptions(),
+              quic::AllSupportedVersions(), backend_.get());
+          bool result = server_->CreateUDPSocketAndListen(
+              quic::QuicSocketAddress(quic::QuicSocketAddress(
+                  quic::QuicIpAddress::Any6(), /*port=*/0)));
+          CHECK(result);
           server_address = server_->server_address();
           event.Signal();
         }));
@@ -89,10 +94,12 @@ class QuicTransportSimpleServerWithThread final {
   const std::vector<url::Origin> origins_;
   net::IPEndPoint server_address_;
 
-  std::unique_ptr<net::QuicTransportSimpleServer> server_;
+  std::unique_ptr<quic::test::QuicTestBackend> backend_;
+  std::unique_ptr<net::QuicSimpleServer> server_;
   std::unique_ptr<base::Thread> io_thread_;
 };
 
+// TODO(vasilvv): Rename this to WebTransportBrowserTest.
 class QuicTransportBrowserTest : public ContentBrowserTest {
  public:
   QuicTransportBrowserTest() : server_({}) {
@@ -117,19 +124,19 @@ class QuicTransportBrowserTest : public ContentBrowserTest {
         "I+ryIVl5ksb8KijTneC3y7z1wBFn5x35O5is9g5n/KM=");
   }
 
-  bool WaitForTitle(const base::string16& expected_title,
-                    const std::vector<base::string16> additional_titles) {
+  bool WaitForTitle(const std::u16string& expected_title,
+                    const std::vector<std::u16string> additional_titles) {
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
 
     for (const auto& title : additional_titles) {
       title_watcher.AlsoWaitForTitle(title);
     }
-    base::string16 actual_title = title_watcher.WaitAndGetTitle();
+    std::u16string actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
     return expected_title == actual_title;
   }
 
-  bool WaitForTitle(const base::string16& title) {
+  bool WaitForTitle(const std::u16string& title) {
     return WaitForTitle(title, {});
   }
 
@@ -143,51 +150,12 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, Echo) {
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+  ASSERT_TRUE(WaitForTitle(u"Title Of Awesomeness"));
 
   ASSERT_TRUE(ExecuteScript(
       shell(), base::StringPrintf(R"JS(
     async function run() {
-      const transport = new QuicTransport('quic-transport://localhost:%d/echo');
-
-      const writer = transport.sendDatagrams().getWriter();
-      const reader = transport.receiveDatagrams().getReader();
-
-      const data = new Uint8Array([65, 66, 67]);
-      const id = setInterval(() => {
-        writer.write(data);
-      }, 10);
-
-      const {done, value} = await reader.read();
-      clearInterval(id);
-      if (done) {
-        throw Error('Got an unexpected DONE signal');
-      }
-      if (value.length !== 3 ||
-          value[0] !== 65 || value[1] !== 66 || value[2] !== 67) {
-        throw Error('Got invalid data');
-      }
-    }
-
-    run().then(() => { document.title = 'PASS'; },
-               (e) => { console.log(e); document.title = 'FAIL'; });
-)JS",
-                                  server_.server_address().port())));
-
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
-}
-
-IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, EchoViaWebTransport) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  ASSERT_TRUE(
-      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
-
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
-
-  ASSERT_TRUE(ExecuteScript(
-      shell(), base::StringPrintf(R"JS(
-    async function run() {
-      const transport = new WebTransport('quic-transport://localhost:%d/echo');
+      const transport = new WebTransport('https://localhost:%d/echo');
 
       const writer = transport.datagramWritable.getWriter();
       const reader = transport.datagramReadable.getReader();
@@ -213,32 +181,38 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, EchoViaWebTransport) {
 )JS",
                                   server_.server_address().port())));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+  ASSERT_TRUE(WaitForTitle(u"PASS", {u"FAIL"}));
 }
 
-IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, ClientIndicationFailure) {
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, EchoViaWebTransport) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+  ASSERT_TRUE(WaitForTitle(u"Title Of Awesomeness"));
 
   ASSERT_TRUE(ExecuteScript(
       shell(), base::StringPrintf(R"JS(
     async function run() {
-      // The client indication fails because there is no resource /X
-      // on the server.
-      const transport = new QuicTransport('quic-transport:localhost:%d/X');
+      const transport = new WebTransport('https://localhost:%d/echo');
 
-      // Client indication is NOT part of handshake.
-      await transport.ready;
+      const writer = transport.datagramWritable.getWriter();
+      const reader = transport.datagramReadable.getReader();
 
-      try {
-        await transport.closed;
-      } catch (e) {
-        return;
+      const data = new Uint8Array([65, 66, 67]);
+      const id = setInterval(() => {
+        writer.write(data);
+      }, 10);
+
+      const {done, value} = await reader.read();
+      clearInterval(id);
+      if (done) {
+        throw Error('Got an unexpected DONE signal');
       }
-      throw Error('closed should be rejected');
+      if (value.length !== 3 ||
+          value[0] !== 65 || value[1] !== 66 || value[2] !== 67) {
+        throw Error('Got invalid data');
+      }
     }
 
     run().then(() => { document.title = 'PASS'; },
@@ -246,7 +220,37 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, ClientIndicationFailure) {
 )JS",
                                   server_.server_address().port())));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+  ASSERT_TRUE(WaitForTitle(u"PASS", {u"FAIL"}));
+}
+
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, NonexistentResource) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+
+  ASSERT_TRUE(WaitForTitle(u"Title Of Awesomeness"));
+
+  ASSERT_TRUE(ExecuteScript(
+      shell(), base::StringPrintf(R"JS(
+    async function run() {
+      // The client indication fails because there is no resource /X
+      // on the server.
+      const transport = new WebTransport('https://localhost:%d/X');
+
+      try {
+        await transport.ready;
+      } catch (e) {
+        return;
+      }
+      throw Error('ready should be rejected');
+    }
+
+    run().then(() => { document.title = 'PASS'; },
+               (e) => { console.log(e); document.title = 'FAIL'; });
+)JS",
+                                  server_.server_address().port())));
+
+  ASSERT_TRUE(WaitForTitle(u"PASS", {u"FAIL"}));
 }
 
 IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, CreateSendStream) {
@@ -254,16 +258,16 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, CreateSendStream) {
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+  ASSERT_TRUE(WaitForTitle(u"Title Of Awesomeness"));
 
   ASSERT_TRUE(ExecuteScript(
       shell(), base::StringPrintf(R"JS(
     async function run() {
-      const transport = new QuicTransport('quic-transport://localhost:%d/echo');
+      const transport = new WebTransport('https://localhost:%d/echo');
 
       await transport.ready;
 
-      const sendStream = await transport.createSendStream();
+      const sendStream = await transport.createUnidirectionalStream();
       const writer = sendStream.writable.getWriter();
       await writer.write(new Uint8Array([65, 66, 67]));
       await writer.close();
@@ -274,22 +278,23 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, CreateSendStream) {
 )JS",
                                   server_.server_address().port())));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+  ASSERT_TRUE(WaitForTitle(u"PASS", {u"FAIL"}));
 }
 
 // ReceiveStream is flaky: crbug.com/1140193
+// TODO(vasilvv): change from QuicTransport to WebTransport when re-enabling.
 #define MAYBE_ReceiveStream DISABLED_ReceiveStream
 IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, MAYBE_ReceiveStream) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+  ASSERT_TRUE(WaitForTitle(u"Title Of Awesomeness"));
 
   ASSERT_TRUE(ExecuteScript(
       shell(), base::StringPrintf(R"JS(
     async function run() {
-      const transport = new QuicTransport('quic-transport://localhost:%d/echo');
+      const transport = new QuicTransport('https://localhost:%d/echo');
 
       await transport.ready;
 
@@ -326,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, MAYBE_ReceiveStream) {
 )JS",
                                   server_.server_address().port())));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+  ASSERT_TRUE(WaitForTitle(u"PASS", {u"FAIL"}));
 }
 
 IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, BidirectionalStream) {
@@ -334,12 +339,12 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, BidirectionalStream) {
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+  ASSERT_TRUE(WaitForTitle(u"Title Of Awesomeness"));
 
   ASSERT_TRUE(ExecuteScript(
       shell(), base::StringPrintf(R"JS(
     async function run() {
-      const transport = new QuicTransport('quic-transport://localhost:%d/echo');
+      const transport = new WebTransport('https://localhost:%d/echo');
 
       await transport.ready;
 
@@ -373,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, BidirectionalStream) {
 )JS",
                                   server_.server_address().port())));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+  ASSERT_TRUE(WaitForTitle(u"PASS", {u"FAIL"}));
 }
 
 IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, CertificateFingerprint) {
@@ -381,14 +386,14 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, CertificateFingerprint) {
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+  ASSERT_TRUE(WaitForTitle(u"Title Of Awesomeness"));
 
   ASSERT_TRUE(ExecuteScript(
       shell(), base::StringPrintf(R"JS(
     async function run() {
       // The connection fails because the fingerprint does not match.
-      const transport = new QuicTransport(
-          'quic-transport://localhost:%d/echo', {
+      const transport = new WebTransport(
+          'https://localhost:%d/echo', {
             serverCertificateFingerprints: [
               {
                 algorithm: "sha-256",
@@ -421,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, CertificateFingerprint) {
 )JS",
                                   server_.server_address().port())));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+  ASSERT_TRUE(WaitForTitle(u"PASS", {u"FAIL"}));
 }
 
 IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, ReceiveBidirectionalStream) {
@@ -429,13 +434,62 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, ReceiveBidirectionalStream) {
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+  ASSERT_TRUE(WaitForTitle(u"Title Of Awesomeness"));
+
+  ASSERT_TRUE(ExecuteScript(
+      shell(), base::StringPrintf(R"JS(
+    async function run() {
+      const transport = new WebTransport(
+        'https://localhost:%d/echo');
+
+      await transport.ready;
+
+      const streams = transport.incomingBidirectionalStreams;
+      const reader = streams.getReader();
+      const {value, done} = await reader.read();
+      if (done) {
+        throw new Error('bidirectional streams should not be closed');
+      }
+      await testBidiStream(value);
+    }
+
+    async function testBidiStream(bidiStream) {
+      // Consume the initial "hello" that is sent by the server.
+      const writer = bidiStream.writable.getWriter();
+      const reader = bidiStream.readable.getReader();
+      await writer.write(new TextEncoder().encode('hello'));
+      const {value: valueAsBinary, done: done0} = await reader.read();
+      if (done0) {
+        throw new Error('at least one read should happen');
+      }
+      const valueAsString = new TextDecoder().decode(valueAsBinary);
+      if (valueAsString !== 'hello') {
+        throw new Error(`expected 'hello', got '${valueAsString}'`);
+      }
+    }
+
+    run().then(() => { document.title = 'PASS'; },
+               (e) => { console.log(e); document.title = 'FAIL'; });
+)JS",
+                                  server_.server_address().port())));
+
+  ASSERT_TRUE(WaitForTitle(u"PASS", {u"FAIL"}));
+}
+
+// TODO(vasilvv): re-add /receive-bidirectional and re-enable the test.
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest,
+                       DISABLED_ReceiveBidirectionalStreamOld) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+
+  ASSERT_TRUE(WaitForTitle(u"Title Of Awesomeness"));
 
   ASSERT_TRUE(ExecuteScript(
       shell(), base::StringPrintf(R"JS(
     async function run() {
       const transport = new QuicTransport(
-        'quic-transport://localhost:%d/receive-bidirectional');
+        'https://localhost:%d/receive-bidirectional');
 
       await transport.ready;
 
@@ -492,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, ReceiveBidirectionalStream) {
 )JS",
                                   server_.server_address().port())));
 
-  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+  ASSERT_TRUE(WaitForTitle(u"PASS", {u"FAIL"}));
 }
 
 }  // namespace

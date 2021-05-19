@@ -146,7 +146,7 @@ public:
 
 	tcu::PixelBufferAccess&			getPixelAccess	(void)			{ return m_buffer.getPixelAccess(); }
 
-	void							upload			(const VkCommandBuffer	cmdBuffer) const;
+	void							upload			(const VkCommandBuffer	cmdBuffer);
 	void							download		(const VkCommandBuffer	cmdBuffer);
 
 private:
@@ -225,7 +225,7 @@ StorageImage2D::StorageImage2D (Context& context, VkFormat vkFormat, const int w
 	}
 }
 
-void StorageImage2D::upload (const VkCommandBuffer cmdBuffer) const
+void StorageImage2D::upload (const VkCommandBuffer cmdBuffer)
 {
 	const VkDevice					dev							= m_context.getDevice();
 	const DeviceInterface&			vki							= m_context.getDeviceInterface();
@@ -254,7 +254,7 @@ void StorageImage2D::upload (const VkCommandBuffer cmdBuffer) const
 			VK_ACCESS_TRANSFER_READ_BIT, (VkAccessFlags)0,
 			m_buffer.getBuffer(), 0ull, m_buffer.getSize());
 
-		const_cast<StorageImage2D*>(this)->m_layout = VK_IMAGE_LAYOUT_GENERAL;
+		m_layout = VK_IMAGE_LAYOUT_GENERAL;
 		const VkImageMemoryBarrier afterCopyBarrier = makeImageMemoryBarrier(
 			VK_ACCESS_TRANSFER_WRITE_BIT, (VkAccessFlags)0,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_layout,
@@ -375,16 +375,6 @@ TestInstance* MismatchedVectorSizesTest::createInstance	(Context& context) const
 	return new MismatchedVectorSizesTestInstance(context, m_params);
 }
 
-void MismatchedVectorSizesTest::checkSupport (Context& context) const
-{
-	VkFormatProperties formatProperties = getPhysicalDeviceFormatProperties(context.getInstanceInterface(), context.getPhysicalDevice(), m_params->vkFormat);
-
-	if ((formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) == 0)
-	{
-		TCU_THROW(NotSupportedError, "Creating storage image with this format is not supported");
-	}
-}
-
 enum class OpCapability
 {
 	Shader,
@@ -498,16 +488,43 @@ TextureFormat makeBufferFormat (tcu::TextureChannelClass channelClass, bool doub
 	return TextureFormat(TextureFormat::ChannelOrder::RGBA, channelType);
 }
 
+void MismatchedVectorSizesTest::checkSupport (Context& context) const
+{
+	const FormatInfo* info = findFormatInfo(m_params->vkFormat);
+
+	// capabilities that may be used in the shader
+	if (info->capability == OpCapability::Int64ImageEXT)
+	{
+		const VkPhysicalDeviceFeatures deviceFeatures = getPhysicalDeviceFeatures(context.getInstanceInterface(), context.getPhysicalDevice());
+		if(!deviceFeatures.shaderInt64)
+		{
+			TCU_THROW(NotSupportedError, "Device feature shaderInt64 is not supported");
+		}
+		context.requireDeviceFunctionality("VK_EXT_shader_image_atomic_int64");
+	}
+
+	// extensions used statically in the shader
+	context.requireDeviceFunctionality("VK_KHR_variable_pointers");
+	context.requireDeviceFunctionality("VK_KHR_storage_buffer_storage_class");
+
+	VkFormatProperties formatProperties = getPhysicalDeviceFormatProperties(context.getInstanceInterface(), context.getPhysicalDevice(), m_params->vkFormat);
+
+	if ((formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) == 0)
+	{
+		TCU_THROW(NotSupportedError, "Creating storage image with this format is not supported");
+	}
+}
+
+
 void MismatchedVectorSizesTest::initPrograms (SourceCollections& programCollection) const
 {
 	tcu::StringTemplate shaderTemplate(R"(
 
 							  ${ENABLING_CAPABILITIES}
-							  OpCapability	   Int64
-							  OpCapability	   Float64
-							  OpExtension	   "SPV_EXT_shader_image_int64"
+							  ${CAPABILITY_INT64}
 							  OpExtension      "SPV_KHR_variable_pointers"
 							  OpExtension      "SPV_KHR_storage_buffer_storage_class"
+							  ${EXTENSIONS}
 
 					%std450 = OpExtInstImport  "GLSL.std.450"
 							  OpMemoryModel    Logical GLSL450
@@ -529,25 +546,11 @@ void MismatchedVectorSizesTest::initPrograms (SourceCollections& programCollecti
 					  %void = OpTypeVoid
 				   %fn_void = OpTypeFunction %void
 
-					%double = OpTypeFloat 64
-					 %slong = OpTypeInt 64 1
-					 %ulong = OpTypeInt 64 0
+					${TYPES_INT64}
 
 					 %float = OpTypeFloat 32
 					  %sint = OpTypeInt 32 1
 					  %uint = OpTypeInt 32 0
-
-				  %v4double = OpTypeVector %double 4
-				  %v3double = OpTypeVector %double 3
-				  %v2double = OpTypeVector %double 2
-
-				   %v4slong = OpTypeVector %slong 4
-				   %v3slong = OpTypeVector %slong 3
-				   %v2slong = OpTypeVector %slong 2
-
-				   %v4ulong = OpTypeVector %ulong 4
-				   %v3ulong = OpTypeVector %ulong 3
-				   %v2ulong = OpTypeVector %ulong 2
 
 				   %v4float = OpTypeVector %float 4
 				   %v3float = OpTypeVector %float 3
@@ -628,6 +631,19 @@ void MismatchedVectorSizesTest::initPrograms (SourceCollections& programCollecti
 							  OpFunctionEnd
 	)");
 
+	const std::string typesInt64(R"(
+					 %slong = OpTypeInt 64 1
+					 %ulong = OpTypeInt 64 0
+
+				   %v4slong = OpTypeVector %slong 4
+				   %v3slong = OpTypeVector %slong 3
+				   %v2slong = OpTypeVector %slong 2
+
+				   %v4ulong = OpTypeVector %ulong 4
+				   %v3ulong = OpTypeVector %ulong 3
+				   %v2ulong = OpTypeVector %ulong 2
+	)");
+
 	const tcu::StringTemplate writeFromSingleComponent(R"(
 					 OpImageWrite %img %id_xy %red
 	)");
@@ -654,6 +670,18 @@ void MismatchedVectorSizesTest::initPrograms (SourceCollections& programCollecti
 
 	specs["SPIRV_IMAGE_FORMAT"]						= info->spirvName;
 	specs["ENABLING_CAPABILITIES"]					= std::string("OpCapability ") + OpCapabilityToStr(info->capability);
+	specs["CAPABILITY_INT64"]						= "";
+	specs["EXTENSIONS"]								= "";
+	specs["TYPES_INT64"]							= "";
+
+	if (info->capability == OpCapability::Int64ImageEXT)
+	{
+		specs["EXTENSIONS"]							= "OpExtension	   \"SPV_EXT_shader_image_int64\"";
+		specs["CAPABILITY_INT64"]					= std::string("OpCapability Int64");
+		specs["TYPES_INT64"]						= typesInt64;
+	}
+
+
 	specs["SAMPLED_TYPE"]							= getChannelStr(buffFormat);
 	specs["IMAGE_WIDTH"]							= std::to_string(m_params->textureWidth);
 	specs["IMAGE_HEIGHT"]							= std::to_string(m_params->textureHeight);

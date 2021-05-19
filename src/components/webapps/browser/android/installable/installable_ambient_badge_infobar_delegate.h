@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_WEBAPPS_BROWSER_ANDROID_INSTALLABLE_INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE_H_
 #define COMPONENTS_WEBAPPS_BROWSER_ANDROID_INSTALLABLE_INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
@@ -47,20 +48,20 @@ class InstallableAmbientBadgeInfoBarDelegate
   // Create and show the infobar.
   static void Create(content::WebContents* web_contents,
                      base::WeakPtr<Client> weak_client,
-                     const base::string16& app_name,
+                     const std::u16string& app_name,
                      const SkBitmap& primary_icon,
                      const bool is_primary_icon_maskable,
                      const GURL& start_url);
 
   void AddToHomescreen();
-  const base::string16 GetMessageText() const;
+  const std::u16string GetMessageText() const;
   const SkBitmap& GetPrimaryIcon() const;
   bool GetIsPrimaryIconMaskable() const;
   const GURL& GetUrl() const { return start_url_; }
 
  private:
   InstallableAmbientBadgeInfoBarDelegate(base::WeakPtr<Client> weak_client,
-                                         const base::string16& app_name,
+                                         const std::u16string& app_name,
                                          const SkBitmap& primary_icon,
                                          const bool is_primary_icon_maskable,
                                          const GURL& start_url);
@@ -70,7 +71,7 @@ class InstallableAmbientBadgeInfoBarDelegate
   void InfoBarDismissed() override;
 
   base::WeakPtr<Client> weak_client_;
-  const base::string16 app_name_;
+  const std::u16string app_name_;
   const SkBitmap primary_icon_;
   const bool is_primary_icon_maskable_;
   const GURL& start_url_;

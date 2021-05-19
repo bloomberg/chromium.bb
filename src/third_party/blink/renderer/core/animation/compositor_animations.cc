@@ -283,13 +283,28 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           // Backdrop-filter pixel moving filters do not change the layer bounds
           // like regular filters do, so they can still be composited.
           break;
-        case CSSPropertyID::kBackgroundColor:
+        case CSSPropertyID::kBackgroundColor: {
+          // When this is true, we have a background-color animation in the body
+          // element, while the view is responsible for painting the body's
+          // background. In this case, we need to let the background-color
+          // animation run on the main thread because the body is not painted
+          // with BackgroundColorPaintWorklet.
+          bool background_transfers_to_view =
+              target_element.GetLayoutBoxModelObject() &&
+              target_element.GetLayoutBoxModelObject()
+                  ->BackgroundTransfersToView();
+          // The table rows and table cols are painted into table cells, which
+          // means their background is never painted using
+          // BackgroundColorPaintWorklet, as a result, we should not composite
+          // the background color animation on the table rows or cols.
           if (!RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() ||
-              !animation_to_add->CanCompositeBGColorAnim()) {
+              layout_object->IsLayoutTableCol() ||
+              layout_object->IsTableRow() || background_transfers_to_view) {
             DefaultToUnsupportedProperty(unsupported_properties, property,
                                          &reasons);
           }
           break;
+        }
         case CSSPropertyID::kVariable: {
           // Custom properties are supported only in the case of
           // OffMainThreadCSSPaintEnabled, and even then only for some specific
@@ -373,7 +388,10 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
   }
 
   CompositorTiming out;
-  if (!ConvertTimingForCompositor(timing, base::TimeDelta(), out,
+  base::TimeDelta time_offset =
+      animation_to_add ? animation_to_add->ComputeCompositorTimeOffset()
+                       : base::TimeDelta();
+  if (!ConvertTimingForCompositor(timing, time_offset, out,
                                   animation_playback_rate)) {
     reasons |= kEffectHasUnsupportedTimingParameters;
   }
@@ -409,8 +427,11 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
     // DCHECK_GE(GetDocument().Lifecycle().GetState(),
     //           DocumentLifecycle::kPrePaintClean);
     bool has_direct_compositing_reasons = false;
-    if (const auto* paint_properties =
-            layout_object->FirstFragment().PaintProperties()) {
+    if (layout_object->FirstFragment().NextFragment()) {
+      // Composited animation on multiple fragments is not supported.
+      reasons |= kTargetHasInvalidCompositingState;
+    } else if (const auto* paint_properties =
+                   layout_object->FirstFragment().PaintProperties()) {
       const auto* transform = paint_properties->Transform();
       const auto* effect = paint_properties->Effect();
       has_direct_compositing_reasons =

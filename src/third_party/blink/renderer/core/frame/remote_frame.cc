@@ -8,10 +8,17 @@
 #include "cc/layers/surface_layer.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/navigation/navigation_policy.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/referrer.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/impression_conversions.h"
 #include "third_party/blink/public/platform/interface_registry.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/url_conversion.h"
+#include "third_party/blink/public/platform/web_url_request_util.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_fullscreen_options.h"
@@ -19,7 +26,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/child_frame_compositing_helper.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -45,6 +52,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -54,6 +62,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace blink {
 
@@ -94,7 +103,9 @@ RemoteFrame::RemoteFrame(
     const RemoteFrameToken& frame_token,
     WindowAgentFactory* inheriting_agent_factory,
     InterfaceRegistry* interface_registry,
-    AssociatedInterfaceProvider* associated_interface_provider)
+    AssociatedInterfaceProvider* associated_interface_provider,
+    WebFrameWidget* ancestor_widget,
+    const base::UnguessableToken& devtools_frame_token)
     : Frame(client,
             page,
             owner,
@@ -102,12 +113,14 @@ RemoteFrame::RemoteFrame(
             previous_sibling,
             insert_type,
             frame_token,
+            devtools_frame_token,
             MakeGarbageCollected<RemoteWindowProxyManager>(*this),
             inheriting_agent_factory),
       // TODO(samans): Investigate if it is safe to delay creation of this
       // object until a FrameSinkId is provided.
       parent_local_surface_id_allocator_(
           std::make_unique<viz::ParentLocalSurfaceIdAllocator>()),
+      ancestor_widget_(ancestor_widget),
       interface_registry_(interface_registry
                               ? interface_registry
                               : InterfaceRegistry::GetEmptyInterfaceRegistry()),
@@ -136,6 +149,8 @@ RemoteFrame::RemoteFrame(
   UpdateInheritedEffectiveTouchActionIfPossible();
   UpdateVisibleToHitTesting();
   Initialize();
+  if (ancestor_widget)
+    compositing_helper_ = std::make_unique<ChildFrameCompositingHelper>(this);
 }
 
 RemoteFrame::~RemoteFrame() {
@@ -239,7 +254,7 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
       if (!initiator_frame_token) {
         initiator_frame_token = window->GetFrame()->GetLocalFrameToken();
         initiator_policy_container_keep_alive_handle =
-            window->GetFrame()->GetPolicyContainer()->IssueKeepAliveHandle();
+            window->GetPolicyContainer()->IssueKeepAliveHandle();
       }
     }
   }
@@ -247,15 +262,50 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
   // TODO(https://crbug.com/1173409 and https://crbug.com/1059959): Check that
   // we always have valid |initiator_frame_token| and
   // |initiator_policy_container_keep_alive_handle|.
+  ResourceRequest& request = frame_request.GetResourceRequest();
+  DCHECK(request.RequestorOrigin().get());
 
-  Client()->Navigate(frame_request.GetResourceRequest(),
-                     frame_load_type == WebFrameLoadType::kReplaceCurrentItem,
-                     is_opener_navigation,
-                     initiator_frame_has_download_sandbox_flag,
-                     initiator_frame_is_ad, frame_request.GetBlobURLToken(),
-                     frame_request.Impression(),
-                     base::OptionalOrNullptr(initiator_frame_token),
-                     std::move(initiator_policy_container_keep_alive_handle));
+  auto params = mojom::blink::OpenURLParams::New();
+  params->url = url;
+  params->initiator_origin = request.RequestorOrigin();
+  params->post_body =
+      blink::GetRequestBodyForWebURLRequest(WrappedResourceRequest(request));
+  DCHECK_EQ(!!params->post_body, request.HttpMethod().Utf8() == "POST");
+  params->extra_headers =
+      blink::GetWebURLRequestHeadersAsString(WrappedResourceRequest(request));
+  params->referrer = mojom::blink::Referrer::New(
+      KURL(NullURL(), request.ReferrerString()), request.GetReferrerPolicy());
+  params->disposition = ui::mojom::blink::WindowOpenDisposition::CURRENT_TAB;
+  params->should_replace_current_entry =
+      frame_load_type == WebFrameLoadType::kReplaceCurrentItem;
+  params->user_gesture = request.HasUserGesture();
+  params->triggering_event_info = mojom::blink::TriggeringEventInfo::kUnknown;
+  params->blob_url_token = frame_request.GetBlobURLToken();
+  params->href_translate =
+      String(frame_request.HrefTranslate().Latin1().c_str());
+  params->initiator_policy_container_keep_alive_handle =
+      std::move(initiator_policy_container_keep_alive_handle);
+  params->initiator_frame_token =
+      base::OptionalFromPtr(base::OptionalOrNullptr(initiator_frame_token));
+
+  if (frame_request.Impression()) {
+    params->impression =
+        blink::ConvertWebImpressionToImpression(*frame_request.Impression());
+  }
+
+  // Note: For the AdFrame/Sandbox download policy here it only covers the case
+  // where the navigation initiator frame is ad. The download_policy may be
+  // further augmented in RenderFrameProxyHost::OnOpenURL if the navigating
+  // frame is ad or sandboxed.
+  params->download_policy.ApplyDownloadFramePolicy(
+      is_opener_navigation, request.HasUserGesture(),
+      request.RequestorOrigin()->CanAccess(
+          GetSecurityContext()->GetSecurityOrigin()),
+      initiator_frame_has_download_sandbox_flag,
+      RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled(),
+      initiator_frame_is_ad);
+
+  GetRemoteFrameHostRemote().OpenURL(std::move(params));
 }
 
 bool RemoteFrame::DetachImpl(FrameDetachType type) {
@@ -281,6 +331,45 @@ bool RemoteFrame::DetachImpl(FrameDetachType type) {
   main_frame_receiver_.reset();
 
   return true;
+}
+
+const scoped_refptr<cc::Layer>& RemoteFrame::GetCcLayer() {
+  return cc_layer_;
+}
+
+void RemoteFrame::SetCcLayer(scoped_refptr<cc::Layer> layer,
+                             bool is_surface_layer) {
+  // |ancestor_widget_| can be null if this is a proxy for a remote
+  // main frame, or a subframe of that proxy. However, we should not be setting
+  // a layer on such a proxy (the layer is used for embedding a child proxy).
+  DCHECK(ancestor_widget_);
+  DCHECK(Owner());
+
+  cc_layer_ = std::move(layer);
+  is_surface_layer_ = is_surface_layer;
+  if (cc_layer_ && is_surface_layer_) {
+    static_cast<cc::SurfaceLayer&>(*cc_layer_)
+        .SetHasPointerEventsNone(IsIgnoredForHitTest());
+  }
+  HTMLFrameOwnerElement* owner = To<HTMLFrameOwnerElement>(Owner());
+  owner->SetNeedsCompositingUpdate();
+
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // New layers for remote frames are controlled by Blink's embedder.
+    // To ensure the new surface is painted, we need to repaint the frame
+    // owner's PaintLayer.
+    LayoutBoxModelObject* layout_object = owner->GetLayoutBoxModelObject();
+    if (layout_object && layout_object->Layer())
+      layout_object->Layer()->SetNeedsRepaint();
+  }
+
+  // Schedule an animation so that a new frame is produced with the updated
+  // layer, otherwise this local root's visible content may not be up to date.
+  owner->GetDocument().GetFrame()->View()->ScheduleAnimation();
+}
+
+SkBitmap* RemoteFrame::GetSadPageBitmap() {
+  return Platform::Current()->GetSadPageBitmap();
 }
 
 bool RemoteFrame::DetachDocument() {
@@ -423,14 +512,14 @@ void RemoteFrame::DidChangeVisibleToHitTesting() {
   if (!cc_layer_ || !is_surface_layer_)
     return;
 
-  static_cast<cc::SurfaceLayer*>(cc_layer_)->SetHasPointerEventsNone(
-      IsIgnoredForHitTest());
+  static_cast<cc::SurfaceLayer&>(*cc_layer_)
+      .SetHasPointerEventsNone(IsIgnoredForHitTest());
 }
 
-void RemoteFrame::SetReplicatedFeaturePolicyHeader(
-    const ParsedFeaturePolicy& parsed_header) {
-  feature_policy_header_ = parsed_header;
-  ApplyReplicatedFeaturePolicyHeader();
+void RemoteFrame::SetReplicatedPermissionsPolicyHeader(
+    const ParsedPermissionsPolicy& parsed_header) {
+  permissions_policy_header_ = parsed_header;
+  ApplyReplicatedPermissionsPolicyHeader();
 }
 
 void RemoteFrame::SetReplicatedSandboxFlags(
@@ -485,16 +574,6 @@ void RemoteFrame::WillEnterFullscreen(
                                 request_type);
 }
 
-void RemoteFrame::AddReplicatedContentSecurityPolicies(
-    WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> csps) {
-  GetSecurityContext()->GetContentSecurityPolicy()->AddPolicies(
-      std::move(csps));
-}
-
-void RemoteFrame::ResetReplicatedContentSecurityPolicy() {
-  security_context_.ResetReplicatedContentSecurityPolicy();
-}
-
 void RemoteFrame::EnforceInsecureNavigationsSet(
     const WTF::Vector<uint32_t>& set) {
   security_context_.SetInsecureNavigationsSet(set);
@@ -517,7 +596,7 @@ void RemoteFrame::SetReplicatedOrigin(
   security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(
       is_potentially_trustworthy_unique_origin);
   security_context_.SetReplicatedOrigin(security_origin);
-  ApplyReplicatedFeaturePolicyHeader();
+  ApplyReplicatedPermissionsPolicyHeader();
 
   // If the origin of a remote frame changed, the accessibility object for the
   // owner element now points to a different child.
@@ -536,11 +615,7 @@ void RemoteFrame::SetReplicatedOrigin(
 
 void RemoteFrame::SetReplicatedAdFrameType(
     mojom::blink::AdFrameType ad_frame_type) {
-  if (ad_frame_type_ == mojom::blink::AdFrameType::kNonAd) {
-    ad_frame_type_ = ad_frame_type;
-  } else {
-    DCHECK_EQ(ad_frame_type_, ad_frame_type);
-  }
+  ad_frame_type_ = ad_frame_type;
 }
 
 void RemoteFrame::SetReplicatedName(const String& name,
@@ -690,28 +765,30 @@ void RemoteFrame::IntrinsicSizingInfoOfChildChanged(
   owner->IntrinsicSizingInfoChanged();
 }
 
-// Update the proxy's SecurityContext with new sandbox flags or feature policy
-// that were set during navigation. Unlike changes to the FrameOwner, which are
-// handled by RemoteFrame::DidUpdateFramePolicy, these changes should be
-// considered effective immediately.
+// Update the proxy's SecurityContext with new sandbox flags or permissions
+// policy that were set during navigation. Unlike changes to the FrameOwner,
+// which are handled by RemoteFrame::DidUpdateFramePolicy, these changes should
+// be considered effective immediately.
 //
 // These flags / policy are needed on the remote frame's SecurityContext to
-// ensure that sandbox flags and feature policy are inherited properly if this
-// proxy ever parents a local frame.
+// ensure that sandbox flags and permissions policy are inherited properly if
+// this proxy ever parents a local frame.
 void RemoteFrame::DidSetFramePolicyHeaders(
     network::mojom::blink::WebSandboxFlags sandbox_flags,
-    const WTF::Vector<ParsedFeaturePolicyDeclaration>& parsed_feature_policy) {
+    const WTF::Vector<ParsedPermissionsPolicyDeclaration>&
+        parsed_permissions_policy) {
   SetReplicatedSandboxFlags(sandbox_flags);
-  // Convert from WTF::Vector<ParsedFeaturePolicyDeclaration>
-  // to std::vector<ParsedFeaturePolicyDeclaration>, since ParsedFeaturePolicy
-  // is an alias for the later.
+  // Convert from WTF::Vector<ParsedPermissionsPolicyDeclaration>
+  // to std::vector<ParsedPermissionsPolicyDeclaration>, since
+  // ParsedPermissionsPolicy is an alias for the later.
   //
   // TODO(crbug.com/1047273): Remove this conversion by switching
-  // ParsedFeaturePolicy to operate over Vector
-  ParsedFeaturePolicy parsed_feature_policy_copy(parsed_feature_policy.size());
-  for (size_t i = 0; i < parsed_feature_policy.size(); ++i)
-    parsed_feature_policy_copy[i] = parsed_feature_policy[i];
-  SetReplicatedFeaturePolicyHeader(parsed_feature_policy_copy);
+  // ParsedPermissionsPolicy to operate over Vector
+  ParsedPermissionsPolicy parsed_permissions_policy_copy(
+      parsed_permissions_policy.size());
+  for (size_t i = 0; i < parsed_permissions_policy.size(); ++i)
+    parsed_permissions_policy_copy[i] = parsed_permissions_policy[i];
+  SetReplicatedPermissionsPolicyHeader(parsed_permissions_policy_copy);
 }
 
 // Update the proxy's FrameOwner with new sandbox flags and container policy
@@ -809,9 +886,7 @@ viz::FrameSinkId RemoteFrame::GetFrameSinkId() {
 }
 
 void RemoteFrame::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
-  // This is a temporary workaround for https://crbug.com/1166729.
-  // TODO(https://crbug.com/1166722): Remove this once the migration is done.
-  Client()->DidSetFrameSinkId();
+  remote_process_gone_ = false;
 
   // The same ParentLocalSurfaceIdAllocator cannot provide LocalSurfaceIds for
   // two different frame sinks, so recreate it here.
@@ -826,6 +901,12 @@ void RemoteFrame::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
   ResendVisualProperties();
 }
 
+void RemoteFrame::ChildProcessGone() {
+  remote_process_gone_ = true;
+  compositing_helper_->ChildFrameGone(
+      ancestor_widget_->GetOriginalScreenInfo().device_scale_factor);
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())
@@ -833,34 +914,6 @@ bool RemoteFrame::IsIgnoredForHitTest() const {
 
   return owner->OwnerType() == mojom::blink::FrameOwnerElementType::kPortal ||
          !visible_to_hit_testing_;
-}
-
-void RemoteFrame::SetCcLayer(cc::Layer* cc_layer, bool is_surface_layer) {
-  DCHECK(Owner());
-
-  cc_layer_ = cc_layer;
-  is_surface_layer_ = is_surface_layer;
-  if (cc_layer_) {
-    if (is_surface_layer) {
-      static_cast<cc::SurfaceLayer*>(cc_layer_)->SetHasPointerEventsNone(
-          IsIgnoredForHitTest());
-    }
-  }
-  HTMLFrameOwnerElement* owner = To<HTMLFrameOwnerElement>(Owner());
-  owner->SetNeedsCompositingUpdate();
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // New layers for remote frames are controlled by Blink's embedder.
-    // To ensure the new surface is painted, we need to repaint the frame
-    // owner's PaintLayer.
-    LayoutBoxModelObject* layout_object = owner->GetLayoutBoxModelObject();
-    if (layout_object && layout_object->Layer())
-      layout_object->Layer()->SetNeedsRepaint();
-  }
-
-  // Schedule an animation so that a new frame is produced with the updated
-  // layer, otherwise this local root's visible content may not be up to date.
-  owner->GetDocument().GetFrame()->View()->ScheduleAnimation();
 }
 
 void RemoteFrame::AdvanceFocus(mojom::blink::FocusType type,
@@ -881,21 +934,21 @@ bool RemoteFrame::DetachChildren() {
   return !!Client();
 }
 
-void RemoteFrame::ApplyReplicatedFeaturePolicyHeader() {
-  const FeaturePolicy* parent_feature_policy = nullptr;
+void RemoteFrame::ApplyReplicatedPermissionsPolicyHeader() {
+  const PermissionsPolicy* parent_permissions_policy = nullptr;
   if (Frame* parent_frame = Parent()) {
-    parent_feature_policy =
-        parent_frame->GetSecurityContext()->GetFeaturePolicy();
+    parent_permissions_policy =
+        parent_frame->GetSecurityContext()->GetPermissionsPolicy();
   }
-  ParsedFeaturePolicy container_policy;
+  ParsedPermissionsPolicy container_policy;
   if (Owner())
     container_policy = Owner()->GetFramePolicy().container_policy;
-  security_context_.InitializeFeaturePolicy(
-      feature_policy_header_, container_policy, parent_feature_policy);
+  security_context_.InitializePermissionsPolicy(
+      permissions_policy_header_, container_policy, parent_permissions_policy);
 }
 
 bool RemoteFrame::SynchronizeVisualProperties(bool propagate) {
-  if (!GetFrameSinkId().is_valid() || Client()->RemoteProcessGone())
+  if (!GetFrameSinkId().is_valid() || remote_process_gone_)
     return false;
 
   bool capture_sequence_number_changed =
@@ -947,9 +1000,13 @@ bool RemoteFrame::SynchronizeVisualProperties(bool propagate) {
 
   viz::SurfaceId surface_id(frame_sink_id_,
                             pending_visual_properties_.local_surface_id);
-  Client()->WillSynchronizeVisualProperties(
-      capture_sequence_number_changed, surface_id,
-      pending_visual_properties_.compositor_viewport.size());
+  DCHECK(ancestor_widget_);
+  DCHECK(surface_id.is_valid());
+  DCHECK(!remote_process_gone_);
+
+  compositing_helper_->SetSurfaceId(
+      surface_id, pending_visual_properties_.compositor_viewport.size(),
+      capture_sequence_number_changed);
 
   bool rect_changed = !sent_visual_properties_ ||
                       sent_visual_properties_->screen_space_rect !=

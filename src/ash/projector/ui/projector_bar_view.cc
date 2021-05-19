@@ -4,6 +4,7 @@
 
 #include "ash/projector/ui/projector_bar_view.h"
 
+#include "ash/projector/projector_controller_impl.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
@@ -15,6 +16,7 @@
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -38,16 +40,17 @@ constexpr int kStopRecordingButtonColorViewRadius = 2;
 
 }  // namespace
 
-ProjectorBarView::ProjectorBarView(ProjectorUiController* ui_controller)
-    : ui_controller_(ui_controller) {
+ProjectorBarView::ProjectorBarView(
+    ProjectorControllerImpl* projector_controller)
+    : projector_controller_(projector_controller) {
   InitLayout();
 }
 
 ProjectorBarView::~ProjectorBarView() = default;
 
 views::UniqueWidgetPtr ProjectorBarView::Create(
-    ProjectorUiController* ui_controller) {
-  auto bar_view = std::make_unique<ProjectorBarView>(ui_controller);
+    ProjectorControllerImpl* projector_controller) {
+  auto bar_view = std::make_unique<ProjectorBarView>(projector_controller);
 
   views::Widget::InitParams params;
   params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
@@ -68,6 +71,16 @@ views::UniqueWidgetPtr ProjectorBarView::Create(
       std::make_unique<views::Widget>(std::move(params)));
   widget->SetContentsView(std::move(bar_view));
   return widget;
+}
+
+void ProjectorBarView::OnLaserPointerStateChanged(bool enabled) {
+  laser_pointer_button_->SetToggled(enabled);
+}
+
+void ProjectorBarView::OnMarkerStateChanged(bool enabled) {
+  marker_button_->SetToggled(enabled);
+
+  // TODO(llin): shows the marker submenu if marker is enabled.
 }
 
 void ProjectorBarView::OnThemeChanged() {
@@ -110,6 +123,18 @@ void ProjectorBarView::InitLayout() {
       base::BindRepeating(&ProjectorBarView::OnKeyIdeaButtonPressed,
                           base::Unretained(this)),
       kProjectorKeyIdeaIcon));
+
+  // Add laser pointer button.
+  laser_pointer_button_ = AddChildView(std::make_unique<ProjectorImageButton>(
+      base::BindRepeating(&ProjectorBarView::OnLaserPointerPressed,
+                          base::Unretained(this)),
+      kPaletteTrayIconLaserPointerIcon));
+
+  // Add marker button.
+  marker_button_ = AddChildView(std::make_unique<ProjectorImageButton>(
+      base::BindRepeating(&ProjectorBarView::OnMarkerPressed,
+                          base::Unretained(this)),
+      kProjectorMarkerIcon));
 }
 
 void ProjectorBarView::UpdateVectorIcon() {
@@ -137,7 +162,16 @@ void ProjectorBarView::OnStopButtonPressed() {
 }
 
 void ProjectorBarView::OnKeyIdeaButtonPressed() {
-  ui_controller_->OnKeyIdeaMarked();
+  DCHECK(projector_controller_);
+  projector_controller_->MarkKeyIdea();
+}
+
+void ProjectorBarView::OnLaserPointerPressed() {
+  projector_controller_->OnLaserPointerPressed();
+}
+
+void ProjectorBarView::OnMarkerPressed() {
+  projector_controller_->OnMarkerPressed();
 }
 
 BEGIN_METADATA(ProjectorBarView, views::View)

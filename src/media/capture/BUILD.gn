@@ -36,13 +36,16 @@ component("capture_base") {
     "video/video_capture_device_descriptor.h",
     "video/video_capture_device_info.cc",
     "video/video_capture_device_info.h",
+    "video/video_capture_feedback.cc",
+    "video/video_capture_feedback.h",
     "video_capture_types.cc",
     "video_capture_types.h",
   ]
   deps = [
     "//base",
     "//base:i18n",
-    "//media",
+    "//media:shared_memory_support",
+    "//media/base:video_facing",
     "//ui/gfx",
   ]
 }
@@ -178,11 +181,8 @@ component("capture_lib") {
       "video/mac/pixel_buffer_transferer_mac.h",
       "video/mac/sample_buffer_transformer_mac.cc",
       "video/mac/sample_buffer_transformer_mac.h",
-      "video/mac/video_capture_device_avfoundation_legacy_mac.h",
-      "video/mac/video_capture_device_avfoundation_legacy_mac.mm",
       "video/mac/video_capture_device_avfoundation_mac.h",
       "video/mac/video_capture_device_avfoundation_mac.mm",
-      "video/mac/video_capture_device_avfoundation_protocol_mac.h",
       "video/mac/video_capture_device_avfoundation_utils_mac.h",
       "video/mac/video_capture_device_avfoundation_utils_mac.mm",
       "video/mac/video_capture_device_decklink_mac.h",
@@ -293,6 +293,8 @@ component("capture_lib") {
       "video/chromeos/camera_device_delegate.h",
       "video/chromeos/camera_hal_delegate.cc",
       "video/chromeos/camera_hal_delegate.h",
+      "video/chromeos/camera_hal_dispatcher_impl.cc",
+      "video/chromeos/camera_hal_dispatcher_impl.h",
       "video/chromeos/camera_metadata_utils.cc",
       "video/chromeos/camera_metadata_utils.h",
       "video/chromeos/capture_metadata_dispatcher.h",
@@ -334,6 +336,7 @@ component("capture_lib") {
     deps += [
       "//ash/constants",
       "//build/config/linux/libdrm",
+      "//chromeos/dbus/power",
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
       "//components/chromeos_camera/common",
       "//components/device_event_log",
@@ -341,17 +344,6 @@ component("capture_lib") {
       "//media/capture/video/chromeos/mojom:cros_camera",
       "//third_party/libsync",
     ]
-  }
-
-  if (is_chromeos_ash) {
-    sources += [
-      "video/chromeos/ash/camera_hal_dispatcher_impl.cc",
-      "video/chromeos/ash/camera_hal_dispatcher_impl.h",
-      "video/chromeos/ash/power_manager_client_proxy.cc",
-      "video/chromeos/ash/power_manager_client_proxy.h",
-    ]
-
-    deps += [ "//chromeos/dbus/power" ]
   }
 
   if (is_fuchsia) {
@@ -490,6 +482,9 @@ test("capture_unittests") {
       "video/fuchsia/video_capture_device_factory_fuchsia_test.cc",
       "video/fuchsia/video_capture_device_fuchsia_test.cc",
     ]
+    additional_manifest_fragments = [
+      "//build/config/fuchsia/test/web_engine_required_capabilities.test-cmx",
+    ]
   }
 
   if (is_mac) {
@@ -530,6 +525,7 @@ test("capture_unittests") {
       "mfplat.lib",
       "mfreadwrite.lib",
       "mfuuid.lib",
+      "dxguid.lib",
     ]
     ldflags = [
       "/DELAYLOAD:mf.dll",
@@ -550,10 +546,10 @@ test("capture_unittests") {
 
   if (is_chromeos_ash) {
     sources += [
-      "video/chromeos/ash/camera_hal_dispatcher_impl_unittest.cc",
       "video/chromeos/camera_3a_controller_unittest.cc",
       "video/chromeos/camera_device_delegate_unittest.cc",
       "video/chromeos/camera_hal_delegate_unittest.cc",
+      "video/chromeos/camera_hal_dispatcher_impl_unittest.cc",
       "video/chromeos/request_manager_unittest.cc",
       "video/chromeos/token_manager_unittest.cc",
     ]

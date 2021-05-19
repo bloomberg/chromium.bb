@@ -4,60 +4,123 @@
 
 #include "components/optimization_guide/content/browser/page_content_annotations_service.h"
 
-#include "base/sequenced_task_runner.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/task/task_traits.h"
+#include "base/metrics/histogram_functions.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/optimization_guide/content/browser/optimization_guide_decider.h"
+#include "components/optimization_guide/core/optimization_guide_enums.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+#include "components/optimization_guide/content/browser/page_content_annotations_model_manager.h"
+#endif
+
 namespace optimization_guide {
 
-PageContentAnnotationsService::PageContentAnnotationsService(
-    OptimizationGuideDecider* optimization_guide_decider) {
-  DCHECK(optimization_guide_decider);
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-  page_topics_model_executor_ = std::make_unique<BertModelExecutor>(
-      optimization_guide_decider, proto::OPTIMIZATION_TARGET_PAGE_TOPICS,
-      /*model_metadata=*/base::nullopt,
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
+namespace {
+
+void LogPageContentAnnotationsStorageStatus(
+    PageContentAnnotationsStorageStatus status) {
+  DCHECK_NE(status, PageContentAnnotationsStorageStatus::kUnknown);
+  base::UmaHistogramEnumeration(
+      "OptimizationGuide.PageContentAnnotationsService."
+      "ContentAnnotationsStorageStatus",
+      status);
+}
+
+}  // namespace
+#endif
+
+PageContentAnnotationsService::PageContentAnnotationsService(
+    OptimizationGuideDecider* optimization_guide_decider,
+    history::HistoryService* history_service) {
+  DCHECK(optimization_guide_decider);
+  DCHECK(history_service);
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  history_service_ = history_service;
+  model_manager_ = std::make_unique<PageContentAnnotationsModelManager>(
+      optimization_guide_decider);
 #endif
 }
 
 PageContentAnnotationsService::~PageContentAnnotationsService() = default;
 
 void PageContentAnnotationsService::Annotate(const HistoryVisit& visit,
-                                             const base::string16& text) {
+                                             const std::string& text) {
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-  page_topics_model_executor_->ExecuteModelWithInput(
-      base::BindOnce(
-          &PageContentAnnotationsService::OnPageTopicsModelExecutionCompleted,
-          weak_ptr_factory_.GetWeakPtr(), visit),
-      base::UTF16ToUTF8(text));
+  model_manager_->Annotate(
+      text,
+      base::BindOnce(&PageContentAnnotationsService::OnPageContentAnnotated,
+                     weak_ptr_factory_.GetWeakPtr(), visit));
 #endif
 }
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-void PageContentAnnotationsService::OnPageTopicsModelExecutionCompleted(
+void PageContentAnnotationsService::OnPageContentAnnotated(
     const HistoryVisit& visit,
-    const base::Optional<std::vector<tflite::task::core::Category>>& output) {
-  // TODO(crbug/1177102): If success, then populate to history service.
+    const base::Optional<history::VisitContentModelAnnotations>&
+        content_annotations) {
+  base::UmaHistogramBoolean(
+      "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated",
+      content_annotations.has_value());
+  if (!content_annotations)
+    return;
+
+  if (!features::ShouldWriteContentAnnotationsToHistoryService())
+    return;
+
+  history_service_->QueryURL(
+      visit.url, /*want_visits=*/true,
+      base::BindOnce(&PageContentAnnotationsService::OnURLQueried,
+                     weak_ptr_factory_.GetWeakPtr(), visit,
+                     *content_annotations),
+      &history_service_task_tracker_);
+}
+#endif
+
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+void PageContentAnnotationsService::OnURLQueried(
+    const HistoryVisit& visit,
+    const history::VisitContentModelAnnotations& content_annotations,
+    history::QueryURLResult url_result) {
+  if (!url_result.success) {
+    LogPageContentAnnotationsStorageStatus(
+        PageContentAnnotationsStorageStatus::kNoVisitsForUrl);
+    return;
+  }
+
+  bool did_store_content_annotations = false;
+  for (const auto& visit_for_url : url_result.visits) {
+    if (visit.nav_entry_timestamp != visit_for_url.visit_time)
+      continue;
+
+    history_service_->AddContentModelAnnotationsForVisit(visit_for_url.visit_id,
+                                                         content_annotations);
+
+    did_store_content_annotations = true;
+    break;
+  }
+  LogPageContentAnnotationsStorageStatus(
+      did_store_content_annotations ? kSuccess : kSpecificVisitForUrlNotFound);
 }
 #endif
 
 base::Optional<int64_t>
 PageContentAnnotationsService::GetPageTopicsModelVersion() const {
-  // TODO(crbug/1177102): Extract this from |page_topics_model_executor| if
-  /// building with tflite lib.
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  return model_manager_->GetPageTopicsModelVersion();
+#else
   return base::nullopt;
+#endif
 }
 
 // static
 HistoryVisit PageContentAnnotationsService::CreateHistoryVisitFromWebContents(
     content::WebContents* web_contents) {
   HistoryVisit visit = {
-      web_contents->GetController().GetLastCommittedEntry()->GetUniqueID(),
+      web_contents->GetController().GetLastCommittedEntry()->GetTimestamp(),
       web_contents->GetLastCommittedURL()};
   return visit;
 }

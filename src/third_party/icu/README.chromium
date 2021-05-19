@@ -311,3 +311,15 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-21492
   - updatream PR:
     https://github.com/unicode-org/icu/pull/1577
+
+18. Patch source/common/uposixdefs.h so it compiles on Fuchsia on Macs.
+    patches/fuchsia.patch
+    - context bug: https://bugs.chromium.org/p/chromium/issues/detail?id=1184527
+
+19. Patch locid.cpp to fix locale canoncalization due to overflow of strcmp return value
+    patches/locid_sort.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21521
+  - updatream PR:
+    https://github.com/unicode-org/icu/pull/1618
+

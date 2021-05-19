@@ -76,8 +76,6 @@ using ::testing::ContainsRegex;
 using ::testing::ElementsAreArray;
 using ::testing::HasSubstr;
 
-constexpr size_t kBuiltinPackets = 12;
-
 std::string RandomTraceFileName() {
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
   constexpr char kSysTmpPath[] = "/data/misc/perfetto-traces";
@@ -1133,12 +1131,12 @@ TEST_F(PerfettoCmdlineTest, NoSanitizers(InvalidCases)) {
   EXPECT_EQ(1, empty_config.Run(&stderr_));
   EXPECT_THAT(stderr_, HasSubstr("TraceConfig is empty"));
 
-  // Cannot make assertions on --dropbox because on standalone builds it fails
+  // Cannot make assertions on --upload because on standalone builds it fails
   // prematurely due to lack of dropbox.
   EXPECT_EQ(1, missing_dropbox.Run(&stderr_));
 
   EXPECT_EQ(1, either_out_or_dropbox.Run(&stderr_));
-  EXPECT_THAT(stderr_, HasSubstr("Either --out or --dropbox"));
+  EXPECT_THAT(stderr_, HasSubstr("Either --out or --upload"));
 
   // Disallow mixing simple and file config.
   EXPECT_EQ(1, simple_and_file_1.Run(&stderr_));
@@ -1167,7 +1165,7 @@ TEST_F(PerfettoCmdlineTest, NoSanitizers(InvalidCases)) {
   EXPECT_THAT(stderr_, ContainsRegex("option.*--detach.*requires an argument"));
 
   EXPECT_EQ(1, detach_without_out_or_dropbox.Run(&stderr_));
-  EXPECT_THAT(stderr_, HasSubstr("--out or --dropbox is required"));
+  EXPECT_THAT(stderr_, HasSubstr("--out or --upload is required"));
 
   // Cannot trace and use --query.
   EXPECT_EQ(1, trace_and_query_1.Run(&stderr_));
@@ -1272,23 +1270,30 @@ TEST_F(PerfettoCmdlineTest, NoSanitizers(StartTracingTrigger)) {
   base::ReadFile(path, &trace_str);
   protos::gen::Trace trace;
   ASSERT_TRUE(trace.ParseFromString(trace_str));
-  EXPECT_EQ(static_cast<int>(kBuiltinPackets + kMessageCount),
-            trace.packet_size());
+  size_t for_testing_packets = 0;
+  size_t trigger_packets = 0;
+  size_t trace_config_packets = 0;
   for (const auto& packet : trace.packet()) {
     if (packet.has_trace_config()) {
       // Ensure the trace config properly includes the trigger mode we set.
       auto kStartTrig = protos::gen::TraceConfig::TriggerConfig::START_TRACING;
       EXPECT_EQ(kStartTrig,
                 packet.trace_config().trigger_config().trigger_mode());
+      ++trace_config_packets;
     } else if (packet.has_trigger()) {
       // validate that the triggers are properly added to the trace.
       EXPECT_EQ("trigger_name", packet.trigger().trigger_name());
+      ++trigger_packets;
     } else if (packet.has_for_testing()) {
       // Make sure that the data size is correctly set based on what we
       // requested.
       EXPECT_EQ(kMessageSize, packet.for_testing().str().size());
+      ++for_testing_packets;
     }
   }
+  EXPECT_EQ(trace_config_packets, 1u);
+  EXPECT_EQ(trigger_packets, 1u);
+  EXPECT_EQ(for_testing_packets, kMessageCount);
 }
 
 TEST_F(PerfettoCmdlineTest, NoSanitizers(StopTracingTrigger)) {
@@ -1360,15 +1365,17 @@ TEST_F(PerfettoCmdlineTest, NoSanitizers(StopTracingTrigger)) {
   base::ReadFile(path, &trace_str);
   protos::gen::Trace trace;
   ASSERT_TRUE(trace.ParseFromString(trace_str));
-  EXPECT_EQ(static_cast<int>(kBuiltinPackets + 1 + kMessageCount),
-            trace.packet_size());
   bool seen_first_trigger = false;
+  size_t for_testing_packets = 0;
+  size_t trigger_packets = 0;
+  size_t trace_config_packets = 0;
   for (const auto& packet : trace.packet()) {
     if (packet.has_trace_config()) {
       // Ensure the trace config properly includes the trigger mode we set.
       auto kStopTrig = protos::gen::TraceConfig::TriggerConfig::STOP_TRACING;
       EXPECT_EQ(kStopTrig,
                 packet.trace_config().trigger_config().trigger_mode());
+      ++trace_config_packets;
     } else if (packet.has_trigger()) {
       // validate that the triggers are properly added to the trace.
       if (!seen_first_trigger) {
@@ -1377,12 +1384,17 @@ TEST_F(PerfettoCmdlineTest, NoSanitizers(StopTracingTrigger)) {
       } else {
         EXPECT_EQ("trigger_name_3", packet.trigger().trigger_name());
       }
+      ++trigger_packets;
     } else if (packet.has_for_testing()) {
       // Make sure that the data size is correctly set based on what we
       // requested.
       EXPECT_EQ(kMessageSize, packet.for_testing().str().size());
+      ++for_testing_packets;
     }
   }
+  EXPECT_EQ(trace_config_packets, 1u);
+  EXPECT_EQ(trigger_packets, 2u);
+  EXPECT_EQ(for_testing_packets, kMessageCount);
 }
 
 // Dropbox on the commandline client only works on android builds. So disable

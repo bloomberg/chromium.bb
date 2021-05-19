@@ -226,6 +226,16 @@ var (
 			path:           "win_toolchain",
 		},
 	}
+
+	// Enable reduceOpsTaskSplitting option on these models
+	// skbug.com/10877#c27
+	REDUCE_OPS_TASK_SPLITTING_MODELS = []string{
+		"AndroidOne",
+		"GalaxyS20",
+		"Nexus5x",
+		"Nexus7",
+		"NUC7i5BNK",
+	}
 )
 
 // Config contains general configuration information.
@@ -255,6 +265,10 @@ type Config struct {
 
 	// List of task names for which we'll never upload results.
 	NoUpload []string `json:"no_upload"`
+
+	// PathToSkia is the relative path from the root of the current checkout to
+	// the root of the Skia checkout.
+	PathToSkia string `json:"path_to_skia"`
 
 	// Swarming pool used for triggering tasks.
 	Pool string `json:"pool"`
@@ -494,7 +508,7 @@ func GenTasks(cfg *Config) {
 		Excludes: []string{rbe.ExcludeGitDir},
 	})
 	b.MustAddCasSpec(CAS_WHOLE_REPO, CAS_SPEC_WHOLE_REPO)
-	generateCompileCAS(b)
+	generateCompileCAS(b, cfg)
 
 	builder.MustFinish()
 }
@@ -606,12 +620,11 @@ func (b *jobBuilder) deriveCompileTaskName() string {
 			ec = strings.Split(val, "_")
 			ignore := []string{
 				"Skpbench", "AbandonGpuContext", "PreAbandonGpuContext", "Valgrind",
-				"ReleaseAndAbandonGpuContext", "CCPR", "FSAA", "FAAA", "FDAA", "NativeFonts", "GDI",
+				"ReleaseAndAbandonGpuContext", "FSAA", "FAAA", "FDAA", "NativeFonts", "GDI",
 				"NoGPUThreads", "ProcDump", "DDL1", "DDL3", "OOPRDDL", "T8888",
 				"DDLTotal", "DDLRecord", "9x9", "BonusConfigs", "SkottieTracing", "SkottieWASM",
-				"GpuTess", "NonNVPR", "Mskp", "Docker", "PDF", "SkVM", "Puppeteer",
-				"SkottieFrames", "RenderSKP", "CanvasPerf", "AllPathsVolatile", "WebGL2",
-				"ReduceOpsTaskSplitting"}
+				"GpuTess", "DMSAA", "Mskp", "Docker", "PDF", "SkVM", "Puppeteer",
+				"SkottieFrames", "RenderSKP", "CanvasPerf", "AllPathsVolatile", "WebGL2"}
 			keep := make([]string, 0, len(ec))
 			for _, part := range ec {
 				if !In(part, ignore) {
@@ -706,6 +719,8 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 			"Mac10.13":   "Mac-10.13.6",
 			"Mac10.14":   "Mac-10.14.3",
 			"Mac10.15.1": "Mac-10.15.1",
+			"Mac10.15.7": "Mac-10.15.7", // Same as 'Mac', but explicit.
+			"Mac11":      "Mac-11.1",
 			"Ubuntu18":   "Ubuntu-18.04",
 			"Win":        DEFAULT_OS_WIN,
 			"Win10":      "Windows-10-18363",
@@ -728,10 +743,6 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 		if os == "Mac10.15" && b.parts["model"] == "VMware7.1" {
 			// ChOps VMs are at a newer version of MacOS.
 			d["os"] = "Mac-10.15.7"
-		}
-		if b.parts["model"] == "LenovoYogaC630" {
-			// This is currently a unique snowflake.
-			d["os"] = "Windows-10"
 		}
 		if b.parts["model"] == "iPhone6" {
 			// This is the latest iOS that supports iPhone6.
@@ -807,6 +818,9 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 			d["docker_installed"] = "true"
 		} else if b.cpu() || b.extraConfig("CanvasKit", "Docker", "SwiftShader") {
 			modelMapping, ok := map[string]map[string]string{
+				"AppleM1": {
+					"MacMini9.1": "arm64-64-Apple_M1",
+				},
 				"AVX": {
 					"VMware7.1": "x86-64-E5-2697_v2",
 				},
@@ -822,9 +836,6 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 				},
 				"Rome": {
 					"GCE": "x86-64-AMD_Rome_GCE",
-				},
-				"Snapdragon850": {
-					"LenovoYogaC630": "arm64-64-Snapdragon850",
 				},
 				"SwiftShader": {
 					"GCE": "x86-64-Haswell_GCE",
@@ -851,7 +862,7 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 					"Adreno630":     "Adreno630",
 					"GT610":         "10de:104a-23.21.13.9101",
 					"GTX660":        "10de:11c0-26.21.14.4120",
-					"GTX960":        "10de:1401-26.21.14.4120",
+					"GTX960":        "10de:1401-27.21.14.5671",
 					"IntelHD4400":   "8086:0a16-20.19.15.4963",
 					"IntelIris540":  "8086:1926-26.20.100.7463",
 					"IntelIris6100": "8086:162b-20.19.15.4963",
@@ -879,6 +890,7 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 				d["gpu"] = gpu
 			} else if b.matchOs("Mac") {
 				gpu, ok := map[string]string{
+					"AppleM1":       "AppleM1",
 					"IntelHD6000":   "8086:1626",
 					"IntelHD615":    "8086:591e",
 					"IntelIris5100": "8086:0a2e",
@@ -887,7 +899,12 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 				if !ok {
 					log.Fatalf("Entry %q not found in Mac GPU mapping.", b.parts["cpu_or_gpu_value"])
 				}
-				d["gpu"] = gpu
+				if gpu == "AppleM1" {
+					// No GPU dimension yet, but we can constrain by CPU.
+					d["cpu"] = "arm64-64-Apple_M1"
+				} else {
+					d["gpu"] = gpu
+				}
 				// Yuck. We have two different types of MacMini7,1 with the same GPU but different CPUs.
 				if b.gpu("IntelIris5100") {
 					// Run all tasks on Golo machines for now.
@@ -1435,6 +1452,13 @@ func (b *taskBuilder) commonTestPerfAssets() {
 	}
 }
 
+// directUpload adds prerequisites for uploading to GCS.
+func (b *taskBuilder) directUpload(gsBucket, serviceAccount string) {
+	b.recipeProp("gs_bucket", gsBucket)
+	b.serviceAccount(serviceAccount)
+	b.cipd(specs.CIPD_PKGS_GSUTIL...)
+}
+
 // dm generates a Test task using dm.
 func (b *jobBuilder) dm() {
 	compileTaskName := ""
@@ -1442,6 +1466,7 @@ func (b *jobBuilder) dm() {
 	if !b.extraConfig("LottieWeb") {
 		compileTaskName = b.compile()
 	}
+	directUpload := false
 	b.addTask(b.Name, func(b *taskBuilder) {
 		cas := CAS_TEST
 		recipe := "test"
@@ -1459,9 +1484,17 @@ func (b *jobBuilder) dm() {
 		} else if b.extraConfig("PathKit") {
 			cas = CAS_PATHKIT
 			recipe = "test_pathkit"
+			if b.doUpload() {
+				b.directUpload(b.cfg.GsBucketGm, b.cfg.ServiceAccountUploadGM)
+				directUpload = true
+			}
 		} else if b.extraConfig("CanvasKit") {
 			cas = CAS_CANVASKIT
 			recipe = "test_canvaskit"
+			if b.doUpload() {
+				b.directUpload(b.cfg.GsBucketGm, b.cfg.ServiceAccountUploadGM)
+				directUpload = true
+			}
 		} else if b.extraConfig("LottieWeb") {
 			// CAS_LOTTIE_CI differs from CAS_LOTTIE_WEB in that it includes
 			// more of the files, especially those brought in via DEPS in the
@@ -1471,6 +1504,18 @@ func (b *jobBuilder) dm() {
 			// ToT.
 			cas = CAS_LOTTIE_CI
 			recipe = "test_lottie_web"
+			if b.doUpload() {
+				b.directUpload(b.cfg.GsBucketGm, b.cfg.ServiceAccountUploadGM)
+				directUpload = true
+			}
+		} else {
+			// Default recipe supports direct upload.
+			// TODO(http://skbug.com/11785): Windows jobs are unable to extract gsutil.
+			// https://bugs.chromium.org/p/chromium/issues/detail?id=1192611
+			if b.doUpload() && !b.matchOs("Win") {
+				b.directUpload(b.cfg.GsBucketGm, b.cfg.ServiceAccountUploadGM)
+				directUpload = true
+			}
 		}
 		b.recipeProp("gold_hashes_url", b.cfg.GoldHashesURL)
 		b.recipeProps(EXTRA_PROPS)
@@ -1524,7 +1569,7 @@ func (b *jobBuilder) dm() {
 
 	// Upload results if necessary. TODO(kjlubick): If we do coverage analysis at the same
 	// time as normal tests (which would be nice), cfg.json needs to have Coverage removed.
-	if b.doUpload() {
+	if b.doUpload() && !directUpload {
 		uploadName := fmt.Sprintf("%s%s%s", PREFIX_UPLOAD, b.jobNameSchema.Sep, b.Name)
 		depName := b.Name
 		b.addTask(uploadName, func(b *taskBuilder) {
@@ -1568,9 +1613,8 @@ func (b *jobBuilder) fm() {
 			"--bot", b.Name,
 			"--gold="+strconv.FormatBool(!b.matchExtraConfig("SAN")),
 			"build/fm${EXECUTABLE_SUFFIX}")
-		b.serviceAccount(b.cfg.ServiceAccountCompile)
+		b.serviceAccount(b.cfg.ServiceAccountUploadGM)
 		b.swarmDimensions()
-		b.expiration(15 * time.Minute)
 		b.attempts(1)
 
 		if b.isLinux() && b.matchExtraConfig("SAN") {
@@ -1790,6 +1834,8 @@ func (b *jobBuilder) perf() {
 		b.recipeProps(EXTRA_PROPS)
 		if recipe == "perf" {
 			b.nanobenchFlags(doUpload)
+		} else if recipe == "skpbench" {
+			b.skpbenchFlags()
 		}
 		b.kitchenTask(recipe, OUTPUT_PERF)
 		b.cas(cas)

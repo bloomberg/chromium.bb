@@ -42,7 +42,6 @@ import {
   isAndroidP,
   isChromeTarget,
   isCrOSTarget,
-  MAX_TIME,
   RecordConfig,
   RecordingTarget
 } from '../common/state';
@@ -76,12 +75,6 @@ export function genConfig(
   const protoCfg = new TraceConfig();
   protoCfg.durationMs = uiCfg.durationMs;
 
-  let time = protoCfg.durationMs / 1000;
-
-  if (time > MAX_TIME) {
-    time = MAX_TIME;
-  }
-
   // Auxiliary buffer for slow-rate events.
   // Set to 1/8th of the main buffer size, with reasonable limits.
   let slowBufSizeKb = uiCfg.bufferSizeMb * (1024 / 8);
@@ -108,6 +101,11 @@ export function genConfig(
       protoCfg.fileWritePeriodMs = uiCfg.fileWritePeriodMs;
       protoCfg.maxFileSizeBytes = uiCfg.maxFileSizeMb * 1e6;
     }
+
+    // Clear incremental state every 5 seconds when tracing into a ring buffer.
+    const incStateConfig = new TraceConfig.IncrementalStateConfig();
+    incStateConfig.clearPeriodMs = 5000;
+    protoCfg.incrementalStateConfig = incStateConfig;
   }
 
   const ftraceEvents = new Set<string>(uiCfg.ftrace ? uiCfg.ftraceEvents : []);
@@ -207,6 +205,7 @@ export function genConfig(
     ftraceEvents.add('mm_event/mm_event_record');
     ftraceEvents.add('kmem/rss_stat');
     ftraceEvents.add('ion/ion_stat');
+    ftraceEvents.add('dmabuf_heap/dma_heap_stat');
     ftraceEvents.add('kmem/ion_heap_grow');
     ftraceEvents.add('kmem/ion_heap_shrink');
   }

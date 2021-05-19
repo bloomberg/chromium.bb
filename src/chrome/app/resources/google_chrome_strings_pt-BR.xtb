@@ -11,13 +11,12 @@
 <translation id="1125124144982679672">Quem está usando o Chrome?</translation>
 <translation id="1142745911746664600">Não é possível atualizar o Chrome</translation>
 <translation id="1154147086299354128">&amp;Abrir no Chrome</translation>
-<translation id="123620459398936149">O Google Chrome não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> requer que você leia e aceite os Termos de Serviço a seguir antes de usar o dispositivo. Esses termos não ampliam, modificam nem limitam os Termos do Google Chrome OS.</translation>
 <translation id="1302523850133262269">Aguarde enquanto o Chrome instala as últimas atualizações do sistema.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Este computador já tem uma versão mais recente do Google Chrome. Caso o software não esteja funcionando, desinstale-o e tente novamente.</translation>
 <translation id="1434626383986940139">Aplicativos Canary do Google Chrome</translation>
-<translation id="147727933880789532">O Chrome recomenda desativar essa extensão porque ela não atende aos padrões do Navegação segura com maior proteção.</translation>
+<translation id="1507198376417198979">Personalize seu novo perfil do Chrome</translation>
 <translation id="1516530951338665275">O Google Chrome precisa acessar o Bluetooth para continuar o 
  pareamento. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
@@ -26,7 +25,6 @@
 <translation id="1587325591171447154">O arquivo <ph name="FILE_NAME" /> é perigoso. Por isso ele foi bloqueado pelo Chrome.</translation>
 <translation id="1597911401261118146">Para verificar se suas senhas estão protegidas contra violações de dados e outros problemas de segurança, <ph name="BEGIN_LINK" />faça login no Chrome<ph name="END_LINK" />.</translation>
 <translation id="1619887657840448962">Para tornar o Chrome mais seguro, desativamos a extensão a seguir, que não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e pode ter sido adicionada sem seu conhecimento.</translation>
-<translation id="162629503687514352">Não foi possível sincronizar suas senhas no Chrome OS.</translation>
 <translation id="1628000112320670027">Ajuda com o Chrome</translation>
 <translation id="1666409074978194368">Falta pouco para a atualização terminar. Reinicie o Google Chrome para concluir esse processo. As janelas anônimas não serão abertas novamente.</translation>
 <translation id="1674870198290878346">Abrir link na janela &amp;sem rastros do Chrome</translation>
@@ -91,14 +89,12 @@
 <translation id="3089968997497233615">Há uma versão nova e mais segura do Google Chrome disponível.</translation>
 <translation id="3100998948628680988">Nomear seu perfil do Chrome</translation>
 <translation id="3114643501466072395">Para verificar se suas outras senhas estão protegidas contra violações de dados e outros problemas de segurança, <ph name="BEGIN_LINK" />faça login no Chrome<ph name="END_LINK" />.</translation>
-<translation id="3127818369811890733">Não foi possível sincronizar seus dados no Chrome OS.</translation>
 <translation id="3140883423282498090">Suas alterações terão efeito na próxima vez que você reiniciar o Google Chrome.</translation>
 <translation id="3149510190863420837">apps do Chrome</translation>
 <translation id="3360895254066713204">Auxiliar do Google Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{O Chrome será reiniciado agora}=1{O Chrome será reiniciado em 1 segundo}one{O Chrome será reiniciado em # segundo}other{O Chrome será reiniciado em # segundos}}</translation>
 <translation id="3395323229510056640">Ajuda com o Chrome OS</translation>
 <translation id="3396977131400919238">Ocorreu um erro no sistema operacional durante a instalação. Baixe o Google Chrome novamente.</translation>
-<translation id="3398288718845740432">Esconder no menu do Google Chrome</translation>
 <translation id="3434246496373299699">O Chrome pode verificar suas senhas quando você faz login com sua Conta do Google</translation>
 <translation id="3451115285585441894">Adicionando ao Google Chrome...</translation>
 <translation id="345171907106878721">Cadastrar-se no Chrome</translation>
@@ -146,7 +142,6 @@
 <translation id="4571503333518166079">Acessar as configurações de notificação do Chrome</translation>
 <translation id="459622048091363950">Assim que o Chrome tiver acesso, os sites poderão solicitar acesso.</translation>
 <translation id="4600710005438004015">Não foi possível atualizar o Chrome para a versão mais recente. Com isso, você está perdendo novos recursos e correções de segurança.</translation>
-<translation id="4631713731678262610">Esconder no menu do Google Chrome</translation>
 <translation id="4633000520311261472">Para tornar o Google Chrome mais seguro, desativamos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e podem ser sido adicionadas sem seu conhecimento.</translation>
 <translation id="4666328473657283332">Para ter acesso aos recursos do Chrome em todos os seus dispositivos, faça login e ative a sincronização.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não-especificado. Se o Google Chrome estiver em execução no momento, feche-o e tente novamente.</translation>
@@ -192,6 +187,7 @@
 <translation id="6070348360322141662">Para maior segurança, o Google Chrome criptografará seus dados</translation>
 <translation id="608006075545470555">Adicionar um perfil de trabalho a este navegador</translation>
 <translation id="6113794647360055231">O Chrome ficou ainda melhor</translation>
+<translation id="6145313976051292476">Abrir PDFs no Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" />: Google Chrome Beta</translation>
 <translation id="61852838583753520">Atualizar o Chrome OS</translation>
@@ -204,7 +200,6 @@
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" />: Google Chrome Dev</translation>
 <translation id="6566149418543181476">Atualizando o Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">Sistema Chrome OS</translation>
-<translation id="6650333065969705433">Para usar o Rosetta para reproduzir mídia protegida, reinicie o Chrome.</translation>
 <translation id="6676384891291319759">Acessar a internet</translation>
 <translation id="6679975945624592337">Permitir a execução do Google Chrome em segundo plano</translation>
 <translation id="6739177684496155661">Continuar em um novo perfil do Chrome?</translation>
@@ -216,7 +211,7 @@
 <translation id="6943584222992551122">Os dados de navegação dessa pessoa serão excluídos deste dispositivo. Para recuperar os dados, faça login no Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Regra interna do Google Chrome Beta que permite o tráfego mDNS.</translation>
 <translation id="6989339256997917931">O Google Chrome foi atualizado, mas ele não é utilizado há pelo menos trinta dias.</translation>
-<translation id="7054640471403081847">Este computador em breve parará de receber atualizações do Google Chrome, porque seu hardware não é mais suportado.</translation>
+<translation id="7025800014283535195">Aqui, você pode alternar entre os perfis do Chrome</translation>
 <translation id="7062128746136194023">Seu pai/mãe desativou "Permissões para sites, apps e extensões" no Chrome. Não é permitido adicionar <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="7098166902387133879">O Google Chrome está usando seu microfone.</translation>
 <translation id="7106741999175697885">Gerenciador de tarefas - Google Chrome</translation>
@@ -269,7 +264,6 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">Este perfil de trabalho é completamente separado do seu perfil pessoal.</translation>
 <translation id="8556340503434111824">Há uma nova versão ainda mais rápida do Google Chrome disponível.</translation>
-<translation id="861359755029082151">O Rosetta permite que o Chrome reproduza a mídia protegida nesta página.</translation>
 <translation id="8614913330719544658">O Google Chrome não responde. Reiniciar agora?</translation>
 <translation id="861702415419836452">O Chrome precisa de permissão para acessar sua câmera e criar um mapa 3D do ambiente a sua volta</translation>
 <translation id="8625237574518804553">{0,plural, =1{O Chrome será reiniciado em 1 minuto}one{O Chrome será reiniciado em # minuto}other{O Chrome será reiniciado em # minutos}}</translation>
@@ -283,7 +277,6 @@
 <translation id="8834965163890861871">O Google Chrome está tentando editar senhas. Digite a senha do Windows para permitir essa ação.</translation>
 <translation id="884296878221830158">Controla também qual página deve ser exibida quando você inicia o Chrome ou clica no botão "Página inicial".</translation>
 <translation id="8862326446509486874">Você não tem os direitos adequados para instalação no nível do sistema. Tente executar o instalador novamente como administrador.</translation>
-<translation id="8907709077090383765">Para permitir que o Chrome reproduza mídia protegida, instale o Rosetta. Quer instalar agora?</translation>
 <translation id="8914504000324227558">Reiniciar o Google Chrome</translation>
 <translation id="8922193594870374009">Para enviar um número de <ph name="ORIGIN" /> ao seu smartphone Android, faça login no Chrome nos dois dispositivos.</translation>
 <translation id="8986207147630327271">Você está adicionando um perfil de trabalho a este navegador. O administrador poderá controlar apenas o perfil de trabalho.</translation>
@@ -293,6 +286,8 @@
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
 <translation id="9138603949443464873">Para que as alterações sejam aplicadas, reinicie o Chrome</translation>
 <translation id="919706545465235479">Atualize o Chrome para iniciar a sincronização</translation>
+<translation id="922152298093051471">Personalizar o Chrome</translation>
 <translation id="940313311831216333">Para ter acesso aos recursos do Chrome em todos os seus dispositivos, faça login e ative a sincronização.</translation>
 <translation id="989369509083708165">O Google Chrome é seu navegador padrão</translation>
+<translation id="989816563149873169">O atalho <ph name="SHORTCUT" /> permite alternar entre os perfis do Chrome</translation>
 </translationbundle>

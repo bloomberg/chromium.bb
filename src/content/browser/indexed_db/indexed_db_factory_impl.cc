@@ -57,7 +57,6 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
-using base::ASCIIToUTF16;
 using url::Origin;
 
 namespace content {
@@ -94,8 +93,7 @@ leveldb::Status GetDBSizeFromEnv(leveldb::Env* env,
 IndexedDBDatabaseError CreateDefaultError() {
   return IndexedDBDatabaseError(
       blink::mojom::IDBException::kUnknownError,
-      ASCIIToUTF16("Internal error opening backing store"
-                   " for indexedDB.open."));
+      u"Internal error opening backing store for indexedDB.open.");
 }
 
 // Creates the leveldb and blob storage directories for IndexedDB.
@@ -232,7 +230,7 @@ void IndexedDBFactoryImpl::GetDatabaseInfo(
 }
 
 void IndexedDBFactoryImpl::Open(
-    const base::string16& name,
+    const std::u16string& name,
     std::unique_ptr<IndexedDBPendingConnection> connection,
     const Origin& origin,
     const base::FilePath& data_directory) {
@@ -268,10 +266,9 @@ void IndexedDBFactoryImpl::Open(
       std::make_unique<IndexedDBMetadataCoding>(), std::move(unique_identifier),
       factory->lock_manager());
   if (!database.get()) {
-    error = IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
-                                   ASCIIToUTF16("Internal error creating "
-                                                "database backend for "
-                                                "indexedDB.open."));
+    error = IndexedDBDatabaseError(
+        blink::mojom::IDBException::kUnknownError,
+        u"Internal error creating database backend for indexedDB.open.");
     connection->callbacks->OnError(error);
     if (s.IsCorruption())
       HandleBackingStoreCorruption(origin, error);
@@ -287,7 +284,7 @@ void IndexedDBFactoryImpl::Open(
 }
 
 void IndexedDBFactoryImpl::DeleteDatabase(
-    const base::string16& name,
+    const std::u16string& name,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const Origin& origin,
     const base::FilePath& data_directory,
@@ -329,7 +326,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   // TODO(dmurph): Get rid of on-demand metadata loading, and store metadata
   // in-memory in the backing store.
   IndexedDBMetadataCoding metadata_coding;
-  std::vector<base::string16> names;
+  std::vector<std::u16string> names;
   s = metadata_coding.ReadDatabaseNames(
       factory->backing_store()->db(),
       factory->backing_store()->origin_identifier(), &names);
@@ -358,10 +355,9 @@ void IndexedDBFactoryImpl::DeleteDatabase(
       std::make_unique<IndexedDBMetadataCoding>(), unique_identifier,
       factory->lock_manager());
   if (!database.get()) {
-    error = IndexedDBDatabaseError(
-        blink::mojom::IDBException::kUnknownError,
-        ASCIIToUTF16("Internal error creating database backend for "
-                     "indexedDB.deleteDatabase."));
+    error = IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
+                                   u"Internal error creating database backend "
+                                   u"for indexedDB.deleteDatabase.");
     callbacks->OnError(error);
     if (s.IsCorruption())
       HandleBackingStoreCorruption(origin, error);
@@ -561,8 +557,8 @@ size_t IndexedDBFactoryImpl::GetConnectionCount(const Origin& origin) const {
 
 void IndexedDBFactoryImpl::NotifyIndexedDBContentChanged(
     const url::Origin& origin,
-    const base::string16& database_name,
-    const base::string16& object_store_name) {
+    const std::u16string& database_name,
+    const std::u16string& object_store_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!context_)
     return;
@@ -721,10 +717,9 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
     if (disk_full) {
       context_->quota_manager_proxy()->NotifyWriteFailed(origin);
       return {IndexedDBOriginStateHandle(), s,
-              IndexedDBDatabaseError(
-                  blink::mojom::IDBException::kQuotaError,
-                  ASCIIToUTF16("Encountered full disk while opening "
-                               "backing store for indexedDB.open.")),
+              IndexedDBDatabaseError(blink::mojom::IDBException::kQuotaError,
+                                     u"Encountered full disk while opening "
+                                     "backing store for indexedDB.open."),
               data_loss_info, /*was_cold_open=*/true};
 
     } else {
@@ -766,8 +761,9 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
       origin,
       /*persist_for_incognito=*/is_incognito_and_in_memory, clock_,
       &class_factory_->transactional_leveldb_factory(), &earliest_sweep_,
-      std::move(lock_manager), std::move(run_tasks_callback),
-      std::move(tear_down_callback), std::move(backing_store));
+      &earliest_compaction_, std::move(lock_manager),
+      std::move(run_tasks_callback), std::move(tear_down_callback),
+      std::move(backing_store));
 
   it = factories_per_origin_.emplace(origin, std::move(origin_state)).first;
 
@@ -965,6 +961,9 @@ void IndexedDBFactoryImpl::OnDatabaseError(const url::Origin& origin,
 
 void IndexedDBFactoryImpl::OnDatabaseDeleted(const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (call_on_database_deleted_for_testing_)
+    call_on_database_deleted_for_testing_.Run(origin);
+
   if (!context_)
     return;
   context_->DatabaseDeleted(origin);
@@ -1009,7 +1008,7 @@ void IndexedDBFactoryImpl::RunTasksForOrigin(
 }
 
 bool IndexedDBFactoryImpl::IsDatabaseOpen(const Origin& origin,
-                                          const base::string16& name) const {
+                                          const std::u16string& name) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = factories_per_origin_.find(origin);
   if (it == factories_per_origin_.end())
@@ -1056,6 +1055,11 @@ bool IndexedDBFactoryImpl::OnMemoryDump(
                        total_memory_in_flight.ValueOrDefault(0));
   }
   return true;
+}
+
+void IndexedDBFactoryImpl::CallOnDatabaseDeletedForTesting(
+    OnDatabaseDeletedCallback callback) {
+  call_on_database_deleted_for_testing_ = std::move(callback);
 }
 
 }  // namespace content

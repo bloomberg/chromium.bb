@@ -143,17 +143,13 @@ class HeapMojoAssociatedReceiverDestroyContextWithoutContextObserverTest
 
 // Make HeapMojoAssociatedReceiver with context observer garbage collected and
 // check that the connection is disconnected right after the marking phase.
-// TODO(1056170): Re-enable test.
-#if !BUILDFLAG(USE_V8_OILPAN)
 TEST_F(HeapMojoAssociatedReceiverGCWithContextObserverTest, ResetsOnGC) {
   ClearOwner();
   EXPECT_FALSE(disconnected());
   PreciselyCollectGarbage();
   run_loop().Run();
   EXPECT_TRUE(disconnected());
-  CompleteSweepingIfNeeded();
 }
-#endif  // !USE_V8_OILPAN
 
 // Check that the owner
 TEST_F(HeapMojoAssociatedReceiverGCWithContextObserverTest,
@@ -170,17 +166,13 @@ TEST_F(HeapMojoAssociatedReceiverGCWithContextObserverTest,
 
 // Make HeapMojoAssociatedReceiver without context observer garbage collected
 // and check that the connection is disconnected right after the marking phase.
-// TODO(1056170): Re-enable test.
-#if !BUILDFLAG(USE_V8_OILPAN)
 TEST_F(HeapMojoAssociatedReceiverGCWithoutContextObserverTest, ResetsOnGC) {
   ClearOwner();
   EXPECT_FALSE(disconnected());
   PreciselyCollectGarbage();
   run_loop().Run();
   EXPECT_TRUE(disconnected());
-  CompleteSweepingIfNeeded();
 }
-#endif  // !USE_V8_OILPAN
 
 // Destroy the context with context observer and check that the connection is
 // disconnected.

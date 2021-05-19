@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -68,7 +67,7 @@ class ObserverWaiter : public AddToHomescreenDataFetcher::Observer {
     run_loop.Run();
   }
 
-  void OnUserTitleAvailable(const base::string16& title,
+  void OnUserTitleAvailable(const std::u16string& title,
                             const GURL& url,
                             bool is_webapk_compatible) override {
     // This should only be called once.
@@ -89,12 +88,12 @@ class ObserverWaiter : public AddToHomescreenDataFetcher::Observer {
       quit_closure_.Run();
   }
 
-  base::string16 title() const { return title_; }
+  std::u16string title() const { return title_; }
   bool is_webapk_compatible() const { return is_webapk_compatible_; }
   bool title_available() const { return title_available_; }
 
  private:
-  base::string16 title_;
+  std::u16string title_;
   bool is_webapk_compatible_;
   bool title_available_;
   bool data_available_;
@@ -112,7 +111,7 @@ blink::Manifest BuildDefaultManifest() {
   manifest.display = kDefaultManifestDisplayMode;
 
   blink::Manifest::ImageResource primary_icon;
-  primary_icon.type = base::ASCIIToUTF16("image/png");
+  primary_icon.type = u"image/png";
   primary_icon.sizes.push_back(gfx::Size(144, 144));
   primary_icon.purpose.push_back(
       blink::mojom::ManifestImageResource_Purpose::ANY);

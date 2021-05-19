@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -217,7 +218,7 @@ TEST_F(WebAppFileHandlerRegistrationWinTest,
   ProfileAttributesEntry* entry =
       storage.GetProfileAttributesWithPath(profile2->GetPath());
   ASSERT_NE(entry, nullptr);
-  entry->SetGAIAName(base::ASCIIToUTF16("gaia user"));
+  entry->SetGAIAName(u"gaia user");
   AddAndVerifyFileAssociations(profile2, kAppName, " (Profile 2)");
 }
 
@@ -239,7 +240,7 @@ TEST_F(WebAppFileHandlerRegistrationWinTest,
   ASSERT_EQ(2u, storage.GetNumberOfProfiles());
   AddAndVerifyFileAssociations(profile2, kAppName, " (Profile 2)");
 
-  UnregisterFileHandlersWithOs(app_id(), profile());
+  UnregisterFileHandlersWithOs(app_id(), profile(), nullptr, base::DoNothing());
   base::ThreadPoolInstance::Get()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
   base::ThreadPoolInstance::Get()->FlushForTesting();
@@ -288,7 +289,7 @@ TEST_F(WebAppFileHandlerRegistrationWinTest,
   ASSERT_EQ(3u, storage.GetNumberOfProfiles());
   AddAndVerifyFileAssociations(profile3, kAppName, " (Profile 3)");
 
-  UnregisterFileHandlersWithOs(app_id(), profile());
+  UnregisterFileHandlersWithOs(app_id(), profile(), nullptr, base::DoNothing());
   base::ThreadPoolInstance::Get()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
   base::ThreadPoolInstance::Get()->FlushForTesting();
@@ -322,7 +323,7 @@ TEST_F(WebAppFileHandlerRegistrationWinTest, UnregisterFileHandlersForWebApp) {
       ShellUtil::GetApplicationPathForProgId(
           GetProgIdForApp(profile()->GetPath(), app_id()));
 
-  UnregisterFileHandlersWithOs(app_id(), profile());
+  UnregisterFileHandlersWithOs(app_id(), profile(), nullptr, base::DoNothing());
   base::ThreadPoolInstance::Get()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(base::PathExists(app_specific_launcher_path));

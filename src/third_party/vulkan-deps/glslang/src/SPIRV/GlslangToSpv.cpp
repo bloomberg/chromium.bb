@@ -255,7 +255,7 @@ protected:
     bool nanMinMaxClamp;               // true if use NMin/NMax/NClamp instead of FMin/FMax/FClamp
     spv::Id stdBuiltins;
     spv::Id nonSemanticDebugPrintf;
-    std::unordered_map<const char*, spv::Id> extBuiltinMap;
+    std::unordered_map<std::string, spv::Id> extBuiltinMap;
 
     std::unordered_map<long long, spv::Id> symbolValues;
     std::unordered_set<long long> rValueParameters;  // set of formal function parameters passed as rValues,
@@ -1493,7 +1493,7 @@ TGlslangToSpvTraverser::TGlslangToSpvTraverser(unsigned int spvVersion,
 
     if (glslangIntermediate->usingPhysicalStorageBuffer()) {
         addressingModel = spv::AddressingModelPhysicalStorageBuffer64EXT;
-        builder.addIncorporatedExtension(spv::E_SPV_EXT_physical_storage_buffer, spv::Spv_1_5);
+        builder.addIncorporatedExtension(spv::E_SPV_KHR_physical_storage_buffer, spv::Spv_1_5);
         builder.addCapability(spv::CapabilityPhysicalStorageBufferAddressesEXT);
     }
     if (glslangIntermediate->usingVulkanMemoryModel()) {
@@ -1551,15 +1551,16 @@ TGlslangToSpvTraverser::TGlslangToSpvTraverser(unsigned int spvVersion,
             builder.addExtension(spv::E_SPV_KHR_post_depth_coverage);
         }
 
-        if (glslangIntermediate->getDepth() != glslang::EldUnchanged && glslangIntermediate->isDepthReplacing())
+        if (glslangIntermediate->isDepthReplacing())
             builder.addExecutionMode(shaderEntry, spv::ExecutionModeDepthReplacing);
 
 #ifndef GLSLANG_WEB
 
         switch(glslangIntermediate->getDepth()) {
-        case glslang::EldGreater:  mode = spv::ExecutionModeDepthGreater; break;
-        case glslang::EldLess:     mode = spv::ExecutionModeDepthLess;    break;
-        default:                   mode = spv::ExecutionModeMax;          break;
+        case glslang::EldGreater:   mode = spv::ExecutionModeDepthGreater;   break;
+        case glslang::EldLess:      mode = spv::ExecutionModeDepthLess;      break;
+        case glslang::EldUnchanged: mode = spv::ExecutionModeDepthUnchanged; break;
+        default:                    mode = spv::ExecutionModeMax;            break;
         }
         if (mode != spv::ExecutionModeMax)
             builder.addExecutionMode(shaderEntry, (spv::ExecutionMode)mode);
@@ -2783,6 +2784,7 @@ bool TGlslangToSpvTraverser::visitAggregate(glslang::TVisit visit, glslang::TInt
         break;
 
     case glslang::EOpAtomicAdd:
+    case glslang::EOpAtomicSubtract:
     case glslang::EOpAtomicMin:
     case glslang::EOpAtomicMax:
     case glslang::EOpAtomicAnd:
@@ -2954,6 +2956,7 @@ bool TGlslangToSpvTraverser::visitAggregate(glslang::TVisit visit, glslang::TInt
             break;
 
         case glslang::EOpAtomicAdd:
+        case glslang::EOpAtomicSubtract:
         case glslang::EOpAtomicMin:
         case glslang::EOpAtomicMax:
         case glslang::EOpAtomicAnd:
@@ -3163,7 +3166,9 @@ bool TGlslangToSpvTraverser::visitAggregate(glslang::TVisit visit, glslang::TInt
 #endif
     if (atomic) {
         // Handle all atomics
-        result = createAtomicOperation(node->getOp(), precision, resultType(), operands, node->getBasicType(),
+        glslang::TBasicType typeProxy = (node->getOp() == glslang::EOpAtomicStore)
+            ? node->getSequence()[0]->getAsTyped()->getBasicType() : node->getBasicType();
+        result = createAtomicOperation(node->getOp(), precision, resultType(), operands, typeProxy,
             lvalueCoherentFlags);
     } else if (node->getOp() == glslang::EOpDebugPrintf) {
         if (!nonSemanticDebugPrintf) {
@@ -6831,9 +6836,6 @@ spv::Id TGlslangToSpvTraverser::createConversion(glslang::TOperator op, OpDecora
         break;
     case glslang::EOpConvPtrToUvec2:
     case glslang::EOpConvUvec2ToPtr:
-        if (builder.isVector(operand))
-            builder.promoteIncorporatedExtension(spv::E_SPV_EXT_physical_storage_buffer,
-                                                 spv::E_SPV_KHR_physical_storage_buffer, spv::Spv_1_5);
         convOp = spv::OpBitcast;
         break;
 #endif
@@ -6891,6 +6893,7 @@ spv::Id TGlslangToSpvTraverser::createAtomicOperation(glslang::TOperator op, spv
                 builder.addCapability(spv::CapabilityAtomicFloat64AddEXT);
         }
         break;
+    case glslang::EOpAtomicSubtract:
     case glslang::EOpAtomicCounterSubtract:
         opCode = spv::OpAtomicISub;
         break;

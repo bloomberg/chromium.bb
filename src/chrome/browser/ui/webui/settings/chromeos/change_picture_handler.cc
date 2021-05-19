@@ -22,11 +22,11 @@
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/login/users/avatar/user_image_manager.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -273,7 +273,7 @@ void ChangePictureHandler::SendProfileImage(const gfx::ImageSkia& image,
 }
 
 void ChangePictureHandler::UpdateProfileImage() {
-  UserImageManager* user_image_manager =
+  auto* user_image_manager =
       ChromeUserManager::Get()->GetUserImageManager(GetUser()->GetAccountId());
   // If we have a downloaded profile image and haven't sent it in
   // |SendSelectedImage|, send it now (without selecting).
@@ -307,7 +307,7 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
   // |image_url| may be empty unless |image_type| is "default".
   DCHECK(!image_type.empty());
 
-  UserImageManager* user_image_manager =
+  auto* user_image_manager =
       ChromeUserManager::Get()->GetUserImageManager(GetUser()->GetAccountId());
   bool waiting_for_camera_photo = false;
 

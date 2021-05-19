@@ -334,12 +334,12 @@ class WebURLLoader::Context : public WebRequestPeer {
   int request_id() const { return request_id_; }
   WebURLLoaderClient* client() const { return client_; }
   void set_client(WebURLLoaderClient* client) { client_ = client; }
-  scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner() {
-    return freezable_task_runner_;
-  }
-  scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner() {
-    return unfreezable_task_runner_;
-  }
+
+  // Returns a task runner that might be unfreezable.
+  // TODO(https://crbug.com/1137682): Rename this to GetTaskRunner instead once
+  // we migrate all usage of the freezable task runner to use the (maybe)
+  // unfreezable task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> GetMaybeUnfreezableTaskRunner();
 
   void Cancel();
   void SetDefersLoading(WebURLLoader::DeferType value);
@@ -406,6 +406,13 @@ class WebURLLoader::Context : public WebRequestPeer {
       freezable_task_runner_handle_;
   std::unique_ptr<WebResourceLoadingTaskRunnerHandle>
       unfreezable_task_runner_handle_;
+  // TODO(https://crbug.com/1137682): Remove |freezable_task_runner_|, migrating
+  // the current usage to use |unfreezable_task_runner_| instead. Also, rename
+  // |unfreezable_task_runner_| to |maybe_unfreezable_task_runner_| here and
+  // elsewhere, because it's only unfreezable if the kLoadingTasksUnfreezable
+  // flag is on, so the name might be misleading (or if we've removed the
+  // |freezable_task_runner_|, just rename this to |task_runner_| and note that
+  // the task runner might or might not be unfreezable, depending on flags).
   scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner_;
   mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle_;
@@ -462,10 +469,17 @@ WebURLLoader::Context::Context(
   DCHECK(url_loader_factory_);
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+WebURLLoader::Context::GetMaybeUnfreezableTaskRunner() {
+  return unfreezable_task_runner_;
+}
+
 void WebURLLoader::Context::Cancel() {
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoader::Context::Cancel", this,
                          TRACE_EVENT_FLAG_FLOW_IN);
   if (request_id_ != -1) {
+    // TODO(https://crbug.com/1137682): Change this to use
+    // |unfreezable_task_runner_| instead?
     resource_request_sender_->Cancel(freezable_task_runner_);
     request_id_ = -1;
   }
@@ -489,6 +503,8 @@ void WebURLLoader::Context::DidChangePriority(
         ConvertWebKitPriorityToNetPriority(new_priority);
     resource_request_sender_->DidChangePriority(net_priority,
                                                 intra_priority_value);
+    // TODO(https://crbug.com/1137682): Change this to
+    // call |unfreezable_task_runner_handle_|?
     freezable_task_runner_handle_->DidChangeRequestPriority(net_priority);
   }
 }
@@ -506,6 +522,8 @@ void WebURLLoader::Context::Start(
   DCHECK_EQ(request_id_, -1);
 
   // Notify Blink's scheduler with the initial resource fetch priority.
+  // TODO(https://crbug.com/1137682): Change this to
+  // call |unfreezable_task_runner_handle_|?
   freezable_task_runner_handle_->DidChangeRequestPriority(request->priority);
 
   url_ = KURL(request->url);
@@ -560,15 +578,17 @@ void WebURLLoader::Context::Start(
       throttles.push_back(std::move(throttle));
   }
 
-  // TODO(minggang): Remove the useage of render frame id.
-  Platform::Current()->AppendVariationsThrottles(request->render_frame_id,
-                                                 &throttles);
+  // TODO(falken): WebURLLoader should be able to get the top frame origin via
+  // some plumbing such as through ResourceLoader -> FetchContext -> LocalFrame
+  // -> RenderHostImpl instead of needing WebURLRequestExtraData.
+  Platform::Current()->AppendVariationsThrottles(
+      url_request_extra_data->top_frame_origin(), &throttles);
 
   uint32_t loader_options = network::mojom::kURLLoadOptionNone;
   if (!no_mime_sniffing) {
     loader_options |= network::mojom::kURLLoadOptionSniffMimeType;
-    throttles.push_back(
-        std::make_unique<MimeSniffingThrottle>(unfreezable_task_runner_));
+    throttles.push_back(std::make_unique<MimeSniffingThrottle>(
+        GetMaybeUnfreezableTaskRunner()));
   }
 
   if (sync_load_response) {
@@ -585,9 +605,9 @@ void WebURLLoader::Context::Start(
     net::NetworkTrafficAnnotationTag tag =
         GetTrafficAnnotationTag(request.get());
     resource_request_sender_->SendSync(
-        std::move(request), requestor_id, tag, loader_options,
-        sync_load_response, url_loader_factory_, std::move(throttles),
-        timeout_interval, cors_exempt_header_list_, terminate_sync_load_event_,
+        std::move(request), tag, loader_options, sync_load_response,
+        url_loader_factory_, std::move(throttles), timeout_interval,
+        cors_exempt_header_list_, terminate_sync_load_event_,
         std::move(download_to_blob_registry), base::WrapRefCounted(this),
         std::move(resource_load_info_notifier_wrapper),
         back_forward_cache_loader_helper_);
@@ -598,10 +618,9 @@ void WebURLLoader::Context::Start(
                          TRACE_EVENT_FLAG_FLOW_OUT);
   net::NetworkTrafficAnnotationTag tag = GetTrafficAnnotationTag(request.get());
   request_id_ = resource_request_sender_->SendAsync(
-      std::move(request), requestor_id, unfreezable_task_runner_, tag,
-      loader_options, cors_exempt_header_list_, base::WrapRefCounted(this),
-      url_loader_factory_, std::move(throttles),
-      std::move(resource_load_info_notifier_wrapper),
+      std::move(request), GetMaybeUnfreezableTaskRunner(), tag, loader_options,
+      cors_exempt_header_list_, base::WrapRefCounted(this), url_loader_factory_,
+      std::move(throttles), std::move(resource_load_info_notifier_wrapper),
       back_forward_cache_loader_helper_);
 
   if (defers_loading_ != WebURLLoader::DeferType::kNotDeferred) {
@@ -829,6 +848,8 @@ void WebURLLoader::PopulateURLResponse(
   response->SetWasAlpnNegotiated(head.was_alpn_negotiated);
   response->SetAlpnNegotiatedProtocol(
       WebString::FromUTF8(head.alpn_negotiated_protocol));
+  response->SetHasAuthorizationCoveredByWildcardOnPreflight(
+      head.has_authorization_covered_by_wildcard_on_preflight);
   response->SetWasAlternateProtocolAvailable(
       head.was_alternate_protocol_available);
   response->SetConnectionInfo(head.connection_info);
@@ -934,7 +955,10 @@ WebURLError WebURLLoader::PopulateURLError(
 
   return WebURLError(status.error_code, status.extended_error_code,
                      status.resolve_error_info, has_copy_in_cache,
-                     WebURLError::IsWebSecurityViolation::kFalse, url);
+                     WebURLError::IsWebSecurityViolation::kFalse, url,
+                     status.should_collapse_initiator
+                         ? WebURLError::ShouldCollapseInitiator::kTrue
+                         : WebURLError::ShouldCollapseInitiator::kFalse);
 }
 
 void WebURLLoader::LoadSynchronously(
@@ -987,7 +1011,10 @@ void WebURLLoader::LoadSynchronously(
       error = WebURLError(error_code, sync_load_response.extended_error_code,
                           sync_load_response.resolve_error_info,
                           WebURLError::HasCopyInCache::kFalse,
-                          is_web_security_violation, final_url);
+                          is_web_security_violation, final_url,
+                          sync_load_response.should_collapse_initiator
+                              ? WebURLError::ShouldCollapseInitiator::kTrue
+                              : WebURLError::ShouldCollapseInitiator::kFalse);
     }
     return;
   }
@@ -1050,7 +1077,7 @@ scoped_refptr<base::SingleThreadTaskRunner>
 WebURLLoader::GetTaskRunnerForBodyLoader() {
   if (!context_)
     return nullptr;
-  return context_->unfreezable_task_runner();
+  return context_->GetMaybeUnfreezableTaskRunner();
 }
 
 void WebURLLoader::SetResourceRequestSenderForTesting(

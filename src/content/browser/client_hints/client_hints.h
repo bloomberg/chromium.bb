@@ -11,6 +11,7 @@
 #include "content/public/browser/client_hints_controller_delegate.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/parsed_headers.mojom-forward.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 
 namespace content {
 
@@ -62,7 +63,8 @@ CONTENT_EXPORT void AddNavigationRequestClientHintsHeaders(
     BrowserContext* context,
     ClientHintsControllerDelegate* delegate,
     bool is_ua_override_on,
-    FrameTreeNode*);
+    FrameTreeNode*,
+    const blink::ParsedPermissionsPolicy&);
 
 // Adds client hints headers for a prefetch navigation that is not associated
 // with a frame. It must be a main frame navigation. |is_javascript_enabled| is
@@ -77,9 +79,9 @@ CONTENT_EXPORT void AddPrefetchNavigationRequestClientHintsHeaders(
 
 // Parses incoming client hints and persists them as appropriate. Returns
 // hints that were accepted as enabled even if they are not going to be
-// persisted. The distinction is relevant in legacy case where feature policy
-// is off and there is no valid Accept-CH-Lifetime, where the header still
-// applies locally within frame.
+// persisted. The distinction is relevant in legacy case where permissions
+// policy is off and there is no valid Accept-CH-Lifetime, where the header
+// still applies locally within frame.
 CONTENT_EXPORT base::Optional<std::vector<network::mojom::WebClientHintsType>>
 ParseAndPersistAcceptCHForNagivation(
     const GURL& url,
@@ -89,7 +91,7 @@ ParseAndPersistAcceptCHForNagivation(
     FrameTreeNode*);
 
 // Looks up which client hints the renderer should be told to enable
-// (after subjecting them to feature policy).
+// (after subjecting them to permissions policy).
 //
 // Note that this is based on the top-level frame, and not necessarily the
 // frame being committed.

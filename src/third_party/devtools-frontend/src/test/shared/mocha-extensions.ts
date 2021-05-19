@@ -12,7 +12,7 @@ import {Platform, platform} from './helper.js';
 
 export {beforeEach} from 'mocha';
 
-async function takeScreenshots() {
+export async function takeScreenshots() {
   try {
     const {target, frontend} = getBrowserAndPages();
     const opts = {
@@ -49,7 +49,7 @@ export function wrapDescribe<ReturnT>(
       if (index < 0) {
         return parsedPath.name;
       }
-      return Path.join(...directories.slice(index + 1), parsedPath.name);
+      return Path.join(...directories.slice(index + 1), `${parsedPath.name}.ts`);
     };
     const err = new Error();
 
@@ -101,8 +101,19 @@ async function timeoutHook(this: Mocha.Runnable, done: Mocha.Done|undefined, err
   }
 }
 
+const iterations = getEnvVar('ITERATIONS', 1);
+
+function iterationSuffix(iteration: number): string {
+  if (iteration === 0) {
+    return '';
+  }
+  return ` (#${iteration})`;
+}
+
 export function it(name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
-  wrapMochaCall(Mocha.it, name, callback);
+  for (let i = 0; i < iterations; i++) {
+    wrapMochaCall(Mocha.it, name + iterationSuffix(i), callback);
+  }
 }
 
 it.skip = function(name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
@@ -110,11 +121,18 @@ it.skip = function(name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
 };
 
 it.skipOnPlatforms = function(platforms: Array<Platform>, name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
-  wrapMochaCall(platforms.includes(platform) ? Mocha.it.skip : Mocha.it, name, callback);
+  const shouldSkip = platforms.includes(platform);
+  if (shouldSkip) {
+    wrapMochaCall(Mocha.it.skip, name, callback);
+  } else {
+    it(name, callback);
+  }
 };
 
 it.only = function(name: string, callback: Mocha.Func|Mocha.AsyncFunc) {
-  wrapMochaCall(Mocha.it.only, name, callback);
+  for (let i = 0; i < iterations; i++) {
+    wrapMochaCall(Mocha.it.only, name + iterationSuffix(i), callback);
+  }
 };
 
 it.repeat = function(repeat: number, name: string, callback: Mocha.Func|Mocha.AsyncFunc) {

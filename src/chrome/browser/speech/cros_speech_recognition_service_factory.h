@@ -9,6 +9,10 @@
 
 class Profile;
 
+namespace ash {
+class DictationTest;
+}
+
 namespace base {
 template <class T>
 class NoDestructor;
@@ -27,6 +31,8 @@ class CrosSpeechRecognitionServiceFactory
 
  private:
   friend class base::NoDestructor<CrosSpeechRecognitionServiceFactory>;
+  friend class OnDeviceSpeechRecognizerTest;
+  friend class ::ash::DictationTest;
   static CrosSpeechRecognitionServiceFactory* GetInstance();
 
   CrosSpeechRecognitionServiceFactory();

@@ -7,8 +7,8 @@
 
 #include "include/core/SkString.h"
 #include "include/gpu/GrContextOptions.h"
+#include "include/private/SkSLString.h"
 #include "src/gpu/GrShaderUtils.h"
-#include "src/sksl/SkSLString.h"
 
 namespace GrShaderUtils {
 
@@ -198,14 +198,21 @@ void VisitLineByLine(const SkSL::String& text,
     }
 }
 
+SkSL::String BuildShaderErrorMessage(const char* shader, const char* errors) {
+    SkSL::String abortText{"Shader compilation error\n"
+                           "------------------------\n"};
+    VisitLineByLine(shader, [&](int lineNumber, const char* lineText) {
+        abortText.appendf("%4i\t%s\n", lineNumber, lineText);
+    });
+    abortText.appendf("Errors:\n%s", errors);
+    return abortText;
+}
+
 GrContextOptions::ShaderErrorHandler* DefaultShaderErrorHandler() {
     class GrDefaultShaderErrorHandler : public GrContextOptions::ShaderErrorHandler {
     public:
         void compileError(const char* shader, const char* errors) override {
-            SkDebugf("Shader compilation error\n"
-                     "------------------------\n");
-            PrintLineByLine(shader);
-            SkDebugf("Errors:\n%s\n", errors);
+            PrintLineByLine(BuildShaderErrorMessage(shader, errors));
             SkDEBUGFAIL("Shader compilation failed!");
         }
     };

@@ -8,16 +8,14 @@ import {click, goToResource, waitForElementWithTextContent} from '../../shared/h
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {assertSelectedElementsNodeTextIncludes, expandSelectedNodeRecursively, getBreadcrumbsTextContent, getSelectedBreadcrumbTextContent, waitForContentOfSelectedElementsNode, waitForElementsStyleSection, waitForSelectedTreeElementSelectorWithTextcontent} from '../helpers/elements-helpers.js';
 
-const EXPECTED_TEXT_CONTENT = `<div class=\u200B"div2">\u200B
-          last child
-        \u200B</div>\u200B`;
+const EXPECTED_TEXT_CONTENT = '<div class=\u200B"div2">\u200B last child \u200B</div>\u200B';
 
 describe('Element breadcrumbs', async () => {
   beforeEach(async function() {
     await goToResource('elements/element-breadcrumbs.html');
     await waitForElementsStyleSection();
 
-    // Sanity check to make sure we have the correct node selected after opening a file
+    // Check to make sure we have the correct node selected after opening a file
     await waitForContentOfSelectedElementsNode('<body>\u200B');
 
     // expand the tree and then navigate down to the target node

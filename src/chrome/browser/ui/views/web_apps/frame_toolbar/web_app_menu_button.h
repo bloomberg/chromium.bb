@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_WEB_APPS_FRAME_TOOLBAR_WEB_APP_MENU_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_WEB_APPS_FRAME_TOOLBAR_WEB_APP_MENU_BUTTON_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
@@ -21,7 +22,7 @@ class WebAppMenuButton : public AppMenuButton {
   METADATA_HEADER(WebAppMenuButton);
   static int GetMenuButtonSizeForBrowser(Browser* browser);
   explicit WebAppMenuButton(BrowserView* browser_view,
-                            base::string16 accessible_name = base::string16());
+                            std::u16string accessible_name = std::u16string());
   WebAppMenuButton(const WebAppMenuButton&) = delete;
   WebAppMenuButton& operator=(const WebAppMenuButton&) = delete;
   ~WebAppMenuButton() override;

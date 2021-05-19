@@ -88,13 +88,13 @@ void PlatformVerificationImpl::ChallengePlatform(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!platform_verification_flow_)
     platform_verification_flow_ =
-        base::MakeRefCounted<chromeos::attestation::PlatformVerificationFlow>();
+        base::MakeRefCounted<ash::attestation::PlatformVerificationFlow>();
 
   platform_verification_flow_->ChallengePlatformKey(
       content::WebContents::FromRenderFrameHost(render_frame_host()),
       service_id, challenge,
       base::BindOnce(&PlatformVerificationImpl::OnPlatformChallenged,
-                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 #else
   // Not supported, so return failure.
   std::move(callback).Run(false, std::string(), std::string(), std::string());
@@ -111,7 +111,7 @@ void PlatformVerificationImpl::OnPlatformChallenged(
   DVLOG(2) << __func__ << ": " << result;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (result != chromeos::attestation::PlatformVerificationFlow::SUCCESS) {
+  if (result != ash::attestation::PlatformVerificationFlow::SUCCESS) {
     DCHECK(signed_data.empty());
     DCHECK(signature.empty());
     DCHECK(platform_key_certificate.empty());
@@ -177,7 +177,7 @@ void PlatformVerificationImpl::IsVerifiedAccessEnabled(
   }
 
   bool enabled_for_device = false;
-  if (!chromeos::CrosSettings::Get()->GetBoolean(
+  if (!ash::CrosSettings::Get()->GetBoolean(
           chromeos::kAttestationForContentProtectionEnabled,
           &enabled_for_device)) {
     LOG(ERROR) << "Failed to get device setting.";

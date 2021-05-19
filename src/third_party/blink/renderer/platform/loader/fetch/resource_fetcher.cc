@@ -603,9 +603,8 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     return;
 
   resource_load_observer_->WillSendRequest(
-      request.InspectorId(), request, ResourceResponse() /* redirects */,
-      resource->GetType(), resource->Options().initiator_info,
-      render_blocking_behavior);
+      request, ResourceResponse() /* redirects */, resource->GetType(),
+      resource->Options(), render_blocking_behavior);
   resource_load_observer_->DidReceiveResponse(
       request.InspectorId(), request, resource->GetResponse(), resource,
       ResourceLoadObserver::ResponseSource::kFromMemoryCache);
@@ -759,7 +758,7 @@ void ResourceFetcher::UpdateMemoryCacheStats(
 
   // Aims to count Resource only referenced from MemoryCache (i.e. what would be
   // dead if MemoryCache holds weak references to Resource). Currently we check
-  // references to Resource from ResourceClient and |m_preloads| only, because
+  // references to Resource from ResourceClient and `preloads_` only, because
   // they are major sources of references.
   if (resource && !resource->IsAlive() && !ContainsAsPreload(resource)) {
     DEFINE_RESOURCE_HISTOGRAM("Dead.");
@@ -1239,9 +1238,16 @@ std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
     const ResourceLoaderOptions& options) {
   DCHECK(!GetProperties().IsDetached());
   DCHECK(loader_factory_);
+
+  // Set |unfreezable_task_runner| to the thread task-runner for keepalive
+  // fetches because we want it to keep running even after the frame is
+  // detached. It's pretty fragile to do that with the
+  // |unfreezable_task_runner_| that's saved in the ResourceFetcher, because
+  // that task runner is frame-associated.
   return loader_factory_->CreateURLLoader(
       ResourceRequest(request), options, freezable_task_runner_,
-      unfreezable_task_runner_,
+      request.GetKeepalive() ? Thread::Current()->GetTaskRunner()
+                             : unfreezable_task_runner_,
       WebBackForwardCacheLoaderHelper(back_forward_cache_loader_helper_));
 }
 
@@ -1966,15 +1972,6 @@ bool ResourceFetcher::StartLoad(
 
   ResourceLoader* loader = nullptr;
 
-  if (archive_ && resource->Url().ProtocolIsInHTTPFamily()) {
-    // MHTML documents should not trigger HTTP requests.
-    //
-    // TODO(lukasza): https://crbug.com/1151438: Remove the ad-hoc DwoC below,
-    // once the bug is fixed and verified.
-    NOTREACHED();
-    base::debug::DumpWithoutCrashing();
-  }
-
   {
     // Forbids JavaScript/revalidation until start()
     // to prevent unintended state transitions.
@@ -1995,8 +1992,8 @@ bool ResourceFetcher::StartLoad(
       request.SetHttpBody(request_body.FormBody());
       ResourceResponse response;
       resource_load_observer_->WillSendRequest(
-          resource->InspectorId(), request, response, resource->GetType(),
-          resource->Options().initiator_info, render_blocking_behavior);
+          request, response, resource->GetType(), resource->Options(),
+          render_blocking_behavior);
     }
 
     using QuotaType = decltype(inflight_keepalive_bytes_);

@@ -151,7 +151,7 @@ ToolbarButton::ToolbarButton(PressedCallback callback,
                              TabStripModel* tab_strip_model,
                              bool trigger_menu_on_long_press)
     : views::LabelButton(std::move(callback),
-                         base::string16(),
+                         std::u16string(),
                          CONTEXT_TOOLBAR_BUTTON),
       model_(std::move(model)),
       tab_strip_model_(tab_strip_model),
@@ -191,7 +191,7 @@ ToolbarButton::ToolbarButton(PressedCallback callback,
 
 ToolbarButton::~ToolbarButton() {}
 
-void ToolbarButton::SetHighlight(const base::string16& highlight_text,
+void ToolbarButton::SetHighlight(const std::u16string& highlight_text,
                                  base::Optional<SkColor> highlight_color) {
   if (highlight_text.empty() && !highlight_color.has_value()) {
     ClearHighlight();
@@ -202,7 +202,7 @@ void ToolbarButton::SetHighlight(const base::string16& highlight_text,
   SetText(highlight_text);
 }
 
-void ToolbarButton::SetText(const base::string16& text) {
+void ToolbarButton::SetText(const std::u16string& text) {
   LabelButton::SetText(text);
   UpdateColorsAndInsets();
 }
@@ -235,7 +235,7 @@ void ToolbarButton::UpdateColorsAndInsets() {
 
   const int highlight_radius =
       ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-          views::EMPHASIS_MAXIMUM, target_size);
+          views::Emphasis::kMaximum, target_size);
 
   SetEnabledTextColors(highlight_color_animation_.GetTextColor());
 
@@ -251,8 +251,12 @@ void ToolbarButton::UpdateColorsAndInsets() {
     SetBackground(views::CreateBackgroundFromPainter(
         views::Painter::CreateSolidRoundRectPainter(
             *background_color, highlight_radius, paint_insets)));
+    label()->SetBackgroundColor(*background_color);
   } else {
     SetBackground(nullptr);
+    const auto* tp = GetThemeProvider();
+    if (tp)
+      label()->SetBackgroundColor(tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }
 
   // Apply new border with target insets.
@@ -318,6 +322,25 @@ void ToolbarButton::UpdateIconsWithColors(const gfx::VectorIcon& icon,
                 ui::ImageModel::FromVectorIcon(icon, pressed_color));
   SetImageModel(Button::STATE_DISABLED,
                 ui::ImageModel::FromVectorIcon(icon, disabled_color));
+}
+
+void ToolbarButton::SetVectorIcon(const gfx::VectorIcon& icon) {
+  SetVectorIcons(icon, icon);
+}
+
+void ToolbarButton::SetVectorIcons(const gfx::VectorIcon& icon,
+                                   const gfx::VectorIcon& touch_icon) {
+  vector_icons_.emplace(VectorIcons{icon, touch_icon});
+  if (GetThemeProvider())
+    UpdateIcon();
+}
+
+void ToolbarButton::UpdateIcon() {
+  if (vector_icons_) {
+    UpdateIconsWithStandardColors(ui::TouchUiController::Get()->touch_ui()
+                                      ? vector_icons_->touch_icon
+                                      : vector_icons_->icon);
+  }
 }
 
 void ToolbarButton::UpdateIconsWithStandardColors(const gfx::VectorIcon& icon) {
@@ -488,9 +511,9 @@ void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
 }
 
-base::string16 ToolbarButton::GetTooltipText(const gfx::Point& p) const {
+std::u16string ToolbarButton::GetTooltipText(const gfx::Point& p) const {
   // Suppress tooltip when IPH is showing.
-  return has_in_product_help_promo_ ? base::string16()
+  return has_in_product_help_promo_ ? std::u16string()
                                     : views::LabelButton::GetTooltipText(p);
 }
 

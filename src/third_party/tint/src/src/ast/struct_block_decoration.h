@@ -15,18 +15,16 @@
 #ifndef SRC_AST_STRUCT_BLOCK_DECORATION_H_
 #define SRC_AST_STRUCT_BLOCK_DECORATION_H_
 
-#include <memory>
-#include <ostream>
 #include <vector>
 
-#include "src/ast/struct_decoration.h"
+#include "src/ast/decoration.h"
 
 namespace tint {
 namespace ast {
 
 /// The struct decorations
 class StructBlockDecoration
-    : public Castable<StructBlockDecoration, StructDecoration> {
+    : public Castable<StructBlockDecoration, Decoration> {
  public:
   /// constructor
   /// @param source the source of this decoration
@@ -49,7 +47,7 @@ class StructBlockDecoration
 };
 
 /// List of struct decorations
-using StructDecorationList = std::vector<StructDecoration*>;
+using DecorationList = std::vector<Decoration*>;
 
 }  // namespace ast
 }  // namespace tint

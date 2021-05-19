@@ -16,17 +16,12 @@
 
 #include <algorithm>
 #include <limits>
-#include <string>
 #include <unordered_map>
 #include <utility>
 
-#include "src/block_allocator.h"
-#include "src/debug.h"
 #include "src/program_builder.h"
-#include "src/semantic/intrinsic.h"
 #include "src/type/access_control_type.h"
 #include "src/type/depth_texture_type.h"
-#include "src/type/f32_type.h"
 #include "src/type/multisampled_texture_type.h"
 #include "src/type/sampled_texture_type.h"
 #include "src/type/storage_texture_type.h"
@@ -419,7 +414,7 @@ class ArrayBuilder : public Builder {
 
   type::Type* Build(BuildState& state) const override {
     auto* el = element_builder_->Build(state);
-    return state.ty_mgr.Get<type::Array>(el, 0, ast::ArrayDecorationList{});
+    return state.ty_mgr.Get<type::Array>(el, 0, ast::DecorationList{});
   }
 
   std::string str() const override {
@@ -783,7 +778,7 @@ class Impl : public IntrinsicTable {
                 Builder* return_type,
                 std::vector<Parameter> parameters) {
     Overload overload{type, return_type, std::move(parameters), {}};
-    overloads_.emplace_back(overload);
+    overloads_.emplace_back(std::move(overload));
   }
 
   /// Registers an overload with the given intrinsic type, return type Matcher /
@@ -796,7 +791,7 @@ class Impl : public IntrinsicTable {
                 std::pair<OpenType, Matcher*> open_type_matcher) {
     Overload overload{
         type, return_type, std::move(parameters), {open_type_matcher}};
-    overloads_.emplace_back(overload);
+    overloads_.emplace_back(std::move(overload));
   }
 };
 
@@ -828,6 +823,9 @@ Impl::Impl() {
   auto* ptr_f32 = ptr(f32);            // ptr<f32>
   auto* ptr_vecN_T = ptr(vecN_T);      // ptr<vecN<T>>
   auto* ptr_vecN_f32 = ptr(vecN_f32);  // ptr<vecN<f32>>
+
+  constexpr size_t overloads_reserve_size = 300;
+  overloads_.reserve(overloads_reserve_size);
 
   // Intrinsic overloads are registered with a call to the Register().
   //
@@ -1060,6 +1058,7 @@ Impl::Impl() {
   Register(I::kSqrt,            vecN_f32,    {vecN_f32}                                               ); // NOLINT
   Register(I::kStep,            f32,         {f32, f32}                                               ); // NOLINT
   Register(I::kStep,            vecN_f32,    {vecN_f32, vecN_f32}                                     ); // NOLINT
+  Register(I::kStorageBarrier,  void_,       {}                                                       ); // NOLINT
   Register(I::kTan,             f32,         {f32}                                                    ); // NOLINT
   Register(I::kTan,             vecN_f32,    {vecN_f32}                                               ); // NOLINT
   Register(I::kTanh,            f32,         {f32}                                                    ); // NOLINT
@@ -1071,6 +1070,7 @@ Impl::Impl() {
   Register(I::kUnpack2x16Unorm, vec2_f32,    {u32}                                                    ); // NOLINT
   Register(I::kUnpack4x8Snorm,  vec4_f32,    {u32}                                                    ); // NOLINT
   Register(I::kUnpack4x8Unorm,  vec4_f32,    {u32}                                                    ); // NOLINT
+  Register(I::kWorkgroupBarrier,void_,       {}                                                       ); // NOLINT
   // clang-format on
 
   auto* tex_1d_f32 = sampled_texture(Dim::k1d, f32);
@@ -1241,6 +1241,7 @@ Impl::Impl() {
   Register(I::kTextureStore, void_, {{t, tex_storage_wo_2d_array_FT},{coords, vec2_i32}, {array_index, i32}, {value, vec4_T}, }); // NOLINT
   Register(I::kTextureStore, void_, {{t, tex_storage_wo_3d_FT},      {coords, vec3_i32},                     {value, vec4_T}, }); // NOLINT
 
+  Register(I::kTextureLoad, vec4_T, {{t, tex_1d_T},               {coords, i32},                           {level, i32},                      }); // NOLINT
   Register(I::kTextureLoad, vec4_T, {{t, tex_2d_T},               {coords, vec2_i32},                      {level, i32},                      }); // NOLINT
   Register(I::kTextureLoad, vec4_T, {{t, tex_2d_array_T},         {coords, vec2_i32}, {array_index, i32},  {level, i32},                      }); // NOLINT
   Register(I::kTextureLoad, vec4_T, {{t, tex_3d_T},               {coords, vec3_i32},                      {level, i32},                      }); // NOLINT
@@ -1253,21 +1254,10 @@ Impl::Impl() {
   Register(I::kTextureLoad, vec4_T, {{t, tex_storage_ro_2d_array_FT},{coords, vec2_i32}, {array_index, i32},                                     }); // NOLINT
   Register(I::kTextureLoad, vec4_T, {{t, tex_storage_ro_3d_FT},      {coords, vec3_i32},                                                         }); // NOLINT
 
-  // TODO(bclayton): Update the rest of tint to reflect the spec changes made in
-  // https://github.com/gpuweb/gpuweb/pull/1301:
-
-  // Overloads added in https://github.com/gpuweb/gpuweb/pull/1301
-  Register(I::kTextureLoad, vec4_T, {{t, tex_1d_T},               {coords, i32},                           {level, i32},                      }); // NOLINT
-
-  // Overloads removed in https://github.com/gpuweb/gpuweb/pull/1301
-  Register(I::kTextureLoad, vec4_T, {{t, tex_1d_T},               {coords, i32},                                                              }); // NOLINT
-  Register(I::kTextureLoad, vec4_T, {{t, tex_2d_T},               {coords, vec2_i32},                                                         }); // NOLINT
-  Register(I::kTextureLoad, vec4_T, {{t, tex_2d_array_T},         {coords, vec2_i32}, {array_index, i32},                                     }); // NOLINT
-  Register(I::kTextureLoad, vec4_T, {{t, tex_3d_T},               {coords, vec3_i32},                                                         }); // NOLINT
-  Register(I::kTextureLoad, f32,    {{t, tex_depth_2d},           {coords, vec2_i32},                                                         }); // NOLINT
-  Register(I::kTextureLoad, f32,    {{t, tex_depth_2d_array},     {coords, vec2_i32}, {array_index, i32},                                     }); // NOLINT
-
   // clang-format on
+
+  // If this assert trips, increase the reserve size.
+  TINT_ASSERT(overloads_.size() <= overloads_reserve_size);
 }
 
 /// @returns a human readable string representation of the overload
@@ -1402,7 +1392,11 @@ semantic::Intrinsic* Impl::Overload::Match(ProgramBuilder& builder,
   // This stage also populates the open_types and open_numbers.
   auto count = std::min(parameters.size(), args.size());
   for (size_t i = 0; i < count; i++) {
-    assert(args[i]);
+    if (!args[i]) {
+      TINT_ICE(diagnostics) << "args[" << i << "] is nullptr";
+      return nullptr;
+    }
+
     auto* arg_ty = args[i];
     if (auto* ptr = arg_ty->As<type::Pointer>()) {
       if (!parameters[i].matcher->ExpectsPointer()) {
@@ -1463,7 +1457,10 @@ semantic::Intrinsic* Impl::Overload::Match(ProgramBuilder& builder,
   Builder::BuildState builder_state{builder.Types(), matcher_state.open_types,
                                     matcher_state.open_numbers};
   auto* ret = return_type->Build(builder_state);
-  assert(ret);  // Build() must return a type
+  if (!ret) {
+    TINT_ICE(diagnostics) << "Build() did not return a type";
+    return nullptr;
+  }
 
   // Build the semantic parameters
   semantic::ParameterList params;

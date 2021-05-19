@@ -63,6 +63,14 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
     virtual void SetUsbEthernetMacAddressSourceError(
         const std::string& device_path,
         const std::string& error_name) = 0;
+    // Determines whether or not to simulate the Scanning property changing when
+    // an Inhibit operation is complete.
+    virtual void SetSimulateUninhibitScanning(
+        bool simulate_uninhibit_scanning) = 0;
+    // Adds a delay before a SetProperty call will result in property value
+    // change.
+    virtual void SetPropertyChangeDelay(
+        base::Optional<base::TimeDelta> time_delay) = 0;
 
    protected:
     virtual ~TestInterface() {}

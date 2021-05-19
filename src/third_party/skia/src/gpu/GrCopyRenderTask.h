@@ -31,9 +31,8 @@ private:
                      SkIPoint dstPoint,
                      GrSurfaceOrigin);
 
+    void onCanSkip() override { fSrc.reset(); }
     bool onIsUsed(GrSurfaceProxy* proxy) const override { return proxy == fSrc.get(); }
-    // If instantiation failed, at flush time we simply will skip doing the copy.
-    void handleInternalAllocationFailure() override {}
     void gatherProxyIntervals(GrResourceAllocator*) const override;
     ExpectedOutcome onMakeClosed(const GrCaps&, SkIRect* targetUpdateBounds) override;
     bool onExecute(GrOpFlushState*) override;

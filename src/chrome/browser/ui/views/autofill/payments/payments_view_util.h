@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_PAYMENTS_VIEW_UTIL_H_
 
 #include <memory>
+#include <string>
 
-#include "base/strings/string16.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/payments/payments_bubble_closed_reasons.h"
 #include "content/public/browser/web_contents.h"
@@ -30,7 +30,7 @@ namespace autofill {
 class TitleWithIconAndSeparatorView : public views::View {
  public:
   METADATA_HEADER(TitleWithIconAndSeparatorView);
-  explicit TitleWithIconAndSeparatorView(const base::string16& window_title);
+  explicit TitleWithIconAndSeparatorView(const std::u16string& window_title);
   ~TitleWithIconAndSeparatorView() override;
 
  private:

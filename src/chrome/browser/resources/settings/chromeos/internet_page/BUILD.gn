@@ -6,10 +6,13 @@ import("//chrome/browser/resources/settings/chromeos/os_settings.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
+import("../os_settings.gni")
 
 js_type_check("closure_compile_module") {
+  closure_flags = os_settings_closure_flags
   is_polymer3 = true
   deps = [
+    ":cellular_banner.m",
     ":cellular_networks_list.m",
     ":cellular_setup_dialog.m",
     ":cellular_setup_settings_delegate.m",
@@ -31,6 +34,18 @@ js_type_check("closure_compile_module") {
   ]
 }
 
+js_library("cellular_banner.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/internet_page/cellular_banner.m.js" ]
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/iron-flex-layout:iron-flex-layout",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+  ]
+  extra_deps = [ ":cellular_banner_module" ]
+}
+
 js_library("cellular_setup_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/internet_page/cellular_setup_dialog.m.js" ]
   deps = [
@@ -47,7 +62,7 @@ js_library("internet_config.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/internet_page/internet_config.m.js" ]
   deps = [
     ":internet_shared_css.m",
-    "//chrome/browser/resources/settings:router.m",
+    "//chrome/browser/resources/settings:router",
     "//chrome/browser/resources/settings/chromeos:metrics_recorder.m",
     "//third_party/polymer/v3_0/components-chromium/iron-flex-layout:iron-flex-layout",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -63,9 +78,10 @@ js_library("internet_config.m") {
 js_library("internet_detail_menu.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/internet_page/internet_detail_menu.m.js" ]
   deps = [
-    "//chrome/browser/resources/settings:router.m",
+    "//chrome/browser/resources/settings:router",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider.m",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
@@ -80,14 +96,14 @@ js_library("internet_detail_page.m") {
     ":internet_shared_css.m",
     ":network_proxy_section.m",
     ":tether_connection_dialog.m",
-    "//chrome/browser/resources/settings:router.m",
+    "//chrome/browser/resources/settings:router",
     "//chrome/browser/resources/settings/chromeos:deep_linking_behavior.m",
     "//chrome/browser/resources/settings/chromeos:metrics_recorder.m",
     "//chrome/browser/resources/settings/chromeos/os_people_page:os_sync_browser_proxy.m",
-    "//chrome/browser/resources/settings/controls:controlled_button.m",
-    "//chrome/browser/resources/settings/controls:settings_toggle_button.m",
-    "//chrome/browser/resources/settings/people_page:sync_browser_proxy.m",
-    "//chrome/browser/resources/settings/prefs:prefs.m",
+    "//chrome/browser/resources/settings/controls:controlled_button",
+    "//chrome/browser/resources/settings/controls:settings_toggle_button",
+    "//chrome/browser/resources/settings/people_page:sync_browser_proxy",
+    "//chrome/browser/resources/settings/prefs:prefs",
     "//third_party/polymer/v3_0/components-chromium/iron-collapse:iron-collapse",
     "//third_party/polymer/v3_0/components-chromium/iron-flex-layout:iron-flex-layout-classes",
     "//third_party/polymer/v3_0/components-chromium/iron-icon:iron-icon",
@@ -121,7 +137,7 @@ js_library("internet_known_networks_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/internet_page/internet_known_networks_page.m.js" ]
   deps = [
     ":internet_shared_css.m",
-    "//chrome/browser/resources/settings:router.m",
+    "//chrome/browser/resources/settings:router",
     "//chrome/browser/resources/settings/chromeos:deep_linking_behavior.m",
     "//chrome/browser/resources/settings/chromeos:metrics_recorder.m",
     "//chrome/browser/resources/settings/chromeos:os_route.m",
@@ -132,7 +148,7 @@ js_library("internet_known_networks_page.m") {
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
-    "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row.m",
+    "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row",
     "//ui/webui/resources/js:assert.m",
   ]
   extra_deps = [ ":internet_known_networks_page_module" ]
@@ -150,13 +166,13 @@ js_library("internet_page.m") {
     ":internet_page_browser_proxy.m",
     ":internet_subpage.m",
     ":network_summary.m",
-    "//chrome/browser/resources/settings:router.m",
+    "//chrome/browser/resources/settings:router",
     "//chrome/browser/resources/settings/chromeos:deep_linking_behavior.m",
     "//chrome/browser/resources/settings/chromeos:metrics_recorder.m",
     "//chrome/browser/resources/settings/chromeos:os_route.m",
-    "//chrome/browser/resources/settings/prefs:prefs.m",
-    "//chrome/browser/resources/settings/settings_page:settings_animated_pages.m",
-    "//chrome/browser/resources/settings/settings_page:settings_subpage.m",
+    "//chrome/browser/resources/settings/prefs:prefs",
+    "//chrome/browser/resources/settings/settings_page:settings_animated_pages",
+    "//chrome/browser/resources/settings/settings_page:settings_subpage",
     "//third_party/polymer/v3_0/components-chromium/iron-icon:iron-icon",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_components/chromeos/cellular_setup:cellular_types.m",
@@ -164,8 +180,10 @@ js_library("internet_page.m") {
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider.m",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior.m",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
+    "//ui/webui/resources/cr_components/chromeos/network:sim_lock_dialogs.m",
     "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button.m",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast.m",
     "//ui/webui/resources/cr_elements/policy:cr_policy_indicator.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
@@ -197,7 +215,7 @@ js_library("internet_subpage.m") {
   deps = [
     ":cellular_networks_list.m",
     ":internet_page_browser_proxy.m",
-    "//chrome/browser/resources/settings:router.m",
+    "//chrome/browser/resources/settings:router",
     "//chrome/browser/resources/settings/chromeos:deep_linking_behavior.m",
     "//chrome/browser/resources/settings/chromeos:metrics_recorder.m",
     "//chrome/browser/resources/settings/chromeos:os_route.m",
@@ -212,7 +230,7 @@ js_library("internet_subpage.m") {
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior.m",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
-    "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row.m",
+    "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row",
     "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
     "//ui/webui/resources/cr_elements/policy:cr_policy_indicator.m",
     "//ui/webui/resources/js:i18n_behavior.m",
@@ -224,11 +242,11 @@ js_library("network_proxy_section.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/internet_page/network_proxy_section.m.js" ]
   deps = [
     ":internet_shared_css.m",
-    "//chrome/browser/resources/settings:router.m",
+    "//chrome/browser/resources/settings:router",
     "//chrome/browser/resources/settings/chromeos:os_route.m",
-    "//chrome/browser/resources/settings/controls:extension_controlled_indicator.m",
-    "//chrome/browser/resources/settings/controls:settings_toggle_button.m",
-    "//chrome/browser/resources/settings/prefs:prefs_behavior.m",
+    "//chrome/browser/resources/settings/controls:extension_controlled_indicator",
+    "//chrome/browser/resources/settings/controls:settings_toggle_button",
+    "//chrome/browser/resources/settings/prefs:prefs_behavior",
     "//third_party/polymer/v3_0/components-chromium/iron-flex-layout:iron-flex-layout-classes",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_components/chromeos/network:cr_policy_network_behavior_mojo.m",
@@ -293,14 +311,19 @@ js_library("cellular_networks_list.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/internet_page/cellular_networks_list.m.js" ]
   deps = [
     ":esim_install_error_dialog.m",
+    "../multidevice_page:multidevice_browser_proxy.m",
+    "../multidevice_page:multidevice_constants.m",
     "//chrome/browser/resources/settings/chromeos/localized_link:localized_link.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_components/chromeos/cellular_setup:cellular_types.m",
     "//ui/webui/resources/cr_components/chromeos/cellular_setup:esim_manager_listener_behavior.m",
     "//ui/webui/resources/cr_components/chromeos/cellular_setup:esim_manager_utils.m",
+    "//ui/webui/resources/cr_components/chromeos/network:cellular_utils.m",
     "//ui/webui/resources/cr_components/chromeos/network:network_list_types.m",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
+    "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":cellular_networks_list_module" ]
 }
@@ -331,7 +354,10 @@ js_library("esim_rename_dialog.m") {
 js_library("esim_remove_profile_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/internet_page/esim_remove_profile_dialog.m.js" ]
   deps = [
+    "//chrome/browser/resources/settings:router",
+    "//chrome/browser/resources/settings/chromeos:os_route.m",
     "//ui/webui/resources/cr_components/chromeos/cellular_setup:esim_manager_utils.m",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
     "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
     "//ui/webui/resources/js:i18n_behavior.m",
@@ -341,6 +367,7 @@ js_library("esim_remove_profile_dialog.m") {
 
 group("polymer3_elements") {
   public_deps = [
+    ":cellular_banner_module",
     ":cellular_networks_list_module",
     ":cellular_setup_dialog_module",
     ":esim_install_error_dialog_module",
@@ -361,11 +388,21 @@ group("polymer3_elements") {
   ]
 }
 
+polymer_modulizer("cellular_banner") {
+  js_file = "cellular_banner.js"
+  html_file = "cellular_banner.html"
+  html_type = "dom-module"
+  auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
+  namespace_rewrites = os_settings_namespace_rewrites
+}
+
 polymer_modulizer("internet_config") {
   js_file = "internet_config.js"
   html_file = "internet_config.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -374,6 +411,7 @@ polymer_modulizer("internet_detail_menu") {
   html_file = "internet_detail_menu.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -382,6 +420,7 @@ polymer_modulizer("internet_detail_page") {
   html_file = "internet_detail_page.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports + [ "chrome/browser/resources/settings/chromeos/internet_page/internet_page_browser_proxy.html|InternetPageBrowserProxy,InternetPageBrowserProxyImpl" ]
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -390,6 +429,7 @@ polymer_modulizer("internet_known_networks_page") {
   html_file = "internet_known_networks_page.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -398,6 +438,7 @@ polymer_modulizer("internet_page") {
   html_file = "internet_page.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -405,6 +446,7 @@ polymer_modulizer("internet_shared_css") {
   js_file = "internet_shared_css.m.js"
   html_file = "internet_shared_css.html"
   html_type = "style-module"
+  migrated_imports = os_settings_migrated_imports
 }
 
 polymer_modulizer("internet_subpage") {
@@ -412,6 +454,7 @@ polymer_modulizer("internet_subpage") {
   html_file = "internet_subpage.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -420,6 +463,7 @@ polymer_modulizer("network_proxy_section") {
   html_file = "network_proxy_section.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -428,6 +472,7 @@ polymer_modulizer("network_summary") {
   html_file = "network_summary.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -436,6 +481,7 @@ polymer_modulizer("network_summary_item") {
   html_file = "network_summary_item.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -444,6 +490,7 @@ polymer_modulizer("tether_connection_dialog") {
   html_file = "tether_connection_dialog.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites =
       [ "cros_network_config.mojom.m.js|cros_network_config.mojom-lite.js" ]
 }
@@ -453,6 +500,7 @@ polymer_modulizer("cellular_setup_dialog") {
   html_file = "cellular_setup_dialog.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -461,6 +509,7 @@ polymer_modulizer("cellular_networks_list") {
   html_file = "cellular_networks_list.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -469,6 +518,7 @@ polymer_modulizer("esim_install_error_dialog") {
   html_file = "esim_install_error_dialog.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -477,6 +527,7 @@ polymer_modulizer("esim_rename_dialog") {
   html_file = "esim_rename_dialog.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 
@@ -485,6 +536,7 @@ polymer_modulizer("esim_remove_profile_dialog") {
   html_file = "esim_remove_profile_dialog.html"
   html_type = "dom-module"
   auto_imports = os_settings_auto_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
 }
 

@@ -328,7 +328,7 @@ bool WebStateImpl::HasWebUI() {
   return !!web_ui_;
 }
 
-const base::string16& WebStateImpl::GetTitle() const {
+const std::u16string& WebStateImpl::GetTitle() const {
   // TODO(stuartmorgan): Implement the NavigationManager logic necessary to
   // match the WebContents implementation of this method.
   DCHECK(Configured());
@@ -683,13 +683,13 @@ CRWJSInjectionReceiver* WebStateImpl::GetJSInjectionReceiver() const {
   return [web_controller_.jsInjector JSInjectionReceiver];
 }
 
-void WebStateImpl::ExecuteJavaScript(const base::string16& javascript) {
+void WebStateImpl::ExecuteJavaScript(const std::u16string& javascript) {
   [web_controller_.jsInjector
       executeJavaScript:base::SysUTF16ToNSString(javascript)
       completionHandler:nil];
 }
 
-void WebStateImpl::ExecuteJavaScript(const base::string16& javascript,
+void WebStateImpl::ExecuteJavaScript(const std::u16string& javascript,
                                      JavaScriptResultCallback callback) {
   __block JavaScriptResultCallback stack_callback = std::move(callback);
   [web_controller_.jsInjector
@@ -901,14 +901,6 @@ void WebStateImpl::ClearDialogs() {
 
 void WebStateImpl::RecordPageStateInNavigationItem() {
   [web_controller_ recordStateInHistory];
-}
-
-void WebStateImpl::OnGoToIndexSameDocumentNavigation(
-    NavigationInitiationType type,
-    bool has_user_gesture) {
-  [web_controller_
-      didFinishGoToIndexSameDocumentNavigationWithType:type
-                                        hasUserGesture:has_user_gesture];
 }
 
 void WebStateImpl::LoadCurrentItem(NavigationInitiationType type) {

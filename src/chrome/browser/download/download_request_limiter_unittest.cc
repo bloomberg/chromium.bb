@@ -4,6 +4,8 @@
 
 #include "chrome/browser/download/download_request_limiter.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -52,8 +54,8 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     permissions::PermissionRequestManager::CreateForWebContents(web_contents());
     permissions::PermissionRequestManager* manager =
         permissions::PermissionRequestManager::FromWebContents(web_contents());
-    mock_permission_prompt_factory_.reset(
-        new permissions::MockPermissionPromptFactory(manager));
+    mock_permission_prompt_factory_ =
+        std::make_unique<permissions::MockPermissionPromptFactory>(manager);
 
     UpdateExpectations(ACCEPT);
     cancel_count_ = continue_count_ = 0;
@@ -158,7 +160,8 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   }
 
   void LoadCompleted() {
-    mock_permission_prompt_factory_->DocumentOnLoadCompletedInMainFrame();
+    mock_permission_prompt_factory_->DocumentOnLoadCompletedInMainFrame(
+        main_rfh());
   }
 
   int AskAllowCount() { return mock_permission_prompt_factory_->show_count(); }
@@ -520,8 +523,8 @@ TEST_F(DownloadRequestLimiterTest, HistoryBack) {
   EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
             download_request_limiter_->GetDownloadUiStatus(web_contents()));
 
-  // Browser-initiated navigation to a different host, which should reset the
-  // state.
+  // Browser-initiated navigation to a different host, which will not reset the
+  // state either.
   NavigateAndCommit(GURL("http://foobar.com"));
   LoadCompleted();
   EXPECT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
@@ -535,12 +538,13 @@ TEST_F(DownloadRequestLimiterTest, HistoryBack) {
   EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
             download_request_limiter_->GetDownloadUiStatus(web_contents()));
 
-  // History back should reset the state as it is going to a different host.
+  // History back should use the old download state, as one of the origin
+  // is in a restricted state.
   backward_navigation = content::NavigationSimulator::CreateHistoryNavigation(
       -1 /* Offset */, web_contents());
   backward_navigation->Start();
   backward_navigation->Commit();
-  EXPECT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
   EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
             download_request_limiter_->GetDownloadUiStatus(web_contents()));

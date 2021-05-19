@@ -23,6 +23,7 @@
 <translation id="1509960214886564027">କିଛି ସାଇଟରେ ଫିଚରଗୁଡ଼ିକ ଠିକ୍ ଭାବେ କାମ କରିନପାରେ</translation>
 <translation id="1620510694547887537">କ୍ୟାମେରା</translation>
 <translation id="1644574205037202324">ଇତିବୃତ୍ତି</translation>
+<translation id="1647582022260550163">ଆପଣ ଅନୁମତିଗୁଡ଼ିକ ରିସେଟ୍ କରିବାକୁ ଏବଂ କୁକୀ ଓ ସାଇଟ୍ ଡାଟା ଖାଲି କରିବାକୁ ଚାହୁଁଥିବା ସୁନିଶ୍ଚିତ କି?</translation>
 <translation id="1660204651932907780">ସାଉଣ୍ଡ ଚାଲୁ କରିବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଅନୁମତି ଦିଅନ୍ତୁ (ସୁପାରିଶ୍ କରାଯାଇଛି)</translation>
 <translation id="1677097821151855053">ଆପଣଙ୍କୁ ସାଇନ୍ ଇନ୍ କରିବା କିମ୍ବା ବିଜ୍ଞାପନଗୁଡ଼ିକୁ ବ୍ୟକ୍ତିଗତକୃତ କରିବା ପରି, ଆପଣଙ୍କ ସୂଚନା ମନେରଖିବା ପାଇଁ କୁକୀ ଏବଂ ଅନ୍ୟ ସାଇଟ୍ ଡାଟା ବ୍ୟବହାର କରାଯାଇଥାଏ। ସମସ୍ତ ସାଇଟ୍ ପାଇଁ କୁକୀଗୁଡ଼ିକ ପରିଚାଳନା କରିବାକୁ, <ph name="BEGIN_LINK" />ସେଟିଂସ୍<ph name="END_LINK" /> ଦେଖନ୍ତୁ।</translation>
 <translation id="1688867105868176567">ସାଇଟ୍‍ ଡାଟା ଖାଲି କରିବେ?</translation>
@@ -92,7 +93,6 @@
 <translation id="3386292677130313581">ସାଇଟ୍‍ଗୁଡ଼ିକ ଆପଣଙ୍କର ଲୋକେସନ୍‌ ଜାଣିବା ପୂର୍ବରୁ ପଚାରନ୍ତୁ (ସୁପାରିଶ୍‌ କରାଯାଇଛି)</translation>
 <translation id="3538390592868664640">ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରିବା ଏବଂ କ୍ୟାମେରା ସ୍ଥିତି ଟ୍ରାକ୍ କରିବାକୁ ସାଇଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="3586500876634962664">କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନର ବ୍ୟବହାର</translation>
-<translation id="3587482841069643663">ସମସ୍ତ</translation>
 <translation id="358794129225322306">ସ୍ୱଚାଳିତ ଭାବେ ଏକାଧିକ ଫାଇଲ୍ ଡାଉନ୍‌ଲୋଡ୍ କରିବା ପାଇଁ ଗୋଟିଏ ସାଇଟ୍‌କୁ ଅନୁମତି ଦିଅନ୍ତୁ।</translation>
 <translation id="3594780231884063836">ଭିଡିଓ ମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
 <translation id="3596414637720633074">ଇନକଗ୍ନିଟୋ ମୋଡରେ ତୃତୀୟ-ପକ୍ଷ କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
@@ -104,6 +104,7 @@
 <translation id="385051799172605136">ପଛକୁ</translation>
 <translation id="3859306556332390985">ଆଗକୁ ବଢ଼ାନ୍ତୁ</translation>
 <translation id="3955193568934677022">ସୁରକ୍ଷିତ ବିଷୟବସ୍ତୁକୁ ଚଲାଇବା ପାଇଁ ସାଇଟ୍‍ଗୁଡ଼ିକୁ ଅନୁମତି ଦିଆଯାଇଛି।(ସୁପାରିଶ୍ କରାଯାଇଛି)</translation>
+<translation id="3967822245660637423">ଡାଉନ୍‍‍‍ଲୋଡ୍ ଶେଷ ହୋଇଛି</translation>
 <translation id="3987993985790029246">ଲିଙ୍କ୍ କପି କରନ୍ତୁ</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ଆଖ୍ୟା</translation>
@@ -177,6 +178,7 @@
 <translation id="5916664084637901428">ଚାଲୁ</translation>
 <translation id="5922853908706496913">ଆପଣଙ୍କ ସ୍କ୍ରିନ୍ ସେୟାର୍ କରାଯାଉଛି</translation>
 <translation id="5939518447894949180">ପୁନଃସେଟ୍</translation>
+<translation id="5975083100439434680">ଜୁମ୍ କମାନ୍ତୁ</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">ଆପଣଙ୍କ ଡିଭାଇସକୁ ଏହି ସାଇଟର ଆକ୍ସେସ ନିୟନ୍ତ୍ରଣ କରନ୍ତୁ</translation>
 <translation id="6040143037577758943">ବନ୍ଦ</translation>
@@ -297,6 +299,7 @@
 <translation id="8801436777607969138">ଏକ ନିର୍ଦ୍ଧିଷ୍ଟ ସାଇଟ୍‌ ପାଇଁ JavaScript ଅବରୋଧ କରନ୍ତୁ।</translation>
 <translation id="8816026460808729765">ସେନ୍ସରଗୁଡ଼ିକୁ ଆକ୍ସେସ୍ କରିବାରୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8903921497873541725">ଜୁମ୍ ବଢ଼ାନ୍ତୁ</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">ଏହି ଡିଭାଇସ୍ ପାଇଁ NFC ବନ୍ଦ ଅଛି। ଏହାକୁ <ph name="BEGIN_LINK" />Android ସେଟିଂସ୍‌<ph name="END_LINK" />ରେ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="8929372349074745002">ଏହି ସାଇଟ୍ ଅଧିକାଂଶ ଲୋକଙ୍କ ପାଇଁ ଶୀଘ୍ର ଖୋଲିଥାଏ ଏବଂ ଶୀଘ୍ର ବ୍ୟବହାର ପାଇଁ ପ୍ରସ୍ତୁତ ଥାଏ</translation>
@@ -304,10 +307,12 @@
 <translation id="894871326938397531">ଇନ୍‌କଗ୍ନିଟୋ ମୋଡ୍ ଛାଡ଼ିବେ?</translation>
 <translation id="8958424370300090006">ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ ସାଇଟ୍ ପାଇଁ କୁକୀଗୁଡ଼ିକୁ ଅବରୋଧ କରନ୍ତୁ।</translation>
 <translation id="8959122750345127698">ନାଭିଗେସନ୍‌ରେ ପହଞ୍ଚି ହେଉନାହିଁ: <ph name="URL" /></translation>
+<translation id="8986362086234534611">ଭୁଲିଗଲେ</translation>
 <translation id="9019902583201351841">ଆପଣଙ୍କ ମାତା-ପିତାଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ କରାଯାଉଛି</translation>
 <translation id="9074739597929991885">ବ୍ଲୁଟୁଥ୍</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ଓ ଅଧିକ <ph name="NUM_MORE" />ଟି}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ଓ ଅଧିକ <ph name="NUM_MORE" />ଟି}}</translation>
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android ସେଟିଂସ<ph name="END_LINK" />ରେ <ph name="APP_NAME" /> ପାଇଁ ଅନୁମତି ଚାଲୁ କରନ୍ତୁ।</translation>
+<translation id="930525582205581608">ଏହି ସାଇଟ୍ ସମ୍ବନ୍ଧିତ ଡାଟା ଖାଲି କରିବେ କି?</translation>
 <translation id="965817943346481315">ଯଦି ସାଇଟ୍ ଅନଧିକାର ପ୍ରବେଶ କରିଥିବା କିମ୍ବା ବିଭ୍ରାନ୍ତିକର ବିଜ୍ଞାପନ ଦେଖାଉଛି, ତେବେ ବ୍ଲକ୍ କରନ୍ତୁ(ସୁପାରିଶ୍ କରାଯାଇଛି)</translation>
 <translation id="967624055006145463">ଡାଟା ଷ୍ଟୋର୍ କରାଯାଇଛି</translation>
 </translationbundle>

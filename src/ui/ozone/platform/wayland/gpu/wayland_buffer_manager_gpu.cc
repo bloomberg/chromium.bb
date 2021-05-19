@@ -45,14 +45,15 @@ void WaylandBufferManagerGpu::Initialize(
     const base::flat_map<::gfx::BufferFormat, std::vector<uint64_t>>&
         buffer_formats_with_modifiers,
     bool supports_dma_buf,
+    bool supports_viewporter,
     bool supports_acquire_fence) {
-  DCHECK(supported_buffer_formats_with_modifiers_.empty());
   supported_buffer_formats_with_modifiers_ = buffer_formats_with_modifiers;
 
 #if defined(WAYLAND_GBM)
   if (!supports_dma_buf)
     set_gbm_device(nullptr);
 #endif
+  supports_viewporter_ = supports_viewporter;
   supports_acquire_fence_ = supports_acquire_fence;
 
   BindHostInterface(std::move(remote_host));
@@ -228,7 +229,7 @@ void WaylandBufferManagerGpu::DestroyBuffer(gfx::AcceleratedWidget widget,
 
 void WaylandBufferManagerGpu::AddBindingWaylandBufferManagerGpu(
     mojo::PendingReceiver<ozone::mojom::WaylandBufferManagerGpu> receiver) {
-  receiver_.Bind(std::move(receiver));
+  receiver_set_.Add(this, std::move(receiver));
 }
 
 const std::vector<uint64_t>&
@@ -287,6 +288,12 @@ void WaylandBufferManagerGpu::DestroyBufferInternal(
 
 void WaylandBufferManagerGpu::BindHostInterface(
     mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> remote_host) {
+  // WaylandBufferManagerHost may bind host again after an error. See
+  // WaylandBufferManagerHost::BindInterface for more details.
+  if (remote_host_.is_bound()) {
+    remote_host_.reset();
+    associated_receiver_.reset();
+  }
   remote_host_.Bind(std::move(remote_host));
 
   // Setup associated interface.

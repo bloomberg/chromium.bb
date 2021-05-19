@@ -397,6 +397,17 @@ TEST_F(WebRtcVideoEngineTestWithVideoLayersAllocation,
   ExpectRtpCapabilitySupport(RtpExtension::kVideoLayersAllocationUri, true);
 }
 
+class WebRtcVideoFrameTrackingId : public WebRtcVideoEngineTest {
+ public:
+  WebRtcVideoFrameTrackingId()
+      : WebRtcVideoEngineTest(
+            "WebRTC-VideoFrameTrackingIdAdvertised/Enabled/") {}
+};
+
+TEST_F(WebRtcVideoFrameTrackingId, AdvertiseVideoFrameTrackingId) {
+  ExpectRtpCapabilitySupport(RtpExtension::kVideoFrameTrackingIdUri, true);
+}
+
 TEST_F(WebRtcVideoEngineTest, CVOSetHeaderExtensionBeforeCapturer) {
   // Allocate the source first to prevent early destruction before channel's
   // dtor is called.
@@ -4923,6 +4934,76 @@ TEST_F(WebRtcVideoChannelTest, SetRecvCodecsWithChangedRtxPayloadType) {
   EXPECT_EQ(kRtxSsrcs1[0], config_after.rtp.rtx_ssrc);
 }
 
+TEST_F(WebRtcVideoChannelTest, SetRecvCodecsRtxWithRtxTime) {
+  const int kUnusedPayloadType1 = 126;
+  const int kUnusedPayloadType2 = 127;
+  EXPECT_FALSE(FindCodecById(engine_.recv_codecs(), kUnusedPayloadType1));
+  EXPECT_FALSE(FindCodecById(engine_.recv_codecs(), kUnusedPayloadType2));
+
+  // SSRCs for RTX.
+  cricket::StreamParams params =
+      cricket::StreamParams::CreateLegacy(kSsrcs1[0]);
+  params.AddFidSsrc(kSsrcs1[0], kRtxSsrcs1[0]);
+  AddRecvStream(params);
+
+  // Payload type for RTX.
+  cricket::VideoRecvParameters parameters;
+  parameters.codecs.push_back(GetEngineCodec("VP8"));
+  cricket::VideoCodec rtx_codec(kUnusedPayloadType1, "rtx");
+  rtx_codec.SetParam("apt", GetEngineCodec("VP8").id);
+  parameters.codecs.push_back(rtx_codec);
+  EXPECT_TRUE(channel_->SetRecvParameters(parameters));
+  ASSERT_EQ(1U, fake_call_->GetVideoReceiveStreams().size());
+  const webrtc::VideoReceiveStream::Config& config =
+      fake_call_->GetVideoReceiveStreams()[0]->GetConfig();
+
+  const int kRtxTime = 343;
+  // Assert that the default value is different from the ones we test
+  // and store the default value.
+  EXPECT_NE(config.rtp.nack.rtp_history_ms, kRtxTime);
+  int default_history_ms = config.rtp.nack.rtp_history_ms;
+
+  // Set rtx-time.
+  parameters.codecs[1].SetParam(kCodecParamRtxTime, kRtxTime);
+  EXPECT_TRUE(channel_->SetRecvParameters(parameters));
+  EXPECT_EQ(fake_call_->GetVideoReceiveStreams()[0]
+                ->GetConfig()
+                .rtp.nack.rtp_history_ms,
+            kRtxTime);
+
+  // Negative values are ignored so the default value applies.
+  parameters.codecs[1].SetParam(kCodecParamRtxTime, -1);
+  EXPECT_TRUE(channel_->SetRecvParameters(parameters));
+  EXPECT_NE(fake_call_->GetVideoReceiveStreams()[0]
+                ->GetConfig()
+                .rtp.nack.rtp_history_ms,
+            -1);
+  EXPECT_EQ(fake_call_->GetVideoReceiveStreams()[0]
+                ->GetConfig()
+                .rtp.nack.rtp_history_ms,
+            default_history_ms);
+
+  // 0 is ignored so the default applies.
+  parameters.codecs[1].SetParam(kCodecParamRtxTime, 0);
+  EXPECT_TRUE(channel_->SetRecvParameters(parameters));
+  EXPECT_NE(fake_call_->GetVideoReceiveStreams()[0]
+                ->GetConfig()
+                .rtp.nack.rtp_history_ms,
+            0);
+  EXPECT_EQ(fake_call_->GetVideoReceiveStreams()[0]
+                ->GetConfig()
+                .rtp.nack.rtp_history_ms,
+            default_history_ms);
+
+  // Values larger than the default are clamped to the default.
+  parameters.codecs[1].SetParam(kCodecParamRtxTime, default_history_ms + 100);
+  EXPECT_TRUE(channel_->SetRecvParameters(parameters));
+  EXPECT_EQ(fake_call_->GetVideoReceiveStreams()[0]
+                ->GetConfig()
+                .rtp.nack.rtp_history_ms,
+            default_history_ms);
+}
+
 TEST_F(WebRtcVideoChannelTest, SetRecvCodecsDifferentPayloadType) {
   cricket::VideoRecvParameters parameters;
   parameters.codecs.push_back(GetEngineCodec("VP8"));
@@ -8300,6 +8381,48 @@ TEST_F(WebRtcVideoChannelTest, ConfiguresLocalSsrc) {
 
 TEST_F(WebRtcVideoChannelTest, ConfiguresLocalSsrcOnExistingReceivers) {
   TestReceiverLocalSsrcConfiguration(true);
+}
+
+TEST_F(WebRtcVideoChannelTest, Simulcast_QualityScalingNotAllowed) {
+  FakeVideoSendStream* stream = SetUpSimulcast(true, true);
+  EXPECT_FALSE(stream->GetEncoderConfig().is_quality_scaling_allowed);
+}
+
+TEST_F(WebRtcVideoChannelTest, Singlecast_QualityScalingAllowed) {
+  FakeVideoSendStream* stream = SetUpSimulcast(false, true);
+  EXPECT_TRUE(stream->GetEncoderConfig().is_quality_scaling_allowed);
+}
+
+TEST_F(WebRtcVideoChannelTest,
+       SinglecastScreenSharing_QualityScalingNotAllowed) {
+  SetUpSimulcast(false, true);
+
+  webrtc::test::FrameForwarder frame_forwarder;
+  VideoOptions options;
+  options.is_screencast = true;
+  EXPECT_TRUE(channel_->SetVideoSend(last_ssrc_, &options, &frame_forwarder));
+  // Fetch the latest stream since SetVideoSend() may recreate it if the
+  // screen content setting is changed.
+  FakeVideoSendStream* stream = fake_call_->GetVideoSendStreams().front();
+
+  EXPECT_FALSE(stream->GetEncoderConfig().is_quality_scaling_allowed);
+  EXPECT_TRUE(channel_->SetVideoSend(last_ssrc_, nullptr, nullptr));
+}
+
+TEST_F(WebRtcVideoChannelTest,
+       SimulcastSingleActiveStream_QualityScalingAllowed) {
+  FakeVideoSendStream* stream = SetUpSimulcast(true, false);
+
+  webrtc::RtpParameters rtp_parameters =
+      channel_->GetRtpSendParameters(last_ssrc_);
+  ASSERT_EQ(3u, rtp_parameters.encodings.size());
+  ASSERT_TRUE(rtp_parameters.encodings[0].active);
+  ASSERT_TRUE(rtp_parameters.encodings[1].active);
+  ASSERT_TRUE(rtp_parameters.encodings[2].active);
+  rtp_parameters.encodings[0].active = false;
+  rtp_parameters.encodings[1].active = false;
+  EXPECT_TRUE(channel_->SetRtpSendParameters(last_ssrc_, rtp_parameters).ok());
+  EXPECT_TRUE(stream->GetEncoderConfig().is_quality_scaling_allowed);
 }
 
 class WebRtcVideoChannelSimulcastTest : public ::testing::Test {

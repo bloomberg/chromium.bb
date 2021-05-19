@@ -1,12 +1,9 @@
 {
   "dependencies": [
     "components",
-    "emulation"
+    "panels/emulation"
   ],
-  "modules": [
-    "screencast-legacy.js"
-  ],
-  "resources": [
+    "resources": [
     "screencastView.css"
   ]
 }

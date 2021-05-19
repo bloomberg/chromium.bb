@@ -8,12 +8,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/browser_features.h"
 #include "chrome/browser/notifications/non_persistent_notification_handler.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/persistent_notification_handler.h"
@@ -102,17 +101,13 @@ NotificationDisplayServiceImpl::NotificationDisplayServiceImpl(Profile* profile)
     AddNotificationHandler(NotificationHandler::Type::ANNOUNCEMENT,
                            std::make_unique<AnnouncementNotificationHandler>());
 
-    if (base::FeatureList::IsEnabled(
-            features::kMuteNotificationsDuringScreenShare)) {
-      auto screen_capture_blocker =
-          std::make_unique<ScreenCaptureNotificationBlocker>(this);
-      AddNotificationHandler(NotificationHandler::Type::NOTIFICATIONS_MUTED,
-                             std::make_unique<MutedNotificationHandler>(
-                                 screen_capture_blocker.get()));
-      notification_queue_.AddNotificationBlocker(
-          std::move(screen_capture_blocker));
-    }
-
+    auto screen_capture_blocker =
+        std::make_unique<ScreenCaptureNotificationBlocker>(this);
+    AddNotificationHandler(NotificationHandler::Type::NOTIFICATIONS_MUTED,
+                           std::make_unique<MutedNotificationHandler>(
+                               screen_capture_blocker.get()));
+    notification_queue_.AddNotificationBlocker(
+        std::move(screen_capture_blocker));
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -142,7 +137,7 @@ void NotificationDisplayServiceImpl::ProcessNotificationOperation(
     const GURL& origin,
     const std::string& notification_id,
     const base::Optional<int>& action_index,
-    const base::Optional<base::string16>& reply,
+    const base::Optional<std::u16string>& reply,
     const base::Optional<bool>& by_user) {
   NotificationHandler* handler = GetNotificationHandler(notification_type);
   DCHECK(handler);
@@ -279,12 +274,12 @@ void NotificationDisplayServiceImpl::ProfileLoadedCallback(
     const GURL& origin,
     const std::string& notification_id,
     const base::Optional<int>& action_index,
-    const base::Optional<base::string16>& reply,
+    const base::Optional<std::u16string>& reply,
     const base::Optional<bool>& by_user,
     Profile* profile) {
+  base::UmaHistogramBoolean("Notifications.LoadProfileResult",
+                            profile != nullptr);
   if (!profile) {
-    // TODO(miguelg): Add UMA for this condition.
-    // Perhaps propagate this through PersistentNotificationStatus.
     LOG(WARNING) << "Profile not loaded correctly";
     return;
   }

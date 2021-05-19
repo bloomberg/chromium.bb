@@ -24,6 +24,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/footnote_container_view.h"
 #include "ui/views/controls/button/image_button.h"
@@ -81,7 +82,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
       content_margins_(content_margins),
       footnote_margins_(content_margins_),
       title_icon_(new views::ImageView()),
-      default_title_(CreateDefaultTitleLabel(base::string16()).release()) {
+      default_title_(CreateDefaultTitleLabel(std::u16string()).release()) {
   AddChildView(title_icon_);
 
   default_title_->SetVisible(false);
@@ -99,7 +100,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
 #if defined(OS_WIN)
   // Windows will automatically create a tooltip for the close button based on
   // the HTCLOSE result from NonClientHitTest().
-  close->SetTooltipText(base::string16());
+  close->SetTooltipText(std::u16string());
   // Specify accessible name instead for screen readers.
   close->SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
 #endif
@@ -114,7 +115,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
       this));
   minimize->SetVisible(false);
 #if defined(OS_WIN)
-  minimize->SetTooltipText(base::string16());
+  minimize->SetTooltipText(std::u16string());
   minimize->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
 #endif
@@ -124,6 +125,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
       kProgressIndicatorHeight, /*allow_round_corner=*/false);
   progress_indicator->SetBackgroundColor(SK_ColorTRANSPARENT);
   progress_indicator->SetVisible(false);
+  progress_indicator->GetViewAccessibility().OverrideIsIgnored(true);
   progress_indicator_ = AddChildView(std::move(progress_indicator));
 }
 
@@ -131,7 +133,7 @@ BubbleFrameView::~BubbleFrameView() = default;
 
 // static
 std::unique_ptr<Label> BubbleFrameView::CreateDefaultTitleLabel(
-    const base::string16& title_text) {
+    const std::u16string& title_text) {
   auto title = std::make_unique<Label>(title_text, style::CONTEXT_DIALOG_TITLE);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetCollapseWhenHidden(true);
@@ -315,7 +317,9 @@ void BubbleFrameView::SetTitleView(std::unique_ptr<View> title_view) {
 }
 
 void BubbleFrameView::SetProgress(base::Optional<double> progress) {
-  progress_indicator_->SetVisible(progress.has_value());
+  bool visible = progress.has_value();
+  progress_indicator_->SetVisible(visible);
+  progress_indicator_->GetViewAccessibility().OverrideIsIgnored(!visible);
   if (progress)
     progress_indicator_->SetValue(progress.value());
 }

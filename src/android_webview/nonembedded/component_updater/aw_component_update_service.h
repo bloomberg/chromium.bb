@@ -7,44 +7,79 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "base/android/scoped_java_ref.h"
+#include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
-
-namespace base {
-class FilePath;
-class Version;
-}  // namespace base
-
-namespace component_updater {
-class ComponentUpdateService;
-}  // namespace component_updater
+#include "base/sequence_checker.h"
+#include "components/update_client/update_client.h"
 
 namespace android_webview {
 
-class MockAwComponentUpdateService;
+using RegisterComponentsCallback =
+    base::RepeatingCallback<bool(const update_client::CrxComponent&)>;
 
-// Native-side implementation of the AwComponentUpdateService, it initializes
-// ComponentUpdateService and registers components.
+class TestAwComponentUpdateService;
+
+// Native-side implementation of the AwComponentUpdateService. It
+// registers components and installs any updates for registered components.
 class AwComponentUpdateService {
  public:
   static AwComponentUpdateService* GetInstance();
-  void MaybeStartComponentUpdateService();
+  void StartComponentUpdateService(base::OnceClosure finished_callback);
 
-  virtual bool NotifyNewVersion(const std::string& component_id,
-                                const base::FilePath& install_dir,
-                                const base::Version& version);
+  bool RegisterComponent(const update_client::CrxComponent& component);
+  void CheckForUpdates(base::OnceClosure on_finished);
 
  private:
-  friend base::NoDestructor<AwComponentUpdateService>;
-  friend MockAwComponentUpdateService;
+  SEQUENCE_CHECKER(sequence_checker_);
 
+  friend base::NoDestructor<AwComponentUpdateService>;
+  friend TestAwComponentUpdateService;
+
+  FRIEND_TEST_ALL_PREFIXES(AwComponentUpdateServiceTest,
+                           TestComponentReadyWhenOffline);
+
+  // Accept custom configurator for testing.
+  explicit AwComponentUpdateService(
+      scoped_refptr<update_client::Configurator> configurator);
   AwComponentUpdateService();
+
+  // Virtual for testing.
   virtual ~AwComponentUpdateService();
 
-  std::unique_ptr<component_updater::ComponentUpdateService> cus_;
-};
+  void OnUpdateComplete(update_client::Callback callback,
+                        const base::TimeTicks& start_time,
+                        update_client::Error error);
+  base::Optional<update_client::CrxComponent> GetComponent(
+      const std::string& id) const;
+  std::vector<base::Optional<update_client::CrxComponent>> GetCrxComponents(
+      const std::vector<std::string>& ids);
+  void ScheduleUpdatesOfRegisteredComponents(
+      base::OnceClosure on_finished_updates);
 
-void SetAwComponentUpdateServiceForTesting(AwComponentUpdateService* service);
+  // Virtual for testing.
+  virtual void RegisterComponents(RegisterComponentsCallback register_callback,
+                                  base::OnceClosure on_finished);
+
+  scoped_refptr<update_client::UpdateClient> update_client_;
+
+  // A collection of every registered component.
+  base::flat_map<std::string, update_client::CrxComponent> components_;
+
+  // Maintains the order in which components have been registered. The position
+  // of a component id in this sequence indicates the priority of the component.
+  // The sooner the component gets registered, the higher its priority, and
+  // the closer this component is to the beginning of the vector.
+  std::vector<std::string> components_order_;
+
+  base::WeakPtrFactory<AwComponentUpdateService> weak_ptr_factory_{this};
+};
 
 }  // namespace android_webview
 

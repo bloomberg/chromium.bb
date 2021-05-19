@@ -41,9 +41,15 @@ class AemuTarget(qemu_target.QemuTarget):
     self._hardware_gpu = hardware_gpu
 
   @staticmethod
+  def CreateFromArgs(args):
+    return AemuTarget(args.out_dir, args.target_cpu, args.system_log_file,
+                      args.cpu_cores, args.require_kvm, args.ram_size_mb,
+                      args.enable_graphics, args.hardware_gpu,
+                      args.fuchsia_out_dir)
+
+  @staticmethod
   def RegisterArgs(arg_parser):
-    emu_target.EmuTarget.RegisterArgs(arg_parser)
-    aemu_args = arg_parser.add_argument_group('aemu', 'AEMU Arguments')
+    aemu_args = arg_parser.add_argument_group('aemu', 'AEMU arguments')
     aemu_args.add_argument('--enable-graphics',
                            action='store_true',
                            default=False,

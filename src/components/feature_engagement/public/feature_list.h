@@ -76,6 +76,8 @@ DEFINE_VARIATION_PARAM(kIPHContextualSearchOptInFeature,
                        "IPH_ContextualSearchOptIn");
 DEFINE_VARIATION_PARAM(kIPHContextualSearchTappedButShouldLongpressFeature,
                        "IPH_ContextualSearchTappedButShouldLongpress");
+DEFINE_VARIATION_PARAM(kIPHContextualSearchInPanelHelpFeature,
+                       "IPH_ContextualSearchInPanelHelp");
 DEFINE_VARIATION_PARAM(kIPHDownloadSettingsFeature, "IPH_DownloadSettings");
 DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadContinuingFeature,
                        "IPH_DownloadInfoBarDownloadContinuing");
@@ -95,6 +97,7 @@ DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryPaymentFillingFeature,
                        "IPH_KeyboardAccessoryPaymentFilling");
 DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryPaymentOfferFeature,
                        "IPH_KeyboardAccessoryPaymentOffer");
+DEFINE_VARIATION_PARAM(kIPHMicToolbarFeature, "IPH_MicToolbar");
 DEFINE_VARIATION_PARAM(kIPHNewTabPageButtonFeature, "IPH_NewTabPageHomeButton");
 DEFINE_VARIATION_PARAM(kIPHPageInfoFeature, "IPH_PageInfo");
 DEFINE_VARIATION_PARAM(kIPHPreviewsOmniboxUIFeature, "IPH_PreviewsOmniboxUI");
@@ -159,9 +162,12 @@ DEFINE_VARIATION_PARAM(kIPHPasswordsAccountStorageFeature,
                        "IPH_PasswordsAccountStorage");
 DEFINE_VARIATION_PARAM(kIPHReadingListDiscoveryFeature,
                        "IPH_ReadingListDiscovery");
+DEFINE_VARIATION_PARAM(kIPHReadingListEntryPointFeature,
+                       "IPH_ReadingListEntryPoint");
 DEFINE_VARIATION_PARAM(kIPHReopenTabFeature, "IPH_ReopenTab");
 DEFINE_VARIATION_PARAM(kIPHWebUITabStripFeature, "IPH_WebUITabStrip");
 DEFINE_VARIATION_PARAM(kIPHDesktopPwaInstallFeature, "IPH_DesktopPwaInstall");
+DEFINE_VARIATION_PARAM(kIPHProfileSwitchFeature, "IPH_ProfileSwitch");
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
@@ -191,6 +197,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHContextualSearchPromotePanelOpenFeature),
         VARIATION_ENTRY(kIPHContextualSearchOptInFeature),
         VARIATION_ENTRY(kIPHContextualSearchTappedButShouldLongpressFeature),
+        VARIATION_ENTRY(kIPHContextualSearchInPanelHelpFeature),
         VARIATION_ENTRY(kIPHDownloadSettingsFeature),
         VARIATION_ENTRY(kIPHDownloadInfoBarDownloadContinuingFeature),
         VARIATION_ENTRY(kIPHDownloadInfoBarDownloadsAreFasterFeature),
@@ -203,6 +210,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHKeyboardAccessoryPasswordFillingFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryPaymentFillingFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryPaymentOfferFeature),
+        VARIATION_ENTRY(kIPHMicToolbarFeature),
         VARIATION_ENTRY(kIPHNewTabPageButtonFeature),
         VARIATION_ENTRY(kIPHPageInfoFeature),
         VARIATION_ENTRY(kIPHPreviewsOmniboxUIFeature),
@@ -242,9 +250,11 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHLiveCaption),
         VARIATION_ENTRY(kIPHPasswordsAccountStorageFeature),
         VARIATION_ENTRY(kIPHReadingListDiscoveryFeature),
+        VARIATION_ENTRY(kIPHReadingListEntryPointFeature),
         VARIATION_ENTRY(kIPHReopenTabFeature),
         VARIATION_ENTRY(kIPHWebUITabStripFeature),
         VARIATION_ENTRY(kIPHDesktopPwaInstallFeature),
+        VARIATION_ENTRY(kIPHProfileSwitchFeature),
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 };

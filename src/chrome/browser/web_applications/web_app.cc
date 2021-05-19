@@ -129,13 +129,19 @@ void WebApp::SetDescription(const std::string& description) {
 }
 
 void WebApp::SetStartUrl(const GURL& start_url) {
-  DCHECK(!start_url.is_empty() && start_url.is_valid());
+  DCHECK(start_url.is_valid());
   start_url_ = start_url;
 }
 
 void WebApp::SetScope(const GURL& scope) {
   DCHECK(scope.is_empty() || scope.is_valid());
   scope_ = scope;
+}
+
+void WebApp::SetNoteTakingNewNoteUrl(const GURL& note_taking_new_note_url) {
+  DCHECK(note_taking_new_note_url.is_empty() ||
+         note_taking_new_note_url.is_valid());
+  note_taking_new_note_url_ = note_taking_new_note_url;
 }
 
 void WebApp::SetThemeColor(base::Optional<SkColor> theme_color) {
@@ -246,8 +252,12 @@ void WebApp::SetShortcutsMenuItemInfos(
 }
 
 void WebApp::SetDownloadedShortcutsMenuIconsSizes(
-    std::vector<std::vector<SquareSizePx>> sizes) {
+    std::vector<IconSizes> sizes) {
   downloaded_shortcuts_menu_icons_sizes_ = std::move(sizes);
+}
+
+void WebApp::SetLastBadgingTime(const base::Time& time) {
+  last_badging_time_ = time;
 }
 
 void WebApp::SetLastLaunchTime(const base::Time& time) {
@@ -277,6 +287,10 @@ void WebApp::SetLaunchQueryParams(
 
 void WebApp::SetManifestUrl(const GURL& manifest_url) {
   manifest_url_ = manifest_url;
+}
+
+void WebApp::SetManifestId(const base::Optional<std::string>& manifest_id) {
+  manifest_id_ = manifest_id;
 }
 
 WebApp::ClientData::ClientData() = default;
@@ -327,13 +341,21 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       << "  user_page_ordinal: " << app.user_page_ordinal_.ToDebugString()
       << std::endl
       << "  user_launch_ordinal: " << app.user_launch_ordinal_.ToDebugString()
-      << std::endl
-      << "  sources: " << app.sources_.to_string() << std::endl
-      << "  is_locally_installed: " << app.is_locally_installed_ << std::endl
+      << std::endl;
+
+  out << "  sources: ";
+  for (int i = Source::Type::kMinValue; i <= Source::Type::kMaxValue; ++i) {
+    if (app.sources_[i])
+      out << static_cast<Source::Type>(i) << " ";
+  }
+  out << std::endl;
+
+  out << "  is_locally_installed: " << app.is_locally_installed_ << std::endl
       << "  is_in_sync_install: " << app.is_in_sync_install_ << std::endl
       << "  sync_fallback_data: " << std::endl
       << app.sync_fallback_data_  // Outputs a std::endl.
       << "  description: " << app.description_ << std::endl
+      << "  last_badging_time: " << app.last_badging_time_ << std::endl
       << "  last_launch_time: " << app.last_launch_time_ << std::endl
       << "  install_time: " << app.install_time_ << std::endl
       << "  is_generated_icon: " << app.is_generated_icon_ << std::endl
@@ -352,10 +374,15 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
        app.shortcuts_menu_item_infos_) {
     out << info;
   }
-  for (const std::vector<SquareSizePx>& size_vec :
+  for (const IconSizes& icon_sizes :
        app.downloaded_shortcuts_menu_icons_sizes_) {
-    out << "  downloaded_shortcuts_menu_icons_sizes_:";
-    for (SquareSizePx size : size_vec)
+    out << "  downloaded_shortcuts_menu_icons_sizes_.any:";
+    for (SquareSizePx size : icon_sizes.any)
+      out << " " << size;
+    out << std::endl;
+
+    out << "  downloaded_shortcuts_menu_icons_sizes_.maskable:";
+    for (SquareSizePx size : icon_sizes.maskable)
       out << " " << size;
     out << std::endl;
   }
@@ -369,6 +396,8 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
        app.protocol_handlers_) {
     out << "  protocol_handler: " << protocol_handler << std::endl;
   }
+  out << "  note_taking_new_note_url: " << app.note_taking_new_note_url_
+      << std::endl;
   for (const apps::UrlHandlerInfo& url_handler : app.url_handlers_)
     out << "  url_handler: " << url_handler << std::endl;
   out << "  capture_links: " << app.capture_links_ << std::endl;
@@ -384,6 +413,9 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
     out << app.client_data_.system_web_app_data.value();
 
   out << "  manifest_url: " << app.manifest_url_ << std::endl;
+
+  if (!app.manifest_id_.has_value())
+    out << "  manifest_id: " << app.manifest_id_.value() << std::endl;
 
   return out;
 }
@@ -435,6 +467,8 @@ bool WebApp::operator==(const WebApp& other) const {
         app.share_target_,
         app.additional_search_terms_,
         app.protocol_handlers_,
+        app.note_taking_new_note_url_,
+        app.last_badging_time_,
         app.last_launch_time_,
         app.install_time_,
         app.run_on_os_login_mode_,
@@ -442,6 +476,7 @@ bool WebApp::operator==(const WebApp& other) const {
         app.url_handlers_,
         app.capture_links_,
         app.manifest_url_,
+        app.manifest_id_,
         app.client_data_.system_web_app_data
         // clang-format on
     );

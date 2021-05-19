@@ -5,16 +5,16 @@
 
 setlocal
 
+set scriptdir=%~dp0
+
 REM Set unique build ID.
-FOR /f "usebackq tokens=*" %%a in (`python3 -c "import uuid; print(uuid.uuid4())"`) do set AUTONINJA_BUILD_ID=%%a
+FOR /f "usebackq tokens=*" %%a in (`%scriptdir%python-bin\python3.bat -c "import uuid; print(uuid.uuid4())"`) do set AUTONINJA_BUILD_ID=%%a
 
 REM If a build performance summary has been requested then also set NINJA_STATUS
 REM to trigger more verbose status updates. In particular this makes it possible
 REM to see how quickly process creation is happening - often a critical clue on
 REM Windows. The trailing space is intentional.
 if "%NINJA_SUMMARIZE_BUILD%" == "1" set NINJA_STATUS=[%%r processes, %%f/%%t @ %%o/s : %%es ] 
-
-set scriptdir=%~dp0
 
 :loop
 IF NOT "%1"=="" (
@@ -33,17 +33,21 @@ IF NOT "%1"=="" (
 
 REM Execute whatever is printed by autoninja.py.
 REM Also print it to reassure that the right settings are being used.
-FOR /f "usebackq tokens=*" %%a in (`vpython %scriptdir%autoninja.py "%*"`) do echo %%a & %%a
+REM Don't use vpython - it is too slow to start.
+REM Don't use python3 because it doesn't work in git bash on Windows and we
+REM should be consistent between autoninja.bat and the autoninja script used by
+REM git bash.
+FOR /f "usebackq tokens=*" %%a in (`%scriptdir%python-bin\python3.bat %scriptdir%autoninja.py "%*"`) do echo %%a & %%a
 @if errorlevel 1 goto buildfailure
 
-REM Use call to invoke python script here, because we may use python3 via python3.bat.
-@if "%NINJA_SUMMARIZE_BUILD%" == "1" call python3 %scriptdir%post_build_ninja_summary.py %*
-@call python3 %scriptdir%ninjalog_uploader_wrapper.py --cmdline %*
+REM Use call to invoke python script here, because we use python via python3.bat.
+@if "%NINJA_SUMMARIZE_BUILD%" == "1" call %scriptdir%python-bin\python3.bat %scriptdir%post_build_ninja_summary.py %*
+@call %scriptdir%python-bin\python3.bat %scriptdir%ninjalog_uploader_wrapper.py --cmdline %*
 
 exit /b
 :buildfailure
 
-@call python3 %scriptdir%ninjalog_uploader_wrapper.py --cmdline %*
+@call %scriptdir%python-bin\python3.bat %scriptdir%ninjalog_uploader_wrapper.py --cmdline %*
 
 REM Return an error code of 1 so that if a developer types:
 REM "autoninja chrome && chrome" then chrome won't run if the build fails.

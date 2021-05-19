@@ -23,6 +23,7 @@
 <translation id="1509960214886564027">Es posible que las funciones de muchos sitios no funcionen correctamente.</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1644574205037202324">Historial</translation>
+<translation id="1647582022260550163">¿Seguro que quieres restablecer los permisos y borrar las cookies y los datos de sitios?</translation>
 <translation id="1660204651932907780">Permitir que los sitios reproduzcan sonidos (recomendado)</translation>
 <translation id="1677097821151855053">Las cookies y otros datos de los sitios se usan para recordarte. Así, podrás iniciar sesión o ver anuncios personalizados, entre otras cosas. Para gestionar las cookies de todos los sitios, ve a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">¿Borrar datos del sitio web?</translation>
@@ -92,7 +93,6 @@
 <translation id="3386292677130313581">Preguntar antes de permitir que los sitios detecten tu ubicación (recomendado)</translation>
 <translation id="3538390592868664640">No permitir que los sitios creen un mapa 3D de tu entorno o hagan un seguimiento de la posición de la cámara</translation>
 <translation id="3586500876634962664">Uso de cámara y micrófono</translation>
-<translation id="3587482841069643663">Todo</translation>
 <translation id="358794129225322306">Permitir que un sitio web descargue varios archivos automáticamente.</translation>
 <translation id="3594780231884063836">Silenciar vídeo</translation>
 <translation id="3596414637720633074">Bloquear cookies de terceros en incógnito</translation>
@@ -104,6 +104,7 @@
 <translation id="385051799172605136">Volver</translation>
 <translation id="3859306556332390985">Buscar hacia delante</translation>
 <translation id="3955193568934677022">Permitir que los sitios reproduzcan contenido protegido (recomendado)</translation>
+<translation id="3967822245660637423">Descarga completa</translation>
 <translation id="3987993985790029246">Copiar enlace</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Título</translation>
@@ -177,6 +178,7 @@
 <translation id="5916664084637901428">Activado</translation>
 <translation id="5922853908706496913">Compartiendo tu pantalla</translation>
 <translation id="5939518447894949180">Restablecer</translation>
+<translation id="5975083100439434680">Reducir</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Controla el acceso de este sitio web a tu dispositivo</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -291,12 +293,13 @@
 <translation id="8702612070107455751">Se borrarán todos los datos offline.</translation>
 <translation id="8719283222052720129">Activa el permiso para <ph name="APP_NAME" /> en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Reintentar</translation>
-<translation id="8730621377337864115">Listo</translation>
+<translation id="8730621377337864115">Hecho</translation>
 <translation id="8737217482364735741">Esta acción borrará todos los datos y cookies guardados por <ph name="ORIGIN" />.</translation>
 <translation id="8751914237388039244">Selecciona una imagen</translation>
 <translation id="8801436777607969138">Bloquea JavaScript en un sitio específico.</translation>
 <translation id="8816026460808729765">No permitir que los sitios accedan a los sensores</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8903921497873541725">Acercar</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">La tecnología NFC está desactivada en este dispositivo. Actívala en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Este sitio web se abre y responde con rapidez en la mayoría de los casos</translation>
@@ -304,10 +307,12 @@
 <translation id="894871326938397531">¿Salir del modo de incógnito?</translation>
 <translation id="8958424370300090006">Bloquear las cookies de un sitio específico.</translation>
 <translation id="8959122750345127698">No se puede realizar la navegación: <ph name="URL" /></translation>
+<translation id="8986362086234534611">Dejar de recordar</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> y <ph name="NUM_MORE" /> más}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> y <ph name="NUM_MORE" /> más}}</translation>
 <translation id="913657688200966289">Activa los permisos para <ph name="APP_NAME" /> en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
+<translation id="930525582205581608">¿Olvidar este sitio?</translation>
 <translation id="965817943346481315">Bloquear si el sitio web muestra anuncios invasivos o engañosos (recomendado)</translation>
 <translation id="967624055006145463">Datos almacenados</translation>
 </translationbundle>

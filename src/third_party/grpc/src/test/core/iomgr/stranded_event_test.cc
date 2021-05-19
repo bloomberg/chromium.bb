@@ -296,15 +296,15 @@ grpc_core::Resolver::Result BuildResolverResponse(
     const std::vector<std::string>& addresses) {
   grpc_core::Resolver::Result result;
   for (const auto& address_str : addresses) {
-    grpc_uri* uri = grpc_uri_parse(address_str.c_str(), true);
-    if (uri == nullptr) {
-      gpr_log(GPR_ERROR, "Failed to parse uri:%s", address_str.c_str());
-      GPR_ASSERT(0);
+    absl::StatusOr<grpc_core::URI> uri = grpc_core::URI::Parse(address_str);
+    if (!uri.ok()) {
+      gpr_log(GPR_ERROR, "Failed to parse. Error: %s",
+              uri.status().ToString().c_str());
+      GPR_ASSERT(uri.ok());
     }
     grpc_resolved_address address;
-    GPR_ASSERT(grpc_parse_uri(uri, &address));
+    GPR_ASSERT(grpc_parse_uri(*uri, &address));
     result.addresses.emplace_back(address.addr, address.len, nullptr);
-    grpc_uri_destroy(uri);
   }
   return result;
 }
@@ -394,8 +394,8 @@ TEST(Pollers, TestReadabilityNotificationsDontGetStrandedOnOneCq) {
       for (int i = 1; i <= kNumMessagePingPongsPerCall; i++) {
         {
           grpc_core::MutexLock lock(&ping_pong_round_mu);
-          ping_pong_round_cv.Broadcast();
-          while (ping_pong_round != i) {
+          ping_pong_round_cv.SignalAll();
+          while (int(ping_pong_round) != i) {
             ping_pong_round_cv.Wait(&ping_pong_round_mu);
           }
         }
@@ -404,7 +404,7 @@ TEST(Pollers, TestReadabilityNotificationsDontGetStrandedOnOneCq) {
         {
           grpc_core::MutexLock lock(&ping_pong_round_mu);
           ping_pongs_done++;
-          ping_pong_round_cv.Broadcast();
+          ping_pong_round_cv.SignalAll();
         }
       }
       gpr_log(GPR_DEBUG, "now receive status on call with server address:%s",
@@ -425,7 +425,7 @@ TEST(Pollers, TestReadabilityNotificationsDontGetStrandedOnOneCq) {
         ping_pong_round_cv.Wait(&ping_pong_round_mu);
       }
       ping_pong_round++;
-      ping_pong_round_cv.Broadcast();
+      ping_pong_round_cv.SignalAll();
       gpr_log(GPR_DEBUG, "initiate ping pong round: %ld", ping_pong_round);
     }
   }

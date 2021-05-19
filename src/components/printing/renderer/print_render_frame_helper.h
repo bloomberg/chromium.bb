@@ -434,15 +434,6 @@ class PrintRenderFrameHelper
 
   void SetPrintPagesParams(const mojom::PrintPagesParams& settings);
 
-  // Quits all runloops waiting for Mojo replies. It's called when
-  // |print_manager_host_| is disconnected before the replies.
-  void QuitActiveRunLoops();
-
-  // Quits a runloop waiting for a Mojo reply. These are called when a Mojo
-  // message gets a reply.
-  void QuitScriptedPrintPreviewRunLoop();
-  void QuitGetPrintSettingsFromUserRunLoop();
-
   // WebView used only to print the selection.
   std::unique_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
   bool reset_prep_frame_view_ = false;
@@ -644,7 +635,6 @@ class PrintRenderFrameHelper
   PrintPreviewContext print_preview_context_;
   bool is_loading_ = false;
   bool is_scripted_preview_delayed_ = false;
-  bool in_scripted_print_ = false;
   int ipc_nesting_level_ = 0;
   bool render_frame_gone_ = false;
   bool delete_pending_ = false;
@@ -661,12 +651,6 @@ class PrintRenderFrameHelper
   // called. This is a store for the RequestPrintPreview() call and its
   // parameters so that it can be invoked after DidStopLoading.
   base::OnceClosure on_stop_loading_closure_;
-
-  // Stores quit closures for the runloops that are waiting for Mojo replies.
-  base::OnceClosure scripted_print_preview_quit_closure_;
-  base::OnceClosure get_print_settings_from_user_quit_closure_;
-
-  bool do_deferred_print_for_system_dialog_ = false;
 
   mojo::AssociatedRemote<mojom::PrintManagerHost> print_manager_host_;
 

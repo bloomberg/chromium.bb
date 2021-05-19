@@ -63,10 +63,11 @@ def _parse_dir_list(dir_list):
         # "repository/androidx/library_group/library_name/library_version/pom_or_jar"
         if len(dir_components) < 6:
             continue
-        dependency_module = 'androidx.{}:{}'.format(dir_components[2],
-                                                    dir_components[3])
+        dependency_package = 'androidx.' + '.'.join(dir_components[2:-3])
+        dependency_module = '{}:{}'.format(dependency_package,
+                                           dir_components[-3])
         if dependency_module not in dependency_version_map:
-            dependency_version_map[dependency_module] = dir_components[4]
+            dependency_version_map[dependency_module] = dir_components[-2]
     return dependency_version_map
 
 
@@ -74,7 +75,8 @@ def _compute_replacement(dependency_version_map, androidx_repository_url,
                          line):
     """Computes output line for build.gradle from build.gradle.template line.
 
-    Replaces {{android_repository_url}} and {{androidx_dependency_version}}.
+    Replaces {{android_repository_url}}, {{androidx_dependency_version}} and
+      {{version_overrides}}.
 
     Args:
       dependency_version_map: An "dependency_group:dependency_name"->dependency_version mapping.
@@ -83,13 +85,20 @@ def _compute_replacement(dependency_version_map, androidx_repository_url,
     """
     line = line.replace('{{androidx_repository_url}}', androidx_repository_url)
 
+    if line.strip() == '{{version_overrides}}':
+        lines = ['versionOverrideMap = [:]']
+        for dependency, version in dependency_version_map.items():
+            lines.append(f'versionOverrideMap["{dependency}"] = "{version}"')
+        return '\n'.join(lines)
+
     match = re.search(r'"(\S+):{{androidx_dependency_version}}"', line)
     if not match:
         return line
 
-    version = dependency_version_map.get(match.group(1))
+    dependency = match.group(1)
+    version = dependency_version_map.get(dependency)
     if not version:
-        return line
+        raise Exception(f'Version for {dependency} not found.')
 
     return line.replace('{{androidx_dependency_version}}', version)
 

@@ -82,7 +82,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Translate.CLD3.TopLanguageEvaluationDuration" units="ms"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -169,6 +169,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Translate.ContentLanguage" enum="TranslateLanguage"
     expires_after="2021-08-09">
+  <obsolete>
+    Removed M90. No longer used.
+  </obsolete>
   <owner>kenjibaheux@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -199,6 +202,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Translate.DeclineTranslateDismissUI" units="units"
     expires_after="2021-04-04">
+  <obsolete>
+    Removed M91. No longer used.
+  </obsolete>
   <owner>kenjibaheux@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -245,7 +251,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Translate.HrefHint.PrefsFilterStatus"
-    enum="HrefTranslatePrefsFilterStatus" expires_after="2021-06-23">
+    enum="HrefTranslatePrefsFilterStatus" expires_after="2021-09-12">
   <owner>sclittle@google.com</owner>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
@@ -260,7 +266,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Translate.HrefHint.Status" enum="HrefTranslateStatus"
-    expires_after="2021-06-27">
+    expires_after="2021-09-12">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -275,6 +281,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Translate.HtmlLang" enum="TranslateLanguage"
     expires_after="2021-04-04">
+  <obsolete>
+    Removed M90. No longer used.
+  </obsolete>
   <owner>kenjibaheux@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -313,6 +322,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Translate.LanguageDetection.LanguageVerification"
+    enum="TranslateLanguageVerification" expires_after="M94">
+  <owner>curranmax@google.com</owner>
+  <owner>megjablon@google.com</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Measures whether the provided HTML language (i.e. the page lang attribute if
+    it exists, otherwise the header Content-Language value) matches the language
+    determined by the model. Beyond directly matching or mismatching the HTML
+    language, the model can complement the HTML language. For example, suppose
+    the HTML language is 'zh' (general Chinese), a language code that the
+    Translate server does not support. In this case, the model can detect a
+    subcode like '-TW' or '-CN', resulting in language codes 'zh-TW' and
+    'zh-CN', which the Translate server supports. This is referred to as
+    &quot;complementing a language subcode&quot;.
+
+    This histogram is recorded every time language detection is run. This
+    includes for each page load, and for sub frame detection.
+  </summary>
+</histogram>
+
 <histogram name="Translate.LanguageDetectionTiming"
     enum="TranslateLanguageDetectionTiming" expires_after="M85">
   <owner>andrewhayden@chromium.org</owner>
@@ -326,7 +356,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Translate.LanguageDeterminedDuration" units="ms"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>sclittle@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
@@ -358,6 +388,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Translate.LanguageVerification"
     enum="TranslateLanguageVerification" expires_after="M78">
+  <obsolete>
+    Removed M90. Replaced by Translate.LanguageDetection.LanguageVerification.
+  </obsolete>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -396,7 +429,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Translate.MenuTranslation.UnavailableReasons"
-    enum="MenuTranslationUnavailableReason" expires_after="2021-07-04">
+    enum="MenuTranslationUnavailableReason" expires_after="2021-09-05">
   <owner>cuianthony@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -572,9 +605,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Translate.PageLoad.InitialTargetLanguage.Origin"
+    enum="TranslateTargetLanguageOrigin" expires_after="M95">
+  <owner>curranmax@google.com</owner>
+  <owner>megjablon@google.com</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Records the origin of the target language at the beginning of the page load.
+    This is the reason why Chrome decided to use the initial target language.
+    This value is logged once the page load is completed or the first time
+    Chrome is backgrounded during the course of the page load, whichever comes
+    first.
+  </summary>
+</histogram>
+
 <histogram
     name="Translate.PageLoad.IsInitialSourceLanguageInUsersContentLanguages"
-    enum="Boolean" expires_after="2021-06-27">
+    enum="Boolean" expires_after="2021-08-29">
   <owner>curranmax@google.com</owner>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
@@ -639,6 +686,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Translate.PageLoad.Ranker.Timer.ShouldOfferTranslation"
+    units="ms" expires_after="M95">
+  <owner>curranmax@google.com</owner>
+  <owner>megjablon@google.com</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Logs the time it takes for the Translate Ranker to calculate whether or not
+    the Translate UI should be shown. This value is only logged on pages loads
+    where the Translate Ranker is queried. On these page loads, the value is
+    logged once the page load is completed or the first time that Chrome is
+    backgrounded during the course of the page load, whichever comes first.
+  </summary>
+</histogram>
+
 <histogram name="Translate.PageLoad.Ranker.Version" units="version"
     expires_after="2021-08-09">
   <owner>curranmax@google.com</owner>
@@ -660,6 +721,37 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Logs the highest priority reason for the initial state of Translate for the
     page load. This value is logged at the end of the page load or the first
     time Chrome is backgrounded during the page load, whichever comes first.
+  </summary>
+</histogram>
+
+<histogram name="Translate.PageLoad.TriggerDecision.AllTriggerDecisions"
+    enum="TranslateTriggerDecision" expires_after="M92">
+  <owner>curranmax@google.com</owner>
+  <owner>megjablon@google.com</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Logs all trigger decisions (reason for the initial state of Translate) for
+    each page load. Each trigger decision is recorded as a separate sample, so
+    there may more than one value recorded per page load. If Translate is
+    initialized multiple times in a single page load, then we may record the
+    same enum multiple times for a single page load. Additionally we may record
+    no samples in cases were the page is abandoned before we process trigger
+    decisions. These values are logged at the end of the page load or the first
+    time Chrome is backgrounded during the page load, whichever comes first.
+  </summary>
+</histogram>
+
+<histogram name="Translate.PageLoad.TriggerDecision.TotalCount"
+    units="trigger decisions" expires_after="M92">
+  <owner>curranmax@google.com</owner>
+  <owner>megjablon@google.com</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Logs the total number of trigger decisions (reason for the initial state of
+    Translate) for each page load. If Translate is initialized multiple times in
+    a single page load, then the same enum value could be counted multiple
+    times. This value is logged at the end of the page load or the first time
+    Chrome is backgrounded during the page load, whichever comes first.
   </summary>
 </histogram>
 
@@ -701,6 +793,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Translate.Ranker.Timer.CalculateScore" units="ms"
     expires_after="M77">
+  <obsolete>
+    Removed M91. Replaced by
+    Translate.PageLoad.Ranker.Timer.ShouldOfferTranslation.
+  </obsolete>
   <owner>rogerm@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -740,6 +836,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Translate.Ranker.Timer.ShouldOfferTranslation" units="ms"
     expires_after="M77">
+  <obsolete>
+    Removed M91. Replaced by
+    Translate.PageLoad.Ranker.Timer.ShouldOfferTranslation.
+  </obsolete>
   <owner>rogerm@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -962,7 +1062,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Translate.Translation.Status" enum="TranslationStatus"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>curranmax@google.com</owner>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
@@ -987,8 +1087,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
-    Records the target language used for a translation. This is the langauge
+    Records the target language used for a translation. This is the language
     being translated to.
+
+    This is recorded when a translation (both manual and automatic) is started.
+  </summary>
+</histogram>
+
+<histogram name="Translate.Translation.TargetLanguage.Origin"
+    enum="TranslateTargetLanguageOrigin" expires_after="M95">
+  <owner>curranmax@google.com</owner>
+  <owner>megjablon@google.com</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Records the origin of the target language used for a translation.
 
     This is recorded when a translation (both manual and automatic) is started.
   </summary>
@@ -1044,6 +1156,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     automatic translation was performed.
 
     This is recorded when a translation (both manual and automatic) is started.
+  </summary>
+</histogram>
+
+<histogram name="Translate.UiInteraction.Event" enum="TranslateUIInteraction"
+    expires_after="M95">
+  <owner>curranmax@google.com</owner>
+  <owner>megjablon@google.com</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Records the UI interaction that the user performed. The set of possible
+    actions are independent of the exact UI and platform, and capture the high
+    level action performed.
+
+    This is recorded every time the user interacts with the Translate UI on all
+    platforms.
   </summary>
 </histogram>
 

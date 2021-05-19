@@ -68,7 +68,7 @@ suite('InternetDetailMenu', function() {
 
   test('Do not show tripple dot when no iccid is present', async function() {
     addEsimCellularNetwork(null, '11111111111111111111111111111111');
-    init();
+    await init();
 
     let trippleDot = internetDetailMenu.$$('#moreNetworkDetail');
     assertFalse(!!trippleDot);
@@ -87,7 +87,7 @@ suite('InternetDetailMenu', function() {
 
   test('Do not show tripple dot when no eid is present', async function() {
     addEsimCellularNetwork('100000', null);
-    init();
+    await init();
 
     let trippleDot = internetDetailMenu.$$('#moreNetworkDetail');
     assertFalse(!!trippleDot);
@@ -106,7 +106,7 @@ suite('InternetDetailMenu', function() {
 
   test('Rename menu click', async function() {
     addEsimCellularNetwork('100000', '11111111111111111111111111111111');
-    init();
+    await init();
 
     const params = new URLSearchParams;
     params.append('guid', 'cellular_guid');
@@ -133,7 +133,7 @@ suite('InternetDetailMenu', function() {
 
   test('Remove menu button click', async function() {
     addEsimCellularNetwork('100000', '11111111111111111111111111111111');
-    init();
+    await init();
 
     const params = new URLSearchParams;
     params.append('guid', 'cellular_guid');
@@ -155,5 +155,34 @@ suite('InternetDetailMenu', function() {
         'show-esim-remove-profile-dialog', internetDetailMenu);
     removeBtn.click();
     await Promise.all([removeProfilePromise, test_util.flushTasks()]);
+  });
+
+  test('Menu is disabled when inhibited', async function() {
+    addEsimCellularNetwork('100000', '11111111111111111111111111111111');
+    init();
+
+    const params = new URLSearchParams;
+    params.append('guid', 'cellular_guid');
+    settings.Router.getInstance().navigateTo(
+        settings.routes.NETWORK_DETAIL, params);
+
+    await flushAsync();
+    const trippleDot = internetDetailMenu.$$('#moreNetworkDetail');
+    assertTrue(!!trippleDot);
+    assertFalse(trippleDot.disabled);
+
+    internetDetailMenu.deviceState = {
+      type: mojom.NetworkType.kCellular,
+      deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+      inhibitReason: mojom.InhibitReason.kConnectingToProfile,
+    };
+    assertTrue(trippleDot.disabled);
+
+    internetDetailMenu.deviceState = {
+      type: mojom.NetworkType.kCellular,
+      deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+      inhibitReason: mojom.InhibitReason.kNotInhibited,
+    };
+    assertFalse(trippleDot.disabled);
   });
 });

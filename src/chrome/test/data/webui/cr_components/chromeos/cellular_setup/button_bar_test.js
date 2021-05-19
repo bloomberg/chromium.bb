@@ -32,7 +32,6 @@ suite('CellularSetupButtonBarTest', function() {
       backward: state,
       cancel: state,
       forward: state,
-      tryAgain: state,
     };
     Polymer.dom.flush();
   }
@@ -65,7 +64,6 @@ suite('CellularSetupButtonBarTest', function() {
     setStateForAllButtons(cellularSetup.ButtonState.ENABLED);
     assertTrue(isButtonShownAndEnabled(buttonBar.$$('#backward')));
     assertTrue(isButtonShownAndEnabled(buttonBar.$$('#cancel')));
-    assertTrue(isButtonShownAndEnabled(buttonBar.$$('#tryAgain')));
     assertTrue(isButtonShownAndEnabled(buttonBar.$$('#forward')));
   });
 
@@ -73,15 +71,13 @@ suite('CellularSetupButtonBarTest', function() {
     setStateForAllButtons(cellularSetup.ButtonState.DISABLED);
     assertTrue(isButtonShownAndDisabled(buttonBar.$$('#backward')));
     assertTrue(isButtonShownAndDisabled(buttonBar.$$('#cancel')));
-    assertTrue(isButtonShownAndDisabled(buttonBar.$$('#tryAgain')));
     assertTrue(isButtonShownAndDisabled(buttonBar.$$('#forward')));
   });
 
   test('individual buttons are hidden', function() {
-    setStateForAllButtons(undefined);
+    setStateForAllButtons(cellularSetup.ButtonState.HIDDEN);
     assertTrue(isButtonHidden(buttonBar.$$('#backward')));
     assertTrue(isButtonHidden(buttonBar.$$('#cancel')));
-    assertTrue(isButtonHidden(buttonBar.$$('#tryAgain')));
     assertTrue(isButtonHidden(buttonBar.$$('#forward')));
   });
 
@@ -97,6 +93,8 @@ suite('CellularSetupButtonBarTest', function() {
   test('default focus is on first button if rest are hidden', function() {
     buttonBar.buttonState = {
       backward: cellularSetup.ButtonState.ENABLED,
+      cancel: cellularSetup.ButtonState.HIDDEN,
+      forward: cellularSetup.ButtonState.HIDDEN,
     };
     buttonBar.focusDefaultButton();
 
@@ -112,7 +110,6 @@ suite('CellularSetupButtonBarTest', function() {
           backward: cellularSetup.ButtonState.ENABLED,
           cancel: cellularSetup.ButtonState.DISABLED,
           forward: cellularSetup.ButtonState.DISABLED,
-          tryAgain: cellularSetup.ButtonState.DISABLED,
         };
         buttonBar.focusDefaultButton();
 

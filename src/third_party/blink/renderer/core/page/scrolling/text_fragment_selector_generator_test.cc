@@ -98,9 +98,8 @@ class TextFragmentSelectorGeneratorTest
     GetDocument()
         .GetFrame()
         ->GetTextFragmentSelectorGenerator()
-        ->UpdateSelection(GetDocument().GetFrame(),
-                          ToEphemeralRangeInFlatTree(
-                              EphemeralRange(selected_start, selected_end)));
+        ->UpdateSelection(ToEphemeralRangeInFlatTree(
+            EphemeralRange(selected_start, selected_end)));
 
     bool callback_called = false;
     String selector;
@@ -1226,26 +1225,6 @@ TEST_P(TextFragmentSelectorGeneratorTest, InputSubmitPrefix) {
   VerifySelector(start, end, "button%20text-,paragraph,-text");
 }
 
-// Checks selection right after a shadow tree will use the shadow tree for
-// prefix. Input with text value will create a shadow tree.
-TEST_P(TextFragmentSelectorGeneratorTest, InputSubmitOneWordPrefix) {
-  SimRequest request("https://example.com/test.html", "text/html");
-  LoadURL("https://example.com/test.html");
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-  <div id='div'>
-    <input type='submit' value="button"> paragraph text
-  </div>
-  )HTML");
-  GetDocument().UpdateStyleAndLayoutTree();
-  Node* div = GetDocument().getElementById("div");
-  const auto& start = Position(div->lastChild(), 0);
-  const auto& end = Position(div->lastChild(), 10);
-  ASSERT_EQ(" paragraph", PlainText(EphemeralRange(start, end)));
-
-  VerifySelector(start, end, "button-,paragraph,-text");
-}
-
 // TODO(crbug.com/1192047): Update the test to better reflect the real repro
 // steps. Test case for crash in crbug.com/1190137. When selector is requested
 // after callback is set and unused.
@@ -1270,7 +1249,6 @@ TEST_P(TextFragmentSelectorGeneratorTest, SecondGenerationCrash) {
 
   // This shouldn't crash.
   GetDocument().GetFrame()->GetTextFragmentSelectorGenerator()->UpdateSelection(
-      GetDocument().GetFrame(),
       ToEphemeralRangeInFlatTree(EphemeralRange(start, end)));
   base::RunLoop().RunUntilIdle();
 }

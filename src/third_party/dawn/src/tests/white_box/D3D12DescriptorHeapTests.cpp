@@ -39,22 +39,29 @@ class D3D12DescriptorHeapTests : public DawnTest {
         DAWN_SKIP_TEST_IF(UsesWire());
         mD3DDevice = reinterpret_cast<Device*>(device.Get());
 
-        mSimpleVSModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        void main() {
-            const vec2 pos[3] = vec2[3](vec2(-1.f, 1.f), vec2(1.f, 1.f), vec2(-1.f, -1.f));
-            gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-        })");
+        mSimpleVSModule = utils::CreateShaderModule(device, R"(
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
 
-        mSimpleFSModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout (location = 0) out vec4 fragColor;
-        layout (set = 0, binding = 0) uniform colorBuffer {
-            vec4 color;
-        };
-        void main() {
-            fragColor = color;
-        })");
+            [[stage(vertex)]] fn main() -> void {
+                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    vec2<f32>(-1.0,  1.0),
+                    vec2<f32>( 1.0,  1.0),
+                    vec2<f32>(-1.0, -1.0)
+                );
+                Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+            })");
+
+        mSimpleFSModule = utils::CreateShaderModule(device, R"(
+            [[block]] struct U {
+                color : vec4<f32>;
+            };
+            [[group(0), binding(0)]] var<uniform> colorBuffer : U;
+            [[location(0)]] var<out> FragColor : vec4<f32>;
+
+            [[stage(fragment)]] fn main() -> void {
+                FragColor = colorBuffer.color;
+            })");
     }
 
     utils::BasicRenderPass MakeRenderPass(uint32_t width,
@@ -66,7 +73,7 @@ class D3D12DescriptorHeapTests : public DawnTest {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = width;
         descriptor.size.height = height;
-        descriptor.size.depth = 1;
+        descriptor.size.depthOrArrayLayers = 1;
         descriptor.sampleCount = 1;
         descriptor.format = format;
         descriptor.mipLevelCount = 1;
@@ -120,14 +127,14 @@ TEST_P(D3D12DescriptorHeapTests, SwitchOverViewHeap) {
     DAWN_SKIP_TEST_IF(!mD3DDevice->IsToggleEnabled(
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
-    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor(device);
+    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
 
     // Fill in a view heap with "view only" bindgroups (1x view per group) by creating a
     // view bindgroup each draw. After HEAP_SIZE + 1 draws, the heaps must switch over.
-    renderPipelineDescriptor.vertexStage.module = mSimpleVSModule;
-    renderPipelineDescriptor.cFragmentStage.module = mSimpleFSModule;
+    renderPipelineDescriptor.vertex.module = mSimpleVSModule;
+    renderPipelineDescriptor.cFragment.module = mSimpleFSModule;
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
     Device* d3dDevice = reinterpret_cast<Device*>(device.Get());
@@ -164,27 +171,28 @@ TEST_P(D3D12DescriptorHeapTests, SwitchOverViewHeap) {
 
 // Verify the shader visible sampler heaps does not switch over within a single submit.
 TEST_P(D3D12DescriptorHeapTests, NoSwitchOverSamplerHeap) {
-    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor(device);
+    // TODO(crbug.com/tint/704): Fails for D3D12 with use_tint_generator
+    DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
+
+    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
 
     // Fill in a sampler heap with "sampler only" bindgroups (1x sampler per group) by creating a
     // sampler bindgroup each draw. After HEAP_SIZE + 1 draws, the heaps WILL NOT switch over
     // because the sampler heap allocations are de-duplicated.
-    renderPipelineDescriptor.vertexStage.module =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-            #version 450
-            void main() {
-                gl_Position = vec4(0.f, 0.f, 0.f, 1.f);
+    renderPipelineDescriptor.vertex.module = utils::CreateShaderModule(device, R"(
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+            [[stage(vertex)]] fn main() -> void {
+                Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
             })");
 
-    renderPipelineDescriptor.cFragmentStage.module =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(#version 450
-            layout(set = 0, binding = 0) uniform sampler sampler0;
-            layout(location = 0) out vec4 fragColor;
-            void main() {
-               fragColor = vec4(0.0, 0.0, 0.0, 0.0);
+    renderPipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
+            [[location(0)]] var<out> FragColor : vec4<f32>;
+            [[group(0), binding(0)]] var sampler0 : sampler;
+            [[stage(fragment)]] fn main() -> void {
+                FragColor = vec4<f32>(0.0, 0.0, 0.0, 0.0);
             })");
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
     wgpu::Sampler sampler = device.CreateSampler();
@@ -237,7 +245,7 @@ TEST_P(D3D12DescriptorHeapTests, PoolHeapsInMultipleSubmits) {
         EXPECT_TRUE(std::find(heaps.begin(), heaps.end(), heap) == heaps.end());
         heaps.push_back(heap);
         // CheckPassedSerials() will update the last internally completed serial.
-        mD3DDevice->CheckPassedSerials();
+        EXPECT_TRUE(mD3DDevice->CheckPassedSerials().IsSuccess());
         // NextSerial() will increment the last internally submitted serial.
         EXPECT_TRUE(mD3DDevice->NextSerial().IsSuccess());
     }
@@ -250,7 +258,7 @@ TEST_P(D3D12DescriptorHeapTests, PoolHeapsInMultipleSubmits) {
         ComPtr<ID3D12DescriptorHeap> heap = allocator->GetShaderVisibleHeap();
         EXPECT_TRUE(heaps.front() == heap);
         heaps.pop_front();
-        mD3DDevice->CheckPassedSerials();
+        EXPECT_TRUE(mD3DDevice->CheckPassedSerials().IsSuccess());
         EXPECT_TRUE(mD3DDevice->NextSerial().IsSuccess());
     }
 
@@ -320,7 +328,7 @@ TEST_P(D3D12DescriptorHeapTests, PoolHeapsInPendingAndMultipleSubmits) {
 
     // Ensure switched-over heaps can be recycled by advancing the GPU by at-least |kFrameDepth|.
     for (uint32_t i = 0; i < kFrameDepth; i++) {
-        mD3DDevice->Tick();
+        mD3DDevice->APITick();
     }
 
     // Switch-over |kNumOfSwitches| again reusing the same heaps.
@@ -354,7 +362,7 @@ TEST_P(D3D12DescriptorHeapTests, GrowHeapsInMultipleSubmits) {
         ComPtr<ID3D12DescriptorHeap> heap = allocator->GetShaderVisibleHeap();
         EXPECT_TRUE(std::find(heaps.begin(), heaps.end(), heap) == heaps.end());
         heaps.insert(heap);
-        mD3DDevice->Tick();
+        mD3DDevice->APITick();
     }
 
     // Verify the number of switches equals the size of heaps allocated (minus the initial).
@@ -411,7 +419,7 @@ TEST_P(D3D12DescriptorHeapTests, GrowAndPoolHeapsInPendingAndMultipleSubmits) {
 
     // Ensure switched-over heaps can be recycled by advancing the GPU by at-least |kFrameDepth|.
     for (uint32_t i = 0; i < kFrameDepth; i++) {
-        mD3DDevice->Tick();
+        mD3DDevice->APITick();
     }
 
     // Switch-over the pool-allocated heaps.
@@ -437,29 +445,32 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBO) {
     utils::BasicRenderPass renderPass =
         MakeRenderPass(kRTSize, kRTSize, wgpu::TextureFormat::R32Float);
 
-    utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-    pipelineDescriptor.vertexStage.module = mSimpleVSModule;
+    utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+    pipelineDescriptor.vertex.module = mSimpleVSModule;
 
-    pipelineDescriptor.cFragmentStage.module =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout (location = 0) out float fragColor;
-        layout (set = 0, binding = 0) uniform buffer0 {
-            float heapSize;
+    pipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
+        [[block]] struct U {
+            heapSize : f32;
         };
-        void main() {
-            fragColor = heapSize;
+        [[group(0), binding(0)]] var<uniform> buffer0 : U;
+        [[location(0)]] var<out> FragColor : f32;
+
+        [[stage(fragment)]] fn main() -> void {
+            FragColor = buffer0.heapSize;
         })");
 
-    pipelineDescriptor.cColorStates[0].format = wgpu::TextureFormat::R32Float;
-    pipelineDescriptor.cColorStates[0].colorBlend.operation = wgpu::BlendOperation::Add;
-    pipelineDescriptor.cColorStates[0].colorBlend.srcFactor = wgpu::BlendFactor::One;
-    pipelineDescriptor.cColorStates[0].colorBlend.dstFactor = wgpu::BlendFactor::One;
-    pipelineDescriptor.cColorStates[0].alphaBlend.operation = wgpu::BlendOperation::Add;
-    pipelineDescriptor.cColorStates[0].alphaBlend.srcFactor = wgpu::BlendFactor::One;
-    pipelineDescriptor.cColorStates[0].alphaBlend.dstFactor = wgpu::BlendFactor::One;
+    wgpu::BlendState blend;
+    blend.color.operation = wgpu::BlendOperation::Add;
+    blend.color.srcFactor = wgpu::BlendFactor::One;
+    blend.color.dstFactor = wgpu::BlendFactor::One;
+    blend.alpha.operation = wgpu::BlendOperation::Add;
+    blend.alpha.srcFactor = wgpu::BlendFactor::One;
+    blend.alpha.dstFactor = wgpu::BlendFactor::One;
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+    pipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::R32Float;
+    pipelineDescriptor.cTargets[0].blend = &blend;
+
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
 
     const uint32_t heapSize =
         mD3DDevice->GetViewShaderVisibleDescriptorAllocator()->GetShaderVisibleHeapSizeForTesting();
@@ -506,16 +517,19 @@ TEST_P(D3D12DescriptorHeapTests, EncodeUBOOverflowMultipleSubmit) {
     DAWN_SKIP_TEST_IF(!mD3DDevice->IsToggleEnabled(
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
+    // TODO(crbug.com/dawn/742): Test output is wrong with D3D12 + WARP.
+    DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP());
+
     utils::ComboRenderPipelineDescriptor renderPipelineDescriptor(device);
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-    pipelineDescriptor.vertexStage.module = mSimpleVSModule;
-    pipelineDescriptor.cFragmentStage.module = mSimpleFSModule;
-    pipelineDescriptor.cColorStates[0].format = renderPass.colorFormat;
+    utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+    pipelineDescriptor.vertex.module = mSimpleVSModule;
+    pipelineDescriptor.cFragment.module = mSimpleFSModule;
+    pipelineDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
 
     // Encode the first descriptor and submit.
     {
@@ -595,12 +609,12 @@ TEST_P(D3D12DescriptorHeapTests, EncodeReuseUBOOverflow) {
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-    pipelineDescriptor.vertexStage.module = mSimpleVSModule;
-    pipelineDescriptor.cFragmentStage.module = mSimpleFSModule;
-    pipelineDescriptor.cColorStates[0].format = renderPass.colorFormat;
+    utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+    pipelineDescriptor.vertex.module = mSimpleVSModule;
+    pipelineDescriptor.cFragment.module = mSimpleFSModule;
+    pipelineDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
 
     std::array<float, 4> redColor = {1, 0, 0, 1};
     wgpu::Buffer firstUniformBuffer = utils::CreateBufferFromData(
@@ -656,12 +670,12 @@ TEST_P(D3D12DescriptorHeapTests, EncodeReuseUBOMultipleSubmits) {
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-    pipelineDescriptor.vertexStage.module = mSimpleVSModule;
-    pipelineDescriptor.cFragmentStage.module = mSimpleFSModule;
-    pipelineDescriptor.cColorStates[0].format = renderPass.colorFormat;
+    utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+    pipelineDescriptor.vertex.module = mSimpleVSModule;
+    pipelineDescriptor.cFragment.module = mSimpleFSModule;
+    pipelineDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
 
     // Encode heap worth of descriptors plus one more.
     std::array<float, 4> redColor = {1, 0, 0, 1};
@@ -739,7 +753,7 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBOAndSamplers) {
     descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = kRTSize;
     descriptor.size.height = kRTSize;
-    descriptor.size.depth = 1;
+    descriptor.size.depthOrArrayLayers = 1;
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
@@ -768,37 +782,43 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBOAndSamplers) {
     }
 
     {
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
 
-        pipelineDescriptor.vertexStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        layout (set = 0, binding = 0) uniform vertexUniformBuffer {
-            mat2 transform;
-        };
-        void main() {
-            const vec2 pos[3] = vec2[3](vec2(-1.f, 1.f), vec2(1.f, 1.f), vec2(-1.f, -1.f));
-            gl_Position = vec4(transform * pos[gl_VertexIndex], 0.f, 1.f);
-        })");
+        pipelineDescriptor.vertex.module = utils::CreateShaderModule(device, R"(
+            [[block]] struct U {
+                transform : mat2x2<f32>;
+            };
+            [[group(0), binding(0)]] var<uniform> buffer0 : U;
+            [[builtin(position)]] var<out> Position : vec4<f32>;
+            [[builtin(vertex_index)]] var<in> VertexIndex : u32;
 
-        pipelineDescriptor.cFragmentStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout (set = 0, binding = 1) uniform sampler sampler0;
-        layout (set = 0, binding = 2) uniform texture2D texture0;
-        layout (set = 0, binding = 3) uniform buffer0 {
-            vec4 color;
-        };
-        layout (location = 0) out vec4 fragColor;
-        void main() {
-            fragColor = texture(sampler2D(texture0, sampler0), gl_FragCoord.xy);
-            fragColor += color;
-        })");
+            [[stage(vertex)]] fn main() -> void {
+                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    vec2<f32>(-1.0,  1.0),
+                    vec2<f32>( 1.0,  1.0),
+                    vec2<f32>(-1.0, -1.0)
+                );
+                Position = vec4<f32>(buffer0.transform * (pos[VertexIndex]), 0.0, 1.0);
+            })");
+        pipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
+            [[block]] struct U {
+                color : vec4<f32>;
+            };
+            [[group(0), binding(1)]] var sampler0 : sampler;
+            [[group(0), binding(2)]] var texture0 : texture_2d<f32>;
+            [[group(0), binding(3)]] var<uniform> buffer0 : U;
+
+            [[location(0)]] var<out> FragColor : vec4<f32>;
+            [[builtin(frag_coord)]] var<in> FragCoord : vec4<f32>;
+
+            [[stage(fragment)]] fn main() -> void {
+                FragColor = textureSample(texture0, sampler0, FragCoord.xy) + buffer0.color;
+            })");
 
         utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
-        pipelineDescriptor.cColorStates[0].format = renderPass.colorFormat;
+        pipelineDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
 
         // Encode a heap worth of descriptors |kNumOfHeaps| times.
         constexpr float dummy = 0.0f;

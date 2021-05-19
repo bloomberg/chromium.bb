@@ -6,8 +6,8 @@
 #define UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_CONTROLLER_H_
 
 #include <set>
+#include <string>
 
-#include "base/strings/string16.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
@@ -33,7 +33,7 @@ class VIEWS_EXPORT TextfieldController {
   // user. It won't be called if the text is changed by calling
   // Textfield::SetText() or Textfield::AppendText().
   virtual void ContentsChanged(Textfield* sender,
-                               const base::string16& new_contents) {}
+                               const std::u16string& new_contents) {}
 
   // Called to get notified about keystrokes in the edit.
   // Returns true if the message was handled and should not be processed

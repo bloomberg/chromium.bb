@@ -18,6 +18,7 @@
 #include "src/gpu/GrDataUtils.h"
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrPixmap.h"
+#include "src/gpu/GrRenderTask.h"
 #include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrSurfaceProxyView.h"
 
@@ -127,13 +128,25 @@ public:
                                          ReadPixelsContext context);
 
     /**
-     * Writes a rectangle of pixels [srcInfo, srcBuffer, srcRowbytes] into the
-     * surfaceDrawContext at the specified position.
-     * @param dContext      The direct context to use
-     * @param src           source for the write
-     * @param dstPt         offset w/in the surface context at which to write
+     * Writes a rectangle of pixels from src into the surfaceDrawContext at the specified position.
+     * @param dContext         The direct context to use
+     * @param src              source for the write
+     * @param dstPt            offset w/in the surface context at which to write
      */
-    bool writePixels(GrDirectContext* dContext, GrPixmap src, SkIPoint dstPt);
+    bool writePixels(GrDirectContext* dContext,
+                     GrCPixmap src,
+                     SkIPoint dstPt);
+
+    /**
+     * Fully populates either the base level or all MIP levels of the GrSurface with pixel data.
+     * @param dContext         The direct context to use
+     * @param src              Array of pixmaps
+     * @param numLevels        Number of pixmaps in src. To succeed this must be 1 or the total
+     *                         number of MIP levels.
+     */
+    bool writePixels(GrDirectContext* dContext,
+                     const GrCPixmap src[],
+                     int numLevels);
 
     GrSurfaceProxy* asSurfaceProxy() { return fReadView.proxy(); }
     const GrSurfaceProxy* asSurfaceProxy() const { return fReadView.proxy(); }
@@ -181,12 +194,12 @@ public:
 
 #if GR_TEST_UTILS
     bool testCopy(sk_sp<GrSurfaceProxy> src, const SkIRect& srcRect, const SkIPoint& dstPoint) {
-        return this->copy(std::move(src), srcRect, dstPoint);
+        return this->copy(std::move(src), srcRect, dstPoint) != nullptr;
     }
 
     bool testCopy(sk_sp<GrSurfaceProxy> src) {
         auto rect = SkIRect::MakeSize(src->dimensions());
-        return this->copy(std::move(src), rect, {0, 0});
+        return this->copy(std::move(src), rect, {0, 0}) != nullptr;
     }
 #endif
 
@@ -234,7 +247,8 @@ private:
      * should go through GrSurfaceProxy::Copy.
      * @param src       src of pixels
      * @param dstPoint  the origin of the 'srcRect' in the destination coordinate space
-     * @return          true if the copy succeeded; false otherwise
+     * @return          a task (that may be skippable by calling canSkip) if successful and
+     *                  null otherwise.
      *
      * Note: Notionally, 'srcRect' is clipped to 'src's extent with 'dstPoint' being adjusted.
      *       Then the 'srcRect' offset by 'dstPoint' is clipped against the dst's extent.
@@ -242,7 +256,12 @@ private:
      *       regions will not be shifted. The 'src' must have the same origin as the backing proxy
      *       of fSurfaceContext.
      */
-    bool copy(sk_sp<GrSurfaceProxy> src, SkIRect srcRect, SkIPoint dstPoint);
+    sk_sp<GrRenderTask> copy(sk_sp<GrSurfaceProxy> src, SkIRect srcRect, SkIPoint dstPoint);
+
+    bool internalWritePixels(GrDirectContext* dContext,
+                             const GrCPixmap src[],
+                             int numLevels,
+                             SkIPoint);
 
     class AsyncReadResult;
 

@@ -24,6 +24,20 @@ std::vector<CellularESimProfile> GenerateProfilesFromHermes();
 COMPONENT_EXPORT(CHROMEOS_NETWORK)
 const DeviceState::CellularSIMSlotInfos GetSimSlotInfosWithUpdatedEid(
     const DeviceState* device);
+
+// Returns true if SIM with given |iccid| is in a primary slot on given
+// cellular |device|.
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+bool IsSimPrimary(const std::string& iccid, const DeviceState* device);
+
+// Generates a service path corresponding to a stub cellular network (i.e., one
+// that is not backed by Shill).
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::string GenerateStubCellularServicePath(const std::string& iccid);
+
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+bool IsStubCellularServicePath(const std::string& service_path);
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_NETWORK_CELLULAR_UTILS_H_

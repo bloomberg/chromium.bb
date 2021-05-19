@@ -10,13 +10,23 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.language.AppLocaleUtils;
 import org.chromium.chrome.browser.language.GlobalAppLocaleController;
 import org.chromium.chrome.browser.language.R;
+import org.chromium.ui.base.ResourceBundle;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Locale;
 
 /**
  * Simple object representing the language item.
  */
 public class LanguageItem {
+    /**
+     * Comparator for sorting LanguageItems alphabetically by display name.
+     */
+    public static final Comparator<LanguageItem> COMPARE_BY_DISPLAY_NAME = (l1, l2) -> {
+        return l1.getDisplayName().compareTo(l2.getDisplayName());
+    };
+
     private final String mCode;
 
     private final String mDisplayName;
@@ -43,7 +53,7 @@ public class LanguageItem {
         if (TextUtils.equals(code, AppLocaleUtils.SYSTEM_LANGUAGE_VALUE)) {
             mSupportAppUI = true; // system language is a supported UI language
         } else {
-            mSupportAppUI = AvailableUiLanguages.isAvailable(mCode);
+            mSupportAppUI = isAvailableUiLanguage(mCode);
         }
     }
 
@@ -115,5 +125,13 @@ public class LanguageItem {
                         Locale.getDefault());
         return new LanguageItem(
                 AppLocaleUtils.SYSTEM_LANGUAGE_VALUE, displayName, nativeName, true);
+    }
+
+    /**
+     * Return true if the language is available as a UI language.
+     * @param language BCP-47 language tag representing a locale (e.g. "en-US")
+     */
+    public static boolean isAvailableUiLanguage(String language) {
+        return Arrays.binarySearch(ResourceBundle.getAvailableLocales(), language) >= 0;
     }
 }

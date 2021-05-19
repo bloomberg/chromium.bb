@@ -917,6 +917,7 @@ const char* CapabilityString(int info)
     case CapabilityRayTracingNV:                    return "RayTracingNV";
     case CapabilityRayTracingKHR:                   return "RayTracingKHR";
     case CapabilityRayQueryKHR:                     return "RayQueryKHR";
+    case CapabilityRayTracingProvisionalKHR:        return "RayTracingProvisionalKHR";
     case CapabilityRayTraversalPrimitiveCullingKHR: return "RayTraversalPrimitiveCullingKHR";
     case CapabilityComputeDerivativeGroupQuadsNV:   return "ComputeDerivativeGroupQuadsNV";
     case CapabilityComputeDerivativeGroupLinearNV:  return "ComputeDerivativeGroupLinearNV";
@@ -2718,7 +2719,7 @@ void Parameterize()
 
     InstructionDesc[OpGroupNonUniformQuadSwap].operands.push(OperandScope, "'Execution'");
     InstructionDesc[OpGroupNonUniformQuadSwap].operands.push(OperandId, "X");
-    InstructionDesc[OpGroupNonUniformQuadSwap].operands.push(OperandLiteralNumber, "'Direction'");
+    InstructionDesc[OpGroupNonUniformQuadSwap].operands.push(OperandId, "'Direction'");
 
     InstructionDesc[OpSubgroupBallotKHR].operands.push(OperandId, "'Predicate'");
 

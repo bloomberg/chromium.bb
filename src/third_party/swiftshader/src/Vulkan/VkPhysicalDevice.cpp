@@ -28,16 +28,6 @@
 
 namespace vk {
 
-#if VK_USE_PLATFORM_FUCHSIA
-if(handleType == VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA)
-{
-	properties->compatibleHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
-	properties->exportFromImportedHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
-	properties->externalMemoryFeatures = VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT | VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT;
-	return;
-}
-#endif
-
 PhysicalDevice::PhysicalDevice(const void *, void *mem)
 {
 }
@@ -249,6 +239,7 @@ static void getPhysicalDeviceDescriptorIndexingFeatures(T *features)
 	features->shaderInputAttachmentArrayDynamicIndexing = VK_FALSE;
 	features->shaderUniformTexelBufferArrayDynamicIndexing = VK_FALSE;
 	features->shaderStorageTexelBufferArrayDynamicIndexing = VK_FALSE;
+	features->shaderUniformBufferArrayNonUniformIndexing = VK_FALSE;
 	features->shaderSampledImageArrayNonUniformIndexing = VK_FALSE;
 	features->shaderStorageBufferArrayNonUniformIndexing = VK_FALSE;
 	features->shaderStorageImageArrayNonUniformIndexing = VK_FALSE;
@@ -260,7 +251,7 @@ static void getPhysicalDeviceDescriptorIndexingFeatures(T *features)
 	features->descriptorBindingStorageImageUpdateAfterBind = VK_FALSE;
 	features->descriptorBindingStorageBufferUpdateAfterBind = VK_FALSE;
 	features->descriptorBindingUniformTexelBufferUpdateAfterBind = VK_FALSE;
-	features->descriptorBindingStorageBufferUpdateAfterBind = VK_FALSE;
+	features->descriptorBindingStorageTexelBufferUpdateAfterBind = VK_FALSE;
 	features->descriptorBindingUpdateUnusedWhilePending = VK_FALSE;
 	features->descriptorBindingPartiallyBound = VK_FALSE;
 	features->descriptorBindingVariableDescriptorCount = VK_FALSE;
@@ -276,15 +267,41 @@ static void getPhysicalDeviceVulkanMemoryModelFeatures(T *features)
 }
 
 template<typename T>
+static void getPhysicalDeviceTimelineSemaphoreFeatures(T *features)
+{
+	features->timelineSemaphore = VK_TRUE;
+}
+
+template<typename T>
+static void getPhysicalDeviceShaderAtomicInt64Features(T *features)
+{
+	features->shaderBufferInt64Atomics = VK_FALSE;
+	features->shaderSharedInt64Atomics = VK_FALSE;
+}
+
+template<typename T>
+static void getPhysicalDeviceShaderFloat16Int8Features(T *features)
+{
+	features->shaderFloat16 = VK_FALSE;
+	features->shaderInt8 = VK_FALSE;
+}
+
+template<typename T>
+static void getPhysicalDeviceBufferDeviceAddressFeatures(T *features)
+{
+	features->bufferDeviceAddress = VK_FALSE;
+	features->bufferDeviceAddressCaptureReplay = VK_FALSE;
+	features->bufferDeviceAddressMultiDevice = VK_FALSE;
+}
+
+template<typename T>
 static void getPhysicalDeviceVulkan12Features(T *features)
 {
 	features->samplerMirrorClampToEdge = VK_FALSE;
 	features->drawIndirectCount = VK_FALSE;
 	getPhysicalDevice8BitStorageFeaturesKHR(features);
-	features->shaderBufferInt64Atomics = VK_FALSE;
-	features->shaderSharedInt64Atomics = VK_FALSE;
-	features->shaderFloat16 = VK_FALSE;
-	features->shaderInt8 = VK_FALSE;
+	getPhysicalDeviceShaderAtomicInt64Features(features);
+	getPhysicalDeviceShaderFloat16Int8Features(features);
 	features->descriptorIndexing = VK_FALSE;
 	getPhysicalDeviceDescriptorIndexingFeatures(features);
 	features->samplerFilterMinmax = VK_FALSE;
@@ -294,10 +311,8 @@ static void getPhysicalDeviceVulkan12Features(T *features)
 	getPhysicalDeviceShaderSubgroupExtendedTypesFeatures(features);
 	getPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR(features);
 	getPhysicalDeviceHostQueryResetFeatures(features);
-	features->timelineSemaphore = VK_FALSE;
-	features->bufferDeviceAddress = VK_FALSE;
-	features->bufferDeviceAddressCaptureReplay = VK_FALSE;
-	features->bufferDeviceAddressMultiDevice = VK_FALSE;
+	getPhysicalDeviceTimelineSemaphoreFeatures(features);
+	getPhysicalDeviceBufferDeviceAddressFeatures(features);
 	getPhysicalDeviceVulkanMemoryModelFeatures(features);
 	features->shaderOutputViewportIndex = VK_FALSE;
 	features->shaderOutputLayer = VK_FALSE;
@@ -375,6 +390,21 @@ void PhysicalDevice::getFeatures2(VkPhysicalDeviceFeatures2 *features) const
 			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES:
 				getPhysicalDeviceVulkanMemoryModelFeatures(reinterpret_cast<VkPhysicalDeviceVulkanMemoryModelFeatures *>(curExtension));
 				break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES:
+				getPhysicalDeviceTimelineSemaphoreFeatures(reinterpret_cast<VkPhysicalDeviceTimelineSemaphoreFeatures *>(curExtension));
+				break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES:
+				getPhysicalDeviceShaderAtomicInt64Features(reinterpret_cast<VkPhysicalDeviceShaderAtomicInt64Features *>(curExtension));
+				break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES:
+				getPhysicalDeviceShaderFloat16Int8Features(reinterpret_cast<VkPhysicalDeviceShaderFloat16Int8Features *>(curExtension));
+				break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES:
+				getPhysicalDeviceBufferDeviceAddressFeatures(reinterpret_cast<VkPhysicalDeviceBufferDeviceAddressFeatures *>(curExtension));
+				break;
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES:
+				getPhysicalDeviceDescriptorIndexingFeatures(reinterpret_cast<VkPhysicalDeviceDescriptorIndexingFeatures *>(curExtension));
+				break;
 			default:
 				LOG_TRAP("curExtension->pNext->sType = %s", vk::Stringify(curExtension->sType).c_str());
 				break;
@@ -412,7 +442,7 @@ const VkPhysicalDeviceLimits &PhysicalDevice::getLimits() const
 		16,                                               // maxPerStageDescriptorStorageBuffers
 		16,                                               // maxPerStageDescriptorSampledImages
 		4,                                                // maxPerStageDescriptorStorageImages
-		4,                                                // maxPerStageDescriptorInputAttachments
+		sw::RENDERTARGETS,                                // maxPerStageDescriptorInputAttachments
 		128,                                              // maxPerStageResources
 		96,                                               // maxDescriptorSetSamplers
 		72,                                               // maxDescriptorSetUniformBuffers
@@ -421,7 +451,7 @@ const VkPhysicalDeviceLimits &PhysicalDevice::getLimits() const
 		MAX_DESCRIPTOR_SET_STORAGE_BUFFERS_DYNAMIC,       // maxDescriptorSetStorageBuffersDynamic
 		96,                                               // maxDescriptorSetSampledImages
 		24,                                               // maxDescriptorSetStorageImages
-		4,                                                // maxDescriptorSetInputAttachments
+		sw::RENDERTARGETS,                                // maxDescriptorSetInputAttachments
 		16,                                               // maxVertexInputAttributes
 		vk::MAX_VERTEX_INPUT_BINDINGS,                    // maxVertexInputBindings
 		2047,                                             // maxVertexInputAttributeOffset
@@ -441,7 +471,7 @@ const VkPhysicalDeviceLimits &PhysicalDevice::getLimits() const
 		0,                                                // maxGeometryOutputVertices (unsupported)
 		0,                                                // maxGeometryTotalOutputComponents (unsupported)
 		sw::MAX_INTERFACE_COMPONENTS,                     // maxFragmentInputComponents
-		4,                                                // maxFragmentOutputAttachments
+		sw::RENDERTARGETS,                                // maxFragmentOutputAttachments
 		1,                                                // maxFragmentDualSrcAttachments
 		4,                                                // maxFragmentCombinedOutputResources
 		16384,                                            // maxComputeSharedMemorySize
@@ -477,15 +507,15 @@ const VkPhysicalDeviceLimits &PhysicalDevice::getLimits() const
 		sampleCounts,                                     // framebufferDepthSampleCounts
 		sampleCounts,                                     // framebufferStencilSampleCounts
 		sampleCounts,                                     // framebufferNoAttachmentsSampleCounts
-		4,                                                // maxColorAttachments
+		sw::RENDERTARGETS,                                // maxColorAttachments
 		sampleCounts,                                     // sampledImageColorSampleCounts
 		sampleCounts,                                     // sampledImageIntegerSampleCounts
 		sampleCounts,                                     // sampledImageDepthSampleCounts
 		sampleCounts,                                     // sampledImageStencilSampleCounts
 		sampleCounts,                                     // storageImageSampleCounts
 		1,                                                // maxSampleMaskWords
-		VK_FALSE,                                         // timestampComputeAndGraphics
-		60,                                               // timestampPeriod
+		VK_TRUE,                                          // timestampComputeAndGraphics
+		1,                                                // timestampPeriod
 		sw::MAX_CLIP_DISTANCES,                           // maxClipDistances
 		sw::MAX_CULL_DISTANCES,                           // maxCullDistances
 		sw::MAX_CLIP_DISTANCES + sw::MAX_CULL_DISTANCES,  // maxCombinedClipAndCullDistances
@@ -710,13 +740,40 @@ void PhysicalDevice::getProperties(VkPhysicalDevicePresentationPropertiesANDROID
 	properties->sharedImage = VK_FALSE;
 }
 
-void PhysicalDevice::getProperties(VkAndroidHardwareBufferUsageANDROID *properties) const
+void PhysicalDevice::getProperties(const VkPhysicalDeviceImageFormatInfo2 *pImageFormatInfo, VkAndroidHardwareBufferUsageANDROID *ahbProperties) const
 {
-	// TODO(b/169439421)
-	//   This AHB could be either a framebuffer, OR a sampled image
-	//     Here we just say it's both
-	//   Need to pass down info on the type of image in question
-	properties->androidHardwareBufferUsage |= AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT;
+	// Maps VkImageUsageFlags to AHB usage flags using this table from the Vulkan spec
+	// https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#memory-external-android-hardware-buffer-usage
+
+	// VK_IMAGE_CREATE_PROTECTED_BIT not currently supported.
+	ASSERT((pImageFormatInfo->flags & VK_IMAGE_CREATE_PROTECTED_BIT) == 0);
+
+	// "It must include at least one GPU usage flag (AHARDWAREBUFFER_USAGE_GPU_*), even if none of the corresponding Vulkan usages or flags are requested."
+	uint64_t ahbUsage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
+
+	// Already covered by the default GPU usage flag above.
+	//
+	// if ((vkUsageFlags & VK_IMAGE_USAGE_SAMPLED_BIT) || (vkUsageFlags & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT))
+	// {
+	// 	 ahbUsage |= AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
+	// }
+
+	if((pImageFormatInfo->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) || (pImageFormatInfo->usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT))
+	{
+		ahbUsage |= AHARDWAREBUFFER_USAGE_GPU_FRAMEBUFFER;
+	}
+
+	if(pImageFormatInfo->flags & VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT)
+	{
+		ahbUsage |= AHARDWAREBUFFER_USAGE_GPU_CUBE_MAP;
+	}
+
+	if(pImageFormatInfo->flags & VK_IMAGE_CREATE_PROTECTED_BIT)
+	{
+		ahbUsage |= AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT;
+	}
+
+	ahbProperties->androidHardwareBufferUsage = ahbUsage;
 }
 #endif
 
@@ -760,6 +817,30 @@ void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalFenceInfo *pExt
 
 void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalSemaphoreInfo *pExternalSemaphoreInfo, VkExternalSemaphoreProperties *pExternalSemaphoreProperties) const
 {
+	for(const auto *nextInfo = reinterpret_cast<const VkBaseInStructure *>(pExternalSemaphoreInfo->pNext);
+	    nextInfo != nullptr; nextInfo = nextInfo->pNext)
+	{
+		switch(nextInfo->sType)
+		{
+			case VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO:
+			{
+				const auto *tlsInfo = reinterpret_cast<const VkSemaphoreTypeCreateInfo *>(nextInfo);
+				// Timeline Semaphore does not support external semaphore
+				if(tlsInfo->semaphoreType == VK_SEMAPHORE_TYPE_TIMELINE)
+				{
+					pExternalSemaphoreProperties->compatibleHandleTypes = 0;
+					pExternalSemaphoreProperties->exportFromImportedHandleTypes = 0;
+					pExternalSemaphoreProperties->externalSemaphoreFeatures = 0;
+					return;
+				}
+			}
+			break;
+			default:
+				WARN("nextInfo->sType = %s", vk::Stringify(nextInfo->sType).c_str());
+				break;
+		}
+	}
+
 #if SWIFTSHADER_EXTERNAL_SEMAPHORE_OPAQUE_FD
 	if(pExternalSemaphoreInfo->handleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT)
 	{
@@ -912,7 +993,8 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceSamplerFilterMinmaxProperties
 template<typename T>
 static void getTimelineSemaphoreProperties(T *properties)
 {
-	properties->maxTimelineSemaphoreValueDifference = 0x7FFFFFFFull;
+	// Our implementation of Timeline Semaphores allows the timeline to advance to any value from any value.
+	properties->maxTimelineSemaphoreValueDifference = (uint64_t)-1;
 }
 
 void PhysicalDevice::getProperties(VkPhysicalDeviceTimelineSemaphoreProperties *properties) const
@@ -1431,17 +1513,25 @@ uint32_t PhysicalDevice::getQueueFamilyPropertyCount() const
 	return 1;
 }
 
+VkQueueFamilyProperties PhysicalDevice::getQueueFamilyProperties() const
+{
+	VkQueueFamilyProperties properties = {};
+	properties.minImageTransferGranularity.width = 1;
+	properties.minImageTransferGranularity.height = 1;
+	properties.minImageTransferGranularity.depth = 1;
+	properties.queueCount = 1;
+	properties.queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+	properties.timestampValidBits = 64;
+
+	return properties;
+}
+
 void PhysicalDevice::getQueueFamilyProperties(uint32_t pQueueFamilyPropertyCount,
                                               VkQueueFamilyProperties *pQueueFamilyProperties) const
 {
 	for(uint32_t i = 0; i < pQueueFamilyPropertyCount; i++)
 	{
-		pQueueFamilyProperties[i].minImageTransferGranularity.width = 1;
-		pQueueFamilyProperties[i].minImageTransferGranularity.height = 1;
-		pQueueFamilyProperties[i].minImageTransferGranularity.depth = 1;
-		pQueueFamilyProperties[i].queueCount = 1;
-		pQueueFamilyProperties[i].queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
-		pQueueFamilyProperties[i].timestampValidBits = 0;  // No support for time stamps
+		pQueueFamilyProperties[i] = getQueueFamilyProperties();
 	}
 }
 
@@ -1450,12 +1540,7 @@ void PhysicalDevice::getQueueFamilyProperties(uint32_t pQueueFamilyPropertyCount
 {
 	for(uint32_t i = 0; i < pQueueFamilyPropertyCount; i++)
 	{
-		pQueueFamilyProperties[i].queueFamilyProperties.minImageTransferGranularity.width = 1;
-		pQueueFamilyProperties[i].queueFamilyProperties.minImageTransferGranularity.height = 1;
-		pQueueFamilyProperties[i].queueFamilyProperties.minImageTransferGranularity.depth = 1;
-		pQueueFamilyProperties[i].queueFamilyProperties.queueCount = 1;
-		pQueueFamilyProperties[i].queueFamilyProperties.queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
-		pQueueFamilyProperties[i].queueFamilyProperties.timestampValidBits = 0;  // No support for time stamps
+		pQueueFamilyProperties[i].queueFamilyProperties = getQueueFamilyProperties();
 	}
 }
 

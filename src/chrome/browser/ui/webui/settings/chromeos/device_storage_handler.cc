@@ -10,7 +10,7 @@
 #include <string>
 #include <utility>
 
-#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
@@ -274,7 +274,7 @@ void StorageHandler::UpdateStorageItem(
   if (calculation_type != calculator::SizeCalculator::CalculationType::kSystem)
     UpdateSystemSize(calculation_type, total_bytes);
 
-  base::string16 message;
+  std::u16string message;
   if (total_bytes < 0) {
     message = l10n_util::GetStringUTF16(IDS_SETTINGS_STORAGE_SIZE_UNKNOWN);
   } else {

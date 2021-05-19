@@ -73,8 +73,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void SaveForceOnlineSignin(const AccountId& account_id,
                              bool force_online_signin) override;
   void SaveUserDisplayName(const AccountId& account_id,
-                           const base::string16& display_name) override;
-  base::string16 GetUserDisplayName(const AccountId& account_id) const override;
+                           const std::u16string& display_name) override;
+  std::u16string GetUserDisplayName(const AccountId& account_id) const override;
   void SaveUserDisplayEmail(const AccountId& account_id,
                             const std::string& display_email) override;
   void SaveUserType(const User* user) override;
@@ -207,13 +207,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Check for a particular user type.
 
-  // Returns true if |account_id| represents demo app.
-  virtual bool IsDemoApp(const AccountId& account_id) const = 0;
-
   // These methods are called when corresponding user type has signed in.
-
-  // Indicates that the demo account has just logged in.
-  virtual void DemoAccountLoggedIn() = 0;
 
   // Indicates that a user just logged in as guest.
   virtual void GuestUserLoggedIn();

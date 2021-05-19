@@ -5,11 +5,14 @@
 #ifndef UI_BASE_CURSOR_OZONE_BITMAP_CURSOR_FACTORY_OZONE_H_
 #define UI_BASE_CURSOR_OZONE_BITMAP_CURSOR_FACTORY_OZONE_H_
 
+#include <map>
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_factory.h"
@@ -35,7 +38,7 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) BitmapCursorOzone
   BitmapCursorOzone(mojom::CursorType type,
                     const std::vector<SkBitmap>& bitmaps,
                     const gfx::Point& hotspot,
-                    int frame_delay_ms);
+                    base::TimeDelta frame_delay);
 
   // Creates a cursor with external storage.
   BitmapCursorOzone(mojom::CursorType type, void* platform_data);
@@ -46,7 +49,7 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) BitmapCursorOzone
 
   // For animated cursors.
   const std::vector<SkBitmap>& bitmaps();
-  int frame_delay_ms();
+  base::TimeDelta frame_delay();
 
   // For theme cursors.
   void* platform_data() { return platform_data_; }
@@ -58,7 +61,7 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) BitmapCursorOzone
   const mojom::CursorType type_;
   std::vector<SkBitmap> bitmaps_;
   gfx::Point hotspot_;
-  int frame_delay_ms_;
+  base::TimeDelta frame_delay_;
 
   // Platform cursor data.  Having this non-nullptr means that this cursor
   // is supplied by the platform.
@@ -81,20 +84,22 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) BitmapCursorFactoryOzone
   static scoped_refptr<BitmapCursorOzone> GetBitmapCursor(
       PlatformCursor platform_cursor);
 
-  // CursorFactoryOzone:
-  base::Optional<PlatformCursor> GetDefaultCursor(
-      mojom::CursorType type) override;
+  // CursorFactory:
+  PlatformCursor GetDefaultCursor(mojom::CursorType type) override;
   PlatformCursor CreateImageCursor(mojom::CursorType type,
                                    const SkBitmap& bitmap,
                                    const gfx::Point& hotspot) override;
   PlatformCursor CreateAnimatedCursor(mojom::CursorType type,
                                       const std::vector<SkBitmap>& bitmaps,
                                       const gfx::Point& hotspot,
-                                      int frame_delay_ms) override;
+                                      base::TimeDelta frame_delay) override;
   void RefImageCursor(PlatformCursor cursor) override;
   void UnrefImageCursor(PlatformCursor cursor) override;
 
  private:
+  std::map<mojom::CursorType, scoped_refptr<BitmapCursorOzone>>
+      default_cursors_;
+
   DISALLOW_COPY_AND_ASSIGN(BitmapCursorFactoryOzone);
 };
 

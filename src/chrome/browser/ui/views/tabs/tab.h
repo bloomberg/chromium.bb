@@ -90,7 +90,7 @@ class Tab : public gfx::AnimationDelegate,
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  base::string16 GetTooltipText(const gfx::Point& p) const override;
+  std::u16string GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
   void PaintChildren(const views::PaintInfo& info) override;
@@ -169,8 +169,8 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the text to show in a tab's tooltip: The contents |title|, followed
   // by a break, followed by a localized string describing the |alert_state|.
   // Exposed publicly for tests.
-  static base::string16 GetTooltipText(
-      const base::string16& title,
+  static std::u16string GetTooltipText(
+      const std::u16string& title,
       base::Optional<TabAlertState> alert_state);
 
   // Returns an alert state to be shown among given alert states.
@@ -185,8 +185,9 @@ class Tab : public gfx::AnimationDelegate,
   class TabCloseButtonObserver;
   friend class AlertIndicatorTest;
   friend class TabTest;
-  friend class TabStripTest;
-  FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabCloseButtonVisibilityWhenStacked);
+  friend class TabStripTestBase;
+  FRIEND_TEST_ALL_PREFIXES(TabStripTestWithScrollingDisabled,
+                           TabCloseButtonVisibilityWhenStacked);
   FRIEND_TEST_ALL_PREFIXES(TabStripTest,
                            TabCloseButtonVisibilityWhenNotStacked);
   FRIEND_TEST_ALL_PREFIXES(TabTest, TitleTextHasSufficientContrast);
@@ -261,6 +262,9 @@ class Tab : public gfx::AnimationDelegate,
   // Whether we are showing the close button. It is cached so that we can
   // detect when it changes and layout appropriately.
   bool showing_close_button_ = false;
+
+  // Whether the tab is currently animating from a pinned to an unpinned state.
+  bool is_animating_from_pinned_ = false;
 
   // If there's room, we add additional padding to the left of the favicon to
   // balance the whitespace inside the non-hovered close button image;

@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/common/url_constants.h"
 #include "components/account_manager_core/account_manager_facade.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -58,14 +59,18 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/signin/public/base/signin_switches.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace signin {
 
@@ -103,8 +108,8 @@ class AccountReconcilorLockWrapper
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     AccountReconcilor* account_reconcilor =
         AccountReconcilorFactory::GetForProfile(profile);
-    account_reconcilor_lock_.reset(
-        new AccountReconcilor::Lock(account_reconcilor));
+    account_reconcilor_lock_ =
+        std::make_unique<AccountReconcilor::Lock>(account_reconcilor);
   }
 
   void DestroyAfterDelay() {
@@ -172,7 +177,8 @@ class ManageAccountsHeaderReceivedUserData
 void ProcessMirrorHeader(
     ManageAccountsParams manage_accounts_params,
     const content::WebContents::Getter& web_contents_getter) {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
+    defined(OS_ANDROID)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   GAIAServiceType service_type = manage_accounts_params.service_type;
@@ -190,7 +196,10 @@ void ProcessMirrorHeader(
   AccountReconcilor* account_reconcilor =
       AccountReconcilorFactory::GetForProfile(profile);
   account_reconcilor->OnReceivedManageAccountsResponse(service_type);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) ||
+        // defined(OS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
       account_reconcilor->GetState());
 
@@ -235,6 +244,8 @@ void ProcessMirrorHeader(
 
   // 2. Displaying a reauthentication window
   if (!manage_accounts_params.email.empty()) {
+    // TODO(https://crbug.com/1177728): enable this for lacros.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // Do not display the re-authentication dialog if this event was triggered
     // by supervision being enabled for an account.  In this situation, a
     // complete signout is required.
@@ -243,7 +254,7 @@ void ProcessMirrorHeader(
     if (service && service->signout_required_after_supervision_enabled()) {
       return;
     }
-
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     base::UmaHistogramBoolean("AccountManager.MirrorReauthenticationRequest",
                               true);
 
@@ -252,8 +263,8 @@ void ProcessMirrorHeader(
     // (See the reason below.)
     signin::IdentityManager* const identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
-    CoreAccountInfo primary_account = identity_manager->GetPrimaryAccountInfo(
-        signin::ConsentLevel::kNotRequired);
+    CoreAccountInfo primary_account =
+        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
     if (profile->IsChild() &&
         gaia::AreEmailsSame(primary_account.email,
                             manage_accounts_params.email)) {
@@ -291,11 +302,18 @@ void ProcessMirrorHeader(
   }
 
   // 3. Displaying the Account Manager for managing accounts.
+  if (base::FeatureList::IsEnabled(switches::kUseAccountManagerFacade)) {
+    ::GetAccountManagerFacade(profile->GetPath().value())
+        ->ShowManageAccountsSettings();
+    return;
+  }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       profile, chromeos::settings::mojom::kMyAccountsSubpagePath);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return;
 
-#else   // !BUILDFLAG(IS_CHROMEOS_ASH)
+#elif defined(OS_ANDROID)
   if (manage_accounts_params.show_consistency_promo &&
       base::FeatureList::IsEnabled(kMobileIdentityConsistency)) {
     auto* window = web_contents->GetNativeView()->GetWindowAndroid();
@@ -325,8 +343,7 @@ void ProcessMirrorHeader(
       return;
     SigninBridge::OpenAccountManagementScreen(window, service_type);
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -352,14 +369,13 @@ void CreateDiceTurnOnSyncHelper(Profile* profile,
 // Shows UI for signin errors.
 void ShowDiceSigninError(Profile* profile,
                          content::WebContents* web_contents,
-                         const std::string& error_message,
-                         const std::string& email) {
+                         const SigninUIError& error) {
   DCHECK(profile);
   Browser* browser = web_contents
                          ? chrome::FindBrowserWithWebContents(web_contents)
                          : chrome::FindBrowserWithProfile(profile);
-  LoginUIServiceFactory::GetForProfile(profile)->DisplayLoginResult(
-      browser, base::UTF8ToUTF16(error_message), base::UTF8ToUTF16(email));
+  LoginUIServiceFactory::GetForProfile(profile)->DisplayLoginResult(browser,
+                                                                    error);
 }
 
 void ProcessDiceHeader(
@@ -394,7 +410,7 @@ void ProcessDiceHeader(
 // child/route id. Must be called on IO thread.
 void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
                                          bool is_off_the_record) {
-  DCHECK(gaia::IsGaiaSignonRealm(response->GetOrigin()));
+  CHECK(gaia::IsGaiaSignonRealm(response->GetOrigin()));
 
   if (!response->IsMainFrame())
     return;
@@ -443,7 +459,7 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
                                        bool is_off_the_record) {
-  DCHECK(gaia::IsGaiaSignonRealm(response->GetOrigin()));
+  CHECK(gaia::IsGaiaSignonRealm(response->GetOrigin()));
 
   if (is_off_the_record)
     return;

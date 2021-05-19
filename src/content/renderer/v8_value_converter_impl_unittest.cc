@@ -512,12 +512,11 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
 
   converter.SetDateAllowed(true);
   TestWeirdType(converter, v8::Date::New(context, 1000).ToLocalChecked(),
-                base::Value::Type::DOUBLE,
-                std::unique_ptr<base::Value>(new base::Value(1.0)));
+                base::Value::Type::DOUBLE, std::make_unique<base::Value>(1.0));
 
   converter.SetRegExpAllowed(true);
   TestWeirdType(converter, regex, base::Value::Type::STRING,
-                std::unique_ptr<base::Value>(new base::Value("/./")));
+                std::make_unique<base::Value>("/./"));
 }
 
 TEST_F(V8ValueConverterImplTest, Prototype) {
@@ -1216,7 +1215,7 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
   const char kExampleData[] = {1, 2, 3, 4, 5};
   v8::Local<v8::ArrayBuffer> array_buffer(
       v8::ArrayBuffer::New(isolate_, sizeof(kExampleData)));
-  memcpy(array_buffer->GetContents().Data(), kExampleData,
+  memcpy(array_buffer->GetBackingStore()->Data(), kExampleData,
          sizeof(kExampleData));
   std::unique_ptr<base::Value> binary_value(
       converter.FromV8Value(array_buffer, context));

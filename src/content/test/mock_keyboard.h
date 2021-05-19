@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -94,7 +93,7 @@ class MockKeyboard {
   int GetCharacters(Layout layout,
                     int key_code,
                     Modifiers modifiers,
-                    base::string16* output);
+                    std::u16string* output);
 
  private:
 #if defined(OS_WIN)

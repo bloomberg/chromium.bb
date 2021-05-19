@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/sync_process_runner.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -72,7 +73,7 @@ SyncProcessRunner::SyncProcessRunner(const std::string& name,
       pending_changes_(0) {
   DCHECK_LE(1u, max_parallel_task_);
   if (!timer_helper_)
-    timer_helper_.reset(new BaseTimerHelper);
+    timer_helper_ = std::make_unique<BaseTimerHelper>();
 }
 
 SyncProcessRunner::~SyncProcessRunner() {}
@@ -198,8 +199,8 @@ void SyncProcessRunner::Run() {
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[%s] * Started", name_.c_str());
 
-  StartSync(base::Bind(&SyncProcessRunner::Finished, factory_.GetWeakPtr(),
-                       now));
+  StartSync(
+      base::BindOnce(&SyncProcessRunner::Finished, factory_.GetWeakPtr(), now));
   if (running_tasks_ < max_parallel_task_)
     Schedule();
 }

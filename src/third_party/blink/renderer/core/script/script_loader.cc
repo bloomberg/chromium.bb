@@ -26,10 +26,10 @@
 
 #include "base/feature_list.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -58,6 +58,8 @@
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
+#include "third_party/blink/renderer/core/speculation_rules/document_speculation_rules.h"
+#include "third_party/blink/renderer/core/speculation_rules/speculation_rule_set.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
@@ -69,11 +71,13 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 
@@ -81,8 +85,7 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
                            const CreateElementFlags flags)
     : element_(element),
       will_be_parser_executed_(false),
-      will_execute_when_document_finished_parsing_(false),
-      force_deferred_(false) {
+      will_execute_when_document_finished_parsing_(false) {
   // <spec href="https://html.spec.whatwg.org/C/#already-started">... The
   // cloning steps for script elements must set the "already started" flag on
   // the copy if it is set on the element being cloned.</spec>
@@ -232,6 +235,10 @@ ScriptLoader::ScriptTypeAtPrepare ScriptLoader::GetScriptTypeAtPrepare(
     return ScriptTypeAtPrepare::kImportMap;
   }
 
+  if (EqualIgnoringASCIICase(type, "speculationrules")) {
+    return ScriptTypeAtPrepare::kSpeculationRules;
+  }
+
   // <spec step="7">... If neither of the above conditions are true, then
   // return. No script is executed.</spec>
   return ScriptTypeAtPrepare::kInvalid;
@@ -273,9 +280,10 @@ bool ShouldBlockSyncScriptForDocumentPolicy(
     return false;
   }
 
-  // Module scripts and import maps never block parsing.
+  // Non-classic scripts don't block parsing.
   if (script_type == ScriptLoader::ScriptTypeAtPrepare::kModule ||
       script_type == ScriptLoader::ScriptTypeAtPrepare::kImportMap ||
+      script_type == ScriptLoader::ScriptTypeAtPrepare::kSpeculationRules ||
       !parser_inserted)
     return false;
 
@@ -347,6 +355,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         return false;
       break;
 
+    case ScriptTypeAtPrepare::kSpeculationRules:
+      if (!RuntimeEnabledFeatures::SpeculationRulesEnabled(context_window))
+        return false;
+      break;
+
     case ScriptTypeAtPrepare::kClassic:
     case ScriptTypeAtPrepare::kModule:
       break;
@@ -397,8 +410,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   const bool is_in_document_write = element_document.IsInDocumentWrite();
 
   // Reset line numbering for nested writes.
-  TextPosition position =
-      is_in_document_write ? TextPosition() : script_start_position;
+  TextPosition position = is_in_document_write ? TextPosition::MinimumPosition()
+                                               : script_start_position;
 
   // <spec step="13">If the script element does not have a src content
   // attribute, and the Should element's inline behavior be blocked by Content
@@ -603,6 +616,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                                  WrapPersistent(element_.Get())));
         return false;
 
+      case ScriptTypeAtPrepare::kSpeculationRules:
+        // TODO(crbug.com/1182803): Implement external speculation rules.
+        element_document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kError,
+            "External speculation rules are not yet supported."));
+        return false;
+
       case ScriptTypeAtPrepare::kClassic: {
         // - "classic":
 
@@ -703,6 +724,21 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         // map` synchronously here.
         pending_import_map->RegisterImportMap();
 
+        return false;
+      }
+
+      case ScriptTypeAtPrepare::kSpeculationRules: {
+        // https://jeremyroman.github.io/alternate-loading-modes/#speculation-rules-prepare-a-script-patch
+        // Let result be the result of parsing speculation rules given source
+        // text and base URL.
+        // Set the script’s result to result.
+        // If the script’s result is not null, append it to the element’s node
+        // document's list of speculation rule sets.
+        DCHECK(RuntimeEnabledFeatures::SpeculationRulesEnabled(context_window));
+        if (auto* rule_set =
+                SpeculationRuleSet::ParseInline(source_text, base_url)) {
+          DocumentSpeculationRules::From(element_document).AddRuleSet(rule_set);
+        }
         return false;
       }
 
@@ -818,25 +854,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     return true;
   }
 
-  // Check for external script that should be force deferred.
-  if (GetScriptType() == ScriptTypeAtPrepare::kClassic &&
-      element_->HasSourceAttribute() &&
-      context_window->GetFrame()->ShouldForceDeferScript() &&
-      IsA<HTMLDocument>(context_window->document()) && parser_inserted_ &&
-      !element_->AsyncAttributeValue()) {
-    // In terms of ScriptLoader flags, force deferred scripts behave like
-    // parser-blocking scripts, except that |force_deferred_| is set.
-    // The caller of PrepareScript()
-    // - Force-defers such scripts if the caller supports force-defer
-    //   (i.e., HTMLParserScriptRunner); or
-    // - Ignores the |force_deferred_| flag and handles such scripts as
-    //   parser-blocking scripts (e.g., XMLParserScriptRunner).
-    force_deferred_ = true;
-    will_be_parser_executed_ = true;
-
-    return true;
-  }
-
   // <spec step="26.B">If the script's type is "classic", and the element has a
   // src attribute, and the element has been flagged as "parser-inserted", and
   // the element does not have an async attribute ...</spec>
@@ -913,14 +930,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // and the element doesn't have a src attribute.
   DCHECK_EQ(GetScriptType(), ScriptTypeAtPrepare::kClassic);
   DCHECK(!is_external_script_);
-
-  // Check for inline script that should be force deferred.
-  if (context_window->GetFrame()->ShouldForceDeferScript() &&
-      IsA<HTMLDocument>(context_window->document()) && parser_inserted_) {
-    force_deferred_ = true;
-    will_be_parser_executed_ = true;
-    return true;
-  }
 
   // <spec step="26.E">If the element does not have a src attribute, and the
   // element has been flagged as "parser-inserted", and either the parser that

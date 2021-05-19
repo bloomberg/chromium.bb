@@ -47,7 +47,7 @@ public interface RenderFrameHost {
      *
      * @return Whether the feature policy allows the feature in this frame.
      */
-    boolean isFeatureEnabled(@FeaturePolicyFeature int feature);
+    boolean isFeatureEnabled(@PermissionsPolicyFeature int feature);
 
     /**
      * Returns an interface by name to the Frame in the renderer process. This
@@ -125,4 +125,9 @@ public interface RenderFrameHost {
      * @return Status code indicating the result of the MakeCredential request security checks.
      */
     int performMakeCredentialWebAuthSecurityChecks(String relyingPartyId, Origin effectiveOrigin);
+
+    /**
+     * @return An identifier for this RenderFrameHost.
+     */
+    GlobalFrameRoutingId getGlobalFrameRoutingId();
 }

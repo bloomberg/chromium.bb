@@ -20,18 +20,18 @@
 class GetBindGroupLayoutTests : public ValidationTest {
   protected:
     wgpu::RenderPipeline RenderPipelineFromFragmentShader(const char* shader) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
                 [[stage(vertex)]] fn main() -> void {
                 })");
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, shader);
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, shader);
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
+        utils::ComboRenderPipelineDescriptor2 descriptor;
         descriptor.layout = nullptr;
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
 
-        return device.CreateRenderPipeline(&descriptor);
+        return device.CreateRenderPipeline2(&descriptor);
     }
 };
 
@@ -43,9 +43,9 @@ TEST_F(GetBindGroupLayoutTests, SameObject) {
     // Native.
     DAWN_SKIP_TEST_IF(UsesWire());
 
-    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
         [[block]] struct S {
-            [[offset(0)]] pos : vec4<f32>;
+            pos : vec4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> uniform0 : S;
         [[group(1), binding(0)]] var<uniform> uniform1 : S;
@@ -53,26 +53,26 @@ TEST_F(GetBindGroupLayoutTests, SameObject) {
         [[stage(vertex)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
         [[block]] struct S2 {
-            [[offset(0)]] pos : vec4<f32>;
+            pos : vec4<f32>;
         };
         [[group(2), binding(0)]] var<uniform> uniform2 : S2;
 
         [[block]] struct S3 {
-            [[offset(0)]] pos : mat4x4<f32>;
+            pos : mat4x4<f32>;
         };
-        [[group(3), binding(0)]] var<storage_buffer> storage3 : S3;
+        [[group(3), binding(0)]] var<storage> storage3 : [[access(read_write)]] S3;
 
         [[stage(fragment)]] fn main() -> void {
         })");
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
+    utils::ComboRenderPipelineDescriptor2 descriptor;
     descriptor.layout = nullptr;
-    descriptor.vertexStage.module = vsModule;
-    descriptor.cFragmentStage.module = fsModule;
+    descriptor.vertex.module = vsModule;
+    descriptor.cFragment.module = fsModule;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
 
     // The same value is returned for the same index.
     EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), pipeline.GetBindGroupLayout(0).Get());
@@ -98,7 +98,7 @@ TEST_F(GetBindGroupLayoutTests, DefaultShaderStageAndDynamicOffsets) {
 
     wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         [[block]] struct S {
-            [[offset(0)]] pos : vec4<f32>;
+            pos : vec4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> uniforms : S;
 
@@ -139,9 +139,9 @@ TEST_F(GetBindGroupLayoutTests, ComputePipeline) {
     // Native.
     DAWN_SKIP_TEST_IF(UsesWire());
 
-    wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
         [[block]] struct S {
-            [[offset(0)]] pos : vec4<f32>;
+            pos : vec4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> uniforms : S;
 
@@ -192,9 +192,9 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
         binding.buffer.type = wgpu::BufferBindingType::Storage;
         wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
             [[block]] struct S {
-                [[offset(0)]] pos : vec4<f32>;
+                pos : vec4<f32>;
             };
-            [[group(0), binding(0)]] var<storage_buffer> ssbo : S;
+            [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] S;
 
             [[stage(fragment)]] fn main() -> void {
             })");
@@ -204,7 +204,7 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
         binding.buffer.type = wgpu::BufferBindingType::Uniform;
         wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
             [[block]] struct S {
-                [[offset(0)]] pos : vec4<f32>;
+                pos : vec4<f32>;
             };
             [[group(0), binding(0)]] var<uniform> uniforms : S;
 
@@ -217,9 +217,9 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
         binding.buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
         wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
             [[block]] struct S {
-                [[offset(0)]] pos : vec4<f32>;
+                pos : vec4<f32>;
             };
-            [[group(0), binding(0)]] var<storage_buffer> ssbo : [[access(read)]] S;
+            [[group(0), binding(0)]] var<storage> ssbo : [[access(read)]] S;
 
             [[stage(fragment)]] fn main() -> void {
             })");
@@ -404,7 +404,7 @@ TEST_F(GetBindGroupLayoutTests, BindingIndices) {
         binding.binding = 0;
         wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
             [[block]] struct S {
-                [[offset(0)]] pos : vec4<f32>;
+                pos : vec4<f32>;
             };
             [[group(0), binding(0)]] var<uniform> uniforms : S;
 
@@ -417,7 +417,7 @@ TEST_F(GetBindGroupLayoutTests, BindingIndices) {
         binding.binding = 1;
         wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
             [[block]] struct S {
-                [[offset(0)]] pos : vec4<f32>;
+                pos : vec4<f32>;
             };
             [[group(0), binding(1)]] var<uniform> uniforms : S;
 
@@ -430,7 +430,7 @@ TEST_F(GetBindGroupLayoutTests, BindingIndices) {
         binding.binding = 2;
         wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
             [[block]] struct S {
-                [[offset(0)]] pos : vec4<f32>;
+                pos : vec4<f32>;
             };
             [[group(0), binding(1)]] var<uniform> uniforms : S;
 
@@ -442,9 +442,9 @@ TEST_F(GetBindGroupLayoutTests, BindingIndices) {
 
 // Test it is valid to have duplicate bindings in the shaders.
 TEST_F(GetBindGroupLayoutTests, DuplicateBinding) {
-    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
         [[block]] struct S {
-            [[offset(0)]] pos : vec4<f32>;
+            pos : vec4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> uniform0 : S;
         [[group(1), binding(0)]] var<uniform> uniform1 : S;
@@ -452,21 +452,21 @@ TEST_F(GetBindGroupLayoutTests, DuplicateBinding) {
         [[stage(vertex)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
         [[block]] struct S {
-            [[offset(0)]] pos : vec4<f32>;
+            pos : vec4<f32>;
         };
         [[group(1), binding(0)]] var<uniform> uniforms : S;
 
         [[stage(fragment)]] fn main() -> void {
         })");
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
+    utils::ComboRenderPipelineDescriptor2 descriptor;
     descriptor.layout = nullptr;
-    descriptor.vertexStage.module = vsModule;
-    descriptor.cFragmentStage.module = fsModule;
+    descriptor.vertex.module = vsModule;
+    descriptor.cFragment.module = fsModule;
 
-    device.CreateRenderPipeline(&descriptor);
+    device.CreateRenderPipeline2(&descriptor);
 }
 
 // Test that minBufferSize is set on the BGL and that the max of the min buffer sizes is used.
@@ -476,36 +476,36 @@ TEST_F(GetBindGroupLayoutTests, MinBufferSize) {
     // Native.
     DAWN_SKIP_TEST_IF(UsesWire());
 
-    wgpu::ShaderModule vsModule4 = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule4 = utils::CreateShaderModule(device, R"(
         [[block]] struct S {
-            [[offset(0)]] pos : f32;
+            pos : f32;
         };
         [[group(0), binding(0)]] var<uniform> uniforms : S;
 
         [[stage(vertex)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule vsModule64 = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule64 = utils::CreateShaderModule(device, R"(
         [[block]] struct S {
-            [[offset(0)]] pos : mat4x4<f32>;
+            pos : mat4x4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> uniforms : S;
 
         [[stage(vertex)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule fsModule4 = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule4 = utils::CreateShaderModule(device, R"(
         [[block]] struct S {
-            [[offset(0)]] pos : f32;
+            pos : f32;
         };
         [[group(0), binding(0)]] var<uniform> uniforms : S;
 
         [[stage(fragment)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule fsModule64 = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule64 = utils::CreateShaderModule(device, R"(
         [[block]] struct S {
-            [[offset(0)]] pos : mat4x4<f32>;
+            pos : mat4x4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> uniforms : S;
 
@@ -527,30 +527,30 @@ TEST_F(GetBindGroupLayoutTests, MinBufferSize) {
     binding.buffer.minBindingSize = 64;
     wgpu::BindGroupLayout bgl64 = device.CreateBindGroupLayout(&desc);
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
+    utils::ComboRenderPipelineDescriptor2 descriptor;
     descriptor.layout = nullptr;
 
     // Check with both stages using 4 bytes.
     {
-        descriptor.vertexStage.module = vsModule4;
-        descriptor.cFragmentStage.module = fsModule4;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+        descriptor.vertex.module = vsModule4;
+        descriptor.cFragment.module = fsModule4;
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
         EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), bgl4.Get());
     }
 
     // Check that the max is taken between 4 and 64.
     {
-        descriptor.vertexStage.module = vsModule64;
-        descriptor.cFragmentStage.module = fsModule4;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+        descriptor.vertex.module = vsModule64;
+        descriptor.cFragment.module = fsModule4;
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
         EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), bgl64.Get());
     }
 
     // Check that the order doesn't change that the max is taken.
     {
-        descriptor.vertexStage.module = vsModule4;
-        descriptor.cFragmentStage.module = fsModule64;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+        descriptor.vertex.module = vsModule4;
+        descriptor.cFragment.module = fsModule64;
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
         EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), bgl64.Get());
     }
 }
@@ -562,20 +562,20 @@ TEST_F(GetBindGroupLayoutTests, StageAggregation) {
     // Native.
     DAWN_SKIP_TEST_IF(UsesWire());
 
-    wgpu::ShaderModule vsModuleNoSampler = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModuleNoSampler = utils::CreateShaderModule(device, R"(
         [[stage(vertex)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule vsModuleSampler = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModuleSampler = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var mySampler: sampler;
         [[stage(vertex)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule fsModuleNoSampler = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModuleNoSampler = utils::CreateShaderModule(device, R"(
         [[stage(fragment)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule fsModuleSampler = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModuleSampler = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var mySampler: sampler;
         [[stage(fragment)]] fn main() -> void {
         })");
@@ -589,14 +589,14 @@ TEST_F(GetBindGroupLayoutTests, StageAggregation) {
     desc.entryCount = 1;
     desc.entries = &binding;
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
+    utils::ComboRenderPipelineDescriptor2 descriptor;
     descriptor.layout = nullptr;
 
     // Check with only the vertex shader using the sampler
     {
-        descriptor.vertexStage.module = vsModuleSampler;
-        descriptor.cFragmentStage.module = fsModuleNoSampler;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+        descriptor.vertex.module = vsModuleSampler;
+        descriptor.cFragment.module = fsModuleNoSampler;
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
 
         binding.visibility = wgpu::ShaderStage::Vertex;
         EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), device.CreateBindGroupLayout(&desc).Get());
@@ -604,9 +604,9 @@ TEST_F(GetBindGroupLayoutTests, StageAggregation) {
 
     // Check with only the fragment shader using the sampler
     {
-        descriptor.vertexStage.module = vsModuleNoSampler;
-        descriptor.cFragmentStage.module = fsModuleSampler;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+        descriptor.vertex.module = vsModuleNoSampler;
+        descriptor.cFragment.module = fsModuleSampler;
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
 
         binding.visibility = wgpu::ShaderStage::Fragment;
         EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), device.CreateBindGroupLayout(&desc).Get());
@@ -614,9 +614,9 @@ TEST_F(GetBindGroupLayoutTests, StageAggregation) {
 
     // Check with both shaders using the sampler
     {
-        descriptor.vertexStage.module = vsModuleSampler;
-        descriptor.cFragmentStage.module = fsModuleSampler;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+        descriptor.vertex.module = vsModuleSampler;
+        descriptor.cFragment.module = fsModuleSampler;
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
 
         binding.visibility = wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Vertex;
         EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), device.CreateBindGroupLayout(&desc).Get());
@@ -625,96 +625,96 @@ TEST_F(GetBindGroupLayoutTests, StageAggregation) {
 
 // Test it is invalid to have conflicting binding types in the shaders.
 TEST_F(GetBindGroupLayoutTests, ConflictingBindingType) {
-    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
         [[block]] struct S {
-            [[offset(0)]] pos : vec4<f32>;
+            pos : vec4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> ubo : S;
 
         [[stage(vertex)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
         [[block]] struct S {
-            [[offset(0)]] pos : vec4<f32>;
+            pos : vec4<f32>;
         };
-        [[group(0), binding(0)]] var<storage_buffer> ssbo : S;
+        [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] S;
 
         [[stage(fragment)]] fn main() -> void {
         })");
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
+    utils::ComboRenderPipelineDescriptor2 descriptor;
     descriptor.layout = nullptr;
-    descriptor.vertexStage.module = vsModule;
-    descriptor.cFragmentStage.module = fsModule;
+    descriptor.vertex.module = vsModule;
+    descriptor.cFragment.module = fsModule;
 
-    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
 }
 
 // Test it is invalid to have conflicting binding texture multisampling in the shaders.
 TEST_F(GetBindGroupLayoutTests, ConflictingBindingTextureMultisampling) {
-    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
 
         [[stage(vertex)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var myTexture : texture_multisampled_2d<f32>;
 
         [[stage(fragment)]] fn main() -> void {
         })");
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
+    utils::ComboRenderPipelineDescriptor2 descriptor;
     descriptor.layout = nullptr;
-    descriptor.vertexStage.module = vsModule;
-    descriptor.cFragmentStage.module = fsModule;
+    descriptor.vertex.module = vsModule;
+    descriptor.cFragment.module = fsModule;
 
-    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
 }
 
 // Test it is invalid to have conflicting binding texture dimension in the shaders.
 TEST_F(GetBindGroupLayoutTests, ConflictingBindingViewDimension) {
-    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
 
         [[stage(vertex)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var myTexture : texture_3d<f32>;
 
         [[stage(fragment)]] fn main() -> void {
         })");
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
+    utils::ComboRenderPipelineDescriptor2 descriptor;
     descriptor.layout = nullptr;
-    descriptor.vertexStage.module = vsModule;
-    descriptor.cFragmentStage.module = fsModule;
+    descriptor.vertex.module = vsModule;
+    descriptor.cFragment.module = fsModule;
 
-    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
 }
 
 // Test it is invalid to have conflicting binding texture component type in the shaders.
 TEST_F(GetBindGroupLayoutTests, ConflictingBindingTextureComponentType) {
-    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
 
         [[stage(vertex)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var myTexture : texture_2d<i32>;
 
         [[stage(fragment)]] fn main() -> void {
         })");
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
+    utils::ComboRenderPipelineDescriptor2 descriptor;
     descriptor.layout = nullptr;
-    descriptor.vertexStage.module = vsModule;
-    descriptor.cFragmentStage.module = fsModule;
+    descriptor.vertex.module = vsModule;
+    descriptor.cFragment.module = fsModule;
 
-    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
 }
 
 // Test it is an error to query an out of range bind group layout.
@@ -739,7 +739,7 @@ TEST_F(GetBindGroupLayoutTests, UnusedIndex) {
 
     wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         [[block]] struct S {
-            [[offset(0)]] pos : vec4<f32>;
+            pos : vec4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> uniforms0 : S;
         [[group(2), binding(0)]] var<uniform> uniforms2 : S;
@@ -784,25 +784,25 @@ TEST_F(GetBindGroupLayoutTests, Reflection) {
 
     wgpu::PipelineLayout pipelineLayout = device.CreatePipelineLayout(&pipelineLayoutDesc);
 
-    wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
         [[block]] struct S {
-            [[offset(0)]] pos : vec4<f32>;
+            pos : vec4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> uniforms : S;
 
         [[stage(vertex)]] fn main() -> void {
         })");
 
-    wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
         [[stage(fragment)]] fn main() -> void {
         })");
 
-    utils::ComboRenderPipelineDescriptor pipelineDesc(device);
+    utils::ComboRenderPipelineDescriptor2 pipelineDesc;
     pipelineDesc.layout = pipelineLayout;
-    pipelineDesc.vertexStage.module = vsModule;
-    pipelineDesc.cFragmentStage.module = fsModule;
+    pipelineDesc.vertex.module = vsModule;
+    pipelineDesc.cFragment.module = fsModule;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDesc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDesc);
 
     EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), bindGroupLayout.Get());
 
@@ -823,12 +823,12 @@ TEST_F(GetBindGroupLayoutTests, Reflection) {
 // Test that fragment output validation is for the correct entryPoint
 // TODO(dawn:216): Re-enable when we correctly reflect which bindings are used for an entryPoint.
 TEST_F(GetBindGroupLayoutTests, DISABLED_FromCorrectEntryPoint) {
-    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[block]] struct Data {
-            [[offset 0]] data : f32;
+            data : f32;
         };
-        [[binding 0, set 0]] var<storage_buffer> data0 : Data;
-        [[binding 1, set 0]] var<storage_buffer> data1 : Data;
+        [[binding 0, set 0]] var<storage> data0 : [[access(read_write)]] Data;
+        [[binding 1, set 0]] var<storage> data1 : [[access(read_write)]] Data;
 
         fn compute0() -> void {
             data0.data = 0.0;

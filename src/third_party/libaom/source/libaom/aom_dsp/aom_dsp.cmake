@@ -319,6 +319,11 @@ if(CONFIG_AV1_ENCODER)
     list(APPEND AOM_DSP_ENCODER_SOURCES "${AOM_ROOT}/aom_dsp/vmaf.c"
                 "${AOM_ROOT}/aom_dsp/vmaf.h")
   endif()
+
+  if(CONFIG_TUNE_BUTTERAUGLI)
+    list(APPEND AOM_DSP_ENCODER_SOURCES "${AOM_ROOT}/aom_dsp/butteraugli.c"
+                "${AOM_ROOT}/aom_dsp/butteraugli.h")
+  endif()
 endif()
 
 # Creates aom_dsp build targets. Must not be called until after libaom target

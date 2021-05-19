@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <tuple>
 
 #include "base/bind.h"
@@ -497,6 +498,105 @@ void HitTestWatermark(
       web_contents, rwhv_child, child_location, rwhv_child, child_location);
 }
 
+void HitTestNestedFramesHelper(
+    Shell* shell,
+    net::test_server::EmbeddedTestServer* embedded_test_server) {
+  GURL main_url(embedded_test_server->GetURL(
+      "/frame_tree/page_with_positioned_nested_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell, main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://a.com/\n"
+      "      C = http://baz.com/",
+      DepictFrameTree(*root));
+
+  FrameTreeNode* child_node = root->child_at(0);
+  FrameTreeNode* grandchild_node = child_node->child_at(0);
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_grandchild =
+      static_cast<RenderWidgetHostViewBase*>(
+          grandchild_node->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetView());
+
+  WaitForHitTestData(child_node->current_frame_host());
+  WaitForHitTestData(grandchild_node->current_frame_host());
+
+  // Create two points to hit test: One in the child of the main frame, and
+  // one in the frame nested within that. The hit test request is sent to the
+  // child's renderer.
+  gfx::PointF point_in_child(1.29, 1.59);
+  gfx::PointF point_in_nested_child(5.52, 5.62);
+  gfx::PointF point_in_nested_child_transformed;  // Transformed into child view
+                                                  // coordinate space.
+  rwhv_grandchild->TransformPointToCoordSpaceForView(
+      point_in_nested_child, rwhv_child, &point_in_nested_child_transformed);
+
+  {
+    base::RunLoop run_loop;
+    viz::FrameSinkId received_frame_sink_id;
+    gfx::PointF returned_point;
+    base::OnceClosure quit_closure = run_loop.QuitClosure();
+    DCHECK(child_node->current_frame_host()
+               ->GetRenderWidgetHost()
+               ->input_target_client());
+    child_node->current_frame_host()
+        ->GetRenderWidgetHost()
+        ->input_target_client()
+        ->FrameSinkIdAt(
+            point_in_child, 0,
+            base::BindLambdaForTesting(
+                [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
+                  received_frame_sink_id = id;
+                  returned_point = point;
+                  std::move(quit_closure).Run();
+                }));
+    run_loop.Run();
+    // |point_in_child| should hit test to the view for |child_node|.
+    ASSERT_EQ(rwhv_child->GetFrameSinkId(), received_frame_sink_id);
+    EXPECT_NEAR(returned_point.x(), point_in_child.x(), kHitTestLowTolerance);
+    EXPECT_NEAR(returned_point.y(), point_in_child.y(), kHitTestLowTolerance);
+  }
+
+  {
+    base::RunLoop run_loop;
+    viz::FrameSinkId received_frame_sink_id;
+    gfx::PointF returned_point;
+    base::OnceClosure quit_closure = run_loop.QuitClosure();
+    DCHECK(child_node->current_frame_host()
+               ->GetRenderWidgetHost()
+               ->input_target_client());
+    child_node->current_frame_host()
+        ->GetRenderWidgetHost()
+        ->input_target_client()
+        ->FrameSinkIdAt(
+            point_in_nested_child_transformed, 0,
+            base::BindLambdaForTesting(
+                [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
+                  received_frame_sink_id = id;
+                  returned_point = point;
+                  std::move(quit_closure).Run();
+                }));
+    run_loop.Run();
+    // |point_in_nested_child_transformed| should hit test to |rwhv_grandchild|.
+    ASSERT_EQ(rwhv_grandchild->GetFrameSinkId(), received_frame_sink_id);
+    EXPECT_NEAR(returned_point.x(), point_in_nested_child.x(),
+                kHitTestLowTolerance);
+    EXPECT_NEAR(returned_point.y(), point_in_nested_child.y(),
+                kHitTestLowTolerance);
+  }
+}
+
 #if defined(USE_AURA)
 void HitTestRootWindowTransform(
     Shell* shell,
@@ -604,7 +704,7 @@ class SetMouseCaptureInterceptor
       msg_received_ = false;
       return;
     }
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
     run_loop_.reset();
     msg_received_ = false;
@@ -712,6 +812,24 @@ class SitePerProcessHitTestBrowserTest : public SitePerProcessBrowserTestBase {
 #endif
 };
 
+// This tests the kInputTargetClientHighPriority finch experiment where we
+// upgrade the TaskQueue priority for InputTargetClient methods.
+class SitePerProcessHitTestTaskPriorityBrowserTest
+    : public SitePerProcessHitTestBrowserTest {
+ public:
+  SitePerProcessHitTestTaskPriorityBrowserTest() = default;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
+    feature_list_.InitAndEnableFeature(
+        blink::features::kInputTargetClientHighPriority);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 //
 // SitePerProcessHighDPIHitTestBrowserTest
 //
@@ -796,8 +914,21 @@ class SitePerProcessInternalsHitTestBrowserTest
   }
 };
 
+constexpr float kMultiScale[] = {1.f, 1.5f, 2.f};
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessInternalsHitTestBrowserTest,
+                         testing::Combine(testing::ValuesIn(kMultiScale)));
+
+// Flaky on MSAN. https://crbug.com/959924
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ScrollNestedLocalNonFastScrollableDiv \
+  DISABLED_ScrollNestedLocalNonFastScrollableDiv
+#else
+#define MAYBE_ScrollNestedLocalNonFastScrollableDiv \
+  ScrollNestedLocalNonFastScrollableDiv
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
-                       ScrollNestedLocalNonFastScrollableDiv) {
+                       MAYBE_ScrollNestedLocalNonFastScrollableDiv) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1828,8 +1959,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   params.prevent_fling = false;
   RenderWidgetHostImpl* root_widget_host =
       static_cast<RenderWidgetHostImpl*>(root_rwhv->GetRenderWidgetHost());
-  auto dont_care_on_complete =
-      base::BindOnce([](SyntheticGesture::Result result) {});
+  auto dont_care_on_complete = base::DoNothing();
   root_widget_host->QueueSyntheticGesture(
       std::make_unique<SyntheticSmoothScrollGesture>(params),
       std::move(dont_care_on_complete));
@@ -3164,18 +3294,18 @@ class TooltipMonitor : public CursorManager::TooltipObserver {
   ~TooltipMonitor() override {}
 
   void Reset() {
-    run_loop_.reset(new base::RunLoop);
+    run_loop_ = std::make_unique<base::RunLoop>();
     tooltips_received_.clear();
   }
 
   void OnSetTooltipTextForView(const RenderWidgetHostViewBase* view,
-                               const base::string16& tooltip_text) override {
+                               const std::u16string& tooltip_text) override {
     tooltips_received_.push_back(tooltip_text);
     if (tooltip_text == tooltip_text_wanted_ && run_loop_->running())
       run_loop_->Quit();
   }
 
-  void WaitUntil(const base::string16& tooltip_text) {
+  void WaitUntil(const std::u16string& tooltip_text) {
     tooltip_text_wanted_ = tooltip_text;
     if (base::Contains(tooltips_received_, tooltip_text))
       return;
@@ -3184,8 +3314,8 @@ class TooltipMonitor : public CursorManager::TooltipObserver {
 
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
-  base::string16 tooltip_text_wanted_;
-  std::vector<base::string16> tooltips_received_;
+  std::u16string tooltip_text_wanted_;
+  std::vector<std::u16string> tooltips_received_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipMonitor);
 };  // class TooltipMonitor
@@ -3265,7 +3395,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
     EXPECT_EQ(iteration != 0, b_frame_monitor.EventWasReceived());
     b_frame_monitor.ResetEventReceived();
 
-    tooltip_monitor.WaitUntil(base::UTF8ToUTF16("body_tooltip"));
+    tooltip_monitor.WaitUntil(u"body_tooltip");
     tooltip_monitor.Reset();
 
     // Next send a MouseMove to B frame, and A should receive a MouseMove event.
@@ -3279,7 +3409,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
     a_frame_monitor.ResetEventReceived();
     EXPECT_TRUE(b_frame_monitor.EventWasReceived());
     b_frame_monitor.ResetEventReceived();
-    tooltip_monitor.WaitUntil(base::string16());
+    tooltip_monitor.WaitUntil(std::u16string());
     tooltip_monitor.Reset();
   }
 
@@ -4083,6 +4213,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   scoped_refptr<SetMouseCaptureInterceptor> interceptor =
       new SetMouseCaptureInterceptor(
           static_cast<RenderWidgetHostImpl*>(widget_host));
+
+  WaitForHitTestData(root->current_frame_host());
 
   gfx::PointF click_point =
       gfx::PointF(rwhv_root->GetViewBounds().width() / 2, 20);
@@ -6623,102 +6755,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, HitTestClippedFrame) {
 
 // Verify InputTargetClient works within an OOPIF process.
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
-  GURL main_url(embedded_test_server()->GetURL(
-      "/frame_tree/page_with_positioned_nested_frames.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  HitTestNestedFramesHelper(shell(), embedded_test_server());
+}
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-  ASSERT_EQ(1U, root->child_count());
-
-  EXPECT_EQ(
-      " Site A ------------ proxies for B C\n"
-      "   +--Site B ------- proxies for A C\n"
-      "        +--Site C -- proxies for A B\n"
-      "Where A = http://127.0.0.1/\n"
-      "      B = http://a.com/\n"
-      "      C = http://baz.com/",
-      DepictFrameTree(root));
-
-  FrameTreeNode* child_node = root->child_at(0);
-  FrameTreeNode* grandchild_node = child_node->child_at(0);
-  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
-      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
-  RenderWidgetHostViewBase* rwhv_grandchild =
-      static_cast<RenderWidgetHostViewBase*>(
-          grandchild_node->current_frame_host()
-              ->GetRenderWidgetHost()
-              ->GetView());
-
-  WaitForHitTestData(child_node->current_frame_host());
-  WaitForHitTestData(grandchild_node->current_frame_host());
-
-  // Create two points to hit test: One in the child of the main frame, and
-  // one in the frame nested within that. The hit test request is sent to the
-  // child's renderer.
-  gfx::PointF point_in_child(1.29, 1.59);
-  gfx::PointF point_in_nested_child(5.52, 5.62);
-  gfx::PointF point_in_nested_child_transformed;  // Transformed into child view
-                                                  // coordinate space.
-  rwhv_grandchild->TransformPointToCoordSpaceForView(
-      point_in_nested_child, rwhv_child, &point_in_nested_child_transformed);
-
-  {
-    base::RunLoop run_loop;
-    viz::FrameSinkId received_frame_sink_id;
-    gfx::PointF returned_point;
-    base::OnceClosure quit_closure =
-        content::GetDeferredQuitTaskForRunLoop(&run_loop);
-    DCHECK(child_node->current_frame_host()
-               ->GetRenderWidgetHost()
-               ->input_target_client());
-    child_node->current_frame_host()
-        ->GetRenderWidgetHost()
-        ->input_target_client()
-        ->FrameSinkIdAt(
-            point_in_child, 0,
-            base::BindLambdaForTesting(
-                [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
-                  received_frame_sink_id = id;
-                  returned_point = point;
-                  std::move(quit_closure).Run();
-                }));
-    content::RunThisRunLoop(&run_loop);
-    // |point_in_child| should hit test to the view for |child_node|.
-    ASSERT_EQ(rwhv_child->GetFrameSinkId(), received_frame_sink_id);
-    EXPECT_NEAR(returned_point.x(), point_in_child.x(), kHitTestLowTolerance);
-    EXPECT_NEAR(returned_point.y(), point_in_child.y(), kHitTestLowTolerance);
-  }
-
-  {
-    base::RunLoop run_loop;
-    viz::FrameSinkId received_frame_sink_id;
-    gfx::PointF returned_point;
-    base::OnceClosure quit_closure =
-        content::GetDeferredQuitTaskForRunLoop(&run_loop);
-    DCHECK(child_node->current_frame_host()
-               ->GetRenderWidgetHost()
-               ->input_target_client());
-    child_node->current_frame_host()
-        ->GetRenderWidgetHost()
-        ->input_target_client()
-        ->FrameSinkIdAt(
-            point_in_nested_child_transformed, 0,
-            base::BindLambdaForTesting(
-                [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
-                  received_frame_sink_id = id;
-                  returned_point = point;
-                  std::move(quit_closure).Run();
-                }));
-    content::RunThisRunLoop(&run_loop);
-    // |point_in_nested_child_transformed| should hit test to |rwhv_grandchild|.
-    ASSERT_EQ(rwhv_grandchild->GetFrameSinkId(), received_frame_sink_id);
-    EXPECT_NEAR(returned_point.x(), point_in_nested_child.x(),
-                kHitTestLowTolerance);
-    EXPECT_NEAR(returned_point.y(), point_in_nested_child.y(),
-                kHitTestLowTolerance);
-  }
+// Test that the InputTargetClient interface works as expected even when Running
+// a TaskPriority finch experiment.
+IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestTaskPriorityBrowserTest,
+                       SmokeTestInputTargetClientTaskPriority) {
+  HitTestNestedFramesHelper(shell(), embedded_test_server());
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
@@ -7316,15 +7360,5 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
       TransformRectToQuadF(hit_test_data[2])));
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
 }
-
-// All tests are flaky on MSAN. https://crbug.com/959924
-#if !defined(MEMORY_SANITIZER)
-#if defined(USE_AURA)
-static const float kMultiScale[] = {1.f, 1.5f, 2.f};
-INSTANTIATE_TEST_SUITE_P(All,
-                         SitePerProcessInternalsHitTestBrowserTest,
-                         testing::Combine(testing::ValuesIn(kMultiScale)));
-#endif  // defined(USE_AURA)
-#endif  // defined(MEMORY_SANITIZER)
 
 }  // namespace content

@@ -15,18 +15,9 @@
 #include "src/type/sampled_texture_type.h"
 
 #include "src/type/access_control_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
 #include "src/type/depth_texture_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/pointer_type.h"
 #include "src/type/storage_texture_type.h"
-#include "src/type/struct_type.h"
 #include "src/type/test_helper.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
 
 namespace tint {
 namespace type {
@@ -83,12 +74,6 @@ TEST_F(SampledTextureTest, TypeName) {
 TEST_F(SampledTextureTest, FriendlyName) {
   SampledTexture s(TextureDimension::k3d, ty.f32());
   EXPECT_EQ(s.FriendlyName(Symbols()), "texture_3d<f32>");
-}
-
-TEST_F(SampledTextureTest, MinBufferBindingSize) {
-  F32 f32;
-  SampledTexture s(TextureDimension::kCube, &f32);
-  EXPECT_EQ(0u, s.MinBufferBindingSize(MemoryLayout::kUniformBuffer));
 }
 
 }  // namespace

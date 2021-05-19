@@ -18,8 +18,9 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/testing_pref_service.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -36,7 +37,8 @@ constexpr char kOriginUrl2[] = "https://origin-2.com/abc";
 
 class UrlHandlerManagerImplTest : public WebAppTest {
  public:
-  UrlHandlerManagerImplTest() {
+  UrlHandlerManagerImplTest()
+      : local_state_(TestingBrowserProcess::GetGlobal()) {
     features_.InitAndEnableFeature(blink::features::kWebAppEnableUrlHandlers);
   }
   ~UrlHandlerManagerImplTest() override = default;
@@ -48,13 +50,10 @@ class UrlHandlerManagerImplTest : public WebAppTest {
         std::make_unique<TestWebAppRegistryController>();
     test_registry_controller_->SetUp(profile());
 
-    UrlHandlerPrefs::RegisterLocalStatePrefs(test_pref_service_.registry());
-
     auto url_handler_manager =
         std::make_unique<UrlHandlerManagerImpl>(profile());
     url_handler_manager_ = url_handler_manager.get();
     url_handler_manager->SetSubsystems(&test_registry_controller_->registrar());
-    url_handler_manager->SetLocalStateForTesting(&test_pref_service_);
 
     auto association_manager =
         std::make_unique<FakeWebAppOriginAssociationManager>();
@@ -62,7 +61,7 @@ class UrlHandlerManagerImplTest : public WebAppTest {
         {apps::UrlHandlerInfo(origin_1_),
          apps::UrlHandlerInfo(origin_1_, false, {"/abc"}, {"/foo"})},
         {apps::UrlHandlerInfo(origin_2_),
-         apps::UrlHandlerInfo(origin_1_, false, {"/abc"}, {"/bar"})},
+         apps::UrlHandlerInfo(origin_2_, false, {"/abc"}, {"/bar"})},
     };
     association_manager->SetData(std::move(data));
     url_handler_manager->SetAssociationManagerForTesting(
@@ -79,22 +78,20 @@ class UrlHandlerManagerImplTest : public WebAppTest {
     return test_registry_controller_->os_integration_manager();
   }
 
-  PrefService* pref_service() { return &test_pref_service_; }
-
   TestWebAppRegistryController& controller() {
     return *test_registry_controller_;
   }
 
   UrlHandlerManagerImpl& url_handler_manager() { return *url_handler_manager_; }
 
-  std::unique_ptr<web_app::WebApp> CreateWebAppWithUrlHandlers(
+  std::unique_ptr<WebApp> CreateWebAppWithUrlHandlers(
       const GURL& app_url,
       const apps::UrlHandlers& url_handlers) {
-    const std::string app_id = web_app::GenerateAppIdFromURL(app_url);
-    auto web_app = std::make_unique<web_app::WebApp>(app_id);
-    web_app->AddSource(web_app::Source::kDefault);
-    web_app->SetDisplayMode(web_app::DisplayMode::kStandalone);
-    web_app->SetUserDisplayMode(web_app::DisplayMode::kStandalone);
+    const std::string app_id = GenerateAppIdFromURL(app_url);
+    auto web_app = std::make_unique<WebApp>(app_id);
+    web_app->AddSource(Source::kDefault);
+    web_app->SetDisplayMode(DisplayMode::kStandalone);
+    web_app->SetUserDisplayMode(DisplayMode::kStandalone);
     web_app->SetName("Name");
     web_app->SetStartUrl(app_url);
     web_app->SetUrlHandlers(url_handlers);
@@ -126,7 +123,13 @@ class UrlHandlerManagerImplTest : public WebAppTest {
     controller().UnregisterApp(app_id);
     controller().RegisterApp(std::move(web_app));
 
-    EXPECT_TRUE(url_handler_manager().UpdateUrlHandlers(app_id));
+    base::RunLoop run_loop;
+    url_handler_manager().UpdateUrlHandlers(
+        app_id, base::BindLambdaForTesting([&](bool success) {
+          EXPECT_TRUE(success);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
     return app_id;
   }
 
@@ -139,8 +142,8 @@ class UrlHandlerManagerImplTest : public WebAppTest {
  private:
   base::test::ScopedFeatureList features_;
   std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
-  TestingPrefServiceSimple test_pref_service_;
   UrlHandlerManagerImpl* url_handler_manager_;
+  ScopedTestingLocalState local_state_;
 };
 
 TEST_F(UrlHandlerManagerImplTest, RegisterAndUnregisterApp) {
@@ -150,7 +153,7 @@ TEST_F(UrlHandlerManagerImplTest, RegisterAndUnregisterApp) {
 
   // Find URL in cmd and look for matching URL handlers.
   std::vector<UrlHandlerLaunchParams> matches =
-      UrlHandlerManagerImpl::GetUrlHandlerMatches(pref_service(), cmd);
+      UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd);
   ASSERT_EQ(matches.size(), 1u);
   const UrlHandlerLaunchParams& params = matches[0];
   EXPECT_EQ(params.profile_path, profile()->GetPath());
@@ -162,7 +165,7 @@ TEST_F(UrlHandlerManagerImplTest, RegisterAndUnregisterApp) {
   controller().UnregisterApp(app_id);
 
   // Confirm there is no matching URL handler now.
-  matches = UrlHandlerManagerImpl::GetUrlHandlerMatches(pref_service(), cmd);
+  matches = UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd);
   EXPECT_TRUE(matches.empty());
 }
 
@@ -175,7 +178,7 @@ TEST_F(UrlHandlerManagerImplTest, RegisterAndUpdateApp) {
 
     // Find URL in commandline and look for matching URL handlers.
     std::vector<UrlHandlerLaunchParams> matches =
-        UrlHandlerManagerImpl::GetUrlHandlerMatches(pref_service(), cmd_1);
+        UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd_1);
 
     ASSERT_EQ(matches.size(), 1u);
     const UrlHandlerLaunchParams& params = matches[0];
@@ -189,7 +192,7 @@ TEST_F(UrlHandlerManagerImplTest, RegisterAndUpdateApp) {
 
     // Expect that url handlers targeting origin 1 have been replaced.
     std::vector<UrlHandlerLaunchParams> matches =
-        UrlHandlerManagerImpl::GetUrlHandlerMatches(pref_service(), cmd_1);
+        UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd_1);
     EXPECT_TRUE(matches.empty());
   }
   {
@@ -197,7 +200,7 @@ TEST_F(UrlHandlerManagerImplTest, RegisterAndUpdateApp) {
     cmd_2.AppendArg(kOriginUrl2);
 
     std::vector<UrlHandlerLaunchParams> matches =
-        UrlHandlerManagerImpl::GetUrlHandlerMatches(pref_service(), cmd_2);
+        UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd_2);
 
     // Expect new url handlers that target origin 2.
     ASSERT_EQ(matches.size(), 1u);
@@ -205,14 +208,19 @@ TEST_F(UrlHandlerManagerImplTest, RegisterAndUpdateApp) {
     EXPECT_EQ(params.profile_path, profile()->GetPath());
     EXPECT_EQ(params.app_id, app_id);
     EXPECT_EQ(params.url, kOriginUrl2);
+
+    // Check excluded path shouldn't match
+    cmd_2 = base::CommandLine(base::CommandLine::NO_PROGRAM);
+    cmd_2.AppendArg("https://origin-2.com/bar");
+    matches = UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd_2);
+    EXPECT_TRUE(matches.empty());
   }
 }
 
 TEST_F(UrlHandlerManagerImplTest, GetUrlHandlerMatches_CommandlineHasNoUrl) {
   const AppId app_Id = RegisterAppAndUrlHandlers();
   base::CommandLine cmd = base::CommandLine(base::CommandLine::NO_PROGRAM);
-  auto matches =
-      UrlHandlerManagerImpl::GetUrlHandlerMatches(pref_service(), cmd);
+  auto matches = UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd);
   EXPECT_TRUE(matches.empty());
 }
 
@@ -224,8 +232,7 @@ TEST_F(UrlHandlerManagerImplTest,
     cmd.AppendSwitchASCII(switches::kAppId, app_id);
     cmd.AppendArg(kOriginUrl1);
 
-    auto matches =
-        UrlHandlerManagerImpl::GetUrlHandlerMatches(pref_service(), cmd);
+    auto matches = UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd);
     EXPECT_TRUE(matches.empty());
   }
   {
@@ -233,8 +240,7 @@ TEST_F(UrlHandlerManagerImplTest,
     cmd.AppendSwitchASCII(switches::kApp, kAppUrl1);
     cmd.AppendArg(kOriginUrl1);
 
-    auto matches =
-        UrlHandlerManagerImpl::GetUrlHandlerMatches(pref_service(), cmd);
+    auto matches = UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd);
     EXPECT_TRUE(matches.empty());
   }
 }
@@ -270,8 +276,7 @@ TEST_F(UrlHandlerManagerImplTest, FeatureFlagDisabled_Unregister) {
   // Check that url handlers are no longer registered.
   base::CommandLine cmd = base::CommandLine(base::CommandLine::NO_PROGRAM);
   cmd.AppendArg(kOriginUrl1);
-  auto matches =
-      UrlHandlerManagerImpl::GetUrlHandlerMatches(pref_service(), cmd);
+  auto matches = UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd);
   ASSERT_EQ(matches.size(), 0u);
 }
 
@@ -290,14 +295,18 @@ TEST_F(UrlHandlerManagerImplTest, FeatureFlagDisabled_Update) {
     controller().UnregisterApp(app_id);
     controller().RegisterApp(std::move(web_app));
 
-    EXPECT_FALSE(url_handler_manager().UpdateUrlHandlers(app_id));
+    base::RunLoop run_loop;
+    url_handler_manager().UpdateUrlHandlers(
+        app_id, base::BindLambdaForTesting([&](bool success) {
+          EXPECT_FALSE(success);
+          run_loop.Quit();
+        }));
   }
 
   // Expect that url handlers have been removed.
   base::CommandLine cmd = base::CommandLine(base::CommandLine::NO_PROGRAM);
   cmd.AppendArg(kOriginUrl1);
-  auto matches =
-      UrlHandlerManagerImpl::GetUrlHandlerMatches(pref_service(), cmd);
+  auto matches = UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd);
   ASSERT_EQ(matches.size(), 0u);
 }
 
@@ -305,8 +314,7 @@ TEST_F(UrlHandlerManagerImplTest, GetUrlHandlerMatches_CommandlineNoMatch) {
   const AppId app_Id = RegisterAppAndUrlHandlers();
   base::CommandLine cmd = base::CommandLine(base::CommandLine::NO_PROGRAM);
   cmd.AppendArg("https://origin-1.com/foo");
-  auto matches =
-      UrlHandlerManagerImpl::GetUrlHandlerMatches(pref_service(), cmd);
+  auto matches = UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd);
   EXPECT_TRUE(matches.empty());
 }
 

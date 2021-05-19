@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.typeText;
@@ -53,7 +54,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.carousel.ButtonView;
@@ -227,10 +227,7 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
 
         onView(withText("Continue")).perform(click());
         waitUntilViewMatchesCondition(withId(R.id.card_unmask_input), isCompletelyDisplayed());
-        onView(withId(R.id.card_unmask_input)).perform(typeText("123"));
-        waitUntilViewMatchesCondition(
-                withId(R.id.positive_button), allOf(isDisplayed(), isEnabled()));
-        onView(withId(R.id.positive_button)).perform(click());
+        onView(withId(R.id.card_unmask_input)).perform(typeText("123"), pressImeActionButton());
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed(), 6000L);
         assertThat(getElementValue(getWebContents(), "name"), is("John Doe"));
         assertThat(getElementValue(getWebContents(), "card_number"), is("4111111111111111"));
@@ -244,7 +241,6 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1176952")
     public void testFailingAutofillSendsProperError() throws Exception {
         String profileId = mHelper.addDummyProfile("John Doe", "johndoe@gmail.com");
         mHelper.addDummyCreditCard(profileId);
@@ -297,8 +293,7 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         testService.setNextActions(new ArrayList<>());
         onView(withText("Continue")).perform(click());
         waitUntilViewMatchesCondition(withId(R.id.card_unmask_input), isCompletelyDisplayed());
-        onView(withId(R.id.card_unmask_input)).perform(typeText("123"));
-        onView(withId(R.id.positive_button)).perform(click());
+        onView(withId(R.id.card_unmask_input)).perform(typeText("123"), pressImeActionButton());
         testService.waitUntilGetNextActions(1);
 
         List<ProcessedActionProto> processedActions = testService.getProcessedActions();
@@ -453,7 +448,6 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1041870")
     public void testKeyboardIsHiddenOnLostFocus() throws Exception {
         String profileId = mHelper.addDummyProfile("John Doe", "johndoe@gmail.com");
         mHelper.addDummyCreditCard(profileId);
@@ -499,10 +493,10 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
 
         waitUntilViewMatchesCondition(withText("User form"), isDisplayed());
         onView(withText("User form")).perform(click());
-        waitUntilViewMatchesCondition(withText("Field 1"), isDisplayed());
-        onView(withText("Field 1")).perform(click());
+        waitUntilViewMatchesCondition(withContentDescription("Field 1"), isDisplayed());
+        onView(withContentDescription("Field 1")).perform(click());
         waitUntilKeyboardMatchesCondition(mTestRule, true);
-        onView(withText("Field 2")).perform(scrollTo(), click());
+        onView(withContentDescription("Field 2")).perform(scrollTo(), click());
         waitUntilKeyboardMatchesCondition(mTestRule, true);
         onView(withText("User form")).perform(scrollTo(), click());
         waitUntilKeyboardMatchesCondition(mTestRule, false);

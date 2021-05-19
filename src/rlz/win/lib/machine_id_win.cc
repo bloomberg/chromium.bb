@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "rlz/lib/assert.h"
 
@@ -70,7 +69,7 @@ bool GetComputerSid(const wchar_t* account_name, SID* sid, DWORD sid_size) {
   return success != FALSE;
 }
 
-base::string16 ConvertSidToString(SID* sid) {
+std::u16string ConvertSidToString(SID* sid) {
   std::wstring sid_string;
   wchar_t* sid_buffer = NULL;
   if (ConvertSidToStringSidW(sid, &sid_buffer)) {
@@ -82,7 +81,7 @@ base::string16 ConvertSidToString(SID* sid) {
 
 }  // namespace
 
-bool GetRawMachineId(base::string16* sid_string, int* volume_id) {
+bool GetRawMachineId(std::u16string* sid_string, int* volume_id) {
   // Calculate the Windows SID.
 
   wchar_t computer_name[MAX_COMPUTERNAME_LENGTH + 1] = {0};

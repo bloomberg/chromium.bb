@@ -45,7 +45,8 @@ class PasswordAccessoryControllerImpl
   // AccessoryController:
   void RegisterFillingSourceObserver(FillingSourceObserver observer) override;
   base::Optional<autofill::AccessorySheetData> GetSheetData() const override;
-  void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
+  void OnFillingTriggered(autofill::FieldGlobalId focused_field_id,
+                          const autofill::UserInfo::Field& selection) override;
   void OnOptionSelected(autofill::AccessoryAction selected_action) override;
   void OnToggleChanged(autofill::AccessoryAction toggled_action,
                        bool enabled) override;
@@ -132,7 +133,7 @@ class PasswordAccessoryControllerImpl
   void ChangeCurrentOriginSavePasswordsStatus(bool enabled);
 
   // Returns true if |suggestion| matches a credential for |origin|.
-  bool AppearsInSuggestions(const base::string16& suggestion,
+  bool AppearsInSuggestions(const std::u16string& suggestion,
                             bool is_password,
                             const url::Origin& origin) const;
 

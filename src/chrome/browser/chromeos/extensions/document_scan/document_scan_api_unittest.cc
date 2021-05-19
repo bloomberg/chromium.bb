@@ -10,9 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/values.h"
+#include "chrome/browser/ash/scanning/fake_lorgnette_scanner_manager.h"
+#include "chrome/browser/ash/scanning/lorgnette_scanner_manager_factory.h"
 #include "chrome/browser/chromeos/extensions/document_scan/document_scan_api.h"
-#include "chrome/browser/chromeos/scanning/fake_lorgnette_scanner_manager.h"
-#include "chrome/browser/chromeos/scanning/lorgnette_scanner_manager_factory.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -35,7 +35,7 @@ constexpr char kVirtualUSBPrinterName[] = "DavieV Virtual USB Printer (USB)";
 // Creates a new FakeLorgnetteScannerManager for the given |context|.
 std::unique_ptr<KeyedService> BuildLorgnetteScannerManager(
     content::BrowserContext* context) {
-  return std::make_unique<chromeos::FakeLorgnetteScannerManager>();
+  return std::make_unique<ash::FakeLorgnetteScannerManager>();
 }
 
 }  // namespace
@@ -49,14 +49,14 @@ class DocumentScanScanFunctionTest : public ExtensionApiUnittest {
   void SetUp() override {
     ExtensionApiUnittest::SetUp();
     function_->set_user_gesture(true);
-    chromeos::LorgnetteScannerManagerFactory::GetInstance()->SetTestingFactory(
+    ash::LorgnetteScannerManagerFactory::GetInstance()->SetTestingFactory(
         browser()->profile(),
         base::BindRepeating(&BuildLorgnetteScannerManager));
   }
 
-  chromeos::FakeLorgnetteScannerManager* GetLorgnetteScannerManager() {
-    return static_cast<chromeos::FakeLorgnetteScannerManager*>(
-        chromeos::LorgnetteScannerManagerFactory::GetForBrowserContext(
+  ash::FakeLorgnetteScannerManager* GetLorgnetteScannerManager() {
+    return static_cast<ash::FakeLorgnetteScannerManager*>(
+        ash::LorgnetteScannerManagerFactory::GetForBrowserContext(
             browser()->profile()));
   }
 

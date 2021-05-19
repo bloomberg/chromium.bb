@@ -30,11 +30,7 @@ class SimpleURLLoader;
 class SharedURLLoaderFactory;
 }  // namespace network
 
-class PrefService;
-
 namespace safe_browsing {
-
-using IsHistorySyncEnabledCallback = base::RepeatingCallback<bool()>;
 
 using RTLookupRequestCallback =
     base::OnceCallback<void(std::unique_ptr<RTLookupRequest>, std::string)>;
@@ -42,7 +38,11 @@ using RTLookupRequestCallback =
 using RTLookupResponseCallback =
     base::OnceCallback<void(bool, bool, std::unique_ptr<RTLookupResponse>)>;
 
+using ReferrerChain =
+    google::protobuf::RepeatedPtrField<safe_browsing::ReferrerChainEntry>;
+
 class VerdictCacheManager;
+class ReferrerChainProvider;
 
 // This base class implements the backoff and cache logic for real time URL
 // lookup feature.
@@ -51,12 +51,9 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
   explicit RealTimeUrlLookupServiceBase(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       VerdictCacheManager* cache_manager,
-      const IsHistorySyncEnabledCallback& is_history_sync_enabled_callback,
-      PrefService* pref_service,
-      const ChromeUserPopulation::ProfileManagementStatus&
-          profile_management_status,
-      bool is_under_advanced_protection,
-      bool is_off_the_record);
+      base::RepeatingCallback<ChromeUserPopulation()>
+          get_user_population_callback,
+      ReferrerChainProvider* referrer_chain_provider);
   ~RealTimeUrlLookupServiceBase() override;
 
   // Returns true if |url|'s scheme can be checked.
@@ -118,6 +115,9 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
   using PendingRTLookupRequests =
       base::flat_map<network::SimpleURLLoader*, RTLookupResponseCallback>;
 
+  // Removes non-mainframe URLs due to user consent restriction.
+  static void SanitizeReferrerChainEntries(ReferrerChain* referrer_chain);
+
   // Returns the endpoint that the URL lookup will be sent to.
   virtual GURL GetRealTimeLookupUrl() const = 0;
 
@@ -127,6 +127,12 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
 
   // Returns true if real time URL lookup with GAIA token is enabled.
   virtual bool CanPerformFullURLLookupWithToken() const = 0;
+
+  // Returns true if referrer chain should be attached to requests.
+  virtual bool CanAttachReferrerChain() const = 0;
+
+  // Returns the user gesture limit of the referrer chain.
+  virtual int GetReferrerUserGestureLimit() const = 0;
 
   // Gets access token, called if |CanPerformFullURLLookupWithToken| returns
   // true.
@@ -216,25 +222,18 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
   // Unowned object used for getting and storing real time url check cache.
   VerdictCacheManager* cache_manager_;
 
-  // Used for determining whether history sync is enabled in the safe browsing
-  // embedder.
-  IsHistorySyncEnabledCallback is_history_sync_enabled_callback_;
-
-  // Unowned object used for getting preference settings.
-  PrefService* pref_service_;
-
-  const ChromeUserPopulation::ProfileManagementStatus
-      profile_management_status_;
-
-  // Whether the profile is enrolled in  advanced protection.
-  bool is_under_advanced_protection_;
-
-  // A boolean indicates whether the profile associated with this
-  // |url_lookup_service| is an off the record profile.
-  bool is_off_the_record_;
-
   // All requests that are sent but haven't received a response yet.
   PendingRTLookupRequests pending_requests_;
+
+  // Used to populate the ChromeUserPopulation field in requests.
+  base::RepeatingCallback<ChromeUserPopulation()> get_user_population_callback_;
+
+  // Unowned object used to retrieve referrer chains.
+  // This object will always be destroyed later than the current object, so
+  // accessing it won't cause UAF. This is because this object is held by
+  // |safe_browsing_service|, which is only destroyed when the browser process
+  // is shutdown.
+  ReferrerChainProvider* referrer_chain_provider_;
 
   friend class RealTimeUrlLookupServiceTest;
   friend class ChromeEnterpriseRealTimeUrlLookupServiceTest;

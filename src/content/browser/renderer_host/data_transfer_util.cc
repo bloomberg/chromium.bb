@@ -118,7 +118,7 @@ blink::mojom::DragDataPtr DropDataToDragData(
     item->file_system_id = file_system_file.filesystem_id;
     items.push_back(blink::mojom::DragItem::NewFileSystemFile(std::move(item)));
   }
-  for (const std::pair<base::string16, base::string16> data :
+  for (const std::pair<std::u16string, std::u16string> data :
        drop_data.custom_data) {
     blink::mojom::DragItemStringPtr item = blink::mojom::DragItemString::New();
     item->string_type = base::UTF16ToUTF8(data.first);
@@ -155,7 +155,7 @@ blink::mojom::DragDataPtr DropMetaDataToDragData(
       // will contain an empty URL (which means no URL is dragged) if the URL in
       // WebDragData is empty.
       if (base::EqualsASCII(meta_data_item.mime_type, ui::kMimeTypeURIList)) {
-        item->string_data = base::UTF8ToUTF16("about:dragdrop-placeholder");
+        item->string_data = u"about:dragdrop-placeholder";
       }
       items.push_back(blink::mojom::DragItem::NewString(std::move(item)));
       continue;

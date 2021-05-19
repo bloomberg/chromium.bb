@@ -20,9 +20,29 @@
 extern "C" {
 #endif
 
+// The token and color_ctx members of the TokenExtra structure are used
+// to store the indices of color and color context of each pixel in
+// case of palette mode.
+// 1) token can take values in the range of [0, 7] as maximum number of possible
+// colors is 8 (PALETTE_COLORS). Hence token requires 3 bits (unsigned).
+// 2) The reserved field (1-bit) is positioned such that color_ctx occupies the
+// most significant bits and token occupies the least significant bits of the
+// byte. Thus accesses to token and color_ctx are optimal. If TokenExtra is
+// defined as:
+//   typedef struct {
+//     int8_t color_ctx : 4;
+//     uint8_t token : 3;
+//   } TokenExtra;
+// then read of color_ctx requires an extra left shift to facilitate sign
+// extension and write of token requires an extra masking.
+// 3) color_ctx can take 5 (PALETTE_COLOR_INDEX_CONTEXTS) valid values, i.e.,
+// from 0 to 4. As per the current implementation it can take values in the
+// range of [-1, 4]. Here -1 corresponds to invalid color index context and is
+// used for default initialization. Hence color_ctx requires 4 bits (signed).
 typedef struct {
-  int8_t color_ctx;
-  uint8_t token;
+  uint8_t token : 3;
+  uint8_t reserved : 1;
+  int8_t color_ctx : 4;
 } TokenExtra;
 
 typedef struct {

@@ -127,12 +127,12 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   bool IsCellOrHeaderOfARIAGrid() const override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   bool AccessibilityPerformAction(const AXActionData& data) override;
-  base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
-  base::string16 GetLocalizedStringForLandmarkType() const override;
-  base::string16 GetLocalizedStringForRoleDescription() const override;
-  base::string16 GetLocalizedStringForImageAnnotationStatus(
+  std::u16string GetLocalizedRoleDescriptionForUnlabeledImage() const override;
+  std::u16string GetLocalizedStringForLandmarkType() const override;
+  std::u16string GetLocalizedStringForRoleDescription() const override;
+  std::u16string GetLocalizedStringForImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus status) const override;
-  base::string16 GetStyleNameAttributeAsLocalizedString() const override;
+  std::u16string GetStyleNameAttributeAsLocalizedString() const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   const ui::AXUniqueId& GetUniqueId() const override;
   bool HasVisibleCaretOrSelection() const override;
@@ -178,7 +178,11 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   gfx::RectF GetInlineTextRect(const int start_offset,
                                const int end_offset) const;
 
-  // Determine the offscreen status of a particular element given its bounds..
+  // Helper for determining if the two rects, including empty rects, intersect
+  // each other.
+  bool Intersects(gfx::RectF rect1, gfx::RectF rect2) const;
+
+  // Determine the offscreen status of a particular element given its bounds.
   AXOffscreenResult DetermineOffscreenResult(gfx::RectF bounds) const;
 
   AXTree* tree_;

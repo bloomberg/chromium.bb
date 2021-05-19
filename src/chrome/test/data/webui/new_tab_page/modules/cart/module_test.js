@@ -4,8 +4,8 @@
 
 import {$$, chromeCartDescriptor, ChromeCartProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {FakeMetricsPrivate} from 'chrome://test/new_tab_page/metrics_test_support.js';
-import {assertNotStyle, assertStyle} from 'chrome://test/new_tab_page/test_support.js';
+import {fakeMetricsPrivate, MetricsTracker} from 'chrome://test/new_tab_page/metrics_test_support.js';
+import {assertNotStyle} from 'chrome://test/new_tab_page/test_support.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 import {eventToPromise, flushTasks, isVisible} from 'chrome://test/test_util.m.js';
 
@@ -16,8 +16,8 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
    */
   let testProxy;
 
-  /** @type {FakeMetricsPrivate} */
-  let fakeMetricsPrivate;
+  /** @type {MetricsTracker} */
+  let metrics;
 
   setup(() => {
     PolymerTest.clearBody();
@@ -25,9 +25,8 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
     testProxy = TestBrowserProxy.fromClass(ChromeCartProxy);
     testProxy.handler =
         TestBrowserProxy.fromClass(chromeCart.mojom.CartHandlerRemote);
-    ChromeCartProxy.instance_ = testProxy;
-    fakeMetricsPrivate = new FakeMetricsPrivate();
-    chrome.metricsPrivate = fakeMetricsPrivate;
+    ChromeCartProxy.setInstance(testProxy);
+    metrics = fakeMetricsPrivate();
     // Not show welcome surface by default.
     testProxy.handler.setResultFor(
         'getWarmWelcomeVisible', Promise.resolve({visible: false}));
@@ -88,7 +87,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
     // Assert.
     const cartItems = moduleElement.shadowRoot.querySelectorAll('.cart-item');
     assertEquals(4, cartItems.length);
-    assertEquals(216, chromeCartDescriptor.heightPx);
+    assertEquals(220, chromeCartDescriptor.element.offsetHeight);
 
     assertEquals('https://amazon.com/', cartItems[0].href);
     assertEquals('Amazon', cartItems[0].querySelector('.merchant').innerText);
@@ -118,7 +117,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
     assertEquals(null, cartItems[2].querySelector('.item-count'));
     assertEquals(null, cartItems[2].querySelector('.thumbnail-list'));
     assertEquals(
-        'chrome://new-tab-page/icons/cart_fallback.svg',
+        'chrome://new-tab-page/modules/cart/icons/cart_fallback.svg',
         cartItems[2].querySelector('.thumbnail-fallback').src);
 
     assertEquals('https://walmart.com/', cartItems[3].href);
@@ -165,7 +164,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
     assertEquals(
         loadTimeData.getString('modulesCartWarmWelcome'),
         headerDescription.innerText);
-    assertEquals(226, chromeCartDescriptor.heightPx);
+    assertEquals(227, chromeCartDescriptor.element.offsetHeight);
   });
 
   test('Backend is notified when module is dismissed or restored', async () => {
@@ -206,15 +205,14 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
         loadTimeData.getString('modulesCartModuleMenuHideToastMessage'),
         hideToastMessage);
     assertEquals(1, testProxy.handler.getCallCount('hideCartModule'));
-    assertEquals(1, fakeMetricsPrivate.count('NewTabPage.Carts.HideModule'));
+    assertEquals(1, metrics.count('NewTabPage.Carts.HideModule'));
 
     // Act.
     hideRestoreCallback();
 
     // Assert.
     assertEquals(1, testProxy.handler.getCallCount('restoreHiddenCartModule'));
-    assertEquals(
-        1, fakeMetricsPrivate.count('NewTabPage.Carts.UndoHideModule'));
+    assertEquals(1, metrics.count('NewTabPage.Carts.UndoHideModule'));
 
     // Act.
     const waitForDisableEvent = eventToPromise('disable-module', moduleElement);
@@ -226,14 +224,13 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
 
     // Assert.
     assertEquals('hello world', disableToastMessage);
-    assertEquals(1, fakeMetricsPrivate.count('NewTabPage.Carts.RemoveModule'));
+    assertEquals(1, metrics.count('NewTabPage.Carts.RemoveModule'));
 
     // Act.
     disableRestoreCallback();
 
     // Assert.
-    assertEquals(
-        1, fakeMetricsPrivate.count('NewTabPage.Carts.UndoRemoveModule'));
+    assertEquals(1, metrics.count('NewTabPage.Carts.UndoRemoveModule'));
   });
 
   test('dismiss and undo single cart item in module', async () => {
@@ -335,10 +332,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
       cartUrl: {url: 'https://dummy.com'},
       productImageUrls: [],
     };
-    const carts = [];
-    for (var i = 0; i < 10; i++) {
-      carts.push(dummyMerchant);
-    }
+    const carts = Array.from({length: 10}, () => dummyMerchant);
     testProxy.handler.setResultFor(
         'getMerchantCarts', Promise.resolve({carts}));
 
@@ -383,8 +377,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
     // Assert.
     checkScrollButtonVisibility(moduleElement, true, true);
     checkVisibleRange(moduleElement, 4, 7);
-    assertEquals(
-        1, fakeMetricsPrivate.count('NewTabPage.Carts.RightScrollClick'));
+    assertEquals(1, metrics.count('NewTabPage.Carts.RightScrollClick'));
 
     // Act.
     waitForRightScrollVisibilityChange =
@@ -397,8 +390,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
     // Assert.
     checkScrollButtonVisibility(moduleElement, true, false);
     checkVisibleRange(moduleElement, 6, 9);
-    assertEquals(
-        2, fakeMetricsPrivate.count('NewTabPage.Carts.RightScrollClick'));
+    assertEquals(2, metrics.count('NewTabPage.Carts.RightScrollClick'));
 
     // Act.
     waitForRightScrollVisibilityChange =
@@ -411,8 +403,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
     // Assert.
     checkScrollButtonVisibility(moduleElement, true, true);
     checkVisibleRange(moduleElement, 2, 5);
-    assertEquals(
-        1, fakeMetricsPrivate.count('NewTabPage.Carts.LeftScrollClick'));
+    assertEquals(1, metrics.count('NewTabPage.Carts.LeftScrollClick'));
 
     // Act.
     waitForLeftScrollVisibilityChange =
@@ -425,8 +416,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
     // Assert.
     checkScrollButtonVisibility(moduleElement, false, true);
     checkVisibleRange(moduleElement, 0, 3);
-    assertEquals(
-        2, fakeMetricsPrivate.count('NewTabPage.Carts.LeftScrollClick'));
+    assertEquals(2, metrics.count('NewTabPage.Carts.LeftScrollClick'));
 
     // Remove the observer.
     cartCarousel.removeEventListener('scroll', onScroll);
@@ -439,10 +429,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
       cartUrl: {url: 'https://dummy.com'},
       productImageUrls: [],
     };
-    const carts = [];
-    for (var i = 0; i < 10; i++) {
-      carts.push(dummyMerchant);
-    }
+    const carts = Array.from({length: 10}, () => dummyMerchant);
     testProxy.handler.setResultFor(
         'getMerchantCarts', Promise.resolve({carts}));
 
@@ -515,10 +502,7 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
       cartUrl: {url: 'https://dummy.com'},
       productImageUrls: [],
     };
-    const carts = [];
-    for (var i = 0; i < 4; i++) {
-      carts.push(dummyMerchant);
-    }
+    const carts = Array.from({length: 4}, () => dummyMerchant);
     testProxy.handler.setResultFor(
         'getMerchantCarts', Promise.resolve({carts}));
 
@@ -564,6 +548,199 @@ suite('NewTabPageModulesChromeCartModuleTest', () => {
     // Assert.
     checkScrollButtonVisibility(moduleElement, false, false);
     checkVisibleRange(moduleElement, 0, 3);
+  });
+
+  test('shows discount chip', async () => {
+    const carts = [
+      {
+        merchant: 'Amazon',
+        cartUrl: {url: 'https://amazon.com'},
+        productImageUrls: [],
+        discountText: '15% off',
+      },
+      {
+        merchant: 'eBay',
+        cartUrl: {url: 'https://ebay.com'},
+        productImageUrls: [],
+        discountText: '50$ off',
+      },
+      {
+        merchant: 'BestBuy',
+        cartUrl: {url: 'https://bestbuy.com'},
+        productImageUrls: [],
+        discountText: '',
+      },
+    ];
+    testProxy.handler.setResultFor(
+        'getMerchantCarts', Promise.resolve({carts}));
+
+    // Act.
+    await chromeCartDescriptor.initialize();
+    const moduleElement = chromeCartDescriptor.element;
+    document.body.append(moduleElement);
+    moduleElement.$.cartItemRepeat.render();
+
+    // Assert.
+    const cartItems = moduleElement.shadowRoot.querySelectorAll('.cart-item');
+    assertEquals(3, cartItems.length);
+
+    assertEquals('https://amazon.com/', cartItems[0].href);
+    assertEquals(
+        '15% off', cartItems[0].querySelector('.discount-chip').innerText);
+    assertEquals('https://ebay.com/', cartItems[1].href);
+    assertEquals(
+        '50$ off', cartItems[1].querySelector('.discount-chip').innerText);
+    assertEquals('https://bestbuy.com/', cartItems[2].href);
+    assertEquals(null, cartItems[2].querySelector('.discount-chip'));
+  });
+
+  test('shows and hides discount consent in cart module', async () => {
+    const carts = [
+      {
+        merchant: 'Foo',
+        cartUrl: {url: 'https://foo.com'},
+        productImageUrls: [],
+      },
+    ];
+    testProxy.handler.setResultFor(
+        'getMerchantCarts', Promise.resolve({carts}));
+    loadTimeData.overrideValues({
+      modulesCartDiscountConsentRejectConfirmation: 'Reject confirmation!',
+      modulesCartDiscountConsentAcceptConfirmation: 'Accept confirmation!',
+    });
+
+    // Arrange.
+    await chromeCartDescriptor.initialize();
+    const moduleElement = chromeCartDescriptor.element;
+    document.body.append(moduleElement);
+    moduleElement.showDiscountConsent = true;
+    moduleElement.$.consentCardElement.render();
+
+    // Assert.
+    const consentCard = $$(moduleElement, '#consentCard');
+    const consentToast =
+        moduleElement.shadowRoot.querySelector('#confirmDiscountConsentToast');
+    assertEquals(true, isVisible(consentCard));
+    assertEquals(false, consentToast.open);
+    assertEquals(
+        loadTimeData.getString('modulesCartDiscountConsentContent'),
+        consentCard.querySelector('#consentContent').innerText);
+    assertEquals(
+        loadTimeData.getString('modulesCartDiscountConsentReject'),
+        consentCard.querySelector('#cancelButton').innerText);
+    assertEquals(
+        loadTimeData.getString('modulesCartDiscountConsentAccept'),
+        consentCard.querySelector('#actionButton').innerText);
+
+    // Act.
+    consentCard.querySelector('#cancelButton').click();
+    await flushTasks();
+
+    // Assert.
+    assertEquals(false, isVisible(consentCard));
+    assertEquals(true, consentToast.open);
+    assertEquals(
+        'Reject confirmation!',
+        consentToast.querySelector('#confirmDiscountConsentMessage').innerText);
+
+    // Act.
+    consentToast.querySelector('#confirmDiscountConsentButton').click();
+
+    // Assert.
+    assertEquals(false, consentToast.open);
+    assertEquals(false, isVisible(consentCard));
+
+    // Act.
+    moduleElement.showDiscountConsent = true;
+    moduleElement.$.consentCardElement.render();
+
+    // Assert.
+    assertEquals(true, isVisible(consentCard));
+
+    // Act.
+    consentCard.querySelector('#actionButton').click();
+    await flushTasks();
+
+    // Assert.
+    assertEquals(false, isVisible(consentCard));
+    assertEquals(true, consentToast.open);
+    assertEquals(
+        'Accept confirmation!',
+        consentToast.querySelector('#confirmDiscountConsentMessage').innerText);
+
+    // Act.
+    consentToast.querySelector('#confirmDiscountConsentButton').click();
+
+    // Assert.
+    assertEquals(false, consentToast.open);
+    assertEquals(false, isVisible(consentCard));
+  });
+
+  test('scroll with consent card', async () => {
+    // Arrange.
+    const dummyMerchant = {
+      merchant: 'Dummy',
+      cartUrl: {url: 'https://dummy.com'},
+      productImageUrls: [],
+    };
+    const carts = Array.from({length: 10}, () => dummyMerchant);
+    testProxy.handler.setResultFor(
+        'getMerchantCarts', Promise.resolve({carts}));
+
+    // Arrange.
+    await chromeCartDescriptor.initialize();
+    const moduleElement = chromeCartDescriptor.element;
+    document.body.append(moduleElement);
+    moduleElement.showDiscountConsent = true;
+    moduleElement.$.cartItemRepeat.render();
+    const cartCarousel =
+        moduleElement.shadowRoot.querySelector('#cartCarousel');
+    moduleElement.scrollBehavior = 'auto';
+    const onScroll = () => {
+      moduleElement.dispatchEvent(new Event('scroll-finish'));
+    };
+    cartCarousel.addEventListener('scroll', onScroll, false);
+
+    // Assert.
+    const cartItems = moduleElement.shadowRoot.querySelectorAll('.cart-item');
+    assertEquals(10, cartItems.length);
+
+    // Act.
+    let waitForLeftScrollVisibilityChange =
+        eventToPromise('left-scroll-hide', moduleElement);
+    let waitForRightScrollVisibilityChange =
+        eventToPromise('right-scroll-show', moduleElement);
+    moduleElement.style.width = '560px';
+    await waitForLeftScrollVisibilityChange;
+    await waitForRightScrollVisibilityChange;
+
+    // Assert.
+    checkScrollButtonVisibility(moduleElement, false, true);
+    checkVisibleRange(moduleElement, 0, 1);
+
+    // Act.
+    waitForLeftScrollVisibilityChange =
+        eventToPromise('left-scroll-show', moduleElement);
+    let waitForScrollFinished = eventToPromise('scroll-finish', moduleElement);
+    moduleElement.shadowRoot.querySelector('#rightScrollButton').click();
+    await waitForScrollFinished;
+    await waitForLeftScrollVisibilityChange;
+
+    // Assert.
+    checkScrollButtonVisibility(moduleElement, true, true);
+    checkVisibleRange(moduleElement, 2, 5);
+
+    // Act.
+    waitForLeftScrollVisibilityChange =
+        eventToPromise('left-scroll-hide', moduleElement);
+    waitForScrollFinished = eventToPromise('scroll-finish', moduleElement);
+    moduleElement.shadowRoot.querySelector('#leftScrollButton').click();
+    await waitForScrollFinished;
+    await waitForLeftScrollVisibilityChange;
+
+    // Assert.
+    checkScrollButtonVisibility(moduleElement, false, true);
+    checkVisibleRange(moduleElement, 0, 1);
   });
 
   function checkScrollButtonVisibility(

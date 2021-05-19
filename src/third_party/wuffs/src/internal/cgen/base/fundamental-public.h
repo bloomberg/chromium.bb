@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// ---------------- Fundamentals
+// ---------------- Version
 
 // WUFFS_VERSION is the major.minor.patch version, as per https://semver.org/,
 // as a uint64_t. The major number is the high 32 bits. The minor number is the
@@ -40,17 +40,144 @@
 #define WUFFS_VERSION_BUILD_METADATA_COMMIT_DATE 0
 #define WUFFS_VERSION_STRING "0.0.0+0.00000000"
 
+// ---------------- Configuration
+
+// Define WUFFS_CONFIG__AVOID_CPU_ARCH to avoid any code tied to a specific CPU
+// architecture, such as SSE SIMD for the x86 CPU family.
+#if defined(WUFFS_CONFIG__AVOID_CPU_ARCH)  // (#if-chain ref AVOID_CPU_ARCH_0)
+// No-op.
+#else  // (#if-chain ref AVOID_CPU_ARCH_0)
+
+// The "defined(__clang__)" isn't redundant. While vanilla clang defines
+// __GNUC__, clang-cl (which mimics MSVC's cl.exe) does not.
+#if defined(__GNUC__) || defined(__clang__)
+#define WUFFS_BASE__MAYBE_ATTRIBUTE_TARGET(arg) __attribute__((target(arg)))
+#else
+#define WUFFS_BASE__MAYBE_ATTRIBUTE_TARGET(arg)
+#endif  // defined(__GNUC__) || defined(__clang__)
+
+#if defined(__GNUC__)  // (#if-chain ref AVOID_CPU_ARCH_1)
+
+// To simplify Wuffs code, "cpu_arch >= arm_xxx" requires xxx but also
+// unaligned little-endian load/stores.
+#if defined(__ARM_FEATURE_UNALIGNED) && defined(__BYTE_ORDER__) && \
+    (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+// Not all gcc versions define __ARM_ACLE, even if they support crc32
+// intrinsics. Look for __ARM_FEATURE_CRC32 instead.
+#if defined(__ARM_FEATURE_CRC32)
+#include <arm_acle.h>
+#define WUFFS_BASE__CPU_ARCH__ARM_CRC32
+#endif  // defined(__ARM_FEATURE_CRC32)
+#if defined(__ARM_NEON)
+#include <arm_neon.h>
+#define WUFFS_BASE__CPU_ARCH__ARM_NEON
+#endif  // defined(__ARM_NEON)
+#endif  // defined(__ARM_FEATURE_UNALIGNED) etc
+
+// Similarly, "cpu_arch >= x86_sse42" requires SSE4.2 but also PCLMUL and
+// POPCNT. This is checked at runtime via cpuid, not at compile time.
+#if defined(__x86_64__)
+#include <cpuid.h>
+#include <x86intrin.h>
+#define WUFFS_BASE__CPU_ARCH__X86_64
+#endif  // defined(__x86_64__)
+
+#elif defined(_MSC_VER)  // (#if-chain ref AVOID_CPU_ARCH_1)
+
+#if defined(_M_X64)
+#if defined(__AVX__) || defined(__clang__)
+
+// We need <intrin.h> for the __cpuid function.
+#include <intrin.h>
+// That's not enough for X64 SIMD, with clang-cl, if we want to use
+// "__attribute__((target(arg)))" without e.g. "/arch:AVX".
+//
+// Some web pages suggest that <immintrin.h> is all you need, as it pulls in
+// the earlier SIMD families like SSE4.2, but that doesn't seem to work in
+// practice, possibly for the same reason that just <intrin.h> doesn't work.
+#include <immintrin.h>  // AVX, AVX2, FMA, POPCNT
+#include <nmmintrin.h>  // SSE4.2
+#include <wmmintrin.h>  // AES, PCLMUL
+#define WUFFS_BASE__CPU_ARCH__X86_64
+
+#else  // defined(__AVX__) || defined(__clang__)
+
+// clang-cl (which defines both __clang__ and _MSC_VER) supports
+// "__attribute__((target(arg)))".
+//
+// For MSVC's cl.exe (unlike clang or gcc), SIMD capability is a compile-time
+// property of the source file (e.g. a /arch:AVX or -mavx compiler flag), not
+// of individual functions (that can be conditionally selected at runtime).
+#pragma message("Wuffs with MSVC+X64 needs /arch:AVX for best performance")
+
+#endif  // defined(__AVX__) || defined(__clang__)
+#endif  // defined(_M_X64)
+
+#endif  // (#if-chain ref AVOID_CPU_ARCH_1)
+#endif  // (#if-chain ref AVOID_CPU_ARCH_0)
+
+// --------
+
 // Define WUFFS_CONFIG__STATIC_FUNCTIONS to make all of Wuffs' functions have
 // static storage. The motivation is discussed in the "ALLOW STATIC
 // IMPLEMENTATION" section of
 // https://raw.githubusercontent.com/nothings/stb/master/docs/stb_howto.txt
-#ifdef WUFFS_CONFIG__STATIC_FUNCTIONS
+#if defined(WUFFS_CONFIG__STATIC_FUNCTIONS)
 #define WUFFS_BASE__MAYBE_STATIC static
 #else
 #define WUFFS_BASE__MAYBE_STATIC
-#endif
+#endif  // defined(WUFFS_CONFIG__STATIC_FUNCTIONS)
 
-// --------
+// ---------------- CPU Architecture
+
+static inline bool  //
+wuffs_base__cpu_arch__have_arm_crc32() {
+#if defined(WUFFS_BASE__CPU_ARCH__ARM_CRC32)
+  return true;
+#else
+  return false;
+#endif  // defined(WUFFS_BASE__CPU_ARCH__ARM_CRC32)
+}
+
+static inline bool  //
+wuffs_base__cpu_arch__have_arm_neon() {
+#if defined(WUFFS_BASE__CPU_ARCH__ARM_NEON)
+  return true;
+#else
+  return false;
+#endif  // defined(WUFFS_BASE__CPU_ARCH__ARM_NEON)
+}
+
+static inline bool  //
+wuffs_base__cpu_arch__have_x86_sse42() {
+#if defined(WUFFS_BASE__CPU_ARCH__X86_64)
+  // GCC defines these macros but MSVC does not.
+  //  - bit_PCLMUL = (1 <<  1)
+  //  - bit_POPCNT = (1 << 23)
+  //  - bit_SSE4_2 = (1 << 20)
+  const unsigned int sse42_ecx1 = 0x00900002;
+
+  // clang defines __GNUC__ and clang-cl defines _MSC_VER (but not __GNUC__).
+#if defined(__GNUC__)
+  unsigned int eax1 = 0;
+  unsigned int ebx1 = 0;
+  unsigned int ecx1 = 0;
+  unsigned int edx1 = 0;
+  if (__get_cpuid(1, &eax1, &ebx1, &ecx1, &edx1)) {
+    return (ecx1 & sse42_ecx1) == sse42_ecx1;
+  }
+#elif defined(_MSC_VER)  // defined(__GNUC__)
+  int x[4];
+  __cpuid(x, 1);
+  return (((unsigned int)(x[2])) & sse42_ecx1) == sse42_ecx1;
+#else
+#error "WUFFS_BASE__CPU_ARCH__ETC combined with an unsupported compiler"
+#endif  // defined(__GNUC__); defined(_MSC_VER)
+#endif  // defined(WUFFS_BASE__CPU_ARCH__X86_64)
+  return false;
+}
+
+// ---------------- Fundamentals
 
 // Wuffs assumes that:
 //  - converting a uint32_t to a size_t will never overflow.
@@ -94,7 +221,7 @@
 // passed as a separately allocated "work buffer".
 //
 // For more detail, see:
-// https://github.com/google/wuffs/blob/master/doc/note/initialization.md
+// https://github.com/google/wuffs/blob/main/doc/note/initialization.md
 #define WUFFS_INITIALIZE__LEAVE_INTERNAL_BUFFERS_UNINITIALIZED \
   ((uint32_t)0x00000002)
 
@@ -103,7 +230,7 @@
 // wuffs_base__empty_struct is used when a Wuffs function returns an empty
 // struct. In C, if a function f returns void, you can't say "x = f()", but in
 // Wuffs, if a function g returns empty, you can say "y = g()".
-typedef struct {
+typedef struct wuffs_base__empty_struct__struct {
   // private_impl is a placeholder field. It isn't explicitly used, except that
   // without it, the sizeof a struct with no fields can differ across C/C++
   // compilers, and it is undefined behavior in C99. For example, gcc says that
@@ -125,7 +252,7 @@ wuffs_base__make_empty_struct() {
 
 // wuffs_base__utility is a placeholder receiver type. It enables what Java
 // calls static methods, as opposed to regular methods.
-typedef struct {
+typedef struct wuffs_base__utility__struct {
   // private_impl is a placeholder field. It isn't explicitly used, except that
   // without it, the sizeof a struct with no fields can differ across C/C++
   // compilers, and it is undefined behavior in C99. For example, gcc says that
@@ -138,15 +265,15 @@ typedef struct {
   uint8_t private_impl;
 } wuffs_base__utility;
 
-typedef struct {
+typedef struct wuffs_base__vtable__struct {
   const char* vtable_name;
   const void* function_pointers;
 } wuffs_base__vtable;
 
 // --------
 
-// See https://github.com/google/wuffs/blob/master/doc/note/statuses.md
-typedef struct {
+// See https://github.com/google/wuffs/blob/main/doc/note/statuses.md
+typedef struct wuffs_base__status__struct {
   const char* repr;
 
 #ifdef __cplusplus
@@ -258,7 +385,7 @@ typedef WUFFS_BASE__RESULT(uint64_t) wuffs_base__result_u64;
 
 // wuffs_base__transform__output is the result of transforming from a src slice
 // to a dst slice.
-typedef struct {
+typedef struct wuffs_base__transform__output__struct {
   wuffs_base__status status;
   size_t num_dst;
   size_t num_src;
@@ -269,6 +396,12 @@ typedef struct {
 // FourCC constants.
 
 // !! INSERT FourCCs.
+
+// --------
+
+// Quirks.
+
+// !! INSERT Quirks.
 
 // --------
 
@@ -437,7 +570,7 @@ wuffs_base__u64__sat_sub(uint64_t x, uint64_t y) {
 
 // --------
 
-typedef struct {
+typedef struct wuffs_base__multiply_u64__output__struct {
   uint64_t lo;
   uint64_t hi;
 } wuffs_base__multiply_u64__output;
@@ -454,6 +587,7 @@ wuffs_base__multiply_u64(uint64_t x, uint64_t y) {
   o.hi = ((uint64_t)(z >> 64));
   return o;
 #else
+  // TODO: consider using the _mul128 intrinsic if defined(_MSC_VER).
   uint64_t x0 = x & 0xFFFFFFFF;
   uint64_t x1 = x >> 32;
   uint64_t y0 = y & 0xFFFFFFFF;
@@ -480,6 +614,7 @@ wuffs_base__count_leading_zeroes_u64(uint64_t u) {
 }
 
 #else
+// TODO: consider using the _BitScanReverse intrinsic if defined(_MSC_VER).
 
 static inline uint32_t  //
 wuffs_base__count_leading_zeroes_u64(uint64_t u) {
@@ -519,80 +654,80 @@ wuffs_base__count_leading_zeroes_u64(uint64_t u) {
 
 // --------
 
-#define wuffs_base__load_u8be__no_bounds_check \
-  wuffs_base__load_u8__no_bounds_check
-#define wuffs_base__load_u8le__no_bounds_check \
-  wuffs_base__load_u8__no_bounds_check
+#define wuffs_base__peek_u8be__no_bounds_check \
+  wuffs_base__peek_u8__no_bounds_check
+#define wuffs_base__peek_u8le__no_bounds_check \
+  wuffs_base__peek_u8__no_bounds_check
 
 static inline uint8_t  //
-wuffs_base__load_u8__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u8__no_bounds_check(const uint8_t* p) {
   return p[0];
 }
 
 static inline uint16_t  //
-wuffs_base__load_u16be__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u16be__no_bounds_check(const uint8_t* p) {
   return (uint16_t)(((uint16_t)(p[0]) << 8) | ((uint16_t)(p[1]) << 0));
 }
 
 static inline uint16_t  //
-wuffs_base__load_u16le__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u16le__no_bounds_check(const uint8_t* p) {
   return (uint16_t)(((uint16_t)(p[0]) << 0) | ((uint16_t)(p[1]) << 8));
 }
 
 static inline uint32_t  //
-wuffs_base__load_u24be__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u24be__no_bounds_check(const uint8_t* p) {
   return ((uint32_t)(p[0]) << 16) | ((uint32_t)(p[1]) << 8) |
          ((uint32_t)(p[2]) << 0);
 }
 
 static inline uint32_t  //
-wuffs_base__load_u24le__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u24le__no_bounds_check(const uint8_t* p) {
   return ((uint32_t)(p[0]) << 0) | ((uint32_t)(p[1]) << 8) |
          ((uint32_t)(p[2]) << 16);
 }
 
 static inline uint32_t  //
-wuffs_base__load_u32be__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u32be__no_bounds_check(const uint8_t* p) {
   return ((uint32_t)(p[0]) << 24) | ((uint32_t)(p[1]) << 16) |
          ((uint32_t)(p[2]) << 8) | ((uint32_t)(p[3]) << 0);
 }
 
 static inline uint32_t  //
-wuffs_base__load_u32le__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u32le__no_bounds_check(const uint8_t* p) {
   return ((uint32_t)(p[0]) << 0) | ((uint32_t)(p[1]) << 8) |
          ((uint32_t)(p[2]) << 16) | ((uint32_t)(p[3]) << 24);
 }
 
 static inline uint64_t  //
-wuffs_base__load_u40be__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u40be__no_bounds_check(const uint8_t* p) {
   return ((uint64_t)(p[0]) << 32) | ((uint64_t)(p[1]) << 24) |
          ((uint64_t)(p[2]) << 16) | ((uint64_t)(p[3]) << 8) |
          ((uint64_t)(p[4]) << 0);
 }
 
 static inline uint64_t  //
-wuffs_base__load_u40le__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u40le__no_bounds_check(const uint8_t* p) {
   return ((uint64_t)(p[0]) << 0) | ((uint64_t)(p[1]) << 8) |
          ((uint64_t)(p[2]) << 16) | ((uint64_t)(p[3]) << 24) |
          ((uint64_t)(p[4]) << 32);
 }
 
 static inline uint64_t  //
-wuffs_base__load_u48be__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u48be__no_bounds_check(const uint8_t* p) {
   return ((uint64_t)(p[0]) << 40) | ((uint64_t)(p[1]) << 32) |
          ((uint64_t)(p[2]) << 24) | ((uint64_t)(p[3]) << 16) |
          ((uint64_t)(p[4]) << 8) | ((uint64_t)(p[5]) << 0);
 }
 
 static inline uint64_t  //
-wuffs_base__load_u48le__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u48le__no_bounds_check(const uint8_t* p) {
   return ((uint64_t)(p[0]) << 0) | ((uint64_t)(p[1]) << 8) |
          ((uint64_t)(p[2]) << 16) | ((uint64_t)(p[3]) << 24) |
          ((uint64_t)(p[4]) << 32) | ((uint64_t)(p[5]) << 40);
 }
 
 static inline uint64_t  //
-wuffs_base__load_u56be__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u56be__no_bounds_check(const uint8_t* p) {
   return ((uint64_t)(p[0]) << 48) | ((uint64_t)(p[1]) << 40) |
          ((uint64_t)(p[2]) << 32) | ((uint64_t)(p[3]) << 24) |
          ((uint64_t)(p[4]) << 16) | ((uint64_t)(p[5]) << 8) |
@@ -600,7 +735,7 @@ wuffs_base__load_u56be__no_bounds_check(const uint8_t* p) {
 }
 
 static inline uint64_t  //
-wuffs_base__load_u56le__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u56le__no_bounds_check(const uint8_t* p) {
   return ((uint64_t)(p[0]) << 0) | ((uint64_t)(p[1]) << 8) |
          ((uint64_t)(p[2]) << 16) | ((uint64_t)(p[3]) << 24) |
          ((uint64_t)(p[4]) << 32) | ((uint64_t)(p[5]) << 40) |
@@ -608,7 +743,7 @@ wuffs_base__load_u56le__no_bounds_check(const uint8_t* p) {
 }
 
 static inline uint64_t  //
-wuffs_base__load_u64be__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u64be__no_bounds_check(const uint8_t* p) {
   return ((uint64_t)(p[0]) << 56) | ((uint64_t)(p[1]) << 48) |
          ((uint64_t)(p[2]) << 40) | ((uint64_t)(p[3]) << 32) |
          ((uint64_t)(p[4]) << 24) | ((uint64_t)(p[5]) << 16) |
@@ -616,7 +751,7 @@ wuffs_base__load_u64be__no_bounds_check(const uint8_t* p) {
 }
 
 static inline uint64_t  //
-wuffs_base__load_u64le__no_bounds_check(const uint8_t* p) {
+wuffs_base__peek_u64le__no_bounds_check(const uint8_t* p) {
   return ((uint64_t)(p[0]) << 0) | ((uint64_t)(p[1]) << 8) |
          ((uint64_t)(p[2]) << 16) | ((uint64_t)(p[3]) << 24) |
          ((uint64_t)(p[4]) << 32) | ((uint64_t)(p[5]) << 40) |
@@ -625,44 +760,50 @@ wuffs_base__load_u64le__no_bounds_check(const uint8_t* p) {
 
 // --------
 
-#define wuffs_base__store_u8be__no_bounds_check \
-  wuffs_base__store_u8__no_bounds_check
-#define wuffs_base__store_u8le__no_bounds_check \
-  wuffs_base__store_u8__no_bounds_check
+#define wuffs_base__poke_u8be__no_bounds_check \
+  wuffs_base__poke_u8__no_bounds_check
+#define wuffs_base__poke_u8le__no_bounds_check \
+  wuffs_base__poke_u8__no_bounds_check
 
 static inline void  //
-wuffs_base__store_u8__no_bounds_check(uint8_t* p, uint8_t x) {
+wuffs_base__poke_u8__no_bounds_check(uint8_t* p, uint8_t x) {
   p[0] = x;
 }
 
 static inline void  //
-wuffs_base__store_u16be__no_bounds_check(uint8_t* p, uint16_t x) {
+wuffs_base__poke_u16be__no_bounds_check(uint8_t* p, uint16_t x) {
   p[0] = (uint8_t)(x >> 8);
   p[1] = (uint8_t)(x >> 0);
 }
 
 static inline void  //
-wuffs_base__store_u16le__no_bounds_check(uint8_t* p, uint16_t x) {
+wuffs_base__poke_u16le__no_bounds_check(uint8_t* p, uint16_t x) {
+#if defined(__GNUC__) && !defined(__clang__) && defined(__x86_64__)
+  // This seems to perform better on gcc 10 (but not clang 9). Clang also
+  // defines "__GNUC__".
+  memcpy(p, &x, 2);
+#else
   p[0] = (uint8_t)(x >> 0);
   p[1] = (uint8_t)(x >> 8);
+#endif
 }
 
 static inline void  //
-wuffs_base__store_u24be__no_bounds_check(uint8_t* p, uint32_t x) {
+wuffs_base__poke_u24be__no_bounds_check(uint8_t* p, uint32_t x) {
   p[0] = (uint8_t)(x >> 16);
   p[1] = (uint8_t)(x >> 8);
   p[2] = (uint8_t)(x >> 0);
 }
 
 static inline void  //
-wuffs_base__store_u24le__no_bounds_check(uint8_t* p, uint32_t x) {
+wuffs_base__poke_u24le__no_bounds_check(uint8_t* p, uint32_t x) {
   p[0] = (uint8_t)(x >> 0);
   p[1] = (uint8_t)(x >> 8);
   p[2] = (uint8_t)(x >> 16);
 }
 
 static inline void  //
-wuffs_base__store_u32be__no_bounds_check(uint8_t* p, uint32_t x) {
+wuffs_base__poke_u32be__no_bounds_check(uint8_t* p, uint32_t x) {
   p[0] = (uint8_t)(x >> 24);
   p[1] = (uint8_t)(x >> 16);
   p[2] = (uint8_t)(x >> 8);
@@ -670,15 +811,21 @@ wuffs_base__store_u32be__no_bounds_check(uint8_t* p, uint32_t x) {
 }
 
 static inline void  //
-wuffs_base__store_u32le__no_bounds_check(uint8_t* p, uint32_t x) {
+wuffs_base__poke_u32le__no_bounds_check(uint8_t* p, uint32_t x) {
+#if defined(__GNUC__) && !defined(__clang__) && defined(__x86_64__)
+  // This seems to perform better on gcc 10 (but not clang 9). Clang also
+  // defines "__GNUC__".
+  memcpy(p, &x, 4);
+#else
   p[0] = (uint8_t)(x >> 0);
   p[1] = (uint8_t)(x >> 8);
   p[2] = (uint8_t)(x >> 16);
   p[3] = (uint8_t)(x >> 24);
+#endif
 }
 
 static inline void  //
-wuffs_base__store_u40be__no_bounds_check(uint8_t* p, uint64_t x) {
+wuffs_base__poke_u40be__no_bounds_check(uint8_t* p, uint64_t x) {
   p[0] = (uint8_t)(x >> 32);
   p[1] = (uint8_t)(x >> 24);
   p[2] = (uint8_t)(x >> 16);
@@ -687,7 +834,7 @@ wuffs_base__store_u40be__no_bounds_check(uint8_t* p, uint64_t x) {
 }
 
 static inline void  //
-wuffs_base__store_u40le__no_bounds_check(uint8_t* p, uint64_t x) {
+wuffs_base__poke_u40le__no_bounds_check(uint8_t* p, uint64_t x) {
   p[0] = (uint8_t)(x >> 0);
   p[1] = (uint8_t)(x >> 8);
   p[2] = (uint8_t)(x >> 16);
@@ -696,7 +843,7 @@ wuffs_base__store_u40le__no_bounds_check(uint8_t* p, uint64_t x) {
 }
 
 static inline void  //
-wuffs_base__store_u48be__no_bounds_check(uint8_t* p, uint64_t x) {
+wuffs_base__poke_u48be__no_bounds_check(uint8_t* p, uint64_t x) {
   p[0] = (uint8_t)(x >> 40);
   p[1] = (uint8_t)(x >> 32);
   p[2] = (uint8_t)(x >> 24);
@@ -706,7 +853,7 @@ wuffs_base__store_u48be__no_bounds_check(uint8_t* p, uint64_t x) {
 }
 
 static inline void  //
-wuffs_base__store_u48le__no_bounds_check(uint8_t* p, uint64_t x) {
+wuffs_base__poke_u48le__no_bounds_check(uint8_t* p, uint64_t x) {
   p[0] = (uint8_t)(x >> 0);
   p[1] = (uint8_t)(x >> 8);
   p[2] = (uint8_t)(x >> 16);
@@ -716,7 +863,7 @@ wuffs_base__store_u48le__no_bounds_check(uint8_t* p, uint64_t x) {
 }
 
 static inline void  //
-wuffs_base__store_u56be__no_bounds_check(uint8_t* p, uint64_t x) {
+wuffs_base__poke_u56be__no_bounds_check(uint8_t* p, uint64_t x) {
   p[0] = (uint8_t)(x >> 48);
   p[1] = (uint8_t)(x >> 40);
   p[2] = (uint8_t)(x >> 32);
@@ -727,7 +874,7 @@ wuffs_base__store_u56be__no_bounds_check(uint8_t* p, uint64_t x) {
 }
 
 static inline void  //
-wuffs_base__store_u56le__no_bounds_check(uint8_t* p, uint64_t x) {
+wuffs_base__poke_u56le__no_bounds_check(uint8_t* p, uint64_t x) {
   p[0] = (uint8_t)(x >> 0);
   p[1] = (uint8_t)(x >> 8);
   p[2] = (uint8_t)(x >> 16);
@@ -738,7 +885,7 @@ wuffs_base__store_u56le__no_bounds_check(uint8_t* p, uint64_t x) {
 }
 
 static inline void  //
-wuffs_base__store_u64be__no_bounds_check(uint8_t* p, uint64_t x) {
+wuffs_base__poke_u64be__no_bounds_check(uint8_t* p, uint64_t x) {
   p[0] = (uint8_t)(x >> 56);
   p[1] = (uint8_t)(x >> 48);
   p[2] = (uint8_t)(x >> 40);
@@ -750,7 +897,12 @@ wuffs_base__store_u64be__no_bounds_check(uint8_t* p, uint64_t x) {
 }
 
 static inline void  //
-wuffs_base__store_u64le__no_bounds_check(uint8_t* p, uint64_t x) {
+wuffs_base__poke_u64le__no_bounds_check(uint8_t* p, uint64_t x) {
+#if defined(__GNUC__) && !defined(__clang__) && defined(__x86_64__)
+  // This seems to perform better on gcc 10 (but not clang 9). Clang also
+  // defines "__GNUC__".
+  memcpy(p, &x, 8);
+#else
   p[0] = (uint8_t)(x >> 0);
   p[1] = (uint8_t)(x >> 8);
   p[2] = (uint8_t)(x >> 16);
@@ -759,7 +911,74 @@ wuffs_base__store_u64le__no_bounds_check(uint8_t* p, uint64_t x) {
   p[5] = (uint8_t)(x >> 40);
   p[6] = (uint8_t)(x >> 48);
   p[7] = (uint8_t)(x >> 56);
+#endif
 }
+
+// --------
+
+// Load and Store functions are deprecated. Use Peek and Poke instead.
+
+#define wuffs_base__load_u8__no_bounds_check \
+  wuffs_base__peek_u8__no_bounds_check
+#define wuffs_base__load_u16be__no_bounds_check \
+  wuffs_base__peek_u16be__no_bounds_check
+#define wuffs_base__load_u16le__no_bounds_check \
+  wuffs_base__peek_u16le__no_bounds_check
+#define wuffs_base__load_u24be__no_bounds_check \
+  wuffs_base__peek_u24be__no_bounds_check
+#define wuffs_base__load_u24le__no_bounds_check \
+  wuffs_base__peek_u24le__no_bounds_check
+#define wuffs_base__load_u32be__no_bounds_check \
+  wuffs_base__peek_u32be__no_bounds_check
+#define wuffs_base__load_u32le__no_bounds_check \
+  wuffs_base__peek_u32le__no_bounds_check
+#define wuffs_base__load_u40be__no_bounds_check \
+  wuffs_base__peek_u40be__no_bounds_check
+#define wuffs_base__load_u40le__no_bounds_check \
+  wuffs_base__peek_u40le__no_bounds_check
+#define wuffs_base__load_u48be__no_bounds_check \
+  wuffs_base__peek_u48be__no_bounds_check
+#define wuffs_base__load_u48le__no_bounds_check \
+  wuffs_base__peek_u48le__no_bounds_check
+#define wuffs_base__load_u56be__no_bounds_check \
+  wuffs_base__peek_u56be__no_bounds_check
+#define wuffs_base__load_u56le__no_bounds_check \
+  wuffs_base__peek_u56le__no_bounds_check
+#define wuffs_base__load_u64be__no_bounds_check \
+  wuffs_base__peek_u64be__no_bounds_check
+#define wuffs_base__load_u64le__no_bounds_check \
+  wuffs_base__peek_u64le__no_bounds_check
+
+#define wuffs_base__store_u8__no_bounds_check \
+  wuffs_base__poke_u8__no_bounds_check
+#define wuffs_base__store_u16be__no_bounds_check \
+  wuffs_base__poke_u16be__no_bounds_check
+#define wuffs_base__store_u16le__no_bounds_check \
+  wuffs_base__poke_u16le__no_bounds_check
+#define wuffs_base__store_u24be__no_bounds_check \
+  wuffs_base__poke_u24be__no_bounds_check
+#define wuffs_base__store_u24le__no_bounds_check \
+  wuffs_base__poke_u24le__no_bounds_check
+#define wuffs_base__store_u32be__no_bounds_check \
+  wuffs_base__poke_u32be__no_bounds_check
+#define wuffs_base__store_u32le__no_bounds_check \
+  wuffs_base__poke_u32le__no_bounds_check
+#define wuffs_base__store_u40be__no_bounds_check \
+  wuffs_base__poke_u40be__no_bounds_check
+#define wuffs_base__store_u40le__no_bounds_check \
+  wuffs_base__poke_u40le__no_bounds_check
+#define wuffs_base__store_u48be__no_bounds_check \
+  wuffs_base__poke_u48be__no_bounds_check
+#define wuffs_base__store_u48le__no_bounds_check \
+  wuffs_base__poke_u48le__no_bounds_check
+#define wuffs_base__store_u56be__no_bounds_check \
+  wuffs_base__poke_u56be__no_bounds_check
+#define wuffs_base__store_u56le__no_bounds_check \
+  wuffs_base__poke_u56le__no_bounds_check
+#define wuffs_base__store_u64be__no_bounds_check \
+  wuffs_base__poke_u64be__no_bounds_check
+#define wuffs_base__store_u64le__no_bounds_check \
+  wuffs_base__poke_u64le__no_bounds_check
 
 // ---------------- Slices and Tables
 
@@ -902,13 +1121,19 @@ wuffs_base__empty_table_u64() {
   return ret;
 }
 
+static inline bool  //
+wuffs_base__slice_u8__overlaps(wuffs_base__slice_u8 s, wuffs_base__slice_u8 t) {
+  return ((s.ptr <= t.ptr) && (t.ptr < (s.ptr + s.len))) ||
+         ((t.ptr <= s.ptr) && (s.ptr < (t.ptr + t.len)));
+}
+
 // wuffs_base__slice_u8__subslice_i returns s[i:].
 //
 // It returns an empty slice if i is out of bounds.
 static inline wuffs_base__slice_u8  //
 wuffs_base__slice_u8__subslice_i(wuffs_base__slice_u8 s, uint64_t i) {
   if ((i <= SIZE_MAX) && (i <= s.len)) {
-    return wuffs_base__make_slice_u8(s.ptr + i, s.len - i);
+    return wuffs_base__make_slice_u8(s.ptr + i, ((size_t)(s.len - i)));
   }
   return wuffs_base__make_slice_u8(NULL, 0);
 }
@@ -919,7 +1144,7 @@ wuffs_base__slice_u8__subslice_i(wuffs_base__slice_u8 s, uint64_t i) {
 static inline wuffs_base__slice_u8  //
 wuffs_base__slice_u8__subslice_j(wuffs_base__slice_u8 s, uint64_t j) {
   if ((j <= SIZE_MAX) && (j <= s.len)) {
-    return wuffs_base__make_slice_u8(s.ptr, j);
+    return wuffs_base__make_slice_u8(s.ptr, ((size_t)j));
   }
   return wuffs_base__make_slice_u8(NULL, 0);
 }
@@ -932,7 +1157,33 @@ wuffs_base__slice_u8__subslice_ij(wuffs_base__slice_u8 s,
                                   uint64_t i,
                                   uint64_t j) {
   if ((i <= j) && (j <= SIZE_MAX) && (j <= s.len)) {
-    return wuffs_base__make_slice_u8(s.ptr + i, j - i);
+    return wuffs_base__make_slice_u8(s.ptr + i, ((size_t)(j - i)));
   }
   return wuffs_base__make_slice_u8(NULL, 0);
 }
+
+// ---------------- Magic Numbers
+
+// wuffs_base__magic_number_guess_fourcc guesses the file format of some data,
+// given its opening bytes. It returns a positive FourCC value on success.
+//
+// It returns zero if nothing matches its hard-coded list of 'magic numbers'.
+//
+// It returns a negative value if a longer prefix is required for a conclusive
+// result. For example, seeing a single 'B' byte is not enough to discriminate
+// the BMP and BPG image file formats.
+//
+// It does not do a full validity check. Like any guess made from a short
+// prefix of the data, it may return false positives. Data that starts with 99
+// bytes of valid JPEG followed by corruption or truncation is an invalid JPEG
+// image overall, but this function will still return WUFFS_BASE__FOURCC__JPEG.
+//
+// Another source of false positives is that some 'magic numbers' are valid
+// ASCII data. A file starting with "GIF87a and GIF89a are the two versions of
+// GIF" will match GIF's 'magic number' even if it's plain text, not an image.
+//
+// For modular builds that divide the base module into sub-modules, using this
+// function requires the WUFFS_CONFIG__MODULE__BASE__MAGIC sub-module, not just
+// WUFFS_CONFIG__MODULE__BASE__CORE.
+WUFFS_BASE__MAYBE_STATIC int32_t  //
+wuffs_base__magic_number_guess_fourcc(wuffs_base__slice_u8 prefix);

@@ -25,8 +25,6 @@
 #include "components/omnibox/browser/url_index_private_data.h"
 #include "components/omnibox/common/omnibox_features.h"
 
-using in_memory_url_index::InMemoryURLIndexCacheItem;
-
 // Initializes a allowlist of URL schemes.
 void InitializeSchemeAllowlist(SchemeSet* allowlist,
                                const SchemeSet& client_schemes_to_allowlist) {
@@ -137,7 +135,7 @@ bool InMemoryURLIndex::GetCacheFilePath(base::FilePath* file_path) {
 // Querying --------------------------------------------------------------------
 
 ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
-    const base::string16& term_string,
+    const std::u16string& term_string,
     size_t cursor_position,
     size_t max_matches) {
   return private_data_->HistoryItemsForTerms(

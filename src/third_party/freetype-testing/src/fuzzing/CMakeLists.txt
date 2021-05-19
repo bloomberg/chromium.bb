@@ -238,6 +238,11 @@ add_fuzz_target(
   "freetype::Bzip2FuzzTarget"
   "targets/support/Bzip2FuzzTarget.h")
 
+add_fuzz_target(
+  "colrv1"
+  "freetype::ColrV1FuzzTarget"
+  "targets/font-drivers/colrv1.h")
+
 # ----------------------------------------------------------------------------
 # environment options:
 

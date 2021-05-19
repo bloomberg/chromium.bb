@@ -16,7 +16,7 @@
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
 #include "components/feed/core/v2/proto_util.h"
-#include "components/feed/core/v2/public/feed_stream_api.h"
+#include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/stream_model/ephemeral_change.h"
 #include "components/feed/core/v2/stream_model/feature_tree.h"
 
@@ -131,6 +131,9 @@ class StreamModel {
   bool RejectEphemeralChange(EphemeralChangeId id);
 
   const std::string& GetNextPageToken() const;
+  // Time the client received this stream data. 'NextPage' requests do not
+  // change this time.
+  base::Time GetLastAddedTime() const;
 
   // Outputs a string representing the model state for debugging or testing.
   std::string DumpStateForTesting();

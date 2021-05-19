@@ -15,8 +15,6 @@
 #ifndef SRC_AST_FUNCTION_H_
 #define SRC_AST_FUNCTION_H_
 
-#include <memory>
-#include <ostream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -25,17 +23,11 @@
 #include "src/ast/binding_decoration.h"
 #include "src/ast/block_statement.h"
 #include "src/ast/builtin_decoration.h"
-#include "src/ast/expression.h"
-#include "src/ast/function_decoration.h"
+#include "src/ast/decoration.h"
 #include "src/ast/group_decoration.h"
 #include "src/ast/location_decoration.h"
-#include "src/ast/node.h"
 #include "src/ast/pipeline_stage.h"
-#include "src/ast/statement.h"
 #include "src/ast/variable.h"
-#include "src/symbol.h"
-#include "src/type/sampler_type.h"
-#include "src/type/type.h"
 
 namespace tint {
 namespace ast {
@@ -50,12 +42,14 @@ class Function : public Castable<Function, Node> {
   /// @param return_type the return type
   /// @param body the function body
   /// @param decorations the function decorations
+  /// @param return_type_decorations the return type decorations
   Function(const Source& source,
            Symbol symbol,
            VariableList params,
            type::Type* return_type,
            BlockStatement* body,
-           FunctionDecorationList decorations);
+           DecorationList decorations,
+           DecorationList return_type_decorations);
   /// Move constructor
   Function(Function&&);
 
@@ -67,7 +61,19 @@ class Function : public Castable<Function, Node> {
   const VariableList& params() const { return params_; }
 
   /// @returns the decorations attached to this function
-  const FunctionDecorationList& decorations() const { return decorations_; }
+  const DecorationList& decorations() const { return decorations_; }
+
+  /// @returns the decoration with the type `T` or nullptr if this function does
+  /// not contain a decoration with the given type
+  template <typename T>
+  const T* find_decoration() const {
+    for (auto* deco : decorations()) {
+      if (auto* d = deco->As<T>()) {
+        return d;
+      }
+    }
+    return nullptr;
+  }
 
   /// @returns the workgroup size {x, y, z} for the function. {1, 1, 1} will be
   /// return if no workgroup size was set.
@@ -81,6 +87,11 @@ class Function : public Castable<Function, Node> {
 
   /// @returns the function return type.
   type::Type* return_type() const { return return_type_; }
+
+  /// @returns the decorations attached to the function return type.
+  const DecorationList& return_type_decorations() const {
+    return return_type_decorations_;
+  }
 
   /// @returns a pointer to the last statement of the function or nullptr if
   // function is empty
@@ -96,9 +107,6 @@ class Function : public Castable<Function, Node> {
   /// @param ctx the clone context
   /// @return the newly cloned node
   Function* Clone(CloneContext* ctx) const override;
-
-  /// @returns true if the symbol and type are both present
-  bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
   /// @param sem the semantic info for the program
@@ -118,7 +126,8 @@ class Function : public Castable<Function, Node> {
   VariableList const params_;
   type::Type* const return_type_;
   BlockStatement* const body_;
-  FunctionDecorationList const decorations_;
+  DecorationList const decorations_;
+  DecorationList const return_type_decorations_;
 };
 
 /// A list of functions

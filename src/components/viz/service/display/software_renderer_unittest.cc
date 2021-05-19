@@ -121,7 +121,9 @@ class SoftwareRendererTest : public testing::Test {
                                std::unique_ptr<CopyOutputResult> result) {
     DCHECK(!result->IsEmpty());
     DCHECK_EQ(result->format(), CopyOutputResult::Format::RGBA_BITMAP);
-    *bitmap_result = std::make_unique<SkBitmap>(result->AsSkBitmap());
+    auto scoped_bitmap = result->ScopedAccessSkBitmap();
+    (*bitmap_result) =
+        std::make_unique<SkBitmap>(scoped_bitmap.GetOutScopedBitmap());
     DCHECK((*bitmap_result)->readyToDraw());
     std::move(quit_closure).Run();
   }
@@ -495,8 +497,8 @@ class PartialSwapSoftwareOutputDevice : public SoftwareOutputDevice {
   // SoftwareOutputDevice overrides.
   SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override {
     damage_rect_at_start_ = damage_rect;
-    canvas_.reset(new ClipTrackingCanvas(viewport_pixel_size_.width(),
-                                         viewport_pixel_size_.height()));
+    canvas_ = std::make_unique<ClipTrackingCanvas>(
+        viewport_pixel_size_.width(), viewport_pixel_size_.height());
     canvas_->addCanvas(SoftwareOutputDevice::BeginPaint(damage_rect));
     return canvas_.get();
   }

@@ -15,11 +15,9 @@
 #ifndef SRC_TYPE_STRUCT_TYPE_H_
 #define SRC_TYPE_STRUCT_TYPE_H_
 
-#include <memory>
 #include <string>
 
 #include "src/ast/struct.h"
-#include "src/symbol.h"
 #include "src/type/type.h"
 
 namespace tint {
@@ -52,16 +50,6 @@ class Struct : public Castable<Struct, Type> {
   /// @returns the name for this type that closely resembles how it would be
   /// declared in WGSL.
   std::string FriendlyName(const SymbolTable& symbols) const override;
-
-  /// @param mem_layout type of memory layout to use in calculation.
-  /// @returns minimum size required for this type, in bytes.
-  ///          0 for non-host shareable types.
-  uint64_t MinBufferBindingSize(MemoryLayout mem_layout) const override;
-
-  /// @param mem_layout type of memory layout to use in calculation.
-  /// @returns base alignment for the type, in bytes.
-  ///          0 for non-host shareable types.
-  uint64_t BaseAlignment(MemoryLayout mem_layout) const override;
 
   /// Clones this type and all transitive types using the `CloneContext` `ctx`.
   /// @param ctx the clone context

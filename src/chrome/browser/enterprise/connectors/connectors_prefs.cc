@@ -28,6 +28,10 @@ const char kOnSecurityEventPref[] = "enterprise_connectors.on_security_event";
 
 const char kContextAwareAccessSignalsAllowlistPref[] =
     "enterprise_connectors.device_trust.origins";
+const char kDeviceTrustPrivateKeyPref[] =
+    "enterprise_connectors.device_trust.private_key";
+const char kDeviceTrustPublicKeyPref[] =
+    "enterprise_connectors.device_trust.public_key";
 
 const char kOnFileAttachedScopePref[] =
     "enterprise_connectors.scope.on_file_attached";
@@ -37,6 +41,10 @@ const char kOnBulkDataEntryScopePref[] =
     "enterprise_connectors.scope.on_bulk_data_entry";
 const char kOnSecurityEventScopePref[] =
     "enterprise_connectors.scope.on_security_event";
+
+// Template to store the Box folder_id for caching purposes
+constexpr char kFileSystemUploadFolderIdPref[] =
+    "enterprise_connectors.file_system.box.folder_id";
 
 namespace {
 
@@ -71,6 +79,11 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kContextAwareAccessSignalsAllowlistPref);
 
   RegisterFileSystemPrefs(registry);
+}
+
+void RegisterLocalPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(kDeviceTrustPrivateKeyPref, std::string());
+  registry->RegisterStringPref(kDeviceTrustPublicKeyPref, std::string());
 }
 
 }  // namespace enterprise_connectors

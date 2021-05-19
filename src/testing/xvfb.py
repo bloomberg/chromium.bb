@@ -8,6 +8,7 @@
 
 from __future__ import print_function
 
+import copy
 import os
 import os.path
 import psutil
@@ -73,7 +74,8 @@ def launch_dbus(env):
   if 'DBUS_SESSION_BUS_ADDRESS' in os.environ:
     return
   try:
-    dbus_output = subprocess.check_output(['dbus-launch'], env=env).split('\n')
+    dbus_output = subprocess.check_output(
+        ['dbus-launch'], env=env).decode('utf-8').split('\n')
     for line in dbus_output:
       m = re.match(r'([^=]+)\=(.+)', line)
       if m:
@@ -130,7 +132,7 @@ def run_executable(
     use_weston = True
     cmd.remove('--use-weston')
 
-  if sys.platform == 'linux2' and use_xvfb:
+  if sys.platform.startswith('linux') and use_xvfb:
     return _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr)
   elif use_weston:
     return _run_with_weston(cmd, env, stdoutfile)
@@ -148,6 +150,7 @@ def _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr):
   def set_xvfb_ready(*_):
     xvfb_ready.setvalue(True)
 
+  dbus_pid = None
   try:
     signal.signal(signal.SIGTERM, raise_xvfb_error)
     signal.signal(signal.SIGINT, raise_xvfb_error)
@@ -209,7 +212,7 @@ def _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr):
       # been terminated. In that case, it's safe to read the return value.
       if wait_for_openbox:
         xwmstartupcheck_proc.wait()
-        if xwmstartupcheck_proc.returncode is not 0:
+        if xwmstartupcheck_proc.returncode != 0:
           raise _XvfbProcessError('Failed to get OpenBox up.')
 
     if use_xcompmgr:
@@ -243,6 +246,8 @@ def _run_with_weston(cmd, env, stdoutfile):
     signal.signal(signal.SIGTERM, raise_weston_error)
     signal.signal(signal.SIGINT, raise_weston_error)
 
+    dbus_pid = launch_dbus(env)
+
     # The bundled weston (//third_party/weston) is used by Linux Ozone Wayland
     # CI and CQ testers and compiled by //ui/ozone/platform/wayland whenever
     # there is a dependency on the Ozone/Wayland and use_bundled_weston is set
@@ -261,24 +266,37 @@ def _run_with_weston(cmd, env, stdoutfile):
     # Set $XDG_RUNTIME_DIR if it is not set.
     _set_xdg_runtime_dir(env)
 
+    # Weston is compiled along with the Ozone/Wayland platform, and is
+    # fetched as data deps. Thus, run it from the current directory.
+    #
+    # Weston is used with the following flags:
+    # 1) --backend=headless-backend.so - runs Weston in a headless mode
+    # that does not require a real GPU card.
+    # 2) --idle-time=0 - disables idle timeout, which prevents Weston
+    # to enter idle state. Otherwise, Weston stops to send frame callbacks,
+    # and tests start to time out (this typically happens after 300 seconds -
+    # the default time after which Weston enters the idle state).
+    # 3) --width && --height set size of a virtual display: we need to set
+    # an adequate size so that tests can have more room for managing size
+    # of windows.
+    # 4) --use-gl - Runs Weston using hardware acceleration instead of
+    # SwiftShader.
+    weston_cmd = ['./weston', '--backend=headless-backend.so', '--idle-time=0',
+          '--width=1024', '--height=768', '--modules=test-plugin.so']
+
+    if '--weston-use-gl' in cmd:
+      weston_cmd.append('--use-gl')
+      cmd.remove('--weston-use-gl')
+
+    if '--weston-debug-logging' in cmd:
+      cmd.remove('--weston-debug-logging')
+      env = copy.deepcopy(env)
+      env['WAYLAND_DEBUG'] = '1'
+
     weston_proc_display = None
     for _ in range(10):
-      # Weston is compiled along with the Ozone/Wayland platform, and is
-      # fetched as data deps. Thus, run it from the current directory.
-      #
-      # Weston is used with the following flags:
-      # 1) --backend=headless-backend.so - runs Weston in a headless mode
-      # that does not require a real GPU card.
-      # 2) --idle-time=0 - disables idle timeout, which prevents Weston
-      # to enter idle state. Otherwise, Weston stops to send frame callbacks,
-      # and tests start to time out (this typically happens after 300 seconds -
-      # the default time after which Weston enters the idle state).
-      # 3) --width && --height set size of a virtual display: we need to set
-      # an adequate size so that tests can have more room for managing size
-      # of windows.
       weston_proc = subprocess.Popen(
-         ('./weston', '--backend=headless-backend.so', '--idle-time=0',
-          '--width=1024', '--height=768', '--modules=test-plugin.so'),
+         weston_cmd,
          stderr=subprocess.STDOUT, env=env)
 
       # Get the $WAYLAND_DISPLAY set by Weston and pass it to the test launcher.
@@ -302,6 +320,11 @@ def _run_with_weston(cmd, env, stdoutfile):
   finally:
     kill(weston_proc, 'weston')
 
+    # dbus-daemon is not a subprocess, so we can't SIGTERM+waitpid() on it.
+    # To ensure it exits, use SIGKILL which should be safe since all other
+    # processes that it would have been servicing have exited.
+    if dbus_pid:
+      os.kill(dbus_pid, signal.SIGKILL)
 
 def _get_display_from_weston(weston_proc_pid):
   """Retrieves $WAYLAND_DISPLAY set by Weston.
@@ -321,9 +344,10 @@ def _get_display_from_weston(weston_proc_pid):
   function. See the bug for further details.
   """
 
-  # Try 10 times as it is not known when Weston spawn child desktop shell
-  # process.
-  for _ in range(10):
+  # Try 100 times as it is not known when Weston spawn child desktop shell
+  # process. The most seen so far is ~50 checks/~2.5 seconds, but startup
+  # is usually almost instantaneous.
+  for _ in range(100):
     # gives weston time to start or fail.
     time.sleep(.05)
     # Take the parent process.

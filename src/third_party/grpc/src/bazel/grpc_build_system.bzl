@@ -24,6 +24,7 @@
 #
 
 load("//bazel:cc_grpc_library.bzl", "cc_grpc_library")
+load("//bazel:copts.bzl", "GRPC_DEFAULT_COPTS")
 load("@upb//bazel:upb_proto_library.bzl", "upb_proto_library")
 load("@build_bazel_rules_apple//apple:ios.bzl", "ios_unit_test")
 
@@ -77,7 +78,8 @@ def grpc_cc_library(
         alwayslink = 0,
         data = [],
         use_cfstream = False,
-        tags = []):
+        tags = [],
+        linkstatic = False):
     copts = []
     if use_cfstream:
         copts = if_mac(["-DGRPC_CFSTREAM"])
@@ -109,7 +111,7 @@ def grpc_cc_library(
                   }),
         hdrs = hdrs + public_hdrs,
         deps = deps + _get_external_deps(external_deps),
-        copts = copts,
+        copts = GRPC_DEFAULT_COPTS + copts,
         visibility = visibility,
         testonly = testonly,
         linkopts = linkopts,
@@ -121,6 +123,7 @@ def grpc_cc_library(
         alwayslink = alwayslink,
         data = data,
         tags = tags,
+        linkstatic = linkstatic,
     )
 
 def grpc_proto_plugin(name, srcs = [], deps = []):
@@ -187,7 +190,7 @@ def grpc_cc_test(name, srcs = [], deps = [], external_deps = [], args = [], data
         "args": args,
         "data": data,
         "deps": deps + _get_external_deps(external_deps),
-        "copts": copts,
+        "copts": GRPC_DEFAULT_COPTS + copts,
         "linkopts": if_not_windows(["-pthread"]),
         "size": size,
         "timeout": timeout,
@@ -249,7 +252,7 @@ def grpc_cc_binary(name, srcs = [], deps = [], external_deps = [], args = [], da
         testonly = testonly,
         linkshared = linkshared,
         deps = deps + _get_external_deps(external_deps),
-        copts = copts,
+        copts = GRPC_DEFAULT_COPTS + copts,
         linkopts = if_not_windows(["-pthread"]) + linkopts,
         tags = tags,
         features = features,

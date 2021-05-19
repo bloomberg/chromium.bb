@@ -77,9 +77,10 @@ namespace dawn_native {
             return {};
         }
 
-        MaybeError ValidateTextureDepthStencilToBufferCopyRestrictions(const TextureCopyView& src) {
+        MaybeError ValidateTextureDepthStencilToBufferCopyRestrictions(
+            const ImageCopyTexture& src) {
             Aspect aspectUsed;
-            DAWN_TRY_ASSIGN(aspectUsed, SingleAspectUsedByTextureCopyView(src));
+            DAWN_TRY_ASSIGN(aspectUsed, SingleAspectUsedByImageCopyTexture(src));
             if (aspectUsed == Aspect::Depth) {
                 switch (src.texture->GetFormat().format) {
                     case wgpu::TextureFormat::Depth24Plus:
@@ -398,11 +399,11 @@ namespace dawn_native {
             return {};
         }
 
-        void EncodeTimestampsToNanosecondsConversion(CommandEncoder* encoder,
-                                                     QuerySetBase* querySet,
-                                                     uint32_t queryCount,
-                                                     BufferBase* destination,
-                                                     uint64_t destinationOffset) {
+        MaybeError EncodeTimestampsToNanosecondsConversion(CommandEncoder* encoder,
+                                                           QuerySetBase* querySet,
+                                                           uint32_t queryCount,
+                                                           BufferBase* destination,
+                                                           uint64_t destinationOffset) {
             DeviceBase* device = encoder->GetDevice();
 
             // The availability got from query set is a reference to vector<bool>, need to covert
@@ -415,10 +416,12 @@ namespace dawn_native {
             BufferDescriptor availabilityDesc = {};
             availabilityDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
             availabilityDesc.size = querySet->GetQueryCount() * sizeof(uint32_t);
+            // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
             Ref<BufferBase> availabilityBuffer =
-                AcquireRef(device->CreateBuffer(&availabilityDesc));
-            device->GetQueue()->WriteBuffer(availabilityBuffer.Get(), 0, availability.data(),
-                                            availability.size() * sizeof(uint32_t));
+                AcquireRef(device->APICreateBuffer(&availabilityDesc));
+            DAWN_TRY(device->GetQueue()->WriteBuffer(availabilityBuffer.Get(), 0,
+                                                     availability.data(),
+                                                     availability.size() * sizeof(uint32_t)));
 
             // Timestamp params uniform buffer
             TimestampParams params = {queryCount, static_cast<uint32_t>(destinationOffset),
@@ -426,11 +429,14 @@ namespace dawn_native {
             BufferDescriptor parmsDesc = {};
             parmsDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
             parmsDesc.size = sizeof(params);
-            Ref<BufferBase> paramsBuffer = AcquireRef(device->CreateBuffer(&parmsDesc));
-            device->GetQueue()->WriteBuffer(paramsBuffer.Get(), 0, &params, sizeof(params));
+            // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
+            Ref<BufferBase> paramsBuffer = AcquireRef(device->APICreateBuffer(&parmsDesc));
+            DAWN_TRY(
+                device->GetQueue()->WriteBuffer(paramsBuffer.Get(), 0, &params, sizeof(params)));
 
             EncodeConvertTimestampsToNanoseconds(encoder, destination, availabilityBuffer.Get(),
                                                  paramsBuffer.Get());
+            return {};
         }
 
     }  // namespace
@@ -461,21 +467,13 @@ namespace dawn_native {
         }
 
         // Set the query at queryIndex to available for resolving in query set.
-        querySet->SetQueryAvailability(queryIndex, 1);
-
-        // Gets the iterator for that querySet or create a new vector of bool set to false
-        // if the querySet wasn't registered.
-        auto it = mQueryAvailabilityMap.emplace(querySet, querySet->GetQueryCount()).first;
-        it->second[queryIndex] = 1;
-    }
-
-    const QueryAvailabilityMap& CommandEncoder::GetQueryAvailabilityMap() const {
-        return mQueryAvailabilityMap;
+        querySet->SetQueryAvailability(queryIndex, true);
     }
 
     // Implementation of the API's command recording methods
 
-    ComputePassEncoder* CommandEncoder::BeginComputePass(const ComputePassDescriptor* descriptor) {
+    ComputePassEncoder* CommandEncoder::APIBeginComputePass(
+        const ComputePassDescriptor* descriptor) {
         DeviceBase* device = GetDevice();
 
         bool success =
@@ -497,7 +495,7 @@ namespace dawn_native {
         return ComputePassEncoder::MakeError(device, this, &mEncodingContext);
     }
 
-    RenderPassEncoder* CommandEncoder::BeginRenderPass(const RenderPassDescriptor* descriptor) {
+    RenderPassEncoder* CommandEncoder::APIBeginRenderPass(const RenderPassDescriptor* descriptor) {
         DeviceBase* device = GetDevice();
 
         PassResourceUsageTracker usageTracker(PassType::Render);
@@ -580,11 +578,11 @@ namespace dawn_native {
         return RenderPassEncoder::MakeError(device, this, &mEncodingContext);
     }
 
-    void CommandEncoder::CopyBufferToBuffer(BufferBase* source,
-                                            uint64_t sourceOffset,
-                                            BufferBase* destination,
-                                            uint64_t destinationOffset,
-                                            uint64_t size) {
+    void CommandEncoder::APICopyBufferToBuffer(BufferBase* source,
+                                               uint64_t sourceOffset,
+                                               BufferBase* destination,
+                                               uint64_t destinationOffset,
+                                               uint64_t size) {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             if (GetDevice()->IsValidationEnabled()) {
                 DAWN_TRY(GetDevice()->ValidateObject(source));
@@ -621,15 +619,18 @@ namespace dawn_native {
         });
     }
 
-    void CommandEncoder::CopyBufferToTexture(const BufferCopyView* source,
-                                             const TextureCopyView* destination,
-                                             const Extent3D* copySize) {
+    void CommandEncoder::APICopyBufferToTexture(const ImageCopyBuffer* source,
+                                                const ImageCopyTexture* destination,
+                                                const Extent3D* copySize) {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
+            Extent3D fixedCopySize = *copySize;
+            DAWN_TRY(FixUpDeprecatedGPUExtent3DDepth(GetDevice(), &fixedCopySize));
+
             if (GetDevice()->IsValidationEnabled()) {
-                DAWN_TRY(ValidateBufferCopyView(GetDevice(), *source));
+                DAWN_TRY(ValidateImageCopyBuffer(GetDevice(), *source));
                 DAWN_TRY(ValidateCanUseAs(source->buffer, wgpu::BufferUsage::CopySrc));
 
-                DAWN_TRY(ValidateTextureCopyView(GetDevice(), *destination, *copySize));
+                DAWN_TRY(ValidateImageCopyTexture(GetDevice(), *destination, fixedCopySize));
                 DAWN_TRY(ValidateCanUseAs(destination->texture, wgpu::TextureUsage::CopyDst));
                 DAWN_TRY(ValidateTextureSampleCountInBufferCopyCommands(destination->texture));
 
@@ -638,25 +639,26 @@ namespace dawn_native {
                 // because in the latter we divide copyExtent.width by blockWidth and
                 // copyExtent.height by blockHeight while the divisibility conditions are
                 // checked in validating texture copy range.
-                DAWN_TRY(ValidateTextureCopyRange(*destination, *copySize));
+                DAWN_TRY(ValidateTextureCopyRange(GetDevice(), *destination, fixedCopySize));
             }
             const TexelBlockInfo& blockInfo =
                 destination->texture->GetFormat().GetAspectInfo(destination->aspect).block;
             TextureDataLayout srcLayout = FixUpDeprecatedTextureDataLayoutOptions(
-                GetDevice(), source->layout, blockInfo, *copySize);
+                GetDevice(), source->layout, blockInfo, fixedCopySize);
             if (GetDevice()->IsValidationEnabled()) {
                 DAWN_TRY(ValidateLinearTextureCopyOffset(srcLayout, blockInfo));
                 DAWN_TRY(ValidateLinearTextureData(srcLayout, source->buffer->GetSize(), blockInfo,
-                                                   *copySize));
+                                                   fixedCopySize));
 
                 mTopLevelBuffers.insert(source->buffer);
                 mTopLevelTextures.insert(destination->texture);
             }
 
-            ApplyDefaultTextureDataLayoutOptions(&srcLayout, blockInfo, *copySize);
+            ApplyDefaultTextureDataLayoutOptions(&srcLayout, blockInfo, fixedCopySize);
 
             // Skip noop copies.
-            if (copySize->width != 0 && copySize->height != 0 && copySize->depth != 0) {
+            if (fixedCopySize.width != 0 && fixedCopySize.height != 0 &&
+                fixedCopySize.depthOrArrayLayers != 0) {
                 // Record the copy command.
                 CopyBufferToTextureCmd* copy =
                     allocator->Allocate<CopyBufferToTextureCmd>(Command::CopyBufferToTexture);
@@ -669,49 +671,53 @@ namespace dawn_native {
                 copy->destination.mipLevel = destination->mipLevel;
                 copy->destination.aspect =
                     ConvertAspect(destination->texture->GetFormat(), destination->aspect);
-                copy->copySize = *copySize;
+                copy->copySize = fixedCopySize;
             }
 
             return {};
         });
     }
 
-    void CommandEncoder::CopyTextureToBuffer(const TextureCopyView* source,
-                                             const BufferCopyView* destination,
-                                             const Extent3D* copySize) {
+    void CommandEncoder::APICopyTextureToBuffer(const ImageCopyTexture* source,
+                                                const ImageCopyBuffer* destination,
+                                                const Extent3D* copySize) {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
+            Extent3D fixedCopySize = *copySize;
+            DAWN_TRY(FixUpDeprecatedGPUExtent3DDepth(GetDevice(), &fixedCopySize));
+
             if (GetDevice()->IsValidationEnabled()) {
-                DAWN_TRY(ValidateTextureCopyView(GetDevice(), *source, *copySize));
+                DAWN_TRY(ValidateImageCopyTexture(GetDevice(), *source, fixedCopySize));
                 DAWN_TRY(ValidateCanUseAs(source->texture, wgpu::TextureUsage::CopySrc));
                 DAWN_TRY(ValidateTextureSampleCountInBufferCopyCommands(source->texture));
                 DAWN_TRY(ValidateTextureDepthStencilToBufferCopyRestrictions(*source));
 
-                DAWN_TRY(ValidateBufferCopyView(GetDevice(), *destination));
+                DAWN_TRY(ValidateImageCopyBuffer(GetDevice(), *destination));
                 DAWN_TRY(ValidateCanUseAs(destination->buffer, wgpu::BufferUsage::CopyDst));
 
                 // We validate texture copy range before validating linear texture data,
                 // because in the latter we divide copyExtent.width by blockWidth and
                 // copyExtent.height by blockHeight while the divisibility conditions are
                 // checked in validating texture copy range.
-                DAWN_TRY(ValidateTextureCopyRange(*source, *copySize));
+                DAWN_TRY(ValidateTextureCopyRange(GetDevice(), *source, fixedCopySize));
             }
             const TexelBlockInfo& blockInfo =
                 source->texture->GetFormat().GetAspectInfo(source->aspect).block;
             TextureDataLayout dstLayout = FixUpDeprecatedTextureDataLayoutOptions(
-                GetDevice(), destination->layout, blockInfo, *copySize);
+                GetDevice(), destination->layout, blockInfo, fixedCopySize);
             if (GetDevice()->IsValidationEnabled()) {
                 DAWN_TRY(ValidateLinearTextureCopyOffset(dstLayout, blockInfo));
                 DAWN_TRY(ValidateLinearTextureData(dstLayout, destination->buffer->GetSize(),
-                                                   blockInfo, *copySize));
+                                                   blockInfo, fixedCopySize));
 
                 mTopLevelTextures.insert(source->texture);
                 mTopLevelBuffers.insert(destination->buffer);
             }
 
-            ApplyDefaultTextureDataLayoutOptions(&dstLayout, blockInfo, *copySize);
+            ApplyDefaultTextureDataLayoutOptions(&dstLayout, blockInfo, fixedCopySize);
 
             // Skip noop copies.
-            if (copySize->width != 0 && copySize->height != 0 && copySize->depth != 0) {
+            if (fixedCopySize.width != 0 && fixedCopySize.height != 0 &&
+                fixedCopySize.depthOrArrayLayers != 0) {
                 // Record the copy command.
                 CopyTextureToBufferCmd* copy =
                     allocator->Allocate<CopyTextureToBufferCmd>(Command::CopyTextureToBuffer);
@@ -723,29 +729,31 @@ namespace dawn_native {
                 copy->destination.offset = dstLayout.offset;
                 copy->destination.bytesPerRow = dstLayout.bytesPerRow;
                 copy->destination.rowsPerImage = dstLayout.rowsPerImage;
-                copy->copySize = *copySize;
+                copy->copySize = fixedCopySize;
             }
 
             return {};
         });
     }
 
-    void CommandEncoder::CopyTextureToTexture(const TextureCopyView* source,
-                                              const TextureCopyView* destination,
-                                              const Extent3D* copySize) {
+    void CommandEncoder::APICopyTextureToTexture(const ImageCopyTexture* source,
+                                                 const ImageCopyTexture* destination,
+                                                 const Extent3D* copySize) {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
+            Extent3D fixedCopySize = *copySize;
+            DAWN_TRY(FixUpDeprecatedGPUExtent3DDepth(GetDevice(), &fixedCopySize));
             if (GetDevice()->IsValidationEnabled()) {
                 DAWN_TRY(GetDevice()->ValidateObject(source->texture));
                 DAWN_TRY(GetDevice()->ValidateObject(destination->texture));
 
-                DAWN_TRY(ValidateTextureCopyView(GetDevice(), *source, *copySize));
-                DAWN_TRY(ValidateTextureCopyView(GetDevice(), *destination, *copySize));
+                DAWN_TRY(ValidateImageCopyTexture(GetDevice(), *source, fixedCopySize));
+                DAWN_TRY(ValidateImageCopyTexture(GetDevice(), *destination, fixedCopySize));
 
                 DAWN_TRY(
-                    ValidateTextureToTextureCopyRestrictions(*source, *destination, *copySize));
+                    ValidateTextureToTextureCopyRestrictions(*source, *destination, fixedCopySize));
 
-                DAWN_TRY(ValidateTextureCopyRange(*source, *copySize));
-                DAWN_TRY(ValidateTextureCopyRange(*destination, *copySize));
+                DAWN_TRY(ValidateTextureCopyRange(GetDevice(), *source, fixedCopySize));
+                DAWN_TRY(ValidateTextureCopyRange(GetDevice(), *destination, fixedCopySize));
 
                 DAWN_TRY(ValidateCanUseAs(source->texture, wgpu::TextureUsage::CopySrc));
                 DAWN_TRY(ValidateCanUseAs(destination->texture, wgpu::TextureUsage::CopyDst));
@@ -755,7 +763,8 @@ namespace dawn_native {
             }
 
             // Skip noop copies.
-            if (copySize->width != 0 && copySize->height != 0 && copySize->depth != 0) {
+            if (fixedCopySize.width != 0 && fixedCopySize.height != 0 &&
+                fixedCopySize.depthOrArrayLayers != 0) {
                 CopyTextureToTextureCmd* copy =
                     allocator->Allocate<CopyTextureToTextureCmd>(Command::CopyTextureToTexture);
                 copy->source.texture = source->texture;
@@ -767,20 +776,20 @@ namespace dawn_native {
                 copy->destination.mipLevel = destination->mipLevel;
                 copy->destination.aspect =
                     ConvertAspect(destination->texture->GetFormat(), destination->aspect);
-                copy->copySize = *copySize;
+                copy->copySize = fixedCopySize;
             }
 
             return {};
         });
     }
 
-    void CommandEncoder::InjectValidationError(const char* message) {
+    void CommandEncoder::APIInjectValidationError(const char* message) {
         if (mEncodingContext.CheckCurrentEncoder(this)) {
             mEncodingContext.HandleError(InternalErrorType::Validation, message);
         }
     }
 
-    void CommandEncoder::InsertDebugMarker(const char* groupLabel) {
+    void CommandEncoder::APIInsertDebugMarker(const char* groupLabel) {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             InsertDebugMarkerCmd* cmd =
                 allocator->Allocate<InsertDebugMarkerCmd>(Command::InsertDebugMarker);
@@ -793,7 +802,7 @@ namespace dawn_native {
         });
     }
 
-    void CommandEncoder::PopDebugGroup() {
+    void CommandEncoder::APIPopDebugGroup() {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             if (GetDevice()->IsValidationEnabled()) {
                 if (mDebugGroupStackSize == 0) {
@@ -807,7 +816,7 @@ namespace dawn_native {
         });
     }
 
-    void CommandEncoder::PushDebugGroup(const char* groupLabel) {
+    void CommandEncoder::APIPushDebugGroup(const char* groupLabel) {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             PushDebugGroupCmd* cmd =
                 allocator->Allocate<PushDebugGroupCmd>(Command::PushDebugGroup);
@@ -822,11 +831,11 @@ namespace dawn_native {
         });
     }
 
-    void CommandEncoder::ResolveQuerySet(QuerySetBase* querySet,
-                                         uint32_t firstQuery,
-                                         uint32_t queryCount,
-                                         BufferBase* destination,
-                                         uint64_t destinationOffset) {
+    void CommandEncoder::APIResolveQuerySet(QuerySetBase* querySet,
+                                            uint32_t firstQuery,
+                                            uint32_t queryCount,
+                                            BufferBase* destination,
+                                            uint64_t destinationOffset) {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             if (GetDevice()->IsValidationEnabled()) {
                 DAWN_TRY(GetDevice()->ValidateObject(querySet));
@@ -850,17 +859,16 @@ namespace dawn_native {
             cmd->destinationOffset = destinationOffset;
 
             // Encode internal compute pipeline for timestamp query
-            if (querySet->GetQueryType() == wgpu::QueryType::Timestamp &&
-                GetDevice()->IsToggleEnabled(Toggle::ConvertTimestampsToNanoseconds)) {
-                EncodeTimestampsToNanosecondsConversion(this, querySet, queryCount, destination,
-                                                        destinationOffset);
+            if (querySet->GetQueryType() == wgpu::QueryType::Timestamp) {
+                DAWN_TRY(EncodeTimestampsToNanosecondsConversion(this, querySet, queryCount, destination,
+                                                        destinationOffset));
             }
 
             return {};
         });
     }
 
-    void CommandEncoder::WriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex) {
+    void CommandEncoder::APIWriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex) {
         mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             if (GetDevice()->IsValidationEnabled()) {
                 DAWN_TRY(GetDevice()->ValidateObject(querySet));
@@ -878,19 +886,29 @@ namespace dawn_native {
         });
     }
 
-    CommandBufferBase* CommandEncoder::Finish(const CommandBufferDescriptor* descriptor) {
+    CommandBufferBase* CommandEncoder::APIFinish(const CommandBufferDescriptor* descriptor) {
+        Ref<CommandBufferBase> commandBuffer;
+        if (GetDevice()->ConsumedError(FinishInternal(descriptor), &commandBuffer)) {
+            return CommandBufferBase::MakeError(GetDevice());
+        }
+        ASSERT(!IsError());
+        return commandBuffer.Detach();
+    }
+
+    ResultOrError<Ref<CommandBufferBase>> CommandEncoder::FinishInternal(
+        const CommandBufferDescriptor* descriptor) {
         DeviceBase* device = GetDevice();
+
         // Even if mEncodingContext.Finish() validation fails, calling it will mutate the internal
         // state of the encoding context. The internal state is set to finished, and subsequent
         // calls to encode commands will generate errors.
-        if (device->ConsumedError(mEncodingContext.Finish()) ||
-            device->ConsumedError(device->ValidateIsAlive()) ||
-            (device->IsValidationEnabled() &&
-             device->ConsumedError(ValidateFinish(mEncodingContext.GetIterator(),
-                                                  mEncodingContext.GetPassUsages())))) {
-            return CommandBufferBase::MakeError(device);
+        DAWN_TRY(mEncodingContext.Finish());
+        DAWN_TRY(device->ValidateIsAlive());
+
+        if (device->IsValidationEnabled()) {
+            DAWN_TRY(
+                ValidateFinish(mEncodingContext.GetIterator(), mEncodingContext.GetPassUsages()));
         }
-        ASSERT(!IsError());
         return device->CreateCommandBuffer(this, descriptor);
     }
 

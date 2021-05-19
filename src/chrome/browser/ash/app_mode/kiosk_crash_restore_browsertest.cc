@@ -14,8 +14,8 @@
 #include "chrome/browser/ash/app_mode/fake_cws.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/login/test/kiosk_test_helpers.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/ash/login/test/kiosk_test_helpers.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/extensions/browsertest_util.h"
@@ -26,6 +26,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/common/value_builder.h"
@@ -67,8 +68,8 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     // Override device policy.
-    OwnerSettingsServiceChromeOSFactory::GetInstance()
-        ->SetOwnerKeyUtilForTesting(owner_key_util_);
+    OwnerSettingsServiceAshFactory::GetInstance()->SetOwnerKeyUtilForTesting(
+        owner_key_util_);
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetSigningKey());
 
@@ -87,7 +88,7 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
                                     cryptohome_id.account_id());
     command_line->AppendSwitchASCII(
         switches::kLoginProfile,
-        chromeos::CryptohomeClient::GetStubSanitizedUsername(cryptohome_id));
+        chromeos::UserDataAuthClient::GetStubSanitizedUsername(cryptohome_id));
 
     fake_cws_->Init(embedded_test_server());
     fake_cws_->SetUpdateCrx(kTestKioskApp, std::string(kTestKioskApp) + ".crx",

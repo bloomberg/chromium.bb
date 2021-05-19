@@ -27,6 +27,7 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -92,10 +93,6 @@ class CONTENT_EXPORT NavigationHandle {
   // Whether the navigation is taking place in the main frame or in a subframe.
   // This remains constant over the navigation lifetime.
   virtual bool IsInMainFrame() = 0;
-
-  // Whether the navigation is taking place in a frame that is a direct child
-  // of the main frame. This remains constant over the navigation lifetime.
-  virtual bool IsParentMainFrame() = 0;
 
   // Whether the navigation was initiated by the renderer process. Examples of
   // renderer-initiated navigations include:
@@ -444,6 +441,14 @@ class CONTENT_EXPORT NavigationHandle {
   // RenderFrameHost. This can either be for the commit of a successful
   // navigation or an error page.
   virtual bool IsWaitingToCommit() = 0;
+
+  // Returns true when at least one preload Link header was received via an
+  // Early Hints response during this navigation. True only for a main frame
+  // navigation.
+  virtual bool WasEarlyHintsPreloadLinkHeaderReceived() = 0;
+
+  // Write a representation of this object into a trace.
+  virtual void WriteIntoTracedValue(perfetto::TracedValue context) = 0;
 
   // Testing methods ----------------------------------------------------------
   //

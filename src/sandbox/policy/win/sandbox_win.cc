@@ -26,7 +26,6 @@
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -606,7 +605,7 @@ ResultCode SetJobMemoryLimit(const base::CommandLine& cmd_line,
       memory_limit = 32 * GB;
     } else if (physical_memory > 16 * GB) {
       memory_limit = 16 * GB;
-    } else if (physical_memory > 8 * GB) {
+    } else {
       memory_limit = 8 * GB;
     }
   }
@@ -632,6 +631,9 @@ std::wstring GetAppContainerProfileName(const std::string& appcontainer_id,
     case SandboxType::kMediaFoundationCdm:
       sandbox_base_name = std::string("cr.sb.cdm");
       break;
+    case SandboxType::kNetwork:
+      sandbox_base_name = std::string("cr.sb.net");
+      break;
     default:
       DCHECK(0);
   }
@@ -652,8 +654,12 @@ ResultCode SetupAppContainerProfile(AppContainerProfile* profile,
                                     SandboxType sandbox_type) {
   if (sandbox_type != SandboxType::kMediaFoundationCdm &&
       sandbox_type != SandboxType::kGpu &&
-      sandbox_type != SandboxType::kXrCompositing)
+      sandbox_type != SandboxType::kXrCompositing &&
+      sandbox_type != SandboxType::kNetwork)
     return SBOX_ERROR_UNSUPPORTED;
+
+  DCHECK(sandbox_type != SandboxType::kNetwork ||
+         base::FeatureList::IsEnabled(features::kNetworkServiceSandboxLPAC));
 
   if (sandbox_type == SandboxType::kGpu &&
       !profile->AddImpersonationCapability(L"chromeInstallFiles")) {
@@ -736,6 +742,18 @@ ResultCode SetupAppContainerProfile(AppContainerProfile* profile,
   // Enable LPAC for GPU process, but not for XRCompositor service.
   if (sandbox_type == SandboxType::kGpu &&
       base::FeatureList::IsEnabled(features::kGpuLPAC)) {
+    profile->SetEnableLowPrivilegeAppContainer(true);
+  }
+
+  // Enable LPAC for Network service.
+  if (sandbox_type == SandboxType::kNetwork) {
+    profile->AddCapability(
+        sandbox::WellKnownCapabilities::kPrivateNetworkClientServer);
+    profile->AddCapability(sandbox::WellKnownCapabilities::kInternetClient);
+    profile->AddCapability(
+        sandbox::WellKnownCapabilities::kEnterpriseAuthentication);
+    profile->AddCapability(L"lpacIdentityServices");
+    profile->AddCapability(L"lpacCryptoServices");
     profile->SetEnableLowPrivilegeAppContainer(true);
   }
 
@@ -901,9 +919,13 @@ bool SandboxWin::IsAppContainerEnabledForSandbox(
   if (sandbox_type == SandboxType::kMediaFoundationCdm)
     return true;
 
-  if (sandbox_type != SandboxType::kGpu)
-    return false;
-  return base::FeatureList::IsEnabled(features::kGpuAppContainer);
+  if (sandbox_type == SandboxType::kGpu)
+    return base::FeatureList::IsEnabled(features::kGpuAppContainer);
+
+  if (sandbox_type == SandboxType::kNetwork)
+    return base::FeatureList::IsEnabled(features::kNetworkServiceSandboxLPAC);
+
+  return false;
 }
 
 // static
@@ -1191,6 +1213,8 @@ std::string SandboxWin::GetSandboxTypeInEnglish(SandboxType sandbox_type) {
       return "CDM";
     case SandboxType::kPrintCompositor:
       return "Print Compositor";
+    case SandboxType::kPrintBackend:
+      return "Print Backend";
     case SandboxType::kAudio:
       return "Audio";
     case SandboxType::kSpeechRecognition:

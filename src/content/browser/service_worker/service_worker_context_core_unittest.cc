@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/test/bind.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -27,7 +28,7 @@ class ServiceWorkerContextCoreTest : public testing::Test,
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
   }
 
   void TearDown() override {

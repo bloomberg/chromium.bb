@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/environment.h"
 #include "base/path_service.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process_handle.h"
@@ -68,19 +69,22 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
   ~ChromeUnitTestSuiteInitializer() override = default;
 
   void OnTestStart(const testing::TestInfo& test_info) override {
-    content_client_.reset(new ChromeContentClient);
+    content_client_ = std::make_unique<ChromeContentClient>();
     content::SetContentClient(content_client_.get());
 
-    browser_content_client_.reset(
-        new ChromeContentBrowserClientWithoutNetworkServiceInitialization());
+    browser_content_client_ = std::make_unique<
+        ChromeContentBrowserClientWithoutNetworkServiceInitialization>();
     content::SetBrowserClientForTesting(browser_content_client_.get());
-    utility_content_client_.reset(new ChromeContentUtilityClient());
+    utility_content_client_ = std::make_unique<ChromeContentUtilityClient>();
     content::SetUtilityClientForTesting(utility_content_client_.get());
 
     TestingBrowserProcess::CreateInstance();
     // Make sure the loaded locale is "en-US".
     if (ui::ResourceBundle::GetSharedInstance().GetLoadedLocaleForTesting() !=
         kDefaultLocale) {
+      // Linux uses environment to determine locale.
+      std::unique_ptr<base::Environment> env(base::Environment::Create());
+      env->SetVar("LANG", kDefaultLocale);
       ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(
           kDefaultLocale);
     }

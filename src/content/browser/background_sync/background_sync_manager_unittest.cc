@@ -58,8 +58,8 @@ namespace {
 using ::testing::_;
 using ::testing::Return;
 
-const char kScope1[] = "https://example.com/a";
-const char kScope2[] = "https://example.com/b";
+const char kScope1[] = "https://example.com/a/";
+const char kScope2[] = "https://example.com/b/";
 const char kScript1[] = "https://example.com/a/script.js";
 const char kScript2[] = "https://example.com/b/script.js";
 
@@ -115,7 +115,7 @@ class BackgroundSyncManagerTest
     // TODO(jkarlin): Create a new object with all of the necessary SW calls
     // so that we can inject test versions instead of bringing up all of this
     // extra SW stuff.
-    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
     std::unique_ptr<MockPermissionManager> mock_permission_manager(
         new testing::NiceMock<MockPermissionManager>());
@@ -134,8 +134,8 @@ class BackgroundSyncManagerTest
     // Create a StoragePartition with the correct BrowserContext so that the
     // BackgroundSyncManager can find the BrowserContext through it.
     storage_partition_impl_ = static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetStoragePartitionForSite(
-            helper_->browser_context(), GURL("https://example.com")));
+        BrowserContext::GetStoragePartitionForUrl(helper_->browser_context(),
+                                                  GURL("https://example.com")));
     helper_->context_wrapper()->set_storage_partition(storage_partition_impl_);
 
     SetMaxSyncAttemptsAndRestartManager(1);

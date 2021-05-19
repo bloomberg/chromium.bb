@@ -15,7 +15,6 @@
 #ifndef SRC_WRITER_MSL_GENERATOR_IMPL_H_
 #define SRC_WRITER_MSL_GENERATOR_IMPL_H_
 
-#include <sstream>
 #include <string>
 #include <unordered_map>
 
@@ -24,14 +23,9 @@
 #include "src/ast/binary_expression.h"
 #include "src/ast/bitcast_expression.h"
 #include "src/ast/break_statement.h"
-#include "src/ast/call_expression.h"
-#include "src/ast/case_statement.h"
 #include "src/ast/continue_statement.h"
 #include "src/ast/discard_statement.h"
-#include "src/ast/else_statement.h"
-#include "src/ast/identifier_expression.h"
 #include "src/ast/if_statement.h"
-#include "src/ast/literal.h"
 #include "src/ast/loop_statement.h"
 #include "src/ast/member_accessor_expression.h"
 #include "src/ast/return_statement.h"
@@ -41,9 +35,7 @@
 #include "src/ast/unary_op_expression.h"
 #include "src/program.h"
 #include "src/scope_stack.h"
-#include "src/semantic/intrinsic.h"
 #include "src/type/struct_type.h"
-#include "src/writer/msl/namer.h"
 #include "src/writer/text_generator.h"
 
 namespace tint {
@@ -67,16 +59,6 @@ class GeneratorImpl : public TextGenerator {
 
   /// @returns true on successful generation; false otherwise
   bool Generate();
-
-  /// Calculates the alignment size of the given `type`. This returns 0
-  /// for pointers as the size is unknown.
-  /// @param type the type to calculate the alignment size for
-  /// @returns the number of bytes used to align `type` or 0 on error
-  uint32_t calculate_alignment_size(type::Type* type);
-  /// Calculates the largest alignment seen within a struct
-  /// @param type the struct to calculate
-  /// @returns the largest alignment value
-  uint32_t calculate_largest_alignment(type::Struct* type);
 
   /// Handles generating a constructed
   /// @param ty the constructed type to generate
@@ -209,11 +191,18 @@ class GeneratorImpl : public TextGenerator {
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted
   bool EmitSwitch(ast::SwitchStatement* stmt);
-  /// Handles generating type
+  /// Handles generating a type
   /// @param type the type to generate
   /// @param name the name of the variable, only used for array emission
   /// @returns true if the type is emitted
   bool EmitType(type::Type* type, const std::string& name);
+  /// Handles generating an MSL-packed storage type.
+  /// If the type does not have a packed form, the standard non-packed form is
+  /// emitted.
+  /// @param type the type to generate
+  /// @param name the name of the variable, only used for array emission
+  /// @returns true if the type is emitted
+  bool EmitPackedType(type::Type* type, const std::string& name);
   /// Handles generating a struct declaration
   /// @param str the struct to generate
   /// @returns true if the struct is emitted
@@ -253,10 +242,6 @@ class GeneratorImpl : public TextGenerator {
   /// @returns true if an input or output struct is required.
   bool has_referenced_var_needing_struct(ast::Function* func);
 
-  /// Generates a name for the prefix
-  /// @param prefix the prefix of the name to generate
-  /// @returns the name
-  std::string generate_name(const std::string& prefix);
   /// Handles generating a builtin name
   /// @param intrinsic the semantic info for the intrinsic
   /// @returns the name or "" if not valid
@@ -271,9 +256,6 @@ class GeneratorImpl : public TextGenerator {
   /// @param builtin the builtin to convert
   /// @returns the string name of the builtin or blank on error
   std::string builtin_to_attribute(ast::Builtin builtin) const;
-
-  /// @returns the namer for testing purposes
-  Namer* namer_for_testing() { return &namer_; }
 
  private:
   enum class VarType { kIn, kOut };
@@ -291,7 +273,16 @@ class GeneratorImpl : public TextGenerator {
     return program_->TypeOf(expr);
   }
 
-  Namer namer_;
+  // A pair of byte size and alignment `uint32_t`s.
+  struct SizeAndAlign {
+    uint32_t size;
+    uint32_t align;
+  };
+
+  /// @returns the MSL packed type size and alignment in bytes for the given
+  /// type.
+  SizeAndAlign MslPackedTypeSizeAndAlign(type::Type* ty);
+
   ScopeStack<const semantic::Variable*> global_variables_;
   Symbol current_ep_sym_;
   bool generating_entry_point_ = false;

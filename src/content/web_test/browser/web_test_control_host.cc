@@ -12,6 +12,7 @@
 #include <memory>
 #include <queue>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -19,6 +20,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -26,8 +28,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/strings/nullable_string16.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -36,7 +36,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "content/browser/renderer_host/frame_tree.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/child_process_termination_info.h"
@@ -96,6 +99,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/select_file_policy.h"
+#include "url/url_constants.h"
 
 #if defined(OS_MAC)
 #include "base/mac/foundation_util.h"
@@ -104,6 +108,9 @@
 namespace content {
 
 namespace {
+
+// The URL used in between two web tests.
+const char kAboutBlankResetWebTest[] = "about:blank?reset-web-test";
 
 std::string DumpFrameState(const blink::ExplodedFrameState& frame_state,
                            size_t indent,
@@ -118,7 +125,7 @@ std::string DumpFrameState(const blink::ExplodedFrameState& frame_state,
   }
 
   std::string url = web_test_string_util::NormalizeWebTestURL(
-      base::UTF16ToUTF8(frame_state.url_string.value_or(base::string16())));
+      base::UTF16ToUTF8(frame_state.url_string.value_or(std::u16string())));
   result.append(url);
   DCHECK(frame_state.target);
   if (!frame_state.target->empty()) {
@@ -275,27 +282,22 @@ void ApplyWebTestDefaultPreferences(blink::web_pref::WebPreferences* prefs) {
 
 #if defined(OS_MAC)
   prefs->cursive_font_family_map[blink::web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Apple Chancery");
-  prefs->fantasy_font_family_map[blink::web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Papyrus");
-  prefs->serif_font_family_map[blink::web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Times");
-  prefs->standard_font_family_map[blink::web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Times");
+      u"Apple Chancery";
+  prefs->fantasy_font_family_map[blink::web_pref::kCommonScript] = u"Papyrus";
+  prefs->serif_font_family_map[blink::web_pref::kCommonScript] = u"Times";
+  prefs->standard_font_family_map[blink::web_pref::kCommonScript] = u"Times";
 #else
   prefs->cursive_font_family_map[blink::web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Comic Sans MS");
-  prefs->fantasy_font_family_map[blink::web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Impact");
+      u"Comic Sans MS";
+  prefs->fantasy_font_family_map[blink::web_pref::kCommonScript] = u"Impact";
   prefs->serif_font_family_map[blink::web_pref::kCommonScript] =
-      base::ASCIIToUTF16("times new roman");
+      u"times new roman";
   prefs->standard_font_family_map[blink::web_pref::kCommonScript] =
-      base::ASCIIToUTF16("times new roman");
+      u"times new roman";
 #endif
-  prefs->fixed_font_family_map[blink::web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Courier");
+  prefs->fixed_font_family_map[blink::web_pref::kCommonScript] = u"Courier";
   prefs->sans_serif_font_family_map[blink::web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Helvetica");
+      u"Helvetica";
 }
 
 }  // namespace
@@ -304,11 +306,7 @@ void ApplyWebTestDefaultPreferences(blink::web_pref::WebPreferences* prefs) {
 
 WebTestResultPrinter::WebTestResultPrinter(std::ostream* output,
                                            std::ostream* error)
-    : state_(DURING_TEST),
-      capture_text_only_(false),
-      encode_binary_data_(false),
-      output_(output),
-      error_(error) {}
+    : output_(output), error_(error) {}
 
 void WebTestResultPrinter::StartStateDump() {
   state_ = DURING_STATE_DUMP;
@@ -468,6 +466,7 @@ class WebTestControlHost::WebTestWindowObserver : WebContentsObserver {
     }
   }
 
+ private:
   void WebContentsDestroyed() override {
     // Deletes |this| and removes the pointer to it from WebTestControlHost.
     web_test_control_->test_opened_window_observers_.erase(web_contents());
@@ -477,7 +476,6 @@ class WebTestControlHost::WebTestWindowObserver : WebContentsObserver {
     web_test_control_->HandleNewRenderFrameHost(render_frame_host);
   }
 
- private:
   WebTestControlHost* const web_test_control_;
 };
 
@@ -490,11 +488,7 @@ WebTestControlHost* WebTestControlHost::Get() {
   return instance_;
 }
 
-WebTestControlHost::WebTestControlHost()
-    : main_window_(nullptr),
-      secondary_window_(nullptr),
-      test_phase_(BETWEEN_TESTS),
-      crash_when_leak_found_(false) {
+WebTestControlHost::WebTestControlHost() {
   CHECK(!instance_);
   instance_ = this;
 
@@ -516,8 +510,8 @@ WebTestControlHost::WebTestControlHost()
   // protocol) until we enter the protocol mode (see TestInfo::protocol_mode).
   printer_->set_capture_text_only(true);
 
-  InjectTestSharedWorkerService(BrowserContext::GetStoragePartition(
-      ShellContentBrowserClient::Get()->browser_context(), nullptr));
+  InjectTestSharedWorkerService(BrowserContext::GetDefaultStoragePartition(
+      ShellContentBrowserClient::Get()->browser_context()));
 
   GpuDataManager::GetInstance()->AddObserver(this);
   ResetBrowserAfterWebTest();
@@ -555,7 +549,7 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   main_window_render_view_hosts_.clear();
   main_window_render_process_hosts_.clear();
   all_observed_render_process_hosts_.clear();
-  render_process_host_observer_.RemoveAll();
+  render_process_host_observations_.RemoveAllObservations();
   frame_to_layout_dump_map_.clear();
 
   ShellBrowserContext* browser_context =
@@ -710,10 +704,9 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
     BrowserContext* browser_context =
         ShellContentBrowserClient::Get()->browser_context();
     StoragePartition* storage_partition =
-        BrowserContext::GetStoragePartition(browser_context, nullptr);
+        BrowserContext::GetDefaultStoragePartition(browser_context);
     storage_partition->GetCookieManagerForBrowserProcess()->DeleteCookies(
-        network::mojom::CookieDeletionFilter::New(),
-        base::BindOnce([](uint32_t) {}));
+        network::mojom::CookieDeletionFilter::New(), base::DoNothing());
   }
 
   ui::SelectFileDialog::SetFactory(nullptr);
@@ -1095,7 +1088,7 @@ void WebTestControlHost::ReadyToCommitNavigation(
 
 void WebTestControlHost::RenderProcessHostDestroyed(
     RenderProcessHost* render_process_host) {
-  render_process_host_observer_.Remove(render_process_host);
+  render_process_host_observations_.RemoveObservation(render_process_host);
   all_observed_render_process_hosts_.erase(render_process_host);
   web_test_render_thread_map_.erase(render_process_host);
   main_window_render_process_hosts_.erase(render_process_host);
@@ -1173,6 +1166,8 @@ void WebTestControlHost::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     return;
 
   const bool main_window =
+      FrameTreeNode::From(frame)->frame_tree()->type() ==
+          FrameTree::Type::kPrimary &&
       WebContents::FromRenderFrameHost(frame) == main_window_->web_contents();
 
   RenderProcessHost* process_host = frame->GetProcess();
@@ -1218,8 +1213,8 @@ void WebTestControlHost::HandleNewRenderFrameHost(RenderFrameHost* frame) {
   }
 
   // Is this a previously unknown renderer process_host?
-  if (!render_process_host_observer_.IsObserving(process_host)) {
-    render_process_host_observer_.Add(process_host);
+  if (!render_process_host_observations_.IsObservingSource(process_host)) {
+    render_process_host_observations_.AddObservation(process_host);
     all_observed_render_process_hosts_.insert(process_host);
 
     if (!main_window) {
@@ -1251,11 +1246,11 @@ void WebTestControlHost::OnTestFinished() {
       ShellContentBrowserClient::Get()->browser_context();
 
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
-      2, base::BindOnce(&WebTestControlHost::ResetRendererAfterWebTest,
+      2, base::BindOnce(&WebTestControlHost::PrepareRendererForNextWebTest,
                         weak_factory_.GetWeakPtr()));
 
   StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartition(browser_context, nullptr);
+      BrowserContext::GetDefaultStoragePartition(browser_context);
   storage_partition->GetServiceWorkerContext()->ClearAllServiceWorkersForTest(
       barrier_closure);
   storage_partition->ClearBluetoothAllowedDevicesMapForTesting();
@@ -1263,8 +1258,8 @@ void WebTestControlHost::OnTestFinished() {
   // TODO(nhiroki): Add a comment about the reason why we terminate all shared
   // workers here.
   TerminateAllSharedWorkers(
-      BrowserContext::GetStoragePartition(
-          ShellContentBrowserClient::Get()->browser_context(), nullptr),
+      BrowserContext::GetDefaultStoragePartition(
+          ShellContentBrowserClient::Get()->browser_context()),
       barrier_closure);
 }
 
@@ -1358,6 +1353,8 @@ void WebTestControlHost::OnImageDump(const std::string& actual_pixel_hash,
             switches::kForceOverlayFullscreenVideo)) {
       discard_transparency = false;
     }
+    if (web_test_runtime_flags().dump_drag_image())
+      discard_transparency = false;
 
     gfx::PNGCodec::ColorFormat pixel_format;
     switch (image.info().colorType()) {
@@ -1506,7 +1503,7 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
   ~FakeSelectFileDialog() override = default;
 
   void SelectFileImpl(Type type,
-                      const base::string16& title,
+                      const std::u16string& title,
                       const base::FilePath& default_path,
                       const FileTypeInfo* file_types,
                       int file_type_index,
@@ -1570,7 +1567,7 @@ void WebTestControlHost::ClearTrustTokenState(base::OnceClosure callback) {
   BrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartition(browser_context, nullptr);
+      BrowserContext::GetDefaultStoragePartition(browser_context);
   storage_partition->GetNetworkContext()->ClearTrustTokenData(
       nullptr,  // A wildcard filter.
       std::move(callback));
@@ -1595,7 +1592,7 @@ void WebTestControlHost::SetDatabaseQuota(int32_t quota) {
   BrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartition(browser_context, nullptr);
+      BrowserContext::GetDefaultStoragePartition(browser_context);
   scoped_refptr<storage::QuotaManager> quota_manager =
       base::WrapRefCounted(storage_partition->GetQuotaManager());
 
@@ -1614,7 +1611,7 @@ void WebTestControlHost::ClearAllDatabases() {
   BrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartition(browser_context, nullptr);
+      BrowserContext::GetDefaultStoragePartition(browser_context);
   scoped_refptr<storage::DatabaseTracker> db_tracker =
       base::WrapRefCounted(storage_partition->GetDatabaseTracker());
 
@@ -1626,7 +1623,7 @@ void WebTestControlHost::ClearAllDatabases() {
 void WebTestControlHost::SimulateWebNotificationClick(
     const std::string& title,
     int32_t action_index,
-    const base::Optional<base::string16>& reply) {
+    const base::Optional<std::u16string>& reply) {
   auto* client = WebTestContentBrowserClient::Get();
   auto* context = client->GetWebTestBrowserContext();
   auto* service = client->GetPlatformNotificationService(context);
@@ -1657,7 +1654,7 @@ void WebTestControlHost::SimulateWebContentIndexDelete(const std::string& id) {
       content_index_provider->GetRegistrationDataFromId(id);
 
   StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartitionForSite(
+      BrowserContext::GetStoragePartitionForUrl(
           browser_context, registration_data.second.GetURL(),
           /*can_create=*/false);
   storage_partition->GetContentIndexContext()->OnUserDeletedItem(
@@ -1781,26 +1778,53 @@ void WebTestControlHost::CheckForLeakedWindows() {
   check_for_leaked_windows_ = true;
 }
 
-void WebTestControlHost::ResetRendererAfterWebTest() {
-  if (main_window_) {
-    main_window_->web_contents()->Stop();
-
-    RenderProcessHost* main_frame_process = main_window_->web_contents()
-                                                ->GetMainFrame()
-                                                ->GetRenderViewHost()
-                                                ->GetProcess();
-    GetWebTestRenderThreadRemote(main_frame_process)
-        ->ResetRendererAfterWebTest(
-            base::BindOnce(&WebTestControlHost::ResetRendererAfterWebTestDone,
-                           weak_factory_.GetWeakPtr()));
-  } else {
-    // If the window is gone, due to crashes or whatever, we need to make
-    // progress.
-    ResetRendererAfterWebTestDone();
+void WebTestControlHost::PrepareRendererForNextWebTest() {
+  // If the window is gone, due to crashes or whatever, we need to make
+  // progress.
+  if (!main_window_) {
+    PrepareRendererForNextWebTestDone();
+    return;
   }
+
+  content::WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(main_window_->web_contents());
+
+  // TODO(arthursonzogni): Not sure if this line is needed. It cancels pending
+  // navigations and pending subresources requests. I guess it increases the
+  // odds of transitionning from one test to another with no side effects.
+  // Consider removing it to understand what happens without.
+  web_contents->Stop();
+
+  // Navigate to about:blank in between two consecutive web tests.
+  //
+  // Note: this navigation might happen in a new process, depending on the
+  // COOP policy of the previous document.
+  NavigationController::LoadURLParams params((GURL(kAboutBlankResetWebTest)));
+  params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED);
+  params.should_clear_history_list = true;
+  params.initiator_origin = url::Origin();  // Opaque initiator.
+  web_contents->GetController().LoadURLWithParams(params);
+
+  // The navigation might have to wait for before unload handler to execute. The
+  // remaining of the logic continues in:
+  // |WebTestControlHost::DidFinishNavigation|.
 }
 
-void WebTestControlHost::ResetRendererAfterWebTestDone() {
+void WebTestControlHost::DidFinishNavigation(NavigationHandle* navigation) {
+  if (navigation->GetURL() != GURL(kAboutBlankResetWebTest))
+    return;
+
+  // Request additional web test specific cleanup in the renderer process:
+  content::WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(main_window_->web_contents());
+  RenderProcessHost* main_rfh_process =
+      web_contents->GetMainFrame()->GetProcess();
+  GetWebTestRenderThreadRemote(main_rfh_process)->ResetRendererAfterWebTest();
+
+  PrepareRendererForNextWebTestDone();
+}
+
+void WebTestControlHost::PrepareRendererForNextWebTestDone() {
   if (leak_detector_ && main_window_) {
     // When doing leak detection, we don't want to count opened windows as
     // leaks, unless the test specifies that it expects to have closed them
@@ -1896,7 +1920,7 @@ void WebTestControlHost::BlockThirdPartyCookies(bool block) {
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartition(browser_context, nullptr);
+      BrowserContext::GetDefaultStoragePartition(browser_context);
   storage_partition->GetCookieManagerForBrowserProcess()
       ->BlockThirdPartyCookies(block);
 }

@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/render_frame_host.h"
@@ -70,8 +71,8 @@ class TestStateStoreObserver : public StateStore::TestObserver {
  public:
   TestStateStoreObserver(content::BrowserContext* context,
                          const std::string& extension_id)
-      : extension_id_(extension_id), scoped_observer_(this) {
-    scoped_observer_.Add(ExtensionSystem::Get(context)->state_store());
+      : extension_id_(extension_id) {
+    scoped_observation_.Observe(ExtensionSystem::Get(context)->state_store());
   }
   ~TestStateStoreObserver() override {}
 
@@ -90,7 +91,8 @@ class TestStateStoreObserver : public StateStore::TestObserver {
   std::string extension_id_;
   std::map<std::string, int> updated_values_;
 
-  ScopedObserver<StateStore, StateStore::TestObserver> scoped_observer_;
+  base::ScopedObservation<StateStore, StateStore::TestObserver>
+      scoped_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestStateStoreObserver);
 };
@@ -1296,6 +1298,59 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, EnableAndDisable) {
     EXPECT_EQ(true, action->GetIsVisible(tab_id2));
     EXPECT_EQ(true, action->GetIsVisible(tab_id1));
   }
+}
+
+using ActionAPITest = ExtensionApiTest;
+
+IN_PROC_BROWSER_TEST_F(ActionAPITest, TestGetUserSettings) {
+  constexpr char kManifest[] =
+      R"({
+           "name": "getUserSettings Test",
+           "manifest_version": 3,
+           "version": "1",
+           "background": {"service_worker": "worker.js"},
+           "action": {}
+         })";
+  constexpr char kWorker[] =
+      R"(chrome.action.onClicked.addListener(async () => {
+           const settings = await chrome.action.getUserSettings();
+           chrome.test.sendMessage(JSON.stringify(settings));
+         });
+         chrome.test.sendMessage('ready');)";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kWorker);
+
+  const Extension* extension = nullptr;
+  {
+    ExtensionTestMessageListener listener("ready", /*will_reply=*/false);
+    extension = LoadExtension(test_dir.UnpackedPath());
+    ASSERT_TRUE(extension);
+    ASSERT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  ToolbarActionsModel* const toolbar_model =
+      ToolbarActionsModel::Get(profile());
+  EXPECT_FALSE(toolbar_model->IsActionPinned(extension->id()));
+
+  std::unique_ptr<ExtensionActionTestHelper> toolbar_helper =
+      ExtensionActionTestHelper::Create(browser());
+
+  auto get_response = [extension, toolbar_helper = toolbar_helper.get()]() {
+    ExtensionTestMessageListener listener(/*will_reply=*/false);
+    listener.set_extension_id(extension->id());
+    toolbar_helper->Press(0);
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    return listener.message();
+  };
+
+  EXPECT_EQ(R"({"isOnToolbar":false})", get_response());
+
+  toolbar_model->SetActionVisibility(extension->id(), true);
+  EXPECT_TRUE(toolbar_model->IsActionPinned(extension->id()));
+
+  EXPECT_EQ(R"({"isOnToolbar":true})", get_response());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

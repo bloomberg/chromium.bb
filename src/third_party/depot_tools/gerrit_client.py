@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -153,6 +153,64 @@ def CMDchanges(parser, args):
   write_result(result, opt)
 
 
+@subcommand.usage('[args ...]')
+def CMDcreatechange(parser, args):
+  parser.add_option('-s', '--subject', help='subject for change')
+  parser.add_option('-b',
+                    '--branch',
+                    default='main',
+                    help='target branch for change')
+  parser.add_option(
+      '-p',
+      '--param',
+      dest='params',
+      action='append',
+      help='repeatable field value parameter, format: -p key=value')
+
+  (opt, args) = parser.parse_args(args)
+  for p in opt.params:
+    assert '=' in p, '--param is key=value, not "%s"' % p
+
+  result = gerrit_util.CreateChange(
+      urlparse.urlparse(opt.host).netloc,
+      opt.project,
+      branch=opt.branch,
+      subject=opt.subject,
+      params=list(tuple(p.split('=', 1)) for p in opt.params),
+  )
+  logging.info(result)
+  write_result(result, opt)
+
+
+@subcommand.usage('[args ...]')
+def CMDchangeedit(parser, args):
+  parser.add_option('-c', '--change', type=int, help='change number')
+  parser.add_option('--path', help='path for file')
+  parser.add_option('--file', help='file to place at |path|')
+
+  (opt, args) = parser.parse_args(args)
+
+  with open(opt.file) as f:
+    data = f.read()
+  result = gerrit_util.ChangeEdit(
+      urlparse.urlparse(opt.host).netloc, opt.change, opt.path, data)
+  logging.info(result)
+  write_result(result, opt)
+
+
+@subcommand.usage('[args ...]')
+def CMDpublishchangeedit(parser, args):
+  parser.add_option('-c', '--change', type=int, help='change number')
+  parser.add_option('--notify', help='whether to notify')
+
+  (opt, args) = parser.parse_args(args)
+
+  result = gerrit_util.PublishChangeEdit(
+      urlparse.urlparse(opt.host).netloc, opt.change, opt.notify)
+  logging.info(result)
+  write_result(result, opt)
+
+
 @subcommand.usage('')
 def CMDabandon(parser, args):
   parser.add_option('-c', '--change', type=int, help='change number')
@@ -165,6 +223,75 @@ def CMDabandon(parser, args):
       opt.change, opt.message)
   logging.info(result)
   write_result(result, opt)
+
+
+@subcommand.usage('''Mass abandon changes
+
+Mass abandon abandons CLs that match search criteria provided by user. Before
+any change is actually abandoned, user is presented with a list of CLs that
+will be affected if user confirms. User can skip confirmation by passing --force
+parameter.
+
+The script can abandon up to 100 CLs per invocation.
+
+Examples:
+gerrit_client.py mass-abandon --host https://HOST -p 'project=repo2'
+gerrit_client.py mass-abandon --host https://HOST -p 'message=testing'
+gerrit_client.py mass-abandon --host https://HOST -p 'is=wip' -p 'age:1y'
+''')
+def CMDmass_abandon(parser, args):
+  parser.add_option('-p',
+                    '--param',
+                    dest='params',
+                    action='append',
+                    default=[],
+                    help='repeatable query parameter, format: -p key=value')
+  parser.add_option('-m', '--message', default='', help='reason for abandoning')
+  parser.add_option('-f',
+                    '--force',
+                    action='store_true',
+                    help='Don\'t prompt for confirmation')
+
+  opt, args = parser.parse_args(args)
+
+  for p in opt.params:
+    assert '=' in p, '--param is key=value, not "%s"' % p
+  search_query = list(tuple(p.split('=', 1)) for p in opt.params)
+  if not any(t for t in search_query if t[0] == 'owner'):
+    # owner should always be present when abandoning changes
+    search_query.append(('owner', 'me'))
+  search_query.append(('status', 'open'))
+  logging.info("Searching for: %s" % search_query)
+
+  host = urlparse.urlparse(opt.host).netloc
+
+  result = gerrit_util.QueryChanges(
+      host,
+      search_query,
+      # abandon at most 100 changes as not all Gerrit instances support
+      # unlimited results.
+      limit=100,
+  )
+  if len(result) == 0:
+    logging.warn("Nothing to abandon")
+    return
+
+  logging.warn("%s CLs match search query: " % len(result))
+  for change in result:
+    logging.warn("[ID: %d] %s" % (change['_number'], change['subject']))
+
+  if not opt.force:
+    q = raw_input(
+        'Do you want to move forward with abandoning? [y to confirm] ').strip()
+    if q not in ['y', 'Y']:
+      logging.warn("Aborting...")
+      return
+
+  for change in result:
+    logging.warning("Abandoning: %s" % change['subject'])
+    gerrit_util.AbandonChange(host, change['id'], opt.message)
+
+  logging.warning("Done")
 
 
 class OptionParser(optparse.OptionParser):

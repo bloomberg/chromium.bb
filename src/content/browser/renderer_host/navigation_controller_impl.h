@@ -152,6 +152,13 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // affect frames within the subtree of |sandbox_frame_tree_node_id|, which
   // initiated the navigation.
   void GoToOffsetInSandboxedFrame(int offset, int sandbox_frame_tree_node_id);
+#if defined(OS_ANDROID)
+  // The difference with (Can)GoToOffset/(Can)GoToOffsetInSandboxedFrame is that
+  // this respect the history manipulation intervention and will excludes the
+  // skippable entries.
+  bool CanGoToOffsetWithSkipping(int offset);
+  void GoToOffsetWithSkipping(int offset);
+#endif
 
   // Called when a document requests a navigation through a
   // RenderFrameProxyHost.
@@ -177,9 +184,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // case, we know there is no content displayed in the page.
   bool IsUnmodifiedBlankTab();
 
-  // The session storage namespace that all child RenderViews belonging to
-  // |instance| should use.
-  SessionStorageNamespace* GetSessionStorageNamespace(SiteInstance* instance);
+  // The session storage namespace that all child RenderViews associated with
+  // |site_info| should use.
+  SessionStorageNamespace* GetSessionStorageNamespace(
+      const SiteInfo& site_info);
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.
@@ -252,8 +260,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Returns true if the given URL would be a same-document navigation (e.g., if
   // the reference fragment is different, or after a pushState) from the last
-  // committed URL in the specified frame. If there is no last committed entry,
-  // then nothing will be same-document.
+  // committed URL in the specified frame.
   //
   // Special note: if the URLs are the same, it does NOT automatically count as
   // a same-document navigation. Neither does an input URL that has no ref, even
@@ -281,7 +288,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Calling this function when a SessionStorageNamespace has already been
   // associated with a |partition_id| will CHECK() fail.
   void SetSessionStorageNamespace(
-      const std::string& partition_id,
+      const StoragePartitionId& partition_id,
       SessionStorageNamespace* session_storage_namespace);
 
   // Random data ---------------------------------------------------------------
@@ -365,6 +372,14 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       NavigationControllerBrowserTest,
       PostThenBrowserInitiatedFragmentNavigationThenReload);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerBrowserTest, PostSubframe);
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerDisableHistoryIntervention,
+                           GoToOffsetWithSkippingDisableHistoryIntervention);
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerHistoryInterventionBrowserTest,
+                           GoToOffsetWithSkippingEnableHistoryIntervention);
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerHistoryInterventionBrowserTest,
+                           SetSkipOnBackForwardDoSkipForGoToOffsetWithSkipping);
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerHistoryInterventionBrowserTest,
+                           SetSkipOnBackForwardDoNotSkipForGoToOffset);
 
   // Defines possible actions that are returned by
   // DetermineActionForHistoryNavigation().
@@ -587,6 +602,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Returns the navigation index that differs from the current entry by the
   // specified |offset|.  The index returned is not guaranteed to be valid.
+  // This does not account for skippable entries or the history manipulation
+  // intervention.
   int GetIndexForOffset(int offset);
 
   // History Manipulation intervention:
@@ -628,6 +645,22 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // |history_offset|. This notifies all renderers involved in rendering the
   // current page about the new offset and length.
   void SetHistoryOffsetAndLength(int history_offset, int history_length);
+
+  // Helper functions used to determine if it is safe to change the internal
+  // representation of StoragePartitionId.
+  //
+  // Called when a new StoragePartitionId is added to
+  // `session_storage_namespace_map_` and adds an entry to
+  // `partition_config_to_id_map_`.
+  void OnStoragePartitionIdAdded(const StoragePartitionId& partition_id);
+  // Called to log a crash dump when unique string representations result in
+  // the same StoragePartitionConfig, or an ID used to lookup a namespace
+  // contains a different config than the one used when the namespace was
+  // added to the map. Both situations imply that there is not a 1:1 mapping
+  // between representations.
+  void LogStoragePartitionIdCrashKeys(
+      const StoragePartitionId& original_partition_id,
+      const StoragePartitionId& new_partition_id);
 
   // ---------------------------------------------------------------------------
 
@@ -704,6 +737,15 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // NavigationController, only entries in the same StoragePartition may
   // share session storage state with one another.
   SessionStorageNamespaceMap session_storage_namespace_map_;
+
+  // Temporary map that is being used to verify that there is a 1:1
+  // relationship between the string representation used as the key in
+  // `session_storage_namespace_map_` and the StoragePartitionConfig
+  // representation that we plan to migrate the map key to.
+  // TODO(acolwell): Remove this map once we have enough data to determine if
+  // it is safe to change representations or not.
+  std::map<StoragePartitionConfig, StoragePartitionId>
+      partition_config_to_id_map_;
 
   // The maximum number of entries that a navigation controller can store.
   static size_t max_entry_count_for_testing_;

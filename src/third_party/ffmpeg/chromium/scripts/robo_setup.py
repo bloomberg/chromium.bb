@@ -149,23 +149,14 @@ def FetchAdditionalWindowsBinaries(robo_configuration):
     raise Exception("update.py --package=objdump failed")
 
 
-def FetchMacSDKs(robo_configuration):
-  """Download the MacOSX SDKs."""
+def FetchMacSDK(robo_configuration):
+  """Download the MacOSX SDK."""
   log("Installing Mac OSX sdk")
   robo_configuration.chdir_to_chrome_src()
   if robo_configuration.Call(
       "FORCE_MAC_TOOLCHAIN=1 build/mac_toolchain.py",
       shell=True):
-    raise Exception("Cannot download and extract Mac beta SDK")
-
-  # TODO: Once the 11.0 SDK is out of beta, it should be used for both
-  # arm64 and intel builds.
-  log("Installing Mac OSX 11.0 beta sdk for arm64")
-  robo_configuration.chdir_to_chrome_src()
-  if robo_configuration.Call(
-      "FORCE_MAC_TOOLCHAIN=1 build/mac_toolchain.py",
-      shell=True):
-    raise Exception("Cannot download and extract Mac beta SDK")
+    raise Exception("Cannot download and extract Mac SDK")
 
 
 def EnsureLLVMSymlinks(robo_configuration):
@@ -237,7 +228,7 @@ def EnsureToolchains(robo_configuration):
   """Make sure that we have all the toolchains for cross-compilation"""
   EnsureGClientTargets(robo_configuration)
   FetchAdditionalWindowsBinaries(robo_configuration)
-  FetchMacSDKs(robo_configuration)
+  FetchMacSDK(robo_configuration)
   EnsureLLVMSymlinks(robo_configuration)
   EnsureSysroots(robo_configuration)
 

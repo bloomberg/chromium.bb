@@ -245,6 +245,9 @@ static int asf_read_marker(AVFormatContext *s, const GUIDParseTable *g)
         avio_skip(pb, 4); // flags
         len = avio_rl32(pb);
 
+        if (avio_feof(pb))
+            return AVERROR_INVALIDDATA;
+
         if ((ret = avio_get_str16le(pb, len, name,
                                     sizeof(name))) < len)
             avio_skip(pb, len - ret);
@@ -851,6 +854,8 @@ static int asf_read_ext_stream_properties(AVFormatContext *s, const GUIDParseTab
     st_num     = avio_rl16(pb);
     st_num    &= ASF_STREAM_NUM;
     lang_idx   = avio_rl16(pb); // Stream Language ID Index
+    if (lang_idx >= ASF_MAX_STREAMS)
+        return AVERROR_INVALIDDATA;
     for (i = 0; i < asf->nb_streams; i++) {
         if (st_num == asf->asf_st[i]->stream_index) {
             st                       = s->streams[asf->asf_st[i]->index];
@@ -1660,6 +1665,9 @@ static int detect_unknown_subobject(AVFormatContext *s, int64_t offset, int64_t 
     const GUIDParseTable *g = NULL;
     ff_asf_guid guid;
     int ret;
+
+    if (offset > INT64_MAX - size)
+        return AVERROR_INVALIDDATA;
 
     while (avio_tell(pb) <= offset + size) {
         if (avio_tell(pb) == asf->offset)

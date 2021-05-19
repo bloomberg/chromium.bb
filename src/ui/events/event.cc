@@ -17,7 +17,6 @@
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -840,7 +839,7 @@ KeyEvent::KeyEvent(EventType type,
       is_char_(is_char),
       key_(key) {}
 
-KeyEvent::KeyEvent(base::char16 character,
+KeyEvent::KeyEvent(char16_t character,
                    KeyboardCode key_code,
                    DomCode code,
                    int flags,
@@ -1001,9 +1000,9 @@ bool KeyEvent::IsRepeated(KeyEvent** last_key_event) {
 KeyEvent** KeyEvent::GetLastKeyEvent() {
 #if defined(USE_X11) || defined(USE_OZONE)
   // Use a different static variable for key events that have non standard
-  // state masks as it may be reposted by an IME. IBUS-GTK uses this field
-  // to detect the re-posted event for example. crbug.com/385873.
-  return properties() && properties()->contains(kPropertyKeyboardIBusFlag)
+  // state masks as it may be reposted by an IME. IBUS-GTK and fcitx-GTK uses
+  // this field to detect the re-posted event for example. crbug.com/385873.
+  return properties() && properties()->contains(kPropertyKeyboardImeFlag)
              ? &last_ibus_key_event_
              : &last_key_event_;
 #else
@@ -1018,7 +1017,7 @@ DomKey KeyEvent::GetDomKey() const {
   return key_;
 }
 
-base::char16 KeyEvent::GetCharacter() const {
+char16_t KeyEvent::GetCharacter() const {
   // Determination of key_ may be done lazily.
   if (key_ == DomKey::NONE)
     ApplyLayout();
@@ -1026,7 +1025,7 @@ base::char16 KeyEvent::GetCharacter() const {
     // Historically ui::KeyEvent has held only BMP characters.
     // Until this explicitly changes, require |key_| to hold a BMP character.
     DomKey::Base utf32_character = key_.ToCharacter();
-    base::char16 ucs2_character = static_cast<base::char16>(utf32_character);
+    char16_t ucs2_character{utf32_character};
     DCHECK_EQ(static_cast<DomKey::Base>(ucs2_character), utf32_character);
     // Check if the control character is down. Note that ALTGR is represented
     // on Windows as CTRL|ALT, so we need to make sure that is not set.
@@ -1044,7 +1043,7 @@ base::char16 KeyEvent::GetCharacter() const {
   return 0;
 }
 
-base::char16 KeyEvent::GetText() const {
+char16_t KeyEvent::GetText() const {
   if ((flags() & EF_CONTROL_DOWN) != 0) {
     DomKey key;
     KeyboardCode key_code;
@@ -1054,7 +1053,7 @@ base::char16 KeyEvent::GetText() const {
   return GetUnmodifiedText();
 }
 
-base::char16 KeyEvent::GetUnmodifiedText() const {
+char16_t KeyEvent::GetUnmodifiedText() const {
   if (!is_char_ && (key_code_ == VKEY_RETURN))
     return '\r';
   return GetCharacter();

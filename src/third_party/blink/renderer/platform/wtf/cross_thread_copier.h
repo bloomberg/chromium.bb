@@ -54,13 +54,15 @@ class Time;
 class UnguessableToken;
 }  // namespace base
 
+struct SkISize;
 class SkRefCnt;
 template <typename T>
 class sk_sp;
 
 namespace gfx {
+class ColorSpace;
 class Size;
-}
+}  // namespace gfx
 
 namespace gpu {
 struct SyncToken;
@@ -68,8 +70,8 @@ struct SyncToken;
 
 namespace media {
 class VideoFrame;
-struct VideoFrameFeedback;
-}
+struct VideoCaptureFeedback;
+}  // namespace media
 
 namespace mojo {
 template <typename Interface>
@@ -80,7 +82,7 @@ template <typename Interface>
 class PendingAssociatedRemote;
 template <typename Interface>
 class PendingAssociatedReceiver;
-}
+}  // namespace mojo
 
 namespace WTF {
 
@@ -331,14 +333,26 @@ struct CrossThreadCopier<
 };
 
 template <>
+struct CrossThreadCopier<SkISize>
+    : public CrossThreadCopierPassThrough<SkISize> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
 struct CrossThreadCopier<gfx::Size>
     : public CrossThreadCopierPassThrough<gfx::Size> {
   STATIC_ONLY(CrossThreadCopier);
 };
 
 template <>
-struct CrossThreadCopier<media::VideoFrameFeedback>
-    : public CrossThreadCopierPassThrough<media::VideoFrameFeedback> {
+struct CrossThreadCopier<gfx::ColorSpace>
+    : public CrossThreadCopierPassThrough<gfx::ColorSpace> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<media::VideoCaptureFeedback>
+    : public CrossThreadCopierPassThrough<media::VideoCaptureFeedback> {
   STATIC_ONLY(CrossThreadCopier);
 };
 

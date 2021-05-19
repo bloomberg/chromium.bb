@@ -5,17 +5,17 @@
 #include "chrome/browser/ash/login/screens/enable_debugging_screen.h"
 
 #include "base/check.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/login_web_dialog.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -84,7 +84,7 @@ void EnableDebuggingScreen::HandleLearnMore() {
       Profile::FromWebUI(
           LoginDisplayHost::default_host()->GetOobeUI()->web_ui()),
       nullptr, LoginDisplayHost::default_host()->GetNativeWindow(),
-      base::string16(), data_url);
+      std::u16string(), data_url);
   dialog->Show();
 }
 
@@ -115,7 +115,7 @@ void EnableDebuggingScreen::OnRemoveRootfsVerification(bool success) {
 
 void EnableDebuggingScreen::WaitForCryptohome() {
   UpdateUIState(EnableDebuggingScreenView::UI_STATE_WAIT);
-  chromeos::CryptohomeClient* client = chromeos::CryptohomeClient::Get();
+  chromeos::UserDataAuthClient* client = chromeos::UserDataAuthClient::Get();
   client->WaitForServiceToBeAvailable(base::BindOnce(
       &EnableDebuggingScreen::OnCryptohomeDaemonAvailabilityChecked,
       weak_ptr_factory_.GetWeakPtr()));

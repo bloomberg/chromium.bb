@@ -795,11 +795,11 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest,
   for (auto* op : kTestOps) {
     EXPECT_TRUE(ExecJs(tab, base::StringPrintf(kBaseCall, op)));
 
-    base::string16 expected_title(
+    std::u16string expected_title(
         base::ASCIIToUTF16(base::StringPrintf(kBaseExpected, op)));
     content::TitleWatcher title_watcher(tab, expected_title);
 
-    base::string16 unexpected_title(
+    std::u16string unexpected_title(
         base::ASCIIToUTF16(base::StringPrintf(kBaseUnexpected, op)));
     title_watcher.AlsoWaitForTitle(unexpected_title);
 
@@ -1020,7 +1020,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_EQ(base::UTF8ToUTF16("Data URL"), web_contents->GetTitle());
+  ASSERT_EQ(u"Data URL", web_contents->GetTitle());
 
   EXPECT_TRUE(
       PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
@@ -1075,7 +1075,7 @@ class ContentSettingsWorkerModulesBrowserTest : public ContentSettingsTest {
       const std::string& content_type,
       const net::test_server::HttpRequest& request) const {
     if (request.relative_url != relative_url)
-      return std::unique_ptr<net::test_server::HttpResponse>();
+      return nullptr;
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         std::make_unique<net::test_server::BasicHttpResponse>());
     http_response->set_code(net::HTTP_OK);
@@ -1119,9 +1119,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest,
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  base::string16 expected_title(base::ASCIIToUTF16("Imported"));
+  std::u16string expected_title(u"Imported");
   content::TitleWatcher title_watcher(web_contents, expected_title);
-  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("Failed"));
+  title_watcher.AlsoWaitForTitle(u"Failed");
 
   ui_test_utils::NavigateToURL(browser(), http_url);
 
@@ -1172,9 +1172,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  base::string16 expected_title(base::ASCIIToUTF16("Failed"));
+  std::u16string expected_title(u"Failed");
   content::TitleWatcher title_watcher(web_contents, expected_title);
-  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("Imported"));
+  title_watcher.AlsoWaitForTitle(u"Imported");
 
   ui_test_utils::NavigateToURL(browser(), http_url);
 

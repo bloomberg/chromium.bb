@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/power_monitor_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/scoped_gdi_object.h"
@@ -42,7 +43,7 @@ namespace {
 class TestPlatformDelegate : public ui::PlatformWindowDelegate {
  public:
   // ui::PlatformWindowDelegate implementation.
-  void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
+  void OnBoundsChanged(const BoundsChange& change) override {}
   void OnDamageRect(const gfx::Rect& damaged_region) override {}
   void DispatchEvent(ui::Event* event) override {}
   void OnCloseRequest() override {}
@@ -117,6 +118,9 @@ class DirectCompositionSurfaceTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    // These tests are assumed to run on battery.
+    fake_power_monitor_source_.SetOnBatteryPower(true);
+
     // Without this, the following check always fails.
     gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true);
     if (!QueryDirectCompositionDevice(QueryD3D11DeviceObjectFromANGLE())) {
@@ -170,6 +174,7 @@ class DirectCompositionSurfaceTest : public testing::Test {
   HWND parent_window_;
   scoped_refptr<DirectCompositionSurfaceWin> surface_;
   scoped_refptr<GLContext> context_;
+  base::test::ScopedPowerMonitorTestSource fake_power_monitor_source_;
 };
 
 TEST_F(DirectCompositionSurfaceTest, TestMakeCurrent) {

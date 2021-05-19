@@ -39,9 +39,7 @@ namespace content {
 class RenderProcessHostUnitTest : public RenderViewHostImplTestHarness {
  public:
   scoped_refptr<SiteInstanceImpl> CreateForUrl(const GURL& url) {
-    return SiteInstanceImpl::CreateForUrlInfo(
-        browser_context(), UrlInfo::CreateForTesting(url),
-        CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated());
+    return SiteInstanceImpl::CreateForTesting(browser_context(), url);
   }
 };
 
@@ -451,7 +449,7 @@ TEST_F(RenderProcessHostUnitTest, DoNotReuseError) {
   const GURL kUrl2("http://bar.com");
 
   // Isolate |kUrl1| so we can't get a default SiteInstance for it.
-  ChildProcessSecurityPolicyImpl::GetInstance()->AddIsolatedOrigins(
+  ChildProcessSecurityPolicyImpl::GetInstance()->AddFutureIsolatedOrigins(
       {url::Origin::Create(kUrl1)},
       ChildProcessSecurityPolicy::IsolatedOriginSource::TEST,
       browser_context());
@@ -851,11 +849,12 @@ class StoragePartitionContentBrowserClient : public ContentBrowserClient {
       BrowserContext* browser_context,
       const GURL& site) override {
     if (site == site_) {
-      return StoragePartitionConfig::Create(partition_domain_, partition_name_,
+      return StoragePartitionConfig::Create(browser_context, partition_domain_,
+                                            partition_name_,
                                             false /* in_memory */);
     }
 
-    return StoragePartitionConfig::CreateDefault();
+    return StoragePartitionConfig::CreateDefault(browser_context);
   }
 
   GURL site_;
@@ -1115,9 +1114,8 @@ TEST_F(SpareRenderProcessHostUnitTest,
   // unnecessary resource contention when 2 processes try to launch at the same
   // time).
   scoped_refptr<SiteInstanceImpl> site_instance =
-      SiteInstanceImpl::CreateForUrlInfo(
-          browser_context(), UrlInfo::CreateForTesting(GURL("http://foo.com")),
-          CoopCoepCrossOriginIsolatedInfo::CreateNonIsolated());
+      SiteInstanceImpl::CreateForTesting(browser_context(),
+                                         GURL("http://foo.com"));
   RenderProcessHost* site_instance_process = site_instance->GetProcess();
 
   // The SiteInstance shouldn't get the old spare, because of BrowserContext

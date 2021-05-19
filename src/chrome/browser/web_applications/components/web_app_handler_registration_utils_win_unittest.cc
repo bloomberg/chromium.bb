@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/components/web_app_handler_registration_utils_win.h"
 
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
@@ -170,7 +171,8 @@ TEST_F(WebAppHandlerRegistrationUtilsWinTest,
   RegisterApp(app_id(), app_name(), app_name_extension, profile2->GetPath());
 
   // Update installations external to profile 2 (i.e. profile1).
-  CheckAndUpdateExternalInstallations(profile2->GetPath(), app_id());
+  CheckAndUpdateExternalInstallations(profile2->GetPath(), app_id(),
+                                      base::DoNothing());
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   // Test that the profile1 installation is updated with a profile-specific
@@ -190,7 +192,8 @@ TEST_F(WebAppHandlerRegistrationUtilsWinTest,
 
   Profile* profile2 =
       testing_profile_manager()->CreateTestingProfile("Profile 2");
-  CheckAndUpdateExternalInstallations(profile2->GetPath(), app_id());
+  CheckAndUpdateExternalInstallations(profile2->GetPath(), app_id(),
+                                      base::DoNothing());
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   // Ensure that after updating from profile2 (which has no installation),
@@ -216,7 +219,8 @@ TEST_F(WebAppHandlerRegistrationUtilsWinTest,
   // Attempting updates from profile3 when there are already 2 app installations
   // in other profiles shouldn't change the original 2 installations since they
   // already have app-specific names.
-  CheckAndUpdateExternalInstallations(profile3->GetPath(), app_id());
+  CheckAndUpdateExternalInstallations(profile3->GetPath(), app_id(),
+                                      base::DoNothing());
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   TestRegisteredApp(app_id(), app_name(), L" (Default)", profile1->GetPath());
@@ -242,16 +246,16 @@ TEST_F(WebAppHandlerRegistrationUtilsWinTest, CreateAppLauncherFile) {
   EXPECT_EQ(launcher_path.value().BaseName(), expected_launcher_filename);
 }
 
-// Test that invalid file name characters in app_name are replaced with '_'.
+// Test that invalid file name characters in app_name are replaced with ' '.
 TEST_F(WebAppHandlerRegistrationUtilsWinTest, AppNameWithInvalidChars) {
   // '*' is an invalid char in Windows file names, so it should be replaced
-  // with '_'.
+  // with ' '.
   std::wstring app_name = L"app*name";
   // On Windows 7 the extension is omitted.
   base::FilePath expected_launcher_name =
       base::win::GetVersion() > base::win::Version::WIN7
-          ? base::FilePath(L"app_name.exe")
-          : base::FilePath(L"app_name");
+          ? base::FilePath(L"app name.exe")
+          : base::FilePath(L"app name");
   EXPECT_EQ(GetAppSpecificLauncherFilename(app_name), expected_launcher_name);
 }
 

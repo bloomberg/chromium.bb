@@ -121,17 +121,6 @@ Polymer({
     nearby_share.getContactManager().downloadContacts();
   },
 
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  onEnableTap_(event) {
-    this.setPrefValue(
-        'nearby_sharing.enabled',
-        !this.getPref('nearby_sharing.enabled').value);
-    event.stopPropagation();
-  },
-
   /** @private */
   onDeviceNameTap_() {
     if (this.showDeviceNameDialog_) {
@@ -180,6 +169,7 @@ Polymer({
    */
   onReceiveDialogClose_(event) {
     this.showReceiveDialog_ = false;
+    this.inHighVisibility_ = false;
   },
 
   /**
@@ -220,9 +210,15 @@ Polymer({
    * Mojo callback when the Nearby utility process stops.
    */
   onNearbyProcessStopped() {
-    // Note: Intentionally left empty.
+    this.inHighVisibility_ = false;
   },
 
+  /**
+   * Mojo callback when advertising fails to start.
+   */
+  onStartAdvertisingFailure() {
+    this.inHighVisibility_ = false;
+  },
 
   /** @private */
   onInHighVisibilityToggledByUser_() {
@@ -409,6 +405,14 @@ Polymer({
    */
   getAccountRowLabel(profileName, profileLabel) {
     return this.i18n('nearbyShareAccountRowLabel', profileName, profileLabel);
+  },
+
+  /** @private */
+  getEnabledToggleClassName_() {
+    if (this.getPref('nearby_sharing.enabled').value) {
+      return 'enabled-toggle-on';
+    }
+    return 'enabled-toggle-off';
   },
 
   /** @private */

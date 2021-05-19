@@ -18,6 +18,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom-shared.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -36,13 +36,13 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/fake_anomaly_detector_client.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -65,7 +65,7 @@ constexpr int64_t kDiskSizeBytes = 4ll * 1024 * 1024 * 1024;  // 4 GiB
 const char kTerminaKernelVersion[] =
     "4.19.56-05556-gca219a5b1086 #3 SMP PREEMPT Mon Jul 1 14:36:38 CEST 2019";
 const char kCrostiniCorruptionHistogram[] = "Crostini.FilesystemCorruption";
-constexpr auto kLongTime = base::TimeDelta::FromDays(1);
+constexpr auto kLongTime = base::TimeDelta::FromDays(10);
 
 void ExpectFailure(base::OnceClosure closure, bool success) {
   EXPECT_FALSE(success);
@@ -96,6 +96,14 @@ void ExpectCrostiniExportResult(base::OnceClosure closure,
   EXPECT_EQ(expected_export_size, export_size);
   std::move(closure).Run();
 }
+
+class TestRestartObserver : public CrostiniManager::RestartObserver {
+ public:
+  void OnStageStarted(mojom::InstallerState stage) override {
+    stages.push_back(stage);
+  }
+  std::vector<mojom::InstallerState> stages;
+};
 
 }  // namespace
 
@@ -209,7 +217,7 @@ class CrostiniManagerTest : public testing::Test {
     crostini_manager_ = CrostiniManager::GetForProfile(profile_.get());
 
     // Login user for crostini, link gaia for DriveFS.
-    auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
+    auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
     AccountId account_id = AccountId::FromUserEmailGaiaId(
         profile()->GetProfileUserName(), "12345");
     user_manager->AddUser(account_id);
@@ -224,13 +232,13 @@ class CrostiniManagerTest : public testing::Test {
     g_browser_process->platform_part()
         ->InitializeSchedulerConfigurationManager();
 
-    chromeos::CryptohomeClient::InitializeFake();
-    chromeos::FakeCryptohomeClient::Get()->set_requires_powerwash(false);
+    chromeos::CryptohomeMiscClient::InitializeFake();
+    chromeos::FakeCryptohomeMiscClient::Get()->set_requires_powerwash(false);
     policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
   }
 
   void TearDown() override {
-    chromeos::CryptohomeClient::Shutdown();
+    chromeos::CryptohomeMiscClient::Shutdown();
     g_browser_process->platform_part()->ShutdownSchedulerConfigurationManager();
     scoped_user_manager_.reset();
     crostini_manager_->Shutdown();
@@ -247,8 +255,8 @@ class CrostiniManagerTest : public testing::Test {
   CrostiniManager* crostini_manager() { return crostini_manager_; }
   const ContainerId& container_id() { return container_id_; }
 
-  chromeos::FakeChromeUserManager* fake_user_manager() const {
-    return static_cast<chromeos::FakeChromeUserManager*>(
+  ash::FakeChromeUserManager* fake_user_manager() const {
+    return static_cast<ash::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 
@@ -375,7 +383,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmPowerwashRequestError) {
   fake_user_manager()->LoginUser(account_id);
 
   // Set DeviceRebootOnUserSignout to always.
-  chromeos::ScopedCrosSettingsTestHelper settings_helper{
+  ash::ScopedCrosSettingsTestHelper settings_helper{
       /* create_settings_service=*/false};
   settings_helper.ReplaceDeviceSettingsProviderWithStub();
   settings_helper.SetInteger(
@@ -383,7 +391,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmPowerwashRequestError) {
       enterprise_management::DeviceRebootOnUserSignoutProto::ALWAYS);
 
   // Set cryptohome requiring powerwash.
-  chromeos::FakeCryptohomeClient::Get()->set_requires_powerwash(true);
+  chromeos::FakeCryptohomeMiscClient::Get()->set_requires_powerwash(true);
   policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
 
   NotificationDisplayServiceTester notification_service(profile());
@@ -410,7 +418,7 @@ TEST_F(CrostiniManagerTest,
   fake_user_manager()->LoginUser(account_id);
 
   // Set DeviceRebootOnUserSignout to always.
-  chromeos::ScopedCrosSettingsTestHelper settings_helper{
+  ash::ScopedCrosSettingsTestHelper settings_helper{
       /* create_settings_service=*/false};
   settings_helper.ReplaceDeviceSettingsProviderWithStub();
   settings_helper.SetInteger(
@@ -419,9 +427,9 @@ TEST_F(CrostiniManagerTest,
 
   // Reset cryptohome state to undefined and make cryptohome unavailable.
   policy::PowerwashRequirementsChecker::ResetForTesting();
-  chromeos::FakeCryptohomeClient::Get()->SetServiceIsAvailable(false);
+  chromeos::FakeCryptohomeMiscClient::Get()->SetServiceIsAvailable(false);
   policy::PowerwashRequirementsChecker::Initialize();
-  chromeos::FakeCryptohomeClient::Get()->ReportServiceIsNotAvailable();
+  chromeos::FakeCryptohomeMiscClient::Get()->ReportServiceIsNotAvailable();
 
   NotificationDisplayServiceTester notification_service(profile());
 
@@ -909,7 +917,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringComponentLoaded) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(fake_concierge_client_->create_disk_image_called());
   ExpectCrostiniRestartResult(CrostiniResult::INSTALL_IMAGE_LOADER_TIMED_OUT);
   ExpectRestarterUmaCount(1);
@@ -939,7 +947,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringCreateDiskImage) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
@@ -989,7 +997,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringStartVm) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
@@ -1009,7 +1017,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForVmStarted) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
@@ -1041,7 +1049,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringStartLxd) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
@@ -1059,7 +1067,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForLxdStarted) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
@@ -1093,7 +1101,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringCreateContainer) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
   ExpectCrostiniRestartResult(CrostiniResult::CREATE_CONTAINER_TIMED_OUT);
   ExpectRestarterUmaCount(1);
@@ -1109,7 +1117,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForContainerCreated) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
@@ -1208,7 +1216,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringContainerSetup) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
@@ -1226,7 +1234,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringStartContainer) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   ExpectCrostiniRestartResult(CrostiniResult::START_CONTAINER_TIMED_OUT);
   ExpectRestarterUmaCount(1);
 }
@@ -1241,7 +1249,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForContainerStarted) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
@@ -1275,7 +1283,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringSshKeysFetched) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_TRUE(fake_concierge_client_->get_container_ssh_keys_called());
@@ -1380,7 +1388,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringMountContainer) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   task_environment_.FastForwardBy(kLongTime);
-  run_loop()->Run();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_TRUE(fake_concierge_client_->get_container_ssh_keys_called());
@@ -1778,6 +1786,169 @@ TEST_F(CrostiniManagerRestartTest, ComponentUpdateInProgress) {
 
   ExpectRestarterUmaCount(1);
   ExpectCrostiniRestartResult(CrostiniResult::SUCCESS);
+}
+
+TEST_F(CrostiniManagerRestartTest, AllObservers) {
+  TestRestartObserver observer2;
+  int observer1_count = 0;
+  on_stage_started_ =
+      base::BindLambdaForTesting([&](mojom::InstallerState state) {
+        ++observer1_count;
+        if (state == mojom::InstallerState::kStartTerminaVm) {
+          // Add a second Restarter with observer while first is starting.
+          crostini_manager()->RestartCrostini(
+              container_id(),
+              base::BindOnce(
+                  &CrostiniManagerRestartTest::RestartCrostiniCallback,
+                  base::Unretained(this), run_loop()->QuitClosure()),
+              &observer2);
+        }
+      });
+
+  restart_id_ = crostini_manager()->RestartCrostini(
+      container_id(),
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), base::DoNothing::Once()),
+      this);
+  run_loop()->Run();
+  EXPECT_EQ(2, restart_crostini_callback_count_);
+  EXPECT_EQ(8, observer1_count);
+  EXPECT_EQ(5, observer2.stages.size());
+}
+
+TEST_F(CrostiniManagerRestartTest, StartVmOnly) {
+  TestRestartObserver observer;
+  CrostiniManager::RestartOptions options;
+  options.start_vm_only = true;
+  restart_id_ = crostini_manager()->RestartCrostiniWithOptions(
+      container_id(), std::move(options),
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      &observer);
+  run_loop()->Run();
+  ExpectCrostiniRestartResult(CrostiniResult::SUCCESS);
+  EXPECT_EQ(std::vector<crostini::mojom::InstallerState>({
+                crostini::mojom::InstallerState::kStart,
+                crostini::mojom::InstallerState::kInstallImageLoader,
+                crostini::mojom::InstallerState::kCreateDiskImage,
+                crostini::mojom::InstallerState::kStartTerminaVm,
+            }),
+            observer.stages);
+}
+
+TEST_F(CrostiniManagerRestartTest, StartVmOnlyThenFullRestart) {
+  TestRestartObserver observer1;
+  TestRestartObserver observer2;
+  CrostiniManager::RestartOptions options;
+  options.start_vm_only = true;
+  restart_id_ = crostini_manager()->RestartCrostiniWithOptions(
+      container_id(), std::move(options),
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), base::DoNothing::Once()),
+      &observer1);
+  crostini_manager()->RestartCrostini(
+      container_id(),
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      &observer2);
+  run_loop()->Run();
+  EXPECT_EQ(2, restart_crostini_callback_count_);
+  EXPECT_EQ(std::vector<crostini::mojom::InstallerState>({
+                crostini::mojom::InstallerState::kStart,
+                crostini::mojom::InstallerState::kInstallImageLoader,
+                crostini::mojom::InstallerState::kCreateDiskImage,
+                crostini::mojom::InstallerState::kStartTerminaVm,
+            }),
+            observer1.stages);
+  EXPECT_EQ(std::vector<crostini::mojom::InstallerState>({
+                crostini::mojom::InstallerState::kCreateDiskImage,
+                crostini::mojom::InstallerState::kStartTerminaVm,
+                crostini::mojom::InstallerState::kStart,
+                crostini::mojom::InstallerState::kInstallImageLoader,
+                crostini::mojom::InstallerState::kCreateDiskImage,
+                crostini::mojom::InstallerState::kStartTerminaVm,
+                crostini::mojom::InstallerState::kStartLxd,
+                crostini::mojom::InstallerState::kCreateContainer,
+                crostini::mojom::InstallerState::kSetupContainer,
+                crostini::mojom::InstallerState::kStartContainer,
+            }),
+            observer2.stages);
+}
+
+TEST_F(CrostiniManagerRestartTest, FullRestartThenStartVmOnly) {
+  TestRestartObserver observer1;
+  TestRestartObserver observer2;
+  restart_id_ = crostini_manager()->RestartCrostini(
+      container_id(),
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), base::DoNothing::Once()),
+      &observer1);
+  CrostiniManager::RestartOptions options;
+  options.start_vm_only = true;
+  restart_id_ = crostini_manager()->RestartCrostiniWithOptions(
+      container_id(), std::move(options),
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      &observer2);
+  run_loop()->Run();
+  EXPECT_EQ(2, restart_crostini_callback_count_);
+  EXPECT_EQ(std::vector<crostini::mojom::InstallerState>({
+                crostini::mojom::InstallerState::kStart,
+                crostini::mojom::InstallerState::kInstallImageLoader,
+                crostini::mojom::InstallerState::kCreateDiskImage,
+                crostini::mojom::InstallerState::kStartTerminaVm,
+                crostini::mojom::InstallerState::kStartLxd,
+                crostini::mojom::InstallerState::kCreateContainer,
+                crostini::mojom::InstallerState::kSetupContainer,
+                crostini::mojom::InstallerState::kStartContainer,
+            }),
+            observer1.stages);
+  EXPECT_EQ(std::vector<crostini::mojom::InstallerState>({
+                crostini::mojom::InstallerState::kCreateDiskImage,
+                crostini::mojom::InstallerState::kStartTerminaVm,
+                crostini::mojom::InstallerState::kStartLxd,
+                crostini::mojom::InstallerState::kCreateContainer,
+                crostini::mojom::InstallerState::kSetupContainer,
+                crostini::mojom::InstallerState::kStartContainer,
+            }),
+            observer2.stages);
+}
+
+TEST_F(CrostiniManagerRestartTest, StartVmOnlyTwice) {
+  TestRestartObserver observer1;
+  TestRestartObserver observer2;
+  CrostiniManager::RestartOptions options1;
+  options1.start_vm_only = true;
+  restart_id_ = crostini_manager()->RestartCrostiniWithOptions(
+      container_id(), std::move(options1),
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), base::DoNothing::Once()),
+      &observer1);
+  CrostiniManager::RestartOptions options2;
+  options2.start_vm_only = true;
+  restart_id_ = crostini_manager()->RestartCrostiniWithOptions(
+      container_id(), std::move(options2),
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      &observer2);
+  run_loop()->Run();
+  EXPECT_EQ(2, restart_crostini_callback_count_);
+  EXPECT_EQ(std::vector<crostini::mojom::InstallerState>({
+                crostini::mojom::InstallerState::kStart,
+                crostini::mojom::InstallerState::kInstallImageLoader,
+                crostini::mojom::InstallerState::kCreateDiskImage,
+                crostini::mojom::InstallerState::kStartTerminaVm,
+            }),
+            observer1.stages);
+  EXPECT_EQ(std::vector<crostini::mojom::InstallerState>({
+                crostini::mojom::InstallerState::kCreateDiskImage,
+                crostini::mojom::InstallerState::kStartTerminaVm,
+                crostini::mojom::InstallerState::kStart,
+                crostini::mojom::InstallerState::kInstallImageLoader,
+                crostini::mojom::InstallerState::kCreateDiskImage,
+                crostini::mojom::InstallerState::kStartTerminaVm,
+            }),
+            observer2.stages);
 }
 
 class CrostiniManagerEnterpriseReportingTest

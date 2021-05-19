@@ -254,10 +254,6 @@ class DragSession {
 
     this.element_.setDragging(false);
     this.element_.setDraggedOut(false);
-
-    if (event.type === 'dragend') {
-      this.maybeShowTabContextMenu_();
-    }
   }
 
   /** @return {boolean} */
@@ -311,22 +307,6 @@ class DragSession {
 
     this.element_.setDragging(false);
     this.element_.setDraggedOut(false);
-
-    if (!wasDraggingPlaceholder) {
-      this.maybeShowTabContextMenu_();
-    }
-  }
-
-  /** @private */
-  maybeShowTabContextMenu_() {
-    if (!isTabElement(this.element_) || this.hasMoved_) {
-      return;
-    }
-
-    // If the user was dragging a tab and the tab has not ever been moved,
-    // show a context menu instead.
-    this.tabStripEmbedderProxy_.showTabContextMenu(
-        this.element_.tab.id, this.lastPoint_.x, this.lastPoint_.y);
   }
 
   /**
@@ -553,16 +533,14 @@ export class DragManager {
       return;
     }
 
+    // If we are dragging a tab element ensure its touch pressed state is reset
+    // to avoid any associated css effects making it onto the drag image.
+    if (isTabElement(draggedItem)) {
+      /** @private {!TabElement} */ (draggedItem).setTouchPressed(false);
+    }
+
     if (this.delegate_.shouldPreventDrag()) {
       event.preventDefault();
-
-      // The gesture to start a drag and to open a context menu are the same
-      // on touch, so fallback to showing the context menu when drag is
-      // prevented.
-      if (isTabElement(draggedItem)) {
-        this.tabStripEmbedderProxy_.showTabContextMenu(
-            draggedItem.tab.id, event.clientX, event.clientY);
-      }
       return;
     }
 

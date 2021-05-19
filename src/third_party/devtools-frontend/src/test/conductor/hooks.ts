@@ -7,6 +7,7 @@
 import * as puppeteer from 'puppeteer';
 
 import {clearPuppeteerState, getBrowserAndPages, registerHandlers, setBrowserAndPages, setTestServerPort} from './puppeteer-state.js';
+import {getTestRunnerConfigSetting} from './test_runner_config.js';
 
 // Workaround for mismatching versions of puppeteer types and puppeteer library.
 declare module 'puppeteer' {
@@ -30,9 +31,15 @@ const headless = !process.env['DEBUG'];
 const envSlowMo = process.env['STRESS'] ? 50 : undefined;
 const envThrottleRate = process.env['STRESS'] ? 3 : 1;
 
-const TEST_SERVER_TYPE = process.env.TEST_SERVER_TYPE;
+// When loading DevTools with target.goto, we wait for it to be fully loaded using these events.
+const DEVTOOLS_WAITUNTIL_EVENTS: puppeteer.PuppeteerLifeCycleEvent[] = ['networkidle2', 'domcontentloaded'];
+// When loading an empty page (including within the devtools window), we wait for it to be loaded using these events.
+const EMPTY_PAGE_WAITUNTIL_EVENTS: puppeteer.PuppeteerLifeCycleEvent[] = ['domcontentloaded'];
+
+// TODO (jacktfranklin): remove fallback to process.env once test runner config migration is done: crbug.com/1186163
+const TEST_SERVER_TYPE = getTestRunnerConfigSetting('test-server-type', process.env.TEST_SERVER_TYPE);
 if (!TEST_SERVER_TYPE) {
-  throw new Error('Failed to run tests: process.env.TEST_SERVER_TYPE was not defined.');
+  throw new Error('Failed to run tests: test-server-type was not defined.');
 }
 
 // TODO: move this into a file
@@ -45,6 +52,13 @@ const ALLOWED_ASSERTION_FAILURES = [
   // A failing fetch isn't itself a real error.
   // TODO(https://crbug.com/124534) Remove once those messages are not printed anymore.
   'Failed to load resource: the server responded with a status of 404 (Not Found)',
+  // Every letter "typed" into the console can trigger a preview `Runtime.evaluate` call.
+  // There is no way for an e2e test to know whether all of them have resolved or if there are
+  // still pending calls. If the test finishes too early, the JS context is destroyed and pending
+  // evaluations will fail. We ignore these kinds of errors. Tests have to make sure themselves
+  // that all assertions and success criteria are met (e.g. autocompletions etc).
+  // See: https://crbug.com/1192052
+  'Request Runtime.evaluate failed. {"code":-32602,"message":"uniqueContextId not found"}',
 ];
 
 const logLevels = {
@@ -64,19 +78,22 @@ interface DevToolsTarget {
   id: string;
 }
 
-const envChromeBinary = process.env['CHROME_BIN'];
+// TODO (jacktfranklin): remove fallback to process.env once test runner config migration is done: crbug.com/1186163
+const envChromeBinary = getTestRunnerConfigSetting('chrome-binary-path', process.env['CHROME_BIN']);
+const envChromeFeatures = getTestRunnerConfigSetting('chrome-features', process.env['CHROME_FEATURES']);
 
 function launchChrome() {
   // Use port 0 to request any free port.
   const launchArgs = [
     '--remote-debugging-port=0',
     '--enable-experimental-web-platform-features',
-    '--ignore-certificate-errors',
+    // This fingerprint may be generated from the certificate using
+    // openssl x509 -noout -pubkey -in scripts/hosted_mode/cert.pem | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | base64
+    '--ignore-certificate-errors-spki-list=KLy6vv6synForXwI6lDIl+D3ZrMV6Y1EMTY6YpOcAos=',
     '--site-per-process',  // Default on Desktop anyway, but ensure that we always use out-of-process frames when we intend to.
     '--host-resolver-rules=MAP *.test 127.0.0.1',
   ];
-  // TODO(jacktfranklin): crbug.com/1176642 expose this as a cleaner type in Puppeteer and update this type.
-  const opts: puppeteer.LaunchOptions&puppeteer.ChromeArgOptions&puppeteer.BrowserOptions = {
+  const opts: puppeteer.LaunchOptions&puppeteer.BrowserLaunchArgumentOptions&puppeteer.BrowserConnectOptions = {
     headless,
     executablePath: envChromeBinary,
     dumpio: !headless,
@@ -88,6 +105,10 @@ function launchChrome() {
     opts.defaultViewport = {width, height};
   } else {
     launchArgs.push(`--window-size=${width},${height}`);
+  }
+
+  if (envChromeFeatures) {
+    launchArgs.push(`--enable-features=${envChromeFeatures}`);
   }
 
   opts.args = launchArgs;
@@ -158,9 +179,15 @@ async function loadTargetPageAndFrontend(testServerPort: number) {
     /**
      * In hosted mode the frontend points to DevTools, so let's load it up.
      */
-    frontendUrl = `https://localhost:${testServerPort}/front_end/devtools_app.html?ws=localhost:${
-        chromeDebugPort}/devtools/page/${id}`;
-    await frontend.goto(frontendUrl, {waitUntil: ['networkidle2', 'domcontentloaded']});
+
+    const devToolsAppURL =
+        getTestRunnerConfigSetting<string>('hosted-server-devtools-url', 'front_end/devtools_app.html');
+    if (!devToolsAppURL) {
+      throw new Error('Could not load DevTools. hosted-server-devtools-url config not found.');
+    }
+    frontendUrl =
+        `https://localhost:${testServerPort}/${devToolsAppURL}?ws=localhost:${chromeDebugPort}/devtools/page/${id}`;
+    await frontend.goto(frontendUrl, {waitUntil: DEVTOOLS_WAITUNTIL_EVENTS});
   }
 
 
@@ -231,7 +258,7 @@ function formatStackFrame(stackFrame: puppeteer.ConsoleMessageLocation): string 
 export async function resetPages() {
   const {target, frontend} = getBrowserAndPages();
   // Reload the target page.
-  await target.goto(EMPTY_PAGE, {waitUntil: ['domcontentloaded']});
+  await loadEmptyPageAndWaitForContent(target);
 
   if (TEST_SERVER_TYPE === 'hosted-mode') {
     const {frontend} = getBrowserAndPages();
@@ -241,7 +268,7 @@ export async function resetPages() {
     await reloadDevTools();
   } else {
     // Reset the frontend back to an empty page for the component docs server.
-    await frontend.goto(EMPTY_PAGE, {waitUntil: ['domcontentloaded']});
+    await loadEmptyPageAndWaitForContent(frontend);
   }
 }
 
@@ -264,7 +291,7 @@ export async function reloadDevTools(options: ReloadDevToolsOptions = {}) {
   }
 
   // Reload the DevTools frontend and await the elements panel.
-  await frontend.goto(EMPTY_PAGE, {waitUntil: ['domcontentloaded']});
+  await loadEmptyPageAndWaitForContent(frontend);
   // omit "can_dock=" when it's false because appending "can_dock=false"
   // will make getElementPosition in shared helpers unhappy
   let url = canDock ? `${frontendUrl}&can_dock=true` : frontendUrl;
@@ -273,7 +300,7 @@ export async function reloadDevTools(options: ReloadDevToolsOptions = {}) {
     url += `&panel=${queryParams.panel}`;
   }
 
-  await frontend.goto(url, {waitUntil: ['domcontentloaded']});
+  await frontend.goto(url, {waitUntil: DEVTOOLS_WAITUNTIL_EVENTS});
 
   if (!queryParams.panel && selectedPanel.selector) {
     await frontend.waitForSelector(selectedPanel.selector);
@@ -286,6 +313,10 @@ export async function reloadDevTools(options: ReloadDevToolsOptions = {}) {
     const client = await frontend.target().createCDPSession();
     await client.send('Emulation.setCPUThrottlingRate', {rate: envThrottleRate});
   }
+}
+
+async function loadEmptyPageAndWaitForContent(target: puppeteer.Page) {
+  await target.goto(EMPTY_PAGE, {waitUntil: EMPTY_PAGE_WAITUNTIL_EVENTS});
 }
 
 // Can be run multiple times in the same process.

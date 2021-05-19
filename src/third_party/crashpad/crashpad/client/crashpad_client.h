@@ -472,10 +472,9 @@ class CrashpadClient {
   //!
   //! A handler must have already been installed before calling this method.
   //! This method should be called when an application is ready to start
-  //! processing previously created intermediate dumps and begin uploading.
-  //! Processing will block, so this should not be called on the main UI thread.
-  //! No intermediate dumps will be processed (and therefore no minidumps will
-  //! uploaded) until this method (or DumpWithoutCrash) is called.
+  //! processing previously created intermediate dumps. Processing will block,
+  //! so this should not be called on the main UI thread. No intermediate dumps
+  //! will be processed until this method is called.
   //!
   //! \param[in] annotations Process annotations to set in each crash report.
   //!     Useful when adding crash annotations detected on the next run after a
@@ -483,15 +482,40 @@ class CrashpadClient {
   void ProcessIntermediateDumps(
       const std::map<std::string, std::string>& annotations = {});
 
-  // TODO(justincohen): This method is purely for bringing up iOS interfaces.
-  //! \brief Requests that the handler capture a dump even though there hasn't
-  //!     been a crash.
+  //! \brief Requests that the handler begin in-process uploading of any
+  //! pending reports.
+  //!
+  //! Once called the handler will start looking for pending reports to upload
+  //! on another thread. This method does not block.
+  //!
+  //! A handler must have already been installed before calling this method.
+  void StartProcesingPendingReports();
+
+  //! \brief Requests that the handler capture an intermediate dump even though
+  //!     there hasn't been a crash. The intermediate dump will be converted
+  //!     to a mindump immediately. If StartProcesingPendingReports() has been
+  //!     called, this will also trigger an upload.
+  //!
+  //! For internal use only. Clients should use CRASHPAD_SIMULATE_CRASH().
   //!
   //! A handler must have already been installed before calling this method.
   //!
   //! \param[in] context A NativeCPUContext, generally captured by
   //!     CaptureContext() or similar.
   static void DumpWithoutCrash(NativeCPUContext* context);
+
+  //! \brief Requests that the handler capture an intermediate dump even though
+  //!     there hasn't been a crash. The intermediate dump will not be converted
+  //!     to a mindump until ProcessIntermediateDumps() is called.
+  //!
+  //! For internal use only. Clients should use
+  //! CRASHPAD_SIMULATE_CRASH_AND_DEFER_PROCESSING().
+  //!
+  //! A handler must have already been installed before calling this method.
+  //!
+  //! \param[in] context A NativeCPUContext, generally captured by
+  //!     CaptureContext() or similar.
+  static void DumpWithoutCrashAndDeferProcessing(NativeCPUContext* context);
 #endif
 
 #if defined(OS_APPLE) || DOXYGEN

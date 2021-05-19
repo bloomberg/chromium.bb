@@ -9,8 +9,6 @@
 #include "chrome/browser/accessibility/accessibility_permission_context.h"
 #include "chrome/browser/background_fetch/background_fetch_permission_context.h"
 #include "chrome/browser/background_sync/periodic_background_sync_permission_context.h"
-#include "chrome/browser/clipboard/clipboard_read_write_permission_context.h"
-#include "chrome/browser/clipboard/clipboard_sanitized_write_permission_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/display_capture/display_capture_permission_context.h"
 #include "chrome/browser/generic_sensor/sensor_permission_context.h"
@@ -19,6 +17,7 @@
 #include "chrome/browser/media/midi_sysex_permission_context.h"
 #include "chrome/browser/media/webrtc/camera_pan_tilt_zoom_permission_context.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permission_context.h"
+#include "chrome/browser/nfc/chrome_nfc_permission_context_delegate.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,6 +32,9 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/background_sync/background_sync_permission_context.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/permissions/contexts/clipboard_read_write_permission_context.h"
+#include "components/permissions/contexts/clipboard_sanitized_write_permission_context.h"
+#include "components/permissions/contexts/file_handling_permission_context.h"
 #include "components/permissions/contexts/font_access_permission_context.h"
 #include "components/permissions/contexts/payment_handler_permission_context.h"
 #include "components/permissions/contexts/webxr_permission_context.h"
@@ -45,12 +47,12 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/geolocation/geolocation_permission_context_delegate_android.h"
-#include "chrome/browser/nfc/nfc_permission_context_android.h"
 #include "components/permissions/contexts/geolocation_permission_context_android.h"
+#include "components/permissions/contexts/nfc_permission_context_android.h"
 #else
 #include "chrome/browser/geolocation/geolocation_permission_context_delegate.h"
-#include "chrome/browser/nfc/nfc_permission_context.h"
 #include "components/permissions/contexts/geolocation_permission_context.h"
+#include "components/permissions/contexts/nfc_permission_context.h"
 #endif
 
 namespace {
@@ -94,9 +96,11 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
   permission_contexts[ContentSettingsType::ACCESSIBILITY_EVENTS] =
       std::make_unique<AccessibilityPermissionContext>(profile);
   permission_contexts[ContentSettingsType::CLIPBOARD_READ_WRITE] =
-      std::make_unique<ClipboardReadWritePermissionContext>(profile);
+      std::make_unique<permissions::ClipboardReadWritePermissionContext>(
+          profile);
   permission_contexts[ContentSettingsType::CLIPBOARD_SANITIZED_WRITE] =
-      std::make_unique<ClipboardSanitizedWritePermissionContext>(profile);
+      std::make_unique<permissions::ClipboardSanitizedWritePermissionContext>(
+          profile);
   permission_contexts[ContentSettingsType::PAYMENT_HANDLER] =
       std::make_unique<payments::PaymentHandlerPermissionContext>(profile);
   permission_contexts[ContentSettingsType::BACKGROUND_FETCH] =
@@ -111,12 +115,15 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
   permission_contexts[ContentSettingsType::WAKE_LOCK_SYSTEM] =
       std::make_unique<WakeLockPermissionContext>(
           profile, ContentSettingsType::WAKE_LOCK_SYSTEM);
+  auto nfc_delegate = std::make_unique<ChromeNfcPermissionContextDelegate>();
 #if !defined(OS_ANDROID)
   permission_contexts[ContentSettingsType::NFC] =
-      std::make_unique<NfcPermissionContext>(profile);
+      std::make_unique<permissions::NfcPermissionContext>(
+          profile, std::move(nfc_delegate));
 #else
   permission_contexts[ContentSettingsType::NFC] =
-      std::make_unique<NfcPermissionContextAndroid>(profile);
+      std::make_unique<permissions::NfcPermissionContextAndroid>(
+          profile, std::move(nfc_delegate));
 #endif
   permission_contexts[ContentSettingsType::VR] =
       std::make_unique<permissions::WebXrPermissionContext>(
@@ -134,6 +141,8 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
       std::make_unique<FontAccessPermissionContext>(profile);
   permission_contexts[ContentSettingsType::DISPLAY_CAPTURE] =
       std::make_unique<DisplayCapturePermissionContext>(profile);
+  permission_contexts[ContentSettingsType::FILE_HANDLING] =
+      std::make_unique<FileHandlingPermissionContext>(profile);
   return permission_contexts;
 }
 }  // namespace

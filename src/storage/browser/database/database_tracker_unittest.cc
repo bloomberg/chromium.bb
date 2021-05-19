@@ -16,7 +16,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -30,8 +29,6 @@
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
-
-using base::ASCIIToUTF16;
 
 namespace storage {
 
@@ -51,7 +48,7 @@ class TestObserver : public DatabaseTracker::Observer {
 
   ~TestObserver() override = default;
   void OnDatabaseSizeChanged(const std::string& origin_identifier,
-                             const base::string16& database_name,
+                             const std::u16string& database_name,
                              int64_t database_size) override {
     if (!observe_size_changes_)
       return;
@@ -62,7 +59,7 @@ class TestObserver : public DatabaseTracker::Observer {
   }
   void OnDatabaseScheduledForDeletion(
       const std::string& origin_identifier,
-      const base::string16& database_name) override {
+      const std::u16string& database_name) override {
     if (!observe_scheduled_deletions_)
       return;
     new_notification_received_ = true;
@@ -75,7 +72,7 @@ class TestObserver : public DatabaseTracker::Observer {
     return temp_new_notification_received;
   }
   std::string GetNotificationOriginIdentifier() { return origin_identifier_; }
-  base::string16 GetNotificationDatabaseName() { return database_name_; }
+  std::u16string GetNotificationDatabaseName() { return database_name_; }
   int64_t GetNotificationDatabaseSize() { return database_size_; }
 
  private:
@@ -83,13 +80,13 @@ class TestObserver : public DatabaseTracker::Observer {
   bool observe_size_changes_;
   bool observe_scheduled_deletions_;
   std::string origin_identifier_;
-  base::string16 database_name_;
+  std::u16string database_name_;
   int64_t database_size_;
 };
 
 void CheckNotificationReceived(TestObserver* observer,
                                const std::string& expected_origin_identifier,
-                               const base::string16& expected_database_name,
+                               const std::u16string& expected_database_name,
                                int64_t expected_database_size) {
   EXPECT_TRUE(observer->DidReceiveNewNotification());
   EXPECT_EQ(expected_origin_identifier,
@@ -228,18 +225,14 @@ class DatabaseTracker_TestHelper_Test {
               GetIdentifierFromOrigin(GURL(kOrigin1Url));
           const std::string kOrigin2 =
               GetIdentifierFromOrigin(GURL(kOrigin2Url));
-          const base::string16 kDB1 = ASCIIToUTF16("db1");
-          const base::string16 kDB2 = ASCIIToUTF16("db2");
-          const base::string16 kDB3 = ASCIIToUTF16("db3");
-          const base::string16 kDescription =
-              ASCIIToUTF16("database_description");
+          const std::u16string kDB1 = u"db1";
+          const std::u16string kDB2 = u"db2";
+          const std::u16string kDB3 = u"db3";
+          const std::u16string kDescription = u"database_description";
 
-          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                                  &database_size);
-          tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
-                                  &database_size);
-          tracker->DatabaseOpened(kOrigin2, kDB3, kDescription, 0,
-                                  &database_size);
+          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, &database_size);
+          tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, &database_size);
+          tracker->DatabaseOpened(kOrigin2, kDB3, kDescription, &database_size);
 
           EXPECT_TRUE(
               base::CreateDirectory(tracker->GetOriginDirectory(kOrigin1)));
@@ -270,8 +263,7 @@ class DatabaseTracker_TestHelper_Test {
           EXPECT_FALSE(base::PathExists(tracker->GetOriginDirectory(kOrigin1)));
 
           // Recreate db1.
-          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                                  &database_size);
+          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, &database_size);
           EXPECT_TRUE(
               base::CreateDirectory(tracker->GetOriginDirectory(kOrigin1)));
           EXPECT_TRUE(
@@ -346,11 +338,10 @@ class DatabaseTracker_TestHelper_Test {
               GetIdentifierFromOrigin(GURL(kOrigin1Url));
           const std::string kOrigin2 =
               GetIdentifierFromOrigin(GURL(kOrigin2Url));
-          const base::string16 kDB1 = ASCIIToUTF16("db1");
-          const base::string16 kDB2 = ASCIIToUTF16("db2");
-          const base::string16 kDB3 = ASCIIToUTF16("db3");
-          const base::string16 kDescription =
-              ASCIIToUTF16("database_description");
+          const std::u16string kDB1 = u"db1";
+          const std::u16string kDB2 = u"db2";
+          const std::u16string kDB3 = u"db3";
+          const std::u16string kDescription = u"database_description";
 
           // Get the info for kOrigin1 and kOrigin2
           DatabaseTracker::CachedOriginInfo* origin1_info =
@@ -360,14 +351,11 @@ class DatabaseTracker_TestHelper_Test {
           EXPECT_TRUE(origin1_info);
           EXPECT_TRUE(origin2_info);
 
-          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                                  &database_size);
+          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, &database_size);
           EXPECT_EQ(0, database_size);
-          tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
-                                  &database_size);
+          tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, &database_size);
           EXPECT_EQ(0, database_size);
-          tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, 0,
-                                  &database_size);
+          tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, &database_size);
           EXPECT_EQ(0, database_size);
 
           // Write some data to each file and check that the listeners are
@@ -398,8 +386,7 @@ class DatabaseTracker_TestHelper_Test {
           tracker->DatabaseClosed(kOrigin1, kDB3);
 
           // Open an existing database and check the reported size
-          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                                  &database_size);
+          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, &database_size);
           EXPECT_EQ(1, database_size);
           tracker->DatabaseClosed(kOrigin1, kDB1);
 
@@ -410,8 +397,7 @@ class DatabaseTracker_TestHelper_Test {
           // Then make sure that DatabaseOpened() still returns the correct
           // result.
           tracker->CloseTrackerDatabaseAndClearCaches();
-          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                                  &database_size);
+          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, &database_size);
           EXPECT_EQ(1, database_size);
           tracker->DatabaseClosed(kOrigin1, kDB1);
 
@@ -419,8 +405,7 @@ class DatabaseTracker_TestHelper_Test {
           tracker->RemoveObserver(&observer1);
 
           // Trying to delete a database in use should fail
-          tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, 0,
-                                  &database_size);
+          tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, &database_size);
           EXPECT_FALSE(tracker->DeleteClosedDatabase(kOrigin1, kDB3));
           origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
           EXPECT_TRUE(origin1_info);
@@ -448,8 +433,7 @@ class DatabaseTracker_TestHelper_Test {
           EXPECT_EQ(2, origins_info[1].TotalSize());
 
           // Trying to delete an origin with databases in use should fail
-          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
-                                  &database_size);
+          tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, &database_size);
           EXPECT_FALSE(tracker->DeleteOrigin(kOrigin1, false));
           origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
           EXPECT_TRUE(origin1_info);
@@ -473,8 +457,8 @@ class DatabaseTracker_TestHelper_Test {
   static void DatabaseTrackerQuotaIntegration(bool incognito_mode) {
     const url::Origin kOrigin(url::Origin::Create(GURL(kOrigin1Url)));
     const std::string kOriginId = GetIdentifierFromOrigin(kOrigin);
-    const base::string16 kName = ASCIIToUTF16("name");
-    const base::string16 kDescription = ASCIIToUTF16("description");
+    const std::u16string kName = u"name";
+    const std::u16string kDescription = u"description";
 
     base::test::TaskEnvironment task_environment;
     base::ScopedTempDir temp_dir;
@@ -499,7 +483,7 @@ class DatabaseTracker_TestHelper_Test {
           // then delete it. Observe the tracker notifies accordingly.
 
           int64_t database_size = 0;
-          tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
+          tracker->DatabaseOpened(kOriginId, kName, kDescription,
                                   &database_size);
           EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
           test_quota_proxy->reset();
@@ -536,7 +520,7 @@ class DatabaseTracker_TestHelper_Test {
           // then close it (at which time deletion will actually occur).
           // Observe the tracker notifies accordingly.
 
-          tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
+          tracker->DatabaseOpened(kOriginId, kName, kDescription,
                                   &database_size);
           EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
           test_quota_proxy->reset();
@@ -573,7 +557,7 @@ class DatabaseTracker_TestHelper_Test {
           // a renderer crash.
           // Observe the tracker notifies accordingly.
 
-          tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
+          tracker->DatabaseOpened(kOriginId, kName, kDescription,
                                   &database_size);
           EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
           test_quota_proxy->reset();
@@ -600,9 +584,9 @@ class DatabaseTracker_TestHelper_Test {
     int64_t database_size = 0;
     const std::string kOrigin1 = GetIdentifierFromOrigin(GURL(kOrigin1Url));
     const std::string kOrigin2 = GetIdentifierFromOrigin(GURL(kOrigin2Url));
-    const base::string16 kDB1 = ASCIIToUTF16("db1");
-    const base::string16 kDB2 = ASCIIToUTF16("db2");
-    const base::string16 kDescription = ASCIIToUTF16("database_description");
+    const std::u16string kDB1 = u"db1";
+    const std::u16string kDB2 = u"db2";
+    const std::u16string kDescription = u"database_description";
 
     // Initialize the tracker database.
     base::test::TaskEnvironment task_environment;
@@ -625,10 +609,10 @@ class DatabaseTracker_TestHelper_Test {
                 base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
 
             // Open two new databases.
-            tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
+            tracker->DatabaseOpened(kOrigin1, kDB1, kDescription,
                                     &database_size);
             EXPECT_EQ(0, database_size);
-            tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
+            tracker->DatabaseOpened(kOrigin2, kDB2, kDescription,
                                     &database_size);
             EXPECT_EQ(0, database_size);
 
@@ -695,9 +679,9 @@ class DatabaseTracker_TestHelper_Test {
     int64_t database_size = 0;
     const std::string kOrigin1 = GetIdentifierFromOrigin(GURL(kOrigin1Url));
     const std::string kOrigin2 = GetIdentifierFromOrigin(GURL(kOrigin2Url));
-    const base::string16 kDB1 = ASCIIToUTF16("db1");
-    const base::string16 kDB2 = ASCIIToUTF16("db2");
-    const base::string16 kDescription = ASCIIToUTF16("database_description");
+    const std::u16string kDB1 = u"db1";
+    const std::u16string kDB2 = u"db2";
+    const std::u16string kDescription = u"database_description";
 
     // Initialize the tracker database.
     base::test::TaskEnvironment task_environment;
@@ -722,10 +706,10 @@ class DatabaseTracker_TestHelper_Test {
             tracker->SetForceKeepSessionState();
 
             // Open two new databases.
-            tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
+            tracker->DatabaseOpened(kOrigin1, kDB1, kDescription,
                                     &database_size);
             EXPECT_EQ(0, database_size);
-            tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
+            tracker->DatabaseOpened(kOrigin2, kDB2, kDescription,
                                     &database_size);
             EXPECT_EQ(0, database_size);
 
@@ -787,10 +771,9 @@ class DatabaseTracker_TestHelper_Test {
   static void EmptyDatabaseNameIsValid() {
     const GURL kOrigin(kOrigin1Url);
     const std::string kOriginId = GetIdentifierFromOrigin(kOrigin);
-    const base::string16 kEmptyName;
-    const base::string16 kDescription(ASCIIToUTF16("description"));
-    const base::string16 kChangedDescription(
-        ASCIIToUTF16("changed_description"));
+    const std::u16string kEmptyName;
+    const std::u16string kDescription(u"description");
+    const std::u16string kChangedDescription(u"changed_description");
 
     // Initialize a tracker database, no need to put it on disk.
     const bool kUseInMemoryTrackerDatabase = true;
@@ -813,7 +796,7 @@ class DatabaseTracker_TestHelper_Test {
 
           // Create a db with an empty name.
           int64_t database_size = -1;
-          tracker->DatabaseOpened(kOriginId, kEmptyName, kDescription, 0,
+          tracker->DatabaseOpened(kOriginId, kEmptyName, kDescription,
                                   &database_size);
           EXPECT_EQ(0, database_size);
           tracker->DatabaseModified(kOriginId, kEmptyName);
@@ -821,7 +804,7 @@ class DatabaseTracker_TestHelper_Test {
           EXPECT_EQ(1u, infos.size());
           EXPECT_FALSE(
               tracker->GetFullDBFilePath(kOriginId, kEmptyName).empty());
-          tracker->DatabaseOpened(kOriginId, kEmptyName, kChangedDescription, 0,
+          tracker->DatabaseOpened(kOriginId, kEmptyName, kChangedDescription,
                                   &database_size);
           infos.clear();
           EXPECT_TRUE(tracker->GetAllOriginsInfo(&infos));
@@ -845,8 +828,8 @@ class DatabaseTracker_TestHelper_Test {
   static void HandleSqliteError() {
     const GURL kOrigin(kOrigin1Url);
     const std::string kOriginId = GetIdentifierFromOrigin(kOrigin);
-    const base::string16 kName(ASCIIToUTF16("name"));
-    const base::string16 kDescription(ASCIIToUTF16("description"));
+    const std::u16string kName(u"name");
+    const std::u16string kDescription(u"description");
 
     // Initialize a tracker database, no need to put it on disk.
     const bool kUseInMemoryTrackerDatabase = true;
@@ -876,7 +859,7 @@ class DatabaseTracker_TestHelper_Test {
           // Create a record of a database in the tracker db and create
           // a spoof_db_file on disk in the expected location.
           int64_t database_size = 0;
-          tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
+          tracker->DatabaseOpened(kOriginId, kName, kDescription,
                                   &database_size);
           base::FilePath spoof_db_file =
               tracker->GetFullDBFilePath(kOriginId, kName);
@@ -907,7 +890,7 @@ class DatabaseTracker_TestHelper_Test {
           // --------------------------------------------------------
           // Create another record of a database in the tracker db and create
           // a spoof_db_file on disk in the expected location.
-          tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
+          tracker->DatabaseOpened(kOriginId, kName, kDescription,
                                   &database_size);
           base::FilePath spoof_db_file2 =
               tracker->GetFullDBFilePath(kOriginId, kName);

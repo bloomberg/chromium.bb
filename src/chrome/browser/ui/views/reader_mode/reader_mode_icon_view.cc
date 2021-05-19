@@ -76,7 +76,8 @@ void ReaderModeIconView::ReadyToCommitNavigation(
                                       GetPageType(web_contents));
 }
 
-void ReaderModeIconView::DocumentAvailableInMainFrame() {
+void ReaderModeIconView::DocumentAvailableInMainFrame(
+    content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
     return;
@@ -130,7 +131,7 @@ const gfx::VectorIcon& ReaderModeIconView::GetVectorIcon() const {
   return GetActive() ? kReaderModeIcon : kReaderModeDisabledIcon;
 }
 
-base::string16 ReaderModeIconView::GetTextForTooltipAndAccessibleName() const {
+std::u16string ReaderModeIconView::GetTextForTooltipAndAccessibleName() const {
   return l10n_util::GetStringUTF16(GetActive() ? IDS_EXIT_DISTILLED_PAGE
                                                : IDS_DISTILL_PAGE);
 }

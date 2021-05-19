@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as SDK from '../../../../front_end/core/sdk/sdk.js';
+import * as Resources from '../../../../front_end/panels/application/application.js';
 import * as Coordinator from '../../../../front_end/render_coordinator/render_coordinator.js';
-import * as Resources from '../../../../front_end/resources/resources.js';
-import * as SDK from '../../../../front_end/sdk/sdk.js';
 import * as Components from '../../../../front_end/ui/components/components.js';
-import {assertShadowRoot, getElementWithinComponent, renderElementIntoDOM} from '../helpers/DOMHelpers.js';
+import {assertShadowRoot, getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM} from '../helpers/DOMHelpers.js';
 
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 
@@ -31,6 +31,9 @@ const makeFrame = (): SDK.ResourceTreeModel.ResourceTreeFrame => {
     }),
     resourceTreeModel: () => ({
       target: () => ({
+        // set to true so that Linkifier.maybeLinkifyScriptLocation() exits
+        // early and does not run into other problems with this mock
+        isDisposed: () => true,
         model: () => ({
           getSecurityIsolationStatus: () => ({
             coep: {
@@ -45,16 +48,18 @@ const makeFrame = (): SDK.ResourceTreeModel.ResourceTreeFrame => {
         }),
       }),
     }),
+    _creationStackTrace: {
+      callFrames: [{
+        functionName: 'function1',
+        url: 'http://www.example.com/script.js',
+        lineNumber: 15,
+        columnNumber: 10,
+        scriptId: 'someScriptId',
+      }],
+    },
   } as unknown as SDK.ResourceTreeModel.ResourceTreeFrame;
   return newFrame;
 };
-
-function extractTextFromReportView(shadowRoot: ShadowRoot, selector: string) {
-  const elements = Array.from(shadowRoot.querySelectorAll(selector));
-  return elements.map(element => {
-    return element.textContent ? element.textContent.trim().replace(/[ \n]+/g, ' ') : '';
-  });
-}
 
 describe('FrameDetailsView', () => {
   it('renders with a title', async () => {
@@ -85,11 +90,12 @@ describe('FrameDetailsView', () => {
     await coordinator.done();
     await coordinator.done();  // 2nd call awaits async render
 
-    const keys = extractTextFromReportView(component.shadowRoot, 'devtools-report-key');
+    const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
     assert.deepEqual(keys, [
       'URL',
       'Origin',
       'Owner Element',
+      'Frame Creation Stack Trace',
       'Secure Context',
       'Cross-Origin Isolated',
       'Cross-Origin Embedder Policy',
@@ -98,11 +104,12 @@ describe('FrameDetailsView', () => {
       'Measure Memory',
     ]);
 
-    const values = extractTextFromReportView(component.shadowRoot, 'devtools-report-value');
+    const values = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-value');
     assert.deepEqual(values, [
       'https://www.example.com/path/page.html',
       'https://www.example.com',
       '<iframe>',
+      '',
       'Yes Localhost is always a secure context',
       'Yes',
       'None',
@@ -110,5 +117,14 @@ describe('FrameDetailsView', () => {
       'available, transferable',
       'available Learn more',
     ]);
+
+    const stackTrace =
+        getElementWithinComponent(component, 'devtools-resources-stack-trace', Resources.StackTrace.StackTrace);
+    assertShadowRoot(stackTrace.shadowRoot);
+    const expandableList =
+        getElementWithinComponent(stackTrace, 'devtools-expandable-list', Components.ExpandableList.ExpandableList);
+    assertShadowRoot(expandableList.shadowRoot);
+    const expandableListText = getCleanTextContentFromElements(expandableList.shadowRoot, '.stack-trace-row');
+    assert.deepEqual(expandableListText, ['function1 @ www.example.com/script.js:16']);
   });
 });

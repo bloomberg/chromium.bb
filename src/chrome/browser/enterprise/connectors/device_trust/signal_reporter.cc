@@ -24,9 +24,9 @@ void DeviceTrustSignalReporter::Init(
       return;
     }
     case CreateQueueStatus::DONE: {
-      // CreateReportQueue should not be retried if previously failed; need
-      // browser restart or further investigation about why creation of
-      // ReportQueue failed.
+      // reporting::ReportQueueProvider::CreateQueue should not be retried if
+      // previously failed; need browser restart or further investigation about
+      // why creation of ReportQueue failed.
       std::move(done_cb).Run(report_queue_.get() != nullptr);
       return;
     }
@@ -46,8 +46,14 @@ void DeviceTrustSignalReporter::Init(
           policy_check);
   // Create ReportQueueConfiguration.
   policy::DMToken dm_token = GetDmToken();
+  if (!dm_token.is_valid()) {
+    LOG(ERROR) << "Failed to retrieve valid DM token";
+    create_queue_status_ = CreateQueueStatus::DONE;
+    std::move(done_cb).Run(false);
+    return;
+  }
   auto config_result = reporting::ReportQueueConfiguration::Create(
-      dm_token, reporting::Destination::DEVICE_TRUST_REPORTS,
+      dm_token.value(), reporting::Destination::DEVICE_TRUST_REPORTS,
       std::move(policy_cb));
 
   // Bail out if ReportQueueConfiguration creation failed.
@@ -59,8 +65,8 @@ void DeviceTrustSignalReporter::Init(
     return;
   }
 
-  // Wrap to convert reporting::ReportingClient::CreateReportQueueResponse to
-  // bool for done_cb.
+  // Wrap to convert reporting::ReportQueueProvider::CreateReportQueueResponse
+  // to bool for done_cb.
   auto create_queue_cb =
       base::BindOnce(&DeviceTrustSignalReporter::OnCreateReportQueueResponse,
                      weak_factory_.GetWeakPtr(), std::move(done_cb));
@@ -86,7 +92,8 @@ void DeviceTrustSignalReporter::SendReport(
 
 void DeviceTrustSignalReporter::OnCreateReportQueueResponse(
     base::OnceCallback<void(bool)> create_queue_cb,
-    reporting::ReportingClient::CreateReportQueueResponse report_queue_result) {
+    reporting::ReportQueueProvider::CreateReportQueueResponse
+        report_queue_result) {
   bool success = report_queue_result.ok();
   if (success) {
     report_queue_ = std::move(report_queue_result.ValueOrDie());
@@ -105,10 +112,10 @@ policy::DMToken DeviceTrustSignalReporter::GetDmToken() const {
 }
 
 void DeviceTrustSignalReporter::PostCreateReportQueueTask(
-    reporting::ReportingClient::CreateReportQueueCallback create_queue_cb,
+    reporting::ReportQueueProvider::CreateReportQueueCallback create_queue_cb,
     std::unique_ptr<reporting::ReportQueueConfiguration> config) {
   auto create_queue_task =
-      base::BindOnce(&reporting::ReportingClient::CreateReportQueue,
+      base::BindOnce(&reporting::ReportQueueProvider::CreateQueue,
                      std::move(config), std::move(create_queue_cb));
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, std::move(create_queue_task));

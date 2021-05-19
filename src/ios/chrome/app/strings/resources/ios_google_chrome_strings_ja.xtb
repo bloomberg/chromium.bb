@@ -4,6 +4,7 @@
 <translation id="1282031177488366470">Chrome の機能と動作の改善に協力する</translation>
 <translation id="1314663809820920746">このデバイスのブックマーク、履歴、パスワードなどの設定は、引き続き使用できます。これらの設定に変更を加えた場合、変更内容は Google アカウントと同期されません。</translation>
 <translation id="1479202195792305274">Google アカウントでログインすると、Chrome でパスワードを確認できるようになります。</translation>
+<translation id="1493827051843127077">Chrome を既定に設定すると、タブ、パスワード、お支払い情報をすべてのデバイスで同期できるようになります</translation>
 <translation id="1504372625950710826">Chrome でアップデートを確認できませんでした。インターネット接続を確認してみてください。</translation>
 <translation id="1682483655351012182">Chrome のデータを同期する</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -14,6 +15,7 @@
 <translation id="2342919707875585281">Chrome で、許可したサイトと現在地が共有されます。</translation>
 <translation id="2347208864470321755">この機能を有効にすると、外国語のページで翻訳ツールが表示されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">Chrome をデフォルトのブラウザにする</translation>
+<translation id="2561231791489583059">Chrome を既定のブラウザとして使用すると、危険なサイトから保護され、パスワードを安全に保つことができます</translation>
 <translation id="2574249610672786438">どのデバイスからでも Chrome で自分のタブにアクセスするには、すべてのデバイスでログインしてください</translation>
 <translation id="2576431527583832481">Chrome のアップデートが見つかりました。新しいバージョンが利用可能です。</translation>
 <translation id="257708665678654955">次回から Google Chrome でこのサイトの <ph name="LANGUAGE_NAME" /> ページの翻訳を表示しますか？</translation>
@@ -30,13 +32,12 @@
 <translation id="3522659714780527202">どのデバイスからでも Chrome で自分のタブにアクセスするには、同期をオンにしてください</translation>
 <translation id="3533694711092285624">保存されているパスワードがありません。パスワードを保存すると Chrome で確認できるようになります。</translation>
 <translation id="3706101708757577809">メッセージ、ドキュメント、他のアプリのリンクをタップしたときに、常に Chrome が使えるようになります。</translation>
+<translation id="3720541637541300822">Chrome を終了するときにシークレット タブをロックする</translation>
 <translation id="384394811301901750">現在 Google Chrome ではカメラを使用できません</translation>
-<translation id="38949020760388809">このデバイスから Chrome データを削除するかどうかを選択してください。</translation>
 <translation id="3980220367029651214">同期アカウントを <ph name="USER_EMAIL1" /> から <ph name="USER_EMAIL2" /> へ切り替えます。既存の Chrome データは <ph name="DOMAIN" /> で管理されています。データはこのデバイスから削除されますが、<ph name="USER_EMAIL1" /> で保持されます。</translation>
 <translation id="3984746313391923992">組織が Chrome にログインしないように求めています。</translation>
 <translation id="3988789688219830639">Google Chrome で写真または動画にアクセスできません。iOS の [設定] &gt; [プライバシー] &gt; [写真] でアクセスを有効にしてください。</translation>
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
-<translation id="415767770115540173">ユーザーの場所に基づいてChromeでGoogleを使いやすくします。</translation>
 <translation id="417201473131094001">Chrome Canary ではサポートされていません</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4249068189593983585">Chrome の使い方のヒント: タブのオプションをさらに表示するには、画面の下部または上部のツールバーにある [タブを表示] を長押しします。</translation>
@@ -51,7 +52,9 @@
 <translation id="5642200033778930880">Google Chrome では、分割表示モードでカメラを使用することはできません</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">オフラインのため Chrome でアップデートを確認できません</translation>
+<translation id="5716154293141027663">他のアプリでタップしたリンクを Chrome で開くことができます</translation>
 <translation id="5854621639439811139">Chrome の使い方のヒント: 戻る、進む、検索など一部のボタンは画面の下部に表示されるようになりました。</translation>
+<translation id="5876773482963502140">Chrome に位置情報の利用を許可すると、許可を与えたサイトに位置情報が提供されます。また、サイトで付近の店舗やニュースなどの地域情報を表示できる場合に位置情報を要求されることがあります。</translation>
 <translation id="6036420186814142909">Google Chromeには、インターネットのデータやウェブページの読み込み速度を管理できる機能があります。
 <ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="6181930887571472871">Chrome に切り替え</translation>
@@ -71,6 +74,7 @@
 <translation id="7261678641327190792">Chrome でパスワードを確認できません</translation>
 <translation id="7265369419224458312">パソコンで開いたタブにこちらからアクセスできます。パソコンでChromeを開き、メニューから[Chromeにログイン]を選択してください。</translation>
 <translation id="7272930098487145294">画像を保存するには、[設定] をタップして写真への追加を Chrome に許可してください</translation>
+<translation id="7275945473750112644">アカウントは <ph name="HOSTED_DOMAIN" /> で管理されているため、Chrome データはこのデバイスから削除されます</translation>
 <translation id="7400722733683201933">Google Chrome について</translation>
 <translation id="7501046334262221972">Chrome をデフォルトのブラウザにするには、[設定] を開き、[デフォルトのブラウザ App] をタップして、Chrome を選択します。</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
@@ -79,8 +83,9 @@
 <translation id="766361182512894255">データ侵害によってパスワードが漏洩しました。パスワードをすぐに変更することをおすすめします。</translation>
 <translation id="7698568245838009292">Chrome がカメラへのアクセス許可を求めています</translation>
 <translation id="7855730255114109580">Google Chrome は最新版です</translation>
-<translation id="8109233255338845204">アカウントは <ph name="HOSTED_DOMAIN" /> で管理されているため、Chrome データはこのデバイスから削除されます。</translation>
+<translation id="8022947259858476807">Chrome を既定に設定すると、リンクの表示やウィジェットからの検索、他のアプリでのパスワードの自動入力に使用できるようになります</translation>
 <translation id="8160472928944011082">Chrome を更新できません</translation>
+<translation id="8357607116237445042">このデバイスから Chrome データを削除するかどうかを選択してください</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="840168496893712993">アドオンが原因でChromeがクラッシュしました。アドオンをアンインストールしてみてください。</translation>
 <translation id="8459495907675268833">選択したデータが Chrome から削除され、同期されたデバイスからも削除されました。他の Google サービスでの検索や操作など、Google アカウントの他の形式の閲覧履歴が history.google.com に残ることがあります。</translation>
@@ -89,5 +94,6 @@
   2. [デフォルトのブラウザアプリ] をタップします。
   3. [Chrome] を選択します。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="9135668017386497357">Chrome に位置情報の利用を許可した場合、その情報が Chrome から既定の検索エンジンや許可済みのサイトに送信されます。また、サイトで付近の店舗やニュースなどの地域情報を表示できる場合に位置情報を要求されることがあります。</translation>
+<translation id="8736550665979974340">Google Chrome でいつでも安全にブラウジング</translation>
+<translation id="9112744793181547300">Chrome を既定に設定しますか？</translation>
 </translationbundle>

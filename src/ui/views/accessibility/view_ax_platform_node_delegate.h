@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -55,7 +55,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   gfx::NativeViewAccessible GetNativeObject() const override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
 #if defined(OS_APPLE)
-  void AnnounceText(const base::string16& text) override;
+  void AnnounceText(const std::u16string& text) override;
 #endif
 
   // ui::AXPlatformNodeDelegate.
@@ -89,7 +89,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
-  base::string16 GetAuthorUniqueId() const override;
+  std::u16string GetAuthorUniqueId() const override;
   bool IsMinimized() const override;
   // Also in |ViewAccessibility|.
   const ui::AXUniqueId& GetUniqueId() const override;

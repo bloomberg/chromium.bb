@@ -4,9 +4,9 @@
 
 #include "quic/core/quic_coalesced_packet.h"
 
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "quic/platform/api/quic_bug_tracker.h"
-#include "quic/platform/api/quic_ptr_util.h"
 
 namespace quic {
 
@@ -24,7 +24,7 @@ bool QuicCoalescedPacket::MaybeCoalescePacket(
     QuicBufferAllocator* allocator,
     QuicPacketLength current_max_packet_length) {
   if (packet.encrypted_length == 0) {
-    QUIC_BUG << "Trying to coalesce an empty packet";
+    QUIC_BUG(quic_bug_10611_1) << "Trying to coalesce an empty packet";
     return true;
   }
   if (length_ == 0) {
@@ -47,7 +47,8 @@ bool QuicCoalescedPacket::MaybeCoalescePacket(
       return false;
     }
     if (max_packet_length_ != current_max_packet_length) {
-      QUIC_BUG << "Max packet length changes in the middle of the write path";
+      QUIC_BUG(quic_bug_10611_2)
+          << "Max packet length changes in the middle of the write path";
       return false;
     }
     if (ContainsPacketOfEncryptionLevel(packet.encryption_level)) {
@@ -73,7 +74,7 @@ bool QuicCoalescedPacket::MaybeCoalescePacket(
   if (packet.encryption_level == ENCRYPTION_INITIAL) {
     // Save a copy of ENCRYPTION_INITIAL packet (excluding encrypted buffer, as
     // the packet will be re-serialized later).
-    initial_packet_ = QuicWrapUnique<SerializedPacket>(
+    initial_packet_ = absl::WrapUnique<SerializedPacket>(
         CopySerializedPacket(packet, allocator, /*copy_buffer=*/false));
     return true;
   }
@@ -102,9 +103,9 @@ void QuicCoalescedPacket::NeuterInitialPacket() {
     return;
   }
   if (length_ < initial_packet_->encrypted_length) {
-    QUIC_BUG << "length_: " << length_
-             << ", is less than initial packet length: "
-             << initial_packet_->encrypted_length;
+    QUIC_BUG(quic_bug_10611_3)
+        << "length_: " << length_ << ", is less than initial packet length: "
+        << initial_packet_->encrypted_length;
     Clear();
     return;
   }
@@ -145,11 +146,22 @@ bool QuicCoalescedPacket::ContainsPacketOfEncryptionLevel(
 TransmissionType QuicCoalescedPacket::TransmissionTypeOfPacket(
     EncryptionLevel level) const {
   if (!ContainsPacketOfEncryptionLevel(level)) {
-    QUIC_BUG << "Coalesced packet does not contain packet of encryption level: "
-             << EncryptionLevelToString(level);
+    QUIC_BUG(quic_bug_10611_4)
+        << "Coalesced packet does not contain packet of encryption level: "
+        << EncryptionLevelToString(level);
     return NOT_RETRANSMISSION;
   }
   return transmission_types_[level];
+}
+
+size_t QuicCoalescedPacket::NumberOfPackets() const {
+  size_t num_of_packets = 0;
+  for (int8_t i = ENCRYPTION_INITIAL; i < NUM_ENCRYPTION_LEVELS; ++i) {
+    if (ContainsPacketOfEncryptionLevel(static_cast<EncryptionLevel>(i))) {
+      ++num_of_packets;
+    }
+  }
+  return num_of_packets;
 }
 
 std::string QuicCoalescedPacket::ToString(size_t serialized_length) const {

@@ -50,6 +50,11 @@ static bool g_thread_cache_key_created = false;
 constexpr base::TimeDelta ThreadCacheRegistry::kMinPurgeInterval;
 constexpr base::TimeDelta ThreadCacheRegistry::kMaxPurgeInterval;
 constexpr base::TimeDelta ThreadCacheRegistry::kDefaultPurgeInterval;
+uint8_t ThreadCache::global_limits_[ThreadCache::kBucketCount];
+
+// Start with the normal size, not the maximum one.
+uint16_t ThreadCache::largest_active_bucket_index_ =
+    BucketIndexForSize(kDefaultSizeThreshold);
 
 // static
 ThreadCacheRegistry& ThreadCacheRegistry::Instance() {
@@ -105,6 +110,21 @@ void ThreadCacheRegistry::DumpStats(bool my_thread_only,
 void ThreadCacheRegistry::PurgeAll() {
   auto* current_thread_tcache = ThreadCache::Get();
 
+  // May take a while, don't hold the lock while purging.
+  //
+  // In most cases, the current thread is more important than other ones. For
+  // instance in renderers, it is the main thread. It is also the only thread
+  // that we can synchronously purge.
+  //
+  // The reason why we trigger the purge for this one first is that assuming
+  // that all threads are allocating memory, they will start purging
+  // concurrently in the loop below. This will then make them all contend with
+  // the main thread for the partition lock, since it is acquired/released once
+  // per bucket. By purging the main thread first, we avoid these interferences
+  // for this thread at least.
+  if (ThreadCache::IsValid(current_thread_tcache))
+    current_thread_tcache->Purge();
+
   {
     PartitionAutoLock scoped_locker(GetLock());
     ThreadCache* tcache = list_head_;
@@ -119,10 +139,6 @@ void ThreadCacheRegistry::PurgeAll() {
       tcache = tcache->next_;
     }
   }
-
-  // May take a while, don't hold the lock while purging.
-  if (ThreadCache::IsValid(current_thread_tcache))
-    current_thread_tcache->Purge();
 }
 
 void ThreadCacheRegistry::ForcePurgeAllThreadAfterForkUnsafe() {
@@ -158,6 +174,37 @@ void ThreadCacheRegistry::StartPeriodicPurge() {
   PostDelayedPurgeTask();
 }
 
+void ThreadCacheRegistry::SetThreadCacheMultiplier(float multiplier) {
+  // Two steps:
+  // - Set the global limits, which will affect newly created threads.
+  // - Enumerate all thread caches and set the limit to the global one.
+  {
+    PartitionAutoLock scoped_locker(GetLock());
+    ThreadCache* tcache = list_head_;
+
+    // If this is called before *any* thread cache has serviced *any*
+    // allocation, which can happen in tests, and in theory in non-test code as
+    // well.
+    if (!tcache)
+      return;
+
+    // Setting the global limit while locked, because we need |tcache->root_|.
+    ThreadCache::SetGlobalLimits(tcache->root_, multiplier);
+
+    while (tcache) {
+      PA_DCHECK(ThreadCache::IsValid(tcache));
+      for (int index = 0; index < ThreadCache::kBucketCount; index++) {
+        // This is racy, but we don't care if the limit is enforced later, and
+        // we really want to avoid atomic instructions on the fast path.
+        tcache->buckets_[index].limit.store(ThreadCache::global_limits_[index],
+                                            std::memory_order_relaxed);
+      }
+
+      tcache = tcache->next_;
+    }
+  }
+}
+
 void ThreadCacheRegistry::PostDelayedPurgeTask() {
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -171,44 +218,52 @@ void ThreadCacheRegistry::PeriodicPurge() {
   if (!periodic_purge_running_)
     return;
 
-  ThreadCache* tcache = ThreadCache::Get();
-  // Can run when there is no thread cache, in which case there is nothing to
-  // do, and the task should not be rescheduled. This would typically indicate a
-  // case where the thread cache was never enabled, or got disabled.
-  if (!ThreadCache::IsValid(tcache))
-    return;
-
-  uint64_t allocations = tcache->stats_.alloc_count;
-  uint64_t allocations_since_last_purge =
-      allocations - allocations_at_last_purge_;
-
-  // Purge should not run when there is little activity in the process. We
-  // assume that the main thread is a reasonable proxy for the process activity,
-  // where the main thread is the current one.
+  // Summing across all threads can be slow, but is necessary. Otherwise we rely
+  // on the assumption that the current thread is a good proxy for overall
+  // allocation activity. This is not the case for all process types.
   //
+  // Since there is no synchronization with other threads, the value is stale,
+  // which is fine.
+  uint64_t all_allocations_approx = 0;
+  {
+    PartitionAutoLock scoped_locker(GetLock());
+    ThreadCache* tcache = list_head_;
+    // Can run when there is no thread cache, in which case there is nothing to
+    // do, and the task should not be rescheduled. This would typically indicate
+    // a case where the thread cache was never enabled, or got disabled.
+    if (!tcache)
+      return;
+
+    while (tcache) {
+      all_allocations_approx += tcache->allocations_;
+      tcache = tcache->next_;
+    }
+  }
+
+  uint64_t allocations_since_last_purge =
+      all_allocations_approx - allocations_at_last_purge_;
+
   // If there were not enough allocations since the last purge, back off. On the
   // other hand, if there were many allocations, make purge more frequent, but
   // always in a set frequency range.
   //
   // There is a potential drawback: a process that was idle for a long time and
-  // suddenly becomes very actve will take some time to go back to regularly
+  // suddenly becomes very active will take some time to go back to regularly
   // scheduled purge with a small enough interval. This is the case for instance
   // of a renderer moving to foreground. To mitigate that, if the number of
   // allocations since the last purge was very large, make a greater leap to
   // faster purging.
-  if (allocations_since_last_purge > 10 * kMinMainThreadAllocationsForPurging) {
+  if (allocations_since_last_purge > 10 * kMinAllocationsForPurging) {
     purge_interval_ = std::min(kDefaultPurgeInterval, purge_interval_ / 2);
-  } else if (allocations_since_last_purge >
-             2 * kMinMainThreadAllocationsForPurging) {
+  } else if (allocations_since_last_purge > 2 * kMinAllocationsForPurging) {
     purge_interval_ = std::max(kMinPurgeInterval, purge_interval_ / 2);
-  } else if (allocations_since_last_purge <
-             kMinMainThreadAllocationsForPurging) {
+  } else if (allocations_since_last_purge < kMinAllocationsForPurging) {
     purge_interval_ = std::min(kMaxPurgeInterval, purge_interval_ * 2);
   }
 
   PurgeAll();
 
-  allocations_at_last_purge_ = allocations;
+  allocations_at_last_purge_ = all_allocations_approx;
   PostDelayedPurgeTask();
 }
 
@@ -233,7 +288,9 @@ void ThreadCache::EnsureThreadSpecificDataInitialized() {
 
 // static
 void ThreadCache::Init(PartitionRoot<ThreadSafe>* root) {
-  PA_CHECK(root->buckets[kBucketCount - 1].slot_size == kSizeThreshold);
+  PA_CHECK(root->buckets[kBucketCount - 1].slot_size == kLargeSizeThreshold);
+  PA_CHECK(root->buckets[largest_active_bucket_index_].slot_size ==
+           kDefaultSizeThreshold);
 
   EnsureThreadSpecificDataInitialized();
 
@@ -249,6 +306,54 @@ void ThreadCache::Init(PartitionRoot<ThreadSafe>* root) {
 #if defined(OS_WIN)
   PartitionTlsSetOnDllProcessDetach(OnDllProcessDetach);
 #endif
+
+  SetGlobalLimits(root, kDefaultMultiplier);
+}
+
+// static
+void ThreadCache::SetGlobalLimits(PartitionRoot<ThreadSafe>* root,
+                                  float multiplier) {
+  size_t initial_value =
+      static_cast<size_t>(kSmallBucketBaseCount) * multiplier;
+
+  for (int index = 0; index < kBucketCount; index++) {
+    const auto& root_bucket = root->buckets[index];
+    // Invalid bucket.
+    if (!root_bucket.active_slot_spans_head) {
+      global_limits_[index] = 0;
+      continue;
+    }
+
+    // Smaller allocations are more frequent, and more performance-sensitive.
+    // Cache more small objects, and fewer larger ones, to save memory.
+    size_t slot_size = root_bucket.slot_size;
+    size_t value;
+    if (slot_size <= 128) {
+      value = initial_value;
+    } else if (slot_size <= 256) {
+      value = initial_value / 2;
+    } else {
+      value = initial_value / 4;
+    }
+
+    // Clamp the limit between two constraints:
+    // - Batch fill should fill at least 2 elements at a time.
+    // - |PutInBucket()| is called on a full bucket, which should not overflow.
+    constexpr uint8_t kMinLimit = 2 * kBatchFillRatio;
+    constexpr uint8_t kMaxLimit = std::numeric_limits<uint8_t>::max() - 1;
+    global_limits_[index] = std::max(kMinLimit, {std::min(value, {kMaxLimit})});
+    PA_DCHECK(global_limits_[index] >= kMinLimit);
+    PA_DCHECK(global_limits_[index] <= kMaxLimit);
+  }
+}
+
+// static
+void ThreadCache::SetLargestCachedSize(size_t size) {
+  if (size > ThreadCache::kLargeSizeThreshold)
+    size = ThreadCache::kLargeSizeThreshold;
+  largest_active_bucket_index_ =
+      PartitionRoot<internal::ThreadSafe>::SizeToBucketIndex(size);
+  PA_CHECK(largest_active_bucket_index_ < kBucketCount);
 }
 
 // static
@@ -287,30 +392,23 @@ ThreadCache::ThreadCache(PartitionRoot<ThreadSafe>* root)
       prev_(nullptr) {
   ThreadCacheRegistry::Instance().RegisterThreadCache(this);
 
+  memset(&stats_, 0, sizeof(stats_));
+
   for (int index = 0; index < kBucketCount; index++) {
     const auto& root_bucket = root->buckets[index];
     Bucket* tcache_bucket = &buckets_[index];
+    tcache_bucket->freelist_head = nullptr;
+    tcache_bucket->count = 0;
+    tcache_bucket->limit.store(global_limits_[index],
+                               std::memory_order_relaxed);
+
     // Invalid bucket.
-    if (!root_bucket.active_slot_spans_head) {
+    if (!root_bucket.is_valid()) {
       // Explicitly set this, as size computations iterate over all buckets.
-      tcache_bucket->limit = 0;
-      tcache_bucket->count = 0;
+      tcache_bucket->limit.store(0, std::memory_order_relaxed);
       tcache_bucket->slot_size = 0;
-      continue;
-    }
-
-    // Smaller allocations are more frequent, and more performance-sensitive.
-    // Cache more small objects, and fewer larger ones, to save memory.
-    size_t slot_size = root_bucket.slot_size;
-    PA_CHECK(slot_size <= std::numeric_limits<uint16_t>::max());
-    tcache_bucket->slot_size = static_cast<uint16_t>(slot_size);
-
-    if (slot_size <= 128) {
-      tcache_bucket->limit = kMaxCountPerBucket;
-    } else if (slot_size <= 256) {
-      tcache_bucket->limit = kMaxCountPerBucket / 2;
     } else {
-      tcache_bucket->limit = kMaxCountPerBucket / 4;
+      tcache_bucket->slot_size = root_bucket.slot_size;
     }
   }
 }
@@ -334,6 +432,10 @@ void ThreadCache::Delete(void* tcache_ptr) {
   // TODO(lizeb): Investigate whether this is needed on POSIX as well.
   PartitionTlsSet(g_thread_cache_key, reinterpret_cast<void*>(kTombstone));
 #endif
+}
+
+ThreadCache::Bucket::Bucket() {
+  limit.store(0, std::memory_order_relaxed);
 }
 
 void ThreadCache::FillBucket(size_t bucket_index) {
@@ -367,7 +469,8 @@ void ThreadCache::FillBucket(size_t bucket_index) {
   INCREMENT_COUNTER(stats_.batch_fill_count);
 
   Bucket& bucket = buckets_[bucket_index];
-  int count = bucket.limit / kBatchFillRatio;
+  int count = bucket.limit.load(std::memory_order_relaxed) / kBatchFillRatio;
+  PA_DCHECK(count > 1);
 
   size_t usable_size;
   bool is_already_zeroed;
@@ -407,25 +510,42 @@ void ThreadCache::FillBucket(size_t bucket_index) {
 
 void ThreadCache::ClearBucket(ThreadCache::Bucket& bucket, size_t limit) {
   // Avoids acquiring the lock needlessly.
-  if (!bucket.count)
+  if (!bucket.count || bucket.count <= limit)
     return;
 
-  // Acquire the lock once for the bucket. Allocations from the same bucket are
-  // likely to be hitting the same cache lines in the central allocator, and
-  // lock acquisitions can be expensive.
-  internal::ScopedGuard<internal::ThreadSafe> guard(root_->lock_);
-  while (bucket.count > limit) {
-    auto* entry = bucket.freelist_head;
-    PA_DCHECK(entry);
-    bucket.freelist_head = entry->GetNext();
-
-    root_->RawFreeLocked(entry);
-    bucket.count--;
+  if (limit == 0) {
+    FreeAfter(bucket.freelist_head);
+    bucket.freelist_head = nullptr;
+  } else {
+    // Free the *end* of the list, not the head, since the head contains the
+    // most recently touched memory.
+    auto* head = bucket.freelist_head;
+    size_t items = 1;  // Cannot free the freelist head.
+    while (items < limit) {
+      head = head->GetNext();
+      items++;
+    }
+    FreeAfter(head->GetNext());
+    head->SetNext(nullptr);
   }
-  PA_DCHECK(bucket.count == limit);
+  bucket.count = limit;
+}
+
+void ThreadCache::FreeAfter(PartitionFreelistEntry* head) {
+  // Acquire the lock once. Deallocation from the same bucket are likely to be
+  // hitting the same cache lines in the central allocator, and lock
+  // acquisitions can be expensive.
+  internal::ScopedGuard<internal::ThreadSafe> guard(root_->lock_);
+  while (head) {
+    void* ptr = head;
+    head = head->GetNext();
+    root_->RawFreeLocked(ptr);
+  }
 }
 
 void ThreadCache::ResetForTesting() {
+  allocations_ = 0;
+
   stats_.alloc_count = 0;
   stats_.alloc_hits = 0;
   stats_.alloc_misses = 0;
@@ -460,6 +580,13 @@ void ThreadCache::AccumulateStats(ThreadCacheStats* stats) const {
 
   stats->batch_fill_count += stats_.batch_fill_count;
 
+#if defined(PA_THREAD_CACHE_ALLOC_STATS)
+  for (size_t i = 0; i < kNumBuckets + 1; i++) {
+    stats->bucket_size_[i] = root_->buckets[i].slot_size;
+    stats->allocs_per_bucket_[i] += stats_.allocs_per_bucket_[i];
+  }
+#endif  // defined(PA_THREAD_CACHE_ALLOC_STATS)
+
   for (const Bucket& bucket : buckets_) {
     stats->bucket_total_memory +=
         bucket.count * static_cast<size_t>(bucket.slot_size);
@@ -478,6 +605,11 @@ void ThreadCache::Purge() {
 
 void ThreadCache::PurgeInternal() {
   should_purge_.store(false, std::memory_order_relaxed);
+  // TODO(lizeb): Investigate whether lock acquisition should be less frequent.
+  //
+  // Note: iterate over all buckets, even the inactive ones. Since
+  // |largest_active_bucket_index_| can be lowered at runtime, there may be
+  // memory already cached in the inactive buckets. They should still be purged.
   for (auto& bucket : buckets_)
     ClearBucket(bucket, 0);
 }

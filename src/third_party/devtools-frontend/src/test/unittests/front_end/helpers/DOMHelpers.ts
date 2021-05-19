@@ -153,6 +153,13 @@ export function dispatchMouseOverEvent<T extends Element>(element: T, options: M
   const moveEvent = new MouseEvent('mouseover', options);
   element.dispatchEvent(moveEvent);
 }
+/**
+ * Dispatches a mouse out event.
+ */
+export function dispatchMouseOutEvent<T extends Element>(element: T, options: MouseEventInit = {}) {
+  const moveEvent = new MouseEvent('mouseout', options);
+  element.dispatchEvent(moveEvent);
+}
 
 /**
  * Dispatches a mouse move event.
@@ -178,7 +185,7 @@ export function getEventPromise<T extends Event>(element: HTMLElement, eventName
   return new Promise<T>(resolve => {
     element.addEventListener(eventName, (event: Event) => {
       resolve(event as T);
-    });
+    }, {once: true});
   });
 }
 
@@ -198,4 +205,15 @@ export async function raf() {
   */
 export function stripLitHtmlCommentNodes(text: string) {
   return text.replaceAll('<!---->', '');
+}
+
+/**
+ * Returns an array of textContents
+ * NewLine and multiple space characters are replaced with single space character
+ */
+export function getCleanTextContentFromElements(shadowRoot: ShadowRoot, selector: string) {
+  const elements = Array.from(shadowRoot.querySelectorAll(selector));
+  return elements.map(element => {
+    return element.textContent ? element.textContent.trim().replace(/[ \n]+/g, ' ') : '';
+  });
 }

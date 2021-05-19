@@ -1476,7 +1476,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
             frame_to_show, cm->superres_upscaled_width,
             cm->superres_upscaled_height, seq_params->subsampling_x,
             seq_params->subsampling_y, seq_params->use_highbitdepth,
-            AOM_BORDER_IN_PIXELS, byte_alignment, fb, cb, cb_priv)) {
+            AOM_BORDER_IN_PIXELS, byte_alignment, fb, cb, cb_priv, 0)) {
       unlock_buffer_pool(pool);
       aom_internal_error(
           &cm->error, AOM_CODEC_MEM_ERROR,

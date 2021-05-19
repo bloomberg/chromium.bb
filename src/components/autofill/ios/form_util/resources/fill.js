@@ -137,12 +137,9 @@ __gCrWeb.fill.ROLE_ATTRIBUTE_PRESENTATION = 0;
 /**
  * The value for a unique form or field ID not set or missing.
  *
- * This variable is |kNotSetRendererID| from
- * chromium/src/components/autofill/ios/browser/autofill_util.h
- *
  * @const {string}
  */
-__gCrWeb.fill.RENDERER_ID_NOT_SET = '-1';
+__gCrWeb.fill.RENDERER_ID_NOT_SET = '0';
 
 /**
  * The JS Symbol object used to set stable unique form and field IDs.
@@ -1273,7 +1270,7 @@ __gCrWeb.fill.InferLabelFromValueAttr = function(element) {
  *
  * It is based on the logic in
  *     bool IsLabelValid(base::StringPiece16 inferred_label,
- *         const std::vector<base::char16>& stop_words)
+ *         const std::vector<char16_t>& stop_words)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
  * The list of characters that are considered special is hard-coded in a regexp.
  *
@@ -2253,7 +2250,6 @@ __gCrWeb.fill.unownedFormElementsAndFieldSetsToFormData = function(
   for (let index = 0; index < count; index++) {
     const keyword = keywords[index];
     if (title.includes(keyword) || path.includes(keyword)) {
-      form['is_formless_checkout'] = true;
       return __gCrWeb.fill.formOrFieldsetsToFormData(
           null /* formElement*/, null /* formControlElement */, fieldsets,
           controlElements, extractMask, form, null /* field */);

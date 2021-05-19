@@ -196,7 +196,6 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   // Decoder implementation.
   bool IsPlatformDecoder() const override;
   bool SupportsDecryption() const override;
-  std::string GetDisplayName() const override;
   VideoDecoderType GetDecoderType() const override;
 
   // VideoDecoder implementation.
@@ -357,10 +356,6 @@ bool FuchsiaVideoDecoder::IsPlatformDecoder() const {
 
 bool FuchsiaVideoDecoder::SupportsDecryption() const {
   return true;
-}
-
-std::string FuchsiaVideoDecoder::GetDisplayName() const {
-  return "FuchsiaVideoDecoder";
 }
 
 VideoDecoderType FuchsiaVideoDecoder::GetDecoderType() const {
@@ -643,7 +638,6 @@ void FuchsiaVideoDecoder::OnInputBufferPoolCreated(
   settings.set_buffer_lifetime_ordinal(input_buffer_lifetime_ordinal_);
   settings.set_buffer_constraints_version_ordinal(
       decoder_input_constraints_->buffer_constraints_version_ordinal());
-  settings.set_single_buffer_mode(false);
   settings.set_sysmem_token(input_buffer_collection_->TakeToken());
   decoder_->SetInputBufferPartialSettings(std::move(settings));
 

@@ -4,15 +4,17 @@
 
 #include "base/allocator/partition_allocator/partition_root.h"
 
+#include "base/allocator/partition_allocator/address_pool_manager_bitmap.h"
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
-#include "base/allocator/partition_allocator/pcscan.h"
+#include "base/allocator/partition_allocator/starscan/pcscan.h"
 #include "base/bits.h"
 #include "build/build_config.h"
 
@@ -143,14 +145,14 @@ static size_t PartitionPurgeSlotSpan(
   size_t discardable_bytes = 0;
 
   if (slot_span->CanStoreRawSize()) {
-    uint32_t used_bytes =
-        static_cast<uint32_t>(RoundUpToSystemPage(slot_span->GetRawSize()));
-    discardable_bytes = bucket->slot_size - used_bytes;
+    uint32_t utilized_slot_size = static_cast<uint32_t>(
+        RoundUpToSystemPage(slot_span->GetUtilizedSlotSize()));
+    discardable_bytes = bucket->slot_size - utilized_slot_size;
     if (discardable_bytes && discard) {
       char* ptr = reinterpret_cast<char*>(
           internal::SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(
               slot_span));
-      ptr += used_bytes;
+      ptr += utilized_slot_size;
       DiscardSystemPages(ptr, discardable_bytes);
     }
     return discardable_bytes;
@@ -400,8 +402,8 @@ static void PartitionDumpBucketStats(
 }
 
 #if DCHECK_IS_ON()
-void DCheckIfManagedByPartitionAllocNormalBuckets(const void* ptr) {
-  PA_DCHECK(IsManagedByPartitionAllocNormalBuckets(ptr));
+void DCheckIfManagedByPartitionAllocBRPPool(void* ptr) {
+  PA_DCHECK(IsManagedByPartitionAllocBRPPool(ptr));
 }
 #endif
 
@@ -477,24 +479,22 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
       internal::PartitionAddressSpace::Init();
 #endif
 
-    // If alignment needs to be enforced, disallow adding a cookie and/or
-    // ref-count at the beginning of the slot.
-    if (opts.alignment == PartitionOptions::Alignment::kAlignedAlloc) {
-      allow_cookies = false;
-      allow_ref_count = false;
-      // There should be no configuration where aligned root and ref-count are
-      // requested at the same time. In theory REF_COUNT_AT_END_OF_ALLOCATION
-      // allows these to co-exist, but in this case aligned root is not even
-      // created.
-      PA_CHECK(opts.ref_count == PartitionOptions::RefCount::kDisabled);
-    } else {
-      allow_cookies = true;
-      // Allow ref-count if it's explicitly requested *and* GigaCage is enabled.
-      // Without GigaCage it'd be unused, thus wasteful.
-      allow_ref_count =
-          (opts.ref_count == PartitionOptions::RefCount::kEnabled) &&
-          features::IsPartitionAllocGigaCageEnabled();
-    }
+    allow_aligned_alloc =
+        opts.aligned_alloc == PartitionOptions::AlignedAlloc::kAllowed;
+    allow_cookies = opts.cookies == PartitionOptions::Cookies::kAllowed;
+    // Allow ref-count if it's expressly allowed *and* GigaCage is enabled.
+    // Without GigaCage it'd be unused, thus wasteful.
+    allow_ref_count =
+        (opts.ref_count == PartitionOptions::RefCount::kAllowed) &&
+        features::IsPartitionAllocGigaCageEnabled();
+
+    // Cookies and ref-count mess up alignment needed for AlignedAlloc, making
+    // those options incompatible. However, ref-count is acceptable in the
+    // REF_COUNT_AT_END_OF_ALLOCATION case.
+    PA_DCHECK(!allow_aligned_alloc || !allow_cookies);
+#if !BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION)
+    PA_DCHECK(!allow_aligned_alloc || !allow_ref_count);
+#endif
 
 #if PARTITION_EXTRAS_REQUIRED
     extras_size = 0;
@@ -513,6 +513,11 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
       extras_offset += internal::kPartitionRefCountOffsetAdjustment;
     }
 #endif
+
+    // Re-confirm the above PA_CHECKs, by making sure there are no
+    // pre-allocation extras when AlignedAlloc is allowed. Post-allocation
+    // extras are ok.
+    PA_CHECK(!allow_aligned_alloc || !extras_offset);
 
     quarantine_mode =
 #if PA_ALLOW_PCSCAN
@@ -545,8 +550,10 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
       for (j = 0; j < kNumBucketsPerOrder; ++j) {
         bucket->Init(current_size);
         // Disable pseudo buckets so that touching them faults.
-        if (current_size % kSmallestBucket)
+        if (current_size % kSmallestBucket) {
           bucket->active_slot_spans_head = nullptr;
+          PA_DCHECK(!bucket->is_valid());
+        }
         current_size += current_increment;
         ++bucket;
       }
@@ -559,12 +566,12 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
     // TLS in ThreadCache not supported on other OSes.
     with_thread_cache = false;
 #else
-  internal::ThreadCache::EnsureThreadSpecificDataInitialized();
-  with_thread_cache =
-      (opts.thread_cache == PartitionOptions::ThreadCache::kEnabled);
+    internal::ThreadCache::EnsureThreadSpecificDataInitialized();
+    with_thread_cache =
+        (opts.thread_cache == PartitionOptions::ThreadCache::kEnabled);
 
-  if (with_thread_cache)
-    internal::ThreadCache::Init(this);
+    if (with_thread_cache)
+      internal::ThreadCache::Init(this);
 #endif  // !defined(PA_THREAD_CACHE_SUPPORTED)
 
     initialized = true;
@@ -887,7 +894,7 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
       // Don't report the pseudo buckets that the generic allocator sets up in
       // order to preserve a fast size->bucket map (see
       // PartitionRoot::Init() for details).
-      if (!bucket->active_slot_spans_head)
+      if (!bucket->is_valid())
         bucket_stats[i].is_valid = false;
       else
         internal::PartitionDumpBucketStats(&bucket_stats[i], bucket);

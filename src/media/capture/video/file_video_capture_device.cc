@@ -5,6 +5,8 @@
 #include "media/capture/video/file_video_capture_device.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -16,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "media/base/video_frame.h"
 #include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/blob_utils.h"
 #include "media/capture/video/gpu_memory_buffer_utils.h"
@@ -39,7 +42,8 @@ int ParseY4MInt(const base::StringPiece& token) {
 // Extract numerator and denominator out of a token that must have the aspect
 // numerator:denominator, both integer numbers.
 void ParseY4MRational(const base::StringPiece& token,
-                      int* numerator, int* denominator) {
+                      int* numerator,
+                      int* denominator) {
   size_t index_divider = token.find(':');
   CHECK_NE(index_divider, token.npos);
   *numerator = ParseY4MInt(token.substr(0, index_divider));
@@ -177,8 +181,8 @@ Y4mFileParser::Y4mFileParser(const base::FilePath& file_path)
 Y4mFileParser::~Y4mFileParser() = default;
 
 bool Y4mFileParser::Initialize(VideoCaptureFormat* capture_format) {
-  file_.reset(new base::File(file_path_,
-                             base::File::FLAG_OPEN | base::File::FLAG_READ));
+  file_ = std::make_unique<base::File>(
+      file_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file_->IsValid()) {
     DLOG(ERROR) << file_path_.value() << ", error: "
                 << base::File::ErrorToString(file_->error_details());
@@ -193,7 +197,8 @@ bool Y4mFileParser::Initialize(VideoCaptureFormat* capture_format) {
   ParseY4MTags(header, capture_format);
   first_frame_byte_index_ = header_end + kY4MSimpleFrameDelimiterSize;
   current_byte_index_ = first_frame_byte_index_;
-  frame_size_ = capture_format->ImageAllocationSize();
+  frame_size_ = VideoFrame::AllocationSize(capture_format->pixel_format,
+                                           capture_format->frame_size);
   return true;
 }
 
@@ -226,7 +231,7 @@ MjpegFileParser::MjpegFileParser(const base::FilePath& file_path)
 MjpegFileParser::~MjpegFileParser() = default;
 
 bool MjpegFileParser::Initialize(VideoCaptureFormat* capture_format) {
-  mapped_file_.reset(new base::MemoryMappedFile());
+  mapped_file_ = std::make_unique<base::MemoryMappedFile>();
 
   if (!mapped_file_->Initialize(file_path_) || !mapped_file_->IsValid()) {
     LOG(ERROR) << "File memory map error: " << file_path_.value();
@@ -286,12 +291,11 @@ std::unique_ptr<VideoFileParser> FileVideoCaptureDevice::GetVideoFileParser(
   std::unique_ptr<VideoFileParser> file_parser;
   std::string file_name(file_path.value().begin(), file_path.value().end());
 
-  if (base::EndsWith(file_name, "y4m",
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    file_parser.reset(new Y4mFileParser(file_path));
+  if (base::EndsWith(file_name, "y4m", base::CompareCase::INSENSITIVE_ASCII)) {
+    file_parser = std::make_unique<Y4mFileParser>(file_path);
   } else if (base::EndsWith(file_name, "mjpeg",
                             base::CompareCase::INSENSITIVE_ASCII)) {
-    file_parser.reset(new MjpegFileParser(file_path));
+    file_parser = std::make_unique<MjpegFileParser>(file_path);
   } else {
     LOG(ERROR) << "Unsupported file format.";
     return file_parser;

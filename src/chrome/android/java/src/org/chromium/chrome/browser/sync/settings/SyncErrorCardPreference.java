@@ -23,8 +23,6 @@ import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 
-import java.util.Collections;
-
 public class SyncErrorCardPreference extends Preference
         implements ProfileSyncService.SyncStateChangedListener, ProfileDataCache.Observer {
     /**
@@ -124,8 +122,6 @@ public class SyncErrorCardPreference extends Preference
         if (signedInAccount == null) {
             return;
         }
-
-        mProfileDataCache.update(Collections.singletonList(signedInAccount));
         Drawable accountImage =
                 mProfileDataCache.getProfileDataOrDefault(signedInAccount).getImage();
         errorCardView.getImage().setImageDrawable(accountImage);
@@ -136,19 +132,8 @@ public class SyncErrorCardPreference extends Preference
         } else {
             errorCardView.getStatusMessage().setVisibility(View.VISIBLE);
         }
-        if (isTrustedVaultError()) {
-            // TODO(crbug.com/1166582): For trusted vault errors, the "hint" string is already so
-            // short ("Fix now"), that the button would end up simply repeating it. So the "summary"
-            // string is used as the card description instead. In the long run, it would probably be
-            // best to make the hint string for trusted vault errors more detailed.
-            errorCardView.getDescription().setText(
-                    ProfileSyncService.get().isEncryptEverythingEnabled()
-                            ? getContext().getString(R.string.sync_error_card_title)
-                            : getContext().getString(R.string.password_sync_error_summary));
-        } else {
-            errorCardView.getDescription().setText(
-                    SyncSettingsUtils.getSyncErrorHint(getContext(), mSyncError));
-        }
+        errorCardView.getDescription().setText(
+                SyncSettingsUtils.getSyncErrorHint(getContext(), mSyncError));
 
         errorCardView.getPrimaryButton().setText(
                 SyncSettingsUtils.getSyncErrorCardButtonLabel(getContext(), mSyncError));

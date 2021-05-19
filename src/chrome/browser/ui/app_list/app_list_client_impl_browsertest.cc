@@ -43,7 +43,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -82,16 +82,15 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, IsExtensionAppOpen) {
     content::WindowedNotificationObserver app_loaded_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile());
-    proxy->Launch(extension_app->id(),
-                  apps::GetEventFlags(
-                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      false /* preferred_containner */),
-                  apps::mojom::LaunchSource::kFromTest,
-                  apps::MakeWindowInfo(
-                      display::Screen::GetScreen()->GetPrimaryDisplay().id()));
+    apps::AppServiceProxyFactory::GetForProfile(profile())->Launch(
+        extension_app->id(),
+        apps::GetEventFlags(
+            apps::mojom::LaunchContainer::kLaunchContainerWindow,
+            WindowOpenDisposition::NEW_WINDOW,
+            false /* preferred_containner */),
+        apps::mojom::LaunchSource::kFromTest,
+        apps::MakeWindowInfo(
+            display::Screen::GetScreen()->GetPrimaryDisplay().id()));
     app_loaded_observer.Wait();
   }
   EXPECT_TRUE(delegate->IsAppOpen(extension_app->id()));
@@ -130,9 +129,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, UninstallApp) {
   base::RunLoop run_loop;
   client->UninstallApp(profile(), app->id());
 
-  apps::AppServiceProxy* app_service_proxy_ =
-      apps::AppServiceProxyFactory::GetForProfile(profile());
-  app_service_proxy_->FlushMojoCallsForTesting();
+  apps::AppServiceProxyFactory::GetForProfile(profile())
+      ->FlushMojoCallsForTesting();
 
   run_loop.RunUntilIdle();
   EXPECT_FALSE(wm::GetTransientChildren(client->GetAppListWindow()).empty());
@@ -266,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowContextMenu) {
     if (menu_model->GetTypeAt(i) == ui::MenuModel::TYPE_SEPARATOR)
       continue;
 
-    base::string16 label = menu_model->GetLabelAt(i);
+    std::u16string label = menu_model->GetLabelAt(i);
     EXPECT_FALSE(label.empty());
   }
 }

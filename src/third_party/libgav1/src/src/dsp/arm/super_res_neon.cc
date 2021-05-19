@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/dsp/arm/common_neon.h"
 #include "src/dsp/super_res.h"
 #include "src/utils/cpu.h"
 
@@ -20,6 +19,7 @@
 
 #include <arm_neon.h>
 
+#include "src/dsp/arm/common_neon.h"
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"

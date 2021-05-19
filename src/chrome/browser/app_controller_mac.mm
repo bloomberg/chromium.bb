@@ -4,6 +4,7 @@
 
 #import "chrome/browser/app_controller_mac.h"
 
+#include <dispatch/dispatch.h>
 #include <stddef.h>
 
 #include <memory>
@@ -46,6 +47,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
+#include "chrome/browser/mac/auth_session_request.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -332,7 +334,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
   void OnProfileAdded(const base::FilePath& profile_path) override {}
 
   void OnProfileWasRemoved(const base::FilePath& profile_path,
-                           const base::string16& profile_name) override {
+                           const std::u16string& profile_name) override {
     // When a profile is deleted we need to notify the AppController,
     // so it can correctly update its pointer to the last used profile.
     [app_controller_ profileWasRemoved:profile_path];
@@ -341,7 +343,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override {}
 
   void OnProfileNameChanged(const base::FilePath& profile_path,
-                            const base::string16& old_profile_name) override {}
+                            const std::u16string& old_profile_name) override {}
 
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override {}
 
@@ -520,10 +522,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
       return NO;
     }
 
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
+    chrome::OnClosingAllBrowsers(true);
     // This will close all browser sessions.
     chrome::CloseAllBrowsers();
 
@@ -540,10 +539,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // Initiate a shutdown (via chrome::CloseAllBrowsersAndQuit()) if we aren't
   // already shutting down.
   if (!browser_shutdown::IsTryingToQuit()) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
+    chrome::OnClosingAllBrowsers(true);
     chrome::CloseAllBrowsersAndQuit();
   }
 
@@ -607,12 +603,6 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (void)didEndMainMessageLoop {
-  if (base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose)) {
-    // With DestroyProfileOnBrowserClose, Profiles get deleted earlier. So
-    // _lastProfile is already null, and and we cannot load it from disk now.
-    DCHECK_EQ(nullptr, _lastProfile);
-    return;
-  }
   if (!_lastProfile) {
     // If only the profile picker is open and closed again, there is no profile
     // loaded when main message loop ends and we cannot load it from disk now.
@@ -787,14 +777,10 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   [self openUrls:urls];
 
-  // In test environments where there is no network connection, the visible NTP
-  // URL may be chrome-search://local-ntp/local-ntp.html instead of
-  // chrome://newtab/. See local_ntp_test_utils::GetFinalNtpUrl for more
-  // details.
   // This NTP check should be replaced once https://crbug.com/624410 is fixed.
   if (startupIndex != TabStripModel::kNoTab &&
       (startupContent->GetVisibleURL() == chrome::kChromeUINewTabURL ||
-       startupContent->GetVisibleURL() == chrome::kChromeSearchLocalNtpUrl)) {
+       startupContent->GetVisibleURL() == chrome::kChromeUINewTabPageURL)) {
     browser->tab_strip_model()->CloseWebContentsAt(startupIndex,
         TabStripModel::CLOSE_NONE);
   }
@@ -817,8 +803,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // Notify BrowserList to keep the application running so it doesn't go away
   // when all the browser windows get closed.
-  _keep_alive.reset(new ScopedKeepAlive(KeepAliveOrigin::APP_CONTROLLER,
-                                        KeepAliveRestartOption::DISABLED));
+  _keep_alive = std::make_unique<ScopedKeepAlive>(
+      KeepAliveOrigin::APP_CONTROLLER, KeepAliveRestartOption::DISABLED);
 
   [self setUpdateCheckInterval];
 
@@ -835,8 +821,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // Instantiate the ProfileAttributesStorage observer so that we can get
   // notified when a profile is deleted.
-  _profileAttributesStorageObserver.reset(new AppControllerProfileObserver(
-      g_browser_process->profile_manager(), self));
+  _profileAttributesStorageObserver =
+      std::make_unique<AppControllerProfileObserver>(
+          g_browser_process->profile_manager(), self);
 
   // Record the path to the (browser) app bundle; this is used by the app mode
   // shim.
@@ -873,8 +860,13 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
             _menuState.get()));
   }
 
-  _handoff_active_url_observer_bridge.reset(
-      new HandoffActiveURLObserverBridge(self));
+  _handoff_active_url_observer_bridge =
+      std::make_unique<HandoffActiveURLObserverBridge>(self);
+
+  if (@available(macOS 10.15, *)) {
+    ASWebAuthenticationSessionWebBrowserSessionManager.sharedManager
+        .sessionHandler = self;
+  }
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   // Disable fatal OOM to hack around an OS bug https://crbug.com/654695.
@@ -1322,7 +1314,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
       SessionService* sessionService =
           SessionServiceFactory::GetForProfileForSessionRestore(lastProfile);
       if (sessionService &&
-          sessionService->RestoreIfNecessary(std::vector<GURL>()))
+          sessionService->RestoreIfNecessary(std::vector<GURL>(),
+                                             /* restore_apps */ false))
         return NO;
     }
   }
@@ -1720,13 +1713,13 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   [bookmarkItem setSubmenu:_bookmarkMenuBridge->BookmarkMenu()];
   [bookmarkItem setHidden:hidden];
 
-  _historyMenuBridge.reset(new HistoryMenuBridge(_lastProfile));
+  _historyMenuBridge = std::make_unique<HistoryMenuBridge>(_lastProfile);
   _historyMenuBridge->BuildMenu();
 
   chrome::BrowserCommandController::
       UpdateSharedCommandsForIncognitoAvailability(
           _menuState.get(), _lastProfile);
-  _profilePrefRegistrar.reset(new PrefChangeRegistrar());
+  _profilePrefRegistrar = std::make_unique<PrefChangeRegistrar>();
   _profilePrefRegistrar->Init(_lastProfile->GetPrefs());
   _profilePrefRegistrar->Add(
       prefs::kIncognitoModeAvailability,
@@ -1843,6 +1836,25 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   [self updateHandoffManager:webContents];
 }
 
+#pragma mark - ASWebAuthenticationSessionWebBrowserSessionHandling
+
+// Note that both of these WebAuthenticationSession calls come in on a random
+// worker thread, so it's important to hop to the main thread.
+
+- (void)beginHandlingWebAuthenticationSessionRequest:
+    (ASWebAuthenticationSessionRequest*)request API_AVAILABLE(macos(10.15)) {
+  dispatch_async(dispatch_get_main_queue(), ^(void) {
+    AuthSessionRequest::StartNewAuthSession(request, [self lastProfile]);
+  });
+}
+
+- (void)cancelWebAuthenticationSessionRequest:
+    (ASWebAuthenticationSessionRequest*)request API_AVAILABLE(macos(10.15)) {
+  dispatch_async(dispatch_get_main_queue(), ^(void) {
+    AuthSessionRequest::CancelAuthSession(request);
+  });
+}
+
 @end  // @implementation AppController
 
 //---------------------------------------------------------------------------
@@ -1868,8 +1880,7 @@ bool IsOpeningNewWindow() {
 void CreateGuestProfileIfNeeded() {
   g_browser_process->profile_manager()->CreateProfileAsync(
       ProfileManager::GetGuestProfilePath(),
-      base::BindRepeating(&UpdateProfileInUse), base::string16(),
-      std::string());
+      base::BindRepeating(&UpdateProfileInUse));
 }
 
 void EnterpriseStartupDialogClosed() {

@@ -9,7 +9,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "ui/base/cursor/cursor_theme_manager.h"
 #include "ui/base/cursor/cursor_theme_manager_observer.h"
@@ -36,9 +35,9 @@ class WaylandCursorFactory : public BitmapCursorFactoryOzone,
   // CursorFactory:
   void ObserveThemeChanges() override;
 
-  // CursorFactoryOzone:
-  base::Optional<PlatformCursor> GetDefaultCursor(
-      mojom::CursorType type) override;
+  // CursorFactory:
+  PlatformCursor GetDefaultCursor(mojom::CursorType type) override;
+  void SetDeviceScaleFactor(float scale) override;
 
  protected:
   // Returns the actual wl_cursor record from the currently loaded theme.
@@ -77,6 +76,9 @@ class WaylandCursorFactory : public BitmapCursorFactoryOzone,
   std::string name_;
   // Current size of cursors
   int size_ = 24;
+
+  // The current scale of the mouse cursor icon.
+  float scale_ = 1.0f;
 
   std::unique_ptr<ThemeData> current_theme_;
   // Holds the reference on the unloaded theme until the cursor is released.

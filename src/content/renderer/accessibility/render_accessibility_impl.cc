@@ -62,15 +62,15 @@ using blink::WebView;
 
 namespace {
 
-// The minimum amount of time in milliseconds that should be spent
-// in serializing code in order to report the elapsed time as a URL-keyed
-// metric.
-constexpr int kMinSerializationTimeToSendInMS = 100;
+// The minimum amount of time that should be spent in serializing code in order
+// to report the elapsed time as a URL-keyed metric.
+constexpr base::TimeDelta kMinSerializationTimeToSend =
+    base::TimeDelta::FromMilliseconds(100);
 
 // When URL-keyed metrics for the amount of time spent in serializing code
 // are sent, the minimum amount of time to wait, in seconds, before
 // sending metrics. Metrics may also be sent once per page transition.
-constexpr int kMinUKMDelayInSeconds = 300;
+constexpr base::TimeDelta kMinUKMDelay = base::TimeDelta::FromSeconds(300);
 
 void SetAccessibilityCrashKey(ui::AXMode mode) {
   // Add a crash key with the ax_mode, to enable searching for top crashes that
@@ -88,7 +88,7 @@ void SetAccessibilityCrashKey(ui::AXMode mode) {
     base::debug::SetCrashKeyString(ax_mode_crash_key, mode.ToString());
 }
 
-}
+}  // namespace
 
 namespace content {
 
@@ -102,7 +102,6 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
       tree_source_(std::make_unique<BlinkAXTreeSource>(render_frame, mode)),
       serializer_(std::make_unique<BlinkAXTreeSerializer>(tree_source_.get())),
       plugin_tree_source_(nullptr),
-      last_scroll_offset_(gfx::Size()),
       event_schedule_status_(EventScheduleStatus::kNotWaiting),
       reset_token_(0),
       ukm_timer_(std::make_unique<base::ElapsedTimer>()),
@@ -149,11 +148,8 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
 #endif
   auto* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(::switches::kDisableAXMenuList)) {
-    if (command_line->GetSwitchValueASCII(::switches::kDisableAXMenuList) ==
-        "false")
-      disable_ax_menu_list = false;
-    else
-      disable_ax_menu_list = true;
+    disable_ax_menu_list = command_line->GetSwitchValueASCII(
+                               ::switches::kDisableAXMenuList) != "false";
   }
   if (disable_ax_menu_list)
     settings->SetUseAXMenuList(false);
@@ -193,7 +189,7 @@ void RenderAccessibilityImpl::DidCommitProvisionalLoad(
   event_schedule_mode_ = EventScheduleMode::kDeferEvents;
 
   MaybeSendUKM();
-  slowest_serialization_ms_ = 0;
+  slowest_serialization_time_ = base::TimeDelta();
   ukm_timer_ = std::make_unique<base::ElapsedTimer>();
 
   // Remove the image annotator if the page is loading and it was added for
@@ -597,7 +593,7 @@ bool RenderAccessibilityImpl::ShouldSerializeNodeForEvent(
     return false;
 
   if (event.event_type == ax::mojom::Event::kTextSelectionChanged &&
-      !obj.IsNativeTextControl()) {
+      !obj.IsNativeTextField()) {
     // Selection changes on non-native text controls cause no change to the
     // control node's data.
     //
@@ -665,7 +661,7 @@ void RenderAccessibilityImpl::ScheduleSendPendingAccessibilityEvents(
       break;
   }
 
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(0);
+  base::TimeDelta delay = base::TimeDelta();
   switch (event_schedule_mode_) {
     case EventScheduleMode::kDeferEvents:
       event_schedule_status_ = EventScheduleStatus::kScheduledDeferred;
@@ -678,7 +674,7 @@ void RenderAccessibilityImpl::ScheduleSendPendingAccessibilityEvents(
       // This set of events needed to be processed immediately because of a
       // page load or user action.
       event_schedule_status_ = EventScheduleStatus::kScheduledImmediate;
-      delay = base::TimeDelta::FromMilliseconds(0);
+      delay = base::TimeDelta();
       break;
   }
 
@@ -702,7 +698,8 @@ int RenderAccessibilityImpl::GenerateAXID() {
 void RenderAccessibilityImpl::SetPluginTreeSource(
     PluginAXTreeSource* plugin_tree_source) {
   plugin_tree_source_ = plugin_tree_source;
-  plugin_serializer_.reset(new PluginAXTreeSerializer(plugin_tree_source_));
+  plugin_serializer_ =
+      std::make_unique<PluginAXTreeSerializer>(plugin_tree_source_);
 
   OnPluginRootNodeUpdated();
 }
@@ -814,6 +811,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   // time to inject a stylesheet for image annotation debugging.
   bool had_load_complete_messages = false;
 
+  bool had_end_of_test_event = false;
+
   ScopedFreezeBlinkAXTreeSource freeze(tree_source_.get());
 
   WebAXObject root = tree_source_->GetRoot();
@@ -834,6 +833,11 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     if (event.event_type == ax::mojom::Event::kLoadComplete)
       had_load_complete_messages = true;
 
+    if (event.event_type == ax::mojom::Event::kEndOfTest) {
+      had_end_of_test_event = true;
+      continue;
+    }
+
     auto obj = WebAXObject::FromWebDocumentByID(document, event.id);
 
     // Make sure the object still exists.
@@ -842,11 +846,13 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     if (!obj.MaybeUpdateLayoutAndCheckValidity())
       continue;
 
-    // Make sure it's a descendant of our root node - exceptions include the
-    // scroll area that's the parent of the main document (we ignore it), and
-    // possibly nodes attached to a different document.
-    if (!tree_source_->IsInTree(obj))
-      continue;
+      // Make sure it's a descendant of our root node - exceptions include the
+      // scroll area that's the parent of the main document (we ignore it), and
+      // possibly nodes attached to a different document.
+      // TODO(accessibility) Remove once it's clear this never triggers.
+#if defined(AX_FAIL_FAST_BUILD)
+    SANITIZER_CHECK(tree_source_->IsInTree(obj));
+#endif
 
     // If it's ignored, find the first ancestor that's not ignored.
     //
@@ -944,8 +950,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   // Now serialize all dirty objects. Keep track of IDs serialized
   // so we don't have to serialize the same node twice.
   std::set<int32_t> already_serialized_ids;
-  for (size_t i = 0; i < dirty_objects.size(); i++) {
-    auto obj = dirty_objects[i].obj;
+  for (const DirtyObject& current_dirty_object : dirty_objects) {
+    auto obj = current_dirty_object.obj;
     // Dirty objects can be added using MarkWebAXObjectDirty(obj) from other
     // parts of the code as well, so we need to ensure the object still exists.
     // TODO(accessibility) Change this to CheckValidity() if there aren't crash
@@ -967,9 +973,9 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       continue;
 
     ui::AXTreeUpdate update;
-    update.event_from = dirty_objects[i].event_from;
-    update.event_from_action = dirty_objects[i].event_from_action;
-    update.event_intents = dirty_objects[i].event_intents;
+    update.event_from = current_dirty_object.event_from;
+    update.event_from_action = current_dirty_object.event_from_action;
+    update.event_intents = current_dirty_object.event_intents;
     // If there's a plugin, force the tree data to be generated in every
     // message so the plugin can merge its own tree data changes.
     if (plugin_tree_source_)
@@ -992,6 +998,18 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     updates.push_back(update);
 
     VLOG(1) << "Accessibility tree update:\n" << update.ToString();
+  }
+
+  if (had_end_of_test_event) {
+    ui::AXEvent end_of_test(root.AxID(), ax::mojom::Event::kEndOfTest);
+    if (!WebAXObject::IsDirty(document)) {
+      events.emplace_back(end_of_test);
+    } else {
+      // Document is still dirty, queue up another end of test and process
+      // immediately.
+      event_schedule_mode_ = EventScheduleMode::kProcessEventsImmediately;
+      HandleAXEvent(end_of_test);
+    }
   }
 
   event_schedule_status_ = EventScheduleStatus::kWaitingForAck;
@@ -1018,14 +1036,14 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
   // Measure the amount of time spent in this function. Keep track of the
   // maximum within a time interval so we can upload UKM.
-  int elapsed_time_ms = timer.Elapsed().InMilliseconds();
-  if (elapsed_time_ms > slowest_serialization_ms_) {
+  base::TimeDelta elapsed_time_ms = timer.Elapsed();
+  if (elapsed_time_ms > slowest_serialization_time_) {
     last_ukm_source_id_ = document.GetUkmSourceId();
     last_ukm_url_ = document.CanonicalUrlForSharing().GetString().Utf8();
-    slowest_serialization_ms_ = elapsed_time_ms;
+    slowest_serialization_time_ = elapsed_time_ms;
   }
 
-  if (ukm_timer_->Elapsed().InSeconds() >= kMinUKMDelayInSeconds)
+  if (ukm_timer_->Elapsed() >= kMinUKMDelay)
     MaybeSendUKM();
 }
 
@@ -1151,13 +1169,12 @@ void RenderAccessibilityImpl::AddPluginTreeToUpdate(
   if (invalidate_plugin_subtree)
     plugin_serializer_->Reset();
 
-  for (size_t i = 0; i < update->nodes.size(); ++i) {
-    if (update->nodes[i].role == ax::mojom::Role::kEmbeddedObject) {
-      plugin_host_node_ =
-          WebAXObject::FromWebDocumentByID(document, update->nodes[i].id);
+  for (ui::AXNodeData& node : update->nodes) {
+    if (node.role == ax::mojom::Role::kEmbeddedObject) {
+      plugin_host_node_ = WebAXObject::FromWebDocumentByID(document, node.id);
 
       const ui::AXNode* root = plugin_tree_source_->GetRoot();
-      update->nodes[i].child_ids.push_back(root->id());
+      node.child_ids.push_back(root->id());
 
       ui::AXTreeUpdate plugin_update;
       plugin_serializer_->SerializeChanges(root, &plugin_update);
@@ -1165,8 +1182,8 @@ void RenderAccessibilityImpl::AddPluginTreeToUpdate(
       size_t old_count = update->nodes.size();
       size_t new_count = plugin_update.nodes.size();
       update->nodes.resize(old_count + new_count);
-      for (size_t j = 0; j < new_count; ++j)
-        update->nodes[old_count + j] = plugin_update.nodes[j];
+      for (size_t i = 0; i < new_count; ++i)
+        update->nodes[old_count + i] = plugin_update.nodes[i];
       break;
     }
   }
@@ -1402,17 +1419,18 @@ void RenderAccessibilityImpl::CancelScheduledEvents() {
 }
 
 void RenderAccessibilityImpl::MaybeSendUKM() {
-  if (slowest_serialization_ms_ < kMinSerializationTimeToSendInMS)
+  if (slowest_serialization_time_ < kMinSerializationTimeToSend)
     return;
 
   ukm::builders::Accessibility_Renderer(last_ukm_source_id_)
-      .SetCpuTime_SendPendingAccessibilityEvents(slowest_serialization_ms_)
+      .SetCpuTime_SendPendingAccessibilityEvents(
+          slowest_serialization_time_.InMilliseconds())
       .Record(ukm_recorder_.get());
   ResetUKMData();
 }
 
 void RenderAccessibilityImpl::ResetUKMData() {
-  slowest_serialization_ms_ = 0;
+  slowest_serialization_time_ = base::TimeDelta();
   ukm_timer_ = std::make_unique<base::ElapsedTimer>();
   last_ukm_source_id_ = ukm::kInvalidSourceId;
   last_ukm_url_ = "";

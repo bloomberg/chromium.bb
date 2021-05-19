@@ -68,8 +68,8 @@ g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
     const kColorFormat: GPUTextureFormat = 'rgba8unorm';
     const colorAttachment = t.device.createTexture({
       format: kColorFormat,
-      size: { width: kWidth, height: kHeight, depth: 1 },
-      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+      size: { width: kWidth, height: kHeight, depthOrArrayLayers: 1 },
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     const colorAttachmentView = colorAttachment.createView();
@@ -78,8 +78,8 @@ g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
     const kDepthStencilFormat: GPUTextureFormat = 'depth32float';
     const depthStencilAttachment = t.device.createTexture({
       format: kDepthStencilFormat,
-      size: { width: kWidth, height: kHeight, depth: 1 },
-      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+      size: { width: kWidth, height: kHeight, depthOrArrayLayers: 1 },
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     // Color load operation will clear to {1.0, 1.0, 1.0, 1.0}.
@@ -104,7 +104,7 @@ g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
     });
     pass.endPass();
 
-    t.device.defaultQueue.submit([encoder.finish()]);
+    t.device.queue.submit([encoder.finish()]);
 
     // Check that the correct store operation occurred.
     let expectedColorValue: PerTexelComponent<number> = {};
@@ -155,9 +155,9 @@ g.test('render_pass_store_op,color_attachment_only')
   .fn(t => {
     const colorAttachment = t.device.createTexture({
       format: t.params.colorFormat,
-      size: { width: kWidth, height: kHeight, depth: t.params.arrayLayer + 1 },
+      size: { width: kWidth, height: kHeight, depthOrArrayLayers: t.params.arrayLayer + 1 },
       mipLevelCount: kMipLevelCount,
-      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     const colorViewDesc: GPUTextureViewDescriptor = {
@@ -182,7 +182,7 @@ g.test('render_pass_store_op,color_attachment_only')
       ],
     });
     pass.endPass();
-    t.device.defaultQueue.submit([encoder.finish()]);
+    t.device.queue.submit([encoder.finish()]);
 
     // Check that the correct store operation occurred.
     let expectedValue: PerTexelComponent<number> = {};
@@ -218,8 +218,8 @@ g.test('render_pass_store_op,multiple_color_attachments')
       colorAttachments.push(
         t.device.createTexture({
           format: kColorFormat,
-          size: { width: kWidth, height: kHeight, depth: 1 },
-          usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+          size: { width: kWidth, height: kHeight, depthOrArrayLayers: 1 },
+          usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
         })
       );
     }
@@ -241,7 +241,7 @@ g.test('render_pass_store_op,multiple_color_attachments')
       colorAttachments: renderPassColorAttachmentDescriptors,
     });
     pass.endPass();
-    t.device.defaultQueue.submit([encoder.finish()]);
+    t.device.queue.submit([encoder.finish()]);
 
     // Check that the correct store operation occurred.
     let expectedValue: PerTexelComponent<number> = {};
@@ -281,9 +281,9 @@ TODO: Also test unsized depth/stencil formats
   .fn(t => {
     const depthStencilAttachment = t.device.createTexture({
       format: t.params.depthStencilFormat,
-      size: { width: kWidth, height: kHeight, depth: t.params.arrayLayer + 1 },
+      size: { width: kWidth, height: kHeight, depthOrArrayLayers: t.params.arrayLayer + 1 },
       mipLevelCount: kMipLevelCount,
-      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     const depthStencilViewDesc: GPUTextureViewDescriptor = {
@@ -309,7 +309,7 @@ TODO: Also test unsized depth/stencil formats
       },
     });
     pass.endPass();
-    t.device.defaultQueue.submit([encoder.finish()]);
+    t.device.queue.submit([encoder.finish()]);
 
     let expectedValue: PerTexelComponent<number> = {};
     if (t.params.storeOperation === 'clear') {

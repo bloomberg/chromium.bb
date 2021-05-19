@@ -2125,6 +2125,7 @@ HEADERS_LIST="
     ES2_gl_h
     gsm_h
     io_h
+    linux_dma_buf_h
     linux_perf_event_h
     machine_ioctl_bt848_h
     machine_ioctl_meteor_h
@@ -2651,7 +2652,7 @@ rdft_select="fft"
 
 # decoders / encoders
 aac_decoder_select="adts_header mdct15 mdct sinewin"
-aac_fixed_decoder_select="adts_header mdct sinewin"
+aac_fixed_decoder_select="adts_header mdct"
 aac_encoder_select="audio_frame_queue iirfilter lpc mdct sinewin"
 aac_latm_decoder_select="aac_decoder aac_latm_parser"
 ac3_decoder_select="ac3_parser ac3dsp bswapdsp fmtconvert mdct"
@@ -2687,7 +2688,6 @@ atrac3p_decoder_select="mdct sinewin"
 atrac3pal_decoder_select="mdct sinewin"
 atrac9_decoder_select="mdct"
 av1_decoder_select="cbs_av1"
-avrn_decoder_select="exif jpegtables"
 bink_decoder_select="blockdsp hpeldsp"
 binkaudio_dct_decoder_select="mdct rdft dct sinewin wma_freqs"
 binkaudio_rdft_decoder_select="mdct rdft sinewin wma_freqs"
@@ -2715,6 +2715,7 @@ eamad_decoder_select="aandcttables blockdsp bswapdsp idctdsp mpegvideo"
 eatgq_decoder_select="aandcttables"
 eatqi_decoder_select="aandcttables blockdsp bswapdsp idctdsp"
 exr_decoder_deps="zlib"
+exr_encoder_deps="zlib"
 ffv1_decoder_select="rangecoder"
 ffv1_encoder_select="rangecoder"
 ffvhuff_decoder_select="huffyuv_decoder"
@@ -2760,7 +2761,7 @@ interplay_video_decoder_select="hpeldsp"
 jpegls_decoder_select="mjpeg_decoder"
 jv_decoder_select="blockdsp"
 lagarith_decoder_select="llviddsp"
-ljpeg_encoder_select="idctdsp jpegtables mpegvideoenc"
+ljpeg_encoder_select="idctdsp jpegtables"
 lscr_decoder_deps="zlib"
 magicyuv_decoder_select="llviddsp"
 magicyuv_encoder_select="llvidencdsp"
@@ -2846,6 +2847,7 @@ sonic_encoder_select="golomb rangecoder"
 sonic_ls_encoder_select="golomb rangecoder"
 sp5x_decoder_select="mjpeg_decoder"
 speedhq_decoder_select="mpegvideo"
+speedhq_encoder_select="mpegvideoenc"
 srgc_decoder_deps="zlib"
 svq1_decoder_select="hpeldsp"
 svq1_encoder_select="hpeldsp me_cmp mpegvideoenc"
@@ -3304,9 +3306,9 @@ asf_o_demuxer_select="riffdec"
 asf_muxer_select="riffenc"
 asf_stream_muxer_select="asf_muxer"
 av1_demuxer_select="av1_frame_merge_bsf av1_parser"
-avi_demuxer_select="iso_media riffdec exif"
+avi_demuxer_select="riffdec exif"
 avi_muxer_select="riffenc"
-caf_demuxer_select="iso_media riffdec"
+caf_demuxer_select="iso_media"
 caf_muxer_select="iso_media"
 dash_muxer_select="mp4_muxer"
 dash_demuxer_deps="libxml2"
@@ -3332,9 +3334,9 @@ ismv_muxer_select="mov_muxer"
 ivf_muxer_select="av1_metadata_bsf vp9_superframe_bsf"
 latm_muxer_select="aac_adtstoasc_bsf"
 matroska_audio_muxer_select="matroska_muxer"
-matroska_demuxer_select="iso_media riffdec"
+matroska_demuxer_select="riffdec"
 matroska_demuxer_suggest="bzlib lzo zlib"
-matroska_muxer_select="iso_media riffenc vp9_superframe_bsf aac_adtstoasc_bsf"
+matroska_muxer_select="riffenc vp9_superframe_bsf aac_adtstoasc_bsf"
 mlp_demuxer_select="mlp_parser"
 mmf_muxer_select="riffenc"
 mov_demuxer_select="iso_media riffdec"
@@ -3380,7 +3382,7 @@ w64_muxer_select="wav_muxer"
 wav_demuxer_select="riffdec"
 wav_muxer_select="riffenc"
 webm_chunk_muxer_select="webm_muxer"
-webm_muxer_select="iso_media riffenc"
+webm_muxer_select="riffenc"
 webm_dash_manifest_demuxer_select="matroska_demuxer"
 wtv_demuxer_select="mpegts_demuxer riffdec"
 wtv_muxer_select="mpegts_muxer riffenc"
@@ -4266,7 +4268,7 @@ case "$toolchain" in
         ld_default="$source_path/compat/windows/mslink"
         nm_default="dumpbin.exe -symbols"
         ar_default="lib.exe"
-        case "$arch" in
+        case "${arch:-$arch_default}" in
         aarch64|arm64)
             as_default="armasm64.exe"
             ;;
@@ -5388,7 +5390,12 @@ case $target_os in
         SHFLAGS='-dynamiclib -Wl,-single_module -Wl,-install_name,$(INSTALL_NAME_DIR)/$(SLIBNAME_WITH_MAJOR),-current_version,$(LIBVERSION),-compatibility_version,$(LIBMAJOR)'
         enabled x86_32 && append SHFLAGS -Wl,-read_only_relocs,suppress
         strip="${strip} -x"
-        add_ldflags -Wl,-dynamic,-search_paths_first
+
+        # TODO(wolenetz): ld64.lld no longer recognizes the following flags and
+        # produces error causing configure to misdetect things like whether
+        # stdlib defines getenv.
+        # add_ldflags -Wl,-dynamic,-search_paths_first
+
         check_cflags -Werror=partial-availability
         SLIBSUF=".dylib"
         SLIBNAME_WITH_VERSION='$(SLIBPREF)$(FULLNAME).$(LIBVERSION)$(SLIBSUF)'
@@ -6156,6 +6163,9 @@ check_headers dxgidebug.h
 check_headers dxva.h
 check_headers dxva2api.h -D_WIN32_WINNT=0x0600
 check_headers io.h
+enabled libdrm &&
+    check_headers linux/dma-buf.h
+
 check_headers linux/perf_event.h
 check_headers libcrystalhd/libcrystalhd_if.h
 check_headers malloc.h
@@ -6242,7 +6252,7 @@ fi
 if enabled cuda_nvcc; then
     nvccflags="$nvccflags -ptx"
 else
-    nvccflags="$nvccflags -S -nocudalib -nocudainc --cuda-device-only -include ${source_link}/compat/cuda/cuda_runtime.h"
+    nvccflags="$nvccflags -S -nocudalib -nocudainc --cuda-device-only -Wno-c++11-narrowing -include ${source_link}/compat/cuda/cuda_runtime.h"
     check_nvcc cuda_llvm
 fi
 
@@ -6409,7 +6419,7 @@ enabled libopenvino       && require libopenvino c_api/ie_c_api.h ie_c_api_versi
 # }
 enabled libpulse          && require_pkg_config libpulse libpulse pulse/pulseaudio.h pa_context_new
 enabled librabbitmq       && require_pkg_config librabbitmq "librabbitmq >= 0.7.1" amqp.h amqp_new_connection
-enabled librav1e          && require_pkg_config librav1e "rav1e >= 0.1.0" rav1e.h rav1e_context_new
+enabled librav1e          && require_pkg_config librav1e "rav1e >= 0.4.0" rav1e.h rav1e_context_new
 enabled librsvg           && require_pkg_config librsvg librsvg-2.0 librsvg-2.0/librsvg/rsvg.h rsvg_handle_render_cairo
 enabled librtmp           && require_pkg_config librtmp librtmp librtmp/rtmp.h RTMP_Socket
 enabled librubberband     && require_pkg_config librubberband "rubberband >= 1.8.1" rubberband/rubberband-c.h rubberband_new -lstdc++ && append librubberband_extralibs "-lstdc++"
@@ -7576,10 +7586,11 @@ cat > $TMPH <<EOF
 #define FFMPEG_CONFIG_H
 #define FFMPEG_CONFIGURATION "$(c_escape $FFMPEG_CONFIGURATION)"
 #define FFMPEG_LICENSE "$(c_escape $license)"
-#define CONFIG_THIS_YEAR 2020
+#define CONFIG_THIS_YEAR 2021
 #define FFMPEG_DATADIR "$(eval c_escape $datadir)"
 #define AVCONV_DATADIR "$(eval c_escape $datadir)"
 #define CC_IDENT "$(c_escape ${cc_ident:-Unknown compiler})"
+#define OS_NAME $target_os
 #define av_restrict $restrict_keyword
 #define EXTERN_PREFIX "${extern_prefix}"
 #define EXTERN_ASM ${extern_prefix}

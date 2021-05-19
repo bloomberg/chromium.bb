@@ -106,7 +106,8 @@ GCMProfileService* GCMProfileServiceFactory::GetForProfile(
 
 // static
 GCMProfileServiceFactory* GCMProfileServiceFactory::GetInstance() {
-  return base::Singleton<GCMProfileServiceFactory>::get();
+  static base::NoDestructor<GCMProfileServiceFactory> instance;
+  return instance.get();
 }
 
 GCMProfileServiceFactory::GCMProfileServiceFactory()
@@ -148,9 +149,8 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
       content::GetNetworkConnectionTracker(), chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       IdentityManagerFactory::GetForProfile(profile),
-      std::unique_ptr<GCMClientFactory>(new GCMClientFactory),
-      content::GetUIThreadTaskRunner({}), content::GetIOThreadTaskRunner({}),
-      blocking_task_runner);
+      std::make_unique<GCMClientFactory>(), content::GetUIThreadTaskRunner({}),
+      content::GetIOThreadTaskRunner({}), blocking_task_runner);
 #endif
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::PrefetchService* prefetch_service =

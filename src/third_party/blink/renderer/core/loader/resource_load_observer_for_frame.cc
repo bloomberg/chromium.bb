@@ -69,23 +69,23 @@ void ResourceLoadObserverForFrame::DidStartRequest(
 }
 
 void ResourceLoadObserverForFrame::WillSendRequest(
-    uint64_t identifier,
     const ResourceRequest& request,
     const ResourceResponse& redirect_response,
     ResourceType resource_type,
-    const FetchInitiatorInfo& initiator_info,
+    const ResourceLoaderOptions& options,
     RenderBlockingBehavior render_blocking_behavior) {
   LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);
   if (redirect_response.IsNull()) {
     // Progress doesn't care about redirects, only notify it when an
     // initial request is sent.
-    frame->Loader().Progress().WillStartLoading(identifier, request.Priority());
+    frame->Loader().Progress().WillStartLoading(request.InspectorId(),
+                                                request.Priority());
   }
   probe::WillSendRequest(
-      GetProbe(), identifier, document_loader_,
+      GetProbe(), document_loader_,
       fetcher_properties_->GetFetchClientSettingsObject().GlobalObjectUrl(),
-      request, redirect_response, initiator_info, resource_type,
+      request, redirect_response, options, resource_type,
       render_blocking_behavior);
   if (auto* idleness_detector = frame->GetIdlenessDetector())
     idleness_detector->OnWillSendRequest(document_->Fetcher());
@@ -97,9 +97,9 @@ void ResourceLoadObserverForFrame::DidChangePriority(
     uint64_t identifier,
     ResourceLoadPriority priority,
     int intra_priority_value) {
-  TRACE_EVENT1("devtools.timeline", "ResourceChangePriority", "data",
-               inspector_change_resource_priority_event::Data(
-                   document_loader_, identifier, priority));
+  DEVTOOLS_TIMELINE_TRACE_EVENT("ResourceChangePriority",
+                                inspector_change_resource_priority_event::Data,
+                                document_loader_, identifier, priority);
   probe::DidChangeResourcePriority(document_->GetFrame(), document_loader_,
                                    identifier, priority);
 }
@@ -289,7 +289,7 @@ CoreProbeSink* ResourceLoadObserverForFrame::GetProbe() {
 }
 
 void ResourceLoadObserverForFrame::CountUsage(WebFeature feature) {
-  document_loader_->GetUseCounterHelper().Count(feature, document_->GetFrame());
+  document_loader_->GetUseCounter().Count(feature, document_->GetFrame());
 }
 
 }  // namespace blink

@@ -7,6 +7,7 @@ import("//tools/polymer/polymer.gni")
 import("../os_settings.gni")
 
 js_type_check("closure_compile_module") {
+  closure_flags = os_settings_closure_flags
   is_polymer3 = true
   deps = [
     ":android_apps_browser_proxy.m",
@@ -27,8 +28,8 @@ js_library("android_apps_subpage.m") {
     ":android_apps_browser_proxy.m",
     "..:deep_linking_behavior.m",
     "..:os_route.m",
-    "../..:router.m",
-    "../../prefs:prefs_behavior.m",
+    "../..:router",
+    "../../prefs:prefs_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
@@ -44,9 +45,9 @@ js_library("os_apps_page.m") {
     ":android_apps_subpage.m",
     "..:deep_linking_behavior.m",
     "..:os_route.m",
-    "../../:router.m",
-    "../../prefs:prefs_behavior.m",
-    "../../settings_page:settings_animated_pages.m",
+    "../../:router",
+    "../../prefs:prefs_behavior",
+    "../../settings_page:settings_animated_pages",
     "../localized_link:localized_link.m",
     "./app_management_page:constants.m",
     "./app_management_page:store_client.m",
@@ -69,7 +70,7 @@ polymer_modulizer("android_apps_subpage") {
   js_file = "android_apps_subpage.js"
   html_file = "android_apps_subpage.html"
   html_type = "dom-module"
-  migrated_imports = settings_migrated_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
   auto_imports = os_settings_auto_imports
 }
@@ -78,7 +79,7 @@ polymer_modulizer("os_apps_page") {
   js_file = "os_apps_page.js"
   html_file = "os_apps_page.html"
   html_type = "dom-module"
-  migrated_imports = settings_migrated_imports
+  migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
   auto_imports = os_settings_auto_imports
 }

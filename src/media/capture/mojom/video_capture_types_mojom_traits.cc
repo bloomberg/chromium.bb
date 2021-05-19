@@ -4,7 +4,6 @@
 
 #include "media/capture/mojom/video_capture_types_mojom_traits.h"
 
-#include "media/base/ipc/media_param_traits_macros.h"
 #include "ui/gfx/geometry/mojom/geometry.mojom.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
@@ -715,6 +714,10 @@ EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::ToMojom(
     case media::VideoCaptureError::kDesktopCaptureDeviceMacFailedStreamStart:
       return media::mojom::VideoCaptureError::
           kDesktopCaptureDeviceMacFailedStreamStart;
+    case media::VideoCaptureError::
+        kCrosHalV3BufferManagerFailedToReserveBuffers:
+      return media::mojom::VideoCaptureError::
+          kCrosHalV3BufferManagerFailedToReserveBuffers;
   }
   NOTREACHED();
   return media::mojom::VideoCaptureError::kNone;
@@ -1272,6 +1275,11 @@ bool EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::
       *output =
           media::VideoCaptureError::kDesktopCaptureDeviceMacFailedStreamStart;
       return true;
+    case media::mojom::VideoCaptureError::
+        kCrosHalV3BufferManagerFailedToReserveBuffers:
+      *output = media::VideoCaptureError::
+          kCrosHalV3BufferManagerFailedToReserveBuffers;
+      return true;
   }
   NOTREACHED();
   return false;
@@ -1747,13 +1755,16 @@ bool StructTraits<media::mojom::VideoCaptureDeviceInfoDataView,
 }
 
 // static
-bool StructTraits<media::mojom::VideoFrameFeedbackDataView,
-                  media::VideoFrameFeedback>::
-    Read(media::mojom::VideoFrameFeedbackDataView data,
-         media::VideoFrameFeedback* output) {
+bool StructTraits<media::mojom::VideoCaptureFeedbackDataView,
+                  media::VideoCaptureFeedback>::
+    Read(media::mojom::VideoCaptureFeedbackDataView data,
+         media::VideoCaptureFeedback* output) {
   output->max_framerate_fps = data.max_framerate_fps();
   output->max_pixels = data.max_pixels();
   output->resource_utilization = data.resource_utilization();
+  output->require_mapped_frame = data.require_mapped_frame();
+  if (!data.ReadMappedSizes(&(output->mapped_sizes)))
+    return false;
   return true;
 }
 

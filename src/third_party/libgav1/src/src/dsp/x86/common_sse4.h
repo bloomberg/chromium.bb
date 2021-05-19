@@ -70,6 +70,19 @@ inline void PrintRegX(const int r, const char* const name) {
 #define PR(var, N) PrintReg(var, #var, N)
 #define PD(var) PrintReg(var, #var);
 #define PX(var) PrintRegX(var, #var);
+
+#if LIBGAV1_MSAN
+#include <sanitizer/msan_interface.h>
+
+inline void PrintShadow(const void* r, const char* const name,
+                        const size_t size) {
+  fprintf(stderr, "Shadow for %s:\n", name);
+  __msan_print_shadow(r, size);
+}
+#define PS(var, N) PrintShadow(var, #var, N)
+
+#endif  // LIBGAV1_MSAN
+
 #endif  // 0
 
 namespace libgav1 {
@@ -243,6 +256,15 @@ inline __m128i RightShiftWithRounding_S32(const __m128i v_val_d, int bits) {
   const __m128i v_bias_d = _mm_set1_epi32((1 << bits) >> 1);
   const __m128i v_tmp_d = _mm_add_epi32(v_val_d, v_bias_d);
   return _mm_srai_epi32(v_tmp_d, bits);
+}
+
+// Use this when |bits| is not an immediate value.
+inline __m128i VariableRightShiftWithRounding_S32(const __m128i v_val_d,
+                                                  int bits) {
+  const __m128i v_bias_d =
+      _mm_set1_epi32(static_cast<int32_t>((1 << bits) >> 1));
+  const __m128i v_tmp_d = _mm_add_epi32(v_val_d, v_bias_d);
+  return _mm_sra_epi32(v_tmp_d, _mm_cvtsi32_si128(bits));
 }
 
 //------------------------------------------------------------------------------

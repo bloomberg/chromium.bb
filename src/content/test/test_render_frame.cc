@@ -29,6 +29,7 @@
 #include "services/network/public/cpp/not_implemented_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/frame/frame_replication_state.mojom.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_navigation_control.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -154,7 +155,7 @@ class MockFrameHost : public mojom::FrameHost {
                     mojo::PendingAssociatedRemote<blink::mojom::PortalClient>,
                     CreatePortalCallback callback) override {
     std::move(callback).Run(MSG_ROUTING_NONE,
-                            mojom::FrameReplicationState::New(),
+                            blink::mojom::FrameReplicationState::New(),
                             blink::PortalToken(), blink::RemoteFrameToken(),
                             base::UnguessableToken());
   }
@@ -162,7 +163,7 @@ class MockFrameHost : public mojom::FrameHost {
   void AdoptPortal(const blink::PortalToken&,
                    AdoptPortalCallback callback) override {
     std::move(callback).Run(
-        MSG_ROUTING_NONE, mojom::FrameReplicationState::New(),
+        MSG_ROUTING_NONE, blink::mojom::FrameReplicationState::New(),
         blink::RemoteFrameToken(), base::UnguessableToken());
   }
 
@@ -178,7 +179,6 @@ class MockFrameHost : public mojom::FrameHost {
       mojom::BeginNavigationParamsPtr begin_params,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
       mojo::PendingAssociatedRemote<mojom::NavigationClient>,
-      mojo::PendingRemote<blink::mojom::NavigationInitiator>,
       mojo::PendingRemote<blink::mojom::PolicyContainerHostKeepAliveHandle>)
       override {}
 
@@ -199,7 +199,7 @@ class MockFrameHost : public mojom::FrameHost {
     is_page_state_updated_ = true;
   }
 
-  void OpenURL(mojom::OpenURLParamsPtr params) override {
+  void OpenURL(blink::mojom::OpenURLParamsPtr params) override {
     is_url_opened_ = true;
   }
 
@@ -257,17 +257,21 @@ void TestRenderFrame::Navigate(network::mojom::URLResponseHeadPtr head,
       blink::ChildPendingURLLoaderFactoryBundle::CreateFromDefaultFactoryImpl(
           network::NotImplementedURLLoaderFactory::Create());
 
-  CommitNavigation(std::move(common_params), std::move(commit_params),
-                   std::move(head), mojo::ScopedDataPipeConsumerHandle(),
-                   network::mojom::URLLoaderClientEndpointsPtr(),
-                   std::move(pending_factory_bundle), base::nullopt,
-                   blink::mojom::ControllerServiceWorkerInfoPtr(),
-                   blink::mojom::ServiceWorkerContainerInfoForClientPtr(),
-                   mojo::NullRemote() /* prefetch_loader_factory */,
-                   base::UnguessableToken::Create(),
-                   CreateStubPolicyContainer(),
-                   base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
-                                  base::Unretained(mock_frame_host_.get())));
+  MockPolicyContainerHost mock_policy_container_host;
+  CommitNavigation(
+      std::move(common_params), std::move(commit_params), std::move(head),
+      mojo::ScopedDataPipeConsumerHandle(),
+      network::mojom::URLLoaderClientEndpointsPtr(),
+      std::move(pending_factory_bundle), base::nullopt,
+      blink::mojom::ControllerServiceWorkerInfoPtr(),
+      blink::mojom::ServiceWorkerContainerInfoForClientPtr(),
+      mojo::NullRemote() /* prefetch_loader_factory */,
+      base::UnguessableToken::Create(),
+      blink::mojom::PolicyContainer::New(
+          blink::mojom::PolicyContainerPolicies::New(),
+          mock_policy_container_host.BindNewEndpointAndPassDedicatedRemote()),
+      base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
+                     base::Unretained(mock_frame_host_.get())));
 }
 
 void TestRenderFrame::Navigate(mojom::CommonNavigationParamsPtr common_params,
@@ -290,9 +294,9 @@ void TestRenderFrame::NavigateWithError(
           network::NotImplementedURLLoaderFactory::Create());
   mock_navigation_client_->CommitFailedNavigation(
       std::move(common_params), std::move(commit_params),
-      false /* has_stale_copy_in_cache */, error_code, resolve_error_info,
-      error_page_content, std::move(pending_factory_bundle),
-      CreateStubPolicyContainer(),
+      false /* has_stale_copy_in_cache */, error_code,
+      0 /* extended_error_code */, resolve_error_info, error_page_content,
+      std::move(pending_factory_bundle), CreateStubPolicyContainer(),
       base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
                      base::Unretained(mock_frame_host_.get())));
 }
@@ -305,6 +309,11 @@ void TestRenderFrame::BeginNavigation(
     auto navigation_params =
         blink::WebNavigationParams::CreateWithHTMLStringForTesting(
             next_navigation_html_override_.value(), info->url_request.Url());
+    MockPolicyContainerHost mock_policy_container_host;
+    navigation_params->policy_container =
+        std::make_unique<blink::WebPolicyContainer>(
+            blink::WebPolicyContainerPolicies(),
+            mock_policy_container_host.BindNewEndpointAndPassDedicatedRemote());
     next_navigation_html_override_ = base::nullopt;
     frame_->CommitNavigation(std::move(navigation_params),
                              nullptr /* extra_data */);
@@ -321,6 +330,11 @@ void TestRenderFrame::BeginNavigation(
     GURL url = info->url_request.Url();
     auto navigation_params =
         blink::WebNavigationParams::CreateFromInfo(*info.get());
+    MockPolicyContainerHost mock_policy_container_host;
+    navigation_params->policy_container =
+        std::make_unique<blink::WebPolicyContainer>(
+            blink::WebPolicyContainerPolicies(),
+            mock_policy_container_host.BindNewEndpointAndPassDedicatedRemote());
     if (!url.IsAboutBlank() && !url.IsAboutSrcdoc()) {
       std::string mime_type, charset, data;
       if (!net::DataURL::Parse(url, &mime_type, &charset, &data)) {

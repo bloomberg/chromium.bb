@@ -14,10 +14,9 @@
 
 #include "src/type/u32_type.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::U32);
+TINT_INSTANTIATE_TYPEINFO(tint::type::U32);
 
 namespace tint {
 namespace type {
@@ -34,14 +33,6 @@ std::string U32::type_name() const {
 
 std::string U32::FriendlyName(const SymbolTable&) const {
   return "u32";
-}
-
-uint64_t U32::MinBufferBindingSize(MemoryLayout) const {
-  return 4;
-}
-
-uint64_t U32::BaseAlignment(MemoryLayout) const {
-  return 4;
 }
 
 U32* U32::Clone(CloneContext* ctx) const {

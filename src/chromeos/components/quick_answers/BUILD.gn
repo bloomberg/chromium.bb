@@ -38,6 +38,10 @@ source_set("quick_answers") {
     "utils/quick_answers_metrics.h",
     "utils/quick_answers_utils.cc",
     "utils/quick_answers_utils.h",
+    "utils/unit_conversion_constants.cc",
+    "utils/unit_conversion_constants.h",
+    "utils/unit_converter.cc",
+    "utils/unit_converter.h",
   ]
   deps = [
     "//ash/constants",
@@ -77,6 +81,7 @@ source_set("unit_tests") {
     "translation_result_loader_unittest.cc",
     "understanding/intent_generator_unittest.cc",
     "utils/language_detector_unittest.cc",
+    "utils/unit_converter_unittest.cc",
   ]
 
   deps = [
@@ -88,7 +93,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/services/assistant/public/shared",
-    "//chromeos/services/machine_learning/public/cpp:test_support",
+    "//chromeos/services/machine_learning/public/cpp:stub",
     "//chromeos/services/machine_learning/public/mojom",
     "//components/prefs:prefs",
     "//components/prefs:test_support",

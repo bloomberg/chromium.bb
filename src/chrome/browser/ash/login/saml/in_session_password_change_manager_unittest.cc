@@ -8,9 +8,9 @@
 #include "ash/public/cpp/session/session_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/login_pref_names.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -36,7 +36,7 @@ constexpr base::TimeDelta kAdvanceWarningTime = base::TimeDelta::FromDays(14);
 constexpr base::TimeDelta kOneYear = base::TimeDelta::FromDays(365);
 constexpr base::TimeDelta kTenYears = base::TimeDelta::FromDays(10 * 365);
 
-inline base::string16 utf16(const char* ascii) {
+inline std::u16string utf16(const char* ascii) {
   return base::ASCIIToUTF16(ascii);
 }
 

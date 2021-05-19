@@ -23,6 +23,7 @@
 <translation id="1509960214886564027">ਸ਼ਾਇਦ ਕਈ ਸਾਈਟਾਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਠੀਕ ਤਰੀਕੇ ਨਾਲ ਕੰਮ ਨਾ ਕਰਨ</translation>
 <translation id="1620510694547887537">ਕੈਮਰਾ</translation>
 <translation id="1644574205037202324">ਇਤਿਹਾਸ</translation>
+<translation id="1647582022260550163">ਕੀ ਤੁਸੀਂ ਪੱਕਾ ਇਜਾਜ਼ਤਾਂ ਨੂੰ ਰੀਸੈੱਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ, ਅਤੇ ਕੁਕੀਜ਼ ਅਤੇ ਹੋਰ ਸਾਈਟ ਡਾਟੇ ਨੂੰ ਕਲੀਅਰ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
 <translation id="1660204651932907780">ਸਾਈਟਾਂ ਨੂੰ ਧੁਨੀ ਵਜਾਉਣ ਦਿਓ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="1677097821151855053">ਕੁਕੀਜ਼ ਅਤੇ ਹੋਰ ਸਾਈਟ ਡਾਟੇ ਦੀ ਵਰਤੋਂ ਤੁਹਾਨੂੰ ਯਾਦ ਰੱਖਣ ਲਈ ਕੀਤੀ ਜਾਂਦੀ ਹੈ, ਉਦਾਹਰਨ ਦੇ ਤੌਰ 'ਤੇ ਤੁਹਾਨੂੰ ਸਾਈਨ-ਇਨ ਕਰਨ ਲਈ ਜਾਂ ਵਿਗਿਆਪਨਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ। ਸਾਰੀਆਂ ਸਾਈਟਾਂ ਲਈ ਕੁਕੀਜ਼ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ, <ph name="BEGIN_LINK" />ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਦੇਖੋ।</translation>
 <translation id="1688867105868176567">ਕੀ ਸਾਈਟ ਡਾਟਾ ਕਲੀਅਰ ਕਰਨਾ ਹੈ?</translation>
@@ -92,7 +93,6 @@
 <translation id="3386292677130313581">ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡਾ ਟਿਕਾਣਾ ਜਾਣਨ ਤੋਂ ਪਹਿਲਾਂ ਤੁਹਾਡੀ ਇਜਾਜ਼ਤ ਲੈਣ ਨੂੰ ਜ਼ਰੂਰੀ ਬਣਾਓ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="3538390592868664640">ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਆਲੇ-ਦੁਆਲੇ ਦਾ 3D ਨਕਸ਼ਾ ਬਣਾਉਣ ਜਾਂ ਕੈਮਰਾ ਸਥਿਤੀ ਨੂੰ ਟਰੈਕ ਕਰਨ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="3586500876634962664">ਕੈਮਰੇ ਅਤੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਦੀ ਵਰਤੋਂ</translation>
-<translation id="3587482841069643663">ਸਾਰੇ</translation>
 <translation id="358794129225322306">ਕਿਸੇ ਸਾਈਟ ਨੂੰ ਇੱਕ ਤੋਂ ਜ਼ਿਆਦਾ ਫ਼ਾਈਲਾਂ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਡਾਊਨਲੋਡ ਕਰਨ ਦਿਓ।</translation>
 <translation id="3594780231884063836">ਵੀਡੀਓ ਮਿਊਟ ਕਰੋ</translation>
 <translation id="3596414637720633074">ਇਨਕੋਗਨਿਟੋ ਵਿੱਚ ਤੀਜੀ-ਧਿਰ ਦੀਆਂ ਕੁਕੀਜ਼ ਨੂੰ ਬਲਾਕ ਕਰੋ</translation>
@@ -104,6 +104,7 @@
 <translation id="385051799172605136">ਪਿੱਛੇ</translation>
 <translation id="3859306556332390985">ਅੱਗੇ ਵੱਲ ਨੂੰ ਲੈ ਜਾਓ</translation>
 <translation id="3955193568934677022">ਸਾਈਟਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਸਮੱਗਰੀ ਚਲਾਉਣ ਦਿਓ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
+<translation id="3967822245660637423">ਡਾਊਨਲੋਡ ਪੂਰਾ ਹੋਇਆ</translation>
 <translation id="3987993985790029246">ਲਿੰਕ ਕਾਪੀ ਕਰੋ</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ਸਿਰਲੇਖ</translation>
@@ -177,6 +178,7 @@
 <translation id="5916664084637901428">ਚਾਲੂ</translation>
 <translation id="5922853908706496913">ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="5939518447894949180">ਰੀਸੈਟ ਕਰੋ</translation>
+<translation id="5975083100439434680">ਜ਼ੂਮ ਘਟਾਓ</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">ਆਪਣੇ ਡੀਵਾਈਸ ਤੱਕ ਇਸ ਸਾਈਟ ਦੀ ਪਹੁੰਚ ਨੂੰ ਕੰਟਰੋਲ ਕਰੋ</translation>
 <translation id="6040143037577758943">ਬੰਦ ਕਰੋ</translation>
@@ -297,6 +299,7 @@
 <translation id="8801436777607969138">ਕਿਸੇ ਖਾਸ ਸਾਈਟ ਲਈ JavaScript ਨੂੰ ਬਲਾਕ ਕਰੋ।</translation>
 <translation id="8816026460808729765">ਸਾਈਟਾਂ ਨੂੰ ਸੈਂਸਰਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8903921497873541725">ਜ਼ੂਮ ਵਧਾਓ</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">ਇਸ ਡੀਵਾਈਸ ਲਈ NFC ਬੰਦ ਹੈ। ਇਸਨੂੰ <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="8929372349074745002">ਇਹ ਸਾਈਟ ਜ਼ਿਆਦਾਤਰ ਲੋਕਾਂ ਲਈ ਤੇਜ਼ੀ ਨਾਲ ਖੁੱਲ੍ਹਦੀ ਅਤੇ ਜਵਾਬ ਦਿੰਦੀ ਹੈ</translation>
@@ -304,10 +307,12 @@
 <translation id="894871326938397531">ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਛੱਡੀਏ?</translation>
 <translation id="8958424370300090006">ਕਿਸੇ ਖਾਸ ਸਾਈਟ ਲਈ ਕੁਕੀਜ਼ ਬਲਾਕ ਕਰੋ।</translation>
 <translation id="8959122750345127698">ਨੈਵੀਗੇਸ਼ਨ ਨਾਪਹੁੰਚਯੋਗ ਹੈ: <ph name="URL" /></translation>
+<translation id="8986362086234534611">ਭੁੱਲਣਾ</translation>
 <translation id="9019902583201351841">ਤੁਹਾਡੇ ਮਾਪਿਆਂ ਵੱਲੋਂ ਵਿਵਸਥਿਤ</translation>
 <translation id="9074739597929991885">ਬਲੂਟੁੱਥ</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ਅਤੇ <ph name="NUM_MORE" /> ਹੋਰ}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ਅਤੇ <ph name="NUM_MORE" /> ਹੋਰ}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ਅਤੇ <ph name="NUM_MORE" /> ਹੋਰ}}</translation>
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ <ph name="APP_NAME" /> ਲਈ ਇਜਾਜ਼ਤਾਂ ਚਾਲੂ ਕਰੋ।</translation>
+<translation id="930525582205581608">ਕੀ ਇਸ ਸਾਈਟ ਨੂੰ ਕਲੀਅਰ ਕਰਨਾ ਹੈ?</translation>
 <translation id="965817943346481315">ਜੇਕਰ ਸਾਈਟ ਦਖਲਅੰਦਾਜ਼ੀ ਅਤੇ ਗੁਮਰਾਹ ਕਰਨ ਵਾਲੇ ਵਿਗਿਆਪਨ ਦਿਖਾਉਂਦੀ ਹੈ, ਤਾਂ ਇਸਨੂੰ ਬਲਾਕ ਕਰੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="967624055006145463">ਸਟੋਰ ਕੀਤਾ ਡਾਟਾ</translation>
 </translationbundle>

@@ -560,7 +560,7 @@ TEST_F(IndexedRuleTest, RedirectParsing) {
         base::JSONReader::Read(cases[i].redirect_dictionary_json);
     ASSERT_TRUE(redirect_val);
 
-    base::string16 error;
+    std::u16string error;
     rule.action.redirect = dnr_api::Redirect::FromValue(*redirect_val, &error);
     ASSERT_TRUE(rule.action.redirect);
     ASSERT_TRUE(error.empty());
@@ -889,6 +889,60 @@ TEST_F(IndexedRuleTest, ModifyHeadersParsing) {
     EXPECT_TRUE(std::equal(
         expected_response_headers.begin(), expected_response_headers.end(),
         indexed_rule.response_headers.begin(), EqualsForTesting));
+  }
+}
+
+TEST_F(IndexedRuleTest, RequestMethodsParsing) {
+  using RequestMethodVec = std::vector<dnr_api::RequestMethod>;
+
+  struct {
+    std::unique_ptr<RequestMethodVec> request_methods;
+    std::unique_ptr<RequestMethodVec> excluded_request_methods;
+    const ParseResult expected_result;
+    // Only valid if `expected_result` is SUCCESS.
+    const uint16_t expected_request_methods_mask;
+  } cases[] = {
+      {nullptr, nullptr, ParseResult::SUCCESS, flat_rule::RequestMethod_ANY},
+      {nullptr,
+       std::make_unique<RequestMethodVec>(
+           RequestMethodVec({dnr_api::REQUEST_METHOD_PUT})),
+       ParseResult::SUCCESS,
+       flat_rule::RequestMethod_ANY & ~flat_rule::RequestMethod_PUT},
+      {std::make_unique<RequestMethodVec>(RequestMethodVec(
+           {dnr_api::REQUEST_METHOD_DELETE, dnr_api::REQUEST_METHOD_GET})),
+       nullptr, ParseResult::SUCCESS,
+       flat_rule::RequestMethod_DELETE | flat_rule::RequestMethod_GET},
+      {std::make_unique<RequestMethodVec>(RequestMethodVec(
+           {dnr_api::REQUEST_METHOD_HEAD, dnr_api::REQUEST_METHOD_OPTIONS,
+            dnr_api::REQUEST_METHOD_PATCH})),
+       nullptr, ParseResult::SUCCESS,
+       flat_rule::RequestMethod_HEAD | flat_rule::RequestMethod_OPTIONS |
+           flat_rule::RequestMethod_PATCH},
+      {std::make_unique<RequestMethodVec>(
+           RequestMethodVec({dnr_api::REQUEST_METHOD_POST})),
+       std::make_unique<RequestMethodVec>(
+           RequestMethodVec({dnr_api::REQUEST_METHOD_POST})),
+       ParseResult::ERROR_REQUEST_METHOD_DUPLICATED,
+       flat_rule::RequestMethod_NONE},
+      {std::make_unique<RequestMethodVec>(), nullptr,
+       ParseResult::ERROR_EMPTY_REQUEST_METHODS_LIST,
+       flat_rule::RequestMethod_NONE}};
+
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.condition.request_methods = std::move(cases[i].request_methods);
+    rule.condition.excluded_request_methods =
+        std::move(cases[i].excluded_request_methods);
+
+    IndexedRule indexed_rule;
+    ParseResult result = IndexedRule::CreateIndexedRule(
+        std::move(rule), GetBaseURL(), &indexed_rule);
+
+    EXPECT_EQ(cases[i].expected_result, result);
+    if (result == ParseResult::SUCCESS)
+      EXPECT_EQ(cases[i].expected_request_methods_mask,
+                indexed_rule.request_methods);
   }
 }
 

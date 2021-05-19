@@ -13,13 +13,13 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/ash/login/error_screens_histogram_helper.h"
+#include "chrome/browser/ash/login/helper.h"
+#include "chrome/browser/ash/login/ui/login_display.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
-#include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chromeos/network/network_handler.h"
@@ -255,8 +255,7 @@ void UpdateRequiredScreen::StopObservingNetworkState() {
 }
 
 void UpdateRequiredScreen::OnSelectNetworkButtonClicked() {
-  ash::SystemTray::Get()->ShowNetworkDetailedViewBubble(
-      true /* show_by_click */);
+  ash::SystemTray::Get()->ShowNetworkDetailedViewBubble();
 }
 
 void UpdateRequiredScreen::OnUpdateButtonClicked() {

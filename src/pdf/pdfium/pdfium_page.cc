@@ -27,7 +27,7 @@
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
-#include "pdf/thumbnail.h"
+#include "pdf/ui/thumbnail.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
@@ -847,10 +847,10 @@ PDFiumPage::Area PDFiumPage::FormTypeToArea(int form_type) {
   }
 }
 
-base::char16 PDFiumPage::GetCharAtIndex(int index) {
+char16_t PDFiumPage::GetCharAtIndex(int index) {
   if (!available_)
     return L'\0';
-  return static_cast<base::char16>(FPDFText_GetUnicode(GetTextPage(), index));
+  return char16_t{FPDFText_GetUnicode(GetTextPage(), index)};
 }
 
 int PDFiumPage::GetCharCount() {
@@ -879,12 +879,10 @@ PDFiumPage::Area PDFiumPage::GetDestinationTarget(FPDF_DEST destination,
   GetPageDestinationTarget(destination, &x, &y, &target->zoom);
 
   if (x) {
-    target->x_in_pixels =
-        TransformPageToScreenX(PreProcessInPageCoordX(x.value()));
+    target->x_in_pixels = PreProcessAndTransformInPageCoordX(x.value());
   }
   if (y) {
-    target->y_in_pixels =
-        TransformPageToScreenY(PreProcessInPageCoordY(y.value()));
+    target->y_in_pixels = PreProcessAndTransformInPageCoordY(y.value());
   }
 
   return DOCLINK_AREA;
@@ -920,16 +918,17 @@ void PDFiumPage::GetPageDestinationTarget(FPDF_DEST destination,
     *zoom_value = zoom;
 }
 
-float PDFiumPage::PreProcessInPageCoordX(float x) {
+float PDFiumPage::PreProcessAndTransformInPageCoordX(float x) {
   // If `x` < 0, scroll to the left side of the page.
-  // If `x` > width, scroll to the right side of the page.
-  return std::max<float>(std::min<float>(x, FPDF_GetPageWidthF(GetPage())), 0);
+  // If `x` > page width, scroll to the right side of the page.
+  return TransformPageToScreenX(
+      std::max(std::min(x, FPDF_GetPageWidthF(GetPage())), 0.0f));
 }
 
-float PDFiumPage::PreProcessInPageCoordY(float y) {
+float PDFiumPage::PreProcessAndTransformInPageCoordY(float y) {
   // If `y` < 0, it is a valid input, no extra handling is needed.
-  // If `y` > height, scroll to the top of the page.
-  return std::min<float>(y, FPDF_GetPageHeightF(GetPage()));
+  // If `y` > page height, scroll to the top of the page.
+  return TransformPageToScreenY(std::min(y, FPDF_GetPageHeightF(GetPage())));
 }
 
 gfx::PointF PDFiumPage::TransformPageToScreenXY(const gfx::PointF& xy) {
@@ -1008,10 +1007,10 @@ void PDFiumPage::PopulateWebLinks() {
   for (int i = 0; i < count; ++i) {
     // WARNING: FPDFLink_GetURL() is not compatible with
     // CallPDFiumWideStringBufferApi().
-    base::string16 url;
+    std::u16string url;
     int url_length = FPDFLink_GetURL(links.get(), i, nullptr, 0);
     if (url_length > 0) {
-      PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
+      PDFiumAPIStringBufferAdapter<std::u16string> api_string_adapter(
           &url, url_length, true);
       unsigned short* data =
           reinterpret_cast<unsigned short*>(api_string_adapter.GetData());

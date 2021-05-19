@@ -206,6 +206,13 @@ def chrome_golo(c):  # pragma: no cover
   c.got_revision_mapping['chrome_golo'] = 'got_revision'
 
 @config_ctx()
+def infra_puppet(c):  # pragma: no cover
+  s = c.solutions.add()
+  s.name = 'infra_puppet'
+  s.url = 'https://chrome-internal.googlesource.com/infra/puppet.git'
+  c.got_revision_mapping['infra_puppet'] = 'got_revision'
+
+@config_ctx()
 def build_internal(c):
   s = c.solutions.add()
   s.name = 'build_internal'

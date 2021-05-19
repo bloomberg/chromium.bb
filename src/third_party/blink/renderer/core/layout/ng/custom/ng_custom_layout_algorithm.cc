@@ -27,7 +27,7 @@ NGCustomLayoutAlgorithm::NGCustomLayoutAlgorithm(
 }
 
 MinMaxSizesResult NGCustomLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesInput& input) const {
+    const MinMaxSizesFloatInput& input) const {
   if (!Node().IsCustomLayoutLoaded())
     return FallbackMinMaxSizes(input);
 
@@ -47,7 +47,7 @@ MinMaxSizesResult NGCustomLayoutAlgorithm::ComputeMinMaxSizes(
     return FallbackMinMaxSizes(input);
   }
 
-  bool depends_on_percentage_block_size = false;
+  bool depends_on_block_constraints = false;
   IntrinsicSizesResultOptions* intrinsic_sizes_result_options = nullptr;
   LogicalSize border_box_size{
       container_builder_.InlineSize(),
@@ -55,13 +55,11 @@ MinMaxSizesResult NGCustomLayoutAlgorithm::ComputeMinMaxSizes(
           ConstraintSpace(), Style(), BorderPadding(),
           CalculateDefaultBlockSize(ConstraintSpace(), Node(),
                                     BorderScrollbarPadding()),
-          container_builder_.InlineSize(),
-          Node().ShouldBeConsideredAsReplaced())};
-  if (!instance->IntrinsicSizes(ConstraintSpace(), document, Node(),
-                                border_box_size, BorderScrollbarPadding(),
-                                input.percentage_resolution_block_size, &scope,
-                                &intrinsic_sizes_result_options,
-                                &depends_on_percentage_block_size)) {
+          container_builder_.InlineSize())};
+  if (!instance->IntrinsicSizes(
+          ConstraintSpace(), document, Node(), border_box_size,
+          BorderScrollbarPadding(), ChildAvailableSize().block_size, &scope,
+          &intrinsic_sizes_result_options, &depends_on_block_constraints)) {
     // TODO(ikilpatrick): Report this error to the developer.
     return FallbackMinMaxSizes(input);
   }
@@ -76,7 +74,7 @@ MinMaxSizesResult NGCustomLayoutAlgorithm::ComputeMinMaxSizes(
   sizes.min_size.ClampNegativeToZero();
   sizes.max_size.ClampNegativeToZero();
 
-  return MinMaxSizesResult(sizes, depends_on_percentage_block_size);
+  return MinMaxSizesResult(sizes, depends_on_block_constraints);
 }
 
 scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
@@ -109,8 +107,7 @@ scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
           ConstraintSpace(), Style(), BorderPadding(),
           CalculateDefaultBlockSize(ConstraintSpace(), Node(),
                                     BorderScrollbarPadding()),
-          container_builder_.InlineSize(),
-          Node().ShouldBeConsideredAsReplaced())};
+          container_builder_.InlineSize())};
   if (!instance->Layout(ConstraintSpace(), document, Node(), border_box_size,
                         BorderScrollbarPadding(), &scope,
                         fragment_result_options, &fragment_result_data)) {
@@ -168,8 +165,7 @@ scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
       LayoutUnit::FromDoubleRound(fragment_result_options->autoBlockSize()));
   LayoutUnit block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), BorderPadding(), auto_block_size,
-      container_builder_.InitialBorderBoxSize().inline_size,
-      Node().ShouldBeConsideredAsReplaced());
+      container_builder_.InitialBorderBoxSize().inline_size);
 
   if (fragment_result_options->hasBaseline()) {
     LayoutUnit baseline =
@@ -201,7 +197,7 @@ void NGCustomLayoutAlgorithm::AddAnyOutOfFlowPositionedChildren(
 }
 
 MinMaxSizesResult NGCustomLayoutAlgorithm::FallbackMinMaxSizes(
-    const MinMaxSizesInput& input) const {
+    const MinMaxSizesFloatInput& input) const {
   return NGBlockLayoutAlgorithm(params_).ComputeMinMaxSizes(input);
 }
 

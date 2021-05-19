@@ -61,16 +61,19 @@ namespace dawn_native {
         bool IsDataInitialized() const;
         void SetIsDataInitialized();
 
-        // Dawn API
-        void MapAsync(wgpu::MapMode mode,
-                      size_t offset,
-                      size_t size,
-                      WGPUBufferMapCallback callback,
-                      void* userdata);
-        void* GetMappedRange(size_t offset, size_t size);
-        const void* GetConstMappedRange(size_t offset, size_t size);
+        void* GetMappedRange(size_t offset, size_t size, bool writable = true);
         void Unmap();
-        void Destroy();
+
+        // Dawn API
+        void APIMapAsync(wgpu::MapMode mode,
+                         size_t offset,
+                         size_t size,
+                         WGPUBufferMapCallback callback,
+                         void* userdata);
+        void* APIGetMappedRange(size_t offset, size_t size);
+        const void* APIGetConstMappedRange(size_t offset, size_t size);
+        void APIUnmap();
+        void APIDestroy();
 
       protected:
         BufferBase(DeviceBase* device,
@@ -91,7 +94,6 @@ namespace dawn_native {
 
         virtual bool IsCPUWritableAtCreation() const = 0;
         MaybeError CopyFromStagingBuffer();
-        void* GetMappedRangeInternal(bool writable, size_t offset, size_t size);
         void CallMapCallback(MapRequestID mapID, WGPUBufferMapAsyncStatus status);
 
         MaybeError ValidateMap(wgpu::BufferUsage requiredUsage,

@@ -4,9 +4,10 @@
 
 #include "extensions/browser/api/system_info/system_info_api.h"
 
+#include <string>
+
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
-#include "base/strings/string16.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "components/storage_monitor/test_storage_monitor.h"
@@ -130,8 +131,8 @@ const storage_monitor::StorageInfo& GetFakeStorageInfo() {
     return storage_monitor::StorageInfo(
         GetFakeStorageDeviceId(),
         base::FilePath::StringType() /* device_location */,
-        base::string16() /* label */, base::string16() /* vendor */,
-        base::string16() /* model */, 0 /* size_in_bytes */);
+        std::u16string() /* label */, std::u16string() /* vendor */,
+        std::u16string() /* model */, 0 /* size_in_bytes */);
   }());
   return *info;
 }

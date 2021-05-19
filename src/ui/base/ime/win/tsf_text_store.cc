@@ -286,7 +286,7 @@ HRESULT TSFTextStore::GetText(LONG acp_start,
   acp_end = std::min(acp_end, acp_start + static_cast<LONG>(text_buffer_size));
   *text_buffer_copied = acp_end - acp_start;
 
-  const base::string16& result =
+  const std::u16string& result =
       string_buffer_document_.substr(acp_start, *text_buffer_copied);
   for (size_t i = 0; i < result.size(); ++i) {
     text_buffer[i] = result[i];
@@ -495,7 +495,7 @@ HRESULT TSFTextStore::InsertTextAtSelection(DWORD flags,
   DCHECK_LE(start_pos, end_pos);
   string_buffer_document_ =
       string_buffer_document_.substr(0, start_pos) +
-      base::string16(text_buffer, text_buffer + text_buffer_size) +
+      std::u16string(text_buffer, text_buffer + text_buffer_size) +
       string_buffer_document_.substr(end_pos);
 
   // reconstruct string that needs to be inserted.
@@ -698,7 +698,7 @@ HRESULT TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
     is_tic_write_in_progress_ = false;
   }
 
-  const base::string16& composition_string = string_buffer_document_.substr(
+  const std::u16string& composition_string = string_buffer_document_.substr(
       composition_range_.GetMin(), composition_range_.length());
 
   // Only need to set composition if the current composition string
@@ -1098,34 +1098,33 @@ bool TSFTextStore::GetCompositionStatus(
   return true;
 }
 
-void TSFTextStore::ResetCompositionState() {
+bool TSFTextStore::TerminateComposition() {
+  TRACE_EVENT0("ime", "TSFTextStore::TerminateComposition");
+  bool terminate_composition_called = false;
+  if (context_ && has_composition_range_) {
+    Microsoft::WRL::ComPtr<ITfContextOwnerCompositionServices> service;
+
+    if (SUCCEEDED(context_->QueryInterface(IID_PPV_ARGS(&service)))) {
+      service->TerminateComposition(nullptr);
+      terminate_composition_called = true;
+    }
+  }
+
   previous_composition_string_.clear();
   previous_composition_start_ = 0;
   previous_composition_selection_range_ = gfx::Range::InvalidRange();
   previous_text_spans_.clear();
 
   string_pending_insertion_.clear();
+  has_composition_range_ = false;
   composition_range_.set_start(0);
   composition_range_.set_end(0);
 
   selection_ = gfx::Range(composition_from_client_.end(),
                           composition_from_client_.end());
   composition_start_ = selection_.end();
-}
 
-bool TSFTextStore::TerminateComposition() {
-  TRACE_EVENT0("ime", "TSFTextStore::TerminateComposition");
-  if (context_ && has_composition_range_) {
-    Microsoft::WRL::ComPtr<ITfContextOwnerCompositionServices> service;
-
-    if (SUCCEEDED(context_->QueryInterface(IID_PPV_ARGS(&service)))) {
-      service->TerminateComposition(nullptr);
-      has_composition_range_ = false;
-      return true;
-    }
-  }
-
-  return false;
+  return terminate_composition_called;
 }
 
 void TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded() {
@@ -1141,7 +1140,7 @@ void TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded() {
   TRACE_EVENT0("ime",
                "TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded");
   gfx::Range latest_buffer_range_from_client;
-  base::string16 latest_buffer_from_client;
+  std::u16string latest_buffer_from_client;
   gfx::Range latest_selection_from_client;
 
   if (text_input_client_->GetTextRange(&latest_buffer_range_from_client) &&
@@ -1305,8 +1304,6 @@ bool TSFTextStore::CancelComposition() {
 
   TRACE_EVENT0("ime", "TSFTextStore::CancelComposition");
 
-  ResetCompositionState();
-
   return TerminateComposition();
 }
 
@@ -1320,8 +1317,6 @@ bool TSFTextStore::ConfirmComposition() {
 
   if (!text_input_client_)
     return false;
-
-  ResetCompositionState();
 
   return TerminateComposition();
 }
@@ -1421,7 +1416,7 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
   }
 
   // Construct string to be committed.
-  const base::string16& new_committed_string = string_buffer_document_.substr(
+  const std::u16string& new_committed_string = string_buffer_document_.substr(
       new_committed_string_offset, new_committed_string_size);
   // TODO(crbug.com/978678): Unify the behavior of
   //     |TextInputClient::InsertText(text)| for the empty text.
@@ -1456,7 +1451,7 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
 
 void TSFTextStore::StartCompositionOnNewText(
     size_t start_offset,
-    const base::string16& composition_string) {
+    const std::u16string& composition_string) {
   CompositionText composition_text;
   composition_text.text = composition_string;
   composition_text.ime_text_spans = text_spans_;
@@ -1488,7 +1483,7 @@ void TSFTextStore::StartCompositionOnNewText(
           /*is_composition_committed*/ false);
     } else {
       // User wants to commit the current composition
-      const base::string16& committed_string = string_buffer_document_.substr(
+      const std::u16string& committed_string = string_buffer_document_.substr(
           composition_range_.GetMin(), composition_range_.length());
       text_input_client_->SetActiveCompositionForAccessibility(
           composition_range_, committed_string,

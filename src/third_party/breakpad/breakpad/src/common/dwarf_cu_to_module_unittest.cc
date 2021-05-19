@@ -55,6 +55,7 @@ using google_breakpad::Module;
 
 using ::testing::_;
 using ::testing::AtMost;
+using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Test;
@@ -857,8 +858,8 @@ Situation situations[] = {
 class FuncLinePairing: public CUFixtureBase,
                        public TestWithParam<Situation> { };
 
-INSTANTIATE_TEST_CASE_P(AllSituations, FuncLinePairing,
-                        ValuesIn(situations));
+INSTANTIATE_TEST_SUITE_P(AllSituations, FuncLinePairing,
+                         ValuesIn(situations));
 
 TEST_P(FuncLinePairing, Pairing) {
   const Situation& s = GetParam();
@@ -1043,11 +1044,11 @@ TEST_F(FuncLinePairing, WarnOnceLine) {
 class CXXQualifiedNames: public CUFixtureBase,
                          public TestWithParam<DwarfTag> { };
 
-INSTANTIATE_TEST_CASE_P(VersusEnclosures, CXXQualifiedNames,
-                        Values(dwarf2reader::DW_TAG_class_type,
-                               dwarf2reader::DW_TAG_structure_type,
-                               dwarf2reader::DW_TAG_union_type,
-                               dwarf2reader::DW_TAG_namespace));
+INSTANTIATE_TEST_SUITE_P(VersusEnclosures, CXXQualifiedNames,
+                         Values(dwarf2reader::DW_TAG_class_type,
+                                dwarf2reader::DW_TAG_structure_type,
+                                dwarf2reader::DW_TAG_union_type,
+                                dwarf2reader::DW_TAG_namespace));
 
 TEST_P(CXXQualifiedNames, TwoFunctions) {
   DwarfTag tag = GetParam();
@@ -1145,8 +1146,8 @@ class QualifiedForLanguage
     : public CUFixtureBase,
       public TestWithParam<LanguageAndQualifiedName> { };
 
-INSTANTIATE_TEST_CASE_P(LanguageAndQualifiedName, QualifiedForLanguage,
-                        ValuesIn(LanguageAndQualifiedNameCases));
+INSTANTIATE_TEST_SUITE_P(LanguageAndQualifiedName, QualifiedForLanguage,
+                         ValuesIn(LanguageAndQualifiedNameCases));
 
 TEST_P(QualifiedForLanguage, MemberFunction) {
   const LanguageAndQualifiedName& param = GetParam();

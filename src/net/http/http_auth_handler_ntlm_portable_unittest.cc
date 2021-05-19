@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/base64.h"
@@ -35,13 +36,13 @@ class HttpAuthHandlerNtlmPortableTest : public PlatformTest {
  public:
   // Test input value defined in [MS-NLMP] Section 4.2.1.
   HttpAuthHandlerNtlmPortableTest() {
-    http_auth_preferences_.reset(new MockAllowHttpAuthPreferences());
+    http_auth_preferences_ = std::make_unique<MockAllowHttpAuthPreferences>();
     // Disable NTLMv2 for this end to end test because it's not possible
     // to mock all the required dependencies for NTLMv2 from here. These
     // tests are only of the overall flow, and the detailed tests of the
     // contents of the protocol messages are in ntlm_client_unittest.cc
     http_auth_preferences_->set_ntlm_v2_enabled(false);
-    factory_.reset(new HttpAuthHandlerNTLM::Factory());
+    factory_ = std::make_unique<HttpAuthHandlerNTLM::Factory>();
     factory_->set_http_auth_preferences(http_auth_preferences_.get());
     creds_ = AuthCredentials(
         ntlm::test::kNtlmDomain + base::ASCIIToUTF16("\\") + ntlm::test::kUser,
@@ -115,7 +116,7 @@ class HttpAuthHandlerNtlmPortableTest : public PlatformTest {
   // no assumptions about the underlying encoding. This will fail if there
   // are an odd number of bytes in the payload.
   void ReadString16Payload(ntlm::NtlmBufferReader* reader,
-                           base::string16* str) {
+                           std::u16string* str) {
     ntlm::SecurityBuffer sec_buf;
     EXPECT_TRUE(reader->ReadSecurityBuffer(&sec_buf));
     EXPECT_EQ(0, sec_buf.length % 2);
@@ -129,8 +130,7 @@ class HttpAuthHandlerNtlmPortableTest : public PlatformTest {
     }
 #endif
 
-    str->assign(reinterpret_cast<const base::char16*>(raw.data()),
-                raw.size() / 2);
+    str->assign(reinterpret_cast<const char16_t*>(raw.data()), raw.size() / 2);
   }
 
   int GetGenerateAuthTokenResult() {

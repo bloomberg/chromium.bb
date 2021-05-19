@@ -10,16 +10,18 @@
 #include <utility>
 #include <vector>
 
-#include "base/cancelable_callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "device/vr/android/arcore/ar_compositor_frame_sink.h"
+#include "device/vr/public/cpp/xr_frame_sink_client.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/util/fps_meter.h"
 #include "device/vr/util/sliding_average.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -31,16 +33,15 @@
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_f.h"
-#include "ui/gfx/native_widget_types.h"
-
-namespace gfx {
-class GpuFence;
-}  // namespace gfx
 
 namespace gl {
 class GLContext;
 class GLSurface;
 }  // namespace gl
+
+namespace ui {
+class WindowAndroid;
+}  // namespace ui
 
 namespace device {
 
@@ -95,7 +96,10 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   void Initialize(
       ArCoreSessionUtils* session_utils,
       ArCoreFactory* arcore_factory,
+      XrFrameSinkClient* xr_frame_sink_client,
       gfx::AcceleratedWidget drawing_widget,
+      gpu::SurfaceHandle surface_handle,
+      ui::WindowAndroid* root_window,
       const gfx::Size& frame_size,
       display::Display::Rotation display_rotation,
       const std::unordered_set<device::mojom::XRSessionFeature>&
@@ -113,6 +117,11 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   const scoped_refptr<base::SingleThreadTaskRunner>& GetGlThreadTaskRunner() {
     return gl_thread_task_runner_;
   }
+
+  // Used to indicate whether or not the ArCoreGl can handle rendering DOM
+  // content or if "tricks" like ensuring that a separate layer with the DOM
+  // content are rendered over top of the ArCoreGl content need to be used.
+  bool CanRenderDOMContent();
 
   // mojom::XRFrameDataProvider
   void GetFrameData(mojom::XRFrameDataRequestOptionsPtr options,
@@ -176,9 +185,6 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                                const gpu::MailboxHolder& mailbox);
   void ProcessFrameDrawnIntoTexture(int16_t frame_index,
                                     const gpu::SyncToken& sync_token);
-  void OnWebXrTokenSignaled(int16_t frame_index,
-                            std::unique_ptr<gfx::GpuFence> gpu_fence);
-
   // Notifies that the screen was touched at |touch_point| using a pointer.
   // |touching| will be set to true if the screen is still touched. |is_primary|
   // signifies that the used pointer is considered primary.
@@ -201,21 +207,37 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                     mojom::XRFrameDataProvider::GetFrameDataCallback callback);
 
   bool InitializeGl(gfx::AcceleratedWidget drawing_widget);
-  void OnArImageTransportReady(ArCoreGlInitializeCallback callback);
+  void InitializeArCompositor(gpu::SurfaceHandle surface_handle,
+                              ui::WindowAndroid* root_window,
+                              XrFrameSinkClient* xr_frame_sink_client,
+                              device::DomOverlaySetup dom_setup);
+  void OnArImageTransportReady();
+  void OnArCompositorInitialized(bool initialized);
+  void OnInitialized();
   bool IsOnGlThread() const;
   void CopyCameraImageToFramebuffer();
   void OnTransportFrameAvailable(const gfx::Transform& uv_transform);
   void TransitionProcessingFrameToRendering();
 
-  void GetRenderedFrameStats();
-  void FinishRenderingFrame();
+  void GetRenderedFrameStats(WebXrFrame* frame = nullptr);
+  void FinishRenderingFrame(WebXrFrame* frame = nullptr);
   base::TimeDelta EstimatedArCoreFrameTime();
   base::TimeDelta WaitTimeForArCoreUpdate();
   base::TimeDelta WaitTimeForRenderCompletion();
   void ScheduleGetFrameData();
   void RunPendingGetFrameData();
+  bool CanStartNewAnimatingFrame();
+  void TryRunPendingGetFrameData();
 
   bool IsFeatureEnabled(mojom::XRSessionFeature feature);
+
+  void SubmitVizFrame(int16_t frame_index,
+                      ArCompositorFrameSink::FrameType frame_type);
+  void DidNotProduceVizFrame(int16_t frame_index);
+  void OnBeginFrame(const viz::BeginFrameArgs& args);
+  void OnReclaimedGpuFenceAvailable(WebXrFrame* frame,
+                                    std::unique_ptr<gfx::GpuFence> gpu_fence);
+  void ClearRenderingFrame(WebXrFrame* frame);
 
   // Set of features enabled on this session. Required to correctly configure
   // the session and only send out necessary data related to reference spaces to
@@ -225,6 +247,11 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
 
   base::OnceClosure session_shutdown_callback_;
 
+  // If we initiate a shutdown, make sure that we stop processing data. Note
+  // that as ArCoreGl is only intended to live for the duration of a single
+  // session, this value is never reset to false when it is set to true.
+  bool pending_shutdown_ = false;
+
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> gl_thread_task_runner_;
@@ -232,6 +259,9 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   // Created on GL thread and should only be accessed on that thread.
   std::unique_ptr<ArCore> arcore_;
   std::unique_ptr<ArImageTransport> ar_image_transport_;
+
+  std::unique_ptr<ArCompositorFrameSink> ar_compositor_;
+  const bool use_ar_compositor_;
 
   // This class uses the same overall presentation state logic
   // as GvrGraphicsDelegate, with some difference due to drawing
@@ -281,6 +311,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   bool should_recalculate_uvs_ = true;
   bool have_camera_image_ = false;
 
+  ArCoreGlInitializeCallback initialized_callback_;
+  bool is_image_transport_ready_ = false;
   bool is_initialized_ = false;
   bool is_paused_ = true;
 

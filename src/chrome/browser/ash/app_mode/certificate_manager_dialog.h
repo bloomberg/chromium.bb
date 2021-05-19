@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_ASH_APP_MODE_CERTIFICATE_MANAGER_DIALOG_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
+#include "chrome/browser/ash/login/ui/login_web_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -22,7 +22,7 @@ class CertificateManagerDialog : public LoginWebDialog {
   ~CertificateManagerDialog() override;
 
   // ui::WebDialogDelegate
-  base::string16 GetDialogTitle() const override;
+  std::u16string GetDialogTitle() const override;
   void GetDialogSize(gfx::Size* size) const override;
 
  private:

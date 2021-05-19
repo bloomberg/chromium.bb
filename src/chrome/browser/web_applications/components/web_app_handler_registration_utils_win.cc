@@ -90,7 +90,8 @@ void UpdateAppRegistration(const web_app::AppId& app_id,
                            const std::wstring& app_name,
                            const base::FilePath& profile_path,
                            const std::wstring& prog_id,
-                           const std::wstring& app_name_extension) {
+                           const std::wstring& app_name_extension,
+                           base::OnceCallback<void()> callback) {
   if (!base::DeleteFile(ShellUtil::GetApplicationPathForProgId(prog_id))) {
     web_app::RecordRegistration(
         web_app::RegistrationResult::kFailToDeleteExistingRegistration);
@@ -115,6 +116,7 @@ void UpdateAppRegistration(const web_app::AppId& app_id,
 
   ShellUtil::AddApplicationClass(prog_id, app_launch_cmd, user_visible_app_name,
                                  app_name, icon_path);
+  std::move(callback).Run();
 }
 
 bool AppNameHasProfileExtension(const std::wstring& app_name,
@@ -157,8 +159,7 @@ std::wstring GetAppNameExtensionForNextInstall(
 base::FilePath GetAppSpecificLauncherFilename(const std::wstring& app_name) {
   // Remove any characters that are illegal in Windows filenames.
   base::FilePath::StringType sanitized_app_name =
-      web_app::internals::GetSanitizedFileName(base::AsString16(app_name))
-          .value();
+      internals::GetSanitizedFileName(base::AsString16(app_name)).value();
 
   // On Windows 7, where the launcher has no file extension, replace any '.'
   // characters with '_' to prevent a portion of the filename from being
@@ -229,7 +230,10 @@ base::Optional<base::FilePath> CreateAppLauncherFile(
   base::DeleteFile(app_specific_launcher_path);
   if (!base::CreateWinHardLink(app_specific_launcher_path, pwa_launcher_path) &&
       !base::CopyFile(pwa_launcher_path, app_specific_launcher_path)) {
-    DPLOG(ERROR) << "Unable to copy the generic PWA launcher";
+    DPLOG(ERROR) << "Unable to copy the generic PWA launcher."
+                 << " pwa_launcher_path: " << pwa_launcher_path
+                 << " app_specific_launcher_path: "
+                 << app_specific_launcher_path;
     RecordRegistration(RegistrationResult::kFailToCopyFromGenericLauncher);
     return base::nullopt;
   }
@@ -238,7 +242,8 @@ base::Optional<base::FilePath> CreateAppLauncherFile(
 }
 
 void CheckAndUpdateExternalInstallations(const base::FilePath& cur_profile_path,
-                                         const AppId& app_id) {
+                                         const AppId& app_id,
+                                         base::OnceCallback<void()> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::wstring prog_id = GetProgIdForApp(cur_profile_path, app_id);
@@ -296,7 +301,8 @@ void CheckAndUpdateExternalInstallations(const base::FilePath& cur_profile_path,
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&UpdateAppRegistration, app_id, updated_name,
                      external_installation_profile_path,
-                     external_installation_prog_id, updated_extension));
+                     external_installation_prog_id, updated_extension,
+                     std::move(callback)));
 }
 
 // Record UMA metric for the result of file handler registration.

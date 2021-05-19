@@ -28,20 +28,31 @@ public:
                                           VkFormat format,
                                           GrProtected isProtected);
 
-    static sk_sp<GrAttachment> MakeWrapped(GrVkGpu* gpu,
-                                           SkISize dimensions,
-                                           const GrVkImageInfo&,
-                                           sk_sp<GrBackendSurfaceMutableStateImpl>,
-                                           UsageFlags attachmentUsages,
-                                           GrWrapOwnership,
-                                           GrWrapCacheable);
+    static sk_sp<GrVkAttachment> MakeTexture(GrVkGpu* gpu,
+                                             SkISize dimensions,
+                                             VkFormat format,
+                                             uint32_t mipLevels,
+                                             GrRenderable renderable,
+                                             int numSamples,
+                                             SkBudgeted budgeted,
+                                             GrProtected isProtected);
+
+    static sk_sp<GrVkAttachment> MakeWrapped(GrVkGpu* gpu,
+                                             SkISize dimensions,
+                                             const GrVkImageInfo&,
+                                             sk_sp<GrBackendSurfaceMutableStateImpl>,
+                                             UsageFlags attachmentUsages,
+                                             GrWrapOwnership,
+                                             GrWrapCacheable,
+                                             bool forSecondaryCB = false);
 
     ~GrVkAttachment() override;
 
     GrBackendFormat backendFormat() const override { return this->getBackendFormat(); }
 
     const GrManagedResource* imageResource() const { return this->resource(); }
-    const GrVkImageView* view() const { return fView.get(); }
+    const GrVkImageView* framebufferView() const { return fFramebufferView.get(); }
+    const GrVkImageView* textureView() const { return fTextureView.get(); }
 
 protected:
     void onRelease() override;
@@ -53,6 +64,7 @@ private:
                                       UsageFlags attachmentUsages,
                                       int sampleCnt,
                                       VkFormat format,
+                                      uint32_t mipLevels,
                                       VkImageUsageFlags vkUsageFlags,
                                       GrProtected isProtected,
                                       SkBudgeted);
@@ -62,7 +74,8 @@ private:
                    UsageFlags supportedUsages,
                    const GrVkImageInfo&,
                    sk_sp<GrBackendSurfaceMutableStateImpl> mutableState,
-                   sk_sp<const GrVkImageView> view,
+                   sk_sp<const GrVkImageView> framebufferView,
+                   sk_sp<const GrVkImageView> textureView,
                    SkBudgeted);
 
     GrVkAttachment(GrVkGpu* gpu,
@@ -70,13 +83,16 @@ private:
                    UsageFlags supportedUsages,
                    const GrVkImageInfo&,
                    sk_sp<GrBackendSurfaceMutableStateImpl> mutableState,
-                   sk_sp<const GrVkImageView> view,
+                   sk_sp<const GrVkImageView> framebufferView,
+                   sk_sp<const GrVkImageView> textureView,
                    GrBackendObjectOwnership,
-                   GrWrapCacheable);
+                   GrWrapCacheable,
+                   bool forSecondaryCB);
 
     GrVkGpu* getVkGpu() const;
 
-    sk_sp<const GrVkImageView> fView;
+    sk_sp<const GrVkImageView> fFramebufferView;
+    sk_sp<const GrVkImageView> fTextureView;
 };
 
 #endif

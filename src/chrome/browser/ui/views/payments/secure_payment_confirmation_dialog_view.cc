@@ -17,13 +17,11 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace payments {
 namespace {
-
-// Height of each row.
-constexpr int kRowHeight = 48;
 
 // Records UMA metric for the authentication dialog result.
 void RecordAuthenticationDialogResult(
@@ -67,6 +65,9 @@ void SecurePaymentConfirmationDialogView::ShowDialog(
     CancelCallback cancel_callback) {
   DCHECK(model);
   model_ = model;
+
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   InitChildViews();
 
@@ -131,16 +132,17 @@ void SecurePaymentConfirmationDialogView::OnDialogClosed() {
 }
 
 void SecurePaymentConfirmationDialogView::OnModelUpdated() {
-  // Changing the progress bar visibility does not invalidate layout as it is
-  // absolutely positioned.
-  if (progress_bar_)
-    progress_bar_->SetVisible(model_->progress_bar_visible());
+  views::View* progress_bar =
+      GetViewByID(static_cast<int>(DialogViewID::PROGRESS_BAR));
+  if (progress_bar)
+    progress_bar->SetVisible(model_->progress_bar_visible());
 
   SetButtonLabel(ui::DIALOG_BUTTON_OK, model_->verify_button_label());
   SetButtonEnabled(ui::DIALOG_BUTTON_OK, model_->verify_button_enabled());
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, model_->cancel_button_label());
   SetButtonEnabled(ui::DIALOG_BUTTON_CANCEL, model_->cancel_button_enabled());
 
+  SetAccessibleTitle(model_->title());
   UpdateLabelView(DialogViewID::TITLE, model_->title());
   UpdateLabelView(DialogViewID::MERCHANT_LABEL, model_->merchant_label());
   UpdateLabelView(DialogViewID::MERCHANT_VALUE, model_->merchant_value());
@@ -170,7 +172,7 @@ void SecurePaymentConfirmationDialogView::OnModelUpdated() {
 
 void SecurePaymentConfirmationDialogView::UpdateLabelView(
     DialogViewID id,
-    const base::string16& text) {
+    const std::u16string& text) {
   static_cast<views::Label*>(GetViewByID(static_cast<int>(id)))->SetText(text);
 }
 
@@ -202,46 +204,14 @@ void SecurePaymentConfirmationDialogView::InitChildViews() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
 
-  AddChildView(CreateHeaderView());
+  AddChildView(CreateSecurePaymentConfirmationHeaderView(
+      GetNativeTheme()->ShouldUseDarkColors(),
+      static_cast<int>(DialogViewID::PROGRESS_BAR),
+      static_cast<int>(DialogViewID::HEADER_ICON)));
 
   AddChildView(CreateBodyView());
 
   InvalidateLayout();
-}
-
-// Creates the header view, which is the fingerprint icon and a progress bar.
-// The fingerprint icon covers the whole header view and the progress bar is
-// overlaid on the top of the header.
-// +------------------------------------------+
-// |===============progress bar===============|
-// |                                          |
-// |             fingerprint icon             |
-// +------------------------------------------+
-std::unique_ptr<views::View>
-SecurePaymentConfirmationDialogView::CreateHeaderView() {
-  const int header_width = GetSecurePaymentConfirmationHeaderWidth();
-  const gfx::Size header_size(header_width, kHeaderIconHeight);
-
-  // The container view has no layout, so its preferred size is hardcoded to
-  // match the size of the image, and the progress bar overlay is absolutely
-  // positioned.
-  auto header_view = std::make_unique<views::View>();
-  header_view->SetPreferredSize(header_size);
-
-  // Fingerprint header icon
-  auto image_view = CreateSecurePaymentConfirmationHeaderView(
-      GetNativeTheme()->ShouldUseDarkColors());
-  image_view->SetID(static_cast<int>(DialogViewID::HEADER_ICON));
-  header_view->AddChildView(image_view.release());
-
-  // Progress bar
-  auto progress_bar = CreateSecurePaymentConfirmationProgressBarView();
-  progress_bar->SetID(static_cast<int>(DialogViewID::PROGRESS_BAR));
-  progress_bar->SetVisible(model_->progress_bar_visible());
-  progress_bar_ = progress_bar.get();
-  header_view->AddChildView(progress_bar.release());
-
-  return header_view;
 }
 
 // Creates the body.
@@ -257,8 +227,8 @@ SecurePaymentConfirmationDialogView::CreateHeaderView() {
 std::unique_ptr<views::View>
 SecurePaymentConfirmationDialogView::CreateBodyView() {
   auto body = std::make_unique<views::View>();
-  body->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(kBodyInsets, kBodyInsets, kBodyExtraInset, kBodyInsets)));
+  body->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      kBodyInsets, kBodyExtraInset, kBodyExtraInset, kBodyExtraInset)));
 
   views::GridLayout* layout =
       body->SetLayoutManager(std::make_unique<views::GridLayout>());
@@ -282,7 +252,7 @@ SecurePaymentConfirmationDialogView::CreateBodyView() {
 // +------------------------------------------+
 // | merchant label     value                 |
 // +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
-// | instrument label   value            icon |
+// | instrument label   [icon] value          |
 // +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
 // | total label        value                 |
 // +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
@@ -316,12 +286,12 @@ std::unique_ptr<views::View> SecurePaymentConfirmationDialogView::CreateRows() {
 
 // Creates a row of data with |label|, |value|, and optionally |icon|.
 // +------------------------------------------+
-// | label      value                    icon |
+// | label      [icon] value                  |
 // +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+ <-- border
 std::unique_ptr<views::View> SecurePaymentConfirmationDialogView::CreateRowView(
-    const base::string16& label,
+    const std::u16string& label,
     DialogViewID label_id,
-    const base::string16& value,
+    const std::u16string& value,
     DialogViewID value_id,
     const SkBitmap* icon,
     DialogViewID icon_id) {
@@ -346,34 +316,30 @@ std::unique_ptr<views::View> SecurePaymentConfirmationDialogView::CreateRowView(
   constexpr int kPaddingAfterLabel = 24;
   columns->AddPaddingColumn(views::GridLayout::kFixedSize, kPaddingAfterLabel);
 
-  // Value column
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
-                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   // Icon column
   if (icon) {
-    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                        views::GridLayout::kFixedSize,
                        views::GridLayout::ColumnSize::kFixed,
                        kInstrumentIconWidth, kInstrumentIconWidth);
+    columns->AddPaddingColumn(views::GridLayout::kFixedSize,
+                              ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                  views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   }
 
-  layout->StartRow(views::GridLayout::kFixedSize, 0, kRowHeight);
+  // Value column
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+
+  layout->StartRow(views::GridLayout::kFixedSize, 0, kPaymentInfoRowHeight);
 
   std::unique_ptr<views::Label> label_text = std::make_unique<views::Label>(
       label, views::style::CONTEXT_DIALOG_BODY_TEXT,
-      views::style::STYLE_SECONDARY);
+      ChromeTextStyle::STYLE_EMPHASIZED_SECONDARY);
   label_text->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   label_text->SetLineHeight(kDescriptionLineHeight);
   label_text->SetID(static_cast<int>(label_id));
   layout->AddView(std::move(label_text));
-
-  std::unique_ptr<views::Label> value_text = std::make_unique<views::Label>(
-      value, views::style::CONTEXT_DIALOG_BODY_TEXT,
-      views::style::STYLE_PRIMARY);
-  value_text->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-  value_text->SetLineHeight(kDescriptionLineHeight);
-  value_text->SetID(static_cast<int>(value_id));
-  layout->AddView(std::move(value_text));
 
   if (icon) {
     instrument_icon_ = model_->instrument_icon();
@@ -386,6 +352,14 @@ std::unique_ptr<views::View> SecurePaymentConfirmationDialogView::CreateRowView(
     icon_view->SetID(static_cast<int>(icon_id));
     layout->AddView(std::move(icon_view));
   }
+
+  std::unique_ptr<views::Label> value_text = std::make_unique<views::Label>(
+      value, views::style::CONTEXT_DIALOG_BODY_TEXT,
+      views::style::STYLE_PRIMARY);
+  value_text->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+  value_text->SetLineHeight(kDescriptionLineHeight);
+  value_text->SetID(static_cast<int>(value_id));
+  layout->AddView(std::move(value_text));
 
   return row;
 }

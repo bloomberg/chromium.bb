@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -257,8 +257,7 @@ TEST_F(BrowserUnitTest, CreateBrowserDuringKioskSplashScreen) {
 
   // Setting up user manager state to be in kiosk mode:
   // Creating a new user manager.
-  chromeos::FakeChromeUserManager* user_manager =
-      new chromeos::FakeChromeUserManager();
+  auto* user_manager = new ash::FakeChromeUserManager();
   user_manager::ScopedUserManager manager{
       std::unique_ptr<user_manager::UserManager>(user_manager)};
   const user_manager::User* user =

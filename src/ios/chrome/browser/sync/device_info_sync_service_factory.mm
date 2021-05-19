@@ -58,6 +58,12 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
   }
 
   // syncer::DeviceInfoSyncClient:
+  base::Optional<syncer::DeviceInfo::PhoneAsASecurityKeyInfo>
+  GetPhoneAsASecurityKeyInfo() const override {
+    return base::nullopt;
+  }
+
+  // syncer::DeviceInfoSyncClient:
   base::Optional<std::string> GetFCMRegistrationToken() const override {
     if (sync_invalidations_service_) {
       return sync_invalidations_service_->GetFCMRegistrationToken();
@@ -78,6 +84,10 @@ class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
     // invalidations have been turned off.
     return syncer::ModelTypeSet();
   }
+
+  // syncer::DeviceInfoSyncClient:
+  // Returns false since we only care about Chrome OS devices
+  bool IsUmaEnabledOnCrOSDevice() const override { return false; }
 
  private:
   PrefService* const prefs_;

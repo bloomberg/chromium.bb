@@ -10,6 +10,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/accessibility/magnifier/magnification_controller.h"
+#include "ash/accessibility/magnifier/partial_magnification_controller.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/root_window_transformers.h"
@@ -17,8 +19,6 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
-#include "ash/magnifier/magnification_controller.h"
-#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
@@ -791,7 +791,7 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   GetRootWindowSettings(non_primary_window)->display_id =
       old_primary_display.id();
 
-  base::string16 old_primary_title = primary_window->GetTitle();
+  std::u16string old_primary_title = primary_window->GetTitle();
   primary_window->SetTitle(non_primary_window->GetTitle());
   non_primary_window->SetTitle(old_primary_title);
 

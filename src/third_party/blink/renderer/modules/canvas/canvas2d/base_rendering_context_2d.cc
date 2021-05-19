@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/html/canvas/text_metrics.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_filter.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/path_2d.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
@@ -467,27 +468,39 @@ void BaseRenderingContext2D::setGlobalCompositeOperation(
   ModifiableState().SetGlobalComposite(sk_blend_mode);
 }
 
-String BaseRenderingContext2D::filter() const {
-  return GetState().UnparsedFilter();
+void BaseRenderingContext2D::filter(StringOrCanvasFilter& filter) const {
+  if (GetState().GetCanvasFilter())
+    filter.SetCanvasFilter(GetState().GetCanvasFilter());
+  else
+    filter.SetString(GetState().UnparsedCSSFilter());
 }
 
 void BaseRenderingContext2D::setFilter(
     const ExecutionContext* execution_context,
-    const String& filter_string) {
-  if (filter_string == GetState().UnparsedFilter())
-    return;
+    StringOrCanvasFilter input) {
+  if (input.IsString()) {
+    String filter_string = input.GetAsString();
 
-  const CSSValue* filter_value = CSSParser::ParseSingleValue(
-      CSSPropertyID::kFilter, filter_string,
-      MakeGarbageCollected<CSSParserContext>(
-          kHTMLStandardMode, execution_context->GetSecureContextMode()));
+    if (!GetState().GetCanvasFilter() &&
+        filter_string == GetState().UnparsedCSSFilter())
+      return;
 
-  if (!filter_value || filter_value->IsCSSWideKeyword())
-    return;
+    const CSSValue* css_value = CSSParser::ParseSingleValue(
+        CSSPropertyID::kFilter, filter_string,
+        MakeGarbageCollected<CSSParserContext>(
+            kHTMLStandardMode, execution_context->GetSecureContextMode()));
 
-  ModifiableState().SetUnparsedFilter(filter_string);
-  ModifiableState().SetFilter(filter_value);
-  SnapshotStateForFilter();
+    if (!css_value || css_value->IsCSSWideKeyword())
+      return;
+
+    ModifiableState().SetUnparsedCSSFilter(filter_string);
+    ModifiableState().SetCSSFilter(css_value);
+    SnapshotStateForFilter();
+  } else if (input.IsCanvasFilter() &&
+             RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
+    ModifiableState().SetCanvasFilter(input.GetAsCanvasFilter());
+    SnapshotStateForFilter();
+  }
 }
 
 void BaseRenderingContext2D::scale(double sx, double sy) {
@@ -543,6 +556,9 @@ void BaseRenderingContext2D::scale(double sx, double sy, double sz) {
 }
 
 void BaseRenderingContext2D::rotate(double angle_in_radians) {
+  if (UNLIKELY(NoAllocFallbackForUnrealizedSaves()))
+    return;
+
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return;
@@ -564,6 +580,9 @@ void BaseRenderingContext2D::rotate(double angle_in_radians) {
 
 // All angles are in radians
 void BaseRenderingContext2D::rotate3d(double rx, double ry, double rz) {
+  if (UNLIKELY(NoAllocFallbackForUnrealizedSaves()))
+    return;
+
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return;
@@ -593,6 +612,9 @@ void BaseRenderingContext2D::rotateAxis(double axisX,
                                         double axisY,
                                         double axisZ,
                                         double angle_in_radians) {
+  if (UNLIKELY(NoAllocFallbackForUnrealizedSaves()))
+    return;
+
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return;
@@ -680,6 +702,9 @@ void BaseRenderingContext2D::translate(double tx, double ty, double tz) {
 }
 
 void BaseRenderingContext2D::perspective(double length) {
+  if (UNLIKELY(NoAllocFallbackForUnrealizedSaves()))
+    return;
+
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return;
@@ -780,7 +805,6 @@ void BaseRenderingContext2D::transform(double m11,
   // TODO(crbug.com/1140535) Investigate the performance implications of simply
   // calling the 3d version above with:
   // transform(m11, m12, 0, 0, m21, m22, 0, 0, 0, 0, 1, 0, dx, dy, 0, 1);
-
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return;
@@ -811,6 +835,9 @@ void BaseRenderingContext2D::transform(double m11,
 }
 
 void BaseRenderingContext2D::resetTransform() {
+  if (UNLIKELY(NoAllocFallbackForUnrealizedSaves()))
+    return;
+
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return;

@@ -183,7 +183,7 @@ std::unique_ptr<base::DictionaryValue> ComponentLoader::ParseManifest(
 
   if (!manifest.get() || !manifest->is_dict()) {
     LOG(ERROR) << "Failed to parse extension manifest.";
-    return std::unique_ptr<base::DictionaryValue>();
+    return nullptr;
   }
   return base::DictionaryValue::From(std::move(manifest));
 }
@@ -439,8 +439,9 @@ scoped_refptr<const Extension> ComponentLoader::CreateExtension(
   // TODO(abarth): We should REQUIRE_MODERN_MANIFEST_VERSION once we've updated
   //               our component extensions to the new manifest version.
   int flags = Extension::REQUIRE_KEY;
-  return Extension::Create(info.root_directory, Manifest::COMPONENT,
-                           *info.manifest, flags, utf8_error);
+  return Extension::Create(info.root_directory,
+                           mojom::ManifestLocation::kComponent, *info.manifest,
+                           flags, utf8_error);
 }
 
 // static

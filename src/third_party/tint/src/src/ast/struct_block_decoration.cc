@@ -14,10 +14,9 @@
 
 #include "src/ast/struct_block_decoration.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::StructBlockDecoration);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::StructBlockDecoration);
 
 namespace tint {
 namespace ast {

@@ -38,7 +38,6 @@ import org.chromium.ui.base.ViewUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Collections;
 
 /**
  * A preference that displays "Sign in to Chrome" when the user is not sign in, and displays
@@ -136,7 +135,7 @@ public class SignInPreference
         CoreAccountInfo accountInfo =
                 IdentityServicesProvider.get()
                         .getIdentityManager(Profile.getLastUsedRegularProfile())
-                        .getPrimaryAccountInfo(ConsentLevel.NOT_REQUIRED);
+                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN);
         if (accountInfo != null) {
             setupSignedIn(accountInfo.getEmail());
             return;
@@ -203,7 +202,6 @@ public class SignInPreference
 
     private void setupSignedIn(String accountName) {
         mState = State.SIGNED_IN;
-        mProfileDataCache.update(Collections.singletonList(accountName));
         DisplayableProfileData profileData = mProfileDataCache.getProfileDataOrDefault(accountName);
 
         setTitle(profileData.getFullNameOrEmail());

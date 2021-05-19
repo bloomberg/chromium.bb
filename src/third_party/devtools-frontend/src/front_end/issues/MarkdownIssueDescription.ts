@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Root from '../root/root.js';
-import * as SDK from '../sdk/sdk.js';
+import * as Root from '../core/root/root.js';
+import type * as SDK from '../core/sdk/sdk.js';
 import * as Marked from '../third_party/marked/marked.js';
 
 import {MarkdownView} from './MarkdownView.js';
@@ -11,17 +11,17 @@ import {MarkdownView} from './MarkdownView.js';
 export interface IssueDescription {
   title: string;
   view: MarkdownView;
-  issueKind: SDK.Issue.IssueKind;
   links: {link: string, linkTitle: string}[];
 }
 
-export function createIssueDescriptionFromMarkdown(description: SDK.Issue.MarkdownIssueDescription): IssueDescription {
-  const rawMarkdown = getMarkdownFileContent(description.file);
+export async function createIssueDescriptionFromMarkdown(description: SDK.Issue.MarkdownIssueDescription):
+    Promise<IssueDescription> {
+  const rawMarkdown = await getMarkdownFileContent(description.file);
   const rawMarkdownWithPlaceholdersReplaced = substitutePlaceholders(rawMarkdown, description.substitutions);
   return createIssueDescriptionFromRawMarkdown(rawMarkdownWithPlaceholdersReplaced, description);
 }
 
-function getMarkdownFileContent(filename: string): string {
+async function getMarkdownFileContent(filename: string): Promise<string> {
   const rawMarkdown = Root.Runtime.cachedResources.get(filename);
   if (!rawMarkdown) {
     throw new Error(`Markdown file ${filename} not found. Declare it as a resource in the module.json file`);
@@ -88,7 +88,6 @@ export function createIssueDescriptionFromRawMarkdown(
   return {
     title,
     view: markdownComponent,
-    issueKind: SDK.Issue.IssueKind.BreakingChange,
     links: description.links,
   };
 }

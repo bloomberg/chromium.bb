@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/diagnostics_ui/backend/diagnostics_manager.h"
@@ -49,6 +50,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"batteryTitle", IDS_DIAGNOSTICS_BATTERY_TITLE},
       {"boardAndVersionInfo", IDS_DIAGNOSTICS_DEVICE_INFO_TEXT},
       {"chargeTestResultText", IDS_CHARGE_TEST_RESULT},
+      {"cpuBannerMessage", IDS_DIAGNOSTICS_CPU_BANNER_MESSAGE},
       {"cpuCacheRoutineText", IDS_DIAGNOSTICS_CPU_CACHE_ROUTINE_TEXT},
       {"cpuChipText", IDS_DIAGNOSTICS_CPU_CHIP_TEXT},
       {"cpuFloatingPointAccuracyRoutineText",
@@ -127,6 +129,8 @@ void SetUpWebUIDataSource(content::WebUIDataSource* source,
   source->AddResourcePath("test_loader_util.js",
                           IDR_WEBUI_JS_TEST_LOADER_UTIL_JS);
   source->AddBoolean("isLoggedIn", LoginState::Get()->IsUserLoggedIn());
+  source->AddBoolean("isNetworkingEnabled",
+                     features::IsNetworkingInDiagnosticsAppEnabled());
 }
 
 }  // namespace

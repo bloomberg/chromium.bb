@@ -19,6 +19,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/goma.gni")
+import("//build/toolchain/rbe.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build_overrides/build.gni")
 
@@ -33,7 +34,7 @@ if (current_cpu == "x64") {
   import("//build/config/x64.gni")
 }
 if (is_mac) {
-  import("//build/config/mac/symbols.gni")
+  import("//build/config/apple/symbols.gni")
 }
 if (is_ios) {
   import("//build/config/ios/ios_sdk.gni")
@@ -167,6 +168,10 @@ declare_args() {
   # Bugs have been reported to the windbg/WPA teams and this workaround will be
   # removed when they are fixed.
   use_full_pdb_paths = false
+
+  # Enable -H, which prints the include tree during compilation.
+  # For use by tools/clang/scripts/analyze_includes.py
+  show_includes = false
 }
 
 declare_args() {
@@ -210,6 +215,7 @@ if (is_android || (is_chromeos_ash && is_chromeos_device)) {
 
 assert(!(llvm_force_head_revision && use_goma),
        "can't use goma with trunk clang")
+assert(!(llvm_force_head_revision && use_rbe), "can't use rbe with trunk clang")
 
 # default_include_dirs ---------------------------------------------------------
 #
@@ -285,6 +291,13 @@ config("compiler") {
     cflags += [ "-fno-delete-null-pointer-checks" ]
   }
 
+  # Don't emit the GCC version ident directives, they just end up in the
+  # .comment section or debug info taking up binary size, and makes comparing
+  # .o files built with different compiler versions harder.
+  if (!is_win || is_clang) {
+    cflags += [ "-fno-ident" ]
+  }
+
   # In general, Windows is totally different, but all the other builds share
   # some common compiler and linker configuration.
   if (!is_win) {
@@ -316,11 +329,7 @@ config("compiler") {
     }
 
     if (use_lld) {
-      if (is_apple) {
-        ldflags += [ "-fuse-ld=lld.darwinnew" ]
-      } else {
-        ldflags += [ "-fuse-ld=lld" ]
-      }
+      ldflags += [ "-fuse-ld=lld" ]
     }
 
     # Linker warnings.
@@ -727,20 +736,9 @@ config("compiler") {
     }
   }
 
-  # Pin to LLVM's legacy pass manager so we can switch independently of a Clang roll.
-  # TODO(https://crbug.com/1173188): remove once we've rolled a Clang with the new PM as the default PM.
-  if ((is_android || is_win) && is_clang && !is_nacl) {
-    cflags += [
-      "-Xclang",
-      "-fno-experimental-new-pass-manager",
-    ]
-    if (use_thin_lto) {
-      if (is_win) {
-        ldflags += [ "-opt:noltonewpassmanager" ]
-      } else {
-        ldflags += [ "-Wl,--lto-legacy-pass-manager" ]
-      }
-    }
+  if (is_clang && !is_nacl && show_includes) {
+    assert(!is_win, "show_includes is not supported on Windows")
+    cflags += [ "-H" ]
   }
 
   # This flag enforces that member pointer base types are complete. It helps
@@ -751,6 +749,11 @@ config("compiler") {
   if (is_clang && !is_nacl && target_os != "chromeos" && !use_xcode_clang &&
       !is_chromeos_lacros && (is_win || use_custom_libcxx)) {
     cflags += [ "-fcomplete-member-pointers" ]
+  }
+
+  # TODO(crbug/1185183): Remove after next clang roll
+  if (is_clang && !is_nacl && is_linux && is_msan) {
+    cflags += [ "-flegacy-pass-manager" ]
   }
 
   # Pass the same C/C++ flags to the objective C/C++ compiler.
@@ -2022,10 +2025,6 @@ if (is_win) {
     # Aix does not support these.
 
     common_optimize_on_cflags += [
-      # Don't emit the GCC version ident directives, they just end up in the
-      # .comment section taking up binary size.
-      "-fno-ident",
-
       # Put data and code in their own sections, so that unused symbols
       # can be removed at link time with --gc-sections.
       "-fdata-sections",

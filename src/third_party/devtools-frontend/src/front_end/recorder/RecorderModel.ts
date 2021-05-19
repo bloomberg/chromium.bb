@@ -4,9 +4,9 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../common/common.js';
-import * as SDK from '../sdk/sdk.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as UI from '../ui/legacy/legacy.js';
 import type * as Workspace from '../workspace/workspace.js';
 
 import {RecordingSession} from './RecordingSession.js';

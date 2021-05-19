@@ -329,7 +329,11 @@ class TryserverApi(recipe_api.RecipeApi):
 
   def get_footer(self, tag, patch_text=None):
     """Gets a specific tag from a CL description"""
-    return self._get_footers(patch_text).get(tag, [])
+    footers = self._get_footers(patch_text)
+    if footers is None:
+      return []
+
+    return footers.get(tag, [])
 
   def normalize_footer_name(self, footer):
     return '-'.join([ word.title() for word in footer.strip().split('-') ])

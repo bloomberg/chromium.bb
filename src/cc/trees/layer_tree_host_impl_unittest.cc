@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <utility>
 
 #include "base/base_switches.h"
@@ -108,12 +109,12 @@
     statements;                   \
   }
 
-using ::testing::Mock;
-using ::testing::Return;
+using media::VideoFrame;
+using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
-using ::testing::_;
-using media::VideoFrame;
+using ::testing::Mock;
+using ::testing::Return;
 
 using ScrollThread = cc::InputHandler::ScrollThread;
 
@@ -4479,9 +4480,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PageScaleAnimation) {
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
     host_impl_->active_tree()->SetPendingPageScaleAnimation(
-        std::unique_ptr<PendingPageScaleAnimation>(
-            new PendingPageScaleAnimation(gfx::Vector2d(), false, 2,
-                                          duration)));
+        std::make_unique<PendingPageScaleAnimation>(gfx::Vector2d(), false, 2,
+                                                    duration));
     host_impl_->ActivateSyncTree();
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_TRUE(did_request_next_frame_);
@@ -4540,9 +4540,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PageScaleAnimation) {
     did_request_redraw_ = false;
     did_request_next_frame_ = false;
     host_impl_->active_tree()->SetPendingPageScaleAnimation(
-        std::unique_ptr<PendingPageScaleAnimation>(
-            new PendingPageScaleAnimation(gfx::Vector2d(25, 25), true,
-                                          min_page_scale, duration)));
+        std::make_unique<PendingPageScaleAnimation>(gfx::Vector2d(25, 25), true,
+                                                    min_page_scale, duration));
     host_impl_->ActivateSyncTree();
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_TRUE(did_request_next_frame_);
@@ -4606,8 +4605,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PageScaleAnimationNoOp) {
             scroll_layer->element_id(), gfx::ScrollOffset(50, 50));
 
     host_impl_->active_tree()->SetPendingPageScaleAnimation(
-        std::unique_ptr<PendingPageScaleAnimation>(
-            new PendingPageScaleAnimation(gfx::Vector2d(), true, 1, duration)));
+        std::make_unique<PendingPageScaleAnimation>(gfx::Vector2d(), true, 1,
+                                                    duration));
     host_impl_->ActivateSyncTree();
     begin_frame_args.frame_time = start_time;
     begin_frame_args.frame_id.sequence_number++;
@@ -4673,8 +4672,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   // Make sure TakePageScaleAnimation works properly.
 
   host_impl_->sync_tree()->SetPendingPageScaleAnimation(
-      std::unique_ptr<PendingPageScaleAnimation>(new PendingPageScaleAnimation(
-          gfx::Vector2d(), false, target_scale, duration)));
+      std::make_unique<PendingPageScaleAnimation>(gfx::Vector2d(), false,
+                                                  target_scale, duration));
   std::unique_ptr<PendingPageScaleAnimation> psa =
       host_impl_->sync_tree()->TakePendingPageScaleAnimation();
   EXPECT_EQ(target_scale, psa->scale);
@@ -4686,8 +4685,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   did_request_redraw_ = false;
   did_request_next_frame_ = false;
   host_impl_->sync_tree()->SetPendingPageScaleAnimation(
-      std::unique_ptr<PendingPageScaleAnimation>(new PendingPageScaleAnimation(
-          gfx::Vector2d(), false, target_scale, duration)));
+      std::make_unique<PendingPageScaleAnimation>(gfx::Vector2d(), false,
+                                                  target_scale, duration));
   begin_frame_args.frame_time = halfway_through_animation;
   begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
@@ -4786,8 +4785,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 
   did_complete_page_scale_animation_ = false;
   host_impl_->active_tree()->SetPendingPageScaleAnimation(
-      std::unique_ptr<PendingPageScaleAnimation>(
-          new PendingPageScaleAnimation(gfx::Vector2d(), false, 2, duration)));
+      std::make_unique<PendingPageScaleAnimation>(gfx::Vector2d(), false, 2,
+                                                  duration));
   host_impl_->ActivateSyncTree();
   begin_frame_args.frame_time = start_time;
   begin_frame_args.frame_id.sequence_number++;
@@ -4847,14 +4846,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   gfx::Point position(295, 195);
   gfx::Vector2dF offset(0, 50);
 
-// TODO(bokan): Unfortunately, Mac currently doesn't support smooth scrolling
-// wheel events. https://crbug.com/574283.
-#if defined(OS_MAC)
-  std::vector<ui::ScrollInputType> types = {ui::ScrollInputType::kScrollbar};
-#else
   std::vector<ui::ScrollInputType> types = {ui::ScrollInputType::kScrollbar,
                                             ui::ScrollInputType::kWheel};
-#endif
   for (auto type : types) {
     auto begin_state = BeginState(position, offset, type);
     begin_state->data()->set_current_native_scrolling_element(
@@ -13142,32 +13135,6 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(1, 1));
 }
 
-#if defined(OS_MAC)
-// Ensure Mac wheel scrolling causes instant scrolling. This test can be removed
-// once https://crbug.com/574283 is fixed.
-TEST_P(ScrollUnifiedLayerTreeHostImplTest, MacWheelIsNonAnimated) {
-  const gfx::Size content_size(1000, 1000);
-  const gfx::Size viewport_size(50, 100);
-  SetupViewportLayersOuterScrolls(viewport_size, content_size);
-  LayerImpl* scrolling_layer = OuterViewportScrollLayer();
-
-  host_impl_->set_force_smooth_wheel_scrolling_for_testing(false);
-  ASSERT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD,
-            GetInputHandler()
-                .ScrollBegin(BeginState(gfx::Point(), gfx::Vector2d(0, 50),
-                                        ui::ScrollInputType::kWheel)
-                                 .get(),
-                             ui::ScrollInputType::kWheel)
-                .thread);
-  GetInputHandler().ScrollUpdate(
-      AnimatedUpdateState(gfx::Point(), gfx::Vector2d(0, 50)).get());
-
-  // Ensure the scroll update happens immediately.
-  EXPECT_EQ(CurrentScrollOffset(scrolling_layer).y(), 50);
-  GetInputHandler().ScrollEnd();
-}
-#endif
-
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, OneScrollForFirstScrollDelay) {
   LayerTreeSettings settings = DefaultSettings();
   settings.commit_to_active_tree = false;
@@ -18270,7 +18237,8 @@ TEST_F(LayerTreeHostImplTest, DocumentTransitionRequestCausesDamage) {
 
   // Adding a transition effect should cause us to redraw.
   host_impl_->active_tree()->AddDocumentTransitionRequest(
-      DocumentTransitionRequest::CreateStart(base::OnceClosure()));
+      DocumentTransitionRequest::CreateStart(
+          /*document_tag=*/0, /*shared_element_count=*/0, base::OnceClosure()));
 
   // Ensure there is damage and we requested a redraw.
   host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw,

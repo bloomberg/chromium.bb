@@ -21,10 +21,10 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
+#include "chromeos/dbus/userdataauth/install_attributes_client.h"
 #include "chromeos/system/factory_ping_embargo_check.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
@@ -88,20 +88,6 @@ constexpr base::TimeDelta kSystemClockSyncWaitTimeout =
 // or if system clock synchronization has failed.
 using SystemClockSyncCallback = base::OnceCallback<void(
     AutoEnrollmentController::SystemClockSyncState system_clock_sync_state)>;
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-// These values must match the corresponding enum defined in enums.xml.
-enum class InitialEnrollmentRequirementHistogramValue {
-  kRequired = 0,
-  kNotRequiredSerialNumberMissing = 1,
-  kNotRequiredBrandCodeMissing = 2,
-  kNotRequiredEmbargoEndDateInvalid = 3,
-  kNotRequiredEmbargoEndDateInvalidWithoutSystemClockSync = 4,
-  kNotRequiredInEmbargoPeriod = 5,
-  kNotRequiredInEmbargoPeriodWithoutSystemClockSync = 6,
-  kMaxValue = kNotRequiredInEmbargoPeriodWithoutSystemClockSync
-};
 
 // Returns the int value of the `switch_name` argument, clamped to the [0, 62]
 // interval. Returns 0 if the argument doesn't exist or isn't an int value.
@@ -293,39 +279,6 @@ class AutoEnrollmentController::SystemClockSyncWaiter
 
   DISALLOW_COPY_AND_ASSIGN(SystemClockSyncWaiter);
 };
-
-namespace {
-
-// Records the "Enterprise.InitialEnrollmentRequirement" histogram value.
-// Do not pass `*WithoutSystemClockSync` enum values as `value`.
-// If `value` is one of the values that are only generated at specific system
-// clock values (that is, related to the factory ping embargo period),
-// `system_clock_sync_state` is used to determine if the reported value should
-// be `value` or the corresponding `*WithoutSystemClockSync` value.
-void RecordInitialEnrollmentRequirement(
-    InitialEnrollmentRequirementHistogramValue value,
-    AutoEnrollmentController::SystemClockSyncState system_clock_sync_state) {
-  DCHECK_NE(value, InitialEnrollmentRequirementHistogramValue::
-                       kNotRequiredEmbargoEndDateInvalidWithoutSystemClockSync);
-  DCHECK_NE(value, InitialEnrollmentRequirementHistogramValue::
-                       kNotRequiredInEmbargoPeriodWithoutSystemClockSync);
-  if (system_clock_sync_state !=
-      AutoEnrollmentController::SystemClockSyncState::kSynchronized) {
-    if (value == InitialEnrollmentRequirementHistogramValue::
-                     kNotRequiredEmbargoEndDateInvalid) {
-      value = InitialEnrollmentRequirementHistogramValue::
-          kNotRequiredEmbargoEndDateInvalidWithoutSystemClockSync;
-    }
-    if (value == InitialEnrollmentRequirementHistogramValue::
-                     kNotRequiredInEmbargoPeriod) {
-      value = InitialEnrollmentRequirementHistogramValue::
-          kNotRequiredInEmbargoPeriodWithoutSystemClockSync;
-    }
-  }
-  UMA_HISTOGRAM_ENUMERATION("Enterprise.InitialEnrollmentRequirement", value);
-}
-
-}  // namespace
 
 const char AutoEnrollmentController::kForcedReEnrollmentAlways[] = "always";
 const char AutoEnrollmentController::kForcedReEnrollmentNever[] = "never";
@@ -537,10 +490,6 @@ AutoEnrollmentController::GetInitialStateDeterminationRequirement() {
   if (provider->GetEnterpriseMachineID().empty()) {
     LOG(WARNING)
         << "Skip Initial State Determination due to missing serial number.";
-    RecordInitialEnrollmentRequirement(
-        InitialEnrollmentRequirementHistogramValue::
-            kNotRequiredSerialNumberMissing,
-        system_clock_sync_state_);
     return InitialStateDeterminationRequirement::kNotRequired;
   }
 
@@ -550,10 +499,6 @@ AutoEnrollmentController::GetInitialStateDeterminationRequirement() {
   if (!rlz_brand_code_found || rlz_brand_code.empty()) {
     LOG(WARNING)
         << "Skip Initial State Determination due to missing brand code.";
-    RecordInitialEnrollmentRequirement(
-        InitialEnrollmentRequirementHistogramValue::
-            kNotRequiredBrandCodeMissing,
-        system_clock_sync_state_);
     return InitialStateDeterminationRequirement::kNotRequired;
   }
 
@@ -575,25 +520,14 @@ AutoEnrollmentController::GetInitialStateDeterminationRequirement() {
     LOG(WARNING)
         << "Skip Initial State Determination due to invalid embargo date ("
         << system_clock_log_info << ").";
-    RecordInitialEnrollmentRequirement(
-        InitialEnrollmentRequirementHistogramValue::
-            kNotRequiredEmbargoEndDateInvalid,
-        system_clock_sync_state_);
     return InitialStateDeterminationRequirement::kNotRequired;
   }
   if (embargo_state == system::FactoryPingEmbargoState::kNotPassed) {
     LOG(WARNING) << "Skip Initial State Determination because the device is in "
                     "the embargo period ("
                  << system_clock_log_info << ").";
-    RecordInitialEnrollmentRequirement(
-        InitialEnrollmentRequirementHistogramValue::kNotRequiredInEmbargoPeriod,
-        system_clock_sync_state_);
     return InitialStateDeterminationRequirement::kNotRequired;
   }
-
-  RecordInitialEnrollmentRequirement(
-      InitialEnrollmentRequirementHistogramValue::kRequired,
-      system_clock_sync_state_);
 
   return InitialStateDeterminationRequirement::kRequired;
 }
@@ -865,7 +799,7 @@ void AutoEnrollmentController::UpdateState(
 void AutoEnrollmentController::StartCleanupForcedReEnrollment() {
   // D-Bus services may not be available yet, so we call
   // WaitForServiceToBeAvailable. See https://crbug.com/841627.
-  CryptohomeClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
+  InstallAttributesClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
       &AutoEnrollmentController::StartRemoveFirmwareManagementParameters,
       weak_ptr_factory_.GetWeakPtr()));
 }
@@ -879,8 +813,8 @@ void AutoEnrollmentController::StartRemoveFirmwareManagementParameters(
     return;
   }
 
-  cryptohome::RemoveFirmwareManagementParametersRequest request;
-  CryptohomeClient::Get()->RemoveFirmwareManagementParametersFromTpm(
+  user_data_auth::RemoveFirmwareManagementParametersRequest request;
+  InstallAttributesClient::Get()->RemoveFirmwareManagementParameters(
       request,
       base::BindOnce(
           &AutoEnrollmentController::OnFirmwareManagementParametersRemoved,
@@ -888,9 +822,13 @@ void AutoEnrollmentController::StartRemoveFirmwareManagementParameters(
 }
 
 void AutoEnrollmentController::OnFirmwareManagementParametersRemoved(
-    base::Optional<cryptohome::BaseReply> reply) {
-  if (!reply.has_value())
+    base::Optional<user_data_auth::RemoveFirmwareManagementParametersReply>
+        reply) {
+  if (!reply.has_value() ||
+      reply->error() !=
+          user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET) {
     LOG(ERROR) << "Failed to remove firmware management parameters.";
+  }
 
   // D-Bus services may not be available yet, so we call
   // WaitForServiceToBeAvailable. See https://crbug.com/841627.

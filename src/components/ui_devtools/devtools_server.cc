@@ -119,8 +119,8 @@ void UiDevToolsServer::CreateTCPServerSocket(
     int port,
     net::NetworkTrafficAnnotationTag tag,
     network::mojom::NetworkContext::CreateTCPServerSocketCallback callback) {
-  // Create the socket using the address 0.0.0.0 to listen on all interfaces.
-  net::IPAddress address(0, 0, 0, 0);
+  // Create the socket using the address 127.0.0.1 to listen on all interfaces.
+  net::IPAddress address(127, 0, 0, 1);
   constexpr int kBacklog = 1;
   network_context->CreateTCPServerSocket(
       net::IPEndPoint(address, port), kBacklog,
@@ -176,6 +176,10 @@ void UiDevToolsServer::SendOverWebSocket(int connection_id,
                                          base::StringPiece message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(devtools_server_sequence_);
   server_->SendOverWebSocket(connection_id, message, tag_);
+}
+
+void UiDevToolsServer::SetOnSessionEnded(base::OnceClosure callback) const {
+  on_session_ended_ = std::move(callback);
 }
 
 void UiDevToolsServer::MakeServer(
@@ -235,6 +239,9 @@ void UiDevToolsServer::OnClose(int connection_id) {
   UiDevToolsClient* client = it->second;
   client->Disconnect();
   connections_.erase(it);
+
+  if (connections_.empty() && on_session_ended_)
+    std::move(on_session_ended_).Run();
 }
 
 }  // namespace ui_devtools

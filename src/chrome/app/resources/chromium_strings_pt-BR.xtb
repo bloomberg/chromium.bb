@@ -10,7 +10,6 @@
 <translation id="1315551408014407711">Configure seu novo perfil do Chromium</translation>
 <translation id="1396446129537741364">O Chromium está tentando mostrar senhas.</translation>
 <translation id="1414495520565016063">Você está conectado ao Chromium.</translation>
-<translation id="1414973082589232775">Para usar o Rosetta para reproduzir mídia protegida, reinicie o Chromium.</translation>
 <translation id="151962892725702025">O Chromium OS não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
 <translation id="1524282610922162960">Compartilhar uma guia do Chromium</translation>
 <translation id="1553461853655228091">O Chromium precisa de permissão para acessar sua câmera e criar um mapa 3D do ambiente a sua volta</translation>
@@ -25,8 +24,8 @@
 <translation id="1966382378801805537">O Chromium não pode determinar ou definir o navegador padrão</translation>
 <translation id="2008474315282236005">Essa ação excluirá 1 item deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="2020032459870799438">Para verificar se suas outras senhas estão protegidas contra violações de dados e outros problemas de segurança, <ph name="BEGIN_LINK" />faça login no Chromium<ph name="END_LINK" />.</translation>
+<translation id="2174178932569897599">Personalizar o Chromium</translation>
 <translation id="2185166961232948079">Chromium - Login na rede - <ph name="PAGE_TITLE" /></translation>
-<translation id="2225696941839557119">Não foi possível sincronizar suas senhas no Chromium OS.</translation>
 <translation id="2241627712206172106">Se você usa um computador compartilhado, seus amigos e familiares podem navegar separadamente e configurar o Chromium da maneira que desejarem.</translation>
 <translation id="2294245788148774212">Opcional: ajude a melhorar os recursos e o desempenho do Chromium OS enviando automaticamente dados de uso e diagnóstico ao Google.</translation>
 <translation id="2343156876103232566">Para enviar um número daqui para seu smartphone Android, faça login no Chromium nos dois dispositivos.</translation>
@@ -40,10 +39,8 @@
 <translation id="2577788541081224677">Para ter acesso aos recursos do Chromium em todos os seus dispositivos, faça login e ative a sincronização.</translation>
 <translation id="2583187216237139145">Quaisquer dados do Chromium gerados quando este perfil estiver sendo usado (como a criação de favoritos, histórico, senhas e outras configurações) podem ser removidos pelo administrador do perfil de trabalho. <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">É necessário reiniciar o Chromium OS para que a atualização seja aplicada.</translation>
-<translation id="2615699638672665509">Este computador em breve parará de receber atualizações do Chromium, porque seu hardware não é mais suportado.</translation>
 <translation id="2648074677641340862">Ocorreu um erro no sistema operacional durante a instalação. Faça o download do Chromium novamente.</translation>
 <translation id="2661879430930417727">Se você compartilha um dispositivo, seus amigos e familiares podem navegar separadamente e configurar o Chromium da maneira que quiserem</translation>
-<translation id="270245676623587882">O Chromium recomenda desativar essa extensão porque ela não atende aos padrões do Navegação segura com maior proteção.</translation>
 <translation id="2711502716910134313">Guia do Chromium</translation>
 <translation id="2718390899429598676">Para maior segurança, o Chromium criptografará seus dados.</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
@@ -63,6 +60,7 @@
 <translation id="3130323860337406239">O Chromium está usando seu microfone.</translation>
 <translation id="3155163173539279776">Reiniciar Chromium</translation>
 <translation id="3179665906251668410">Abrir link na janela &amp;sem rastros do Chromium</translation>
+<translation id="3185330573522821672">Personalize seu novo perfil do Chromium</translation>
 <translation id="3190315855212034486">O Chromium travou. Reiniciar agora?</translation>
 <translation id="3229526316128325841">O Chromium quer exportar suas senhas.</translation>
 <translation id="3258596308407688501">O Chromium não pode ler e gravar neste diretório de dados: <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -75,6 +73,7 @@
 <translation id="3430503420100763906">Você pode usar os perfis do Chromium para separar todos seus dados nele. Crie perfis para amigos e familiares ou separe trabalho e lazer.</translation>
 <translation id="347328004046849135">O Chromium enviará uma notificação quando você fizer login com uma senha comprometida</translation>
 <translation id="3474745554856756813">Essa ação excluirá <ph name="ITEMS_COUNT" /> itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como <ph name="USER_EMAIL" />.</translation>
+<translation id="3497319089134299931">O atalho <ph name="SHORTCUT" /> permite alternar entre os perfis do Chromium</translation>
 <translation id="3509308970982693815">Feche todas as janelas do Chromium e tente novamente.</translation>
 <translation id="3575459661164320785">Há um software nocivo no seu computador. O Chromium pode removê-lo, restaurar as configurações e desativar as extensões para que o navegador volte a funcionar normalmente.</translation>
 <translation id="3639635944603682591">Os dados de navegação dessa pessoa serão excluídos deste dispositivo. Para recuperar os dados, faça login no Chromium como <ph name="USER_EMAIL" />.</translation>
@@ -135,11 +134,11 @@
 <translation id="5480860683791598150">O Chromium precisa acessar seu local para compartilhá-lo com este site</translation>
 <translation id="549669000822060376">Aguarde enquanto o Chromium instala as últimas atualizações do sistema.</translation>
 <translation id="5496810170689441661">O Chromium está tentando editar senhas. Digite a senha do Windows para permitir essa ação.</translation>
+<translation id="5527463683072221100">Abrir PDFs no Chromium</translation>
 <translation id="5623402015214259806">{0,plural, =0{Uma atualização do Chromium está disponível}=1{Uma atualização do Chromium está disponível}one{Uma atualização do Chromium está disponível há # dia}other{Uma atualização do Chromium está disponível há # dias}}</translation>
 <translation id="5634636535844844681">O Chromium requer o Windows 7 ou versão superior.</translation>
 <translation id="5653831366781983928">Reinicie o Chromium agora</translation>
 <translation id="5698481217667032250">Exibir Chromium neste idioma</translation>
-<translation id="5736967399513123100">Para permitir que o Chromium reproduza mídia protegida, instale o Rosetta. Quer instalar agora?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
@@ -155,10 +154,10 @@
 <translation id="6120345080069858279">O Chromium salvará essa senha na sua Conta do Google. Você não precisará se lembrar dela.</translation>
 <translation id="6129621093834146363">O arquivo <ph name="FILE_NAME" /> é perigoso. Por isso ele foi bloqueado pelo Chromium.</translation>
 <translation id="6134968993075716475">O "Navegação segura" está desativado. O Chromium recomenda ativá-lo.</translation>
+<translation id="6145820983052037069">Aqui, você pode alternar entre os perfis do Chromium</translation>
 <translation id="6183079672144801177">Verifique se sua conta está conectada ao Chromium no <ph name="TARGET_DEVICE_NAME" /> e tente fazer o envio novamente.</translation>
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver funcionando, desinstale o Chromium e tente novamente.</translation>
 <translation id="6219195342503754812">{0,plural, =0{O Chromium será reiniciado agora}=1{O Chromium será reiniciado em 1 segundo}one{O Chromium será reiniciado em # segundo}other{O Chromium será reiniciado em # segundos}}</translation>
-<translation id="623836266260425961">Não foi possível sincronizar seus dados no Chromium OS.</translation>
 <translation id="6248213926982192922">Tornar o Chromium o navegador padrão</translation>
 <translation id="6266342355635466082">O Chromium não pode verificar se há atualizações. Verifique sua conexão com a Internet.</translation>
 <translation id="6268381023930128611">Sair do Chromium?</translation>
@@ -189,7 +188,6 @@
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiado para o Chromium)</translation>
 <translation id="6893813176749746474">O Chromium foi atualizado, mas não é utilizado há pelo menos 30 dias.</translation>
-<translation id="6897548120660295439">O Rosetta permite que o Chromium reproduza a mídia protegida nesta página.</translation>
 <translation id="691026815377248078">O Chromium precisa acessar o Bluetooth para continuar o 
  pareamento. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="6964305034639999644">Abrir link na janela &amp;sem rastros do Chromium</translation>
@@ -197,11 +195,9 @@
 <translation id="6990124437352146030">O Chromium precisa de permissão para este site acessar seu microfone</translation>
 <translation id="701244094609242530">O Chromium não pode verificar suas extensões. Tente mais tarde.</translation>
 <translation id="705851970750939768">Atualizar o Chromium</translation>
-<translation id="7066436765290594559">O Chromium OS não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
 <translation id="7067091210845072982">Se uma imagem não tiver uma descrição útil, o Chromium tentará fornecer uma para você. As imagens serão enviadas ao Google para a criação de descrições.</translation>
 <translation id="7196312274710523067">Não foi possível iniciar o Chromium. Tente novamente.</translation>
 <translation id="7197677400338048821">Não foi possível verificar suas senhas. Tente novamente em 24 horas.</translation>
-<translation id="7205698830395646142">Esconder no menu do Chromium</translation>
 <translation id="7223968959479464213">Gerenciador de tarefas - Chromium</translation>
 <translation id="731644333568559921">Atualizar o &amp;Chromium OS</translation>
 <translation id="731795002583552498">Atualizando o Chromium</translation>
@@ -235,7 +231,6 @@
 <translation id="7907774600618164274">O Chromium OS não foi encerrado corretamente.</translation>
 <translation id="7937630085815544518">Você estava conectado ao Chromium como <ph name="USER_EMAIL_ADDRESS" />. Use a mesma conta para fazer login novamente.</translation>
 <translation id="7975919845073681630">Como esta é uma instalação secundária do Chromium, ele não pode se tornar seu navegador padrão.</translation>
-<translation id="7979877361127045932">Esconder no menu do Chromium</translation>
 <translation id="8013436988911883588">Assim que o Chromium tiver acesso, os sites poderão solicitar acesso.</translation>
 <translation id="81770708095080097">Esse arquivo é perigoso, por isso ele foi bloqueado pelo Chromium.</translation>
 <translation id="8248265253516264921">Se uma imagem não tiver uma descrição útil, o Chromium tentará fornecer uma para você. As imagens serão enviadas ao Google para a criação de descrições. É possível desativar essa opção nas configurações a qualquer momento.</translation>

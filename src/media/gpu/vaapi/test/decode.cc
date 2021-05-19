@@ -5,20 +5,27 @@
 #include <va/va.h>
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/logging.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "media/filters/ivf_parser.h"
+#include "media/gpu/vaapi/test/av1_decoder.h"
+#include "media/gpu/vaapi/test/shared_va_surface.h"
 #include "media/gpu/vaapi/test/vaapi_device.h"
 #include "media/gpu/vaapi/test/video_decoder.h"
 #include "media/gpu/vaapi/test/vp9_decoder.h"
 #include "media/gpu/vaapi/va_stubs.h"
 #include "ui/gfx/geometry/size.h"
 
+using media::vaapi_test::Av1Decoder;
+using media::vaapi_test::SharedVASurface;
 using media::vaapi_test::VaapiDevice;
 using media::vaapi_test::VideoDecoder;
 using media::vaapi_test::Vp9Decoder;
@@ -40,6 +47,7 @@ constexpr char kUsageMsg[] =
     "usage: decode_test\n"
     "           --video=<video path>\n"
     "           [--frames=<number of frames to decode>]\n"
+    "           [--fetch=<derive|get>]\n"
     "           [--out-prefix=<path prefix of decoded frame PNGs>]\n"
     "           [--md5]\n"
     "           [--visible]\n"
@@ -50,13 +58,18 @@ constexpr char kUsageMsg[] =
 constexpr char kHelpMsg[] =
     "This binary decodes the IVF video in <video> path with specified video\n"
     "<profile> via thinly wrapped libva calls.\n"
-    "Supported codecs: VP9 (profiles 0, 2)\n"
+    "Supported codecs: VP9 (profiles 0, 2) and AV1 (profile 0)\n"
     "\nThe following arguments are supported:\n"
     "    --video=<path>\n"
     "        Required. Path to IVF-formatted video to decode.\n"
     "    --frames=<int>\n"
     "        Optional. Number of frames to decode, defaults to all.\n"
     "        Override with a positive integer to decode at most that many.\n"
+    "    --fetch=<derive|get>\n"
+    "        Optional. If omitted, try to fetch VASurface data by any means.\n"
+    "        Specifically, try, in order, vaDeriveImage, then if that fails,\n"
+    "        vaCreateImage + vaGetImage. Otherwise, only attempt the\n"
+    "        specified fetch policy.\n"
     "    --out-prefix=<string>\n"
     "        Optional. Save PNGs of decoded (and visible, if --visible is\n"
     "        specified) frames if and only if a path prefix (which may\n"
@@ -76,8 +89,8 @@ constexpr char kHelpMsg[] =
     "        output, md5 hash) only to visible frames.\n"
     "    --loop\n"
     "        Optional. If specified, loops decoding until terminated\n"
-    "        externally or until an error occurs, at which point the current\n"
-    "        pass through the video completes and the binary exits.\n"
+    "        externally or until an error occurs, at which point execution\n"
+    "        will immediately terminate.\n"
     "        If specified with --frames, loops decoding that number of\n"
     "        leading frames. If specified with --out-prefix, loops decoding,\n"
     "        but only saves the first iteration of decoded frames.\n"
@@ -97,9 +110,11 @@ std::string FourccStr(uint32_t fourcc) {
 // Creates the appropriate decoder for |stream_data| which is expected to point
 // to IVF data of length |stream_len|. The decoder will use |va_device| to issue
 // VAAPI calls. Returns nullptr on failure.
-std::unique_ptr<VideoDecoder> CreateDecoder(const VaapiDevice& va_device,
-                                            const uint8_t* stream_data,
-                                            size_t stream_len) {
+std::unique_ptr<VideoDecoder> CreateDecoder(
+    const VaapiDevice& va_device,
+    SharedVASurface::FetchPolicy fetch_policy,
+    const uint8_t* stream_data,
+    size_t stream_len) {
   // Set up video parser.
   auto ivf_parser = std::make_unique<media::IvfParser>();
   media::IvfFileHeader file_header{};
@@ -110,12 +125,31 @@ std::unique_ptr<VideoDecoder> CreateDecoder(const VaapiDevice& va_device,
 
   // Create appropriate decoder for codec.
   VLOG(1) << "Creating decoder with codec " << FourccStr(file_header.fourcc);
-  if (file_header.fourcc == fourcc('V', 'P', '9', '0'))
-    return std::make_unique<Vp9Decoder>(std::move(ivf_parser), va_device);
+  // When adding a new format, keep fourccs alphabetical.
+  if (file_header.fourcc == fourcc('A', 'V', '0', '1')) {
+    return std::make_unique<Av1Decoder>(std::move(ivf_parser), va_device,
+                                        fetch_policy);
+  } else if (file_header.fourcc == fourcc('V', 'P', '9', '0')) {
+    return std::make_unique<Vp9Decoder>(std::move(ivf_parser), va_device,
+                                        fetch_policy);
+  }
 
   LOG(ERROR) << "Codec " << FourccStr(file_header.fourcc) << " not supported.\n"
              << kUsageMsg;
   return nullptr;
+}
+
+base::Optional<SharedVASurface::FetchPolicy> GetFetchPolicy(
+    const std::string& fetch_policy) {
+  if (fetch_policy.empty())
+    return SharedVASurface::FetchPolicy::kAny;
+  if (base::EqualsCaseInsensitiveASCII(fetch_policy, "derive"))
+    return SharedVASurface::FetchPolicy::kDeriveImage;
+  if (base::EqualsCaseInsensitiveASCII(fetch_policy, "get"))
+    return SharedVASurface::FetchPolicy::kGetImage;
+
+  LOG(ERROR) << "Unrecognized fetch policy " << fetch_policy;
+  return base::nullopt;
 }
 
 }  // namespace
@@ -153,6 +187,12 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
+  const auto fetch_policy = GetFetchPolicy(cmd->GetSwitchValueASCII("fetch"));
+  if (!fetch_policy) {
+    std::cout << kUsageMsg;
+    return EXIT_FAILURE;
+  }
+
   // Initialize VA stubs.
   StubPathMap paths;
   const std::string va_suffix(base::NumberToString(VA_MAJOR_VERSION + 1));
@@ -176,11 +216,10 @@ int main(int argc, char** argv) {
   const VaapiDevice va_device;
   const bool loop_decode = cmd->HasSwitch("loop");
   bool first_loop = true;
-  bool errored = false;
 
   do {
     const std::unique_ptr<VideoDecoder> dec =
-        CreateDecoder(va_device, stream.data(), stream.length());
+        CreateDecoder(va_device, *fetch_policy, stream.data(), stream.length());
     if (!dec) {
       LOG(ERROR) << "Failed to create decoder for file: " << video_path;
       return EXIT_FAILURE;
@@ -193,12 +232,6 @@ int main(int argc, char** argv) {
       if (res == VideoDecoder::kEOStream) {
         LOG(INFO) << "End of stream.";
         break;
-      }
-
-      if (res == VideoDecoder::kFailed) {
-        LOG(ERROR) << "Failed to decode.";
-        errored = true;
-        continue;
       }
 
       if (cmd->HasSwitch("visible") && !dec->LastDecodedFrameVisible())
@@ -214,11 +247,9 @@ int main(int argc, char** argv) {
     }
 
     first_loop = false;
-  } while (loop_decode && !errored);
+  } while (loop_decode);
 
   LOG(INFO) << "Done reading.";
 
-  if (errored)
-    return EXIT_FAILURE;
   return EXIT_SUCCESS;
 }

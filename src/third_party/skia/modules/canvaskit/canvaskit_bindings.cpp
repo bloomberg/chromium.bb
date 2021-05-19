@@ -91,7 +91,7 @@
 #endif
 
 #ifndef SK_NO_FONTS
-sk_sp<SkFontMgr> SkFontMgr_New_Custom_Data(const uint8_t** datas, const size_t* sizes, int n);
+sk_sp<SkFontMgr> SkFontMgr_New_Custom_Data(sk_sp<SkData>* datas, int n);
 #endif
 
 struct OptionalMatrix : SkMatrix {
@@ -838,19 +838,32 @@ EMSCRIPTEN_BINDINGS(Skia) {
             const SkRect* oval = reinterpret_cast<const SkRect*>(fPtr);
             self.drawArc(*oval, startAngle, sweepAngle, useCenter, paint);
         }))
-        // _drawAtlas takes an array of SkColor. There is no SkColor4f override.
-        // TODO: take sampling as an explicit parameter from the caller
-        .function("_drawAtlas", optional_override([](SkCanvas& self,
+        .function("_drawAtlasOptions", optional_override([](SkCanvas& self,
                 const sk_sp<SkImage>& atlas, uintptr_t /* SkRSXform* */ xptr,
                 uintptr_t /* SkRect* */ rptr, uintptr_t /* SkColor* */ cptr, int count,
-                SkBlendMode mode, const SkPaint* paint)->void {
+                SkBlendMode mode, SkFilterMode filter, SkMipmapMode mipmap,
+                const SkPaint* paint)->void {
             const SkRSXform* dstXforms = reinterpret_cast<const SkRSXform*>(xptr);
             const SkRect* srcRects = reinterpret_cast<const SkRect*>(rptr);
             const SkColor* colors = nullptr;
             if (cptr) {
                 colors = reinterpret_cast<const SkColor*>(cptr);
             }
-            SkSamplingOptions sampling(SkFilterMode::kLinear);
+            SkSamplingOptions sampling(filter, mipmap);
+            self.drawAtlas(atlas.get(), dstXforms, srcRects, colors, count, mode, sampling,
+                           nullptr, paint);
+        }), allow_raw_pointers())
+        .function("_drawAtlasCubic", optional_override([](SkCanvas& self,
+                const sk_sp<SkImage>& atlas, uintptr_t /* SkRSXform* */ xptr,
+                uintptr_t /* SkRect* */ rptr, uintptr_t /* SkColor* */ cptr, int count,
+                SkBlendMode mode, float B, float C, const SkPaint* paint)->void {
+            const SkRSXform* dstXforms = reinterpret_cast<const SkRSXform*>(xptr);
+            const SkRect* srcRects = reinterpret_cast<const SkRect*>(rptr);
+            const SkColor* colors = nullptr;
+            if (cptr) {
+                colors = reinterpret_cast<const SkColor*>(cptr);
+            }
+            SkSamplingOptions sampling({B, C});
             self.drawAtlas(atlas.get(), dstXforms, srcRects, colors, count, mode, sampling,
                            nullptr, paint);
         }), allow_raw_pointers())
@@ -950,6 +963,17 @@ EMSCRIPTEN_BINDINGS(Skia) {
         }), allow_raw_pointers())
 #endif
         .function("drawPath", &SkCanvas::drawPath)
+        .function("_drawPatch", optional_override([](SkCanvas& self,
+                                                     uintptr_t /* SkPoint* */ cubics,
+                                                     uintptr_t /* SkColor* */ colors,
+                                                     uintptr_t /* SkPoint* */ texs,
+                                                     SkBlendMode mode,
+                                                     const SkPaint& paint)->void {
+            self.drawPatch(reinterpret_cast<const SkPoint*>(cubics),
+                           reinterpret_cast<const SkColor*>(colors),
+                           reinterpret_cast<const SkPoint*>(texs),
+                           mode, paint);
+        }))
         // Of note, picture is *not* what is colloquially thought of as a "picture", what we call
         // a bitmap. An SkPicture is a series of draw commands.
         .function("drawPicture", select_overload<void (const sk_sp<SkPicture>&)>(&SkCanvas::drawPicture))
@@ -1162,7 +1186,12 @@ EMSCRIPTEN_BINDINGS(Skia) {
             auto datas = reinterpret_cast<const uint8_t**>(dPtr);
             auto sizes = reinterpret_cast<const size_t*>(sPtr);
 
-            return SkFontMgr_New_Custom_Data(datas, sizes, numFonts);
+            std::unique_ptr<sk_sp<SkData>[]> skdatas(new sk_sp<SkData>[numFonts]);
+            for (int i = 0; i < numFonts; ++i) {
+                skdatas[i] = SkData::MakeFromMalloc(datas[i], sizes[i]);
+            }
+
+            return SkFontMgr_New_Custom_Data(skdatas.get(), numFonts);
         }), allow_raw_pointers())
         .class_function("RefDefault", &SkFontMgr::RefDefault)
         .function("countFamilies", &SkFontMgr::countFamilies)

@@ -9,10 +9,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "third_party/openscreen/src/cast/cast_core/api/runtime/cast_audio_decoder_service.pb.h"
+#include "third_party/openscreen/src/cast/cast_core/api/runtime/cast_audio_channel_service.pb.h"
 #include "third_party/protobuf/src/google/protobuf/duration.pb.h"
 
 namespace chromecast {
+
+class TaskRunner;
+
 namespace media {
 // Exposes the CastAudioDecoderChannel RPC client with a callback-based API.
 //
@@ -51,7 +54,6 @@ class CastRuntimeAudioChannelBroker {
     kUnavailable = 14,
     kDataLoss = 15,
     kDoNotUse = -1,
-    kReadDone = -2,
   };
 
   // Callbacks associated with RPC communication done by gRPC.
@@ -106,6 +108,7 @@ class CastRuntimeAudioChannelBroker {
   };
 
   static std::unique_ptr<CastRuntimeAudioChannelBroker> Create(
+      TaskRunner* task_runner,
       Handler* handler);
 
   virtual ~CastRuntimeAudioChannelBroker();
@@ -122,6 +125,7 @@ class CastRuntimeAudioChannelBroker {
   virtual void StopAsync() = 0;
   virtual void PauseAsync() = 0;
   virtual void ResumeAsync(TimestampInfo timestamp_info) = 0;
+  virtual void UpdateTimestampAsync(TimestampInfo timestamp_info) = 0;
 };
 
 }  // namespace media

@@ -4,15 +4,15 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as SDK from '../core/sdk/sdk.js';
 import * as Formatter from '../formatter/formatter.js';
-import * as i18n from '../i18n/i18n.js';
-import * as JavaScriptMetaData from '../javascript_metadata/javascript_metadata.js';
-import * as Platform from '../platform/platform.js';
-import * as SDK from '../sdk/sdk.js';
-import * as TextUtils from '../text_utils/text_utils.js';
-import * as UI from '../ui/ui.js';
+import * as JavaScriptMetaData from '../models/javascript_metadata/javascript_metadata.js';
+import * as TextUtils from '../models/text_utils/text_utils.js';
+import * as UI from '../ui/legacy/legacy.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description 0 of suggestions in Java Script Autocomplete
   */

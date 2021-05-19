@@ -208,9 +208,6 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
 
   // Set the pacing gain to 25% larger than the recent BW increase in STARTUP.
   bool decrease_startup_pacing_at_end_of_round = false;
-
-  // Latch the flag for quic_bbr2_bw_startup.
-  const bool bw_startup = GetQuicReloadableFlag(quic_bbr2_bw_startup);
 };
 
 class QUIC_EXPORT_PRIVATE RoundTripCounter {
@@ -538,6 +535,9 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   QuicBandwidth bandwidth_latest_ = QuicBandwidth::Zero();
   // Max bandwidth of recent rounds. Updated once per round.
   QuicBandwidth bandwidth_lo_ = bandwidth_lo_default();
+  // bandwidth_lo_ at the beginning of a round with loss. Only used when the
+  // bw_lo_mode is non-default.
+  QuicBandwidth prior_bandwidth_lo_ = QuicBandwidth::Zero();
 
   // Max inflight in the current round. Updated once per congestion event.
   QuicByteCount inflight_latest_ = 0;
@@ -552,8 +552,6 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   bool full_bandwidth_reached_ = false;
   QuicBandwidth full_bandwidth_baseline_ = QuicBandwidth::Zero();
   QuicRoundTripCount rounds_without_bandwidth_growth_ = 0;
-  const bool reset_max_bytes_delivered_ =
-      GetQuicReloadableFlag(quic_bbr2_reset_max_bytes_delivered);
 };
 
 enum class Bbr2Mode : uint8_t {

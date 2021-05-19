@@ -4,6 +4,7 @@
 <translation id="1282031177488366470">Ayuda a mejorar las funciones y el rendimiento de Chrome</translation>
 <translation id="1314663809820920746">Podrás seguir viendo todos tus favoritos, el historial, las contraseñas y otras opciones de configuración en este dispositivo. Si realizas cambios, no se sincronizarán con tu Cuenta de Google.</translation>
 <translation id="1479202195792305274">Chrome puede revisar las contraseñas solo cuando accedes con tu Cuenta de Google.</translation>
+<translation id="1493827051843127077">Establece Chrome como navegador predeterminado para sincronizar tus pestañas, información de pago y contraseñas en todos tus dispositivos</translation>
 <translation id="1504372625950710826">Chrome no pudo buscar actualizaciones. Revisa la conexión a Internet.</translation>
 <translation id="1682483655351012182">Sincronizar tus datos de Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -14,6 +15,7 @@
 <translation id="2342919707875585281">Chrome comparte tu ubicación con los sitios en donde lo permites.</translation>
 <translation id="2347208864470321755">Cuando esté activada esta función, Chrome ofrecerá traducir páginas escritas en otros idiomas con Google Traductor. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">Establece Chrome como tu navegador predeterminado</translation>
+<translation id="2561231791489583059">Usa Chrome como tu navegador predeterminado para protegerte de sitios peligrosos y mantener tus contraseñas seguras</translation>
 <translation id="2574249610672786438">Para ver tus pestañas donde sea que uses Chrome, accede a tu cuenta en todos los dispositivos</translation>
 <translation id="2576431527583832481">¡Chrome mejoró! Hay una nueva versión disponible.</translation>
 <translation id="257708665678654955">¿Quieres que Google Chrome te ofrezca traducir las páginas de este sitio que estén en <ph name="LANGUAGE_NAME" /> la próxima vez?</translation>
@@ -30,13 +32,12 @@
 <translation id="3522659714780527202">Para ver tus pestañas donde sea que uses Chrome, activa la sincronización</translation>
 <translation id="3533694711092285624">No hay contraseñas guardadas. Chrome puede revisar las contraseñas cuando las guardas.</translation>
 <translation id="3706101708757577809">Ahora puedes usar Chrome cada vez que presionas vínculos que aparecen en mensajes, documentos u otras apps.</translation>
+<translation id="3720541637541300822">Bloquear las pestañas de incógnito cuando cierras Chrome</translation>
 <translation id="384394811301901750">Google Chrome no puede usar tu cámara en este momento</translation>
-<translation id="38949020760388809">Elige si deseas borrar o conservar los datos de Chrome que tienes almacenados en este dispositivo.</translation>
 <translation id="3980220367029651214">Estás cambiando la cuenta de sincronización de <ph name="USER_EMAIL1" /> a <ph name="USER_EMAIL2" />. <ph name="DOMAIN" /> administra tus datos de Chrome existentes. Esta acción borrará tus datos del dispositivo, pero permanecerán en <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">Tu organización requiere que no accedas a tu cuenta en Chrome.</translation>
 <translation id="3988789688219830639">Google Chrome no puede acceder a tus fotos ni videos. Habilita el acceso en Configuración de iOS &gt; Privacidad &gt; Fotos.</translation>
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
-<translation id="415767770115540173">Obtén una mejor experiencia de Google en Chrome según tu ubicación.</translation>
 <translation id="417201473131094001">No es compatible con Chrome Canary</translation>
 <translation id="424864128008805179">¿Quieres salir de Chrome?</translation>
 <translation id="4249068189593983585">Sugerencia de Chrome: Para obtener más opciones de pestañas, mantén presionado el botón Mostrar pestañas de la barra de herramientas, que se encuentra en la parte inferior o superior de la pantalla.</translation>
@@ -51,7 +52,9 @@
 <translation id="5642200033778930880">Google Chrome no puede usar tu cámara en el modo de vista dividida</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Sin conexión, Chrome no puede buscar actualizaciones.</translation>
+<translation id="5716154293141027663">Abre Chrome cada vez que presiones vínculos en otras apps</translation>
 <translation id="5854621639439811139">Sugerencia de Chrome: Algunos botones ahora están en la parte inferior de la pantalla, como Retroceder, Avanzar y Buscar.</translation>
+<translation id="5876773482963502140">Si permites que Chrome conozca tu ubicación, la enviará a los sitios que permitas. Es posible que los sitios soliciten tu ubicación cuando tienen información local para mostrarte, como noticias o tiendas cercanas.</translation>
 <translation id="6036420186814142909">Google Chrome tiene funciones que te ayudan a administrar tus datos de Internet y la rapidez con la que puedes cargar páginas web.
 <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="6181930887571472871">Cambia a Chrome</translation>
@@ -71,6 +74,7 @@
 <translation id="7261678641327190792">Chrome no puede revisar las contraseñas</translation>
 <translation id="7265369419224458312">Accede aquí a las pestañas que abriste en la computadora. Abre Chrome en la computadora, accede al menú y selecciona "Acceder a Chrome…".</translation>
 <translation id="7272930098487145294">Para guardar imágenes, presiona en la Configuración a fin de permitir que Chrome agregue tus fotos</translation>
+<translation id="7275945473750112644"><ph name="HOSTED_DOMAIN" /> administra tu cuenta, por lo que se borrarán los datos de Chrome almacenados en este dispositivo.</translation>
 <translation id="7400722733683201933">Acerca de Google Chrome</translation>
 <translation id="7501046334262221972">Para hacer que Chrome sea tu navegador predeterminado, abre Ajustes. Presiona App del navegador por omisión y, luego, selecciona Chrome.</translation>
 <translation id="756809126120519699">Datos de Chrome borrados</translation>
@@ -79,8 +83,9 @@
 <translation id="766361182512894255">Tu contraseña quedó expuesta en una violación de la seguridad de los datos. Chrome te recomienda cambiarla ahora.</translation>
 <translation id="7698568245838009292">Chrome quiere acceder a la cámara</translation>
 <translation id="7855730255114109580">Google Chrome está actualizado</translation>
-<translation id="8109233255338845204"><ph name="HOSTED_DOMAIN" /> administra tu cuenta, por lo que se borrarán los datos de Chrome almacenados en este dispositivo.</translation>
+<translation id="8022947259858476807">Usa Chrome como tu navegador predeterminado para abrir vínculos, realizar búsquedas desde widgets y autocompletar contraseñas en otras apps</translation>
 <translation id="8160472928944011082">No se puede actualizar Chrome</translation>
+<translation id="8357607116237445042">Decide si quieres borrar o conservar los datos de Chrome que tienes almacenados en este dispositivo</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Todos los derechos reservados.</translation>
 <translation id="840168496893712993">Algunos complementos causan bloqueos en Chrome. Prueba a desinstalarlos.</translation>
 <translation id="8459495907675268833">Los datos seleccionados se quitaron de Chrome y los dispositivos sincronizados. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación, como las búsquedas y la actividad de otros servicios de Google en history.google.com.</translation>
@@ -89,5 +94,6 @@
   2. Presiona App de navegador predeterminada.
   3. Selecciona Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="9135668017386497357">Si permites que Chrome conozca tu ubicación, la enviará a tu motor de búsqueda predeterminado y a los sitios que permitas. Es posible que los sitios soliciten tu ubicación cuando tienen información local para mostrarte, como noticias o tiendas cercanas.</translation>
+<translation id="8736550665979974340">Aprovecha la seguridad de Google Chrome</translation>
+<translation id="9112744793181547300">¿Deseas establecer Chrome como navegador predeterminado?</translation>
 </translationbundle>

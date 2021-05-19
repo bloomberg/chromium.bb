@@ -30,8 +30,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using content::WebContents;
@@ -186,8 +186,8 @@ class CurrentTabDesktopMediaListTest : public testing::Test {
   std::unique_ptr<base::RunLoop> run_loop_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  ash::ScopedTestUserManager test_user_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(CurrentTabDesktopMediaListTest);

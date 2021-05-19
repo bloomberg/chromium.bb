@@ -28,9 +28,9 @@ namespace trace_processor {
 MemoryTrackerSnapshotParser::MemoryTrackerSnapshotParser(
     TraceProcessorContext* context)
     : context_(context),
-      level_of_detail_ids_{{context_->storage->InternString("detailed"),
+      level_of_detail_ids_{{context_->storage->InternString("background"),
                             context_->storage->InternString("light"),
-                            context_->storage->InternString("background")}},
+                            context_->storage->InternString("detailed")}},
       unit_ids_{{context_->storage->InternString("objects"),
                  context_->storage->InternString("bytes")}},
       aggregate_raw_nodes_(),
@@ -316,8 +316,7 @@ MemoryTrackerSnapshotParser::EmitNode(
 
 void MemoryTrackerSnapshotParser::GenerateGraphFromRawNodesAndEmitRows() {
   std::unique_ptr<GlobalNodeGraph> graph = GenerateGraph(aggregate_raw_nodes_);
-  EmitRows(last_snapshot_timestamp_, *(graph.get()),
-           last_snapshot_level_of_detail_);
+  EmitRows(last_snapshot_timestamp_, *graph, last_snapshot_level_of_detail_);
   aggregate_raw_nodes_.clear();
 }
 

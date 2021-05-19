@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_VIEW_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/auto_reset.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
@@ -67,7 +67,7 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
       ToolbarActionViewController::PageInteractionStatus status);
 
   // WidgetDelegate:
-  base::string16 GetAccessibleWindowTitle() const override;
+  std::u16string GetAccessibleWindowTitle() const override;
 
   // TabStripModelObserver:
   void TabChangedAt(content::WebContents* contents,

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/feature_policy/document_policy.h"
+#include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/dom/document.h"

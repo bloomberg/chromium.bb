@@ -21,7 +21,6 @@
 #include <tuple>
 #include <vector>
 
-#include "src/ast/pipeline_stage.h"
 #include "src/inspector/entry_point.h"
 #include "src/inspector/scalar.h"
 #include "src/program.h"
@@ -101,9 +100,10 @@ struct ResourceBinding {
     kSampler,
     kComparisonSampler,
     kSampledTexture,
-    kMulitsampledTexture,
+    kMultisampledTexture,
     kReadOnlyStorageTexture,
     kWriteOnlyStorageTexture,
+    kDepthTexture,
   };
 
   /// Type of resource that is bound.
@@ -112,8 +112,11 @@ struct ResourceBinding {
   uint32_t bind_group;
   /// Identifier to identify this binding within the bind group
   uint32_t binding;
-  /// Minimum size required for this binding, in bytes, if defined.
-  uint64_t min_buffer_binding_size;
+  /// Size for this binding, in bytes, if defined.
+  uint64_t size;
+  /// Size for this binding without trailing structure padding, in bytes, if
+  /// defined.
+  uint64_t size_no_padding;
   /// Dimensionality of this binding, if defined.
   TextureDimension dim;
   /// Kind of data being sampled, if defined.
@@ -196,6 +199,11 @@ class Inspector {
   /// @param entry_point name of the entry point to get information about.
   /// @returns vector of all of the bindings for write-only storage textures.
   std::vector<ResourceBinding> GetWriteOnlyStorageTextureResourceBindings(
+      const std::string& entry_point);
+
+  /// @param entry_point name of the entry point to get information about.
+  /// @returns vector of all of the bindings for depth textures.
+  std::vector<ResourceBinding> GetDepthTextureResourceBindings(
       const std::string& entry_point);
 
  private:

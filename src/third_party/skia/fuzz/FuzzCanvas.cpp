@@ -226,7 +226,8 @@ static sk_sp<SkShader> make_fuzz_shader(Fuzz* fuzz, int depth) {
             if (useTile) {
                 fuzz->next(&tile);
             }
-            return pic->makeShader(tmX, tmY, useMatrix ? &matrix : nullptr, useTile ? &tile : nullptr);
+            return pic->makeShader(tmX, tmY, SkFilterMode::kNearest,
+                                   useMatrix ? &matrix : nullptr, useTile ? &tile : nullptr);
         }
         // EFFECTS:
         case 9:
@@ -829,7 +830,6 @@ static void fuzz_paint(Fuzz* fuzz, SkPaint* paint, int depth) {
     paint->setDither(       make_fuzz_t<bool>(fuzz));
     paint->setColor(        make_fuzz_t<SkColor>(fuzz));
     paint->setBlendMode(    make_fuzz_enum_range<SkBlendMode>(fuzz, SkBlendMode::kLastMode));
-    SkPaintPriv::SetFQ(paint, make_fuzz_enum_range<SkFilterQuality>(fuzz, kLast_SkFilterQuality));
     paint->setStyle(        make_fuzz_enum_range<SkPaint::Style>(fuzz,
                                                  SkPaint::Style::kStrokeAndFill_Style));
     paint->setShader(       make_fuzz_shader(fuzz, depth - 1));

@@ -22,13 +22,20 @@ uint64_t g_current_sequence_number = 0;
 
 UndoStep::UndoStep(Document* document,
                    const SelectionForUndoStep& starting_selection,
-                   const SelectionForUndoStep& ending_selection,
-                   InputEvent::InputType input_type)
+                   const SelectionForUndoStep& ending_selection)
     : document_(document),
       starting_selection_(starting_selection),
       ending_selection_(ending_selection),
-      input_type_(input_type),
-      sequence_number_(++g_current_sequence_number) {}
+      sequence_number_(++g_current_sequence_number) {
+  // Note: Both |starting_selection| and |ending_selection| can be null,
+  // Note: |starting_selection_| can be disconnected when forward-delete.
+  // See |TypingCommand::ForwardDeleteKeyPressed()|
+}
+
+bool UndoStep::IsConnected() const {
+  return EndingRootEditableElement() &&
+         EndingRootEditableElement()->isConnected();
+}
 
 void UndoStep::Unapply() {
   DCHECK(document_);
@@ -111,10 +118,6 @@ void UndoStep::Reapply() {
   editor.SetLastEditCommand(nullptr);
   editor.GetUndoStack().RegisterUndoStep(this);
   editor.RespondToChangedContents(new_selection.Base());
-}
-
-InputEvent::InputType UndoStep::GetInputType() const {
-  return input_type_;
 }
 
 void UndoStep::Append(SimpleEditCommand* command) {

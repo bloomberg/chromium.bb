@@ -19,11 +19,14 @@ extern const base::Feature kWebViewConnectionlessSafeBrowsing;
 extern const base::Feature kWebViewCpuAffinityRestrictToLittleCores;
 extern const base::Feature kWebViewDisplayCutout;
 extern const base::Feature kWebViewExtraHeadersSameOriginOnly;
+extern const base::Feature kWebViewJavaJsBridgeMojo;
 extern const base::Feature kWebViewMeasureScreenCoverage;
 extern const base::Feature kWebViewMixedContentAutoupgrades;
+extern const base::Feature kWebViewOriginTrials;
+extern const base::Feature kWebViewPowerSchedulerThrottleIdle;
+extern const base::Feature kWebViewSuppressDifferentOriginSubframeJSDialogs;
 extern const base::Feature kWebViewTestFeature;
 extern const base::Feature kWebViewWideColorGamutSupport;
-extern const base::Feature kWebViewJavaJsBridgeMojo;
 
 }  // namespace features
 }  // namespace android_webview

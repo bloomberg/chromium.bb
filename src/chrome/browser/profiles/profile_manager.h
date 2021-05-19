@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
@@ -25,8 +26,6 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/common/buildflags.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -42,8 +41,7 @@ class ScopedProfileKeepAlive;
 //
 // Note that the Profile objects may be destroyed when their last browser window
 // is closed. The DestroyProfileOnBrowserClose flag controls this behavior.
-class ProfileManager : public content::NotificationObserver,
-                       public Profile::Delegate {
+class ProfileManager : public Profile::Delegate {
  public:
   using CreateCallback =
       base::RepeatingCallback<void(Profile*, Profile::CreateStatus)>;
@@ -85,7 +83,12 @@ class ProfileManager : public content::NotificationObserver,
   // |profile| (normal mode is not available for browsing).
   static bool IsOffTheRecordModeForced(Profile* profile);
 
-  // Same as instance method but provides the default user_data_dir as well.
+  // Get the Profiles which are currently open, i.e. have open browsers or were
+  // open the last time Chrome was running. Profiles that fail to initialize are
+  // skipped. The Profiles appear in the order they were opened. The last used
+  // profile will be on the list if it is initialized successfully, but its
+  // index on the list will depend on when it was opened (it is not necessarily
+  // the last one).
   static std::vector<Profile*> GetLastOpenedProfiles();
 
   // Get the profile for the user which created the current session.
@@ -129,6 +132,9 @@ class ProfileManager : public content::NotificationObserver,
   // already exist on disk
   // Returns true if the profile exists, but the final loaded profile will come
   // as part of the callback.
+  // TODO(https://crbug.com/1195201): `profile_name` parameter indicates the
+  // name of a directory within the user data directory and not the visible
+  // profile name. Rename to `profile_basename`.
   bool LoadProfile(const std::string& profile_name,
                    bool incognito,
                    ProfileLoadedCallback callback);
@@ -140,9 +146,7 @@ class ProfileManager : public content::NotificationObserver,
   // If the profile has already been created then callback is called
   // immediately. Should be called on the UI thread.
   void CreateProfileAsync(const base::FilePath& profile_path,
-                          const CreateCallback& callback,
-                          const base::string16& name,
-                          const std::string& icon_url);
+                          const CreateCallback& callback);
 
   // Returns true if the profile pointer is known to point to an existing
   // profile.
@@ -155,24 +159,15 @@ class ProfileManager : public content::NotificationObserver,
   // Get the Profile last used (the Profile to which owns the most recently
   // focused window) with this Chrome build. If no signed profile has been
   // stored in Local State, hand back the Default profile.
+  // TODO(https://crbug.com/1195201): Remove `user_data_dir` parameter since it
+  // always must match `user_data_dir_` field.
   Profile* GetLastUsedProfile(const base::FilePath& user_data_dir);
 
   // Get the path of the last used profile, or if that's undefined, the default
   // profile.
+  // TODO(https://crbug.com/1195201): Remove `user_data_dir` parameter since it
+  // always must match `user_data_dir_` field.
   base::FilePath GetLastUsedProfileDir(const base::FilePath& user_data_dir);
-
-  // Get the name of the last used profile, or if that's undefined, the default
-  // profile.
-  std::string GetLastUsedProfileName();
-
-  // Get the Profiles which are currently open, i.e. have open browsers or were
-  // open the last time Chrome was running. Profiles that fail to initialize are
-  // skipped. The Profiles appear in the order they were opened. The last used
-  // profile will be on the list if it is initialized successfully, but its
-  // index on the list will depend on when it was opened (it is not necessarily
-  // the last one).
-  std::vector<Profile*> GetLastOpenedProfiles(
-      const base::FilePath& user_data_dir);
 
   // Returns created and fully initialized profiles. Note, profiles order is NOT
   // guaranteed to be related with the creation order.
@@ -191,8 +186,8 @@ class ProfileManager : public content::NotificationObserver,
   // and CREATE_STATUS_CREATED) so binding parameters with bind::Passed() is
   // prohibited. Returns the file path to the profile that will be created
   // asynchronously.
-  static base::FilePath CreateMultiProfileAsync(const base::string16& name,
-                                                const std::string& icon_url,
+  static base::FilePath CreateMultiProfileAsync(const std::u16string& name,
+                                                size_t icon_index,
                                                 const CreateCallback& callback);
 
   // Returns the full path to be used for guest profiles.
@@ -262,11 +257,6 @@ class ProfileManager : public content::NotificationObserver,
 
   const base::FilePath& user_data_dir() const { return user_data_dir_; }
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // Profile::Delegate implementation:
   void OnProfileCreated(Profile* profile,
                         bool success,
@@ -315,6 +305,9 @@ class ProfileManager : public content::NotificationObserver,
     std::unique_ptr<Profile> profile;
     // Strong references to this Profile once it's been created (e.g. a Browser
     // object, a BackgroundModeManager, ...)
+    //
+    // Initially contains a kWaitingForFirstBrowserWindow entry, which gets
+    // removed when a kBrowserWindow keepalive is added.
     std::map<ProfileKeepAliveOrigin, int> keep_alives;
     // Whether profile has been fully loaded (created and initialized).
     bool created;
@@ -327,6 +320,14 @@ class ProfileManager : public content::NotificationObserver,
   // off-the-record profile)
   void AddKeepAlive(const Profile* profile, ProfileKeepAliveOrigin origin);
   void RemoveKeepAlive(const Profile* profile, ProfileKeepAliveOrigin origin);
+
+  // Removes the kWaitingForFirstBrowserWindow keepalive. This allows a Profile*
+  // to be deleted from now on, even if it never had a visible browser window.
+  void ClearFirstBrowserWindowKeepAlive(const Profile* profile);
+
+  // Helper for RemoveKeepAlive() and ClearFirstBrowserWindowFlag(). If the
+  // refcount to this Profile is zero, calls RemoveKeepAlive().
+  void DeleteProfileIfNoKeepAlive(const ProfileInfo* info);
 
   // Does final initial actions.
   void DoFinalInit(ProfileInfo* profile_info, bool go_off_the_record);
@@ -398,6 +399,9 @@ class ProfileManager : public content::NotificationObserver,
   // Returns whether |path| is allowed for profile creation.
   bool IsAllowedProfilePath(const base::FilePath& path) const;
 
+  // Whether a new profile can be created at |path|.
+  bool CanCreateProfileAtPath(const base::FilePath& path) const;
+
   // Returns a ProfileInfoCache object which can be used to get information
   // about profiles without having to load them from disk.
   // Deprecated, use GetProfileAttributesStorage() instead.
@@ -462,6 +466,8 @@ class ProfileManager : public content::NotificationObserver,
   // shutdown. New profiles will not be created.
   void ScheduleForcedEphemeralProfileForDeletion(
       const base::FilePath& profile_dir);
+
+  void OnClosingAllBrowsersChanged(bool closing);
 #endif  // !defined(OS_ANDROID)
 
   // Destroy after |profile_info_cache_| since Profile destruction may trigger
@@ -475,7 +481,7 @@ class ProfileManager : public content::NotificationObserver,
   // to an access to this member.
   std::unique_ptr<ProfileInfoCache> profile_info_cache_;
 
-  content::NotificationRegistrar registrar_;
+  base::CallbackListSubscription closing_all_browsers_subscription_;
 
   // The path to the user data directory (DIR_USER_DATA).
   const base::FilePath user_data_dir_;

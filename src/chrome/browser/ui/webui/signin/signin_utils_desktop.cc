@@ -26,7 +26,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 SigninUIError CanOfferSignin(Profile* profile,
-                             CanOfferSigninType can_offer,
                              const std::string& gaia_id,
                              const std::string& email) {
   if (!profile)
@@ -49,11 +48,8 @@ SigninUIError CanOfferSignin(Profile* profile,
       return SigninUIError::UsernameNotAllowedByPatternFromPrefs(email);
     }
 
-    if (can_offer == CAN_OFFER_SIGNIN_FOR_SECONDARY_ACCOUNT)
-      return SigninUIError::Ok();
-
     // If the identity manager already has a primary account, then this is a
-    // re-auth scenario.  Make sure the email just signed in corresponds to
+    // re-auth scenario. Make sure the email just signed in corresponds to
     // the one sign in manager expects.
     std::string current_email =
         identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
@@ -76,7 +72,22 @@ SigninUIError CanOfferSignin(Profile* profile,
                 .GetAllProfilesAttributes();
 
         for (const ProfileAttributesEntry* entry : entries) {
-          if (!entry->IsAuthenticated())
+          // Ignore omitted profiles (these are notably profiles being created
+          // using the signed-in profile creation flow). This is motivated by
+          // these profile hanging around until the next restart which could
+          // block subsequent profile creation, resulting in
+          // SigninUIError::AccountAlreadyUsedByAnotherProfile.
+          // TODO(crbug.com/1196290): This opens the possibility for getting
+          // into a state with 2 profiles syncing to the same account:
+          //  - start creating a new profile and sign-in,
+          //  - enabled sync for the same account in another (existing) profile,
+          //  - finish the profile creation by consenting to sync.
+          // Properly addressing this would require deleting profiles from
+          // cancelled flow right away, returning an error here for omitted
+          // profiles, and fix the code that switches to the other syncing
+          // profile so that the profile creation flow window gets activated for
+          // profiles being created (instead of opening a new window).
+          if (!entry->IsAuthenticated() || entry->IsOmitted())
             continue;
 
           // For backward compatibility, need to check also the username of the
@@ -87,7 +98,8 @@ SigninUIError CanOfferSignin(Profile* profile,
           std::string profile_email = base::UTF16ToUTF8(entry->GetUserName());
           if (gaia_id == profile_gaia_id ||
               gaia::AreEmailsSame(email, profile_email)) {
-            return SigninUIError::AccountAlreadyUsedByAnotherProfile(email);
+            return SigninUIError::AccountAlreadyUsedByAnotherProfile(
+                email, entry->GetPath());
           }
         }
       }

@@ -15,9 +15,7 @@
 #ifndef SRC_AST_BLOCK_STATEMENT_H_
 #define SRC_AST_BLOCK_STATEMENT_H_
 
-#include <memory>
 #include <utility>
-#include <vector>
 
 #include "src/ast/statement.h"
 
@@ -34,6 +32,9 @@ class BlockStatement : public Castable<BlockStatement, Statement> {
   /// Move constructor
   BlockStatement(BlockStatement&&);
   ~BlockStatement() override;
+
+  /// @returns the StatementList
+  const StatementList& list() const { return statements_; }
 
   /// @returns true if the block is empty
   bool empty() const { return statements_.empty(); }
@@ -64,14 +65,14 @@ class BlockStatement : public Castable<BlockStatement, Statement> {
   /// @returns the ending iterator
   StatementList::const_iterator end() const { return statements_.end(); }
 
+  /// @returns the statement list
+  const StatementList& statements() const { return statements_; }
+
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
   BlockStatement* Clone(CloneContext* ctx) const override;
-
-  /// @returns true if the node is valid
-  bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
   /// @param sem the semantic info for the program

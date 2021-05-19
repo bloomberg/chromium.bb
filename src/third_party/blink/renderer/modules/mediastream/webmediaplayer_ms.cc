@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -541,6 +540,11 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
     SetReadyState(WebMediaPlayer::kReadyStateHaveEnoughData);
     MaybeCreateWatchTimeReporter();
   }
+
+  client_->DidMediaMetadataChange(HasAudio(), HasVideo(),
+                                  media::MediaContentType::OneShot);
+  delegate_->DidMediaMetadataChange(delegate_id_, HasAudio(), HasVideo(),
+                                    media::MediaContentType::OneShot);
 
   return WebMediaPlayer::LoadTiming::kImmediate;
 }
@@ -1068,7 +1072,7 @@ void WebMediaPlayerMS::OnFrameHidden() {
 #endif  // defined(OS_ANDROID)
 }
 
-void WebMediaPlayerMS::OnFrameClosed() {
+void WebMediaPlayerMS::SuspendForFrameClosed() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
 // On Android, pause the video completely for this time period.
@@ -1119,12 +1123,8 @@ void WebMediaPlayerMS::OnFrameShown() {
 
 void WebMediaPlayerMS::OnIdleTimeout() {}
 
-void WebMediaPlayerMS::OnVolumeMultiplierUpdate(double multiplier) {
+void WebMediaPlayerMS::SetVolumeMultiplier(double multiplier) {
   // TODO(perkj, magjed): See TODO in OnPlay().
-}
-
-void WebMediaPlayerMS::OnBecamePersistentVideo(bool value) {
-  get_client()->OnBecamePersistentVideo(value);
 }
 
 void WebMediaPlayerMS::ActivateSurfaceLayerForVideo() {

@@ -31,18 +31,17 @@ public:
         auto radii = _outer.radii;
         (void)radii;
         prevRadii = float2(-1.0);
-        medPrecision = !sk_Caps.floatIs32Bits;
-        ellipseVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
-                                                      kFloat4_GrSLType, "ellipse");
-        if (medPrecision) {
-            scaleVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
-                                                        kFloat2_GrSLType, "scale");
+        ellipseVar = args.fUniformHandler->addUniform(
+                &_outer, kFragment_GrShaderFlag, kFloat4_GrSLType, "ellipse");
+        if (!sk_Caps.floatIs32Bits) {
+            scaleVar = args.fUniformHandler->addUniform(
+                    &_outer, kFragment_GrShaderFlag, kFloat2_GrSLType, "scale");
         }
         fragBuilder->codeAppendf(
                 R"SkSL(float2 prevCenter;
 float2 prevRadii = float2(%f, %f);
-bool medPrecision = %s;
 float2 d = sk_FragCoord.xy - %s.xy;
+const bool medPrecision = !sk_Caps.floatIs32Bits;
 @if (medPrecision) {
     d *= %s.y;
 }
@@ -75,7 +74,8 @@ half alpha;
     default:
         discard;
 })SkSL",
-                prevRadii.fX, prevRadii.fY, (medPrecision ? "true" : "false"),
+                prevRadii.fX,
+                prevRadii.fY,
                 args.fUniformHandler->getUniformCStr(ellipseVar),
                 scaleVar.isValid() ? args.fUniformHandler->getUniformCStr(scaleVar) : "float2(0)",
                 args.fUniformHandler->getUniformCStr(ellipseVar),
@@ -131,7 +131,6 @@ private:
     }
     SkPoint prevCenter = float2(0);
     SkPoint prevRadii = float2(0);
-    bool medPrecision = false;
     UniformHandle ellipseVar;
     UniformHandle scaleVar;
 };
@@ -140,7 +139,7 @@ std::unique_ptr<GrGLSLFragmentProcessor> GrEllipseEffect::onMakeProgramImpl() co
 }
 void GrEllipseEffect::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                             GrProcessorKeyBuilder* b) const {
-    b->add32((uint32_t)edgeType);
+    b->addBits(2, (uint32_t)edgeType, "edgeType");
 }
 bool GrEllipseEffect::onIsEqual(const GrFragmentProcessor& other) const {
     const GrEllipseEffect& that = other.cast<GrEllipseEffect>();
@@ -163,7 +162,11 @@ std::unique_ptr<GrFragmentProcessor> GrEllipseEffect::clone() const {
 #if GR_TEST_UTILS
 SkString GrEllipseEffect::onDumpInfo() const {
     return SkStringPrintf("(edgeType=%d, center=float2(%f, %f), radii=float2(%f, %f))",
-                          (int)edgeType, center.fX, center.fY, radii.fX, radii.fY);
+                          (int)edgeType,
+                          center.fX,
+                          center.fY,
+                          radii.fX,
+                          radii.fY);
 }
 #endif
 GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrEllipseEffect);

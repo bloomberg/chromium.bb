@@ -76,8 +76,8 @@ public class PaymentHandlerCoordinator {
                 activity, null /* eventOffsetHandler */, mPaymentHandlerWebContents);
         initializeWebContents(activity, webContentView, url);
 
-        mToolbarCoordinator =
-                new PaymentHandlerToolbarCoordinator(activity, mPaymentHandlerWebContents, url);
+        mToolbarCoordinator = new PaymentHandlerToolbarCoordinator(activity,
+                mPaymentHandlerWebContents, url, activity.getModalDialogManagerSupplier());
 
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerProperties.ALL_KEYS).build();
         PaymentHandlerMediator mediator = new PaymentHandlerMediator(model, this::hide,
@@ -114,7 +114,12 @@ public class PaymentHandlerCoordinator {
             mPaymentHandlerWebContents.destroy();
         };
         boolean isShowSuccess = bottomSheetController.requestShowContent(view, /*animate=*/true);
-        return isShowSuccess ? mPaymentHandlerWebContents : null;
+        if (!isShowSuccess) {
+            mHider.run();
+            mHider = null;
+            return null;
+        }
+        return mPaymentHandlerWebContents;
     }
 
     private void initializeWebContents(

@@ -15,6 +15,51 @@ libavutil:     2017-10-21
 
 API changes, most recent first:
 
+2021-03-10 - xxxxxxxxxx - lavf 58.72.100 - avformat.h
+  Change AVBufferRef related AVStream function and struct size
+  parameter and fields type to size_t at next major bump.
+
+2021-03-10 - xxxxxxxxxx - lavc 58.130.100 - packet.h
+  Change AVBufferRef related AVPacket function and struct size
+  parameter and fields type to size_t at next major bump.
+
+2021-03-10 - xxxxxxxxxx - lavu 56.68.100 - buffer.h frame.h
+  Change AVBufferRef and relevant AVFrame function and struct size
+  parameter and fields type to size_t at next major bump.
+
+2021-03-04 - xxxxxxxxxx - lavc 58.128.101 - avcodec.h
+  Enable err_recognition to be set for encoders.
+
+2021-03-03 - xxxxxxxxxx - lavf 58.70.100 - avformat.h
+  Deprecate AVFMT_FLAG_PRIV_OPT. It will do nothing
+  as soon as av_demuxer_open() is removed.
+
+2021-02-27 - xxxxxxxxxx - lavc 58.126.100 - avcodec.h
+  Deprecated avcodec_get_frame_class().
+
+2021-02-21 - xxxxxxxxxx - lavu 56.66.100 - tx.h
+  Add enum AVTXFlags and AVTXFlags.AV_TX_INPLACE
+
+2021-02-14 - xxxxxxxxxx - lavd 58.12.100 - avdevice.h
+  Deprecated avdevice_capabilities_create() and
+  avdevice_capabilities_free().
+
+2021-02-xx - xxxxxxxxxx - lavu 56.xx.100 - common.h
+  Add FFABS64U()
+
+2021-01-26 - xxxxxxxxxx - lavu 56.64.100 - common.h
+  Add FFABSU()
+
+2021-01-25 - xxxxxxxxxx - lavc 58.119.100 - avcodec.h
+  Deprecate AVCodecContext.debug_mv, FF_DEBUG_VIS_MV_P_FOR, FF_DEBUG_VIS_MV_B_FOR,
+  FF_DEBUG_VIS_MV_B_BACK
+
+2021-01-11 - xxxxxxxxxx - lavc 58.116.100 - avcodec.h
+  Add FF_PROFILE_VVC_MAIN_10 and FF_PROFILE_VVC_MAIN_10_444.
+
+2020-xx-xx - xxxxxxxxxx - lavu 56.63.100 - video_enc_params.h
+  Add AV_VIDEO_ENC_PARAMS_MPEG2
+
 2020-12-03 - xxxxxxxxxx - lavu 56.62.100 - timecode.h
   Add av_timecode_init_from_components.
 

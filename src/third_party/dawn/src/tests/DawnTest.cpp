@@ -21,7 +21,6 @@
 #include "common/Platform.h"
 #include "common/SystemUtils.h"
 #include "dawn/dawn_proc.h"
-#include "dawn_native/DawnNative.h"
 #include "dawn_wire/WireClient.h"
 #include "dawn_wire/WireServer.h"
 #include "utils/PlatformDebugLogger.h"
@@ -258,6 +257,7 @@ void DawnTestEnvironment::ParseArgs(int argc, char** argv) {
             } else {
                 mBackendValidationLevel = dawn_native::BackendValidationLevel::Full;
             }
+            continue;
         }
 
         if (strcmp("-c", argv[i]) == 0 || strcmp("--begin-capture-on-startup", argv[i]) == 0) {
@@ -320,6 +320,7 @@ void DawnTestEnvironment::ParseArgs(int argc, char** argv) {
                     }
                 }
             }
+            continue;
         }
 
         constexpr const char kWireTraceDirArg[] = "--wire-trace-dir=";
@@ -382,6 +383,14 @@ void DawnTestEnvironment::ParseArgs(int argc, char** argv) {
                    "available device type\n";
             continue;
         }
+
+        // Skip over args that look like they're for Googletest.
+        constexpr const char kGtestArgPrefix[] = "--gtest_";
+        if (strncmp(kGtestArgPrefix, argv[i], sizeof(kGtestArgPrefix) - 1) == 0) {
+            continue;
+        }
+
+        dawn::WarningLog() << " Unused argument: " << argv[i];
     }
 }
 
@@ -527,6 +536,7 @@ std::vector<AdapterTestParam> DawnTestEnvironment::GetAvailableAdapterTestParams
                 // test skips on all backends, we can remove this and use a test suite with
                 // use_tint_generator in the command line args instead.
                 if (params[i].backendType == wgpu::BackendType::Vulkan ||
+                    params[i].backendType == wgpu::BackendType::D3D12 ||
                     params[i].backendType == wgpu::BackendType::OpenGL ||
                     params[i].backendType == wgpu::BackendType::OpenGLES) {
                     BackendTestConfig configWithTint = params[i];
@@ -778,14 +788,6 @@ bool DawnTestBase::IsBackendValidationEnabled() const {
     return gTestEnv->GetBackendValidationLevel() != dawn_native::BackendValidationLevel::Disabled;
 }
 
-bool DawnTestBase::HasWGSL() const {
-#ifdef DAWN_ENABLE_WGSL
-    return true;
-#else
-    return false;
-#endif
-}
-
 bool DawnTestBase::IsAsan() const {
 #if defined(ADDRESS_SANITIZER)
     return true;
@@ -1001,26 +1003,22 @@ std::ostringstream& DawnTestBase::AddTextureExpectationImpl(const char* file,
                                                             int line,
                                                             detail::Expectation* expectation,
                                                             const wgpu::Texture& texture,
-                                                            uint32_t x,
-                                                            uint32_t y,
-                                                            uint32_t width,
-                                                            uint32_t height,
+                                                            wgpu::Origin3D origin,
+                                                            wgpu::Extent3D extent,
                                                             uint32_t level,
-                                                            uint32_t slice,
                                                             wgpu::TextureAspect aspect,
                                                             uint32_t dataSize,
                                                             uint32_t bytesPerRow) {
     if (bytesPerRow == 0) {
-        bytesPerRow = Align(width * dataSize, kTextureBytesPerRowAlignment);
+        bytesPerRow = Align(extent.width * dataSize, kTextureBytesPerRowAlignment);
     } else {
-        ASSERT(bytesPerRow >= width * dataSize);
+        ASSERT(bytesPerRow >= extent.width * dataSize);
         ASSERT(bytesPerRow == Align(bytesPerRow, kTextureBytesPerRowAlignment));
     }
 
-    uint32_t rowsPerImage = height;
-    uint32_t depth = 1;
-    uint32_t size =
-        utils::RequiredBytesInCopy(bytesPerRow, rowsPerImage, width, height, depth, dataSize);
+    uint32_t rowsPerImage = extent.height;
+    uint32_t size = utils::RequiredBytesInCopy(bytesPerRow, rowsPerImage, extent.width,
+                                               extent.height, extent.depthOrArrayLayers, dataSize);
 
     // TODO(enga): We should have the map async alignment in Contants.h. Also, it should change to 8
     // for Float64Array.
@@ -1028,14 +1026,13 @@ std::ostringstream& DawnTestBase::AddTextureExpectationImpl(const char* file,
 
     // We need to enqueue the copy immediately because by the time we resolve the expectation,
     // the texture might have been modified.
-    wgpu::TextureCopyView textureCopyView =
-        utils::CreateTextureCopyView(texture, level, {x, y, slice}, aspect);
-    wgpu::BufferCopyView bufferCopyView =
-        utils::CreateBufferCopyView(readback.buffer, readback.offset, bytesPerRow, rowsPerImage);
-    wgpu::Extent3D copySize = {width, height, 1};
+    wgpu::ImageCopyTexture imageCopyTexture =
+        utils::CreateImageCopyTexture(texture, level, origin, aspect);
+    wgpu::ImageCopyBuffer imageCopyBuffer =
+        utils::CreateImageCopyBuffer(readback.buffer, readback.offset, bytesPerRow, rowsPerImage);
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &copySize);
+    encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &extent);
 
     wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
@@ -1046,7 +1043,7 @@ std::ostringstream& DawnTestBase::AddTextureExpectationImpl(const char* file,
     deferred.readbackSlot = readback.slot;
     deferred.readbackOffset = readback.offset;
     deferred.size = size;
-    deferred.rowBytes = width * dataSize;
+    deferred.rowBytes = extent.width * dataSize;
     deferred.bytesPerRow = bytesPerRow;
     deferred.expectation.reset(expectation);
 
@@ -1072,12 +1069,11 @@ void DawnTestBase::FlushWire() {
 }
 
 void DawnTestBase::WaitForAllOperations() {
-    wgpu::Queue queue = device.GetQueue();
-    wgpu::Fence fence = queue.CreateFence();
-
-    // Force the currently submitted operations to completed.
-    queue.Signal(fence, 1);
-    while (fence.GetCompletedValue() < 1) {
+    bool done = false;
+    device.GetQueue().OnSubmittedWorkDone(
+        0u, [](WGPUQueueWorkDoneStatus, void* userdata) { *static_cast<bool*>(userdata) = true; },
+        &done);
+    while (!done) {
         WaitABit();
     }
 }

@@ -13,7 +13,7 @@
 #include "base/task_runner_util.h"
 #include "base/version.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/ui/kiosk_external_update_notification.h"
+#include "chrome/browser/ash/notifications/kiosk_external_update_notification.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -432,7 +432,7 @@ void KioskExternalUpdater::NotifyKioskAppUpdateAvailable() {
 }
 
 void KioskExternalUpdater::NotifyKioskUpdateProgress(
-    const base::string16& message) {
+    const std::u16string& message) {
   if (!notification_)
     notification_ = std::make_unique<KioskExternalUpdateNotification>(message);
   else
@@ -445,47 +445,46 @@ void KioskExternalUpdater::DismissKioskUpdateNotification() {
   }
 }
 
-base::string16 KioskExternalUpdater::GetUpdateReportMessage() const {
+std::u16string KioskExternalUpdater::GetUpdateReportMessage() const {
   DCHECK(!IsExternalUpdatePending());
   int updated = 0;
   int failed = 0;
-  base::string16 updated_apps;
-  base::string16 failed_apps;
+  std::u16string updated_apps;
+  std::u16string failed_apps;
   for (const auto& it : external_updates_) {
     const ExternalUpdate& update = it.second;
-    base::string16 app_name = base::UTF8ToUTF16(update.app_name);
+    std::u16string app_name = base::UTF8ToUTF16(update.app_name);
     if (update.update_status == UpdateStatus::kSuccess) {
       ++updated;
       if (updated_apps.empty())
         updated_apps = app_name;
       else
-        updated_apps += base::ASCIIToUTF16(", ") + app_name;
+        updated_apps += u", " + app_name;
     } else {  // UpdateStatus::kFailed
       ++failed;
       if (failed_apps.empty()) {
-        failed_apps = app_name + base::ASCIIToUTF16(": ") + update.error;
+        failed_apps = app_name + u": " + update.error;
       } else {
-        failed_apps += base::ASCIIToUTF16("\n") + app_name +
-                       base::ASCIIToUTF16(": ") + update.error;
+        failed_apps += u"\n" + app_name + u": " + update.error;
       }
     }
   }
 
-  base::string16 message =
+  std::u16string message =
       ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
           IDS_KIOSK_EXTERNAL_UPDATE_COMPLETE);
   if (updated) {
-    base::string16 success_app_msg = l10n_util::GetStringFUTF16(
+    std::u16string success_app_msg = l10n_util::GetStringFUTF16(
         IDS_KIOSK_EXTERNAL_UPDATE_SUCCESSFUL_UPDATED_APPS, updated_apps);
-    message += base::ASCIIToUTF16("\n") + success_app_msg;
+    message += u"\n" + success_app_msg;
   }
 
   if (failed) {
-    base::string16 failed_app_msg =
+    std::u16string failed_app_msg =
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_KIOSK_EXTERNAL_UPDATE_FAILED_UPDATED_APPS) +
-        base::ASCIIToUTF16("\n") + failed_apps;
-    message += base::ASCIIToUTF16("\n") + failed_app_msg;
+        u"\n" + failed_apps;
+    message += u"\n" + failed_app_msg;
   }
   return message;
 }

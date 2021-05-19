@@ -109,7 +109,7 @@ void NavigateAndWaitForTitle(content::WebContents* web_contents,
                              const GURL& test_data_url,
                              const GURL& expected_commit_url,
                              base::StringPiece ascii_title) {
-  base::string16 expected_title = base::ASCIIToUTF16(ascii_title);
+  std::u16string expected_title = base::ASCIIToUTF16(ascii_title);
   TitleWatcher title_watcher(web_contents, expected_title);
   EXPECT_TRUE(NavigateToURL(web_contents, test_data_url, expected_commit_url));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -349,15 +349,15 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
   void RunTestScript(const std::string& script) {
     EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
                               "loadScript('" + script + "');"));
-    base::string16 ok = base::ASCIIToUTF16("OK");
+    std::u16string ok = u"OK";
     TitleWatcher title_watcher(shell()->web_contents(), ok);
-    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
+    title_watcher.AlsoWaitForTitle(u"FAIL");
     EXPECT_EQ(ok, title_watcher.WaitAndGetTitle());
   }
 
   void ExecuteScriptAndWaitForTitle(const std::string& script,
                                     const std::string& title) {
-    base::string16 title16 = base::ASCIIToUTF16(title);
+    std::u16string title16 = base::ASCIIToUTF16(title);
     TitleWatcher title_watcher(shell()->web_contents(), title16);
     EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
     EXPECT_EQ(title16, title_watcher.WaitAndGetTitle());
@@ -2001,7 +2001,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, NoLocalFileScheme) {
 
   auto expected_title = base::ASCIIToUTF16("load failed");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("Local Script"));
+  title_watcher.AlsoWaitForTitle(u"Local Script");
 
   const GURL script_file_url =
       net::FilePathToFileURL(GetTestDataPath("local_script.js"));

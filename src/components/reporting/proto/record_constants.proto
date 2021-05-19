@@ -38,6 +38,13 @@ enum Destination {
   // Device Trust connector, sent by Chrome browsers for Chrome Browser Cloud
   // Management (CBCM).
   DEVICE_TRUST_REPORTS = 8;
+
+  // |PRINT_JOBS| print jobs event handler
+  PRINT_JOBS = 9;
+
+  // |EXTENSIONS_WORKFLOW| handler is for sending extension requests events,
+  // sent for Chrome Browser Cloud Management (CBCM).
+  EXTENSIONS_WORKFLOW = 10;
 }
 
 // |Priority| is used to determine when items from the queue should be rate

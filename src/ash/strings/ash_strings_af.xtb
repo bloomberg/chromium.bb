@@ -40,6 +40,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="1252999807265626933">Laai vanaf <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hoe lyk die weer?</translation>
 <translation id="1267032506238418139">Kortpadverandering</translation>
+<translation id="1269405891096105529">Randtoestel word nie in Gasmodus gesteun nie</translation>
 <translation id="1270290102613614947">Opskerm-sleutelbord gedeaktiveer</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1275285675049378717">Gee tans krag aan <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Tik 'n boodskap</translation>
 <translation id="2018630726571919839">Vertel vir my 'n grappie</translation>
+<translation id="2021864487439853900">Klik om te ontsluit</translation>
 <translation id="2049240716062114887">Lessenaarnaam is verander na <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Portret</translation>
 <translation id="2067602449040652523">Sleutelbordhelderheid</translation>
@@ -276,6 +278,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan steeds later aanmeld.</translation>
 <translation id="3321628682574733415">Verkeerde ouerkode</translation>
 <translation id="332587331255250389">Vervang asseblief die battery</translation>
+<translation id="3333741161915951567">Herselflaai modem. Wag 30 sek. voordat jy weer probeer.</translation>
 <translation id="3341303451326249809">Skermkiekie is geneem</translation>
 <translation id="334252345105450327">Neem 'n skermkiekie</translation>
 <translation id="3351879221545518001">Jy saai tans die skerm uit.</translation>
@@ -320,6 +323,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Bestuurde gebruiker</translation>
 <translation id="3665889125180354336">Neem mikrofoon op</translation>
 <translation id="36813544980941320">Wi-Fi-netwerke sal tussen jou foon en <ph name="DEVICE_NAME" /> gedeel word</translation>
+<translation id="3702809606464356667">Vensters van die huidige lessenaar word tans gewys; druk die oppylsleutel om vensters van alle lessenaars te wys</translation>
 <translation id="3702846122927433391">Bevolking in Nigerië</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="370665806235115550">Laai tans …</translation>
@@ -352,6 +356,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="394485226368336402">Oudio-instellings</translation>
 <translation id="3945319193631853098">Tik om opstelling te voltooi</translation>
 <translation id="3945867833895287237">Koppel tans aan warmkol …</translation>
+<translation id="3958465044488004317">Sien resultaat in Assistent</translation>
 <translation id="3962859241508114581">Vorige snit</translation>
 <translation id="3969043077941541451">Af</translation>
 <translation id="397105322502079400">Bereken tans …</translation>
@@ -408,10 +413,12 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4421231901400348175">Deel tans beheer oor jou skerm met <ph name="HELPER_NAME" /> deur afstandbystand.</translation>
 <translation id="4424159417645388645">Lessenaar 5</translation>
 <translation id="4430019312045809116">Volume</translation>
+<translation id="4445159312344259901">Meld aan om te ontsluit</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 belangrike kennisgewing}other{# belangrike kennisgewings}}</translation>
 <translation id="4450893287417543264">Moenie weer wys nie</translation>
 <translation id="445864333228800152">Goeienaand</translation>
 <translation id="4458688154122353284">Stop skermopname</translation>
+<translation id="4467143075433126295">Druk en hou [Esc] om volskerm te verlaat</translation>
 <translation id="4472575034687746823">Kom aan die gang</translation>
 <translation id="4477350412780666475">Volgende snit</translation>
 <translation id="4477892968187500306">Hierdie toestel kan programme bevat wat nie deur Google geverifieer is nie.</translation>
@@ -608,6 +615,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Die Google Assistent is nie in 'n gastesessie beskikbaar nie.</translation>
 <translation id="6137566720514957455">Maak verwyderingdialoog oop vir <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Randtoestel word nie gesteun nie</translation>
 <translation id="615957422585914272">Wys opskerm-sleutelbord</translation>
 <translation id="6165508094623778733">Kom meer te wete</translation>
 <translation id="6179832488876878285">Jy kan jou belangrike lêers hier vasspeld. Maak Lêers-program oop om te begin.</translation>
@@ -625,11 +633,11 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6297287540776456956">Gebruik die stilus om 'n area te kies</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> is na <ph name="ROTATION" /> gedraai</translation>
 <translation id="6315170314923504164">Stem</translation>
+<translation id="6330012934079202188">Vensters van alle lessenaars word tans gewys; druk die oppylsleutel om vensters van die huidige lessenaar te wys</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> is 'n bestuurde sessie wat deur <ph name="MANAGER" /> bestuur word</translation>
 <translation id="6376931439017688372">Bluetooth is aan</translation>
 <translation id="6381109794406942707">Voer jou PIN in om die toestel te ontsluit.</translation>
 <translation id="639644700271529076">HOOFLETTERSLOT is af</translation>
-<translation id="6396835948284782440">Druk en hou [Esc] om uit te gaan.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Vee alle kennisgewings uit</translation>
@@ -795,7 +803,6 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="7780159184141939021">Draai skerm</translation>
 <translation id="7796353162336583443">Tik op die stilusknoppie op die rak om 'n nota of skermkiekie te neem of die Google Assistent, laseraanwyser of vergrootglas te gebruik.</translation>
 <translation id="7798302898096527229">Druk Search of Shift om te kanselleer.</translation>
-<translation id="7807966291075028781">Randtoestel word vir sekuriteitredes nie in Gasmodus gesteun nie</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> en <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sterk sein</translation>
 <translation id="7837740436429729974">Tyd is verby</translation>
@@ -945,6 +952,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="8936501819958976551">gedeaktiveer</translation>
 <translation id="8938800817013097409">USB C-toestel (regterpoort aan agterkant)</translation>
 <translation id="8940956008527784070">Battery laag (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Net goedgekeurde Thunderbolt-toestelle is met jou Chromebook versoenbaar</translation>
 <translation id="8982906748181120328">Naby-sigbaarheid</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Gebruik tans <ph name="IME_NAME" /></translation>

@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
-#include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/wizard_context.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ash/login/helper.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
+#include "chrome/browser/ash/login/wizard_context.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -87,6 +87,8 @@ void NetworkScreen::ShowImpl() {
 void NetworkScreen::HideImpl() {
   if (view_)
     view_->Hide();
+  connection_timer_.Stop();
+  UnsubscribeNetworkNotification();
 }
 
 void NetworkScreen::OnUserAction(const std::string& action_id) {
@@ -118,6 +120,7 @@ void NetworkScreen::DefaultNetworkChanged(const NetworkState* network) {
 }
 
 void NetworkScreen::Refresh() {
+  continue_pressed_ = false;
   SubscribeNetworkNotification();
   UpdateStatus();
 }
@@ -143,13 +146,6 @@ void NetworkScreen::UnsubscribeNetworkNotification() {
   }
 }
 
-void NetworkScreen::NotifyOnConnection() {
-  // TODO(nkostylev): Check network connectivity.
-  UnsubscribeNetworkNotification();
-  connection_timer_.Stop();
-  exit_callback_.Run(Result::CONNECTED);
-}
-
 void NetworkScreen::OnConnectionTimeout() {
   StopWaitingForConnection(network_id_);
   if (!network_state_helper_->IsConnected() && view_) {
@@ -168,7 +164,7 @@ void NetworkScreen::UpdateStatus() {
   if (is_connected)
     view_->ClearErrors();
 
-  base::string16 network_name = network_state_helper_->GetCurrentNetworkName();
+  std::u16string network_name = network_state_helper_->GetCurrentNetworkName();
   if (is_connected)
     StopWaitingForConnection(network_name);
   else if (network_state_helper_->IsConnecting())
@@ -177,14 +173,13 @@ void NetworkScreen::UpdateStatus() {
     StopWaitingForConnection(network_id_);
 }
 
-void NetworkScreen::StopWaitingForConnection(const base::string16& network_id) {
+void NetworkScreen::StopWaitingForConnection(const std::u16string& network_id) {
   bool is_connected = network_state_helper_->IsConnected();
   if (is_connected && continue_pressed_) {
     NotifyOnConnection();
     return;
   }
 
-  continue_pressed_ = false;
   connection_timer_.Stop();
 
   network_id_ = network_id;
@@ -198,7 +193,7 @@ void NetworkScreen::StopWaitingForConnection(const base::string16& network_id) {
   }
 }
 
-void NetworkScreen::WaitForConnection(const base::string16& network_id) {
+void NetworkScreen::WaitForConnection(const std::u16string& network_id) {
   if (network_id_ != network_id || !connection_timer_.IsRunning()) {
     connection_timer_.Stop();
     connection_timer_.Start(FROM_HERE, kConnectionTimeout, this,
@@ -223,10 +218,10 @@ void NetworkScreen::OnContinueButtonClicked() {
 
   if (network_state_helper_->IsConnected()) {
     NotifyOnConnection();
-  } else {
-    continue_pressed_ = true;
-    WaitForConnection(network_id_);
+    return;
   }
+  continue_pressed_ = true;
+  WaitForConnection(network_id_);
 }
 
 void NetworkScreen::OnHasPreinstalledDemoResources(

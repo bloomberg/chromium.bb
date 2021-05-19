@@ -7,7 +7,27 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
+
+namespace {
+
+// Will destroy `handle` if it's not a valid platform handle.
+mojo::ScopedHandle CloneScopedHandle(mojo::ScopedHandle* handle) {
+  DCHECK(handle);
+  if (!handle->is_valid()) {
+    return mojo::ScopedHandle();
+  }
+  mojo::PlatformHandle platform_handle =
+      mojo::UnwrapPlatformHandle(std::move(*handle));
+  DCHECK(platform_handle.is_valid());
+  *handle = mojo::WrapPlatformHandle(platform_handle.Clone());
+  return mojo::WrapPlatformHandle(std::move(platform_handle));
+}
+
+}  // namespace
 
 namespace chromeos {
 namespace cros_healthd {
@@ -22,17 +42,17 @@ FakeCrosHealthdService::FakeCrosHealthdService() = default;
 FakeCrosHealthdService::~FakeCrosHealthdService() = default;
 
 void FakeCrosHealthdService::GetProbeService(
-    mojom::CrosHealthdProbeServiceRequest service) {
+    mojo::PendingReceiver<mojom::CrosHealthdProbeService> service) {
   probe_receiver_set_.Add(this, std::move(service));
 }
 
 void FakeCrosHealthdService::GetDiagnosticsService(
-    mojom::CrosHealthdDiagnosticsServiceRequest service) {
+    mojo::PendingReceiver<mojom::CrosHealthdDiagnosticsService> service) {
   diagnostics_receiver_set_.Add(this, std::move(service));
 }
 
 void FakeCrosHealthdService::GetEventService(
-    mojom::CrosHealthdEventServiceRequest service) {
+    mojo::PendingReceiver<mojom::CrosHealthdEventService> service) {
   event_receiver_set_.Add(this, std::move(service));
 }
 
@@ -50,7 +70,7 @@ void FakeCrosHealthdService::SendNetworkDiagnosticsRoutines(
 }
 
 void FakeCrosHealthdService::GetSystemService(
-    mojom::CrosHealthdSystemServiceRequest service) {
+    mojo::PendingReceiver<mojom::CrosHealthdSystemService> service) {
   system_receiver_set_.Add(this, std::move(service));
 }
 
@@ -82,8 +102,8 @@ void FakeCrosHealthdService::GetRoutineUpdate(
           std::move(callback),
           mojom::RoutineUpdate::New(
               routine_update_response_->progress_percent,
-              std::move(routine_update_response_->output),
-              std::move(routine_update_response_->routine_update_union))),
+              CloneScopedHandle(&routine_update_response_->output),
+              routine_update_response_->routine_update_union.Clone())),
       callback_delay_);
 }
 
@@ -285,18 +305,18 @@ void FakeCrosHealthdService::RunVideoConferencingRoutine(
 }
 
 void FakeCrosHealthdService::AddBluetoothObserver(
-    mojom::CrosHealthdBluetoothObserverPtr observer) {
-  bluetooth_observers_.Add(observer.PassInterface());
+    mojo::PendingRemote<mojom::CrosHealthdBluetoothObserver> observer) {
+  bluetooth_observers_.Add(std::move(observer));
 }
 
 void FakeCrosHealthdService::AddLidObserver(
-    mojom::CrosHealthdLidObserverPtr observer) {
-  lid_observers_.Add(observer.PassInterface());
+    mojo::PendingRemote<mojom::CrosHealthdLidObserver> observer) {
+  lid_observers_.Add(std::move(observer));
 }
 
 void FakeCrosHealthdService::AddPowerObserver(
-    mojom::CrosHealthdPowerObserverPtr observer) {
-  power_observers_.Add(observer.PassInterface());
+    mojo::PendingRemote<mojom::CrosHealthdPowerObserver> observer) {
+  power_observers_.Add(std::move(observer));
 }
 
 void FakeCrosHealthdService::AddNetworkObserver(

@@ -16,6 +16,7 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request_info.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/navigation_params.h"
@@ -92,21 +93,22 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
     params.process_id = network::mojom::kBrowserProcessId;
     params.is_corb_enabled = false;
     url_loader_ = std::make_unique<network::URLLoader>(
-        context_.get(), nullptr /* network_service_client */,
+        context_.get(), /*url_loader_factory=*/nullptr,
         nullptr /* network_context_client */,
         base::BindOnce(&TestNavigationLoaderInterceptor::DeleteURLLoader,
                        base::Unretained(this)),
         std::move(receiver), 0 /* options */, resource_request,
-        std::move(client), /*reponse_body_use_tracker=*/base::nullopt,
-        TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+        std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
         /*coep_reporter=*/nullptr, 0, /* request_id */
         0 /* keepalive_request_size */,
         false /* require_network_isolation_key */, resource_scheduler_client_,
         nullptr /* keepalive_statistics_recorder */,
-        nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */,
-        kEmptyOriginAccessList, mojo::NullRemote() /* cookie_observer */,
-        mojo::NullRemote() /* auth_cert_observer */);
+        nullptr /* header_client */, nullptr /* origin_policy_manager */,
+        nullptr /* trust_token_helper */, kEmptyOriginAccessList,
+        mojo::NullRemote() /* cookie_observer */,
+        mojo::NullRemote() /* url_loader_network_observer */,
+        /*devtools_observer=*/mojo::NullRemote(),
+        /*accept_ch_frame_observer=*/mojo::NullRemote());
   }
 
   bool MaybeCreateLoaderForResponse(
@@ -146,7 +148,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
             base::test::TaskEnvironment::MainThreadType::IO)),
         network_change_notifier_(
             net::test::MockNetworkChangeNotifier::Create()) {
-    browser_context_.reset(new TestBrowserContext);
+    browser_context_ = std::make_unique<TestBrowserContext>();
     http_test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("content/test/data")));
 
@@ -199,21 +201,22 @@ class NavigationURLLoaderImplTest : public testing::Test {
     url::Origin origin = url::Origin::Create(url);
 
     std::unique_ptr<NavigationRequestInfo> request_info(
-        new NavigationRequestInfo(
+        std::make_unique<NavigationRequestInfo>(
             std::move(common_params), std::move(begin_params),
             net::IsolationInfo::Create(
                 net::IsolationInfo::RequestType::kMainFrame, origin, origin,
                 net::SiteForCookies::FromUrl(url)),
-            is_main_frame, false /* parent_is_main_frame */,
-            false /* are_ancestors_secure */, -1 /* frame_tree_node_id */,
-            false /* is_for_guests_only */, false /* report_raw_headers */,
-            false /* is_prerenering */,
+            is_main_frame, false /* are_ancestors_secure */,
+            FrameTreeNode::kFrameTreeNodeInvalidId /* frame_tree_node_id */,
+            false /* report_raw_headers */, false /* is_prerenering */,
             upgrade_if_insecure /* upgrade_if_insecure */,
             nullptr /* blob_url_loader_factory */,
             base::UnguessableToken::Create() /* devtools_navigation_token */,
             base::UnguessableToken::Create() /* devtools_frame_token */,
-            false /* obey_origin_policy */, {} /* cors_exempt_headers */,
-            nullptr /* client_security_state */));
+            false /* obey_origin_policy */,
+            net::HttpRequestHeaders() /* cors_exempt_headers */,
+            nullptr /* client_security_state */,
+            base::nullopt /* devtools_accepted_stream_types */));
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors;
     most_recent_resource_request_ = base::nullopt;
     interceptors.push_back(std::make_unique<TestNavigationLoaderInterceptor>(
@@ -226,7 +229,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
         nullptr /* service_worker_handle */, nullptr /* appcache_handle */,
         nullptr /* prefetched_signed_exchange_cache */, delegate,
         mojo::NullRemote() /* cookie_access_obsever */,
-        mojo::NullRemote() /* auth_cert_observer */, std::move(interceptors));
+        mojo::NullRemote() /* url_loader_network_observer */,
+        /*devtools_observer=*/mojo::NullRemote(), std::move(interceptors));
   }
 
   // Requests |redirect_url|, which must return a HTTP 3xx redirect. It's also

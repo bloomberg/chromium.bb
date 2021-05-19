@@ -25,12 +25,12 @@
 cmake_minimum_required(VERSION 3.5.1)
 
 set(PACKAGE_NAME          "grpc")
-set(PACKAGE_VERSION       "1.34.0-dev")
-set(gRPC_CORE_VERSION     "13.0.0")
-set(gRPC_CORE_SOVERSION   "13")
-set(gRPC_CPP_VERSION      "1.34.0-dev")
+set(PACKAGE_VERSION       "1.37.0-dev")
+set(gRPC_CORE_VERSION     "15.0.0")
+set(gRPC_CORE_SOVERSION   "15")
+set(gRPC_CPP_VERSION      "1.37.0-dev")
 set(gRPC_CPP_SOVERSION    "1")
-set(gRPC_CSHARP_VERSION   "2.34.0-dev")
+set(gRPC_CSHARP_VERSION   "2.37.0-dev")
 set(gRPC_CSHARP_SOVERSION "2")
 set(PACKAGE_STRING        "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_TARNAME       "${PACKAGE_NAME}-${PACKAGE_VERSION}")
@@ -88,13 +88,9 @@ set(gRPC_PROTOBUF_PACKAGE_TYPE "" CACHE STRING "Algorithm for searching protobuf
 set_property(CACHE gRPC_PROTOBUF_PACKAGE_TYPE PROPERTY STRINGS "CONFIG" "MODULE")
 
 if(gRPC_BUILD_TESTS)
-  set(gRPC_GFLAGS_PROVIDER "module" CACHE STRING "Provider of gflags library")
-  set_property(CACHE gRPC_GFLAGS_PROVIDER PROPERTY STRINGS "module" "package")
-
   set(gRPC_BENCHMARK_PROVIDER "module" CACHE STRING "Provider of benchmark library")
   set_property(CACHE gRPC_BENCHMARK_PROVIDER PROPERTY STRINGS "module" "package")
 else()
-  set(gRPC_GFLAGS_PROVIDER "none")
   set(gRPC_BENCHMARK_PROVIDER "none")
 endif()
 
@@ -126,7 +122,7 @@ set(gRPC_ABSL_USED_TARGETS
   absl_errno_saver
   absl_exponential_biased
   absl_fixed_array
-  absl_flat_hash_set
+  absl_flat_hash_map
   absl_function_ref
   absl_graphcycles_internal
   absl_hash
@@ -144,12 +140,14 @@ set(gRPC_ABSL_USED_TARGETS
   absl_malloc_internal
   absl_memory
   absl_optional
+  absl_raw_hash_map
   absl_raw_hash_set
   absl_raw_logging_internal
   absl_span
   absl_spinlock_wait
   absl_stacktrace
   absl_status
+  absl_statusor
   absl_str_format
   absl_str_format_internal
   absl_strings
@@ -252,7 +250,6 @@ include(cmake/abseil-cpp.cmake)
 include(cmake/address_sorting.cmake)
 include(cmake/benchmark.cmake)
 include(cmake/cares.cmake)
-include(cmake/gflags.cmake)
 include(cmake/protobuf.cmake)
 include(cmake/re2.cmake)
 include(cmake/ssl.cmake)
@@ -460,6 +457,9 @@ protobuf_generate_grpc_cpp(
   src/proto/grpc/testing/xds/v3/ads.proto
 )
 protobuf_generate_grpc_cpp(
+  src/proto/grpc/testing/xds/v3/aggregate_cluster.proto
+)
+protobuf_generate_grpc_cpp(
   src/proto/grpc/testing/xds/v3/base.proto
 )
 protobuf_generate_grpc_cpp(
@@ -500,6 +500,15 @@ protobuf_generate_grpc_cpp(
 )
 protobuf_generate_grpc_cpp(
   src/proto/grpc/testing/xds/v3/route.proto
+)
+protobuf_generate_grpc_cpp(
+  src/proto/grpc/testing/xds/v3/router.proto
+)
+protobuf_generate_grpc_cpp(
+  src/proto/grpc/testing/xds/v3/string.proto
+)
+protobuf_generate_grpc_cpp(
+  src/proto/grpc/testing/xds/v3/tls.proto
 )
 protobuf_generate_grpc_cpp(
   test/core/tsi/alts/fake_handshaker/handshaker.proto
@@ -616,7 +625,6 @@ if(gRPC_BUILD_TESTS)
   add_dependencies(buildtests_c jwt_verifier_test)
   add_dependencies(buildtests_c lame_client_test)
   add_dependencies(buildtests_c load_file_test)
-  add_dependencies(buildtests_c log_test)
   add_dependencies(buildtests_c manual_constructor_test)
   add_dependencies(buildtests_c message_compress_test)
   add_dependencies(buildtests_c metadata_test)
@@ -695,7 +703,6 @@ if(gRPC_BUILD_TESTS)
   if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     add_dependencies(buildtests_c udp_server_test)
   endif()
-  add_dependencies(buildtests_c uri_parser_test)
   add_dependencies(buildtests_c useful_test)
   add_dependencies(buildtests_c varint_test)
 
@@ -709,13 +716,14 @@ if(gRPC_BUILD_TESTS)
   if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     add_dependencies(buildtests_cxx alarm_test)
   endif()
-  if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
+  if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     add_dependencies(buildtests_cxx alts_concurrent_connectivity_test)
   endif()
   add_dependencies(buildtests_cxx alts_util_test)
   add_dependencies(buildtests_cxx async_end2end_test)
   add_dependencies(buildtests_cxx auth_property_iterator_test)
   add_dependencies(buildtests_cxx authorization_engine_test)
+  add_dependencies(buildtests_cxx aws_request_signer_test)
   add_dependencies(buildtests_cxx backoff_test)
   add_dependencies(buildtests_cxx bad_streaming_id_bad_client_test)
   add_dependencies(buildtests_cxx badreq_bad_client_test)
@@ -810,6 +818,7 @@ if(gRPC_BUILD_TESTS)
   add_dependencies(buildtests_cxx codegen_test_minimal)
   add_dependencies(buildtests_cxx connection_prefix_bad_client_test)
   add_dependencies(buildtests_cxx connectivity_state_test)
+  add_dependencies(buildtests_cxx context_allocator_end2end_test)
   add_dependencies(buildtests_cxx context_list_test)
   add_dependencies(buildtests_cxx delegating_channel_test)
   add_dependencies(buildtests_cxx destroy_grpclb_channel_with_active_connect_stress_test)
@@ -823,6 +832,7 @@ if(gRPC_BUILD_TESTS)
     add_dependencies(buildtests_cxx examine_stack_test)
   endif()
   add_dependencies(buildtests_cxx exception_test)
+  add_dependencies(buildtests_cxx file_watcher_certificate_provider_factory_test)
   add_dependencies(buildtests_cxx filter_end2end_test)
   add_dependencies(buildtests_cxx flaky_network_test)
   add_dependencies(buildtests_cxx generic_end2end_test)
@@ -833,6 +843,7 @@ if(gRPC_BUILD_TESTS)
   add_dependencies(buildtests_cxx google_mesh_ca_certificate_provider_factory_test)
   add_dependencies(buildtests_cxx grpc_cli)
   add_dependencies(buildtests_cxx grpc_tls_certificate_distributor_test)
+  add_dependencies(buildtests_cxx grpc_tls_certificate_provider_test)
   add_dependencies(buildtests_cxx grpc_tls_credentials_options_test)
   if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     add_dependencies(buildtests_cxx grpc_tool_test)
@@ -860,6 +871,8 @@ if(gRPC_BUILD_TESTS)
   add_dependencies(buildtests_cxx lb_get_cpu_stats_test)
   add_dependencies(buildtests_cxx lb_load_data_store_test)
   add_dependencies(buildtests_cxx linux_system_roots_test)
+  add_dependencies(buildtests_cxx log_test)
+  add_dependencies(buildtests_cxx matchers_test)
   add_dependencies(buildtests_cxx message_allocator_end2end_test)
   add_dependencies(buildtests_cxx mock_test)
   add_dependencies(buildtests_cxx nonblocking_test)
@@ -873,6 +886,7 @@ if(gRPC_BUILD_TESTS)
   add_dependencies(buildtests_cxx qps_json_driver)
   add_dependencies(buildtests_cxx qps_worker)
   add_dependencies(buildtests_cxx raw_end2end_test)
+  add_dependencies(buildtests_cxx rbac_translator_test)
   add_dependencies(buildtests_cxx ref_counted_ptr_test)
   add_dependencies(buildtests_cxx ref_counted_test)
   if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
@@ -926,10 +940,12 @@ if(gRPC_BUILD_TESTS)
   if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     add_dependencies(buildtests_cxx time_jump_test)
   endif()
+  add_dependencies(buildtests_cxx time_util_test)
   add_dependencies(buildtests_cxx timer_test)
   add_dependencies(buildtests_cxx tls_security_connector_test)
   add_dependencies(buildtests_cxx too_many_pings_test)
   add_dependencies(buildtests_cxx unknown_frame_bad_client_test)
+  add_dependencies(buildtests_cxx uri_parser_test)
   add_dependencies(buildtests_cxx window_overflow_bad_client_test)
   if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     add_dependencies(buildtests_cxx work_serializer_test)
@@ -940,6 +956,7 @@ if(gRPC_BUILD_TESTS)
   add_dependencies(buildtests_cxx xds_bootstrap_test)
   add_dependencies(buildtests_cxx xds_certificate_provider_test)
   add_dependencies(buildtests_cxx xds_credentials_end2end_test)
+  add_dependencies(buildtests_cxx xds_credentials_test)
   if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     add_dependencies(buildtests_cxx xds_end2end_test)
   endif()
@@ -1045,9 +1062,9 @@ add_library(end2end_nosec_tests
   test/core/end2end/tests/default_host.cc
   test/core/end2end/tests/disappearing_server.cc
   test/core/end2end/tests/empty_batch.cc
-  test/core/end2end/tests/filter_call_init_fails.cc
   test/core/end2end/tests/filter_causes_close.cc
   test/core/end2end/tests/filter_context.cc
+  test/core/end2end/tests/filter_init_fails.cc
   test/core/end2end/tests/filter_latency.cc
   test/core/end2end/tests/filter_status_code.cc
   test/core/end2end/tests/graceful_server_shutdown.cc
@@ -1142,6 +1159,7 @@ target_link_libraries(end2end_nosec_tests
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -1179,9 +1197,9 @@ add_library(end2end_tests
   test/core/end2end/tests/default_host.cc
   test/core/end2end/tests/disappearing_server.cc
   test/core/end2end/tests/empty_batch.cc
-  test/core/end2end/tests/filter_call_init_fails.cc
   test/core/end2end/tests/filter_causes_close.cc
   test/core/end2end/tests/filter_context.cc
+  test/core/end2end/tests/filter_init_fails.cc
   test/core/end2end/tests/filter_latency.cc
   test/core/end2end/tests/filter_status_code.cc
   test/core/end2end/tests/graceful_server_shutdown.cc
@@ -1270,13 +1288,13 @@ target_include_directories(end2end_tests
     ${_gRPC_ZLIB_INCLUDE_DIR}
 )
 target_link_libraries(end2end_tests
-  ${_gRPC_SSL_LIBRARIES}
   ${_gRPC_ALLTARGETS_LIBRARIES}
   grpc_test_util
   grpc
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -1325,6 +1343,7 @@ add_library(gpr
   src/core/lib/gprpp/stat_windows.cc
   src/core/lib/gprpp/thd_posix.cc
   src/core/lib/gprpp/thd_windows.cc
+  src/core/lib/gprpp/time_util.cc
   src/core/lib/profiling/basic_timers.cc
   src/core/lib/profiling/stap_timers.cc
 )
@@ -1445,6 +1464,7 @@ add_library(grpc
   src/core/ext/filters/client_channel/client_channel_factory.cc
   src/core/ext/filters/client_channel/client_channel_plugin.cc
   src/core/ext/filters/client_channel/config_selector.cc
+  src/core/ext/filters/client_channel/dynamic_filters.cc
   src/core/ext/filters/client_channel/global_subchannel_pool.cc
   src/core/ext/filters/client_channel/health/health_check_client.cc
   src/core/ext/filters/client_channel/http_connect_handshaker.cc
@@ -1463,31 +1483,29 @@ add_library(grpc
   src/core/ext/filters/client_channel/lb_policy/round_robin/round_robin.cc
   src/core/ext/filters/client_channel/lb_policy/weighted_target/weighted_target.cc
   src/core/ext/filters/client_channel/lb_policy/xds/cds.cc
-  src/core/ext/filters/client_channel/lb_policy/xds/eds.cc
   src/core/ext/filters/client_channel/lb_policy/xds/xds_cluster_impl.cc
   src/core/ext/filters/client_channel/lb_policy/xds/xds_cluster_manager.cc
+  src/core/ext/filters/client_channel/lb_policy/xds/xds_cluster_resolver.cc
   src/core/ext/filters/client_channel/lb_policy_registry.cc
   src/core/ext/filters/client_channel/local_subchannel_pool.cc
   src/core/ext/filters/client_channel/proxy_mapper_registry.cc
   src/core/ext/filters/client_channel/resolver.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/dns_resolver_ares.cc
-  src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_ev_driver.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_ev_driver_libuv.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_ev_driver_posix.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_ev_driver_windows.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_wrapper.cc
-  src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_wrapper_fallback.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_wrapper_libuv.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_wrapper_posix.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_wrapper_windows.cc
   src/core/ext/filters/client_channel/resolver/dns/dns_resolver_selection.cc
   src/core/ext/filters/client_channel/resolver/dns/native/dns_resolver.cc
   src/core/ext/filters/client_channel/resolver/fake/fake_resolver.cc
+  src/core/ext/filters/client_channel/resolver/google_c2p/google_c2p_resolver.cc
   src/core/ext/filters/client_channel/resolver/sockaddr/sockaddr_resolver.cc
   src/core/ext/filters/client_channel/resolver/xds/xds_resolver.cc
   src/core/ext/filters/client_channel/resolver_registry.cc
   src/core/ext/filters/client_channel/resolver_result_parsing.cc
-  src/core/ext/filters/client_channel/resolving_lb_policy.cc
   src/core/ext/filters/client_channel/retry_throttle.cc
   src/core/ext/filters/client_channel/server_address.cc
   src/core/ext/filters/client_channel/service_config.cc
@@ -1574,6 +1592,8 @@ add_library(grpc
   src/core/ext/upb-generated/envoy/config/route/v3/route_components.upb.c
   src/core/ext/upb-generated/envoy/config/route/v3/scoped_route.upb.c
   src/core/ext/upb-generated/envoy/config/trace/v3/http_tracer.upb.c
+  src/core/ext/upb-generated/envoy/extensions/clusters/aggregate/v3/cluster.upb.c
+  src/core/ext/upb-generated/envoy/extensions/filters/http/router/v3/router.upb.c
   src/core/ext/upb-generated/envoy/extensions/filters/network/http_connection_manager/v3/http_connection_manager.upb.c
   src/core/ext/upb-generated/envoy/extensions/transport_sockets/tls/v3/cert.upb.c
   src/core/ext/upb-generated/envoy/extensions/transport_sockets/tls/v3/common.upb.c
@@ -1620,14 +1640,15 @@ add_library(grpc
   src/core/ext/upb-generated/udpa/annotations/sensitive.upb.c
   src/core/ext/upb-generated/udpa/annotations/status.upb.c
   src/core/ext/upb-generated/udpa/annotations/versioning.upb.c
-  src/core/ext/upb-generated/udpa/core/v1/authority.upb.c
-  src/core/ext/upb-generated/udpa/core/v1/collection_entry.upb.c
-  src/core/ext/upb-generated/udpa/core/v1/context_params.upb.c
-  src/core/ext/upb-generated/udpa/core/v1/resource.upb.c
-  src/core/ext/upb-generated/udpa/core/v1/resource_locator.upb.c
-  src/core/ext/upb-generated/udpa/core/v1/resource_name.upb.c
   src/core/ext/upb-generated/udpa/data/orca/v1/orca_load_report.upb.c
+  src/core/ext/upb-generated/udpa/type/v1/typed_struct.upb.c
   src/core/ext/upb-generated/validate/validate.upb.c
+  src/core/ext/upb-generated/xds/core/v3/authority.upb.c
+  src/core/ext/upb-generated/xds/core/v3/collection_entry.upb.c
+  src/core/ext/upb-generated/xds/core/v3/context_params.upb.c
+  src/core/ext/upb-generated/xds/core/v3/resource.upb.c
+  src/core/ext/upb-generated/xds/core/v3/resource_locator.upb.c
+  src/core/ext/upb-generated/xds/core/v3/resource_name.upb.c
   src/core/ext/upbdefs-generated/envoy/annotations/deprecation.upbdefs.c
   src/core/ext/upbdefs-generated/envoy/annotations/resource.upbdefs.c
   src/core/ext/upbdefs-generated/envoy/config/accesslog/v3/accesslog.upbdefs.c
@@ -1659,6 +1680,8 @@ add_library(grpc
   src/core/ext/upbdefs-generated/envoy/config/route/v3/route_components.upbdefs.c
   src/core/ext/upbdefs-generated/envoy/config/route/v3/scoped_route.upbdefs.c
   src/core/ext/upbdefs-generated/envoy/config/trace/v3/http_tracer.upbdefs.c
+  src/core/ext/upbdefs-generated/envoy/extensions/clusters/aggregate/v3/cluster.upbdefs.c
+  src/core/ext/upbdefs-generated/envoy/extensions/filters/http/router/v3/router.upbdefs.c
   src/core/ext/upbdefs-generated/envoy/extensions/filters/network/http_connection_manager/v3/http_connection_manager.upbdefs.c
   src/core/ext/upbdefs-generated/envoy/extensions/transport_sockets/tls/v3/cert.upbdefs.c
   src/core/ext/upbdefs-generated/envoy/extensions/transport_sockets/tls/v3/common.upbdefs.c
@@ -1687,7 +1710,6 @@ add_library(grpc
   src/core/ext/upbdefs-generated/google/api/annotations.upbdefs.c
   src/core/ext/upbdefs-generated/google/api/http.upbdefs.c
   src/core/ext/upbdefs-generated/google/protobuf/any.upbdefs.c
-  src/core/ext/upbdefs-generated/google/protobuf/descriptor.upbdefs.c
   src/core/ext/upbdefs-generated/google/protobuf/duration.upbdefs.c
   src/core/ext/upbdefs-generated/google/protobuf/empty.upbdefs.c
   src/core/ext/upbdefs-generated/google/protobuf/struct.upbdefs.c
@@ -1699,21 +1721,24 @@ add_library(grpc
   src/core/ext/upbdefs-generated/udpa/annotations/sensitive.upbdefs.c
   src/core/ext/upbdefs-generated/udpa/annotations/status.upbdefs.c
   src/core/ext/upbdefs-generated/udpa/annotations/versioning.upbdefs.c
-  src/core/ext/upbdefs-generated/udpa/core/v1/authority.upbdefs.c
-  src/core/ext/upbdefs-generated/udpa/core/v1/collection_entry.upbdefs.c
-  src/core/ext/upbdefs-generated/udpa/core/v1/context_params.upbdefs.c
-  src/core/ext/upbdefs-generated/udpa/core/v1/resource.upbdefs.c
-  src/core/ext/upbdefs-generated/udpa/core/v1/resource_locator.upbdefs.c
-  src/core/ext/upbdefs-generated/udpa/core/v1/resource_name.upbdefs.c
+  src/core/ext/upbdefs-generated/udpa/type/v1/typed_struct.upbdefs.c
   src/core/ext/upbdefs-generated/validate/validate.upbdefs.c
+  src/core/ext/upbdefs-generated/xds/core/v3/authority.upbdefs.c
+  src/core/ext/upbdefs-generated/xds/core/v3/collection_entry.upbdefs.c
+  src/core/ext/upbdefs-generated/xds/core/v3/context_params.upbdefs.c
+  src/core/ext/upbdefs-generated/xds/core/v3/resource.upbdefs.c
+  src/core/ext/upbdefs-generated/xds/core/v3/resource_locator.upbdefs.c
+  src/core/ext/upbdefs-generated/xds/core/v3/resource_name.upbdefs.c
   src/core/ext/xds/certificate_provider_registry.cc
   src/core/ext/xds/certificate_provider_store.cc
-  src/core/ext/xds/google_mesh_ca_certificate_provider_factory.cc
+  src/core/ext/xds/file_watcher_certificate_provider_factory.cc
   src/core/ext/xds/xds_api.cc
   src/core/ext/xds/xds_bootstrap.cc
   src/core/ext/xds/xds_certificate_provider.cc
   src/core/ext/xds/xds_client.cc
   src/core/ext/xds/xds_client_stats.cc
+  src/core/ext/xds/xds_http_filters.cc
+  src/core/ext/xds/xds_server_config_fetcher.cc
   src/core/lib/avl/avl.cc
   src/core/lib/backoff/backoff.cc
   src/core/lib/channel/channel_args.cc
@@ -1839,8 +1864,7 @@ add_library(grpc
   src/core/lib/json/json_reader.cc
   src/core/lib/json/json_util.cc
   src/core/lib/json/json_writer.cc
-  src/core/lib/security/authorization/authorization_engine.cc
-  src/core/lib/security/authorization/evaluate_args.cc
+  src/core/lib/matchers/matchers.cc
   src/core/lib/security/context/security_context.cc
   src/core/lib/security/credentials/alts/alts_credentials.cc
   src/core/lib/security/credentials/alts/check_gcp_environment.cc
@@ -1853,6 +1877,8 @@ add_library(grpc
   src/core/lib/security/credentials/composite/composite_credentials.cc
   src/core/lib/security/credentials/credentials.cc
   src/core/lib/security/credentials/credentials_metadata.cc
+  src/core/lib/security/credentials/external/aws_external_account_credentials.cc
+  src/core/lib/security/credentials/external/aws_request_signer.cc
   src/core/lib/security/credentials/external/external_account_credentials.cc
   src/core/lib/security/credentials/external/file_external_account_credentials.cc
   src/core/lib/security/credentials/external/url_external_account_credentials.cc
@@ -1872,6 +1898,7 @@ add_library(grpc
   src/core/lib/security/credentials/tls/grpc_tls_certificate_provider.cc
   src/core/lib/security/credentials/tls/grpc_tls_credentials_options.cc
   src/core/lib/security/credentials/tls/tls_credentials.cc
+  src/core/lib/security/credentials/tls/tls_utils.cc
   src/core/lib/security/credentials/xds/xds_credentials.cc
   src/core/lib/security/security_connector/alts/alts_security_connector.cc
   src/core/lib/security/security_connector/fake/fake_security_connector.cc
@@ -1991,7 +2018,6 @@ target_include_directories(grpc
 )
 target_link_libraries(grpc
   ${_gRPC_BASELIB_LIBRARIES}
-  ${_gRPC_SSL_LIBRARIES}
   ${_gRPC_ZLIB_LIBRARIES}
   ${_gRPC_CARES_LIBRARIES}
   ${_gRPC_ADDRESS_SORTING_LIBRARIES}
@@ -2001,12 +2027,14 @@ target_link_libraries(grpc
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::optional
   absl::strings
+  absl::statusor
   absl::status
   absl::bind_front
   absl::inlined_vector
-  absl::flat_hash_set
+  absl::flat_hash_map
 )
 if(_gRPC_PLATFORM_IOS OR _gRPC_PLATFORM_MAC)
   target_link_libraries(grpc "-framework CoreFoundation")
@@ -2084,6 +2112,7 @@ target_link_libraries(grpc_csharp_ext
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -2092,7 +2121,6 @@ if(gRPC_BUILD_TESTS)
 
 add_library(grpc_test_util
   test/core/util/cmdline.cc
-  test/core/util/debugger_macros.cc
   test/core/util/eval_args_mock_endpoint.cc
   test/core/util/fuzzer_util.cc
   test/core/util/grpc_profiler.cc
@@ -2112,6 +2140,7 @@ add_library(grpc_test_util
   test/core/util/subprocess_windows.cc
   test/core/util/test_config.cc
   test/core/util/test_tcp_server.cc
+  test/core/util/tls_utils.cc
   test/core/util/tracer_util.cc
   test/core/util/trickle_endpoint.cc
 )
@@ -2150,6 +2179,7 @@ target_link_libraries(grpc_test_util
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::symbolize
   absl::stacktrace
   absl::failure_signal_handler
@@ -2164,7 +2194,6 @@ if(gRPC_BUILD_TESTS)
 
 add_library(grpc_test_util_unsecure
   test/core/util/cmdline.cc
-  test/core/util/debugger_macros.cc
   test/core/util/eval_args_mock_endpoint.cc
   test/core/util/fuzzer_util.cc
   test/core/util/grpc_profiler.cc
@@ -2243,6 +2272,7 @@ add_library(grpc_unsecure
   src/core/ext/filters/client_channel/client_channel_factory.cc
   src/core/ext/filters/client_channel/client_channel_plugin.cc
   src/core/ext/filters/client_channel/config_selector.cc
+  src/core/ext/filters/client_channel/dynamic_filters.cc
   src/core/ext/filters/client_channel/global_subchannel_pool.cc
   src/core/ext/filters/client_channel/health/health_check_client.cc
   src/core/ext/filters/client_channel/http_connect_handshaker.cc
@@ -2265,12 +2295,10 @@ add_library(grpc_unsecure
   src/core/ext/filters/client_channel/proxy_mapper_registry.cc
   src/core/ext/filters/client_channel/resolver.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/dns_resolver_ares.cc
-  src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_ev_driver.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_ev_driver_libuv.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_ev_driver_posix.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_ev_driver_windows.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_wrapper.cc
-  src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_wrapper_fallback.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_wrapper_libuv.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_wrapper_posix.cc
   src/core/ext/filters/client_channel/resolver/dns/c_ares/grpc_ares_wrapper_windows.cc
@@ -2280,7 +2308,6 @@ add_library(grpc_unsecure
   src/core/ext/filters/client_channel/resolver/sockaddr/sockaddr_resolver.cc
   src/core/ext/filters/client_channel/resolver_registry.cc
   src/core/ext/filters/client_channel/resolver_result_parsing.cc
-  src/core/ext/filters/client_channel/resolving_lb_policy.cc
   src/core/ext/filters/client_channel/retry_throttle.cc
   src/core/ext/filters/client_channel/server_address.cc
   src/core/ext/filters/client_channel/service_config.cc
@@ -2557,8 +2584,10 @@ target_link_libraries(grpc_unsecure
   upb
   absl::optional
   absl::strings
+  absl::statusor
   absl::status
   absl::inlined_vector
+  absl::flat_hash_map
 )
 if(_gRPC_PLATFORM_IOS OR _gRPC_PLATFORM_MAC)
   target_link_libraries(grpc_unsecure "-framework CoreFoundation")
@@ -2659,7 +2688,6 @@ target_link_libraries(benchmark_helpers
   address_sorting
   upb
   ${_gRPC_BENCHMARK_LIBRARIES}
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 endif()
@@ -2711,6 +2739,7 @@ add_library(grpc++
   src/cpp/server/server_context.cc
   src/cpp/server/server_credentials.cc
   src/cpp/server/server_posix.cc
+  src/cpp/server/xds_server_credentials.cc
   src/cpp/thread_manager/thread_manager.cc
   src/cpp/util/byte_buffer_cc.cc
   src/cpp/util/status.cc
@@ -2755,6 +2784,8 @@ target_link_libraries(grpc++
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
+  absl::synchronization
 )
 
 foreach(_hdr
@@ -2878,6 +2909,7 @@ foreach(_hdr
   include/grpcpp/impl/codegen/message_allocator.h
   include/grpcpp/impl/codegen/metadata_map.h
   include/grpcpp/impl/codegen/method_handler.h
+  include/grpcpp/impl/codegen/method_handler_impl.h
   include/grpcpp/impl/codegen/proto_buffer_reader.h
   include/grpcpp/impl/codegen/proto_buffer_writer.h
   include/grpcpp/impl/codegen/proto_utils.h
@@ -2941,6 +2973,7 @@ foreach(_hdr
   include/grpcpp/support/sync_stream.h
   include/grpcpp/support/time.h
   include/grpcpp/support/validate_service_config.h
+  include/grpcpp/xds_server_builder.h
 )
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
@@ -3002,6 +3035,7 @@ target_link_libraries(grpc++_alts
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 foreach(_hdr
@@ -3025,12 +3059,7 @@ if(gRPC_INSTALL)
 endif()
 
 
-if(gRPC_BUILD_CODEGEN)
 add_library(grpc++_error_details
-  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.pb.cc
-  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.grpc.pb.cc
-  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.pb.h
-  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.grpc.pb.h
   src/cpp/util/error_details.cc
 )
 
@@ -3071,6 +3100,7 @@ target_link_libraries(grpc++_error_details
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 foreach(_hdr
@@ -3083,9 +3113,7 @@ foreach(_hdr
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
-endif()
 
-if(gRPC_BUILD_CODEGEN)
 
 if(gRPC_INSTALL)
   install(TARGETS grpc++_error_details EXPORT gRPCTargets
@@ -3095,7 +3123,6 @@ if(gRPC_INSTALL)
   )
 endif()
 
-endif()
 
 if(gRPC_BUILD_CODEGEN)
 add_library(grpc++_reflection
@@ -3144,6 +3171,7 @@ target_link_libraries(grpc++_reflection
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 foreach(_hdr
@@ -3216,7 +3244,7 @@ target_link_libraries(grpc++_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 foreach(_hdr
@@ -3279,7 +3307,6 @@ target_link_libraries(grpc++_test_config
   ${_gRPC_ALLTARGETS_LIBRARIES}
   gpr
   absl::flags_parse
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -3340,8 +3367,8 @@ target_link_libraries(grpc++_test_util
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -3427,6 +3454,7 @@ target_link_libraries(grpc++_unsecure
   gpr
   address_sorting
   upb
+  absl::synchronization
 )
 
 foreach(_hdr
@@ -3550,6 +3578,7 @@ foreach(_hdr
   include/grpcpp/impl/codegen/message_allocator.h
   include/grpcpp/impl/codegen/metadata_map.h
   include/grpcpp/impl/codegen/method_handler.h
+  include/grpcpp/impl/codegen/method_handler_impl.h
   include/grpcpp/impl/codegen/proto_buffer_reader.h
   include/grpcpp/impl/codegen/proto_buffer_writer.h
   include/grpcpp/impl/codegen/proto_utils.h
@@ -3746,6 +3775,7 @@ target_link_libraries(grpcpp_channelz
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 foreach(_hdr
@@ -3772,29 +3802,19 @@ endif()
 endif()
 
 add_library(upb
+  third_party/upb/upb/decode_fast.c
   third_party/upb/upb/decode.c
-  third_party/upb/upb/encode.c
-  third_party/upb/upb/msg.c
-  third_party/upb/upb/port.c
-  third_party/upb/upb/table.c
-  third_party/upb/upb/upb.c
   third_party/upb/upb/def.c
+  third_party/upb/upb/encode.c
+  third_party/upb/upb/json_decode.c
+  third_party/upb/upb/json_encode.c
+  third_party/upb/upb/msg.c
   third_party/upb/upb/reflection.c
+  third_party/upb/upb/table.c
   third_party/upb/upb/text_encode.c
-  src/core/ext/upb-generated/google/protobuf/any.upb.c
+  third_party/upb/upb/upb.c
   src/core/ext/upb-generated/google/protobuf/descriptor.upb.c
-  src/core/ext/upb-generated/google/protobuf/duration.upb.c
-  src/core/ext/upb-generated/google/protobuf/empty.upb.c
-  src/core/ext/upb-generated/google/protobuf/struct.upb.c
-  src/core/ext/upb-generated/google/protobuf/timestamp.upb.c
-  src/core/ext/upb-generated/google/protobuf/wrappers.upb.c
-  src/core/ext/upbdefs-generated/google/protobuf/any.upbdefs.c
   src/core/ext/upbdefs-generated/google/protobuf/descriptor.upbdefs.c
-  src/core/ext/upbdefs-generated/google/protobuf/duration.upbdefs.c
-  src/core/ext/upbdefs-generated/google/protobuf/empty.upbdefs.c
-  src/core/ext/upbdefs-generated/google/protobuf/struct.upbdefs.c
-  src/core/ext/upbdefs-generated/google/protobuf/timestamp.upbdefs.c
-  src/core/ext/upbdefs-generated/google/protobuf/wrappers.upbdefs.c
 )
 
 set_target_properties(upb PROPERTIES
@@ -3968,6 +3988,7 @@ target_link_libraries(algorithm_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -3998,6 +4019,7 @@ target_link_libraries(alloc_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4028,6 +4050,7 @@ target_link_libraries(alpn_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4059,6 +4082,7 @@ target_link_libraries(alts_counter_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4090,6 +4114,7 @@ target_link_libraries(alts_crypt_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4121,6 +4146,7 @@ target_link_libraries(alts_crypter_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4153,6 +4179,7 @@ target_link_libraries(alts_frame_protector_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4184,6 +4211,7 @@ target_link_libraries(alts_grpc_record_protocol_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4215,6 +4243,7 @@ target_link_libraries(alts_handshaker_client_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4246,6 +4275,7 @@ target_link_libraries(alts_iovec_record_protocol_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4276,6 +4306,7 @@ target_link_libraries(alts_security_connector_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4307,6 +4338,7 @@ target_link_libraries(alts_tsi_handshaker_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4338,6 +4370,7 @@ target_link_libraries(alts_tsi_utils_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4369,6 +4402,7 @@ target_link_libraries(alts_zero_copy_grpc_protector_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4399,6 +4433,7 @@ target_link_libraries(arena_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4429,6 +4464,7 @@ target_link_libraries(auth_context_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4459,6 +4495,7 @@ target_link_libraries(avl_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4489,6 +4526,7 @@ target_link_libraries(b64_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4520,6 +4558,7 @@ target_link_libraries(bad_server_response_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4552,6 +4591,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -4585,6 +4625,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -4616,6 +4657,7 @@ target_link_libraries(bin_decoder_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4646,6 +4688,7 @@ target_link_libraries(bin_encoder_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4676,6 +4719,7 @@ target_link_libraries(buffer_list_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4706,6 +4750,7 @@ target_link_libraries(channel_args_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4736,6 +4781,7 @@ target_link_libraries(channel_create_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4766,6 +4812,7 @@ target_link_libraries(channel_stack_builder_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4796,6 +4843,7 @@ target_link_libraries(channel_stack_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4826,6 +4874,7 @@ target_link_libraries(check_gcp_environment_linux_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4856,6 +4905,7 @@ target_link_libraries(check_gcp_environment_windows_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4887,6 +4937,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -4918,6 +4969,7 @@ target_link_libraries(cmdline_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -4949,6 +5001,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -4980,6 +5033,7 @@ target_link_libraries(completion_queue_threading_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5010,6 +5064,7 @@ target_link_libraries(compression_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5040,6 +5095,7 @@ target_link_libraries(concurrent_connectivity_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5071,6 +5127,7 @@ target_link_libraries(connection_refused_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5101,6 +5158,7 @@ target_link_libraries(cpu_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5131,6 +5189,7 @@ target_link_libraries(dns_resolver_connectivity_using_ares_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5161,6 +5220,7 @@ target_link_libraries(dns_resolver_connectivity_using_native_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5191,6 +5251,7 @@ target_link_libraries(dns_resolver_cooldown_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5221,6 +5282,7 @@ target_link_libraries(dns_resolver_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5253,6 +5315,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -5285,6 +5348,7 @@ target_link_libraries(endpoint_pair_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5315,6 +5379,7 @@ target_link_libraries(env_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5346,6 +5411,7 @@ target_link_libraries(error_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5377,6 +5443,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -5408,6 +5475,7 @@ target_link_libraries(fake_resolver_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5439,6 +5507,7 @@ target_link_libraries(fake_transport_security_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5470,6 +5539,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -5502,6 +5572,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -5538,6 +5609,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -5574,6 +5646,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -5606,6 +5679,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -5641,6 +5715,7 @@ target_link_libraries(format_request_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5672,6 +5747,7 @@ target_link_libraries(frame_handler_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5703,6 +5779,7 @@ target_link_libraries(goaway_server_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5733,6 +5810,7 @@ target_link_libraries(grpc_alts_credentials_options_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5763,6 +5841,7 @@ target_link_libraries(grpc_byte_buffer_reader_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5793,6 +5872,7 @@ target_link_libraries(grpc_completion_queue_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5823,6 +5903,7 @@ target_link_libraries(grpc_ipv6_loopback_available_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5855,6 +5936,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -5887,6 +5969,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -5918,6 +6001,7 @@ target_link_libraries(histogram_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5948,6 +6032,7 @@ target_link_libraries(host_port_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -5978,6 +6063,7 @@ target_link_libraries(hpack_encoder_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6008,6 +6094,7 @@ target_link_libraries(hpack_parser_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6038,6 +6125,7 @@ target_link_libraries(hpack_table_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6073,6 +6161,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -6109,6 +6198,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -6141,6 +6231,7 @@ target_link_libraries(inproc_callback_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6172,6 +6263,7 @@ target_link_libraries(invalid_call_argument_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6202,6 +6294,7 @@ target_link_libraries(json_token_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6232,6 +6325,7 @@ target_link_libraries(jwt_verifier_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6263,6 +6357,7 @@ target_link_libraries(lame_client_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6293,36 +6388,7 @@ target_link_libraries(load_file_test
   gpr
   address_sorting
   upb
-)
-
-
-endif()
-if(gRPC_BUILD_TESTS)
-
-add_executable(log_test
-  test/core/gpr/log_test.cc
-)
-
-target_include_directories(log_test
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
-    ${_gRPC_RE2_INCLUDE_DIR}
-    ${_gRPC_SSL_INCLUDE_DIR}
-    ${_gRPC_UPB_GENERATED_DIR}
-    ${_gRPC_UPB_GRPC_GENERATED_DIR}
-    ${_gRPC_UPB_INCLUDE_DIR}
-    ${_gRPC_ZLIB_INCLUDE_DIR}
-)
-
-target_link_libraries(log_test
-  ${_gRPC_ALLTARGETS_LIBRARIES}
-  grpc_test_util
-  grpc
-  gpr
-  address_sorting
-  upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6353,6 +6419,7 @@ target_link_libraries(manual_constructor_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6383,6 +6450,7 @@ target_link_libraries(message_compress_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6413,6 +6481,7 @@ target_link_libraries(metadata_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6443,6 +6512,7 @@ target_link_libraries(minimal_stack_is_minimal_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6473,6 +6543,7 @@ target_link_libraries(mpmcqueue_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6504,6 +6575,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -6536,6 +6608,7 @@ target_link_libraries(multiple_server_queues_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6566,6 +6639,7 @@ target_link_libraries(murmur_hash_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6597,6 +6671,7 @@ target_link_libraries(no_server_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6627,6 +6702,7 @@ target_link_libraries(num_external_connectivity_watchers_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6657,6 +6733,7 @@ target_link_libraries(parse_address_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6688,6 +6765,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -6723,6 +6801,7 @@ target_link_libraries(parser_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6753,6 +6832,7 @@ target_link_libraries(percent_encoding_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6783,6 +6863,7 @@ target_link_libraries(public_headers_must_be_c89
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6814,6 +6895,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -6845,6 +6927,7 @@ target_link_libraries(resolve_address_using_ares_resolver_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6876,6 +6959,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -6907,6 +6991,7 @@ target_link_libraries(resolve_address_using_native_resolver_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6937,6 +7022,7 @@ target_link_libraries(resource_quota_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6967,6 +7053,7 @@ target_link_libraries(secure_channel_create_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -6998,6 +7085,7 @@ target_link_libraries(secure_endpoint_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7028,6 +7116,7 @@ target_link_libraries(security_connector_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7058,6 +7147,7 @@ target_link_libraries(sequential_connectivity_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7090,6 +7180,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -7121,6 +7212,7 @@ target_link_libraries(server_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7151,6 +7243,7 @@ target_link_libraries(slice_buffer_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7181,6 +7274,7 @@ target_link_libraries(slice_string_helpers_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7211,6 +7305,7 @@ target_link_libraries(sockaddr_resolver_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7241,6 +7336,7 @@ target_link_libraries(sockaddr_utils_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7272,6 +7368,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -7303,6 +7400,7 @@ target_link_libraries(spinlock_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7333,6 +7431,7 @@ target_link_libraries(ssl_credentials_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7365,6 +7464,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -7396,6 +7496,7 @@ target_link_libraries(status_conversion_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7426,6 +7527,7 @@ target_link_libraries(stream_compression_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7456,6 +7558,7 @@ target_link_libraries(stream_map_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7486,6 +7589,7 @@ target_link_libraries(stream_owned_slice_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7516,6 +7620,7 @@ target_link_libraries(string_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7546,6 +7651,7 @@ target_link_libraries(sync_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7577,6 +7683,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -7610,6 +7717,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -7642,6 +7750,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -7673,6 +7782,7 @@ target_link_libraries(test_core_gpr_time_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7703,6 +7813,7 @@ target_link_libraries(test_core_security_credentials_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7733,6 +7844,7 @@ target_link_libraries(test_core_slice_slice_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7763,6 +7875,7 @@ target_link_libraries(thd_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7793,6 +7906,7 @@ target_link_libraries(threadpool_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7823,6 +7937,7 @@ target_link_libraries(time_averaged_stats_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7853,6 +7968,7 @@ target_link_libraries(timeout_encoding_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7883,6 +7999,7 @@ target_link_libraries(timer_heap_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7913,6 +8030,7 @@ target_link_libraries(timer_list_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7943,6 +8061,7 @@ target_link_libraries(tls_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -7973,6 +8092,7 @@ target_link_libraries(transport_security_common_api_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -8003,6 +8123,7 @@ target_link_libraries(transport_security_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -8034,40 +8155,11 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
 endif()
-endif()
-if(gRPC_BUILD_TESTS)
-
-add_executable(uri_parser_test
-  test/core/uri/uri_parser_test.cc
-)
-
-target_include_directories(uri_parser_test
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
-    ${_gRPC_RE2_INCLUDE_DIR}
-    ${_gRPC_SSL_INCLUDE_DIR}
-    ${_gRPC_UPB_GENERATED_DIR}
-    ${_gRPC_UPB_GRPC_GENERATED_DIR}
-    ${_gRPC_UPB_INCLUDE_DIR}
-    ${_gRPC_ZLIB_INCLUDE_DIR}
-)
-
-target_link_libraries(uri_parser_test
-  ${_gRPC_ALLTARGETS_LIBRARIES}
-  grpc_test_util
-  grpc
-  gpr
-  address_sorting
-  upb
-)
-
-
 endif()
 if(gRPC_BUILD_TESTS)
 
@@ -8095,6 +8187,7 @@ target_link_libraries(useful_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -8125,6 +8218,7 @@ target_link_libraries(varint_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -8167,7 +8261,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -8213,7 +8307,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -8255,14 +8348,13 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
 endif()
 endif()
 if(gRPC_BUILD_TESTS)
-if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
+if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
 
   add_executable(alts_concurrent_connectivity_test
     ${_gRPC_PROTO_GENS_DIR}/test/core/tsi/alts/fake_handshaker/handshaker.pb.cc
@@ -8307,7 +8399,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -8350,7 +8442,7 @@ target_link_libraries(alts_util_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -8411,7 +8503,7 @@ target_link_libraries(async_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -8452,7 +8544,7 @@ target_link_libraries(auth_property_iterator_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -8460,6 +8552,9 @@ endif()
 if(gRPC_BUILD_TESTS)
 
 add_executable(authorization_engine_test
+  src/core/lib/security/authorization/authorization_engine.cc
+  src/core/lib/security/authorization/evaluate_args.cc
+  src/core/lib/security/authorization/rbac_policy.cc
   test/core/security/authorization_engine_test.cc
   third_party/googletest/googletest/src/gtest-all.cc
   third_party/googletest/googlemock/src/gmock-all.cc
@@ -8491,7 +8586,47 @@ target_link_libraries(authorization_engine_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
+  absl::flat_hash_set
+)
+
+
+endif()
+if(gRPC_BUILD_TESTS)
+
+add_executable(aws_request_signer_test
+  test/core/security/aws_request_signer_test.cc
+  third_party/googletest/googletest/src/gtest-all.cc
+  third_party/googletest/googlemock/src/gmock-all.cc
+)
+
+target_include_directories(aws_request_signer_test
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
+    ${_gRPC_RE2_INCLUDE_DIR}
+    ${_gRPC_SSL_INCLUDE_DIR}
+    ${_gRPC_UPB_GENERATED_DIR}
+    ${_gRPC_UPB_GRPC_GENERATED_DIR}
+    ${_gRPC_UPB_INCLUDE_DIR}
+    ${_gRPC_ZLIB_INCLUDE_DIR}
+    third_party/googletest/googletest/include
+    third_party/googletest/googletest
+    third_party/googletest/googlemock/include
+    third_party/googletest/googlemock
+    ${_gRPC_PROTO_GENS_DIR}
+)
+
+target_link_libraries(aws_request_signer_test
+  ${_gRPC_PROTOBUF_LIBRARIES}
+  ${_gRPC_ALLTARGETS_LIBRARIES}
+  grpc_test_util
+  grpc
+  gpr
+  address_sorting
+  upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -8530,7 +8665,7 @@ target_link_libraries(backoff_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -8571,7 +8706,7 @@ target_link_libraries(bad_streaming_id_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -8612,7 +8747,7 @@ target_link_libraries(badreq_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -8652,7 +8787,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -8697,7 +8832,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -8742,7 +8876,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -8787,7 +8920,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -8832,7 +8964,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -8881,7 +9012,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -8930,7 +9060,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -8975,7 +9104,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9020,7 +9148,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9065,7 +9192,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9110,7 +9236,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9155,7 +9280,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9200,7 +9324,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9245,7 +9368,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9290,7 +9412,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9335,7 +9456,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9381,7 +9501,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
     absl::flags
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9426,7 +9545,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9471,7 +9589,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9516,7 +9633,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9561,7 +9677,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9606,7 +9721,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_POSIX)
     address_sorting
     upb
     ${_gRPC_BENCHMARK_LIBRARIES}
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -9648,7 +9762,7 @@ target_link_libraries(byte_buffer_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -9687,7 +9801,7 @@ target_link_libraries(byte_stream_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -9731,7 +9845,7 @@ target_link_libraries(cancel_ares_query_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -9770,7 +9884,7 @@ target_link_libraries(certificate_provider_registry_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -9809,7 +9923,7 @@ target_link_libraries(certificate_provider_store_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -9863,7 +9977,7 @@ target_link_libraries(cfstream_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -9903,7 +10017,7 @@ target_link_libraries(channel_arguments_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -9943,7 +10057,7 @@ target_link_libraries(channel_filter_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -9988,7 +10102,7 @@ target_link_libraries(channel_trace_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10028,7 +10142,7 @@ target_link_libraries(channelz_registry_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10083,7 +10197,7 @@ target_link_libraries(channelz_service_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10128,7 +10242,7 @@ target_link_libraries(channelz_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10191,8 +10305,8 @@ target_link_libraries(cli_call_test
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -10247,7 +10361,7 @@ target_link_libraries(client_callback_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10310,7 +10424,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -10366,7 +10480,7 @@ target_link_libraries(client_interceptors_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10430,7 +10544,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -10471,7 +10585,7 @@ target_link_libraries(codegen_test_full
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10511,7 +10625,7 @@ target_link_libraries(codegen_test_minimal
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10552,7 +10666,7 @@ target_link_libraries(connection_prefix_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10591,7 +10705,61 @@ target_link_libraries(connectivity_state_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
+)
+
+
+endif()
+if(gRPC_BUILD_TESTS)
+
+add_executable(context_allocator_end2end_test
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/echo.pb.cc
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/echo.grpc.pb.cc
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/echo.pb.h
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/echo.grpc.pb.h
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/echo_messages.pb.cc
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/echo_messages.grpc.pb.cc
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/echo_messages.pb.h
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/echo_messages.grpc.pb.h
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/simple_messages.pb.cc
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/simple_messages.grpc.pb.cc
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/simple_messages.pb.h
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/simple_messages.grpc.pb.h
+  test/cpp/end2end/context_allocator_end2end_test.cc
+  test/cpp/end2end/test_service_impl.cc
+  third_party/googletest/googletest/src/gtest-all.cc
+  third_party/googletest/googlemock/src/gmock-all.cc
+)
+
+target_include_directories(context_allocator_end2end_test
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
+    ${_gRPC_RE2_INCLUDE_DIR}
+    ${_gRPC_SSL_INCLUDE_DIR}
+    ${_gRPC_UPB_GENERATED_DIR}
+    ${_gRPC_UPB_GRPC_GENERATED_DIR}
+    ${_gRPC_UPB_INCLUDE_DIR}
+    ${_gRPC_ZLIB_INCLUDE_DIR}
+    third_party/googletest/googletest/include
+    third_party/googletest/googletest
+    third_party/googletest/googlemock/include
+    third_party/googletest/googlemock
+    ${_gRPC_PROTO_GENS_DIR}
+)
+
+target_link_libraries(context_allocator_end2end_test
+  ${_gRPC_PROTOBUF_LIBRARIES}
+  ${_gRPC_ALLTARGETS_LIBRARIES}
+  grpc++_test_util
+  grpc_test_util
+  grpc++
+  grpc
+  gpr
+  address_sorting
+  upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10630,7 +10798,7 @@ target_link_libraries(context_list_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10684,7 +10852,7 @@ target_link_libraries(delegating_channel_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10725,7 +10893,7 @@ target_link_libraries(destroy_grpclb_channel_with_active_connect_stress_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10764,7 +10932,7 @@ target_link_libraries(dual_ref_counted_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10805,7 +10973,7 @@ target_link_libraries(duplicate_header_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10865,7 +11033,7 @@ target_link_libraries(end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10873,6 +11041,10 @@ endif()
 if(gRPC_BUILD_TESTS)
 
 add_executable(error_details_test
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.pb.cc
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.grpc.pb.cc
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.pb.h
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.grpc.pb.h
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/echo_messages.pb.cc
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/echo_messages.grpc.pb.cc
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/echo_messages.pb.h
@@ -10910,7 +11082,7 @@ target_link_libraries(error_details_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10918,6 +11090,8 @@ endif()
 if(gRPC_BUILD_TESTS)
 
 add_executable(evaluate_args_test
+  src/core/lib/security/authorization/evaluate_args.cc
+  src/core/lib/security/authorization/rbac_policy.cc
   test/core/security/evaluate_args_test.cc
   third_party/googletest/googletest/src/gtest-all.cc
   third_party/googletest/googlemock/src/gmock-all.cc
@@ -10949,7 +11123,7 @@ target_link_libraries(evaluate_args_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -10988,7 +11162,7 @@ target_link_libraries(eventmanager_libuv_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -11028,9 +11202,9 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
     absl::symbolize
     absl::stacktrace
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -11084,7 +11258,46 @@ target_link_libraries(exception_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
+)
+
+
+endif()
+if(gRPC_BUILD_TESTS)
+
+add_executable(file_watcher_certificate_provider_factory_test
+  test/core/xds/file_watcher_certificate_provider_factory_test.cc
+  third_party/googletest/googletest/src/gtest-all.cc
+  third_party/googletest/googlemock/src/gmock-all.cc
+)
+
+target_include_directories(file_watcher_certificate_provider_factory_test
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
+    ${_gRPC_RE2_INCLUDE_DIR}
+    ${_gRPC_SSL_INCLUDE_DIR}
+    ${_gRPC_UPB_GENERATED_DIR}
+    ${_gRPC_UPB_GRPC_GENERATED_DIR}
+    ${_gRPC_UPB_INCLUDE_DIR}
+    ${_gRPC_ZLIB_INCLUDE_DIR}
+    third_party/googletest/googletest/include
+    third_party/googletest/googletest
+    third_party/googletest/googlemock/include
+    third_party/googletest/googlemock
+    ${_gRPC_PROTO_GENS_DIR}
+)
+
+target_link_libraries(file_watcher_certificate_provider_factory_test
+  ${_gRPC_PROTOBUF_LIBRARIES}
+  ${_gRPC_ALLTARGETS_LIBRARIES}
+  grpc_test_util
+  grpc
+  gpr
+  address_sorting
+  upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -11141,7 +11354,7 @@ target_link_libraries(filter_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -11195,7 +11408,7 @@ target_link_libraries(flaky_network_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -11252,7 +11465,7 @@ target_link_libraries(generic_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -11292,7 +11505,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -11332,7 +11545,7 @@ target_link_libraries(global_config_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -11340,6 +11553,7 @@ endif()
 if(gRPC_BUILD_TESTS)
 
 add_executable(google_mesh_ca_certificate_provider_factory_test
+  src/core/ext/xds/google_mesh_ca_certificate_provider_factory.cc
   test/core/xds/google_mesh_ca_certificate_provider_factory_test.cc
   third_party/googletest/googletest/src/gtest-all.cc
   third_party/googletest/googlemock/src/gmock-all.cc
@@ -11371,7 +11585,7 @@ target_link_libraries(google_mesh_ca_certificate_provider_factory_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -11421,8 +11635,8 @@ target_link_libraries(grpc_cli
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -11727,7 +11941,46 @@ target_link_libraries(grpc_tls_certificate_distributor_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
+)
+
+
+endif()
+if(gRPC_BUILD_TESTS)
+
+add_executable(grpc_tls_certificate_provider_test
+  test/core/security/grpc_tls_certificate_provider_test.cc
+  third_party/googletest/googletest/src/gtest-all.cc
+  third_party/googletest/googlemock/src/gmock-all.cc
+)
+
+target_include_directories(grpc_tls_certificate_provider_test
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
+    ${_gRPC_RE2_INCLUDE_DIR}
+    ${_gRPC_SSL_INCLUDE_DIR}
+    ${_gRPC_UPB_GENERATED_DIR}
+    ${_gRPC_UPB_GRPC_GENERATED_DIR}
+    ${_gRPC_UPB_INCLUDE_DIR}
+    ${_gRPC_ZLIB_INCLUDE_DIR}
+    third_party/googletest/googletest/include
+    third_party/googletest/googletest
+    third_party/googletest/googlemock/include
+    third_party/googletest/googlemock
+    ${_gRPC_PROTO_GENS_DIR}
+)
+
+target_link_libraries(grpc_tls_certificate_provider_test
+  ${_gRPC_PROTOBUF_LIBRARIES}
+  ${_gRPC_ALLTARGETS_LIBRARIES}
+  grpc_test_util
+  grpc
+  gpr
+  address_sorting
+  upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -11766,7 +12019,7 @@ target_link_libraries(grpc_tls_credentials_options_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -11827,8 +12080,8 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
     absl::flags
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -11874,7 +12127,7 @@ target_link_libraries(grpclb_api_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -11937,7 +12190,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -11978,7 +12231,7 @@ target_link_libraries(h2_ssl_session_reuse_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12019,7 +12272,7 @@ target_link_libraries(head_of_line_blocking_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12060,7 +12313,7 @@ target_link_libraries(headers_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12123,7 +12376,7 @@ target_link_libraries(health_service_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12177,8 +12430,8 @@ target_link_libraries(http2_client
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -12236,7 +12489,7 @@ target_link_libraries(hybrid_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12275,7 +12528,7 @@ target_link_libraries(init_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12316,7 +12569,7 @@ target_link_libraries(initial_settings_frame_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12355,7 +12608,7 @@ target_link_libraries(insecure_security_connector_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12412,8 +12665,8 @@ target_link_libraries(interop_client
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -12469,8 +12722,8 @@ target_link_libraries(interop_server
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -12513,8 +12766,8 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
     absl::flags
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -12554,7 +12807,7 @@ target_link_libraries(json_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12595,7 +12848,7 @@ target_link_libraries(large_metadata_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12639,7 +12892,7 @@ target_link_libraries(lb_get_cpu_stats_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12680,7 +12933,7 @@ target_link_libraries(lb_load_data_store_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12719,7 +12972,85 @@ target_link_libraries(linux_system_roots_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
+)
+
+
+endif()
+if(gRPC_BUILD_TESTS)
+
+add_executable(log_test
+  test/core/gpr/log_test.cc
+  third_party/googletest/googletest/src/gtest-all.cc
+  third_party/googletest/googlemock/src/gmock-all.cc
+)
+
+target_include_directories(log_test
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
+    ${_gRPC_RE2_INCLUDE_DIR}
+    ${_gRPC_SSL_INCLUDE_DIR}
+    ${_gRPC_UPB_GENERATED_DIR}
+    ${_gRPC_UPB_GRPC_GENERATED_DIR}
+    ${_gRPC_UPB_INCLUDE_DIR}
+    ${_gRPC_ZLIB_INCLUDE_DIR}
+    third_party/googletest/googletest/include
+    third_party/googletest/googletest
+    third_party/googletest/googlemock/include
+    third_party/googletest/googlemock
+    ${_gRPC_PROTO_GENS_DIR}
+)
+
+target_link_libraries(log_test
+  ${_gRPC_PROTOBUF_LIBRARIES}
+  ${_gRPC_ALLTARGETS_LIBRARIES}
+  grpc_test_util
+  grpc
+  gpr
+  address_sorting
+  upb
+  ${_gRPC_SSL_LIBRARIES}
+)
+
+
+endif()
+if(gRPC_BUILD_TESTS)
+
+add_executable(matchers_test
+  test/core/security/matchers_test.cc
+  third_party/googletest/googletest/src/gtest-all.cc
+  third_party/googletest/googlemock/src/gmock-all.cc
+)
+
+target_include_directories(matchers_test
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
+    ${_gRPC_RE2_INCLUDE_DIR}
+    ${_gRPC_SSL_INCLUDE_DIR}
+    ${_gRPC_UPB_GENERATED_DIR}
+    ${_gRPC_UPB_GRPC_GENERATED_DIR}
+    ${_gRPC_UPB_INCLUDE_DIR}
+    ${_gRPC_ZLIB_INCLUDE_DIR}
+    third_party/googletest/googletest/include
+    third_party/googletest/googletest
+    third_party/googletest/googlemock/include
+    third_party/googletest/googlemock
+    ${_gRPC_PROTO_GENS_DIR}
+)
+
+target_link_libraries(matchers_test
+  ${_gRPC_PROTOBUF_LIBRARIES}
+  ${_gRPC_ALLTARGETS_LIBRARIES}
+  grpc_test_util
+  grpc
+  gpr
+  address_sorting
+  upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12773,7 +13104,7 @@ target_link_libraries(message_allocator_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12831,7 +13162,7 @@ target_link_libraries(mock_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12884,7 +13215,7 @@ target_link_libraries(nonblocking_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -12923,8 +13254,8 @@ target_link_libraries(noop-benchmark
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   ${_gRPC_BENCHMARK_LIBRARIES}
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -12963,7 +13294,7 @@ target_link_libraries(orphanable_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13004,7 +13335,7 @@ target_link_libraries(out_of_bounds_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13043,7 +13374,7 @@ target_link_libraries(pid_controller_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13097,7 +13428,7 @@ target_link_libraries(port_sharing_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13157,7 +13488,7 @@ target_link_libraries(proto_server_reflection_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13197,7 +13528,7 @@ target_link_libraries(proto_utils_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13285,8 +13616,8 @@ target_link_libraries(qps_json_driver
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -13366,8 +13697,8 @@ target_link_libraries(qps_worker
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -13425,7 +13756,49 @@ target_link_libraries(raw_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
+)
+
+
+endif()
+if(gRPC_BUILD_TESTS)
+
+add_executable(rbac_translator_test
+  src/core/lib/security/authorization/evaluate_args.cc
+  src/core/lib/security/authorization/rbac_policy.cc
+  src/core/lib/security/authorization/rbac_translator.cc
+  test/core/security/rbac_translator_test.cc
+  third_party/googletest/googletest/src/gtest-all.cc
+  third_party/googletest/googlemock/src/gmock-all.cc
+)
+
+target_include_directories(rbac_translator_test
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
+    ${_gRPC_RE2_INCLUDE_DIR}
+    ${_gRPC_SSL_INCLUDE_DIR}
+    ${_gRPC_UPB_GENERATED_DIR}
+    ${_gRPC_UPB_GRPC_GENERATED_DIR}
+    ${_gRPC_UPB_INCLUDE_DIR}
+    ${_gRPC_ZLIB_INCLUDE_DIR}
+    third_party/googletest/googletest/include
+    third_party/googletest/googletest
+    third_party/googletest/googlemock/include
+    third_party/googletest/googlemock
+    ${_gRPC_PROTO_GENS_DIR}
+)
+
+target_link_libraries(rbac_translator_test
+  ${_gRPC_PROTOBUF_LIBRARIES}
+  ${_gRPC_ALLTARGETS_LIBRARIES}
+  grpc_test_util
+  grpc
+  gpr
+  address_sorting
+  upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13464,7 +13837,7 @@ target_link_libraries(ref_counted_ptr_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13503,7 +13876,7 @@ target_link_libraries(ref_counted_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13543,7 +13916,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -13583,7 +13956,7 @@ target_link_libraries(retry_throttle_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13624,7 +13997,7 @@ target_link_libraries(secure_auth_context_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13682,7 +14055,7 @@ target_link_libraries(server_builder_plugin_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13735,7 +14108,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -13789,7 +14161,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -13829,7 +14200,7 @@ target_link_libraries(server_chttp2_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13871,7 +14242,7 @@ target_link_libraries(server_context_test_spouse_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13924,7 +14295,7 @@ target_link_libraries(server_early_return_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -13979,7 +14350,7 @@ target_link_libraries(server_interceptors_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14020,7 +14391,7 @@ target_link_libraries(server_registered_method_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14073,7 +14444,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -14132,7 +14502,7 @@ target_link_libraries(service_config_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14171,7 +14541,7 @@ target_link_libraries(service_config_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14210,7 +14580,7 @@ target_link_libraries(settings_timeout_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14267,7 +14637,7 @@ target_link_libraries(shutdown_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14308,7 +14678,7 @@ target_link_libraries(simple_request_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14348,8 +14718,8 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
     absl::symbolize
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -14389,7 +14759,7 @@ target_link_libraries(stat_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14428,7 +14798,7 @@ target_link_libraries(static_metadata_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14467,7 +14837,7 @@ target_link_libraries(stats_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14506,7 +14876,7 @@ target_link_libraries(status_metadata_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14545,7 +14915,7 @@ target_link_libraries(status_util_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14586,7 +14956,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -14645,7 +15015,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -14686,7 +15056,7 @@ target_link_libraries(string_ref_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14726,7 +15096,7 @@ target_link_libraries(test_cpp_client_credentials_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14766,7 +15136,7 @@ target_link_libraries(test_cpp_server_credentials_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14807,7 +15177,7 @@ target_link_libraries(test_cpp_util_slice_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14848,7 +15218,7 @@ target_link_libraries(test_cpp_util_time_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14890,7 +15260,7 @@ target_link_libraries(thread_manager_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -14948,7 +15318,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -14990,11 +15360,50 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
 endif()
+endif()
+if(gRPC_BUILD_TESTS)
+
+add_executable(time_util_test
+  test/core/gprpp/time_util_test.cc
+  third_party/googletest/googletest/src/gtest-all.cc
+  third_party/googletest/googlemock/src/gmock-all.cc
+)
+
+target_include_directories(time_util_test
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
+    ${_gRPC_RE2_INCLUDE_DIR}
+    ${_gRPC_SSL_INCLUDE_DIR}
+    ${_gRPC_UPB_GENERATED_DIR}
+    ${_gRPC_UPB_GRPC_GENERATED_DIR}
+    ${_gRPC_UPB_INCLUDE_DIR}
+    ${_gRPC_ZLIB_INCLUDE_DIR}
+    third_party/googletest/googletest/include
+    third_party/googletest/googletest
+    third_party/googletest/googlemock/include
+    third_party/googletest/googlemock
+    ${_gRPC_PROTO_GENS_DIR}
+)
+
+target_link_libraries(time_util_test
+  ${_gRPC_PROTOBUF_LIBRARIES}
+  ${_gRPC_ALLTARGETS_LIBRARIES}
+  grpc_test_util
+  grpc
+  gpr
+  address_sorting
+  upb
+  ${_gRPC_SSL_LIBRARIES}
+)
+
+
 endif()
 if(gRPC_BUILD_TESTS)
 
@@ -15031,7 +15440,7 @@ target_link_libraries(timer_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -15070,7 +15479,7 @@ target_link_libraries(tls_security_connector_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -15113,7 +15522,7 @@ target_link_libraries(too_many_pings_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -15154,7 +15563,46 @@ target_link_libraries(unknown_frame_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
+)
+
+
+endif()
+if(gRPC_BUILD_TESTS)
+
+add_executable(uri_parser_test
+  test/core/uri/uri_parser_test.cc
+  third_party/googletest/googletest/src/gtest-all.cc
+  third_party/googletest/googlemock/src/gmock-all.cc
+)
+
+target_include_directories(uri_parser_test
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
+    ${_gRPC_RE2_INCLUDE_DIR}
+    ${_gRPC_SSL_INCLUDE_DIR}
+    ${_gRPC_UPB_GENERATED_DIR}
+    ${_gRPC_UPB_GRPC_GENERATED_DIR}
+    ${_gRPC_UPB_INCLUDE_DIR}
+    ${_gRPC_ZLIB_INCLUDE_DIR}
+    third_party/googletest/googletest/include
+    third_party/googletest/googletest
+    third_party/googletest/googlemock/include
+    third_party/googletest/googlemock
+    ${_gRPC_PROTO_GENS_DIR}
+)
+
+target_link_libraries(uri_parser_test
+  ${_gRPC_PROTOBUF_LIBRARIES}
+  ${_gRPC_ALLTARGETS_LIBRARIES}
+  grpc_test_util
+  grpc
+  gpr
+  address_sorting
+  upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -15195,7 +15643,7 @@ target_link_libraries(window_overflow_bad_client_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -15235,7 +15683,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -15258,7 +15706,6 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/simple_messages.pb.h
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/simple_messages.grpc.pb.h
     test/core/util/cmdline.cc
-    test/core/util/debugger_macros.cc
     test/core/util/eval_args_mock_endpoint.cc
     test/core/util/fuzzer_util.cc
     test/core/util/grpc_profiler.cc
@@ -15311,10 +15758,10 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
+    ${_gRPC_SSL_LIBRARIES}
     absl::symbolize
     absl::stacktrace
     absl::failure_signal_handler
-    ${_gRPC_GFLAGS_LIBRARIES}
   )
 
 
@@ -15354,7 +15801,7 @@ target_link_libraries(xds_bootstrap_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -15393,7 +15840,7 @@ target_link_libraries(xds_certificate_provider_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -15447,7 +15894,46 @@ target_link_libraries(xds_credentials_end2end_test
   gpr
   address_sorting
   upb
-  ${_gRPC_GFLAGS_LIBRARIES}
+  ${_gRPC_SSL_LIBRARIES}
+)
+
+
+endif()
+if(gRPC_BUILD_TESTS)
+
+add_executable(xds_credentials_test
+  test/core/security/xds_credentials_test.cc
+  third_party/googletest/googletest/src/gtest-all.cc
+  third_party/googletest/googlemock/src/gmock-all.cc
+)
+
+target_include_directories(xds_credentials_test
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${_gRPC_ADDRESS_SORTING_INCLUDE_DIR}
+    ${_gRPC_RE2_INCLUDE_DIR}
+    ${_gRPC_SSL_INCLUDE_DIR}
+    ${_gRPC_UPB_GENERATED_DIR}
+    ${_gRPC_UPB_GRPC_GENERATED_DIR}
+    ${_gRPC_UPB_INCLUDE_DIR}
+    ${_gRPC_ZLIB_INCLUDE_DIR}
+    third_party/googletest/googletest/include
+    third_party/googletest/googletest
+    third_party/googletest/googlemock/include
+    third_party/googletest/googlemock
+    ${_gRPC_PROTO_GENS_DIR}
+)
+
+target_link_libraries(xds_credentials_test
+  ${_gRPC_PROTOBUF_LIBRARIES}
+  ${_gRPC_ALLTARGETS_LIBRARIES}
+  grpc_test_util
+  grpc
+  gpr
+  address_sorting
+  upb
+  ${_gRPC_SSL_LIBRARIES}
 )
 
 
@@ -15500,6 +15986,10 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/ads.grpc.pb.cc
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/ads.pb.h
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/ads.grpc.pb.h
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/aggregate_cluster.pb.cc
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/aggregate_cluster.grpc.pb.cc
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/aggregate_cluster.pb.h
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/aggregate_cluster.grpc.pb.h
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/base.pb.cc
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/base.grpc.pb.cc
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/base.pb.h
@@ -15556,6 +16046,18 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/route.grpc.pb.cc
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/route.pb.h
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/route.grpc.pb.h
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/router.pb.cc
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/router.grpc.pb.cc
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/router.pb.h
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/router.grpc.pb.h
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/string.pb.cc
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/string.grpc.pb.cc
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/string.pb.h
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/string.grpc.pb.h
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/tls.pb.cc
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/tls.grpc.pb.cc
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/tls.pb.h
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/xds/v3/tls.grpc.pb.h
     test/cpp/end2end/test_service_impl.cc
     test/cpp/end2end/xds_end2end_test.cc
     third_party/googletest/googletest/src/gtest-all.cc
@@ -15590,7 +16092,7 @@ if(_gRPC_PLATFORM_LINUX OR _gRPC_PLATFORM_MAC OR _gRPC_PLATFORM_POSIX)
     gpr
     address_sorting
     upb
-    ${_gRPC_GFLAGS_LIBRARIES}
+    ${_gRPC_SSL_LIBRARIES}
   )
 
 
@@ -15644,8 +16146,8 @@ target_link_libraries(xds_interop_client
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -15653,6 +16155,10 @@ endif()
 if(gRPC_BUILD_TESTS)
 
 add_executable(xds_interop_server
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/health/v1/health.pb.cc
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/health/v1/health.grpc.pb.cc
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/health/v1/health.pb.h
+  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/health/v1/health.grpc.pb.h
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/empty.pb.cc
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/empty.grpc.pb.cc
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/empty.pb.h
@@ -15665,6 +16171,7 @@ add_executable(xds_interop_server
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/test.grpc.pb.cc
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/test.pb.h
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/test.grpc.pb.h
+  test/cpp/end2end/test_health_check_service_impl.cc
   test/cpp/interop/xds_interop_server.cc
   third_party/googletest/googletest/src/gtest-all.cc
   third_party/googletest/googlemock/src/gmock-all.cc
@@ -15698,8 +16205,8 @@ target_link_libraries(xds_interop_server
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -15740,8 +16247,8 @@ target_link_libraries(alts_credentials_fuzzer_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -15782,8 +16289,8 @@ target_link_libraries(client_fuzzer_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -15824,8 +16331,8 @@ target_link_libraries(hpack_parser_fuzzer_test_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -15866,8 +16373,8 @@ target_link_libraries(http_request_fuzzer_test_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -15908,8 +16415,8 @@ target_link_libraries(http_response_fuzzer_test_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -15950,8 +16457,8 @@ target_link_libraries(json_fuzzer_test_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -15992,8 +16499,8 @@ target_link_libraries(nanopb_fuzzer_response_test_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -16034,8 +16541,8 @@ target_link_libraries(nanopb_fuzzer_serverlist_test_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -16076,8 +16583,8 @@ target_link_libraries(percent_decode_fuzzer_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -16118,8 +16625,8 @@ target_link_libraries(percent_encode_fuzzer_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -16160,8 +16667,8 @@ target_link_libraries(server_fuzzer_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -16202,8 +16709,8 @@ target_link_libraries(ssl_server_fuzzer_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -16244,8 +16751,8 @@ target_link_libraries(uri_fuzzer_test_one_entry
   gpr
   address_sorting
   upb
+  ${_gRPC_SSL_LIBRARIES}
   absl::flags
-  ${_gRPC_GFLAGS_LIBRARIES}
 )
 
 
@@ -16319,7 +16826,7 @@ generate_pkgconfig(
   "high performance general RPC framework"
   "${gRPC_CORE_VERSION}"
   "gpr openssl"
-  "-lgrpc -laddress_sorting -lre2 -lupb -lcares -lz -labsl_raw_hash_set -labsl_hashtablez_sampler -labsl_exponential_biased -labsl_hash -labsl_bad_variant_access -labsl_city -labsl_status -labsl_cord -labsl_str_format_internal -labsl_synchronization -labsl_graphcycles_internal -labsl_symbolize -labsl_demangle_internal -labsl_stacktrace -labsl_debugging_internal -labsl_malloc_internal -labsl_time -labsl_time_zone -labsl_civil_time -labsl_strings -labsl_strings_internal -labsl_throw_delegate -labsl_int128 -labsl_base -labsl_spinlock_wait -labsl_bad_optional_access -labsl_raw_logging_internal -labsl_log_severity"
+  "-lgrpc -laddress_sorting -lre2 -lupb -lcares -lz -labsl_raw_hash_set -labsl_hashtablez_sampler -labsl_exponential_biased -labsl_hash -labsl_city -labsl_statusor -labsl_bad_variant_access -labsl_status -labsl_cord -labsl_str_format_internal -labsl_synchronization -labsl_graphcycles_internal -labsl_symbolize -labsl_demangle_internal -labsl_stacktrace -labsl_debugging_internal -labsl_malloc_internal -labsl_time -labsl_time_zone -labsl_civil_time -labsl_strings -labsl_strings_internal -labsl_throw_delegate -labsl_int128 -labsl_base -labsl_spinlock_wait -labsl_bad_optional_access -labsl_raw_logging_internal -labsl_log_severity"
   ""
   "grpc.pc")
 
@@ -16329,7 +16836,7 @@ generate_pkgconfig(
   "high performance general RPC framework without SSL"
   "${gRPC_CORE_VERSION}"
   "gpr"
-  "-lgrpc_unsecure -labsl_status -labsl_cord -labsl_str_format_internal -labsl_synchronization -labsl_graphcycles_internal -labsl_symbolize -labsl_demangle_internal -labsl_stacktrace -labsl_debugging_internal -labsl_malloc_internal -labsl_time -labsl_time_zone -labsl_civil_time -labsl_strings -labsl_strings_internal -labsl_throw_delegate -labsl_int128 -labsl_base -labsl_spinlock_wait -labsl_bad_optional_access -labsl_raw_logging_internal -labsl_log_severity"
+  "-lgrpc_unsecure -labsl_raw_hash_set -labsl_hashtablez_sampler -labsl_exponential_biased -labsl_hash -labsl_city -labsl_statusor -labsl_bad_variant_access -labsl_status -labsl_cord -labsl_str_format_internal -labsl_synchronization -labsl_graphcycles_internal -labsl_symbolize -labsl_demangle_internal -labsl_stacktrace -labsl_debugging_internal -labsl_malloc_internal -labsl_time -labsl_time_zone -labsl_civil_time -labsl_strings -labsl_strings_internal -labsl_throw_delegate -labsl_int128 -labsl_base -labsl_spinlock_wait -labsl_bad_optional_access -labsl_raw_logging_internal -labsl_log_severity"
   ""
   "grpc_unsecure.pc")
 
@@ -16339,7 +16846,7 @@ generate_pkgconfig(
   "C++ wrapper for gRPC"
   "${gRPC_CPP_VERSION}"
   "grpc"
-  "-lgrpc++ -labsl_raw_hash_set -labsl_hashtablez_sampler -labsl_exponential_biased -labsl_hash -labsl_bad_variant_access -labsl_city -labsl_status -labsl_cord -labsl_str_format_internal -labsl_synchronization -labsl_graphcycles_internal -labsl_symbolize -labsl_demangle_internal -labsl_stacktrace -labsl_debugging_internal -labsl_malloc_internal -labsl_time -labsl_time_zone -labsl_civil_time -labsl_strings -labsl_strings_internal -labsl_throw_delegate -labsl_int128 -labsl_base -labsl_spinlock_wait -labsl_bad_optional_access -labsl_raw_logging_internal -labsl_log_severity"
+  "-lgrpc++ -labsl_raw_hash_set -labsl_hashtablez_sampler -labsl_exponential_biased -labsl_hash -labsl_city -labsl_statusor -labsl_bad_variant_access -labsl_status -labsl_cord -labsl_str_format_internal -labsl_synchronization -labsl_graphcycles_internal -labsl_symbolize -labsl_demangle_internal -labsl_stacktrace -labsl_debugging_internal -labsl_malloc_internal -labsl_time -labsl_time_zone -labsl_civil_time -labsl_strings -labsl_strings_internal -labsl_throw_delegate -labsl_int128 -labsl_base -labsl_spinlock_wait -labsl_bad_optional_access -labsl_raw_logging_internal -labsl_log_severity"
   ""
   "grpc++.pc")
 
@@ -16349,6 +16856,6 @@ generate_pkgconfig(
   "C++ wrapper for gRPC without SSL"
   "${gRPC_CPP_VERSION}"
   "grpc_unsecure"
-  "-lgrpc++_unsecure -labsl_status -labsl_cord -labsl_str_format_internal -labsl_synchronization -labsl_graphcycles_internal -labsl_symbolize -labsl_demangle_internal -labsl_stacktrace -labsl_debugging_internal -labsl_malloc_internal -labsl_time -labsl_time_zone -labsl_civil_time -labsl_strings -labsl_strings_internal -labsl_throw_delegate -labsl_int128 -labsl_base -labsl_spinlock_wait -labsl_bad_optional_access -labsl_raw_logging_internal -labsl_log_severity"
+  "-lgrpc++_unsecure -labsl_raw_hash_set -labsl_hashtablez_sampler -labsl_exponential_biased -labsl_hash -labsl_city -labsl_statusor -labsl_bad_variant_access -labsl_status -labsl_cord -labsl_str_format_internal -labsl_synchronization -labsl_graphcycles_internal -labsl_symbolize -labsl_demangle_internal -labsl_stacktrace -labsl_debugging_internal -labsl_malloc_internal -labsl_time -labsl_time_zone -labsl_civil_time -labsl_strings -labsl_strings_internal -labsl_throw_delegate -labsl_int128 -labsl_base -labsl_spinlock_wait -labsl_bad_optional_access -labsl_raw_logging_internal -labsl_log_severity"
   ""
   "grpc++_unsecure.pc")

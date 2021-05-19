@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -105,7 +106,10 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
       raw_signin_client_(signin_client_param) {
 }
 
-IdentityManagerDependenciesOwner::~IdentityManagerDependenciesOwner() = default;
+IdentityManagerDependenciesOwner::~IdentityManagerDependenciesOwner() {
+  if (owned_signin_client_)
+    owned_signin_client_->Shutdown();
+}
 
 sync_preferences::TestingPrefServiceSyncable*
 IdentityManagerDependenciesOwner::pref_service() {
@@ -168,6 +172,7 @@ void IdentityTestEnvironment::Initialize() {
   test_identity_manager_observer_ =
       std::make_unique<TestIdentityManagerObserver>(identity_manager());
   diagnostics_observation_.Observe(identity_manager());
+  identity_manager_observation_.Observe(identity_manager());
 }
 
 IdentityTestEnvironment::IdentityTestEnvironment(
@@ -236,7 +241,8 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
   auto token_service = std::make_unique<FakeProfileOAuth2TokenService>(
       pref_service,
       std::make_unique<TestProfileOAuth2TokenServiceDelegateChromeOS>(
-          account_tracker_service.get(), account_manager,
+          account_tracker_service.get(),
+          account_manager_factory->GetAccountManagerAsh(user_data_dir.value()),
           /*is_regular_profile=*/true));
 
   return FinishBuildIdentityManagerForTests(
@@ -339,11 +345,17 @@ IdentityTestEnvironment::FinishBuildIdentityManagerForTests(
       std::move(gaia_cookie_manager_service);
   init_params.primary_account_manager = std::move(primary_account_manager);
   init_params.token_service = std::move(token_service);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  init_params.signin_client = signin_client;
+#endif
 
   return std::make_unique<IdentityManager>(std::move(init_params));
 }
 
-IdentityTestEnvironment::~IdentityTestEnvironment() = default;
+IdentityTestEnvironment::~IdentityTestEnvironment() {
+  if (owned_identity_manager_)
+    owned_identity_manager_->Shutdown();
+}
 
 IdentityManager* IdentityTestEnvironment::identity_manager() {
   DCHECK(raw_identity_manager_ || owned_identity_manager_);
@@ -356,6 +368,10 @@ IdentityManager* IdentityTestEnvironment::identity_manager() {
 TestIdentityManagerObserver*
 IdentityTestEnvironment::identity_manager_observer() {
   return test_identity_manager_observer_.get();
+}
+
+void IdentityTestEnvironment::WaitForRefreshTokensLoaded() {
+  signin::WaitForRefreshTokensLoaded(identity_manager());
 }
 
 CoreAccountInfo IdentityTestEnvironment::SetPrimaryAccount(
@@ -387,7 +403,7 @@ AccountInfo IdentityTestEnvironment::MakePrimaryAccountAvailable(
 
 AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
     const std::string& email) {
-  DCHECK(!identity_manager()->HasPrimaryAccount(ConsentLevel::kNotRequired));
+  DCHECK(!identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Chrome OS sets the unconsented primary account during login and does not
   // allow signout.
@@ -404,16 +420,16 @@ AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
   base::RunLoop().RunUntilIdle();
   // Tests that don't use the |SigninManager| needs the unconsented primary
   // account to be set manually.
-  if (!identity_manager()->HasPrimaryAccount(ConsentLevel::kNotRequired)) {
+  if (!identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin)) {
     identity_manager()
         ->GetPrimaryAccountMutator()
         ->SetUnconsentedPrimaryAccount(account_info.account_id);
   }
 #endif
-  DCHECK(identity_manager()->HasPrimaryAccount(ConsentLevel::kNotRequired));
-  DCHECK_EQ(email, identity_manager()
-                       ->GetPrimaryAccountInfo(ConsentLevel::kNotRequired)
-                       .email);
+  DCHECK(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
+  DCHECK_EQ(
+      email,
+      identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin).email);
   return account_info;
 }
 
@@ -560,11 +576,13 @@ void IdentityTestEnvironment::OnAccessTokenRequested(
                      weak_ptr_factory_.GetWeakPtr(), account_id));
 }
 
-void IdentityTestEnvironment::OnIdentityManagerShutdown() {
+void IdentityTestEnvironment::OnIdentityManagerShutdown(
+    signin::IdentityManager* identity_manager) {
   // Remove the Observers that IdentityTestEnvironment added during its
   // initialization.
   test_identity_manager_observer_.reset();
   diagnostics_observation_.Reset();
+  identity_manager_observation_.Reset();
 }
 
 void IdentityTestEnvironment::HandleOnAccessTokenRequested(

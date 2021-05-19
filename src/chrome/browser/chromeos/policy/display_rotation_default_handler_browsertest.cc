@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/policy/device_display_cros_browser_test.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationDefaultTest, FirstDisplay) {
 
   SetRotationPolicy(policy_rotation);
   int settings_rotation;
-  EXPECT_TRUE(chromeos::CrosSettings::Get()->GetInteger(
+  EXPECT_TRUE(ash::CrosSettings::Get()->GetInteger(
       chromeos::kDisplayRotationDefault, &settings_rotation));
   EXPECT_EQ(policy_rotation, settings_rotation)
       << "Value of CrosSettings after policy value changed";
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationBootTest, PRE_Reboot) {
       static_cast<em::DisplayRotationDefaultProto::Rotation>(policy_rotation));
   base::RunLoop run_loop;
   base::CallbackListSubscription subscription =
-      chromeos::CrosSettings::Get()->AddSettingsObserver(
+      ash::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kDisplayRotationDefault, run_loop.QuitClosure());
   device_policy->SetDefaultSigningKey();
   device_policy->Build();

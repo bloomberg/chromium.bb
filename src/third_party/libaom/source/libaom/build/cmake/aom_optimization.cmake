@@ -100,6 +100,7 @@ function(get_asm_obj_format out_format)
     if("${AOM_TARGET_SYSTEM}" STREQUAL "Darwin")
       set(objformat "macho64")
     elseif("${AOM_TARGET_SYSTEM}" STREQUAL "MSYS"
+           OR "${AOM_TARGET_SYSTEM}" STREQUAL "CYGWIN"
            OR "${AOM_TARGET_SYSTEM}" STREQUAL "Windows")
       set(objformat "win64")
     else()
@@ -109,6 +110,7 @@ function(get_asm_obj_format out_format)
     if("${AOM_TARGET_SYSTEM}" STREQUAL "Darwin")
       set(objformat "macho32")
     elseif("${AOM_TARGET_SYSTEM}" STREQUAL "MSYS"
+           OR "${AOM_TARGET_SYSTEM}" STREQUAL "CYGWIN"
            OR "${AOM_TARGET_SYSTEM}" STREQUAL "Windows")
       set(objformat "win32")
     else()

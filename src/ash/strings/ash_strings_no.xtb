@@ -40,6 +40,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1252999807265626933">Lader fra <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hvordan er været?</translation>
 <translation id="1267032506238418139">Endring av hurtigtast</translation>
+<translation id="1269405891096105529">Den eksterne enheten støttes ikke i Gjestemodus</translation>
 <translation id="1270290102613614947">Skjermtastaturet er deaktivert</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1275285675049378717">Gir strøm til <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="2012624427112548395">Ctrl + Søk + H</translation>
 <translation id="2016340657076538683">Skriv inn en melding</translation>
 <translation id="2018630726571919839">Fortell meg en vits</translation>
+<translation id="2021864487439853900">Klikk for å låse opp</translation>
 <translation id="2049240716062114887">Skrivebordsnavnet ble endret til <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Lysstyrke på tastaturet</translation>
@@ -276,6 +278,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan fortsatt logge på senere.</translation>
 <translation id="3321628682574733415">Feil kode for foreldertilgang</translation>
 <translation id="332587331255250389">Bytt ut batteriet</translation>
+<translation id="3333741161915951567">Modemet startes på nytt. Vent 30 sekunder før du prøver igjen.</translation>
 <translation id="3341303451326249809">Skjermdumpen er lagret</translation>
 <translation id="334252345105450327">Ta en skjermdump</translation>
 <translation id="3351879221545518001">Du caster for øyeblikket skjermen.</translation>
@@ -320,6 +323,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> – administrert bruker</translation>
 <translation id="3665889125180354336">Ta opp med mikrofonen</translation>
 <translation id="36813544980941320">Wi-Fi-nettverk blir delt mellom telefonen din og <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Viser vinduer fra det nåværende skrivebordet. Trykk på oppoverpiltasten for å vise vinduer fra alle skrivebord</translation>
 <translation id="3702846122927433391">Antall innbyggere i Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Laster inn ...</translation>
@@ -351,6 +355,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="394485226368336402">Lydinnstillinger</translation>
 <translation id="3945319193631853098">Trykk for å fullføre konfigureringen</translation>
 <translation id="3945867833895287237">Kobler til Wi-Fi-sone …</translation>
+<translation id="3958465044488004317">Se resultatet i assistenten</translation>
 <translation id="3962859241508114581">Forrige spor</translation>
 <translation id="3969043077941541451">Av</translation>
 <translation id="397105322502079400">Beregner …</translation>
@@ -407,10 +412,12 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="4421231901400348175">Deler kontroll av skjermen med <ph name="HELPER_NAME" /> via fjernhjelp.</translation>
 <translation id="4424159417645388645">Skrivebord 5</translation>
 <translation id="4430019312045809116">Volum</translation>
+<translation id="4445159312344259901">Logg inn for å låse opp</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 viktig varsel}other{# viktige varsler}}</translation>
 <translation id="4450893287417543264">Ikke vis igjen</translation>
 <translation id="445864333228800152">God kveld</translation>
 <translation id="4458688154122353284">Avslutt skjermopptak</translation>
+<translation id="4467143075433126295">Trykk og hold [Esc] for å gå ut av fullskjerm</translation>
 <translation id="4472575034687746823">Kom i gang</translation>
 <translation id="4477350412780666475">Neste spor</translation>
 <translation id="4477892968187500306">Denne enheten kan ha apper som ikke er verifisert av Google.</translation>
@@ -607,6 +614,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Google-assistenten er ikke tilgjengelig i gjesteøkter.</translation>
 <translation id="6137566720514957455">Åpne dialogboksen for fjerning av <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Den eksterne enheten støttes ikke</translation>
 <translation id="615957422585914272">Vis skjermtastaturet</translation>
 <translation id="6165508094623778733">Finn ut mer</translation>
 <translation id="6179832488876878285">Du kan feste viktige filer her. Åpne Filer-appen for å komme i gang.</translation>
@@ -624,11 +632,11 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="6297287540776456956">Bruk pekepennen til å velge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ble rotert til <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Tale</translation>
+<translation id="6330012934079202188">Viser vinduer fra alle skrivebord. Trykk på oppoverpiltasten for å vise vinduer fra det nåværende skrivebordet</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> er en administrert økt som administreres av <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth er på</translation>
 <translation id="6381109794406942707">For å låse opp enheten, skriv inn PIN-koden.</translation>
 <translation id="639644700271529076">CAPS LOCK er av</translation>
-<translation id="6396835948284782440">Trykk og hold [Esc] for å avslutte.</translation>
 <translation id="6406704438230478924">alt gr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Fjern alle varsler</translation>
@@ -794,7 +802,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="7780159184141939021">Rotér skjermen</translation>
 <translation id="7796353162336583443">Trykk på pekepenn-knappen på hyllen for å gjøre et notat, ta en skjermdump eller bruke Google-assistenten, laserpekeren eller forstørrelsesglasset.</translation>
 <translation id="7798302898096527229">Trykk på Søk eller Shift for å avbryte</translation>
-<translation id="7807966291075028781">Av sikkerhetsårsaker støttes ikke den eksterne enheten i Gjestemodus</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sterkt signal</translation>
 <translation id="7837740436429729974">Tiden er ute</translation>
@@ -944,6 +951,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="8936501819958976551">deaktivert</translation>
 <translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
 <translation id="8940956008527784070">Lavt batterinivå (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8951539504029375108">Kun godkjente Thunderbolt-enheter er kompatible med Chromebooken din</translation>
 <translation id="8982906748181120328">Nærdeling synlig</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Bruker <ph name="IME_NAME" /></translation>

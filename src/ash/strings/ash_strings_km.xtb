@@ -40,6 +40,7 @@
 <translation id="1252999807265626933">កំពុងសាកពី <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">តើអាកាសធាតុ​យ៉ាងម៉េចដែរ?</translation>
 <translation id="1267032506238418139">ការផ្លាស់ប្តូរផ្លូវកាត់</translation>
+<translation id="1269405891096105529">មិនអាចប្រើ​ឧបករណ៍​ខាងក្រៅ​នៅក្នុង​មុខងារភ្ញៀវ​បានទេ</translation>
 <translation id="1270290102613614947">ក្តារចុចលើអេក្រង់បានបិទដំណើរការ</translation>
 <translation id="1272079795634619415">ឈប់</translation>
 <translation id="1275285675049378717">កំពុង​សាកថ្ម <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">សរសេរ​សារ</translation>
 <translation id="2018630726571919839">និយាយ​រឿងកំប្លែង​ឱ្យខ្ញុំស្ដាប់</translation>
+<translation id="2021864487439853900">ចុចដើម្បីដោះសោ</translation>
 <translation id="2049240716062114887">ឈ្មោះតុត្រូវ​បានប្ដូរទៅ <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">បញ្ឈរ</translation>
 <translation id="2067602449040652523">ពន្លឺកា្តរចុច</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> នៅតែអាចចូល​នៅពេល​ក្រោយបាន​ដដែល។</translation>
 <translation id="3321628682574733415">លេខកូដមាតាបិតា​មិនត្រឹមត្រូវទេ</translation>
 <translation id="332587331255250389">សូម​ប្តូរ​ថ្ម</translation>
+<translation id="3333741161915951567">ម៉ូដឹម​ចាប់ផ្ដើម​ឡើងវិញ។ សូមរង់ចាំ​រយៈពេល 30 វិនាទី មុននឹង​ព្យាយាម​ម្ដងទៀត។</translation>
 <translation id="3341303451326249809">បាន​ថតរូបអេក្រង់</translation>
 <translation id="334252345105450327">ថតអេក្រង់</translation>
 <translation id="3351879221545518001">ឥឡូវនេះ អ្នកកំពុង​បញ្ជូន​អេក្រង់។</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733">អ្នកប្រើប្រាស់​ដែលគ្រប់គ្រង​ដោយ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3665889125180354336">ថតសំឡេង​ដោយ​ប្រើ​មីក្រូហ្វូន</translation>
 <translation id="36813544980941320">បណ្ដាញ Wi-Fi នឹងត្រូវបានចែករំលែក​រវាង​ទូរសព្ទរបស់អ្នក និង <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">កំពុងបង្ហាញ​វិនដូពី​តុបច្ចុប្បន្ន សូមចុចគ្រាប់ចុច​ព្រួញឡើងលើ ដើម្បីបង្ហាញ​វិនដូ​ពីតុទាំងអស់</translation>
 <translation id="3702846122927433391">ចំនួនប្រជាជននៅប្រទេសនីហ្សេរីយ៉ា</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">កំពុងដំណើរការ...</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">ការ​កំណត់​សំឡេង</translation>
 <translation id="3945319193631853098">ចុចដើម្បី​បញ្ចប់ការរៀបចំ</translation>
 <translation id="3945867833895287237">កំពុងភ្ជាប់ហតស្ប៉ត...</translation>
+<translation id="3958465044488004317">មើល​លទ្ធផលក្នុង​ជំនួយការ</translation>
 <translation id="3962859241508114581">សំនៀងមុន</translation>
 <translation id="3969043077941541451">បិទ</translation>
 <translation id="397105322502079400">កំពុងគណនា...</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175">ចែករំលែកការបញ្ជាអេក្រង់របស់អ្នកជាមួយ <ph name="HELPER_NAME" /> តាមរយៈជំនួយការពីចម្ងាយ។</translation>
 <translation id="4424159417645388645">តុទី 5</translation>
 <translation id="4430019312045809116">សម្លេង</translation>
+<translation id="4445159312344259901">ចូលដើម្បីដោះសោ</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{ការជូនដំណឹងសំខាន់ 1}other{ការជូនដំណឹង​សំខាន់ #}}</translation>
 <translation id="4450893287417543264">កុំបង្ហាញម្ដងទៀត</translation>
 <translation id="445864333228800152">សាយណ្ហ​សួស្ដី</translation>
 <translation id="4458688154122353284">បញ្ឈប់​ការថត​អេក្រង់</translation>
+<translation id="4467143075433126295">ចុច [Esc] ឱ្យជាប់ ដើម្បីចេញ​ពីអេក្រង់ពេញ</translation>
 <translation id="4472575034687746823">ចាប់ផ្ដើម</translation>
 <translation id="4477350412780666475">សំនៀង​បន្ទាប់</translation>
 <translation id="4477892968187500306">ឧបករណ៍នេះ​អាចមាន​កម្មវិធី​ដែល​មិនត្រូវបាន​ផ្ទៀងផ្ទាត់​ដោយ Google។</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />។ <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">​មិន​អាចប្រើ​ Google ជំនួយការនៅក្នុង​វេនភ្ញៀវ​បានទេ។</translation>
 <translation id="6137566720514957455">បើក "ប្រអប់លុប​គណនី" សម្រាប់ <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">មិនអាចប្រើ​ឧបករណ៍ខាងក្រៅ​បានទេ</translation>
 <translation id="615957422585914272">បង្ហាញក្តារចុចលើអេក្រង់</translation>
 <translation id="6165508094623778733">ស្វែងយល់​បន្ថែម</translation>
 <translation id="6179832488876878285">អ្នកអាចខ្ទាស់ឯកសារសំខាន់ៗរបស់អ្នកនៅទីនេះ។ សូមបើកកម្មវិធី Files ដើម្បីចាប់ផ្ដើម។</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">ប្រើប៊ិចដើម្បីជ្រើសរើសតំបន់</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ត្រូវបានបង្វិលទៅ <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">សម្លេង</translation>
+<translation id="6330012934079202188">កំពុងបង្ហាញ​វិនដូពីតុ​ទាំងអស់ សូមចុច​គ្រាប់ចុច​ព្រួញឡើងលើ ដើម្បីបង្ហាញ​វិនដូពី​តុបច្ចុប្បន្ន</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> គឺជា​រយៈពេល​ចូលប្រើ​ដែល​ស្ថិតក្រោមការគ្រប់គ្រងរបស់ <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">ប៊្លូធូស​ត្រូវបាន​បើក</translation>
 <translation id="6381109794406942707">ដើម្បីដោះសោឧបករណ៍នេះ សូមបញ្ចូលកូដ PIN របស់អ្នក។</translation>
 <translation id="639644700271529076">CAPS LOCK ត្រូវបានបិទ</translation>
-<translation id="6396835948284782440">ចុច [Esc] ឱ្យជាប់ ដើម្បីចាកចេញ។</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">សម្អាត​ការ​ជូន​ដំណឹង​ទាំងអស់</translation>
@@ -714,7 +722,7 @@
 <translation id="7067196344162293536">បង្វិល​ស្វ័យ​ប្រវត្តិ</translation>
 <translation id="7068360136237591149">បើក​ឯកសារ</translation>
 <translation id="7076293881109082629">កំពុងចូល</translation>
-<translation id="7088960765736518739">ប្រើប៊ូតុងចុច</translation>
+<translation id="7088960765736518739">មុខងារប្រើឧបករណ៍ចុចសម្រាប់ជនពិការ</translation>
 <translation id="7098389117866926363">ឧបករណ៍ USB-C (រន្ធឆ្វេងផ្នែកខាងក្រោយ)</translation>
 <translation id="7118268675952955085">រូបថត​អេក្រង់</translation>
 <translation id="7131634465328662194">អ្នក​នឹង​ចាកចេញ​ពី​គណនី​ដោយ​ស្វ័យ​ប្រវត្តិ។</translation>
@@ -794,7 +802,6 @@
 <translation id="7780159184141939021">បង្វិល​អេក្រង់</translation>
 <translation id="7796353162336583443">ចុច​ប៊ូតុងប៊ិច​នៅលើ​ធ្នើដើម្បី​កត់ចំណាំ ថត​អេក្រង់ ប្រើ​ Google ជំនួយការ សញ្ញា​ព្រួញ​ឡាស៊ែរ ឬ​កែវ​ពង្រីក។</translation>
 <translation id="7798302898096527229">ចុច Search ឬ Shift ដើម្បី​បោះបង់។</translation>
-<translation id="7807966291075028781">ឧបករណ៍សម្រាប់​ភ្ជាប់​ជាមួយ​កុំព្យូទ័រមិនអាចប្រើនៅក្នុងមុខងារភ្ញៀវបានទេ ដោយសារបញ្ហាពាក់ព័ន្ធនឹងសុវត្ថិភាព</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> និង <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">សេវាខ្លាំង</translation>
 <translation id="7837740436429729974">ដល់​ម៉ោង</translation>
@@ -944,6 +951,7 @@
 <translation id="8936501819958976551">បាន​បិទដំណើរការ</translation>
 <translation id="8938800817013097409">ឧបករណ៍ USB-C (រន្ធស្តាំផ្នែកខាងក្រោយ)</translation>
 <translation id="8940956008527784070">ថ្មខ្សោយ (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">មានតែ​ឧបករណ៍ Thunderbolt មានការអនុញ្ញាតប៉ុណ្ណោះ ដែលត្រូវគ្នា​ជាមួយ Chromebook របស់អ្នក</translation>
 <translation id="8982906748181120328">លទ្ធភាពមើលឃើញនៅជិត</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">កំពុងប្រើ <ph name="IME_NAME" /></translation>

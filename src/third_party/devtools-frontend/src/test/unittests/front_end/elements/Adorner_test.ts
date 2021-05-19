@@ -4,9 +4,9 @@
 
 const {assert} = chai;
 
-import * as Common from '../../../../front_end/common/common.js';
-import type * as ElementsModule from '../../../../front_end/elements/elements.js';
-import {ls} from '../../../../front_end/platform/platform.js';
+import * as Common from '../../../../front_end/core/common/common.js';
+import type * as Platform from '../../../../front_end/core/platform/platform.js';
+import type * as ElementsModule from '../../../../front_end/panels/elements/elements.js';
 import {describeWithEnvironment} from '../helpers/EnvironmentHelpers.js';
 
 const ADORNER_TAG_NAME = 'DEVTOOLS-ADORNER';
@@ -15,7 +15,7 @@ const ADORNER_NAME = 'grid';
 describeWithEnvironment('Adorner', async () => {
   let Elements: typeof ElementsModule;
   before(async () => {
-    Elements = await import('../../../../front_end/elements/elements.js');
+    Elements = await import('../../../../front_end/panels/elements/elements.js');
   });
 
   function assertIsAdorner(element: HTMLElement) {
@@ -31,23 +31,13 @@ describeWithEnvironment('Adorner', async () => {
     assertIsAdorner(adorner);
   });
 
-  it('can be created by Adorner.create', () => {
-    const content = document.createElement('span');
-    content.textContent = ADORNER_NAME;
-    const adorner = Elements.Adorner.Adorner.create(content, ADORNER_NAME);
-    assertIsAdorner(adorner);
-
-    const options = {
-      category: Elements.AdornerManager.AdornerCategories.Layout,
-    };
-    const adornerWithOptions = Elements.Adorner.Adorner.create(content, ADORNER_NAME, options);
-    assertIsAdorner(adornerWithOptions);
-    assert.strictEqual(adornerWithOptions.category, Elements.AdornerManager.AdornerCategories.Layout);
-  });
-
   it('can interacts as a toggle button with proper ARIA setup', () => {
     const content = document.createElement('span');
-    const adorner = Elements.Adorner.Adorner.create(content, ADORNER_NAME);
+    const adorner = new Elements.Adorner.Adorner();
+    adorner.data = {
+      name: ADORNER_NAME,
+      content,
+    };
     assert.isNull(adorner.getAttribute('role'), 'non-interactive adorner had wrong aria role value');
 
     let clickCounter = 0;
@@ -55,8 +45,8 @@ describeWithEnvironment('Adorner', async () => {
       clickCounter++;
     };
 
-    const ariaLabelDefault = ls`adorner toggled on`;
-    const ariaLabelActive = ls`adorner toggled off`;
+    const ariaLabelDefault = 'adorner toggled on' as Platform.UIString.LocalizedString;
+    const ariaLabelActive = 'adorner toggled off' as Platform.UIString.LocalizedString;
     adorner.addInteraction(clickListener, {
       isToggle: true,
       shouldPropagateOnKeydown: false,
@@ -100,7 +90,11 @@ describeWithEnvironment('Adorner', async () => {
 
   it('can be toggled programmatically', () => {
     const content = document.createElement('span');
-    const adorner = Elements.Adorner.Adorner.create(content, ADORNER_NAME);
+    const adorner = new Elements.Adorner.Adorner();
+    adorner.data = {
+      name: ADORNER_NAME,
+      content,
+    };
     adorner.addInteraction(() => {}, {
       isToggle: true,
       shouldPropagateOnKeydown: false,

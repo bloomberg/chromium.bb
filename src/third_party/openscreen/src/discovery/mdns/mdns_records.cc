@@ -606,9 +606,7 @@ bool MdnsRecord::IsValidConfig(const DomainName& name,
 }
 
 bool MdnsRecord::operator==(const MdnsRecord& rhs) const {
-  return dns_type_ == rhs.dns_type_ && dns_class_ == rhs.dns_class_ &&
-         record_type_ == rhs.record_type_ && ttl_ == rhs.ttl_ &&
-         name_ == rhs.name_ && rdata_ == rhs.rdata_;
+  return IsReannouncementOf(rhs) && ttl_ == rhs.ttl_;
 }
 
 bool MdnsRecord::operator!=(const MdnsRecord& rhs) const {
@@ -652,6 +650,12 @@ bool MdnsRecord::operator<=(const MdnsRecord& rhs) const {
 
 bool MdnsRecord::operator>=(const MdnsRecord& rhs) const {
   return !(*this < rhs);
+}
+
+bool MdnsRecord::IsReannouncementOf(const MdnsRecord& rhs) const {
+  return dns_type_ == rhs.dns_type_ && dns_class_ == rhs.dns_class_ &&
+         record_type_ == rhs.record_type_ && name_ == rhs.name_ &&
+         rdata_ == rhs.rdata_;
 }
 
 size_t MdnsRecord::MaxWireSize() const {

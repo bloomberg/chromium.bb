@@ -208,6 +208,24 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_DEFAULT_BROWSER_LEARN_MORE_INSTRUCTIONS_MESSAGE_CTA_EXPERIMENT" desc="Description to user about how to reach the default browser setting in their device. [iOS only]">
         You can now use Chromium any time you tap on links in messages, documents, and other apps.
       </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_NON_MODAL_TITLE" desc="Title for the non-modal default browser promotion banner">
+        Set Chromium as Default?
+      </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_NON_MODAL_DESCRIPTION" desc="Description for the non-modal default browser promotion banner">
+        Open Chromium anytime you tap on links in other apps
+      </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_TAILORED_ALL_TABS_DESCRIPTION" desc="Chromium version of the description for the 'All your tabs' default browser promotion modal. [iOS only]">
+        Set Chromium as default to sync your tabs, passwords, and payment info on all your devices
+      </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_TAILORED_STAY_SAFE_TITLE" desc="Chromium version of the title for the 'Stay safe' default browser promotion modal. [iOS only]">
+        Stay Safe With Chromium
+      </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_TAILORED_STAY_SAFE_DESCRIPTION" desc="Chromium version of the description for the 'Stay safe' default browser promotion modal. [iOS only]">
+        Use Chromium as your default browser to stay protected from dangerous sites &amp; keep your passwords safe
+      </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_TAILORED_BUILT_FOR_IOS_DESCRIPTION" desc="Chromium version of the description for the 'Built for iOS' default browser promotion modal. [iOS only]">
+        Use Chromium by default to open links, search from widgets, and autofill passwords in other apps
+      </message>
       <message name="IDS_IOS_DISCONNECT_DIALOG_TITLE" desc="The title of the disconnect dialog [Length: 30em].">
         Sign out of Chromium?
       </message>
@@ -238,11 +256,11 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_INCOGNITO_REAUTH_SET_UP_SYSTEM_DIALOG_REASON" desc="Text for system biometric authentication dialog to explain why authentication is required when the user attempts to enable the setting to protect incognito tabs with biometric auth. [iOS only]">
        Let Chromium lock your Incognito tabs.
       </message>
-      <message name="IDS_IOS_LOCATION_AUTHORIZATION_ALERT" desc="Specifies the reason for sending the user's location to Google [Length: unlimited] [iOS only].">
-          Get a better Google experience in Chromium based on your location.
+      <message name="IDS_IOS_INCOGNITO_REAUTH_SETTING_NAME" desc="Name of the Setting to protect incognito tabs with biometric authentication, e.g. Face ID or Touch ID. [iOS only]">
+       Lock Incognito Tabs When You Close Chromium
       </message>
       <message name="IDS_IOS_LOCATION_MODAL_DESCRIPTION" desc="The description of the location permissions modal [Length: unlimited] [iOS only].">
-          If you allow Chromium to know your location, Chromium sends it to your default search engine and any sites that you allow. Sites may ask for your location when they have local info to show you, like nearby shops or news.
+          If you allow Chromium to know your location, Chromium sends it to any sites that you allow. Sites may ask for your location when they have local info to show you, like nearby shops or news.
       </message>
       <message name="IDS_IOS_LOCATION_WHEN_IN_USE_USAGE_DESCRIPTION" desc="Specifies the reason for accessing the user's location information while the app is in use [Length: unlimited] [iOS only].">
           Chromium shares your location with sites you allow.
@@ -341,10 +359,10 @@ locale.  The strings in this file are specific to iOS.
         Sign in to Chromium
       </message>
       <message name="IDS_IOS_SIGNOUT_DIALOG_TITLE_WITH_SYNCING_ACCOUNT" desc="The signout dialog title. This dialog is used when the user have a gmail account and sync is turned on [iOS only].">
-        Choose whether to clear your Chromium data from this device or keep it.
+        Choose whether to clear your Chromium data from this device or keep it
       </message>
       <message name="IDS_IOS_SIGNOUT_DIALOG_TITLE_WITH_SYNCING_MANAGED_ACCOUNT" desc="The signout dialog title. This dialog is used when the user have a managed account (other than gmail account) [iOS only].">
-        Your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex></ph>, so your Chromium data will be cleared from this device.
+        Your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex></ph>, so your Chromium data will be cleared from this device
       </message>
       <message name="IDS_IOS_TAB_SWITCHER_NO_TABS_TO_SYNC_PROMO" desc="The title of the paragraph IDS_OPEN_TABS_NO_SESSION_INSTRUCTIONS_IOS. The paragraph explains that tabs opened on other devices where the user is signed in will appear here, in the Tab Switcher. [iOS only]">
         Use Chromium Everywhere

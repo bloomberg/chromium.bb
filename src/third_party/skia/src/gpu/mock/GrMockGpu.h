@@ -22,7 +22,10 @@ class GrMockGpu : public GrGpu {
 public:
     static sk_sp<GrGpu> Make(const GrMockOptions*, const GrContextOptions&, GrDirectContext*);
 
-    ~GrMockGpu() override {}
+    ~GrMockGpu() override;
+
+    GrThreadSafePipelineBuilder* pipelineBuilder() override;
+    sk_sp<GrThreadSafePipelineBuilder> refPipelineBuilder() override;
 
     GrFence SK_WARN_UNUSED_RESULT insertFence() override { return 0; }
     bool waitFence(GrFence) override { return true; }
@@ -50,8 +53,6 @@ public:
 
 private:
     GrMockGpu(GrDirectContext*, const GrMockOptions&, const GrContextOptions&);
-
-    void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>* sampleLocations) override;
 
     void xferBarrier(GrRenderTarget*, GrXferBarrierType) override {}
 

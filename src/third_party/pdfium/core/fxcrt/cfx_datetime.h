@@ -91,9 +91,4 @@ class CFX_DateTime {
   uint16_t millisecond_;
 };
 
-struct FX_TIMEZONE {
-  int8_t tzHour;
-  uint8_t tzMinute;
-};
-
 #endif  // CORE_FXCRT_CFX_DATETIME_H_

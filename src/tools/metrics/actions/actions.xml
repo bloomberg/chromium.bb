@@ -1717,6 +1717,20 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.AddToHomescreenIPH.Message.Clicked">
+  <owner>shaktisahu@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
+  <description>
+    User clicked on Add button of Add to homescreen IPH message.
+  </description>
+</action>
+
+<action name="Android.AddToHomescreenIPH.Message.Shown">
+  <owner>shaktisahu@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
+  <description>Add to homescreen IPH message UI was shown.</description>
+</action>
+
 <action name="Android.BookmarkPage.ReadingList.MarkAsRead">
   <owner>shaktisahu@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
@@ -4724,7 +4738,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ClearBrowsingData_SiteUsageData">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>Recorded when the user clears site usage data.</description>
 </action>
 
@@ -5299,6 +5314,16 @@ should be able to be added at any place in this file.
   <description>
     Contextual Search closed when the user pressed the X in the Contextual
     search Bar.
+  </description>
+</action>
+
+<action name="ContextualSearch.logInPanelHelpAcknowledged">
+  <owner>donnd@chromium.org</owner>
+  <owner>contextual-search-eng@google.com</owner>
+  <description>
+    Logged when the user acknowledges the In-Panel-Help that promotes a
+    longpress gesture to trigger an intelligent Contextual Search instead of a
+    tap gesture.
   </description>
 </action>
 
@@ -9297,6 +9322,29 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.DefaultBrowserPromo.TailoredFullscreen.Accepted">
+  <owner>javierrobles@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
+  <description>
+    The user accepted a tailored browser fullscreen promo modal, and was taken
+    to the Settings app. iOS only.
+  </description>
+</action>
+
+<action name="IOS.DefaultBrowserPromo.TailoredFullscreen.Appear">
+  <owner>javierrobles@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
+  <description>A tailored fullscren promo appeared. iOS only.</description>
+</action>
+
+<action name="IOS.DefaultBrowserPromo.TailoredFullscreen.Dismiss">
+  <owner>javierrobles@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
+  <description>
+    The user dismissed a tailored browser fullscreen promo modal. iOS only.
+  </description>
+</action>
+
 <action name="IOS.NTP.Doodle.Tapped">
   <owner>gambard@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
@@ -12552,12 +12600,14 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Media.Controls.Cast">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user clicked on the cast controls button.</description>
 </action>
 
 <action name="Media.Controls.CastOverlay">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user clicked on the cast overlay button.</description>
 </action>
 
@@ -12576,24 +12626,28 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Media.Controls.ClosedCaptionHide">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user hid the closed caption from the controls.</description>
 </action>
 
 <action name="Media.Controls.ClosedCaptionShow">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>
     The user showed the closed caption from the controls.
   </description>
 </action>
 
 <action name="Media.Controls.Download">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user clicked on the controls' download button.</description>
 </action>
 
 <action name="Media.Controls.EnterFullscreen">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user entered fullscreen mode from the controls.</description>
 </action>
 
@@ -12607,7 +12661,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Media.Controls.ExitFullscreen">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user left fullscreen mode from the controls.</description>
 </action>
 
@@ -12621,27 +12676,31 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Media.Controls.Mute">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user muted a media element from the controls.</description>
 </action>
 
 <action name="Media.Controls.OverflowClose">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user closed the overflow menu via the controls.</description>
 </action>
 
 <action name="Media.Controls.OverflowOpen">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user opened the overflow menu via the controls.</description>
 </action>
 
 <action name="Media.Controls.Pause">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user paused a media element from the controls.</description>
 </action>
 
 <action name="Media.Controls.PauseOverlay">
-  <owner>beccahughes@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <description>
     The user paused a media element from the pause overlay button.
@@ -12649,12 +12708,14 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Media.Controls.Play">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user played a media element from the controls.</description>
 </action>
 
 <action name="Media.Controls.PlayOverlay">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>
     The user played a media element from the play overlay button.
   </description>
@@ -12677,6 +12738,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Media.Controls.RemoteSeekBackward">
+  <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <description>
     User seeks the video backward using any controls apart from the media
@@ -12686,6 +12748,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Media.Controls.RemoteSeekForward">
+  <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <description>
     User seeks the video forward using any controls apart from the media element
@@ -12694,33 +12757,38 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Media.Controls.ScrubbingBegin">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>
     The user started to interact with the control's scrubber.
   </description>
 </action>
 
 <action name="Media.Controls.ScrubbingEnd">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>
     The user stopped interacting with the control's scrubber.
   </description>
 </action>
 
 <action name="Media.Controls.Unmute">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>The user unmuted a media element from the controls.</description>
 </action>
 
 <action name="Media.Controls.VolumeChangeBegin">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>
     The user started to interact with the control's volume slider.
   </description>
 </action>
 
 <action name="Media.Controls.VolumeChangeEnd">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>
     The user stopped interacting with the control's volume slider.
   </description>
@@ -12745,11 +12813,13 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Media.Session.BackgroundResume">
+  <obsolete>Removed as of 2021/02.</obsolete>
   <owner>avayvod@chromium.org</owner>
   <description>User resumed a backgrounded video. Android-only.</description>
 </action>
 
 <action name="Media.Session.BackgroundSuspend">
+  <obsolete>Removed as of 2021/02.</obsolete>
   <owner>avayvod@chromium.org</owner>
   <description>
     User paused a video playing in the background or brought it to the
@@ -12868,7 +12938,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MediaContextMenu_EnterPictureInPicture">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <description>
     User clicked on the contextual menu of a video player to enter
@@ -12877,7 +12947,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MediaContextMenu_ExitPictureInPicture">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <description>
     User clicked on the contextual menu of a video player to exit
@@ -14077,6 +14147,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileMenuBackward">
+  <obsolete>Deprecated as of 3/2021</obsolete>
   <owner>gangwu@chromium.org</owner>
   <description>User pressed the back icon in the app menu.</description>
 </action>
@@ -16953,6 +17024,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="NTP_LinkOpenedFromContextMenu">
+  <obsolete>Replaced by NewTabPage.LinkOpenedFromContextMenu.WebUI</obsolete>
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -17343,6 +17415,24 @@ should be able to be added at any place in this file.
   <description>
     Recorded when a snackbar shown when viewing an offline page with no network
     is dismissed without &quot;Edit&quot; button being clicked.
+  </description>
+</action>
+
+<action name="Omnibox.ClipboardSuggestion.Conceal">
+  <owner>gangwu@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.comg</owner>
+  <description>
+    User clicks on a clipboard suggestion's conceal button to hide the contents
+    of the clipboard on Android.
+  </description>
+</action>
+
+<action name="Omnibox.ClipboardSuggestion.Reveal">
+  <owner>gangwu@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <description>
+    User clicks on a clipboard suggestion's reveal button to show the contents
+    of the clipboard on Android.
   </description>
 </action>
 
@@ -21116,8 +21206,8 @@ should be able to be added at any place in this file.
 
 <action name="ScreenOrientationChange">
   <owner>avayvod@chromium.org</owner>
-  <owner>mlamouri@chromium.org</owner>
   <owner>zqzhang@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <description>
     The use rotates the device triggering a screen orientation change. This
     action is Android-specific.
@@ -22068,11 +22158,28 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SharingHubAndroid.LinkGeneration.Failure.TextShared">
+  <owner>cheickcisse@google.com</owner>
+  <description>
+    The user shared only the text because the link generation failed.
+  </description>
+</action>
+
 <action name="SharingHubAndroid.LinkGeneration.Link">
   <owner>cheickcisse@google.com</owner>
   <description>
     The user requested sharing the link-to-text in the sharing hub.
   </description>
+</action>
+
+<action name="SharingHubAndroid.LinkGeneration.Success.LinkToTextShared">
+  <owner>cheickcisse@google.com</owner>
+  <description>The user shared link-to-text.</description>
+</action>
+
+<action name="SharingHubAndroid.LinkGeneration.Success.TextShared">
+  <owner>cheickcisse@google.com</owner>
+  <description>The user shared only the text.</description>
 </action>
 
 <action name="SharingHubAndroid.LinkGeneration.Text">
@@ -22308,18 +22415,35 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Shelf_AlignmentSetBottom">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mmourgos@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <description>User sets shelf to bottom alignment on ChromeOS.</description>
 </action>
 
 <action name="Shelf_AlignmentSetLeft">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mmourgos@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <description>User sets shelf to left alignment on ChromeOS.</description>
 </action>
 
 <action name="Shelf_AlignmentSetRight">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mmourgos@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <description>User sets shelf to right alignment on ChromeOS.</description>
+</action>
+
+<action name="Shelf_ItemPinned">
+  <owner>mmourgos@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <description>User pinned an app item to the shelf on ChromeOS.</description>
+</action>
+
+<action name="Shelf_ItemUnpinned">
+  <owner>mmourgos@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <description>
+    User unpinned an app item from the shelf on ChromeOS.
+  </description>
 </action>
 
 <action name="ShowAccessibilitySettings">
@@ -22677,7 +22801,6 @@ should be able to be added at any place in this file.
 <action name="Signin_Impression_FromKaleidoscope">
   <owner>beccahughes@chromium.org</owner>
   <owner>steimel@chromium.org</owner>
-  <owner>mlamouri@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <description>
     Recorded when showing a sign-in page from Kaleidoscope.
@@ -27341,7 +27464,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="webapps.AddShortcut.Manifest">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>mgiuca@chromium.org</owner>
   <description>
     Shortcut added to the homescreen with a valid Manifest. This action will be
     recorded in addition to AppShortcut, AppShortcutApple and Bookmark actions
@@ -27793,6 +27916,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="WrenchMenu_OpenRecentGroup">
+  <owner>connily@chromium.org</owner>
+  <description>App Menu: Recently Closed: Open a recent group.</description>
+</action>
+
 <action name="WrenchMenu_OpenRecentTabFromDevice">
   <owner>jwd@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -27878,6 +28006,8 @@ should be able to be added at any place in this file.
   <suffix name="ChromeHomePullToRefresh"
       label="For ChromeHomePullToRefresh feature."/>
   <suffix name="ContextualSearch" label="For ContextualSearch feature."/>
+  <suffix name="ContextualSearchInPanelHelp"
+      label="For ContextualSearchInPanelHelp feature."/>
   <suffix name="ContextualSearchOptIn"
       label="For ContextualSearchOptIn feature."/>
   <suffix name="ContextualSearchPanel"
@@ -27920,6 +28050,7 @@ should be able to be added at any place in this file.
   <suffix name="IncognitoWindow" label="For IncognitoWindow feature."/>
   <suffix name="LongPressToolbarTip" label="For LongPressToolbar feature."/>
   <suffix name="MediaDownload" label="For MediaDownload feature."/>
+  <suffix name="MicToolbar" label="In product help for toolbar mic."/>
   <suffix name="NewIncognitoTabTip" label="For NewIncognitoTabTip feature."/>
   <suffix name="NewTab" label="For NewTab feature."/>
   <suffix name="NewTabPageButton" label="Deprecated in M79-."/>
@@ -27935,6 +28066,8 @@ should be able to be added at any place in this file.
       label="For the quiet notification prompts feature."/>
   <suffix name="ReadingListDiscovery"
       label="For ReadingListDiscoveryFeature feature."/>
+  <suffix name="ReadingListEntryPoint"
+      label="For ReadingListEntryPoint feature."/>
   <suffix name="ReopenTab" label="For ReopenTab feature."/>
   <suffix name="TabGroupsDragAndDrop" label="For drop-to-merge in tab group."/>
   <suffix name="TabGroupsQuicklyComparePages"

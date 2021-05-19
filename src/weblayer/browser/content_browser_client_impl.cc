@@ -15,12 +15,13 @@
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/blocked_content/popup_blocker.h"
 #include "components/captive_portal/core/buildflags.h"
-#include "components/content_capture/browser/content_capture_receiver_manager.h"
+#include "components/content_capture/browser/onscreen_content_provider.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/embedder_support/content_settings_utils.h"
 #include "components/embedder_support/switches.h"
@@ -60,6 +61,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -106,7 +108,6 @@
 #include "weblayer/browser/weblayer_speech_recognition_manager_delegate.h"
 #include "weblayer/common/features.h"
 #include "weblayer/common/weblayer_paths.h"
-#include "weblayer/public/common/switches.h"
 #include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/main.h"
 
@@ -130,7 +131,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/base/resource/resource_bundle_android.h"
-#include "weblayer/browser/android/metrics/weblayer_metrics_navigation_throttle.h"
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
 #include "weblayer/browser/android_descriptors.h"
 #include "weblayer/browser/browser_context_impl.h"
@@ -184,9 +184,9 @@ bool IsSafebrowsingSupported() {
 bool IsNetworkErrorAutoReloadEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableAutoReload))
+  if (command_line.HasSwitch(embedder_support::kEnableAutoReload))
     return true;
-  if (command_line.HasSwitch(switches::kDisableAutoReload))
+  if (command_line.HasSwitch(embedder_support::kDisableAutoReload))
     return false;
   return true;
 }
@@ -388,12 +388,12 @@ bool ContentBrowserClientImpl::CanShutdownGpuProcessNowOnIOThread() {
   return true;
 }
 
-content::DevToolsManagerDelegate*
-ContentBrowserClientImpl::GetDevToolsManagerDelegate() {
+std::unique_ptr<content::DevToolsManagerDelegate>
+ContentBrowserClientImpl::CreateDevToolsManagerDelegate() {
 #if defined(OS_ANDROID)
-  return new DevToolsManagerDelegateAndroid();
+  return std::make_unique<DevToolsManagerDelegateAndroid>();
 #else
-  return new content::DevToolsManagerDelegate();
+  return std::make_unique<content::DevToolsManagerDelegate>();
 #endif
 }
 
@@ -461,6 +461,10 @@ void ContentBrowserClientImpl::ConfigureNetworkContextParams(
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
         proxy_config,
         net::DefineNetworkTrafficAnnotation("undefined", "Nothing here yet."));
+  }
+  if (command_line->HasSwitch(embedder_support::kShortReportingDelay)) {
+    context_params->reporting_delivery_interval =
+        base::TimeDelta::FromMilliseconds(100);
   }
 }
 
@@ -740,6 +744,15 @@ ContentBrowserClientImpl::GetControllerPresentationServiceDelegate(
   return nullptr;
 }
 
+void ContentBrowserClientImpl::OpenURL(
+    content::SiteInstance* site_instance,
+    const content::OpenURLParams& params,
+    base::OnceCallback<void(content::WebContents*)> callback) {
+  std::move(callback).Run(
+      ProfileImpl::FromBrowserContext(site_instance->GetBrowserContext())
+          ->OpenUrl(params));
+}
+
 std::vector<std::unique_ptr<content::NavigationThrottle>>
 ContentBrowserClientImpl::CreateThrottlesForNavigation(
     content::NavigationHandle* handle) {
@@ -771,11 +784,6 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
       if (auto_reload_throttle)
         throttles.push_back(std::move(auto_reload_throttle));
     }
-
-#if defined(OS_ANDROID)
-    throttles.push_back(
-        std::make_unique<WebLayerMetricsNavigationThrottle>(handle));
-#endif
 
     // MetricsNavigationThrottle requires that it runs before
     // NavigationThrottles that may delay or cancel navigations, so only
@@ -866,7 +874,7 @@ bool ContentBrowserClientImpl::BindAssociatedReceiverFromFrame(
     return true;
   }
   if (interface_name == content_capture::mojom::ContentCaptureReceiver::Name_) {
-    content_capture::ContentCaptureReceiverManager::BindContentCaptureReceiver(
+    content_capture::OnscreenContentProvider::BindContentCaptureReceiver(
         mojo::PendingAssociatedReceiver<
             content_capture::mojom::ContentCaptureReceiver>(std::move(*handle)),
         render_frame_host);
@@ -1126,6 +1134,32 @@ bool ContentBrowserClientImpl::HasErrorPage(int http_status_code) {
   // Use an internal error page, if we have one for the status code.
   return error_page::LocalizedError::HasStrings(
       error_page::Error::kHttpErrorDomain, http_status_code);
+}
+
+bool ContentBrowserClientImpl::IsClipboardPasteAllowed(
+    content::RenderFrameHost* render_frame_host) {
+  DCHECK(render_frame_host);
+
+  const GURL& url = render_frame_host->GetLastCommittedOrigin().GetURL();
+  content::BrowserContext* browser_context =
+      content::WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetBrowserContext();
+  DCHECK(browser_context);
+
+  content::PermissionController* permission_controller =
+      content::BrowserContext::GetPermissionController(browser_context);
+  blink::mojom::PermissionStatus status =
+      permission_controller->GetPermissionStatusForFrame(
+          content::PermissionType::CLIPBOARD_READ_WRITE, render_frame_host,
+          url);
+
+  if (!render_frame_host->HasTransientUserActivation() &&
+      status != blink::mojom::PermissionStatus::GRANTED) {
+    // Paste requires either user activation, or granted web permission.
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace weblayer

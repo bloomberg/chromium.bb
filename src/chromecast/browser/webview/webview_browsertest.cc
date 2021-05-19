@@ -5,15 +5,16 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check_op.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/extensions/cast_extension_system_factory.h"
 #include "chromecast/browser/webview/webview_browser_context.h"
 #include "chromecast/browser/webview/webview_controller.h"
+#include "chromecast/graphics/cast_window_manager_aura.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -28,6 +29,8 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/focus_client.h"
+#include "ui/aura/window_tree_host.h"
 
 using testing::_;
 using testing::Truly;
@@ -92,8 +95,8 @@ class WebviewTest : public content::BrowserTestBase {
   // asynchronously.
   void SubmitWebviewRequest(WebviewController* controller,
                             const webview::WebviewRequest& request) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&WebviewController::ProcessRequest,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&WebviewController::ProcessRequest,
                                   base::Unretained(controller), request));
   }
 
@@ -101,8 +104,8 @@ class WebviewTest : public content::BrowserTestBase {
   void SubmitNavigation(content::WebContents* web_contents,
                         const std::string& path) {
     GURL url = embedded_test_server()->GetURL("foo.com", path);
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             [](content::WebContents* web_contents, const GURL& url) {
               ignore_result(content::NavigateToURL(web_contents, url));
@@ -114,7 +117,7 @@ class WebviewTest : public content::BrowserTestBase {
       const net::test_server::HttpRequest& request) {
     GURL absolute_url = embedded_test_server()->GetURL(request.relative_url);
     if (absolute_url.path() != "/test" && absolute_url.path() != "/test2")
-      return std::unique_ptr<net::test_server::HttpResponse>();
+      return nullptr;
 
     auto http_response =
         std::make_unique<net::test_server::BasicHttpResponse>();
@@ -172,7 +175,8 @@ IN_PROC_BROWSER_TEST_F(WebviewTest, Navigate) {
 }
 
 // Verify the navigation request process
-IN_PROC_BROWSER_TEST_F(WebviewTest, VerifyNavigationDelegation) {
+// Disabled due to flakiness. http://crbug.com/1192724
+IN_PROC_BROWSER_TEST_F(WebviewTest, DISABLED_VerifyNavigationDelegation) {
   WebviewController webview(context_.get(), &client_, true);
 
   EXPECT_CALL(client_, EnqueueSend(_)).Times(testing::AnyNumber());
@@ -416,6 +420,61 @@ IN_PROC_BROWSER_TEST_F(WebviewTest, UserDataOverride) {
   webview::WebviewRequest navigate;
   navigate.mutable_navigate()->set_url(test_url.spec());
   SubmitWebviewRequest(&webview, navigate);
+
+  RunMessageLoop();
+}
+
+IN_PROC_BROWSER_TEST_F(WebviewTest, Focus) {
+  // Webview creation sends messages to the client (eg: accessibility ID).
+  EXPECT_CALL(client_, EnqueueSend(_)).Times(testing::AnyNumber());
+
+  WebviewController webview(context_.get(), &client_, true);
+  GURL test_url = embedded_test_server()->GetURL("foo.com", "/test");
+  webview.GetWebContents()->GetNativeView()->Show();
+  CastWindowManagerAura window_manager(false);
+  window_manager.Setup();
+  window_manager.AddWindow(webview.GetWebContents()->GetNativeView());
+
+  auto check = [](const std::unique_ptr<webview::WebviewResponse>& response) {
+    return response->has_page_event() &&
+           response->page_event().current_page_state() ==
+               webview::AsyncPageEvent_State_LOADED;
+  };
+  EXPECT_CALL(client_, EnqueueSend(Truly(check)))
+      .Times(testing::AtLeast(1))
+      .WillOnce(
+          [this, &webview](std::unique_ptr<webview::WebviewResponse> response) {
+            webview::WebviewRequest request;
+            request.mutable_focus();
+            webview.ProcessRequest(request);
+            EXPECT_TRUE(webview.GetWebContents()->GetNativeView()->HasFocus());
+
+            Quit();
+          });
+
+  webview::WebviewRequest navigate;
+  navigate.mutable_navigate()->set_url(test_url.spec());
+  SubmitWebviewRequest(&webview, navigate);
+
+  RunMessageLoop();
+}
+
+IN_PROC_BROWSER_TEST_F(WebviewTest, GetUserAgent) {
+  auto check = [](const std::unique_ptr<webview::WebviewResponse>& response) {
+    return response->has_get_user_agent();
+  };
+  EXPECT_CALL(client_, EnqueueSend(_)).Times(testing::AnyNumber());
+  EXPECT_CALL(client_, EnqueueSend(Truly(check)))
+      .Times(testing::AtLeast(1))
+      .WillOnce([this](std::unique_ptr<webview::WebviewResponse> response) {
+        EXPECT_NE(response->get_user_agent().user_agent(), "");
+        Quit();
+      });
+  WebviewController webview(context_.get(), &client_, true);
+
+  webview::WebviewRequest request;
+  request.mutable_get_user_agent();
+  SubmitWebviewRequest(&webview, request);
 
   RunMessageLoop();
 }

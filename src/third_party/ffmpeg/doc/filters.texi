@@ -640,6 +640,10 @@ Set LFO range.
 Set LFO rate.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section acue
 
 Delay audio filtering until a given wallclock timestamp. See the @ref{cue}
@@ -652,44 +656,44 @@ Samples detected as impulsive noise are replaced by interpolated samples using
 autoregressive modelling.
 
 @table @option
-@item w
+@item window, w
 Set window size, in milliseconds. Allowed range is from @code{10} to
 @code{100}. Default value is @code{55} milliseconds.
 This sets size of window which will be processed at once.
 
-@item o
+@item overlap, o
 Set window overlap, in percentage of window size. Allowed range is from
 @code{50} to @code{95}. Default value is @code{75} percent.
 Setting this to a very high value increases impulsive noise removal but makes
 whole process much slower.
 
-@item a
+@item arorder, a
 Set autoregression order, in percentage of window size. Allowed range is from
 @code{0} to @code{25}. Default value is @code{2} percent. This option also
 controls quality of interpolated samples using neighbour good samples.
 
-@item t
+@item threshold, t
 Set threshold value. Allowed range is from @code{1} to @code{100}.
 Default value is @code{2}.
 This controls the strength of impulsive noise which is going to be removed.
 The lower value, the more samples will be detected as impulsive noise.
 
-@item b
+@item burst, b
 Set burst fusion, in percentage of window size. Allowed range is @code{0} to
 @code{10}. Default value is @code{2}.
 If any two samples detected as noise are spaced less than this value then any
 sample between those two samples will be also detected as noise.
 
-@item m
+@item method, m
 Set overlap method.
 
 It accepts the following values:
 @table @option
-@item a
+@item add, a
 Select overlap-add method. Even not interpolated samples are slightly
 changed with this method.
 
-@item s
+@item save, s
 Select overlap-save method. Not interpolated samples remain unchanged.
 @end table
 
@@ -703,38 +707,38 @@ Samples detected as clipped are replaced by interpolated samples using
 autoregressive modelling.
 
 @table @option
-@item w
+@item window, w
 Set window size, in milliseconds. Allowed range is from @code{10} to @code{100}.
 Default value is @code{55} milliseconds.
 This sets size of window which will be processed at once.
 
-@item o
+@item overlap, o
 Set window overlap, in percentage of window size. Allowed range is from @code{50}
 to @code{95}. Default value is @code{75} percent.
 
-@item a
+@item arorder, a
 Set autoregression order, in percentage of window size. Allowed range is from
 @code{0} to @code{25}. Default value is @code{8} percent. This option also controls
 quality of interpolated samples using neighbour good samples.
 
-@item t
+@item threshold, t
 Set threshold value. Allowed range is from @code{1} to @code{100}.
 Default value is @code{10}. Higher values make clip detection less aggressive.
 
-@item n
+@item hsize, n
 Set size of histogram used to detect clips. Allowed range is from @code{100} to @code{9999}.
 Default value is @code{1000}. Higher values make clip detection less aggressive.
 
-@item m
+@item method, m
 Set overlap method.
 
 It accepts the following values:
 @table @option
-@item a
+@item add, a
 Select overlap-add method. Even not interpolated samples are slightly changed
 with this method.
 
-@item s
+@item save, s
 Select overlap-save method. Not interpolated samples remain unchanged.
 @end table
 
@@ -998,6 +1002,62 @@ Invert phase of the second channel:
 aeval=val(0)|-val(1)
 @end example
 @end itemize
+
+@section aexciter
+
+An exciter is used to produce high sound that is not present in the
+original signal. This is done by creating harmonic distortions of the
+signal which are restricted in range and added to the original signal.
+An Exciter raises the upper end of an audio signal without simply raising
+the higher frequencies like an equalizer would do to create a more
+"crisp" or "brilliant" sound.
+
+The filter accepts the following options:
+
+@table @option
+@item level_in
+Set input level prior processing of signal.
+Allowed range is from 0 to 64.
+Default value is 1.
+
+@item level_out
+Set output level after processing of signal.
+Allowed range is from 0 to 64.
+Default value is 1.
+
+@item amount
+Set the amount of harmonics added to original signal.
+Allowed range is from 0 to 64.
+Default value is 1.
+
+@item drive
+Set the amount of newly created harmonics.
+Allowed range is from 0.1 to 10.
+Default value is 8.5.
+
+@item blend
+Set the octave of newly created harmonics.
+Allowed range is from -10 to 10.
+Default value is 0.
+
+@item freq
+Set the lower frequency limit of producing harmonics in Hz.
+Allowed range is from 2000 to 12000 Hz.
+Default is 7500 Hz.
+
+@item ceil
+Set the upper frequency limit of producing harmonics.
+Allowed range is from 9999 to 20000 Hz.
+If value is lower than 10000 Hz no limit is applied.
+
+@item listen
+Mute the original signal and output only added harmonics.
+By default is disabled.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @anchor{afade}
 @section afade
@@ -1875,6 +1935,11 @@ stream ends. The default value is 2 seconds.
 @item weights
 Specify weight of each input audio stream as sequence.
 Each weight is separated by space. By default all inputs have same weight.
+
+@item normalize
+Always scale inputs instead of only doing summation of samples.
+Beware of heavy clipping if inputs are not normalized prior or after filtering
+by this filter if this option is disabled. By default is enabled.
 @end table
 
 @subsection Commands
@@ -1882,6 +1947,7 @@ Each weight is separated by space. By default all inputs have same weight.
 This filter supports the following commands:
 @table @option
 @item weights
+@item sum
 Syntax is same as option with same name.
 @end table
 
@@ -2343,6 +2409,10 @@ in the final filter output. Set this option to -1 to hear actual
 noise removed from input signal.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section asetnsamples
 
 Set the number of samples per each output audio frame.
@@ -2453,6 +2523,12 @@ It accepts the following values:
 @item sin
 @item erf
 @end table
+
+@item threshold
+Set threshold from where to start clipping. Default value is 0dB or 1.
+
+@item output
+Set gain applied to output. Default value is 0dB or 1.
 
 @item param
 Set additional parameter which controls sigmoid function.
@@ -3149,6 +3225,9 @@ kHz
 @item width, w
 Determine how steep is the filter's shelf transition.
 
+@item poles, p
+Set number of poles. Default is 2.
+
 @item mix, m
 How much to use filtered signal in output. Default is 1.
 Range is between 0 and 1.
@@ -3673,14 +3752,17 @@ Set output gain. Default is 1.
 This filter supports the all above options as @ref{commands}.
 
 @section crystalizer
-Simple algorithm to expand audio dynamic range.
+Simple algorithm for audio noise sharpening.
+
+This filter linearly increases differences betweeen each audio sample.
 
 The filter accepts the following options:
 
 @table @option
 @item i
-Sets the intensity of effect (default: 2.0). Must be in range between 0.0
+Sets the intensity of effect (default: 2.0). Must be in range between -10.0 to 0
 (unchanged sound) to 10.0 (maximum effect).
+To inverse filtering use negative value.
 
 @item c
 Enable clipping. By default is enabled.
@@ -6050,6 +6132,9 @@ kHz
 @item width, w
 Determine how steep is the filter's shelf transition.
 
+@item poles, p
+Set number of poles. Default is 2.
+
 @item mix, m
 How much to use filtered signal in output. Default is 1.
 Range is between 0 and 1.
@@ -7081,6 +7166,15 @@ Alternatively can be set to @code{s} serial.
 Parallel can be faster then serial, while other way around is never true.
 Parallel will abort early on first change being greater then thresholds, while serial
 will continue processing other side of frames if they are equal or below thresholds.
+
+@item 0s
+@item 1s
+@item 2s
+Set sigma for 1st plane, 2nd plane or 3rd plane. Default is 32767.
+Valid range is from 0 to 32767.
+This options controls weight for each pixel in radius defined by size.
+Default value means every pixel have same weight.
+Setting this option to 0 effectively disables filtering.
 @end table
 
 @subsection Commands
@@ -7129,6 +7223,10 @@ The filter accepts the following option:
 Set the minimal luminance value. Default is @code{16}.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section bilateral
 Apply bilateral filter, spatial smoothing while preserving edges.
 
@@ -7145,6 +7243,10 @@ Allowed range is 0 to 1. Default is 0.1.
 @item planes
 Set planes to filter. Default is first only.
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section bitplanenoise
 
@@ -7413,6 +7515,9 @@ tblend=all_mode=grainextract
 @end example
 @end itemize
 
+@subsection Commands
+This filter supports same @ref{commands} as options.
+
 @section bm3d
 
 Denoise frames using Block-Matching 3D algorithm.
@@ -7653,6 +7758,9 @@ Set the sharpening strength. Default value is 0.
 Set planes to filter. Default value is to filter all
 planes except alpha plane.
 @end table
+
+@subsection Commands
+This filter supports same @ref{commands} as options.
 
 @section chromahold
 Remove all color information for all colors except for certain one.
@@ -7987,6 +8095,69 @@ colorbalance=rs=.3
 
 This filter supports the all above options as @ref{commands}.
 
+@section colorcontrast
+
+Adjust color contrast between RGB components.
+
+The filter accepts the following options:
+
+@table @option
+@item rc
+Set the red-cyan contrast. Defaults is 0.0. Allowed range is from -1.0 to 1.0.
+
+@item gm
+Set the green-magenta contrast. Defaults is 0.0. Allowed range is from -1.0 to 1.0.
+
+@item by
+Set the blue-yellow contrast. Defaults is 0.0. Allowed range is from -1.0 to 1.0.
+
+@item rcw
+@item gmw
+@item byw
+Set the weight of each @code{rc}, @code{gm}, @code{by} option value. Default value is 0.0.
+Allowed range is from 0.0 to 1.0. If all weights are 0.0 filtering is disabled.
+
+@item pl
+Set the amount of preserving lightness. Default value is 0.0. Allowed range is from 0.0 to 1.0.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
+@section colorcorrect
+
+Adjust color white balance selectively for blacks and whites.
+This filter operates in YUV colorspace.
+
+The filter accepts the following options:
+
+@table @option
+@item rl
+Set the red shadow spot. Allowed range is from -1.0 to 1.0.
+Default value is 0.
+
+@item bl
+Set the blue shadow spot. Allowed range is from -1.0 to 1.0.
+Default value is 0.
+
+@item rh
+Set the red highlight spot. Allowed range is from -1.0 to 1.0.
+Default value is 0.
+
+@item bh
+Set the red highlight spot. Allowed range is from -1.0 to 1.0.
+Default value is 0.
+
+@item saturation
+Set the amount of saturation. Allowed range is from -3.0 to 3.0.
+Default value is 1.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section colorchannelmixer
 
 Adjust video input frames by re-mixing color channels.
@@ -8030,6 +8201,10 @@ Adjust contribution of input red, green, blue and alpha channels for output alph
 Default is @code{1} for @var{aa}, and @code{0} for @var{ar}, @var{ag} and @var{ab}.
 
 Allowed ranges for options are @code{[-2.0, 2.0]}.
+
+@item pl
+Preserve lightness when changing colors. Allowed range is from @code{[0.0, 1.0]}.
+Default is @code{0.0}, thus disabled.
 @end table
 
 @subsection Examples
@@ -8046,6 +8221,33 @@ Simulate sepia tones:
 colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131
 @end example
 @end itemize
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
+@section colorize
+Overlay a solid color on the video stream.
+
+The filter accepts the following options:
+
+@table @option
+@item hue
+Set the color hue. Allowed range is from 0 to 360.
+Default value is 0.
+
+@item saturation
+Set the color saturation. Allowed range is from 0 to 1.
+Default value is 0.5.
+
+@item lightness
+Set the color lightness. Allowed range is from 0 to 1.
+Default value is 0.5.
+
+@item mix
+Set the mix of source lightness. By default is set to 1.0.
+Allowed range is from 0.0 to 1.0.
+@end table
 
 @subsection Commands
 
@@ -8510,6 +8712,28 @@ For example to convert the input to SMPTE-240M, use the command:
 @example
 colorspace=smpte240m
 @end example
+
+@section colortemperature
+Adjust color temperature in video to simulate variations in ambient color temperature.
+
+The filter accepts the following options:
+
+@table @option
+@item temperature
+Set the temperature in Kelvin. Allowed range is from 1000 to 40000.
+Default value is 6500 K.
+
+@item mix
+Set mixing with filtered output. Allowed range is from 0 to 1.
+Default value is 1.
+
+@item pl
+Set the amount of preserving lightness. Allowed range is from 0 to 1.
+Default value is 0.
+@end table
+
+@subsection Commands
+This filter supports same @ref{commands} as options.
 
 @section convolution
 
@@ -9089,6 +9313,10 @@ Save Gnuplot script of the curves in specified file.
 To avoid some filtergraph syntax conflicts, each key points list need to be
 defined using the following syntax: @code{x0/y0 x1/y1 x2/y2 ...}.
 
+@subsection Commands
+
+This filter supports same @ref{commands} as options.
+
 @subsection Examples
 
 @itemize
@@ -9181,7 +9409,14 @@ Set background opacity.
 
 @item format
 Set display number format. Can be @code{hex}, or @code{dec}. Default is @code{hex}.
+
+@item components
+Set pixel components to display. By default all pixel components are displayed.
 @end table
+
+@subsection Commands
+
+This filter supports same @ref{commands} as options excluding @code{size} option.
 
 @section dblur
 Apply Directional blur filter.
@@ -9315,6 +9550,10 @@ e.g. banding detection threshold is triggered for all color components.
 The default is disabled.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section deblock
 
 Remove blocking artifacts from input video.
@@ -9373,6 +9612,10 @@ Similar as above, but filter only second and third plane.
 deblock=filter=strong:block=4:alpha=0.12:beta=0.07:gamma=0.06:delta=0.05:planes=6
 @end example
 @end itemize
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @anchor{decimate}
 @section decimate
@@ -9936,6 +10179,10 @@ Set the input name of the dnn network.
 
 @item output
 Set the output name of the dnn network.
+
+@item async
+use DNN async execution if set (default: set),
+roll back to sync execution if the backend does not support async.
 
 @end table
 
@@ -10898,6 +11145,18 @@ Can be either @var{normal} or @var{diff}. Default is @var{normal}.
 between neighbour histogram values.
 @end table
 
+@section epx
+Apply the EPX magnification filter which is designed for pixel art.
+
+It accepts the following option:
+
+@table @option
+@item n
+Set the scaling dimension: @code{2} for @code{2xEPX}, @code{3} for
+@code{3xEPX}.
+Default is @code{3}.
+@end table
+
 @section eq
 Set brightness, contrast, saturation and approximate gamma adjustment.
 
@@ -11038,6 +11297,102 @@ Flags to local 3x3 coordinates maps like this:
 @subsection Commands
 
 This filter supports the all above options as @ref{commands}.
+
+@section estdif
+
+Deinterlace the input video ("estdif" stands for "Edge Slope
+Tracing Deinterlacing Filter").
+
+Spatial only filter that uses edge slope tracing algorithm
+to interpolate missing lines.
+It accepts the following parameters:
+
+@table @option
+@item mode
+The interlacing mode to adopt. It accepts one of the following values:
+
+@table @option
+@item frame
+Output one frame for each frame.
+@item field
+Output one frame for each field.
+@end table
+
+The default value is @code{field}.
+
+@item parity
+The picture field parity assumed for the input interlaced video. It accepts one
+of the following values:
+
+@table @option
+@item tff
+Assume the top field is first.
+@item bff
+Assume the bottom field is first.
+@item auto
+Enable automatic detection of field parity.
+@end table
+
+The default value is @code{auto}.
+If the interlacing is unknown or the decoder does not export this information,
+top field first will be assumed.
+
+@item deint
+Specify which frames to deinterlace. Accepts one of the following
+values:
+
+@table @option
+@item all
+Deinterlace all frames.
+@item interlaced
+Only deinterlace frames marked as interlaced.
+@end table
+
+The default value is @code{all}.
+
+@item rslope
+Specify the search radius for edge slope tracing. Default value is 1.
+Allowed range is from 1 to 15.
+
+@item redge
+Specify the search radius for best edge matching. Default value is 2.
+Allowed range is from 0 to 15.
+
+@item interp
+Specify the interpolation used. Default is 4-point interpolation. It accepts one
+of the following values:
+
+@table @option
+@item 2p
+Two-point interpolation.
+@item 4p
+Four-point interpolation.
+@item 6p
+Six-point interpolation.
+@end table
+@end table
+
+@subsection Commands
+This filter supports same @ref{commands} as options.
+
+@section exposure
+Adjust exposure of the video stream.
+
+The filter accepts the following options:
+
+@table @option
+@item exposure
+Set the exposure correction in EV. Allowed range is from -3.0 to 3.0 EV
+Default value is 0 EV.
+
+@item black
+Set the black level correction. Allowed range is from -1.0 to 1.0.
+Default value is 0.
+@end table
+
+@subsection Commands
+
+This filter supports same @ref{commands} as options.
 
 @section extractplanes
 
@@ -11744,16 +12099,25 @@ It accepts the following values:
 fill pixels using outermost pixels
 
 @item mirror
-fill pixels using mirroring
+fill pixels using mirroring (half sample symmetric)
 
 @item fixed
 fill pixels with constant value
+
+@item reflect
+fill pixels using reflecting (whole sample symmetric)
+
+@item wrap
+fill pixels using wrapping
+
+@item fade
+fade pixels to constant value
 @end table
 
 Default is @var{smear}.
 
 @item color
-Set color for pixels in fixed mode. Default is @var{black}.
+Set color for pixels in fixed or fade mode. Default is @var{black}.
 @end table
 
 @subsection Commands
@@ -12537,6 +12901,10 @@ This filter also supports the @ref{framesync} options.
 More information about the Hald CLUT can be found on Eskil Steenberg's website
 (Hald CLUT author) at @url{http://www.quelsolaar.com/technology/clut.html}.
 
+@subsection Commands
+
+This filter supports the @code{interp} option as @ref{commands}.
+
 @subsection Workflow examples
 
 @subsubsection Hald CLUT video stream
@@ -13014,6 +13382,28 @@ By default value is 0.
 
 The @code{hysteresis} filter also supports the @ref{framesync} options.
 
+@section identity
+
+Obtain the identity score between two input videos.
+
+This filter takes two input videos.
+
+Both input videos must have the same resolution and pixel format for
+this filter to work correctly. Also it assumes that both inputs
+have the same number of frames, which are compared one by one.
+
+The obtained per component, average, min and max identity score is printed through
+the logging system.
+
+The filter stores the calculated identity scores of each frame in frame metadata.
+
+In the below example the input file @file{main.mpg} being processed is compared
+with the reference file @file{ref.mpg}.
+
+@example
+ffmpeg -i main.mpg -i ref.mpg -lavfi identity -f null -
+@end example
+
 @section idet
 
 Detect video interlacing type.
@@ -13256,6 +13646,27 @@ kerndeint=map=1
 @end example
 @end itemize
 
+@section kirsch
+Apply kirsch operator to input video stream.
+
+The filter accepts the following option:
+
+@table @option
+@item planes
+Set which planes will be processed, unprocessed planes will be copied.
+By default value 0xf, all planes will be processed.
+
+@item scale
+Set value which will be multiplied with filtered result.
+
+@item delta
+Set value which will be added to filtered result.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section lagfun
 
 Slowly update darker pixels.
@@ -13270,6 +13681,10 @@ Set factor for decaying. Default is .95. Allowed range is from 0 to 1.
 @item planes
 Set which planes to filter. Default is all. Allowed range is from 0 to 15.
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section lenscorrection
 
@@ -13309,6 +13724,13 @@ no correction. Default is 0.
 @item k2
 Coefficient of the double quadratic correction term. This value has a range [-1,1].
 0 means no correction. Default is 0.
+@item i
+Set interpolation type. Can be @code{nearest} or @code{bilinear}.
+Default is @code{nearest}.
+@item fc
+Specify the color of the unmapped pixels. For the syntax of this option,
+check the @ref{color syntax,,"Color" section in the ffmpeg-utils
+manual,ffmpeg-utils}. Default color is @code{black@@0}.
 @end table
 
 The formula that generates the correction is:
@@ -13317,6 +13739,10 @@ The formula that generates the correction is:
 
 where @var{r_0} is halve of the image diagonal and @var{r_src} and @var{r_tgt} are the
 distances from the focal point in the source and target images, respectively.
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section lensfun
 
@@ -13551,6 +13977,10 @@ Upper bound. Defaults to the highest allowed value for the input.
 Specify which planes will be processed. Defaults to all available.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section loop
 
 Loop video frames.
@@ -13628,6 +14058,10 @@ Interpolate values using the spline interpolation.
 @end table
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @anchor{lut3d}
 @section lut3d
 
@@ -13664,8 +14098,16 @@ Use values from the nearest defined point.
 Interpolate values using the 8 points defining a cube.
 @item tetrahedral
 Interpolate values using a tetrahedron.
+@item pyramid
+Interpolate values using a pyramid.
+@item prism
+Interpolate values using a prism.
 @end table
 @end table
+
+@subsection Commands
+
+This filter supports the @code{interp} option as @ref{commands}.
 
 @section lumakey
 
@@ -13776,6 +14218,10 @@ expression
 @end table
 
 All expressions default to "val".
+
+@subsection Commands
+
+This filter supports same @ref{commands} as options.
 
 @subsection Examples
 
@@ -13896,6 +14342,10 @@ The second input video bit depth.
 
 All expressions default to "x".
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands} except option @code{d}.
+
 @subsection Examples
 
 @itemize
@@ -13939,6 +14389,10 @@ copied from first stream.
 By default value 0xf, all planes will be processed.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section maskedmax
 
 Merge the second and third input stream into output stream using absolute differences
@@ -13954,6 +14408,10 @@ Set which planes will be processed as bitmap, unprocessed planes will be
 copied from first stream.
 By default value 0xf, all planes will be processed.
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section maskedmerge
 
@@ -13974,6 +14432,10 @@ copied from first stream.
 By default value 0xf, all planes will be processed.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section maskedmin
 
 Merge the second and third input stream into output stream using absolute differences
@@ -13989,6 +14451,10 @@ Set which planes will be processed as bitmap, unprocessed planes will be
 copied from first stream.
 By default value 0xf, all planes will be processed.
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section maskedthreshold
 Pick pixels comparing absolute difference of two video streams with fixed
@@ -14010,6 +14476,10 @@ Set which planes will be processed as bitmap, unprocessed planes will be
 copied from second stream.
 By default value 0xf, all planes will be processed.
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section maskfun
 Create mask from input video.
@@ -14037,6 +14507,10 @@ Set max average pixel value for frame. If sum of all pixel components is higher 
 average, output frame will be completely filled with value set by @var{fill} option.
 Typically useful for scene changes when used in combination with @code{tblend} filter.
 @end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section mcdeint
 
@@ -14355,6 +14829,42 @@ The duration of the first input.
 @end table
 @end table
 
+@subsection Commands
+
+This filter supports the following commands:
+@table @option
+@item weights
+@item scale
+Syntax is same as option with same name.
+@end table
+
+@section monochrome
+Convert video to gray using custom color filter.
+
+A description of the accepted options follows.
+
+@table @option
+@item cb
+Set the chroma blue spot. Allowed range is from -1 to 1.
+Default value is 0.
+
+@item cr
+Set the chroma red spot. Allowed range is from -1 to 1.
+Default value is 0.
+
+@item size
+Set the color filter size. Allowed range is from .1 to 10.
+Default value is 1.
+
+@item high
+Set the highlights strength. Allowed range is from 0 to 1.
+Default value is 0.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section mpdecimate
 
 Drop frames that do not differ greatly from the previous frame in
@@ -14393,6 +14903,27 @@ Default value for @option{hi} is 64*12, default value for @option{lo} is
 64*5, and default value for @option{frac} is 0.33.
 @end table
 
+@section msad
+
+Obtain the MSAD (Mean Sum of Absolute Differences) between two input videos.
+
+This filter takes two input videos.
+
+Both input videos must have the same resolution and pixel format for
+this filter to work correctly. Also it assumes that both inputs
+have the same number of frames, which are compared one by one.
+
+The obtained per component, average, min and max MSAD is printed through
+the logging system.
+
+The filter stores the calculated MSAD of each frame in frame metadata.
+
+In the below example the input file @file{main.mpg} being processed is compared
+with the reference file @file{ref.mpg}.
+
+@example
+ffmpeg -i main.mpg -i ref.mpg -lavfi msad -f null -
+@end example
 
 @section negate
 
@@ -14405,6 +14936,10 @@ It accepts the following option:
 @item negate_alpha
 With value 1, it negates the alpha component, if present. Default value is 0.
 @end table
+
+@subsection Commands
+
+This filter supports same @ref{commands} as options.
 
 @anchor{nlmeans}
 @section nlmeans
@@ -14519,9 +15054,9 @@ Set which set of weights to use in the predictor.
 Can be one of the following:
 
 @table @samp
-@item a
+@item a, abs
 weights trained to minimize absolute error
-@item s
+@item s, mse
 weights trained to minimize squared error
 @end table
 
@@ -14543,13 +15078,15 @@ Can be one of the following:
 @item none
 @item original
 @item new
+@item new2
+@item new3
 @end table
 
 Default is @code{new}.
-
-@item fapprox
-Set various debugging flags.
 @end table
+
+@subsection Commands
+This filter supports same @ref{commands} as options, excluding @var{weights} option.
 
 @section noformat
 
@@ -15658,6 +16195,10 @@ Filter selects among @samp{t}, @samp{b} and @samp{p} using image analysis only.
 @end table
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section photosensitivity
 Reduce various flashes in video, so to help users with epilepsy.
 
@@ -15719,6 +16260,10 @@ Set window X position, relative offset on X axis.
 @item wy
 Set window Y position, relative offset on Y axis.
 @end table
+
+@subsection Commands
+
+This filter supports same @ref{commands} as options.
 
 @section pp
 
@@ -15978,12 +16523,33 @@ set pixel third component expression
 @item c3
 set pixel fourth component expression, corresponds to the alpha component
 
-@item i
+@item index, i
 set component to use as base for altering colors
+
+@item preset, p
+Pick one of built-in LUTs. By default is set to none.
+
+Available LUTs:
+@table @samp
+@item magma
+@item inferno
+@item plasma
+@item viridis
+@item turbo
+@item cividis
+@item range1
+@item range2
+@item shadows
+@item highlights
 @end table
 
-Each of them specifies the expression to use for computing the lookup table for
-the corresponding pixel component values.
+@item opacity
+Set opacity of output colors. Allowed range is from 0 to 1.
+Default value is set to 1.
+@end table
+
+Each of the expression options specifies the expression to use for computing
+the lookup table for the corresponding pixel component values.
 
 The expressions can contain the following constants and functions:
 
@@ -16003,6 +16569,10 @@ The maximum allowed component value.
 @end table
 
 All expressions default to "val".
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @subsection Examples
 
@@ -17638,6 +18208,37 @@ Keep the same colorspace property (default).
 @end table
 @end table
 
+@section shear
+Apply shear transform to input video.
+
+This filter supports the following options:
+
+@table @option
+@item shx
+Shear factor in X-direction. Default value is 0.
+Allowed range is from -2 to 2.
+
+@item shy
+Shear factor in Y-direction. Default value is 0.
+Allowed range is from -2 to 2.
+
+@item fillcolor, c
+Set the color used to fill the output area not covered by the transformed
+video. For the general syntax of this option, check the
+@ref{color syntax,,"Color" section in the ffmpeg-utils manual,ffmpeg-utils}.
+If the special value "none" is selected then no
+background is printed (useful for example if the background is never shown).
+
+Default value is "black".
+
+@item interp
+Set interpolation type. Can be @code{bilinear} or @code{nearest}. Default is @code{bilinear}.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section showinfo
 
 Show a line containing various information for each input video frame.
@@ -17757,6 +18358,33 @@ Swap 10th and 1st frame of every ten frames of the input:
 ffmpeg -i INPUT -vf "shuffleframes=9 1 2 3 4 5 6 7 8 0" OUTPUT
 @end example
 @end itemize
+
+@section shufflepixels
+
+Reorder pixels in video frames.
+
+This filter accepts the following options:
+
+@table @option
+@item direction, d
+Set shuffle direction. Can be forward or inverse direction.
+Default direction is forward.
+
+@item mode, m
+Set shuffle mode. Can be horizontal, vertical or block mode.
+
+@item width, w
+@item height, h
+Set shuffle block_size. In case of horizontal shuffle mode only width
+part of size is used, and in case of vertical shuffle mode only height
+part of size is used.
+
+@item seed, s
+Set random seed used with shuffling pixels. Mainly useful to set to be able
+to reverse filtering process to get original input.
+For example, to reverse forward shuffle you need to use same parameters
+and exact same seed and to set direction to inverse.
+@end table
 
 @section shuffleplanes
 
@@ -18702,6 +19330,10 @@ The timestamp expressed in seconds. It's NAN if the input timestamp is unknown.
 the position in the file of the input frame, NAN if unknown
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section swapuv
 Swap U & V plane.
 
@@ -19237,6 +19869,32 @@ Default value of @code{0.5} will pick always median values, while @code{0} will 
 minimum values, and @code{1} maximum values.
 @end table
 
+@subsection Commands
+
+This filter supports all above options as @ref{commands}, excluding option @code{radius}.
+
+@section tmidequalizer
+
+Apply Temporal Midway Video Equalization effect.
+
+Midway Video Equalization adjusts a sequence of video frames to have the same
+histograms, while maintaining their dynamics as much as possible. It's
+useful for e.g. matching exposures from a video frames sequence.
+
+This filter accepts the following option:
+
+@table @option
+@item radius
+Set filtering radius. Default is @code{5}. Allowed range is from 1 to 127.
+
+@item sigma
+Set filtering sigma. Default is @code{0.5}. This controls strength of filtering.
+Setting this option to 0 effectively does nothing.
+
+@item planes
+Set which planes to process. Default is @code{15}, which is all available planes.
+@end table
+
 @section tmix
 
 Mix successive video frames.
@@ -19280,6 +19938,15 @@ Similar as above but only showing temporal differences:
 tmix=frames=3:weights="-1 2 -1":scale=1
 @end example
 @end itemize
+
+@subsection Commands
+
+This filter supports the following commands:
+@table @option
+@item weights
+@item scale
+Syntax is same as option with same name.
+@end table
 
 @anchor{tonemap}
 @section tonemap
@@ -20642,6 +21309,27 @@ otherwise colors will be less saturated, more towards gray.
 
 This filter supports the all above options as @ref{commands}.
 
+@section vif
+
+Obtain the average VIF (Visual Information Fidelity) between two input videos.
+
+This filter takes two input videos.
+
+Both input videos must have the same resolution and pixel format for
+this filter to work correctly. Also it assumes that both inputs
+have the same number of frames, which are compared one by one.
+
+The obtained average VIF score is printed through the logging system.
+
+The filter stores the calculated VIF score of each frame.
+
+In the below example the input file @file{main.mpg} being processed is compared
+with the reference file @file{ref.mpg}.
+
+@example
+ffmpeg -i main.mpg -i ref.mpg -lavfi vif -f null -
+@end example
+
 @anchor{vignette}
 @section vignette
 
@@ -20823,6 +21511,35 @@ More-complex filter coefficient set.
 @end table
 Default value is @samp{complex}.
 
+@item mode
+The interlacing mode to adopt. It accepts one of the following values:
+
+@table @option
+@item frame
+Output one frame for each frame.
+@item field
+Output one frame for each field.
+@end table
+
+The default value is @code{field}.
+
+@item parity
+The picture field parity assumed for the input interlaced video. It accepts one
+of the following values:
+
+@table @option
+@item tff
+Assume the top field is first.
+@item bff
+Assume the bottom field is first.
+@item auto
+Enable automatic detection of field parity.
+@end table
+
+The default value is @code{auto}.
+If the interlacing is unknown or the decoder does not export this information,
+top field first will be assumed.
+
 @item deint
 Specify which frames to deinterlace. Accepts one of the following values:
 
@@ -20835,6 +21552,9 @@ Only deinterlace frames marked as interlaced.
 
 Default value is @samp{all}.
 @end table
+
+@subsection Commands
+This filter supports same @ref{commands} as options.
 
 @section waveform
 Video waveform monitor.
@@ -21180,6 +21900,10 @@ Set median percentile. Default value is @code{0.5}.
 Default value of @code{0.5} will pick always median values, while @code{0} will pick
 minimum values, and @code{1} maximum values.
 @end table
+
+@subsection Commands
+
+This filter supports all above options as @ref{commands}, excluding option @code{inputs}.
 
 @section xstack
 Stack video inputs into custom layout.
@@ -21764,6 +22488,13 @@ Possible values are:
 
 @item npl
 Set the nominal peak luminance.
+
+@item param_a
+Parameter A for scaling filters. Parameter "b" for bicubic, and the number of
+filter taps for lanczos.
+
+@item param_b
+Parameter B for scaling filters. Parameter "c" for bicubic.
 @end table
 
 The values of the @option{w} and @option{h} options are expressions

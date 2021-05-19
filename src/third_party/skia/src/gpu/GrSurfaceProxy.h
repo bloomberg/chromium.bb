@@ -227,7 +227,20 @@ public:
     virtual GrRenderTargetProxy* asRenderTargetProxy() { return nullptr; }
     virtual const GrRenderTargetProxy* asRenderTargetProxy() const { return nullptr; }
 
+    /** @return The unique key for this proxy. May be invalid. */
+    virtual const GrUniqueKey& getUniqueKey() const {
+        // Base class never has a valid unique key.
+        static const GrUniqueKey kInvalidKey;
+        return kInvalidKey;
+    }
+
     bool isInstantiated() const { return SkToBool(fTarget); }
+
+    /** Called when this task becomes a target of a GrRenderTask. */
+    void isUsedAsTaskTarget() { ++fTaskTargetCount; }
+
+    /** How many render tasks has this proxy been the target of? */
+    int getTaskTargetCount() const { return fTaskTargetCount; }
 
     // If the proxy is already instantiated, return its backing GrTexture; if not, return null.
     GrSurface* peekSurface() const { return fTarget.get(); }
@@ -276,9 +289,6 @@ public:
      */
     size_t gpuMemorySize() const {
         SkASSERT(!this->isFullyLazy());
-        if (fTarget) {
-            return fTarget->gpuMemorySize();
-        }
         if (kInvalidGpuMemorySize == fGpuMemorySize) {
             fGpuMemorySize = this->onUninstantiatedGpuMemorySize();
             SkASSERT(kInvalidGpuMemorySize != fGpuMemorySize);
@@ -298,6 +308,10 @@ public:
     // new one. Thus, there isn't a need for a swizzle when doing the copy. The format of the copy
     // will be the same as the src. Therefore, the copy can be used in a view with the same swizzle
     // as the original for use with a given color type.
+    //
+    // Optionally gets the render task that performs the copy. If it is later determined that the
+    // copy is not neccessaru then the task can be marked skippable using GrRenderTask::canSkip() and
+    // the copy will be elided.
     static sk_sp<GrSurfaceProxy> Copy(GrRecordingContext*,
                                       sk_sp<GrSurfaceProxy> src,
                                       GrSurfaceOrigin,
@@ -305,7 +319,8 @@ public:
                                       SkIRect srcRect,
                                       SkBackingFit,
                                       SkBudgeted,
-                                      RectsMustMatch = RectsMustMatch::kNo);
+                                      RectsMustMatch = RectsMustMatch::kNo,
+                                      sk_sp<GrRenderTask>* outTask = nullptr);
 
     // Same as above Copy but copies the entire 'src'
     static sk_sp<GrSurfaceProxy> Copy(GrRecordingContext*,
@@ -313,7 +328,8 @@ public:
                                       GrSurfaceOrigin,
                                       GrMipmapped,
                                       SkBackingFit,
-                                      SkBudgeted);
+                                      SkBudgeted,
+                                      sk_sp<GrRenderTask>* outTask = nullptr);
 
 #if GR_TEST_UTILS
     int32_t testingOnly_getBackingRefCnt() const;
@@ -336,6 +352,8 @@ public:
     bool isDDLTarget() const { return fIsDDLTarget; }
 
     GrProtected isProtected() const { return fIsProtected; }
+
+    bool isPromiseProxy() { return fIsPromiseProxy; }
 
 protected:
     // Deferred version - takes a new UniqueID from the shared resource/proxy pool.
@@ -433,13 +451,16 @@ private:
 
     bool                   fIgnoredByResourceAllocator = false;
     bool                   fIsDDLTarget = false;
+    bool                   fIsPromiseProxy = false;
     GrProtected            fIsProtected;
+
+    int                     fTaskTargetCount = 0;
 
     // This entry is lazily evaluated so, when the proxy wraps a resource, the resource
     // will be called but, when the proxy is deferred, it will compute the answer itself.
     // If the proxy computes its own answer that answer is checked (in debug mode) in
-    // the instantiation method.
-    mutable size_t         fGpuMemorySize;
+    // the instantiation method. The image may be shared between threads, hence atomic.
+    mutable std::atomic<size_t>         fGpuMemorySize{kInvalidGpuMemorySize};
     SkDEBUGCODE(SkString   fDebugName;)
 };
 

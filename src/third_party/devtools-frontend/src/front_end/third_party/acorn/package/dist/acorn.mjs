@@ -340,7 +340,8 @@ var defaultOptions = {
   // error.
   allowReturnOutsideFunction: false,
   // When enabled, import/export statements are not constrained to
-  // appearing at the top of the program.
+  // appearing at the top of the program, and an import.meta expression
+  // in a script isn't considered an error.
   allowImportExportEverywhere: false,
   // When enabled, await identifiers are allowed to appear at the top-level scope,
   // but they are still not allowed in non-async functions.
@@ -537,7 +538,7 @@ var Parser = function Parser(options, input, startPos) {
   // Labels in scope.
   this.labels = [];
   // Thus-far undefined exports.
-  this.undefinedExports = {};
+  this.undefinedExports = Object.create(null);
 
   // If enabled, skip leading hashbang line.
   if (this.pos === 0 && options.allowHashBang && this.input.slice(0, 2) === "#!")
@@ -751,7 +752,7 @@ var pp$1 = Parser.prototype;
 // to its body instead of creating a new node.
 
 pp$1.parseTopLevel = function(node) {
-  var exports = {};
+  var exports = Object.create(null);
   if (!node.body) { node.body = []; }
   while (this.type !== types.eof) {
     var stmt = this.parseStatement(null, true, exports);
@@ -2214,6 +2215,7 @@ pp$3.parseExprSubscripts = function(refDestructuringErrors) {
   if (refDestructuringErrors && result.type === "MemberExpression") {
     if (refDestructuringErrors.parenthesizedAssign >= result.start) { refDestructuringErrors.parenthesizedAssign = -1; }
     if (refDestructuringErrors.parenthesizedBind >= result.start) { refDestructuringErrors.parenthesizedBind = -1; }
+    if (refDestructuringErrors.trailingComma >= result.start) { refDestructuringErrors.trailingComma = -1; }
   }
   return result
 };
@@ -2456,7 +2458,7 @@ pp$3.parseImportMeta = function(node) {
     { this.raiseRecoverable(node.property.start, "The only valid meta property for import is 'import.meta'"); }
   if (containsEsc)
     { this.raiseRecoverable(node.start, "'import.meta' must not contain escaped characters"); }
-  if (this.options.sourceType !== "module")
+  if (this.options.sourceType !== "module" && !this.options.allowImportExportEverywhere)
     { this.raiseRecoverable(node.start, "Cannot use 'import.meta' outside a module"); }
 
   return this.finishNode(node, "MetaProperty")
@@ -2877,7 +2879,7 @@ pp$3.isSimpleParamList = function(params) {
 // or "arguments" and duplicate parameters.
 
 pp$3.checkParams = function(node, allowDuplicates) {
-  var nameHash = {};
+  var nameHash = Object.create(null);
   for (var i = 0, list = node.params; i < list.length; i += 1)
     {
     var param = list[i];
@@ -5207,7 +5209,7 @@ pp$9.readWord = function() {
 
 // Acorn is a tiny, fast JavaScript parser written in JavaScript.
 
-var version = "8.0.4";
+var version = "8.1.0";
 
 Parser.acorn = {
   Parser: Parser,

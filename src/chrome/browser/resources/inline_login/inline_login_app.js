@@ -6,7 +6,7 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
+import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 
 import {isChromeOS} from '//resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -255,7 +255,7 @@ Polymer({
 
   /**
    * Sends a message 'lstFetchResults'. This is a specific message sent when
-   * the inline signin is loaded with reason REASON_FETCH_LST_ONLY. Handlers of
+   * the inline signin is loaded with reason kFetchLstOnly. Handlers of
    * this message would expect a single argument a base::Dictionary value that
    * contains the values fetched from the gaia sign in endpoint.
    * @param {string} arg The string representation of the json data returned by
@@ -360,6 +360,12 @@ Polymer({
         /** @type {WelcomePageAppElement} */ (this.$$('welcome-page-app'))
             .isSkipCheckboxChecked();
     this.browserProxy_.skipWelcomePage(skipChecked);
+    this.setFocusToWebview_();
+  },
+
+  /** @private */
+  setFocusToWebview_() {
+    this.$.signinFrame.focus();
   },
   // </if>
 

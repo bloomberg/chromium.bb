@@ -5,6 +5,7 @@
 #include "gpu/ipc/service/gpu_channel_manager.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -44,6 +45,7 @@
 #endif
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
+#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -360,8 +362,10 @@ GpuChannelManager::~GpuChannelManager() {
 gles2::Outputter* GpuChannelManager::outputter() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!outputter_)
-    outputter_.reset(new gles2::TraceOutputter("GpuChannelManager Trace"));
+  if (!outputter_) {
+    outputter_ =
+        std::make_unique<gles2::TraceOutputter>("GpuChannelManager Trace");
+  }
   return outputter_.get();
 }
 
@@ -377,13 +381,13 @@ gles2::ProgramCache* GpuChannelManager::program_cache() {
     // Use the EGL blob cache extension for the passthrough decoder.
     if (gpu_preferences_.use_passthrough_cmd_decoder &&
         gles2::PassthroughCommandDecoderSupported()) {
-      program_cache_.reset(new gles2::PassthroughProgramCache(
-          gpu_preferences_.gpu_program_cache_size, disable_disk_cache));
+      program_cache_ = std::make_unique<gles2::PassthroughProgramCache>(
+          gpu_preferences_.gpu_program_cache_size, disable_disk_cache);
     } else {
-      program_cache_.reset(new gles2::MemoryProgramCache(
+      program_cache_ = std::make_unique<gles2::MemoryProgramCache>(
           gpu_preferences_.gpu_program_cache_size, disable_disk_cache,
           workarounds.disable_program_caching_for_transform_feedback,
-          &activity_flags_));
+          &activity_flags_);
     }
   }
   return program_cache_.get();
@@ -655,52 +659,22 @@ void GpuChannelManager::HandleMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
-      "TotalDuration");
-
-  if (program_cache_) {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
-        "ProgramCacheHandleMemoryPressureDuration");
+  if (program_cache_)
     program_cache_->HandleMemoryPressure(memory_pressure_level);
-  }
 
   // These caches require a current context for cleanup.
   if (shared_context_state_ &&
       shared_context_state_->MakeCurrent(nullptr, true /* needs_gl */)) {
-    {
-      SCOPED_UMA_HISTOGRAM_TIMER(
-          "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
-          "DiscardableManagerHandleMemoryPressureDuration");
       discardable_manager_.HandleMemoryPressure(memory_pressure_level);
-    }
-    {
-      SCOPED_UMA_HISTOGRAM_TIMER(
-          "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
-          "PasshtroughDiscardableManagerHandleMemoryPressureDuration");
       passthrough_discardable_manager_.HandleMemoryPressure(
           memory_pressure_level);
-    }
-
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
-        "SharedContextStatePurgeMemoryDuration");
     shared_context_state_->PurgeMemory(memory_pressure_level);
   }
-  if (gr_shader_cache_) {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
-        "GrShaderCachePurgeMemoryDuration");
+
+  if (gr_shader_cache_)
     gr_shader_cache_->PurgeMemory(memory_pressure_level);
-  }
 #if defined(OS_WIN)
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "Memory.Experimental.GpuChannelManagerPressureHandlerDuration."
-        "TrimD3DResourcesDuration");
-    TrimD3DResources();
-  }
+  TrimD3DResources();
 #endif
 }
 
@@ -723,9 +697,6 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
 #endif
   use_virtualized_gl_contexts |=
       gpu_driver_bug_workarounds_.use_virtualized_gl_contexts;
-  // MailboxManagerSync synchronization correctness currently depends on having
-  // only a single context. See crbug.com/510243 for details.
-  use_virtualized_gl_contexts |= mailbox_manager_->UsesSync();
 
   const bool use_passthrough_decoder =
       gles2::PassthroughCommandDecoderSupported() &&
@@ -749,6 +720,14 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   if (!context) {
     gl::GLContextAttribs attribs = gles2::GenerateGLContextAttribs(
         ContextCreationAttribs(), use_passthrough_decoder);
+
+    // Disable robust resource initialization for raster decoder and compositor.
+    // TODO(crbug.com/1192632): disable robust_resource_initialization for
+    // SwANGLE.
+    if (gl::GLSurfaceEGL::GetDisplayType() != gl::ANGLE_SWIFTSHADER &&
+        features::IsUsingSkiaRenderer()) {
+      attribs.robust_resource_initialization = false;
+    }
 
     // Only skip validation if the GLContext will be used exclusively by the
     // SharedContextState and dcheck is off.

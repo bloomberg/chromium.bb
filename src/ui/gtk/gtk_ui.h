@@ -13,7 +13,6 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "build/buildflag.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gtk/gtk_ui_delegate.h"
@@ -24,13 +23,12 @@ typedef struct _GParamSpec GParamSpec;
 typedef struct _GtkParamSpec GtkParamSpec;
 typedef struct _GtkSettings GtkSettings;
 typedef struct _GtkStyle GtkStyle;
-typedef struct _GtkWidget GtkWidget;
 
 namespace gtk {
 using ColorMap = std::map<int, SkColor>;
 
-class GtkKeyBindingsHandler;
 class DeviceScaleFactorObserver;
+class GtkKeyBindingsHandler;
 class NativeThemeGtk;
 class SettingsProvider;
 
@@ -153,9 +151,6 @@ class GtkUi : public views::LinuxUI {
 
   NativeThemeGtk* native_theme_;
 
-  // A regular GtkWindow.
-  GtkWidget* fake_window_;
-
   // Colors calculated by LoadGtkValues() that are given to the
   // caller while |use_gtk_| is true.
   ColorMap colors_;
@@ -192,6 +187,7 @@ class GtkUi : public views::LinuxUI {
   std::vector<views::FrameButton> leading_buttons_;
   std::vector<views::FrameButton> trailing_buttons_;
 
+  // This is only used on GTK3.
   std::unique_ptr<GtkKeyBindingsHandler> key_bindings_handler_;
 
   // Objects to notify when the window frame button order changes.

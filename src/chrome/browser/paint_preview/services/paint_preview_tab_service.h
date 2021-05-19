@@ -21,6 +21,7 @@
 #include "components/paint_preview/browser/paint_preview_base_service.h"
 #include "components/paint_preview/browser/paint_preview_policy.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
+#include "content/public/browser/global_routing_id.h"
 
 #if defined(os_android)
 #include "base/android/jni_android.h"
@@ -63,6 +64,7 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
   // status.
   void CaptureTab(int tab_id,
                   content::WebContents* contents,
+                  bool accessibility_enabled,
                   FinishedCallback callback);
 
   // Destroys the Paint Preview associated with |tab_id|. This MUST be called
@@ -85,6 +87,7 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
       JNIEnv* env,
       jint j_tab_id,
       const base::android::JavaParamRef<jobject>& j_web_contents,
+      jboolean accessibility_enabled,
       const base::android::JavaParamRef<jobject>& j_callback);
   void TabClosedAndroid(JNIEnv* env, jint j_tab_id);
   jboolean HasCaptureForTabAndroid(JNIEnv* env, jint j_tab_id);
@@ -105,7 +108,8 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
     TabServiceTask(int tab_id,
                    const DirectoryKey& key,
                    int frame_tree_node_id,
-                   content::GlobalFrameRoutingId frame_routing_id);
+                   content::GlobalFrameRoutingId frame_routing_id,
+                   base::ScopedClosureRunner capture_handle);
     ~TabServiceTask();
 
     TabServiceTask(const TabServiceTask& other) = delete;
@@ -142,6 +146,8 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
       return weak_ptr_factory_.GetWeakPtr();
     }
 
+    void ReleaseCaptureHandle() { capture_handle_.RunAndReset(); }
+
    private:
     int tab_id_;
     DirectoryKey key_;
@@ -150,6 +156,8 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
 
     bool wait_for_accessibility_{false};
     Status status_{kInvalid};
+
+    base::ScopedClosureRunner capture_handle_;
 
     FinishedCallback finished_callback_;
     base::WeakPtrFactory<TabServiceTask> weak_ptr_factory_{this};
@@ -163,6 +171,7 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
 
   // The FTN ID is to look-up the content::WebContents.
   void CaptureTabInternal(base::WeakPtr<TabServiceTask> task,
+                          bool accessibility_enabled,
                           const base::Optional<base::FilePath>& file_path);
 
   void OnAXTreeWritten(base::WeakPtr<TabServiceTask> task, bool result);

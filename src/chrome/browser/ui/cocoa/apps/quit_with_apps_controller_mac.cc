@@ -94,7 +94,7 @@ void QuitWithAppsController::Close(bool by_user) {
 
 void QuitWithAppsController::Click(
     const base::Optional<int>& button_index,
-    const base::Optional<base::string16>& reply) {
+    const base::Optional<std::u16string>& reply) {
   CloseNotification(notification_profile_);
 
   if (!button_index)
@@ -102,10 +102,7 @@ void QuitWithAppsController::Click(
 
   if (*button_index == kQuitAllAppsButtonIndex) {
     if (hosted_app_quit_notification_) {
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
-          content::NotificationService::AllSources(),
-          content::NotificationService::NoDetails());
+      chrome::OnClosingAllBrowsers(true);
       chrome::CloseAllBrowsers();
     }
     AppWindowRegistryUtil::CloseAllAppWindows();

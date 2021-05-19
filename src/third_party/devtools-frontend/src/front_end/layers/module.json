@@ -1,8 +1,0 @@
-{
-  "dependencies": [
-    "layer_viewer"
-  ],
-  "modules": [
-    "layers-legacy.js"
-  ]
-}

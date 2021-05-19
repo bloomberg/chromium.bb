@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
@@ -296,9 +295,9 @@ void ChromeCleanupHandler::GetPluralString(int id,
   int num_items = 0;
   args->GetInteger(1, &num_items);
 
-  const base::string16 plural_string =
+  const std::u16string plural_string =
       num_items > 0 ? l10n_util::GetPluralStringFUTF16(id, num_items)
-                    : base::string16();
+                    : std::u16string();
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(plural_string));
 }

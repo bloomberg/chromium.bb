@@ -17,7 +17,7 @@ mojom("mojom") {
     "audio_logging.mojom",
     "audio_output_stream.mojom",
     "audio_parameters.mojom",
-    "cdm_infobar_service.mojom",
+    "audio_stream_factory.mojom",
     "cdm_service.mojom",
     "cdm_storage.mojom",
     "content_decryption_module.mojom",
@@ -58,6 +58,10 @@ mojom("mojom") {
 
   if (is_chromecast) {
     sources += [ "cast_application_media_info_manager.mojom" ]
+  }
+
+  if (is_win) {
+    sources += [ "media_foundation_service.mojom" ]
   }
 
   public_deps = [
@@ -414,10 +418,6 @@ mojom("mojom") {
     },
     {
       types = [
-        {
-          mojom = "media.mojom.ScalingSettings"
-          cpp = "::media::ScalingSettings"
-        },
         {
           mojom = "media.mojom.ResolutionBitrateLimit"
           cpp = "::media::ResolutionBitrateLimit"

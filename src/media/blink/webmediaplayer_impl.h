@@ -192,6 +192,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   uint64_t AudioDecodedByteCount() const override;
   uint64_t VideoDecodedByteCount() const override;
 
+  void SetVolumeMultiplier(double multiplier) override;
+  void SetPersistentState(bool persistent) override;
+  void SetPowerExperimentState(bool state) override;
+  void SuspendForFrameClosed() override;
+
   bool HasAvailableVideoFrame() const override;
 
   scoped_refptr<blink::WebAudioSourceProviderImpl> GetAudioSourceProvider()
@@ -211,12 +216,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // blink::WebMediaPlayerDelegate::Observer implementation.
   void OnFrameHidden() override;
-  void OnFrameClosed() override;
   void OnFrameShown() override;
   void OnIdleTimeout() override;
-  void OnVolumeMultiplierUpdate(double multiplier) override;
-  void OnBecamePersistentVideo(bool value) override;
-  void OnPowerExperimentState(bool state) override;
   void RequestRemotePlaybackDisabled(bool disabled) override;
 
 #if defined(OS_ANDROID)
@@ -799,7 +800,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool is_remote_rendering_ = false;
 
   // The last volume received by setVolume() and the last volume multiplier from
-  // OnVolumeMultiplierUpdate().  The multiplier is typical 1.0, but may be less
+  // SetVolumeMultiplier().  The multiplier is typical 1.0, but may be less
   // if the WebMediaPlayerDelegate has requested a volume reduction (ducking)
   // for a transient sound.  Playout volume is derived by volume * multiplier.
   double volume_ = 1.0;
@@ -999,6 +1000,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported_ = true;
+
+  bool was_suspended_for_frame_closed_ = false;
 
   base::CancelableOnceClosure have_enough_after_lazy_load_cb_;
 

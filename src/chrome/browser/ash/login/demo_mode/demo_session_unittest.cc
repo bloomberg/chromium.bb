@@ -17,15 +17,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/ash/login/demo_mode/demo_resources.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -76,7 +76,7 @@ class DemoSessionTest : public testing::Test {
     InitializeCrosComponentManager();
     session_manager_ = std::make_unique<session_manager::SessionManager>();
     wallpaper_controller_client_ =
-        std::make_unique<WallpaperControllerClient>();
+        std::make_unique<WallpaperControllerClientImpl>();
     wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
   }
 
@@ -131,8 +131,8 @@ class DemoSessionTest : public testing::Test {
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     RegisterUserProfilePrefs(prefs->registry());
     TestingProfile* profile = profile_manager_->CreateTestingProfile(
-        "test-profile", std::move(prefs), base::ASCIIToUTF16("Test profile"),
-        1 /* avatar_id */, std::string() /* supervised_user_id */,
+        "test-profile", std::move(prefs), u"Test profile", 1 /* avatar_id */,
+        std::string() /* supervised_user_id */,
         TestingProfile::TestingFactories());
     chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
                                                                       profile);
@@ -144,7 +144,7 @@ class DemoSessionTest : public testing::Test {
   FakeCrOSComponentManager* cros_component_manager_ = nullptr;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
-  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  std::unique_ptr<WallpaperControllerClientImpl> wallpaper_controller_client_;
   TestWallpaperController test_wallpaper_controller_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
 

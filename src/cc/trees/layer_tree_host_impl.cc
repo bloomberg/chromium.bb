@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <limits>
 #include <list>
+#include <map>
+#include <memory>
 #include <string>
 
 #include "base/auto_reset.h"
@@ -20,6 +22,7 @@
 #include "base/containers/flat_map.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -172,7 +175,10 @@ bool HasMobileViewport(LayerTreeImpl* active_tree) {
 bool IsMobileOptimized(LayerTreeImpl* active_tree) {
   bool has_mobile_viewport = HasMobileViewport(active_tree);
   bool has_fixed_page_scale = HasFixedPageScale(active_tree);
-  return has_fixed_page_scale || has_mobile_viewport;
+  return has_fixed_page_scale || has_mobile_viewport ||
+         (base::FeatureList::IsEnabled(
+              ::features::kRemoveMobileViewportDoubleTap) &&
+          active_tree->viewport_mobile_optimized());
 }
 
 viz::ResourceFormat TileRasterBufferFormat(
@@ -1172,12 +1178,14 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     size_t surface_index = render_surface_list_size - 1 - i;
     RenderSurfaceImpl* render_surface =
         (*frame->render_surface_list)[surface_index];
+    const auto& shared_element_id =
+        render_surface->GetDocumentTransitionSharedElementId();
 
     bool is_root_surface =
         render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId;
     bool should_draw_into_render_pass =
         is_root_surface || render_surface->contributes_to_drawn_surface() ||
-        render_surface->CopyOfOutputRequired();
+        render_surface->CopyOfOutputRequired() || shared_element_id.valid();
     if (should_draw_into_render_pass)
       frame->render_passes.push_back(render_surface->CreateRenderPass());
   }
@@ -2031,6 +2039,8 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
 void LayerTreeHostImpl::DidPresentCompositorFrame(
     uint32_t frame_token,
     const viz::FrameTimingDetails& details) {
+  devtools_instrumentation::DidPresentFrame(
+      id_, frame_token, details.presentation_feedback.timestamp);
   PresentationTimeCallbackBuffer::PendingCallbacks activated_callbacks =
       presentation_time_callbacks_.PopPendingCallbacks(frame_token);
 
@@ -2157,6 +2167,12 @@ void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
   }
 }
 
+void LayerTreeHostImpl::OnCompositorFrameTransitionDirectiveProcessed(
+    uint32_t sequence_id) {
+  finished_transition_request_sequence_ids_.push_back(sequence_id);
+  SetNeedsCommit();
+}
+
 void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {
   client_->OnCanDrawStateChanged(CanDraw());
 }
@@ -2210,7 +2226,7 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 
   metadata.display_transform_hint = active_tree_->display_transform_hint();
 
-  if (std::unique_ptr<viz::DelegatedInkMetadata> delegated_ink_metadata =
+  if (std::unique_ptr<gfx::DelegatedInkMetadata> delegated_ink_metadata =
           active_tree_->take_delegated_ink_metadata()) {
     delegated_ink_metadata->set_frame_time(CurrentBeginFrameArgs().frame_time);
     TRACE_EVENT_INSTANT1(
@@ -2219,10 +2235,6 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
         delegated_ink_metadata->ToString());
     metadata.delegated_ink_metadata = std::move(delegated_ink_metadata);
   }
-
-  for (auto& request : active_tree_->TakeDocumentTransitionRequests())
-    metadata.transition_directives.push_back(request->ConstructDirective());
-
   return metadata;
 }
 
@@ -2415,7 +2427,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   active_tree_->ResetAllChangeTracking();
 
   active_tree_->set_has_ever_been_drawn(true);
-  devtools_instrumentation::DidDrawFrame(id_);
+  devtools_instrumentation::DidDrawFrame(id_, frame_token);
   benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(
       rendering_stats_instrumentation_->TakeImplThreadRenderingStats());
 
@@ -2483,6 +2495,25 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
   }
 
   viz::CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
+
+  std::map<DocumentTransitionSharedElementId, viz::CompositorRenderPassId>
+      shared_element_render_pass_id_map;
+  for (RenderSurfaceImpl* render_surface : *frame->render_surface_list) {
+    const auto& shared_element_id =
+        render_surface->GetDocumentTransitionSharedElementId();
+    if (!shared_element_id.valid())
+      continue;
+    DCHECK(
+        !base::Contains(shared_element_render_pass_id_map, shared_element_id));
+    shared_element_render_pass_id_map[shared_element_id] =
+        render_surface->render_pass_id();
+  }
+
+  for (auto& request : active_tree_->TakeDocumentTransitionRequests()) {
+    metadata.transition_directives.push_back(
+        request->ConstructDirective(shared_element_render_pass_id_map));
+  }
+
   PopulateMetadataContentColorUsage(frame, &metadata);
   metadata.may_contain_video = frame->may_contain_video;
   metadata.deadline = viz::FrameDeadline(
@@ -2525,7 +2556,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
 
   if (render_frame_metadata_observer_) {
     last_draw_render_frame_metadata_ = MakeRenderFrameMetadata(frame);
-    if (viz::DelegatedInkMetadata* ink_metadata =
+    if (gfx::DelegatedInkMetadata* ink_metadata =
             metadata.delegated_ink_metadata.get()) {
       last_draw_render_frame_metadata_->delegated_ink_metadata =
           DelegatedInkBrowserMetadata(ink_metadata->is_hovering());
@@ -3434,8 +3465,8 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   TaskGraphRunner* task_graph_runner = task_graph_runner_;
   if (is_synchronous_single_threaded_) {
     DCHECK(!single_thread_synchronous_task_graph_runner_);
-    single_thread_synchronous_task_graph_runner_.reset(
-        new SynchronousTaskGraphRunner);
+    single_thread_synchronous_task_graph_runner_ =
+        std::make_unique<SynchronousTaskGraphRunner>();
     task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
   }
 
@@ -3546,6 +3577,13 @@ std::unique_ptr<MutatorEvents> LayerTreeHostImpl::TakeMutatorEvents() {
   std::swap(events, mutator_events_);
   mutator_host_->TakeTimeUpdatedEvents(events.get());
   return events;
+}
+
+std::vector<uint32_t>
+LayerTreeHostImpl::TakeFinishedTransitionRequestSequenceIds() {
+  std::vector<uint32_t> result;
+  result.swap(finished_transition_request_sequence_ids_);
+  return result;
 }
 
 void LayerTreeHostImpl::ClearCaches() {

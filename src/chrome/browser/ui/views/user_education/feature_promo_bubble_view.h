@@ -37,20 +37,34 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   FeaturePromoBubbleView& operator=(const FeaturePromoBubbleView&) = delete;
   ~FeaturePromoBubbleView() override;
 
+  struct ButtonParams {
+    ButtonParams();
+    ButtonParams(ButtonParams&&);
+    ~ButtonParams();
+
+    ButtonParams& operator=(ButtonParams&&);
+
+    std::u16string text;
+    bool has_border;
+    base::RepeatingClosure callback;
+  };
+
   struct CreateParams {
     CreateParams();
     CreateParams(CreateParams&&);
     ~CreateParams();
 
+    CreateParams& operator=(CreateParams&&);
+
     views::View* anchor_view = nullptr;
-
-    base::string16 body_text;
-    base::Optional<base::string16> title_text;
-    base::Optional<base::string16> screenreader_text;
-
-    bool snoozable = false;
-
     views::BubbleBorder::Arrow arrow = views::BubbleBorder::TOP_LEFT;
+
+    std::u16string body_text;
+    base::Optional<std::u16string> title_text;
+    base::Optional<std::u16string> screenreader_text;
+
+    std::vector<ButtonParams> buttons;
+
     base::Optional<int> preferred_width;
 
     bool focusable = false;
@@ -66,28 +80,22 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   //
   // Creates the promo. The returned pointer is only valid until the
   // widget is destroyed. It must not be manually deleted by the caller.
-  static FeaturePromoBubbleView* Create(
-      CreateParams params,
-      base::RepeatingClosure snooze_callback = base::RepeatingClosure(),
-      base::RepeatingClosure dismiss_callback = base::RepeatingClosure());
+  static FeaturePromoBubbleView* Create(CreateParams params);
 
   // Closes the promo bubble.
   void CloseBubble();
 
-  views::Button* GetDismissButtonForTesting() const;
-  views::Button* GetSnoozeButtonForTesting() const;
+  views::Button* GetButtonForTesting(int index) const;
 
  private:
-  FeaturePromoBubbleView(CreateParams params,
-                         base::RepeatingClosure snooze_callback,
-                         base::RepeatingClosure dismiss_callback);
+  explicit FeaturePromoBubbleView(CreateParams params);
 
   // BubbleDialogDelegateView:
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   ax::mojom::Role GetAccessibleWindowRole() override;
-  base::string16 GetAccessibleWindowTitle() const override;
+  std::u16string GetAccessibleWindowTitle() const override;
   void UpdateHighlightedButton(bool highlighted) override {
     // Do nothing: the anchor for promo bubbles should not highlight.
   }
@@ -103,14 +111,10 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   // get blurred.
   bool persist_on_blur_ = false;
 
-  // Determines if this bubble has dismiss and snooze buttons.
-  // If true, |focusable_| must be true for keyboard accessibility.
-  bool snoozable_;
+  // If the bubble has buttons, it must be focusable.
+  std::vector<views::MdTextButton*> buttons_;
 
-  views::MdTextButton* dismiss_button_ = nullptr;
-  views::MdTextButton* snooze_button_ = nullptr;
-
-  base::string16 accessible_name_;
+  std::u16string accessible_name_;
 
   base::Optional<int> preferred_width_;
 

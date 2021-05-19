@@ -24,6 +24,7 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/image_model_utils.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
@@ -33,7 +34,7 @@
 namespace views {
 
 LabelButton::LabelButton(PressedCallback callback,
-                         const base::string16& text,
+                         const std::u16string& text,
                          int button_context)
     : Button(std::move(callback)),
       cached_normal_font_list_(
@@ -59,17 +60,8 @@ LabelButton::~LabelButton() = default;
 
 gfx::ImageSkia LabelButton::GetImage(ButtonState for_state) const {
   for_state = ImageStateForState(for_state);
-
-  const auto& image_model = button_state_image_models_[for_state];
-  if (image_model.IsImage())
-    return image_model.GetImage().AsImageSkia();
-
-  if (image_model.IsVectorIcon()) {
-    return ui::ThemedVectorIcon(image_model.GetVectorIcon())
-        .GetImageSkia(GetNativeTheme());
-  }
-
-  return gfx::ImageSkia();
+  return GetImageSkiaFromImageModel(button_state_image_models_[for_state],
+                                    GetNativeTheme());
 }
 
 void LabelButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
@@ -90,11 +82,11 @@ void LabelButton::SetImageModel(ButtonState for_state,
     UpdateImage();
 }
 
-const base::string16& LabelButton::GetText() const {
+const std::u16string& LabelButton::GetText() const {
   return label_->GetText();
 }
 
-void LabelButton::SetText(const base::string16& text) {
+void LabelButton::SetText(const std::u16string& text) {
   SetTextInternal(text);
 }
 
@@ -512,7 +504,7 @@ void LabelButton::StateChanged(ButtonState old_state) {
   VisualStateChanged();
 }
 
-void LabelButton::SetTextInternal(const base::string16& text) {
+void LabelButton::SetTextInternal(const std::u16string& text) {
   SetAccessibleName(text);
   label_->SetText(text);
 
@@ -533,7 +525,7 @@ void LabelButton::ClearTextIfShrunkDown() {
       height() <= preferred_size.height()) {
     // Once the button shrinks down to its preferred size (that disregards the
     // current text), we finish the operation by clearing the text.
-    SetText(base::string16());
+    SetText(std::u16string());
   }
 }
 
@@ -613,7 +605,7 @@ void LabelButton::FlipCanvasOnPaintForRTLUIChanged() {
 }
 
 BEGIN_METADATA(LabelButton, Button)
-ADD_PROPERTY_METADATA(base::string16, Text)
+ADD_PROPERTY_METADATA(std::u16string, Text)
 ADD_PROPERTY_METADATA(gfx::HorizontalAlignment, HorizontalAlignment)
 ADD_PROPERTY_METADATA(gfx::Size, MinSize)
 ADD_PROPERTY_METADATA(gfx::Size, MaxSize)

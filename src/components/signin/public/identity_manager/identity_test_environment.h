@@ -50,7 +50,8 @@ class TestIdentityManagerObserver;
 // task environment. If your test doesn't already have one, use a
 // base::test::TaskEnvironment instance variable to fulfill this
 // requirement.
-class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
+class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver,
+                                public IdentityManager::Observer {
  public:
   struct PendingRequest {
     PendingRequest(CoreAccountId account_id,
@@ -105,6 +106,10 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Returns the |TestIdentityManagerObserver| watching the IdentityManager.
   TestIdentityManagerObserver* identity_manager_observer();
 
+  // Blocks until LoadCredentials is complete and OnRefreshTokensLoaded is
+  // invoked.
+  void WaitForRefreshTokensLoaded();
+
   // Sets the primary account for the given email address, generating a GAIA ID
   // that corresponds uniquely to that email address. On non-ChromeOS, results
   // in the firing of the IdentityManager and PrimaryAccountManager callbacks
@@ -158,7 +163,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
                                               const std::string& gaia_id);
 
   // Revokes sync consent from the primary account: the primary account is left
-  // at ConsentLevel::kNotRequired.
+  // at ConsentLevel::kSignin.
   void RevokeSyncConsent();
 
   // Clears the primary account, removes all accounts and revokes the sync
@@ -400,7 +405,10 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
                               const ScopeSet& scopes) override;
-  void OnIdentityManagerShutdown() override;
+
+  // IdentityManager::Observer:
+  void OnIdentityManagerShutdown(
+      signin::IdentityManager* identity_manager) override;
 
   // Handles the notification that an access token request was received for
   // |account_id|. Invokes |on_access_token_request_callback_| if the latter
@@ -446,6 +454,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
                           &IdentityManager::AddDiagnosticsObserver,
                           &IdentityManager::RemoveDiagnosticsObserver>
       diagnostics_observation_{this};
+  base::ScopedObservation<IdentityManager, IdentityManager::Observer>
+      identity_manager_observation_{this};
 
   base::OnceClosure on_access_token_requested_callback_;
   std::vector<AccessTokenRequestState> requesters_;

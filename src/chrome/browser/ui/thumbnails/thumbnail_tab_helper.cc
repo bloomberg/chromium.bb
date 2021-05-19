@@ -56,34 +56,6 @@ gfx::Size GetMinimumThumbnailSize() {
   return min_target_size;
 }
 
-// Manages increment/decrement of video capture state on a WebContents.
-// Acquires (if possible) on construction, releases (if acquired) on
-// destruction.
-class ScopedThumbnailCapture {
- public:
-  explicit ScopedThumbnailCapture(
-      content::WebContentsObserver* web_contents_observer)
-      : web_contents_observer_(web_contents_observer) {
-    auto* const contents = web_contents_observer->web_contents();
-    if (contents) {
-      contents->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ true);
-      captured_ = true;
-    }
-  }
-
-  ~ScopedThumbnailCapture() {
-    auto* const contents = web_contents_observer_->web_contents();
-    if (captured_ && contents)
-      contents->DecrementCapturerCount(/* stay_hidden */ true);
-  }
-
- private:
-  // We track a web contents observer because it's an easy way to see if the
-  // web contents has disappeared without having to add another observer.
-  content::WebContentsObserver* const web_contents_observer_;
-  bool captured_ = false;
-};
-
 }  // anonymous namespace
 
 // ThumbnailTabHelper::CaptureType ---------------------------------------
@@ -131,7 +103,7 @@ class ThumbnailTabHelper::TabStateTracker
 
   // Returns true if we are capturing thumbnails from a tab and should continue
   // to do so, false if we should stop.
-  bool ShouldContinueVideoCapture() const { return scoped_capture_ != nullptr; }
+  bool ShouldContinueVideoCapture() const { return !!scoped_capture_; }
 
   // Tells our scheduling logic that a frame was received.
   void OnFrameCaptured(CaptureType capture_type) {
@@ -140,12 +112,15 @@ class ThumbnailTabHelper::TabStateTracker
   }
 
  private:
-  using PageReadiness = ThumbnailReadinessTracker::Readiness;
+  using CaptureReadinesss = ThumbnailImage::CaptureReadiness;
 
   // ThumbnailCaptureDriver::Client:
   void RequestCapture() override {
-    if (!scoped_capture_)
-      scoped_capture_ = std::make_unique<ScopedThumbnailCapture>(this);
+    if (!scoped_capture_) {
+      scoped_capture_ = web_contents()->IncrementCapturerCount(
+          gfx::Size(), /*stay_hidden=*/true,
+          /*stay_awake=*/false);
+    }
   }
 
   void StartCapture() override {
@@ -155,7 +130,7 @@ class ThumbnailTabHelper::TabStateTracker
 
   void StopCapture() override {
     thumbnail_tab_helper_->StopVideoCapture();
-    scoped_capture_.reset();
+    scoped_capture_.RunAndReset();
   }
 
   // content::WebContentsObserver:
@@ -166,7 +141,7 @@ class ThumbnailTabHelper::TabStateTracker
 
     visible_ = new_visible;
     capture_driver_.UpdatePageVisibility(visible_);
-    if (!visible_ && page_readiness_ != PageReadiness::kNotReady)
+    if (!visible_ && page_readiness_ != CaptureReadinesss::kNotReady)
       thumbnail_tab_helper_->CaptureThumbnailOnTabHidden();
   }
 
@@ -185,12 +160,16 @@ class ThumbnailTabHelper::TabStateTracker
       web_contents()->GetController().LoadIfNecessary();
   }
 
-  void PageReadinessChanged(PageReadiness readiness) {
+  ThumbnailImage::CaptureReadiness GetCaptureReadiness() const override {
+    return page_readiness_;
+  }
+
+  void PageReadinessChanged(CaptureReadinesss readiness) {
     if (page_readiness_ == readiness)
       return;
     // If we transition back to a kNotReady state, clear any existing thumbnail,
     // as it will contain an old snapshot, possibly from a different domain.
-    if (readiness == PageReadiness::kNotReady)
+    if (readiness == CaptureReadinesss::kNotReady)
       thumbnail_tab_helper_->ClearData();
     page_readiness_ = readiness;
     capture_driver_.UpdatePageReadiness(readiness);
@@ -206,11 +185,10 @@ class ThumbnailTabHelper::TabStateTracker
   bool visible_ = false;
 
   // Where we are in the page lifecycle.
-  PageReadiness page_readiness_ = PageReadiness::kNotReady;
+  CaptureReadinesss page_readiness_ = CaptureReadinesss::kNotReady;
 
-  // Scoped request for video capture. Ensures we always decrement the counter
-  // once per increment.
-  std::unique_ptr<ScopedThumbnailCapture> scoped_capture_;
+  // Scoped request for video capture.
+  base::ScopedClosureRunner scoped_capture_;
 };
 
 // ThumbnailTabHelper ----------------------------------------------------

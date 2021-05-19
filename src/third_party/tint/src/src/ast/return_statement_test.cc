@@ -14,9 +14,6 @@
 
 #include "src/ast/return_statement.h"
 
-#include <sstream>
-
-#include "src/ast/identifier_expression.h"
 #include "src/ast/test_helper.h"
 
 namespace tint {
@@ -53,23 +50,6 @@ TEST_F(ReturnStatementTest, HasValue_WithValue) {
   auto* expr = Expr("expr");
   auto* r = create<ReturnStatement>(expr);
   EXPECT_TRUE(r->has_value());
-}
-
-TEST_F(ReturnStatementTest, IsValid_WithoutValue) {
-  auto* r = create<ReturnStatement>();
-  EXPECT_TRUE(r->IsValid());
-}
-
-TEST_F(ReturnStatementTest, IsValid_WithValue) {
-  auto* expr = Expr("expr");
-  auto* r = create<ReturnStatement>(expr);
-  EXPECT_TRUE(r->IsValid());
-}
-
-TEST_F(ReturnStatementTest, IsValid_InvalidValue) {
-  auto* expr = Expr("");
-  auto* r = create<ReturnStatement>(expr);
-  EXPECT_FALSE(r->IsValid());
 }
 
 TEST_F(ReturnStatementTest, ToStr_WithValue) {

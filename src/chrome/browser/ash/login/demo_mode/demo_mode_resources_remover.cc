@@ -20,15 +20,15 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/ash/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/ash/login/demo_mode/demo_resources.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/idle_detector.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
@@ -141,19 +141,14 @@ DemoModeResourcesRemover::~DemoModeResourcesRemover() {
   ChromeUserManager::Get()->RemoveSessionStateObserver(this);
 }
 
-void DemoModeResourcesRemover::LowDiskSpace(uint64_t free_disk_space) {
+void DemoModeResourcesRemover::LowDiskSpace(
+    const ::user_data_auth::LowDiskSpace& status) {
   AttemptRemoval(RemovalReason::kLowDiskSpace, RemovalCallback());
 }
 
 void DemoModeResourcesRemover::ActiveUserChanged(user_manager::User* user) {
   // Ignore user activity in guest sessions.
   if (user->GetType() == user_manager::USER_TYPE_GUEST)
-    return;
-
-  // Do not remove resources if the device is in a legacy derelict demo session,
-  // which is implemented as kiosk - note that this is different than sessions
-  // detected by IsLegacyDemoRetailModeSession().
-  if (DemoAppLauncher::IsDemoAppSession(user->GetAccountId()))
     return;
 
   // Attempt resources removal if the device is managed, and not in a retail
@@ -253,7 +248,7 @@ DemoModeResourcesRemover::DemoModeResourcesRemover(PrefService* local_state)
   CHECK(!g_instance);
   g_instance = this;
 
-  cryptohome_observer_.Add(CryptohomeClient::Get());
+  userdataauth_observer_.Observe(UserDataAuthClient::Get());
   ChromeUserManager::Get()->AddSessionStateObserver(this);
 }
 
@@ -294,7 +289,7 @@ void DemoModeResourcesRemover::OnRemovalDone(RemovalReason reason,
     local_state_->SetBoolean(kDemoModeResourcesRemoved, true);
     local_state_->ClearPref(kAccumulatedUsagePref);
 
-    cryptohome_observer_.RemoveAll();
+    userdataauth_observer_.Reset();
     ChromeUserManager::Get()->RemoveSessionStateObserver(this);
 
     user_activity_observer_.RemoveAll();

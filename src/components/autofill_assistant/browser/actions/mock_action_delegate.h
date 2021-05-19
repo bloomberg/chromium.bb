@@ -118,13 +118,6 @@ class MockActionDelegate : public ActionDelegate {
                     const ElementFinder::Result& element,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
-  MOCK_METHOD4(WaitUntilElementIsStable,
-               void(int,
-                    base::TimeDelta,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&,
-                                            base::TimeDelta)> callback));
-
   MOCK_METHOD5(Prompt,
                void(std::unique_ptr<std::vector<UserAction>> user_actions,
                     bool disable_force_expand_sheet,
@@ -150,7 +143,7 @@ class MockActionDelegate : public ActionDelegate {
 
   void FillCardForm(
       std::unique_ptr<autofill::CreditCard> card,
-      const base::string16& cvc,
+      const std::u16string& cvc,
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback) override {
     OnFillCardForm(card.get(), cvc, selector, callback);
@@ -174,17 +167,9 @@ class MockActionDelegate : public ActionDelegate {
 
   MOCK_METHOD4(OnFillCardForm,
                void(const autofill::CreditCard* card,
-                    const base::string16& cvc,
+                    const std::u16string& cvc,
                     const Selector& selector,
                     base::OnceCallback<void(const ClientStatus&)>& callback));
-
-  MOCK_METHOD5(SelectOption,
-               void(const std::string& re2,
-                    bool case_sensitive,
-                    SelectOptionProto::OptionComparisonAttribute
-                        option_comparison_attribute,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
 
   MOCK_METHOD5(ScrollToElementPosition,
                void(const Selector& selector,
@@ -192,67 +177,21 @@ class MockActionDelegate : public ActionDelegate {
                     std::unique_ptr<ElementFinder::Result> scrollable_element,
                     const ElementFinder::Result& element,
                     base::OnceCallback<void(const ClientStatus&)> callback));
-
   MOCK_METHOD1(SetTouchableElementArea,
                void(const ElementAreaProto& touchable_element_area));
-
-  MOCK_METHOD2(HighlightElement,
-               void(const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
   MOCK_METHOD1(CollectUserData,
                void(CollectUserDataOptions* collect_user_data_options));
-
   MOCK_METHOD1(
       SetLastSuccessfulUserDataOptions,
       void(std::unique_ptr<CollectUserDataOptions> collect_user_data_options));
-
   MOCK_CONST_METHOD0(GetLastSuccessfulUserDataOptions,
                      CollectUserDataOptions*());
-
   MOCK_METHOD1(
       WriteUserData,
       void(base::OnceCallback<void(UserData*, UserData::FieldChange*)>));
-
   MOCK_METHOD2(GetFullCard,
                void(const autofill::CreditCard* credit_card,
                     ActionDelegate::GetFullCardCallback callback));
-
-  MOCK_METHOD2(GetFieldValue,
-               void(const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&,
-                                            const std::string&)> callback));
-
-  MOCK_METHOD3(GetStringAttribute,
-               void(const std::vector<std::string>& attributes,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&,
-                                            const std::string&)> callback));
-
-  MOCK_METHOD3(SetValueAttribute,
-               void(const std::string& value,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
-  MOCK_METHOD4(SetAttribute,
-               void(const std::vector<std::string>& attribute,
-                    const std::string& value,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
-  void SendKeyboardInput(
-      const std::vector<UChar32>& codepoints,
-      int delay_in_millisecond,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) {
-    OnSendKeyboardInput(codepoints, delay_in_millisecond, element, callback);
-  }
-  MOCK_METHOD4(OnSendKeyboardInput,
-               void(const std::vector<UChar32>& codepoints,
-                    int delay_in_millisecond,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)>& callback));
-
   MOCK_METHOD0(ExpectNavigation, void());
   MOCK_METHOD0(ExpectedNavigationHasStarted, bool());
   MOCK_METHOD1(WaitForNavigation,
@@ -263,7 +202,7 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(Restart, void());
   MOCK_CONST_METHOD0(GetUserData, UserData*());
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
-  MOCK_METHOD0(GetWebsiteLoginManager, WebsiteLoginManager*());
+  MOCK_CONST_METHOD0(GetWebsiteLoginManager, WebsiteLoginManager*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_CONST_METHOD0(GetWebController, WebController*());
   MOCK_METHOD0(GetEmailAddressForAccessTokenAccount, std::string());

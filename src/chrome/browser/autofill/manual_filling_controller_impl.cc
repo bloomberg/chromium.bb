@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -125,10 +127,16 @@ void ManualFillingControllerImpl::RefreshSuggestions(
 }
 
 void ManualFillingControllerImpl::NotifyFocusedInputChanged(
+    autofill::FieldRendererId focused_field_id,
     autofill::mojom::FocusedFieldType focused_field_type) {
   TRACE_EVENT0("passwords",
                "ManualFillingControllerImpl::NotifyFocusedInputChanged");
-  focused_field_type_ = focused_field_type;
+  autofill::LocalFrameToken frame_token;
+  if (content::RenderFrameHost* rfh = web_contents_->GetFocusedFrame()) {
+    frame_token = autofill::LocalFrameToken(rfh->GetFrameToken().value());
+  }
+  last_focused_field_id_ = {frame_token, focused_field_id};
+  last_focused_field_type_ = focused_field_type;
 
   // Ensure warnings and filling state is updated according to focused field.
   if (cc_controller_)
@@ -177,7 +185,7 @@ void ManualFillingControllerImpl::OnFillingTriggered(
   AccessoryController* controller = GetControllerForTab(type);
   if (!controller)
     return;  // Controller not available anymore.
-  controller->OnFillingTriggered(selection);
+  controller->OnFillingTriggered(last_focused_field_id_, selection);
   view_->SwapSheetWithKeyboard();  // Soft-close the keyboard.
 }
 
@@ -221,6 +229,18 @@ void ManualFillingControllerImpl::Initialize() {
 ManualFillingControllerImpl::ManualFillingControllerImpl(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
+  if (PasswordAccessoryController::AllowedForWebContents(web_contents_)) {
+    pwd_controller_ =
+        ChromePasswordManagerClient::FromWebContents(web_contents_)
+            ->GetOrCreatePasswordAccessory()
+            ->AsWeakPtr();
+    if (base::FeatureList::IsEnabled(
+            autofill::features::kAutofillKeyboardAccessory)) {
+      pwd_controller_->RegisterFillingSourceObserver(base::BindRepeating(
+          &ManualFillingControllerImpl::OnSourceAvailabilityChanged,
+          weak_factory_.GetWeakPtr(), FillingSource::PASSWORD_FALLBACKS));
+    }
+  }
   if (AddressAccessoryController::AllowedForWebContents(web_contents)) {
     address_controller_ =
         AddressAccessoryController::GetOrCreate(web_contents)->AsWeakPtr();
@@ -243,10 +263,16 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
     base::WeakPtr<CreditCardAccessoryController> cc_controller,
     std::unique_ptr<ManualFillingViewInterface> view)
     : web_contents_(web_contents),
-      pwd_controller_for_testing_(std::move(pwd_controller)),
+      pwd_controller_(std::move(pwd_controller)),
       address_controller_(std::move(address_controller)),
       cc_controller_(std::move(cc_controller)),
       view_(std::move(view)) {
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillKeyboardAccessory)) {
+    pwd_controller_->RegisterFillingSourceObserver(base::BindRepeating(
+        &ManualFillingControllerImpl::OnSourceAvailabilityChanged,
+        weak_factory_.GetWeakPtr(), FillingSource::PASSWORD_FALLBACKS));
+  }
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "ManualFillingCache", base::ThreadTaskRunnerHandle::Get());
 }
@@ -270,13 +296,15 @@ bool ManualFillingControllerImpl::ShouldShowAccessory() const {
           autofill::features::kAutofillKeyboardAccessory) &&
       !base::FeatureList::IsEnabled(
           autofill::features::kAutofillManualFallbackAndroid)) {
-    return focused_field_type_ == FocusedFieldType::kFillablePasswordField ||
-           (focused_field_type_ == FocusedFieldType::kFillableUsernameField &&
+    return last_focused_field_type_ ==
+               FocusedFieldType::kFillablePasswordField ||
+           (last_focused_field_type_ ==
+                FocusedFieldType::kFillableUsernameField &&
             (base::FeatureList::IsEnabled(
                  password_manager::features::kFillingPasswordsFromAnyOrigin) ||
              available_sources_.contains(FillingSource::PASSWORD_FALLBACKS)));
   }
-  switch (focused_field_type_) {
+  switch (last_focused_field_type_) {
     // Always show on password fields to provide management and generation.
     case FocusedFieldType::kFillablePasswordField:
       return true;
@@ -288,8 +316,12 @@ bool ManualFillingControllerImpl::ShouldShowAccessory() const {
              base::FeatureList::IsEnabled(
                  password_manager::features::kFillingPasswordsFromAnyOrigin);
 
-    // Even if there are suggestions, don't show on search fields and textareas.
+    // Fallbacks aren't really useful on search fields but autocomplete entries
+    // justify showing the accessory.
     case FocusedFieldType::kFillableSearchField:
+      return available_sources_.contains(FillingSource::AUTOFILL);
+
+    // Even if there are suggestions, don't show on textareas.
     case FocusedFieldType::kFillableTextArea:
       return false;  // TODO(https://crbug.com/965478): true on long-press.
 
@@ -298,7 +330,7 @@ bool ManualFillingControllerImpl::ShouldShowAccessory() const {
     case FocusedFieldType::kUnknown:
       return false;
   }
-  NOTREACHED() << "Unhandled field type " << focused_field_type_;
+  NOTREACHED() << "Unhandled field type " << last_focused_field_type_;
   return false;
 }
 
@@ -316,13 +348,25 @@ void ManualFillingControllerImpl::UpdateVisibility() {
   }
 }
 
+void ManualFillingControllerImpl::OnSourceAvailabilityChanged(
+    FillingSource source,
+    AccessoryController* source_controller,
+    AccessoryController::IsFillingSourceAvailable is_source_available) {
+  base::Optional<AccessorySheetData> sheet = source_controller->GetSheetData();
+  bool show_filling_source = sheet.has_value() && is_source_available;
+  // TODO(crbug.com/1169167): Remove once all sheets pull this information
+  // instead of waiting to get it pushed.
+  view_->OnItemsAvailable(std::move(sheet.value()));
+  UpdateSourceAvailability(source, show_filling_source);
+}
+
 AccessoryController* ManualFillingControllerImpl::GetControllerForTab(
     AccessoryTabType type) {
   switch (type) {
     case AccessoryTabType::ADDRESSES:
       return address_controller_.get();
     case AccessoryTabType::PASSWORDS:
-      return GetPasswordController();
+      return pwd_controller_.get();
     case AccessoryTabType::CREDIT_CARDS:
       return cc_controller_.get();
     case AccessoryTabType::TOUCH_TO_FILL:
@@ -342,7 +386,7 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
     case AccessoryAction::USE_OTHER_PASSWORD:
     case AccessoryAction::GENERATE_PASSWORD_AUTOMATIC:
     case AccessoryAction::TOGGLE_SAVE_PASSWORDS:
-      return GetPasswordController();
+      return pwd_controller_.get();
     case AccessoryAction::MANAGE_ADDRESSES:
       return address_controller_.get();
     case AccessoryAction::MANAGE_CREDIT_CARDS:
@@ -354,17 +398,6 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
   NOTREACHED() << "Controller not defined for action: "
                << static_cast<int>(action);
   return nullptr;
-}
-
-PasswordAccessoryController*
-ManualFillingControllerImpl::GetPasswordController() const {
-  if (pwd_controller_for_testing_)
-    return pwd_controller_for_testing_.get();
-
-  return PasswordAccessoryController::AllowedForWebContents(web_contents_)
-             ? ChromePasswordManagerClient::FromWebContents(web_contents_)
-                   ->GetOrCreatePasswordAccessory()
-             : nullptr;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ManualFillingControllerImpl)

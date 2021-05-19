@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "quic/platform/api/quic_export.h"
-#include "quic/platform/api/quic_uint128.h"
 
 namespace quic {
 

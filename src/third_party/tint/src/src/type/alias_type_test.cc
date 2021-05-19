@@ -12,27 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/type/alias_type.h"
-
-#include <memory>
-#include <utility>
-
-#include "src/ast/storage_class.h"
-#include "src/ast/stride_decoration.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_decoration.h"
-#include "src/ast/struct_member_offset_decoration.h"
 #include "src/type/access_control_type.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/pointer_type.h"
-#include "src/type/struct_type.h"
 #include "src/type/test_helper.h"
 #include "src/type/texture_type.h"
-#include "src/type/vector_type.h"
 
 namespace tint {
 namespace type {
@@ -153,76 +135,6 @@ TEST_F(AliasTest, UnwrapAll_PointerAccessControl) {
 
   EXPECT_EQ(a.type(), &p);
   EXPECT_EQ(a.UnwrapAll(), ty.u32());
-}
-
-TEST_F(AliasTest, MinBufferBindingSizeU32) {
-  auto* alias = ty.alias("alias", ty.u32());
-  EXPECT_EQ(4u, alias->MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AliasTest, MinBufferBindingSizeArray) {
-  Array array(ty.u32(), 4,
-              ast::ArrayDecorationList{
-                  create<ast::StrideDecoration>(4),
-              });
-  auto* alias = ty.alias("alias", &array);
-  EXPECT_EQ(16u, alias->MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AliasTest, MinBufferBindingSizeRuntimeArray) {
-  Array array(ty.u32(), 0,
-              ast::ArrayDecorationList{
-                  create<ast::StrideDecoration>(4),
-              });
-  auto* alias = ty.alias("alias", &array);
-  EXPECT_EQ(4u, alias->MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AliasTest, MinBufferBindingSizeStruct) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("foo", ty.u32(), {MemberOffset(0)}),
-                            Member("bar", ty.u32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
-  auto* struct_type = ty.struct_("struct_type", str);
-  auto* alias = ty.alias("alias", struct_type);
-
-  EXPECT_EQ(16u, alias->MinBufferBindingSize(MemoryLayout::kUniformBuffer));
-  EXPECT_EQ(8u, alias->MinBufferBindingSize(MemoryLayout::kStorageBuffer));
-}
-
-TEST_F(AliasTest, BaseAlignmentU32) {
-  auto* alias = ty.alias("alias", ty.u32());
-  EXPECT_EQ(4u, alias->BaseAlignment(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AliasTest, BaseAlignmentArray) {
-  Array array(ty.u32(), 4,
-              ast::ArrayDecorationList{
-                  create<ast::StrideDecoration>(4),
-              });
-  auto* alias = ty.alias("alias", &array);
-  EXPECT_EQ(16u, alias->BaseAlignment(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AliasTest, BaseAlignmentRuntimeArray) {
-  Array array(ty.u32(), 0,
-              ast::ArrayDecorationList{
-                  create<ast::StrideDecoration>(4),
-              });
-  auto* alias = ty.alias("alias", &array);
-  EXPECT_EQ(16u, alias->BaseAlignment(MemoryLayout::kUniformBuffer));
-}
-
-TEST_F(AliasTest, BaseAlignmentStruct) {
-  auto* str = create<ast::Struct>(
-      ast::StructMemberList{Member("foo", ty.u32(), {MemberOffset(0)}),
-                            Member("bar", ty.u32(), {MemberOffset(4)})},
-      ast::StructDecorationList{});
-  auto* struct_type = ty.struct_("struct_type", str);
-  auto* alias = ty.alias("alias", struct_type);
-
-  EXPECT_EQ(16u, alias->BaseAlignment(MemoryLayout::kUniformBuffer));
-  EXPECT_EQ(4u, alias->BaseAlignment(MemoryLayout::kStorageBuffer));
 }
 
 TEST_F(AliasTest, UnwrapAliasIfNeeded) {

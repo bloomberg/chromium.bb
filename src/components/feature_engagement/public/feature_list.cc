@@ -16,6 +16,8 @@ namespace {
 const base::Feature* const kAllFeatures[] = {
     &kIPHDummyFeature,  // Ensures non-empty array for all platforms.
 #if defined(OS_ANDROID)
+    &kIPHAddToHomescreenMessageFeature,
+    &kIPHAddToHomescreenTextBubbleFeature,
     &kIPHDataSaverDetailFeature,
     &kIPHDataSaverMilestonePromoFeature,
     &kIPHDataSaverPreviewFeature,
@@ -34,6 +36,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHContextualSearchPromotePanelOpenFeature,
     &kIPHContextualSearchOptInFeature,
     &kIPHContextualSearchTappedButShouldLongpressFeature,
+    &kIPHContextualSearchInPanelHelpFeature,
     &kIPHDownloadSettingsFeature,
     &kIPHDownloadInfoBarDownloadContinuingFeature,
     &kIPHDownloadInfoBarDownloadsAreFasterFeature,
@@ -46,6 +49,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHKeyboardAccessoryPasswordFillingFeature,
     &kIPHKeyboardAccessoryPaymentFillingFeature,
     &kIPHKeyboardAccessoryPaymentOfferFeature,
+    &kIPHMicToolbarFeature,
     &kIPHNewTabPageHomeButtonFeature,
     &kIPHPageInfoFeature,
     &kIPHPreviewsOmniboxUIFeature,
@@ -87,9 +91,11 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHLiveCaptionFeature,
     &kIPHPasswordsAccountStorageFeature,
     &kIPHReadingListDiscoveryFeature,
+    &kIPHReadingListEntryPointFeature,
     &kIPHReopenTabFeature,
     &kIPHWebUITabStripFeature,
     &kIPHDesktopPwaInstallFeature,
+    &kIPHProfileSwitchFeature,
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 };

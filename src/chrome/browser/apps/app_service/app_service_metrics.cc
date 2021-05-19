@@ -16,7 +16,7 @@
 #include "extensions/common/constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -62,10 +62,11 @@ enum class DefaultAppName {
   kStadia = 40,
   kScanningApp = 41,
   kDiagnosticsApp = 42,
+  kPrintManagementApp = 43,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kDiagnosticsApp,
+  kMaxValue = kPrintManagementApp,
 };
 
 void RecordDefaultAppLaunch(DefaultAppName default_app_name,
@@ -149,6 +150,10 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
       base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromFullRestore",
                                     default_app_name);
       break;
+    case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
+      base::UmaHistogramEnumeration(
+          "Apps.DefaultAppLaunch.FromSmartTextContextMenu", default_app_name);
+      break;
   }
 }
 
@@ -183,6 +188,7 @@ void RecordBuiltInAppLaunch(apps::BuiltInAppName built_in_app_name,
     case apps::mojom::LaunchSource::kFromSharesheet:
     case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
     case apps::mojom::LaunchSource::kFromFullRestore:
+    case apps::mojom::LaunchSource::kFromSmartTextContextMenu:
       break;
   }
 }
@@ -269,6 +275,8 @@ void RecordAppLaunch(const std::string& app_id,
     RecordDefaultAppLaunch(DefaultAppName::kScanningApp, launch_source);
   else if (app_id == web_app::kDiagnosticsAppId)
     RecordDefaultAppLaunch(DefaultAppName::kDiagnosticsApp, launch_source);
+  else if (app_id == web_app::kPrintManagementAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kPrintManagementApp, launch_source);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Above are default apps; below are built-in apps.

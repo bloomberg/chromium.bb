@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -81,10 +81,10 @@ bool ShouldChangeStartThrobber(TabStripModel* tab_strip_model,
          tab_strip_model->GetActiveWebContents() != contents[0].contents;
 }
 
-base::string16 GetTabCounterLabelText(int num_tabs) {
+std::u16string GetTabCounterLabelText(int num_tabs) {
   // In the triple-digit case, fall back to ':D' to match Android.
   if (num_tabs >= 100)
-    return base::string16(base::ASCIIToUTF16(":D"));
+    return std::u16string(u":D");
   return base::FormatNumber(num_tabs);
 }
 
@@ -96,7 +96,7 @@ base::string16 GetTabCounterLabelText(int num_tabs) {
 class NumberLabel : public views::Label {
  public:
   METADATA_HEADER(NumberLabel);
-  NumberLabel() : Label(base::string16(), CONTEXT_TAB_COUNTER) {
+  NumberLabel() : Label(std::u16string(), CONTEXT_TAB_COUNTER) {
     single_digit_font_ = font_list();
     double_digit_font_ = views::style::GetFont(CONTEXT_TAB_COUNTER,
                                                views::style::STYLE_SECONDARY);
@@ -104,7 +104,7 @@ class NumberLabel : public views::Label {
 
   ~NumberLabel() override = default;
 
-  void SetText(const base::string16& text) override {
+  void SetText(const std::u16string& text) override {
     SetFontList(text.length() > 1 ? double_digit_font_ : single_digit_font_);
     Label::SetText(text);
   }
@@ -246,25 +246,20 @@ TabCounterAnimator::TabCounterAnimator(views::Label* appearing_label,
                                        views::Throbber* throbber)
     : appearing_label_(appearing_label),
       disappearing_label_(disappearing_label),
-      label_animation_(
-          std::vector<gfx::MultiAnimation::Part>{
-              // Stay in place.
-              gfx::MultiAnimation::Part(kFirstPartDuration,
-                                        gfx::Tween::Type::ZERO),
-              // Swap out to the new label.
-              gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(200),
-                                        gfx::Tween::Type::EASE_IN_OUT)},
-          gfx::MultiAnimation::kDefaultTimerInterval),
+      label_animation_(std::vector<gfx::MultiAnimation::Part>{
+          // Stay in place.
+          gfx::MultiAnimation::Part(kFirstPartDuration, gfx::Tween::Type::ZERO),
+          // Swap out to the new label.
+          gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(200),
+                                    gfx::Tween::Type::EASE_IN_OUT)}),
       border_view_(border_view),
-      border_animation_(
-          std::vector<gfx::MultiAnimation::Part>{
-              gfx::MultiAnimation::Part(kFirstPartDuration,
-                                        gfx::Tween::Type::EASE_OUT),
-              gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(150),
-                                        gfx::Tween::Type::EASE_IN_OUT),
-              gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(50),
-                                        gfx::Tween::Type::EASE_IN_OUT)},
-          gfx::MultiAnimation::kDefaultTimerInterval),
+      border_animation_(std::vector<gfx::MultiAnimation::Part>{
+          gfx::MultiAnimation::Part(kFirstPartDuration,
+                                    gfx::Tween::Type::EASE_OUT),
+          gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(150),
+                                    gfx::Tween::Type::EASE_IN_OUT),
+          gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(50),
+                                    gfx::Tween::Type::EASE_IN_OUT)}),
       throbber_(throbber) {
   label_animation_.set_delegate(this);
   label_animation_.set_continuous(false);
@@ -537,7 +532,7 @@ void WebUITabCounterButton::UpdateColors() {
   border_view_->SetBorder(views::CreateRoundedRectBorder(
       2,
       views::LayoutProvider::Get()->GetCornerRadiusMetric(
-          views::EMPHASIS_MEDIUM),
+          views::Emphasis::kMedium),
       current_text_color));
 }
 

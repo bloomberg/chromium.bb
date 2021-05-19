@@ -27,6 +27,7 @@ source_set("tracing") {
   ]
 
   sources = [
+    "backend_type.h",
     "buffer_exhausted_policy.h",
     "console_interceptor.h",
     "data_source.h",
@@ -35,6 +36,7 @@ source_set("tracing") {
     "interceptor.h",
     "internal/basic_types.h",
     "internal/checked_scope.h",
+    "internal/compile_time_hash.h",
     "internal/data_source_internal.h",
     "internal/in_process_tracing_backend.h",
     "internal/interceptor_trace_writer.h",
@@ -45,13 +47,16 @@ source_set("tracing") {
     "internal/track_event_data_source.h",
     "internal/track_event_internal.h",
     "internal/track_event_macros.h",
+    "internal/write_track_event_args.h",
     "locked_handle.h",
     "platform.h",
+    "string_helpers.h",
     "trace_writer_base.h",
     "traced_value.h",
     "traced_value_forward.h",
     "tracing.h",
     "tracing_backend.h",
+    "tracing_policy.h",
     "track.h",
     "track_event.h",
     "track_event_category_registry.h",

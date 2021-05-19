@@ -45,7 +45,7 @@ void CheckParse(const ConstCommandsTestData& data,
 
   extensions::Command command;
   std::unique_ptr<base::DictionaryValue> input(new base::DictionaryValue);
-  base::string16 error;
+  std::u16string error;
 
   // First, test the parse of a string suggested_key value.
   input->SetString("suggested_key", data.key);
@@ -73,7 +73,7 @@ void CheckParse(const ConstCommandsTestData& data,
       return;
     }
 
-    input.reset(new base::DictionaryValue);
+    input = std::make_unique<base::DictionaryValue>();
     auto key_dict = std::make_unique<base::DictionaryValue>();
 
     for (size_t j = 0; j < platforms.size(); ++j)
@@ -219,7 +219,7 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
   key_dict->SetString("chromeos", "Ctrl+Shift+C");
 
   extensions::Command command;
-  base::string16 error;
+  std::u16string error;
   EXPECT_TRUE(command.Parse(input.get(), command_name, 0, &error));
   EXPECT_STREQ(description.c_str(),
                base::UTF16ToASCII(command.description()).c_str());

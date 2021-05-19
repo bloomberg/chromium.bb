@@ -83,7 +83,9 @@ void ApplyConstraints(const Constraints& constraints,
                       Recommendations* recommendations) {
   // Audio has no fields in the display description, so we can safely
   // ignore the current recommendations when setting values here.
-  recommendations->audio.max_delay = constraints.audio.max_delay;
+  if (constraints.audio.max_delay.has_value()) {
+    recommendations->audio.max_delay = constraints.audio.max_delay.value();
+  }
   recommendations->audio.max_channels = constraints.audio.max_channels;
   recommendations->audio.max_sample_rate = constraints.audio.max_sample_rate;
 
@@ -93,9 +95,15 @@ void ApplyConstraints(const Constraints& constraints,
 
   // With video, we take the intersection of values of the constraints and
   // the display description.
-  recommendations->video.max_delay = constraints.video.max_delay;
-  recommendations->video.max_pixels_per_second =
-      constraints.video.max_pixels_per_second;
+  if (constraints.video.max_delay.has_value()) {
+    recommendations->video.max_delay = constraints.video.max_delay.value();
+  }
+
+  if (constraints.video.max_pixels_per_second.has_value()) {
+    recommendations->video.max_pixels_per_second =
+        constraints.video.max_pixels_per_second.value();
+  }
+
   recommendations->video.bit_rate_limits =
       BitRateLimits{std::max(constraints.video.min_bit_rate,
                              recommendations->video.bit_rate_limits.minimum),

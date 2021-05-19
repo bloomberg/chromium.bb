@@ -64,7 +64,8 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   ServiceWorkerSingleScriptUpdateCheckerTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         browser_context_(std::make_unique<TestBrowserContext>()) {
-    BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
+    // Ensure the BrowserContext's storage partition is initialized.
+    BrowserContext::GetDefaultStoragePartition(browser_context_.get());
     base::RunLoop().RunUntilIdle();
   }
   ~ServiceWorkerSingleScriptUpdateCheckerTest() override = default;
@@ -1003,7 +1004,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, ScriptType_Module_Main) {
   std::string header;
   EXPECT_TRUE(request->headers.GetHeader("Service-Worker", &header));
   EXPECT_EQ("script", header);
-  EXPECT_EQ(request->mode, network::mojom::RequestMode::kCors);
+  EXPECT_EQ(request->mode, network::mojom::RequestMode::kSameOrigin);
   EXPECT_EQ(request->credentials_mode, network::mojom::CredentialsMode::kOmit);
   EXPECT_EQ(request->destination,
             network::mojom::RequestDestination::kServiceWorker);
@@ -1018,7 +1019,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
   auto loader_factory = std::make_unique<network::TestURLLoaderFactory>();
   base::Optional<CheckResult> check_result;
 
-  // Load main script. Should validate the cache.
+  // Load imported script. Should validate the cache.
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(
           kImportedScriptURL, kScriptURL, GURL(kScope),
@@ -1033,8 +1034,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
   const network::ResourceRequest* request = nullptr;
   ASSERT_TRUE(loader_factory->IsPending(kImportedScriptURL, &request));
   std::string header;
-  EXPECT_TRUE(request->headers.GetHeader("Service-Worker", &header));
-  EXPECT_EQ("script", header);
+  EXPECT_FALSE(request->headers.GetHeader("Service-Worker", &header));
   EXPECT_EQ(request->mode, network::mojom::RequestMode::kCors);
   EXPECT_EQ(request->credentials_mode, network::mojom::CredentialsMode::kOmit);
   EXPECT_EQ(request->destination,

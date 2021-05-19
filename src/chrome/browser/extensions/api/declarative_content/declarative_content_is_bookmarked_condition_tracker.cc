@@ -25,7 +25,7 @@ const char kIsBookmarkedRequiresBookmarkPermission[] =
 
 bool HasBookmarkAPIPermission(const Extension* extension) {
   return extension->permissions_data()->HasAPIPermission(
-      APIPermission::kBookmark);
+      mojom::APIPermissionID::kBookmark);
 }
 
 }  // namespace
@@ -48,20 +48,19 @@ DeclarativeContentIsBookmarkedPredicate::Create(
     const Extension* extension,
     const base::Value& value,
     std::string* error) {
-  bool is_bookmarked = false;
-  if (value.GetAsBoolean(&is_bookmarked)) {
-    if (!HasBookmarkAPIPermission(extension)) {
-      *error = kIsBookmarkedRequiresBookmarkPermission;
-      return std::unique_ptr<DeclarativeContentIsBookmarkedPredicate>();
-    } else {
-      return base::WrapUnique(new DeclarativeContentIsBookmarkedPredicate(
-          evaluator, extension, is_bookmarked));
-    }
-  } else {
+  if (!value.is_bool()) {
     *error = base::StringPrintf(kIsBookmarkedInvalidTypeOfParameter,
                                 declarative_content_constants::kIsBookmarked);
-    return std::unique_ptr<DeclarativeContentIsBookmarkedPredicate>();
+    return nullptr;
   }
+
+  if (!HasBookmarkAPIPermission(extension)) {
+    *error = kIsBookmarkedRequiresBookmarkPermission;
+    return nullptr;
+  }
+
+  return base::WrapUnique(new DeclarativeContentIsBookmarkedPredicate(
+      evaluator, extension, value.GetBool() /* is_bookmarked */));
 }
 
 ContentPredicateEvaluator*
@@ -151,7 +150,7 @@ DeclarativeContentIsBookmarkedConditionTracker::
       BookmarkModelFactory::GetForBrowserContext(context);
   // Can be null during unit test execution.
   if (bookmark_model)
-    scoped_bookmarks_observer_.Add(bookmark_model);
+    scoped_bookmarks_observation_.Observe(bookmark_model);
 }
 
 DeclarativeContentIsBookmarkedConditionTracker::

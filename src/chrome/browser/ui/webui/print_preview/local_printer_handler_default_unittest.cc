@@ -27,6 +27,15 @@ namespace printing {
 
 namespace {
 
+// Used as a callback to `GetDefaultPrinter` in tests.
+// Increases `call_count` and records value returned by `GetDefaultPrinter`.
+void RecordGetDefaultPrinter(bool& default_printer_set,
+                             std::string& default_printer_out,
+                             const std::string& default_printer) {
+  default_printer_out = default_printer;
+  default_printer_set = true;
+}
+
 // Used as a callback to `StartGetPrinters` in tests.
 // Increases `call_count` and records values returned by `StartGetPrinters`.
 // TODO(crbug.com/1171579) Get rid of use of base::ListValue.
@@ -51,7 +60,7 @@ void RecordGetCapability(bool& capabilities_set,
 }
 
 // Converts JSON string to base::ListValue object.
-// On failure, returns NULL and fills `error` string.
+// On failure, returns nullptr and fills `error` string.
 std::unique_ptr<base::ListValue> GetJSONAsListValue(
     const base::StringPiece& json,
     std::string& error) {
@@ -83,13 +92,12 @@ class LocalPrinterHandlerDefaultTest : public testing::TestWithParam<bool> {
 
     TestingProfile::Builder builder;
     profile_ = builder.Build();
-    initiator_web_contents_ = content::WebContents::Create(
+    initiator_ = content::WebContents::Create(
         content::WebContents::CreateParams(profile_.get()));
-    content::WebContents* initiator = initiator_web_contents_.get();
     test_backend_ = base::MakeRefCounted<TestPrintBackend>();
     PrintBackend::SetPrintBackendForTesting(test_backend_.get());
     local_printer_handler_ =
-        std::make_unique<LocalPrinterHandlerDefault>(initiator);
+        std::make_unique<LocalPrinterHandlerDefault>(initiator_.get());
 
     if (use_backend_service) {
       print_backend_service_ = PrintBackendServiceTestImpl::LaunchForTesting(
@@ -112,10 +120,16 @@ class LocalPrinterHandlerDefaultTest : public testing::TestWithParam<bool> {
                                      std::move(basic_info));
   }
 
- protected:
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
+
+  LocalPrinterHandlerDefault* local_printer_handler() {
+    return local_printer_handler_.get();
+  }
+
+ private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<content::WebContents> initiator_web_contents_;
+  std::unique_ptr<content::WebContents> initiator_;
   scoped_refptr<TestPrintBackend> test_backend_;
   std::unique_ptr<LocalPrinterHandlerDefault> local_printer_handler_;
 
@@ -127,6 +141,39 @@ class LocalPrinterHandlerDefaultTest : public testing::TestWithParam<bool> {
 
 INSTANTIATE_TEST_SUITE_P(All, LocalPrinterHandlerDefaultTest, testing::Bool());
 
+// Tests that getting default printer is successful.
+TEST_P(LocalPrinterHandlerDefaultTest, GetDefaultPrinter) {
+  AddPrinter("printer1", "default1", "description1", true);
+  AddPrinter("printer2", "non-default2", "description2", false);
+  AddPrinter("printer3", "non-default3", "description3", false);
+
+  bool did_get_default_printer = false;
+  std::string default_printer;
+  local_printer_handler()->GetDefaultPrinter(base::BindOnce(
+      &RecordGetDefaultPrinter, std::ref(did_get_default_printer),
+      std::ref(default_printer)));
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(did_get_default_printer);
+  EXPECT_EQ(default_printer, "printer1");
+}
+
+// Tests that getting default printer gives empty string when no printers are
+// installed.
+TEST_P(LocalPrinterHandlerDefaultTest, GetDefaultPrinterNoneInstalled) {
+  bool did_get_default_printer = false;
+  std::string default_printer;
+  local_printer_handler()->GetDefaultPrinter(base::BindOnce(
+      &RecordGetDefaultPrinter, std::ref(did_get_default_printer),
+      std::ref(default_printer)));
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(did_get_default_printer);
+  EXPECT_TRUE(default_printer.empty());
+}
+
 TEST_P(LocalPrinterHandlerDefaultTest, GetPrinters) {
   AddPrinter("printer1", "default1", "description1", true);
   AddPrinter("printer2", "non-default2", "description2", false);
@@ -136,12 +183,12 @@ TEST_P(LocalPrinterHandlerDefaultTest, GetPrinters) {
   std::unique_ptr<base::ListValue> printers;
   bool is_done = false;
 
-  local_printer_handler_->StartGetPrinters(
+  local_printer_handler()->StartGetPrinters(
       base::BindRepeating(&RecordPrinterList, std::ref(call_count),
                           std::ref(printers)),
       base::BindOnce(&RecordPrintersDone, std::ref(is_done)));
 
-  task_environment_.RunUntilIdle();
+  RunUntilIdle();
 
   EXPECT_EQ(call_count, 1u);
   EXPECT_TRUE(is_done);
@@ -182,12 +229,12 @@ TEST_P(LocalPrinterHandlerDefaultTest, GetPrintersNoneRegistered) {
   bool is_done = false;
 
   // Do not add any printers before attempt to get printer list.
-  local_printer_handler_->StartGetPrinters(
+  local_printer_handler()->StartGetPrinters(
       base::BindRepeating(&RecordPrinterList, std::ref(call_count),
                           std::ref(printers)),
       base::BindOnce(&RecordPrintersDone, std::ref(is_done)));
 
-  task_environment_.RunUntilIdle();
+  RunUntilIdle();
 
   EXPECT_EQ(call_count, 0u);
   EXPECT_TRUE(is_done);
@@ -201,11 +248,11 @@ TEST_P(LocalPrinterHandlerDefaultTest, StartGetCapabilityValidPrinter) {
 
   bool did_fetch_caps = false;
   base::Value fetched_caps;
-  local_printer_handler_->StartGetCapability(
+  local_printer_handler()->StartGetCapability(
       "printer1", base::BindOnce(&RecordGetCapability, std::ref(did_fetch_caps),
                                  std::ref(fetched_caps)));
 
-  task_environment_.RunUntilIdle();
+  RunUntilIdle();
 
   ASSERT_TRUE(did_fetch_caps);
   ASSERT_TRUE(fetched_caps.is_dict());
@@ -218,12 +265,12 @@ TEST_P(LocalPrinterHandlerDefaultTest, StartGetCapabilityValidPrinter) {
 TEST_P(LocalPrinterHandlerDefaultTest, StartGetCapabilityInvalidPrinter) {
   bool did_fetch_caps = false;
   base::Value fetched_caps;
-  local_printer_handler_->StartGetCapability(
+  local_printer_handler()->StartGetCapability(
       /*destination_id=*/"invalid printer",
       base::BindOnce(&RecordGetCapability, std::ref(did_fetch_caps),
                      std::ref(fetched_caps)));
 
-  task_environment_.RunUntilIdle();
+  RunUntilIdle();
 
   ASSERT_TRUE(did_fetch_caps);
   EXPECT_TRUE(fetched_caps.is_none());

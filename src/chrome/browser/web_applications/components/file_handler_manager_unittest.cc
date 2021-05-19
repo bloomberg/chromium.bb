@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
@@ -163,7 +164,8 @@ TEST_F(FileHandlerManagerTest, FileHandlersAreNotAvailableUnlessEnabled) {
   }
 
   // Ensure they can be disabled.
-  file_handler_manager().DisableAndUnregisterOsFileHandlers(app_id);
+  file_handler_manager().DisableAndUnregisterOsFileHandlers(app_id, nullptr,
+                                                            base::DoNothing());
 
   {
     const auto* handlers =

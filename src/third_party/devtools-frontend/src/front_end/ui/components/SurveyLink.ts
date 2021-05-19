@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../../common/common.js';
-import type * as Host from '../../host/host.js';
+import * as Common from '../../core/common/common.js';
+import type * as Host from '../../core/host/host.js';
 import * as LitHtml from '../../third_party/lit-html/lit-html.js';
 
 import type {IconData} from './Icon.js';
 
-import * as i18n from '../../i18n/i18n.js';
-export const UIStrings = {
+import * as i18n from '../../core/i18n/i18n.js';
+const UIStrings = {
   /**
   *@description Text shown when the link to open a survey is clicked but the survey has not yet appeared
   */
@@ -126,8 +126,7 @@ export class SurveyLink extends HTMLElement {
           text-decoration: var(--issue-link-text-decoration, underline);
           cursor: pointer;
           font-size: var(--issue-link-font-size, 14px);
-          color: var(--issue-link); /* stylelint-disable-line plugin/use_theme_colors */
-          /* See: crbug.com/1152736 for color variable migration. */
+          color: var(--color-link);
           border: none;
           background: none;
           font-family: inherit;
@@ -151,7 +150,7 @@ export class SurveyLink extends HTMLElement {
         }
       </style>
       <button class="link ${linkState}" tabindex=${ariaDisabled ? '-1' : '0'} .disabled=${ariaDisabled} aria-disabled=${ariaDisabled} @click=${this.sendSurvey}>
-        <devtools-icon class="link-icon" .data=${{iconName: 'feedback_thin_16x16_icon', color: 'var(--issue-link)', width: 'var(--issue-link-icon-size, 16px)', height: 'var(--issue-link-icon-size, 16px)'} as IconData}></devtools-icon><!--
+        <devtools-icon class="link-icon" .data=${{iconName: 'feedback_thin_16x16_icon', color: 'var(--color-link)', width: 'var(--issue-link-icon-size, 16px)', height: 'var(--issue-link-icon-size, 16px)'} as IconData}></devtools-icon><!--
       -->${linkText}
       </button>
     `;

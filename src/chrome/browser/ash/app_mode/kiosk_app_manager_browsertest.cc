@@ -25,10 +25,10 @@
 #include "chrome/browser/ash/app_mode/fake_cws.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_data.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
@@ -117,14 +117,9 @@ scoped_refptr<extensions::Extension> MakeKioskApp(
   }
 
   std::string err;
-  scoped_refptr<extensions::Extension> app =
-      extensions::Extension::Create(
-          base::FilePath(),
-          extensions::Manifest::INTERNAL,
-          value,
-          extensions::Extension::WAS_INSTALLED_BY_DEFAULT,
-          id,
-          &err);
+  scoped_refptr<extensions::Extension> app = extensions::Extension::Create(
+      base::FilePath(), extensions::mojom::ManifestLocation::kInternal, value,
+      extensions::Extension::WAS_INSTALLED_BY_DEFAULT, id, &err);
   EXPECT_EQ(err, "");
   return app;
 }

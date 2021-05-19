@@ -313,9 +313,9 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
 
   block_offset += BorderScrollbarPadding().block_end;
 
-  LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), BorderPadding(), block_offset,
-      border_box_size.inline_size, Node().ShouldBeConsideredAsReplaced());
+  LayoutUnit block_size =
+      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), BorderPadding(),
+                                  block_offset, border_box_size.inline_size);
 
   container_builder_.SetIntrinsicBlockSize(block_offset);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
@@ -326,7 +326,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
 }
 
 MinMaxSizesResult NGMathUnderOverLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesInput& child_input) const {
+    const MinMaxSizesFloatInput&) const {
   DCHECK(IsValidMathMLScript(Node()));
 
   if (auto result = CalculateMinMaxSizesIgnoringChildren(
@@ -334,25 +334,23 @@ MinMaxSizesResult NGMathUnderOverLayoutAlgorithm::ComputeMinMaxSizes(
     return *result;
 
   MinMaxSizes sizes;
-  bool depends_on_percentage_block_size = false;
+  bool depends_on_block_constraints = false;
 
   for (NGLayoutInputNode child = Node().FirstChild(); child;
        child = child.NextSibling()) {
     if (child.IsOutOfFlowPositioned())
       continue;
     // TODO(crbug.com/1125136): take into account italic correction.
-    auto child_result = ComputeMinAndMaxContentContribution(
-        Style(), To<NGBlockNode>(child), child_input);
-    NGBoxStrut margins = ComputeMinMaxMargins(Style(), child);
-    child_result.sizes += margins.InlineSum();
+    const auto child_result = ComputeMinAndMaxContentContributionForMathChild(
+        Style(), ConstraintSpace(), To<NGBlockNode>(child),
+        ChildAvailableSize().block_size);
 
     sizes.Encompass(child_result.sizes);
-    depends_on_percentage_block_size |=
-        child_result.depends_on_percentage_block_size;
+    depends_on_block_constraints |= child_result.depends_on_block_constraints;
   }
 
   sizes += BorderScrollbarPadding().InlineSum();
-  return MinMaxSizesResult(sizes, depends_on_percentage_block_size);
+  return MinMaxSizesResult(sizes, depends_on_block_constraints);
 }
 
 }  // namespace blink

@@ -12,17 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/intrinsic_texture_helper_test.h"
 #include "src/ast/stage_decoration.h"
-#include "src/type/depth_texture_type.h"
-#include "src/type/multisampled_texture_type.h"
-#include "src/type/sampled_texture_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/hlsl/generator_impl.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -305,42 +297,24 @@ texture_tint_0.GetDimensions(_tint_tmp.x, _tint_tmp.y, _tint_tmp.z, _tint_tmp.w)
       return R"(texture_tint_0.SampleCmp(sampler_tint_0, float3(1.0f, 2.0f, 3.0f), 4.0f))";
     case ValidTextureOverload::kSampleCompareDepthCubeArrayF32:
       return R"(texture_tint_0.SampleCmp(sampler_tint_0, float4(1.0f, 2.0f, 3.0f, float(4)), 5.0f))";
-    case ValidTextureOverload::kLoad1dF32:
-      return R"(texture_tint_0.Load(int2(1, 0)))";
-    case ValidTextureOverload::kLoad1dU32:
-      return R"(texture_tint_0.Load(int2(1, 0)))";
-    case ValidTextureOverload::kLoad1dI32:
-      return R"(texture_tint_0.Load(int2(1, 0)))";
-    case ValidTextureOverload::kLoad2dF32:
-      return R"(texture_tint_0.Load(int3(1, 2, 0)))";
-    case ValidTextureOverload::kLoad2dU32:
-      return R"(texture_tint_0.Load(int3(1, 2, 0)))";
-    case ValidTextureOverload::kLoad2dI32:
-      return R"(texture_tint_0.Load(int3(1, 2, 0)))";
+    case ValidTextureOverload::kLoad1dLevelF32:
+      return R"(texture_tint_0.Load(int2(1, 0), 3))";
+    case ValidTextureOverload::kLoad1dLevelU32:
+      return R"(texture_tint_0.Load(int2(1, 0), 3))";
+    case ValidTextureOverload::kLoad1dLevelI32:
+      return R"(texture_tint_0.Load(int2(1, 0), 3))";
     case ValidTextureOverload::kLoad2dLevelF32:
       return R"(texture_tint_0.Load(int3(1, 2, 0), 3))";
     case ValidTextureOverload::kLoad2dLevelU32:
       return R"(texture_tint_0.Load(int3(1, 2, 0), 3))";
     case ValidTextureOverload::kLoad2dLevelI32:
       return R"(texture_tint_0.Load(int3(1, 2, 0), 3))";
-    case ValidTextureOverload::kLoad2dArrayF32:
-      return R"(texture_tint_0.Load(int4(1, 2, 3, 0)))";
-    case ValidTextureOverload::kLoad2dArrayU32:
-      return R"(texture_tint_0.Load(int4(1, 2, 3, 0)))";
-    case ValidTextureOverload::kLoad2dArrayI32:
-      return R"(texture_tint_0.Load(int4(1, 2, 3, 0)))";
     case ValidTextureOverload::kLoad2dArrayLevelF32:
       return R"(texture_tint_0.Load(int4(1, 2, 3, 0), 4))";
     case ValidTextureOverload::kLoad2dArrayLevelU32:
       return R"(texture_tint_0.Load(int4(1, 2, 3, 0), 4))";
     case ValidTextureOverload::kLoad2dArrayLevelI32:
       return R"(texture_tint_0.Load(int4(1, 2, 3, 0), 4))";
-    case ValidTextureOverload::kLoad3dF32:
-      return R"(texture_tint_0.Load(int4(1, 2, 3, 0)))";
-    case ValidTextureOverload::kLoad3dU32:
-      return R"(texture_tint_0.Load(int4(1, 2, 3, 0)))";
-    case ValidTextureOverload::kLoad3dI32:
-      return R"(texture_tint_0.Load(int4(1, 2, 3, 0)))";
     case ValidTextureOverload::kLoad3dLevelF32:
       return R"(texture_tint_0.Load(int4(1, 2, 3, 0), 4))";
     case ValidTextureOverload::kLoad3dLevelU32:
@@ -359,16 +333,12 @@ texture_tint_0.GetDimensions(_tint_tmp.x, _tint_tmp.y, _tint_tmp.z, _tint_tmp.w)
       return R"(texture_tint_0.Load(int4(1, 2, 3, 0), 4))";
     case ValidTextureOverload::kLoadMultisampled2dArrayI32:
       return R"(texture_tint_0.Load(int4(1, 2, 3, 0), 4))";
-    case ValidTextureOverload::kLoadDepth2dF32:
-      return R"(texture_tint_0.Load(int3(1, 2, 0)))";
     case ValidTextureOverload::kLoadDepth2dLevelF32:
       return R"(texture_tint_0.Load(int3(1, 2, 0), 3))";
-    case ValidTextureOverload::kLoadDepth2dArrayF32:
-      return R"(texture_tint_0.Load(int4(1, 2, 3, 0)))";
     case ValidTextureOverload::kLoadDepth2dArrayLevelF32:
       return R"(texture_tint_0.Load(int4(1, 2, 3, 0), 4))";
     case ValidTextureOverload::kLoadStorageRO1dRgba32float:
-      return R"(texture_tint_0.Load(1))";
+      return R"(texture_tint_0.Load(int2(1, 0)))";
     case ValidTextureOverload::kLoadStorageRO2dRgba8unorm:
     case ValidTextureOverload::kLoadStorageRO2dRgba8snorm:
     case ValidTextureOverload::kLoadStorageRO2dRgba8uint:
@@ -385,11 +355,11 @@ texture_tint_0.GetDimensions(_tint_tmp.x, _tint_tmp.y, _tint_tmp.z, _tint_tmp.w)
     case ValidTextureOverload::kLoadStorageRO2dRgba32uint:
     case ValidTextureOverload::kLoadStorageRO2dRgba32sint:
     case ValidTextureOverload::kLoadStorageRO2dRgba32float:
-      return R"(texture_tint_0.Load(int2(1, 2)))";
+      return R"(texture_tint_0.Load(int3(1, 2, 0)))";
     case ValidTextureOverload::kLoadStorageRO2dArrayRgba32float:
-      return R"(texture_tint_0.Load(int3(1, 2, 3)))";
+      return R"(texture_tint_0.Load(int4(1, 2, 3, 0)))";
     case ValidTextureOverload::kLoadStorageRO3dRgba32float:
-      return R"(texture_tint_0.Load(int3(1, 2, 3)))";
+      return R"(texture_tint_0.Load(int4(1, 2, 3, 0)))";
     case ValidTextureOverload::kStoreWO1dRgba32float:
       return R"(texture_tint_0[1] = float4(2.0f, 3.0f, 4.0f, 5.0f))";
     case ValidTextureOverload::kStoreWO2dRgba32float:
@@ -417,7 +387,7 @@ TEST_P(HlslGeneratorIntrinsicTextureTest, Call) {
        ast::StatementList{
            create<ast::CallStatement>(call),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kFragment),
        });
 

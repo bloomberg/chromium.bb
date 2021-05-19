@@ -28,6 +28,8 @@
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/prohibited_technologies_handler.h"
+#include "chromeos/network/system_token_cert_db_storage.h"
+#include "chromeos/network/test_cellular_esim_profile_handler.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
@@ -157,8 +159,9 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())),
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot()))));
 
+    SystemTokenCertDbStorage::Initialize();
     NetworkCertLoader::Initialize();
-    NetworkCertLoader::ForceHardwareBackedForTesting();
+    NetworkCertLoader::ForceAvailableForNetworkAuthForTesting();
 
     LoginState::Initialize();
 
@@ -180,10 +183,15 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
     cellular_inhibitor_->Init(helper_.network_state_handler(),
                               helper_.network_device_handler());
 
+    cellular_esim_profile_handler_.reset(new TestCellularESimProfileHandler());
+    cellular_esim_profile_handler_->Init(helper_.network_state_handler(),
+                                         cellular_inhibitor_.get());
+
     cellular_esim_connection_handler_.reset(
         new CellularESimConnectionHandler());
-    cellular_esim_connection_handler_->Init(helper_.network_state_handler(),
-                                            cellular_inhibitor_.get());
+    cellular_esim_connection_handler_->Init(
+        helper_.network_state_handler(), cellular_inhibitor_.get(),
+        cellular_esim_profile_handler_.get());
 
     network_connection_handler_.reset(new NetworkConnectionHandlerImpl());
     network_connection_handler_->Init(
@@ -210,6 +218,7 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
     LoginState::Shutdown();
 
     NetworkCertLoader::Shutdown();
+    SystemTokenCertDbStorage::Shutdown();
   }
 
  protected:
@@ -347,6 +356,35 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetCellularServiceOutOfCredits() {
+    helper_.service_test()->SetServiceProperty(kTestCellularServicePath,
+                                               shill::kOutOfCreditsProperty,
+                                               base::Value(true));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetCellularSimLocked() {
+    // Simulate a locked SIM.
+    base::Value sim_lock_status(base::Value::Type::DICTIONARY);
+    sim_lock_status.SetKey(shill::kSIMLockTypeProperty,
+                           base::Value(shill::kSIMLockPin));
+    helper_.device_test()->SetDeviceProperty(
+        kTestCellularDevicePath, shill::kSIMLockStatusProperty,
+        std::move(sim_lock_status), /*notify_changed=*/true);
+
+    // Set the cellular service to be the active profile.
+    base::Value::ListStorage sim_slot_infos;
+    base::Value slot_info_item(base::Value::Type::DICTIONARY);
+    slot_info_item.SetKey(shill::kSIMSlotInfoICCID, base::Value(kTestIccid));
+    slot_info_item.SetBoolKey(shill::kSIMSlotInfoPrimary, true);
+    sim_slot_infos.push_back(std::move(slot_info_item));
+    helper_.device_test()->SetDeviceProperty(
+        kTestCellularDevicePath, shill::kSIMSlotInfoProperty,
+        base::Value(sim_slot_infos), /*notify_changed=*/true);
+
+    base::RunLoop().RunUntilIdle();
+  }
+
   void AddNonConnectablePSimService() {
     AddCellularDevice();
 
@@ -377,7 +415,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
         dbus::ObjectPath(kTestCellularServicePath),
         dbus::ObjectPath(kTestEuiccPath), kTestIccid, kTestCellularName,
         "service_provider", "activation_code", kTestCellularServicePath,
-        hermes::profile::State::kInactive, /*service_only=*/false);
+        hermes::profile::State::kInactive,
+        hermes::profile::ProfileClass::kOperational, /*service_only=*/false);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -429,6 +468,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
   std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
       managed_config_handler_;
   std::unique_ptr<CellularInhibitor> cellular_inhibitor_;
+  std::unique_ptr<TestCellularESimProfileHandler>
+      cellular_esim_profile_handler_;
   std::unique_ptr<CellularESimConnectionHandler>
       cellular_esim_connection_handler_;
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
@@ -904,6 +945,23 @@ TEST_F(NetworkConnectionHandlerImplTest, PSimProfile_NotConnectable) {
   AddNonConnectablePSimService();
   Connect(kTestCellularServicePath);
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
+}
+
+TEST_F(NetworkConnectionHandlerImplTest, PSimProfile_OutOfCredits) {
+  AddNonConnectablePSimService();
+
+  SetCellularServiceOutOfCredits();
+  Connect(kTestCellularServicePath);
+  EXPECT_EQ(NetworkConnectionHandler::kErrorCellularOutOfCredits,
+            GetResultAndReset());
+}
+
+TEST_F(NetworkConnectionHandlerImplTest, SimLocked) {
+  AddNonConnectablePSimService();
+  SetCellularSimLocked();
+  SetCellularServiceConnectable();
+  Connect(kTestCellularServicePath);
+  EXPECT_EQ(NetworkConnectionHandler::kErrorSimLocked, GetResultAndReset());
 }
 
 TEST_F(NetworkConnectionHandlerImplTest, ESimProfile_AlreadyConnectable) {

@@ -5,11 +5,11 @@
 #include "chromeos/components/diagnostics_ui/backend/system_data_provider.h"
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -365,7 +365,7 @@ void VerifyChargeStatusResult(
   EXPECT_EQ(expected_battery_state, update->battery_state);
 
   if (expected_battery_state == mojom::BatteryState::kFull) {
-    EXPECT_EQ(base::string16(), update->power_time);
+    EXPECT_EQ(std::u16string(), update->power_time);
     return;
   }
 
@@ -375,7 +375,7 @@ void VerifyChargeStatusResult(
       ConstructPowerSupplyProperties(power_source, battery_state,
                                      is_calculating_battery_time, time_to_full,
                                      time_to_empty);
-  base::string16 expected_power_time =
+  std::u16string expected_power_time =
       ConstructPowerTime(expected_battery_state, props);
 
   EXPECT_EQ(expected_power_time, update->power_time);

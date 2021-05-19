@@ -37,6 +37,7 @@ class Platform {
   virtual ~Platform();
 
   enum class Status {
+    // These values must match up with CableAuthenticatorUI.java.
     TUNNEL_SERVER_CONNECT = 1,
     HANDSHAKE_COMPLETE = 2,
     REQUEST_RECEIVED = 3,
@@ -44,6 +45,7 @@ class Platform {
   };
 
   enum class Error {
+    // These values must match up with CableAuthenticatorUI.java.
     UNEXPECTED_EOF = 100,
     TUNNEL_SERVER_CONNECT_FAILED = 101,
     HANDSHAKE_FAILED = 102,
@@ -167,8 +169,9 @@ std::unique_ptr<Transaction> TransactFromFCM(
     base::span<const uint8_t, kRootSecretSize> root_secret,
     std::array<uint8_t, kRoutingIdSize> routing_id,
     base::span<const uint8_t, kTunnelIdSize> tunnel_id,
-    base::span<const uint8_t> pairing_id,
-    base::span<const uint8_t, kClientNonceSize> client_nonce);
+    base::span<const uint8_t, kPairingIDSize> pairing_id,
+    base::span<const uint8_t, kClientNonceSize> client_nonce,
+    base::Optional<base::span<const uint8_t>> contact_id);
 
 }  // namespace authenticator
 }  // namespace cablev2

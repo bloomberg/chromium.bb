@@ -395,13 +395,16 @@ struct OneOffDescriptorSet {
     ~OneOffDescriptorSet();
     bool Initialized();
     void Clear();
-    void WriteDescriptorBufferInfo(int binding, VkBuffer buffer, VkDeviceSize size,
-                                   VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uint32_t count = 1);
+    void WriteDescriptorBufferInfo(int binding, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize range,
+                                   VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uint32_t arrayElement = 0,
+                                   uint32_t count = 1);
     void WriteDescriptorBufferView(int binding, VkBufferView &buffer_view,
-                                   VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, uint32_t count = 1);
+                                   VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,
+                                   uint32_t arrayElement = 0, uint32_t count = 1);
     void WriteDescriptorImageInfo(int binding, VkImageView image_view, VkSampler sampler,
                                   VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                  VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, uint32_t count = 1);
+                                  VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, uint32_t arrayElement = 0,
+                                  uint32_t count = 1);
     void UpdateDescriptorSets();
 };
 

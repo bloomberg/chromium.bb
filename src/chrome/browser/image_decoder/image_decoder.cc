@@ -154,11 +154,11 @@ void ImageDecoder::StartWithOptionsImpl(
   }
 
   data_decoder::mojom::ImageCodec codec =
-      data_decoder::mojom::ImageCodec::DEFAULT;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (image_codec == ROBUST_PNG_CODEC)
-    codec = data_decoder::mojom::ImageCodec::ROBUST_PNG;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+      data_decoder::mojom::ImageCodec::kDefault;
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (image_codec == PNG_CODEC)
+    codec = data_decoder::mojom::ImageCodec::kPng;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   auto callback =
       base::BindOnce(&OnDecodeImageDone,

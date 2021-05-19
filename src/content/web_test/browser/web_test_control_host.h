@@ -18,7 +18,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
@@ -86,8 +86,6 @@ class WebTestResultPrinter {
   void StartStateDump();
 
  private:
-  void PrintEncodedBinaryData(const std::vector<unsigned char>& data);
-
   enum State {
     DURING_TEST,
     DURING_STATE_DUMP,
@@ -96,13 +94,16 @@ class WebTestResultPrinter {
     IN_IMAGE_BLOCK,
     AFTER_TEST
   };
-  State state_;
 
-  bool capture_text_only_;
-  bool encode_binary_data_;
+  void PrintEncodedBinaryData(const std::vector<unsigned char>& data);
 
-  std::ostream* output_;
-  std::ostream* error_;
+  std::ostream* const output_;
+  std::ostream* const error_;
+
+  State state_ = DURING_TEST;
+
+  bool capture_text_only_ = false;
+  bool encode_binary_data_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestResultPrinter);
 };
@@ -149,31 +150,6 @@ class WebTestControlHost : public WebContentsObserver,
       int render_process_id,
       mojo::PendingAssociatedReceiver<mojom::WebTestControlHost> receiver);
 
-  // WebContentsObserver implementation.
-  void PluginCrashed(const base::FilePath& plugin_path,
-                     base::ProcessId plugin_pid) override;
-  void TitleWasSet(NavigationEntry* entry) override;
-  void DidFailLoad(RenderFrameHost* render_frame_host,
-                   const GURL& validated_url,
-                   int error_code) override;
-  void WebContentsDestroyed() override;
-  void DidUpdateFaviconURL(
-      RenderFrameHost* render_frame_host,
-      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
-  void RenderViewHostChanged(RenderViewHost* old_host,
-                             RenderViewHost* new_host) override;
-  void RenderViewDeleted(RenderViewHost* render_view_host) override;
-  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
-
-  // RenderProcessHostObserver implementation.
-  void RenderProcessHostDestroyed(
-      RenderProcessHost* render_process_host) override;
-  void RenderProcessExited(RenderProcessHost* render_process_host,
-                           const ChildProcessTerminationInfo& info) override;
-
-  // GpuDataManagerObserver implementation.
-  void OnGpuProcessCrashed(base::TerminationStatus exit_code) override;
-
   const WebTestRuntimeFlags& web_test_runtime_flags() const {
     return web_test_runtime_flags_;
   }
@@ -196,7 +172,31 @@ class WebTestControlHost : public WebContentsObserver,
 
   class WebTestWindowObserver;
 
-  static WebTestControlHost* instance_;
+  // WebContentsObserver implementation.
+  void PluginCrashed(const base::FilePath& plugin_path,
+                     base::ProcessId plugin_pid) override;
+  void TitleWasSet(NavigationEntry* entry) override;
+  void DidFailLoad(RenderFrameHost* render_frame_host,
+                   const GURL& validated_url,
+                   int error_code) override;
+  void WebContentsDestroyed() override;
+  void DidUpdateFaviconURL(
+      RenderFrameHost* render_frame_host,
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
+  void RenderViewHostChanged(RenderViewHost* old_host,
+                             RenderViewHost* new_host) override;
+  void RenderViewDeleted(RenderViewHost* render_view_host) override;
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(NavigationHandle* navigation) override;
+
+  // RenderProcessHostObserver implementation.
+  void RenderProcessHostDestroyed(
+      RenderProcessHost* render_process_host) override;
+  void RenderProcessExited(RenderProcessHost* render_process_host,
+                           const ChildProcessTerminationInfo& info) override;
+
+  // GpuDataManagerObserver implementation.
+  void OnGpuProcessCrashed(base::TerminationStatus exit_code) override;
 
   // WebTestControlHost implementation.
   void InitiateCaptureDump(
@@ -236,7 +236,7 @@ class WebTestControlHost : public WebContentsObserver,
   void SimulateWebNotificationClick(
       const std::string& title,
       int32_t action_index,
-      const base::Optional<base::string16>& reply) override;
+      const base::Optional<std::u16string>& reply) override;
   void SimulateWebNotificationClose(const std::string& title,
                                     bool by_user) override;
   void SimulateWebContentIndexDelete(const std::string& id) override;
@@ -272,11 +272,15 @@ class WebTestControlHost : public WebContentsObserver,
   void OnLeakDetectionDone(int pid,
                            const LeakDetector::LeakDetectionReport& report);
 
-  // At the end of the test, once browser-side cleanup is done, commence reset
-  // of the renderer process that will stick around.
-  void ResetRendererAfterWebTest();
-  // Callback for when the renderer completes its reset at the end of the test.
-  void ResetRendererAfterWebTestDone();
+  // In between two tests, do some cleanup. Navigate to about:blank and
+  // request blink to reset states.
+  //
+  // Note: If the current document had COOP:same-origin defined, the navigation
+  // to about:blank will have to happen in a different browsing context group.
+  // The process used might be a different one.
+  void PrepareRendererForNextWebTest();
+  void PrepareRendererForNextWebTestDone();
+
   void OnPixelDumpCaptured(const SkBitmap& snapshot);
   void ReportResults();
   void EnqueueSurfaceCopyRequest();
@@ -298,7 +302,6 @@ class WebTestControlHost : public WebContentsObserver,
   // reentrancy problems.
   void CompositeAllFramesThen(base::OnceCallback<void()> callback);
 
- private:
   Node* BuildFrameTree(WebContents* web_contents);
   void CompositeNodeQueueThen(base::OnceCallback<void()> callback);
   void BuildDepthFirstQueue(Node* node);
@@ -309,26 +312,27 @@ class WebTestControlHost : public WebContentsObserver,
   static void PlatformResizeWindowMac(Shell* shell, const gfx::Size& size);
 #endif
 
- public:
+  static WebTestControlHost* instance_;
+
   std::unique_ptr<WebTestResultPrinter> printer_;
 
   base::FilePath current_working_directory_;
   base::FilePath temp_path_;
 
-  Shell* main_window_;
-  Shell* secondary_window_;
+  Shell* main_window_ = nullptr;
+  Shell* secondary_window_ = nullptr;
 
   std::unique_ptr<WebTestDevToolsBindings> devtools_bindings_;
   std::unique_ptr<DevToolsProtocolTestBindings>
       devtools_protocol_test_bindings_;
 
   // What phase of running an individual test we are currently in.
-  TestPhase test_phase_;
+  TestPhase test_phase_ = BETWEEN_TESTS;
 
   // Per test config.
   std::string expected_pixel_hash_;
   GURL test_url_;
-  bool protocol_mode_;
+  bool protocol_mode_ = false;
 
   // Stores the default test-adapted WebPreferences which is then used to fully
   // reset the main window's preferences if and when it is reused.
@@ -336,10 +340,10 @@ class WebTestControlHost : public WebContentsObserver,
 
   // True if the WebPreferences of newly created RenderViewHost should be
   // overridden with prefs_.
-  bool should_override_prefs_;
+  bool should_override_prefs_ = false;
   blink::web_pref::WebPreferences prefs_;
 
-  bool crash_when_leak_found_;
+  bool crash_when_leak_found_ = false;
   std::unique_ptr<LeakDetector> leak_detector_;
 
   std::unique_ptr<WebTestBluetoothChooserFactory> bluetooth_chooser_factory_;
@@ -349,8 +353,9 @@ class WebTestControlHost : public WebContentsObserver,
       test_opened_window_observers_;
 
   // Renderer processes are observed to detect crashes.
-  ScopedObserver<RenderProcessHost, RenderProcessHostObserver>
-      render_process_host_observer_{this};
+  base::ScopedMultiSourceObservation<RenderProcessHost,
+                                     RenderProcessHostObserver>
+      render_process_host_observations_{this};
   std::set<RenderProcessHost*> all_observed_render_process_hosts_;
   std::set<RenderProcessHost*> main_window_render_process_hosts_;
   std::set<RenderViewHost*> main_window_render_view_hosts_;

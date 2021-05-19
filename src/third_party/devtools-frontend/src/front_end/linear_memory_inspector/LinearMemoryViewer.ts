@@ -93,9 +93,6 @@ export class LinearMemoryViewer extends HTMLElement {
   }
 
   private resize(): void {
-    // A memory request currently takes too much time, so for the time being
-    // update with whatever data we have, and request for more memory to fill
-    // the screen if applicable after.
     this.update();
     this.dispatchEvent(new ResizeEvent(this.numBytesInRow * this.numRows));
   }
@@ -136,7 +133,9 @@ export class LinearMemoryViewer extends HTMLElement {
 
     // Calculate the width to fill.
     const dividerWidth = divider.getBoundingClientRect().width;
-    const widthToFill = this.clientWidth -
+    // this.clientWidth is rounded, while the other values are not. Subtract one to make
+    // sure that we correctly calculate the widths.
+    const widthToFill = this.clientWidth - 1 -
         (firstByteCell.getBoundingClientRect().left - this.getBoundingClientRect().left) - dividerWidth;
     if (widthToFill < groupWidth) {
       this.numBytesInRow = LinearMemoryViewer.BYTE_GROUP_SIZE;
@@ -220,8 +219,8 @@ export class LinearMemoryViewer extends HTMLElement {
         .divider {
           width: 1px;
           height: inherit;
-          background-color: var(--divider-color);
-          margin: 0 4px 0 4px;
+          background-color: var(--color-details-hairline);
+          margin: 0 4px;
         }
       </style>
       <div class="view" tabindex="0" @keydown=${this.onKeyDown}>

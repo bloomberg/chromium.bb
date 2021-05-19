@@ -82,15 +82,15 @@ namespace {
 constexpr base::TimeDelta kMediaFoundationServiceIdleTimeout =
     base::TimeDelta::FromSeconds(5);
 
-// Gets an instance of the MF CDM Media service.
+// Gets an instance of the MediaFoundationService.
 // Instances are started lazily as needed.
-media::mojom::MediaService& GetMediaFoundationService() {
+media::mojom::MediaFoundationService& GetMediaFoundationService() {
   // NOTE: We use sequence-local storage to limit the lifetime of this Remote to
   // that of the UI-thread sequence. This ensures that the Remote is destroyed
   // when the task environment is torn down and reinitialized, e.g. between unit
   // tests.
-  static base::NoDestructor<
-      base::SequenceLocalStorageSlot<mojo::Remote<media::mojom::MediaService>>>
+  static base::NoDestructor<base::SequenceLocalStorageSlot<
+      mojo::Remote<media::mojom::MediaFoundationService>>>
       remote_slot;
   auto& remote = remote_slot->GetOrCreateValue();
   if (!remote) {
@@ -134,19 +134,11 @@ std::ostream& operator<<(std::ostream& os, const CdmServiceKey& key) {
 class CdmServiceMap {
  public:
   CdmServiceMap() = default;
-
-  ~CdmServiceMap() {
-    DVLOG(1) << __func__ << ": max_remote_count_=" << max_remote_count_;
-    UMA_HISTOGRAM_COUNTS_100("Media.EME.MaxCdmProcessCount", max_remote_count_);
-  }
+  ~CdmServiceMap() = default;
 
   // Gets or creates a media::mojom::CdmService remote. The returned remote
   // might not be bound, e.g. if it's newly created.
-  auto& GetOrCreateRemote(const CdmServiceKey& key) {
-    auto& remote = remotes_[key];
-    max_remote_count_ = std::max(max_remote_count_, remotes_.size());
-    return remote;
-  }
+  auto& GetOrCreateRemote(const CdmServiceKey& key) { return remotes_[key]; }
 
   void EraseRemote(const CdmServiceKey& key) {
     DCHECK(remotes_.count(key));
@@ -155,7 +147,6 @@ class CdmServiceMap {
 
  private:
   std::map<CdmServiceKey, mojo::Remote<media::mojom::CdmService>> remotes_;
-  size_t max_remote_count_ = 0;
 };
 
 CdmServiceMap& GetCdmServiceMap() {
@@ -197,11 +188,6 @@ media::mojom::CdmService& GetCdmService(const base::Token& guid,
   if (!remote) {
     ServiceProcessHost::Options options;
     options.WithDisplayName(display_name);
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
-    if (cdm_info.launch_x86_64) {
-      options.WithChildFlags(ChildProcessHost::CHILD_LAUNCH_X86_64);
-    }
-#endif  // OS_MAC && ARCH_CPU_ARM64
     ServiceProcessHost::Launch(remote.BindNewPipeAndPassReceiver(),
                                options.Pass());
     remote.set_disconnect_handler(base::BindOnce(&EraseCdmService, key));
@@ -324,10 +310,8 @@ media::mojom::MediaService& GetSecondaryMediaService() {
 class FrameInterfaceFactoryImpl : public media::mojom::FrameInterfaceFactory {
  public:
   FrameInterfaceFactoryImpl(RenderFrameHost* rfh,
-                            const base::Token& cdm_guid,
                             const std::string& cdm_file_system_id)
       : render_frame_host_(rfh),
-        cdm_guid_(cdm_guid),
         cdm_file_system_id_(cdm_file_system_id) {
   }
 
@@ -366,7 +350,6 @@ class FrameInterfaceFactoryImpl : public media::mojom::FrameInterfaceFactory {
 
  private:
   RenderFrameHost* const render_frame_host_;
-  const base::Token cdm_guid_;
   const std::string cdm_file_system_id_;
 };
 
@@ -377,17 +360,16 @@ MediaInterfaceProxy::MediaInterfaceProxy(RenderFrameHost* render_frame_host)
   DVLOG(1) << __func__;
   DCHECK(render_frame_host_);
 
+  std::string cdm_file_system_id;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS) && BUILDFLAG(IS_CHROMEOS_ASH)
   // The file system ID passed in here is only used by the CDM obtained through
   // the |media_interface_factory_ptr_|.
-  auto frame_factory_getter = base::BindRepeating(
-      &MediaInterfaceProxy::GetFrameServices, base::Unretained(this),
-      base::Token(), kChromeOsCdmFileSystemId);
-#else
+  cdm_file_system_id = kChromeOsCdmFileSystemId;
+#endif
+
   auto frame_factory_getter =
       base::BindRepeating(&MediaInterfaceProxy::GetFrameServices,
-                          base::Unretained(this), base::Token(), std::string());
-#endif
+                          base::Unretained(this), cdm_file_system_id);
   media_interface_factory_ptr_ = std::make_unique<MediaInterfaceFactoryHolder>(
       base::BindRepeating(&GetMediaService), frame_factory_getter);
   secondary_interface_factory_ = std::make_unique<MediaInterfaceFactoryHolder>(
@@ -496,11 +478,11 @@ void MediaInterfaceProxy::CreateMediaFoundationRenderer(
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << __func__ << ": this=" << this;
 
-  InterfaceFactory* factory = GetMFMediaInterfaceFactory();
-  DCHECK(factory);
-  if (factory)
+  InterfaceFactory* factory = GetMediaFoundationServiceInterfaceFactory();
+  if (factory) {
     factory->CreateMediaFoundationRenderer(
         std::move(receiver), std::move(renderer_extension_receiver));
+  }
 }
 #endif  // defined(OS_WIN)
 
@@ -531,9 +513,8 @@ void MediaInterfaceProxy::CreateCdm(const std::string& key_system,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if defined(OS_WIN)
   DVLOG(1) << __func__ << ": this=" << this << " key_system=" << key_system;
-  base::FilePath cdm_path;
-  if (ShouldUseMediaFoundationServiceForCdm(key_system, cdm_path)) {
-    InterfaceFactory* factory = GetMFMediaInterfaceFactory();
+  if (ShouldUseMediaFoundationServiceForCdm(key_system, cdm_config)) {
+    InterfaceFactory* factory = GetMediaFoundationServiceInterfaceFactory();
     if (factory)
       factory->CreateCdm(key_system, cdm_config, std::move(callback));
     return;
@@ -552,8 +533,8 @@ void MediaInterfaceProxy::CreateCdm(const std::string& key_system,
 #endif
 
   if (!factory) {
-    std::move(callback).Run(mojo::NullRemote(), base::nullopt,
-                            mojo::NullRemote(), "Unable to find a CDM factory");
+    std::move(callback).Run(mojo::NullRemote(), nullptr,
+                            "Unable to find a CDM factory");
     return;
   }
 
@@ -561,47 +542,50 @@ void MediaInterfaceProxy::CreateCdm(const std::string& key_system,
 }
 
 mojo::PendingRemote<media::mojom::FrameInterfaceFactory>
-MediaInterfaceProxy::GetFrameServices(const base::Token& cdm_guid,
-                                      const std::string& cdm_file_system_id) {
+MediaInterfaceProxy::GetFrameServices(const std::string& cdm_file_system_id) {
   mojo::PendingRemote<media::mojom::FrameInterfaceFactory> factory;
   frame_factories_.Add(std::make_unique<FrameInterfaceFactoryImpl>(
-                           render_frame_host_, cdm_guid, cdm_file_system_id),
+                           render_frame_host_, cdm_file_system_id),
                        factory.InitWithNewPipeAndPassReceiver());
   return factory;
 }
 
 #if defined(OS_WIN)
 media::mojom::InterfaceFactory*
-MediaInterfaceProxy::GetMFMediaInterfaceFactory() {
+MediaInterfaceProxy::GetMediaFoundationServiceInterfaceFactory() {
   DVLOG(3) << __func__ << ": this=" << this;
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // TODO(xhwang): Also check protected media identifier content setting.
+  if (!base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
+    DLOG(ERROR) << "Hardware secure decryption disabled!";
+    return nullptr;
+  }
+
   if (!mf_interface_factory_remote_)
-    ConnectToMFMediaService();
+    ConnectToMediaFoundationService();
 
   return mf_interface_factory_remote_.get();
 }
 
-void MediaInterfaceProxy::ConnectToMFMediaService() {
+void MediaInterfaceProxy::ConnectToMediaFoundationService() {
   DVLOG(1) << __func__ << ": this=" << this;
   DCHECK(!mf_interface_factory_remote_);
   DCHECK(!mf_service_ptr_);
 
   mf_service_ptr_ = &GetMediaFoundationService();
-  // Passing empty arguments to GetFrameServices() as MF CDMs don't use
-  // CdmStorage currently.
   mf_service_ptr_->CreateInterfaceFactory(
       mf_interface_factory_remote_.BindNewPipeAndPassReceiver(),
-      GetFrameServices(base::Token{}, std::string()));
+      GetFrameServices());
 
-  // Handle unexpected mojo pipe disconnection such as "mf_cdm" utility process
-  // crashed or killed in Browser task manager.
-  mf_interface_factory_remote_.set_disconnect_handler(
-      base::BindOnce(&MediaInterfaceProxy::OnMFMediaServiceConnectionError,
-                     base::Unretained(this)));
+  // Handle unexpected mojo pipe disconnection such as MediaFoundationService
+  // process crashed or killed in the browser task manager.
+  mf_interface_factory_remote_.set_disconnect_handler(base::BindOnce(
+      &MediaInterfaceProxy::OnMediaFoundationServiceConnectionError,
+      base::Unretained(this)));
 }
 
-void MediaInterfaceProxy::OnMFMediaServiceConnectionError() {
+void MediaInterfaceProxy::OnMediaFoundationServiceConnectionError() {
   DVLOG(1) << __func__ << ": this=" << this;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -611,22 +595,16 @@ void MediaInterfaceProxy::OnMFMediaServiceConnectionError() {
 
 bool MediaInterfaceProxy::ShouldUseMediaFoundationServiceForCdm(
     const std::string& key_system,
-    base::FilePath& cdm_path) {
-  DVLOG(1) << __func__ << ": this=" << this << " key_system=" << key_system;
+    const media::CdmConfig& cdm_config) {
+  DVLOG(1) << __func__ << ": this=" << this << ", key_system=" << key_system;
 
-  std::unique_ptr<CdmInfo> cdm_info =
-      KeySystemSupportImpl::GetCdmInfoForKeySystem(key_system);
-  if (!cdm_info) {
-    NOTREACHED() << "No valid CdmInfo for " << key_system;
-    return false;
-  }
+  // TODO(xhwang): Refine this after we populate support info during EME
+  // requestMediaKeySystemAccess() query, e.g. to check both `key_system` and
+  // `cdm_config`.
+  // TODO(xhwang): Determine whether we need to also check
+  // cdm_config.allow_distinctive_identifier here.
 
-  // The MediaFoundation-based CDM should always be created in the MF media
-  // service.
-  // TODO(frankli): Use CdmInfo/CdmConfig to determine if MF media service
-  // is required to host the CDM.
-
-  return false;
+  return cdm_config.use_hw_secure_codecs;
 }
 #endif  // defined(OS_WIN)
 
@@ -689,9 +667,8 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
 #endif  // defined(OS_MAC)
 
   mojo::Remote<media::mojom::CdmFactory> cdm_factory_remote;
-  cdm_service.CreateCdmFactory(
-      cdm_factory_remote.BindNewPipeAndPassReceiver(),
-      GetFrameServices(cdm_guid, cdm_info.file_system_id));
+  cdm_service.CreateCdmFactory(cdm_factory_remote.BindNewPipeAndPassReceiver(),
+                               GetFrameServices(cdm_info.file_system_id));
   cdm_factory_remote.set_disconnect_handler(
       base::BindOnce(&MediaInterfaceProxy::OnCdmServiceConnectionError,
                      base::Unretained(this), cdm_guid));
@@ -716,13 +693,12 @@ void MediaInterfaceProxy::OnChromeOsCdmCreated(
     const media::CdmConfig& cdm_config,
     CreateCdmCallback callback,
     mojo::PendingRemote<media::mojom::ContentDecryptionModule> receiver,
-    const base::Optional<base::UnguessableToken>& cdm_id,
-    mojo::PendingRemote<media::mojom::Decryptor> decryptor,
+    media::mojom::CdmContextPtr cdm_context,
     const std::string& error_message) {
   if (receiver) {
     ReportCdmTypeUMA(CrosCdmType::kPlatformCdm);
     // Success case, just pass it back through the callback.
-    std::move(callback).Run(std::move(receiver), cdm_id, std::move(decryptor),
+    std::move(callback).Run(std::move(receiver), std::move(cdm_context),
                             error_message);
     return;
   }
@@ -732,8 +708,8 @@ void MediaInterfaceProxy::OnChromeOsCdmCreated(
   VLOG(1) << "Failed creating Chrome OS CDM, will use library CDM";
   auto* factory = GetCdmFactory(key_system);
   if (!factory) {
-    std::move(callback).Run(mojo::NullRemote(), base::nullopt,
-                            mojo::NullRemote(), "Unable to find a CDM factory");
+    std::move(callback).Run(mojo::NullRemote(), nullptr,
+                            "Unable to find a CDM factory");
     return;
   }
   ReportCdmTypeUMA(CrosCdmType::kChromeCdm);

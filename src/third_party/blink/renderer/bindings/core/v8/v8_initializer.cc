@@ -462,15 +462,9 @@ static bool WasmCodeGenerationCheckCallbackInMainThread(
                             static_cast<size_t>(source_str.length()));
       memcpy(snippet, *source_str, len * sizeof(UChar));
       snippet[len] = 0;
-      // Wasm code generation is allowed if we have either the wasm-eval
-      // directive or the unsafe-eval directive. However, we only recognize
-      // wasm-eval for certain schemes
-      return policy->AllowWasmEval(ReportingDisposition::kReport,
-                                   ContentSecurityPolicy::kWillThrowException,
-                                   snippet) ||
-             policy->AllowEval(ReportingDisposition::kReport,
-                               ContentSecurityPolicy::kWillThrowException,
-                               snippet);
+      return policy->AllowWasmCodeGeneration(
+          ReportingDisposition::kReport,
+          ContentSecurityPolicy::kWillThrowException, snippet);
     }
   }
   return false;
@@ -601,7 +595,7 @@ static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
   }
 
   ModuleRequest module_request(
-      specifier, TextPosition(),
+      specifier, TextPosition::MinimumPosition(),
       ModuleRecord::ToBlinkImportAssertions(
           script_state->GetContext(), v8::Local<v8::Module>(),
           v8_import_assertions, /*v8_import_assertions_has_positions=*/false));

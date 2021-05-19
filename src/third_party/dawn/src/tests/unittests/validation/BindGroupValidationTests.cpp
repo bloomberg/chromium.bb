@@ -1083,42 +1083,42 @@ class SetBindGroupValidationTest : public ValidationTest {
     wgpu::BindGroupLayout mBindGroupLayout;
 
     wgpu::RenderPipeline CreateRenderPipeline() {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
                 [[stage(vertex)]] fn main() -> void {
                 })");
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
                 [[block]] struct S {
-                    [[offset(0)]] value : vec2<f32>;
+                    value : vec2<f32>;
                 };
 
                 [[group(0), binding(0)]] var<uniform> uBufferDynamic : S;
                 [[group(0), binding(1)]] var<uniform> uBuffer : S;
-                [[group(0), binding(2)]] var<storage_buffer> sBufferDynamic : [[access(read_write)]] S;
-                [[group(0), binding(3)]] var<storage_buffer> sReadonlyBufferDynamic : [[access(read)]] S;
+                [[group(0), binding(2)]] var<storage> sBufferDynamic : [[access(read_write)]] S;
+                [[group(0), binding(3)]] var<storage> sReadonlyBufferDynamic : [[access(read)]] S;
 
                 [[stage(fragment)]] fn main() -> void {
                 })");
 
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-        pipelineDescriptor.vertexStage.module = vsModule;
-        pipelineDescriptor.cFragmentStage.module = fsModule;
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        pipelineDescriptor.vertex.module = vsModule;
+        pipelineDescriptor.cFragment.module = fsModule;
         wgpu::PipelineLayout pipelineLayout =
             utils::MakeBasicPipelineLayout(device, &mBindGroupLayout);
         pipelineDescriptor.layout = pipelineLayout;
-        return device.CreateRenderPipeline(&pipelineDescriptor);
+        return device.CreateRenderPipeline2(&pipelineDescriptor);
     }
 
     wgpu::ComputePipeline CreateComputePipeline() {
-        wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
                 [[block]] struct S {
-                    [[offset(0)]] value : vec2<f32>;
+                    value : vec2<f32>;
                 };
 
                 [[group(0), binding(0)]] var<uniform> uBufferDynamic : S;
                 [[group(0), binding(1)]] var<uniform> uBuffer : S;
-                [[group(0), binding(2)]] var<storage_buffer> sBufferDynamic : [[access(read_write)]] S;
-                [[group(0), binding(3)]] var<storage_buffer> sReadonlyBufferDynamic : [[access(read)]] S;
+                [[group(0), binding(2)]] var<storage> sBufferDynamic : [[access(read_write)]] S;
+                [[group(0), binding(3)]] var<storage> sReadonlyBufferDynamic : [[access(read)]] S;
 
                 [[stage(compute), workgroup_size(4, 4, 1)]] fn main() -> void {
                 })");
@@ -1486,7 +1486,7 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
     void SetUp() override {
         ValidationTest::SetUp();
 
-        mVsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        mVsModule = utils::CreateShaderModule(device, R"(
                 [[stage(vertex)]] fn main() -> void {
                 })");
     }
@@ -1532,7 +1532,7 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
             device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 
         std::stringstream ss;
-        ss << "[[block]] struct S { [[offset(0)]] value : vec2<f32>; };";
+        ss << "[[block]] struct S { value : vec2<f32>; };";
 
         // Build a shader which has bindings that match the pipeline layout.
         for (uint32_t l = 0; l < layouts.size(); ++l) {
@@ -1543,7 +1543,7 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
                 ss << "[[group(" << l << "), binding(" << b << ")]] ";
                 switch (binding) {
                     case wgpu::BufferBindingType::Storage:
-                        ss << "var<storage_buffer> set" << l << "_binding" << b
+                        ss << "var<storage> set" << l << "_binding" << b
                            << " : [[access(read_write)]] S;";
                         break;
                     case wgpu::BufferBindingType::Uniform:
@@ -1557,13 +1557,13 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
 
         ss << "[[stage(fragment)]] fn main() -> void {}";
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, ss.str().c_str());
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, ss.str().c_str());
 
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-        pipelineDescriptor.vertexStage.module = mVsModule;
-        pipelineDescriptor.cFragmentStage.module = fsModule;
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        pipelineDescriptor.vertex.module = mVsModule;
+        pipelineDescriptor.cFragment.module = fsModule;
         pipelineDescriptor.layout = pipelineLayout;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
 
         return std::make_tuple(bindGroupLayouts, pipeline);
     }
@@ -1688,31 +1688,31 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
     wgpu::RenderPipeline CreateFSRenderPipeline(
         const char* fsShader,
         std::vector<wgpu::BindGroupLayout> bindGroupLayout) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
                 [[stage(vertex)]] fn main() -> void {
                 })");
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, fsShader);
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fsShader);
 
         wgpu::PipelineLayoutDescriptor descriptor;
         descriptor.bindGroupLayoutCount = bindGroupLayout.size();
         descriptor.bindGroupLayouts = bindGroupLayout.data();
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-        pipelineDescriptor.vertexStage.module = vsModule;
-        pipelineDescriptor.cFragmentStage.module = fsModule;
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        pipelineDescriptor.vertex.module = vsModule;
+        pipelineDescriptor.cFragment.module = fsModule;
         wgpu::PipelineLayout pipelineLayout = device.CreatePipelineLayout(&descriptor);
         pipelineDescriptor.layout = pipelineLayout;
-        return device.CreateRenderPipeline(&pipelineDescriptor);
+        return device.CreateRenderPipeline2(&pipelineDescriptor);
     }
 
     wgpu::RenderPipeline CreateRenderPipeline(std::vector<wgpu::BindGroupLayout> bindGroupLayouts) {
         return CreateFSRenderPipeline(R"(
             [[block]] struct S {
-                [[offset(0)]] value : vec2<f32>;
+                value : vec2<f32>;
             };
 
-            [[group(0), binding(0)]] var<storage_buffer> sBufferDynamic : [[access(read_write)]] S;
-            [[group(1), binding(0)]] var<storage_buffer> sReadonlyBufferDynamic : [[access(read)]] S;
+            [[group(0), binding(0)]] var<storage> sBufferDynamic : [[access(read_write)]] S;
+            [[group(1), binding(0)]] var<storage> sReadonlyBufferDynamic : [[access(read)]] S;
 
             [[stage(fragment)]] fn main() -> void {
             })",
@@ -1722,7 +1722,7 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
     wgpu::ComputePipeline CreateComputePipeline(
         const char* shader,
         std::vector<wgpu::BindGroupLayout> bindGroupLayout) {
-        wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, shader);
+        wgpu::ShaderModule csModule = utils::CreateShaderModule(device, shader);
 
         wgpu::PipelineLayoutDescriptor descriptor;
         descriptor.bindGroupLayoutCount = bindGroupLayout.size();
@@ -1741,11 +1741,11 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
         std::vector<wgpu::BindGroupLayout> bindGroupLayouts) {
         return CreateComputePipeline(R"(
             [[block]] struct S {
-                [[offset(0)]] value : vec2<f32>;
+                value : vec2<f32>;
             };
 
-            [[group(0), binding(0)]] var<storage_buffer> sBufferDynamic : [[access(read_write)]] S;
-            [[group(1), binding(0)]] var<storage_buffer> sReadonlyBufferDynamic : [[access(read)]] S;
+            [[group(0), binding(0)]] var<storage> sBufferDynamic : [[access(read_write)]] S;
+            [[group(1), binding(0)]] var<storage> sReadonlyBufferDynamic : [[access(read)]] S;
 
             [[stage(compute), workgroup_size(4, 4, 1)]] fn main() -> void {
             })",
@@ -2052,19 +2052,19 @@ class ComparisonSamplerBindingTest : public ValidationTest {
   protected:
     wgpu::RenderPipeline CreateFragmentPipeline(wgpu::BindGroupLayout* bindGroupLayout,
                                                 const char* fragmentSource) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[stage(vertex)]] fn main() -> void {
             })");
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, fragmentSource);
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fragmentSource);
 
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-        pipelineDescriptor.vertexStage.module = vsModule;
-        pipelineDescriptor.cFragmentStage.module = fsModule;
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        pipelineDescriptor.vertex.module = vsModule;
+        pipelineDescriptor.cFragment.module = fsModule;
         wgpu::PipelineLayout pipelineLayout =
             utils::MakeBasicPipelineLayout(device, bindGroupLayout);
         pipelineDescriptor.layout = pipelineLayout;
-        return device.CreateRenderPipeline(&pipelineDescriptor);
+        return device.CreateRenderPipeline2(&pipelineDescriptor);
     }
 };
 

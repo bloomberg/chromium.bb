@@ -111,16 +111,20 @@ skia_library_configs = [
 
 # Use for CPU-specific Skia code that needs particular compiler flags.
 template("opts") {
-  visibility = [ ":*" ]
   if (invoker.enabled) {
-    source_set(target_name) {
+    skia_source_set(target_name) {
+      visibility = [ ":*" ]
       check_includes = false
+      configs = skia_library_configs
       forward_variables_from(invoker, "*")
-      configs += skia_library_configs
+      if (defined(invoker.configs)) {
+        configs += invoker.configs
+      }
     }
   } else {
     # If not enabled, a phony empty target that swallows all otherwise unused variables.
-    source_set(target_name) {
+    skia_source_set(target_name) {
+      visibility = [ ":*" ]
       check_includes = false
       forward_variables_from(invoker,
                              "*",
@@ -239,7 +243,6 @@ opts("skx") {
 
 # Any feature of Skia that requires third-party code should be optional and use this template.
 template("optional") {
-  visibility = [ ":*" ]
   if (invoker.enabled) {
     config(target_name + "_public") {
       if (defined(invoker.public_defines)) {
@@ -252,34 +255,44 @@ template("optional") {
         include_dirs = invoker.public_include_dirs
       }
     }
-    source_set(target_name) {
+    skia_source_set(target_name) {
+      visibility = [ ":*" ]
       check_includes = false
+      configs = skia_library_configs
+
+      # "*" clobbers the current scope; append to existing configs
       forward_variables_from(invoker,
                              "*",
                              [
+                               "configs",
                                "public_defines",
                                "sources_for_tests",
                                "sources_when_disabled",
-                               "configs_to_remove",
                              ])
-      all_dependent_configs = [ ":" + target_name + "_public" ]
-      configs += skia_library_configs
-      if (defined(invoker.configs_to_remove)) {
-        configs -= invoker.configs_to_remove
+      if (defined(invoker.configs)) {
+        configs += invoker.configs
       }
+      all_dependent_configs = [ ":" + target_name + "_public" ]
     }
     if (defined(invoker.sources_for_tests) && skia_enable_tools) {
-      source_set(target_name + "_tests") {
+      skia_source_set(target_name + "_tests") {
+        visibility = [ ":*" ]
         check_includes = false
+        configs = skia_library_configs
+
+        # "*" clobbers the current scope; append to existing configs
         forward_variables_from(invoker,
                                "*",
                                [
+                                 "configs",
                                  "public_defines",
                                  "sources",
                                  "sources_for_tests",
                                  "sources_when_disabled",
-                                 "configs_to_remove",
                                ])
+        if (defined(invoker.configs)) {
+          configs += invoker.configs
+        }
         testonly = true
         sources = invoker.sources_for_tests
         if (!defined(deps)) {
@@ -287,17 +300,18 @@ template("optional") {
         }
         deps += [ ":test" ]
         all_dependent_configs = [ ":" + target_name + "_public" ]
-        configs += skia_library_configs
-        if (defined(invoker.configs_to_remove)) {
-          configs -= invoker.configs_to_remove
-        }
       }
     }
   } else {
-    source_set(target_name) {
+    skia_source_set(target_name) {
+      visibility = [ ":*" ]
+      configs = skia_library_configs
+
+      # "*" clobbers the current scope; append to existing configs
       forward_variables_from(invoker,
                              "*",
                              [
+                               "configs",
                                "public",
                                "public_defines",
                                "public_deps",
@@ -307,15 +321,17 @@ template("optional") {
                                "sources",
                                "sources_for_tests",
                                "sources_when_disabled",
-                               "configs_to_remove",
                              ])
+      if (defined(invoker.configs)) {
+        configs += invoker.configs
+      }
       if (defined(invoker.sources_when_disabled)) {
         sources = invoker.sources_when_disabled
       }
-      configs += skia_library_configs
     }
     if (defined(invoker.sources_for_tests)) {
-      source_set(target_name + "_tests") {
+      skia_source_set(target_name + "_tests") {
+        visibility = [ ":*" ]
       }
     }
   }
@@ -545,7 +561,7 @@ optional("fontmgr_win_gdi") {
 }
 
 if (skia_lex) {
-  executable("sksllex") {
+  skia_executable("sksllex") {
     sources = [
       "src/sksl/lex/Main.cpp",
       "src/sksl/lex/NFA.cpp",
@@ -586,7 +602,7 @@ if (skia_lex) {
 
 # `Compile Processors` and `Compile SkSL Tests` both rely on skslc.
 if (skia_compile_processors || skia_compile_sksl_tests) {
-  executable("skslc") {
+  skia_executable("skslc") {
     defines = [
       "SKSL_STANDALONE",
       "SK_DISABLE_TRACING",
@@ -623,8 +639,8 @@ if (skia_compile_processors || skia_compile_sksl_tests) {
     include_dirs = [ "." ]
     deps = [
       ":run_sksllex",
-      "//third_party/spirv-tools:spvtools",
-      "//third_party/spirv-tools:spvtools_val",
+      "//third_party/externals/spirv-tools:spvtools",
+      "//third_party/externals/spirv-tools:spvtools_val",
     ]
   }
 
@@ -872,10 +888,6 @@ optional("gpu") {
     sources -= skia_ccpr_sources
     sources += [ "src/gpu/ccpr/GrCoverageCountingPathRenderer_none.cpp" ]
   }
-  if (!skia_enable_nvpr) {
-    sources -= skia_nvpr_sources
-    sources += [ "src/gpu/GrPathRendering_none.cpp" ]
-  }
 
   libs = []
   frameworks = []
@@ -1122,13 +1134,13 @@ optional("raw") {
 
   # SkRawCodec catches any exceptions thrown by dng_sdk, insulating the rest of
   # Skia.
-  configs_to_remove = [ "//gn:no_exceptions" ]
+  configs = [ "gn/portable:add_exceptions" ]
 
   sources = [ "src/codec/SkRawCodec.cpp" ]
 }
 
 import("third_party/skcms/skcms.gni")
-source_set("skcms") {
+skia_source_set("skcms") {
   cflags = []
   if (!is_win || is_clang) {
     cflags += [
@@ -1223,9 +1235,9 @@ if (skia_enable_gpu && skia_generate_workarounds) {
   }
 }
 
-component("skia") {
+skia_component("skia") {
   public_configs = [ ":skia_public" ]
-  configs += skia_library_configs
+  configs = skia_library_configs
 
   public_deps = [
     ":fontmgr_FontConfigInterface",
@@ -1399,7 +1411,7 @@ component("skia") {
   }
 
   if (skia_enable_spirv_validation) {
-    deps += [ "//third_party/spirv-tools:spvtools_val" ]
+    deps += [ "//third_party/externals/spirv-tools:spvtools_val" ]
     defines += [ "SK_ENABLE_SPIRV_VALIDATION" ]
   }
 
@@ -1410,7 +1422,7 @@ component("skia") {
 
 # DebugCanvas used in experimental/wasm-skp-debugger
 if (target_cpu == "wasm") {
-  static_library("debugcanvas") {
+  skia_static_library("debugcanvas") {
     public_configs = [ ":skia_public" ]
 
     sources = [
@@ -1424,10 +1436,10 @@ if (target_cpu == "wasm") {
   }
 }
 
-static_library("pathkit") {
+skia_static_library("pathkit") {
   check_includes = false
   public_configs = [ ":skia_public" ]
-  configs += skia_library_configs
+  configs = skia_library_configs
 
   deps = [
     ":arm64",
@@ -1497,6 +1509,7 @@ group("modules") {
     "modules/skottie",
     "modules/skparagraph",
     "modules/skshaper",
+    "modules/svg",
   ]
 }
 
@@ -1530,8 +1543,8 @@ if (skia_enable_tools) {
   ]
 
   # Used by gn_to_bp.py to list our public include dirs.
-  source_set("public") {
-    configs += [ ":skia_public" ]
+  skia_source_set("public") {
+    configs = [ ":skia_public" ]
     include_dirs = skia_public_includes
   }
 
@@ -1551,7 +1564,7 @@ if (skia_enable_tools) {
   }
 
   if (target_cpu == "x64") {
-    executable("fiddle") {
+    skia_executable("fiddle") {
       check_includes = false
       libs = []
       sources = [
@@ -1587,13 +1600,15 @@ if (skia_enable_tools) {
     }
   }
 
-  source_set("public_headers_warnings_check") {
+  skia_source_set("public_headers_warnings_check") {
     sources = [ "tools/public_headers_warnings_check.cpp" ]
-    configs -= [ "//gn:warnings_except_public_headers" ]
-    configs += [
+    configs = [
       ":our_vulkan_headers",
       ":cpp14",
     ]
+    if (defined(skia_header_target_default_configs)) {
+      configs += skia_header_target_default_configs
+    }
     deps = [
       ":skia",
       ":skia.h",
@@ -1612,7 +1627,7 @@ if (skia_enable_tools) {
         defines = invoker.public_defines
       }
     }
-    source_set(target_name) {
+    skia_source_set(target_name) {
       forward_variables_from(invoker, "*", [])
       check_includes = false
       public_configs = [
@@ -1651,24 +1666,32 @@ if (skia_enable_tools) {
     } else {
       # !is_ios
 
-      output_dir = root_build_dir
       if (defined(invoker.is_shared_library) && invoker.is_shared_library) {
-        shared_library("lib" + target_name) {
+        skia_shared_library("lib" + target_name) {
+          output_dir = root_build_dir
           forward_variables_from(invoker, "*", [ "is_shared_library" ])
+          if (!defined(configs)) {
+            configs = []
+          }
           configs += [ ":skia_private" ]
           testonly = true
         }
       } else {
         _executable = target_name
-        executable(_executable) {
+        skia_executable(_executable) {
           check_includes = false
+          output_dir = root_build_dir
           forward_variables_from(invoker, "*", [ "is_shared_library" ])
+          if (!defined(configs)) {
+            configs = []
+          }
           configs += [ ":skia_private" ]
           testonly = true
         }
       }
       if (is_android && skia_android_serial != "" && defined(_executable)) {
         action("push_" + target_name) {
+          output_dir = root_build_dir
           script = "gn/push_to_android.py"
           deps = [ ":" + _executable ]
           _stamp = "$target_gen_dir/$_executable.pushed_$skia_android_serial"
@@ -2029,9 +2052,6 @@ if (skia_enable_tools) {
   import("gn/samples.gni")
   test_lib("samples") {
     sources = samples_sources
-    if (skia_enable_ccpr) {
-      sources += samples_sources_ccpr
-    }
     public_deps = [ ":tool_utils" ]
     deps = [
       ":flags",
@@ -2124,7 +2144,7 @@ if (skia_enable_tools) {
     }
 
     # optional separate library to dlopen when running CanvasStateTests.
-    shared_library("canvas_state_lib") {
+    skia_shared_library("canvas_state_lib") {
       sources = [
         "tests/CanvasStateHelpers.cpp",
         "tests/CanvasStateHelpers.h",
@@ -2365,12 +2385,9 @@ if (skia_enable_tools) {
   }
 
   if (!is_win) {
-    source_set("skqp_lib") {
+    source_set("skqp_lib") {  # Not a skia_source_set
       check_includes = false
       testonly = true
-      if (!is_official_build) {
-        configs -= [ "//gn:warnings" ]
-      }
       public_configs = [ ":skia_private" ]
       defines =
           [ "SK_SKQP_GLOBAL_ERROR_TOLERANCE=$skia_skqp_global_error_tolerance" ]
@@ -2409,11 +2426,8 @@ if (skia_enable_tools) {
     }
   }
   if (is_android) {
-    shared_library("libskqp_app") {
+    shared_library("libskqp_app") {  # Not a skia_shared_library
       configs += [ ":skia_private" ]
-      if (!is_official_build) {
-        configs -= [ "//gn:warnings" ]
-      }
       testonly = true
       sources = [ "tools/skqp/src/jni_skqp.cpp" ]
       deps = [
@@ -2698,11 +2712,10 @@ if (skia_enable_tools) {
       }
       if (skia_use_vulkan) {
         deps += [
-          "//third_party/spirv-tools:spvtools",
+          "//third_party/externals/spirv-tools:spvtools",
 
-          #spvtools depends on this but doesn't deps it in. Looks like upstream bug
-          #that we replicated in our third_party/spirv-tools/BUILD.gn
-          "//third_party/spirv-tools:spvtools_val",
+          #spvtools depends on this but doesn't deps it in.
+          "//third_party/externals/spirv-tools:spvtools_val",
         ]
       }
     }
@@ -2810,7 +2823,7 @@ if (skia_enable_tools) {
     }
   }
 
-  executable("cpu_modules") {
+  skia_executable("cpu_modules") {
     sources = [ "tools/cpu_modules.cpp" ]
     deps = [
       ":skia",
@@ -2825,7 +2838,7 @@ if (skia_enable_tools) {
     }
   }
 
-  executable("image_diff_metric") {
+  skia_executable("image_diff_metric") {
     sources = [ "tools/image_diff_metric.cpp" ]
     deps = [ ":skia" ]
   }
@@ -2840,10 +2853,13 @@ if (skia_enable_tools) {
 
   if (skia_build_fuzzers) {
     template("libfuzzer_app") {
-      output_dir = root_build_dir
-      executable(target_name) {
+      skia_executable(target_name) {
+        output_dir = root_build_dir
         check_includes = false
         forward_variables_from(invoker, "*", [ "is_shared_library" ])
+        if (!defined(configs)) {
+          configs = []
+        }
         configs += [ ":skia_private" ]
         sources += [
           "fuzz/Fuzz.cpp",
@@ -2950,6 +2966,14 @@ if (skia_enable_tools) {
       deps = []
     }
 
+    libfuzzer_app("api_ddl_threading") {
+      sources = [
+        "fuzz/FuzzDDLThreading.cpp",
+        "fuzz/oss_fuzz/FuzzDDLThreading.cpp",
+      ]
+      deps = []
+    }
+
     libfuzzer_app("api_gradients") {
       sources = [
         "fuzz/FuzzGradients.cpp",
@@ -3014,6 +3038,14 @@ if (skia_enable_tools) {
         "modules/svg",
         "//third_party/libpng",
       ]
+    }
+
+    libfuzzer_app("api_regionop") {
+      sources = [
+        "fuzz/FuzzRegionOp.cpp",
+        "fuzz/oss_fuzz/FuzzRegionOp.cpp",
+      ]
+      deps = []
     }
 
     if (skia_use_gl) {
@@ -3217,7 +3249,7 @@ if (is_ios && skia_enable_skottie && !skia_enable_flutter_defines) {
   }
 }
 
-executable("skia_c_api_example") {
+skia_executable("skia_c_api_example") {
   sources = [ "experimental/c-api-example/skia-c-example.c" ]
   include_dirs = [ "." ]
   deps = [ ":skia" ]

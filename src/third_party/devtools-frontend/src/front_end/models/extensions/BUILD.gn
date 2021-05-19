@@ -1,0 +1,45 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("../../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../../scripts/build/ninja/devtools_module.gni")
+
+devtools_module("extensions") {
+  sources = [
+    "ExtensionAPI.ts",
+    "ExtensionPanel.ts",
+    "ExtensionServer.ts",
+    "ExtensionTraceProvider.ts",
+    "ExtensionView.ts",
+    "LanguageExtensionEndpoint.ts",
+  ]
+
+  deps = [
+    "../../browser_sdk:bundle",
+    "../../components:bundle",
+    "../../core/common:bundle",
+    "../../core/host:bundle",
+    "../../core/platform:bundle",
+    "../../core/protocol_client:bundle",
+    "../../core/root:bundle",
+    "../../core/sdk:bundle",
+    "../../models/bindings:bundle",
+    "../../models/text_utils:bundle",
+    "../../theme_support:bundle",
+    "../../ui/legacy:bundle",
+    "../../workspace:bundle",
+  ]
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "extensions.ts"
+
+  deps = [ ":extensions" ]
+}
+
+devtools_entrypoint("legacy") {
+  entrypoint = "extensions-legacy.ts"
+
+  deps = [ ":bundle" ]
+}

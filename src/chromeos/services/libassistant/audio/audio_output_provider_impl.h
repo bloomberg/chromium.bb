@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "build/buildflag.h"
+#include "chromeos/assistant/internal/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "chromeos/services/libassistant/audio/audio_device_owner.h"
@@ -21,9 +23,9 @@
 #include "chromeos/services/libassistant/public/mojom/audio_output_delegate.mojom.h"
 #include "chromeos/services/libassistant/public/mojom/platform_delegate.mojom-forward.h"
 #include "libassistant/shared/public/platform_audio_output.h"
+#include "media/mojo/mojom/audio_stream_factory.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace chromeos {
 
@@ -39,9 +41,16 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
       mojom::PlatformDelegate* platform_delegate);
 
   // assistant_client::AudioOutputProvider overrides:
+#if BUILDFLAG(BUILD_LIBASSISTANT_146S)
   assistant_client::AudioOutput* CreateAudioOutput(
       assistant_client::OutputStreamType type,
       const assistant_client::OutputStreamFormat& stream_format) override;
+#endif  // BUILD_LIBASSISTANT_146S
+
+#if BUILDFLAG(BUILD_LIBASSISTANT_152S)
+  assistant_client::AudioOutput* CreateAudioOutput(
+      assistant_client::OutputStreamMetadata metadata) override;
+#endif  // BUILD_LIBASSISTANT_152S
 
   std::vector<assistant_client::OutputStreamEncoding>
   GetSupportedStreamEncodings() override;
@@ -57,7 +66,11 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
 
  private:
   void BindStreamFactory(
-      mojo::PendingReceiver<audio::mojom::StreamFactory> receiver);
+      mojo::PendingReceiver<media::mojom::AudioStreamFactory> receiver);
+
+  assistant_client::AudioOutput* CreateAudioOutputInternal(
+      assistant_client::OutputStreamType type,
+      const assistant_client::OutputStreamFormat& stream_format);
 
   // Owned by |AssistantManagerServiceImpl|.
   mojom::PlatformDelegate* platform_delegate_ = nullptr;

@@ -4,6 +4,7 @@
 <translation id="1282031177488366470">Bidra til å gjøre Chrome bedre og raskere</translation>
 <translation id="1314663809820920746">Du kan fremdeles se bokmerkene dine, loggen din, passordene dine og andre innstillinger på denne enheten. Hvis du gjør endringer, blir de ikke synkronisert med Google-kontoen din.</translation>
 <translation id="1479202195792305274">Chrome kan sjekke passordene dine når du logger på med Google-kontoen din.</translation>
+<translation id="1493827051843127077">Angi Chrome som standard for å synkronisere fanene, passordene og betalingsopplysningene dine på alle enhetene dine</translation>
 <translation id="1504372625950710826">Chrome kunne ikke se etter oppdateringer. Se om du er koblet til internett.</translation>
 <translation id="1682483655351012182">Synkroniser Chrome-dataene dine</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -14,6 +15,7 @@
 <translation id="2342919707875585281">Chrome deler posisjonen din med nettsteder du tillater.</translation>
 <translation id="2347208864470321755">Når denne funksjonen er slått på, tilbyr Chrome å oversette sider som er skrevet på andre språk ved hjelp av Google Oversetter. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">Velg Chrome som standardnettleser</translation>
+<translation id="2561231791489583059">Bruk Chrome som standardnettleser for å holde deg beskyttet mot farlige nettsteder og holde passordene dine trygge</translation>
 <translation id="2574249610672786438">For å se fanene dine overalt hvor du bruker Chrome, logg på alle enhetene dine</translation>
 <translation id="2576431527583832481">Chrome har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
 <translation id="257708665678654955">Vil du at Google Chrome skal tilby å oversette sider på <ph name="LANGUAGE_NAME" /> på dette nettstedet neste gang?</translation>
@@ -30,13 +32,12 @@
 <translation id="3522659714780527202">For å se fanene dine overalt hvor du bruker Chrome, slå på synkronisering</translation>
 <translation id="3533694711092285624">Ingen lagrede passord. Chrome kan sjekke passordene dine når du lagrer dem.</translation>
 <translation id="3706101708757577809">Nå kan du bruke Chrome hver gang du trykker på linker i meldinger, dokumenter og andre apper.</translation>
+<translation id="3720541637541300822">Lås inkognitofaner når du lukker Chrome</translation>
 <translation id="384394811301901750">Google Chrome kan ikke bruke kameraet akkurat nå</translation>
-<translation id="38949020760388809">Velg om du vil slette Chrome-dataene dine fra denne enheten eller beholde dem.</translation>
 <translation id="3980220367029651214">Du bytter synkroniseringskonto fra <ph name="USER_EMAIL1" /> til <ph name="USER_EMAIL2" />. De eksisterende Chrome-dataene dine administreres av <ph name="DOMAIN" />. Dette sletter dataene dine fra denne enheten, men dataene blir værende i <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">Organisasjonen din krever at du forblir logget av Chrome.</translation>
 <translation id="3988789688219830639">Google Chrome har ikke tilgang til bildene eller videoene dine. Slå på tilgangen i iOS-innstillingene &gt; Personvern &gt; Bilder.</translation>
 <translation id="4099578267706723511">Gjør Chrome bedre ved å sende bruksstatistikk og programstopprapporter til Google.</translation>
-<translation id="415767770115540173">Få en bedre Google-opplevelse i Chrome basert på hvor du er.</translation>
 <translation id="417201473131094001">Støttes ikke i Chrome Canary</translation>
 <translation id="424864128008805179">Vil du logge av Chrome?</translation>
 <translation id="4249068189593983585">Chrome-tips. For flere fanealternativer, trykk og hold inne Vis faner-knappen på verktøylinjen, som du finner nederst eller øverst på skjermen.</translation>
@@ -51,7 +52,9 @@
 <translation id="5642200033778930880">Google Chrome kan ikke bruke kameraet i modus for delt visning</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Uten nett – Chrome kan ikke se etter oppdateringer</translation>
+<translation id="5716154293141027663">Åpne alltid Chrome når du trykker på linker i andre apper</translation>
 <translation id="5854621639439811139">Chrome-tips. Noen knapper, slik som Tilbake, Frem og Søk, er nå nederst på skjermen.</translation>
+<translation id="5876773482963502140">Hvis du lar Chrome få vite posisjonen din, sender Chrome den til eventuelle nettsteder hvor du gir tillatelse til dette. Nettsteder kan be om posisjonen din når de har lokal informasjon å vise deg, for eksempel butikker i nærheten eller lokalnyheter.</translation>
 <translation id="6036420186814142909">Google Chrome har funksjoner som hjelper deg med å administrere dataforbruket ditt og hastigheten for innlasting av nettsider.
 <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="6181930887571472871">Bytt til Chrome</translation>
@@ -71,6 +74,7 @@
 <translation id="7261678641327190792">Chrome kan ikke sjekke passordene dine</translation>
 <translation id="7265369419224458312">Du kan bruke fanene du har åpne på datamaskinen, direkte herfra. Bare åpne Chrome på datamaskinen, gå til menyen, og velg «Logg på Chrome».</translation>
 <translation id="7272930098487145294">For å lagre bilder, trykk på Innstillinger for å la Chrome legge dem til i bildene dine</translation>
+<translation id="7275945473750112644">Kontoen din administreres av <ph name="HOSTED_DOMAIN" />, så Chrome-dataene dine blir slettet fra denne enheten</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="7501046334262221972">For å gjøre Chrome til standardnettleseren din, åpne Innstillinger. Trykk på Standard nettleserapp, og velg Chrome.</translation>
 <translation id="756809126120519699">Chrome-dataene er slettet</translation>
@@ -79,8 +83,9 @@
 <translation id="766361182512894255">Passordet ditt har vært avdekket i et databrudd. Chrome anbefaler at du bytter passord nå.</translation>
 <translation id="7698568245838009292">Chrome vil ha tilgang til kameraet</translation>
 <translation id="7855730255114109580">Google Chrome er oppdatert</translation>
-<translation id="8109233255338845204">Kontoen din administreres av <ph name="HOSTED_DOMAIN" />, så Chrome-dataene dine blir slettet fra denne enheten.</translation>
+<translation id="8022947259858476807">Bruk Chrome som standard til å åpne linker, søke i moduler og fylle ut passord i andre apper automatisk</translation>
 <translation id="8160472928944011082">Kan ikke oppdatere Chrome</translation>
+<translation id="8357607116237445042">Velg om du vil slette Chrome-dataene dine fra denne enheten eller beholde dem</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Med enerett.</translation>
 <translation id="840168496893712993">Noen tillegg fører til at Chrome krasjer. Prøv å avinstallere dem.</translation>
 <translation id="8459495907675268833">De valgte dataene er fjernet fra Chrome og alle synkroniserte enheter. Det kan hende Google-kontoen din har andre typer nettleserlogger, for eksempel for søk og aktivitet fra andre Google-tjenester, på history.google.com.</translation>
@@ -89,5 +94,6 @@
   2. Trykk på Standard nettleserapp.
   3. Velg Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="9135668017386497357">Hvis du lar Chrome få vite posisjonen din, sender Chrome den til standardsøkemotoren din og eventuelle nettsteder hvor du gir tillatelse til dette. Nettsteder kan be om posisjonen din når de har lokal informasjon å vise deg, for eksempel butikker i nærheten eller lokalnyheter.</translation>
+<translation id="8736550665979974340">Hold deg trygg med Google Chrome</translation>
+<translation id="9112744793181547300">Vil du angi Chrome som standard?</translation>
 </translationbundle>

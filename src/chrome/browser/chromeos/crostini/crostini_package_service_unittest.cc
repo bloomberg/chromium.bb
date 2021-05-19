@@ -13,11 +13,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/grit/generated_resources.h"
@@ -432,7 +432,7 @@ enum KnownApp {
 };
 
 // Returns the app name for one of the known apps.
-base::string16 GetAppName(KnownApp app) {
+std::u16string GetAppName(KnownApp app) {
   switch (app) {
     case DEFAULT_APP:
       return base::ASCIIToUTF16(kDefaultAppName);
@@ -470,15 +470,15 @@ class PrintableNotification {
         message_(base.message()),
         progress_(base.progress()) {}
 
-  const base::string16& display_source() const { return display_source_; }
-  const base::string16& title() const { return title_; }
-  const base::string16& message() const { return message_; }
+  const std::u16string& display_source() const { return display_source_; }
+  const std::u16string& title() const { return title_; }
+  const std::u16string& message() const { return message_; }
   int progress() const { return progress_; }
 
  private:
-  const base::string16 display_source_;
-  const base::string16 title_;
-  const base::string16 message_;
+  const std::u16string display_source_;
+  const std::u16string title_;
+  const std::u16string message_;
   const int progress_;
 };
 
@@ -508,17 +508,17 @@ std::vector<PrintableNotification> Printable(
 
 class NotificationMatcher : public MatcherInterface<PrintableNotification> {
  public:
-  NotificationMatcher(const base::string16& expected_source,
-                      const base::string16& expected_title,
-                      const base::string16& expected_message)
+  NotificationMatcher(const std::u16string& expected_source,
+                      const std::u16string& expected_title,
+                      const std::u16string& expected_message)
       : expected_source_(expected_source),
         expected_title_(expected_title),
         check_message_(true),
         expected_message_(expected_message),
         check_progress_(false),
         expected_progress_(-1) {}
-  NotificationMatcher(const base::string16& expected_source,
-                      const base::string16& expected_title,
+  NotificationMatcher(const std::u16string& expected_source,
+                      const std::u16string& expected_title,
                       int expected_progress)
       : expected_source_(expected_source),
         expected_title_(expected_title),
@@ -585,10 +585,10 @@ class NotificationMatcher : public MatcherInterface<PrintableNotification> {
   }
 
  private:
-  const base::string16 expected_source_;
-  const base::string16 expected_title_;
+  const std::u16string expected_source_;
+  const std::u16string expected_title_;
   const bool check_message_;
-  const base::string16 expected_message_;
+  const std::u16string expected_message_;
   const bool check_progress_;
   const int expected_progress_;
 };

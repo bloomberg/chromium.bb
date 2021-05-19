@@ -105,18 +105,11 @@ void Bbr2Sender::SetFromConfig(const QuicConfig& config,
       config.HasClientRequestedIndependentOption(kB2CL, perspective)) {
     params_.avoid_too_low_probe_bw_cwnd = false;
   }
-  if (GetQuicReloadableFlag(quic_bbr2_fewer_startup_round_trips) &&
-      config.HasClientRequestedIndependentOption(k1RTT, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_fewer_startup_round_trips, 1, 2);
+  if (config.HasClientRequestedIndependentOption(k1RTT, perspective)) {
     params_.startup_full_bw_rounds = 1;
   }
-  if (GetQuicReloadableFlag(quic_bbr2_fewer_startup_round_trips) &&
-      config.HasClientRequestedIndependentOption(k2RTT, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_fewer_startup_round_trips, 2, 2);
+  if (config.HasClientRequestedIndependentOption(k2RTT, perspective)) {
     params_.startup_full_bw_rounds = 2;
-  }
-  if (config.HasClientRequestedIndependentOption(kB2LO, perspective)) {
-    params_.ignore_inflight_lo = true;
   }
   if (config.HasClientRequestedIndependentOption(kB2HR, perspective)) {
     params_.inflight_hi_headroom = 0.15;
@@ -133,9 +126,10 @@ void Bbr2Sender::ApplyConnectionOptions(
   if (ContainsQuicTag(connection_options, kBBQ2)) {
     params_.startup_cwnd_gain = 2.885;
     params_.drain_cwnd_gain = 2.885;
-    if (params_.bw_startup) {
-      model_.set_cwnd_gain(params_.startup_cwnd_gain);
-    }
+    model_.set_cwnd_gain(params_.startup_cwnd_gain);
+  }
+  if (ContainsQuicTag(connection_options, kB2LO)) {
+    params_.ignore_inflight_lo = true;
   }
   if (ContainsQuicTag(connection_options, kB2NE)) {
     params_.always_exit_startup_on_excess_loss = false;
@@ -146,9 +140,7 @@ void Bbr2Sender::ApplyConnectionOptions(
   if (ContainsQuicTag(connection_options, kB2H2)) {
     params_.limit_inflight_hi_by_max_delivered = true;
   }
-  if (GetQuicReloadableFlag(quic_bbr2_use_bytes_delivered) &&
-      ContainsQuicTag(connection_options, kB2DL)) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_bbr2_use_bytes_delivered);
+  if (ContainsQuicTag(connection_options, kB2DL)) {
     params_.use_bytes_delivered_for_inflight_hi = true;
   }
   if (ContainsQuicTag(connection_options, kB2RC)) {
@@ -157,20 +149,16 @@ void Bbr2Sender::ApplyConnectionOptions(
   if (ContainsQuicTag(connection_options, kBSAO)) {
     model_.EnableOverestimateAvoidance();
   }
-  if (params_.bw_startup && ContainsQuicTag(connection_options, kBBQ6)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_bw_startup, 1, 4);
+  if (ContainsQuicTag(connection_options, kBBQ6)) {
     params_.decrease_startup_pacing_at_end_of_round = true;
   }
-  if (params_.bw_startup && ContainsQuicTag(connection_options, kBBQ7)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_bw_startup, 2, 4);
+  if (ContainsQuicTag(connection_options, kBBQ7)) {
     params_.bw_lo_mode_ = Bbr2Params::QuicBandwidthLoMode::MIN_RTT_REDUCTION;
   }
-  if (params_.bw_startup && ContainsQuicTag(connection_options, kBBQ8)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_bw_startup, 3, 4);
+  if (ContainsQuicTag(connection_options, kBBQ8)) {
     params_.bw_lo_mode_ = Bbr2Params::QuicBandwidthLoMode::INFLIGHT_REDUCTION;
   }
-  if (params_.bw_startup && ContainsQuicTag(connection_options, kBBQ9)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_bw_startup, 4, 4);
+  if (ContainsQuicTag(connection_options, kBBQ9)) {
     params_.bw_lo_mode_ = Bbr2Params::QuicBandwidthLoMode::CWND_REDUCTION;
   }
 }
@@ -248,6 +236,16 @@ void Bbr2Sender::OnCongestionEvent(bool /*rtt_updated*/,
   model_.OnCongestionEventStart(event_time, acked_packets, lost_packets,
                                 &congestion_event);
 
+  if (InSlowStart()) {
+    if (!lost_packets.empty()) {
+      connection_stats_->slowstart_packets_lost += lost_packets.size();
+      connection_stats_->slowstart_bytes_lost += congestion_event.bytes_lost;
+    }
+    if (congestion_event.end_of_round_trip) {
+      ++connection_stats_->slowstart_num_rtts;
+    }
+  }
+
   // Number of mode changes allowed for this congestion event.
   int mode_changes_allowed = kMaxModeChangesPerCongestionEvent;
   while (true) {
@@ -266,16 +264,19 @@ void Bbr2Sender::OnCongestionEvent(bool /*rtt_updated*/,
     BBR2_MODE_DISPATCH(Enter(event_time, &congestion_event));
     --mode_changes_allowed;
     if (mode_changes_allowed < 0) {
-      QUIC_BUG << "Exceeded max number of mode changes per congestion event.";
+      QUIC_BUG(quic_bug_10443_1)
+          << "Exceeded max number of mode changes per congestion event.";
       break;
     }
   }
 
   UpdatePacingRate(congestion_event.bytes_acked);
-  QUIC_BUG_IF(pacing_rate_.IsZero()) << "Pacing rate must not be zero!";
+  QUIC_BUG_IF(quic_bug_10443_2, pacing_rate_.IsZero())
+      << "Pacing rate must not be zero!";
 
   UpdateCongestionWindow(congestion_event.bytes_acked);
-  QUIC_BUG_IF(cwnd_ == 0u) << "Congestion window must not be zero!";
+  QUIC_BUG_IF(quic_bug_10443_3, cwnd_ == 0u)
+      << "Congestion window must not be zero!";
 
   model_.OnCongestionEventFinish(unacked_packets_->GetLeastUnacked(),
                                  congestion_event);
@@ -320,9 +321,17 @@ void Bbr2Sender::UpdatePacingRate(QuicByteCount bytes_acked) {
   }
 
   QuicBandwidth target_rate = model_.pacing_gain() * model_.BandwidthEstimate();
-  if (model_.full_bandwidth_reached() ||
-      params_.decrease_startup_pacing_at_end_of_round ||
-      params_.bw_lo_mode_ != Bbr2Params::DEFAULT) {
+  if (model_.full_bandwidth_reached()) {
+    pacing_rate_ = target_rate;
+    return;
+  }
+  if (params_.decrease_startup_pacing_at_end_of_round &&
+      model_.pacing_gain() < Params().startup_pacing_gain) {
+    pacing_rate_ = target_rate;
+    return;
+  }
+  if (params_.bw_lo_mode_ != Bbr2Params::DEFAULT &&
+      model_.loss_events_in_round() > 0) {
     pacing_rate_ = target_rate;
     return;
   }
@@ -378,6 +387,10 @@ void Bbr2Sender::OnPacketSent(QuicTime sent_time,
                 << ", total_acked:" << model_.total_bytes_acked()
                 << ", total_lost:" << model_.total_bytes_lost() << "  @ "
                 << sent_time;
+  if (InSlowStart()) {
+    ++connection_stats_->slowstart_packets_sent;
+    connection_stats_->slowstart_bytes_sent += bytes;
+  }
   if (bytes_in_flight == 0 && params().avoid_unnecessary_probe_rtt) {
     OnExitQuiescence(sent_time);
   }

@@ -5,8 +5,9 @@
 #include <wrl.h>
 #include <wrl/event.h>
 
+#include <string>
+
 #include "base/notreached.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/win/scoped_hstring.h"
 #include "device/gamepad/test_support/fake_igamepad_statics.h"

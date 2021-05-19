@@ -51,6 +51,7 @@ if (ozone_platform_wayland) {
   ozone_platforms += [ "wayland" ]
   ozone_platform_deps += [ "platform/wayland" ]
   ozone_platform_test_deps += [ "platform/wayland:wayland_unittests" ]
+  ozone_platform_ui_test_support_deps += [ "platform/wayland:ui_test_support" ]
 }
 
 if (ozone_platform_x11) {
@@ -62,6 +63,7 @@ if (ozone_platform_x11) {
 if (ozone_platform_scenic) {
   ozone_platforms += [ "scenic" ]
   ozone_platform_deps += [ "platform/scenic" ]
+  ozone_platform_test_deps += [ "platform/scenic:scenic_unittests" ]
 }
 
 platform_list_cc_file = "$target_gen_dir/platform_list.cc"
@@ -92,12 +94,15 @@ component("ozone_base") {
     "public/platform_clipboard.h",
     "public/platform_gl_egl_utility.cc",
     "public/platform_gl_egl_utility.h",
+    "public/platform_global_shortcut_listener.cc",
+    "public/platform_global_shortcut_listener.h",
     "public/platform_menu_utils.cc",
     "public/platform_menu_utils.h",
     "public/platform_screen.cc",
     "public/platform_screen.h",
     "public/platform_user_input_monitor.cc",
     "public/platform_user_input_monitor.h",
+    "public/platform_utils.h",
     "public/platform_window_surface.h",
     "public/surface_factory_ozone.cc",
     "public/surface_factory_ozone.h",

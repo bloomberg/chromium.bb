@@ -109,7 +109,7 @@ class WebAppAutoLoginUtilMock : public WebAppAutoLoginUtil {
 std::unique_ptr<ShortcutInfo> GetShortcutInfo() {
   std::unique_ptr<ShortcutInfo> info(new ShortcutInfo);
   info->extension_id = "extensionid";
-  info->title = base::ASCIIToUTF16("Shortcut Title");
+  info->title = u"Shortcut Title";
   info->url = GURL("http://example.com/");
   info->profile_path = base::FilePath("user_data_dir").Append("Profile 1");
   info->profile_name = "profile name";
@@ -359,6 +359,57 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
   EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 }
 
+TEST_F(WebAppShortcutCreatorTest, ProtocolHandlers) {
+  const base::FilePath plist_path =
+      shim_path_.Append("Contents").Append("Info.plist");
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
+                                                       info_.get());
+
+  // CFBundleURLTypes should not be set, because we set no protocol
+  // handlers.
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               ShortcutLocations()));
+  {
+    NSDictionary* plist = [NSDictionary
+        dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
+    NSArray* protocol_types_value =
+        [plist objectForKey:app_mode::kCFBundleURLTypesKey];
+    EXPECT_EQ(protocol_types_value, nil);
+  }
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
+
+  // Register 2 valid protocol handlers.
+  info_->protocol_handlers.insert("mailto");
+  info_->protocol_handlers.insert("web+testing");
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               ShortcutLocations()));
+  {
+    NSDictionary* plist = [NSDictionary
+        dictionaryWithContentsOfFile:base::mac::FilePathToNSString(plist_path)];
+    NSArray* protocol_types_value =
+        [plist objectForKey:app_mode::kCFBundleURLTypesKey];
+    EXPECT_NE(protocol_types_value, nil);
+    EXPECT_EQ(1u, [protocol_types_value count]);
+    NSDictionary* protocol_types_dict = [protocol_types_value objectAtIndex:0];
+    EXPECT_NE(protocol_types_dict, nil);
+
+    // Verify CFBundleURLName is set.
+    EXPECT_NSEQ(
+        [protocol_types_dict objectForKey:app_mode::kCFBundleURLNameKey],
+        base::SysUTF8ToNSString(base::mac::BaseBundleID() +
+                                std::string(".app.") + info_->extension_id));
+
+    // Verify CFBundleURLSchemes is set, and contains the expected values.
+    NSArray* handlers =
+        [protocol_types_dict objectForKey:app_mode::kCFBundleURLSchemesKey];
+    EXPECT_NE(handlers, nil);
+    EXPECT_EQ(2u, [handlers count]);
+    EXPECT_NSEQ([handlers objectAtIndex:0], @"mailto");
+    EXPECT_NSEQ([handlers objectAtIndex:1], @"web+testing");
+  }
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
+}
+
 TEST_F(WebAppShortcutCreatorTest, CreateShortcutsConflict) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
                                                        info_.get());
@@ -403,11 +454,11 @@ TEST_F(WebAppShortcutCreatorTest, NormalizeTitle) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
                                                        info_.get());
 
-  info_->title = base::UTF8ToUTF16("../../Evil/");
+  info_->title = u"../../Evil/";
   EXPECT_EQ(destination_dir_.Append(":..:Evil:.app"),
             shortcut_creator.GetApplicationsShortcutPath(false));
 
-  info_->title = base::UTF8ToUTF16("....");
+  info_->title = u"....";
   EXPECT_EQ(destination_dir_.Append(fallback_shim_base_name_),
             shortcut_creator.GetApplicationsShortcutPath(false));
 }

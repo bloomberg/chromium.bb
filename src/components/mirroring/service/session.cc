@@ -643,7 +643,8 @@ void Session::SetConstraints(const openscreen::cast::Answer& answer,
         std::min(video_config->max_playout_delay,
                  base::TimeDelta::FromMilliseconds(video.max_delay.count()));
     video_config->max_frame_rate =
-        std::min(video_config->max_frame_rate, video.maximum.frame_rate);
+        std::min(video_config->max_frame_rate,
+                 static_cast<double>(video.maximum.frame_rate));
 
     // We only do sender-side letterboxing if the receiver doesn't support it.
     mirror_settings_.SetSenderSideLetterboxingEnabled(!video.supports_scaling);
@@ -869,7 +870,7 @@ void Session::SetTargetPlayoutDelay(base::TimeDelta playout_delay) {
     video_stream_->SetTargetPlayoutDelay(playout_delay);
 }
 
-void Session::ProcessFeedback(const media::VideoFrameFeedback& feedback) {
+void Session::ProcessFeedback(const media::VideoCaptureFeedback& feedback) {
   if (video_capture_client_) {
     video_capture_client_->ProcessFeedback(feedback);
   }

@@ -14,48 +14,14 @@
 
 #include "src/transform/first_index_offset.h"
 
-#include <cassert>
 #include <memory>
 #include <utility>
 
-#include "src/ast/array_accessor_expression.h"
-#include "src/ast/assignment_statement.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/bitcast_expression.h"
-#include "src/ast/break_statement.h"
-#include "src/ast/builtin_decoration.h"
-#include "src/ast/call_statement.h"
-#include "src/ast/case_statement.h"
-#include "src/ast/constructor_expression.h"
-#include "src/ast/else_statement.h"
-#include "src/ast/expression.h"
-#include "src/ast/fallthrough_statement.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/if_statement.h"
-#include "src/ast/loop_statement.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/struct.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/ast/struct_decoration.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/struct_member_offset_decoration.h"
-#include "src/ast/switch_statement.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/unary_op_expression.h"
-#include "src/ast/variable.h"
-#include "src/ast/variable_decl_statement.h"
-#include "src/ast/variable_decoration.h"
-#include "src/clone_context.h"
-#include "src/program.h"
 #include "src/program_builder.h"
 #include "src/semantic/function.h"
-#include "src/type/struct_type.h"
-#include "src/type/u32_type.h"
-#include "src/type_determiner.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::transform::FirstIndexOffset::Data);
+TINT_INSTANTIATE_TYPEINFO(tint::transform::FirstIndexOffset::Data);
 
 namespace tint {
 namespace transform {
@@ -73,7 +39,7 @@ ast::Variable* clone_variable_with_new_name(CloneContext* ctx,
   // Clone arguments outside of create() call to have deterministic ordering
   auto source = ctx->Clone(in->source());
   auto symbol = ctx->dst->Symbols().Register(new_name);
-  auto* type = ctx->Clone(in->type());
+  auto* type = ctx->Clone(in->declared_type());
   auto* constructor = ctx->Clone(in->constructor());
   auto decorations = ctx->Clone(in->decorations());
   return ctx->dst->create<ast::Variable>(
@@ -101,7 +67,7 @@ FirstIndexOffset::FirstIndexOffset(uint32_t binding, uint32_t group)
 
 FirstIndexOffset::~FirstIndexOffset() = default;
 
-Transform::Output FirstIndexOffset::Run(const Program* in) {
+Transform::Output FirstIndexOffset::Run(const Program* in, const DataMap&) {
   ProgramBuilder out;
 
   // First do a quick check to see if the transform has already been applied.
@@ -115,15 +81,17 @@ Transform::Output FirstIndexOffset::Run(const Program* in) {
     }
   }
 
+  State state{&out, binding_, group_};
+
   Symbol vertex_index_sym;
   Symbol instance_index_sym;
 
   // Lazily construct the UniformBuffer on first call to
   // maybe_create_buffer_var()
   ast::Variable* buffer_var = nullptr;
-  auto maybe_create_buffer_var = [&](ProgramBuilder* dst) {
+  auto maybe_create_buffer_var = [&]() {
     if (buffer_var == nullptr) {
-      buffer_var = AddUniformBuffer(dst);
+      buffer_var = state.AddUniformBuffer();
     }
   };
 
@@ -131,105 +99,80 @@ Transform::Output FirstIndexOffset::Run(const Program* in) {
   // add a CreateFirstIndexOffset() statement to each function that uses one of
   // these builtins.
 
-  CloneContext(&out, in)
-      .ReplaceAll([&](CloneContext* ctx, ast::Variable* var) -> ast::Variable* {
-        for (ast::VariableDecoration* dec : var->decorations()) {
-          if (auto* blt_dec = dec->As<ast::BuiltinDecoration>()) {
-            ast::Builtin blt_type = blt_dec->value();
-            if (blt_type == ast::Builtin::kVertexIndex) {
-              vertex_index_sym = var->symbol();
-              has_vertex_index_ = true;
-              return clone_variable_with_new_name(
-                  ctx, var,
-                  kIndexOffsetPrefix + in->Symbols().NameFor(var->symbol()));
-            } else if (blt_type == ast::Builtin::kInstanceIndex) {
-              instance_index_sym = var->symbol();
-              has_instance_index_ = true;
-              return clone_variable_with_new_name(
-                  ctx, var,
-                  kIndexOffsetPrefix + in->Symbols().NameFor(var->symbol()));
-            }
+  CloneContext ctx(&out, in);
+  ctx.ReplaceAll([&](ast::Variable* var) -> ast::Variable* {
+    for (ast::Decoration* dec : var->decorations()) {
+      if (auto* blt_dec = dec->As<ast::BuiltinDecoration>()) {
+        ast::Builtin blt_type = blt_dec->value();
+        if (blt_type == ast::Builtin::kVertexIndex) {
+          vertex_index_sym = var->symbol();
+          state.has_vertex_index = true;
+          return clone_variable_with_new_name(
+              &ctx, var,
+              kIndexOffsetPrefix + in->Symbols().NameFor(var->symbol()));
+        } else if (blt_type == ast::Builtin::kInstanceIndex) {
+          instance_index_sym = var->symbol();
+          state.has_instance_index = true;
+          return clone_variable_with_new_name(
+              &ctx, var,
+              kIndexOffsetPrefix + in->Symbols().NameFor(var->symbol()));
+        }
+      }
+    }
+    return nullptr;  // Just clone var
+  });
+  ctx.ReplaceAll(  // Note: This happens in the same pass as the rename above
+                   // which determines the original builtin variable names,
+                   // but this should be fine, as variables are cloned first.
+      [&](ast::Function* func) -> ast::Function* {
+        maybe_create_buffer_var();
+        if (buffer_var == nullptr) {
+          return nullptr;  // no transform need, just clone func
+        }
+        auto* func_sem = in->Sem().Get(func);
+        ast::StatementList statements;
+        for (const auto& data : func_sem->LocalReferencedBuiltinVariables()) {
+          if (data.second->value() == ast::Builtin::kVertexIndex) {
+            statements.emplace_back(state.CreateFirstIndexOffset(
+                in->Symbols().NameFor(vertex_index_sym), kFirstVertexName,
+                buffer_var));
+          } else if (data.second->value() == ast::Builtin::kInstanceIndex) {
+            statements.emplace_back(state.CreateFirstIndexOffset(
+                in->Symbols().NameFor(instance_index_sym), kFirstInstanceName,
+                buffer_var));
           }
         }
-        return nullptr;  // Just clone var
-      })
-      .ReplaceAll(  // Note: This happens in the same pass as the rename above
-                    // which determines the original builtin variable names,
-                    // but this should be fine, as variables are cloned first.
-          [&](CloneContext* ctx, ast::Function* func) -> ast::Function* {
-            maybe_create_buffer_var(ctx->dst);
-            if (buffer_var == nullptr) {
-              return nullptr;  // no transform need, just clone func
-            }
-            auto* func_sem = in->Sem().Get(func);
-            ast::StatementList statements;
-            for (const auto& data :
-                 func_sem->LocalReferencedBuiltinVariables()) {
-              if (data.second->value() == ast::Builtin::kVertexIndex) {
-                statements.emplace_back(CreateFirstIndexOffset(
-                    in->Symbols().NameFor(vertex_index_sym), kFirstVertexName,
-                    buffer_var, ctx->dst));
-              } else if (data.second->value() == ast::Builtin::kInstanceIndex) {
-                statements.emplace_back(CreateFirstIndexOffset(
-                    in->Symbols().NameFor(instance_index_sym),
-                    kFirstInstanceName, buffer_var, ctx->dst));
-              }
-            }
-            return CloneWithStatementsAtStart(ctx, func, statements);
-          })
-      .Clone();
+        return CloneWithStatementsAtStart(&ctx, func, statements);
+      });
+  ctx.Clone();
 
-  return Output(
-      Program(std::move(out)),
-      std::make_unique<Data>(has_vertex_index_, has_instance_index_,
-                             vertex_index_offset_, instance_index_offset_));
+  return Output(Program(std::move(out)),
+                std::make_unique<Data>(
+                    state.has_vertex_index, state.has_instance_index,
+                    state.vertex_index_offset, state.instance_index_offset));
 }
 
-bool FirstIndexOffset::HasVertexIndex() {
-  return has_vertex_index_;
-}
-
-bool FirstIndexOffset::HasInstanceIndex() {
-  return has_instance_index_;
-}
-
-uint32_t FirstIndexOffset::GetFirstVertexOffset() {
-  assert(has_vertex_index_);
-  return vertex_index_offset_;
-}
-
-uint32_t FirstIndexOffset::GetFirstInstanceOffset() {
-  assert(has_instance_index_);
-  return instance_index_offset_;
-}
-
-ast::Variable* FirstIndexOffset::AddUniformBuffer(ProgramBuilder* dst) {
+ast::Variable* FirstIndexOffset::State::AddUniformBuffer() {
   auto* u32_type = dst->create<type::U32>();
-  ast::StructMemberList members;
   uint32_t offset = 0;
-  if (has_vertex_index_) {
-    ast::StructMemberDecorationList member_dec;
-    member_dec.push_back(
-        dst->create<ast::StructMemberOffsetDecoration>(Source{}, offset));
+  ast::StructMemberList members;
+  if (has_vertex_index) {
     members.push_back(dst->create<ast::StructMember>(
         Source{}, dst->Symbols().Register(kFirstVertexName), u32_type,
-        std::move(member_dec)));
-    vertex_index_offset_ = offset;
+        ast::DecorationList{}));
+    vertex_index_offset = offset;
     offset += 4;
   }
 
-  if (has_instance_index_) {
-    ast::StructMemberDecorationList member_dec;
-    member_dec.push_back(
-        dst->create<ast::StructMemberOffsetDecoration>(Source{}, offset));
+  if (has_instance_index) {
     members.push_back(dst->create<ast::StructMember>(
         Source{}, dst->Symbols().Register(kFirstInstanceName), u32_type,
-        std::move(member_dec)));
-    instance_index_offset_ = offset;
+        ast::DecorationList{}));
+    instance_index_offset = offset;
     offset += 4;
   }
 
-  ast::StructDecorationList decos;
+  ast::DecorationList decos;
   decos.push_back(dst->create<ast::StructBlockDecoration>(Source{}));
 
   auto* struct_type = dst->create<type::Struct>(
@@ -243,23 +186,22 @@ ast::Variable* FirstIndexOffset::AddUniformBuffer(ProgramBuilder* dst) {
       struct_type,                           // type
       false,                                 // is_const
       nullptr,                               // constructor
-      ast::VariableDecorationList{
-          dst->create<ast::BindingDecoration>(Source{}, binding_),
-          dst->create<ast::GroupDecoration>(Source{}, group_),
+      ast::DecorationList{
+          dst->create<ast::BindingDecoration>(Source{}, binding),
+          dst->create<ast::GroupDecoration>(Source{}, group),
       });
 
-  dst->AST().AddGlobalVariable(idx_var);
-
   dst->AST().AddConstructedType(struct_type);
+
+  dst->AST().AddGlobalVariable(idx_var);
 
   return idx_var;
 }
 
-ast::VariableDeclStatement* FirstIndexOffset::CreateFirstIndexOffset(
+ast::VariableDeclStatement* FirstIndexOffset::State::CreateFirstIndexOffset(
     const std::string& original_name,
     const std::string& field_name,
-    ast::Variable* buffer_var,
-    ProgramBuilder* dst) {
+    ast::Variable* buffer_var) {
   auto* buffer =
       dst->create<ast::IdentifierExpression>(Source{}, buffer_var->symbol());
 
@@ -279,7 +221,7 @@ ast::VariableDeclStatement* FirstIndexOffset::CreateFirstIndexOffset(
       dst->create<type::U32>(),                // type
       true,                                    // is_const
       constructor,                             // constructor
-      ast::VariableDecorationList{});          // decorations
+      ast::DecorationList{});                  // decorations
   return dst->create<ast::VariableDeclStatement>(Source{}, var);
 }
 

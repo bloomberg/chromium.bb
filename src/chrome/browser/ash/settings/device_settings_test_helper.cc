@@ -6,22 +6,23 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
+#include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 
-namespace chromeos {
+namespace ash {
 
 ScopedDeviceSettingsTestHelper::ScopedDeviceSettingsTestHelper() {
   DeviceSettingsService::Initialize();
@@ -55,13 +56,14 @@ void DeviceSettingsTestBase::SetUp() {
       base::WrapUnique(user_manager_));
   owner_key_util_ = new ownership::MockOwnerKeyUtil();
   device_settings_service_ = std::make_unique<DeviceSettingsService>();
-  dbus_setter_ = DBusThreadManager::GetSetterForTesting();
-  CryptohomeClient::InitializeFake();
+  dbus_setter_ = chromeos::DBusThreadManager::GetSetterForTesting();
+  chromeos::UserDataAuthClient::InitializeFake();
+  chromeos::CryptohomeMiscClient::InitializeFake();
   PowerManagerClient::InitializeFake();
-  TpmManagerClient::InitializeFake();
-  OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(
+  chromeos::TpmManagerClient::InitializeFake();
+  OwnerSettingsServiceAshFactory::SetDeviceSettingsServiceForTesting(
       device_settings_service_.get());
-  OwnerSettingsServiceChromeOSFactory::GetInstance()->SetOwnerKeyUtilForTesting(
+  OwnerSettingsServiceAshFactory::GetInstance()->SetOwnerKeyUtilForTesting(
       owner_key_util_);
   base::RunLoop().RunUntilIdle();
 
@@ -77,15 +79,15 @@ void DeviceSettingsTestBase::SetUp() {
 
 void DeviceSettingsTestBase::TearDown() {
   teardown_called_ = true;
-  OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(
-      nullptr);
+  OwnerSettingsServiceAshFactory::SetDeviceSettingsServiceForTesting(nullptr);
   FlushDeviceSettings();
   device_settings_service_->UnsetSessionManager();
   device_settings_service_.reset();
-  TpmManagerClient::Shutdown();
+  chromeos::TpmManagerClient::Shutdown();
   PowerManagerClient::Shutdown();
-  CryptohomeClient::Shutdown();
-  DBusThreadManager::Shutdown();
+  chromeos::CryptohomeMiscClient::Shutdown();
+  chromeos::UserDataAuthClient::Shutdown();
+  chromeos::DBusThreadManager::Shutdown();
   device_policy_.reset();
   base::RunLoop().RunUntilIdle();
   profile_.reset();
@@ -117,11 +119,11 @@ void DeviceSettingsTestBase::InitOwner(const AccountId& account_id,
     ProfileHelper::Get()->SetProfileToUserMappingForTesting(
         const_cast<user_manager::User*>(user));
   }
-  OwnerSettingsServiceChromeOS* service =
-      OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_.get());
+  OwnerSettingsServiceAsh* service =
+      OwnerSettingsServiceAshFactory::GetForBrowserContext(profile_.get());
   CHECK(service);
   if (tpm_is_ready)
     service->OnTPMTokenReady(true /* token is enabled */);
 }
 
-}  // namespace chromeos
+}  // namespace ash

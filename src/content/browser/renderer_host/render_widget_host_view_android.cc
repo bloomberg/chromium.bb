@@ -314,6 +314,16 @@ void RenderWidgetHostViewAndroid::RemoveDestructionObserver(
   destruction_observers_.RemoveObserver(observer);
 }
 
+base::CallbackListSubscription
+RenderWidgetHostViewAndroid::SubscribeToSurfaceIdChanges(
+    const SurfaceIdChangedCallback& callback) {
+  return surface_id_changed_callbacks_.Add(callback);
+}
+
+void RenderWidgetHostViewAndroid::OnSurfaceIdChanged() {
+  surface_id_changed_callbacks_.Notify(GetCurrentSurfaceId());
+}
+
 void RenderWidgetHostViewAndroid::InitAsChild(gfx::NativeView parent_view) {
   NOTIMPLEMENTED();
 }
@@ -1063,7 +1073,7 @@ void RenderWidgetHostViewAndroid::Destroy() {
 }
 
 void RenderWidgetHostViewAndroid::SetTooltipText(
-    const base::string16& tooltip_text) {
+    const std::u16string& tooltip_text) {
   // Tooltips don't makes sense on Android.
 }
 
@@ -2369,9 +2379,7 @@ void RenderWidgetHostViewAndroid::TakeFallbackContentFrom(
     RenderWidgetHostView* view) {
   DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
               ->IsRenderWidgetHostViewChildFrame());
-  base::Optional<SkColor> color = view->GetBackgroundColor();
-  if (color)
-    SetBackgroundColor(*color);
+  CopyBackgroundColorIfPresentFrom(*view);
 
   RenderWidgetHostViewAndroid* view_android =
       static_cast<RenderWidgetHostViewAndroid*>(view);

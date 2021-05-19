@@ -40,6 +40,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/embedder_support/switches.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -313,9 +314,10 @@ class NetworkContextConfigurationBrowserTest
   content::StoragePartition* GetStoragePartitionForContextType(
       NetworkContextType network_context_type) {
     const auto kOnDiskConfig = content::StoragePartitionConfig::Create(
-        "foo", /*partition_name=*/"", /*in_memory=*/false);
+        browser()->profile(), "foo", /*partition_name=*/"",
+        /*in_memory=*/false);
     const auto kInMemoryConfig = content::StoragePartitionConfig::Create(
-        "foo", /*partition_name=*/"", /*in_memory=*/true);
+        browser()->profile(), "foo", /*partition_name=*/"", /*in_memory=*/true);
 
     switch (network_context_type) {
       case NetworkContextType::kSystem:
@@ -335,10 +337,19 @@ class NetworkContextConfigurationBrowserTest
       case NetworkContextType::kInMemoryApp:
         return content::BrowserContext::GetStoragePartition(
             browser()->profile(), kInMemoryConfig);
-      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile: {
         DCHECK(incognito_);
+        // Note: Even though we are requesting an on-disk config, the function
+        // will return an in-memory config because incognito profiles are not
+        // supposed to to use on-disk storage.
+        const auto kIncognitoConfig = content::StoragePartitionConfig::Create(
+            incognito_->profile(), "foo", /*partition_name=*/"",
+            /*in_memory=*/false);
+        DCHECK(kIncognitoConfig.in_memory());
+
         return content::BrowserContext::GetStoragePartition(
-            incognito_->profile(), kOnDiskConfig);
+            incognito_->profile(), kIncognitoConfig);
+      }
     }
     NOTREACHED();
     return nullptr;
@@ -870,7 +881,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
   }
 
   // Make a request whose response should be cached.
-  GURL request_url = embedded_test_server()->GetURL("/cachetime");
+  GURL request_url = embedded_test_server()->GetURL(kCacheRandomPath);
   url::Origin request_origin =
       url::Origin::Create(embedded_test_server()->base_url());
   std::unique_ptr<network::ResourceRequest> request =
@@ -894,9 +905,6 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
   ASSERT_TRUE(simple_loader_helper.response_body());
   EXPECT_GT(simple_loader_helper.response_body()->size(), 0u);
 
-  // Stop the server.
-  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-
   // Make the request again, and make sure it's cached or not, according to
   // expectations. Reuse the content::ResourceRequest, but nothing else.
   std::unique_ptr<network::ResourceRequest> request2 =
@@ -915,15 +923,14 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
   simple_loader2->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory(), simple_loader_helper2.GetCallback());
   simple_loader_helper2.WaitForCallback();
+  ASSERT_TRUE(simple_loader_helper2.response_body());
   if (GetHttpCacheType() == StorageType::kNone) {
-    // If there's no cache, and no server running, the request should have
-    // failed.
-    EXPECT_FALSE(simple_loader_helper2.response_body());
-    EXPECT_EQ(net::ERR_CONNECTION_REFUSED, simple_loader2->NetError());
+    // If there's no cache, the request should have returned a different
+    // response than before.
+    EXPECT_NE(*simple_loader_helper.response_body(),
+              *simple_loader_helper2.response_body());
   } else {
-    // Otherwise, the request should have succeeded, and returned the same
-    // result as before.
-    ASSERT_TRUE(simple_loader_helper2.response_body());
+    // Otherwise, the request should have returned the same result as before.
     EXPECT_EQ(*simple_loader_helper.response_body(),
               *simple_loader_helper2.response_body());
   }
@@ -1263,8 +1270,13 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   MakeLongLivedRequestThatHangsUntilShutdown();
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_UserAgentAndLanguagePrefs DISABLED_UserAgentAndLanguagePrefs
+#else
+#define MAYBE_UserAgentAndLanguagePrefs UserAgentAndLanguagePrefs
+#endif
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
-                       UserAgentAndLanguagePrefs) {
+                       MAYBE_UserAgentAndLanguagePrefs) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   // The system and SafeBrowsing network contexts aren't associated with any
@@ -1999,7 +2011,7 @@ class NetworkContextConfigurationReportingAndNelBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kShortReportingDelay);
+    command_line->AppendSwitch(embedder_support::kShortReportingDelay);
     // This switch will cause traffic to *any* port to go to https_server_,
     // regardless of which arbitrary port https_server_ decides to run on.
     // NEL and Reporting policies are only valid for a single origin.
@@ -2161,8 +2173,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationReportingAndNelBrowserTest,
 }
 
 // Instantiates tests with a prefix indicating which NetworkContext is being
-// tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
-// enabled, and "/2" if it's enabled and restarted.
+// tested, and a suffix of "/0" if the network service is enabled, "/1" if it's
+// enabled and restarted.
 #define TEST_CASES(network_context_type)                           \
   TestCase({NetworkServiceState::kEnabled, network_context_type}), \
       TestCase({NetworkServiceState::kRestarted, network_context_type})

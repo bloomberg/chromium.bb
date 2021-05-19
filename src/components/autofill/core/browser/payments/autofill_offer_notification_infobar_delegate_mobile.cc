@@ -60,7 +60,7 @@ int AutofillOfferNotificationInfoBarDelegateMobile::GetIconId() const {
   return IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER;
 }
 
-base::string16 AutofillOfferNotificationInfoBarDelegateMobile::GetMessageText()
+std::u16string AutofillOfferNotificationInfoBarDelegateMobile::GetMessageText()
     const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_OFFERS_REMINDER_TITLE);
 }
@@ -74,7 +74,7 @@ int AutofillOfferNotificationInfoBarDelegateMobile::GetButtons() const {
   return BUTTON_OK;
 }
 
-base::string16 AutofillOfferNotificationInfoBarDelegateMobile::GetButtonLabel(
+std::u16string AutofillOfferNotificationInfoBarDelegateMobile::GetButtonLabel(
     InfoBarButton button) const {
   if (button == BUTTON_OK) {
     return l10n_util::GetStringUTF16(
@@ -82,7 +82,7 @@ base::string16 AutofillOfferNotificationInfoBarDelegateMobile::GetButtonLabel(
   }
 
   NOTREACHED() << "Unsupported button label requested: " << button;
-  return base::string16();
+  return std::u16string();
 }
 
 void AutofillOfferNotificationInfoBarDelegateMobile::InfoBarDismissed() {

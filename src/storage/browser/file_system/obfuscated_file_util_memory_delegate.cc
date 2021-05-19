@@ -4,8 +4,10 @@
 
 #include "storage/browser/file_system/obfuscated_file_util_memory_delegate.h"
 
+#include <algorithm>
 #include <utility>
 
+#include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/files/file_util.h"
 #include "base/numerics/checked_math.h"
 #include "base/system/sys_info.h"
@@ -29,7 +31,11 @@ bool IsMemoryAvailable(int64_t required_memory) {
   // This function is not implemented on FUCHSIA, yet. (crbug.com/986608)
   return true;
 #else
-  return base::SysInfo::AmountOfAvailablePhysicalMemory() >= required_memory;
+  int64_t max_allocatable =
+      std::min(base::SysInfo::AmountOfAvailablePhysicalMemory(),
+               static_cast<int64_t>(base::MaxDirectMapped()));
+
+  return max_allocatable >= required_memory;
 #endif
 }
 
@@ -526,18 +532,37 @@ int ObfuscatedFileUtilMemoryDelegate::WriteFile(
       static_cast<size_t>(buf_len))
     return net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
 
-  // Fail if enough memory is not available.
-  if (offset_u + buf_len > dp->entry->file_content.capacity() &&
-      !IsMemoryAvailable(offset_u + buf_len)) {
-    return net::ERR_FILE_NO_SPACE;
+  const size_t last_position = offset_u + buf_len;
+  if (last_position > dp->entry->file_content.capacity()) {
+    // Fail if enough memory is not available.
+    if (!IsMemoryAvailable(last_position))
+      return net::ERR_FILE_NO_SPACE;
+
+// If required memory is bigger than half of the max allocatable memory block,
+// reserve first to avoid STL getting more than required memory.
+// See crbug.com/1043914 for more context.
+// |MaxDirectMapped| function is not implemented on FUCHSIA, yet.
+// (crbug.com/986608)
+#if !defined(OS_FUCHSIA)
+    if (last_position >= base::MaxDirectMapped() / 2) {
+      // TODO(https://crbug.com/1043914): Allocated memory is rounded up to
+      // 100MB blocks to reduce memory allocation delays. Switch to a more
+      // proper container to remove this dependency.
+      const size_t round_up_size = 100 * 1024 * 1024;
+      size_t rounded_up = ((last_position / round_up_size) + 1) * round_up_size;
+      if (!IsMemoryAvailable(rounded_up))
+        return net::ERR_FILE_NO_SPACE;
+      dp->entry->file_content.reserve(rounded_up);
+    }
+#endif
   }
 
   if (offset_u == dp->entry->file_content.size()) {
     dp->entry->file_content.insert(dp->entry->file_content.end(), buf->data(),
                                    buf->data() + buf_len);
   } else {
-    if (offset_u + buf_len > dp->entry->file_content.size())
-      dp->entry->file_content.resize(offset_u + buf_len);
+    if (last_position > dp->entry->file_content.size())
+      dp->entry->file_content.resize(last_position);
 
     // if |offset_u| is larger than the original file size, there will be null
     // bytes between the end of the file and |offset_u|.

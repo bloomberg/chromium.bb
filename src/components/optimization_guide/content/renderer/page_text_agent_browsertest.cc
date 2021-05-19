@@ -5,12 +5,12 @@
 #include "components/optimization_guide/content/renderer/page_text_agent.h"
 
 #include <limits>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -28,7 +28,7 @@ class TestConsumer : public mojom::PageTextConsumer {
   TestConsumer() = default;
   ~TestConsumer() override = default;
 
-  base::string16 text() const { return base::StrCat(chunks_); }
+  std::u16string text() const { return base::StrCat(chunks_); }
   bool on_chunks_end_called() const { return on_chunks_end_called_; }
   size_t num_chunks() const { return chunks_.size(); }
 
@@ -37,7 +37,7 @@ class TestConsumer : public mojom::PageTextConsumer {
   }
 
   // mojom::PageTextConsumer:
-  void OnTextDumpChunk(const base::string16& chunk) override {
+  void OnTextDumpChunk(const std::u16string& chunk) override {
     ASSERT_FALSE(on_chunks_end_called_);
     chunks_.push_back(chunk);
   }
@@ -46,7 +46,7 @@ class TestConsumer : public mojom::PageTextConsumer {
 
  private:
   mojo::Receiver<mojom::PageTextConsumer> receiver_{this};
-  std::vector<base::string16> chunks_;
+  std::vector<std::u16string> chunks_;
   bool on_chunks_end_called_ = false;
 };
 
@@ -58,7 +58,7 @@ class PageTextAgentRenderViewTest : public content::RenderViewTest {
   ~PageTextAgentRenderViewTest() override = default;
 };
 
-TEST_F(PageTextAgentRenderViewTest, SubframeFirstLayout) {
+TEST_F(PageTextAgentRenderViewTest, AMPSubframeFirstLayout) {
   // Create and get a subframe.
   LoadHTML(
       "<html><body>"
@@ -78,17 +78,18 @@ TEST_F(PageTextAgentRenderViewTest, SubframeFirstLayout) {
   auto request = mojom::PageTextDumpRequest::New();
   request->max_size = 1024;
   request->event = mojom::TextDumpEvent::kFirstLayout;
-  request->min_frame_pixel_area = 0;
   subframe_agent.RequestPageTextDump(std::move(request),
                                      std::move(consumer_remote));
 
   // Simulate a page load.
+  subframe_agent.DidObserveLoadingBehavior(
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded);
   subframe_agent.DidFinishLoad();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(consumer.on_chunks_end_called());
 }
 
-TEST_F(PageTextAgentRenderViewTest, SubframeLoadFinished) {
+TEST_F(PageTextAgentRenderViewTest, NotAMPSubframeLoadFinished) {
   // Create and get a subframe.
   LoadHTML(
       "<html><body>"
@@ -108,45 +109,77 @@ TEST_F(PageTextAgentRenderViewTest, SubframeLoadFinished) {
   auto request = mojom::PageTextDumpRequest::New();
   request->max_size = 1024;
   request->event = mojom::TextDumpEvent::kFinishedLoad;
-  request->min_frame_pixel_area = 0;
   subframe_agent.RequestPageTextDump(std::move(request),
                                      std::move(consumer_remote));
 
   // Simulate a page load.
+  subframe_agent.DidObserveLoadingBehavior(
+      blink::LoadingBehaviorFlag::kLoadingBehaviorNone);
+  subframe_agent.DidFinishLoad();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(consumer.on_chunks_end_called());
+}
+
+TEST_F(PageTextAgentRenderViewTest, MainFrame) {
+  // Create and get a subframe.
+  LoadHTML(
+      "<html><body>"
+      "  <p>hello</p>"
+      "</body></html>");
+  content::RenderFrame* mainframe =
+      content::RenderFrame::FromWebFrame(GetMainFrame());
+
+  PageTextAgent subframe_agent(mainframe);
+
+  // Send the request.
+  mojo::PendingRemote<mojom::PageTextConsumer> consumer_remote;
+  TestConsumer consumer;
+  consumer.Bind(consumer_remote.InitWithNewPipeAndPassReceiver());
+
+  auto request = mojom::PageTextDumpRequest::New();
+  request->max_size = 1024;
+  request->event = mojom::TextDumpEvent::kFinishedLoad;
+  subframe_agent.RequestPageTextDump(std::move(request),
+                                     std::move(consumer_remote));
+
+  // Simulate a page load.
+  subframe_agent.DidObserveLoadingBehavior(
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded);
+  subframe_agent.DidFinishLoad();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(consumer.on_chunks_end_called());
+}
+
+TEST_F(PageTextAgentRenderViewTest, AMPSuccessCase) {
+  // Create and get a subframe.
+  LoadHTML(
+      "<html><body>"
+      "  <p>hello</p>"
+      "  <iframe name=sub srcdoc=\"<p>world</p>\"></iframe>"
+      "</body></html>");
+  content::RenderFrame* subframe = content::RenderFrame::FromWebFrame(
+      GetMainFrame()->FindFrameByName("sub")->ToWebLocalFrame());
+
+  PageTextAgent subframe_agent(subframe);
+
+  // Send the request.
+  mojo::PendingRemote<mojom::PageTextConsumer> consumer_remote;
+  TestConsumer consumer;
+  consumer.Bind(consumer_remote.InitWithNewPipeAndPassReceiver());
+
+  auto request = mojom::PageTextDumpRequest::New();
+  request->max_size = 1024;
+  request->event = mojom::TextDumpEvent::kFinishedLoad;
+  subframe_agent.RequestPageTextDump(std::move(request),
+                                     std::move(consumer_remote));
+
+  // Simulate a page load.
+  subframe_agent.DidObserveLoadingBehavior(
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded);
   subframe_agent.DidFinishLoad();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(consumer.on_chunks_end_called());
-  EXPECT_EQ(base::ASCIIToUTF16("world"), consumer.text());
-}
-
-TEST_F(PageTextAgentRenderViewTest, SubframeTooSmall) {
-  // Create and get a subframe.
-  LoadHTML(
-      "<html><body>"
-      "  <p>hello</p>"
-      "  <iframe name=sub srcdoc=\"<p>world</p>\"></iframe>"
-      "</body></html>");
-  content::RenderFrame* subframe = content::RenderFrame::FromWebFrame(
-      GetMainFrame()->FindFrameByName("sub")->ToWebLocalFrame());
-
-  PageTextAgent subframe_agent(subframe);
-
-  // Send the request.
-  mojo::PendingRemote<mojom::PageTextConsumer> consumer_remote;
-  TestConsumer consumer;
-  consumer.Bind(consumer_remote.InitWithNewPipeAndPassReceiver());
-
-  auto request = mojom::PageTextDumpRequest::New();
-  request->max_size = 1024;
-  request->event = mojom::TextDumpEvent::kFinishedLoad;
-  request->min_frame_pixel_area = std::numeric_limits<uint64_t>::max();
-  subframe_agent.RequestPageTextDump(std::move(request),
-                                     std::move(consumer_remote));
-
-  // Simulate a page load.
-  subframe_agent.DidFinishLoad();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(consumer.on_chunks_end_called());
+  EXPECT_EQ(u"world", consumer.text());
 }
 
 }  // namespace optimization_guide

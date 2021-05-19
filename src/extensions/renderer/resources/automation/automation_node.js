@@ -18,6 +18,14 @@ var IsInteractPermitted = natives.IsInteractPermitted;
 var GetRootID = natives.GetRootID;
 
 /**
+ * Similar to above, but may move to ancestor roots if the current tree
+ * has multiple roots.
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @return {{treeID: string, nodeID: number}}
+ */
+var GetPublicRoot = natives.GetPublicRoot;
+
+/**
  * @param {string} axTreeID The id of the accessibility tree.
  * @return {?string} The title of the document.
  */
@@ -427,6 +435,13 @@ var GetHasPopup = natives.GetHasPopup;
 /**
  * @param {string} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
+ * @return {automation.AriaCurrentState}
+ */
+var GetAriaCurrentState = natives.GetAriaCurrentState;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
  * @param {string} searchStr
  * @param {boolean} backward
  * @return {{treeId: string, nodeId: number}}
@@ -609,14 +624,18 @@ AutomationNodeImpl.prototype = {
   },
 
   get root() {
-    return this.rootImpl && this.rootImpl.wrapper;
+    const info = GetPublicRoot(this.treeID);
+    if (!info) {
+      return null;
+    }
+    return AutomationRootNodeImpl.getNodeFromTree(info.treeId, info.nodeId) ||
+        null;
   },
 
   get parent() {
     var info = GetParentID(this.treeID, this.id);
-    if (!info)
-      return;
-    return AutomationRootNodeImpl.getNodeFromTree(info.treeId, info.nodeId);
+    if (info)
+      return AutomationRootNodeImpl.getNodeFromTree(info.treeId, info.nodeId);
   },
 
   get htmlAttributes() {
@@ -825,6 +844,10 @@ AutomationNodeImpl.prototype = {
 
   get hasPopup() {
     return GetHasPopup(this.treeID, this.id);
+  },
+
+  get ariaCurrentState() {
+    return GetAriaCurrentState(this.treeID, this.id);
   },
 
   get tableCellColumnHeaders() {
@@ -1908,6 +1931,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
   readonly: $Array.concat(
       publicAttributes,
       [
+        'ariaCurrentState',
         'bold',
         'checked',
         'children',

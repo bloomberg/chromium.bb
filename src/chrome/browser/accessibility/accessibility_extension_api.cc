@@ -12,11 +12,11 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -46,8 +46,8 @@
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
+#include "chrome/browser/ash/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
@@ -223,7 +223,6 @@ AccessibilityPrivateSetHighlightsFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSetKeyboardListenerFunction::Run() {
-  ChromeExtensionFunctionDetails details(this);
   CHECK(extension());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -239,7 +238,8 @@ AccessibilityPrivateSetKeyboardListenerFunction::Run() {
     return RespondNow(Error("Existing keyboard listener registered."));
 
   manager->SetKeyboardListenerExtensionId(
-      enabled ? extension()->id() : std::string(), details.GetProfile());
+      enabled ? extension()->id() : std::string(),
+      Profile::FromBrowserContext(browser_context()));
 
   ash::EventRewriterController::Get()->CaptureAllKeysForSpokenFeedback(
       enabled && capture);
@@ -270,10 +270,9 @@ AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::Run() {
           SetNativeChromeVoxArcSupportForCurrentApp::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ChromeExtensionFunctionDetails details(this);
   arc::ArcAccessibilityHelperBridge* bridge =
       arc::ArcAccessibilityHelperBridge::GetForBrowserContext(
-          details.GetProfile());
+          browser_context());
   if (bridge) {
     bool enabled;
     EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
@@ -657,4 +656,33 @@ AccessibilityPrivateUpdateSelectToSpeakPanelFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-#endif  // defined (OS_CHROMEOS)
+ExtensionFunction::ResponseAction
+AccessibilityPrivateShowConfirmationDialogFunction::Run() {
+  std::unique_ptr<accessibility_private::ShowConfirmationDialog::Params>
+      params =
+          accessibility_private::ShowConfirmationDialog::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::u16string title = base::UTF8ToUTF16(params->title);
+  std::u16string description = base::UTF8ToUTF16(params->description);
+  ash::AccessibilityController::Get()->ShowConfirmationDialog(
+      title, description,
+      base::BindOnce(
+          &AccessibilityPrivateShowConfirmationDialogFunction::OnDialogResult,
+          base::RetainedRef(this), /* confirmed */ true),
+      base::BindOnce(
+          &AccessibilityPrivateShowConfirmationDialogFunction::OnDialogResult,
+          base::RetainedRef(this), /* not confirmed */ false),
+      base::BindOnce(
+          &AccessibilityPrivateShowConfirmationDialogFunction::OnDialogResult,
+          base::RetainedRef(this), /* not confirmed */ false));
+
+  return RespondLater();
+}
+
+void AccessibilityPrivateShowConfirmationDialogFunction::OnDialogResult(
+    bool confirmed) {
+  Respond(OneArgument(base::Value(confirmed)));
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

@@ -155,11 +155,11 @@ std::unique_ptr<base::DictionaryValue> ReadPrefsDictionary(
       deserializer.Deserialize(&error_code, &error_str);
   if (!prefs || error_code != JSONFileValueDeserializer::JSON_NO_ERROR) {
     ADD_FAILURE() << "Error #" << error_code << ": " << error_str;
-    return std::unique_ptr<base::DictionaryValue>();
+    return nullptr;
   }
   if (!prefs->is_dict()) {
     ADD_FAILURE();
-    return std::unique_ptr<base::DictionaryValue>();
+    return nullptr;
   }
   return std::unique_ptr<base::DictionaryValue>(
       static_cast<base::DictionaryValue*>(prefs.release()));
@@ -1123,7 +1123,7 @@ class PrefHashBrowserTestRegistryValidationFailure
                                       KEY_SET_VALUE | KEY_WOW64_32KEY));
     // An incorrect hash should still have the correct size.
     ASSERT_EQ(ERROR_SUCCESS,
-              key.WriteValue(L"homepage", base::string16(64, 'A').c_str()));
+              key.WriteValue(L"homepage", std::wstring(64, 'A').c_str()));
   }
 
   void VerifyReactionToPrefAttack() override {
@@ -1162,16 +1162,16 @@ class PrefHashBrowserTestDefaultSearch : public PrefHashBrowserTestBase {
         static_cast<DefaultSearchManager::Source>(-1);
 
     TemplateURLData user_dse;
-    user_dse.SetKeyword(base::UTF8ToUTF16("userkeyword"));
-    user_dse.SetShortName(base::UTF8ToUTF16("username"));
+    user_dse.SetKeyword(u"userkeyword");
+    user_dse.SetShortName(u"username");
     user_dse.SetURL("http://user_default_engine/search?q=good_user_query");
     default_search_manager.SetUserSelectedDefaultSearchEngine(user_dse);
 
     const TemplateURLData* current_dse =
         default_search_manager.GetDefaultSearchEngine(&dse_source);
     EXPECT_EQ(DefaultSearchManager::FROM_USER, dse_source);
-    EXPECT_EQ(current_dse->keyword(), base::UTF8ToUTF16("userkeyword"));
-    EXPECT_EQ(current_dse->short_name(), base::UTF8ToUTF16("username"));
+    EXPECT_EQ(current_dse->keyword(), u"userkeyword");
+    EXPECT_EQ(current_dse->short_name(), u"username");
     EXPECT_EQ(current_dse->url(),
               "http://user_default_engine/search?q=good_user_query");
   }
@@ -1236,16 +1236,16 @@ class PrefHashBrowserTestDefaultSearch : public PrefHashBrowserTestBase {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
       // Attack is successful.
       EXPECT_EQ(DefaultSearchManager::FROM_USER, dse_source);
-      EXPECT_EQ(current_dse->keyword(), base::UTF8ToUTF16("badkeyword"));
-      EXPECT_EQ(current_dse->short_name(), base::UTF8ToUTF16("badname"));
+      EXPECT_EQ(current_dse->keyword(), u"badkeyword");
+      EXPECT_EQ(current_dse->short_name(), u"badname");
       EXPECT_EQ(current_dse->url(),
                 "http://bad_default_engine/search?q=dirty_user_query");
 #endif
     } else {
       // Attack fails.
       EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, dse_source);
-      EXPECT_NE(current_dse->keyword(), base::UTF8ToUTF16("badkeyword"));
-      EXPECT_NE(current_dse->short_name(), base::UTF8ToUTF16("badname"));
+      EXPECT_NE(current_dse->keyword(), u"badkeyword");
+      EXPECT_NE(current_dse->short_name(), u"badname");
       EXPECT_NE(current_dse->url(),
                 "http://bad_default_engine/search?q=dirty_user_query");
     }

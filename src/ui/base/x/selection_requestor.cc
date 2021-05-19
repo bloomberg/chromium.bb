@@ -10,8 +10,6 @@
 #include "ui/base/x/selection_owner.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/events/platform/platform_event_source.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_util.h"
@@ -42,14 +40,8 @@ std::vector<uint8_t> CombineData(
 
 }  // namespace
 
-SelectionRequestor::SelectionRequestor(x11::Window x_window,
-                                       x11::EventObserver* observer)
-    : x_window_(x_window),
-      x_property_(x11::Atom::None),
-      observer_(observer),
-      current_request_index_(0u) {
-  x_property_ = x11::GetAtom(kChromeSelection);
-}
+SelectionRequestor::SelectionRequestor(x11::Window x_window)
+    : x_window_(x_window), x_property_(x11::GetAtom(kChromeSelection)) {}
 
 SelectionRequestor::~SelectionRequestor() = default;
 
@@ -207,9 +199,6 @@ void SelectionRequestor::CompleteRequest(size_t index, bool success) {
       ++current_request_index_;
     ConvertSelectionForCurrentRequest();
   }
-
-  if (request->quit_closure)
-    std::move(request->quit_closure).Run();
 }
 
 void SelectionRequestor::ConvertSelectionForCurrentRequest() {

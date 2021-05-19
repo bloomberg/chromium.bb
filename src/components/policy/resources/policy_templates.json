@@ -527,6 +527,7 @@
       'desc': '''Content settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.''',
       'policies': [
         'DefaultCookiesSetting',
+        'DefaultFileHandlingGuardSetting',
         'DefaultFileSystemReadGuardSetting',
         'DefaultFileSystemWriteGuardSetting',
         'DefaultImagesSetting',
@@ -546,6 +547,8 @@
         'CookiesAllowedForUrls',
         'CookiesBlockedForUrls',
         'CookiesSessionOnlyForUrls',
+        'FileHandlingAllowedForUrls',
+        'FileHandlingBlockedForUrls',
         'FileSystemReadAskForUrls',
         'FileSystemReadBlockedForUrls',
         'FileSystemWriteAskForUrls',
@@ -574,6 +577,8 @@
         'WebUsbBlockedForUrls',
         'SerialAskForUrls',
         'SerialBlockedForUrls',
+        'SerialAllowAllPortsForUrls',
+        'SerialAllowUsbDevicesForUrls',
       ],
     },
     {
@@ -923,6 +928,7 @@
         'ReportDeviceFanInfo',
         'ReportDeviceVpdInfo',
         'ReportDeviceSystemInfo',
+        'ReportDevicePrintJobs',
         'ReportUploadFrequency',
         'ReportArcStatusEnabled',
         'HeartbeatEnabled',
@@ -1223,6 +1229,16 @@
         'SamlPasswordExpirationAdvanceWarningDays',
         'LockScreenReauthenticationEnabled',
         'SAMLOfflineSigninTimeLimit',
+      ],
+    },
+    {
+      'name': 'Borealis',
+      'type': 'group',
+      'caption': '''Borealis''',
+      'desc': '''Controls policies related to the <ph name="BOREALIS_NAME">Borealis</ph> subsystem.''',
+      'policies': [
+        'DeviceBorealisAllowed',
+        'UserBorealisAllowed',
       ],
     },
     {
@@ -5167,6 +5183,39 @@
       'arc_support': '''This policy also controls access to Android Developer Options. If you set this policy to 'DeveloperToolsDisallowed' (value 2), users cannot access Developer Options. If you set this policy to another value or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.''',
     },
     {
+      'name': 'HeadlessMode',
+      'owners': ['file://headless/OWNERS'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'Enabled',
+          'value': 1,
+          'caption': '''Allow use of the Headless Mode''',
+        },
+        {
+          'name': 'Disabled',
+          'value': 2,
+          'caption': '''Do not allow use of the Headless Mode''',
+        },
+      ],
+      'supported_on': ['chrome.*:91-', 'chrome_os:91-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+        'platform_only': True,  # No cloud-policy support for now.
+      },
+      'example_value': 2,
+      'default': 1,
+      'id': 842,
+      'caption': '''Control use of the Headless Mode''',
+      'tags': [],
+      'desc': '''Setting this policy to <ph name="ENABLED">Enabled</ph> or leaving the policy unset allows use of the headless mode. Setting this policy to <ph name="DISABLED">Disabled</ph> denies use of the headless mode.''',
+    },
+    {
       'name': 'RestoreOnStartup',
       'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
       'type': 'int-enum',
@@ -6113,8 +6162,8 @@
               'items': {
                 'type': 'object',
                 'properties': {
-                  'vendor_id': { 'type': 'integer' },
-                  'product_id': { 'type': 'integer' }
+                  'vendor_id': { 'type': 'integer', 'minimum': 0, 'maximum': 65535 },
+                  'product_id': { 'type': 'integer', 'minimum': 0, 'maximum': 65535 }
                 }
               }
             },
@@ -6133,18 +6182,20 @@
       },
       'example_value': [{
         'devices': [{'vendor_id': 1234, 'product_id': 5678}],
-        'urls': ['https://google.com', 'https://requesting.com,https://embedded.com'],
+        'urls': ['https://google.com'],
       }],
       'id': 486,
       'caption': '''Automatically grant permission to these sites to connect to USB devices with the given vendor and product IDs.''',
       'tags': ['website-sharing'],
       'desc': '''Setting the policy lets you list the URL patterns that specify which sites are automatically granted permission to access a USB device with the given vendor and product IDs. Each item in the list requires both <ph name="DEVICES_FIELD_NAME">devices</ph> and <ph name="URLS_FIELD_NAME">urls</ph> fields for the policy to be valid. Each item in the <ph name="DEVICES_FIELD_NAME">devices</ph> field can have a <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> and <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field. Omitting the <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> field will create a policy matching any device. Omitting the <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field will create a policy matching any device with the given vendor ID. A policy which has a <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field without a <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> field is invalid.
 
-      The USB permission model uses the requesting and embedding URLs to grant the requesting URL permission to access the USB device. The requesting URL can be different than the embedding URL when the requesting site is loaded in an iframe. So, the <ph name="URLS_FIELD_NAME">urls</ph> field can have up to 2 URL strings delimited by a comma to specify the requesting and embedding URL, respectively. If only one URL is specified, then access to the corresponding USB devices is granted when the requesting site's URL matches this URL, regardless of embedding status. The URLs must be valid, otherwise the policy is ignored.
+      The USB permission model will grant the specified URL permission to access the USB device as a top-level origin. If embedded frames need to access USB devices, the 'usb' <ph name="FEATURE_POLICY_HEADER_NAME">feature-policy</ph> header should be used to grant access. The URL must be valid, otherwise the policy is ignored.
 
-      Leaving the policy unset means <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME">DefaultWebUsbGuardSetting</ph> applies, if it's set. If not, the user's personal setting applies.
+      Deprecated: The USB permission model used to support specifying both the requesting and embedding URLs. This is deprecated and only supported for backwards compatiblity in this manner: if both a requesting and embedding URL is specified, then the embedding URL will be granted the permission as top-level origin and the requsting URL will be ignored entirely.
 
-      URL patterns in this policy shouldn't conflict with those configured through <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME">WebUsbBlockedForUrls</ph>. If they do, this policy takes precedence over <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME">WebUsbBlockedForUrls</ph> and <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME">WebUsbAskForUrls</ph>.''',
+      This policy overrides <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME">DefaultWebUsbGuardSetting</ph>, <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME">WebUsbAskForUrls</ph>, <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME">WebUsbBlockedForUrls</ph> and the user's preferences.
+
+      This policy only affects access to USB devices through the WebUSB API. To grant access to USB devices through the Web Serial API see the <ph name="SERIAL_ALLOW_USB_DEVICES_FOR_URLS_POLICY_NAME">SerialAllowUsbDevicesForUrls</ph> policy.''',
     },
     {
       'name': 'DeviceLoginScreenWebUsbAllowDevicesForUrls',
@@ -6181,14 +6232,16 @@
       },
       'example_value': [{
         'devices': [{'vendor_id': 1234, 'product_id': 5678}],
-        'urls': ['https://google.com', 'https://requesting.com,https://embedded.com'],
+        'urls': ['https://google.com'],
       }],
       'id': 603,
       'caption': '''Automatically grant permission to these sites to connect to USB devices with the given vendor and product IDs on the login screen.''',
       'tags': ['website-sharing'],
       'desc': '''Setting the policy lets you list the URL patterns that specify which sites are automatically granted permission to access a USB device with the given vendor and product IDs on the login screen. Each item in the list requires both <ph name="DEVICES_FIELD_NAME">devices</ph> and <ph name="URLS_FIELD_NAME">urls</ph> fields for the policy to be valid. Each item in the <ph name="DEVICES_FIELD_NAME">devices</ph> field can have a <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> and <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field. Omitting the <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> field will create a policy matching any device. Omitting the <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field will create a policy matching any device with the given vendor ID. A policy which has a <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field without a <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> field is invalid.
 
-      The USB permission model uses the requesting and embedding URLs to grant the requesting URL permission to access the USB device. The requesting URL can be different than the embedding URL when the requesting site is loaded in an iframe. So, the <ph name="URLS_FIELD_NAME">urls</ph> field can have up to 2 URL strings delimited by a comma to specify the requesting and embedding URL, respectively. If only one URL is specified, then access to the corresponding USB devices is granted when the requesting site's URL matches this URL, regardless of embedding status. The URLs must be valid, otherwise the policy is ignored.
+      The USB permission model will grant the specified URL permission to access the USB device as a top-level origin. If embedded frames need to access USB devices, the 'usb' <ph name="FEATURE_POLICY_HEADER_NAME">feature-policy</ph> header should be used to grant access. The URL must be valid, otherwise the policy is ignored.
+
+      Deprecated: The USB permission model used to support specifying both the requesting and embedding URLs. This is deprecated and only supported for backwards compatiblity in this manner: if both a requesting and embedding URL is specified, then the embedding URL will be granted the permission as top-level origin and the requsting URL will be ignored entirely.
 
       Leaving the policy unset puts the global default value in use for all sites (no automatic access).''',
     },
@@ -6327,6 +6380,171 @@
       For URL patterns which do not match the policy <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME">SerialAskForUrls</ph> (if there is a match), <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME">DefaultSerialGuardSetting</ph> (if set), or the users' personal settings take precedence, in that order.
 
       URL patterns can't conflict with <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME">SerialAskForUrls</ph>. Neither policy takes precedence if a URL matches with both.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. <ph name="WILDCARD_VALUE">*</ph> is not an accepted value for this policy.''',
+    },
+    {
+      'name': 'SerialAllowAllPortsForUrls',
+      'owners': ['reillyg@chromium.org', 'file://content/browser/serial/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'future_on': ['chrome_os', 'chrome.*'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com'],
+      'id': 837,
+      'caption': '''Automatically grant permission to sites to connect all serial ports.''',
+      'tags': [],
+      'desc': '''Setting the policy allows you to list sites which are automatically granted permission to access all available serial ports.
+
+      The URLs must be valid, otherwise the policy is ignored. Only the origin (scheme, host and port) of the URL is considered.
+
+      This policy overrides <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME">DefaultSerialGuardSetting</ph>, <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME">SerialAskForUrls</ph>, <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME">SerialBlockedForUrls</ph> and the user's preferences.''',
+    },
+    {
+      'name': 'SerialAllowUsbDevicesForUrls',
+      'owners': ['reillyg@chromium.org', 'file://content/browser/serial/OWNERS'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'devices': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'vendor_id': { 'type': 'integer', 'minimum': 0, 'maximum': 65535 },
+                  'product_id': { 'type': 'integer', 'minimum': 0, 'maximum': 65535 }
+                },
+                'required': ['vendor_id']
+              }
+            },
+            'urls': {
+              'type': 'array',
+              'items': { 'type': 'string' }
+            }
+          },
+          'required': ['devices', 'urls']
+        }
+      },
+      'future_on': ['chrome_os', 'chrome.*'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': [
+        {
+          'devices': [{'vendor_id': 1234, 'product_id': 5678}],
+          'urls': ['https://specific-device.example.com']
+        },
+        {
+          'devices': [{'vendor_id': 1234}],
+          'urls': ['https://all-vendor-devices.example.com']
+        }
+      ],
+      'id': 838,
+      'caption': '''Automatically grant permission to sites to connect to USB serial devices.''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy allows you to list sites which are automatically granted permission to access USB serial devices with vendor and product IDs matching the <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> and <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> fields. Omitting the <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field allows the given sites permission to access devices with a vendor ID matching the <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> field and any product ID.
+
+      The URLs must be valid, otherwise the policy is ignored. Only the origin (scheme, host and port) of the URL is considered.
+
+      This policy overrides <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME">DefaultSerialGuardSetting</ph>, <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME">SerialAskForUrls</ph>, <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME">SerialBlockedForUrls</ph> and the user's preferences.
+
+      This policy only affects access to USB devices through the Web Serial API. To grant access to USB devices through the WebUSB API see the <ph name="WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME">WebUsbAllowDevicesForUrls</ph> policy.''',
+    },
+    {
+      'name': 'DefaultFileHandlingGuardSetting',
+      'owners': ['huangdarwin@chromium.org', 'cmp@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'BlockFileHandling',
+          'value': 2,
+          'caption': '''Do not allow any web app to access file types via the File Handling API''',
+        },
+        {
+          'name': 'AskFileHandling',
+          'value': 3,
+          'caption': '''Allow web apps to ask the user to grant access to file types via the File Handling API''',
+        },
+      ],
+      'supported_on': ['chrome_os:91-', 'chrome.*:91-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'default': None,
+      'id': 845,
+      'caption': '''Control use of the File Handling API''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy to <ph name="ASK_FILE_HANDLING">AskFileHandling</ph> lets web apps ask for access to file types via the File Handling API. Setting the policy to <ph name="BLOCK_FILE_HANDLING">BlockFileHandling</ph> denies access to file types.
+
+      Leaving it unset lets web apps ask for access, but users can change this setting.''',
+    },
+    {
+      'name': 'FileHandlingAllowedForUrls',
+      'owners': ['huangdarwin@chromium.org', 'cmp@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:91-', 'chrome.*:91-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 846,
+      'caption': '''Allow the File Handling API on these web apps''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy lets you list the URL patterns that specify which web apps are granted access to file types.
+
+      Leaving the policy unset means <ph name="DEFAULT_FILE_HANDLING_GUARD_SETTING_POLICY_NAME">DefaultFileHandlingGuardSetting</ph> applies for all web apps, if it's set. If not, users' personal settings apply.
+
+      For URL patterns which match neither <ph name="FILE_HANDLING_ALLOWED_FOR_URLS_POLICY_NAME">FileHandlingAllowedForUrls</ph> nor <ph name="FILE_HANDLING_BLOCKED_FOR_URLS_POLICY_NAME">FileHandlingBlockedForUrls</ph>, <ph name="DEFAULT_FILE_HANDLING_GUARD_SETTING_POLICY_NAME">DefaultFileHandlingGuardSetting</ph>, or the users' personal settings, will be used, in that order.
+
+      URL patterns must not conflict with <ph name="FILE_HANDLING_BLOCKED_FOR_URLS_POLICY_NAME">FileHandlingBlockedForUrls</ph>. Neither policy takes precedence if a URL matches with both.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. <ph name="WILDCARD_VALUE">*</ph> is not an accepted value for this policy.''',
+    },
+    {
+      'name': 'FileHandlingBlockedForUrls',
+      'owners': ['huangdarwin@chromium.org', 'cmp@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:91-', 'chrome.*:91-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 847,
+      'caption': '''Block the File Handling API on these web apps''',
+      'tags': [],
+      'desc': '''Setting the policy lets you list the URL patterns that specify which web apps can't ask users to grant them access to file types.
+
+      Leaving the policy unset means <ph name="DEFAULT_FILE_HANDLING_GUARD_SETTING_POLICY_NAME">DefaultFileHandlingGuardSetting</ph> applies for all web apps, if it's set. If not, the user's personal setting applies.
+
+      For URL patterns which match neither <ph name="FILE_HANDLING_ALLOWED_FOR_URLS_POLICY_NAME">FileHandlingAllowedForUrls</ph> nor <ph name="FILE_HANDLING_BLOCKED_FOR_URLS_POLICY_NAME">FileHandlingBlockedForUrls</ph>, <ph name="DEFAULT_FILE_HANDLING_GUARD_SETTING_POLICY_NAME">DefaultFileHandlingGuardSetting</ph>, or the users' personal settings, will be used, in that order.
+
+      URL patterns must not conflict with <ph name="FILE_HANDLING_ALLOWED_FOR_URLS_POLICY_NAME">FileHandlingAllowedForUrls</ph>. Neither policy takes precedence if a URL matches with both.
 
       For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. <ph name="WILDCARD_VALUE">*</ph> is not an accepted value for this policy.''',
     },
@@ -7869,16 +8087,19 @@
       'owners': ['file://components/policy/resources/OWNERS', 'pastarmovj@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:63-', 'chrome_os:63-'],
+      'supported_on': ['chrome.*:63-88', 'chrome_os:63-88'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
       'example_value': True,
       'id': 391,
-      'caption': '''Extend Flash content setting to all content''',
+      'caption': '''Extend Flash content setting to all content (deprecated)''',
       'tags': ['system-security'],
-      'desc': '''Setting the policy to True runs all <ph name="FLASH_PLUGIN_NAME">Flash</ph> content embedded on websites that allow <ph name="FLASH_PLUGIN_NAME">Flash</ph>, including content from other origins or small content.
+      'desc': '''This policy has been removed since <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 89 because <ph name="FLASH_PLUGIN_NAME">Flash</ph> has been deprecated.
+
+      Setting the policy to True runs all <ph name="FLASH_PLUGIN_NAME">Flash</ph> content embedded on websites that allow <ph name="FLASH_PLUGIN_NAME">Flash</ph>, including content from other origins or small content.
 
       Setting the policy to False or leaving it unset might block <ph name="FLASH_PLUGIN_NAME">Flash</ph> content from other origins or small content.
 
@@ -8290,8 +8511,8 @@
         'chrome_os:86-',
         'android:86-',
         'webview_android:86-',
+        'ios:91-',
       ],
-      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -8320,8 +8541,8 @@
         'chrome_os:86-',
         'android:86-',
         'webview_android:86-',
+        'ios:91-',
       ],
-      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -8522,7 +8743,7 @@
     },
     {
       'name': 'DeviceKerberosEncryptionTypes',
-      'owners': ['file://chrome/browser/chromeos/authpolicy/OWNERS', 'fsandrade@chromium.org'],
+      'owners': ['file://chrome/browser/ash/authpolicy/OWNERS', 'fsandrade@chromium.org'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -8569,7 +8790,7 @@
     },
     {
       'name': 'DeviceUserPolicyLoopbackProcessingMode',
-      'owners': ['file://chrome/browser/chromeos/authpolicy/OWNERS', 'tomdobro@chromium.org'],
+      'owners': ['file://chrome/browser/ash/authpolicy/OWNERS', 'tomdobro@chromium.org'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -8612,7 +8833,7 @@
     },
     {
       'name': 'DeviceMachinePasswordChangeRate',
-      'owners': ['file://chrome/browser/chromeos/authpolicy/OWNERS', 'fsandrade@chromium.org'],
+      'owners': ['file://chrome/browser/ash/authpolicy/OWNERS', 'fsandrade@chromium.org'],
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 0, 'maximum': 9999 },
       'supported_on': ['chrome_os:66-'],
@@ -8635,7 +8856,7 @@
     },
     {
       'name': 'DeviceGpoCacheLifetime',
-      'owners': ['file://chrome/browser/chromeos/authpolicy/OWNERS', 'tomdobro@chromium.org'],
+      'owners': ['file://chrome/browser/ash/authpolicy/OWNERS', 'tomdobro@chromium.org'],
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 0, 'maximum': 9999 },
       'supported_on': ['chrome_os:73-'],
@@ -8658,7 +8879,7 @@
     },
     {
       'name': 'DeviceAuthDataCacheLifetime',
-      'owners': ['file://chrome/browser/chromeos/authpolicy/OWNERS', 'fsandrade@chromium.org'],
+      'owners': ['file://chrome/browser/ash/authpolicy/OWNERS', 'fsandrade@chromium.org'],
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 0, 'maximum': 9999 },
       'supported_on': ['chrome_os:73-'],
@@ -9039,6 +9260,68 @@
       This policy affects only users who authenticated using SAML.
 
       The policy value should be specified in seconds.''',
+    },
+    {
+      'name': 'GaiaLockScreenOfflineSigninTimeLimitDays',
+      'owners': ['ayag@chromium.org', 'chromeos-commercial-identity@google.com', 'file://components/policy/resources/OWNERS'],
+      'type': 'int',
+      'schema': {
+        'type': 'integer',
+        'minimum': -1,
+        'maximum': 365
+      },
+      'future_on': ['chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'default': None,
+      'example_value': 32,
+      'id': 833,
+      'caption': '''Limit the time for which a user authenticated via GAIA without SAML can log in offline at the lock screen''',
+      'tags': [],
+      'desc': '''While logging in through the lock screen, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can authenticate against a server (online) or using a cached password (offline).
+
+      When this policy is unset, or set to a value of -1, it will not enforce online authentication on the lock screen and will allow the user to use offline authentication unless a different reason than this policy enforces an online authentication.
+
+      If the policy is set to a value of 0, online authentication will always be required.
+
+      When this policy is set to any other value, it specifies the number of days since the last online authentication after which the user must use online authentication again in the next login through the lock screen.
+
+      This policy affects users who authenticated using GAIA without SAML.
+
+      The policy value should be specified in days.''',
+    },
+    {
+      'name': 'SamlLockScreenOfflineSigninTimeLimitDays',
+      'owners': ['ayag@chromium.org', 'chromeos-commercial-identity@google.com', 'file://components/policy/resources/OWNERS'],
+      'type': 'int',
+      'schema': {
+        'type': 'integer',
+        'minimum': -1,
+        'maximum': 365
+      },
+      'future_on': ['chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'default': None,
+      'example_value': 32,
+      'id': 834,
+      'caption': '''Limit the time for which a user authenticated via SAML can log in offline at the lock screen''',
+      'tags': [],
+      'desc': '''While logging in through the lock screen, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can authenticate against a server (online) or using a cached password (offline).
+
+      When this policy is unset or set to a value of -1, it will not enforce online authentication on the lock screen and will allow the user to use offline authentication unless a different reason than this policy enforces an online authentication.
+
+      If the policy is set to a value of 0, online authentication will always be required.
+
+      When this policy is set to any other value, it specifies the number of days since the last online authentication after which the user must use online authentication again in the next login through the lock screen.
+
+      This policy affects users who authenticated using SAML.
+
+      The policy value should be specified in days.''',
     },
     {
       'name': 'AutoCleanUpStrategy',
@@ -9557,6 +9840,38 @@
 
       If the policy is set to false or left unset, the information will not be reported.
       If set to true, the device's system information will be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'ReportDevicePrintJobs',
+      'owners': ['mattme@google.com', 'file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Report print jobs',
+        },
+        {
+          'value': False,
+          'caption': 'Do not report print jobs',
+        },
+      ],
+      'example_value': False,
+      'default': False,
+      'id': 835,
+      'caption': '''Report print jobs''',
+      'tags': ['admin-sharing'],
+      'desc': '''Report a device's print jobs.
+
+      If the policy is set to false or left unset, the information will not be reported.
+      If set to true, the device's print jobs will be reported.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -10711,7 +11026,7 @@
       'supported_on': ['chrome.*:25-', 'chrome_os:23-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': False,
+        'per_profile': True,
       },
       'example_value': False,
       'id': 160,
@@ -11100,6 +11415,8 @@
             'scanning',
             'web_store',
             'canvas',
+            'google_news',
+            'explore',
           ],
         },
       },
@@ -11134,6 +11451,16 @@
           'value': 'canvas',
           'caption': '''Canvas (supported since version 90)''',
         },
+        {
+          'name': 'google_news',
+          'value': 'google_news',
+          'caption': '''Google News (supported since version 91)''',
+        },
+        {
+          'name': 'explore',
+          'value': 'explore',
+          'caption': '''Explore (supported since version 91)''',
+        },
       ],
       'supported_on': ['chrome_os:84-'],
       'features': {
@@ -11143,7 +11470,7 @@
       },
       'example_value': ['camera', 'browser_settings', 'os_settings', 'scanning', 'web_store', 'canvas'],
       'id': 689,
-      'caption': '''Configure the camera, browser settings, os settings, scanning, web store and canvas features to be disabled''',
+      'caption': '''Configure the camera, browser settings, os settings, scanning, web store, canvas, Google news and explore features to be disabled''',
       'tags': [],
       'desc': '''Allows you to set a list of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> features to be disabled.
 
@@ -14227,6 +14554,41 @@
       If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the default maximum version.
 
       Otherwise it may be set to one of the following values: "tls1.2" or "tls1.3". When set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use SSL/TLS versions greater than the specified version. An unrecognized value will be ignored.''',
+    },
+    {
+      'name': 'CECPQ2Enabled',
+      'owners': ['file://crypto/OWNERS'],
+      'type': 'main',
+      'example_value': True,
+      'default': True,
+      'schema': { 'type': 'boolean' },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable default CECPQ2 rollout process',
+        },
+        {
+          'value': False,
+          'caption': 'Disable CECPQ2',
+        },
+      ],
+      'supported_on': [
+        'chrome.*:91-',
+        'chrome_os:91-',
+        'android:91-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 841,
+      'caption': '''CECPQ2 post-quantum key-agreement enabled for TLS''',
+      'tags': ['system-security'],
+      'desc': '''If this policy is not configured, or is set to enabled, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will follow the default rollout process for CECPQ2, a post-quantum key-agreement algorithm in TLS.
+
+      CECPQ2 results in larger TLS messages which, in very rare cases, can trigger bugs in some networking hardware. This policy can be set to False to disable CECPQ2 while networking issues are resolved.
+
+      This policy is a temporary measure and will be removed in future versions of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
     },
     {
       'name': 'CertificateTransparencyEnforcementDisabledForUrls',
@@ -17598,6 +17960,39 @@
       Note: Site isolation support for Android will improve, but currently it may cause performance problems. This policy applies only to Chrome on Android running on devices with strictly more than 1 GB of RAM. To apply the policy on non-Android platforms, use <ph name="SITE_PER_PROCESS_POLICY_NAME">SitePerProcess</ph>.''',
     },
     {
+      'name': 'SharedArrayBufferUnrestrictedAccessAllowed',
+      'owners': ['bbudge@chromium.org', 'vahl@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:91-', 'chrome_os:91-'],
+      'device_only': False,
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow sites to use SharedArrayBuffers',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent sites from using SharedArrayBuffers',
+        },
+      ],
+      'example_value': True,
+      'default': False,
+      'id': 852,
+      'caption': '''Specifies whether SharedArrayBuffers can be used in a non cross-origin-isolated context''',
+      'tags': ['system-security'],
+      'desc': '''
+      Specifies whether SharedArrayBuffers can be used in a non cross-origin-
+      isolated context. Chrome will require cross-origin isolation when using
+      SharedArrayBuffers from Chrome 91 onward (2021-05-25) for Web Compatibility
+      reasons. Additional details can be found on:
+      https://developer.chrome.com/blog/enabling-shared-array-buffer/.''',
+    },
+    {
       'name': 'WebDriverOverridesIncompatiblePolicies',
       'owners': ['file://components/policy/resources/OWNERS', 'pastarmovj@chromium.org'],
       'type': 'main',
@@ -19332,7 +19727,7 @@
         'per_profile': True,
       },
       'supported_on': ['chrome_os:70-'],
-      'caption': '''Contorls Network File Shares for ChromeOS availability''',
+      'caption': '''Controls Network File Shares for ChromeOS availability''',
       'example_value': True,
       'desc': '''Setting the policy to Enabled lets users use Network File Shares for <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph>. Setting the policy to Disabled means users can't use this feature.''',
     },
@@ -19452,7 +19847,7 @@
       'tags': [],
       'desc': '''Setting the policy defines the return value of Managed Configuration API for given origin.
 
-      Managed configuration API is a key-value configuration that can be accessed via navigator.device.getManagedConfiguration() javascript call. This API is only available to origins which correspond to force-installed web applications via <ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME">WebAppInstallForceList</ph>.
+      Managed configuration API is a key-value configuration that can be accessed via navigator.managed.getManagedConfiguration() javascript call. This API is only available to origins which correspond to force-installed web applications via <ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME">WebAppInstallForceList</ph>.
      '''
     },
     {
@@ -19692,7 +20087,7 @@
       When this policy is left unset or set to disabled, extension installation requests are not created or uploaded.
       When this policy is set to enabled, extension installation requests are created and uploaded to Google Admin console.
 
-      Extension installation requests are created when users try to install an extension that is not allowed by <ph name="EXTENSION_INSTALL_ALLOWLIST">ExtesionInstallAllowlist</ph> or <ph name="EXTENSION_SETTINGS">ExtensionSettings</ph>.
+      Extension installation requests are created when users try to install an extension that is not allowed by <ph name="EXTENSION_INSTALL_ALLOWLIST">ExtensionInstallAllowlist</ph> or <ph name="EXTENSION_SETTINGS">ExtensionSettings</ph>.
 
       This policy is only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph> for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
       This policy is always effective for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.'''
@@ -20956,7 +21351,7 @@
       This policy also enables notifications that warn SAML users if their SAML passwords are soon to expire so that they can deal with this immediately by doing an in-session password change.
       But, these notifications will only be shown if password expiry information is sent to the device by the SAML identity provider during the SAML login flow.
 
-      Setting this policy to Disabled or not set, SAML password can't be changed at chrome://password-change and there won't be any notification when SAML passwods are soon to expire.''',
+      Setting this policy to Disabled or not set, SAML password can't be changed at chrome://password-change and there won't be any notification when SAML passwords are soon to expire.''',
     },
     {
       'name': 'LockScreenReauthenticationEnabled',
@@ -21283,9 +21678,9 @@
       'tags': ['website-sharing'],
       'desc': '''Controls whether the Kerberos functionality is enabled. Kerberos is an authentication protocol that can be used to authenticate to web apps and file shares.
 
-          If this policy is enabled, Kerberos functionality is enabled. Kerberos accounts can be added either through the 'Configure Kerberos accounts' policy or through the Kerberos Accounts settings in the People settings page.
+          If this policy is enabled, Kerberos functionality is enabled. Kerberos accounts can be added either through the 'Configure Kerberos accounts' policy or through the Kerberos Accounts settings in the Kerberos settings page.
 
-          If this policy disabled or not set, the Kerberos Accounts settings are disabled. No Kerberos accounts can be added and Kerberos authentication cannot be used. All existing Kerberos accounts are deleted, all stored passwords are deleted.''',
+          If this policy is disabled or not set, the Kerberos Accounts settings are disabled. No Kerberos accounts can be added and Kerberos authentication cannot be used. All existing Kerberos accounts are deleted, all stored passwords are deleted.''',
     },
     {
       'name': 'KerberosRememberPasswordEnabled',
@@ -21325,7 +21720,7 @@
       'tags': ['website-sharing'],
       'desc': '''Controls whether users may add Kerberos accounts.
 
-          If this policy is enabled or not set, users may add Kerberos accounts via the Kerberos Accounts settings in the People settings page. Users have full control over accounts they added and may modify or remove them.
+          If this policy is enabled or not set, users may add Kerberos accounts via the Kerberos Accounts settings in the Kerberos settings page. Users have full control over accounts they added and may modify or remove them.
 
           If this policy is disabled, users may not add Kerberos accounts. Accounts can only be added via the 'Configure Kerberos accounts' policy. This is an effective way to lock down accounts.''',
     },
@@ -22526,7 +22921,7 @@
     },
     {
       'name': 'DeviceWebBasedAttestationAllowedUrls',
-      'owners': ['miersh@google.com', 'pmarko@chromium.org', 'file://chrome/browser/chromeos/login/OWNERS'],
+      'owners': ['miersh@google.com', 'pmarko@chromium.org', 'file://chrome/browser/ash/login/OWNERS'],
       'device_only': True,
       'type': 'list',
       'schema': {
@@ -22554,7 +22949,7 @@
     },
     {
       'name': 'DeviceShowNumericKeyboardForPassword',
-      'owners': ['raleksandrov@google.com', 'file://chrome/browser/chromeos/login/OWNERS'],
+      'owners': ['raleksandrov@google.com', 'file://chrome/browser/ash/login/OWNERS'],
       'type' : 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:80-'],
@@ -22699,7 +23094,7 @@
     },
     {
       'name': 'WebComponentsV0Enabled',
-      'owners': ['masonfreed@chromium.org', 'chrishtr@chromium.org'],
+      'owners': ['masonf@chromium.org', 'chrishtr@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'example_value': True,
@@ -22722,7 +23117,7 @@
     },
     {
       'name': 'UseLegacyFormControls',
-      'owners': ['masonfreed@chromium.org', 'chrishtr@chromium.org', 'hwi@chromium.org', 'nsull@google.com'],
+      'owners': ['masonf@chromium.org', 'chrishtr@chromium.org', 'hwi@chromium.org', 'nsull@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'example_value': True,
@@ -23836,7 +24231,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
 
        If the policy is enabled and set to one or more domains, no lookalike warnings pages will be shown when the user visits pages on that domain.
 
-       If the policy is disabled, not set, or set to an empty list, warnings may appear on any site the user visits.
+       If the policy is not set, or set to an empty list, warnings may appear on any site the user visits.
 
        A hostname can be allowed with a complete host match, or any domain match. For example, a URL like "https://foo.example.com/bar" may have warnings suppressed if this list includes either "foo.example.com" or "example.com".'''
 
@@ -24162,7 +24557,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'supported_on': ['chrome.*:87-', 'chrome_os:87-'],
       'features': {
         'dynamic_refresh': False,
-        'per_profile': False,
+        'per_profile': True,
       },
       'items': [
         {
@@ -24348,6 +24743,42 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       If this policy is set to Disabled or unset, the user cannot use <ph name="LACROS_NAME">Lacros</ph>.
 
       If this policy is set to Enabled, the user can use the <ph name="LACROS_NAME">Lacros</ph> browser.''',
+    },
+    {
+      'name': 'LacrosSecondaryProfilesAllowed',
+      'owners': ['asumaneev@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      # TODO(crbug.com/1179280): remove chrome.linux support once
+      # https://crbug.com/1169547 is finished.
+      'supported_on': ['chrome.linux:91-', 'chrome_os:91-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow users to create secondary profiles and use guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent users from creating secondary profiles and from using guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'default_for_enterprise_users': False,
+      'id': 832,
+      'caption': '''Allow users to create secondary profiles and use guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser''',
+      'tags': [],
+      'desc': '''This setting allows users to create secondary profiles and use guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser.
+
+      Similar to both BrowserAddPersonEnabled and BrowserGuestModeEnabled, if this policy is set to false or unset, the user cannot create secondary profiles and use guest mode.
+
+      If this policy is set to true, the user can create secondary profiles and use guest mode.
+
+      Note, that if this policy is set to true but BrowserAddPersonEnabled is set to false, the user cannot create secondary profiles. The same for BrowserGuestModeEnabled and guest mode.''',
     },
     {
       'name': 'IntegratedWebAuthenticationAllowed',
@@ -24595,6 +25026,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
           'properties': {
             'service_provider': { 'type': 'string' },
             'enterprise_id': { 'type': 'string' },
+            'domain': { 'type': 'string' },
             'enable': {
               'type': 'array',
               'items': {
@@ -24633,6 +25065,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'example_value': [{
         'service_provider': 'Google',
         'enterprise_id': '1234567890',
+        'domain': 'example.com',
         'enable': [
           {
             'url_list': ['*'],
@@ -24665,7 +25098,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
 
       The <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD">service_provider</ph> field identifies which analysis service provider the settings correspond to.
 
-      The <ph name="ENTERPRISE_CONNECTOR_ENTERPRISE_ID_FIELD">enterprise_id</ph> field identifies the enterprise with the service provider.  When the user is asked to sign in as part of setting up the <ph name="FILE_SYSTEM_ENTERPRISE_CONNECTOR">File System Enterprise Connector</ph>, only user accounts associated with this enterprise are permitted.
+      The <ph name="ENTERPRISE_CONNECTOR_ENTERPRISE_ID_FIELD">enterprise_id</ph> field is a unique ID for a partner service provider that identifies the customer's account with the service provider. When the user is asked to sign in as part of setting up the <ph name="FILE_SYSTEM_ENTERPRISE_CONNECTOR">File System Enterprise Connector</ph>, only user accounts associated with this customer's service provider account are permitted.
 
       This policy can only be set from the <ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME">Google Admin console</ph>.'''
     },
@@ -24732,7 +25165,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
           },
         },
       },
-      'future_on': ['chrome.*'],
+      'supported_on': ['chrome.*:91-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -24767,7 +25200,8 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 0, 'maximum': 5 },
       'default': 0,
-      'supported_on': ['chrome.*:90-', 'chrome_os:91-'],
+      'supported_on': ['chrome.*:90-'],
+      'future_on': ['chrome_os'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -24788,11 +25222,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['carlosil@chromium.org', 'meacer@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': [
-        'chrome.*',
-        'chrome_os',
-        'android'
-      ],
+      'supported_on': ['chrome.*:91-', 'chrome_os:91-', 'android:91-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -24815,7 +25245,67 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'desc': '''As described in https://www.chromestatus.com/feature/5148698084376576 , JavaScript modal dialogs, triggered by <ph name="JS_ALERT">$6<ex>window.alert</ex></ph>, <ph name="JS_CONFIRM">$6<ex>window.confirm</ex></ph>, and <ph name="JS_PROMPT">$6<ex>window.prompt</ex></ph>, will be blocked in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> if triggered from a subframe whose origin is different from the main frame origin.
        This policy allows overriding that change.
        If the policy is set to enabled or unset, JavaScript dialogs triggered from a different origin subframe will be blocked.
-       If the policy is set to disabled, JavaScript dialogs triggered from a different origin subframe will not be blocked.''',
+       If the policy is set to disabled, JavaScript dialogs triggered from a different origin subframe will not be blocked.
+
+       This policy will be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 95.''',
+    },
+    {
+      'name': 'DeviceBorealisAllowed',
+      'owners': ['hollingum@google.com', 'dca@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:91-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Do not prevent <ph name="BOREALIS_NAME">Borealis</ph> from running on a device',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent <ph name="BOREALIS_NAME">Borealis</ph> from running on a device',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 830,
+      'caption': '''Allow devices to use <ph name="BOREALIS_NAME">Borealis</ph> on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>''',
+      'tags': [],
+      'desc': '''Controls the availability of <ph name="BOREALIS_NAME">Borealis</ph> for this device.
+
+      If the policy is set to false, <ph name="BOREALIS_NAME">Borealis</ph> will be unavailable for all users of the device. Otherwise (when the policy is unset, or true) <ph name="BOREALIS_NAME">Borealis</ph> will be available if and only if no other policy or setting disables it.''',
+    },
+    {
+      'name': 'UserBorealisAllowed',
+      'owners': ['hollingum@google.com	', 'dca@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:91-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Do not prevent <ph name="BOREALIS_NAME">Borealis</ph> from running for a user',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent <ph name="BOREALIS_NAME">Borealis</ph> from running for a user',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 831,
+      'caption': '''Allow users to use <ph name="BOREALIS_NAME">Borealis</ph> on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>''',
+      'tags': [],
+      'desc': '''Controls the availability of <ph name="BOREALIS_NAME">Borealis</ph> for this user.
+
+      If the policy is set to false, <ph name="BOREALIS_NAME">Borealis</ph> will be unavailable. Otherwise (when the policy is unset, or true) <ph name="BOREALIS_NAME">Borealis</ph> will be available if and only if no other policy or setting disables it.''',
     },
     {
       'name': 'AudioProcessHighPriorityEnabled',
@@ -24853,6 +25343,196 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       This policy is intended as a temporary measure to give enterprises the ability to
       run audio with higher priority to address certain performance issues with audio capture.
       This policy will be removed in the future.''',
+    },
+    {
+      'name': 'ForcedLanguages',
+      'owners': ['igorruvinov@chromium.org', 'pastarmovj@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:91-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': [ 'en-US' ],
+      'id': 839,
+      'default': None,
+      'caption': '''Configure the content and order of preferred languages''',
+      'tags': [],
+      'desc': '''This policy allows admins to configure the order of the preferred languages in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s settings.
+
+      The order of the list will appear in the same order under the "Order languages based on your preference" section in chrome://settings/languages. Users won't be able to remove or reorder languages set by the policy, but will be able to add languages underneath those set by the policy. Users will also have full control over the browser's UI language and translation/spell check settings, unless enforced by other policies.
+
+      Leaving the policy unset lets users manipulate the entire list of preferred languages.''',
+    },
+    {
+      'name': 'BrowserThemeColor',
+      'owners': ['igorruvinov@google.com', 'ydago@google.com', 'pastarmovj@google.com'],
+      'type': 'string',
+      'schema': {
+        'type': 'string',
+        'description': '''Hex color which will be used to generate and apply a theme to the browser.''',
+      },
+      'supported_on': ['chrome.*:91-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'default': None,
+      'example_value': '#FFFFFF',
+      'id': 840,
+      'caption': '''Configure the color of the browser's theme''',
+      'tags': [],
+      'desc': '''This policy allows admins to configure the color of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s theme. The input string should be a valid hex color string matching the format "#RRGGBB".
+
+      Setting the policy to a valid hex color causes a theme based on that color to be automatically generated and applied to the browser. Users won't be able to change the theme set by the policy.
+
+      Leaving the policy unset lets users change their browser's theme as preferred.''',
+    },
+    {
+      'name': 'WebRtcIPHandling',
+      'owners': ['file://third_party/blink/renderer/modules/peerconnection/OWNERS', 'toprice@chromium.org'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [ 'default', 'default_public_and_private_interfaces', 'default_public_interface_only', 'disable_non_proxied_udp' ],
+      },
+      'items': [
+        {
+          'name': 'default',
+          'value': 'default',
+          'caption': '''WebRTC will use all available interfaces when searching for the best path.''',
+        },
+        {
+          'name': 'default_public_and_private_interfaces',
+          'value': 'default_public_and_private_interfaces',
+          'caption': '''WebRTC will only use the interface connecting to the public Internet, but may connect using private IP addresses.''',
+        },
+        {
+          'name': 'default_public_interface_only',
+          'value': 'default_public_interface_only',
+          'caption': '''WebRTC will only use the interface connecting to the public Internet, and will not connect using private IP addresses.''',
+        },
+        {
+          'name': 'disable_non_proxied_udp',
+          'value': 'disable_non_proxied_udp',
+          'caption': '''WebRTC will use TCP on the public-facing interface, and will only use UDP if supported by a configured proxy.''',
+        },
+      ],
+      'supported_on': ['chrome.*:91-', 'chrome_os:91-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'default': 'default',
+      'example_value': 'default',
+      'id': 843,
+      'caption': '''The IP handling policy of WebRTC''',
+      'tags': [],
+      'desc': '''This policy allows restricting which IP addresses and interfaces WebRTC uses when attempting to find the best available connection. See RFC 8828 section 5.2 (https://tools.ietf.org/html/rfc8828.html#section-5.2). When unset, defaults to using all available interfaces.''',
+    },
+    {
+      'name': 'PdfAnnotationsEnabled',
+      'owners': ['thestig@chromium.org', 'file://pdf/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:91-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'The PDF viewer can annotate PDFs',
+        },
+        {
+          'value': False,
+          'caption': 'The PDF viewer cannot annotate PDFs',
+        },
+      ],
+      'default': True,
+      'example_value': False,
+      'id': 844,
+      'caption': '''Enable PDF Annotations''',
+      'tags': [],
+      'desc': '''Controls if the PDF viewer in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can annotate PDFs.
+
+      When this policy is not set, or is set to true, then the PDF viewer will be able to annotate PDFs.
+
+      When this policy is set to false, then the PDF viewer will not be able to annotate PDFs.'''
+    },
+    {
+      'name': 'DeviceAllowedBluetoothServices',
+      'owners': ['howardchung@google.com', 'alainm@chromium.org', 'mcchou@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'pattern': '^((0x)?[0-9A-Fa-f]{4})|((0x)?[0-9A-Fa-f]{8})|([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})$',
+        },
+      },
+      'supported_on': ['chrome_os:91-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': ['0x111E', '0x110B', '0x1203', '0x1108', '0x110C', '0x110E', '0x110F', '0x1200'],
+      'id': 848,
+      'caption': '''Only allow connection to the Bluetooth services in the list''',
+      'tags': [],
+      'desc': '''This policy allows admins to configure Bluetooth services that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> is allowed to connect to.
+
+When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> only allows users to connect to the specified Bluetooth services with an exception when the list is empty which means any service is allowed to use. UUIDs reserved by the Bluetooth SIG can be represented as <ph name="BLUETOOTH_RESERVED_UUID_WITH_0X">'0xABCD'</ph> or <ph name="BLUETOOTH_RESERVED_UUID_WITHOUT_0X">'ABCD'</ph>. Custom UUIDs can be represented as <ph name="BLUETOOTH_CUSTOM_UUID">'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'</ph>. UUIDs are case insensitive. Leaving this policy unset lets users connect to any Bluetooth service.'''
+    },
+    {
+      'name': 'ExplicitlyAllowedNetworkPorts',
+      'owners': ['ricea@chromium.org', 'yhirano@chromium.org'],
+      'type': 'string-enum-list',  # this would be 'int-enum-list' if it was supported.
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'enum': [
+            '10080',
+          ],
+        },
+      },
+      'items': [
+        {
+          'name': '10080',
+          'value': '10080',
+          'caption': '''port 10080 (expires 2022/04/01)''',
+          'supported_on': [
+            'chrome.*:91-99',
+            'android:91-99',
+            'chrome_os:91-99',
+            'webview_android:91-99'
+          ],
+        }
+      ],
+      'supported_on': ['chrome.*:91-', 'android:91-', 'chrome_os:91-', 'webview_android:91-'],
+      'features': {
+        'per_profile': False,
+        'dynamic_refresh': True,
+      },
+      'example_value': ['10080'],
+      'id': 849,
+      'caption': '''Explicitly allowed network ports''',
+      'tags': ['system-security', 'website-sharing', 'local-data-access'],
+      'desc': '''Setting the policy permits bypassing the list of restricted ports built into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The value is a comma-separated list of zero or more ports that outgoing connections will be permitted on.
+
+      Ports are restricted to prevent <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> being used as a vector to exploit various network vulnerabilities. Setting this policy may expose your network to attacks. This policy is intended as a temporary workaround for errors with code "ERR_UNSAFE_PORT" while migrating a service running on a blocked port to a standard port (ie. port 80 or 443).
+
+      Malicious websites can easily detect that this policy is set, and for what ports, and use that information to target attacks.
+
+      Leaving the value empty or unset means that all restricted ports will be blocked. If there is a mixture of valid and invalid values, the valid ones will be applied.
+
+      This policy overrides the "--explicitly-allowed-ports" command-line option.''',
     },
   ],
   'messages': {
@@ -25232,6 +25912,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceFanInfo': 'device_reporting.report_fan_info',
     'ReportDeviceVpdInfo': 'device_reporting.report_vpd_info',
     'ReportDeviceSystemInfo': 'device_reporting.report_system_info',
+    'ReportDevicePrintJobs': 'device_reporting.report_print_jobs',
     'ReportUploadFrequency': 'device_reporting.device_status_frequency',
     'DeviceLoginScreenPowerManagement': 'login_screen_power_management.login_screen_power_management',
     'DeviceChromeVariations': 'device_chrome_variations_type.value',
@@ -25293,6 +25974,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceArcDataSnapshotHours': 'arc_data_snapshot_hours.arc_data_snapshot_hours',
     'DeviceSystemWideTracingEnabled': 'device_system_wide_tracing_enabled.enabled',
     'DevicePciPeripheralDataAccessEnabled': 'device_pci_peripheral_data_access_enabled.enabled',
+    'DeviceBorealisAllowed': 'device_borealis_allowed.allowed',
+    'DeviceAllowedBluetoothServices': 'device_allowed_bluetooth_services.allowlist',
   },
   'policy_atomic_group_definitions': [
     {
@@ -25689,6 +26372,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceFanInfo',
         'ReportDeviceVpdInfo',
         'ReportDeviceSystemInfo',
+        'ReportDevicePrintJobs',
         'ReportUploadFrequency',
         'ReportArcStatusEnabled',
         'HeartbeatEnabled',
@@ -25778,8 +26462,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 830, 831, 832, 833, 834, 835],
+  'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 850, 851],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 836,
+  'highest_id_currently_used': 852,
   'highest_atomic_group_id_currently_used': 40
 }

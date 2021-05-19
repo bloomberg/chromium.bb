@@ -1,0 +1,86 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("../../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../../scripts/build/ninja/devtools_module.gni")
+
+devtools_module("network") {
+  sources = [
+    "BinaryResourceView.ts",
+    "BlockedURLsPane.ts",
+    "EventSourceMessagesView.ts",
+    "HARWriter.ts",
+    "NetworkConfigView.ts",
+    "NetworkDataGridNode.ts",
+    "NetworkFrameGrouper.ts",
+    "NetworkItemView.ts",
+    "NetworkLogView.ts",
+    "NetworkLogViewColumns.ts",
+    "NetworkManageCustomHeadersView.ts",
+    "NetworkOverview.ts",
+    "NetworkPanel.ts",
+    "NetworkSearchScope.ts",
+    "NetworkTimeCalculator.ts",
+    "NetworkWaterfallColumn.ts",
+    "RequestCookiesView.ts",
+    "RequestHTMLView.ts",
+    "RequestHeadersView.ts",
+    "RequestInitiatorView.ts",
+    "RequestPreviewView.ts",
+    "RequestResponseView.ts",
+    "RequestTimingView.ts",
+    "RequestTrustTokensView.ts",
+    "ResourceWebSocketFrameView.ts",
+    "SignedExchangeInfoView.ts",
+  ]
+
+  deps = [
+    "../../browser_sdk:bundle",
+    "../../components:bundle",
+    "../../cookie_table:bundle",
+    "../../core/common:bundle",
+    "../../core/host:bundle",
+    "../../core/i18n:bundle",
+    "../../core/platform:bundle",
+    "../../core/root:bundle",
+    "../../core/sdk:bundle",
+    "../../data_grid:bundle",
+    "../../har_importer:bundle",
+    "../../models/bindings:bundle",
+    "../../models/text_utils:bundle",
+    "../../object_ui:bundle",
+    "../../panels/elements:bundle",
+    "../../panels/mobile_throttling:bundle",
+    "../../perf_ui:bundle",
+    "../../search:bundle",
+    "../../source_frame:bundle",
+    "../../theme_support:bundle",
+    "../../third_party/chromium/client-variations:bundle",
+    "../../ui/components:bundle",
+    "../../ui/legacy:bundle",
+    "../../workspace:bundle",
+  ]
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "network.ts"
+
+  deps = [ ":network" ]
+}
+
+devtools_entrypoint("legacy") {
+  entrypoint = "network-legacy.ts"
+
+  deps = [ ":bundle" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "network-meta.ts"
+
+  deps = [
+    ":bundle",
+    "../../core/root:bundle",
+    "../../ui/legacy:bundle",
+  ]
+}

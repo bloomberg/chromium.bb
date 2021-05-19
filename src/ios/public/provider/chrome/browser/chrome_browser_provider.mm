@@ -66,11 +66,6 @@ ChromeBrowserProvider::GetChromeTrustedVaultService() {
   return nullptr;
 }
 
-GeolocationUpdaterProvider*
-ChromeBrowserProvider::GetGeolocationUpdaterProvider() {
-  return nullptr;
-}
-
 std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
 }
@@ -80,12 +75,6 @@ void ChromeBrowserProvider::AddSerializableData(
     web::WebState* web_state) {}
 
 bool ChromeBrowserProvider::MightBlockUrlDuringRestore() {
-  return false;
-}
-
-bool ChromeBrowserProvider::ShouldBlockUrlDuringRestore(
-    const GURL& url,
-    web::WebState* web_state) {
   return false;
 }
 

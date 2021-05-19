@@ -1079,7 +1079,7 @@ void DispatchGetPrivateDataEXT(
     layer_data->device_dispatch_table.GetPrivateDataEXT(device, objectType, objectHandle, privateDataSlot, pData);
 }
 
-std::unordered_map<VkCommandBuffer, VkCommandPool> secondary_cb_map{};
+layer_data::unordered_map<VkCommandBuffer, VkCommandPool> secondary_cb_map{};
 
 ReadWriteLock dispatch_secondary_cb_map_mutex;
 
@@ -1107,7 +1107,7 @@ VkResult DispatchAllocateCommandBuffers(VkDevice device, const VkCommandBufferAl
     if ((result == VK_SUCCESS) && pAllocateInfo && (pAllocateInfo->level == VK_COMMAND_BUFFER_LEVEL_SECONDARY)) {
         auto lock = dispatch_cb_write_lock();
         for (uint32_t cb_index = 0; cb_index < pAllocateInfo->commandBufferCount; cb_index++) {
-            secondary_cb_map.insert({ pCommandBuffers[cb_index], pAllocateInfo->commandPool });
+            secondary_cb_map.emplace(pCommandBuffers[cb_index], pAllocateInfo->commandPool);
         }
     }
     return result;

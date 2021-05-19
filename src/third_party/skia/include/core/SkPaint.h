@@ -192,26 +192,16 @@ public:
     */
     void setDither(bool dither) { fBitfields.fDither = static_cast<unsigned>(dither); }
 
-    /** Returns SkFilterQuality, the image filtering level. A lower setting
-        draws faster; a higher setting looks better when the image is scaled.
-    */
+#ifdef SK_SUPPORT_LEGACY_SETFILTERQUALITY
+    // DEPRECATED -- this field is unused.
     SkFilterQuality getFilterQuality() const {
         return (SkFilterQuality)fBitfields.fFilterQuality;
     }
 
-#ifndef SK_SUPPORT_LEGACY_SETFILTERQUALITY
-private:
-#endif
-    /** Sets SkFilterQuality, the image filtering level. A lower setting
-        draws faster; a higher setting looks better when the image is scaled.
-        Does not check to see if quality is valid.
-
-        example: https://fiddle.skia.org/c/@Color_Methods
-        example: https://fiddle.skia.org/c/@Paint_setFilterQuality
-    */
-    void setFilterQuality(SkFilterQuality quality);
-#ifndef SK_SUPPORT_LEGACY_SETFILTERQUALITY
-public:
+    // DEPRECATED -- this field is unused.
+    void setFilterQuality(SkFilterQuality fq) {
+        fBitfields.fFilterQuality = fq;
+    }
 #endif
 
     /** \enum SkPaint::Style

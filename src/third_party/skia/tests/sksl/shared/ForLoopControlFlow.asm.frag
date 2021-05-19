@@ -1,13 +1,13 @@
 OpCapability Shader
 %1 = OpExtInstImport "GLSL.std.450"
 OpMemoryModel Logical GLSL450
-OpEntryPoint Fragment %_entrypoint "_entrypoint" %sk_FragColor %sk_Clockwise
-OpExecutionMode %_entrypoint OriginUpperLeft
+OpEntryPoint Fragment %_entrypoint_v "_entrypoint" %sk_FragColor %sk_Clockwise
+OpExecutionMode %_entrypoint_v OriginUpperLeft
 OpName %sk_FragColor "sk_FragColor"
 OpName %sk_Clockwise "sk_Clockwise"
 OpName %_UniformBuffer "_UniformBuffer"
 OpMemberName %_UniformBuffer 0 "colorWhite"
-OpName %_entrypoint "_entrypoint"
+OpName %_entrypoint_v "_entrypoint_v"
 OpName %main "main"
 OpName %x "x"
 OpName %r "r"
@@ -15,22 +15,26 @@ OpName %b "b"
 OpDecorate %sk_FragColor RelaxedPrecision
 OpDecorate %sk_FragColor Location 0
 OpDecorate %sk_FragColor Index 0
-OpDecorate %sk_Clockwise RelaxedPrecision
 OpDecorate %sk_Clockwise BuiltIn FrontFacing
 OpMemberDecorate %_UniformBuffer 0 Offset 0
 OpMemberDecorate %_UniformBuffer 0 RelaxedPrecision
 OpDecorate %_UniformBuffer Block
 OpDecorate %10 Binding 0
 OpDecorate %10 DescriptorSet 0
+OpDecorate %x RelaxedPrecision
 OpDecorate %26 RelaxedPrecision
+OpDecorate %r RelaxedPrecision
 OpDecorate %35 RelaxedPrecision
 OpDecorate %39 RelaxedPrecision
 OpDecorate %43 RelaxedPrecision
+OpDecorate %44 RelaxedPrecision
 OpDecorate %48 RelaxedPrecision
 OpDecorate %49 RelaxedPrecision
+OpDecorate %b RelaxedPrecision
 OpDecorate %56 RelaxedPrecision
 OpDecorate %58 RelaxedPrecision
 OpDecorate %61 RelaxedPrecision
+OpDecorate %62 RelaxedPrecision
 OpDecorate %68 RelaxedPrecision
 OpDecorate %69 RelaxedPrecision
 OpDecorate %70 RelaxedPrecision
@@ -58,7 +62,7 @@ OpDecorate %70 RelaxedPrecision
 %float_1 = OpConstant %float 1
 %int_2 = OpConstant %int 2
 %int_1 = OpConstant %int 1
-%_entrypoint = OpFunction %void None %15
+%_entrypoint_v = OpFunction %void None %15
 %16 = OpLabel
 %17 = OpFunctionCall %v4float %main
 OpStore %sk_FragColor %17

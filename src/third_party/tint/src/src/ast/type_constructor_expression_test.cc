@@ -12,16 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/ast/type_constructor_expression.h"
-
-#include <memory>
-#include <sstream>
-
-#include "src/ast/constructor_expression.h"
-#include "src/ast/identifier_expression.h"
+#include "gtest/gtest-spi.h"
 #include "src/ast/test_helper.h"
-#include "src/type/f32_type.h"
-#include "src/type/vector_type.h"
 
 namespace tint {
 namespace ast {
@@ -58,44 +50,23 @@ TEST_F(TypeConstructorExpressionTest, IsTypeConstructor) {
   EXPECT_TRUE(t->Is<TypeConstructorExpression>());
 }
 
-TEST_F(TypeConstructorExpressionTest, IsValid) {
-  ExpressionList expr;
-  expr.push_back(Expr("expr"));
-
-  auto* t = create<TypeConstructorExpression>(ty.f32(), expr);
-  EXPECT_TRUE(t->IsValid());
+TEST_F(TypeConstructorExpressionTest, Assert_NullType) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.create<TypeConstructorExpression>(nullptr, ExpressionList{b.Expr(1)});
+      },
+      "internal compiler error");
 }
 
-TEST_F(TypeConstructorExpressionTest, IsValid_EmptyValue) {
-  ExpressionList expr;
-
-  auto* t = create<TypeConstructorExpression>(ty.f32(), expr);
-  EXPECT_TRUE(t->IsValid());
-}
-
-TEST_F(TypeConstructorExpressionTest, IsValid_NullType) {
-  ExpressionList expr;
-  expr.push_back(Expr("expr"));
-
-  auto* t = create<TypeConstructorExpression>(nullptr, expr);
-  EXPECT_FALSE(t->IsValid());
-}
-
-TEST_F(TypeConstructorExpressionTest, IsValid_NullValue) {
-  ExpressionList expr;
-  expr.push_back(Expr("expr"));
-  expr.push_back(nullptr);
-
-  auto* t = create<TypeConstructorExpression>(ty.f32(), expr);
-  EXPECT_FALSE(t->IsValid());
-}
-
-TEST_F(TypeConstructorExpressionTest, IsValid_InvalidValue) {
-  ExpressionList expr;
-  expr.push_back(Expr(""));
-
-  auto* t = create<TypeConstructorExpression>(ty.f32(), expr);
-  EXPECT_FALSE(t->IsValid());
+TEST_F(TypeConstructorExpressionTest, Assert_NullValue) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.create<TypeConstructorExpression>(b.ty.i32(),
+                                            ExpressionList{nullptr});
+      },
+      "internal compiler error");
 }
 
 TEST_F(TypeConstructorExpressionTest, ToStr) {

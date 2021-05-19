@@ -183,18 +183,21 @@ has_fcntl_h = cc.has_header('fcntl.h')
 has_sys_mman_h = cc.has_header('sys/mman.h')
 
 mmap_option = get_option('mmap')
-if mmap_option.auto()
-  use_mmap = has_unistd_h and has_fcntl_h and has_sys_mman_h
-else
-  use_mmap = mmap_option.enabled()
-endif
-if use_mmap
-  # This version of ftsystem.c uses mmap() to read input font files.
-  ft2_sources += files(['builds/unix/ftsystem.c',])
+
+if mmap_option.disabled()
+  ft2_sources += files(['src/base/ftsystem.c',])
 elif host_machine.system() == 'windows'
   ft2_sources += files(['builds/windows/ftsystem.c',])
 else
-  ft2_sources += files(['src/base/ftsystem.c',])
+  if has_unistd_h and has_fcntl_h and has_sys_mman_h
+    # This version of ftsystem.c uses mmap() to read input font files.
+    ft2_sources += files(['builds/unix/ftsystem.c',])
+  elif mmap_option.enabled()
+    error('mmap was enabled via options but is not available,'
+          + ' required headers were not found!')
+  else
+    ft2_sources += files(['src/base/ftsystem.c',])
+  endif
 endif
 
 
@@ -229,8 +232,10 @@ ftoption_command = process_header_command
 
 
 # GZip support
-zlib_dep = dependency('zlib', required: get_option('zlib'),
-  fallback: ['zlib', 'zlib_dep'])
+zlib_dep = dependency('zlib',
+  required: get_option('zlib'),
+  fallback: 'zlib')
+
 if zlib_dep.found()
   ftoption_command += [
     '--enable=FT_CONFIG_OPTION_USE_ZLIB',
@@ -243,7 +248,9 @@ else
 endif
 
 # BZip2 support
-bzip2_dep = cc.find_library('bz2', required: get_option('bzip2'))
+bzip2_dep = cc.find_library('bz2',
+  required: get_option('bzip2'))
+
 if bzip2_dep.found()
   ftoption_command += ['--enable=FT_CONFIG_OPTION_USE_BZIP2']
   ft2_sources += files(['src/bzip2/ftbzip2.c',])
@@ -251,7 +258,10 @@ if bzip2_dep.found()
 endif
 
 # PNG support
-libpng_dep = dependency('libpng', required: get_option('png'))
+libpng_dep = dependency('libpng',
+  required: get_option('png'),
+  fallback: 'libpng')
+
 if libpng_dep.found()
   ftoption_command += ['--enable=FT_CONFIG_OPTION_USE_PNG']
   ft2_deps += [libpng_dep]
@@ -259,15 +269,18 @@ endif
 
 # Harfbuzz support
 harfbuzz_dep = dependency('harfbuzz',
-                 version: '>= 2.0.0',
-                 required: get_option('harfbuzz'))
+  version: '>= 2.0.0',
+  required: get_option('harfbuzz'))
+
 if harfbuzz_dep.found()
   ftoption_command += ['--enable=FT_CONFIG_OPTION_USE_HARFBUZZ']
   ft2_deps += [harfbuzz_dep]
 endif
 
 # Brotli decompression support
-brotli_dep = dependency('libbrotlidec', required: get_option('brotli'))
+brotli_dep = dependency('libbrotlidec',
+  required: get_option('brotli'))
+
 if brotli_dep.found()
   ftoption_command += ['--enable=FT_CONFIG_OPTION_USE_BROTLI']
   ft2_deps += [brotli_dep]
@@ -288,6 +301,7 @@ if host_machine.system() == 'windows'
   ft2_defines += ['-DDLL_EXPORT=1']
 endif
 
+
 # Generate `ftconfig.h`
 
 ftconfig_command = process_header_command
@@ -300,19 +314,16 @@ endif
 
 if host_machine.system() in ['linux', 'darwin', 'cygwin']
   ftconfig_h_in = files('builds/unix/ftconfig.h.in')
-else
-  ftconfig_h_in = files('include/freetype/config/ftconfig.h')
+  ftconfig_h = custom_target('ftconfig.h',
+    input: ftconfig_h_in,
+    output: 'ftconfig.h',
+    command: ftconfig_command,
+    install: true,
+    install_dir: 'include/freetype2/freetype/config',
+  )
+  ft2_sources += ftconfig_h
+  ft2_defines += ['-DFT_CONFIG_CONFIG_H=<ftconfig.h>']
 endif
-
-ftconfig_h = custom_target('ftconfig.h',
-  input: ftconfig_h_in,
-  output: 'ftconfig.h',
-  command: ftconfig_command,
-  install: true,
-  install_dir: 'include/freetype2/freetype/config',
-)
-ft2_sources += ftconfig_h
-ft2_defines += ['-DFT_CONFIG_CONFIG_H=<ftconfig.h>']
 
 
 ft2_lib = library('freetype',
@@ -331,6 +342,7 @@ freetype_dep = declare_dependency(
   include_directories: ft2_includes,
   link_with: ft2_lib,
   version: ft2_pkgconfig_version)
+
 meson.override_dependency('freetype2', freetype_dep)
 
 
@@ -338,7 +350,7 @@ meson.override_dependency('freetype2', freetype_dep)
 # i.e., the subdir value seems to be ignored, contrary to examples in the
 # Meson documentation.
 install_headers('include/ft2build.h',
-   install_dir: 'include/freetype2')
+  install_dir: 'include/freetype2')
 install_headers(ft2_public_headers,
   install_dir: 'include/freetype2/freetype')
 install_headers(ft2_config_headers,
@@ -346,6 +358,7 @@ install_headers(ft2_config_headers,
 
 
 pkgconfig = import('pkgconfig')
+
 pkgconfig.generate(ft2_lib,
   filebase: 'freetype2',
   name: 'FreeType 2',

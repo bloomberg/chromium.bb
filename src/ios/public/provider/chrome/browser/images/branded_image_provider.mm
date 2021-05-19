@@ -50,3 +50,11 @@ UIImage* BrandedImageProvider::GetDownloadGoogleDriveImage() {
 UIImage* BrandedImageProvider::GetOmniboxAnswerIcon() {
   return nil;
 }
+
+UIImage* BrandedImageProvider::GetStaySafePromoImage() {
+  return nil;
+}
+
+UIImage* BrandedImageProvider::GetMadeForIOSPromoImage() {
+  return nil;
+}

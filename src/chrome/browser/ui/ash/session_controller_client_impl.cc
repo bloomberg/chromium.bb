@@ -15,14 +15,14 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/login/ui/user_adding_screen.h"
+#include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/crosapi/browser_manager.h"
-#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -158,9 +158,8 @@ SessionControllerClientImpl::SessionControllerClientImpl() {
       prefs::kSessionLengthLimit,
       base::BindRepeating(&SessionControllerClientImpl::SendSessionLengthLimit,
                           base::Unretained(this)));
-  chromeos::DeviceSettingsService::Get()
-      ->device_off_hours_controller()
-      ->AddObserver(this);
+  ash::DeviceSettingsService::Get()->device_off_hours_controller()->AddObserver(
+      this);
   DCHECK(!g_session_controller_client_instance);
   g_session_controller_client_instance = this;
 }
@@ -181,7 +180,7 @@ SessionControllerClientImpl::~SessionControllerClientImpl() {
   SessionManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveSessionStateObserver(this);
-  chromeos::DeviceSettingsService::Get()
+  ash::DeviceSettingsService::Get()
       ->device_off_hours_controller()
       ->RemoveObserver(this);
 }
@@ -387,8 +386,8 @@ SessionControllerClientImpl::GetAddUserSessionPolicy() {
   if (user_manager->GetUsersAllowedForMultiProfile().empty())
     return ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS;
 
-  if (chromeos::MultiProfileUserController::GetPrimaryUserPolicy() !=
-      chromeos::MultiProfileUserController::ALLOWED) {
+  if (ash::MultiProfileUserController::GetPrimaryUserPolicy() !=
+      ash::MultiProfileUserController::ALLOWED) {
     return ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER;
   }
 
@@ -622,7 +621,7 @@ void SessionControllerClientImpl::SendSessionLengthLimit() {
   }
 
   policy::off_hours::DeviceOffHoursController* off_hours_controller =
-      chromeos::DeviceSettingsService::Get()->device_off_hours_controller();
+      ash::DeviceSettingsService::Get()->device_off_hours_controller();
   base::Time off_hours_session_end_time;
   // Use "OffHours" end time only if the session will be actually terminated.
   if (off_hours_controller->IsCurrentSessionAllowedOnlyForOffHours())

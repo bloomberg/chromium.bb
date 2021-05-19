@@ -6,7 +6,7 @@
 // TranslatorMetal:
 //   A GLSL-based translator that outputs shaders that fit GL_KHR_vulkan_glsl.
 //   It takes into account some considerations for Metal backend also.
-//   The shaders are then fed into glslang to spit out SPIR-V (libANGLE-side).
+//   The shaders are then fed into glslang to spit out SPIR-V.
 //   See: https://www.khronos.org/registry/vulkan/specs/misc/GL_KHR_vulkan_glsl.txt
 //
 //   The SPIR-V will then be translated to Metal Shading Language later in Metal backend.
@@ -65,9 +65,10 @@ class TranslatorMetal : public TranslatorVulkan
         TIntermBlock *root,
         const DriverUniform *driverUniforms) override;
 
-    ANGLE_NO_DISCARD bool insertSampleMaskWritingLogic(TIntermBlock *root,
+    ANGLE_NO_DISCARD bool insertSampleMaskWritingLogic(TInfoSinkBase &sink,
+                                                       TIntermBlock *root,
                                                        const DriverUniformMetal *driverUniforms);
-    ANGLE_NO_DISCARD bool insertRasterizerDiscardLogic(TIntermBlock *root);
+    ANGLE_NO_DISCARD bool insertRasterizerDiscardLogic(TInfoSinkBase &sink, TIntermBlock *root);
 };
 
 }  // namespace sh

@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/shell_browser_main_parts.h"
 
+#include <memory>
 #include <string>
 
 #include "apps/browser_context_keyed_service_factories.h"
@@ -164,7 +165,7 @@ int ShellBrowserMainParts::PreEarlyInitialization() {
 }
 
 int ShellBrowserMainParts::PreCreateThreads() {
-  // TODO(jamescook): Initialize chromeos::CrosSettings here?
+  // TODO(jamescook): Initialize ash::CrosSettings here?
 
   content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       kExtensionScheme);
@@ -173,7 +174,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
   return 0;
 }
 
-void ShellBrowserMainParts::PreMainMessageLoopRun() {
+int ShellBrowserMainParts::PreMainMessageLoopRun() {
   extensions_client_ = std::make_unique<ShellExtensionsClient>();
   ExtensionsClient::Set(extensions_client_.get());
 
@@ -225,7 +226,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   // TODO(jamescook): Initialize user_manager::UserManager.
 
-  update_query_params_delegate_.reset(new ShellUpdateQueryParamsDelegate);
+  update_query_params_delegate_ =
+      std::make_unique<ShellUpdateQueryParamsDelegate>();
   update_client::UpdateQueryParams::SetDelegate(
       update_query_params_delegate_.get());
 
@@ -255,17 +257,23 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   } else {
     browser_main_delegate_->Start(browser_context_.get());
   }
+
+  desktop_controller_->PreMainMessageLoopRun();
+
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 
-bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
-  if (!run_message_loop_)
-    return true;
-  desktop_controller_->Run();
-  *result_code = content::RESULT_CODE_NORMAL_EXIT;
-  return true;
+void ShellBrowserMainParts::WillRunMainMessageLoop(
+    std::unique_ptr<base::RunLoop>& run_loop) {
+  if (run_message_loop_)
+    desktop_controller_->WillRunMainMessageLoop(run_loop);
+  else
+    run_loop.reset();
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
+  desktop_controller_->PostMainMessageLoopRun();
+
   // Close apps before shutting down browser context and extensions system.
   desktop_controller_->CloseAppWindows();
 

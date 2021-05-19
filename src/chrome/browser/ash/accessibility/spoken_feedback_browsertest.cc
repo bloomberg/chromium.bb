@@ -29,11 +29,11 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
+#include "chrome/browser/ash/login/test/oobe_base_test.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
@@ -256,9 +256,9 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeHardwareKeys) {
         "CommandHandler.onCommand('showKbExplorerPage');");
   });
   sm_.ExpectSpeech("ChromeVox Learn Mode");
-  sm_.ExpectSpeech(
+  sm_.ExpectSpeechPattern(
       "Press a qwerty key, refreshable braille key, or touch gesture to learn "
-      "its function. Press control with w or escape to exit.");
+      "*");
 
   // These are the default top row keys and their descriptions which live in
   // ChromeVox.
@@ -282,6 +282,29 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeHardwareKeys) {
   sm_.ExpectSpeech("volume down");
   sm_.Call([this]() { SendKeyPress(ui::VKEY_F10); });
   sm_.ExpectSpeech("volume up");
+
+  sm_.Replay();
+}
+
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeEscapeWithGesture) {
+  EnableChromeVox();
+  sm_.Call([this]() {
+    extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+        browser()->profile(), extension_misc::kChromeVoxExtensionId,
+        "CommandHandler.onCommand('showKbExplorerPage');");
+  });
+  sm_.ExpectSpeech("ChromeVox Learn Mode");
+  sm_.ExpectSpeechPattern(
+      "Press a qwerty key, refreshable braille key, or touch gesture to learn "
+      "*");
+
+  sm_.Call([]() {
+    AccessibilityManager::Get()->HandleAccessibilityGesture(
+        ax::mojom::Gesture::kSwipeLeft2, gfx::PointF());
+  });
+  sm_.ExpectSpeech("Swipe two fingers left");
+  sm_.ExpectSpeech("Escape");
+  sm_.ExpectSpeech("Stopping Learn Mode");
 
   sm_.Replay();
 }
@@ -498,7 +521,7 @@ IN_PROC_BROWSER_TEST_P(ShelfNotificationBadgeSpokenFeedbackTest,
   // Create and add a test app to the shelf model.
   ShelfItem item;
   item.id = ShelfID("TestApp");
-  item.title = base::ASCIIToUTF16("TestAppTitle");
+  item.title = u"TestAppTitle";
   item.type = ShelfItemType::TYPE_APP;
   ShelfModel::Get()->Add(item);
 
@@ -551,7 +574,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   // Create and add a test app to the shelf model.
   ShelfItem item;
   item.id = ShelfID(app_id);
-  item.title = base::ASCIIToUTF16("TestAppTitle");
+  item.title = u"TestAppTitle";
   item.type = ShelfItemType::TYPE_APP;
   item.app_status = AppStatus::kPaused;
   ShelfModel::Get()->Add(item);
@@ -601,7 +624,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   // Create and add a test app to the shelf model.
   ShelfItem item;
   item.id = ShelfID(app_id);
-  item.title = base::ASCIIToUTF16("TestAppTitle");
+  item.title = u"TestAppTitle";
   item.type = ShelfItemType::TYPE_APP;
   item.app_status = AppStatus::kBlocked;
   ShelfModel::Get()->Add(item);
@@ -812,7 +835,13 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyMode) {
 // sending js commands above. This variant may be subject to flakes as it
 // depends on more of the UI events stack and sticky mode invocation has a
 // timing element to it.
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyModeRawKeys) {
+// Consistently failing on ChromiumOS MSan. http://crbug.com/1182542
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_ChromeVoxStickyModeRawKeys DISABLED_ChromeVoxStickyModeRawKeys
+#else
+#define MAYBE_ChromeVoxStickyModeRawKeys ChromeVoxStickyModeRawKeys
+#endif
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxStickyModeRawKeys) {
   EnableChromeVox();
   StablizeChromeVoxState();
 

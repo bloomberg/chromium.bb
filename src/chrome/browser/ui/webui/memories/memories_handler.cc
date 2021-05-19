@@ -4,17 +4,24 @@
 
 #include "chrome/browser/ui/webui/memories/memories_handler.h"
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
+#include "chrome/browser/history_clusters/memories_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/history_clusters/core/memories_features.h"
+#include "components/history_clusters/core/memories_service.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 #if !defined(OFFICIAL_BUILD)
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/containers/flat_map.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/time_formatting.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -30,7 +37,18 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/tab_groups/tab_group_id.h"
+#include "ui/base/l10n/time_format.h"
+
+namespace {
+GURL GetRandomlySizedThumbnailUrl() {
+  const std::vector<int> dimensions = {150, 160, 170, 180, 190, 200};
+  auto random_dimension = [&dimensions]() {
+    return dimensions[rand() % dimensions.size()];
+  };
+  return GURL(base::StringPrintf("https://via.placeholder.com/%dX%d",
+                                 random_dimension(), random_dimension()));
+}
+}  // namespace
 #endif
 
 MemoriesHandler::MemoriesHandler(
@@ -54,32 +72,45 @@ void MemoriesHandler::SetPage(
 void MemoriesHandler::GetSampleMemories(const std::string& query,
                                         MemoriesResultCallback callback) {
 #if defined(OFFICIAL_BUILD)
-  std::move(callback).Run({});
+  auto memories_result_mojom = memories::mojom::MemoriesResult::New();
+  std::move(callback).Run(std::move(memories_result_mojom));
   return;
 #else
-  // Query HistoryService for URLs containing |query|.
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
-  history::QueryOptions query_options;
-  query_options.duplicate_policy = history::QueryOptions::KEEP_ALL_DUPLICATES;
-  query_options.SetRecentDayRange(90);
-  history_service->QueryHistory(
-      base::UTF8ToUTF16(query), query_options,
-      base::BindOnce(&MemoriesHandler::OnHistoryQueryResults,
-                     weak_ptr_factory_.GetWeakPtr(), query,
-                     std::move(callback)),
-      &history_task_tracker_);
+  // If the query is empty and a remote model endpoint is set, then ask the
+  // MemoriesService for memories. The MemoriesService doesn't yet support
+  // filtering memories by query or an on-client clustering, so if either the
+  // query is non-empty or the endpoint is not set, fallback to sample memories
+  // from history.
+  if (query.empty() && memories::RemoteModelEndpoint().is_valid()) {
+    GetMemories(std::move(callback));
+  } else {
+    // Query HistoryService for URLs containing |query|.
+    history::HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    history::QueryOptions query_options;
+    query_options.duplicate_policy = history::QueryOptions::KEEP_ALL_DUPLICATES;
+    query_options.SetRecentDayRange(90);
+    history_service->QueryHistory(
+        base::UTF8ToUTF16(query), query_options,
+        base::BindOnce(&MemoriesHandler::OnHistoryQueryResults,
+                       weak_ptr_factory_.GetWeakPtr(), query,
+                       std::move(callback)),
+        &history_task_tracker_);
+  }
 }
 
 void MemoriesHandler::OnHistoryQueryResults(const std::string& query,
                                             MemoriesResultCallback callback,
                                             history::QueryResults results) {
   auto memories_result_mojom = memories::mojom::MemoriesResult::New();
-  memories_result_mojom->title =
-      base::UTF8ToUTF16("Related to \"" + query + "\"");
-  memories_result_mojom->thumbnail_url =
-      GURL("https://via.placeholder.com/200");
+  if (results.empty()) {
+    std::move(callback).Run(std::move(memories_result_mojom));
+    return;
+  }
+
+  memories_result_mojom->title = base::UTF8ToUTF16(query);
+  memories_result_mojom->thumbnail_url = GetRandomlySizedThumbnailUrl();
 
   auto memory_mojom = memories::mojom::Memory::New();
   memory_mojom->id = base::UnguessableToken::Create();
@@ -97,15 +128,8 @@ void MemoriesHandler::OnHistoryQueryResults(const std::string& query,
       memory_mojom->last_visit_time = result.visit_time();
     }
 
-    // Keep track of all the visited URLs.
-    auto webpage = memories::mojom::WebPage::New();
-    webpage->url = result.url();
-    webpage->title = result.title();
-    webpage->thumbnail_url = GURL("https://via.placeholder.com/200");
-    memory_mojom->pages[result.url()] = std::move(webpage);
-
     // Check if the URL is a valid search URL.
-    base::string16 search_terms;
+    std::u16string search_terms;
     bool is_valid_search_url =
         default_search_provider &&
         default_search_provider->ExtractSearchTermsFromURL(
@@ -113,7 +137,7 @@ void MemoriesHandler::OnHistoryQueryResults(const std::string& query,
         !search_terms.empty();
     if (is_valid_search_url) {
       // If the URL is a valid search URL, try to create a related search query.
-      const base::string16& search_query =
+      const std::u16string& search_query =
           base::i18n::ToLower(base::CollapseWhitespace(search_terms, false));
 
       // Skip duplicate search queries.
@@ -137,7 +161,13 @@ void MemoriesHandler::OnHistoryQueryResults(const std::string& query,
       auto visit = memories::mojom::Visit::New();
       // TOOD(mahmadi): URLResult does not contain visit_id.
       visit->url = result.url();
+      visit->page_title = result.title();
+      visit->thumbnail_url = GetRandomlySizedThumbnailUrl();
       visit->time = result.visit_time();
+      visit->relative_date = ui::TimeFormat::Simple(
+          ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
+          base::Time::Now() - visit->time);
+      visit->time_of_day = base::TimeFormatTimeOfDay(visit->time);
 
       std::function<void(std::vector<memories::mojom::VisitPtr>&, bool)>
           add_visit;
@@ -176,22 +206,34 @@ void MemoriesHandler::OnHistoryQueryResults(const std::string& query,
     const TabStripModel* tab_strip_model = browser->tab_strip_model();
     const TabGroupModel* group_model = tab_strip_model->group_model();
     for (const auto& group_id : group_model->ListTabGroups()) {
-      std::vector<GURL> related_tab_group_urls;
       const TabGroup* tab_group = group_model->GetTabGroup(group_id);
+      bool tab_group_has_url_in_memory = false;
       gfx::Range tabs = tab_group->ListTabs();
       for (uint32_t index = tabs.start(); index < tabs.end(); ++index) {
         content::WebContents* web_contents =
             tab_strip_model->GetWebContentsAt(index);
         const GURL& url = web_contents->GetLastCommittedURL();
-        if (base::Contains(memory_mojom->pages, url)) {
-          related_tab_group_urls.push_back(url);
+        auto matching_result_it = std::find_if(
+            results.begin(), results.end(),
+            [&url](const auto& result) { return result.url() == url; });
+        if (matching_result_it != results.end()) {
+          tab_group_has_url_in_memory = true;
+          break;
         }
       }
-      if (!related_tab_group_urls.empty()) {
+      if (tab_group_has_url_in_memory) {
         auto tab_group_mojom = memories::mojom::TabGroup::New();
         tab_group_mojom->id = tab_group->id().token();
         tab_group_mojom->title = tab_group->visual_data()->title();
-        tab_group_mojom->urls = related_tab_group_urls;
+        for (uint32_t index = tabs.start(); index < tabs.end(); ++index) {
+          content::WebContents* web_contents =
+              tab_strip_model->GetWebContentsAt(index);
+          auto webpage = memories::mojom::WebPage::New();
+          webpage->url = web_contents->GetLastCommittedURL();
+          webpage->title = web_contents->GetTitle();
+          webpage->thumbnail_url = GetRandomlySizedThumbnailUrl();
+          tab_group_mojom->pages.push_back(std::move(webpage));
+        }
         memory_mojom->related_tab_groups.push_back(std::move(tab_group_mojom));
       }
     }
@@ -204,8 +246,16 @@ void MemoriesHandler::OnHistoryQueryResults(const std::string& query,
     std::vector<bookmarks::UrlAndTitle> bookmarks;
     model->GetBookmarks(&bookmarks);
     for (const auto& bookmark : bookmarks) {
-      if (base::Contains(memory_mojom->pages, bookmark.url)) {
-        memory_mojom->bookmarks.push_back(bookmark.url);
+      auto matching_result_it = std::find_if(
+          results.begin(), results.end(), [&bookmark](const auto& result) {
+            return result.url() == bookmark.url;
+          });
+      if (matching_result_it != results.end()) {
+        auto webpage = memories::mojom::WebPage::New();
+        webpage->url = matching_result_it->url();
+        webpage->title = matching_result_it->title();
+        webpage->thumbnail_url = GetRandomlySizedThumbnailUrl();
+        memory_mojom->bookmarks.push_back(std::move(webpage));
       }
     }
   }
@@ -213,4 +263,14 @@ void MemoriesHandler::OnHistoryQueryResults(const std::string& query,
   memories_result_mojom->memories.push_back(std::move(memory_mojom));
   std::move(callback).Run(std::move(memories_result_mojom));
 #endif
+}
+
+void MemoriesHandler::GetMemories(MemoriesResultCallback callback) {
+  auto* memory_service = MemoriesServiceFactory::GetForBrowserContext(profile_);
+  memory_service->GetMemories(base::BindOnce([](memories::Memories memories) {
+                                auto result =
+                                    memories::mojom::MemoriesResult::New();
+                                result->memories = std::move(memories);
+                                return result;
+                              }).Then(std::move(callback)));
 }

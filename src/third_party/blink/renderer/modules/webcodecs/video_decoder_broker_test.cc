@@ -50,7 +50,7 @@ namespace {
 class FakeGpuVideoDecoder : public media::FakeVideoDecoder {
  public:
   FakeGpuVideoDecoder()
-      : FakeVideoDecoder("FakeGpuVideoDecoder" /* display_name */,
+      : FakeVideoDecoder(0 /* decoder_id */,
                          0 /* decoding_delay */,
                          13 /* max_parallel_decoding_requests */,
                          media::BytesDecodedCB()) {}
@@ -146,8 +146,7 @@ class FakeInterfaceFactory : public media::mojom::InterfaceFactory {
   void CreateCdm(const std::string& key_system,
                  const media::CdmConfig& cdm_config,
                  CreateCdmCallback callback) override {
-    std::move(callback).Run(mojo::NullRemote(), base::nullopt,
-                            mojo::NullRemote(), "CDM creation not supported");
+    std::move(callback).Run(mojo::NullRemote(), nullptr, "CDM not supported");
   }
 
 #if defined(OS_WIN)
@@ -291,7 +290,9 @@ class VideoDecoderBrokerTest : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(this);
   }
 
-  std::string GetDisplayName() { return decoder_broker_->GetDisplayName(); }
+  media::VideoDecoderType GetDecoderType() {
+    return decoder_broker_->GetDecoderType();
+  }
 
   bool IsPlatformDecoder() { return decoder_broker_->IsPlatformDecoder(); }
 
@@ -320,7 +321,7 @@ TEST_F(VideoDecoderBrokerTest, Decode_Uninitialized) {
   V8TestingScope v8_scope;
 
   ConstructDecoder(*v8_scope.GetExecutionContext());
-  EXPECT_EQ(GetDisplayName(), "EmptyWebCodecsVideoDecoder");
+  EXPECT_EQ(GetDecoderType(), media::VideoDecoderType::kBroker);
 
   // No call to Initialize. Other APIs should fail gracefully.
 
@@ -337,10 +338,10 @@ TEST_F(VideoDecoderBrokerTest, Decode_NoMojoDecoder) {
   V8TestingScope v8_scope;
 
   ConstructDecoder(*v8_scope.GetExecutionContext());
-  EXPECT_EQ(GetDisplayName(), "EmptyWebCodecsVideoDecoder");
+  EXPECT_EQ(GetDecoderType(), media::VideoDecoderType::kBroker);
 
   InitializeDecoder(media::TestVideoConfig::Normal());
-  EXPECT_NE(GetDisplayName(), "EmptyWebCodecsVideoDecoder");
+  EXPECT_NE(GetDecoderType(), media::VideoDecoderType::kBroker);
 
   DecodeBuffer(media::ReadTestDataFile("vp8-I-frame-320x120"));
   DecodeBuffer(media::DecoderBuffer::CreateEOSBuffer());
@@ -361,12 +362,12 @@ TEST_F(VideoDecoderBrokerTest, Init_RequireAcceleration) {
   V8TestingScope v8_scope;
 
   ConstructDecoder(*v8_scope.GetExecutionContext());
-  EXPECT_EQ(GetDisplayName(), "EmptyWebCodecsVideoDecoder");
+  EXPECT_EQ(GetDecoderType(), media::VideoDecoderType::kBroker);
 
   decoder_broker_->SetHardwarePreference(HardwarePreference::kRequire);
 
   InitializeDecoder(media::TestVideoConfig::Normal(), /*expect_success*/ false);
-  EXPECT_EQ(GetDisplayName(), "EmptyWebCodecsVideoDecoder");
+  EXPECT_EQ(GetDecoderType(), media::VideoDecoderType::kBroker);
 }
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
@@ -376,14 +377,13 @@ TEST_F(VideoDecoderBrokerTest, Init_DenyAcceleration) {
 
   SetupMojo(*execution_context);
   ConstructDecoder(*execution_context);
-  EXPECT_EQ(GetDisplayName(), "EmptyWebCodecsVideoDecoder");
+  EXPECT_EQ(GetDecoderType(), media::VideoDecoderType::kBroker);
 
   decoder_broker_->SetHardwarePreference(HardwarePreference::kDeny);
 
   // Use an extra-large video to push us towards a hardware decoder.
   media::VideoDecoderConfig config = media::TestVideoConfig::ExtraLarge();
   InitializeDecoder(config);
-  EXPECT_NE(GetDisplayName(), "EmptyWebCodecsVideoDecoder");
   EXPECT_FALSE(IsPlatformDecoder());
 }
 
@@ -393,7 +393,7 @@ TEST_F(VideoDecoderBrokerTest, Decode_MultipleAccelerationPreferences) {
 
   SetupMojo(*execution_context);
   ConstructDecoder(*execution_context);
-  EXPECT_EQ(GetDisplayName(), "EmptyWebCodecsVideoDecoder");
+  EXPECT_EQ(GetDecoderType(), media::VideoDecoderType::kBroker);
 
   // Make sure we can decode software only.
   decoder_broker_->SetHardwarePreference(HardwarePreference::kDeny);
@@ -440,12 +440,12 @@ TEST_F(VideoDecoderBrokerTest, Decode_WithMojoDecoder) {
 
   SetupMojo(*execution_context);
   ConstructDecoder(*execution_context);
-  EXPECT_EQ(GetDisplayName(), "EmptyWebCodecsVideoDecoder");
+  EXPECT_EQ(GetDecoderType(), media::VideoDecoderType::kBroker);
 
   // Use an extra-large video to ensure we don't get a software decoder.
   media::VideoDecoderConfig config = media::TestVideoConfig::ExtraLarge();
   InitializeDecoder(config);
-  EXPECT_EQ(GetDisplayName(), "MojoVideoDecoder");
+  EXPECT_EQ(GetDecoderType(), media::VideoDecoderType::kTesting);
 
   DecodeBuffer(media::CreateFakeVideoBufferForTest(
       config, base::TimeDelta(), base::TimeDelta::FromMilliseconds(33)));

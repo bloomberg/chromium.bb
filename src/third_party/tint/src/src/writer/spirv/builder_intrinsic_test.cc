@@ -12,40 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/intrinsic_texture_helper_test.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
 #include "src/ast/stage_decoration.h"
-#include "src/ast/struct.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/ast/struct_member.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/uint_literal.h"
-#include "src/ast/variable.h"
-#include "src/type/array_type.h"
-#include "src/type/bool_type.h"
 #include "src/type/depth_texture_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/i32_type.h"
-#include "src/type/matrix_type.h"
-#include "src/type/multisampled_texture_type.h"
-#include "src/type/pointer_type.h"
-#include "src/type/sampled_texture_type.h"
-#include "src/type/sampler_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/u32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type/void_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -403,17 +373,17 @@ TEST_F(IntrinsicBuilderTest, Call_TextureSampleCompare_Twice) {
   type::Sampler s(type::SamplerKind::kComparisonSampler);
   type::DepthTexture t(type::TextureDimension::k2d);
 
-  auto* tex = Global("texture", &t, ast::StorageClass::kNone);
+  auto* tex = Global("texture", &t, ast::StorageClass::kInput);
 
-  auto* sampler = Global("sampler", &s, ast::StorageClass::kNone);
+  auto* sampler = Global("sampler", &s, ast::StorageClass::kInput);
 
   auto* expr1 = Call("textureSampleCompare", "texture", "sampler",
                      vec2<f32>(1.0f, 2.0f), 2.0f);
   auto* expr2 = Call("textureSampleCompare", "texture", "sampler",
                      vec2<f32>(1.0f, 2.0f), 2.0f);
 
-  WrapInFunction(expr1);
-  WrapInFunction(expr2);
+  Func("f1", {}, ty.void_(), {create<ast::CallStatement>(expr1)}, {});
+  Func("f2", {}, ty.void_(), {create<ast::CallStatement>(expr2)}, {});
 
   spirv::Builder& b = Build();
 
@@ -427,11 +397,11 @@ TEST_F(IntrinsicBuilderTest, Call_TextureSampleCompare_Twice) {
 
   EXPECT_EQ(DumpInstructions(b.types()), R"(%4 = OpTypeFloat 32
 %3 = OpTypeImage %4 2D 1 0 0 1 Unknown
-%2 = OpTypePointer Private %3
-%1 = OpVariable %2 Private
+%2 = OpTypePointer Input %3
+%1 = OpVariable %2 Input
 %7 = OpTypeSampler
-%6 = OpTypePointer Private %7
-%5 = OpVariable %6 Private
+%6 = OpTypePointer Input %7
+%5 = OpVariable %6 Input
 %11 = OpTypeSampledImage %3
 %13 = OpTypeVector %4 2
 %14 = OpConstant %4 1
@@ -459,7 +429,7 @@ TEST_F(IntrinsicBuilderTest, Call_GLSLMethod_WithLoad) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -494,7 +464,7 @@ TEST_P(Intrinsic_Builtin_SingleParam_Float_Test, Call_Scalar) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -523,7 +493,7 @@ TEST_P(Intrinsic_Builtin_SingleParam_Float_Test, Call_Vector) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -578,7 +548,7 @@ TEST_F(IntrinsicBuilderTest, Call_Length_Scalar) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -604,7 +574,7 @@ TEST_F(IntrinsicBuilderTest, Call_Length_Vector) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -632,7 +602,7 @@ TEST_F(IntrinsicBuilderTest, Call_Normalize) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -665,7 +635,7 @@ TEST_P(Intrinsic_Builtin_DualParam_Float_Test, Call_Scalar) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -695,7 +665,7 @@ TEST_P(Intrinsic_Builtin_DualParam_Float_Test, Call_Vector) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -733,7 +703,7 @@ TEST_F(IntrinsicBuilderTest, Call_Distance_Scalar) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -760,7 +730,7 @@ TEST_F(IntrinsicBuilderTest, Call_Distance_Vector) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -790,7 +760,7 @@ TEST_F(IntrinsicBuilderTest, Call_Cross) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -822,7 +792,7 @@ TEST_P(Intrinsic_Builtin_ThreeParam_Float_Test, Call_Scalar) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -853,7 +823,7 @@ TEST_P(Intrinsic_Builtin_ThreeParam_Float_Test, Call_Vector) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -895,7 +865,7 @@ TEST_P(Intrinsic_Builtin_SingleParam_Sint_Test, Call_Scalar) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -924,7 +894,7 @@ TEST_P(Intrinsic_Builtin_SingleParam_Sint_Test, Call_Vector) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -960,7 +930,7 @@ TEST_P(Intrinsic_Builtin_SingleParam_Uint_Test, Call_Scalar) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -989,7 +959,7 @@ TEST_P(Intrinsic_Builtin_SingleParam_Uint_Test, Call_Vector) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1025,7 +995,7 @@ TEST_P(Intrinsic_Builtin_DualParam_SInt_Test, Call_Scalar) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1054,7 +1024,7 @@ TEST_P(Intrinsic_Builtin_DualParam_SInt_Test, Call_Vector) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1091,7 +1061,7 @@ TEST_P(Intrinsic_Builtin_DualParam_UInt_Test, Call_Scalar) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1120,7 +1090,7 @@ TEST_P(Intrinsic_Builtin_DualParam_UInt_Test, Call_Vector) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1157,7 +1127,7 @@ TEST_P(Intrinsic_Builtin_ThreeParam_Sint_Test, Call_Scalar) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1188,7 +1158,7 @@ TEST_P(Intrinsic_Builtin_ThreeParam_Sint_Test, Call_Vector) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1224,7 +1194,7 @@ TEST_P(Intrinsic_Builtin_ThreeParam_Uint_Test, Call_Scalar) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1255,7 +1225,7 @@ TEST_P(Intrinsic_Builtin_ThreeParam_Uint_Test, Call_Vector) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1290,7 +1260,7 @@ TEST_F(IntrinsicBuilderTest, Call_Modf) {
            create<ast::VariableDeclStatement>(out),
            create<ast::CallStatement>(expr),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kVertex),
        });
 
@@ -1333,7 +1303,7 @@ TEST_F(IntrinsicBuilderTest, Call_Frexp) {
            create<ast::VariableDeclStatement>(out),
            create<ast::CallStatement>(expr),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kVertex),
        });
 
@@ -1377,7 +1347,7 @@ TEST_F(IntrinsicBuilderTest, Call_Determinant) {
   WrapInFunction(expr);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1407,14 +1377,10 @@ OpFunctionEnd
 }
 
 TEST_F(IntrinsicBuilderTest, Call_ArrayLength) {
-  auto* s = create<ast::Struct>(
-      ast::StructMemberList{Member(0, "a", ty.array<f32>(4))},
-      ast::StructDecorationList{
-          create<ast::StructBlockDecoration>(),
-      });
-  auto* s_type = ty.struct_("my_struct", s);
-  Global("b", s_type, ast::StorageClass::kStorage, nullptr,
-         ast::VariableDecorationList{
+  auto* s = Structure("my_struct", {Member(0, "a", ty.array<f32>(4))},
+                      {create<ast::StructBlockDecoration>()});
+  Global("b", s, ast::StorageClass::kStorage, nullptr,
+         ast::DecorationList{
              create<ast::BindingDecoration>(1),
              create<ast::GroupDecoration>(2),
          });
@@ -1425,7 +1391,7 @@ TEST_F(IntrinsicBuilderTest, Call_ArrayLength) {
        ast::StatementList{
            create<ast::CallStatement>(expr),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kVertex),
        });
 
@@ -1456,16 +1422,15 @@ TEST_F(IntrinsicBuilderTest, Call_ArrayLength) {
 }
 
 TEST_F(IntrinsicBuilderTest, Call_ArrayLength_OtherMembersInStruct) {
-  auto* s = create<ast::Struct>(
-      ast::StructMemberList{Member(0, "z", ty.f32()),
-                            Member(4, "a", ty.array<f32>(4))},
-      ast::StructDecorationList{
-          create<ast::StructBlockDecoration>(),
-      });
+  auto* s = Structure("my_struct",
+                      {
+                          Member(0, "z", ty.f32()),
+                          Member(4, "a", ty.array<f32>(4)),
+                      },
+                      {create<ast::StructBlockDecoration>()});
 
-  auto* s_type = ty.struct_("my_struct", s);
-  Global("b", s_type, ast::StorageClass::kStorage, nullptr,
-         ast::VariableDecorationList{
+  Global("b", s, ast::StorageClass::kStorage, nullptr,
+         ast::DecorationList{
              create<ast::BindingDecoration>(1),
              create<ast::GroupDecoration>(2),
          });
@@ -1476,7 +1441,7 @@ TEST_F(IntrinsicBuilderTest, Call_ArrayLength_OtherMembersInStruct) {
        ast::StatementList{
            create<ast::CallStatement>(expr),
        },
-       ast::FunctionDecorationList{
+       ast::DecorationList{
            create<ast::StageDecoration>(ast::PipelineStage::kVertex),
        });
 
@@ -1517,7 +1482,7 @@ TEST_P(Intrinsic_Builtin_DataPacking_Test, Binary) {
   WrapInFunction(call);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1580,7 +1545,7 @@ TEST_P(Intrinsic_Builtin_DataUnpacking_Test, Binary) {
   WrapInFunction(call);
 
   auto* func = Func("a_func", ast::VariableList{}, ty.void_(),
-                    ast::StatementList{}, ast::FunctionDecorationList{});
+                    ast::StatementList{}, ast::DecorationList{});
 
   spirv::Builder& b = Build();
 
@@ -1630,6 +1595,71 @@ INSTANTIATE_TEST_SUITE_P(
                     IntrinsicData{"unpack2x16snorm", "UnpackSnorm2x16"},
                     IntrinsicData{"unpack2x16unorm", "UnpackUnorm2x16"},
                     IntrinsicData{"unpack2x16float", "UnpackHalf2x16"}));
+
+TEST_F(IntrinsicBuilderTest, Call_WorkgroupBarrier) {
+  Func("f", ast::VariableList{}, ty.void_(),
+       ast::StatementList{
+           create<ast::CallStatement>(Call("workgroupBarrier")),
+       },
+       ast::DecorationList{
+           create<ast::StageDecoration>(ast::PipelineStage::kCompute),
+       });
+
+  spirv::Builder& b = Build();
+
+  ASSERT_TRUE(b.Build()) << b.error();
+
+  ASSERT_EQ(b.functions().size(), 1u);
+
+  auto* expected_types = R"(%2 = OpTypeVoid
+%1 = OpTypeFunction %2
+%6 = OpTypeInt 32 0
+%7 = OpConstant %6 2
+%8 = OpConstant %6 264
+)";
+  auto got_types = DumpInstructions(b.types());
+  EXPECT_EQ(expected_types, got_types);
+
+  auto* expected_instructions = R"(OpControlBarrier %7 %7 %8
+)";
+  auto got_instructions = DumpInstructions(b.functions()[0].instructions());
+  EXPECT_EQ(expected_instructions, got_instructions);
+
+  Validate(b);
+}
+
+TEST_F(IntrinsicBuilderTest, Call_StorageBarrier) {
+  Func("f", ast::VariableList{}, ty.void_(),
+       ast::StatementList{
+           create<ast::CallStatement>(Call("storageBarrier")),
+       },
+       ast::DecorationList{
+           create<ast::StageDecoration>(ast::PipelineStage::kCompute),
+       });
+
+  spirv::Builder& b = Build();
+
+  ASSERT_TRUE(b.Build()) << b.error();
+
+  ASSERT_EQ(b.functions().size(), 1u);
+
+  auto* expected_types = R"(%2 = OpTypeVoid
+%1 = OpTypeFunction %2
+%6 = OpTypeInt 32 0
+%7 = OpConstant %6 2
+%8 = OpConstant %6 1
+%9 = OpConstant %6 72
+)";
+  auto got_types = DumpInstructions(b.types());
+  EXPECT_EQ(expected_types, got_types);
+
+  auto* expected_instructions = R"(OpControlBarrier %7 %8 %9
+)";
+  auto got_instructions = DumpInstructions(b.functions()[0].instructions());
+  EXPECT_EQ(expected_instructions, got_instructions);
+
+  Validate(b);
+}
 
 }  // namespace
 }  // namespace spirv

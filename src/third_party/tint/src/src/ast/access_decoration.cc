@@ -14,10 +14,9 @@
 
 #include "src/ast/access_decoration.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::AccessDecoration);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::AccessDecoration);
 
 namespace tint {
 namespace ast {

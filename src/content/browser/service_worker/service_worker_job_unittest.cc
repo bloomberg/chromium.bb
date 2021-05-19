@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
+#include <memory>
 #include <tuple>
 
 #include "base/barrier_closure.h"
@@ -46,6 +48,7 @@
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -168,7 +171,7 @@ class ServiceWorkerJobTest : public testing::Test {
                           BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
   }
 
   void TearDown() override { helper_.reset(); }
@@ -574,7 +577,12 @@ class FailStartInstanceClient : public FakeEmbeddedWorkerInstanceClient {
       : FakeEmbeddedWorkerInstanceClient(helper) {}
 
   void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override {
-    // Don't save the Mojo ptrs. The connection breaks.
+    // Call Disconnect to break the Mojo connection immediately.
+    // This makes sure the error code becomes kErrorStartWorkerFailed. Otherwise
+    // the error code might be kNetworkError when PlzServiceWorker is enabled
+    // because the URLLoader bound to params->main_script_load_params can get
+    // destroyed before the service worker stops.
+    Disconnect();
   }
 };
 
@@ -2035,7 +2043,18 @@ Cross-Origin-Embedder-Policy: none
   scoped_refptr<ServiceWorkerRegistration> registration =
       update_helper_->SetupInitialRegistration(kNewVersionOrigin);
   ASSERT_TRUE(registration.get());
-  EXPECT_FALSE(registration->active_version()->cross_origin_embedder_policy());
+  if (base::FeatureList::IsEnabled(features::kPlzServiceWorker)) {
+    // COEP is populated here because the worker's script is loaded as a part of
+    // the start worker sequence before registration and the response header is
+    // reflected to the version at that point
+    EXPECT_EQ(CrossOriginEmbedderPolicyNone(),
+              registration->active_version()->cross_origin_embedder_policy());
+  } else {
+    // COEP is not set to the version because the script is not loaded before
+    // starting the worker.
+    EXPECT_FALSE(
+        registration->active_version()->cross_origin_embedder_policy());
+  }
 
   registration->AddListener(update_helper_);
 

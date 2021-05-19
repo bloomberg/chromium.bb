@@ -14,7 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/crosapi/browser_manager_observer.h"
+#include "chrome/browser/ash/crosapi/browser_manager_observer.h"
 #include "chrome/browser/chromeos/policy/off_hours/device_off_hours_controller.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chromeos/login/login_state/login_state.h"

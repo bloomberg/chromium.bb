@@ -225,7 +225,8 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual void OnPacketComplete() = 0;
 
   // Called to check whether |token| is a valid stateless reset token.
-  virtual bool IsValidStatelessResetToken(QuicUint128 token) const = 0;
+  virtual bool IsValidStatelessResetToken(
+      const StatelessResetToken& token) const = 0;
 
   // Called when an IETF stateless reset packet has been parsed and validated
   // with the stateless reset token.
@@ -470,10 +471,14 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   static std::unique_ptr<QuicEncryptedPacket> BuildPublicResetPacket(
       const QuicPublicResetPacket& packet);
 
+  // Returns the minimal stateless reset packet length.
+  static size_t GetMinStatelessResetPacketLength();
+
   // Returns a new IETF stateless reset packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildIetfStatelessResetPacket(
       QuicConnectionId connection_id,
-      QuicUint128 stateless_reset_token);
+      size_t received_packet_length,
+      StatelessResetToken stateless_reset_token);
 
   // Returns a new version negotiation packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildVersionNegotiationPacket(
@@ -709,6 +714,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
     drop_incoming_retry_packets_ = drop_incoming_retry_packets;
   }
 
+  bool do_not_synthesize_source_cid_for_short_header() const {
+    return do_not_synthesize_source_cid_for_short_header_;
+  }
+
  private:
   friend class test::QuicFramerPeer;
 
@@ -826,8 +835,13 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicPacketNumber base_packet_number,
       uint64_t* packet_number);
   bool ProcessFrameData(QuicDataReader* reader, const QuicPacketHeader& header);
+
+  static bool IsIetfFrameTypeExpectedForEncryptionLevel(uint64_t frame_type,
+                                                        EncryptionLevel level);
+
   bool ProcessIetfFrameData(QuicDataReader* reader,
-                            const QuicPacketHeader& header);
+                            const QuicPacketHeader& header,
+                            EncryptionLevel decrypted_level);
   bool ProcessStreamFrame(QuicDataReader* reader,
                           uint8_t frame_type,
                           QuicStreamFrame* frame);
@@ -1112,6 +1126,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // The value of the current key phase bit, which is toggled when the keys are
   // changed.
   bool current_key_phase_bit_;
+  // Whether we have performed a key update at least once.
+  bool key_update_performed_ = false;
   // Tracks the first packet received in the current key phase. Will be
   // uninitialized before the first one-RTT packet has been received or after a
   // locally initiated key update but before the first packet from the peer in
@@ -1157,6 +1173,14 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // Indicates whether received RETRY packets should be dropped.
   bool drop_incoming_retry_packets_ = false;
+
+  bool reject_unexpected_ietf_frame_types_ =
+      GetQuicReloadableFlag(quic_reject_unexpected_ietf_frame_types);
+
+  // Indicates whether source connection ID should be synthesized when read
+  // short header packet.
+  const bool do_not_synthesize_source_cid_for_short_header_ =
+      GetQuicReloadableFlag(quic_do_not_synthesize_source_cid_for_short_header);
 
   // The length in bytes of the last packet number written to an IETF-framed
   // packet.

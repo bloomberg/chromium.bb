@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -39,49 +40,62 @@ class AppUninstall : public App {
   void Initialize() override;
   void FirstTaskRun() override;
 
+  // Conditionally set, if prefs must be acquired for some uninstall scenarios.
+  // Creating the prefs instance may result in deadlocks. Therefore, the prefs
+  // lock can't be taken in all cases.
   std::unique_ptr<GlobalPrefs> global_prefs_;
 };
 
 void AppUninstall::Initialize() {
-  global_prefs_ = CreateGlobalPrefs();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kUninstallIfUnusedSwitch))
+    global_prefs_ = CreateGlobalPrefs();
 }
 
 void AppUninstall::FirstTaskRun() {
-  if (!global_prefs_) {
-    return;
-  }
-
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
+
+  if (command_line->HasSwitch(kUninstallSwitch)) {
+    CHECK(!global_prefs_);
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&Uninstall, updater_scope()),
+        base::BindOnce(&AppUninstall::Shutdown, this));
+    return;
+  }
 
 #if defined(OS_MAC)
   // TODO(crbug.com/1114719): Implement --uninstall-self for Win.
   if (command_line->HasSwitch(kUninstallSelfSwitch)) {
+    CHECK(!global_prefs_);
     base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()}, base::BindOnce(&UninstallCandidate),
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&UninstallCandidate, updater_scope()),
         base::BindOnce(&AppUninstall::Shutdown, this));
     return;
   }
 #endif
 
-  const bool has_uninstall_switch = command_line->HasSwitch(kUninstallSwitch);
-  const bool has_uninstall_if_unused_switch =
-      command_line->HasSwitch(kUninstallIfUnusedSwitch);
-
-  const std::vector<std::string> app_ids =
-      base::MakeRefCounted<PersistedData>(global_prefs_->GetPrefService())
-          ->GetAppIds();
-
-  const bool can_uninstall =
-      has_uninstall_switch ||
-      (has_uninstall_if_unused_switch && app_ids.size() == 1 &&
-       base::Contains(app_ids, kUpdaterAppId));
-
-  if (can_uninstall) {
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()}, base::BindOnce(&Uninstall, false),
-        base::BindOnce(&AppUninstall::Shutdown, this));
-    return;
+  if (command_line->HasSwitch(kUninstallIfUnusedSwitch)) {
+    CHECK(global_prefs_);
+    const std::vector<std::string> registered_apps =
+        base::MakeRefCounted<PersistedData>(global_prefs_->GetPrefService())
+            ->GetAppIds();
+    if (registered_apps.size() == 1 &&
+        base::Contains(registered_apps, kUpdaterAppId)) {
+      base::ThreadPool::PostTaskAndReplyWithResult(
+          FROM_HERE, {base::MayBlock()},
+          base::BindOnce(&Uninstall, updater_scope()),
+          base::BindOnce(
+              [](base::OnceCallback<void(int)> shutdown, int exit_code) {
+                // global_prefs is captured so that this process holds the prefs
+                // lock through uninstallation.
+                std::move(shutdown).Run(exit_code);
+              },
+              base::BindOnce(&AppUninstall::Shutdown, this)));
+    }
   }
 }
 

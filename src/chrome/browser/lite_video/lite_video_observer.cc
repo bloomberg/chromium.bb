@@ -64,7 +64,8 @@ void LiteVideoObserver::MaybeCreateForWebContents(
 }
 
 LiteVideoObserver::LiteVideoObserver(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      receivers_(web_contents, this) {
   lite_video_decider_ = GetLiteVideoDeciderFromWebContents(web_contents);
   routing_ids_to_notify_ = {};
 }
@@ -237,7 +238,8 @@ void LiteVideoObserver::MaybeUpdateCoinflipExperimentState(
 }
 
 void LiteVideoObserver::MediaBufferUnderflow(const content::MediaPlayerId& id) {
-  content::RenderFrameHost* render_frame_host = id.render_frame_host;
+  auto* render_frame_host =
+      content::RenderFrameHost::FromID(id.frame_routing_id);
 
   if (!render_frame_host || !render_frame_host->GetProcess())
     return;
@@ -276,11 +278,12 @@ void LiteVideoObserver::MediaBufferUnderflow(const content::MediaPlayerId& id) {
 }
 
 void LiteVideoObserver::MediaPlayerSeek(const content::MediaPlayerId& id) {
-  content::RenderFrameHost* render_frame_host = id.render_frame_host;
 
   if (!lite_video::features::DisableLiteVideoOnMediaPlayerSeek())
     return;
 
+  auto* render_frame_host =
+      content::RenderFrameHost::FromID(id.frame_routing_id);
   if (!render_frame_host || !render_frame_host->GetProcess())
     return;
 
@@ -303,6 +306,23 @@ void LiteVideoObserver::MediaPlayerSeek(const content::MediaPlayerId& id) {
   LOCAL_HISTOGRAM_BOOLEAN("LiteVideo.MediaPlayerSeek.StopThrottling", true);
 
   loading_hints_agent->StopThrottlingMediaRequests();
+}
+
+uint64_t LiteVideoObserver::GetAndClearEstimatedDataSavingBytes() {
+  if (current_throttled_video_bytes_ == 0)
+    return 0;
+  // ThrottledVideoBytesDeflatedRatio is essentially
+  //  bytes_saved / throttled_video_bytes. So use that to compute estimated
+  //  bytes saved.
+  uint64_t bytes_saved = static_cast<uint64_t>(
+      current_throttled_video_bytes_ *
+      lite_video::features::GetThrottledVideoBytesDeflatedRatio());
+  current_throttled_video_bytes_ = 0;
+  return bytes_saved;
+}
+
+void LiteVideoObserver::NotifyThrottledDataUse(uint64_t response_bytes) {
+  current_throttled_video_bytes_ += response_bytes;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LiteVideoObserver)

@@ -180,7 +180,8 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
       // PseudoIdFirstLetter set. When that node is attached we will handle
       // setting up the first letter then.
       return nullptr;
-    } else if (first_letter_text_layout_object->IsInline() &&
+    } else if ((first_letter_text_layout_object->IsInline() ||
+                first_letter_text_layout_object->IsAnonymousBlock()) &&
                !first_letter_text_layout_object->SlowFirstChild()) {
       if (LayoutObject* next_sibling =
               first_letter_text_layout_object->NextSibling()) {
@@ -319,8 +320,9 @@ FirstLetterPseudoElement::CustomStyleForLayoutObject(
     return nullptr;
   DCHECK(first_letter_text->Parent());
   return ParentOrShadowHostElement()->StyleForPseudoElement(
-      style_recalc_context, PseudoElementStyleRequest(GetPseudoId()),
-      first_letter_text->Parent()->FirstLineStyle());
+      style_recalc_context,
+      StyleRequest(GetPseudoId(),
+                   first_letter_text->Parent()->FirstLineStyle()));
 }
 
 void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* first_letter_text) {

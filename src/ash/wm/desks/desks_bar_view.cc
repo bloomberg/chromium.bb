@@ -97,6 +97,13 @@ int GetSpaceBetweenMiniViews(DeskMiniView* mini_view) {
   return kMiniViewsSpacing - mini_view->GetPreviewBorderInsets().width();
 }
 
+// Translate the |background_view| by |y| on y-coordinate.
+void TranslateTheBackgroundView(views::View* background_view, float y) {
+  gfx::Transform transform;
+  transform.Translate(0, y);
+  background_view->layer()->SetTransform(transform);
+}
+
 // Initialize a scoped layer animation settings for scroll view contents.
 void InitScrollContentsAnimationSettings(
     ui::ScopedLayerAnimationSettings& settings) {
@@ -336,6 +343,13 @@ class BentoDesksBarScrollViewLayout : public views::LayoutManager {
                          kZeroStateButtonSpacing,
                      kZeroStateY),
           zero_state_new_desk_button_size));
+
+      // Keep the background view's translation updated while the height of bar
+      // changes. E.g, it could happens while zooming in/out the bar. Note, the
+      // background view is only translated while in zero state.
+      TranslateTheBackgroundView(
+          bar_view_->background_view(),
+          -(scroll_bounds.height() - DesksBarView::kZeroStateBarHeight));
       return;
     }
 
@@ -859,20 +873,14 @@ void DesksBarView::UpdateNewMiniViews(bool initializing_bar_view,
   if (is_bento_enabled) {
     if (initializing_bar_view)
       UpdateBentoDeskButtonsVisibility();
-    if (IsZeroState() && !expanding_bar_view) {
-      gfx::Transform transform;
-      transform.Translate(0, -(height() - kZeroStateBarHeight));
-      background_view_->layer()->SetTransform(transform);
+    if (IsZeroState() && !expanding_bar_view)
       return;
-    }
   } else if (desks.size() < 2) {
     // We do not show mini_views when we have a single desk.
     DCHECK(mini_views_.empty());
 
     // The bar background is initially translated off the screen.
-    gfx::Transform translate;
-    translate.Translate(0, -height());
-    background_view_->layer()->SetTransform(translate);
+    TranslateTheBackgroundView(background_view_, -height());
     background_view_->layer()->SetOpacity(0);
 
     return;
@@ -1004,8 +1012,10 @@ DeskMiniView* DesksBarView::FindMiniViewForDesk(const Desk* desk) const {
 }
 
 int DesksBarView::GetFirstMiniViewXOffset() const {
+  // GetMirroredX is used here to make sure the removing and adding a desk
+  // transform is correct while in RTL layout.
   return mini_views_.empty() ? bounds().CenterPoint().x()
-                             : mini_views_[0]->bounds().x();
+                             : mini_views_[0]->GetMirroredX();
 }
 
 void DesksBarView::UpdateMinimumWidthToFitContents() {

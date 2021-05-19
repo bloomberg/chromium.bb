@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -18,7 +19,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -112,7 +112,7 @@ bool g_allow_directory_access_for_test = false;
 bool GetFileTypesFromAcceptOption(
     const file_system::AcceptOption& accept_option,
     std::vector<base::FilePath::StringType>* extensions,
-    base::string16* description) {
+    std::u16string* description) {
   std::set<base::FilePath::StringType> extension_set;
   int description_id = 0;
 
@@ -347,7 +347,7 @@ ExtensionFunction::ResponseAction FileSystemGetWritableEntryFunction::Run() {
 void FileSystemGetWritableEntryFunction::CheckPermissionAndSendResponse() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (is_directory_ && !extension_->permissions_data()->HasAPIPermission(
-                           APIPermission::kFileSystemDirectory)) {
+                           mojom::APIPermissionID::kFileSystemDirectory)) {
     Respond(Error(kRequiresFileSystemDirectoryError));
     return;
   }
@@ -635,7 +635,7 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
 
   if (accepts) {
     for (const file_system::AcceptOption& option : *accepts) {
-      base::string16 description;
+      std::u16string description;
       std::vector<base::FilePath::StringType> extensions;
 
       if (!GetFileTypesFromAcceptOption(option, &extensions, &description))
@@ -732,7 +732,7 @@ ExtensionFunction::ResponseAction FileSystemChooseEntryFunction::Run() {
     } else if (options->type == file_system::CHOOSE_ENTRY_TYPE_OPENDIRECTORY) {
       is_directory_ = true;
       if (!extension_->permissions_data()->HasAPIPermission(
-              APIPermission::kFileSystemDirectory)) {
+              mojom::APIPermissionID::kFileSystemDirectory)) {
         return RespondNow(Error(kRequiresFileSystemDirectoryError));
       }
       if (multiple_) {

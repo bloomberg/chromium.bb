@@ -14,6 +14,10 @@ GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/password_manager/core/common/password_manager_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
+GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#include "components/language/core/common/language_experiments.h"');
+GEN('#endif');
+
 /** Test fixture for shared Polymer 3 elements. */
 // eslint-disable-next-line no-var
 var CrSettingsV3BrowserTest = class extends PolymerTest {
@@ -75,14 +79,6 @@ var CrSettingsLanguagesPageV3Test = class extends CrSettingsV3BrowserTest {
   }
 };
 
-TEST_F('CrSettingsLanguagesPageV3Test', 'AddLanguagesDialog', function() {
-  mocha.grep(languages_page_tests.TestNames.AddLanguagesDialog).run();
-});
-
-TEST_F('CrSettingsLanguagesPageV3Test', 'LanguageMenu', function() {
-  mocha.grep(languages_page_tests.TestNames.LanguageMenu).run();
-});
-
 TEST_F('CrSettingsLanguagesPageV3Test', 'Spellcheck', function() {
   mocha.grep(languages_page_tests.TestNames.Spellcheck).run();
 });
@@ -93,6 +89,23 @@ TEST_F('CrSettingsLanguagesPageV3Test', 'SpellcheckOfficialBuild', function() {
 });
 GEN('#endif');
 
+GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
+// eslint-disable-next-line no-var
+var CrSettingsLanguagesPageRestructuredV3Test =
+    class extends CrSettingsLanguagesPageV3Test {
+  /** @override */
+  get featureListInternal() {
+    return {enabled: ['language::kDesktopRestructuredLanguageSettings']};
+  }
+};
+TEST_F(
+    'CrSettingsLanguagesPageRestructuredV3Test', 'RestructuredLanguageSettings',
+    function() {
+      mocha.grep(languages_page_tests.TestNames.RestructuredLanguageSettings)
+          .run();
+    });
+GEN('#endif');
+
 GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
 TEST_F(
     'CrSettingsLanguagesPageV3Test', 'ChromeOSLanguagesSettingsUpdate',
@@ -101,6 +114,22 @@ TEST_F(
           .run();
     });
 GEN('#endif');
+
+// eslint-disable-next-line no-var
+var CrSettingsLanguagesSubpageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/languages_subpage_tests.js';
+  }
+};
+
+TEST_F('CrSettingsLanguagesSubpageV3Test', 'AddLanguagesDialog', function() {
+  mocha.grep(languages_subpage_tests.TestNames.AddLanguagesDialog).run();
+});
+
+TEST_F('CrSettingsLanguagesSubpageV3Test', 'LanguageMenu', function() {
+  mocha.grep(languages_subpage_tests.TestNames.LanguageMenu).run();
+});
 
 // eslint-disable-next-line no-var
 var CrSettingsLanguagesPageMetricsV3Test =
@@ -421,8 +450,9 @@ TEST_F(
       runMochaSuite('PrivacyPageSound');
     });
 
+// TODO(crbug.com/1113912): flaky failure on multiple platforms
 TEST_F(
-    'CrSettingsPrivacyPageV3Test', 'HappinessTrackingSurveysTests', function() {
+    'CrSettingsPrivacyPageV3Test', 'DISABLED_HappinessTrackingSurveysTests', function() {
       runMochaSuite('HappinessTrackingSurveys');
     });
 
@@ -513,8 +543,8 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
  ['PeoplePage', 'people_page_test.js'],
  ['PeoplePageSyncControls', 'people_page_sync_controls_test.js'],
  ['PeoplePageSyncPage', 'people_page_sync_page_test.js'],
- ['Prefs', 'prefs_tests.m.js'],
- ['PrefUtil', 'pref_util_tests.m.js'],
+ ['Prefs', 'prefs_tests.js'],
+ ['PrefUtil', 'pref_util_tests.js'],
  ['ProtocolHandlers', 'protocol_handlers_tests.js'],
  ['RecentSitePermissions', 'recent_site_permissions_test.js'],
  // Flaky on all OSes. TODO(crbug.com/1127733): Enable the test.
@@ -532,12 +562,12 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
  ['SiteFavicon', 'site_favicon_test.js'],
  ['SiteListEntry', 'site_list_entry_tests.js'],
  ['SiteSettingsPage', 'site_settings_page_test.js'],
- ['Slider', 'settings_slider_tests.m.js'],
+ ['Slider', 'settings_slider_tests.js'],
  ['StartupUrlsPage', 'startup_urls_page_test.js'],
  ['Subpage', 'settings_subpage_test.js'],
  ['SyncAccountControl', 'sync_account_control_test.js'],
- ['Textarea', 'settings_textarea_tests.m.js'],
- ['ToggleButton', 'settings_toggle_button_tests.m.js'],
+ ['Textarea', 'settings_textarea_tests.js'],
+ ['ToggleButton', 'settings_toggle_button_tests.js'],
  ['ZoomLevels', 'zoom_levels_tests.js'],
 ].forEach(test => registerTest(...test));
 

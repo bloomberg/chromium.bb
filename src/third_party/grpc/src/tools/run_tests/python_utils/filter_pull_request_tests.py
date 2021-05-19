@@ -61,12 +61,12 @@ _ALL_TEST_SUITES = [
     _LINUX_TEST_SUITE, _WINDOWS_TEST_SUITE, _MACOS_TEST_SUITE
 ]
 
-# Dictionary of whitelistable files where the key is a regex matching changed files
+# Dictionary of allowlistable files where the key is a regex matching changed files
 # and the value is a list of tests that should be run. An empty list means that
 # the changed files should not trigger any tests. Any changed file that does not
 # match any of these regexes will trigger all tests
 # DO NOT CHANGE THIS UNLESS YOU KNOW WHAT YOU ARE DOING (be careful even if you do)
-_WHITELIST_DICT = {
+_ALLOWLIST_DICT = {
     '^doc/': [],
     '^examples/': [],
     '^include/grpc\+\+/': [_CPP_TEST_SUITE],
@@ -86,6 +86,7 @@ _WHITELIST_DICT = {
     '^test/distrib/php/': [_PHP_TEST_SUITE],
     '^test/distrib/python/': [_PYTHON_TEST_SUITE],
     '^test/distrib/ruby/': [_RUBY_TEST_SUITE],
+    '^tools/run_tests/xds_k8s_test_driver/': [],
     '^vsprojects/': [_WINDOWS_TEST_SUITE],
     'composer\.json$': [_PHP_TEST_SUITE],
     'config\.m4$': [_PHP_TEST_SUITE],
@@ -110,11 +111,11 @@ _WHITELIST_DICT = {
     'setup\.py$': [_PYTHON_TEST_SUITE]
 }
 
-# Regex that combines all keys in _WHITELIST_DICT
-_ALL_TRIGGERS = "(" + ")|(".join(_WHITELIST_DICT.keys()) + ")"
+# Regex that combines all keys in _ALLOWLIST_DICT
+_ALL_TRIGGERS = "(" + ")|(".join(_ALLOWLIST_DICT.keys()) + ")"
 
 # Add all triggers to their respective test suites
-for trigger, test_suites in six.iteritems(_WHITELIST_DICT):
+for trigger, test_suites in six.iteritems(_ALLOWLIST_DICT):
     for test_suite in test_suites:
         test_suite.add_trigger(trigger)
 
@@ -165,7 +166,7 @@ def affects_c_cpp(base_branch):
   :return: boolean indicating whether C/C++ changes are made in pull request
   """
     changed_files = _get_changed_files(base_branch)
-    # Run all tests if any changed file is not in the whitelist dictionary
+    # Run all tests if any changed file is not in the allowlist dictionary
     for changed_file in changed_files:
         if not re.match(_ALL_TRIGGERS, changed_file):
             return True
@@ -187,7 +188,7 @@ def filter_tests(tests, base_branch):
         print('  %s' % changed_file)
     print('')
 
-    # Run all tests if any changed file is not in the whitelist dictionary
+    # Run all tests if any changed file is not in the allowlist dictionary
     for changed_file in changed_files:
         if not re.match(_ALL_TRIGGERS, changed_file):
             return (tests)

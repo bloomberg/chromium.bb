@@ -5,19 +5,16 @@
 #ifndef PDF_PDF_VIEW_WEB_PLUGIN_H_
 #define PDF_PDF_VIEW_WEB_PLUGIN_H_
 
-#include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/paint/paint_image.h"
 #include "pdf/pdf_view_plugin_base.h"
 #include "pdf/post_message_receiver.h"
 #include "pdf/post_message_sender.h"
+#include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "v8/include/v8.h"
-
-namespace base {
-class Value;
-}  // namespace base
 
 namespace blink {
 class WebPluginContainer;
@@ -29,7 +26,8 @@ namespace chrome_pdf {
 class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public blink::WebPlugin,
                                public BlinkUrlLoader::Client,
-                               public PostMessageReceiver::Client {
+                               public PostMessageReceiver::Client,
+                               public SkiaGraphics::Client {
  public:
   explicit PdfViewWebPlugin(const blink::WebPluginParams& params);
   PdfViewWebPlugin(const PdfViewWebPlugin& other) = delete;
@@ -57,65 +55,35 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void DidFailLoading(const blink::WebURLError& error) override;
 
   // PdfViewPluginBase:
-  void ProposeDocumentLayout(const DocumentLayout& layout) override;
-  void DidScroll(const gfx::Vector2d& offset) override;
-  void ScrollToX(int x_in_screen_coords) override;
-  void ScrollToY(int y_in_screen_coords) override;
-  void ScrollBy(const gfx::Vector2d& scroll_delta) override;
-  void ScrollToPage(int page) override;
-  void NavigateTo(const std::string& url,
-                  WindowOpenDisposition disposition) override;
-  void NavigateToDestination(int page,
-                             const float* x,
-                             const float* y,
-                             const float* zoom) override;
-  void UpdateCursor(PP_CursorType_Dev cursor) override;
+  void UpdateCursor(ui::mojom::CursorType cursor_type) override;
   void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
-  void NotifyTouchSelectionOccurred() override;
-  void GetDocumentPassword(
-      base::OnceCallback<void(const std::string&)> callback) override;
-  void Beep() override;
   void Alert(const std::string& message) override;
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
-  std::string GetURL() override;
-  void Email(const std::string& to,
-             const std::string& cc,
-             const std::string& bcc,
-             const std::string& subject,
-             const std::string& body) override;
   void Print() override;
   void SubmitForm(const std::string& url,
                   const void* data,
                   int length) override;
-  std::unique_ptr<UrlLoader> CreateUrlLoader() override;
-  std::vector<SearchStringResult> SearchString(const base::char16* string,
-                                               const base::char16* term,
+  std::vector<SearchStringResult> SearchString(const char16_t* string,
+                                               const char16_t* term,
                                                bool case_sensitive) override;
-  void DocumentLoadComplete() override;
-  void DocumentLoadFailed() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
-  void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
-  void FormTextFieldFocusChange(bool in_focus) override;
   bool IsPrintPreview() override;
-  void IsSelectingChanged(bool is_selecting) override;
   void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
   void EnteredEditMode() override;
-  void DocumentFocusChanged(bool document_has_focus) override;
   void SetSelectedText(const std::string& selected_text) override;
   void SetLinkUnderCursor(const std::string& link_under_cursor) override;
   bool IsValidLink(const std::string& url) override;
   std::unique_ptr<Graphics> CreatePaintGraphics(const gfx::Size& size) override;
   bool BindPaintGraphics(Graphics& graphics) override;
-  void ScheduleTaskOnMainThread(
-      base::TimeDelta delay,
-      ResultCallback callback,
-      int32_t result,
-      const base::Location& from_here = base::Location::Current()) override;
+  void ScheduleTaskOnMainThread(const base::Location& from_here,
+                                ResultCallback callback,
+                                int32_t result,
+                                base::TimeDelta delay) override;
 
   // BlinkUrlLoader::Client:
   bool IsValid() const override;
@@ -129,6 +97,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // PostMessageReceiver::Client:
   void OnMessage(const base::Value& message) override;
 
+  // SkiaGraphics::Client:
+  void UpdateSnapshot(sk_sp<SkImage> snapshot) override;
+
  protected:
   // PdfViewPluginBase:
   base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override;
@@ -138,6 +109,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                       int32_t result) override;
   void SendMessage(base::Value message) override;
   void InitImageData(const gfx::Size& size) override;
+  void SetFormFieldInFocus(bool in_focus) override;
   void SetAccessibilityDocInfo(const AccessibilityDocInfo& doc_info) override;
   void SetAccessibilityPageInfo(AccessibilityPageInfo page_info,
                                 std::vector<AccessibilityTextRunInfo> text_runs,
@@ -145,18 +117,33 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                 AccessibilityPageObjects page_objects) override;
   void SetAccessibilityViewportInfo(
       const AccessibilityViewportInfo& viewport_info) override;
+  void SetContentRestrictions(int content_restrictions) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
+  void OnPrintPreviewLoaded() override;
+  void UserMetricsRecordAction(const std::string& action) override;
 
  private:
   // Call `Destroy()` instead.
   ~PdfViewWebPlugin() override;
 
-  void OnViewportChanged(gfx::Rect view_rect, float new_device_scale);
+  void OnViewportChanged(const gfx::Rect& view_rect, float new_device_scale);
+
+  // Invalidates the entire web plugin container and schedules a paint of the
+  // page in it.
+  void InvalidatePluginContainer();
+
+  // Schedules a paint of the page of a given region in the web plugin
+  // container. The coordinates are relative to the top-left of the container.
+  void InvalidateRectInPluginContainer(const gfx::Rect& rect);
 
   blink::WebPluginParams initial_params_;
   blink::WebPluginContainer* container_ = nullptr;
 
   v8::Persistent<v8::Object> scriptable_receiver_;
   PostMessageSender post_message_sender_;
+
+  cc::PaintImage snapshot_;
 
   base::WeakPtrFactory<PdfViewWebPlugin> weak_factory_{this};
 };

@@ -55,7 +55,7 @@ if (is_android) {
     outputs =
         weblayer_components_strings_java_resources +
         [ "grit/components_strings.h" ] +
-        process_file_template(locales_with_fake_bidi,
+        process_file_template(locales_with_pseudolocales,
                               [ "components_strings_{{source_name_part}}.pak" ])
   }
 
@@ -73,7 +73,7 @@ if (is_android) {
     ]
     outputs = [ "grit/components_chromium_strings.h" ] +
               process_file_template(
-                  locales_with_fake_bidi,
+                  locales_with_pseudolocales,
                   [ "components_chromium_strings_{{source_name_part}}.pak" ])
   }
 
@@ -139,6 +139,12 @@ source_set("weblayer_lib_base") {
     "app/main.cc",
     "browser/autofill_client_impl.cc",
     "browser/autofill_client_impl.h",
+    "browser/background_fetch/background_fetch_delegate_factory.cc",
+    "browser/background_fetch/background_fetch_delegate_factory.h",
+    "browser/background_fetch/background_fetch_delegate_impl.cc",
+    "browser/background_fetch/background_fetch_delegate_impl.h",
+    "browser/background_fetch/background_fetch_download.cc",
+    "browser/background_fetch/background_fetch_download.h",
     "browser/background_sync/background_sync_controller_factory.cc",
     "browser/background_sync/background_sync_controller_factory.h",
     "browser/background_sync/background_sync_delegate_impl.cc",
@@ -176,6 +182,8 @@ source_set("weblayer_lib_base") {
     "browser/download_impl.h",
     "browser/download_manager_delegate_impl.cc",
     "browser/download_manager_delegate_impl.h",
+    "browser/download_service_factory.cc",
+    "browser/download_service_factory.h",
     "browser/favicon/favicon_backend_wrapper.cc",
     "browser/favicon/favicon_backend_wrapper.h",
     "browser/favicon/favicon_fetcher_impl.cc",
@@ -191,6 +199,8 @@ source_set("weblayer_lib_base") {
     "browser/feature_list_creator.h",
     "browser/file_select_helper.cc",
     "browser/file_select_helper.h",
+    "browser/heavy_ad_service_factory.cc",
+    "browser/heavy_ad_service_factory.h",
     "browser/host_content_settings_map_factory.cc",
     "browser/host_content_settings_map_factory.h",
     "browser/i18n_util.cc",
@@ -239,6 +249,8 @@ source_set("weblayer_lib_base") {
     "browser/permissions/permission_decision_auto_blocker_factory.h",
     "browser/permissions/permission_manager_factory.cc",
     "browser/permissions/permission_manager_factory.h",
+    "browser/permissions/weblayer_nfc_permission_context_delegate.cc",
+    "browser/permissions/weblayer_nfc_permission_context_delegate.h",
     "browser/permissions/weblayer_permissions_client.cc",
     "browser/permissions/weblayer_permissions_client.h",
     "browser/persistence/browser_persistence_common.cc",
@@ -249,6 +261,8 @@ source_set("weblayer_lib_base") {
     "browser/persistence/browser_persister_file_utils.h",
     "browser/persistence/minimal_browser_persister.cc",
     "browser/persistence/minimal_browser_persister.h",
+    "browser/persistent_download.cc",
+    "browser/persistent_download.h",
     "browser/popup_navigation_delegate_impl.cc",
     "browser/popup_navigation_delegate_impl.h",
     "browser/profile_disk_operations.cc",
@@ -289,6 +303,8 @@ source_set("weblayer_lib_base") {
     "browser/weblayer_features.h",
     "browser/weblayer_field_trials.cc",
     "browser/weblayer_field_trials.h",
+    "browser/weblayer_page_load_metrics_memory_tracker_factory.cc",
+    "browser/weblayer_page_load_metrics_memory_tracker_factory.h",
     "browser/weblayer_security_blocking_page_factory.cc",
     "browser/weblayer_security_blocking_page_factory.h",
     "browser/weblayer_speech_recognition_manager_delegate.cc",
@@ -371,6 +387,7 @@ source_set("weblayer_lib_base") {
     "//components/autofill/content/renderer",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
+    "//components/background_fetch",
     "//components/background_sync",
     "//components/base32",
     "//components/blocked_content",
@@ -391,6 +408,8 @@ source_set("weblayer_lib_base") {
     "//components/crash/core/common",
     "//components/download/content/factory",
     "//components/download/content/public",
+    "//components/download/public/background_service:public",
+    "//components/download/public/task:public",
     "//components/embedder_support",
     "//components/embedder_support:browser_util",
     "//components/embedder_support/origin_trials",
@@ -401,11 +420,13 @@ source_set("weblayer_lib_base") {
     "//components/favicon/core:database",
     "//components/favicon_base",
     "//components/find_in_page",
+    "//components/heavy_ad_intervention",
     "//components/infobars/core",
     "//components/js_injection/browser",
     "//components/js_injection/renderer",
     "//components/keyed_service/content",
     "//components/language/core/browser",
+    "//components/leveldb_proto",
     "//components/metrics",
     "//components/metrics:content",
     "//components/network_time",
@@ -416,6 +437,7 @@ source_set("weblayer_lib_base") {
     "//components/omnibox/browser:browser",
     "//components/page_info",
     "//components/page_load_metrics/browser",
+    "//components/page_load_metrics/browser/observers/ad_metrics",
     "//components/page_load_metrics/renderer",
     "//components/password_manager/content/browser",
     "//components/payments/core",
@@ -528,12 +550,12 @@ source_set("weblayer_lib_base") {
     sources += [
       "app/jni_onload.cc",
       "app/jni_onload.h",
+      "browser/android/application_info_helper.cc",
+      "browser/android/application_info_helper.h",
       "browser/android/exception_filter.cc",
       "browser/android/exception_filter.h",
       "browser/android/metrics/uma_utils.cc",
       "browser/android/metrics/uma_utils.h",
-      "browser/android/metrics/weblayer_metrics_navigation_throttle.cc",
-      "browser/android/metrics/weblayer_metrics_navigation_throttle.h",
       "browser/android/metrics/weblayer_metrics_service_client.cc",
       "browser/android/metrics/weblayer_metrics_service_client.h",
       "browser/android/permission_request_utils.cc",
@@ -659,6 +681,7 @@ source_set("weblayer_lib_base") {
       "//components/favicon/android",
       "//components/infobars/android",
       "//components/infobars/content",
+      "//components/installedapp/android",
       "//components/javascript_dialogs",
       "//components/location/android:settings",
       "//components/media_router/browser",
@@ -693,8 +716,10 @@ source_set("weblayer_lib_base") {
       "//components/subresource_filter/android",
       "//components/translate/content/android",
       "//components/version_info/android:channel_getter",
+      "//components/webauthn/android",
       "//services/resource_coordinator/public/cpp/memory_instrumentation:browser",
       "//ui/android",
+      "//url:gurl_android",
       "//weblayer/browser/java:jni",
     ]
   } else {
@@ -747,6 +772,7 @@ if (is_android) {
     deps = [
       ":weblayer_lib_base",
       "//base",
+      "//base/test:test_support",
       "//components/infobars/android",
       "//components/infobars/core",
       "//components/translate/core/browser",
@@ -832,6 +858,7 @@ if (is_android) {
     deps = [
       ":weblayer_lib_webview_test",
       "//base",
+      "//components/autofill/android/provider/test_support:component_autofill_provider_native_test_support",
       "//content/public/app",
       "//weblayer/browser/java:test_weblayer_jni_registration",
     ]

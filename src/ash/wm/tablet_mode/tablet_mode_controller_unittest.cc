@@ -604,10 +604,10 @@ TEST_F(TabletModeControllerTest, VerticalHingeTest) {
   }
 }
 
-// Test if this case does not crash. See http://crbug.com/462806
+// Test if this case does not crash. See http://crbug.com/462806.
 TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
   // Do not animate wallpaper on entering overview.
-  OverviewWallpaperController::SetDoNotChangeWallpaperForTests();
+  OverviewWallpaperController::SetDisableChangeWallpaperForTest(true);
 
   UpdateDisplay("800x600,800x600");
   std::unique_ptr<aura::Window> w1(
@@ -624,6 +624,8 @@ TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_EQ(w1->GetRootWindow(), w2->GetRootWindow());
+
+  OverviewWallpaperController::SetDisableChangeWallpaperForTest(false);
 }
 
 // Test that the disabling of the internal display exits tablet mode, and that
@@ -1630,6 +1632,31 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsSnappedWindows) {
   WaitForSmoothnessMetrics();
   histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
   histogram_tester.ExpectTotalCount(kExitHistogram, 0);
+}
+
+// Tests that closing a window during the tablet mode enter animation does not
+// cause a crash.
+TEST_F(TabletModeControllerTest, CloseWindowDuringEnterAnimation) {
+  std::unique_ptr<aura::Window> window = CreateAppWindow(gfx::Rect(250, 100));
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  tablet_mode_controller()->SetEnabledForTest(true);
+  window.reset();
+}
+
+// Tests that closing a window during the tablet mode exit animation does not
+// cause a crash.
+TEST_F(TabletModeControllerTest, CloseWindowDuringExitAnimation) {
+  std::unique_ptr<aura::Window> window = CreateAppWindow(gfx::Rect(250, 100));
+  tablet_mode_controller()->SetEnabledForTest(true);
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  tablet_mode_controller()->SetEnabledForTest(false);
+  window.reset();
 }
 
 class TabletModeControllerOnDeviceTest : public TabletModeControllerTest {

@@ -4,6 +4,8 @@
 
 #include "media/remoting/end2end_test_renderer.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -104,14 +106,14 @@ class TestRemoter final : public mojom::Remoter {
                         mojo::PendingReceiver<mojom::RemotingDataStreamSender>
                             video_sender_receiver) override {
     if (audio_pipe.is_valid()) {
-      audio_stream_sender_.reset(new TestStreamSender(
+      audio_stream_sender_ = std::make_unique<TestStreamSender>(
           std::move(audio_sender_receiver), std::move(audio_pipe),
-          DemuxerStream::AUDIO, send_frame_to_sink_cb_));
+          DemuxerStream::AUDIO, send_frame_to_sink_cb_);
     }
     if (video_pipe.is_valid()) {
-      video_stream_sender_.reset(new TestStreamSender(
+      video_stream_sender_ = std::make_unique<TestStreamSender>(
           std::move(video_sender_receiver), std::move(video_pipe),
-          DemuxerStream::VIDEO, send_frame_to_sink_cb_));
+          DemuxerStream::VIDEO, send_frame_to_sink_cb_);
     }
   }
 
@@ -333,15 +335,15 @@ void End2EndTestRenderer::CompleteInitialize() {
 }
 
 void End2EndTestRenderer::OnReceivedRpc(
-    std::unique_ptr<media::remoting::pb::RpcMessage> message) {
+    std::unique_ptr<openscreen::cast::RpcMessage> message) {
   DCHECK(message);
   DCHECK_EQ(message->proc(),
-            media::remoting::pb::RpcMessage::RPC_ACQUIRE_RENDERER);
+            openscreen::cast::RpcMessage::RPC_ACQUIRE_RENDERER);
   OnAcquireRenderer(std::move(message));
 }
 
 void End2EndTestRenderer::OnAcquireRenderer(
-    std::unique_ptr<media::remoting::pb::RpcMessage> message) {
+    std::unique_ptr<openscreen::cast::RpcMessage> message) {
   DCHECK(message->has_integer_value());
   DCHECK(message->integer_value() != RpcBroker::kInvalidHandle);
 
@@ -352,9 +354,9 @@ void End2EndTestRenderer::OnAcquireRenderer(
 }
 
 void End2EndTestRenderer::OnAcquireRendererDone(int receiver_renderer_handle) {
-  auto rpc = std::make_unique<pb::RpcMessage>();
+  auto rpc = std::make_unique<openscreen::cast::RpcMessage>();
   rpc->set_handle(sender_renderer_handle_);
-  rpc->set_proc(pb::RpcMessage::RPC_ACQUIRE_RENDERER_DONE);
+  rpc->set_proc(openscreen::cast::RpcMessage::RPC_ACQUIRE_RENDERER_DONE);
   rpc->set_integer_value(receiver_renderer_handle);
   receiver_rpc_broker_->SendMessageToRemote(std::move(rpc));
 }

@@ -16,14 +16,11 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
+#include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 
 namespace base {
 class CommandLine;
 }
-
-namespace cryptohome {
-class BaseReply;
-}  // namespace cryptohome
 
 namespace chromeos {
 
@@ -192,11 +189,6 @@ class AutoEnrollmentController {
   // reached while waiting for the system clock sync.
   void OnSystemClockSyncResult(SystemClockSyncState system_clock_sync_state);
 
-  // Re-checks if initial enrollment is required. The requirement could change
-  // if the system clock has been synchronized, because the device may not be
-  // in the factory ping embargo period according to the new system time.
-  void RecheckInitialEnrollmentRequirement();
-
   // Starts the auto-enrollment client for initial enrollment.
   void StartClientForInitialEnrollment();
 
@@ -227,7 +219,8 @@ class AutoEnrollmentController {
   // the FWMP is used only for newer devices.
   // This also starts the VPD clearing process.
   void OnFirmwareManagementParametersRemoved(
-      base::Optional<cryptohome::BaseReply> reply);
+      base::Optional<user_data_auth::RemoveFirmwareManagementParametersReply>
+          reply);
 
   // Makes a D-Bus call to session_manager to set block_devmode=0 and
   // check_enrollment=0 in RW_VPD. Stops the `safeguard_timer_` and notifies the

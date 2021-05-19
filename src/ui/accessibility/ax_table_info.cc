@@ -134,8 +134,9 @@ bool AXTableInfo::Update() {
 
   // On Mac, we add a few extra nodes to the table - see comment
   // at the top of UpdateExtraMacNodes for details.
-  if (tree_->enable_extra_mac_nodes())
-    UpdateExtraMacNodes();
+#if defined(AX_EXTRA_MAC_NODES)
+  UpdateExtraMacNodes();
+#endif
 
   // The table metadata is now valid, any table queries will now be
   // fast. Any time a node in the table is updated, we'll have to

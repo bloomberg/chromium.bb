@@ -9,7 +9,6 @@ generate_grd("build_grdp") {
   grd_prefix = "polymer_1_0"
   out_grd = "$target_gen_dir/${grd_prefix}_resources.grdp"
   input_files = [
-    "font-roboto/roboto.html",
     "iron-a11y-announcer/iron-a11y-announcer-extracted.js",
     "iron-a11y-announcer/iron-a11y-announcer.html",
     "iron-a11y-keys-behavior/iron-a11y-keys-behavior-extracted.js",
@@ -32,10 +31,6 @@ generate_grd("build_grdp") {
     "iron-iconset-svg/iron-iconset-svg.html",
     "iron-list/iron-list-extracted.js",
     "iron-list/iron-list.html",
-    "iron-location/iron-location-extracted.js",
-    "iron-location/iron-location.html",
-    "iron-location/iron-query-params-extracted.js",
-    "iron-location/iron-query-params.html",
     "iron-media-query/iron-media-query-extracted.js",
     "iron-media-query/iron-media-query.html",
     "iron-meta/iron-meta-extracted.js",

@@ -11,14 +11,17 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_font_face_descriptors.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
+#include "third_party/blink/renderer/core/frame/csp/conversion_util.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/testing/mock_policy_container_host.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -206,6 +209,21 @@ void PageTestBase::NavigateTo(const KURL& url,
 
   for (const auto& header : headers)
     params->response.SetHttpHeaderField(header.key, header.value);
+
+  MockPolicyContainerHost mock_policy_container_host;
+  params->policy_container = std::make_unique<WebPolicyContainer>(
+      WebPolicyContainerPolicies(),
+      mock_policy_container_host.BindNewEndpointAndPassDedicatedRemote());
+
+  // Add parsed Content Security Policies to the policy container, simulating
+  // what the browser does.
+  for (auto& csp : ParseContentSecurityPolicies(
+           params->response.HttpHeaderField("content-security-policy"),
+           network::mojom::blink::ContentSecurityPolicyType::kEnforce,
+           network::mojom::blink::ContentSecurityPolicySource::kHTTP, url)) {
+    params->policy_container->policies.content_security_policies.emplace_back(
+        ConvertToPublic(std::move(csp)));
+  }
 
   GetFrame().Loader().CommitNavigation(std::move(params),
                                        nullptr /* extra_data */);

@@ -4,6 +4,7 @@
 
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
+import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
 import("//chrome/browser/resources/pdf/ink/ink.gni")
 import("//chrome/common/features.gni")
@@ -149,6 +150,8 @@ static_library("extensions") {
     "api/downloads_internal/downloads_internal_api.h",
     "api/enterprise_hardware_platform/enterprise_hardware_platform_api.cc",
     "api/enterprise_hardware_platform/enterprise_hardware_platform_api.h",
+    "api/enterprise_reporting_private/enterprise_reporting_private_api.cc",
+    "api/enterprise_reporting_private/enterprise_reporting_private_api.h",
     "api/extension_action/extension_action_api.cc",
     "api/extension_action/extension_action_api.h",
     "api/extension_action/extension_page_actions_api_constants.cc",
@@ -431,6 +434,8 @@ static_library("extensions") {
     "blocklist.h",
     "blocklist_check.cc",
     "blocklist_check.h",
+    "blocklist_extension_prefs.cc",
+    "blocklist_extension_prefs.h",
     "blocklist_factory.cc",
     "blocklist_factory.h",
     "blocklist_state_fetcher.cc",
@@ -463,6 +468,8 @@ static_library("extensions") {
     "chrome_extension_cookies.h",
     "chrome_extension_cookies_factory.cc",
     "chrome_extension_cookies_factory.h",
+    "chrome_extension_frame_host.cc",
+    "chrome_extension_frame_host.h",
     "chrome_extension_function_details.cc",
     "chrome_extension_function_details.h",
     "chrome_extension_host_delegate.cc",
@@ -647,8 +654,6 @@ static_library("extensions") {
     "menu_manager_factory.h",
     "navigation_observer.cc",
     "navigation_observer.h",
-    "ntp_overridden_bubble_delegate.cc",
-    "ntp_overridden_bubble_delegate.h",
     "pack_extension_job.cc",
     "pack_extension_job.h",
     "pending_extension_info.cc",
@@ -665,6 +670,8 @@ static_library("extensions") {
     "policy_handlers.h",
     "proxy_overridden_bubble_delegate.cc",
     "proxy_overridden_bubble_delegate.h",
+    "safe_browsing_verdict_handler.cc",
+    "safe_browsing_verdict_handler.h",
     "scoped_active_install.cc",
     "scoped_active_install.h",
     "scripting_permissions_modifier.cc",
@@ -679,8 +686,6 @@ static_library("extensions") {
     "standard_management_policy_provider.h",
     "startup_helper.cc",
     "startup_helper.h",
-    "state_store_notification_observer.cc",
-    "state_store_notification_observer.h",
     "suspicious_extension_bubble_delegate.cc",
     "suspicious_extension_bubble_delegate.h",
     "sync_bundle.cc",
@@ -788,11 +793,14 @@ static_library("extensions") {
     "//chrome/browser/devtools",
     "//chrome/browser/image_decoder",
     "//chrome/browser/media/router",
+    "//chrome/browser/media/router:media_router_feature",
     "//chrome/browser/media/router/discovery",
+    "//chrome/browser/profiles",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/resource_coordinator:intervention_policy_database_proto",
     "//chrome/browser/resource_coordinator:mojo_bindings",
     "//chrome/browser/safe_browsing",
+    "//chrome/browser/safe_browsing:metrics_collector",
     "//chrome/browser/web_applications",
     "//chrome/browser/web_applications/components",
     "//components/site_engagement/core/mojom:mojo_bindings",
@@ -893,6 +901,7 @@ static_library("extensions") {
     "//extensions/browser/updater",
     "//extensions/buildflags",
     "//extensions/common",
+    "//extensions/common:mojom",
     "//extensions/common/api",
     "//extensions/strings",
     "//google_apis",
@@ -956,12 +965,20 @@ static_library("extensions") {
   if (is_chromeos_lacros || is_chromeos_ash) {
     sources += [
       "api/enterprise_device_attributes/enterprise_device_attributes_api.h",
+      "api/enterprise_platform_keys/enterprise_platform_keys_api.cc",
       "api/enterprise_platform_keys/enterprise_platform_keys_api.h",
+      "api/messaging/native_message_built_in_host.cc",
+      "api/messaging/native_message_built_in_host.h",
+      "api/messaging/native_message_echo_host.cc",
+      "api/messaging/native_message_echo_host.h",
       "api/platform_keys/platform_keys_api.h",
+      "clipboard_extension_helper_chromeos.cc",
+      "clipboard_extension_helper_chromeos.h",
     ]
     deps += [
       "//chromeos/crosapi/cpp",
       "//chromeos/crosapi/mojom",
+      "//remoting/host/it2me:chrome_os_host",
     ]
     if (is_chromeos_lacros) {
       sources += [
@@ -969,11 +986,24 @@ static_library("extensions") {
         "api/enterprise_device_attributes/enterprise_device_attributes_api_lacros.h",
         "api/enterprise_platform_keys/enterprise_platform_keys_api_lacros.cc",
         "api/enterprise_platform_keys/enterprise_platform_keys_api_lacros.h",
+        "api/messaging/native_message_host_lacros.cc",
         "api/platform_keys/platform_keys_api_lacros.cc",
         "api/platform_keys/platform_keys_api_lacros.h",
       ]
       deps += [ "//chromeos/lacros" ]
+    } else {
+      sources += [ "api/messaging/native_message_host_chromeos.cc" ]
+      deps += [ "//remoting/host" ]
     }
+  } else {
+    sources += [
+      "api/messaging/native_message_process_host.cc",
+      "api/messaging/native_message_process_host.h",
+      "api/messaging/native_messaging_launch_from_native.cc",
+      "api/messaging/native_messaging_launch_from_native.h",
+      "api/messaging/native_process_launcher.cc",
+      "api/messaging/native_process_launcher.h",
+    ]
   }
 
   if (is_chromeos_ash) {
@@ -1006,7 +1036,6 @@ static_library("extensions") {
       "api/input_ime/input_ime_event_router_base.h",
       "api/media_perception_private/media_perception_api_delegate_chromeos.cc",
       "api/media_perception_private/media_perception_api_delegate_chromeos.h",
-      "api/messaging/native_message_host_chromeos.cc",
       "api/networking_cast_private/chrome_networking_cast_private_delegate.cc",
       "api/networking_cast_private/chrome_networking_cast_private_delegate.h",
       "api/networking_cast_private/networking_cast_private_api.cc",
@@ -1031,8 +1060,6 @@ static_library("extensions") {
       "api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.cc",
       "api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h",
       "chrome_kiosk_delegate_chromeos.cc",
-      "clipboard_extension_helper_chromeos.cc",
-      "clipboard_extension_helper_chromeos.h",
       "extension_assets_manager_chromeos.cc",
       "extension_assets_manager_chromeos.h",
       "extension_garbage_collector_chromeos.cc",
@@ -1094,9 +1121,6 @@ static_library("extensions") {
       "//components/user_manager",
       "//media/capture:capture_lib",
       "//media/capture/video/chromeos/mojom:cros_camera",
-      "//remoting/base",
-      "//remoting/host",
-      "//remoting/host/it2me:chrome_os_host",
       "//third_party/protobuf:protobuf_lite",
       "//ui/base/ime/chromeos",
       "//ui/chromeos",
@@ -1120,19 +1144,9 @@ static_library("extensions") {
     sources += [
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.cc",
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.h",
-      "api/enterprise_reporting_private/context_info_fetcher.cc",
-      "api/enterprise_reporting_private/context_info_fetcher.h",
-      "api/enterprise_reporting_private/enterprise_reporting_private_api.cc",
-      "api/enterprise_reporting_private/enterprise_reporting_private_api.h",
       "api/enterprise_reporting_private/keychain_data_helper_mac.h",
       "api/enterprise_reporting_private/keychain_data_helper_mac.mm",
       "api/image_writer_private/operation_nonchromeos.cc",
-      "api/messaging/native_message_process_host.cc",
-      "api/messaging/native_message_process_host.h",
-      "api/messaging/native_messaging_launch_from_native.cc",
-      "api/messaging/native_messaging_launch_from_native.h",
-      "api/messaging/native_process_launcher.cc",
-      "api/messaging/native_process_launcher.h",
       "api/tabs/tabs_util.cc",
       "chrome_kiosk_delegate.cc",
       "default_apps.cc",
@@ -1160,11 +1174,17 @@ static_library("extensions") {
       "global_shortcut_listener_x11.cc",
       "global_shortcut_listener_x11.h",
     ]
-  } else if (use_ozone) {
+  }
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
     sources += [
       "global_shortcut_listener_ozone.cc",
       "global_shortcut_listener_ozone.h",
     ]
+  }
+
+  if (use_x11 || use_ozone) {
+    sources += [ "global_shortcut_listener_linux.cc" ]
   }
 
   if (is_mac) {

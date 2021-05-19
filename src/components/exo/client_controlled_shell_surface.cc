@@ -589,7 +589,7 @@ void ClientControlledShellSurface::SetFrameButtons(
 }
 
 void ClientControlledShellSurface::SetExtraTitle(
-    const base::string16& extra_title) {
+    const std::u16string& extra_title) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetExtraTitle",
                "extra_title", base::UTF16ToUTF8(extra_title));
 
@@ -718,6 +718,25 @@ float ClientControlledShellSurface::GetClientToDpScale() const {
   if (use_default_scale_cancellation_)
     return 1.f;
   return 1.f / scale_;
+}
+
+void ClientControlledShellSurface::SetResizeLock(bool resize_lock) {
+  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetResizeLock",
+               "resize_lock", resize_lock);
+  pending_resize_lock_ = resize_lock;
+}
+
+void ClientControlledShellSurface::UpdateCanResize() {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::updateCanResize");
+  widget_->GetNativeWindow()->SetProperty(ash::kArcResizeLockKey,
+                                          pending_resize_lock_);
+  // If resize lock is enabled, the window is explicitly marded as unresizable.
+  // Otherwise, the decision is deferred to the parent class.
+  if (ash::features::IsArcResizeLockEnabled() && pending_resize_lock_) {
+    SetCanResize(false);
+    return;
+  }
+  ShellSurfaceBase::UpdateCanResize();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1035,7 +1054,7 @@ void ClientControlledShellSurface::InitializeWindowState(
   UpdateFrameWidth();
   if (initial_orientation_lock_ != ash::OrientationLockType::kAny)
     SetOrientationLock(initial_orientation_lock_);
-  if (initial_extra_title_ != base::string16())
+  if (initial_extra_title_ != std::u16string())
     SetExtraTitle(initial_extra_title_);
 
   // Register Client controlled accelerators.
@@ -1205,6 +1224,8 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
                                           pending_always_on_top_
                                               ? ui::ZOrderLevel::kFloatingWindow
                                               : ui::ZOrderLevel::kNormal);
+
+  UpdateCanResize();
 
   ash::WindowState* window_state = GetWindowState();
   // For PIP, the snap fraction is used to specify the ideal position. Usually

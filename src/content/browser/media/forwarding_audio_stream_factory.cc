@@ -27,17 +27,18 @@ namespace content {
 
 namespace {
 
-ForwardingAudioStreamFactory::StreamFactoryBinder&
-GetStreamFactoryBinderOverride() {
-  static base::NoDestructor<ForwardingAudioStreamFactory::StreamFactoryBinder>
+ForwardingAudioStreamFactory::AudioStreamFactoryBinder&
+GetAudioStreamFactoryBinderOverride() {
+  static base::NoDestructor<
+      ForwardingAudioStreamFactory::AudioStreamFactoryBinder>
       binder;
   return *binder;
 }
 
 void BindStreamFactoryFromUIThread(
-    mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
+    mojo::PendingReceiver<media::mojom::AudioStreamFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const auto& binder_override = GetStreamFactoryBinderOverride();
+  const auto& binder_override = GetAudioStreamFactoryBinderOverride();
   if (binder_override) {
     binder_override.Run(std::move(receiver));
     return;
@@ -242,12 +243,14 @@ ForwardingAudioStreamFactory::~ForwardingAudioStreamFactory() {
 
 void ForwardingAudioStreamFactory::LoopbackStreamStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_contents()->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ false);
+  capture_handle_ =
+      web_contents()->IncrementCapturerCount(gfx::Size(), /*stay_hidden=*/false,
+                                             /*stay_awake=*/true);
 }
 
 void ForwardingAudioStreamFactory::LoopbackStreamStopped() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_contents()->DecrementCapturerCount(/* stay_hidden */ false);
+  capture_handle_.RunAndReset();
 }
 
 void ForwardingAudioStreamFactory::SetMuted(bool muted) {
@@ -268,7 +271,7 @@ bool ForwardingAudioStreamFactory::IsMuted() const {
   return is_muted_;
 }
 
-void ForwardingAudioStreamFactory::FrameDeleted(
+void ForwardingAudioStreamFactory::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(render_frame_host);
@@ -282,9 +285,9 @@ void ForwardingAudioStreamFactory::FrameDeleted(
                                 render_frame_host->GetRoutingID()));
 }
 
-void ForwardingAudioStreamFactory::OverrideStreamFactoryBinderForTesting(
-    StreamFactoryBinder binder) {
-  GetStreamFactoryBinderOverride() = std::move(binder);
+void ForwardingAudioStreamFactory::OverrideAudioStreamFactoryBinderForTesting(
+    AudioStreamFactoryBinder binder) {
+  GetAudioStreamFactoryBinderOverride() = std::move(binder);
 }
 
 void ForwardingAudioStreamFactory::Core::CleanupStreamsBelongingTo(
@@ -330,7 +333,8 @@ void ForwardingAudioStreamFactory::Core::RemoveOutput(
   ResetRemoteFactoryPtrIfIdle();
 }
 
-audio::mojom::StreamFactory* ForwardingAudioStreamFactory::Core::GetFactory() {
+media::mojom::AudioStreamFactory*
+ForwardingAudioStreamFactory::Core::GetFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!remote_factory_) {
     TRACE_EVENT_INSTANT1(

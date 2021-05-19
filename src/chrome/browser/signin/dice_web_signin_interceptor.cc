@@ -32,6 +32,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/common/pref_names.h"
@@ -58,18 +59,12 @@ void RecordSigninInterceptionHeuristicOutcome(
   base::UmaHistogramEnumeration("Signin.Intercept.HeuristicOutcome", outcome);
 }
 
-bool IsProfileCreationAllowed() {
-  PrefService* service = g_browser_process->local_state();
-  DCHECK(service);
-  return service->GetBoolean(prefs::kBrowserAddPersonEnabled);
-}
-
 // Helper function to return the primary account info. The returned info is
 // empty if there is no primary account, and non-empty otherwise. Extended
 // fields may be missing if they are not available.
 AccountInfo GetPrimaryAccountInfo(signin::IdentityManager* manager) {
   CoreAccountInfo primary_core_account_info =
-      manager->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired);
+      manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
   if (primary_core_account_info.IsEmpty())
     return AccountInfo();
 
@@ -110,8 +105,7 @@ SigninInterceptGuestAvailability GetGuestOptionAvailablity() {
   if (BrowserList::GetGuestBrowserCount())
     return SigninInterceptGuestAvailability::kGuestAlreadyOpen;
 
-  if (!g_browser_process->local_state()->GetBoolean(
-          prefs::kBrowserGuestModeEnabled)) {
+  if (!profiles::IsGuestModeEnabled()) {
     return SigninInterceptGuestAvailability::kGuestBlocked;
   }
   return SigninInterceptGuestAvailability::kAvailable;
@@ -192,7 +186,7 @@ DiceWebSigninInterceptor::GetHeuristicOutcome(
 
   // From this point the remaining possible interceptions involve creating a new
   // profile.
-  if (!IsProfileCreationAllowed()) {
+  if (!profiles::IsProfileCreationAllowed()) {
     return SigninInterceptionHeuristicOutcome::kAbortProfileCreationDisallowed;
   }
 
@@ -369,8 +363,7 @@ bool DiceWebSigninInterceptor::ShouldShowEnterpriseBubble(
   DCHECK(intercepted_account_info.IsValid());
   // Check if the intercepted account or the primary account is managed.
   CoreAccountInfo primary_core_account_info =
-      identity_manager_->GetPrimaryAccountInfo(
-          signin::ConsentLevel::kNotRequired);
+      identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
 
   if (primary_core_account_info.IsEmpty() ||
       primary_core_account_info.account_id ==
@@ -479,7 +472,7 @@ void DiceWebSigninInterceptor::OnProfileCreationChoice(
 
   DCHECK(interception_bubble_handle_);
   profile_creation_start_time_ = base::TimeTicks::Now();
-  base::string16 profile_name;
+  std::u16string profile_name;
   profile_name = profiles::GetDefaultNameForNewSignedInProfile(account_info);
 
   DCHECK(!dice_signed_in_profile_creator_);
@@ -561,11 +554,21 @@ void DiceWebSigninInterceptor::OnNewBrowserCreated(bool is_new_profile) {
   DCHECK(interception_bubble_handle_);
   interception_bubble_handle_.reset();  // Close the bubble now.
   session_startup_helper_.reset();
-  if (is_new_profile && !profile_->IsEphemeralGuestProfile()) {
-    Browser* browser = chrome::FindBrowserWithProfile(profile_);
-    DCHECK(browser);
-    delegate_->ShowProfileCustomizationBubble(browser);
+
+  if (!is_new_profile || profile_->IsEphemeralGuestProfile())
+    return;
+
+  // Don't show the customization bubble if a valid policy theme is set.
+  Browser* browser = chrome::FindBrowserWithProfile(profile_);
+  if (ThemeServiceFactory::GetForProfile(profile_)->UsingPolicyTheme()) {
+    // Show the profile switch IPH that is normally shown after the
+    // customization bubble.
+    browser->window()->MaybeShowProfileSwitchIPH();
+    return;
   }
+
+  DCHECK(browser);
+  delegate_->ShowProfileCustomizationBubble(browser);
 }
 
 // static

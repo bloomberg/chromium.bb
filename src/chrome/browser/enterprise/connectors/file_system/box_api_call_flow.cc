@@ -6,14 +6,19 @@
 
 #include <string>
 
+#include "base/base64.h"
 #include "base/files/file_util.h"
+#include "base/hash/sha1.h"
 #include "base/json/json_writer.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_api_call_endpoints.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
+#include "rename_handler.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -57,11 +62,27 @@ std::string GetMimeType(base::FilePath file_path) {
   return file_type;
 }
 
+base::Value CreateEmptyDict() {
+  return base::Value(base::Value::Type::DICTIONARY);
+}
+
 base::Value CreateSingleFieldDict(const std::string& key,
                                   const std::string& value) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey(key, value);
   return dict;
+}
+
+bool VerifyChunkedUploadParts(const base::Value& parts) {
+  auto parts_list = parts.FindPath("parts")->GetList();
+  DCHECK(!parts_list.empty());
+  for (auto p = parts_list.begin(); p != parts_list.end(); ++p) {
+    DCHECK(p->FindPath("part_id")) << parts;
+    DCHECK(p->FindPath("offset")) << parts;
+    DCHECK(p->FindPath("size")) << parts;
+    DCHECK(p->FindPath("sha1")) << parts;
+  }
+  return true;
 }
 
 }  // namespace
@@ -259,6 +280,20 @@ void BoxCreateUpstreamFolderApiCallFlow::OnJsonParsed(
 // API reference:
 // https://developer.box.com/reference/post-files-content/
 
+// static
+bool BoxWholeFileUploadApiCallFlow::DeleteIfExists(base::FilePath file_path) {
+  if (!base::PathExists(file_path)) {
+    // If the file is deleted by some other thread, how can we be sure what we
+    // read and uploaded was correct?! So report as error. Otherwise, it is
+    // considered successful to
+    // attempt to delete a file that does not exist by base::DeleteFile().
+    DLOG(ERROR) << "[FileSystemRenameHandler] temporary local file "
+                << file_path << " no longer exists!";
+    return false;
+  }
+  return base::DeleteFile(file_path);
+}
+
 BoxWholeFileUploadApiCallFlow::BoxWholeFileUploadApiCallFlow(
     TaskCallback callback,
     const std::string& folder_id,
@@ -292,9 +327,9 @@ void BoxWholeFileUploadApiCallFlow::PostReadFileTask(
     const std::string& access_token) {
   auto read_file_task = base::BindOnce(&BoxWholeFileUploadApiCallFlow::ReadFile,
                                        local_file_path_);
-  auto read_file_reply =
-      base::BindOnce(&BoxWholeFileUploadApiCallFlow::OnFileRead,
-                     factory_.GetWeakPtr(), url_loader_factory, access_token);
+  auto read_file_reply = base::BindOnce(
+      &BoxWholeFileUploadApiCallFlow::OnFileRead, weak_factory_.GetWeakPtr(),
+      url_loader_factory, access_token);
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
@@ -370,24 +405,14 @@ bool BoxWholeFileUploadApiCallFlow::IsExpectedSuccessCode(int code) const {
 void BoxWholeFileUploadApiCallFlow::ProcessApiCallSuccess(
     const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
-  if (!base::PathExists(local_file_path_)) {
-    // If the file is deleted by some other thread, how can we be sure what we
-    // read and uploaded was correct?! So report as error. Otherwise, it is
-    // considered successful to
-    // attempt to delete a file that does not exist by base::DeleteFile().
-    DLOG(ERROR) << "[BoxApiCallFlow] Whole File Upload: temporary local file "
-                   "no longer exists!";
-    OnFileDeleted(false);
-    return;
-  }
-
   PostDeleteFileTask();
 }
 
 void BoxWholeFileUploadApiCallFlow::PostDeleteFileTask() {
-  auto delete_file_task = base::BindOnce(&base::DeleteFile, local_file_path_);
-  auto delete_file_reply = base::BindOnce(
-      &BoxWholeFileUploadApiCallFlow::OnFileDeleted, factory_.GetWeakPtr());
+  auto delete_file_task = base::BindOnce(&DeleteIfExists, local_file_path_);
+  auto delete_file_reply =
+      base::BindOnce(&BoxWholeFileUploadApiCallFlow::OnFileDeleted,
+                     weak_factory_.GetWeakPtr());
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       std::move(delete_file_task), std::move(delete_file_reply));
@@ -415,6 +440,314 @@ void BoxWholeFileUploadApiCallFlow::ProcessApiCallFailure(
   // TODO(1165972): decide whether to queue up the file to retry later, or also
   // delete like in ProcessApiCallSuccess()
   std::move(callback_).Run(false, response_code);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ChunkedUpload: CreateUploadSession
+////////////////////////////////////////////////////////////////////////////////
+// BoxApiCallFlow interface.
+// API reference:
+// https://developer.box.com/reference/post-files-upload-sessions/
+
+BoxCreateUploadSessionApiCallFlow::BoxCreateUploadSessionApiCallFlow(
+    TaskCallback callback,
+    const std::string& folder_id,
+    const size_t file_size,
+    const base::FilePath& file_name)
+    : callback_(std::move(callback)),
+      folder_id_(folder_id),
+      file_size_(file_size),
+      file_name_(file_name) {}
+
+BoxCreateUploadSessionApiCallFlow::~BoxCreateUploadSessionApiCallFlow() =
+    default;
+
+GURL BoxCreateUploadSessionApiCallFlow::CreateApiCallUrl() {
+  return GURL("https://upload.box.com/api/2.0/files/upload_sessions/");
+}
+
+std::string BoxCreateUploadSessionApiCallFlow::CreateApiCallBody() {
+  base::Value val(base::Value::Type::DICTIONARY);
+  val.SetStringKey("folder_id", folder_id_);
+  val.SetIntKey("file_size", file_size_);  // TODO(https://crbug.com/1187152)
+  val.SetStringKey("file_name", file_name_.MaybeAsASCII());
+
+  bool file_big_enough = file_size_ > kChunkFileUploadMinSize;
+  CHECK(file_big_enough) << file_size_;
+
+  std::string body;
+  base::JSONWriter::Write(val, &body);
+  return body;
+}
+
+bool BoxCreateUploadSessionApiCallFlow::IsExpectedSuccessCode(int code) const {
+  return code == net::HTTP_CREATED;
+}
+
+void BoxCreateUploadSessionApiCallFlow::ProcessApiCallSuccess(
+    const network::mojom::URLResponseHead* head,
+    std::unique_ptr<std::string> body) {
+  auto response_code = head->headers->response_code();
+  CHECK_EQ(response_code, net::HTTP_CREATED);
+
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *body, base::BindOnce(&BoxCreateUploadSessionApiCallFlow::OnJsonParsed,
+                            weak_factory_.GetWeakPtr()));
+}
+
+void BoxCreateUploadSessionApiCallFlow::ProcessApiCallFailure(
+    int net_error,
+    const network::mojom::URLResponseHead* head,
+    std::unique_ptr<std::string> body) {
+  auto response_code = head->headers->response_code();
+  LOG(ERROR) << "[BoxApiCallFlow] CreateUploadSession failed. Error code "
+             << response_code << "; headers: " << head->headers->raw_headers();
+  if (!body->empty()) {
+    LOG(ERROR) << "Body: " << *body;
+  }
+  std::move(callback_).Run(false, response_code, CreateEmptyDict());
+}
+
+void BoxCreateUploadSessionApiCallFlow::OnJsonParsed(
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    LOG(ERROR) << "[BoxApiCallFlow] CreateUploadSession succeeded but unable "
+                  "to parse response";
+    std::move(callback_).Run(false, net::HTTP_CREATED, CreateEmptyDict());
+    return;
+  }
+
+  auto* session_endpoints = result.value->FindPath("session_endpoints");
+  bool valid_endpoints = session_endpoints &&
+                         session_endpoints->FindPath("upload_part") &&
+                         session_endpoints->FindPath("commit") &&
+                         session_endpoints->FindPath("abort");
+  if (!valid_endpoints) {
+    LOG(ERROR) << "[BoxApiCallFlow] CreateUploadSession succeeded but "
+                  "some endpoints returned are invalid: "
+               << *result.value;
+  }
+  std::move(callback_).Run(
+      valid_endpoints, net::HTTP_CREATED,
+      session_endpoints ? std::move(*session_endpoints) : CreateEmptyDict());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ChunkedUpload: Base
+////////////////////////////////////////////////////////////////////////////////
+BoxChunkedUploadBaseApiCallFlow::BoxChunkedUploadBaseApiCallFlow(
+    const GURL endpoint)
+    : endpoint_(endpoint) {
+  DCHECK(endpoint_.is_valid());
+}
+
+GURL BoxChunkedUploadBaseApiCallFlow::CreateApiCallUrl() {
+  return endpoint_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ChunkedUpload: PartFileUpload
+////////////////////////////////////////////////////////////////////////////////
+// BoxApiCallFlow interface.
+// API reference:
+// https://developer.box.com/reference/put-files-upload-sessions-id/
+
+BoxPartFileUploadApiCallFlow::BoxPartFileUploadApiCallFlow(
+    TaskCallback callback,
+    const std::string& session_endpoint,
+    const std::string& file_part_content,
+    const size_t byte_from,
+    const size_t byte_to,
+    const size_t byte_total)
+    : BoxChunkedUploadBaseApiCallFlow(GURL(session_endpoint)),
+      callback_(std::move(callback)),
+      part_content_(file_part_content),
+      content_range_(base::StringPrintf("bytes %zu-%zu/%zu",
+                                        byte_from,
+                                        byte_to,
+                                        byte_total)),
+      sha_digest_(CreateFileDigest(file_part_content)) {}
+
+BoxPartFileUploadApiCallFlow::~BoxPartFileUploadApiCallFlow() = default;
+
+std::string BoxPartFileUploadApiCallFlow::CreateFileDigest(
+    const std::string& content) {
+  // Box API requires the digest to be SHA1 and Base64 encoded.
+  std::string sha_encoded;
+  base::Base64Encode(base::SHA1HashString(content), &sha_encoded);
+
+  std::string sha_digest("sha=");
+  sha_digest.append(sha_encoded);
+  sha_digest.append("=");
+  return sha_digest;
+}
+
+net::HttpRequestHeaders BoxPartFileUploadApiCallFlow::CreateApiCallHeaders() {
+  net::HttpRequestHeaders headers;
+  headers.SetHeader("content-range", content_range_);
+  headers.SetHeader("digest", sha_digest_);
+  return headers;
+}
+
+std::string BoxPartFileUploadApiCallFlow::CreateApiCallBody() {
+  return part_content_;
+}
+
+std::string BoxPartFileUploadApiCallFlow::CreateApiCallBodyContentType() {
+  return "application/octet-stream";
+}
+
+std::string BoxPartFileUploadApiCallFlow::GetRequestTypeForBody(
+    const std::string& body) {
+  CHECK(!body.empty());
+  return "PUT";
+}
+
+bool BoxPartFileUploadApiCallFlow::IsExpectedSuccessCode(int code) const {
+  return code == net::HTTP_OK;
+}
+
+void BoxPartFileUploadApiCallFlow::ProcessApiCallSuccess(
+    const network::mojom::URLResponseHead* head,
+    std::unique_ptr<std::string> body) {
+  DCHECK(body);
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *body, base::BindOnce(&BoxPartFileUploadApiCallFlow::OnJsonParsed,
+                            weak_factory_.GetWeakPtr()));
+}
+
+void BoxPartFileUploadApiCallFlow::ProcessApiCallFailure(
+    int net_error,
+    const network::mojom::URLResponseHead* head,
+    std::unique_ptr<std::string> body) {
+  auto response_code = head->headers->response_code();
+  DVLOG(1) << "[BoxApiCallFlow] PartFileUplaod failed. Error code "
+           << response_code;
+  std::move(callback_).Run(false, response_code, base::Value());
+}
+
+void BoxPartFileUploadApiCallFlow::OnJsonParsed(
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    DVLOG(1) << "[BoxApiCallFlow] PartFileUplaod OnJsonParsed Error: "
+             << (result.error ? result.error->data()
+                              : "<no error info available>");
+    std::move(callback_).Run(false, net::HTTP_OK, base::Value());
+    return;
+  }
+
+  base::Value* part = result.value ? result.value->FindPath("part") : nullptr;
+  if (!part) {
+    const char* msg =
+        result.value ? "<no part>"
+                     : (result.error ? result.error->data() : "<no error>");
+    DVLOG(1) << "BoxPartFileUploadApiCallFlow::OnJsonParsed: " << msg;
+    std::move(callback_).Run(false, net::HTTP_OK, base::Value());
+    return;
+  }
+  std::move(callback_).Run(true, net::HTTP_OK, std::move(*part));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ChunkedUpload: AbortUploadSession
+////////////////////////////////////////////////////////////////////////////////
+// BoxApiCallFlow interface.
+// API reference:
+// https://developer.box.com/reference/delete-files-upload-sessions-id/
+BoxAbortUploadSessionApiCallFlow::BoxAbortUploadSessionApiCallFlow(
+    TaskCallback callback,
+    const std::string& session_endpoint)
+    : BoxChunkedUploadBaseApiCallFlow(GURL(session_endpoint)),
+      callback_(std::move(callback)) {}
+
+BoxAbortUploadSessionApiCallFlow::~BoxAbortUploadSessionApiCallFlow() = default;
+
+bool BoxAbortUploadSessionApiCallFlow::IsExpectedSuccessCode(int code) const {
+  return code == net::HTTP_NO_CONTENT;
+}
+
+std::string BoxAbortUploadSessionApiCallFlow::GetRequestTypeForBody(
+    const std::string& body) {
+  return "DELETE";
+}
+
+void BoxAbortUploadSessionApiCallFlow::ProcessApiCallSuccess(
+    const network::mojom::URLResponseHead* head,
+    std::unique_ptr<std::string> body) {
+  std::move(callback_).Run(!body || body->empty(),  // Expecting an empty body.
+                           head->headers->response_code());
+}
+
+void BoxAbortUploadSessionApiCallFlow::ProcessApiCallFailure(
+    int net_error,
+    const network::mojom::URLResponseHead* head,
+    std::unique_ptr<std::string> body) {
+  std::move(callback_).Run(false, head->headers->response_code());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ChunkedUpload: CommitUploadSession
+////////////////////////////////////////////////////////////////////////////////
+// BoxApiCallFlow interface.
+// API reference:
+// https://developer.box.com/reference/post-files-upload-sessions-id-commit/
+BoxCommitUploadSessionApiCallFlow::BoxCommitUploadSessionApiCallFlow(
+    TaskCallback callback,
+    const std::string& session_endpoint,
+    const base::Value& parts,
+    const std::string digest)
+    : BoxChunkedUploadBaseApiCallFlow(GURL(session_endpoint)),
+      callback_(std::move(callback)),
+      upload_session_parts_(parts.Clone()),
+      sha_digest_(digest) {}
+
+BoxCommitUploadSessionApiCallFlow::~BoxCommitUploadSessionApiCallFlow() =
+    default;
+
+net::HttpRequestHeaders
+BoxCommitUploadSessionApiCallFlow::CreateApiCallHeaders() {
+  net::HttpRequestHeaders headers;
+  headers.SetHeader("digest", sha_digest_);
+  return headers;
+}
+
+std::string BoxCommitUploadSessionApiCallFlow::CreateApiCallBody() {
+  DCHECK(VerifyChunkedUploadParts(upload_session_parts_));
+  std::string body;
+  base::JSONWriter::Write(upload_session_parts_, &body);
+  return body;
+}
+
+bool BoxCommitUploadSessionApiCallFlow::IsExpectedSuccessCode(int code) const {
+  return code == net::HTTP_CREATED || code == net::HTTP_ACCEPTED;
+}
+
+void BoxCommitUploadSessionApiCallFlow::ProcessApiCallSuccess(
+    const network::mojom::URLResponseHead* head,
+    std::unique_ptr<std::string> body) {
+  auto response_code = head->headers->response_code();
+  bool success = true;
+  base::TimeDelta retry_after;
+  if (response_code == net::HTTP_ACCEPTED) {
+    std::string retry_string;
+    success &=
+        head->headers->EnumerateHeader(nullptr, "Retry-After", &retry_string);
+    success &= net::HttpUtil::ParseRetryAfterHeader(
+        retry_string, base::Time::Now(), &retry_after);
+    DCHECK(success) << "Unable to find Retry-After header. Headers: "
+                    << head->headers->raw_headers();
+  }
+  std::move(callback_).Run(success, response_code, retry_after);
+}
+
+void BoxCommitUploadSessionApiCallFlow::ProcessApiCallFailure(
+    int net_error,
+    const network::mojom::URLResponseHead* head,
+    std::unique_ptr<std::string> body) {
+  auto response_code = head->headers->response_code();
+  LOG(ERROR) << "[BoxApiCallFlow] CommitUploadSession failed. Error code "
+             << response_code;
+  std::move(callback_).Run(false, response_code, base::TimeDelta());
 }
 
 }  // namespace enterprise_connectors

@@ -14,6 +14,7 @@
 
 #include "av1/common/mv.h"
 #include "av1/encoder/block.h"
+#include "av1/encoder/rd.h"
 
 #include "aom_dsp/variance.h"
 
@@ -83,7 +84,7 @@ typedef struct {
 } MV_COST_PARAMS;
 
 int av1_mv_bit_cost(const MV *mv, const MV *ref_mv, const int *mvjcost,
-                    int *mvcost[2], int weight);
+                    int *const mvcost[2], int weight);
 
 int av1_get_mvpred_sse(const MV_COST_PARAMS *mv_cost_params,
                        const FULLPEL_MV best_mv,
@@ -210,6 +211,10 @@ void av1_make_default_fullpel_ms_params(
     const MACROBLOCK *x, BLOCK_SIZE bsize, const MV *ref_mv,
     const search_site_config search_sites[NUM_SEARCH_METHODS],
     int fine_search_interval);
+
+/*! Sets the \ref FULLPEL_MOTION_SEARCH_PARAMS to intra mode. */
+void av1_set_ms_to_intra_mode(FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
+                              const IntraBCMVCosts *dv_costs);
 
 // Sets up configs for fullpixel DIAMOND / CLAMPED_DIAMOND search method.
 void av1_init_dsmotion_compensation(search_site_config *cfg, int stride,

@@ -5,6 +5,7 @@
 #include "chrome/updater/win/net/network_winhttp.h"
 
 #include <limits>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,7 +16,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"

@@ -12,9 +12,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "chrome/browser/autofill/accessory_controller.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_view_interface.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
@@ -22,7 +24,6 @@ class AddressAccessoryController;
 class CreditCardAccessoryController;
 }  // namespace autofill
 
-class AccessoryController;
 class PasswordAccessoryController;
 
 // Use ManualFillingController::GetOrCreate to obtain instances of this class.
@@ -37,6 +38,7 @@ class ManualFillingControllerImpl
   void RefreshSuggestions(
       const autofill::AccessorySheetData& accessory_sheet_data) override;
   void NotifyFocusedInputChanged(
+      autofill::FieldRendererId focused_field_id,
       autofill::mojom::FocusedFieldType focused_field_type) override;
   void UpdateSourceAvailability(FillingSource source,
                                 bool has_suggestions) override;
@@ -102,15 +104,17 @@ class ManualFillingControllerImpl
   // Adjusts visibility based on focused field type and available suggestions.
   void UpdateVisibility();
 
+  void OnSourceAvailabilityChanged(
+      FillingSource source,
+      AccessoryController* source_controller,
+      AccessoryController::IsFillingSourceAvailable is_source_available);
+
   // Returns the controller that is responsible for a tab of given |type|.
   AccessoryController* GetControllerForTab(autofill::AccessoryTabType type);
 
   // Returns the controller that is responsible for a given |action|.
   AccessoryController* GetControllerForAction(
       autofill::AccessoryAction action) const;
-
-  // Returns the controller that is responsible for a given |action|.
-  PasswordAccessoryController* GetPasswordController() const;
 
   // The tab for which this class is scoped.
   content::WebContents* web_contents_ = nullptr;
@@ -121,13 +125,16 @@ class ManualFillingControllerImpl
   // This map contains sheets for each sources to be shown to the user.
   base::flat_map<FillingSource, autofill::AccessorySheetData> available_sheets_;
 
+  // The unique renderer ID of the last known selected field.
+  autofill::FieldGlobalId last_focused_field_id_;
+
   // Type of the last known selected field. Helps to determine UI visibility.
-  autofill::mojom::FocusedFieldType focused_field_type_ =
+  autofill::mojom::FocusedFieldType last_focused_field_type_ =
       autofill::mojom::FocusedFieldType::kUnknown;
 
   // Controllers which handle events relating to a specific tab and the
   // associated data.
-  base::WeakPtr<PasswordAccessoryController> pwd_controller_for_testing_;
+  base::WeakPtr<PasswordAccessoryController> pwd_controller_;
   base::WeakPtr<autofill::AddressAccessoryController> address_controller_;
   base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller_;
 

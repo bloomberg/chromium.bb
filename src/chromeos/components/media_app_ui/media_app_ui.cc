@@ -75,6 +75,9 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
   std::string csp = std::string("frame-src ") + kChromeUIMediaAppGuestURL + ";";
   host_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::FrameSrc, csp);
+  // Allow use of SharedArrayBuffer (required by wasm code in the iframe guest).
+  host_source->OverrideCrossOriginOpenerPolicy("same-origin");
+  host_source->OverrideCrossOriginEmbedderPolicy("require-corp");
 
   // Register auto-granted permissions.
   auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context);
@@ -83,6 +86,7 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
   allowlist->RegisterAutoGrantedPermissions(
       host_origin, {
                        ContentSettingsType::COOKIES,
+                       ContentSettingsType::FILE_HANDLING,
                        ContentSettingsType::FILE_SYSTEM_READ_GUARD,
                        ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
                        ContentSettingsType::IMAGES,

@@ -4,9 +4,10 @@
 
 #include "components/autofill/android/provider/test_support/jni_headers/AutofillProviderTestHelper_jni.h"
 
+#include <string>
+
 #include "base/android/jni_array.h"
 #include "base/base64.h"
-#include "base/strings/string16.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_provider.h"
@@ -55,14 +56,14 @@ JNI_AutofillProviderTestHelper_SimulateMainFrameAutofillServerResponseForTesting
     const base::android::JavaParamRef<jobject>& jweb_contents,
     const base::android::JavaParamRef<jobjectArray>& jfield_ids,
     const base::android::JavaParamRef<jintArray>& jfield_types) {
-  std::vector<base::string16> field_ids;
+  std::vector<std::u16string> field_ids;
   base::android::AppendJavaStringArrayToStringVector(env, jfield_ids,
                                                      &field_ids);
   std::vector<int> field_types;
   base::android::JavaIntArrayToIntVector(env, jfield_types, &field_types);
 
   AutofillHandler* autofill_handler = ToMainFrameAutofillHandler(jweb_contents);
-  const std::map<FormRendererId, std::unique_ptr<FormStructure>>&
+  const std::map<FormGlobalId, std::unique_ptr<FormStructure>>&
       form_structures = autofill_handler->form_structures();
   CHECK(!form_structures.empty());
 
@@ -109,7 +110,7 @@ JNI_AutofillProviderTestHelper_SimulateMainFramePredictionsAutofillServerRespons
     const base::android::JavaParamRef<jobject>& jweb_contents,
     const base::android::JavaParamRef<jobjectArray>& jfield_ids,
     const base::android::JavaParamRef<jobjectArray>& jfield_types) {
-  std::vector<base::string16> field_ids;
+  std::vector<std::u16string> field_ids;
   base::android::AppendJavaStringArrayToStringVector(env, jfield_ids,
                                                      &field_ids);
   std::vector<std::vector<int>> field_types;
@@ -117,7 +118,7 @@ JNI_AutofillProviderTestHelper_SimulateMainFramePredictionsAutofillServerRespons
                                                 &field_types);
 
   AutofillHandler* autofill_handler = ToMainFrameAutofillHandler(jweb_contents);
-  const std::map<FormRendererId, std::unique_ptr<FormStructure>>&
+  const std::map<FormGlobalId, std::unique_ptr<FormStructure>>&
       form_structures = autofill_handler->form_structures();
   CHECK(!form_structures.empty());
 
@@ -160,7 +161,7 @@ JNI_AutofillProviderTestHelper_SimulateMainFrameAutofillQueryFailedForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jweb_contents) {
   AutofillHandler* autofill_handler = ToMainFrameAutofillHandler(jweb_contents);
-  const std::map<FormRendererId, std::unique_ptr<FormStructure>>&
+  const std::map<FormGlobalId, std::unique_ptr<FormStructure>>&
       form_structures = autofill_handler->form_structures();
   // Always use first form.
   CHECK(form_structures.size());

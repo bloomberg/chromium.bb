@@ -5,10 +5,15 @@
 #ifndef ASH_CLIPBOARD_CLIPBOARD_HISTORY_UTIL_H_
 #define ASH_CLIPBOARD_CLIPBOARD_HISTORY_UTIL_H_
 
+#include <string>
+
 #include "ash/ash_export.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
+
+namespace gfx {
+class ImageSkia;
+}
 
 namespace ui {
 class ClipboardData;
@@ -103,20 +108,25 @@ ASH_EXPORT bool ContainsFileSystemData(const ui::ClipboardData& data);
 ASH_EXPORT void GetSplitFileSystemData(
     const ui::ClipboardData& data,
     std::vector<base::StringPiece16>* source_list,
-    base::string16* sources);
+    std::u16string* sources);
 
 // Returns the count of copied files contained by the clipboard data.
 ASH_EXPORT size_t GetCountOfCopiedFiles(const ui::ClipboardData& data);
 
 // Returns file system sources contained in `data`. If `data` does not contain
 // file system sources, an empty string is returned.
-ASH_EXPORT base::string16 GetFileSystemSources(const ui::ClipboardData& data);
+ASH_EXPORT std::u16string GetFileSystemSources(const ui::ClipboardData& data);
 
 // Returns true if `data` is supported by clipboard history.
 ASH_EXPORT bool IsSupported(const ui::ClipboardData& data);
 
 // Returns whether the clipboard history is enabled for the current user mode.
 ASH_EXPORT bool IsEnabledInCurrentMode();
+
+// Returns an image icon for the file clipboard item.
+ASH_EXPORT gfx::ImageSkia GetIconForFileClipboardItem(
+    const ClipboardHistoryItem& item,
+    const std::string& file_name);
 
 }  // namespace ClipboardHistoryUtil
 }  // namespace ash

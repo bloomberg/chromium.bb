@@ -4,15 +4,16 @@
 
 #include "chrome/browser/chromeos/fileapi/file_change_service.h"
 
+#include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/scoped_observation.h"
 #include "base/test/bind.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/file_change_service_factory.h"
 #include "chrome/browser/chromeos/fileapi/file_change_service_observer.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -228,7 +229,7 @@ class TempFileSystem {
 class FileChangeServiceTest : public BrowserWithTestWindowTest {
  public:
   FileChangeServiceTest()
-      : fake_user_manager_(new chromeos::FakeChromeUserManager),
+      : fake_user_manager_(new FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
 
   FileChangeServiceTest(const FileChangeServiceTest& other) = delete;
@@ -250,7 +251,7 @@ class FileChangeServiceTest : public BrowserWithTestWindowTest {
     return CreateProfileWithName(kPrimaryProfileName);
   }
 
-  chromeos::FakeChromeUserManager* fake_user_manager_;
+  FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 };
 

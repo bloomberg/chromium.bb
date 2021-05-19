@@ -40,6 +40,7 @@
 <translation id="1252999807265626933">Се полни од <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какво е времето?</translation>
 <translation id="1267032506238418139">Промена на кратенка</translation>
+<translation id="1269405891096105529">Периферниот уред не е поддржан во режим на гостин</translation>
 <translation id="1270290102613614947">Тастатурата на екранот е оневозможена</translation>
 <translation id="1272079795634619415">Запри</translation>
 <translation id="1275285675049378717">Се напојува <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl+„Пребарување“+H</translation>
 <translation id="2016340657076538683">Напишете порака</translation>
 <translation id="2018630726571919839">Кажи ми шега</translation>
+<translation id="2021864487439853900">Кликнете за да отклучите</translation>
 <translation id="2049240716062114887">Името на работната површина е променето во <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Портрет</translation>
 <translation id="2067602449040652523">Осветленост на тастатурата</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> сепак ќе може да се најави подоцна.</translation>
 <translation id="3321628682574733415">Неточен код на родител</translation>
 <translation id="332587331255250389">Заменете ја батеријата</translation>
+<translation id="3333741161915951567">Рестартирање на модемот. Почекајте 30 секунди и пробајте повторно.</translation>
 <translation id="3341303451326249809">Направена е слика од екранот</translation>
 <translation id="334252345105450327">Направи слика од екранот</translation>
 <translation id="3351879221545518001">Во моментов емитувате екран.</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" />, управуван корисник</translation>
 <translation id="3665889125180354336">Микрофон за снимање</translation>
 <translation id="36813544980941320">Wi-Fi мрежите ќе се споделуваат помеѓу вашиот телефон и <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Се прикажуваат прозорци од тековната работна површина, притиснете го копчето со стрелка за нагоре за да се прикажат прозорци од сите работни површини</translation>
 <translation id="3702846122927433391">Население во Нигерија</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="370665806235115550">Се вчитува...</translation>
@@ -352,6 +356,7 @@
 <translation id="394485226368336402">Поставки за аудио</translation>
 <translation id="3945319193631853098">Допрете за да го завршите поставувањето</translation>
 <translation id="3945867833895287237">Се поврзува со точка на пристап…</translation>
+<translation id="3958465044488004317">Видете ги резултатите во „Помошникот“</translation>
 <translation id="3962859241508114581">Претходна песна</translation>
 <translation id="3969043077941541451">Исклучи</translation>
 <translation id="397105322502079400">Се пресметува…</translation>
@@ -408,10 +413,12 @@
 <translation id="4421231901400348175">Споделување контрола на вашиот екран со <ph name="HELPER_NAME" /> преку далечинска помош.</translation>
 <translation id="4424159417645388645">Работна површина 5</translation>
 <translation id="4430019312045809116">Гласност</translation>
+<translation id="4445159312344259901">Најавете се за да отклучите</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 важно известување}one{# важно известување}other{# важни известувања}}</translation>
 <translation id="4450893287417543264">Не прикажувај повторно</translation>
 <translation id="445864333228800152">Добровечер,</translation>
 <translation id="4458688154122353284">Запрете со снимање на екранот</translation>
+<translation id="4467143075433126295">Притиснете и задржете [Esc] за да излезете од цел екран</translation>
 <translation id="4472575034687746823">Започнете</translation>
 <translation id="4477350412780666475">Следна песна</translation>
 <translation id="4477892968187500306">Уредов може да содржи апликации што не се потврдени од Google.</translation>
@@ -449,7 +456,7 @@
 <translation id="4776917500594043016">Лозинка за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">„Помошникот на Google“ не е достапен во сесија за демонстрација.</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">Исклучи</translation>
+<translation id="4804818685124855865">Прекини врска</translation>
 <translation id="4814539958450445987">Екран за најавување</translation>
 <translation id="4831034276697007977">Дали сигурно сакате да ги исклучите автоматските кликови?</translation>
 <translation id="4849058404725798627">Нагласи го предметот со фокус на тастатурата</translation>
@@ -608,6 +615,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">„Помошникот на Google“ не е достапен во гостинска сесија.</translation>
 <translation id="6137566720514957455">Отвори го дијалогот за отстранување за <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Периферните уреди не се поддржани</translation>
 <translation id="615957422585914272">Покажи тастатура на екран</translation>
 <translation id="6165508094623778733">Дознајте повеќе</translation>
 <translation id="6179832488876878285">Може да ги закачите вашите важни датотеки тука. Отворете ја апликацијата Files за да започнете.</translation>
@@ -625,11 +633,11 @@
 <translation id="6297287540776456956">Употребете го пенкалото за да изберете регион</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> беше ротирано до <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Глас</translation>
+<translation id="6330012934079202188">Се прикажуваат прозорци од сите работни површина, притиснете го копчето со стрелка за нагоре за да се прикажат прозорци од тековната работна површина</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> е управувана сесија со којашто управува <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth е вклучен</translation>
 <translation id="6381109794406942707">За да го отклучите уредот, внесете го вашиот PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK е исклучено</translation>
-<translation id="6396835948284782440">Притиснете и задржете [Esc] за да излезете.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Избриши ги сите известувања</translation>
@@ -795,7 +803,6 @@
 <translation id="7780159184141939021">Ротација на екранот</translation>
 <translation id="7796353162336583443">Допрете го копчето за пенкало на полицата за да напишете белешка, да направите слика од екранот или пак, да го користите „Помошникотна Google“, ласерскиот покажувач или лупата.</translation>
 <translation id="7798302898096527229">Притиснете „Пребарување“ или Shift за да откажете.</translation>
-<translation id="7807966291075028781">Периферниот уред не е поддржан во режим на гостин поради безбедносни причини</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Силен сигнал</translation>
 <translation id="7837740436429729974">Времето истече</translation>
@@ -828,7 +835,7 @@
 <translation id="8004512796067398576">Зголемување</translation>
 <translation id="8029247720646289474">Поврзувањето со точка на пристап не успеа</translation>
 <translation id="8029629653277878342">Потребен е PIN или лозинка за поголема безбедност</translation>
-<translation id="8030169304546394654">Исклучено</translation>
+<translation id="8030169304546394654">Не е поврзано</translation>
 <translation id="8036504271468642248">Претходна реченица</translation>
 <translation id="8042893070933512245">Отворете го менито со поставки за пристапност</translation>
 <translation id="8048123526339889627">Поставки за Bluetooth</translation>
@@ -945,6 +952,7 @@
 <translation id="8936501819958976551">деактивирано</translation>
 <translation id="8938800817013097409">USB-Ц уред (десна порта од задната страна)</translation>
 <translation id="8940956008527784070">Слаба батерија (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Само одобрените уреди Thunderbolt се компатибилни со вашиот Chromebook</translation>
 <translation id="8982906748181120328">Видливост во близина</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Се користи <ph name="IME_NAME" /></translation>

@@ -1,0 +1,13 @@
+{
+  "dependencies": [
+    "workspace_diff",
+    "text_editor",
+    "models/persistence",
+    "snippets",
+    "ui/legacy"
+  ],
+    "resources": [
+    "changesView.css",
+    "changesSidebar.css"
+  ]
+}

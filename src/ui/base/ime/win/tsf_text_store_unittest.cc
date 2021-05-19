@@ -39,7 +39,7 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD0(ClearCompositionText, void());
   MOCK_METHOD2(
       InsertText,
-      void(const base::string16&,
+      void(const std::u16string&,
            ui::TextInputClient::InsertTextCursorBehavior cursor_behavior));
   MOCK_METHOD1(InsertChar, void(const ui::KeyEvent&));
   MOCK_CONST_METHOD0(GetTextInputType, ui::TextInputType());
@@ -58,7 +58,7 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD1(SetEditableSelectionRange, bool(const gfx::Range&));
   MOCK_METHOD1(DeleteRange, bool(const gfx::Range&));
   MOCK_CONST_METHOD2(GetTextFromRange,
-                     bool(const gfx::Range&, base::string16*));
+                     bool(const gfx::Range&, std::u16string*));
   MOCK_METHOD0(OnInputMethodChanged, void());
   MOCK_METHOD1(ChangeTextDirectionAndLayoutAlignment,
                bool(base::i18n::TextDirection));
@@ -70,7 +70,7 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD2(SetCompositionFromExistingText,
                bool(const gfx::Range&, const std::vector<ui::ImeTextSpan>&));
   MOCK_METHOD3(SetActiveCompositionForAccessibility,
-               void(const gfx::Range&, const base::string16&, bool));
+               void(const gfx::Range&, const std::u16string&, bool));
   MOCK_METHOD2(GetActiveTextInputControlLayoutBounds,
                void(base::Optional<gfx::Rect>* control_bounds,
                     base::Optional<gfx::Rect>* selection_bounds));
@@ -158,7 +158,7 @@ class TSFTextStoreTest : public testing::Test {
   }
 
   // Accessors to the internal state of TSFTextStore.
-  base::string16* string_buffer() {
+  std::u16string* string_buffer() {
     return &text_store_->string_buffer_document_;
   }
   size_t* composition_start() { return &text_store_->composition_start_; }
@@ -184,7 +184,7 @@ class TSFTextStoreTestCallback {
     range->set_end(text_range_.end());
     return true;
   }
-  bool GetTextFromRange(const gfx::Range& range, base::string16* text) {
+  bool GetTextFromRange(const gfx::Range& range, std::u16string* text) {
     *text = text_buffer_.substr(range.GetMin(), range.length());
     return true;
   }
@@ -204,10 +204,10 @@ class TSFTextStoreTestCallback {
   // Accessors to the internal state of TSFTextStore.
   bool* edit_flag() { return &text_store_->edit_flag_; }
   bool* new_text_inserted() { return &text_store_->new_text_inserted_; }
-  base::string16* string_buffer() {
+  std::u16string* string_buffer() {
     return &text_store_->string_buffer_document_;
   }
-  base::string16* string_pending_insertion() {
+  std::u16string* string_pending_insertion() {
     return &text_store_->string_pending_insertion_;
   }
   size_t* composition_start() { return &text_store_->composition_start_; }
@@ -216,7 +216,7 @@ class TSFTextStoreTestCallback {
   gfx::Range* composition_range() { return &text_store_->composition_range_; }
   bool* has_composition_range() { return &text_store_->has_composition_range_; }
 
-  void SetInternalState(const base::string16& new_string_buffer,
+  void SetInternalState(const std::u16string& new_string_buffer,
                         LONG new_composition_start,
                         LONG new_selection_start,
                         LONG new_selection_end) {
@@ -374,6 +374,7 @@ class TSFTextStoreTestCallback {
     EXPECT_TRUE(text_store_->previous_text_spans_.empty());
 
     EXPECT_TRUE(text_store_->string_pending_insertion_.empty());
+    EXPECT_FALSE(text_store_->has_composition_range_);
     EXPECT_TRUE(text_store_->composition_range_.is_empty());
     EXPECT_EQ(text_store_->composition_from_client_.end(),
               text_store_->selection_.start());
@@ -401,7 +402,7 @@ class TSFTextStoreTestCallback {
     composition_range_.set_end(end);
   }
 
-  void SetTextBuffer(const base::char16* buffer) {
+  void SetTextBuffer(const char16_t* buffer) {
     text_buffer_.clear();
     text_buffer_.assign(buffer);
   }
@@ -410,7 +411,7 @@ class TSFTextStoreTestCallback {
   gfx::Range text_range_;
   gfx::Range selection_range_;
   gfx::Range composition_range_;
-  base::string16 text_buffer_;
+  std::u16string text_buffer_;
   scoped_refptr<TSFTextStore> text_store_;
 
  private:
@@ -432,7 +433,7 @@ TEST_F(TSFTextStoreTest, GetStatusTest) {
 TEST_F(TSFTextStoreTest, QueryInsertTest) {
   LONG result_start = 0;
   LONG result_end = 0;
-  *string_buffer() = base::string16();
+  *string_buffer() = std::u16string();
   *composition_start() = 0;
   EXPECT_EQ(E_INVALIDARG,
             text_store_->QueryInsert(0, 0, 0, nullptr, &result_end));
@@ -442,7 +443,7 @@ TEST_F(TSFTextStoreTest, QueryInsertTest) {
             text_store_->QueryInsert(0, 0, 0, &result_start, &result_end));
   EXPECT_EQ(0, result_start);
   EXPECT_EQ(0, result_end);
-  *string_buffer() = STRING16_LITERAL("1234");
+  *string_buffer() = u"1234";
   *composition_start() = 1;
   EXPECT_EQ(S_OK,
             text_store_->QueryInsert(0, 1, 0, &result_start, &result_end));
@@ -657,7 +658,7 @@ class RequestLockTextChangeTestCallback : public TSFTextStoreTestCallback {
     EXPECT_TRUE(HasReadWriteLock());
 
     *edit_flag() = true;
-    SetInternalState(STRING16_LITERAL("012345"), 6, 6, 6);
+    SetInternalState(u"012345", 6, 6, 6);
     text_spans()->clear();
 
     state_ = 2;
@@ -665,10 +666,10 @@ class RequestLockTextChangeTestCallback : public TSFTextStoreTestCallback {
   }
 
   void InsertText(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
     EXPECT_EQ(2, state_);
-    EXPECT_EQ(STRING16_LITERAL("012345"), text);
+    EXPECT_EQ(u"012345", text);
     state_ = 3;
   }
 
@@ -678,8 +679,8 @@ class RequestLockTextChangeTestCallback : public TSFTextStoreTestCallback {
     return true;
   }
 
-  bool GetTextFromRange(const gfx::Range& range, base::string16* text) const {
-    base::string16 string_buffer = STRING16_LITERAL("012345");
+  bool GetTextFromRange(const gfx::Range& range, std::u16string* text) const {
+    std::u16string string_buffer = u"012345";
     *text = string_buffer.substr(range.GetMin(), range.length());
     return true;
   }
@@ -755,12 +756,12 @@ class SelectionTestCallback : public TSFTextStoreTestCallback {
       : TSFTextStoreTestCallback(text_store) {}
 
   HRESULT ReadLockGranted(DWORD flags) {
-    SetInternalState(base::string16(), 0, 0, 0);
+    SetInternalState(std::u16string(), 0, 0, 0);
 
     GetSelectionTest(0, 0);
     SetSelectionTest(0, 0, TF_E_NOLOCK);
 
-    SetInternalState(STRING16_LITERAL("012345"), 0, 0, 3);
+    SetInternalState(u"012345", 0, 0, 3);
 
     GetSelectionTest(0, 3);
     SetSelectionTest(0, 0, TF_E_NOLOCK);
@@ -769,7 +770,7 @@ class SelectionTestCallback : public TSFTextStoreTestCallback {
   }
 
   HRESULT ReadWriteLockGranted(DWORD flags) {
-    SetInternalState(base::string16(), 0, 0, 0);
+    SetInternalState(std::u16string(), 0, 0, 0);
 
     SetSelectionTest(0, 0, S_OK);
     GetSelectionTest(0, 0);
@@ -777,7 +778,7 @@ class SelectionTestCallback : public TSFTextStoreTestCallback {
     SetSelectionTest(1, 0, TF_E_INVALIDPOS);
     SetSelectionTest(1, 1, TF_E_INVALIDPOS);
 
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
 
     SetSelectionTest(0, 0, S_OK);
     SetSelectionTest(0, 1, S_OK);
@@ -854,7 +855,7 @@ class SetGetTextTestCallback : public TSFTextStoreTestCallback {
     GetTextTest(0, 0, L"", 0);
     GetTextErrorTest(0, 1, TF_E_INVALIDPOS);
 
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
 
     GetTextErrorTest(-1, -1, TF_E_INVALIDPOS);
     GetTextErrorTest(-1, 0, TF_E_INVALIDPOS);
@@ -916,13 +917,13 @@ class SetGetTextTestCallback : public TSFTextStoreTestCallback {
   }
 
   HRESULT ReadWriteLockGranted(DWORD flags) {
-    SetInternalState(base::string16(), 0, 0, 0);
+    SetInternalState(std::u16string(), 0, 0, 0);
     SetTextTest(0, 0, L"", S_OK);
 
-    SetInternalState(base::string16(), 0, 0, 0);
+    SetInternalState(std::u16string(), 0, 0, 0);
     SetTextTest(0, 1, L"", TS_E_INVALIDPOS);
 
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
 
     SetTextTest(0, 0, L"", S_OK);
     SetTextTest(0, 1, L"", S_OK);
@@ -944,17 +945,17 @@ class SetGetTextTestCallback : public TSFTextStoreTestCallback {
     SetTextTest(3, 3, L"", TS_E_INVALIDPOS);
     GetTextTest(0, -1, L"4", 1);
     GetSelectionTest(1, 1);
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
 
     SetTextTest(3, 6, L"", S_OK);
     GetTextTest(0, -1, L"0126", 4);
     GetSelectionTest(3, 3);
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
 
     SetTextTest(3, 7, L"", S_OK);
     GetTextTest(0, -1, L"012", 3);
     GetSelectionTest(3, 3);
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
 
     SetTextTest(3, 8, L"", TS_E_INVALIDPOS);
 
@@ -965,12 +966,12 @@ class SetGetTextTestCallback : public TSFTextStoreTestCallback {
     SetTextTest(6, 6, L"", S_OK);
     GetTextTest(0, -1, L"0123456", 7);
     GetSelectionTest(6, 6);
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
 
     SetTextTest(6, 7, L"", S_OK);
     GetTextTest(0, -1, L"012345", 6);
     GetSelectionTest(6, 6);
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
 
     SetTextTest(6, 8, L"", TS_E_INVALIDPOS);
 
@@ -982,36 +983,36 @@ class SetGetTextTestCallback : public TSFTextStoreTestCallback {
     SetTextTest(7, 7, L"", S_OK);
     GetTextTest(0, -1, L"0123456", 7);
     GetSelectionTest(7, 7);
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
 
     SetTextTest(7, 8, L"", TS_E_INVALIDPOS);
 
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
     SetTextTest(3, 3, L"abc", S_OK);
     GetTextTest(0, -1, L"012abc3456", 10);
     GetSelectionTest(3, 6);
 
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
     SetTextTest(3, 6, L"abc", S_OK);
     GetTextTest(0, -1, L"012abc6", 7);
     GetSelectionTest(3, 6);
 
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
     SetTextTest(3, 7, L"abc", S_OK);
     GetTextTest(0, -1, L"012abc", 6);
     GetSelectionTest(3, 6);
 
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
     SetTextTest(6, 6, L"abc", S_OK);
     GetTextTest(0, -1, L"012345abc6", 10);
     GetSelectionTest(6, 9);
 
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
     SetTextTest(6, 7, L"abc", S_OK);
     GetTextTest(0, -1, L"012345abc", 9);
     GetSelectionTest(6, 9);
 
-    SetInternalState(STRING16_LITERAL("0123456"), 3, 3, 3);
+    SetInternalState(u"0123456", 3, 3, 3);
     SetTextTest(7, 7, L"abc", S_OK);
     GetTextTest(0, -1, L"0123456abc", 10);
     GetSelectionTest(7, 10);
@@ -1054,12 +1055,12 @@ class InsertTextAtSelectionTestCallback : public TSFTextStoreTestCallback {
   HRESULT ReadLockGranted(DWORD flags) {
     const wchar_t kBuffer[] = L"0123456789";
 
-    SetInternalState(STRING16_LITERAL("abcedfg"), 0, 0, 0);
+    SetInternalState(u"abcedfg", 0, 0, 0);
     InsertTextAtSelectionQueryOnlyTest(kBuffer, 10, 0, 0);
     GetSelectionTest(0, 0);
     InsertTextAtSelectionQueryOnlyTest(kBuffer, 0, 0, 0);
 
-    SetInternalState(STRING16_LITERAL("abcedfg"), 0, 2, 5);
+    SetInternalState(u"abcedfg", 0, 2, 5);
     InsertTextAtSelectionQueryOnlyTest(kBuffer, 10, 2, 5);
     GetSelectionTest(2, 5);
     InsertTextAtSelectionQueryOnlyTest(kBuffer, 0, 2, 5);
@@ -1073,34 +1074,34 @@ class InsertTextAtSelectionTestCallback : public TSFTextStoreTestCallback {
   }
 
   HRESULT ReadWriteLockGranted(DWORD flags) {
-    SetInternalState(STRING16_LITERAL("abcedfg"), 0, 0, 0);
+    SetInternalState(u"abcedfg", 0, 0, 0);
 
     const wchar_t kBuffer[] = L"0123456789";
     InsertTextAtSelectionQueryOnlyTest(kBuffer, 10, 0, 0);
     GetSelectionTest(0, 0);
     InsertTextAtSelectionQueryOnlyTest(kBuffer, 0, 0, 0);
 
-    SetInternalState(base::string16(), 0, 0, 0);
+    SetInternalState(std::u16string(), 0, 0, 0);
     InsertTextAtSelectionTest(kBuffer, 10, 0, 10, 0, 0, 10);
     GetSelectionTest(0, 10);
     GetTextTest(0, -1, L"0123456789", 10);
 
-    SetInternalState(STRING16_LITERAL("abcedfg"), 0, 0, 0);
+    SetInternalState(u"abcedfg", 0, 0, 0);
     InsertTextAtSelectionTest(kBuffer, 10, 0, 10, 0, 0, 10);
     GetSelectionTest(0, 10);
     GetTextTest(0, -1, L"0123456789abcedfg", 17);
 
-    SetInternalState(STRING16_LITERAL("abcedfg"), 0, 0, 3);
+    SetInternalState(u"abcedfg", 0, 0, 3);
     InsertTextAtSelectionTest(kBuffer, 0, 0, 0, 0, 3, 0);
     GetSelectionTest(0, 0);
     GetTextTest(0, -1, L"edfg", 4);
 
-    SetInternalState(STRING16_LITERAL("abcedfg"), 0, 3, 7);
+    SetInternalState(u"abcedfg", 0, 3, 7);
     InsertTextAtSelectionTest(kBuffer, 10, 3, 13, 3, 7, 13);
     GetSelectionTest(3, 13);
     GetTextTest(0, -1, L"abc0123456789", 13);
 
-    SetInternalState(STRING16_LITERAL("abcedfg"), 0, 7, 7);
+    SetInternalState(u"abcedfg", 0, 7, 7);
     InsertTextAtSelectionTest(kBuffer, 10, 7, 17, 7, 7, 17);
     GetSelectionTest(7, 17);
     GetTextTest(0, -1, L"abcedfg0123456789", 17);
@@ -1161,7 +1162,7 @@ class ScenarioTestCallback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("axyzc"), composition.text);
+    EXPECT_EQ(u"axyzc", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(5u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -1196,13 +1197,13 @@ class ScenarioTestCallback : public TSFTextStoreTestCallback {
   }
 
   void InsertText2(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("axy"), text);
+    EXPECT_EQ(u"axy", text);
   }
 
   void SetCompositionText2(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("ZCPc"), composition.text);
+    EXPECT_EQ(u"ZCPc", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(4u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -1224,9 +1225,9 @@ class ScenarioTestCallback : public TSFTextStoreTestCallback {
   }
 
   void InsertText3(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("ZCPc"), text);
+    EXPECT_EQ(u"ZCPc", text);
     has_composition_text_ = false;
   }
 
@@ -1254,7 +1255,7 @@ class ScenarioTestCallback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText4(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("EFGH"), composition.text);
+    EXPECT_EQ(u"EFGH", composition.text);
     EXPECT_EQ(4u, composition.selection.start());
     EXPECT_EQ(4u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -1285,7 +1286,7 @@ class ScenarioTestCallback : public TSFTextStoreTestCallback {
   // still need to call into TextInputClient to set composition text
   // to update selection range even though composition text is unchanged.
   void SetCompositionText5(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("EFGH"), composition.text);
+    EXPECT_EQ(u"EFGH", composition.text);
     EXPECT_EQ(2u, composition.selection.start());
     EXPECT_EQ(2u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -1345,7 +1346,7 @@ class GetTextExtTestCallback : public TSFTextStoreTestCallback {
         layout_prepared_character_num_(0) {}
 
   HRESULT LockGranted(DWORD flags) {
-    SetInternalState(STRING16_LITERAL("0123456789012"), 0, 0, 0);
+    SetInternalState(u"0123456789012", 0, 0, 0);
     layout_prepared_character_num_ = 13;
     has_composition_text_ = true;
 
@@ -1371,23 +1372,23 @@ class GetTextExtTestCallback : public TSFTextStoreTestCallback {
     has_composition_text_ = false;
     GetTextExtTest(view_cookie, 0, 0, 1, 2, 4, 6);
 
-    SetInternalState(base::string16(), 0, 0, 0);
+    SetInternalState(std::u16string(), 0, 0, 0);
     GetTextExtTest(view_cookie, 0, 0, 1, 2, 4, 6);
 
     // Last character is not available due to timing issue of async API.
     // In this case, we will get first character bounds instead of whole text
     // bounds.
-    SetInternalState(STRING16_LITERAL("abc"), 0, 0, 3);
+    SetInternalState(u"abc", 0, 0, 3);
     layout_prepared_character_num_ = 2;
     has_composition_text_ = true;
     GetTextExtTest(view_cookie, 0, 0, 11, 12, 11, 20);
 
     // TODO(nona, kinaba): Remove following test case after PPAPI supporting
     // GetCompositionCharacterBounds.
-    SetInternalState(STRING16_LITERAL("a"), 0, 0, 1);
+    SetInternalState(u"a", 0, 0, 1);
     layout_prepared_character_num_ = 0;
     GetTextExtTest(view_cookie, 0, 1, 1, 2, 4, 6);
-    SetInternalState(STRING16_LITERAL("abc"), 0, 0, 3);
+    SetInternalState(u"abc", 0, 0, 3);
     GetTextExtNoLayoutTest(view_cookie, 2, 3);
 
     return S_OK;
@@ -1538,7 +1539,7 @@ class KeyEventTestCallback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("a"), composition.text);
+    EXPECT_EQ(u"a", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(1u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -1582,14 +1583,14 @@ class KeyEventTestCallback : public TSFTextStoreTestCallback {
   }
 
   void InsertText2(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("a"), text);
+    EXPECT_EQ(u"a", text);
     SetHasCompositionText(false);
   }
 
   void SetCompositionText2(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("B"), composition.text);
+    EXPECT_EQ(u"B", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(1u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -1627,9 +1628,9 @@ class KeyEventTestCallback : public TSFTextStoreTestCallback {
   }
 
   void InsertText3(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("B"), text);
+    EXPECT_EQ(u"B", text);
     SetHasCompositionText(false);
   }
 
@@ -1723,7 +1724,7 @@ class AccessibilityEventTestCallback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("a"), composition.text);
+    EXPECT_EQ(u"a", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(1u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -1739,9 +1740,9 @@ class AccessibilityEventTestCallback : public TSFTextStoreTestCallback {
 
   void SetActiveCompositionForAccessibility1(
       const gfx::Range& range,
-      const base::string16& active_composition_text,
+      const std::u16string& active_composition_text,
       bool committed_composition) {
-    EXPECT_EQ(STRING16_LITERAL("a"), active_composition_text);
+    EXPECT_EQ(u"a", active_composition_text);
     EXPECT_EQ(0u, range.start());
     EXPECT_EQ(1u, range.end());
   }
@@ -1798,7 +1799,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
     GetTextTest(0, -1, L"", 0);
 
     SetTextRange(0, 1);
-    SetTextBuffer(STRING16_LITERAL("a"));
+    SetTextBuffer(u"a");
     SetSelectionRange(1, 1);
     *composition_start() = 1;
     return S_OK;
@@ -1844,17 +1845,17 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
   }
 
   void InsertText2(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("bcde"), text);
+    EXPECT_EQ(u"bcde", text);
     SetTextRange(0, 5);
     SetSelectionRange(5, 5);
-    SetTextBuffer(STRING16_LITERAL("abcde"));
+    SetTextBuffer(u"abcde");
   }
 
   HRESULT LockGranted3(DWORD flags) {
     SetTextRange(0, 5);
-    SetTextBuffer(STRING16_LITERAL("about"));
+    SetTextBuffer(u"about");
     SetSelectionRange(0, 5);
     return S_OK;
   }
@@ -1890,7 +1891,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
 
   HRESULT LockGranted4(DWORD flags) {
     SetTextRange(0, 5);
-    SetTextBuffer(STRING16_LITERAL("abFGt"));
+    SetTextBuffer(u"abFGt");
     SetSelectionRange(3, 4);
     return S_OK;
   }
@@ -1926,7 +1927,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
 
   HRESULT LockGranted5(DWORD flags) {
     SetTextRange(0, 3);
-    SetTextBuffer(STRING16_LITERAL("aHI"));
+    SetTextBuffer(u"aHI");
     SetSelectionRange(3, 3);
     return S_OK;
   }
@@ -1962,7 +1963,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
 
   HRESULT LockGranted6(DWORD flags) {
     SetTextRange(0, 5);
-    SetTextBuffer(STRING16_LITERAL("JKLMN"));
+    SetTextBuffer(u"JKLMN");
     SetSelectionRange(2, 5);
     return S_OK;
   }
@@ -1998,7 +1999,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
 
   HRESULT LockGranted7(DWORD flags) {
     SetTextRange(0, 0);
-    SetTextBuffer(STRING16_LITERAL(""));
+    SetTextBuffer(u"");
     SetSelectionRange(0, 0);
     return S_OK;
   }
@@ -2034,7 +2035,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
 
   HRESULT LockGranted8(DWORD flags) {
     SetTextRange(0, 3);
-    SetTextBuffer(STRING16_LITERAL("OPQ"));
+    SetTextBuffer(u"OPQ");
     SetSelectionRange(0, 2);
     return S_OK;
   }
@@ -2070,7 +2071,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
 
   HRESULT LockGranted9(DWORD flags) {
     SetTextRange(0, 3);
-    SetTextBuffer(STRING16_LITERAL("OPR"));
+    SetTextBuffer(u"OPR");
     SetSelectionRange(2, 3);
     return S_OK;
   }
@@ -2106,7 +2107,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
 
   HRESULT LockGranted10(DWORD flags) {
     SetTextRange(0, 3);
-    SetTextBuffer(STRING16_LITERAL("SPR"));
+    SetTextBuffer(u"SPR");
     SetSelectionRange(0, 1);
     return S_OK;
   }
@@ -2142,7 +2143,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
   // 11. renderer proc changes buffer from "SPR" to "STPR".
   HRESULT LockGranted11(DWORD flags) {
     SetTextRange(0, 4);
-    SetTextBuffer(STRING16_LITERAL("STPR"));
+    SetTextBuffer(u"STPR");
     SetSelectionRange(2, 2);
     return S_OK;
   }
@@ -2179,7 +2180,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
   // 12. renderer proc changes buffer from "STPR" to "PR".
   HRESULT LockGranted12(DWORD flags) {
     SetTextRange(0, 2);
-    SetTextBuffer(STRING16_LITERAL("PR"));
+    SetTextBuffer(u"PR");
     SetSelectionRange(0, 0);
     return S_OK;
   }
@@ -2216,7 +2217,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
   // 13. renderer proc changes buffer from "PR" to "UPR".
   HRESULT LockGranted13(DWORD flags) {
     SetTextRange(0, 3);
-    SetTextBuffer(STRING16_LITERAL("UPR"));
+    SetTextBuffer(u"UPR");
     SetSelectionRange(1, 1);
     return S_OK;
   }
@@ -2253,7 +2254,7 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
   // 14. renderer proc changes buffer from "UPR" to "UPVWR".
   HRESULT LockGranted14(DWORD flags) {
     SetTextRange(0, 5);
-    SetTextBuffer(STRING16_LITERAL("UPVWR"));
+    SetTextBuffer(u"UPVWR");
     SetSelectionRange(4, 4);
     return S_OK;
   }
@@ -2501,7 +2502,7 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("a"), composition.text);
+    EXPECT_EQ(u"a", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(1u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -2552,14 +2553,14 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
   }
 
   void InsertText2(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("a"), text);
+    EXPECT_EQ(u"a", text);
     SetHasCompositionText(false);
   }
 
   void SetCompositionText2(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("a"), composition.text);
+    EXPECT_EQ(u"a", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(1u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -2586,9 +2587,9 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
   }
 
   void InsertText3(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("a"), text);
+    EXPECT_EQ(u"a", text);
     SetHasCompositionText(false);
   }
 
@@ -2618,15 +2619,15 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
   // We expect this call since the composition was started and committed during
   // same edit session.
   void SetCompositionText4(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("c"), composition.text);
+    EXPECT_EQ(u"c", composition.text);
     ASSERT_EQ(1u, composition.ime_text_spans.size());
     ASSERT_EQ(gfx::Range(1, 1), composition.selection);
   }
 
   void InsertText4(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("c"), text);
+    EXPECT_EQ(u"c", text);
   }
 
   HRESULT LockGranted5(DWORD flags) {
@@ -2662,7 +2663,7 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText5(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("d"), composition.text);
+    EXPECT_EQ(u"d", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(1u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -2692,9 +2693,9 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
   }
 
   void InsertText6(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("e"), text);
+    EXPECT_EQ(u"e", text);
     SetHasCompositionText(false);
   }
 
@@ -2802,7 +2803,7 @@ class RegressionTest2Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText2(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("DE"), composition.text);
+    EXPECT_EQ(u"DE", composition.text);
     EXPECT_EQ(2u, composition.selection.start());
     EXPECT_EQ(2u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -2830,9 +2831,9 @@ class RegressionTest2Callback : public TSFTextStoreTestCallback {
   }
 
   void InsertText3(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("DE"), text);
+    EXPECT_EQ(u"DE", text);
     SetHasCompositionText(false);
   }
 
@@ -2901,7 +2902,7 @@ class RegressionTest3Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("a"), composition.text);
+    EXPECT_EQ(u"a", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(1u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -2932,7 +2933,7 @@ class RegressionTest3Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText2(const ui::CompositionText& composition) {
-    EXPECT_EQ(base::string16(), composition.text);
+    EXPECT_EQ(std::u16string(), composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(0u, composition.selection.end());
     ASSERT_EQ(0u, composition.ime_text_spans.size());
@@ -3001,7 +3002,7 @@ class RegressionTest4Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("a"), composition.text);
+    EXPECT_EQ(u"a", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(1u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -3030,9 +3031,9 @@ class RegressionTest4Callback : public TSFTextStoreTestCallback {
   }
 
   void InsertText2(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("a"), text);
+    EXPECT_EQ(u"a", text);
     SetHasCompositionText(false);
   }
 
@@ -3105,7 +3106,7 @@ class RegressionTest5Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("aa"), composition.text);
+    EXPECT_EQ(u"aa", composition.text);
     EXPECT_EQ(2u, composition.selection.start());
     EXPECT_EQ(2u, composition.selection.end());
     ASSERT_EQ(2u, composition.ime_text_spans.size());
@@ -3148,7 +3149,7 @@ class RegressionTest5Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText2(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("aa"), composition.text);
+    EXPECT_EQ(u"aa", composition.text);
     EXPECT_EQ(2u, composition.selection.start());
     EXPECT_EQ(2u, composition.selection.end());
     ASSERT_EQ(2u, composition.ime_text_spans.size());
@@ -3174,9 +3175,9 @@ class RegressionTest5Callback : public TSFTextStoreTestCallback {
   }
 
   void InsertText3(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("aa"), text);
+    EXPECT_EQ(u"aa", text);
     SetHasCompositionText(false);
   }
 
@@ -3249,7 +3250,7 @@ class RegressionTest6Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("a"), composition.text);
+    EXPECT_EQ(u"a", composition.text);
     EXPECT_EQ(1u, composition.selection.start());
     EXPECT_EQ(1u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -3273,9 +3274,9 @@ class RegressionTest6Callback : public TSFTextStoreTestCallback {
   }
 
   void InsertText2(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("a"), text);
+    EXPECT_EQ(u"a", text);
     SetHasCompositionText(false);
   }
 
@@ -3339,7 +3340,7 @@ class UnderlineStyleTestCallback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("a"), composition.text);
+    EXPECT_EQ(u"a", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(1u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -3440,9 +3441,9 @@ class RegressionTest7Callback : public TSFTextStoreTestCallback {
   }
 
   void InsertText3(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("a"), text);
+    EXPECT_EQ(u"a", text);
     SetHasCompositionText(false);
   }
 
@@ -3511,7 +3512,7 @@ class RegressionTest8Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("bbbb"), composition.text);
+    EXPECT_EQ(u"bbbb", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(4u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -3605,7 +3606,7 @@ class RegressionTest9Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText2(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("bbbb"), composition.text);
+    EXPECT_EQ(u"bbbb", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(4u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -3637,7 +3638,7 @@ class RegressionTest9Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText3(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("bbcc"), composition.text);
+    EXPECT_EQ(u"bbcc", composition.text);
     EXPECT_EQ(2u, composition.selection.start());
     EXPECT_EQ(4u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -3662,9 +3663,9 @@ class RegressionTest9Callback : public TSFTextStoreTestCallback {
   }
 
   void InsertText4(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("bbcc"), text);
+    EXPECT_EQ(u"bbcc", text);
     SetHasCompositionText(false);
   }
 
@@ -3745,7 +3746,7 @@ class RegressionTest10Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("abcd"), composition.text);
+    EXPECT_EQ(u"abcd", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(4u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -3787,7 +3788,7 @@ class RegressionTest10Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText2(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("abcd"), composition.text);
+    EXPECT_EQ(u"abcd", composition.text);
     EXPECT_EQ(2u, composition.selection.start());
     EXPECT_EQ(2u, composition.selection.end());
     ASSERT_EQ(2u, composition.ime_text_spans.size());
@@ -3895,7 +3896,7 @@ class RegressionTest11Callback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("abcd"), composition.text);
+    EXPECT_EQ(u"abcd", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(4u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -4027,7 +4028,7 @@ class MultipleSetTextCallback : public TSFTextStoreTestCallback {
 
   HRESULT LockGranted1(DWORD flags) {
     SetTextRange(0, 6);
-    SetTextBuffer(STRING16_LITERAL("123456"));
+    SetTextBuffer(u"123456");
     SetTextTest(0, 0, L"123456", S_OK);
     SetSelectionRange(6, 6);
     *composition_start() = 1;
@@ -4135,7 +4136,7 @@ class TextInputClientReentrancyTestCallback : public TSFTextStoreTestCallback {
   }
 
   void SetCompositionText1(const ui::CompositionText& composition) {
-    EXPECT_EQ(STRING16_LITERAL("a"), composition.text);
+    EXPECT_EQ(u"a", composition.text);
     EXPECT_EQ(0u, composition.selection.start());
     EXPECT_EQ(1u, composition.selection.end());
     ASSERT_EQ(1u, composition.ime_text_spans.size());
@@ -4143,7 +4144,7 @@ class TextInputClientReentrancyTestCallback : public TSFTextStoreTestCallback {
     EXPECT_EQ(1u, composition.ime_text_spans[0].end_offset);
     SetHasCompositionText(true);
     SetTextRange(0, 1);
-    SetTextBuffer(STRING16_LITERAL("a"));
+    SetTextBuffer(u"a");
     SetSelectionRange(0, 1);
   }
 
@@ -4161,12 +4162,12 @@ class TextInputClientReentrancyTestCallback : public TSFTextStoreTestCallback {
   }
 
   void InsertText2(
-      const base::string16& text,
+      const std::u16string& text,
       ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
-    EXPECT_EQ(STRING16_LITERAL("a"), text);
+    EXPECT_EQ(u"a", text);
     SetHasCompositionText(false);
     SetSelectionRange(1, 1);
-    SetTextBuffer(STRING16_LITERAL("b"));
+    SetTextBuffer(u"b");
     HRESULT result = kInvalidResult;
     EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
     EXPECT_EQ(S_OK, result);

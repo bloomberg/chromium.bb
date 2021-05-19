@@ -42,17 +42,23 @@ class DepotToolsClientTest(unittest.TestCase):
     })
     self.root = '/'
     self.fopen = self.repo.open_for_reading
-    mock.patch(
-        'owners_client.DepotToolsClient._GetOriginalOwnersFiles',
-        return_value={}).start()
     self.addCleanup(mock.patch.stopall)
     self.client = owners_client.DepotToolsClient(
         '/', 'branch', self.fopen, self.repo)
 
-  def testListOwners(self):
+  @mock.patch('scm.GIT.CaptureStatus')
+  @mock.patch('scm.GIT.GetOldContents')
+  def testListOwners(self, mockGetOldContents, mockCaptureStatus):
+    mockGetOldContents.side_effect = lambda r, f, _b: self.repo.files[r + f]
+    mockCaptureStatus.return_value = [
+        ('M', 'bar/everyone/foo.txt'),
+        ('M', 'OWNERS'),
+    ]
+
     self.assertEqual(
         ['*', 'missing@example.com'],
         self.client.ListOwners('bar/everyone/foo.txt'))
+    mockCaptureStatus.assert_called_once_with('/', 'branch')
 
 
 class GerritClientTest(unittest.TestCase):
@@ -96,7 +102,7 @@ class GerritClientTest(unittest.TestCase):
     # Always use slashes as separators.
     gerrit_util.GetOwnersForFile.assert_called_once_with(
         'host', 'project', 'branch', 'bar/everyone/foo.txt',
-        resolve_all_users=False)
+        resolve_all_users=False, seed=mock.ANY)
 
   def testListOwnersOwnedByAll(self):
     mock.patch(
@@ -174,21 +180,6 @@ class OwnersClientTest(unittest.TestCase):
         self.client.GetFilesApprovalStatus(['everyone'], [], []),
         {'everyone': owners_client.OwnersClient.INSUFFICIENT_REVIEWERS})
 
-  def test_owner_combinations(self):
-    owners = [alice, bob, chris, dave, emily]
-    self.assertEqual(
-        list(owners_client._owner_combinations(owners, 2)),
-        [(bob, alice),
-         (chris, alice),
-         (chris, bob),
-         (dave, alice),
-         (dave, bob),
-         (dave, chris),
-         (emily, alice),
-         (emily, bob),
-         (emily, chris),
-         (emily, dave)])
-
   def testScoreOwners(self):
     self.client.owners_by_path = {
         'a': [alice, bob, chris]
@@ -205,7 +196,7 @@ class OwnersClientTest(unittest.TestCase):
     }
     self.assertEqual(
       self.client.ScoreOwners(self.client.owners_by_path.keys()),
-      [bob, alice, chris]
+      [alice, bob, chris]
     )
 
     self.client.owners_by_path = {
@@ -216,7 +207,7 @@ class OwnersClientTest(unittest.TestCase):
     self.assertEqual(
       self.client.ScoreOwners(
           self.client.owners_by_path.keys(), exclude=[chris]),
-      [bob, alice],
+      [alice, bob],
     )
 
     self.client.owners_by_path = {
@@ -227,68 +218,60 @@ class OwnersClientTest(unittest.TestCase):
     }
     self.assertEqual(
       self.client.ScoreOwners(self.client.owners_by_path.keys()),
-      [chris, dave, alice, bob]
+      [alice, chris, bob, dave]
     )
 
-  def testSuggestOwners(self):
-    self.client.owners_by_path = {'a': [alice]}
-    self.assertEqual(
-        self.client.SuggestOwners(['a']),
-        [alice])
-
-    self.client.owners_by_path = {'abcd': [alice, bob, chris, dave]}
-    self.assertEqual(
-        sorted(self.client.SuggestOwners(['abcd'])),
-        [alice, bob])
-
-    self.client.owners_by_path = {'abcd': [alice, bob, chris, dave]}
-    self.assertEqual(
-        sorted(self.client.SuggestOwners(['abcd'], exclude=[alice, bob])),
-        [chris, dave])
-
-    self.client.owners_by_path = {
-        'ae': [alice, emily],
-        'be': [bob, emily],
-        'ce': [chris, emily],
-        'de': [dave, emily],
-    }
-    suggested = self.client.SuggestOwners(['ae', 'be', 'ce', 'de'])
-    # emily should be selected along with anyone else.
-    self.assertIn(emily, suggested)
-    self.assertEqual(2, len(suggested))
-
-    self.client.owners_by_path = {
-        'ad': [alice, dave],
-        'cad': [chris, alice, dave],
-        'ead': [emily, alice, dave],
-        'bd': [bob, dave],
-    }
-    self.assertEqual(
-        sorted(self.client.SuggestOwners(['ad', 'cad', 'ead', 'bd'])),
-        [alice, dave])
-
-    self.client.owners_by_path = {
-        'a': [alice],
-        'b': [bob],
-        'c': [chris],
-        'ad': [alice, dave],
-    }
-    self.assertEqual(
-        sorted(self.client.SuggestOwners(['a', 'b', 'c', 'ad'])),
-        [alice, bob, chris])
-
-    self.client.owners_by_path = {
-        'abc': [alice, bob, chris],
-        'acb': [alice, chris, bob],
-        'bac': [bob, alice, chris],
-        'bca': [bob, chris, alice],
-        'cab': [chris, alice, bob],
-        'cba': [chris, bob, alice]
-    }
+  def assertSuggestsOwners(self, owners_by_path, exclude=None):
+    self.client.owners_by_path = owners_by_path
     suggested = self.client.SuggestOwners(
-        ['abc', 'acb', 'bac', 'bca', 'cab', 'cba'])
-    # Any two owners.
-    self.assertEqual(2, len(suggested))
+        owners_by_path.keys(), exclude=exclude)
+
+    # Owners should appear only once
+    self.assertEqual(len(suggested), len(set(suggested)))
+
+    # All paths should be covered.
+    suggested = set(suggested)
+    for owners in owners_by_path.values():
+      self.assertTrue(suggested & set(owners))
+
+    # No excluded owners should be present.
+    if exclude:
+      for owner in suggested:
+        self.assertNotIn(owner, exclude)
+
+  def testSuggestOwners(self):
+    self.assertSuggestsOwners({})
+    self.assertSuggestsOwners({'a': [alice]})
+    self.assertSuggestsOwners({'abcd': [alice, bob, chris, dave]})
+    self.assertSuggestsOwners(
+        {'abcd': [alice, bob, chris, dave]},
+        exclude=[alice, bob])
+    self.assertSuggestsOwners(
+        {'ae': [alice, emily],
+         'be': [bob, emily],
+         'ce': [chris, emily],
+         'de': [dave, emily]})
+    self.assertSuggestsOwners(
+        {'ad': [alice, dave],
+         'cad': [chris, alice, dave],
+         'ead': [emily, alice, dave],
+         'bd': [bob, dave]})
+    self.assertSuggestsOwners(
+        {'a': [alice],
+         'b': [bob],
+         'c': [chris],
+         'ad': [alice, dave]})
+    self.assertSuggestsOwners(
+        {'abc': [alice, bob, chris],
+         'acb': [alice, chris, bob],
+         'bac': [bob, alice, chris],
+         'bca': [bob, chris, alice],
+         'cab': [chris, alice, bob],
+         'cba': [chris, bob, alice]})
+
+    # Check that we can handle a large amount of files with unrelated owners.
+    self.assertSuggestsOwners(
+        {str(x): [str(x)] for x in range(100)})
 
   def testBatchListOwners(self):
     self.client.owners_by_path = {
@@ -309,19 +292,19 @@ class OwnersClientTest(unittest.TestCase):
 
 class GetCodeOwnersClientTest(unittest.TestCase):
   def setUp(self):
-    mock.patch('gerrit_util.IsCodeOwnersEnabled').start()
+    mock.patch('gerrit_util.IsCodeOwnersEnabledOnHost').start()
     self.addCleanup(mock.patch.stopall)
 
   def testGetCodeOwnersClient_GerritClient(self):
-    gerrit_util.IsCodeOwnersEnabled.return_value = True
+    gerrit_util.IsCodeOwnersEnabledOnHost.return_value = True
     self.assertIsInstance(
-        owners_client.GetCodeOwnersClient('root', 'host', 'project', 'branch'),
+        owners_client.GetCodeOwnersClient('', '', 'host', 'project', 'branch'),
         owners_client.GerritClient)
 
   def testGetCodeOwnersClient_DepotToolsClient(self):
-    gerrit_util.IsCodeOwnersEnabled.return_value = False
+    gerrit_util.IsCodeOwnersEnabledOnHost.return_value = False
     self.assertIsInstance(
-        owners_client.GetCodeOwnersClient('root', 'host', 'project', 'branch'),
+        owners_client.GetCodeOwnersClient('root', 'branch', '', '', ''),
         owners_client.DepotToolsClient)
 
 

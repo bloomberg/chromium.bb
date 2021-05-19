@@ -5,36 +5,41 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_CONTENT_BROWSER_PAGE_CONTENT_ANNOTATIONS_SERVICE_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_CONTENT_BROWSER_PAGE_CONTENT_ANNOTATIONS_SERVICE_H_
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
+#include "base/task/cancelable_task_tracker.h"
+#include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/url_row.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-#include "components/optimization_guide/content/browser/bert_model_executor.h"
-#endif
 
 namespace content {
 class WebContents;
 }  // namespace content
 
+namespace history {
+class HistoryService;
+}  // namespace history
+
 namespace optimization_guide {
 
 class OptimizationGuideDecider;
+class PageContentAnnotationsModelManager;
 
-// The information used by HistoryService to identify a visit.
+// The information used by HistoryService to identify a visit to a URL.
 struct HistoryVisit {
-  // TODO(crbug/1177102): Add history::ContextID.
-  int nav_entry_id;
-  const GURL& url;
+  base::Time nav_entry_timestamp;
+  GURL url;
 };
 
 // A KeyedService that annotates page content.
 class PageContentAnnotationsService : public KeyedService {
  public:
   explicit PageContentAnnotationsService(
-      OptimizationGuideDecider* optimization_guide_decider);
+      OptimizationGuideDecider* optimization_guide_decider,
+      history::HistoryService* history_service);
   ~PageContentAnnotationsService() override;
   PageContentAnnotationsService(const PageContentAnnotationsService&) = delete;
   PageContentAnnotationsService& operator=(
@@ -50,7 +55,7 @@ class PageContentAnnotationsService : public KeyedService {
   // History Service.
   //
   // Virtualized for testing.
-  virtual void Annotate(const HistoryVisit& visit, const base::string16& text);
+  virtual void Annotate(const HistoryVisit& visit, const std::string& text);
 
   // Returns the version of the page topics model that is currently being used
   // to annotate page content. Will return |base::nullopt| if no model is being
@@ -59,13 +64,26 @@ class PageContentAnnotationsService : public KeyedService {
 
  private:
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-  // Invoked when the page topics model has finished executing.
-  void OnPageTopicsModelExecutionCompleted(
+  // Callback invoked when |visit| has been annotated.
+  void OnPageContentAnnotated(
       const HistoryVisit& visit,
-      const base::Optional<std::vector<tflite::task::core::Category>>& output);
+      const base::Optional<history::VisitContentModelAnnotations>&
+          content_annotations);
 
-  // The model executor responsible for executing the page topics model.
-  std::unique_ptr<BertModelExecutor> page_topics_model_executor_;
+  // Callback invoked when |history_service| has returned results for the visits
+  // to a URL.
+  void OnURLQueried(
+      const HistoryVisit& visit,
+      const history::VisitContentModelAnnotations& content_annotations,
+      history::QueryURLResult url_result);
+
+  // The history service to write content annotations to. Not owned. Guaranteed
+  // to outlive |this|.
+  history::HistoryService* history_service_;
+  // The task tracker to keep track of tasks to query |history_service|.
+  base::CancelableTaskTracker history_service_task_tracker_;
+
+  std::unique_ptr<PageContentAnnotationsModelManager> model_manager_;
 #endif
 
   base::WeakPtrFactory<PageContentAnnotationsService> weak_ptr_factory_{this};

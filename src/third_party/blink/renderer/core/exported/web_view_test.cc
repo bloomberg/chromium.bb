@@ -65,7 +65,6 @@
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/test/test_web_frame_content_dumper.h"
@@ -487,7 +486,8 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
                       /*is_inside_portal=*/false,
                       /*compositing_enabled=*/true,
                       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
-                      web_view_helper_.GetAgentGroupScheduler()));
+                      web_view_helper_.GetAgentGroupScheduler(),
+                      /*session_storage_namespace_id=*/base::EmptyString()));
 
   EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
   // WebView does not have a frame yet, but we should still be able to set the
@@ -694,9 +694,8 @@ TEST_F(WebViewTest, PlatformColorsChangedOnDeviceEmulation) {
   ASSERT_TRUE(span1);
 
   // Check non-MobileLayoutTheme color.
-  // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
   Color original = LayoutTheme::GetTheme().FocusRingColor(
-      ComputedStyle::InitialStyle().UsedColorScheme());
+      span1->ComputedStyleRef().UsedColorScheme());
   EXPECT_EQ(original, OutlineColor(span1));
 
   // Set the focus ring color for the mobile theme to something known.
@@ -1568,8 +1567,7 @@ TEST_F(WebViewTest, FinishCompositionDoesNotRevealSelection) {
       web_view_helper_.InitializeAndLoad(base_url_ + "form_with_input.html");
   web_view->MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
-  EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(gfx::ScrollOffset(), web_view->MainFrameImpl()->GetScrollOffset());
 
   // Set up a composition from existing text that needs to be committed.
   Vector<ImeTextSpan> empty_ime_text_spans;
@@ -1581,8 +1579,8 @@ TEST_F(WebViewTest, FinishCompositionDoesNotRevealSelection) {
   Element* element = static_cast<Element*>(
       web_view->MainFrameImpl()->GetDocument().GetElementById("btn"));
   element->scrollIntoView();
-  float offset_height = web_view->MainFrameImpl()->GetScrollOffset().height;
-  EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().width);
+  float offset_height = web_view->MainFrameImpl()->GetScrollOffset().y();
+  EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().x());
   EXPECT_LT(0, offset_height);
 
   WebTextInputInfo info = frame->GetInputMethodController()->TextInputInfo();
@@ -1592,8 +1590,8 @@ TEST_F(WebViewTest, FinishCompositionDoesNotRevealSelection) {
   frame->FrameWidget()
       ->GetActiveWebInputMethodController()
       ->FinishComposingText(WebInputMethodController::kDoNotKeepSelection);
-  EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_EQ(offset_height, web_view->MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().x());
+  EXPECT_EQ(offset_height, web_view->MainFrameImpl()->GetScrollOffset().y());
 }
 
 TEST_F(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
@@ -2426,15 +2424,15 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState) {
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->MainFrameViewWidget()->Resize(gfx::Size(100, 150));
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(gfx::ScrollOffset(),
+            web_view_impl->MainFrameImpl()->GetScrollOffset());
 
   // Make the page scale and scroll with the given paremeters.
   web_view_impl->SetPageScaleFactor(2.0f);
-  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(94, 111));
+  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::ScrollOffset(94, 111));
   EXPECT_EQ(2.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(94, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_EQ(111, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(94, web_view_impl->MainFrameImpl()->GetScrollOffset().x());
+  EXPECT_EQ(111, web_view_impl->MainFrameImpl()->GetScrollOffset().y());
   auto* main_frame_local =
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
   main_frame_local->Loader().SaveScrollState();
@@ -2457,8 +2455,8 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState) {
   // Confirm that resetting the page state resets the saved scroll position.
   web_view_impl->ResetScrollAndScaleState();
   EXPECT_EQ(1.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(gfx::ScrollOffset(),
+            web_view_impl->MainFrameImpl()->GetScrollOffset());
   EXPECT_FALSE(main_frame_local->Loader()
                    .GetDocumentLoader()
                    ->GetHistoryItem()
@@ -2475,7 +2473,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       DocumentUpdateReason::kTest);
 
   // Emulate a user scroll
-  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 900));
+  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::ScrollOffset(0, 900));
   auto* main_frame_local =
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
   Persistent<HistoryItem> item1 =
@@ -2493,18 +2491,18 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr, false /* has_event */,
-      nullptr);
+      false /* has_transient_user_activation */, nullptr,
+      mojom::blink::TriggeringEventInfo::kNotFromEvent, nullptr);
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item2->Url(), WebFrameLoadType::kBackForward, item2.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr, false /* has_event */,
-      nullptr);
+      false /* has_transient_user_activation */, nullptr,
+      mojom::blink::TriggeringEventInfo::kNotFromEvent, nullptr);
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr, false /* has_event */,
-      nullptr);
+      false /* has_transient_user_activation */, nullptr,
+      mojom::blink::TriggeringEventInfo::kNotFromEvent, nullptr);
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 
@@ -2523,21 +2521,21 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr, false /* has_event */,
-      nullptr);
+      false /* has_transient_user_activation */, nullptr,
+      mojom::blink::TriggeringEventInfo::kNotFromEvent, nullptr);
 
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item3->Url(), WebFrameLoadType::kBackForward, item3.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr, false /* has_event */,
-      nullptr);
+      false /* has_transient_user_activation */, nullptr,
+      mojom::blink::TriggeringEventInfo::kNotFromEvent, nullptr);
   // The scroll offset is only applied via invoking the anchor via the main
   // lifecycle, or a forced layout.
   // TODO(chrishtr): At the moment, WebLocalFrameImpl::GetScrollOffset() does
   // not force a layout. Script-exposed scroll offset-reading methods do,
   // however. It seems wrong not to force a layout.
-  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_GT(web_view_impl->MainFrameImpl()->GetScrollOffset().height, 2000);
+  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().x());
+  EXPECT_GT(web_view_impl->MainFrameImpl()->GetScrollOffset().y(), 2000);
 }
 
 // Tests that scroll offset modified during fullscreen is preserved when
@@ -2550,8 +2548,8 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   UpdateAllLifecyclePhases();
 
   // Scroll the page down.
-  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
-  ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
+  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::ScrollOffset(0, 2000));
+  ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().y());
 
   // Enter fullscreen.
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
@@ -2563,14 +2561,14 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   UpdateAllLifecyclePhases();
 
   // Assert the scroll position on the document element doesn't change.
-  ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
+  ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().y());
 
-  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2100));
+  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::ScrollOffset(0, 2100));
 
   web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(2100, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(2100, web_view_impl->MainFrameImpl()->GetScrollOffset().y());
 }
 
 // Tests that background color is read from the backdrop on fullscreen.
@@ -2634,7 +2632,8 @@ static void DragAndDropURL(WebViewImpl* web_view, const std::string& url) {
   WebFrameWidget* widget = web_view->MainFrameImpl()->FrameWidget();
   widget->DragTargetDragEnter(drag_data, client_point, screen_point,
                               kDragOperationCopy, 0, base::DoNothing());
-  widget->DragTargetDrop(drag_data, client_point, screen_point, 0);
+  widget->DragTargetDrop(drag_data, client_point, screen_point, 0,
+                         base::DoNothing());
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(
       web_view->MainFrameImpl());
 }
@@ -2726,8 +2725,8 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   WebViewImpl* web_view = static_cast<WebViewImpl*>(WebView::Create(
       /*client=*/nullptr, /*is_hidden=*/false, /*is_inside_portal=*/false,
       /*compositing_enabled=*/false, /*opener=*/nullptr,
-      mojo::NullAssociatedReceiver(),
-      web_view_helper_.GetAgentGroupScheduler()));
+      mojo::NullAssociatedReceiver(), web_view_helper_.GetAgentGroupScheduler(),
+      /*session_storage_namespace_id=*/base::EmptyString()));
   frame_test_helpers::TestWebFrameClient web_frame_client;
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(
       web_view, &web_frame_client, nullptr, LocalFrameToken(), nullptr);
@@ -2982,7 +2981,8 @@ TEST_F(WebViewTest, TouchDragContextMenuWithoutDrag) {
   // Simulate the end of a non-moving drag.
   const gfx::PointF dragend_point(250, 8);
   web_view->MainFrameViewWidget()->DragSourceEndedAt(
-      dragend_point, dragend_point, ui::mojom::blink::DragOperation::kNone);
+      dragend_point, dragend_point, ui::mojom::blink::DragOperation::kNone,
+      base::DoNothing());
   EXPECT_TRUE(
       web_view->GetPage()->GetContextMenuController().ContextMenuNodeForFrame(
           web_view->MainFrameImpl()->GetFrame()));
@@ -3021,7 +3021,8 @@ TEST_F(WebViewTest, TouchDragContextMenuWithDrag) {
   // Simulate the end of a drag.
   const gfx::PointF dragend_point(270, 28);
   web_view->MainFrameViewWidget()->DragSourceEndedAt(
-      dragend_point, dragend_point, ui::mojom::blink::DragOperation::kNone);
+      dragend_point, dragend_point, ui::mojom::blink::DragOperation::kNone,
+      base::DoNothing());
   EXPECT_FALSE(
       web_view->GetPage()->GetContextMenuController().ContextMenuNodeForFrame(
           web_view->MainFrameImpl()->GetFrame()));
@@ -5959,47 +5960,6 @@ TEST_F(WebViewTest, RootLayerAttachment) {
   EXPECT_TRUE(layer_tree_host->root_layer());
 }
 
-// Verifies that we emit Blink.UseCounter.FeaturePolicy.PotentialAnimation for
-// CSS and JS animations in a document.
-// TODO(crbug.com/1066620): enable this test after metrics for document policy
-// are added. Needs to update histogram name to document policy equivalent
-// when re-enabled.
-TEST_F(WebViewTest, DISABLED_PotentialViolationReportsForLayoutAnimations) {
-  const char* kHistogramName =
-      "Blink.UseCounter.FeaturePolicy.PotentialViolation";
-  WebViewImpl* web_view = web_view_helper_.Initialize();
-  // A page with non-violating animation does not generate report.
-  WebURL base_url_no_violation =
-      url_test_helpers::ToKURL("http://good-css.example.com/");
-  frame_test_helpers::LoadHTMLString(
-      web_view->MainFrameImpl(),
-      "<html><head><style>@keyframes foo {from "
-      "{color: blue;} to {color: red}}</style></head></html>",
-      base_url_no_violation);
-  HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount(kHistogramName, 0);
-  // Page with 2 potential (CSS) layout-animation violations.
-  WebURL base_url_css_violations =
-      url_test_helpers::ToKURL("http://bad-css.example.com/");
-  frame_test_helpers::LoadHTMLString(
-      web_view->MainFrameImpl(),
-      "<html><head><style>@keyframes bar {"
-      "from{height: 100px;} to {height: 200px;}}"
-      "@keyframes baz {from{top: 100px;} to {top: 200px;}}"
-      "</style></head></html>",
-      base_url_css_violations);
-  histogram_tester.ExpectTotalCount(kHistogramName, 1);
-  // Page with a JS layout-animations violation.
-  WebURL base_url_js_violations =
-      url_test_helpers::ToKURL("http://js.example.com/");
-  frame_test_helpers::LoadHTMLString(
-      web_view->MainFrameImpl(),
-      "<html><body><div></div><script>document.body.firstChild.animate("
-      "{top: '100px'});</script></body></html>",
-      base_url_js_violations);
-  histogram_tester.ExpectTotalCount(kHistogramName, 2);
-}
-
 TEST_F(WebViewTest, ForceDarkModeInvalidatesPaint) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->MainFrameViewWidget()->Resize(gfx::Size(500, 500));
@@ -6103,6 +6063,22 @@ TEST_F(WebViewTest, LongPressAndThenLongTapLinkInIframeShouldShowContextMenu) {
                 WebCoalescedInputEvent(tap_event, ui::LatencyInfo())));
   EXPECT_EQ("anchor contextmenu",
             web_view->MainFrameImpl()->GetDocument().Title());
+}
+
+TEST_F(WebViewTest, SetHistoryLengthAndOffset) {
+  WebViewImpl* web_view_impl = web_view_helper_.Initialize();
+
+  // No history to merge; one committed page.
+  web_view_impl->SetHistoryListFromNavigation(0, 1);
+  EXPECT_EQ(1, web_view_impl->HistoryBackListCount() +
+                   web_view_impl->HistoryForwardListCount() + 1);
+  EXPECT_EQ(0, web_view_impl->HistoryBackListCount());
+
+  // History of length 1 to merge; one committed page.
+  web_view_impl->SetHistoryListFromNavigation(1, 2);
+  EXPECT_EQ(2, web_view_impl->HistoryBackListCount() +
+                   web_view_impl->HistoryForwardListCount() + 1);
+  EXPECT_EQ(1, web_view_impl->HistoryBackListCount());
 }
 
 }  // namespace blink

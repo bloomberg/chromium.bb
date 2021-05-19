@@ -119,8 +119,8 @@ TEST_F(CredentialProviderServiceTest, PasswordChanges) {
   form.url = GURL("http://0.com");
   form.signon_realm = "http://www.example.com/";
   form.action = GURL("http://www.example.com/action");
-  form.password_element = base::ASCIIToUTF16("pwd");
-  form.password_value = base::ASCIIToUTF16("example");
+  form.password_element = u"pwd";
+  form.password_value = u"example";
 
   password_store_->AddLogin(form);
   task_environment_.RunUntilIdle();
@@ -130,7 +130,7 @@ TEST_F(CredentialProviderServiceTest, PasswordChanges) {
 
   NSString* keychainIdentifier =
       credential_store_.credentials.firstObject.keychainIdentifier;
-  form.password_value = base::ASCIIToUTF16("secret");
+  form.password_value = u"secret";
 
   password_store_->UpdateLogin(form);
   task_environment_.RunUntilIdle();
@@ -154,8 +154,8 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
   form.url = GURL("http://0.com");
   form.signon_realm = "http://www.example.com/";
   form.action = GURL("http://www.example.com/action");
-  form.password_element = base::ASCIIToUTF16("pwd");
-  form.password_value = base::ASCIIToUTF16("example");
+  form.password_element = u"pwd";
+  form.password_value = u"example";
 
   password_store_->AddLogin(form);
   task_environment_.RunUntilIdle();
@@ -179,7 +179,7 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
   credential_provider_service_->OnPrimaryAccountChanged(
       signin::PrimaryAccountChangeEvent(
           signin::PrimaryAccountChangeEvent::State(
-              CoreAccountInfo(), signin::ConsentLevel::kNotRequired),
+              CoreAccountInfo(), signin::ConsentLevel::kSignin),
           signin::PrimaryAccountChangeEvent::State(
               account, signin::ConsentLevel::kSync)));
 
@@ -198,7 +198,7 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
           signin::PrimaryAccountChangeEvent::State(account,
                                                    signin::ConsentLevel::kSync),
           signin::PrimaryAccountChangeEvent::State(
-              CoreAccountInfo(), signin::ConsentLevel::kNotRequired)));
+              CoreAccountInfo(), signin::ConsentLevel::kSignin)));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
     base::RunLoop().RunUntilIdle();
@@ -215,8 +215,8 @@ TEST_F(CredentialProviderServiceTest, AndroidCredential) {
   PasswordForm form;
   form.url = GURL(form.signon_realm);
   form.signon_realm = "android://hash@com.example.my.app";
-  form.password_element = base::ASCIIToUTF16("pwd");
-  form.password_value = base::ASCIIToUTF16("example");
+  form.password_element = u"pwd";
+  form.password_value = u"example";
 
   password_store_->AddLogin(form);
   task_environment_.RunUntilIdle();

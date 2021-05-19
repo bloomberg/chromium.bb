@@ -4,6 +4,9 @@
 
 #include "util/base64.h"
 
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 
 namespace openscreen {
@@ -14,13 +17,21 @@ namespace {
 constexpr char kText[] = "hello world";
 constexpr char kBase64Text[] = "aGVsbG8gd29ybGQ=";
 
+// More sophisticated comparisons here, such as EXPECT_STREQ, may
+// cause memory failures on some platforms (e.g. ASAN) due to mismatched
+// lengths.
+void CheckEquals(const char* expected, const std::vector<uint8_t>& actual) {
+  EXPECT_EQ(0, std::memcmp(actual.data(), expected, actual.size()));
+}
+
 void CheckEncodeDecode(const char* to_encode, const char* encode_expected) {
   std::string encoded = Encode(to_encode);
   EXPECT_EQ(encode_expected, encoded);
 
-  std::string decoded;
+  std::vector<uint8_t> decoded;
   EXPECT_TRUE(Decode(encoded, &decoded));
-  EXPECT_EQ(to_encode, decoded);
+
+  CheckEquals(to_encode, decoded);
 }
 
 }  // namespace
@@ -52,8 +63,9 @@ TEST(Base64Test, InPlace) {
   text = Encode(text);
   EXPECT_EQ(kBase64Text, text);
 
-  EXPECT_TRUE(Decode(text, &text));
-  EXPECT_EQ(text, kText);
+  std::vector<uint8_t> out;
+  EXPECT_TRUE(Decode(text, &out));
+  CheckEquals(kText, out);
 }
 
 }  // namespace base64

@@ -42,7 +42,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/gtest_util.h"
 #include "base/test/gtest_xml_util.h"
@@ -1565,17 +1565,30 @@ bool TestLauncher::InitTests() {
     LOG(ERROR) << "Failed to get list of tests.";
     return false;
   }
+  std::vector<std::string> uninstantiated_tests;
   for (const TestIdentifier& test_id : tests) {
     TestInfo test_info(test_id);
     if (test_id.test_case_name == "GoogleTestVerification") {
-      LOG(INFO) << "The following parameterized test case is not instantiated: "
-                << test_id.test_name;
+      // GoogleTestVerification is used by googletest to detect tests that are
+      // parameterized but not instantiated.
+      uninstantiated_tests.push_back(test_id.test_name);
       continue;
     }
     // TODO(isamsonov): crbug.com/1004417 remove when windows builders
     // stop flaking on MANAUAL_ tests.
     if (launcher_delegate_->ShouldRunTest(test_id))
       tests_.push_back(test_info);
+  }
+  if (!uninstantiated_tests.empty()) {
+    LOG(ERROR) << "Found uninstantiated parameterized tests. These test suites "
+                  "will not run:";
+    for (const std::string& name : uninstantiated_tests)
+      LOG(ERROR) << "  " << name;
+    LOG(ERROR) << "Please use INSTANTIATE_TEST_SUITE_P to instantiate the "
+                  "tests, or GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST if "
+                  "the parameter list can be intentionally empty. See "
+                  "//third_party/googletest/src/docs/advanced.md";
+    return false;
   }
   return true;
 }
@@ -1742,7 +1755,7 @@ std::vector<std::string> TestLauncher::CollectTests() {
 
     // Tests with the name XYZ will cause tests with the name PRE_XYZ to run. We
     // should bucket all of these tests together.
-    if (Hash(prefix_stripped_name) % total_shards_ !=
+    if (PersistentHash(prefix_stripped_name) % total_shards_ !=
         static_cast<uint32_t>(shard_index_)) {
       continue;
     }

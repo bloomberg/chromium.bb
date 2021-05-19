@@ -279,7 +279,15 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
+// Failing on Linux/Mac: https://crbug.com/1182662
+// Using MSAN on ChromeOS causes problems due to its hardware OpenGL library.
+#if defined(OS_LINUX) || defined(OS_MAC) || \
+    (BUILDFLAG(IS_CHROMEOS_ASH) && defined(MEMORY_SANITIZER))
+#define MAYBE_Performance DISABLED_Performance
+#else
+#define MAYBE_Performance Performance
+#endif
+IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, MAYBE_Performance) {
   if (!is_full_performance_run()) {
     // TODO(crbug.com/1042457): Flaky failures across multiple CQ builders.
     return;
@@ -337,14 +345,11 @@ IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
-// On ChromeOS, software compositing is not an option, and using MSAN on
-// ChromeOS causes problems due to its hardware OpenGL library.
-#if !defined(MEMORY_SANITIZER)
+// On ChromeOS, software compositing is not an option.
 INSTANTIATE_TEST_SUITE_P(All,
                          TabCapturePerformanceTest,
                          testing::Values(kUseGpu,
                                          kTestThroughWebRTC | kUseGpu));
-#endif
 
 #else
 

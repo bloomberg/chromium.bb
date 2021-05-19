@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "quic/core/crypto/null_encrypter.h"
 #include "quic/core/crypto/quic_crypto_server_config.h"
@@ -37,7 +38,6 @@
 #include "quic/tools/quic_backend_response.h"
 #include "quic/tools/quic_memory_cache_backend.h"
 #include "quic/tools/quic_simple_server_stream.h"
-#include "common/platform/api/quiche_text_utils.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -135,9 +135,9 @@ QuicCryptoServerStreamBase* CreateMockCryptoServerStream(
     case PROTOCOL_UNSUPPORTED:
       break;
   }
-  QUIC_BUG << "Unknown handshake protocol: "
-           << static_cast<int>(
-                  session->connection()->version().handshake_protocol);
+  QUIC_BUG(quic_bug_10933_1)
+      << "Unknown handshake protocol: "
+      << static_cast<int>(session->connection()->version().handshake_protocol);
   return nullptr;
 }
 
@@ -699,8 +699,7 @@ class QuicSimpleServerSessionServerPushTest
       } else {
         stream_id = GetNthServerInitiatedUnidirectionalId(i - 1);
       }
-      std::string path = partial_push_resource_path +
-                         quiche::QuicheTextUtils::Uint64ToString(i);
+      std::string path = absl::StrCat(partial_push_resource_path, i);
       std::string url = scheme + "://" + resource_host + path;
       QuicUrl resource_url = QuicUrl(url);
       std::string body(body_size, 'a');
@@ -774,19 +773,26 @@ class QuicSimpleServerSessionServerPushTest
   }
 };
 
+ParsedQuicVersionVector SupportedVersionsWithPush() {
+  ParsedQuicVersionVector versions;
+  for (const ParsedQuicVersion& version : AllSupportedVersions()) {
+    if (!version.UsesHttp3()) {
+      // Push over HTTP/3 is not supported.
+      versions.push_back(version);
+    }
+  }
+  return versions;
+}
+
 INSTANTIATE_TEST_SUITE_P(Tests,
                          QuicSimpleServerSessionServerPushTest,
-                         ::testing::ValuesIn(AllSupportedVersions()));
+                         ::testing::ValuesIn(SupportedVersionsWithPush()));
 
 // Tests that given more than kMaxStreamsForTest resources, all their
 // PUSH_PROMISE's will be sent out and only kMaxStreamsForTest streams will be
 // opened and send push response.
 TEST_P(QuicSimpleServerSessionServerPushTest, TestPromisePushResources) {
   MaybeConsumeHeadersStreamData();
-  if (VersionUsesHttp3(transport_version())) {
-    session_->EnableServerPush();
-    session_->OnMaxPushIdFrame(kMaxQuicStreamId);
-  }
   size_t num_resources = kMaxStreamsForTest + 5;
   PromisePushResources(num_resources);
   EXPECT_EQ(kMaxStreamsForTest,
@@ -798,10 +804,6 @@ TEST_P(QuicSimpleServerSessionServerPushTest, TestPromisePushResources) {
 TEST_P(QuicSimpleServerSessionServerPushTest,
        HandlePromisedPushRequestsAfterStreamDraining) {
   MaybeConsumeHeadersStreamData();
-  if (VersionUsesHttp3(transport_version())) {
-    session_->EnableServerPush();
-    session_->OnMaxPushIdFrame(kMaxQuicStreamId);
-  }
   size_t num_resources = kMaxStreamsForTest + 1;
   QuicByteCount data_frame_header_length = PromisePushResources(num_resources);
   QuicStreamId next_out_going_stream_id;
@@ -879,10 +881,6 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
     return;
   }
   MaybeConsumeHeadersStreamData();
-  if (VersionUsesHttp3(transport_version())) {
-    session_->EnableServerPush();
-    session_->OnMaxPushIdFrame(kMaxQuicStreamId);
-  }
 
   // Having two extra resources to be send later. One of them will be reset, so
   // when opened stream become close, only one will become open.
@@ -969,10 +967,6 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
 TEST_P(QuicSimpleServerSessionServerPushTest,
        CloseStreamToHandleMorePromisedStream) {
   MaybeConsumeHeadersStreamData();
-  if (VersionUsesHttp3(transport_version())) {
-    session_->EnableServerPush();
-    session_->OnMaxPushIdFrame(kMaxQuicStreamId);
-  }
   size_t num_resources = kMaxStreamsForTest + 1;
   if (VersionHasIetfQuicFrames(transport_version())) {
     // V99 will send out a stream-id-blocked frame when the we desired to exceed

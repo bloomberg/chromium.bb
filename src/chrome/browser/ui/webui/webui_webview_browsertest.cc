@@ -128,7 +128,7 @@ class WebUIWebViewBrowserTest : public WebUIBrowserTest {
 #else
     return GURL(signin::GetEmbeddedPromoURL(
         signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
-        signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT, false));
+        signin_metrics::Reason::kForcedSigninPrimaryAccount, false));
 #endif
   }
 
@@ -375,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DISABLED_DragAndDropToInput) {
   content::DropData dropdata;
   dropdata.did_originate_from_renderer = true;
   dropdata.url = GURL(url::kAboutBlankURL);
-  dropdata.url_title = base::string16(base::ASCIIToUTF16("Drop me"));
+  dropdata.url_title = std::u16string(u"Drop me");
 
   // Drag url into input in webview.
 
@@ -392,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DISABLED_DragAndDropToInput) {
     render_view_host->GetWidget()->FilterDropData(&dropdata);
     render_view_host->GetWidget()->DragTargetDragEnter(
         dropdata, client_pt, screen_pt, drag_operation_mask,
-        blink::WebInputEvent::kLeftButtonDown);
+        blink::WebInputEvent::kLeftButtonDown, base::DoNothing());
     ASSERT_TRUE(listener.Wait());
   }
 
@@ -404,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DISABLED_DragAndDropToInput) {
                                   "Step2: destNode gets dragover");
     render_view_host->GetWidget()->DragTargetDragOver(
         client_pt, screen_pt, drag_operation_mask,
-        blink::WebInputEvent::kLeftButtonDown);
+        blink::WebInputEvent::kLeftButtonDown, base::DoNothing());
     ASSERT_TRUE(listener.Wait());
   }
 
@@ -416,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DISABLED_DragAndDropToInput) {
     WebUIMessageListener listener(embedder_web_contents->GetWebUI(),
                                   "Step3: destNode gets drop");
     render_view_host->GetWidget()->DragTargetDrop(
-        dropdata, client_pt, screen_pt, 0);
+        dropdata, client_pt, screen_pt, 0, base::DoNothing());
     ASSERT_TRUE(listener.Wait());
     // Confirm no navigation
     EXPECT_FALSE(observer.Navigated());

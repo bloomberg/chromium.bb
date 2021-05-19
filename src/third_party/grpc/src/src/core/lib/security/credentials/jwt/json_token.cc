@@ -33,14 +33,11 @@
 #include "src/core/lib/security/util/json_util.h"
 #include "src/core/lib/slice/b64.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmodule-import-in-extern-c"
 extern "C" {
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 }
-#pragma clang diagnostic pop
 
 using grpc_core::Json;
 
@@ -112,7 +109,7 @@ grpc_auth_json_key grpc_auth_json_key_create_from_json(const Json& json) {
     goto end;
   }
   result.private_key =
-      PEM_read_bio_RSAPrivateKey(bio, nullptr, nullptr, (void*)"");
+      PEM_read_bio_RSAPrivateKey(bio, nullptr, nullptr, const_cast<char*>(""));
   if (result.private_key == nullptr) {
     gpr_log(GPR_ERROR, "Could not deserialize private key.");
     goto end;

@@ -12,19 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/assignment_statement.h"
-#include "src/ast/break_statement.h"
-#include "src/ast/continue_statement.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/loop_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
-#include "src/type/i32_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -143,6 +130,47 @@ OpBranch %7
 OpStore %1 %10
 OpBranch %5
 %6 = OpLabel
+)");
+}
+
+TEST_F(BuilderTest, Loop_WithBodyVariableAccessInContinuing) {
+  // loop {
+  //   var a : i32;
+  //   continuing {
+  //     a = 3;
+  //   }
+  // }
+
+  auto* var = Var("a", ty.i32(), ast::StorageClass::kFunction);
+  auto* var_decl = WrapInStatement(var);
+  auto* body = create<ast::BlockStatement>(ast::StatementList{var_decl});
+  auto* continuing = create<ast::BlockStatement>(
+      ast::StatementList{create<ast::AssignmentStatement>(Expr("a"), Expr(3))});
+
+  auto* loop = create<ast::LoopStatement>(body, continuing);
+  WrapInFunction(loop);
+
+  spirv::Builder& b = Build();
+
+  b.push_function(Function{});
+  EXPECT_TRUE(b.GenerateLoopStatement(loop)) << b.error();
+
+  EXPECT_EQ(DumpInstructions(b.types()), R"(%7 = OpTypeInt 32 1
+%6 = OpTypePointer Function %7
+%8 = OpConstantNull %7
+%9 = OpConstant %7 3
+)");
+  EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
+            R"(OpBranch %1
+%1 = OpLabel
+OpLoopMerge %2 %3 None
+OpBranch %4
+%4 = OpLabel
+OpBranch %3
+%3 = OpLabel
+OpStore %5 %9
+OpBranch %1
+%2 = OpLabel
 )");
 }
 

@@ -64,11 +64,11 @@ Notification CreateInlineReplyNotification(const proto::Notification& proto,
       });
   bool includes_open_action = actions_it != proto.actions().end();
 
-  base::Optional<base::string16> title = base::nullopt;
+  base::Optional<std::u16string> title = base::nullopt;
   if (!proto.title().empty())
     title = base::UTF8ToUTF16(proto.title());
 
-  base::Optional<base::string16> text_content = base::nullopt;
+  base::Optional<std::u16string> text_content = base::nullopt;
   if (!proto.text_content().empty())
     text_content = base::UTF8ToUTF16(proto.text_content());
 
@@ -207,7 +207,7 @@ void NotificationProcessor::ImageDecoderDelegate::PerformImageDecode(
     DecodeImageCallback single_image_decoded_closure) {
   std::vector<uint8_t> image_bytes(data.begin(), data.end());
   data_decoder::DecodeImage(
-      &data_decoder_, image_bytes, data_decoder::mojom::ImageCodec::DEFAULT,
+      &data_decoder_, image_bytes, data_decoder::mojom::ImageCodec::kDefault,
       /*shrink_to_fit=*/true, data_decoder::kDefaultMaxSizeInBytes,
       /*desired_image_frame_size=*/gfx::Size(),
       std::move(single_image_decoded_closure));

@@ -23,6 +23,7 @@
 <translation id="1509960214886564027">Μπορεί να παρουσιαστούν προβλήματα στις λειτουργίες πολλών ιστοτόπων.</translation>
 <translation id="1620510694547887537">Κάμερα</translation>
 <translation id="1644574205037202324">Ιστορικό</translation>
+<translation id="1647582022260550163">Είστε βέβαιοι ότι θέλετε να επαναφέρετε τις άδειες και να διαγράψετε τα cookie και τα δεδομένα ιστοτόπου;</translation>
 <translation id="1660204651932907780">Να επιτρέπεται στους ιστοτόπους να αναπαράγουν ήχο (συνιστάται)</translation>
 <translation id="1677097821151855053">Τα cookie και άλλα δεδομένα ιστοτόπου χρησιμοποιούνται για την απομνημόνευσή σας, όπως, για παράδειγμα, για σας συνδέουν ή να εξατομικεύουν τις διαφημίσεις σας. Για να διαχειριστείτε τα cookie για όλους τους ιστοτόπους, ανατρέξτε στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Να διαγραφούν τα δεδομένα ιστοτόπου;</translation>
@@ -92,7 +93,6 @@
 <translation id="3386292677130313581">Να γίνεται ερώτηση προτού επιτραπεί η κοινοποίηση της τοποθεσίας σας σε ιστότοπους (συνιστάται)</translation>
 <translation id="3538390592868664640">Αποκλείστε ιστοτόπους από τη δημιουργία ενός τρισδιάστατου χάρτη του περιβάλλοντα χώρου σας ή την παρακολούθηση της θέσης της κάμερας.</translation>
 <translation id="3586500876634962664">Χρήση κάμερας και μικροφώνου</translation>
-<translation id="3587482841069643663">Όλες</translation>
 <translation id="358794129225322306">Να επιτρέπεται σε έναν ιστότοπο να κατεβάζει αυτόματα πολλά αρχεία.</translation>
 <translation id="3594780231884063836">Σίγαση βίντεο</translation>
 <translation id="3596414637720633074">Αποκλεισμός cookie τρίτων μερών στην Ανώνυμη περιήγηση</translation>
@@ -104,6 +104,7 @@
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3859306556332390985">Αναζήτηση προς τα εμπρός</translation>
 <translation id="3955193568934677022">Να επιτρέπεται στους ιστοτόπους να αναπαράγουν προστατευμένο περιεχόμενο (συνιστάται)</translation>
+<translation id="3967822245660637423">Ολοκλήρωση λήψης</translation>
 <translation id="3987993985790029246">Αντ. συνδ.</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Τίτλος</translation>
@@ -177,6 +178,7 @@
 <translation id="5916664084637901428">Ενεργό</translation>
 <translation id="5922853908706496913">Κοινή χρήση της οθόνης σας</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
+<translation id="5975083100439434680">Σμίκρυνση</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Έλεγχος της πρόσβασης αυτού του ιστοτόπου στη συσκευή σας</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
@@ -297,6 +299,7 @@
 <translation id="8801436777607969138">Αποκλεισμός JavaScript για κάποιο συγκεκριμένο ιστότοπο.</translation>
 <translation id="8816026460808729765">Αποκλεισμός πρόσβασης στους αισθητήρες από ιστοτόπους</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8903921497873541725">Μεγέθυνση</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Το NFC είναι ανενεργό για αυτήν τη συσκευή. Ενεργοποιήστε το στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Αυτός ο ιστότοπος ανοίγει και αποκρίνεται γρήγορα για τους περισσότερους χρήστες.</translation>
@@ -304,10 +307,12 @@
 <translation id="894871326938397531">Έξοδος από την κατάσταση ανώνυμης περιήγησης;</translation>
 <translation id="8958424370300090006">Αποκλεισμός cookie για έναν συγκεκριμένο ιστοτόπο.</translation>
 <translation id="8959122750345127698">Δεν είναι δυνατή η μετάβαση στη διεύθυνση: <ph name="URL" /></translation>
+<translation id="8986362086234534611">Διαγραφή από τη μνήμη</translation>
 <translation id="9019902583201351841">Διαχειρίζεται από τους γονείς σου</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> και <ph name="NUM_MORE" /> ακόμη}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> και <ph name="NUM_MORE" /> ακόμη}}</translation>
 <translation id="913657688200966289">Ενεργοποιήστε τις άδειες για την εφαρμογή <ph name="APP_NAME" /> στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
+<translation id="930525582205581608">Κατάργηση απομνημόνευσης αυτού του ιστοτόπου;</translation>
 <translation id="965817943346481315">Αποκλεισμός εάν ο ιστότοπος εμφανίζει παρεμβατικές ή παραπλανητικές διαφημίσεις (συνιστάται)</translation>
 <translation id="967624055006145463">Αποθηκευμένα δεδομένα</translation>
 </translationbundle>

@@ -42,13 +42,13 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/ash_interfaces.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/policy/arc_policy_bridge.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
-#include "chrome/browser/chromeos/crosapi/browser_manager.h"
-#include "chrome/browser/chromeos/crosapi/browser_util.h"
-#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/metrics/enrollment_status.h"
 #include "chromeos/dbus/util/version_loader.h"
@@ -234,15 +234,15 @@ void PopulateEntriesAsync(SystemLogsResponse* response) {
 
 std::string GetChromeVersionString() {
   // Version of the current running browser.
-  std::string browser_version = chrome::GetVersionString();
-
+  std::string browser_version =
+      chrome::GetVersionString(chrome::WithExtendedStable(true));
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // If the device is receiving LTS updates, add a prefix to the version string.
   // The value of the policy is ignored here.
   std::string value;
-  const bool is_lts = chromeos::CrosSettings::Get()->GetString(
-      chromeos::kReleaseLtsTag, &value);
+  const bool is_lts =
+      ash::CrosSettings::Get()->GetString(chromeos::kReleaseLtsTag, &value);
   if (is_lts)
     browser_version = kLTSChromeVersionPrefix + browser_version;
 
@@ -398,7 +398,7 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
       syncer::sync_ui_util::ConstructAboutInformation(
           syncer::sync_ui_util::IncludeSensitiveData(false),
           ProfileSyncServiceFactory::GetForProfile(profile),
-          chrome::GetChannel());
+          chrome::GetChannelName(chrome::WithExtendedStable(true)));
   std::string serialized_sync_logs;
   JSONStringValueSerializer(&serialized_sync_logs).Serialize(*sync_logs);
   response->emplace(kSyncDataKey, serialized_sync_logs);

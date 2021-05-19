@@ -7,11 +7,15 @@
 
 #include <memory>
 
+#include "base/observer_list_types.h"
 #include "base/optional.h"
+#include "base/types/pass_key.h"
+#include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 #include "url/gurl.h"
 
@@ -19,9 +23,9 @@ namespace content {
 
 class FrameTree;
 class NavigationController;
+class PrerenderHostRegistry;
 class RenderFrameHostImpl;
-class WebContents;
-class FrameTree;
+class WebContentsImpl;
 
 // Prerender2:
 // PrerenderHost creates a new WebContents and starts prerendering with that.
@@ -38,18 +42,37 @@ class FrameTree;
 // but will eventually completely replace the WebContents approach.
 class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called on the page activation.
+    virtual void OnActivated() {}
+
+    // Called from the PrerenderHost's destructor. The observer should drop any
+    // reference to the host.
+    virtual void OnHostDestroyed() {}
+  };
+
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class FinalStatus {
     kActivated = 0,
     kDestroyed = 1,
     kLowEndDevice = 2,
-    kMaxValue = kLowEndDevice
+    kCrossOriginRedirect = 3,
+    kCrossOriginNavigation = 4,
+    kInvalidSchemeRedirect = 5,
+    kInvalidSchemeNavigation = 6,
+    kInProgressNavigation = 7,
+    kNavigationRequestFailure = 8,
+    kNavigationRequestBlockedByCsp = 9,
+    kMainFrameNavigation = 10,
+    kDisallowedMojoInterface = 11,
+    kPlugin = 12,
+    kMaxValue = kPlugin
   };
 
   PrerenderHost(blink::mojom::PrerenderAttributesPtr attributes,
-                const url::Origin& initiator_origin,
-                WebContentsImpl& web_contents);
+                RenderFrameHostImpl& initiator_render_frame_host);
   ~PrerenderHost() override;
 
   PrerenderHost(const PrerenderHost&) = delete;
@@ -62,22 +85,46 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // WebContentsObserver implementation:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
-  // Activates the prerendered contents. Returns false when activation didn't
-  // occur for some reason. This must be called after this host gets ready for
-  // activation. `current_render_frame_host` is the RenderFrameHost that will
-  // be swapped out and destroyed by the activation.
-  bool ActivatePrerenderedContents(
-      RenderFrameHostImpl& current_render_frame_host);
+  // Activates the prerendered contents. This must be called after this host
+  // gets ready for activation. `old_render_frame_host` is the RenderFrameHost
+  // that will be swapped out and destroyed by the activation. For MPArch
+  // implementation, returns the activating page prepared for cross-FrameTree
+  // transfer. For multiple WebContents implementation, always returns nullptr.
+  //
+  // TODO(https://crbug.com/1154501): WebContents implementation will need to be
+  // removed.
+  //
+  // TODO(https://crbug.com/1170277): Potentially update implementation so that
+  // the |old_render_frame_host| parameter is not required.
+  //
+  // TODO(https://crbug.com/1181263): Refactor BackForwardCacheImpl::Entry into
+  // a generic "page" object to make clear that the same logic is also used for
+  // prerendering.
+  std::unique_ptr<BackForwardCacheImpl::Entry> ActivatePrerenderedContents(
+      RenderFrameHostImpl& old_render_frame_host,
+      NavigationRequest& navigation_request);
 
-  // Exposes the main RenderFrameHost of the prerendered page for testing.
+  // Returns the main RenderFrameHost of the prerendered page.
   // This must be called after StartPrerendering() and before
   // ActivatePrerenderedContents().
-  RenderFrameHostImpl* GetPrerenderedMainFrameHostForTesting();
+  RenderFrameHostImpl* GetPrerenderedMainFrameHost();
+
+  // Tells the reason of the destruction of this host. PrerenderHostRegistry
+  // uses this before abandoning the host.
+  void RecordFinalStatus(base::PassKey<PrerenderHostRegistry>,
+                         FinalStatus status);
 
   // Waits until the page load finishes.
   void WaitForLoadStopForTesting();
 
   const GURL& GetInitialUrl() const;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  bool IsAssociatedWith(const WebContentsImpl& web_contents);
+
+  url::Origin initiator_origin() const { return initiator_origin_; }
 
   int frame_tree_node_id() const { return frame_tree_node_id_; }
 
@@ -102,8 +149,9 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   NavigationController& GetNavigationController();
 
   const blink::mojom::PrerenderAttributesPtr attributes_;
-  const GlobalFrameRoutingId initiator_render_frame_host_id_;
   const url::Origin initiator_origin_;
+  const int initiator_process_id_;
+  const blink::LocalFrameToken initiator_frame_token_;
 
   // Indicates if `page_holder_` is ready for activation.
   bool is_ready_for_activation_ = false;
@@ -116,6 +164,8 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   base::Optional<FinalStatus> final_status_;
 
   std::unique_ptr<PageHolderInterface> page_holder_;
+
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace content

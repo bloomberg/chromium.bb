@@ -21,6 +21,7 @@
 #include "core/internal/endpoint_manager.h"
 #include "core/internal/mediums/mediums.h"
 #include "core/internal/mediums/utils.h"
+#include "core/internal/offline_frames.h"
 #include "platform/public/system_clock.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -57,20 +58,49 @@ TEST(BwuManagerTest, CanInitiateBwu) {
   bwu_manager.Shutdown();
 }
 
-TEST(BwuManagerTest, CanProcessPathAvailableFrame) {
+TEST(BwuManagerTest, CanProcessBandwidthUpgradeFrames) {
+  ClientProxy client;
+  std::string endpoint_id("EP_A");
+  LocationHint location_hint = Utils::BuildLocationHint("US");
+  Mediums mediums;
+  EndpointChannelManager ecm;
+  EndpointManager em{&ecm};
+  BwuManager bwu_manager{mediums, em, ecm, {}, {}};
+
+  ExceptionOr<OfflineFrame> path_available_frame = parser::FromBytes(
+      parser::ForBwuWebrtcPathAvailable("my_id", location_hint));
+  bwu_manager.OnIncomingFrame(path_available_frame.result(), endpoint_id,
+                              &client, Medium::WEB_RTC);
+
+  ExceptionOr<OfflineFrame> last_write_frame =
+      parser::FromBytes(parser::ForBwuLastWrite());
+  bwu_manager.OnIncomingFrame(last_write_frame.result(), endpoint_id, &client,
+                              Medium::WEB_RTC);
+
+  ExceptionOr<OfflineFrame> safe_to_close_frame =
+      parser::FromBytes(parser::ForBwuSafeToClose());
+  bwu_manager.OnIncomingFrame(safe_to_close_frame.result(), endpoint_id,
+                              &client, Medium::WEB_RTC);
+
+  bwu_manager.Shutdown();
+}
+
+TEST(BwuManagerTest, InitiateBwu_UpgradeFails_NoCrash) {
   ClientProxy client;
   std::string endpoint_id("EP_A");
   Mediums mediums;
   EndpointChannelManager ecm;
   EndpointManager em{&ecm};
   BwuManager bwu_manager{mediums, em, ecm, {}, {}};
+  parser::UpgradePathInfo upgrade_path_info;
+  upgrade_path_info.set_medium(parser::UpgradePathInfo::WEB_RTC);
 
-  LocationHint location_hint = Utils::BuildLocationHint("US");
-  ExceptionOr<OfflineFrame> wrapped_frame = parser::FromBytes(
-      parser::ForBwuWebrtcPathAvailable("my_id", location_hint));
-
-  bwu_manager.OnIncomingFrame(wrapped_frame.result(), endpoint_id, &client,
+  bwu_manager.InitiateBwuForEndpoint(&client, endpoint_id);
+  ExceptionOr<OfflineFrame> bwu_failed_frame =
+      parser::FromBytes(parser::ForBwuFailure(upgrade_path_info));
+  bwu_manager.OnIncomingFrame(bwu_failed_frame.result(), endpoint_id, &client,
                               Medium::WEB_RTC);
+
   bwu_manager.Shutdown();
 }
 

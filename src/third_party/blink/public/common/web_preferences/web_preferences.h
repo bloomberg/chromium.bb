@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/nqe/effective_connection_type.h"
@@ -30,7 +29,7 @@ using blink::mojom::EffectiveConnectionType;
 
 // Map of ISO 15924 four-letter script code to font family.  For example,
 // "Arab" to "My Arabic Font".
-typedef std::map<std::string, base::string16> ScriptFontFamilyMap;
+typedef std::map<std::string, std::u16string> ScriptFontFamilyMap;
 
 // The ISO 15924 script code for undetermined script aka Common. It's the
 // default used on WebKit's side to get/set a font setting when no script is
@@ -158,6 +157,7 @@ struct BLINK_COMMON_EXPORT WebPreferences {
   bool smart_insert_delete_enabled;
   bool spatial_navigation_enabled;
   bool navigate_on_drag_drop;
+  bool fake_no_alloc_direct_call_for_testing_enabled;
   blink::mojom::V8CacheOptions v8_cache_options;
   bool record_whole_document;
 

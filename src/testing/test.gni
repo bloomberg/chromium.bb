@@ -9,6 +9,12 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//build_overrides/build.gni")
 
+declare_args() {
+  # For more info about RTS, please see
+  # //docs/testing/regression-test-selection.md
+  use_rts = false
+}
+
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/extract_unwind_tables.gni")
@@ -42,11 +48,28 @@ if (is_android) {
 #   is_xctest: (iOS, optional) whether to build the executable as XCTest.
 #      Similar to the GN arg 'enable_run_ios_unittests_with_xctest' but
 #      for build targets.
+#   override_board: (ash, optional) override the 'cros_board' used in
+#      generating the test runner script.
 template("test") {
+  # Ensures the rts file exists and if not, creates a dummy file
+  if (use_rts) {
+    action("${target_name}__rts_filters") {
+      script = "//build/add_rts_filters.py"
+      rts_file = "${root_build_dir}/gen/rts/${invoker.target_name}.filter"
+      args = [ rebase_path(rts_file, root_build_dir) ]
+      outputs = [ rts_file ]
+    }
+  }
+
   testonly = true
   if (!is_ios) {
     assert(!defined(invoker.is_xctest) || !invoker.is_xctest,
            "is_xctest can be set only for iOS builds")
+  }
+  if (!is_chromeos_ash || cros_board == "") {
+    assert(
+        !defined(invoker.override_board),
+        "override_board can be set only for ChromeOS builds with target board")
   }
   if (is_android) {
     assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
@@ -78,11 +101,13 @@ template("test") {
       executable(_exec_target) {
         # Configs will always be defined since we set_defaults in BUILDCONFIG.gn.
         configs = []
-        data_deps = []
-        forward_variables_from(invoker,
-                               "*",
-                               TESTONLY_AND_VISIBILITY + _wrapper_script_vars +
-                                   [ "extra_dist_files" ])
+        forward_variables_from(
+            invoker,
+            "*",
+            TESTONLY_AND_VISIBILITY + _wrapper_script_vars + [
+                  "data_deps",
+                  "extra_dist_files",
+                ])
 
         # Thanks to the set_defaults() for test(), configs are initialized with
         # the default shared_library configs rather than executable configs.
@@ -92,8 +117,22 @@ template("test") {
         ]
         configs += [ "//build/config:executable_config" ]
 
+        if (defined(invoker.data_deps)) {
+          data_deps = invoker.data_deps
+        } else {
+          data_deps = []
+        }
+        if (!defined(data)) {
+          data = []
+        }
+        data += [ "//testing/location_tags.json" ]
+
         # Don't output to the root or else conflict with the group() below.
         output_name = rebase_path(_exec_output, root_out_dir)
+
+        if (use_rts) {
+          data_deps += [ ":${invoker.target_name}__rts_filters" ]
+        }
       }
 
       create_native_executable_dist(_dist_target) {
@@ -103,6 +142,13 @@ template("test") {
         if (defined(invoker.extra_dist_files)) {
           extra_files = invoker.extra_dist_files
         }
+
+        if (use_rts) {
+          if (!defined(data_deps)) {
+            data_deps = []
+          }
+          data_deps += [ ":${invoker.target_name}__rts_filters" ]
+        }
       }
     } else {
       _library_target = "${target_name}__library"
@@ -110,6 +156,7 @@ template("test") {
       _apk_specific_vars = [
         "android_manifest",
         "android_manifest_dep",
+        "android_manifest_template",
         "app_as_shared_lib",
         "enable_multidex",
         "product_config_java_packages",
@@ -183,6 +230,10 @@ template("test") {
         if (defined(_unwind_table_asset_name)) {
           deps += [ ":${_unwind_table_asset_name}" ]
         }
+
+        if (use_rts) {
+          data_deps = [ ":${invoker.target_name}__rts_filters" ]
+        }
       }
     }
 
@@ -203,6 +254,10 @@ template("test") {
       test_name = _output_name
       test_suite = _output_name
       test_type = "gtest"
+
+      if (use_rts) {
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
+      }
     }
 
     # Create a wrapper script rather than using a group() in order to ensure
@@ -225,6 +280,17 @@ template("test") {
           ":$_library_target",
         ]
       }
+
+      if (defined(invoker.data_deps)) {
+        data_deps = invoker.data_deps
+      } else {
+        data_deps = []
+      }
+      data = [ "//testing/location_tags.json" ]
+
+      if (use_rts) {
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
+      }
     }
   } else if (is_fuchsia) {
     assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
@@ -233,25 +299,22 @@ template("test") {
     _pkg_target = "${_output_name}_pkg"
     _exec_target = "${_output_name}__exec"
 
-    # TODO(1019938): switch the default to tests.cmx which doesn't request
-    # the deprecated-ambient-replace-as-executable feature.
-    if (!defined(invoker.manifest)) {
-      manifest = "//build/config/fuchsia/tests-with-exec.cmx"
-    } else {
-      manifest = invoker.manifest
-    }
+    manifest_fragments =
+        [ "//build/config/fuchsia/test/minimum_capabilities.test-cmx" ]
 
-    if (use_clang_coverage) {
-      component_with_coverage_manifest = "${target_name}-coverage.test-cmx"
-      cmc_merge(component_with_coverage_manifest) {
-        sources = [
-          "//build/config/fuchsia/add_DebugData_service.test-cmx",
-          manifest,
-        ]
-        output_name = target_name
-      }
-      manifest = "${target_out_dir}/${component_with_coverage_manifest}"
+    if (defined(invoker.additional_manifest_fragments)) {
+      manifest_fragments += invoker.additional_manifest_fragments
     }
+    if (use_clang_coverage) {
+      manifest_fragments +=
+          [ "//build/config/fuchsia/add_DebugData_service.test-cmx" ]
+    }
+    combined_manifest = "${target_name}.test-cmx"
+    cmc_merge(combined_manifest) {
+      sources = manifest_fragments
+      output_name = target_name
+    }
+    manifest = "${target_out_dir}/${combined_manifest}"
 
     fuchsia_package_runner(target_name) {
       is_test_exe = true
@@ -265,20 +328,30 @@ template("test") {
       package = ":$_pkg_target"
       package_name_override = _output_name
 
+      data = [ "//testing/location_tags.json" ]
       data_deps = [ "//testing/buildbot/filters:fuchsia_filters" ]
+
+      if (use_rts) {
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
+      }
     }
 
     cr_fuchsia_package(_pkg_target) {
       binary = ":$_exec_target"
       package_name_override = _output_name
-      if (use_clang_coverage) {
-        deps = [ ":$component_with_coverage_manifest" ]
-      }
+      deps = [ ":$combined_manifest" ]
     }
 
     executable(_exec_target) {
       forward_variables_from(invoker, "*", TESTONLY_AND_VISIBILITY)
       output_name = _exec_target
+
+      if (use_rts) {
+        if (!defined(data_deps)) {
+          data_deps = []
+        }
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
+      }
     }
   } else if (is_ios) {
     assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
@@ -298,7 +371,6 @@ template("test") {
       forward_variables_from(invoker,
                              [
                                "data",
-                               "data_deps",
                                "deps",
                                "executable_args",
                                "retries",
@@ -316,6 +388,11 @@ template("test") {
       ]
 
       wrapper_output_name = "${_wrapper_output_name}"
+
+      if (!defined(data)) {
+        data = []
+      }
+      data += [ "//testing/location_tags.json" ]
     }
 
     _resources_bundle_data = target_name + "_resources_bundle_data"
@@ -371,6 +448,10 @@ template("test") {
       # Include the generate_wrapper as part of data_deps
       data_deps += [ ":${_wrapper_output_name}" ]
       write_runtime_deps = _runtime_deps_file
+
+      if (use_rts) {
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
+      }
     }
   } else if (is_chromeos_ash && cros_board != "") {
     assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
@@ -386,6 +467,16 @@ template("test") {
       generated_script = "$root_build_dir/bin/run_" + invoker.target_name
       test_exe = invoker.target_name
       runtime_deps_file = _runtime_deps_file
+
+      if (defined(invoker.override_board)) {
+        override_board = invoker.override_board
+      }
+
+      data = [ "//testing/location_tags.json" ]
+
+      if (use_rts) {
+        data_deps = [ ":${invoker.target_name}__rts_filters" ]
+      }
     }
 
     executable(target_name) {
@@ -405,6 +496,13 @@ template("test") {
       write_runtime_deps = _runtime_deps_file
       data += [ _runtime_deps_file ]
       deps += [ ":$_gen_runner_target" ]
+
+      if (use_rts) {
+        if (!defined(data_deps)) {
+          data_deps = []
+        }
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
+      }
     }
   } else if (chromeos_is_browser_only) {
     _runtime_deps_file = "$root_out_dir/${target_name}.runtime_deps"
@@ -428,13 +526,14 @@ template("test") {
       wrapper_script = "$root_build_dir/bin/run_" + _executable
 
       data = []
+      data_deps = [ "//testing:test_scripts_shared" ]
+
       if (_use_xvfb) {
         executable = "//testing/xvfb.py"
-        data += [ "//testing/xvfb.py" ]
       } else {
         executable = "//testing/test_env.py"
-        data += [ "//testing/test_env.py" ]
       }
+      data += [ "//testing/location_tags.json" ]
 
       executable_args = [
         "@WrappedPath(../../build/lacros/test_runner.py)",
@@ -464,6 +563,10 @@ template("test") {
         "//build/lacros/test_runner.py",
         "//.vpython",
       ]
+
+      if (use_rts) {
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
+      }
     }
 
     executable(target_name) {
@@ -482,6 +585,10 @@ template("test") {
       if (_use_ash_chrome && also_build_ash_chrome) {
         data_deps +=
             [ "//chrome:chrome(//build/toolchain/linux:ash_clang_x64)" ]
+      }
+
+      if (use_rts) {
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
       }
     }
   } else if (!is_nacl) {
@@ -503,13 +610,14 @@ template("test") {
       wrapper_script = "$root_build_dir/bin/run_" + _executable
 
       data = []
+      data_deps = [ "//testing:test_scripts_shared" ]
+
       if (_use_xvfb) {
         executable = "//testing/xvfb.py"
-        data += [ "//testing/xvfb.py" ]
       } else {
         executable = "//testing/test_env.py"
-        data += [ "//testing/test_env.py" ]
       }
+      data += [ "//testing/location_tags.json" ]
 
       executable_args = [
         "@WrappedPath(./${_executable})",
@@ -529,6 +637,10 @@ template("test") {
       }
 
       data += [ "//.vpython" ]
+
+      if (use_rts) {
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
+      }
     }
 
     executable(target_name) {
@@ -547,6 +659,13 @@ template("test") {
 
       write_runtime_deps = _runtime_deps_file
       deps += [ ":$_gen_runner_target" ]
+
+      if (use_rts) {
+        if (!defined(data_deps)) {
+          data_deps = []
+        }
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
+      }
     }
   } else {
     # This is a catch-all clause for NaCl toolchains and other random
@@ -559,6 +678,13 @@ template("test") {
       forward_variables_from(invoker, [ "visibility" ])
       if (!defined(deps)) {
         deps = []
+      }
+
+      if (use_rts) {
+        if (!defined(data_deps)) {
+          data_deps = []
+        }
+        data_deps += [ ":${invoker.target_name}__rts_filters" ]
       }
     }
   }
@@ -579,6 +705,15 @@ template("test") {
 # the conventions listed in the
 # [test wrapper API](//docs/testing/test_wrapper_api.md).
 template("script_test") {
+  if (use_rts) {
+    action("${target_name}__rts_filters") {
+      script = "//build/add_rts_filters.py"
+      rts_file = "${root_build_dir}/gen/rts/${invoker.target_name}.filter"
+      args = [ rebase_path(rts_file, root_build_dir) ]
+      outputs = [ rts_file ]
+    }
+  }
+
   generate_wrapper(target_name) {
     testonly = true
     wrapper_script = "${root_build_dir}/bin/run_${target_name}"
@@ -591,21 +726,22 @@ template("script_test") {
       executable_args += invoker.args
     }
 
-    data = [
-      "//.vpython",
-      "//testing/test_env.py",
+    data = [ invoker.script ]
 
-      # These aren't needed by *every* test, but they're likely needed often
-      # enough to just make it easier to declare them here.
-      "//testing/xvfb.py",
-      "//testing/scripts/common.py",
+    if (defined(invoker.run_under_python2) && invoker.run_under_python2) {
+      use_vpython3 = false
+      data += [ "//.vpython" ]
+    } else {
+      use_vpython3 = true
+      data += [ "//.vpython3" ]
+    }
 
-      invoker.script,
-    ]
     if (defined(invoker.data)) {
       data += invoker.data
     }
-    data_deps = []
+    data += [ "//testing/location_tags.json" ]
+
+    data_deps = [ "//testing:test_scripts_shared" ]
     if (defined(invoker.data_deps)) {
       data_deps += invoker.data_deps
     }
@@ -621,6 +757,10 @@ template("script_test") {
     forward_variables_from(invoker, [ "visibility" ])
 
     write_runtime_deps = "${root_build_dir}/${target_name}.runtime_deps"
+
+    if (use_rts) {
+      data_deps += [ ":${invoker.target_name}__rts_filters" ]
+    }
   }
 }
 

@@ -93,9 +93,18 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
 
   explicit ClipboardHostImpl(RenderFrameHost* render_frame_host);
 
+  // Performs a check to see if pasting `data` is allowed by data transfer
+  // policies and invokes PasteIfPolicyAllowedCallback upon completion.
+  // PerformPasteIfContentAllowed maybe be invoked immediately if the policy
+  // controller doesn't exist.
+  void PasteIfPolicyAllowed(ui::ClipboardBuffer clipboard_buffer,
+                            const ui::ClipboardFormatType& data_type,
+                            std::string data,
+                            IsClipboardPasteContentAllowedCallback callback);
+
   // Performs a check to see if pasting |data| is allowed and invokes |callback|
-  // upon completion. |callback| maybe be invoked immediately if the data has
-  // already been checked.  |data| and |seqno| should corresponds to the same
+  // upon completion. |callback| may be invoked immediately if the data has
+  // already been checked. |data| and |seqno| should corresponds to the same
   // clipboard data.
   void PerformPasteIfContentAllowed(
       uint64_t seqno,
@@ -110,7 +119,7 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
   //  - it is too old
   void CleanupObsoleteRequests();
 
-  // Completion callback of PerformPasteIfContentAllowed().  Sets the allowed
+  // Completion callback of PerformPasteIfContentAllowed(). Sets the allowed
   // status for the clipboard data corresponding to sequence number |seqno|.
   void FinishPasteIfContentAllowed(uint64_t seqno,
                                    ClipboardPasteContentAllowed allowed);
@@ -155,20 +164,20 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
   void ReadFiles(ui::ClipboardBuffer clipboard_buffer,
                  ReadFilesCallback callback) override;
   void ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
-                      const base::string16& type,
+                      const std::u16string& type,
                       ReadCustomDataCallback callback) override;
-  void WriteText(const base::string16& text) override;
-  void WriteHtml(const base::string16& markup, const GURL& url) override;
-  void WriteSvg(const base::string16& markup) override;
+  void WriteText(const std::u16string& text) override;
+  void WriteHtml(const std::u16string& markup, const GURL& url) override;
+  void WriteSvg(const std::u16string& markup) override;
   void WriteSmartPasteMarker() override;
   void WriteCustomData(
-      const base::flat_map<base::string16, base::string16>& data) override;
+      const base::flat_map<std::u16string, std::u16string>& data) override;
   void WriteBookmark(const std::string& url,
-                     const base::string16& title) override;
+                     const std::u16string& title) override;
   void WriteImage(const SkBitmap& unsafe_bitmap) override;
   void CommitWrite() override;
 #if defined(OS_MAC)
-  void WriteStringToFindPboard(const base::string16& text) override;
+  void WriteStringToFindPboard(const std::u16string& text) override;
 #endif
 
   // Called by PerformPasteIfContentAllowed() when an is allowed request is
@@ -177,6 +186,16 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
       uint64_t seqno,
       const ui::ClipboardFormatType& data_type,
       std::string data);
+
+  // Completion callback of PasteIfPolicyAllowed. If `is_allowed` is set to
+  // true, PerformPasteIfContentAllowed will be invoked. Otherwise `callback`
+  // will be invoked immediately to cancel the paste.
+  void PasteIfPolicyAllowedCallback(
+      ui::ClipboardBuffer clipboard_buffer,
+      const ui::ClipboardFormatType& data_type,
+      std::string data,
+      IsClipboardPasteContentAllowedCallback callback,
+      bool is_allowed);
 
   void OnReadImage(ui::ClipboardBuffer clipboard_buffer,
                    ReadImageCallback callback,

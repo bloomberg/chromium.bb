@@ -11,14 +11,15 @@ android_library("internal_java") {
   deps = [
     ":java_resources",
     "//base:base_java",
-    "//base:jni_java",
     "//components/favicon/android:java",
 
     # TODO(crbug/951695): Cyclic dependency. Depend on public only when ready.
     "//chrome/android:chrome_java",
     "//chrome/android/features/keyboard_accessory/public:public_java",
+    "//chrome/browser/feature_engagement:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/fullscreen/android:java",
+    "//chrome/browser/password_manager/android:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/tab:java",
     "//chrome/browser/tabmodel:java",
@@ -140,6 +141,7 @@ android_resources("java_resources") {
   deps = [
     ":java_strings_grd",
     "//chrome/android:chrome_app_java_resources",
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
   ]
 }
 

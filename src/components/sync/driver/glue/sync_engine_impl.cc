@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -376,6 +377,22 @@ void SyncEngineImpl::HasUnsyncedItemsForTest(
       sync_task_runner_.get(), FROM_HERE,
       base::BindOnce(&SyncEngineBackend::HasUnsyncedItemsForTest, backend_),
       std::move(cb));
+}
+
+void SyncEngineImpl::GetThrottledDataTypesForTest(
+    base::OnceCallback<void(ModelTypeSet)> cb) const {
+  DCHECK(IsInitialized());
+  // Instead of reading directly from |cached_status_.throttled_types|, issue
+  // a round trip to the backend sequence, in case there is an ongoing cycle
+  // that could update the throttled types.
+  sync_task_runner_->PostTaskAndReply(
+      FROM_HERE, base::DoNothing(),
+      base::BindOnce(
+          [](base::WeakPtr<SyncEngineImpl> engine,
+             base::OnceCallback<void(ModelTypeSet)> cb) {
+            std::move(cb).Run(engine->cached_status_.throttled_types);
+          },
+          weak_ptr_factory_.GetWeakPtr(), std::move(cb)));
 }
 
 void SyncEngineImpl::RequestBufferedProtocolEventsAndEnableForwarding() {

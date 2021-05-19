@@ -2,15 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as i18n from '../i18n/i18n.js';
-import * as SDK from '../sdk/sdk.js';
-import * as UI from '../ui/ui.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import {AffectedResourcesView} from './AffectedResourcesView.js';
 import {AggregatedIssue} from './IssueAggregator.js';
 import {IssueView} from './IssueView.js';
 
-export const UIStrings = {
+const UIStrings = {
+  /**
+  *@description Label for number of affected resources indication in issue view
+  */
+  nViolations: '{n, plural, =1 { violation} other { violations}}',
   /**
   *@description Label for number of affected resources indication in issue view
   */
@@ -20,7 +25,7 @@ export const UIStrings = {
   */
   violations: 'violations',
   /**
-  *@description Value for the status column in Shared Array Buffer issues
+  *@description Value for the status column in SharedArrayBuffer issues
   */
   warning: 'warning',
   /**
@@ -52,7 +57,7 @@ export const UIStrings = {
   */
   trigger: 'Trigger',
   /**
-  *@description Text for the status of something
+  *@description Title for the status column in the SAB affected resources list
   */
   status: 'Status',
 };
@@ -64,6 +69,10 @@ export class AffectedSharedArrayBufferIssueDetailsView extends AffectedResources
   constructor(parentView: IssueView, issue: AggregatedIssue) {
     super(parentView, {singular: i18nString(UIStrings.violation), plural: i18nString(UIStrings.violations)});
     this.issue = issue;
+  }
+
+  protected getResourceName(count: number): Platform.UIString.LocalizedString {
+    return i18nString(UIStrings.nViolations, {n: count});
   }
 
   private appendStatus(element: HTMLElement, isWarning: boolean): void {
@@ -113,7 +122,8 @@ export class AffectedSharedArrayBufferIssueDetailsView extends AffectedResources
     element.classList.add('affected-resource-directive');
 
     const sabIssueDetails = sabIssue.details();
-    this.appendSourceLocation(element, sabIssueDetails.sourceCodeLocation, sabIssue.model()?.getTargetIfNotDisposed());
+    const location = SDK.Issue.toZeroBasedLocation(sabIssueDetails.sourceCodeLocation);
+    this.appendSourceLocation(element, location, sabIssue.model()?.getTargetIfNotDisposed());
     this.appendType(element, sabIssueDetails.type);
     this.appendStatus(element, sabIssueDetails.isWarning);
 

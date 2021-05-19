@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PLATFORM_AUDIO_INPUT_HOST_IMPL_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PLATFORM_AUDIO_INPUT_HOST_IMPL_H_
 
-#include "chromeos/services/assistant/public/cpp/migration/audio_input_host.h"
+#include "chromeos/services/assistant/platform/audio_input_host.h"
 
 #include <string>
 
@@ -43,7 +43,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioInputHostImpl
   void SetMicState(bool mic_open) override;
   void OnHotwordEnabled(bool enable) override;
   void OnConversationTurnStarted() override;
-  void OnConversationTurnFinished() override;
 
   // AudioDevices::Observer implementation:
   void SetDeviceId(const base::Optional<std::string>& device_id) override;

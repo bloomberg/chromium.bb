@@ -33,6 +33,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
@@ -48,6 +49,7 @@
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #endif
 
 using base::StringPrintf;
@@ -146,11 +148,15 @@ void MemoryDetails::StartFetch() {
   // getting called from the IO thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // In order to process this request, we need to use the plugin information.
-  // However, plugin process information is only available from the IO thread.
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&MemoryDetails::CollectChildInfoOnIOThread, this));
+  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
+    CollectChildInfoOnProcessThread();
+  } else {
+    // In order to process this request, we need to use the plugin information.
+    // However, plugin process information is only available from the IO thread.
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MemoryDetails::CollectChildInfoOnProcessThread, this));
+  }
 }
 
 MemoryDetails::~MemoryDetails() {}
@@ -170,7 +176,7 @@ std::string MemoryDetails::ToLogString(bool include_tab_title) {
          include_tab_title) &&
         !iter1->titles.empty()) {
       log += " [";
-      for (std::vector<base::string16>::const_iterator iter2 =
+      for (std::vector<std::u16string>::const_iterator iter2 =
                iter1->titles.begin();
            iter2 != iter1->titles.end(); ++iter2) {
         if (iter2 != iter1->titles.begin())
@@ -190,8 +196,10 @@ std::string MemoryDetails::ToLogString(bool include_tab_title) {
   return log;
 }
 
-void MemoryDetails::CollectChildInfoOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+void MemoryDetails::CollectChildInfoOnProcessThread() {
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? content::BrowserThread::UI
+                          : content::BrowserThread::IO);
 
   std::vector<ProcessMemoryInformation> child_info;
 
@@ -316,7 +324,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
                 ->enabled_extensions()
                 .GetByID(page_url.host());
         if (extension) {
-          base::string16 title = base::UTF8ToUTF16(extension->name());
+          std::u16string title = base::UTF8ToUTF16(extension->name());
           process.titles.push_back(title);
           process.renderer_type =
               ProcessMemoryInformation::RENDERER_EXTENSION;
@@ -324,8 +332,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         }
       }
 
-      extensions::ViewType type = extensions::GetViewType(contents);
-      if (type == extensions::VIEW_TYPE_BACKGROUND_CONTENTS) {
+      extensions::mojom::ViewType type = extensions::GetViewType(contents);
+      if (type == extensions::mojom::ViewType::kBackgroundContents) {
         process.titles.push_back(base::UTF8ToUTF16(page_url.spec()));
         process.renderer_type =
             ProcessMemoryInformation::RENDERER_BACKGROUND_APP;
@@ -333,7 +341,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       }
 #endif
 
-      base::string16 title = contents->GetTitle();
+      std::u16string title = contents->GetTitle();
       if (!title.length())
         title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
       process.titles.push_back(title);

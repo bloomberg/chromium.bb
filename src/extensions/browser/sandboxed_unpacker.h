@@ -24,6 +24,7 @@
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/json_file_sanitizer.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/mojom/manifest.mojom-shared.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
@@ -140,7 +141,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // TODO(devlin): SKIP_ON_SHUTDOWN is also not quite sufficient for this. We
   // should probably instead be using base::ImportantFileWriter or similar.
   SandboxedUnpacker(
-      Manifest::Location location,
+      mojom::ManifestLocation location,
       int creation_flags,
       const base::FilePath& extensions_dir,
       const scoped_refptr<base::SequencedTaskRunner>& unpacker_io_task_runner,
@@ -166,7 +167,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   bool CreateTempDirectory();
 
   // Helper functions to simplify calling ReportFailure.
-  base::string16 FailureReasonToString16(
+  std::u16string FailureReasonToString16(
       const SandboxedUnpackerFailureReason reason);
   void FailWithPackageError(const SandboxedUnpackerFailureReason reason);
 
@@ -220,7 +221,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // Puts a sanboxed unpacker failure in histogram
   // Extensions.SandboxUnpackFailureReason.
   void ReportFailure(const SandboxedUnpackerFailureReason reason,
-                     const base::string16& error);
+                     const std::u16string& error);
 
   // Overwrites original manifest with safe result from utility process.
   // Returns nullopt on error.
@@ -292,7 +293,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   std::string extension_id_;
 
   // Location to use for the unpacked extension.
-  Manifest::Location location_;
+  mojom::ManifestLocation location_;
 
   // Creation flags to use for the extension. These flags will be used
   // when calling Extension::Create() by the CRX installer.

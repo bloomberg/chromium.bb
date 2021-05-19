@@ -57,23 +57,23 @@ CSSMathSum* CSSMathSum::Create(const HeapVector<CSSNumberish>& args,
     return nullptr;
   }
 
-  CSSMathSum* result = Create(CSSNumberishesToNumericValues(args));
-  if (!result) {
-    exception_state.ThrowTypeError("Incompatible types");
-    return nullptr;
-  }
-
-  return result;
+  return Create(CSSNumberishesToNumericValues(args), exception_state);
 }
 
-CSSMathSum* CSSMathSum::Create(CSSNumericValueVector values) {
+CSSMathSum* CSSMathSum::Create(CSSNumericValueVector values,
+                               ExceptionState& exception_state) {
   bool error = false;
   CSSNumericValueType final_type =
       CSSMathVariadic::TypeCheck(values, CSSNumericValueType::Add, error);
-  return error ? nullptr
-               : MakeGarbageCollected<CSSMathSum>(
-                     MakeGarbageCollected<CSSNumericArray>(std::move(values)),
-                     final_type);
+  CSSMathSum* result =
+      error ? nullptr
+            : MakeGarbageCollected<CSSMathSum>(
+                  MakeGarbageCollected<CSSNumericArray>(std::move(values)),
+                  final_type);
+  if (!result)
+    exception_state.ThrowTypeError("Incompatible types");
+
+  return result;
 }
 
 base::Optional<CSSNumericSumValue> CSSMathSum::SumValue() const {
@@ -100,21 +100,7 @@ base::Optional<CSSNumericSumValue> CSSMathSum::SumValue() const {
 }
 
 CSSMathExpressionNode* CSSMathSum::ToCalcExpressionNode() const {
-  // TODO(crbug.com/782103): Handle the single value case correctly.
-  if (NumericValues().size() == 1)
-    return NumericValues()[0]->ToCalcExpressionNode();
-
-  CSSMathExpressionNode* node = CSSMathExpressionBinaryOperation::Create(
-      NumericValues()[0]->ToCalcExpressionNode(),
-      NumericValues()[1]->ToCalcExpressionNode(), CSSMathOperator::kAdd);
-
-  for (wtf_size_t i = 2; i < NumericValues().size(); i++) {
-    node = CSSMathExpressionBinaryOperation::Create(
-        node, NumericValues()[i]->ToCalcExpressionNode(),
-        CSSMathOperator::kAdd);
-  }
-
-  return node;
+  return ToCalcExporessionNodeForVariadic(CSSMathOperator::kAdd);
 }
 
 void CSSMathSum::BuildCSSText(Nested nested,

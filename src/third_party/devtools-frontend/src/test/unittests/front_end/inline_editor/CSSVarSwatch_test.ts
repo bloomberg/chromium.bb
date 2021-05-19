@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assertNotNull} from '../../../../front_end/core/platform/platform.js';
 import * as InlineEditor from '../../../../front_end/inline_editor/inline_editor.js';
-import {assertNotNull} from '../../../../front_end/platform/platform.js';
 import {assertShadowRoot, renderElementIntoDOM} from '../helpers/DOMHelpers.js';
 
 const {assert} = chai;
@@ -46,7 +46,7 @@ describe('CSSVarSwatch', () => {
       text: 'var(--test)',
       computedValue: '2px',
       fromFallback: false,
-      onLinkClick: () => {},
+      onLinkActivate: () => {},
     };
 
     assertSwatch(component, {
@@ -64,7 +64,7 @@ describe('CSSVarSwatch', () => {
       text: 'var(--undefined)',
       computedValue: null,
       fromFallback: false,
-      onLinkClick: () => {},
+      onLinkActivate: () => {},
     };
 
     assertSwatch(component, {
@@ -82,7 +82,7 @@ describe('CSSVarSwatch', () => {
       text: 'var(--undefined, 3px)',
       computedValue: '3px',
       fromFallback: true,
-      onLinkClick: () => {},
+      onLinkActivate: () => {},
     };
 
     assertSwatch(component, {
@@ -100,7 +100,7 @@ describe('CSSVarSwatch', () => {
       text: 'var(--undefined-color, green)',
       computedValue: 'green',
       fromFallback: true,
-      onLinkClick: () => {},
+      onLinkActivate: () => {},
     };
 
     assertSwatch(component, {
@@ -118,7 +118,7 @@ describe('CSSVarSwatch', () => {
       text: 'var(--undefined-color,    green   )',
       computedValue: 'green',
       fromFallback: true,
-      onLinkClick: () => {},
+      onLinkActivate: () => {},
     };
 
     assertSwatch(component, {
@@ -136,7 +136,7 @@ describe('CSSVarSwatch', () => {
       text: 'var(--test, green)',
       computedValue: 'red',
       fromFallback: false,
-      onLinkClick: () => {},
+      onLinkActivate: () => {},
     };
 
     assertSwatch(component, {
@@ -154,7 +154,7 @@ describe('CSSVarSwatch', () => {
       text: 'var( --test     )',
       computedValue: 'red',
       fromFallback: false,
-      onLinkClick: () => {},
+      onLinkActivate: () => {},
     };
 
     assertSwatch(component, {

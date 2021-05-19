@@ -27,26 +27,22 @@ bssl::UniquePtr<SSL_CTX> TlsServerConnection::CreateSslCtx(
   // We don't actually need the TicketCrypter here, but we need to know
   // whether it's set.
   if (proof_source->GetTicketCrypter()) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_session_tickets_always_enabled, 1, 3);
+    QUIC_CODE_COUNT(quic_session_tickets_enabled);
     SSL_CTX_set_ticket_aead_method(ssl_ctx.get(),
                                    &TlsServerConnection::kSessionTicketMethod);
   } else if (!GetQuicRestartFlag(quic_session_tickets_always_enabled)) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_session_tickets_always_enabled, 2, 3);
+    QUIC_CODE_COUNT(quic_session_tickets_disabled_by_flag);
     SSL_CTX_set_options(ssl_ctx.get(), SSL_OP_NO_TICKET);
   } else {
-    QUIC_RESTART_FLAG_COUNT_N(quic_session_tickets_always_enabled, 3, 3);
+    QUIC_CODE_COUNT(quic_session_tickets_disabled);
   }
-  if (GetQuicRestartFlag(quic_enable_zero_rtt_for_tls_v2) &&
-      (proof_source->GetTicketCrypter() ||
-       GetQuicRestartFlag(quic_session_tickets_always_enabled))) {
+  if (proof_source->GetTicketCrypter() ||
+      GetQuicRestartFlag(quic_session_tickets_always_enabled)) {
     SSL_CTX_set_early_data_enabled(ssl_ctx.get(), 1);
   }
   SSL_CTX_set_select_certificate_cb(
       ssl_ctx.get(), &TlsServerConnection::EarlySelectCertCallback);
-  if (GetQuicRestartFlag(quic_tls_prefer_server_cipher_and_curve_list)) {
-    QUIC_RESTART_FLAG_COUNT(quic_tls_prefer_server_cipher_and_curve_list);
-    SSL_CTX_set_options(ssl_ctx.get(), SSL_OP_CIPHER_SERVER_PREFERENCE);
-  }
+  SSL_CTX_set_options(ssl_ctx.get(), SSL_OP_CIPHER_SERVER_PREFERENCE);
   return ssl_ctx;
 }
 

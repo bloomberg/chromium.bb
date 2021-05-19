@@ -54,6 +54,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "weblayer/browser/autofill_client_impl.h"
@@ -481,7 +482,7 @@ NavigationController* TabImpl::GetNavigationController() {
   return navigation_controller_.get();
 }
 
-void TabImpl::ExecuteScript(const base::string16& script,
+void TabImpl::ExecuteScript(const std::u16string& script,
                             bool use_separate_isolate,
                             JavaScriptResultCallback callback) {
   if (use_separate_isolate) {
@@ -507,9 +508,9 @@ const std::map<std::string, std::string>& TabImpl::GetData() {
   return data_;
 }
 
-base::string16 TabImpl::AddWebMessageHostFactory(
+std::u16string TabImpl::AddWebMessageHostFactory(
     std::unique_ptr<WebMessageHostFactory> factory,
-    const base::string16& js_object_name,
+    const std::u16string& js_object_name,
     const std::vector<std::string>& allowed_origin_rules) {
   if (!js_communication_host_) {
     js_communication_host_ =
@@ -522,13 +523,13 @@ base::string16 TabImpl::AddWebMessageHostFactory(
 }
 
 void TabImpl::RemoveWebMessageHostFactory(
-    const base::string16& js_object_name) {
+    const std::u16string& js_object_name) {
   if (js_communication_host_)
     js_communication_host_->RemoveWebMessageHostFactory(js_object_name);
 }
 
 void TabImpl::ExecuteScriptWithUserGestureForTests(
-    const base::string16& script) {
+    const std::u16string& script) {
   web_contents_->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
       script);
 }
@@ -789,7 +790,7 @@ base::android::ScopedJavaLocalRef<jstring> TabImpl::RegisterWebMessageCallback(
   auto proxy = std::make_unique<WebMessageHostFactoryProxy>(client);
   std::vector<std::string> origins;
   base::android::AppendJavaStringArrayToStringVector(env, js_origins, &origins);
-  base::string16 result = AddWebMessageHostFactory(
+  std::u16string result = AddWebMessageHostFactory(
       std::move(proxy),
       base::android::ConvertJavaStringToUTF16(env, js_object_name), origins);
   return base::android::ConvertUTF16ToJavaString(env, result);
@@ -798,7 +799,7 @@ base::android::ScopedJavaLocalRef<jstring> TabImpl::RegisterWebMessageCallback(
 void TabImpl::UnregisterWebMessageCallback(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& js_object_name) {
-  base::string16 name;
+  std::u16string name;
   base::android::ConvertJavaStringToUTF16(env, js_object_name, &name);
   RemoveWebMessageHostFactory(name);
 }
@@ -943,7 +944,7 @@ void TabImpl::NavigationStateChanged(content::WebContents* source,
   // be fixed and INVALIDATE_TYPE_LOAD should be removed.
   if (changed_flags &
       (content::INVALIDATE_TYPE_TITLE | content::INVALIDATE_TYPE_LOAD)) {
-    base::string16 title = web_contents_->GetTitle();
+    std::u16string title = web_contents_->GetTitle();
     if (title_ != title) {
       title_ = title;
       for (auto& observer : observers_)

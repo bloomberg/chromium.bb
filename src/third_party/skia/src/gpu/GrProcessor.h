@@ -13,42 +13,13 @@
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrGpuBuffer.h"
 #include "src/gpu/GrProcessorUnitTest.h"
+#include "src/gpu/GrProgramDesc.h"
 #include "src/gpu/GrSamplerState.h"
 #include "src/gpu/GrShaderVar.h"
 #include "src/gpu/GrSurfaceProxyPriv.h"
 #include "src/gpu/GrTextureProxy.h"
 
 class GrResourceProvider;
-
-/**
- * Used by processors to build their keys. It incorporates each per-processor key into a larger
- * shader key.
- */
-class GrProcessorKeyBuilder {
-public:
-    GrProcessorKeyBuilder(SkTArray<unsigned char, true>* data) : fData(data), fCount(0) {
-        SkASSERT(0 == fData->count() % sizeof(uint32_t));
-    }
-
-    void add32(uint32_t v) {
-        ++fCount;
-        fData->push_back_n(4, reinterpret_cast<uint8_t*>(&v));
-    }
-
-    /** Inserts count uint32_ts into the key. The returned pointer is only valid until the next
-        add*() call. */
-    uint32_t* SK_WARN_UNUSED_RESULT add32n(int count) {
-        SkASSERT(count > 0);
-        fCount += count;
-        return reinterpret_cast<uint32_t*>(fData->push_back_n(4 * count));
-    }
-
-    size_t size() const { return sizeof(uint32_t) * fCount; }
-
-private:
-    SkTArray<uint8_t, true>* fData; // unowned ptr to the larger key.
-    int fCount;                     // number of uint32_ts added to fData by the processor.
-};
 
 /** Provides custom shader code to the Ganesh shading pipeline. GrProcessor objects *must* be
     immutable: after being constructed, their fields may not change.
@@ -96,7 +67,6 @@ public:
         kGrClampFragmentProcessor_ClassID,
         kGrColorMatrixFragmentProcessor_ClassID,
         kGrColorSpaceXformEffect_ClassID,
-        kGrComposeLerpEffect_ClassID,
         kGrConfigConversionEffect_ClassID,
         kGrConicEffect_ClassID,
         kGrConstColorProcessor_ClassID,
@@ -112,7 +82,6 @@ public:
         kGrEllipseEffect_ClassID,
         kGrFillRRectOp_Processor_ClassID,
         kGrGaussianConvolutionFragmentProcessor_ClassID,
-        kGrGSCoverageProcessor_ClassID,
         kGrHighContrastFilterEffect_ClassID,
         kGrHSLToRGBFilterEffect_ClassID,
         kGrImprovedPerlinNoiseEffect_ClassID,
@@ -142,7 +111,6 @@ public:
         kGrTiledGradientEffect_ClassID,
         kGrTwoPointConicalGradientLayout_ClassID,
         kGrUnrolledBinaryGradientColorizer_ClassID,
-        kGrVSCoverageProcessor_ClassID,
         kGrYUVtoRGBEffect_ClassID,
         kHighContrastFilterEffect_ClassID,
         kLatticeGP_ClassID,
@@ -151,7 +119,6 @@ public:
         kPremulFragmentProcessor_ClassID,
         kQuadEdgeEffect_ClassID,
         kQuadPerEdgeAAGeometryProcessor_ClassID,
-        kSampleLocationsTestProcessor_ClassID,
         kSeriesFragmentProcessor_ClassID,
         kShaderPDXferProcessor_ClassID,
         kStencilResolveProcessor_ClassID,
@@ -200,7 +167,6 @@ public:
      */
     enum class CustomFeatures {
         kNone = 0,
-        kSampleLocations = 1 << 0,
     };
 
     GR_DECL_BITFIELD_CLASS_OPS_FRIENDS(CustomFeatures);

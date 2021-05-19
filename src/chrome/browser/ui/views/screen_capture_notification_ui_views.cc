@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/scoped_multi_source_observation.h"
 #include "build/build_config.h"
@@ -89,7 +91,7 @@ class ScreenCaptureNotificationUIViews : public ScreenCaptureNotificationUI,
                                          public views::ViewObserver {
  public:
   METADATA_HEADER(ScreenCaptureNotificationUIViews);
-  explicit ScreenCaptureNotificationUIViews(const base::string16& text);
+  explicit ScreenCaptureNotificationUIViews(const std::u16string& text);
   ScreenCaptureNotificationUIViews(const ScreenCaptureNotificationUIViews&) =
       delete;
   ScreenCaptureNotificationUIViews& operator=(
@@ -127,7 +129,7 @@ class ScreenCaptureNotificationUIViews : public ScreenCaptureNotificationUI,
 };
 
 ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
-    const base::string16& text) {
+    const std::u16string& text) {
   SetShowCloseButton(false);
   SetShowTitle(false);
   SetTitle(text);
@@ -147,14 +149,14 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(std::move(label));
 
-  base::string16 source_text =
+  std::u16string source_text =
       l10n_util::GetStringUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_SOURCE);
   source_button_ = AddChildView(std::make_unique<views::MdTextButton>(
       base::BindRepeating(&ScreenCaptureNotificationUIViews::NotifySourceChange,
                           base::Unretained(this)),
       source_text));
 
-  base::string16 stop_text =
+  std::u16string stop_text =
       l10n_util::GetStringUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP);
   auto stop_button = std::make_unique<views::MdTextButton>(
       base::BindRepeating(&ScreenCaptureNotificationUIViews::NotifyStopped,
@@ -259,9 +261,8 @@ ScreenCaptureNotificationUIViews::CreateNonClientFrameView(
       std::make_unique<views::BubbleFrameView>(gfx::Insets(), kPadding);
   SkColor color = widget->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
-  frame->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
-      new views::BubbleBorder(views::BubbleBorder::NONE,
-                              views::BubbleBorder::STANDARD_SHADOW, color)));
+  frame->SetBubbleBorder(std::make_unique<views::BubbleBorder>(
+      views::BubbleBorder::NONE, views::BubbleBorder::STANDARD_SHADOW, color));
   return frame;
 }
 
@@ -289,7 +290,7 @@ END_METADATA
 }  // namespace
 
 std::unique_ptr<ScreenCaptureNotificationUI>
-ScreenCaptureNotificationUI::Create(const base::string16& text) {
+ScreenCaptureNotificationUI::Create(const std::u16string& text) {
   return std::unique_ptr<ScreenCaptureNotificationUI>(
       new ScreenCaptureNotificationUIViews(text));
 }

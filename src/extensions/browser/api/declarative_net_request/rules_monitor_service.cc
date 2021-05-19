@@ -71,7 +71,7 @@ void LogLoadRulesetResult(LoadRulesetResult result) {
 
 bool HasAPIPermission(const Extension& extension) {
   return extension.permissions_data()->HasAPIPermission(
-      APIPermission::kDeclarativeNetRequest);
+      mojom::APIPermissionID::kDeclarativeNetRequest);
 }
 
 // Returns whether the extension's allocation should be released. This would
@@ -342,7 +342,7 @@ const base::ListValue& RulesMonitorService::GetSessionRulesValue(
 std::vector<api::declarative_net_request::Rule>
 RulesMonitorService::GetSessionRules(const ExtensionId& extension_id) const {
   std::vector<api::declarative_net_request::Rule> result;
-  base::string16 error;
+  std::u16string error;
   bool populate_result = json_schema_compiler::util::PopulateArrayFromList(
       GetSessionRulesValue(extension_id), &result, &error);
   DCHECK(populate_result);
@@ -392,7 +392,7 @@ RulesMonitorService::RulesMonitorService(
       ruleset_manager_(browser_context),
       action_tracker_(browser_context),
       global_rules_tracker_(prefs_, extension_registry_) {
-  registry_observer_.Add(extension_registry_);
+  registry_observation_.Observe(extension_registry_);
 }
 
 RulesMonitorService::~RulesMonitorService() = default;

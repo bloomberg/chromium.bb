@@ -102,6 +102,12 @@ Polymer({
     numFingerprints_: {
       type: Number,
       value: 0,
+      observer: 'updateNumFingerprintsDescription_',
+    },
+
+    /** @private */
+    numFingerprintsDescription_: {
+      type: String,
     },
 
     /**
@@ -254,7 +260,7 @@ Polymer({
       // small chance that CrOS fails to remove the quick unlock capability. See
       // https://crbug.com/1054327 for details.
       this.hasPin = false;
-      this.setModes.call(null, [], [], function(result) {
+      this.setModes.call(null, [], [], (result) => {
         assert(result, 'Failed to clear quick unlock modes');
         // Revert |hasPin| to true in the event setModes fails to set lock state
         // to PASSWORD only.
@@ -338,13 +344,16 @@ Polymer({
   },
 
   /** @private */
-  getDescriptionText_() {
-    if (this.numFingerprints_ > 0) {
-      return this.i18n(
-          'lockScreenNumberFingerprints', this.numFingerprints_.toString());
+  updateNumFingerprintsDescription_() {
+    if (this.numFingerprints_ === 0) {
+      this.numFingerprintDescription_ =
+          this.i18n('lockScreenEditFingerprintsDescription');
+    } else {
+      PluralStringProxyImpl.getInstance()
+          .getPluralString(
+              'lockScreenNumberFingerprints', this.numFingerprints_)
+          .then(string => this.numFingerprintDescription_ = string);
     }
-
-    return this.i18n('lockScreenEditFingerprintsDescription');
   },
 
   /** @private */

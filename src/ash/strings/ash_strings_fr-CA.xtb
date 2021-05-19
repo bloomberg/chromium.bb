@@ -40,6 +40,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1252999807265626933">Recharge à partir de <ph name="POWER_SOURCE" /> en cours</translation>
 <translation id="1255033239764210633">Quel temps fait-il?</translation>
 <translation id="1267032506238418139">Modification du raccourci</translation>
+<translation id="1269405891096105529">Le mode Invité ne prend pas en charge votre périphérique</translation>
 <translation id="1270290102613614947">Clavier à l'écran désactivé</translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1275285675049378717">Alimente cet appareil : <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="2012624427112548395">Ctrl+Recherche+H</translation>
 <translation id="2016340657076538683">Rédiger un message</translation>
 <translation id="2018630726571919839">Raconte-moi une blague</translation>
+<translation id="2021864487439853900">Cliquez pour le déverrouiller</translation>
 <translation id="2049240716062114887">Le bureau a été renommé : <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Luminosité du clavier</translation>
@@ -276,6 +278,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> peut toujours se connecter plus tard.</translation>
 <translation id="3321628682574733415">Code parental incorrect</translation>
 <translation id="332587331255250389">Veuillez remplacer la pile</translation>
+<translation id="3333741161915951567">Le modem est en train de redémarrer. Patientez 30 secondes avant de réessayer.</translation>
 <translation id="3341303451326249809">Capture d'écran réussie</translation>
 <translation id="334252345105450327">Prendre une capture d'écran</translation>
 <translation id="3351879221545518001">Vous diffusez actuellement l'écran.</translation>
@@ -320,6 +323,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="366222428570480733">Utilisateur géré : <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3665889125180354336">Enregistrement avec le microphone</translation>
 <translation id="36813544980941320">Les réseaux Wi-Fi seront partagés entre votre téléphone et votre <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Affichage des fenêtres du bureau actuel. Appuyez sur la flèche vers le haut pour afficher les fenêtres de tous les bureaux.</translation>
 <translation id="3702846122927433391">Quelle est la population du Nigéria?</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="370665806235115550">Chargement en cours...</translation>
@@ -407,10 +411,12 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="4421231901400348175">Partage du contrôle de votre écran avec <ph name="HELPER_NAME" /> au moyen de l’assistance à distance.</translation>
 <translation id="4424159417645388645">Bureau 5</translation>
 <translation id="4430019312045809116">Volume</translation>
+<translation id="4445159312344259901">Connectez-vous pour le déverrouiller</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 notification importante}one{# notification importante}other{# notifications importantes}}</translation>
 <translation id="4450893287417543264">Ne plus afficher</translation>
 <translation id="445864333228800152">Bonsoir,</translation>
 <translation id="4458688154122353284">Arrêter l'enregistrement de l'écran</translation>
+<translation id="4467143075433126295">Maintenez la touche [Échapp.] enfoncée pour quitter le mode plein écran</translation>
 <translation id="4472575034687746823">Premiers pas</translation>
 <translation id="4477350412780666475">Chanson suivante</translation>
 <translation id="4477892968187500306">Cet appareil pourrait contenir des applications qui n'ont pas été vérifiées par Google.</translation>
@@ -607,6 +613,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">L'Assistant Google n'est pas accessible dans une session d'invité.</translation>
 <translation id="6137566720514957455">Ouvrir la boîte de dialogue de retrait pour <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Ce périphérique n'est pas pris en charge</translation>
 <translation id="615957422585914272">Afficher le clavier à l'écran</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6179832488876878285">Vous pouvez épingler vos fichiers importants ici. Ouvrez l'application Fichiers pour commencer.</translation>
@@ -624,11 +631,11 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="6297287540776456956">Utilisez un stylet pour sélectionner une zone</translation>
 <translation id="6310121235600822547">L'écran <ph name="DISPLAY_NAME" /> a été pivoté de <ph name="ROTATION" />.</translation>
 <translation id="6315170314923504164">Voix</translation>
+<translation id="6330012934079202188">Affichage des fenêtres de tous les bureaux. Appuyez sur la flèche vers le haut pour afficher les fenêtres du bureau actuel.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> est une session gérée par <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Le Bluetooth est activé</translation>
 <translation id="6381109794406942707">Pour déverrouiller l'appareil, entrez votre NIP.</translation>
 <translation id="639644700271529076">Touche de verrouillage des majuscules désactivée</translation>
-<translation id="6396835948284782440">Maintenez enfoncée la touche [Échapp.] pour quitter.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Effacer toutes les notifications</translation>
@@ -794,7 +801,6 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="7780159184141939021">Faire pivoter l'écran</translation>
 <translation id="7796353162336583443">Touchez le bouton du stylet sur l'étagère pour créer une note, pour prendre une capture d'écran ou pour utiliser l'Assistant Google, le pointeur laser ou la loupe.</translation>
 <translation id="7798302898096527229">Appuyez sur Recherche ou Majuscule pour le désactiver.</translation>
-<translation id="7807966291075028781">Le périphérique n'est pas compatible en mode Invité pour des raisons de sécurité</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> et <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Signal fort</translation>
 <translation id="7837740436429729974">Temps écoulé</translation>
@@ -944,6 +950,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="8936501819958976551">désactivée</translation>
 <translation id="8938800817013097409">Appareil USB-C (port arrière-droit)</translation>
 <translation id="8940956008527784070">Batterie faible (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8951539504029375108">Seuls les appareils Thunderbolt approuvés sont compatibles avec votre Chromebook</translation>
 <translation id="8982906748181120328">Partage à proximité</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Mode de saisie utilisé : <ph name="IME_NAME" /></translation>

@@ -5,6 +5,7 @@
 #include "chromeos/components/local_search_service/index.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 
 namespace chromeos {
@@ -24,11 +25,13 @@ std::string IndexIdBasedHistogramPrefix(IndexId index_id) {
       return prefix + "CrosSettings";
     case IndexId::kHelpApp:
       return prefix + "HelpApp";
+    case IndexId::kHelpAppLauncher:
+      return prefix + "HelpAppLauncher";
   }
 }
 
-void OnSearchPerformedDone() {
-  // TODO(thanhdng): add a histogram to log this.
+void OnSearchPerformedDone(const std::string& histogram_string) {
+  UMA_HISTOGRAM_BOOLEAN(histogram_string + ".NumberSearchPerformedDone", true);
 }
 
 }  // namespace
@@ -55,8 +58,8 @@ void Index::MaybeLogSearchResultsStats(ResponseStatus status,
                                        size_t num_results,
                                        base::TimeDelta latency) {
   if (reporter_remote_.is_bound())
-    reporter_remote_->OnSearchPerformed(index_id_,
-                                        base::BindOnce(&OnSearchPerformedDone));
+    reporter_remote_->OnSearchPerformed(
+        index_id_, base::BindOnce(&OnSearchPerformedDone, histogram_prefix_));
 
   base::UmaHistogramEnumeration(histogram_prefix_ + ".ResponseStatus", status);
   if (status == ResponseStatus::kSuccess) {
@@ -67,11 +70,46 @@ void Index::MaybeLogSearchResultsStats(ResponseStatus status,
   }
 }
 
-void Index::MaybeLogIndexSize(uint64_t index_size) {
+void Index::MaybeLogIndexSize() {
+  const uint32_t index_size = GetIndexSize();
   if (index_size != 0u) {
     base::UmaHistogramCounts10000(histogram_prefix_ + ".NumberDocuments",
                                   index_size);
   }
+}
+
+void Index::AddOrUpdateCallbackWithTime(AddOrUpdateCallback callback,
+                                        const base::Time start_time) {
+  const auto time_diff = base::Time::Now() - start_time;
+  MaybeLogIndexSize();
+  base::UmaHistogramTimes(histogram_prefix_ + ".AddOrUpdateLatency", time_diff);
+  std::move(callback).Run();
+}
+
+void Index::DeleteCallbackWithTime(DeleteCallback callback,
+                                   const base::Time start_time,
+                                   const uint32_t num_deleted) {
+  const auto time_diff = base::Time::Now() - start_time;
+  base::UmaHistogramTimes(histogram_prefix_ + ".DeleteLatency", time_diff);
+  MaybeLogIndexSize();
+  std::move(callback).Run(num_deleted);
+}
+
+void Index::UpdateDocumentsCallbackWithTime(UpdateDocumentsCallback callback,
+                                            const base::Time start_time,
+                                            const uint32_t num_deleted) {
+  const auto time_diff = base::Time::Now() - start_time;
+  base::UmaHistogramTimes(histogram_prefix_ + ".UpdateDocumentsLatency",
+                          time_diff);
+  MaybeLogIndexSize();
+  std::move(callback).Run(num_deleted);
+}
+
+void Index::ClearIndexCallbackWithTime(ClearIndexCallback callback,
+                                       const base::Time start_time) {
+  const auto time_diff = base::Time::Now() - start_time;
+  base::UmaHistogramTimes(histogram_prefix_ + ".ClearIndexLatency", time_diff);
+  std::move(callback).Run();
 }
 
 }  // namespace local_search_service

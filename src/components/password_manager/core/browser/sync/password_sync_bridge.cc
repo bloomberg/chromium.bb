@@ -176,7 +176,7 @@ PasswordForm PasswordFromEntityChange(const syncer::EntityChange& entity_change,
 
 InsecureCredential CreateInsecureCredential(
     const std::string& signon_realm,
-    const base::string16& username,
+    const std::u16string& username,
     InsecureType type,
     const sync_pb::PasswordSpecificsData::PasswordIssues::PasswordIssue&
         issue) {
@@ -199,7 +199,7 @@ std::vector<InsecureCredential> InsecureCredentialsFromEntityChange(
     return insecure_credentials;
 
   const std::string& signon_realm = password_data.signon_realm();
-  const base::string16& username =
+  const std::u16string& username =
       base::UTF8ToUTF16(password_data.username_value());
 
   const auto& password_issues = password_data.password_issues();
@@ -945,7 +945,7 @@ void PasswordSyncBridge::GetAllDataForDebugging(DataCallback callback) {
     PasswordForm form = *pair.second;
     const std::vector<InsecureCredential> insecure_credentials =
         password_store_sync_->ReadSecurityIssues(pair.first);
-    form.password_value = base::UTF8ToUTF16("<redacted>");
+    form.password_value = u"<redacted>";
     batch->Put(base::NumberToString(pair.first.value()),
                CreateEntityData(form, insecure_credentials));
   }

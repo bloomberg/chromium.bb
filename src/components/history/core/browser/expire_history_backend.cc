@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -381,14 +382,14 @@ void ExpireHistoryBackend::InitWorkQueue() {
 
 const ExpiringVisitsReader* ExpireHistoryBackend::GetAllVisitsReader() {
   if (!all_visits_reader_)
-    all_visits_reader_.reset(new AllVisitsReader());
+    all_visits_reader_ = std::make_unique<AllVisitsReader>();
   return all_visits_reader_.get();
 }
 
 const ExpiringVisitsReader*
     ExpireHistoryBackend::GetAutoSubframeVisitsReader() {
   if (!auto_subframe_visits_reader_)
-    auto_subframe_visits_reader_.reset(new AutoSubframeVisitsReader());
+    auto_subframe_visits_reader_ = std::make_unique<AutoSubframeVisitsReader>();
   return auto_subframe_visits_reader_.get();
 }
 
@@ -476,6 +477,9 @@ void ExpireHistoryBackend::DeleteVisitRelatedInfo(const VisitVector& visits,
       if (main_db_->GetURLRow(visits[i].url_id, &row))
         effects->affected_urls[visits[i].url_id] = row;
     }
+
+    // Delete content annotations associated with visit.
+    main_db_->DeleteContentAnnotationsForVisit(visits[i].visit_id);
   }
 }
 

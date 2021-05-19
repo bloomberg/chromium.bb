@@ -9,6 +9,7 @@
 #include "base/containers/contains.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/device_api/managed_configuration_store.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -141,6 +142,9 @@ void ManagedConfigurationAPI::GetOriginPolicyConfiguration(
     const url::Origin& origin,
     const std::vector<std::string>& keys,
     base::OnceCallback<void(std::unique_ptr<base::DictionaryValue>)> callback) {
+  if (!CanHaveManagedStore(origin)) {
+    return std::move(callback).Run(nullptr);
+  }
   backend_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&ManagedConfigurationAPI::GetConfigurationOnBackend,
@@ -148,16 +152,31 @@ void ManagedConfigurationAPI::GetOriginPolicyConfiguration(
       std::move(callback));
 }
 
-void ManagedConfigurationAPI::AddObserver(const url::Origin& origin,
-                                          Observer* observer) {
-  // A configuration could potentially appear in the future, therefore create a
-  // store.
-  GetOrLoadStoreForOrigin(origin)->AddObserver(observer);
+void ManagedConfigurationAPI::AddObserver(Observer* observer) {
+  if (CanHaveManagedStore(observer->GetOrigin())) {
+    GetOrLoadStoreForOrigin(observer->GetOrigin())->AddObserver(observer);
+  } else {
+    unmanaged_observers_.insert(observer);
+  }
 }
 
-void ManagedConfigurationAPI::RemoveObserver(const url::Origin& origin,
-                                             Observer* observer) {
-  GetOrLoadStoreForOrigin(origin)->RemoveObserver(observer);
+void ManagedConfigurationAPI::RemoveObserver(Observer* observer) {
+  auto it = unmanaged_observers_.find(observer);
+  if (it != unmanaged_observers_.end()) {
+    unmanaged_observers_.erase(it);
+    return;
+  }
+
+  GetOrLoadStoreForOrigin(observer->GetOrigin())->RemoveObserver(observer);
+}
+
+bool ManagedConfigurationAPI::CanHaveManagedStore(const url::Origin& origin) {
+  return base::Contains(managed_origins_, origin);
+}
+
+const std::set<url::Origin>& ManagedConfigurationAPI::GetManagedOrigins()
+    const {
+  return managed_origins_;
 }
 
 void ManagedConfigurationAPI::OnConfigurationPolicyChanged() {
@@ -192,6 +211,9 @@ void ManagedConfigurationAPI::OnConfigurationPolicyChanged() {
                                 std::string());
     }
   }
+
+  managed_origins_.swap(current_origins);
+  PromoteObservers();
 }
 
 ManagedConfigurationStore* ManagedConfigurationAPI::GetOrLoadStoreForOrigin(
@@ -321,4 +343,17 @@ void ManagedConfigurationAPI::StoreConfigurationOnBackend(
     const url::Origin& origin,
     base::DictionaryValue configuration) {
   GetOrLoadStoreForOrigin(origin)->SetCurrentPolicy(configuration);
+}
+
+void ManagedConfigurationAPI::PromoteObservers() {
+  for (auto it = unmanaged_observers_.begin();
+       it != unmanaged_observers_.end();) {
+    if (CanHaveManagedStore((*it)->GetOrigin())) {
+      auto* observer = *it;
+      it = unmanaged_observers_.erase(it);
+      AddObserver(observer);
+    } else {
+      ++it;
+    }
+  }
 }

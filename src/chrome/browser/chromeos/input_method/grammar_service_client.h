@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_GRAMMAR_SERVICE_CLIENT_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_GRAMMAR_SERVICE_CLIENT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/services/machine_learning/public/mojom/grammar_checker.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -34,7 +34,7 @@ namespace chromeos {
 //       ...
 //     }
 //
-//     void MyTextCheck(Profile* profile, const base::string16& text) {
+//     void MyTextCheck(Profile* profile, const std::u16string& text) {
 //        client_.reset(new GrammarServiceClient);
 //        client_->RequestTextCheck(profile, 0, text,
 //            base::BindOnce(&MyClient::OnTextCheckComplete,
@@ -56,13 +56,13 @@ class GrammarServiceClient {
   // Sends grammar check request to ML service, parses the reponse
   // and calls a provided callback method.
   bool RequestTextCheck(Profile* profile,
-                        const base::string16& text,
+                        const std::u16string& text,
                         TextCheckCompleteCallback callback) const;
 
  private:
   // Parse the result returned from grammar check service.
   void ParseGrammarCheckerResult(
-      const base::string16& text,
+      const std::u16string& text,
       TextCheckCompleteCallback callback,
       chromeos::machine_learning::mojom::GrammarCheckerResultPtr result) const;
 

@@ -27,6 +27,7 @@
 #include "perfetto/profiling/normalize.h"
 #include "src/profiling/perf/regs_parsing.h"
 
+#include "protos/perfetto/common/perf_events.gen.h"
 #include "protos/perfetto/config/profiling/perf_event_config.gen.h"
 
 namespace perfetto {
@@ -73,7 +74,7 @@ std::pair<std::string, std::string> SplitTracepointString(
 
 // If set, the returned id is guaranteed to be non-zero.
 base::Optional<uint32_t> ParseTracepointAndResolveId(
-    const protos::gen::PerfEventConfig::Tracepoint& tracepoint,
+    const protos::gen::PerfEvents::Tracepoint& tracepoint,
     EventConfig::tracepoint_id_fn_t tracepoint_id_lookup) {
   std::string full_name = tracepoint.name();
   std::string tp_group;
@@ -154,29 +155,53 @@ base::Optional<uint32_t> ChooseActualRingBufferPages(uint32_t config_value) {
 }
 
 base::Optional<PerfCounter> ToPerfCounter(
-    protos::gen::PerfEventConfig::Counter pb_enum) {
-  using protos::gen::PerfEventConfig;
+    protos::gen::PerfEvents::Counter pb_enum) {
+  using protos::gen::PerfEvents;
   switch (static_cast<int>(pb_enum)) {  // cast to pacify -Wswitch-enum
-    case PerfEventConfig::SW_CPU_CLOCK:
-      return base::make_optional<PerfCounter>(PERF_TYPE_SOFTWARE,
-                                              PERF_COUNT_SW_CPU_CLOCK);
-    case PerfEventConfig::SW_PAGE_FAULTS:
-      return base::make_optional<PerfCounter>(PERF_TYPE_SOFTWARE,
-                                              PERF_COUNT_SW_PAGE_FAULTS);
-    case PerfEventConfig::HW_CPU_CYCLES:
-      return base::make_optional<PerfCounter>(PERF_TYPE_HARDWARE,
-                                              PERF_COUNT_HW_CPU_CYCLES);
-    case PerfEventConfig::HW_INSTRUCTIONS:
-      return base::make_optional<PerfCounter>(PERF_TYPE_HARDWARE,
-                                              PERF_COUNT_HW_INSTRUCTIONS);
+    case PerfEvents::SW_CPU_CLOCK:
+      return PerfCounter::Counter(PerfEvents::SW_CPU_CLOCK, PERF_TYPE_SOFTWARE,
+                                  PERF_COUNT_SW_CPU_CLOCK);
+    case PerfEvents::SW_PAGE_FAULTS:
+      return PerfCounter::Counter(PerfEvents::SW_PAGE_FAULTS,
+                                  PERF_TYPE_SOFTWARE,
+                                  PERF_COUNT_SW_PAGE_FAULTS);
+    case PerfEvents::HW_CPU_CYCLES:
+      return PerfCounter::Counter(PerfEvents::HW_CPU_CYCLES, PERF_TYPE_HARDWARE,
+                                  PERF_COUNT_HW_CPU_CYCLES);
+    case PerfEvents::HW_INSTRUCTIONS:
+      return PerfCounter::Counter(PerfEvents::HW_INSTRUCTIONS,
+                                  PERF_TYPE_HARDWARE,
+                                  PERF_COUNT_HW_INSTRUCTIONS);
     default:
-      PERFETTO_ELOG("Unrecognised PerfEventConfig::Counter enum value: %zu",
+      PERFETTO_ELOG("Unrecognised PerfEvents::Counter enum value: %zu",
                     static_cast<size_t>(pb_enum));
       return base::nullopt;
   }
 }
 
 }  // namespace
+
+// static
+PerfCounter PerfCounter::Counter(protos::gen::PerfEvents::Counter counter,
+                                 uint32_t type,
+                                 uint32_t config) {
+  PerfCounter ret;
+  ret.counter = counter;
+  ret.type = type;
+  ret.config = config;
+  return ret;
+}
+
+// static
+PerfCounter PerfCounter::Tracepoint(
+    protos::gen::PerfEvents::Tracepoint tracepoint,
+    uint32_t id) {
+  PerfCounter ret;
+  ret.tracepoint = std::move(tracepoint);
+  ret.type = PERF_TYPE_TRACEPOINT;
+  ret.config = id;
+  return ret;
+}
 
 // static
 base::Optional<EventConfig> EventConfig::Create(
@@ -217,21 +242,18 @@ base::Optional<EventConfig> EventConfig::Create(
       return base::nullopt;
     timebase_event = *maybe_counter;
 
-  } else if (pb_config.timebase().has_tracepoint() ||
-             pb_config.has_tracepoint()) {
-    const auto& tracepoint_pb =
-        pb_config.timebase().has_tracepoint()
-            ? pb_config.timebase().tracepoint()
-            : pb_config.tracepoint();  // backwards compatibility
+  } else if (pb_config.timebase().has_tracepoint()) {
+    const auto& tracepoint_pb = pb_config.timebase().tracepoint();
     base::Optional<uint32_t> maybe_id =
         ParseTracepointAndResolveId(tracepoint_pb, tracepoint_id_lookup);
     if (!maybe_id)
       return base::nullopt;
-    timebase_event =
-        PerfCounter{PERF_TYPE_TRACEPOINT, *maybe_id, tracepoint_pb.filter()};
+    timebase_event = PerfCounter::Tracepoint(tracepoint_pb, *maybe_id);
 
   } else {
-    timebase_event = PerfCounter{PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_CLOCK};
+    timebase_event =
+        PerfCounter::Counter(protos::gen::PerfEvents::PerfEvents::SW_CPU_CLOCK,
+                             PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_CLOCK);
   }
 
   // Callstack sampling.
@@ -293,6 +315,10 @@ base::Optional<EventConfig> EventConfig::Create(
   if (samples_per_tick_limit == 0)
     return base::nullopt;
 
+  // Optional footprint controls.
+  uint64_t max_enqueued_footprint_bytes =
+      pb_config.max_enqueued_footprint_kb() * 1024;
+
   // Android-specific options.
   uint32_t remote_descriptor_timeout_ms =
       pb_config.remote_descriptor_timeout_ms()
@@ -302,7 +328,7 @@ base::Optional<EventConfig> EventConfig::Create(
   // Build the underlying syscall config struct.
   perf_event_attr pe = {};
   pe.size = sizeof(perf_event_attr);
-  pe.disabled = true;  // will be activated via ioctl
+  pe.disabled = 1;  // will be activated via ioctl
 
   // Sampling timebase.
   pe.type = timebase_event.type;
@@ -341,11 +367,11 @@ base::Optional<EventConfig> EventConfig::Create(
     }
   }
 
-  return EventConfig(raw_ds_config, pe, timebase_event, sample_callstacks,
-                     std::move(target_filter), kernel_frames,
-                     ring_buffer_pages.value(), read_tick_period_ms,
-                     samples_per_tick_limit, remote_descriptor_timeout_ms,
-                     pb_config.unwind_state_clear_period_ms());
+  return EventConfig(
+      raw_ds_config, pe, timebase_event, sample_callstacks,
+      std::move(target_filter), kernel_frames, ring_buffer_pages.value(),
+      read_tick_period_ms, samples_per_tick_limit, remote_descriptor_timeout_ms,
+      pb_config.unwind_state_clear_period_ms(), max_enqueued_footprint_bytes);
 }
 
 EventConfig::EventConfig(const DataSourceConfig& raw_ds_config,
@@ -358,7 +384,8 @@ EventConfig::EventConfig(const DataSourceConfig& raw_ds_config,
                          uint32_t read_tick_period_ms,
                          uint64_t samples_per_tick_limit,
                          uint32_t remote_descriptor_timeout_ms,
-                         uint32_t unwind_state_clear_period_ms)
+                         uint32_t unwind_state_clear_period_ms,
+                         uint64_t max_enqueued_footprint_bytes)
     : perf_event_attr_(pe),
       timebase_event_(timebase_event),
       sample_callstacks_(sample_callstacks),
@@ -369,6 +396,7 @@ EventConfig::EventConfig(const DataSourceConfig& raw_ds_config,
       samples_per_tick_limit_(samples_per_tick_limit),
       remote_descriptor_timeout_ms_(remote_descriptor_timeout_ms),
       unwind_state_clear_period_ms_(unwind_state_clear_period_ms),
+      max_enqueued_footprint_bytes_(max_enqueued_footprint_bytes),
       raw_ds_config_(raw_ds_config) /* full copy */ {}
 
 }  // namespace profiling

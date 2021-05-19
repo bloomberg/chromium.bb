@@ -61,7 +61,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                       int32_t routing_id,
                       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
                       const blink::LocalFrameToken& frame_token,
-                      LifecycleState lifecyle_state);
+                      LifecycleStateImpl lifecycle_state);
   ~TestRenderFrameHost() override;
 
   // RenderFrameHostImpl overrides (same values, but in Test*/Mock* types)
@@ -82,7 +82,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   TestRenderFrameHost* AppendChild(const std::string& frame_name) override;
   TestRenderFrameHost* AppendChildWithPolicy(
       const std::string& frame_name,
-      const blink::ParsedFeaturePolicy& allow) override;
+      const blink::ParsedPermissionsPolicy& allow) override;
   void Detach() override;
   void SendNavigateWithTransition(int nav_entry_id,
                                   bool did_create_new_entry,
@@ -234,6 +234,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int32_t error_code,
+      int32_t extended_error_code,
       const base::Optional<std::string>& error_page_content,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,

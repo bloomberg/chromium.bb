@@ -879,10 +879,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
         ->GetURLLoaderFactoryForBrowserProcess()
-        ->CreateLoaderAndStart(std::move(job.receiver), job.routing_id,
-                               job.request_id, job.options,
-                               std::move(job.url_request), job.client.Unbind(),
-                               job.traffic_annotation);
+        ->CreateLoaderAndStart(std::move(job.receiver), job.request_id,
+                               job.options, std::move(job.url_request),
+                               job.client.Unbind(), job.traffic_annotation);
   }
 
   // Abandon all active kMockHttps* requests.  |expected_num_jobs|
@@ -951,7 +950,7 @@ CaptivePortalBrowserTest::~CaptivePortalBrowserTest() = default;
 
 void CaptivePortalBrowserTest::SetUpOnMainThread() {
   url_loader_interceptor_ =
-      std::make_unique<content::URLLoaderInterceptor>(base::Bind(
+      std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
           &CaptivePortalBrowserTest::OnIntercept, base::Unretained(this)));
 
   // Double-check that the captive portal service isn't enabled by default for

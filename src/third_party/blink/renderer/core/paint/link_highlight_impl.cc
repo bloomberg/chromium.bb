@@ -33,7 +33,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -348,8 +347,15 @@ void LinkHighlightImpl::SetPaintArtifactCompositorNeedsUpdate() {
 }
 
 void LinkHighlightImpl::UpdateOpacity(float opacity) {
-  effect_->Update(EffectPaintPropertyNode::Root(),
-                  LinkHighlightEffectNodeState(opacity, element_id_));
+  auto change =
+      effect_->Update(EffectPaintPropertyNode::Root(),
+                      LinkHighlightEffectNodeState(opacity, element_id_));
+  // If there is no |node_|, |ReleaseResources| has already handled the call to
+  // |SetPaintArtifactCompositorNeedsUpdate|.
+  if (!node_)
+    return;
+  if (change > PaintPropertyChangeType::kChangedOnlyCompositedValues)
+    SetPaintArtifactCompositorNeedsUpdate();
 }
 
 }  // namespace blink

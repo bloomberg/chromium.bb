@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if !V8_ENABLE_WEBASSEMBLY
+#error This header should only be included if WebAssembly is enabled.
+#endif  // !V8_ENABLE_WEBASSEMBLY
+
 #ifndef V8_WASM_COMPILATION_ENVIRONMENT_H_
 #define V8_WASM_COMPILATION_ENVIRONMENT_H_
 
@@ -64,11 +68,9 @@ struct CompilationEnv {
 
   const LowerSimd lower_simd;
 
-  // We assume that memories of size >= half of the virtual address space
-  // cannot be allocated (see https://crbug.com/1201340).
-  static constexpr uint32_t kMaxMemoryPagesAtRuntime = std::min(
-      kV8MaxWasmMemoryPages,
-      (uintptr_t{1} << (kSystemPointerSize == 4 ? 31 : 63)) / kWasmPageSize);
+  static constexpr uint32_t kMaxMemoryPagesAtRuntime =
+      std::min(kV8MaxWasmMemoryPages,
+               std::numeric_limits<uintptr_t>::max() / kWasmPageSize);
 
   constexpr CompilationEnv(const WasmModule* module,
                            UseTrapHandler use_trap_handler,

@@ -17,6 +17,10 @@
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/guest_os/guest_os_share_path.h"
+#include "chrome/browser/ash/guest_os/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
@@ -26,10 +30,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
-#include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_crostini_tracker.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_controller.h"
@@ -549,7 +549,7 @@ void UpdateContainerPref(Profile* profile,
   }
 }
 
-base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent) {
+std::u16string GetTimeRemainingMessage(base::TimeTicks start, int percent) {
   // Only estimate once we've spent at least 3 seconds OR gotten 10% of the way
   // through.
   constexpr base::TimeDelta kMinTimeForEstimate =
@@ -568,7 +568,6 @@ base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent) {
         IDS_CROSTINI_NOTIFICATION_OPERATION_STARTING);
   }
 }
-
 
 const ContainerId& DefaultContainerId() {
   static const base::NoDestructor<ContainerId> container_id(

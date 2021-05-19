@@ -48,16 +48,17 @@ namespace dawn_native {
                                          uint64_t byteSize,
                                          const TexelBlockInfo& blockInfo,
                                          const Extent3D& copyExtent);
-    MaybeError ValidateTextureCopyRange(const TextureCopyView& textureCopyView,
+    MaybeError ValidateTextureCopyRange(DeviceBase const* device,
+                                        const ImageCopyTexture& imageCopyTexture,
                                         const Extent3D& copySize);
-    ResultOrError<Aspect> SingleAspectUsedByTextureCopyView(const TextureCopyView& view);
-    MaybeError ValidateLinearToDepthStencilCopyRestrictions(const TextureCopyView& dst);
+    ResultOrError<Aspect> SingleAspectUsedByImageCopyTexture(const ImageCopyTexture& view);
+    MaybeError ValidateLinearToDepthStencilCopyRestrictions(const ImageCopyTexture& dst);
 
-    MaybeError ValidateBufferCopyView(DeviceBase const* device,
-                                      const BufferCopyView& bufferCopyView);
-    MaybeError ValidateTextureCopyView(DeviceBase const* device,
-                                       const TextureCopyView& textureCopyView,
-                                       const Extent3D& copySize);
+    MaybeError ValidateImageCopyBuffer(DeviceBase const* device,
+                                       const ImageCopyBuffer& imageCopyBuffer);
+    MaybeError ValidateImageCopyTexture(DeviceBase const* device,
+                                        const ImageCopyTexture& imageCopyTexture,
+                                        const Extent3D& copySize);
 
     MaybeError ValidateRowsPerImage(const Format& format,
                                     uint32_t rowsPerImage,
@@ -71,9 +72,13 @@ namespace dawn_native {
 
     bool IsRangeOverlapped(uint32_t startA, uint32_t startB, uint32_t length);
 
-    MaybeError ValidateTextureToTextureCopyRestrictions(const TextureCopyView& src,
-                                                        const TextureCopyView& dst,
+    MaybeError ValidateTextureToTextureCopyRestrictions(const ImageCopyTexture& src,
+                                                        const ImageCopyTexture& dst,
                                                         const Extent3D& copySize);
+
+    MaybeError ValidateCopyTextureForBrowserRestrictions(const ImageCopyTexture& src,
+                                                         const ImageCopyTexture& dst,
+                                                         const Extent3D& copySize);
 
     MaybeError ValidateCanUseAs(const TextureBase* texture, wgpu::TextureUsage usage);
 

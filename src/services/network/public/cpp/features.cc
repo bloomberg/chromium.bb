@@ -76,6 +76,13 @@ const base::Feature kProactivelyThrottleLowPriorityRequests{
     "ProactivelyThrottleLowPriorityRequests",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Cross-Origin-Embedder-Policy: cors-or-credentialless.
+// https://github.com/mikewest/credentiallessness
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kCrossOriginEmbedderPolicyCredentialless{
+    "CrossOriginEmbedderPolicyCredentialless",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Cross-Origin Opener Policy (COOP).
 // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
 // https://html.spec.whatwg.org/#cross-origin-opener-policy
@@ -203,6 +210,12 @@ const base::FeatureParam<bool> kPlatformProvidedTrustTokenIssuance{
 
 const base::Feature kWebSocketReassembleShortMessages{
     "WebSocketReassembleShortMessages", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable support for ACCEPT_CH H2/3 frame as part of Client Hint Reliability.
+// See:
+// https://tools.ietf.org/html/draft-davidben-http-client-hint-reliability-02#section-4.3
+const base::Feature kAcceptCHFrame{"AcceptCHFrame",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace network

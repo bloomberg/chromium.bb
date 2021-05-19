@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -32,8 +33,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using base::string16;
 using base::UTF8ToUTF16;
+using std::u16string;
 
 namespace extensions {
 

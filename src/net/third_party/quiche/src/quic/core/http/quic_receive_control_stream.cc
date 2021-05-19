@@ -233,6 +233,13 @@ bool QuicReceiveControlStream::OnAcceptChFrame(const AcceptChFrame& frame) {
   return true;
 }
 
+void QuicReceiveControlStream::OnWebTransportStreamFrameType(
+    QuicByteCount /*header_length*/,
+    WebTransportSessionId /*session_id*/) {
+  QUIC_BUG(WEBTRANSPORT_STREAM on Control Stream)
+      << "Parsed WEBTRANSPORT_STREAM on a control stream.";
+}
+
 bool QuicReceiveControlStream::OnUnknownFrameStart(
     uint64_t frame_type,
     QuicByteCount /*header_length*/,
@@ -263,8 +270,7 @@ bool QuicReceiveControlStream::ValidateFrameType(HttpFrameType frame_type) {
        frame_type == HttpFrameType::PUSH_PROMISE) ||
       (spdy_session()->perspective() == Perspective::IS_CLIENT &&
        frame_type == HttpFrameType::MAX_PUSH_ID) ||
-      (GetQuicReloadableFlag(quic_parse_accept_ch_frame) &&
-       spdy_session()->perspective() == Perspective::IS_SERVER &&
+      (spdy_session()->perspective() == Perspective::IS_SERVER &&
        frame_type == HttpFrameType::ACCEPT_CH)) {
     stream_delegate()->OnStreamError(
         QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM,

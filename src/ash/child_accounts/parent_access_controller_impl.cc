@@ -4,6 +4,8 @@
 
 #include "ash/child_accounts/parent_access_controller_impl.h"
 
+#include <string>
+
 #include "ash/login/login_screen_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -12,7 +14,6 @@
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -52,7 +53,7 @@ constexpr char kUMAValidationResultSuffixTimezone[] = "TimezoneChange";
 // clock change.
 constexpr char kUMAValidationResultSuffixClock[] = "ClockChange";
 
-base::string16 GetTitle(SupervisedAction action) {
+std::u16string GetTitle(SupervisedAction action) {
   int title_id;
   switch (action) {
     case SupervisedAction::kUnlockTimeLimits:
@@ -72,7 +73,7 @@ base::string16 GetTitle(SupervisedAction action) {
   return l10n_util::GetStringUTF16(title_id);
 }
 
-base::string16 GetDescription(SupervisedAction action) {
+std::u16string GetDescription(SupervisedAction action) {
   int description_id;
   switch (action) {
     case SupervisedAction::kUnlockTimeLimits:
@@ -92,7 +93,7 @@ base::string16 GetDescription(SupervisedAction action) {
   return l10n_util::GetStringUTF16(description_id);
 }
 
-base::string16 GetAccessibleTitle() {
+std::u16string GetAccessibleTitle() {
   return l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_DIALOG_NAME);
 }
 

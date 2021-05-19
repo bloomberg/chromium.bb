@@ -141,6 +141,7 @@ source_set("common_sources") {
     "referrer.h",
     "referrer_type_converters.cc",
     "referrer_type_converters.h",
+    "resource_request_blocked_reason.h",
     "resource_usage_reporter_type_converters.cc",
     "resource_usage_reporter_type_converters.h",
     "result_codes.h",
@@ -165,10 +166,7 @@ source_set("common_sources") {
   ]
 
   if (is_win) {
-    sources += [
-      "font_cache_dispatcher_win.h",
-      "injection_test_win.h",
-    ]
+    sources += [ "font_cache_dispatcher_win.h" ]
   }
 
   if (is_android) {
@@ -244,7 +242,6 @@ source_set("common_sources") {
   }
 
   if (is_android) {
-    sources += [ "cpu_affinity.h" ]
     deps += [ "//content/public/android:jni" ]
   }
 

@@ -22,7 +22,6 @@
 
 #include "base/files/file_path.h"
 #include "base/process/process.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
@@ -632,9 +631,6 @@ IPC_MESSAGE_CONTROL1(PpapiMsg_SetPreferences,
 IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_SupportsInterface,
                             std::string /* interface_name */,
                             bool /* result */)
-
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_LogInterfaceUsage,
-                     int /* interface_hash */)
 
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 // Network state notification from the browser for implementing
@@ -1280,12 +1276,6 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_NotifyError,
                     ppapi::HostResource /* video_decoder */,
                     PP_VideoDecodeError_Dev /* error */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
-
-// PPB_X509Certificate_Private
-IPC_SYNC_MESSAGE_CONTROL1_2(PpapiHostMsg_PPBX509Certificate_ParseDER,
-                            std::vector<char> /* der */,
-                            bool /* succeeded */,
-                            ppapi::PPB_X509Certificate_Fields /* result */)
 
 //-----------------------------------------------------------------------------
 // Resource call/reply messages.
@@ -2120,7 +2110,7 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_SaveAs)
 
 // Called by the plugin when its selection changes.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetSelectedText,
-                     base::string16 /* selected_text */)
+                     std::u16string /* selected_text */)
 
 // Called by the plugin to set the link under the cursor.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetLinkUnderCursor,

@@ -15,7 +15,9 @@ import org.chromium.weblayer_private.interfaces.IClientNavigation;
 import org.chromium.weblayer_private.interfaces.INavigation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Information about a navigation. Each time there is a new navigation, a new
@@ -82,6 +84,30 @@ public class Navigation extends IClientNavigation.Stub {
         ThreadCheck.ensureOnUiThread();
         try {
             return mNavigationImpl.getHttpStatusCode();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /*
+     * Returns the HTTP response headers. Returns an empty map if the navigation hasn't completed
+     * yet or if a response wasn't received.
+     *
+     * @since 91
+     */
+    public Map<String, String> getResponseHeaders() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 91) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            Map<String, String> headers = new HashMap<String, String>();
+            List<String> array = mNavigationImpl.getResponseHeaders();
+            for (int i = 0; i < array.size(); i += 2) {
+                headers.put(array.get(i), array.get(i + 1));
+            }
+
+            return headers;
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -365,11 +391,13 @@ public class Navigation extends IClientNavigation.Stub {
     /**
      * Returns true if this navigation was initiated by a form submission.
      *
-     * @since 90
+     * @since 89
      */
     public boolean isFormSubmission() {
         ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 90) {
+        if (WebLayer.getSupportedMajorVersionInternal() < 89
+                || WebLayer.getVersion().equals("89.0.4389.69")
+                || WebLayer.getVersion().equals("89.0.4389.72")) {
             throw new UnsupportedOperationException();
         }
         try {
@@ -382,12 +410,14 @@ public class Navigation extends IClientNavigation.Stub {
     /**
      * Returns the referrer for this request.
      *
-     * @since 90
+     * @since 89
      */
     @NonNull
     public Uri getReferrer() {
         ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 90) {
+        if (WebLayer.getSupportedMajorVersionInternal() < 89
+                || WebLayer.getVersion().equals("89.0.4389.69")
+                || WebLayer.getVersion().equals("89.0.4389.72")) {
             throw new UnsupportedOperationException();
         }
         try {

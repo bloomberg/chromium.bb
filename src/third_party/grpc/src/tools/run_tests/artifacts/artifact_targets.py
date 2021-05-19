@@ -95,7 +95,7 @@ def create_jobspec(name,
     return jobspec
 
 
-_MACOS_COMPAT_FLAG = '-mmacosx-version-min=10.7'
+_MACOS_COMPAT_FLAG = '-mmacosx-version-min=10.10'
 
 _ARCH_FLAG_MAP = {'x86': '-m32', 'x64': '-m64'}
 
@@ -123,7 +123,7 @@ class PythonArtifact:
                 self.py_version)
             environ['PIP'] = '/usr/local/bin/pip{}'.format(self.py_version)
             # https://github.com/resin-io-projects/armv7hf-debian-qemu/issues/9
-            # A QEMU bug causes submodule update to hang, so we copy directly
+            # A QEMU bug causes submodule update to freeze, so we copy directly
             environ['RELATIVE_COPY_PATH'] = '.'
             # Parallel builds are counterproductive in emulated environment
             environ['GRPC_PYTHON_BUILD_EXT_COMPILER_JOBS'] = '1'
@@ -144,8 +144,25 @@ class PythonArtifact:
             environ['PYTHON'] = '/opt/python/{}/bin/python'.format(
                 self.py_version)
             environ['PIP'] = '/opt/python/{}/bin/pip'.format(self.py_version)
-            environ['GRPC_BUILD_GRPCIO_TOOLS_DEPENDENTS'] = 'TRUE'
-            environ['GRPC_BUILD_MANYLINUX_WHEEL'] = 'TRUE'
+            environ['GRPC_SKIP_PIP_CYTHON_UPGRADE'] = 'TRUE'
+            if self.arch == 'aarch64':
+                environ['GRPC_SKIP_TWINE_CHECK'] = 'TRUE'
+                # when crosscompiling, we need to force statically linking libstdc++
+                # otherwise libstdc++ symbols would be too new and the resulting
+                # wheel wouldn't pass the auditwheel check.
+                # This is needed because C core won't build with GCC 4.8 that's
+                # included in the default dockcross toolchain and we needed
+                # to opt into using a slighly newer version of GCC.
+                environ['GRPC_PYTHON_BUILD_WITH_STATIC_LIBSTDCXX'] = 'TRUE'
+
+            else:
+                # only run auditwheel if we're not crosscompiling
+                environ['GRPC_RUN_AUDITWHEEL_REPAIR'] = 'TRUE'
+                # only build the packages that depend on grpcio-tools
+                # if we're not crosscompiling.
+                # - they require protoc to run on current architecture
+                # - they only have sdist packages anyway, so it's useless to build them again
+                environ['GRPC_BUILD_GRPCIO_TOOLS_DEPENDENTS'] = 'TRUE'
             return create_docker_jobspec(
                 self.name,
                 # NOTE(rbellevi): Do *not* update this without also ensuring the
@@ -203,7 +220,7 @@ class RubyArtifact:
         return create_jobspec(
             self.name, ['tools/run_tests/artifacts/build_artifact_ruby.sh'],
             use_workspace=True,
-            timeout_seconds=45 * 60)
+            timeout_seconds=60 * 60)
 
 
 class CSharpExtArtifact:
@@ -233,6 +250,7 @@ class CSharpExtArtifact:
             return create_jobspec(
                 self.name,
                 ['tools/run_tests/artifacts/build_artifact_csharp_ios.sh'],
+                timeout_seconds=45 * 60,
                 use_workspace=True)
         elif self.platform == 'windows':
             return create_jobspec(self.name, [
@@ -304,17 +322,9 @@ class ProtocArtifact:
 
     def build_jobspec(self):
         if self.platform != 'windows':
-            cxxflags = '-DNDEBUG %s' % _ARCH_FLAG_MAP[self.arch]
-            ldflags = '%s' % _ARCH_FLAG_MAP[self.arch]
-            if self.platform != 'macos':
-                ldflags += '  -static-libgcc -static-libstdc++ -s'
-            environ = {
-                'CONFIG': 'opt',
-                'CXXFLAGS': cxxflags,
-                'LDFLAGS': ldflags,
-                'PROTOBUF_LDFLAGS_EXTRA': ldflags
-            }
+            environ = {'CXXFLAGS': '', 'LDFLAGS': ''}
             if self.platform == 'linux':
+                environ['LDFLAGS'] += ' -static-libgcc -static-libstdc++ -s'
                 return create_docker_jobspec(
                     self.name,
                     'tools/dockerfile/grpc_artifact_centos6_{}'.format(
@@ -348,7 +358,6 @@ def targets():
         ProtocArtifact('linux', 'x64'),
         ProtocArtifact('linux', 'x86'),
         ProtocArtifact('macos', 'x64'),
-        ProtocArtifact('macos', 'x86'),
         ProtocArtifact('windows', 'x64'),
         ProtocArtifact('windows', 'x86'),
         CSharpExtArtifact('linux', 'x64'),
@@ -383,6 +392,9 @@ def targets():
         PythonArtifact('manylinux2010', 'x86', 'cp37-cp37m'),
         PythonArtifact('manylinux2010', 'x86', 'cp38-cp38'),
         PythonArtifact('manylinux2010', 'x86', 'cp39-cp39'),
+        PythonArtifact('manylinux2014', 'aarch64', 'cp37-cp37m'),
+        PythonArtifact('manylinux2014', 'aarch64', 'cp38-cp38'),
+        PythonArtifact('manylinux2014', 'aarch64', 'cp39-cp39'),
         PythonArtifact('linux_extra', 'armv7', '2.7'),
         PythonArtifact('linux_extra', 'armv7', '3.5'),
         PythonArtifact('linux_extra', 'armv7', '3.6'),
@@ -400,15 +412,13 @@ def targets():
         PythonArtifact('windows', 'x86', 'Python36_32bit'),
         PythonArtifact('windows', 'x86', 'Python37_32bit'),
         PythonArtifact('windows', 'x86', 'Python38_32bit'),
-        # TODO(lidiz) uncomment if Python39 installs stably.
-        # PythonArtifact('windows', 'x86', 'Python39_32bit'),
+        PythonArtifact('windows', 'x86', 'Python39_32bit'),
         PythonArtifact('windows', 'x64', 'Python27'),
         PythonArtifact('windows', 'x64', 'Python35'),
         PythonArtifact('windows', 'x64', 'Python36'),
         PythonArtifact('windows', 'x64', 'Python37'),
         PythonArtifact('windows', 'x64', 'Python38'),
-        # TODO(lidiz) uncomment if Python39 installs stably.
-        # PythonArtifact('windows', 'x64', 'Python39'),
+        PythonArtifact('windows', 'x64', 'Python39'),
         RubyArtifact('linux', 'x64'),
         RubyArtifact('macos', 'x64'),
         PHPArtifact('linux', 'x64')

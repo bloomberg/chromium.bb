@@ -44,11 +44,9 @@ CONTENT_EXPORT extern const base::Feature
     kClearCrossBrowsingContextGroupMainFrameName;
 CONTENT_EXPORT extern const base::Feature kClickPointerEvent;
 CONTENT_EXPORT extern const base::Feature kCompositeBGColorAnimation;
-CONTENT_EXPORT extern const base::Feature kCompositeRelativeKeyframes;
 CONTENT_EXPORT extern const base::Feature kCodeCacheDeletionWithoutFilter;
 CONTENT_EXPORT extern const base::Feature kConsolidatedMovementXY;
 CONTENT_EXPORT extern const base::Feature kConversionMeasurement;
-CONTENT_EXPORT extern const base::Feature kCookieDeprecationMessages;
 CONTENT_EXPORT extern const base::Feature kCooperativeScheduling;
 CONTENT_EXPORT extern const base::Feature kCrashReporting;
 CONTENT_EXPORT extern const base::Feature kCriticalClientHint;
@@ -56,14 +54,18 @@ CONTENT_EXPORT extern const base::Feature kDataSaverHoldback;
 CONTENT_EXPORT extern const base::Feature kDesktopCaptureChangeSource;
 CONTENT_EXPORT extern const base::Feature kDocumentPolicy;
 CONTENT_EXPORT extern const base::Feature kDocumentPolicyNegotiation;
+CONTENT_EXPORT extern const base::Feature kEarlyHintsPreloadForNavigation;
 CONTENT_EXPORT extern const base::Feature kEmbeddingRequiresOptIn;
 CONTENT_EXPORT extern const base::Feature kEnableNewCanvas2DAPI;
 CONTENT_EXPORT extern const base::Feature kEnumerateDevicesHideDeviceIDs;
 CONTENT_EXPORT extern const base::Feature kExperimentalAccessibilityLabels;
+CONTENT_EXPORT extern const base::Feature
+    kExperimentalContentSecurityPolicyFeatures;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
 CONTENT_EXPORT extern const base::Feature
     kExtraSafelistedRequestHeadersForOutOfBlinkCors;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyForClientHints;
+CONTENT_EXPORT extern const base::Feature kFledgeInterestGroups;
 CONTENT_EXPORT extern const base::Feature kFontSrcLocalMatching;
 #if !defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature
@@ -124,9 +126,10 @@ CONTENT_EXPORT extern const base::Feature kOriginPolicy;
 CONTENT_EXPORT extern const base::Feature kOpenXrExtendedFeatureSupport;
 CONTENT_EXPORT extern const base::Feature kOverscrollHistoryNavigation;
 CONTENT_EXPORT extern const base::Feature kPeriodicBackgroundSync;
-CONTENT_EXPORT extern const base::Feature kPermissionsPolicyHeader;
+CONTENT_EXPORT extern const base::Feature kFeaturePolicyHeader;
 CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
 CONTENT_EXPORT extern const base::Feature kPepperCrossOriginRedirectRestriction;
+CONTENT_EXPORT extern const base::Feature kProcessHostOnUI;
 CONTENT_EXPORT extern const base::Feature kPlzServiceWorker;
 CONTENT_EXPORT extern const base::Feature kHighPriorityBeforeUnload;
 CONTENT_EXPORT extern const base::Feature kPrioritizeBootstrapTasks;
@@ -151,7 +154,7 @@ CONTENT_EXPORT extern const base::Feature kServiceWorkerPrefersUnusedProcess;
 CONTENT_EXPORT extern const base::Feature
     kServiceWorkerTerminationOnNoControllee;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
-CONTENT_EXPORT extern const base::Feature kRestrictSharedArrayBuffer;
+CONTENT_EXPORT extern const base::Feature kSharedArrayBufferOnDesktop;
 CONTENT_EXPORT extern const base::Feature
     kSignedExchangePrefetchCacheForNavigations;
 CONTENT_EXPORT extern const base::Feature
@@ -159,6 +162,8 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kSignedExchangeSubresourcePrefetch;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangePingValidity;
+CONTENT_EXPORT extern const base::Feature
+    kSiteIsolationForCrossOriginOpenerPolicy;
 CONTENT_EXPORT extern const base::Feature
     kSkipEarlyCommitPendingForCrashedFrame;
 CONTENT_EXPORT extern const base::Feature kWebOTP;
@@ -181,7 +186,6 @@ CONTENT_EXPORT extern const base::Feature kUserAgentClientHint;
 CONTENT_EXPORT extern const base::Feature kVerifyDidCommitParams;
 CONTENT_EXPORT extern const base::Feature kVideoPlaybackQuality;
 CONTENT_EXPORT extern const base::Feature kV8VmFuture;
-CONTENT_EXPORT extern const base::Feature kWebAppManifestDisplayOverride;
 CONTENT_EXPORT extern const base::Feature kWebAppWindowControlsOverlay;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyBaseline;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyLazyCompilation;
@@ -221,10 +225,10 @@ CONTENT_EXPORT extern const base::Feature kWebNfc;
 
 #if defined(OS_MAC)
 CONTENT_EXPORT extern const base::Feature kDesktopCaptureMacV2;
+CONTENT_EXPORT extern const base::Feature kWindowCaptureMacV2;
 CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
 CONTENT_EXPORT extern const base::Feature kIOSurfaceCapturer;
 CONTENT_EXPORT extern const base::Feature kMacSyscallSandbox;
-CONTENT_EXPORT extern const base::Feature kMacV2GPUSandbox;
 CONTENT_EXPORT extern const base::Feature kRetryGetVideoCaptureDeviceInfos;
 #endif  // defined(OS_MAC)
 

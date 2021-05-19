@@ -4,17 +4,17 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../common/common.js';
-import * as Host from '../host/host.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as Root from '../core/root/root.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import type {ContrastInfo} from './ContrastInfo.js';
 import {Events as ContrastInfoEvents} from './ContrastInfo.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Label for when no contrast information is available in the color picker
   */

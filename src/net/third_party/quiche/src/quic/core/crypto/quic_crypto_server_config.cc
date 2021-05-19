@@ -140,7 +140,7 @@ class ValidateClientHelloHelper {
       delete;
 
   ~ValidateClientHelloHelper() {
-    QUIC_BUG_IF(done_cb_ != nullptr)
+    QUIC_BUG_IF(quic_bug_12963_1, done_cb_ != nullptr)
         << "Deleting ValidateClientHelloHelper with a pending callback.";
   }
 
@@ -155,7 +155,8 @@ class ValidateClientHelloHelper {
   }
 
   void DetachCallback() {
-    QUIC_BUG_IF(done_cb_ == nullptr) << "Callback already detached.";
+    QUIC_BUG_IF(quic_bug_10630_1, done_cb_ == nullptr)
+        << "Callback already detached.";
     done_cb_ = nullptr;
   }
 
@@ -737,11 +738,28 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     std::unique_ptr<ProofSource::Details> proof_source_details,
     std::unique_ptr<ProcessClientHelloContext> context,
     const Configs& configs) const {
-  QUIC_BUG_IF(!QuicUtils::IsConnectionIdValidForVersion(
-      context->connection_id(), context->transport_version()))
+  QUIC_BUG_IF(quic_bug_12963_2,
+              !QuicUtils::IsConnectionIdValidForVersion(
+                  context->connection_id(), context->transport_version()))
       << "ProcessClientHelloAfterGetProof: attempted to use connection ID "
       << context->connection_id() << " which is invalid with version "
       << context->version();
+
+  if (context->validate_chlo_result()->postpone_cert_validate_for_server &&
+      context->info().reject_reasons.empty()) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_crypto_postpone_cert_validate_for_server);
+    if (!context->signed_config() || !context->signed_config()->chain) {
+      // No chain.
+      context->validate_chlo_result()->info.reject_reasons.push_back(
+          SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
+    } else if (!ValidateExpectedLeafCertificate(
+                   context->client_hello(),
+                   context->signed_config()->chain->certs)) {
+      // Has chain but leaf is invalid.
+      context->validate_chlo_result()->info.reject_reasons.push_back(
+          INVALID_EXPECTED_LEAF_CERTIFICATE);
+    }
+  }
 
   if (found_error) {
     context->Fail(QUIC_HANDSHAKE_FAILED, "Failed to get proof");
@@ -824,8 +842,9 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     absl::string_view public_value,
     std::unique_ptr<ProcessClientHelloContext> context,
     const Configs& configs) const {
-  QUIC_BUG_IF(!QuicUtils::IsConnectionIdValidForVersion(
-      context->connection_id(), context->transport_version()))
+  QUIC_BUG_IF(quic_bug_12963_3,
+              !QuicUtils::IsConnectionIdValidForVersion(
+                  context->connection_id(), context->transport_version()))
       << "ProcessClientHelloAfterCalculateSharedKeys:"
          " attempted to use connection ID "
       << context->connection_id() << " which is invalid with version "
@@ -835,9 +854,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     // If we are already using the fallback config, or there is no fallback
     // config to use, just bail out of the handshake.
     if (configs.fallback == nullptr ||
-        context->signed_config()->config == configs.fallback ||
-        !GetQuicReloadableFlag(
-            send_quic_fallback_server_config_on_leto_error)) {
+        context->signed_config()->config == configs.fallback) {
       context->Fail(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
                     "Failed to calculate shared key");
     } else {
@@ -1134,9 +1151,10 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
 
   if (configs.empty()) {
     if (primary_config_ != nullptr) {
-      QUIC_BUG << "No valid QUIC server config. Keeping the current config.";
+      QUIC_BUG(quic_bug_10630_2)
+          << "No valid QUIC server config. Keeping the current config.";
     } else {
-      QUIC_BUG << "No valid QUIC server config.";
+      QUIC_BUG(quic_bug_10630_3) << "No valid QUIC server config.";
     }
     return;
   }
@@ -1276,13 +1294,15 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     // No valid source address token.
   }
 
-  QuicReferenceCountedPointer<ProofSource::Chain> chain =
-      proof_source_->GetCertChain(server_address, client_address,
-                                  std::string(info->sni));
-  if (!chain) {
-    info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
-  } else if (!ValidateExpectedLeafCertificate(client_hello, chain->certs)) {
-    info->reject_reasons.push_back(INVALID_EXPECTED_LEAF_CERTIFICATE);
+  if (!client_hello_state->postpone_cert_validate_for_server) {
+    QuicReferenceCountedPointer<ProofSource::Chain> chain =
+        proof_source_->GetCertChain(server_address, client_address,
+                                    std::string(info->sni));
+    if (!chain) {
+      info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
+    } else if (!ValidateExpectedLeafCertificate(client_hello, chain->certs)) {
+      info->reject_reasons.push_back(INVALID_EXPECTED_LEAF_CERTIFICATE);
+    }
   }
 
   if (info->client_nonce.size() != kNonceSize) {
@@ -1455,7 +1475,8 @@ void QuicCryptoServerConfig::BuildRejection(
 
   // The client may have requested a certificate chain.
   if (!ClientDemandsX509Proof(context.client_hello())) {
-    QUIC_BUG << "x509 certificates not supported in proof demand";
+    QUIC_BUG(quic_bug_10630_4)
+        << "x509 certificates not supported in proof demand";
     return;
   }
 

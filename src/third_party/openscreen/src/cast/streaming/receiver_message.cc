@@ -27,6 +27,18 @@ EnumNameTable<ReceiverMessage::Type, 5> kMessageTypeNames{
      {"CAPABILITIES_RESPONSE", ReceiverMessage::Type::kCapabilitiesResponse},
      {"RPC", ReceiverMessage::Type::kRpc}}};
 
+EnumNameTable<MediaCapability, 9> kMediaCapabilityNames{{
+    {"audio", MediaCapability::kAudio},
+    {"aac", MediaCapability::kAac},
+    {"opus", MediaCapability::kOpus},
+    {"video", MediaCapability::kVideo},
+    {"4k", MediaCapability::k4k},
+    {"h264", MediaCapability::kH264},
+    {"vp8", MediaCapability::kVp8},
+    {"vp9", MediaCapability::kVp9},
+    {"hevc", MediaCapability::kHevc},
+}};
+
 ReceiverMessage::Type GetMessageType(const Json::Value& root) {
   std::string type;
   if (!json::ParseAndValidateString(root[kMessageType], &type)) {
@@ -37,6 +49,22 @@ ReceiverMessage::Type GetMessageType(const Json::Value& root) {
   ErrorOr<ReceiverMessage::Type> parsed = GetEnum(kMessageTypeNames, type);
 
   return parsed.value(ReceiverMessage::Type::kUnknown);
+}
+
+bool ParseAndValidateCapability(const Json::Value& value,
+                                MediaCapability* out) {
+  std::string c;
+  if (!json::ParseAndValidateString(value, &c)) {
+    return false;
+  }
+
+  const ErrorOr<MediaCapability> capability = GetEnum(kMediaCapabilityNames, c);
+  if (capability.is_error()) {
+    return false;
+  }
+
+  *out = capability.value();
+  return true;
 }
 
 }  // namespace
@@ -77,14 +105,14 @@ ErrorOr<ReceiverCapability> ReceiverCapability::Parse(
     remoting_version = ReceiverCapability::kRemotingVersionUnknown;
   }
 
-  std::vector<std::string> media_capabilities;
-  if (!json::ParseAndValidateStringArray(value["mediaCaps"],
-                                         &media_capabilities)) {
+  std::vector<MediaCapability> capabilities;
+  if (!json::ParseAndValidateArray<MediaCapability>(
+          value["mediaCaps"], ParseAndValidateCapability, &capabilities)) {
     return Error(Error::Code::kJsonParseError,
                  "Failed to parse media capabilities");
   }
 
-  return ReceiverCapability{remoting_version, std::move(media_capabilities)};
+  return ReceiverCapability{remoting_version, std::move(capabilities)};
 }
 
 Json::Value ReceiverCapability::ToJson() const {
@@ -92,7 +120,7 @@ Json::Value ReceiverCapability::ToJson() const {
   root["remoting"] = remoting_version;
   Json::Value capabilities(Json::ValueType::arrayValue);
   for (const auto& capability : media_capabilities) {
-    capabilities.append(capability);
+    capabilities.append(GetEnumName(kMediaCapabilityNames, capability).value());
   }
   root["mediaCaps"] = std::move(capabilities);
   return root;
@@ -181,9 +209,10 @@ ErrorOr<ReceiverMessage> ReceiverMessage::Parse(const Json::Value& value) {
     } break;
 
     case Type::kRpc: {
-      std::string rpc;
-      if (json::ParseAndValidateString(value[kRpcMessageBody], &rpc) &&
-          base64::Decode(rpc, &rpc)) {
+      std::string encoded_rpc;
+      std::vector<uint8_t> rpc;
+      if (json::ParseAndValidateString(value[kRpcMessageBody], &encoded_rpc) &&
+          base64::Decode(encoded_rpc, &rpc)) {
         message.body = std::move(rpc);
         message.valid = true;
       }
@@ -232,7 +261,8 @@ ErrorOr<Json::Value> ReceiverMessage::ToJson() const {
 
     // NOTE: RPC messages do NOT have a result field.
     case ReceiverMessage::Type::kRpc:
-      root[kRpcMessageBody] = base64::Encode(absl::get<std::string>(body));
+      root[kRpcMessageBody] =
+          base64::Encode(absl::get<std::vector<uint8_t>>(body));
       break;
 
     default:

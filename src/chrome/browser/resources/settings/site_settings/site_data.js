@@ -9,13 +9,13 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.m.js';
+import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
-import '../settings_shared_css.m.js';
+import '../settings_shared_css.js';
 import './site_data_entry.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -25,11 +25,11 @@ import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_up
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {GlobalScrollTargetBehavior, GlobalScrollTargetBehaviorImpl} from '../global_scroll_target_behavior.m.js';
+import {GlobalScrollTargetBehavior, GlobalScrollTargetBehaviorImpl} from '../global_scroll_target_behavior.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
-import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.js';
 
 import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from './local_data_browser_proxy.js';
 import {SiteSettingsBehavior} from './site_settings_behavior.js';

@@ -258,7 +258,7 @@ void TestPrerender::WaitForLoads(int expected_number_of_loads) {
   DCHECK(!load_waiter_);
   DCHECK(!expected_number_of_loads_);
   if (number_of_loads_ < expected_number_of_loads) {
-    load_waiter_.reset(new base::RunLoop);
+    load_waiter_ = std::make_unique<base::RunLoop>();
     expected_number_of_loads_ = expected_number_of_loads;
     load_waiter_->Run();
     load_waiter_.reset();
@@ -423,7 +423,7 @@ bool PrerenderInProcessBrowserTest::UrlIsInNoStatePrefetchManager(
 
 bool PrerenderInProcessBrowserTest::UrlIsInNoStatePrefetchManager(
     const GURL& url) const {
-  return GetNoStatePrefetchManager()->FindPrerenderData(
+  return GetNoStatePrefetchManager()->FindNoStatePrefetchData(
              url, GetSessionStorageNamespace()) != nullptr;
 }
 
@@ -441,10 +441,10 @@ PrerenderInProcessBrowserTest::GetNoStatePrefetchManager() const {
 TestNoStatePrefetchContents*
 PrerenderInProcessBrowserTest::GetNoStatePrefetchContentsFor(
     const GURL& url) const {
-  NoStatePrefetchManager::PrerenderData* prerender_data =
-      GetNoStatePrefetchManager()->FindPrerenderData(url, nullptr);
+  NoStatePrefetchManager::NoStatePrefetchData* no_state_prefetch_data =
+      GetNoStatePrefetchManager()->FindNoStatePrefetchData(url, nullptr);
   return static_cast<TestNoStatePrefetchContents*>(
-      prerender_data ? prerender_data->contents() : nullptr);
+      no_state_prefetch_data ? no_state_prefetch_data->contents() : nullptr);
 }
 
 net::EmbeddedTestServer* PrerenderInProcessBrowserTest::src_server() {
@@ -507,8 +507,8 @@ void PrerenderInProcessBrowserTest::SetUpOnMainThread() {
 void PrerenderInProcessBrowserTest::UseHttpsSrcServer() {
   if (https_src_server_)
     return;
-  https_src_server_.reset(
-      new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+  https_src_server_ = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
   https_src_server_->ServeFilesFromSourceDirectory("chrome/test/data");
   https_src_server_->RegisterRequestMonitor(base::BindRepeating(
       &PrerenderInProcessBrowserTest::MonitorResourceRequest,
@@ -516,13 +516,13 @@ void PrerenderInProcessBrowserTest::UseHttpsSrcServer() {
   CHECK(https_src_server_->Start());
 }
 
-base::string16 PrerenderInProcessBrowserTest::MatchTaskManagerTab(
+std::u16string PrerenderInProcessBrowserTest::MatchTaskManagerTab(
     const char* page_title) {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX,
                                     base::ASCIIToUTF16(page_title));
 }
 
-base::string16 PrerenderInProcessBrowserTest::MatchTaskManagerPrerender(
+std::u16string PrerenderInProcessBrowserTest::MatchTaskManagerPrerender(
     const char* page_title) {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
                                     base::ASCIIToUTF16(page_title));

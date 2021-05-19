@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 
 // All data needed by TemplateURLRef::ReplaceSearchTerms which typically may
 // only be accessed on the UI thread.
@@ -37,7 +36,7 @@ class SearchTermsData {
 
   // Returns the value for the Chrome Omnibox rlz.  This implementation returns
   // the empty string.
-  virtual base::string16 GetRlzParameterValue(bool from_app_list) const;
+  virtual std::u16string GetRlzParameterValue(bool from_app_list) const;
 
   // The optional client parameter passed with Google search requests.  This
   // implementation returns the empty string.

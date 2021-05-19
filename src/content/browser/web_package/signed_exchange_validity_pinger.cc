@@ -97,17 +97,19 @@ void SignedExchangeValidityPinger::Start(
   // (While we don't check the result yet)
   resource_request->load_flags |=
       net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE;
-  resource_request->render_frame_id = MSG_ROUTING_NONE;
   resource_request->throttling_profile_id = throttling_profile_id;
 
   url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
-      std::move(url_loader_factory), std::move(throttles), 0 /* routing_id */,
+      std::move(url_loader_factory), std::move(throttles),
       signed_exchange_utils::MakeRequestID() /* request_id */,
       network::mojom::kURLLoadOptionNone, resource_request.get(), this,
       kValidityPingerTrafficAnnotation, base::ThreadTaskRunnerHandle::Get());
 }
 
 SignedExchangeValidityPinger::~SignedExchangeValidityPinger() = default;
+
+void SignedExchangeValidityPinger::OnReceiveEarlyHints(
+    network::mojom::EarlyHintsPtr early_hints) {}
 
 void SignedExchangeValidityPinger::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr head) {}

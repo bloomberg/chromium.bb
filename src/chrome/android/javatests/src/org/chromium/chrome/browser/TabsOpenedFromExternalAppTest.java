@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Browser;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.lifecycle.Stage;
 
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
@@ -24,17 +23,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.BaseSwitches;
-import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -217,15 +215,14 @@ public class TabsOpenedFromExternalAppTest {
     }
 
     private void assertBackPressSendsChromeToBackground() throws Exception {
-        Assert.assertTrue("Window does not have focus before pressing back.",
-                mActivityTestRule.getActivity().hasWindowFocus());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().onBackPressed());
-        ApplicationTestUtils.waitForActivityState(mActivityTestRule.getActivity(), Stage.STOPPED);
-        Assert.assertFalse(mActivityTestRule.getActivity().isFinishing());
-        // Android doesn't like to finish Activities that are backgrounded, so return
-        // to the foreground before the test finishes.
-        mActivityTestRule.resumeMainActivityFromLauncher();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue("Window does not have focus before pressing back.",
+                    mActivityTestRule.getActivity().hasWindowFocus());
+            AsyncInitializationActivity.interceptMoveTaskToBackForTesting();
+            mActivityTestRule.getActivity().onBackPressed();
+            Assert.assertTrue(AsyncInitializationActivity.wasMoveTaskToBackInterceptedForTesting());
+            Assert.assertFalse(mActivityTestRule.getActivity().isFinishing());
+        });
     }
 
     /**
@@ -479,7 +476,6 @@ public class TabsOpenedFromExternalAppTest {
     @Test
     @LargeTest
     @Feature({"Navigation"})
-    @DisabledTest(message = "Flaky test - see: https://crbug.com/1176476")
     public void testNewTabWithNewTabExtra() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
 

@@ -15,7 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/buildflag.h"
 #include "chrome/browser/ash/assistant/assistant_util.h"
-#include "chrome/browser/chromeos/login/ui/oobe_dialog_size_utils.h"
+#include "chrome/browser/ash/login/ui/oobe_dialog_size_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -169,7 +169,7 @@ bool AssistantOptInDialog::BounceIfActive() {
 AssistantOptInDialog::AssistantOptInDialog(
     ash::FlowType type,
     ash::AssistantSetup::StartAssistantOptInFlowCallback callback)
-    : SystemWebDialogDelegate(CreateAssistantOptInURL(type), base::string16()),
+    : SystemWebDialogDelegate(CreateAssistantOptInURL(type), std::u16string()),
       callback_(std::move(callback)) {}
 
 AssistantOptInDialog::~AssistantOptInDialog() {

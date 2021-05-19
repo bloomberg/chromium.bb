@@ -19,16 +19,16 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/apps/apk_web_app_service.h"
+#include "chrome/browser/ash/apps/metrics/intent_handling_metrics.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/arc_web_contents_data.h"
+#include "chrome/browser/ash/arc/fileapi/arc_content_file_system_url_util.h"
+#include "chrome/browser/ash/arc/intent_helper/custom_tab_session_impl.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/apps/apk_web_app_service.h"
-#include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
-#include "chrome/browser/chromeos/arc/intent_helper/custom_tab_session_impl.h"
+#include "chrome/browser/ash/web_applications/chrome_camera_app_ui_delegate.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/web_applications/chrome_camera_app_ui_delegate.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -54,7 +54,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -357,7 +357,7 @@ void ChromeNewWindowClient::NewWindow(bool is_incognito) {
 
 void ChromeNewWindowClient::OpenFileManager() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   DCHECK(proxy);
 
@@ -384,7 +384,7 @@ void ChromeNewWindowClient::OpenFileManager() {
 
 void ChromeNewWindowClient::OpenDownloadsFolder() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   auto downloads_path =
       file_manager::util::GetDownloadsFolderForProfile(profile);
@@ -417,7 +417,19 @@ void ChromeNewWindowClient::OpenDownloadsFolder() {
 
 void ChromeNewWindowClient::OpenCrosh() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  web_app::LaunchSystemWebAppAsync(profile, web_app::SystemAppType::CROSH);
+  if (base::FeatureList::IsEnabled(chromeos::features::kCroshSWA)) {
+    web_app::LaunchSystemWebAppAsync(profile, web_app::SystemAppType::CROSH);
+  } else {
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+    Browser* browser = displayer.browser();
+    content::WebContents* page = browser->OpenURL(content::OpenURLParams(
+        GURL(chrome::kChromeUIUntrustedCroshURL), content::Referrer(),
+        WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui::PAGE_TRANSITION_GENERATED, false));
+    browser->window()->Show();
+    browser->window()->Activate();
+    page->Focus();
+  }
 }
 
 void ChromeNewWindowClient::OpenGetHelp() {
@@ -527,13 +539,13 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
         WindowOpenDisposition::NEW_FOREGROUND_TAB, /*prefer_container=*/false);
   }
 
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->LaunchAppWithUrl(*app_id, event_flags, url,
                           apps::mojom::LaunchSource::kFromArc);
 
-  chromeos::ApkWebAppService* apk_web_app_service =
-      chromeos::ApkWebAppService::Get(profile);
+  ash::ApkWebAppService* apk_web_app_service =
+      ash::ApkWebAppService::Get(profile);
   if (!apk_web_app_service ||
       !apk_web_app_service->IsWebAppInstalledFromArc(app_id.value())) {
     return;

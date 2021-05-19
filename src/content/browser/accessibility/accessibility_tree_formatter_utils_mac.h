@@ -34,10 +34,16 @@ class CONTENT_EXPORT LineIndexer final {
     std::string DOMid;
   };
 
+  // IsBrowserAccessibilityCocoa or IsAXUIElement accessible nodes comparator.
+  struct NodeComparator {
+    constexpr bool operator()(const gfx::NativeViewAccessible& lhs,
+                              const gfx::NativeViewAccessible& rhs) const;
+  };
+
   // Map between accessible objects and their identificators which can be a line
   // index the object is placed at in an accessible tree or its DOM id
   // attribute.
-  std::map<const gfx::NativeViewAccessible, NodeIdentifier> map;
+  std::map<const gfx::NativeViewAccessible, NodeIdentifier, NodeComparator> map;
 };
 
 // Implements stateful id values. Can be either id or be in
@@ -109,7 +115,7 @@ class CONTENT_EXPORT AttributeInvoker final {
   id PropertyNodeToTextMarkerRange(const ui::AXPropertyNode&) const;
 
   gfx::NativeViewAccessible LineIndexToNode(
-      const base::string16 line_index) const;
+      const std::u16string line_index) const;
 
   const id node;
   const LineIndexer* line_indexer;

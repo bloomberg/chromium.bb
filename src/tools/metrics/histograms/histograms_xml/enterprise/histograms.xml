@@ -97,7 +97,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Enterprise.AutoEnrollmentHashDanceSuccessTime"
-    units="ms" expires_after="2021-07-04">
+    units="ms" expires_after="2021-09-05">
 <!-- Name completed by histogram_suffixes name="EnterpriseAutoEnrollmentType". -->
 
   <owner>amraboelkher@google.com</owner>
@@ -140,7 +140,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Enterprise.AutoEnrollmentProtocolTime" units="ms"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
 <!-- Name completed by histogram_suffixes name="EnterpriseAutoEnrollmentType". -->
 
   <owner>pmarko@chromium.org</owner>
@@ -397,6 +397,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true" name="Enterprise.DevicePolicyDeviceIdValidity"
     enum="EnterprisePolicyDeviceIdValidity" expires_after="M85">
+  <obsolete>
+    Removed in M91 since the data is no longer required.
+  </obsolete>
 <!-- Name completed by histogram_suffixes name="EnterpriseDevicePolicyDeviceIdValidity" -->
 
   <owner>emaxx@chromium.org</owner>
@@ -505,7 +508,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.DeviceSettings.MissingPolicyMitigated"
-    units="BooleanSuccess" expires_after="2021-07-27">
+    units="BooleanSuccess" expires_after="2021-10-04">
   <owner>poromov@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
   <summary>
@@ -516,7 +519,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.DeviceSettings.UpdatedStatus"
-    enum="DeviceSettingsStatus" expires_after="2021-07-27">
+    enum="DeviceSettingsStatus" expires_after="2021-10-04">
   <owner>poromov@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
   <summary>
@@ -715,7 +718,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.EnrollmentForced" enum="EnterpriseEnrollmentType"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -724,7 +727,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.EnrollmentForcedAttestationBased"
-    enum="EnterpriseEnrollmentType" expires_after="2021-07-18">
+    enum="EnterpriseEnrollmentType" expires_after="2021-09-19">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -972,7 +975,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.FirstRun.AppRestrictionLoadTime" units="ms"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>wenyufu@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -983,7 +986,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.FirstRun.AppRestrictionLoadTime.Medium" units="ms"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>skym@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
@@ -996,6 +999,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.HeartbeatSignalSuccess" enum="BooleanSuccess"
     expires_after="2020-08-01">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>igorcov@chromium.org</owner>
   <owner>poromov@chromium.org</owner>
   <summary>
@@ -1007,6 +1013,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.InitialEnrollmentRequirement"
     enum="EnterpriseInitialEnrollmentRequirement" expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>pmarko@chromium.org</owner>
   <owner>igorcov@chromium.org</owner>
   <summary>
@@ -1019,10 +1028,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.InvalidDevicePolicyFilesStatus"
-    enum="InvalidDevicePolicyFilesStatus" expires_after="2021-05-02">
+    enum="InvalidDevicePolicyFilesStatus" expires_after="2022-01-01">
   <owner>emaxx@chromium.org</owner>
   <owner>igorcov@chromium.org</owner>
-  <owner>vsavu@chromium.org</owner>
+  <owner>vsavu@google.com</owner>
   <summary>
     Chrome OS only. Result of checking if device policy files are valid when
     reading the device policy data.
@@ -1039,6 +1048,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.LockToSingleUserResult"
     enum="LockToSingleUserResult" expires_after="M86">
+  <obsolete>
+    Removed in M91, enough data has been gathered.
+  </obsolete>
   <owner>emaxx@chromium.org</owner>
   <owner>igorcov@chromium.org</owner>
   <summary>
@@ -1072,7 +1084,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.MachineLevelUserCloudPolicyEnrollment.Result"
     enum="MachineLevelUserCloudPolicyEnrollmentResult"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>rogerta@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>The result of machine level user cloud policy enrollment.</summary>
@@ -1164,6 +1176,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.PolicyHasVerifiedCachedKey"
     enum="BooleanValidKeyExists" expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored
+  </obsolete>
   <owner>atwilson@chromium.org</owner>
   <summary>
     Boolean tracking whether there is a valid policy signing key on disk.
@@ -1204,6 +1219,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.PolicyKeyVerification"
     enum="EnterprisePolicyKeyVerification" expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored
+  </obsolete>
   <owner>atwilson@chromium.org</owner>
   <summary>Tracking the results of policy key verification.</summary>
 </histogram>
@@ -1276,7 +1294,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.PublicSession.SessionLength" units="minutes"
-    expires_after="2021-07-27">
+    expires_after="2021-10-04">
   <owner>marcgrimme@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
   <summary>
@@ -1316,6 +1334,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.RemoteCommand.RemoteSession.DeviceIsIdle"
     enum="Boolean" expires_after="2020-03-01">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>antrim@chromium.org</owner>
   <summary>
     When an enterprise admin attempts to establish a remote session to a device
@@ -1326,6 +1347,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.RemoteCommand.RemoteSession.IdlenessOverride"
     enum="Boolean" expires_after="2020-03-01">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>antrim@chromium.org</owner>
   <summary>
     When an enterprise admin attempts to establish a remote session to a device
@@ -1349,6 +1373,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true" name="Enterprise.RetrievePolicyResponse"
     enum="EnterpriseRetrievePolicyResponseType" expires_after="2020-02-16">
+  <obsolete>
+    Removed in M91 since the data is no longer monitored.
+  </obsolete>
 <!-- Name completed by histogram_suffixes name="EnterpriseRetrievePolicyResponse" -->
 
   <owner>emaxx@chromium.org</owner>
@@ -1484,6 +1511,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.UserCloudPolicyStore.LoadStatus"
     enum="PolicyLoadStatus" expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>atwilson@chromium.org</owner>
   <summary>
     Result of the attempted policy load during profile initialization.
@@ -1492,6 +1522,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.UserCloudPolicyStore.LoadValidationStatus"
     enum="PolicyValidationStatus" expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>atwilson@chromium.org</owner>
   <summary>
     Result of validating the policy that has just been loaded from disk.
@@ -1500,6 +1533,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.UserCloudPolicyStore.StoreValidationStatus"
     enum="PolicyValidationStatus" expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>atwilson@chromium.org</owner>
   <summary>
     Result of validating the policy sent down from the server, before writing to
@@ -1586,12 +1622,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.UserPolicyValidationFailure"
     enum="ValidationFailures" expires_after="M85">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>mnissler@chromium.org</owner>
   <summary>Source of policy validation errors on Chrome OS.</summary>
 </histogram>
 
 <histogram name="Enterprise.UserPolicyValidationLoadStatus"
     enum="PolicyValidationStatus" expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>mnissler@chromium.org</owner>
   <summary>
     Validation result when loading user policy from the policy store.
@@ -1600,6 +1642,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.UserPolicyValidationStoreStatus"
     enum="PolicyValidationStatus" expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>mnissler@chromium.org</owner>
   <summary>
     Validation result when writing user policy to the policy store.
@@ -1671,7 +1716,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.UserSession.Logins"
-    enum="EnterpriseUserSessionLogins" expires_after="2021-07-18">
+    enum="EnterpriseUserSessionLogins" expires_after="2021-09-19">
   <owner>xiyuan@chromium.org</owner>
   <owner>sduraisamy@chromium.org</owner>
   <summary>Tracks the sign-in events on an enrolled device.</summary>
@@ -1679,6 +1724,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.UserSigninChoice" enum="SigninChoice"
     expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>atwilson@chromium.org</owner>
   <summary>
     Choice the user made when presented with enterprise signin dialog.
@@ -1695,7 +1743,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.VpdUpdateStatus" units="units"
-    expires_after="2021-07-04">
+    expires_after="2021-09-05">
   <owner>igorcov@chromium.org</owner>
   <owner>tnagel@chromium.org</owner>
   <summary>
@@ -1705,6 +1753,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.WildcardLoginCheck.DelayPolicyTokenFetch"
     units="ms" expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>mnissler@chromium.org</owner>
   <summary>
     Delay incurred by the token fetching step of the wildcard login check.
@@ -1713,12 +1764,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Enterprise.WildcardLoginCheck.DelayTotal" units="ms"
     expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>mnissler@chromium.org</owner>
   <summary>Total delay incurred by the wildcard login check.</summary>
 </histogram>
 
 <histogram name="Enterprise.WildcardLoginCheck.DelayUserInfoFetch" units="ms"
     expires_after="M77">
+  <obsolete>
+    Removed in M91 since the data is not monitored.
+  </obsolete>
   <owner>mnissler@chromium.org</owner>
   <summary>
     Delay incurred by the user info fetching step of the wildcard login check.
@@ -1736,12 +1793,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EnterpriseCheck.InvalidJsonPolicies" enum="EnterprisePolicies"
-    expires_after="2020-06-18">
+    expires_after="2021-07-01">
   <owner>olsen@chromium.org</owner>
+  <owner>chromeos-commercial-stability@google.com</owner>
   <summary>
     A set of policy rules that failed validation due to unparsable JSON, or JSON
     that did not match the schema. This validation happens on start-up and when
     the policy has changed.
+
+    The histogram was expired (not recording data) from 2020-06-18 until
+    2021-03-15.
   </summary>
 </histogram>
 
@@ -1857,7 +1918,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EnterpriseCheck.Mac.IsDeviceDomainJoined" enum="Boolean"
-    expires_after="2021-07-27">
+    expires_after="2021-10-04">
   <owner>avi@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1897,7 +1958,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="EnterpriseCheck.OSType" enum="OsSuite"
-    expires_after="2021-07-27">
+    expires_after="2021-10-04">
   <owner>pastarmovj@chromium.org</owner>
   <owner>rogerta@chomium.org</owner>
   <summary>

@@ -12,32 +12,12 @@
 
     <!-- TabSwitcher - The minimum distance from the edge to commit a side swap. -->
     <dimen name="swipe_commit_distance">120dp</dimen>
-    <!-- TabSwitcher - Size of the shift applied to tabs when stacked. -->
-    <dimen name="stacked_tab_visible_size">4dp</dimen>
-    <!-- TabSwitcher - Buffer space above the stack. -->
-    <dimen name="stack_buffer_height">5dp</dimen>
-    <!-- TabSwitcher - Buffer space on the side of the stack. -->
-    <dimen name="stack_buffer_width">5dp</dimen>
-    <!-- TabSwitcher - Minimum spacing between tabs. -->
-    <dimen name="min_spacing">120dp</dimen>
-    <!-- TabSwitcher - Maximum over scroll. -->
-    <dimen name="over_scroll">75dp</dimen>
-    <!-- TabSwitcher - Minimum scrolling distance to even out all the tabs. -->
-    <dimen name="even_out_scrolling">400dp</dimen>
     <!-- TabSwitcher - The space between tabs in the toolbar swiping transition. -->
     <dimen name="toolbar_swipe_space_between_tabs">30dp</dimen>
     <!-- TabSwitcher - The minimum distance from the edge to commit a toolbar side swap. -->
     <dimen name="toolbar_swipe_commit_distance">90dp</dimen>
-    <!-- TabSwitcher - Maximum amount to slide the tabs down or right in over scroll. -->
-    <dimen name="over_scroll_slide">10dp</dimen>
      <!-- TabSwitcher - The size of the close button on each tab. -->
     <dimen name="tab_switcher_close_button_size">20dp</dimen>
-
-    <!-- TabSwitcher -->
-    <dimen name="tabswitcher_border_frame_padding_left">6dp</dimen>
-    <dimen name="tabswitcher_border_frame_padding_top">50dp</dimen>
-    <dimen name="tabswitcher_border_frame_transparent_top">3dp</dimen>
-    <dimen name="tabswitcher_border_frame_transparent_side">2dp</dimen>
 
     <!-- Toolbar Phone - padding of the optional button when menu button is present -->
     <dimen name="toolbar_phone_optional_button_padding">12dp</dimen>
@@ -203,10 +183,6 @@
     <dimen name="location_bar_action_icon_width">48dp</dimen>
     <dimen name="location_bar_icon_margin_end">4dp</dimen>
     <dimen name="location_bar_lateral_padding">10dp</dimen>
-    <!--  When the url action container is shown, the location bar end padding is built in to its
-    actions, so the action container itself uses a negative offset to properly align with the end
-     of the location bar. -->
-    <dimen name="location_bar_url_action_offset">-10dp</dimen>
     <dimen name="location_bar_status_separator_width">1dp</dimen>
     <dimen name="location_bar_status_separator_spacer">8dp</dimen>
     <dimen name="location_bar_min_url_width">68dp</dimen>
@@ -228,6 +204,10 @@
     <dimen name="sei_location_bar_icon_end_padding_focused">16dp</dimen>
     <dimen name="sei_location_bar_verbose_start_padding_verbose_text">4dp</dimen>
     <dimen name="sei_location_bar_status_extra_padding_width">4dp</dimen>
+     <!--  When the url action container is shown, the location bar end padding is built in to its
+    actions, so the action container itself uses a negative offset to properly align with the end
+    of the location bar. -->
+    <dimen name="sei_location_bar_url_action_offset">-8dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
     <dimen name="toolbar_optional_button_animation_translation">10dp</dimen>
@@ -282,11 +262,6 @@
     <dimen name="duet_ntp_logo_top_margin">-16dp</dimen>
     <dimen name="ntp_search_box_height">48dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
-    <dimen name="sei_search_box_lateral_padding">12dp</dimen>
-    <!-- The ntp_voice_search_button_width is 48dp and its icon is 24dp. Setting
-         8dp start padding will result in 8dp padding between the icon and the
-         end of the fakebox ((48 - 24 - 8) / 2). -->
-    <dimen name="sei_ntp_fakebox_button_start_padding">8dp</dimen>
     <dimen name="experimental_explore_sites_radius">8dp</dimen>
     <dimen name="experimental_explore_sites_padding">8dp</dimen>
     <dimen name="experimental_explore_sites_margin">16dp</dimen>
@@ -295,8 +270,7 @@
          to both the top and bottom bounds to bring the 48dp modern_toolbar_background_size to 56dp
          (matches toolbar_height_no_shadow). -->
     <dimen name="ntp_search_box_bounds_vertical_inset_modern">-4dp</dimen>
-    <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
-    <dimen name="ntp_wide_card_lateral_margins_v2">36dp</dimen>
+    <dimen name="ntp_wide_card_lateral_margins">36dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
     <dimen name="snippets_article_header_menu_size">48dp</dimen>
     <dimen name="feed_v2_header_menu_width">18dp</dimen>
@@ -305,9 +279,9 @@
     <!-- This should match |ntp_header_lateral_margins_v2|. -->
     <dimen name="ntp_header_lateral_margins_v2">16dp</dimen>
     <!-- This is in sp because we want the icon to scale with the TextView it sits alongside. -->
-    <dimen name="content_suggestions_card_modern_margin">12dp</dimen>
-    <dimen name="content_suggestions_card_modern_margin_v2">0dp</dimen>
-    <dimen name="content_suggestions_card_modern_padding_v2">16dp</dimen>
+    <dimen name="content_suggestions_card_modern_margin">0dp</dimen>
+    <dimen name="content_suggestions_card_modern_padding">16dp</dimen>
+    <dimen name="content_suggestions_card_bottom_margin">12dp</dimen>
     <dimen name="md_incognito_ntp_line_spacing">6sp</dimen>
     <dimen name="md_incognito_ntp_padding_left">16dp</dimen>
     <dimen name="cryptid_height_in_logo_wrapper">60dp</dimen>
@@ -372,7 +346,6 @@
     <dimen name="custom_tabs_toolbar_vertical_padding">16dp</dimen>
     <dimen name="custom_tabs_toolbar_horizontal_margin_no_close">8dp</dimen>
     <dimen name="min_toolbar_icon_side_padding">6dp</dimen>
-    <dimen name="custom_tabs_url_lite_separator_margin">4dp</dimen>
     <dimen name="custom_tabs_url_text_size">12sp</dimen>
     <dimen name="custom_tabs_title_text_size">16sp</dimen>
     <dimen name="custom_tabs_bottom_bar_max_height">120dp</dimen>
@@ -406,7 +379,6 @@
     <!--  Used as a margin to force the shadow view to overlap other views. -->
     <dimen name="action_bar_shadow_margin_negative">-10dp</dimen>
     <dimen name="sync_promo_view_padding">16dp</dimen>
-    <dimen name="open_new_tab_animation_y_translation">-20dp</dimen>
     <dimen name="sync_passphrase_type_instructions_padding">25dp</dimen>
     <!-- 18dp padding is added to each side of the remove button to limit the image width to 20dp (56dp - 2 * 18dp). -->
     <dimen name="history_item_remove_button_lateral_padding">18dp</dimen>
@@ -461,7 +433,6 @@
     <dimen name="navigation_bubble_text_end_padding">8dp</dimen>
     <dimen name="navigation_sheet_content_top_padding">18dp</dimen>
     <dimen name="navigation_sheet_content_bottom_padding">4dp</dimen>
-    <dimen name="navigation_sheet_content_wrap_padding">12dp</dimen>
     <dimen name="navigation_sheet_peek_height">120dp</dimen>
 
     <!-- RadioButtonWithDescriptionLayout dimensions -->

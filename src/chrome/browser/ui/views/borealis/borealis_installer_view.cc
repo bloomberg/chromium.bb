@@ -9,13 +9,14 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/borealis/borealis_context_manager.h"
-#include "chrome/browser/chromeos/borealis/borealis_installer.h"
-#include "chrome/browser/chromeos/borealis/borealis_service.h"
-#include "chrome/browser/chromeos/borealis/borealis_util.h"
+#include "chrome/browser/ash/borealis/borealis_context_manager.h"
+#include "chrome/browser/ash/borealis/borealis_installer.h"
+#include "chrome/browser/ash/borealis/borealis_service.h"
+#include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -49,7 +50,7 @@ constexpr int kWindowHeight = 636;
 
 }  // namespace
 
-// Defined in chrome/browser/chromeos/borealis/borealis_util.h.
+// Defined in chrome/browser/ash/borealis/borealis_util.h.
 void borealis::ShowBorealisInstallerView(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!g_borealis_installer_view) {
@@ -151,7 +152,7 @@ BorealisInstallerView::BorealisInstallerView(Profile* profile)
   upper_container_view->AddChildView(progress_bar_);
 
   installation_progress_message_label_ =
-      new views::Label(base::string16(), CONTEXT_DIALOG_BODY_TEXT_SMALL,
+      new views::Label(std::u16string(), CONTEXT_DIALOG_BODY_TEXT_SMALL,
                        views::style::STYLE_SECONDARY);
   installation_progress_message_label_->SetEnabledColor(gfx::kGoogleGrey700);
   installation_progress_message_label_->SetProperty(
@@ -255,7 +256,7 @@ gfx::Size BorealisInstallerView::CalculatePreferredSize() const {
   return gfx::Size(kWindowWidth, kWindowHeight);
 }
 
-base::string16 BorealisInstallerView::GetPrimaryMessage() const {
+std::u16string BorealisInstallerView::GetPrimaryMessage() const {
   switch (state_) {
     case State::kConfirmInstall:
       return l10n_util::GetStringFUTF16(
@@ -278,7 +279,7 @@ base::string16 BorealisInstallerView::GetPrimaryMessage() const {
   }
 }
 
-base::string16 BorealisInstallerView::GetSecondaryMessage() const {
+std::u16string BorealisInstallerView::GetSecondaryMessage() const {
   switch (state_) {
     case State::kConfirmInstall:
       return l10n_util::GetStringUTF16(
@@ -319,6 +320,9 @@ base::string16 BorealisInstallerView::GetSecondaryMessage() const {
         case ResultEnum::kDlcNeedSpaceError:
           return l10n_util::GetStringUTF16(
               IDS_BOREALIS_INSUFFICIENT_DISK_SPACE_MESSAGE);
+        case ResultEnum::kDlcNeedUpdateError:
+          return l10n_util::GetStringUTF16(
+              IDS_BOREALIS_DLC_NEED_UPDATE_FAILED_MESSAGE);
         case ResultEnum::kDlcUnknownError:
           return l10n_util::GetStringFUTF16(
               IDS_BOREALIS_GENERIC_ERROR_MESSAGE, app_name_,
@@ -344,14 +348,26 @@ int BorealisInstallerView::GetCurrentDialogButtons() const {
       DCHECK(result_);
       switch (*result_) {
         case borealis::BorealisInstallResult::kBorealisNotAllowed:
+        case borealis::BorealisInstallResult::kDlcUnsupportedError:
+        case borealis::BorealisInstallResult::kDlcNeedUpdateError:
           return ui::DIALOG_BUTTON_CANCEL;
-        default:
+        case borealis::BorealisInstallResult::kBorealisInstallInProgress:
+        case borealis::BorealisInstallResult::kDlcInternalError:
+        case borealis::BorealisInstallResult::kDlcBusyError:
+        case borealis::BorealisInstallResult::kDlcNeedRebootError:
+        case borealis::BorealisInstallResult::kDlcNeedSpaceError:
+        case borealis::BorealisInstallResult::kDlcUnknownError:
+        case borealis::BorealisInstallResult::kOffline:
           return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
+        case borealis::BorealisInstallResult::kSuccess:
+        case borealis::BorealisInstallResult::kCancelled:
+          NOTREACHED();
+          return 0;
       }
   }
 }
 
-base::string16 BorealisInstallerView::GetCurrentDialogButtonLabel(
+std::u16string BorealisInstallerView::GetCurrentDialogButtonLabel(
     ui::DialogButton button) const {
   switch (state_) {
     case State::kConfirmInstall:
@@ -463,7 +479,7 @@ void BorealisInstallerView::StartInstallation() {
 }
 
 BEGIN_METADATA(BorealisInstallerView, views::DialogDelegateView)
-ADD_READONLY_PROPERTY_METADATA(base::string16, PrimaryMessage)
-ADD_READONLY_PROPERTY_METADATA(base::string16, SecondaryMessage)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, PrimaryMessage)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, SecondaryMessage)
 ADD_READONLY_PROPERTY_METADATA(int, CurrentDialogButtons)
 END_METADATA

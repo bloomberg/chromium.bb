@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/profile_policy_connector.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -273,7 +274,7 @@ void ProfilePolicyConnector::InitForTesting(
 }
 
 void ProfilePolicyConnector::OverrideIsManagedForTesting(bool is_managed) {
-  is_managed_override_.reset(new bool(is_managed));
+  is_managed_override_ = std::make_unique<bool>(is_managed);
 }
 
 void ProfilePolicyConnector::SetPlatformPolicyProviderForTesting(
@@ -315,6 +316,15 @@ void ProfilePolicyConnector::TriggerProxiedPoliciesWaitTimeoutForTesting() {
   proxied_policies_propagated_watcher_->OnProviderUpdatePropagationTimedOut();
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+base::flat_set<std::string> ProfilePolicyConnector::user_affiliation_ids()
+    const {
+  auto* store = GetActualPolicyStore();
+  if (!store || !store->has_policy())
+    return {};
+  const auto& ids = store->policy()->user_affiliation_ids();
+  return {ids.begin(), ids.end()};
+}
 
 const CloudPolicyStore* ProfilePolicyConnector::GetActualPolicyStore() const {
   if (policy_store_)

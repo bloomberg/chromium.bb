@@ -155,7 +155,14 @@ class ProfileWindowCountBrowserTest
   Profile* profile_ = nullptr;
 };
 
-IN_PROC_BROWSER_TEST_P(ProfileWindowCountBrowserTest, CountProfileWindows) {
+// TODO(crbug.com/1186994): Test is flaky on Linux Dbg.
+#if defined(OS_LINUX) && !defined(NDEBUG)
+#define MAYBE_CountProfileWindows DISABLED_CountProfileWindows
+#else
+#define MAYBE_CountProfileWindows CountProfileWindows
+#endif
+IN_PROC_BROWSER_TEST_P(ProfileWindowCountBrowserTest,
+                       MAYBE_CountProfileWindows) {
   DCHECK_EQ(0, GetWindowCount());
 
   // Create a browser and check the count.
@@ -273,8 +280,7 @@ IN_PROC_BROWSER_TEST_P(GuestProfileWindowBrowserTest,
   Browser* guest_browser = CreateGuestBrowser();
   Profile* guest_profile = guest_browser->profile();
 
-  base::string16 fip_text =
-      base::ASCIIToUTF16("first guest session search text");
+  std::u16string fip_text = u"first guest session search text";
   FindBarStateFactory::GetForBrowserContext(guest_profile)
       ->SetLastSearchText(fip_text);
 
@@ -291,6 +297,7 @@ IN_PROC_BROWSER_TEST_P(GuestProfileWindowBrowserTest,
   guest_browser = chrome::FindAnyBrowser(guest_profile, true);
   EXPECT_TRUE(guest_browser);
   CloseBrowserSynchronously(guest_browser);
+  content::RunAllTasksUntilIdle();
 
   // Open a new guest browser window. Since this is a separate session, the find
   // in page text should have been cleared (along with all other browsing data).
@@ -305,7 +312,7 @@ IN_PROC_BROWSER_TEST_P(GuestProfileWindowBrowserTest,
         guest_profile, chrome::startup::IS_NOT_PROCESS_STARTUP,
         chrome::startup::IS_NOT_FIRST_RUN, true /*always_create*/);
   }
-  EXPECT_EQ(base::string16(),
+  EXPECT_EQ(std::u16string(),
             FindBarStateFactory::GetForBrowserContext(guest_profile)
                 ->GetSearchPrepopulateText());
 }

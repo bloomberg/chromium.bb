@@ -32,15 +32,14 @@ namespace net {
 
 namespace {
 
-bool LooksLikePacScript(const base::string16& script) {
+bool LooksLikePacScript(const std::u16string& script) {
   // Note: this is only an approximation! It may not always work correctly,
   // however it is very likely that legitimate scripts have this exact string,
   // since they must minimally define a function of this name. Conversely, a
   // file not containing the string is not likely to be a PAC script.
   //
   // An exact test would have to load the script in a javascript evaluator.
-  return script.find(base::ASCIIToUTF16("FindProxyForURL")) !=
-         base::string16::npos;
+  return script.find(u"FindProxyForURL") != std::u16string::npos;
 }
 
 // This is the hard-coded location used by the DNS portion of web proxy

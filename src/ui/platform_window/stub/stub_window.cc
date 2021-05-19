@@ -4,7 +4,7 @@
 
 #include "ui/platform_window/stub/stub_window.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
@@ -47,7 +47,7 @@ gfx::Rect StubWindow::GetBounds() const {
   return bounds_;
 }
 
-void StubWindow::SetTitle(const base::string16& title) {}
+void StubWindow::SetTitle(const std::u16string& title) {}
 
 void StubWindow::SetCapture() {}
 

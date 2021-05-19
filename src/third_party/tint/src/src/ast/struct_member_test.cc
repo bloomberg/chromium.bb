@@ -12,14 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/ast/struct_member.h"
-
-#include <sstream>
-#include <utility>
-
-#include "src/ast/struct_member_offset_decoration.h"
+#include "gtest/gtest-spi.h"
 #include "src/ast/test_helper.h"
-#include "src/type/i32_type.h"
 
 namespace tint {
 namespace ast {
@@ -28,11 +22,11 @@ namespace {
 using StructMemberTest = TestHelper;
 
 TEST_F(StructMemberTest, Creation) {
-  auto* st = Member("a", ty.i32(), {MemberOffset(4)});
+  auto* st = Member("a", ty.i32(), {MemberSize(4)});
   EXPECT_EQ(st->symbol(), Symbol(1));
   EXPECT_EQ(st->type(), ty.i32());
   EXPECT_EQ(st->decorations().size(), 1u);
-  EXPECT_TRUE(st->decorations()[0]->Is<StructMemberOffsetDecoration>());
+  EXPECT_TRUE(st->decorations()[0]->Is<StructMemberSizeDecoration>());
   EXPECT_EQ(st->source().range.begin.line, 0u);
   EXPECT_EQ(st->source().range.begin.column, 0u);
   EXPECT_EQ(st->source().range.end.line, 0u);
@@ -52,29 +46,36 @@ TEST_F(StructMemberTest, CreationWithSource) {
   EXPECT_EQ(st->source().range.end.column, 8u);
 }
 
-TEST_F(StructMemberTest, IsValid) {
-  auto* st = Member("a", ty.i32());
-  EXPECT_TRUE(st->IsValid());
+TEST_F(StructMemberTest, Assert_EmptySymbol) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.Member("", b.ty.i32());
+      },
+      "internal compiler error");
 }
 
-TEST_F(StructMemberTest, IsValid_EmptySymbol) {
-  auto* st = Member("", ty.i32());
-  EXPECT_FALSE(st->IsValid());
+TEST_F(StructMemberTest, Assert_NullType) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.Member("a", nullptr);
+      },
+      "internal compiler error");
 }
 
-TEST_F(StructMemberTest, IsValid_NullType) {
-  auto* st = Member("a", nullptr);
-  EXPECT_FALSE(st->IsValid());
-}
-
-TEST_F(StructMemberTest, IsValid_Null_Decoration) {
-  auto* st = Member("a", ty.i32(), {MemberOffset(4), nullptr});
-  EXPECT_FALSE(st->IsValid());
+TEST_F(StructMemberTest, Assert_NullDecoration) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.Member("a", b.ty.i32(), {b.MemberSize(4), nullptr});
+      },
+      "internal compiler error");
 }
 
 TEST_F(StructMemberTest, ToStr) {
-  auto* st = Member("a", ty.i32(), {MemberOffset(4)});
-  EXPECT_EQ(str(st), "StructMember{[[ offset 4 ]] a: __i32}\n");
+  auto* st = Member("a", ty.i32(), {MemberSize(4)});
+  EXPECT_EQ(str(st), "StructMember{[[ size 4 ]] a: __i32}\n");
 }
 
 TEST_F(StructMemberTest, ToStrNoDecorations) {

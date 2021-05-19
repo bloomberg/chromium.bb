@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
@@ -150,8 +149,8 @@ class DemoSetupController
     ErrorCode error_code() const { return error_code_; }
     RecoveryMethod recovery_method() const { return recovery_method_; }
 
-    base::string16 GetLocalizedErrorMessage() const;
-    base::string16 GetLocalizedRecoveryMessage() const;
+    std::u16string GetLocalizedErrorMessage() const;
+    std::u16string GetLocalizedRecoveryMessage() const;
     std::string GetDebugDescription() const;
 
    private:

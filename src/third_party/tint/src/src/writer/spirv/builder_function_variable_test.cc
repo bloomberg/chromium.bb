@@ -12,28 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/binary_expression.h"
-#include "src/ast/binding_decoration.h"
-#include "src/ast/builtin.h"
-#include "src/ast/builtin_decoration.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/group_decoration.h"
-#include "src/ast/location_decoration.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/storage_class.h"
-#include "src/ast/struct.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/variable.h"
-#include "src/ast/variable_decoration.h"
-#include "src/type/access_control_type.h"
-#include "src/type/f32_type.h"
-#include "src/type/struct_type.h"
-#include "src/type/vector_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -45,7 +23,7 @@ namespace {
 using BuilderTest = TestHelper;
 
 TEST_F(BuilderTest, FunctionVar_NoStorageClass) {
-  auto* v = Global("var", ty.f32(), ast::StorageClass::kNone);
+  auto* v = Global("var", ty.f32(), ast::StorageClass::kInput);
 
   spirv::Builder& b = Build();
 
@@ -194,7 +172,7 @@ OpStore %7 %6
 TEST_F(BuilderTest, FunctionVar_Const) {
   auto* init = vec3<f32>(1.f, 1.f, 3.f);
 
-  auto* v = Const("var", ty.f32(), init);
+  auto* v = Const("var", ty.vec3<f32>(), init);
 
   WrapInFunction(v);
 

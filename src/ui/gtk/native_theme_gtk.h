@@ -5,6 +5,8 @@
 #ifndef UI_GTK_NATIVE_THEME_GTK_H_
 #define UI_GTK_NATIVE_THEME_GTK_H_
 
+#include "base/callback_list.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
@@ -21,14 +23,11 @@ namespace gtk {
 using ScopedCssProvider = ScopedGObject<GtkCssProvider>;
 
 // A version of NativeTheme that uses GTK-rendered widgets.
-class NativeThemeGtk : public ui::NativeThemeBase {
+class COMPONENT_EXPORT(GTK) NativeThemeGtk : public ui::NativeThemeBase {
  public:
   static NativeThemeGtk* instance();
 
-  // Overridden from ui::NativeThemeBase:
-  SkColor GetSystemColor(
-      ColorId color_id,
-      ColorScheme color_scheme = ColorScheme::kDefault) const override;
+  // ui::NativeThemeBase:
   void PaintArrowButton(cc::PaintCanvas* canvas,
                         const gfx::Rect& rect,
                         Part direction,
@@ -71,9 +70,16 @@ class NativeThemeGtk : public ui::NativeThemeBase {
                          const gfx::Rect& rect,
                          const FrameTopAreaExtraParams& frame_top_area,
                          ColorScheme color_scheme) const override;
-  void NotifyObservers() override;
+  void NotifyOnNativeThemeUpdated() override;
 
   void OnThemeChanged(GtkSettings* settings, GtkParamSpec* param);
+
+ protected:
+  // ui::NativeThemeBase:
+  bool AllowColorPipelineRedirection(ColorScheme color_scheme) const override;
+  SkColor GetSystemColorDeprecated(ColorId color_id,
+                                   ColorScheme color_scheme,
+                                   bool apply_processing) const override;
 
  private:
   friend class base::NoDestructor<NativeThemeGtk>;

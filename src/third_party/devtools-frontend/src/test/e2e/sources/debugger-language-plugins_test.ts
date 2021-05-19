@@ -6,8 +6,8 @@ import {assert} from 'chai';
 
 import {$, click, enableExperiment, getBrowserAndPages, getResourcesPath, goToResource, pasteText, waitFor, waitForFunction, waitForMany, waitForNone} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {CONSOLE_TAB_SELECTOR, focusConsolePrompt, getCurrentConsoleMessages} from '../helpers/console-helpers.js';
-import {addBreakpointForLine, checkBreakpointIsNotActive, getCallFrameLocations, getCallFrameNames, getValuesForScope, listenForSourceFilesAdded, openFileInEditor, openFileInSourcesPanel, openSourceCodeEditorForFile, openSourcesPanel, PAUSE_ON_EXCEPTION_BUTTON, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, switchToCallFrame, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
+import {CONSOLE_TAB_SELECTOR, focusConsolePrompt, getCurrentConsoleMessages, getStructuredConsoleMessages} from '../helpers/console-helpers.js';
+import {addBreakpointForLine, getCallFrameLocations, getCallFrameNames, getNonBreakableLines, getValuesForScope, isBreakpointSet, listenForSourceFilesAdded, openFileInEditor, openFileInSourcesPanel, openSourceCodeEditorForFile, openSourcesPanel, PAUSE_ON_EXCEPTION_BUTTON, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, switchToCallFrame, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
 
 
 // TODO: Remove once Chromium updates its version of Node.js to 12+.
@@ -229,6 +229,14 @@ describe('The Debugger Language Plugins', async () => {
     const callFrameLoc = await waitFor('.call-frame-location');
     const scriptLocation = await callFrameLoc.evaluate(location => location.textContent);
     assert.deepEqual(scriptLocation, 'unreachable.ll:6');
+
+    await click(RESUME_BUTTON);
+    const error = await waitForFunction(async () => {
+      const messages = await getStructuredConsoleMessages();
+      return messages.find(message => message.message.startsWith('Uncaught (in promise) RuntimeError: unreachable'));
+    });
+    const callframes = error.message.split('\n').slice(1);
+    assert.deepEqual(callframes, ['    at Main (unreachable.ll:6)', '    at go (unreachable.html:27)']);
   });
 
   // Resolve the location for a breakpoint.
@@ -290,13 +298,14 @@ describe('The Debugger Language Plugins', async () => {
     await target.evaluate('go();');
     await openFileInEditor('global_variable.ll');
     // Line 4 is non-breakable.
-    await addBreakpointForLine(frontend, 4, true);
+    assert.include(await getNonBreakableLines(frontend), 4);
+
     await addBreakpointForLine(frontend, 9);
 
     const scriptLocation = await retrieveTopCallFrameScriptLocation('main();', target);
     assert.deepEqual(scriptLocation, 'global_variable.ll:9');
 
-    await checkBreakpointIsNotActive(4);
+    await waitForFunction(async () => !(await isBreakpointSet(4)));
   });
 
   it('shows top-level and nested variables', async () => {
@@ -445,6 +454,20 @@ describe('The Debugger Language Plugins', async () => {
 
     await switchToCallFrame(3);
     assert.deepEqual(await getValuesForScope('LOCAL', 0, 1), ['localX2: undefined']);
+
+    await click(RESUME_BUTTON);
+    await waitForFunction(async () => {
+      const messages = await getStructuredConsoleMessages();
+      if (!messages.length) {
+        return false;
+      }
+      const message = messages[messages.length - 1];
+      return message.message === `Uncaught (in promise) RuntimeError: unreachable
+    at inner_inline_func (unreachable.ll:6)
+    at outer_inline_func (unreachable.ll:11)
+    at Main (unreachable.ll:16)
+    at go (unreachable.html:27)`;
+    });
   });
 
   it('falls back to wasm function names when inline info not present', async () => {

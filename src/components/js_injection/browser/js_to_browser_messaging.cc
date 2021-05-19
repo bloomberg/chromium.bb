@@ -78,11 +78,11 @@ void JsToBrowserMessaging::OnBackForwardCacheStateChanged() {
 }
 
 void JsToBrowserMessaging::PostMessage(
-    const base::string16& message,
+    const std::u16string& message,
     std::vector<blink::MessagePortDescriptor> ports) {
   DCHECK(render_frame_host_);
 
-  if (render_frame_host_->IsInactiveAndDisallowReactivation())
+  if (render_frame_host_->IsInactiveAndDisallowActivation())
     return;
 
   content::WebContents* web_contents =

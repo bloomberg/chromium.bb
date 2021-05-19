@@ -147,43 +147,11 @@ public class StatusViewRenderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    public void testStatusViewWithIconAndVerbosePadding() throws IOException {
-        runOnUiThreadBlocking(() -> {
-            mStatusView.setVerboseStatusTextContent(R.string.location_bar_preview_lite_page_status);
-            mStatusView.setVerboseStatusTextWidth(mStatusView.getResources().getDimensionPixelSize(
-                    R.dimen.location_bar_min_verbose_status_text_width));
-            mStatusView.setVerboseStatusTextVisible(true);
-            mStatusModel.set(StatusProperties.STATUS_ICON_ALPHA, 1f);
-            mStatusModel.set(StatusProperties.SHOW_STATUS_ICON, true);
-            mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE,
-                    new StatusIconResource(R.drawable.ic_search, 0));
-        });
-        mRenderTestRule.render(mStatusView, "status_view_with_icon_and_verbose_padding");
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"RenderTest"})
-    public void testStatusViewNoIconAndVerbosePadding() throws IOException {
-        runOnUiThreadBlocking(() -> {
-            mStatusView.setVerboseStatusTextContent(R.string.location_bar_preview_lite_page_status);
-            mStatusView.setVerboseStatusTextWidth(mStatusView.getResources().getDimensionPixelSize(
-                    R.dimen.location_bar_min_verbose_status_text_width));
-            mStatusView.setVerboseStatusTextVisible(true);
-            mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE,
-                    new StatusIconResource(R.drawable.ic_search, 0));
-        });
-        mRenderTestRule.render(mStatusView, "status_view_no_icon_with_verbose_padding");
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"RenderTest"})
     public void testStatusViewWithLocationPermissionIcon() throws IOException {
         runOnUiThreadBlocking(() -> {
             Drawable locationIcon =
-                    ContentSettingsResources.getContentSettingsIcon(mStatusView.getContext(),
-                            ContentSettingsType.GEOLOCATION, ContentSettingValues.ALLOW);
+                    ContentSettingsResources.getIconForOmnibox(mStatusView.getContext(),
+                            ContentSettingsType.GEOLOCATION, ContentSettingValues.ALLOW, false);
             PermissionIconResource statusIcon = new PermissionIconResource(locationIcon, false);
             statusIcon.setTransitionType(StatusView.IconTransitionType.ROTATE);
             mStatusModel.set(StatusProperties.STATUS_ICON_ALPHA, 1f);

@@ -86,7 +86,8 @@ void LayoutNGTable::GridBordersChanged() {
     SetShouldDoFullPaintInvalidationWithoutGeometryChange(
         PaintInvalidationReason::kStyle);
     // If borders change, table fragment must be regenerated.
-    SetNeedsLayout(layout_invalidation_reason::kTableChanged);
+    SetNeedsLayoutAndIntrinsicWidthsRecalc(
+        layout_invalidation_reason::kTableChanged);
   }
 }
 
@@ -121,6 +122,7 @@ void LayoutNGTable::UpdateBlockLayout(bool relayout_children) {
     return;
   }
   UpdateInFlowBlockLayout();
+  UpdateMargins();
 }
 
 void LayoutNGTable::AddChild(LayoutObject* child, LayoutObject* before_child) {
@@ -190,9 +192,13 @@ void LayoutNGTable::StyleDidChange(StyleDifference diff,
   NOT_DESTROYED();
   // StyleDifference handles changes in table-layout, border-spacing.
   if (old_style) {
-    bool borders_changed = !old_style->BorderVisuallyEqual(StyleRef()) ||
-                           (diff.TextDecorationOrColorChanged() &&
-                            StyleRef().HasBorderColorReferencingCurrentColor());
+    bool borders_changed =
+        !old_style->BorderVisuallyEqual(StyleRef()) ||
+        old_style->GetWritingDirection() != StyleRef().GetWritingDirection() ||
+        old_style->IsFixedTableLayout() != StyleRef().IsFixedTableLayout() ||
+        old_style->EmptyCells() != StyleRef().EmptyCells() ||
+        (diff.TextDecorationOrColorChanged() &&
+         StyleRef().HasBorderColorReferencingCurrentColor());
     bool collapse_changed =
         StyleRef().BorderCollapse() != old_style->BorderCollapse();
     if (borders_changed || collapse_changed)
@@ -251,8 +257,11 @@ PhysicalRect LayoutNGTable::OverflowClipRect(
 void LayoutNGTable::AddVisualEffectOverflow() {
   NOT_DESTROYED();
   // TODO(1061423) Fragment painting: need a correct fragment.
+  if (PhysicalFragmentCount() != 1u) {
+    NOTREACHED();
+    return;
+  }
   if (const NGPhysicalBoxFragment* fragment = GetPhysicalFragment(0)) {
-    DCHECK_EQ(PhysicalFragmentCount(), 1u);
     // Table's collapsed borders contribute to visual overflow.
     // In the inline direction, table's border box does not include
     // visual border width (largest border), but does include
@@ -261,18 +270,10 @@ void LayoutNGTable::AddVisualEffectOverflow() {
     if (const NGTableBorders* collapsed_borders =
             fragment->TableCollapsedBorders()) {
       PhysicalRect borders_overflow = PhysicalBorderBoxRect();
-      NGBoxStrut table_borders = collapsed_borders->TableBorder();
-      auto visual_inline_strut =
-          collapsed_borders->GetCollapsedBorderVisualInlineStrut();
-      // Expand by difference between visual and layout border width.
-      table_borders.inline_start =
-          visual_inline_strut.first - table_borders.inline_start;
-      table_borders.inline_end =
-          visual_inline_strut.second - table_borders.inline_end;
-      table_borders.block_start = LayoutUnit();
-      table_borders.block_end = LayoutUnit();
+      NGBoxStrut visual_size_diff =
+          collapsed_borders->GetCollapsedBorderVisualSizeDiff();
       borders_overflow.Expand(
-          table_borders.ConvertToPhysical(StyleRef().GetWritingDirection()));
+          visual_size_diff.ConvertToPhysical(StyleRef().GetWritingDirection()));
       AddSelfVisualOverflow(borders_overflow);
     }
   }

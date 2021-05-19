@@ -657,7 +657,7 @@
       {
         "args": [
           "-v",
-          "--browser=android-chrome-64-bundle",
+          "--browser=android-trichrome-bundle",
           "--upload-results",
           "--test-shard-map-filename=android-pixel4-perf_map.json"
         ],
@@ -703,7 +703,7 @@
       {
         "args": [
           "-v",
-          "--browser=android-weblayer",
+          "--browser=android-weblayer-trichrome-google-bundle",
           "--upload-results",
           "--test-shard-map-filename=android-pixel4_weblayer-perf_map.json"
         ],
@@ -749,7 +749,7 @@
       {
         "args": [
           "-v",
-          "--browser=android-webview-google",
+          "--browser=android-webview-trichrome-google-bundle",
           "--upload-results",
           "--test-shard-map-filename=android-pixel4_webview-perf_map.json"
         ],
@@ -1063,6 +1063,39 @@
       }
     ]
   },
+  "chromecast-linux-builder-perf": {
+    "additional_compile_targets": [
+      "cast_shell"
+    ],
+    "isolated_scripts": [
+      {
+        "args": [],
+        "isolate_name": "resource_sizes_chromecast",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "resource_sizes_chromecast",
+        "override_compile_targets": [
+          "resource_sizes_chromecast"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        }
+      }
+    ]
+  },
   "chromeos-amd64-generic-lacros-builder-perf": {
     "additional_compile_targets": [
       "chrome"
@@ -1118,6 +1151,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "device_status": "available",
               "device_type": "eve",
               "gpu": null,
               "os": "ChromeOS",
@@ -1146,6 +1180,34 @@
     "additional_compile_targets": [
       "chromedriver",
       "chromium_builder_perf"
+    ],
+    "isolated_scripts": [
+      {
+        "args": [],
+        "isolate_name": "chrome_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "chrome_sizes",
+        "override_compile_targets": [
+          "chrome_sizes"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        }
+      }
     ]
   },
   "linux-builder-perf-rel": {
@@ -1377,50 +1439,32 @@
     "additional_compile_targets": [
       "chromedriver",
       "chromium_builder_perf"
-    ]
-  },
-  "mac-arm_dtk_arm-perf": {
+    ],
     "isolated_scripts": [
       {
-        "args": [
-          "-v",
-          "--browser=release",
-          "--upload-results",
-          "--test-shard-map-filename=mac-arm_dtk_arm-perf_map.json",
-          "--assert-gpu-compositing"
-        ],
-        "isolate_name": "performance_test_suite",
+        "args": [],
+        "isolate_name": "chrome_sizes",
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
         },
-        "name": "performance_test_suite",
+        "name": "chrome_sizes",
         "override_compile_targets": [
-          "performance_test_suite"
+          "chrome_sizes"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "cpu": "arm",
-              "mac_model": "ADP3,2",
+              "cpu": "x86",
               "os": "Mac",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
           "ignore_task_failure": false,
           "io_timeout": 21600,
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 8
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "requires_simultaneous_shard_dispatch": true,
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       }
     ]
@@ -1429,6 +1473,34 @@
     "additional_compile_targets": [
       "chromedriver",
       "chromium_builder_perf"
+    ],
+    "isolated_scripts": [
+      {
+        "args": [],
+        "isolate_name": "chrome_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "chrome_sizes",
+        "override_compile_targets": [
+          "chrome_sizes"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        }
+      }
     ]
   },
   "mac-m1_mini_2020-perf": {
@@ -1464,7 +1536,7 @@
           "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "shards": 8
         },
         "trigger_script": {
           "args": [
@@ -1535,6 +1607,52 @@
       "script": "//tools/perf/process_perf_results.py"
     }
   },
+  "win-10_amd-perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=release_x64",
+          "--upload-results",
+          "--test-shard-map-filename=win-10_amd-perf_map.json",
+          "--assert-gpu-compositing"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "override_compile_targets": [
+          "performance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:15d8-27.20.1034.6",
+              "os": "Windows-10-18363.476",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "11A5S4L300 [ThinkCentre M75q-1] (LENOVO)"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
   "win-10_laptop_low_end-perf": {
     "isolated_scripts": [
       {
@@ -1596,12 +1714,68 @@
     "additional_compile_targets": [
       "chromedriver",
       "chromium_builder_perf"
+    ],
+    "isolated_scripts": [
+      {
+        "args": [],
+        "isolate_name": "chrome_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "chrome_sizes",
+        "override_compile_targets": [
+          "chrome_sizes"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86",
+              "os": "Windows",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        }
+      }
     ]
   },
   "win64-builder-perf": {
     "additional_compile_targets": [
       "chromedriver",
       "chromium_builder_perf"
+    ],
+    "isolated_scripts": [
+      {
+        "args": [],
+        "isolate_name": "chrome_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "chrome_sizes",
+        "override_compile_targets": [
+          "chrome_sizes"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        }
+      }
     ]
   }
 }

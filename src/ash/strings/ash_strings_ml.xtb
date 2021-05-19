@@ -40,6 +40,7 @@
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> എന്നതിൽ നിന്നും ചാർജ് ചെയ്യുന്നു</translation>
 <translation id="1255033239764210633">കാലാവസ്ഥ എങ്ങനെയുണ്ട്?</translation>
 <translation id="1267032506238418139">കുറുക്കുവഴി മാറ്റം</translation>
+<translation id="1269405891096105529">അതിഥി മോഡിൽ പെരിഫറൽ പിന്തുണയ്‌ക്കുന്നില്ല</translation>
 <translation id="1270290102613614947">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> ചാർജ് ചെയ്യുന്നു</translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl+തിരയൽ+H</translation>
 <translation id="2016340657076538683">ഒരു സന്ദേശം ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="2018630726571919839">എന്നോട് ഒരു തമാശ പറയൂ</translation>
+<translation id="2021864487439853900">അൺലോക്കുചെയ്യാൻ ക്ലിക്കുചെയ്യൂ</translation>
 <translation id="2049240716062114887">ഡെസ്‌കിന്റെ പേര് <ph name="DESK_NAME" /> എന്നാക്കി മാറ്റി</translation>
 <translation id="2050339315714019657">പോർട്രെയ്റ്റ്</translation>
 <translation id="2067602449040652523">കീബോർഡ് തെളിച്ചം</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിന് പിന്നീട്, തുടർന്നും സൈൻ ഇൻ ചെയ്യാനാവും.</translation>
 <translation id="3321628682574733415">രക്ഷാകർതൃ കോഡ് തെറ്റാണ്</translation>
 <translation id="332587331255250389">ബാറ്ററി മാറ്റി പുതിയത് വയ്ക്കുക</translation>
+<translation id="3333741161915951567">മോഡം റീബൂട്ട് ചെയ്യുന്നു. വീണ്ടും ശ്രമിക്കുന്നതിന് മുമ്പ് 30 സെക്കൻഡ് കാത്തിരിക്കുക.</translation>
 <translation id="3341303451326249809">സ്‌ക്രീൻഷോട്ട് ക്യാപ്‌ചർ ചെയ്തു</translation>
 <translation id="334252345105450327">സ്‌ക്രീൻഷോട്ട് എടുക്കൂ</translation>
 <translation id="3351879221545518001">നിലവിൽ നിങ്ങൾ സ്ക്രീൻ കാസ്‌റ്റ് ചെയ്യുന്നു.</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733">നിയന്ത്രിത ഉപയോക്താവ് <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3665889125180354336">മൈക്രോഫോൺ റെക്കോർഡ് ചെയ്യുക</translation>
 <translation id="36813544980941320">നിങ്ങളുടെ ഫോണിനും <ph name="DEVICE_NAME" /> എന്നതിനുമിടയിൽ വെെഫെെ നെറ്റ്‌വർക്കുകൾ പങ്കിടും</translation>
+<translation id="3702809606464356667">നിലവിലെ ഡെസ്ക്കിൽ നിന്നുള്ള വിൻഡോകൾ കാണിക്കുന്നു, എല്ലാ ഡെസ്‌ക്കിലും നിന്നുള്ള വിൻഡോകൾ കാണിക്കാൻ മുകളിലേയ്ക്കുള്ള അമ്പടയാള കീ അമർത്തുക</translation>
 <translation id="3702846122927433391">നൈജീരിയയിലെ ജനസംഖ്യ</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">ലോഡ്ചെയ്യുന്നു...</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">ഓഡിയോ ക്രമീകരണം</translation>
 <translation id="3945319193631853098">സജ്ജീകരണം പൂർത്തിയാക്കാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="3945867833895287237">ഹോട്ട്സ്പോട്ടിലേക്ക് കണക്റ്റ് ചെയ്യുന്നു...</translation>
+<translation id="3958465044488004317">Assistant-ൽ ഫലം കാണുക</translation>
 <translation id="3962859241508114581">മുമ്പത്തെ ട്രാക്ക്</translation>
 <translation id="3969043077941541451">ഓഫാണ്</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> ഉപയോഗിച്ച് നിങ്ങളുടെ വിദൂര സഹായി മുഖേന സ്‌ക്രീനിന്റെ നിയന്ത്രണം പങ്കിടുക.</translation>
 <translation id="4424159417645388645">ഡെസ്ക് 5</translation>
 <translation id="4430019312045809116">അളവ്</translation>
+<translation id="4445159312344259901">അൺലോക്കുചെയ്യാൻ സൈൻ ഇൻ ചെയ്യൂ</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{പ്രധാനപ്പെട്ട ഒരു അറിയിപ്പ്}other{പ്രധാനപ്പെട്ട # അറിയിപ്പുകൾ}}</translation>
 <translation id="4450893287417543264">വീണ്ടും കാണിക്കരുത്</translation>
 <translation id="445864333228800152">ഗുഡ് ഈവനിംഗ്,</translation>
 <translation id="4458688154122353284">സ്ക്രീൻ റെക്കോർഡിംഗ് നിർത്തുക</translation>
+<translation id="4467143075433126295">പൂർണ്ണ സ്‌ക്രീനിൽ നിന്ന് പുറത്തുകടക്കാൻ [Esc] അമർത്തിപ്പിടിക്കുക</translation>
 <translation id="4472575034687746823">ആരംഭിക്കാം</translation>
 <translation id="4477350412780666475">അടുത്ത ട്രാക്ക്</translation>
 <translation id="4477892968187500306">Google പരിശോധിച്ചുറപ്പിച്ചിട്ടില്ലാത്ത ആപ്പുകൾ ഈ ഉപകരണത്തിൽ അടങ്ങിയിരിക്കാം.</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">അതിഥി സെഷനിൽ Google അസി‌സ്‌റ്റന്റ് ലഭ്യമല്ല.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> -നുള്ള ഡയലോഗ് നീക്കം ചെയ്യുക തുറക്കുക</translation>
+<translation id="6154006699632741460">പെരിഫറലിനെ പിന്തുണയ്ക്കുന്നില്ല</translation>
 <translation id="615957422585914272">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് ദൃശ്യമാക്കുക</translation>
 <translation id="6165508094623778733">കൂടുതലറിയുക</translation>
 <translation id="6179832488876878285">നിങ്ങളുടെ പ്രധാനപ്പെട്ട ഫയലുകൾ ഇവിടെ പിൻ ചെയ്യാം. ആരംഭിക്കാൻ Files ആപ്പ് തുറക്കുക.</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">ആവശ്യമുള്ള ഏരിയ തിരഞ്ഞെടുക്കാൻ സ്റ്റൈലസ് ഉപയോഗിക്കുക</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> എന്നതിനെ <ph name="ROTATION" /> എന്നതിലേയ്‌ക്ക് തിരിച്ചു</translation>
 <translation id="6315170314923504164">Voice</translation>
+<translation id="6330012934079202188">എല്ലാ ഡെസ്‌ക്കിലും നിന്നുള്ള വിൻഡോകൾ കാണിക്കുന്നു, നിലവിലെ ഡെസ്ക്കിൽ നിന്നുള്ള വിൻഡോകൾ കാണിക്കാൻ മുകളിലേയ്ക്കുള്ള അമ്പടയാള കീ അമർത്തുക</translation>
 <translation id="6338485349199627913"><ph name="MANAGER" /> മാനേജ് ചെയ്യുന്ന ഒരു മാനേജ് ചെയ്യപ്പെടുന്ന സെഷനാണ് <ph name="DISPLAY_NAME" /></translation>
 <translation id="6376931439017688372">Bluetooth ഓണാണ്</translation>
 <translation id="6381109794406942707">ഉപകരണം അൺലോക്ക് ചെയ്യാൻ, നിങ്ങളുടെ പിൻ നൽകുക.</translation>
 <translation id="639644700271529076">CAPS LOCK ഓഫാണ്</translation>
-<translation id="6396835948284782440">പുറത്ത് കടക്കാൻ [Esc] അമർത്തിപ്പിടിക്കുക.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">എല്ലാ അറിയിപ്പുകളും മായ്ക്കുക</translation>
@@ -794,7 +802,6 @@
 <translation id="7780159184141939021">സ്‌ക്രീൻ തിരിക്കുക</translation>
 <translation id="7796353162336583443">കുറിപ്പോ സ്‌ക്രീന്‍ഷോട്ടോ എടുക്കാനും Google സഹായിയോ ലേസർ പോയിന്‍ററോ ഭൂതക്കണ്ണാടിയോ ഉപയോഗിക്കാനും ഷെൽഫിലെ സ്‌റ്റൈലസ് ബട്ടൺ ടാപ്പ് ചെയ്യുക.</translation>
 <translation id="7798302898096527229">റദ്ദാക്കാൻ 'തിരയൽ' അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
-<translation id="7807966291075028781">സുരക്ഷാ കാരണങ്ങളാൽ അതിഥി മോഡിൽ പെരിഫറലിന് പിന്തുണയില്ല</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />, <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">ശക്തിയുള്ള സിഗ്നൽ</translation>
 <translation id="7837740436429729974">സമയം കഴിഞ്ഞു</translation>
@@ -944,6 +951,7 @@
 <translation id="8936501819958976551">നിർജീവമാക്കി</translation>
 <translation id="8938800817013097409">USB-C ഉപകരണം (പുറകിൽ വലതുവശത്തെ പോർട്ട്)</translation>
 <translation id="8940956008527784070">ബാറ്ററി കുറവാണ് (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">അംഗീകൃത Thunderbolt ഉപകരണങ്ങൾ മാത്രമേ നിങ്ങളുടെ Chromebook-ന് അനുയോജ്യമാകൂ</translation>
 <translation id="8982906748181120328">സമീപമുള്ള ദൃശ്യപരത</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ഉപയോഗിക്കുന്നു</translation>

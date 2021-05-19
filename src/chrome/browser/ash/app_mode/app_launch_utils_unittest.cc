@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/task_environment.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service_factory.h"
@@ -47,11 +47,10 @@ class AppLaunchUtilsTest : public testing::Test {
     testing::Test::SetUp();
 
     const AccountId account_id = AccountId::FromUserEmail("lala@example.com");
-    auto fake_user_manager =
-        std::make_unique<chromeos::FakeChromeUserManager>();
+    auto fake_user_manager = std::make_unique<FakeChromeUserManager>();
     // Stealing the pointer from unique ptr before it goes to the scoped user
     // manager.
-    chromeos::FakeChromeUserManager* user_manager = fake_user_manager.get();
+    FakeChromeUserManager* user_manager = fake_user_manager.get();
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(fake_user_manager));
     user_manager->AddWebKioskAppUser(account_id);

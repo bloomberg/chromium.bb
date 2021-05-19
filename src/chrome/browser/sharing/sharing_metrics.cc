@@ -23,6 +23,8 @@ const char* GetEnumStringValue(SharingFeatureName feature) {
       return "ClickToCall";
     case SharingFeatureName::kSharedClipboard:
       return "SharedClipboard";
+    case SharingFeatureName::kSmsRemoteFetcher:
+      return "SmsRemoteFetcher";
   }
 }
 
@@ -107,6 +109,8 @@ std::string SharingSendMessageResultToString(SharingSendMessageResult result) {
       return "EncryptionError";
     case SharingSendMessageResult::kCommitTimeout:
       return "CommitTimeout";
+    case SharingSendMessageResult::kCancelled:
+      return "RequestCancelled";
   }
 }
 
@@ -172,7 +176,7 @@ void LogSharingRegistrationResult(SharingDeviceRegistrationResult result) {
   base::UmaHistogramEnumeration("Sharing.DeviceRegistrationResult", result);
 }
 
-void LogSharingUnegistrationResult(SharingDeviceRegistrationResult result) {
+void LogSharingUnregistrationResult(SharingDeviceRegistrationResult result) {
   base::UmaHistogramEnumeration("Sharing.DeviceUnregistrationResult", result);
 }
 

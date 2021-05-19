@@ -63,16 +63,17 @@ After starting the broker, an FFmpeg client may stream data to the broker using
 the command:
 
 @example
-ffmpeg -re -i input -f mpegts amqp://[[user]:[password]@@]hostname[:port]
+ffmpeg -re -i input -f mpegts amqp://[[user]:[password]@@]hostname[:port][/vhost]
 @end example
 
 Where hostname and port (default is 5672) is the address of the broker. The
 client may also set a user/password for authentication. The default for both
-fields is "guest".
+fields is "guest". Name of virtual host on broker can be set with vhost. The
+default value is "/".
 
 Muliple subscribers may stream from the broker using the command:
 @example
-ffplay amqp://[[user]:[password]@@]hostname[:port]
+ffplay amqp://[[user]:[password]@@]hostname[:port][/vhost]
 @end example
 
 In RabbitMQ all data published to the broker flows through a specific exchange,
@@ -174,6 +175,16 @@ Caching wrapper for input stream.
 
 Cache the input stream to temporary file. It brings seeking capability to live streams.
 
+The accepted options are:
+@table @option
+
+@item read_ahead_limit
+Amount in bytes that may be read ahead when seeking isn't supported. Range is -1 to INT_MAX.
+-1 for unlimited. Default is 65536.
+
+@end table
+
+URL Syntax is
 @example
 cache:@var{URL}
 @end example
@@ -398,6 +409,13 @@ for live / endless streams.
 
 @item reconnect_streamed
 If set then even streamed/non seekable streams will be reconnected on errors.
+
+@item reconnect_on_network_error
+Reconnect automatically in case of TCP/TLS errors during connect.
+
+@item reconnect_on_http_error
+A comma separated list of HTTP status codes to reconnect on. The list can
+include specific status codes (e.g. '503') or the strings '4xx' / '5xx'.
 
 @item reconnect_delay_max
 Sets the maximum delay in seconds after which to give up reconnecting
@@ -1634,8 +1652,9 @@ tcp://@var{hostname}:@var{port}[?@var{options}]
 The list of supported options follows.
 
 @table @option
-@item listen=@var{1|0}
-Listen for an incoming connection. Default value is 0.
+@item listen=@var{2|1|0}
+Listen for an incoming connection. 0 disables listen, 1 enables listen in
+single client mode, 2 enables listen in multi-client mode. Default value is 0.
 
 @item timeout=@var{microseconds}
 Set raise error timeout, expressed in microseconds.

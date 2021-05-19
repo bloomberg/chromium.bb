@@ -6,7 +6,6 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/model/assistant_ui_model.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/assistant_overlay.h"
@@ -178,8 +177,6 @@ void HomeButtonController::OnAppListShown() {
   if (!Shell::Get()->IsInTabletMode())
     button_->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   is_showing_app_list_ = true;
-  RootWindowController::ForWindow(button_->GetWidget()->GetNativeWindow())
-      ->UpdateShelfVisibility();
 }
 
 void HomeButtonController::OnAppListDismissed() {
@@ -192,8 +189,6 @@ void HomeButtonController::OnAppListDismissed() {
   button_->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
 
   is_showing_app_list_ = false;
-  RootWindowController::ForWindow(button_->GetWidget()->GetNativeWindow())
-      ->UpdateShelfVisibility();
 }
 
 void HomeButtonController::InitializeAssistantOverlay() {

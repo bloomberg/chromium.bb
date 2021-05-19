@@ -11,6 +11,7 @@ namespace {
 
 using extensions::APIPermission;
 using extensions::APIPermissionInfo;
+using extensions::mojom::APIPermissionID;
 
 class SimpleAPIPermission : public APIPermission {
  public:
@@ -91,7 +92,7 @@ APIPermission::APIPermission(const APIPermissionInfo* info)
 
 APIPermission::~APIPermission() { }
 
-APIPermission::ID APIPermission::id() const {
+mojom::APIPermissionID APIPermission::id() const {
   return info()->id();
 }
 

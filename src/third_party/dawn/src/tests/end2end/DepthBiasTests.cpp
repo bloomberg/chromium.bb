@@ -70,9 +70,9 @@ class DepthBiasTests : public DawnTest {
                 break;
         }
 
-        wgpu::ShaderModule vertexModule = utils::CreateShaderModuleFromWGSL(device, vertexSource);
+        wgpu::ShaderModule vertexModule = utils::CreateShaderModule(device, vertexSource);
 
-        wgpu::ShaderModule fragmentModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fragmentModule = utils::CreateShaderModule(device, R"(
     [[location(0)]] var<out> fragColor : vec4<f32>;;
     [[stage(fragment)]] fn main() -> void {
         fragColor = vec4<f32>(1.0, 0.0, 0.0, 1.0);
@@ -101,24 +101,21 @@ class DepthBiasTests : public DawnTest {
         renderPassDesc.cDepthStencilAttachmentInfo.clearDepth = depthClear;
 
         // Create a render pipeline to render the quad
-        utils::ComboRenderPipelineDescriptor renderPipelineDesc(device);
+        utils::ComboRenderPipelineDescriptor2 renderPipelineDesc;
 
-        renderPipelineDesc.cRasterizationState.depthBias = bias;
-        renderPipelineDesc.cRasterizationState.depthBiasSlopeScale = biasSlopeScale;
-        renderPipelineDesc.cRasterizationState.depthBiasClamp = biasClamp;
-
-        renderPipelineDesc.vertexStage.module = vertexModule;
-        renderPipelineDesc.cFragmentStage.module = fragmentModule;
-        renderPipelineDesc.cDepthStencilState.format = depthFormat;
-        renderPipelineDesc.cDepthStencilState.depthWriteEnabled = true;
+        renderPipelineDesc.vertex.module = vertexModule;
+        renderPipelineDesc.cFragment.module = fragmentModule;
+        wgpu::DepthStencilState* depthStencil = renderPipelineDesc.EnableDepthStencil(depthFormat);
+        depthStencil->depthWriteEnabled = true;
+        depthStencil->depthBias = bias;
+        depthStencil->depthBiasSlopeScale = biasSlopeScale;
+        depthStencil->depthBiasClamp = biasClamp;
 
         if (depthFormat != wgpu::TextureFormat::Depth32Float) {
-            renderPipelineDesc.cDepthStencilState.depthCompare = wgpu::CompareFunction::Greater;
+            depthStencil->depthCompare = wgpu::CompareFunction::Greater;
         }
 
-        renderPipelineDesc.depthStencilState = &renderPipelineDesc.cDepthStencilState;
-
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&renderPipelineDesc);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&renderPipelineDesc);
 
         // Draw the quad (two triangles)
         wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
@@ -165,7 +162,7 @@ TEST_P(DepthBiasTests, PositiveBiasOnFloat) {
         0.5, 0.5,  //
     };
 
-    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, 0, 0, kRTSize, kRTSize, 0, 0,
+    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, {0, 0}, {kRTSize, kRTSize}, 0,
                       wgpu::TextureAspect::DepthOnly);
 }
 
@@ -185,7 +182,7 @@ TEST_P(DepthBiasTests, PositiveBiasOnFloatWithClamp) {
         0.375, 0.375,  //
     };
 
-    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, 0, 0, kRTSize, kRTSize, 0, 0,
+    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, {0, 0}, {kRTSize, kRTSize}, 0,
                       wgpu::TextureAspect::DepthOnly);
 }
 
@@ -207,7 +204,7 @@ TEST_P(DepthBiasTests, NegativeBiasOnFloat) {
         0.0, 0.0,  //
     };
 
-    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, 0, 0, kRTSize, kRTSize, 0, 0,
+    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, {0, 0}, {kRTSize, kRTSize}, 0,
                       wgpu::TextureAspect::DepthOnly);
 }
 
@@ -227,7 +224,7 @@ TEST_P(DepthBiasTests, NegativeBiasOnFloatWithClamp) {
         0.125, 0.125,  //
     };
 
-    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, 0, 0, kRTSize, kRTSize, 0, 0,
+    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, {0, 0}, {kRTSize, kRTSize}, 0,
                       wgpu::TextureAspect::DepthOnly);
 }
 
@@ -246,7 +243,7 @@ TEST_P(DepthBiasTests, PositiveInfinitySlopeBiasOnFloat) {
         1.0, 1.0,  //
     };
 
-    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, 0, 0, kRTSize, kRTSize, 0, 0,
+    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, {0, 0}, {kRTSize, kRTSize}, 0,
                       wgpu::TextureAspect::DepthOnly);
 }
 
@@ -265,7 +262,7 @@ TEST_P(DepthBiasTests, NegativeInfinityBiasOnFloat) {
         0.0, 0.0,  //
     };
 
-    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, 0, 0, kRTSize, kRTSize, 0, 0,
+    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, {0, 0}, {kRTSize, kRTSize}, 0,
                       wgpu::TextureAspect::DepthOnly);
 }
 
@@ -280,7 +277,7 @@ TEST_P(DepthBiasTests, NoBiasTiltedXOnFloat) {
         0.125, 0.125,  //
     };
 
-    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, 0, 0, kRTSize, kRTSize, 0, 0,
+    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, {0, 0}, {kRTSize, kRTSize}, 0,
                       wgpu::TextureAspect::DepthOnly);
 }
 
@@ -295,7 +292,7 @@ TEST_P(DepthBiasTests, PositiveSlopeBiasOnFloat) {
         0.375, 0.375,  //
     };
 
-    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, 0, 0, kRTSize, kRTSize, 0, 0,
+    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, {0, 0}, {kRTSize, kRTSize}, 0,
                       wgpu::TextureAspect::DepthOnly);
 }
 
@@ -310,7 +307,7 @@ TEST_P(DepthBiasTests, NegativeHalfSlopeBiasOnFloat) {
         0.0, 0.0,    //
     };
 
-    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, 0, 0, kRTSize, kRTSize, 0, 0,
+    EXPECT_TEXTURE_EQ(expected.data(), mDepthTexture, {0, 0}, {kRTSize, kRTSize}, 0,
                       wgpu::TextureAspect::DepthOnly);
 }
 
@@ -327,7 +324,7 @@ TEST_P(DepthBiasTests, PositiveBiasOn24bit) {
         RGBA8::kRed, RGBA8::kRed,  //
     };
 
-    EXPECT_TEXTURE_RGBA8_EQ(expected.data(), mRenderTarget, 0, 0, kRTSize, kRTSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expected.data(), mRenderTarget, {0, 0}, {kRTSize, kRTSize});
 }
 
 // Test adding positive bias to output with a clamp
@@ -348,7 +345,7 @@ TEST_P(DepthBiasTests, PositiveBiasOn24bitWithClamp) {
         RGBA8::kZero, RGBA8::kZero,  //
     };
 
-    EXPECT_TEXTURE_RGBA8_EQ(zero.data(), mRenderTarget, 0, 0, kRTSize, kRTSize, 0, 0);
+    EXPECT_TEXTURE_EQ(zero.data(), mRenderTarget, {0, 0}, {kRTSize, kRTSize});
 }
 
 // Test adding positive bias to output
@@ -363,7 +360,7 @@ TEST_P(DepthBiasTests, PositiveSlopeBiasOn24bit) {
         RGBA8::kZero, RGBA8::kZero,  //
     };
 
-    EXPECT_TEXTURE_RGBA8_EQ(expected.data(), mRenderTarget, 0, 0, kRTSize, kRTSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expected.data(), mRenderTarget, {0, 0}, {kRTSize, kRTSize});
 }
 
 DAWN_INSTANTIATE_TEST(DepthBiasTests,

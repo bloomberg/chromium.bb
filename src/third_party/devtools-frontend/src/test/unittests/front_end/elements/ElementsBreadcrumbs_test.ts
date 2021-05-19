@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import type * as ElementsModule from '../../../../front_end/elements/elements.js';
+import type * as ElementsModule from '../../../../front_end/panels/elements/elements.js';
 import {assertElement, assertElements, assertShadowRoot, dispatchClickEvent, doubleRaf, renderElementIntoDOM, waitForScrollLeft} from '../helpers/DOMHelpers.js';
 import {describeWithEnvironment} from '../helpers/EnvironmentHelpers.js';
 import {withNoMutations} from '../helpers/MutationHelpers.js';
 
+import * as Coordinator from '../../../../front_end/render_coordinator/render_coordinator.js';
+
 const {assert} = chai;
+const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 
 
 interface MakeCrumbOptions extends Partial<ElementsModule.ElementsBreadcrumbsUtils.DOMNode> {
@@ -36,7 +39,7 @@ const makeCrumb = (overrides: MakeCrumbOptions = {}) => {
 describeWithEnvironment('ElementsBreadcrumbs', () => {
   let Elements: typeof ElementsModule;
   before(async () => {
-    Elements = await import('../../../../front_end/elements/elements.js');
+    Elements = await import('../../../../front_end/panels/elements/elements.js');
   });
 
   describe('#determineElementTitle', () => {
@@ -174,105 +177,73 @@ describeWithEnvironment('ElementsBreadcrumbs', () => {
   });
 
   describe('rendering breadcrumbs', () => {
-    it('renders all the breadcrumbs provided', () => {
+    async function renderBreadcrumbs(data: ElementsModule.ElementsBreadcrumbs.ElementsBreadcrumbsData): Promise<{
+      component: ElementsModule.ElementsBreadcrumbs.ElementsBreadcrumbs,
+      shadowRoot: ShadowRoot,
+    }> {
       const component = new Elements.ElementsBreadcrumbs.ElementsBreadcrumbs();
       renderElementIntoDOM(component);
+      component.data = data;
 
-      const bodyCrumb = makeCrumb({
-        nodeType: Node.ELEMENT_NODE,
-        id: 2,
-        nodeName: 'body',
-        nodeNameNicelyCased: 'body',
-      });
+      await coordinator.done();
+      assertShadowRoot(component.shadowRoot);
+      return {
+        component,
+        shadowRoot: component.shadowRoot,
+      };
+    }
 
-      const divCrumb = makeCrumb({
-        nodeType: Node.ELEMENT_NODE,
-        id: 3,
-        nodeName: 'div',
-        nodeNameNicelyCased: 'div',
-        attributes: {
-          id: 'test-id',
-        },
-      });
+    const bodyCrumb = makeCrumb({
+      nodeType: Node.ELEMENT_NODE,
+      id: 2,
+      nodeName: 'body',
+      nodeNameNicelyCased: 'body',
+    });
 
-      component.data = {
+    const divCrumb = makeCrumb({
+      nodeType: Node.ELEMENT_NODE,
+      id: 3,
+      nodeName: 'div',
+      nodeNameNicelyCased: 'div',
+      attributes: {
+        id: 'test-id',
+      },
+    });
+
+    it('renders all the breadcrumbs provided', async () => {
+      const {shadowRoot} = await renderBreadcrumbs({
         crumbs: [divCrumb, bodyCrumb],
         selectedNode: bodyCrumb,
-      };
+      });
 
-      assertShadowRoot(component.shadowRoot);
-
-      const crumbs = Array.from(component.shadowRoot.querySelectorAll('[data-crumb]'));
-
+      const crumbs = Array.from(shadowRoot.querySelectorAll('[data-crumb]'));
       assert.lengthOf(crumbs, 2);
     });
 
-    it('highlights the active breadcrumb', () => {
-      const component = new Elements.ElementsBreadcrumbs.ElementsBreadcrumbs();
-      renderElementIntoDOM(component);
-
-      const bodyCrumb = makeCrumb({
-        nodeType: Node.ELEMENT_NODE,
-        id: 2,
-        nodeName: 'body',
-        nodeNameNicelyCased: 'body',
-      });
-
-      const divCrumb = makeCrumb({
-        nodeType: Node.ELEMENT_NODE,
-        id: 3,
-        nodeName: 'div',
-        nodeNameNicelyCased: 'div',
-        attributes: {
-          id: 'test-id',
-        },
-      });
-
-      component.data = {
+    it('highlights the active breadcrumb', async () => {
+      const {shadowRoot} = await renderBreadcrumbs({
         crumbs: [divCrumb, bodyCrumb],
         selectedNode: bodyCrumb,
-      };
-
-      assertShadowRoot(component.shadowRoot);
-
-      const activeCrumbs = component.shadowRoot.querySelectorAll('.crumb.selected');
+      });
+      const activeCrumbs = shadowRoot.querySelectorAll('.crumb.selected');
       assert.lengthOf(activeCrumbs, 1);
     });
 
     it('updates the text if a crumb\'s title changes', async () => {
-      const component = new Elements.ElementsBreadcrumbs.ElementsBreadcrumbs();
-      renderElementIntoDOM(component);
-
-      const bodyCrumb = makeCrumb({
-        nodeType: Node.ELEMENT_NODE,
-        id: 2,
-        nodeName: 'body',
-        nodeNameNicelyCased: 'body',
-      });
-
-      const divCrumb = makeCrumb({
-        nodeType: Node.ELEMENT_NODE,
-        id: 3,
-        nodeName: 'div',
-        nodeNameNicelyCased: 'div',
-        attributes: {
-          id: 'test-id',
-        },
-      });
-
-      component.data = {
+      const {component, shadowRoot} = await renderBreadcrumbs({
         crumbs: [divCrumb, bodyCrumb],
         selectedNode: bodyCrumb,
-      };
+      });
 
-      assertShadowRoot(component.shadowRoot);
-      await withNoMutations(component.shadowRoot, shadowRoot => {
+      await withNoMutations(shadowRoot, async shadowRoot => {
         const newDiv: ElementsModule.ElementsBreadcrumbsUtils
             .DOMNode = {...divCrumb, nodeName: 'span', nodeNameNicelyCased: 'span'};
         component.data = {
           crumbs: [newDiv, bodyCrumb],
           selectedNode: bodyCrumb,
         };
+
+        await coordinator.done();
 
         const renderedTextForUpdatedCrumb = shadowRoot.querySelector('.crumb:last-child devtools-node-text');
         assertElement(renderedTextForUpdatedCrumb, HTMLElement);
@@ -301,20 +272,18 @@ describeWithEnvironment('ElementsBreadcrumbs', () => {
         },
       });
 
-      it('shows the scrolling icons if the crumbs do not fit in their container', () => {
+      it('shows the scrolling icons if the crumbs do not fit in their container', async () => {
         const thinWrapper = document.createElement('div');
         thinWrapper.style.width = '400px';
 
         const component = new Elements.ElementsBreadcrumbs.ElementsBreadcrumbs();
         thinWrapper.appendChild(component);
-
         renderElementIntoDOM(thinWrapper);
-
         component.data = {
           crumbs: [divCrumb, bodyCrumb],
           selectedNode: bodyCrumb,
         };
-
+        await coordinator.done();
         assertShadowRoot(component.shadowRoot);
 
         const scrollButtons = component.shadowRoot.querySelectorAll('button.overflow');
@@ -331,22 +300,19 @@ describeWithEnvironment('ElementsBreadcrumbs', () => {
       it('disables the right button once the user has scrolled to the end', async () => {
         const thinWrapper = document.createElement('div');
         thinWrapper.style.width = '400px';
-
         const component = new Elements.ElementsBreadcrumbs.ElementsBreadcrumbs();
         thinWrapper.appendChild(component);
-
         renderElementIntoDOM(thinWrapper);
-
         component.data = {
           crumbs: [divCrumb, bodyCrumb],
           selectedNode: bodyCrumb,
         };
+        await coordinator.done();
 
         assertShadowRoot(component.shadowRoot);
 
         const rightButton = component.shadowRoot.querySelector('button.overflow.right');
         assertElement(rightButton, HTMLButtonElement);
-
         assert.isFalse(rightButton.disabled);
 
         await withNoMutations(component.shadowRoot, async shadowRoot => {
@@ -354,6 +320,7 @@ describeWithEnvironment('ElementsBreadcrumbs', () => {
           const scrollWrapper = shadowRoot.querySelector('.crumbs-window');
           assertElement(scrollWrapper, HTMLDivElement);
           await waitForScrollLeft(scrollWrapper, 170);
+          await coordinator.done();
           assert.isTrue(rightButton.disabled);
         });
       });
@@ -361,16 +328,14 @@ describeWithEnvironment('ElementsBreadcrumbs', () => {
       it('hides the overflow buttons should the user resize the window to be large enough', async () => {
         const thinWrapper = document.createElement('div');
         thinWrapper.style.width = '400px';
-
         const component = new Elements.ElementsBreadcrumbs.ElementsBreadcrumbs();
         thinWrapper.appendChild(component);
-
         renderElementIntoDOM(thinWrapper);
-
         component.data = {
           crumbs: [divCrumb, bodyCrumb],
           selectedNode: bodyCrumb,
         };
+        await coordinator.done();
 
         assertShadowRoot(component.shadowRoot);
 
@@ -383,9 +348,42 @@ describeWithEnvironment('ElementsBreadcrumbs', () => {
         assert.isFalse(rightButton.classList.contains('hidden'));
 
         thinWrapper.style.width = '800px';
-        // So the browser has time to paint
+        // Changing the width should trigger the resize observer, so we need to wait for that to happen.
         await doubleRaf();
+        await coordinator.done();
 
+        assert.isTrue(leftButton.classList.contains('hidden'));
+        assert.isTrue(rightButton.classList.contains('hidden'));
+      });
+
+      it('hides the overflow should the list of nodes change so the crumbs no longer overflow', async () => {
+        const thinWrapper = document.createElement('div');
+        thinWrapper.style.width = '400px';
+
+        const component = new Elements.ElementsBreadcrumbs.ElementsBreadcrumbs();
+        thinWrapper.appendChild(component);
+        renderElementIntoDOM(thinWrapper);
+        component.data = {
+          crumbs: [divCrumb, bodyCrumb],
+          selectedNode: bodyCrumb,
+        };
+        await coordinator.done();
+        assertShadowRoot(component.shadowRoot);
+        const leftButton = component.shadowRoot.querySelector('button.overflow.left');
+        assertElement(leftButton, HTMLButtonElement);
+        const rightButton = component.shadowRoot.querySelector('button.overflow.right');
+        assertElement(rightButton, HTMLButtonElement);
+
+        // Ensure the buttons are visible now
+        assert.isFalse(leftButton.classList.contains('hidden'));
+        assert.isFalse(rightButton.classList.contains('hidden'));
+
+        component.data = {
+          crumbs: [bodyCrumb],
+          selectedNode: bodyCrumb,
+        };
+        await coordinator.done();
+        // The buttons are hidden now the list is no longer overflowing
         assert.isTrue(leftButton.classList.contains('hidden'));
         assert.isTrue(rightButton.classList.contains('hidden'));
       });
@@ -393,17 +391,15 @@ describeWithEnvironment('ElementsBreadcrumbs', () => {
       it('shows the overflow buttons should the user resize the window down to be small', async () => {
         const thinWrapper = document.createElement('div');
         thinWrapper.style.width = '800px';
-
         const component = new Elements.ElementsBreadcrumbs.ElementsBreadcrumbs();
         thinWrapper.appendChild(component);
-
         renderElementIntoDOM(thinWrapper);
 
         component.data = {
           crumbs: [divCrumb, bodyCrumb],
           selectedNode: bodyCrumb,
         };
-
+        await coordinator.done();
         assertShadowRoot(component.shadowRoot);
 
         const leftButton = component.shadowRoot.querySelector('button.overflow.left');
@@ -415,8 +411,9 @@ describeWithEnvironment('ElementsBreadcrumbs', () => {
         assert.isTrue(rightButton.classList.contains('hidden'));
 
         thinWrapper.style.width = '400px';
-        // So the browser has time to paint
+        // Give the resize observer time to fire.
         await doubleRaf();
+        await coordinator.done();
 
         assert.isFalse(leftButton.classList.contains('hidden'));
         assert.isFalse(rightButton.classList.contains('hidden'));

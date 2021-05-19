@@ -34,6 +34,12 @@ enum class KeyRetrievalTriggerForUMA;
     (UIViewController*)baseViewController;
 
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// Shows the Sync settings UI, presenting from |baseViewController|.
+// If |baseViewController| is nil BVC will be used as presenterViewController.
+- (void)showSyncSettingsFromViewController:
+    (UIViewController*)baseViewController;
+
+// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
 // Shows the sync encryption passphrase UI, presenting from
 // |baseViewController|.
 - (void)showSyncPassphraseSettingsFromViewController:
@@ -146,10 +152,6 @@ enum class KeyRetrievalTriggerForUMA;
 
 // Signs the user out and dismisses UI for any in-progress sign-in.
 - (void)forceSignOut;
-
-// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
-// Shows the Add Account UI, presenting from |baseViewController|.
-- (void)showAddAccountFromViewController:(UIViewController*)baseViewController;
 
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
 // Shows the consistency promo UI that allows users to sign in to Chrome using

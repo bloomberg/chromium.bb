@@ -387,11 +387,8 @@ EventContext TrackEventInternal::WriteEvent(
     perfetto::protos::pbzero::TrackEvent::Type type,
     uint64_t timestamp) {
   PERFETTO_DCHECK(g_main_thread);
+  PERFETTO_DCHECK(!incr_state->was_cleared);
 
-  if (incr_state->was_cleared) {
-    incr_state->was_cleared = false;
-    ResetIncrementalState(trace_writer, timestamp);
-  }
   auto packet = NewTracePacket(trace_writer, timestamp);
   EventContext ctx(std::move(packet), incr_state);
 
@@ -402,7 +399,8 @@ EventContext TrackEventInternal::WriteEvent(
   // We assume that |category| and |name| point to strings with static lifetime.
   // This means we can use their addresses as interning keys.
   // TODO(skyostil): Intern categories at compile time.
-  if (category && type != protos::pbzero::TrackEvent::TYPE_SLICE_END) {
+  if (category && type != protos::pbzero::TrackEvent::TYPE_SLICE_END &&
+      type != protos::pbzero::TrackEvent::TYPE_COUNTER) {
     category->ForEachGroupMember(
         [&](const char* member_name, size_t name_size) {
           size_t category_iid =

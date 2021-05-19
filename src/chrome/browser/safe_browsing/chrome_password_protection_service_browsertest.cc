@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                                       password_manager::MockPasswordStore>))
               .get()));
   std::vector<password_manager::MatchingReusedCredential> credentials = {
-      {"https://example.test", base::ASCIIToUTF16("username1")}};
+      {"https://example.test", u"username1"}};
   service->set_saved_passwords_matching_reused_credentials({credentials});
 
   EXPECT_CALL(*password_store, RemoveInsecureCredentialsImpl(_, _, _)).Times(1);
@@ -553,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                                           ServiceAccessType::EXPLICIT_ACCESS)
           .get();
   password_store->SaveGaiaPasswordHash(
-      user_manager::kStubUserEmail, base::UTF8ToUTF16("password_1"),
+      user_manager::kStubUserEmail, u"password_1",
       /*is_primary_account=*/true,
       password_manager::metrics_util::GaiaPasswordHashChange::
           CHANGED_IN_CONTENT_AREA);
@@ -799,9 +799,9 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                                           ServiceAccessType::EXPLICIT_ACCESS)
           .get();
   password_store->SaveEnterprisePasswordHash("username@domain.com",
-                                             base::UTF8ToUTF16("password_1"));
+                                             u"password_1");
   password_store->SaveGaiaPasswordHash(
-      user_manager::kStubUserEmail, base::UTF8ToUTF16("password_2"),
+      user_manager::kStubUserEmail, u"password_2",
       /*is_primary_account=*/false,
       password_manager::metrics_util::GaiaPasswordHashChange::
           CHANGED_IN_CONTENT_AREA);

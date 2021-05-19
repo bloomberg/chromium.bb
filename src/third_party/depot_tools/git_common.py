@@ -683,7 +683,16 @@ def repo_root():
 def upstream_default():
   """Returns the default branch name of the origin repository."""
   try:
-    return run('rev-parse', '--abbrev-ref', 'origin/HEAD')
+    ret = run('rev-parse', '--abbrev-ref', 'origin/HEAD')
+    # Detect if the repository migrated to main branch
+    if ret == 'origin/master':
+      try:
+        ret = run('rev-parse', '--abbrev-ref', 'origin/main')
+        run('remote', 'set-head', '-a', 'origin')
+        ret = run('rev-parse', '--abbrev-ref', 'origin/HEAD')
+      except subprocess2.CalledProcessError:
+        pass
+    return ret
   except subprocess2.CalledProcessError:
     return 'origin/master'
 

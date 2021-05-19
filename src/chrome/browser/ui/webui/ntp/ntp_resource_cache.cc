@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -18,7 +17,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_util.h"
@@ -31,6 +29,7 @@
 #include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/cookie_controls_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -38,7 +37,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/policy/core/common/policy_service.h"
@@ -47,7 +45,6 @@
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -88,59 +85,6 @@ const char kLearnMoreGuestSessionUrl[] =
 const char kLearnMoreEphemeralGuestSessionUrl[] =
     "https://support.google.com/chrome/?p=ui_guest";
 
-SkColor GetThemeColor(const ui::ThemeProvider& tp, int id) {
-  SkColor color = tp.GetColor(id);
-  // If web contents are being inverted because the system is in high-contrast
-  // mode, any system theme colors we use must be inverted too to cancel out.
-  return ui::NativeTheme::GetInstanceForNativeUi()
-                     ->GetPlatformHighContrastColorScheme() ==
-                 ui::NativeTheme::PlatformHighContrastColorScheme::kDark
-             ? color_utils::InvertColor(color)
-             : color;
-}
-
-// Get the CSS string for the background position on the new tab page for the
-// states when the bar is attached or detached.
-std::string GetNewTabBackgroundCSS(const ui::ThemeProvider& theme_provider,
-                                   bool bar_attached) {
-  // TODO(glen): This is a quick workaround to hide the notused.png image when
-  // no image is provided - we don't have time right now to figure out why
-  // this is painting as white.
-  // http://crbug.com/17593
-  if (!theme_provider.HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-    return "-64px";
-  }
-
-  int alignment = theme_provider.GetDisplayProperty(
-      ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
-
-  if (bar_attached)
-    return ThemeProperties::AlignmentToString(alignment);
-
-  if (alignment & ThemeProperties::ALIGN_TOP) {
-    // The bar is detached, so we must offset the background by the bar size
-    // if it's a top-aligned bar.
-    int offset = GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT);
-
-    if (alignment & ThemeProperties::ALIGN_LEFT)
-      return "left " + base::NumberToString(-offset) + "px";
-    else if (alignment & ThemeProperties::ALIGN_RIGHT)
-      return "right " + base::NumberToString(-offset) + "px";
-    return "center " + base::NumberToString(-offset) + "px";
-  }
-
-  return ThemeProperties::AlignmentToString(alignment);
-}
-
-// How the background image on the new tab page should be tiled (see tiling
-// masks in theme_service.h).
-std::string GetNewTabBackgroundTilingCSS(
-    const ui::ThemeProvider& theme_provider) {
-  int repeat_mode =
-      theme_provider.GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_TILING);
-  return ThemeProperties::TilingToString(repeat_mode);
-}
-
 std::string ReplaceTemplateExpressions(
     const scoped_refptr<base::RefCountedMemory>& bytes,
     const ui::TemplateReplacements& replacements) {
@@ -152,22 +96,55 @@ std::string ReplaceTemplateExpressions(
 
 }  // namespace
 
+SkColor GetThemeColor(const ui::NativeTheme* native_theme,
+                      const ui::ThemeProvider& tp,
+                      int id) {
+  SkColor color = tp.GetColor(id);
+  // If web contents are being inverted because the system is in high-contrast
+  // mode, any system theme colors we use must be inverted too to cancel out.
+  return native_theme->GetPlatformHighContrastColorScheme() ==
+                 ui::NativeTheme::PlatformHighContrastColorScheme::kDark
+             ? color_utils::InvertColor(color)
+             : color;
+}
+
+// Get the CSS string for the background position on the new tab page.
+std::string GetNewTabBackgroundPositionCSS(
+    const ui::ThemeProvider& theme_provider) {
+  // TODO(glen): This is a quick workaround to hide the notused.png image when
+  // no image is provided - we don't have time right now to figure out why
+  // this is painting as white.
+  // http://crbug.com/17593
+  if (!theme_provider.HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
+    return "-64px";
+  }
+
+  return ThemeProperties::AlignmentToString(theme_provider.GetDisplayProperty(
+      ThemeProperties::NTP_BACKGROUND_ALIGNMENT));
+}
+
+// How the background image on the new tab page should be tiled (see tiling
+// masks in theme_service.h).
+std::string GetNewTabBackgroundTilingCSS(
+    const ui::ThemeProvider& theme_provider) {
+  int repeat_mode =
+      theme_provider.GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_TILING);
+  return ThemeProperties::TilingToString(repeat_mode);
+}
+
 NTPResourceCache::NTPResourceCache(Profile* profile)
     : profile_(profile), is_swipe_tracking_from_scroll_events_enabled_(false) {
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 content::Source<ThemeService>(
-                     ThemeServiceFactory::GetForProfile(profile)));
+  ThemeServiceFactory::GetForProfile(profile_)->AddObserver(this);
 
   base::RepeatingClosure callback = base::BindRepeating(
       &NTPResourceCache::OnPreferenceChanged, base::Unretained(this));
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   profile_pref_change_registrar_.Init(profile_->GetPrefs());
-  profile_pref_change_registrar_.Add(bookmarks::prefs::kShowBookmarkBar,
-                                     callback);
   profile_pref_change_registrar_.Add(prefs::kNtpShownPage, callback);
   profile_pref_change_registrar_.Add(prefs::kCookieControlsMode, callback);
 
+  // TODO(crbug/1056916): Remove the global accessor to NativeTheme.
   theme_observation_.Observe(ui::NativeTheme::GetInstanceForNativeUi());
 
   policy_change_registrar_ = std::make_unique<policy::PolicyChangeRegistrar>(
@@ -240,34 +217,38 @@ base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(WindowType win_type) {
   }
 }
 
-base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(WindowType win_type) {
+base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(
+    WindowType win_type,
+    content::WebContents::Getter wc_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Guest mode doesn't have theme-related CSS.
   if (win_type == GUEST)
     return nullptr;
 
+  // Returns the cached CSS if it exists.
+  // The cache will be invalidated when the theme of |wc_getter| changes.
   if (win_type == INCOGNITO) {
     if (!new_tab_incognito_css_)
-      CreateNewTabIncognitoCSS();
+      CreateNewTabIncognitoCSS(wc_getter);
     return new_tab_incognito_css_.get();
   }
 
   if (!new_tab_css_)
-    CreateNewTabCSS();
+    CreateNewTabCSS(wc_getter);
   return new_tab_css_.get();
 }
 
-void NTPResourceCache::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
-
-  // Invalidate the cache.
+void NTPResourceCache::OnThemeChanged() {
   Invalidate();
 }
 
+void NTPResourceCache::Shutdown() {
+  ThemeServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
+}
+
 void NTPResourceCache::OnNativeThemeUpdated(ui::NativeTheme* updated_theme) {
+  // TODO(crbug/1056916): Remove the global accessor to NativeTheme.
   DCHECK_EQ(updated_theme, ui::NativeTheme::GetInstanceForNativeUi());
   Invalidate();
 }
@@ -290,21 +271,16 @@ void NTPResourceCache::Invalidate() {
 
 void NTPResourceCache::CreateNewTabIncognitoHTML() {
   ui::TemplateReplacements replacements;
-  // Note: there's specific rules in CSS that look for this attribute's content
-  // being equal to "true" as a string.
-  replacements["bookmarkbarattached"] =
-      profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar)
-          ? "true"
-          : "false";
 
   // Ensure passing off-the-record profile; |profile_| is not an OTR profile.
   DCHECK(!profile_->IsOffTheRecord());
   DCHECK(profile_->HasAnyOffTheRecordProfile());
+
   // Cookie controls service returns the same result for all off-the-record
   // profiles, so it doesn't matter which of them we use.
+  Profile* incognito_profile = profile_->GetAllOffTheRecordProfiles()[0];
   CookieControlsService* cookie_controls_service =
-      CookieControlsServiceFactory::GetForProfile(
-          profile_->GetAllOffTheRecordProfiles()[0]);
+      CookieControlsServiceFactory::GetForProfile(incognito_profile);
 
   replacements["incognitoTabDescription"] =
       l10n_util::GetStringUTF8(reading_list::switches::IsReadingListEnabled()
@@ -334,8 +310,12 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   replacements["cookieControlsTooltipText"] = l10n_util::GetStringUTF8(
       IDS_NEW_TAB_OTR_COOKIE_CONTROLS_CONTROLLED_TOOLTIP_TEXT);
 
+  // The ThemeProvider can have different behavior depending on regular or
+  // Incognito profile. Therefore, making use of Incognito profile explicitly
+  // here.
   const ui::ThemeProvider& tp =
-      ThemeService::GetThemeProviderForProfile(profile_);
+      ThemeService::GetThemeProviderForProfile(incognito_profile);
+
   replacements["hasCustomBackground"] =
       tp.HasCustomImage(IDR_THEME_NTP_BACKGROUND) ? "true" : "false";
 
@@ -408,7 +388,7 @@ scoped_refptr<base::RefCountedString> NTPResourceCache::CreateNewTabGuestHTML(
                                 l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     localized_strings.SetString("enterpriseInfoHintLink",
                                 chrome::kLearnMoreEnterpriseURL);
-    base::string16 enterprise_info;
+    std::u16string enterprise_info;
     if (connector->IsCloudManaged()) {
       const std::string enterprise_domain_manager =
           connector->GetEnterpriseDomainManager();
@@ -469,7 +449,9 @@ scoped_refptr<base::RefCountedString> NTPResourceCache::CreateNewTabGuestHTML(
   return base::RefCountedString::TakeString(&full_html);
 }
 
-void NTPResourceCache::CreateNewTabIncognitoCSS() {
+void NTPResourceCache::CreateNewTabIncognitoCSS(
+    const content::WebContents::Getter wc_getter) {
+  const ui::NativeTheme* native_theme = webui::GetNativeTheme(wc_getter.Run());
   const ui::ThemeProvider& tp = ThemeService::GetThemeProviderForProfile(
       profile_->GetPrimaryOTRProfile());
 
@@ -482,9 +464,8 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
 
   // Colors.
   substitutions["colorBackground"] = color_utils::SkColorToRgbaString(
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_BACKGROUND));
-  substitutions["backgroundBarDetached"] = GetNewTabBackgroundCSS(tp, false);
-  substitutions["backgroundBarAttached"] = GetNewTabBackgroundCSS(tp, true);
+      GetThemeColor(native_theme, tp, ThemeProperties::COLOR_NTP_BACKGROUND));
+  substitutions["backgroundPosition"] = GetNewTabBackgroundPositionCSS(tp);
   substitutions["backgroundTiling"] = GetNewTabBackgroundTilingCSS(tp);
 
   // Get our template.
@@ -501,19 +482,22 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
   new_tab_incognito_css_ = base::RefCountedString::TakeString(&full_css);
 }
 
-void NTPResourceCache::CreateNewTabCSS() {
+void NTPResourceCache::CreateNewTabCSS(
+    const content::WebContents::Getter wc_getter) {
+  const ui::NativeTheme* native_theme = webui::GetNativeTheme(wc_getter.Run());
   const ui::ThemeProvider& tp =
       ThemeService::GetThemeProviderForProfile(profile_);
 
   // Get our theme colors.
   SkColor color_background =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_BACKGROUND);
-  SkColor color_text = GetThemeColor(tp, ThemeProperties::COLOR_NTP_TEXT);
+      GetThemeColor(native_theme, tp, ThemeProperties::COLOR_NTP_BACKGROUND);
+  SkColor color_text =
+      GetThemeColor(native_theme, tp, ThemeProperties::COLOR_NTP_TEXT);
   SkColor color_text_light =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_TEXT_LIGHT);
+      GetThemeColor(native_theme, tp, ThemeProperties::COLOR_NTP_TEXT_LIGHT);
 
   SkColor color_header =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_HEADER);
+      GetThemeColor(native_theme, tp, ThemeProperties::COLOR_NTP_HEADER);
   // Generate a lighter color for the header gradients.
   color_utils::HSL header_lighter;
   color_utils::SkColorToHSL(color_header, &header_lighter);
@@ -539,9 +523,8 @@ void NTPResourceCache::CreateNewTabCSS() {
   substitutions["colorBackground"] =
       color_utils::SkColorToRgbaString(color_background);
   substitutions["colorLink"] = color_utils::SkColorToRgbString(
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_LINK));
-  substitutions["backgroundBarDetached"] = GetNewTabBackgroundCSS(tp, false);
-  substitutions["backgroundBarAttached"] = GetNewTabBackgroundCSS(tp, true);
+      GetThemeColor(native_theme, tp, ThemeProperties::COLOR_NTP_LINK));
+  substitutions["backgroundPosition"] = GetNewTabBackgroundPositionCSS(tp);
   substitutions["backgroundTiling"] = GetNewTabBackgroundTilingCSS(tp);
   substitutions["colorTextRgba"] = color_utils::SkColorToRgbaString(color_text);
   substitutions["colorTextLight"] =

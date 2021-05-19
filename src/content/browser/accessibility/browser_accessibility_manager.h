@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -32,7 +33,6 @@
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree.h"
-#include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/ax_tree_manager.h"
 #include "ui/accessibility/ax_tree_observer.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -256,10 +256,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // had focus.
   static void NeverSuppressOrDelayEventsForTesting();
 
-  // Some tests are temporarily allowed to disable extra mac nodes.
-  static void DisableExtraMacNodesForTesting();
-  static bool GetExtraMacNodesDisabled();
-
   // Accessibility actions. All of these are implemented asynchronously
   // by sending a message to the renderer to perform the respective action
   // on the given node.  See the definition of |ui::AXActionData| for more
@@ -417,13 +413,13 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
       const BrowserAccessibility& start_object,
       const BrowserAccessibility& end_object);
 
-  static base::string16 GetTextForRange(
+  static std::u16string GetTextForRange(
       const BrowserAccessibility& start_object,
       const BrowserAccessibility& end_object);
 
   // If start and end offsets are greater than the text's length, returns all
   // the text.
-  static base::string16 GetTextForRange(
+  static std::u16string GetTextForRange(
       const BrowserAccessibility& start_object,
       int start_offset,
       const BrowserAccessibility& end_object,
@@ -591,9 +587,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // Fire all events regardless of focus and with no delay, to avoid test
   // flakiness. See NeverSuppressOrDelayEventsForTesting() for details.
   static bool never_suppress_or_delay_events_for_testing_;
-
-  // Some tests disable extra mac nodes.
-  static bool disable_extra_mac_nodes_for_testing_;
 
   const ui::AXEventGenerator& event_generator() const {
     return event_generator_;

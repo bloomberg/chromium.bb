@@ -25,6 +25,7 @@ gpu_metric.py android_gpu gpu_metric.out
 
 # Android SysUI CUJs metrics
 android_sysui_cuj.py android_sysui_cuj android_sysui_cuj.out
+android_sysui_cuj_old.py android_sysui_cuj android_sysui_cuj_old.out
 android_sysui_cuj.py android_sysui_cuj_event.sql android_sysui_cuj_event.out
 
 # Frame Timeline event trace tests
@@ -36,3 +37,6 @@ composition_layer.py composition_layer_count.sql composition_layer_count.out
 
 # Android Jank metrics
 android_jank.py android_jank android_jank.out
+
+# G2D metrics
+g2d_metrics.textproto g2d g2d_metrics.out

@@ -38,6 +38,7 @@ class GlobalArgsTracker;
 class GlobalStackProfileTracker;
 class HeapGraphTracker;
 class HeapProfileTracker;
+class PerfSampleTracker;
 class MetadataTracker;
 class ProtoImporterModule;
 class ProcessTracker;
@@ -76,6 +77,7 @@ class TraceProcessorContext {
   std::unique_ptr<EventTracker> event_tracker;
   std::unique_ptr<ClockTracker> clock_tracker;
   std::unique_ptr<HeapProfileTracker> heap_profile_tracker;
+  std::unique_ptr<PerfSampleTracker> perf_sample_tracker;
   std::unique_ptr<GlobalStackProfileTracker> global_stack_profile_tracker;
   std::unique_ptr<MetadataTracker> metadata_tracker;
 
@@ -112,7 +114,7 @@ class TraceProcessorContext {
 
   // The module at the index N is registered to handle field id N in
   // TracePacket.
-  std::vector<ProtoImporterModule*> modules_by_field;
+  std::vector<std::vector<ProtoImporterModule*>> modules_by_field;
   std::vector<std::unique_ptr<ProtoImporterModule>> modules;
   FtraceModule* ftrace_module = nullptr;
 };

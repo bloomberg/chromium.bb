@@ -92,9 +92,9 @@ bool IsChargerConnected() {
     // If battery is full or battery is charging, that implies power is
     // connected. Also return true if a power source is connected and
     // battery is not discharging.
-    return power_status->IsBatteryCharging() || power_status->IsBatteryFull() ||
+    return power_status->IsBatteryCharging() ||
            (power_status->IsLinePowerConnected() &&
-            !power_status->IsBatteryDischargingOnLinePower());
+            power_status->GetBatteryPercent() > 95.f);
   } else {
     // Chromeboxes have no battery.
     return power_status->IsLinePowerConnected();
@@ -362,6 +362,8 @@ void AmbientController::ScreenIdleStateChanged(
   if (!IsAmbientModeEnabled())
     return;
 
+  is_screen_off_ = idle_state.off();
+
   if (idle_state.off()) {
     DVLOG(1) << "Screen is off, close ambient mode.";
 
@@ -469,6 +471,11 @@ void AmbientController::ShowHiddenUi() {
 
   if (is_suspend_imminent_) {
     VLOG(1) << "Do not start hidden UI when suspend imminent";
+    return;
+  }
+
+  if (is_screen_off_) {
+    VLOG(1) << "Do not start hidden UI when screen is off";
     return;
   }
 

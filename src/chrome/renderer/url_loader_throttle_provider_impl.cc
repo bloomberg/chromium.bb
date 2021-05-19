@@ -18,6 +18,7 @@
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/lite_video/lite_video_url_loader_throttle.h"
+#include "chrome/renderer/subresource_redirect/src_video_redirect_url_loader_throttle.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
 #include "components/no_state_prefetch/renderer/no_state_prefetch_helper.h"
@@ -90,7 +91,7 @@ void SetExtensionThrottleManagerTestPolicy(
 
 URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
     blink::ThreadSafeBrowserInterfaceBrokerProxy* broker,
-    content::URLLoaderThrottleProviderType type,
+    blink::URLLoaderThrottleProviderType type,
     ChromeContentRendererClient* chrome_content_renderer_client)
     : type_(type),
       chrome_content_renderer_client_(chrome_content_renderer_client) {
@@ -114,7 +115,7 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
   // An ad_delay_factory_ is created, rather than cloning the existing one.
 }
 
-std::unique_ptr<content::URLLoaderThrottleProvider>
+std::unique_ptr<blink::URLLoaderThrottleProvider>
 URLLoaderThrottleProviderImpl::Clone() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (safe_browsing_remote_)
@@ -122,13 +123,13 @@ URLLoaderThrottleProviderImpl::Clone() {
   return base::WrapUnique(new URLLoaderThrottleProviderImpl(*this));
 }
 
-std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+blink::WebVector<std::unique_ptr<blink::URLLoaderThrottle>>
 URLLoaderThrottleProviderImpl::CreateThrottles(
     int render_frame_id,
     const blink::WebURLRequest& request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
+  blink::WebVector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
 
   const network::mojom::RequestDestination request_destination =
       request.GetRequestDestination();
@@ -139,22 +140,22 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
       blink::IsRequestDestinationFrame(request_destination);
 
   DCHECK(!is_frame_resource ||
-         type_ == content::URLLoaderThrottleProviderType::kFrame);
+         type_ == blink::URLLoaderThrottleProviderType::kFrame);
 
   if (!is_frame_resource) {
     if (safe_browsing_remote_)
       safe_browsing_.Bind(std::move(safe_browsing_remote_));
-    throttles.push_back(
+    throttles.emplace_back(
         std::make_unique<safe_browsing::RendererURLLoaderThrottle>(
             safe_browsing_.get(), render_frame_id));
   }
 
-  if (type_ == content::URLLoaderThrottleProviderType::kFrame &&
+  if (type_ == blink::URLLoaderThrottleProviderType::kFrame &&
       !is_frame_resource) {
     auto throttle =
         prerender::NoStatePrefetchHelper::MaybeCreateThrottle(render_frame_id);
     if (throttle)
-      throttles.push_back(std::move(throttle));
+      throttles.emplace_back(std::move(throttle));
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -170,7 +171,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
     std::unique_ptr<blink::URLLoaderThrottle> throttle =
         extension_throttle_manager_->MaybeCreateURLLoaderThrottle(request);
     if (throttle)
-      throttles.push_back(std::move(throttle));
+      throttles.emplace_back(std::move(throttle));
   }
 #endif
 
@@ -182,7 +183,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   }
 #endif
 
-  throttles.push_back(std::make_unique<GoogleURLLoaderThrottle>(
+  throttles.emplace_back(std::make_unique<GoogleURLLoaderThrottle>(
 #if defined(OS_ANDROID)
       client_data_header,
       /* night_mode_enabled= */ false,
@@ -191,7 +192,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
       ChromeRenderThreadObserver::GetDynamicParams()));
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  throttles.push_back(std::make_unique<MergeSessionLoaderThrottle>(
+  throttles.emplace_back(std::make_unique<MergeSessionLoaderThrottle>(
       chrome_content_renderer_client_->GetChromeObserver()
           ->chromeos_listener()));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -199,13 +200,18 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   auto throttle = subresource_redirect::SubresourceRedirectURLLoaderThrottle::
       MaybeCreateThrottle(request, render_frame_id);
   if (throttle)
-    throttles.push_back(std::move(throttle));
+    throttles.emplace_back(std::move(throttle));
+  auto src_video_redirect_throttle =
+      subresource_redirect::SrcVideoRedirectURLLoaderThrottle::
+          MaybeCreateThrottle(request, render_frame_id);
+  if (src_video_redirect_throttle)
+    throttles.emplace_back(std::move(src_video_redirect_throttle));
 
   if (render_frame_id != MSG_ROUTING_NONE) {
     auto throttle = lite_video::LiteVideoURLLoaderThrottle::MaybeCreateThrottle(
         request, render_frame_id);
     if (throttle)
-      throttles.push_back(std::move(throttle));
+      throttles.emplace_back(std::move(throttle));
   }
 
   return throttles;

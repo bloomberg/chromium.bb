@@ -54,6 +54,7 @@ FrameNodeImpl::~FrameNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(child_worker_nodes_.empty());
   DCHECK(opened_page_nodes_.empty());
+  DCHECK(!execution_context_);
 }
 
 void FrameNodeImpl::Bind(
@@ -82,9 +83,9 @@ void FrameNodeImpl::SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) {
   document_.has_nonempty_beforeunload = has_nonempty_beforeunload;
 }
 
-void FrameNodeImpl::SetIsAdFrame() {
+void FrameNodeImpl::SetIsAdFrame(bool is_ad_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  is_ad_frame_.SetAndMaybeNotify(this, true);
+  is_ad_frame_.SetAndMaybeNotify(this, is_ad_frame);
 }
 
 void FrameNodeImpl::SetHadFormInteraction() {
@@ -575,7 +576,7 @@ void FrameNodeImpl::OnJoiningGraph() {
   // page node must be accessed. OnFrameNodeAdded() has not been called yet for
   // this frame, so it is important to avoid sending a notification for this
   // property change.
-  visibility_.Set(GetInitialFrameVisibility());
+  visibility_.Set(this, GetInitialFrameVisibility());
 
   // Wire this up to the other nodes in the graph.
   if (parent_frame_node_)
@@ -609,6 +610,11 @@ void FrameNodeImpl::OnBeforeLeavingGraph() {
   // Disable querying this node using process and frame routing ids.
   graph()->UnregisterFrameNodeForId(process_node_->GetRenderProcessId(),
                                     render_frame_id_, this);
+}
+
+void FrameNodeImpl::RemoveNodeAttachedData() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  execution_context_.reset();
 }
 
 void FrameNodeImpl::SeverOpenedPagesAndMaybeReparent() {

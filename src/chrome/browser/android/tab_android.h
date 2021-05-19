@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
 #include "chrome/browser/tab/web_contents_state.h"
@@ -92,7 +92,7 @@ class TabAndroid : public base::SupportsUserData {
   bool IsNativePage() const;
 
   // Return the tab title.
-  base::string16 GetTitle() const;
+  std::u16string GetTitle() const;
 
   // Return the tab url.
   GURL GetURL() const;

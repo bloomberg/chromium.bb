@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/views/media_router/cast_dialog_no_sinks_view.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
-#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/media_router/browser/media_router_metrics.h"
@@ -106,7 +105,7 @@ views::Widget* CastDialogView::GetCurrentDialogWidget() {
   return instance_ ? instance_->GetWidget() : nullptr;
 }
 
-base::string16 CastDialogView::GetWindowTitle() const {
+std::u16string CastDialogView::GetWindowTitle() const {
   switch (selected_source_) {
     case SourceType::kTab:
       return dialog_title_;
@@ -118,7 +117,7 @@ base::string16 CastDialogView::GetWindowTitle() const {
                                         local_file_name_.value());
     default:
       NOTREACHED();
-      return base::string16();
+      return std::u16string();
   }
 }
 

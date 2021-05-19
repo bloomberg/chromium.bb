@@ -14,9 +14,9 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/policy/device_display_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -64,8 +64,8 @@ const int kDefaultDisplayScale = 100;
 
 PolicyValue GetPolicySetting() {
   const base::DictionaryValue* resolution_pref = nullptr;
-  chromeos::CrosSettings::Get()->GetDictionary(
-      chromeos::kDeviceDisplayResolution, &resolution_pref);
+  ash::CrosSettings::Get()->GetDictionary(chromeos::kDeviceDisplayResolution,
+                                          &resolution_pref);
   EXPECT_TRUE(resolution_pref) << "DeviceDisplayResolution setting is not set";
   const base::Value* width = resolution_pref->FindKeyOfType(
       {chromeos::kDeviceDisplayResolutionKeyExternalWidth},
@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, PRE_Reboot) {
   SetPolicyValue(&proto, policy_value, true);
   base::RunLoop run_loop;
   base::CallbackListSubscription subscription =
-      chromeos::CrosSettings::Get()->AddSettingsObserver(
+      ash::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kDeviceDisplayResolution, run_loop.QuitClosure());
   device_policy->SetDefaultSigningKey();
   device_policy->Build();

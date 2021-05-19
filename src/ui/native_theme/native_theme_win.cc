@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -247,7 +248,8 @@ void NativeThemeWin::Paint(cc::PaintCanvas* canvas,
                            State state,
                            const gfx::Rect& rect,
                            const ExtraParams& extra,
-                           ColorScheme color_scheme) const {
+                           ColorScheme color_scheme,
+                           const base::Optional<SkColor>& accent_color) const {
   if (rect.IsEmpty())
     return;
 
@@ -322,6 +324,23 @@ void NativeThemeWin::ConfigureWebInstance() {
   web_instance->set_system_colors(GetSystemColors());
 }
 
+bool NativeThemeWin::AllowColorPipelineRedirection(
+    ColorScheme color_scheme) const {
+  return true;
+}
+
+SkColor NativeThemeWin::GetSystemColorDeprecated(ColorId color_id,
+                                                 ColorScheme color_scheme,
+                                                 bool apply_processing) const {
+  base::Optional<SkColor> color;
+  if (color_scheme == ColorScheme::kPlatformHighContrast &&
+      (color = GetPlatformHighContrastColor(color_id))) {
+    return color.value();
+  }
+  return NativeTheme::GetSystemColorDeprecated(color_id, color_scheme,
+                                               apply_processing);
+}
+
 NativeThemeWin::~NativeThemeWin() {
   // TODO(https://crbug.com/787692): Calling CloseHandles() here breaks
   // certain tests and the reliability bots.
@@ -350,7 +369,7 @@ void NativeThemeWin::OnSysColorChange() {
     set_forced_colors(IsUsingHighContrastThemeInternal());
   set_preferred_color_scheme(CalculatePreferredColorScheme());
   set_preferred_contrast(CalculatePreferredContrast());
-  NotifyObservers();
+  NotifyOnNativeThemeUpdated();
 }
 
 void NativeThemeWin::UpdateSystemColors() {
@@ -590,17 +609,6 @@ void NativeThemeWin::PaintDirect(SkCanvas* destination_canvas,
   }
 }
 
-SkColor NativeThemeWin::GetSystemColor(ColorId color_id,
-                                       ColorScheme color_scheme) const {
-  if (color_scheme == ColorScheme::kDefault)
-    color_scheme = GetDefaultSystemColorScheme();
-
-  base::Optional<SkColor> color;
-  if (color_scheme == ColorScheme::kPlatformHighContrast)
-    color = GetPlatformHighContrastColor(color_id);
-  return color.value_or(NativeTheme::GetSystemColor(color_id, color_scheme));
-}
-
 base::Optional<SkColor> NativeThemeWin::GetPlatformHighContrastColor(
     ColorId color_id) const {
   switch (color_id) {
@@ -615,7 +623,7 @@ base::Optional<SkColor> NativeThemeWin::GetPlatformHighContrastColor(
     case kColorId_TableBackgroundAlternate:
     case kColorId_TooltipBackground:
     case kColorId_ProminentButtonDisabledColor:
-    case kColorId_NotificationDefaultBackground:
+    case kColorId_NotificationBackground:
       return system_colors_[SystemThemeColor::kWindow];
 
     // Window Text
@@ -631,7 +639,6 @@ base::Optional<SkColor> NativeThemeWin::GetPlatformHighContrastColor(
     case kColorId_TooltipIcon:
     case kColorId_TooltipText:
     case kColorId_ThrobberSpinningColor:
-    case kColorId_ThrobberLightColor:
     case kColorId_AlertSeverityLow:
     case kColorId_AlertSeverityMedium:
     case kColorId_AlertSeverityHigh:
@@ -681,6 +688,7 @@ base::Optional<SkColor> NativeThemeWin::GetPlatformHighContrastColor(
     case kColorId_ProminentButtonColor:
     case kColorId_ProminentButtonFocusedColor:
     case kColorId_ButtonBorderColor:
+    case kColorId_DropdownSelectedBackgroundColor:
     case kColorId_FocusedMenuItemBackgroundColor:
     case kColorId_LabelTextSelectionBackgroundFocused:
     case kColorId_TextfieldSelectionBackgroundFocused:
@@ -1683,7 +1691,7 @@ void NativeThemeWin::UpdateDarkModeStatus() {
   }
   set_use_dark_colors(dark_mode_enabled);
   set_preferred_color_scheme(CalculatePreferredColorScheme());
-  NotifyObservers();
+  NotifyOnNativeThemeUpdated();
 }
 
 }  // namespace ui

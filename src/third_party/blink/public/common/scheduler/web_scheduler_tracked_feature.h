@@ -19,7 +19,7 @@ namespace scheduler {
 //
 // Please keep in sync with WebSchedulerTrackedFeature in
 // tools/metrics/histograms/enums.xml. These values should not be renumbered.
-enum class WebSchedulerTrackedFeature {
+enum class WebSchedulerTrackedFeature : uint32_t {
   kWebSocket = 0,
   kWebRTC = 1,
 
@@ -100,9 +100,10 @@ enum class WebSchedulerTrackedFeature {
   kKeyboardLock = 51,
   kWebOTPService = 52,
   kOutstandingNetworkRequestDirectSocket = 53,
+  kMediaSessionImplOnServiceCreated = 56,
 
   // NB: This enum is used in a bitmask, so kMaxValue must be less than 64.
-  kMaxValue = kOutstandingNetworkRequestDirectSocket
+  kMaxValue = kMediaSessionImplOnServiceCreated,
 };
 
 static_assert(static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue) < 64,

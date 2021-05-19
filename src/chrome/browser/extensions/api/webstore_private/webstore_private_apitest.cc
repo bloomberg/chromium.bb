@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -10,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -27,6 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -34,10 +37,12 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "extensions/browser/allowlist_state.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install/extension_install_ui.h"
+#include "extensions/common/extension_features.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -48,7 +53,7 @@
 // flag to #if defined(OS_CHROMEOS)
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "chrome/browser/chromeos/login/test/logged_in_user_mixin.h"
+#include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -70,6 +75,8 @@ namespace utils = extension_function_test_utils;
 namespace extensions {
 
 namespace {
+
+constexpr char kExtensionId[] = "enfkhcelefdadlmkffamgdlgplcionje";
 
 class WebstoreInstallListener : public WebstoreInstaller::Delegate {
  public:
@@ -148,8 +155,8 @@ class ExtensionWebstorePrivateApiTest : public MixinBasedExtensionApiTest {
     ASSERT_TRUE(StartEmbeddedTestServer());
     extensions::ExtensionInstallUI::set_disable_ui_for_tests();
 
-    auto_confirm_install_.reset(
-        new ScopedTestDialogAutoConfirm(ScopedTestDialogAutoConfirm::ACCEPT));
+    auto_confirm_install_ = std::make_unique<ScopedTestDialogAutoConfirm>(
+        ScopedTestDialogAutoConfirm::ACCEPT);
 
     ASSERT_TRUE(webstore_install_dir_.CreateUniqueTempDir());
     webstore_install_dir_copy_ = webstore_install_dir_.GetPath();
@@ -183,7 +190,7 @@ class ExtensionWebstorePrivateApiTest : public MixinBasedExtensionApiTest {
     extension_test_util::SetGalleryUpdateURL(crx_url);
 
     GURL page_url = GetTestServerURL(page);
-    return RunPageTest(page_url.spec());
+    return RunExtensionTest({.page_url = page_url.spec().c_str()});
   }
 
   content::WebContents* GetWebContents() {
@@ -309,12 +316,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, AppInstallBubble) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IsInIncognitoMode) {
   GURL page_url = GetTestServerURL("incognito.html");
-  ASSERT_TRUE(RunPageTest(page_url.spec(), kFlagNone, kFlagUseIncognito));
+  ASSERT_TRUE(RunExtensionTest(
+      {.page_url = page_url.spec().c_str(), .open_in_incognito = true}));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IsNotInIncognitoMode) {
   GURL page_url = GetTestServerURL("not_incognito.html");
-  ASSERT_TRUE(RunPageTest(page_url.spec()));
+  ASSERT_TRUE(RunExtensionTest({.page_url = page_url.spec().c_str()}));
 }
 
 // Tests using the iconUrl parameter to the install function.
@@ -325,7 +333,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IconUrl) {
 // Tests that the Approvals are properly created in beginInstall.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, BeginInstall) {
   std::string appId = "iladmdjkfniedhfhcfoefgojhgaiaccc";
-  std::string extensionId = "enfkhcelefdadlmkffamgdlgplcionje";
   ASSERT_TRUE(RunInstallTest("begin_install.html", "extension.crx"));
 
   std::unique_ptr<WebstoreInstaller::Approval> approval =
@@ -336,9 +343,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, BeginInstall) {
   EXPECT_EQ("2", approval->authuser);
   EXPECT_EQ(browser()->profile(), approval->profile);
 
-  approval = WebstorePrivateApi::PopApprovalForTesting(
-      browser()->profile(), extensionId);
-  EXPECT_EQ(extensionId, approval->extension_id);
+  approval = WebstorePrivateApi::PopApprovalForTesting(browser()->profile(),
+                                                       kExtensionId);
+  EXPECT_EQ(kExtensionId, approval->extension_id);
   EXPECT_FALSE(approval->use_app_installed_bubble);
   EXPECT_FALSE(approval->skip_post_install_ui);
   EXPECT_TRUE(approval->authuser.empty());
@@ -628,7 +635,7 @@ class ExtensionWebstorePrivateGetReferrerChainApiTest
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateGetReferrerChainApiTest,
                        GetReferrerChain) {
   GURL page_url = GetTestServerURLWithReferrers("referrer_chain.html");
-  ASSERT_TRUE(RunPageTest(page_url.spec()));
+  ASSERT_TRUE(RunExtensionTest({.page_url = page_url.spec().c_str()}));
 }
 
 // Tests that the GetReferrerChain API returns an empty string for profiles
@@ -641,7 +648,60 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateGetReferrerChainApiTest,
   pref_service->SetBoolean(prefs::kSafeBrowsingEnabled, false);
 
   GURL page_url = GetTestServerURLWithReferrers("empty_referrer_chain.html");
-  ASSERT_TRUE(RunPageTest(page_url.spec()));
+  ASSERT_TRUE(RunExtensionTest({.page_url = page_url.spec().c_str()}));
+}
+
+class ExtensionWebstorePrivateApiAllowlistEnforcementTest
+    : public ExtensionWebstorePrivateApiTest {
+ public:
+  ExtensionWebstorePrivateApiAllowlistEnforcementTest() {
+    feature_list_.InitWithFeatures(
+        {extensions_features::kSafeBrowsingCrxAllowlistShowWarnings,
+         extensions_features::kSafeBrowsingCrxAllowlistAutoDisable},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiAllowlistEnforcementTest,
+                       EnhancedSafeBrowsingNotAllowlisted) {
+  safe_browsing::SetSafeBrowsingState(browser()->profile()->GetPrefs(),
+                                      safe_browsing::ENHANCED_PROTECTION);
+  ASSERT_TRUE(
+      RunInstallTest("safebrowsing_not_allowlisted.html", "extension.crx"));
+
+  EXPECT_EQ(ALLOWLIST_NOT_ALLOWLISTED,
+            extension_service()->allowlist()->GetExtensionAllowlistState(
+                kExtensionId));
+  EXPECT_EQ(
+      ALLOWLIST_ACKNOWLEDGE_ENABLED_BY_USER,
+      extension_service()->allowlist()->GetExtensionAllowlistAcknowledgeState(
+          kExtensionId));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiAllowlistEnforcementTest,
+                       EnhancedSafeBrowsingAllowlisted) {
+  safe_browsing::SetSafeBrowsingState(browser()->profile()->GetPrefs(),
+                                      safe_browsing::ENHANCED_PROTECTION);
+  ASSERT_TRUE(RunInstallTest("safebrowsing_allowlisted.html", "extension.crx"));
+
+  EXPECT_EQ(ALLOWLIST_UNDEFINED,
+            extension_service()->allowlist()->GetExtensionAllowlistState(
+                kExtensionId));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiAllowlistEnforcementTest,
+                       StandardSafeBrowsingNotAllowlisted) {
+  safe_browsing::SetSafeBrowsingState(browser()->profile()->GetPrefs(),
+                                      safe_browsing::STANDARD_PROTECTION);
+  ASSERT_TRUE(
+      RunInstallTest("safebrowsing_not_allowlisted.html", "extension.crx"));
+
+  EXPECT_EQ(ALLOWLIST_UNDEFINED,
+            extension_service()->allowlist()->GetExtensionAllowlistState(
+                kExtensionId));
 }
 
 }  // namespace extensions

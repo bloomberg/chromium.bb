@@ -26,7 +26,7 @@
 
 // Version number for shader translation API.
 // It is incremented every time the API changes.
-#define ANGLE_SH_VERSION 253
+#define ANGLE_SH_VERSION 255
 
 enum ShShaderSpec
 {
@@ -69,12 +69,11 @@ enum ShShaderOutput
     SH_HLSL_4_1_OUTPUT       = 0x8B49,  // D3D 11
     SH_HLSL_4_0_FL9_3_OUTPUT = 0x8B4A,  // D3D 11 feature level 9_3
 
-    // Output specialized GLSL to be fed to glslang for Vulkan SPIR.
-    SH_GLSL_VULKAN_OUTPUT = 0x8B4B,
+    // Output SPIR-V for the Vulkan backend.
+    SH_SPIRV_VULKAN_OUTPUT = 0x8B4B,
 
-    // Output specialized GLSL to be fed to glslang for Vulkan SPIR to be cross compiled to Metal
-    // later.
-    SH_GLSL_METAL_OUTPUT = 0x8B4C,
+    // Output SPIR-V to be cross compiled to Metal.
+    SH_SPIRV_METAL_OUTPUT = 0x8B4C,
 };
 
 // Compile options.
@@ -617,6 +616,7 @@ using ShHandle = void *;
 
 namespace sh
 {
+using BinaryBlob = std::vector<uint32_t>;
 
 //
 // Driver must call this first, once, before doing any other compiler operations.
@@ -679,7 +679,7 @@ void Destruct(ShHandle handle);
 //                            compiling for WebGL - it is implied.
 // SH_INTERMEDIATE_TREE: Writes intermediate tree to info log.
 //                       Can be queried by calling sh::GetInfoLog().
-// SH_OBJECT_CODE: Translates intermediate tree to glsl or hlsl shader.
+// SH_OBJECT_CODE: Translates intermediate tree to glsl or hlsl shader, or SPIR-V binary.
 //                 Can be queried by calling sh::GetObjectCode().
 // SH_VARIABLES: Extracts attributes, uniforms, and varyings.
 //               Can be queried by calling ShGetVariableInfo().
@@ -703,10 +703,17 @@ ShShaderOutput GetShaderOutputType(const ShHandle handle);
 // handle: Specifies the compiler
 const std::string &GetInfoLog(const ShHandle handle);
 
-// Returns null-terminated object code for a compiled shader.
+// Returns null-terminated object code for a compiled shader.  Only valid for output types that
+// generate human-readable code (GLSL, ESSL or HLSL).
 // Parameters:
 // handle: Specifies the compiler
 const std::string &GetObjectCode(const ShHandle handle);
+
+// Returns object binary blob for a compiled shader.  Only valid for output types that
+// generate binary blob (SPIR-V).
+// Parameters:
+// handle: Specifies the compiler
+const BinaryBlob &GetObjectBinaryBlob(const ShHandle handle);
 
 // Returns a (original_name, hash) map containing all the user defined names in the shader,
 // including variable names, function names, struct names, and struct field names.
@@ -892,6 +899,7 @@ extern const char kLineRasterEmulationPosition[];
 
 // Transform feedback emulation support
 extern const char kXfbEmulationGetOffsetsFunctionName[];
+extern const char kXfbEmulationCaptureFunctionName[];
 extern const char kXfbEmulationBufferBlockName[];
 extern const char kXfbEmulationBufferName[];
 extern const char kXfbEmulationBufferFieldName[];
@@ -912,6 +920,13 @@ extern const char kCoverageMaskEnabledConstName[];
 // Specialization constant to emulate rasterizer discard.
 extern const char kRasterizerDiscardEnabledConstName[];
 }  // namespace mtl
+
+// For backends that use glslang (the Vulkan shader compiler), i.e. Vulkan and Metal, call these to
+// initialize and finalize glslang itself.  This can be called independently from Initialize() and
+// Finalize().
+void InitializeGlslang();
+void FinalizeGlslang();
+
 }  // namespace sh
 
 #endif  // GLSLANG_SHADERLANG_H_

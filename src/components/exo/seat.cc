@@ -43,27 +43,6 @@
 namespace exo {
 namespace {
 
-Surface* GetEffectiveFocus(aura::Window* window) {
-  if (!window)
-    return nullptr;
-  Surface* const surface = Surface::AsSurface(window);
-  if (surface)
-    return surface;
-  ShellSurfaceBase* shell_surface_base = nullptr;
-  for (auto* current = window; current && !shell_surface_base;
-       current = current->parent()) {
-    shell_surface_base = GetShellSurfaceBaseForWindow(current);
-  }
-  // Make sure the |window| is the toplevel or a host window, but not
-  // another window added to the toplevel.
-  if (shell_surface_base &&
-      (shell_surface_base->GetWidget()->GetNativeWindow() == window ||
-       shell_surface_base->host_window()->Contains(window))) {
-    return shell_surface_base->root_surface();
-  }
-  return nullptr;
-}
-
 }  // namespace
 
 Seat::Seat(std::unique_ptr<DataExchangeDelegate> delegate)
@@ -120,7 +99,8 @@ void Seat::RemoveObserver(SeatObserver* observer) {
 }
 
 Surface* Seat::GetFocusedSurface() {
-  return GetEffectiveFocus(WMHelper::GetInstance()->GetFocusedWindow());
+  return GetTargetSurfaceForKeyboardFocus(
+      WMHelper::GetInstance()->GetFocusedWindow());
 }
 
 void Seat::StartDrag(DataSource* source,
@@ -144,9 +124,12 @@ void Seat::AbortPendingDragOperation() {
 
 void Seat::SetSelection(DataSource* source) {
   Surface* focused_surface = GetFocusedSurface();
-  DCHECK(focused_surface);
-  if (!source || !source->CanBeDataSourceForCopy(focused_surface))
+  if (!source || !focused_surface ||
+      !source->CanBeDataSourceForCopy(focused_surface)) {
+    if (source)
+      source->Cancelled();
     return;
+  }
 
   if (selection_source_) {
     if (selection_source_->get() == source)
@@ -196,7 +179,7 @@ class Seat::RefCountedScopedClipboardWriter
 void Seat::OnTextRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
                       base::OnceClosure callback,
                       const std::string& mime_type,
-                      base::string16 data) {
+                      std::u16string data) {
   writer->WriteText(std::move(data));
   std::move(callback).Run();
 }
@@ -213,7 +196,7 @@ void Seat::OnRTFRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
 void Seat::OnHTMLRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
                       base::OnceClosure callback,
                       const std::string& mime_type,
-                      base::string16 data) {
+                      std::u16string data) {
   writer->WriteHTML(std::move(data), std::string());
   std::move(callback).Run();
 }
@@ -224,7 +207,7 @@ void Seat::OnImageRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
                        const std::vector<uint8_t>& data) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   data_decoder::DecodeImageIsolated(
-      data, data_decoder::mojom::ImageCodec::DEFAULT, false,
+      data, data_decoder::mojom::ImageCodec::kDefault, false,
       std::numeric_limits<int64_t>::max(), gfx::Size(),
       base::BindOnce(&Seat::OnImageDecoded, weak_ptr_factory_.GetWeakPtr(),
                      std::move(callback), writer));
@@ -286,7 +269,7 @@ void Seat::OnAllReadsFinished(
 
 void Seat::OnWindowFocused(aura::Window* gained_focus,
                            aura::Window* lost_focus) {
-  Surface* const surface = GetEffectiveFocus(gained_focus);
+  Surface* const surface = GetTargetSurfaceForKeyboardFocus(gained_focus);
   for (auto& observer : observers_) {
     observer.OnSurfaceFocusing(surface);
   }
@@ -338,8 +321,9 @@ void Seat::OnKeyEvent(ui::KeyEvent* event) {
   if (physical_code_for_currently_processing_event_ != ui::DomCode::NONE) {
     switch (event->type()) {
       case ui::ET_KEY_PRESSED:
-        pressed_keys_.insert(
-            {physical_code_for_currently_processing_event_, event->code()});
+        pressed_keys_.emplace(
+            physical_code_for_currently_processing_event_,
+            KeyState{event->code(), /*consumed_by_ime=*/false});
         break;
       case ui::ET_KEY_RELEASED:
         pressed_keys_.erase(physical_code_for_currently_processing_event_);

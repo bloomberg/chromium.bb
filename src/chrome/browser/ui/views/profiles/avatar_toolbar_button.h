@@ -15,6 +15,8 @@
 
 class AvatarToolbarButtonDelegate;
 class Browser;
+class BrowserView;
+class FeaturePromoControllerViews;
 
 class AvatarToolbarButton : public ToolbarButton,
                             ToolbarIconContainerView::Observer {
@@ -42,8 +44,9 @@ class AvatarToolbarButton : public ToolbarButton,
 
   // TODO(crbug.com/922525): Remove this constructor when this button always has
   // ToolbarIconContainerView as a parent.
-  explicit AvatarToolbarButton(Browser* browser);
-  AvatarToolbarButton(Browser* browser, ToolbarIconContainerView* parent);
+  explicit AvatarToolbarButton(BrowserView* browser);
+  AvatarToolbarButton(BrowserView* browser_view,
+                      ToolbarIconContainerView* parent);
   AvatarToolbarButton(const AvatarToolbarButton&) = delete;
   AvatarToolbarButton& operator=(const AvatarToolbarButton&) = delete;
   ~AvatarToolbarButton() override;
@@ -56,6 +59,9 @@ class AvatarToolbarButton : public ToolbarButton,
 
   void NotifyHighlightAnimationFinished();
 
+  // Attempts showing the In-Produce-Help for profile Switching.
+  void MaybeShowProfileSwitchIPH();
+
   // ToolbarButton:
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnBlur() override;
@@ -66,6 +72,9 @@ class AvatarToolbarButton : public ToolbarButton,
   // ToolbarIconContainerView::Observer:
   void OnHighlightChanged() override;
 
+  // Can be used in tests to reduce or remove the delay before showing the IPH.
+  static void SetIPHMinDelayAfterCreationForTesting(base::TimeDelta delay);
+
  protected:
   // ToolbarButton:
   void NotifyClick(const ui::Event& event) override;
@@ -74,16 +83,33 @@ class AvatarToolbarButton : public ToolbarButton,
   FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,
                            HighlightMeetsMinimumContrast);
 
-  base::string16 GetAvatarTooltipText() const;
+  // ui::PropertyHandler:
+  void AfterPropertyChange(const void* key, int64_t old_value) override;
+
+  std::u16string GetAvatarTooltipText() const;
   ui::ImageModel GetAvatarIcon(ButtonState state,
                                const gfx::Image& profile_identity_image) const;
 
   void SetInsets();
 
+  // Attempts to show the in-product help for profile switching. This function
+  // should only be called after the backend is initialized. Otherwise prefer
+  // calling MaybeShowProfileSwitchIPH().
+  void MaybeShowProfileSwitchIPHInitialized(bool success);
+
   std::unique_ptr<AvatarToolbarButtonDelegate> delegate_;
 
   Browser* const browser_;
   ToolbarIconContainerView* const parent_;
+
+  // Time when this object was created.
+  const base::TimeTicks creation_time_;
+
+  // Do not show the IPH right when creating the window, so that the IPH has a
+  // separate animation.
+  static base::TimeDelta g_iph_min_delay_after_creation;
+
+  FeaturePromoControllerViews* const feature_promo_controller_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

@@ -65,7 +65,6 @@ label {
   border-radius: 4px;
   border-style: none;
   margin: 0;
-  outline: none;
   padding: 0;
   pointer-events: auto;
   position: relative;
@@ -76,16 +75,23 @@ input[type=checkbox] {
   -webkit-appearance: none;
 }
 
+[tabindex] {
+  outline: none; /* Prevent default focus ring style. */
+  user-select: none;
+}
+
 body.tab-navigation button:focus::after,
 body.tab-navigation input:focus::after {
-  border: 2px solid var(--focus-color);
+  --focus-ring-width: 2px;
+
+  border: var(--focus-ring-width) solid var(--focus-color);
   border-radius: 4px;
-  bottom: calc(-1 * var(--focus-ring-size));
   content: '';
-  left: calc(-1 * var(--focus-ring-size));
+  height: calc(100% + var(--focus-ring-size) * 2);
+  left: calc(-1 * var(--focus-ring-size) - var(--focus-ring-width));
   position: absolute;
-  right: calc(-1 * var(--focus-ring-size));
-  top: calc(-1 * var(--focus-ring-size));
+  top: calc(-1 * var(--focus-ring-size) - var(--focus-ring-width));
+  width: calc(100% + var(--focus-ring-size) * 2);
 }
 
 .cancel-animate {
@@ -158,7 +164,8 @@ body.tab-navigation .circle input:focus::after {
   visibility: visible;
 }
 
-body.taking.video .left-stripe {
+body.taking.video .left-stripe:not(#options-group),
+body.taking.video #options-group :not(#open-ptz-panel) {
   opacity: 0;
   transition: visibility 0ms 225ms, opacity 225ms var(--standard-easing);
   visibility: hidden;
@@ -640,9 +647,11 @@ body.should-handle-intent-result #gallery-enter {
   --switch-device-gap: 32px;
   bottom: calc(var(--bottom-line) + (var(--big-icon) / 2) + var(--switch-device-gap) - var(--option-item-vpadding));
   flex-direction: column-reverse;
+  transition: bottom var(--fast1-duration);
 }
 
-body:not(.multi-camera) #options-group {
+body:not(.multi-camera) #options-group,
+body.taking.video #options-group {
   bottom: calc(var(--bottom-line) - var(--option-item-vpadding) - (var(--small-icon) / 2));
 }
 
@@ -651,8 +660,20 @@ body.max-wnd #options-group {
   --switch-device-gap: 48px;
 }
 
-#options-group input {
+#options-group input,
+#options-group button {
   margin: var(--option-item-vpadding) 0;
+}
+
+body:is(:not(.has-ptz-support), :not(.expert), :not(.show-ptz-options)) #open-ptz-panel {
+  display: none;
+}
+
+#open-ptz-panel {
+  --ripple-spread-ratio: 2;
+  --ripple-start-radius: 18px;
+
+  background-image: url(/images/camera_button_ptz_panel.svg);
 }
 
 body.timer-3s #toggle-timer:checked {
@@ -723,6 +744,7 @@ body.should-handle-intent-result #open-settings {
 }
 
 #view-camera,
+#view-ptz-panel,
 #view-settings,
 #view-grid-settings,
 #view-timer-settings,
@@ -744,6 +766,7 @@ body.should-handle-intent-result #open-settings {
 }
 
 body.view-camera #view-camera,
+body.view-ptz-panel #view-ptz-panel,
 body.view-settings #view-settings,
 body.view-grid-settings #view-grid-settings,
 body.view-timer-settings #view-timer-settings,
@@ -956,11 +979,6 @@ body:not(.show-metadata) #expert-controls>.metadata-row,
 body:not(.video) #expert-controls>.video-option-row,
 body:not(.custom-video-parameters) #expert-controls>.video-option-row {
   display: none;
-}
-
-#video-profile,
-#video-level {
-  pointer-events: auto;
 }
 
 #preview-grid-horizontal {
@@ -1263,6 +1281,7 @@ html[dir=rtl] #banner-close {
 }
 
 .menu {
+  backdrop-filter: blur(10px);
   background: rgba(0, 0, 0, 0.75);
   display: flex;
   flex-direction: column;
@@ -1298,12 +1317,6 @@ label.menu-item:hover {
 button.menu-item,
 label.menu-item {
   overflow: hidden;
-}
-
-body.tab-navigation button.menu-item:focus::after,
-body.tab-navigation label.menu-item:focus::after {
-  bottom: 0;
-  top: 0;
 }
 
 button.menu-item::before,
@@ -1411,8 +1424,7 @@ body.timer-10s .description span[i18n-text=label_timer_10s],
 }
 
 body.tab-navigation button.menu-item:focus::after {
-  left: 2px;
-  right: 2px;
+  --focus-ring-size: -3px;
 }
 
 .menu-header button.icon {

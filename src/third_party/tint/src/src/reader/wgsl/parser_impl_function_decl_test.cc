@@ -12,13 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "src/ast/function.h"
 #include "src/ast/workgroup_decoration.h"
-#include "src/reader/wgsl/parser_impl.h"
 #include "src/reader/wgsl/parser_impl_test_helper.h"
-#include "src/type/type.h"
-#include "src/type/void_type.h"
 
 namespace tint {
 namespace reader {
@@ -172,6 +167,37 @@ fn main() -> void { return; })");
   EXPECT_EQ(x, 5u);
   EXPECT_EQ(y, 6u);
   EXPECT_EQ(z, 7u);
+
+  auto* body = f->body();
+  ASSERT_EQ(body->size(), 1u);
+  EXPECT_TRUE(body->get(0)->Is<ast::ReturnStatement>());
+}
+
+TEST_F(ParserImplTest, FunctionDecl_ReturnTypeDecorationList) {
+  auto p = parser("fn main() -> [[location(1)]] f32 { return 1.0; }");
+  auto decos = p->decoration_list();
+  EXPECT_FALSE(p->has_error()) << p->error();
+  ASSERT_FALSE(decos.errored);
+  EXPECT_FALSE(decos.matched);
+  auto f = p->function_decl(decos.value);
+  EXPECT_FALSE(p->has_error()) << p->error();
+  EXPECT_FALSE(f.errored);
+  EXPECT_TRUE(f.matched);
+  ASSERT_NE(f.value, nullptr);
+
+  EXPECT_EQ(f->symbol(), p->builder().Symbols().Get("main"));
+  ASSERT_NE(f->return_type(), nullptr);
+  EXPECT_TRUE(f->return_type()->Is<type::F32>());
+  ASSERT_EQ(f->params().size(), 0u);
+
+  auto& decorations = f->decorations();
+  EXPECT_EQ(decorations.size(), 0u);
+
+  auto& ret_type_decorations = f->return_type_decorations();
+  ASSERT_EQ(ret_type_decorations.size(), 1u);
+  auto* loc = ret_type_decorations[0]->As<ast::LocationDecoration>();
+  ASSERT_TRUE(loc != nullptr);
+  EXPECT_EQ(loc->value(), 1u);
 
   auto* body = f->body();
   ASSERT_EQ(body->size(), 1u);

@@ -72,8 +72,6 @@ public final class ProductionSupportedFlagList {
                     "Enables modern SameSite cookie behavior: 1) SameSite=Lax by default "
                             + "(cookies without a SameSite attribute are treated as SameSite=Lax); "
                             + "2) Schemeful Same-Site (site boundaries include the URL scheme)."),
-            Flag.baseFeature(GpuFeatures.ENABLE_SHARED_IMAGE_FOR_WEBVIEW,
-                    "Enables shared images for WebView."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_VULKAN,
                     "Use Vulkan for composite. Requires VizForWebView and Android device and "
                             + "OS support. May crash if enabled on unsupported device."),
@@ -105,7 +103,13 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_DISPLAY_CUTOUT,
                     "Enables display cutout (notch) support in WebView for Android P and above."),
             Flag.baseFeature(AwFeatures.WEBVIEW_CPU_AFFINITY_RESTRICT_TO_LITTLE_CORES,
-                    "Forces WebView to do rendering work in little cores"),
+                    "Forces WebView to do rendering work on LITTLE CPU cores on big.LITTLE "
+                            + "architectures"),
+            Flag.baseFeature(AwFeatures.WEBVIEW_POWER_SCHEDULER_THROTTLE_IDLE,
+                    "Restricts all of WebView's out-of-process renderer threads to use only LITTLE "
+                            + "CPU cores on big.LITTLE architectures when the power mode is idle. "
+                            + "WebViewCpuAffinityRestrictToLittleCores, if set, takes precedence "
+                            + "over this flag."),
             Flag.baseFeature(BlinkFeatures.WEBVIEW_ACCELERATE_SMALL_CANVASES,
                     "Accelerate all canvases in webview."),
             Flag.baseFeature(AwFeatures.WEBVIEW_MIXED_CONTENT_AUTOUPGRADES,

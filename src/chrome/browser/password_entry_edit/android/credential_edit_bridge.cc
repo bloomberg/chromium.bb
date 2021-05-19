@@ -16,14 +16,16 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 std::unique_ptr<CredentialEditBridge> CredentialEditBridge::MaybeCreate(
     const password_manager::PasswordForm* credential,
-    std::vector<base::string16> existing_usernames,
+    std::vector<std::u16string> existing_usernames,
     password_manager::SavedPasswordsPresenter* saved_passwords_presenter,
+    PasswordManagerPresenter* password_manager_presenter,
     base::OnceClosure dismissal_callback,
     const base::android::JavaRef<jobject>& context,
     const base::android::JavaRef<jobject>& settings_launcher) {
@@ -35,14 +37,15 @@ std::unique_ptr<CredentialEditBridge> CredentialEditBridge::MaybeCreate(
   }
   return base::WrapUnique(new CredentialEditBridge(
       credential, std::move(existing_usernames), saved_passwords_presenter,
-      std::move(dismissal_callback), context, settings_launcher,
-      std::move(java_bridge)));
+      password_manager_presenter, std::move(dismissal_callback), context,
+      settings_launcher, std::move(java_bridge)));
 }
 
 CredentialEditBridge::CredentialEditBridge(
     const password_manager::PasswordForm* credential,
-    std::vector<base::string16> existing_usernames,
+    std::vector<std::u16string> existing_usernames,
     password_manager::SavedPasswordsPresenter* saved_passwords_presenter,
+    PasswordManagerPresenter* password_manager_presenter,
     base::OnceClosure dismissal_callback,
     const base::android::JavaRef<jobject>& context,
     const base::android::JavaRef<jobject>& settings_launcher,
@@ -50,11 +53,13 @@ CredentialEditBridge::CredentialEditBridge(
     : credential_(credential),
       existing_usernames_(std::move(existing_usernames)),
       saved_passwords_presenter_(saved_passwords_presenter),
+      password_manager_presenter_(password_manager_presenter),
       dismissal_callback_(std::move(dismissal_callback)),
       java_bridge_(java_bridge) {
   Java_CredentialEditBridge_initAndLaunchUi(
       base::android::AttachCurrentThread(), java_bridge_,
-      reinterpret_cast<intptr_t>(this), context, settings_launcher);
+      reinterpret_cast<intptr_t>(this), context, settings_launcher,
+      credential->blocked_by_user, !credential->federation_origin.opaque());
 }
 
 CredentialEditBridge::~CredentialEditBridge() {
@@ -82,20 +87,31 @@ void CredentialEditBridge::SaveChanges(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& username,
     const base::android::JavaParamRef<jstring>& password) {
-  std::vector<password_manager::PasswordForm> forms_to_change{*credential_};
-
-  // TODO(crbug.com/1170289): Make sure toremove duplicates of the edited
-  // credential, before saving the new one.
   saved_passwords_presenter_->EditSavedPasswords(
-      forms_to_change, base::android::ConvertJavaStringToUTF16(username),
+      *credential_, base::android::ConvertJavaStringToUTF16(username),
       base::android::ConvertJavaStringToUTF16(password));
+}
+
+void CredentialEditBridge::DeleteCredential(JNIEnv* env) {
+  if (credential_->blocked_by_user) {
+    std::vector<std::string> sort_keys = {
+        password_manager::CreateSortKey(*credential_)};
+    password_manager_presenter_->RemovePasswordExceptions(sort_keys);
+  } else if (!credential_->federation_origin.opaque()) {
+    std::vector<std::string> sort_keys = {
+        password_manager::CreateSortKey(*credential_)};
+    password_manager_presenter_->RemoveSavedPasswords(sort_keys);
+  } else {
+    saved_passwords_presenter_->RemovePassword(*credential_);
+  }
+  std::move(dismissal_callback_).Run();
 }
 
 void CredentialEditBridge::OnUIDismissed(JNIEnv* env) {
   std::move(dismissal_callback_).Run();
 }
 
-base::string16 CredentialEditBridge::GetDisplayURLOrAppName() {
+std::u16string CredentialEditBridge::GetDisplayURLOrAppName() {
   auto facet = password_manager::FacetURI::FromPotentiallyInvalidSpec(
       credential_->signon_realm);
 
@@ -120,7 +136,7 @@ base::string16 CredentialEditBridge::GetDisplayURLOrAppName() {
       net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
 }
 
-base::string16 CredentialEditBridge::GetDisplayFederationOrigin() {
+std::u16string CredentialEditBridge::GetDisplayFederationOrigin() {
   return credential_->IsFederatedCredential()
              ? url_formatter::FormatUrl(
                    credential_->federation_origin.GetURL(),
@@ -129,5 +145,5 @@ base::string16 CredentialEditBridge::GetDisplayFederationOrigin() {
                        url_formatter::kFormatUrlOmitTrivialSubdomains |
                        url_formatter::kFormatUrlTrimAfterHost,
                    net::UnescapeRule::SPACES, nullptr, nullptr, nullptr)
-             : base::string16();
+             : std::u16string();
 }

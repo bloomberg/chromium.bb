@@ -38,9 +38,10 @@ class Dictation : public SpeechRecognizerDelegate,
 
   // SpeechRecognizerDelegate:
   void OnSpeechResult(
-      const base::string16& query,
+      const std::u16string& query,
       bool is_final,
-      base::Optional<std::vector<base::TimeDelta>> word_offsets) override;
+      const base::Optional<SpeechRecognizerDelegate::TranscriptTiming>&
+          word_offsets) override;
   void OnSpeechSoundLevelChanged(int16_t level) override;
   void OnSpeechRecognitionStateChanged(
       SpeechRecognizerStatus new_state) override;
@@ -55,6 +56,12 @@ class Dictation : public SpeechRecognizerDelegate,
 
   // Saves current dictation result and stops listening.
   void DictationOff();
+
+  // Commits the current composition text.
+  void CommitCurrentText();
+
+  SpeechRecognizerStatus current_state_;
+  bool has_committed_text_ = false;
 
   std::unique_ptr<SpeechRecognizer> speech_recognizer_;
   std::unique_ptr<ui::CompositionText> composition_;

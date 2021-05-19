@@ -4,17 +4,17 @@
 
 #include "components/webapps/browser/installable/installable_manager.h"
 
+#include <memory>
+#include <string>
 #include <tuple>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,7 +26,6 @@
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -142,11 +141,11 @@ class CallbackTester {
     manifest_ = data.manifest;
     primary_icon_url_ = data.primary_icon_url;
     if (data.primary_icon)
-      primary_icon_.reset(new SkBitmap(*data.primary_icon));
+      primary_icon_ = std::make_unique<SkBitmap>(*data.primary_icon);
     has_maskable_primary_icon_ = data.has_maskable_primary_icon;
     splash_icon_url_ = data.splash_icon_url;
     if (data.splash_icon)
-      splash_icon_.reset(new SkBitmap(*data.splash_icon));
+      splash_icon_ = std::make_unique<SkBitmap>(*data.splash_icon);
     valid_manifest_ = data.valid_manifest;
     has_worker_ = data.has_worker;
     base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
@@ -198,7 +197,7 @@ class NestedCallbackTester {
     manifest_ = data.manifest;
     primary_icon_url_ = data.primary_icon_url;
     if (data.primary_icon)
-      primary_icon_.reset(new SkBitmap(*data.primary_icon));
+      primary_icon_ = std::make_unique<SkBitmap>(*data.primary_icon);
     valid_manifest_ = data.valid_manifest;
     has_worker_ = data.has_worker;
 
@@ -1627,9 +1626,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     EXPECT_FALSE(tester->manifest().IsEmpty());
     EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
-    EXPECT_EQ(base::ASCIIToUTF16("Manifest test app"), tester->manifest().name);
-    EXPECT_EQ(base::string16(),
-              tester->manifest().short_name.value_or(base::string16()));
+    EXPECT_EQ(u"Manifest test app", tester->manifest().name);
+    EXPECT_EQ(std::u16string(),
+              tester->manifest().short_name.value_or(std::u16string()));
   }
 
   {
@@ -1659,9 +1658,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     run_loop.Run();
 
     EXPECT_FALSE(tester->manifest().IsEmpty());
-    EXPECT_EQ(base::string16(),
-              tester->manifest().name.value_or(base::string16()));
-    EXPECT_EQ(base::ASCIIToUTF16("Manifest"), tester->manifest().short_name);
+    EXPECT_EQ(std::u16string(),
+              tester->manifest().name.value_or(std::u16string()));
+    EXPECT_EQ(u"Manifest", tester->manifest().short_name);
     EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
   }
 }
@@ -1900,23 +1899,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_EQ(tester->errors()[0], MANIFEST_URL_CHANGED);
 }
 
-// A dedicated test fixture for DisplayOverride, which is supported
-// only for the new web apps mode, and requires a command line switch
-// to enable manifest parsing.
-class InstallableManagerBrowserTest_DisplayOverride
-    : public InstallableManagerBrowserTest {
- public:
-  InstallableManagerBrowserTest_DisplayOverride() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kWebAppManifestDisplayOverride);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
-                       CheckManifestOnly) {
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       CheckManifestOnly_DisplayOverride) {
   base::RunLoop run_loop;
   std::unique_ptr<CallbackTester> tester(
       new CallbackTester(run_loop.QuitClosure()));
@@ -1945,8 +1929,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
   EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
 }
 
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
-                       ManifestDisplayOverrideReportsError) {
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       ManifestDisplayOverrideReportsError_DisplayOverride) {
   base::RunLoop run_loop;
   std::unique_ptr<CallbackTester> tester(
       new CallbackTester(run_loop.QuitClosure()));
@@ -1972,8 +1956,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
       tester->errors());
 }
 
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
-                       FallbackToDisplayBrowser) {
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       FallbackToDisplayBrowser_DisplayOverride) {
   base::RunLoop run_loop;
   std::unique_ptr<CallbackTester> tester(
       new CallbackTester(run_loop.QuitClosure()));

@@ -96,6 +96,8 @@ WebDialogView::WebDialogView(content::BrowserContext* context,
   if (delegate_) {
     for (const auto& accelerator : delegate_->GetAccelerators())
       AddAccelerator(accelerator);
+    RegisterWindowWillCloseCallback(base::BindOnce(
+        &WebDialogView::NotifyDialogWillClose, base::Unretained(this)));
   }
 }
 
@@ -179,23 +181,19 @@ views::CloseRequestResult WebDialogView::OnWindowCloseRequested() {
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, views::WidgetDelegate implementation:
 
-bool WebDialogView::OnCloseRequested(Widget::ClosedReason close_reason) {
-  return !delegate_ || delegate_->DeprecatedOnDialogCloseRequested();
-}
-
 bool WebDialogView::CanMaximize() const {
   if (delegate_)
     return delegate_->CanMaximizeDialog();
   return false;
 }
 
-base::string16 WebDialogView::GetWindowTitle() const {
+std::u16string WebDialogView::GetWindowTitle() const {
   if (delegate_)
     return delegate_->GetDialogTitle();
-  return base::string16();
+  return std::u16string();
 }
 
-base::string16 WebDialogView::GetAccessibleWindowTitle() const {
+std::u16string WebDialogView::GetAccessibleWindowTitle() const {
   if (delegate_)
     return delegate_->GetAccessibleDialogTitle();
   return GetWindowTitle();
@@ -264,7 +262,7 @@ ui::ModalType WebDialogView::GetDialogModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
 
-base::string16 WebDialogView::GetDialogTitle() const {
+std::u16string WebDialogView::GetDialogTitle() const {
   return GetWindowTitle();
 }
 
@@ -475,6 +473,11 @@ void WebDialogView::InitDialog() {
 
   if (!disable_url_load_for_test_)
     web_view_->LoadInitialURL(GetDialogContentURL());
+}
+
+void WebDialogView::NotifyDialogWillClose() {
+  if (delegate_)
+    delegate_->OnDialogWillClose();
 }
 
 BEGIN_METADATA(WebDialogView, ClientView)

@@ -27,6 +27,8 @@ using extensions::ManifestPermission;
 using extensions::ManifestPermissionSet;
 using extensions::PermissionSet;
 using extensions::URLPatternSet;
+using extensions::mojom::APIPermissionID;
+using extensions::mojom::ManifestLocation;
 
 ExtensionMsg_PermissionSetStruct::ExtensionMsg_PermissionSetStruct() {
 }
@@ -55,7 +57,7 @@ ExtensionMsg_PermissionSetStruct::ToPermissionSet() const {
 }
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
-    : location(Manifest::INVALID_LOCATION),
+    : location(ManifestLocation::kInvalidLocation),
       creation_flags(Extension::NO_FLAGS) {}
 
 ExtensionMsg_Loaded_Params::~ExtensionMsg_Loaded_Params() {}
@@ -174,24 +176,22 @@ void ParamTraits<URLPatternSet>::Log(const param_type& p, std::string* l) {
   LogParam(p.patterns(), l);
 }
 
-void ParamTraits<APIPermission::ID>::Write(base::Pickle* m,
-                                           const param_type& p) {
+void ParamTraits<APIPermissionID>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, static_cast<int>(p));
 }
 
-bool ParamTraits<APIPermission::ID>::Read(const base::Pickle* m,
-                                          base::PickleIterator* iter,
-                                          param_type* p) {
+bool ParamTraits<APIPermissionID>::Read(const base::Pickle* m,
+                                        base::PickleIterator* iter,
+                                        param_type* p) {
   int api_id = -2;
   if (!ReadParam(m, iter, &api_id))
     return false;
 
-  *p = static_cast<APIPermission::ID>(api_id);
+  *p = static_cast<APIPermissionID>(api_id);
   return true;
 }
 
-void ParamTraits<APIPermission::ID>::Log(
-    const param_type& p, std::string* l) {
+void ParamTraits<APIPermissionID>::Log(const param_type& p, std::string* l) {
   LogParam(static_cast<int>(p), l);
 }
 
@@ -213,11 +213,11 @@ bool ParamTraits<APIPermissionSet>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &size))
     return false;
   for (uint32_t i = 0; i < size; ++i) {
-    APIPermission::ID id;
+    APIPermissionID id;
     if (!ReadParam(m, iter, &id))
       return false;
     const APIPermissionInfo* permission_info =
-      extensions::PermissionsInfo::GetInstance()->GetByID(id);
+        extensions::PermissionsInfo::GetInstance()->GetByID(id);
     if (!permission_info)
       return false;
     std::unique_ptr<APIPermission> p(permission_info->CreateAPIPermission());
@@ -268,30 +268,6 @@ bool ParamTraits<ManifestPermissionSet>::Read(const base::Pickle* m,
 void ParamTraits<ManifestPermissionSet>::Log(
     const param_type& p, std::string* l) {
   LogParam(p.map(), l);
-}
-
-void ParamTraits<HostID>::Write(base::Pickle* m, const param_type& p) {
-  WriteParam(m, p.type());
-  WriteParam(m, p.id());
-}
-
-bool ParamTraits<HostID>::Read(const base::Pickle* m,
-                               base::PickleIterator* iter,
-                               param_type* r) {
-  HostID::HostType type;
-  std::string id;
-  if (!ReadParam(m, iter, &type))
-    return false;
-  if (!ReadParam(m, iter, &id))
-    return false;
-  *r = HostID(type, id);
-  return true;
-}
-
-void ParamTraits<HostID>::Log(
-    const param_type& p, std::string* l) {
-  LogParam(p.type(), l);
-  LogParam(p.id(), l);
 }
 
 void ParamTraits<ExtensionMsg_PermissionSetStruct>::Write(base::Pickle* m,

@@ -23,13 +23,13 @@ class DrawIndirectValidationTest : public ValidationTest {
     void SetUp() override {
         ValidationTest::SetUp();
 
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(position)]] var<out> Position : vec4<f32>;
             [[stage(vertex)]] fn main() -> void {
                 Position = vec4<f32>(0.0, 0.0, 0.0, 0.0);
             })");
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
             [[location(0)]] var<out> fragColor : vec4<f32>;
             [[stage(fragment)]] fn main() -> void {
                 fragColor = vec4<f32>(0.0, 0.0, 0.0, 0.0);
@@ -38,12 +38,12 @@ class DrawIndirectValidationTest : public ValidationTest {
         // Set up render pipeline
         wgpu::PipelineLayout pipelineLayout = utils::MakeBasicPipelineLayout(device, nullptr);
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
+        utils::ComboRenderPipelineDescriptor2 descriptor;
         descriptor.layout = pipelineLayout;
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
 
-        pipeline = device.CreateRenderPipeline(&descriptor);
+        pipeline = device.CreateRenderPipeline2(&descriptor);
     }
 
     void ValidateExpectation(wgpu::CommandEncoder encoder, utils::Expectation expectation) {

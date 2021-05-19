@@ -4,6 +4,7 @@
 <translation id="1282031177488366470">Contribuie la îmbunătățirea funcțiilor și performanței Chrome</translation>
 <translation id="1314663809820920746">Poți vedea în continuare toate marcajele, istoricul, parolele și alte setări pe acest dispozitiv. Dacă faci modificări, ele nu se vor sincroniza cu Contul Google.</translation>
 <translation id="1479202195792305274">Chrome poate să îți verifice parolele atunci când te conectezi folosind Contul Google.</translation>
+<translation id="1493827051843127077">Setează Chrome ca browser prestabilit pentru a sincroniza filele, parolele și informațiile de plată pe toate dispozitivele</translation>
 <translation id="1504372625950710826">Chrome nu a putut căuta actualizări. Verifică-ți conexiunea la internet.</translation>
 <translation id="1682483655351012182">Sincronizează-ți datele din Chromium</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -14,6 +15,7 @@
 <translation id="2342919707875585281">Chrome trimite locația ta către site-urile pe care le permiți.</translation>
 <translation id="2347208864470321755">Când este activată această funcție, Chrome se va oferi să traducă paginile scrise în alte limbi utilizând Google Traducere. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">Setează Chrome ca browser prestabilit</translation>
+<translation id="2561231791489583059">Folosește Chrome ca browser prestabilit ca să te protejezi de site-uri periculoase și să păstrezi parolele în siguranță</translation>
 <translation id="2574249610672786438">Conectează-te pe toate dispozitivele ca să vezi toate filele tale deschise în Chrome</translation>
 <translation id="2576431527583832481">Chrome a devenit și mai bun! Este disponibilă o nouă versiune.</translation>
 <translation id="257708665678654955">Dorești ca data viitoare Google Chrome să propună traducerea paginilor în limba <ph name="LANGUAGE_NAME" /> de pe acest site?</translation>
@@ -30,13 +32,12 @@
 <translation id="3522659714780527202">Activează sincronizarea ca să vezi toate filele tale deschise în Chrome</translation>
 <translation id="3533694711092285624">Nu există parole salvate. Chrome îți poate verifica parolele dacă le salvezi.</translation>
 <translation id="3706101708757577809">Acum poți folosi Chrome oricând atingi linkuri în mesaje, documente și alte aplicații.</translation>
+<translation id="3720541637541300822">Blochează filele incognito când închizi Chrome</translation>
 <translation id="384394811301901750">Momentan, Google Chrome nu poate folosi camera foto</translation>
-<translation id="38949020760388809">Alege dacă ștergi datele Chrome de pe dispozitiv sau le păstrezi.</translation>
 <translation id="3980220367029651214">Comuți contul pentru sincronizare de la <ph name="USER_EMAIL1" /> la <ph name="USER_EMAIL2" />. Datele Chrome existente sunt gestionate de <ph name="DOMAIN" />. Astfel, se vor șterge datele de pe acest dispozitiv, dar datele vor rămâne în <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">Organizația îți solicită să nu te conectezi la Chrome.</translation>
 <translation id="3988789688219830639">Google Chrome nu are acces la fotografii și videoclipuri. Activează accesul din Setări iOS &gt; Confidențialitate &gt; Fotografii.</translation>
 <translation id="4099578267706723511">Contribuie la îmbunătățirea Chrome trimițând statistici de utilizare și rapoarte de blocare la Google.</translation>
-<translation id="415767770115540173">Beneficiază de o experiență Google mai bună în Chrome pe baza locației.</translation>
 <translation id="417201473131094001">Nu se acceptă pe Chrome Canary</translation>
 <translation id="424864128008805179">Te deconectezi de la Chrome?</translation>
 <translation id="4249068189593983585">Sfat pentru Chrome: pentru mai multe opțiuni de file, atinge lung butonul Afișează filele din bara de instrumente, care se află în partea de sus sau de jos a ecranului.</translation>
@@ -51,7 +52,9 @@
 <translation id="5642200033778930880">Google Chrome nu poate folosi camera foto în modul Vizualizare împărțită</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Offline, Chrome nu poate căuta actualizări</translation>
+<translation id="5716154293141027663">Deschide Chrome când atingi linkuri în alte aplicații</translation>
 <translation id="5854621639439811139">Sfat pentru Chrome: unele butoane se află acum în partea de jos a ecranului, cum ar fi Înapoi, Înainte și Caută.</translation>
+<translation id="5876773482963502140">Dacă permiți accesul Chrome la locație, Chrome trimite informații privind locația la site-urile cărora le acorzi această permisiune. Site-urile pot solicita informații despre locație atunci când au informații locale de afișat, de exemplu, magazine din apropiere sau știri.</translation>
 <translation id="6036420186814142909">Google Chrome are funcții care te ajută să gestionezi datele de internet și viteza cu care poți să încarci paginile web.
 <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="6181930887571472871">Treci la Chrome</translation>
@@ -71,6 +74,7 @@
 <translation id="7261678641327190792">Chrome nu îți poate verifica parolele</translation>
 <translation id="7265369419224458312">Accesează chiar aici filele pe care le-ai deschis pe computer. Deschide Chrome pe computer, accesează meniul și selectează „Conectează-te la Chrome...”</translation>
 <translation id="7272930098487145294">Pentru a salva imaginile, atinge Setări ca să permiți browserului Chrome să adauge fotografiile</translation>
+<translation id="7275945473750112644">Contul tău este gestionat de <ph name="HOSTED_DOMAIN" />, așa că datele Chrome vor fi șterse de pe acest dispozitiv</translation>
 <translation id="7400722733683201933">Despre Google Chrome</translation>
 <translation id="7501046334262221972">Pentru a seta Chrome ca browser prestabilit, deschide Setările. Atinge Aplicația browser prestabilită și selectează Chrome.</translation>
 <translation id="756809126120519699">Datele Chrome au fost șterse</translation>
@@ -79,8 +83,9 @@
 <translation id="766361182512894255">Parola a fost expusă în urma încălcării securității datelor. Chrome recomandă să-ți schimbi acum parola.</translation>
 <translation id="7698568245838009292">Chrome vrea să acceseze camera foto</translation>
 <translation id="7855730255114109580">Google Chrome este actualizat</translation>
-<translation id="8109233255338845204">Contul tău este gestionat de <ph name="HOSTED_DOMAIN" />, așa că datele Chrome vor fi șterse de pe acest dispozitiv.</translation>
+<translation id="8022947259858476807">Folosește Chrome în mod prestabilit ca să deschizi linkuri, să cauți din widgeturi și să completezi automat parolele în alte aplicații</translation>
 <translation id="8160472928944011082">Chrome nu se poate actualiza</translation>
+<translation id="8357607116237445042">Alege dacă ștergi datele Chrome de pe dispozitiv sau le păstrezi</translation>
 <translation id="8370517070665726704">Drept de autor <ph name="YEAR" /> Google LLC. Toate drepturile rezervate.</translation>
 <translation id="840168496893712993">Unele suplimente determină blocarea browserului Chrome. Încearcă să le dezinstalezi.</translation>
 <translation id="8459495907675268833">Datele selectate au fost eliminate din Chrome și de pe dispozitivele sincronizate. Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi căutările și activitatea din alte servicii Google, la history.google.com.</translation>
@@ -89,5 +94,6 @@
   2. atinge Aplicația browser prestabilită;
   3. selectează Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="9135668017386497357">Dacă permiți accesul Chrome la locație, Chrome trimite informații privind locația la motorul de căutare prestabilit și la site-urile cărora le acorzi această permisiune. Site-urile pot solicita informații despre locație atunci când au informații locale de afișat, de exemplu, magazine din apropiere sau știri.</translation>
+<translation id="8736550665979974340">Protejează-te cu Google Chrome</translation>
+<translation id="9112744793181547300">Setezi Chrome ca browser prestabilit?</translation>
 </translationbundle>

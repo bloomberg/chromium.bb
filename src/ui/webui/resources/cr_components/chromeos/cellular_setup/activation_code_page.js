@@ -10,13 +10,15 @@ const QR_CODE_DETECTION_INTERVAL_MS = 1000;
 
 /** @enum {number} */
 const PageState = {
-  INITIAL: 1,
+  MANUAL_ENTRY: 1,
   SCANNING_USER_FACING: 2,
   SCANNING_ENVIRONMENT_FACING: 3,
   SWITCHING_CAM_USER_TO_ENVIRONMENT: 4,
   SWITCHING_CAM_ENVIRONMENT_TO_USER: 5,
-  SUCCESS: 6,
-  FAILURE: 7,
+  SCANNING_SUCCESS: 6,
+  SCANNING_FAILURE: 7,
+  MANUAL_ENTRY_INSTALL_FAILURE: 8,
+  SCANNING_INSTALL_FAILURE: 9,
 };
 
 /** @enum {number} */
@@ -27,6 +29,8 @@ const UiElement = {
   SCAN_FINISH: 4,
   SCAN_SUCCESS: 5,
   SCAN_FAILURE: 6,
+  CODE_DETECTED: 7,
+  SCAN_INSTALL_FAILURE: 8,
 };
 
 /**
@@ -66,6 +70,22 @@ Polymer({
     },
 
     /**
+     * Enum used as an ID for specific UI elements.
+     * A UiElement is passed between html and JS for
+     * certain UI elements to determine their state.
+     *
+     * @type {!UiElement}
+     */
+    UiElement: {
+      type: Object,
+      value: UiElement,
+    },
+
+    showNoProfilesMessage: {
+      type: Boolean,
+    },
+
+    /**
      * @type {!PageState}
      * @private
      */
@@ -83,21 +103,14 @@ Polymer({
     },
 
     /**
-     * Enum used as an ID for specific UI elements.
-     * A UiElement is passed between html and JS for
-     * certain UI elements to determine their state.
-     *
-     * @type {!UiElement}
+     *  TODO(crbug.com/1093185): add type |BarcodeDetector| when externs
+     *  becomes available
+     *  @private {?Object}
      */
-    UiElement: {
+    qrCodeDetector_: {
       type: Object,
-      value: UiElement,
+      value: null,
     },
-
-    /** @private */
-    showNoProfilesMessage: {
-      type: Boolean,
-    }
   },
 
   /**
@@ -118,12 +131,13 @@ Polymer({
    */
   qrCodeDetectorTimer_: null,
 
+
   /**
-   *  TODO(crbug.com/1093185): add type |BarcodeDetector| when externs
-   *  becomes available
-   *  @private
+   * The function used to initiate a repeating timer. Can be overwritten in
+   * tests.
+   * @private {function(Function, number)}
    */
-  qrCodeDetector_: null,
+  setIntervalFunction_: setInterval.bind(window),
 
   /**
    *  TODO(crbug.com/1093185): add type |BarcodeDetector| when externs
@@ -133,18 +147,38 @@ Polymer({
    */
   barcodeDetectorClass_: BarcodeDetector,
 
+  /** @private {typeof ImageCapture} */
+  imageCaptureClass_: ImageCapture,
+
+  /**
+   * Function used to play the video. Can be overwritten by
+   * setFakesForTesting().
+   * @private {function()}
+   */
+  playVideo_: function() {
+    this.$$('#video').play();
+  },
+
+  /**
+   * Function used to stop a stream. Can be overwritten by setFakesForTesting().
+   * @private {function(MediaStream)}
+   */
+  stopStream_: function(stream) {
+    if (stream) {
+      stream.getTracks()[0].stop();
+    }
+  },
+
   /** @override */
   ready() {
     this.setMediaDevices(navigator.mediaDevices);
-    this.initBarcodeDetector();
-    this.state_ = PageState.INITIAL;
+    this.initBarcodeDetector_();
+    this.state_ = PageState.MANUAL_ENTRY;
   },
 
   /** @override */
   detached() {
-    if (this.stream_) {
-      this.stream_.getTracks()[0].stop();
-    }
+    this.stopStream_(this.stream_);
     if (this.qrCodeDetectorTimer_) {
       clearTimeout(this.qrCodeDetectorTimer_);
     }
@@ -166,7 +200,7 @@ Polymer({
    * @suppress {undefinedVars|missingProperties}
    * @private
    */
-  async initBarcodeDetector() {
+  async initBarcodeDetector_() {
     const formats = await this.barcodeDetectorClass_.getSupportedFormats();
 
     if (!formats || formats.length === 0) {
@@ -189,6 +223,26 @@ Polymer({
     this.updateCameraCount_();
     this.mediaDevices_.addEventListener(
         'devicechange', this.updateCameraCount_.bind(this));
+  },
+
+  /**
+   * TODO(crbug.com/1093185): Add barcodeDetectorClass type when BarcodeDetector
+   * externs become available.
+   * @param barcodeDetectorClass
+   * @param {typeof ImageCapture} imageCaptureClass
+   * @param {function(Function, number)} setIntervalFunction
+   * @param {function()} playVideoFunction
+   * @param {function(MediaStream)} stopStreamFunction
+   */
+  async setFakesForTesting(
+      barcodeDetectorClass, imageCaptureClass, setIntervalFunction,
+      playVideoFunction, stopStreamFunction) {
+    this.barcodeDetectorClass_ = barcodeDetectorClass;
+    await this.initBarcodeDetector_();
+    this.imageCaptureClass_ = imageCaptureClass;
+    this.setIntervalFunction_ = setIntervalFunction;
+    this.playVideo_ = playVideoFunction;
+    this.stopStream_ = stopStreamFunction;
   },
 
   /**
@@ -250,11 +304,9 @@ Polymer({
           if (this.stream_) {
             const video = this.$$('#video');
             video.srcObject = stream;
-            video.play();
+            this.playVideo_();
           }
-          if (oldStream) {
-            oldStream.getTracks()[0].stop();
-          }
+          this.stopStream_(oldStream);
 
           this.activationCode = '';
           this.state_ = useUserFacingCamera ?
@@ -266,7 +318,7 @@ Polymer({
           }
         })
         .catch(e => {
-          this.state_ = PageState.FAILURE;
+          this.state_ = PageState.SCANNING_FAILURE;
         });
   },
 
@@ -278,19 +330,22 @@ Polymer({
    */
   async detectQrCode_() {
     try {
-      this.qrCodeDetectorTimer_ = setInterval(
+      this.qrCodeDetectorTimer_ = this.setIntervalFunction_(
           (async function() {
-            const capturer = new ImageCapture(this.stream_.getVideoTracks()[0]);
+            const capturer =
+                new this.imageCaptureClass_(this.stream_.getVideoTracks()[0]);
             const frame = await capturer.grabFrame();
             const activationCode = await this.detectActivationCode_(frame);
             if (activationCode) {
               clearTimeout(this.qrCodeDetectorTimer_);
               this.activationCode = activationCode;
+              this.stopStream_(this.stream_);
+              this.state_ = PageState.SCANNING_SUCCESS;
             }
           }).bind(this),
           QR_CODE_DETECTION_INTERVAL_MS);
     } catch (error) {
-      this.state_ = PageState.FAILURE;
+      this.state_ = PageState.SCANNING_FAILURE;
     }
   },
 
@@ -318,14 +373,6 @@ Polymer({
   onActivationCodeChanged_() {
     const activationCode = this.validateActivationCode_(this.activationCode);
     this.fire('activation-code-updated', {activationCode: activationCode});
-    if (activationCode) {
-      if (this.stream_) {
-        this.stream_.getTracks()[0].stop();
-      }
-      this.state_ = PageState.SUCCESS;
-    } else {
-      this.state_ = PageState.FAILURE;
-    }
   },
 
   /**
@@ -357,15 +404,43 @@ Polymer({
   /** @private */
   onShowErrorChanged_() {
     if (this.showError) {
-      this.state_ = PageState.FAILURE;
+      if (this.state_ === PageState.MANUAL_ENTRY) {
+        this.state_ = PageState.MANUAL_ENTRY_INSTALL_FAILURE;
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          cr.ui.focusWithoutInk(this.$.activationCode);
+        });
+      } else if (this.state_ === PageState.SCANNING_SUCCESS) {
+        this.state_ = PageState.SCANNING_INSTALL_FAILURE;
+      }
     }
   },
 
   /** @private */
   onStateChanged_() {
-    if (this.state_ !== PageState.FAILURE) {
+    if (this.state_ !== PageState.MANUAL_ENTRY_INSTALL_FAILURE &&
+        this.state_ !== PageState.SCANNING_INSTALL_FAILURE) {
       this.showError = false;
     }
+    if (this.state_ === PageState.MANUAL_ENTRY) {
+      // Wait for the video element to be hidden by isUiElementHidden() before
+      // stopping the stream or the user will see a flash.
+      Polymer.RenderStatus.afterNextRender(this, () => {
+        this.stopStream_(this.stream_);
+      });
+    }
+  },
+
+  /**
+   * @param {KeyboardEvent} e
+   * @private
+   */
+  onKeyDown_(e) {
+    if (e.key === 'Enter') {
+      this.fire('forward-navigation-requested');
+    } else {
+      this.state_ = PageState.MANUAL_ENTRY;
+    }
+    e.stopPropagation();
   },
 
   /**
@@ -377,7 +452,8 @@ Polymer({
   isUiElementHidden_(uiElement, state, cameraCount) {
     switch (uiElement) {
       case UiElement.START_SCANNING:
-        return state !== PageState.INITIAL;
+        return state !== PageState.MANUAL_ENTRY &&
+            state !== PageState.MANUAL_ENTRY_INSTALL_FAILURE;
       case UiElement.VIDEO:
         return state !== PageState.SCANNING_USER_FACING &&
             state !== PageState.SCANNING_ENVIRONMENT_FACING;
@@ -386,11 +462,18 @@ Polymer({
             state === PageState.SCANNING_ENVIRONMENT_FACING;
         return !(isScanning && this.cameraCount_ > 1);
       case UiElement.SCAN_FINISH:
-        return state !== PageState.SUCCESS && state !== PageState.FAILURE;
+        return state !== PageState.SCANNING_SUCCESS &&
+            state !== PageState.SCANNING_FAILURE &&
+            state !== PageState.SCANNING_INSTALL_FAILURE;
       case UiElement.SCAN_SUCCESS:
-        return state !== PageState.SUCCESS;
+        return state !== PageState.SCANNING_SUCCESS &&
+            state !== PageState.SCANNING_INSTALL_FAILURE;
       case UiElement.SCAN_FAILURE:
-        return state !== PageState.FAILURE;
+        return state !== PageState.SCANNING_FAILURE;
+      case UiElement.CODE_DETECTED:
+        return state !== PageState.SCANNING_SUCCESS;
+      case UiElement.SCAN_INSTALL_FAILURE:
+        return state !== PageState.SCANNING_INSTALL_FAILURE;
     }
   },
 
@@ -424,4 +507,13 @@ Polymer({
     return this.showNoProfilesMessage ? this.i18n('scanQRCodeNoProfiles') :
                                         this.i18n('scanQRCode');
   },
+
+  /**
+   * @param {PageState} state
+   * @return {boolean}
+   * @private
+   */
+  shouldActivationCodeInputBeInvalid_(state) {
+    return state === PageState.MANUAL_ENTRY_INSTALL_FAILURE;
+  }
 });

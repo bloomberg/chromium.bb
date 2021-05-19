@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/gfx/win/msg_util.h"
 #include "ui/gfx/win/window_impl.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -34,7 +35,7 @@ class WIN_WINDOW_EXPORT WinWindow : public PlatformWindow,
   void PrepareForShutdown() override;
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetBounds() const override;
-  void SetTitle(const base::string16& title) override;
+  void SetTitle(const std::u16string& title) override;
   void SetCapture() override;
   void ReleaseCapture() override;
   bool HasCapture() const override;

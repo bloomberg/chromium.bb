@@ -14,8 +14,6 @@
 
 #include "src/ast/discard_statement.h"
 
-#include <sstream>
-
 #include "src/ast/test_helper.h"
 
 namespace tint {
@@ -44,11 +42,6 @@ TEST_F(DiscardStatementTest, Creation_WithSource) {
 TEST_F(DiscardStatementTest, IsDiscard) {
   auto* stmt = create<DiscardStatement>();
   EXPECT_TRUE(stmt->Is<DiscardStatement>());
-}
-
-TEST_F(DiscardStatementTest, IsValid) {
-  auto* stmt = create<DiscardStatement>();
-  EXPECT_TRUE(stmt->IsValid());
 }
 
 TEST_F(DiscardStatementTest, ToStr) {

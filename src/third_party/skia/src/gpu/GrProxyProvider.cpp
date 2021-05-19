@@ -324,7 +324,7 @@ sk_sp<GrTextureProxy> GrProxyProvider::createNonMippedProxyFromBitmap(const SkBi
     sk_sp<GrTextureProxy> proxy = this->createLazyProxy(
             [bitmap](GrResourceProvider* resourceProvider, const LazySurfaceDesc& desc) {
                 SkASSERT(desc.fMipmapped == GrMipmapped::kNo);
-                GrMipLevel mipLevel = { bitmap.getPixels(), bitmap.rowBytes() };
+                GrMipLevel mipLevel = {bitmap.getPixels(), bitmap.rowBytes(), nullptr};
                 auto colorType = SkColorTypeToGrColorType(bitmap.colorType());
                 return LazyCallbackResult(resourceProvider->createTexture(
                         desc.fDimensions, desc.fFormat, colorType, desc.fRenderable,
@@ -689,17 +689,19 @@ sk_sp<GrTextureProxy> GrProxyProvider::CreatePromiseProxy(GrContextThreadSafePro
 
     // We pass kReadOnly here since we should treat content of the client's texture as immutable.
     // The promise API provides no way for the client to indicate that the texture is protected.
-    return sk_sp<GrTextureProxy>(new GrTextureProxy(std::move(callback),
-                                                    format,
-                                                    dimensions,
-                                                    mipMapped,
-                                                    mipmapStatus,
-                                                    SkBackingFit::kExact,
-                                                    SkBudgeted::kNo,
-                                                    GrProtected::kNo,
-                                                    GrInternalSurfaceFlags::kReadOnly,
-                                                    GrSurfaceProxy::UseAllocator::kYes,
-                                                    GrDDLProvider::kYes));
+    auto proxy = sk_sp<GrTextureProxy>(new GrTextureProxy(std::move(callback),
+                                                          format,
+                                                          dimensions,
+                                                          mipMapped,
+                                                          mipmapStatus,
+                                                          SkBackingFit::kExact,
+                                                          SkBudgeted::kNo,
+                                                          GrProtected::kNo,
+                                                          GrInternalSurfaceFlags::kReadOnly,
+                                                          GrSurfaceProxy::UseAllocator::kYes,
+                                                          GrDDLProvider::kYes));
+    proxy->priv().setIsPromiseProxy();
+    return proxy;
 }
 
 sk_sp<GrTextureProxy> GrProxyProvider::createLazyProxy(LazyInstantiateCallback&& callback,

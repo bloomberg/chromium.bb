@@ -128,7 +128,7 @@ const base::Feature kOmniboxDemoteByType{"OmniboxDemoteByType",
 // Feature used to reduce entity latency by sharing a decoder. Param values will
 // configure other optimizations as well.
 const base::Feature kEntitySuggestionsReduceLatency{
-    "OmniboxEntitySuggestionsReduceLatency", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxEntitySuggestionsReduceLatency", enabled_by_default_desktop_only};
 
 // Feature used to cap max zero suggestions shown according to the param
 // OmniboxMaxZeroSuggestMatches. If omitted,
@@ -165,13 +165,6 @@ const base::Feature kOmniboxMaxURLMatches{
 // URLs; else show up to 8 suggestions if doing so would include 1 or more URLs.
 const base::Feature kDynamicMaxAutocomplete{"OmniboxDynamicMaxAutocomplete",
                                             enabled_by_default_desktop_only};
-
-// Feature used to enable bubbling URL suggestions above search suggestions
-// after grouping if 2 conditions are met:
-// 1) There must be a sufficient score gap between the adjacent searches.
-// 2) There must be a sufficient buffer between the URL and search scores.
-const base::Feature kBubbleUrlSuggestions{"OmniboxBubbleUrlSuggestions",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, when the user clears the whole omnibox text (i.e. via Backspace),
 // Chrome will request remote ZeroSuggest suggestions for the OTHER page
@@ -296,12 +289,17 @@ const base::Feature kShortBookmarkSuggestionsByTotalInputLength{
 const base::Feature kBookmarkPaths{"OmniboxBookmarkPaths",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, clipboard suggestion will not show the clipboard content until
+// the user clicks the reveal button.
+const base::Feature kClipboardSuggestionContentHidden = {
+    "ClipboardSuggestionContentHidden", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, shows slightly more compact suggestions, allowing the
 // kAdaptiveSuggestionsCount feature to fit more suggestions on screen.
 const base::Feature kCompactSuggestions{"OmniboxCompactSuggestions",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enbaled, frequently visited sites are presented in form of a single row
+// If enabled, frequently visited sites are presented in form of a single row
 // with a carousel of tiles, instead of one URL per row.
 extern const base::Feature kMostVisitedTiles{"OmniboxMostVisitedTiles",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -326,13 +324,21 @@ const base::Feature kOmniboxSuggestionButtonRow{
 const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
                                              enabled_by_default_desktop_only};
 
+// Feature used to enable the second batch of Pedals (Safety Check, etc.).
+const base::Feature kOmniboxPedalsBatch2{"OmniboxPedalsBatch2",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature that enables use of the colored version of the default Pedal icon.
+const base::Feature kOmniboxPedalsDefaultIconColored{
+    "OmniboxPedalsDefaultIconColored", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable the keyword search button.
 const base::Feature kOmniboxKeywordSearchButton{
     "OmniboxKeywordSearchButton", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables new UI changes indicating focus and hover states.
-const base::Feature kOmniboxRefinedFocusState{
-    "OmniboxRefinedFocusState", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOmniboxRefinedFocusState{"OmniboxRefinedFocusState",
+                                              enabled_by_default_desktop_only};
 
 // If enabled, uses WebUI to render the omnibox suggestions popup, similar to
 // how the NTP "realbox" is implemented.
@@ -353,6 +359,11 @@ const base::Feature kIntranetRedirectBehaviorPolicyRollout{
 // Android's built-in voice recognition service. Only works on Android.
 const base::Feature kOmniboxAssistantVoiceSearch{
     "OmniboxAssistantVoiceSearch", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to control whether space, double space, or neither triggers
+// keyword mode. When disabled, space triggering is disabled.
+const base::Feature kKeywordSpaceTriggering{"OmniboxKeywordSpaceTriggering",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to reveal the path, query and ref from steady state URLs
 // on hover.

@@ -81,6 +81,8 @@ source_set("hit_test") {
       "hit_test_x11.h",
     ]
   }
+
+  deps = [ "//base" ]
 }
 
 component("base") {
@@ -92,8 +94,6 @@ component("base") {
     "default_style.h",
     "device_form_factor.h",
     "device_form_factor_desktop.cc",
-    "dragdrop/drag_drop_types.cc",
-    "dragdrop/drag_drop_types.h",
     "dragdrop/drop_target_event.cc",
     "dragdrop/drop_target_event.h",
     "dragdrop/os_exchange_data.cc",
@@ -193,7 +193,6 @@ component("base") {
 
   if (is_win) {
     sources += [
-      "dragdrop/drag_drop_types_win.cc",
       "dragdrop/drag_source_win.cc",
       "dragdrop/drag_source_win.h",
       "dragdrop/drop_target_win.cc",
@@ -307,7 +306,6 @@ component("base") {
       "cocoa/weak_ptr_nsobject.mm",
       "cocoa/window_size_constants.h",
       "cocoa/window_size_constants.mm",
-      "dragdrop/drag_drop_types_mac.mm",
       "dragdrop/os_exchange_data_provider_builder_mac.h",
       "dragdrop/os_exchange_data_provider_builder_mac.mm",
       "dragdrop/os_exchange_data_provider_mac.h",
@@ -329,8 +327,6 @@ component("base") {
     sources += [
       "accelerators/accelerator.cc",
       "accelerators/accelerator.h",
-      "accelerators/accelerator_history.cc",
-      "accelerators/accelerator_history.h",
       "accelerators/accelerator_manager.cc",
       "accelerators/accelerator_manager.h",
       "accelerators/media_keys_listener.cc",
@@ -359,6 +355,8 @@ component("base") {
       sources += [
         "accelerators/menu_label_accelerator_util_linux.cc",
         "accelerators/menu_label_accelerator_util_linux.h",
+        "linux/linux_desktop.cc",
+        "linux/linux_desktop.h",
       ]
     }
 
@@ -496,23 +494,16 @@ component("base") {
     }
   }
 
-  if (use_x11 && use_aura) {
+  if (use_x11 && use_aura && is_linux) {
+    # These Aura X11 files aren't used on ChromeOS.
     sources += [
-      "x/selection_requestor.cc",
-      "x/selection_requestor.h",
+      "dragdrop/os_exchange_data_provider_x11.cc",
+      "dragdrop/os_exchange_data_provider_x11.h",
     ]
     deps += [
       "//ui/events/platform/x11",
       "//ui/gfx/x",
     ]
-
-    if (!is_chromeos_ash) {
-      # These Aura X11 files aren't used on ChromeOS.
-      sources += [
-        "dragdrop/os_exchange_data_provider_x11.cc",
-        "dragdrop/os_exchange_data_provider_x11.h",
-      ]
-    }
   }
 
   if (use_aura && (is_linux || is_chromeos)) {
@@ -526,6 +517,7 @@ component("base") {
   if (use_glib) {
     configs += [ "//build/config/linux:glib" ]
     sources += [
+      "glib/glib_cast.h",
       "glib/glib_integers.h",
       "glib/glib_signal.h",
       "glib/scoped_gobject.h",
@@ -566,8 +558,6 @@ component("base") {
 
   if (!toolkit_views && !use_aura) {
     sources -= [
-      "dragdrop/drag_drop_types.cc",
-      "dragdrop/drag_drop_types.h",
       "dragdrop/drop_target_event.cc",
       "dragdrop/drop_target_event.h",
       "dragdrop/os_exchange_data.cc",
@@ -975,7 +965,6 @@ test("ui_base_unittests") {
     ]
   } else {  # !is_ios
     sources += [
-      "accelerators/accelerator_history_unittest.cc",
       "accelerators/accelerator_manager_unittest.cc",
       "accelerators/accelerator_unittest.cc",
       "accelerators/menu_label_accelerator_util_unittest.cc",
@@ -1133,7 +1122,6 @@ test("ui_base_unittests") {
   # TODO(crbug.com/980371): Implement OSExchangeDataProvider for Fuchsia.
   if ((use_aura || toolkit_views) && !is_fuchsia) {
     sources += [ "dragdrop/os_exchange_data_unittest.cc" ]
-
     deps += [
       "//ui/events",
       "//ui/events/platform",
@@ -1141,10 +1129,7 @@ test("ui_base_unittests") {
   }
 
   if (use_x11) {
-    sources += [
-      "dragdrop/os_exchange_data_provider_x11_unittest.cc",
-      "x/selection_requestor_unittest.cc",
-    ]
+    sources += [ "dragdrop/os_exchange_data_provider_x11_unittest.cc" ]
     deps += [ "//ui/gfx/x:unit_test" ]
   }
 

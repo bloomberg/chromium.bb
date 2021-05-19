@@ -150,7 +150,9 @@ void HTMLDialogElement::show() {
   SetBooleanAttribute(html_names::kOpenAttr, true);
 
   // Showing a <dialog> should hide all open popups.
-  GetDocument().HideAllPopupsUntil(nullptr);
+  if (RuntimeEnabledFeatures::HTMLPopupElementEnabled()) {
+    GetDocument().HideAllPopupsUntil(nullptr);
+  }
 
   // The layout must be updated here because setFocusForDialog calls
   // Element::isFocusable, which requires an up-to-date layout.
@@ -180,7 +182,9 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   }
 
   // Showing a <dialog> should hide all open popups.
-  GetDocument().HideAllPopupsUntil(nullptr);
+  if (RuntimeEnabledFeatures::HTMLPopupElementEnabled()) {
+    GetDocument().HideAllPopupsUntil(nullptr);
+  }
 
   GetDocument().AddToTopLayer(this);
   SetBooleanAttribute(html_names::kOpenAttr, true);
@@ -199,6 +203,7 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
 void HTMLDialogElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
   InertSubtreesChanged(GetDocument());
+  SetIsModal(false);
 }
 
 void HTMLDialogElement::DefaultEventHandler(Event& event) {

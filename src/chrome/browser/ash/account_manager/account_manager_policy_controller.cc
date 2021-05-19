@@ -11,11 +11,13 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/sequence_checker.h"
+#include "chrome/browser/account_manager_facade_factory.h"
 #include "chrome/browser/ash/account_manager/account_manager_edu_coexistence_controller.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/child_accounts/secondary_account_consent_logger.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
+#include "components/account_manager_core/account_manager_facade.h"
 #include "components/prefs/pref_service.h"
 
 namespace ash {
@@ -23,9 +25,11 @@ namespace ash {
 AccountManagerPolicyController::AccountManagerPolicyController(
     Profile* profile,
     AccountManager* account_manager,
+    account_manager::AccountManagerFacade* account_manager_facade,
     const AccountId& device_account_id)
     : profile_(profile),
       account_manager_(account_manager),
+      account_manager_facade_(account_manager_facade),
       device_account_id_(device_account_id) {}
 
 AccountManagerPolicyController::~AccountManagerPolicyController() {
@@ -60,7 +64,8 @@ void AccountManagerPolicyController::Start() {
     if (base::FeatureList::IsEnabled(supervised_users::kEduCoexistenceFlowV2)) {
       edu_coexistence_consent_invalidation_controller_ =
           std::make_unique<EduCoexistenceConsentInvalidationController>(
-              profile_, account_manager_, device_account_id_);
+              profile_, account_manager_, account_manager_facade_,
+              device_account_id_);
       edu_coexistence_consent_invalidation_controller_->Init();
     } else {
       // Invalidate secondary accounts if parental consent text version for EDU
@@ -107,7 +112,7 @@ void AccountManagerPolicyController::
     return;
   }
 
-  account_manager_->GetAccounts(
+  account_manager_facade_->GetAccounts(
       base::BindOnce(&AccountManagerPolicyController::RemoveSecondaryAccounts,
                      weak_factory_.GetWeakPtr()));
 }
@@ -120,7 +125,7 @@ void AccountManagerPolicyController::OnChildAccountTypeChanged(
     return;
   }
 
-  account_manager_->GetAccounts(
+  account_manager_facade_->GetAccounts(
       base::BindOnce(&AccountManagerPolicyController::RemoveSecondaryAccounts,
                      weak_factory_.GetWeakPtr()));
 }
@@ -138,7 +143,7 @@ void AccountManagerPolicyController::
   if (stored_version == current_version)
     return;
 
-  account_manager_->GetAccounts(
+  account_manager_facade_->GetAccounts(
       base::BindOnce(&AccountManagerPolicyController::
                          InvalidateSecondaryAccountsOnEduConsentChange,
                      weak_factory_.GetWeakPtr(), current_version));

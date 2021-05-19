@@ -4,10 +4,13 @@
 <translation id="1175958423215084756">已偵測到連結。<ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">相片集嘅相</translation>
 <translation id="1430915738399379752">列印</translation>
+<translation id="1467231725790366244">抆走咗 <ph name="CAMERA" />。</translation>
 <translation id="1473110567575736769">3 秒計時器</translation>
 <translation id="1620510694547887537">相機</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">沒有記錄任何內容</translation>
+<translation id="1838104802459806957">向上傾斜</translation>
+<translation id="1851169887664797861">已推出新的相機控制項</translation>
 <translation id="1851616744363735765">已暫停</translation>
 <translation id="1862930711583847113">無法匯出 <ph name="FILE" /></translation>
 <translation id="1899697626337024495">相機解像度</translation>
@@ -17,15 +20,18 @@
 <translation id="2064538373111010176">開咗「<ph name="CAMERA" />」</translation>
 <translation id="2144806332417375165">自訂影片參數</translation>
 <translation id="229579744168541441">匯出至磁碟</translation>
+<translation id="2320741269052147773">向左平移</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2501853267655415902">停咗錄影</translation>
 <translation id="2501953888035679275">使用您的相機拍照及錄影。</translation>
 <translation id="2549985041256363841">開始錄影</translation>
 <translation id="2599796128805996109">後置鏡頭</translation>
+<translation id="2879583609344924966">插入咗 <ph name="CAMERA" />。</translation>
 <translation id="2912439424121107408">此裝置不支援專業模式</translation>
 <translation id="2968794441791257519">使用相機拍攝的相片和影片將會移至「下載」資料夾，您可以在「檔案」中存取這些相片和影片。
 
         擁有儲存空間權限的應用程式可以存取您的相片和影片。</translation>
+<translation id="3067436040345934772">向右平移</translation>
 <translation id="3081586908890909590">切換至錄影模式</translation>
 <translation id="313467653172006084">每秒畫格數：30</translation>
 <translation id="3183731565330012717">網格類型</translation>
@@ -34,6 +40,7 @@
 <translation id="3259149966178251584">相機解像度</translation>
 <translation id="3517926952904427380">無法拍攝肖像相片</translation>
 <translation id="3569311554794739032">您確定要移除「<ph name="FILE" />」嗎？</translation>
+<translation id="3733597664308256288">推出咗新嘅相機控制項。㩒搜尋鍵 + 向右箭咀就可以用。</translation>
 <translation id="3810838688059735925">影片</translation>
 <translation id="3838931309141338733">掃描條碼</translation>
 <translation id="3892148308691398805">複製文字</translation>
@@ -56,6 +63,7 @@
 <translation id="5671277269877808209">正方形</translation>
 <translation id="5775960006311140197">專業模式</translation>
 <translation id="5869546221129391014">網格</translation>
+<translation id="5975083100439434680">縮小</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6073451960410192870">停止錄影</translation>
 <translation id="6197807149213783179">儲存元數據</translation>
@@ -84,16 +92,19 @@
 <translation id="7974782136796202581">顯示平移傾斜縮放選項</translation>
 <translation id="7983668134180549431">已偵測到文字。</translation>
 <translation id="8067883171444229417">播放影片</translation>
+<translation id="8120146556401698679">平移 傾斜 縮放</translation>
 <translation id="8131740175452115882">確定</translation>
 <translation id="8145038249676204903">切換至拍照模式</translation>
 <translation id="8239780215768881278">拍攝影片快照</translation>
 <translation id="8261506727792406068">刪除</translation>
+<translation id="8425673304802773841">向下傾斜</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8687491812650032292">高清畫質 <ph name="HEIGHT" />p (<ph name="WIDTH" />：<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">預覽元數據</translation>
 <translation id="8815966864175525708">切換至肖像相片拍攝模式</translation>
 <translation id="8828441885228359828">恢復錄影</translation>
 <translation id="8870695351537079478">無法開始錄影</translation>
+<translation id="8903921497873541725">放大</translation>
 <translation id="9045155556724273246">10 秒</translation>
 <translation id="945522503751344254">提供意見反映</translation>
 </translationbundle>

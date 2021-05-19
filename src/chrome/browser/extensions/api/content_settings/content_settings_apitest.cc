@@ -289,9 +289,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, IncognitoIsolation) {
   std::vector<int> content_settings_before = GetContentSettingsSnapshot(url);
 
   // Run extension, set all permissions to allow, and check if they are changed.
-  EXPECT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "content_settings/incognitoisolation", "test.html", "allow",
-      kFlagEnableIncognito, kFlagUseIncognito))
+  ASSERT_TRUE(RunExtensionTest({.name = "content_settings/incognitoisolation",
+                                .page_url = "test.html",
+                                .custom_arg = "allow",
+                                .open_in_incognito = true},
+                               {.allow_in_incognito = true}))
       << message_;
 
   // Get content settings after running extension to ensure nothing is changed.
@@ -299,9 +301,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, IncognitoIsolation) {
   EXPECT_EQ(content_settings_before, content_settings_after);
 
   // Run extension, set all permissions to block, and check if they are changed.
-  EXPECT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "content_settings/incognitoisolation", "test.html", "block",
-      kFlagEnableIncognito, kFlagUseIncognito))
+  ASSERT_TRUE(RunExtensionTest({.name = "content_settings/incognitoisolation",
+                                .page_url = "test.html",
+                                .custom_arg = "block",
+                                .open_in_incognito = true},
+                               {.allow_in_incognito = true}))
       << message_;
 
   // Get content settings after running extension to ensure nothing is changed.
@@ -312,8 +316,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, IncognitoIsolation) {
 // Tests if changing incognito mode permissions in regular profile are rejected.
 IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
                        IncognitoNotAllowedInRegular) {
-  EXPECT_FALSE(RunExtensionSubtestWithArg("content_settings/incognitoisolation",
-                                          "test.html", "allow"))
+  EXPECT_FALSE(RunExtensionTest({.name = "content_settings/incognitoisolation",
+                                 .page_url = "test.html",
+                                 .custom_arg = "allow"}))
       << message_;
 }
 
@@ -346,11 +351,6 @@ IN_PROC_BROWSER_TEST_P(ExtensionContentSettingsApiLazyTest,
       "ContentSettings.ExtensionNonEmbeddedSettingSet", 2);
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionContentSettingsApiLazyTest, PluginsApiTest) {
-  constexpr char kExtensionPath[] = "content_settings/disablepluginsapi";
-  EXPECT_TRUE(RunLazyTest(kExtensionPath)) << message_;
-}
-
 IN_PROC_BROWSER_TEST_P(ExtensionContentSettingsApiLazyTest, ConsoleErrorTest) {
   constexpr char kExtensionPath[] = "content_settings/disablepluginsapi";
   const extensions::Extension* extension =
@@ -360,7 +360,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionContentSettingsApiLazyTest, ConsoleErrorTest) {
                            ->GetBackgroundHostForExtension(extension->id())
                            ->host_contents();
   content::WebContentsConsoleObserver console_observer(web_contents);
-  console_observer.SetPattern("*API is no longer supported*");
+  console_observer.SetPattern("*contentSettings.plugins is deprecated.*");
   browsertest_util::ExecuteScriptInBackgroundPageNoWait(
       profile(), extension->id(), "setPluginsSetting()");
   console_observer.Wait();

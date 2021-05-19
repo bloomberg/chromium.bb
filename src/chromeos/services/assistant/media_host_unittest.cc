@@ -23,9 +23,9 @@ namespace assistant {
 
 namespace {
 
-using libassistant::mojom::MediaState;
-using libassistant::mojom::MediaStatePtr;
-using libassistant::mojom::PlaybackState;
+using chromeos::libassistant::mojom::MediaState;
+using chromeos::libassistant::mojom::MediaStatePtr;
+using chromeos::libassistant::mojom::PlaybackState;
 using media_session::mojom::MediaSessionInfo;
 using ::testing::_;
 
@@ -88,13 +88,16 @@ class MediaControllerMock : public media_session::mojom::MediaController {
       (::media_session::mojom::MediaSessionImageType type,
        int32_t minimum_size_px,
        int32_t desired_size_px,
-       ::mojo::PendingRemote<media_session::mojom::MediaControllerImageObserver>
+       mojo::PendingRemote<media_session::mojom::MediaControllerImageObserver>
            observer));
   MOCK_METHOD(void, SeekTo, (::base::TimeDelta seek_time));
   MOCK_METHOD(void, ScrubTo, (::base::TimeDelta seek_time));
   MOCK_METHOD(void, EnterPictureInPicture, ());
   MOCK_METHOD(void, ExitPictureInPicture, ());
   MOCK_METHOD(void, SetAudioSinkId, (const base::Optional<std::string>& id));
+  MOCK_METHOD(void, ToggleMicrophone, ());
+  MOCK_METHOD(void, ToggleCamera, ());
+  MOCK_METHOD(void, HangUp, ());
   void AddObserver(
       mojo::PendingRemote<media_session::mojom::MediaControllerObserver> remote)
       override {
@@ -132,12 +135,12 @@ class FakeMediaControllerManager
 
   // media_session::mojom::MediaControllerManager implementation:
   void CreateMediaControllerForSession(
-      ::mojo::PendingReceiver<media_session::mojom::MediaController> receiver,
+      mojo::PendingReceiver<media_session::mojom::MediaController> receiver,
       const ::base::UnguessableToken& request_id) override {
     NOTIMPLEMENTED();
   }
   void CreateActiveMediaController(
-      ::mojo::PendingReceiver<media_session::mojom::MediaController> receiver)
+      mojo::PendingReceiver<media_session::mojom::MediaController> receiver)
       override {
     media_controller_.Bind(std::move(receiver));
   }
@@ -211,7 +214,7 @@ class MediaHostTest : public testing::Test {
     return libassistant_controller_;
   }
 
-  libassistant::mojom::MediaDelegate& libassistant_media_delegate() {
+  chromeos::libassistant::mojom::MediaDelegate& libassistant_media_delegate() {
     return *libassistant_media_delegate_;
   }
 
@@ -284,7 +287,8 @@ class MediaHostTest : public testing::Test {
   FakeMediaControllerManager media_controller_manager_;
   ScopedAssistantClient assistant_client_;
   testing::StrictMock<LibassistantMediaControllerMock> libassistant_controller_;
-  mojo::Remote<libassistant::mojom::MediaDelegate> libassistant_media_delegate_;
+  mojo::Remote<chromeos::libassistant::mojom::MediaDelegate>
+      libassistant_media_delegate_;
   std::unique_ptr<MediaHost> media_host_;
 };
 
@@ -332,7 +336,7 @@ TEST_F(MediaHostTest, ShouldSetTitleWhenCallingSetExternalPlaybackState) {
       .WillOnce([&](MediaStatePtr state) { actual_state = std::move(state); });
 
   media_session::MediaMetadata meta_data;
-  meta_data.title = base::UTF8ToUTF16("the title");
+  meta_data.title = u"the title";
   MediaSessionMetadataChanged(meta_data);
 
   ASSERT_FALSE(actual_state.is_null());
@@ -470,14 +474,14 @@ TEST_F(MediaHostTest, ShouldForwardLibassistantMediaSessionUpdates) {
 
   base::Optional<media_session::MediaMetadata> expected_output =
       media_session::MediaMetadata();
-  expected_output->title = base::UTF8ToUTF16("the title");
-  expected_output->artist = base::UTF8ToUTF16("the artist");
-  expected_output->album = base::UTF8ToUTF16("the album");
+  expected_output->title = u"the title";
+  expected_output->artist = u"the artist";
+  expected_output->album = u"the album";
   EXPECT_CALL(media_session_observer,
               MediaSessionMetadataChanged(expected_output));
 
   auto input = MediaState::New();
-  input->metadata = libassistant::mojom::MediaMetadata::New();
+  input->metadata = chromeos::libassistant::mojom::MediaMetadata::New();
   input->metadata->title = "the title";
   input->metadata->artist = "the artist";
   input->metadata->album = "the album";

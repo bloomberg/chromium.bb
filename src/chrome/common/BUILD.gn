@@ -99,12 +99,14 @@ source_set("ini_parser") {
 static_library("common") {
   sources = [
     "all_messages.h",
+    "child_process_host_flags.h",
     "child_process_logging.h",
     "chrome_content_client.cc",
     "chrome_content_client.h",
     "chrome_content_client_constants.cc",
     "chrome_descriptors.h",
     "chrome_isolated_world_ids.h",
+    "chrome_resource_request_blocked_reason.h",
     "chrome_result_codes.h",
     "common_message_generator.cc",
     "common_message_generator.h",
@@ -158,6 +160,7 @@ static_library("common") {
     "//base:base_static",
     "//base:i18n",
     "//base/util/values:values_util",
+    "//build:branding_buildflags",
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/app/theme:theme_resources",
@@ -237,7 +240,6 @@ static_library("common") {
   ]
 
   deps = [
-    "//build:branding_buildflags",
     "//build:chromeos_buildflags",
     "//components/crash/core/app",
     "//components/google/core/common",
@@ -461,10 +463,6 @@ static_library("common") {
   }
 
   if (enable_library_cdms) {
-    sources += [
-      "media/cdm_manifest.cc",
-      "media/cdm_manifest.h",
-    ]
     deps += [ "//media/cdm:cdm_paths" ]  # Needed by chrome_content_client.cc
 
     if (enable_widevine) {
@@ -534,12 +532,12 @@ static_library("non_code_constants") {
     ":buildflags",
     ":version_header",
     "//base",
-    "//build:branding_buildflags",
     "//build:chromeos_buildflags",
     "//ppapi/buildflags",
   ]
 
   public_deps = [
+    "//build:branding_buildflags",
     "//printing/buildflags",
     "//ui/base:buildflags",
   ]
@@ -702,6 +700,8 @@ mojom("mojo_bindings") {
   sources = [
     "cache_stats_recorder.mojom",
     "chrome_render_frame.mojom",
+    "draggable_regions.mojom",
+    "lite_video_service.mojom",
     "media/webrtc_logging.mojom",
     "metrics.mojom",
     "net/net_error_page_support.mojom",

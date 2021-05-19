@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
 #include "quic/core/quic_epoll_alarm_factory.h"
 #include "quic/core/quic_epoll_connection_helper.h"
-#include "quic/platform/api/quic_ptr_util.h"
 #include "quic/tools/quic_simple_crypto_server_stream_helper.h"
 #include "quic/tools/quic_simple_dispatcher.h"
 #include "quic/tools/quic_simple_server_session.h"
@@ -49,7 +49,7 @@ class CustomStreamSession : public QuicSimpleServerSession {
     if (stream_factory_) {
       QuicSpdyStream* stream =
           stream_factory_->CreateStream(id, this, server_backend());
-      ActivateStream(QuicWrapUnique(stream));
+      ActivateStream(absl::WrapUnique(stream));
       return stream;
     }
     return QuicSimpleServerSession::CreateIncomingStream(id);
@@ -98,12 +98,13 @@ class QuicTestDispatcher : public QuicSimpleDispatcher {
       const QuicSocketAddress& self_address,
       const QuicSocketAddress& peer_address,
       absl::string_view alpn,
-      const ParsedQuicVersion& version) override {
+      const ParsedQuicVersion& version,
+      absl::string_view sni) override {
     QuicReaderMutexLock lock(&factory_lock_);
     if (session_factory_ == nullptr && stream_factory_ == nullptr &&
         crypto_stream_factory_ == nullptr) {
       return QuicSimpleDispatcher::CreateQuicSession(
-          id, self_address, peer_address, alpn, version);
+          id, self_address, peer_address, alpn, version, sni);
     }
     QuicConnection* connection = new QuicConnection(
         id, self_address, peer_address, helper(), alarm_factory(), writer(),

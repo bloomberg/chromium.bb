@@ -27,7 +27,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.UserActionTester;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
@@ -125,7 +125,7 @@ public class BrowsingDataBridgeTest {
     public void testSameSiteNoneCookiesDeleted() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             BrowsingDataBridge.getInstance().clearSameSiteNoneData(
-                    () -> { mCallbackHelper.notifyCalled(); }, false);
+                    () -> { mCallbackHelper.notifyCalled(); });
         });
         mCallbackHelper.waitForCallback(0);
         assertThat(mActionTester.toString(), getActions(),

@@ -1,6 +1,9 @@
 import { LogMessageWithStack } from './log_message.js';
 
-export type Status = 'running' | 'pass' | 'skip' | 'warn' | 'fail';
+// TODO: Add warn expectations
+export type Expectation = 'pass' | 'skip' | 'fail';
+
+export type Status = 'running' | 'warn' | Expectation;
 
 export interface TestCaseResult {
   status: Status;

@@ -76,6 +76,10 @@ bool NGLayoutInputNode::IsSliderThumb() const {
   return IsBlock() && blink::IsSliderThumb(GetDOMNode());
 }
 
+bool NGLayoutInputNode::IsSVGText() const {
+  return box_ && box_->IsNGSVGText();
+}
+
 bool NGLayoutInputNode::IsEmptyTableSection() const {
   return box_->IsTableSection() && To<LayoutNGTableSection>(box_)->IsEmpty();
 }
@@ -97,15 +101,6 @@ wtf_size_t NGLayoutInputNode::TableCellRowspan() const {
 
 bool NGLayoutInputNode::IsTextControlPlaceholder() const {
   return IsBlock() && blink::IsTextControlPlaceholder(GetDOMNode());
-}
-
-MinMaxSizesResult NGLayoutInputNode::ComputeMinMaxSizes(
-    WritingMode writing_mode,
-    const MinMaxSizesInput& input,
-    const NGConstraintSpace* space) const {
-  if (auto* inline_node = DynamicTo<NGInlineNode>(this))
-    return inline_node->ComputeMinMaxSizes(writing_mode, input, space);
-  return To<NGBlockNode>(*this).ComputeMinMaxSizes(writing_mode, input, space);
 }
 
 void NGLayoutInputNode::IntrinsicSize(
@@ -146,6 +141,16 @@ String NGLayoutInputNode::ToString() const {
 
 #if DCHECK_IS_ON()
 void NGLayoutInputNode::ShowNodeTree() const {
+  if (getenv("RUNNING_UNDER_RR")) {
+    // Printing timestamps requires an IPC to get the local time, which
+    // does not work in an rr replay session. Just disable timestamp printing
+    // globally, since we don't need them. Affecting global state isn't a
+    // problem because invoking this from a rr session creates a temporary
+    // program environment that will be destroyed as soon as the invocation
+    // completes.
+    logging::SetLogItems(true, true, false, false);
+  }
+
   StringBuilder string_builder;
   string_builder.Append(".:: LayoutNG Node Tree ::.\n");
   AppendNodeToString(*this, &string_builder);

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/strings/string16.h"
 
 namespace ash {
 
@@ -18,7 +17,7 @@ class ASH_PUBLIC_EXPORT SystemTrayClient {
   virtual ~SystemTrayClient() {}
 
   // Shows general settings UI.
-  virtual void ShowSettings() = 0;
+  virtual void ShowSettings(int64_t display_id) = 0;
 
   // Shows settings related to Bluetooth devices (e.g. to add a device).
   virtual void ShowBluetoothSettings() = 0;
@@ -29,7 +28,7 @@ class ASH_PUBLIC_EXPORT SystemTrayClient {
   // necessarily the device name.
   virtual void ShowBluetoothPairingDialog(
       const std::string& address,
-      const base::string16& name_for_display,
+      const std::u16string& name_for_display,
       bool paired,
       bool connected) = 0;
 
@@ -103,6 +102,9 @@ class ASH_PUBLIC_EXPORT SystemTrayClient {
   // if we should navigate to the physical SIM setup flow or to the page that
   // allows the user to select which flow they wish to enter (pSIM or eSIM).
   virtual void ShowSettingsCellularSetup(bool show_psim_flow) = 0;
+
+  // Opens SIM unlock dialog in OS Settings.
+  virtual void ShowSettingsSimUnlock() = 0;
 
   // Shows the "add network" UI to create a third-party extension-backed VPN
   // connection (e.g. Cisco AnyConnect).

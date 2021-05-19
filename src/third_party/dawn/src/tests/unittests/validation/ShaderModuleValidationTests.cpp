@@ -14,6 +14,8 @@
 
 #include "common/Constants.h"
 
+#include "dawn_native/ShaderModule.h"
+
 #include "tests/unittests/validation/ValidationTest.h"
 
 #include "utils/WGPUHelpers.h"
@@ -62,7 +64,7 @@ TEST_F(ShaderModuleValidationTest, FragmentOutputLocationExceedsMaxColorAttachme
         [[stage(fragment)]] fn main() -> void {
             fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
         })";
-    ASSERT_DEVICE_ERROR(utils::CreateShaderModuleFromWGSL(device, stream.str().c_str()));
+    ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, stream.str().c_str()));
 }
 
 // Test that it is invalid to create a shader module with no chained descriptor. (It must be
@@ -73,14 +75,133 @@ TEST_F(ShaderModuleValidationTest, NoChainedDescriptor) {
 }
 
 // Test that it is not allowed to use combined texture and sampler.
-// TODO(cwallez@chromium.org): Convert them to SPIRV ASM to remove the dependency on glslang.
 TEST_F(ShaderModuleValidationTest, CombinedTextureAndSampler) {
+    // SPIR-V ASM produced by glslang for the following fragment shader:
+    //
+    //   #version 450
+    //   layout(set = 0, binding = 0) uniform sampler2D tex;
+    //   void main () {}
+    //
+    // Note that the following defines an interface combined texture/sampler which is not allowed
+    // in Dawn / WebGPU.
+    //
+    //   %8 = OpTypeSampledImage %7
+    //   %_ptr_UniformConstant_8 = OpTypePointer UniformConstant %8
+    //   %tex = OpVariable %_ptr_UniformConstant_8 UniformConstant
     const char* shader = R"(
-        #version 450
-        layout (set = 0, binding = 0) uniform sampler2D texture;
-        void main() {
-        })";
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %main "main"
+               OpExecutionMode %main OriginUpperLeft
+               OpSource GLSL 450
+               OpName %main "main"
+               OpName %tex "tex"
+               OpDecorate %tex DescriptorSet 0
+               OpDecorate %tex Binding 0
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+      %float = OpTypeFloat 32
+          %7 = OpTypeImage %float 2D 0 0 0 1 Unknown
+          %8 = OpTypeSampledImage %7
+%_ptr_UniformConstant_8 = OpTypePointer UniformConstant %8
+        %tex = OpVariable %_ptr_UniformConstant_8 UniformConstant
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
 
-    ASSERT_DEVICE_ERROR(
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, shader));
+    ASSERT_DEVICE_ERROR(utils::CreateShaderModuleFromASM(device, shader));
+}
+
+// Test that it is not allowed to declare a multisampled-array interface texture.
+// TODO(enga): Also test multisampled cube, cube array, and 3D. These have no GLSL keywords.
+TEST_F(ShaderModuleValidationTest, MultisampledArrayTexture) {
+    // SPIR-V ASM produced by glslang for the following fragment shader:
+    //
+    //  #version 450
+    //  layout(set=0, binding=0) uniform texture2DMSArray tex;
+    //  void main () {}}
+    //
+    // Note that the following defines an interface array multisampled texture which is not allowed
+    // in Dawn / WebGPU.
+    //
+    //  %7 = OpTypeImage %float 2D 0 1 1 1 Unknown
+    //  %_ptr_UniformConstant_7 = OpTypePointer UniformConstant %7
+    //  %tex = OpVariable %_ptr_UniformConstant_7 UniformConstant
+    const char* shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %main "main"
+               OpExecutionMode %main OriginUpperLeft
+               OpSource GLSL 450
+               OpName %main "main"
+               OpName %tex "tex"
+               OpDecorate %tex DescriptorSet 0
+               OpDecorate %tex Binding 0
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+      %float = OpTypeFloat 32
+          %7 = OpTypeImage %float 2D 0 1 1 1 Unknown
+%_ptr_UniformConstant_7 = OpTypePointer UniformConstant %7
+        %tex = OpVariable %_ptr_UniformConstant_7 UniformConstant
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+    ASSERT_DEVICE_ERROR(utils::CreateShaderModuleFromASM(device, shader));
+}
+
+// Tests that shader module compilation messages can be queried.
+TEST_F(ShaderModuleValidationTest, CompilationMessages) {
+    // This test works assuming ShaderModule is backed by a dawn_native::ShaderModuleBase, which
+    // is not the case on the wire.
+    DAWN_SKIP_TEST_IF(UsesWire());
+
+    std::ostringstream stream;
+    stream << R"([[location(0)]] var<out> fragColor : vec4<f32>;
+        [[stage(fragment)]] fn main() -> void {
+            fragColor = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+        })";
+    wgpu::ShaderModule shaderModule = utils::CreateShaderModule(device, stream.str().c_str());
+
+    dawn_native::ShaderModuleBase* shaderModuleBase =
+        reinterpret_cast<dawn_native::ShaderModuleBase*>(shaderModule.Get());
+    shaderModuleBase->CompilationMessages()->ClearMessages();
+    shaderModuleBase->CompilationMessages()->AddMessage("Info Message");
+    shaderModuleBase->CompilationMessages()->AddMessage("Warning Message",
+                                                        wgpu::CompilationMessageType::Warning);
+    shaderModuleBase->CompilationMessages()->AddMessage("Error Message",
+                                                        wgpu::CompilationMessageType::Error, 3, 4);
+
+    auto callback = [](WGPUCompilationInfoRequestStatus status, const WGPUCompilationInfo* info,
+                       void* userdata) {
+        ASSERT_EQ(WGPUCompilationInfoRequestStatus_Success, status);
+        ASSERT_NE(nullptr, info);
+        ASSERT_EQ(3u, info->messageCount);
+
+        const WGPUCompilationMessage* message = &info->messages[0];
+        ASSERT_STREQ("Info Message", message->message);
+        ASSERT_EQ(WGPUCompilationMessageType_Info, message->type);
+        ASSERT_EQ(0u, message->lineNum);
+        ASSERT_EQ(0u, message->linePos);
+
+        message = &info->messages[1];
+        ASSERT_STREQ("Warning Message", message->message);
+        ASSERT_EQ(WGPUCompilationMessageType_Warning, message->type);
+        ASSERT_EQ(0u, message->lineNum);
+        ASSERT_EQ(0u, message->linePos);
+
+        message = &info->messages[2];
+        ASSERT_STREQ("Error Message", message->message);
+        ASSERT_EQ(WGPUCompilationMessageType_Error, message->type);
+        ASSERT_EQ(3u, message->lineNum);
+        ASSERT_EQ(4u, message->linePos);
+    };
+
+    shaderModule.GetCompilationInfo(callback, nullptr);
 }

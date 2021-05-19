@@ -67,6 +67,11 @@ class WebStateImpl;
 @property(nonatomic, readonly, assign, getter=isWebProcessCrashed)
     BOOL webProcessCrashed;
 
+// Whether or not the user is currently interacting with the web content
+// presented by this controller.
+@property(nonatomic, readonly, assign, getter=isUserInteracting)
+    BOOL userInteracting;
+
 // Whether the WebController is visible. Returns YES after wasShown call and
 // NO after wasHidden() call.
 @property(nonatomic, assign, getter=isVisible) BOOL visible;
@@ -155,13 +160,6 @@ class WebStateImpl;
 
 // Notifies the CRWWebController that it has been hidden.
 - (void)wasHidden;
-
-// Called when NavigationManager has completed go to index same-document
-// navigation. Updates HTML5 history state, current document URL and sends
-// approprivate navigation and loading WebStateObserver callbacks.
-- (void)didFinishGoToIndexSameDocumentNavigationWithType:
-            (web::NavigationInitiationType)type
-                                          hasUserGesture:(BOOL)hasUserGesture;
 
 // Instructs WKWebView to navigate to the given navigation item. |wk_item| and
 // |item| must point to the same navigation item. Calling this method may

@@ -48,7 +48,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // to see how each parameter is used.
   ServiceWorkerSubresourceLoader(
       mojo::PendingReceiver<network::mojom::URLLoader>,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& resource_request,
@@ -181,7 +180,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   // These are given by the constructor (as the params for
   // URLLoaderFactory::CreateLoaderAndStart).
-  const int routing_id_;
   const int request_id_;
   const uint32_t options_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
@@ -205,11 +203,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   blink::mojom::ServiceWorkerFetchEventTimingPtr fetch_event_timing_;
   network::mojom::FetchResponseSource response_source_;
-
-  // For debugging crbug.com/1162035. Set to true after a redirect is
-  // received/followed.
-  bool received_redirect_for_bug1162035_ = false;
-  bool followed_redirect_for_bug1162035_ = false;
 
   base::WeakPtrFactory<ServiceWorkerSubresourceLoader> weak_factory_{this};
 
@@ -253,7 +246,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   // network::mojom::URLLoaderFactory overrides:
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& resource_request,

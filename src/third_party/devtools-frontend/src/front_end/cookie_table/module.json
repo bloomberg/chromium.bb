@@ -1,12 +1,9 @@
 {
   "dependencies": [
-    "ui",
+    "ui/legacy",
     "data_grid"
   ],
-  "modules": [
-    "cookie_table-legacy.js"
-  ],
-  "resources": [
+    "resources": [
     "cookiesTable.css"
   ]
 }

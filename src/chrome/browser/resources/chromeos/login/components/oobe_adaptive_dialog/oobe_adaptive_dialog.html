@@ -11,6 +11,7 @@
 <link rel="import" href="/components/common_styles.html">
 <link rel="import" href="/components/oobe_custom_vars_css.html">
 <link rel="import" href="/components/oobe_shared_vars_css.html">
+<link rel="import" href="/components/oobe_focus_behavior.html">
 
 <!--
   Simple OOBE dialog which should be used for OOBE UI elements.
@@ -59,6 +60,10 @@
 <dom-module id="oobe-adaptive-dialog">
   <template>
     <style include="oobe-dialog-host cr-shared-style">
+      /*
+       * Please check whether `multidevice_setup/ui_page.html` needs to be
+       * updated when below css rules are changed.
+       */
       :host {
         height: var(--oobe-adaptive-dialog-height);
         width: var(--oobe-adaptive-dialog-width);
@@ -91,8 +96,6 @@
         --oobe-adaptive-dialog-header-width: clamp(346px,
             calc(0.6 * (var(--oobe-adaptive-dialog-width) -
             2 * var(--oobe-adaptive-dialog-content-padding))) , 520px);
-        --oobe-adaptive-dialog-content-top-padding:
-          var(--oobe-adaptive-dialog-header-top-padding);
       }
 
       #oobe-title ::slotted(h1) {
@@ -141,8 +144,7 @@
         --paper-progress-active-color: var(--google-blue-500);
         --paper-progress-container-color: var(--google-blue-100);
         height: 4px;
-        margin-bottom: 32px;
-        margin-top: 16px;
+        margin-top: 32px;
         width: 100%;
       }
 
@@ -162,7 +164,7 @@
 
       .bottom-buttons-container {
         /* Always allocate height for buttons even a container is empty */
-        min-height: var(--cr-button-height);
+        min-height: var(--oobe-button-height);
         padding-bottom: var(--oobe-adaptive-dialog-buttons-vertical-padding);
         padding-inline-end:
           var(--oobe-adaptive-dialog-buttons-horizontal-padding);
@@ -174,13 +176,13 @@
 
       .back-button-container {
         /* Always allocate height for buttons even a container is empty */
-        min-height: var(--cr-button-height);
+        min-height: var(--oobe-button-height);
         padding-bottom:
           var(--oobe-adaptive-dialog-back-button-vertical-padding);
         padding-inline-end:
-          var(--oobe-adaptive-dialog-buttons-horizontal-padding);
+          var(--oobe-adaptive-dialog-back-button-horizontal-padding);
         padding-inline-start:
-          var(--oobe-adaptive-dialog-buttons-horizontal-padding);
+          var(--oobe-adaptive-dialog-back-button-horizontal-padding);
         padding-top: var(--oobe-adaptive-dialog-back-button-vertical-padding);
         z-index: 1;
       }

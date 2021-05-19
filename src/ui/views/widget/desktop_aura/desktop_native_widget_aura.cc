@@ -522,6 +522,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
     cursor_reference_count_++;
     if (!native_cursor_manager_)
       native_cursor_manager_ = new DesktopNativeCursorManager();
+    native_cursor_manager_->AddHost(host());
+
     if (!cursor_manager_) {
       cursor_manager_ = new wm::CursorManager(
           std::unique_ptr<wm::NativeCursorManager>(native_cursor_manager_));
@@ -529,7 +531,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
           display::Screen::GetScreen()->GetDisplayNearestWindow(
               host_->window()));
     }
-    native_cursor_manager_->AddHost(host());
     aura::client::SetCursorClient(host_->window(), cursor_manager_);
   }
 
@@ -715,7 +716,7 @@ void DesktopNativeWidgetAura::GetWindowPlacement(
     desktop_window_tree_host_->GetWindowPlacement(bounds, maximized);
 }
 
-bool DesktopNativeWidgetAura::SetWindowTitle(const base::string16& title) {
+bool DesktopNativeWidgetAura::SetWindowTitle(const std::u16string& title) {
   if (!content_window_)
     return false;
   return desktop_window_tree_host_->SetWindowTitle(title);
@@ -990,7 +991,7 @@ Widget::MoveLoopResult DesktopNativeWidgetAura::RunMoveLoop(
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
   if (!content_window_)
-    return Widget::MOVE_LOOP_CANCELED;
+    return Widget::MoveLoopResult::kCanceled;
   return desktop_window_tree_host_->RunMoveLoop(drag_offset, source,
                                                 escape_behavior);
 }

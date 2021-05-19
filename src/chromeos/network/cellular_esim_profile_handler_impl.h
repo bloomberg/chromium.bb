@@ -6,10 +6,9 @@
 #define CHROMEOS_NETWORK_CELLULAR_ESIM_PROFILE_HANDLER_IMPL_H_
 
 #include "base/component_export.h"
-#include "chromeos/dbus/hermes/hermes_euicc_client.h"
-#include "chromeos/dbus/hermes/hermes_manager_client.h"
-#include "chromeos/dbus/hermes/hermes_profile_client.h"
+#include "base/containers/flat_set.h"
 #include "chromeos/network/cellular_esim_profile_handler.h"
+#include "chromeos/network/network_state_handler_observer.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -18,9 +17,7 @@ namespace chromeos {
 
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimProfileHandlerImpl
     : public CellularESimProfileHandler,
-      public HermesManagerClient::Observer,
-      public HermesEuiccClient::Observer,
-      public HermesProfileClient::Observer {
+      public NetworkStateHandlerObserver {
  public:
   CellularESimProfileHandlerImpl();
   CellularESimProfileHandlerImpl(const CellularESimProfileHandlerImpl&) =
@@ -31,25 +28,23 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimProfileHandlerImpl
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
+  // NetworkStateHandlerObserver:
+  void DeviceListChanged() override;
+
  private:
+  friend class CellularESimProfileHandlerImplTest;
+
   // CellularESimProfileHandler:
-  void Init() override;
+  void InitInternal() override;
   std::vector<CellularESimProfile> GetESimProfiles() override;
   void SetDevicePrefs(PrefService* device_prefs) override;
+  void OnHermesPropertiesUpdated() override;
 
-  // HermesManagerClient::Observer:
-  void OnAvailableEuiccListChanged() override;
-
-  // HermesEuiccClient::Observer:
-  void OnEuiccPropertyChanged(const dbus::ObjectPath& euicc_path,
-                              const std::string& property_name) override;
-
-  // HermesProfileClient::Observer:
-  void OnCarrierProfilePropertyChanged(
-      const dbus::ObjectPath& carrier_profile_path,
-      const std::string& property_name) override;
-
+  void RefreshEuiccsIfNecessary();
+  base::flat_set<std::string> GetEuiccPathsFromPrefs() const;
+  void StoreEuiccPathsToPrefs(const base::flat_set<std::string>& paths);
   void UpdateProfilesFromHermes();
+  bool CellularDeviceExists() const;
 
   // Initialized to null and set once SetDevicePrefs() is called.
   PrefService* device_prefs_ = nullptr;

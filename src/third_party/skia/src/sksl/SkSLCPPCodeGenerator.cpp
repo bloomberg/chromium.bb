@@ -12,6 +12,7 @@
 #include "src/sksl/SkSLCPPUniformCTypes.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLHCodeGenerator.h"
+#include "src/sksl/ir/SkSLEnum.h"
 
 #include <algorithm>
 
@@ -352,7 +353,7 @@ int CPPCodeGenerator::getChildFPIndex(const Variable& var) const {
                                   p->as<GlobalVarDeclaration>().declaration()->as<VarDeclaration>();
             if (&decl.var() == &var) {
                 return index;
-            } else if (decl.var().type() == *fContext.fTypes.fFragmentProcessor) {
+            } else if (decl.var().type().isFragmentProcessor()) {
                 ++index;
             }
         }
@@ -374,7 +375,7 @@ void CPPCodeGenerator::writeFunctionCall(const FunctionCall& c) {
 
         // Validity checks that are detected by function definition in sksl_fp.inc
         SkASSERT(arguments.size() >= 1 && arguments.size() <= 3);
-        SkASSERT("fragmentProcessor"  == arguments[0]->type().name());
+        SkASSERT(arguments[0]->type().isFragmentProcessor());
 
         // Actually fail during compilation if arguments with valid types are
         // provided that are not variable references, since sample() is a
@@ -514,7 +515,7 @@ static const char* glsltype_string(const Context& context, const Type& type) {
 }
 
 void CPPCodeGenerator::prepareHelperFunction(const FunctionDeclaration& decl) {
-    if (decl.isBuiltin() || decl.name() == "main") {
+    if (decl.isBuiltin() || decl.isMain()) {
         return;
     }
 
@@ -556,7 +557,7 @@ void CPPCodeGenerator::writeFunction(const FunctionDefinition& f) {
     OutputStream* oldOut = fOut;
     StringStream buffer;
     fOut = &buffer;
-    if (decl.name() == "main") {
+    if (decl.isMain()) {
         fInMain = true;
         for (const std::unique_ptr<Statement>& s : f.body()->as<Block>().children()) {
             this->writeStatement(*s);
@@ -668,7 +669,7 @@ void CPPCodeGenerator::writePrivateVars() {
             const GlobalVarDeclaration& global = p->as<GlobalVarDeclaration>();
             const Variable& var = global.declaration()->as<VarDeclaration>().var();
             if (is_private(var)) {
-                if (var.type() == *fContext.fTypes.fFragmentProcessor) {
+                if (var.type().isFragmentProcessor()) {
                     fErrors.error(global.fOffset,
                                   "fragmentProcessor variables must be declared 'in'");
                     return;
@@ -718,7 +719,8 @@ void CPPCodeGenerator::writePrivateVarValues() {
 
 static bool is_accessible(const Variable& var) {
     const Type& type = var.type();
-    return Type::TypeKind::kSampler != type.typeKind() &&
+    return !type.isFragmentProcessor() &&
+           Type::TypeKind::kSampler != type.typeKind() &&
            Type::TypeKind::kOther != type.typeKind();
 }
 
@@ -1088,14 +1090,14 @@ void CPPCodeGenerator::writeSetData(std::vector<const Variable*>& uniforms) {
                                     "        (void) %s;\n",
                                     name, HCodeGenerator::FieldName(name).c_str(), name);
                 } else if (SectionAndParameterHelper::IsParameter(variable) &&
-                            variable.type() != *fContext.fTypes.fFragmentProcessor) {
+                           !variable.type().isFragmentProcessor()) {
                     if (!wroteProcessor) {
                         this->writef("        const %s& _outer = _proc.cast<%s>();\n", fullName,
                                      fullName);
                         wroteProcessor = true;
                     }
 
-                    if (variable.type() != *fContext.fTypes.fFragmentProcessor) {
+                    if (!variable.type().isFragmentProcessor()) {
                         this->writef("        auto %s = _outer.%s;\n"
                                         "        (void) %s;\n",
                                         name, name, name);
@@ -1142,7 +1144,7 @@ void CPPCodeGenerator::writeClone() {
                      fFullName.c_str(), fFullName.c_str(), fFullName.c_str());
         for (const Variable* param : fSectionAndParameterHelper.getParameters()) {
             String fieldName = HCodeGenerator::FieldName(String(param->name()).c_str());
-            if (param->type() != *fContext.fTypes.fFragmentProcessor) {
+            if (!param->type().isFragmentProcessor()) {
                 this->writef("\n, %s(src.%s)",
                              fieldName.c_str(),
                              fieldName.c_str());
@@ -1186,7 +1188,7 @@ void CPPCodeGenerator::writeDumpInfo() {
 
         for (const Variable* param : fSectionAndParameterHelper.getParameters()) {
             // dumpInfo() doesn't need to log child FPs.
-            if (param->type() == *fContext.fTypes.fFragmentProcessor) {
+            if (param->type().isFragmentProcessor()) {
                 continue;
             }
 
@@ -1238,7 +1240,37 @@ void CPPCodeGenerator::writeTest() {
     }
 }
 
+static int bits_needed(uint32_t v) {
+    int bits = 1;
+    while (v >= (1u << bits)) {
+        bits++;
+    }
+    return bits;
+}
+
 void CPPCodeGenerator::writeGetKey() {
+    auto bitsForEnum = [&](const Type& type) {
+        for (const ProgramElement* e : fProgram.elements()) {
+            if (!e->is<Enum>() || type.name() != e->as<Enum>().typeName()) {
+                continue;
+            }
+            SKSL_INT minVal = 0, maxVal = 0;
+            auto gatherEnumRange = [&](StringFragment, SKSL_INT value) {
+                minVal = std::min(minVal, value);
+                maxVal = std::max(maxVal, value);
+            };
+            e->as<Enum>().foreach(gatherEnumRange);
+            if (minVal < 0) {
+                // Found a negative value in the enum, just use 32 bits
+                return 32;
+            }
+            SkASSERT(SkTFitsIn<uint32_t>(maxVal));
+            return bits_needed(maxVal);
+        }
+        SK_ABORT("Didn't find declaring element for enum type!");
+        return 32;
+    };
+
     this->writef("void %s::onGetGLSLProcessorKey(const GrShaderCaps& caps, "
                                                 "GrProcessorKeyBuilder* b) const {\n",
                  fFullName.c_str());
@@ -1281,15 +1313,23 @@ void CPPCodeGenerator::writeGetKey() {
                                  HCodeGenerator::FieldName(name).c_str());
                     this->writef("    uint16_t alpha = SkFloatToHalf(%s.fA);\n",
                                  HCodeGenerator::FieldName(name).c_str());
-                    this->write("    b->add32(((uint32_t)red << 16) | green);\n");
-                    this->write("    b->add32(((uint32_t)blue << 16) | alpha);\n");
+                    this->writef("    b->add32(((uint32_t)red << 16) | green, \"%s.rg\");\n", name);
+                    this->writef("    b->add32(((uint32_t)blue << 16) | alpha, \"%s.ba\");\n",
+                                 name);
                 } else if (varType == *fContext.fTypes.fHalf ||
                            varType == *fContext.fTypes.fFloat) {
-                    this->writef("    b->add32(sk_bit_cast<uint32_t>(%s));\n",
-                                 HCodeGenerator::FieldName(name).c_str());
-                } else if (varType.isInteger() || varType.isBoolean() || varType.isEnum()) {
-                    this->writef("    b->add32((uint32_t) %s);\n",
-                                 HCodeGenerator::FieldName(name).c_str());
+                    this->writef("    b->add32(sk_bit_cast<uint32_t>(%s), \"%s\");\n",
+                                 HCodeGenerator::FieldName(name).c_str(), name);
+                } else if (varType.isBoolean()) {
+                    this->writef("    b->addBool(%s, \"%s\");\n",
+                                 HCodeGenerator::FieldName(name).c_str(), name);
+                } else if (varType.isEnum()) {
+                    this->writef("    b->addBits(%d, (uint32_t) %s, \"%s\");\n",
+                                 bitsForEnum(varType), HCodeGenerator::FieldName(name).c_str(),
+                                 name);
+                } else if (varType.isInteger()) {
+                    this->writef("    b->add32((uint32_t) %s, \"%s\");\n",
+                                 HCodeGenerator::FieldName(name).c_str(), name);
                 } else {
                     SK_ABORT("NOT YET IMPLEMENTED: automatic key handling for %s\n",
                              varType.displayName().c_str());
@@ -1385,7 +1425,7 @@ bool CPPCodeGenerator::generateCode() {
                  "    (void) that;\n",
                  fullName, fullName, fullName);
     for (const auto& param : fSectionAndParameterHelper.getParameters()) {
-        if (param->type() == *fContext.fTypes.fFragmentProcessor) {
+        if (param->type().isFragmentProcessor()) {
             continue;
         }
         String nameString(param->name());

@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2020 Valve Corporation
-# Copyright (c) 2014-2020 LunarG, Inc.
+# Copyright (c) 2014-2021 Valve Corporation
+# Copyright (c) 2014-2021 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -120,6 +120,9 @@ target_include_directories(vk_layer_validation_tests
                                   ${PROJECT_BINARY_DIR}
                                   ${VulkanHeaders_INCLUDE_DIR}
                                   ${PROJECT_BINARY_DIR}/layers)
+if (USE_ROBIN_HOOD_HASHING)
+    target_include_directories(vk_layer_validation_tests PUBLIC ${ROBIN_HOOD_HASHING_INCLUDE_DIR})
+endif()
 add_dependencies(vk_layer_validation_tests
                  VkLayer_utils)
 

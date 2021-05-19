@@ -40,6 +40,7 @@
 <translation id="1252999807265626933">טעינה מ-<ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">מה מזג האוויר?</translation>
 <translation id="1267032506238418139">שינוי מקש קיצור</translation>
+<translation id="1269405891096105529">אין תמיכה בציוד היקפי במצב אורח</translation>
 <translation id="1270290102613614947">המקלדת שמופיעה במסך מושבתת</translation>
 <translation id="1272079795634619415">הפסקה</translation>
 <translation id="1275285675049378717">מספק חשמל ל-<ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">כאן מקלידים את ההודעה</translation>
 <translation id="2018630726571919839">אני רוצה לשמוע בדיחה</translation>
+<translation id="2021864487439853900">יש ללחוץ כדי לבטל את הנעילה</translation>
 <translation id="2049240716062114887">שמו של שולחן העבודה הווירטואלי שונה לשם <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">לאורך</translation>
 <translation id="2067602449040652523">בהירות מקלדת</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101">ל-<ph name="USER_EMAIL_ADDRESS" /> תהיה עדיין אפשרות להיכנס לחשבון מאוחר יותר.</translation>
 <translation id="3321628682574733415">קוד הורה שגוי</translation>
 <translation id="332587331255250389">יש להחליף את הסוללה</translation>
+<translation id="3333741161915951567">מתבצעת הפעלה מחדש של המודם. עליך להמתין 30 שניות ולנסות שוב.</translation>
 <translation id="3341303451326249809">צילום המסך בוצע</translation>
 <translation id="334252345105450327">יצירת צילום מסך</translation>
 <translation id="3351879221545518001">מתבצעת עכשיו העברה של מסך.</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> משתמש מנוהל</translation>
 <translation id="3665889125180354336">הקלטת המיקרופון</translation>
 <translation id="36813544980941320">‏רשתות Wi-Fi ישותפו בין הטלפון שלך לבין <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">מוצגים החלונות משולחן העבודה הווירטואלי הנוכחי. ניתן להקיש על מקש החץ למעלה כדי להציג חלונות מכל שולחנות העבודה הווירטואליים</translation>
 <translation id="3702846122927433391">אוכלוסיית ניגריה</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">בטעינה...</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">הגדרות אודיו</translation>
 <translation id="3945319193631853098">יש להקיש כדי להשלים את ההגדרה</translation>
 <translation id="3945867833895287237">מתבצע חיבור אל לנקודת אינטרנט…</translation>
+<translation id="3958465044488004317">‏ניתן להציג תוצאה ב-Assistant</translation>
 <translation id="3962859241508114581">הטראק הקודם</translation>
 <translation id="3969043077941541451">כבוי</translation>
 <translation id="397105322502079400">מתבצע חישוב...</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175">שיתוף השליטה במסך עם <ph name="HELPER_NAME" /> דרך סיוע מרחוק.</translation>
 <translation id="4424159417645388645">שולחן עבודה וירטואלי 5</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
+<translation id="4445159312344259901">יש להיכנס כדי לבטל את הנעילה</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{התראה חשובה אחת}two{# התראות חשובות}many{# התראות חשובות}other{# התראות חשובות}}</translation>
 <translation id="4450893287417543264">אין להציג שוב</translation>
 <translation id="445864333228800152">ערב טוב,</translation>
 <translation id="4458688154122353284">הפסקה של הקלטת המסך</translation>
+<translation id="4467143075433126295">‏יש ללחוץ לחיצה ארוכה על [Esc‏] כדי לצאת ממסך מלא</translation>
 <translation id="4472575034687746823">תחילת העבודה</translation>
 <translation id="4477350412780666475">הטראק הבא</translation>
 <translation id="4477892968187500306">‏המכשיר הזה עשוי להכיל אפליקציות שלא אומתו על-ידי Google.</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">‏Google Assistant לא זמינה בגלישה כאורח.</translation>
 <translation id="6137566720514957455">פתיחת תיבת דו-דיח להסרה של <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">אין תמיכה בציוד ההיקפי</translation>
 <translation id="615957422585914272">הצגת מקלדת במסך</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6179832488876878285">כאן אפשר להצמיד את הקבצים החשובים. יש לפתוח את אפליקציית 'קבצים' כדי להתחיל.</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">יש לבחור אזור באמצעות הסטיילוס</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> סובב אל <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">קול</translation>
+<translation id="6330012934079202188">מוצגים החלונות מכל שולחנות העבודה הווירטואליים. ניתן להקיש על מקש החץ למעלה כדי להציג את החלונות משולחן העבודה הווירטואלי הנוכחי</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> הוא סשן מנוהל שמנוהל על ידי <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">‏Bluetooth פועל</translation>
 <translation id="6381109794406942707">כדי לבטל את הנעילה של המכשיר, יש להזין את קוד האימות.</translation>
 <translation id="639644700271529076">‏CAPS LOCK כבוי</translation>
-<translation id="6396835948284782440">‏כדי לצאת, צריך ללחוץ לחיצה ארוכה על [Esc].</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, עוצמת האות: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">ניקוי כל ההודעות</translation>
@@ -796,7 +804,6 @@
 <translation id="7780159184141939021">סיבוב המסך</translation>
 <translation id="7796353162336583443">‏כדי לרשום הערה או לצלם צילום מסך, או כדי להשתמש ב-Google Assistant, בסמן הלייזר או בזכוכית המגדלת, צריך להקיש על לחצן הסטיילוס במדף.</translation>
 <translation id="7798302898096527229">‏יש להקיש על Search או על Shift כדי לבטל.</translation>
-<translation id="7807966291075028781">מטעמי אבטחה, אין תמיכה בציוד היקפי כשנמצאים במצב אורח.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ו-<ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">אות חזק</translation>
 <translation id="7837740436429729974">עבר הזמן</translation>
@@ -946,6 +953,7 @@
 <translation id="8936501819958976551">מושבתת</translation>
 <translation id="8938800817013097409">‏מכשיר עם יציאת USB-C (יציאה ימנית מאחור)</translation>
 <translation id="8940956008527784070">‏סוללה חלשה (‎<ph name="PERCENTAGE" />%‎)</translation>
+<translation id="8951539504029375108">‏רק מכשירי Thunderbolt מאושרים תואמים ל-Chromebook</translation>
 <translation id="8982906748181120328">גישה בסביבה</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">מקלדת בשימוש: <ph name="IME_NAME" /></translation>

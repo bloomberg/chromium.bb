@@ -13,8 +13,6 @@
 @class NSMutableArray;
 
 namespace ios {
-// Email suffix used for managed accounts.
-extern NSString* const kManagedIdentityEmailSuffix;
 
 // A fake ChromeIdentityService used for testing.
 class FakeChromeIdentityService : public ChromeIdentityService {
@@ -32,11 +30,9 @@ class FakeChromeIdentityService : public ChromeIdentityService {
       UIViewController* viewController,
       BOOL animated) override;
   ChromeIdentityInteractionManager* CreateChromeIdentityInteractionManager(
-      ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const override;
   FakeChromeIdentityInteractionManager*
   CreateFakeChromeIdentityInteractionManager(
-      ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const;
 
   bool IsValidIdentity(ChromeIdentity* identity) override;

@@ -40,6 +40,7 @@
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> પરથી ચાર્જ કરી રહ્યાં છે</translation>
 <translation id="1255033239764210633">હવામાન કેવું છે?</translation>
 <translation id="1267032506238418139">શૉર્ટકટ ફેરફાર</translation>
+<translation id="1269405891096105529">અતિથિ મોડમાં પેરિફેરલને સપોર્ટ આપવામાં આવતો નથી</translation>
 <translation id="1270290102613614947">ઓન-સ્ક્રીન કીબોર્ડ અક્ષમ કર્યું</translation>
 <translation id="1272079795634619415">રોકો</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" />ને પાવર સપ્લાય આપી રહ્યું છે</translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">એક સંદેશ લખો</translation>
 <translation id="2018630726571919839">મને કોઈ જોક સંભળાવો</translation>
+<translation id="2021864487439853900">અનલૉક કરવા માટે ક્લિક કરો</translation>
 <translation id="2049240716062114887">ડેસ્કનું નામ બદલીને <ph name="DESK_NAME" /> કરવામાં આવ્યું હતું</translation>
 <translation id="2050339315714019657">પોર્ટ્રેટ</translation>
 <translation id="2067602449040652523">કીબોર્ડનું તેજ</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> હજીએ થોડા સમય પછી સાઇન ઇન કરી શકશે.</translation>
 <translation id="3321628682574733415">માતાપિતાનો કોડ ખોટો</translation>
 <translation id="332587331255250389">કૃપા કરીને બૅટરી બદલો</translation>
+<translation id="3333741161915951567">મૉડેમ રીબૂટ. ફરી પ્રયાસ કરતાં પહેલાં 30 સેકન્ડ રાહ જુઓ.</translation>
 <translation id="3341303451326249809">સ્ક્રીનશૉટ કૅપ્ચર કર્યો</translation>
 <translation id="334252345105450327">સ્ક્રીનશૉટ લો</translation>
 <translation id="3351879221545518001">તમે હાલમાં સ્ક્રીનને કાસ્ટ કરી રહ્યા છો.</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> મેનેજ કરાયેલા વપરાશકર્તા</translation>
 <translation id="3665889125180354336">માઇક્રોફોનથી રેકોર્ડ કરો</translation>
 <translation id="36813544980941320">તમારા ફોન અને <ph name="DEVICE_NAME" /> વચ્ચે વાઇ-ફાઇ નેટવર્ક શેર કરવામાં આવશે</translation>
+<translation id="3702809606464356667">વર્તમાન ડેસ્ક પરથી વિન્ડો બતાવી રહ્યાં છીએ, બધી ડેસ્ક પરની વિન્ડો બતાવવા માટે ઉપરની ઍરો કી દબાવો</translation>
 <translation id="3702846122927433391">નાઇજીરીયાની વસ્તી</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">લોડ કરી રહ્યું છે...</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">ઑડિઓ સેટિંગ્સ</translation>
 <translation id="3945319193631853098">સેટઅપ કરવાનું પૂર્ણ કરવા માટે ટૅપ કરો</translation>
 <translation id="3945867833895287237">હૉટસ્પૉટ સાથે કનેક્ટ કરી રહ્યાં છીએ...</translation>
+<translation id="3958465044488004317">Assistantમાં પરિણામ જુઓ</translation>
 <translation id="3962859241508114581">પાછલું ટ્રૅક</translation>
 <translation id="3969043077941541451">બંધ</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175">દૂરસ્થ સહાય વડે <ph name="HELPER_NAME" /> સાથે તમારી સ્ક્રીનનું નિયંત્રણ શેર કરવું.</translation>
 <translation id="4424159417645388645">ડેસ્ક 5</translation>
 <translation id="4430019312045809116">વૉલ્યૂમ</translation>
+<translation id="4445159312344259901">અનલૉક કરવા માટે સાઇન ઇન કરો</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 મહત્ત્વપૂર્ણ નોટિફિકેશન}one{# મહત્ત્વપૂર્ણ નોટિફિકેશન}other{# મહત્ત્વપૂર્ણ નોટિફિકેશન}}</translation>
 <translation id="4450893287417543264">ફરી બતાવશો નહીં</translation>
 <translation id="445864333228800152">ગુડ ઇવનિંગ,</translation>
 <translation id="4458688154122353284">સ્ક્રીન રેકોર્ડિંગ બંધ કરો</translation>
+<translation id="4467143075433126295">પૂર્ણ સ્ક્રીનથી બહાર નીકળવા માટે Esc કીને દબાવી રાખો</translation>
 <translation id="4472575034687746823">પ્રારંભ કરો</translation>
 <translation id="4477350412780666475">આગલો ટ્રૅક</translation>
 <translation id="4477892968187500306">આ ડિવાઇસમાં એવી ઍપ હોય શકે કે જેની Google દ્વારા ચકાસણી કરવામાં આવી છે.</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">અતિથિ સત્રમાં Google આસિસ્ટંટ ઉપલબ્ધ હોતું નથી.</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> માટે કાઢી નાખવાનો સંવાદ ખોલો</translation>
+<translation id="6154006699632741460">પેરિફેરલને સપોર્ટ આપવામાં આવતો નથી</translation>
 <translation id="615957422585914272">ઑન-સ્ક્રીન કીબોર્ડ બતાવો</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6179832488876878285">તમે તમારી મહત્ત્વની ફાઇલો અહીં પિન કરી શકો છો. શરૂ કરવા માટે Files ઍપ ખોલો.</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">કોઈ પ્રદેશ પસંદ કરવા માટે સ્ટાઇલસનો ઉપયોગ કરો</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ને <ph name="ROTATION" /> પર ફેરવવામાં આવ્યું હતું</translation>
 <translation id="6315170314923504164">Voice</translation>
+<translation id="6330012934079202188">બધી ડેસ્ક પરથી વિન્ડો બતાવી રહ્યાં છીએ, વર્તમાન ડેસ્ક પરની વિન્ડો બતાવવા માટે ઉપરની ઍરો કી દબાવો</translation>
 <translation id="6338485349199627913">મેનેજ કરાયેલું સત્ર <ph name="DISPLAY_NAME" />ને <ph name="MANAGER" /> દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="6376931439017688372">બ્લૂટૂથ ચાલુ છે</translation>
 <translation id="6381109794406942707">ડિવાઇસને અનલૉક કરવા માટે. તમારો પિન દાખલ કરો.</translation>
 <translation id="639644700271529076">CAPS LOCK બંધ છે</translation>
-<translation id="6396835948284782440">બહાર નીકળવા માટે [Esc]ને દબાવી રાખો.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">બધા નોટિફિકેશન સાફ કરો</translation>
@@ -794,7 +802,6 @@
 <translation id="7780159184141939021">સ્ક્રીનને ફેરવો</translation>
 <translation id="7796353162336583443">એક નોંધ અથવા સ્ક્રીનશૉટ લેવા, Google સહાયક, લૅઝર પૉઇન્ટર અથવા બૃહદદર્શક કાચનો ઉપયોગ કરવા માટે શેલ્ફ પરના સ્ટાઇલસ બટનને ટૅપ કરો.</translation>
 <translation id="7798302898096527229">રદ કરવા માટે શોધો અથવા Shift દબાવો.</translation>
-<translation id="7807966291075028781">સુરક્ષા કારણોસર અતિથિ મોડમાં પેરિફેરલને સપોર્ટ આપવામાં આવતો નથી</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> અને <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">પ્રબળ સિગ્નલ</translation>
 <translation id="7837740436429729974">સમય સમાપ્ત</translation>
@@ -944,6 +951,7 @@
 <translation id="8936501819958976551">નિષ્ક્રિય કરેલું</translation>
 <translation id="8938800817013097409">USB-C ડિવાઇસ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
 <translation id="8940956008527784070">બૅટરી ઓછી (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">તમારી Chromebook સાથે ફક્ત મંજૂરી ધરાવતા Thunderbolt ડિવાઇસ સુસંગત હોય છે</translation>
 <translation id="8982906748181120328">નજીકની દૃશ્યતા</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" />નો ઉપયોગ કરી રહ્યા છે</translation>

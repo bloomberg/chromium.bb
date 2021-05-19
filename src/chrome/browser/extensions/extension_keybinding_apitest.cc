@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -42,6 +41,7 @@
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/switches.h"
 
 using content::WebContents;
 
@@ -247,12 +247,20 @@ class CommandsApiTest : public ExtensionApiTest {
 #endif
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    // Some builders are flaky due to slower loading interacting with
+    // deferred commits. This primarily impacts chromeos for the test
+    // CommandsApiTest.ContinuePropagation.
+    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
+  }
+
  protected:
   bool IsGrantedForTab(const Extension* extension,
                        const content::WebContents* web_contents) {
     return extension->permissions_data()->HasAPIPermissionForTab(
         sessions::SessionTabHelper::IdForTab(web_contents).id(),
-        APIPermission::kTab);
+        mojom::APIPermissionID::kTab);
   }
 
   // Returns true if the extension with the given |extension_id| has an active
@@ -279,7 +287,7 @@ class CommandsApiTest : public ExtensionApiTest {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  void RunChromeOSConversionTest(const std::string& extension_path) {
+  void RunChromeOSConversionTest(const char* extension_path) {
     // Setup the environment.
     ASSERT_TRUE(embedded_test_server()->Start());
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -385,9 +393,6 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, InactivePageActionDoesntTrigger) {
 // Tests that a page action that is unpinned and only shown within the
 // extensions menu will still properly trigger when the keybinding is used.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, UnpinnedPageActionTriggers) {
-  base::AutoReset<bool> disable_toolbar_animations(
-      &ToolbarActionsBar::disable_animations_for_testing_, true);
-
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
@@ -989,14 +994,18 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_ChromeOSConversions) {
 // re-adding.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, AddRemoveAddComponentExtension) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  ASSERT_TRUE(RunComponentExtensionTest("keybinding/component")) << message_;
+  ASSERT_TRUE(RunExtensionTest(
+      {.name = "keybinding/component", .load_as_component = true}))
+      << message_;
 
   extensions::ExtensionSystem::Get(browser()->profile())
       ->extension_service()
       ->component_loader()
       ->Remove("pkplfbidichfdicaijlchgnapepdginl");
 
-  ASSERT_TRUE(RunComponentExtensionTest("keybinding/component")) << message_;
+  ASSERT_TRUE(RunExtensionTest(
+      {.name = "keybinding/component", .load_as_component = true}))
+      << message_;
 }
 
 // Validate parameters sent along with an extension event, in response to

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DLP_CLIPBOARD_BUBBLE_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_CLIPBOARD_BUBBLE_H_
 
+#include <string>
+
 #include "base/callback.h"
-#include "base/strings/string16.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
@@ -24,7 +25,7 @@ class ClipboardBubbleView : public views::View {
  public:
   METADATA_HEADER(ClipboardBubbleView);
 
-  explicit ClipboardBubbleView(const base::string16& text);
+  explicit ClipboardBubbleView(const std::u16string& text);
   ~ClipboardBubbleView() override;
 
   virtual gfx::Size GetBubbleSize() const = 0;
@@ -42,7 +43,7 @@ class ClipboardBlockBubble : public ClipboardBubbleView {
  public:
   METADATA_HEADER(ClipboardBlockBubble);
 
-  explicit ClipboardBlockBubble(const base::string16& text);
+  explicit ClipboardBlockBubble(const std::u16string& text);
   ~ClipboardBlockBubble() override;
 
   // ClipboardBubbleView::
@@ -58,7 +59,7 @@ class ClipboardWarnBubble : public ClipboardBubbleView {
  public:
   METADATA_HEADER(ClipboardWarnBubble);
 
-  explicit ClipboardWarnBubble(const base::string16& text);
+  explicit ClipboardWarnBubble(const std::u16string& text);
   ~ClipboardWarnBubble() override;
 
   // ClipboardBubbleView::

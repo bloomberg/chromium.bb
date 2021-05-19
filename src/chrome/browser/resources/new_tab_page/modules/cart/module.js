@@ -43,7 +43,13 @@ class ChromeCartModuleElement extends mixinBehaviors
       headerChipText: String,
 
       /** @type {string} */
-      headerDescriptionText: String,
+      headerDescriptionText: {
+        type: String,
+        reflectToAttribute: true,
+      },
+
+      /** @type {boolean} */
+      showDiscountConsent: Boolean,
 
       /** @private {boolean} */
       showLeftScrollButton_: Boolean,
@@ -57,9 +63,6 @@ class ChromeCartModuleElement extends mixinBehaviors
       /** @private {string} */
       cartMenuRemoveItem_: String,
 
-      /** @private {number} */
-      height: Number,
-
       /**
        * Data about the most recently dismissed cart item.
        * @type {?{message: string, restoreCallback: function()}}
@@ -69,6 +72,12 @@ class ChromeCartModuleElement extends mixinBehaviors
         type: Object,
         value: null,
       },
+
+      /** @private {string} */
+      confirmDiscountConsentString_: String,
+
+      /** @private {string} */
+      discountConsentIconSrc_: String,
     };
   }
 
@@ -303,9 +312,18 @@ class ChromeCartModuleElement extends mixinBehaviors
     const scrollOffset = Math.max(
         leftScrollShadow ? leftScrollShadow.offsetWidth : 0,
         rightScrollShadow ? rightScrollShadow.offsetWidth : 0);
+    let leftPosition = carts[index].offsetLeft - scrollOffset;
+    // TODO(crbug.com/1198632): This could make a left scroll jump over cart
+    // items.
+    if (index === 0) {
+      const consentCard = this.shadowRoot.getElementById('consentCard');
+      if (consentCard) {
+        leftPosition -= consentCard.offsetWidth;
+      }
+    }
     this.$.cartCarousel.scrollTo({
       top: 0,
-      left: carts[index].offsetLeft - scrollOffset,
+      left: leftPosition,
       behavior: this.scrollBehavior,
     });
   }
@@ -332,6 +350,27 @@ class ChromeCartModuleElement extends mixinBehaviors
     ChromeCartProxy.getInstance().handler.onCartItemClicked(index);
     this.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
   }
+
+  /** @private */
+  onDisallowDiscount_() {
+    this.showDiscountConsent = false;
+    this.confirmDiscountConsentString_ =
+        loadTimeData.getString('modulesCartDiscountConsentRejectConfirmation');
+    $$(this, '#confirmDiscountConsentToast').show();
+  }
+
+  /** @private */
+  onAllowDiscount_() {
+    this.showDiscountConsent = false;
+    this.confirmDiscountConsentString_ =
+        loadTimeData.getString('modulesCartDiscountConsentAcceptConfirmation');
+    $$(this, '#confirmDiscountConsentToast').show();
+  }
+
+  /** @private */
+  onConfirmDiscountConsentClick_() {
+    $$(this, '#confirmDiscountConsentToast').hide();
+  }
 }
 
 customElements.define(ChromeCartModuleElement.is, ChromeCartModuleElement);
@@ -351,7 +390,6 @@ async function createCartElement() {
     element.headerChipText = loadTimeData.getString('modulesCartHeaderNew');
     element.headerDescriptionText =
         loadTimeData.getString('modulesCartWarmWelcome');
-    element.height = 226;
   }
   element.cartItems = carts;
   return element;
@@ -360,5 +398,4 @@ async function createCartElement() {
 /** @type {!ModuleDescriptor} */
 export const chromeCartDescriptor = new ModuleDescriptor(
     /*id=*/ 'chrome_cart',
-    /*name=*/ loadTimeData.getString('modulesCartSentence'),
-    /*heightPx=*/ 216, createCartElement);
+    /*name=*/ loadTimeData.getString('modulesCartSentence'), createCartElement);

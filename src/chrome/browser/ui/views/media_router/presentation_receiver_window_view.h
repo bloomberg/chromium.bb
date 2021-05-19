@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_MEDIA_ROUTER_PRESENTATION_RECEIVER_WINDOW_VIEW_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/command_updater_delegate.h"
@@ -82,7 +82,7 @@ class PresentationReceiverWindowView final
 
   // views::WidgetDelegateView overrides.
   void DeleteDelegate() final;
-  base::string16 GetWindowTitle() const final;
+  std::u16string GetWindowTitle() const final;
 
   // ui::AcceleratorTarget overrides.
   bool AcceleratorPressed(const ui::Accelerator& accelerator) final;
@@ -125,7 +125,7 @@ class PresentationReceiverWindowView final
 
   PresentationReceiverWindowFrame* const frame_;
   PresentationReceiverWindowDelegate* const delegate_;
-  base::string16 title_;
+  std::u16string title_;
   const std::unique_ptr<LocationBarModelImpl> location_bar_model_;
   CommandUpdaterImpl command_updater_;
   LocationBarView* location_bar_view_ = nullptr;

@@ -8,6 +8,7 @@ import * as puppeteer from 'puppeteer';
 
 import {reloadDevTools} from '../conductor/hooks.js';
 import {getBrowserAndPages, getTestServerPort} from '../conductor/puppeteer-state.js';
+import {getTestRunnerConfigSetting} from '../conductor/test_runner_config.js';
 import {AsyncScope} from './mocha-extensions.js';
 
 declare global {
@@ -332,7 +333,11 @@ export const goToResourceWithCustomHost = async (host: string, path: string) => 
 };
 
 export const getResourcesPath = (host: string = 'localhost') => {
-  return `https://${host}:${getTestServerPort()}/test/e2e/resources`;
+  let resourcesPath = getTestRunnerConfigSetting('hosted-server-e2e-resources-path', '/test/e2e/resources');
+  if (!resourcesPath.startsWith('/')) {
+    resourcesPath = `/${resourcesPath}`;
+  }
+  return `https://${host}:${getTestServerPort()}${resourcesPath}`;
 };
 
 export const step = async (description: string, step: Function) => {
@@ -505,7 +510,7 @@ export const getPendingEvents = function(frontend: puppeteer.Page, eventType: st
   }, eventType);
 };
 
-export const waitForClass = async (element: puppeteer.ElementHandle<Element>, classname: string): Promise<void> => {
+export const waitForClass = async(element: puppeteer.ElementHandle<Element>, classname: string): Promise<void> => {
   await waitForFunction(async () => {
     return await element.evaluate((el, classname) => el.classList.contains(classname), classname);
   });
@@ -515,4 +520,6 @@ export function assertNotNull<T>(val: T): asserts val is NonNullable<T> {
   assert.isNotNull(val);
 }
 
-export {getBrowserAndPages, getTestServerPort as getTestServerPort, reloadDevTools};
+// We export Puppeteer so other test utils can import it from here and not rely
+// on Node modules resolution to import it.
+export {getBrowserAndPages, getTestServerPort, reloadDevTools, puppeteer};

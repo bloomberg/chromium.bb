@@ -10,14 +10,16 @@
 #include "ash/components/account_manager/account_manager.h"
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "base/test/bind.h"
+#include "chrome/browser/account_manager_facade_factory.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/account_manager_core/account_manager_facade.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -105,10 +107,14 @@ namespace settings {
 
 class TestingAccountManagerUIHandler : public AccountManagerUIHandler {
  public:
-  TestingAccountManagerUIHandler(AccountManager* account_manager,
-                                 signin::IdentityManager* identity_manager,
-                                 content::WebUI* web_ui)
-      : AccountManagerUIHandler(account_manager, identity_manager) {
+  TestingAccountManagerUIHandler(
+      AccountManager* account_manager,
+      account_manager::AccountManagerFacade* account_manager_facade,
+      signin::IdentityManager* identity_manager,
+      content::WebUI* web_ui)
+      : AccountManagerUIHandler(account_manager,
+                                account_manager_facade,
+                                identity_manager) {
     set_web_ui(web_ui);
   }
 
@@ -136,7 +142,7 @@ class AccountManagerUIHandlerTest
     }
     profile_ = profile_builder.Build();
 
-    auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
+    auto user_manager = std::make_unique<FakeChromeUserManager>();
     const user_manager::User* user;
     if (GetDeviceAccountInfo().user_type ==
         user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY) {
@@ -173,8 +179,11 @@ class AccountManagerUIHandlerTest
                                       GetDeviceAccountInfo().account_type},
         GetDeviceAccountInfo().email, GetDeviceAccountInfo().token);
 
+    auto* account_manager_facade =
+        ::GetAccountManagerFacade(profile_->GetPath().value());
+
     handler_ = std::make_unique<TestingAccountManagerUIHandler>(
-        account_manager_, identity_manager_, &web_ui_);
+        account_manager_, account_manager_facade, identity_manager_, &web_ui_);
     handler_->SetProfileForTesting(profile_.get());
     handler_->RegisterMessages();
     handler_->AllowJavascriptForTesting();
@@ -235,8 +244,8 @@ class AccountManagerUIHandlerTest
   AccountManager* account_manager() { return account_manager_; }
 
  private:
-  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
-    return static_cast<chromeos::FakeChromeUserManager*>(
+  FakeChromeUserManager* GetFakeUserManager() const {
+    return static_cast<FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 
@@ -301,6 +310,9 @@ IN_PROC_BROWSER_TEST_P(AccountManagerUIHandlerTest,
   const std::vector<::account_manager::Account> account_manager_accounts =
       GetAccountsFromAccountManager();
   ASSERT_EQ(3UL, account_manager_accounts.size());
+
+  // Wait for accounts to propagate to IdentityManager.
+  base::RunLoop().RunUntilIdle();
 
   // Call "getAccounts".
   base::ListValue args;

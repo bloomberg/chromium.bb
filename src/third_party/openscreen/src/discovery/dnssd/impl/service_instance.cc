@@ -23,8 +23,14 @@ ServiceInstance::ServiceInstance(TaskRunner* task_runner,
                                         config,
                                         network_info)),
       network_config_(network_info.interface.index,
-                      network_info.interface.GetIpAddressV4(),
-                      network_info.interface.GetIpAddressV6()) {
+                      (network_info.supported_address_families &
+                       Config::NetworkInfo::kUseIpV4)
+                          ? network_info.interface.GetIpAddressV4()
+                          : IPAddress{},
+                      (network_info.supported_address_families &
+                       Config::NetworkInfo::kUseIpV6)
+                          ? network_info.interface.GetIpAddressV6()
+                          : IPAddress{}) {
   const Config::NetworkInfo::AddressFamilies supported_address_families =
       network_info.supported_address_families;
 

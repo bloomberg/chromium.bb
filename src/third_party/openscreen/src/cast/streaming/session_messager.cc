@@ -21,8 +21,7 @@ void ReplyIfTimedOut(
     ReceiverMessage::Type reply_type,
     std::vector<std::pair<int, SenderSessionMessager::ReplyCallback>>*
         replies) {
-  auto it = replies->begin();
-  for (; it != replies->end(); ++it) {
+  for (auto it = replies->begin(); it != replies->end(); ++it) {
     if (it->first == sequence_number) {
       OSP_DVLOG
           << "Replying with empty message due to timeout for sequence number: "
@@ -108,6 +107,8 @@ Error SenderSessionMessager::SendRequest(SenderMessage message,
     return error;
   }
 
+  OSP_DCHECK(awaiting_replies_.find(message.sequence_number) ==
+             awaiting_replies_.end());
   awaiting_replies_.emplace_back(message.sequence_number, std::move(cb));
   task_runner_->PostTaskWithDelay(
       [self = weak_factory_.GetWeakPtr(), reply_type,
@@ -179,8 +180,12 @@ void SenderSessionMessager::OnMessage(const std::string& source_id,
       return;
     }
 
-    it->second(receiver_message.value({}));
-    awaiting_replies_.erase(it);
+    it->second(std::move(receiver_message.value({})));
+
+    // Calling the function callback may result in the checksum of the pointed
+    // to object to change, so calling erase() on the iterator after executing
+    // second() may result in a segfault.
+    awaiting_replies_.erase_key(sequence_number);
   }
 }
 
@@ -202,7 +207,7 @@ void ReceiverSessionMessager::SetHandler(SenderMessage::Type type,
 Error ReceiverSessionMessager::SendMessage(ReceiverMessage message) {
   if (sender_session_id_.empty()) {
     return Error(Error::Code::kInitializationFailure,
-                 "Tried to send a message without receving one first");
+                 "Tried to send a message without receiving one first");
   }
 
   const auto namespace_ = (message.type == ReceiverMessage::Type::kRpc)

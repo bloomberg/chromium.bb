@@ -14,12 +14,12 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
 #include "chrome/browser/chromeos/input_method/input_host_helper.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/native_input_method_engine.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/extensions/api/input_ime.h"
@@ -256,6 +256,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
   }
 
   void OnFocus(
+      int context_id,
       const IMEEngineHandlerInterface::InputContext& context) override {
     if (extension_id_.empty())
       return;
@@ -265,7 +266,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     // inputs. We ensure that we only trigger one OnFocus event.
     if (ExtensionHasListener(input_method_private::OnFocus::kEventName)) {
       input_method_private::InputContext input_context;
-      input_context.context_id = context.id;
+      input_context.context_id = context_id;
       input_context.type = input_method_private::ParseInputContextType(
           ConvertInputContextType(context));
       input_context.mode = input_method_private::ParseInputModeType(
@@ -295,7 +296,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
       return;
     }
 
-    ImeObserver::OnFocus(context);
+    ImeObserver::OnFocus(context_id, context);
   }
 
   void OnAssistiveWindowButtonClicked(
@@ -630,7 +631,7 @@ InputMethodEngine* InputImeEventRouter::GetEngine(
   }
 }
 
-InputMethodEngineBase* InputImeEventRouter::GetEngineIfActive(
+InputMethodEngine* InputImeEventRouter::GetEngineIfActive(
     const std::string& extension_id,
     std::string* error) {
   auto it = engine_map_.find(extension_id);
@@ -1032,7 +1033,7 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
       // can receive the onActivate event to recover itself upon the
       // unexpected unload.
       std::string error;
-      InputMethodEngineBase* engine =
+      InputMethodEngine* engine =
           event_router->GetEngineIfActive(extension->id(), &error);
       DCHECK(engine) << error;
       // When extension is unloaded unexpectedly and reloaded, OS doesn't pass

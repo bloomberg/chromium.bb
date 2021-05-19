@@ -4,10 +4,13 @@
 <translation id="1175958423215084756">Холбоос илэрсэн. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Галлерейны зураг</translation>
 <translation id="1430915738399379752">Хэвлэх</translation>
+<translation id="1467231725790366244"><ph name="CAMERA" />-г салгасан байна.</translation>
 <translation id="1473110567575736769">3 секундийн цаг тоологч</translation>
 <translation id="1620510694547887537">Камер</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Бичсэн зүйл алга</translation>
+<translation id="1838104802459806957">Дээш хазайлгах</translation>
+<translation id="1851169887664797861">Камерын нэмэлт хяналт боломжтой</translation>
 <translation id="1851616744363735765">ТҮР ЗОГСООСОН</translation>
 <translation id="1862930711583847113"><ph name="FILE" />-г экспорт хийх боломжгүй байна</translation>
 <translation id="1899697626337024495">Зургийн нягтрал</translation>
@@ -17,15 +20,18 @@
 <translation id="2064538373111010176"><ph name="CAMERA" /> идэвхтэй байна</translation>
 <translation id="2144806332417375165">Захиалгат видеоны параметр</translation>
 <translation id="229579744168541441">Диск рүү экспорт хийх</translation>
+<translation id="2320741269052147773">Зүүн тийш чиглүүлэх</translation>
 <translation id="2501278716633472235">Буцаах</translation>
 <translation id="2501853267655415902">Бичлэгийг зогсоосон</translation>
 <translation id="2501953888035679275">Камераараа зураг авч, видео хийгээрэй.</translation>
 <translation id="2549985041256363841">Бичиж эхлэх</translation>
 <translation id="2599796128805996109">Арын камер</translation>
+<translation id="2879583609344924966"><ph name="CAMERA" />-г залгасан байна.</translation>
 <translation id="2912439424121107408">Энэ төхөөрөмж мэргэжилтэн горимыг дэмждэггүй</translation>
 <translation id="2968794441791257519">Камераар авсан зураг болон видеог Татаж авсан файлын фолдерт зөөнө. Та тэдгээрт Файлс цэсээс хандаж болно.
 
         Хадгалах сангийн зөвшөөрөлтэй аппууд таны зураг болон видеонд хандах эрхтэй болно.</translation>
+<translation id="3067436040345934772">Баруун тийш чиглүүлэх</translation>
 <translation id="3081586908890909590">Видео бичих рүү сэлгэх</translation>
 <translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">Торны төрөл</translation>
@@ -34,6 +40,7 @@
 <translation id="3259149966178251584">Камерын нягтрал</translation>
 <translation id="3517926952904427380">Хөрөг зураг авах боломжгүй байна</translation>
 <translation id="3569311554794739032">Та <ph name="FILE" />-г устгахдаа итгэлтэй байна уу?</translation>
+<translation id="3733597664308256288">Камерын нэмэлт хяналт боломжтой. Хандахын тулд Хайлт + Баруун сумыг дарна уу.</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3838931309141338733">Баркодыг скан хийх</translation>
 <translation id="3892148308691398805">Текстийг хуулах</translation>
@@ -56,6 +63,7 @@
 <translation id="5671277269877808209">Дөрвөлжин</translation>
 <translation id="5775960006311140197">Мэргэжилтэн горим</translation>
 <translation id="5869546221129391014">Сүлжээний тор</translation>
+<translation id="5975083100439434680">Багасгаж харах</translation>
 <translation id="6040143037577758943">Хаах</translation>
 <translation id="6073451960410192870">Бичихийг зогсоох</translation>
 <translation id="6197807149213783179">Мета өгөгдлийг хадгалах</translation>
@@ -84,16 +92,19 @@
 <translation id="7974782136796202581">Чиглүүлэгч хазайлт томруулалтын сонголтыг харуулах</translation>
 <translation id="7983668134180549431">Текст илэрсэн.</translation>
 <translation id="8067883171444229417">Видео тоглуулах</translation>
+<translation id="8120146556401698679">Чиглүүлэгч хазайлгалт томруулалт</translation>
 <translation id="8131740175452115882">Батлах</translation>
 <translation id="8145038249676204903">Зураг авах руу сэлгэх</translation>
 <translation id="8239780215768881278">Видео агшин зураг авах</translation>
 <translation id="8261506727792406068">Устгах</translation>
+<translation id="8425673304802773841">Доош хазайлгах</translation>
 <translation id="8428213095426709021">Тохиргоо</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />пиксел (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Мета өгөгдлийг урьдчилан үзэх</translation>
 <translation id="8815966864175525708">Хөрөг зураг авахын тулд сэлгэх</translation>
 <translation id="8828441885228359828">Бичлэгийг үргэлжлүүлэх</translation>
 <translation id="8870695351537079478">Бичиж эхлэх боломжгүй байна</translation>
+<translation id="8903921497873541725">Томруулж харах</translation>
 <translation id="9045155556724273246">10 секунд</translation>
 <translation id="945522503751344254">Санал хүсэлт илгээх</translation>
 </translationbundle>

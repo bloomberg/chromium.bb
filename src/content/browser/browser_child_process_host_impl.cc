@@ -4,6 +4,8 @@
 
 #include "content/browser/browser_child_process_host_impl.h"
 
+#include <memory>
+
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -31,7 +33,7 @@
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/histogram_controller.h"
+#include "content/browser/metrics/histogram_controller.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
@@ -155,7 +157,9 @@ std::unique_ptr<BrowserChildProcessHost> BrowserChildProcessHost::Create(
 }
 
 BrowserChildProcessHost* BrowserChildProcessHost::FromID(int child_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   BrowserChildProcessHostImpl::BrowserChildProcessList* process_list =
       g_child_process_list.Pointer();
   for (BrowserChildProcessHostImpl* host : *process_list) {
@@ -200,7 +204,9 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
       channel_(nullptr),
       is_channel_connected_(false),
       notify_child_disconnected_(false) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
 
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
@@ -225,7 +231,9 @@ BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
 
 // static
 void BrowserChildProcessHostImpl::TerminateAll() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   // Make a copy since the BrowserChildProcessHost dtor mutates the original
   // list.
   BrowserChildProcessList copy = g_child_process_list.Get();
@@ -271,17 +279,23 @@ void BrowserChildProcessHostImpl::LaunchWithPreloadedFiles(
 }
 
 const ChildProcessData& BrowserChildProcessHostImpl::GetData() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   return data_;
 }
 
 ChildProcessHost* BrowserChildProcessHostImpl::GetHost() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   return child_process_host_.get();
 }
 
 const base::Process& BrowserChildProcessHostImpl::GetProcess() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   DCHECK(child_process_.get())
       << "Requesting a child process handle before launching.";
   DCHECK(child_process_->GetProcess().IsValid())
@@ -294,24 +308,32 @@ BrowserChildProcessHostImpl::TakeMetricsAllocator() {
   return std::move(metrics_allocator_);
 }
 
-void BrowserChildProcessHostImpl::SetName(const base::string16& name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void BrowserChildProcessHostImpl::SetName(const std::u16string& name) {
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   data_.name = name;
 }
 
 void BrowserChildProcessHostImpl::SetMetricsName(
     const std::string& metrics_name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   data_.metrics_name = metrics_name;
 }
 
 void BrowserChildProcessHostImpl::SetProcess(base::Process process) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   data_.SetProcess(std::move(process));
 }
 
 void BrowserChildProcessHostImpl::ForceShutdown() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   g_child_process_list.Get().remove(this);
   child_process_host_->ForceShutdown();
 }
@@ -325,7 +347,9 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
     std::unique_ptr<base::CommandLine> cmd_line,
     std::map<std::string, base::FilePath> files_to_preload,
     bool terminate_on_shutdown) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
   static const char* const kForwardSwitches[] = {
@@ -353,13 +377,13 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
   data_.sandbox_type = delegate->GetSandboxType();
 
   notify_child_disconnected_ = true;
-  child_process_.reset(new ChildProcessLauncher(
+  child_process_ = std::make_unique<ChildProcessLauncher>(
       std::move(delegate), std::move(cmd_line), data_.id, this,
       std::move(*child_process_host_->GetMojoInvitation()),
       base::BindRepeating(&BrowserChildProcessHostImpl::OnMojoError,
                           weak_factory_.GetWeakPtr(),
                           base::ThreadTaskRunnerHandle::Get()),
-      std::move(files_to_preload), terminate_on_shutdown));
+      std::move(files_to_preload), terminate_on_shutdown);
   ShareMetricsAllocatorToProcess();
 }
 
@@ -383,7 +407,9 @@ void BrowserChildProcessHostImpl::DumpProcessStack() {
 
 ChildProcessTerminationInfo BrowserChildProcessHostImpl::GetTerminationInfo(
     bool known_dead) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
   if (!child_process_) {
     // If the delegate doesn't use Launch() helper.
     ChildProcessTerminationInfo info;
@@ -400,7 +426,9 @@ bool BrowserChildProcessHostImpl::OnMessageReceived(
 }
 
 void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
 
   is_channel_connected_ = true;
   notify_child_disconnected_ = true;
@@ -461,7 +489,9 @@ void BrowserChildProcessHostImpl::OnChannelInitialized(IPC::Channel* channel) {
 }
 
 void BrowserChildProcessHostImpl::OnChildDisconnected() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
 
   tracing_registration_.reset();
 
@@ -623,7 +653,9 @@ bool BrowserChildProcessHostImpl::CanUseWarmUpConnection() {
 #endif
 
 void BrowserChildProcessHostImpl::OnProcessLaunched() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
 
   const base::Process& process = child_process_->GetProcess();
   DCHECK(process.IsValid());
@@ -701,7 +733,9 @@ void BrowserChildProcessHostImpl::RegisterCoordinatorClient(
 }
 
 bool BrowserChildProcessHostImpl::IsProcessLaunched() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
 
   return child_process_.get() && child_process_->GetProcess().IsValid();
 }

@@ -376,6 +376,13 @@ class QUIC_EXPORT_PRIVATE QuicStream
 
   bool fin_buffered() const { return fin_buffered_; }
 
+  // True if buffered data in send buffer is below buffered_data_threshold_.
+  bool CanWriteNewData() const;
+
+  // Called immediately after the stream is created from a pending stream,
+  // indicating it can start processing data.
+  void OnStreamCreatedFromPendingStream();
+
  protected:
   // Called when data of [offset, offset + data_length] is buffered in send
   // buffer.
@@ -390,9 +397,6 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // Sends a RST_STREAM with code QUIC_RST_ACKNOWLEDGEMENT if neither a FIN nor
   // a RST_STREAM has been sent.
   virtual void OnClose();
-
-  // True if buffered data in send buffer is below buffered_data_threshold_.
-  bool CanWriteNewData() const;
 
   // True if buffered data in send buffer is still below
   // buffered_data_threshold_ even after writing |length| bytes.

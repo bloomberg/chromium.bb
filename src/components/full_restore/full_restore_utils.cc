@@ -12,13 +12,16 @@
 #include "components/full_restore/full_restore_read_handler.h"
 #include "components/full_restore/full_restore_save_handler.h"
 #include "components/full_restore/window_info.h"
-#include "ui/aura/client/aura_constants.h"
+
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(COMPONENT_EXPORT(FULL_RESTORE), int32_t*)
 
 namespace full_restore {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kWindowIdKey, 0)
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kRestoreWindowIdKey, 0)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kAppIdKey, nullptr)
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(int32_t, kActivationIndexKey, nullptr)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kParentToHiddenContainerKey, false)
 
 void SaveAppLaunchInfo(const base::FilePath& profile_path,
                        std::unique_ptr<AppLaunchInfo> app_launch_info) {
@@ -36,14 +39,6 @@ void SaveWindowInfo(const WindowInfo& window_info) {
   FullRestoreSaveHandler::GetInstance()->SaveWindowInfo(window_info);
 }
 
-std::unique_ptr<WindowInfo> GetWindowInfo(int32_t restore_window_id) {
-  if (!ash::features::IsFullRestoreEnabled())
-    return nullptr;
-
-  return FullRestoreReadHandler::GetInstance()->GetWindowInfo(
-      restore_window_id);
-}
-
 std::unique_ptr<WindowInfo> GetWindowInfo(aura::Window* window) {
   if (!ash::features::IsFullRestoreEnabled())
     return nullptr;
@@ -56,6 +51,13 @@ int32_t FetchRestoreWindowId(const std::string& app_id) {
     return 0;
 
   return FullRestoreReadHandler::GetInstance()->FetchRestoreWindowId(app_id);
+}
+
+int32_t GetArcRestoreWindowId(int32_t task_id) {
+  if (!ash::features::IsFullRestoreEnabled())
+    return 0;
+
+  return FullRestoreReadHandler::GetInstance()->GetArcRestoreWindowId(task_id);
 }
 
 bool ShouldRestore(const AccountId& account_id) {
@@ -74,38 +76,31 @@ bool HasWindowInfo(int32_t restore_window_id) {
   if (!ash::features::IsFullRestoreEnabled())
     return false;
 
-  std::unique_ptr<WindowInfo> window_info = GetWindowInfo(restore_window_id);
-  return !!window_info;
+  return FullRestoreReadHandler::GetInstance()->HasWindowInfo(
+      restore_window_id);
 }
 
-void ModifyWidgetParams(int32_t restore_window_id,
+bool ModifyWidgetParams(int32_t restore_window_id,
                         views::Widget::InitParams* out_params) {
-  DCHECK(out_params);
-
   if (!ash::features::IsFullRestoreEnabled())
-    return;
+    return false;
 
-  std::unique_ptr<WindowInfo> window_info = GetWindowInfo(restore_window_id);
-  if (!window_info)
-    return;
+  return FullRestoreReadHandler::GetInstance()->ModifyWidgetParams(
+      restore_window_id, out_params);
+}
 
-  if (window_info->desk_id)
-    out_params->workspace = base::NumberToString(*window_info->desk_id);
-  out_params->visible_on_all_workspaces =
-      window_info->visible_on_all_workspaces.has_value();
-  if (window_info->current_bounds)
-    out_params->bounds = *window_info->current_bounds;
-  if (window_info->restore_bounds) {
-    out_params->init_properties_container.SetProperty(
-        aura::client::kRestoreBoundsKey, *window_info->restore_bounds);
-  }
-  if (window_info->window_state_type) {
-    // ToWindowShowState will make us lose some ash-specific types (left/right
-    // snap). Ash is responsible for restoring these states by checking
-    // GetWindowInfo.
-    out_params->show_state =
-        chromeos::ToWindowShowState(*window_info->window_state_type);
-  }
+void OnTaskCreated(const std::string& app_id,
+                   int32_t task_id,
+                   int32_t session_id) {
+  FullRestoreReadHandler::GetInstance()->OnTaskCreated(app_id, task_id,
+                                                       session_id);
+  FullRestoreSaveHandler::GetInstance()->OnTaskCreated(app_id, task_id,
+                                                       session_id);
+}
+
+void OnTaskDestroyed(int32_t task_id) {
+  FullRestoreReadHandler::GetInstance()->OnTaskDestroyed(task_id);
+  FullRestoreSaveHandler::GetInstance()->OnTaskDestroyed(task_id);
 }
 
 }  // namespace full_restore

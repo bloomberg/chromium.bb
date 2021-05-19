@@ -7,17 +7,23 @@ import("//testing/test.gni")
 
 assert(is_chromeos)
 
-component("app_list") {
+source_set("app_list") {
   sources = [
-    "app_list_export.h",
+    "app_list_color_provider_impl.cc",
+    "app_list_color_provider_impl.h",
+    "app_list_controller_impl.cc",
+    "app_list_controller_impl.h",
     "app_list_metrics.cc",
     "app_list_metrics.h",
     "app_list_presenter_delegate.h",
+    "app_list_presenter_delegate_impl.cc",
+    "app_list_presenter_delegate_impl.h",
     "app_list_presenter_impl.cc",
     "app_list_presenter_impl.h",
     "app_list_util.cc",
     "app_list_util.h",
     "app_list_view_delegate.h",
+    "home_launcher_animation_info.h",
     "paged_view_structure.cc",
     "paged_view_structure.h",
     "views/app_list_drag_and_drop_host.h",
@@ -100,7 +106,8 @@ component("app_list") {
     "views/top_icon_animation_view.h",
   ]
 
-  defines = [ "APP_LIST_IMPLEMENTATION" ]
+  # Needed because this source_set implements part of the "ash" component.
+  defines = [ "ASH_IMPLEMENTATION" ]
 
   deps = [
     "//ash/app_list/resources",
@@ -122,7 +129,11 @@ component("app_list") {
     "//chromeos/services/assistant/public/cpp",
     "//chromeos/ui/vector_icons",
     "//components/keyed_service/core",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/services/app_service/public/cpp:app_update",
     "//components/sync",
+    "//extensions/common:common_constants",
     "//mojo/public/cpp/bindings",
     "//skia",
     "//third_party/icu",
@@ -134,9 +145,11 @@ component("app_list") {
     "//ui/compositor",
     "//ui/compositor_extra",
     "//ui/display",
+    "//ui/display/manager",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/native_theme",
     "//ui/resources",
     "//ui/strings",
     "//ui/views",
@@ -147,7 +160,6 @@ component("app_list") {
   # TODO(hejq): Remove this once app_list is migrated. http://crbug.com/733662
   public_deps = [
     "//ash/app_list/model:app_list_model",
-    "//ash/app_list/model:search_model",
     "//ash/public/cpp",
     "//base",
     "//mojo/public/cpp/bindings",
@@ -160,18 +172,18 @@ component("app_list") {
   ]
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
 
   sources = [
-    "test/app_list_test_model.cc",
-    "test/app_list_test_model.h",
-    "test/app_list_test_view_delegate.cc",
-    "test/app_list_test_view_delegate.h",
-    "test/test_search_result.cc",
-    "test/test_search_result.h",
-    "views/test/apps_grid_view_test_api.cc",
-    "views/test/apps_grid_view_test_api.h",
+    "app_list_test_view_delegate.cc",
+    "app_list_test_view_delegate.h",
+    "model/app_list_test_model.cc",
+    "model/app_list_test_model.h",
+    "model/search/test_search_result.cc",
+    "model/search/test_search_result.h",
+    "views/apps_grid_view_test_api.cc",
+    "views/apps_grid_view_test_api.h",
   ]
 
   deps = [
@@ -185,39 +197,23 @@ static_library("test_support") {
   ]
 }
 
-executable("app_list_demo") {
+source_set("unit_tests") {
   testonly = true
 
-  sources = [ "demo/app_list_demo_views.cc" ]
-
-  deps = [
-    ":app_list",
-    ":test_support",
-    "//base",
-    "//build/win:default_exe_manifest",
-    "//content",
-    "//content/public/browser",
-    "//skia",
-    "//ui/base",
-    "//ui/events",
-    "//ui/resources",
-    "//ui/resources:ui_test_pak",
-    "//ui/views",
-    "//ui/views_content_client",
-    "//url",
-  ]
-}
-
-test("app_list_unittests") {
-  use_xvfb = use_xvfb_in_this_config
-
   sources = [
+    "app_list_controller_impl_unittest.cc",
+    "app_list_metrics_unittest.cc",
+    "app_list_presenter_delegate_unittest.cc",
+    "app_list_presenter_impl_unittest.cc",
+    "app_list_unittest.cc",
     "folder_image_unittest.cc",
-    "test/run_all_unittests.cc",
+    "model/app_list_item_list_unittest.cc",
+    "model/app_list_model_unittest.cc",
     "views/app_list_main_view_unittest.cc",
     "views/app_list_menu_model_adapter_unittest.cc",
     "views/app_list_view_unittest.cc",
     "views/apps_grid_view_unittest.cc",
+    "views/assistant/assistant_page_view_unittest.cc",
     "views/folder_header_view_unittest.cc",
     "views/privacy_container_view_unittest.cc",
     "views/result_selection_controller_unittest.cc",
@@ -232,8 +228,13 @@ test("app_list_unittests") {
   deps = [
     ":app_list",
     ":test_support",
+    "//ash:test_support",
+    "//ash/assistant/model",
+    "//ash/assistant/ui",
+    "//ash/assistant/ui:constants",
     "//ash/constants",
     "//ash/keyboard/ui",
+    "//ash/keyboard/ui:test_support",
     "//ash/public/cpp",
     "//ash/public/cpp:test_support",
     "//ash/public/cpp/app_list/vector_icons",
@@ -246,12 +247,16 @@ test("app_list_unittests") {
     "//skia",
     "//testing/gtest",
     "//ui/accessibility",
+    "//ui/aura:test_support",
     "//ui/base",
     "//ui/compositor",
+    "//ui/display:display_manager_test_api",
     "//ui/events:test_support",
     "//ui/gfx:test_support",
     "//ui/gl:test_support",
+    "//ui/message_center",
     "//ui/resources",
+    "//ui/touch_selection",
     "//ui/views",
     "//ui/views:test_support",
   ]

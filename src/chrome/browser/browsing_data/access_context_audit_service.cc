@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/storage_partition.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 AccessContextAuditService::CookieAccessHelper::CookieAccessHelper(
     AccessContextAuditService* service)
@@ -133,6 +134,62 @@ void AccessContextAuditService::RecordStorageAPIAccess(
                                 database_, std::move(access_record)));
 }
 
+void AccessContextAuditService::GetCookieAccessRecords(
+    AccessContextRecordsCallback callback) {
+  if (!user_visible_tasks_in_progress++)
+    database_task_runner_->UpdatePriority(base::TaskPriority::USER_VISIBLE);
+
+  for (auto& helper : cookie_access_helpers_)
+    helper.FlushCookieRecords();
+
+  database_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&AccessContextAuditDatabase::GetCookieRecords, database_),
+      base::BindOnce(
+          &AccessContextAuditService::CompleteGetAccessRecordsInternal,
+          weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void AccessContextAuditService::GetStorageAccessRecords(
+    AccessContextRecordsCallback callback) {
+  if (!user_visible_tasks_in_progress++)
+    database_task_runner_->UpdatePriority(base::TaskPriority::USER_VISIBLE);
+
+  database_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&AccessContextAuditDatabase::GetStorageRecords, database_),
+      base::BindOnce(
+          &AccessContextAuditService::CompleteGetAccessRecordsInternal,
+          weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+namespace {
+
+bool IsSameSite(const url::Origin& origin1, const url::Origin& origin2) {
+  return net::registry_controlled_domains::SameDomainOrHost(
+      origin1, origin2,
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+}
+
+void SelectThirdPartyStorageAccessRecords(
+    AccessContextRecordsCallback callback,
+    std::vector<AccessContextAuditDatabase::AccessRecord> storage_records) {
+  std::vector<AccessContextAuditDatabase::AccessRecord> result;
+  for (auto& record : storage_records) {
+    if (!IsSameSite(record.origin, record.top_frame_origin))
+      result.push_back(std::move(record));
+  }
+  std::move(callback).Run(std::move(result));
+}
+
+}  // namespace
+
+void AccessContextAuditService::GetThirdPartyStorageAccessRecords(
+    AccessContextRecordsCallback callback) {
+  GetStorageAccessRecords(base::BindOnce(&SelectThirdPartyStorageAccessRecords,
+                                         std::move(callback)));
+}
+
 void AccessContextAuditService::GetAllAccessRecords(
     AccessContextRecordsCallback callback) {
   if (!user_visible_tasks_in_progress++)
@@ -145,11 +202,11 @@ void AccessContextAuditService::GetAllAccessRecords(
       FROM_HERE,
       base::BindOnce(&AccessContextAuditDatabase::GetAllRecords, database_),
       base::BindOnce(
-          &AccessContextAuditService::CompleteGetAllAccessRecordsInternal,
+          &AccessContextAuditService::CompleteGetAccessRecordsInternal,
           weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void AccessContextAuditService::CompleteGetAllAccessRecordsInternal(
+void AccessContextAuditService::CompleteGetAccessRecordsInternal(
     AccessContextRecordsCallback callback,
     std::vector<AccessContextAuditDatabase::AccessRecord> records) {
   DCHECK_GT(user_visible_tasks_in_progress, 0);

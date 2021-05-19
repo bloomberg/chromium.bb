@@ -26,16 +26,16 @@ class F extends ValidationTest {
 
   createRenderPipeline(): GPURenderPipeline {
     const pipeline = this.device.createRenderPipeline({
-      vertexStage: {
+      vertex: {
         module: this.device.createShaderModule({
           code: `
             [[block]] struct VertexUniforms {
               [[offset(0)]] transform : mat2x2<f32> ;
             };
-            [[set(0), binding(0)]] var<uniform> uniforms : VertexUniforms;
+            [[group(0), binding(0)]] var<uniform> uniforms : VertexUniforms;
 
             [[builtin(position)]] var<out> Position : vec4<f32>;
-            [[builtin(vertex_idx)]] var<in> VertexIndex : i32;
+            [[builtin(vertex_index)]] var<in> VertexIndex : i32;
             [[stage(vertex)]] fn main() -> void {
               var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
                 vec2<f32>(-1.0, -1.0),
@@ -48,13 +48,13 @@ class F extends ValidationTest {
         }),
         entryPoint: 'main',
       },
-      fragmentStage: {
+      fragment: {
         module: this.device.createShaderModule({
           code: `
             [[block]] struct FragmentUniforms {
               [[offset(0)]] color : vec4<f32>;
             };
-            [[set(1), binding(0)]] var<uniform> uniforms : FragmentUniforms;
+            [[group(1), binding(0)]] var<uniform> uniforms : FragmentUniforms;
 
             [[location(0)]] var<out> fragColor : vec4<f32>;
             [[stage(fragment)]] fn main() -> void {
@@ -63,9 +63,9 @@ class F extends ValidationTest {
             }`,
         }),
         entryPoint: 'main',
+        targets: [{ format: 'rgba8unorm' }],
       },
-      primitiveTopology: 'triangle-list',
-      colorStates: [{ format: 'rgba8unorm' }],
+      primitive: { topology: 'triangle-list' },
     });
     return pipeline;
   }
@@ -73,8 +73,8 @@ class F extends ValidationTest {
   beginRenderPass(commandEncoder: GPUCommandEncoder): GPURenderPassEncoder {
     const attachmentTexture = this.device.createTexture({
       format: 'rgba8unorm',
-      size: { width: 16, height: 16, depth: 1 },
-      usage: GPUTextureUsage.OUTPUT_ATTACHMENT,
+      size: { width: 16, height: 16, depthOrArrayLayers: 1 },
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     return commandEncoder.beginRenderPass({

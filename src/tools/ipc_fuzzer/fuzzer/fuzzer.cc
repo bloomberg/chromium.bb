@@ -13,7 +13,6 @@
 #include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "base/strings/nullable_string16.h"
 #include "base/strings/string_util.h"
 #include "base/unguessable_token.h"
 #include "base/util/type_safety/id_type.h"
@@ -213,8 +212,8 @@ struct FuzzTraits<std::string> {
 };
 
 template <>
-struct FuzzTraits<base::string16> {
-  static bool Fuzz(base::string16* p, Fuzzer* fuzzer) {
+struct FuzzTraits<std::u16string> {
+  static bool Fuzz(std::u16string* p, Fuzzer* fuzzer) {
     fuzzer->FuzzString16(p);
     return true;
   }
@@ -439,20 +438,6 @@ struct FuzzTraits<base::File::Info> {
     p->last_modified = base::Time::FromDoubleT(last_modified);
     p->last_accessed = base::Time::FromDoubleT(last_accessed);
     p->creation_time = base::Time::FromDoubleT(creation_time);
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<base::NullableString16> {
-  static bool Fuzz(base::NullableString16* p, Fuzzer* fuzzer) {
-    base::string16 string = p->string();
-    bool is_null = p->is_null();
-    if (!FuzzParam(&string, fuzzer))
-      return false;
-    if (!FuzzParam(&is_null, fuzzer))
-      return false;
-    *p = base::NullableString16(string, is_null);
     return true;
   }
 };
@@ -1264,20 +1249,6 @@ struct FuzzTraits<GURL> {
     else if (selector == 2)
       random_url = std::string("data:") + random_url;
     *p = GURL(random_url);
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<HostID> {
-  static bool Fuzz(HostID* p, Fuzzer* fuzzer) {
-    HostID::HostType type = p->type();
-    std::string id = p->id();
-    if (!FuzzParam(&type, fuzzer))
-      return false;
-    if (!FuzzParam(&id, fuzzer))
-      return false;
-    *p = HostID(type, id);
     return true;
   }
 };

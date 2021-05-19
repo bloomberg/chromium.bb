@@ -64,6 +64,7 @@ TEST(CommandLineFlagsTest, CanBeAccessedInCodeOnceGTestHIsIncluded) {
 #include <cstdint>
 #include <map>
 #include <ostream>
+#include <string>
 #include <type_traits>
 #include <unordered_set>
 #include <vector>
@@ -254,8 +255,8 @@ using testing::internal::GetTimeInMillis;
 using testing::internal::GetTypeId;
 using testing::internal::GetUnitTestImpl;
 using testing::internal::GTestFlagSaver;
+using testing::internal::HasDebugStringAndShortDebugString;
 using testing::internal::Int32FromEnvOrDie;
-using testing::internal::IsAProtocolMessage;
 using testing::internal::IsContainer;
 using testing::internal::IsContainerTest;
 using testing::internal::IsNotContainer;
@@ -485,28 +486,28 @@ class FormatEpochTimeInMillisAsIso8601Test : public Test {
 const TimeInMillis FormatEpochTimeInMillisAsIso8601Test::kMillisPerSec;
 
 TEST_F(FormatEpochTimeInMillisAsIso8601Test, PrintsTwoDigitSegments) {
-  EXPECT_EQ("2011-10-31T18:52:42",
+  EXPECT_EQ("2011-10-31T18:52:42.000",
             FormatEpochTimeInMillisAsIso8601(1320087162 * kMillisPerSec));
 }
 
-TEST_F(FormatEpochTimeInMillisAsIso8601Test, MillisecondsDoNotAffectResult) {
+TEST_F(FormatEpochTimeInMillisAsIso8601Test, IncludesMillisecondsAfterDot) {
   EXPECT_EQ(
-      "2011-10-31T18:52:42",
+      "2011-10-31T18:52:42.234",
       FormatEpochTimeInMillisAsIso8601(1320087162 * kMillisPerSec + 234));
 }
 
 TEST_F(FormatEpochTimeInMillisAsIso8601Test, PrintsLeadingZeroes) {
-  EXPECT_EQ("2011-09-03T05:07:02",
+  EXPECT_EQ("2011-09-03T05:07:02.000",
             FormatEpochTimeInMillisAsIso8601(1315026422 * kMillisPerSec));
 }
 
 TEST_F(FormatEpochTimeInMillisAsIso8601Test, Prints24HourTime) {
-  EXPECT_EQ("2011-09-28T17:08:22",
+  EXPECT_EQ("2011-09-28T17:08:22.000",
             FormatEpochTimeInMillisAsIso8601(1317229702 * kMillisPerSec));
 }
 
 TEST_F(FormatEpochTimeInMillisAsIso8601Test, PrintsEpochStart) {
-  EXPECT_EQ("1970-01-01T00:00:00", FormatEpochTimeInMillisAsIso8601(0));
+  EXPECT_EQ("1970-01-01T00:00:00.000", FormatEpochTimeInMillisAsIso8601(0));
 }
 
 # ifdef __BORLANDC__
@@ -2767,7 +2768,7 @@ class FloatingPointTest : public Test {
   typedef typename Floating::Bits Bits;
 
   void SetUp() override {
-    const size_t max_ulps = Floating::kMaxUlps;
+    const uint32_t max_ulps = Floating::kMaxUlps;
 
     // The bits that represent 0.0.
     const Bits zero_bits = Floating(0).bits();
@@ -3084,6 +3085,13 @@ TEST_F(DoubleTest, EXPECT_NEAR) {
   EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.0, 1.5, 0.25),  // NOLINT
                           "The difference between 1.0 and 1.5 is 0.5, "
                           "which exceeds 0.25");
+  // At this magnitude adjacent doubles are 512.0 apart, so this triggers a
+  // slightly different failure reporting path.
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_NEAR(4.2934311416234112e+18, 4.2934311416234107e+18, 1.0),
+      "The abs_error parameter 1.0 evaluates to 1 which is smaller than the "
+      "minimum distance between doubles for numbers of this magnitude which is "
+      "512");
 }
 
 // Tests ASSERT_NEAR.
@@ -3179,8 +3187,6 @@ TEST_F(DisabledTestsTest, DISABLED_TestShouldNotRun_2) {
 
 // Tests that disabled typed tests aren't run.
 
-#if GTEST_HAS_TYPED_TEST
-
 template <typename T>
 class TypedTest : public Test {
 };
@@ -3202,11 +3208,7 @@ TYPED_TEST(DISABLED_TypedTest, ShouldNotRun) {
   FAIL() << "Unexpected failure: Disabled typed test should not run.";
 }
 
-#endif  // GTEST_HAS_TYPED_TEST
-
 // Tests that disabled type-parameterized tests aren't run.
-
-#if GTEST_HAS_TYPED_TEST_P
 
 template <typename T>
 class TypedTestP : public Test {
@@ -3237,8 +3239,6 @@ TYPED_TEST_P(DISABLED_TypedTestP, ShouldNotRun) {
 REGISTER_TYPED_TEST_SUITE_P(DISABLED_TypedTestP, ShouldNotRun);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(My, DISABLED_TypedTestP, NumericTypes);
-
-#endif  // GTEST_HAS_TYPED_TEST_P
 
 // Tests that assertion macros evaluate their arguments exactly once.
 
@@ -3347,7 +3347,11 @@ TEST_F(SingleEvaluationTest, OtherCases) {
 
 #if GTEST_HAS_RTTI
 
+#ifdef _MSC_VER
+#define ERROR_DESC "class std::runtime_error"
+#else
 #define ERROR_DESC "std::runtime_error"
+#endif
 
 #else  // GTEST_HAS_RTTI
 
@@ -4123,11 +4127,13 @@ TEST(HRESULTAssertionTest, Streaming) {
 
 #endif  // GTEST_OS_WINDOWS
 
-#ifdef __BORLANDC__
-// Silences warnings: "Condition is always true", "Unreachable code"
-# pragma option push -w-ccc -w-rch
+// The following code intentionally tests a suboptimal syntax.
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-else"
+#pragma GCC diagnostic ignored "-Wempty-body"
+#pragma GCC diagnostic ignored "-Wpragmas"
 #endif
-
 // Tests that the assertion macros behave like single statements.
 TEST(AssertionSyntaxTest, BasicAssertionsBehavesLikeSingleStatement) {
   if (AlwaysFalse())
@@ -4147,6 +4153,9 @@ TEST(AssertionSyntaxTest, BasicAssertionsBehavesLikeSingleStatement) {
   else
     EXPECT_GT(3, 2) << "";
 }
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #if GTEST_HAS_EXCEPTIONS
 // Tests that the compiler will not complain about unreachable code in the
@@ -4167,6 +4176,13 @@ TEST(ExpectThrowTest, DoesNotGenerateDuplicateCatchClauseWarning) {
   EXPECT_THROW(throw std::exception(), std::exception);
 }
 
+// The following code intentionally tests a suboptimal syntax.
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-else"
+#pragma GCC diagnostic ignored "-Wempty-body"
+#pragma GCC diagnostic ignored "-Wpragmas"
+#endif
 TEST(AssertionSyntaxTest, ExceptionAssertionsBehavesLikeSingleStatement) {
   if (AlwaysFalse())
     EXPECT_THROW(ThrowNothing(), bool);
@@ -4192,8 +4208,19 @@ TEST(AssertionSyntaxTest, ExceptionAssertionsBehavesLikeSingleStatement) {
   else
     ;  // NOLINT
 }
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 #endif  // GTEST_HAS_EXCEPTIONS
 
+// The following code intentionally tests a suboptimal syntax.
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-else"
+#pragma GCC diagnostic ignored "-Wempty-body"
+#pragma GCC diagnostic ignored "-Wpragmas"
+#endif
 TEST(AssertionSyntaxTest, NoFatalFailureAssertionsBehavesLikeSingleStatement) {
   if (AlwaysFalse())
     EXPECT_NO_FATAL_FAILURE(FAIL()) << "This should never be executed. "
@@ -4216,6 +4243,9 @@ TEST(AssertionSyntaxTest, NoFatalFailureAssertionsBehavesLikeSingleStatement) {
   else
     ASSERT_NO_FATAL_FAILURE(SUCCEED());
 }
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 // Tests that the assertion macros work well with switch statements.
 TEST(AssertionSyntaxTest, WorksWithSwitch) {
@@ -7178,24 +7208,71 @@ GTEST_TEST(AlternativeNameTest, Works) {  // GTEST_TEST is the same as TEST.
 class ConversionHelperBase {};
 class ConversionHelperDerived : public ConversionHelperBase {};
 
-// Tests that IsAProtocolMessage<T>::value is a compile-time constant.
-TEST(IsAProtocolMessageTest, ValueIsCompileTimeConstant) {
-  GTEST_COMPILE_ASSERT_(IsAProtocolMessage<::proto2::MessageLite>::value,
+struct HasDebugStringMethods {
+  std::string DebugString() const { return ""; }
+  std::string ShortDebugString() const { return ""; }
+};
+
+struct InheritsDebugStringMethods : public HasDebugStringMethods {};
+
+struct WrongTypeDebugStringMethod {
+  std::string DebugString() const { return ""; }
+  int ShortDebugString() const { return 1; }
+};
+
+struct NotConstDebugStringMethod {
+  std::string DebugString() { return ""; }
+  std::string ShortDebugString() const { return ""; }
+};
+
+struct MissingDebugStringMethod {
+  std::string DebugString() { return ""; }
+};
+
+struct IncompleteType;
+
+// Tests that HasDebugStringAndShortDebugString<T>::value is a compile-time
+// constant.
+TEST(HasDebugStringAndShortDebugStringTest, ValueIsCompileTimeConstant) {
+  GTEST_COMPILE_ASSERT_(
+      HasDebugStringAndShortDebugString<HasDebugStringMethods>::value,
+      const_true);
+  GTEST_COMPILE_ASSERT_(
+      HasDebugStringAndShortDebugString<InheritsDebugStringMethods>::value,
+      const_true);
+  GTEST_COMPILE_ASSERT_(HasDebugStringAndShortDebugString<
+                            const InheritsDebugStringMethods>::value,
                         const_true);
-  GTEST_COMPILE_ASSERT_(!IsAProtocolMessage<int>::value, const_false);
+  GTEST_COMPILE_ASSERT_(
+      !HasDebugStringAndShortDebugString<WrongTypeDebugStringMethod>::value,
+      const_false);
+  GTEST_COMPILE_ASSERT_(
+      !HasDebugStringAndShortDebugString<NotConstDebugStringMethod>::value,
+      const_false);
+  GTEST_COMPILE_ASSERT_(
+      !HasDebugStringAndShortDebugString<MissingDebugStringMethod>::value,
+      const_false);
+  GTEST_COMPILE_ASSERT_(
+      !HasDebugStringAndShortDebugString<IncompleteType>::value, const_false);
+  GTEST_COMPILE_ASSERT_(!HasDebugStringAndShortDebugString<int>::value,
+                        const_false);
 }
 
-// Tests that IsAProtocolMessage<T>::value is true when T is
-// proto2::Message or a sub-class of it.
-TEST(IsAProtocolMessageTest, ValueIsTrueWhenTypeIsAProtocolMessage) {
-  EXPECT_TRUE(IsAProtocolMessage<::proto2::MessageLite>::value);
+// Tests that HasDebugStringAndShortDebugString<T>::value is true when T has
+// needed methods.
+TEST(HasDebugStringAndShortDebugStringTest,
+     ValueIsTrueWhenTypeHasDebugStringAndShortDebugString) {
+  EXPECT_TRUE(
+      HasDebugStringAndShortDebugString<InheritsDebugStringMethods>::value);
 }
 
-// Tests that IsAProtocolMessage<T>::value is false when T is neither
-// ::proto2::Message nor a sub-class of it.
-TEST(IsAProtocolMessageTest, ValueIsFalseWhenTypeIsNotAProtocolMessage) {
-  EXPECT_FALSE(IsAProtocolMessage<int>::value);
-  EXPECT_FALSE(IsAProtocolMessage<const ConversionHelperBase>::value);
+// Tests that HasDebugStringAndShortDebugString<T>::value is false when T
+// doesn't have needed methods.
+TEST(HasDebugStringAndShortDebugStringTest,
+     ValueIsFalseWhenTypeIsNotAProtocolMessage) {
+  EXPECT_FALSE(HasDebugStringAndShortDebugString<int>::value);
+  EXPECT_FALSE(
+      HasDebugStringAndShortDebugString<const ConversionHelperBase>::value);
 }
 
 // Tests GTEST_REMOVE_REFERENCE_AND_CONST_.
@@ -7470,13 +7547,155 @@ TEST(FlatTuple, Basic) {
   EXPECT_EQ(0.0, tuple.Get<1>());
   EXPECT_EQ(nullptr, tuple.Get<2>());
 
-  tuple = FlatTuple<int, double, const char*>(7, 3.2, "Foo");
+  tuple = FlatTuple<int, double, const char*>(
+      testing::internal::FlatTupleConstructTag{}, 7, 3.2, "Foo");
   EXPECT_EQ(7, tuple.Get<0>());
   EXPECT_EQ(3.2, tuple.Get<1>());
   EXPECT_EQ(std::string("Foo"), tuple.Get<2>());
 
   tuple.Get<1>() = 5.1;
   EXPECT_EQ(5.1, tuple.Get<1>());
+}
+
+namespace {
+std::string AddIntToString(int i, const std::string& s) {
+  return s + std::to_string(i);
+}
+}  // namespace
+
+TEST(FlatTuple, Apply) {
+  using testing::internal::FlatTuple;
+
+  FlatTuple<int, std::string> tuple{testing::internal::FlatTupleConstructTag{},
+                                    5, "Hello"};
+
+  // Lambda.
+  EXPECT_TRUE(tuple.Apply([](int i, const std::string& s) -> bool {
+    return i == static_cast<int>(s.size());
+  }));
+
+  // Function.
+  EXPECT_EQ(tuple.Apply(AddIntToString), "Hello5");
+
+  // Mutating operations.
+  tuple.Apply([](int& i, std::string& s) {
+    ++i;
+    s += s;
+  });
+  EXPECT_EQ(tuple.Get<0>(), 6);
+  EXPECT_EQ(tuple.Get<1>(), "HelloHello");
+}
+
+struct ConstructionCounting {
+  ConstructionCounting() { ++default_ctor_calls; }
+  ~ConstructionCounting() { ++dtor_calls; }
+  ConstructionCounting(const ConstructionCounting&) { ++copy_ctor_calls; }
+  ConstructionCounting(ConstructionCounting&&) noexcept { ++move_ctor_calls; }
+  ConstructionCounting& operator=(const ConstructionCounting&) {
+    ++copy_assignment_calls;
+    return *this;
+  }
+  ConstructionCounting& operator=(ConstructionCounting&&) noexcept {
+    ++move_assignment_calls;
+    return *this;
+  }
+
+  static void Reset() {
+    default_ctor_calls = 0;
+    dtor_calls = 0;
+    copy_ctor_calls = 0;
+    move_ctor_calls = 0;
+    copy_assignment_calls = 0;
+    move_assignment_calls = 0;
+  }
+
+  static int default_ctor_calls;
+  static int dtor_calls;
+  static int copy_ctor_calls;
+  static int move_ctor_calls;
+  static int copy_assignment_calls;
+  static int move_assignment_calls;
+};
+
+int ConstructionCounting::default_ctor_calls = 0;
+int ConstructionCounting::dtor_calls = 0;
+int ConstructionCounting::copy_ctor_calls = 0;
+int ConstructionCounting::move_ctor_calls = 0;
+int ConstructionCounting::copy_assignment_calls = 0;
+int ConstructionCounting::move_assignment_calls = 0;
+
+TEST(FlatTuple, ConstructorCalls) {
+  using testing::internal::FlatTuple;
+
+  // Default construction.
+  ConstructionCounting::Reset();
+  { FlatTuple<ConstructionCounting> tuple; }
+  EXPECT_EQ(ConstructionCounting::default_ctor_calls, 1);
+  EXPECT_EQ(ConstructionCounting::dtor_calls, 1);
+  EXPECT_EQ(ConstructionCounting::copy_ctor_calls, 0);
+  EXPECT_EQ(ConstructionCounting::move_ctor_calls, 0);
+  EXPECT_EQ(ConstructionCounting::copy_assignment_calls, 0);
+  EXPECT_EQ(ConstructionCounting::move_assignment_calls, 0);
+
+  // Copy construction.
+  ConstructionCounting::Reset();
+  {
+    ConstructionCounting elem;
+    FlatTuple<ConstructionCounting> tuple{
+        testing::internal::FlatTupleConstructTag{}, elem};
+  }
+  EXPECT_EQ(ConstructionCounting::default_ctor_calls, 1);
+  EXPECT_EQ(ConstructionCounting::dtor_calls, 2);
+  EXPECT_EQ(ConstructionCounting::copy_ctor_calls, 1);
+  EXPECT_EQ(ConstructionCounting::move_ctor_calls, 0);
+  EXPECT_EQ(ConstructionCounting::copy_assignment_calls, 0);
+  EXPECT_EQ(ConstructionCounting::move_assignment_calls, 0);
+
+  // Move construction.
+  ConstructionCounting::Reset();
+  {
+    FlatTuple<ConstructionCounting> tuple{
+        testing::internal::FlatTupleConstructTag{}, ConstructionCounting{}};
+  }
+  EXPECT_EQ(ConstructionCounting::default_ctor_calls, 1);
+  EXPECT_EQ(ConstructionCounting::dtor_calls, 2);
+  EXPECT_EQ(ConstructionCounting::copy_ctor_calls, 0);
+  EXPECT_EQ(ConstructionCounting::move_ctor_calls, 1);
+  EXPECT_EQ(ConstructionCounting::copy_assignment_calls, 0);
+  EXPECT_EQ(ConstructionCounting::move_assignment_calls, 0);
+
+  // Copy assignment.
+  // TODO(ofats): it should be testing assignment operator of FlatTuple, not its
+  // elements
+  ConstructionCounting::Reset();
+  {
+    FlatTuple<ConstructionCounting> tuple;
+    ConstructionCounting elem;
+    tuple.Get<0>() = elem;
+  }
+  EXPECT_EQ(ConstructionCounting::default_ctor_calls, 2);
+  EXPECT_EQ(ConstructionCounting::dtor_calls, 2);
+  EXPECT_EQ(ConstructionCounting::copy_ctor_calls, 0);
+  EXPECT_EQ(ConstructionCounting::move_ctor_calls, 0);
+  EXPECT_EQ(ConstructionCounting::copy_assignment_calls, 1);
+  EXPECT_EQ(ConstructionCounting::move_assignment_calls, 0);
+
+  // Move assignment.
+  // TODO(ofats): it should be testing assignment operator of FlatTuple, not its
+  // elements
+  ConstructionCounting::Reset();
+  {
+    FlatTuple<ConstructionCounting> tuple;
+    tuple.Get<0>() = ConstructionCounting{};
+  }
+  EXPECT_EQ(ConstructionCounting::default_ctor_calls, 2);
+  EXPECT_EQ(ConstructionCounting::dtor_calls, 2);
+  EXPECT_EQ(ConstructionCounting::copy_ctor_calls, 0);
+  EXPECT_EQ(ConstructionCounting::move_ctor_calls, 0);
+  EXPECT_EQ(ConstructionCounting::copy_assignment_calls, 0);
+  EXPECT_EQ(ConstructionCounting::move_assignment_calls, 1);
+
+  ConstructionCounting::Reset();
 }
 
 TEST(FlatTuple, ManyTypes) {

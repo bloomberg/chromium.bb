@@ -25,9 +25,9 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeApplicationImpl;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -73,6 +73,7 @@ public class IncognitoCustomTabIntentDataProvider extends BrowserServicesIntentD
 
     @Nullable
     private final String mUrlToLoad;
+    private final String mSendersPackageName;
 
     /** Whether this CustomTabActivity was explicitly started by another Chrome Activity. */
     private final boolean mIsOpenedByChrome;
@@ -86,6 +87,7 @@ public class IncognitoCustomTabIntentDataProvider extends BrowserServicesIntentD
         assert intent != null;
         mIntent = intent;
         mUrlToLoad = resolveUrlToLoad(intent);
+        mSendersPackageName = getSendersPackageNameFromIntent(intent);
         mSession = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         mIsTrustedIntent = isTrustedCustomTab(intent, mSession);
         mAnimationBundle = IntentUtils.safeGetBundleExtra(
@@ -133,12 +135,9 @@ public class IncognitoCustomTabIntentDataProvider extends BrowserServicesIntentD
     }
 
     private static boolean isIntentFromFirstParty(Intent intent) {
-        CustomTabsSessionToken sessionToken =
-                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        String sendersPackageName =
-                CustomTabsConnection.getInstance().getClientPackageNameForSession(sessionToken);
+        String sendersPackageName = getSendersPackageNameFromIntent(intent);
         return !TextUtils.isEmpty(sendersPackageName)
-                && ChromeApplication.getComponent().resolveExternalAuthUtils().isGoogleSigned(
+                && ChromeApplicationImpl.getComponent().resolveExternalAuthUtils().isGoogleSigned(
                         sendersPackageName);
     }
 
@@ -171,6 +170,12 @@ public class IncognitoCustomTabIntentDataProvider extends BrowserServicesIntentD
             if (TextUtils.isEmpty(title) || pendingIntent == null) continue;
             mMenuEntries.add(new Pair<String, PendingIntent>(title, pendingIntent));
         }
+    }
+
+    private static String getSendersPackageNameFromIntent(Intent intent) {
+        CustomTabsSessionToken sessionToken =
+                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        return CustomTabsConnection.getInstance().getClientPackageNameForSession(sessionToken);
     }
 
     public static void addIncongitoExtrasForChromeFeatures(
@@ -222,6 +227,10 @@ public class IncognitoCustomTabIntentDataProvider extends BrowserServicesIntentD
 
     private String resolveUrlToLoad(Intent intent) {
         return IntentHandler.getUrlFromIntent(intent);
+    }
+
+    public String getSendersPackageName() {
+        return mSendersPackageName;
     }
 
     @Override

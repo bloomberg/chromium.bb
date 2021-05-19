@@ -8,11 +8,11 @@
 #include <cstring>
 #include <string>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 #include "quic/core/crypto/quic_random.h"
 #include "quic/platform/api/quic_bug_tracker.h"
-#include "quic/platform/api/quic_ptr_util.h"
 
 namespace quic {
 
@@ -25,7 +25,7 @@ std::unique_ptr<Curve25519KeyExchange> Curve25519KeyExchange::New(
     QuicRandom* rand) {
   std::unique_ptr<Curve25519KeyExchange> result =
       New(Curve25519KeyExchange::NewPrivateKey(rand));
-  QUIC_BUG_IF(result == nullptr);
+  QUIC_BUG_IF(quic_bug_12891_1, result == nullptr);
   return result;
 }
 
@@ -47,7 +47,9 @@ std::unique_ptr<Curve25519KeyExchange> Curve25519KeyExchange::New(
     return nullptr;
   }
 
-  auto ka = QuicWrapUnique(new Curve25519KeyExchange);
+  // Use absl::WrapUnique(new) instead of std::make_unique because
+  // Curve25519KeyExchange has a private constructor.
+  auto ka = absl::WrapUnique(new Curve25519KeyExchange);
   memcpy(ka->private_key_, private_key.data(), X25519_PRIVATE_KEY_LEN);
   X25519_public_from_private(ka->public_key_, ka->private_key_);
   return ka;

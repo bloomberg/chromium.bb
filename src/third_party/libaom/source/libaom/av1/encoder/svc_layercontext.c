@@ -30,6 +30,7 @@ void av1_init_layer_context(AV1_COMP *const cpi) {
   svc->current_superframe = 0;
   svc->force_zero_mode_spatial_ref = 1;
   svc->num_encoded_top_layer = 0;
+  svc->use_flexible_mode = 0;
 
   for (int sl = 0; sl < svc->number_spatial_layers; ++sl) {
     for (int tl = 0; tl < svc->number_temporal_layers; ++tl) {
@@ -164,7 +165,6 @@ void av1_update_temporal_layer_framerate(AV1_COMP *const cpi) {
 }
 
 void av1_restore_layer_context(AV1_COMP *const cpi) {
-  GF_GROUP *const gf_group = &cpi->gf_group;
   SVC *const svc = &cpi->svc;
   const AV1_COMMON *const cm = &cpi->common;
   LAYER_CONTEXT *const lc = get_layer_context(cpi);
@@ -173,7 +173,7 @@ void av1_restore_layer_context(AV1_COMP *const cpi) {
   // Restore layer rate control.
   cpi->rc = lc->rc;
   cpi->oxcf.rc_cfg.target_bandwidth = lc->target_bandwidth;
-  gf_group->index = 0;
+  cpi->gf_frame_index = 0;
   cpi->mv_search_params.max_mv_magnitude = lc->max_mv_magnitude;
   if (cpi->mv_search_params.max_mv_magnitude == 0)
     cpi->mv_search_params.max_mv_magnitude = AOMMAX(cm->width, cm->height);
@@ -198,7 +198,7 @@ void av1_restore_layer_context(AV1_COMP *const cpi) {
   // This is to skip searching mv for that reference if it was last
   // refreshed (i.e., buffer slot holding that reference was refreshed) on the
   // previous spatial layer(s) at the same time (current_superframe).
-  if (svc->external_ref_frame_config && svc->force_zero_mode_spatial_ref) {
+  if (svc->set_ref_frame_config && svc->force_zero_mode_spatial_ref) {
     int ref_frame_idx = svc->ref_idx[LAST_FRAME - 1];
     if (svc->buffer_time_index[ref_frame_idx] == svc->current_superframe &&
         svc->buffer_spatial_layer[ref_frame_idx] <= svc->spatial_layer_id - 1)
@@ -211,13 +211,12 @@ void av1_restore_layer_context(AV1_COMP *const cpi) {
 }
 
 void av1_save_layer_context(AV1_COMP *const cpi) {
-  GF_GROUP *const gf_group = &cpi->gf_group;
   SVC *const svc = &cpi->svc;
   const AV1_COMMON *const cm = &cpi->common;
   LAYER_CONTEXT *lc = get_layer_context(cpi);
   lc->rc = cpi->rc;
   lc->target_bandwidth = (int)cpi->oxcf.rc_cfg.target_bandwidth;
-  lc->group_index = gf_group->index;
+  lc->group_index = cpi->gf_frame_index;
   lc->max_mv_magnitude = cpi->mv_search_params.max_mv_magnitude;
   if (svc->spatial_layer_id == 0) svc->base_framerate = cpi->framerate;
   // For spatial-svc, allow cyclic-refresh to be applied on the spatial layers,
@@ -243,7 +242,7 @@ void av1_save_layer_context(AV1_COMP *const cpi) {
       svc->buffer_time_index[i] = svc->current_superframe;
       svc->buffer_spatial_layer[i] = svc->spatial_layer_id;
     }
-  } else if (cpi->svc.external_ref_frame_config) {
+  } else if (cpi->svc.set_ref_frame_config) {
     for (unsigned int i = 0; i < INTER_REFS_PER_FRAME; i++) {
       int ref_frame_map_idx = svc->ref_idx[i];
       if (cpi->svc.refresh[ref_frame_map_idx]) {
@@ -341,4 +340,147 @@ void av1_one_pass_cbr_svc_start_layer(AV1_COMP *const cpi) {
   cpi->common.width = width;
   cpi->common.height = height;
   av1_update_frame_size(cpi);
+}
+
+enum {
+  SVC_LAST_FRAME = 0,
+  SVC_LAST2_FRAME,
+  SVC_LAST3_FRAME,
+  SVC_GOLDEN_FRAME,
+  SVC_BWDREF_FRAME,
+  SVC_ALTREF2_FRAME,
+  SVC_ALTREF_FRAME
+};
+
+// For fixed svc mode: fixed pattern is set based on the number of
+// spatial and temporal layers, and the ksvc_fixed_mode.
+void av1_set_svc_fixed_mode(AV1_COMP *const cpi) {
+  SVC *const svc = &cpi->svc;
+  int i;
+  assert(svc->use_flexible_mode == 0);
+  // Fixed SVC mode only supports at most 3 spatial or temporal layers.
+  assert(svc->number_spatial_layers >= 1 && svc->number_spatial_layers <= 3 &&
+         svc->number_temporal_layers >= 1 && svc->number_temporal_layers <= 3);
+  svc->set_ref_frame_config = 1;
+  int superframe_cnt = svc->current_superframe;
+  // Set the reference map buffer idx for the 7 references:
+  // LAST_FRAME (0), LAST2_FRAME(1), LAST3_FRAME(2), GOLDEN_FRAME(3),
+  // BWDREF_FRAME(4), ALTREF2_FRAME(5), ALTREF_FRAME(6).
+  for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = i;
+  for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->reference[i] = 0;
+  for (i = 0; i < REF_FRAMES; i++) svc->refresh[i] = 0;
+  // Always reference LAST, and reference GOLDEN on SL > 0.
+  // For KSVC: GOLDEN reference will be removed on INTER_FRAMES later
+  // when frame_type is set.
+  svc->reference[SVC_LAST_FRAME] = 1;
+  if (svc->spatial_layer_id > 0) svc->reference[SVC_GOLDEN_FRAME] = 1;
+  if (svc->temporal_layer_id == 0) {
+    // Base temporal layer.
+    if (svc->spatial_layer_id == 0) {
+      // Set all buffer_idx to 0. Update slot 0 (LAST).
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 0;
+      svc->refresh[0] = 1;
+    } else if (svc->spatial_layer_id == 1) {
+      // Set buffer_idx for LAST to slot 1, GOLDEN (and all other refs) to
+      // slot 0. Update slot 1 (LAST).
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 0;
+      svc->ref_idx[SVC_LAST_FRAME] = 1;
+      svc->refresh[1] = 1;
+    } else if (svc->spatial_layer_id == 2) {
+      // Set buffer_idx for LAST to slot 2, GOLDEN (and all other refs) to
+      // slot 1. Update slot 2 (LAST).
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 1;
+      svc->ref_idx[SVC_LAST_FRAME] = 2;
+      svc->refresh[2] = 1;
+    }
+  } else if (svc->temporal_layer_id == 2 && (superframe_cnt - 1) % 4 == 0) {
+    // First top temporal enhancement layer.
+    if (svc->spatial_layer_id == 0) {
+      // Reference LAST (slot 0).
+      // Set GOLDEN to slot 3 and update slot 3.
+      // Set all other buffer_idx to slot 0.
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 0;
+      if (svc->spatial_layer_id < svc->number_spatial_layers - 1) {
+        svc->ref_idx[SVC_GOLDEN_FRAME] = 3;
+        svc->refresh[3] = 1;
+      }
+    } else if (svc->spatial_layer_id == 1) {
+      // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 1,
+      // GOLDEN (and all other refs) to slot 3.
+      // Set LAST2 to slot 4 and Update slot 4.
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 3;
+      svc->ref_idx[SVC_LAST_FRAME] = 1;
+      if (svc->spatial_layer_id < svc->number_spatial_layers - 1) {
+        svc->ref_idx[SVC_LAST2_FRAME] = 4;
+        svc->refresh[4] = 1;
+      }
+    } else if (svc->spatial_layer_id == 2) {
+      // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 2,
+      // GOLDEN (and all other refs) to slot 4.
+      // No update.
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 4;
+      svc->ref_idx[SVC_LAST_FRAME] = 2;
+    }
+  } else if (svc->temporal_layer_id == 1) {
+    // Middle temporal enhancement layer.
+    if (svc->spatial_layer_id == 0) {
+      // Reference LAST.
+      // Set all buffer_idx to 0.
+      // Set GOLDEN to slot 5 and update slot 5.
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 0;
+      if (svc->temporal_layer_id < svc->number_temporal_layers - 1) {
+        svc->ref_idx[SVC_GOLDEN_FRAME] = 5;
+        svc->refresh[5] = 1;
+      }
+    } else if (svc->spatial_layer_id == 1) {
+      // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 1,
+      // GOLDEN (and all other refs) to slot 5.
+      // Set LAST3 to slot 6 and update slot 6.
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 5;
+      svc->ref_idx[SVC_LAST_FRAME] = 1;
+      if (svc->temporal_layer_id < svc->number_temporal_layers - 1) {
+        svc->ref_idx[SVC_LAST3_FRAME] = 6;
+        svc->refresh[6] = 1;
+      }
+    } else if (svc->spatial_layer_id == 2) {
+      // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 2,
+      // GOLDEN (and all other refs) to slot 6.
+      // Set LAST3 to slot 7 and update slot 7.
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 6;
+      svc->ref_idx[SVC_LAST_FRAME] = 2;
+      if (svc->temporal_layer_id < svc->number_temporal_layers - 1) {
+        svc->ref_idx[SVC_LAST3_FRAME] = 7;
+        svc->refresh[7] = 1;
+      }
+    }
+  } else if (svc->temporal_layer_id == 2 && (superframe_cnt - 3) % 4 == 0) {
+    // Second top temporal enhancement layer.
+    if (svc->spatial_layer_id == 0) {
+      // Set LAST to slot 5 and reference LAST.
+      // Set GOLDEN to slot 3 and update slot 3.
+      // Set all other buffer_idx to 0.
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 0;
+      svc->ref_idx[SVC_LAST_FRAME] = 5;
+      if (svc->spatial_layer_id < svc->number_spatial_layers - 1) {
+        svc->ref_idx[SVC_GOLDEN_FRAME] = 3;
+        svc->refresh[3] = 1;
+      }
+    } else if (svc->spatial_layer_id == 1) {
+      // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 6,
+      // GOLDEN to slot 3. Set LAST2 to slot 4 and update slot 4.
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 0;
+      svc->ref_idx[SVC_LAST_FRAME] = 6;
+      svc->ref_idx[SVC_GOLDEN_FRAME] = 3;
+      if (svc->spatial_layer_id < svc->number_spatial_layers - 1) {
+        svc->ref_idx[SVC_LAST2_FRAME] = 4;
+        svc->refresh[4] = 1;
+      }
+    } else if (svc->spatial_layer_id == 2) {
+      // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 7,
+      // GOLDEN to slot 4. No update.
+      for (i = 0; i < INTER_REFS_PER_FRAME; i++) svc->ref_idx[i] = 0;
+      svc->ref_idx[SVC_LAST_FRAME] = 7;
+      svc->ref_idx[SVC_GOLDEN_FRAME] = 4;
+    }
+  }
 }

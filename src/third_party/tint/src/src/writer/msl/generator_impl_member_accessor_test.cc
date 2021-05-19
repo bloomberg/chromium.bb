@@ -12,13 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/member_accessor_expression.h"
-#include "src/program.h"
-#include "src/writer/msl/generator_impl.h"
 #include "src/writer/msl/test_helper.h"
 
 namespace tint {
@@ -34,7 +27,7 @@ TEST_F(MslGeneratorImplTest, EmitExpression_MemberAccessor) {
                                   ast::StructMemberList{
                                       Member("mem", ty.f32()),
                                   },
-                                  ast::StructDecorationList{})),
+                                  ast::DecorationList{})),
          ast::StorageClass::kPrivate);
   auto* expr = MemberAccessor("str", "mem");
   WrapInFunction(expr);

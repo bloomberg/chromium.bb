@@ -226,6 +226,7 @@ void StreamingVp8Encoder::ProcessWorkUnitsUntilTimeToQuit() {
       static_cast<WorkUnit&>(work_unit) = std::move(encode_queue_.front());
       encode_queue_.pop();
       force_key_frame = needs_key_frame_;
+      needs_key_frame_ = false;
       target_bitrate = target_bitrate_;
     }
 

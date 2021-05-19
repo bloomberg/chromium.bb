@@ -4,8 +4,8 @@
 // found in the LICENSE file.
 //
 // TranslatorVulkan:
-//   A GLSL-based translator that outputs shaders that fit GL_KHR_vulkan_glsl.
-//   The shaders are then fed into glslang to spit out SPIR-V (libANGLE-side).
+//   A GLSL-based translator that outputs shaders that fit GL_KHR_vulkan_glsl and feeds them into
+//   glslang to spit out SPIR-V.
 //   See: https://www.khronos.org/registry/vulkan/specs/misc/GL_KHR_vulkan_glsl.txt
 //
 
@@ -19,6 +19,7 @@
 #include "compiler/translator/IntermNode.h"
 #include "compiler/translator/OutputVulkanGLSL.h"
 #include "compiler/translator/StaticType.h"
+#include "compiler/translator/glslang_wrapper.h"
 #include "compiler/translator/tree_ops/vulkan/FlagSamplersWithTexelFetch.h"
 #include "compiler/translator/tree_ops/vulkan/MonomorphizeUnsupportedFunctionsInVulkanGLSL.h"
 #include "compiler/translator/tree_ops/vulkan/NameEmbeddedUniformStructs.h"
@@ -271,17 +272,6 @@ ANGLE_NO_DISCARD bool ReplaceGLDepthRangeWithDriverUniform(TCompiler *compiler,
     return ReplaceVariableWithTyped(compiler, root, depthRangeVar, angleEmulatedDepthRangeRef);
 }
 
-ANGLE_NO_DISCARD bool AppendTransformFeedbackOutputToMain(TCompiler *compiler,
-                                                          TIntermBlock *root,
-                                                          TSymbolTable *symbolTable)
-{
-    TVariable *xfbPlaceholder = new TVariable(symbolTable, ImmutableString("@@ XFB-OUT @@"),
-                                              new TType(), SymbolType::AngleInternal);
-
-    // Append the assignment as a statement at the end of the shader.
-    return RunAtTheEndOfShader(compiler, root, new TIntermSymbol(xfbPlaceholder), symbolTable);
-}
-
 TVariable *AddANGLEPositionVaryingDeclaration(TIntermBlock *root,
                                               TSymbolTable *symbolTable,
                                               TQualifier qualifier)
@@ -441,6 +431,67 @@ ANGLE_NO_DISCARD bool AddXfbEmulationSupport(TCompiler *compiler,
     // Insert the function declaration before main().
     const size_t mainIndex = FindMainIndex(root);
     root->insertChildNodes(mainIndex, {functionDef});
+
+    // Generate the following function and place it before main().  This function will be filled
+    // with transform feedback capture code at link time.
+    //
+    //     void ANGLECaptureXfb()
+    //     {
+    //     }
+    const TType *voidType = StaticType::GetBasic<EbtVoid>();
+
+    // Create the function body, which is empty.
+    body = new TIntermBlock;
+
+    // Declare the function
+    TFunction *xfbCaptureFunction =
+        new TFunction(symbolTable, ImmutableString(vk::kXfbEmulationCaptureFunctionName),
+                      SymbolType::AngleInternal, voidType, false);
+
+    // Insert the function declaration before main().
+    root->insertChildNodes(mainIndex,
+                           {CreateInternalFunctionDefinitionNode(*xfbCaptureFunction, body)});
+
+    // Create the following logic and add it at the end of main():
+    //
+    //     if (ANGLEUniforms.xfbActiveUnpaused)
+    //     {
+    //         ANGLECaptureXfb();
+    //     }
+    //
+
+    // Create a reference ANGLEUniforms.xfbActiveUnpaused
+    TIntermBinary *xfbActiveUnpaused = driverUniforms->getXfbActiveUnpaused();
+
+    // ANGLEUniforms.xfbActiveUnpaused != 0
+    TIntermBinary *isXfbActiveUnpaused =
+        new TIntermBinary(EOpNotEqual, xfbActiveUnpaused, CreateUIntNode(0));
+
+    // Create the function call
+    TIntermAggregate *captureXfbCall =
+        TIntermAggregate::CreateFunctionCall(*xfbCaptureFunction, {});
+
+    TIntermBlock *captureXfbBlock = new TIntermBlock;
+    captureXfbBlock->appendStatement(captureXfbCall);
+
+    // Create a call to ANGLEGetXfbOffsets too, for the sole purpose of preventing it from being
+    // culled as unused by glslang.
+    TIntermSequence zero;
+    zero.push_back(CreateIndexNode(0));
+    TIntermSequence ivec4Zero;
+    ivec4Zero.push_back(TIntermAggregate::CreateConstructor(*ivec4Type, &zero));
+    TIntermAggregate *getOffsetsCall =
+        TIntermAggregate::CreateFunctionCall(*getOffsetsFunction, &ivec4Zero);
+    captureXfbBlock->appendStatement(getOffsetsCall);
+
+    // Create the if
+    TIntermIfElse *captureXfb = new TIntermIfElse(isXfbActiveUnpaused, captureXfbBlock, nullptr);
+
+    // Run it at the end of the shader.
+    if (!RunAtTheEndOfShader(compiler, root, captureXfb, symbolTable))
+    {
+        return false;
+    }
 
     // Additionally, generate the following storage buffer declarations used to capture transform
     // feedback output.  Again, there's a maximum of four buffers.
@@ -712,15 +763,14 @@ TranslatorVulkan::TranslatorVulkan(sh::GLenum type, ShShaderSpec spec)
     : TCompiler(type, spec, SH_GLSL_450_CORE_OUTPUT)
 {}
 
-bool TranslatorVulkan::translateImpl(TIntermBlock *root,
+bool TranslatorVulkan::translateImpl(TInfoSinkBase &sink,
+                                     TIntermBlock *root,
                                      ShCompileOptions compileOptions,
                                      PerformanceDiagnostics * /*perfDiagnostics*/,
                                      SpecConst *specConst,
                                      DriverUniform *driverUniforms,
                                      TOutputVulkanGLSL *outputGLSL)
 {
-    TInfoSinkBase &sink = getInfoSink().obj;
-
     if (getShaderType() == GL_VERTEX_SHADER)
     {
         if (!ShaderBuiltinsWorkaround(this, root, &getSymbolTable(), compileOptions))
@@ -951,25 +1001,17 @@ bool TranslatorVulkan::translateImpl(TIntermBlock *root,
                 return false;
             }
         }
-
-        // Append a macro for transform feedback substitution prior to modifying depth.
-        if ((compileOptions & SH_ADD_VULKAN_XFB_EMULATION_SUPPORT_CODE) != 0)
-        {
-            if (!AppendTransformFeedbackOutputToMain(this, root, &getSymbolTable()))
-            {
-                return false;
-            }
-        }
     }
 
     switch (packedShaderType)
     {
         case gl::ShaderType::Fragment:
         {
-            bool usesPointCoord   = false;
-            bool usesFragCoord    = false;
-            bool usesSampleMaskIn = false;
-            bool usesLastFragData = false;
+            bool usesPointCoord    = false;
+            bool usesFragCoord     = false;
+            bool usesSampleMaskIn  = false;
+            bool usesLastFragData  = false;
+            bool useSamplePosition = false;
 
             // Search for the gl_PointCoord usage, if its used, we need to flip the y coordinate.
             for (const ShaderVariable &inputVarying : mInputVaryings)
@@ -982,6 +1024,12 @@ bool TranslatorVulkan::translateImpl(TIntermBlock *root,
                 if (inputVarying.name == "gl_SampleMaskIn")
                 {
                     usesSampleMaskIn = true;
+                    continue;
+                }
+
+                if (inputVarying.name == "gl_SamplePosition")
+                {
+                    useSamplePosition = true;
                     continue;
                 }
 
@@ -1096,6 +1144,32 @@ bool TranslatorVulkan::translateImpl(TIntermBlock *root,
                 if (!RotateAndFlipBuiltinVariable(this, root, GetMainSequence(root), flipNegXY,
                                                   &getSymbolTable(),
                                                   BuiltInVariable::gl_PointCoord(),
+                                                  kFlippedPointCoordName, pivot, fragRotation))
+                {
+                    return false;
+                }
+            }
+
+            if (useSamplePosition)
+            {
+                TIntermTyped *flipXY = specConst->getFlipXY();
+                if (!flipXY)
+                {
+                    flipXY = driverUniforms->getFlipXYRef();
+                }
+                TIntermConstantUnion *pivot = CreateFloatNode(0.5f);
+                TIntermTyped *fragRotation  = nullptr;
+                if (usePreRotation)
+                {
+                    fragRotation = specConst->getFragRotationMatrix();
+                    if (!fragRotation)
+                    {
+                        fragRotation = driverUniforms->getFragRotationMatrixRef();
+                    }
+                }
+                if (!RotateAndFlipBuiltinVariable(this, root, GetMainSequence(root), flipXY,
+                                                  &getSymbolTable(),
+                                                  BuiltInVariable::gl_SamplePosition(),
                                                   kFlippedPointCoordName, pivot, fragRotation))
                 {
                     return false;
@@ -1250,11 +1324,10 @@ bool TranslatorVulkan::translate(TIntermBlock *root,
                                  ShCompileOptions compileOptions,
                                  PerformanceDiagnostics *perfDiagnostics)
 {
-
-    TInfoSinkBase &sink = getInfoSink().obj;
+    TInfoSinkBase sink;
 
     bool precisionEmulation = false;
-    if (!emulatePrecisionIfNeeded(root, sink, &precisionEmulation, SH_GLSL_VULKAN_OUTPUT))
+    if (!emulatePrecisionIfNeeded(root, sink, &precisionEmulation, SH_SPIRV_VULKAN_OUTPUT))
         return false;
 
     bool enablePrecision = (compileOptions & SH_IGNORE_PRECISION_QUALIFIERS) == 0;
@@ -1269,7 +1342,7 @@ bool TranslatorVulkan::translate(TIntermBlock *root,
     if ((compileOptions & SH_USE_SPECIALIZATION_CONSTANT) != 0)
     {
         DriverUniform driverUniforms;
-        if (!translateImpl(root, compileOptions, perfDiagnostics, &specConst, &driverUniforms,
+        if (!translateImpl(sink, root, compileOptions, perfDiagnostics, &specConst, &driverUniforms,
                            &outputGLSL))
         {
             return false;
@@ -1278,8 +1351,8 @@ bool TranslatorVulkan::translate(TIntermBlock *root,
     else
     {
         DriverUniformExtended driverUniformsExt;
-        if (!translateImpl(root, compileOptions, perfDiagnostics, &specConst, &driverUniformsExt,
-                           &outputGLSL))
+        if (!translateImpl(sink, root, compileOptions, perfDiagnostics, &specConst,
+                           &driverUniformsExt, &outputGLSL))
         {
             return false;
         }
@@ -1288,12 +1361,24 @@ bool TranslatorVulkan::translate(TIntermBlock *root,
     // Write translated shader.
     root->traverse(&outputGLSL);
 
-    return true;
+    return compileToSpirv(sink);
 }
 
 bool TranslatorVulkan::shouldFlattenPragmaStdglInvariantAll()
 {
     // Not necessary.
     return false;
+}
+
+bool TranslatorVulkan::compileToSpirv(const TInfoSinkBase &glsl)
+{
+    std::vector<uint32_t> spirvBlob;
+    if (!GlslangCompileToSpirv(getResources(), getShaderType(), glsl.str(), &spirvBlob))
+    {
+        return false;
+    }
+
+    getInfoSink().obj.setBinary(std::move(spirvBlob));
+    return true;
 }
 }  // namespace sh

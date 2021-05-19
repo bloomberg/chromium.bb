@@ -541,6 +541,14 @@ class CompilationUnit {
                                   enum DwarfForm form,
                                   uint64_t implicit_const);
 
+  // Special version of ProcessAttribute, for finding str_offsets_base in
+  // DW_TAG_compile_unit, for DWARF v5.
+  const uint8_t* ProcessStrOffsetBaseAttribute(uint64_t dieoffset,
+					       const uint8_t* start,
+					       enum DwarfAttribute attr,
+					       enum DwarfForm form,
+					       uint64_t implicit_const);
+
   // Called when we have an attribute with unsigned data to give to
   // our handler.  The attribute is for the DIE at OFFSET from the
   // beginning of compilation unit, has a name of ATTR, a form of
@@ -554,8 +562,11 @@ class CompilationUnit {
     if (attr == DW_AT_GNU_dwo_id) {
       dwo_id_ = data;
     }
-    else if (attr == DW_AT_GNU_addr_base) {
+    else if (attr == DW_AT_GNU_addr_base || attr == DW_AT_addr_base) {
       addr_base_ = data;
+    }
+    else if (attr == DW_AT_str_offsets_base) {
+      str_offsets_base_ = data;
     }
     else if (attr == DW_AT_GNU_ranges_base || attr == DW_AT_rnglists_base) {
       ranges_base_ = data;
@@ -611,7 +622,7 @@ class CompilationUnit {
                               enum DwarfAttribute attr,
                               enum DwarfForm form,
                               const char* data) {
-    if (attr == DW_AT_GNU_dwo_name)
+    if (attr == DW_AT_GNU_dwo_name || attr == DW_AT_dwo_name)
       dwo_name_ = data;
     handler_->ProcessAttributeString(offset, attr, form, data);
   }
@@ -703,6 +714,9 @@ class CompilationUnit {
   // associated with the skeleton compilation unit.
   bool is_split_dwarf_;
 
+  // Flag indicating if it's a Type Unit (only applicable to DWARF v5).
+  bool is_type_unit_;
+
   // The value of the DW_AT_GNU_dwo_id attribute, if any.
   uint64_t dwo_id_;
 
@@ -725,6 +739,9 @@ class CompilationUnit {
 
   // The value of the DW_AT_GNU_addr_base attribute, if any.
   uint64_t addr_base_;
+
+  // The value of DW_AT_str_offsets_base attribute, if any.
+  uint64_t str_offsets_base_;
 
   // True if we have already looked for a .dwp file.
   bool have_checked_for_dwp_;

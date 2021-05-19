@@ -120,12 +120,10 @@ ErrorOr<Stream> ParseStream(const Json::Value& value, Stream::Type type) {
     return ssrc.error();
   }
   auto aes_key = ParseAesHexBytes(value, "aesKey");
-  if (!aes_key) {
-    return aes_key.error();
-  }
   auto aes_iv_mask = ParseAesHexBytes(value, "aesIvMask");
-  if (!aes_iv_mask) {
-    return aes_iv_mask.error();
+  if (!aes_key || !aes_iv_mask) {
+    return Error(Error::Code::kUnencryptedOffer,
+                 "Offer stream must have both a valid aesKey and aesIvMask");
   }
   auto rtp_timebase = ParseRtpTimebase(value, "timeBase");
   if (!rtp_timebase) {

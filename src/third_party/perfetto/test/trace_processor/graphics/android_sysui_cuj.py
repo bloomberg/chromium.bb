@@ -19,6 +19,7 @@ import synth_common
 
 PID = 1000
 RTID = 1555
+LAYER = "TX - NotificationShade#0"
 
 
 def add_main_thread_atrace(trace, ts, ts_end, buf):
@@ -36,13 +37,62 @@ def add_gpu_thread_atrace(trace, ts, ts_end, buf):
   trace.add_atrace_end(ts=ts_end, tid=1666, pid=PID)
 
 
-def add_frame(trace, ts_do_frame, ts_end_do_frame, ts_draw_frame,
+def add_frame(trace, vsync, ts_do_frame, ts_end_do_frame, ts_draw_frame,
               ts_end_draw_frame, ts_gpu, ts_end_gpu):
   add_main_thread_atrace(trace, ts_do_frame, ts_end_do_frame,
-                         "Choreographer#doFrame")
-  add_render_thread_atrace(trace, ts_draw_frame, ts_end_draw_frame, "DrawFrame")
+                         "Choreographer#doFrame %d" % vsync)
+  add_render_thread_atrace(trace, ts_draw_frame, ts_end_draw_frame,
+                           "DrawFrames %d" % vsync)
   add_gpu_thread_atrace(trace, ts_gpu, ts_end_gpu,
                         "waiting for GPU completion 123")
+
+
+def add_display_frame_events(ts,
+                             dur,
+                             token_start,
+                             jank=None,
+                             on_time_finish_override=None):
+  jank_type = jank if jank is not None else 1
+  present_type = 2 if jank is not None else 1
+  if on_time_finish_override is None:
+    on_time_finish = 1 if jank is None else 0
+  else:
+    on_time_finish = on_time_finish_override
+  trace.add_expected_display_frame_start_event(
+      ts=ts, cookie=token_start, token=token_start, pid=PID)
+  trace.add_frame_end_event(ts=ts + 20_500_000, cookie=token_start)
+  trace.add_actual_display_frame_start_event(
+      ts=ts,
+      cookie=token_start + 1,
+      token=token_start,
+      pid=PID,
+      present_type=present_type,
+      on_time_finish=on_time_finish,
+      gpu_composition=0,
+      jank_type=jank_type,
+      prediction_type=3)
+  trace.add_frame_end_event(ts=ts + dur, cookie=token_start + 1)
+  trace.add_expected_surface_frame_start_event(
+      ts=ts,
+      cookie=token_start + 2,
+      token=token_start + 1,
+      display_frame_token=token_start,
+      pid=PID,
+      layer_name=LAYER)
+  trace.add_frame_end_event(ts=ts + 20_500_000, cookie=token_start + 2)
+  trace.add_actual_surface_frame_start_event(
+      ts=ts,
+      cookie=token_start + 3,
+      token=token_start + 1,
+      display_frame_token=token_start,
+      pid=PID,
+      layer_name=LAYER,
+      present_type=present_type,
+      on_time_finish=on_time_finish,
+      gpu_composition=0,
+      jank_type=jank_type,
+      prediction_type=3)
+  trace.add_frame_end_event(ts=ts + dur, cookie=token_start + 3)
 
 
 trace = synth_common.create_trace()
@@ -64,6 +114,7 @@ trace.add_atrace_async_end(
 
 add_frame(
     trace,
+    vsync=1,
     ts_do_frame=0,
     ts_end_do_frame=5_000_000,
     ts_draw_frame=4_000_000,
@@ -75,8 +126,10 @@ add_main_thread_atrace(
 add_render_thread_atrace(
     trace, ts=4_500_000, ts_end=4_800_000, buf="flush layers")
 
+
 add_frame(
     trace,
+    vsync=2,
     ts_do_frame=8_000_000,
     ts_end_do_frame=23_000_000,
     ts_draw_frame=22_000_000,
@@ -90,6 +143,7 @@ add_render_thread_atrace(
 
 add_frame(
     trace,
+    vsync=3,
     ts_do_frame=30_000_000,
     ts_end_do_frame=33_000_000,
     ts_draw_frame=31_000_000,
@@ -119,6 +173,7 @@ add_render_thread_atrace(
 
 add_frame(
     trace,
+    vsync=4,
     ts_do_frame=40_000_000,
     ts_end_do_frame=53_000_000,
     ts_draw_frame=52_000_000,
@@ -136,6 +191,7 @@ trace.add_sched(ts=59_000_000, prev_pid=RTID, next_pid=0, prev_state='R')
 
 add_frame(
     trace,
+    vsync=6,
     ts_do_frame=70_000_000,
     ts_end_do_frame=80_000_000,
     ts_draw_frame=78_000_000,
@@ -156,6 +212,7 @@ trace.add_sched(ts=88_500_000, prev_pid=RTID, next_pid=0, prev_state='R')
 
 add_frame(
     trace,
+    vsync=9,
     ts_do_frame=100_000_000,
     ts_end_do_frame=115_000_000,
     ts_draw_frame=102_000_000,
@@ -164,7 +221,7 @@ add_frame(
     ts_end_gpu=115_600_000)
 
 add_render_thread_atrace(
-    trace, ts=108_000_000, ts_end=114_000_000, buf="DrawFrame")
+    trace, ts=108_000_000, ts_end=114_000_000, buf="DrawFrames 6")
 add_gpu_thread_atrace(
     trace,
     ts=121_500_000,
@@ -173,6 +230,7 @@ add_gpu_thread_atrace(
 
 add_frame(
     trace,
+    vsync=10,
     ts_do_frame=200_000_000,
     ts_end_do_frame=215_000_000,
     ts_draw_frame=202_000_000,
@@ -181,10 +239,11 @@ add_frame(
     ts_end_gpu=210_000_000)
 
 add_render_thread_atrace(
-    trace, ts=208_000_000, ts_end=214_000_000, buf="DrawFrame")
+    trace, ts=208_000_000, ts_end=214_000_000, buf="DrawFrames 7")
 
 add_frame(
     trace,
+    vsync=11,
     ts_do_frame=300_000_000,
     ts_end_do_frame=315_000_000,
     ts_draw_frame=302_000_000,
@@ -195,14 +254,47 @@ add_frame(
 add_render_thread_atrace(
     trace, ts=305_000_000, ts_end=308_000_000, buf="dispatchFrameCallbacks")
 
+add_frame(
+    trace,
+    vsync=12,
+    ts_do_frame=400_000_000,
+    ts_end_do_frame=415_000_000,
+    ts_draw_frame=402_000_000,
+    ts_end_draw_frame=404_000_000,
+    ts_gpu=408_000_000,
+    ts_end_gpu=410_000_000)
+
+add_render_thread_atrace(
+    trace, ts=415_000_000, ts_end=418_000_000, buf="dispatchFrameCallbacks")
+
 # One more frame after the CUJ is finished
 add_frame(
     trace,
+    vsync=13,
     ts_do_frame=1_100_000_000,
     ts_end_do_frame=1_200_000_000,
     ts_draw_frame=1_150_000_000,
     ts_end_draw_frame=1_300_000_000,
     ts_gpu=1_400_000_000,
     ts_end_gpu=1_500_000_000)
+
+add_display_frame_events(ts=0, dur=16_000_000, token_start=10)
+add_display_frame_events(ts=8_000_000, dur=28_000_000, token_start=20, jank=66)
+add_display_frame_events(ts=30_000_000, dur=25_000_000, token_start=30, jank=64)
+add_display_frame_events(ts=40_000_000, dur=40_000_000, token_start=40, jank=64)
+add_display_frame_events(ts=70_000_000, dur=20_000_000, token_start=50, jank=64)
+add_display_frame_events(
+    ts=100_000_000, dur=23_000_000, token_start=60, jank=64)
+add_display_frame_events(
+    ts=200_000_000, dur=12_000_000, token_start=70, jank=34)
+add_display_frame_events(ts=300_000_000, dur=61_000_000, token_start=80)
+add_display_frame_events(
+    ts=400_000_000,
+    dur=61_000_000,
+    token_start=90,
+    jank=128,
+    on_time_finish_override=1)
+add_display_frame_events(
+    ts=1_100_000_000, dur=500_000_000, token_start=100, jank=64)
 
 sys.stdout.buffer.write(trace.trace.SerializeToString())

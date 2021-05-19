@@ -764,6 +764,15 @@ void VideoCaptureDeviceMac::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
   std::move(callback).Run(true);
 }
 
+void VideoCaptureDeviceMac::OnUtilizationReport(
+    int frame_feedback_id,
+    media::VideoCaptureFeedback feedback) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (!capture_device_)
+    return;
+  [capture_device_ setScaledResolutions:std::move(feedback.mapped_sizes)];
+}
+
 bool VideoCaptureDeviceMac::Init(VideoCaptureApi capture_api_type) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kNotInitialized);
@@ -771,8 +780,8 @@ bool VideoCaptureDeviceMac::Init(VideoCaptureApi capture_api_type) {
   if (capture_api_type != VideoCaptureApi::MACOSX_AVFOUNDATION)
     return false;
 
-  capture_device_.reset([[GetVideoCaptureDeviceAVFoundationImplementationClass()
-      alloc] initWithFrameReceiver:this]);
+  capture_device_.reset(
+      [[VideoCaptureDeviceAVFoundation alloc] initWithFrameReceiver:this]);
 
   if (!capture_device_)
     return false;

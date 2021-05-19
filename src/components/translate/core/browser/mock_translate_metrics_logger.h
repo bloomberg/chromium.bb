@@ -32,6 +32,8 @@ class MockTranslateMetricsLogger : public TranslateMetricsLogger {
   MOCK_METHOD1(RecordMetrics, void(bool));
   MOCK_METHOD1(SetUkmSourceId, void(ukm::SourceId));
   MOCK_METHOD2(LogRankerMetrics, void(RankerDecision, uint32_t));
+  MOCK_METHOD0(LogRankerStart, void());
+  MOCK_METHOD0(LogRankerFinish, void());
   MOCK_METHOD1(LogTriggerDecision, void(TriggerDecision));
   MOCK_METHOD0(LogAutofillAssistantDeferredTriggerDecision, void());
   MOCK_METHOD0(LogInitialState, void());
@@ -46,7 +48,9 @@ class MockTranslateMetricsLogger : public TranslateMetricsLogger {
   MOCK_METHOD1(LogOmniboxIconChange, void(bool));
   MOCK_METHOD2(LogInitialSourceLanguage, void(const std::string&, bool));
   MOCK_METHOD1(LogSourceLanguage, void(const std::string&));
-  MOCK_METHOD1(LogTargetLanguage, void(const std::string&));
+  MOCK_METHOD2(LogTargetLanguage,
+               void(const std::string&,
+                    TranslateBrowserMetrics::TargetLanguageOrigin));
   MOCK_METHOD1(LogUIInteraction, void(UIInteraction));
   MOCK_METHOD0(GetNextManualTranslationType, TranslationType());
   MOCK_METHOD1(SetHasHrefTranslateTarget, void(bool));

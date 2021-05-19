@@ -1,8 +1,8 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2017, 2019-2020 The Khronos Group Inc.
-# Copyright (c) 2015-2017, 2019-2020 Valve Corporation
-# Copyright (c) 2015-2017, 2019-2020 LunarG, Inc.
+# Copyright (c) 2015-2017, 2019-2021 The Khronos Group Inc.
+# Copyright (c) 2015-2017, 2019-2021 Valve Corporation
+# Copyright (c) 2015-2017, 2019-2021 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ from collections import namedtuple, OrderedDict
 # Copyright text prefixing all headers (list of strings).
 prefixStrings = [
     '/*',
-    '** Copyright (c) 2015-2017, 2019 The Khronos Group Inc.',
-    '** Copyright (c) 2015-2017, 2019 Valve Corporation',
-    '** Copyright (c) 2015-2017, 2019 LunarG, Inc.',
-    '** Copyright (c) 2015-2017, 2019 Google Inc.',
+    '** Copyright (c) 2015-2017, 2019-2021 The Khronos Group Inc.',
+    '** Copyright (c) 2015-2017, 2019-2021 Valve Corporation',
+    '** Copyright (c) 2015-2017, 2019-2021 LunarG, Inc.',
+    '** Copyright (c) 2015-2017, 2019-2021 Google Inc.',
     '**',
     '** Licensed under the Apache License, Version 2.0 (the "License");',
     '** you may not use this file except in compliance with the License.',
@@ -61,6 +61,7 @@ platform_dict = {
     'xlib_xrandr' : 'VK_USE_PLATFORM_XLIB_XRANDR_EXT',
     'provisional' : 'VK_ENABLE_BETA_EXTENSIONS',
     'directfb' : 'VK_USE_PLATFORM_DIRECTFB_EXT',
+    'screen' : 'VK_USE_PLATFORM_SCREEN_QNX',
 }
 
 #

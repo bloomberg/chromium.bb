@@ -1012,19 +1012,18 @@ void AccessibilityTreeFormatterUia::WriteElementArray(
     base::DictionaryValue* dict) const {
   int count;
   array->get_Length(&count);
-  base::string16 element_list;
+  std::u16string element_list;
   for (int i = 0; i < count; i++) {
     Microsoft::WRL::ComPtr<IUIAutomationElement> element;
     if (SUCCEEDED(array->GetElement(i, &element))) {
-      if (element_list != STRING16_LITERAL("")) {
-        element_list += STRING16_LITERAL(", ");
+      if (element_list != u"") {
+        element_list += u", ";
       }
       auto name = GetNodeName(element.Get());
       if (name.empty()) {
         base::win::ScopedBstr role;
         element->get_CurrentAriaRole(role.Receive());
-        name = STRING16_LITERAL("{") + base::WideToUTF16(role.Get()) +
-               STRING16_LITERAL("}");
+        name = u"{" + base::WideToUTF16(role.Get()) + u"}";
       }
       element_list += name;
     }
@@ -1033,7 +1032,7 @@ void AccessibilityTreeFormatterUia::WriteElementArray(
     dict->SetString(GetPropertyName(propertyId), element_list);
 }
 
-base::string16 AccessibilityTreeFormatterUia::GetNodeName(
+std::u16string AccessibilityTreeFormatterUia::GetNodeName(
     IUIAutomationElement* uncached_node) const {
   // Update the cache for this node.
   if (uncached_node) {
@@ -1049,7 +1048,7 @@ base::string16 AccessibilityTreeFormatterUia::GetNodeName(
           {variant.ptr()->bstrVal, SysStringLen(variant.ptr()->bstrVal)});
     }
   }
-  return base::string16();
+  return std::u16string();
 }
 
 void AccessibilityTreeFormatterUia::BuildCacheRequests() {

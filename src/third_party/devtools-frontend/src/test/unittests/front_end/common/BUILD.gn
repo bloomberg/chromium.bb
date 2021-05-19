@@ -16,6 +16,7 @@ ts_library("common") {
     "ResourceType_test.ts",
     "SegmentedRange_test.ts",
     "Settings_test.ts",
+    "SimpleHistoryManager_test.ts",
     "StringOutputStream_test.ts",
     "TextDictionary_test.ts",
     "Throttler_test.ts",
@@ -24,7 +25,7 @@ ts_library("common") {
   ]
 
   deps = [
-    "../../../../front_end/common:bundle",
+    "../../../../front_end/core/common:bundle",
     "../helpers",
   ]
 }

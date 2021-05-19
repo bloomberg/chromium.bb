@@ -22,6 +22,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -40,6 +41,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Batch(Batch.PER_CLASS)
+@DisabledTest(message = "crbug.com/1194736 Enable this test if the bug is resolved")
 public class CommerceSubscriptionsStorageTest {
     @ClassRule
     public static ChromeTabbedActivityTestRule sActivityTestRule =
@@ -49,38 +51,12 @@ public class CommerceSubscriptionsStorageTest {
     public BlankCTATabInitialStateRule mBlankCTATabInitialStateRule =
             new BlankCTATabInitialStateRule(sActivityTestRule, false);
 
-    /**
-     * Helper class for load operations to get load results.
-     */
-    class LoadCallbackHelper extends CallbackHelper {
-        private CommerceSubscription mSingleResult;
-        private List<CommerceSubscription> mResultList;
-
-        void notifyCalled(CommerceSubscription subscription) {
-            mSingleResult = subscription;
-            notifyCalled();
-        }
-
-        void notifyCalled(List<CommerceSubscription> subscriptions) {
-            mResultList = subscriptions;
-            notifyCalled();
-        }
-
-        CommerceSubscription getSingleResult() {
-            return mSingleResult;
-        }
-
-        List<CommerceSubscription> getResultList() {
-            return mResultList;
-        }
-    }
-
     private static final String OFFER_ID_1 = "offer_id_1";
     private static final String OFFER_ID_2 = "offer_id_2";
     private static final String OFFER_ID_3 = "offer_id_3";
-    private static final String KEY_1 = "1_1_offer_id_1";
-    private static final String KEY_2 = "1_1_offer_id_2";
-    private static final String KEY_3 = "1_0_offer_id_3";
+    private static final String KEY_1 = "PRICE_TRACK_OFFER_ID_offer_id_1";
+    private static final String KEY_2 = "PRICE_TRACK_OFFER_ID_offer_id_2";
+    private static final String KEY_3 = "PRICE_TRACK_IDENTIFIER_TYPE_UNSPECIFIED_offer_id_3";
 
     private CommerceSubscriptionsStorage mStorage;
     private CommerceSubscription mSubscription1;
@@ -104,12 +80,15 @@ public class CommerceSubscriptionsStorageTest {
         mSubscription3 =
                 new CommerceSubscription(CommerceSubscription.CommerceSubscriptionType.PRICE_TRACK,
                         OFFER_ID_3, CommerceSubscription.SubscriptionManagementType.CHROME_MANAGED,
-                        CommerceSubscription.TrackingIdType.TRACKING_TYPE_UNSPECIFIED);
+                        CommerceSubscription.TrackingIdType.IDENTIFIER_TYPE_UNSPECIFIED);
     }
 
     @After
     public void tearDown() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mStorage.destroy(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mStorage.deleteAll();
+            mStorage.destroy();
+        });
     }
 
     @SmallTest
@@ -152,7 +131,7 @@ public class CommerceSubscriptionsStorageTest {
                         CommerceSubscription.TrackingIdType.OFFER_ID);
         loadPrefixAndCheckResult(
                 prefix1, new ArrayList<>(Arrays.asList(mSubscription1, mSubscription2)));
-        String prefix2 = String.valueOf(CommerceSubscription.CommerceSubscriptionType.PRICE_TRACK);
+        String prefix2 = CommerceSubscription.CommerceSubscriptionType.PRICE_TRACK;
         loadPrefixAndCheckResult(prefix2,
                 new ArrayList<>(Arrays.asList(mSubscription3, mSubscription1, mSubscription2)));
     }
@@ -215,7 +194,7 @@ public class CommerceSubscriptionsStorageTest {
 
     private void loadSingleAndCheckResult(String key, CommerceSubscription expected)
             throws TimeoutException {
-        LoadCallbackHelper ch = new LoadCallbackHelper();
+        SubscriptionsLoadCallbackHelper ch = new SubscriptionsLoadCallbackHelper();
         int chCount = ch.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(() -> mStorage.load(key, (res) -> ch.notifyCalled(res)));
         ch.waitForCallback(chCount);
@@ -230,7 +209,7 @@ public class CommerceSubscriptionsStorageTest {
 
     private void loadPrefixAndCheckResult(String prefix, List<CommerceSubscription> expected)
             throws TimeoutException {
-        LoadCallbackHelper ch = new LoadCallbackHelper();
+        SubscriptionsLoadCallbackHelper ch = new SubscriptionsLoadCallbackHelper();
         int chCount = ch.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mStorage.loadWithPrefix(prefix, (res) -> ch.notifyCalled(res)));

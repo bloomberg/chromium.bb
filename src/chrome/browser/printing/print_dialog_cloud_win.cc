@@ -64,7 +64,7 @@ class PrintDataSetter : public content::WebContentsObserver {
     message_data.SetString("content", base64_data);
     std::string json_data;
     base::JSONWriter::Write(message_data, &json_data);
-    message_data_ = STRING16_LITERAL("cp-dialog-set-print-document::");
+    message_data_ = u"cp-dialog-set-print-document::";
     message_data_.append(base::UTF8ToUTF16(json_data));
   }
 
@@ -73,7 +73,7 @@ class PrintDataSetter : public content::WebContentsObserver {
   void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override {
     GURL url = web_contents()->GetURL();
     if (cloud_devices::IsCloudPrintURL(url)) {
-      base::string16 origin = base::UTF8ToUTF16(url.GetOrigin().spec());
+      std::u16string origin = base::UTF8ToUTF16(url.GetOrigin().spec());
       content::MessagePortProvider::PostMessageToFrame(web_contents(), origin,
                                                        origin, message_data_);
     }
@@ -81,7 +81,7 @@ class PrintDataSetter : public content::WebContentsObserver {
 
   void WebContentsDestroyed() override { delete this; }
 
-  base::string16 message_data_;
+  std::u16string message_data_;
   DISALLOW_COPY_AND_ASSIGN(PrintDataSetter);
 };
 

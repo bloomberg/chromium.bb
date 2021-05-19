@@ -10,7 +10,9 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -31,7 +33,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -46,6 +48,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "extensions/common/constants.h"
+#include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -86,18 +89,105 @@ content::WebContents* NavigateWebAppUsingParams(const std::string& app_id,
   return web_contents;
 }
 
+base::Optional<GURL> GetUrlHandlingLaunchUrl(
+    WebAppProvider& provider,
+    const apps::AppLaunchParams& params) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kWebAppEnableUrlHandlers) ||
+      !params.url_handler_launch_url.has_value()) {
+    return base::nullopt;
+  }
+
+  GURL url = params.url_handler_launch_url.value();
+  DCHECK(url.is_valid());
+
+  // If URL is not in scope, default to launch URL for now.
+  // TODO(crbug.com/1072058): Allow developers to handle out-of-scope URL
+  // launch.
+  const std::string app_scope =
+      provider.registrar().GetAppScope(params.app_id).spec();
+  DCHECK(!app_scope.empty());
+  return base::StartsWith(url.spec(), app_scope, base::CompareCase::SENSITIVE)
+             ? url
+             : provider.registrar().GetAppLaunchUrl(params.app_id);
+}
+
+// TODO(crbug.com/1019239): Passing a WebAppProvider seems to be a bit of an
+// anti-pattern. We should refactor this and other existing functions in this
+// file to receive an OsIntegrationManager instead.
+base::Optional<GURL> GetProtocolHandlingTranslatedUrl(
+    WebAppProvider& provider,
+    const apps::AppLaunchParams& params) {
+  if (!params.protocol_handler_launch_url.has_value())
+    return base::nullopt;
+
+  GURL protocol_url(params.protocol_handler_launch_url.value());
+  if (!protocol_url.is_valid())
+    return base::nullopt;
+
+  base::Optional<GURL> translated_url =
+      provider.os_integration_manager().TranslateProtocolUrl(params.app_id,
+                                                             protocol_url);
+
+  return translated_url;
+}
+
 GURL GetLaunchUrl(WebAppProvider& provider,
                   const apps::AppLaunchParams& params,
                   const apps::ShareTarget* share_target) {
   if (!params.override_url.is_empty())
     return params.override_url;
 
-  const GURL app_url =
-      share_target ? share_target->action
-                   : provider.registrar().GetAppLaunchUrl(params.app_id);
-  return provider.os_integration_manager()
-      .GetMatchingFileHandlerURL(params.app_id, params.launch_files)
-      .value_or(app_url);
+  // Handle url_handlers launch
+  base::Optional<GURL> url_handler_launch_url =
+      GetUrlHandlingLaunchUrl(provider, params);
+  if (url_handler_launch_url.has_value())
+    return url_handler_launch_url.value();
+
+  // Handle file_handlers launch
+  base::Optional<GURL> file_handler_url =
+      provider.os_integration_manager().GetMatchingFileHandlerURL(
+          params.app_id, params.launch_files);
+  if (file_handler_url.has_value())
+    return file_handler_url.value();
+
+  // Handle protocol_handlers launch
+  base::Optional<GURL> protocol_handler_translated_url =
+      GetProtocolHandlingTranslatedUrl(provider, params);
+  if (protocol_handler_translated_url.has_value())
+    return protocol_handler_translated_url.value();
+
+  // Handle share_target launch
+  if (share_target)
+    return share_target->action;
+
+  // Default launch
+  return provider.registrar().GetAppLaunchUrl(params.app_id);
+}
+
+bool IsProtocolHandlerCommandLineArg(const base::CommandLine::StringType& arg) {
+#if defined(OS_WIN)
+  GURL url(base::WideToUTF16(arg));
+#else
+  GURL url(arg);
+#endif
+
+  if (url.is_valid() && url.has_scheme()) {
+    bool has_custom_scheme_prefix = false;
+    return blink::IsValidCustomHandlerScheme(url.scheme(),
+                                             /* allow_ext_plus_prefix */ false,
+                                             has_custom_scheme_prefix);
+  }
+  return false;
+}
+
+bool DoesCommandLineContainProtocolUrl(const base::CommandLine& command_line) {
+  for (const auto& arg : command_line.GetArgs()) {
+    if (IsProtocolHandlerCommandLineArg(arg)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -271,18 +361,31 @@ void WebAppLaunchManager::LaunchApplication(
     const std::string& app_id,
     const base::CommandLine& command_line,
     const base::FilePath& current_directory,
+    const base::Optional<GURL>& url_handler_launch_url,
+    const base::Optional<GURL>& protocol_handler_launch_url,
     base::OnceCallback<void(Browser* browser,
                             apps::mojom::LaunchContainer container)> callback) {
   if (!provider_)
     return;
 
+  apps::mojom::AppLaunchSource launch_source =
+      apps::mojom::AppLaunchSource::kSourceCommandLine;
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin) &&
+      command_line.HasSwitch(switches::kAppRunOnOsLoginMode)) {
+    launch_source = apps::mojom::AppLaunchSource::kSourceRunOnOsLogin;
+  }
+
   apps::AppLaunchParams params(
       app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceCommandLine);
+      WindowOpenDisposition::NEW_WINDOW, launch_source);
   params.command_line = command_line;
   params.current_directory = current_directory;
-  params.launch_files = apps::GetLaunchFilesFromCommandLine(command_line);
+  if (!DoesCommandLineContainProtocolUrl(command_line)) {
+    params.launch_files = apps::GetLaunchFilesFromCommandLine(command_line);
+  }
+  params.url_handler_launch_url = url_handler_launch_url;
+  params.protocol_handler_launch_url = protocol_handler_launch_url;
+
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu)) {
     params.override_url = GURL(command_line.GetSwitchValueASCII(

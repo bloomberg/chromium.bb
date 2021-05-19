@@ -22,13 +22,13 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_downloads_delegate.h"
@@ -271,7 +271,7 @@ class MockDownloadManager : public content::MockDownloadManager {
 class HoldingSpaceKeyedServiceTest : public BrowserWithTestWindowTest {
  public:
   HoldingSpaceKeyedServiceTest()
-      : fake_user_manager_(new chromeos::FakeChromeUserManager),
+      : fake_user_manager_(new FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)),
         download_manager_(
             std::make_unique<testing::NiceMock<MockDownloadManager>>()) {
@@ -311,9 +311,8 @@ class HoldingSpaceKeyedServiceTest : public BrowserWithTestWindowTest {
     fake_user_manager_->AddUser(account_id);
     fake_user_manager_->LoginUser(account_id);
     return profile_manager()->CreateTestingProfile(
-        kSecondaryProfileName, std::move(prefs),
-        base::ASCIIToUTF16("Test profile"), 1 /*avatar_id*/,
-        std::string() /*supervised_user_id*/,
+        kSecondaryProfileName, std::move(prefs), u"Test profile",
+        1 /*avatar_id*/, std::string() /*supervised_user_id*/,
         /*testing_factories=*/
         {{file_manager::VolumeManagerFactory::GetInstance(),
           base::BindRepeating(&BuildVolumeManager)}});
@@ -444,7 +443,7 @@ class HoldingSpaceKeyedServiceTest : public BrowserWithTestWindowTest {
         .WillByDefault(testing::Return(true));
   }
 
-  chromeos::FakeChromeUserManager* fake_user_manager_;
+  FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
   std::unique_ptr<MockDownloadManager> download_manager_;
 
@@ -512,7 +511,7 @@ TEST_F(HoldingSpaceKeyedServiceTest, AddScreenshotItem) {
   EXPECT_EQ(item_1_virtual_path,
             GetVirtualPathFromUrl(item_1->file_system_url(),
                                   downloads_mount->name()));
-  EXPECT_EQ(base::ASCIIToUTF16("Screenshot 1.png"), item_1->text());
+  EXPECT_EQ(u"Screenshot 1.png", item_1->text());
 
   const HoldingSpaceItem* item_2 = model->items()[1].get();
   EXPECT_EQ(item_2_full_path, item_2->file_path());
@@ -528,7 +527,16 @@ TEST_F(HoldingSpaceKeyedServiceTest, AddScreenshotItem) {
   EXPECT_EQ(item_2_virtual_path,
             GetVirtualPathFromUrl(item_2->file_system_url(),
                                   downloads_mount->name()));
-  EXPECT_EQ(base::ASCIIToUTF16("Screenshot 2.png"), item_2->text());
+  EXPECT_EQ(u"Screenshot 2.png", item_2->text());
+
+  // Attempt to add an already added screenshot to the model.
+  EXPECT_EQ(model->items()[1]->file_path(), item_2_full_path);
+  holding_space_service->AddScreenshot(item_2_full_path);
+
+  // Attempts to add already added screenshots should be ignored.
+  ASSERT_EQ(model->items().size(), 2u);
+  EXPECT_EQ(model->items()[0].get(), item_1);
+  EXPECT_EQ(model->items()[1].get(), item_2);
 }
 
 TEST_F(HoldingSpaceKeyedServiceTest, GuestUserProfile) {
@@ -1718,7 +1726,7 @@ TEST_F(HoldingSpaceKeyedServiceNearbySharingTest, AddNearbyShareItem) {
   EXPECT_EQ(item_1_virtual_path,
             GetVirtualPathFromUrl(item_1->file_system_url(),
                                   downloads_mount->name()));
-  EXPECT_EQ(base::ASCIIToUTF16("File 1.png"), item_1->text());
+  EXPECT_EQ(u"File 1.png", item_1->text());
 
   const HoldingSpaceItem* item_2 = model->items()[1].get();
   EXPECT_EQ(item_2_full_path, item_2->file_path());
@@ -1734,7 +1742,7 @@ TEST_F(HoldingSpaceKeyedServiceNearbySharingTest, AddNearbyShareItem) {
   EXPECT_EQ(item_2_virtual_path,
             GetVirtualPathFromUrl(item_2->file_system_url(),
                                   downloads_mount->name()));
-  EXPECT_EQ(base::ASCIIToUTF16("File 2.png"), item_2->text());
+  EXPECT_EQ(u"File 2.png", item_2->text());
 }
 
 TEST_F(HoldingSpaceKeyedServiceTest, AddScreenRecordingItem) {
@@ -1792,7 +1800,7 @@ TEST_F(HoldingSpaceKeyedServiceTest, AddScreenRecordingItem) {
   EXPECT_EQ(item_1_virtual_path,
             GetVirtualPathFromUrl(item_1->file_system_url(),
                                   downloads_mount->name()));
-  EXPECT_EQ(base::ASCIIToUTF16("Screen Recording 1.mpg"), item_1->text());
+  EXPECT_EQ(u"Screen Recording 1.mpg", item_1->text());
 
   const HoldingSpaceItem* item_2 = model->items()[1].get();
   EXPECT_EQ(item_2_full_path, item_2->file_path());
@@ -1808,7 +1816,7 @@ TEST_F(HoldingSpaceKeyedServiceTest, AddScreenRecordingItem) {
   EXPECT_EQ(item_2_virtual_path,
             GetVirtualPathFromUrl(item_2->file_system_url(),
                                   downloads_mount->name()));
-  EXPECT_EQ(base::ASCIIToUTF16("Screen Recording 2.mpg"), item_2->text());
+  EXPECT_EQ(u"Screen Recording 2.mpg", item_2->text());
 
   // Attempt to add an item with an empty file. Verify nothing gets added to the
   // model.
@@ -1819,6 +1827,15 @@ TEST_F(HoldingSpaceKeyedServiceTest, AddScreenRecordingItem) {
   holding_space_service->AddScreenRecording(item_3_full_path);
 
   ASSERT_EQ(2u, model->items().size());
+
+  // Attempt to add an already added screen capture to the model.
+  EXPECT_EQ(model->items()[1]->file_path(), item_2_full_path);
+  holding_space_service->AddScreenRecording(item_2_full_path);
+
+  // Attempts to add already added screen capture should be ignored.
+  ASSERT_EQ(model->items().size(), 2u);
+  EXPECT_EQ(model->items()[0].get(), item_1);
+  EXPECT_EQ(model->items()[1].get(), item_2);
 }
 
 }  // namespace ash

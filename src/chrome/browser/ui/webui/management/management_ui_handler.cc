@@ -21,9 +21,12 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/device_api/managed_configuration_api.h"
+#include "chrome/browser/device_api/managed_configuration_api_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -31,7 +34,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
-#include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/referrer_policy.h"
@@ -39,11 +41,11 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
@@ -167,6 +169,7 @@ const char kManagementReportAppInfoAndActivity[] =
 const char kManagementReportExtensions[] = "managementReportExtensions";
 const char kManagementReportAndroidApplications[] =
     "managementReportAndroidApplications";
+const char kManagementReportPrintJobs[] = "managementReportPrintJobs";
 const char kManagementPrinting[] = "managementPrinting";
 const char kManagementCrostini[] = "managementCrostini";
 const char kManagementCrostiniContainerConfiguration[] =
@@ -210,6 +213,7 @@ enum class DeviceReportingType {
   kAppInfoAndActivity,
   kLogs,
   kPrint,
+  kPrintJobs,
   kCrostini,
   kUsername,
   kExtensions,
@@ -235,6 +239,8 @@ std::string ToJSDeviceReportingType(const DeviceReportingType& type) {
       return "logs";
     case DeviceReportingType::kPrint:
       return "print";
+    case DeviceReportingType::kPrintJobs:
+      return "print jobs";
     case DeviceReportingType::kCrostini:
       return "crostini";
     case DeviceReportingType::kUsername:
@@ -322,44 +328,10 @@ const char* GetReportingTypeValue(ReportingType reportingType) {
 
 }  // namespace
 
-std::string GetAccountDomain(Profile* profile) {
-  if (!IsProfileManaged(profile))
-    return std::string();
-  auto username = profile->GetProfileUserName();
-  size_t email_separator_pos = username.find('@');
-  bool is_email = email_separator_pos != std::string::npos &&
-                  email_separator_pos < username.length() - 1;
-
-  if (!is_email)
-    return std::string();
-
-  const std::string domain = gaia::ExtractDomainName(std::move(username));
-
-  return (domain == "gmail.com" || domain == "googlemail.com") ? std::string()
-                                                               : domain;
-}
-
 std::string ManagementUIHandler::GetAccountManager(Profile* profile) {
-  if (!IsProfileManaged(profile))
-    return std::string();
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  const policy::UserCloudPolicyManagerChromeOS* user_cloud_policy_manager =
-      profile->GetUserCloudPolicyManagerChromeOS();
-#else
-  const policy::UserCloudPolicyManager* user_cloud_policy_manager =
-      profile->GetUserCloudPolicyManager();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-  if (user_cloud_policy_manager) {
-    const enterprise_management::PolicyData* policy =
-        user_cloud_policy_manager->core()->store()->policy();
-    if (policy && policy->has_managed_by()) {
-      return policy->managed_by();
-    }
-  }
-
-  return GetAccountDomain(profile);
+  base::Optional<std::string> account_manager =
+      chrome::GetAccountManagerIdentity(profile);
+  return account_manager ? *account_manager : std::string();
 }
 
 ManagementUIHandler::ManagementUIHandler() {
@@ -418,6 +390,10 @@ void ManagementUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getThreatProtectionInfo",
       base::BindRepeating(&ManagementUIHandler::HandleGetThreatProtectionInfo,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getManagedWebsites",
+      base::BindRepeating(&ManagementUIHandler::HandleGetManagedWebsites,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "initBrowserReportingInfo",
@@ -583,8 +559,17 @@ void ManagementUIHandler::AddDeviceReportingInfo(
                               DeviceReportingType::kLogs);
   }
 
-  if (profile->GetPrefs()->GetBoolean(
-          prefs::kPrintingSendUsernameAndFilenameEnabled)) {
+  bool report_print_jobs = false;
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kReportDevicePrintJobs,
+                                            &report_print_jobs);
+  if (report_print_jobs) {
+    AddDeviceReportingElement(report_sources, kManagementReportPrintJobs,
+                              DeviceReportingType::kPrintJobs);
+  }
+
+  bool report_print_username = profile->GetPrefs()->GetBoolean(
+      prefs::kPrintingSendUsernameAndFilenameEnabled);
+  if (report_print_username && !report_print_jobs) {
     AddDeviceReportingElement(report_sources, kManagementPrinting,
                               DeviceReportingType::kPrint);
   }
@@ -638,8 +623,8 @@ void ManagementUIHandler::AddUpdateRequiredEolInfo(
                                  base::UTF8ToUTF16(GetDeviceManager()),
                                  ui::GetChromeOSDeviceName()));
   std::string eol_admin_message;
-  chromeos::CrosSettings::Get()->GetString(
-      chromeos::kDeviceMinimumVersionAueMessage, &eol_admin_message);
+  ash::CrosSettings::Get()->GetString(chromeos::kDeviceMinimumVersionAueMessage,
+                                      &eol_admin_message);
   response->SetStringPath("eolAdminMessage", eol_admin_message);
 }
 
@@ -697,6 +682,9 @@ base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
     response.SetStringPath(
         "extensionReportingTitle",
         l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
+    response.SetStringPath(
+        "managedWebsitesSubtitle",
+        l10n_util::GetStringUTF16(IDS_MANAGEMENT_MANAGED_WEBSITES_EXPLANATION));
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     response.SetStringPath(
@@ -720,6 +708,10 @@ base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
         "extensionReportingTitle",
         l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                    base::UTF8ToUTF16(enterprise_manager)));
+    response.SetStringPath("managedWebsitesSubtitle",
+                           l10n_util::GetStringFUTF16(
+                               IDS_MANAGEMENT_MANAGED_WEBSITES_BY_EXPLANATION,
+                               base::UTF8ToUTF16(enterprise_manager)));
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     response.SetStringPath(
@@ -825,6 +817,17 @@ base::Value ManagementUIHandler::GetThreatProtectionInfo(
                                 base::UTF8ToUTF16(enterprise_manager)));
   result.SetKey("info", std::move(info));
   return result;
+}
+
+base::Value ManagementUIHandler::GetManagedWebsitesInfo(
+    Profile* profile) const {
+  base::Value managed_websites(base::Value::Type::LIST);
+  for (const auto& entry :
+       ManagedConfigurationAPIFactory::GetForProfile(profile)
+           ->GetManagedOrigins()) {
+    managed_websites.Append(entry.Serialize());
+  }
+  return managed_websites;
 }
 
 policy::PolicyService* ManagementUIHandler::GetPolicyService() const {
@@ -1023,6 +1026,15 @@ void ManagementUIHandler::HandleGetThreatProtectionInfo(
   ResolveJavascriptCallback(
       args->GetList()[0] /* callback_id */,
       GetThreatProtectionInfo(Profile::FromWebUI(web_ui())));
+}
+
+void ManagementUIHandler::HandleGetManagedWebsites(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  ResolveJavascriptCallback(
+      args->GetList()[0] /* callback_id */,
+      GetManagedWebsitesInfo(Profile::FromWebUI(web_ui())));
 }
 
 void ManagementUIHandler::HandleInitBrowserReportingInfo(

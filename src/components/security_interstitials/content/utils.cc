@@ -4,6 +4,8 @@
 
 #include "components/security_interstitials/content/utils.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/process/launch.h"
@@ -20,7 +22,6 @@
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #endif
 
 namespace security_interstitials {

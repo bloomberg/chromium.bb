@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Platform from '../platform/platform.js';
-import * as TextUtils from '../text_utils/text_utils.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as TextUtils from '../models/text_utils/text_utils.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import {SearchConfig, SearchResult} from './SearchConfig.js';  // eslint-disable-line no-unused-vars
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Accessibility label for number of matches in each file in search results pane
   *@example {2} PH1
@@ -43,7 +43,7 @@ export class SearchResultsPane extends UI.Widget.VBox {
     this._searchResults = [];
     this._treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
     this._treeOutline.hideOverflow();
-    this._treeOutline.registerRequiredCSS('search/searchResultsPane.css', {enableLegacyPatching: true});
+    this._treeOutline.registerRequiredCSS('search/searchResultsPane.css', {enableLegacyPatching: false});
     this.contentElement.appendChild(this._treeOutline.element);
 
     this._matchesExpandedCount = 0;

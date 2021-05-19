@@ -55,7 +55,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
@@ -76,6 +75,7 @@
 #include "net/cookies/cookie_monster_netlog_params.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
+#include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_values.h"
 #include "url/origin.h"
@@ -165,7 +165,7 @@ const int CookieMonster::kSafeFromGlobalPurgeDays = 30;
 namespace {
 
 bool ContainsControlCharacter(const std::string& s) {
-  return base::ranges::any_of(s, [](char c) { return c >= 0 && c <= 31; });
+  return base::ranges::any_of(s, &HttpUtil::IsControlChar);
 }
 
 typedef std::vector<CanonicalCookie*> CanonicalCookieVector;
@@ -304,6 +304,27 @@ size_t CountCookiesForPossibleDeletion(
   return cookies_count;
 }
 
+// Records minutes until the expiration date of a cookie to the appropriate
+// histogram. Only histograms cookies that have an expiration date (i.e. are
+// persistent).
+void HistogramExpirationDuration(const CanonicalCookie& cookie,
+                                 base::Time creation_time) {
+  if (!cookie.IsPersistent())
+    return;
+
+  int expiration_duration_minutes =
+      (cookie.ExpiryDate() - creation_time).InMinutes();
+  if (cookie.IsSecure()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Cookie.ExpirationDurationMinutesSecure",
+                                expiration_duration_minutes, 1,
+                                kMinutesInTenYears, 50);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Cookie.ExpirationDurationMinutesNonSecure",
+                                expiration_duration_minutes, 1,
+                                kMinutesInTenYears, 50);
+  }
+}
+
 }  // namespace
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
@@ -327,7 +348,6 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
       last_access_threshold_(last_access_threshold),
       last_statistic_record_time_(base::Time::Now()),
       persist_session_cookies_(false) {
-  InitializeHistograms();
   cookieable_schemes_.insert(
       cookieable_schemes_.begin(), kDefaultCookieableSchemes,
       kDefaultCookieableSchemes + kDefaultCookieableSchemesCount);
@@ -724,7 +744,9 @@ void CookieMonster::OnLoaded(
     std::vector<std::unique_ptr<CanonicalCookie>> cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
   StoreLoadedCookies(std::move(cookies));
-  histogram_time_blocked_on_load_->AddTime(TimeTicks::Now() - beginning_time);
+  base::UmaHistogramCustomTimes(
+      "Cookie.TimeBlockedOnLoad", base::TimeTicks::Now() - beginning_time,
+      TimeDelta::FromMilliseconds(1), TimeDelta::FromMinutes(1), 50);
 
   // Invoke the task queue of cookie request.
   InvokeQueue();
@@ -1163,14 +1185,14 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   }
   auto inserted = cookies_.insert(CookieMap::value_type(key, std::move(cc)));
 
-  // See InitializeHistograms() for details.
   int32_t type_sample =
       !cc_ptr->IsEffectivelySameSiteNone(access_result.access_semantics)
           ? 1 << COOKIE_TYPE_SAME_SITE
           : 0;
   type_sample |= cc_ptr->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
   type_sample |= cc_ptr->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
-  histogram_cookie_type_->Add(type_sample);
+  UMA_HISTOGRAM_EXACT_LINEAR("Cookie.Type", type_sample,
+                             (1 << COOKIE_TYPE_LAST_ENTRY));
 
   DCHECK(access_result.status.IsInclude());
   if (dispatch_change) {
@@ -1265,16 +1287,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
     // Realize that we might be setting an expired cookie, and the only point
     // was to delete the cookie which we've already done.
     if (!already_expired) {
-      // See InitializeHistograms() for details.
-      if (cc->IsPersistent()) {
-        if (cc->IsSecure()) {
-          histogram_expiration_duration_minutes_secure_->Add(
-              (cc->ExpiryDate() - creation_date).InMinutes());
-        } else {
-          histogram_expiration_duration_minutes_non_secure_->Add(
-              (cc->ExpiryDate() - creation_date).InMinutes());
-        }
-      }
+      HistogramExpirationDuration(*cc, creation_date);
 
       // Histogram the type of scheme used on URLs that set cookies. This
       // intentionally includes cookies that are set or overwritten by
@@ -1291,7 +1304,8 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
                : (cc->IsSecure()
                       ? COOKIE_SOURCE_SECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME
                       : COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME));
-      histogram_cookie_source_scheme_->Add(cookie_source_sample);
+      UMA_HISTOGRAM_ENUMERATION("Cookie.CookieSourceScheme",
+                                cookie_source_sample);
 
       UMA_HISTOGRAM_BOOLEAN("Cookie.DomainSet", cc->IsDomainCookie());
 
@@ -1321,6 +1335,9 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
           "Cookie.Port.Set.RemoteHost",
           ReducePortRangeForCookieHistogram(source_url.EffectiveIntPort()));
     }
+
+    UMA_HISTOGRAM_ENUMERATION("Cookie.CookieSourceSchemeName",
+                              GetSchemeNameEnum(source_url));
   } else {
     UMA_HISTOGRAM_BOOLEAN(
         "Cookie.SameParty.SetExclusionDecidedBySameParty",
@@ -1349,15 +1366,7 @@ void CookieMonster::SetAllCookies(CookieList list,
     if (cookie.IsExpired(creation_time))
       continue;
 
-    if (cookie.IsPersistent()) {
-      if (cookie.IsSecure()) {
-        histogram_expiration_duration_minutes_secure_->Add(
-            (cookie.ExpiryDate() - creation_time).InMinutes());
-      } else {
-        histogram_expiration_duration_minutes_non_secure_->Add(
-            (cookie.ExpiryDate() - creation_time).InMinutes());
-      }
-    }
+    HistogramExpirationDuration(cookie, creation_time);
 
     CookieAccessResult access_result;
     access_result.access_semantics = GetAccessSemanticsForCookie(cookie);
@@ -1489,10 +1498,10 @@ size_t CookieMonster::GarbageCollect(const Time& current,
       // 4.  High-priority non-secure cookies.
       // 5.  Medium-priority secure cookies.
       // 6.  High-priority secure cookies.
-      const static struct {
+      constexpr struct {
         CookiePriority priority;
         bool protect_secure_cookies;
-      } purge_rounds[] = {
+      } kPurgeRounds[] = {
           // 1.  Low-priority non-secure cookies.
           {COOKIE_PRIORITY_LOW, true},
           // 2.  Low-priority secure cookies.
@@ -1508,7 +1517,7 @@ size_t CookieMonster::GarbageCollect(const Time& current,
       };
 
       size_t quota = 0;
-      for (const auto& purge_round : purge_rounds) {
+      for (const auto& purge_round : kPurgeRounds) {
         // Adjust quota according to the priority of cookies. Each round should
         // protect certain number of cookies in order to avoid starvation.
         // For example, when each round starts to remove cookies, the number of
@@ -1636,7 +1645,7 @@ size_t CookieMonster::PurgeLeastRecentMatches(CookieItVector* cookies,
     secure_cookies = CountCookiesForPossibleDeletion(
         priority, cookies, protect_secure_cookies /* count secure cookies */);
     cookies_count_possibly_to_be_deleted -=
-        std::max(secure_cookies, to_protect - secure_cookies);
+        std::max(secure_cookies, to_protect);
   } else {
     cookies_count_possibly_to_be_deleted -= to_protect;
   }
@@ -1811,8 +1820,7 @@ bool CookieMonster::DoRecordPeriodicStats() {
   if (started_fetching_all_cookies_ && !finished_fetching_all_cookies_)
     return false;
 
-  // See InitializeHistograms() for details.
-  histogram_count_->Add(cookies_.size());
+  base::UmaHistogramCounts100000("Cookie.Count2", cookies_.size());
 
   if (cookie_access_delegate()) {
     for (const auto& set : cookie_access_delegate()->RetrieveFirstPartySets()) {
@@ -1835,43 +1843,6 @@ bool CookieMonster::DoRecordPeriodicStats() {
   UMA_HISTOGRAM_COUNTS_10000("Cookie.NumKeys", num_keys_);
 
   return true;
-}
-
-// Initialize all histogram counter variables used in this class.
-//
-// TODO(https://crbug.com/1087445): remove this in favor of histogram_macros.h
-// or histogram_functions.h usage, since both are now threadsafe.
-void CookieMonster::InitializeHistograms() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // From UMA_HISTOGRAM_CUSTOM_COUNTS
-  histogram_expiration_duration_minutes_secure_ = base::Histogram::FactoryGet(
-      "Cookie.ExpirationDurationMinutesSecure", 1, kMinutesInTenYears, 50,
-      base::Histogram::kUmaTargetedHistogramFlag);
-  histogram_expiration_duration_minutes_non_secure_ =
-      base::Histogram::FactoryGet("Cookie.ExpirationDurationMinutesNonSecure",
-                                  1, kMinutesInTenYears, 50,
-                                  base::Histogram::kUmaTargetedHistogramFlag);
-
-  // From UMA_HISTOGRAM_COUNTS_100000
-  // This replaces Cookie.Count which only counted up to 4000 cookies.
-  histogram_count_ =
-      base::Histogram::FactoryGet("Cookie.Count2", 1, 100000, 50,
-                                  base::Histogram::kUmaTargetedHistogramFlag);
-
-  // From UMA_HISTOGRAM_ENUMERATION
-  histogram_cookie_type_ = base::LinearHistogram::FactoryGet(
-      "Cookie.Type", 1, (1 << COOKIE_TYPE_LAST_ENTRY) - 1,
-      1 << COOKIE_TYPE_LAST_ENTRY, base::Histogram::kUmaTargetedHistogramFlag);
-  histogram_cookie_source_scheme_ = base::LinearHistogram::FactoryGet(
-      "Cookie.CookieSourceScheme", 1, COOKIE_SOURCE_LAST_ENTRY - 1,
-      COOKIE_SOURCE_LAST_ENTRY, base::Histogram::kUmaTargetedHistogramFlag);
-
-  // From UMA_HISTOGRAM_{CUSTOM_,}TIMES
-  histogram_time_blocked_on_load_ = base::Histogram::FactoryTimeGet(
-      "Cookie.TimeBlockedOnLoad", base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromMinutes(1), 50,
-      base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 void CookieMonster::DoCookieCallback(base::OnceClosure callback) {

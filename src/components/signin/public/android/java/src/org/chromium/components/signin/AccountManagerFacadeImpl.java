@@ -29,7 +29,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.components.signin.util.PatternMatcher;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -225,10 +224,9 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         new AsyncTask<Integer>() {
             @Override
             public @ChildAccountStatus.Status Integer doInBackground() {
-                if (mDelegate.hasFeatures(account, new String[] {FEATURE_IS_CHILD_ACCOUNT_KEY})) {
+                if (mDelegate.hasFeature(account, FEATURE_IS_CHILD_ACCOUNT_KEY)) {
                     return ChildAccountStatus.REGULAR_CHILD;
-                } else if (mDelegate.hasFeatures(
-                                   account, new String[] {FEATURE_IS_USM_ACCOUNT_KEY})) {
+                } else if (mDelegate.hasFeature(account, FEATURE_IS_USM_ACCOUNT_KEY)) {
                     return ChildAccountStatus.USM_CHILD;
                 } else {
                     return ChildAccountStatus.NOT_CHILD;

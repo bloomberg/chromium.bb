@@ -63,11 +63,11 @@ void AddSeparator(ui::MenuSeparatorType separator_type,
   (*menu_items)->items.push_back(std::move(menu_item));
 }
 
-void AddArcCommandItem(int command_id,
-                       const std::string& shortcut_id,
-                       const std::string& label,
-                       const gfx::ImageSkia& icon,
-                       apps::mojom::MenuItemsPtr* menu_items) {
+void AddShortcutCommandItem(int command_id,
+                            const std::string& shortcut_id,
+                            const std::string& label,
+                            const gfx::ImageSkia& icon,
+                            apps::mojom::MenuItemsPtr* menu_items) {
   apps::mojom::MenuItemPtr menu_item = apps::mojom::MenuItem::New();
   menu_item->type = apps::mojom::MenuItemType::kPublisherCommand;
   menu_item->command_id = command_id;
@@ -117,9 +117,10 @@ bool ShouldAddOpenItem(const std::string& app_id,
     return false;
   }
 
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
-  return proxy->InstanceRegistry().GetWindows(app_id).empty();
+  return apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->InstanceRegistry()
+      .GetWindows(app_id)
+      .empty();
 }
 
 bool ShouldAddCloseItem(const std::string& app_id,
@@ -129,9 +130,10 @@ bool ShouldAddCloseItem(const std::string& app_id,
     return false;
   }
 
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
-  return !proxy->InstanceRegistry().GetWindows(app_id).empty();
+  return !apps::AppServiceProxyFactory::GetForProfile(profile)
+              ->InstanceRegistry()
+              .GetWindows(app_id)
+              .empty();
 }
 
 void PopulateRadioItemFromMojoMenuItems(
@@ -190,10 +192,9 @@ bool PopulateNewItemFromMojoMenuItems(
   return true;
 }
 
-void PopulateItemFromMojoMenuItems(
-    apps::mojom::MenuItemPtr item,
-    ui::SimpleMenuModel* model,
-    arc::ArcAppShortcutItems* arc_shortcut_items) {
+void PopulateItemFromMojoMenuItems(apps::mojom::MenuItemPtr item,
+                                   ui::SimpleMenuModel* model,
+                                   apps::AppShortcutItems* arc_shortcut_items) {
   switch (item->type) {
     case apps::mojom::MenuItemType::kSeparator:
       model->AddSeparator(static_cast<ui::MenuSeparatorType>(item->command_id));
@@ -201,7 +202,7 @@ void PopulateItemFromMojoMenuItems(
     case apps::mojom::MenuItemType::kPublisherCommand: {
       model->AddItemWithIcon(item->command_id, base::UTF8ToUTF16(item->label),
                              ui::ImageModel::FromImageSkia(item->image));
-      arc::ArcAppShortcutItem arc_shortcut_item;
+      apps::AppShortcutItem arc_shortcut_item;
       arc_shortcut_item.shortcut_id = item->shortcut_id;
       arc_shortcut_items->push_back(arc_shortcut_item);
       break;

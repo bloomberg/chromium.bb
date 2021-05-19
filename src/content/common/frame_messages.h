@@ -37,7 +37,6 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/context_menu_data/untrustworthy_context_menu_params.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/frame_visual_properties.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
@@ -45,12 +44,10 @@
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
-#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-shared.h"
-#include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
@@ -58,6 +55,9 @@
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "third_party/blink/public/mojom/permissions_policy/document_policy_feature.mojom.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
+#include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
@@ -75,15 +75,14 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-#define IPC_MESSAGE_START FrameMsgStart
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ScrollbarMode,
                           blink::mojom::ScrollbarMode::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
                           content::STOP_FIND_ACTION_LAST)
 IPC_ENUM_TRAITS(network::mojom::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyFeature,
-                          blink::mojom::FeaturePolicyFeature::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PermissionsPolicyFeature,
+                          blink::mojom::PermissionsPolicyFeature::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::DocumentPolicyFeature,
                           blink::mojom::DocumentPolicyFeature::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::UserActivationUpdateType,
@@ -94,12 +93,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
                           blink::mojom::FrameVisibility::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::WebFeature,
                           blink::mojom::WebFeature::kMaxValue)
-
-IPC_STRUCT_TRAITS_BEGIN(blink::NavigationDownloadPolicy)
-  IPC_STRUCT_TRAITS_MEMBER(observed_types)
-  IPC_STRUCT_TRAITS_MEMBER(disallowed_types)
-  IPC_STRUCT_TRAITS_MEMBER(blocking_downloads_in_sandbox_enabled)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::Impression)
   IPC_STRUCT_TRAITS_MEMBER(conversion_destination)
@@ -128,7 +121,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::ScreenInfo)
   IPC_STRUCT_TRAITS_MEMBER(orientation_angle)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(blink::ParsedFeaturePolicyDeclaration)
+IPC_STRUCT_TRAITS_BEGIN(blink::ParsedPermissionsPolicyDeclaration)
   IPC_STRUCT_TRAITS_MEMBER(feature)
   IPC_STRUCT_TRAITS_MEMBER(allowed_origins)
   IPC_STRUCT_TRAITS_MEMBER(matches_all_origins)

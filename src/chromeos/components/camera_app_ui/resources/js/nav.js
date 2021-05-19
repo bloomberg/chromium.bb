@@ -35,8 +35,6 @@ let topmostIndex = -1;
 export function setup(views) {
   allViews = views;
   // Manage all tabindex usages in for navigation.
-  dom.getAll('[tabindex]', HTMLElement)
-      .forEach((element) => util.makeUnfocusableByMouse(element));
   document.body.addEventListener('keydown', (event) => {
     const e = assertInstanceof(event, KeyboardEvent);
     if (e.key === 'Tab') {
@@ -56,6 +54,10 @@ function activate(index) {
   const view = allViews[index];
   view.root.setAttribute('aria-hidden', 'false');
   dom.getAllFrom(view.root, '[tabindex]', HTMLElement).forEach((element) => {
+    if (element.dataset['tabindex'] === undefined) {
+      // First activation, no need to restore tabindex from data-tabindex.
+      return;
+    }
     element.setAttribute('tabindex', element.dataset['tabindex']);
     element.removeAttribute('data-tabindex');
   });
@@ -221,10 +223,11 @@ export function onKeyPressed(event) {
 }
 
 /**
- * Handles resized window on current all visible views.
+ * Handles when the window state or size changed.
  */
-export function onWindowResized() {
-  // All visible views need being relayout after window is resized.
+export function onWindowStatusChanged() {
+  // All visible views need being relayout after window is resized or state
+  // changed.
   for (let i = allViews.length - 1; i >= 0; i--) {
     if (isShown(i)) {
       allViews[i].layout();

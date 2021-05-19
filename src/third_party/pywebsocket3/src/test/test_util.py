@@ -45,7 +45,7 @@ from six.moves import range
 from six import PY3
 from six import int2byte
 
-_TEST_DATA_DIR = os.path.join(os.path.split(__file__)[0], 'testdata')
+_TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'testdata')
 
 
 class UtilTest(unittest.TestCase):

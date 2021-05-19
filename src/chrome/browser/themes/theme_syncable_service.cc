@@ -45,12 +45,14 @@ ThemeSyncableService::ThemeSyncableService(Profile* profile,
       theme_service_(theme_service),
       use_system_theme_by_default_(false) {
   DCHECK(theme_service_);
+  theme_service_->AddObserver(this);
 }
 
 ThemeSyncableService::~ThemeSyncableService() {
+  theme_service_->RemoveObserver(this);
 }
 
-void ThemeSyncableService::OnThemeChange() {
+void ThemeSyncableService::OnThemeChanged() {
   if (sync_processor_.get()) {
     sync_pb::ThemeSpecifics current_specifics;
     if (!GetThemeSpecificsFromCurrentTheme(&current_specifics))
@@ -309,6 +311,10 @@ bool ThemeSyncableService::GetThemeSpecificsFromCurrentTheme(
     DVLOG(1) << "Ignoring non-syncable extension: " << current_extension->id();
     return false;
   }
+
+  // If theme was set through policy, it should be unsyncable.
+  if (theme_service_->UsingPolicyTheme())
+    return false;
 
   theme_specifics->Clear();
   theme_specifics->set_use_custom_theme(false);

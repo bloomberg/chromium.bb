@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <ostream>
 #include <utility>
 
@@ -27,7 +28,7 @@ GURL::GURL(const GURL& other)
       is_valid_(other.is_valid_),
       parsed_(other.parsed_) {
   if (other.inner_url_)
-    inner_url_.reset(new GURL(*other.inner_url_));
+    inner_url_ = std::make_unique<GURL>(*other.inner_url_);
   // Valid filesystem urls should always have an inner_url_.
   DCHECK(!is_valid_ || !SchemeIsFileSystem() || inner_url_);
 }
@@ -68,8 +69,8 @@ GURL::GURL(std::string canonical_spec, const url::Parsed& parsed, bool is_valid)
   InitializeFromCanonicalSpec();
 }
 
-template<typename STR>
-void GURL::InitCanonical(base::BasicStringPiece<STR> input_spec,
+template <typename CharT>
+void GURL::InitCanonical(base::BasicStringPiece<CharT> input_spec,
                          bool trim_path_end) {
   url::StdStringCanonOutput output(&spec_);
   is_valid_ = url::Canonicalize(
@@ -78,8 +79,8 @@ void GURL::InitCanonical(base::BasicStringPiece<STR> input_spec,
 
   output.Complete();  // Must be done before using string.
   if (is_valid_ && SchemeIsFileSystem()) {
-    inner_url_.reset(new GURL(spec_.data(), parsed_.Length(),
-                              *parsed_.inner_parsed(), true));
+    inner_url_ = std::make_unique<GURL>(spec_.data(), parsed_.Length(),
+                                        *parsed_.inner_parsed(), true);
   }
   // Valid URLs always have non-empty specs.
   DCHECK(!is_valid_ || !spec_.empty());
@@ -87,9 +88,8 @@ void GURL::InitCanonical(base::BasicStringPiece<STR> input_spec,
 
 void GURL::InitializeFromCanonicalSpec() {
   if (is_valid_ && SchemeIsFileSystem()) {
-    inner_url_.reset(
-        new GURL(spec_.data(), parsed_.Length(),
-                 *parsed_.inner_parsed(), true));
+    inner_url_ = std::make_unique<GURL>(spec_.data(), parsed_.Length(),
+                                        *parsed_.inner_parsed(), true);
   }
 
 #ifndef NDEBUG
@@ -139,7 +139,7 @@ GURL& GURL::operator=(const GURL& other) {
   else if (inner_url_)
     *inner_url_ = *other.inner_url_;
   else
-    inner_url_.reset(new GURL(*other.inner_url_));
+    inner_url_ = std::make_unique<GURL>(*other.inner_url_);
 
   return *this;
 }
@@ -190,9 +190,9 @@ GURL GURL::Resolve(base::StringPiece relative) const {
   output.Complete();
   result.is_valid_ = true;
   if (result.SchemeIsFileSystem()) {
-    result.inner_url_.reset(
-        new GURL(result.spec_.data(), result.parsed_.Length(),
-                 *result.parsed_.inner_parsed(), true));
+    result.inner_url_ =
+        std::make_unique<GURL>(result.spec_.data(), result.parsed_.Length(),
+                               *result.parsed_.inner_parsed(), true);
   }
   return result;
 }
@@ -216,9 +216,9 @@ GURL GURL::Resolve(base::StringPiece16 relative) const {
   output.Complete();
   result.is_valid_ = true;
   if (result.SchemeIsFileSystem()) {
-    result.inner_url_.reset(
-        new GURL(result.spec_.data(), result.parsed_.Length(),
-                 *result.parsed_.inner_parsed(), true));
+    result.inner_url_ =
+        std::make_unique<GURL>(result.spec_.data(), result.parsed_.Length(),
+                               *result.parsed_.inner_parsed(), true);
   }
   return result;
 }
@@ -239,16 +239,16 @@ GURL GURL::ReplaceComponents(
 
   output.Complete();
   if (result.is_valid_ && result.SchemeIsFileSystem()) {
-    result.inner_url_.reset(new GURL(result.spec_.data(),
-                                     result.parsed_.Length(),
-                                     *result.parsed_.inner_parsed(), true));
+    result.inner_url_ =
+        std::make_unique<GURL>(result.spec_.data(), result.parsed_.Length(),
+                               *result.parsed_.inner_parsed(), true);
   }
   return result;
 }
 
 // Note: code duplicated above (it's inconvenient to use a template here).
 GURL GURL::ReplaceComponents(
-    const url::Replacements<base::char16>& replacements) const {
+    const url::Replacements<char16_t>& replacements) const {
   GURL result;
 
   // Not allowed for invalid URLs.
@@ -262,9 +262,9 @@ GURL GURL::ReplaceComponents(
 
   output.Complete();
   if (result.is_valid_ && result.SchemeIsFileSystem()) {
-    result.inner_url_.reset(new GURL(result.spec_.data(),
-                                     result.parsed_.Length(),
-                                     *result.parsed_.inner_parsed(), true));
+    result.inner_url_ =
+        std::make_unique<GURL>(result.spec_.data(), result.parsed_.Length(),
+                               *result.parsed_.inner_parsed(), true);
   }
   return result;
 }

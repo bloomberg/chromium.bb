@@ -17,6 +17,7 @@
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
+#include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/consent_level.h"
@@ -27,6 +28,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
+#include "base/containers/flat_map.h"
+#include "base/time/time.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -145,6 +148,10 @@ class IdentityManager : public KeyedService,
 
     // Called after removing an account info.
     virtual void OnExtendedAccountInfoRemoved(const AccountInfo& info) {}
+
+    // Called on Shutdown(), for observers that aren't KeyedServices to remove
+    // their observers.
+    virtual void OnIdentityManagerShutdown(IdentityManager* identity_manager) {}
   };
 
   // Methods to register or remove observers.
@@ -346,10 +353,6 @@ class IdentityManager : public KeyedService,
     virtual void OnRefreshTokenRemovedForAccountFromSource(
         const CoreAccountId& account_id,
         const std::string& source) {}
-
-    // Called on Shutdown(), for observers that aren't KeyedServices to remove
-    // their observers.
-    virtual void OnIdentityManagerShutdown() {}
   };
 
   void AddDiagnosticsObserver(DiagnosticsObserver* observer);
@@ -377,6 +380,9 @@ class IdentityManager : public KeyedService,
     std::unique_ptr<DiagnosticsProvider> diagnostics_provider;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     ash::AccountManager* ash_account_manager = nullptr;
+#endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    SigninClient* signin_client = nullptr;
 #endif
 
     bool allow_access_token_fetch = true;
@@ -662,6 +668,9 @@ class IdentityManager : public KeyedService,
   std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
   std::unique_ptr<PrimaryAccountManager> primary_account_manager_;
   std::unique_ptr<AccountFetcherService> account_fetcher_service_;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  SigninClient* const signin_client_;
+#endif
 
   IdentityMutator identity_mutator_;
 
@@ -685,6 +694,11 @@ class IdentityManager : public KeyedService,
 #if defined(OS_ANDROID)
   // Java-side IdentityManager object.
   base::android::ScopedJavaGlobalRef<jobject> java_identity_manager_;
+
+  // CoreAccountId and the corresponding fetch start time, this is only
+  // used to record account information fetch duration.
+  base::flat_map<CoreAccountId, base::TimeTicks>
+      account_info_fetch_start_times_;
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

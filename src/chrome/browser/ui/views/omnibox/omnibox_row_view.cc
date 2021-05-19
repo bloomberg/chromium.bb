@@ -82,7 +82,7 @@ class OmniboxRowView::HeaderView : public views::View {
     }
   }
 
-  void SetHeader(int suggestion_group_id, const base::string16& header_text) {
+  void SetHeader(int suggestion_group_id, const std::u16string& header_text) {
     suggestion_group_id_ = suggestion_group_id;
     header_text_ = header_text;
 
@@ -243,7 +243,7 @@ class OmniboxRowView::HeaderView : public views::View {
   int suggestion_group_id_ = 0;
 
   // The unmodified header text for this header.
-  base::string16 header_text_;
+  std::u16string header_text_;
 
   // Stores whether or not the group was hidden. This is used to fire correct
   // accessibility change events.
@@ -259,46 +259,42 @@ class OmniboxRowView::HeaderView : public views::View {
 
 DEFINE_ENUM_CONVERTERS(OmniboxPopupModel::LineState,
                        {OmniboxPopupModel::FOCUSED_BUTTON_HEADER,
-                        base::ASCIIToUTF16("FOCUSED_BUTTON_HEADER")},
-                       {OmniboxPopupModel::NORMAL,
-                        base::ASCIIToUTF16("NORMAL")},
-                       {OmniboxPopupModel::KEYWORD_MODE,
-                        base::ASCIIToUTF16("KEYWORD_MODE")},
+                        u"FOCUSED_BUTTON_HEADER"},
+                       {OmniboxPopupModel::NORMAL, u"NORMAL"},
+                       {OmniboxPopupModel::KEYWORD_MODE, u"KEYWORD_MODE"},
                        {OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH,
-                        base::ASCIIToUTF16("FOCUSED_BUTTON_TAB_SWITCH")},
+                        u"FOCUSED_BUTTON_TAB_SWITCH"},
                        {OmniboxPopupModel::FOCUSED_BUTTON_PEDAL,
-                        base::ASCIIToUTF16("FOCUSED_BUTTON_PEDAL")},
+                        u"FOCUSED_BUTTON_PEDAL"},
                        {OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION,
-                        base::ASCIIToUTF16("FOCUSED_BUTTON_REMOVE_SUGGESTION")})
+                        u"FOCUSED_BUTTON_REMOVE_SUGGESTION"})
 
 template <>
 struct views::metadata::TypeConverter<OmniboxPopupModel::Selection>
     : public views::metadata::BaseTypeConverter<true> {
-  static base::string16 ToString(
+  static std::u16string ToString(
       views::metadata::ArgType<OmniboxPopupModel::Selection> source_value);
   static base::Optional<OmniboxPopupModel::Selection> FromString(
-      const base::string16& source_value);
+      const std::u16string& source_value);
   static views::metadata::ValidStrings GetValidStrings() { return {}; }
 };
 
 // static
-base::string16
+std::u16string
 views::metadata::TypeConverter<OmniboxPopupModel::Selection>::ToString(
     views::metadata::ArgType<OmniboxPopupModel::Selection> source_value) {
-  return STRING16_LITERAL("{") + base::NumberToString16(source_value.line) +
-         STRING16_LITERAL(",") +
+  return u"{" + base::NumberToString16(source_value.line) + u"," +
          TypeConverter<OmniboxPopupModel::LineState>::ToString(
              source_value.state) +
-         STRING16_LITERAL("}");
+         u"}";
 }
 
 // static
 base::Optional<OmniboxPopupModel::Selection>
 views::metadata::TypeConverter<OmniboxPopupModel::Selection>::FromString(
-    const base::string16& source_value) {
-  const auto values =
-      base::SplitString(source_value, base::ASCIIToUTF16("{,}"),
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    const std::u16string& source_value) {
+  const auto values = base::SplitString(
+      source_value, u"{,}", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (values.size() != 2)
     return base::nullopt;
   // TODO(pkasting): This should be size_t, but for some reason that won't link
@@ -331,7 +327,7 @@ OmniboxRowView::OmniboxRowView(size_t line,
 }
 
 void OmniboxRowView::ShowHeader(int suggestion_group_id,
-                                const base::string16& header_text) {
+                                const std::u16string& header_text) {
   // Create the header (at index 0) if it doesn't exist.
   if (header_view_ == nullptr)
     header_view_ = AddChildViewAt(std::make_unique<HeaderView>(this), 0);

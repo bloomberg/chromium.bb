@@ -181,7 +181,9 @@ function waitForScrollEnd(eventTarget, getValue, targetValue) {
       if (getValue() == targetValue) {
         clearTimeout(timeout);
         eventTarget.removeEventListener('scroll', scrollListener);
-        resolve();
+        // Wait for a commit to allow the scroll to propagate through the
+        // compositor before resolving.
+        return waitForCompositorCommit().then(() => { resolve(); });
       }
     };
     if (getValue() == targetValue)
@@ -254,6 +256,9 @@ const Buttons = (function() {
 // the synthetic gesture code modified to guarantee the single update behavior.
 // https://crbug.com/893608
 const SPEED_INSTANT = 400000;
+
+// Constant wheel delta value when percent based scrolling is enabled
+const WHEEL_DELTA = 100;
 
 // This will be replaced by smoothScrollWithXY.
 function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type,

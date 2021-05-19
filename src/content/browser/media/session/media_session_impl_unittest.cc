@@ -54,8 +54,9 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
     return AudioFocusType::kGain;
   }
 
-  void MediaSessionInfoChanged(MediaSessionInfoPtr session_info) override {
-    session_info_ = std::move(session_info);
+  void MediaSessionInfoChanged(
+      const MediaSessionInfoPtr& session_info) override {
+    session_info_ = session_info.Clone();
   }
 
   MOCK_CONST_METHOD0(request_id, const base::UnguessableToken&());
@@ -83,6 +84,8 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
     default_actions_.insert(media_session::mojom::MediaSessionAction::kPlay);
     default_actions_.insert(media_session::mojom::MediaSessionAction::kPause);
     default_actions_.insert(media_session::mojom::MediaSessionAction::kStop);
+    default_actions_.insert(media_session::mojom::MediaSessionAction::kSeekTo);
+    default_actions_.insert(media_session::mojom::MediaSessionAction::kScrubTo);
   }
 
   void SetUp() override {
@@ -93,9 +96,11 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
 
     RenderViewHostTestHarness::SetUp();
 
-    player_observer_.reset(new MockMediaSessionPlayerObserver(main_rfh()));
-    mock_media_session_service_.reset(
-        new testing::NiceMock<MockMediaSessionServiceImpl>(main_rfh()));
+    player_observer_ =
+        std::make_unique<MockMediaSessionPlayerObserver>(main_rfh());
+    mock_media_session_service_ =
+        std::make_unique<testing::NiceMock<MockMediaSessionServiceImpl>>(
+            main_rfh());
 
     // Connect to the Media Session service and bind |audio_focus_remote_| to
     // it.

@@ -14,10 +14,9 @@
 
 #include "src/ast/continue_statement.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::ContinueStatement);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::ContinueStatement);
 
 namespace tint {
 namespace ast {
@@ -32,10 +31,6 @@ ContinueStatement* ContinueStatement::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
   auto src = ctx->Clone(source());
   return ctx->dst->create<ContinueStatement>(src);
-}
-
-bool ContinueStatement::IsValid() const {
-  return true;
 }
 
 void ContinueStatement::to_str(const semantic::Info&,

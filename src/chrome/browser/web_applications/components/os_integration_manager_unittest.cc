@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,7 +61,7 @@ class MockOsIntegrationManager : public OsIntegrationManager {
               (const AppId& app_id,
                const std::vector<WebApplicationShortcutsMenuItemInfo>&
                    shortcuts_menu_item_infos,
-               const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps,
+               const ShortcutsMenuIconBitmaps& shortcuts_menu_icon_bitmaps,
                base::OnceCallback<void(bool success)> callback),
               (override));
 
@@ -92,7 +94,7 @@ class MockOsIntegrationManager : public OsIntegrationManager {
               UnregisterRunOnOsLogin,
               (const AppId& app_id,
                const base::FilePath& profile_path,
-               const base::string16& shortcut_title,
+               const std::u16string& shortcut_title,
                UnregisterRunOnOsLoginCallback callback),
               (override));
   MOCK_METHOD(void,
@@ -102,7 +104,12 @@ class MockOsIntegrationManager : public OsIntegrationManager {
                std::unique_ptr<ShortcutInfo> shortcut_info,
                DeleteShortcutsCallback callback),
               (override));
-  MOCK_METHOD(void, UnregisterFileHandlers, (const AppId& app_id), (override));
+  MOCK_METHOD(void,
+              UnregisterFileHandlers,
+              (const AppId& app_id,
+               std::unique_ptr<ShortcutInfo> info,
+               base::OnceCallback<void()> callback),
+              (override));
   MOCK_METHOD(void,
               UnregisterProtocolHandlers,
               (const AppId& app_id),
@@ -114,8 +121,23 @@ class MockOsIntegrationManager : public OsIntegrationManager {
               (override));
 
   // Update:
-  // TODO(crbug/1072058): Add test case that runs UpdateOsHooks.
-  MOCK_METHOD(void, UpdateUrlHandlers, (const AppId& app_id), (override));
+  MOCK_METHOD(void,
+              UpdateFileHandlers,
+              (const AppId& app_id, std::unique_ptr<ShortcutInfo> info),
+              (override));
+  MOCK_METHOD(void,
+              UpdateShortcuts,
+              (const AppId& app_id, base::StringPiece old_name),
+              (override));
+  MOCK_METHOD(void,
+              UpdateShortcutsMenu,
+              (const AppId& app_id, const WebApplicationInfo& web_app_info),
+              (override));
+  MOCK_METHOD(void,
+              UpdateUrlHandlers,
+              (const AppId& app_id,
+               base::OnceCallback<void(bool success)> callback),
+              (override));
 
   // Utility methods:
   MOCK_METHOD(std::unique_ptr<ShortcutInfo>,
@@ -133,20 +155,23 @@ const base::FilePath::CharType kFakeProfilePath[] =
 #endif  // defined(OS_WIN)
 
 const char kFakeAppUrl[] = "https://fake.com";
+const std::u16string kFakeAppTitle(u"fake title");
 
-std::unique_ptr<ShortcutInfo> CreateTestShorcutInfo(
-    const web_app::AppId& app_id) {
+std::unique_ptr<ShortcutInfo> CreateTestShorcutInfo(const AppId& app_id) {
   auto shortcut_info = std::make_unique<ShortcutInfo>();
   shortcut_info->profile_path = base::FilePath(kFakeProfilePath);
   shortcut_info->extension_id = app_id;
   shortcut_info->url = GURL(kFakeAppUrl);
+  shortcut_info->title = kFakeAppTitle;
   return shortcut_info;
 }
 
 class OsIntegrationManagerTest : public testing::Test {
  public:
   OsIntegrationManagerTest() {
-    features_.InitAndEnableFeature(blink::features::kWebAppEnableUrlHandlers);
+    features_.InitWithFeatures({blink::features::kWebAppEnableUrlHandlers,
+                                ::features::kDesktopPWAsRunOnOsLogin},
+                               {});
   }
 
   ~OsIntegrationManagerTest() override = default;
@@ -206,6 +231,7 @@ TEST_F(OsIntegrationManagerTest, InstallOsHooksEverything) {
   EXPECT_CALL(manager, ReadAllShortcutsMenuIconsAndRegisterShortcutsMenu(
                            app_id, testing::_))
       .WillOnce(base::test::RunOnceCallback<1>(true));
+  EXPECT_CALL(manager, RegisterRunOnOsLogin(app_id, testing::_)).Times(1);
 
   InstallOsHooksOptions options;
   options.add_to_desktop = true;
@@ -250,12 +276,17 @@ TEST_F(OsIntegrationManagerTest, UninstallOsHooksEverything) {
   EXPECT_CALL(manager, DeleteShortcuts(app_id, kExpectedShortcutPath,
                                        testing::_, testing::_))
       .WillOnce(base::test::RunOnceCallback<3>(true));
-  EXPECT_CALL(manager, UnregisterFileHandlers(app_id)).Times(1);
+  EXPECT_CALL(manager, UnregisterFileHandlers(app_id, testing::_, testing::_))
+      .Times(1);
   EXPECT_CALL(manager, UnregisterProtocolHandlers(app_id)).Times(1);
   EXPECT_CALL(manager, UnregisterUrlHandlers(app_id)).Times(1);
   EXPECT_CALL(manager, UnregisterWebAppOsUninstallation(app_id)).Times(1);
   EXPECT_CALL(manager, UnregisterShortcutsMenu(app_id))
       .WillOnce(testing::Return(true));
+  EXPECT_CALL(manager,
+              UnregisterRunOnOsLogin(app_id, base::FilePath(kFakeProfilePath),
+                                     kFakeAppTitle, testing::_))
+      .Times(1);
 
   manager.UninstallAllOsHooks(app_id, std::move(callback));
   run_loop.Run();
@@ -266,6 +297,21 @@ TEST_F(OsIntegrationManagerTest, UninstallOsHooksEverything) {
   EXPECT_TRUE(uninstall_results[OsHookType::kRunOnOsLogin]);
   EXPECT_TRUE(uninstall_results[OsHookType::kShortcutsMenu]);
   EXPECT_TRUE(uninstall_results[OsHookType::kUninstallationViaOsSettings]);
+}
+
+TEST_F(OsIntegrationManagerTest, UpdateOsHooksEverything) {
+  const AppId app_id = "test";
+  testing::StrictMock<MockOsIntegrationManager> manager;
+
+  WebApplicationInfo web_app_info;
+  base::StringPiece old_name = "test-name";
+
+  EXPECT_CALL(manager, UpdateFileHandlers(app_id, testing::_)).Times(1);
+  EXPECT_CALL(manager, UpdateShortcuts(app_id, old_name)).Times(1);
+  EXPECT_CALL(manager, UpdateShortcutsMenu(app_id, testing::_)).Times(1);
+  EXPECT_CALL(manager, UpdateUrlHandlers(app_id, testing::_)).Times(1);
+
+  manager.UpdateOsHooks(app_id, old_name, nullptr, true, web_app_info);
 }
 
 }  // namespace

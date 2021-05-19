@@ -40,6 +40,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1252999807265626933">Po karikohet nga <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Si është moti?</translation>
 <translation id="1267032506238418139">Ndryshim në shkurtore</translation>
+<translation id="1269405891096105529">Pajisja periferike nuk mbështetet në modalitetin "vizitor"</translation>
 <translation id="1270290102613614947">Tastiera në ekran u çaktivizua</translation>
 <translation id="1272079795634619415">Ndalo</translation>
 <translation id="1275285675049378717">Po furnizon me energji <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2012624427112548395">Ctrl+Kërko+H</translation>
 <translation id="2016340657076538683">Shkruaj një mesazh</translation>
 <translation id="2018630726571919839">Më trego një barsoletë</translation>
+<translation id="2021864487439853900">Kliko për ta shkyçur</translation>
 <translation id="2049240716062114887">Emri i tryezës u ndryshua në "<ph name="DESK_NAME" />"</translation>
 <translation id="2050339315714019657">Portret (vertikal</translation>
 <translation id="2067602449040652523">Ndriçimi i tastierës</translation>
@@ -177,7 +179,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2408955596600435184">Fut kodin PIN</translation>
 <translation id="2412593942846481727">Ka përditësim</translation>
 <translation id="2427507373259914951">Klikimi me butonin majtas</translation>
-<translation id="2429753432712299108">Pajisja me Bluetooth, "<ph name="DEVICE_NAME" />" kërkon leje për çiftim. Përpara se të pranosh, konfirmo që ky kod shfaqet në atë pajisje: <ph name="PASSKEY" /></translation>
+<translation id="2429753432712299108">Pajisja me Bluetooth, "<ph name="DEVICE_NAME" />" kërkon leje për çiftim. Përpara se të pranosh, konfirmo që ky çelës kalimi shfaqet në atë pajisje: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Shfaq fjalëkalimin</translation>
 <translation id="2450205753526923158">Modaliteti i pamjes së ekranit</translation>
 <translation id="2473177541599297363">Konfirmo rezolucionin</translation>
@@ -276,6 +278,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> mund të identifikohet përsëri më vonë.</translation>
 <translation id="3321628682574733415">Kod i gabuar prindi</translation>
 <translation id="332587331255250389">Zëvendëso baterinë</translation>
+<translation id="3333741161915951567">Modemi po rindizet. Prit 30 sekonda para se ta provosh përsëri.</translation>
 <translation id="3341303451326249809">Pamja e ekranit u regjistrua</translation>
 <translation id="334252345105450327">Nxirr një pamje të ekranit</translation>
 <translation id="3351879221545518001">Aktualisht po transmeton ekranin.</translation>
@@ -320,6 +323,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="366222428570480733">Përdorues i menaxhuar (<ph name="USER_EMAIL_ADDRESS" />)</translation>
 <translation id="3665889125180354336">Regjistro me mikrofonin</translation>
 <translation id="36813544980941320">Rrjetet Wi-Fi do të ndahen mes telefonit tënd dhe <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Po shfaqen dritaret nga tavolina aktuale e punës. Shtyp tastin "Shigjeta lart" për të shfaqur dritaret nga të gjitha tavolinat e punës</translation>
 <translation id="3702846122927433391">Popullsia në Nigeri</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Po ngarkon...</translation>
@@ -351,6 +355,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="394485226368336402">Cilësimet e audios</translation>
 <translation id="3945319193631853098">Trokit për të përfunduar konfigurimin</translation>
 <translation id="3945867833895287237">Po lidhet me zonën e qasjes për internet...</translation>
+<translation id="3958465044488004317">Shiko rezultatet te "Asistenti"</translation>
 <translation id="3962859241508114581">Kënga e mëparshme</translation>
 <translation id="3969043077941541451">Joaktive</translation>
 <translation id="397105322502079400">Po llogarit...</translation>
@@ -407,10 +412,12 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="4421231901400348175">Po ndan kontrollin e ekranit me <ph name="HELPER_NAME" /> përmes "Ndihmës në distancë".</translation>
 <translation id="4424159417645388645">Tavolina e punës 5</translation>
 <translation id="4430019312045809116">Volumi</translation>
+<translation id="4445159312344259901">Identifikohu për ta shkyçur</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 njoftim i rëndësishëm}other{# njoftime të rëndësishme}}</translation>
 <translation id="4450893287417543264">Mos e shfaq përsëri</translation>
 <translation id="445864333228800152">Mirëmbrëma,</translation>
 <translation id="4458688154122353284">Ndalo regjistrimin e ekranit</translation>
+<translation id="4467143075433126295">Shtyp dhe mbaj shtypur [Esc] për të dalë nga ekrani i plotë</translation>
 <translation id="4472575034687746823">Fillo</translation>
 <translation id="4477350412780666475">Kënga tjetër</translation>
 <translation id="4477892968187500306">Kjo pajisje mund të përmbajë aplikacione që nuk janë verifikuar nga Google.</translation>
@@ -607,6 +614,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">"Asistenti i Google" nuk ofrohet në një sesion për vizitorët.</translation>
 <translation id="6137566720514957455">Hap dialogun e heqjes për <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Pajisja periferike nuk mbështetet</translation>
 <translation id="615957422585914272">Shfaq tastierën në ekran</translation>
 <translation id="6165508094623778733">Mëso më shumë</translation>
 <translation id="6179832488876878285">Mund t'i gozhdosh skedarët e tu të rëndësishëm këtu. Hap aplikacionin "Skedarët" për të filluar.</translation>
@@ -624,11 +632,11 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="6297287540776456956">Përdor stilolapsin për të zgjedhur një sektorin</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> u rrotullua në <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Voice</translation>
+<translation id="6330012934079202188">Po shfaqen dritaret nga të gjitha tavolinat e punës. Shtyp tastin "Shigjeta lart" për të shfaqur dritaret nga tavolina aktuale e punës</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> është sesion i menaxhuar që menaxhohet nga <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth-i është aktiv</translation>
 <translation id="6381109794406942707">Për të shkyçur pajisjen, fut kodin PIN.</translation>
 <translation id="639644700271529076">KYÇJA E KAPITALEVE është joaktive</translation>
-<translation id="6396835948284782440">Shtyp dhe mbaj shtypur [Esc] për të dalë.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Pastro të gjitha njoftimet</translation>
@@ -794,7 +802,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="7780159184141939021">Rrotullo ekranin</translation>
 <translation id="7796353162336583443">Trokit te butoni i stilolapsit në raft për të mbajtur një shënim, për të nxjerrë një pamje të ekranit, për të përdorur "Asistentin e Google", treguesin me lazer ose xhamin zmadhues.</translation>
 <translation id="7798302898096527229">Shtyp "Kërko" ose "Shift" për të anuluar</translation>
-<translation id="7807966291075028781">Pajisja periferike nuk mbështetet në modalitetin "vizitor" për arsye sigurie</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> dhe <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinjal i fortë</translation>
 <translation id="7837740436429729974">Koha mbaroi</translation>
@@ -944,6 +951,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="8936501819958976551">çaktivizuar</translation>
 <translation id="8938800817013097409">Pajisja USB-C (porta djathtas, prapa)</translation>
 <translation id="8940956008527784070">Nivel i ulët baterie (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Vetëm pajisjet e miratuara Thunderbolt janë të përputhshme me pajisjen tënde Chromebook</translation>
 <translation id="8982906748181120328">Dukshmëria</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Po përdor <ph name="IME_NAME" /></translation>

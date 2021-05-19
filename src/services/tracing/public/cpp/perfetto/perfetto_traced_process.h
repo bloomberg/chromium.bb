@@ -10,13 +10,20 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
+#include "base/tracing/perfetto_task_runner.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_tracing_backend.h"
-#include "services/tracing/public/cpp/perfetto/task_runner.h"
+#include "services/tracing/public/mojom/perfetto_service.mojom.h"
+#include "third_party/perfetto/include/perfetto/tracing/tracing.h"
+#include "third_party/perfetto/include/perfetto/tracing/tracing_policy.h"
 
 namespace base {
 namespace trace_event {
 class TraceConfig;
 }  // namespace trace_event
+namespace tracing {
+class PerfettoPlatform;
+}  // namespace tracing
 }  // namespace base
 
 namespace tracing {
@@ -24,7 +31,6 @@ namespace mojom {
 class TracingService;
 }  // namespace mojom
 
-class PerfettoPlatform;
 class PerfettoProducer;
 class ProducerClient;
 class SystemProducer;
@@ -41,7 +47,8 @@ class SystemProducer;
 // * Construct the new implementation when requested to
 //   in PerfettoProducer::StartDataSource.
 class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
-    : public PerfettoTracingBackend::Delegate {
+    : public PerfettoTracingBackend::Delegate,
+      public perfetto::TracingPolicy {
  public:
   // If not noted otherwise, a DataSourceBase's methods are only called on
   // PerfettoTracedProcess::GetTaskRunner()'s sequence.
@@ -50,18 +57,16 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
     explicit DataSourceBase(const std::string& name);
     virtual ~DataSourceBase();
 
-    void StartTracingWithID(
-        uint64_t data_source_id,
-        PerfettoProducer* producer,
-        const perfetto::DataSourceConfig& data_source_config);
+    void StartTracing(uint64_t data_source_id,
+                      PerfettoProducer* producer,
+                      const perfetto::DataSourceConfig& data_source_config);
+    void StopTracing(
+        base::OnceClosure stop_complete_callback = base::OnceClosure());
 
-    virtual void StartTracing(
+    virtual void StartTracingImpl(
         PerfettoProducer* producer,
         const perfetto::DataSourceConfig& data_source_config) = 0;
-    // StopTracing must set |producer_| to nullptr before invoking the callback.
-    // TODO(nuskos): Refactor this so that the implementation doesn't have to
-    // remember to do this.
-    virtual void StopTracing(
+    virtual void StopTracingImpl(
         base::OnceClosure stop_complete_callback = base::OnceClosure()) = 0;
 
     // Flush the data source.
@@ -86,15 +91,29 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
     virtual void AbortStartupTracing() {}
 
     const std::string& name() const { return name_; }
-    uint64_t data_source_id() const { return data_source_id_; }
-    const PerfettoProducer* producer() const { return producer_; }
+
+    // These accessors are only allowed on the perfetto sequence.
+    uint64_t data_source_id() const {
+      DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
+      return data_source_id_;
+    }
+    const PerfettoProducer* producer() const {
+      DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
+      return producer_;
+    }
+
+    // In some tests we violate the assumption that only a single tracing
+    // session is alive. This allows tests to explicitly ignore the DCHECK in
+    // place to check this.
+    void ClearProducerForTesting() { producer_ = nullptr; }
 
    protected:
-    PerfettoProducer* producer_ = nullptr;
+    SEQUENCE_CHECKER(perfetto_sequence_checker_);
 
    private:
     uint64_t data_source_id_ = 0;
     std::string name_;
+    PerfettoProducer* producer_ = nullptr;
   };
 
   // Returns the process-wide instance of the PerfettoTracedProcess.
@@ -118,7 +137,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
 
   // Returns the task runner used by any Perfetto service. Can be called on any
   // thread.
-  static PerfettoTaskRunner* GetTaskRunner();
+  static base::tracing::PerfettoTaskRunner* GetTaskRunner();
 
   // Add a new data source to the PerfettoTracedProcess; the caller retains
   // ownership and is responsible for making sure the data source outlives the
@@ -136,12 +155,17 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
                            const base::trace_event::TraceConfig&,
                            bool privacy_filtering_enabled);
 
-  // Initialize the Perfetto client library (i.e., perfetto::Tracing) for this
-  // process. Should be called early during startup.
-  void SetupClientLibrary();
-
   // Called on the process's main thread once the thread pool is ready.
   void OnThreadPoolAvailable();
+
+  // Set a callback that returns whether a system tracing session is allowed.
+  // The callback will be executed on the sequence that set it. Only a single
+  // callback is supported. If no callback is set, all system consumer
+  // connections are denied.
+  void SetAllowSystemTracingConsumerCallback(base::RepeatingCallback<bool()>);
+
+  // Overrides SetAllowSystemTracingConsumerCallback() for testing.
+  void SetAllowSystemTracingConsumerForTesting(bool allow);
 
   // Called to initialize system tracing, i.e., connecting to a system Perfetto
   // daemon as a producer. If |system_socket| isn't provided, Perfetto's default
@@ -178,7 +202,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
   void ClearDataSourcesForTesting();
   static void DeleteSoonForTesting(std::unique_ptr<PerfettoTracedProcess>);
 
-  PerfettoPlatform* perfetto_platform_for_testing() const {
+  base::tracing::PerfettoPlatform* perfetto_platform_for_testing() const {
     return platform_.get();
   }
 
@@ -197,6 +221,26 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
  private:
   friend class base::NoDestructor<PerfettoTracedProcess>;
 
+  // Initialize the Perfetto client library (i.e., perfetto::Tracing) for this
+  // process.
+  void SetupClientLibrary();
+
+  // perfetto::TracingPolicy implementation:
+  void ShouldAllowConsumerSession(
+      const perfetto::TracingPolicy::ShouldAllowConsumerSessionArgs&) override;
+
+  void ShouldAllowSystemConsumerSession(
+      std::function<void(bool)> result_callback);
+
+  base::Lock allow_system_consumer_lock_;
+  base::RepeatingCallback<bool()> allow_system_consumer_callback_
+      GUARDED_BY(allow_system_consumer_lock_);
+  scoped_refptr<base::SequencedTaskRunner>
+      allow_system_consumer_callback_runner_
+          GUARDED_BY(allow_system_consumer_lock_);
+  bool system_consumer_enabled_for_testing_
+      GUARDED_BY(allow_system_consumer_lock_) = false;
+
   base::Lock data_sources_lock_;
   // The canonical set of DataSourceBases alive in this process. These will be
   // registered with the tracing service.
@@ -211,7 +255,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
   std::unique_ptr<SystemProducer> system_producer_;
 
   // Platform implementation for the Perfetto client library.
-  std::unique_ptr<PerfettoPlatform> platform_;
+  std::unique_ptr<base::tracing::PerfettoPlatform> platform_;
   std::unique_ptr<PerfettoTracingBackend> tracing_backend_;
 
   scoped_refptr<base::SequencedTaskRunner> consumer_connection_task_runner_;

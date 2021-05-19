@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -9,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -482,23 +483,18 @@ class NoStatePrefetchBrowserTest
 
 class NoStatePrefetchBrowserTestHttpCache
     : public NoStatePrefetchBrowserTest,
-      public testing::WithParamInterface<std::tuple<bool, bool>> {
+      public testing::WithParamInterface<bool> {
  protected:
   void SetUp() override {
-    bool split_cache_by_network_isolation_key;
-    bool append_frame_origin_to_network_isolation_key;
-    std::tie(split_cache_by_network_isolation_key,
-             append_frame_origin_to_network_isolation_key) = GetParam();
+    bool split_cache_by_network_isolation_key = GetParam();
+    if (split_cache_by_network_isolation_key) {
+      feature_list_.InitAndEnableFeature(
+          net::features::kSplitCacheByNetworkIsolationKey);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          net::features::kSplitCacheByNetworkIsolationKey);
+    }
 
-    std::vector<base::Feature> disabled_and_enabled_features[2];
-
-    disabled_and_enabled_features[split_cache_by_network_isolation_key]
-        .push_back(net::features::kSplitCacheByNetworkIsolationKey);
-    disabled_and_enabled_features[append_frame_origin_to_network_isolation_key]
-        .push_back(net::features::kAppendFrameOriginToNetworkIsolationKey);
-
-    feature_list_.InitWithFeatures(disabled_and_enabled_features[true],
-                                   disabled_and_enabled_features[false]);
     NoStatePrefetchBrowserTest::SetUp();
   }
 
@@ -509,16 +505,10 @@ class NoStatePrefetchBrowserTestHttpCache
 using NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin =
     NoStatePrefetchBrowserTestHttpCache;
 
-// Test that the network isolation key is correctly populated during a prefetch,
-// with feature kAppendFrameOriginToNetworkIsolationKey disabled and enabled
-// respectively.
+// Test that the network isolation key is correctly populated during a prefetch.
 IN_PROC_BROWSER_TEST_P(
     NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin,
     PrefetchTwoCrossOriginFrames) {
-  bool append_frame_origin_to_network_isolation_key;
-  std::tie(std::ignore, append_frame_origin_to_network_isolation_key) =
-      GetParam();
-
   GURL image_src =
       embedded_test_server()->GetURL("/prerender/cacheable_image.png");
   base::StringPairs replacement_text_img_src;
@@ -540,14 +530,13 @@ IN_PROC_BROWSER_TEST_P(
   ui_test_utils::NavigateToURL(current_browser(),
                                src_server()->GetURL(prerender_path));
 
-  WaitForRequestCount(image_src,
-                      append_frame_origin_to_network_isolation_key ? 2 : 1);
+  WaitForRequestCount(image_src, 2);
 }
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin,
-    ::testing::Combine(::testing::Values(true), ::testing::Bool()));
+    ::testing::Values(true));
 
 // Checks that a page is correctly prefetched in the case of a
 // <link rel=prerender> tag and the JavaScript on the page is not executed.
@@ -626,7 +615,7 @@ IN_PROC_BROWSER_TEST_P(
 INSTANTIATE_TEST_SUITE_P(
     All,
     NoStatePrefetchBrowserTestHttpCache_DefaultAndDoubleKeyedHttpCache,
-    ::testing::Combine(::testing::Bool(), ::testing::Values(false)));
+    ::testing::Bool());
 
 // Checks that the expected resource types are fetched via NoState Prefetch.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchAllResourceTypes) {
@@ -845,7 +834,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookie) {
       PrefetchFromURL(url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
 
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartitionForSite(
+      content::BrowserContext::GetStoragePartitionForUrl(
           current_browser()->profile(), url, false);
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
@@ -867,7 +856,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookieCrossDomain) {
   // While the request is cross-site, it's permitted to set (implicitly) lax
   // cookies on a cross-site navigation.
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartitionForSite(
+      content::BrowserContext::GetStoragePartitionForUrl(
           current_browser()->profile(), cross_domain_url, false);
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
@@ -1372,7 +1361,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
   EXPECT_TRUE(base::StatisticsRecorder::SetCallback(
       kPrefetchCanceledHistogram,
       base::BindRepeating(
-          [](const base::Closure& quit_closure, bool* called,
+          [](base::RepeatingClosure quit_closure, bool* called,
              const char* histogram_name, uint64_t name_hash,
              base::HistogramBase::Sample sample) {
             *called = true;
@@ -1452,7 +1441,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
 // will intercepts a prefetch request.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ServiceWorkerIntercept) {
   // Register and launch a SW.
-  base::string16 expected_title = base::ASCIIToUTF16("SW READY");
+  std::u16string expected_title = u"SW READY";
   content::TitleWatcher title_watcher(GetActiveWebContents(), expected_title);
   ui_test_utils::NavigateToURL(current_browser(),
                                src_server()->GetURL(kServiceWorkerLoader));
@@ -1768,9 +1757,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchOmniboxBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, OpenTaskManager) {
-  const base::string16 any_tab = MatchTaskManagerTab("*");
-  const base::string16 original = MatchTaskManagerTab("Prefetch Loader");
-  const base::string16 prefetch_page = MatchTaskManagerTab("Prefetch Page");
+  const std::u16string any_tab = MatchTaskManagerTab("*");
+  const std::u16string original = MatchTaskManagerTab("Prefetch Loader");
+  const std::u16string prefetch_page = MatchTaskManagerTab("Prefetch Page");
 
   // Show the task manager. This populates the model.
   chrome::OpenTaskManager(current_browser());

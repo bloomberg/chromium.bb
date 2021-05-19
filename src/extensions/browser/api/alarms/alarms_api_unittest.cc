@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/optional.h"
@@ -549,7 +551,7 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     std::unique_ptr<Alarm> alarm(new Alarm);
     alarm->js_alarm->name = "bb";
     alarm->js_alarm->scheduled_time = 30 * 60000;
-    alarm->js_alarm->period_in_minutes.reset(new double(30));
+    alarm->js_alarm->period_in_minutes = std::make_unique<double>(30);
     alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm));
     VerifyScheduledTime("a");
     RemoveAllAlarms();
@@ -559,7 +561,7 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     std::unique_ptr<Alarm> alarm(new Alarm);
     alarm->js_alarm->name = "bb";
     alarm->js_alarm->scheduled_time = 3 * 60000;
-    alarm->js_alarm->period_in_minutes.reset(new double(3));
+    alarm->js_alarm->period_in_minutes = std::make_unique<double>(3);
     alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm));
     base::RunLoop().Run();
     EXPECT_EQ(
@@ -574,12 +576,12 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     std::unique_ptr<Alarm> alarm2(new Alarm);
     alarm2->js_alarm->name = "bb";
     alarm2->js_alarm->scheduled_time = 4 * 60000;
-    alarm2->js_alarm->period_in_minutes.reset(new double(4));
+    alarm2->js_alarm->period_in_minutes = std::make_unique<double>(4);
     alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm2));
     std::unique_ptr<Alarm> alarm3(new Alarm);
     alarm3->js_alarm->name = "ccc";
     alarm3->js_alarm->scheduled_time = 25 * 60000;
-    alarm3->js_alarm->period_in_minutes.reset(new double(25));
+    alarm3->js_alarm->period_in_minutes = std::make_unique<double>(25);
     alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm3));
     base::RunLoop().Run();
     EXPECT_EQ(
@@ -590,8 +592,9 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
 }
 
 TEST_F(ExtensionAlarmsSchedulingTest, ReleasedExtensionPollsInfrequently) {
-  set_extension(
-      ExtensionBuilder("Test").SetLocation(Manifest::INTERNAL).Build());
+  set_extension(ExtensionBuilder("Test")
+                    .SetLocation(mojom::ManifestLocation::kInternal)
+                    .Build());
   test_clock_.SetNow(base::Time::FromJsTime(300000));
   CreateAlarm("[\"a\", {\"when\": 300010}]");
   CreateAlarm("[\"b\", {\"when\": 340000}]");
@@ -624,8 +627,9 @@ TEST_F(ExtensionAlarmsSchedulingTest, TimerRunning) {
 }
 
 TEST_F(ExtensionAlarmsSchedulingTest, MinimumGranularity) {
-  set_extension(
-      ExtensionBuilder("Test").SetLocation(Manifest::INTERNAL).Build());
+  set_extension(ExtensionBuilder("Test")
+                    .SetLocation(mojom::ManifestLocation::kInternal)
+                    .Build());
   test_clock_.SetNow(base::Time::FromJsTime(0));
   CreateAlarm("[\"a\", {\"periodInMinutes\": 2}]");
   test_clock_.Advance(base::TimeDelta::FromSeconds(1));
@@ -652,8 +656,9 @@ TEST_F(ExtensionAlarmsSchedulingTest, DifferentMinimumGranularities) {
   // CreateAlarm() uses extension_, so keep a ref of the old one around, and
   // repopulate extension_.
   scoped_refptr<const Extension> extension2(extension_ref());
-  set_extension(
-      ExtensionBuilder("Test").SetLocation(Manifest::INTERNAL).Build());
+  set_extension(ExtensionBuilder("Test")
+                    .SetLocation(mojom::ManifestLocation::kInternal)
+                    .Build());
 
   CreateAlarm("[\"b\", {\"periodInMinutes\": 2}]");
 

@@ -49,7 +49,7 @@ class TextureSubresourceTest : public DawnTest {
     }
 
     void DrawTriangle(const wgpu::TextureView& view) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(vertex_index)]] var<in> VertexIndex : u32;
             [[builtin(position)]] var<out> Position : vec4<f32>;
 
@@ -62,19 +62,19 @@ class TextureSubresourceTest : public DawnTest {
                 Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
             })");
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
             [[location(0)]] var<out> fragColor : vec4<f32>;
             [[stage(fragment)]] fn main() -> void {
                 fragColor = vec4<f32>(1.0, 0.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
-        descriptor.cColorStates[0].format = kFormat;
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+        descriptor.cTargets[0].format = kFormat;
 
-        wgpu::RenderPipeline rp = device.CreateRenderPipeline(&descriptor);
+        wgpu::RenderPipeline rp = device.CreateRenderPipeline2(&descriptor);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
@@ -89,7 +89,7 @@ class TextureSubresourceTest : public DawnTest {
     }
 
     void SampleAndDraw(const wgpu::TextureView& samplerView, const wgpu::TextureView& renderView) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(vertex_index)]] var<in> VertexIndex : u32;
             [[builtin(position)]] var<out> Position : vec4<f32>;
 
@@ -105,7 +105,7 @@ class TextureSubresourceTest : public DawnTest {
                 Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
             })");
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
             [[group(0), binding(0)]] var samp : sampler;
             [[group(0), binding(1)]] var tex : texture_2d<f32>;
 
@@ -117,15 +117,15 @@ class TextureSubresourceTest : public DawnTest {
                 fragColor = textureSample(tex, samp, FragCoord.xy / vec2<f32>(4.0, 4.0));
             })");
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
-        descriptor.cColorStates[0].format = kFormat;
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+        descriptor.cTargets[0].format = kFormat;
 
         wgpu::Sampler sampler = device.CreateSampler();
 
-        wgpu::RenderPipeline rp = device.CreateRenderPipeline(&descriptor);
+        wgpu::RenderPipeline rp = device.CreateRenderPipeline2(&descriptor);
         wgpu::BindGroupLayout bgl = rp.GetBindGroupLayout(0);
         wgpu::BindGroup bindGroup =
             utils::MakeBindGroup(device, bgl, {{0, sampler}, {1, samplerView}});
@@ -169,8 +169,8 @@ TEST_P(TextureSubresourceTest, MipmapLevelsTest) {
     // black in render view (mip level 1).
     RGBA8 topRight = RGBA8::kBlack;
     RGBA8 bottomLeft = RGBA8::kRed;
-    EXPECT_TEXTURE_RGBA8_EQ(&topRight, texture, kSize / 2 - 1, 0, 1, 1, 1, 0);
-    EXPECT_TEXTURE_RGBA8_EQ(&bottomLeft, texture, 0, kSize / 2 - 1, 1, 1, 1, 0);
+    EXPECT_TEXTURE_EQ(&topRight, texture, {kSize / 2 - 1, 0}, {1, 1}, 1);
+    EXPECT_TEXTURE_EQ(&bottomLeft, texture, {0, kSize / 2 - 1}, {1, 1}, 1);
 }
 
 // Test different array layers
@@ -197,8 +197,8 @@ TEST_P(TextureSubresourceTest, ArrayLayersTest) {
     // black in render view (array layer 1).
     RGBA8 topRight = RGBA8::kBlack;
     RGBA8 bottomLeft = RGBA8::kRed;
-    EXPECT_TEXTURE_RGBA8_EQ(&topRight, texture, kSize - 1, 0, 1, 1, 0, 1);
-    EXPECT_TEXTURE_RGBA8_EQ(&bottomLeft, texture, 0, kSize - 1, 1, 1, 0, 1);
+    EXPECT_TEXTURE_EQ(&topRight, texture, {kSize - 1, 0, 1}, {1, 1});
+    EXPECT_TEXTURE_EQ(&bottomLeft, texture, {0, kSize - 1, 1}, {1, 1});
 }
 
 // TODO (yunchao.he@intel.com):

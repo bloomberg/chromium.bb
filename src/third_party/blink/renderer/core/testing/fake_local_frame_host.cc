@@ -39,8 +39,6 @@ void FakeLocalFrameHost::UnregisterProtocolHandler(const WTF::String& scheme,
 
 void FakeLocalFrameHost::DidDisplayInsecureContent() {}
 
-void FakeLocalFrameHost::DidAddContentSecurityPolicies(
-    WTF::Vector<::network::mojom::blink::ContentSecurityPolicyPtr>) {}
 void FakeLocalFrameHost::DidContainInsecureFormAction() {}
 
 void FakeLocalFrameHost::DocumentAvailableInMainFrame(
@@ -223,6 +221,8 @@ void FakeLocalFrameHost::DidAddMessageToConsole(
     const WTF::String& untrusted_stack_trace) {}
 
 void FakeLocalFrameHost::FrameSizeChanged(const gfx::Size& frame_size) {}
+
+void FakeLocalFrameHost::DidActivateForPrerendering() {}
 
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_ui.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
@@ -90,6 +91,17 @@ class ProfilePicker {
   // uses the same new profile created by `SwitchToSignIn()`.
   static void SwitchToSyncConfirmation();
 
+  // Finishes the sign-in flow by moving to the enterprise profile welcome
+  // screen. It uses the same new profile created by `SwitchToSignIn()`.
+  static void SwitchToEnterpriseProfileWelcome(
+      EnterpriseProfileWelcomeUI::ScreenType type,
+      base::OnceCallback<void(bool)> proceed_callback);
+
+  // When the sign-in flow cannot be completed because another profile at
+  // `profile_path` is already syncing with a chosen account, shows the profile
+  // switch screen. It uses the system profile.
+  static void SwitchToProfileSwitch(const base::FilePath& profile_path);
+
   // Shows a dialog where the user can auth the profile or see the
   // auth error message. If a dialog is already shown, this destroys the current
   // dialog and creates a new one.
@@ -107,6 +119,10 @@ class ProfilePicker {
   // Getter of the target page  url. If not empty and is valid, it opens on
   // profile selection instead of the new tab page.
   static GURL GetOnSelectProfileTargetUrl();
+
+  // Getter of the path of profile which is displayed on the profile switch
+  // screen.
+  static base::FilePath GetSwitchProfilePath();
 
   // Hides the profile picker.
   static void Hide();
@@ -155,19 +171,6 @@ class ProfilePickerForceSigninDialog {
   // flow.
   static constexpr int kDialogHeight = 512;
   static constexpr int kDialogWidth = 448;
-
-  // Shows a dialog where the user can re-authenticate the profile with the
-  // given |email|. This is called from the profile picker when a profile is
-  // locked and the user's password is detected to have been changed.
-  static void ShowUnlockDialog(content::BrowserContext* browser_context,
-                               const std::string& email);
-
-  // Shows a reauth dialog with profile path so that the sign in error message
-  // can be displayed without browser window.
-  static void ShowUnlockDialogWithProfilePath(
-      content::BrowserContext* browser_context,
-      const std::string& email,
-      const base::FilePath& profile_path);
 
   // Shows a dialog where the user logs into their profile for the first time
   // via the profile picker, when force signin is enabled.

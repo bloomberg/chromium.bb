@@ -35,15 +35,15 @@
 /* eslint-disable rulesdir/no_underscored_properties */
 
 import * as BrowserSDK from '../browser_sdk/browser_sdk.js';
-import * as Common from '../common/common.js';
+import * as Common from '../core/common/common.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as Root from '../core/root/root.js';
+import * as SDK from '../core/sdk/sdk.js';
 import * as DataGrid from '../data_grid/data_grid.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
-import * as SDK from '../sdk/sdk.js';
-import * as UI from '../ui/ui.js';
+import * as UI from '../ui/legacy/legacy.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Cookie table cookies table expires session value in Cookies Table of the Cookies table in the Application panel
   */
@@ -113,7 +113,7 @@ export class CookiesTable extends UI.Widget.VBox {
       deleteCallback?: ((arg0: SDK.Cookie.Cookie, arg1: () => void) => void)) {
     super();
 
-    this.registerRequiredCSS('cookie_table/cookiesTable.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('cookie_table/cookiesTable.css', {enableLegacyPatching: false});
     this.element.classList.add('cookies-table');
 
     this._saveCallback = saveCallback;

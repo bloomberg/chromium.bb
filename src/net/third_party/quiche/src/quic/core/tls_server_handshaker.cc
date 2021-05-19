@@ -21,7 +21,16 @@
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_hostname_utils.h"
 #include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_server_stats.h"
 #include "common/platform/api/quiche_text_utils.h"
+
+#define RECORD_LATENCY_IN_US(stat_name, latency, comment)                   \
+  do {                                                                      \
+    const int64_t latency_in_us = (latency).ToMicroseconds();               \
+    QUIC_DVLOG(1) << "Recording " stat_name ": " << latency_in_us;          \
+    QUIC_SERVER_HISTOGRAM_COUNTS(stat_name, latency_in_us, 1, 10000000, 50, \
+                                 comment);                                  \
+  } while (0)
 
 namespace quic {
 
@@ -55,7 +64,8 @@ TlsServerHandshaker::DefaultProofSourceHandle::SelectCertificate(
     const std::vector<uint8_t>& /*quic_transport_params*/,
     const absl::optional<std::vector<uint8_t>>& /*early_data_context*/) {
   if (!handshaker_ || !proof_source_) {
-    QUIC_BUG << "SelectCertificate called on a detached handle";
+    QUIC_BUG(quic_bug_10341_1)
+        << "SelectCertificate called on a detached handle";
     return QUIC_FAILURE;
   }
 
@@ -65,7 +75,7 @@ TlsServerHandshaker::DefaultProofSourceHandle::SelectCertificate(
   handshaker_->OnSelectCertificateDone(
       /*ok=*/true, /*is_sync=*/true, chain.get());
   if (!handshaker_->select_cert_status().has_value()) {
-    QUIC_BUG
+    QUIC_BUG(quic_bug_12423_1)
         << "select_cert_status() has no value after a synchronous select cert";
     // Return success to continue the handshake.
     return QUIC_SUCCESS;
@@ -81,12 +91,13 @@ QuicAsyncStatus TlsServerHandshaker::DefaultProofSourceHandle::ComputeSignature(
     absl::string_view in,
     size_t max_signature_size) {
   if (!handshaker_ || !proof_source_) {
-    QUIC_BUG << "ComputeSignature called on a detached handle";
+    QUIC_BUG(quic_bug_10341_2)
+        << "ComputeSignature called on a detached handle";
     return QUIC_FAILURE;
   }
 
   if (signature_callback_) {
-    QUIC_BUG << "ComputeSignature called while pending";
+    QUIC_BUG(quic_bug_10341_3) << "ComputeSignature called while pending";
     return QUIC_FAILURE;
   }
 
@@ -489,7 +500,8 @@ TlsServerHandshaker::SetTransportParameters() {
     std::vector<uint8_t> early_data_context;
     if (!SerializeTransportParametersForTicket(
             server_params, *application_state_, &early_data_context)) {
-      QUIC_BUG << "Failed to serialize Transport Parameters for ticket.";
+      QUIC_BUG(quic_bug_10341_4)
+          << "Failed to serialize Transport Parameters for ticket.";
       result.early_data_context = std::vector<uint8_t>();
       return result;
     }
@@ -514,7 +526,8 @@ void TlsServerHandshaker::SetWriteSecret(
     // Fill crypto_negotiated_params_:
     const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl());
     if (cipher) {
-      crypto_negotiated_params_->cipher_suite = SSL_CIPHER_get_value(cipher);
+      crypto_negotiated_params_->cipher_suite =
+          SSL_CIPHER_get_protocol_id(cipher);
     }
     crypto_negotiated_params_->key_exchange_group = SSL_get_curve_id(ssl());
   }
@@ -535,7 +548,6 @@ void TlsServerHandshaker::FinishHandshake() {
     // FinishHandshake, we don't have any confirmation that the client is live,
     // so all end of handshake processing is deferred until the handshake is
     // actually complete.
-    QUIC_RESTART_FLAG_COUNT(quic_enable_zero_rtt_for_tls_v2);
     return;
   }
   if (!valid_alpn_received_) {
@@ -570,7 +582,8 @@ QuicAsyncStatus TlsServerHandshaker::VerifyCertChain(
     std::unique_ptr<ProofVerifyDetails>* /*details*/,
     uint8_t* /*out_alert*/,
     std::unique_ptr<ProofVerifierCallback> /*callback*/) {
-  QUIC_BUG << "Client certificates are not yet supported on the server";
+  QUIC_BUG(quic_bug_10341_5)
+      << "Client certificates are not yet supported on the server";
   return QUIC_FAILURE;
 }
 
@@ -593,6 +606,12 @@ ssl_private_key_result_t TlsServerHandshaker::PrivateKeySign(
         sig_alg, in, max_out);
     if (status == QUIC_PENDING) {
       set_expected_ssl_error(SSL_ERROR_WANT_PRIVATE_KEY_OPERATION);
+      if (async_op_timer_.has_value()) {
+        QUIC_CODE_COUNT(
+            quic_tls_server_computing_signature_while_another_op_pending);
+      }
+      async_op_timer_ = QuicTimeAccumulator();
+      async_op_timer_->Start(now());
     }
     return PrivateKeyComplete(out, out_len, max_out);
   }
@@ -616,7 +635,23 @@ ssl_private_key_result_t TlsServerHandshaker::PrivateKeyComplete(
   if (expected_ssl_error() == SSL_ERROR_WANT_PRIVATE_KEY_OPERATION) {
     return ssl_private_key_retry;
   }
-  if (!HasValidSignature(max_out)) {
+
+  const bool success = HasValidSignature(max_out);
+  QuicConnectionStats::TlsServerOperationStats compute_signature_stats;
+  compute_signature_stats.success = success;
+  if (async_op_timer_.has_value()) {
+    async_op_timer_->Stop(now());
+    compute_signature_stats.async_latency =
+        async_op_timer_->GetTotalElapsedTime();
+    async_op_timer_.reset();
+    RECORD_LATENCY_IN_US("tls_server_async_compute_signature_latency_us",
+                         compute_signature_stats.async_latency,
+                         "Async compute signature latency in microseconds");
+  }
+  connection_stats().tls_server_compute_signature_stats =
+      std::move(compute_signature_stats);
+
+  if (!success) {
     return ssl_private_key_failure;
   }
   *out_len = cert_verify_sig_.size();
@@ -665,7 +700,7 @@ int TlsServerHandshaker::SessionTicketSeal(uint8_t* out,
   QUICHE_DCHECK(proof_source_->GetTicketCrypter());
   std::vector<uint8_t> ticket = proof_source_->GetTicketCrypter()->Encrypt(in);
   if (max_out_len < ticket.size()) {
-    QUIC_BUG
+    QUIC_BUG(quic_bug_12423_2)
         << "TicketCrypter returned " << ticket.size()
         << " bytes of ciphertext, which is larger than its max overhead of "
         << max_out_len;
@@ -673,6 +708,7 @@ int TlsServerHandshaker::SessionTicketSeal(uint8_t* out,
   }
   *out_len = ticket.size();
   memcpy(out, ticket.data(), ticket.size());
+  QUIC_CODE_COUNT(quic_tls_server_handshaker_tickets_sealed);
   return 1;  // success
 }
 
@@ -693,19 +729,50 @@ ssl_ticket_aead_result_t TlsServerHandshaker::SessionTicketOpen(
     // returning ssl_ticket_aead_retry, we should continue processing to return
     // the decrypted ticket.
     //
-    // If the callback is not run asynchronously, return ssl_ticket_aead_retry
+    // If the callback is not run synchronously, return ssl_ticket_aead_retry
     // and when the callback is complete this function will be run again to
     // return the result.
     if (ticket_decryption_callback_) {
       set_expected_ssl_error(SSL_ERROR_PENDING_TICKET);
+      if (async_op_timer_.has_value()) {
+        QUIC_CODE_COUNT(
+            quic_tls_server_decrypting_ticket_while_another_op_pending);
+      }
+      async_op_timer_ = QuicTimeAccumulator();
+      async_op_timer_->Start(now());
       return ssl_ticket_aead_retry;
     }
   }
+
+  ssl_ticket_aead_result_t result =
+      FinalizeSessionTicketOpen(out, out_len, max_out_len);
+
+  QuicConnectionStats::TlsServerOperationStats decrypt_ticket_stats;
+  decrypt_ticket_stats.success = (result == ssl_ticket_aead_success);
+  if (async_op_timer_.has_value()) {
+    async_op_timer_->Stop(now());
+    decrypt_ticket_stats.async_latency = async_op_timer_->GetTotalElapsedTime();
+    async_op_timer_.reset();
+    RECORD_LATENCY_IN_US("tls_server_async_decrypt_ticket_latency_us",
+                         decrypt_ticket_stats.async_latency,
+                         "Async decrypt ticket latency in microseconds");
+  }
+  connection_stats().tls_server_decrypt_ticket_stats =
+      std::move(decrypt_ticket_stats);
+
+  return result;
+}
+
+ssl_ticket_aead_result_t TlsServerHandshaker::FinalizeSessionTicketOpen(
+    uint8_t* out,
+    size_t* out_len,
+    size_t max_out_len) {
   ticket_decryption_callback_ = nullptr;
   set_expected_ssl_error(SSL_ERROR_WANT_READ);
   if (decrypted_session_ticket_.empty()) {
     QUIC_DLOG(ERROR) << "Session ticket decryption failed; ignoring ticket";
     // Ticket decryption failed. Ignore the ticket.
+    QUIC_CODE_COUNT(quic_tls_server_handshaker_tickets_ignored);
     return ssl_ticket_aead_ignore_ticket;
   }
   if (max_out_len < decrypted_session_ticket_.size()) {
@@ -715,6 +782,7 @@ ssl_ticket_aead_result_t TlsServerHandshaker::SessionTicketOpen(
          decrypted_session_ticket_.size());
   *out_len = decrypted_session_ticket_.size();
 
+  QUIC_CODE_COUNT(quic_tls_server_handshaker_tickets_opened);
   return ssl_ticket_aead_success;
 }
 
@@ -743,7 +811,8 @@ ssl_select_cert_result_t TlsServerHandshaker::EarlySelectCertCallback(
 
   if (!pre_shared_key_.empty()) {
     // TODO(b/154162689) add PSK support to QUIC+TLS.
-    QUIC_BUG << "QUIC server pre-shared keys not yet supported with TLS";
+    QUIC_BUG(quic_bug_10341_6)
+        << "QUIC server pre-shared keys not yet supported with TLS";
     return ssl_select_cert_error;
   }
 
@@ -799,6 +868,12 @@ ssl_select_cert_result_t TlsServerHandshaker::EarlySelectCertCallback(
 
     if (status == QUIC_PENDING) {
       set_expected_ssl_error(SSL_ERROR_PENDING_CERTIFICATE);
+      if (async_op_timer_.has_value()) {
+        QUIC_CODE_COUNT(
+            quic_tls_server_selecting_cert_while_another_op_pending);
+      }
+      async_op_timer_ = QuicTimeAccumulator();
+      async_op_timer_->Start(now());
       return ssl_select_cert_retry;
     }
 
@@ -857,6 +932,21 @@ void TlsServerHandshaker::OnSelectCertificateDone(
       QUIC_LOG(ERROR) << "No certs provided for host '" << hostname_ << "'";
     }
   }
+
+  QuicConnectionStats::TlsServerOperationStats select_cert_stats;
+  select_cert_stats.success = (select_cert_status_ == QUIC_SUCCESS);
+  QUICHE_DCHECK_NE(is_sync, async_op_timer_.has_value());
+  if (async_op_timer_.has_value()) {
+    async_op_timer_->Stop(now());
+    select_cert_stats.async_latency = async_op_timer_->GetTotalElapsedTime();
+    async_op_timer_.reset();
+    RECORD_LATENCY_IN_US("tls_server_async_select_cert_latency_us",
+                         select_cert_stats.async_latency,
+                         "Async select cert latency in microseconds");
+  }
+  connection_stats().tls_server_select_cert_stats =
+      std::move(select_cert_stats);
+
   const int last_expected_ssl_error = expected_ssl_error();
   set_expected_ssl_error(SSL_ERROR_WANT_READ);
   if (!is_sync) {
@@ -928,10 +1018,18 @@ int TlsServerHandshaker::SelectAlpn(const uint8_t** out,
     size_t alps_length = 0;
     std::unique_ptr<char[]> buffer;
 
-    const std::string& origin = crypto_negotiated_params_->sni;
-    std::string accept_ch_value = GetAcceptChValueForOrigin(origin);
+    const std::string& hostname = crypto_negotiated_params_->sni;
+    std::string accept_ch_value = GetAcceptChValueForOrigin(hostname);
+
+    std::string origin;
+    if (GetQuicReloadableFlag(quic_alps_include_scheme_in_origin)) {
+      QUIC_RELOADABLE_FLAG_COUNT(quic_alps_include_scheme_in_origin);
+      origin = "https://";
+    }
+    origin.append(crypto_negotiated_params_->sni);
+
     if (!accept_ch_value.empty()) {
-      AcceptChFrame frame{{{origin, std::move(accept_ch_value)}}};
+      AcceptChFrame frame{{{std::move(origin), std::move(accept_ch_value)}}};
       alps_length = HttpEncoder::SerializeAcceptChFrame(frame, &buffer);
       alps_data = reinterpret_cast<const uint8_t*>(buffer.get());
     }

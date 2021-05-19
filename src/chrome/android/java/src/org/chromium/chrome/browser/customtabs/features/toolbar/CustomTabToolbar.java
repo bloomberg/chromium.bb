@@ -47,16 +47,14 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.FakeboxDelegate;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
+import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
-import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
-import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
+import org.chromium.chrome.browser.page_info.ChromePageInfo;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.theme.ThemeUtils;
@@ -69,6 +67,7 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.page_info.PageInfoController;
+import org.chromium.components.page_info.PageInfoController.OpenedFromSource;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -133,8 +132,6 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     private View mLocationBarFrameLayout;
     private View mTitleUrlContainer;
     private TextView mUrlBar;
-    private View mLiteStatusView;
-    private View mLiteStatusSeparatorView;
     private TextView mTitleBar;
     private ImageView mIncognitoImageView;
     private ImageButton mSecurityButton;
@@ -185,8 +182,6 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         mUrlBar = (TextView) findViewById(R.id.url_bar);
         mUrlBar.setHint("");
         mUrlBar.setEnabled(false);
-        mLiteStatusView = findViewById(R.id.url_bar_lite_status);
-        mLiteStatusSeparatorView = findViewById(R.id.url_bar_lite_status_separator);
         mTitleBar = findViewById(R.id.title_bar);
         mLocationBarFrameLayout = findViewById(R.id.location_bar_frame_layout);
         mTitleUrlContainer = findViewById(R.id.title_url_container);
@@ -683,14 +678,9 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 if (webContents == null) return;
                 Activity activity = currentTab.getWindowAndroid().getActivity().get();
                 if (activity == null) return;
-                PageInfoController.show(activity, webContents, getContentPublisher(),
-                        PageInfoController.OpenedFromSource.TOOLBAR,
-                        new ChromePageInfoControllerDelegate(activity, webContents,
-                                mModalDialogManagerSupplier,
-                                /*offlinePageLoadUrlDelegate=*/
-                                new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab)),
-                        new ChromePermissionParamsListBuilderDelegate(),
-                        PageInfoController.NO_HIGHLIGHTED_PERMISSION);
+                new ChromePageInfo(mModalDialogManagerSupplier, getContentPublisher(),
+                        OpenedFromSource.TOOLBAR)
+                        .show(currentTab, PageInfoController.NO_HIGHLIGHTED_PERMISSION);
             });
         }
 
@@ -846,13 +836,6 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 originEnd = displayText.length();
             }
 
-            // The Lite Status view visibility should be updated on every new URL and only be
-            // displayed along with the URL bar.
-            final boolean liteStatusIsVisible =
-                    mLocationBarDataProvider.isPreview() && mUrlBar.getVisibility() == View.VISIBLE;
-            mLiteStatusView.setVisibility(liteStatusIsVisible ? View.VISIBLE : View.GONE);
-            mLiteStatusSeparatorView.setVisibility(liteStatusIsVisible ? View.VISIBLE : View.GONE);
-
             mUrlCoordinator.setUrlBarData(
                     UrlBarData.create(url, displayText, originStart, originEnd, url),
                     UrlBar.ScrollType.SCROLL_TO_TLD, SelectionState.SELECT_ALL);
@@ -915,7 +898,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
         @Nullable
         @Override
-        public FakeboxDelegate getFakeboxDelegate() {
+        public OmniboxStub getOmniboxStub() {
             return null;
         }
     }

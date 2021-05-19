@@ -126,10 +126,10 @@ static void connectivity_state_set(grpc_chttp2_transport* t,
                                    const absl::Status& status,
                                    const char* reason);
 
-static void benign_reclaimer(void* t, grpc_error* error);
-static void destructive_reclaimer(void* t, grpc_error* error);
-static void benign_reclaimer_locked(void* t, grpc_error* error);
-static void destructive_reclaimer_locked(void* t, grpc_error* error);
+static void benign_reclaimer(void* arg, grpc_error* error);
+static void destructive_reclaimer(void* arg, grpc_error* error);
+static void benign_reclaimer_locked(void* arg, grpc_error* error);
+static void destructive_reclaimer_locked(void* arg, grpc_error* error);
 
 static void post_benign_reclaimer(grpc_chttp2_transport* t);
 static void post_destructive_reclaimer(grpc_chttp2_transport* t);
@@ -146,8 +146,7 @@ static void next_bdp_ping_timer_expired_locked(void* tp, grpc_error* error);
 
 static void cancel_pings(grpc_chttp2_transport* t, grpc_error* error);
 static void send_ping_locked(grpc_chttp2_transport* t,
-                             grpc_closure* on_initiate,
-                             grpc_closure* on_complete);
+                             grpc_closure* on_initiate, grpc_closure* on_ack);
 static void retry_initiate_ping_locked(void* tp, grpc_error* error);
 
 // keepalive-relevant functions
@@ -367,7 +366,9 @@ static bool read_channel_args(grpc_chttp2_transport* t,
     t->channelz_socket =
         grpc_core::MakeRefCounted<grpc_core::channelz::SocketNode>(
             std::string(grpc_endpoint_get_local_address(t->ep)), t->peer_string,
-            absl::StrFormat("%s %s", get_vtable()->name, t->peer_string));
+            absl::StrFormat("%s %s", get_vtable()->name, t->peer_string),
+            grpc_core::channelz::SocketNode::Security::GetFromChannelArgs(
+                channel_args));
   }
   return enable_bdp;
 }
@@ -617,7 +618,7 @@ grpc_chttp2_stream::grpc_chttp2_stream(grpc_chttp2_transport* t,
       metadata_buffer{grpc_chttp2_incoming_metadata_buffer(arena),
                       grpc_chttp2_incoming_metadata_buffer(arena)} {
   if (server_data) {
-    id = static_cast<uint32_t>((uintptr_t)server_data);
+    id = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(server_data));
     *t->accepting_stream = this;
     grpc_chttp2_stream_map_add(&t->stream_map, id, this);
     post_destructive_reclaimer(t);
@@ -750,7 +751,7 @@ grpc_chttp2_stream* grpc_chttp2_parsing_accept_stream(grpc_chttp2_transport* t,
   GPR_ASSERT(t->accepting_stream == nullptr);
   t->accepting_stream = &accepting;
   t->accept_stream_cb(t->accept_stream_cb_user_data, &t->base,
-                      (void*)static_cast<uintptr_t>(id));
+                      reinterpret_cast<void*>(id));
   t->accepting_stream = nullptr;
   return accepting;
 }
@@ -2098,7 +2099,7 @@ static void add_error(grpc_error* error, grpc_error** refs, size_t* nrefs) {
 }
 
 static grpc_error* removal_error(grpc_error* extra_error, grpc_chttp2_stream* s,
-                                 const char* master_error_msg) {
+                                 const char* main_error_msg) {
   grpc_error* refs[3];
   size_t nrefs = 0;
   add_error(s->read_closed_error, refs, &nrefs);
@@ -2106,7 +2107,7 @@ static grpc_error* removal_error(grpc_error* extra_error, grpc_chttp2_stream* s,
   add_error(extra_error, refs, &nrefs);
   grpc_error* error = GRPC_ERROR_NONE;
   if (nrefs > 0) {
-    error = GRPC_ERROR_CREATE_REFERENCING_FROM_STATIC_STRING(master_error_msg,
+    error = GRPC_ERROR_CREATE_REFERENCING_FROM_STATIC_STRING(main_error_msg,
                                                              refs, nrefs);
   }
   GRPC_ERROR_UNREF(extra_error);
@@ -2570,9 +2571,7 @@ void schedule_bdp_ping_locked(grpc_chttp2_transport* t) {
                         grpc_schedule_on_exec_ctx),
       GRPC_CLOSURE_INIT(&t->finish_bdp_ping_locked, finish_bdp_ping, t,
                         grpc_schedule_on_exec_ctx));
-  // TODO(yashykt): Enabling this causes internal b/168345569. Re-enable once
-  // fixed.
-  // grpc_chttp2_initiate_write(t, GRPC_CHTTP2_INITIATE_WRITE_BDP_PING);
+  grpc_chttp2_initiate_write(t, GRPC_CHTTP2_INITIATE_WRITE_BDP_PING);
 }
 
 static void start_bdp_ping(void* tp, grpc_error* error) {

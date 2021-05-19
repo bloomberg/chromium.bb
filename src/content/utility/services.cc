@@ -39,6 +39,8 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_adapter_factory.h"          // nogncheck
+#include "media/mojo/mojom/cdm_service.mojom.h"     // nogncheck
+#include "media/mojo/mojom/frame_interface_factory.mojom.h"  // nogncheck
 #include "media/mojo/services/cdm_service.h"        // nogncheck
 #include "media/mojo/services/mojo_cdm_helper.h"    // nogncheck
 #include "media/mojo/services/mojo_media_client.h"  // nogncheck
@@ -54,7 +56,6 @@
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "sandbox/win/src/sandbox.h"
-
 extern sandbox::TargetServices* g_utility_target_services;
 #endif  // defined(OS_WIN)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -67,7 +68,12 @@ extern sandbox::TargetServices* g_utility_target_services;
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS_ASH)
 #include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"  // nogncheck
 #include "services/shape_detection/shape_detection_service.h"  // nogncheck
-#endif
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_WIN)
+#include "media/mojo/mojom/media_foundation_service.mojom.h"  // nogncheck
+#include "media/mojo/services/media_foundation_service.h"     // nogncheck
+#endif  // defined(OS_WIN)
 
 namespace content {
 
@@ -208,6 +214,13 @@ auto RunDataDecoder(
       std::move(receiver));
 }
 
+#if defined(OS_WIN)
+auto RunMediaFoundationService(
+    mojo::PendingReceiver<media::mojom::MediaFoundationService> receiver) {
+  return std::make_unique<media::MediaFoundationService>(std::move(receiver));
+}
+#endif  // defined(OS_WIN)
+
 auto RunStorageService(
     mojo::PendingReceiver<storage::mojom::StorageService> receiver) {
   return std::make_unique<storage::StorageServiceImpl>(
@@ -259,6 +272,10 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   services.Add(RunCdmService);
 #endif
+
+#if defined(OS_WIN)
+  services.Add(RunMediaFoundationService);
+#endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
   services.Add(RunXrDeviceService);

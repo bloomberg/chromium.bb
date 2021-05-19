@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
-#include "ash/accessibility/accessibility_focus_ring_layer.h"
+#include "ash/accessibility/ui/accessibility_focus_ring_controller_impl.h"
+#include "ash/accessibility/ui/accessibility_focus_ring_layer.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/system_tray_test_api.h"
@@ -288,7 +288,16 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, BreaksAtParagraphBounds) {
   sm_.Replay();
 }
 
-IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, LanguageBoundsIgnoredByDefault) {
+#if defined(MEMORY_SANITIZER)
+// TODO(crbug.com/1184714): Flaky timeout on MSAN.
+#define MAYBE_LanguageBoundsIgnoredByDefault \
+  DISABLED_LanguageBoundsIgnoredByDefault
+#else
+#define MAYBE_LanguageBoundsIgnoredByDefault \
+  DISABLED_LanguageBoundsIgnoredByDefault
+#endif
+IN_PROC_BROWSER_TEST_F(SelectToSpeakTest,
+                       MAYBE_LanguageBoundsIgnoredByDefault) {
   // Splitting at language bounds is behind a feature flag, test the default
   // behaviour doesn't introduce a regression.
   ActivateSelectToSpeakInWindowBounds(

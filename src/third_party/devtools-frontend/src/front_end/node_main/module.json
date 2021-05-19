@@ -1,18 +1,9 @@
 {
-  "extensions": [
-    {
-      "type": "early-initialization",
-      "className": "NodeMain.NodeMain"
-    }
-  ],
   "dependencies": [
-    "ui",
+    "ui/legacy",
     "components"
   ],
-  "modules": [
-    "node_main-legacy.js"
-  ],
-  "resources": [
+    "resources": [
     "nodeConnectionsPanel.css"
   ]
 }

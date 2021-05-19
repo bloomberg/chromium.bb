@@ -51,12 +51,12 @@ bool IsSyncingPasswordsNormally(CredentialLeakType leak_type) {
 }
 
 // Formats the |origin| to a human-friendly url string.
-base::string16 GetFormattedUrl(const GURL& origin) {
+std::u16string GetFormattedUrl(const GURL& origin) {
   return url_formatter::FormatUrlForSecurityDisplay(
       origin, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
 }
 
-base::string16 GetAcceptButtonLabel(CredentialLeakType leak_type) {
+std::u16string GetAcceptButtonLabel(CredentialLeakType leak_type) {
   // |ShouldShowChangePasswordButton()| and |ShouldCheckPasswords()| are not
   // both true at the same time.
   if (ShouldCheckPasswords(leak_type)) {
@@ -70,47 +70,31 @@ base::string16 GetAcceptButtonLabel(CredentialLeakType leak_type) {
   return l10n_util::GetStringUTF16(IDS_OK);
 }
 
-base::string16 GetCancelButtonLabel() {
+std::u16string GetCancelButtonLabel() {
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
-base::string16 GetDescription(CredentialLeakType leak_type,
-                              const GURL& origin) {
-  const base::string16 formatted = GetFormattedUrl(origin);
+std::u16string GetDescription(CredentialLeakType leak_type,
+                              const GURL& /*origin*/) {
   if (!ShouldCheckPasswords(leak_type)) {
-    return l10n_util::GetStringFUTF16(
-        IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE, formatted);
-  } else if (password_manager::IsPasswordSaved(leak_type)) {
+    return l10n_util::GetStringUTF16(
+        IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE);
+  }
+  if (password_manager::IsPasswordSaved(leak_type)) {
     return l10n_util::GetStringUTF16(
         IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE);
-  } else {
-    return l10n_util::GetStringFUTF16(
-        IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE, formatted);
   }
+  return l10n_util::GetStringUTF16(
+      IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE);
 }
 
-base::string16 GetDescriptionWithCount(CredentialLeakType leak_type,
-                                       const GURL& origin,
-                                       CompromisedSitesCount saved_sites) {
-  IsSaved is_saved(IsPasswordSaved(leak_type));
-  if (ShouldCheckPasswords(leak_type) || is_saved) {
-    DCHECK_GE(saved_sites.value(), 1);
-    // saved_sites must be reduced by 1 if the saved sites include the origin as
-    // the origin is mentioned explicitly in the message.
-    return base::i18n::MessageFormatter::FormatWithNumberedArgs(
-        l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_SAVED_PASSWORDS_MESSAGE),
-        GetFormattedUrl(origin), saved_sites.value() - (is_saved ? 1 : 0));
-  }
-  return GetDescription(leak_type, origin);
-}
-
-base::string16 GetTitle(CredentialLeakType leak_type) {
+std::u16string GetTitle(CredentialLeakType leak_type) {
   return l10n_util::GetStringUTF16(ShouldCheckPasswords(leak_type)
                                        ? IDS_CREDENTIAL_LEAK_TITLE_CHECK
                                        : IDS_CREDENTIAL_LEAK_TITLE_CHANGE);
 }
 
-base::string16 GetLeakDetectionTooltip() {
+std::u16string GetLeakDetectionTooltip() {
   return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_LEAK_HELP_MESSAGE);
 }
 

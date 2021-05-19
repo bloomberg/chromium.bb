@@ -102,10 +102,10 @@ QuicFrameTypeBitfield GetFrameTypeBitfield(QuicFrameType type) {
     case ACK_FREQUENCY_FRAME:
       return kAckFrequencyFrameBitfield;
     case NUM_FRAME_TYPES:
-      QUIC_BUG << "Unexpected frame type";
+      QUIC_BUG(quic_bug_10518_1) << "Unexpected frame type";
       return kInvalidFrameBitfield;
   }
-  QUIC_BUG << "Unexpected frame type";
+  QUIC_BUG(quic_bug_10518_2) << "Unexpected frame type";
   return kInvalidFrameBitfield;
 }
 
@@ -140,8 +140,8 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* mutable_packet,
   const SerializedPacket& packet = *mutable_packet;
   QuicPacketNumber packet_number = packet.packet_number;
   QuicPacketLength bytes_sent = packet.encrypted_length;
-  QUIC_BUG_IF(largest_sent_packet_.IsInitialized() &&
-              largest_sent_packet_ >= packet_number)
+  QUIC_BUG_IF(quic_bug_12645_1, largest_sent_packet_.IsInitialized() &&
+                                    largest_sent_packet_ >= packet_number)
       << "largest_sent_packet_: " << largest_sent_packet_
       << ", packet_number: " << packet_number;
   QUICHE_DCHECK_GE(packet_number, least_unacked_ + unacked_packets_.size());
@@ -158,7 +158,7 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* mutable_packet,
   largest_sent_largest_acked_.UpdateMax(packet.largest_acked);
 
   if (!measure_rtt) {
-    QUIC_BUG_IF(set_in_flight);
+    QUIC_BUG_IF(quic_bug_12645_2, set_in_flight);
     info.state = NOT_CONTRIBUTING_RTT;
   }
 
@@ -289,8 +289,8 @@ bool QuicUnackedPacketMap::IsUnacked(QuicPacketNumber packet_number) const {
 
 void QuicUnackedPacketMap::RemoveFromInFlight(QuicTransmissionInfo* info) {
   if (info->in_flight) {
-    QUIC_BUG_IF(bytes_in_flight_ < info->bytes_sent);
-    QUIC_BUG_IF(packets_in_flight_ == 0);
+    QUIC_BUG_IF(quic_bug_12645_3, bytes_in_flight_ < info->bytes_sent);
+    QUIC_BUG_IF(quic_bug_12645_4, packets_in_flight_ == 0);
     bytes_in_flight_ -= info->bytes_sent;
     --packets_in_flight_;
 
@@ -298,11 +298,12 @@ void QuicUnackedPacketMap::RemoveFromInFlight(QuicTransmissionInfo* info) {
         GetPacketNumberSpace(info->encryption_level);
     if (bytes_in_flight_per_packet_number_space_[packet_number_space] <
         info->bytes_sent) {
-      QUIC_BUG << "bytes_in_flight: "
-               << bytes_in_flight_per_packet_number_space_[packet_number_space]
-               << " is smaller than bytes_sent: " << info->bytes_sent
-               << " for packet number space: "
-               << PacketNumberSpaceToString(packet_number_space);
+      QUIC_BUG(quic_bug_10518_3)
+          << "bytes_in_flight: "
+          << bytes_in_flight_per_packet_number_space_[packet_number_space]
+          << " is smaller than bytes_sent: " << info->bytes_sent
+          << " for packet number space: "
+          << PacketNumberSpaceToString(packet_number_space);
       bytes_in_flight_per_packet_number_space_[packet_number_space] = 0;
     } else {
       bytes_in_flight_per_packet_number_space_[packet_number_space] -=
@@ -560,7 +561,8 @@ PacketNumberSpace QuicUnackedPacketMap::GetPacketNumberSpace(
 QuicPacketNumber QuicUnackedPacketMap::GetLargestAckedOfPacketNumberSpace(
     PacketNumberSpace packet_number_space) const {
   if (packet_number_space >= NUM_PACKET_NUMBER_SPACES) {
-    QUIC_BUG << "Invalid packet number space: " << packet_number_space;
+    QUIC_BUG(quic_bug_10518_4)
+        << "Invalid packet number space: " << packet_number_space;
     return QuicPacketNumber();
   }
   return largest_acked_packets_[packet_number_space];
@@ -569,7 +571,8 @@ QuicPacketNumber QuicUnackedPacketMap::GetLargestAckedOfPacketNumberSpace(
 QuicTime QuicUnackedPacketMap::GetLastInFlightPacketSentTime(
     PacketNumberSpace packet_number_space) const {
   if (packet_number_space >= NUM_PACKET_NUMBER_SPACES) {
-    QUIC_BUG << "Invalid packet number space: " << packet_number_space;
+    QUIC_BUG(quic_bug_10518_5)
+        << "Invalid packet number space: " << packet_number_space;
     return QuicTime::Zero();
   }
   return last_inflight_packets_sent_time_[packet_number_space];
@@ -579,7 +582,8 @@ QuicPacketNumber
 QuicUnackedPacketMap::GetLargestSentRetransmittableOfPacketNumberSpace(
     PacketNumberSpace packet_number_space) const {
   if (packet_number_space >= NUM_PACKET_NUMBER_SPACES) {
-    QUIC_BUG << "Invalid packet number space: " << packet_number_space;
+    QUIC_BUG(quic_bug_10518_6)
+        << "Invalid packet number space: " << packet_number_space;
     return QuicPacketNumber();
   }
   return largest_sent_retransmittable_packets_[packet_number_space];
@@ -613,12 +617,14 @@ QuicUnackedPacketMap::GetFirstInFlightTransmissionInfoOfSpace(
 
 void QuicUnackedPacketMap::EnableMultiplePacketNumberSpacesSupport() {
   if (supports_multiple_packet_number_spaces_) {
-    QUIC_BUG << "Multiple packet number spaces has already been enabled";
+    QUIC_BUG(quic_bug_10518_7)
+        << "Multiple packet number spaces has already been enabled";
     return;
   }
   if (largest_sent_packet_.IsInitialized()) {
-    QUIC_BUG << "Try to enable multiple packet number spaces support after any "
-                "packet has been sent.";
+    QUIC_BUG(quic_bug_10518_8)
+        << "Try to enable multiple packet number spaces support after any "
+           "packet has been sent.";
     return;
   }
 

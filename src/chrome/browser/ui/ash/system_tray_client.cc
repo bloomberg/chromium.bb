@@ -16,11 +16,11 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/login/help_app_launcher.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/system_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
@@ -257,8 +257,8 @@ SystemTrayClient* SystemTrayClient::Get() {
 
 void SystemTrayClient::SetUpdateNotificationState(
     ash::NotificationStyle style,
-    const base::string16& notification_title,
-    const base::string16& notification_body) {
+    const std::u16string& notification_title,
+    const std::u16string& notification_body) {
   update_notification_style_ = style;
   update_notification_title_ = notification_title;
   update_notification_body_ = notification_body;
@@ -290,11 +290,11 @@ void SystemTrayClient::SetLocaleList(
 ////////////////////////////////////////////////////////////////////////////////
 // ash::mojom::SystemTrayClient:
 
-void SystemTrayClient::ShowSettings() {
+void SystemTrayClient::ShowSettings(int64_t display_id) {
   // TODO(jamescook): Use different metric for OS settings.
   base::RecordAction(base::UserMetricsAction("ShowOptions"));
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      ProfileManager::GetActiveUserProfile());
+      ProfileManager::GetActiveUserProfile(), display_id);
 }
 
 void SystemTrayClient::ShowBluetoothSettings() {
@@ -305,7 +305,7 @@ void SystemTrayClient::ShowBluetoothSettings() {
 
 void SystemTrayClient::ShowBluetoothPairingDialog(
     const std::string& address,
-    const base::string16& name_for_display,
+    const std::u16string& name_for_display,
     bool paired,
     bool connected) {
   if (chromeos::BluetoothPairingDialog::ShowDialog(address, name_for_display,
@@ -351,12 +351,8 @@ void SystemTrayClient::ShowChromeSlow() {
 
 void SystemTrayClient::ShowIMESettings() {
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
-  const std::string path =
-      base::FeatureList::IsEnabled(
-          ::chromeos::features::kLanguageSettingsUpdate)
-          ? chromeos::settings::mojom::kInputSubpagePath
-          : chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath;
-  ShowSettingsSubPageForActiveUser(path);
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kInputSubpagePath);
 }
 
 void SystemTrayClient::ShowConnectedDevicesSettings() {
@@ -408,7 +404,7 @@ void SystemTrayClient::ShowGestureEducationHelp() {
   if (!profile)
     return;
 
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(profile);
   proxy->LaunchAppWithUrl(web_app::kHelpAppId, ui::EventFlags::EF_NONE,
                           GURL(chrome::kChromeOSGestureEducationHelpURL),
@@ -518,6 +514,16 @@ void SystemTrayClient::ShowArcVpnCreate(const std::string& app_id) {
 
   apps::AppServiceProxyFactory::GetForProfile(profile)->Launch(
       app_id, ui::EF_NONE, apps::mojom::LaunchSource::kFromParentalControls);
+}
+
+void SystemTrayClient::ShowSettingsSimUnlock() {
+  // TODO(https://crbug.com/1093185) Add metrics action recorder.
+  SessionManager* const session_manager = SessionManager::Get();
+  DCHECK(session_manager->IsSessionStarted());
+  DCHECK(!session_manager->IsInSecondaryLoginScreen());
+  std::string page = chromeos::settings::mojom::kCellularNetworksSubpagePath;
+  page += "&showSimLockDialog=true";
+  ShowSettingsSubPageForActiveUser(page);
 }
 
 void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {

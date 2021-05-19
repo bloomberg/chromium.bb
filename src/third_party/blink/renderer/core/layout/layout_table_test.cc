@@ -80,16 +80,7 @@ TEST_F(LayoutTableTest, OverflowWithCollapsedBorders) {
                                             LayoutUnit(0), LayoutUnit(10));
   EXPECT_EQ(expected_self_visual_overflow,
             table->PhysicalSelfVisualOverflowRect());
-  if (RuntimeEnabledFeatures::LayoutNGTableEnabled()) {
-    EXPECT_EQ(table->PhysicalContentBoxRect(),
-              table->PhysicalLayoutOverflowRect());
-  } else {
-    // In Legacy, visual overflow incorrectly does not include borders
-    // that extend beyond table boundaries.
-    // For this table, its layout overflow equals self visual overflow.
-    EXPECT_EQ(expected_self_visual_overflow,
-              table->PhysicalLayoutOverflowRect());
-  }
+  EXPECT_EQ(expected_self_visual_overflow, table->PhysicalLayoutOverflowRect());
   // The table's visual overflow covers self visual overflow and content visual
   // overflows.
   auto expected_visual_overflow = table->PhysicalContentBoxRect();
@@ -242,11 +233,7 @@ TEST_F(LayoutTableTest, WidthPercentagesExceedHundred) {
 
   // Table width should be TableLayoutAlgorithm::kMaxTableWidth
   auto* table = GetTableByElementId("onlyTable");
-  // TablesNG will grow up to LayoutUnit::Max()
-  if (RuntimeEnabledFeatures::LayoutNGTableEnabled())
-    EXPECT_EQ(2000000, table->OffsetWidth());
-  else
-    EXPECT_EQ(1000000, table->OffsetWidth());
+  EXPECT_EQ(1000000, table->OffsetWidth());
 }
 
 TEST_F(LayoutTableTest, CloseToMaxWidth) {

@@ -7,8 +7,9 @@ syntax = "proto3";
 package feedstore;
 
 import "components/feed/core/proto/v2/wire/content_id.proto";
-import "components/feed/core/proto/v2/wire/stream_structure.proto";
 import "components/feed/core/proto/v2/wire/feed_action.proto";
+import "components/feed/core/proto/v2/wire/stream_structure.proto";
+import "components/feed/core/proto/v2/wire/web_feed_matcher.proto";
 
 option optimize_for = LITE_RUNTIME;
 
@@ -24,6 +25,9 @@ option optimize_for = LITE_RUNTIME;
 // s/<stream-id>/<content-id>       -> shared_state
 // a/<action-id>                    -> action
 // m                                -> metadata
+// subs                             -> subscribed_web_feeds
+// recommendedIndex                 -> recommended_web_feed_index
+// R/<web_feed_id>                  -> recommended_web_feed
 message Record {
   oneof data {
     StreamData stream_data = 1;
@@ -32,6 +36,9 @@ message Record {
     StoredAction local_action = 4;
     StreamSharedState shared_state = 5;
     Metadata metadata = 6;
+    SubscribedWebFeeds subscribed_web_feeds = 7;
+    WebFeedInfo recommended_web_feed = 8;
+    RecommendedWebFeedIndex recommended_web_feed_index = 9;
   }
 }
 
@@ -65,6 +72,15 @@ message Metadata {
     int64 expiry_time_ms = 2;
   }
 
+  // Metadata about a specific stream.
+  message StreamMetadata {
+    string stream_id = 1;
+    // If this stream has been viewed before, this timestamp matches the
+    // 'StreamData.last_added_time_millis' value of that stream. This is used to
+    // determine whether the user has already seen a stored stream's data.
+    int64 view_time_millis = 2;
+  }
+
   // Token used to read or write to the same storage.
   bytes consistency_token = 1;
   // ID for the next pending action.
@@ -77,6 +93,9 @@ message Metadata {
   // "shared_state"
   //    records.
   int32 stream_schema_version = 4;
+  repeated StreamMetadata stream_metadata = 5;
+  // The GAIA ID associated with the store.
+  string gaia = 6;
 }
 
 // A set of StreamStructures that should be applied to a stream.
@@ -127,6 +146,8 @@ message StreamStructure {
   Type type = 4;
   // Set iff type=CONTENT
   ContentInfo content_info = 5;
+  // Is this the root of the stream?
+  bool is_root = 6;
 }
 
 message DataOperation {
@@ -170,4 +191,47 @@ message StoredAction {
   int32 upload_attempt_count = 2;
   // The action to upload.
   feedwire.FeedAction action = 3;
+}
+
+// List of web feeds for which the user is subscribed.
+message SubscribedWebFeeds {
+  repeated WebFeedInfo feeds = 1;
+  // The unix timestamp in milliseconds that this data was updated from the
+  // server.
+  int64 update_time_millis = 2;
+}
+
+message RecommendedWebFeedIndex {
+  message Entry {
+    string web_feed_id = 1;
+    repeated feedwire.webfeed.WebFeedMatcher matchers = 2;
+  }
+  repeated Entry entries = 1;
+  // The unix timestamp in milliseconds that this data was updated from the
+  // server.
+  int64 update_time_millis = 2;
+}
+
+// Reference to an image.
+message Image {
+  string url = 1;
+}
+
+// See http://go/chrome-web-feed-api.
+message WebFeedInfo {
+  enum State {
+    STATE_UNSPECIFIED = 0;
+    INACTIVE = 1;
+    ACTIVE = 2;
+  }
+  string web_feed_id = 1;
+  string title = 2;
+  string subtitle = 3;
+  string detail_text = 4;
+  string visit_uri = 5;
+  string rss_uri = 6;
+  Image favicon = 7;
+  int64 follower_count = 8;
+  State state = 9;
+  repeated feedwire.webfeed.WebFeedMatcher matchers = 10;
 }

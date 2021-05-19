@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {Route} from '../router.m.js';
+// #import {Route} from '../router.js';
 
 /**
  * Specifies all possible os routes in settings.
@@ -87,7 +87,6 @@
  *   STYLUS: !settings.Route,
  *   SYNC: !settings.Route,
  *   SYNC_ADVANCED: !settings.Route,
- *   WALLPAPER: !settings.Route,
  * }}
  */
 /* #export */ let OsSettingsRoutes;

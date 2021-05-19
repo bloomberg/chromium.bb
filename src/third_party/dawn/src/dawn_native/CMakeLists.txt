@@ -25,10 +25,6 @@ if(BUILD_SHARED_LIBS)
     target_compile_definitions(dawn_native PRIVATE "DAWN_NATIVE_SHARED_LIBRARY")
 endif()
 
-if(DAWN_ENABLE_WGSL)
-    target_link_libraries(dawn_native PRIVATE libtint)
-endif()
-
 target_sources(dawn_native PRIVATE
     "${DAWN_INCLUDE_DIR}/dawn_native/DawnNative.h"
     "${DAWN_INCLUDE_DIR}/dawn_native/dawn_native_export.h"
@@ -66,6 +62,8 @@ target_sources(dawn_native PRIVATE
     "CommandValidation.h"
     "Commands.cpp"
     "Commands.h"
+    "CompilationMessages.cpp"
+    "CompilationMessages.h"
     "ComputePassEncoder.cpp"
     "ComputePassEncoder.h"
     "ComputePipeline.cpp"
@@ -92,6 +90,8 @@ target_sources(dawn_native PRIVATE
     "ErrorScope.h"
     "Extensions.cpp"
     "Extensions.h"
+    "ExternalTexture.cpp"
+    "ExternalTexture.h"
     "ObjectContentHasher.cpp"
     "ObjectContentHasher.h"
     "Fence.cpp"
@@ -159,6 +159,8 @@ target_sources(dawn_native PRIVATE
     "SwapChain.h"
     "Texture.cpp"
     "Texture.h"
+    "TintUtils.cpp"
+    "TintUtils.h"
     "ToBackend.h"
     "Toggles.cpp"
     "Toggles.h"
@@ -169,6 +171,7 @@ target_link_libraries(dawn_native
     PRIVATE dawn_common
             dawn_platform
             dawn_internal_config
+            libtint
             spirv-cross-core
             spirv-cross-glsl
             spirv-cross-hlsl
@@ -180,6 +183,10 @@ if (DAWN_USE_X11)
     find_package(X11 REQUIRED)
     target_link_libraries(dawn_native PRIVATE ${X11_LIBRARIES})
     target_include_directories(dawn_native PRIVATE ${X11_INCLUDE_DIR})
+    target_sources(dawn_native PRIVATE
+        "XlibXcbFunctions.cpp"
+        "XlibXcbFunctions.h"
+    )
 endif()
 
 if (WIN32)

@@ -28,12 +28,14 @@
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/menu_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
@@ -97,6 +99,10 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
 }
 
 @implementation ChromeEarlGreyAppInterface
+
++ (BOOL)isRTL {
+  return UseRTLLayout();
+}
 
 + (NSError*)clearBrowsingHistory {
   if (chrome_test_util::ClearBrowsingHistory()) {
@@ -385,6 +391,10 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
   }
 
   if (@available(iOS 13, *)) {
+    // Always disable default browser promo in new window, to avoid
+    // messages to be closed too early.
+    [self disableDefaultBrowserPromo];
+
     NSUserActivity* activity =
         [[NSUserActivity alloc] initWithActivityType:@"EG2NewWindow"];
     UISceneActivationRequestOptions* options =
@@ -512,6 +522,15 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
 + (NSUInteger)incognitoTabCountInWindowWithNumber:(int)windowNumber {
   return chrome_test_util::GetIncognitoTabCountForWindowWithNumber(
       windowNumber);
+}
+
+// Disables default browser promo. If a test needs to check a message drop down
+// in a second window, this needs to be disabled or the popup will kill the
+// message.
++ (void)disableDefaultBrowserPromo {
+  chrome_test_util::GetMainController().appState.shouldShowDefaultBrowserPromo =
+      NO;
+  LogUserInteractionWithFullscreenPromo();
 }
 
 #pragma mark - WebState Utilities (EG2)

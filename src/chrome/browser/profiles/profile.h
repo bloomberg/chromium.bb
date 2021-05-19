@@ -40,6 +40,7 @@ class Time;
 }
 
 namespace content {
+class ResourceContext;
 class WebUI;
 }
 
@@ -101,6 +102,9 @@ class Profile : public content::BrowserContext {
     EXIT_CRASHED,
   };
 
+  // The use of this class to create non-primary OTR profiles in Desktop
+  // platforms is restricted exclusively for cases where extensions should not
+  // be applicable to run. Please see crbug.com/1098697#c3 for more details.
   class OTRProfileID {
    public:
     // Creates an OTR profile ID from |profile_id|.
@@ -146,6 +150,10 @@ class Profile : public content::BrowserContext {
         JNIEnv* env,
         const base::android::JavaRef<jobject>& j_otr_profile_id);
 
+    // Constructs an OTRProfileID based on the string passed in. Should only be
+    // called with values previously returned by Serialize().
+    static OTRProfileID Deserialize(const std::string& value);
+
     // Constructs a string that represents OTRProfileID from the provided
     // OTRProfileID.
     // TODO(crbug.com/1161104): Use one serialize function for both java and
@@ -163,8 +171,6 @@ class Profile : public content::BrowserContext {
     // Returns this OTRProfileID in a string format that can be used for debug
     // message.
     const std::string& ToString() const;
-
-    static int first_unused_index_;
 
     const std::string profile_id_;
   };
@@ -221,7 +227,8 @@ class Profile : public content::BrowserContext {
   virtual const OTRProfileID& GetOTRProfileID() const = 0;
 
   variations::VariationsClient* GetVariationsClient() override;
-  content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList() override;
+
+  content::ResourceContext* GetResourceContext() override;
 
   // Returns the creation time of this profile. This will either be the creation
   // time of the profile directory or, for ephemeral off-the-record profiles,
@@ -241,18 +248,19 @@ class Profile : public content::BrowserContext {
 
   // Return an OffTheRecord version of this profile with the given
   // |otr_profile_id|. The returned pointer is owned by the receiving profile.
+  // If an OffTheRecord with |otr_profile_id| profile id does not exist, a new
+  // profile is created and returned if |create_if_needed| is true or a nullptr
+  // is returned if it is false.
   // If the receiving profile is OffTheRecord, the owner would be its original
   // profile.
   //
-  // WARNING I: This will create the OffTheRecord profile if it doesn't already
-  // exist. If this isn't what you want, you need to check
-  // HasOffTheRecordProfile() first.
-  //
-  // WARNING II: Once a profile is no longer used, use
+  // WARNING: Once a profile is no longer used, use
   // ProfileDestroyer::DestroyProfileWhenAppropriate or
   // ProfileDestroyer::DestroyOffTheRecordProfileNow to destroy it.
-  virtual Profile* GetOffTheRecordProfile(
-      const OTRProfileID& otr_profile_id) = 0;
+  // TODO(https://crbug.com/1191315): Remove default value after auditing and
+  // updating use cases.
+  virtual Profile* GetOffTheRecordProfile(const OTRProfileID& otr_profile_id,
+                                          bool create_if_needed = true) = 0;
 
   // Returns all OffTheRecord profiles.
   virtual std::vector<Profile*> GetAllOffTheRecordProfiles() = 0;
@@ -516,13 +524,6 @@ class Profile : public content::BrowserContext {
 
   virtual void RecordMainFrameNavigation() = 0;
 
-  void SetCorsOriginAccessListForOrigin(
-      TargetBrowserContexts target_mode,
-      const url::Origin& source_origin,
-      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-      base::OnceClosure closure) override;
-
  protected:
   void set_is_guest_profile(bool is_guest_profile) {
     is_guest_profile_ = is_guest_profile;
@@ -547,14 +548,13 @@ class Profile : public content::BrowserContext {
   // Returns whether the user has signed in this profile to an account.
   virtual bool IsSignedIn() = 0;
 
-  // TODO(lukasza): Move this method to the //content layer.
-  void SetCorsOriginAccessListForThisContextOnly(
-      const url::Origin& source_origin,
-      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-      base::OnceClosure closure);
-
  private:
+  // Created on the UI thread, and returned by GetResourceContext(), but
+  // otherwise lives on and is destroyed on the IO thread.
+  //
+  // TODO(https://crbug.com/908955): Get rid of ResourceContext.
+  std::unique_ptr<content::ResourceContext> resource_context_;
+
   bool restored_last_session_ = false;
 
   // Used to prevent the notification that this Profile is destroyed from
@@ -576,10 +576,6 @@ class Profile : public content::BrowserContext {
 
   class ChromeVariationsClient;
   std::unique_ptr<variations::VariationsClient> chrome_variations_client_;
-
-  // TODO(lukasza): Move this field to the //content layer.
-  scoped_refptr<content::SharedCorsOriginAccessList>
-      shared_cors_origin_access_list_;
 };
 
 // The comparator for profile pointers as key in a map.

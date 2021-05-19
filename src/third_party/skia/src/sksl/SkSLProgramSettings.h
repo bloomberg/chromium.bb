@@ -8,7 +8,7 @@
 #ifndef SKSL_PROGRAMSETTINGS
 #define SKSL_PROGRAMSETTINGS
 
-#include "src/sksl/SkSLDefines.h"
+#include "include/private/SkSLDefines.h"
 
 namespace SkSL {
 
@@ -53,19 +53,16 @@ struct ProgramSettings {
     int fDefaultUniformBinding = 0;
     // Enables the SkSL optimizer.
     bool fOptimize = true;
-    // (Requires fOptimize = true) Remove any uncalled functions other than main(). Note that a
+    // (Requires fOptimize = true) Removes any uncalled functions other than main(). Note that a
     // function which starts out being used may end up being uncalled after optimization.
     bool fRemoveDeadFunctions = true;
-    // (Requires fOptimize = true) Performs control-flow analysis, constant propagation, and various
-    // other optimizations that are currently implemented as part of the control-flow system.
-    // Turning this off will also disable error-checking for unreachable code and unassigned vars.
-    bool fControlFlowAnalysis = true;
-    // (Requires fOptimize = true AND fControlFlowAnalysis = true) Uses the control-flow graph to
-    // detect and eliminate code within a function that has become unreachable due to optimization.
-    bool fDeadCodeElimination = true;
+    // (Requires fOptimize = true) Removes global variables which are never used.
+    bool fRemoveDeadVariables = true;
     // (Requires fOptimize = true) When greater than zero, enables the inliner. The threshold value
     // sets an upper limit on the acceptable amount of code growth from inlining.
     int fInlineThreshold = SkSL::kDefaultInlineThreshold;
+    // If true, every function in the generated program will be given the `noinline` modifier.
+    bool fForceNoInline = false;
     // If true, implicit conversions to lower precision numeric types are allowed
     // (eg, float to half)
     bool fAllowNarrowingConversions = false;

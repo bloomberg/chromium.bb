@@ -33,7 +33,7 @@
     Time limit removed for <ph name="APP_NAME">$1<ex>Gmail</ex></ph>
   </message>
 
-  <!-- Wallpaper Manager -->
+  <!-- Wallpaper Manager (Deprecated Chrome App Version) -->
   <message name="IDS_WALLPAPER_MANAGER_APP_NAME" desc="Name of the app which allows users to pick their wallpaper.">
     Wallpaper Picker
   </message>
@@ -273,8 +273,11 @@
   <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_ERROR_TITLE" desc="Title for cellular setup when Chrome OS encounters an error preparing the cellular device for setup.">
     No network found
   </message>
-  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_ERROR_MESSAGE" desc="Message displayed under title in cellular setup when Chrome OS encounters an error preparing the cellular device for setup. Prompts user to insert SIM and try again.">
-    Please insert your SIM and try again
+  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_ERROR_MESSAGE" desc="Message displayed under title in cellular setup when Chrome OS encounters an error preparing the cellular device for setup and has retry attempts left. Prompts user to insert SIM and try again.">
+    No network found. Please insert your SIM and try again.
+  </message>
+  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_FINAL_ERROR_MESSAGE" desc="Message displayed under title in cellular setup when Chrome OS encounters an error preparing the cellular device for setup and has no retry attempts left. Prompts user to insert SIM, reboot and try again.">
+    No network found. Please insert your SIM and reboot your device before trying again.
   </message>
   <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_LOADING_TITLE" desc="Title for cellular setup step which indicates that a connection is in progress to the user's mobile data provider (e.g., Verizon).">
     Connecting to <ph name="CARRIER_NAME">$1<ex>Google Fi</ex></ph>
@@ -291,8 +294,8 @@
   <message name="IDS_CELLULAR_SETUP_FINAL_PAGE_TITLE" desc="Title for the final success screen of cellular setup that tells the user that setup is completed but service is being activated">
     Mobile data being activated
   </message>
-  <message name="IDS_CELLULAR_SETUP_FINAL_PAGE_MESSAGE" desc="Message displayed under title in final success screen of cellular setup that tells user that service may take a while to activate.">
-    It might take up to 15 minutes to complete mobile data activation.
+  <message name="IDS_CELLULAR_SETUP_PSIM_FINAL_PAGE_MESSAGE" desc="Message displayed under title in final success screen of physical SIM cellular setup that tells user that service may take a while to activate.">
+    Network has been added successfully. It may take several minutes for your cellular network to become active.
   </message>
   <message name="IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_TITLE" desc="Title for the final screen of cellular setup when ChromeOS encountered an error completing activation">
     Could not activate cellular device
@@ -313,7 +316,7 @@
     Insert SIM before proceeding
   </message>
   <message name="IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_ESIM_LABEL" desc="Label for electronic SIM (eSIM) setup flow card radio select button during cellular setup">
-    eSim setup
+    eSIM setup
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PROFILE_DETECT_MESSAGE" desc="Message displayed during loading page in eSIM setup flow when looking for eSIM profiles.">
     Looking for available profiles...
@@ -356,6 +359,9 @@
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_LOADING" desc="Label informing the user that the activation code is currently being verified.">
     Verifying activation code...
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_INVALID" desc="Label informing the user that the code used to install an eSIM profile is invalid.">
+    Invalid code. Please try again.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESTABLISH_NETWORK_CONNECTION" desc="Message, informing user that a network connection is being established during cellular setup">
     Establishing network connection ...
@@ -546,7 +552,7 @@
     If you download the update over your mobile network, it could result in overage charges.
   </message>
   <message name="IDS_REMORA_CONFIRM_MESSAGE" desc="Remora confirm message on the first OOBE screen">
-    Your Hangouts Meet hardware is ready to be set up.
+    Your Google Meet hardware is ready to set up
   </message>
   <message name="IDS_OOBE_GENERIC_FATAL_ERROR_TITLE" desc="A generic title to be shown during OOBE to be used in error screens.">
     Something went wrong
@@ -859,7 +865,7 @@
     Set up this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> for a child
   </message>
   <message name="IDS_OOBE_USER_CREATION_CHILD_SIGNIN_SUBTITLE" desc="Subtitle of the screen which allows users to choose signin method for child.">
-    To set up parental controls, a child must have a Google Account managed by a parent. <ph name="DEVICE_TYPE_PLURAL">$1<ex>Chromebooks</ex></ph> allow parents to set up screen limits, approve or block websites, and do more with the Family Link app. If the child needs to do schoolwork on sites like Google Classroom, a school account can be added later.
+    To use parental controls like app approval and screen time limits, a child must have a Google Account managed by a parent. A school account can be added later for tools like Google Classroom.
   </message>
   <message name="IDS_OOBE_USER_CREATION_CHILD_SIGNIN_LEARN_MORE" desc="Learn more link text in child account creation screen.">
     Learn more
@@ -1125,6 +1131,21 @@
   </message>
   <message name="IDS_LOGIN_RECOMMEND_APPS_INSTALL" desc="The label on the button that installs the user selected apps">
     Install &#38; continue
+  </message>
+  <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_TITLE_NEW" desc="The title of the dialog that recommend apps to user">
+    Find apps for work and play
+  </message>
+  <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_DESCRIPTION_NEW" desc="The description of the 'Recommend Apps' section">
+    Get creative, be productive, and stay entertained with apps on the Google Play Store
+  </message>
+  <message name="IDS_LOGIN_RECOMMEND_APPS_SELECT_ALL" desc="The label on the button that selects all recommended apps">
+    Select all
+  </message>
+  <message name="IDS_LOGIN_RECOMMEND_APPS_DO_IT_LATER" desc="The label on the button that skips installing any recomended apps">
+    Do it later
+  </message>
+  <message name="IDS_LOGIN_RECOMMEND_APPS_DONE" desc="The label on the button that installs the user selected apps">
+    Done
   </message>
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_LOADING" desc="Message shown while the recommended app list is being downloaded.">
     Please wait...
@@ -1595,6 +1616,9 @@
   <message name="IDS_NETWORK_LIST_SIM_CARD_LOCKED" desc="Text in the network list element when a Cellular network's SIM card is locked.">
     SIM card is locked
   </message>
+  <message name="IDS_NETWORK_LIST_UPDATED_CELLULAR_SIM_CARD_LOCKED" desc="Text in the network list element when a Cellular network's SIM card is locked. Used when updated cellular activation flag in on.">
+    Locked
+  </message>
   <message name="IDS_NETWORK_LIST_NOT_CONNECTED" desc="Text in the network list element when there is a network for the type, but it is not connected or connecting.">
     Not connected
   </message>
@@ -1682,8 +1706,29 @@
   <message name="IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_WITH_PROVIDER_NAME_INSTALLING" desc="A11y label for an eSIM profile that is currently installing, shown in a list in settings and oobe. Includes the provider name.">
     Installing mobile profile, Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="NETWORK_PROVIDER_NAME">$4<ex>Verizon LTE</ex></ph>
   </message>
+  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATE" desc="Text for the button displayed for SIM networks that haven't been setup that opens the SIM setup dialog when clicked." translateable="false">
+    Activate
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATE_A11Y_LABEL" desc="A11Y label for the button displayed for SIM networks that haven't been setup that opens the SIM setup dialog when clicked. Includes network name." translateable="false">
+    Activate, <ph name="NETWORK_NAME">$1<ex>Verizon</ex></ph>
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATING" desc="Loading text indicating that the SIM network is currently being set up so that the user can connect to it to access the Internet." translateable="false">
+    Activating...
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_UNAVAILABLE_SIM_NETWORK" desc="Text for label displayed for SIM networks that are not available to be setup.">
+    Not activated. Contact your carrier.
+  </message>
   <message name="IDS_NETWORK_LIST_ITEM_DOWNLOAD" desc="Text for the button displayed for pending eSIM profiles that installs the profile when pressed.">
     Download
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_DOWNLOAD_A11Y_LABEL" desc="A11Y label for the button displayed for pending eSIM profiles that installs the profile when pressed. Includes profile name">
+    Download, <ph name="PROFILE_NAME">$1<ex>Cellular</ex></ph>
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_UNLOCK" desc="Text for the button displayed for locked cellular networks that opens a dialog to unlock the network when pressed ">
+    Unlock
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_UNLOCK_A11Y_LABEL" desc="A11Y label for button displayed for locked cellular networks that opens a dialog to unlock the network when pressed. Includes network name.">
+    <ph name="NETWORK_NAME">$1<ex>Cellular</ex></ph>, Unlock
   </message>
   <message name="IDS_NETWORK_LIST_ITEM_ADDING_PROFILE" desc="Loading text indicating that an eSIM profile is currently installing.">
     Adding Profile...
@@ -1773,8 +1818,8 @@
   <message name="IDS_SETTINGS_INTERNET_NETWORK_CERTIFICATE_NONE_INSTALLED" desc="Settings > Internet > Network configuration: Label when no certificates are installed.">
     None installed
   </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_REQUIRE_HARDWARE_BACKED" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when a non hardware-backed user certificate is selected.">
-    User certificate must be hardware-backed.
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_NOT_AVAILABLE_FOR_NETWORK_AUTH" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when a certificate is selected which is not available for network authentication .">
+    User certificate is not available for network authentication.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_ACCESS_POINT" desc="Settings > Internet > Network details: Access Point section label.">
     Access Point
@@ -1922,8 +1967,17 @@
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for change PIN dialog.">
     Change SIM PIN
   </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TOOLTIP" desc="Settings > Internet > Network details > Lock/unlock SIM card: Tooltip over SIM lock toggle that indicates that the operation cannot be performed without network connection">
+    Connect to this network to change SIM lock setting
+  </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for SIM locked dialog.">
     SIM Card is locked
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_SUBTITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title informing the user to enter a PIN provided by the carrier in order unlock network">
+    Enter the 8-digit PIN Unblocking Key provided by your carrier
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_SUBTITLE" desc="Subtitle for Network Summary item when the SIM is locked.">
+    SIM Locked
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_WARNING" desc="Settings > Internet > Network details > Lock/unlock SIM card: Warning for SIM locked dialog when PUK is required.">
     If you fail to verify, your network access will be disabled.
@@ -2482,6 +2536,12 @@
   <message name="IDS_LOCK_PASSWORD_CHANGED_OLD_PASSWORD_HINT" desc="Old password field hint on the password changed dialog.">
     Enter old password
   </message>
+  <message name="IDS_LOCK_SCREEN_NETWORK_TITLE" desc="Title for the network dialog shown on the lock screen">
+    Network not available
+  </message>
+  <message name="IDS_LOCK_SCREEN_NETWORK_SUBTITLE" desc="Subtitle for lock screen network dialog">
+    Please connect to the internet to sign in to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
   <message name="IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED" desc="Couldn't sign into Google account on the Active Directory managed device.">
     Sorry, Google accounts are not allowed on this device.
   </message>
@@ -2622,6 +2682,9 @@
   </message>
   <message name="IDS_LOGIN_CONNECTING_INDICATOR_TEXT" desc="A message to show telling the user that the device is attempting to re-connect to the network.">
     Connecting and verifying
+  </message>
+  <message name="IDS_LOGIN_SSH_WARNING" desc="A message telling user that the device has SSH server configured. So they should be carefule with accounts they use to sign in.">
+    Device has SSH server configured. Do not sign in with sensitive accounts.
   </message>
   <message name="IDS_DEVICE_DISABLED_HEADING" desc="Heading of the message shown to the user when the device has been disabled by its owner.">
     Your device is locked
@@ -3930,10 +3993,10 @@
     Loading...
   </message>
   <message name="IDS_ARC_SNAPSHOT_RESTART_NOTIFICATION_TITLE" desc="Title of the notification shown to the user when ARC data snapshot must be updated">
-    Restart requested
+    Restart to update organization’s apps
   </message>
   <message name="IDS_ARC_SNAPSHOT_RESTART_NOTIFICATION_MESSAGE" desc="Message in the notification shown to the user when ARC data snapshot must be updated">
-    Your administrator requested to restart your device to update apps. This may take several minutes to complete.
+    This update from your administrator will make your organization’s apps open faster. This may take a few minutes.
   </message>
   <message name="IDS_ARC_SNAPSHOT_RESTART_NOTIFICATION_RESTART_BUTTON" desc="Label on button in the notification shown to the user when ARC data snapshot must be updated">
     Restart
@@ -4369,6 +4432,9 @@
   <message name="IDS_CROSTINI_INSTALLER_INSTALL_BUTTON" desc="Label for the button in the Crostini installer dialog to begin installing Linux.">
     Install
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_SETTINGS_BUTTON" desc="Label for the button in the Crostini installer dialog to open the settings app.">
+    Open Settings
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_INSTALLING" desc="Text shown in the Crostini installer dialog while  Linux is installing.">
     Installing Linux...
   </message>
@@ -4429,6 +4495,12 @@
   <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR" desc="Text shown in the Crostini installer dialog when the VM component fails to load">
     Error downloading the virtual machine. Please try again.
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_NEED_UPDATE_TITLE" desc="Title shown in the Crostini installer dialog when the VM fails to install because the device must be updated">
+    Chrome OS update required
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_NEED_UPDATE_ERROR" desc="Text shown in the Crostini installer dialog when the VM fails to install because the device must be updated first">
+    To finish setting up Linux, update Chrome OS and try again.
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR" desc="Text shown in the Crostini installer dialog when the VM service fails to start">
     Error starting the virtual machine service. Please try again.
   </message>
@@ -4467,6 +4539,9 @@
   </message>
   <message name="IDS_CROSTINI_INSTALLER_DISK_SIZE_HINT" desc="Text shown in Crostini installer dialog to explain that the disk size can be modified later in Settings">
     This can be modified later in Settings
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_USERNAME_LABEL" desc="Label for the field where the user enters their username">
+    Username
   </message>
   <message name="IDS_CROSTINI_INSTALLER_USERNAME_MESSAGE" desc="Text shown in the Crostini installer dialog prompting the user to pick their username">
     Select a username
@@ -4793,6 +4868,24 @@
   <message name="IDS_CROSTINI_RECOVERY_RESTART_BUTTON" desc="Label for the dialog button when Linux will be restarted after a Chrome crash.">
     Restart Linux
   </message>
+
+  <!-- Crostini low disk space notification -->
+  <message name="IDS_CROSTINI_LOW_DISK_NOTIFICATION_TITLE" desc="Title of the notification warning users that they are low on disk space.">
+    Linux is low on disk space
+  </message>
+  <message name="IDS_CROSTINI_LOW_DISK_NOTIFICATION_MESSAGE" desc="Notification text warning users that they are low on disk space.">
+    Free up disk space or resize the Linux disk in Settings
+  </message>
+  <message name="IDS_CROSTINI_CRITICALLY_LOW_DISK_NOTIFICATION_TITLE" desc="Title of the notification warning users that they are critically low on disk space.">
+    Linux disk space critically low
+  </message>
+  <message name="IDS_CROSTINI_CRITICALLY_LOW_DISK_NOTIFICATION_MESSAGE" desc="Notification text warning users that they are critically low on disk space.">
+    Linux apps may become unresponsive.
+  </message>
+  <message name="IDS_CROSTINI_LOW_DISK_NOTIFICATION_BUTTON" desc="Button on the low disk notification to open storage management.">
+    Resize Linux disk
+  </message>
+
   <!-- Time limit notification -->
   <message name="IDS_SCREEN_TIME_NOTIFICATION_TITLE" desc="The title of the notification when screen usage limit reaches before locking the device.">
     Almost time for a break
@@ -5105,7 +5198,7 @@
   </message>
 
   <!-- Strings for Plugin VM -->
-  <message name="IDS_PLUGIN_VM_APP_NAME" desc="Name of the 'Parallels' app.">
+  <message name="IDS_PLUGIN_VM_APP_NAME" desc="Product name for 'Parallels Desktop'. Should not be translated as it is a third party name." translateable="false">
     Parallels Desktop
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_CONFIRMATION_TITLE" desc="Title of the Plugin VM installer when asking user to start installation.">
@@ -5194,6 +5287,9 @@
   </message>
   <message name="IDS_PLUGIN_VM_START_VM_ERROR_TITLE" desc="Title in the notification shown when launching the 'Plugin VM' app failed due to a network or unknown error.">
     Couldn't open <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>
+  </message>
+  <message name="IDS_PLUGIN_VM_START_VM_INSUFFICIENT_DISK_SPACE_ERROR_MESSAGE" desc="Message in the error dialog shown when launching Parallels Desktop fails due to insufficient disk space.">
+    Disk space is critically low. Free up disk space and try again.
   </message>
   <message name="IDS_PLUGIN_VM_NETWORK_ERROR_MESSAGE" desc="Message in the notification shown when launching the 'Plugin VM' app failed due to a network error.">
     Connect to the internet and try again
@@ -5287,11 +5383,17 @@
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_BUTTON" desc="Label for the button to view accounts on the Chrome OS Account Manager Welcome screen.">
     View accounts
   </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_TITLE" desc="Title for the Chrome OS 'Add account' dialog.">
+    Sign in to add a Google account
+  </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_TITLE" desc="Title for the Welcome screen in Chrome OS 'Add account' dialog.">
     Add another Google Account for <ph name="USER_NAME">$1<ex>John</ex></ph>
   </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY" desc="Text body for the Welcome screen in Chrome OS 'Add account' dialog.">
     You can manage signed-in Google Accounts from <ph name="LINK_BEGIN">&lt;a id="osSettingsLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>Settings<ph name="LINK_END">&lt;/a&gt;</ph>. Permissions you have granted to websites and apps may apply to all accounts. If you don't want sites or apps to access your account info, you can sign into your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> as a guest or browse the web in an <ph name="LINK_2_BEGIN">&lt;a id="incognitoLink" href="#"&gt;</ph>incognito window<ph name="LINK_2_END">&lt;/a&gt;</ph>.
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY_WITHOUT_INCOGNITO" desc="Text body for the Welcome screen in Chrome OS 'Add account' dialog without incognito link.">
+    You can manage signed-in Google Accounts from <ph name="LINK_BEGIN">&lt;a id="osSettingsLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>Settings<ph name="LINK_END">&lt;/a&gt;</ph>. Permissions you have granted to websites and apps may apply to all accounts. If you don't want sites or apps to access your account info, you can sign into your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> as a guest.
   </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_CHECKBOX" desc="Checkbox text for the Welcome screen in Chrome OS 'Add account' dialog. If user checks this checkbox, this screen will not be shown the next time they open the dialog.">
     Don't remind me next time
@@ -5440,6 +5542,9 @@
   </message>
   <message name="IDS_BOREALIS_DLC_NEED_REBOOT_FAILED_MESSAGE" desc="" translateable="false">
     Please restart your device to use <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>.
+  </message>
+  <message name="IDS_BOREALIS_DLC_NEED_UPDATE_FAILED_MESSAGE" desc="" translateable="false">
+    Please ensure that your device is up to date and try again.
   </message>
   <message name="IDS_BOREALIS_INSUFFICIENT_DISK_SPACE_MESSAGE" desc="" translateable="false">
       Your device is low on storage. To increase free space, delete files from device.
@@ -5678,6 +5783,11 @@ You can manage this account’s settings by installing the Family Link app on yo
   </message>
   <message name="IDS_SUGGESTION_AUTOCORRECT_UNDO_WINDOW_SHOWN" desc="String announced by screenreader when a button to undo an autocorrect is shown. Example, user types 'hllo', system autocorrects to 'hello', user then prepares to revert the autocorrect.">
     Autocorrect undo dialog is shown for <ph name="TYPED_WORD">$1<ex>hllo</ex></ph> corrected to <ph name="CORRECTED_WORD">$2<ex>hello</ex></ph>.  Press up arrow to access, escape to ignore.
+  </message>
+
+  <!-- Strings for emoji picker-->
+  <message name="IDS_ACCNAME_EMOJI_PICKER" desc="The accessible name for the emoji picker.">
+    Emoji Picker
   </message>
 
   <!-- Strings for Custom Tab UI -->

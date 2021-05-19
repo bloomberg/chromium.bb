@@ -21,6 +21,7 @@ class GrProgramDesc;
 class GrProgramInfo;
 class GrProxyProvider;
 class GrRecordingContextPriv;
+class GrSubRunAllocator;
 class GrSurfaceContext;
 class GrSurfaceProxy;
 class GrTextBlobCache;
@@ -95,17 +96,17 @@ public:
     // GrRecordingContext. Arenas does not maintain ownership of the pools it groups together.
     class Arenas {
     public:
-        Arenas(GrMemoryPool*, SkArenaAlloc*);
-
-        // For storing GrOp-derived classes recorded by a GrRecordingContext
-        GrMemoryPool* opMemoryPool() { return fOpMemoryPool; }
+        Arenas(SkArenaAlloc*, GrSubRunAllocator*);
 
         // For storing pipelines and other complex data as-needed by ops
         SkArenaAlloc* recordTimeAllocator() { return fRecordTimeAllocator; }
 
+        // For storing GrTextBlob SubRuns
+        GrSubRunAllocator* recordTimeSubRunAllocator() { return fRecordTimeSubRunAllocator; }
+
     private:
-        GrMemoryPool* fOpMemoryPool;
         SkArenaAlloc* fRecordTimeAllocator;
+        GrSubRunAllocator* fRecordTimeSubRunAllocator;
     };
 
 protected:
@@ -116,7 +117,7 @@ protected:
     // Like Arenas, but preserves ownership of the underlying pools.
     class OwnedArenas {
     public:
-        OwnedArenas();
+        OwnedArenas(bool ddlRecording);
         ~OwnedArenas();
 
         Arenas get();
@@ -124,11 +125,12 @@ protected:
         OwnedArenas& operator=(OwnedArenas&&);
 
     private:
-        std::unique_ptr<GrMemoryPool> fOpMemoryPool;
+        bool fDDLRecording;
         std::unique_ptr<SkArenaAlloc> fRecordTimeAllocator;
+        std::unique_ptr<GrSubRunAllocator> fRecordTimeSubRunAllocator;
     };
 
-    GrRecordingContext(sk_sp<GrContextThreadSafeProxy>);
+    GrRecordingContext(sk_sp<GrContextThreadSafeProxy>, bool ddlRecording);
 
     bool init() override;
 

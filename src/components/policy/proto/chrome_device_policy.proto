@@ -141,6 +141,7 @@ message DeviceReportingProto {
   optional bool report_fan_info = 23 [default = false];
   optional bool report_vpd_info = 24 [default = false];
   optional bool report_system_info = 25 [default = false];
+  optional bool report_print_jobs = 26 [default = false];
 
   // Frequency to report device status, default to 3 hours.
   // If changed, the default value has to be updated in
@@ -1762,6 +1763,16 @@ message DevicePciPeripheralDataAccessEnabledProto {
   optional bool enabled = 1 [default = false];
 }
 
+// Setting that controls whether Borealis will be allowed on the device.
+message DeviceBorealisAllowedProto {
+  optional bool allowed = 1 [default = true];
+}
+
+message DeviceAllowedBluetoothServicesProto {
+  // Policy which controls which service UUID is available.
+  repeated string allowlist = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61, 90;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1914,4 +1925,7 @@ message ChromeDeviceSettingsProto {
       device_system_wide_tracing_enabled = 117;
   optional DevicePciPeripheralDataAccessEnabledProto
       device_pci_peripheral_data_access_enabled = 118;
+  optional DeviceBorealisAllowedProto device_borealis_allowed = 119;
+  optional DeviceAllowedBluetoothServicesProto
+      device_allowed_bluetooth_services = 120;
 }

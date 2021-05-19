@@ -557,7 +557,7 @@ bool WebUITabStripContainerView::IsDraggedTab(const ui::OSExchangeData& data) {
   base::Pickle pickle;
   if (data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
                           &pickle)) {
-    base::string16 result;
+    std::u16string result;
     ui::ReadCustomDataForType(pickle.data(), pickle.size(),
                               base::ASCIIToUTF16(kWebUITabIdDataType), &result);
     if (result.size())
@@ -790,15 +790,27 @@ void WebUITabStripContainerView::AnimationProgressed(
 
 void WebUITabStripContainerView::ShowContextMenuAtPoint(
     gfx::Point point,
-    std::unique_ptr<ui::MenuModel> menu_model) {
+    std::unique_ptr<ui::MenuModel> menu_model,
+    base::RepeatingClosure on_menu_closed_callback) {
+  if (!web_view_->GetWebContents())
+    return;
   ConvertPointToScreen(this, &point);
   context_menu_model_ = std::move(menu_model);
   context_menu_runner_ = std::make_unique<views::MenuRunner>(
       context_menu_model_.get(),
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU |
+          views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER,
+      on_menu_closed_callback);
   context_menu_runner_->RunMenuAt(
       GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
-      views::MenuAnchorPosition::kTopLeft, ui::MENU_SOURCE_MOUSE);
+      views::MenuAnchorPosition::kTopLeft, ui::MENU_SOURCE_MOUSE,
+      web_view_->GetWebContents()->GetContentNativeView());
+}
+
+void WebUITabStripContainerView::CloseContextMenu() {
+  if (!context_menu_runner_)
+    return;
+  context_menu_runner_->Cancel();
 }
 
 void WebUITabStripContainerView::ShowEditDialogForGroupAtPoint(
@@ -838,6 +850,11 @@ TabStripUILayout WebUITabStripContainerView::GetLayout() {
 
 SkColor WebUITabStripContainerView::GetColor(int id) const {
   return GetThemeProvider()->GetColor(id);
+}
+
+SkColor WebUITabStripContainerView::GetSystemColor(
+    ui::NativeTheme::ColorId id) const {
+  return GetNativeTheme()->GetSystemColor(id);
 }
 
 int WebUITabStripContainerView::GetHeightForWidth(int w) const {

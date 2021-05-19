@@ -5,7 +5,7 @@
 import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
-import '../settings_shared_css.m.js';
+import '../settings_shared_css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
@@ -15,7 +15,7 @@ import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behav
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {routes} from '../route.js';
-import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.js';
 import {AllSitesAction2, ContentSetting, ContentSettingsTypes, SiteSettingSource} from '../site_settings/constants.js';
 import {SiteSettingsBehavior} from '../site_settings/site_settings_behavior.js';
 import {RawSiteException, RecentSitePermissions} from '../site_settings/site_settings_prefs_browser_proxy.js';
@@ -175,9 +175,11 @@ Polymer({
       case ContentSettingsTypes.WINDOW_PLACEMENT:
         return this.i18n('siteSettingsWindowPlacementMidSentence');
       case ContentSettingsTypes.FONT_ACCESS:
-        return this.i18n('fontsAccessMidSentence');
+        return this.i18n('siteSettingsFontAccessMidSentence');
       case ContentSettingsTypes.IDLE_DETECTION:
         return this.i18n('siteSettingsIdleDetectionMidSentence');
+      case ContentSettingsTypes.FILE_HANDLING:
+        return this.i18n('siteSettingsFileHandlingMidSentence');
       default:
         return '';
     }

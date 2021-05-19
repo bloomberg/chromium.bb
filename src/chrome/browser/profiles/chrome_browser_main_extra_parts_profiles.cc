@@ -128,7 +128,6 @@
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_service_factory.h"
 #include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
-#include "chrome/browser/media/feeds/media_feeds_service_factory.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade_factory.h"
 #include "chrome/browser/profiles/profile_theme_update_service_factory.h"
@@ -193,12 +192,17 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/login/security_token_session_controller_factory.h"
+#include "chrome/browser/ash/login/security_token_session_controller_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/cert_db_initializer_factory.h"
+#endif
+
+#if defined(OS_MAC)
+#include "chrome/browser/ui/cocoa/screentime/history_bridge_factory.h"
+#include "chrome/browser/ui/cocoa/screentime/screentime_features.h"
 #endif
 
 namespace chrome {
@@ -332,7 +336,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   if (MediaEngagementService::IsEnabled())
     MediaEngagementServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)
-  media_feeds::MediaFeedsServiceFactory::GetInstance();
   MediaGalleriesPreferencesFactory::GetInstance();
 #endif
   if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
@@ -407,6 +410,10 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::AdvancedProtectionStatusManagerFactory::GetInstance();
+#endif
+#if defined(OS_MAC)
+  if (screentime::IsScreenTimeEnabled())
+    screentime::HistoryBridgeFactory::GetInstance();
 #endif
   SCTReportingServiceFactory::GetInstance();
 #if defined(OS_ANDROID)

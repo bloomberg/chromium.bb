@@ -285,6 +285,11 @@ SuperFatArch* DumpSymbols::FindBestMatchForArchitecture(
 string DumpSymbols::Identifier() {
   FileID file_id(object_filename_.c_str());
   unsigned char identifier_bytes[16];
+  scoped_ptr<Module> module;
+  if (!selected_object_file_) {
+    if (!CreateEmptyModule(module))
+      return string();
+  }
   cpu_type_t cpu_type = selected_object_file_->cputype;
   cpu_subtype_t cpu_subtype = selected_object_file_->cpusubtype;
   if (!file_id.MachoIdentifier(cpu_type, cpu_subtype, identifier_bytes)) {
@@ -301,6 +306,10 @@ string DumpSymbols::Identifier() {
   for(size_t i = compacted.find('-'); i != string::npos;
       i = compacted.find('-', i))
     compacted.erase(i, 1);
+
+  // The pdb for these IDs has an extra byte, so to make everything uniform put
+  // a 0 on the end of mac IDs.
+  compacted += "0";
 
   return compacted;
 }
@@ -406,7 +415,6 @@ bool DumpSymbols::CreateEmptyModule(scoped_ptr<Module>& module) {
   string identifier = Identifier();
   if (identifier.empty())
     return false;
-  identifier += "0";
 
   // Create a module to hold the debugging information.
   module.reset(new Module(module_name,

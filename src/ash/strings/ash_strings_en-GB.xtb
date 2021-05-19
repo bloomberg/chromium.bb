@@ -40,6 +40,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1252999807265626933">Charging from <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">What's the weather?</translation>
 <translation id="1267032506238418139">Shortcut change</translation>
+<translation id="1269405891096105529">Peripheral not supported in Guest Mode</translation>
 <translation id="1270290102613614947">On-screen keyboard disabled</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1275285675049378717">Powering <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Type a message</translation>
 <translation id="2018630726571919839">Tell me a joke</translation>
+<translation id="2021864487439853900">Click to unlock</translation>
 <translation id="2049240716062114887">Desk name was changed to <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Keyboard brightness</translation>
@@ -276,6 +278,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> can still sign in later.</translation>
 <translation id="3321628682574733415">Incorrect parent code</translation>
 <translation id="332587331255250389">Please replace the battery</translation>
+<translation id="3333741161915951567">Modem reboot. Wait 30 sec before trying again.</translation>
 <translation id="3341303451326249809">Screenshot captured</translation>
 <translation id="334252345105450327">Take a screenshot</translation>
 <translation id="3351879221545518001">You are currently casting the screen.</translation>
@@ -320,6 +323,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> managed user</translation>
 <translation id="3665889125180354336">Record microphone</translation>
 <translation id="36813544980941320">Wi-Fi networks will be shared between your phone and <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Showing windows from the current desk; press the Up arrow key to show windows from all desks</translation>
 <translation id="3702846122927433391">Population in Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Loading...</translation>
@@ -351,6 +355,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="394485226368336402">Audio settings</translation>
 <translation id="3945319193631853098">Tap to complete setup</translation>
 <translation id="3945867833895287237">Connecting to hotspot…</translation>
+<translation id="3958465044488004317">See result in Assistant</translation>
 <translation id="3962859241508114581">Previous track</translation>
 <translation id="3969043077941541451">Off</translation>
 <translation id="397105322502079400">Calculating...</translation>
@@ -407,10 +412,12 @@ Here are some things that you can try to get started.</translation>
 <translation id="4421231901400348175">Sharing control of your screen with <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4424159417645388645">Desk 5</translation>
 <translation id="4430019312045809116">volume</translation>
+<translation id="4445159312344259901">Sign in to unlock</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 important notification}other{# important notifications}}</translation>
 <translation id="4450893287417543264">Don't show again</translation>
 <translation id="445864333228800152">Good evening,</translation>
 <translation id="4458688154122353284">Stop screen recording</translation>
+<translation id="4467143075433126295">Press and hold [Esc] to exit full screen</translation>
 <translation id="4472575034687746823">Get started</translation>
 <translation id="4477350412780666475">Next track</translation>
 <translation id="4477892968187500306">This device may contain apps that haven't been verified by Google.</translation>
@@ -607,6 +614,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">The Google Assistant is not available in a guest session.</translation>
 <translation id="6137566720514957455">Open remove dialogue for <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Peripheral not supported</translation>
 <translation id="615957422585914272">Show on-screen keyboard</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="6179832488876878285">You can pin your important files here. Open Files app to get started.</translation>
@@ -624,11 +632,11 @@ Here are some things that you can try to get started.</translation>
 <translation id="6297287540776456956">Use the stylus to select a region</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> was rotated to <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Voice</translation>
+<translation id="6330012934079202188">Showing windows from all desks; press the Up arrow key to show windows from the current desk</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> is a managed session managed by <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth is on</translation>
 <translation id="6381109794406942707">To unlock the device, enter your PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK is off</translation>
-<translation id="6396835948284782440">Press and hold [Esc] to exit.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Clear all notifications</translation>
@@ -794,7 +802,6 @@ Here are some things that you can try to get started.</translation>
 <translation id="7780159184141939021">Rotate screen</translation>
 <translation id="7796353162336583443">Tap the stylus button on the shelf to take a note, screenshot, use the Google Assistant, laser pointer or magnifying glass.</translation>
 <translation id="7798302898096527229">Press Search or Shift to cancel.</translation>
-<translation id="7807966291075028781">Peripheral not supported in Guest mode for security reasons</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> and <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Strong signal</translation>
 <translation id="7837740436429729974">Time's up</translation>
@@ -944,6 +951,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="8936501819958976551">deactivated</translation>
 <translation id="8938800817013097409">USB-C device (right port in the back)</translation>
 <translation id="8940956008527784070">Battery low (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Only approved Thunderbolt devices are compatible with your Chromebook</translation>
 <translation id="8982906748181120328">Nearby visibility</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Using <ph name="IME_NAME" /></translation>

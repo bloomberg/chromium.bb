@@ -16,10 +16,10 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
-#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/remote_apps/id_generator.h"
 #include "chrome/browser/chromeos/remote_apps/remote_apps_manager.h"
@@ -121,7 +121,7 @@ class RemoteAppsImplBrowsertest : public policy::DevicePolicyCrosBrowserTest {
         ->SetIdGeneratorForTesting(std::move(id_generator));
 
     extensions::ChromeTestExtensionLoader loader(profile);
-    loader.set_location(extensions::Manifest::EXTERNAL_POLICY);
+    loader.set_location(extensions::mojom::ManifestLocation::kExternalPolicy);
     loader.set_pack_extension(true);
     loader.set_pem_path(pem_path);
     // When |set_pack_extension_| is true, the |loader| first packs and then

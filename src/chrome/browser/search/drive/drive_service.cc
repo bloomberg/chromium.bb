@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "build/build_config.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/signin/public/identity_manager/scope_set.h"
@@ -16,17 +17,27 @@
 namespace {
 // The scope required for an access token in order to query ItemSuggest.
 constexpr char kDriveScope[] = "https://www.googleapis.com/auth/drive.readonly";
-// TODO(crbug/1171898): Will need to change and verify client_info in the
-// future.
+#if OS_LINUX
+constexpr char kPlatform[] = "LINUX";
+#elif OS_WIN
+constexpr char kPlatform[] = "WINDOWS";
+#elif OS_MAC
+constexpr char kPlatform[] = "MAC_OS";
+#elif OS_CHROMEOS
+constexpr char kPlatform[] = "CHROME_OS";
+#else
+constexpr char kPlatform[] = "UNSPECIFIED_PLATFORM";
+#endif
+// TODO(crbug/1178869): Add language code to request.
 constexpr char kRequestBody[] = R"({
-      'client_info': {
-        'platform_type': 'UNSPECIFIED_PLATFORM',
-        'scenario_type': 'CHROME_NTP_FILES',
-        'request_type': 'LIVE_REQUEST'
-      },
-      'max_suggestions': 3,
-      'type_detail_fields': 'drive_item.title,drive_item.mimeType'
-    })";
+  'client_info': {
+    'platform_type': '%s',
+    'scenario_type': 'CHROME_NTP_FILES',
+    'request_type': 'LIVE_REQUEST'
+  },
+  'max_suggestions': 3,
+  'type_detail_fields': 'drive_item.title,drive_item.mimeType'
+})";
 // Maximum accepted size of an ItemSuggest response. 1MB.
 constexpr int kMaxResponseSize = 1024 * 1024;
 const char server_url[] = "https://appsitemsuggest-pa.googleapis.com/v1/items";
@@ -122,7 +133,8 @@ void DriveService::OnTokenReceived(GoogleServiceAuthError error,
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  kTrafficAnnotation);
   url_loader_->SetRetryOptions(0, network::SimpleURLLoader::RETRY_NEVER);
-  url_loader_->AttachStringForUpload(kRequestBody, "application/json");
+  url_loader_->AttachStringForUpload(
+      base::StringPrintf(kRequestBody, kPlatform), "application/json");
   url_loader_->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&DriveService::OnJsonReceived, weak_factory_.GetWeakPtr()),
@@ -176,26 +188,31 @@ void DriveService::OnJsonParsed(
           justification_text_segments->GetList().size() == 0) {
         continue;
       }
-      // TODO(crbug/1179370): Verify what textSegments will be from ItemSuggest.
-      auto* justification_text =
-          justification_text_segments->GetList()[0].FindStringPath("text");
+      std::string justification_text;
+      for (auto& text_segment : justification_text_segments->GetList()) {
+        auto* justification_text_path = text_segment.FindStringPath("text");
+        if (!justification_text_path) {
+          continue;
+        }
+        justification_text += *justification_text_path;
+      }
       auto* id = item.FindStringKey("itemId");
-      if (!title || !mime_type || !justification_text || !id) {
+      auto* item_url = item.FindStringKey("url");
+      if (!title || !mime_type || justification_text.empty() || !id ||
+          !item_url || !GURL(*item_url).is_valid()) {
         continue;
       }
+      auto* photo_url =
+          item.FindStringPath("justification.primaryPerson.photoUrl");
       auto mojo_drive_doc = drive::mojom::File::New();
       mojo_drive_doc->title = *title;
-      if (*mime_type == "application/vnd.google-apps.document") {
-        mojo_drive_doc->type = drive::mojom::FileType::kDoc;
-      } else if (*mime_type == "application/vnd.google-apps.spreadsheet") {
-        mojo_drive_doc->type = drive::mojom::FileType::kSheet;
-      } else if (*mime_type == "application/vnd.google-apps.presentation") {
-        mojo_drive_doc->type = drive::mojom::FileType::kSlide;
-      } else {
-        mojo_drive_doc->type = drive::mojom::FileType::kOther;
-      }
-      mojo_drive_doc->justification_text = *justification_text;
+      mojo_drive_doc->mime_type = *mime_type;
+      mojo_drive_doc->justification_text = justification_text;
       mojo_drive_doc->id = *id;
+      mojo_drive_doc->item_url = GURL(*item_url);
+      if (photo_url && GURL(*photo_url).is_valid()) {
+        mojo_drive_doc->untrusted_photo_url = GURL(*photo_url);
+      }
       document_list.push_back(std::move(mojo_drive_doc));
     }
     std::move(callback).Run(std::move(document_list));

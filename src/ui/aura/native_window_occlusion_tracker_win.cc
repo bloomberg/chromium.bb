@@ -22,7 +22,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/win/hwnd_util.h"
 
 namespace aura {
@@ -243,6 +245,9 @@ void NativeWindowOcclusionTrackerWin::UpdateOcclusionState(
     const base::flat_map<HWND, Window::OcclusionState>&
         root_window_hwnds_occlusion_state,
     bool show_all_windows) {
+  // Pause occlusion until we've updated all root windows, to avoid O(n^3)
+  // calls to recompute occlusion in WindowOcclusionTracker.
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking;
   num_visible_root_windows_ = 0;
   for (const auto& root_window_pair : root_window_hwnds_occlusion_state) {
     auto it = hwnd_root_window_map_.find(root_window_pair.first);
@@ -287,14 +292,28 @@ void NativeWindowOcclusionTrackerWin::OnSessionChange(
 }
 
 void NativeWindowOcclusionTrackerWin::OnDisplayStateChanged(bool display_on) {
+  static bool screen_power_listener_enabled = base::FeatureList::IsEnabled(
+      features::kScreenPowerListenerForNativeWinOcclusion);
+  if (!screen_power_listener_enabled)
+    return;
+
   if (display_on == display_on_)
     return;
 
   display_on_ = display_on;
-  // Display changing to on will cause a foreground window change,
-  // which will trigger an occlusion calculation on its own.
-  if (!display_on_)
+  if (display_on_) {
+    // Notify the window occlusion calculator of the display turning on
+    // which will schedule an occlusion calculation. This must be run
+    // on the WindowOcclusionCalculator thread.
+    update_occlusion_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &WindowOcclusionCalculator::HandleVisibilityChanged,
+            base::Unretained(WindowOcclusionCalculator::GetInstance()),
+            /*visible=*/true));
+  } else {
     MarkNonIconicWindowsOccluded();
+  }
 }
 
 void NativeWindowOcclusionTrackerWin::MarkNonIconicWindowsOccluded() {
@@ -700,8 +719,8 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
           FROM_HERE, base::BindOnce(update_occlusion_state_callback_,
                                     root_window_hwnds_occlusion_state_,
                                     showing_thumbnails_));
-      return;
     }
+    return;
   } else if (event == EVENT_OBJECT_HIDE) {
     // Avoid getting the hwnd's class name, and recomputing occlusion, if not
     // needed.
@@ -714,6 +733,8 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
       // Let occlusion calculation fix occlusion state, even though hwnd might
       // be a popup window.
       calculate_occlusion = true;
+    } else {
+      return;
     }
   }
   // Don't continually calculate occlusion while a window is moving (unless it's

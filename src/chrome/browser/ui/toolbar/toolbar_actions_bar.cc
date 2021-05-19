@@ -27,11 +27,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/runtime_data.h"
@@ -41,6 +39,8 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace {
+
+constexpr gfx::Size kDefaultIconAreaSize(28, 28);
 
 using WeakToolbarActions = std::vector<ToolbarActionViewController*>;
 
@@ -125,9 +125,6 @@ ToolbarActionsBar::~ToolbarActionsBar() {
   // Make sure we don't listen to any more model changes during
   // ToolbarActionsBar destruction.
   model_observation_.Reset();
-
-  for (ToolbarActionsBarObserver& observer : observers_)
-    observer.OnToolbarActionsBarDestroyed();
 }
 
 // static
@@ -138,23 +135,8 @@ ToolbarActionsBar* ToolbarActionsBar::FromBrowserWindow(BrowserWindow* window) {
   return static_cast<ToolbarActionsBar*>(window->GetExtensionsContainer());
 }
 
-// static
-void ToolbarActionsBar::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kToolbarIconSurfacingBubbleAcknowledged, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterInt64Pref(prefs::kToolbarIconSurfacingBubbleLastShowTime,
-                              0);
-}
-
-// static
-gfx::Size ToolbarActionsBar::GetIconAreaSize() {
-  return gfx::Size(28, 28);
-}
-
 gfx::Size ToolbarActionsBar::GetViewSize() const {
-  gfx::Rect rect(GetIconAreaSize());
+  gfx::Rect rect(kDefaultIconAreaSize);
   rect.Inset(-GetIconAreaInsets());
   return rect.size();
 }
@@ -432,8 +414,6 @@ void ToolbarActionsBar::OnDragEnded() {
 
   DCHECK(is_drag_in_progress());
   index_of_dragged_item_.reset();
-  for (ToolbarActionsBarObserver& observer : observers_)
-    observer.OnToolbarActionDragDone();
 }
 
 void ToolbarActionsBar::OnDragDrop(int dragged_index,
@@ -463,11 +443,6 @@ const base::Optional<size_t> ToolbarActionsBar::IndexOfDraggedItem() const {
 }
 
 void ToolbarActionsBar::OnAnimationEnded() {
-  // Notify the observers now, since showing a bubble or popup could potentially
-  // cause another animation to start.
-  for (ToolbarActionsBarObserver& observer : observers_)
-    observer.OnToolbarActionsBarAnimationEnded();
-
   // Check if we were waiting for animation to complete to either show a
   // message bubble, or to show a popup.
   if (pending_bubble_controller_) {
@@ -564,14 +539,6 @@ void ToolbarActionsBar::HideActivePopup() {
   if (popup_owner_)
     popup_owner_->HidePopup();
   DCHECK(!popup_owner_);
-}
-
-void ToolbarActionsBar::AddObserver(ToolbarActionsBarObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ToolbarActionsBar::RemoveObserver(ToolbarActionsBarObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void ToolbarActionsBar::ShowToolbarActionBubble(

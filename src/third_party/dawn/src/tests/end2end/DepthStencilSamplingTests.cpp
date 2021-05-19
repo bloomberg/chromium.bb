@@ -57,6 +57,9 @@ class DepthStencilSamplingTest : public DawnTest {
     void SetUp() override {
         DawnTest::SetUp();
 
+        // TODO(crbug.com/tint/684): Shaders compile, tests fail.
+        DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
+
         wgpu::BufferDescriptor uniformBufferDesc;
         uniformBufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
         uniformBufferDesc.size = sizeof(float);
@@ -65,13 +68,13 @@ class DepthStencilSamplingTest : public DawnTest {
 
     wgpu::RenderPipeline CreateSamplingRenderPipeline(std::vector<TestAspect> aspects,
                                                       uint32_t componentIndex) {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(position)]] var<out> Position : vec4<f32>;
             [[stage(vertex)]] fn main() -> void {
                 Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
 
         std::ostringstream shaderSource;
         std::ostringstream shaderBody;
@@ -88,7 +91,7 @@ class DepthStencilSamplingTest : public DawnTest {
 
                     shaderBody << "\nresult" << index << " = textureLoad(tex" << index
                                << ", vec2<i32>(0, 0), 0)[" << componentIndex << "];\n";
-                    pipelineDescriptor.cColorStates[index].format = wgpu::TextureFormat::R32Float;
+                    pipelineDescriptor.cTargets[index].format = wgpu::TextureFormat::R32Float;
                     break;
                 case TestAspect::Stencil:
                     shaderSource << "[[group(0), binding(" << index << ")]] var tex" << index
@@ -99,7 +102,7 @@ class DepthStencilSamplingTest : public DawnTest {
 
                     shaderBody << "\nresult" << index << " = textureLoad(tex" << index
                                << ", vec2<i32>(0, 0), 0)[" << componentIndex << "];\n";
-                    pipelineDescriptor.cColorStates[index].format = wgpu::TextureFormat::R8Uint;
+                    pipelineDescriptor.cTargets[index].format = wgpu::TextureFormat::R8Uint;
                     break;
             }
 
@@ -108,14 +111,13 @@ class DepthStencilSamplingTest : public DawnTest {
 
         shaderSource << "[[stage(fragment)]] fn main() -> void { " << shaderBody.str() << "\n}";
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModuleFromWGSL(device, shaderSource.str().c_str());
-        pipelineDescriptor.vertexStage.module = vsModule;
-        pipelineDescriptor.cFragmentStage.module = fsModule;
-        pipelineDescriptor.primitiveTopology = wgpu::PrimitiveTopology::PointList;
-        pipelineDescriptor.colorStateCount = static_cast<uint32_t>(aspects.size());
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, shaderSource.str().c_str());
+        pipelineDescriptor.vertex.module = vsModule;
+        pipelineDescriptor.cFragment.module = fsModule;
+        pipelineDescriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
+        pipelineDescriptor.cFragment.targetCount = static_cast<uint32_t>(aspects.size());
 
-        return device.CreateRenderPipeline(&pipelineDescriptor);
+        return device.CreateRenderPipeline2(&pipelineDescriptor);
     }
 
     wgpu::ComputePipeline CreateSamplingComputePipeline(std::vector<TestAspect> aspects,
@@ -124,10 +126,10 @@ class DepthStencilSamplingTest : public DawnTest {
         std::ostringstream shaderBody;
         shaderSource << R"(
             [[block]] struct DepthResult {
-                [[offset(0)]] value : f32;
+                value : f32;
             };
             [[block]] struct StencilResult {
-                [[offset(0)]] value : u32;
+                value : u32;
             };)";
         shaderSource << "\n";
 
@@ -139,8 +141,8 @@ class DepthStencilSamplingTest : public DawnTest {
                                  << " : texture_2d<f32>;\n";
 
                     shaderSource << "[[group(0), binding(" << 2 * index + 1
-                                 << ")]] var<storage_buffer> result" << index
-                                 << " : DepthResult;\n";
+                                 << ")]] var<storage> result" << index
+                                 << " : [[access(read_write)]] DepthResult;\n";
 
                     shaderBody << "\nresult" << index << ".value = textureLoad(tex" << index
                                << ", vec2<i32>(0, 0), 0)[" << componentIndex << "];";
@@ -150,8 +152,8 @@ class DepthStencilSamplingTest : public DawnTest {
                                  << " : texture_2d<u32>;\n";
 
                     shaderSource << "[[group(0), binding(" << 2 * index + 1
-                                 << ")]] var<storage_buffer> result" << index
-                                 << " : StencilResult;\n";
+                                 << ")]] var<storage> result" << index
+                                 << " : [[access(read_write)]] StencilResult;\n";
 
                     shaderBody << "\nresult" << index << ".value = textureLoad(tex" << index
                                << ", vec2<i32>(0, 0), 0)[" << componentIndex << "];";
@@ -163,8 +165,7 @@ class DepthStencilSamplingTest : public DawnTest {
 
         shaderSource << "[[stage(compute)]] fn main() -> void { " << shaderBody.str() << "\n}";
 
-        wgpu::ShaderModule csModule =
-            utils::CreateShaderModuleFromWGSL(device, shaderSource.str().c_str());
+        wgpu::ShaderModule csModule = utils::CreateShaderModule(device, shaderSource.str().c_str());
 
         wgpu::ComputePipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.computeStage.module = csModule;
@@ -174,17 +175,17 @@ class DepthStencilSamplingTest : public DawnTest {
     }
 
     wgpu::RenderPipeline CreateComparisonRenderPipeline() {
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[builtin(position)]] var<out> Position : vec4<f32>;
             [[stage(vertex)]] fn main() -> void {
                 Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
             })");
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
             [[group(0), binding(0)]] var samp : sampler_comparison;
             [[group(0), binding(1)]] var tex : texture_depth_2d;
             [[block]] struct Uniforms {
-                [[offset(0)]] compareRef : f32;
+                compareRef : f32;
             };
             [[group(0), binding(2)]] var<uniform> uniforms : Uniforms;
 
@@ -201,29 +202,29 @@ class DepthStencilSamplingTest : public DawnTest {
                      {1, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Depth},
                      {2, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Uniform}});
 
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-        pipelineDescriptor.vertexStage.module = vsModule;
-        pipelineDescriptor.cFragmentStage.module = fsModule;
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        pipelineDescriptor.vertex.module = vsModule;
+        pipelineDescriptor.cFragment.module = fsModule;
         pipelineDescriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
-        pipelineDescriptor.primitiveTopology = wgpu::PrimitiveTopology::PointList;
-        pipelineDescriptor.cColorStates[0].format = wgpu::TextureFormat::R32Float;
+        pipelineDescriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
+        pipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::R32Float;
 
-        return device.CreateRenderPipeline(&pipelineDescriptor);
+        return device.CreateRenderPipeline2(&pipelineDescriptor);
     }
 
     wgpu::ComputePipeline CreateComparisonComputePipeline() {
-        wgpu::ShaderModule csModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
             [[group(0), binding(0)]] var samp : sampler_comparison;
             [[group(0), binding(1)]] var tex : texture_depth_2d;
             [[block]] struct Uniforms {
-                [[offset(0)]] compareRef : f32;
+                compareRef : f32;
             };
             [[group(0), binding(2)]] var<uniform> uniforms : Uniforms;
 
             [[block]] struct SamplerResult {
-                [[offset(0)]] value : f32;
+                value : f32;
             };
-            [[group(0), binding(3)]] var<storage_buffer> samplerResult : SamplerResult;
+            [[group(0), binding(3)]] var<storage> samplerResult : [[access(read_write)]] SamplerResult;
 
             [[stage(compute)]] fn main() -> void {
                 samplerResult.value = textureSampleCompare(tex, samp, vec2<f32>(0.5, 0.5), uniforms.compareRef);
@@ -338,7 +339,7 @@ class DepthStencilSamplingTest : public DawnTest {
             wgpu::CommandBuffer commands = commandEncoder.Finish();
             queue.Submit(1, &commands);
 
-            EXPECT_TEXTURE_EQ(expectedValues[i], outputTexture, 0, 0);
+            EXPECT_TEXTURE_EQ(expectedValues[i], outputTexture, {0, 0});
         }
     }
 
@@ -481,7 +482,7 @@ class DepthStencilSamplingTest : public DawnTest {
             queue.Submit(1, &commands);
 
             EXPECT_TEXTURE_EQ(CompareFunctionPasses(compareRef, compare, textureValue) ? 1.f : 0.f,
-                              outputTexture, 0, 0);
+                              outputTexture, {0, 0});
         }
     }
 
@@ -651,9 +652,10 @@ TEST_P(DepthStencilSamplingTest, SampleDepthAndStencilRender) {
         wgpu::CommandBuffer commands = commandEncoder.Finish();
         queue.Submit(1, &commands);
 
-        EXPECT_TEXTURE_EQ(passDescriptor.cDepthStencilAttachmentInfo.clearDepth, depthOutput, 0, 0);
+        EXPECT_TEXTURE_EQ(passDescriptor.cDepthStencilAttachmentInfo.clearDepth, depthOutput,
+                          {0, 0});
         EXPECT_TEXTURE_EQ(uint8_t(passDescriptor.cDepthStencilAttachmentInfo.clearStencil),
-                          stencilOutput, 0, 0);
+                          stencilOutput, {0, 0});
     }
 
     // With compute pipeline

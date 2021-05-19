@@ -15,14 +15,11 @@
 #ifndef SRC_AST_INTRINSIC_TEXTURE_HELPER_TEST_H_
 #define SRC_AST_INTRINSIC_TEXTURE_HELPER_TEST_H_
 
-#include <functional>
 #include <vector>
 
 #include "src/ast/access_control.h"
 #include "src/program_builder.h"
-#include "src/type/sampler_type.h"
 #include "src/type/storage_texture_type.h"
-#include "src/type/texture_type.h"
 
 namespace tint {
 namespace ast {
@@ -134,24 +131,15 @@ enum class ValidTextureOverload {
   kSampleCompareDepth2dArrayOffsetF32,
   kSampleCompareDepthCubeF32,
   kSampleCompareDepthCubeArrayF32,
-  kLoad1dF32,
-  kLoad1dU32,
-  kLoad1dI32,
-  kLoad2dF32,
-  kLoad2dU32,
-  kLoad2dI32,
+  kLoad1dLevelF32,
+  kLoad1dLevelU32,
+  kLoad1dLevelI32,
   kLoad2dLevelF32,
   kLoad2dLevelU32,
   kLoad2dLevelI32,
-  kLoad2dArrayF32,
-  kLoad2dArrayU32,
-  kLoad2dArrayI32,
   kLoad2dArrayLevelF32,
   kLoad2dArrayLevelU32,
   kLoad2dArrayLevelI32,
-  kLoad3dF32,
-  kLoad3dU32,
-  kLoad3dI32,
   kLoad3dLevelF32,
   kLoad3dLevelU32,
   kLoad3dLevelI32,
@@ -161,11 +149,9 @@ enum class ValidTextureOverload {
   kLoadMultisampled2dArrayF32,
   kLoadMultisampled2dArrayU32,
   kLoadMultisampled2dArrayI32,
-  kLoadDepth2dF32,
   kLoadDepth2dLevelF32,
-  kLoadDepth2dArrayF32,
   kLoadDepth2dArrayLevelF32,
-  kLoadStorageRO1dRgba32float,       // Not permutated for all texel formats
+  kLoadStorageRO1dRgba32float,  // Not permutated for all texel formats
   kLoadStorageRO2dRgba8unorm,
   kLoadStorageRO2dRgba8snorm,
   kLoadStorageRO2dRgba8uint,

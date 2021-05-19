@@ -5,6 +5,7 @@
 #include "ash/system/power/peripheral_battery_notifier.h"
 
 #include <memory>
+#include <string>
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/test/test_system_tray_client.h"
@@ -12,7 +13,6 @@
 #include "ash/system/power/peripheral_battery_listener.h"
 #include "ash/system/power/peripheral_battery_tests.h"
 #include "ash/test/ash_test_base.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -28,13 +28,13 @@ using BI = ash::PeripheralBatteryListener::BatteryInfo;
 
 namespace {
 
-const base::string16& NotificationMessagePrefix() {
-  static const base::string16 prefix(base::ASCIIToUTF16("Battery low ("));
+const std::u16string& NotificationMessagePrefix() {
+  static const std::u16string prefix(u"Battery low (");
   return prefix;
 }
 
-const base::string16& NotificationMessageSuffix() {
-  static const base::string16 suffix(base::ASCIIToUTF16("%)"));
+const std::u16string& NotificationMessageSuffix() {
+  static const std::u16string suffix(u"%)");
   return suffix;
 }
 
@@ -52,9 +52,8 @@ class PeripheralBatteryNotifierTest : public AshTestBase {
   ~PeripheralBatteryNotifierTest() override = default;
 
   void SetUp() override {
-    ui::DeviceDataManager::CreateInstance();
-
     AshTestBase::SetUp();
+    ASSERT_TRUE(ui::DeviceDataManager::HasInstance());
 
     // Simulate the complete listing of input devices, required by the listener.
     ui::DeviceDataManagerTestApi().OnDeviceListsComplete();
@@ -73,13 +72,11 @@ class PeripheralBatteryNotifierTest : public AshTestBase {
     battery_notifier_.reset();
     battery_listener_.reset();
     AshTestBase::TearDown();
-
-    ui::DeviceDataManager::DeleteInstance();
   }
 
   // Extracts the battery percentage from the message of a notification.
   uint8_t ExtractBatteryPercentage(message_center::Notification* notification) {
-    const base::string16& message = notification->message();
+    const std::u16string& message = notification->message();
     EXPECT_TRUE(base::StartsWith(message, NotificationMessagePrefix(),
                                  base::CompareCase::SENSITIVE));
     EXPECT_TRUE(base::EndsWith(message, NotificationMessageSuffix(),

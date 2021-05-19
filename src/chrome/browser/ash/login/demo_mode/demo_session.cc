@@ -31,14 +31,14 @@
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/ash/login/demo_mode/demo_resources.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
@@ -124,10 +124,6 @@ std::string GetBoardName() {
 
 std::string GetHighlightsAppId() {
   std::string board = GetBoardName();
-  if (board == "eve")
-    return extension_misc::kHighlightsEveAppId;
-  if (board == "nocturne")
-    return extension_misc::kHighlightsNocturneAppId;
   if (board == "atlas")
     return extension_misc::kHighlightsAtlasAppId;
   return extension_misc::kHighlightsAppId;
@@ -192,12 +188,11 @@ std::vector<ash::LocaleInfo> GetSupportedLocales() {
     locale_info.iso_code = locale;
     locale_info.display_name = l10n_util::GetDisplayNameForLocale(
         locale, current_locale_iso_code, true /* is_for_ui */);
-    const base::string16 native_display_name =
+    const std::u16string native_display_name =
         l10n_util::GetDisplayNameForLocale(locale, locale,
                                            true /* is_for_ui */);
     if (locale_info.display_name != native_display_name) {
-      locale_info.display_name +=
-          base::UTF8ToUTF16(" - ") + native_display_name;
+      locale_info.display_name += u" - " + native_display_name;
     }
     supported_locales.push_back(std::move(locale_info));
   }
@@ -343,10 +338,6 @@ std::string DemoSession::GetAdditionalLanguageList() {
 // static
 std::string DemoSession::GetScreensaverAppId() {
   std::string board = GetBoardName();
-  if (board == "eve")
-    return extension_misc::kScreensaverEveAppId;
-  if (board == "nocturne")
-    return extension_misc::kScreensaverNocturneAppId;
   if (board == "atlas")
     return extension_misc::kScreensaverAtlasAppId;
   if (board == "kukui") {
@@ -559,7 +550,7 @@ void DemoSession::ShowSplashScreen() {
     image_path =
         demo_resources_->path().Append(kSplashScreensPath).Append("en-US.jpg");
   }
-  WallpaperControllerClient::Get()->ShowAlwaysOnTopWallpaper(image_path);
+  WallpaperControllerClientImpl::Get()->ShowAlwaysOnTopWallpaper(image_path);
   remove_splash_screen_fallback_timer_->Start(
       FROM_HERE, kRemoveSplashScreenTimeout,
       base::BindOnce(&DemoSession::RemoveSplashScreen,
@@ -569,7 +560,7 @@ void DemoSession::ShowSplashScreen() {
 void DemoSession::RemoveSplashScreen() {
   if (splash_screen_removed_)
     return;
-  WallpaperControllerClient::Get()->RemoveAlwaysOnTopWallpaper();
+  WallpaperControllerClientImpl::Get()->RemoveAlwaysOnTopWallpaper();
   remove_splash_screen_fallback_timer_.reset();
   app_window_registry_observer_.RemoveAll();
   splash_screen_removed_ = true;

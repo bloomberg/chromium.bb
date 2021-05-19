@@ -32,11 +32,10 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/paint/paint_image.h"
 #include "cc/trees/paint_holding_commit_trigger.h"
-#include "components/viz/common/delegated_ink_metadata.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/blame_context.h"
@@ -57,6 +56,7 @@
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "ui/gfx/delegated_ink_metadata.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CreateWindow
@@ -106,6 +106,7 @@ struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct ViewportDescription;
 struct ScreenInfo;
+struct ScreenInfos;
 struct WebWindowFeatures;
 
 namespace mojom {
@@ -290,9 +291,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual bool TabsToLinks() = 0;
 
   virtual const ScreenInfo& GetScreenInfo(LocalFrame& frame) const = 0;
+  virtual const ScreenInfos& GetScreenInfos(LocalFrame& frame) const = 0;
 
   virtual void SetCursor(const ui::Cursor&, LocalFrame* local_root) = 0;
-
   virtual void SetCursorOverridden(bool) = 0;
 
   virtual void AutoscrollStart(const gfx::PointF& position, LocalFrame*) {}
@@ -526,7 +527,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void SetDelegatedInkMetadata(
       LocalFrame* frame,
-      std::unique_ptr<viz::DelegatedInkMetadata> metadata) {}
+      std::unique_ptr<gfx::DelegatedInkMetadata> metadata) {}
 
   virtual void BatterySavingsChanged(LocalFrame& main_frame,
                                      BatterySavingsFlags savings) = 0;

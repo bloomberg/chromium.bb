@@ -15,6 +15,7 @@
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/partition_stats.h"
 #include "base/bits.h"
+#include "base/memory/nonscannable_memory.h"
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
 #include "base/partition_alloc_buildflags.h"
@@ -97,7 +98,11 @@ base::ThreadSafePartitionRoot* Allocator() {
   }
 
   auto* new_root = new (g_allocator_buffer) base::ThreadSafePartitionRoot({
-    base::PartitionOptions::Alignment::kRegular,
+#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
+    base::PartitionOptions::AlignedAlloc::kDisallowed,
+#else
+    base::PartitionOptions::AlignedAlloc::kAllowed,
+#endif
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
     !BUILDFLAG(ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL)
         base::PartitionOptions::ThreadCache::kEnabled,
@@ -121,7 +126,17 @@ base::ThreadSafePartitionRoot* Allocator() {
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
         // !BUILDFLAG(ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL)
         base::PartitionOptions::Quarantine::kAllowed,
-        base::PartitionOptions::RefCount::kEnabled,
+#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
+        base::PartitionOptions::Cookies::kAllowed,
+#else
+        base::PartitionOptions::Cookies::kDisallowed,
+#endif
+#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC) || \
+    BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION)
+        base::PartitionOptions::RefCount::kAllowed,
+#else
+        base::PartitionOptions::RefCount::kDisallowed,
+#endif
   });
   g_root_.store(new_root, std::memory_order_release);
 
@@ -135,20 +150,25 @@ base::ThreadSafePartitionRoot* OriginalAllocator() {
 }
 
 base::ThreadSafePartitionRoot* AlignedAllocator() {
-#if !DCHECK_IS_ON() && (!BUILDFLAG(USE_BACKUP_REF_PTR) || \
-                        BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION))
-  // There are no tags or cookies in front of the allocation, so the regular
-  // allocator provides suitably aligned memory already.
-  return Allocator();
-#else
+#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
   // Since the general-purpose allocator uses the thread cache, this one cannot.
   static base::NoDestructor<base::ThreadSafePartitionRoot> aligned_allocator(
-      base::PartitionOptions{base::PartitionOptions::Alignment::kAlignedAlloc,
-                             base::PartitionOptions::ThreadCache::kDisabled,
-                             base::PartitionOptions::Quarantine::kAllowed,
-                             base::PartitionOptions::RefCount::kDisabled});
-  return aligned_allocator.get();
+      base::PartitionOptions {
+        base::PartitionOptions::AlignedAlloc::kAllowed,
+            base::PartitionOptions::ThreadCache::kDisabled,
+            base::PartitionOptions::Quarantine::kAllowed,
+            base::PartitionOptions::Cookies::kDisallowed,
+#if BUILDFLAG(REF_COUNT_AT_END_OF_ALLOCATION)
+            // Given the outer #if, this is possible only when DCHECK_IS_ON().
+            base::PartitionOptions::RefCount::kAllowed,
+#else
+            base::PartitionOptions::RefCount::kDisallowed,
 #endif
+      });
+  return aligned_allocator.get();
+#else   // BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
+  return Allocator();
+#endif  // BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
 }
 
 #if defined(OS_WIN) && defined(ARCH_CPU_X86)
@@ -304,8 +324,20 @@ void PartitionFree(const AllocatorDispatch*, void* address, void* context) {
 size_t PartitionGetSizeEstimate(const AllocatorDispatch*,
                                 void* address,
                                 void* context) {
+#if defined(OS_MAC)
+  if (!(base::IsManagedByPartitionAllocNonBRPPool(address) ||
+        base::IsManagedByPartitionAllocBRPPool(address))) {
+    // The object pointed to by `address` is not allocated by the
+    // PartitionAlloc.  The return value `0` means that the pointer does not
+    // belong to this malloc zone.
+    return 0;
+  }
+#endif  // defined(OS_MAC)
+
   // TODO(lizeb): Returns incorrect values for aligned allocations.
-  return base::ThreadSafePartitionRoot::GetUsableSize(address);
+  const size_t size = base::ThreadSafePartitionRoot::GetUsableSize(address);
+  PA_DCHECK(size);
+  return size;
 }
 
 // static
@@ -384,11 +416,20 @@ void ConfigurePartitionRefCountSupport(bool enable_ref_count) {
 
   auto* new_root = new (g_allocator_buffer_for_ref_count_config)
       base::ThreadSafePartitionRoot({
-          base::PartitionOptions::Alignment::kRegular,
-          base::PartitionOptions::ThreadCache::kEnabled,
-          base::PartitionOptions::Quarantine::kAllowed,
-          enable_ref_count ? base::PartitionOptions::RefCount::kEnabled
-                           : base::PartitionOptions::RefCount::kDisabled,
+#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
+        base::PartitionOptions::AlignedAlloc::kDisallowed,
+#else
+        base::PartitionOptions::AlignedAlloc::kAllowed,
+#endif
+            base::PartitionOptions::ThreadCache::kEnabled,
+            base::PartitionOptions::Quarantine::kAllowed,
+#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
+            base::PartitionOptions::Cookies::kAllowed,
+#else
+            base::PartitionOptions::Cookies::kDisallowed,
+#endif
+            enable_ref_count ? base::PartitionOptions::RefCount::kAllowed
+                             : base::PartitionOptions::RefCount::kDisallowed,
       });
   g_root_.store(new_root, std::memory_order_release);
   g_original_root_ = current_root;
@@ -397,10 +438,11 @@ void ConfigurePartitionRefCountSupport(bool enable_ref_count) {
 
 #if PA_ALLOW_PCSCAN
 void EnablePCScan() {
-  auto& pcscan = internal::PCScan<internal::ThreadSafe>::Instance();
+  auto& pcscan = internal::PCScan::Instance();
   pcscan.RegisterScannableRoot(Allocator());
   if (Allocator() != AlignedAllocator())
     pcscan.RegisterScannableRoot(AlignedAllocator());
+  internal::NonScannableAllocator::Instance().EnablePCScan();
 }
 #endif
 
@@ -462,18 +504,29 @@ SHIM_ALWAYS_EXPORT struct mallinfo mallinfo(void) __THROW {
                                   &aligned_allocator_dumper);
   }
 
+  // Dump stats for nonscannable allocators.
+  auto& nonscannable_allocator =
+      base::internal::NonScannableAllocator::Instance();
+  base::SimplePartitionStatsDumper nonscannable_allocator_dumper;
+  if (auto* nonscannable_root = nonscannable_allocator.root())
+    nonscannable_root->DumpStats("malloc", true,
+                                 &nonscannable_allocator_dumper);
+
   struct mallinfo info = {0};
   info.arena = 0;  // Memory *not* allocated with mmap().
 
   // Memory allocated with mmap(), aka virtual size.
   info.hblks = allocator_dumper.stats().total_mmapped_bytes +
-               aligned_allocator_dumper.stats().total_mmapped_bytes;
+               aligned_allocator_dumper.stats().total_mmapped_bytes +
+               nonscannable_allocator_dumper.stats().total_mmapped_bytes;
   // Resident bytes.
   info.hblkhd = allocator_dumper.stats().total_resident_bytes +
-                aligned_allocator_dumper.stats().total_resident_bytes;
+                aligned_allocator_dumper.stats().total_resident_bytes +
+                nonscannable_allocator_dumper.stats().total_resident_bytes;
   // Allocated bytes.
   info.uordblks = allocator_dumper.stats().total_active_bytes +
-                  aligned_allocator_dumper.stats().total_active_bytes;
+                  aligned_allocator_dumper.stats().total_active_bytes +
+                  nonscannable_allocator_dumper.stats().total_active_bytes;
 
   return info;
 }
@@ -482,3 +535,21 @@ SHIM_ALWAYS_EXPORT struct mallinfo mallinfo(void) __THROW {
 }  // extern "C"
 
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+
+#if defined(OS_APPLE)
+
+namespace base {
+namespace allocator {
+
+void InitializeDefaultAllocatorPartitionRoot() {
+  // On OS_APPLE, the initialization of PartitionRoot uses memory allocations
+  // internally, e.g. __builtin_available, and it's not easy to avoid it.
+  // Thus, we initialize the PartitionRoot with using the system default
+  // allocator before we intercept the system default allocator.
+  ignore_result(Allocator());
+}
+
+}  // namespace allocator
+}  // namespace base
+
+#endif  // defined(OS_APPLE)

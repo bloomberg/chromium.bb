@@ -8,18 +8,18 @@
 // #import {FilesMessage} from '../elements/files_message.m.js';
 // #import {FileListSelectionModel} from './ui/file_list_selection_model.m.js';
 // #import {A11yAnnounce} from './ui/a11y_announce.m.js';
-// #import {ProgressCenter} from '../../../externs/background/progress_center.m.js';
-// #import {FakeEntry, FilesAppDirEntry} from '../../../externs/files_app_entry_interfaces.m.js';
-// #import {FileBrowserBackgroundFull} from '../../../externs/background/file_browser_background_full.m.js';
-// #import {BackgroundWindow} from '../../../externs/background_window.m.js';
-// #import {FileOperationManager} from '../../../externs/background/file_operation_manager.m.js';
-// #import {mediaImportInterfaces} from '../../../externs/background/media_import_handler.m.js';
-// #import {mediaScannerInterfaces} from '../../../externs/background/media_scanner.m.js';
-// #import {Crostini} from '../../../externs/background/crostini.m.js';
-// #import {importerHistoryInterfaces} from '../../../externs/background/import_history.m.js';
-// #import {CommandHandlerDeps} from '../../../externs/command_handler_deps.m.js';
+// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
+// #import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.m.js';
+// #import {FileBrowserBackgroundFull} from '../../externs/background/file_browser_background_full.m.js';
+// #import {BackgroundWindow} from '../../externs/background_window.m.js';
+// #import {FileOperationManager} from '../../externs/background/file_operation_manager.m.js';
+// #import {mediaImportInterfaces} from '../../externs/background/media_import_handler.m.js';
+// #import {mediaScannerInterfaces} from '../../externs/background/media_scanner.m.js';
+// #import {Crostini} from '../../externs/background/crostini.m.js';
+// #import {importerHistoryInterfaces} from '../../externs/background/import_history.m.js';
+// #import {CommandHandlerDeps} from '../../externs/command_handler_deps.m.js';
 // #import {ProgressItemState} from '../../common/js/progress_center_common.m.js';
-// #import {StorageAdapter} from '../../common/js/storage_adapter.m.js';
+// #import {xfm} from '../../common/js/xfm.m.js';
 // #import {crossoverSearchUtils} from './crossover_search_utils.m.js';
 // #import {FileTasks} from './file_tasks.m.js';
 // #import {CrostiniController} from './crostini_controller.m.js';
@@ -51,7 +51,7 @@
 // #import {ThumbnailModel} from './metadata/thumbnail_model.m.js';
 // #import {MetadataModel} from './metadata/metadata_model.m.js';
 // #import {ContentMetadataProvider} from './metadata/content_metadata_provider.m.js';
-// #import {FilteredVolumeManager} from '../../../base/js/filtered_volume_manager.m.js';
+// #import {FilteredVolumeManager} from '../../common/js/filtered_volume_manager.m.js';
 // #import {LaunchParam} from './launch_param.m.js';
 // #import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.m.js';
 // #import {CommandButton} from './ui/commandbutton.m.js';
@@ -74,7 +74,7 @@
 // #import {SortMenuController} from './sort_menu_controller.m.js';
 // #import {ScanController} from './scan_controller.m.js';
 // #import {DriveDialogController} from './drive_dialog_controller.m.js';
-// #import {VolumeManagerCommon, AllowedPaths} from '../../../base/js/volume_manager_types.m.js';
+// #import {VolumeManagerCommon, AllowedPaths} from '../../common/js/volume_manager_types.m.js';
 // #import {AppStateController} from './app_state_controller.m.js';
 // #import {DialogType} from './dialog_type.m.js';
 // #import {FileMetadataFormatter} from './ui/file_metadata_formatter.m.js';
@@ -667,8 +667,8 @@
     assert(this.selectionHandler_);
     assert(this.launchParams_);
     assert(this.volumeManager_);
+    assert(this.fileOperationManager_);
     assert(this.dialogDom_);
-    assert(this.fileFilter_);
 
     this.scanController_ = new ScanController(
         this.directoryModel_, this.ui_.listContainer, this.spinnerController_,
@@ -686,7 +686,7 @@
     this.toolbarController_ = new ToolbarController(
         this.ui_.toolbar, this.ui_.dialogNavigationList, this.ui_.listContainer,
         assert(this.ui_.locationLine), this.selectionHandler_,
-        this.directoryModel_, this.volumeManager_,
+        this.directoryModel_, this.volumeManager_, this.fileOperationManager_,
         /** @type {!A11yAnnounce} */ (this.ui_));
     this.emptyFolderController_ = new EmptyFolderController(
         this.ui_.emptyFolder, this.directoryModel_, this.ui_.alertDialog);
@@ -903,9 +903,6 @@
     this.document_.documentElement.classList.add('files-ng');
     this.dialogDom_.classList.add('files-ng');
 
-    this.dialogDom_.classList.toggle(
-        'camera-folder-enabled', util.isFilesCameraFolderEnabled());
-
     chrome.fileManagerPrivate.isTabletModeEnabled(
         this.onTabletModeChanged_.bind(this));
     chrome.fileManagerPrivate.onTabletModeChanged.addListener(
@@ -926,10 +923,6 @@
    * @private
    */
   initGeneral_() {
-    // For the SWA version we need the adapters set up before they get used.
-    if (window.isSWA) {
-      this.initAdapters_();
-    }
     // Initialize the application state.
     // TODO(mtomasz): Unify window.appState with location.search format.
     if (window.appState) {
@@ -1017,15 +1010,6 @@
   }
 
   /**
-   * One time initialization of the SWA adapters for chrome extension APIs.
-   * @private
-   */
-  initAdapters_() {
-    /** @suppress {checkTypes|const} */
-    window.chrome.storage = new StorageAdapter();
-  }
-
-  /**
    * One time initialization of the essential UI elements in the Files app.
    * These elements will be shown to the user. Only visible elements should be
    * initialized here. Any heavy operation should be avoided. The Files app's
@@ -1047,7 +1031,8 @@
 
     if (util.isFilesJsModulesEnabled()) {
       ContentMetadataProvider.configure(
-          'foreground/js/metadata_dispatcher.m.js', /*isModule=*/ true);
+          'foreground/js/metadata/metadata_dispatcher.m.js',
+          /*isModule=*/ true);
     } else if (window.isSWA) {
       ContentMetadataProvider.configure(
           'foreground/js/metadata/metadata_dispatcher.js');

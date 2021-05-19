@@ -8,12 +8,17 @@
 
 #include "ash/clipboard/clipboard_history_item.h"
 #include "ash/metrics/histogram_macros.h"
+#include "ash/public/cpp/file_icon_util.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
+#include "base/files/file_path.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard_data.h"
 #include "ui/base/clipboard/custom_data_helper.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 namespace ash {
 namespace ClipboardHistoryUtil {
@@ -93,7 +98,7 @@ bool ContainsFileSystemData(const ui::ClipboardData& data) {
 
 void GetSplitFileSystemData(const ui::ClipboardData& data,
                             std::vector<base::StringPiece16>* source_list,
-                            base::string16* sources) {
+                            std::u16string* sources) {
   DCHECK(sources);
   DCHECK(sources->empty());
   DCHECK(source_list);
@@ -112,7 +117,7 @@ void GetSplitFileSystemData(const ui::ClipboardData& data,
 }
 
 size_t GetCountOfCopiedFiles(const ui::ClipboardData& data) {
-  base::string16 sources;
+  std::u16string sources;
   std::vector<base::StringPiece16> source_list;
   GetSplitFileSystemData(data, &source_list, &sources);
 
@@ -124,12 +129,12 @@ size_t GetCountOfCopiedFiles(const ui::ClipboardData& data) {
   return source_list.size();
 }
 
-base::string16 GetFileSystemSources(const ui::ClipboardData& data) {
+std::u16string GetFileSystemSources(const ui::ClipboardData& data) {
   if (!ContainsFormat(data, ui::ClipboardInternalFormat::kCustom))
-    return base::string16();
+    return std::u16string();
 
   // Attempt to read file system sources in the custom data.
-  base::string16 sources;
+  std::u16string sources;
   ui::ReadCustomDataForType(
       data.custom_data_data().c_str(), data.custom_data_data().size(),
       base::UTF8ToUTF16(kFileSystemSourcesType), &sources);
@@ -173,6 +178,26 @@ bool IsEnabledInCurrentMode() {
     case LoginStatus::CHILD:
       return true;
   }
+}
+
+gfx::ImageSkia GetIconForFileClipboardItem(const ClipboardHistoryItem& item,
+                                           const std::string& file_name) {
+  DCHECK_EQ(ClipboardHistoryDisplayFormat::kFile,
+            CalculateDisplayFormat(item.data()));
+  const int copied_files_count = GetCountOfCopiedFiles(item.data());
+  const SkColor icon_color = ash::AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconColorPrimary);
+
+  if (copied_files_count == 0)
+    return gfx::ImageSkia();
+  if (copied_files_count == 1)
+    return GetIconForPath(base::FilePath(file_name), icon_color);
+  constexpr std::array<const gfx::VectorIcon*, 9> icons = {
+      &kTwoFilesIcon,   &kThreeFilesIcon, &kFourFilesIcon,
+      &kFiveFilesIcon,  &kSixFilesIcon,   &kSevenFilesIcon,
+      &kEightFilesIcon, &kNineFilesIcon,  &kMoreThanNineFilesIcon};
+  int icon_index = std::min(copied_files_count - 2, (int)icons.size() - 1);
+  return CreateVectorIcon(*icons[icon_index], icon_color);
 }
 
 }  // namespace ClipboardHistoryUtil

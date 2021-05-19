@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_save_address_profile_delegate_ios.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/autofill_credit_card_filling_infobar_delegate_mobile.h"
@@ -254,14 +255,14 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
 }
 
 void ChromeAutofillClientIOS::ConfirmAccountNameFixFlow(
-    base::OnceCallback<void(const base::string16&)> callback) {
+    base::OnceCallback<void(const std::u16string&)> callback) {
   base::Optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
           identity_manager_->GetPrimaryAccountInfo(
               signin::ConsentLevel::kSync));
-  base::string16 account_name =
+  std::u16string account_name =
       primary_account_info ? base::UTF8ToUTF16(primary_account_info->full_name)
-                           : base::string16();
+                           : std::u16string();
 
   card_name_fix_flow_controller_.Show(
       // CardNameFixFlowViewBridge manages its own lifetime, so
@@ -273,7 +274,7 @@ void ChromeAutofillClientIOS::ConfirmAccountNameFixFlow(
 
 void ChromeAutofillClientIOS::ConfirmExpirationDateFixFlow(
     const CreditCard& card,
-    base::OnceCallback<void(const base::string16&, const base::string16&)>
+    base::OnceCallback<void(const std::u16string&, const std::u16string&)>
         callback) {
   card_expiration_date_fix_flow_controller_.Show(
       // CardExpirationDateFixFlowViewBridge manages its own lifetime,
@@ -321,7 +322,13 @@ void ChromeAutofillClientIOS::ConfirmCreditCardFillAssist(
 void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
     const AutofillProfile& profile,
     AddressProfileSavePromptCallback callback) {
-  // TODO(crbug.com/1167062): Implement.
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kAutofillAddressProfileSavePrompt));
+  auto delegate = std::make_unique<AutofillSaveAddressProfileDelegateIOS>(
+      profile, std::move(callback));
+  infobar_manager_->AddInfoBar(std::make_unique<InfoBarIOS>(
+      InfobarType::kInfobarTypeSaveAutofillAddressProfile,
+      std::move(delegate)));
 }
 
 bool ChromeAutofillClientIOS::HasCreditCardScanFeature() {
@@ -339,8 +346,8 @@ void ChromeAutofillClientIOS::ShowAutofillPopup(
 }
 
 void ChromeAutofillClientIOS::UpdateAutofillPopupDataListValues(
-    const std::vector<base::string16>& values,
-    const std::vector<base::string16>& labels) {
+    const std::vector<std::u16string>& values,
+    const std::vector<std::u16string>& labels) {
   // No op. ios/web_view does not support display datalist.
 }
 
@@ -381,8 +388,8 @@ void ChromeAutofillClientIOS::PropagateAutofillPredictions(
 }
 
 void ChromeAutofillClientIOS::DidFillOrPreviewField(
-    const base::string16& autofilled_value,
-    const base::string16& profile_full_name) {}
+    const std::u16string& autofilled_value,
+    const std::u16string& profile_full_name) {}
 
 bool ChromeAutofillClientIOS::IsContextSecure() const {
   return IsContextSecureForWebState(web_state_);

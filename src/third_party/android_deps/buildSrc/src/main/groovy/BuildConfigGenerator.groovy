@@ -3,13 +3,21 @@
 // found in the LICENSE file.
 
 import groovy.json.JsonOutput
+import groovy.text.Template
+import groovy.transform.SourceURI
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
-import java.util.regex.Pattern
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.time.LocalDate
 import java.util.concurrent.Executors
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 
 /**
  * Task to download dependencies specified in {@link ChromiumPlugin} and configure the
@@ -27,13 +35,17 @@ class BuildConfigGenerator extends DefaultTask {
     private static final BUILD_GN_GEN_PATTERN = Pattern.compile(
             "${BUILD_GN_TOKEN_START}(.*)${BUILD_GN_TOKEN_END}",
             Pattern.DOTALL)
-    private static final BUILD_GN_GEN_REMINDER = "# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.\n"
+    private static final GEN_REMINDER = "# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.\n"
     private static final DEPS_TOKEN_START = "# === ANDROID_DEPS Generated Code Start ==="
     private static final DEPS_TOKEN_END = "# === ANDROID_DEPS Generated Code End ==="
     private static final DEPS_GEN_PATTERN = Pattern.compile(
             "${DEPS_TOKEN_START}(.*)${DEPS_TOKEN_END}",
             Pattern.DOTALL)
     private static final DOWNLOAD_DIRECTORY_NAME = "libs"
+    // The 3pp bot now adds an epoch to the version tag, this needs to be kept
+    // in sync with 3pp epoch at:
+    // https://source.chromium.org/chromium/infra/infra/+/master:recipes/recipe_modules/support_3pp/resolved_spec.py?q=symbol:PACKAGE_EPOCH&ss=chromium
+    private static final THREEPP_EPOCH = "2"
 
     // Some libraries are hosted in Chromium's //third_party directory. This is a mapping between
     // them so they can be used instead of android_deps pulling in its own copy.
@@ -54,45 +66,68 @@ class BuildConfigGenerator extends DefaultTask {
 
     public static final def AUTOROLLED_REPO_PATH = 'third_party/android_deps_autorolled'
 
+    public static final def COPYRIGHT_HEADER = """\
+        # Copyright 2021 The Chromium Authors. All rights reserved.
+        # Use of this source code is governed by a BSD-style license that can be
+        # found in the LICENSE file.
+    """.stripIndent()
+
     /**
      * Directory where the artifacts will be downloaded and where files will be generated.
      * Note: this path is specified as relative to the chromium source root, and must be normalised
      * to an absolute path before being used, as Groovy would base relative path where the script
      * is being executed.
      */
+    @Input
     String repositoryPath
 
     /**
      * Relative path to the Chromium source root from the build.gradle file.
      */
+    @Input
     String chromiumSourceRoot
 
     /**
      * Name of the cipd root package.
      */
+    @Input
     String cipdBucket
 
     /**
      * Skips license file import.
      */
+    @Input
     boolean skipLicenses
 
     /**
      * Array with visibility for targets which are not listed in build.gradle
      */
+    @Input
     String[] internalTargetVisibility
 
-     /**
-      * Whether to ignore DEPS file.
-      */
-     boolean ignoreDEPS
+    /**
+     * Whether to ignore DEPS file.
+     */
+    @Input
+    boolean ignoreDEPS
+
+    /**
+     * The URI of the file BuildConfigGenerator.groovy
+     */
+    @Input
+    @SourceURI
+    URI sourceUri
 
     @TaskAction
     void main() {
         // Do not run task on subprojects.
         if (project != project.getRootProject()) return
- 
+
         skipLicenses = skipLicenses || project.hasProperty("skipLicenses")
+
+        Path fetchTemplatePath = Paths.get(sourceUri).resolveSibling('3ppFetch.template')
+        def fetchTemplate = new groovy.text.SimpleTemplateEngine()
+                                    .createTemplate(fetchTemplatePath.toFile())
 
         def subprojects = new HashSet<Project>()
         subprojects.add(project)
@@ -108,12 +143,18 @@ class BuildConfigGenerator extends DefaultTask {
         def dependencyDirectories = []
         def downloadExecutor = Executors.newCachedThreadPool()
         def downloadTasks = []
+        def mergeLicensesDeps = []
         graph.dependencies.values().each { dependency ->
             if (excludeDependency(dependency) || computeJavaGroupForwardingTarget(dependency) != null) {
                 return
             }
-            logger.debug "Processing ${dependency.name}: \n${jsonDump(dependency)}"
-            def depDir = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}"
+
+            def dependencyForLogging = dependency.clone()
+            // jsonDump() throws StackOverflowError for ResolvedArtifact.
+            dependencyForLogging.artifact = null
+
+            logger.debug "Processing ${dependency.name}: \n${jsonDump(dependencyForLogging)}"
+            def depDir = computeDepDir(dependency)
             def absoluteDepDir = "${normalisedRepoPath}/${depDir}"
 
             dependencyDirectories.add(depDir)
@@ -132,23 +173,29 @@ class BuildConfigGenerator extends DefaultTask {
             new File("${absoluteDepDir}/cipd.yaml").write(makeCipdYaml(dependency, cipdBucket,
                                                                        repositoryPath))
             new File("${absoluteDepDir}/OWNERS").write(makeOwners())
-            if (!skipLicenses) {
-                if (dependency.licensePath?.trim()) {
-                    new File("${absoluteDepDir}/LICENSE").write(
-                            new File("${normalisedRepoPath}/${dependency.licensePath}").text)
-                } else if (dependency.licenseUrl?.trim()) {
-                    File destFile = new File("${absoluteDepDir}/LICENSE")
-                    downloadTasks.add(downloadExecutor.submit {
-                        downloadFile(dependency.id, dependency.licenseUrl, destFile)
-                        if (destFile.text.contains("<html")) {
-                            throw new RuntimeException("Found HTML in LICENSE file. Please add an "
-                                    + "override to ChromiumDepGraph.groovy for ${dependency.id}.")
-                        }
-                    })
+
+            // Enable 3pp flow for //third_party/android_deps only.
+            // TODO(crbug.com/1132368): Enable 3pp flow for subprojects as well.
+            if (repositoryPath == "third_party/android_deps") {
+                if (dependency.fileUrl) {
+                    def absoluteDep3ppDir = "${absoluteDepDir}/3pp"
+                    new File(absoluteDep3ppDir).mkdirs()
+                    new File("${absoluteDep3ppDir}/3pp.pb").write(make3ppPb(dependency,
+                                                                            cipdBucket,
+                                                                            repositoryPath))
+                    def fetchFile = new File("${absoluteDep3ppDir}/fetch.py")
+                    fetchFile.write(make3ppFetch(fetchTemplate, dependency))
+                    fetchFile.setExecutable(true, false)
                 } else {
-                    getLogger().warn("Missing license for ${dependency.id}.")
-                    getLogger().warn("License Name was: ${dependency.licenseName}")
+                    throw new RuntimeException("Failed to generate 3pp files for ${dependency.id} "
+                        + "due to empty file url.")
                 }
+            }
+
+            if (!skipLicenses) {
+                validateLicenses(dependency)
+                downloadLicenses(dependency, normalisedRepoPath, downloadExecutor, downloadTasks)
+                mergeLicensesDeps.add(dependency)
             }
         }
         downloadExecutor.shutdown()
@@ -157,8 +204,12 @@ class BuildConfigGenerator extends DefaultTask {
             task.get()
         }
 
+        mergeLicensesDeps.each { dependency ->
+            mergeLicenses(dependency, normalisedRepoPath)
+        }
+
         // 3. Generate the root level build files
-        updateBuildTargetDeclaration(graph, repositoryPath, normalisedRepoPath)
+        updateBuildTargetDeclaration(graph, normalisedRepoPath)
         if (!ignoreDEPS) {
             updateDepsDeclaration(graph, cipdBucket, repositoryPath,
                                   "${normalisedRepoPath}/../../DEPS")
@@ -168,8 +219,11 @@ class BuildConfigGenerator extends DefaultTask {
                                   "${normalisedRepoPath}/additional_readme_paths.json")
     }
 
-    private void updateBuildTargetDeclaration(ChromiumDepGraph depGraph,
-            String repositoryPath, String normalisedRepoPath) {
+    private static String computeDepDir(ChromiumDepGraph.DependencyDescription dependency) {
+        return "${DOWNLOAD_DIRECTORY_NAME}/${dependency.directoryName}"
+    }
+
+    private void updateBuildTargetDeclaration(ChromiumDepGraph depGraph, String normalisedRepoPath) {
         File buildFile = new File("${normalisedRepoPath}/BUILD.gn");
         def sb = new StringBuilder()
 
@@ -182,84 +236,21 @@ class BuildConfigGenerator extends DefaultTask {
             return dependency1.id.compareTo(dependency2.id)
         }
 
-        depGraph.dependencies.values().sort(dependencyComparator).each { dependency ->
-            if (excludeDependency(dependency) || !dependency.generateTarget) {
-                return
-            }
-
-            def targetName = translateTargetName(dependency.id) + "_java"
-            def javaGroupTarget = computeJavaGroupForwardingTarget(dependency)
-            if (javaGroupTarget != null) {
-                assert dependency.extension == 'jar' || dependency.extension == 'aar'
-                sb.append("""
-                java_group("${targetName}") {
-                  deps = [ \"${javaGroupTarget}\" ]
-                """.stripIndent())
-                if (dependency.testOnly) sb.append("  testonly = true\n")
-                sb.append("}\n\n")
-                return
-            }
-
-            def depsStr = ""
-            if (!dependency.children.isEmpty()) {
-                dependency.children.each { childDep ->
-                    def dep = depGraph.dependencies[childDep]
-                    if (dep.exclude) {
-                        return
-                    }
-                    // Special case: If a child dependency is an existing lib, rather than skipping
-                    // it, replace the child dependency with the existing lib.
-                    def existingLib = EXISTING_LIBS.get(dep.id)
-                    def depTargetName = translateTargetName(dep.id) + "_java"
-                    if (existingLib != null) {
-                        depsStr += "\"${existingLib}\","
-                    } else if (excludeDependency(dep)) {
-                        def thirdPartyDir = (dep.id.startsWith("androidx")) ? "androidx" : "android_deps"
-                        depsStr += "\"//third_party/${thirdPartyDir}:${depTargetName}\","
-                    } else if (dep.id == "com_google_android_material_material") {
-                        // Material design is pulled in via doubledown, should
-                        // use the variable instead of the real target.
-                        depsStr += "\"\\\$material_design_target\","
-                    } else {
-                        depsStr += "\":${depTargetName}\","
-                    }
-                }
-            }
-
-            def libPath = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}"
-            sb.append(BUILD_GN_GEN_REMINDER)
-            if (dependency.extension == 'jar') {
-                sb.append("""\
-                java_prebuilt("${targetName}") {
-                  jar_path = "${libPath}/${dependency.fileName}"
-                  output_name = "${dependency.id}"
-                """.stripIndent())
-                if (dependency.supportsAndroid) {
-                    sb.append("  supports_android = true\n")
-                } else {
-                    // Save some time by not validating classpaths of desktop
-                    // .jars. Also required to break a dependency cycle for
-                    // errorprone.
-                    sb.append("  enable_bytecode_checks = false\n")
-                }
-            } else if (dependency.extension == 'aar') {
-                sb.append("""\
-                android_aar_prebuilt("${targetName}") {
-                  aar_path = "${libPath}/${dependency.fileName}"
-                  info_path = "${libPath}/${dependency.id}.info"
-                """.stripIndent())
-            } else {
-                throw new IllegalStateException("Dependency type should be JAR or AAR")
-            }
-
-            sb.append(generateBuildTargetVisibilityDeclaration(dependency))
-
-            if (dependency.testOnly) sb.append("  testonly = true\n")
-            if (!depsStr.empty) sb.append("  deps = [${depsStr}]\n")
-            addSpecialTreatment(sb, dependency.id, dependency.extension)
-
-            sb.append("}\n\n")
+        def fixedDependencies = depGraph.dependencies.values().findAll {
+            dependency -> dependency.usedInBuild
         }
+        fixedDependencies.sort(dependencyComparator).each { dependency ->
+            appendBuildTarget(dependency, depGraph.dependencies, sb)
+        }
+
+        sb.append("if (build_with_chromium) {\n")
+        def buildWithChromiumDependencies = depGraph.dependencies.values().findAll {
+            dependency -> !dependency.usedInBuild
+        }
+        buildWithChromiumDependencies.sort(dependencyComparator).each { dependency ->
+            appendBuildTarget(dependency, depGraph.dependencies, sb)
+        }
+        sb.append("}\n")
 
         def out = "${BUILD_GN_TOKEN_START}\n${sb.toString()}\n${BUILD_GN_TOKEN_END}"
         if (buildFile.exists()) {
@@ -270,6 +261,87 @@ class BuildConfigGenerator extends DefaultTask {
             out = "import(\"//build/config/android/rules.gni\")\n" + out
         }
         buildFile.write(out)
+    }
+
+    public void appendBuildTarget(ChromiumDepGraph.DependencyDescription dependency,
+                                  Map<String, ChromiumDepGraph.DependencyDescription> allDependencies,
+                                  StringBuilder sb) {
+        if (excludeDependency(dependency) || !dependency.generateTarget) {
+            return
+        }
+
+        def targetName = translateTargetName(dependency.id) + "_java"
+        def javaGroupTarget = computeJavaGroupForwardingTarget(dependency)
+        if (javaGroupTarget != null) {
+            assert dependency.extension == 'jar' || dependency.extension == 'aar'
+            sb.append("""
+            java_group("${targetName}") {
+              deps = [ \"${javaGroupTarget}\" ]
+            """.stripIndent())
+            if (dependency.testOnly) sb.append("  testonly = true\n")
+            sb.append("}\n\n")
+            return
+        }
+
+        def depsStr = ""
+        if (!dependency.children.isEmpty()) {
+            dependency.children.each { childDep ->
+                def dep = allDependencies[childDep]
+                if (dep.exclude) {
+                    return
+                }
+                // Special case: If a child dependency is an existing lib, rather than skipping
+                // it, replace the child dependency with the existing lib.
+                def existingLib = EXISTING_LIBS.get(dep.id)
+                def depTargetName = translateTargetName(dep.id) + "_java"
+                if (existingLib != null) {
+                    depsStr += "\"${existingLib}\","
+                } else if (excludeDependency(dep)) {
+                    def thirdPartyDir = (dep.id.startsWith("androidx")) ? "androidx" : "android_deps"
+                    depsStr += "\"//third_party/${thirdPartyDir}:${depTargetName}\","
+                } else if (dep.id == "com_google_android_material_material") {
+                    // Material design is pulled in via doubledown, should
+                    // use the variable instead of the real target.
+                    depsStr += "\"\\\$material_design_target\","
+                } else {
+                    depsStr += "\":${depTargetName}\","
+                }
+            }
+        }
+
+        def libPath = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.directoryName}"
+        sb.append(GEN_REMINDER)
+        if (dependency.extension == 'jar') {
+            sb.append("""\
+            java_prebuilt("${targetName}") {
+              jar_path = "${libPath}/${dependency.fileName}"
+              output_name = "${dependency.id}"
+            """.stripIndent())
+            if (dependency.supportsAndroid) {
+                sb.append("  supports_android = true\n")
+            } else {
+                // Save some time by not validating classpaths of desktop
+                // .jars. Also required to break a dependency cycle for
+                // errorprone.
+                sb.append("  enable_bytecode_checks = false\n")
+            }
+        } else if (dependency.extension == 'aar') {
+            sb.append("""\
+            android_aar_prebuilt("${targetName}") {
+              aar_path = "${libPath}/${dependency.fileName}"
+              info_path = "${libPath}/${dependency.id}.info"
+            """.stripIndent())
+        } else {
+            throw new IllegalStateException("Dependency type should be JAR or AAR")
+        }
+
+        sb.append(generateBuildTargetVisibilityDeclaration(dependency))
+
+        if (dependency.testOnly) sb.append("  testonly = true\n")
+        if (!depsStr.empty) sb.append("  deps = [${depsStr}]\n")
+        addSpecialTreatment(sb, dependency.id, dependency.extension)
+
+        sb.append("}\n\n")
     }
 
     public static String translateTargetName(String targetName) {
@@ -315,6 +387,8 @@ class BuildConfigGenerator extends DefaultTask {
     }
 
     private static void addSpecialTreatment(StringBuilder sb, String dependencyId, String dependencyExtension) {
+        addPreconditionsOverrideTreatment(sb, dependencyId)
+
         if (dependencyId.startsWith('org_robolectric')) {
             // Skip platform checks since it depends on
             // accessibility_test_framework_java which requires_android.
@@ -454,7 +528,7 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # because androidx_concurrent_futures also depends on it and to avoid\n')
                 sb.append('  # defining ListenableFuture.class twice.\n')
                 sb.append('  deps += [":com_google_guava_listenablefuture_java"]\n')
-                sb.append('  jar_excluded_patterns = ["*/ListenableFuture.class"]\n')
+                sb.append('  jar_excluded_patterns += ["*/ListenableFuture.class"]\n')
                 break
             case 'com_google_code_findbugs_jsr305':
             case 'com_google_errorprone_error_prone_annotations':
@@ -500,7 +574,7 @@ class BuildConfigGenerator extends DefaultTask {
                 break
             case 'com_google_android_gms_play_services_basement':
                 sb.append('  # https://crbug.com/989505\n')
-                sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
+                sb.append('  jar_excluded_patterns += ["META-INF/proguard/*"]\n')
                 // Deprecated deps jar but still needed by play services basement.
                 sb.append('  input_jars_paths=["\\$android_sdk/optional/org.apache.http.legacy.jar"]\n')
                 sb.append('  bytecode_rewriter_target = "//build/android/bytecode:fragment_activity_replacer"\n')
@@ -562,7 +636,70 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # The library works without it as it\'s only used for logging.\n')
                 sb.append('  enable_bytecode_checks = false\n')
                 break
+            case 'com_android_tools_sdk_common':
+            case 'com_android_tools_common':
+            case 'com_android_tools_layoutlib_layoutlib_api':
+                sb.append('\n')
+                sb.append('  # This target does not come with most of its dependencies and is\n')
+                sb.append('  # only meant to be used by the resources shrinker. If you wish to use\n')
+                sb.append('  # this for other purposes, change buildCompileNoDeps in build.gradle.\n')
+                sb.append('  visibility = [ "//build/android/gyp/resources_shrinker:*" ]\n')
+                break
         }
+    }
+
+    private static void addPreconditionsOverrideTreatment(StringBuilder sb, String dependencyId) {
+        def targetName = translateTargetName(dependencyId)
+        switch(targetName) {
+          case "androidx_core_core":
+          case "com_google_guava_guava_android":
+          case "google_play_services_basement":
+              if (targetName == "com_google_guava_guava_android") {
+                  // com_google_guava_guava_android is java_prebuilt().
+                  sb.append("bypass_platform_checks = true")
+              }
+              def libraryDep = "//third_party/android_deps/local_modifications/preconditions:" +
+                  computePreconditionsStubLibraryForDep(dependencyId)
+              sb.append("""
+                |
+                | jar_excluded_patterns = []
+                | if (!enable_java_asserts) {
+                |   # Omit the file since we use our own copy.
+                |   jar_excluded_patterns += [
+                |     "${computePreconditionsClassForDep(dependencyId)}",
+                |   ]
+                |   deps += [
+                |     "${libraryDep}",
+                |   ]
+                | }
+                |""".stripMargin())
+         }
+    }
+
+    private static String computePreconditionsStubLibraryForDep(String dependencyId) {
+        def targetName = translateTargetName(dependencyId)
+        switch (targetName) {
+            case "androidx_core_core":
+              return "androidx_stub_preconditions_java"
+            case "com_google_guava_guava_android":
+              return "guava_stub_preconditions_java"
+            case "google_play_services_basement":
+              return "gms_stub_preconditions_java"
+        }
+        return null
+    }
+
+    private static String computePreconditionsClassForDep(String dependencyId) {
+        def targetName = translateTargetName(dependencyId)
+        switch (targetName) {
+            case "androidx_core_core":
+              return "androidx/core/util/Preconditions.class"
+            case "com_google_guava_guava_android":
+              return "com/google/common/base/Preconditions.class"
+            case "google_play_services_basement":
+              return "com/google/android/gms/common/internal/Preconditions.class"
+        }
+        return null
     }
 
     private void updateDepsDeclaration(ChromiumDepGraph depGraph, String cipdBucket,
@@ -583,17 +720,15 @@ class BuildConfigGenerator extends DefaultTask {
                     computeJavaGroupForwardingTarget(dependency) != null) {
                 return
             }
-            def depPath = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}"
-            def cipdPath = "${cipdBucket}/${repoPath}"
-            // CIPD does not allow uppercase in names.
-            cipdPath += "/${depPath}".toLowerCase()
+            def depPath = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.directoryName}"
+            def cipdPath = "${cipdBucket}/${repoPath}/${depPath}"
             sb.append("""\
             |
             |  'src/${repoPath}/${depPath}': {
             |      'packages': [
             |          {
             |              'package': '${cipdPath}',
-            |              'version': 'version:${dependency.version}-${dependency.cipdSuffix}',
+            |              'version': 'version:${THREEPP_EPOCH}@${dependency.version}.${dependency.cipdSuffix}',
             |          },
             |      ],
             |      'condition': 'checkout_android',
@@ -624,6 +759,16 @@ class BuildConfigGenerator extends DefaultTask {
         if (repositoryPath == AUTOROLLED_REPO_PATH) {
           def targetName = translateTargetName(dependency.id) + "_java"
           return !isTargetAutorolled(targetName)
+        }
+        // TODO(crbug.com/1184780): Remove this once org_robolectric_shadows_multidex
+        // is updated to a newer version which does not need jetify.
+        if (dependency.directoryName == "org_robolectric_shadows_multidex") {
+            if (dependency.version != "4.3.1") {
+                throw new RuntimeException("Got a new version for org_robolectric_shadows_multidex. " +
+                    "If this new version don't need jetify, please move this dependency back to the " +
+                    "auto-generated section in //DEPS and //third_party/android_deps/BUILD.gn.")
+            }
+            return true
         }
         return false
     }
@@ -671,15 +816,21 @@ class BuildConfigGenerator extends DefaultTask {
     }
 
     static String makeReadme(ChromiumDepGraph.DependencyDescription dependency) {
-        def licenseString
-        // Replace license names with ones that are whitelisted, see third_party/PRESUBMIT.py
-        switch (dependency.licenseName) {
-            case "The Apache Software License, Version 2.0":
-                licenseString = "Apache Version 2.0"
-                break
-            default:
-                licenseString = dependency.licenseName
+        def licenseStrings = []
+        for (ChromiumDepGraph.LicenseSpec license : dependency.licenses) {
+            // Replace license names with ones that are whitelisted, see third_party/PRESUBMIT.py
+            switch (license.name) {
+                case "The Apache Software License, Version 2.0":
+                    licenseStrings.add("Apache Version 2.0")
+                    break
+                case "GNU General Public License, version 2, with the Classpath Exception":
+                    licenseStrings.add("GPL v2 with the classpath exception")
+                    break
+                default:
+                    licenseStrings.add(license.name)
+            }
         }
+        def licenseString = String.join(", ", licenseStrings)
 
         def securityCritical = dependency.supportsAndroid && dependency.isShipped
         def licenseFile = dependency.isShipped? "LICENSE" : "NOT_SHIPPED"
@@ -703,10 +854,10 @@ class BuildConfigGenerator extends DefaultTask {
 
     static String makeCipdYaml(ChromiumDepGraph.DependencyDescription dependency, String cipdBucket,
                                String repoPath) {
-        def cipdVersion = "${dependency.version}-${dependency.cipdSuffix}"
+        def cipdVersion = "${THREEPP_EPOCH}@${dependency.version}.${dependency.cipdSuffix}"
         def cipdPath = "${cipdBucket}/${repoPath}"
         // CIPD does not allow uppercase in names.
-        cipdPath += "/${DOWNLOAD_DIRECTORY_NAME}/" + dependency.id.toLowerCase()
+        cipdPath += "/${DOWNLOAD_DIRECTORY_NAME}/" + dependency.directoryName
 
         // NOTE: the fetch_all.py script relies on the format of this file!
         // See fetch_all.py:GetCipdPackageInfo().
@@ -726,6 +877,98 @@ class BuildConfigGenerator extends DefaultTask {
         """.stripIndent()
 
         return str
+    }
+
+    static void validateLicenses(ChromiumDepGraph.DependencyDescription dependency) {
+        if (dependency.licenses.isEmpty()) {
+            throw new RuntimeException("Missing license for ${dependency.id}.")
+            return
+        }
+
+        for (ChromiumDepGraph.LicenseSpec license : dependency.licenses) {
+            if (!license.path?.trim() && !license.url?.trim()) {
+                def exceptionMessage = "Missing license for ${dependency.id}. "
+                    + "License Name was: ${license.name}"
+                throw new RuntimeException(exceptionMessage)
+            }
+        }
+    }
+
+    static void downloadLicenses(ChromiumDepGraph.DependencyDescription dependency,
+                                 String normalisedRepoPath,
+                                 ExecutorService downloadExecutor,
+                                 List<Future> downloadTasks) {
+        def depDir = normalisedRepoPath +"/" + computeDepDir(dependency)
+        for (int i = 0; i < dependency.licenses.size(); ++i) {
+            def license = dependency.licenses[i]
+            if (!license.path?.trim() && license.url?.trim()) {
+                def destFileSuffix = (dependency.licenses.size() > 1) ? "${i+1}.tmp" : ""
+                def destFile = new File("${depDir}/LICENSE${destFileSuffix}")
+                downloadTasks.add(downloadExecutor.submit {
+                    downloadFile(dependency.id, license.url, destFile)
+                    if (destFile.text.contains("<html")) {
+                        throw new RuntimeException("Found HTML in LICENSE file. Please add an "
+                                + "override to ChromiumDepGraph.groovy for ${dependency.id}.")
+                    }
+                })
+            }
+        }
+    }
+
+    static void mergeLicenses(ChromiumDepGraph.DependencyDescription dependency,
+                              String normalisedRepoPath) {
+        def depDir = computeDepDir(dependency)
+        def outFile = new File("${normalisedRepoPath}/${depDir}/LICENSE")
+
+        if (dependency.licenses.size() == 1) {
+            def licensePath0 = dependency.licenses.get(0).path?.trim()
+            if (licensePath0) {
+                outFile.write(new File("${normalisedRepoPath}/${licensePath0}").text)
+            }
+            return
+        }
+
+        outFile.write("Third-Party Software Licenses\n")
+        for (int i = 0; i < dependency.licenses.size(); ++i) {
+            def licenseSpec = dependency.licenses[i]
+            outFile.append("\n${i+1}. ${licenseSpec.name}\n\n")
+            def licensePath = (licenseSpec.path != null)
+                ? licenseSpec.path.trim()
+                : "${depDir}/LICENSE${i+1}.tmp"
+            outFile.append(new File("${normalisedRepoPath}/${licensePath}").text)
+        }
+    }
+
+    static String make3ppPb(ChromiumDepGraph.DependencyDescription dependency,
+                            String cipdBucket, String repoPath) {
+        def pkgPrefix = "${cipdBucket}/${repoPath}/${DOWNLOAD_DIRECTORY_NAME}"
+
+        def str = COPYRIGHT_HEADER + "\n" + GEN_REMINDER
+        str += """
+        create {
+          source {
+            script { name: "fetch.py" }
+            patch_version: "${dependency.cipdSuffix}"
+          }
+        }
+
+        upload {
+          pkg_prefix: "${pkgPrefix}"
+          universal: true
+        }
+        """.stripIndent()
+
+        return str
+
+    }
+
+    static String make3ppFetch(Template fetchTemplate,
+                               ChromiumDepGraph.DependencyDescription dependency) {
+        def bindMap = [
+            copyrightHeader: COPYRIGHT_HEADER,
+            dependency: dependency,
+        ]
+        return fetchTemplate.make(bindMap).toString()
     }
 
     static String jsonDump(obj) {

@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
@@ -77,12 +79,18 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::ValuesIn(viz::GetRendererTypes()),
                          ::testing::PrintToStringParamName());
 
+// viz::GetRendererTypes() can return an empty list on some platforms.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(LayerTreeHostFiltersPixelTest);
+
 using LayerTreeHostFiltersPixelTestGPU = LayerTreeHostFiltersPixelTest;
 
 INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostFiltersPixelTestGPU,
                          ::testing::ValuesIn(viz::GetGpuRendererTypes()),
                          ::testing::PrintToStringParamName());
+
+// viz::GetGpuRendererTypes() can return an empty list on some platforms.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(LayerTreeHostFiltersPixelTestGPU);
 
 TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRect) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
@@ -223,11 +231,11 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRounded) {
           1.01f * percentage_pixels_small_error;
   // Divide average error by 4 since we blur most of the result.
   float average_error_allowed_in_bad_pixels = small_error_threshold / 4.f;
-  pixel_comparator_.reset(new FuzzyPixelComparator(
+  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
       true,  // discard_alpha
       percentage_pixels_large_or_small_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_limit,
-      small_error_threshold));
+      small_error_threshold);
 
   RunPixelTest(background, use_software_renderer()
                                ? base::FilePath(FILE_PATH_LITERAL(
@@ -360,6 +368,10 @@ INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
                          ::testing::ValuesIn(viz::GetGpuRendererTypes()),
                          ::testing::PrintToStringParamName());
 
+// viz::GetGpuRendererTypes() can return an empty list on some platforms.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
+    LayerTreeHostBlurFiltersPixelTestGPULayerList);
+
 // TODO(michaelludwig): Re-enable after Skia roll and update expected images.
 // See skbug.com/9545
 TEST_P(LayerTreeHostBlurFiltersPixelTestGPULayerList,
@@ -465,6 +477,10 @@ INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostFiltersScaledPixelTest,
                          ::testing::ValuesIn(viz::GetRendererTypes()),
                          ::testing::PrintToStringParamName());
+
+// viz::GetRendererTypes() can return an empty list on some platforms.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
+    LayerTreeHostFiltersScaledPixelTest);
 
 TEST_P(LayerTreeHostFiltersScaledPixelTest, StandardDpi) {
   RunPixelTestType(100, 1.f);
@@ -575,7 +591,8 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
   filter->SetBackdropFilters(filters);
   filter->ClearBackdropFilterBounds();
 
-#if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON) || defined(ARCH_CPU_ARM64)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(_MIPS_ARCH_LOONGSON) || \
+    defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
   // Windows has 153 pixels off by at most 2: crbug.com/225027
   float percentage_pixels_large_error = 0.3825f;  // 153px / (200*200)
@@ -585,6 +602,10 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
     percentage_pixels_large_error = 0.415f;  // 166px / (200*200)
     large_error_allowed = 1;
   }
+#elif defined(OS_MAC)
+  // There's a 1 pixel error on MacOS
+  float percentage_pixels_large_error = 0.0025f;  // 1px / (200*200)
+  int large_error_allowed = 1;
 #elif defined(_MIPS_ARCH_LOONGSON)
   // Loongson has 2 pixels off by at most 2: crbug.com/819075
   float percentage_pixels_large_error = 0.005f;  // 2px / (200*200)
@@ -596,11 +617,11 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
   float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 1.f;
   int small_error_allowed = 0;
-  pixel_comparator_.reset(new FuzzyPixelComparator(
+  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
       true,  // discard_alpha
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed));
+      small_error_allowed);
 #endif
 
   RunPixelTest(
@@ -657,11 +678,11 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterRotated) {
   float average_error_allowed_in_bad_pixels = 2.f;
   int large_error_allowed = 2;
   int small_error_allowed = 0;
-  pixel_comparator_.reset(new FuzzyPixelComparator(
+  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
       true,  // discard_alpha
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed));
+      small_error_allowed);
 
   RunPixelTest(background,
                base::FilePath(FILE_PATH_LITERAL("backdrop_filter_rotated_.png"))
@@ -715,10 +736,10 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageRenderSurfaceScaled) {
     average_error_allowed_in_bad_pixels = 1.f;
     large_error_allowed = 1;
   }
-  pixel_comparator_.reset(new FuzzyPixelComparator(
+  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
       /*discard_alpha=*/true, percentage_pixels_large_error,
       percentage_pixels_small_error, average_error_allowed_in_bad_pixels,
-      large_error_allowed, small_error_allowed));
+      large_error_allowed, small_error_allowed);
 
   RunPixelTest(
       background,
@@ -843,11 +864,11 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedFilter) {
 #endif
   float percentage_pixels_small_error = 0.0f;
   int small_error_allowed = 0;
-  pixel_comparator_.reset(new FuzzyPixelComparator(
+  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
       true,  // discard_alpha
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed));
+      small_error_allowed);
 #endif
 
   RunPixelTest(background,
@@ -882,7 +903,8 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
 
   background->AddChild(child);
 
-#if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS) || \
+    defined(ARCH_CPU_ARM64) || defined(USE_OZONE)
 #if defined(ARCH_CPU_ARM64) && \
     (defined(OS_WIN) || defined(OS_FUCHSIA) || defined(OS_MAC))
   // Windows, macOS, and Fuchsia on ARM64 has some pixels difference.
@@ -890,6 +912,11 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
   float percentage_pixels_large_error = 0.89f;
   float average_error_allowed_in_bad_pixels = 5.f;
   int large_error_allowed = 17;
+#elif defined(OS_MAC) || defined(OS_CHROMEOS) || defined(USE_OZONE)
+  // There's a 1 pixel error on MacOS and ChromeOS
+  float percentage_pixels_large_error = 0.00111112f;  // 1px / (300*300)
+  float average_error_allowed_in_bad_pixels = 1.f;
+  int large_error_allowed = 1;
 #else
   // Windows and all other ARM64 have 3 pixels off by 1: crbug.com/259915
   float percentage_pixels_large_error = 0.00333334f;  // 3px / (300*300)
@@ -901,11 +928,11 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
 #endif
   float percentage_pixels_small_error = 0.0f;
   int small_error_allowed = 0;
-  pixel_comparator_.reset(new FuzzyPixelComparator(
+  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
       true,  // discard_alpha
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed));
+      small_error_allowed);
 #else
   if (use_skia_vulkan())
     pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
@@ -1158,6 +1185,9 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::ValuesIn(viz::GetRendererTypes()),
                          ::testing::PrintToStringParamName());
 
+// viz::GetRendererTypes() can return an empty list on some platforms.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BackdropFilterOffsetTest);
+
 TEST_P(BackdropFilterOffsetTest, StandardDpi) {
   RunPixelTestType(1.f);
 }
@@ -1194,11 +1224,11 @@ class BackdropFilterInvertTest : public LayerTreeHostFiltersPixelTest {
       int large_error_allowed = 1;
       float percentage_pixels_small_error = 0.0f;
       int small_error_allowed = 0;
-      pixel_comparator_.reset(new FuzzyPixelComparator(
+      pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
           true,  // discard_alpha
           percentage_pixels_large_error, percentage_pixels_small_error,
           average_error_allowed_in_bad_pixels, large_error_allowed,
-          small_error_allowed));
+          small_error_allowed);
     }
     RunPixelTest(std::move(root), expected_result);
   }
@@ -1217,6 +1247,9 @@ INSTANTIATE_TEST_SUITE_P(All,
                          BackdropFilterInvertTest,
                          ::testing::ValuesIn(viz::GetRendererTypes()),
                          ::testing::PrintToStringParamName());
+
+// viz::GetRendererTypes() can return an empty list on some platforms.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BackdropFilterInvertTest);
 
 TEST_P(BackdropFilterInvertTest, StandardDpi) {
   RunPixelTestType(1.f);

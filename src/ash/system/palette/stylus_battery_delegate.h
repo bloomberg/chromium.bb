@@ -5,11 +5,12 @@
 #ifndef ASH_SYSTEM_PALETTE_STYLUS_BATTERY_DELEGATE_H_
 #define ASH_SYSTEM_PALETTE_STYLUS_BATTERY_DELEGATE_H_
 
+#include <string>
+
 #include "ash/ash_export.h"
 #include "ash/system/power/peripheral_battery_listener.h"
 #include "base/callback_forward.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/gfx/image/image_skia.h"
 

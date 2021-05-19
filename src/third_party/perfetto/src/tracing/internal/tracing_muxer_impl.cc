@@ -171,11 +171,12 @@ void TracingMuxerImpl::ProducerImpl::Flush(FlushRequestID flush_id,
 }
 
 void TracingMuxerImpl::ProducerImpl::ClearIncrementalState(
-    const DataSourceInstanceID*,
-    size_t) {
+    const DataSourceInstanceID* instances,
+    size_t instance_count) {
   PERFETTO_DCHECK_THREAD(thread_checker_);
-  // TODO(skyostil): Mark each affected data source's incremental state as
-  // needing to be cleared.
+  for (size_t inst_idx = 0; inst_idx < instance_count; inst_idx++) {
+    muxer_->ClearDataSourceIncrementalState(backend_id_, instances[inst_idx]);
+  }
 }
 
 void TracingMuxerImpl::ProducerImpl::SweepDeadServices() {
@@ -652,6 +653,8 @@ TracingMuxerImpl::TracingMuxerImpl(const TracingInitArgs& args)
 void TracingMuxerImpl::Initialize(const TracingInitArgs& args) {
   PERFETTO_DCHECK_THREAD(thread_checker_);  // Rebind the thread checker.
 
+  policy_ = args.tracing_policy;
+
   auto add_backend = [this, &args](TracingBackend* backend, BackendType type) {
     if (!backend) {
       // We skip the log in release builds because the *_backend_fake.cc code
@@ -984,6 +987,23 @@ void TracingMuxerImpl::StopDataSource_AsyncEnd(
   producer->SweepDeadServices();
 }
 
+void TracingMuxerImpl::ClearDataSourceIncrementalState(
+    TracingBackendId backend_id,
+    DataSourceInstanceID instance_id) {
+  PERFETTO_DCHECK_THREAD(thread_checker_);
+  PERFETTO_DLOG("Clearing incremental state for data source %" PRIu64,
+                instance_id);
+  auto ds = FindDataSource(backend_id, instance_id);
+  if (!ds) {
+    PERFETTO_ELOG("Could not find data source to clear incremental state for");
+    return;
+  }
+  // Make DataSource::TraceContext::GetIncrementalState() eventually notice that
+  // the incremental state should be cleared.
+  ds.static_state->incremental_state_generation.fetch_add(
+      1, std::memory_order_relaxed);
+}
+
 void TracingMuxerImpl::SyncProducersForTesting() {
   std::mutex mutex;
   std::condition_variable cv;
@@ -1095,6 +1115,7 @@ void TracingMuxerImpl::UpdateDataSourcesOnAllBackends() {
 
       rds.descriptor.set_will_notify_on_start(true);
       rds.descriptor.set_will_notify_on_stop(true);
+      rds.descriptor.set_handles_incremental_state_clear(true);
       backend.producer->service_->RegisterDataSource(rds.descriptor);
       backend.producer->registered_data_sources_.set(rds.static_state->index);
     }
@@ -1342,12 +1363,29 @@ TracingMuxerImpl::ConsumerImpl* TracingMuxerImpl::FindConsumer(
   for (RegisteredBackend& backend : backends_) {
     for (auto& consumer : backend.consumers) {
       if (consumer->session_id_ == session_id) {
-        PERFETTO_DCHECK(consumer->service_);
         return consumer.get();
       }
     }
   }
   return nullptr;
+}
+
+void TracingMuxerImpl::InitializeConsumer(TracingSessionGlobalID session_id) {
+  PERFETTO_DCHECK_THREAD(thread_checker_);
+
+  auto* consumer = FindConsumer(session_id);
+  if (!consumer)
+    return;
+
+  TracingBackendId backend_id = consumer->backend_id_;
+  // |backends_| is append-only, Backend instances are always valid.
+  PERFETTO_CHECK(backend_id < backends_.size());
+  RegisteredBackend& backend = backends_[backend_id];
+
+  TracingBackend::ConnectConsumerArgs conn_args;
+  conn_args.consumer = consumer;
+  conn_args.task_runner = task_runner_.get();
+  consumer->Initialize(backend.backend->ConnectConsumer(conn_args));
 }
 
 void TracingMuxerImpl::OnConsumerDisconnected(ConsumerImpl* consumer) {
@@ -1464,21 +1502,53 @@ std::unique_ptr<TracingSession> TracingMuxerImpl::CreateTracingSession(
         continue;
       }
 
+      TracingBackendId backend_id = backend.id;
+
+      // Create the consumer now, even if we have to ask the embedder below, so
+      // that any other tasks executing after this one can find the consumer and
+      // change its pending attributes.
+      backend.consumers.emplace_back(
+          new ConsumerImpl(this, backend.type, backend.id, session_id));
+
       // The last registered backend in |backends_| is the unsupported backend
       // without a valid type.
       if (!backend.type) {
         PERFETTO_ELOG(
             "No tracing backend ready for type=%d, consumer will disconnect",
             requested_backend_type);
+        InitializeConsumer(session_id);
+        return;
       }
 
-      backend.consumers.emplace_back(
-          new ConsumerImpl(this, backend.type, backend.id, session_id));
-      auto& consumer = backend.consumers.back();
-      TracingBackend::ConnectConsumerArgs conn_args;
-      conn_args.consumer = consumer.get();
-      conn_args.task_runner = task_runner_.get();
-      consumer->Initialize(backend.backend->ConnectConsumer(conn_args));
+      // Check if the embedder wants to be asked for permission before
+      // connecting the consumer.
+      if (!policy_) {
+        InitializeConsumer(session_id);
+        return;
+      }
+
+      TracingPolicy::ShouldAllowConsumerSessionArgs args;
+      args.backend_type = backend.type;
+      args.result_callback = [this, backend_id, session_id](bool allow) {
+        task_runner_->PostTask([this, backend_id, session_id, allow] {
+          if (allow) {
+            InitializeConsumer(session_id);
+            return;
+          }
+
+          PERFETTO_ELOG(
+              "Consumer session for backend type type=%d forbidden, "
+              "consumer will disconnect",
+              backends_[backend_id].type);
+
+          auto* consumer = FindConsumer(session_id);
+          if (!consumer)
+            return;
+
+          consumer->OnDisconnect();
+        });
+      };
+      policy_->ShouldAllowConsumerSession(args);
       return;
     }
     PERFETTO_DFATAL("Not reached");

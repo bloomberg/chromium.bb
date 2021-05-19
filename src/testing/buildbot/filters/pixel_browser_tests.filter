@@ -5,6 +5,7 @@ AppInfoDialogBrowserTest.*
 AskGoogleForSuggestionsDialogTest.*
 BookmarkBubbleViewBrowserTest.*
 BookmarkEditorViewBrowserTest.*
+ChromeLabsUiTest.*
 ContentSettingBubbleDialogTest.*
 ExtensionInstallDialogViewInteractiveBrowserTest.*
 ExtensionUninstallDialogViewInteractiveBrowserTest.*
@@ -18,6 +19,8 @@ OneTimePermissionPromptBubbleViewBrowserTest.*
 OutdatedUpgradeBubbleTest.*
 PageInfoBubbleViewBrowserTest.*
 PasswordReuseModalWarningTest.*
+PermissionChipBrowserTest.*
+All/PermissionPromptBubbleViewBrowserTest.*
 ProfileSigninConfirmationDialogTest.*
 RelaunchRecommendedBubbleViewDialogTest.*
 RelaunchRequiredDialogViewDialogTest.*

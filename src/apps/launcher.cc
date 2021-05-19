@@ -414,7 +414,7 @@ void LaunchPlatformAppWithCommandLineAndLaunchId(
     std::unique_ptr<app_runtime::LaunchData> launch_data =
         std::make_unique<app_runtime::LaunchData>();
     if (!launch_id.empty())
-      launch_data->id.reset(new std::string(launch_id));
+      launch_data->id = std::make_unique<std::string>(launch_id);
     AppRuntimeEventRouter::DispatchOnLaunchedEvent(context, app, source,
                                                    std::move(launch_data));
     return;
@@ -451,7 +451,7 @@ void LaunchPlatformAppWithAction(
   CHECK(!action_data || !action_data->is_lock_screen_action ||
         !*action_data->is_lock_screen_action ||
         app->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kLockScreen))
+            extensions::mojom::APIPermissionID::kLockScreen))
       << "Launching lock screen action handler requires lockScreen permission.";
 
   scoped_refptr<PlatformAppPathLauncher> launcher =

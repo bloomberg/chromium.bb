@@ -20,6 +20,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#define MIMICLIB_SCRATCH_BUFFER_ARRAY_SIZE (64 * 1024 * 1024)
 #define IO_BUFFER_ARRAY_SIZE (64 * 1024 * 1024)
 #define PIXEL_BUFFER_ARRAY_SIZE (64 * 1024 * 1024)
 #define TOKEN_BUFFER_ARRAY_SIZE (128 * 1024)
@@ -31,6 +32,7 @@ uint8_t g_want_array_u8[IO_BUFFER_ARRAY_SIZE];
 uint8_t g_work_array_u8[IO_BUFFER_ARRAY_SIZE];
 uint8_t g_src_array_u8[IO_BUFFER_ARRAY_SIZE];
 
+uint8_t g_mimiclib_scratch_array_u8[MIMICLIB_SCRATCH_BUFFER_ARRAY_SIZE];
 uint8_t g_pixel_array_u8[PIXEL_BUFFER_ARRAY_SIZE];
 
 wuffs_base__token g_have_array_token[TOKEN_BUFFER_ARRAY_SIZE];
@@ -41,6 +43,7 @@ wuffs_base__slice_u8 g_want_slice_u8;
 wuffs_base__slice_u8 g_work_slice_u8;
 wuffs_base__slice_u8 g_src_slice_u8;
 
+wuffs_base__slice_u8 g_mimiclib_scratch_slice_u8;
 wuffs_base__slice_u8 g_pixel_slice_u8;
 
 wuffs_base__slice_token g_have_slice_token;
@@ -64,6 +67,10 @@ wuffs_testlib__initialize_global_xxx_slices() {
       .ptr = g_src_array_u8,
       .len = IO_BUFFER_ARRAY_SIZE,
   });
+  g_mimiclib_scratch_slice_u8 = ((wuffs_base__slice_u8){
+      .ptr = g_mimiclib_scratch_array_u8,
+      .len = MIMICLIB_SCRATCH_BUFFER_ARRAY_SIZE,
+  });
   g_pixel_slice_u8 = ((wuffs_base__slice_u8){
       .ptr = g_pixel_array_u8,
       .len = PIXEL_BUFFER_ARRAY_SIZE,
@@ -77,6 +84,20 @@ wuffs_testlib__initialize_global_xxx_slices() {
       .ptr = g_want_array_token,
       .len = TOKEN_BUFFER_ARRAY_SIZE,
   });
+}
+
+uint8_t  //
+unhex(uint8_t b) {
+  if (('0' <= b) && (b <= '9')) {
+    return b - '0';
+  }
+  if (('A' <= b) && (b <= 'F')) {
+    return b + 10 - 'A';
+  }
+  if (('a' <= b) && (b <= 'f')) {
+    return b + 10 - 'a';
+  }
+  return 0;
 }
 
 char g_fail_msg[65536] = {0};
@@ -568,6 +589,72 @@ copy_to_io_buffer_from_pixel_buffer(wuffs_base__io_buffer* dst,
   return NULL;
 }
 
+bool  //
+skip_read_file_patches(const char** path) {
+  const char* p = *path;
+  while (*p == '@') {
+    p++;
+    while (*p != ';') {
+      if (*p == '\x00') {
+        return false;
+      }
+      p++;
+    }
+    p++;
+  }
+  *path = p;
+  return true;
+}
+
+bool  //
+apply_read_file_patches(wuffs_base__io_buffer* dst,
+                        const char* original_path,
+                        size_t original_wi) {
+  const char* p = original_path;
+  while (*p == '@') {
+    p++;
+    uint64_t offset = 0;
+    while (*p != '=') {
+      if (*p == '\x00') {
+        return false;
+      }
+      offset = (offset << 4) | unhex(*p);
+      p++;
+    }
+    p++;
+    uint8_t before = 0;
+    while (*p != '=') {
+      if (*p == '\x00') {
+        return false;
+      }
+      before = (before << 4) | unhex(*p);
+      p++;
+    }
+    p++;
+    uint8_t after = 0;
+    while (*p != ';') {
+      if (*p == '\x00') {
+        return false;
+      }
+      after = (after << 4) | unhex(*p);
+      p++;
+    }
+    p++;
+
+    size_t i = original_wi + offset;
+    if ((i >= dst->meta.wi) || (dst->data.ptr[i] != before)) {
+      return false;
+    }
+    dst->data.ptr[i] = after;
+  }
+  return true;
+}
+
+// read_file loads path into dst.
+//
+// The path may be preceded by zero or more "@123=45=67;" sub-strings, which
+// denote a one-byte patch at offset 0x123, changing the byte at that offset
+// from 0x45 to 0x67.
 const char*  //
 read_file(wuffs_base__io_buffer* dst, const char* path) {
   if (!dst || !path) {
@@ -576,24 +663,32 @@ read_file(wuffs_base__io_buffer* dst, const char* path) {
   if (dst->meta.closed) {
     RETURN_FAIL("read_file: dst buffer closed for writes");
   }
+
+  const char* original_path = path;
+  size_t original_wi = dst->meta.wi;
+  if (!skip_read_file_patches(&path)) {
+    RETURN_FAIL("read_file(\"%s\"): invalid \"@123=45=67;\" patch",
+                original_path);
+  }
+
   FILE* f = fopen(path, "r");
   if (!f) {
     RETURN_FAIL("read_file(\"%s\"): %s (errno=%d)", path, strerror(errno),
                 errno);
   }
 
-  uint8_t dummy[1];
+  uint8_t placeholder[1];
   uint8_t* ptr = dst->data.ptr + dst->meta.wi;
   size_t len = dst->data.len - dst->meta.wi;
   while (true) {
     if (!len) {
       // We have read all that dst can hold. Check that we have read the full
       // file by trying to read one more byte, which should fail with EOF.
-      ptr = dummy;
+      ptr = placeholder;
       len = 1;
     }
     size_t n = fread(ptr, 1, len, f);
-    if (ptr != dummy) {
+    if (ptr != placeholder) {
       ptr += n;
       len -= n;
       dst->meta.wi += n;
@@ -618,6 +713,11 @@ read_file(wuffs_base__io_buffer* dst, const char* path) {
   fclose(f);
   dst->meta.pos = 0;
   dst->meta.closed = true;
+
+  if (!apply_read_file_patches(dst, original_path, original_wi)) {
+    RETURN_FAIL("read_file(\"%s\"): invalid \"@123=45=67;\" patch",
+                original_path);
+  }
   return NULL;
 }
 
@@ -950,10 +1050,17 @@ do_run__wuffs_base__image_decoder(wuffs_base__image_decoder* b,
                                   uint64_t* n_bytes_out,
                                   wuffs_base__io_buffer* dst,
                                   wuffs_base__pixel_format pixfmt,
+                                  uint32_t* quirks_ptr,
+                                  size_t quirks_len,
                                   wuffs_base__io_buffer* src) {
   wuffs_base__image_config ic = ((wuffs_base__image_config){});
   wuffs_base__frame_config fc = ((wuffs_base__frame_config){});
   wuffs_base__pixel_buffer pb = ((wuffs_base__pixel_buffer){});
+
+  size_t i;
+  for (i = 0; i < quirks_len; i++) {
+    wuffs_base__image_decoder__set_quirk_enabled(b, quirks_ptr[i], true);
+  }
 
   uint32_t bits_per_pixel = wuffs_base__pixel_format__bits_per_pixel(&pixfmt);
   if (bits_per_pixel == 0) {
@@ -1010,9 +1117,13 @@ do_bench_image_decode(
                                wuffs_base__io_buffer* dst,
                                uint32_t wuffs_initialize_flags,
                                wuffs_base__pixel_format pixfmt,
+                               uint32_t* quirks_ptr,
+                               size_t quirks_len,
                                wuffs_base__io_buffer* src),
     uint32_t wuffs_initialize_flags,
     wuffs_base__pixel_format pixfmt,
+    uint32_t* quirks_ptr,
+    size_t quirks_len,
     const char* src_filename,
     size_t src_ri,
     size_t src_wi,
@@ -1028,8 +1139,8 @@ do_bench_image_decode(
   uint64_t iters = iters_unscaled * g_flags.iterscale;
   for (i = 0; i < iters; i++) {
     src.meta.ri = src_ri;
-    CHECK_STRING(
-        (*decode_func)(&n_bytes, NULL, wuffs_initialize_flags, pixfmt, &src));
+    CHECK_STRING((*decode_func)(&n_bytes, NULL, wuffs_initialize_flags, pixfmt,
+                                quirks_ptr, quirks_len, &src));
   }
   bench_finish(iters, n_bytes);
   return NULL;
@@ -1054,35 +1165,6 @@ do_test__wuffs_base__hasher_u32(wuffs_base__hasher_u32* b,
          }));
   if (have != want) {
     RETURN_FAIL("have 0x%08" PRIX32 ", want 0x%08" PRIX32, have, want);
-  }
-  return NULL;
-}
-
-const char*  //
-do_test__wuffs_base__image_config_decoder(wuffs_base__image_decoder* b,
-                                          const char* src_filename,
-                                          size_t src_ri,
-                                          size_t src_wi,
-                                          uint64_t want_num_frames) {
-  wuffs_base__io_buffer src = ((wuffs_base__io_buffer){
-      .data = g_src_slice_u8,
-  });
-  CHECK_STRING(read_file_fragment(&src, src_filename, src_ri, src_wi));
-
-  uint64_t have_num_frames;
-  for (have_num_frames = 0;; have_num_frames++) {
-    wuffs_base__status status =
-        wuffs_base__image_decoder__decode_frame_config(b, NULL, &src);
-    if (status.repr == wuffs_base__note__end_of_data) {
-      break;
-    } else if (!wuffs_base__status__is_ok(&status)) {
-      RETURN_FAIL("decode_frame_config: \"%s\"", status.repr);
-    }
-  }
-
-  if (have_num_frames != want_num_frames) {
-    RETURN_FAIL("num_frames: have %" PRIu64 ", want %" PRIu64, have_num_frames,
-                want_num_frames);
   }
   return NULL;
 }
@@ -1137,7 +1219,7 @@ do_test__wuffs_base__image_decoder(
     RETURN_FAIL("pixbuf_len too large");
   } else {
     wuffs_base__color_u32_argb_premul have_final_pixel =
-        wuffs_base__load_u32le__no_bounds_check(&g_pixel_array_u8[n - 4]);
+        wuffs_base__peek_u32le__no_bounds_check(&g_pixel_array_u8[n - 4]);
     if (have_final_pixel != want_final_pixel) {
       RETURN_FAIL("final pixel: have 0x%08" PRIX32 ", want 0x%08" PRIX32,
                   have_final_pixel, want_final_pixel);
@@ -1214,7 +1296,7 @@ do_test__wuffs_base__token_decoder(wuffs_base__token_decoder* b,
   if (gt->src_filename) {
     CHECK_STRING(
         read_file_fragment(&src, gt->src_filename, gt->src_offset0,
-                           gt->src_offset1 ? gt->src_offset1 : UINT64_MAX));
+                           gt->src_offset1 ? gt->src_offset1 : SIZE_MAX));
   } else {
     src.meta.closed = true;
   }
@@ -1238,22 +1320,22 @@ do_test__wuffs_base__token_decoder(wuffs_base__token_decoder* b,
       // `script/print-json-token-debug-format.c`.
       uint8_t* ptr = have.data.ptr + have.meta.wi;
 
-      wuffs_base__store_u32be__no_bounds_check(ptr + 0x0, (uint32_t)(pos));
-      wuffs_base__store_u16be__no_bounds_check(ptr + 0x4, len);
-      wuffs_base__store_u16be__no_bounds_check(ptr + 0x6, con);
+      wuffs_base__poke_u32be__no_bounds_check(ptr + 0x0, (uint32_t)(pos));
+      wuffs_base__poke_u16be__no_bounds_check(ptr + 0x4, len);
+      wuffs_base__poke_u16be__no_bounds_check(ptr + 0x6, con);
       if (vmajor > 0) {
-        wuffs_base__store_u32be__no_bounds_check(ptr + 0x8, vmajor);
+        wuffs_base__poke_u32be__no_bounds_check(ptr + 0x8, vmajor);
         uint32_t vminor = wuffs_base__token__value_minor(t);
-        wuffs_base__store_u32be__no_bounds_check(ptr + 0xC, vminor);
+        wuffs_base__poke_u32be__no_bounds_check(ptr + 0xC, vminor);
       } else if (vmajor == 0) {
         uint8_t vbc = wuffs_base__token__value_base_category(t);
         uint32_t vbd = wuffs_base__token__value_base_detail(t);
-        wuffs_base__store_u32be__no_bounds_check(ptr + 0x8, 0);
-        wuffs_base__store_u8__no_bounds_check(ptr + 0x000C, vbc);
-        wuffs_base__store_u24be__no_bounds_check(ptr + 0xD, vbd);
+        wuffs_base__poke_u32be__no_bounds_check(ptr + 0x8, 0);
+        wuffs_base__poke_u8__no_bounds_check(ptr + 0x000C, vbc);
+        wuffs_base__poke_u24be__no_bounds_check(ptr + 0xD, vbd);
       } else {
-        wuffs_base__store_u8__no_bounds_check(ptr + 0x0008, 0x01);
-        wuffs_base__store_u56be__no_bounds_check(
+        wuffs_base__poke_u8__no_bounds_check(ptr + 0x0008, 0x01);
+        wuffs_base__poke_u56be__no_bounds_check(
             ptr + 0x9, wuffs_base__token__value_extension(t));
       }
       have.meta.wi += 16;

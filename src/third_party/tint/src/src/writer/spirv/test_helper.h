@@ -21,13 +21,8 @@
 
 #include "gtest/gtest.h"
 #include "spirv-tools/libspirv.hpp"
-#include "src/ast/module.h"
-#include "src/diagnostic/formatter.h"
-#include "src/program_builder.h"
 #include "src/transform/spirv.h"
-#include "src/type_determiner.h"
 #include "src/writer/spirv/binary_writer.h"
-#include "src/writer/spirv/builder.h"
 
 namespace tint {
 namespace writer {

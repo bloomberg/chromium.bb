@@ -4,14 +4,15 @@
 
 #include "chrome/browser/ui/passwords/password_generation_popup_view.h"
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_view_tester.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "content/public/test/browser_test.h"
@@ -23,11 +24,14 @@ namespace autofill {
 class TestPasswordGenerationPopupController
     : public PasswordGenerationPopupControllerImpl {
  public:
+  // |vertical_offset| specifies the vertical offset of the popup relative to
+  // the web contents container.
   explicit TestPasswordGenerationPopupController(
-      content::WebContents* web_contents)
+      content::WebContents* web_contents,
+      int vertical_offset = 0)
       : PasswordGenerationPopupControllerImpl(
             gfx::RectF(web_contents->GetContainerBounds().x(),
-                       web_contents->GetContainerBounds().y(),
+                       web_contents->GetContainerBounds().y() + vertical_offset,
                        10,
                        10),
             autofill::password_generation::PasswordGenerationUIData(
@@ -36,7 +40,7 @@ class TestPasswordGenerationPopupController
                                       10,
                                       10),
                 /*max_length=*/10,
-                /*generation_element=*/base::string16(),
+                /*generation_element=*/std::u16string(),
                 autofill::FieldRendererId(100),
                 /*is_generation_element_password_type=*/true,
                 /*text_direction=*/base::i18n::TextDirection(),
@@ -74,7 +78,8 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
                        MouseMovementInEditingPopup) {
   controller_ =
       new autofill::TestPasswordGenerationPopupController(GetWebContents());
-  controller_->Show(PasswordGenerationPopupController::kEditGeneratedPassword);
+  EXPECT_TRUE(controller_->Show(
+      PasswordGenerationPopupController::kEditGeneratedPassword));
 
   GetViewTester()->SimulateMouseMovementAt(
       gfx::Point(GetWebContents()->GetContainerBounds().x() + 1,
@@ -89,9 +94,20 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
                        CloseWebContentsWithVisiblePopup) {
   controller_ =
       new autofill::TestPasswordGenerationPopupController(GetWebContents());
-  controller_->Show(PasswordGenerationPopupController::kEditGeneratedPassword);
+  EXPECT_TRUE(controller_->Show(
+      PasswordGenerationPopupController::kEditGeneratedPassword));
 
   GetWebContents()->Close();
+}
+
+// Verify that controller is not crashed in case of insufficient vertical space
+// for showing popup.
+IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
+                       DoNotCrashInCaseOfInsuffucientVertialSpace) {
+  controller_ = new autofill::TestPasswordGenerationPopupController(
+      GetWebContents(), /*vertical_offset=*/-20);
+  EXPECT_FALSE(controller_->Show(
+      PasswordGenerationPopupController::kEditGeneratedPassword));
 }
 
 }  // namespace autofill

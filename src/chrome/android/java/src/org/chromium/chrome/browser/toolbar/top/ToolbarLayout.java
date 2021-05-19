@@ -790,8 +790,8 @@ public abstract class ToolbarLayout
     }
 
     private void maybeUnfocusUrlBar() {
-        if (getLocationBar() != null && getLocationBar().getFakeboxDelegate() != null) {
-            getLocationBar().getFakeboxDelegate().setUrlBarFocus(
+        if (getLocationBar() != null && getLocationBar().getOmniboxStub() != null) {
+            getLocationBar().getOmniboxStub().setUrlBarFocus(
                     false, null, OmniboxFocusReason.UNFOCUS);
         }
     }

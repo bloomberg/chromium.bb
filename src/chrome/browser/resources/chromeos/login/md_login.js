@@ -7,14 +7,13 @@
  */
 
 // <include src="test_util.js">
-// <include src="../../../../../ui/login/screen.js">
-// <include src="../../../../../ui/login/bubble.js">
-// <include src="../../../../../ui/login/display_manager.js">
+// <include src="bubble.js">
+// <include src="display_manager.js">
 // <include src="demo_mode_test_helper.js">
 
-// <include src="../../../../../ui/login/login_ui_tools.js">
+// <include src="login_ui_tools.js">
 // <include src="cr_ui.js">
-// <include src="oobe_select.js">
+// <include src="components/oobe_select.js">
 
 // <include src="../../gaia_auth_host/authenticator.js">
 
@@ -40,10 +39,6 @@ HTMLImports.whenReady(() => {
        */
       initialize() {
         cr.ui.login.DisplayManager.initialize();
-
-        cr.ui.Bubble.decorate($('bubble-persistent'));
-        $('bubble-persistent').persistent = true;
-        $('bubble-persistent').hideOnKeyPress = false;
 
         cr.ui.Bubble.decorate($('bubble'));
 

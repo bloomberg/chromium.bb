@@ -138,7 +138,8 @@ class DragDropOperation::IconSurface final : public SurfaceTreeHost,
       return;
     }
 
-    operation_->OnDragIconCaptured(icon_result->AsSkBitmap());
+    auto scoped_bitmap = icon_result->ScopedAccessSkBitmap();
+    operation_->OnDragIconCaptured(scoped_bitmap.GetOutScopedBitmap());
   }
 
   DragDropOperation* const operation_;
@@ -243,7 +244,7 @@ void DragDropOperation::AbortIfPending() {
 }
 
 void DragDropOperation::OnTextRead(const std::string& mime_type,
-                                   base::string16 data) {
+                                   std::u16string data) {
   DCHECK(os_exchange_data_);
   os_exchange_data_->SetString(std::move(data));
 
@@ -254,7 +255,7 @@ void DragDropOperation::OnTextRead(const std::string& mime_type,
 }
 
 void DragDropOperation::OnHTMLRead(const std::string& mime_type,
-                                   base::string16 data) {
+                                   std::u16string data) {
   DCHECK(os_exchange_data_);
   os_exchange_data_->SetHtml(std::move(data), GURL());
   mime_type_ = mime_type;

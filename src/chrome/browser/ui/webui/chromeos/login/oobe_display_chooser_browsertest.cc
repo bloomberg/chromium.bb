@@ -7,7 +7,7 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/shell.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "content/public/test/browser_test.h"
 #include "ui/display/display.h"
@@ -47,8 +47,9 @@ int64_t GetPrimaryDisplayId() {
 
 // Test that display removal does not trigger CHECK in
 // WindowTreeHostManager::GetPrimaryDisplayId().
+// TODO(crbug.com/1183020): Align with RWHI::GetVisualProperties and re-enable.
 IN_PROC_BROWSER_TEST_F(OobeDisplayChooserTest,
-                       RemovingPrimaryDisplaySanityCheck) {
+                       DISABLED_RemovingPrimaryDisplaySanityCheck) {
   display::ManagedDisplayInfo info1(1, "x-1", false);
   info1.SetBounds(gfx::Rect(0, 0, 1280, 800));
   display::ManagedDisplayInfo info2(2, "x-2", false);

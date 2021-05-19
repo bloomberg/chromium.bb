@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -621,7 +622,7 @@ void SequencedSocketData::RunUntilPaused() {
   if (IsPaused())
     return;
 
-  run_until_paused_run_loop_.reset(new base::RunLoop());
+  run_until_paused_run_loop_ = std::make_unique<base::RunLoop>();
   run_until_paused_run_loop_->Run();
   run_until_paused_run_loop_.reset();
   DCHECK(IsPaused());
@@ -1605,6 +1606,11 @@ NextProto MockSSLClientSocket::GetNegotiatedProtocol() const {
   return data_->next_proto;
 }
 
+base::Optional<base::StringPiece>
+MockSSLClientSocket::GetPeerApplicationSettings() const {
+  return data_->peer_application_settings;
+}
+
 bool MockSSLClientSocket::GetSSLInfo(SSLInfo* requested_ssl_info) {
   requested_ssl_info->Reset();
   *requested_ssl_info = data_->ssl_info;
@@ -1698,6 +1704,7 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       read_offset_(0),
       read_data_(SYNCHRONOUS, ERR_UNEXPECTED),
       need_read_data_(true),
+      source_host_(IPAddress(192, 0, 2, 33)),
       source_port_(123),
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       pending_read_buf_(nullptr),
@@ -1876,7 +1883,7 @@ int MockUDPClientSocket::GetPeerAddress(IPEndPoint* address) const {
 }
 
 int MockUDPClientSocket::GetLocalAddress(IPEndPoint* address) const {
-  *address = IPEndPoint(IPAddress(192, 0, 2, 33), source_port_);
+  *address = IPEndPoint(source_host_, source_port_);
   return OK;
 }
 

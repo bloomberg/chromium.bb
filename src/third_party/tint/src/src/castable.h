@@ -15,64 +15,139 @@
 #ifndef SRC_CASTABLE_H_
 #define SRC_CASTABLE_H_
 
-#include <cstdint>
-#include <functional>
-#include <type_traits>
 #include <utility>
+
+#if defined(__clang__)
+/// Temporarily disable certain warnings when using Castable API
+#define TINT_CASTABLE_PUSH_DISABLE_WARNINGS()                               \
+  _Pragma("clang diagnostic push")                                     /**/ \
+      _Pragma("clang diagnostic ignored \"-Wundefined-var-template\"") /**/ \
+      static_assert(true, "require extra semicolon")
+
+/// Restore disabled warnings
+#define TINT_CASTABLE_POP_DISABLE_WARNINGS() \
+  _Pragma("clang diagnostic pop") /**/       \
+      static_assert(true, "require extra semicolon")
+#else
+#define TINT_CASTABLE_PUSH_DISABLE_WARNINGS() \
+  static_assert(true, "require extra semicolon")
+#define TINT_CASTABLE_POP_DISABLE_WARNINGS() \
+  static_assert(true, "require extra semicolon")
+#endif
+
+TINT_CASTABLE_PUSH_DISABLE_WARNINGS();
 
 namespace tint {
 
-class ClassID;
+namespace detail {
+template <typename T>
+struct TypeInfoOf;
+}  // namespace detail
 
 /// Helper macro to instantiate the TypeInfo<T> template for `CLASS`.
-#define TINT_INSTANTIATE_CLASS_ID(CLASS)             \
-  template <>                                        \
-  const char tint::UniqueToken<CLASS>::token = 0;    \
-  template <>                                        \
-  const uintptr_t tint::TypeInfo<CLASS>::unique_id = \
-      reinterpret_cast<uintptr_t>(&tint::UniqueToken<CLASS>::token)
+#define TINT_INSTANTIATE_TYPEINFO(CLASS)                      \
+  TINT_CASTABLE_PUSH_DISABLE_WARNINGS();                      \
+  template <>                                                 \
+  const tint::TypeInfo tint::detail::TypeInfoOf<CLASS>::info{ \
+      &tint::detail::TypeInfoOf<CLASS::TrueBase>::info,       \
+      #CLASS,                                                 \
+  };                                                          \
+  TINT_CASTABLE_POP_DISABLE_WARNINGS()
 
-/// TypeInfo holds type information for the type T.
-/// TINT_INSTANTIATE_CLASS_ID() must be defined in a .cpp file for each type
+/// TypeInfo holds type information for a Castable type.
+struct TypeInfo {
+  /// The base class of this type.
+  const TypeInfo* base;
+  /// The type name
+  const char* name;
+
+  /// @param type the test type info
+  /// @returns true if the class with this TypeInfo is of, or derives from the
+  /// class with the given TypeInfo.
+  bool Is(const tint::TypeInfo& type) const;
+
+  /// @returns the static TypeInfo for the type T
+  template <typename T>
+  static const TypeInfo& Of() {
+    return detail::TypeInfoOf<T>::info;
+  }
+};
+
+namespace detail {
+
+/// TypeInfoOf contains a single TypeInfo field for the type T.
+/// TINT_INSTANTIATE_TYPEINFO() must be defined in a .cpp file for each type
 /// `T`.
 template <typename T>
-struct TypeInfo {
-  /// The unique identifier for the type T.
-  static const uintptr_t unique_id;
+struct TypeInfoOf {
+  /// The unique TypeInfo for the type T.
+  static const TypeInfo info;
 };
 
-/// UniqueToken holds a single static const char, which is uniquely declared for
-/// each specialization of the template class.
-/// Use by TINT_INSTANTIATE_CLASS_ID() to generate a unique pointer, which is in
-/// turn used to generate TypeInfo<T>::unique_id.
-template <typename T>
-struct UniqueToken {
-  /// A dummy static variable that is unique for the type T.
-  static const char token;
-};
+// Forward declaration
+template <typename TO_FIRST, typename... TO_REST>
+struct IsAnyOf;
 
-/// ClassID represents a unique, comparable identifier for a C++ type.
-class ClassID {
- public:
-  /// @returns the unique ClassID for the type T.
-  template <typename T>
-  static inline ClassID Of() {
-    return ClassID(TypeInfo<T>::unique_id);
+}  // namespace detail
+
+/// @returns true if `obj` is a valid pointer, and is of, or derives from the
+/// class `TO`
+/// @param obj the object to test from
+template <typename TO, typename FROM>
+inline bool Is(FROM* obj) {
+  constexpr const bool downcast = std::is_base_of<FROM, TO>::value;
+  constexpr const bool upcast = std::is_base_of<TO, FROM>::value;
+  constexpr const bool nocast = std::is_same<FROM, TO>::value;
+  static_assert(upcast || downcast || nocast, "impossible cast");
+
+  if (obj == nullptr) {
+    return false;
   }
 
-  /// Equality operator
-  /// @param rhs the ClassID to compare against
-  /// @returns true if this ClassID is equal to `rhs`
-  inline bool operator==(const ClassID& rhs) const { return id == rhs.id; }
+  if (upcast || nocast) {
+    return true;
+  }
 
-  /// @return the unique numerical identifier of this ClassID
-  inline uintptr_t ID() const { return id; }
+  return obj->TypeInfo().Is(TypeInfo::Of<std::remove_const_t<TO>>());
+}
 
- private:
-  inline explicit ClassID(uintptr_t v) : id(v) {}
+/// @returns true if `obj` is a valid pointer, and is of, or derives from the
+/// class `TO`, and pred(const TO*) returns true
+/// @param obj the object to test from
+/// @param pred predicate function with signature `bool(const TO*)` called iff
+/// object is of, or derives from the class `TO`.
+template <typename TO, typename FROM, typename Pred>
+inline bool Is(FROM* obj, Pred&& pred) {
+  constexpr const bool downcast = std::is_base_of<FROM, TO>::value;
+  constexpr const bool upcast = std::is_base_of<TO, FROM>::value;
+  constexpr const bool nocast = std::is_same<FROM, TO>::value;
+  static_assert(upcast || downcast || nocast, "impossible cast");
 
-  const uintptr_t id;
-};
+  if (obj == nullptr) {
+    return false;
+  }
+
+  bool is_type = upcast || nocast ||
+                 obj->TypeInfo().Is(TypeInfo::Of<std::remove_const_t<TO>>());
+
+  return is_type && pred(static_cast<std::add_const_t<TO>*>(obj));
+}
+
+/// @returns true if `obj` is of, or derives from any of the `TO`
+/// classes.
+/// @param obj the object to cast from
+template <typename... TO, typename FROM>
+inline bool IsAnyOf(FROM* obj) {
+  return detail::IsAnyOf<TO...>::Exec(obj);
+}
+
+/// @returns obj dynamically cast to the type `TO` or `nullptr` if
+/// this object does not derive from `TO`.
+/// @param obj the object to cast from
+template <typename TO, typename FROM>
+inline TO* As(FROM* obj) {
+  return Is<TO>(obj) ? static_cast<TO*>(obj) : nullptr;
+}
 
 /// CastableBase is the base class for all Castable objects.
 /// It is not encouraged to directly derive from CastableBase without using the
@@ -88,39 +163,43 @@ class CastableBase {
 
   virtual ~CastableBase() = default;
 
-  /// @returns true if this object is of, or derives from a class with the
-  /// ClassID `id`.
-  /// @param id the ClassID to test for
-  virtual bool Is(ClassID id) const;
+  /// @returns the TypeInfo of the object
+  virtual const tint::TypeInfo& TypeInfo() const = 0;
 
   /// @returns true if this object is of, or derives from the class `TO`
   template <typename TO>
   inline bool Is() const {
-    using FROM = CastableBase;
-    constexpr const bool downcast = std::is_base_of<FROM, TO>::value;
-    constexpr const bool upcast = std::is_base_of<TO, FROM>::value;
-    constexpr const bool nocast = std::is_same<FROM, TO>::value;
-    static_assert(upcast || downcast || nocast, "impossible cast");
+    return tint::Is<TO>(this);
+  }
 
-    if (upcast || nocast) {
-      return true;
-    }
+  /// @returns true if this object is of, or derives from the class `TO` and
+  /// pred(const TO*) returns true
+  /// @param pred predicate function with signature `bool(const TO*)` called iff
+  /// object is of, or derives from the class `TO`.
+  template <typename TO, typename Pred>
+  inline bool Is(Pred&& pred) const {
+    return tint::Is<TO>(this, std::forward<Pred>(pred));
+  }
 
-    return Is(ClassID::Of<TO>());
+  /// @returns true if this object is of, or derives from any of the `TO`
+  /// classes.
+  template <typename... TO>
+  inline bool IsAnyOf() const {
+    return tint::IsAnyOf<TO...>(this);
   }
 
   /// @returns this object dynamically cast to the type `TO` or `nullptr` if
   /// this object does not derive from `TO`.
   template <typename TO>
   inline TO* As() {
-    return Is<TO>() ? static_cast<TO*>(this) : nullptr;
+    return tint::As<TO>(this);
   }
 
   /// @returns this object dynamically cast to the type `TO` or `nullptr` if
   /// this object does not derive from `TO`.
   template <typename TO>
   inline const TO* As() const {
-    return Is<TO>() ? static_cast<const TO*>(this) : nullptr;
+    return tint::As<const TO>(this);
   }
 
  protected:
@@ -157,72 +236,78 @@ class Castable : public BASE {
   /// use Base in the `CLASS` constructor.
   using Base = Castable;
 
-  /// @returns true if this object is of, or derives from a class with the
-  /// ClassID `id`.
-  /// @param id the ClassID to test for
-  inline bool Is(ClassID id) const override {
-    return ClassID::Of<CLASS>() == id || BASE::Is(id);
+  /// A type alias for `BASE`.
+  using TrueBase = BASE;
+
+  /// @returns the TypeInfo of the object
+  const tint::TypeInfo& TypeInfo() const override {
+    return TypeInfo::Of<CLASS>();
   }
 
   /// @returns true if this object is of, or derives from the class `TO`
   template <typename TO>
   inline bool Is() const {
-    using FROM = Castable;
-    constexpr const bool downcast = std::is_base_of<FROM, TO>::value;
-    constexpr const bool upcast = std::is_base_of<TO, FROM>::value;
-    constexpr const bool nocast = std::is_same<FROM, TO>::value;
-    static_assert(upcast || downcast || nocast, "impossible cast");
+    return tint::Is<TO>(static_cast<const CLASS*>(this));
+  }
 
-    if (upcast || nocast) {
-      return true;
-    }
+  /// @returns true if this object is of, or derives from the class `TO` and
+  /// pred(const TO*) returns true
+  /// @param pred predicate function with signature `bool(const TO*)` called iff
+  /// object is of, or derives from the class `TO`.
+  template <typename TO, typename Pred>
+  inline bool Is(Pred&& pred) const {
+    return tint::Is<TO>(static_cast<const CLASS*>(this),
+                        std::forward<Pred>(pred));
+  }
 
-    return Is(ClassID::Of<TO>());
+  /// @returns true if this object is of, or derives from any of the `TO`
+  /// classes.
+  template <typename... TO>
+  inline bool IsAnyOf() const {
+    return tint::IsAnyOf<TO...>(static_cast<const CLASS*>(this));
   }
 
   /// @returns this object dynamically cast to the type `TO` or `nullptr` if
   /// this object does not derive from `TO`.
   template <typename TO>
   inline TO* As() {
-    return Is<TO>() ? static_cast<TO*>(this) : nullptr;
+    return tint::As<TO>(this);
   }
 
   /// @returns this object dynamically cast to the type `TO` or `nullptr` if
   /// this object does not derive from `TO`.
   template <typename TO>
   inline const TO* As() const {
-    return Is<TO>() ? static_cast<const TO*>(this) : nullptr;
+    return tint::As<const TO>(this);
   }
 };
 
-/// As() dynamically casts `obj` to the target type `TO`.
-/// @returns the cast object, or nullptr if `obj` is `nullptr` or not of the
-/// type `TO`.
-/// @param obj the object to cast
-template <typename TO, typename FROM>
-inline TO* As(FROM* obj) {
-  if (obj == nullptr) {
-    return nullptr;
+namespace detail {
+/// Helper for Castable::IsAnyOf
+template <typename TO_FIRST, typename... TO_REST>
+struct IsAnyOf {
+  /// @param obj castable object to test
+  /// @returns true if `obj` is of, or derives from any of `[TO_FIRST,
+  /// ...TO_REST]`
+  template <typename FROM>
+  static bool Exec(FROM* obj) {
+    return Is<TO_FIRST>(obj) || IsAnyOf<TO_REST...>::Exec(obj);
   }
-  return obj->template As<TO>();
-}
+};
+/// Terminal specialization
+template <typename TO>
+struct IsAnyOf<TO> {
+  /// @param obj castable object to test
+  /// @returns true if `obj` is of, or derives from TO
+  template <typename FROM>
+  static bool Exec(FROM* obj) {
+    return Is<TO>(obj);
+  }
+};
+}  // namespace detail
 
 }  // namespace tint
 
-namespace std {
-
-/// Custom std::hash specialization for tint::ClassID so ClassID can be used as
-/// keys for std::unordered_map and std::unordered_set.
-template <>
-class hash<tint::ClassID> {
- public:
-  /// @param id the ClassID to hash
-  /// @return the ClassID's internal numerical identifier
-  inline std::size_t operator()(const tint::ClassID& id) const {
-    return static_cast<std::size_t>(id.ID());
-  }
-};
-
-}  // namespace std
+TINT_CASTABLE_POP_DISABLE_WARNINGS();
 
 #endif  // SRC_CASTABLE_H_

@@ -1,19 +1,9 @@
 {
   "dependencies": [
-    "ui",
+    "ui/legacy",
     "components"
   ],
-  "modules": [
-    "object_ui.js",
-    "object_ui-legacy.js",
-    "CustomPreviewComponent.js",
-    "ObjectPopoverHelper.js",
-    "ObjectPropertiesSection.js",
-    "JavaScriptAutocomplete.js",
-    "JavaScriptREPL.js",
-    "RemoteObjectPreviewFormatter.js"
-  ],
-  "resources": [
+    "resources": [
     "customPreviewComponent.css",
     "objectPopover.css",
     "objectPropertiesSection.css",

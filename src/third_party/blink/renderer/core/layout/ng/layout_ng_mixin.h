@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/layout/layout_ruby_text.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_block.h"
 
 namespace blink {
 
@@ -34,6 +35,7 @@ class LayoutNGMixin : public Base {
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
   RecalcLayoutOverflowResult RecalcLayoutOverflow() override;
+  void RecalcVisualOverflow() override;
 
   bool IsLayoutNGObject() const final { return true; }
 
@@ -47,6 +49,7 @@ class LayoutNGMixin : public Base {
 
   void UpdateOutOfFlowBlockLayout();
   scoped_refptr<const NGLayoutResult> UpdateInFlowBlockLayout();
+  void UpdateMargins();
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT LayoutNGMixin<LayoutBlock>;
@@ -58,6 +61,7 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
 extern template class CORE_EXTERN_TEMPLATE_EXPORT LayoutNGMixin<LayoutRubyBase>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT LayoutNGMixin<LayoutRubyRun>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT LayoutNGMixin<LayoutRubyText>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT LayoutNGMixin<LayoutSVGBlock>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGMixin<LayoutTableCaption>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

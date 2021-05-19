@@ -344,6 +344,33 @@ TEST_P(ClearTestRGB, DefaultFramebufferRGB)
     EXPECT_PIXEL_NEAR(0, 0, 64, 128, 128, 255, 1.0);
 }
 
+// Invalidate the RGB default framebuffer and verify that the alpha channel is not cleared, and
+// stays set after drawing.
+TEST_P(ClearTestRGB, InvalidateDefaultFramebufferRGB)
+{
+    ANGLE_GL_PROGRAM(blueProgram, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
+
+    // Some GPUs don't support RGB format default framebuffer,
+    // so skip if the back buffer has alpha bits.
+    EGLWindow *window          = getEGLWindow();
+    EGLDisplay display         = window->getDisplay();
+    EGLConfig config           = window->getConfig();
+    EGLint backbufferAlphaBits = 0;
+    eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE, &backbufferAlphaBits);
+    ANGLE_SKIP_TEST_IF(backbufferAlphaBits != 0);
+    // glInvalidateFramebuffer() isn't supported with GLES 2.0
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3);
+    ANGLE_SKIP_TEST_IF(IsD3D11());
+
+    const GLenum discards[] = {GL_COLOR};
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, discards);
+    EXPECT_PIXEL_NEAR(0, 0, 0, 0, 0, 255, 1.0);
+
+    // Don't explicitly clear, but draw blue (make sure alpha is not cleared)
+    drawQuad(blueProgram, essl1_shaders::PositionAttrib(), 0.5f);
+    EXPECT_PIXEL_NEAR(0, 0, 0, 0, 255, 255, 1.0);
+}
+
 // Test clearing a RGBA8 Framebuffer
 TEST_P(ClearTest, RGBA8Framebuffer)
 {
@@ -2460,10 +2487,11 @@ TEST_P(ClearTest, DISABLED_ClearReachesWindow)
 #    undef Bool
 #endif
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these
-// tests should be run against.
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(ClearTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ClearTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(ClearTestES3);
+
 ANGLE_INSTANTIATE_TEST_COMBINE_4(MaskedScissoredClearTest,
                                  MaskedScissoredClearVariationsTestPrint,
                                  testing::Range(0, 3),

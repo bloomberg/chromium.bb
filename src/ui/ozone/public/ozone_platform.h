@@ -31,9 +31,12 @@ class InputController;
 class OverlayManagerOzone;
 class PlatformClipboard;
 class PlatformGLEGLUtility;
+class PlatformGlobalShortcutListener;
+class PlatformGlobalShortcutListenerDelegate;
 class PlatformMenuUtils;
 class PlatformScreen;
 class PlatformUserInputMonitor;
+class PlatformUtils;
 class SurfaceFactoryOzone;
 class SystemInputInjector;
 
@@ -131,6 +134,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // be stacked below an AcceleratedWidget to make a widget opaque.
     bool needs_background_image = false;
 
+    // Wayland only: determines whether windows which are not top level ones
+    // should be given parents explicitly.
+    bool set_parent_for_non_top_level_windows = false;
+
     // If true, the platform shows and updates the drag image.
     bool platform_shows_drag_image = true;
 
@@ -216,6 +223,9 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
       gfx::AcceleratedWidget widget) = 0;
   virtual PlatformGLEGLUtility* GetPlatformGLEGLUtility();
   virtual PlatformMenuUtils* GetPlatformMenuUtils();
+  virtual PlatformUtils* GetPlatformUtils();
+  virtual PlatformGlobalShortcutListener* GetPlatformGlobalShortcutListener(
+      PlatformGlobalShortcutListenerDelegate* delegate);
 
   // Returns true if the specified buffer format is supported.
   virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_OFFER_NOTIFICATION_BUBBLE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_OFFER_NOTIFICATION_BUBBLE_CONTROLLER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "components/autofill/core/browser/ui/payments/payments_bubble_closed_reasons.h"
 #include "content/public/browser/web_contents.h"
 
@@ -41,10 +41,10 @@ class OfferNotificationBubbleController {
       content::WebContents* web_contents);
 
   // Returns the title that should be displayed in the bubble.
-  virtual base::string16 GetWindowTitle() const = 0;
+  virtual std::u16string GetWindowTitle() const = 0;
 
   // Returns the label text for the Ok button.
-  virtual base::string16 GetOkButtonLabel() const = 0;
+  virtual std::u16string GetOkButtonLabel() const = 0;
 
   // Returns the reference to the offer notification bubble view.
   virtual AutofillBubbleBase* GetOfferNotificationBubbleView() const = 0;

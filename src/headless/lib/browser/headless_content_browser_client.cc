@@ -177,9 +177,10 @@ void HeadlessContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
       &HeadlessContentBrowserClient::BindBadgeService, base::Unretained(this)));
 }
 
-content::DevToolsManagerDelegate*
-HeadlessContentBrowserClient::GetDevToolsManagerDelegate() {
-  return new HeadlessDevToolsManagerDelegate(browser_->GetWeakPtr());
+std::unique_ptr<content::DevToolsManagerDelegate>
+HeadlessContentBrowserClient::CreateDevToolsManagerDelegate() {
+  return std::make_unique<HeadlessDevToolsManagerDelegate>(
+      browser_->GetWeakPtr());
 }
 
 scoped_refptr<content::QuotaPermissionContext>
@@ -372,6 +373,15 @@ bool HeadlessContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
   // in the user's regular profile.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUserDataDir);
+}
+
+device::GeolocationSystemPermissionManager*
+HeadlessContentBrowserClient::GetLocationPermissionManager() {
+#if defined(OS_MAC)
+  return browser_->browser_main_parts()->GetLocationPermissionManager();
+#else
+  return nullptr;
+#endif
 }
 
 }  // namespace headless

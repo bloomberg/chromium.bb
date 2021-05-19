@@ -35,16 +35,12 @@ namespace rx
 // - Set 3 contains all other shader resources, such as uniform and storage blocks, atomic counter
 //   buffers, images and image buffers.
 
-// ANGLE driver uniforms set index (binding is always 0):
-enum DescriptorSetIndex : uint32_t
+enum class DescriptorSetIndex : uint32_t
 {
-    // All internal shaders assume there is only one descriptor set, indexed at 0
-    InternalShader = 0,
-
-    DriverUniforms = 0,  // ANGLE driver uniforms set index
-    UniformsAndXfb,      // Uniforms set index
-    Texture,             // Textures set index
-    ShaderResource,      // Other shader resources set index
+    Internal,        // ANGLE driver uniforms or internal shaders
+    UniformsAndXfb,  // Uniforms set index
+    Texture,         // Textures set index
+    ShaderResource,  // Other shader resources set index
 
     InvalidEnum,
     EnumCount = InvalidEnum,
@@ -167,6 +163,8 @@ class alignas(4) RenderPassDesc final
     void packDepthStencilUnresolveAttachment(bool unresolveDepth, bool unresolveStencil);
     void removeDepthStencilUnresolveAttachment();
 
+    void setWriteControlMode(gl::SrgbWriteControlMode mode);
+
     size_t hash() const;
 
     // Color attachments are in [0, colorAttachmentRange()), with possible gaps.
@@ -202,6 +200,12 @@ class alignas(4) RenderPassDesc final
     bool hasStencilUnresolveAttachment() const
     {
         return (mAttachmentFormats.back() & kUnresolveStencilFlag) != 0;
+    }
+    gl::SrgbWriteControlMode getSRGBWriteControlMode() const
+    {
+        return ((mAttachmentFormats.back() & kSrgbWriteControlFlag) != 0)
+                   ? gl::SrgbWriteControlMode::Linear
+                   : gl::SrgbWriteControlMode::Default;
     }
 
     // Get the number of attachments in the Vulkan render pass, i.e. after removing disabled
@@ -285,6 +289,7 @@ class alignas(4) RenderPassDesc final
     static constexpr uint8_t kResolveDepthStencilFlag = 0x40;
     static constexpr uint8_t kUnresolveDepthFlag      = 0x20;
     static constexpr uint8_t kUnresolveStencilFlag    = 0x10;
+    static constexpr uint8_t kSrgbWriteControlFlag    = 0x08;
 };
 
 bool operator==(const RenderPassDesc &lhs, const RenderPassDesc &rhs);
@@ -822,9 +827,8 @@ struct PackedPushConstantRange
 };
 
 template <typename T>
-using DescriptorSetLayoutArray = std::array<T, static_cast<size_t>(DescriptorSetIndex::EnumCount)>;
-using DescriptorSetLayoutPointerArray =
-    DescriptorSetLayoutArray<BindingPointer<DescriptorSetLayout>>;
+using DescriptorSetArray              = angle::PackedEnumMap<DescriptorSetIndex, T>;
+using DescriptorSetLayoutPointerArray = DescriptorSetArray<BindingPointer<DescriptorSetLayout>>;
 template <typename T>
 using PushConstantRangeArray = gl::ShaderMap<T>;
 
@@ -846,7 +850,7 @@ class PipelineLayoutDesc final
     const PushConstantRangeArray<PackedPushConstantRange> &getPushConstantRanges() const;
 
   private:
-    DescriptorSetLayoutArray<DescriptorSetLayoutDesc> mDescriptorSetLayouts;
+    DescriptorSetArray<DescriptorSetLayoutDesc> mDescriptorSetLayouts;
     PushConstantRangeArray<PackedPushConstantRange> mPushConstantRanges;
 
     // Verify the arrays are properly packed.
@@ -859,9 +863,8 @@ class PipelineLayoutDesc final
 };
 
 // Verify the structure is properly packed.
-static_assert(sizeof(PipelineLayoutDesc) ==
-                  (sizeof(DescriptorSetLayoutArray<DescriptorSetLayoutDesc>) +
-                   sizeof(gl::ShaderMap<PackedPushConstantRange>)),
+static_assert(sizeof(PipelineLayoutDesc) == (sizeof(DescriptorSetArray<DescriptorSetLayoutDesc>) +
+                                             sizeof(gl::ShaderMap<PackedPushConstantRange>)),
               "Unexpected Size");
 
 // Packed sampler description for the sampler cache.
@@ -1088,14 +1091,14 @@ class TextureDescriptorDesc
     ANGLE_DISABLE_STRUCT_PADDING_WARNINGS
 };
 
-class UniformsAndXfbDesc
+class UniformsAndXfbDescriptorDesc
 {
   public:
-    UniformsAndXfbDesc();
-    ~UniformsAndXfbDesc();
+    UniformsAndXfbDescriptorDesc();
+    ~UniformsAndXfbDescriptorDesc();
 
-    UniformsAndXfbDesc(const UniformsAndXfbDesc &other);
-    UniformsAndXfbDesc &operator=(const UniformsAndXfbDesc &other);
+    UniformsAndXfbDescriptorDesc(const UniformsAndXfbDescriptorDesc &other);
+    UniformsAndXfbDescriptorDesc &operator=(const UniformsAndXfbDescriptorDesc &other);
 
     BufferSerial getDefaultUniformBufferSerial() const
     {
@@ -1115,7 +1118,7 @@ class UniformsAndXfbDesc
     size_t hash() const;
     void reset();
 
-    bool operator==(const UniformsAndXfbDesc &other) const;
+    bool operator==(const UniformsAndXfbDescriptorDesc &other) const;
 
   private:
     uint32_t mBufferCount;
@@ -1155,6 +1158,10 @@ class FramebufferDesc
     void updateUnresolveMask(FramebufferNonResolveAttachmentMask unresolveMask);
     void updateDepthStencil(ImageOrBufferViewSubresourceSerial serial);
     void updateDepthStencilResolve(ImageOrBufferViewSubresourceSerial serial);
+    ANGLE_INLINE void setWriteControlMode(gl::SrgbWriteControlMode mode)
+    {
+        mSrgbWriteControlMode = static_cast<uint16_t>(mode);
+    }
     size_t hash() const;
 
     bool operator==(const FramebufferDesc &other) const;
@@ -1168,6 +1175,11 @@ class FramebufferDesc
     }
 
     FramebufferNonResolveAttachmentMask getUnresolveAttachmentMask() const;
+    ANGLE_INLINE gl::SrgbWriteControlMode getWriteControlMode() const
+    {
+        return (mSrgbWriteControlMode == 1) ? gl::SrgbWriteControlMode::Linear
+                                            : gl::SrgbWriteControlMode::Default;
+    }
 
     void updateLayerCount(uint32_t layerCount);
     uint32_t getLayerCount() const { return mLayerCount; }
@@ -1180,11 +1192,15 @@ class FramebufferDesc
     void update(uint32_t index, ImageOrBufferViewSubresourceSerial serial);
 
     // Note: this is an exclusive index. If there is one index it will be "1".
-    uint16_t mMaxIndex : 6;
+    // Maximum value is 18
+    uint16_t mMaxIndex : 5;
     uint16_t mHasFramebufferFetch : 1;
     static_assert(gl::IMPLEMENTATION_MAX_FRAMEBUFFER_LAYERS < (1 << 9) - 1,
                   "Not enough bits for mLayerCount");
+
     uint16_t mLayerCount : 9;
+
+    uint16_t mSrgbWriteControlMode : 1;
 
     // If the render pass contains an initial subpass to unresolve a number of attachments, the
     // subpass description is derived from the following mask, specifying which attachments need
@@ -1197,6 +1213,9 @@ class FramebufferDesc
 
     FramebufferAttachmentArray<ImageOrBufferViewSubresourceSerial> mSerials;
 };
+
+constexpr size_t kFramebufferDescSize = sizeof(FramebufferDesc);
+static_assert(kFramebufferDescSize == 148, "Size check failed");
 
 // Disable warnings about struct padding.
 ANGLE_DISABLE_STRUCT_PADDING_WARNINGS
@@ -1289,9 +1308,9 @@ struct hash<rx::vk::TextureDescriptorDesc>
 };
 
 template <>
-struct hash<rx::vk::UniformsAndXfbDesc>
+struct hash<rx::vk::UniformsAndXfbDescriptorDesc>
 {
-    size_t operator()(const rx::vk::UniformsAndXfbDesc &key) const { return key.hash(); }
+    size_t operator()(const rx::vk::UniformsAndXfbDescriptorDesc &key) const { return key.hash(); }
 };
 
 template <>
@@ -1332,7 +1351,7 @@ enum class VulkanCacheType
     DescriptorSet,
     DescriptorSetLayout,
     TextureDescriptors,
-    UniformsAndXfbDescriptorSet,
+    UniformsAndXfbDescriptors,
     Framebuffer,
     EnumCount
 };

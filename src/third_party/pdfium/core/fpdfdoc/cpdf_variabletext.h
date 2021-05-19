@@ -20,8 +20,8 @@
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
 
+class CPVT_Section;
 class CPVT_Word;
-class CSection;
 class IPVT_FontMap;
 struct CPVT_WordInfo;
 
@@ -59,8 +59,9 @@ class CPDF_VariableText {
     virtual int32_t GetWordFontIndex(uint16_t word,
                                      int32_t charset,
                                      int32_t nFontIndex);
-    virtual bool IsLatinWord(uint16_t word);
     virtual int32_t GetDefaultFontIndex();
+
+    IPVT_FontMap* GetFontMap() { return m_pFontMap.Get(); }
 
    private:
     UnownedPtr<IPVT_FontMap> const m_pFontMap;
@@ -72,7 +73,6 @@ class CPDF_VariableText {
   void SetProvider(CPDF_VariableText::Provider* pProvider);
   CPDF_VariableText::Iterator* GetIterator();
 
-  void SetContentRect(const CPVT_FloatRect& rect);
   CFX_FloatRect GetContentRect() const;
   void SetPlateRect(const CFX_FloatRect& rect);
   const CFX_FloatRect& GetPlateRect() const;
@@ -164,10 +164,7 @@ class CPDF_VariableText {
 
  private:
   int GetCharWidth(int32_t nFontIndex, uint16_t Word, uint16_t SubWord);
-  int32_t GetTypeAscent(int32_t nFontIndex);
-  int32_t GetTypeDescent(int32_t nFontIndex);
   int32_t GetWordFontIndex(uint16_t word, int32_t charset, int32_t nFontIndex);
-  bool IsLatinWord(uint16_t word);
 
   CPVT_WordPlace AddSection(const CPVT_WordPlace& place);
   CPVT_WordPlace AddLine(const CPVT_WordPlace& place,
@@ -175,7 +172,6 @@ class CPDF_VariableText {
   CPVT_WordPlace AddWord(const CPVT_WordPlace& place,
                          const CPVT_WordInfo& wordinfo);
   float GetWordFontSize();
-  int32_t GetWordFontIndex(const CPVT_WordInfo& WordInfo);
 
   void ClearSectionRightWords(const CPVT_WordPlace& place);
 
@@ -186,7 +182,7 @@ class CPDF_VariableText {
   CPVT_WordPlace ClearLeftWord(const CPVT_WordPlace& place);
   CPVT_WordPlace ClearRightWord(const CPVT_WordPlace& place);
 
-  CPVT_FloatRect Rearrange(const CPVT_WordRange& PlaceRange);
+  void Rearrange(const CPVT_WordRange& PlaceRange);
   float GetAutoFontSize();
   bool IsBigger(float fFontSize) const;
   CPVT_FloatRect RearrangeSections(const CPVT_WordRange& PlaceRange);
@@ -202,7 +198,7 @@ class CPDF_VariableText {
   float m_fLineLeading = 0.0f;
   float m_fCharSpace = 0.0f;
   float m_fFontSize = 0.0f;
-  std::vector<std::unique_ptr<CSection>> m_SectionArray;
+  std::vector<std::unique_ptr<CPVT_Section>> m_SectionArray;
   UnownedPtr<CPDF_VariableText::Provider> m_pVTProvider;
   std::unique_ptr<CPDF_VariableText::Iterator> m_pVTIterator;
   CFX_FloatRect m_rcPlate;

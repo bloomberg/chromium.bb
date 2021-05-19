@@ -8,9 +8,11 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/time/time.h"
+#include "chromecast/media/cma/backend/proxy/push_buffer_pending_handler.h"
+#include "chromecast/media/cma/backend/proxy/push_buffer_queue.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/task_runner.h"
-#include "third_party/openscreen/src/cast/cast_core/api/runtime/cast_audio_decoder_service.grpc.pb.h"
+#include "third_party/openscreen/src/cast/cast_core/api/runtime/cast_audio_channel_service.grpc.pb.h"
 #include "third_party/protobuf/src/google/protobuf/util/time_util.h"
 
 namespace chromecast {
@@ -186,7 +188,7 @@ CastRuntimeAudioChannelBroker::Handler::PushBufferRequest ToGrpcTypes(
 }
 
 CastRuntimeAudioChannelBroker::TimestampInfo ToGrpcTypes(
-    const CmaProxyHandler::TargetBufferInfo& target_buffer) {
+    const BufferIdManager::TargetBufferInfo& target_buffer) {
   CastRuntimeAudioChannelBroker::TimestampInfo ts_info;
   ts_info.set_buffer_id(target_buffer.buffer_id);
   *ts_info.mutable_system_timestamp() =
@@ -195,44 +197,36 @@ CastRuntimeAudioChannelBroker::TimestampInfo ToGrpcTypes(
   return ts_info;
 }
 
-// Helper to convert from Chromium callback type (OnceCallback) to Chromecast's
-// TaskRunner's Task type.
-class OnceCallbackTask : public TaskRunner::Task {
- public:
-  OnceCallbackTask(base::OnceClosure callback)
-      : callback_(std::move(callback)) {}
-
-  ~OnceCallbackTask() override = default;
-
- private:
-  // TaskRunner::Task overrides:
-  void Run() override { std::move(callback_).Run(); }
-
-  base::OnceClosure callback_;
-};
-
 }  // namespace
 
 // static
 std::unique_ptr<CmaProxyHandler> CmaProxyHandler::Create(
     TaskRunner* task_runner,
-    Client* client) {
-  return std::make_unique<ProxyCallTranslator>(task_runner, client);
+    Client* client,
+    AudioChannelPushBufferHandler::Client* push_buffer_client) {
+  return std::make_unique<ProxyCallTranslator>(task_runner, client,
+                                               push_buffer_client);
 }
-
-ProxyCallTranslator::ProxyCallTranslator(TaskRunner* client_task_runner,
-                                         CmaProxyHandler::Client* client)
-    : ProxyCallTranslator(client_task_runner,
-                          client,
-                          CastRuntimeAudioChannelBroker::Create(this)) {}
 
 ProxyCallTranslator::ProxyCallTranslator(
     TaskRunner* client_task_runner,
     CmaProxyHandler::Client* client,
+    AudioChannelPushBufferHandler::Client* push_buffer_client)
+    : ProxyCallTranslator(
+          client_task_runner,
+          client,
+          push_buffer_client,
+          CastRuntimeAudioChannelBroker::Create(client_task_runner, this)) {}
+
+ProxyCallTranslator::ProxyCallTranslator(
+    TaskRunner* client_task_runner,
+    CmaProxyHandler::Client* client,
+    AudioChannelPushBufferHandler::Client* push_buffer_client,
     std::unique_ptr<CastRuntimeAudioChannelBroker> decoder_channel)
     : decoder_channel_(std::move(decoder_channel)),
       client_task_runner_(client_task_runner),
       client_(client),
+      push_buffer_handler_(client_task_runner, push_buffer_client),
       weak_factory_(this) {
   DCHECK(decoder_channel_.get());
   DCHECK(client_task_runner_);
@@ -247,8 +241,9 @@ void ProxyCallTranslator::Initialize(
   decoder_channel_->InitializeAsync(cast_session_id, ToGrpcTypes(decoder_mode));
 }
 
-void ProxyCallTranslator::Start(int64_t start_pts,
-                                const TargetBufferInfo& target_buffer) {
+void ProxyCallTranslator::Start(
+    int64_t start_pts,
+    const BufferIdManager::TargetBufferInfo& target_buffer) {
   decoder_channel_->StartAsync(start_pts, ToGrpcTypes(target_buffer));
 }
 
@@ -260,7 +255,8 @@ void ProxyCallTranslator::Pause() {
   decoder_channel_->PauseAsync();
 }
 
-void ProxyCallTranslator::Resume(const TargetBufferInfo& target_buffer) {
+void ProxyCallTranslator::Resume(
+    const BufferIdManager::TargetBufferInfo& target_buffer) {
   decoder_channel_->ResumeAsync(ToGrpcTypes(target_buffer));
 }
 
@@ -273,22 +269,29 @@ void ProxyCallTranslator::SetVolume(float multiplier) {
 }
 
 bool ProxyCallTranslator::SetConfig(const AudioConfig& config) {
-  return push_buffer_queue_.PushBuffer(ToGrpcTypes(config));
+  return push_buffer_handler_.PushBuffer(ToGrpcTypes(config)) !=
+         CmaBackend::BufferStatus::kBufferFailed;
 }
 
-bool ProxyCallTranslator::PushBuffer(scoped_refptr<DecoderBufferBase> buffer,
-                                     BufferIdManager::BufferId buffer_id) {
-  return push_buffer_queue_.PushBuffer(
+void ProxyCallTranslator::UpdateTimestamp(
+    const BufferIdManager::TargetBufferInfo& target_buffer) {
+  decoder_channel_->UpdateTimestampAsync(ToGrpcTypes(target_buffer));
+}
+
+CmaBackend::BufferStatus ProxyCallTranslator::PushBuffer(
+    scoped_refptr<DecoderBufferBase> buffer,
+    BufferIdManager::BufferId buffer_id) {
+  return push_buffer_handler_.PushBuffer(
       ToGrpcTypes(std::move(buffer), buffer_id));
 }
 
 base::Optional<ProxyCallTranslator::PushBufferRequest>
 ProxyCallTranslator::GetBufferedData() {
-  return push_buffer_queue_.GetBufferedData();
+  return push_buffer_handler_.GetBufferedData();
 }
 
 bool ProxyCallTranslator::HasBufferedData() {
-  return push_buffer_queue_.HasBufferedData();
+  return push_buffer_handler_.HasBufferedData();
 }
 
 void ProxyCallTranslator::HandleInitializeResponse(
@@ -313,7 +316,7 @@ void ProxyCallTranslator::HandleStateChangeResponse(
     return;
   }
 
-  auto* task = new OnceCallbackTask(
+  auto* task = new TaskRunner::CallbackTask<base::OnceClosure>(
       base::BindOnce(&ProxyCallTranslator::OnPipelineStateChangeTask,
                      weak_factory_.GetWeakPtr(), ToClientTypes(state)));
   client_task_runner_->PostTask(task, 0);
@@ -326,7 +329,7 @@ void ProxyCallTranslator::HandlePushBufferResponse(
     return;
   }
 
-  auto* task = new OnceCallbackTask(
+  auto* task = new TaskRunner::CallbackTask<base::OnceClosure>(
       base::BindOnce(&ProxyCallTranslator::OnBytesDecodedTask,
                      weak_factory_.GetWeakPtr(), decoded_bytes));
   client_task_runner_->PostTask(task, 0);
@@ -344,7 +347,7 @@ bool ProxyCallTranslator::HandleError(
     return true;
   }
 
-  auto* task = new OnceCallbackTask(base::BindOnce(
+  auto* task = new TaskRunner::CallbackTask<base::OnceClosure>(base::BindOnce(
       &ProxyCallTranslator::OnErrorTask, weak_factory_.GetWeakPtr()));
   client_task_runner_->PostTask(task, 0);
   return false;

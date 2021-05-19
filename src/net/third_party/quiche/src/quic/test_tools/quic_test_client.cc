@@ -20,7 +20,6 @@
 #include "quic/core/quic_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
-#include "quic/platform/api/quic_ptr_util.h"
 #include "quic/platform/api/quic_stack_trace.h"
 #include "quic/test_tools/crypto_test_utils.h"
 #include "quic/test_tools/quic_client_peer.h"
@@ -236,7 +235,7 @@ MockableQuicClient::MockableQuicClient(
           epoll_server,
           std::make_unique<MockableQuicClientEpollNetworkHelper>(epoll_server,
                                                                  this),
-          QuicWrapUnique(new RecordingProofVerifier(std::move(proof_verifier))),
+          std::make_unique<RecordingProofVerifier>(std::move(proof_verifier)),
           std::move(session_cache)),
       override_server_connection_id_(EmptyQuicConnectionId()),
       server_connection_id_overridden_(false),
@@ -311,6 +310,9 @@ void MockableQuicClient::UseWriter(QuicPacketWriterWrapper* writer) {
 
 void MockableQuicClient::set_peer_address(const QuicSocketAddress& address) {
   mockable_network_helper()->set_peer_address(address);
+  if (client_session() != nullptr) {
+    client_session()->AddKnownServerAddress(address);
+  }
 }
 
 const QuicReceivedPacket* MockableQuicClient::last_incoming_packet() {
@@ -634,7 +636,7 @@ bool QuicTestClient::connected() const {
 
 void QuicTestClient::Connect() {
   if (connected()) {
-    QUIC_BUG << "Cannot connect already-connected client";
+    QUIC_BUG(quic_bug_10133_1) << "Cannot connect already-connected client";
     return;
   }
   if (!connect_attempted_) {
@@ -796,7 +798,8 @@ void QuicTestClient::OnClose(QuicSpdyStream* stream) {
   closed_stream_states_.insert(std::make_pair(
       id,
       PerStreamState(
-          client_stream->stream_error(), true,
+          // Set response_complete to true iff stream is closed while connected.
+          client_stream->stream_error(), connected(),
           client_stream->headers_decompressed(),
           client_stream->response_headers(),
           client_stream->preliminary_headers(),

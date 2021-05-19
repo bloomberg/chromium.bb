@@ -15,6 +15,14 @@ namespace features {
 // See https://crbug.com/1021193 for more details.
 ASH_PUBLIC_EXPORT extern const base::Feature kAllowAmbientEQ;
 
+// Enables the pre-load app window for ARC++ app during ARCVM booting stage on
+// full restore process.
+ASH_PUBLIC_EXPORT extern const base::Feature kArcGhostWindow;
+
+// Enables resize lock for ARC++ and puts restrictions on window resizing.
+// TODO(takise): Remove this after the feature is fully launched.
+ASH_PUBLIC_EXPORT extern const base::Feature kArcResizeLock;
+
 // Enables the Auto Night Light feature which sets the default schedule type to
 // sunset-to-sunrise until the user changes it to something else. This feature
 // is not exposed to the end user, and is enabled only via cros_config for
@@ -98,10 +106,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kManagedDeviceUIRedesign;
 // TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
 ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
 
-// Removes media notifications from the notification counter in the status area.
-// TODO(crbug.com/1111881): Remove when OS media controls launched.
-ASH_PUBLIC_EXPORT extern const base::Feature kMediaNotificationsCounter;
-
 // Enables resizing/moving the selection region for partial screenshot.
 ASH_PUBLIC_EXPORT extern const base::Feature kMovablePartialScreenshot;
 
@@ -175,6 +179,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kStylusBatteryStatus;
 // right now since it is under development.
 ASH_PUBLIC_EXPORT extern const base::Feature kWebUITabStripTabDragIntegration;
 
+// Change window creation to be based on cursor position
+// when there are multiple displays.
+ASH_PUBLIC_EXPORT extern const base::Feature kWindowsFollowCursor;
+
 // Enables notifications to be shown within context menus.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationsInContextMenu;
 
@@ -201,6 +209,10 @@ ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
 ASH_PUBLIC_EXPORT bool IsAltTabLimitedToActiveDesk();
 
 ASH_PUBLIC_EXPORT bool IsPerDeskShelfEnabled();
+
+ASH_PUBLIC_EXPORT bool IsArcGhostWindowEnabled();
+
+ASH_PUBLIC_EXPORT bool IsArcResizeLockEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAutoNightLightEnabled();
 
@@ -264,8 +276,6 @@ ASH_PUBLIC_EXPORT bool IsWebUITabStripTabDragIntegrationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDisplayAlignmentAssistanceEnabled();
 
-ASH_PUBLIC_EXPORT bool IsMovablePartialScreenshotEnabled();
-
 ASH_PUBLIC_EXPORT bool IsNotificationsInContextMenuEnabled();
 
 ASH_PUBLIC_EXPORT bool IsTemporaryHoldingSpaceEnabled();
@@ -282,6 +292,8 @@ ASH_PUBLIC_EXPORT bool IsShowDateInTrayButtonEnabled();
 // whether "WebUITabStrip" feature is enabled from Chrome.
 ASH_PUBLIC_EXPORT void SetWebUITabStripEnabled(bool enabled);
 ASH_PUBLIC_EXPORT bool IsWebUITabStripEnabled();
+
+ASH_PUBLIC_EXPORT bool DoWindowsFollowCursor();
 
 }  // namespace features
 }  // namespace ash

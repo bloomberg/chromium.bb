@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import * as ComponentHelpers from '../../component_helpers/component_helpers.js';
-import * as Elements from '../../elements/elements.js';
+import * as Elements from '../../panels/elements/elements.js';
 import {makeCrumb} from './helpers.js';
 
 await ComponentHelpers.ComponentServerSetup.setup();
@@ -52,3 +52,10 @@ component.data = {
   crumbs: [emCrumb, spanCrumb, divCrumb, bodyCrumb],
   selectedNode: bodyCrumb,
 };
+
+document.getElementById('focus-body')?.addEventListener('click', () => {
+  component.data = {
+    crumbs: [bodyCrumb],
+    selectedNode: bodyCrumb,
+  };
+});

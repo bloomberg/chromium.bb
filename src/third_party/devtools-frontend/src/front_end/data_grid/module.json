@@ -1,9 +1,8 @@
 {
   "dependencies": [
-    "ui"
+    "ui/legacy"
   ],
   "resources": [
     "dataGrid.css"
-  ],
-  "modules": []
+  ]
 }

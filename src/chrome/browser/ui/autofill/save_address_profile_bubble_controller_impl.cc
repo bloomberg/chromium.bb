@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
+#include "chrome/browser/ui/autofill/edit_address_profile_dialog_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -37,10 +38,10 @@ void SaveAddressProfileBubbleControllerImpl::OfferSave(
   Show();
 }
 
-base::string16 SaveAddressProfileBubbleControllerImpl::GetWindowTitle() const {
+std::u16string SaveAddressProfileBubbleControllerImpl::GetWindowTitle() const {
   // TODO(crbug.com/1167060): Use ineternationalized string upon having final
   // strings.
-  return base::UTF8ToUTF16("Save Address?");
+  return u"Save Address?";
 }
 
 const AutofillProfile&
@@ -54,6 +55,15 @@ void SaveAddressProfileBubbleControllerImpl::OnUserDecision(
 
   std::move(address_profile_save_prompt_callback_)
       .Run(decision, address_profile_);
+}
+
+void SaveAddressProfileBubbleControllerImpl::OnEditButtonClicked() {
+  HideBubble();
+  EditAddressProfileDialogControllerImpl::CreateForWebContents(web_contents());
+  EditAddressProfileDialogControllerImpl* controller =
+      EditAddressProfileDialogControllerImpl::FromWebContents(web_contents());
+  controller->OfferEdit(address_profile_,
+                        std::move(address_profile_save_prompt_callback_));
 }
 
 void SaveAddressProfileBubbleControllerImpl::OnBubbleClosed() {
@@ -70,7 +80,7 @@ void SaveAddressProfileBubbleControllerImpl::OnPageActionIconClicked() {
 }
 
 bool SaveAddressProfileBubbleControllerImpl::IsBubbleActive() const {
-  return bubble_view() != nullptr;
+  return !address_profile_save_prompt_callback_.is_null();
 }
 
 AutofillBubbleBase* SaveAddressProfileBubbleControllerImpl::GetSaveBubbleView()

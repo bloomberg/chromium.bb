@@ -25,6 +25,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
+#include "chrome/browser/ash/base/locale_util.h"
+#include "chrome/browser/ash/child_accounts/parent_access_code/parent_access_service.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
@@ -33,14 +39,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/base/locale_util.h"
-#include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
-#include "chrome/browser/chromeos/crosapi/browser_util.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
 #include "chrome/browser/chromeos/input_method/input_method_syncer.h"
-#include "chrome/browser/chromeos/login/login_pref_names.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/sync/split_settings_sync_field_trial.h"
 #include "chrome/browser/chromeos/sync/turn_sync_on_helper.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -53,7 +53,7 @@
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/drive/drive_pref_names.h"
-#include "components/feedback/tracing_manager.h"
+#include "components/feedback/content/content_tracing_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -174,6 +174,9 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
       enterprise_management::SystemTimezoneProto::USERS_DECIDE);
   registry->RegisterStringPref(::prefs::kMinimumAllowedChromeVersion, "");
   registry->RegisterBooleanPref(::prefs::kLacrosAllowed, true);
+  registry->RegisterIntegerPref(
+      ::prefs::kLacrosLaunchSwitch,
+      static_cast<int>(crosapi::browser_util::LacrosLaunchSwitch::kUserChoice));
   registry->RegisterBooleanPref(
       chromeos::prefs::kDeviceSystemWideTracingEnabled, true);
 
@@ -434,6 +437,12 @@ void Preferences::RegisterProfilePrefs(
                               base::Time().ToInternalValue());
 
   registry->RegisterBooleanPref(::prefs::kHatsDeviceIsSelected, false);
+
+  registry->RegisterInt64Pref(::prefs::kHatsOnboardingSurveyCycleEndTs,
+                              base::Time().ToInternalValue());
+
+  registry->RegisterBooleanPref(::prefs::kHatsOnboardingDeviceIsSelected,
+                                false);
 
   registry->RegisterBooleanPref(::prefs::kPinUnlockFeatureNotificationShown,
                                 false);
@@ -707,7 +716,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
                            pref_name == ::prefs::kPerformanceTracingEnabled)) {
     const bool enabled = performance_tracing_enabled_.GetValue();
     if (enabled)
-      tracing_manager_ = TracingManager::Create();
+      tracing_manager_ = ContentTracingManager::Create();
     else
       tracing_manager_.reset();
     SystemTrayClient::Get()->SetPerformanceTracingIconVisible(enabled);
@@ -799,9 +808,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     if (user_is_active) {
       pointing_stick_settings.SetSensitivity(sensitivity_int);
     }
-    ReportSensitivityPrefApplication(
-        reason, "PointingStick.PointerSensitivity.Changed",
-        "PointingStick.PointerSensitivity.Started", sensitivity_int);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == ::prefs::kTouchpadSensitivity) {
@@ -850,9 +856,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool right = primary_pointing_stick_button_right_.GetValue();
     if (user_is_active)
       pointing_stick_settings.SetPrimaryButtonRight(right);
-    ReportBooleanPrefApplication(
-        reason, "PointingStick.PrimaryButtonRight.Changed",
-        "PointingStick.PrimaryButtonRight.Started", right);
     // Save owner preference in local state to use on login screen.
     if (user_is_owner) {
       PrefService* prefs = g_browser_process->local_state();
@@ -884,8 +887,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool enabled = pointing_stick_acceleration_.GetValue();
     if (user_is_active)
       pointing_stick_settings.SetAcceleration(enabled);
-    ReportBooleanPrefApplication(reason, "PointingStick.Acceleration.Changed",
-                                 "PointingStick.Acceleration.Started", enabled);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == ::prefs::kTouchpadAcceleration) {

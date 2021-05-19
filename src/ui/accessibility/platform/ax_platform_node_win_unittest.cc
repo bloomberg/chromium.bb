@@ -37,7 +37,7 @@ using base::win::ScopedVariant;
 
 namespace ui {
 
-const base::string16 AXPlatformNodeWinTest::kEmbeddedCharacterAsString = {
+const std::u16string AXPlatformNodeWinTest::kEmbeddedCharacterAsString = {
     ui::AXPlatformNodeBase::kEmbeddedCharacter};
 
 namespace {
@@ -3564,13 +3564,13 @@ TEST_F(AXPlatformNodeWinTest, ITableProviderGetColumnHeaders) {
   AXNodeData column_header;
   column_header.id = 3;
   column_header.role = ax::mojom::Role::kColumnHeader;
-  column_header.SetName(STRING16_LITERAL("column_header"));
+  column_header.SetName(u"column_header");
   row1.child_ids.push_back(column_header.id);
 
   AXNodeData row_header;
   row_header.id = 4;
   row_header.role = ax::mojom::Role::kRowHeader;
-  row_header.SetName(STRING16_LITERAL("row_header"));
+  row_header.SetName(u"row_header");
   row1.child_ids.push_back(row_header.id);
 
   Init(root, row1, column_header, row_header);
@@ -3647,19 +3647,19 @@ TEST_F(AXPlatformNodeWinTest, ITableProviderGetColumnHeadersMultipleHeaders) {
   AXNodeData header_r1c1;
   header_r1c1.id = 5;
   header_r1c1.role = ax::mojom::Role::kColumnHeader;
-  header_r1c1.SetName(STRING16_LITERAL("header_r1c1"));
+  header_r1c1.SetName(u"header_r1c1");
   row1.child_ids.push_back(header_r1c1.id);
 
   AXNodeData header_r1c2;
   header_r1c2.id = 6;
   header_r1c2.role = ax::mojom::Role::kColumnHeader;
-  header_r1c2.SetName(STRING16_LITERAL("header_r1c2"));
+  header_r1c2.SetName(u"header_r1c2");
   row1.child_ids.push_back(header_r1c2.id);
 
   AXNodeData header_r1c3;
   header_r1c3.id = 7;
   header_r1c3.role = ax::mojom::Role::kColumnHeader;
-  header_r1c3.SetName(STRING16_LITERAL("header_r1c3"));
+  header_r1c3.SetName(u"header_r1c3");
   row1.child_ids.push_back(header_r1c3.id);
 
   // <tr aria-label="row2">
@@ -3668,19 +3668,19 @@ TEST_F(AXPlatformNodeWinTest, ITableProviderGetColumnHeadersMultipleHeaders) {
   AXNodeData cell_r2c1;
   cell_r2c1.id = 8;
   cell_r2c1.role = ax::mojom::Role::kCell;
-  cell_r2c1.SetName(STRING16_LITERAL("cell_r2c1"));
+  cell_r2c1.SetName(u"cell_r2c1");
   row2.child_ids.push_back(cell_r2c1.id);
 
   AXNodeData cell_r2c2;
   cell_r2c2.id = 9;
   cell_r2c2.role = ax::mojom::Role::kCell;
-  cell_r2c2.SetName(STRING16_LITERAL("cell_r2c2"));
+  cell_r2c2.SetName(u"cell_r2c2");
   row2.child_ids.push_back(cell_r2c2.id);
 
   AXNodeData cell_r2c3;
   cell_r2c3.id = 10;
   cell_r2c3.role = ax::mojom::Role::kCell;
-  cell_r2c3.SetName(STRING16_LITERAL("cell_r2c3"));
+  cell_r2c3.SetName(u"cell_r2c3");
   row2.child_ids.push_back(cell_r2c3.id);
 
   // <tr aria-label="row3">
@@ -3689,13 +3689,13 @@ TEST_F(AXPlatformNodeWinTest, ITableProviderGetColumnHeadersMultipleHeaders) {
   AXNodeData cell_r3c1;
   cell_r3c1.id = 11;
   cell_r3c1.role = ax::mojom::Role::kCell;
-  cell_r3c1.SetName(STRING16_LITERAL("cell_r3c1"));
+  cell_r3c1.SetName(u"cell_r3c1");
   row3.child_ids.push_back(cell_r3c1.id);
 
   AXNodeData header_r3c2;
   header_r3c2.id = 12;
   header_r3c2.role = ax::mojom::Role::kColumnHeader;
-  header_r3c2.SetName(STRING16_LITERAL("header_r3c2"));
+  header_r3c2.SetName(u"header_r3c2");
   row3.child_ids.push_back(header_r3c2.id);
 
   Init(root, row1, row2, row3, header_r1c1, header_r1c2, header_r1c3, cell_r2c1,
@@ -3730,13 +3730,13 @@ TEST_F(AXPlatformNodeWinTest, ITableProviderGetRowHeaders) {
   AXNodeData column_header;
   column_header.id = 3;
   column_header.role = ax::mojom::Role::kColumnHeader;
-  column_header.SetName(STRING16_LITERAL("column_header"));
+  column_header.SetName(u"column_header");
   row1.child_ids.push_back(column_header.id);
 
   AXNodeData row_header;
   row_header.id = 4;
   row_header.role = ax::mojom::Role::kRowHeader;
-  row_header.SetName(STRING16_LITERAL("row_header"));
+  row_header.SetName(u"row_header");
   row1.child_ids.push_back(row_header.id);
 
   Init(root, row1, column_header, row_header);
@@ -3792,13 +3792,13 @@ TEST_F(AXPlatformNodeWinTest, ITableItemProviderGetColumnHeaderItems) {
   AXNodeData column_header_1;
   column_header_1.id = 3;
   column_header_1.role = ax::mojom::Role::kColumnHeader;
-  column_header_1.SetName(STRING16_LITERAL("column_header_1"));
+  column_header_1.SetName(u"column_header_1");
   row1.child_ids.push_back(column_header_1.id);
 
   AXNodeData column_header_2;
   column_header_2.id = 4;
   column_header_2.role = ax::mojom::Role::kColumnHeader;
-  column_header_2.SetName(STRING16_LITERAL("column_header_2"));
+  column_header_2.SetName(u"column_header_2");
   row1.child_ids.push_back(column_header_2.id);
 
   AXNodeData row2;
@@ -3855,7 +3855,7 @@ TEST_F(AXPlatformNodeWinTest, ITableItemProviderGetRowHeaderItems) {
   AXNodeData row_header_1;
   row_header_1.id = 3;
   row_header_1.role = ax::mojom::Role::kRowHeader;
-  row_header_1.SetName(STRING16_LITERAL("row_header_1"));
+  row_header_1.SetName(u"row_header_1");
   row1.child_ids.push_back(row_header_1.id);
 
   AXNodeData cell;
@@ -3871,7 +3871,7 @@ TEST_F(AXPlatformNodeWinTest, ITableItemProviderGetRowHeaderItems) {
   AXNodeData row_header_2;
   row_header_2.id = 6;
   row_header_2.role = ax::mojom::Role::kRowHeader;
-  row_header_2.SetName(STRING16_LITERAL("row_header_2"));
+  row_header_2.SetName(u"row_header_2");
   row2.child_ids.push_back(row_header_2.id);
 
   Init(root, row1, row_header_1, cell, row2, row_header_2);
@@ -5270,7 +5270,13 @@ TEST_F(AXPlatformNodeWinTest, ComputeUIAControlType) {
   child4.role = ax::mojom::Role::kSearchBox;
   root.child_ids.push_back(child4_id);
 
-  Init(root, child1, child2, child3, child4);
+  AXNodeData child5;
+  AXNodeID child5_id = 6;
+  child5.id = child5_id;
+  child5.role = ax::mojom::Role::kTitleBar;
+  root.child_ids.push_back(child5_id);
+
+  Init(root, child1, child2, child3, child4, child5);
 
   EXPECT_UIA_INT_EQ(
       QueryInterfaceFromNodeId<IRawElementProviderSimple>(child1_id),
@@ -5284,6 +5290,9 @@ TEST_F(AXPlatformNodeWinTest, ComputeUIAControlType) {
   EXPECT_UIA_INT_EQ(
       QueryInterfaceFromNodeId<IRawElementProviderSimple>(child4_id),
       UIA_ControlTypePropertyId, int{UIA_EditControlTypeId});
+  EXPECT_UIA_INT_EQ(
+      QueryInterfaceFromNodeId<IRawElementProviderSimple>(child5_id),
+      UIA_ControlTypePropertyId, int{UIA_TitleBarControlTypeId});
 }
 
 TEST_F(AXPlatformNodeWinTest, UIALandmarkType) {
@@ -6149,6 +6158,109 @@ TEST_F(AXPlatformNodeWinTest, IExpandCollapsePatternProviderAction) {
   EXPECT_HRESULT_SUCCEEDED(
       expandcollapse_provider->get_ExpandCollapseState(&state));
   EXPECT_EQ(ExpandCollapseState_LeafNode, state);
+}
+
+// If a menu button has an expanded or collapsed state, we want to make sure we
+// let that be the deciding factor for `get_ExpandCollapseState()`. Otherwise,
+// check if the button is pressed.
+TEST_F(AXPlatformNodeWinTest,
+       IExpandCollapseProviderExpandedCollapsedStateMenuButton) {
+  // Declare a vector that will hold our expected Expanded/Collapsed state for
+  // each menu button we'll declare below.
+  std::vector<ExpandCollapseState> node_expected_state;
+
+  // Our root. Will host all menu buttons below.
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {2, 3, 4, 5, 6, 7};
+
+  // If a pressed menu button is explicitly marked as `kExpanded`, its
+  // Expanded/Collapsed state should be expanded.
+  AXNodeData expanded_pressed_button;
+  expanded_pressed_button.id = 2;
+  expanded_pressed_button.role = ax::mojom::Role::kButton;
+  expanded_pressed_button.SetHasPopup(ax::mojom::HasPopup::kMenu);
+  expanded_pressed_button.SetCheckedState(ax::mojom::CheckedState::kTrue);
+  expanded_pressed_button.AddState(ax::mojom::State::kExpanded);
+  node_expected_state.push_back(ExpandCollapseState_Expanded);
+
+  // If an unpressed menu button is explicitly marked as `kExpanded`, its
+  // Expanded/Collapsed state should be expanded, because this value takes
+  // precedence over the fact that the button isn't pressed.
+  AXNodeData expanded_unpressed_button;
+  expanded_unpressed_button.id = 3;
+  expanded_unpressed_button.role = ax::mojom::Role::kButton;
+  expanded_unpressed_button.SetHasPopup(ax::mojom::HasPopup::kMenu);
+  expanded_unpressed_button.SetCheckedState(ax::mojom::CheckedState::kFalse);
+  expanded_unpressed_button.AddState(ax::mojom::State::kExpanded);
+  node_expected_state.push_back(ExpandCollapseState_Expanded);
+
+  // If a pressed menu button is explicitly marked as `kCollapsed`, its
+  // Expanded/Collapsed state should be collapsed, because this value takes
+  // precedence over the fact that the button is pressed.
+  AXNodeData collapsed_pressed_button;
+  collapsed_pressed_button.id = 4;
+  collapsed_pressed_button.role = ax::mojom::Role::kButton;
+  collapsed_pressed_button.SetHasPopup(ax::mojom::HasPopup::kMenu);
+  collapsed_pressed_button.SetCheckedState(ax::mojom::CheckedState::kTrue);
+  collapsed_pressed_button.AddState(ax::mojom::State::kCollapsed);
+  node_expected_state.push_back(ExpandCollapseState_Collapsed);
+
+  // If an unpressed menu button is explicitly marked as `kCollapsed`, its
+  // Expanded/Collapsed state should be collapsed.
+  AXNodeData collapsed_unpressed_button;
+  collapsed_unpressed_button.id = 5;
+  collapsed_unpressed_button.role = ax::mojom::Role::kButton;
+  collapsed_unpressed_button.SetHasPopup(ax::mojom::HasPopup::kMenu);
+  collapsed_unpressed_button.SetCheckedState(ax::mojom::CheckedState::kFalse);
+  collapsed_unpressed_button.AddState(ax::mojom::State::kCollapsed);
+  node_expected_state.push_back(ExpandCollapseState_Collapsed);
+
+  // If a pressed menu button has no explicit Expanded/Collapsed state, its
+  // Expanded/Collapsed state should be expanded (since it's pressed).
+  AXNodeData pressed_button;
+  pressed_button.id = 6;
+  pressed_button.role = ax::mojom::Role::kButton;
+  pressed_button.SetHasPopup(ax::mojom::HasPopup::kMenu);
+  pressed_button.SetCheckedState(ax::mojom::CheckedState::kTrue);
+  node_expected_state.push_back(ExpandCollapseState_Expanded);
+
+  // If an unpressed button has no explicit Expanded/Collapsed state, its
+  // Expanded/Collapsed state should be collapsed (since it's unpressed).
+  AXNodeData unpressed_button;
+  unpressed_button.id = 7;
+  unpressed_button.role = ax::mojom::Role::kButton;
+  unpressed_button.SetHasPopup(ax::mojom::HasPopup::kMenu);
+  unpressed_button.SetCheckedState(ax::mojom::CheckedState::kFalse);
+  node_expected_state.push_back(ExpandCollapseState_Collapsed);
+
+  // Initialize all our buttons as children of our root.
+  Init(root, expanded_pressed_button, expanded_unpressed_button,
+       collapsed_pressed_button, collapsed_unpressed_button, pressed_button,
+       unpressed_button);
+
+  // Declare all variables we'll use in the below loop.
+  ComPtr<IRawElementProviderSimple> raw_element_provider;
+  ComPtr<IExpandCollapseProvider> expandcollapse_provider;
+  ExpandCollapseState state;
+
+  // Loop through all child buttons and verify that we get the expected
+  // Expanded/Collapsed state.
+  CHECK_EQ(node_expected_state.size(), root.child_ids.size());
+  for (size_t i = 0; i < root.child_ids.size(); ++i) {
+    raw_element_provider = GetIRawElementProviderSimpleFromChildIndex(i);
+    EXPECT_HRESULT_SUCCEEDED(raw_element_provider->GetPatternProvider(
+        UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+    EXPECT_NE(expandcollapse_provider.Get(), nullptr);
+    EXPECT_HRESULT_SUCCEEDED(
+        expandcollapse_provider->get_ExpandCollapseState(&state));
+    SCOPED_TRACE(testing::Message()
+                 << "node index: " << i << ", Actual Expanded/Collapsed State: "
+                 << state << ", Expected Expanded/Collapsed State: "
+                 << node_expected_state[i]);
+    EXPECT_EQ(node_expected_state[i], state);
+  }
 }
 
 TEST_F(AXPlatformNodeWinTest, IInvokeProviderInvoke) {

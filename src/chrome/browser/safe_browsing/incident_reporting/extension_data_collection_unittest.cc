@@ -36,8 +36,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #endif
 
 using ::testing::StrictMock;
@@ -133,11 +133,11 @@ class ExtensionDataCollectionTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+    test_user_manager_ = std::make_unique<ash::ScopedTestUserManager>();
 #endif
   }
 
@@ -191,8 +191,8 @@ class ExtensionDataCollectionTest : public testing::Test {
   int profile_number_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
-  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  std::unique_ptr<ash::ScopedTestUserManager> test_user_manager_;
 #endif
 };
 

@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
@@ -102,6 +101,8 @@ class NetworkLocationProvider
   base::ThreadChecker thread_checker_;
 
   bool is_system_permission_granted_ = false;
+
+  bool is_awaiting_initial_permission_status_ = true;
 
   base::WeakPtrFactory<NetworkLocationProvider> weak_factory_{this};
 

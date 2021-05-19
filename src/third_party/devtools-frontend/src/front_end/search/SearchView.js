@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
-import * as i18n from '../i18n/i18n.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import {SearchConfig, SearchResult, SearchScope} from './SearchConfig.js';  // eslint-disable-line no-unused-vars
 import {SearchResultsPane} from './SearchResultsPane.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Title of a search bar or tool
   */
@@ -84,7 +84,7 @@ export class SearchView extends UI.Widget.VBox {
   constructor(settingKey) {
     super(true);
     this.setMinimumSize(0, 40);
-    this.registerRequiredCSS('search/searchView.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('search/searchView.css', {enableLegacyPatching: false});
 
     this._focusOnShow = false;
     this._isIndexing = false;
@@ -298,9 +298,7 @@ export class SearchView extends UI.Widget.VBox {
     }
     this._searchFinished(finished);
     this._searchConfig = null;
-    UI.ARIAUtils.alert(
-        this._searchMessageElement.textContent + ' ' + this._searchResultsMessageElement.textContent,
-        this._searchMessageElement);
+    UI.ARIAUtils.alert(this._searchMessageElement.textContent + ' ' + this._searchResultsMessageElement.textContent);
   }
 
   /**
@@ -482,7 +480,7 @@ export class SearchView extends UI.Widget.VBox {
 
   _onAction() {
     // Resetting alert variable to prime for next search query result.
-    UI.ARIAUtils.alert(' ', this._searchMessageElement);
+    UI.ARIAUtils.alert(' ');
     const searchConfig = this._buildSearchConfig();
     if (!searchConfig.query() || !searchConfig.query().length) {
       return;

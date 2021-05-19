@@ -14,15 +14,16 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/heavy_ad_intervention/heavy_ad_features.h"
 #include "components/page_load_metrics/browser/ads_page_load_metrics_test_waiter.h"
+#include "components/page_load_metrics/browser/observers/ad_metrics/ad_intervention_browser_test_utils.h"
+#include "components/page_load_metrics/browser/observers/ad_metrics/ads_page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/observers/ad_metrics/frame_tree_data.h"
 #include "components/page_load_metrics/browser/observers/use_counter_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
@@ -58,8 +59,9 @@
 
 namespace {
 
-using OriginStatus = ad_metrics::OriginStatus;
-using OriginStatusWithThrottling = ad_metrics::OriginStatusWithThrottling;
+using OriginStatus = page_load_metrics::OriginStatus;
+using OriginStatusWithThrottling =
+    page_load_metrics::OriginStatusWithThrottling;
 
 using FrameTreeNodeId = int;
 
@@ -109,25 +111,6 @@ const char kMemoryMainFrameMaxHistogramId[] =
 const char kMemoryUpdateCountHistogramId[] =
     "PageLoad.Clients.Ads.Memory.UpdateCount";
 
-const char kHttpOkResponseHeader[] =
-    "HTTP/1.1 200 OK\r\n"
-    "Content-Type: text/html; charset=utf-8\r\n"
-    "\r\n";
-
-// Use the maximum possible threshold so tests are deterministic.
-const int kMaxHeavyAdNetworkSize =
-    heavy_ad_thresholds::kMaxNetworkBytes +
-    AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider::
-        kMaxNetworkThresholdNoiseBytes;
-
-void LoadLargeResource(net::test_server::ControllableHttpResponse* response,
-                       int bytes) {
-  response->WaitForRequest();
-  response->Send(kHttpOkResponseHeader);
-  response->Send(std::string(bytes, ' '));
-  response->Done();
-}
-
 }  // namespace
 
 class AdsPageLoadMetricsObserverBrowserTest
@@ -147,8 +130,7 @@ class AdsPageLoadMetricsObserverBrowserTest
 
   void SetUp() override {
     std::vector<base::Feature> enabled = {
-        subresource_filter::kAdTagging, features::kSitePerProcess,
-        features::kV8PerFrameMemoryMonitoring};
+        subresource_filter::kAdTagging, features::kV8PerFrameMemoryMonitoring};
     std::vector<base::Feature> disabled = {};
 
     scoped_feature_list_.InitWithFeatures(enabled, disabled);
@@ -182,8 +164,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   waiter->AddMinimumCompleteResourcesExpectation(4);
   waiter->Wait();
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  histogram_tester.ExpectUniqueSample(kCrossOriginHistogramId,
-                                      ad_metrics::OriginStatus::kSame, 1);
+  histogram_tester.ExpectUniqueSample(
+      kCrossOriginHistogramId, page_load_metrics::OriginStatus::kSame, 1);
 }
 
 // Test that an empty embedded ad isn't reported at all.
@@ -213,17 +195,16 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   waiter->Wait();
 
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  histogram_tester.ExpectUniqueSample(kCrossOriginHistogramId,
-                                      ad_metrics::OriginStatus::kSame, 1);
+  histogram_tester.ExpectUniqueSample(
+      kCrossOriginHistogramId, page_load_metrics::OriginStatus::kSame, 1);
   auto entries =
       ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
   EXPECT_EQ(1u, entries.size());
   ukm_recorder.ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kStatus_CrossOriginName,
-      static_cast<int>(ad_metrics::OriginStatus::kSame));
+      static_cast<int>(page_load_metrics::OriginStatus::kSame));
 }
 
-// Test that an ad with a different origin as the main page is cross origin.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        OriginStatusMetricCross) {
   // Note: Cannot navigate cross-origin without dynamically generating the URL.
@@ -241,19 +222,20 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                       embedded_test_server()->GetURL(
                           "a.com", "/ads_observer/same_origin_ad.html"));
 
-  // Wait until all resource data updates are sent.
-  waiter->AddPageExpectation(
-      page_load_metrics::PageLoadMetricsTestWaiter::TimingField::kLoadEvent);
+  // Wait until all resource data updates are sent. Note that there is one more
+  // than in the tests above due to the navigation to same_origin_ad.html being
+  // itself made in an iframe.
+  waiter->AddMinimumCompleteResourcesExpectation(5);
   waiter->Wait();
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  histogram_tester.ExpectUniqueSample(kCrossOriginHistogramId,
-                                      ad_metrics::OriginStatus::kCross, 1);
+  histogram_tester.ExpectUniqueSample(
+      kCrossOriginHistogramId, page_load_metrics::OriginStatus::kCross, 1);
   auto entries =
       ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
   EXPECT_EQ(1u, entries.size());
   ukm_recorder.ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kStatus_CrossOriginName,
-      static_cast<int>(ad_metrics::OriginStatus::kCross));
+      static_cast<int>(page_load_metrics::OriginStatus::kCross));
 }
 
 // Verifies that the page ad density records the maximum value during
@@ -615,8 +597,8 @@ class CreativeOriginAdsPageLoadMetricsObserverBrowserTest
 
   void TestCreativeOriginStatus(
       std::unique_ptr<Frame> main_frame,
-      ad_metrics::OriginStatus expected_status,
-      base::Optional<ad_metrics::OriginStatusWithThrottling>
+      page_load_metrics::OriginStatus expected_status,
+      base::Optional<page_load_metrics::OriginStatusWithThrottling>
           expected_status_with_throttling) {
     base::HistogramTester histogram_tester;
     bool subframe_exists = main_frame->HasChild();
@@ -682,8 +664,8 @@ IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
   TestCreativeOriginStatus(
       MakeFrame("a",
                 MakeFrame("a", MakeFrame("b", MakeFrame("c", nullptr), true))),
-      ad_metrics::OriginStatus::kCross,
-      ad_metrics::OriginStatusWithThrottling::kCrossAndUnthrottled);
+      page_load_metrics::OriginStatus::kCross,
+      page_load_metrics::OriginStatusWithThrottling::kCrossAndUnthrottled);
 }
 
 // Test that an ad creative with a different origin as the main page,
@@ -794,10 +776,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectBucketCount(
       kAdUserActivationHistogramId,
-      ad_metrics::UserActivationStatus::kReceivedActivation, 1);
+      page_load_metrics::UserActivationStatus::kReceivedActivation, 1);
   histogram_tester.ExpectBucketCount(
       kAdUserActivationHistogramId,
-      ad_metrics::UserActivationStatus::kNoActivation, 1);
+      page_load_metrics::UserActivationStatus::kNoActivation, 1);
   auto entries =
       ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
   EXPECT_EQ(2u, entries.size());
@@ -809,6 +791,50 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
               *ukm_recorder.GetEntryMetric(
                   entries.back(),
                   ukm::builders::AdFrameLoad::kStatus_UserActivationName));
+}
+
+// See https://crbug.com/1193885.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       UserActivationSetOnFrameAfterSameOriginActivation) {
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/ad_tagging/frame_factory.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Create two same-origin ad frames.
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      web_contents, "createAdFrame('/ad_tagging/ad.html', '');"));
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      web_contents, "createAdFrame('/ad_tagging/ad.html', '');"));
+
+  // Wait for the frames resources to be loaded as we only log histograms for
+  // frames that have non-zero bytes. Four resources in the main frame and one
+  // favicon.
+  waiter->AddMinimumCompleteResourcesExpectation(7);
+  waiter->Wait();
+
+  // Activate one frame by executing a dummy script. This will inherently
+  // activate the second frame due to same-origin visibility user activation.
+  // The activation of the second frame by this heuristic should be ignored.
+  content::RenderFrameHost* ad_frame =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  const std::string no_op_script = "// No-op script";
+  EXPECT_TRUE(ExecuteScript(ad_frame, no_op_script));
+
+  // Activate the other frame directly by executing a dummy script.
+  content::RenderFrameHost* ad_frame_2 =
+      ChildFrameAt(web_contents->GetMainFrame(), 1);
+  EXPECT_TRUE(ExecuteScript(ad_frame_2, no_op_script));
+
+  // Ensure both frames are marked active.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectUniqueSample(
+      kAdUserActivationHistogramId,
+      page_load_metrics::UserActivationStatus::kReceivedActivation, 2);
 }
 
 // Test that a subframe that aborts (due to doc.write) doesn't cause a crash
@@ -1121,7 +1147,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   EXPECT_EQ(1u, entries.size());
   ukm_recorder.ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kStatus_MediaName,
-      static_cast<int>(ad_metrics::MediaStatus::kNotPlayed));
+      static_cast<int>(page_load_metrics::MediaStatus::kNotPlayed));
 }
 
 // Flaky on all platforms, http://crbug.com/972822.
@@ -1161,7 +1187,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   EXPECT_EQ(1u, entries.size());
   ukm_recorder.ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kStatus_MediaName,
-      static_cast<int>(ad_metrics::MediaStatus::kPlayed));
+      static_cast<int>(page_load_metrics::MediaStatus::kPlayed));
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
@@ -1262,15 +1288,17 @@ class AdsPageLoadMetricsObserverResourceBrowserTest
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{subresource_filter::kAdTagging, {}},
          {subresource_filter::kAdsInterventionsEnforced, {}},
-         {features::kHeavyAdIntervention, {}},
-         {features::kHeavyAdPrivacyMitigations, {{"host-threshold", "3"}}}},
+         {heavy_ad_intervention::features::kHeavyAdIntervention, {}},
+         {heavy_ad_intervention::features::kHeavyAdPrivacyMitigations,
+          {{"host-threshold", "3"}}}},
         {});
   }
 
   ~AdsPageLoadMetricsObserverResourceBrowserTest() override {}
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
+    embedded_test_server()->ServeFilesFromSourceDirectory(
+        "components/test/data");
     content::SetupCrossSiteRedirector(embedded_test_server());
     SetRulesetWithRules(
         {subresource_filter::testing::CreateSuffixRule("ad_script.js"),
@@ -1303,15 +1331,17 @@ class AdsPageLoadMetricsObserverResourceBrowserTest
       // to trigger the intervention and ensure that the navigation failed.
       content::TestNavigationObserver error_observer(
           web_contents, net::ERR_BLOCKED_BY_CLIENT);
-      LoadLargeResource(large_resource, kMaxHeavyAdNetworkSize);
+      page_load_metrics::LoadLargeResource(
+          large_resource, page_load_metrics::kMaxHeavyAdNetworkSize);
       error_observer.WaitForNavigationFinished();
       EXPECT_FALSE(error_observer.last_navigation_succeeded());
     } else {
       // Otherwise load the resource, ensuring enough bytes were loaded.
       int64_t current_network_bytes = waiter->current_network_bytes();
-      LoadLargeResource(large_resource, kMaxHeavyAdNetworkSize);
-      waiter->AddMinimumNetworkBytesExpectation(current_network_bytes +
-                                                kMaxHeavyAdNetworkSize);
+      page_load_metrics::LoadLargeResource(
+          large_resource, page_load_metrics::kMaxHeavyAdNetworkSize);
+      waiter->AddMinimumNetworkBytesExpectation(
+          current_network_bytes + page_load_metrics::kMaxHeavyAdNetworkSize);
       waiter->Wait();
     }
   }
@@ -1355,8 +1385,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       browser(), embedded_test_server()->GetURL(
                      "foo.com", "/ad_tagging/frame_factory.html"));
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("createAdFrame('frame_factory.html', '');"),
-      base::NullCallback());
+      u"createAdFrame('frame_factory.html', '');", base::NullCallback());
   // Two pages subresources should have been reported as ad. The iframe resource
   // and its three subresources should also be reported as ads.
   waiter->AddMinimumAdResourceExpectation(6);
@@ -1376,8 +1405,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       browser(), embedded_test_server()->GetURL(
                      "foo.com", "/ad_tagging/frame_factory.html"));
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("createAdFrame('frame_factory.html', 'test');"),
-      base::NullCallback());
+      u"createAdFrame('frame_factory.html', 'test');", base::NullCallback());
   waiter->AddMinimumAdResourceExpectation(6);
   waiter->Wait();
   NavigateIframeToURL(web_contents(), "test",
@@ -1421,14 +1449,14 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
 
   main_html_response->WaitForRequest();
-  main_html_response->Send(kHttpOkResponseHeader);
+  main_html_response->Send(page_load_metrics::kHttpOkResponseHeader);
   main_html_response->Send(
       "<html><body></body><script src=\"ad_script.js\"></script></html>");
   main_html_response->Send(std::string(1024, ' '));
   main_html_response->Done();
 
   ad_script_response->WaitForRequest();
-  ad_script_response->Send(kHttpOkResponseHeader);
+  ad_script_response->Send(page_load_metrics::kHttpOkResponseHeader);
   ad_script_response->Send(
       "var iframe = document.createElement(\"iframe\");"
       "iframe.src =\"ad.html\";"
@@ -1437,14 +1465,14 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   ad_script_response->Done();
 
   iframe_response->WaitForRequest();
-  iframe_response->Send(kHttpOkResponseHeader);
+  iframe_response->Send(page_load_metrics::kHttpOkResponseHeader);
   iframe_response->Send("<html><script src=\"vanilla_script.js\"></script>");
   iframe_response->Send(std::string(2000, ' '));
   iframe_response->Send("</html>");
   iframe_response->Done();
 
   vanilla_script_response->WaitForRequest();
-  vanilla_script_response->Send(kHttpOkResponseHeader);
+  vanilla_script_response->Send(page_load_metrics::kHttpOkResponseHeader);
   vanilla_script_response->Send(std::string(1024, ' '));
   waiter->AddMinimumNetworkBytesExpectation(5000);
   waiter->Wait();
@@ -1497,7 +1525,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 
   // Ad resource will not finish loading but should be reported to metrics.
   incomplete_resource_response->WaitForRequest();
-  incomplete_resource_response->Send(kHttpOkResponseHeader);
+  incomplete_resource_response->Send(page_load_metrics::kHttpOkResponseHeader);
   incomplete_resource_response->Send(std::string(response_bytes, ' '));
 
   // Wait for the resource update to be received for the incomplete response.
@@ -1583,7 +1611,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                               content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Load a resource large enough to trigger the intervention.
-  LoadLargeResource(incomplete_resource_response.get(), kMaxHeavyAdNetworkSize);
+  page_load_metrics::LoadLargeResource(
+      incomplete_resource_response.get(),
+      page_load_metrics::kMaxHeavyAdNetworkSize);
 
   std::string message;
   bool got_report = false;
@@ -1599,8 +1629,16 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 }
 
 // Verifies that reports are sent to all children.
+// crbug.com/1189635: flaky on win and linux.
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_HeavyAdInterventionFired_ReportsToAllChildren \
+  DISABLED_HeavyAdInterventionFired_ReportsToAllChildren
+#else
+#define MAYBE_HeavyAdInterventionFired_ReportsToAllChildren \
+  HeavyAdInterventionFired_ReportsToAllChildren
+#endif
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
-                       HeavyAdInterventionFired_ReportsToAllChildren) {
+                       MAYBE_HeavyAdInterventionFired_ReportsToAllChildren) {
   SetRulesetWithRules(
       {subresource_filter::testing::CreateSuffixRule("frame_factory.html")});
   base::HistogramTester histogram_tester;
@@ -1646,7 +1684,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Load a resource large enough to trigger the intervention.
-  LoadLargeResource(large_resource.get(), kMaxHeavyAdNetworkSize);
+  page_load_metrics::LoadLargeResource(
+      large_resource.get(), page_load_metrics::kMaxHeavyAdNetworkSize);
 
   error_observer.WaitForNavigationFinished();
 
@@ -1679,19 +1718,23 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Load a resource large enough to trigger the intervention.
-  LoadLargeResource(incomplete_resource_response.get(), kMaxHeavyAdNetworkSize);
+  page_load_metrics::LoadLargeResource(
+      incomplete_resource_response.get(),
+      page_load_metrics::kMaxHeavyAdNetworkSize);
 
   // Wait for the intervention page navigation to finish on the frame.
   error_observer.WaitForNavigationFinished();
 
-  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
-                                      ad_metrics::HeavyAdStatus::kNetwork, 1);
+  histogram_tester.ExpectUniqueSample(
+      kHeavyAdInterventionTypeHistogramId,
+      page_load_metrics::HeavyAdStatus::kNetwork, 1);
 
   // Check that the ad frame was navigated to the intervention page.
   EXPECT_FALSE(error_observer.last_navigation_succeeded());
 
-  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
-                                      ad_metrics::HeavyAdStatus::kNetwork, 1);
+  histogram_tester.ExpectUniqueSample(
+      kHeavyAdInterventionTypeHistogramId,
+      page_load_metrics::HeavyAdStatus::kNetwork, 1);
   histogram_tester.ExpectBucketCount(
       "Blink.UseCounter.Features",
       blink::mojom::WebFeature::kHeavyAdIntervention, 1);
@@ -1702,8 +1745,9 @@ class AdsPageLoadMetricsObserverResourceBrowserTestWithoutHeavyAdIntervention
  public:
   AdsPageLoadMetricsObserverResourceBrowserTestWithoutHeavyAdIntervention() {
     // The experiment is "on" if either intervention or reporting is active.
-    feature_list_.InitWithFeatures({}, {features::kHeavyAdIntervention,
-                                        features::kHeavyAdInterventionWarning});
+    feature_list_.InitWithFeatures(
+        {}, {heavy_ad_intervention::features::kHeavyAdIntervention,
+             heavy_ad_intervention::features::kHeavyAdInterventionWarning});
   }
 
  private:
@@ -1728,10 +1772,13 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Load a resource large enough to trigger the intervention.
-  LoadLargeResource(incomplete_resource_response.get(), kMaxHeavyAdNetworkSize);
+  page_load_metrics::LoadLargeResource(
+      incomplete_resource_response.get(),
+      page_load_metrics::kMaxHeavyAdNetworkSize);
 
   // Wait for the resource update to be received for the large resource.
-  waiter->AddMinimumNetworkBytesExpectation(kMaxHeavyAdNetworkSize);
+  waiter->AddMinimumNetworkBytesExpectation(
+      page_load_metrics::kMaxHeavyAdNetworkSize);
   waiter->Wait();
 
   // We can't check whether the navigation didn't occur because the error page
@@ -1762,18 +1809,21 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Load a resource not large enough to trigger the intervention.
-  LoadLargeResource(incomplete_resource_response.get(),
-                    kMaxHeavyAdNetworkSize / 2);
+  page_load_metrics::LoadLargeResource(
+      incomplete_resource_response.get(),
+      page_load_metrics::kMaxHeavyAdNetworkSize / 2);
 
   // Wait for the resource update to be received for the large resource.
-  waiter->AddMinimumNetworkBytesExpectation(kMaxHeavyAdNetworkSize / 2);
+  waiter->AddMinimumNetworkBytesExpectation(
+      page_load_metrics::kMaxHeavyAdNetworkSize / 2);
   waiter->Wait();
 
   histogram_tester.ExpectTotalCount(kHeavyAdInterventionTypeHistogramId, 0);
 
   // Verify that the trial is not activated if no heavy ads are seen.
   EXPECT_FALSE(base::FieldTrialList::IsTrialActive(
-      base::FeatureList::GetFieldTrial(features::kHeavyAdIntervention)
+      base::FeatureList::GetFieldTrial(
+          heavy_ad_intervention::features::kHeavyAdIntervention)
           ->trial_name()));
 }
 
@@ -1803,8 +1853,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // be triggered at this point.
   LoadHeavyAdResourceAndWaitOrError(http_responses[0].get(), waiter.get(),
                                     /*will_block=*/true);
-  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
-                                      ad_metrics::HeavyAdStatus::kNetwork, 1);
+  histogram_tester.ExpectUniqueSample(
+      kHeavyAdInterventionTypeHistogramId,
+      page_load_metrics::HeavyAdStatus::kNetwork, 1);
   histogram_tester.ExpectTotalCount(kAdsInterventionRecordedHistogram, 0);
   histogram_tester.ExpectBucketCount(
       "SubresourceFilter.Actions2",
@@ -1814,8 +1865,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // not be triggered at this point.
   LoadHeavyAdResourceAndWaitOrError(http_responses[1].get(), waiter.get(),
                                     /*will_block=*/true);
-  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
-                                      ad_metrics::HeavyAdStatus::kNetwork, 2);
+  histogram_tester.ExpectUniqueSample(
+      kHeavyAdInterventionTypeHistogramId,
+      page_load_metrics::HeavyAdStatus::kNetwork, 2);
   histogram_tester.ExpectTotalCount(kAdsInterventionRecordedHistogram, 0);
   histogram_tester.ExpectBucketCount(
       "SubresourceFilter.Actions2",
@@ -1833,8 +1885,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // be triggered at this point.
   LoadHeavyAdResourceAndWaitOrError(http_responses[2].get(), waiter.get(),
                                     /*will_block=*/true);
-  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
-                                      ad_metrics::HeavyAdStatus::kNetwork, 3);
+  histogram_tester.ExpectUniqueSample(
+      kHeavyAdInterventionTypeHistogramId,
+      page_load_metrics::HeavyAdStatus::kNetwork, 3);
   histogram_tester.ExpectUniqueSample(
       kAdsInterventionRecordedHistogram,
       subresource_filter::mojom::AdsViolation::kHeavyAdsInterventionAtHostLimit,
@@ -1847,8 +1900,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // second time.
   LoadHeavyAdResourceAndWaitOrError(http_responses[3].get(), waiter.get(),
                                     /*will_block=*/false);
-  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
-                                      ad_metrics::HeavyAdStatus::kNetwork, 3);
+  histogram_tester.ExpectUniqueSample(
+      kHeavyAdInterventionTypeHistogramId,
+      page_load_metrics::HeavyAdStatus::kNetwork, 3);
   histogram_tester.ExpectUniqueSample(
       kAdsInterventionRecordedHistogram,
       subresource_filter::mojom::AdsViolation::kHeavyAdsInterventionAtHostLimit,
@@ -1899,7 +1953,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   ui_test_utils::NavigateToURL(incognito_browser, url);
 
   // Load a resource large enough to trigger the intervention.
-  LoadLargeResource(incomplete_resource_response.get(), kMaxHeavyAdNetworkSize);
+  page_load_metrics::LoadLargeResource(
+      incomplete_resource_response.get(),
+      page_load_metrics::kMaxHeavyAdNetworkSize);
 
   // Wait for the intervention page navigation to finish on the frame.
   error_observer.WaitForNavigationFinished();
@@ -1923,8 +1979,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                                             "/ad_tagging/frame_factory.html");
   ui_test_utils::NavigateToURL(browser(), url);
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("createAdFrame('multiple_mimes.html', 'test');"),
-      base::NullCallback());
+      u"createAdFrame('multiple_mimes.html', 'test');", base::NullCallback());
   waiter->AddMinimumAdResourceExpectation(8);
   waiter->Wait();
 
@@ -1995,7 +2050,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 
   // Ensure that there is a single entry that is at least the percent specified.
   int min_percent =
-      100 * 300 / ad_metrics::PeakCpuAggregator::kWindowSize.InMilliseconds();
+      100 * 300 /
+      page_load_metrics::PeakCpuAggregator::kWindowSize.InMilliseconds();
   auto samples = histogram_tester.GetAllSamples(kPeakWindowdPercentHistogramId);
   EXPECT_EQ(1u, samples.size());
   EXPECT_EQ(1, samples.front().count);
@@ -2032,7 +2088,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   // Ensure that there is a single entry that is at least the peak windowed
   // percent of 400ms.
   int min_percent =
-      100 * 400 / ad_metrics::PeakCpuAggregator::kWindowSize.InMilliseconds();
+      100 * 400 /
+      page_load_metrics::PeakCpuAggregator::kWindowSize.InMilliseconds();
   auto samples = histogram_tester.GetAllSamples(kPeakWindowdPercentHistogramId);
   EXPECT_EQ(1u, samples.size());
   EXPECT_EQ(1, samples.front().count);
@@ -2115,7 +2172,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   // Ensure that there is a single entry that is at least the peak windowed
   // percent of 400ms.
   int min_percent =
-      100 * 300 / ad_metrics::PeakCpuAggregator::kWindowSize.InMilliseconds();
+      100 * 300 /
+      page_load_metrics::PeakCpuAggregator::kWindowSize.InMilliseconds();
   auto samples = histogram_tester.GetAllSamples(kPeakWindowdPercentHistogramId);
   EXPECT_EQ(1u, samples.size());
   EXPECT_EQ(1, samples.front().count);
@@ -2187,8 +2245,7 @@ class AdsMemoryMeasurementBrowserTest
     performance_manager::v8_memory::internal::
         SetEagerMemoryMeasurementEnabledForTesting(true);
     std::vector<base::Feature> enabled = {
-        subresource_filter::kAdTagging, features::kSitePerProcess,
-        features::kV8PerFrameMemoryMonitoring};
+        subresource_filter::kAdTagging, features::kV8PerFrameMemoryMonitoring};
     std::vector<base::Feature> disabled = {};
     scoped_feature_list_.InitWithFeatures(enabled, disabled);
 
@@ -2222,6 +2279,7 @@ class AdsMemoryMeasurementBrowserTest
   }
 
  private:
+  std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter> waiter_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AdsMemoryMeasurementBrowserTest);

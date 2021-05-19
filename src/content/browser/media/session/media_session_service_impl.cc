@@ -4,6 +4,8 @@
 
 #include "content/browser/media/session/media_session_service_impl.h"
 
+#include <memory>
+
 #include "content/browser/media/session/media_metadata_sanitizer.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -15,8 +17,7 @@ namespace content {
 
 MediaSessionServiceImpl::MediaSessionServiceImpl(
     RenderFrameHost* render_frame_host)
-    : render_frame_process_id_(render_frame_host->GetProcess()->GetID()),
-      render_frame_routing_id_(render_frame_host->GetRoutingID()),
+    : render_frame_host_id_(render_frame_host->GetGlobalFrameRoutingId()),
       playback_state_(blink::mojom::MediaSessionPlaybackState::NONE) {
   MediaSessionImpl* session = GetMediaSession();
   if (session)
@@ -38,9 +39,12 @@ void MediaSessionServiceImpl::Create(
   impl->Bind(std::move(receiver));
 }
 
-RenderFrameHost* MediaSessionServiceImpl::GetRenderFrameHost() {
-  return RenderFrameHost::FromID(render_frame_process_id_,
-                                 render_frame_routing_id_);
+GlobalFrameRoutingId MediaSessionServiceImpl::GetRenderFrameHostId() const {
+  return render_frame_host_id_;
+}
+
+RenderFrameHost* MediaSessionServiceImpl::GetRenderFrameHost() const {
+  return RenderFrameHost::FromID(GetRenderFrameHostId());
 }
 
 void MediaSessionServiceImpl::DidFinishNavigation() {
@@ -100,6 +104,22 @@ void MediaSessionServiceImpl::SetMetadata(
     session->OnMediaSessionMetadataChanged(this);
 }
 
+void MediaSessionServiceImpl::SetMicrophoneState(
+    media_session::mojom::MicrophoneState microphone_state) {
+  microphone_state_ = microphone_state;
+  MediaSessionImpl* session = GetMediaSession();
+  if (session)
+    session->OnMediaSessionInfoChanged(this);
+}
+
+void MediaSessionServiceImpl::SetCameraState(
+    media_session::mojom::CameraState camera_state) {
+  camera_state_ = camera_state;
+  MediaSessionImpl* session = GetMediaSession();
+  if (session)
+    session->OnMediaSessionInfoChanged(this);
+}
+
 void MediaSessionServiceImpl::EnableAction(
     media_session::mojom::MediaSessionAction action) {
   actions_.insert(action);
@@ -138,8 +158,9 @@ MediaSessionImpl* MediaSessionServiceImpl::GetMediaSession() {
 
 void MediaSessionServiceImpl::Bind(
     mojo::PendingReceiver<blink::mojom::MediaSessionService> receiver) {
-  receiver_.reset(new mojo::Receiver<blink::mojom::MediaSessionService>(
-      this, std::move(receiver)));
+  receiver_ =
+      std::make_unique<mojo::Receiver<blink::mojom::MediaSessionService>>(
+          this, std::move(receiver));
 }
 
 }  // namespace content

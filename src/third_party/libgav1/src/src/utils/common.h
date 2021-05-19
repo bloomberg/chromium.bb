@@ -375,7 +375,7 @@ constexpr bool IsDirectionalMode(PredictionMode mode) {
 // behavior and result apply to other CPUs' SIMD instructions.
 inline int GetRelativeDistance(const unsigned int a, const unsigned int b,
                                const unsigned int order_hint_shift_bits) {
-  const int diff = a - b;
+  const int diff = static_cast<int>(a) - static_cast<int>(b);
   assert(order_hint_shift_bits <= 31);
   if (order_hint_shift_bits == 0) {
     assert(a == 0);

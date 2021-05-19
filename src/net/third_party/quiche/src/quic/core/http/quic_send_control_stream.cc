@@ -27,7 +27,8 @@ QuicSendControlStream::QuicSendControlStream(QuicStreamId id,
       spdy_session_(spdy_session) {}
 
 void QuicSendControlStream::OnStreamReset(const QuicRstStreamFrame& /*frame*/) {
-  QUIC_BUG << "OnStreamReset() called for write unidirectional stream.";
+  QUIC_BUG(quic_bug_10382_1)
+      << "OnStreamReset() called for write unidirectional stream.";
 }
 
 bool QuicSendControlStream::OnStopSending(QuicRstStreamErrorCode /* code */) {
@@ -101,24 +102,6 @@ void QuicSendControlStream::WritePriorityUpdate(
                 << priority_update;
   WriteOrBufferData(absl::string_view(buffer.get(), frame_length), false,
                     nullptr);
-}
-
-void QuicSendControlStream::SendMaxPushIdFrame(PushId max_push_id) {
-  QUICHE_DCHECK_EQ(Perspective::IS_CLIENT, session()->perspective());
-  QuicConnection::ScopedPacketFlusher flusher(session()->connection());
-  MaybeSendSettingsFrame();
-
-  MaxPushIdFrame frame;
-  frame.push_id = max_push_id;
-  if (spdy_session_->debug_visitor()) {
-    spdy_session_->debug_visitor()->OnMaxPushIdFrameSent(frame);
-  }
-
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount frame_length =
-      HttpEncoder::SerializeMaxPushIdFrame(frame, &buffer);
-  WriteOrBufferData(absl::string_view(buffer.get(), frame_length),
-                    /*fin = */ false, nullptr);
 }
 
 void QuicSendControlStream::SendGoAway(QuicStreamId id) {

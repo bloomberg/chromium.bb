@@ -7683,7 +7683,7 @@ TEST_F(VkLayerTest, InvalidMixingProtectedResources) {
     ASSERT_VK_SUCCESS(err);
 
     // Use protected resources in unprotected command buffer
-    g_pipe.descriptor_set_->WriteDescriptorBufferInfo(0, buffer_protected, 1024);
+    g_pipe.descriptor_set_->WriteDescriptorBufferInfo(0, buffer_protected, 0, 1024);
     g_pipe.descriptor_set_->WriteDescriptorImageInfo(1, image_views_descriptor[0], sampler, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
                                                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     g_pipe.descriptor_set_->UpdateDescriptorSets();
@@ -7777,7 +7777,7 @@ TEST_F(VkLayerTest, InvalidMixingProtectedResources) {
     m_commandBuffer->end();
 
     // Use unprotected resources in protected command buffer
-    g_pipe.descriptor_set_->WriteDescriptorBufferInfo(0, buffer_unprotected, 1024);
+    g_pipe.descriptor_set_->WriteDescriptorBufferInfo(0, buffer_unprotected, 0, 1024);
     g_pipe.descriptor_set_->WriteDescriptorImageInfo(1, image_views_descriptor[1], sampler, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
                                                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     g_pipe.descriptor_set_->UpdateDescriptorSets();
@@ -7955,9 +7955,9 @@ TEST_F(VkLayerTest, InvailStorageAtomicOperation) {
     g_pipe.descriptor_set_->WriteDescriptorImageInfo(3, image_view, sampler, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
                                                      VK_IMAGE_LAYOUT_GENERAL);
     g_pipe.descriptor_set_->WriteDescriptorImageInfo(2, image_view, sampler, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-                                                     VK_IMAGE_LAYOUT_GENERAL, 2);
+                                                     VK_IMAGE_LAYOUT_GENERAL, 0, 2);
     g_pipe.descriptor_set_->WriteDescriptorBufferView(1, buffer_view);
-    g_pipe.descriptor_set_->WriteDescriptorBufferView(0, buffer_view, VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 2);
+    g_pipe.descriptor_set_->WriteDescriptorBufferView(0, buffer_view, VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 0, 2);
     g_pipe.descriptor_set_->UpdateDescriptorSets();
 
     m_commandBuffer->begin();

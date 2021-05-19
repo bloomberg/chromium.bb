@@ -15,12 +15,8 @@
 #ifndef SRC_AST_IDENTIFIER_EXPRESSION_H_
 #define SRC_AST_IDENTIFIER_EXPRESSION_H_
 
-#include <memory>
-#include <utility>
-
 #include "src/ast/expression.h"
 #include "src/semantic/intrinsic.h"
-#include "src/symbol.h"
 
 namespace tint {
 namespace ast {
@@ -44,9 +40,6 @@ class IdentifierExpression : public Castable<IdentifierExpression, Expression> {
   /// @param ctx the clone context
   /// @return the newly cloned node
   IdentifierExpression* Clone(CloneContext* ctx) const override;
-
-  /// @returns true if the node is valid
-  bool IsValid() const override;
 
   /// Writes a representation of the node to the output stream
   /// @param sem the semantic info for the program

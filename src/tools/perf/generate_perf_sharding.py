@@ -131,21 +131,25 @@ def _source_filepath(posix_path):
   return os.path.join(path_util.GetChromiumSrcDir(), *posix_path.split('/'))
 
 
-def _GenerateShardMap(
-    builder, num_of_shards, output_path, debug):
+def GenerateShardMap(builder, num_of_shards, debug=False):
   timing_data = []
   if builder:
     with open(builder.timing_file_path) as f:
       timing_data = json.load(f)
   benchmarks_to_shard = (
       list(builder.benchmark_configs) + list(builder.executables))
-  target_devices = cross_device_test_config.TARGET_DEVICES.get(builder.name, {})
+  repeat_config = cross_device_test_config.TARGET_DEVICES.get(builder.name, {})
   sharding_map = sharding_map_generator.generate_sharding_map(
       benchmarks_to_shard,
       timing_data,
       num_shards=num_of_shards,
       debug=debug,
-      target_devices=target_devices)
+      repeat_config=repeat_config)
+  return sharding_map
+
+
+def _GenerateShardMapJson(builder, num_of_shards, output_path, debug):
+  sharding_map = GenerateShardMap(builder, num_of_shards, debug)
   _DumpJson(sharding_map, output_path)
 
 
@@ -227,8 +231,7 @@ def _UpdateShardsForBuilders(args):
   if not args.use_existing_timing_data:
     _UpdateTimingData(builders)
   for b in builders:
-    _GenerateShardMap(
-        b, b.num_shards, b.shards_map_file_path, args.debug)
+    _GenerateShardMapJson(b, b.num_shards, b.shards_map_file_path, args.debug)
     print('Updated sharding map for %s' % repr(b.name))
 
 

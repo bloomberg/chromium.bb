@@ -14,10 +14,9 @@
 
 #include "src/ast/location_decoration.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::ast::LocationDecoration);
+TINT_INSTANTIATE_TYPEINFO(tint::ast::LocationDecoration);
 
 namespace tint {
 namespace ast {

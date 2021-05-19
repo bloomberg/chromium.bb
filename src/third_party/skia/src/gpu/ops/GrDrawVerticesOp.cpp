@@ -141,7 +141,7 @@ public:
             , fColor(SK_PMColor4fILLEGAL) {}
 
         void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-            const VerticesGP& gp = args.fGP.cast<VerticesGP>();
+            const VerticesGP& gp = args.fGeomProc.cast<VerticesGP>();
             GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
             GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
             GrGLSLVaryingHandler* varyingHandler = args.fVaryingHandler;
@@ -154,6 +154,7 @@ public:
                                        kVertex_GrShaderFlag);
 
             // Setup pass through color
+            fragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
             if (gp.colorAttr().isInitialized()) {
                 GrGLSLVarying varying(kHalf4_GrSLType);
                 varyingHandler->addVarying("color", &varying);
@@ -295,7 +296,7 @@ public:
                 fragBuilder->codeAppendf("%s = %s;", var.c_str(), varying.fsIn());
             }
 
-            fragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+            fragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
         }
 
         static inline void GenKey(const GrGeometryProcessor& gp,
@@ -317,8 +318,8 @@ public:
         }
 
         void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrPrimitiveProcessor& gp) override {
-            const VerticesGP& vgp = gp.cast<VerticesGP>();
+                     const GrGeometryProcessor& geomProc) override {
+            const VerticesGP& vgp = geomProc.cast<VerticesGP>();
 
             this->setTransform(pdman, fViewMatrixUniform, vgp.viewMatrix(), &fViewMatrix);
 
@@ -372,7 +373,7 @@ public:
         GLSLProcessor::GenKey(*this, caps, b);
     }
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override {
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
         return new GLSLProcessor();
     }
 
@@ -740,7 +741,7 @@ void DrawVerticesOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBo
     }
 
     flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-    flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+    flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
     flushState->drawMesh(*fMesh);
 }
 

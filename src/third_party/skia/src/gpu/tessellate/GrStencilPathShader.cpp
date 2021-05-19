@@ -39,8 +39,8 @@ float4x3 unpack_rational_cubic(float2 p0, float2 p1, float2 p2, float2 p3) {
     if (isinf(P[3].y)) {
         // This patch is actually a conic. Convert to a rational cubic.
         float w = P[3].x;
-        float3 c = P[1] * (2/3.0 * w);
-        P = float4x3(P[0], fma(P[0], float3(1/3.0), c), fma(P[2], float3(1/3.0), c), P[2]);
+        float3 c = P[1] * ((2.0/3.0) * w);
+        P = float4x3(P[0], fma(P[0], float3(1.0/3.0), c), fma(P[2], float3(1.0/3.0), c), P[2]);
     }
     return P;
 })";
@@ -53,7 +53,7 @@ float3 safe_mix(float3 a, float3 b, float T, float one_minus_T) {
     return a*one_minus_T + b*T;
 }
 float2 eval_rational_cubic(float4x3 P, float T) {
-    float one_minus_T = 1 - T;
+    float one_minus_T = 1.0 - T;
     float3 ab = safe_mix(P[0], P[1], T, one_minus_T);
     float3 bc = safe_mix(P[1], P[2], T, one_minus_T);
     float3 cd = safe_mix(P[2], P[3], T, one_minus_T);
@@ -66,7 +66,7 @@ float2 eval_rational_cubic(float4x3 P, float T) {
 class GrStencilPathShader::Impl : public GrGLSLGeometryProcessor {
 protected:
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-        const auto& shader = args.fGP.cast<GrStencilPathShader>();
+        const auto& shader = args.fGeomProc.cast<GrStencilPathShader>();
         args.fVaryingHandler->emitAttributes(shader);
         auto v = args.fVertBuilder;
 
@@ -94,8 +94,8 @@ protected:
     }
 
     void setData(const GrGLSLProgramDataManager& pdman,
-                 const GrPrimitiveProcessor& primProc) override {
-        const auto& shader = primProc.cast<GrStencilPathShader>();
+                 const GrGeometryProcessor& geomProc) override {
+        const auto& shader = geomProc.cast<GrStencilPathShader>();
         if (!shader.viewMatrix().isIdentity()) {
             pdman.setSkMatrix(fViewMatrixUniform, shader.viewMatrix());
         }
@@ -104,11 +104,11 @@ protected:
     GrGLSLUniformHandler::UniformHandle fViewMatrixUniform;
 };
 
-GrGLSLPrimitiveProcessor* GrStencilPathShader::createGLSLInstance(const GrShaderCaps&) const {
+GrGLSLGeometryProcessor* GrStencilPathShader::createGLSLInstance(const GrShaderCaps&) const {
     return new Impl;
 }
 
-SkString GrCubicTessellateShader::getTessControlShaderGLSL(const GrGLSLPrimitiveProcessor*,
+SkString GrCubicTessellateShader::getTessControlShaderGLSL(const GrGLSLGeometryProcessor*,
                                                            const char* versionAndExtensionDecls,
                                                            const GrGLSLUniformHandler&,
                                                            const GrShaderCaps&) const {
@@ -165,8 +165,10 @@ SkString GrCubicTessellateShader::getTessControlShaderGLSL(const GrGLSLPrimitive
 }
 
 SkString GrCubicTessellateShader::getTessEvaluationShaderGLSL(
-        const GrGLSLPrimitiveProcessor*, const char* versionAndExtensionDecls,
-        const GrGLSLUniformHandler&, const GrShaderCaps&) const {
+        const GrGLSLGeometryProcessor*,
+        const char* versionAndExtensionDecls,
+        const GrGLSLUniformHandler&,
+        const GrShaderCaps&) const {
     SkString code(versionAndExtensionDecls);
     code.append(kSkSLTypeDefs);
     code.append(kEvalRationalCubicFn);
@@ -199,7 +201,7 @@ SkString GrCubicTessellateShader::getTessEvaluationShaderGLSL(
     return code;
 }
 
-SkString GrWedgeTessellateShader::getTessControlShaderGLSL(const GrGLSLPrimitiveProcessor*,
+SkString GrWedgeTessellateShader::getTessControlShaderGLSL(const GrGLSLGeometryProcessor*,
                                                            const char* versionAndExtensionDecls,
                                                            const GrGLSLUniformHandler&,
                                                            const GrShaderCaps&) const {
@@ -246,8 +248,10 @@ SkString GrWedgeTessellateShader::getTessControlShaderGLSL(const GrGLSLPrimitive
 }
 
 SkString GrWedgeTessellateShader::getTessEvaluationShaderGLSL(
-        const GrGLSLPrimitiveProcessor*, const char* versionAndExtensionDecls,
-        const GrGLSLUniformHandler&, const GrShaderCaps&) const {
+        const GrGLSLGeometryProcessor*,
+        const char* versionAndExtensionDecls,
+        const GrGLSLUniformHandler&,
+        const GrShaderCaps&) const {
     SkString code(versionAndExtensionDecls);
     code.append(kSkSLTypeDefs);
     code.append(kEvalRationalCubicFn);
@@ -348,11 +352,11 @@ sk_sp<const GrGpuBuffer> GrMiddleOutCubicShader::FindOrMakeMiddleOutIndexBuffer(
 
 class GrMiddleOutCubicShader::Impl : public GrStencilPathShader::Impl {
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-        const auto& shader = args.fGP.cast<GrMiddleOutCubicShader>();
+        const auto& shader = args.fGeomProc.cast<GrMiddleOutCubicShader>();
         args.fVaryingHandler->emitAttributes(shader);
         args.fVertBuilder->defineConstantf("int", "kMaxVertexID", "%i", 1 << kMaxResolveLevel);
-        args.fVertBuilder->defineConstantf("float", "kInverseMaxVertexID", "exp2(-%i.0)",
-                                           kMaxResolveLevel);
+        args.fVertBuilder->defineConstantf("float", "kInverseMaxVertexID",
+                                           "(1.0 / float(kMaxVertexID))");
         args.fVertBuilder->insertFunction(kUnpackRationalCubicFn);
         args.fVertBuilder->insertFunction(kEvalRationalCubicFn);
         args.fVertBuilder->codeAppend(R"(
@@ -383,6 +387,6 @@ class GrMiddleOutCubicShader::Impl : public GrStencilPathShader::Impl {
     }
 };
 
-GrGLSLPrimitiveProcessor* GrMiddleOutCubicShader::createGLSLInstance(const GrShaderCaps&) const {
+GrGLSLGeometryProcessor* GrMiddleOutCubicShader::createGLSLInstance(const GrShaderCaps&) const {
     return new Impl;
 }

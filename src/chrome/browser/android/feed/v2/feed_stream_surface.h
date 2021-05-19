@@ -8,17 +8,18 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "components/feed/core/v2/public/feed_stream_api.h"
+#include "components/feed/core/v2/public/feed_api.h"
 
 namespace feedui {
 class StreamUpdate;
 }
 
 namespace feed {
+namespace android {
 
 // Native access to |FeedStreamSurface| in Java.
 // Created once for each NTP/start surface.
-class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
+class FeedStreamSurface : public ::feed::FeedStreamSurface {
  public:
   explicit FeedStreamSurface(const base::android::JavaRef<jobject>& j_this);
   FeedStreamSurface(const FeedStreamSurface&) = delete;
@@ -26,7 +27,7 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
 
   ~FeedStreamSurface() override;
 
-  // SurfaceInterface implementation.
+  // FeedStreamSurface implementation.
   void StreamUpdate(const feedui::StreamUpdate& update) override;
   void ReplaceDataStoreEntry(base::StringPiece key,
                              base::StringPiece data) override;
@@ -77,7 +78,7 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
       const base::android::JavaParamRef<jobject>& obj);
 
   // Event reporting functions. These have no side-effect beyond recording
-  // metrics. See |FeedStreamApi| for definitions.
+  // metrics. See |FeedApi| for definitions.
   void ReportSliceViewed(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          const base::android::JavaParamRef<jstring>& slice_id);
@@ -110,10 +111,11 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
-  FeedStreamApi* feed_stream_api_;
+  FeedApi* feed_stream_api_;
   bool attached_ = false;
 };
 
+}  // namespace android
 }  // namespace feed
 
 #endif  // CHROME_BROWSER_ANDROID_FEED_V2_FEED_STREAM_SURFACE_H_

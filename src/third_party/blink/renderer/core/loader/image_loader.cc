@@ -78,7 +78,7 @@ bool CheckForUnoptimizedImagePolicy(ExecutionContext* context,
     return false;
 
   // Render the image as a placeholder image if the image is not sufficiently
-  // well-compressed, according to the unoptimized image feature policies on
+  // well-compressed, according to the unoptimized image policies on
   // |document|.
   if (RuntimeEnabledFeatures::ExperimentalPoliciesEnabled() &&
       !new_image->IsAcceptableCompressionRatio(*context)) {
@@ -666,9 +666,6 @@ void ImageLoader::UpdateFromElement(
     // a memory leak in case it's already created.
     delay_until_do_update_from_element_ = nullptr;
   }
-
-  // TODO(crbug.com/1175295): Remove this CHECK once the investigation is done.
-  CHECK(element_->GetDocument().GetExecutionContext());
 
   if (ShouldLoadImmediately(ImageSourceToKURL(image_source_url))) {
     DoUpdateFromElement(element_->GetExecutionContext()->GetCurrentWorld(),

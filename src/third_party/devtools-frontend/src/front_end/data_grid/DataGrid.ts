@@ -27,12 +27,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable rulesdir/check_license_header */
 
-import * as Common from '../common/common.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Platform from '../platform/platform.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Platform from '../core/platform/platform.js';
+import * as UI from '../ui/legacy/legacy.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Accessible text label for expandible nodes in datagrids
   */
@@ -315,7 +315,7 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper {
         (this.selectedNode && this.selectedNode.existingElement()) ? this.selectedNode.nodeAccessibleText : '';
     if (this.element === this.element.ownerDocument.deepActiveElement()) {
       // Only alert if the datagrid has focus
-      UI.ARIAUtils.alert(text ? text : accessibleText, this.element);
+      UI.ARIAUtils.alert(text ? text : accessibleText);
     }
   }
 
@@ -324,6 +324,7 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper {
     // 1) If an item is selected - Read the content of the row
     let accessibleText;
     if (this.selectedNode && this.selectedNode.existingElement()) {
+      // TODO(l10n): Don't concatenate strings.
       let expandText = '';
       if (this.selectedNode.hasChildren()) {
         expandText = this.selectedNode.expanded ? i18nString(UIStrings.expanded) : i18nString(UIStrings.collapsed);
@@ -339,7 +340,7 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper {
       const items = i18nString(UIStrings.rowsS, {PH1: children.length});
       accessibleText = i18nString(UIStrings.sSUseTheUpAndDownArrowKeysTo, {PH1: this._displayName, PH2: items});
     }
-    UI.ARIAUtils.alert(accessibleText, this.element);
+    UI.ARIAUtils.alert(accessibleText);
   }
 
   headerTableBody(): Element {

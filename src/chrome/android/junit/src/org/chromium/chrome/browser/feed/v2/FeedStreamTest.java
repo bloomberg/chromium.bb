@@ -36,6 +36,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.feed.FeedServiceBridge;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -47,6 +48,7 @@ import org.chromium.ui.base.WindowAndroid;
 @Config(manifest = Config.NONE)
 public class FeedStreamTest {
     private static final int LOAD_MORE_TRIGGER_LOOKAHEAD = 5;
+    private static final int LOAD_MORE_TRIGGER_SCROLL_DISTANCE_DP = 100;
     private Activity mActivity;
     private RecyclerView mRecyclerView;
     private FakeLinearLayoutManager mLayoutManager;
@@ -75,10 +77,12 @@ public class FeedStreamTest {
         MockitoAnnotations.initMocks(this);
         mActivity = Robolectric.buildActivity(Activity.class).get();
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
-        mocker.mock(FeedServiceBridgeJni.TEST_HOOKS, mFeedServiceBridgeJniMock);
+        mocker.mock(FeedServiceBridge.getTestHooksForTesting(), mFeedServiceBridgeJniMock);
 
         when(mFeedServiceBridgeJniMock.getLoadMoreTriggerLookahead())
                 .thenReturn(LOAD_MORE_TRIGGER_LOOKAHEAD);
+        when(mFeedServiceBridgeJniMock.getLoadMoreTriggerScrollDistanceDp())
+                .thenReturn(LOAD_MORE_TRIGGER_SCROLL_DISTANCE_DP);
         // Surfaces won't open until after startup.
         FeedStreamSurface.startup();
         mFeedStream = new FeedStream(mActivity, false, mSnackbarManager, mPageNavigationDelegate,
@@ -304,7 +308,7 @@ public class FeedStreamTest {
 
     private int getLoadMoreTriggerScrollDistance() {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                FeedStream.LOAD_MORE_TRIGGER_SCROLL_DISTANCE_DP,
+                LOAD_MORE_TRIGGER_SCROLL_DISTANCE_DP,
                 mRecyclerView.getResources().getDisplayMetrics());
     }
 }

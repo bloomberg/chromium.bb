@@ -100,6 +100,9 @@ const size_t kPublicFlagsSize = 1;
 // Number of bytes reserved for version number in the packet header.
 const size_t kQuicVersionSize = 4;
 
+// Minimum number of active connection IDs that an end point can maintain.
+const uint32_t kMinNumOfActiveConnectionIds = 2;
+
 // Length of the retry integrity tag in bytes.
 // https://tools.ietf.org/html/draft-ietf-quic-transport-25#section-17.2.5
 const size_t kRetryIntegrityTagLength = 16;
@@ -290,6 +293,13 @@ QUIC_EXPORT_PRIVATE QuicPacketNumber FirstSendingPacketNumber();
 // Used by clients to tell if a public reset is sent from a Google frontend.
 QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd;
 QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd0;
+
+// HTTP/3 Datagrams.
+enum : QuicDatagramFlowId {
+  kFirstDatagramFlowIdClient = 0,
+  kFirstDatagramFlowIdServer = 1,
+  kDatagramFlowIdIncrement = 2,
+};
 
 }  // namespace quic
 

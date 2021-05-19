@@ -4,11 +4,12 @@
 
 #include "chrome/browser/banners/android/chrome_app_banner_manager_android.h"
 
+#include <string>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/android/webapk/webapk_ukm_recorder.h"
@@ -70,13 +71,20 @@ void ChromeAppBannerManagerAndroid::OnDidPerformInstallableWebAppCheck(
   AppBannerManagerAndroid::OnDidPerformInstallableWebAppCheck(data);
 }
 
+void ChromeAppBannerManagerAndroid::ResetCurrentPageData() {
+  AppBannerManagerAndroid::ResetCurrentPageData();
+  screenshots_.clear();
+}
+
 void ChromeAppBannerManagerAndroid::MaybeShowAmbientBadge() {
-  if (MaybeShowInProductHelp() &&
-      base::GetFieldTrialParamByFeatureAsBool(
-          feature_engagement::kIPHPwaInstallAvailableFeature,
-          kIphReplacesToolbar, false)) {
-    DVLOG(2) << "Install infobar overridden by IPH, as per experiment.";
-    return;
+  if (MaybeShowInProductHelp()) {
+    TrackIphWasShown();
+    if (base::GetFieldTrialParamByFeatureAsBool(
+            feature_engagement::kIPHPwaInstallAvailableFeature,
+            kIphReplacesToolbar, false)) {
+      DVLOG(2) << "Install infobar overridden by IPH, as per experiment.";
+      return;
+    }
   }
 
   AppBannerManagerAndroid::MaybeShowAmbientBadge();
@@ -114,7 +122,7 @@ bool ChromeAppBannerManagerAndroid::MaybeShowPwaBottomSheetController(
   return PwaBottomSheetController::MaybeShow(
       web_contents(), GetAppName(), primary_icon_, has_maskable_primary_icon_,
       manifest_.start_url, screenshots_,
-      manifest_.description.value_or(base::string16()), expand_sheet,
+      manifest_.description.value_or(std::u16string()), expand_sheet,
       std::move(a2hs_params),
       base::BindRepeating(&ChromeAppBannerManagerAndroid::OnInstallEvent,
                           ChromeAppBannerManagerAndroid::GetAndroidWeakPtr()));

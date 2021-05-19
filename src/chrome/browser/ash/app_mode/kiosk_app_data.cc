@@ -141,8 +141,9 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
     }
 
     auto unpacker = base::MakeRefCounted<extensions::SandboxedUnpacker>(
-        extensions::Manifest::INTERNAL, extensions::Extension::NO_FLAGS,
-        temp_dir_.GetPath(), task_runner_.get(), this);
+        extensions::mojom::ManifestLocation::kInternal,
+        extensions::Extension::NO_FLAGS, temp_dir_.GetPath(),
+        task_runner_.get(), this);
     unpacker->StartWithCrx(extensions::CRXFileInfo(
         crx_file_, extensions::GetPolicyVerifierFormat()));
   }
@@ -217,8 +218,9 @@ class KioskAppData::WebstoreDataParser
       const std::string& id,
       const SkBitmap& icon,
       std::unique_ptr<base::DictionaryValue> parsed_manifest) override {
-    extensions::Manifest manifest(extensions::Manifest::INVALID_LOCATION,
-                                  std::move(parsed_manifest), id);
+    extensions::Manifest manifest(
+        extensions::mojom::ManifestLocation::kInvalidLocation,
+        std::move(parsed_manifest), id);
 
     if (!IsValidKioskAppManifest(manifest)) {
       ReportFailure();

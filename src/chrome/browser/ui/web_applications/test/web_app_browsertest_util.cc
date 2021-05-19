@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 
+#include "base/callback_helpers.h"
 #include "base/one_shot_event.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -46,6 +47,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/page_transition_types.h"
+
+using ui_test_utils::BrowserChangeObserver;
 
 namespace web_app {
 
@@ -104,7 +107,7 @@ void AutoAcceptDialogCallback(
 AppId InstallWebApp(Profile* profile,
                     std::unique_ptr<WebApplicationInfo> web_app_info) {
   if (web_app_info->title.empty())
-    web_app_info->title = base::ASCIIToUTF16("WebApplicationInfo App Name");
+    web_app_info->title = u"WebApplicationInfo App Name";
 
   AppId app_id;
   base::RunLoop run_loop;
@@ -136,7 +139,7 @@ AppId InstallWebAppFromPage(Browser* browser, const GURL& app_url) {
   WaitUntilReady(provider);
   provider->install_manager().InstallWebAppFromManifestWithFallback(
       browser->tab_strip_model()->GetActiveWebContents(),
-      /*force_shortcut_app=*/true,
+      /*force_shortcut_app=*/false,
       webapps::WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(&AutoAcceptDialogCallback),
       base::BindLambdaForTesting(
@@ -181,6 +184,8 @@ AppId InstallWebAppFromManifest(Browser* browser, const GURL& app_url) {
 }
 
 Browser* LaunchWebAppBrowser(Profile* profile, const AppId& app_id) {
+  BrowserChangeObserver observer(nullptr,
+                                 BrowserChangeObserver::ChangeType::kAdded);
   EXPECT_TRUE(
       apps::AppServiceProxyFactory::GetForProfile(profile)
           ->BrowserAppLauncher()
@@ -189,7 +194,8 @@ Browser* LaunchWebAppBrowser(Profile* profile, const AppId& app_id) {
               WindowOpenDisposition::CURRENT_TAB,
               apps::mojom::AppLaunchSource::kSourceTest)));
 
-  Browser* browser = chrome::FindLastActive();
+  Browser* browser = observer.Wait();
+  EXPECT_EQ(browser, chrome::FindLastActive());
   bool is_correct_app_browser =
       browser && GetAppIdFromApplicationName(browser->app_name()) == app_id;
   EXPECT_TRUE(is_correct_app_browser);

@@ -1,8 +1,12 @@
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// **** DO NOT EDIT - this .proto was automatically generated. ****
 syntax = "proto3";
 
 package cast.v2;
 
-import "google/protobuf/empty.proto";
 import "cast/cast_core/api/v2/cast_message.proto";
 import "cast/cast_core/api/v2/url_rewrite.proto";
 import "cast/cast_core/api/web/message_channel.proto";
@@ -14,16 +18,8 @@ option optimize_for = LITE_RUNTIME;
 // This service is implemented by the Runtime and represents services
 // specific to a Cast application.
 service RuntimeApplicationService {
-  // Notifies the runtime that a new Cast V2 virtual connection has been opened.
-  rpc OnVirtualConnectionOpen(VirtualConnectionInfo)
-      returns (google.protobuf.Empty);
-
-  // Notifies the runtime that a Cast V2 virtual connection has been closed.
-  rpc OnVirtualConnectionClosed(VirtualConnectionInfo)
-      returns (google.protobuf.Empty);
-
   // Sends a Cast message to the runtime.
-  rpc SendCastMessage(CastMessage) returns (CastMessageResponse);
+  rpc SendCastMessage(CastMessageRequest) returns (CastMessageResponse);
 
   // Set the URL rewrite rules that the Runtime will use to contact the MSP
   // This is called when the rewrite rules are changed
@@ -44,16 +40,3 @@ message SetUrlRewriteRulesRequest {
 }
 
 message SetUrlRewriteRulesResponse {}
-
-// Request by the sender to open or close a virtual connection to the Cast
-// runtime.
-message VirtualConnectionInfo {
-  // The source of the virtual connection request.  Connections from the
-  // sender platform use an id of 'sender-0' and connections from applications
-  // use a unique ID.
-  string source_id = 1;
-  // The destination of the connection request.  Connections to the Cast
-  // receiver platform use an id of 'receiver-0' and connections to applications
-  // use the Cast session id.
-  string destination_id = 2;
-}

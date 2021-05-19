@@ -210,7 +210,7 @@ TEST_F(DiceWebSigninInterceptorTest, ShouldShowProfileSwitchBubble) {
   ASSERT_NE(entry, nullptr);
   std::string kOtherGaiaID = "SomeOtherGaiaID";
   ASSERT_NE(kOtherGaiaID, account_info.gaia);
-  entry->SetAuthInfo(kOtherGaiaID, base::UTF8ToUTF16("alice@gmail.com"),
+  entry->SetAuthInfo(kOtherGaiaID, u"alice@gmail.com",
                      /*is_consented_primary_account=*/true);
   EXPECT_FALSE(interceptor()->ShouldShowProfileSwitchBubble(
       email, profile_attributes_storage()));
@@ -258,7 +258,7 @@ TEST_F(DiceWebSigninInterceptorTest, ShouldShowEnterpriseBubble) {
   MakeValidAccountInfo(&account_info);
   identity_test_env()->UpdateAccountInfoForAccount(account_info);
   ASSERT_EQ(identity_test_env()->identity_manager()->GetPrimaryAccountId(
-                signin::ConsentLevel::kNotRequired),
+                signin::ConsentLevel::kSignin),
             primary_account_info.account_id);
 
   // The primary account does not have full account info (empty domain).
@@ -301,7 +301,7 @@ TEST_F(DiceWebSigninInterceptorTest, ShouldShowEnterpriseBubbleWithoutUPA) {
 
   // Primary account is not set.
   ASSERT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount(
-      signin::ConsentLevel::kNotRequired));
+      signin::ConsentLevel::kSignin));
   EXPECT_FALSE(interceptor()->ShouldShowEnterpriseBubble(account_info_1));
 }
 

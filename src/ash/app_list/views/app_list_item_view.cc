@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
@@ -138,7 +139,8 @@ class AppListItemView::AppNotificationIndicatorView : public views::View {
     float radius = width() * kNotificationIndicatorWidthRatio / 2.0f;
     float padding = width() * kNotificationIndicatorPaddingRatio;
 
-    float center_x = width() - radius - padding;
+    float center_x =
+        base::i18n::IsRTL() ? padding + radius : width() - radius - padding;
     float center_y = padding + radius;
     gfx::PointF center = gfx::PointF(center_x, center_y);
     center.Scale(dsf);
@@ -352,6 +354,8 @@ void AppListItemView::RefreshIcon() {
 }
 
 void AppListItemView::ScaleIconImmediatly(float scale_factor) {
+  if (icon_scale_ == scale_factor)
+    return;
   icon_scale_ = scale_factor;
   SetIcon(icon_image_);
   layer()->SetTransform(gfx::Transform());
@@ -364,25 +368,15 @@ void AppListItemView::SetUIState(UIState ui_state) {
   switch (ui_state) {
     case UI_STATE_NORMAL:
       title_->SetVisible(true);
-      if (ui_state_ == UI_STATE_DRAGGING) {
+      if (ui_state_ == UI_STATE_DRAGGING)
         ScaleAppIcon(false);
-      } else if (ui_state_ == UI_STATE_CARDIFY) {
-        title_->SetFontList(GetAppListConfig().app_title_font());
-        ScaleIconImmediatly(1.0f);
-      }
       break;
     case UI_STATE_DRAGGING:
       title_->SetVisible(false);
-      if (ui_state_ == UI_STATE_NORMAL)
+      if (ui_state_ == UI_STATE_NORMAL && !in_cardified_grid_)
         ScaleAppIcon(true);
       break;
     case UI_STATE_DROPPING_IN_FOLDER:
-      break;
-    case UI_STATE_CARDIFY:
-      gfx::FontList font_size = GetAppListConfig().app_title_font();
-      const int size_delta = font_size.GetFontSize() * (1 - kCardifyIconScale);
-      title_->SetFontList(font_size.DeriveWithSizeDelta(-size_delta));
-      ScaleIconImmediatly(kCardifyIconScale);
       break;
   }
   ui_state_ = ui_state;
@@ -510,9 +504,9 @@ const AppListConfig& AppListItemView::GetAppListConfig() const {
   return apps_grid_view_->GetAppListConfig();
 }
 
-void AppListItemView::SetItemName(const base::string16& display_name,
-                                  const base::string16& full_name) {
-  const base::string16 folder_name_placeholder =
+void AppListItemView::SetItemName(const std::u16string& display_name,
+                                  const std::u16string& full_name) {
+  const std::u16string folder_name_placeholder =
       ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
           IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER);
   if (is_folder_ && display_name.empty())
@@ -520,7 +514,7 @@ void AppListItemView::SetItemName(const base::string16& display_name,
   else
     title_->SetText(display_name);
 
-  tooltip_text_ = display_name == full_name ? base::string16() : full_name;
+  tooltip_text_ = display_name == full_name ? std::u16string() : full_name;
 
   // Use full name for accessibility.
   SetAccessibleName(
@@ -860,14 +854,14 @@ void AppListItemView::OnThemeChanged() {
   SchedulePaint();
 }
 
-base::string16 AppListItemView::GetTooltipText(const gfx::Point& p) const {
+std::u16string AppListItemView::GetTooltipText(const gfx::Point& p) const {
   // Use the label to generate a tooltip, so that it will consider its text
   // truncation in making the tooltip. We do not want the label itself to have a
   // tooltip, so we only temporarily enable it to get the tooltip text from the
   // label, then disable it again.
   title_->SetHandlesTooltips(true);
   title_->SetTooltipText(tooltip_text_);
-  base::string16 tooltip = title_->GetTooltipText(p);
+  std::u16string tooltip = title_->GetTooltipText(p);
   title_->SetHandlesTooltips(false);
   return tooltip;
 }
@@ -992,8 +986,18 @@ void AppListItemView::SetDragUIState() {
   SetUIState(UI_STATE_DRAGGING);
 }
 
-void AppListItemView::SetCardifyUIState() {
-  SetUIState(UI_STATE_CARDIFY);
+void AppListItemView::EnterCardifyState() {
+  in_cardified_grid_ = true;
+  gfx::FontList font_size = GetAppListConfig().app_title_font();
+  const int size_delta = font_size.GetFontSize() * (1 - kCardifyIconScale);
+  title_->SetFontList(font_size.DeriveWithSizeDelta(-size_delta));
+  ScaleIconImmediatly(kCardifyIconScale);
+}
+
+void AppListItemView::ExitCardifyState() {
+  title_->SetFontList(GetAppListConfig().app_title_font());
+  ScaleIconImmediatly(1.0f);
+  in_cardified_grid_ = false;
 }
 
 void AppListItemView::SetNormalUIState() {
@@ -1034,10 +1038,9 @@ gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
 }
 
 void AppListItemView::ItemIconChanged(AppListConfigType config_type) {
-  if (config_type != AppListConfigType::kShared &&
-      config_type != GetAppListConfig().type()) {
+  if (config_type != GetAppListConfig().type())
     return;
-  }
+
   DCHECK(item_weak_);
   SetIcon(item_weak_->GetIcon(GetAppListConfig().type()));
 }

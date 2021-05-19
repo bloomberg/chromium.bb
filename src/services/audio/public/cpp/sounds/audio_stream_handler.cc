@@ -5,6 +5,7 @@
 #include "services/audio/public/cpp/sounds/audio_stream_handler.h"
 
 #include <stdint.h>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -19,8 +20,8 @@
 #include "media/audio/wav_audio_handler.h"
 #include "media/base/channel_layout.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
+#include "media/mojo/mojom/audio_stream_factory.mojom.h"
 #include "services/audio/public/cpp/output_device.h"
-#include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace audio {
 
@@ -70,7 +71,7 @@ class AudioStreamHandler::AudioStreamContainer
       if (g_observer_for_testing) {
         g_observer_for_testing->Initialize(this, params);
       } else {
-        mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
+        mojo::PendingRemote<media::mojom::AudioStreamFactory> stream_factory;
         stream_factory_binder_.Run(
             stream_factory.InitWithNewPipeAndPassReceiver());
         device_ = std::make_unique<audio::OutputDevice>(
@@ -191,8 +192,8 @@ AudioStreamHandler::AudioStreamHandler(
 
   // Store the duration of the WAV data then pass the handler to |stream_|.
   duration_ = wav_audio->GetDuration();
-  stream_.reset(new AudioStreamContainer(std::move(stream_factory_binder),
-                                         std::move(wav_audio)));
+  stream_ = std::make_unique<AudioStreamContainer>(
+      std::move(stream_factory_binder), std::move(wav_audio));
 }
 
 AudioStreamHandler::~AudioStreamHandler() {

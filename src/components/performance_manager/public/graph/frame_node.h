@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_GRAPH_FRAME_NODE_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_GRAPH_FRAME_NODE_H_
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -214,10 +215,14 @@ class FrameNodeObserver {
 
   // Node lifetime notifications.
 
-  // Called when a |frame_node| is added to the graph.
+  // Called when a |frame_node| is added to the graph. Observers must not make
+  // any property changes or cause re-entrant notifications during the scope of
+  // this call. Instead, make property changes via a separate posted task.
   virtual void OnFrameNodeAdded(const FrameNode* frame_node) = 0;
 
-  // Called before a |frame_node| is removed from the graph.
+  // Called before a |frame_node| is removed from the graph. Observers must not
+  // make any property changes or cause re-entrant notifications during the
+  // scope of this call.
   virtual void OnBeforeFrameNodeRemoved(const FrameNode* frame_node) = 0;
 
   // Notifications of property changes.

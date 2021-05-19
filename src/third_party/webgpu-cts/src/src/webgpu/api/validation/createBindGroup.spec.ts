@@ -123,7 +123,7 @@ g.test('texture_binding_must_have_correct_usage')
     });
 
     const descriptor = {
-      size: { width: 16, height: 16, depth: 1 },
+      size: { width: 16, height: 16, depthOrArrayLayers: 1 },
       format: 'rgba8unorm' as const,
       usage,
       sampleCount: info.resource === 'sampledTexMS' ? 4 : 1,
@@ -168,7 +168,7 @@ g.test('texture_must_have_correct_component_type')
     }
 
     const goodDescriptor = {
-      size: { width: 16, height: 16, depth: 1 },
+      size: { width: 16, height: 16, depthOrArrayLayers: 1 },
       format,
       usage: GPUTextureUsage.SAMPLED,
     };
@@ -224,7 +224,7 @@ g.test('texture_must_have_correct_dimension').fn(async t => {
   });
 
   const goodDescriptor = {
-    size: { width: 16, height: 16, depth: 1 },
+    size: { width: 16, height: 16, depthOrArrayLayers: 1 },
     format: 'rgba8unorm' as const,
     usage: GPUTextureUsage.SAMPLED,
   };
@@ -237,7 +237,7 @@ g.test('texture_must_have_correct_dimension').fn(async t => {
 
   // Mismatched texture binding formats are not valid.
   const badDescriptor = clone(goodDescriptor);
-  badDescriptor.size.depth = 2;
+  badDescriptor.size.depthOrArrayLayers = 2;
 
   t.expectValidationError(() => {
     t.device.createBindGroup({
@@ -311,4 +311,54 @@ TODO(#234): disallow zero-sized bindings`
         t.device.createBindGroup(descriptor);
       });
     }
+  });
+
+g.test('minBindingSize')
+  .desc('Tests that minBindingSize is correctly enforced.')
+  .subcases(() =>
+    params()
+      .combine(poptions('minBindingSize', [undefined, 4, 256]))
+      .expand(({ minBindingSize }) =>
+        poptions(
+          'size',
+          minBindingSize !== undefined
+            ? [minBindingSize - 1, minBindingSize, minBindingSize + 1]
+            : [4, 256]
+        )
+      )
+  )
+  .fn(t => {
+    const { size, minBindingSize } = t.params;
+
+    const bindGroupLayout = t.device.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          buffer: {
+            type: 'storage',
+            minBindingSize,
+          },
+        },
+      ],
+    });
+
+    const storageBuffer = t.device.createBuffer({
+      size,
+      usage: GPUBufferUsage.STORAGE,
+    });
+
+    t.expectValidationError(() => {
+      t.device.createBindGroup({
+        layout: bindGroupLayout,
+        entries: [
+          {
+            binding: 0,
+            resource: {
+              buffer: storageBuffer,
+            },
+          },
+        ],
+      });
+    }, minBindingSize !== undefined && size < minBindingSize);
   });

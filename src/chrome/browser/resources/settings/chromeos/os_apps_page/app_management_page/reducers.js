@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {assertNotReached} from 'chrome://resources/js/assert.m.js';
-// clang-format on
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 
 /**
  * @fileoverview Module of functions which produce a new page state in response

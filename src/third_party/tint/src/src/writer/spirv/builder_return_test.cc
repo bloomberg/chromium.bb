@@ -12,18 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/type/f32_type.h"
-#include "src/type/vector_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -51,7 +39,7 @@ TEST_F(BuilderTest, Return_WithValue) {
   auto* val = vec3<f32>(1.f, 1.f, 3.f);
 
   auto* ret = create<ast::ReturnStatement>(val);
-  WrapInFunction(ret);
+  Func("test", {}, ty.vec3<f32>(), {ret}, {});
 
   spirv::Builder& b = Build();
 
@@ -74,7 +62,7 @@ TEST_F(BuilderTest, Return_WithValue_GeneratesLoad) {
   auto* var = Global("param", ty.f32(), ast::StorageClass::kFunction);
 
   auto* ret = create<ast::ReturnStatement>(Expr("param"));
-  WrapInFunction(ret);
+  Func("test", {}, ty.f32(), {ret}, {});
 
   spirv::Builder& b = Build();
 

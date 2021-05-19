@@ -968,6 +968,11 @@ struct NativeValueTraits<IDLOptional<IDLSequence<T>>>
   }
 };
 
+// Frozen array types
+template <typename T>
+struct NativeValueTraits<IDLArray<T>>
+    : public NativeValueTraits<IDLSequence<T>> {};
+
 // Record types
 template <typename K, typename V>
 struct NativeValueTraits<IDLRecord<K, V>>
@@ -1326,6 +1331,20 @@ struct NativeValueTraits<
   static T* NativeValue(v8::Isolate* isolate,
                         v8::Local<v8::Value> value,
                         ExceptionState& exception_state) {
+    return T::Create(isolate, value, exception_state);
+  }
+};
+
+template <typename T>
+struct NativeValueTraits<
+    IDLNullable<T>,
+    typename std::enable_if_t<std::is_base_of<bindings::UnionBase, T>::value>>
+    : public NativeValueTraitsBase<T*> {
+  static T* NativeValue(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state) {
+    if (value->IsNullOrUndefined())
+      return nullptr;
     return T::Create(isolate, value, exception_state);
   }
 };

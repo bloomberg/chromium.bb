@@ -136,7 +136,7 @@ bool AwContentRendererClient::HandleNavigation(
   }
 
   bool ignore_navigation = false;
-  base::string16 url = request.Url().GetString().Utf16();
+  std::u16string url = request.Url().GetString().Utf16();
   bool has_user_gesture = request.HasUserGesture();
 
   mojo::AssociatedRemote<mojom::FrameHost> frame_host_remote;
@@ -213,15 +213,15 @@ void AwContentRendererClient::AddSupportedKeySystems(
   AwAddKeySystems(key_systems);
 }
 
-std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
 AwContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return std::make_unique<AwWebSocketHandshakeThrottleProvider>(
       browser_interface_broker_.get());
 }
 
-std::unique_ptr<content::URLLoaderThrottleProvider>
+std::unique_ptr<blink::URLLoaderThrottleProvider>
 AwContentRendererClient::CreateURLLoaderThrottleProvider(
-    content::URLLoaderThrottleProviderType provider_type) {
+    blink::URLLoaderThrottleProviderType provider_type) {
   return std::make_unique<AwURLLoaderThrottleProvider>(
       browser_interface_broker_.get(), provider_type);
 }

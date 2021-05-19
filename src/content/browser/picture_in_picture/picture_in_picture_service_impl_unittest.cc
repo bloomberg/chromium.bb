@@ -10,7 +10,6 @@
 #include "base/test/bind.h"
 #include "build/build_config.h"
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
-#include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
@@ -82,6 +81,11 @@ class TestOverlayWindow : public OverlayWindow {
   void SetSkipAdButtonVisibility(bool is_visible) override {}
   void SetNextTrackButtonVisibility(bool is_visible) override {}
   void SetPreviousTrackButtonVisibility(bool is_visible) override {}
+  void SetMicrophoneMuted(bool muted) override {}
+  void SetCameraState(bool turned_on) override {}
+  void SetToggleMicrophoneButtonVisibility(bool is_visible) override {}
+  void SetToggleCameraButtonVisibility(bool is_visible) override {}
+  void SetHangUpButtonVisibility(bool is_visible) override {}
   void SetSurfaceId(const viz::SurfaceId& surface_id) override {}
   cc::Layer* GetLayerForTesting() override { return nullptr; }
 
@@ -119,16 +123,18 @@ class PictureInPictureMediaPlayerReceiver : public media::mojom::MediaPlayer {
   }
 
   // media::mojom::MediaPlayer implementation.
-  void AddMediaPlayerObserver(
-      mojo::PendingAssociatedRemote<media::mojom::MediaPlayerObserver>)
-      override {}
   void RequestPlay() override {}
   void RequestPause(bool triggered_by_user) override {}
   void RequestSeekForward(base::TimeDelta seek_time) override {}
   void RequestSeekBackward(base::TimeDelta seek_time) override {}
+  void RequestSeekTo(base::TimeDelta seek_time) override {}
   void RequestEnterPictureInPicture() override {}
   void RequestExitPictureInPicture() override {}
+  void SetVolumeMultiplier(double multiplier) override {}
+  void SetPersistentState(bool persistent) override {}
+  void SetPowerExperimentState(bool enabled) override {}
   void SetAudioSinkId(const std::string& sink_id) override {}
+  void SuspendForFrameClosed() override {}
 
  private:
   mojo::AssociatedReceiver<media::mojom::MediaPlayer> receiver_{this};

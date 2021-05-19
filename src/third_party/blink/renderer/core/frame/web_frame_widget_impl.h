@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/html/battery_savings.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 #include "third_party/blink/renderer/core/page/page_widget_delegate.h"
+#include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -203,7 +204,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   mojom::blink::DisplayMode DisplayMode() const override;
   const WebVector<gfx::Rect>& WindowSegments() const override;
   void SetDelegatedInkMetadata(
-      std::unique_ptr<viz::DelegatedInkMetadata> metadata) final;
+      std::unique_ptr<gfx::DelegatedInkMetadata> metadata) final;
   void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
                      const gfx::Vector2dF& accumulated_overscroll,
                      const gfx::PointF& position,
@@ -228,6 +229,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void ResetVirtualKeyboardVisibilityRequest() override;
   bool GetSelectionBoundsInWindow(gfx::Rect* focus,
                                   gfx::Rect* anchor,
+                                  gfx::Rect* bounding_box,
                                   base::i18n::TextDirection* focus_dir,
                                   base::i18n::TextDirection* anchor_dir,
                                   bool* is_anchor_first) override;
@@ -335,9 +337,11 @@ class CORE_EXPORT WebFrameWidgetImpl
   void InitializeCompositing(
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
-      const ScreenInfo& screen_info,
+      const ScreenInfos& screen_infos,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
-      const cc::LayerTreeSettings* settings) override;
+      const cc::LayerTreeSettings* settings,
+      gfx::RenderingPipeline* main_thread_pipeline,
+      gfx::RenderingPipeline* compositor_thread_pipeline) override;
   void SetCompositorVisible(bool visible) override;
   gfx::Size Size() override;
   void Resize(const gfx::Size& size_with_dsf) override;
@@ -360,6 +364,9 @@ class CORE_EXPORT WebFrameWidgetImpl
   bool PinchGestureActiveInMainFrame() override;
   float PageScaleInMainFrame() override;
   const ScreenInfo& GetScreenInfo() override;
+  const ScreenInfos& GetScreenInfos() override;
+  const ScreenInfo& GetOriginalScreenInfo() override;
+  const ScreenInfos& GetOriginalScreenInfos() override;
   gfx::Rect WindowRect() override;
   gfx::Rect ViewRect() override;
   void SetScreenRects(const gfx::Rect& widget_screen_rect,
@@ -382,7 +389,8 @@ class CORE_EXPORT WebFrameWidgetImpl
       const base::Optional<VisualProperties>& visual_properties) override;
   void DragSourceEndedAt(const gfx::PointF& point_in_viewport,
                          const gfx::PointF& screen_point,
-                         ui::mojom::blink::DragOperation) override;
+                         ui::mojom::blink::DragOperation,
+                         base::OnceClosure callback) override;
 
   // Sets the display mode, which comes from the top-level browsing context and
   // is applied to all widgets.
@@ -519,6 +527,8 @@ class CORE_EXPORT WebFrameWidgetImpl
                                   bool is_pinch_gesture_active,
                                   float minimum,
                                   float maximum);
+  void UpdateViewportDescription(
+      const ViewportDescription& viewport_description);
 
   // The value of the applied battery-savings META element in the document
   // changed.
@@ -530,8 +540,10 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   // Calculates the selection bounds in the root frame. Returns bounds unchanged
   // when there is no focused frame or no selection.
-  void CalculateSelectionBounds(gfx::Rect& anchor_in_root_frame,
-                                gfx::Rect& focus_in_root_frame);
+  void CalculateSelectionBounds(
+      gfx::Rect& anchor_in_root_frame,
+      gfx::Rect& focus_in_root_frame,
+      gfx::Rect* bounding_box_in_root_frame = nullptr);
 
   // Returns if auto resize mode is enabled.
   bool AutoResizeMode();
@@ -539,7 +551,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::DeviceEmulationParams& params);
-  void SetScreenInfoAndSize(const blink::ScreenInfo& screen_info,
+  void SetScreenInfoAndSize(const ScreenInfos& screen_infos,
                             const gfx::Size& widget_size,
                             const gfx::Size& visible_viewport_size);
 
@@ -548,10 +560,10 @@ class CORE_EXPORT WebFrameWidgetImpl
   void UpdateSurfaceAndScreenInfo(
       const viz::LocalSurfaceId& new_local_surface_id,
       const gfx::Rect& compositor_viewport_pixel_rect,
-      const ScreenInfo& new_screen_info);
+      const ScreenInfos& screen_infos);
   // Similar to UpdateSurfaceAndScreenInfo but the surface allocation
   // and compositor viewport rect remains the same.
-  void UpdateScreenInfo(const ScreenInfo& screen_info);
+  void UpdateScreenInfo(const ScreenInfos& screen_infos);
   void UpdateSurfaceAndCompositorRect(
       const viz::LocalSurfaceId& new_local_surface_id,
       const gfx::Rect& compositor_viewport_pixel_rect);
@@ -587,7 +599,6 @@ class CORE_EXPORT WebFrameWidgetImpl
   void DidBeginMainFrame() override;
   std::unique_ptr<cc::LayerTreeFrameSink> AllocateNewLayerTreeFrameSink()
       override;
-  const ScreenInfo& GetOriginalScreenInfo() override;
 
   // Whether compositing to LCD text should be auto determined. This can be
   // overridden by tests to disable this.
@@ -672,7 +683,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   void DragTargetDrop(const WebDragData&,
                       const gfx::PointF& point_in_viewport,
                       const gfx::PointF& screen_point,
-                      uint32_t key_modifiers) override;
+                      uint32_t key_modifiers,
+                      base::OnceClosure callback) override;
   void DragSourceSystemDragEnded() override;
   void SetBackgroundOpaque(bool opaque) override;
   void SetActive(bool active) override;
@@ -850,6 +862,11 @@ class CORE_EXPORT WebFrameWidgetImpl
   // Called during |UpdateVisualProperties| to apply the new size to the widget.
   void ApplyVisualPropertiesSizing(const VisualProperties& visual_properties);
 
+  // Returns true iff the visual property state contains an update that will
+  // change the fullscreen state (e.g. on/off or current display).
+  bool DidChangeFullscreenState(
+      const VisualProperties& visual_properties) const;
+
   // Returns the current state of synchronous resize mode for testing.
   bool SynchronousResizeModeForTestingEnabled();
 
@@ -919,17 +936,12 @@ class CORE_EXPORT WebFrameWidgetImpl
   scoped_refptr<base::SingleThreadTaskRunner> paint_task_runner_;
 
   // WebFrameWidgetImpl is not tied to ExecutionContext
-  HeapMojoAssociatedRemote<mojom::blink::FrameWidgetHost,
-                           HeapMojoWrapperMode::kWithoutContextObserver>
-      frame_widget_host_{nullptr};
+  HeapMojoAssociatedRemote<mojom::blink::FrameWidgetHost> frame_widget_host_{
+      nullptr};
   // WebFrameWidgetImpl is not tied to ExecutionContext
-  HeapMojoAssociatedReceiver<mojom::blink::FrameWidget,
-                             WebFrameWidgetImpl,
-                             HeapMojoWrapperMode::kWithoutContextObserver>
+  HeapMojoAssociatedReceiver<mojom::blink::FrameWidget, WebFrameWidgetImpl>
       receiver_{this, nullptr};
-  HeapMojoReceiver<viz::mojom::blink::InputTargetClient,
-                   WebFrameWidgetImpl,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
+  HeapMojoReceiver<viz::mojom::blink::InputTargetClient, WebFrameWidgetImpl>
       input_target_receiver_{this, nullptr};
 
   // Different consumers in the browser process makes different assumptions, so

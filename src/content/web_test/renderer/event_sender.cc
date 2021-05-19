@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -17,7 +18,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/notreached.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1293,7 +1293,7 @@ void EventSender::Install(WebLocalFrame* frame) {
 }
 
 void EventSender::SetContextMenuData(const ContextMenuData& data) {
-  last_context_menu_data_.reset(new ContextMenuData(data));
+  last_context_menu_data_ = std::make_unique<ContextMenuData>(data);
 }
 
 int EventSender::ModifiersForPointer(int pointer_id) {
@@ -1572,7 +1572,7 @@ void EventSender::KeyDown(const std::string& code_str,
       }
     }
     if (!code) {
-      base::string16 code_str16 = base::UTF8ToUTF16(code_str);
+      std::u16string code_str16 = base::UTF8ToUTF16(code_str);
       if (code_str16.size() != 1u) {
         v8::Isolate* isolate = blink::MainThreadIsolate();
         isolate->ThrowException(v8::Exception::TypeError(
@@ -1586,8 +1586,7 @@ void EventSender::KeyDown(const std::string& code_str,
       if (base::IsAsciiAlpha(code)) {
         domKeyString.assign(code_str);
         domCodeString.assign("Key");
-        domCodeString.push_back(
-            base::ToUpperASCII(static_cast<base::char16>(code)));
+        domCodeString.push_back(base::ToUpperASCII(char16_t{code}));
       } else if (base::IsAsciiDigit(code)) {
         domKeyString.assign(code_str);
         domCodeString.assign("Digit");
@@ -2630,13 +2629,14 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& event,
     // tests to control the drop type (i.e. copy or move).
     MainFrameWidget()->DragTargetDrop(
         *current_drag_data_, event.PositionInWidget(), event.PositionInScreen(),
-        event.GetModifiers());
+        event.GetModifiers(), base::DoNothing());
   } else {
     MainFrameWidget()->DragTargetDragLeave(gfx::PointF(), gfx::PointF());
   }
   current_drag_data_ = base::nullopt;
-  MainFrameWidget()->DragSourceEndedAt(
-      event.PositionInWidget(), event.PositionInScreen(), current_drag_effect_);
+  MainFrameWidget()->DragSourceEndedAt(event.PositionInWidget(),
+                                       event.PositionInScreen(),
+                                       current_drag_effect_, base::DoNothing());
   MainFrameWidget()->DragSourceSystemDragEnded();
 }
 

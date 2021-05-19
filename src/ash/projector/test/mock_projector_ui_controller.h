@@ -10,10 +10,13 @@
 
 namespace ash {
 
+class ProjectorControllerImpl;
+
 // A mock implementation of ProjectorUiController for use in tests.
 class ASH_EXPORT MockProjectorUiController : public ProjectorUiController {
  public:
-  MockProjectorUiController();
+  explicit MockProjectorUiController(
+      ProjectorControllerImpl* projector_controller);
 
   MockProjectorUiController(const MockProjectorUiController&) = delete;
   MockProjectorUiController& operator=(const MockProjectorUiController&) =
@@ -24,6 +27,8 @@ class ASH_EXPORT MockProjectorUiController : public ProjectorUiController {
   // ProjectorUiController:
   MOCK_METHOD0(ShowToolbar, void());
   MOCK_METHOD0(OnKeyIdeaMarked, void());
+  MOCK_METHOD0(OnLaserPointerPressed, void());
+  MOCK_METHOD0(OnMarkerPressed, void());
   MOCK_METHOD2(OnTranscription,
                void(const std::string& transcription, bool is_final));
 };

@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -330,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Focus the element, wait for it to receive focus, and simulate an enter
   // press.
-  base::string16 expected_title = base::ASCIIToUTF16("focused");
+  std::u16string expected_title = u"focused";
   content::TitleWatcher title_watcher(web_contents(), expected_title);
   EXPECT_TRUE(ExecJs(shell(), R"(
     let link = document.getElementById('link');
@@ -409,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
-                       ImpressionWithFeaturePolicyDisabled_NotRegistered) {
+                       ImpressionWithPermissionsPolicyDisabled_NotRegistered) {
   EXPECT_TRUE(NavigateToURL(
       web_contents(),
       https_server()->GetURL(
@@ -427,8 +428,9 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
-                       ImpressionInSubframeWithoutFeaturePolicy_NotRegistered) {
+IN_PROC_BROWSER_TEST_F(
+    ImpressionDeclarationBrowserTest,
+    ImpressionInSubframeWithoutPermissionsPolicy_NotRegistered) {
   GURL page_url = https_server()->GetURL("b.test", "/page_with_iframe.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
 
@@ -450,7 +452,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
-                       ImpressionInSubframeWithFeaturePolicy_Registered) {
+                       ImpressionInSubframeWithPermissionsPolicy_Registered) {
   GURL page_url = https_server()->GetURL("b.test", "/page_with_iframe.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
   EXPECT_TRUE(ExecJs(shell(), R"(
@@ -591,47 +593,76 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_EQ(1UL, second_impression_observer.Wait().impression_data);
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
-                       WindowOpenImpression_ImpressionReceived) {
-  ImpressionObserver impression_observer(web_contents());
-  GURL page_url =
-      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
-  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+IN_PROC_BROWSER_TEST_F(
+    ImpressionDeclarationBrowserTest,
+    ImpressionTagNavigatesCurrentFrame_ImpressionPageMetrics) {
+  base::HistogramTester histograms;
 
-  // Navigate the page using window.open and set an impression.
+  EXPECT_TRUE(NavigateToURL(
+      web_contents(),
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html")));
+
+  // Create an anchor tag with impression attributes and click the link. By
+  // default the target is set to "_top".
   EXPECT_TRUE(ExecJs(web_contents(), R"(
-    window.open("https://a.com", "_top", "",
-               {impressionData: "1", conversionDestination: "https://a.com",
-                reportingOrigin: "https://report.com", impressionExpiry: 1000});)"));
+    createImpressionTag("link1",
+                        "page_with_impression_creator.html",
+                        "1" /* impression data */,
+                        "https://a.com" /* conversion_destination */);)"));
 
-  // Wait for the impression to be seen by the observer.
-  blink::Impression last_impression = impression_observer.Wait();
+  // Click the impression on the page.
+  EXPECT_TRUE(ExecJs(shell(), "simulateClick(\'link1\');"));
+  WaitForLoadStop(web_contents());
 
-  // Verify the attributes of the impression are set as expected.
-  EXPECT_EQ(1UL, last_impression.impression_data);
-  EXPECT_EQ(url::Origin::Create(GURL("https://a.com")),
-            last_impression.conversion_destination);
-  EXPECT_EQ(url::Origin::Create(GURL("https://report.com")),
-            last_impression.reporting_origin);
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1000), *last_impression.expiry);
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+    createImpressionTag("link2",
+                        "page_with_impression_creator.html",
+                        "2" /* impression data */,
+                        "https://a.com" /* conversion_destination */);)"));
+
+  // Click the impression on the page.
+  EXPECT_TRUE(ExecJs(shell(), "simulateClick(\'link2\');"));
+  WaitForLoadStop(web_contents());
+
+  // Navigate away to have the data captured.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+
+  histograms.ExpectBucketCount("Conversions.RegisteredImpressionsPerPage", 1,
+                               2);
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
-                       WindowOpenNoUserGesture_NoImpression) {
-  ImpressionObserver impression_observer(web_contents());
-  GURL page_url =
-      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
-  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+IN_PROC_BROWSER_TEST_F(
+    ImpressionDeclarationBrowserTest,
+    ImpressionTagNavigatesRemoteFrame_ImpressionPageMetrics) {
+  base::HistogramTester histograms;
 
-  // Navigate the page using window.open and set an impression, but do not give
-  // a user gesture.
+  EXPECT_TRUE(NavigateToURL(
+      web_contents(),
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html")));
+
+  // Create an impression tag with a target frame that does not exist, which
+  // will open a new window to navigate.
   EXPECT_TRUE(ExecJs(web_contents(), R"(
-    window.open("https://a.com", "_top", "",
-               {impressionData: "1", conversionDestination: "https://a.com",
-                reportingOrigin: "https://report.com", impressionExpiry: 1000});)",
-                     EXECUTE_SCRIPT_NO_USER_GESTURE));
+    createImpressionTagWithTarget("link1",
+                        "page_with_conversion_redirect.html",
+                        "1" /* impression data */,
+                        "https://a.com" /* conversion_destination */,
+                        "target" /* target */);)"));
+  EXPECT_TRUE(ExecJs(shell(), "simulateClick(\'link1\');"));
 
-  EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+    createImpressionTagWithTarget("link2",
+                        "page_with_conversion_redirect.html",
+                        "2" /* impression data */,
+                        "https://a.com" /* conversion_destination */,
+                        "target" /* target */);)"));
+  EXPECT_TRUE(ExecJs(shell(), "simulateClick(\'link2\');"));
+
+  // Navigate away to have the data captured.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+
+  histograms.ExpectBucketCount("Conversions.RegisteredImpressionsPerPage", 2,
+                               1);
 }
 
 }  // namespace content

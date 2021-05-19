@@ -519,6 +519,56 @@ TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
   testDone();
 });
 
+// Tests that associated subtitles get not just a handle but a valid open File
+// upon initial file load.
+TEST_F('MediaAppUIBrowserTest', 'LoadVideoWithSubtitles', async () => {
+  // Mock the send message call to prevent actual loading. We just want to see
+  // what would be sent.
+  let secondMessageSent;
+  const messageSent = new Promise(resolve => {
+    guestMessagePipe.sendMessage = (messageId, data) => {
+      resolve({messageId, data});
+      secondMessageSent = new Promise(resolveAgain => {
+        guestMessagePipe.sendMessage = (messageId, data) => {
+          resolveAgain({messageId, data});
+          return Promise.resolve();
+        };
+      });
+      return Promise.resolve();
+    };
+  });
+  await launchWithFiles([
+    new File([], 'zero_byte_video.webm', {type: 'video/webm'}),
+    new File([], 'zero_byte_video.vtt', {}),
+    new File([], 'extra_video.webm', {}),
+    new File([], 'unrelated_file.html', {}),
+  ]);
+
+  const message = await messageSent;
+  assertEquals(message.messageId, Message.LOAD_FILES);
+
+  // Initial launch should have two files, and they should both have valid
+  // (non-null) File objects.
+  let data = /** @type {!LoadFilesMessage} */ (message.data);
+  assertEquals(data.files.length, 2);
+  assertEquals(data.files[0].name, 'zero_byte_video.webm');
+  assertNotEquals(data.files[0].file, null);
+  assertEquals(data.files[1].name, 'zero_byte_video.vtt');
+  assertNotEquals(data.files[1].file, null);
+
+  // The extra files message shouldn't include any of the old files. And the new
+  // file should have a null ref.
+  const secondMessage = await secondMessageSent;
+  assertEquals(secondMessage.messageId, Message.LOAD_EXTRA_FILES);
+
+  data = /** @type {!LoadFilesMessage} */ (secondMessage.data);
+  assertEquals(data.files.length, 1);
+  assertEquals(data.files[0].name, 'extra_video.webm');
+  assertEquals(data.files[0].file, null);
+
+  testDone();
+});
+
 // Tests the IPC behind the implementation of ReceivedFile.overwriteOriginal()
 // in the untrusted context. Ensures it correctly updates the file handle owned
 // by the privileged context.
@@ -568,6 +618,37 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalPickerFallback', async () => {
   assertEquals(pickedFile.lastWritable.writes.length, 1);
   assertDeepEquals(
       pickedFile.lastWritable.writes[0], {position: 0, size: 'Foo'.length});
+  testDone();
+});
+
+// Tests that invalid characters in file extensions are stripped before being
+// passed to showSaveFilePicker.
+TEST_F('MediaAppUIBrowserTest', 'FilePickerValidateExtension', async () => {
+  function pick(suggestedName, mimeType = 'image/jpeg') {
+    return new Promise(resolve => {
+      window.showSaveFilePicker = options => {
+        resolve(options.types.map(t => Object.values(t.accept || {})));
+        // The handle is unused in the test, but needed to keep closure happy.
+        return Promise.resolve(/** @type {!FileSystemFileHandle}*/ (null));
+      };
+      pickWritableFile(suggestedName, mimeType);
+    });
+  }
+
+  assertDeepEquals(await pick('foo.jpg'), [[['.jpg']]]);
+  assertDeepEquals(await pick('foo.jfif'), [[['.jfif']]]);
+  assertDeepEquals(await pick('foo'), [[['.foo']]]);
+  assertDeepEquals(await pick('foo.png'), [[['.png']]]);
+  assertDeepEquals(await pick('foo.jpg.jpg'), [[['.jpg']]]);
+  assertDeepEquals(await pick('jpg.jpg (1)'), [[['.jpg1']]]);
+  assertDeepEquals(await pick(''), [[['.ext']]]);
+  assertDeepEquals(await pick('foo.bar.jpg (1) - _baz'), [[['.jpg1baz']]]);
+  assertDeepEquals(await pick('foo.svg+xml'), [[['.svg+xml']]]);
+  assertDeepEquals(await pick('foo.___'), [[['.ext']]]);
+
+  // Ideally, double-barrelled extensions like this would be handled better. But
+  // the only way to do that is with a hardcoded list of exceptions.
+  assertDeepEquals(await pick('foo.tar.gz'), [[['.gz']]]);
   testDone();
 });
 
@@ -1064,24 +1145,25 @@ TEST_F('MediaAppUIBrowserTest', 'RelatedFiles', async () => {
     {name: 'matryoshka.MKV'},
     {name: 'noext', type: ''},
     {name: 'other.txt', type: 'text/plain'},
+    {name: 'subtitles.vtt'},
     {name: 'text.txt', type: 'text/plain'},
     {name: 'world.webm', type: 'video/webm'},
   ];
   const directory = await createMockTestDirectory(testFiles);
-  const [html, jpg, gif, emkv, mkv, MKV, ext, other, txt, webm] =
+  const [html, jpg, gif, emkv, mkv, MKV, ext, other, vtt, txt, webm] =
       directory.getFilesSync();
 
   await loadFilesWithoutSendingToGuest(directory, mkv);
-  assertFilesToBe([mkv, MKV, webm, jpg, gif], 'mkv');
+  assertFilesToBe([mkv, MKV, vtt, webm, jpg, gif], 'mkv');
 
   await loadFilesWithoutSendingToGuest(directory, jpg);
-  assertFilesToBe([jpg, gif, mkv, MKV, webm], 'jpg');
+  assertFilesToBe([jpg, gif, mkv, MKV, vtt, webm], 'jpg');
 
   await loadFilesWithoutSendingToGuest(directory, gif);
-  assertFilesToBe([gif, mkv, MKV, webm, jpg], 'gif');
+  assertFilesToBe([gif, mkv, MKV, vtt, webm, jpg], 'gif');
 
   await loadFilesWithoutSendingToGuest(directory, webm);
-  assertFilesToBe([webm, jpg, gif, mkv, MKV], 'webm');
+  assertFilesToBe([webm, jpg, gif, mkv, MKV, vtt], 'webm');
 
   await loadFilesWithoutSendingToGuest(directory, txt);
   assertFilesToBe([txt, other], 'txt');

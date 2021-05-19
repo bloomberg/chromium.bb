@@ -5,14 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_CREDENTIAL_ENROLLMENT_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_CREDENTIAL_ENROLLMENT_DIALOG_VIEW_H_
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "components/payments/content/payment_credential_enrollment_view.h"
 #include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/window/dialog_delegate.h"
-
-namespace views {
-class ProgressBar;
-}
 
 namespace payments {
 
@@ -39,7 +38,9 @@ class PaymentCredentialEnrollmentDialogView
     PROGRESS_BAR,
     TITLE,
     DESCRIPTION,
-    INSTRUMENT_ICON
+    INSTRUMENT_ICON,
+    INSTRUMENT_NAME,
+    EXTRA_DESCRIPTION
   };
 
   // The
@@ -70,17 +71,17 @@ class PaymentCredentialEnrollmentDialogView
 
   std::unique_ptr<views::View> CreateHeaderView();
   std::unique_ptr<views::View> CreateBodyView();
-  std::unique_ptr<views::View> CreateDescription();
+  std::unique_ptr<views::View> CreateDescription(const std::u16string& text,
+                                                 DialogViewID view_id);
+  std::unique_ptr<views::View> CreateInstrumentRow();
 
-  void UpdateLabelView(DialogViewID id, const base::string16& text);
+  void UpdateLabelView(DialogViewID id, const std::u16string& text);
 
   // May be null.
   ObserverForTest* observer_for_test_ = nullptr;
 
   AcceptCallback accept_callback_;
   CancelCallback cancel_callback_;
-
-  views::ProgressBar* progress_bar_ = nullptr;
 
   // Cache the instrument icon pointer so we don't needlessly update it in
   // OnModelUpdated().

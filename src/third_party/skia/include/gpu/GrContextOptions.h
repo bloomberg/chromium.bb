@@ -9,6 +9,7 @@
 #define GrContextOptions_DEFINED
 
 #include "include/core/SkData.h"
+#include "include/core/SkString.h"
 #include "include/core/SkTypes.h"
 #include "include/gpu/GrDriverBugWorkarounds.h"
 #include "include/gpu/GrTypes.h"
@@ -51,7 +52,17 @@ struct SK_API GrContextOptions {
          */
         virtual sk_sp<SkData> load(const SkData& key) = 0;
 
-        virtual void store(const SkData& key, const SkData& data) = 0;
+        // Placeholder until all clients override the 3-parameter store(), then remove this, and
+        // make that version pure virtual.
+        virtual void store(const SkData& /*key*/, const SkData& /*data*/) { SkASSERT(false); }
+
+        /**
+         * Stores data in the cache, indexed by key. description provides a human-readable
+         * version of the key.
+         */
+        virtual void store(const SkData& key, const SkData& data, const SkString& /*description*/) {
+            this->store(key, data);
+        }
 
     protected:
         PersistentCache() = default;
@@ -251,6 +262,11 @@ struct SK_API GrContextOptions {
      */
     bool fSuppressMipmapSupport = false;
 
+    /**
+     * If true, and if supported, enables hardware tessellation in the caps.
+     */
+    bool fEnableExperimentalHardwareTessellation = false;
+
 #if GR_TEST_UTILS
     /**
      * Private options that are only meant for testing within Skia's tools.
@@ -265,11 +281,6 @@ struct SK_API GrContextOptions {
      * If true, the caps will never support geometry shaders.
      */
     bool fSuppressGeometryShaders = false;
-
-    /**
-     * If true, the caps will never support tessellation shaders.
-     */
-    bool fSuppressTessellationShaders = true;
 
     /**
      * If greater than zero and less than the actual hardware limit, overrides the maximum number of
@@ -301,6 +312,12 @@ struct SK_API GrContextOptions {
      * Force off support for write pixels row bytes in caps.
      */
     bool fDisallowWritePixelRowBytes = false;
+
+    /**
+     * Forces all draws to use antialiasing. This allows Ganesh to use internal multisampling
+     * as well as certain clip optimizations.
+     */
+    bool fAlwaysAntialias = false;
 
     /**
      * Include or exclude specific GPU path renderers.

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../common/common.js';
-import * as i18n from '../i18n/i18n.js';
+import * as Common from '../core/common/common.js';
+import * as i18n from '../core/i18n/i18n.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Title of a setting under the Sources category in Settings
   */
@@ -44,33 +44,33 @@ export const UIStrings = {
   tabCharacter: 'Tab character',
 };
 const str_ = i18n.i18n.registerUIStrings('source_frame/source_frame-meta.ts', UIStrings);
-const i18nString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
+const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.SOURCES,
-  title: i18nString(UIStrings.defaultIndentation),
+  title: i18nLazyString(UIStrings.defaultIndentation),
   settingName: 'textEditorIndent',
   settingType: Common.Settings.SettingType.ENUM,
   defaultValue: '    ',
   options: [
     {
-      title: i18nString(UIStrings.setIndentationToSpaces),
-      text: i18nString(UIStrings.Spaces),
+      title: i18nLazyString(UIStrings.setIndentationToSpaces),
+      text: i18nLazyString(UIStrings.Spaces),
       value: '  ',
     },
     {
-      title: i18nString(UIStrings.setIndentationToFSpaces),
-      text: i18nString(UIStrings.fSpaces),
+      title: i18nLazyString(UIStrings.setIndentationToFSpaces),
+      text: i18nLazyString(UIStrings.fSpaces),
       value: '    ',
     },
     {
-      title: i18nString(UIStrings.setIndentationToESpaces),
-      text: i18nString(UIStrings.eSpaces),
+      title: i18nLazyString(UIStrings.setIndentationToESpaces),
+      text: i18nLazyString(UIStrings.eSpaces),
       value: '        ',
     },
     {
-      title: i18nString(UIStrings.setIndentationToTabCharacter),
-      text: i18nString(UIStrings.tabCharacter),
+      title: i18nLazyString(UIStrings.setIndentationToTabCharacter),
+      text: i18nLazyString(UIStrings.tabCharacter),
       value: '\t',
     },
   ],

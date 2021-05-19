@@ -66,6 +66,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementReportAppInfoAndActivity,
      IDS_MANAGEMENT_REPORT_APP_INFO_AND_ACTIVITY},
     {kManagementPrinting, IDS_MANAGEMENT_REPORT_PRINTING},
+    {kManagementReportPrintJobs, IDS_MANAGEMENT_REPORT_PRINT_JOBS},
     {kManagementCrostini, IDS_MANAGEMENT_CROSTINI},
     {kManagementCrostiniContainerConfiguration,
      IDS_MANAGEMENT_CROSTINI_CONTAINER_CONFIGURATION},
@@ -87,6 +88,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
     {"clearSearch", IDS_CLEAR_SEARCH},
     {"backButton", IDS_ACCNAME_BACK},
+    {"managedWebsites", IDS_MANAGEMENT_MANAGED_WEBSITES},
+    {"managedWebsitesSubtitle", IDS_MANAGEMENT_MANAGED_WEBSITES_EXPLANATION},
     {kManagementExtensionReportMachineName,
      IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME},
     {kManagementExtensionReportMachineNameAddress,
@@ -156,7 +159,7 @@ base::RefCountedMemory* ManagementUI::GetFaviconResourceBytes(
 }
 
 // static
-base::string16 ManagementUI::GetManagementPageSubtitle(Profile* profile) {
+std::u16string ManagementUI::GetManagementPageSubtitle(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();

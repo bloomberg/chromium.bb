@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
 #include "media/base/timestamp_constants.h"
@@ -74,6 +75,10 @@ media::VideoPixelFormat ToMediaPixelFormat(V8VideoPixelFormat::Enum fmt) {
   switch (fmt) {
     case V8VideoPixelFormat::Enum::kI420:
       return media::PIXEL_FORMAT_I420;
+    case V8VideoPixelFormat::Enum::kI422:
+      return media::PIXEL_FORMAT_I422;
+    case V8VideoPixelFormat::Enum::kI444:
+      return media::PIXEL_FORMAT_I444;
     case V8VideoPixelFormat::Enum::kNV12:
       return media::PIXEL_FORMAT_NV12;
     case V8VideoPixelFormat::Enum::kABGR:
@@ -84,6 +89,21 @@ media::VideoPixelFormat ToMediaPixelFormat(V8VideoPixelFormat::Enum fmt) {
       return media::PIXEL_FORMAT_ARGB;
     case V8VideoPixelFormat::Enum::kXRGB:
       return media::PIXEL_FORMAT_XRGB;
+  }
+}
+
+media::VideoPixelFormat ToOpaqueMediaPixelFormat(media::VideoPixelFormat fmt) {
+  DCHECK(!media::IsOpaque(fmt));
+  switch (fmt) {
+    case media::PIXEL_FORMAT_I420A:
+      return media::PIXEL_FORMAT_I420;
+    case media::PIXEL_FORMAT_ARGB:
+      return media::PIXEL_FORMAT_XRGB;
+    case media::PIXEL_FORMAT_ABGR:
+      return media::PIXEL_FORMAT_XBGR;
+    default:
+      NOTIMPLEMENTED() << "Missing support for making " << fmt << " opaque.";
+      return fmt;
   }
 }
 
@@ -174,6 +194,8 @@ bool IsSupportedPlanarFormat(const media::VideoFrame& frame) {
   const size_t num_planes = frame.layout().num_planes();
   switch (frame.format()) {
     case media::PIXEL_FORMAT_I420:
+    case media::PIXEL_FORMAT_I422:
+    case media::PIXEL_FORMAT_I444:
       return num_planes == 3;
     case media::PIXEL_FORMAT_I420A:
       return num_planes == 4;
@@ -222,12 +244,17 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
     return nullptr;
   }
 
+  constexpr char kAlphaDiscard[] = "discard";
+  constexpr char kAlphaKeep[] = "keep";
+
   // Special case <video> and VideoFrame to directly use the underlying frame.
   if (source.IsVideoFrame() || source.IsHTMLVideoElement()) {
     scoped_refptr<media::VideoFrame> source_frame;
     if (source.IsVideoFrame()) {
-      if (!init || (!init->hasTimestamp() && !init->hasDuration()))
+      if (!init || (!init->hasTimestamp() && !init->hasDuration() &&
+                    init->alpha() == kAlphaKeep)) {
         return source.GetAsVideoFrame()->clone(script_state, exception_state);
+      }
       source_frame = source.GetAsVideoFrame()->frame();
     } else if (source.IsHTMLVideoElement()) {
       if (auto* wmp = source.GetAsHTMLVideoElement()->GetWebMediaPlayer())
@@ -240,28 +267,41 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
       return nullptr;
     }
 
+    const bool force_opaque = init && init->alpha() == kAlphaDiscard &&
+                              !media::IsOpaque(source_frame->format());
+
     // We can't modify the timestamp or duration directly since there may be
     // other owners accessing these fields concurrently.
-    if (init && (init->hasTimestamp() || init->hasDuration())) {
-      source_frame = media::VideoFrame::WrapVideoFrame(
-          source_frame, source_frame->format(), source_frame->visible_rect(),
+    if (init && (init->hasTimestamp() || init->hasDuration() || force_opaque)) {
+      const auto wrapped_format =
+          force_opaque ? ToOpaqueMediaPixelFormat(source_frame->format())
+                       : source_frame->format();
+      auto wrapped_frame = media::VideoFrame::WrapVideoFrame(
+          source_frame, wrapped_format, source_frame->visible_rect(),
           source_frame->natural_size());
+      wrapped_frame->set_color_space(source_frame->ColorSpace());
       if (init->hasTimestamp()) {
-        source_frame->set_timestamp(
+        wrapped_frame->set_timestamp(
             base::TimeDelta::FromMicroseconds(init->timestamp()));
       }
       if (init->hasDuration()) {
-        source_frame->metadata().frame_duration =
+        wrapped_frame->metadata().frame_duration =
             base::TimeDelta::FromMicroseconds(init->duration());
       }
+      source_frame = std::move(wrapped_frame);
     }
 
     return MakeGarbageCollected<VideoFrame>(
         std::move(source_frame), ExecutionContext::From(script_state));
   }
 
+  // Some elements like OffscreenCanvas won't choose a default size, so we must
+  // ask them what size they think they are first.
+  auto source_size =
+      image_source->ElementSize(FloatSize(), kRespectImageOrientation);
+
   SourceImageStatus status = kInvalidSourceImageStatus;
-  auto image = image_source->GetSourceImageForCanvas(&status, FloatSize());
+  auto image = image_source->GetSourceImageForCanvas(&status, source_size);
   if (!image || status != kNormalSourceImageStatus) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid source state");
@@ -271,7 +311,16 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
   const auto timestamp = base::TimeDelta::FromMicroseconds(
       (init && init->hasTimestamp()) ? init->timestamp() : 0);
 
-  const auto sk_image = image->PaintImageForCurrentFrame().GetSkImage();
+  // Note: The current PaintImage may be lazy generated, for simplicity, we just
+  // ask Skia to rasterize the image for us.
+  //
+  // A potential optimization could use PaintImage::DecodeYuv() to decode
+  // directly into a media::VideoFrame. This would improve VideoFrame from <img>
+  // creation, but probably such users should be using ImageDecoder directly.
+  auto sk_image = image->PaintImageForCurrentFrame().GetSkImage();
+  if (sk_image->isLazyGenerated())
+    sk_image = sk_image->makeRasterImage();
+
   const auto sk_image_info = sk_image->imageInfo();
 
   auto sk_color_space = sk_image_info.refColorSpace();
@@ -297,6 +346,9 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
     result.natural_size = natural_size;
     result.timestamp = timestamp;
 
+    // TODO(crbug.com/1138681): This is currently wrong for alpha == keep, but
+    // we're removing readback for this flow, so it's fine for now.
+
     // While this function indicates it's asynchronous, the flushAndSubmit()
     // call below ensures it completes synchronously.
     sk_image->asyncRescaleAndReadPixelsYUV420(
@@ -314,7 +366,7 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
     }
 
     frame = std::move(result.frame);
-    frame->set_color_space(gfx_color_space);
+    frame->set_color_space(gfx::ColorSpace::CreateREC709());
     if (init && init->hasDuration()) {
       frame->metadata().frame_duration =
           base::TimeDelta::FromMicroseconds(init->duration());
@@ -323,8 +375,11 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
         std::move(frame), ExecutionContext::From(script_state));
   }
 
-  frame =
-      media::CreateFromSkImage(sk_image, visible_rect, natural_size, timestamp);
+  const bool force_opaque =
+      init && init->alpha() == kAlphaDiscard && !sk_image->isOpaque();
+
+  frame = media::CreateFromSkImage(sk_image, visible_rect, natural_size,
+                                   timestamp, force_opaque);
   if (!frame) {
     exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "Failed to create video frame");
@@ -498,6 +553,11 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
     return nullptr;
   }
 
+  if (init->hasDuration()) {
+    frame->metadata().frame_duration =
+        base::TimeDelta::FromMicroseconds(init->duration());
+  }
+
   for (wtf_size_t i = 0; i < planes.size(); ++i) {
     const auto minimum_size =
         media::VideoFrame::PlaneSize(media_fmt, i, coded_size);
@@ -530,6 +590,10 @@ String VideoFrame::format() const {
     case media::PIXEL_FORMAT_I420:
     case media::PIXEL_FORMAT_I420A:
       return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kI420);
+    case media::PIXEL_FORMAT_I422:
+      return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kI422);
+    case media::PIXEL_FORMAT_I444:
+      return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kI444);
     case media::PIXEL_FORMAT_NV12:
       return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kNV12);
     case media::PIXEL_FORMAT_ABGR:
@@ -610,14 +674,29 @@ uint32_t VideoFrame::displayWidth() const {
   auto local_frame = handle_->frame();
   if (!local_frame)
     return 0;
-  return local_frame->natural_size().width();
+
+  const auto transform =
+      local_frame->metadata().transformation.value_or(media::kNoTransformation);
+  if (transform == media::kNoTransformation ||
+      transform.rotation == media::VIDEO_ROTATION_0 ||
+      transform.rotation == media::VIDEO_ROTATION_180) {
+    return local_frame->natural_size().width();
+  }
+  return local_frame->natural_size().height();
 }
 
 uint32_t VideoFrame::displayHeight() const {
   auto local_frame = handle_->frame();
   if (!local_frame)
     return 0;
-  return local_frame->natural_size().height();
+  const auto transform =
+      local_frame->metadata().transformation.value_or(media::kNoTransformation);
+  if (transform == media::kNoTransformation ||
+      transform.rotation == media::VIDEO_ROTATION_0 ||
+      transform.rotation == media::VIDEO_ROTATION_180) {
+    return local_frame->natural_size().height();
+  }
+  return local_frame->natural_size().width();
 }
 
 base::Optional<uint64_t> VideoFrame::timestamp() const {
@@ -690,9 +769,13 @@ scoped_refptr<Image> VideoFrame::GetSourceImageForCanvas(
     return nullptr;
   }
 
+  const auto orientation_enum = VideoTransformationToImageOrientation(
+      local_handle->frame()->metadata().transformation.value_or(
+          media::kNoTransformation));
   if (auto sk_img = local_handle->sk_image()) {
     *status = kNormalSourceImageStatus;
-    return UnacceleratedStaticBitmapImage::Create(std::move(sk_img));
+    return UnacceleratedStaticBitmapImage::Create(std::move(sk_img),
+                                                  orientation_enum);
   }
 
   const auto image = CreateImageFromVideoFrame(local_handle->frame());
@@ -715,7 +798,20 @@ bool VideoFrame::WouldTaintOrigin() const {
 FloatSize VideoFrame::ElementSize(
     const FloatSize& default_object_size,
     const RespectImageOrientationEnum respect_orientation) const {
-  // TODO(crbug.com/1140137): This will need consideration for orientation.
+  // BitmapSourceSize() will always ignore orientation.
+  if (respect_orientation == kRespectImageOrientation) {
+    auto local_frame = handle_->frame();
+    if (!local_frame)
+      return FloatSize();
+
+    const auto orientation_enum = VideoTransformationToImageOrientation(
+        local_frame->metadata().transformation.value_or(
+            media::kNoTransformation));
+    auto orientation_adjusted_size = FloatSize(local_frame->natural_size());
+    if (ImageOrientation(orientation_enum).UsesWidthAsHeight())
+      return orientation_adjusted_size.TransposedSize();
+    return orientation_adjusted_size;
+  }
   return FloatSize(BitmapSourceSize());
 }
 
@@ -739,10 +835,12 @@ bool VideoFrame::IsAccelerated() const {
 }
 
 IntSize VideoFrame::BitmapSourceSize() const {
-  // TODO(crbug.com/1096724): Should be scaled to display size.
-  if (auto local_frame = handle_->frame())
-    return IntSize(local_frame->visible_rect().size());
-  return IntSize();
+  auto local_frame = handle_->frame();
+  if (!local_frame)
+    return IntSize();
+
+  // ImageBitmaps should always return the size w/o respecting orientation.
+  return IntSize(local_frame->natural_size());
 }
 
 ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
@@ -757,10 +855,14 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
     return ScriptPromise();
   }
 
+  const auto orientation_enum = VideoTransformationToImageOrientation(
+      local_handle->frame()->metadata().transformation.value_or(
+          media::kNoTransformation));
   if (auto sk_img = local_handle->sk_image()) {
     auto* image_bitmap = MakeGarbageCollected<ImageBitmap>(
-        UnacceleratedStaticBitmapImage::Create(std::move(sk_img)), crop_rect,
-        options);
+        UnacceleratedStaticBitmapImage::Create(std::move(sk_img),
+                                               orientation_enum),
+        crop_rect, options);
     return ImageBitmapSource::FulfillImageBitmap(script_state, image_bitmap,
                                                  exception_state);
   }

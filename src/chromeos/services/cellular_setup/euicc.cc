@@ -7,11 +7,16 @@
 #include <cstdint>
 #include <memory>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/strcat.h"
+#include "base/time/time.h"
+#include "chromeos/network/cellular_esim_connection_handler.h"
 #include "chromeos/network/cellular_esim_profile.h"
 #include "chromeos/network/cellular_inhibitor.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/services/cellular_setup/esim_manager.h"
 #include "chromeos/services/cellular_setup/esim_mojo_utils.h"
 #include "chromeos/services/cellular_setup/esim_profile.h"
@@ -21,15 +26,53 @@
 #include "dbus/object_path.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
+namespace chromeos {
+namespace cellular_setup {
 namespace {
 
 // Prefix for EID when encoded in QR Code.
 const char kEidQrCodePrefix[] = "EID:";
 
-}  // namespace
+// Measures the time from which this function is called to when |callback|
+// is expected to run. The measured time difference should capture the time it
+// took for a profile to be fully downloaded from a provided activation code.
+Euicc::InstallProfileFromActivationCodeCallback
+CreateTimedInstallProfileCallback(
+    Euicc::InstallProfileFromActivationCodeCallback callback) {
+  return base::BindOnce(
+      [](Euicc::InstallProfileFromActivationCodeCallback callback,
+         base::Time installation_start_time, mojom::ProfileInstallResult result,
+         mojo::PendingRemote<mojom::ESimProfile> esim_profile_pending_remote)
+          -> void {
+        std::move(callback).Run(result, std::move(esim_profile_pending_remote));
+        if (result != mojom::ProfileInstallResult::kSuccess)
+          return;
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Network.Cellular.ESim.ProfileDownload.ActivationCode.Latency",
+            base::Time::Now() - installation_start_time);
+      },
+      std::move(callback), base::Time::Now());
+}
 
-namespace chromeos {
-namespace cellular_setup {
+// Measures the time from which this function is called to when |callback|
+// is expected to run. The measured time difference should capture the time it
+// took for a profile discovery request to complete.
+Euicc::RequestPendingProfilesCallback CreateTimedRequestPendingProfilesCallback(
+    Euicc::RequestPendingProfilesCallback callback) {
+  return base::BindOnce(
+      [](Euicc::RequestPendingProfilesCallback callback,
+         base::Time installation_start_time,
+         mojom::ESimOperationResult result) -> void {
+        std::move(callback).Run(result);
+        if (result != mojom::ESimOperationResult::kSuccess)
+          return;
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Network.Cellular.ESim.ProfileDiscovery.Latency",
+            base::Time::Now() - installation_start_time);
+      },
+      std::move(callback), base::Time::Now());
+}
+}  // namespace
 
 Euicc::Euicc(const dbus::ObjectPath& path, ESimManager* esim_manager)
     : esim_manager_(esim_manager),
@@ -83,18 +126,25 @@ void Euicc::InstallProfileFromActivationCode(
   }
 
   // Try installing directly with activation code.
+  // TODO(crbug.com/1186682) Add a check for activation codes that are
+  // currently being installed to prevent multiple attempts for the same
+  // activation code.
   NET_LOG(USER) << "Attempting installation with code " << activation_code;
   esim_manager_->cellular_inhibitor()->InhibitCellularScanning(
+      CellularInhibitor::InhibitReason::kInstallingProfile,
       base::BindOnce(&Euicc::PerformInstallProfileFromActivationCode,
                      weak_ptr_factory_.GetWeakPtr(), activation_code,
-                     confirmation_code, std::move(callback)));
+                     confirmation_code,
+                     CreateTimedInstallProfileCallback(std::move(callback))));
 }
 
 void Euicc::RequestPendingProfiles(RequestPendingProfilesCallback callback) {
   NET_LOG(EVENT) << "Requesting Pending profiles";
   esim_manager_->cellular_inhibitor()->InhibitCellularScanning(
-      base::BindOnce(&Euicc::PerformRequestPendingProfiles,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      CellularInhibitor::InhibitReason::kRefreshingProfileList,
+      base::BindOnce(
+          &Euicc::PerformRequestPendingProfiles, weak_ptr_factory_.GetWeakPtr(),
+          CreateTimedRequestPendingProfilesCallback(std::move(callback))));
 }
 
 void Euicc::GetEidQRCode(GetEidQRCodeCallback callback) {
@@ -204,7 +254,7 @@ void Euicc::OnProfileInstallResult(
     InstallProfileFromActivationCodeCallback callback,
     std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock,
     HermesResponseStatus status,
-    const dbus::ObjectPath* object_path) {
+    const dbus::ObjectPath* profile_path) {
   if (status != HermesResponseStatus::kSuccess) {
     NET_LOG(ERROR) << "Error Installing profile status="
                    << static_cast<int>(status);
@@ -213,18 +263,81 @@ void Euicc::OnProfileInstallResult(
     return;
   }
 
-  ESimProfile* esim_profile = GetProfileFromPath(*object_path);
+  install_calls_pending_connect_.emplace(*profile_path, std::move(callback));
+  esim_manager_->cellular_esim_connection_handler()
+      ->EnableNewProfileForConnection(
+          path_, *profile_path, std::move(inhibit_lock),
+          base::BindOnce(&Euicc::OnNewProfileEnableSuccess,
+                         weak_ptr_factory_.GetWeakPtr(), *profile_path),
+          base::BindOnce(&Euicc::OnNewProfileConnectFailure,
+                         weak_ptr_factory_.GetWeakPtr(), *profile_path));
+}
+
+void Euicc::OnNewProfileEnableSuccess(const dbus::ObjectPath& profile_path,
+                                      const std::string& service_path) {
+  const NetworkState* network_state =
+      esim_manager_->network_state_handler()->GetNetworkState(service_path);
+  if (!network_state) {
+    OnNewProfileConnectFailure(profile_path,
+                               NetworkConnectionHandler::kErrorNotFound,
+                               /*error_data=*/nullptr);
+    return;
+  }
+
+  if (network_state->IsConnectingOrConnected()) {
+    OnNewProfileConnectSuccess(profile_path);
+    return;
+  }
+
+  esim_manager_->network_connection_handler()->ConnectToNetwork(
+      service_path,
+      base::BindOnce(&Euicc::OnNewProfileConnectSuccess,
+                     weak_ptr_factory_.GetWeakPtr(), profile_path),
+      base::BindOnce(&Euicc::OnNewProfileConnectFailure,
+                     weak_ptr_factory_.GetWeakPtr(), profile_path),
+      /*check_error_state=*/false, ConnectCallbackMode::ON_STARTED);
+}
+
+void Euicc::OnNewProfileConnectSuccess(const dbus::ObjectPath& profile_path) {
+  auto it = install_calls_pending_connect_.find(profile_path);
+  if (it == install_calls_pending_connect_.end()) {
+    NET_LOG(ERROR) << "ESim profile install callback missing after connect "
+                      "success. profile_path="
+                   << profile_path.value();
+    return;
+  }
+  InstallProfileFromActivationCodeCallback callback = std::move(it->second);
+  install_calls_pending_connect_.erase(it);
+
+  ESimProfile* esim_profile = GetProfileFromPath(profile_path);
   if (!esim_profile) {
     // An ESimProfile may not exist for the newly created esim profile object
     // path if ESimProfileHandler has not updated profile lists yet. Save the
     // callback until an UpdateProfileList call creates an ESimProfile
     // object for this path
-    install_calls_pending_create_.emplace(*object_path, std::move(callback));
+    install_calls_pending_create_.emplace(profile_path, std::move(callback));
     return;
   }
   std::move(callback).Run(mojom::ProfileInstallResult::kSuccess,
                           esim_profile->CreateRemote());
-  // inhibit_lock goes out of scope and will uninhibit automatically.
+}
+
+void Euicc::OnNewProfileConnectFailure(
+    const dbus::ObjectPath& profile_path,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  NET_LOG(ERROR) << "Error connecting to newly created profile path="
+                 << profile_path.value() << " error_name=" << error_name;
+
+  auto it = install_calls_pending_connect_.find(profile_path);
+  if (it == install_calls_pending_connect_.end()) {
+    NET_LOG(ERROR)
+        << "ESim profile install callback missing after connect failure";
+    return;
+  }
+  std::move(it->second)
+      .Run(mojom::ProfileInstallResult::kFailure, mojo::NullRemote());
+  install_calls_pending_connect_.erase(it);
 }
 
 void Euicc::PerformRequestPendingProfiles(

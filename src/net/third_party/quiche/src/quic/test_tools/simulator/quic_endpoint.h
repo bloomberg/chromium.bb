@@ -81,6 +81,13 @@ class QuicEndpoint : public QuicEndpointBase,
   void OnForwardProgressMadeAfterPathDegrading() override {}
   void OnAckNeedsRetransmittableFrame() override {}
   void SendAckFrequency(const QuicAckFrequencyFrame& /*frame*/) override {}
+  void SendNewConnectionId(const QuicNewConnectionIdFrame& /*frame*/) override {
+  }
+  void SendRetireConnectionId(uint64_t /*sequence_number*/) override {}
+  void OnServerConnectionIdIssued(
+      const QuicConnectionId& /*server_connection_id*/) override {}
+  void OnServerConnectionIdRetired(
+      const QuicConnectionId& /*server_connection_id*/) override {}
   bool AllowSelfAddressChange() const override;
   HandshakeState GetHandshakeState() const override;
   bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& /*frame*/) override {
@@ -107,6 +114,10 @@ class QuicEndpoint : public QuicEndpointBase,
     return true;
   }
   void MaybeSendAddressToken() override {}
+  bool IsKnownServerAddress(
+      const QuicSocketAddress& /*address*/) const override {
+    return false;
+  }
 
   // End QuicConnectionVisitorInterface implementation.
 

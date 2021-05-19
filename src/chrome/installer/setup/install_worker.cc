@@ -39,8 +39,10 @@
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/installer/setup/downgrade_cleanup.h"
 #include "chrome/installer/setup/install_params.h"
 #include "chrome/installer/setup/installer_state.h"
+#include "chrome/installer/setup/last_breaking_installer_version.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
@@ -430,7 +432,13 @@ void AddEnterpriseEnrollmentWorkItems(const InstallerState& installer_state,
     cmd_line.AppendSwitch(switches::kVerboseLogging);
     InstallUtil::AppendModeAndChannelSwitches(&cmd_line);
 
-    AppCommand cmd(cmd_line.GetCommandLineString());
+    // The substitution for the insert sequence "%1" here is performed safely by
+    // Google Update rather than insecurely by the Windows shell. Disable the
+    // safety check for unsafe insert sequences since the right thing is
+    // happening. Do not blindly copy this pattern in new code. Check with a
+    // member of base/win/OWNERS if in doubt.
+    AppCommand cmd(cmd_line.GetCommandLineStringWithUnsafeInsertSequences());
+
     // TODO(alito): For now setting this command as web accessible is required
     // by Google Update.  Could revisit this should Google Update change the
     // way permissions are handled for commands.
@@ -646,6 +654,10 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
   base::FilePath new_chrome_exe(target_path.Append(kChromeNewExe));
   const std::wstring clients_key(install_static::GetClientsKeyPath());
 
+  base::FilePath installer_path(
+      installer_state.GetInstallerDirectory(new_version)
+          .Append(setup_path.BaseName()));
+
   // Append work items that will only be executed if this was an in-use update.
   // We update the 'opv' value with the current version that is active,
   // the 'cpv' value with the critical update version (if present), and the
@@ -660,9 +672,6 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
     // version considered critical relative to the version being updated.
     base::Version critical_version(
         installer_state.DetermineCriticalVersion(current_version, new_version));
-    base::FilePath installer_path(
-        installer_state.GetInstallerDirectory(new_version)
-            .Append(setup_path.BaseName()));
 
     if (current_version.IsValid()) {
       in_use_update_work_items->AddSetRegValueWorkItem(
@@ -708,18 +717,12 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
             new Not(new ConditionRunIfFileExists(new_chrome_exe))));
     regular_update_work_items->set_log_message("RegularUpdateWorkItemList");
 
-    // Convey the channel name to the browser if this installer instance's
-    // channel is enforced by policy. Otherwise, delete the registry value.
-    const auto& install_details = install_static::InstallDetails::Get();
-    if (install_details.channel_origin() ==
-        install_static::ChannelOrigin::kPolicy) {
-      post_install_task_list->AddSetRegValueWorkItem(
-          root, clients_key, KEY_WOW64_32KEY, google_update::kRegChannelField,
-          install_details.channel(), true);
-    } else {
-      regular_update_work_items->AddDeleteRegValueWorkItem(
-          root, clients_key, KEY_WOW64_32KEY, google_update::kRegChannelField);
-    }
+    // If a channel was specified by policy, update the "channel" registry value
+    // with it so that the browser knows which channel to use, otherwise delete
+    // whatever value that key holds.
+    AddChannelWorkItems(root, clients_key, regular_update_work_items.get());
+    AddFinalizeUpdateWorkItems(new_version, installer_state, installer_path,
+                               regular_update_work_items.get());
 
     // Since this was not an in-use-update, delete 'opv', 'cpv',
     // and 'cmd' keys.
@@ -866,8 +869,8 @@ void AddInstallWorkItems(const InstallParams& install_params,
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING
 
-  InstallUtil::AddUpdateDowngradeVersionItem(
-      installer_state.root_key(), current_version, new_version, install_list);
+  AddUpdateDowngradeVersionItem(installer_state.root_key(), current_version,
+                                new_version, install_list);
 
   AddUpdateBrandCodeWorkItem(installer_state, install_list);
 
@@ -1040,6 +1043,51 @@ void AddOsUpgradeWorkItems(const InstallerState& installer_state,
     cmd.set_is_auto_run_on_os_upgrade(true);
     cmd.AddWorkItems(installer_state.root_key(), cmd_key, install_list);
   }
+}
+
+void AddChannelWorkItems(HKEY root,
+                         const std::wstring& clients_key,
+                         WorkItemList* list) {
+  const auto& install_details = install_static::InstallDetails::Get();
+  if (install_details.channel_origin() ==
+      install_static::ChannelOrigin::kPolicy) {
+    // Use channel_override rather than simply channel so that extended stable
+    // is differentiated from regular.
+    list->AddSetRegValueWorkItem(root, clients_key, KEY_WOW64_32KEY,
+                                 google_update::kRegChannelField,
+                                 install_details.channel_override(),
+                                 /*overwrite=*/true);
+  } else {
+    list->AddDeleteRegValueWorkItem(root, clients_key, KEY_WOW64_32KEY,
+                                    google_update::kRegChannelField);
+  }
+}
+
+void AddFinalizeUpdateWorkItems(const base::Version& new_version,
+                                const InstallerState& installer_state,
+                                const base::FilePath& setup_path,
+                                WorkItemList* list) {
+  // Cleanup for breaking downgrade first in the post install to avoid
+  // overwriting any of the following post-install tasks.
+  AddDowngradeCleanupItems(new_version, list);
+
+  const std::wstring client_state_key = install_static::GetClientStateKeyPath();
+
+  // Adds the command that needs to be used in order to cleanup any breaking
+  // changes the installer of this version may have added.
+  list->AddSetRegValueWorkItem(
+      installer_state.root_key(), client_state_key, KEY_WOW64_32KEY,
+      google_update::kRegDowngradeCleanupCommandField,
+      GetDowngradeCleanupCommandWithPlaceholders(setup_path, installer_state),
+      true);
+
+  // Write the latest installer's breaking version so that future downgrades
+  // know if they need to do a clean install. This isn't done for in-use since
+  // it is done at the the executable's rename.
+  list->AddSetRegValueWorkItem(
+      installer_state.root_key(), client_state_key, KEY_WOW64_32KEY,
+      google_update::kRegCleanInstallRequiredForVersionBelowField,
+      kLastBreakingInstallerVersion, true);
 }
 
 }  // namespace installer

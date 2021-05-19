@@ -49,6 +49,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
 
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
+  void WaitForMicrophoneState(mojom::MicrophoneState wanted_state);
+  void WaitForCameraState(mojom::CameraState wanted_state);
 
   // Blocks until the set of audio/video states for the players in the media
   // session matches |wanted_states|. The order is not important.
@@ -120,6 +122,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
 
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
   base::Optional<mojom::MediaPlaybackState> wanted_playback_state_;
+  base::Optional<mojom::MicrophoneState> wanted_microphone_state_;
+  base::Optional<mojom::CameraState> wanted_camera_state_;
   base::Optional<std::vector<mojom::MediaAudioVideoState>>
       wanted_audio_video_states_;
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -160,6 +164,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void EnterPictureInPicture() override;
   void ExitPictureInPicture() override;
   void SetAudioSinkId(const base::Optional<std::string>& id) override {}
+  void ToggleMicrophone() override {}
+  void ToggleCamera() override {}
+  void HangUp() override {}
 
   void SetIsControllable(bool value);
   void SetPreferStop(bool value) { prefer_stop_ = value; }

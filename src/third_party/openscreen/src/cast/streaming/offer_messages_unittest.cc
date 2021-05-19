@@ -86,10 +86,16 @@ constexpr char kValidOffer[] = R"({
   ]
 })";
 
-void ExpectFailureOnParse(absl::string_view body) {
+void ExpectFailureOnParse(
+    absl::string_view body,
+    absl::optional<Error::Code> expected = absl::nullopt) {
   ErrorOr<Json::Value> root = json::Parse(body);
   ASSERT_TRUE(root.is_value()) << root.error();
-  EXPECT_TRUE(Offer::Parse(std::move(root.value())).is_error());
+  ErrorOr<Offer> error_or_offer = Offer::Parse(std::move(root.value()));
+  EXPECT_TRUE(error_or_offer.is_error());
+  if (expected) {
+    EXPECT_EQ(expected, error_or_offer.error().code());
+  }
 }
 
 void ExpectEqualsValidOffer(const Offer& offer) {
@@ -183,8 +189,8 @@ TEST(OfferTest, ErrorOnEmptyOffer) {
 }
 
 TEST(OfferTest, ErrorOnMissingMandatoryFields) {
-  // It's okay if castMode is omitted, but if supportedStreams isanne  //
-  // omitted we should fail here.
+  // It's okay if castMode is omitted, but if supportedStreams is omitted we
+  // should fail here.
   ExpectFailureOnParse(R"({
     "castMode": "mirroring"
   })");
@@ -491,6 +497,97 @@ TEST(OfferTest, ToJsonFailsWithInvalidStreams) {
   Offer audio_stream_invalid = valid_offer;
   video_stream_invalid.audio_streams[0].bit_rate = 0;
   EXPECT_TRUE(video_stream_invalid.ToJson().is_error());
+}
+
+TEST(OfferTest, FailsIfUnencrypted) {
+  // Video stream missing AES fields.
+  ExpectFailureOnParse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "video_source",
+      "codecName": "vp8",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 100,
+      "ssrc": 19088743,
+      "timeBase": "1/48000",
+       "resolutions": [],
+       "maxBitRate": 10000,
+       "aesIvMask": "7f12a19be62a36c04ae4116caaeff6d1"
+    }]
+  })",
+                       Error::Code::kUnencryptedOffer);
+
+  ExpectFailureOnParse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "video_source",
+      "codecName": "vp8",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 100,
+      "ssrc": 19088743,
+      "timeBase": "1/48000",
+       "resolutions": [],
+       "maxBitRate": 10000,
+       "aesKey": "51027e4e2347cbcb49d57ef10177aebc"
+    }]
+  })",
+                       Error::Code::kUnencryptedOffer);
+
+  // Audio stream missing AES fields.
+  ExpectFailureOnParse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "audio_source",
+      "codecName": "opus",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 96,
+      "ssrc": 19088743,
+      "bitRate": 124000,
+      "timeBase": "1/48000",
+      "channels": 2,
+      "aesIvMask": "7f12a19be62a36c04ae4116caaeff6d1"
+    }]
+  })",
+                       Error::Code::kUnencryptedOffer);
+
+  ExpectFailureOnParse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "audio_source",
+      "codecName": "opus",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 96,
+      "ssrc": 19088743,
+      "bitRate": 124000,
+      "timeBase": "1/48000",
+      "channels": 2,
+      "aesKey": "51027e4e2347cbcb49d57ef10177aebc"
+    }]
+  })",
+                       Error::Code::kUnencryptedOffer);
+
+  // And finally, fields provided but not properly formatted.
+  ExpectFailureOnParse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "audio_source",
+      "codecName": "opus",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 96,
+      "ssrc": 19088743,
+      "bitRate": 124000,
+      "timeBase": "1/48000",
+      "channels": 2,
+      "aesKey": "51027e4e2347$bcb49d57ef10177aebc",
+      "aesIvMask": "7f12a19be62a36c04ae4116caaeff6d1"
+    }]
+  })",
+                       Error::Code::kUnencryptedOffer);
 }
 
 }  // namespace cast

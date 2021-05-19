@@ -5,9 +5,9 @@
 /* This code is duplicated from ../issues/MarkdownIssueDescription.ts
  to avoid a cyclic dependency. */
 
-import * as Root from '../root/root.js';
+import * as Root from '../core/root/root.js';
 
-export function getMarkdownFileContent(filename: string): string {
+export async function getMarkdownFileContent(filename: string): Promise<string> {
   const rawMarkdown = Root.Runtime.cachedResources.get(filename);
   if (!rawMarkdown) {
     throw new Error(`Markdown file ${filename} not found. Declare it as a resource in the module.json file`);

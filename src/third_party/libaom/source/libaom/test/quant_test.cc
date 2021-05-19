@@ -28,8 +28,7 @@ class QMTest
   virtual ~QMTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
+    InitializeConfig(GET_PARAM(1));
     set_cpu_used_ = GET_PARAM(2);
   }
 
@@ -112,8 +111,7 @@ class QuantizerBoundsCheckTestLarge
   virtual ~QuantizerBoundsCheckTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = rc_end_usage_;

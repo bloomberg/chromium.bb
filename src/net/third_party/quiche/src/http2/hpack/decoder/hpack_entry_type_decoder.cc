@@ -9,7 +9,6 @@
 #include "http2/platform/api/http2_flag_utils.h"
 #include "http2/platform/api/http2_flags.h"
 #include "http2/platform/api/http2_logging.h"
-#include "http2/platform/api/http2_string_utils.h"
 
 namespace http2 {
 
@@ -354,7 +353,8 @@ DecodeStatus HpackEntryTypeDecoder::Start(DecodeBuffer* db) {
       // All of those bits are 1, so the varint extends into another byte.
       return varint_decoder_.StartExtended(7, db);
   }
-  HTTP2_BUG << "Unreachable, byte=" << std::hex << static_cast<uint32_t>(byte);
+  HTTP2_BUG(http2_bug_66_1)
+      << "Unreachable, byte=" << std::hex << static_cast<uint32_t>(byte);
   HTTP2_CODE_COUNT_N(decompress_failure_3, 17, 23);
   return DecodeStatus::kDecodeError;
 }

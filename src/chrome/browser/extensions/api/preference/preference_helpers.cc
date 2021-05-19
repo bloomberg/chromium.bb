@@ -87,7 +87,7 @@ void DispatchEventToExtensions(Profile* profile,
                                events::HistogramValue histogram_value,
                                const std::string& event_name,
                                base::ListValue* args,
-                               APIPermission::ID permission,
+                               mojom::APIPermissionID permission,
                                bool incognito,
                                const std::string& browser_pref) {
   EventRouter* router = EventRouter::Get(profile);

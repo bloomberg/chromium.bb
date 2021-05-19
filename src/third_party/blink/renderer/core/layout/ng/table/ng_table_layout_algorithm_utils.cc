@@ -424,9 +424,9 @@ void ComputeSectionInlineConstraints(
         NGBoxStrut cell_padding = table_borders.CellPaddingForMeasure(
             cell.Style(), table_writing_direction);
         NGTableTypes::CellInlineConstraint cell_constraint =
-            NGTableTypes::CreateCellInlineConstraint(
-                cell, table_writing_mode, is_fixed_layout, cell_border,
-                cell_padding, table_borders.IsCollapsed());
+            NGTableTypes::CreateCellInlineConstraint(cell, table_writing_mode,
+                                                     is_fixed_layout,
+                                                     cell_border, cell_padding);
         if (colspan == 1) {
           base::Optional<NGTableTypes::CellInlineConstraint>& constraint =
               (*cell_inline_constraints)[colspan_cell_tabulator
@@ -504,6 +504,29 @@ NGConstraintSpace NGTableAlgorithmUtils::CreateTableCellConstraintSpace(
   builder.SetCacheSlot(cache_slot);
 
   return builder.ToConstraintSpace();
+}
+
+// Computes maximum possible number of non-mergeable columns.
+wtf_size_t NGTableAlgorithmUtils::ComputeMaximumNonMergeableColumnCount(
+    const Vector<NGBlockNode>& columns,
+    bool is_fixed_layout) {
+  // Build column constraints.
+  scoped_refptr<NGTableTypes::Columns> column_constraints =
+      base::MakeRefCounted<NGTableTypes::Columns>();
+  ColumnConstraintsBuilder constraints_builder(column_constraints.get(),
+                                               is_fixed_layout);
+  VisitLayoutNGTableColumn(columns, UINT_MAX, &constraints_builder);
+  // Find last non-mergeable column.
+  if (column_constraints->data.size() == 0)
+    return 0;
+  wtf_size_t column_index = column_constraints->data.size() - 1;
+  while (column_index > 0 &&
+         column_constraints->data[column_index].is_mergeable) {
+    --column_index;
+  }
+  if (column_index == 0 && column_constraints->data[0].is_mergeable)
+    return 0;
+  return column_index + 1;
 }
 
 scoped_refptr<NGTableTypes::Columns>

@@ -10,6 +10,7 @@
 #include "ash/public/cpp/clipboard_history_controller.h"
 #include "base/base64.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
@@ -135,7 +136,7 @@ void DecodeImageFileAndCopyToClipboard(
   // external storage.
   data_decoder::DecodeImageIsolated(
       std::vector<uint8_t>(png_data->data().begin(), png_data->data().end()),
-      data_decoder::mojom::ImageCodec::DEFAULT, false,
+      data_decoder::mojom::ImageCodec::kDefault, false,
       data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
       base::BindOnce(&CopyImageToClipboard, maintain_clipboard,
                      clipboard_sequence, std::move(callback), png_data));

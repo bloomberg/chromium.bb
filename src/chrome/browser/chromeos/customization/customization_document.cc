@@ -27,11 +27,11 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_downloader.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_util.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
@@ -681,7 +681,7 @@ bool ServicesCustomizationDocument::GetDefaultWallpaperUrl(
 std::unique_ptr<base::DictionaryValue>
 ServicesCustomizationDocument::GetDefaultApps() const {
   if (!IsReady())
-    return std::unique_ptr<base::DictionaryValue>();
+    return nullptr;
 
   return GetDefaultAppsInProviderFormat(*root_);
 }
@@ -826,8 +826,7 @@ void ServicesCustomizationDocument::StartOEMWallpaperDownload(
   wallpaper_downloader_.reset(new CustomizationWallpaperDownloader(
       wallpaper_url, dir, file,
       base::BindOnce(&ServicesCustomizationDocument::OnOEMWallpaperDownloaded,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(std::move(applying)))));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(applying))));
 
   wallpaper_downloader_->Start();
 }

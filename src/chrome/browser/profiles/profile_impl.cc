@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -67,7 +66,6 @@
 #include "chrome/browser/federated_learning/floc_id_provider_factory.h"
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
-#include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -122,6 +120,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store_impl.h"
+#include "components/heavy_ad_intervention/heavy_ad_service.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
@@ -137,6 +136,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -170,11 +170,11 @@
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
+#include "chrome/browser/ash/arc/session/arc_service_launcher.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_builder_chromeos.h"
@@ -234,6 +234,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "components/signin/public/base/signin_switches.h"
 #endif
 
 using base::TimeDelta;
@@ -454,6 +455,10 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kShowCastIconInToolbar, false);
 #endif  // !defined(OS_ANDROID)
   registry->RegisterTimePref(prefs::kProfileCreationTime, base::Time());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterBooleanPref(prefs::kPdfAnnotationsEnabled, true);
+#endif
 }
 
 ProfileImpl::ProfileImpl(
@@ -465,7 +470,6 @@ ProfileImpl::ProfileImpl(
     : path_(path),
       path_creation_time_(path_creation_time),
       io_task_runner_(std::move(io_task_runner)),
-      io_data_(this),
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
       delegate_(delegate) {
@@ -499,6 +503,23 @@ ProfileImpl::ProfileImpl(
 
   set_is_guest_profile(path == ProfileManager::GetGuestProfilePath());
   set_is_system_profile(path == ProfileManager::GetSystemProfilePath());
+
+  // TODO(https://1169142): Replace this part with setting the
+  // BrowserContextType as the main reference for profile type and replacing the
+  // IsXProfile functions implementations with checking for this value.
+  if (IsGuestSession()) {
+    profile_metrics::SetBrowserContextType(
+        this, profile_metrics::BrowserProfileType::kGuest);
+  } else if (IsEphemeralGuestProfile()) {
+    profile_metrics::SetBrowserContextType(
+        this, profile_metrics::BrowserProfileType::kEphemeralGuest);
+  } else if (IsSystemProfile()) {
+    profile_metrics::SetBrowserContextType(
+        this, profile_metrics::BrowserProfileType::kSystem);
+  } else {
+    profile_metrics::SetBrowserContextType(
+        this, profile_metrics::BrowserProfileType::kRegular);
+  }
 
   // The ProfileImpl can be created both synchronously and asynchronously.
   bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
@@ -600,7 +621,7 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
   policy::UserCloudPolicyManager* user_cloud_policy_manager;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (force_immediate_policy_load)
-    chromeos::DeviceSettingsService::Get()->LoadImmediately();
+    ash::DeviceSettingsService::Get()->LoadImmediately();
 
   policy::CreateConfigurationPolicyProvider(
       this, force_immediate_policy_load, io_task_runner_,
@@ -788,8 +809,7 @@ void ProfileImpl::DoFinalInit() {
     if (shutting_down)
       return;
   }
-  // Ensure that the SharingService is initialized now that io_data_ is
-  // initialized. https://crbug.com/171406
+
   SharingServiceFactory::GetForBrowserContext(this);
 
   // The creation of FlocIdProvider should align with the start of a browser
@@ -930,7 +950,10 @@ bool ProfileImpl::IsMainProfile() const {
   // Device Account's certs to non-Device Accounts (Think of the case when the
   // Device Account has sensitive Enterprise SSL client certs).
   // TODO(sinhak): Remove this after launching go/cros-dent-1-lacros.
-  return IsDeviceAccountSignedIn(this);
+  if (!base::FeatureList::IsEnabled(switches::kUseAccountManagerFacade))
+    return IsDeviceAccountSignedIn(this);
+
+  return true;
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -941,10 +964,13 @@ const Profile::OTRProfileID& ProfileImpl::GetOTRProfileID() const {
   return *otr_profile_id;
 }
 
-Profile* ProfileImpl::GetOffTheRecordProfile(
-    const OTRProfileID& otr_profile_id) {
+Profile* ProfileImpl::GetOffTheRecordProfile(const OTRProfileID& otr_profile_id,
+                                             bool create_if_needed) {
   if (HasOffTheRecordProfile(otr_profile_id))
     return otr_profiles_[otr_profile_id].get();
+
+  if (!create_if_needed)
+    return nullptr;
 
   // Create a new OffTheRecordProfile
   std::unique_ptr<Profile> otr_profile =
@@ -1245,10 +1271,6 @@ policy::ProfilePolicyConnector* ProfileImpl::GetProfilePolicyConnector() {
 const policy::ProfilePolicyConnector* ProfileImpl::GetProfilePolicyConnector()
     const {
   return profile_policy_connector_.get();
-}
-
-content::ResourceContext* ProfileImpl::GetResourceContext() {
-  return io_data_.GetResourceContext();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -1560,7 +1582,10 @@ void ProfileImpl::UpdateIsEphemeralInStorage() {
   ProfileAttributesEntry* entry = g_browser_process->profile_manager()
                                       ->GetProfileAttributesStorage()
                                       .GetProfileAttributesWithPath(GetPath());
-  if (entry) {
+  // If a profile is omitted, it has to be ephemeral and thus setting the value
+  // based on the pref does not make any sense. Whenever the profile is set as
+  // non-omitted, it should also update IsEphemeral to respect this pref.
+  if (entry && !entry->IsOmitted()) {
     entry->SetIsEphemeral(
         GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles));
   }

@@ -44,9 +44,6 @@ class AppBannerManagerDesktop
   virtual TestAppBannerManagerDesktop*
   AsTestAppBannerManagerDesktopForTesting();
 
-  // AppBannerManager overrides.
-  bool IsExternallyInstalledWebApp() override;
-
  protected:
   explicit AppBannerManagerDesktop(content::WebContents* web_contents);
 
@@ -59,7 +56,7 @@ class AppBannerManagerDesktop
   base::WeakPtr<AppBannerManager> GetWeakPtr() override;
   void InvalidateWeakPtrs() override;
   bool IsSupportedNonWebAppPlatform(
-      const base::string16& platform) const override;
+      const std::u16string& platform) const override;
   bool IsRelatedNonWebAppInstalled(
       const blink::Manifest::RelatedApplication& related_app) const override;
   bool IsWebAppConsideredInstalled() const override;

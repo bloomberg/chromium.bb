@@ -30,16 +30,16 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../common/common.js';
 import * as Components from '../components/components.js';
-import * as Host from '../host/host.js';
-import * as i18n from '../i18n/i18n.js';
-import * as Root from '../root/root.js';
-import * as UI from '../ui/ui.js';
+import * as Common from '../core/common/common.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
+import * as Root from '../core/root/root.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import type {KeybindsSettingsTab} from './KeybindsSettingsTab.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Name of the Settings view
   */
@@ -77,6 +77,15 @@ export const UIStrings = {
   *@description Message to display if a setting change requires a reload of DevTools
   */
   oneOrMoreSettingsHaveChanged: 'One or more settings have changed which requires a reload to take effect.',
+  /**
+  * @description Label for a filter text input that controls which experiments are shown.
+  */
+  filterExperimentsLabel: 'Filter',
+  /**
+  * @description Warning text shown when the user has entered text to filter the
+  * list of experiments, but no experiments match the filter.
+  */
+  noResults: 'No experiments match the filter',
 };
 const str_ = i18n.i18n.registerUIStrings('settings/SettingsScreen.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -90,7 +99,7 @@ export class SettingsScreen extends UI.Widget.VBox implements UI.View.ViewLocati
 
   private constructor() {
     super(true);
-    this.registerRequiredCSS('settings/settingsScreen.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('settings/settingsScreen.css', {enableLegacyPatching: false});
 
     this.contentElement.classList.add('settings-window-main');
     this.contentElement.classList.add('vbox');
@@ -100,7 +109,7 @@ export class SettingsScreen extends UI.Widget.VBox implements UI.View.ViewLocati
         UI.Utils
             .createShadowRootWithCoreStyles(
                 settingsLabelElement,
-                {cssFile: 'settings/settingsScreen.css', enableLegacyPatching: true, delegatesFocus: undefined})
+                {cssFile: 'settings/settingsScreen.css', enableLegacyPatching: false, delegatesFocus: undefined})
             .createChild('div', 'settings-window-title');
 
     UI.ARIAUtils.markAsHeading(settingsTitleElement, 1);
@@ -227,7 +236,7 @@ class SettingsTab extends UI.Widget.VBox {
                                 .createChild('div', 'settings-tab settings-content settings-container');
   }
 
-  _appendSection(name?: string): Element {
+  _appendSection(name?: string): HTMLElement {
     const block = this.containerElement.createChild('div', 'settings-block');
     if (name) {
       UI.ARIAUtils.markAsGroup(block);
@@ -365,30 +374,57 @@ export class GenericSettingsTab extends SettingsTab {
 let experimentsSettingsTabInstance: ExperimentsSettingsTab;
 
 export class ExperimentsSettingsTab extends SettingsTab {
+  private experimentsSection: HTMLElement|undefined;
+  private unstableExperimentsSection: HTMLElement|undefined;
+
   constructor() {
     super(i18nString(UIStrings.experiments), 'experiments-tab-content');
+    const filterSection = this._appendSection();
+    filterSection.style.paddingTop = '1px';
 
+    const labelElement = filterSection.createChild('label');
+    labelElement.textContent = i18nString(UIStrings.filterExperimentsLabel);
+    const inputElement = UI.UIUtils.createInput('', 'text');
+    UI.ARIAUtils.bindLabelToControl(labelElement, inputElement);
+    filterSection.appendChild(inputElement);
+    inputElement.addEventListener('input', () => this.renderExperiments(inputElement.value.toLowerCase()), false);
+
+    this.renderExperiments('');
+  }
+
+  private renderExperiments(filterText: string): void {
+    if (this.experimentsSection) {
+      this.experimentsSection.remove();
+    }
+    if (this.unstableExperimentsSection) {
+      this.unstableExperimentsSection.remove();
+    }
     const experiments = Root.Runtime.experiments.allConfigurableExperiments().sort();
-    const unstableExperiments = experiments.filter(e => e.unstable);
-    const stableExperiments = experiments.filter(e => !e.unstable);
+    const unstableExperiments = experiments.filter(e => e.unstable && e.title.toLowerCase().includes(filterText));
+    const stableExperiments = experiments.filter(e => !e.unstable && e.title.toLowerCase().includes(filterText));
     if (stableExperiments.length) {
-      const experimentsSection = this._appendSection();
+      this.experimentsSection = this._appendSection();
       const warningMessage = i18nString(UIStrings.theseExperimentsCouldBeUnstable);
-      experimentsSection.appendChild(this._createExperimentsWarningSubsection(warningMessage));
+      this.experimentsSection.appendChild(this._createExperimentsWarningSubsection(warningMessage));
       for (const experiment of stableExperiments) {
-        experimentsSection.appendChild(this._createExperimentCheckbox(experiment));
+        this.experimentsSection.appendChild(this._createExperimentCheckbox(experiment));
       }
     }
     if (unstableExperiments.length) {
-      const experimentsSection = this._appendSection();
+      this.unstableExperimentsSection = this._appendSection();
       const warningMessage = i18nString(UIStrings.theseExperimentsAreParticularly);
-      experimentsSection.appendChild(this._createExperimentsWarningSubsection(warningMessage));
+      this.unstableExperimentsSection.appendChild(this._createExperimentsWarningSubsection(warningMessage));
       for (const experiment of unstableExperiments) {
         // TODO(crbug.com/1161439): remove experiment duplication
         if (experiment.name !== 'blackboxJSFramesOnTimeline') {
-          experimentsSection.appendChild(this._createExperimentCheckbox(experiment));
+          this.unstableExperimentsSection.appendChild(this._createExperimentCheckbox(experiment));
         }
       }
+    }
+    if (!stableExperiments.length && !unstableExperiments.length) {
+      this.experimentsSection = this._appendSection();
+      const warning = this.experimentsSection.createChild('span');
+      warning.textContent = i18nString(UIStrings.noResults);
     }
   }
 
@@ -453,7 +489,7 @@ export class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
         return true;
       case 'settings.documentation':
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(
-            UI.UIUtils.addReferrerToURL('https://developers.google.com/web/tools/chrome-devtools/'));
+            UI.UIUtils.addReferrerToURL('https://developer.chrome.com/docs/devtools/'));
         return true;
       case 'settings.shortcuts':
         SettingsScreen._showSettingsScreen({name: 'keybinds', focusTabHeader: true});
@@ -488,7 +524,6 @@ export class Revealer implements Common.Revealer.Revealer {
         success = true;
       }
     }
-    Root.Runtime.Runtime.instance().extensions(UI.SettingsUI.SettingUI).forEach(revealSettingUI);
 
     // Reveal settings views
     for (const view of UI.ViewManager.getRegisteredViewExtensions()) {
@@ -506,15 +541,6 @@ export class Revealer implements Common.Revealer.Revealer {
     }
 
     return success ? Promise.resolve() : Promise.reject();
-
-    function revealSettingUI(extension: Root.Runtime.Extension): void {
-      const settings = extension.descriptor()['settings'];
-      if (settings && settings.indexOf(setting.name) !== -1) {
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
-        SettingsScreen._showSettingsScreen();
-        success = true;
-      }
-    }
   }
 }
 export interface ShowSettingsScreenOptions {

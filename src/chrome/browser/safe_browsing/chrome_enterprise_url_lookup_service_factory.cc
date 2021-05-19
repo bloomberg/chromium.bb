@@ -11,7 +11,9 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/user_population.h"
 #include "chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -63,20 +65,15 @@ ChromeEnterpriseRealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
         std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
             profile->GetURLLoaderFactory());
   }
-  const policy::BrowserPolicyConnector* browser_policy_connector =
-      g_browser_process->browser_policy_connector();
-  bool is_under_advanced_protection =
-      AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
-          ->IsUnderAdvancedProtection();
   return new ChromeEnterpriseRealTimeUrlLookupService(
       network::SharedURLLoaderFactory::Create(std::move(url_loader_factory)),
       VerdictCacheManagerFactory::GetForProfile(profile), profile,
-      base::BindRepeating(&safe_browsing::SyncUtils::IsHistorySyncEnabled,
-                          ProfileSyncServiceFactory::GetForProfile(profile)),
+      base::BindRepeating(&safe_browsing::GetUserPopulation, profile),
       enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
           profile),
-      profile->GetPrefs(), GetProfileManagementStatus(browser_policy_connector),
-      is_under_advanced_protection, profile->IsOffTheRecord());
+      // Referrer chain provider is set to nullptr for enterprise because
+      // it is currently not supported for enterprise users.
+      /*referrer_chain_provider=*/nullptr);
 }
 
 }  // namespace safe_browsing

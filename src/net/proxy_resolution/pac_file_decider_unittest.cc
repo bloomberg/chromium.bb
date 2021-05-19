@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -55,12 +56,12 @@ class Rules {
           fetch_error(fetch_error),
           is_valid_script(is_valid_script) {}
 
-    base::string16 text() const {
+    std::u16string text() const {
       if (is_valid_script)
         return base::UTF8ToUTF16(url.spec() + "!FindProxyForURL");
       if (fetch_error == OK)
         return base::UTF8ToUTF16(url.spec() + "!invalid-script");
-      return base::string16();
+      return std::u16string();
     }
 
     GURL url;
@@ -92,7 +93,7 @@ class Rules {
     return rules_[0];
   }
 
-  const Rule& GetRuleByText(const base::string16& text) const {
+  const Rule& GetRuleByText(const std::u16string& text) const {
     for (auto it = rules_.begin(); it != rules_.end(); ++it) {
       if (it->text() == text)
         return *it;
@@ -117,7 +118,7 @@ class RuleBasedPacFileFetcher : public PacFileFetcher {
 
   // PacFileFetcher implementation.
   int Fetch(const GURL& url,
-            base::string16* text,
+            std::u16string* text,
             CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag traffic_annotation) override {
     const Rules::Rule& rule = rules_->GetRuleByUrl(url);
@@ -147,7 +148,7 @@ class MockDhcpPacFileFetcher : public DhcpPacFileFetcher {
   MockDhcpPacFileFetcher();
   ~MockDhcpPacFileFetcher() override;
 
-  int Fetch(base::string16* utf16_text,
+  int Fetch(std::u16string* utf16_text,
             CompletionOnceCallback callback,
             const NetLogWithSource& net_log,
             const NetworkTrafficAnnotationTag traffic_annotation) override;
@@ -157,11 +158,11 @@ class MockDhcpPacFileFetcher : public DhcpPacFileFetcher {
 
   virtual void SetPacURL(const GURL& url);
 
-  virtual void CompleteRequests(int result, const base::string16& script);
+  virtual void CompleteRequests(int result, const std::u16string& script);
 
  private:
   CompletionOnceCallback callback_;
-  base::string16* utf16_text_;
+  std::u16string* utf16_text_;
   GURL gurl_;
   DISALLOW_COPY_AND_ASSIGN(MockDhcpPacFileFetcher);
 };
@@ -171,7 +172,7 @@ MockDhcpPacFileFetcher::MockDhcpPacFileFetcher() = default;
 MockDhcpPacFileFetcher::~MockDhcpPacFileFetcher() = default;
 
 int MockDhcpPacFileFetcher::Fetch(
-    base::string16* utf16_text,
+    std::u16string* utf16_text,
     CompletionOnceCallback callback,
     const NetLogWithSource& net_log,
     const NetworkTrafficAnnotationTag traffic_annotation) {
@@ -193,7 +194,7 @@ void MockDhcpPacFileFetcher::SetPacURL(const GURL& url) {
 }
 
 void MockDhcpPacFileFetcher::CompleteRequests(int result,
-                                              const base::string16& script) {
+                                              const std::u16string& script) {
   *utf16_text_ = script;
   std::move(callback_).Run(result);
 }
@@ -345,7 +346,8 @@ class PacFileDeciderQuickCheckTest : public ::testing::Test,
     request_context_.set_host_resolver(&resolver_);
     fetcher_.SetRequestContext(&request_context_);
     config_.set_auto_detect(true);
-    decider_.reset(new PacFileDecider(&fetcher_, &dhcp_fetcher_, nullptr));
+    decider_ =
+        std::make_unique<PacFileDecider>(&fetcher_, &dhcp_fetcher_, nullptr);
   }
 
   int StartDecider() {
@@ -429,10 +431,11 @@ TEST_F(PacFileDeciderQuickCheckTest, AsyncTimeout) {
 TEST_F(PacFileDeciderQuickCheckTest, QuickCheckInhibitsDhcp) {
   MockDhcpPacFileFetcher dhcp_fetcher;
   const char* kPac = "function FindProxyForURL(u,h) { return \"DIRECT\"; }";
-  base::string16 pac_contents = base::UTF8ToUTF16(kPac);
+  std::u16string pac_contents = base::UTF8ToUTF16(kPac);
   GURL url("http://foobar/baz");
   dhcp_fetcher.SetPacURL(url);
-  decider_.reset(new PacFileDecider(&fetcher_, &dhcp_fetcher, nullptr));
+  decider_ =
+      std::make_unique<PacFileDecider>(&fetcher_, &dhcp_fetcher, nullptr);
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   dhcp_fetcher.CompleteRequests(OK, pac_contents);
   EXPECT_TRUE(decider_->effective_config().value().has_pac_url());
@@ -447,7 +450,8 @@ TEST_F(PacFileDeciderQuickCheckTest, QuickCheckDisabled) {
   const char* kPac = "function FindProxyForURL(u,h) { return \"DIRECT\"; }";
   resolver_.set_synchronous_mode(true);
   MockPacFileFetcher fetcher;
-  decider_.reset(new PacFileDecider(&fetcher, &dhcp_fetcher_, nullptr));
+  decider_ =
+      std::make_unique<PacFileDecider>(&fetcher, &dhcp_fetcher_, nullptr);
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   EXPECT_TRUE(fetcher.has_pending_request());
   fetcher.NotifyFetchCompletion(OK, kPac);
@@ -709,10 +713,10 @@ TEST(PacFileDeciderTest, CustomPacFails1_WithNegativeDelay) {
 
 class SynchronousSuccessDhcpFetcher : public DhcpPacFileFetcher {
  public:
-  explicit SynchronousSuccessDhcpFetcher(const base::string16& expected_text)
+  explicit SynchronousSuccessDhcpFetcher(const std::u16string& expected_text)
       : gurl_("http://dhcppac/"), expected_text_(expected_text) {}
 
-  int Fetch(base::string16* utf16_text,
+  int Fetch(std::u16string* utf16_text,
             CompletionOnceCallback callback,
             const NetLogWithSource& net_log,
             const NetworkTrafficAnnotationTag traffic_annotation) override {
@@ -726,11 +730,11 @@ class SynchronousSuccessDhcpFetcher : public DhcpPacFileFetcher {
 
   const GURL& GetPacURL() const override { return gurl_; }
 
-  const base::string16& expected_text() const { return expected_text_; }
+  const std::u16string& expected_text() const { return expected_text_; }
 
  private:
   GURL gurl_;
-  base::string16 expected_text_;
+  std::u16string expected_text_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousSuccessDhcpFetcher);
 };
@@ -743,8 +747,7 @@ class SynchronousSuccessDhcpFetcher : public DhcpPacFileFetcher {
 TEST(PacFileDeciderTest, AutodetectDhcpSuccess) {
   Rules rules;
   RuleBasedPacFileFetcher fetcher(&rules);
-  SynchronousSuccessDhcpFetcher dhcp_fetcher(
-      base::WideToUTF16(L"http://bingo/!FindProxyForURL"));
+  SynchronousSuccessDhcpFetcher dhcp_fetcher(u"http://bingo/!FindProxyForURL");
 
   ProxyConfig config;
   config.set_auto_detect(true);
@@ -769,8 +772,7 @@ TEST(PacFileDeciderTest, AutodetectDhcpSuccess) {
 TEST(PacFileDeciderTest, AutodetectDhcpFailParse) {
   Rules rules;
   RuleBasedPacFileFetcher fetcher(&rules);
-  SynchronousSuccessDhcpFetcher dhcp_fetcher(
-      base::WideToUTF16(L"http://bingo/!invalid-script"));
+  SynchronousSuccessDhcpFetcher dhcp_fetcher(u"http://bingo/!invalid-script");
 
   ProxyConfig config;
   config.set_auto_detect(true);
@@ -798,7 +800,7 @@ class AsyncFailDhcpFetcher
   AsyncFailDhcpFetcher() = default;
   ~AsyncFailDhcpFetcher() override = default;
 
-  int Fetch(base::string16* utf16_text,
+  int Fetch(std::u16string* utf16_text,
             CompletionOnceCallback callback,
             const NetLogWithSource& net_log,
             const NetworkTrafficAnnotationTag traffic_annotation) override {

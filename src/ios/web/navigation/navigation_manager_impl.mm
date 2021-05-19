@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -93,24 +94,6 @@ NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
   post_data = [other.post_data copy];
 
   return *this;
-}
-
-/* static */
-NavigationItem* NavigationManagerImpl::GetLastCommittedNonRedirectedItem(
-    const NavigationManager* nav_manager) {
-  if (!nav_manager || !nav_manager->GetItemCount())
-    return nullptr;
-
-  int index = nav_manager->GetLastCommittedItemIndex();
-  while (index >= 0) {
-    NavigationItem* item = nav_manager->GetItemAtIndex(index);
-    // Returns the first non-Redirect item found.
-    if (!ui::PageTransitionIsRedirect(item->GetTransitionType()))
-      return item;
-    --index;
-  }
-
-  return nullptr;
 }
 
 NavigationManagerImpl::NavigationManagerImpl()
@@ -489,24 +472,11 @@ void NavigationManagerImpl::SetWKWebViewNextPendingUrlNotSerializable(
   next_pending_url_should_skip_serialization_ = url;
 }
 
-bool NavigationManagerImpl::ShouldBlockUrlDuringRestore(const GURL& url) {
+bool NavigationManagerImpl::RestoreSessionFromCache(const GURL& url) {
   DCHECK(is_restore_session_in_progress_);
-  if (!web::GetWebClient()->ShouldBlockUrlDuringRestore(url, GetWebState()))
-    return false;
 
-  // Abort restore.
-  DiscardNonCommittedItems();
-  last_committed_item_index_ = web_view_cache_.GetCurrentItemIndex();
-  if (restored_visible_item_ &&
-      restored_visible_item_->GetUserAgentType() != UserAgentType::NONE) {
-    NavigationItem* last_committed_item =
-        GetLastCommittedItemInCurrentOrRestoredSession();
-    last_committed_item->SetUserAgentType(
-        restored_visible_item_->GetUserAgentType());
-  }
-  restored_visible_item_.reset();
-  FinalizeSessionRestore();
-  return true;
+  // TODO(crbug.com/1174560): Bring up native session restoration.
+  return false;
 }
 
 void NavigationManagerImpl::RemoveTransientURLRewriters() {
@@ -782,7 +752,7 @@ void NavigationManagerImpl::LoadURLWithParams(
       int next_item_index = web_view_cache_.GetCurrentItemIndex() + 1;
       DCHECK_GT(next_item_index, 0);
       cached_items.resize(next_item_index + 1);
-      cached_items[next_item_index].reset(pending_item_.release());
+      cached_items[next_item_index] = std::move(pending_item_);
       Restore(next_item_index, std::move(cached_items));
       DCHECK(web_view_cache_.IsAttachedToWebView());
       return;
@@ -929,14 +899,10 @@ void NavigationManagerImpl::ReloadWithUserAgentType(
   if (!item_to_reload ||
       ui::PageTransitionIsRedirect(item_to_reload->GetTransitionType()))
     item_to_reload = GetVisibleItem();
-  if (!item_to_reload ||
-      ui::PageTransitionIsRedirect(item_to_reload->GetTransitionType())) {
-    NavigationItem* last_committed_before_redirect =
-        GetLastCommittedNonRedirectedItem(this);
-    if (last_committed_before_redirect) {
-      // When a tab is opened on a redirect, there is no last committed item
-      // before the redirect. In that case, take the last committed item.
-      item_to_reload = last_committed_before_redirect;
+  if (!item_to_reload) {
+    NavigationItem* last_committed_item = GetLastCommittedItem();
+    if (last_committed_item) {
+      item_to_reload = last_committed_item;
     }
   }
 
@@ -1205,7 +1171,7 @@ void NavigationManagerImpl::UnsafeRestore(
 
   // Grab the title of the first item before |restored_visible_item_| (which may
   // or may not be the first index) is moved out of |items| below.
-  const base::string16& firstTitle = items[first_index]->GetTitle();
+  const std::u16string& firstTitle = items[first_index]->GetTitle();
 
   // Ordering is important. Cache the visible item of the restored session
   // before starting the new navigation, which may trigger client lookup of
@@ -1301,8 +1267,13 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
     loaded_url = url;
   }
 
+  GURL original_url = loaded_url;
+  if (ui::PageTransitionIsRedirect(transition) && GetLastCommittedItem()) {
+    original_url = GetLastCommittedItem()->GetURL();
+  }
+
   auto item = std::make_unique<NavigationItemImpl>();
-  item->SetOriginalRequestURL(loaded_url);
+  item->SetOriginalRequestURL(original_url);
   item->SetURL(loaded_url);
   item->SetReferrer(referrer);
   item->SetTransitionType(transition);
@@ -1417,7 +1388,7 @@ NavigationManagerImpl::WKWebViewCache::ReleaseCachedItems() {
   DCHECK(!IsAttachedToWebView());
   std::vector<std::unique_ptr<NavigationItem>> result(cached_items_.size());
   for (size_t index = 0; index < cached_items_.size(); index++) {
-    result[index].reset(cached_items_[index].release());
+    result[index] = std::move(cached_items_[index]);
   }
   cached_items_.clear();
   return result;

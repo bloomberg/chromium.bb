@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_PREFETCH_SEARCH_PREFETCH_SEARCH_PREFETCH_SERVICE_H_
 
 #include <map>
+#include <string>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/optional.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/prefetch/search_prefetch/base_search_prefetch_request.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -122,7 +122,7 @@ class SearchPrefetchService : public KeyedService,
 
   // Reports the status of a prefetch for a given search term.
   base::Optional<SearchPrefetchStatus> GetSearchPrefetchStatusForTesting(
-      base::string16 search_terms);
+      std::u16string search_terms);
 
   // Calls |LoadFromPrefs()|.
   bool LoadFromPrefsForTesting();
@@ -134,7 +134,7 @@ class SearchPrefetchService : public KeyedService,
   void AddCacheEntry(const GURL& navigation_url, const GURL& prefetch_url);
 
   // Removes the prefetch and prefetch timers associated with |search_terms|.
-  void DeletePrefetch(base::string16 search_terms);
+  void DeletePrefetch(std::u16string search_terms);
 
   // Records the current time to prevent prefetches for a set duration.
   void ReportError();
@@ -155,11 +155,11 @@ class SearchPrefetchService : public KeyedService,
   // Prefetches that are started are stored using search terms as a key. Only
   // one prefetch should be started for a given search term until the old
   // prefetch expires.
-  std::map<base::string16, std::unique_ptr<BaseSearchPrefetchRequest>>
+  std::map<std::u16string, std::unique_ptr<BaseSearchPrefetchRequest>>
       prefetches_;
 
   // A group of timers to expire |prefetches_| based on the same key.
-  std::map<base::string16, std::unique_ptr<base::OneShotTimer>>
+  std::map<std::u16string, std::unique_ptr<base::OneShotTimer>>
       prefetch_expiry_timers_;
 
   // The time of the last prefetch network/server error.

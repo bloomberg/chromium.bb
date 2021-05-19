@@ -125,13 +125,20 @@ bool IsDrmAtomicAvailable() {
 #endif
 }
 
+void wayland_log(const char* fmt, va_list argp) {
+  LOG(WARNING) << "libwayland: " << base::StringPrintV(fmt, argp);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // Server, public:
 
-Server::Server(Display* display)
-    : display_(display), wl_display_(wl_display_create()) {
+Server::Server(Display* display) : display_(display) {
+  wl_log_set_handler_server(wayland_log);
+
+  wl_display_.reset(wl_display_create());
+
   serial_tracker_ = std::make_unique<SerialTracker>(wl_display_.get());
   wl_global_create(wl_display_.get(), &wl_compositor_interface,
                    kWlCompositorVersion, this, bind_compositor);
@@ -190,8 +197,6 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &zcr_keyboard_configuration_v1_interface,
                    zcr_keyboard_configuration_v1_interface.version, display_,
                    bind_keyboard_configuration);
-  wl_global_create(wl_display_.get(), &zcr_keyboard_extension_v1_interface, 1,
-                   display_, bind_keyboard_extension);
   wl_global_create(wl_display_.get(), &zcr_notification_shell_v1_interface, 1,
                    display_, bind_notification_shell);
   wl_global_create(wl_display_.get(), &zcr_remote_shell_v1_interface,
@@ -215,6 +220,11 @@ Server::Server(Display* display)
                    display_, bind_zxdg_decoration_manager);
   wl_global_create(wl_display_.get(), &zcr_extended_drag_v1_interface, 1,
                    display_, bind_extended_drag);
+
+  zcr_keyboard_extension_data_ =
+      std::make_unique<WaylandKeyboardExtension>(serial_tracker_.get());
+  wl_global_create(wl_display_.get(), &zcr_keyboard_extension_v1_interface, 2,
+                   zcr_keyboard_extension_data_.get(), bind_keyboard_extension);
 
   zwp_text_manager_data_ = std::make_unique<WaylandTextInputManager>(
       display_->seat()->xkb_tracker(), serial_tracker_.get());

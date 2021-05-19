@@ -40,6 +40,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1252999807265626933">A carregar a partir de <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Como está o tempo?</translation>
 <translation id="1267032506238418139">Alteração do atalho</translation>
+<translation id="1269405891096105529">Periférico não suportado no Modo convidado</translation>
 <translation id="1270290102613614947">Teclado no ecrã desativado</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1275285675049378717">Ligar o <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="2012624427112548395">Ctrl + Pesquisa + H</translation>
 <translation id="2016340657076538683">Escrever uma mensagem</translation>
 <translation id="2018630726571919839">Conta-me uma anedota</translation>
+<translation id="2021864487439853900">Clicar para desbloquear</translation>
 <translation id="2049240716062114887">O nome do espaço de trabalho foi alterado para <ph name="DESK_NAME" />.</translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brilho do teclado</translation>
@@ -276,6 +278,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> pode iniciar sessão mais tarde.</translation>
 <translation id="3321628682574733415">Código parental incorreto</translation>
 <translation id="332587331255250389">Substitua a bateria</translation>
+<translation id="3333741161915951567">Reinício do modem. Aguarde 30 segundos antes de tentar novamente.</translation>
 <translation id="3341303451326249809">Captura de ecrã efetuada</translation>
 <translation id="334252345105450327">Tira uma captura de ecrã</translation>
 <translation id="3351879221545518001">Está a transmitir atualmente o ecrã.</translation>
@@ -320,6 +323,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="366222428570480733">Utilizador gerido por <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3665889125180354336">Gravar microfone</translation>
 <translation id="36813544980941320">As redes Wi-Fi serão partilhadas entre o seu telemóvel e o dispositivo <ph name="DEVICE_NAME" />.</translation>
+<translation id="3702809606464356667">Ao mostrar as janelas do espaço de trabalho atual, prima a tecla da seta para cima para mostrar janelas de todos os espaços de trabalho</translation>
 <translation id="3702846122927433391">População da Nigéria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">A carregar...</translation>
@@ -351,6 +355,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="394485226368336402">Definições de áudio</translation>
 <translation id="3945319193631853098">Toque para concluir a configuração.</translation>
 <translation id="3945867833895287237">A ligar à zona Wi-Fi…</translation>
+<translation id="3958465044488004317">Veja o resultado no Assistente</translation>
 <translation id="3962859241508114581">Faixa anterior</translation>
 <translation id="3969043077941541451">Desativado</translation>
 <translation id="397105322502079400">A calcular...</translation>
@@ -407,10 +412,12 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="4421231901400348175">A partilhar o controlo do seu ecrã com <ph name="HELPER_NAME" /> através da Assistência remota.</translation>
 <translation id="4424159417645388645">Espaço de trabalho 5</translation>
 <translation id="4430019312045809116">Volume</translation>
+<translation id="4445159312344259901">Iniciar sessão p/ desbloquear</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 notificação importante}other{# notificações importantes}}</translation>
 <translation id="4450893287417543264">Não mostrar de novo</translation>
 <translation id="445864333228800152">Boa noite,</translation>
 <translation id="4458688154122353284">Parar gravação de ecrã</translation>
+<translation id="4467143075433126295">Prima sem soltar [Esc] para sair do modo de ecrã inteiro</translation>
 <translation id="4472575034687746823">Começar</translation>
 <translation id="4477350412780666475">Faixa seguinte</translation>
 <translation id="4477892968187500306">Este dispositivo pode conter aplicações que não foram validadas pela Google.</translation>
@@ -607,6 +614,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">O Assistente Google não está disponível em sessões de convidado.</translation>
 <translation id="6137566720514957455">Abrir caixa de diálogo de remoção para <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">O periférico não é suportado</translation>
 <translation id="615957422585914272">Mostrar teclado no ecrã</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6179832488876878285">Pode fixar os seus ficheiros importantes aqui. Abra a app Files para começar.</translation>
@@ -624,11 +632,11 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="6297287540776456956">Utilizar a canela stylus para selecionar uma área</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi rodado para <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Voz</translation>
+<translation id="6330012934079202188">Ao mostrar as janelas de todos os espaços de trabalho, prima a tecla da seta para cima para mostrar janelas do espaço de trabalho atual</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> é uma sessão gerida por <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth ativado</translation>
 <translation id="6381109794406942707">Para desbloquear este dispositivo, introduza o seu PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
-<translation id="6396835948284782440">Prima sem soltar [Esc] para sair.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Limpar todas as notificações</translation>
@@ -794,7 +802,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="7780159184141939021">Rodar ecrã</translation>
 <translation id="7796353162336583443">Toque no botão da caneta stylus na prateleira para tirar uma nota, criar uma captura de ecrã ou utilizar o Assistente Google, o ponteiro de laser ou a lupa.</translation>
 <translation id="7798302898096527229">Prima Pesquisar ou Shift para cancelar.</translation>
-<translation id="7807966291075028781">O periférico não é suportado no Modo convidado por motivos de segurança.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinal forte</translation>
 <translation id="7837740436429729974">Acabou o tempo</translation>
@@ -944,6 +951,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="8936501819958976551">desativada</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira direita)</translation>
 <translation id="8940956008527784070">Bateria fraca (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Apenas os dispositivos Thunderbolt aprovados são compatíveis com o seu Chromebook</translation>
 <translation id="8982906748181120328">Vis. na prox.</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">A utilizar <ph name="IME_NAME" />…</translation>

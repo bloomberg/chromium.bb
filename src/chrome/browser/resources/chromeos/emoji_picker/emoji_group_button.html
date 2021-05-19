@@ -2,29 +2,19 @@
   :host {
     display: flex;
     flex-direction: column;
+    height: var(--emoji-group-button-size);
+    scroll-snap-align: none;
+    width: var(--emoji-group-button-size);
   }
 
   #button {
     font-size: 32px;
-    height: 36px;
     margin: 0;
     padding: 0;
-    width: 36px;
   }
 
   #button.emoji-group-active {
     --cr-icon-button-fill-color: var(--cr-checked-color);
-  }
-
-  #bar {
-    background-color: transparent;
-    border-radius: 2px;
-    height: 4px;
-    width: 100%;
-  }
-
-  #bar.emoji-group-active {
-    background-color: var(--cr-checked-color);
   }
 </style>
 
@@ -36,4 +26,3 @@
     aria-label="[[name]]"
     >
 </cr-icon-button>
-<div id="bar" class$="[[_className(active)]]" on-click="handleClick"></div>

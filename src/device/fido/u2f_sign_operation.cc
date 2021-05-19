@@ -53,7 +53,7 @@ void U2fSignOperation::WinkAndTrySign() {
 }
 
 void U2fSignOperation::TrySign() {
-  DispatchDeviceRequest(
+  DispatchU2FCommand(
       ConvertToU2fSignCommand(request(), app_param_type_, key_handle()),
       base::BindOnce(&U2fSignOperation::OnSignResponseReceived,
                      weak_factory_.GetWeakPtr()));
@@ -149,7 +149,7 @@ void U2fSignOperation::WinkAndTryFakeEnrollment() {
 }
 
 void U2fSignOperation::TryFakeEnrollment() {
-  DispatchDeviceRequest(
+  DispatchU2FCommand(
       ConstructBogusU2fRegistrationCommand(),
       base::BindOnce(&U2fSignOperation::OnEnrollmentResponseReceived,
                      weak_factory_.GetWeakPtr()));

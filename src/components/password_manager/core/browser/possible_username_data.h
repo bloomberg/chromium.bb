@@ -9,9 +9,8 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 
 namespace password_manager {
@@ -27,7 +26,7 @@ constexpr auto kMaxDelayBetweenTypingUsernameAndSubmission =
 struct PossibleUsernameData {
   PossibleUsernameData(std::string signon_realm,
                        autofill::FieldRendererId renderer_id,
-                       base::string16 value,
+                       std::u16string value,
                        base::Time last_change,
                        int driver_id);
   PossibleUsernameData(const PossibleUsernameData&);
@@ -35,7 +34,7 @@ struct PossibleUsernameData {
 
   std::string signon_realm;
   autofill::FieldRendererId renderer_id;
-  base::string16 value;
+  std::u16string value;
   base::Time last_change;
 
   // Id of PasswordManagerDriver which corresponds to the frame of this field.
@@ -55,7 +54,7 @@ struct PossibleUsernameData {
 bool IsPossibleUsernameValid(
     const PossibleUsernameData& possible_username,
     const std::string& submitted_signon_realm,
-    const std::vector<base::string16>& possible_usernames);
+    const std::vector<std::u16string>& possible_usernames);
 
 }  // namespace password_manager
 

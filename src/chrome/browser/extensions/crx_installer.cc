@@ -108,7 +108,7 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
                            const WebstoreInstaller::Approval* approval)
     : profile_(service_weak->profile()),
       install_directory_(service_weak->install_directory()),
-      install_source_(Manifest::INTERNAL),
+      install_source_(mojom::ManifestLocation::kInternal),
       approved_(false),
       verification_check_failed_(false),
       expected_manifest_check_level_(
@@ -153,6 +153,9 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
   }
   if (approval->minimum_version.get())
     minimum_version_ = base::Version(*approval->minimum_version);
+
+  if (approval->bypassed_safebrowsing_friction)
+    install_flags_ = kInstallFlagBypassedSafeBrowsingFriction;
 
   show_dialog_callback_ = approval->show_dialog_callback;
 }
@@ -237,7 +240,7 @@ void CrxInstaller::InstallUserScript(const base::FilePath& source_file,
 }
 
 void CrxInstaller::ConvertUserScriptOnSharedFileThread() {
-  base::string16 error;
+  std::u16string error;
   scoped_refptr<Extension> extension = ConvertUserScriptToExtension(
       source_file_, download_url_, install_directory_, &error);
   if (!extension.get()) {
@@ -721,8 +724,7 @@ void CrxInstaller::OnInstallChecksComplete(const PreloadCheck::Errors& errors) {
           l10n_util::GetStringFUTF16(IDS_EXTENSION_IS_BLOCKLISTED,
                                      base::UTF8ToUTF16(extension()->name()))));
       UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlockCRX",
-                                extension()->location(),
-                                Manifest::NUM_LOCATIONS);
+                                extension()->location());
       return;
     }
   }
@@ -954,7 +956,7 @@ void CrxInstaller::ReloadExtensionAfterInstall(
   // TODO(aa): All paths to resources inside extensions should be created
   // lazily and based on the Extension's root path at that moment.
   // TODO(rdevlin.cronin): Continue removing std::string errors and replacing
-  // with base::string16
+  // with std::u16string
   std::string extension_id = extension()->id();
   std::string error;
   extension_ = file_util::LoadExtension(

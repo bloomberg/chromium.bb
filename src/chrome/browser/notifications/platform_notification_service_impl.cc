@@ -39,6 +39,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
+#include "third_party/blink/public/mojom/notifications/notification.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -402,10 +403,8 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
     const std::string& notification_id,
     const blink::PlatformNotificationData& notification_data,
     const blink::NotificationResources& notification_resources) const {
-  // Blink always populates action icons to match the actions, even if no icon
-  // was fetched, so this indicates a compromised renderer.
-  CHECK_EQ(notification_data.actions.size(),
-           notification_resources.action_icons.size());
+  DCHECK_EQ(notification_data.actions.size(),
+            notification_resources.action_icons.size());
 
   message_center::RichNotificationData optional_fields;
 
@@ -446,15 +445,14 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   // Developer supplied action buttons.
   std::vector<message_center::ButtonInfo> buttons;
   for (size_t i = 0; i < notification_data.actions.size(); ++i) {
-    const blink::PlatformNotificationAction& action =
-        notification_data.actions[i];
-    message_center::ButtonInfo button(action.title);
+    const auto& action = notification_data.actions[i];
+    message_center::ButtonInfo button(action->title);
     // TODO(peter): Handle different screen densities instead of always using
     // the 1x bitmap - crbug.com/585815.
     button.icon =
         gfx::Image::CreateFrom1xBitmap(notification_resources.action_icons[i]);
-    if (action.type == blink::mojom::NotificationActionType::TEXT) {
-      button.placeholder = action.placeholder.value_or(
+    if (action->type == blink::mojom::NotificationActionType::TEXT) {
+      button.placeholder = action->placeholder.value_or(
           l10n_util::GetStringUTF16(IDS_NOTIFICATION_REPLY_PLACEHOLDER));
     }
     buttons.push_back(button);
@@ -470,7 +468,7 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   return notification;
 }
 
-base::string16 PlatformNotificationServiceImpl::DisplayNameForContextMessage(
+std::u16string PlatformNotificationServiceImpl::DisplayNameForContextMessage(
     const GURL& origin) const {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // If the source is an extension, lookup the display name.
@@ -484,5 +482,5 @@ base::string16 PlatformNotificationServiceImpl::DisplayNameForContextMessage(
   }
 #endif
 
-  return base::string16();
+  return std::u16string();
 }

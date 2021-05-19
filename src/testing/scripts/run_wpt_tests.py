@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -73,8 +73,6 @@ class WPTTestAdapter(wpt_common.BaseWptScriptAdapter):
             WPT_BINARY,
             "--venv=" + SRC_DIR,
             "--skip-venv-setup",
-            # TODO(crbug.com/1166741): We should be running WPT under Python 3.
-            "--py2",
             "run",
             "chrome"
         ] + self.options.test_list + [
@@ -84,6 +82,7 @@ class WPTTestAdapter(wpt_common.BaseWptScriptAdapter):
             "--binary-arg=--enable-experimental-web-platform-features",
             "--binary-arg=--enable-blink-test-features",
             "--binary-arg=--enable-blink-features=MojoJS,MojoJSTest",
+            "--binary-arg=--disable-field-trial-config",
             "--webdriver-binary=" + chromedriver,
             "--webdriver-arg=--enable-chrome-logs",
             "--headless",
@@ -93,11 +92,9 @@ class WPTTestAdapter(wpt_common.BaseWptScriptAdapter):
             # Exclude webdriver tests for now. They are run separately on the CI
             "--exclude=webdriver",
             "--exclude=infrastructure/webdriver",
-            # Setting --no-fail-on-unexpected makes the return code of wpt 0
-            # even if there were test failures. The CQ doesn't like this since
-            # it uses the exit code to determine which shards to retry (ie:
-            # those that had non-zero exit codes).
-            #"--no-fail-on-unexpected",
+            # By default, WPT will treat unexpected passes as errors, so we
+            # disable that to be consistent with Chromium CI.
+            "--no-fail-on-unexpected-pass",
             "--metadata", WPT_METADATA_OUTPUT_DIR.format(self.options.target),
             # By specifying metadata above, WPT will try to find manifest in the
             # metadata directory. So here we point it back to the correct path
@@ -156,7 +153,6 @@ class WPTTestAdapter(wpt_common.BaseWptScriptAdapter):
             "--checked-in-metadata-dir",
             WPT_CHECKED_IN_METADATA_DIR,
             "--no-process-baselines",
-            "--no-handle-annotations"
         ])
 
 

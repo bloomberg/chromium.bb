@@ -4,6 +4,8 @@
 
 #include "components/continuous_search/browser/search_result_extractor_client.h"
 
+#include "base/strings/utf_string_conversions.h"
+#include "components/continuous_search/common/title_validator.h"
 #include "components/google/core/common/google_util.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -73,6 +75,13 @@ void SearchResultExtractorClient::RequestDataCallbackAdapter(
     std::move(callback).Run(SearchResultExtractorClientStatus::kUnexpectedUrl,
                             mojom::CategoryResults::New());
     return;
+  }
+
+  // Validate all the returned titles (URL already needs to be valid for mojom).
+  for (mojom::ResultGroupPtr& group : results->groups) {
+    for (mojom::SearchResultPtr& result : group->results) {
+      result->title = ValidateTitle(result->title);
+    }
   }
 
   // `url` and transitively `document_url` should always be a search URL. If

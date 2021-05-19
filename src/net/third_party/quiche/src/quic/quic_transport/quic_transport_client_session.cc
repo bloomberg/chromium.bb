@@ -34,7 +34,7 @@ QuicTransportClientSession::QuicTransportClientSession(
     const GURL& url,
     QuicCryptoClientConfig* crypto_config,
     url::Origin origin,
-    ClientVisitor* visitor,
+    WebTransportVisitor* visitor,
     std::unique_ptr<QuicDatagramQueue::Observer> datagram_observer)
     : QuicSession(connection,
                   owner,
@@ -46,7 +46,7 @@ QuicTransportClientSession::QuicTransportClientSession(
       origin_(origin),
       visitor_(visitor) {
   for (const ParsedQuicVersion& version : supported_versions) {
-    QUIC_BUG_IF(version.handshake_protocol != PROTOCOL_TLS1_3)
+    QUIC_BUG_IF(quic_bug_12035_1, version.handshake_protocol != PROTOCOL_TLS1_3)
         << "QuicTransport requires TLS 1.3 handshake";
   }
   crypto_stream_ = std::make_unique<QuicCryptoClientStream>(
@@ -58,7 +58,8 @@ QuicTransportClientSession::QuicTransportClientSession(
 void QuicTransportClientSession::OnAlpnSelected(absl::string_view alpn) {
   // Defense in-depth: ensure the ALPN selected is the desired one.
   if (alpn != QuicTransportAlpn()) {
-    QUIC_BUG << "QuicTransport negotiated non-QuicTransport ALPN: " << alpn;
+    QUIC_BUG(quic_bug_10881_1)
+        << "QuicTransport negotiated non-QuicTransport ALPN: " << alpn;
     connection()->CloseConnection(
         QUIC_INTERNAL_ERROR, "QuicTransport negotiated non-QuicTransport ALPN",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
@@ -117,7 +118,8 @@ QuicTransportClientSession::AcceptIncomingUnidirectionalStream() {
 QuicTransportStream*
 QuicTransportClientSession::OpenOutgoingBidirectionalStream() {
   if (!CanOpenNextOutgoingBidirectionalStream()) {
-    QUIC_BUG << "Attempted to open a stream in violation of flow control";
+    QUIC_BUG(quic_bug_10881_2)
+        << "Attempted to open a stream in violation of flow control";
     return nullptr;
   }
   return CreateStream(GetNextOutgoingBidirectionalStreamId());
@@ -126,7 +128,8 @@ QuicTransportClientSession::OpenOutgoingBidirectionalStream() {
 QuicTransportStream*
 QuicTransportClientSession::OpenOutgoingUnidirectionalStream() {
   if (!CanOpenNextOutgoingUnidirectionalStream()) {
-    QUIC_BUG << "Attempted to open a stream in violation of flow control";
+    QUIC_BUG(quic_bug_10881_3)
+        << "Attempted to open a stream in violation of flow control";
     return nullptr;
   }
   return CreateStream(GetNextOutgoingUnidirectionalStreamId());
@@ -142,7 +145,7 @@ QuicTransportStream* QuicTransportClientSession::CreateStream(QuicStreamId id) {
 std::string QuicTransportClientSession::SerializeClientIndication() {
   std::string serialized_origin = origin_.Serialize();
   if (serialized_origin.size() > std::numeric_limits<uint16_t>::max()) {
-    QUIC_BUG << "Client origin too long";
+    QUIC_BUG(quic_bug_10881_4) << "Client origin too long";
     connection()->CloseConnection(
         QUIC_INTERNAL_ERROR, "Client origin too long",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
@@ -182,23 +185,25 @@ std::string QuicTransportClientSession::SerializeClientIndication() {
       writer.WriteUInt16(
           static_cast<uint16_t>(QuicTransportClientIndicationKeys::kPath)) &&
       writer.WriteUInt16(path.size()) && writer.WriteStringPiece(path);
-  QUIC_BUG_IF(!success) << "Failed to serialize client indication";
-  QUIC_BUG_IF(writer.length() != buffer.length())
+  QUIC_BUG_IF(quic_bug_10881_5, !success)
+      << "Failed to serialize client indication";
+  QUIC_BUG_IF(quic_bug_12035_2, writer.length() != buffer.length())
       << "Serialized client indication has length different from expected";
   return buffer;
 }
 
 void QuicTransportClientSession::SendClientIndication() {
   if (!crypto_stream_->encryption_established()) {
-    QUIC_BUG << "Client indication may only be sent once the encryption is "
-                "established.";
+    QUIC_BUG(quic_bug_10881_6)
+        << "Client indication may only be sent once the encryption is "
+           "established.";
     connection()->CloseConnection(
         QUIC_INTERNAL_ERROR, "Attempted to send client indication unencrypted",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
   if (ready_) {
-    QUIC_BUG << "Client indication may only be sent once.";
+    QUIC_BUG(quic_bug_10881_7) << "Client indication may only be sent once.";
     connection()->CloseConnection(
         QUIC_INTERNAL_ERROR, "Attempted to send client indication twice",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
@@ -208,7 +213,8 @@ void QuicTransportClientSession::SendClientIndication() {
   auto client_indication_owned = std::make_unique<ClientIndication>(
       /*stream_id=*/GetNextOutgoingUnidirectionalStreamId(), this,
       /*is_static=*/false, WRITE_UNIDIRECTIONAL);
-  QUIC_BUG_IF(client_indication_owned->id() != ClientIndicationStream())
+  QUIC_BUG_IF(quic_bug_12035_3,
+              client_indication_owned->id() != ClientIndicationStream())
       << "Client indication stream is " << client_indication_owned->id()
       << " instead of expected " << ClientIndicationStream();
   ClientIndication* client_indication = client_indication_owned.get();
@@ -220,7 +226,8 @@ void QuicTransportClientSession::SendClientIndication() {
 
   // Defense in depth: never set the ready bit unless ALPN has been confirmed.
   if (!alpn_received_) {
-    QUIC_BUG << "ALPN confirmation missing after handshake complete";
+    QUIC_BUG(quic_bug_10881_8)
+        << "ALPN confirmation missing after handshake complete";
     connection()->CloseConnection(
         QUIC_INTERNAL_ERROR,
         "ALPN confirmation missing after handshake complete",

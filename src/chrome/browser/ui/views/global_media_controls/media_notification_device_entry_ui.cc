@@ -130,10 +130,46 @@ CastDeviceEntryView::CastDeviceEntryView(
     const media_router::UIMediaSink& sink)
     : DeviceEntryUI(sink.id,
                     base::UTF16ToUTF8(sink.friendly_name),
-                    CastDialogSinkButton::GetVectorIcon(sink.icon_type)),
+                    CastDialogSinkButton::GetVectorIcon(sink)),
       CastDialogSinkButton(
           base::BindRepeating(std::move(callback), base::Unretained(this)),
           sink) {
+  ChangeCastEntryColor(sink, foreground_color, background_color);
+
+  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  SetInkDropMode(Button::InkDropMode::ON);
+  SetInkDropBaseColor(foreground_color);
+  SetHasInkDropActionOnClick(true);
+  SetPreferredSize(kDeviceEntryViewSize);
+}
+
+void CastDeviceEntryView::OnColorsChanged(SkColor foreground_color,
+                                          SkColor background_color) {
+  SetInkDropBaseColor(foreground_color);
+  ChangeCastEntryColor(sink(), foreground_color, background_color);
+}
+
+DeviceEntryUIType CastDeviceEntryView::GetType() const {
+  return DeviceEntryUIType::kCast;
+}
+
+SkColor CastDeviceEntryView::GetInkDropBaseColor() const {
+  return views::Button::GetInkDropBaseColor();
+}
+
+void CastDeviceEntryView::OnFocus() {
+  // CastDialogSinkButton::OnFocus() changes the button's status text to "Stop
+  // Casting" if the sink is connected. This status text may cause confusion to
+  // users when the button is shown in the Zenith dialog, where clicking on the
+  // sink button will automatically stop the sink's connected route and start a
+  // new one.
+  HoverButton::OnFocus();
+}
+
+void CastDeviceEntryView::ChangeCastEntryColor(
+    const media_router::UIMediaSink& sink,
+    SkColor foreground_color,
+    SkColor background_color) {
   switch (sink.state) {
     // If the sink state is CONNECTING or DISCONNECTING, a throbber icon will
     // show up. The icon's color remains unchanged.
@@ -151,27 +187,6 @@ CastDeviceEntryView::CastDeviceEntryView(
     default:
       NOTREACHED();
   }
-
-  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  SetInkDropMode(Button::InkDropMode::ON);
-  SetInkDropBaseColor(foreground_color);
-  SetHasInkDropActionOnClick(true);
-  SetPreferredSize(kDeviceEntryViewSize);
-}
-
-void CastDeviceEntryView::OnColorsChanged(SkColor foreground_color,
-                                          SkColor background_color) {
-  SetInkDropBaseColor(foreground_color);
-  ChangeEntryColor(static_cast<views::ImageView*>(icon_view()), title(),
-                   subtitle(), icon_, foreground_color, background_color);
-}
-
-DeviceEntryUIType CastDeviceEntryView::GetType() const {
-  return DeviceEntryUIType::kCast;
-}
-
-SkColor CastDeviceEntryView::GetInkDropBaseColor() const {
-  return views::Button::GetInkDropBaseColor();
 }
 
 BEGIN_METADATA(AudioDeviceEntryView, HoverButton)

@@ -374,14 +374,6 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
   UMA_HISTOGRAM_MEDIUM_TIMES("Sync.PostedClientToServerMessageLatency",
                              base::Time::Now() - start_time);
 
-  if (response->error_code() != sync_pb::SyncEnums::SUCCESS) {
-    // TODO(crbug.com/1004302): Stop recording once
-    // Sync.PostedClientToServerMessageError2 (recorded below) has reached
-    // Stable. The reason is so the two can be compared for the same population.
-    base::UmaHistogramSparse("Sync.PostedClientToServerMessageError",
-                             response->error_code());
-  }
-
   // The error can be specified in 2 different fields, so consider both of them.
   sync_pb::SyncEnums::ErrorType error_type =
       response->has_error() ? response->error().error_type()
@@ -584,7 +576,7 @@ bool SyncerProtoUtil::ShouldMaintainPosition(
     const sync_pb::SyncEntity& sync_entity) {
   // Maintain positions for bookmarks that are not server-defined top-level
   // folders.
-  return GetModelType(sync_entity) == BOOKMARKS &&
+  return GetModelTypeFromSpecifics(sync_entity.specifics()) == BOOKMARKS &&
          !(sync_entity.folder() &&
            !sync_entity.server_defined_unique_tag().empty());
 }
@@ -593,24 +585,8 @@ bool SyncerProtoUtil::ShouldMaintainPosition(
 bool SyncerProtoUtil::ShouldMaintainHierarchy(
     const sync_pb::SyncEntity& sync_entity) {
   // Maintain hierarchy for bookmarks or top-level items.
-  return GetModelType(sync_entity) == BOOKMARKS ||
+  return GetModelTypeFromSpecifics(sync_entity.specifics()) == BOOKMARKS ||
          sync_entity.parent_id_string() == "0";
-}
-
-// static
-const std::string& SyncerProtoUtil::NameFromSyncEntity(
-    const sync_pb::SyncEntity& entry) {
-  if (entry.has_non_unique_name())
-    return entry.non_unique_name();
-  return entry.name();
-}
-
-// static
-const std::string& SyncerProtoUtil::NameFromCommitEntryResponse(
-    const sync_pb::CommitResponse_EntryResponse& entry) {
-  if (entry.has_non_unique_name())
-    return entry.non_unique_name();
-  return entry.name();
 }
 
 std::string SyncerProtoUtil::SyncEntityDebugString(

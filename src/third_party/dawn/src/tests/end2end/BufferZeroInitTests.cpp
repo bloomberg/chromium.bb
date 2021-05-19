@@ -96,7 +96,7 @@ class BufferZeroInitTest : public DawnTest {
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
-        for (uint32_t arrayLayer = 0; arrayLayer < size.depth; ++arrayLayer) {
+        for (uint32_t arrayLayer = 0; arrayLayer < size.depthOrArrayLayers; ++arrayLayer) {
             wgpu::TextureViewDescriptor viewDescriptor;
             viewDescriptor.format = format;
             viewDescriptor.dimension = wgpu::TextureViewDimension::e2D;
@@ -126,26 +126,26 @@ class BufferZeroInitTest : public DawnTest {
         wgpu::Texture texture =
             CreateAndInitializeTexture(spec.textureSize, kTextureFormat, kClearColor);
 
-        const wgpu::TextureCopyView textureCopyView =
-            utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+        const wgpu::ImageCopyTexture imageCopyTexture =
+            utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
 
         const uint64_t bufferSize = spec.bufferOffset + spec.extraBytes +
                                     utils::RequiredBytesInCopy(spec.bytesPerRow, spec.rowsPerImage,
                                                                spec.textureSize, kTextureFormat);
         wgpu::Buffer buffer =
             CreateBuffer(bufferSize, wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst);
-        const wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(
+        const wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(
             buffer, spec.bufferOffset, spec.bytesPerRow, spec.rowsPerImage);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &spec.textureSize);
+        encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &spec.textureSize);
         wgpu::CommandBuffer commandBuffer = encoder.Finish();
         EXPECT_LAZY_CLEAR(spec.lazyClearCount, queue.Submit(1, &commandBuffer));
 
         const uint64_t expectedValueCount = bufferSize / sizeof(float);
         std::vector<float> expectedValues(expectedValueCount, 0.f);
 
-        for (uint32_t slice = 0; slice < spec.textureSize.depth; ++slice) {
+        for (uint32_t slice = 0; slice < spec.textureSize.depthOrArrayLayers; ++slice) {
             const uint64_t baseOffsetBytesPerSlice =
                 spec.bufferOffset + spec.bytesPerRow * spec.rowsPerImage * slice;
             for (uint32_t y = 0; y < spec.textureSize.height; ++y) {
@@ -200,22 +200,13 @@ class BufferZeroInitTest : public DawnTest {
         EXPECT_PIXEL_RGBA8_EQ(kExpectedColor, outputTexture, 0u, 0u);
     }
 
-    void TestBufferZeroInitInBindGroup(const char* glslComputeShader,
-                                       uint64_t bufferOffset,
-                                       uint64_t boundBufferSize,
-                                       const std::vector<uint32_t>& expectedBufferData) {
-        return TestBufferZeroInitInBindGroup(
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, glslComputeShader),
-            bufferOffset, boundBufferSize, expectedBufferData);
-    }
-
     wgpu::RenderPipeline CreateRenderPipelineForTest(const char* vertexShader,
                                                      uint32_t vertexBufferCount = 1u) {
         constexpr wgpu::TextureFormat kColorAttachmentFormat = wgpu::TextureFormat::RGBA8Unorm;
 
-        wgpu::ShaderModule vsModule = utils::CreateShaderModuleFromWGSL(device, vertexShader);
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, vertexShader);
 
-        wgpu::ShaderModule fsModule = utils::CreateShaderModuleFromWGSL(device, R"(
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
             [[location(0)]] var<in> i_color : vec4<f32>;
             [[location(0)]] var<out> fragColor : vec4<f32>;
 
@@ -224,16 +215,16 @@ class BufferZeroInitTest : public DawnTest {
             })");
 
         ASSERT(vertexBufferCount <= 1u);
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::PointList;
-        descriptor.cVertexState.vertexBufferCount = vertexBufferCount;
-        descriptor.cVertexState.cVertexBuffers[0].arrayStride = 4 * sizeof(float);
-        descriptor.cVertexState.cVertexBuffers[0].attributeCount = 1;
-        descriptor.cVertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
-        descriptor.cColorStates[0].format = kColorAttachmentFormat;
-        return device.CreateRenderPipeline(&descriptor);
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
+        descriptor.vertex.bufferCount = vertexBufferCount;
+        descriptor.cBuffers[0].arrayStride = 4 * sizeof(float);
+        descriptor.cBuffers[0].attributeCount = 1;
+        descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
+        descriptor.cTargets[0].format = kColorAttachmentFormat;
+        return device.CreateRenderPipeline2(&descriptor);
     }
 
     void ExpectLazyClearSubmitAndCheckOutputs(wgpu::CommandEncoder encoder,
@@ -433,8 +424,7 @@ class BufferZeroInitTest : public DawnTest {
 
         wgpu::ComputePipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.layout = nullptr;
-        pipelineDescriptor.computeStage.module =
-            utils::CreateShaderModuleFromWGSL(device, computeShader);
+        pipelineDescriptor.computeStage.module = utils::CreateShaderModule(device, computeShader);
         pipelineDescriptor.computeStage.entryPoint = "main";
         wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDescriptor);
 
@@ -871,8 +861,8 @@ TEST_P(BufferZeroInitTest, CopyBufferToTexture) {
     constexpr wgpu::TextureFormat kTextureFormat = wgpu::TextureFormat::R32Uint;
 
     wgpu::Texture texture = CreateAndInitializeTexture(kTextureSize, kTextureFormat);
-    const wgpu::TextureCopyView textureCopyView =
-        utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+    const wgpu::ImageCopyTexture imageCopyTexture =
+        utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
 
     const uint32_t rowsPerImage = kTextureSize.height;
     const uint32_t requiredBufferSizeForCopy = utils::RequiredBytesInCopy(
@@ -886,11 +876,11 @@ TEST_P(BufferZeroInitTest, CopyBufferToTexture) {
         constexpr uint64_t kOffset = 0;
         const uint32_t totalBufferSize = requiredBufferSizeForCopy + kOffset;
         wgpu::Buffer buffer = CreateBuffer(totalBufferSize, kBufferUsage);
-        const wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(
+        const wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(
             buffer, kOffset, kTextureBytesPerRowAlignment, kTextureSize.height);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &kTextureSize);
+        encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &kTextureSize);
         wgpu::CommandBuffer commandBuffer = encoder.Finish();
         EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commandBuffer));
 
@@ -904,11 +894,11 @@ TEST_P(BufferZeroInitTest, CopyBufferToTexture) {
         constexpr uint64_t kOffset = 8u;
         const uint32_t totalBufferSize = requiredBufferSizeForCopy + kOffset;
         wgpu::Buffer buffer = CreateBuffer(totalBufferSize, kBufferUsage);
-        const wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(
+        const wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(
             buffer, kOffset, kTextureBytesPerRowAlignment, kTextureSize.height);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &kTextureSize);
+        encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &kTextureSize);
         wgpu::CommandBuffer commandBuffer = encoder.Finish();
         EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commandBuffer));
 
@@ -963,7 +953,8 @@ TEST_P(BufferZeroInitTest, Copy2DArrayTextureToBuffer) {
     constexpr wgpu::Extent3D kTextureSize = {64u, 4u, 3u};
 
     // bytesPerRow == texelBlockSizeInBytes * copySize.width && rowsPerImage == copySize.height &&
-    // bytesPerRow * (rowsPerImage * (copySize.depth - 1) + copySize.height) == buffer.size
+    // bytesPerRow * (rowsPerImage * (copySize.depthOrArrayLayers - 1) + copySize.height) ==
+    // buffer.size
     {
         TestBufferZeroInitInCopyTextureToBuffer(
             {kTextureSize, 0u, 0u, kTextureBytesPerRowAlignment, kTextureSize.height, 0u});
@@ -976,7 +967,7 @@ TEST_P(BufferZeroInitTest, Copy2DArrayTextureToBuffer) {
             {kTextureSize, 0u, 0u, kTextureBytesPerRowAlignment, kRowsPerImage, 1u});
     }
 
-    // bytesPerRow * rowsPerImage * copySize.depth < buffer.size
+    // bytesPerRow * rowsPerImage * copySize.depthOrArrayLayers < buffer.size
     {
         constexpr uint64_t kExtraBufferSize = 16u;
         TestBufferZeroInitInCopyTextureToBuffer({kTextureSize, 0u, kExtraBufferSize,
@@ -991,25 +982,22 @@ TEST_P(BufferZeroInitTest, BoundAsUniformBuffer) {
     // TODO(crbug.com/dawn/661): Diagnose and fix this backend validation failure on GLES.
     DAWN_SKIP_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
 
-    const char* computeShader = R"(
+    constexpr uint32_t kBoundBufferSize = 16u;
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[block]] struct UBO {
-            [[offset(0)]] value : vec4<u32>;
+            value : vec4<u32>;
         };
         [[group(0), binding(0)]] var<uniform> ubo : UBO;
         [[group(0), binding(1)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
 
         [[stage(compute)]] fn main() -> void {
-            if (all(ubo.value == vec4<u32>(0, 0, 0, 0))) {
+            if (all(ubo.value == vec4<u32>(0u, 0u, 0u, 0u))) {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(0.0, 1.0, 0.0, 1.0));
             } else {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(1.0, 0.0, 0.0, 1.0));
             }
         }
-    )";
-
-    constexpr uint32_t kBoundBufferSize = 16u;
-
-    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, computeShader);
+    )");
 
     // Bind the whole buffer
     {
@@ -1033,24 +1021,22 @@ TEST_P(BufferZeroInitTest, BoundAsReadonlyStorageBuffer) {
     // TODO(crbug.com/dawn/661): Diagnose and fix this backend validation failure on GLES.
     DAWN_SKIP_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
 
-    const char* computeShader = R"(
+    constexpr uint32_t kBoundBufferSize = 16u;
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[block]] struct SSBO {
-            [[offset(0)]] value : vec4<u32>;
+            value : vec4<u32>;
         };
-        [[group(0), binding(0)]] var<storage> ssbo : SSBO;
+        [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] SSBO;
         [[group(0), binding(1)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
 
         [[stage(compute)]] fn main() -> void {
-            if (all(ssbo.value == vec4<u32>(0, 0, 0, 0))) {
+            if (all(ssbo.value == vec4<u32>(0u, 0u, 0u, 0u))) {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(0.0, 1.0, 0.0, 1.0));
             } else {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(1.0, 0.0, 0.0, 1.0));
             }
         }
-    )";
-
-    constexpr uint32_t kBoundBufferSize = 16u;
-    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, computeShader);
+    )");
 
     // Bind the whole buffer
     {
@@ -1074,37 +1060,35 @@ TEST_P(BufferZeroInitTest, BoundAsStorageBuffer) {
     // TODO(crbug.com/dawn/661): Diagnose and fix this backend validation failure on GLES.
     DAWN_SKIP_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
 
-    // TODO(crbug.com/tint/375): Enable once barriers are implemented
-    DAWN_SKIP_TEST_IF(HasToggleEnabled("use_tint_generator"));
-    const char* computeShader = R"(
-        #version 450
-        layout(set = 0, binding = 0, std140) buffer SSBO {
-            uvec4 value[2];
-        } ssbo;
-        layout(set = 0, binding = 1, rgba8) uniform writeonly image2D outImage;
-        void main() {
-            if (ssbo.value[0] == uvec4(0, 0, 0, 0) && ssbo.value[1] == uvec4(0, 0, 0, 0)) {
-                imageStore(outImage, ivec2(0, 0), vec4(0.f, 1.f, 0.f, 1.f));
+    constexpr uint32_t kBoundBufferSize = 32u;
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
+        [[block]] struct SSBO {
+            value : array<vec4<u32>, 2>;
+        };
+        [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] SSBO;
+        [[group(0), binding(1)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
+
+        [[stage(compute)]] fn main() -> void {
+            if (all(ssbo.value[0] == vec4<u32>(0u, 0u, 0u, 0u)) &&
+                all(ssbo.value[1] == vec4<u32>(0u, 0u, 0u, 0u))) {
+                textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(0.0, 1.0, 0.0, 1.0));
             } else {
-                imageStore(outImage, ivec2(0, 0), vec4(1.f, 0.f, 0.f, 1.f));
+                textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(1.0, 0.0, 0.0, 1.0));
             }
 
-            memoryBarrier();
-            barrier();
+            storageBarrier();
 
             ssbo.value[0].x = 10u;
             ssbo.value[1].y = 20u;
         }
-    )";
-
-    constexpr uint32_t kBoundBufferSize = 32u;
+    )");
 
     // Bind the whole buffer
     {
         std::vector<uint32_t> expected(kBoundBufferSize / sizeof(uint32_t), 0u);
         expected[0] = 10u;
         expected[5] = 20u;
-        TestBufferZeroInitInBindGroup(computeShader, 0, kBoundBufferSize, expected);
+        TestBufferZeroInitInBindGroup(module, 0, kBoundBufferSize, expected);
     }
 
     // Bind a range of a buffer
@@ -1115,7 +1099,7 @@ TEST_P(BufferZeroInitTest, BoundAsStorageBuffer) {
             (kBoundBufferSize + kOffset + kExtraBytes) / sizeof(uint32_t), 0u);
         expected[kOffset / sizeof(uint32_t)] = 10u;
         expected[kOffset / sizeof(uint32_t) + 5u] = 20u;
-        TestBufferZeroInitInBindGroup(computeShader, kOffset, kBoundBufferSize, expected);
+        TestBufferZeroInitInBindGroup(module, kOffset, kBoundBufferSize, expected);
     }
 }
 
@@ -1202,6 +1186,9 @@ TEST_P(BufferZeroInitTest, IndirectBufferForDispatchIndirect) {
 
 // Test the buffer will be lazily initialized correctly when its first use is in resolveQuerySet
 TEST_P(BufferZeroInitTest, ResolveQuerySet) {
+    // TODO(crbug.com/tint/682): error: runtime array not supported yet
+    DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
+
     // Timestamp query is not supported on OpenGL
     DAWN_SKIP_TEST_IF(IsOpenGL());
 
@@ -1211,10 +1198,6 @@ TEST_P(BufferZeroInitTest, ResolveQuerySet) {
 
     // Skip if timestamp extension is not supported on device
     DAWN_SKIP_TEST_IF(!SupportsExtensions({"timestamp_query"}));
-
-    // TODO(crbug.com/tint/255, crbug.com/tint/256, crbug.com/tint/400, crbug.com/tint/417):
-    // Skip due to runtime array not currently supported in WGSL
-    DAWN_SKIP_TEST_IF(HasToggleEnabled("use_tint_generator"));
 
     constexpr uint64_t kBufferSize = 16u;
     constexpr wgpu::BufferUsage kBufferUsage =

@@ -167,6 +167,7 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  *
  * This set of macros define the control functions available for AVx
  * encoder interface.
+ * The range of encode control ID is 7-229(max).
  *
  * \sa #aom_codec_control(aom_codec_ctx_t *ctx, int ctrl_id, ...)
  */
@@ -264,6 +265,8 @@ enum aome_enc_control_id {
 
   /*!\brief Codec control function to set visual tuning, aom_tune_metric (int)
    * parameter
+   *
+   * The default is AOM_TUNE_PSNR.
    */
   AOME_SET_TUNING = AOME_SET_ARNR_STRENGTH + 2,  // 24
 
@@ -1202,9 +1205,6 @@ enum aome_enc_control_id {
      parameter */
   AV1E_SET_REDUCED_REFERENCE_SET = 125,
 
-  /* NOTE: enums 126-139 unused */
-  /* NOTE: Need a gap in enum values to avoud conflict with 128, 129, 130 */
-
   /*!\brief Control to set frequency of the cost updates for coefficients,
    * unsigned int parameter
    *
@@ -1213,7 +1213,7 @@ enum aome_enc_control_id {
    * - 2 = update at tile level
    * - 3 = turn off
    */
-  AV1E_SET_COEFF_COST_UPD_FREQ = 140,
+  AV1E_SET_COEFF_COST_UPD_FREQ = 126,
 
   /*!\brief Control to set frequency of the cost updates for mode, unsigned int
    * parameter
@@ -1223,7 +1223,7 @@ enum aome_enc_control_id {
    * - 2 = update at tile level
    * - 3 = turn off
    */
-  AV1E_SET_MODE_COST_UPD_FREQ = 141,
+  AV1E_SET_MODE_COST_UPD_FREQ = 127,
 
   /*!\brief Control to set frequency of the cost updates for motion vectors,
    * unsigned int parameter
@@ -1233,7 +1233,7 @@ enum aome_enc_control_id {
    * - 2 = update at tile level
    * - 3 = turn off
    */
-  AV1E_SET_MV_COST_UPD_FREQ = 142,
+  AV1E_SET_MV_COST_UPD_FREQ = 128,
 
   /*!\brief Control to set bit mask that specifies which tier each of the 32
    * possible operating points conforms to, unsigned int parameter
@@ -1241,37 +1241,37 @@ enum aome_enc_control_id {
    * - 0 = main tier (default)
    * - 1 = high tier
    */
-  AV1E_SET_TIER_MASK = 143,
+  AV1E_SET_TIER_MASK = 129,
 
   /*!\brief Control to set minimum compression ratio, unsigned int parameter
    * Take integer values. If non-zero, encoder will try to keep the compression
    * ratio of each frame to be higher than the given value divided by 100.
    * E.g. 850 means minimum compression ratio of 8.5.
    */
-  AV1E_SET_MIN_CR = 144,
+  AV1E_SET_MIN_CR = 130,
 
   /* NOTE: enums 145-149 unused */
 
   /*!\brief Codec control function to set the layer id, aom_svc_layer_id_t*
    * parameter
    */
-  AV1E_SET_SVC_LAYER_ID = 150,
+  AV1E_SET_SVC_LAYER_ID = 131,
 
   /*!\brief Codec control function to set SVC paramaeters, aom_svc_params_t*
    * parameter
    */
-  AV1E_SET_SVC_PARAMS = 151,
+  AV1E_SET_SVC_PARAMS = 132,
 
   /*!\brief Codec control function to set reference frame config:
    * the ref_idx and the refresh flags for each buffer slot.
    * aom_svc_ref_frame_config_t* parameter
    */
-  AV1E_SET_SVC_REF_FRAME_CONFIG = 152,
+  AV1E_SET_SVC_REF_FRAME_CONFIG = 133,
 
   /*!\brief Codec control function to set the path to the VMAF model used when
    * tuning the encoder for VMAF, const char* parameter
    */
-  AV1E_SET_VMAF_MODEL_PATH = 153,
+  AV1E_SET_VMAF_MODEL_PATH = 134,
 
   /*!\brief Codec control function to enable EXT_TILE_DEBUG in AV1 encoder,
    * unsigned int parameter
@@ -1281,7 +1281,7 @@ enum aome_enc_control_id {
    *
    * \note This is only used in lightfield example test.
    */
-  AV1E_ENABLE_EXT_TILE_DEBUG = 154,
+  AV1E_ENABLE_EXT_TILE_DEBUG = 135,
 
   /*!\brief Codec control function to enable the superblock multipass unit test
    * in AV1 to ensure that the encoder does not leak state between different
@@ -1292,30 +1292,44 @@ enum aome_enc_control_id {
    *
    * \note This is only used in sb_multipass unit test.
    */
-  AV1E_ENABLE_SB_MULTIPASS_UNIT_TEST = 155,
+  AV1E_ENABLE_SB_MULTIPASS_UNIT_TEST = 136,
 
   /*!\brief Control to select minimum height for the GF group pyramid structure,
    * unsigned int parameter
    *
    * Valid values: 0..5
    */
-  AV1E_SET_GF_MIN_PYRAMID_HEIGHT = 156,
+  AV1E_SET_GF_MIN_PYRAMID_HEIGHT = 137,
 
   /*!\brief Control to set average complexity of the corpus in the case of
    * single pass vbr based on LAP, unsigned int parameter
    */
-  AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP = 157,
+  AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP = 138,
 
   /*!\brief Control to get baseline gf interval
    */
-  AV1E_GET_BASELINE_GF_INTERVAL = 158,
+  AV1E_GET_BASELINE_GF_INTERVAL = 139,
 
   /*\brief Control to set encoding the denoised frame from denoise-noise-level
    *
    * - 0 = disabled/encode the original frame
    * - 1 = enabled/encode the denoised frame (default)
    */
-  AV1E_SET_ENABLE_DNL_DENOISING = 159,
+  AV1E_SET_ENABLE_DNL_DENOISING = 140,
+
+  /*!\brief Codec control function to turn on / off D45 to D203 intra mode
+   * usage, int parameter
+   *
+   * This will enable or disable usage of D45 to D203 intra modes.
+   *
+   * - 0 = disable
+   * - 1 = enable (default)
+   */
+  AV1E_SET_ENABLE_DIAGONAL_INTRA = 141,
+
+  // Any new encoder control IDs should be added above.
+  // Maximum allowed encoder control ID is 229.
+  // No encoder control ID should be added below.
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1410,6 +1424,7 @@ typedef enum {
   AOM_TUNE_VMAF_WITHOUT_PREPROCESSING = 5,
   AOM_TUNE_VMAF_MAX_GAIN = 6,
   AOM_TUNE_VMAF_NEG_MAX_GAIN = 7,
+  AOM_TUNE_BUTTERAUGLI = 8,
 } aom_tune_metric;
 
 #define AOM_MAX_LAYERS 32   /**< Max number of layers */
@@ -1434,6 +1449,8 @@ typedef struct aom_svc_params {
   int layer_target_bitrate[AOM_MAX_LAYERS];
   /*! Frame rate factor for each temporal layer */
   int framerate_factor[AOM_MAX_TS_LAYERS];
+  /*! Flag to do KSVC for fixed mode */
+  int ksvc_fixed_mode;
 } aom_svc_params_t;
 
 /*!brief Parameters for setting ref frame config */
@@ -1667,6 +1684,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_PAETH_INTRA, int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_CFL_INTRA, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_CFL_INTRA
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DIAGONAL_INTRA, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_DIAGONAL_INTRA
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_SUPERRES, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_SUPERRES

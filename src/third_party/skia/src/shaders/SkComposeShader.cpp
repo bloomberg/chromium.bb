@@ -130,20 +130,20 @@ bool SkShader_Blend::onAppendStages(const SkStageRec& orig_rec) const {
 static skvm::Color program_or_paint(const sk_sp<SkShader>& sh, skvm::Builder* p,
                                     skvm::Coord device, skvm::Coord local, skvm::Color paint,
                                     const SkMatrixProvider& mats, const SkMatrix* localM,
-                                    SkFilterQuality q, const SkColorInfo& dst,
+                                    const SkColorInfo& dst,
                                     skvm::Uniforms* uniforms, SkArenaAlloc* alloc) {
-    return sh ? as_SB(sh)->program(p, device,local, paint, mats,localM, q,dst, uniforms,alloc)
+    return sh ? as_SB(sh)->program(p, device,local, paint, mats,localM, dst, uniforms,alloc)
               : p->premul(paint);
 }
 
 skvm::Color SkShader_Blend::onProgram(skvm::Builder* p,
                                       skvm::Coord device, skvm::Coord local, skvm::Color paint,
                                       const SkMatrixProvider& mats, const SkMatrix* localM,
-                                      SkFilterQuality q, const SkColorInfo& dst,
+                                      const SkColorInfo& dst,
                                       skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const {
     skvm::Color d,s;
-    if ((d = program_or_paint(fDst, p, device,local, paint, mats,localM, q,dst, uniforms,alloc)) &&
-        (s = program_or_paint(fSrc, p, device,local, paint, mats,localM, q,dst, uniforms,alloc)))
+    if ((d = program_or_paint(fDst, p, device,local, paint, mats,localM, dst, uniforms,alloc)) &&
+        (s = program_or_paint(fSrc, p, device,local, paint, mats,localM, dst, uniforms,alloc)))
     {
         return p->blend(fMode, s,d);
     }
@@ -180,11 +180,11 @@ bool SkShader_Lerp::onAppendStages(const SkStageRec& orig_rec) const {
 skvm::Color SkShader_Lerp::onProgram(skvm::Builder* p,
                                      skvm::Coord device, skvm::Coord local, skvm::Color paint,
                                      const SkMatrixProvider& mats, const SkMatrix* localM,
-                                     SkFilterQuality q, const SkColorInfo& dst,
+                                     const SkColorInfo& dst,
                                      skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const {
     skvm::Color d,s;
-    if ((d = program_or_paint(fDst, p, device,local, paint, mats,localM, q,dst, uniforms,alloc)) &&
-        (s = program_or_paint(fSrc, p, device,local, paint, mats,localM, q,dst, uniforms,alloc)))
+    if ((d = program_or_paint(fDst, p, device,local, paint, mats,localM, dst, uniforms,alloc)) &&
+        (s = program_or_paint(fSrc, p, device,local, paint, mats,localM, dst, uniforms,alloc)))
     {
         auto t = p->uniformF(uniforms->pushF(fWeight));
         return {
@@ -201,7 +201,7 @@ skvm::Color SkShader_Lerp::onProgram(skvm::Builder* p,
 
 #include "include/gpu/GrRecordingContext.h"
 #include "src/gpu/effects/GrBlendFragmentProcessor.h"
-#include "src/gpu/effects/generated/GrComposeLerpEffect.h"
+#include "src/gpu/effects/GrSkSLFP.h"
 #include "src/gpu/effects/generated/GrConstColorProcessor.h"
 
 static std::unique_ptr<GrFragmentProcessor> as_fp(const GrFPArgs& args, SkShader* shader) {
@@ -221,6 +221,19 @@ std::unique_ptr<GrFragmentProcessor> SkShader_Lerp::asFragmentProcessor(
     const GrFPArgs::WithPreLocalMatrix args(orig_args, this->getLocalMatrix());
     auto fpA = as_fp(args, fDst.get());
     auto fpB = as_fp(args, fSrc.get());
-    return GrComposeLerpEffect::Make(std::move(fpA), std::move(fpB), fWeight);
+
+    static constexpr char kCode[] = R"(
+        uniform shader a;
+        uniform shader b;
+        uniform half w;
+
+        half4 main() { return mix(sample(a), sample(b), w); }
+    )";
+
+    auto builder = GrRuntimeFPBuilder::Make<kCode>();
+    builder.uniform("w") = fWeight;
+    builder.child("a") = std::move(fpA);
+    builder.child("b") = std::move(fpB);
+    return builder.makeFP(args.fContext);
 }
 #endif

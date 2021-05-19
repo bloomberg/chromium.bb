@@ -44,7 +44,6 @@ import org.chromium.components.signin.identitymanager.PrimaryAccountChangeEvent;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Collections;
 
 /**
  * Handles displaying IdentityDisc on toolbar depending on several conditions
@@ -207,7 +206,6 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
         ProfileDataCache profileDataCache =
                 ProfileDataCache.createWithoutBadge(mContext, dimension_id);
         profileDataCache.addObserver(this);
-        profileDataCache.update(Collections.singletonList(accountName));
         mProfileDataCache[state] = profileDataCache;
     }
 
@@ -267,7 +265,7 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
      */
     @Override
     public void onPrimaryAccountChanged(PrimaryAccountChangeEvent eventDetails) {
-        switch (eventDetails.getEventTypeFor(ConsentLevel.NOT_REQUIRED)) {
+        switch (eventDetails.getEventTypeFor(ConsentLevel.SIGNIN)) {
             case PrimaryAccountChangeEvent.Type.SET:
                 resetIdentityDiscCache();
                 notifyObservers(true);
@@ -327,7 +325,7 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
         @ConsentLevel
         int consentLevel =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
-                ? ConsentLevel.NOT_REQUIRED
+                ? ConsentLevel.SIGNIN
                 : ConsentLevel.SYNC;
         return mIdentityManager != null ? mIdentityManager.getPrimaryAccountInfo(consentLevel)
                                         : null;

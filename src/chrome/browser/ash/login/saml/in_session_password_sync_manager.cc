@@ -9,10 +9,10 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/ash/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
+#include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/saml/in_session_password_change_manager.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_fetcher.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
@@ -84,7 +84,7 @@ void InSessionPasswordSyncManager::MaybeForceReauthOnLockScreen(
     // On the lock screen: need to update the UI.
     screenlock_bridge_->lock_handler()->SetAuthType(
         primary_user_->GetAccountId(),
-        proximity_auth::mojom::AuthType::ONLINE_SIGN_IN, base::string16());
+        proximity_auth::mojom::AuthType::ONLINE_SIGN_IN, std::u16string());
   }
   lock_screen_reauth_reason_ = reauth_reason;
 }
@@ -109,7 +109,7 @@ void InSessionPasswordSyncManager::OnSessionStateChanged() {
   // Request re-auth immediately after locking the screen.
   screenlock_bridge_->lock_handler()->SetAuthType(
       primary_user_->GetAccountId(),
-      proximity_auth::mojom::AuthType::ONLINE_SIGN_IN, base::string16());
+      proximity_auth::mojom::AuthType::ONLINE_SIGN_IN, std::u16string());
 }
 
 void InSessionPasswordSyncManager::UpdateOnlineAuth() {
@@ -180,7 +180,7 @@ void InSessionPasswordSyncManager::CheckCredentials(
     extended_authenticator_ = ExtendedAuthenticator::Create(this);
   }
   extended_authenticator_.get()->AuthenticateToCheck(user_context,
-                                                     base::Closure());
+                                                     base::OnceClosure());
 }
 
 void InSessionPasswordSyncManager::UpdateUserPassword(

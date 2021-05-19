@@ -194,12 +194,12 @@ std::unique_ptr<NetworkUIData> GetUIDataFromValue(
     const base::Value& ui_data_value) {
   std::string ui_data_str;
   if (!ui_data_value.GetAsString(&ui_data_str))
-    return std::unique_ptr<NetworkUIData>();
+    return nullptr;
   if (ui_data_str.empty())
     return std::make_unique<NetworkUIData>();
   base::Value ui_data_dict = chromeos::onc::ReadDictionaryFromJson(ui_data_str);
   if (!ui_data_dict.is_dict())
-    return std::unique_ptr<NetworkUIData>();
+    return nullptr;
   return std::make_unique<NetworkUIData>(ui_data_dict);
 }
 
@@ -210,7 +210,7 @@ std::unique_ptr<NetworkUIData> GetUIDataFromProperties(
                                            &ui_data_value);
   if (!ui_data_value) {
     VLOG(2) << "Dictionary has no UIData entry.";
-    return std::unique_ptr<NetworkUIData>();
+    return nullptr;
   }
   std::unique_ptr<NetworkUIData> ui_data = GetUIDataFromValue(*ui_data_value);
   if (!ui_data)
@@ -218,10 +218,29 @@ std::unique_ptr<NetworkUIData> GetUIDataFromProperties(
   return ui_data;
 }
 
-void SetUIData(const NetworkUIData& ui_data,
-               base::DictionaryValue* shill_dictionary) {
+void SetUIDataAndSource(const NetworkUIData& ui_data,
+                        base::DictionaryValue* shill_dictionary) {
   shill_dictionary->SetKey(shill::kUIDataProperty,
                            base::Value(ui_data.GetAsJson()));
+  std::string source;
+  switch (ui_data.onc_source()) {
+    case ::onc::ONC_SOURCE_UNKNOWN:
+      source = shill::kONCSourceUnknown;
+      break;
+    case ::onc::ONC_SOURCE_NONE:
+      source = shill::kONCSourceNone;
+      break;
+    case ::onc::ONC_SOURCE_USER_IMPORT:
+      source = shill::kONCSourceUserImport;
+      break;
+    case ::onc::ONC_SOURCE_DEVICE_POLICY:
+      source = shill::kONCSourceDevicePolicy;
+      break;
+    case ::onc::ONC_SOURCE_USER_POLICY:
+      source = shill::kONCSourceUserPolicy;
+      break;
+  }
+  shill_dictionary->SetKey(shill::kONCSourceProperty, base::Value(source));
 }
 
 bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,

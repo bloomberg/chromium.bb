@@ -11,15 +11,15 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ash/login/login_wizard.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
+#include "chrome/browser/ash/login/test/js_checker.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
+#include "chrome/browser/ash/login/test/oobe_base_test.h"
+#include "chrome/browser/ash/login/test/oobe_screen_exit_waiter.h"
+#include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, NoAppsSelected) {
 
     test::OobeJS().ExpectElementText(
         l10n_util::GetStringFUTF8(IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE_PLURAL,
-                                  base::ASCIIToUTF16("0")),
+                                  u"0"),
         kTitlePlural);
   }
 
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, MultipleAppsSelected) {
 
     test::OobeJS().ExpectElementText(
         l10n_util::GetStringFUTF8(IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE_PLURAL,
-                                  base::ASCIIToUTF16("2")),
+                                  u"2"),
         kTitlePlural);
   }
 

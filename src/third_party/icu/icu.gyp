@@ -40,10 +40,7 @@
         ],
       }],
       ['OS=="win"', {
-        'defines': [
-          'UCHAR_TYPE=wchar_t',
-        ],
-	'cflags': [ '/utf-8' ],
+        'cflags': [ '/utf-8' ],
       }],
       ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
          or OS=="netbsd" or OS=="mac" or OS=="android" or OS=="qnx") and \

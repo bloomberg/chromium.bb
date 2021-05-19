@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.firstrun;
 
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 
 import android.app.Activity;
@@ -14,6 +15,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
+import android.view.View;
 import android.widget.Button;
 
 import androidx.test.filters.MediumTest;
@@ -36,7 +38,6 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -44,11 +45,12 @@ import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelperUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
 import org.chromium.chrome.browser.policy.EnterpriseInfo;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -57,6 +59,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.policy.AbstractAppRestrictionsProvider;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -68,7 +71,6 @@ import java.util.concurrent.TimeoutException;
  * Integration test suite for the first run experience.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Features.EnableFeatures(ChromeFeatureList.SHARE_BY_DEFAULT_IN_CCT)
 public class FirstRunIntegrationTest {
     private static final long DEFERRED_START_UP_POLL_TIME = 10000L;
     @Rule
@@ -145,10 +147,10 @@ public class FirstRunIntegrationTest {
         return (T) mLastActivity;
     }
 
-    private void setHasAppRestrictionForMock() {
+    private void setHasAppRestrictionForMock(boolean hasAppRestriction) {
         Mockito.doAnswer(invocation -> {
                    Callback<Boolean> callback = invocation.getArgument(0);
-                   callback.onResult(true);
+                   callback.onResult(hasAppRestriction);
                    return null;
                })
                 .when(mMockAppRestrictionInfo)
@@ -168,7 +170,7 @@ public class FirstRunIntegrationTest {
     }
 
     private void skipTosDialogViaPolicy() {
-        setHasAppRestrictionForMock();
+        setHasAppRestrictionForMock(true);
         Bundle restrictions = new Bundle();
         restrictions.putInt("TosDialogBehavior", TosDialogBehavior.SKIP);
         AbstractAppRestrictionsProvider.setTestRestrictions(restrictions);
@@ -305,7 +307,6 @@ public class FirstRunIntegrationTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug/1166585")
     public void testExitFirstRunWithPolicy() {
         skipTosDialogViaPolicy();
 
@@ -399,6 +400,38 @@ public class FirstRunIntegrationTest {
         Intent intent =
                 CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, "https://test.com");
         mContext.startActivity(intent);
+    }
+
+    @Test
+    @MediumTest
+    public void testResetOnBackPress() throws Exception {
+        // Inspired by crbug.com/1192854.
+        // When the policy initialization is finishing after ToS accepted, the small loading circle
+        // will be shown on the screen. If user decide to go back with backpress, the UI should be
+        // reset with ToS UI visible.
+        FirstRunStatus.setSkipWelcomePage(true);
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, true);
+        setHasAppRestrictionForMock(false);
+        FirstRunActivity freActivity = launchFirstRunActivity();
+
+        // ToS page should be skipped and jumped to the next page, since ToS is marked accepted in
+        // shared preference.
+        mTestObserver.flowIsKnownCallback.waitForCallback("Failed to finalize the flow.", 0);
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(freActivity.isNativeSideIsInitializedForTest(), is(true)));
+        mTestObserver.jumpToPageCallback.waitForCallback(
+                "ToS should be skipped after native initialized.", 0);
+
+        // Press back button.
+        TestThreadUtils.runOnUiThreadBlocking(() -> mLastActivity.onBackPressed());
+
+        View tosAndPrivacy = mLastActivity.findViewById(R.id.tos_and_privacy);
+        View umaCheckbox = mLastActivity.findViewById(R.id.send_report_checkbox);
+        Assert.assertNotNull(tosAndPrivacy);
+        Assert.assertNotNull(umaCheckbox);
+        Assert.assertEquals(View.VISIBLE, tosAndPrivacy.getVisibility());
+        Assert.assertEquals(View.VISIBLE, umaCheckbox.getVisibility());
     }
 
     private void clickButton(final Activity activity, final int id, final String message) {

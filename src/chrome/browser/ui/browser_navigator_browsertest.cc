@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/search/local_ntp_test_utils.h"
+#include "chrome/browser/ui/search/ntp_test_utils.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -107,7 +107,7 @@ bool BrowserNavigatorTest::OpenPOSTURLInNewForegroundTabAndGetTitle(
     const GURL& url,
     const std::string& post_data,
     bool is_browser_initiated,
-    base::string16* title) {
+    std::u16string* title) {
   NavigateParams param(MakeNavigateParams());
   param.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   param.url = url;
@@ -1436,7 +1436,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   params.url = GURL(chrome::kChromeUINewTabURL);
   ui_test_utils::NavigateToURL(&params);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(local_ntp_test_utils::GetFinalNtpUrl(browser()->profile()),
+  EXPECT_EQ(ntp_test_utils::GetFinalNtpUrl(browser()->profile()),
             browser()
                 ->tab_strip_model()
                 ->GetActiveWebContents()
@@ -1715,9 +1715,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Open a browser initiated POST request in new foreground tab.
-  base::string16 expected_title(base::ASCIIToUTF16(kExpectedTitle));
+  std::u16string expected_title(base::ASCIIToUTF16(kExpectedTitle));
   std::string post_data = kExpectedTitle;
-  base::string16 title;
+  std::u16string title;
   ASSERT_TRUE(OpenPOSTURLInNewForegroundTabAndGetTitle(
       embedded_test_server()->GetURL(kEchoTitleCommand), post_data, true,
       &title));
@@ -1732,9 +1732,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Open a renderer initiated POST request in new foreground tab.
-  base::string16 expected_title(base::ASCIIToUTF16(kExpectedTitle));
+  std::u16string expected_title(base::ASCIIToUTF16(kExpectedTitle));
   std::string post_data = kExpectedTitle;
-  base::string16 title;
+  std::u16string title;
   ASSERT_TRUE(OpenPOSTURLInNewForegroundTabAndGetTitle(
       embedded_test_server()->GetURL(kEchoTitleCommand), post_data, false,
       &title));
@@ -1765,7 +1765,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   params.window_action = NavigateParams::SHOW_WINDOW;
   ui_test_utils::NavigateToURL(&params);
 
-  base::string16 expected_title(base::UTF8ToUTF16(unescaped_title));
+  std::u16string expected_title(base::UTF8ToUTF16(unescaped_title));
   EXPECT_TRUE(params.navigated_or_inserted_contents);
   EXPECT_EQ(expected_title, params.navigated_or_inserted_contents->GetTitle());
   // GURL always keeps non-ASCII characters escaped, but check them anyways.

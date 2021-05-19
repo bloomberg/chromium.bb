@@ -8,10 +8,10 @@
 #ifndef SKSL_FUNCTIONDECLARATION
 #define SKSL_FUNCTIONDECLARATION
 
+#include "include/private/SkSLModifiers.h"
+#include "include/private/SkSLSymbol.h"
 #include "include/private/SkTArray.h"
 #include "src/sksl/ir/SkSLExpression.h"
-#include "src/sksl/ir/SkSLModifiers.h"
-#include "src/sksl/ir/SkSLSymbol.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLVariable.h"
@@ -35,7 +35,8 @@ public:
     , fModifiers(modifiers)
     , fParameters(std::move(parameters))
     , fReturnType(returnType)
-    , fBuiltin(builtin) {}
+    , fBuiltin(builtin)
+    , fIsMain(name == "main") {}
 
     const Modifiers& modifiers() const {
         return *fModifiers;
@@ -61,10 +62,29 @@ public:
         return fBuiltin;
     }
 
+    bool isMain() const {
+        return fIsMain;
+    }
+
+    String mangledName() const {
+        if ((this->isBuiltin() && !this->definition()) || this->isMain()) {
+            // Builtins without a definition (like `sin` or `sqrt`) must use their real names.
+            return this->name();
+        }
+        // GLSL forbids two underscores in a row; add an extra character if necessary to avoid this.
+        const char* splitter = this->name().endsWith("_") ? "x_" : "_";
+        // Rename function to `funcname_returntypeparamtypes`.
+        String result = this->name() + splitter + this->returnType().abbreviatedName();
+        for (const Variable* p : this->parameters()) {
+            result += p->type().abbreviatedName();
+        }
+        return result;
+    }
+
     String description() const override {
         String result = this->returnType().displayName() + " " + this->name() + "(";
         String separator;
-        for (auto p : this->parameters()) {
+        for (const Variable* p : this->parameters()) {
             result += separator;
             separator = ", ";
             result += p->type().displayName();
@@ -160,6 +180,7 @@ private:
     std::vector<const Variable*> fParameters;
     const Type* fReturnType;
     bool fBuiltin;
+    bool fIsMain;
 
     using INHERITED = Symbol;
 };

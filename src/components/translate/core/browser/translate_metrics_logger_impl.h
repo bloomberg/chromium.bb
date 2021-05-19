@@ -20,26 +20,34 @@ namespace translate {
 // Translation frequency UMA histograms.
 extern const char kTranslateTranslationSourceLanguage[];
 extern const char kTranslateTranslationTargetLanguage[];
+extern const char kTranslateTranslationTargetLanguageOrigin[];
 extern const char kTranslateTranslationStatus[];
 extern const char kTranslateTranslationType[];
+
+// UI Interaction frequency UMA histograms.
+extern const char kTranslateUiInteractionEvent[];
 
 // Page-load frequency UMA histograms.
 extern const char kTranslatePageLoadAutofillAssistantDeferredTriggerDecision[];
 extern const char kTranslatePageLoadFinalSourceLanguage[];
 extern const char kTranslatePageLoadFinalState[];
 extern const char kTranslatePageLoadFinalTargetLanguage[];
+extern const char kTranslatePageLoadHrefTriggerDecision[];
 extern const char kTranslatePageLoadInitialSourceLanguage[];
 extern const char kTranslatePageLoadInitialState[];
 extern const char kTranslatePageLoadInitialTargetLanguage[];
+extern const char kTranslatePageLoadInitialTargetLanguageOrigin[];
 extern const char
     kTranslatePageLoadIsInitialSourceLanguageInUsersContentLanguages[];
 extern const char kTranslatePageLoadNumTargetLanguageChanges[];
 extern const char kTranslatePageLoadNumTranslations[];
 extern const char kTranslatePageLoadNumReversions[];
 extern const char kTranslatePageLoadRankerDecision[];
+extern const char kTranslatePageLoadRankerTimerShouldOfferTranslation[];
 extern const char kTranslatePageLoadRankerVersion[];
 extern const char kTranslatePageLoadTriggerDecision[];
-extern const char kTranslatePageLoadHrefTriggerDecision[];
+extern const char kTranslatePageLoadTriggerDecisionAllTriggerDecisions[];
+extern const char kTranslatePageLoadTriggerDecisionTotalCount[];
 
 class NullTranslateMetricsLogger : public TranslateMetricsLogger {
  public:
@@ -52,6 +60,8 @@ class NullTranslateMetricsLogger : public TranslateMetricsLogger {
   void SetUkmSourceId(ukm::SourceId ukm_source_id) override {}
   void LogRankerMetrics(RankerDecision ranker_decision,
                         uint32_t ranker_version) override {}
+  void LogRankerStart() override {}
+  void LogRankerFinish() override {}
   void LogTriggerDecision(TriggerDecision trigger_decision) override {}
   void LogAutofillAssistantDeferredTriggerDecision() override {}
   void LogInitialState() override {}
@@ -64,7 +74,9 @@ class NullTranslateMetricsLogger : public TranslateMetricsLogger {
   void LogInitialSourceLanguage(const std::string& source_language_code,
                                 bool is_in_users_content_languages) override {}
   void LogSourceLanguage(const std::string& source_language_code) override {}
-  void LogTargetLanguage(const std::string& target_language_code) override {}
+  void LogTargetLanguage(const std::string& target_language_code,
+                         TranslateBrowserMetrics::TargetLanguageOrigin
+                             target_language_origin) override {}
   void LogHTMLDocumentLanguage(const std::string& html_doc_language) override {}
   void LogHTMLContentLanguage(
       const std::string& html_content_language) override {}
@@ -105,6 +117,8 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   void SetUkmSourceId(ukm::SourceId ukm_source_id) override;
   void LogRankerMetrics(RankerDecision ranker_decision,
                         uint32_t ranker_version) override;
+  void LogRankerStart() override;
+  void LogRankerFinish() override;
   void LogTriggerDecision(TriggerDecision trigger_decision) override;
   void LogAutofillAssistantDeferredTriggerDecision() override;
   void LogInitialState() override;
@@ -117,7 +131,9 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   void LogInitialSourceLanguage(const std::string& source_language_code,
                                 bool is_in_users_content_languages) override;
   void LogSourceLanguage(const std::string& source_language_code) override;
-  void LogTargetLanguage(const std::string& target_language_code) override;
+  void LogTargetLanguage(const std::string& target_language_code,
+                         TranslateBrowserMetrics::TargetLanguageOrigin
+                             target_language_origin) override;
   void LogHTMLDocumentLanguage(const std::string& html_doc_language) override;
   void LogHTMLContentLanguage(
       const std::string& html_content_language) override;
@@ -138,9 +154,11 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
                                 bool current_stat_is_translated);
 
   // Logs all relevant information about a translation.
-  void RecordTranslationHistograms(TranslationType translation_type,
-                                   const std::string& source_language,
-                                   const std::string& target_language);
+  void RecordTranslationHistograms(
+      TranslationType translation_type,
+      const std::string& source_language,
+      const std::string& target_language,
+      TranslateBrowserMetrics::TargetLanguageOrigin target_language_origin);
 
   // Logs the final status of the translation.
   void RecordTranslationStatus(TranslationStatus translation_status);
@@ -184,10 +202,13 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   // Stores state about TranslateRanker for this page load.
   RankerDecision ranker_decision_ = RankerDecision::kUninitialized;
   uint32_t ranker_version_ = 0;
+  base::TimeTicks ranker_start_time_;
+  base::Optional<base::TimeDelta> ranker_duration_;
 
   // Stores the reason for the initial state of the page load. In the case there
   // are multiple reasons, only the first reported reason is stored.
   TriggerDecision trigger_decision_ = TriggerDecision::kUninitialized;
+  std::vector<TriggerDecision> all_trigger_decisions_;
   bool autofill_assistant_deferred_trigger_decision_ = false;
 
   // Tracks the different dimensions that determine the state of Translate.
@@ -234,6 +255,12 @@ class TranslateMetricsLoggerImpl : public TranslateMetricsLogger {
   std::string initial_target_language_;
   std::string current_target_language_;
   int num_target_language_changes_ = 0;
+  TranslateBrowserMetrics::TargetLanguageOrigin
+      initial_target_language_origin_ =
+          TranslateBrowserMetrics::TargetLanguageOrigin::kUninitialized;
+  TranslateBrowserMetrics::TargetLanguageOrigin
+      current_target_language_origin_ =
+          TranslateBrowserMetrics::TargetLanguageOrigin::kUninitialized;
 
   // Tracks this record's HTML language attributes.
   std::string html_doc_language_;

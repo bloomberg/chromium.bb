@@ -12,17 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-#include <vector>
-
 #include "src/ast/constant_id_decoration.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/type_constructor_expression.h"
-#include "src/ast/variable.h"
-#include "src/program.h"
-#include "src/type/array_type.h"
-#include "src/type/f32_type.h"
 #include "src/writer/hlsl/test_helper.h"
 
 namespace tint {
@@ -34,6 +24,7 @@ using HlslGeneratorImplTest_ModuleConstant = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_ModuleConstant, Emit_ModuleConstant) {
   auto* var = Const("pos", ty.array<f32, 3>(), array<f32, 3>(1.f, 2.f, 3.f));
+  WrapInFunction(Decl(var));
 
   GeneratorImpl& gen = Build();
 
@@ -43,9 +34,10 @@ TEST_F(HlslGeneratorImplTest_ModuleConstant, Emit_ModuleConstant) {
 
 TEST_F(HlslGeneratorImplTest_ModuleConstant, Emit_SpecConstant) {
   auto* var = Const("pos", ty.f32(), Expr(3.0f),
-                    ast::VariableDecorationList{
+                    ast::DecorationList{
                         create<ast::ConstantIdDecoration>(23),
                     });
+  WrapInFunction(Decl(var));
 
   GeneratorImpl& gen = Build();
 
@@ -60,9 +52,10 @@ static const float pos = WGSL_SPEC_CONSTANT_23;
 
 TEST_F(HlslGeneratorImplTest_ModuleConstant, Emit_SpecConstant_NoConstructor) {
   auto* var = Const("pos", ty.f32(), nullptr,
-                    ast::VariableDecorationList{
+                    ast::DecorationList{
                         create<ast::ConstantIdDecoration>(23),
                     });
+  WrapInFunction(Decl(var));
 
   GeneratorImpl& gen = Build();
 

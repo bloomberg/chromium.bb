@@ -41,15 +41,21 @@ Polymer({
     /** @type {!LanguageHelper} */
     languageHelper: Object,
 
-    /** @private {!Array<!LanguageState|!ForcedLanguageState>|undefined} */
+    /** @private {!Array<!LanguageState|!SpellCheckLanguageState>|undefined} */
     spellCheckLanguages_: {
       type: Array,
-      computed:
-          'getSpellCheckLanguages_(languages.enabled.*, languages.forcedSpellCheckLanguages.*)',
+      computed: `getSpellCheckLanguages_(languageSettingsV2Update2Enabled_,
+          languages.spellCheckOnLanguages.*, languages.enabled.*)`,
     },
 
     /** @private */
     showAddInputMethodsDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    showAddSpellcheckLanguagesDialog_: {
       type: Boolean,
       value: false,
     },
@@ -65,6 +71,14 @@ Polymer({
         chromeos.settings.mojom.Setting.kAddInputMethod,
         chromeos.settings.mojom.Setting.kSpellCheck,
       ]),
+    },
+
+    /** @private */
+    languageSettingsV2Update2Enabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enableLanguageSettingsV2Update2');
+      },
     },
   },
 
@@ -248,6 +262,21 @@ Polymer({
     cr.ui.focusWithoutInk(assert(this.$.addInputMethod));
   },
 
+  /** @private */
+  onAddSpellcheckLanguagesClick_() {
+    this.showAddSpellcheckLanguagesDialog_ = true;
+  },
+
+  /** @private */
+  onAddSpellcheckLanguagesDialogClose_() {
+    this.showAddSpellcheckLanguagesDialog_ = false;
+    // Because #addSpellcheckLanguages is not statically created (as it is
+    // within a <template is="dom-if">), we need to use
+    // this.$$("#addSpellcheckLanguages") instead of
+    // this.$.addSpellCheckLanguages.
+    cr.ui.focusWithoutInk(assert(this.$$('#addSpellcheckLanguages')));
+  },
+
   /**
    * @param {!chrome.languageSettingsPrivate.InputMethod} targetInputMethod
    * @private
@@ -283,6 +312,24 @@ Polymer({
   },
 
   /**
+   * @param {!SpellCheckLanguageState} lang
+   * @private
+   */
+  getRemoveSpellcheckLanguageTooltip_(lang) {
+    return this.i18n(
+        'removeSpellCheckLanguageTooltip', lang.language.displayName);
+  },
+
+  /**
+   * @param {!{model: !{item: SpellCheckLanguageState}}} e
+   * @private
+   */
+  onRemoveSpellcheckLanguageClick_(e) {
+    this.languageHelper.toggleSpellCheck(e.model.item.language.code, false);
+    settings.recordSettingChange();
+  },
+
+  /**
    * @return {string|undefined}
    * @param {!Event} e
    * @private
@@ -303,17 +350,23 @@ Polymer({
   },
 
   /**
-   * Returns an array of enabled languages that support spell check, plus
-   * spellcheck languages that are force-enabled by policy.
-   * @return {!Array<!LanguageState|!ForcedLanguageState>|undefined}
+   * Returns an array of spell check languages for the UI.
+   * @return {!Array<!LanguageState|!SpellCheckLanguageState>|undefined}
    * @private
    */
   getSpellCheckLanguages_() {
     if (this.languages === undefined) {
       return undefined;
     }
+    if (this.languageSettingsV2Update2Enabled_) {
+      const languages = [...this.languages.spellCheckOnLanguages];
+      languages.sort(
+          (a, b) =>
+              a.language.displayName.localeCompare(b.language.displayName));
+      return languages;
+    }
     const combinedLanguages =
-        this.languages.enabled.concat(this.languages.forcedSpellCheckLanguages);
+        this.languages.enabled.concat(this.languages.spellCheckOnLanguages);
     const supportedSpellcheckLanguagesSet = new Set();
     const supportedSpellcheckLanguages = [];
 
@@ -372,7 +425,7 @@ Polymer({
   /**
    * Name only supports clicking when language is not managed, supports
    * spellcheck, and the dictionary has been downloaded with no errors.
-   * @param {!LanguageState|!ForcedLanguageState} item
+   * @param {!LanguageState|!SpellCheckLanguageState} item
    * @return {boolean}
    * @private
    */
@@ -412,5 +465,22 @@ Polymer({
         settings.LanguagesPageInteraction.OPEN_CUSTOM_SPELL_CHECK);
     settings.Router.getInstance().navigateTo(
         settings.routes.OS_LANGUAGES_EDIT_DICTIONARY);
-  }
+  },
+
+  /**
+   * Gets the appropriate CSS class for the Enhanced spell check toggle
+   * depending on whether Update 2 is enabled or not.
+   * @private
+   */
+  getEnhancedSpellCheckClass_() {
+    return this.languageSettingsV2Update2Enabled_ ? '' : 'hr';
+  },
+
+  /**
+   * @private
+   */
+  isEnableSpellcheckingDisabled_() {
+    return !this.languageSettingsV2Update2Enabled_ &&
+        (this.spellCheckLanguages_ && this.spellCheckLanguages_.length === 0);
+  },
 });

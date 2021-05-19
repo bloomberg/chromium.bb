@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -18,6 +19,8 @@
 namespace blink {
 
 class ExceptionState;
+class ExecutionContext;
+class LocalDOMWindow;
 class Profiler;
 class ProfilerInitOptions;
 class ScriptPromiseResolver;
@@ -28,6 +31,17 @@ class ScriptState;
 class CORE_EXPORT ProfilerGroup
     : public V8PerIsolateData::GarbageCollectedData {
  public:
+  // Determines whether or not the given frame can profile. Logs an exception
+  // in the given ExceptionState (if non-null) if profiling is not permitted,
+  // and returns false.
+  static bool CanProfile(LocalDOMWindow*,
+                         ExceptionState* = nullptr,
+                         ReportOptions = ReportOptions::kDoNotReport);
+
+  // Initializes logging for the given LocalDOMWindow if CanProfile returns
+  // true.
+  static void InitializeIfEnabled(LocalDOMWindow*);
+
   static ProfilerGroup* From(v8::Isolate*);
 
   static base::TimeDelta GetBaseSampleInterval();
@@ -40,11 +54,19 @@ class CORE_EXPORT ProfilerGroup
                            base::TimeTicks time_origin,
                            ExceptionState&);
 
+  // Tracks a profiling-enabled document's lifecycle, ensuring that the
+  // profiler is ready during its lifetime.
+  void OnProfilingContextAdded(ExecutionContext* context);
+
+  void DispatchSampleBufferFullEvent();
   void WillBeDestroyed() override;
   void Trace(Visitor*) const override;
 
  private:
   friend class Profiler;
+  class ProfilingContextObserver;
+
+  void OnProfilingContextDestroyed(ProfilingContextObserver*);
 
   void InitV8Profiler();
   void TeardownV8Profiler();
@@ -68,9 +90,24 @@ class CORE_EXPORT ProfilerGroup
 
   HeapHashSet<WeakMember<Profiler>> profilers_;
 
+  // A set of observers, one for each ExecutionContext that has profiling
+  // enabled.
+  HeapHashSet<Member<ProfilingContextObserver>> context_observers_;
+
   DISALLOW_COPY_AND_ASSIGN(ProfilerGroup);
 };
 
+class DiscardedSamplesDelegate : public v8::DiscardedSamplesDelegate {
+ public:
+  explicit DiscardedSamplesDelegate(ProfilerGroup* profiler_group)
+      : profiler_group_(profiler_group) {}
+  void Notify() override;
+
+ private:
+  // It is important to keep a weak reference to the profiler group
+  // because Notify may be invoked after profiling stops and ProfilerGroup dies.
+  WeakPersistent<ProfilerGroup> profiler_group_;
+};
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PROFILER_GROUP_H_

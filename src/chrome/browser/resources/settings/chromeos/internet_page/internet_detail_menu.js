@@ -16,10 +16,24 @@ Polymer({
   ],
 
   properties: {
+    /**
+     * Device state for the network type.
+     * @type {!OncMojo.DeviceStateProperties|undefined}
+     */
+    deviceState: Object,
+
+    /** @private {?OncMojo.NetworkStateProperties} */
+    networkState_: {
+      type: Object,
+      value: null,
+    },
+
     /** @private */
-    iccid_: {
-      type: String,
-      value: '',
+    isUpdatedCellularUiEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('updatedCellularActivationUi');
+      }
     },
   },
 
@@ -31,9 +45,10 @@ Polymer({
    */
   currentRouteChanged(route, oldRoute) {
     if (route !== settings.routes.NETWORK_DETAIL ||
-        !loadTimeData.getBoolean('updatedCellularActivationUi')) {
+        !this.isUpdatedCellularUiEnabled_) {
       return;
     }
+    this.networkState_ = null;
 
     // Check if the current network is Cellular using the GUID in the
     // current route. We can't use the 'type' parameter in the url
@@ -49,26 +64,12 @@ Polymer({
                               .getMojoServiceRemote();
     networkConfig.getNetworkState(guid).then(response => {
       if (response.result.type !==
-          chromeos.networkConfig.mojom.NetworkType.kCellular) {
+              chromeos.networkConfig.mojom.NetworkType.kCellular ||
+          !response.result.typeState.cellular.eid ||
+          !response.result.typeState.cellular.iccid) {
         return;
       }
-      this.setESimIccid_(networkConfig, guid);
-    });
-  },
-
-  /**
-   * @param {!chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
-   *     networkConfig
-   * @param {string} guid
-   * @private
-   */
-  setESimIccid_(networkConfig, guid) {
-    networkConfig.getManagedProperties(guid).then(response => {
-      const managedProperty = response.result;
-      if (managedProperty.typeProperties.cellular.iccid &&
-          managedProperty.typeProperties.cellular.eid) {
-        this.iccid_ = managedProperty.typeProperties.cellular.iccid;
-      }
+      this.networkState_ = response.result;
     });
   },
 
@@ -86,7 +87,18 @@ Polymer({
    * @private
    */
   shouldShowDotsMenuButton_() {
-    return !!this.iccid_;
+    return !!this.networkState_;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isDotsMenuButtonDisabled_() {
+    if (!this.deviceState || !this.isUpdatedCellularUiEnabled_) {
+      return false;
+    }
+    return OncMojo.deviceIsInhibited(this.deviceState);
   },
 
   /**
@@ -94,7 +106,8 @@ Polymer({
    * @private
    */
   onRenameESimProfileTap_(e) {
-    this.fire('show-esim-profile-rename-dialog', {iccid: this.iccid_});
+    this.fire(
+        'show-esim-profile-rename-dialog', {networkState: this.networkState_});
   },
 
   /**
@@ -102,6 +115,7 @@ Polymer({
    * @private
    */
   onRemoveESimProfileTap_(e) {
-    this.fire('show-esim-remove-profile-dialog', {iccid: this.iccid_});
+    this.fire(
+        'show-esim-remove-profile-dialog', {networkState: this.networkState_});
   }
 });

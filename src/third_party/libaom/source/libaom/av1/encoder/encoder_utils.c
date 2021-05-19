@@ -462,9 +462,9 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
   const GF_GROUP *const gf_group = &cpi->gf_group;
   AV1_COMMON *const cm = &cpi->common;
 
-  assert(IMPLIES(gf_group->size > 0, gf_group->index < gf_group->size));
+  assert(IMPLIES(gf_group->size > 0, cpi->gf_frame_index < gf_group->size));
 
-  const int tpl_idx = gf_group->index;
+  const int tpl_idx = cpi->gf_frame_index;
   TplParams *const tpl_data = &cpi->tpl_data;
   TplDepFrame *tpl_frame = &tpl_data->tpl_frame[tpl_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
@@ -497,7 +497,7 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
     } else {
       aom_clear_system_state();
       cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
-      if (is_frame_tpl_eligible(gf_group, gf_group->index)) {
+      if (is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) {
         if (cpi->lap_enabled) {
           double min_boost_factor = sqrt(cpi->rc.baseline_gf_interval);
           const int gfu_boost = get_gfu_boost_from_r0_lap(
@@ -531,7 +531,7 @@ void av1_set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
 #if !CONFIG_REALTIME_ONLY
   GF_GROUP *gf_group = &cpi->gf_group;
   if (cpi->oxcf.algo_cfg.enable_tpl_model &&
-      is_frame_tpl_eligible(gf_group, gf_group->index)) {
+      is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) {
     process_tpl_stats_frame(cpi);
     av1_tpl_rdmult_setup(cpi);
   }
@@ -539,7 +539,7 @@ void av1_set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
 
   // Decide q and q bounds.
   *q = av1_rc_pick_q_and_bounds(cpi, &cpi->rc, cm->width, cm->height,
-                                cpi->gf_group.index, bottom_index, top_index);
+                                cpi->gf_frame_index, bottom_index, top_index);
 
   // Configure experimental use of segmentation for enhanced coding of
   // static regions if indicated.
@@ -665,7 +665,7 @@ void av1_scale_references(AV1_COMP *cpi, const InterpFilter filter,
                   &new_fb->buf, cm->width, cm->height,
                   cm->seq_params.subsampling_x, cm->seq_params.subsampling_y,
                   cm->seq_params.use_highbitdepth, AOM_BORDER_IN_PIXELS,
-                  cm->features.byte_alignment, NULL, NULL, NULL)) {
+                  cm->features.byte_alignment, NULL, NULL, NULL, 0)) {
             if (force_scaling) {
               // Release the reference acquired in the get_free_fb() call above.
               --new_fb->ref_count;
@@ -753,7 +753,7 @@ void av1_setup_frame(AV1_COMP *cpi) {
 
   if ((cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) ||
       frame_is_sframe(cm)) {
-    if (!cpi->seq_params_locked) {
+    if (!cpi->ppi->seq_params_locked) {
       set_sb_size(&cm->seq_params, av1_select_sb_size(cpi));
     }
   } else {
@@ -1301,8 +1301,8 @@ void av1_dump_filtered_recon_frames(AV1_COMP *cpi) {
       "show_frame=%d, show_existing_frame=%d, source_alt_ref_active=%d, "
       "refresh_alt_ref_frame=%d, "
       "y_stride=%4d, uv_stride=%4d, cm->width=%4d, cm->height=%4d\n\n",
-      current_frame->frame_number, cpi->gf_group.index,
-      cpi->gf_group.update_type[cpi->gf_group.index], current_frame->order_hint,
+      current_frame->frame_number, cpi->gf_frame_index,
+      cpi->gf_group.update_type[cpi->gf_frame_index], current_frame->order_hint,
       cm->show_frame, cm->show_existing_frame, cpi->rc.source_alt_ref_active,
       cpi->refresh_frame.alt_ref_frame, recon_buf->y_stride,
       recon_buf->uv_stride, cm->width, cm->height);

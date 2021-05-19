@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -17,7 +18,6 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/process/kill.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
@@ -36,7 +36,7 @@
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom-forward.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "ui/accessibility/ax_tree_id_registry.h"
+#include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/base/ime/mojom/text_input_state.mojom-forward.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -91,12 +91,14 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   void WasUnOccluded() override {}
   void WasOccluded() override {}
   void SetIsInVR(bool is_in_vr) override;
-  base::string16 GetSelectedText() override;
+  std::u16string GetSelectedText() override;
   bool IsMouseLocked() override;
   bool GetIsMouseLockedUnadjustedMovementForTesting() override;
   bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void SetBackgroundColor(SkColor color) override;
   base::Optional<SkColor> GetBackgroundColor() override;
+  void CopyBackgroundColorIfPresentFrom(
+      const RenderWidgetHostView& other) override;
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
@@ -149,11 +151,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
   virtual void SendInitialPropertiesIfNeeded() {}
 
-  // Notification that a resize or move session ended on the native widget.
+  // Called when screen information or native widget bounds change.
   void UpdateScreenInfo(gfx::NativeView view);
 
-  // Tells if the display property (work area/scale factor) has
-  // changed since the last time.
+  // Updates cached screen information and returns whether it has changed.
   bool HasDisplayPropertyChanged(gfx::NativeView view);
 
   // Called by the TextInputManager to notify the view about being removed from
@@ -185,7 +186,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   virtual RenderWidgetHostViewBase* GetRootView();
 
   // Notifies the View that the renderer text selection has changed.
-  virtual void SelectionChanged(const base::string16& text,
+  virtual void SelectionChanged(const std::u16string& text,
                                 size_t offset,
                                 const gfx::Range& range);
 
@@ -432,10 +433,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
   // Tells the View that the tooltip text for the current mouse position over
   // the page has changed.
-  virtual void SetTooltipText(const base::string16& tooltip_text) = 0;
+  virtual void SetTooltipText(const std::u16string& tooltip_text) = 0;
 
   // Displays the requested tooltip on the screen.
-  virtual void DisplayTooltipText(const base::string16& tooltip_text) {}
+  virtual void DisplayTooltipText(const std::u16string& tooltip_text) {}
 
   // Transforms |point| to be in the coordinate space of browser compositor's
   // surface. This is in DIP.
@@ -612,6 +613,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
                                         const gfx::PointF& point,
                                         gfx::PointF* transformed_point) const;
 
+  // Helper function to return whether the current background color is fully
+  // opaque.
+  bool IsBackgroundColorOpaque();
+
   bool view_stopped_flinging_for_test() const {
     return view_stopped_flinging_for_test_;
   }
@@ -619,6 +624,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // Cached information about the renderer's display environment.
   display::Display current_display_;
   bool current_display_is_extended_ = false;
+  bool current_display_is_primary_ = false;
 
   base::ObserverList<RenderWidgetHostViewBaseObserver>::Unchecked observers_;
 

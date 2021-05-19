@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -84,14 +85,6 @@ void TrustTokenRequestRedemptionHelper::Begin(
     return;
   }
 
-  if (refresh_policy_ == mojom::TrustTokenRefreshPolicy::kRefresh &&
-      (!request->initiator() ||
-       !request->initiator()->IsSameOriginWith(*issuer_))) {
-    LogOutcome(net_log_, kBegin, "Refresh from non-issuer context");
-    std::move(done).Run(mojom::TrustTokenOperationStatus::kFailedPrecondition);
-    return;
-  }
-
   if (!token_store_->SetAssociation(*issuer_, top_level_origin_)) {
     LogOutcome(net_log_, kBegin, "Couldn't set issuer-toplevel association");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
@@ -159,6 +152,9 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
+
+  base::UmaHistogramBoolean("Net.TrustTokens.RedemptionRequestEmpty",
+                            maybe_redemption_header->empty());
 
   request->SetExtraRequestHeaderByName(kTrustTokensSecTrustTokenHeader,
                                        std::move(*maybe_redemption_header),

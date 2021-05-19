@@ -18,13 +18,18 @@ export const Curriculum = {
   COMMAND_REFERENCES: 'command_references',
   SOUNDS_AND_SETTINGS: 'sounds_and_settings',
   RESOURCES: 'resources',
+  TOUCH_ORIENTATION: 'touch_orientation',
 };
 
 /**
  * The user’s interaction medium. Influences tutorial content.
+ * Note: keep in sync with the enum in
+ * c/b/r/c/accessibility/common/constants.js.
+ * TODO: Unify with the above file when ES6 is standard in ChromeVox.
  * @enum {string}
  */
 export const InteractionMedium = {
+  NONE: 'none',
   KEYBOARD: 'keyboard',
   TOUCH: 'touch',
   BRAILLE: 'braille',
@@ -53,7 +58,8 @@ export let LessonData;
  * Defines a type for data used to generate main menu buttons.
  * @typedef {{
  *    title: string,
- *    curriculum: Curriculum
+ *    curriculum: Curriculum,
+ *    medium: InteractionMedium,
  * }}
  */
 export let MainMenuButtonData;

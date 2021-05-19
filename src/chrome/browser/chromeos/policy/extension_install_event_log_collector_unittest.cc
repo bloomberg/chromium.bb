@@ -8,8 +8,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -247,8 +247,7 @@ TEST_F(ExtensionInstallEventLogCollectorTest, NoEventsByDefault) {
 }
 
 TEST_F(ExtensionInstallEventLogCollectorTest, LoginLogout) {
-  chromeos::FakeChromeUserManager* fake_user_manager =
-      new chromeos::FakeChromeUserManager();
+  auto* fake_user_manager = new ash::FakeChromeUserManager();
   user_manager::ScopedUserManager scoped_user_manager(
       base::WrapUnique(fake_user_manager));
   AccountId account_id = AccountId::FromUserEmailGaiaId(kEmailId, kGaiaId);
@@ -279,8 +278,7 @@ TEST_F(ExtensionInstallEventLogCollectorTest, LoginLogout) {
 }
 
 TEST_F(ExtensionInstallEventLogCollectorTest, LoginTypes) {
-  chromeos::FakeChromeUserManager* fake_user_manager =
-      new chromeos::FakeChromeUserManager();
+  auto* fake_user_manager = new ash::FakeChromeUserManager();
   user_manager::ScopedUserManager scoped_user_manager(
       base::WrapUnique(fake_user_manager));
   AccountId account_id = AccountId::FromUserEmailGaiaId(kEmailId, kGaiaId);
@@ -364,8 +362,7 @@ TEST_F(ExtensionInstallEventLogCollectorTest, SuspendResume) {
 // Then, pass the captive portal. Verify that a connectivity change is recorded.
 TEST_F(ExtensionInstallEventLogCollectorTest, ConnectivityChanges) {
   SetNetworkState(nullptr, kEthernetServicePath, shill::kStateOnline);
-  chromeos::FakeChromeUserManager* fake_user_manager =
-      new chromeos::FakeChromeUserManager();
+  auto* fake_user_manager = new ash::FakeChromeUserManager();
   user_manager::ScopedUserManager scoped_user_manager(
       base::WrapUnique(fake_user_manager));
   AccountId account_id = AccountId::FromUserEmailGaiaId(kEmailId, kGaiaId);
@@ -529,7 +526,7 @@ TEST_F(ExtensionInstallEventLogCollectorTest,
       kExtensionId1,
       extensions::CrxInstallError(
           extensions::SandboxedUnpackerFailureReason::CRX_HEADER_INVALID,
-          base::string16()));
+          std::u16string()));
   ASSERT_TRUE(VerifyEventAddedSuccessfully(1 /*expected_add_count*/,
                                            0 /*expected_add_all_count*/));
   EXPECT_EQ(em::ExtensionInstallReportLogEvent::INSTALLATION_FAILED,

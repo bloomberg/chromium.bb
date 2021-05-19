@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -164,6 +165,8 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   void EnsureAudioContextManagerService();
   void OnAudioContextManagerServiceConnectionError();
 
+  void SendLogMessage(const String& message);
+
   unsigned context_id_;
   Member<ScriptPromiseResolver> close_resolver_;
 
@@ -193,9 +196,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   double base_latency_ = 0;
 
   // AudioContextManager for reporting audibility.
-  HeapMojoRemote<mojom::blink::AudioContextManager,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      audio_context_manager_;
+  HeapMojoRemote<mojom::blink::AudioContextManager> audio_context_manager_;
 
   // Keeps track if the output of this destination was audible, before the
   // current rendering quantum.  Used for recording "playback" time.

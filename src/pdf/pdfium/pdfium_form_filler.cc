@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "pdf/pdf_features.h"
@@ -25,7 +26,7 @@ namespace {
 int g_last_timer_id = 0;
 
 std::string WideStringToString(FPDF_WIDESTRING wide_string) {
-  return base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(wide_string));
+  return base::UTF16ToUTF8(reinterpret_cast<const char16_t*>(wide_string));
 }
 
 }  // namespace
@@ -610,8 +611,8 @@ int PDFiumFormFiller::Form_Response(IPDF_JSPLATFORM* param,
 
   PDFiumEngine* engine = GetEngine(param);
   std::string rv = engine->client_->Prompt(question_str, default_str);
-  base::string16 rv_16 = base::UTF8ToUTF16(rv);
-  int rv_bytes = rv_16.size() * sizeof(base::char16);
+  std::u16string rv_16 = base::UTF8ToUTF16(rv);
+  int rv_bytes = rv_16.size() * sizeof(char16_t);
   if (response) {
     int bytes_to_copy = rv_bytes < length ? rv_bytes : length;
     memcpy(response, rv_16.c_str(), bytes_to_copy);

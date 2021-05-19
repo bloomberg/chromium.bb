@@ -372,6 +372,17 @@ https://www.freetype.org/freetype2/docs/reference/ft2-bitmap_handling.html
 | 23.1.6 | `FT_GlyphSlot_Own_Bitmap` |                    | Glyph Slot          |
 | 23.1.7 | `FT_Bitmap_Done`          | :heavy_check_mark: | Library <br> Bitmap |
 
+### COLRv1 Methods
+
+Not yet released, see documentation in [freetype.h](https://gitlab.freedesktop.org/freetype/freetype/-/blob/master/include/freetype/freetype.h#L4137)
+
+|    | Function                   | Fuzzed             | Resouces                        |
+| -- | -------------------------- | :----------------: | ------------------------------- |
+|    | `FT_Get_Color_Glyph_Paint` | :heavy_check_mark: | Face <br> Glyph Index           |
+|    | `FT_Get_Paint_Layers`      | :heavy_check_mark: | Face <br> COLRv1 Layer Iterator |
+|    | `FT_Get_Colorline_Stops`   | :heavy_check_mark: | Face <br> COLRv1 Color Iterator |
+|    | `FT_Get_Paint`             | :heavy_check_mark: | Face <br> COLRv1 Opaque Paint   |
+
 ### GZIP Streams
 
 https://www.freetype.org/freetype2/docs/reference/ft2-gzip.html
@@ -396,3 +407,4 @@ https://www.freetype.org/freetype2/docs/reference/ft2-bzip2.html
 |        | Function              | Fuzzed             |
 | ------ | --------------------- | :----------------: |
 | 30.1.1 | `FT_Stream_OpenBzip2` | :heavy_check_mark: |
+

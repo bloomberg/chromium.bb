@@ -4,19 +4,21 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/hid_detection_screen.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
+#include "services/device/public/mojom/input_service.mojom.h"
 
 namespace chromeos {
 
@@ -142,6 +144,28 @@ void HIDDetectionScreenHandler::DeclareLocalizedValues(
   builder->Add("oobeModalDialogClose", IDS_CHROMEOS_OOBE_CLOSE_DIALOG);
   builder->Add("hidDetectionTouchscreenDetected",
                IDS_HID_DETECTION_DETECTED_TOUCHSCREEN);
+}
+
+void HIDDetectionScreenHandler::DeclareJSCallbacks() {
+  AddCallback(
+      "HIDDetectionScreen.emulateDevicesConnectedForTesting",
+      &HIDDetectionScreenHandler::HandleEmulateDevicesConnectedForTesting);
+}
+
+void HIDDetectionScreenHandler::HandleEmulateDevicesConnectedForTesting() {
+  auto mouse = device::mojom::InputDeviceInfo::New();
+  mouse->id = "fake_mouse";
+  mouse->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
+  mouse->type = device::mojom::InputDeviceType::TYPE_USB;
+  mouse->is_mouse = true;
+  screen_->InputDeviceAddedForTesting(std::move(mouse));
+
+  auto keyboard = device::mojom::InputDeviceInfo::New();
+  keyboard->id = "fake_keyboard";
+  keyboard->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
+  keyboard->type = device::mojom::InputDeviceType::TYPE_USB;
+  keyboard->is_keyboard = true;
+  screen_->InputDeviceAddedForTesting(std::move(keyboard));
 }
 
 void HIDDetectionScreenHandler::Initialize() {

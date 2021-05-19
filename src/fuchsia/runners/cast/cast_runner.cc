@@ -39,6 +39,7 @@ static constexpr const char* kServices[] = {
     "fuchsia.accessibility.semantics.SemanticsManager",
     "fuchsia.device.NameProvider",
     "fuchsia.fonts.Provider",
+    "fuchsia.input.virtualkeyboard.ControllerCreator",
     "fuchsia.intl.PropertyProvider",
     "fuchsia.logger.LogSink",
     "fuchsia.media.SessionAudioConsumerFactory",
@@ -52,8 +53,7 @@ static constexpr const char* kServices[] = {
     "fuchsia.process.Launcher",
     "fuchsia.settings.Display",
     "fuchsia.sysmem.Allocator",
-    "fuchsia.ui.input.ImeService",
-    "fuchsia.ui.input.ImeVisibilityService",
+    "fuchsia.ui.input3.Keyboard",
     "fuchsia.ui.scenic.Scenic",
     "fuchsia.vulkan.loader.Loader",
 
@@ -62,18 +62,6 @@ static constexpr const char* kServices[] = {
     // * fuchsia.legacymetrics.MetricsRecorder
     // * fuchsia.media.Audio
 };
-
-bool IsPermissionGrantedInAppConfig(
-    const chromium::cast::ApplicationConfig& application_config,
-    fuchsia::web::PermissionType permission_type) {
-  if (application_config.has_permissions()) {
-    for (auto& permission : application_config.permissions()) {
-      if (permission.has_type() && permission.type() == permission_type)
-        return true;
-    }
-  }
-  return false;
-}
 
 // Names used to partition the Runner's persistent storage for different uses.
 constexpr char kCdmDataSubdirectoryName[] = "cdm_data";
@@ -294,23 +282,36 @@ CastRunner::CastRunner(bool is_headless)
 
   // Specify the services to connect via the Runner process' service directory.
   for (const char* name : kServices) {
-    main_services_->AddService(name);
-    isolated_services_->AddService(name);
+    zx_status_t status = main_services_->AddService(name);
+    ZX_CHECK(status == ZX_OK, status)
+        << "AddService(" << name << ") to main failed";
+    status = isolated_services_->AddService(name);
+    ZX_CHECK(status == ZX_OK, status)
+        << "AddService(" << name << ") to isolated failed";
   }
 
   // Add handlers to main context's service directory for redirected services.
-  main_services_->outgoing_directory()->AddPublicService<fuchsia::media::Audio>(
-      fit::bind_member(this, &CastRunner::OnAudioServiceRequest));
-  main_services_->outgoing_directory()
-      ->AddPublicService<fuchsia::camera3::DeviceWatcher>(
-          fit::bind_member(this, &CastRunner::OnCameraServiceRequest));
-  main_services_->outgoing_directory()
-      ->AddPublicService<fuchsia::legacymetrics::MetricsRecorder>(
-          fit::bind_member(this, &CastRunner::OnMetricsRecorderServiceRequest));
+  zx_status_t status =
+      main_services_->outgoing_directory()
+          ->AddPublicService<fuchsia::media::Audio>(
+              fit::bind_member(this, &CastRunner::OnAudioServiceRequest));
+  ZX_CHECK(status == ZX_OK, status) << "AddPublicService(Audio) to main failed";
+  status = main_services_->outgoing_directory()
+               ->AddPublicService<fuchsia::camera3::DeviceWatcher>(
+                   fit::bind_member(this, &CastRunner::OnCameraServiceRequest));
+  ZX_CHECK(status == ZX_OK, status)
+      << "AddPublicService(DeviceWatcher) to main failed";
+  status = main_services_->outgoing_directory()
+               ->AddPublicService<fuchsia::legacymetrics::MetricsRecorder>(
+                   fit::bind_member(
+                       this, &CastRunner::OnMetricsRecorderServiceRequest));
+  ZX_CHECK(status == ZX_OK, status)
+      << "AddPublicService(MetricsRecorder) to main failed";
 
   // Isolated contexts can use the normal Audio service, and don't record
   // metrics.
-  isolated_services_->AddService(fuchsia::media::Audio::Name_);
+  status = isolated_services_->AddService(fuchsia::media::Audio::Name_);
+  ZX_CHECK(status == ZX_OK, status) << "AddService(Audio) to isolated failed";
 }
 
 CastRunner::~CastRunner() = default;
@@ -456,34 +457,36 @@ void CastRunner::LaunchPendingComponent(PendingCastComponent* pending_component,
                           std::vector<fuchsia::net::http::Header>());
 
   if (component_owner == main_context_.get()) {
-    const auto& application_config = cast_component->application_config();
+    // For components in the main Context the cache sentinel file should have
+    // been created as a side-effect of |CastComponent::StartComponent()|.
+    DCHECK(was_cache_sentinel_created_);
 
     // If this component has the microphone permission then use it to route
     // Audio service requests through.
-    if (IsPermissionGrantedInAppConfig(
-            application_config, fuchsia::web::PermissionType::MICROPHONE)) {
+    if (cast_component->HasWebPermission(
+            fuchsia::web::PermissionType::MICROPHONE)) {
       if (first_audio_capturer_agent_url_.empty()) {
-        first_audio_capturer_agent_url_ = application_config.agent_url();
+        first_audio_capturer_agent_url_ = cast_component->agent_url();
       } else {
-        LOG_IF(WARNING, first_audio_capturer_agent_url_ !=
-                            application_config.agent_url())
+        LOG_IF(WARNING,
+               first_audio_capturer_agent_url_ != cast_component->agent_url())
             << "Audio capturer already in use for different agent. "
                "Current agent: "
-            << application_config.agent_url();
+            << cast_component->agent_url();
       }
       audio_capturer_components_.emplace(cast_component.get());
     }
 
-    if (IsPermissionGrantedInAppConfig(application_config,
-                                       fuchsia::web::PermissionType::CAMERA)) {
+    if (cast_component->HasWebPermission(
+            fuchsia::web::PermissionType::CAMERA)) {
       if (first_video_capturer_agent_url_.empty()) {
-        first_video_capturer_agent_url_ = application_config.agent_url();
+        first_video_capturer_agent_url_ = cast_component->agent_url();
       } else {
-        LOG_IF(WARNING, first_video_capturer_agent_url_ !=
-                            application_config.agent_url())
+        LOG_IF(WARNING,
+               first_video_capturer_agent_url_ != cast_component->agent_url())
             << "Video capturer already in use for different agent. "
                "Current agent: "
-            << application_config.agent_url();
+            << cast_component->agent_url();
       }
       video_capturer_components_.emplace(cast_component.get());
     }
@@ -555,8 +558,9 @@ fuchsia::web::CreateContextParams CastRunner::GetMainContextParams() {
   *params.mutable_features() |=
       fuchsia::web::ContextFeatureFlags::NETWORK |
       fuchsia::web::ContextFeatureFlags::LEGACYMETRICS;
-  main_services_->ConnectClient(
+  zx_status_t status = main_services_->ConnectClient(
       params.mutable_service_directory()->NewRequest());
+  ZX_CHECK(status == ZX_OK, status) << "ConnectClient failed";
 
   if (!disable_vulkan_for_test_)
     SetCdmParamsForMainContext(&params);
@@ -581,8 +585,9 @@ CastRunner::GetIsolatedContextParamsWithFuchsiaDirs(
   fuchsia::web::CreateContextParams params = GetCommonContextParams();
   params.set_remote_debugging_port(kEphemeralRemoteDebuggingPort);
   params.set_content_directories(std::move(content_directories));
-  isolated_services_->ConnectClient(
+  zx_status_t status = isolated_services_->ConnectClient(
       params.mutable_service_directory()->NewRequest());
+  ZX_CHECK(status == ZX_OK, status) << "ConnectClient failed";
   return params;
 }
 
@@ -593,8 +598,9 @@ CastRunner::GetIsolatedContextParamsForCastStreaming() {
   ApplyCastStreamingContextParams(&params);
   // TODO(crbug.com/1069746): Use a different FilteredServiceDirectory for Cast
   // Streaming Contexts.
-  main_services_->ConnectClient(
+  zx_status_t status = main_services_->ConnectClient(
       params.mutable_service_directory()->NewRequest());
+  ZX_CHECK(status == ZX_OK, status) << "ConnectClient failed";
   return params;
 }
 
@@ -647,9 +653,7 @@ void CastRunner::OnAudioServiceRequest(
   // fuchsia.media.Audio requests to the corresponding agent.
   if (!audio_capturer_components_.empty()) {
     CastComponent* capturer_component = *audio_capturer_components_.begin();
-    capturer_component->agent_manager()->ConnectToAgentService(
-        capturer_component->application_config().agent_url(),
-        std::move(request));
+    capturer_component->ConnectAudio(std::move(request));
     return;
   }
 
@@ -665,9 +669,7 @@ void CastRunner::OnCameraServiceRequest(
   // fuchsia.camera3.DeviceWatcher requests to the corresponding agent.
   if (!video_capturer_components_.empty()) {
     CastComponent* capturer_component = *video_capturer_components_.begin();
-    capturer_component->agent_manager()->ConnectToAgentService(
-        capturer_component->application_config().agent_url(),
-        std::move(request));
+    capturer_component->ConnectDeviceWatcher(std::move(request));
     return;
   }
 
@@ -688,7 +690,7 @@ void CastRunner::OnMetricsRecorderServiceRequest(
   if (any_component) {
     VLOG(1) << "Connecting MetricsRecorder via CastComponent.";
     CastComponent* component = reinterpret_cast<CastComponent*>(any_component);
-    component->startup_context()->svc()->Connect(std::move(request));
+    component->ConnectMetricsRecorder(std::move(request));
     return;
   }
 

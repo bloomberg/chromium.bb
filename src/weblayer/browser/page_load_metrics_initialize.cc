@@ -4,13 +4,22 @@
 
 #include "weblayer/browser/page_load_metrics_initialize.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/bind.h"
 #include "base/macros.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/observers/ad_metrics/ads_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_base.h"
+#include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
+#include "weblayer/browser/heavy_ad_service_factory.h"
+#include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/no_state_prefetch/prerender_utils.h"
 #include "weblayer/browser/page_load_metrics_observer_impl.h"
+#include "weblayer/browser/weblayer_page_load_metrics_memory_tracker_factory.h"
 
 namespace content {
 class BrowserContext;
@@ -45,7 +54,11 @@ class PageLoadMetricsEmbedder
   page_load_metrics::PageLoadMetricsMemoryTracker*
   GetMemoryTrackerForBrowserContext(
       content::BrowserContext* browser_context) override {
-    return nullptr;
+    if (!base::FeatureList::IsEnabled(features::kV8PerFrameMemoryMonitoring))
+      return nullptr;
+
+    return WeblayerPageLoadMetricsMemoryTrackerFactory::GetForBrowserContext(
+        browser_context);
   }
 
  protected:
@@ -53,6 +66,18 @@ class PageLoadMetricsEmbedder
   void RegisterEmbedderObservers(
       page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(std::make_unique<PageLoadMetricsObserverImpl>());
+
+    if (!IsPrerendering()) {
+      std::unique_ptr<page_load_metrics::AdsPageLoadMetricsObserver>
+          ads_observer =
+              page_load_metrics::AdsPageLoadMetricsObserver::CreateIfNeeded(
+                  tracker->GetWebContents(),
+                  HeavyAdServiceFactory::GetForBrowserContext(
+                      tracker->GetWebContents()->GetBrowserContext()),
+                  base::BindRepeating(&i18n::GetApplicationLocale));
+      if (ads_observer)
+        tracker->AddObserver(std::move(ads_observer));
+    }
 
     if (g_callback_for_testing)
       (*g_callback_for_testing).Run(tracker);

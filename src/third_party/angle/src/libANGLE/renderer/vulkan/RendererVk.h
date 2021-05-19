@@ -165,7 +165,7 @@ class RendererVk : angle::NonCopyable
     const vk::Format &getFormat(angle::FormatID formatID) const { return mFormatTable[formatID]; }
 
     angle::Result getPipelineCacheSize(DisplayVk *displayVk, size_t *pipelineCacheSizeOut);
-    angle::Result syncPipelineCacheVk(DisplayVk *displayVk);
+    angle::Result syncPipelineCacheVk(DisplayVk *displayVk, ContextVk *contextVk);
 
     // Issues a new serial for linked shader modules. Used in the pipeline cache.
     Serial issueShaderSerial();
@@ -483,9 +483,6 @@ class RendererVk : angle::NonCopyable
 
     // Async Command Queue
     vk::CommandProcessor mCommandProcessor;
-
-    // track whether we initialized (or released) glslang
-    bool mGlslangInitialized;
 
     vk::Allocator mAllocator;
     SamplerCache mSamplerCache;

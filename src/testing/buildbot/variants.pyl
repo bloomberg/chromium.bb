@@ -9,6 +9,18 @@
 # * trailing commas are allowed.
 
 {
+  'ANDROID_INSTRUMENTATION_RUN_ONLY_UNIT_TESTS' : {
+    'args': [
+      '--annotation=Batch=UnitTests'
+    ],
+    'identifier': 'only_unit_tests'
+  },
+  'ANDROID_INSTRUMENTATION_RUN_ALL_EXCEPT_UNIT_TESTS' : {
+    'args': [
+      '--exclude-annotation=Batch=UnitTests'
+    ],
+    'identifier': 'all_except_unit_tests'
+  },
   'OZONE_HEADLESS': {
     'args': [
       '--no-xvfb',
@@ -262,15 +274,6 @@
     ],
     'identifier': 'iPhone X 12.4'
   },
-  'SIM_IPHONE_X_13_4': {
-    'args': [
-      '--platform',
-      'iPhone X',
-      '--version',
-      '13.4',
-    ],
-    'identifier': 'iPhone X 13.4'
-  },
   'SIM_IPHONE_X_13_5': {
     'args': [
       '--platform',
@@ -315,18 +318,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M89/out/Release',
+      '../../weblayer_instrumentation_test_M90/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=89',
+      '--impl-version=90',
     ],
-    'identifier': 'Implementation Library Skew Tests For 89.0.4389.70',
+    'identifier': 'Implementation Library Skew Tests For 90.0.4430.65',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.70',
+          'location': 'weblayer_instrumentation_test_M90',
+          'revision': 'version:90.0.4430.65',
         }
       ],
     },
@@ -339,18 +342,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M88/out/Release',
+      '../../weblayer_instrumentation_test_M89/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=88',
+      '--impl-version=89',
     ],
-    'identifier': 'Implementation Library Skew Tests For 88.0.4324.206',
+    'identifier': 'Implementation Library Skew Tests For 89.0.4389.126',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.206',
+          'location': 'weblayer_instrumentation_test_M89',
+          'revision': 'version:89.0.4389.126',
         }
       ],
     },
@@ -363,18 +366,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M87/out/Release',
+      '../../weblayer_instrumentation_test_M88/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=87',
+      '--impl-version=88',
     ],
-    'identifier': 'Implementation Tests For 87.0.4280.152',
+    'identifier': 'Implementation Tests For 88.0.4324.207',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M87',
-          'revision': 'version:87.0.4280.152-pt2',
+          'location': 'weblayer_instrumentation_test_M88',
+          'revision': 'version:88.0.4324.207-pt2',
         }
       ],
     },
@@ -387,18 +390,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M89/out/Release',
+      '../../weblayer_instrumentation_test_M90/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=89',
+      '--impl-version=90',
     ],
-    'identifier': 'Implementation Library Skew Tests For 89.0.4389.70',
+    'identifier': 'Implementation Library Skew Tests For 90.0.4430.65',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.70',
+          'location': 'weblayer_instrumentation_test_M90',
+          'revision': 'version:90.0.4430.65',
         }
       ],
     },
@@ -411,18 +414,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M88/out/Release',
+      '../../weblayer_instrumentation_test_M89/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=88',
+      '--impl-version=89',
     ],
-    'identifier': 'Implementation Library Skew Tests For 88.0.4324.206',
+    'identifier': 'Implementation Library Skew Tests For 89.0.4389.126',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.206',
+          'location': 'weblayer_instrumentation_test_M89',
+          'revision': 'version:89.0.4389.126',
         }
       ],
     },
@@ -435,23 +438,47 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M87/out/Release',
+      '../../weblayer_instrumentation_test_M88/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=87',
+      '--impl-version=88',
     ],
-    'identifier': 'Implementation Tests For 87.0.4280.152',
+    'identifier': 'Implementation Tests For 88.0.4324.207',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M87',
-          'revision': 'version:87.0.4280.152-pt2',
+          'location': 'weblayer_instrumentation_test_M88',
+          'revision': 'version:88.0.4324.207-pt2',
         }
       ],
     },
   },
   'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MILESTONE': {
+    'args': [
+      '--webview-apk-path=apks/SystemWebView.apk',
+      '--test-runner-outdir',
+      '.',
+      '--client-outdir',
+      '../../weblayer_instrumentation_test_M90/out/Release',
+      '--implementation-outdir',
+      '.',
+      '--test-expectations',
+      '../../weblayer/browser/android/javatests/skew/expectations.txt',
+      '--client-version=90',
+    ],
+    'identifier': 'Client Library Skew Tests For 90.0.4430.65',
+    'swarming': {
+      'cipd_packages': [
+        {
+          'cipd_package': 'chromium/testing/weblayer-x86',
+          'location': 'weblayer_instrumentation_test_M90',
+          'revision': 'version:90.0.4430.65',
+        }
+      ],
+    },
+  },
+  'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE': {
     'args': [
       '--webview-apk-path=apks/SystemWebView.apk',
       '--test-runner-outdir',
@@ -464,18 +491,18 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=89',
     ],
-    'identifier': 'Client Library Skew Tests For 89.0.4389.70',
+    'identifier': 'Client Library Skew Tests For 89.0.4389.126',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.70',
+          'revision': 'version:89.0.4389.126',
         }
       ],
     },
   },
-  'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE': {
+  'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE': {
     'args': [
       '--webview-apk-path=apks/SystemWebView.apk',
       '--test-runner-outdir',
@@ -488,40 +515,44 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=88',
     ],
-    'identifier': 'Client Library Skew Tests For 88.0.4324.206',
+    'identifier': 'Client Tests For 88.0.4324.207',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M88',
-          'revision': 'version:88.0.4324.206',
+          'revision': 'version:88.0.4324.207-pt2',
         }
       ],
     },
   },
-  'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE': {
-    'args': [
-      '--webview-apk-path=apks/SystemWebView.apk',
-      '--test-runner-outdir',
-      '.',
-      '--client-outdir',
-      '../../weblayer_instrumentation_test_M87/out/Release',
-      '--implementation-outdir',
-      '.',
-      '--test-expectations',
-      '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--client-version=87',
-    ],
-    'identifier': 'Client Tests For 87.0.4280.152',
-    'swarming': {
-      'cipd_packages': [
-        {
-          'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M87',
-          'revision': 'version:87.0.4280.152-pt2',
-        }
-      ],
+  'CROS_CORAL_TOT': {
+    'skylab': {
+      'cros_board': 'coral',
+      'cros_img': 'coral-release/R90-13812.0.0',
     },
+    'identifier': 'CORAL_TOT',
+  },
+  'CROS_EVE_TOT': {
+    'skylab': {
+      'cros_board': 'eve',
+      'cros_img': 'eve-release/R90-13812.0.0',
+    },
+    'identifier': 'EVE_TOT',
+  },
+  'CROS_KEFKA_TOT': {
+    'skylab': {
+      'cros_board': 'kefka',
+      'cros_img': 'kefka-release/R90-13812.0.0',
+    },
+    'identifier': 'KEFKA_TOT',
+  },
+  'CROS_KIP_TOT': {
+    'skylab': {
+      'cros_board': 'kip',
+      'cros_img': 'kip-release/R90-13812.0.0',
+    },
+    'identifier': 'KIP_TOT',
   },
   'CROS_OCTOPUS_TOT': {
     'skylab': {
@@ -533,8 +564,15 @@
   'CROS_OCTOPUS_TOT-1': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_img': 'octopus-release/R89-13729.18.0',
+      'cros_img': 'octopus-release/R89-13729.36.0',
     },
     'identifier': 'OCTOPUS_TOT-1',
+  },
+  'CROS_SNAPPY_TOT': {
+    'skylab': {
+      'cros_board': 'snappy',
+      'cros_img': 'snappy-release/R90-13812.0.0',
+    },
+    'identifier': 'SNAPPY_TOT',
   },
 }

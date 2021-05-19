@@ -53,7 +53,7 @@ class CallbackUnaryHandler : public ::grpc::internal::MethodHandler {
         param.call->call(), sizeof(ServerCallbackUnaryImpl)))
         ServerCallbackUnaryImpl(
             static_cast<::grpc::CallbackServerContext*>(param.server_context),
-            param.call, allocator_state, std::move(param.call_requester));
+            param.call, allocator_state, param.call_requester);
     param.server_context->BeginCompletionOp(
         param.call, [call](bool) { call->MaybeDone(); }, call);
 
@@ -210,6 +210,9 @@ class CallbackUnaryHandler : public ::grpc::internal::MethodHandler {
       grpc_call* call = call_.call();
       auto call_requester = std::move(call_requester_);
       allocator_state_->Release();
+      if (ctx_->context_allocator() != nullptr) {
+        ctx_->context_allocator()->Release(ctx_);
+      }
       this->~ServerCallbackUnaryImpl();  // explicitly call destructor
       ::grpc::g_core_codegen_interface->grpc_call_unref(call);
       call_requester();
@@ -266,7 +269,7 @@ class CallbackClientStreamingHandler : public ::grpc::internal::MethodHandler {
         param.call->call(), sizeof(ServerCallbackReaderImpl)))
         ServerCallbackReaderImpl(
             static_cast<::grpc::CallbackServerContext*>(param.server_context),
-            param.call, std::move(param.call_requester));
+            param.call, param.call_requester);
     // Inlineable OnDone can be false in the CompletionOp callback because there
     // is no read reactor that has an inlineable OnDone; this only applies to
     // the DefaultReactor (which is unary).
@@ -402,6 +405,9 @@ class CallbackClientStreamingHandler : public ::grpc::internal::MethodHandler {
       reactor_.load(std::memory_order_relaxed)->OnDone();
       grpc_call* call = call_.call();
       auto call_requester = std::move(call_requester_);
+      if (ctx_->context_allocator() != nullptr) {
+        ctx_->context_allocator()->Release(ctx_);
+      }
       this->~ServerCallbackReaderImpl();  // explicitly call destructor
       ::grpc::g_core_codegen_interface->grpc_call_unref(call);
       call_requester();
@@ -453,7 +459,7 @@ class CallbackServerStreamingHandler : public ::grpc::internal::MethodHandler {
         ServerCallbackWriterImpl(
             static_cast<::grpc::CallbackServerContext*>(param.server_context),
             param.call, static_cast<RequestType*>(param.request),
-            std::move(param.call_requester));
+            param.call_requester);
     // Inlineable OnDone can be false in the CompletionOp callback because there
     // is no write reactor that has an inlineable OnDone; this only applies to
     // the DefaultReactor (which is unary).
@@ -616,7 +622,11 @@ class CallbackServerStreamingHandler : public ::grpc::internal::MethodHandler {
       // DefaultReactor (which is unary).
       this->MaybeDone(/*inlineable_ondone=*/false);
     }
-    ~ServerCallbackWriterImpl() { req_->~RequestType(); }
+    ~ServerCallbackWriterImpl() {
+      if (req_ != nullptr) {
+        req_->~RequestType();
+      }
+    }
 
     const RequestType* request() { return req_; }
 
@@ -624,6 +634,9 @@ class CallbackServerStreamingHandler : public ::grpc::internal::MethodHandler {
       reactor_.load(std::memory_order_relaxed)->OnDone();
       grpc_call* call = call_.call();
       auto call_requester = std::move(call_requester_);
+      if (ctx_->context_allocator() != nullptr) {
+        ctx_->context_allocator()->Release(ctx_);
+      }
       this->~ServerCallbackWriterImpl();  // explicitly call destructor
       ::grpc::g_core_codegen_interface->grpc_call_unref(call);
       call_requester();
@@ -673,7 +686,7 @@ class CallbackBidiHandler : public ::grpc::internal::MethodHandler {
         param.call->call(), sizeof(ServerCallbackReaderWriterImpl)))
         ServerCallbackReaderWriterImpl(
             static_cast<::grpc::CallbackServerContext*>(param.server_context),
-            param.call, std::move(param.call_requester));
+            param.call, param.call_requester);
     // Inlineable OnDone can be false in the CompletionOp callback because there
     // is no bidi reactor that has an inlineable OnDone; this only applies to
     // the DefaultReactor (which is unary).
@@ -835,6 +848,9 @@ class CallbackBidiHandler : public ::grpc::internal::MethodHandler {
       reactor_.load(std::memory_order_relaxed)->OnDone();
       grpc_call* call = call_.call();
       auto call_requester = std::move(call_requester_);
+      if (ctx_->context_allocator() != nullptr) {
+        ctx_->context_allocator()->Release(ctx_);
+      }
       this->~ServerCallbackReaderWriterImpl();  // explicitly call destructor
       ::grpc::g_core_codegen_interface->grpc_call_unref(call);
       call_requester();

@@ -23,6 +23,7 @@
 <translation id="1509960214886564027">Funkcie na mnohých weboch môžu zlyhávať</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1644574205037202324">História</translation>
+<translation id="1647582022260550163">Naozaj chcete resetovať povolenia a vymazať súbory cookie a dáta webu?</translation>
 <translation id="1660204651932907780">Povoliť webom prehrávať zvuk (odporúčané)</translation>
 <translation id="1677097821151855053">Stránky si vás pomocou súborov cookie a ďalších údajov webov zapamätajú, napríklad vás pomocou nich prihlásia alebo prispôsobia reklamy. Ak chcete spravovať súbory cookie pre všetky weby, prejdite do <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Vymazať dáta webu?</translation>
@@ -92,7 +93,6 @@
 <translation id="3386292677130313581">Pýtať sa, či chcete povoliť webu zisťovať vašu polohu (odporúčané)</translation>
 <translation id="3538390592868664640">Brániť webom vytvárať priestorovú mapu okolia a sledovať pozíciu kamery</translation>
 <translation id="3586500876634962664">Používanie kamery a mikrofónu</translation>
-<translation id="3587482841069643663">Všetko</translation>
 <translation id="358794129225322306">Povoľuje webu automaticky sťahovať viacero súborov súčasne.</translation>
 <translation id="3594780231884063836">Vypnúť zvuk videa</translation>
 <translation id="3596414637720633074">Blokovať súbory cookie tretích strán v režime inkognito</translation>
@@ -104,6 +104,7 @@
 <translation id="385051799172605136">Späť</translation>
 <translation id="3859306556332390985">Pretočiť dopredu</translation>
 <translation id="3955193568934677022">Povoliť webom prehrávať chránený obsah (odporúčané)</translation>
+<translation id="3967822245660637423">Sťahovanie dokončené</translation>
 <translation id="3987993985790029246">Kopírovať odkaz</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Názov</translation>
@@ -177,6 +178,7 @@
 <translation id="5916664084637901428">Zapnuté</translation>
 <translation id="5922853908706496913">Zdieľate obrazovku</translation>
 <translation id="5939518447894949180">Resetovať</translation>
+<translation id="5975083100439434680">Oddialiť</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Ovládajte prístup tohto webu do vášho zariadenia</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
@@ -297,6 +299,7 @@
 <translation id="8801436777607969138">Blokovať JavaScript na konkrétnom webe.</translation>
 <translation id="8816026460808729765">Brániť webom v prístupe k senzorom</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8903921497873541725">Priblížiť</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Technológia NFC je v tomto zariadení vypnutá. Zapnite ju v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Tento web sa väčšine ľudí otvára rýchlo, aj tak reaguje</translation>
@@ -304,10 +307,12 @@
 <translation id="894871326938397531">Ukončiť režim inkognito?</translation>
 <translation id="8958424370300090006">Blokovať súbory cookie na konkrétnom webe.</translation>
 <translation id="8959122750345127698">Navigácia je nedostupná: <ph name="URL" /></translation>
+<translation id="8986362086234534611">Odstrániť</translation>
 <translation id="9019902583201351841">Spravované vašimi rodičmi</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a <ph name="NUM_MORE" /> ďalšie povolenie}few{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a <ph name="NUM_MORE" /> ďalšie povolenia}many{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, and <ph name="NUM_MORE" /> more}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a <ph name="NUM_MORE" /> ďalších povolení}}</translation>
 <translation id="913657688200966289">Zapnite v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" /> povolenia pre aplikáciu <ph name="APP_NAME" />.</translation>
+<translation id="930525582205581608">Chcete tento web odstrániť?</translation>
 <translation id="965817943346481315">Blokovať, ak web zobrazuje obťažujúce alebo zavádzajúce reklamy (odporúčané)</translation>
 <translation id="967624055006145463">Uložené dáta</translation>
 </translationbundle>

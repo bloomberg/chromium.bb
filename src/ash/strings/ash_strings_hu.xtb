@@ -40,6 +40,7 @@
 <translation id="1252999807265626933">Töltési forrás: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Milyen idő van?</translation>
 <translation id="1267032506238418139">Billentyűparancsot érintő módosítás</translation>
+<translation id="1269405891096105529">A periféria nem támogatott vendég módban</translation>
 <translation id="1270290102613614947">Képernyő-billentyűzet kikapcsolva</translation>
 <translation id="1272079795634619415">Leállítás</translation>
 <translation id="1275285675049378717">A következő töltése: <ph name="POWER_SOURCE" />…</translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl+Keresés+H</translation>
 <translation id="2016340657076538683">Írja be az üzenetet</translation>
 <translation id="2018630726571919839">Mondj egy viccet</translation>
+<translation id="2021864487439853900">Kattintson a feloldáshoz</translation>
 <translation id="2049240716062114887">Az asztal neve a következőre változott: <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Álló</translation>
 <translation id="2067602449040652523">Billentyűzet világossága</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> később be tud jelentkezni.</translation>
 <translation id="3321628682574733415">Érvénytelen szülői kód</translation>
 <translation id="332587331255250389">Cserélje ki az akkumulátort</translation>
+<translation id="3333741161915951567">A modem újraindul. Az újbóli próbálkozás előtt várjon 30 másodpercet.</translation>
 <translation id="3341303451326249809">Képernyőkép létrehozva</translation>
 <translation id="334252345105450327">Képernyőkép készítése</translation>
 <translation id="3351879221545518001">Folyamatban van a képernyő átküldése.</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> felügyelt felhasználó</translation>
 <translation id="3665889125180354336">Mikrofon általi hangrögzítés</translation>
 <translation id="36813544980941320">A Wi-Fi-hálózatok meg lesznek osztva a telefon és a(z) <ph name="DEVICE_NAME" /> között</translation>
+<translation id="3702809606464356667">Most az aktuális asztal ablakait mutatja; az összes asztal ablakainak megjelenítéséhez nyomja meg a felfelé nyilat</translation>
 <translation id="3702846122927433391">Nigéria népessége</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Betöltés...</translation>
@@ -352,6 +356,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="394485226368336402">Hangbeállítások</translation>
 <translation id="3945319193631853098">Koppintson a beállítás befejezéséhez</translation>
 <translation id="3945867833895287237">Csatlakozás a hotspothoz…</translation>
+<translation id="3958465044488004317">A találat megtekintése a Segédben</translation>
 <translation id="3962859241508114581">Előző szám</translation>
 <translation id="3969043077941541451">Kikapcsolva</translation>
 <translation id="397105322502079400">Számítás…</translation>
@@ -408,10 +413,12 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME" /> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
 <translation id="4424159417645388645">5. asztal</translation>
 <translation id="4430019312045809116">Hangerő</translation>
+<translation id="4445159312344259901">Jelentkezzen be a feloldáshoz</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 fontos értesítés}other{# fontos értesítés}}</translation>
 <translation id="4450893287417543264">Ne jelenjen meg többé</translation>
 <translation id="445864333228800152">Jó estét!</translation>
 <translation id="4458688154122353284">Képernyőfelvétel leállítása</translation>
+<translation id="4467143075433126295">Tartsa lenyomva az [Esc] billentyűt a teljes képernyős módból való kilépéshez</translation>
 <translation id="4472575034687746823">Kezdő lépések</translation>
 <translation id="4477350412780666475">Következő szám</translation>
 <translation id="4477892968187500306">Ez az eszköz olyan alkalmazásokat tartalmazhat, amelyeket nem hagyott jóvá a Google.</translation>
@@ -608,6 +615,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">A Google Segéd nem áll rendelkezésre Vendég-munkafolyamatban.</translation>
 <translation id="6137566720514957455">Eltávolítási párbeszédpanel megnyitása, <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">A periféria nem támogatott</translation>
 <translation id="615957422585914272">A képernyő-billentyűzet megjelenítése</translation>
 <translation id="6165508094623778733">További információ</translation>
 <translation id="6179832488876878285">Ide kitűzheti a fontos fájlokat. A kezdéshez nyissa meg a Fájlok alkalmazást.</translation>
@@ -625,11 +633,11 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6297287540776456956">Terület kijelöléséhez használja az érintőceruzát</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> elfordult erre: <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Hang</translation>
+<translation id="6330012934079202188">Most az összes asztal ablakait mutatja; az aktuális asztal ablakainak megjelenítéséhez nyomja meg a felfelé nyilat</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> – <ph name="MANAGER" /> által kezelt munkamenet</translation>
 <translation id="6376931439017688372">A Bluetooth be van kapcsolva</translation>
 <translation id="6381109794406942707">Az eszköz feloldásához adja meg a PIN-kódot.</translation>
 <translation id="639644700271529076">A CAPS LOCK ki van kapcsolva</translation>
-<translation id="6396835948284782440">A kilépéshez tartsa nyomva az [Esc] gombot.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, jelerősség: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Az összes értesítés törlése</translation>
@@ -795,7 +803,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7780159184141939021">Képernyő elforgatása</translation>
 <translation id="7796353162336583443">Koppintson az érintőceruza gombjára a polcon, ha jegyzetet vagy képernyőképet szeretne készíteni, illetve ha a Google Segédet, a lézermutatót vagy a nagyítót kívánja használni.</translation>
 <translation id="7798302898096527229">A kikapcsoláshoz nyomja meg a Keresés vagy a Shift billentyűt.</translation>
-<translation id="7807966291075028781">A periféria biztonsági okokból nem támogatott vendég módban</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> és <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Erős jel</translation>
 <translation id="7837740436429729974">Az idő lejárt</translation>
@@ -945,6 +952,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8936501819958976551">deaktiválva</translation>
 <translation id="8938800817013097409">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
 <translation id="8940956008527784070">Alacsony akkumulátortöltöttség (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Csak a jóváhagyott Thunderbolt-eszközök kompatibilisek a Chromebookkal</translation>
 <translation id="8982906748181120328">Közeli láthatóság</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> használata</translation>

@@ -51,8 +51,8 @@ const { byteLength, bytesPerRow, rowsPerImage } = getTextureCopyLayout(kTextureF
 
 class IndexFormatTest extends GPUTest {
   MakeRenderPipeline(
-    primitiveTopology: GPUPrimitiveTopology,
-    indexFormat?: GPUIndexFormat
+    topology: GPUPrimitiveTopology,
+    stripIndexFormat?: GPUIndexFormat
   ): GPURenderPipeline {
     const vertexModule = this.device.createShaderModule({
       // TODO?: These positions will create triangles that cut right through pixel centers. If this
@@ -65,7 +65,7 @@ class IndexFormatTest extends GPUTest {
           vec2<f32>(0.01, -0.98));
 
         [[builtin(position)]] var<out> Position : vec4<f32>;
-        [[builtin(vertex_idx)]] var<in> VertexIndex : u32;
+        [[builtin(vertex_index)]] var<in> VertexIndex : u32;
 
         [[stage(vertex)]]
         fn main() -> void {
@@ -91,12 +91,15 @@ class IndexFormatTest extends GPUTest {
 
     return this.device.createRenderPipeline({
       layout: this.device.createPipelineLayout({ bindGroupLayouts: [] }),
-      vertexStage: { module: vertexModule, entryPoint: 'main' },
-      fragmentStage: { module: fragmentModule, entryPoint: 'main' },
-      primitiveTopology,
-      colorStates: [{ format: kTextureFormat }],
-      vertexState: {
-        indexFormat,
+      vertex: { module: vertexModule, entryPoint: 'main' },
+      fragment: {
+        module: fragmentModule,
+        entryPoint: 'main',
+        targets: [{ format: kTextureFormat }],
+      },
+      primitive: {
+        topology,
+        stripIndexFormat,
       },
     });
   }
@@ -134,8 +137,8 @@ class IndexFormatTest extends GPUTest {
 
     const colorAttachment = this.device.createTexture({
       format: kTextureFormat,
-      size: { width: kWidth, height: kHeight, depth: 1 },
-      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+      size: { width: kWidth, height: kHeight, depthOrArrayLayers: 1 },
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     const result = this.device.createBuffer({
@@ -158,7 +161,7 @@ class IndexFormatTest extends GPUTest {
       { buffer: result, bytesPerRow, rowsPerImage },
       [kWidth, kHeight]
     );
-    this.device.defaultQueue.submit([encoder.finish()]);
+    this.device.queue.submit([encoder.finish()]);
 
     return result;
   }

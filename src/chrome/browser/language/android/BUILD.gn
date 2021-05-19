@@ -9,6 +9,7 @@ android_library("base_module_java") {
   sources = [
     "java/src/org/chromium/chrome/browser/language/AppLocaleUtils.java",
     "java/src/org/chromium/chrome/browser/language/GlobalAppLocaleController.java",
+    "java/src/org/chromium/chrome/browser/language/LanguageSplitInstaller.java",
   ]
   deps = [
     "//base:base_java",
@@ -20,12 +21,16 @@ android_library("base_module_java") {
 android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/language/settings/AddLanguageFragment.java",
-    "java/src/org/chromium/chrome/browser/language/settings/AvailableUiLanguages.java",
+    "java/src/org/chromium/chrome/browser/language/settings/AlwaysTranslateListFragment.java",
+    "java/src/org/chromium/chrome/browser/language/settings/ContentLanguagesPreference.java",
     "java/src/org/chromium/chrome/browser/language/settings/LanguageItem.java",
+    "java/src/org/chromium/chrome/browser/language/settings/LanguageItemListFragment.java",
+    "java/src/org/chromium/chrome/browser/language/settings/LanguageItemListPreference.java",
     "java/src/org/chromium/chrome/browser/language/settings/LanguageItemPickerPreference.java",
     "java/src/org/chromium/chrome/browser/language/settings/LanguageListBaseAdapter.java",
-    "java/src/org/chromium/chrome/browser/language/settings/LanguageListPreference.java",
+    "java/src/org/chromium/chrome/browser/language/settings/LanguageSettings.java",
     "java/src/org/chromium/chrome/browser/language/settings/LanguagesManager.java",
+    "java/src/org/chromium/chrome/browser/language/settings/NeverTranslateListFragment.java",
 
     # Todo(https://crbug.com/1176981): Remove cyclical dependancy with Translate bridge.
     "java/src/org/chromium/chrome/browser/translate/TranslateBridge.java",
@@ -34,10 +39,10 @@ android_library("java") {
     ":base_module_java",
     ":java_resources",
     "//base:base_java",
-    "//base:jni_java",
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
+    "//chrome/browser/settings:java",
     "//chrome/browser/tab:java",
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/widget/android:java",
@@ -67,8 +72,12 @@ android_resources("java_resources") {
     "java/res/layout/accept_languages_item.xml",
     "java/res/layout/accept_languages_list.xml",
     "java/res/layout/add_languages_main.xml",
+    "java/res/layout/language_list_with_add_button.xml",
     "java/res/layout/languages_preference.xml",
+    "java/res/layout/preference_category_no_title_or_padding.xml",
     "java/res/menu/languages_action_bar_menu.xml",
+    "java/res/xml/languages_detailed_preferences.xml",
+    "java/res/xml/languages_preferences.xml",
   ]
   deps = [
     "//chrome/browser/ui/android/strings:ui_strings_grd",

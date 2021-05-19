@@ -12,16 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/ast/struct.h"
-
-#include <memory>
-#include <sstream>
-#include <utility>
-
+#include "gtest/gtest-spi.h"
 #include "src/ast/struct_block_decoration.h"
-#include "src/ast/struct_member.h"
 #include "src/ast/test_helper.h"
-#include "src/type/i32_type.h"
 
 namespace tint {
 namespace ast {
@@ -30,8 +23,8 @@ namespace {
 using StructTest = TestHelper;
 
 TEST_F(StructTest, Creation) {
-  auto* s = create<Struct>(StructMemberList{Member("a", ty.i32())},
-                           StructDecorationList{});
+  auto* s =
+      create<Struct>(StructMemberList{Member("a", ty.i32())}, DecorationList{});
   EXPECT_EQ(s->members().size(), 1u);
   EXPECT_TRUE(s->decorations().empty());
   EXPECT_EQ(s->source().range.begin.line, 0u);
@@ -41,7 +34,7 @@ TEST_F(StructTest, Creation) {
 }
 
 TEST_F(StructTest, Creation_WithDecorations) {
-  StructDecorationList decos;
+  DecorationList decos;
   decos.push_back(create<StructBlockDecoration>());
 
   auto* s = create<Struct>(StructMemberList{Member("a", ty.i32())}, decos);
@@ -55,7 +48,7 @@ TEST_F(StructTest, Creation_WithDecorations) {
 }
 
 TEST_F(StructTest, CreationWithSourceAndDecorations) {
-  StructDecorationList decos;
+  DecorationList decos;
   decos.push_back(create<StructBlockDecoration>());
 
   auto* s = create<Struct>(
@@ -70,25 +63,28 @@ TEST_F(StructTest, CreationWithSourceAndDecorations) {
   EXPECT_EQ(s->source().range.end.column, 8u);
 }
 
-TEST_F(StructTest, IsValid) {
-  auto* s = create<Struct>(StructMemberList{}, StructDecorationList{});
-  EXPECT_TRUE(s->IsValid());
+TEST_F(StructTest, Assert_Null_StructMember) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.create<Struct>(StructMemberList{b.Member("a", b.ty.i32()), nullptr},
+                         DecorationList{});
+      },
+      "internal compiler error");
 }
 
-TEST_F(StructTest, IsValid_Null_StructMember) {
-  auto* s = create<Struct>(StructMemberList{Member("a", ty.i32()), nullptr},
-                           StructDecorationList{});
-  EXPECT_FALSE(s->IsValid());
-}
-
-TEST_F(StructTest, IsValid_Invalid_StructMember) {
-  auto* s = create<Struct>(StructMemberList{Member("", ty.i32())},
-                           ast::StructDecorationList{});
-  EXPECT_FALSE(s->IsValid());
+TEST_F(StructTest, Assert_Null_Decoration) {
+  EXPECT_FATAL_FAILURE(
+      {
+        ProgramBuilder b;
+        b.create<Struct>(StructMemberList{b.Member("a", b.ty.i32())},
+                         DecorationList{nullptr});
+      },
+      "internal compiler error");
 }
 
 TEST_F(StructTest, ToStr) {
-  StructDecorationList decos;
+  DecorationList decos;
   decos.push_back(create<StructBlockDecoration>());
   auto* s = create<Struct>(StructMemberList{Member("a", ty.i32())}, decos);
 

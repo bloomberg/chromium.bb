@@ -40,6 +40,7 @@
 <translation id="1252999807265626933">Пуњење из уређаја <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какво је време?</translation>
 <translation id="1267032506238418139">Промена пречице</translation>
+<translation id="1269405891096105529">Периферни уређај није подржан у режиму госта</translation>
 <translation id="1270290102613614947">Тастатура на екрану је онемогућена</translation>
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="1275285675049378717">Напаја се <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@
 <translation id="2012624427112548395">Ctrl + тастер за претрагу + H</translation>
 <translation id="2016340657076538683">Унесите поруку</translation>
 <translation id="2018630726571919839">Испричај ми виц.</translation>
+<translation id="2021864487439853900">Кликните да бисте откључали</translation>
 <translation id="2049240716062114887">Име радне површине је промењено у <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2067602449040652523">Осветљеност тастатуре</translation>
@@ -276,6 +278,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> ће и даље моћи да се пријави касније.</translation>
 <translation id="3321628682574733415">Нетачан кôд родитеља</translation>
 <translation id="332587331255250389">Замените батерију</translation>
+<translation id="3333741161915951567">Рестартовање модема. Сачекајте 30 секунди пре него што пробате поново.</translation>
 <translation id="3341303451326249809">Снимак екрана је направљен</translation>
 <translation id="334252345105450327">Направи снимак екрана</translation>
 <translation id="3351879221545518001">Тренутно пребацујете екран.</translation>
@@ -320,6 +323,7 @@
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Корисник којим се управља</translation>
 <translation id="3665889125180354336">Снимај помоћу микрофона</translation>
 <translation id="36813544980941320">WiFi мреже ће се делити између вашег телефона и уређаја <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Приказују се прозори са актуелне радне површине. Притисните тастер са стрелицом нагоре да би се приказивали прозори са свих радних површина.</translation>
 <translation id="3702846122927433391">Популација Нигерије</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Учитава се...</translation>
@@ -351,6 +355,7 @@
 <translation id="394485226368336402">Подешавања звука</translation>
 <translation id="3945319193631853098">Додирните да бисте довршили подешавање</translation>
 <translation id="3945867833895287237">Успоставља се веза са хотспотом...</translation>
+<translation id="3958465044488004317">Погледајте резултат у Помоћнику</translation>
 <translation id="3962859241508114581">Претходна песма</translation>
 <translation id="3969043077941541451">Искључи</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
@@ -407,10 +412,12 @@
 <translation id="4421231901400348175">Делите контролу над екраном са особом <ph name="HELPER_NAME" /> преко Даљинске помоћи.</translation>
 <translation id="4424159417645388645">Радна површина 5</translation>
 <translation id="4430019312045809116">Јачина звука</translation>
+<translation id="4445159312344259901">Пријавите се да откључате</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 важно обавештење}one{# важно обавештење}few{# важна обавештења}other{# важних обавештења}}</translation>
 <translation id="4450893287417543264">Не приказуј поново</translation>
 <translation id="445864333228800152">Добро вече,</translation>
 <translation id="4458688154122353284">Зауставите снимање екрана</translation>
+<translation id="4467143075433126295">Притисните и задржите [Esc] да бисте изашли из режима преко целог екрана</translation>
 <translation id="4472575034687746823">Започнимо</translation>
 <translation id="4477350412780666475">Следећа песма</translation>
 <translation id="4477892968187500306">Овај уређај може да садржи апликације које Google није верификовао.</translation>
@@ -607,6 +614,7 @@
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Google помоћник није доступан у сесији госта.</translation>
 <translation id="6137566720514957455">Отвара налог за уклањање за корисника <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Периферни уређај није подржан</translation>
 <translation id="615957422585914272">Прикажи тастатуру на екрану</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="6179832488876878285">Овде можете да закачите најважније фајлове. Отворите апликацију Фајлови да бисте започели.</translation>
@@ -624,11 +632,11 @@
 <translation id="6297287540776456956">Користите писаљку да бисте изабрали област</translation>
 <translation id="6310121235600822547">Екран <ph name="DISPLAY_NAME" /> је промењен у <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Глас</translation>
+<translation id="6330012934079202188">Приказују се прозори са свих радних површина. Притисните тастер са стрелицом нагоре да би се приказивали прозори са актуелне радне површине.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> је сесија којом управља <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth је укључен</translation>
 <translation id="6381109794406942707">Да бисте откључали уређај, унесите PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK је искључен</translation>
-<translation id="6396835948284782440">Притисните и задржите [Esc] да бисте изашли.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Обришите сва обавештења</translation>
@@ -794,7 +802,6 @@
 <translation id="7780159184141939021">Ротирајте екран</translation>
 <translation id="7796353162336583443">Додирните дугме писаљке на полици да бисте направили белешку и снимак екрана и да бисте користили Google помоћник, ласерски показивач или лупу.</translation>
 <translation id="7798302898096527229">Притисните тастер за претрагу или Shift да бисте отказали.</translation>
-<translation id="7807966291075028781">Периферни уређај није подржан у режиму госта из безбедносних разлога</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Јак сигнал</translation>
 <translation id="7837740436429729974">Време је истекло</translation>
@@ -944,6 +951,7 @@
 <translation id="8936501819958976551">деактивирано</translation>
 <translation id="8938800817013097409">Уређај са USB прикључком типа C (задњи десни порт)</translation>
 <translation id="8940956008527784070">Батерија је скоро празна (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Само одобрени Thunderbolt уређаји су компатибилни са вашим Chromebook-ом</translation>
 <translation id="8982906748181120328">Видљиво у близини</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Користи се <ph name="IME_NAME" /></translation>

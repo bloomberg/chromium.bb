@@ -18,7 +18,6 @@
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/process/kill.h"
-#include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -35,9 +34,11 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/web_bundler.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -468,13 +469,13 @@ class WebContents : public PageNavigator,
   // Returns the current navigation properties, which if a navigation is
   // pending may be provisional (e.g., the navigation could result in a
   // download, in which case the URL would revert to what it was previously).
-  virtual const base::string16& GetTitle() = 0;
+  virtual const std::u16string& GetTitle() = 0;
 
   // Saves the given title to the navigation entry and does associated work. It
   // will update history and the view with the new title, and also synthesize
   // titles for file URLs that have none. Thus |entry| must have a URL set.
   virtual void UpdateTitleForEntry(NavigationEntry* entry,
-                                   const base::string16& title) = 0;
+                                   const std::u16string& title) = 0;
 
   // Returns the SiteInstance associated with the current page.
   virtual SiteInstance* GetSiteInstance() = 0;
@@ -503,7 +504,7 @@ class WebContents : public PageNavigator,
   // Returns the current load state and the URL associated with it.
   // The load state is only updated while IsLoading() is true.
   virtual const net::LoadStateWithParam& GetLoadState() = 0;
-  virtual const base::string16& GetLoadStateHost() = 0;
+  virtual const std::u16string& GetLoadStateHost() = 0;
 
   // Returns the upload progress.
   virtual uint64_t GetUploadSize() = 0;
@@ -541,6 +542,9 @@ class WebContents : public PageNavigator,
   // the side-effects from using or changing these APIs, both upstream and
   // downstream of this API layer.
   //
+  // Callers must hold onto the returned base::ScopedClosureRunner until they
+  // are done capturing.
+  //
   // |capture_size| is only used in the case of mirroring (i.e., screen capture
   // video); otherwise, an empty gfx::Size should be provided. This specifies
   // the capturer's target video resolution, but can be empty to mean
@@ -553,9 +557,12 @@ class WebContents : public PageNavigator,
   // true, the show/hide state of the WebContents will be passed to the
   // renderers, like normal. If false, the renderers will always be told they
   // are user-visible while being captured.
-  virtual void IncrementCapturerCount(const gfx::Size& capture_size,
-                                      bool stay_hidden) = 0;
-  virtual void DecrementCapturerCount(bool stay_hidden) = 0;
+  //
+  // |stay_awake| will cause a WakeLock to be held which prevents system sleep.
+  virtual base::ScopedClosureRunner IncrementCapturerCount(
+      const gfx::Size& capture_size,
+      bool stay_hidden,
+      bool stay_awake) WARN_UNUSED_RESULT = 0;
 
   // Returns true if audio/screenshot/video is being captured by the embedder,
   // as indicated by calls to IncrementCapturerCount().
@@ -745,6 +752,8 @@ class WebContents : public PageNavigator,
   virtual void Delete() = 0;
   virtual void SelectAll() = 0;
   virtual void CollapseSelection() = 0;
+  virtual void ScrollToTopOfDocument() = 0;
+  virtual void ScrollToBottomOfDocument() = 0;
 
   // Adjust the selection starting and ending points in the focused frame by
   // the given amounts. A negative amount moves the selection towards the
@@ -755,10 +764,10 @@ class WebContents : public PageNavigator,
                                                 bool show_selection_menu) = 0;
 
   // Replaces the currently selected word or a word around the cursor.
-  virtual void Replace(const base::string16& word) = 0;
+  virtual void Replace(const std::u16string& word) = 0;
 
   // Replaces the misspelling in the current selection.
-  virtual void ReplaceMisspelling(const base::string16& word) = 0;
+  virtual void ReplaceMisspelling(const std::u16string& word) = 0;
 
   // Let the renderer know that the menu has been closed.
   virtual void NotifyContextMenuClosed(const GURL& link_followed) = 0;
@@ -848,7 +857,7 @@ class WebContents : public PageNavigator,
   virtual void SaveFrameWithHeaders(const GURL& url,
                                     const Referrer& referrer,
                                     const std::string& headers,
-                                    const base::string16& suggested_filename,
+                                    const std::u16string& suggested_filename,
                                     RenderFrameHost* rfh) = 0;
 
   // Generate an MHTML representation of the current page conforming to the
@@ -958,9 +967,8 @@ class WebContents : public PageNavigator,
   // |bitmaps| will be empty on download failure.
   // |sizes| are the sizes in pixels of the bitmaps before they were resized due
   // to the max bitmap size passed to DownloadImage(). Each entry in the bitmaps
-  // vector corresponds to an entry in the sizes vector (both vector sizes are
-  // guaranteed to be equal). If a bitmap was resized, there should be a single
-  // returned bitmap.
+  // vector corresponds to an entry in the sizes vector. If a bitmap was
+  // resized, there should be a single returned bitmap.
   using ImageDownloadCallback =
       base::OnceCallback<void(int id,
                               int http_status_code,
@@ -1005,7 +1013,7 @@ class WebContents : public PageNavigator,
 
   // Finds text on a page. |search_text| should not be empty.
   virtual void Find(int request_id,
-                    const base::string16& search_text,
+                    const std::u16string& search_text,
                     blink::mojom::FindOptionsPtr options) = 0;
 
   // Notifies the renderer that the user has closed the FindInPage window
@@ -1182,17 +1190,18 @@ class WebContents : public PageNavigator,
   // reliable favicon-related state.
   virtual const std::vector<blink::mojom::FaviconURLPtr>& GetFaviconURLs() = 0;
 
-  // Intended for desktop pwas with manifest entry of window-controls-overlay,
-  // This sends the available title bar area bounds and the insets to the
-  // renderer process.
-  virtual void UpdateWindowControlsOverlay(const gfx::Rect& bounding_rect,
-                                           const gfx::Insets& insets) = 0;
+  // Intended for desktop PWAs with manifest entry of window-controls-overlay,
+  // This sends the available title bar area bounds to the renderer process.
+  virtual void UpdateWindowControlsOverlay(const gfx::Rect& bounding_rect) = 0;
 
   // Whether the WebContents has an active player that is effectively
   // fullscreen. That means that the video is either fullscreen or it is the
   // content of a fullscreen page (in other words, a fullscreen video with
   // custom controls).
   virtual bool HasActiveEffectivelyFullscreenVideo() = 0;
+
+  // Serialise this object into a trace.
+  virtual void WriteIntoTracedValue(perfetto::TracedValue context) = 0;
 
  private:
   // This interface should only be implemented inside content.

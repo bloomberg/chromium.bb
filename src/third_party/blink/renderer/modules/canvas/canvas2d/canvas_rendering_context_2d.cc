@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -81,10 +82,6 @@ namespace blink {
 static const base::TimeDelta kTryRestoreContextInterval =
     base::TimeDelta::FromMilliseconds(500);
 static const unsigned kMaxTryRestoreContextAttempts = 4;
-
-static bool ContextLostRestoredEventsEnabled() {
-  return RuntimeEnabledFeatures::Canvas2dContextLostRestoredEnabled();
-}
 
 // Drawing methods need to use this instead of SkAutoCanvasRestore in case
 // overdraw detection substitutes the recording canvas (to discard overdrawn
@@ -149,9 +146,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
           &CanvasRenderingContext2D::TryRestoreContextEvent),
       should_prune_local_font_cache_(false),
       random_generator_((uint32_t)base::RandUint64()),
-      bernoulli_distribution_(kRasterMetricProbability),
-      ukm_recorder_(canvas->GetDocument().UkmRecorder()),
-      ukm_source_id_(canvas->GetDocument().UkmSourceID()) {
+      bernoulli_distribution_(kRasterMetricProbability) {
   if (canvas->GetDocument().GetSettings() &&
       canvas->GetDocument().GetSettings()->GetAntialiasedClips2dCanvasEnabled())
     clip_antialiasing_ = kAntiAliased;
@@ -204,6 +199,7 @@ bool CanvasRenderingContext2D::IsComposited() const {
 void CanvasRenderingContext2D::Stop() {
   if (!isContextLost()) {
     // Never attempt to restore the context because the page is being torn down.
+    context_restorable_ = false;
     LoseContext(kSyntheticLostContext);
   }
 }
@@ -230,7 +226,7 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
   DCHECK(context_lost_mode_ != kNotLostContext && !IsPaintable());
 
   if (CanCreateCanvas2dResourceProvider()) {
-    if (ContextLostRestoredEventsEnabled()) {
+    if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
       dispatch_context_restored_event_timer_.StartOneShot(base::TimeDelta(),
                                                           FROM_HERE);
     } else {
@@ -253,7 +249,7 @@ void CanvasRenderingContext2D::Trace(Visitor* visitor) const {
 }
 
 void CanvasRenderingContext2D::DispatchContextLostEvent(TimerBase*) {
-  if (canvas() && ContextLostRestoredEventsEnabled()) {
+  if (canvas() && RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
     Event* event = Event::CreateCancelable(event_type_names::kContextlost);
     canvas()->DispatchEvent(*event);
     if (event->defaultPrevented()) {
@@ -261,9 +257,8 @@ void CanvasRenderingContext2D::DispatchContextLostEvent(TimerBase*) {
     }
   }
 
-  // If RealLostContext, it means the context was not lost due to surface
-  // failure but rather due to a an eviction, which means image buffer exists.
-  if (context_restorable_ && context_lost_mode_ == kRealLostContext) {
+  if (context_restorable_ && (context_lost_mode_ == kRealLostContext ||
+                              context_lost_mode_ == kSyntheticLostContext)) {
     try_restore_context_attempt_count_ = 0;
     try_restore_context_event_timer_.StartRepeating(kTryRestoreContextInterval,
                                                     FROM_HERE);
@@ -278,8 +273,20 @@ void CanvasRenderingContext2D::TryRestoreContextEvent(TimerBase* timer) {
     return;
   }
 
-  DCHECK(context_lost_mode_ == kRealLostContext);
-  if (IsPaintable() && canvas()->GetCanvas2DLayerBridge()->Restore()) {
+  DCHECK(context_lost_mode_ != kWebGLLoseContextLostContext);
+
+  // If lost mode is |kSyntheticLostContext| and |context_restorable_| is set to
+  // true, it means context is forced to be lost for testing purpose. Restore
+  // the context.
+  if (context_lost_mode_ == kSyntheticLostContext && IsPaintable()) {
+    try_restore_context_event_timer_.Stop();
+    Host()->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU);
+    DispatchContextRestoredEvent(nullptr);
+
+    // If RealLostContext, it means the context was not lost due to surface
+    // failure but rather due to a an eviction, which means image buffer exists.
+  } else if (context_lost_mode_ == kRealLostContext && IsPaintable() &&
+             canvas()->GetCanvas2DLayerBridge()->Restore()) {
     try_restore_context_event_timer_.Stop();
     DispatchContextRestoredEvent(nullptr);
   }
@@ -298,7 +305,7 @@ void CanvasRenderingContext2D::DispatchContextRestoredEvent(TimerBase*) {
     return;
   Reset();
   context_lost_mode_ = kNotLostContext;
-  if (ContextLostRestoredEventsEnabled()) {
+  if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
     Event* event(Event::Create(event_type_names::kContextrestored));
     canvas()->DispatchEvent(*event);
   }
@@ -543,7 +550,8 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
           canvas_font_cache->ParseFont(new_font);
       if (!parsed_style)
         return;
-      font_style = ComputedStyle::Create();
+      font_style =
+          canvas()->GetDocument().GetStyleResolver().CreateComputedStyle();
       FontDescription element_font_description(
           computed_style->GetFontDescription());
       // Reset the computed size to avoid inheriting the zoom factor from the
@@ -957,12 +965,8 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
 
   const Font& font = AccessFont();
 
-  TextDirection direction;
-  if (GetState().GetDirection() ==
-      CanvasRenderingContext2DState::kDirectionInherit)
-    direction = DetermineDirectionality(text);
-  else
-    direction = ToTextDirection(GetState().GetDirection(), canvas());
+  TextDirection direction =
+      ToTextDirection(GetState().GetDirection(), canvas());
 
   return MakeGarbageCollected<TextMetrics>(font, direction,
                                            GetState().GetTextBaseline(),
@@ -1166,7 +1170,7 @@ void CanvasRenderingContext2D::DrawFocusIfNeededInternal(const Path& path,
   // focus events fire.
   if (element->GetDocument().FocusedElement() == element) {
     ScrollPathIntoViewInternal(path);
-    DrawFocusRing(path);
+    DrawFocusRing(path, element);
   }
 
   // Update its accessible bounds whether it's focused or not.
@@ -1186,15 +1190,18 @@ bool CanvasRenderingContext2D::FocusRingCallIsValid(const Path& path,
   return true;
 }
 
-void CanvasRenderingContext2D::DrawFocusRing(const Path& path) {
+void CanvasRenderingContext2D::DrawFocusRing(const Path& path,
+                                             Element* element) {
   if (!GetOrCreatePaintCanvas())
     return;
 
-  // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
-  SkColor color =
-      LayoutTheme::GetTheme()
-          .FocusRingColor(ComputedStyle::InitialStyle().UsedColorScheme())
-          .Rgb();
+  mojom::blink::ColorScheme color_scheme = mojom::blink::ColorScheme::kLight;
+  if (element) {
+    if (const ComputedStyle* style = element->GetComputedStyle())
+      color_scheme = style->UsedColorScheme();
+  }
+
+  SkColor color = LayoutTheme::GetTheme().FocusRingColor(color_scheme).Rgb();
   const int kFocusRingWidth = 5;
   DrawPlatformFocusRing(path.GetSkPath(), GetPaintCanvas(), color,
                         /*width=*/kFocusRingWidth, /*radius=*/kFocusRingWidth);

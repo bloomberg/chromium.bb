@@ -227,8 +227,8 @@ void QRCodeGeneratorBubble::Init() {
       1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   using Alignment = views::ImageView::Alignment;
   auto qr_code_image = std::make_unique<views::ImageView>();
-  const int border_radius =
-      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
+  const int border_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kHigh);
   qr_code_image->SetBorder(views::CreateRoundedRectBorder(
       /*thickness=*/2, border_radius, gfx::kGoogleGrey200));
   qr_code_image->SetHorizontalAlignment(Alignment::kCenter);
@@ -357,7 +357,7 @@ void QRCodeGeneratorBubble::Init() {
 
 void QRCodeGeneratorBubble::ContentsChanged(
     views::Textfield* sender,
-    const base::string16& new_contents) {
+    const std::u16string& new_contents) {
   DCHECK_EQ(sender, textfield_url_);
   if (sender == textfield_url_) {
     url_ = GURL(base::UTF16ToUTF8(new_contents));
@@ -384,10 +384,10 @@ bool QRCodeGeneratorBubble::HandleMouseEvent(
 }
 
 /*static*/
-const base::string16 QRCodeGeneratorBubble::GetQRCodeFilenameForURL(
+const std::u16string QRCodeGeneratorBubble::GetQRCodeFilenameForURL(
     const GURL& url) {
   if (!url.has_host() || url.HostIsIPAddress())
-    return base::ASCIIToUTF16("qrcode_chrome.png");
+    return u"qrcode_chrome.png";
 
   return base::ASCIIToUTF16(base::StrCat({"qrcode_", url.host(), ".png"}));
 }

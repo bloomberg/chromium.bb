@@ -14,10 +14,9 @@
 
 #include "src/type/f32_type.h"
 
-#include "src/clone_context.h"
 #include "src/program_builder.h"
 
-TINT_INSTANTIATE_CLASS_ID(tint::type::F32);
+TINT_INSTANTIATE_TYPEINFO(tint::type::F32);
 
 namespace tint {
 namespace type {
@@ -34,14 +33,6 @@ std::string F32::type_name() const {
 
 std::string F32::FriendlyName(const SymbolTable&) const {
   return "f32";
-}
-
-uint64_t F32::MinBufferBindingSize(MemoryLayout) const {
-  return 4;
-}
-
-uint64_t F32::BaseAlignment(MemoryLayout) const {
-  return 4;
 }
 
 F32* F32::Clone(CloneContext* ctx) const {

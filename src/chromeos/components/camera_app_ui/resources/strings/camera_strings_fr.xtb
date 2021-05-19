@@ -4,10 +4,13 @@
 <translation id="1175958423215084756">Lien détecté. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Images de la galerie</translation>
 <translation id="1430915738399379752">Imprimer</translation>
+<translation id="1467231725790366244"><ph name="CAMERA" /> est débranchée.</translation>
 <translation id="1473110567575736769">Minuteur de 3 secondes</translation>
 <translation id="1620510694547887537">Caméra</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Aucune donnée enregistrée</translation>
+<translation id="1838104802459806957">Redresser</translation>
+<translation id="1851169887664797861">D'autres commandes sont disponibles pour la caméra</translation>
 <translation id="1851616744363735765">SUSPENDU</translation>
 <translation id="1862930711583847113">Impossible d'exporter <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Résolution photo</translation>
@@ -17,15 +20,18 @@
 <translation id="2064538373111010176">Option <ph name="CAMERA" /> activée</translation>
 <translation id="2144806332417375165">Paramètres vidéo personnalisés</translation>
 <translation id="229579744168541441">Exporter vers le disque</translation>
+<translation id="2320741269052147773">Pano à gauche</translation>
 <translation id="2501278716633472235">Retour</translation>
 <translation id="2501853267655415902">Enregistrement interrompu</translation>
 <translation id="2501953888035679275">Prenez des photos et enregistrez des vidéos avec votre appareil photo.</translation>
 <translation id="2549985041256363841">Démarrer l'enregistrement</translation>
 <translation id="2599796128805996109">Caméra arrière</translation>
+<translation id="2879583609344924966"><ph name="CAMERA" /> est branchée.</translation>
 <translation id="2912439424121107408">Le mode Expert n'est pas compatible avec cet appareil</translation>
 <translation id="2968794441791257519">Les photos et les vidéos prises avec l'appareil photo seront déplacées vers le dossier "Téléchargements". Vous pouvez y accéder via l'application Fichiers.
 
         Les applications disposant d'autorisations d'accès à l'espace de stockage pourront accéder à vos photos et vidéos.</translation>
+<translation id="3067436040345934772">Pano à droite</translation>
 <translation id="3081586908890909590">Passer à l'enregistrement de vidéo</translation>
 <translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">Type de grille</translation>
@@ -34,6 +40,7 @@
 <translation id="3259149966178251584">Résolution de la caméra</translation>
 <translation id="3517926952904427380">Impossible de prendre une photo en mode portrait</translation>
 <translation id="3569311554794739032">Voulez-vous vraiment supprimer <ph name="FILE" /> ?</translation>
+<translation id="3733597664308256288">D'autres commandes sont disponibles pour la caméra. Recherche+Flèche vers la droite pour y accéder.</translation>
 <translation id="3810838688059735925">Vidéo</translation>
 <translation id="3838931309141338733">Lire le code-barres</translation>
 <translation id="3892148308691398805">Copier le texte</translation>
@@ -56,6 +63,7 @@
 <translation id="5671277269877808209">Carré</translation>
 <translation id="5775960006311140197">Mode Expert</translation>
 <translation id="5869546221129391014">Grille</translation>
+<translation id="5975083100439434680">Zoom arrière</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6073451960410192870">Arrêter l'enregistrement</translation>
 <translation id="6197807149213783179">Enregistrer les métadonnées</translation>
@@ -84,16 +92,19 @@ S'ils concernent la qualité de l'image ou de la vidéo, veuillez joindre un exe
 <translation id="7974782136796202581">Afficher les options de panoramique, d'inclinaison et de zoom</translation>
 <translation id="7983668134180549431">Texte détecté.</translation>
 <translation id="8067883171444229417">Lire la vidéo</translation>
+<translation id="8120146556401698679">Panoramique, inclinaison, zoom</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8145038249676204903">Passer à la prise de photo</translation>
 <translation id="8239780215768881278">Prendre un instantané vidéo</translation>
 <translation id="8261506727792406068">Supprimer</translation>
+<translation id="8425673304802773841">Incliner</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Prévisualiser les métadonnées</translation>
 <translation id="8815966864175525708">Bouton permettant de prendre une photo en mode portrait</translation>
 <translation id="8828441885228359828">Reprendre l'enregistrement</translation>
 <translation id="8870695351537079478">Impossible de démarrer l'enregistrement</translation>
+<translation id="8903921497873541725">Zoom avant</translation>
 <translation id="9045155556724273246">10 secondes</translation>
 <translation id="945522503751344254">Envoyer un commentaire</translation>
 </translationbundle>

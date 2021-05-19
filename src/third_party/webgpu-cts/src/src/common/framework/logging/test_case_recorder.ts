@@ -1,8 +1,8 @@
-import { SkipTestCase } from '../fixture.js';
+import { SkipTestCase, UnexpectedPassError } from '../fixture.js';
 import { now, assert } from '../util/util.js';
 
 import { LogMessageWithStack } from './log_message.js';
-import { LiveTestCaseResult } from './result.js';
+import { Expectation, LiveTestCaseResult } from './result.js';
 
 enum LogSeverity {
   Pass = 0,
@@ -18,7 +18,10 @@ const kMaxLogStacks = 2;
 /** Holds onto a LiveTestCaseResult owned by the Logger, and writes the results into it. */
 export class TestCaseRecorder {
   private result: LiveTestCaseResult;
-  private maxLogSeverity = LogSeverity.Pass;
+  private inSubCase: boolean = false;
+  private subCaseStatus = LogSeverity.Pass;
+  private finalCaseStatus = LogSeverity.Pass;
+  private hideStacksBelowSeverity = LogSeverity.Warn;
   private startTime = -1;
   private logs: LogMessageWithStack[] = [];
   private logLinesAtCurrentSeverity = 0;
@@ -45,15 +48,37 @@ export class TestCaseRecorder {
 
     // Convert numeric enum back to string (but expose 'exception' as 'fail')
     this.result.status =
-      this.maxLogSeverity === LogSeverity.Pass
+      this.finalCaseStatus === LogSeverity.Pass
         ? 'pass'
-        : this.maxLogSeverity === LogSeverity.Skip
+        : this.finalCaseStatus === LogSeverity.Skip
         ? 'skip'
-        : this.maxLogSeverity === LogSeverity.Warn
+        : this.finalCaseStatus === LogSeverity.Warn
         ? 'warn'
         : 'fail'; // Everything else is an error
 
     this.result.logs = this.logs;
+  }
+
+  beginSubCase() {
+    this.subCaseStatus = LogSeverity.Pass;
+    this.inSubCase = true;
+  }
+
+  endSubCase(expectedStatus: Expectation) {
+    try {
+      if (expectedStatus === 'fail') {
+        if (this.subCaseStatus <= LogSeverity.Warn) {
+          throw new UnexpectedPassError();
+        } else {
+          this.subCaseStatus = LogSeverity.Pass;
+        }
+      }
+    } finally {
+      this.inSubCase = false;
+      if (this.subCaseStatus > this.finalCaseStatus) {
+        this.finalCaseStatus = this.subCaseStatus;
+      }
+    }
   }
 
   injectResult(injectedResult: LiveTestCaseResult): void {
@@ -61,32 +86,28 @@ export class TestCaseRecorder {
   }
 
   debug(ex: Error): void {
-    if (!this.debugging) {
-      return;
-    }
-    const logMessage = new LogMessageWithStack('DEBUG', ex);
-    logMessage.setStackHidden();
-    this.logImpl(LogSeverity.Pass, logMessage);
+    if (!this.debugging) return;
+    this.logImpl(LogSeverity.Pass, 'DEBUG', ex);
+  }
+
+  info(ex: Error): void {
+    this.logImpl(LogSeverity.Pass, 'INFO', ex);
   }
 
   skipped(ex: SkipTestCase): void {
-    const message = new LogMessageWithStack('SKIP', ex);
-    if (!this.debugging) {
-      message.setStackHidden();
-    }
-    this.logImpl(LogSeverity.Skip, message);
+    this.logImpl(LogSeverity.Skip, 'SKIP', ex);
   }
 
   warn(ex: Error): void {
-    this.logImpl(LogSeverity.Warn, new LogMessageWithStack('WARN', ex));
+    this.logImpl(LogSeverity.Warn, 'WARN', ex);
   }
 
   expectationFailed(ex: Error): void {
-    this.logImpl(LogSeverity.ExpectFailed, new LogMessageWithStack('EXPECTATION FAILED', ex));
+    this.logImpl(LogSeverity.ExpectFailed, 'EXPECTATION FAILED', ex);
   }
 
   validationFailed(ex: Error): void {
-    this.logImpl(LogSeverity.ValidationFailed, new LogMessageWithStack('VALIDATION FAILED', ex));
+    this.logImpl(LogSeverity.ValidationFailed, 'VALIDATION FAILED', ex);
   }
 
   threw(ex: Error): void {
@@ -94,12 +115,14 @@ export class TestCaseRecorder {
       this.skipped(ex);
       return;
     }
-    this.logImpl(LogSeverity.ThrewException, new LogMessageWithStack('EXCEPTION', ex));
+    this.logImpl(LogSeverity.ThrewException, 'EXCEPTION', ex);
   }
 
-  private logImpl(level: LogSeverity, logMessage: LogMessageWithStack): void {
+  private logImpl(level: LogSeverity, name: string, baseException: Error): void {
+    const logMessage = new LogMessageWithStack(name, baseException);
+
     // Deduplicate errors with the exact same stack
-    if (logMessage.stack) {
+    if (!this.debugging && logMessage.stack) {
       const seen = this.messagesForPreviouslySeenStacks.get(logMessage.stack);
       if (seen) {
         seen.incrementTimesSeen();
@@ -108,23 +131,30 @@ export class TestCaseRecorder {
       this.messagesForPreviouslySeenStacks.set(logMessage.stack, logMessage);
     }
 
-    // Mark printStack=false for all logs except 2 at the highest severity
-    if (level > this.maxLogSeverity) {
+    // Final case status should be the "worst" of all log entries.
+    if (this.inSubCase) {
+      if (level > this.subCaseStatus) this.subCaseStatus = level;
+    } else {
+      if (level > this.finalCaseStatus) this.finalCaseStatus = level;
+    }
+
+    // setStackHidden for all logs except `kMaxLogStacks` stacks at the highest severity
+    if (level > this.hideStacksBelowSeverity) {
       this.logLinesAtCurrentSeverity = 0;
-      this.maxLogSeverity = level;
-      if (!this.debugging) {
-        // Go back and turn off printStack for everything of a lower log level
-        for (const log of this.logs) {
-          log.setStackHidden();
-        }
+      this.hideStacksBelowSeverity = level;
+
+      // Go back and setStackHidden for everything of a lower log level
+      for (const log of this.logs) {
+        log.setStackHidden();
       }
     }
-    if (level < this.maxLogSeverity || this.logLinesAtCurrentSeverity >= kMaxLogStacks) {
-      if (!this.debugging) {
-        logMessage.setStackHidden();
-      }
+    if (level === this.hideStacksBelowSeverity) {
+      this.logLinesAtCurrentSeverity++;
     }
+    if (level < this.hideStacksBelowSeverity || this.logLinesAtCurrentSeverity > kMaxLogStacks) {
+      logMessage.setStackHidden();
+    }
+
     this.logs.push(logMessage);
-    this.logLinesAtCurrentSeverity++;
   }
 }

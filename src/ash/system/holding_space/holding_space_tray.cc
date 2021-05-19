@@ -18,6 +18,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_observer.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/holding_space/holding_space_tray_bubble.h"
 #include "ash/system/holding_space/holding_space_tray_icon.h"
@@ -26,6 +27,8 @@
 #include "base/containers/adapters.h"
 #include "base/pickle.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/drag_drop_client_observer.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
@@ -38,6 +41,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/vector_icons.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -195,6 +199,47 @@ std::unique_ptr<views::View> CreateDropTargetOverlay() {
   return drop_target_overlay;
 }
 
+// ScopedDragDropObserver ------------------------------------------------------
+
+// A class which observes an `aura::client::DragDropClient` for the scope of its
+// existence. Drag events are passed to a callback supplied in the constructor.
+class ScopedDragDropObserver : public aura::client::DragDropClientObserver,
+                               public ShellObserver {
+ public:
+  ScopedDragDropObserver(
+      aura::client::DragDropClient* client,
+      base::RepeatingCallback<void(const ui::DropTargetEvent*)> event_callback)
+      : event_callback_(std::move(event_callback)) {
+    drag_drop_client_observer_.Observe(client);
+    shell_observer_.Observe(Shell::Get());
+  }
+
+  ScopedDragDropObserver(const ScopedDragDropObserver&) = delete;
+  ScopedDragDropObserver& operator=(const ScopedDragDropObserver&) = delete;
+  ~ScopedDragDropObserver() override = default;
+
+ private:
+  // aura::client::DragDropClientObserver:
+  void OnDragUpdated(const ui::DropTargetEvent& event) override {
+    event_callback_.Run(&event);
+  }
+
+  void OnDragEnded() override { event_callback_.Run(/*event=*/nullptr); }
+
+  // ShellObserver:
+  void OnShellDestroying() override { drag_drop_client_observer_.Reset(); }
+
+  base::RepeatingCallback<void(const ui::DropTargetEvent*)> event_callback_;
+  base::ScopedObservation<aura::client::DragDropClient,
+                          aura::client::DragDropClientObserver>
+      drag_drop_client_observer_{this};
+  base::ScopedObservation<Shell,
+                          ShellObserver,
+                          &Shell::AddShellObserver,
+                          &Shell::RemoveShellObserver>
+      shell_observer_{this};
+};
+
 }  // namespace
 
 // HoldingSpaceTray ------------------------------------------------------------
@@ -223,9 +268,6 @@ HoldingSpaceTray::HoldingSpaceTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   //   * the cursor is sufficiently close to this view.
   drop_target_overlay_ = AddChildView(CreateDropTargetOverlay());
   drop_target_overlay_->layer()->SetOpacity(0.f);
-
-  // Animation.
-  set_use_bounce_in_animation(true);
 }
 
 HoldingSpaceTray::~HoldingSpaceTray() = default;
@@ -255,7 +297,7 @@ void HoldingSpaceTray::ClickedOutsideBubble() {
   CloseBubble();
 }
 
-base::string16 HoldingSpaceTray::GetAccessibleNameForTray() {
+std::u16string HoldingSpaceTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_A11Y_NAME);
 }
 
@@ -265,7 +307,7 @@ views::View* HoldingSpaceTray::GetTooltipHandlerForPoint(
   return HitTestPoint(point) ? this : nullptr;
 }
 
-base::string16 HoldingSpaceTray::GetTooltipText(const gfx::Point& point) const {
+std::u16string HoldingSpaceTray::GetTooltipText(const gfx::Point& point) const {
   return l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE);
 }
 
@@ -284,26 +326,6 @@ void HoldingSpaceTray::UpdateAfterLoginStatusChange() {
   UpdateVisibility();
 }
 
-bool HoldingSpaceTray::PerformAction(const ui::Event& event) {
-  if (bubble_) {
-    CloseBubble();
-    return true;
-  }
-
-  ShowBubble(event.IsMouseEvent() || event.IsGestureEvent());
-
-  // Activate the bubble for a11y or if it was shown via keypress. Otherwise
-  // focus will remain on the tray when it should enter the bubble.
-  if (event.IsKeyEvent() ||
-      Shell::Get()->accessibility_controller()->spoken_feedback().enabled()) {
-    DCHECK(bubble_ && bubble_->GetBubbleWidget());
-    bubble_->GetBubbleWidget()->widget_delegate()->SetCanActivate(true);
-    bubble_->GetBubbleWidget()->Activate();
-  }
-
-  return true;
-}
-
 void HoldingSpaceTray::CloseBubble() {
   if (!bubble_)
     return;
@@ -317,7 +339,7 @@ void HoldingSpaceTray::CloseBubble() {
   SetIsActive(false);
 }
 
-void HoldingSpaceTray::ShowBubble(bool show_by_click) {
+void HoldingSpaceTray::ShowBubble() {
   if (bubble_)
     return;
 
@@ -326,7 +348,7 @@ void HoldingSpaceTray::ShowBubble(bool show_by_click) {
 
   DCHECK(tray_container());
 
-  bubble_ = std::make_unique<HoldingSpaceTrayBubble>(this, show_by_click);
+  bubble_ = std::make_unique<HoldingSpaceTrayBubble>(this);
 
   // Observe the bubble widget so that we can do proper clean up when it is
   // being destroyed. If destruction is due to a call to `CloseBubble()` we will
@@ -339,6 +361,10 @@ void HoldingSpaceTray::ShowBubble(bool show_by_click) {
 
 TrayBubbleView* HoldingSpaceTray::GetBubbleView() {
   return bubble_ ? bubble_->GetBubbleView() : nullptr;
+}
+
+views::Widget* HoldingSpaceTray::GetBubbleWidget() const {
+  return bubble_ ? bubble_->GetBubbleWidget() : nullptr;
 }
 
 void HoldingSpaceTray::SetVisiblePreferred(bool visible_preferred) {
@@ -375,34 +401,14 @@ bool HoldingSpaceTray::CanDrop(const ui::OSExchangeData& data) {
   return !ExtractUnpinnedFilePaths(data).empty();
 }
 
-// TODO(crbug.com/1171059): Instead of handling `OnDragEntered()`, show the
-// `drop_target_overlay_` if the cursor is within range of this view.
-void HoldingSpaceTray::OnDragEntered(const ui::DropTargetEvent& event) {
-  if (ExtractUnpinnedFilePaths(event.data()).empty())
-    UpdateDropTargetState(/*is_drop_target=*/false, &event);
-  else
-    UpdateDropTargetState(/*is_drop_target=*/true, &event);
-}
-
 int HoldingSpaceTray::OnDragUpdated(const ui::DropTargetEvent& event) {
-  if (ExtractUnpinnedFilePaths(event.data()).empty()) {
-    UpdateDropTargetState(/*is_drop_target=*/false, &event);
-    return ui::DragDropTypes::DRAG_NONE;
-  }
-  UpdateDropTargetState(/*is_drop_target=*/true, &event);
-  return ui::DragDropTypes::DRAG_COPY;
-}
-
-// TODO(crbug.com/1171059): Instead of handling `OnDragExited()`, hide the
-// `drop_target_overlay_` if the cursor is outside range of this view.
-void HoldingSpaceTray::OnDragExited() {
-  UpdateDropTargetState(/*is_drop_target=*/false, /*event=*/nullptr);
+  return ExtractUnpinnedFilePaths(event.data()).empty()
+             ? ui::DragDropTypes::DRAG_NONE
+             : ui::DragDropTypes::DRAG_COPY;
 }
 
 DragOperation HoldingSpaceTray::OnPerformDrop(
     const ui::DropTargetEvent& event) {
-  UpdateDropTargetState(/*is_drop_target=*/false, /*event=*/nullptr);
-
   std::vector<base::FilePath> unpinned_file_paths(
       ExtractUnpinnedFilePaths(event.data()));
   if (unpinned_file_paths.empty())
@@ -412,6 +418,8 @@ DragOperation HoldingSpaceTray::OnPerformDrop(
       holding_space_metrics::PodAction::kDragAndDropToPin);
 
   HoldingSpaceController::Get()->client()->PinFiles(unpinned_file_paths);
+  did_drop_to_pin_ = true;
+
   return DragOperation::kCopy;
 }
 
@@ -421,7 +429,25 @@ void HoldingSpaceTray::Layout() {
   // The `drop_target_overlay_` should always fill this view's bounds as they
   // are perceived by the user. Note that the user perceives the bounds of this
   // view to be its background bounds, not its local bounds.
-  drop_target_overlay_->SetBoundsRect(GetBackgroundBounds());
+  drop_target_overlay_->SetBoundsRect(GetMirroredRect(GetBackgroundBounds()));
+}
+
+void HoldingSpaceTray::VisibilityChanged(views::View* starting_from,
+                                         bool is_visible) {
+  TrayBackgroundView::VisibilityChanged(starting_from, is_visible);
+
+  if (!is_visible) {
+    drag_drop_observer_.reset();
+    return;
+  }
+
+  // Observe drag/drop events only when visible. Since the observer is owned by
+  // `this` view, it's safe to bind to a raw pointer.
+  drag_drop_observer_ = std::make_unique<ScopedDragDropObserver>(
+      /*client=*/aura::client::GetDragDropClient(
+          GetWidget()->GetNativeWindow()->GetRootWindow()),
+      /*event_callback=*/base::BindRepeating(
+          &HoldingSpaceTray::UpdateDropTargetState, base::Unretained(this)));
 }
 
 void HoldingSpaceTray::FirePreviewsUpdateTimerIfRunningForTesting() {
@@ -453,7 +479,7 @@ void HoldingSpaceTray::UpdateVisibility() {
                       ModelContainsFinalizedItems(model));
 }
 
-base::string16 HoldingSpaceTray::GetAccessibleNameForBubble() {
+std::u16string HoldingSpaceTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
 }
 
@@ -466,6 +492,13 @@ void HoldingSpaceTray::HideBubble(const TrayBubbleView* bubble_view) {
 }
 
 void HoldingSpaceTray::OnHoldingSpaceModelAttached(HoldingSpaceModel* model) {
+  // When the `model` is attached the session is either being started/unlocked
+  // or the active profile is being changed. It's also possible that the status
+  // area is being initialized (such as is the case when a display is added at
+  // runtime). The holding space tray should not bounce or animate previews
+  // during this phase.
+  SetShouldAnimate(false);
+
   model_observer_.Observe(model);
   UpdateVisibility();
   UpdatePreviewsState();
@@ -479,12 +512,33 @@ void HoldingSpaceTray::OnHoldingSpaceModelDetached(HoldingSpaceModel* model) {
 
 void HoldingSpaceTray::OnHoldingSpaceItemsAdded(
     const std::vector<const HoldingSpaceItem*>& items) {
+  // If a finalized holding space item is added to the model mid-session, the
+  // holding space tray should bounce in (if it isn't already visible) and
+  // previews should be animated.
+  if (!Shell::Get()->session_controller()->IsUserSessionBlocked()) {
+    const bool has_finalized_item = std::any_of(
+        items.begin(), items.end(),
+        [](const HoldingSpaceItem* item) { return item->IsFinalized(); });
+    if (has_finalized_item)
+      SetShouldAnimate(true);
+  }
+
   UpdateVisibility();
   UpdatePreviewsState();
 }
 
 void HoldingSpaceTray::OnHoldingSpaceItemsRemoved(
     const std::vector<const HoldingSpaceItem*>& items) {
+  // If a finalized holding space item is removed from the model mid-session,
+  // the holding space tray should animate updates.
+  if (!Shell::Get()->session_controller()->IsUserSessionBlocked()) {
+    const bool has_finalized_item = std::any_of(
+        items.begin(), items.end(),
+        [](const HoldingSpaceItem* item) { return item->IsFinalized(); });
+    if (has_finalized_item)
+      SetShouldAnimate(true);
+  }
+
   UpdateVisibility();
   UpdatePreviewsState();
 }
@@ -506,6 +560,8 @@ void HoldingSpaceTray::ExecuteCommand(int command_id, int event_flags) {
           Shell::Get()->session_controller()->GetActivePrefService(), false);
       break;
     case HoldingSpaceCommandId::kShowPreviews:
+      SetShouldAnimate(true);
+
       holding_space_metrics::RecordPodAction(
           holding_space_metrics::PodAction::kShowPreviews);
 
@@ -555,12 +611,23 @@ void HoldingSpaceTray::ShowContextMenuForViewImpl(
   context_menu_runner_ =
       std::make_unique<views::MenuRunner>(context_menu_model_.get(), run_types);
 
-  gfx::Rect anchor = source->GetBoundsInScreen();
-  anchor.Inset(gfx::Insets(-kHoldingSpaceContextMenuMargin, 0));
+  views::MenuAnchorPosition anchor;
+  switch (shelf()->alignment()) {
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
+      anchor = views::MenuAnchorPosition::kBubbleAbove;
+      break;
+    case ShelfAlignment::kLeft:
+      anchor = views::MenuAnchorPosition::kBubbleRight;
+      break;
+    case ShelfAlignment::kRight:
+      anchor = views::MenuAnchorPosition::kBubbleLeft;
+      break;
+  }
 
   context_menu_runner_->RunMenuAt(
-      source->GetWidget(), /*button_controller=*/nullptr, anchor,
-      views::MenuAnchorPosition::kTopLeft, source_type);
+      source->GetWidget(), /*button_controller=*/nullptr,
+      source->GetBoundsInScreen(), anchor, source_type);
 }
 
 void HoldingSpaceTray::OnWidgetDragWillStart(views::Widget* widget) {
@@ -587,6 +654,12 @@ void HoldingSpaceTray::OnActiveUserPrefServiceChanged(PrefService* prefs) {
 
 void HoldingSpaceTray::OnSessionStateChanged(
     session_manager::SessionState state) {
+  // If the session is blocked the holding space tray should *not* bounce or
+  // animate previews when the session becomes unblocked. Note that the holding
+  // space tray is not visible if the session is blocked.
+  if (Shell::Get()->session_controller()->IsUserSessionBlocked())
+    SetShouldAnimate(false);
+
   UpdateVisibility();
 }
 
@@ -664,12 +737,31 @@ bool HoldingSpaceTray::PreviewsShown() const {
   return previews_tray_icon_ && previews_tray_icon_->GetVisible();
 }
 
-// TODO(crbug.com/1171059): Animate translation of tray icons.
-void HoldingSpaceTray::UpdateDropTargetState(bool is_drop_target,
-                                             const ui::LocatedEvent* event) {
+void HoldingSpaceTray::UpdateDropTargetState(const ui::DropTargetEvent* event) {
+  bool is_drop_target = false;
+
+  if (event && !ExtractUnpinnedFilePaths(event->data()).empty()) {
+    // If the `event` contains pinnable files and is within range of this view,
+    // indicate this view is a drop target to increase discoverability.
+    constexpr int kProximityThreshold = 20;
+    gfx::Rect drop_target_bounds_in_screen(GetBoundsInScreen());
+    drop_target_bounds_in_screen.Inset(gfx::Insets(-kProximityThreshold));
+
+    gfx::Point event_location_in_screen(event->root_location());
+    ::wm::ConvertPointToScreen(
+        static_cast<aura::Window*>(event->target())->GetRootWindow(),
+        &event_location_in_screen);
+
+    is_drop_target =
+        drop_target_bounds_in_screen.Contains(event_location_in_screen);
+  }
+
   AnimateToTargetOpacity(drop_target_overlay_, is_drop_target ? 1.f : 0.f);
   AnimateToTargetOpacity(default_tray_icon_, is_drop_target ? 0.f : 1.f);
   AnimateToTargetOpacity(previews_tray_icon_, is_drop_target ? 0.f : 1.f);
+
+  previews_tray_icon_->UpdateDropTargetState(is_drop_target, did_drop_to_pin_);
+  did_drop_to_pin_ = false;
 
   const views::InkDropState target_ink_drop_state =
       is_drop_target ? views::InkDropState::ACTION_PENDING
@@ -677,20 +769,16 @@ void HoldingSpaceTray::UpdateDropTargetState(bool is_drop_target,
   if (GetInkDrop()->GetTargetInkDropState() == target_ink_drop_state)
     return;
 
-  // Even though `event` is a `ui::LocatedEvent`, it may *not* return `true` for
-  // `IsLocatedEvent()` which is checked downstream when animating the ink drop.
-  // Since the only data that needs to propagate is `event` location, create a
-  // synthetic event that *will* return `true` for `IsLocatedEvent()` if needed.
-  std::unique_ptr<ui::MouseEvent> mouse_moved_event;
-  if (event && !event->IsLocatedEvent()) {
-    mouse_moved_event = std::make_unique<ui::MouseEvent>(
-        ui::ET_MOUSE_MOVED, event->location_f(), event->root_location_f(),
-        event->time_stamp(), /*flags=*/ui::EF_NONE,
-        /*changed_button_flags=*/ui::EF_NONE);
-    event = mouse_moved_event.get();
-  }
+  // Do *not* pass in an event as the origin for the ink drop. Since the user is
+  // not directly over this view, it would look strange to give the ink drop an
+  // out-of-bounds origin.
+  AnimateInkDrop(target_ink_drop_state, /*event=*/nullptr);
+}
 
-  AnimateInkDrop(target_ink_drop_state, event);
+void HoldingSpaceTray::SetShouldAnimate(bool should_animate) {
+  set_use_bounce_in_animation(should_animate);
+  if (previews_tray_icon_)
+    previews_tray_icon_->set_should_animate_updates(should_animate);
 }
 
 BEGIN_METADATA(HoldingSpaceTray, TrayBackgroundView)

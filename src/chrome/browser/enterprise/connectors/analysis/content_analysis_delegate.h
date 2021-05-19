@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
@@ -73,7 +72,7 @@ class ContentAnalysisDelegate {
     GURL url;
 
     // Text data to scan, such as plain text, URLs, HTML content, etc.
-    std::vector<base::string16> text;
+    std::vector<std::u16string> text;
 
     // List of files to scan.
     std::vector<base::FilePath> paths;
@@ -360,6 +359,10 @@ class ContentAnalysisDelegate {
   // Set to true at the end of UploadData to indicate requests have been made
   // for every file/text. This is read to ensure |this| isn't deleted too early.
   bool data_uploaded_ = false;
+
+  // This is set to true as soon as a TOO_MANY_REQUESTS response is obtained. No
+  // more data should be upload for |this| at that point.
+  bool throttled_ = false;
 
   base::TimeTicks upload_start_time_;
 

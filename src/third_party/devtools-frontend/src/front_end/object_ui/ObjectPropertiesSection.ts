@@ -30,23 +30,23 @@
 
 /* eslint-disable rulesdir/no_underscored_properties */
 
-import * as Common from '../common/common.js';
+import * as Common from '../core/common/common.js';
 import type * as Components from '../components/components.js';
-import * as Host from '../host/host.js';
-import * as i18n from '../i18n/i18n.js';
+import * as Host from '../core/host/host.js';
+import * as i18n from '../core/i18n/i18n.js';
 import * as LinearMemoryInspector from '../linear_memory_inspector/linear_memory_inspector.js';
-import * as Platform from '../platform/platform.js';
-import * as SDK from '../sdk/sdk.js';
-import * as TextUtils from '../text_utils/text_utils.js';
+import * as Platform from '../core/platform/platform.js';
+import * as SDK from '../core/sdk/sdk.js';
+import * as TextUtils from '../models/text_utils/text_utils.js';
 import * as WebComponents from '../ui/components/components.js';
-import * as UI from '../ui/ui.js';
+import * as UI from '../ui/legacy/legacy.js';
 
 import {CustomPreviewComponent} from './CustomPreviewComponent.js';
 import {JavaScriptAutocomplete} from './JavaScriptAutocomplete.js';
 import {JavaScriptREPL} from './JavaScriptREPL.js';
 import {createSpansForNodeTitle, RemoteObjectPreviewFormatter} from './RemoteObjectPreviewFormatter.js';
 
-export const UIStrings = {
+const UIStrings = {
   /**
   *@description Text in Object Properties Section
   *@example {function alert()  [native code] } PH1
@@ -100,7 +100,9 @@ export const UIStrings = {
   */
   copyPropertyPath: 'Copy property path',
   /**
-  *@description Text in Object Properties Section
+  * @description Text shown when displaying a JavaScript object that has a string property that is
+  * too large for DevTools to properly display a text editor. This is shown instead of the string in
+  * question. Should be translated.
   */
   stringIsTooLargeToEdit: '<string is too large to edit>',
   /**
@@ -362,8 +364,9 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
       height: '13px',
     };
     memoryIcon.onclick = (event: MouseEvent): void => {
+      Host.userMetrics.linearMemoryInspectorRevealedFrom(Host.UserMetrics.LinearMemoryInspectorRevealedFrom.MemoryIcon);
       LinearMemoryInspector.LinearMemoryInspectorController.LinearMemoryInspectorController.instance()
-          .openInspectorView(obj, 0);
+          .openInspectorView(obj);
       event.stopPropagation();
     };
     UI.Tooltip.Tooltip.install(memoryIcon, 'Reveal in Memory Inspector panel');
@@ -401,11 +404,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         previewFormatter.appendObjectPreview(valueElement, value.preview, false /* isEntry */);
         propertyValue = new ObjectPropertyValue(valueElement);
         UI.Tooltip.Tooltip.install(propertyValue.element, description || '');
-      } else if (
-          description.length >
-          // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((self as any).ObjectUI.ObjectPropertiesSection._maxRenderableStringLength || maxRenderableStringLength)) {
+      } else if (description.length > maxRenderableStringLength) {
         propertyValue = new ExpandableTextPropertyValue(valueElement, description, EXPANDABLE_MAX_LENGTH);
       } else {
         propertyValue = new ObjectPropertyValue(valueElement);
@@ -438,10 +437,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
       valueElement.classList.add('object-value-string');
       const text = JSON.stringify(description);
       let propertyValue;
-      if (description.length >
-          // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((self as any).ObjectUI.ObjectPropertiesSection._maxRenderableStringLength || maxRenderableStringLength)) {
+      if (description.length > maxRenderableStringLength) {
         propertyValue = new ExpandableTextPropertyValue(valueElement, text, EXPANDABLE_MAX_LENGTH);
       } else {
         UI.UIUtils.createTextChild(valueElement, text);
@@ -456,10 +452,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
       valueElement.classList.add('object-value-trustedtype');
       const text = `${className} "${description}"`;
       let propertyValue;
-      if (text.length >
-          // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((self as any).ObjectUI.ObjectPropertiesSection._maxRenderableStringLength || maxRenderableStringLength)) {
+      if (text.length > maxRenderableStringLength) {
         propertyValue = new ExpandableTextPropertyValue(valueElement, text, EXPANDABLE_MAX_LENGTH);
       } else {
         const contentString = createStringElement();
@@ -564,8 +557,14 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
 /** @const */
 const ARRAY_LOAD_THRESHOLD = 100;
 
-/** @const */
-export const maxRenderableStringLength = 10000;
+let maxRenderableStringLength = 10000;
+
+export function setMaxRenderableStringLength(value: number): void {
+  maxRenderableStringLength = value;
+}
+export function getMaxRenderableStringLength(): number {
+  return maxRenderableStringLength;
+}
 
 export class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.TreeOutlineInShadow {
   _editable: boolean;
@@ -740,7 +739,14 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
       }
       const canShowProperty = property.getter || !property.isAccessorProperty();
       if (canShowProperty && property.name !== '__proto__') {
-        treeNode.appendChild(new ObjectPropertyTreeElement(property, linkifier));
+        const element = new ObjectPropertyTreeElement(property, linkifier);
+        if (property.name === 'memories' && property.value?.className === 'Memories') {
+          element._updateExpandable();
+          if (element.isExpandable()) {
+            element.expand();
+          }
+        }
+        treeNode.appendChild(element);
       }
     }
     for (let i = 0; i < tailProperties.length; ++i) {

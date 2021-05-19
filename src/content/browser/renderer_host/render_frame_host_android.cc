@@ -20,8 +20,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
 #include "url/android/gurl_android.h"
 #include "url/origin.h"
 
@@ -85,13 +85,15 @@ base::android::ScopedJavaLocalRef<jobject>
 RenderFrameHostAndroid::GetJavaObject() {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (obj_.is_uninitialized()) {
-    bool is_incognito = render_frame_host_->GetSiteInstance()
-                            ->GetBrowserContext()
-                            ->IsOffTheRecord();
+    const bool is_incognito = render_frame_host_->GetSiteInstance()
+                                  ->GetBrowserContext()
+                                  ->IsOffTheRecord();
+    const GlobalFrameRoutingId rfh_id =
+        render_frame_host_->GetGlobalFrameRoutingId();
     ScopedJavaLocalRef<jobject> local_ref = Java_RenderFrameHostImpl_create(
         env, reinterpret_cast<intptr_t>(this),
         render_frame_host_->delegate()->GetJavaRenderFrameHostDelegate(),
-        is_incognito);
+        is_incognito, rfh_id.child_id, rfh_id.frame_routing_id);
     obj_ = JavaObjectWeakGlobalRef(env, local_ref);
     return local_ref;
   }
@@ -125,7 +127,7 @@ bool RenderFrameHostAndroid::IsFeatureEnabled(
     const base::android::JavaParamRef<jobject>&,
     jint feature) const {
   return render_frame_host_->IsFeatureEnabled(
-      static_cast<blink::mojom::FeaturePolicyFeature>(feature));
+      static_cast<blink::mojom::PermissionsPolicyFeature>(feature));
 }
 
 ScopedJavaLocalRef<jobject>

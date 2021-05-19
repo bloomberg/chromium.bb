@@ -37,6 +37,7 @@
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
 #include "content/browser/renderer_host/media/aec_dump_manager_impl.h"
+#include "content/browser/renderer_host/render_process_host_internal_observer.h"
 #include "content/browser/tracing/tracing_service_controller.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/child_process.mojom.h"
@@ -84,10 +85,10 @@
 #include "third_party/blink/public/mojom/media/renderer_audio_output_stream_factory.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "third_party/blink/public/mojom/native_io/native_io.mojom-forward.h"
-#include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom.h"
 #include "third_party/blink/public/mojom/plugins/plugin_registry.mojom-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-forward.h"
 #include "third_party/blink/public/mojom/webdatabase/web_database.mojom.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(OS_ANDROID)
@@ -119,8 +120,8 @@ class InProcessChildThreadParams;
 class IsolationContext;
 class MediaStreamTrackMetricsHost;
 class P2PSocketDispatcherHost;
+class PepperRendererConnection;
 class PermissionServiceContext;
-class PeerConnectionTrackerHost;
 class PluginRegistryImpl;
 class ProcessLock;
 class PushMessagingManager;
@@ -235,8 +236,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       bool incoming,
       bool outgoing,
       WebRtcRtpPacketCallback packet_callback) override;
-  void EnableWebRtcEventLogOutput(int lid, int output_period_ms) override;
-  void DisableWebRtcEventLogOutput(int lid) override;
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
@@ -274,6 +273,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void ForceCrash() override;
   void CleanupNetworkServicePluginExceptionsUponDestruction() override;
   std::string GetInfoForBrowserContextDestructionCrashReporting() override;
+  void WriteIntoTracedValue(perfetto::TracedValue context) override;
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   void DumpProfilingData(base::OnceClosure callback) override;
 #endif
@@ -308,6 +308,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
       int32_t new_routing_id,
       blink::LocalFrameToken& frame_token,
       base::UnguessableToken& devtools_frame_token);
+
+  void AddInternalObserver(RenderProcessHostInternalObserver* observer);
+  void RemoveInternalObserver(RenderProcessHostInternalObserver* observer);
 
   // Called when the renderer has fully destroyed the associated RenderView
   // identified by |closed_view_route_id|. This is static because its also
@@ -656,9 +659,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
     ipc_send_watcher_for_testing_ = std::move(watcher);
   }
 
-  size_t keep_alive_ref_count() const { return keep_alive_ref_count_; }
+#if BUILDFLAG(ENABLE_PLUGINS)
+  PepperRendererConnection* pepper_renderer_connection() {
+    return pepper_renderer_connection_.get();
+  }
+#endif
 
-  PeerConnectionTrackerHost* GetPeerConnectionTrackerHost();
+  size_t keep_alive_ref_count() const { return keep_alive_ref_count_; }
 
   // Allows overriding the URLLoaderFactory creation via CreateURLLoaderFactory.
   // Passing a null callback will restore the default behavior.
@@ -843,9 +850,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static RenderProcessHost* FindReusableProcessHostForSiteInstance(
       SiteInstanceImpl* site_instance);
 
-  void BindPeerConnectionTrackerHost(
-      mojo::PendingReceiver<blink::mojom::PeerConnectionTrackerHost> receiver);
-
 #if BUILDFLAG(ENABLE_MDNS)
   void CreateMdnsResponder(
       mojo::PendingReceiver<network::mojom::MdnsResponder> receiver);
@@ -1011,6 +1015,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The observers watching our lifetime.
   base::ObserverList<RenderProcessHostObserver> observers_;
 
+  // The observers watching content-internal events.
+  base::ObserverList<RenderProcessHostInternalObserver> internal_observers_;
+
   // True if the process can be shut down suddenly.  If this is true, then we're
   // sure that all the RenderViews in the process can be shutdown suddenly.  If
   // it's false, then specific RenderViews might still be allowed to be shutdown
@@ -1055,10 +1062,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       media_stream_track_metrics_host_;
 
   std::unique_ptr<FramelessMediaInterfaceProxy> media_interface_proxy_;
-
-  // Forwards messages between WebRTCInternals in the browser process
-  // and PeerConnectionTracker in the renderer process.
-  std::unique_ptr<PeerConnectionTrackerHost> peer_connection_tracker_host_;
 
   // Records the time when the process starts surviving for workers for UMA.
   base::TimeTicks keep_alive_start_time_;
@@ -1132,6 +1135,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
   // For the render process to connect to the system tracing service.
   std::unique_ptr<tracing::SystemTracingService> system_tracing_service_;
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  scoped_refptr<PepperRendererConnection> pepper_renderer_connection_;
 #endif
 
   // IOThreadHostImpl owns some IO-thread state associated with this

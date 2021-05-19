@@ -701,8 +701,8 @@ class CORE_EXPORT LocalFrameView final
     return *paint_timing_detector_;
   }
 
-  MobileFriendlinessChecker& GetMobileFriendlinessChecker() const {
-    return *mobile_friendliness_checker_;
+  MobileFriendlinessChecker* GetMobileFriendlinessChecker() const {
+    return mobile_friendliness_checker_;
   }
   void DidChangeMobileFriendliness(const MobileFriendliness& mf);
 
@@ -758,7 +758,7 @@ class CORE_EXPORT LocalFrameView final
   void ParentVisibleChanged() override;
   void NotifyFrameRectsChangedIfNeeded();
   void SetViewportIntersection(const mojom::blink::ViewportIntersectionState&
-                                   intersection_state) override;
+                                   intersection_state) override {}
   void VisibilityForThrottlingChanged() override;
   bool LifecycleUpdatesThrottled() const override {
     return lifecycle_updates_throttled_;
@@ -877,8 +877,8 @@ class CORE_EXPORT LocalFrameView final
   void ClearLayoutSubtreeRootsAndMarkContainingBlocks();
 
   void PerformPreLayoutTasks();
-  void PerformLayout(bool in_subtree_layout);
-  void PerformPostLayoutTasks();
+  void PerformLayout();
+  void PerformPostLayoutTasks(bool view_size_changed);
 
   DocumentLifecycle& Lifecycle() const;
 
@@ -902,7 +902,7 @@ class CORE_EXPORT LocalFrameView final
 
   void UpdateGeometriesIfNeeded();
   bool WasViewportResized();
-  void SendResizeEventIfNeeded();
+  void SendResizeEventIfNeeded(bool visual_viewport_size_changed);
 
   void ScheduleUpdatePluginsIfNecessary();
   void UpdatePluginsTimerFired(TimerBase*);
@@ -982,7 +982,9 @@ class CORE_EXPORT LocalFrameView final
   // StyleEngine instead of the base background color.
   bool ShouldUseColorAdjustBackground() const;
 
-  // Appends the document transition from this view into the given vector.
+  // Verifies the shared elements for the document transition on this view.
+  void VerifySharedElementsForDocumentTransition();
+  // Append document transition requests from this view into the given vector.
   void AppendDocumentTransitionRequests(
       WTF::Vector<std::unique_ptr<DocumentTransition::Request>>&);
 
@@ -1134,6 +1136,8 @@ class CORE_EXPORT LocalFrameView final
   UniqueObjectId unique_id_;
   Member<LayoutShiftTracker> layout_shift_tracker_;
   Member<PaintTimingDetector> paint_timing_detector_;
+
+  // This will be nullptr iff !frame_->IsMainFrame().
   Member<MobileFriendlinessChecker> mobile_friendliness_checker_;
 
   HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;

@@ -60,7 +60,7 @@ class NotificationUIManagerBrowserTest : public InProcessBrowserTest {
       log_ += (by_user ? "by_user_" : "programmatically_");
     }
     void Click(const base::Optional<int>& button_index,
-               const base::Optional<base::string16>& reply) override {
+               const base::Optional<std::u16string>& reply) override {
       if (button_index) {
         log_ += "ButtonClick_";
         log_ += base::NumberToString(*button_index) + "_";
@@ -83,12 +83,11 @@ class NotificationUIManagerBrowserTest : public InProcessBrowserTest {
       new_delegate->AddRef();
     }
 
-    return Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, id,
-        base::ASCIIToUTF16("title"), base::ASCIIToUTF16("message"),
-        gfx::Image(), base::UTF8ToUTF16("chrome-test://testing/"),
-        GURL("chrome-test://testing/"), message_center::NotifierId(),
-        message_center::RichNotificationData(), new_delegate);
+    return Notification(message_center::NOTIFICATION_TYPE_SIMPLE, id, u"title",
+                        u"message", gfx::Image(), u"chrome-test://testing/",
+                        GURL("chrome-test://testing/"),
+                        message_center::NotifierId(),
+                        message_center::RichNotificationData(), new_delegate);
   }
 
   Notification CreateRichTestNotification(const std::string& id,
@@ -102,10 +101,8 @@ class NotificationUIManagerBrowserTest : public InProcessBrowserTest {
     message_center::RichNotificationData data;
 
     return Notification(
-        message_center::NOTIFICATION_TYPE_BASE_FORMAT, id,
-        base::ASCIIToUTF16("title"), base::ASCIIToUTF16("message"),
-        gfx::Image(), base::UTF8ToUTF16("chrome-test://testing/"),
-        GURL("chrome-test://testing/"),
+        message_center::NOTIFICATION_TYPE_BASE_FORMAT, id, u"title", u"message",
+        gfx::Image(), u"chrome-test://testing/", GURL("chrome-test://testing/"),
         message_center::NotifierId(message_center::NotifierType::APPLICATION,
                                    "extension_id"),
         data, new_delegate);

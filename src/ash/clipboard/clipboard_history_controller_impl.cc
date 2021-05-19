@@ -14,15 +14,13 @@
 #include "ash/clipboard/clipboard_nudge_controller.h"
 #include "ash/clipboard/scoped_clipboard_history_pause_impl.h"
 #include "ash/constants/ash_features.h"
+#include "ash/display/display_util.h"
 #include "ash/public/cpp/clipboard_image_model_factory.h"
-#include "ash/public/cpp/file_icon_util.h"
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "ash/style/ash_color_provider.h"
+#include "ash/style/scoped_light_mode_as_default.h"
 #include "ash/wm/window_util.h"
-#include "base/base64.h"
-#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -42,12 +40,10 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/types/event_type.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -63,16 +59,6 @@ ui::ClipboardNonBacked* GetClipboard() {
   auto* clipboard = ui::ClipboardNonBacked::GetForCurrentThread();
   DCHECK(clipboard);
   return clipboard;
-}
-
-bool IsRectContainedByAnyDisplay(const gfx::Rect& rect) {
-  const std::vector<display::Display>& displays =
-      display::Screen::GetScreen()->GetAllDisplays();
-  for (const auto& display : displays) {
-    if (display.bounds().Contains(rect))
-      return true;
-  }
-  return false;
 }
 
 }  // namespace
@@ -288,7 +274,7 @@ void ClipboardHistoryControllerImpl::ShowMenu(const gfx::Rect& anchor_rect,
           weak_ptr_factory_.GetWeakPtr()));
 
   for (auto& observer : observers_)
-    observer.OnClipboardHistoryMenuShown();
+    observer.OnClipboardHistoryMenuShown(show_source);
 }
 
 bool ClipboardHistoryControllerImpl::ShouldShowNewFeatureBadge() const {
@@ -345,20 +331,18 @@ base::Value ClipboardHistoryControllerImpl::GetHistoryValues(
         item_value.SetKey(kTextDataKey, base::Value(item.data().text()));
         break;
       case ash::ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kFile: {
-        item_value.SetKey(
-            kTextDataKey,
-            base::Value(base::UTF16ToUTF8(resource_manager_->GetLabel(item))));
-        gfx::ImageSkia image = GetIconForPath(
-            base::FilePath(item.data().text()),
-            ash::AshColorProvider::Get()->GetContentLayerColor(
-                AshColorProvider::ContentLayerType::kIconColorPrimary));
-        item_value.SetKey(
-            kImageDataKey,
-            base::Value(webui::GetBitmapDataUrl(*image.bitmap())));
+        std::string file_name =
+            base::UTF16ToUTF8(resource_manager_->GetLabel(item));
+        item_value.SetKey(kTextDataKey, base::Value(file_name));
+        ScopedLightModeAsDefault scoped_light_mode_as_default;
+        std::string data_url = webui::GetBitmapDataUrl(
+            *ClipboardHistoryUtil::GetIconForFileClipboardItem(item, file_name)
+                 .bitmap());
+        item_value.SetKey(kImageDataKey, base::Value(data_url));
         break;
       }
     }
-    item_value.SetKey("idToken", base::Value(item.id().ToString()));
+    item_value.SetKey("id", base::Value(item.id().ToString()));
     item_results.Append(std::move(item_value));
   }
 

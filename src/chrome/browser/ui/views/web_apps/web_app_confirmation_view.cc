@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/views/web_apps/web_app_confirmation_view.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -81,7 +81,7 @@ WebAppConfirmationView::WebAppConfirmationView(
   gfx::Size image_size(web_app::kWebAppIconSmall, web_app::kWebAppIconSmall);
   gfx::ImageSkia image(
       std::make_unique<WebAppInfoImageSource>(web_app::kWebAppIconSmall,
-                                              web_app_info_->icon_bitmaps_any),
+                                              web_app_info_->icon_bitmaps.any),
       image_size);
   icon_image_view->SetImageSize(image_size);
   icon_image_view->SetImage(image);
@@ -192,19 +192,19 @@ bool WebAppConfirmationView::IsDialogButtonEnabled(
 
 void WebAppConfirmationView::ContentsChanged(
     views::Textfield* sender,
-    const base::string16& new_contents) {
+    const std::u16string& new_contents) {
   DCHECK_EQ(title_tf_, sender);
   DialogModelChanged();
 }
 
-base::string16 WebAppConfirmationView::GetTrimmedTitle() const {
-  base::string16 title(title_tf_->GetText());
+std::u16string WebAppConfirmationView::GetTrimmedTitle() const {
+  std::u16string title(title_tf_->GetText());
   base::TrimWhitespace(title, base::TRIM_ALL, &title);
   return title;
 }
 
 BEGIN_METADATA(WebAppConfirmationView, views::DialogDelegateView)
-ADD_READONLY_PROPERTY_METADATA(base::string16, TrimmedTitle)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, TrimmedTitle)
 END_METADATA
 
 namespace chrome {

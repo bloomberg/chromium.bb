@@ -99,7 +99,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebResourceRequestSenderDelegate* GetResourceRequestSenderDelegate()
       override;
   void AppendVariationsThrottles(
-      int routing_id,
+      const url::Origin& top_origin,
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles)
       override;
   blink::WebString DefaultLocale() override;
@@ -155,7 +155,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   bool UsesFakeCodecForPeerConnection() override;
   bool IsWebRtcEncryptionEnabled() override;
   bool IsWebRtcStunOriginEnabled() override;
-  base::Optional<blink::WebString> WebRtcStunProbeTrialParameter() override;
   media::MediaPermission* GetWebRTCMediaPermission(
       blink::WebLocalFrame* web_frame) override;
   void GetWebRTCRendererPreferences(blink::WebLocalFrame* web_frame,
@@ -216,8 +215,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<base::SingleThreadTaskRunner> MediaThreadTaskRunner() override;
   media::DecoderFactory* GetMediaDecoderFactory() override;
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
+  gfx::ColorSpace GetRenderingColorSpace() const override;
   void SetActiveURL(const blink::WebURL& url,
                     const blink::WebString& top_url) override;
+  SkBitmap* GetSadPageBitmap() override;
 
   // Tells this platform that the renderer is locked to a site (i.e., a scheme
   // plus eTLD+1, such as https://google.com), or to a more specific origin.

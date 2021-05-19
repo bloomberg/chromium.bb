@@ -304,6 +304,17 @@ void av1_simple_motion_search_based_split(
       score < no_split_thresh) {
     *do_square_split = 0;
   }
+
+  // If the score is very low, prune rectangular split since it is unlikely to
+  // occur.
+  if (cpi->sf.part_sf.simple_motion_search_rect_split) {
+    const float scale = res_idx >= 2 ? 3.0f : 2.0f;
+    const float rect_split_thresh =
+        scale * av1_simple_motion_search_no_split_thresh
+                    [cpi->sf.part_sf.simple_motion_search_rect_split][res_idx]
+                    [bsize_idx];
+    if (score < rect_split_thresh) *do_rectangular_split = 0;
+  }
 }
 
 // Given a list of ref frames in refs, performs simple_motion_search on each of
@@ -627,6 +638,7 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *xd = &x->e_mbd;
   const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
 
+  // Currently this only allows 128X128 SB size. May extend it to 64X64 SB size.
   assert(sb_size == BLOCK_128X128);
 
   int f_idx = 0;
@@ -690,14 +702,18 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
       if (log_sse > max_log_sse) max_log_sse = log_sse;
     }
   aom_clear_system_state();
-  const float avg_mv_row = sum_mv_row / 64.0f;
-  const float var_mv_row = sum_mv_row_sq / 64.0f - avg_mv_row * avg_mv_row;
+  const int blks = mb_rows * mb_cols;
+  const float avg_mv_row = sum_mv_row / (float)blks;
+  const float var_mv_row =
+      sum_mv_row_sq / (float)blks - avg_mv_row * avg_mv_row;
 
-  const float avg_mv_col = sum_mv_col / 64.0f;
-  const float var_mv_col = sum_mv_col_sq / 64.0f - avg_mv_col * avg_mv_col;
+  const float avg_mv_col = sum_mv_col / (float)blks;
+  const float var_mv_col =
+      sum_mv_col_sq / (float)blks - avg_mv_col * avg_mv_col;
 
-  const float avg_log_sse = sum_log_sse / 64.0f;
-  const float var_log_sse = sum_log_sse_sq / 64.0f - avg_log_sse * avg_log_sse;
+  const float avg_log_sse = sum_log_sse / (float)blks;
+  const float var_log_sse =
+      sum_log_sse_sq / (float)blks - avg_log_sse * avg_log_sse;
 
   features[f_idx++] = avg_log_sse;
   features[f_idx++] = avg_mv_col;
@@ -716,11 +732,20 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
   assert(f_idx == FEATURE_SIZE_MAX_MIN_PART_PRED);
 }
 
+// Convert result index to block size.
+// result idx     block size
+//     0          BLOCK_16X16
+//     1          BLOCK_32X32
+//     2          BLOCK_64X64
+//     3          BLOCK_128X128
+static BLOCK_SIZE get_block_size(int idx) {
+  return (BLOCK_SIZE)((idx + 2) * 3);
+}
+
 BLOCK_SIZE av1_predict_max_partition(const AV1_COMP *const cpi,
                                      const MACROBLOCK *const x,
                                      const float *features) {
-  float scores[MAX_NUM_CLASSES_MAX_MIN_PART_PRED] = { 0.0f },
-        probs[MAX_NUM_CLASSES_MAX_MIN_PART_PRED] = { 0.0f };
+  float scores[MAX_NUM_CLASSES_MAX_MIN_PART_PRED] = { 0.0f };
   const NN_CONFIG *nn_config = &av1_max_part_pred_nn_config;
 
   assert(cpi->sf.part_sf.auto_max_partition_based_on_simple_motion !=
@@ -728,21 +753,26 @@ BLOCK_SIZE av1_predict_max_partition(const AV1_COMP *const cpi,
 
   aom_clear_system_state();
   av1_nn_predict(features, nn_config, 1, scores);
-  av1_nn_softmax(scores, probs, MAX_NUM_CLASSES_MAX_MIN_PART_PRED);
 
   int result = MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1;
   if (cpi->sf.part_sf.auto_max_partition_based_on_simple_motion ==
       DIRECT_PRED) {
     result = 0;
-    float max_prob = probs[0];
+    float max_score = scores[0];
     for (int i = 1; i < MAX_NUM_CLASSES_MAX_MIN_PART_PRED; ++i) {
-      if (probs[i] > max_prob) {
-        max_prob = probs[i];
+      if (scores[i] > max_score) {
+        max_score = scores[i];
         result = i;
       }
     }
-  } else if (cpi->sf.part_sf.auto_max_partition_based_on_simple_motion ==
-             RELAXED_PRED) {
+    return get_block_size(result);
+  }
+
+  float probs[MAX_NUM_CLASSES_MAX_MIN_PART_PRED] = { 0.0f };
+  av1_nn_softmax(scores, probs, MAX_NUM_CLASSES_MAX_MIN_PART_PRED);
+
+  if (cpi->sf.part_sf.auto_max_partition_based_on_simple_motion ==
+      RELAXED_PRED) {
     for (result = MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1; result >= 0;
          --result) {
       if (result < MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1) {
@@ -773,7 +803,7 @@ BLOCK_SIZE av1_predict_max_partition(const AV1_COMP *const cpi,
     }
   }
 
-  return (BLOCK_SIZE)((result + 2) * 3);
+  return get_block_size(result);
 }
 
 // Get the minimum partition block width and height(in log scale) under a

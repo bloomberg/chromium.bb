@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/conversions/conversion_page_metrics.h"
@@ -101,8 +102,10 @@ void ConversionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
 
   // The initiator frame host may be deleted by this point. In that case, ignore
   // this navigation and drop the impression associated with it.
-  // TODO(https://crbug.com/1056907): Record metrics on how often impressions
-  // are dropped because the initiator is destroyed.
+
+  UMA_HISTOGRAM_BOOLEAN("Conversions.ImpressionNavigationHasDeadInitiator",
+                        initiator_frame_host == nullptr);
+
   if (!initiator_frame_host)
     return;
 
@@ -120,6 +123,17 @@ void ConversionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
           ->current_origin();
   navigation_impression_origins_.emplace(navigation_handle->GetNavigationId(),
                                          initiator_root_frame_origin);
+
+  if (auto* initiator_web_contents =
+          WebContents::FromRenderFrameHost(initiator_frame_host)) {
+    if (auto* initiator_conversion_host =
+            ConversionHost::FromWebContents(initiator_web_contents)) {
+      // This doesn't necessarily mean that the browser will store the report,
+      // due to the additional logic in DidFinishNavigation(). This records
+      // that a page /attempted/ to register an impression for a navigation.
+      initiator_conversion_host->NotifyImpressionNavigationInitiatedByPage();
+    }
+  }
 }
 
 void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
@@ -202,13 +216,6 @@ void ConversionHost::RegisterConversion(
   content::RenderFrameHost* render_frame_host =
       receiver_.GetCurrentTargetFrame();
 
-  // Conversion registration is only allowed in the main frame.
-  if (render_frame_host->GetParent()) {
-    mojo::ReportBadMessage(
-        "blink.mojom.ConversionHost can only be used by the main frame.");
-    return;
-  }
-
   // If there is no conversion manager available, ignore any conversion
   // registrations.
   ConversionManager* conversion_manager =
@@ -216,12 +223,16 @@ void ConversionHost::RegisterConversion(
   if (!conversion_manager)
     return;
 
-  url::Origin conversion_origin = render_frame_host->GetLastCommittedOrigin();
+  const url::Origin& conversion_origin =
+      render_frame_host->GetLastCommittedOrigin();
+  const url::Origin& main_frame_origin =
+      render_frame_host->GetMainFrame()->GetLastCommittedOrigin();
 
   // Only allow conversion registration on secure pages with a secure conversion
   // redirects.
   if (!network::IsOriginPotentiallyTrustworthy(conversion_origin) ||
-      !network::IsOriginPotentiallyTrustworthy(conversion->reporting_origin)) {
+      !network::IsOriginPotentiallyTrustworthy(conversion->reporting_origin) ||
+      !network::IsOriginPotentiallyTrustworthy(main_frame_origin)) {
     mojo::ReportBadMessage(
         "blink.mojom.ConversionHost can only be used in secure contexts with a "
         "secure conversion registration origin.");
@@ -231,13 +242,12 @@ void ConversionHost::RegisterConversion(
   if (!GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
           web_contents()->GetBrowserContext(),
           ContentBrowserClient::ConversionMeasurementOperation::kConversion,
-          nullptr /* impression_origin */, &conversion_origin,
+          nullptr /* impression_origin */, &main_frame_origin,
           &conversion->reporting_origin)) {
     return;
   }
 
-  net::SchemefulSite conversion_destination(
-      render_frame_host->GetLastCommittedOrigin());
+  net::SchemefulSite conversion_destination(main_frame_origin);
 
   StorableConversion storable_conversion(
       conversion_manager->GetConversionPolicy().GetSanitizedConversionData(
@@ -249,9 +259,16 @@ void ConversionHost::RegisterConversion(
   conversion_manager->HandleConversion(storable_conversion);
 }
 
+void ConversionHost::NotifyImpressionNavigationInitiatedByPage() {
+  if (conversion_page_metrics_)
+    conversion_page_metrics_->OnImpression();
+}
+
 void ConversionHost::SetCurrentTargetFrameForTesting(
     RenderFrameHost* render_frame_host) {
   receiver_.SetCurrentTargetFrameForTesting(render_frame_host);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ConversionHost)
 
 }  // namespace content

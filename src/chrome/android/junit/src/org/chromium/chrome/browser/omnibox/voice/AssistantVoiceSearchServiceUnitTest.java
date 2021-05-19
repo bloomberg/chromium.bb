@@ -111,7 +111,9 @@ public class AssistantVoiceSearchServiceUnitTest {
         doReturn(true).when(mExternalAuthUtils).isChromeGoogleSigned();
         doReturn(true).when(mExternalAuthUtils).isGoogleSigned(IntentHandler.PACKAGE_GSA);
         doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
+        doReturn(true).when(mGsaState).isGsaInstalled();
         doReturn(false).when(mGsaState).isAgsaVersionBelowMinimum(any(), any());
+        doReturn(AGSA_VERSION_NUMBER).when(mGsaState).parseAgsaMajorMinorVersionAsInteger(any());
         doReturn(true).when(mGsaState).canAgsaHandleIntent(any());
         doReturn(true).when(mIdentityManager).hasPrimaryAccount();
         doReturn(FAKE_ACCOUNTS_1).when(mAccountManagerFacade).getGoogleAccounts();
@@ -287,6 +289,19 @@ public class AssistantVoiceSearchServiceUnitTest {
 
     @Test
     @Feature("OmniboxAssistantVoiceSearch")
+    public void testAssistantEligibility_AGSA_not_installed() throws Exception {
+        doReturn(false).when(mGsaState).isGsaInstalled();
+
+        List<Integer> reasons = new ArrayList<>();
+        boolean eligible = mAssistantVoiceSearchService.isDeviceEligibleForAssistant(
+                /* returnImmediately= */ false, /* outList= */ reasons);
+        Assert.assertEquals(1, reasons.size());
+        Assert.assertEquals(EligibilityFailureReason.AGSA_NOT_INSTALLED, (int) reasons.get(0));
+        Assert.assertFalse(eligible);
+    }
+
+    @Test
+    @Feature("OmniboxAssistantVoiceSearch")
     public void getMicButtonColorStateList_ColorfulMicEnabled() {
         mAssistantVoiceSearchService.setColorfulMicEnabledForTesting(true);
         Assert.assertNull(mAssistantVoiceSearchService.getMicButtonColorStateList(0, mContext));
@@ -309,6 +324,9 @@ public class AssistantVoiceSearchServiceUnitTest {
         Assert.assertEquals(1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         AssistantVoiceSearchService.USER_ELIGIBILITY_HISTOGRAM, /* eligible= */ 1));
+        Assert.assertEquals(1,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        AssistantVoiceSearchService.AGSA_VERSION_HISTOGRAM, AGSA_VERSION_NUMBER));
 
         doReturn(true).when(mGsaState).isAgsaVersionBelowMinimum(any(), any());
         doReturn(false).when(mIdentityManager).hasPrimaryAccount();
@@ -316,6 +334,10 @@ public class AssistantVoiceSearchServiceUnitTest {
         Assert.assertEquals(1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         AssistantVoiceSearchService.USER_ELIGIBILITY_HISTOGRAM, /* eligible= */ 0));
+        Assert.assertEquals(2,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        AssistantVoiceSearchService.AGSA_VERSION_HISTOGRAM, AGSA_VERSION_NUMBER));
+
         Assert.assertEquals(1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         AssistantVoiceSearchService.USER_ELIGIBILITY_FAILURE_REASON_HISTOGRAM,

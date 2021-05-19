@@ -12,7 +12,7 @@
 #include <memory>
 #include "stdlib.h"
 #include "string.h"
-#include "src/sksl/SkSLDefines.h"
+#include "include/private/SkSLDefines.h"
 #include "src/sksl/SkSLLexer.h"
 
 #ifndef SKSL_STANDALONE
@@ -271,6 +271,12 @@ public:
     const char* fbFetchColorName() const {
         return fFBFetchColorName;
     }
+
+    bool fRewriteMatrixVectorMultiply = false;
+    bool rewriteMatrixVectorMultiply() const {
+        return fRewriteMatrixVectorMultiply;
+    }
+
 };
 
 using ShaderCapsClass = StandaloneShaderCaps;
@@ -421,6 +427,13 @@ public:
         ShaderCapsPointer result = MakeShaderCaps();
         result->fVersionDeclString = "#version 400";
         result->fRewriteDoWhileLoops = true;
+        return result;
+    }
+
+    static ShaderCapsPointer RewriteMatrixVectorMultiply() {
+        ShaderCapsPointer result = MakeShaderCaps();
+        result->fVersionDeclString = "#version 400";
+        result->fRewriteMatrixVectorMultiply = true;
         return result;
     }
 

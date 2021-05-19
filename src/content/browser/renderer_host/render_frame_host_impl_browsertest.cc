@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -186,15 +187,9 @@ class FirstPartySchemeContentBrowserClient : public TestContentBrowserClient {
 // See https://crbug.com/491535
 class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
  public:
-  using LifecycleState = RenderFrameHostImpl::LifecycleState;
+  using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
   RenderFrameHostImplBrowserTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    // This makes the tests that check NetworkIsolationKeys make sure both the
-    // frame and top frame origins are correct, without significantly affecting
-    // other tests.
-    feature_list_.InitAndEnableFeature(
-        net::features::kAppendFrameOriginToNetworkIsolationKey);
-  }
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
   ~RenderFrameHostImplBrowserTest() override = default;
 
   // Return an URL for loading a local test file.
@@ -234,7 +229,6 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   net::EmbeddedTestServer https_server_;
 };
 
@@ -429,7 +423,7 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
   }
 
   // Runs the dialog callback.
-  void Run(bool success, const base::string16& user_input) {
+  void Run(bool success, const std::u16string& user_input) {
     std::move(callback_).Run(success, user_input);
   }
 
@@ -457,8 +451,8 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
   void RunJavaScriptDialog(WebContents* web_contents,
                            RenderFrameHost* render_frame_host,
                            JavaScriptDialogType dialog_type,
-                           const base::string16& message_text,
-                           const base::string16& default_prompt_text,
+                           const std::u16string& message_text,
+                           const std::u16string& default_prompt_text,
                            DialogClosedCallback callback,
                            bool* did_suppress_message) override {
     callback_ = std::move(callback);
@@ -476,7 +470,7 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
 
   bool HandleJavaScriptDialog(WebContents* web_contents,
                               bool accept,
-                              const base::string16* prompt_override) override {
+                              const std::u16string* prompt_override) override {
     return true;
   }
 
@@ -543,7 +537,7 @@ class RenderFrameHostFactoryForBeforeUnloadInterceptor
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       bool renderer_initiated_creation,
-      RenderFrameHostImpl::LifecycleState lifecycle_state) override {
+      RenderFrameHostImpl::LifecycleStateImpl lifecycle_state) override {
     return base::WrapUnique(new RenderFrameHostImplForBeforeUnloadInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
@@ -583,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   // JavaScript onbeforeunload dialogs require a user gesture.
   for (auto* frame : web_contents()->GetAllFrames())
-    frame->ExecuteJavaScriptWithUserGestureForTests(base::string16());
+    frame->ExecuteJavaScriptWithUserGestureForTests(std::u16string());
 
   // Force a process switch by going to a privileged page. The beforeunload
   // timer will be started on the top-level frame but will be paused while the
@@ -597,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_completion());
 
   // Answer the dialog.
-  dialog_manager.Run(true, base::string16());
+  dialog_manager.Run(true, std::u16string());
 
   // There will be no beforeunload completion callback invocation, so if the
   // beforeunload completion callback timer isn't functioning then the
@@ -631,12 +625,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Give the page a user gesture and try reloading again. This time there
   // should be a dialog. If there is no dialog, the call to Wait will hang.
   web_contents()->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
-      base::string16());
+      std::u16string());
   web_contents()->GetController().Reload(ReloadType::NORMAL, false);
   dialog_manager.Wait();
 
   // Answer the dialog.
-  dialog_manager.Run(true, base::string16());
+  dialog_manager.Run(true, std::u16string());
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
 
   // The reload should have cleared the user gesture bit, so upon leaving again
@@ -666,7 +660,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // Cancel the dialog.
   dialog_manager.reset_url_invalidate_count();
-  dialog_manager.Run(false, base::string16());
+  dialog_manager.Run(false, std::u16string());
   EXPECT_FALSE(web_contents()->IsLoading());
 
   // Verify there are no pending history items after the dialog is cancelled.
@@ -701,12 +695,12 @@ class RenderFrameHostImplBeforeUnloadBrowserTest
 
   void CloseDialogAndProceed() {
     dialog_manager_->Run(true /* navigation should proceed */,
-                         base::string16());
+                         std::u16string());
   }
 
   void CloseDialogAndCancel() {
     dialog_manager_->Run(false /* navigation should proceed */,
-                         base::string16());
+                         std::u16string());
   }
 
   // Installs a beforeunload handler in the given frame.
@@ -744,7 +738,7 @@ class RenderFrameHostImplBeforeUnloadBrowserTest
  protected:
   void SetUpOnMainThread() override {
     RenderFrameHostImplBrowserTest::SetUpOnMainThread();
-    dialog_manager_.reset(new TestJavaScriptDialogManager);
+    dialog_manager_ = std::make_unique<TestJavaScriptDialogManager>();
     web_contents()->SetDelegate(dialog_manager_.get());
   }
 
@@ -857,8 +851,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   // but it should not be waiting for the beforeunload completion callback.
   EXPECT_THAT(
       main_frame->lifecycle_state(),
-      testing::AnyOf(testing::Eq(LifecycleState::kRunningUnloadHandlers),
-                     testing::Eq(LifecycleState::kInBackForwardCache)));
+      testing::AnyOf(testing::Eq(LifecycleStateImpl::kRunningUnloadHandlers),
+                     testing::Eq(LifecycleStateImpl::kInBackForwardCache)));
   EXPECT_FALSE(main_frame->is_waiting_for_beforeunload_completion());
   EXPECT_EQ(0u, main_frame->beforeunload_pending_replies_.size());
   EXPECT_EQ(nullptr, main_frame->GetBeforeUnloadInitiator());
@@ -1424,18 +1418,7 @@ class NavigationHandleGrabber : public WebContentsObserver {
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
     if (navigation_handle->GetURL().path() != "/title2.html")
       return;
-    NavigationRequest::From(navigation_handle)
-        ->set_complete_callback_for_testing(
-            base::BindOnce(&NavigationHandleGrabber::SendingNavigationCommitted,
-                           base::Unretained(this), navigation_handle));
-  }
-
-  bool SendingNavigationCommitted(
-      NavigationHandle* navigation_handle,
-      NavigationThrottle::ThrottleCheckResult result) {
-    if (navigation_handle->GetURL().path() == "/title2.html")
-      ExecuteScriptAsync(web_contents(), "document.open();");
-    return false;
+    ExecuteScriptAsync(web_contents(), "document.open();");
   }
 
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {
@@ -1508,7 +1491,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, FastNavigationAbort) {
   // NavigationHandleGrabber::SendingNavigationCommitted(). The navigation
   // should get aborted because of the document.open() in the navigating RFH.
   NavigationHandleGrabber observer(web_contents());
-  const base::string16 title = base::ASCIIToUTF16("done");
+  const std::u16string title = u"done";
   EXPECT_TRUE(
       ExecuteScript(web_contents(), "window.location.href='/title2.html'"));
   observer.WaitForTitle2();
@@ -1597,8 +1580,8 @@ IN_PROC_BROWSER_TEST_F(
   xhr_response.Done();
 
   // 4) Wait for the XHR request to complete.
-  const base::string16 xhr_aborted_title = base::ASCIIToUTF16("xhr aborted");
-  const base::string16 xhr_loaded_title = base::ASCIIToUTF16("xhr loaded");
+  const std::u16string xhr_aborted_title = u"xhr aborted";
+  const std::u16string xhr_loaded_title = u"xhr loaded";
   TitleWatcher watcher(shell()->web_contents(), xhr_loaded_title);
   watcher.AlsoWaitForTitle(xhr_aborted_title);
 
@@ -1651,8 +1634,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest,
   // 3) The end of the response is issued. The renderer must be able to receive
   //    it.
   {
-    const base::string16 document_loaded_title =
-        base::ASCIIToUTF16("document loaded");
+    const std::u16string document_loaded_title = u"document loaded";
     TitleWatcher watcher(shell()->web_contents(), document_loaded_title);
     main_document_response.Send(
         "<script>"
@@ -2646,7 +2628,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // dispatch a before unload with discard as a reason. This should return
   // without any dialog being seen.
   web_contents()->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
-      base::string16());
+      std::u16string());
   web_contents()->GetMainFrame()->DispatchBeforeUnload(
       RenderFrameHostImpl::BeforeUnloadType::DISCARD, false);
   dialog_manager.Wait();
@@ -2673,13 +2655,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // dispatch a before unload with discard as a reason. This should return
   // without any dialog being seen.
   web_contents()->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
-      base::string16());
+      std::u16string());
 
   // Launch an alert javascript dialog. This pending dialog should block a
   // subsequent discarding before unload request.
   web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("setTimeout(function(){alert('hello');}, 10);"),
-      base::NullCallback());
+      u"setTimeout(function(){alert('hello');}, 10);", base::NullCallback());
   dialog_manager.Wait();
   EXPECT_EQ(0, dialog_manager.num_beforeunload_dialogs_seen());
   EXPECT_EQ(0, dialog_manager.num_beforeunload_fired_seen());
@@ -2695,7 +2676,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // Clear the existing javascript dialog so that the associated IPC message
   // doesn't leak.
-  dialog_manager.Run(true, base::string16());
+  dialog_manager.Run(true, std::u16string());
 
   web_contents()->SetDelegate(nullptr);
   web_contents()->SetJavaScriptDialogManagerForTesting(nullptr);
@@ -2819,30 +2800,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHost* subframe = web_contents()->GetAllFrames()[1];
   EXPECT_EQ(main_origin, subframe->GetLastCommittedOrigin());
 }
-
-class RenderFrameHostCreatedObserver : public WebContentsObserver {
- public:
-  explicit RenderFrameHostCreatedObserver(WebContents* web_contents)
-      : WebContentsObserver(web_contents) {}
-
-  RenderFrameHost* Wait() {
-    if (!new_frame_)
-      run_loop_.Run();
-
-    return new_frame_;
-  }
-
- private:
-  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
-    new_frame_ = render_frame_host;
-    run_loop_.Quit();
-  }
-
-  base::RunLoop run_loop_;
-  RenderFrameHost* new_frame_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostCreatedObserver);
-};
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        OriginOfFreshFrame_SandboxedSubframe) {
@@ -3974,25 +3931,20 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
     grandchild = child->child_at(0);
 
-    // Now the frames above grandchild differ only in scheme. SiteForCookies
-    // should be the same except that schemefully_same() should be false.
+    // Now the frames above grandchild differ only in scheme. This results in
+    // null SiteForCookies because of the schemefully_same flag, but site should
+    // still not be opaque.
     net::SiteForCookies grandchild_cross_scheme =
         grandchild->current_frame_host()->ComputeSiteForCookies();
-    EXPECT_FALSE(grandchild_cross_scheme.schemefully_same());
-    EXPECT_EQ("a.test", grandchild_cross_scheme.registrable_domain());
+    EXPECT_TRUE(grandchild_cross_scheme.IsNull());
+    EXPECT_FALSE(grandchild_cross_scheme.site().opaque());
 
     net::SiteForCookies grandchild_cross_scheme_navigation =
         grandchild->current_frame_host()
             ->ComputeIsolationInfoForNavigation(other_url)
             .site_for_cookies();
-    EXPECT_FALSE(grandchild_cross_scheme_navigation.schemefully_same());
-    EXPECT_EQ("a.test",
-              grandchild_cross_scheme_navigation.registrable_domain());
-
-    // IsEquivalent() doesn't check schemefully_same.
-    EXPECT_TRUE(grandchild_cross_scheme.IsEquivalent(grandchild_same_scheme));
-    EXPECT_TRUE(grandchild_cross_scheme_navigation.IsEquivalent(
-        grandchild_same_scheme_navigation));
+    EXPECT_TRUE(grandchild_cross_scheme_navigation.IsNull());
+    EXPECT_FALSE(grandchild_cross_scheme_navigation.site().opaque());
   }
 }
 
@@ -4305,7 +4257,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHostImpl* rfh_a = web_contents()->GetMainFrame();
   RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
   RenderFrameDeletedObserver delete_rfh_b(rfh_b);
-  EXPECT_EQ(LifecycleState::kActive, rfh_b->lifecycle_state());
+  EXPECT_EQ(LifecycleStateImpl::kActive, rfh_b->lifecycle_state());
 
   // 2) Leave rfh_b in pending deletion state.
   LeaveInPendingDeletionState(rfh_b);
@@ -4318,13 +4270,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_c));
   RenderFrameHostImpl* rfh_c = web_contents()->GetMainFrame();
 
-  EXPECT_THAT(rfh_a->lifecycle_state(),
-              testing::AnyOf(testing::Eq(LifecycleState::kReadyToBeDeleted),
-                             testing::Eq(LifecycleState::kInBackForwardCache)));
+  EXPECT_THAT(
+      rfh_a->lifecycle_state(),
+      testing::AnyOf(testing::Eq(LifecycleStateImpl::kReadyToBeDeleted),
+                     testing::Eq(LifecycleStateImpl::kInBackForwardCache)));
   EXPECT_THAT(
       rfh_b->lifecycle_state(),
-      testing::AnyOf(testing::Eq(LifecycleState::kRunningUnloadHandlers),
-                     testing::Eq(LifecycleState::kInBackForwardCache)));
+      testing::AnyOf(testing::Eq(LifecycleStateImpl::kRunningUnloadHandlers),
+                     testing::Eq(LifecycleStateImpl::kInBackForwardCache)));
 
   // 5) Check the IsCurrent state of rfh_a, rfh_b and rfh_c after navigating to
   // C.
@@ -4333,7 +4286,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(rfh_c->IsCurrent());
 }
 
-// Test the LifecycleState is updated correctly for the main frame during
+// Test the LifecycleStateImpl is updated correctly for the main frame during
 // navigation.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        CheckLifecycleStateTransitionOnMainFrame) {
@@ -4344,10 +4297,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = root_frame_host();
-  EXPECT_EQ(LifecycleState::kActive, rfh_a->lifecycle_state());
+  EXPECT_EQ(LifecycleStateImpl::kActive, rfh_a->lifecycle_state());
 
-  // 2) Leave rfh_a in pending deletion state to check for rfh_a LifecycleState
-  // after navigating to B.
+  // 2) Leave rfh_a in pending deletion state to check for rfh_a
+  // LifecycleStateImpl after navigating to B.
   LeaveInPendingDeletionState(rfh_a);
 
   // 3) Start navigation to B, but don't commit yet.
@@ -4363,9 +4316,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
             NavigationRequest::AssociatedSiteInstanceType::SPECULATIVE);
   EXPECT_TRUE(pending_rfh);
 
-  // 4) Check the LifecycleState of both rfh_a and pending_rfh before commit.
-  EXPECT_EQ(LifecycleState::kSpeculative, pending_rfh->lifecycle_state());
-  EXPECT_EQ(LifecycleState::kActive, rfh_a->lifecycle_state());
+  // 4) Check the LifecycleStateImpl of both rfh_a and pending_rfh before
+  // commit.
+  EXPECT_EQ(LifecycleStateImpl::kSpeculative, pending_rfh->lifecycle_state());
+  EXPECT_EQ(LifecycleStateImpl::kActive, rfh_a->lifecycle_state());
   EXPECT_EQ(root_frame_host(), rfh_a);
 
   // 5) Let the navigation finish and make sure it is succeeded.
@@ -4373,15 +4327,16 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(url_b, web_contents()->GetMainFrame()->GetLastCommittedURL());
   RenderFrameHostImpl* rfh_b = root_frame_host();
 
-  // 6) Check the LifecycleState of both rfh_a and rfh_b after navigating to B.
+  // 6) Check the LifecycleStateImpl of both rfh_a and rfh_b after navigating to
+  // B.
   EXPECT_THAT(
       rfh_a->lifecycle_state(),
-      testing::AnyOf(testing::Eq(LifecycleState::kRunningUnloadHandlers),
-                     testing::Eq(LifecycleState::kInBackForwardCache)));
-  EXPECT_EQ(LifecycleState::kActive, rfh_b->lifecycle_state());
+      testing::AnyOf(testing::Eq(LifecycleStateImpl::kRunningUnloadHandlers),
+                     testing::Eq(LifecycleStateImpl::kInBackForwardCache)));
+  EXPECT_EQ(LifecycleStateImpl::kActive, rfh_b->lifecycle_state());
 }
 
-// Test the LifecycleState is updated correctly for a subframe.
+// Test the LifecycleStateImpl is updated correctly for a subframe.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        CheckRFHLifecycleStateTransitionOnSubFrame) {
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
@@ -4390,23 +4345,23 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
 
   // Lifecycle state of initial (Blank page) RenderFrameHost should be active as
-  // we don't update the LifecycleState prior to navigation commits (to new URL
-  // i.e., url_ab in this case).
-  EXPECT_EQ(LifecycleState::kActive, root_frame_host()->lifecycle_state());
+  // we don't update the LifecycleStateImpl prior to navigation commits (to new
+  // URL i.e., url_ab in this case).
+  EXPECT_EQ(LifecycleStateImpl::kActive, root_frame_host()->lifecycle_state());
 
   // 1) Navigate to a page with an iframe.
   EXPECT_TRUE(NavigateToURL(shell(), url_ab));
   RenderFrameHostImpl* rfh_a = web_contents()->GetMainFrame();
   RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
-  EXPECT_EQ(LifecycleState::kActive, rfh_b->lifecycle_state());
+  EXPECT_EQ(LifecycleStateImpl::kActive, rfh_b->lifecycle_state());
 
   // 2) Navigate B's subframe to a cross-site C.
   EXPECT_TRUE(NavigateToURLFromRenderer(rfh_b->frame_tree_node(), url_c));
 
-  // 3) Check LifecycleState of sub-frame rfh_c after navigating from subframe
-  // rfh_b.
+  // 3) Check LifecycleStateImpl of sub-frame rfh_c after navigating from
+  // subframe rfh_b.
   RenderFrameHostImpl* rfh_c = rfh_a->child_at(0)->current_frame_host();
-  EXPECT_EQ(LifecycleState::kActive, rfh_c->lifecycle_state());
+  EXPECT_EQ(LifecycleStateImpl::kActive, rfh_c->lifecycle_state());
 
   // 4) Add a new child frame.
   RenderFrameHostCreatedObserver subframe_observer(web_contents());
@@ -4415,10 +4370,70 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                      "document.body.appendChild(iframe);"));
   subframe_observer.Wait();
 
-  // 5) LifecycleState of newly inserted child frame should be kActive before
-  // navigation.
+  // 5) LifecycleStateImpl of newly inserted child frame should be kActive
+  // before navigation.
   RenderFrameHostImpl* rfh_d = rfh_c->child_at(0)->current_frame_host();
-  EXPECT_EQ(LifecycleState::kActive, rfh_d->lifecycle_state());
+  EXPECT_EQ(LifecycleStateImpl::kActive, rfh_d->lifecycle_state());
+}
+
+// Test that LifecycleStateImpl is updated correctly during
+// cross-RenderFrameHost navigation.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       CheckLifecycleStateTransitionWithPendingCommit) {
+  class CheckLifecycleStateImpl : public WebContentsObserver {
+   public:
+    explicit CheckLifecycleStateImpl(WebContents* web_contents)
+        : WebContentsObserver(web_contents) {}
+
+    // WebContentsObserver overrides:
+    void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
+      RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
+          navigation_handle->GetRenderFrameHost());
+      EXPECT_EQ(rfh->lifecycle_state(), LifecycleStateImpl::kPendingCommit);
+      EXPECT_EQ(rfh->GetLifecycleState(),
+                RenderFrameHost::LifecycleState::kPendingCommit);
+    }
+  };
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = root_frame_host();
+  EXPECT_EQ(LifecycleStateImpl::kActive, rfh_a->lifecycle_state());
+
+  // 2) Start navigation to B, but don't commit yet.
+  TestNavigationManager manager(web_contents(), url_b);
+  shell()->LoadURL(url_b);
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameHostImpl* speculative_rfh =
+      root->render_manager()->speculative_frame_host();
+  NavigationRequest* navigation_request = root->navigation_request();
+  EXPECT_EQ(navigation_request->associated_site_instance_type(),
+            NavigationRequest::AssociatedSiteInstanceType::SPECULATIVE);
+  EXPECT_TRUE(speculative_rfh);
+
+  // 3) Check the LifecycleStateImpl of both rfh_a and speculative_rfh before
+  // commit.
+  EXPECT_EQ(LifecycleStateImpl::kSpeculative,
+            speculative_rfh->lifecycle_state());
+  EXPECT_EQ(LifecycleStateImpl::kActive, rfh_a->lifecycle_state());
+  EXPECT_EQ(root_frame_host(), rfh_a);
+
+  // 4) Check that LifecycleStateImpl of speculative_rfh transitions to
+  // kPendingCommit in ReadyToCommitNavigation.
+  CheckLifecycleStateImpl check_pending_commit(web_contents());
+
+  // 5) Let the navigation finish and make sure it is succeeded.
+  manager.WaitForNavigationFinished();
+  EXPECT_EQ(url_b, web_contents()->GetMainFrame()->GetLastCommittedURL());
+  RenderFrameHostImpl* rfh_b = root_frame_host();
+  EXPECT_EQ(rfh_b, speculative_rfh);
+  EXPECT_EQ(LifecycleStateImpl::kActive, rfh_b->lifecycle_state());
 }
 
 // Verify that a new RFH gets marked as having committed a navigation after
@@ -4437,7 +4452,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(root_frame_host()->has_committed_any_navigation_);
 }
 
-// Test the LifecycleState when a renderer crashes during navigation.
+// Test the LifecycleStateImpl when a renderer crashes during navigation.
 // When navigating after a crash, the new RenderFrameHost should
 // become active immediately, prior to the navigation committing. This is
 // an optimization to prevent the user from sitting around on the sad tab
@@ -4453,7 +4468,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = root_frame_host();
-  EXPECT_EQ(LifecycleState::kActive, rfh_a->lifecycle_state());
+  EXPECT_EQ(LifecycleStateImpl::kActive, rfh_a->lifecycle_state());
 
   // 2) Renderer crash.
   RenderProcessHost* renderer_process = rfh_a->GetProcess();
@@ -4479,15 +4494,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
               NavigationRequest::AssociatedSiteInstanceType::CURRENT);
   }
 
-  // 4) Check the LifecycleState of B's RFH.
-  EXPECT_EQ(LifecycleState::kActive, current_rfh->lifecycle_state());
+  // 4) Check the LifecycleStateImpl of B's RFH.
+  EXPECT_EQ(LifecycleStateImpl::kActive, current_rfh->lifecycle_state());
 
   // 5) Let the navigation finish and make sure it is succeeded.
   manager.WaitForNavigationFinished();
   EXPECT_EQ(url_b, web_contents()->GetMainFrame()->GetLastCommittedURL());
   // The RenderFrameHost has been replaced after the crash, so get it again.
   current_rfh = root->render_manager()->current_frame_host();
-  EXPECT_EQ(LifecycleState::kActive, current_rfh->lifecycle_state());
+  EXPECT_EQ(LifecycleStateImpl::kActive, current_rfh->lifecycle_state());
 }
 
 // Check that same site navigation correctly resets document_used_web_otp_.
@@ -4507,7 +4522,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
     }) ();
   )";
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve(testing::_))
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(testing::_, testing::_))
       .WillOnce(testing::Invoke([&]() {
         mock_provider_ptr->NotifyReceive(
             std::vector<url::Origin>{url::Origin::Create(first_url)}, "hello",
@@ -4558,7 +4573,10 @@ class DocumentOnLoadObserver : public WebContentsObserver {
 
  protected:
   // WebContentsObserver:
-  void DocumentOnLoadCompletedInMainFrame() override { callback_.Run(); }
+  void DocumentOnLoadCompletedInMainFrame(
+      RenderFrameHost* render_frame_host) override {
+    callback_.Run();
+  }
 
  private:
   base::RepeatingClosure callback_;

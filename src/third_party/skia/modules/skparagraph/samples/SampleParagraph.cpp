@@ -2575,7 +2575,7 @@ protected:
                          cluster.textRange().start, cluster.textRange().end,
                          cluster.isSoftBreak() ? "soft" :
                          cluster.isHardBreak() ? "hard" :
-                         cluster.isWhitespaces() ? "spaces" : "");
+                         cluster.isWhitespaceBreak() ? "spaces" : "");
             }
 
             auto lines = impl->lines();
@@ -3416,6 +3416,64 @@ private:
     using INHERITED = Sample;
 };
 
+class ParagraphView58 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph58"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto fontCollection = getFontCollection();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(40);
+        text_style.setColor(SK_ColorBLACK);
+        builder.pushStyle(text_style);
+        builder.addText(u"Text1 Google\u00A0Pay Text2");
+
+        auto paragraph = builder.Build();
+        paragraph->layout(width());
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    using INHERITED = Sample;
+};
+
+class ParagraphView59 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph59"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        auto fontCollection = getFontCollection();
+        //fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        //fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Ahem")});
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        text_style.setFontSize(14);
+        builder.pushStyle(text_style);
+        builder.addText("foo\u2060");
+        auto paragraph = builder.Build();
+        paragraph->layout(320);
+        paragraph->paint(canvas, 0, 0);
+        auto result = paragraph->getGlyphPositionAtCoordinate(paragraph->getMaxIntrinsicWidth(), 0.0f);
+        SkDebugf("position = %d (%s)\n", result.position, result.affinity == Affinity::kDownstream ? "Down" :"Up");
+    }
+
+private:
+    using INHERITED = Sample;
+};
 }  // namespace
 
 //////////////////////////////////////////////////////////////////////////////
@@ -3474,3 +3532,5 @@ DEF_SAMPLE(return new ParagraphView54();)
 DEF_SAMPLE(return new ParagraphView55();)
 DEF_SAMPLE(return new ParagraphView56();)
 DEF_SAMPLE(return new ParagraphView57();)
+DEF_SAMPLE(return new ParagraphView58();)
+DEF_SAMPLE(return new ParagraphView59();)

@@ -13,22 +13,21 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/borealis/borealis_window_manager.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/borealis/borealis_window_manager.h"
+#include "chrome/browser/ash/guest_os/guest_os_share_path.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_files.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/arc/arc_util.h"
@@ -55,11 +54,11 @@ constexpr char kUriListSeparator[] = "\r\n";
 constexpr char kVmFileScheme[] = "vmfile";
 
 // Mime types used in FilesApp to copy/paste files to clipboard.
-constexpr base::char16 kFilesAppMimeTag[] = STRING16_LITERAL("fs/tag");
-constexpr base::char16 kFilesAppTagExo[] = STRING16_LITERAL("exo");
-constexpr base::char16 kFilesAppMimeSources[] = STRING16_LITERAL("fs/sources");
+constexpr char16_t kFilesAppMimeTag[] = u"fs/tag";
+constexpr char16_t kFilesAppTagExo[] = u"exo";
+constexpr char16_t kFilesAppMimeSources[] = u"fs/sources";
 constexpr char kFilesAppSeparator[] = "\n";
-constexpr base::char16 kFilesAppSeparator16[] = STRING16_LITERAL("\n");
+constexpr char16_t kFilesAppSeparator16[] = u"\n";
 
 storage::FileSystemContext* GetFileSystemContext() {
   Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
@@ -99,7 +98,7 @@ void SendArcUrls(exo::DataExchangeDelegate::SendDataCallback callback,
     lines.push_back(url.spec());
   }
   // Arc requires UTF16 for data.
-  base::string16 data =
+  std::u16string data =
       base::UTF8ToUTF16(base::JoinString(lines, kUriListSeparator));
   std::move(callback).Run(base::RefCountedString16::TakeString(&data));
 }
@@ -256,7 +255,7 @@ void ShareAndSend(ui::EndpointType target,
   std::string joined = base::JoinString(lines_to_send, kUriListSeparator);
   scoped_refptr<base::RefCountedMemory> data;
   if (is_arc) {
-    base::string16 utf16 = base::UTF8ToUTF16(joined);
+    std::u16string utf16 = base::UTF8ToUTF16(joined);
     data = base::RefCountedString16::TakeString(&utf16);
   } else {
     data = base::RefCountedString::TakeString(&joined);
@@ -389,7 +388,7 @@ base::Pickle ChromeDataExchangeDelegate::CreateClipboardFilenamesPickle(
   }
   base::Pickle pickle;
   ui::WriteCustomDataToPickle(
-      std::unordered_map<base::string16, base::string16>(
+      std::unordered_map<std::u16string, std::u16string>(
           {{kFilesAppMimeTag, kFilesAppTagExo},
            {kFilesAppMimeSources, base::UTF8ToUTF16(base::JoinString(
                                       filenames, kFilesAppSeparator))}}),
@@ -412,7 +411,7 @@ ChromeDataExchangeDelegate::ParseClipboardFilenamesPickle(
   }
 
   const ui::DataTransferEndpoint data_dst(target);
-  base::string16 file_system_url_list;
+  std::u16string file_system_url_list;
   data.ReadCustomData(ui::ClipboardBuffer::kCopyPaste, kFilesAppMimeSources,
                       &data_dst, &file_system_url_list);
   if (file_system_url_list.empty())

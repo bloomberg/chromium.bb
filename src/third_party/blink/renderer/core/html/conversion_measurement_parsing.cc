@@ -33,9 +33,9 @@ base::Optional<WebImpression> GetImpression(
     return base::nullopt;
 
   if (!execution_context->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kConversionMeasurement)) {
+          mojom::blink::PermissionsPolicyFeature::kConversionMeasurement)) {
     String message =
-        "The 'conversion-measurement' feature policy must be enabled to "
+        "The 'conversion-measurement' permissions policy must be enabled to "
         "declare an impression.";
     execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kOther,

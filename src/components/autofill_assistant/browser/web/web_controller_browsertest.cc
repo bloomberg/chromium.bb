@@ -8,9 +8,12 @@
 #include <thread>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
+#include "base/time/time.h"
+#include "components/autofill_assistant/browser/action_value.pb.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "components/autofill_assistant/browser/top_padding.h"
@@ -23,6 +26,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/switches.h"
 
 namespace autofill_assistant {
 
@@ -41,6 +45,9 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(kSitePerProcess);
+    // Necessary to avoid flakiness or failure due to input arriving
+    // before the first compositor commit.
+    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
   }
 
   void SetUpOnMainThread() override {
@@ -201,7 +208,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback) {
     web_controller_->ScrollIntoView(
-        element,
+        true, element,
         base::BindOnce(&WebControllerBrowserTest::OnScrollIntoViewForClickOrTap,
                        base::Unretained(this), click_type, element,
                        std::move(callback)));
@@ -346,7 +353,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     ASSERT_TRUE(element_result != nullptr);
     const ElementFinder::Result* element_result_ptr = element_result.get();
     web_controller_->SelectOption(
-        *element_result_ptr, re2, case_sensitive, option_comparison_attribute,
+        re2, case_sensitive, option_comparison_attribute, *element_result_ptr,
         base::BindOnce(&WebControllerBrowserTest::ElementRetainingCallback,
                        base::Unretained(this), std::move(element_result),
                        std::move(done_callback), result_output));
@@ -557,6 +564,23 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     return captured_status;
   }
 
+  ClientStatus WaitUntilElementIsStable(const ElementFinder::Result& element,
+                                        int max_rounds,
+                                        base::TimeDelta check_interval) {
+    ClientStatus captured_status;
+    base::RunLoop run_loop;
+    web_controller_->WaitUntilElementIsStable(
+        max_rounds, check_interval, element,
+        base::BindLambdaForTesting(
+            [&captured_status, &run_loop](const ClientStatus& status,
+                                          base::TimeDelta) {
+              captured_status = status;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return captured_status;
+  }
+
   void FindElement(const Selector& selector,
                    ClientStatus* status_out,
                    ElementFinder::Result* result_out) {
@@ -644,7 +668,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     ASSERT_TRUE(element_result != nullptr);
     const ElementFinder::Result* element_result_ptr = element_result.get();
     web_controller_->GetStringAttribute(
-        *element_result_ptr, attributes,
+        attributes, *element_result_ptr,
         base::BindOnce(
             &WebControllerBrowserTest::ElementRetainingStringCallback,
             base::Unretained(this), std::move(element_result),
@@ -747,17 +771,17 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback) {
     if (value.empty()) {
-      web_controller_->SetValueAttribute(element, value, std::move(callback));
+      web_controller_->SetValueAttribute(value, element, std::move(callback));
       return;
     }
 
     switch (fill_strategy) {
       case SET_VALUE:
-        web_controller_->SetValueAttribute(element, value, std::move(callback));
+        web_controller_->SetValueAttribute(value, element, std::move(callback));
         return;
       case SIMULATE_KEY_PRESSES:
         web_controller_->SetValueAttribute(
-            element, /* value= */ std::string(),
+            /* value= */ std::string(), element,
             base::BindOnce(
                 &WebControllerBrowserTest::OnSetValueAttributeForSetFieldValue,
                 base::Unretained(this), value, false, element,
@@ -772,7 +796,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
         return;
       case SIMULATE_KEY_PRESSES_FOCUS:
         web_controller_->SetValueAttribute(
-            element, /* value= */ std::string(),
+            /* value= */ std::string(), element,
             base::BindOnce(
                 &WebControllerBrowserTest::OnSetValueAttributeForSetFieldValue,
                 base::Unretained(this), value, true, element,
@@ -806,8 +830,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
       std::move(callback).Run(status);
       return;
     }
-    web_controller_->SendKeyboardInput(element, UTF8ToUnicode(value),
-                                       /* delay_in_milli= */ 0,
+    web_controller_->SendKeyboardInput(UTF8ToUnicode(value),
+                                       /* delay_in_milli= */ 0, element,
                                        std::move(callback));
   }
 
@@ -887,8 +911,55 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
       return;
     }
 
-    web_controller_->SendKeyboardInput(element, codepoints, delay_in_milli,
+    web_controller_->SendKeyboardInput(codepoints, delay_in_milli, element,
                                        std::move(callback));
+  }
+
+  ClientStatus SendKeyEvent(const Selector& selector,
+                            const KeyEvent& key_event) {
+    base::RunLoop run_loop;
+    ClientStatus result;
+
+    web_controller_->FindElement(
+        selector, /* strict_mode= */ true,
+        base::BindOnce(
+            &WebControllerBrowserTest::FindSendKeyEventElementCallback,
+            base::Unretained(this), key_event, run_loop.QuitClosure(),
+            &result));
+
+    run_loop.Run();
+    return result;
+  }
+
+  void FindSendKeyEventElementCallback(
+      const KeyEvent& key_event,
+      base::OnceClosure done_callback,
+      ClientStatus* result_output,
+      const ClientStatus& element_status,
+      std::unique_ptr<ElementFinder::Result> element_result) {
+    EXPECT_EQ(ACTION_APPLIED, element_status.proto_status());
+    ASSERT_TRUE(element_result != nullptr);
+    const ElementFinder::Result* element_result_ptr = element_result.get();
+    web_controller_->FocusField(
+        *element_result_ptr,
+        base::BindOnce(
+            &WebControllerBrowserTest::OnFieldFocussedForSendKeyEvent,
+            base::Unretained(this), key_event, std::move(done_callback),
+            result_output, std::move(element_result)));
+  }
+
+  void OnFieldFocussedForSendKeyEvent(
+      const KeyEvent& key_event,
+      base::OnceClosure done_callback,
+      ClientStatus* result_output,
+      std::unique_ptr<ElementFinder::Result> element,
+      const ClientStatus& focus_status) {
+    const ElementFinder::Result* element_ptr = element.get();
+    web_controller_->SendKeyEvent(
+        key_event, *element_ptr,
+        base::BindOnce(&WebControllerBrowserTest::ElementRetainingCallback,
+                       base::Unretained(this), std::move(element),
+                       std::move(done_callback), result_output));
   }
 
   ClientStatus SetAttribute(const Selector& selector,
@@ -924,7 +995,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     ASSERT_TRUE(element_result != nullptr);
     const ElementFinder::Result* element_result_ptr = element_result.get();
     web_controller_->SetAttribute(
-        *element_result_ptr, attributes, value,
+        attributes, value, *element_result_ptr,
         base::BindOnce(&WebControllerBrowserTest::ElementRetainingCallback,
                        base::Unretained(this), std::move(element_result),
                        std::move(done_callback), result_output));
@@ -1611,9 +1682,9 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElement) {
-  Selector area_two({"#touch_area_two"});
-  ClickOrTapElement(area_two, ClickType::TAP);
-  WaitForElementRemove(area_two);
+  Selector area_five({"#touch_area_five"});
+  ClickOrTapElement(area_five, ClickType::TAP);
+  WaitForElementRemove(area_five);
 
   Selector area_one({"#touch_area_one"});
   ClickOrTapElement(area_one, ClickType::TAP);
@@ -2146,6 +2217,65 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendKeyboardInputWithDelay) {
   GetFieldsValue({selector}, {"abc"});
 }
 
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, BackspaceKeyEvent) {
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    document.getElementById('input4').addEventListener('keyup', (e) => {
+      document.getElementById('input6').value = "triggered";
+    });
+    document.getElementById('input5').addEventListener('keyup', (e) => {
+      document.getElementById('input7').value = "triggered";
+    });
+  )"));
+
+  std::vector<Selector> selectors;
+  Selector a_selector({"#input4"});
+  selectors.emplace_back(a_selector);
+  // The initial value of #input4 is "helloworld4", sending a backspace should
+  // remove the last character.
+  EXPECT_EQ(ACTION_APPLIED,
+            SendKeyboardInput(a_selector, UTF8ToUnicode("\b")).proto_status());
+  Selector b_selector({"#input5"});
+  selectors.emplace_back(b_selector);
+  // The initial value of #input5 is "helloworld5", selecting the value and
+  // sending a backspace should remove the entire text.
+  EXPECT_EQ(ACTION_APPLIED,
+            SetFieldValue(
+                b_selector, "\b",
+                KeyboardValueFillStrategy::SIMULATE_KEY_PRESSES_SELECT_VALUE)
+                .proto_status());
+  GetFieldsValue(selectors, {"helloworld", std::string()});
+
+  selectors.clear();
+  Selector a_trigger_selector({"#input6"});
+  selectors.emplace_back(a_trigger_selector);
+  Selector b_trigger_selector({"#input7"});
+  selectors.emplace_back(b_trigger_selector);
+  GetFieldsValue(selectors, {"triggered", "triggered"});
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendKeyCommands) {
+  std::vector<Selector> selectors;
+  // The initial value of #input2 is "helloworld2", sending a DeleteBackward
+  // command should remove the last character.
+  Selector a_selector({"#input2"});
+  selectors.emplace_back(a_selector);
+  KeyEvent a_key_event;
+  a_key_event.add_command("MoveToEndOfLine");
+  a_key_event.add_command("DeleteBackward");
+  EXPECT_EQ(ACTION_APPLIED,
+            SendKeyEvent(a_selector, a_key_event).proto_status());
+  // The initial value of #input3 is "helloworld3", sending SelectAll +
+  // DeleteBackward commands should clear the text.
+  Selector b_selector({"#input3"});
+  selectors.emplace_back(b_selector);
+  KeyEvent b_key_event;
+  b_key_event.add_command("SelectAll");
+  b_key_event.add_command("DeleteBackward");
+  EXPECT_EQ(ACTION_APPLIED,
+            SendKeyEvent(b_selector, b_key_event).proto_status());
+  GetFieldsValue(selectors, {"helloworld", std::string()});
+}
+
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
                        SendKeyboardInputDevtoolsFailure) {
   // This makes devtools action fail and is used as a way of testing that the
@@ -2157,8 +2287,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   ClientStatus status;
   base::RunLoop run_loop;
   web_controller_->SendKeyboardInput(
-      bad_element, UTF8ToUnicode("never sent"),
-      /* key_press_delay_in_millisecond= */ 0,
+      UTF8ToUnicode("never sent"),
+      /* key_press_delay_in_millisecond= */ 0, bad_element,
       base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
                      base::Unretained(this), run_loop.QuitClosure(), &status));
   run_loop.Run();
@@ -2378,235 +2508,6 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetElementRect) {
   EXPECT_LT(iframe_element_rect.bottom, iframe_rect.bottom);
 }
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetElementByProximity) {
-  Selector input1_selector({"input"});
-  auto* input1_closest = input1_selector.proto.add_filters()->mutable_closest();
-  input1_closest->add_target()->set_css_selector("label");
-  input1_closest->add_target()->mutable_inner_text()->set_re2("Input1");
-
-  GetFieldsValue({input1_selector}, {"helloworld1"});
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       GetElementByProximityWithTooManyCandidates) {
-  Selector selector({"input.pairs"});
-  auto* closest = selector.proto.add_filters()->mutable_closest();
-  closest->add_target()->set_css_selector("label.pairs");
-  closest->set_max_pairs(24);
-
-  ClientStatus status;
-  ElementFinder::Result result;
-  FindElement(selector, &status, &result);
-  EXPECT_EQ(TOO_MANY_CANDIDATES, status.proto_status());
-
-  closest->set_max_pairs(25);
-  FindElement(selector, &status, &result);
-  EXPECT_EQ(ACTION_APPLIED, status.proto_status());
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ProximityRelative_Position) {
-  Selector selector({"#at_center"});
-  auto* closest = selector.proto.add_filters()->mutable_closest();
-  closest->add_target()->set_css_selector("table.proximity td");
-  auto* inner_text = closest->add_target()->mutable_inner_text();
-
-  // The cells of the table look like the following:
-  //
-  // One    Two     Three
-  // Four   Center  Five
-  // Six    Seven   Eight
-  //
-  // The element is "Center", the target is "One" to "Eight". The
-  // relative_position specify that the element should be below|above|... the
-  // target.
-
-  closest->set_relative_position(SelectorProto::ProximityFilter::BELOW);
-  inner_text->set_re2("One");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Two");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Three");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Four");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Five");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Six");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Seven");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Eight");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Center");
-  RunStrictElementCheck(selector, false);
-
-  closest->set_relative_position(SelectorProto::ProximityFilter::ABOVE);
-  inner_text->set_re2("One");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Two");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Three");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Four");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Five");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Six");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Seven");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Eight");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Center");
-  RunStrictElementCheck(selector, false);
-
-  closest->set_relative_position(SelectorProto::ProximityFilter::LEFT);
-  inner_text->set_re2("One");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Two");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Three");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Four");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Five");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Six");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Seven");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Eight");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Center");
-  RunStrictElementCheck(selector, false);
-
-  closest->set_relative_position(SelectorProto::ProximityFilter::RIGHT);
-  inner_text->set_re2("One");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Two");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Three");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Four");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Five");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Six");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Seven");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Eight");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Center");
-  RunStrictElementCheck(selector, false);
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ProximityAlignment) {
-  Selector selector({"#at_center"});
-  auto* closest = selector.proto.add_filters()->mutable_closest();
-  closest->add_target()->set_css_selector("table.proximity td");
-  auto* inner_text = closest->add_target()->mutable_inner_text();
-
-  closest->set_in_alignment(true);
-  inner_text->set_re2("One");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Two");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Three");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Four");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Five");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Six");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Seven");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Eight");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Center");
-  RunStrictElementCheck(selector, true);
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       ProximityAlignmentWithPosition) {
-  Selector selector({"#at_center"});
-  auto* closest = selector.proto.add_filters()->mutable_closest();
-  closest->add_target()->set_css_selector("table.proximity td");
-  auto* inner_text = closest->add_target()->mutable_inner_text();
-
-  closest->set_in_alignment(true);
-  closest->set_relative_position(SelectorProto::ProximityFilter::LEFT);
-
-  inner_text->set_re2("One");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Two");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Three");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Four");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Five");
-  RunStrictElementCheck(selector, true);
-  inner_text->set_re2("Six");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Seven");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Eight");
-  RunStrictElementCheck(selector, false);
-  inner_text->set_re2("Center");
-  RunStrictElementCheck(selector, false);
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       FindPseudoElementToClickByProximity) {
-  const std::string javascript = R"(
-    document.querySelector("#terms-and-conditions").checked;
-  )";
-  EXPECT_FALSE(content::EvalJs(shell(), javascript).ExtractBool());
-
-  // This test clicks on the before pseudo-element that's closest to
-  // #terms-and-conditions - this has the same effect as clicking on
-  // #terms-and-conditions. This checks that pseudo-elements have positions and
-  // that we can go through an array of pseudo-elements and choose the closest
-  // one.
-  Selector selector({"label, span"});
-  selector.SetPseudoType(PseudoType::BEFORE);
-  auto* closest = selector.proto.add_filters()->mutable_closest();
-  closest->add_target()->set_css_selector("#terms-and-conditions");
-
-  ClickOrTapElement(selector, ClickType::CLICK);
-  EXPECT_TRUE(content::EvalJs(shell(), javascript).ExtractBool());
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       GetElementByProximityDifferentFrames) {
-  Selector selector({"input"});
-  auto* closest = selector.proto.add_filters()->mutable_closest();
-  closest->add_target()->set_css_selector("#iframe");
-  closest->add_target()->mutable_nth_match()->set_index(0);
-  closest->add_target()->mutable_enter_frame();
-  closest->add_target()->set_css_selector("div");
-
-  // Cannot compare position of elements on different frames.
-  ClientStatus status;
-  FindElement(Selector(SelectorProto::default_instance()), &status, nullptr);
-  EXPECT_EQ(INVALID_SELECTOR, status.proto_status());
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       GetElementByProximitySameFrame) {
-  Selector selector({"#iframe", "input[name='email']"});
-
-  // The target is searched within #iframe.
-  auto* closest = selector.proto.add_filters()->mutable_closest();
-  closest->add_target()->set_css_selector("span");
-  closest->add_target()->mutable_inner_text()->set_re2("Email");
-
-  RunLaxElementCheck(selector, true);
-  GetFieldsValue({selector}, {"email@example.com"});
-}
-
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetStringAttribute) {
   std::string value;
 
@@ -2822,6 +2723,45 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendDuplexwebEvent) {
   GetFieldsValue({selector}, {"empty"});
   web_controller_->DispatchJsEvent(base::DoNothing());
   GetFieldsValue({selector}, {"received"});
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, WaitForElementToBecomeStable) {
+  ClientStatus status;
+  ElementFinder::Result element;
+  FindElement(Selector({"#touch_area_one"}), &status, &element);
+  ASSERT_TRUE(status.ok());
+
+  // Move the element indefinitely.
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    (function() {
+        let i = 0;
+        document.getElementById('touch_area_one').style.position = 'absolute';
+        document.browserTestInterval = setInterval(function() {
+          document.getElementById('touch_area_one').style.left =
+            `${10 * i++}px`;
+        }, 100);
+      })())"));
+  status = WaitUntilElementIsStable(element, 10,
+                                    base::TimeDelta::FromMilliseconds(100));
+  EXPECT_EQ(ELEMENT_UNSTABLE, status.proto_status());
+
+  // Stop moving the element.
+  EXPECT_TRUE(ExecJs(shell(), "clearInterval(document.browserTestInterval);"));
+  status = WaitUntilElementIsStable(element, 10,
+                                    base::TimeDelta::FromMilliseconds(100));
+  EXPECT_TRUE(status.ok());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       WaitForElementToBecomeStableDevtoolsFailure) {
+  // This makes devtools action fail.
+  ElementFinder::Result element;
+  element.dom_object.object_data.node_frame_id = "doesnotexist";
+  element.container_frame_host = web_contents()->GetMainFrame();
+
+  ClientStatus status = WaitUntilElementIsStable(
+      element, 10, base::TimeDelta::FromMilliseconds(100));
+  EXPECT_EQ(UNEXPECTED_JS_ERROR, status.proto_status());
 }
 
 }  // namespace autofill_assistant

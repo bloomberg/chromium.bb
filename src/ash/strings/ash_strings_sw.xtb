@@ -40,6 +40,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="1252999807265626933">Inachaji kwenye <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hali ya hewa ikoje?</translation>
 <translation id="1267032506238418139">Mabadiliko kwenye njia ya mkato</translation>
+<translation id="1269405891096105529">Kifaa ulichounganisha kwenye kompyuta hakiwezi kutumika katika hali ya Wageni</translation>
 <translation id="1270290102613614947">Kibodi ya skrini imezimwa</translation>
 <translation id="1272079795634619415">Simamisha</translation>
 <translation id="1275285675049378717">Inawasha <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Andika ujumbe</translation>
 <translation id="2018630726571919839">Nipe kichekesho</translation>
+<translation id="2021864487439853900">Bofya ili ufungue</translation>
 <translation id="2049240716062114887">Jina la eneokazi limebadilishwa kuwa <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Wima</translation>
 <translation id="2067602449040652523">Ung'avu wa kibodi</translation>
@@ -276,6 +278,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> bado anaweza kuingia katika akaunti baadaye.</translation>
 <translation id="3321628682574733415">Msimbo wa mzazi si sahihi</translation>
 <translation id="332587331255250389">Tafadhali badilisha betri</translation>
+<translation id="3333741161915951567">Modemu inawashwa tena. Subiri kwa sekunde 30 kabla ya kujaribu tena.</translation>
 <translation id="3341303451326249809">Picha ya skrini imepigwa</translation>
 <translation id="334252345105450327">Piga picha ya skrini</translation>
 <translation id="3351879221545518001">Kwa sasa unatuma skrini.</translation>
@@ -320,6 +323,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Mtumiaji anayesimamiwa</translation>
 <translation id="3665889125180354336">Maikrofoni ya kurekodi</translation>
 <translation id="36813544980941320">Mitandao ya Wi-Fi itashirikiwa kati ya simu yako na <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Inaonyesha madirisha yaliyo kwenye eneokazi la sasa, bonyeza kishale cha Juu ili uonyeshe madirisha yaliyo kwenye maeneokazi yote</translation>
 <translation id="3702846122927433391">Idadi ya watu nchini Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Inapakia...</translation>
@@ -351,6 +355,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="394485226368336402">Mipangilio ya sauti</translation>
 <translation id="3945319193631853098">Gusa ili ukamilishe kuweka mipangilio</translation>
 <translation id="3945867833895287237">Inaunganisha kwenye mtandao pepe...</translation>
+<translation id="3958465044488004317">Angalia matokeo katika programu ya Mratibu</translation>
 <translation id="3962859241508114581">Wimbo Uliotangulia</translation>
 <translation id="3969043077941541451">Zima</translation>
 <translation id="397105322502079400">Inakokotoa...</translation>
@@ -407,10 +412,12 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="4421231901400348175">Kushiriki udhibiti wa skrini yako na <ph name="HELPER_NAME" /> kupitia Usaidizi wa Mbali.</translation>
 <translation id="4424159417645388645">Eneokazi la tano</translation>
 <translation id="4430019312045809116">Kiwango cha sauti</translation>
+<translation id="4445159312344259901">Ingia katika akaunti ili ufungue</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{Arifa moja muhimu}other{Arifa # muhimu}}</translation>
 <translation id="4450893287417543264">Usionyeshe tena</translation>
 <translation id="445864333228800152">Habari za jioni,</translation>
 <translation id="4458688154122353284">Acha kunasa skrini</translation>
+<translation id="4467143075433126295">Bonyeza na ushikilie kitufe cha [Esc] ili uondoke kwenye skrini nzima</translation>
 <translation id="4472575034687746823">Anza</translation>
 <translation id="4477350412780666475">Wimbo Unaofuata</translation>
 <translation id="4477892968187500306">Huenda kifaa hiki kina programu ambazo hazijathibitishwa na Google.</translation>
@@ -607,6 +614,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">Programu ya Mratibu wa Google haipatikani katika kipindi cha mgeni.</translation>
 <translation id="6137566720514957455">Fungua kidirisha cha kuondoa <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">Kifaa ulichounganisha hakiwezi kutumika</translation>
 <translation id="615957422585914272">Onyesha kibodi ya skrini</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="6179832488876878285">Unaweza kubandika faili zako muhimu hapa. Fungua programu ya Faili ili uanze.</translation>
@@ -624,11 +632,11 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="6297287540776456956">Tumia stylus kuchagua eneo</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ilizungushwa hadi <ph name="ROTATION" /></translation>
 <translation id="6315170314923504164">Sauti</translation>
+<translation id="6330012934079202188">Inaonyesha madirisha yaliyo kwenye maeneokazi yote, bonyeza kishale cha Juu ili uonyeshe madirisha yaliyo kwenye eneokazi la sasa</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> ni kipindi kinachodhibitiwa ambacho kinadhibitiwa na <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Bluetooth imewashwa</translation>
 <translation id="6381109794406942707">Ili ufungue kifaa, weka PIN yako.</translation>
 <translation id="639644700271529076">CAPS LOCK imezimwa</translation>
-<translation id="6396835948284782440">Bonyeza na ushikilie kitufe cha [Esc] ili ufunge.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Futa arifa zote</translation>
@@ -795,7 +803,6 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="7780159184141939021">Zungusha Skrini</translation>
 <translation id="7796353162336583443">Gusa kitufe cha stylus kwenye rafu ili uandike kidokezo, upige picha ya skrini, utumie programu ya Mratibu, kielekezi cha leza au lenzi.</translation>
 <translation id="7798302898096527229">Bonyeza Tafuta au Shift ili ughairi.</translation>
-<translation id="7807966291075028781">Kifaa ulichounganisha kwenye kompyuta hakiwezi kutumika katika hali ya Wageni kwa sababu za usalama</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> na <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Mtandao ni thabiti</translation>
 <translation id="7837740436429729974">Muda umekwisha</translation>
@@ -945,6 +952,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8936501819958976551">kimezimwa</translation>
 <translation id="8938800817013097409">Kifaa cha USB-C (mlango wa kulia nyuma)</translation>
 <translation id="8940956008527784070">Betri inaisha (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Vifaa vya Thunderbolt vilivyoidhinishwa pekee ndivyo vinavyooana na Chromebook yako</translation>
 <translation id="8982906748181120328">Kuonekana</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Unatumia <ph name="IME_NAME" /></translation>

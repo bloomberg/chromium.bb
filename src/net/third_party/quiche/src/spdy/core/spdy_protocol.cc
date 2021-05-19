@@ -9,7 +9,6 @@
 
 #include "absl/strings/str_cat.h"
 #include "spdy/platform/api/spdy_bug_tracker.h"
-#include "spdy/platform/api/spdy_string_utils.h"
 
 namespace spdy {
 
@@ -29,7 +28,8 @@ SpdyPriority ClampSpdy3Priority(SpdyPriority priority) {
                 "The value of given priority shouldn't be smaller than highest "
                 "priority. Check this invariant explicitly.");
   if (priority > kV3LowestPriority) {
-    SPDY_BUG << "Invalid priority: " << static_cast<int>(priority);
+    SPDY_BUG(spdy_bug_22_1)
+        << "Invalid priority: " << static_cast<int>(priority);
     return kV3LowestPriority;
   }
   return priority;
@@ -37,11 +37,11 @@ SpdyPriority ClampSpdy3Priority(SpdyPriority priority) {
 
 int ClampHttp2Weight(int weight) {
   if (weight < kHttp2MinStreamWeight) {
-    SPDY_BUG << "Invalid weight: " << weight;
+    SPDY_BUG(spdy_bug_22_2) << "Invalid weight: " << weight;
     return kHttp2MinStreamWeight;
   }
   if (weight > kHttp2MaxStreamWeight) {
-    SPDY_BUG << "Invalid weight: " << weight;
+    SPDY_BUG(spdy_bug_22_3) << "Invalid weight: " << weight;
     return kHttp2MaxStreamWeight;
   }
   return weight;
@@ -92,7 +92,7 @@ bool IsDefinedFrameType(uint8_t frame_type_field) {
 }
 
 SpdyFrameType ParseFrameType(uint8_t frame_type_field) {
-  SPDY_BUG_IF(!IsDefinedFrameType(frame_type_field))
+  SPDY_BUG_IF(spdy_bug_22_4, !IsDefinedFrameType(frame_type_field))
       << "Frame type not defined: " << static_cast<int>(frame_type_field);
   return static_cast<SpdyFrameType>(frame_type_field);
 }
@@ -191,8 +191,7 @@ bool ParseSettingsId(SpdySettingsId wire_setting_id,
 std::string SettingsIdToString(SpdySettingsId id) {
   SpdyKnownSettingsId known_id;
   if (!ParseSettingsId(id, &known_id)) {
-    return absl::StrCat("SETTINGS_UNKNOWN_",
-                        SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
+    return absl::StrCat("SETTINGS_UNKNOWN_", absl::Hex(uint32_t{id}));
   }
 
   switch (known_id) {
@@ -216,8 +215,7 @@ std::string SettingsIdToString(SpdySettingsId id) {
       return "SETTINGS_EXPERIMENT_SCHEDULER";
   }
 
-  return absl::StrCat("SETTINGS_UNKNOWN_",
-                      SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
+  return absl::StrCat("SETTINGS_UNKNOWN_", absl::Hex(uint32_t{id}));
 }
 
 SpdyErrorCode ParseErrorCode(uint32_t wire_error_code) {

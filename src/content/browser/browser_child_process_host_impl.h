@@ -94,7 +94,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   ChildProcessTerminationInfo GetTerminationInfo(bool known_dead) override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
-  void SetName(const base::string16& name) override;
+  void SetName(const std::u16string& name) override;
   void SetMetricsName(const std::string& metrics_name) override;
   void SetProcess(base::Process process) override;
 
@@ -140,8 +140,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   mojo::OutgoingInvitation* GetInProcessMojoInvitation() {
     return &child_process_host_->GetMojoInvitation().value();
   }
-
-  IPC::Channel* child_channel() const { return channel_; }
 
   mojom::ChildProcess* child_process() const {
     return static_cast<ChildProcessHostImpl*>(child_process_host_.get())

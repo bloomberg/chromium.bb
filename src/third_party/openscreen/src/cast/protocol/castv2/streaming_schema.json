@@ -110,7 +110,7 @@
         "maxBitRate": {"type": "integer", "minimum": 32000, "maximum": 320000},
         "maxDelay": {"$ref": "#/definitions/delay"}
       },
-      "required": ["maxSampleRate", "maxChannels", "maxBitRate", "maxDelay"]
+      "required": ["maxSampleRate", "maxChannels", "maxBitRate"]
     },
     "video_constraints": {
       "properties": {
@@ -122,10 +122,8 @@
         "maxDelay": {"$ref": "#/definitions/delay"}
       },
       "required": [
-        "maxPixelsPerSecond",
         "maxDimensions",
-        "maxBitRate",
-        "maxDelay"
+        "maxBitRate"
       ]
     },
     "constraints": {

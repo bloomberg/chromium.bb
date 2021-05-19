@@ -21,29 +21,32 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "src/program.h"
-#include "src/program_builder.h"
 #include "src/reader/wgsl/parser.h"
 #include "src/transform/manager.h"
-#include "src/type_determiner.h"
 #include "src/writer/wgsl/generator.h"
 
 namespace tint {
 namespace transform {
 
 /// Helper class for testing transforms
-class TransformTest : public testing::Test {
+template <typename BASE>
+class TransformTestBase : public BASE {
  public:
   /// Transforms and returns the WGSL source `in`, transformed using
   /// `transforms`.
   /// @param in the input WGSL source
   /// @param transforms the list of transforms to apply
+  /// @param data the optional DataMap to pass to Transform::Run()
   /// @return the transformed output
-  Transform::Output Transform(
+  Transform::Output Run(
       std::string in,
-      std::vector<std::unique_ptr<transform::Transform>> transforms) {
-    Source::File file("test", in);
-    auto program = reader::wgsl::Parse(&file);
+      std::vector<std::unique_ptr<transform::Transform>> transforms,
+      DataMap data = {}) {
+    auto file = std::make_unique<Source::File>("test", in);
+    auto program = reader::wgsl::Parse(file.get());
+
+    // Keep this pointer alive after Transform() returns
+    files_.emplace_back(std::move(file));
 
     if (!program.IsValid()) {
       return Transform::Output(std::move(program));
@@ -53,30 +56,31 @@ class TransformTest : public testing::Test {
     for (auto& transform : transforms) {
       manager.append(std::move(transform));
     }
-    return manager.Run(&program);
+    return manager.Run(&program, data);
   }
 
   /// Transforms and returns the WGSL source `in`, transformed using
   /// `transform`.
   /// @param transform the transform to apply
   /// @param in the input WGSL source
+  /// @param data the optional DataMap to pass to Transform::Run()
   /// @return the transformed output
-  Transform::Output Transform(std::string in,
-                              std::unique_ptr<transform::Transform> transform) {
+  Transform::Output Run(std::string in,
+                        std::unique_ptr<transform::Transform> transform,
+                        DataMap data = {}) {
     std::vector<std::unique_ptr<transform::Transform>> transforms;
     transforms.emplace_back(std::move(transform));
-    return Transform(std::move(in), std::move(transforms));
+    return Run(std::move(in), std::move(transforms), std::move(data));
   }
 
   /// Transforms and returns the WGSL source `in`, transformed using
   /// a transform of type `TRANSFORM`.
   /// @param in the input WGSL source
-  /// @param args the TRANSFORM constructor arguments
+  /// @param data the optional DataMap to pass to Transform::Run()
   /// @return the transformed output
-  template <typename TRANSFORM, typename... ARGS>
-  Transform::Output Transform(std::string in, ARGS&&... args) {
-    return Transform(std::move(in),
-                     std::make_unique<TRANSFORM>(std::forward<ARGS>(args)...));
+  template <typename TRANSFORM>
+  Transform::Output Run(std::string in, DataMap data = {}) {
+    return Run(std::move(in), std::make_unique<TRANSFORM>(), std::move(data));
   }
 
   /// @param output the output of the transform
@@ -108,7 +112,15 @@ class TransformTest : public testing::Test {
     }
     return "\n" + res + "\n";
   }
+
+ private:
+  std::vector<std::unique_ptr<Source::File>> files_;
 };
+
+using TransformTest = TransformTestBase<testing::Test>;
+
+template <typename T>
+using TransformTestWithParam = TransformTestBase<testing::TestWithParam<T>>;
 
 }  // namespace transform
 }  // namespace tint

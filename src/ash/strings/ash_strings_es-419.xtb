@@ -40,6 +40,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1252999807265626933">Cargando desde <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">¿Cómo está el clima?</translation>
 <translation id="1267032506238418139">Cambio de la combinación de teclas</translation>
+<translation id="1269405891096105529">El dispositivo periférico no es compatible en el Modo de invitado.</translation>
 <translation id="1270290102613614947">Teclado en pantalla inhabilitado</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1275285675049378717">Cargando <ph name="POWER_SOURCE" /></translation>
@@ -132,6 +133,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2012624427112548395">Ctrl+Buscar+H</translation>
 <translation id="2016340657076538683">Escribe un mensaje</translation>
 <translation id="2018630726571919839">Cuéntame un chiste</translation>
+<translation id="2021864487439853900">Haz clic para desbloquear.</translation>
 <translation id="2049240716062114887">Se cambió el nombre del escritorio a <ph name="DESK_NAME" /></translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brillo del teclado</translation>
@@ -276,6 +278,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> podrá acceder más tarde.</translation>
 <translation id="3321628682574733415">Código parental incorrecto</translation>
 <translation id="332587331255250389">Reemplaza la batería</translation>
+<translation id="3333741161915951567">El módem se está reiniciando. Espera 30 segundos antes de intentarlo de nuevo.</translation>
 <translation id="3341303451326249809">Se guardó la captura de pantalla</translation>
 <translation id="334252345105450327">Toma una captura de pantalla</translation>
 <translation id="3351879221545518001">Estás transmitiendo la pantalla.</translation>
@@ -320,6 +323,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" />, usuario administrado</translation>
 <translation id="3665889125180354336">Grabar con el micrófono</translation>
 <translation id="36813544980941320">Se compartirán las redes Wi-Fi entre tu teléfono y tu <ph name="DEVICE_NAME" /></translation>
+<translation id="3702809606464356667">Se muestran las ventanas del escritorio actual. Para ver las de todos los escritorios, presiona la flecha hacia arriba.</translation>
 <translation id="3702846122927433391">Población de Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Cargando...</translation>
@@ -352,6 +356,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="394485226368336402">Configuración de audio</translation>
 <translation id="3945319193631853098">Presiona para completar la configuración.</translation>
 <translation id="3945867833895287237">Estableciendo conexión con el hotspot…</translation>
+<translation id="3958465044488004317">Ver el resultado en Asistente</translation>
 <translation id="3962859241508114581">Pista anterior</translation>
 <translation id="3969043077941541451">No</translation>
 <translation id="397105322502079400">Calculando...</translation>
@@ -408,10 +413,12 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4421231901400348175">Se está compartiendo el control de la pantalla con <ph name="HELPER_NAME" /> mediante la Asistencia remota.</translation>
 <translation id="4424159417645388645">Escritorio 5</translation>
 <translation id="4430019312045809116">Volumen</translation>
+<translation id="4445159312344259901">Accede para desbloquear.</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 notificación importante}other{# notificaciones importantes}}</translation>
 <translation id="4450893287417543264">No volver a mostrar</translation>
 <translation id="445864333228800152">Buenas noches:</translation>
 <translation id="4458688154122353284">Detener la grabación de pantalla</translation>
+<translation id="4467143075433126295">Mantén presionado [Esc] para salir de la pantalla completa.</translation>
 <translation id="4472575034687746823">Comenzar</translation>
 <translation id="4477350412780666475">Siguiente pista</translation>
 <translation id="4477892968187500306">Es posible que este dispositivo incluya apps que Google no verificó.</translation>
@@ -608,6 +615,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" />.</translation>
 <translation id="612734058257491180">El Asistente de Google no está disponible en las sesiones de invitado.</translation>
 <translation id="6137566720514957455">Abrir el diálogo para quitar la cuenta <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6154006699632741460">El dispositivo periférico no es compatible</translation>
 <translation id="615957422585914272">Mostrar el teclado en pantalla</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6179832488876878285">Puedes fijar tus archivos importantes aquí. Para comenzar, abre la app de Archivos.</translation>
@@ -625,11 +633,11 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6297287540776456956">Usa la pluma stylus para seleccionar una región</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> se giró a <ph name="ROTATION" />.</translation>
 <translation id="6315170314923504164">Voz</translation>
+<translation id="6330012934079202188">Se muestran las ventanas de todos los escritorios. Para ver solo las del escritorio actual, presiona la flecha hacia arriba.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> es una sesión administrada por <ph name="MANAGER" /></translation>
 <translation id="6376931439017688372">Se activó la conexión Bluetooth</translation>
 <translation id="6381109794406942707">Para desbloquear el dispositivo, ingresa el PIN.</translation>
 <translation id="639644700271529076">El bloqueo de mayúsculas está desactivado.</translation>
-<translation id="6396835948284782440">Mantén presionado [Esc] para salir.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Borra todas las notificaciones</translation>
@@ -795,7 +803,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7780159184141939021">Girar pantalla</translation>
 <translation id="7796353162336583443">Presiona el botón de la pluma stylus en la biblioteca para tomar notas o capturas de pantalla, usar el Asistente de Google y activar las funciones de puntero láser o lupa.</translation>
 <translation id="7798302898096527229">Presiona mayúscula o la tecla de búsqueda para cancelarlo.</translation>
-<translation id="7807966291075028781">El dispositivo periférico no es compatible con el Modo de invitado por motivos de seguridad.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> y <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Señal fuerte</translation>
 <translation id="7837740436429729974">Tiempo agotado</translation>
@@ -945,6 +952,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8936501819958976551">desactivada</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (puerto derecho en la parte posterior)</translation>
 <translation id="8940956008527784070">Batería baja (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8951539504029375108">Solo los dispositivos Thunderbolt aprobados son compatibles con tu Chromebook.</translation>
 <translation id="8982906748181120328">Visibilidad de Nearby</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> en uso</translation>

@@ -344,7 +344,7 @@ namespace dawn_native { namespace d3d12 {
             return DAWN_VALIDATION_ERROR("Mip level count must be 1");
         }
 
-        if (descriptor->size.depth != 1) {
+        if (descriptor->size.depthOrArrayLayers != 1) {
             return DAWN_VALIDATION_ERROR("Depth must be 1");
         }
 
@@ -360,7 +360,7 @@ namespace dawn_native { namespace d3d12 {
         const D3D12_RESOURCE_DESC d3dDescriptor = d3d12Resource->GetDesc();
         if ((dawnDescriptor->size.width != d3dDescriptor.Width) ||
             (dawnDescriptor->size.height != d3dDescriptor.Height) ||
-            (dawnDescriptor->size.depth != 1)) {
+            (dawnDescriptor->size.depthOrArrayLayers != 1)) {
             return DAWN_VALIDATION_ERROR("D3D12 texture size doesn't match descriptor");
         }
 
@@ -418,27 +418,25 @@ namespace dawn_native { namespace d3d12 {
     }
 
     // static
-    ResultOrError<Ref<Texture>> Texture::Create(Device* device,
-                                                const ExternalImageDescriptor* descriptor,
-                                                HANDLE sharedHandle,
-                                                ExternalMutexSerial acquireMutexKey,
-                                                bool isSwapChainTexture) {
-        const TextureDescriptor* textureDescriptor =
-            reinterpret_cast<const TextureDescriptor*>(descriptor->cTextureDescriptor);
-
+    ResultOrError<Ref<Texture>> Texture::CreateExternalImage(Device* device,
+                                                             const TextureDescriptor* descriptor,
+                                                             ComPtr<ID3D12Resource> d3d12Texture,
+                                                             ExternalMutexSerial acquireMutexKey,
+                                                             bool isSwapChainTexture,
+                                                             bool isInitialized) {
         Ref<Texture> dawnTexture =
-            AcquireRef(new Texture(device, textureDescriptor, TextureState::OwnedExternal));
-        DAWN_TRY(dawnTexture->InitializeAsExternalTexture(textureDescriptor, sharedHandle,
+            AcquireRef(new Texture(device, descriptor, TextureState::OwnedExternal));
+        DAWN_TRY(dawnTexture->InitializeAsExternalTexture(descriptor, std::move(d3d12Texture),
                                                           acquireMutexKey, isSwapChainTexture));
 
         // Importing a multi-planar format must be initialized. This is required because
         // a shared multi-planar format cannot be initialized by Dawn.
-        if (!descriptor->isInitialized && dawnTexture->GetFormat().IsMultiPlanar()) {
+        if (!isInitialized && dawnTexture->GetFormat().IsMultiPlanar()) {
             return DAWN_VALIDATION_ERROR(
                 "Cannot create a multi-planar formatted texture without being initialized");
         }
 
-        dawnTexture->SetIsSubresourceContentInitialized(descriptor->isInitialized,
+        dawnTexture->SetIsSubresourceContentInitialized(isInitialized,
                                                         dawnTexture->GetAllSubresources());
         return std::move(dawnTexture);
     }
@@ -454,30 +452,13 @@ namespace dawn_native { namespace d3d12 {
     }
 
     MaybeError Texture::InitializeAsExternalTexture(const TextureDescriptor* descriptor,
-                                                    HANDLE sharedHandle,
+                                                    ComPtr<ID3D12Resource> d3d12Texture,
                                                     ExternalMutexSerial acquireMutexKey,
                                                     bool isSwapChainTexture) {
         Device* dawnDevice = ToBackend(GetDevice());
-        DAWN_TRY(ValidateTextureDescriptor(dawnDevice, descriptor));
-        DAWN_TRY(ValidateTextureDescriptorCanBeWrapped(descriptor));
-
-        ComPtr<ID3D12Resource> d3d12Resource;
-        DAWN_TRY(CheckHRESULT(dawnDevice->GetD3D12Device()->OpenSharedHandle(
-                                  sharedHandle, IID_PPV_ARGS(&d3d12Resource)),
-                              "D3D12 opening shared handle"));
-
-        DAWN_TRY(ValidateD3D12TextureCanBeWrapped(d3d12Resource.Get(), descriptor));
-
-        // Shared handle is assumed to support resource sharing capability. The resource
-        // shared capability tier must agree to share resources between D3D devices.
-        if (GetFormat().IsMultiPlanar()) {
-            DAWN_TRY(ValidateD3D12VideoTextureCanBeShared(ToBackend(GetDevice()),
-                                                          D3D12TextureFormat(descriptor->format)));
-        }
 
         ComPtr<IDXGIKeyedMutex> dxgiKeyedMutex;
-        DAWN_TRY_ASSIGN(dxgiKeyedMutex,
-                        dawnDevice->CreateKeyedMutexForTexture(d3d12Resource.Get()));
+        DAWN_TRY_ASSIGN(dxgiKeyedMutex, dawnDevice->CreateKeyedMutexForTexture(d3d12Texture.Get()));
 
         DAWN_TRY(CheckHRESULT(dxgiKeyedMutex->AcquireSync(uint64_t(acquireMutexKey), INFINITE),
                               "D3D12 acquiring shared mutex"));
@@ -491,7 +472,7 @@ namespace dawn_native { namespace d3d12 {
         // When creating the ResourceHeapAllocation, the resource heap is set to nullptr because the
         // texture is owned externally. The texture's owning entity must remain responsible for
         // memory management.
-        mResourceAllocation = {info, 0, std::move(d3d12Resource), nullptr};
+        mResourceAllocation = {info, 0, std::move(d3d12Texture), nullptr};
 
         return {};
     }
@@ -504,7 +485,7 @@ namespace dawn_native { namespace d3d12 {
         const Extent3D& size = GetSize();
         resourceDescriptor.Width = size.width;
         resourceDescriptor.Height = size.height;
-        resourceDescriptor.DepthOrArraySize = size.depth;
+        resourceDescriptor.DepthOrArraySize = size.depthOrArrayLayers;
 
         // This will need to be much more nuanced when WebGPU has
         // texture view compatibility rules.
@@ -585,6 +566,11 @@ namespace dawn_native { namespace d3d12 {
         }
 
         device->DeallocateMemory(mResourceAllocation);
+
+        // Now that we've deallocated the memory, the texture is no longer a swap chain texture.
+        // We can set mSwapChainTexture to false to avoid passing a nullptr to
+        // ID3D12SharingContract::Present.
+        mSwapChainTexture = false;
 
         if (mDxgiKeyedMutex != nullptr) {
             mDxgiKeyedMutex->ReleaseSync(uint64_t(mAcquireMutexKey) + 1);
@@ -781,8 +767,7 @@ namespace dawn_native { namespace d3d12 {
         const ExecutionSerial pendingCommandSerial =
             ToBackend(GetDevice())->GetPendingCommandSerial();
 
-        // This transitions assume it is a 2D texture
-        ASSERT(GetDimension() == wgpu::TextureDimension::e2D);
+        ASSERT(GetDimension() != wgpu::TextureDimension::e1D);
 
         mSubresourceStateAndDecay.Update(
             range, [&](const SubresourceRange& updateRange, StateAndDecay* state) {
@@ -998,23 +983,10 @@ namespace dawn_native { namespace d3d12 {
                             continue;
                         }
 
-                        D3D12_TEXTURE_COPY_LOCATION textureLocation =
-                            ComputeTextureCopyLocationForTexture(this, level, layer, aspect);
-                        for (uint32_t i = 0; i < copySplit.count; ++i) {
-                            Texture2DCopySplit::CopyInfo& info = copySplit.copies[i];
-
-                            D3D12_TEXTURE_COPY_LOCATION bufferLocation =
-                                ComputeBufferLocationForCopyTextureRegion(
-                                    this, ToBackend(uploadHandle.stagingBuffer)->GetResource(),
-                                    info.bufferSize, copySplit.offset, bytesPerRow, aspect);
-                            D3D12_BOX sourceRegion =
-                                ComputeD3D12BoxFromOffsetAndSize(info.bufferOffset, info.copySize);
-
-                            // copy the buffer filled with clear color to the texture
-                            commandList->CopyTextureRegion(
-                                &textureLocation, info.textureOffset.x, info.textureOffset.y,
-                                info.textureOffset.z, &bufferLocation, &sourceRegion);
-                        }
+                        RecordCopyBufferToTextureFromTextureCopySplit(
+                            commandList, copySplit,
+                            ToBackend(uploadHandle.stagingBuffer)->GetResource(), 0, bytesPerRow,
+                            this, level, layer, aspect);
                     }
                 }
             }
@@ -1042,6 +1014,12 @@ namespace dawn_native { namespace d3d12 {
     bool Texture::StateAndDecay::operator==(const Texture::StateAndDecay& other) const {
         return lastState == other.lastState && lastDecaySerial == other.lastDecaySerial &&
                isValidToDecay == other.isValidToDecay;
+    }
+
+    // static
+    Ref<TextureView> TextureView::Create(TextureBase* texture,
+                                         const TextureViewDescriptor* descriptor) {
+        return AcquireRef(new TextureView(texture, descriptor));
     }
 
     TextureView::TextureView(TextureBase* texture, const TextureViewDescriptor* descriptor)

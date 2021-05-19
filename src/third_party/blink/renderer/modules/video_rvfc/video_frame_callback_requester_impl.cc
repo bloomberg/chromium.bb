@@ -45,7 +45,12 @@ VideoFrameCallbackRequesterImpl::VideoFrameCallbackRequesterImpl(
     : VideoFrameCallbackRequester(element),
       callback_collection_(
           MakeGarbageCollected<VideoFrameRequestCallbackCollection>(
-              element.GetExecutionContext())) {}
+              element.GetExecutionContext())) {
+  cross_origin_isolated_capability_ =
+      element.GetExecutionContext()
+          ? element.GetExecutionContext()->CrossOriginIsolatedCapability()
+          : false;
+}
 
 VideoFrameCallbackRequesterImpl::~VideoFrameCallbackRequesterImpl() = default;
 
@@ -202,11 +207,13 @@ void VideoFrameCallbackRequesterImpl::ExecuteVideoFrameCallbacks(
 
   metadata->setPresentationTime(GetClampedTimeInMillis(
       time_converter.MonotonicTimeToZeroBasedDocumentTime(
-          frame_metadata->presentation_time)));
+          frame_metadata->presentation_time),
+      cross_origin_isolated_capability_));
 
   metadata->setExpectedDisplayTime(GetClampedTimeInMillis(
       time_converter.MonotonicTimeToZeroBasedDocumentTime(
-          frame_metadata->expected_display_time)));
+          frame_metadata->expected_display_time),
+      cross_origin_isolated_capability_));
 
   metadata->setPresentedFrames(frame_metadata->presented_frames);
 
@@ -223,13 +230,15 @@ void VideoFrameCallbackRequesterImpl::ExecuteVideoFrameCallbacks(
   if (frame_metadata->metadata.capture_begin_time) {
     metadata->setCaptureTime(GetClampedTimeInMillis(
         time_converter.MonotonicTimeToZeroBasedDocumentTime(
-            *frame_metadata->metadata.capture_begin_time)));
+            *frame_metadata->metadata.capture_begin_time),
+        cross_origin_isolated_capability_));
   }
 
   if (frame_metadata->metadata.receive_time) {
     metadata->setReceiveTime(GetClampedTimeInMillis(
         time_converter.MonotonicTimeToZeroBasedDocumentTime(
-            *frame_metadata->metadata.receive_time)));
+            *frame_metadata->metadata.receive_time),
+        cross_origin_isolated_capability_));
   }
 
   if (frame_metadata->metadata.rtp_timestamp) {
@@ -287,9 +296,10 @@ void VideoFrameCallbackRequesterImpl::OnExecution(double high_res_now_ms) {
 
 // static
 double VideoFrameCallbackRequesterImpl::GetClampedTimeInMillis(
-    base::TimeDelta time) {
-  return Performance::ClampTimeResolution(time.InSecondsF()) *
-         base::Time::kMillisecondsPerSecond;
+    base::TimeDelta time,
+    bool cross_origin_isolated_capability) {
+  return Performance::ClampTimeResolution(time,
+                                          cross_origin_isolated_capability);
 }
 
 // static
@@ -298,10 +308,11 @@ double VideoFrameCallbackRequesterImpl::GetCoarseClampedTimeInSeconds(
   constexpr auto kCoarseResolution = base::TimeDelta::FromMicroseconds(100);
   // Add this assert, in case TimeClamper's resolution were to change to be
   // stricter.
-  static_assert(kCoarseResolution >= base::TimeDelta::FromSecondsD(
-                                         TimeClamper::kResolutionSeconds),
-                "kCoarseResolution should be at least as coarse as other clock "
-                "resolutions");
+  static_assert(
+      kCoarseResolution >= base::TimeDelta::FromMicrosecondsD(
+                               TimeClamper::kCoarseResolutionMicroseconds),
+      "kCoarseResolution should be at least as coarse as other clock "
+      "resolutions");
 
   return time.FloorToMultiple(kCoarseResolution).InSecondsF();
 }

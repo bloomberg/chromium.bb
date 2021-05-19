@@ -1,12 +1,9 @@
 {
   "dependencies": [
     "data_grid",
-    "ui"
+    "ui/legacy"
   ],
-  "modules": [
-    "webauthn-legacy.js"
-  ],
-  "resources": [
+    "resources": [
     "webauthnPane.css"
   ]
 }

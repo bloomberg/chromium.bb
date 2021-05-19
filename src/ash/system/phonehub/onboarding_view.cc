@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
@@ -25,7 +26,6 @@
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/unified/rounded_label_button.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "chromeos/components/phonehub/onboarding_ui_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -134,12 +134,12 @@ class OnboardingDismissPromptView : public PhoneHubInterstitialView {
     // Adds title and description.
     SetTitle(l10n_util::GetStringUTF16(
         IDS_ASH_PHONE_HUB_ONBOARDING_DISMISS_DIALOG_TITLE));
-    base::string16 part1 = l10n_util::GetStringUTF16(
+    std::u16string part1 = l10n_util::GetStringUTF16(
         IDS_ASH_PHONE_HUB_ONBOARDING_DISMISS_DIALOG_DESCRIPTION_PART_1);
-    base::string16 part2 = l10n_util::GetStringUTF16(
+    std::u16string part2 = l10n_util::GetStringUTF16(
         IDS_ASH_PHONE_HUB_ONBOARDING_DISMISS_DIALOG_DESCRIPTION_PART_2);
     // Uses "\n" to create a newline separator between two text paragraphs.
-    SetDescription(base::StrCat({part1, base::ASCIIToUTF16("\n\n"), part2}));
+    SetDescription(base::StrCat({part1, u"\n\n", part2}));
 
     // Adds "Ok, got it" button.
     auto ack_button = std::make_unique<InterstitialViewButton>(

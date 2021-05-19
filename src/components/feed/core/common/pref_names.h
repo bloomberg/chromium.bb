@@ -56,8 +56,9 @@ extern const char kThrottlerRequestCountListPrefName[];
 extern const char kThrottlerLastRequestTime[];
 // The pref name for storing |DebugStreamData|.
 extern const char kDebugStreamData[];
-// The pref name for storing the request schedule.
+// The pref names for storing the request schedules.
 extern const char kRequestSchedule[];
+extern const char kWebFeedsRequestSchedule[];
 // The pref name for storing the persistent metrics data.
 extern const char kMetricsData[];
 // The pref name for storing client instance id.
@@ -66,6 +67,8 @@ extern const char kClientInstanceId[];
 extern const char kDiscoverAPIEndpointOverride[];
 // The pref name for storing the server experiments the client is in.
 extern const char kExperiments[];
+// If set to false, the WebFeed UI is disabled.
+extern const char kEnableWebFeedUI[];
 
 }  // namespace prefs
 

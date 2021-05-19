@@ -17,10 +17,12 @@
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/cellular_inhibitor.h"
 #include "chromeos/network/fake_network_connection_handler.h"
+#include "chromeos/network/fake_stub_cellular_networks_provider.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/test_cellular_esim_profile_handler.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -65,17 +67,30 @@ class CellularESimUninstallHandlerTest : public testing::Test {
     cellular_inhibitor_ = std::make_unique<CellularInhibitor>();
     cellular_inhibitor_->Init(network_state_handler_.get(),
                               network_device_handler_.get());
+    cellular_esim_profile_handler_ =
+        std::make_unique<TestCellularESimProfileHandler>();
+    cellular_esim_profile_handler_->Init(network_state_handler_.get(),
+                                         cellular_inhibitor_.get());
 
     cellular_esim_uninstall_handler_ =
         std::make_unique<CellularESimUninstallHandler>();
     cellular_esim_uninstall_handler_->Init(
-        cellular_inhibitor_.get(), network_configuration_handler_.get(),
-        network_connection_handler_.get(), network_state_handler_.get());
+        cellular_inhibitor_.get(), cellular_esim_profile_handler_.get(),
+        network_configuration_handler_.get(), network_connection_handler_.get(),
+        network_state_handler_.get());
 
+    stub_cellular_networks_provider_ =
+        std::make_unique<FakeStubCellularNetworksProvider>();
+    network_state_handler_->set_stub_cellular_networks_provider(
+        stub_cellular_networks_provider_.get());
     SetupNetwork();
   }
 
   void TearDown() override {
+    stub_cellular_networks_provider_.reset();
+    cellular_esim_uninstall_handler_.reset();
+    cellular_esim_profile_handler_.reset();
+    cellular_inhibitor_.reset();
     network_device_handler_.reset();
     network_state_handler_.reset();
     network_configuration_handler_.reset();
@@ -120,6 +135,11 @@ class CellularESimUninstallHandlerTest : public testing::Test {
     return !profile_paths.empty();
   }
 
+  void AddStub(const std::string& stub_iccid, const std::string& eid) {
+    stub_cellular_networks_provider_->AddStub(stub_iccid, eid);
+    network_state_handler_->SyncStubCellularNetworks();
+  }
+
  private:
   void SetupNetwork() {
     ShillDeviceClient::Get()->GetTestInterface()->AddDevice(
@@ -131,12 +151,14 @@ class CellularESimUninstallHandlerTest : public testing::Test {
         dbus::ObjectPath(kTestCarrierProfilePath),
         dbus::ObjectPath(kDefaultEuiccPath), kTestCellularIccid,
         kTestProfileName, kTestServiceProvider, "", kTestNetworkServicePath,
-        hermes::profile::State::kActive, /*service_only=*/true);
+        hermes::profile::State::kActive,
+        hermes::profile::ProfileClass::kOperational, /*service_only=*/false);
     HermesEuiccClient::Get()->GetTestInterface()->AddCarrierProfile(
         dbus::ObjectPath(kTestCarrierProfilePath2),
         dbus::ObjectPath(kDefaultEuiccPath), kTestCellularIccid2,
         kTestProfileName, kTestServiceProvider, "", kTestNetworkServicePath2,
-        hermes::profile::State::kInactive, /*service_only=*/true);
+        hermes::profile::State::kInactive,
+        hermes::profile::ProfileClass::kOperational, /*service_only=*/false);
     base::RunLoop().RunUntilIdle();
 
     ShillServiceClient::Get()->GetTestInterface()->SetServiceProperty(
@@ -147,13 +169,17 @@ class CellularESimUninstallHandlerTest : public testing::Test {
 
   base::test::SingleThreadTaskEnvironment task_environment_;
 
-  std::unique_ptr<CellularInhibitor> cellular_inhibitor_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
+  std::unique_ptr<CellularInhibitor> cellular_inhibitor_;
+  std::unique_ptr<TestCellularESimProfileHandler>
+      cellular_esim_profile_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   std::unique_ptr<FakeNetworkConnectionHandler> network_connection_handler_;
   std::unique_ptr<CellularESimUninstallHandler>
       cellular_esim_uninstall_handler_;
+  std::unique_ptr<FakeStubCellularNetworksProvider>
+      stub_cellular_networks_provider_;
 };
 
 TEST_F(CellularESimUninstallHandlerTest, Success) {
@@ -226,6 +252,35 @@ TEST_F(CellularESimUninstallHandlerTest, MultipleRequests) {
       euicc_properties->installed_carrier_profiles().value().front().value());
   EXPECT_FALSE(ESimServiceConfigExists(kTestNetworkServicePath));
   EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath2));
+}
+
+TEST_F(CellularESimUninstallHandlerTest, StubCellularNetwork) {
+  // Remove shill eSIM service and add a corresponding stub service.
+  ShillServiceClient::Get()->GetTestInterface()->RemoveService(
+      kTestNetworkServicePath);
+  base::RunLoop().RunUntilIdle();
+  AddStub(kTestCellularIccid, kDefaultEid);
+
+  // Verify that removing the eSIM profile succeeds.
+  base::RunLoop run_loop;
+  bool success;
+  UninstallESim(run_loop, kTestCarrierProfilePath, success);
+  run_loop.Run();
+  EXPECT_TRUE(success);
+}
+
+TEST_F(CellularESimUninstallHandlerTest, RemovesShillOnlyServices) {
+  EXPECT_TRUE(ESimServiceConfigExists(kTestNetworkServicePath));
+
+  // Remove profile without removing service.
+  EXPECT_TRUE(
+      HermesEuiccClient::Get()->GetTestInterface()->RemoveCarrierProfile(
+          dbus::ObjectPath(kDefaultEuiccPath),
+          dbus::ObjectPath(kTestCarrierProfilePath)));
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that stale service is also removed.
+  EXPECT_FALSE(ESimServiceConfigExists(kTestNetworkServicePath));
 }
 
 }  // namespace chromeos

@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/strings/string16.h"
 #include "components/site_engagement/content/site_engagement_observer.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_params.h"
+#include "components/webapps/browser/pwa_install_path_tracker.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -129,13 +129,8 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Returns the app name if the current page is installable, otherwise returns
   // the empty string.
-  static base::string16 GetInstallableWebAppName(
+  static std::u16string GetInstallableWebAppName(
       content::WebContents* web_contents);
-
-  // Returns whether the page that would currently be installed by the
-  // "Install PWA" or "Create Shortcut" actions would replace an installed app
-  // with an External install source. Returns false if unknown.
-  virtual bool IsExternallyInstalledWebApp();
 
   // Returns whether installability checks satisfy promotion requirements
   // (e.g. having a service worker fetch event) or have passed previously within
@@ -188,13 +183,21 @@ class AppBannerManager : public content::WebContentsObserver,
   InstallableWebAppCheckResult GetInstallableWebAppCheckResultForTesting();
 
   // Return the name of the app for this page.
-  virtual base::string16 GetAppName() const;
+  virtual std::u16string GetAppName() const;
 
   // Simple accessors:
   const blink::Manifest& manifest() { return manifest_; }
   const SkBitmap& primary_icon() { return primary_icon_; }
   bool has_maskable_primary_icon() { return has_maskable_primary_icon_; }
   const GURL& validated_url() { return validated_url_; }
+
+  // Tracks the route taken to an install of a PWA (whether the bottom sheet
+  // was shown or the infobar/install) and what triggered it (install source).
+  // Only used on Android.
+  void TrackInstallPath(bool bottom_sheet, WebappInstallSource install_source);
+
+  // Tracks that the IPH has been shown. Only used on Android.
+  void TrackIphWasShown();
 
  protected:
   explicit AppBannerManager(content::WebContents* web_contents);
@@ -234,7 +237,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // current device and the platform delivers apps considered replacements for
   // web apps.
   virtual bool IsSupportedNonWebAppPlatform(
-      const base::string16& platform) const = 0;
+      const std::u16string& platform) const = 0;
 
   // Returns whether |related_app| is already installed and considered a
   // replacement for the manifest's web app.
@@ -423,6 +426,10 @@ class AppBannerManager : public content::WebContentsObserver,
   // The scope of the most recent installability check that was non-promotable
   // due to being already installed, otherwise invalid.
   GURL last_already_installed_web_app_scope_;
+
+  // Keeps track of the path the user took through the UI, before deciding to
+  // install.
+  PwaInstallPathTracker install_path_tracker_;
 
   base::ObserverList<Observer, true> observer_list_;
 

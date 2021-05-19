@@ -47,6 +47,7 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
     case SandboxType::kGpu:
     case SandboxType::kPpapi:
     case SandboxType::kCdm:
+    case SandboxType::kPrintBackend:
     case SandboxType::kPrintCompositor:
 #if defined(OS_FUCHSIA)
     case SandboxType::kWebContext:
@@ -109,6 +110,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SandboxType::kUtility:
     case SandboxType::kNetwork:
     case SandboxType::kCdm:
+    case SandboxType::kPrintBackend:
     case SandboxType::kPrintCompositor:
     case SandboxType::kAudio:
     case SandboxType::kVideoCapture:
@@ -197,6 +199,11 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
     return SandboxType::kZygoteIntermediateSandbox;
 #endif
 
+#if defined(OS_MAC)
+  if (process_type == switches::kRelauncherProcessType)
+    return SandboxType::kNoSandbox;
+#endif
+
   if (process_type == switches::kCloudPrintServiceProcess)
     return SandboxType::kNoSandbox;
 
@@ -217,6 +224,8 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
       return switches::kPpapiSandbox;
     case SandboxType::kCdm:
       return switches::kCdmSandbox;
+    case SandboxType::kPrintBackend:
+      return switches::kPrintBackendSandbox;
     case SandboxType::kPrintCompositor:
       return switches::kPrintCompositorSandbox;
     case SandboxType::kUtility:
@@ -285,6 +294,8 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
     return SandboxType::kPpapi;
   if (sandbox_string == switches::kCdmSandbox)
     return SandboxType::kCdm;
+  if (sandbox_string == switches::kPrintBackendSandbox)
+    return SandboxType::kPrintBackend;
   if (sandbox_string == switches::kPrintCompositorSandbox)
     return SandboxType::kPrintCompositor;
 #if defined(OS_WIN)

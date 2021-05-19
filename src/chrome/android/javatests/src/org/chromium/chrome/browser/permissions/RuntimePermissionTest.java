@@ -15,14 +15,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.download.DownloadController;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.permissions.RuntimePermissionTestUtils.RuntimePromptResponse;
 import org.chromium.chrome.browser.permissions.RuntimePermissionTestUtils.TestAndroidPermissionDelegate;
+import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.permissions.R;
@@ -153,11 +154,11 @@ public class RuntimePermissionTest {
         DownloadObserver observer = new DownloadObserver() {
             @Override
             public void onAllDownloadsRetrieved(
-                    final List<DownloadItem> list, boolean isOffTheRecord) {}
+                    final List<DownloadItem> list, ProfileKey profileKey) {}
             @Override
             public void onDownloadItemUpdated(DownloadItem item) {}
             @Override
-            public void onDownloadItemRemoved(String guid, boolean isOffTheRecord) {}
+            public void onDownloadItemRemoved(String guid) {}
             @Override
             public void onAddOrReplaceDownloadSharedPreferenceEntry(ContentId id) {}
 
@@ -174,6 +175,7 @@ public class RuntimePermissionTest {
         String[] requestablePermission = new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE};
         mTestAndroidPermissionDelegate = new TestAndroidPermissionDelegate(
                 requestablePermission, RuntimePromptResponse.DENY);
+        DownloadController.setAndroidPermissionDelegateForTesting(mTestAndroidPermissionDelegate);
         RuntimePermissionTestUtils.runTest(mPermissionTestRule, mTestAndroidPermissionDelegate,
                 DOWNLOAD_TEST, false /* expectPermissionAllowed */,
                 null /* permissionPromptAllow */, true /* waitForMissingPermissionPrompt */,
@@ -269,7 +271,6 @@ public class RuntimePermissionTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1144670")
     @Feature({"RuntimePermissions", "Location"})
     public void testAllowRuntimeLocationIncognito() throws Exception {
         RuntimePermissionTestUtils.setupGeolocationSystemMock();
@@ -288,7 +289,6 @@ public class RuntimePermissionTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1144670")
     @Feature({"RuntimePermissions", "MediaPermissions"})
     @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
     public void testAllowRuntimeCameraIncognito() throws Exception {
@@ -306,7 +306,6 @@ public class RuntimePermissionTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1144670")
     @Feature({"RuntimePermissions", "MediaPermissions"})
     @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
     public void testAllowRuntimeMicrophoneIncognito() throws Exception {

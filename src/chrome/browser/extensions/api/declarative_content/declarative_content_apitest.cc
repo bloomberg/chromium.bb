@@ -238,18 +238,15 @@ void DeclarativeContentApiTest::CheckBookmarkEvents(bool match_is_bookmarked) {
   // Check rule evaluation on add/remove bookmark.
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(browser()->profile());
-  const bookmarks::BookmarkNode* node =
-      bookmark_model->AddURL(bookmark_model->other_node(), 0,
-                             base::ASCIIToUTF16("title"),
-                             GURL("http://test1/"));
+  const bookmarks::BookmarkNode* node = bookmark_model->AddURL(
+      bookmark_model->other_node(), 0, u"title", GURL("http://test1/"));
   EXPECT_EQ(match_is_bookmarked, action->GetIsVisible(tab_id));
 
   bookmark_model->Remove(node);
   EXPECT_EQ(!match_is_bookmarked, action->GetIsVisible(tab_id));
 
   // Check rule evaluation on navigate to bookmarked and non-bookmarked URL.
-  bookmark_model->AddURL(bookmark_model->other_node(), 0,
-                         base::ASCIIToUTF16("title"),
+  bookmark_model->AddURL(bookmark_model->other_node(), 0, u"title",
                          GURL("http://test2/"));
 
   NavigateInRenderer(tab, GURL("http://test2/"));
@@ -995,10 +992,8 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 }
 
 // https://crbug.com/517492
-// Fails on XP: http://crbug.com/515717
-// Fails on other platfomrs: http://crbug.com/1013457
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
-                       DISABLED_RemoveAllRulesAfterExtensionUninstall) {
+                       RemoveAllRulesAfterExtensionUninstall) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
 
@@ -1018,12 +1013,12 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   ExtensionService* extension_service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
 
-  base::string16 error;
+  std::u16string error;
   ASSERT_TRUE(extension_service->UninstallExtension(
       extension->id(),
       UNINSTALL_REASON_FOR_TESTING,
       &error));
-  ASSERT_EQ(base::ASCIIToUTF16(""), error);
+  ASSERT_EQ(u"", error);
 
   // Reload the extension, then add and remove a rule.
   extension = LoadExtension(ext_dir_.UnpackedPath());

@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_chromium_client_session.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -51,9 +53,9 @@
 #include "net/third_party/quiche/src/quic/core/http/spdy_server_push_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
+#include "url/origin.h"
 
 namespace net {
 
@@ -76,6 +78,40 @@ const size_t kMinRetryTimeForDefaultNetworkSecs = 1;
 // Maximum RTT time for this session when set initial timeout for probing
 // network.
 const int kDefaultRTTMilliSecs = 300;
+
+// These values are persisted to logs. Entries should not be renumbered,
+// and numeric values should never be reused.
+enum class AcceptChEntries {
+  kNoEntries = 0,
+  kOnlyValidEntries = 1,
+  kOnlyInvalidEntries = 2,
+  kBothValidAndInvalidEntries = 3,
+  kMaxValue = kBothValidAndInvalidEntries,
+};
+
+void LogAcceptChFrameReceivedHistogram(bool has_valid_entry,
+                                       bool has_invalid_entry) {
+  AcceptChEntries value;
+  if (has_valid_entry) {
+    if (has_invalid_entry) {
+      value = AcceptChEntries::kBothValidAndInvalidEntries;
+    } else {
+      value = AcceptChEntries::kOnlyValidEntries;
+    }
+  } else {
+    if (has_invalid_entry) {
+      value = AcceptChEntries::kOnlyInvalidEntries;
+    } else {
+      value = AcceptChEntries::kNoEntries;
+    }
+  }
+  base::UmaHistogramEnumeration("Net.QuicSession.AcceptChFrameReceivedViaAlps",
+                                value);
+}
+
+void LogAcceptChForOriginHistogram(bool value) {
+  base::UmaHistogramBoolean("Net.QuicSession.AcceptChForOrigin", value);
+}
 
 void RecordConnectionCloseErrorCodeImpl(const std::string& histogram,
                                         uint64_t error,
@@ -290,22 +326,6 @@ void LogProbeResultToHistogram(MigrationCause cause, bool success) {
       base::BooleanHistogram::FactoryGet(
           histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag));
 }
-
-class HpackEncoderDebugVisitor : public quic::QuicHpackDebugVisitor {
-  void OnUseEntry(quic::QuicTime::Delta elapsed) override {
-    UMA_HISTOGRAM_TIMES(
-        "Net.QuicHpackEncoder.IndexedEntryAge",
-        base::TimeDelta::FromMicroseconds(elapsed.ToMicroseconds()));
-  }
-};
-
-class HpackDecoderDebugVisitor : public quic::QuicHpackDebugVisitor {
-  void OnUseEntry(quic::QuicTime::Delta elapsed) override {
-    UMA_HISTOGRAM_TIMES(
-        "Net.QuicHpackDecoder.IndexedEntryAge",
-        base::TimeDelta::FromMicroseconds(elapsed.ToMicroseconds()));
-  }
-};
 
 class QuicServerPushHelper : public ServerPushDelegate::ServerPushHelper {
  public:
@@ -548,6 +568,14 @@ bool QuicChromiumClientSession::Handle::WasEverUsed() const {
     return was_ever_used_;
 
   return session_->WasConnectionEverUsed();
+}
+
+const std::vector<std::string>&
+QuicChromiumClientSession::Handle::GetDnsAliasesForSessionKey(
+    const QuicSessionKey& key) const {
+  static const base::NoDestructor<std::vector<std::string>> emptyvector_result;
+  return session_ ? session_->GetDnsAliasesForSessionKey(key)
+                  : *emptyvector_result;
 }
 
 bool QuicChromiumClientSession::Handle::CheckVary(
@@ -883,7 +911,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     std::unique_ptr<QuicServerInfo> server_info,
     const QuicSessionKey& session_key,
     bool require_confirmation,
-    quic::QuicStreamId max_allowed_push_id,
     bool migrate_session_early_v2,
     bool migrate_sessions_on_network_change_v2,
     NetworkChangeNotifier::NetworkHandle default_network,
@@ -971,7 +998,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       ignore_read_error_(false),
       headers_include_h2_stream_dependency_(
           headers_include_h2_stream_dependency),
-      max_allowed_push_id_(max_allowed_push_id),
       attempted_zero_rtt_(false),
       num_migrations_(0),
       last_key_update_reason_(quic::KeyUpdateReason::kInvalid),
@@ -1129,17 +1155,12 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
 }
 
 void QuicChromiumClientSession::Initialize() {
-  if (VersionUsesHttp3(transport_version())) {
-    quic::QuicSpdyClientSessionBase::SetMaxPushId(max_allowed_push_id_);
-  }
   set_max_inbound_header_list_size(kQuicMaxHeaderListSize);
   if (config()->HasClientRequestedIndependentOption(
           quic::kQLVE, quic::Perspective::IS_CLIENT)) {
     connection()->EnableLegacyVersionEncapsulation(session_key_.host());
   }
   quic::QuicSpdyClientSessionBase::Initialize();
-  SetHpackEncoderDebugVisitor(std::make_unique<HpackEncoderDebugVisitor>());
-  SetHpackDecoderDebugVisitor(std::make_unique<HpackDecoderDebugVisitor>());
 }
 
 size_t QuicChromiumClientSession::WriteHeadersOnHeadersStream(
@@ -1202,6 +1223,30 @@ void QuicChromiumClientSession::OnHttp3GoAway(uint64_t id) {
     }
     return true;
   });
+}
+
+void QuicChromiumClientSession::OnAcceptChFrameReceivedViaAlps(
+    const quic::AcceptChFrame& frame) {
+  bool has_valid_entry = false;
+  bool has_invalid_entry = false;
+  for (const auto& entry : frame.entries) {
+    // |entry.origin| must be a valid origin.
+    GURL url(entry.origin);
+    if (!url.is_valid()) {
+      has_invalid_entry = true;
+      continue;
+    }
+    const url::Origin origin = url::Origin::Create(url);
+    std::string serialized = origin.Serialize();
+    if (serialized.empty() || entry.origin != serialized) {
+      has_invalid_entry = true;
+      continue;
+    }
+    has_valid_entry = true;
+    accept_ch_entries_received_via_alps_.insert(
+        std::make_pair(std::move(origin), entry.value));
+  }
+  LogAcceptChFrameReceivedHistogram(has_valid_entry, has_invalid_entry);
 }
 
 void QuicChromiumClientSession::AddHandle(Handle* handle) {
@@ -1460,6 +1505,18 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   }
 
   return true;
+}
+
+base::StringPiece QuicChromiumClientSession::GetAcceptChViaAlpsForOrigin(
+    const url::Origin& origin) const {
+  auto it = accept_ch_entries_received_via_alps_.find(origin);
+  if (it == accept_ch_entries_received_via_alps_.end()) {
+    LogAcceptChForOriginHistogram(false);
+    return {};
+  } else {
+    LogAcceptChForOriginHistogram(true);
+    return it->second;
+  }
 }
 
 int QuicChromiumClientSession::CryptoConnect(CompletionOnceCallback callback) {
@@ -2328,7 +2385,6 @@ void QuicChromiumClientSession::OnPortMigrationProbeSucceeded(
   static_cast<QuicChromiumPacketWriter*>(connection()->writer())
       ->set_delegate(nullptr);
   writer->set_delegate(this);
-  connection()->SetSelfAddress(self_address);
 
   if (!migrate_idle_session_ && !HasActiveRequestStreams()) {
     // If idle sessions won't be migrated, close the connection.
@@ -2344,8 +2400,8 @@ void QuicChromiumClientSession::OnPortMigrationProbeSucceeded(
 
   // Migrate to the probed socket immediately: socket, writer and reader will
   // be acquired by connection and used as default on success.
-  if (!MigrateToSocket(std::move(socket), std::move(reader),
-                       std::move(writer))) {
+  if (!MigrateToSocket(self_address, peer_address, std::move(socket),
+                       std::move(reader), std::move(writer))) {
     LogMigrateToSocketStatus(false);
     net_log_.AddEvent(
         NetLogEventType::QUIC_CONNECTION_MIGRATION_FAILURE_AFTER_PROBING);
@@ -2354,8 +2410,6 @@ void QuicChromiumClientSession::OnPortMigrationProbeSucceeded(
 
   LogMigrateToSocketStatus(true);
 
-  // Notify the connection that migration succeeds after probing.
-  connection()->OnSuccessfulMigration(/*is_port_change=*/true);
   num_migrations_++;
   HistogramAndLogMigrationSuccess(connection_id());
 }
@@ -2388,7 +2442,6 @@ void QuicChromiumClientSession::OnConnectionMigrationProbeSucceeded(
   static_cast<QuicChromiumPacketWriter*>(connection()->writer())
       ->set_delegate(nullptr);
   writer->set_delegate(this);
-  connection()->SetSelfAddress(self_address);
 
   // Close streams that are not migratable to the probed |network|.
   ResetNonMigratableStreams();
@@ -2407,8 +2460,8 @@ void QuicChromiumClientSession::OnConnectionMigrationProbeSucceeded(
 
   // Migrate to the probed socket immediately: socket, writer and reader will
   // be acquired by connection and used as default on success.
-  if (!MigrateToSocket(std::move(socket), std::move(reader),
-                       std::move(writer))) {
+  if (!MigrateToSocket(self_address, peer_address, std::move(socket),
+                       std::move(reader), std::move(writer))) {
     LogMigrateToSocketStatus(false);
     net_log_.AddEvent(
         NetLogEventType::QUIC_CONNECTION_MIGRATION_FAILURE_AFTER_PROBING);
@@ -2416,12 +2469,6 @@ void QuicChromiumClientSession::OnConnectionMigrationProbeSucceeded(
   }
 
   LogMigrateToSocketStatus(true);
-
-  // Notify the connection that migration succeeds after probing.
-  // TODO(b/159074035) Change is_port_change to false here once the
-  // QuicStreamFactoryTest migration tests have been fixed to account for the
-  // retransmitted STREAM frames.
-  connection()->OnSuccessfulMigration(/*is_port_change=*/true);
 
   net_log_.AddEventWithInt64Params(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS_AFTER_PROBING,
@@ -2800,8 +2847,8 @@ void QuicChromiumClientSession::OnProofVerifyDetailsAvailable(
     const quic::ProofVerifyDetails& verify_details) {
   const ProofVerifyDetailsChromium* verify_details_chromium =
       reinterpret_cast<const ProofVerifyDetailsChromium*>(&verify_details);
-  cert_verify_result_.reset(
-      new CertVerifyResult(verify_details_chromium->cert_verify_result));
+  cert_verify_result_ = std::make_unique<CertVerifyResult>(
+      verify_details_chromium->cert_verify_result);
   pinning_failure_log_ = verify_details_chromium->pinning_failure_log;
   logger_->OnCertificateVerified(*cert_verify_result_);
   pkp_bypassed_ = verify_details_chromium->pkp_bypassed;
@@ -3528,9 +3575,12 @@ MigrationResult QuicChromiumClientSession::Migrate(
       ->set_delegate(nullptr);
   new_writer->set_delegate(this);
 
+  IPEndPoint self_address;
+  socket->GetLocalAddress(&self_address);
   // Migrate to the new socket.
-  if (!MigrateToSocket(std::move(socket), std::move(new_reader),
-                       std::move(new_writer))) {
+  if (!MigrateToSocket(ToQuicSocketAddress(self_address),
+                       ToQuicSocketAddress(peer_address), std::move(socket),
+                       std::move(new_reader), std::move(new_writer))) {
     HistogramAndLogMigrationFailure(MIGRATION_STATUS_TOO_MANY_CHANGES,
                                     connection_id(), "Too many changes");
     if (close_session_on_error) {
@@ -3552,6 +3602,8 @@ MigrationResult QuicChromiumClientSession::Migrate(
 }
 
 bool QuicChromiumClientSession::MigrateToSocket(
+    const quic::QuicSocketAddress& self_address,
+    const quic::QuicSocketAddress& peer_address,
     std::unique_ptr<DatagramClientSocket> socket,
     std::unique_ptr<QuicChromiumPacketReader> reader,
     std::unique_ptr<QuicChromiumPacketWriter> writer) {
@@ -3571,8 +3623,8 @@ bool QuicChromiumClientSession::MigrateToSocket(
   // WriteToNewSocket completes.
   DVLOG(1) << "Force blocking the packet writer";
   writer->set_force_write_blocked(true);
-  // TODO(jri): Make SetQuicPacketWriter take a scoped_ptr.
-  connection()->SetQuicPacketWriter(writer.release(), /*owns_writer=*/true);
+  MigratePath(self_address, peer_address, writer.release(),
+              /*owns_writer=*/true);
 
   // Post task to write the pending packet or a PING packet to the new
   // socket. This avoids reentrancy issues if there is a write error
@@ -3714,6 +3766,14 @@ quic::QuicClientPromisedInfo* QuicChromiumClientSession::GetPromised(
     return nullptr;
   }
   return push_promise_index_->GetPromised(url.spec());
+}
+
+const std::vector<std::string>&
+QuicChromiumClientSession::GetDnsAliasesForSessionKey(
+    const QuicSessionKey& key) const {
+  static const base::NoDestructor<std::vector<std::string>> emptyvector_result;
+  return stream_factory_ ? stream_factory_->GetDnsAliasesForSessionKey(key)
+                         : *emptyvector_result;
 }
 
 bool QuicChromiumClientSession::ValidateStatelessReset(

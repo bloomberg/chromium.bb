@@ -6,13 +6,13 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/check.h"
 #include "base/i18n/unicodestring.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
@@ -34,7 +34,7 @@ class AutofillRegexes {
   ~AutofillRegexes() = default;
 
   // Maps patterns to their corresponding regex matchers.
-  std::map<base::string16, std::unique_ptr<icu::RegexMatcher>, std::less<>>
+  std::map<std::u16string, std::unique_ptr<icu::RegexMatcher>, std::less<>>
       matchers_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillRegexes);
@@ -65,7 +65,7 @@ namespace autofill {
 
 bool MatchesPattern(const base::StringPiece16& input,
                     const base::StringPiece16& pattern,
-                    base::string16* match,
+                    std::u16string* match,
                     int32_t group_to_be_captured) {
   static base::NoDestructor<AutofillRegexes> g_autofill_regexes;
   static base::NoDestructor<base::Lock> g_lock;

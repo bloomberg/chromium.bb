@@ -78,6 +78,26 @@ static StringId JankTypeBitmaskToStringId(TraceProcessorContext* context,
   return context->storage->InternString(base::StringView(jank_str));
 }
 
+static bool DisplayFrameJanky(int32_t jank_type) {
+  if (jank_type == FrameTimelineEvent::JANK_UNSPECIFIED || jank_type == FrameTimelineEvent::JANK_NONE)
+    return false;
+
+  int32_t display_frame_jank_bitmask = FrameTimelineEvent::JANK_SF_SCHEDULING | FrameTimelineEvent::JANK_PREDICTION_ERROR | FrameTimelineEvent::JANK_DISPLAY_HAL | FrameTimelineEvent::JANK_SF_CPU_DEADLINE_MISSED | FrameTimelineEvent::JANK_SF_GPU_DEADLINE_MISSED;
+  if (jank_type & display_frame_jank_bitmask)
+      return true;
+  return false;
+}
+
+static bool SurfaceFrameJanky(int32_t jank_type) {
+  if (jank_type == FrameTimelineEvent::JANK_UNSPECIFIED || jank_type == FrameTimelineEvent::JANK_NONE)
+    return false;
+
+  int32_t surface_frame_jank_bitmask = FrameTimelineEvent::JANK_APP_DEADLINE_MISSED | FrameTimelineEvent::JANK_UNKNOWN;
+  if (jank_type & surface_frame_jank_bitmask)
+    return true;
+  return false;
+}
+
 static bool ValidatePredictionType(TraceProcessorContext* context,
                                    int32_t prediction_type) {
   if (prediction_type >= FrameTimelineEvent::PREDICTION_VALID /*1*/ &&
@@ -132,7 +152,14 @@ FrameTimelineEventParser::FrameTimelineEventParser(
       gpu_composition_id_(context->storage->InternString("GPU composition")),
       jank_type_id_(context->storage->InternString("Jank type")),
       layer_name_id_(context->storage->InternString("Layer name")),
-      prediction_type_id_(context->storage->InternString("Prediction type")) {}
+      prediction_type_id_(context->storage->InternString("Prediction type")),
+      is_buffer_id_(context->storage->InternString("Is Buffer?")),
+      jank_tag_none_id_(context->storage->InternString("No Jank")),
+      jank_tag_self_id_(context->storage->InternString("Self Jank")),
+      jank_tag_other_id_(context->storage->InternString("Other Jank")),
+      jank_tag_dropped_id_(context->storage->InternString("Dropped Frame")),
+      jank_tag_buffer_stuffing_id_(
+          context->storage->InternString("Buffer Stuffing")) {}
 
 void FrameTimelineEventParser::ParseExpectedDisplayFrameStart(
     int64_t timestamp,
@@ -177,7 +204,8 @@ void FrameTimelineEventParser::ParseExpectedDisplayFrameStart(
   expected_row.display_frame_token = token;
   expected_row.upid = upid;
 
-  context_->slice_tracker->BeginFrameTimeline(
+  context_->slice_tracker->BeginTyped(
+      context_->storage->mutable_expected_frame_timeline_slice_table(),
       expected_row, [this, token](ArgsTracker::BoundInserter* inserter) {
         inserter->AddArg(display_frame_token_id_, Variadic::Integer(token));
       });
@@ -240,20 +268,27 @@ void FrameTimelineEventParser::ParseActualDisplayFrameStart(
         prediction_type_ids_[static_cast<size_t>(event.prediction_type())];
   }
   actual_row.prediction_type = prediction_type;
+  if (DisplayFrameJanky(event.jank_type()))
+    actual_row.jank_tag = jank_tag_self_id_;
+  else
+    actual_row.jank_tag = jank_tag_none_id_;
 
-  SliceId slice_id = context_->slice_tracker->BeginFrameTimeline(
-      actual_row, [this, token, jank_type, present_type, prediction_type,
-                   &event](ArgsTracker::BoundInserter* inserter) {
-        inserter->AddArg(display_frame_token_id_, Variadic::Integer(token));
-        inserter->AddArg(present_type_id_, Variadic::String(present_type));
-        inserter->AddArg(on_time_finish_id_,
-                         Variadic::Integer(event.on_time_finish()));
-        inserter->AddArg(gpu_composition_id_,
-                         Variadic::Integer(event.gpu_composition()));
-        inserter->AddArg(jank_type_id_, Variadic::String(jank_type));
-        inserter->AddArg(prediction_type_id_,
-                         Variadic::String(prediction_type));
-      });
+  base::Optional<SliceId> opt_slice_id =
+      context_->slice_tracker->BeginTyped(
+          context_->storage->mutable_actual_frame_timeline_slice_table(),
+          actual_row,
+          [this, token, jank_type, present_type, prediction_type,
+           &event](ArgsTracker::BoundInserter* inserter) {
+            inserter->AddArg(display_frame_token_id_, Variadic::Integer(token));
+            inserter->AddArg(present_type_id_, Variadic::String(present_type));
+            inserter->AddArg(on_time_finish_id_,
+                             Variadic::Integer(event.on_time_finish()));
+            inserter->AddArg(gpu_composition_id_,
+                             Variadic::Integer(event.gpu_composition()));
+            inserter->AddArg(jank_type_id_, Variadic::String(jank_type));
+            inserter->AddArg(prediction_type_id_,
+                             Variadic::String(prediction_type));
+          });
 
   // SurfaceFrames will always be parsed before the matching DisplayFrame
   // (since the app works on the frame before SurfaceFlinger does). Because
@@ -261,10 +296,12 @@ void FrameTimelineEventParser::ParseActualDisplayFrameStart(
   // surface_slice id - we shouldn't see more surfaces_slices that should be
   // connected to this slice after this point.
   auto range = display_token_to_surface_slice_.equal_range(token);
-  for (auto it = range.first; it != range.second; ++it) {
-    SliceId display_slice = slice_id;    // SurfaceFlinger
-    SliceId surface_slice = it->second;  // App
-    context_->flow_tracker->InsertFlow(display_slice, surface_slice);
+  if (opt_slice_id) {
+    for (auto it = range.first; it != range.second; ++it) {
+      SliceId display_slice = *opt_slice_id;  // SurfaceFlinger
+      SliceId surface_slice = it->second;     // App
+      context_->flow_tracker->InsertFlow(display_slice, surface_slice);
+    }
   }
   display_token_to_surface_slice_.erase(range.first, range.second);
 }
@@ -339,7 +376,8 @@ void FrameTimelineEventParser::ParseExpectedSurfaceFrameStart(
   expected_row.display_frame_token = display_frame_token;
   expected_row.upid = upid;
   expected_row.layer_name = layer_name_id;
-  context_->slice_tracker->BeginFrameTimeline(
+  context_->slice_tracker->BeginTyped(
+      context_->storage->mutable_expected_frame_timeline_slice_table(),
       expected_row,
       [this, token, layer_name_id](ArgsTracker::BoundInserter* inserter) {
         inserter->AddArg(display_frame_token_id_, Variadic::Integer(token));
@@ -404,8 +442,10 @@ void FrameTimelineEventParser::ParseActualSurfaceFrameStart(
   actual_row.upid = upid;
   actual_row.layer_name = layer_name_id;
   StringId present_type = present_type_ids_[0];
+  bool present_type_validated = false;
   if (event.has_present_type() &&
       ValidatePresentType(context_, event.present_type())) {
+    present_type_validated = true;
     present_type = present_type_ids_[static_cast<size_t>(event.present_type())];
   }
   actual_row.present_type = present_type;
@@ -420,26 +460,49 @@ void FrameTimelineEventParser::ParseActualSurfaceFrameStart(
         prediction_type_ids_[static_cast<size_t>(event.prediction_type())];
   }
   actual_row.prediction_type = prediction_type;
+  if (SurfaceFrameJanky(event.jank_type()))
+    actual_row.jank_tag = jank_tag_self_id_;
+  else if (DisplayFrameJanky(event.jank_type()))
+    actual_row.jank_tag = jank_tag_other_id_;
+  else if (event.jank_type() == FrameTimelineEvent::JANK_BUFFER_STUFFING)
+    actual_row.jank_tag = jank_tag_buffer_stuffing_id_;
+  else if (present_type_validated && event.present_type() == FrameTimelineEvent::PRESENT_DROPPED)
+    actual_row.jank_tag = jank_tag_dropped_id_;
+  else
+    actual_row.jank_tag = jank_tag_none_id_;
+  StringId is_buffer = context_->storage->InternString("Unspecified");
+  if (event.has_is_buffer()) {
+    if (event.is_buffer())
+      is_buffer = context_->storage->InternString("Yes");
+    else
+      is_buffer = context_->storage->InternString("No");
+  }
 
-  SliceId slice_id = context_->slice_tracker->BeginFrameTimeline(
-      actual_row,
-      [this, jank_type, present_type, token, layer_name_id, display_frame_token,
-       prediction_type, &event](ArgsTracker::BoundInserter* inserter) {
-        inserter->AddArg(surface_frame_token_id_, Variadic::Integer(token));
-        inserter->AddArg(display_frame_token_id_,
-                         Variadic::Integer(display_frame_token));
-        inserter->AddArg(layer_name_id_, Variadic::String(layer_name_id));
-        inserter->AddArg(present_type_id_, Variadic::String(present_type));
-        inserter->AddArg(on_time_finish_id_,
-                         Variadic::Integer(event.on_time_finish()));
-        inserter->AddArg(gpu_composition_id_,
-                         Variadic::Integer(event.gpu_composition()));
-        inserter->AddArg(jank_type_id_, Variadic::String(jank_type));
-        inserter->AddArg(prediction_type_id_,
-                         Variadic::String(prediction_type));
-      });
+  base::Optional<SliceId> opt_slice_id =
+      context_->slice_tracker->BeginTyped(
+          context_->storage->mutable_actual_frame_timeline_slice_table(),
+          actual_row,
+          [this, jank_type, present_type, token, layer_name_id,
+           display_frame_token, prediction_type, is_buffer,
+           &event](ArgsTracker::BoundInserter* inserter) {
+            inserter->AddArg(surface_frame_token_id_, Variadic::Integer(token));
+            inserter->AddArg(display_frame_token_id_,
+                             Variadic::Integer(display_frame_token));
+            inserter->AddArg(layer_name_id_, Variadic::String(layer_name_id));
+            inserter->AddArg(present_type_id_, Variadic::String(present_type));
+            inserter->AddArg(on_time_finish_id_,
+                             Variadic::Integer(event.on_time_finish()));
+            inserter->AddArg(gpu_composition_id_,
+                             Variadic::Integer(event.gpu_composition()));
+            inserter->AddArg(jank_type_id_, Variadic::String(jank_type));
+            inserter->AddArg(prediction_type_id_,
+                             Variadic::String(prediction_type));
+            inserter->AddArg(is_buffer_id_, Variadic::String(is_buffer));
+          });
 
-  display_token_to_surface_slice_.emplace(display_frame_token, slice_id);
+  if (opt_slice_id) {
+    display_token_to_surface_slice_.emplace(display_frame_token, *opt_slice_id);
+  }
 }
 
 void FrameTimelineEventParser::ParseFrameEnd(int64_t timestamp,
@@ -458,7 +521,7 @@ void FrameTimelineEventParser::ParseFrameEnd(int64_t timestamp,
     return;
   auto track_set_id = it->second;
   auto track_id = context_->async_track_set_tracker->End(track_set_id, cookie);
-  context_->slice_tracker->EndFrameTimeline(timestamp, track_id);
+  context_->slice_tracker->End(timestamp, track_id);
   cookie_track_set_id_map_.erase(it);
 }
 

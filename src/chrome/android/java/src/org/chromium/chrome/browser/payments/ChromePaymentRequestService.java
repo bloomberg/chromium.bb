@@ -23,7 +23,6 @@ import org.chromium.components.payments.AbortReason;
 import org.chromium.components.payments.AndroidPaymentApp;
 import org.chromium.components.payments.BrowserPaymentRequest;
 import org.chromium.components.payments.ErrorStrings;
-import org.chromium.components.payments.Event;
 import org.chromium.components.payments.JourneyLogger;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PackageManagerDelegate;
@@ -380,6 +379,7 @@ public class ChromePaymentRequestService
             mHasSkippedAppSelector = true;
         } else {
             mPaymentUiService.showAppSelector(isShowWaitingForUpdatedDetails);
+            mJourneyLogger.setShown();
         }
         return null;
     }
@@ -415,7 +415,7 @@ public class ChromePaymentRequestService
                             ()
                                     -> onUiAborted(AbortReason.ABORTED_BY_USER,
                                             ErrorStrings.USER_CANCELLED))) {
-                    mJourneyLogger.setEventOccurred(Event.SHOWN);
+                    mJourneyLogger.setShown();
                     return null;
                 } else {
                     return ErrorStrings.MINIMAL_UI_SUPPRESSED;
@@ -425,7 +425,7 @@ public class ChromePaymentRequestService
             assert !mPaymentUiService.getPaymentApps().isEmpty();
             PaymentApp selectedApp = mPaymentUiService.getSelectedPaymentApp();
             dimBackgroundIfNotPaymentHandler(selectedApp);
-            mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
+            mJourneyLogger.setSkippedShow();
             invokePaymentApp(null /* selectedShippingAddress */, null /* selectedShippingOption */,
                     selectedApp);
         } else {
@@ -571,7 +571,7 @@ public class ChromePaymentRequestService
                         mPaymentUiService.getSelectedContact(), selectedPaymentApp,
                         mSpec.getPaymentOptions(), mSkipToGPayHelper != null);
         mPaymentRequestService.invokePaymentApp(selectedPaymentApp, paymentResponseHelper);
-        return !selectedPaymentApp.isAutofillInstrument();
+        return selectedPaymentApp.getPaymentAppType() != PaymentAppType.AUTOFILL;
     }
 
     private PaymentHandlerHost getPaymentHandlerHost() {
@@ -692,7 +692,7 @@ public class ChromePaymentRequestService
             }
         } else {
             PaymentApp firstApp = mPaymentUiService.getPaymentApps().get(0);
-            if (firstApp.isAutofillInstrument()) {
+            if (firstApp.getPaymentAppType() == PaymentAppType.AUTOFILL) {
                 missingFields = ((AutofillPaymentInstrument) (firstApp)).getMissingFields();
             }
         }

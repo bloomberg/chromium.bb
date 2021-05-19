@@ -304,15 +304,17 @@ static AOM_INLINE void decode_reconstruct_tx(
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
     const int sub_step = bsw * bsh;
+    const int row_end =
+        AOMMIN(tx_size_high_unit[tx_size], max_blocks_high - blk_row);
+    const int col_end =
+        AOMMIN(tx_size_wide_unit[tx_size], max_blocks_wide - blk_col);
 
     assert(bsw > 0 && bsh > 0);
 
-    for (int row = 0; row < tx_size_high_unit[tx_size]; row += bsh) {
-      for (int col = 0; col < tx_size_wide_unit[tx_size]; col += bsw) {
-        const int offsetr = blk_row + row;
+    for (int row = 0; row < row_end; row += bsh) {
+      const int offsetr = blk_row + row;
+      for (int col = 0; col < col_end; col += bsw) {
         const int offsetc = blk_col + col;
-
-        if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
         decode_reconstruct_tx(cm, td, r, mbmi, plane, plane_bsize, offsetr,
                               offsetc, block, sub_txs, eob_total);
@@ -1975,7 +1977,8 @@ static AOM_INLINE void setup_buffer_pool(AV1_COMMON *cm) {
           &cm->cur_frame->buf, cm->width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
           AOM_DEC_BORDER_IN_PIXELS, cm->features.byte_alignment,
-          &cm->cur_frame->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv)) {
+          &cm->cur_frame->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv,
+          0)) {
     unlock_buffer_pool(pool);
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate frame buffer");
@@ -2800,6 +2803,10 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
     decoder_alloc_tile_data(pbi, n_tiles);
   }
+  if (pbi->dcb.xd.seg_mask == NULL)
+    CHECK_MEM_ERROR(cm, pbi->dcb.xd.seg_mask,
+                    (uint8_t *)aom_memalign(
+                        16, 2 * MAX_SB_SQUARE * sizeof(*pbi->dcb.xd.seg_mask)));
 #if CONFIG_ACCOUNTING
   if (pbi->acct_enabled) {
     aom_accounting_reset(&pbi->accounting);
@@ -3356,6 +3363,8 @@ void av1_free_mc_tmp_buf(ThreadData *thread_data) {
 
   aom_free(thread_data->tmp_conv_dst);
   thread_data->tmp_conv_dst = NULL;
+  aom_free(thread_data->seg_mask);
+  thread_data->seg_mask = NULL;
   for (int i = 0; i < 2; ++i) {
     aom_free(thread_data->tmp_obmc_bufs[i]);
     thread_data->tmp_obmc_bufs[i] = NULL;
@@ -3388,6 +3397,10 @@ static AOM_INLINE void allocate_mc_tmp_buf(AV1_COMMON *const cm,
   CHECK_MEM_ERROR(cm, thread_data->tmp_conv_dst,
                   aom_memalign(32, MAX_SB_SIZE * MAX_SB_SIZE *
                                        sizeof(*thread_data->tmp_conv_dst)));
+  CHECK_MEM_ERROR(cm, thread_data->seg_mask,
+                  (uint8_t *)aom_memalign(
+                      16, 2 * MAX_SB_SQUARE * sizeof(*thread_data->seg_mask)));
+
   for (int i = 0; i < 2; ++i) {
     CHECK_MEM_ERROR(
         cm, thread_data->tmp_obmc_bufs[i],
@@ -3410,6 +3423,8 @@ static AOM_INLINE void reset_dec_workers(AV1Decoder *pbi,
     thread_data->td->dcb.mc_buf[0] = thread_data->td->mc_buf[0];
     thread_data->td->dcb.mc_buf[1] = thread_data->td->mc_buf[1];
     thread_data->td->dcb.xd.tmp_conv_dst = thread_data->td->tmp_conv_dst;
+    if (worker_idx)
+      thread_data->td->dcb.xd.seg_mask = thread_data->td->seg_mask;
     for (int j = 0; j < 2; ++j) {
       thread_data->td->dcb.xd.tmp_obmc_bufs[j] =
           thread_data->td->tmp_obmc_bufs[j];
@@ -3589,6 +3604,10 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
   if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
     decoder_alloc_tile_data(pbi, n_tiles);
   }
+  if (pbi->dcb.xd.seg_mask == NULL)
+    CHECK_MEM_ERROR(cm, pbi->dcb.xd.seg_mask,
+                    (uint8_t *)aom_memalign(
+                        16, 2 * MAX_SB_SQUARE * sizeof(*pbi->dcb.xd.seg_mask)));
 
   for (int row = 0; row < tile_rows; row++) {
     for (int col = 0; col < tile_cols; col++) {
@@ -3775,6 +3794,10 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
     }
     decoder_alloc_tile_data(pbi, n_tiles);
   }
+  if (pbi->dcb.xd.seg_mask == NULL)
+    CHECK_MEM_ERROR(cm, pbi->dcb.xd.seg_mask,
+                    (uint8_t *)aom_memalign(
+                        16, 2 * MAX_SB_SQUARE * sizeof(*pbi->dcb.xd.seg_mask)));
 
   for (int row = 0; row < tile_rows; row++) {
     for (int col = 0; col < tile_cols; col++) {
@@ -4756,7 +4779,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                   seq_params->max_frame_height, seq_params->subsampling_x,
                   seq_params->subsampling_y, seq_params->use_highbitdepth,
                   AOM_BORDER_IN_PIXELS, features->byte_alignment,
-                  &buf->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv)) {
+                  &buf->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv, 0)) {
             decrease_ref_count(buf, pool);
             unlock_buffer_pool(pool);
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,

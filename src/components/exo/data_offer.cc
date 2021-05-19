@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/pickle.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -71,7 +72,7 @@ ui::ClipboardFormatType GetClipboardFormatType() {
 }
 
 scoped_refptr<base::RefCountedString> EncodeAsRefCountedString(
-    const base::string16& text,
+    const std::u16string& text,
     const std::string& charset) {
   std::string encoded_text;
   base::UTF16ToCodepage(text, charset.c_str(),
@@ -81,10 +82,10 @@ scoped_refptr<base::RefCountedString> EncodeAsRefCountedString(
 }
 
 DataOffer::AsyncSendDataCallback AsyncEncodeAsRefCountedString(
-    const base::string16& text,
+    const std::u16string& text,
     const std::string& charset) {
   return base::BindOnce(
-      [](const base::string16& text, const std::string& charset,
+      [](const std::u16string& text, const std::string& charset,
          DataOffer::SendDataCallback callback) {
         std::move(callback).Run(EncodeAsRefCountedString(text, charset));
       },
@@ -94,7 +95,7 @@ DataOffer::AsyncSendDataCallback AsyncEncodeAsRefCountedString(
 void ReadTextFromClipboard(const std::string& charset,
                            const ui::DataTransferEndpoint data_dst,
                            DataOffer::SendDataCallback callback) {
-  base::string16 text;
+  std::u16string text;
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::ClipboardBuffer::kCopyPaste, &data_dst, &text);
   std::move(callback).Run(EncodeAsRefCountedString(text, charset));
@@ -103,7 +104,7 @@ void ReadTextFromClipboard(const std::string& charset,
 void ReadHTMLFromClipboard(const std::string& charset,
                            const ui::DataTransferEndpoint data_dst,
                            DataOffer::SendDataCallback callback) {
-  base::string16 text;
+  std::u16string text;
   std::string url;
   uint32_t start, end;
   ui::Clipboard::GetForCurrentThread()->ReadHTML(
@@ -264,7 +265,27 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
     return;
   }
 
-  base::string16 string_content;
+  base::FilePath file_contents_filename;
+  std::string file_contents;
+  if (data.provider().HasFileContents() &&
+      data.provider().GetFileContents(&file_contents_filename,
+                                      &file_contents)) {
+    std::string filename = file_contents_filename.value();
+    base::ReplaceChars(filename, "\\", "\\\\", &filename);
+    base::ReplaceChars(filename, "\"", "\\\"", &filename);
+    const std::string mime_type =
+        base::StrCat({"application/octet-stream;name=\"", filename, "\""});
+    auto callback = base::BindOnce(
+        [](scoped_refptr<base::RefCountedString> contents,
+           DataOffer::SendDataCallback callback) {
+          std::move(callback).Run(std::move(contents));
+        },
+        base::RefCountedString::TakeString(&file_contents));
+    data_callbacks_.emplace(mime_type, std::move(callback));
+    delegate_->OnOffer(mime_type);
+  }
+
+  std::u16string string_content;
   if (data.HasString() && data.GetString(&string_content)) {
     const std::string utf8_mime_type = std::string(ui::kMimeTypeTextUtf8);
     data_callbacks_.emplace(
@@ -284,7 +305,7 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
     delegate_->OnOffer(text_plain_mime_type);
   }
 
-  base::string16 html_content;
+  std::u16string html_content;
   GURL url_content;
   if (data.HasHtml() && data.GetHtml(&html_content, &url_content)) {
     const std::string utf8_html_mime_type = std::string(kTextHtmlMimeTypeUtf8);

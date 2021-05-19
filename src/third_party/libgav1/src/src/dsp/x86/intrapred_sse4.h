@@ -942,6 +942,122 @@ void IntraPredSmoothInit_SSE4_1();
 //------------------------------------------------------------------------------
 // 10bpp
 
+#ifndef LIBGAV1_Dsp10bpp_DirectionalIntraPredictorZone1
+#define LIBGAV1_Dsp10bpp_DirectionalIntraPredictorZone1 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize4x4_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize4x4_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize4x8_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize4x8_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize4x16_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize4x16_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize8x4_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize8x4_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize8x8_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize8x8_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize8x16_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize8x16_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize8x32_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize8x32_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize16x4_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize16x4_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize16x8_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize16x8_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize16x16_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize16x16_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize16x32_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize16x32_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize32x8_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize32x8_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize32x16_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize32x16_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize32x32_CflSubsampler420
+#define LIBGAV1_Dsp10bpp_TransformSize32x32_CflSubsampler420 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize4x4_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize4x4_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize4x8_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize4x8_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize4x16_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize4x16_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize8x4_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize8x4_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize8x8_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize8x8_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize8x16_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize8x16_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize8x32_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize8x32_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize16x4_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize16x4_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize16x8_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize16x8_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize16x16_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize16x16_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize16x32_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize16x32_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize32x8_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize32x8_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize32x16_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize32x16_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
+#ifndef LIBGAV1_Dsp10bpp_TransformSize32x32_CflSubsampler444
+#define LIBGAV1_Dsp10bpp_TransformSize32x32_CflSubsampler444 LIBGAV1_CPU_SSE4_1
+#endif
+
 #ifndef LIBGAV1_Dsp10bpp_TransformSize4x4_IntraPredictorDcTop
 #define LIBGAV1_Dsp10bpp_TransformSize4x4_IntraPredictorDcTop LIBGAV1_CPU_SSE4_1
 #endif

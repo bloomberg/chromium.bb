@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "chromeos/dbus/pciguard/pciguard_client.h"
 #include "chromeos/dbus/typecd/typecd_client.h"
 
 namespace ash {
@@ -19,7 +20,8 @@ namespace ash {
 // additional logic such determining if notifications are required or whether a
 // guest-session notification is needed.
 class COMPONENT_EXPORT(ASH_PCIE_PERIPHERAL) PciePeripheralManager
-    : public chromeos::TypecdClient::Observer {
+    : public chromeos::TypecdClient::Observer,
+      public chromeos::PciguardClient::Observer {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -34,6 +36,11 @@ class COMPONENT_EXPORT(ASH_PCIE_PERIPHERAL) PciePeripheralManager
     // Thunderbolt/USB4 device has been plugged in during a guest session. Can
     // be called multiple times.
     virtual void OnGuestModeNotificationReceived(bool is_thunderbolt_only) = 0;
+
+    // Called to notify observers, primarily notification controllers, that the
+    // recently plugged in Thunderbolt/USB4 device is in the block list. The
+    // block list is specified by the Pciguard Daemon.
+    virtual void OnPeripheralBlockedReceived() = 0;
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -44,7 +51,8 @@ class COMPONENT_EXPORT(ASH_PCIE_PERIPHERAL) PciePeripheralManager
     kTBTOnlyAndBlockedInGuestSession = 2,
     kAltModeFallbackDueToPciguard = 3,
     kAltModeFallbackInGuestSession = 4,
-    kMaxValue = kAltModeFallbackInGuestSession,
+    kPeripheralBlocked = 5,
+    kMaxValue = kPeripheralBlocked,
   };
 
   // Sets the global instance. Must be called before any calls to Get().
@@ -75,9 +83,14 @@ class COMPONENT_EXPORT(ASH_PCIE_PERIPHERAL) PciePeripheralManager
   // TypecdClient::Observer:
   void OnThunderboltDeviceConnected(bool is_thunderbolt_only) override;
 
+  // PciguardClient::Observer:
+  void OnBlockedThunderboltDeviceConnected(
+      const std::string& device_name) override;
+
   // Call to notify observers that a new notification is needed.
   void NotifyLimitedPerformancePeripheralReceived();
   void NotifyGuestModeNotificationReceived(bool is_thunderbolt_only);
+  void NotifyPeripheralBlockedReceived();
 
   const bool is_guest_profile_;
   // Pcie tunneling refers to allowing Thunderbolt/USB4 peripherals to run at

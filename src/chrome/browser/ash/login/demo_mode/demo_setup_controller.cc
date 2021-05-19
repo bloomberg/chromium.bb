@@ -21,10 +21,10 @@
 #include "chrome/browser/ash/login/demo_mode/demo_resources.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
+#include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
@@ -350,7 +350,7 @@ DemoSetupController::DemoSetupError::DemoSetupError(
 
 DemoSetupController::DemoSetupError::~DemoSetupError() = default;
 
-base::string16 DemoSetupController::DemoSetupError::GetLocalizedErrorMessage()
+std::u16string DemoSetupController::DemoSetupError::GetLocalizedErrorMessage()
     const {
   switch (error_code_) {
     case ErrorCode::kOfflinePolicyError:
@@ -428,10 +428,10 @@ base::string16 DemoSetupController::DemoSetupError::GetLocalizedErrorMessage()
       return l10n_util::GetStringUTF16(IDS_DEMO_SETUP_UNEXPECTED_ERROR);
   }
   NOTREACHED() << "No localized error message available for demo setup error.";
-  return base::string16();
+  return std::u16string();
 }
 
-base::string16
+std::u16string
 DemoSetupController::DemoSetupError::GetLocalizedRecoveryMessage() const {
   switch (recovery_method_) {
     case RecoveryMethod::kRetry:
@@ -449,7 +449,7 @@ DemoSetupController::DemoSetupError::GetLocalizedRecoveryMessage() const {
   }
   NOTREACHED()
       << "No localized error message available for demo setup recovery method.";
-  return base::string16();
+  return std::u16string();
 }
 
 std::string DemoSetupController::DemoSetupError::GetDebugDescription() const {

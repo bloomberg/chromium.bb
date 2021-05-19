@@ -12,18 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
-#include "gtest/gtest.h"
-#include "src/ast/assignment_statement.h"
-#include "src/ast/block_statement.h"
-#include "src/ast/float_literal.h"
-#include "src/ast/identifier_expression.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/variable_decl_statement.h"
-#include "src/type/f32_type.h"
-#include "src/type_determiner.h"
-#include "src/writer/spirv/builder.h"
 #include "src/writer/spirv/spv_dump.h"
 #include "src/writer/spirv/test_helper.h"
 
@@ -34,7 +22,9 @@ namespace {
 
 using BuilderTest = TestHelper;
 
-TEST_F(BuilderTest, Block) {
+// TODO(amaiorano): Disabled because Resolver now emits "redeclared identifier
+// 'var'".
+TEST_F(BuilderTest, DISABLED_Block) {
   // Note, this test uses shadow variables which aren't allowed in WGSL but
   // serves to prove the block code is pushing new scopes as needed.
   auto* inner = create<ast::BlockStatement>(ast::StatementList{

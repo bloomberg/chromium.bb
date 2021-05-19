@@ -53,9 +53,6 @@ namespace {
 // the UI.
 const char* const kCancelActionName = "cancel";
 
-// Intent not set constant.
-const char* const kIntentNotSet = "NotSet";
-
 }  // namespace
 
 static base::android::ScopedJavaLocalRef<jobject>
@@ -106,11 +103,10 @@ bool ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jobject>& jcaller,
                           const JavaParamRef<jstring>& jinitial_url,
                           const JavaParamRef<jstring>& jexperiment_ids,
-                          const JavaParamRef<jstring>& jcaller_account,
                           const JavaParamRef<jobjectArray>& jparameter_names,
                           const JavaParamRef<jobjectArray>& jparameter_values,
                           jboolean jis_cct,
-                          const JavaParamRef<jobject>& jonboarding_coordinator,
+                          const JavaParamRef<jobject>& joverlay_coordinator,
                           jboolean jonboarding_shown,
                           jlong jservice) {
   // When Start() is called, AA_START should have been measured. From now on,
@@ -125,18 +121,17 @@ bool ClientAndroid::Start(JNIEnv* env,
   CreateController(std::move(service));
 
   // If an overlay is already shown, then show the rest of the UI.
-  if (jonboarding_coordinator) {
-    AttachUI(jonboarding_coordinator);
+  if (joverlay_coordinator) {
+    AttachUI(joverlay_coordinator);
   }
 
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
   auto trigger_context = ui_controller_android_utils::CreateTriggerContext(
       env, jexperiment_ids, jparameter_names, jparameter_values, jis_cct,
-      jonboarding_shown, /* is_direct_action = */ false, jcaller_account);
+      jonboarding_shown, /* is_direct_action = */ false, jinitial_url);
 
   intent_ = trigger_context->GetScriptParameters().GetIntent().value_or(
-      kIntentNotSet);
-
+      std::string());
   if (VLOG_IS_ON(2)) {
     std::string experiment_ids =
         base::android::ConvertJavaStringToUTF8(env, jexperiment_ids);
@@ -171,8 +166,7 @@ void ClientAndroid::StartTriggerScript(
       ui_controller_android_utils::CreateTriggerContext(
           env, jexperiment_ids, jparameter_names, jparameter_values,
           /* is_cct = */ false, /* onboarding_shown = */ false,
-          /* is_direct_action = */ false,
-          /* caller_account_hash = */ nullptr),
+          /* is_direct_action = */ false, jinitial_url),
       jservice_request_sender);
 }
 
@@ -242,7 +236,7 @@ void ClientAndroid::FetchWebsiteActions(
           env, jexperiment_ids, jparameter_names, jparameter_values,
           /* is_cct = */ false, /* onboarding_shown = */ false,
           /* is_direct_action = */ true,
-          /* caller_account_hash = */ nullptr),
+          /* jinitial_url = */ nullptr),
       base::BindOnce(&ClientAndroid::OnFetchWebsiteActions,
                      weak_ptr_factory_.GetWeakPtr(), scoped_jcallback));
 }
@@ -321,7 +315,8 @@ base::android::ScopedJavaLocalRef<jobjectArray> ClientAndroid::GetDirectActions(
   base::android::ScopedJavaLocalRef<jclass> directaction_array_class =
       base::android::GetClass(env,
                               "org/chromium/chrome/browser/autofill_assistant/"
-                              "AutofillAssistantDirectActionImpl");
+                              "AutofillAssistantDirectActionImpl",
+                              "autofill_assistant");
 
   jobjectArray joa = env->NewObjectArray(
       actions_count, directaction_array_class.obj(), nullptr);
@@ -353,7 +348,7 @@ bool ClientAndroid::PerformDirectAction(
     const base::android::JavaParamRef<jstring>& jexperiment_ids,
     const base::android::JavaParamRef<jobjectArray>& jparameter_names,
     const base::android::JavaParamRef<jobjectArray>& jparameter_values,
-    const base::android::JavaParamRef<jobject>& jonboarding_coordinator) {
+    const base::android::JavaParamRef<jobject>& joverlay_coordinator) {
   std::string action_name =
       base::android::ConvertJavaStringToUTF8(env, jaction_name);
 
@@ -361,7 +356,7 @@ bool ClientAndroid::PerformDirectAction(
       env, jexperiment_ids, jparameter_names, jparameter_values,
       /* is_cct = */ false, /* onboarding_shown = */ false,
       /* is_direct_action = */ true,
-      /* caller_account_hash = */ nullptr);
+      /* jinitial_url = */ nullptr);
 
   // Cancel through the UI if it is up. This allows the user to undo. This is
   // always available, even if no action was found and action_index == -1.
@@ -377,8 +372,8 @@ bool ClientAndroid::PerformDirectAction(
     return false;
 
   // If an overlay is already shown, then show the rest of the UI immediately.
-  if (jonboarding_coordinator) {
-    AttachUI(jonboarding_coordinator);
+  if (joverlay_coordinator) {
+    AttachUI(joverlay_coordinator);
   }
 
   return controller_->PerformUserActionWithContext(action_index,
@@ -412,10 +407,10 @@ void ClientAndroid::AttachUI() {
 }
 
 void ClientAndroid::AttachUI(
-    const JavaParamRef<jobject>& jonboarding_coordinator) {
+    const JavaParamRef<jobject>& joverlay_coordinator) {
   if (!ui_controller_android_) {
     ui_controller_android_ = UiControllerAndroid::CreateFromWebContents(
-        web_contents_, jonboarding_coordinator);
+        web_contents_, joverlay_coordinator);
     if (!ui_controller_android_) {
       // The activity is not or not yet in a mode where attaching the UI is
       // possible.
@@ -454,6 +449,21 @@ std::string ClientAndroid::GetChromeSignedInEmailAddress() const {
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()))
           ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
   return account_info.email;
+}
+
+base::Optional<std::pair<int, int>> ClientAndroid::GetWindowSize() const {
+  if (ui_controller_android_) {
+    return ui_controller_android_->GetWindowSize();
+  }
+  return base::nullopt;
+}
+
+ClientContextProto::ScreenOrientation ClientAndroid::GetScreenOrientation()
+    const {
+  if (ui_controller_android_) {
+    return ui_controller_android_->GetScreenOrientation();
+  }
+  return ClientContextProto::UNDEFINED_ORIENTATION;
 }
 
 AccessTokenFetcher* ClientAndroid::GetAccessTokenFetcher() {

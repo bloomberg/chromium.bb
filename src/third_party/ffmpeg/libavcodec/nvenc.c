@@ -1921,7 +1921,7 @@ static int nvenc_set_timestamp(AVCodecContext *avctx,
     pkt->pts = params->outputTimeStamp;
     pkt->dts = timestamp_queue_dequeue(ctx->timestamp_list);
 
-    pkt->dts -= FFMAX(avctx->max_b_frames, 0) * FFMIN(avctx->ticks_per_frame, 1);
+    pkt->dts -= FFMAX(avctx->max_b_frames, 0) * FFMAX(avctx->ticks_per_frame, 1);
 
     return 0;
 }
@@ -2247,7 +2247,7 @@ static int nvenc_send_frame(AVCodecContext *avctx, const AVFrame *frame)
 
             if (tc_data) {
                 sei_data[sei_count].payloadSize = (uint32_t)tc_size;
-                sei_data[sei_count].payloadType = HEVC_SEI_TYPE_TIME_CODE;
+                sei_data[sei_count].payloadType = SEI_TYPE_TIME_CODE;
                 sei_data[sei_count].payload = (uint8_t*)tc_data;
                 sei_count ++;
             }

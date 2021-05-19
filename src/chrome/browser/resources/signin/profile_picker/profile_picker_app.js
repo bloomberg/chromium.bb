@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
+import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import './profile_picker_main_view.js';
 import './profile_picker_shared_css.js';
-import './strings.js';
+import './strings.m.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -116,6 +116,8 @@ Polymer({
         return this.i18n('profileTypeChoiceTitle');
       case ProfileCreationSteps.LOCAL_PROFILE_CUSTOMIZATION:
         return this.i18n('localProfileCreationTitle');
+      case 'profileSwitch':
+        return this.i18n('profileSwitchTitle');
       default:
         return '';
     }
@@ -132,6 +134,8 @@ Polymer({
       case Routes.NEW_PROFILE:
         return Promise.all(
             [this.initializeNewProfileThemeInfo_(), ensureLazyLoaded()]);
+      case Routes.PROFILE_SWITCH:
+        return ensureLazyLoaded();
       default:
         // |this.currentRoute_| should be set by now.
         assertNotReached();

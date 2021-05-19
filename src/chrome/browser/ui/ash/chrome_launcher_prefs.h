@@ -25,10 +25,6 @@ extern const char kPinnedAppsPrefAppIDKey[];
 
 extern const char kPinnedAppsPrefPinnedByPolicy[];
 
-// To enable finch experiment with number of default apps on the shelf.
-// See |kEnableExtendedShelfLayoutParam| in .cc file.
-extern const base::Feature kEnableExtendedShelfLayout;
-
 // Value used as a placeholder in the list of pinned applications.
 // This is NOT a valid extension identifier so pre-M31 versions ignore it.
 extern const char kPinnedAppsPlaceholder[];
@@ -48,6 +44,10 @@ void InitLocalPref(PrefService* prefs, const char* local, const char* synced);
 // Gets the ordered list of pinned apps that exist on device from the app sync
 // service.
 std::vector<ash::ShelfID> GetPinnedAppsFromSync(
+    LauncherControllerHelper* helper);
+
+// Gets the ordered list of apps that have been pinned by policy.
+std::vector<std::string> GetAppsPinnedByPolicy(
     LauncherControllerHelper* helper);
 
 // Removes information about pin position from sync model for the app.

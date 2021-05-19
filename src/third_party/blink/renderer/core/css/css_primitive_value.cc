@@ -205,16 +205,25 @@ CSSPrimitiveValue* CSSPrimitiveValue::CreateFromLength(const Length& length,
   return nullptr;
 }
 
+// TODO(crbug.com/1133390): When we support <frequency>, we must clamp like
+// <time>.
 double CSSPrimitiveValue::ComputeSeconds() const {
-  if (IsCalculated())
-    return To<CSSMathFunctionValue>(this)->ComputeSeconds();
-  return To<CSSNumericLiteralValue>(this)->ComputeSeconds();
+  double result = IsCalculated()
+                      ? To<CSSMathFunctionValue>(this)->ComputeSeconds()
+                      : To<CSSNumericLiteralValue>(this)->ComputeSeconds();
+  if (RuntimeEnabledFeatures::CSSCalcInfinityAndNaNEnabled())
+    result = CSSValueClampingUtils::ClampTime(result);
+  return result;
 }
 
 double CSSPrimitiveValue::ComputeDegrees() const {
-  if (IsCalculated())
-    return To<CSSMathFunctionValue>(this)->ComputeDegrees();
-  return To<CSSNumericLiteralValue>(this)->ComputeDegrees();
+  double result = IsCalculated()
+                      ? To<CSSMathFunctionValue>(this)->ComputeDegrees()
+                      : To<CSSNumericLiteralValue>(this)->ComputeDegrees();
+  if (RuntimeEnabledFeatures::CSSCalcInfinityAndNaNEnabled()) {
+    result = CSSValueClampingUtils::ClampAngle(result);
+  }
+  return result;
 }
 
 double CSSPrimitiveValue::ComputeDotsPerPixel() const {
@@ -377,7 +386,7 @@ Length CSSPrimitiveValue::ConvertToLength(
   if (IsPercentage()) {
     if (IsNumericLiteralValue() ||
         !To<CSSMathFunctionValue>(this)->AllowsNegativePercentageReference()) {
-      double value = GetDoubleValue();
+      double value = GetDoubleValueWithoutClamping();
       if (RuntimeEnabledFeatures::CSSCalcInfinityAndNaNEnabled()) {
         value = CSSValueClampingUtils::ClampLength(value);
       }
@@ -389,6 +398,10 @@ Length CSSPrimitiveValue::ConvertToLength(
 }
 
 double CSSPrimitiveValue::GetDoubleValue() const {
+  return CSSValueClampingUtils::ClampDouble(GetDoubleValueWithoutClamping());
+}
+
+double CSSPrimitiveValue::GetDoubleValueWithoutClamping() const {
   return IsCalculated() ? To<CSSMathFunctionValue>(this)->DoubleValue()
                         : To<CSSNumericLiteralValue>(this)->DoubleValue();
 }

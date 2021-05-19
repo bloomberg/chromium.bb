@@ -1887,6 +1887,27 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, ZeroRulesets) {
   EXPECT_TRUE(IsNavigationBlocked(url));
 }
 
+// Ensure that when an extension blocks a main-frame request using
+// declarativeNetRequest, the resultant error page attributes this to an
+// extension.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       ErrorPageForBlockedMainFrameNavigation) {
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithRules({CreateMainFrameBlockRule("example.com")}));
+
+  ui_test_utils::NavigateToURL(browser(), GetURLForFilter("example.com"));
+  EXPECT_EQ(content::PAGE_TYPE_ERROR, GetPageType());
+
+  std::string body;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents(),
+      "window.domAutomationController.send(document.body.textContent)", &body));
+
+  EXPECT_TRUE(
+      base::Contains(body, "This page has been blocked by an extension"));
+  EXPECT_TRUE(base::Contains(body, "Try disabling your extensions."));
+}
+
 // Test an extension with multiple static rulesets.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, MultipleRulesets) {
   set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
@@ -4443,13 +4464,15 @@ class DeclarativeNetRequestAllowAllRequestsBrowserTest
     std::string url_filter;
     bool is_regex_rule;
     base::Optional<std::vector<std::string>> resource_types;
+    base::Optional<std::vector<std::string>> request_methods;
   };
 
   DeclarativeNetRequestAllowAllRequestsBrowserTest() = default;
 
   void RunTest(const std::vector<RuleData>& rule_data,
                const std::vector<std::string>& paths_seen,
-               const std::vector<std::string>& paths_not_seen) {
+               const std::vector<std::string>& paths_not_seen,
+               bool post_navigation = false) {
     std::vector<TestRule> test_rules;
     for (const auto& rule : rule_data) {
       TestRule test_rule = CreateGenericRule();
@@ -4462,13 +4485,15 @@ class DeclarativeNetRequestAllowAllRequestsBrowserTest
       else
         test_rule.condition->url_filter = rule.url_filter;
       test_rule.condition->resource_types = rule.resource_types;
+      test_rule.condition->request_methods = rule.request_methods;
       test_rules.push_back(test_rule);
     }
 
     ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(test_rules));
 
     GURL page_url = embedded_test_server()->GetURL(
-        "example.com", "/page_with_two_frames.html");
+        "example.com", post_navigation ? "/post_to_page_with_two_frames.html"
+                                       : "/page_with_two_frames.html");
     ui_test_utils::NavigateToURL(browser(), page_url);
 
     const std::set<GURL> requests_seen = GetAndResetRequestsToServer();
@@ -4583,6 +4608,51 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestAllowAllRequestsBrowserTest,
           {requests[0], requests[1], requests[2], requests[3], requests[4],
            requests[5]},
           {});
+}
+
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestAllowAllRequestsBrowserTest,
+                       TestPostNavigationMatched) {
+  std::vector<RuleData> rule_data = {
+      {1, 6, "allowAllRequests", "page_with_two_frames\\.html", true,
+       std::vector<std::string>({"main_frame"}),
+       std::vector<std::string>({"post"})},
+      {2, 5, "block", "*", false},
+  };
+
+  // Requests:
+  // -/page_with_two_frames.html (Matching rule=1)
+  //   -/subresources/script.js (Matching rule=[1,2] Winner=1)
+  //   -/child_frame.html?frame=1 (Matching Rule=[1,2] Winner=1)
+  //     -/subresources/script.js?frameId=1 (Matching Rule=[1,2] Winner=1)
+  //   -/child_frame.html?frame=2 (Matching Rule=[1,2] Winner=1)
+  //     -/subresources/script.js?frameId=2 (Matching Rule=[1,2] Winner=1)
+  // Hence all requests go through.
+  RunTest(rule_data,
+          {requests[0], requests[1], requests[2], requests[3], requests[4],
+           requests[5]},
+          {}, true);
+}
+
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestAllowAllRequestsBrowserTest,
+                       TestPostNavigationNotMatched) {
+  std::vector<RuleData> rule_data = {
+      {1, 6, "allowAllRequests", "page_with_two_frames\\.html", true,
+       std::vector<std::string>({"main_frame"}),
+       std::vector<std::string>({"get"})},
+      {2, 5, "block", "*", false},
+  };
+
+  // Requests:
+  // -/page_with_two_frames.html (No matches)
+  //   -/subresources/script.js (Matching rule 2)
+  //   -/child_frame.html?frame=1 (Matching rule 2)
+  //     -/subresources/script.js?frameId=1 (Matching rule 2)
+  //   -/child_frame.html?frame=2 (Matching rule 2)
+  //     -/subresources/script.js?frameId=2 (Matching rule 2)
+  // Hence requests are blocked.
+  RunTest(rule_data, {requests[0]},
+          {requests[1], requests[2], requests[3], requests[4], requests[5]},
+          true);
 }
 
 // Tests that when an extension is updated but loses the declarativeNetRequest
@@ -4945,7 +5015,7 @@ class DeclarativeNetRequestSubresourceWebBundlesBrowserTest
   }
 
  protected:
-  bool TryLoadScript(const char* script_src) {
+  bool TryLoadScript(const std::string& script_src) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     bool success = false;
@@ -4962,7 +5032,7 @@ class DeclarativeNetRequestSubresourceWebBundlesBrowserTest
         document.body.appendChild(script);
       })();
                                           )",
-                                            script_src);
+                                            script_src.c_str());
     EXPECT_TRUE(ExecuteScriptAndExtractBool(web_contents->GetMainFrame(),
                                             script, &success));
     return success;
@@ -5081,7 +5151,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), page_url);
   EXPECT_EQ(page_url, web_contents->GetLastCommittedURL());
 
-  base::string16 expected_title = base::ASCIIToUTF16("script loaded");
+  std::u16string expected_title = u"script loaded";
   content::TitleWatcher title_watcher(web_contents, expected_title);
   EXPECT_TRUE(TryLoadScript("pass.js"));
   // Check that the script in the web bundle is correctly loaded even when the
@@ -5089,6 +5159,79 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   EXPECT_FALSE(TryLoadScript("cancel.js"));
+}
+
+// Ensure DeclarativeNetRequest API can block the requests for the subresources
+// inside the web bundle which URL is urn uuid.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
+                       RequestCanceledUrnUUIDUrl) {
+  TestRule rule = CreateGenericRule();
+  std::string pass_js_url = "urn:uuid:fc80c15b-69e9-4a45-ab41-9c90d2b55976";
+  std::string cancel_js_url = "urn:uuid:15d749ad-7d9f-49d9-94f7-83a866e7fef8";
+  std::vector<TestRule> rules;
+  rule.id = kMinValidID;
+  rule.condition->url_filter = cancel_js_url + "|";
+  rule.condition->resource_types = std::vector<std::string>({"script"});
+  rule.priority = 1;
+  rules.push_back(rule);
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
+
+  const std::string page_html =
+      base::StringPrintf(R"(
+        <title>Loaded</title>
+        <body>
+        <script>
+        (() => {
+          const wbn_url =
+              new URL('./web_bundle.wbn', location.href).toString();
+          const pass_js_url = '%s';
+          const cancel_js_url = '%s';
+          const link = document.createElement('link');
+          link.rel = 'webbundle';
+          link.href = wbn_url;
+          link.resources = pass_js_url + ' ' + cancel_js_url;
+          document.body.appendChild(link);
+        })();
+        </script>
+        </body>
+      )",
+                         pass_js_url.c_str(), cancel_js_url.c_str());
+
+  std::string web_bundle;
+  RegisterWebBundleRequestHandler("/web_bundle.wbn", &web_bundle);
+  RegisterRequestHandler("/test.html", "text/html", page_html);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Create a web bundle.
+  // Currently the web bundle format requires a valid GURL for the fallback URL
+  // of a web bundle. So we use |pass_js_url_str| for the fallback URL.
+  // TODO(crbug.com/966753): Stop using |pass_js_url_str| when
+  // https://github.com/WICG/webpackage/issues/590 is resolved.
+  web_package::test::WebBundleBuilder builder(pass_js_url, "");
+  auto pass_js_location = builder.AddResponse(
+      {{":status", "200"}, {"content-type", "application/javascript"}},
+      "document.title = 'script loaded';");
+  auto cancel_js_location = builder.AddResponse(
+      {{":status", "200"}, {"content-type", "application/javascript"}}, "");
+  builder.AddIndexEntry(pass_js_url, "", {pass_js_location});
+  builder.AddIndexEntry(cancel_js_url, "", {cancel_js_location});
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  web_bundle = std::string(bundle.begin(), bundle.end());
+
+  GURL page_url = embedded_test_server()->GetURL("/test.html");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  EXPECT_EQ(page_url, web_contents->GetLastCommittedURL());
+
+  std::u16string expected_title = u"script loaded";
+  content::TitleWatcher title_watcher(web_contents, expected_title);
+  EXPECT_TRUE(TryLoadScript(pass_js_url));
+  // Check that the pass_js_url script in the web bundle is correctly loaded
+  // even when the extension with blocking handler intercepted the request.
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  EXPECT_FALSE(TryLoadScript(cancel_js_url));
 }
 
 // Ensure DeclarativeNetRequest API can redirect the requests for the
@@ -5203,7 +5346,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), page_url);
   EXPECT_EQ(page_url, web_contents->GetLastCommittedURL());
   {
-    base::string16 expected_title = base::ASCIIToUTF16("redirected");
+    std::u16string expected_title = u"redirected";
     content::TitleWatcher title_watcher(web_contents, expected_title);
     EXPECT_TRUE(TryLoadScript("redirect.js"));
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -5212,8 +5355,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestSubresourceWebBundlesBrowserTest,
     // In the current implementation, extensions can redirect the request to
     // the other resource in the web bundle even if the resource is not listed
     // in the resources attribute.
-    base::string16 expected_title =
-        base::ASCIIToUTF16("redirected_to_unlisted");
+    std::u16string expected_title = u"redirected_to_unlisted";
     content::TitleWatcher title_watcher(web_contents, expected_title);
     EXPECT_TRUE(TryLoadScript("redirect_to_unlisted.js"));
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -5539,6 +5681,79 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
   VerifyPublicRulesetIds(last_loaded_extension(), {});
   VerifyExtensionAllocationInPrefs(last_loaded_extension_id(), 2);
   EXPECT_EQ("3", GetAvailableStaticRuleCount(last_loaded_extension_id()));
+}
+
+// Tests the "requestMethods" and "excludedRequestMethods" property of a
+// declarative rule condition.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       BlockRequests_Methods) {
+  struct {
+    int id;
+    std::string url_filter;
+    std::vector<std::string> request_methods;
+    std::vector<std::string> excluded_request_methods;
+  } rules_data[] = {{1, "default", {}, {}},
+                    {2, "included", {"head", "put"}, {}},
+                    {3, "excluded", {}, {"options", "patch"}},
+                    {4, "combination", {"get"}, {"put"}}};
+
+  std::vector<TestRule> rules;
+  for (const auto& rule_data : rules_data) {
+    TestRule rule = CreateGenericRule(rule_data.id);
+    rule.condition->url_filter = rule_data.url_filter;
+
+    // An empty list is not allowed for the "requestMethods" property.
+    if (!rule_data.request_methods.empty())
+      rule.condition->request_methods = rule_data.request_methods;
+
+    rule.condition->excluded_request_methods =
+        rule_data.excluded_request_methods;
+    rules.push_back(rule);
+  }
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
+
+  struct {
+    std::string path;
+    std::string expected_blocked_request_methods;
+  } test_cases[] = {{"default", "delete,get,head,options,patch,post,put"},
+                    {"included", "head,put"},
+                    {"excluded", "delete,get,head,post,put"},
+                    {"combination", "get"}};
+
+  const char kPerformRequestWithAllMethodsScript[] = R"(
+    {
+      const allRequestMethods = ["delete", "get", "head", "options", "patch",
+                                 "post", "put"];
+      const url = "/empty.html?%s";
+
+      let blockedMethods = [];
+
+      Promise.allSettled(
+        allRequestMethods.map(method =>
+          fetch(url, {method}).catch(() => { blockedMethods.push(method); })
+        )
+      ).then(() =>
+      {
+        window.domAutomationController.send(blockedMethods.sort().join());
+      });
+    }
+  )";
+
+  GURL url = embedded_test_server()->GetURL("abc.com", "/empty.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::RenderFrameHost* main_frame = GetMainFrame();
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(base::StringPrintf("Path: %s", test_case.path.c_str()));
+    std::string actual_blocked_request_methods;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        main_frame,
+        base::StringPrintf(kPerformRequestWithAllMethodsScript,
+                           test_case.path.c_str()),
+        &actual_blocked_request_methods));
+    EXPECT_EQ(test_case.expected_blocked_request_methods,
+              actual_blocked_request_methods);
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

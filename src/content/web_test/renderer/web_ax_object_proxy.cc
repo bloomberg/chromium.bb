@@ -31,10 +31,12 @@ namespace {
 // Map role value to string, matching Safari/Mac platform implementation to
 // avoid rebaselining web tests.
 std::string RoleToString(ax::mojom::Role role) {
-  constexpr int kSkipPrefixLen = 7;  /// Length of "Role::k"
+  std::string prefix = "k";
   std::ostringstream result;
   result << role;
-  return "AXRole: AX" + result.str().substr(kSkipPrefixLen);
+  // Check that |result| starts with |prefix|.
+  DCHECK_EQ(result.str().find(prefix), 0ull);
+  return "AXRole: AX" + result.str().substr(prefix.size());
 }
 
 std::string GetStringValue(const blink::WebAXObject& object) {
@@ -46,7 +48,7 @@ std::string GetStringValue(const blink::WebAXObject& object) {
     unsigned int blue = color & 0xFF;
     value = base::StringPrintf("rgba(%d, %d, %d, 1)", red, green, blue);
   } else {
-    value = object.StringValue().Utf8();
+    value = object.GetValueForControl().Utf8();
   }
   return value.insert(0, "AXValue: ");
 }
@@ -562,7 +564,7 @@ int WebAXObjectProxy::IntValue() {
   } else if (accessibility_object_.Role() == ax::mojom::Role::kHeading) {
     return accessibility_object_.HeadingLevel();
   } else {
-    return atoi(accessibility_object_.StringValue().Utf8().data());
+    return atoi(accessibility_object_.GetValueForControl().Utf8().data());
   }
 }
 
@@ -1401,8 +1403,9 @@ void WebAXObjectProxy::Press() {
 bool WebAXObjectProxy::SetValue(const std::string& value) {
   UpdateLayout();
   if (GetAXNodeData().GetRestriction() != ax::mojom::Restriction::kNone ||
-      accessibility_object_.StringValue().IsEmpty())
+      accessibility_object_.GetValueForControl().IsEmpty()) {
     return false;
+  }
 
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kSetValue;

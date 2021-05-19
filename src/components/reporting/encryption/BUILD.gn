@@ -4,6 +4,48 @@
 
 import("//build/config/features.gni")
 
+static_library("encryption_module_interface") {
+  sources = [
+    "encryption_module_interface.cc",
+    "encryption_module_interface.h",
+  ]
+  deps = [
+    "//base",
+    "//components/reporting/proto:record_proto",
+    "//components/reporting/util:status",
+  ]
+}
+
+static_library("primitives") {
+  sources = [
+    "primitives.cc",
+    "primitives.h",
+  ]
+
+  deps = [
+    "//base",
+    "//crypto",
+    "//crypto:platform",
+    "//third_party/boringssl",
+  ]
+}
+
+static_library("testing_primitives") {
+  testonly = true
+  sources = [
+    "testing_primitives.cc",
+    "testing_primitives.h",
+  ]
+  deps = [
+    ":primitives",
+    "//base",
+    "//base/test:test_support",
+    "//crypto",
+    "//crypto:platform",
+    "//third_party/boringssl",
+  ]
+}
+
 static_library("encryption_module") {
   sources = [
     "encryption_module.cc",
@@ -11,6 +53,7 @@ static_library("encryption_module") {
   ]
   deps = [
     ":encryption",
+    ":encryption_module_interface",
     "//base",
     "//components/reporting/proto:record_proto",
     "//components/reporting/util:status",
@@ -23,28 +66,26 @@ static_library("encryption") {
     "encryption.h",
   ]
   deps = [
+    ":primitives",
     "//base",
     "//components/reporting/proto:record_proto",
     "//components/reporting/util:status",
-    "//crypto",
-    "//crypto:platform",
-    "//third_party/boringssl",
   ]
 }
 
 static_library("decryption") {
+  testonly = true
   sources = [
     "decryption.cc",
     "decryption.h",
   ]
   deps = [
     ":encryption",
+    ":primitives",
+    ":testing_primitives",
     "//base",
     "//components/reporting/proto:record_proto",
     "//components/reporting/util:status",
-    "//crypto",
-    "//crypto:platform",
-    "//third_party/boringssl",
   ]
 }
 
@@ -54,9 +95,9 @@ static_library("verification") {
     "verification.h",
   ]
   deps = [
+    ":primitives",
     "//base",
     "//components/reporting/util:status",
-    "//third_party/boringssl",
   ]
 }
 
@@ -70,6 +111,9 @@ static_library("test_support") {
     ":decryption",
     ":encryption",
     ":encryption_module",
+    ":encryption_module_interface",
+    ":primitives",
+    ":testing_primitives",
     ":verification",
     "//base",
     "//base/test:test_support",
@@ -78,7 +122,6 @@ static_library("test_support") {
     "//components/reporting/util:status_macros",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/boringssl:boringssl",
   ]
 }
 
@@ -88,21 +131,25 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "encryption_module_unittest.cc",
+    "encryption_unittest.cc",
     "verification_unittest.cc",
   ]
   deps = [
     ":decryption",
     ":encryption",
     ":encryption_module",
+    ":encryption_module_interface",
+    ":primitives",
     ":test_support",
+    ":testing_primitives",
     ":verification",
     "//base",
     "//base/test:test_support",
     "//components/reporting/proto:record_proto",
     "//components/reporting/util:status",
     "//components/reporting/util:status_macros",
+    "//components/reporting/util:test_callbacks_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/boringssl:boringssl",
   ]
 }

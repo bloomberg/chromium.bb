@@ -1,7 +1,7 @@
-/* Copyright (c) 2020 The Khronos Group Inc.
- * Copyright (c) 2020 Valve Corporation
- * Copyright (c) 2020 LunarG, Inc.
- * Copyright (C) 2020 Google Inc.
+/* Copyright (c) 2020-2021 The Khronos Group Inc.
+ * Copyright (c) 2020-2021 Valve Corporation
+ * Copyright (c) 2020-2021 LunarG, Inc.
+ * Copyright (C) 2020-2021 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@
 #define SPARSE_CONTAINERS_H_
 #include <cassert>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 namespace sparse_container {
@@ -91,7 +90,7 @@ class SparseVector {
     typedef IndexType_ IndexType;
     typedef T value_type;
     typedef value_type ValueType;
-    typedef std::unordered_map<IndexType, ValueType> SparseType;
+    typedef layer_data::unordered_map<IndexType, ValueType> SparseType;
     typedef std::vector<ValueType> DenseType;
 
     SparseVector(IndexType start, IndexType end)
@@ -351,7 +350,7 @@ class SparseVector {
             ValueType default_value = HasFullRange() ? full_range_value_ : kDefaultValue;
             dense_.reset(new DenseType((range_max_ - range_min_), default_value));
             DenseType &ray = *dense_;
-            for (auto const &item : *sparse_) {
+            for (const auto &item : *sparse_) {
                 ray[item.first - range_min_] = item.second;
             }
             sparse_.reset();

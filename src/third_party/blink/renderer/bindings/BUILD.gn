@@ -65,6 +65,9 @@ if (use_blink_v8_binding_new_idl_interface) {
 
 template("collect_idl_files") {
   action_with_pydeps(target_name) {
+    # TODO(crbug.com/1194277): Investigate non-determinism in Py3 builds.
+    run_under_python2 = true
+
     script = "${bindings_scripts_dir}/collect_idl_files.py"
 
     inputs = invoker.inputs
@@ -135,6 +138,9 @@ collect_idl_files("web_idl_in_modules_for_testing") {
 }
 
 action_with_pydeps("web_idl_database") {
+  # TODO(crbug.com/1194277): Investigate non-determinism in Py3 builds.
+  run_under_python2 = true
+
   visibility += [ "//tools/privacy_budget/blink_apis:*" ]
 
   script = "${bindings_scripts_dir}/build_web_idl_database.py"
@@ -165,6 +171,9 @@ action_with_pydeps("web_idl_database") {
 
 template("generate_bindings") {
   action_with_pydeps(target_name) {
+    # TODO(crbug.com/1194277): Investigate non-determinism in Py3 builds.
+    run_under_python2 = true
+
     script = "${bindings_scripts_dir}/generate_bindings.py"
 
     if (defined(invoker.pool)) {
@@ -226,6 +235,13 @@ generate_bindings("generate_bindings_all") {
     outputs += generated_namespace_sources_in_core +
                generated_namespace_sources_in_modules
   }
+  targets += [ "typedef" ]
+  outputs +=
+      generated_typedef_sources_in_core + generated_typedef_sources_in_modules
+  targets += [ "union" ]
+  outputs +=
+      generated_union_sources_in_core + generated_union_sources_in_modules +
+      generated_union_sources_for_testing_in_core
 }
 
 # Exposes the libraries that affect the resulting blob image of the V8 context

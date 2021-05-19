@@ -105,13 +105,13 @@ void AutofillPopupControllerImpl::Show(
     just_created = true;
   }
 
-  WeakPtr<AutofillPopupControllerImpl> weak_this = GetWeakPtr();
   if (just_created) {
 #if defined(OS_ANDROID)
     ManualFillingController::GetOrCreate(web_contents_)
         ->UpdateSourceAvailability(FillingSource::AUTOFILL,
                                    !suggestions.empty());
 #endif
+    WeakPtr<AutofillPopupControllerImpl> weak_this = GetWeakPtr();
     view_->Show();
     // crbug.com/1055981. |this| can be destroyed synchronously at this point.
     if (!weak_this)
@@ -128,9 +128,6 @@ void AutofillPopupControllerImpl::Show(
       selected_line_.reset();
 
     OnSuggestionsChanged();
-    // crbug.com/1200766. |this| can be destroyed synchronously at this point.
-    if (!weak_this)
-      return;
   }
 
   static_cast<ContentAutofillDriver*>(delegate_->GetAutofillDriver())
@@ -145,8 +142,8 @@ void AutofillPopupControllerImpl::Show(
 }
 
 void AutofillPopupControllerImpl::UpdateDataListValues(
-    const std::vector<base::string16>& values,
-    const std::vector<base::string16>& labels) {
+    const std::vector<std::u16string>& values,
+    const std::vector<std::u16string>& labels) {
   selected_line_.reset();
   // Remove all the old data list values, which should always be at the top of
   // the list if they are present.
@@ -330,20 +327,20 @@ const Suggestion& AutofillPopupControllerImpl::GetSuggestionAt(int row) const {
   return suggestions_[row];
 }
 
-const base::string16& AutofillPopupControllerImpl::GetSuggestionValueAt(
+const std::u16string& AutofillPopupControllerImpl::GetSuggestionValueAt(
     int row) const {
   return suggestions_[row].value;
 }
 
-const base::string16& AutofillPopupControllerImpl::GetSuggestionLabelAt(
+const std::u16string& AutofillPopupControllerImpl::GetSuggestionLabelAt(
     int row) const {
   return suggestions_[row].label;
 }
 
 bool AutofillPopupControllerImpl::GetRemovalConfirmationText(
     int list_index,
-    base::string16* title,
-    base::string16* body) {
+    std::u16string* title,
+    std::u16string* body) {
   return delegate_->GetDeletionConfirmationText(
       suggestions_[list_index].value, suggestions_[list_index].frontend_id,
       title, body);

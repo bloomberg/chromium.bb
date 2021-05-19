@@ -43,7 +43,6 @@
 #include "decode.h"
 #include "hwconfig.h"
 #include "internal.h"
-#include "packet_internal.h"
 #include "thread.h"
 
 typedef struct FramePool {
@@ -67,7 +66,8 @@ typedef struct FramePool {
 
 static int apply_param_change(AVCodecContext *avctx, const AVPacket *avpkt)
 {
-    int size, ret;
+    int ret;
+    buffer_size_t size;
     const uint8_t *data;
     uint32_t flags;
     int64_t val;
@@ -145,68 +145,42 @@ fail2:
 
 #define IS_EMPTY(pkt) (!(pkt)->data)
 
-static int extract_packet_props(AVCodecInternal *avci, AVPacket *pkt)
+static int copy_packet_props(AVPacket *dst, const AVPacket *src)
 {
-    int ret = 0;
-
-    ret = avpriv_packet_list_put(&avci->pkt_props, &avci->pkt_props_tail, pkt,
-                                 av_packet_copy_props, 0);
+    int ret = av_packet_copy_props(dst, src);
     if (ret < 0)
         return ret;
-    avci->pkt_props_tail->pkt.size = pkt->size; // HACK: Needed for ff_decode_frame_props().
-    avci->pkt_props_tail->pkt.data = (void*)1;  // HACK: Needed for IS_EMPTY().
 
-    if (IS_EMPTY(avci->last_pkt_props)) {
-        ret = avpriv_packet_list_get(&avci->pkt_props,
-                                     &avci->pkt_props_tail,
-                                     avci->last_pkt_props);
-        av_assert0(ret != AVERROR(EAGAIN));
-    }
-    return ret;
+    dst->size = src->size; // HACK: Needed for ff_decode_frame_props().
+    dst->data = (void*)1;  // HACK: Needed for IS_EMPTY().
+
+    return 0;
 }
 
-static int unrefcount_frame(AVCodecInternal *avci, AVFrame *frame)
+static int extract_packet_props(AVCodecInternal *avci, const AVPacket *pkt)
 {
-    int ret;
+    AVPacket tmp = { 0 };
+    int ret = 0;
 
-    /* move the original frame to our backup */
-    av_frame_unref(avci->to_free);
-    av_frame_move_ref(avci->to_free, frame);
+    if (IS_EMPTY(avci->last_pkt_props)) {
+        if (av_fifo_size(avci->pkt_props) >= sizeof(*pkt)) {
+            av_fifo_generic_read(avci->pkt_props, avci->last_pkt_props,
+                                 sizeof(*avci->last_pkt_props), NULL);
+        } else
+            return copy_packet_props(avci->last_pkt_props, pkt);
+    }
 
-    /* now copy everything except the AVBufferRefs back
-     * note that we make a COPY of the side data, so calling av_frame_free() on
-     * the caller's frame will work properly */
-    ret = av_frame_copy_props(frame, avci->to_free);
+    if (av_fifo_space(avci->pkt_props) < sizeof(*pkt)) {
+        ret = av_fifo_grow(avci->pkt_props, sizeof(*pkt));
+        if (ret < 0)
+            return ret;
+    }
+
+    ret = copy_packet_props(&tmp, pkt);
     if (ret < 0)
         return ret;
 
-    memcpy(frame->data,     avci->to_free->data,     sizeof(frame->data));
-    memcpy(frame->linesize, avci->to_free->linesize, sizeof(frame->linesize));
-    if (avci->to_free->extended_data != avci->to_free->data) {
-        int planes = avci->to_free->channels;
-        int size   = planes * sizeof(*frame->extended_data);
-
-        if (!size) {
-            av_frame_unref(frame);
-            return AVERROR_BUG;
-        }
-
-        frame->extended_data = av_malloc(size);
-        if (!frame->extended_data) {
-            av_frame_unref(frame);
-            return AVERROR(ENOMEM);
-        }
-        memcpy(frame->extended_data, avci->to_free->extended_data,
-               size);
-    } else
-        frame->extended_data = frame->data;
-
-    frame->format         = avci->to_free->format;
-    frame->width          = avci->to_free->width;
-    frame->height         = avci->to_free->height;
-    frame->channel_layout = avci->to_free->channel_layout;
-    frame->nb_samples     = avci->to_free->nb_samples;
-    frame->channels       = avci->to_free->channels;
+    av_fifo_generic_write(avci->pkt_props, &tmp, sizeof(tmp), NULL);
 
     return 0;
 }
@@ -267,8 +241,10 @@ int ff_decode_get_packet(AVCodecContext *avctx, AVPacket *pkt)
     if (ret < 0)
         goto finish;
 
+#if FF_API_OLD_ENCDEC
     if (avctx->codec->receive_frame)
         avci->compat_decode_consumed += pkt->size;
+#endif
 
     return 0;
 finish:
@@ -372,21 +348,14 @@ static inline int decode_simple_internal(AVCodecContext *avctx, AVFrame *frame, 
     if (avctx->codec->type == AVMEDIA_TYPE_VIDEO) {
         if (frame->flags & AV_FRAME_FLAG_DISCARD)
             got_frame = 0;
-        if (got_frame)
-            frame->best_effort_timestamp = guess_correct_pts(avctx,
-                                                             frame->pts,
-                                                             frame->pkt_dts);
     } else if (avctx->codec->type == AVMEDIA_TYPE_AUDIO) {
         uint8_t *side;
-        int side_size;
+        buffer_size_t side_size;
         uint32_t discard_padding = 0;
         uint8_t skip_reason = 0;
         uint8_t discard_reason = 0;
 
         if (ret >= 0 && got_frame) {
-            frame->best_effort_timestamp = guess_correct_pts(avctx,
-                                                             frame->pts,
-                                                             frame->pkt_dts);
             if (frame->format == AV_SAMPLE_FMT_NONE)
                 frame->format = avctx->sample_fmt;
             if (!frame->channel_layout)
@@ -522,7 +491,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
         }
     }
 
+#if FF_API_OLD_ENCDEC
     avci->compat_decode_consumed += ret;
+#endif
 
     if (ret >= pkt->size || ret < 0) {
         av_packet_unref(pkt);
@@ -579,6 +550,10 @@ static int decode_receive_frame_internal(AVCodecContext *avctx, AVFrame *frame)
         avci->draining_done = 1;
 
     if (!ret) {
+        frame->best_effort_timestamp = guess_correct_pts(avctx,
+                                                         frame->pts,
+                                                         frame->pkt_dts);
+
         /* the only case where decode data is not set should be decoders
          * that do not call ff_get_buffer() */
         av_assert0((frame->private_ref && frame->private_ref->size == sizeof(FrameDecodeData)) ||
@@ -742,6 +717,54 @@ int attribute_align_arg avcodec_receive_frame(AVCodecContext *avctx, AVFrame *fr
     return 0;
 }
 
+#if FF_API_OLD_ENCDEC
+FF_DISABLE_DEPRECATION_WARNINGS
+static int unrefcount_frame(AVCodecInternal *avci, AVFrame *frame)
+{
+    int ret;
+
+    /* move the original frame to our backup */
+    av_frame_unref(avci->to_free);
+    av_frame_move_ref(avci->to_free, frame);
+
+    /* now copy everything except the AVBufferRefs back
+     * note that we make a COPY of the side data, so calling av_frame_free() on
+     * the caller's frame will work properly */
+    ret = av_frame_copy_props(frame, avci->to_free);
+    if (ret < 0)
+        return ret;
+
+    memcpy(frame->data,     avci->to_free->data,     sizeof(frame->data));
+    memcpy(frame->linesize, avci->to_free->linesize, sizeof(frame->linesize));
+    if (avci->to_free->extended_data != avci->to_free->data) {
+        int planes = avci->to_free->channels;
+        int size   = planes * sizeof(*frame->extended_data);
+
+        if (!size) {
+            av_frame_unref(frame);
+            return AVERROR_BUG;
+        }
+
+        frame->extended_data = av_malloc(size);
+        if (!frame->extended_data) {
+            av_frame_unref(frame);
+            return AVERROR(ENOMEM);
+        }
+        memcpy(frame->extended_data, avci->to_free->extended_data,
+               size);
+    } else
+        frame->extended_data = frame->data;
+
+    frame->format         = avci->to_free->format;
+    frame->width          = avci->to_free->width;
+    frame->height         = avci->to_free->height;
+    frame->channel_layout = avci->to_free->channel_layout;
+    frame->nb_samples     = avci->to_free->nb_samples;
+    frame->channels       = avci->to_free->channels;
+
+    return 0;
+}
+
 static int compat_decode(AVCodecContext *avctx, AVFrame *frame,
                          int *got_frame, const AVPacket *pkt)
 {
@@ -837,6 +860,8 @@ int attribute_align_arg avcodec_decode_audio4(AVCodecContext *avctx,
 {
     return compat_decode(avctx, frame, got_frame_ptr, avpkt);
 }
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
 static void get_subtitle_defaults(AVSubtitle *sub)
 {
@@ -845,55 +870,58 @@ static void get_subtitle_defaults(AVSubtitle *sub)
 }
 
 #define UTF8_MAX_BYTES 4 /* 5 and 6 bytes sequences should not be used */
-static int recode_subtitle(AVCodecContext *avctx,
-                           AVPacket *outpkt, const AVPacket *inpkt)
+static int recode_subtitle(AVCodecContext *avctx, AVPacket **outpkt,
+                           AVPacket *inpkt, AVPacket *buf_pkt)
 {
 #if CONFIG_ICONV
     iconv_t cd = (iconv_t)-1;
     int ret = 0;
     char *inb, *outb;
     size_t inl, outl;
-    AVPacket tmp;
 #endif
 
-    if (avctx->sub_charenc_mode != FF_SUB_CHARENC_MODE_PRE_DECODER || inpkt->size == 0)
+    if (avctx->sub_charenc_mode != FF_SUB_CHARENC_MODE_PRE_DECODER || inpkt->size == 0) {
+        *outpkt = inpkt;
         return 0;
+    }
 
 #if CONFIG_ICONV
-    cd = iconv_open("UTF-8", avctx->sub_charenc);
-    av_assert0(cd != (iconv_t)-1);
-
     inb = inpkt->data;
     inl = inpkt->size;
 
     if (inl >= INT_MAX / UTF8_MAX_BYTES - AV_INPUT_BUFFER_PADDING_SIZE) {
         av_log(avctx, AV_LOG_ERROR, "Subtitles packet is too big for recoding\n");
-        ret = AVERROR(ENOMEM);
-        goto end;
+        return AVERROR(ERANGE);
     }
 
-    ret = av_new_packet(&tmp, inl * UTF8_MAX_BYTES);
+    cd = iconv_open("UTF-8", avctx->sub_charenc);
+    av_assert0(cd != (iconv_t)-1);
+
+    ret = av_new_packet(buf_pkt, inl * UTF8_MAX_BYTES);
     if (ret < 0)
         goto end;
-    outpkt->buf  = tmp.buf;
-    outpkt->data = tmp.data;
-    outpkt->size = tmp.size;
-    outb = outpkt->data;
-    outl = outpkt->size;
+    ret = av_packet_copy_props(buf_pkt, inpkt);
+    if (ret < 0)
+        goto end;
+    outb = buf_pkt->data;
+    outl = buf_pkt->size;
 
     if (iconv(cd, &inb, &inl, &outb, &outl) == (size_t)-1 ||
         iconv(cd, NULL, NULL, &outb, &outl) == (size_t)-1 ||
-        outl >= outpkt->size || inl != 0) {
+        outl >= buf_pkt->size || inl != 0) {
         ret = FFMIN(AVERROR(errno), -1);
         av_log(avctx, AV_LOG_ERROR, "Unable to recode subtitle event \"%s\" "
                "from %s to UTF-8\n", inpkt->data, avctx->sub_charenc);
-        av_packet_unref(&tmp);
         goto end;
     }
-    outpkt->size -= outl;
-    memset(outpkt->data + outpkt->size, 0, outl);
+    buf_pkt->size -= outl;
+    memset(buf_pkt->data + buf_pkt->size, 0, outl);
+    *outpkt = buf_pkt;
 
+    ret = 0;
 end:
+    if (ret < 0)
+        av_packet_unref(buf_pkt);
     if (cd != (iconv_t)-1)
         iconv_close(cd);
     return ret;
@@ -999,7 +1027,7 @@ int avcodec_decode_subtitle2(AVCodecContext *avctx, AVSubtitle *sub,
                              int *got_sub_ptr,
                              AVPacket *avpkt)
 {
-    int i, ret = 0;
+    int ret = 0;
 
     if (!avpkt->data && avpkt->size) {
         av_log(avctx, AV_LOG_ERROR, "invalid packet: NULL data, size != 0\n");
@@ -1016,69 +1044,60 @@ int avcodec_decode_subtitle2(AVCodecContext *avctx, AVSubtitle *sub,
     get_subtitle_defaults(sub);
 
     if ((avctx->codec->capabilities & AV_CODEC_CAP_DELAY) || avpkt->size) {
-        AVPacket pkt_recoded = *avpkt;
+        AVCodecInternal *avci = avctx->internal;
+        AVPacket *pkt;
 
-        ret = recode_subtitle(avctx, &pkt_recoded, avpkt);
-        if (ret < 0) {
-            *got_sub_ptr = 0;
-        } else {
-             ret = extract_packet_props(avctx->internal, &pkt_recoded);
-             if (ret < 0)
-                return ret;
+        ret = recode_subtitle(avctx, &pkt, avpkt, avci->buffer_pkt);
+        if (ret < 0)
+            return ret;
 
-            if (avctx->pkt_timebase.num && avpkt->pts != AV_NOPTS_VALUE)
-                sub->pts = av_rescale_q(avpkt->pts,
-                                        avctx->pkt_timebase, AV_TIME_BASE_Q);
-            ret = avctx->codec->decode(avctx, sub, got_sub_ptr, &pkt_recoded);
-            av_assert1((ret >= 0) >= !!*got_sub_ptr &&
-                       !!*got_sub_ptr >= !!sub->num_rects);
+        if (avctx->pkt_timebase.num && avpkt->pts != AV_NOPTS_VALUE)
+            sub->pts = av_rescale_q(avpkt->pts,
+                                    avctx->pkt_timebase, AV_TIME_BASE_Q);
+        ret = avctx->codec->decode(avctx, sub, got_sub_ptr, pkt);
+        av_assert1((ret >= 0) >= !!*got_sub_ptr &&
+                   !!*got_sub_ptr >= !!sub->num_rects);
 
 #if FF_API_ASS_TIMING
-            if (avctx->sub_text_format == FF_SUB_TEXT_FMT_ASS_WITH_TIMINGS
-                && *got_sub_ptr && sub->num_rects) {
-                const AVRational tb = avctx->pkt_timebase.num ? avctx->pkt_timebase
-                                                              : avctx->time_base;
-                int err = convert_sub_to_old_ass_form(sub, avpkt, tb);
-                if (err < 0)
-                    ret = err;
-            }
+        if (avctx->sub_text_format == FF_SUB_TEXT_FMT_ASS_WITH_TIMINGS
+            && *got_sub_ptr && sub->num_rects) {
+            const AVRational tb = avctx->pkt_timebase.num ? avctx->pkt_timebase
+                                  : avctx->time_base;
+            int err = convert_sub_to_old_ass_form(sub, avpkt, tb);
+            if (err < 0)
+                ret = err;
+        }
 #endif
 
-            if (sub->num_rects && !sub->end_display_time && avpkt->duration &&
-                avctx->pkt_timebase.num) {
-                AVRational ms = { 1, 1000 };
-                sub->end_display_time = av_rescale_q(avpkt->duration,
-                                                     avctx->pkt_timebase, ms);
-            }
+        if (sub->num_rects && !sub->end_display_time && avpkt->duration &&
+            avctx->pkt_timebase.num) {
+            AVRational ms = { 1, 1000 };
+            sub->end_display_time = av_rescale_q(avpkt->duration,
+                                                 avctx->pkt_timebase, ms);
+        }
 
-            if (avctx->codec_descriptor->props & AV_CODEC_PROP_BITMAP_SUB)
-                sub->format = 0;
-            else if (avctx->codec_descriptor->props & AV_CODEC_PROP_TEXT_SUB)
-                sub->format = 1;
+        if (avctx->codec_descriptor->props & AV_CODEC_PROP_BITMAP_SUB)
+            sub->format = 0;
+        else if (avctx->codec_descriptor->props & AV_CODEC_PROP_TEXT_SUB)
+            sub->format = 1;
 
-            for (i = 0; i < sub->num_rects; i++) {
-                if (avctx->sub_charenc_mode != FF_SUB_CHARENC_MODE_IGNORE &&
-                    sub->rects[i]->ass && !utf8_check(sub->rects[i]->ass)) {
-                    av_log(avctx, AV_LOG_ERROR,
-                           "Invalid UTF-8 in decoded subtitles text; "
-                           "maybe missing -sub_charenc option\n");
-                    avsubtitle_free(sub);
-                    ret = AVERROR_INVALIDDATA;
-                    break;
-                }
-            }
-
-            if (avpkt->data != pkt_recoded.data) { // did we recode?
-                /* prevent from destroying side data from original packet */
-                pkt_recoded.side_data = NULL;
-                pkt_recoded.side_data_elems = 0;
-
-                av_packet_unref(&pkt_recoded);
+        for (unsigned i = 0; i < sub->num_rects; i++) {
+            if (avctx->sub_charenc_mode != FF_SUB_CHARENC_MODE_IGNORE &&
+                sub->rects[i]->ass && !utf8_check(sub->rects[i]->ass)) {
+                av_log(avctx, AV_LOG_ERROR,
+                       "Invalid UTF-8 in decoded subtitles text; "
+                       "maybe missing -sub_charenc option\n");
+                avsubtitle_free(sub);
+                ret = AVERROR_INVALIDDATA;
+                break;
             }
         }
 
         if (*got_sub_ptr)
             avctx->frame_number++;
+
+        if (pkt == avci->buffer_pkt) // did we recode?
+            av_packet_unref(avci->buffer_pkt);
     }
 
     return ret;
@@ -1691,7 +1710,7 @@ int avcodec_default_get_buffer2(AVCodecContext *avctx, AVFrame *frame, int flags
 
 static int add_metadata_from_side_data(const AVPacket *avpkt, AVFrame *frame)
 {
-    int size;
+    buffer_size_t size;
     const uint8_t *side_metadata;
 
     AVDictionary **frame_md = &frame->metadata;
@@ -1721,10 +1740,9 @@ int ff_decode_frame_props(AVCodecContext *avctx, AVFrame *frame)
         { AV_PKT_DATA_S12M_TIMECODE,              AV_FRAME_DATA_S12M_TIMECODE },
     };
 
-    if (IS_EMPTY(pkt))
-        avpriv_packet_list_get(&avctx->internal->pkt_props,
-                               &avctx->internal->pkt_props_tail,
-                               pkt);
+    if (IS_EMPTY(pkt) && av_fifo_size(avctx->internal->pkt_props) >= sizeof(*pkt))
+        av_fifo_generic_read(avctx->internal->pkt_props,
+                             pkt, sizeof(*pkt), NULL);
 
     if (pkt) {
         frame->pts = pkt->pts;
@@ -1738,7 +1756,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         frame->pkt_size     = pkt->size;
 
         for (i = 0; i < FF_ARRAY_ELEMS(sd); i++) {
-            int size;
+            buffer_size_t size;
             uint8_t *packet_sd = av_packet_get_side_data(pkt, sd[i].packet, &size);
             if (packet_sd) {
                 AVFrameSideData *frame_sd = av_frame_new_side_data(frame,

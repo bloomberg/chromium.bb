@@ -31,6 +31,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
@@ -149,7 +150,7 @@ void DisplayMediaAccessHandler::HandleRequest(
       return;
     }
     if (!rfh->IsFeatureEnabled(
-            blink::mojom::FeaturePolicyFeature::kDisplayCapture)) {
+            blink::mojom::PermissionsPolicyFeature::kDisplayCapture)) {
       bad_message::ReceivedBadMessage(
           rfh->GetProcess(), bad_message::BadMessageReason::
                                  RFH_DISPLAY_CAPTURE_PERMISSION_MISSING);

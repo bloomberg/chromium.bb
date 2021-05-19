@@ -17,7 +17,6 @@
 
 #include "base/component_export.h"
 #include "base/files/file_path.h"
-#include "base/strings/string16.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/file_info.h"
 #include "ui/base/dragdrop/download_file_info.h"
@@ -52,17 +51,17 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
   virtual void MarkOriginatedFromRenderer() = 0;
   virtual bool DidOriginateFromRenderer() const = 0;
 
-  virtual void SetString(const base::string16& data) = 0;
-  virtual void SetURL(const GURL& url, const base::string16& title) = 0;
+  virtual void SetString(const std::u16string& data) = 0;
+  virtual void SetURL(const GURL& url, const std::u16string& title) = 0;
   virtual void SetFilename(const base::FilePath& path) = 0;
   virtual void SetFilenames(const std::vector<FileInfo>& file_names) = 0;
   virtual void SetPickledData(const ClipboardFormatType& format,
                               const base::Pickle& data) = 0;
 
-  virtual bool GetString(base::string16* data) const = 0;
+  virtual bool GetString(std::u16string* data) const = 0;
   virtual bool GetURLAndTitle(FilenameToURLPolicy policy,
                               GURL* url,
-                              base::string16* title) const = 0;
+                              std::u16string* title) const = 0;
   virtual bool GetFilename(base::FilePath* path) const = 0;
   virtual bool GetFilenames(std::vector<FileInfo>* file_names) const = 0;
   virtual bool GetPickledData(const ClipboardFormatType& format,
@@ -73,14 +72,12 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
   virtual bool HasFile() const = 0;
   virtual bool HasCustomFormat(const ClipboardFormatType& format) const = 0;
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
   virtual void SetFileContents(const base::FilePath& filename,
                                const std::string& file_contents) = 0;
-#endif
-#if defined(OS_WIN)
   virtual bool GetFileContents(base::FilePath* filename,
                                std::string* file_contents) const = 0;
   virtual bool HasFileContents() const = 0;
+#if defined(OS_WIN)
   virtual bool HasVirtualFilenames() const = 0;
   virtual bool GetVirtualFilenames(std::vector<FileInfo>* file_names) const = 0;
   virtual bool GetVirtualFilesAsTempFiles(
@@ -96,8 +93,8 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
 #endif
 
 #if defined(USE_AURA)
-  virtual void SetHtml(const base::string16& html, const GURL& base_url) = 0;
-  virtual bool GetHtml(base::string16* html, GURL* base_url) const = 0;
+  virtual void SetHtml(const std::u16string& html, const GURL& base_url) = 0;
+  virtual bool GetHtml(std::u16string* html, GURL* base_url) const = 0;
   virtual bool HasHtml() const = 0;
 #endif
 

@@ -42,61 +42,66 @@ class InputStreamPreprocessor {
   DISALLOW_NEW();
 
  public:
-  InputStreamPreprocessor(Tokenizer* tokenizer) : tokenizer_(tokenizer) {
-    Reset();
-  }
+  explicit InputStreamPreprocessor(Tokenizer* tokenizer)
+      : tokenizer_(tokenizer) {}
 
-  ALWAYS_INLINE UChar NextInputCharacter() const {
-    return next_input_character_;
-  }
-
+  // http://www.whatwg.org/specs/web-apps/current-work/#next-input-character
   // Returns whether we succeeded in peeking at the next character.
   // The only way we can fail to peek is if there are no more
   // characters in |source| (after collapsing \r\n, etc).
-  ALWAYS_INLINE bool Peek(SegmentedString& source) {
-    next_input_character_ = source.CurrentChar();
-
-    // Every branch in this function is expensive, so we have a
-    // fast-reject branch for characters that don't require special
-    // handling. Please run the parser benchmark whenever you touch
-    // this function. It's very hot.
-    static const UChar kSpecialCharacterMask = '\n' | '\r' | '\0';
-    if (next_input_character_ & ~kSpecialCharacterMask) {
-      skip_next_new_line_ = false;
-      return true;
-    }
-    return ProcessNextInputCharacter(source);
+  ALWAYS_INLINE bool Peek(SegmentedString& source, UChar& cc) {
+    cc = source.CurrentChar();
+    return ProcessNextInputCharacter(source, cc);
   }
 
   // Returns whether there are more characters in |source| after advancing.
-  ALWAYS_INLINE bool Advance(SegmentedString& source) {
-    source.AdvanceAndUpdateLineNumber();
-    if (source.IsEmpty())
-      return false;
-    return Peek(source);
+  ALWAYS_INLINE bool Advance(SegmentedString& source, UChar& cc) {
+    cc = source.AdvanceAndUpdateLineNumber();
+    return ProcessNextInputCharacter(source, cc);
+  }
+
+  ALWAYS_INLINE bool AdvancePastNonNewline(SegmentedString& source, UChar& cc) {
+    cc = source.AdvancePastNonNewline();
+    return ProcessNextInputCharacter(source, cc);
   }
 
   bool SkipNextNewLine() const { return skip_next_new_line_; }
 
   void Reset(bool skip_next_new_line = false) {
-    next_input_character_ = '\0';
     skip_next_new_line_ = skip_next_new_line;
   }
 
  private:
-  bool ProcessNextInputCharacter(SegmentedString& source) {
-  ProcessAgain:
-    DCHECK_EQ(next_input_character_, source.CurrentChar());
-
-    if (next_input_character_ == '\n' && skip_next_new_line_) {
+  ALWAYS_INLINE bool ProcessNextInputCharacter(SegmentedString& source,
+                                               UChar& cc) {
+    // Every branch in this function is expensive, so we have a
+    // fast-reject branch for characters that don't require special
+    // handling. Please run the parser benchmark whenever you touch
+    // this function. It's very hot.
+    static const UChar kSpecialCharacterMask = '\n' | '\r' | '\0';
+    if (cc & ~kSpecialCharacterMask) {
       skip_next_new_line_ = false;
-      source.AdvancePastNewlineAndUpdateLineNumber();
+      return true;
+    }
+    // |source| will only be empty if it returns a null character
+    // after advancing.
+    if (source.IsEmpty())
+      return false;
+    return ProcessNextInputSpecialCharacter(source, cc);
+  }
+
+  bool ProcessNextInputSpecialCharacter(SegmentedString& source, UChar& cc) {
+  ProcessAgain:
+    DCHECK_EQ(cc, source.CurrentChar());
+
+    if (cc == '\n' && skip_next_new_line_) {
+      skip_next_new_line_ = false;
+      cc = source.AdvancePastNewlineAndUpdateLineNumber();
       if (source.IsEmpty())
         return false;
-      next_input_character_ = source.CurrentChar();
     }
-    if (next_input_character_ == '\r') {
-      next_input_character_ = '\n';
+    if (cc == '\r') {
+      cc = '\n';
       skip_next_new_line_ = true;
     } else {
       skip_next_new_line_ = false;
@@ -105,16 +110,14 @@ class InputStreamPreprocessor {
       // replaced by the replacement character. We suspect this is a problem
       // with the spec as doing that filtering breaks surrogate pair handling
       // and causes us not to match Minefield.
-      if (next_input_character_ == '\0' &&
-          !ShouldTreatNullAsEndOfFileMarker(source)) {
+      if (cc == '\0' && !ShouldTreatNullAsEndOfFileMarker(source)) {
         if (tokenizer_->ShouldSkipNullCharacters()) {
-          source.AdvancePastNonNewline();
+          cc = source.AdvancePastNonNewline();
           if (source.IsEmpty())
             return false;
-          next_input_character_ = source.CurrentChar();
           goto ProcessAgain;
         }
-        next_input_character_ = 0xFFFD;
+        cc = 0xFFFD;
       }
     }
     return true;
@@ -125,10 +128,7 @@ class InputStreamPreprocessor {
   }
 
   Tokenizer* tokenizer_;
-
-  // http://www.whatwg.org/specs/web-apps/current-work/#next-input-character
-  UChar next_input_character_;
-  bool skip_next_new_line_;
+  bool skip_next_new_line_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(InputStreamPreprocessor);
 };

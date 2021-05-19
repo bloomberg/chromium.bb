@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "components/crx_file/crx_verifier.h"
 

@@ -60,6 +60,7 @@ import org.chromium.content_public.browser.navigation_controller.UserAgentOverri
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.ColorUtils;
 import org.chromium.url.GURL;
@@ -115,7 +116,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     private TabViewManagerImpl mTabViewManager;
 
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
-    private final ObserverList<TabObserver> mObservers = new ObserverList<>();
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    protected final ObserverList<TabObserver> mObservers = new ObserverList<>();
 
     // Content layer Delegates
     private TabWebContentsDelegateAndroidImpl mWebContentsDelegate;
@@ -864,6 +866,14 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
                 CriticalPersistedTabData.from(this).setUrl(new GURL(loadUrlParams.getUrl()));
             }
 
+            // The {@link mDelegateFactory} needs to be set before calling
+            // {@link TabHelpers.initTabHelpers()}. This is because it creates a
+            // TabBrowserControlsConstraintsHelper, and
+            // {@link TabBrowserControlsConstraintsHelper#updateVisibilityDelegate()} will call the
+            // Tab#getDelegateFactory().createBrowserControlsVisibilityDelegate().
+            // See https://crbug.com/1179419.
+            mDelegateFactory = delegateFactory;
+
             TabHelpers.initTabHelpers(this, parent);
 
             if (tabState != null) {
@@ -872,7 +882,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
             initializeNative();
 
-            mDelegateFactory = delegateFactory;
             RevenueStats.getInstance().tabCreated(this);
 
             // If there is a frozen WebContents state or a pending lazy load, don't create a new
@@ -948,7 +957,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      */
     void restoreFieldsFromState(TabState state) {
         assert state != null;
-        assert !mUsedCriticalPersistedTabData;
         CriticalPersistedTabData.from(this).setWebContentsState(state.contentsState);
         CriticalPersistedTabData.from(this).setTimestampMillis(state.timestampMillis);
         CriticalPersistedTabData.from(this).setUrl(
@@ -1279,8 +1287,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
                 TabImplJni.get().onPhysicalBackingSizeChanged(
                         mNativeTabAndroid, webContents, bounds.right, bounds.bottom);
             }
-            webContents.onShow();
             initWebContents(webContents);
+            webContents.onShow();
         });
 
         if (didStartLoad) {
@@ -1326,12 +1334,12 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     }
 
     @CalledByNative
-    private static long[] getAllNativePtrs(TabImpl[] tabsArray) {
+    private static long[] getAllNativePtrs(Tab[] tabsArray) {
         if (tabsArray == null) return null;
 
         long[] tabsPtrArray = new long[tabsArray.length];
         for (int i = 0; i < tabsArray.length; i++) {
-            tabsPtrArray[i] = tabsArray[i].getNativePtr();
+            tabsPtrArray[i] = ((TabImpl) tabsArray[i]).getNativePtr();
         }
         return tabsPtrArray;
     }
@@ -1618,11 +1626,20 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             // WebContents.
             TabImplJni.get().destroyWebContents(mNativeTabAndroid);
         } else {
+            // This branch is to not delete the WebContents, but just to release the WebContent from
+            // the Tab and clear the WebContents for two different cases a) The WebContents will be
+            // destroyed eventually, but from the native WebContents. b) The WebContents will be
+            // reused later. We need to clear the reference to the Tab from WebContentsObservers or
+            // the UserData. If the WebContents will be reused, we should set the necessary
+            // delegates again.
             TabImplJni.get().releaseWebContents(mNativeTabAndroid);
-            // Since the native WebContents is still alive, we need to clear its reference to the
-            // Java WebContents. While doing so, it will also call back into Java to destroy the
-            // Java WebContents.
-            contentsToDestroy.clearNativeReference();
+            // This call is just a workaround, Chrome should clean up the WebContentsObservers
+            // itself.
+            contentsToDestroy.clearJavaWebContentsObservers();
+            contentsToDestroy.initialize(PRODUCT_VERSION,
+                    ViewAndroidDelegate.createBasicDelegate(/* containerView */ null),
+                    /* accessDelegate */ null, /* windowAndroid */ null,
+                    WebContents.createDefaultInternalsHolder());
         }
     }
 

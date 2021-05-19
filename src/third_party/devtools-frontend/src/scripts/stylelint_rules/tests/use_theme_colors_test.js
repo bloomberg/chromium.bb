@@ -19,7 +19,7 @@ async function lint(code) {
   return warnings;
 }
 
-const EXPECTED_ERROR_MESSAGE = 'All CSS color declarations should use a variable defined in ui/themeColors.css';
+const EXPECTED_ERROR_MESSAGE = 'All CSS color declarations should use a variable defined in ui/legacy/themeColors.css';
 
 describe('use_theme_colors', () => {
   beforeEach(() => {
@@ -52,6 +52,22 @@ describe('use_theme_colors', () => {
 
   it('errors when finding a bad color inside a border declaration', async () => {
     const warnings = await lint('p { border-left: 1px solid #fff; }');
+
+    assert.deepEqual(
+        warnings,
+        [{column: 5, line: 1, rule: 'plugin/use_theme_colors', severity: 'error', text: EXPECTED_ERROR_MESSAGE}]);
+  });
+
+  it('errors on border-color', async () => {
+    const warnings = await lint('p { border-color: #fff; }');
+
+    assert.deepEqual(
+        warnings,
+        [{column: 5, line: 1, rule: 'plugin/use_theme_colors', severity: 'error', text: EXPECTED_ERROR_MESSAGE}]);
+  });
+
+  it('errors on outline', async () => {
+    const warnings = await lint('p { outline: 4px solid #ff0000; }');
 
     assert.deepEqual(
         warnings,
@@ -116,7 +132,6 @@ describe('use_theme_colors', () => {
     assert.strictEqual(output, 'p { color: var(--color-primary); }');
   });
 
-
   it('errors when a variable is used that is not defined in themeColors', async () => {
     const warnings = await lint('p { color: var(--not-a-theme-color); }');
 
@@ -138,6 +153,11 @@ describe('use_theme_colors', () => {
     assert.lengthOf(warnings, 0);
   });
 
+  it('allows any var(--image-file-*)', async () => {
+    const warnings = await lint('p { background: var(--image-file-fof); }');
+    assert.lengthOf(warnings, 0);
+  });
+
   it('allows any color to be used when in a :host-context dark theme block', async () => {
     const code = `:host-context(.-theme-with-dark-background) p {
       color: #fff;
@@ -146,9 +166,49 @@ describe('use_theme_colors', () => {
     assert.lengthOf(warnings, 0);
   });
 
+  it('does not lint against background-image properties when they are defined as just a variable', async () => {
+    const code = `.spectrum-sat {
+      background-image: var(--my-lovely-image);
+    }`;
+    const warnings = await lint(code);
+    assert.lengthOf(warnings, 0);
+  });
+
+  it('does lint against background-image properties when they are a gradient with a colour in', async () => {
+    const code = `.spectrum-sat {
+      background-image: linear-gradient(to right, #fff, rgb(204 154 129 / 0%));
+    }`;
+    const warnings = await lint(code);
+    // Two warnings: one for each colour (#fff and rgb(...))
+    assert.deepEqual(warnings, [
+      {
+        line: 2,
+        column: 7,
+        rule: 'plugin/use_theme_colors',
+        severity: 'error',
+        text: 'All CSS color declarations should use a variable defined in ui/legacy/themeColors.css'
+      },
+      {
+        line: 2,
+        column: 7,
+        rule: 'plugin/use_theme_colors',
+        severity: 'error',
+        text: 'All CSS color declarations should use a variable defined in ui/legacy/themeColors.css'
+      }
+    ]);
+  });
+
   it('allows any color to be used when in a .-theme-with-dark-background block', async () => {
     const code = `.-theme-with-dark-background p {
       color: #fff;
+    }`;
+    const warnings = await lint(code);
+    assert.lengthOf(warnings, 0);
+  });
+
+  it('ignores any css variables prefixed with "--override-"', async () => {
+    const code = `p {
+      color: var(--override-custom-color);
     }`;
     const warnings = await lint(code);
     assert.lengthOf(warnings, 0);

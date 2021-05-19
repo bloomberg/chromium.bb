@@ -930,7 +930,7 @@ int SkTextBlob::getIntercepts(const SkScalar bounds[2], SkScalar intervals[],
     }
 
     SkGlyphRunBuilder builder;
-    builder.textBlobToGlyphRunListIgnoringRSXForm(*paint, *this, SkPoint{0, 0});
+    builder.textBlobToGlyphRunListIgnoringRSXForm(*this, SkPoint{0, 0});
     auto glyphRunList = builder.useGlyphRunList();
 
     int intervalCount = 0;
@@ -953,6 +953,11 @@ bool SkTextBlob::Iter::next(Run* rec) {
             rec->fTypeface = fRunRecord->font().getTypeface();
             rec->fGlyphCount = fRunRecord->glyphCount();
             rec->fGlyphIndices = fRunRecord->glyphBuffer();
+#ifdef SK_UNTIL_CRBUG_1187654_IS_FIXED
+            rec->fClusterIndex_forTest = fRunRecord->clusterBuffer();
+            rec->fUtf8Size_forTest = fRunRecord->textSize();
+            rec->fUtf8_forTest = fRunRecord->textBuffer();
+#endif
         }
         if (fRunRecord->isLastRun()) {
             fRunRecord = nullptr;

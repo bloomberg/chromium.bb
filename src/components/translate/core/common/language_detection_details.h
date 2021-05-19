@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
 
@@ -45,7 +44,7 @@ struct LanguageDetectionDetails {
   std::string adopted_language;
 
   // The contents which is used for detection.
-  base::string16 contents;
+  std::u16string contents;
 
   // The reliability score of the language detection model.
   float model_reliability_score = 0.0;

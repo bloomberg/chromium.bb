@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/pickle.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/field_info_table.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
@@ -131,7 +130,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
       WARN_UNUSED_RESULT;
 
   // Gets a list of credentials with password_value=|plain_text_password|.
-  bool GetLoginsByPassword(const base::string16& plain_text_password,
+  bool GetLoginsByPassword(const std::u16string& plain_text_password,
                            std::vector<std::unique_ptr<PasswordForm>>* forms)
       WARN_UNUSED_RESULT;
 
@@ -151,7 +150,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // Gets list of logins which match |signon_realm| and |username|.
   FormRetrievalResult GetLoginsBySignonRealmAndUsername(
       const std::string& signon_realm,
-      const base::string16& username,
+      const std::u16string& username,
       PrimaryKeyToFormMap& key_to_form_map) WARN_UNUSED_RESULT;
 
   // Gets the complete list of not blocklisted credentials.
@@ -272,7 +271,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // successful, or returning false and leaving cipher_text unchanged if
   // encryption fails (e.g., if the underlying OS encryption system is
   // temporarily unavailable).
-  EncryptionResult EncryptedString(const base::string16& plain_text,
+  EncryptionResult EncryptedString(const std::u16string& plain_text,
                                    std::string* cipher_text) const
       WARN_UNUSED_RESULT;
 
@@ -281,7 +280,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // decryption fails (e.g., if the underlying OS encryption system is
   // temporarily unavailable).
   EncryptionResult DecryptedString(const std::string& cipher_text,
-                                   base::string16* plain_text) const
+                                   std::u16string* plain_text) const
       WARN_UNUSED_RESULT;
 
   // Fills |form| from the values in the given statement (which is assumed to be

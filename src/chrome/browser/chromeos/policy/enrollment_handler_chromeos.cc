@@ -19,8 +19,8 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
+#include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/policy/active_directory_join_delegate.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
@@ -601,10 +601,18 @@ void EnrollmentHandlerChromeOS::SetFirmwareManagementParametersData() {
 }
 
 void EnrollmentHandlerChromeOS::OnFirmwareManagementParametersDataSet(
-    base::Optional<cryptohome::BaseReply> reply) {
+    base::Optional<user_data_auth::SetFirmwareManagementParametersReply>
+        reply) {
   DCHECK_EQ(STEP_SET_FWMP_DATA, enrollment_step_);
-  if (!reply.has_value())
-    LOG(ERROR) << "Failed to update firmware management parameters in TPM.";
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to update firmware management parameters in TPM due "
+                  "to DBus error.";
+  } else if (reply->error() !=
+             user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET) {
+    LOG(ERROR) << "Failed to update firmware management parameters in TPM, "
+                  "error code: "
+               << static_cast<int>(reply->error());
+  }
 
   SetStep(STEP_LOCK_DEVICE);
   StartLockDevice();
@@ -725,7 +733,7 @@ void EnrollmentHandlerChromeOS::OnDeviceAccountTokenStored() {
     CHECK(install_attributes_->IsActiveDirectoryManaged());
     // Update device settings so that in case of Active Directory unsigned
     // policy is accepted.
-    chromeos::DeviceSettingsService::Get()->SetDeviceMode(
+    ash::DeviceSettingsService::Get()->SetDeviceMode(
         install_attributes_->GetMode());
     chromeos::AuthPolicyClient::Get()->RefreshDevicePolicy(base::BindOnce(
         &EnrollmentHandlerChromeOS::HandleActiveDirectoryPolicyRefreshed,

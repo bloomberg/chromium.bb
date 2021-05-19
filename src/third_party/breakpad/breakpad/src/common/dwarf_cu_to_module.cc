@@ -181,7 +181,8 @@ struct DwarfCUToModule::CUContext {
         high_pc(0),
         ranges_form(dwarf2reader::DW_FORM_sec_offset),
         ranges_data(0),
-        ranges_base(0) { }
+        ranges_base(0),
+        str_offsets_base(0) { }
 
   ~CUContext() {
     for (vector<Module::Function*>::iterator it = functions.begin();
@@ -223,6 +224,9 @@ struct DwarfCUToModule::CUContext {
   // Offset into .debug_addr where this CU's addresses are stored. Data in
   // form DW_FORM_addrxX is relative to this offset.
   uint64_t addr_base;
+
+  // Offset into this CU's contribution to .debug_str_offsets.
+  uint64_t str_offsets_base;
 
   // Collect all the data from the CU that a RangeListReader needs to read a
   // range.
@@ -909,6 +913,9 @@ void DwarfCUToModule::ProcessAttributeUnsigned(enum DwarfAttribute attr,
     case dwarf2reader::DW_AT_GNU_addr_base:
       cu_context_->addr_base = data;
       break;
+    case dwarf2reader::DW_AT_str_offsets_base:
+      cu_context_->str_offsets_base = data;
+      break;
 
     default:
       break;
@@ -1017,16 +1024,15 @@ void DwarfCUToModule::ReadSourceLines(uint64_t offset) {
   uint64_t string_section_length = 0;
   map_entry = dwarf2reader::GetSectionByName(section_map, ".debug_str");
   if (map_entry != section_map.end()) {
-    string_section_start = map_entry->second.first + offset;
-    string_section_length = map_entry->second.second - offset;
+    string_section_start = map_entry->second.first;
+    string_section_length = map_entry->second.second;
   }
   const uint8_t* line_string_section_start = nullptr;
   uint64_t line_string_section_length = 0;
   map_entry = dwarf2reader::GetSectionByName(section_map, ".debug_line_str");
   if (map_entry != section_map.end()) {
-    line_string_section_start = map_entry->second.first + offset;
-    line_string_section_length = map_entry->second.second - offset;
-    return;
+    line_string_section_start = map_entry->second.first;
+    line_string_section_length = map_entry->second.second;
   }
   line_reader_->ReadProgram(
       line_section_start, line_section_length,
@@ -1333,7 +1339,8 @@ bool DwarfCUToModule::StartCompilationUnit(uint64_t offset,
 bool DwarfCUToModule::StartRootDIE(uint64_t offset, enum DwarfTag tag) {
   // We don't deal with partial compilation units (the only other tag
   // likely to be used for root DIE).
-  return tag == dwarf2reader::DW_TAG_compile_unit;
+  return (tag == dwarf2reader::DW_TAG_compile_unit
+	  || tag == dwarf2reader::DW_TAG_skeleton_unit);
 }
 
 } // namespace google_breakpad

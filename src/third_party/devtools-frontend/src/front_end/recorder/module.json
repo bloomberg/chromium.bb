@@ -1,10 +1,9 @@
 {
   "dependencies": [
-    "ui",
-    "persistence",
-    "accessibility",
-    "elements"
+    "ui/legacy",
+    "models/persistence",
+    "panels/accessibility",
+    "panels/elements"
   ],
-  "modules": [],
-  "resources": []
+    "resources": []
 }

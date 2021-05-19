@@ -20,7 +20,7 @@
 #include "src/core/SkTypeface_remote.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/text/GrSDFTOptions.h"
+#include "src/gpu/text/GrSDFTControl.h"
 #include "tests/Test.h"
 #include "tools/Resources.h"
 #include "tools/ToolUtils.h"
@@ -683,10 +683,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SkRemoteGlyphCache_DrawTextAsDFT, reporter, c
 
     // A scale transform forces fallback to dft.
     SkMatrix matrix = SkMatrix::Scale(16, 16);
-    SkSurfaceProps surfaceProps(0, kUnknown_SkPixelGeometry);
-    GrSDFTOptions options = direct->priv().asRecordingContext()->priv().SDFTOptions();
-    REPORTER_ASSERT(reporter,
-            options.canDrawAsDistanceFields(paint, font, matrix, surfaceProps, true));
+    GrSDFTControl control = direct->priv().asRecordingContext()->priv().getSDFTControl(true);
+    REPORTER_ASSERT(reporter, control.drawingType(font, paint, matrix) == GrSDFTControl::kSDFT);
 
     // Server.
     auto serverTf = SkTypeface::MakeFromName("monospace", SkFontStyle());

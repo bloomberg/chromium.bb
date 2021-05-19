@@ -15,7 +15,6 @@
 #include "rtc_base/logging.h"
 
 namespace webrtc {
-namespace video_coding {
 
 RtpFrameReferenceFinder::ReturnVector RtpVp8RefFinder::ManageFrame(
     std::unique_ptr<RtpFrameObject> frame) {
@@ -244,5 +243,4 @@ void RtpVp8RefFinder::ClearTo(uint16_t seq_num) {
   }
 }
 
-}  // namespace video_coding
 }  // namespace webrtc

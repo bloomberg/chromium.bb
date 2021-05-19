@@ -7,9 +7,9 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/webauthn/hover_list_model.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/metadata/metadata_header_macros.h"
@@ -55,8 +55,8 @@ class HoverListView : public views::View,
   };
 
   void AppendListItemView(const gfx::VectorIcon* icon,
-                          base::string16 item_text,
-                          base::string16 item_description,
+                          std::u16string item_text,
+                          std::u16string item_description,
                           int item_tag);
   void CreateAndAppendPlaceholderItem();
   void AddListItemView(int item_tag);

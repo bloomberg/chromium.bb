@@ -16,15 +16,13 @@
 #define SRC_WRITER_HLSL_TEST_HELPER_H_
 
 #include <memory>
-#include <sstream>
 #include <string>
 #include <utility>
 
 #include "gtest/gtest.h"
-#include "src/diagnostic/formatter.h"
-#include "src/program_builder.h"
+#include "src/transform/canonicalize_entry_point_io.h"
 #include "src/transform/hlsl.h"
-#include "src/type_determiner.h"
+#include "src/transform/manager.h"
 #include "src/writer/hlsl/generator_impl.h"
 
 namespace tint {
@@ -102,7 +100,12 @@ class TestHelperBase : public BODY, public ProgramBuilder {
       ASSERT_TRUE(program->IsValid())
           << formatter.format(program->Diagnostics());
     }();
-    auto result = transform::Hlsl().Run(program.get());
+
+    tint::transform::Manager transform_manager;
+    transform_manager.append(
+        std::make_unique<tint::transform::CanonicalizeEntryPointIO>());
+    transform_manager.append(std::make_unique<tint::transform::Hlsl>());
+    auto result = transform_manager.Run(program.get());
     [&]() {
       ASSERT_TRUE(result.program.IsValid())
           << formatter.format(result.program.Diagnostics());

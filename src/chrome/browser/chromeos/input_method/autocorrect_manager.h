@@ -26,9 +26,16 @@ class AutocorrectManager {
   AutocorrectManager& operator=(const AutocorrectManager&) = delete;
 
   // Mark `autocorrect_range` with an underline. `autocorrect_range` is based on
-  // the current text contents.
+  // the `current_text` contents.
+  // NOTE: Technically redundant to require client to supply `current_text` as
+  // AutocorrectManager can retrieve it from current text editing state known to
+  // IMF. However, due to async situation between browser-process IMF and
+  // render-process TextInputClient, it may just get a stale value that way.
+  // TODO(crbug/1194424): Remove technically redundant `current_text` param
+  // to avoid situation with multiple conflicting sources of truth.
   void HandleAutocorrect(gfx::Range autocorrect_range,
-                         const std::string& original_text);
+                         const std::u16string& original_text,
+                         const std::u16string& current_text);
 
   // To hide the underline after enough keypresses, this class intercepts
   // keystrokes. Returns whether the keypress has now been handled.
@@ -39,7 +46,7 @@ class AutocorrectManager {
 
   // To show the undo window when cursor is in an autocorrected word, this class
   // is notified of surrounding text changes.
-  void OnSurroundingTextChanged(const base::string16& text,
+  void OnSurroundingTextChanged(const std::u16string& text,
                                 int cursor_pos,
                                 int anchor_pos);
 
@@ -51,7 +58,7 @@ class AutocorrectManager {
   SuggestionHandlerInterface* suggestion_handler_;
   int context_id_ = 0;
   int key_presses_until_underline_hide_ = 0;
-  std::string original_text_;
+  std::u16string original_text_;
   bool window_visible = false;
   bool button_highlighted = false;
   base::TimeTicks autocorrect_time_;

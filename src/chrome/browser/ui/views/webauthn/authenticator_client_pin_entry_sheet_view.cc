@@ -21,19 +21,23 @@ AuthenticatorClientPinEntrySheetView::pin_entry_sheet_model() {
   return static_cast<AuthenticatorClientPinEntrySheetModel*>(model());
 }
 
-std::unique_ptr<views::View>
+std::pair<std::unique_ptr<views::View>,
+          AuthenticatorRequestSheetView::AutoFocus>
 AuthenticatorClientPinEntrySheetView::BuildStepSpecificContent() {
-  return std::make_unique<AuthenticatorClientPinEntryView>(
-      this, /*show_confirmation_text_field=*/pin_entry_sheet_model()->mode() !=
-                AuthenticatorClientPinEntrySheetModel::Mode::kPinEntry);
+  return std::make_pair(
+      std::make_unique<AuthenticatorClientPinEntryView>(
+          this,
+          /*show_confirmation_text_field=*/pin_entry_sheet_model()->mode() !=
+              AuthenticatorClientPinEntrySheetModel::Mode::kPinEntry),
+      AutoFocus::kYes);
 }
 
 void AuthenticatorClientPinEntrySheetView::OnPincodeChanged(
-    base::string16 pincode) {
+    std::u16string pincode) {
   pin_entry_sheet_model()->SetPinCode(std::move(pincode));
 }
 
 void AuthenticatorClientPinEntrySheetView::OnConfirmationChanged(
-    base::string16 pincode) {
+    std::u16string pincode) {
   pin_entry_sheet_model()->SetPinConfirmation(std::move(pincode));
 }

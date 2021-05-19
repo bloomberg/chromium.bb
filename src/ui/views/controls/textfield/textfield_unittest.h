@@ -43,12 +43,12 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   void TearDown() override;
 
   ui::ClipboardBuffer GetAndResetCopiedToClipboard();
-  base::string16 GetClipboardText(ui::ClipboardBuffer type);
+  std::u16string GetClipboardText(ui::ClipboardBuffer type);
   void SetClipboardText(ui::ClipboardBuffer type, const std::string& text);
 
   // TextfieldController:
   void ContentsChanged(Textfield* sender,
-                       const base::string16& new_contents) override;
+                       const std::u16string& new_contents) override;
   void OnBeforeUserAction(Textfield* sender) override;
   void OnAfterUserAction(Textfield* sender) override;
   void OnAfterCutOrCopy(ui::ClipboardBuffer clipboard_type) override;
@@ -90,9 +90,9 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
                     bool shift,
                     bool control_or_command);
   void SendKeyEvent(ui::KeyboardCode key_code);
-  void SendKeyEvent(base::char16 ch);
-  void SendKeyEvent(base::char16 ch, int flags);
-  void SendKeyEvent(base::char16 ch, int flags, bool from_vk);
+  void SendKeyEvent(char16_t ch);
+  void SendKeyEvent(char16_t ch, int flags);
+  void SendKeyEvent(char16_t ch, int flags, bool from_vk);
   void DispatchMockInputMethodKeyEvent();
 
   // Sends a platform-specific move (and select) to the logical start of line.
@@ -158,7 +158,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   TextfieldModel* model_ = nullptr;
 
   // The string from Controller::ContentsChanged callback.
-  base::string16 last_contents_;
+  std::u16string last_contents_;
 
   // For testing input method related behaviors.
   MockInputMethod* input_method_ = nullptr;

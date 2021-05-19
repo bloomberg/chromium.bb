@@ -1,38 +1,78 @@
 <style>
   :host {
+    --ntp-modules-drive-row-margin: 15px;
+    display: block;
     height: 100%;
     width: 100%;
   }
 
   #files {
     display: flex;
+    flex-direction: column;
   }
 
   .file {
+    align-items: center;
+    border-top: 0.5px solid var(--ntp-border-color);
     color: var(--cr-primary-text-color);
-    display: block;
-    margin-inline-start: 16px;
+    display: flex;
+    flex-shrink: 0;
+    height: 38px;
+    margin-inline-end: var(--ntp-modules-drive-row-margin);
+    margin-inline-start: var(--ntp-modules-drive-row-margin);
     text-decoration: none;
-    width: 165px;
   }
 
-  .file-icon-container {
-    align-items: center;
-    background: var(--google-grey-refresh-100);
-    border-radius: 4px;
-    display: flex;
-    height: 136px;
-    justify-content: center;
-    margin-bottom: 8px;
+  .file:hover {
+    background-color: var(--ntp-hover-background-color);
+    margin-inline-end: 0;
+    margin-inline-start: 0;
+    padding-inline-end: var(--ntp-modules-drive-row-margin);
+    padding-inline-start: var(--ntp-modules-drive-row-margin);
+  }
+
+  .file:hover + .file {
+    margin-inline-end: 0;
+    margin-inline-start: 0;
+    padding-inline-end: var(--ntp-modules-drive-row-margin);
+    padding-inline-start: var(--ntp-modules-drive-row-margin);
   }
 
   .file-icon {
-    max-height: 80px;
-    width: 80px;
+    margin-inline-end: 8px;
+  }
+
+  .file-title {
+    flex-basis: 0;
+    flex-grow: 250;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .file-description {
     color: var(--cr-secondary-text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .file-info {
+    display: flex;
+  }
+
+  .justification-container {
+    align-items: center;
+    display: flex;
+    flex-basis: 0;
+    flex-grow: 186;
+    overflow: hidden;
+  }
+
+  .user-image {
+    border-radius: 50%;
+    margin-inline-end: 8px;
+    max-height: 30px;
   }
 </style>
 <ntp-module-header
@@ -44,16 +84,26 @@
 </ntp-module-header>
 <div id="files">
   <template id="fileRepeat" is="dom-repeat" items="[[files]]">
-    <a class="file" href="[[getTargetUrl_(item)]]">
-      <div class="file-icon-container">
-        <img
-            class="file-icon"
-            draggable="false"
-            src="[[getImageSrc_(item)]]">
-        </img>
+    <a class="file" href="[[item.itemUrl.url]]" on-click="onFileClick_"
+        on-auxclick="onFileClick_">
+      <img
+          is="ntp-img"
+          class="file-icon"
+          draggable="false"
+          auto-src="[[getImageSrc_(item)]]">
+      </img>
+      <div class="file-title" title="[[item.title]]">[[item.title]]</div>
+      <div class="justification-container">
+        <template is="dom-if" if="[[item.untrustedPhotoUrl]]">
+          <img
+              is="ntp-img"
+              class="user-image"
+              draggable="false"
+              auto-src="[[item.untrustedPhotoUrl.url]]">
+          </img>
+        </template>
+        <div class="file-description">[[item.justificationText]]</div>
       </div>
-      <div class="file-title">[[item.title]]</div>
-      <div class="file-description">[[item.justificationText]]</div>
     </a>
   </template>
 </div>

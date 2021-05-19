@@ -42,21 +42,8 @@ if (include_js_tests) {
       "//chrome/browser/ui",
     ]
     data = [
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_action_menu_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_checkbox_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_expand_button_focus_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_icon_button_focus_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_input_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_profile_avatar_selector_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_tabs_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toggle_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toolbar_search_field_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/iron_list_focus_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_focus_row_behavior_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/fake_chrome_event.m.js",
       "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/sync_test_util.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/test_sync_browser_proxy.m.js",
       "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
       "$root_gen_dir/chrome/test/data/webui/test_store.m.js",
       "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
@@ -78,6 +65,7 @@ if (include_js_tests) {
       "bookmarks/bookmarks_browsertest.js",
       "cr_components/cr_components_v3_browsertest.js",
       "cr_elements/cr_elements_v3_browsertest.js",
+      "download_shelf/download_shelf_browsertest.js",
       "histograms/histograms_internals_ui_browsertest.js",
       "history/history_browsertest.js",
       "invalidations/about_invalidations_browsertest.js",
@@ -111,6 +99,7 @@ if (include_js_tests) {
 
     deps = [
       ":modulize",
+      "net_internals:preprocess",
       "settings:preprocess",
       "//build:branding_buildflags",
       "//chrome/browser/ui",
@@ -147,6 +136,7 @@ if (include_js_tests) {
         "chromeos/edu_login/edu_login_browsertest.js",
         "chromeos/emoji_picker/emoji_picker_browsertest.js",
         "chromeos/gaia_action_buttons/gaia_action_buttons_browsertest.js",
+        "chromeos/internet_detail_dialog_browsertest.js",
         "cr_components/chromeos/cr_components_chromeos_browsertest.js",
         "cr_components/chromeos/cr_components_chromeos_v3_browsertest.js",
         "set_time_dialog_browsertest.js",
@@ -182,51 +172,13 @@ if (include_js_tests) {
     }
 
     data = [
-      "$root_gen_dir/chrome/test/data/webui/cr_components/managed_footnote_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_button_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_container_shadow_behavior_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_dialog_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_drawer_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_expand_button_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_fingerprint_progress_arc_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_icon_button_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_lazy_render_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_link_row_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_lottie_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_policy_indicator_behavior_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_policy_indicator_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_policy_pref_indicator_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_radio_button_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_radio_group_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_search_field_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_scrollable_behavior_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_slider_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toast_manager_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toast_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toolbar_focus_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_view_manager_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_elements/find_shortcut_behavior_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/fake_chrome_event.m.js",
       "$root_gen_dir/chrome/test/data/webui/js/load_time_data_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js",
       "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js",
-      "$root_gen_dir/chrome/test/data/webui/resources/list_property_update_behavior_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/fake_input_method_private.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/fake_language_settings_private.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/fake_settings_private.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/pref_util_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/prefs_test_cases.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/prefs_tests.m.js",
+      "$root_gen_dir/chrome/test/data/webui/net_internals/main_test.js",
+      "$root_gen_dir/chrome/test/data/webui/net_internals/test_util.js",
       "$root_gen_dir/chrome/test/data/webui/settings/route_tests.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/settings_slider_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/settings_textarea_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/settings_toggle_button_tests.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/sync_test_util.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/test_languages_browser_proxy.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/test_lifetime_browser_proxy.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/test_profile_info_browser_proxy.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/test_search_engines_browser_proxy.m.js",
-      "$root_gen_dir/chrome/test/data/webui/settings/test_sync_browser_proxy.m.js",
       "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
       "$root_gen_dir/chrome/test/data/webui/test_store.m.js",
       "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
@@ -260,13 +212,13 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/activation_code_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/base_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/button_bar_test.m.js",
+        "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/confirmation_code_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/cellular_eid_popup_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/cellular_setup_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/esim_flow_ui_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/final_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/provisioning_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/psim_flow_ui_test.m.js",
-        "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/setup_selection_flow_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/fake_barcode_detector.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/fake_canvas_context.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/cellular_setup/setup_loading_page_test.m.js",
@@ -297,7 +249,7 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/network/network_proxy_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/network/network_select_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/network/network_siminfo_test.m.js",
-        "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/network/sim_lock_dialogs_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/nearby_share/shared/fake_nearby_contact_manager.m.js",
         "$root_gen_dir/chrome/test/data/webui/nearby_share/shared/fake_nearby_share_settings.m.js",
         "$root_gen_dir/chrome/test/data/webui/nearby_share/shared/nearby_contact_visibility_test.m.js",
@@ -326,6 +278,7 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_util.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/uninstall_button_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/bluetooth_page_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/cellular_banner_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/cellular_networks_list_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/cellular_setup_dialog_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/crostini_page_test.m.js",
@@ -434,9 +387,9 @@ if (include_js_tests) {
     sources = [
       "bluetooth_internals/bluetooth_internals_browsertest.js",
       "media/media_engagement_browsertest.js",
-      "media/media_feeds_webui_browsertest.js",
       "media/media_history_webui_browsertest.js",
       "new_tab_page/new_tab_page_browsertest.js",
+      "new_tab_page_third_party/new_tab_page_third_party_browsertest.js",
       "read_later/read_later_browsertest.js",
     ]
 
@@ -448,12 +401,13 @@ if (include_js_tests) {
         "chromeos/crostini_upgrader_browsertest.js",
         "chromeos/diagnostics/diagnostics_browsertest.js",
         "chromeos/machine_learning_internals_browsertest.js",
+        "chromeos/personalization_app/personalization_app_browsertest.js",
         "chromeos/print_management/print_management_browsertest.js",
         "chromeos/scanning/scanning_app_browsertest.js",
         "nearby_share/nearby_browsertest.js",
         "nearby_share/shared/nearby_shared_v3_browsertest.js",
       ]
-      deps += [ "//chromeos/services/machine_learning/public/cpp:test_support" ]
+      deps += [ "//chromeos/services/machine_learning/public/cpp:stub" ]
     }
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -478,7 +432,10 @@ if (include_js_tests) {
   js2gtest("interactive_ui_tests_js_mojo_lite_webui") {
     test_type = "mojo_lite_webui"
 
-    sources = [ "new_tab_page/new_tab_page_interactive_test.js" ]
+    sources = [
+      "new_tab_page/new_tab_page_interactive_test.js",
+      "new_tab_page_third_party/new_tab_page_third_party_interactive_test.js",
+    ]
 
     gen_include_files = [
       "polymer_browser_test_base.js",
@@ -522,22 +479,20 @@ if (include_js_tests) {
 group("modulize") {
   deps = [
     ":modulize_local",
-    "./cr_components:modulize",
     "./cr_components/chromeos:modulize",
-    "./cr_elements:modulize",
     "./js:modulize",
-    "./resources:modulize",
-    "./settings:modulize",
   ]
 
   if (is_chromeos_ash) {
-    deps += [ "./nearby_share/shared:modulize" ]
+    deps += [
+      "./nearby_share/shared:modulize",
+      "./settings/chromeos:modulize",
+    ]
   }
 }
 
 js_modulizer("modulize_local") {
   input_files = [
-    "cr_focus_row_behavior_test.js",
     "fake_chrome_event.js",
     "mock_controller.js",
     "mock_timer.js",
@@ -554,6 +509,7 @@ group("closure_compile") {
     ":closure_compile_local",
     "cr_components:closure_compile",
     "cr_elements:closure_compile",
+    "download_shelf:closure_compile",
     "inline_login:closure_compile",
     "js/cr:closure_compile",
     "new_tab_page:closure_compile",
@@ -570,6 +526,7 @@ group("closure_compile") {
       "chromeos:closure_compile",
       "nearby_share:closure_compile",
       "nearby_share/shared:closure_compile",
+      "settings/chromeos:closure_compile",
     ]
   }
   if (!is_android) {

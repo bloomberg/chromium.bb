@@ -4,10 +4,8 @@
 
 package org.chromium.chrome.browser.signin.ui.account_picker;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -15,18 +13,22 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 import org.robolectric.RuntimeEnvironment;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
-import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerProperties.AddAccountRowProperties;
 import org.chromium.chrome.browser.signin.ui.account_picker.AccountPickerProperties.ExistingAccountRowProperties;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.ProfileDataSource;
+import org.chromium.components.signin.identitymanager.AccountInfoService;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -35,6 +37,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Tests the class {@link AccountPickerMediator}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
+@Features.DisableFeatures({ChromeFeatureList.DEPRECATE_MENAGERIE_API})
 public class AccountPickerMediatorTest {
     private static final String FULL_NAME1 = "Test Account1";
     private static final String ACCOUNT_EMAIL1 = "test.account1@gmail.com";
@@ -49,17 +52,17 @@ public class AccountPickerMediatorTest {
         }
     }
 
+    @Rule
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+
+    @Rule
+    public final Features.JUnitProcessor processor = new Features.JUnitProcessor();
+
     private final CustomProfileDataSource mFakeProfileDataSource = new CustomProfileDataSource();
 
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule =
             new AccountManagerTestRule(mFakeProfileDataSource);
-
-    @Mock
-    private Profile mProfileMock;
-
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private IdentityServicesProvider mIdentityServicesProviderMock;
 
     @Mock
     private AccountPickerCoordinator.Listener mListenerMock;
@@ -70,13 +73,7 @@ public class AccountPickerMediatorTest {
 
     @Before
     public void setUp() {
-        initMocks(this);
-        Profile.setLastUsedProfileForTesting(mProfileMock);
-        IdentityServicesProvider.setInstanceForTests(mIdentityServicesProviderMock);
-        when(mIdentityServicesProviderMock.getIdentityManager(mProfileMock)
-                        .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-                                anyString()))
-                .thenReturn(null);
+        AccountInfoService.init(mock(IdentityManager.class));
     }
 
     @After
@@ -84,8 +81,7 @@ public class AccountPickerMediatorTest {
         if (mMediator != null) {
             mMediator.destroy();
         }
-        IdentityServicesProvider.setInstanceForTests(null);
-        Profile.setLastUsedProfileForTesting(null);
+        AccountInfoService.resetForTests();
     }
 
     @Test

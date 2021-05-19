@@ -5,6 +5,7 @@
 #include "ash/ambient/ui/media_string_view.h"
 
 #include <memory>
+#include <string>
 
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ui/ambient_view_ids.h"
@@ -14,7 +15,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
@@ -155,8 +155,8 @@ void MediaStringView::MediaSessionMetadataChanged(
   media_session::MediaMetadata session_metadata =
       metadata.value_or(media_session::MediaMetadata());
 
-  base::string16 media_string;
-  base::string16 middle_dot = base::UTF8ToUTF16(kMiddleDotSeparator);
+  std::u16string media_string;
+  std::u16string middle_dot = base::UTF8ToUTF16(kMiddleDotSeparator);
   if (!session_metadata.title.empty() && !session_metadata.artist.empty()) {
     media_string =
         session_metadata.title + middle_dot + session_metadata.artist;
@@ -167,7 +167,7 @@ void MediaStringView::MediaSessionMetadataChanged(
   }
 
   // Reset text and stop any ongoing animation.
-  media_text_->SetText(base::string16());
+  media_text_->SetText(std::u16string());
   media_text_->layer()->GetAnimator()->StopAnimating();
 
   media_text_->SetText(media_string);

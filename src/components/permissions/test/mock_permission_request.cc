@@ -4,7 +4,8 @@
 
 #include "components/permissions/test/mock_permission_request.h"
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
 #include "components/permissions/request_type.h"
 
@@ -87,12 +88,12 @@ RequestType MockPermissionRequest::GetRequestType() const {
 }
 
 #if defined(OS_ANDROID)
-base::string16 MockPermissionRequest::GetMessageText() const {
+std::u16string MockPermissionRequest::GetMessageText() const {
   return text_;
 }
 #endif
 
-base::string16 MockPermissionRequest::GetMessageTextFragment() const {
+std::u16string MockPermissionRequest::GetMessageTextFragment() const {
   return text_;
 }
 

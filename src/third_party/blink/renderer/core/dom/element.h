@@ -79,7 +79,7 @@ class MutableCSSPropertyValueSet;
 class NamedNodeMap;
 class PointerLockOptions;
 class PseudoElement;
-class PseudoElementStyleRequest;
+class StyleRequest;
 class ResizeObservation;
 class ResizeObserver;
 class ScrollIntoViewOptions;
@@ -729,29 +729,25 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool PseudoElementStylesDependOnFontMetrics() const;
 
   // Retrieve the ComputedStyle (if any) corresponding to the provided
-  // PseudoElementStyleRequest from cache, calculating the ComputedStyle
-  // on-demand if it's missing from the cache.
-  const ComputedStyle* CachedStyleForPseudoElement(
-      const PseudoElementStyleRequest&);
+  // PseudoId from cache, calculating the ComputedStyle on-demand if it's
+  // missing from the cache.
+  const ComputedStyle* CachedStyleForPseudoElement(PseudoId);
 
-  // Calculate the ComputedStyle corresponding to the provided
-  // PseudoElementStyleRequest, bypassing the pseudo style cache.
+  // Calculate the ComputedStyle corresponding to the provided StyleRequest,
+  // bypassing the pseudo style cache.
   //
   // This is appropriate to use if the cached version is invalid in a given
   // situation.
   scoped_refptr<ComputedStyle> UncachedStyleForPseudoElement(
-      const PseudoElementStyleRequest&,
-      const ComputedStyle* parent_style = nullptr);
+      const StyleRequest&);
 
   // This is the same as UncachedStyleForPseudoElement, except that the caller
   // must provide an appropriate StyleRecalcContext such that e.g. @container
   // queries are evaluated correctly.
   //
   // See StyleRecalcContext for more information.
-  scoped_refptr<ComputedStyle> StyleForPseudoElement(
-      const StyleRecalcContext&,
-      const PseudoElementStyleRequest&,
-      const ComputedStyle* parent_style = nullptr);
+  scoped_refptr<ComputedStyle> StyleForPseudoElement(const StyleRecalcContext&,
+                                                     const StyleRequest&);
 
   virtual bool CanGeneratePseudoElement(PseudoId) const;
 
@@ -950,6 +946,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual bool IsAdRelated() const { return false; }
 
   void NotifyInlineStyleMutation();
+
+  // Returns true if this element should composite due to a document transition.
+  // See third_party/blink/renderer/core/document_transition/README.md for more
+  // information.
+  bool ShouldCompositeForDocumentTransition() const;
 
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }

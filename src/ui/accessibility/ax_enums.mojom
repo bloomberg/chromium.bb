@@ -214,7 +214,6 @@ enum Role {
   kIframePresentational,
   kIgnored,
   kImage,
-  kImageMap,
   kImeCandidate,
   kInlineTextBox,
   kInputTime,
@@ -502,6 +501,7 @@ enum StringAttribute {
   kAutoComplete,
   kCheckedStateDescription,
   kChildTreeId,
+  kChildTreeNodeAppId,
   kClassName,
   kContainerLiveRelevant,
   kContainerLiveStatus,
@@ -522,6 +522,7 @@ enum StringAttribute {
   kName,
   kLiveRelevant,
   kLiveStatus,
+  kParentTreeNodeAppId,
   // Only if not already exposed in kName (NameFrom::kPlaceholder)
   kPlaceholder,
   kRole,

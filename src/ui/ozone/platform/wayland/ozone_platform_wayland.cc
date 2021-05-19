@@ -18,6 +18,7 @@
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/gfx/native_widget_types.h"
@@ -111,8 +112,7 @@ class OzonePlatformWayland : public OzonePlatform {
     // The WaylandConnection and the WaylandOutputManager must be created
     // before PlatformScreen.
     DCHECK(connection_ && connection_->wayland_output_manager());
-    return connection_->wayland_output_manager()->CreateWaylandScreen(
-        connection_.get());
+    return connection_->wayland_output_manager()->CreateWaylandScreen();
   }
 
   PlatformClipboard* GetPlatformClipboard() override {
@@ -157,6 +157,9 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   void InitializeUI(const InitParams& args) override {
+    // Initialize DeviceDataManager early as devices are set during
+    // WaylandConnection::Initialize().
+    DeviceDataManager::CreateInstance();
 #if BUILDFLAG(USE_XKBCOMMON)
     keyboard_layout_engine_ =
         std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_);
@@ -236,6 +239,14 @@ class OzonePlatformWayland : public OzonePlatform {
       // toplevel windows, clients simply don't know their position on screens
       // and always assume they are located at some arbitrary position.
       properties->ignore_screen_bounds_for_menus = true;
+      // Wayland uses sub-surfaces to show tooltips, and sub-surfaces must be
+      // bound to their root surfaces always, but finding the correct root
+      // surface at the moment of creating the tooltip is not always possible
+      // due to how Wayland handles focus and activation.
+      // Therefore, the platform should be given a hint at the moment when the
+      // surface is initialised, where it is known for sure which root surface
+      // shows the tooltip.
+      properties->set_parent_for_non_top_level_windows = true;
       properties->app_modal_dialogs_use_event_blocker = true;
 
       // Primary planes can be transluscent due to underlay strategy. As a

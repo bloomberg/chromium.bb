@@ -21,6 +21,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<variants name="PersistentAllocatorType">
+  <variant name="BrowserMetrics" summary="For browser process metrics."/>
+  <variant name="CrashpadMetrics" summary="For metrics from Crashpad."/>
+  <variant name="FieldTrialAllocator" summary="For field-trial allocator."/>
+  <variant name="GpuMetrics" summary="For GPU process metrics."/>
+  <variant name="NotificationHelperMetrics"
+      summary="For notification_helper process metrics."/>
+  <variant name="PpapiBrokerMetrics"
+      summary="For &quot;PPAPI broker&quot; process metrics."/>
+  <variant name="PpapiPluginMetrics"
+      summary="For &quot;PPAPI plugin&quot; process metrics."/>
+  <variant name="RendererMetrics" summary="For renderer process metrics."/>
+  <variant name="SandboxHelperMetrics"
+      summary="For &quot;sandbox helper&quot; process metrics."/>
+  <variant name="SetupMetrics" summary="For setup metrics."/>
+  <variant name="UtilityMetrics"
+      summary="For &quot;utility&quot; process metrics."/>
+  <variant name="ZygoteMetrics"
+      summary="For &quot;zygote&quot; process metrics."/>
+</variants>
+
 <histogram name="UMA.ActualLogUploadInterval" units="minutes"
     expires_after="2021-08-22">
   <owner>asvitkine@chromium.org</owner>
@@ -56,7 +77,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.ClientIdBackupRecoveredWithAge" units="hours"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -151,7 +172,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.IsClonedInstall" enum="BooleanCloned"
-    expires_after="2021-07-11">
+    expires_after="2021-09-12">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -162,7 +183,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.DroppedHistogramSampleCount"
-    units="samples" expires_after="2021-03-21">
+    units="samples" expires_after="2022-03-21">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -173,7 +194,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.DroppedUserActionCount"
-    units="samples" expires_after="2021-03-21">
+    units="samples" expires_after="2022-03-21">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -183,7 +204,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.FlushedHistogramCount"
-    units="histograms" expires_after="2021-03-21">
+    units="histograms" expires_after="2022-03-21">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -192,7 +213,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.InputHistogramSampleCount"
-    units="samples" expires_after="2021-03-21">
+    units="samples" expires_after="2022-03-21">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -202,7 +223,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.InputUserActionCount" units="samples"
-    expires_after="2021-03-21">
+    expires_after="2022-03-21">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -244,7 +265,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.LogUpload.Canceled.CellularConstraint"
-    enum="BooleanCanceled" expires_after="2021-07-11">
+    enum="BooleanCanceled" expires_after="2021-09-12">
   <owner>holte@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -266,7 +287,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.LogUpload.ResponseOrErrorCode.HTTP"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-04-15">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-08-22">
   <owner>holte@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -387,79 +408,44 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="UMA.PersistentAllocator.{PersistentMemoryErrors}Errors"
+<histogram name="UMA.PersistentAllocator.{PersistentAllocatorType}.Errors"
     enum="PersistentAllocatorErrors" expires_after="M85">
   <owner>bcwhite@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
     Errors detected by the persistent memory allocator. These are set when they
-    occur. {PersistentMemoryErrors}
+    occur. {PersistentAllocatorType}
   </summary>
-  <token key="PersistentMemoryErrors">
-    <variant name="">
-      <obsolete>
-        Base histogram. Use suffixes of this histogram instead.
-      </obsolete>
-    </variant>
-    <variant name="BrowserMetrics." summary="For browser process metrics."/>
-    <variant name="CrashpadMetrics." summary="For metrics from Crashpad."/>
-    <variant name="FieldTrialAllocator." summary="For field-trial allocator."/>
-    <variant name="GpuMetrics." summary="For GPU process metrics."/>
-    <variant name="NotificationHelperMetrics."
-        summary="For notification_helper process metrics."/>
-    <variant name="PpapiBrokerMetrics."
-        summary="For &quot;PPAPI broker&quot; process metrics."/>
-    <variant name="PpapiPluginMetrics."
-        summary="For &quot;PPAPI plugin&quot; process metrics."/>
-    <variant name="RendererMetrics." summary="For renderer process metrics."/>
-    <variant name="SandboxHelperMetrics."
-        summary="For &quot;sandbox helper&quot; process metrics."/>
-    <variant name="SetupMetrics." summary="For setup metrics."/>
-    <variant name="UtilityMetrics."
-        summary="For &quot;utility&quot; process metrics."/>
-    <variant name="ZygoteMetrics."
-        summary="For &quot;zygote&quot; process metrics."/>
-  </token>
+  <token key="PersistentAllocatorType" variants="PersistentAllocatorType"/>
 </histogram>
 
-<histogram name="UMA.PersistentAllocator.{PersistentMemoryUsedPct}UsedPct"
+<histogram name="UMA.PersistentAllocator.{PersistentAllocatorType}.UsedPct"
     units="%" expires_after="M87">
   <owner>bcwhite@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
     Percentage of persistent memory segment that has been allocated. This is
-    updated only once per reporting cycle. {PersistentMemoryUsedPct}
+    updated only once per reporting cycle. {PersistentAllocatorType}
   </summary>
-  <token key="PersistentMemoryUsedPct">
-    <variant name="">
-      <obsolete>
-        Base histogram. Use suffixes of this histogram instead.
-      </obsolete>
-    </variant>
-    <variant name="BrowserMetrics." summary="For browser process metrics."/>
-    <variant name="FieldTrialAllocator." summary="For field-trial allocator."/>
-    <variant name="GpuMetrics." summary="For GPU process metrics."/>
-    <variant name="NotificationHelperMetrics."
-        summary="For notification_helper process metrics."/>
-    <variant name="PpapiBrokerMetrics."
-        summary="For &quot;PPAPI broker&quot; process metrics."/>
-    <variant name="PpapiPluginMetrics."
-        summary="For &quot;PPAPI plugin&quot; process metrics."/>
-    <variant name="RendererMetrics." summary="For renderer process metrics."/>
-    <variant name="SandboxHelperMetrics."
-        summary="For &quot;sandbox helper&quot; process metrics."/>
-    <variant name="SetupMetrics." summary="For setup metrics."/>
-    <variant name="UtilityMetrics."
-        summary="For &quot;utility&quot; process metrics."/>
-    <variant name="ZygoteMetrics."
-        summary="For &quot;zygote&quot; process metrics."/>
-  </token>
+  <token key="PersistentAllocatorType" variants="PersistentAllocatorType"/>
+</histogram>
+
+<histogram name="UMA.PersistentHistograms.HistogramsInStartupFile"
+    enum="HistogramNameHash" expires_after="2021-06-20">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>chrome-metrics-team@google.com</owner>
+  <summary>
+    Records which histograms were found initially in the .pma file used by the
+    browser process for persistent histograms. The expectation is there should
+    be no entries there, but this histogram is added to diagnose a problem we're
+    seeing where this could be the cause. See crbug.com/1176977 for details.
+  </summary>
 </histogram>
 
 <histogram name="UMA.PersistentHistograms.InitResult"
-    enum="PersistentHistogramsInitResult" expires_after="2021-06-27">
+    enum="PersistentHistogramsInitResult" expires_after="2021-08-29">
   <owner>bcwhite@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -469,7 +455,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.PrimaryUserType" enum="UserType"
-    expires_after="2021-07-18">
+    expires_after="2021-09-19">
   <owner>michaelpg@chromium.org</owner>
   <owner>yilkal@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -505,7 +491,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.SamplingRatePerMille" units="samples per mille"
-    expires_after="2021-06-27">
+    expires_after="2021-08-29">
   <owner>jwd@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -603,7 +589,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.TruncatedEvents.UserAction" units="events"
-    expires_after="2021-08-22">
+    expires_after="2021-10-04">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -637,7 +623,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.UnsentLogs.PersistedSizeInKB" units="KB"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>michaelbai@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -649,7 +635,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.UnsentLogs.SentCount" units="samples"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>michaelbai@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -660,7 +646,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.UnsentLogs.UnsentCount" units="samples"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>michaelbai@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -671,7 +657,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UMA.UnsentLogs.UnsentPercentage" units="%"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>michaelbai@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>

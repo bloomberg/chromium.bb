@@ -305,7 +305,7 @@ static void ScaleUVDownEven(int src_width,
       ScaleUVRowDownEven = ScaleUVRowDownEven_NEON;
     }
   }
-#endif// TODO(fbarchard): Enable Box filter
+#endif  // TODO(fbarchard): Enable Box filter
 #if defined(HAS_SCALEUVROWDOWNEVENBOX_NEON)
   if (TestCpuFlag(kCpuHasNEON)) {
     ScaleUVRowDownEven = filtering ? ScaleUVRowDownEvenBox_Any_NEON
@@ -649,6 +649,218 @@ static void ScaleUVBilinearUp(int src_width,
 }
 #endif  // HAS_SCALEUVBILINEARUP
 
+// Scale UV, horizontally up by 2 times.
+// Uses linear filter horizontally, nearest vertically.
+// This is an optimized version for scaling up a plane to 2 times of
+// its original width, using linear interpolation.
+// This is used to scale U and V planes of NV16 to NV24.
+void ScaleUVLinearUp2(int src_width,
+                      int src_height,
+                      int dst_width,
+                      int dst_height,
+                      int src_stride,
+                      int dst_stride,
+                      const uint8_t* src_uv,
+                      uint8_t* dst_uv) {
+  void (*ScaleRowUp)(const uint8_t* src_uv, uint8_t* dst_uv, int dst_width) =
+      ScaleUVRowUp2_Linear_Any_C;
+  int i;
+  int y;
+  int dy;
+
+  // This function can only scale up by 2 times horizontally.
+  assert(src_width == ((dst_width + 1) / 2));
+
+#ifdef HAS_SCALEUVROWUP2LINEAR_SSSE3
+  if (TestCpuFlag(kCpuHasSSSE3)) {
+    ScaleRowUp = ScaleUVRowUp2_Linear_Any_SSSE3;
+  }
+#endif
+
+#ifdef HAS_SCALEUVROWUP2LINEAR_AVX2
+  if (TestCpuFlag(kCpuHasAVX2)) {
+    ScaleRowUp = ScaleUVRowUp2_Linear_Any_AVX2;
+  }
+#endif
+
+#ifdef HAS_SCALEUVROWUP2LINEAR_NEON
+  if (TestCpuFlag(kCpuHasNEON)) {
+    ScaleRowUp = ScaleUVRowUp2_Linear_Any_NEON;
+  }
+#endif
+
+  if (dst_height == 1) {
+    ScaleRowUp(src_uv + ((src_height - 1) / 2) * src_stride, dst_uv, dst_width);
+  } else {
+    dy = FixedDiv(src_height - 1, dst_height - 1);
+    y = (1 << 15) - 1;
+    for (i = 0; i < dst_height; ++i) {
+      ScaleRowUp(src_uv + (y >> 16) * src_stride, dst_uv, dst_width);
+      dst_uv += dst_stride;
+      y += dy;
+    }
+  }
+}
+
+// Scale plane, up by 2 times.
+// This is an optimized version for scaling up a plane to 2 times of
+// its original size, using bilinear interpolation.
+// This is used to scale U and V planes of NV12 to NV24.
+void ScaleUVBilinearUp2(int src_width,
+                        int src_height,
+                        int dst_width,
+                        int dst_height,
+                        int src_stride,
+                        int dst_stride,
+                        const uint8_t* src_ptr,
+                        uint8_t* dst_ptr) {
+  void (*Scale2RowUp)(const uint8_t* src_ptr, ptrdiff_t src_stride,
+                      uint8_t* dst_ptr, ptrdiff_t dst_stride, int dst_width) =
+      ScaleUVRowUp2_Bilinear_Any_C;
+  int x;
+
+  // This function can only scale up by 2 times.
+  assert(src_width == ((dst_width + 1) / 2));
+  assert(src_height == ((dst_height + 1) / 2));
+
+#ifdef HAS_SCALEUVROWUP2BILINEAR_SSSE3
+  if (TestCpuFlag(kCpuHasSSSE3)) {
+    Scale2RowUp = ScaleUVRowUp2_Bilinear_Any_SSSE3;
+  }
+#endif
+
+#ifdef HAS_SCALEUVROWUP2BILINEAR_AVX2
+  if (TestCpuFlag(kCpuHasAVX2)) {
+    Scale2RowUp = ScaleUVRowUp2_Bilinear_Any_AVX2;
+  }
+#endif
+
+#ifdef HAS_SCALEUVROWUP2BILINEAR_NEON
+  if (TestCpuFlag(kCpuHasNEON)) {
+    Scale2RowUp = ScaleUVRowUp2_Bilinear_Any_NEON;
+  }
+#endif
+
+  Scale2RowUp(src_ptr, 0, dst_ptr, 0, dst_width);
+  dst_ptr += dst_stride;
+  for (x = 0; x < src_height - 1; ++x) {
+    Scale2RowUp(src_ptr, src_stride, dst_ptr, dst_stride, dst_width);
+    src_ptr += src_stride;
+    // TODO(fbarchard): Test performance of writing one row of destination at a
+    // time.
+    dst_ptr += 2 * dst_stride;
+  }
+  if (!(dst_height & 1)) {
+    Scale2RowUp(src_ptr, 0, dst_ptr, 0, dst_width);
+  }
+}
+
+// Scale 16 bit UV, horizontally up by 2 times.
+// Uses linear filter horizontally, nearest vertically.
+// This is an optimized version for scaling up a plane to 2 times of
+// its original width, using linear interpolation.
+// This is used to scale U and V planes of P210 to P410.
+void ScaleUVLinearUp2_16(int src_width,
+                         int src_height,
+                         int dst_width,
+                         int dst_height,
+                         int src_stride,
+                         int dst_stride,
+                         const uint16_t* src_uv,
+                         uint16_t* dst_uv) {
+  void (*ScaleRowUp)(const uint16_t* src_uv, uint16_t* dst_uv, int dst_width) =
+      ScaleUVRowUp2_Linear_16_Any_C;
+  int i;
+  int y;
+  int dy;
+
+  // This function can only scale up by 2 times horizontally.
+  assert(src_width == ((dst_width + 1) / 2));
+
+#ifdef HAS_SCALEUVROWUP2LINEAR_16_SSE2
+  if (TestCpuFlag(kCpuHasSSE2)) {
+    ScaleRowUp = ScaleUVRowUp2_Linear_16_Any_SSE2;
+  }
+#endif
+
+#ifdef HAS_SCALEUVROWUP2LINEAR_16_AVX2
+  if (TestCpuFlag(kCpuHasAVX2)) {
+    ScaleRowUp = ScaleUVRowUp2_Linear_16_Any_AVX2;
+  }
+#endif
+
+#ifdef HAS_SCALEUVROWUP2LINEAR_16_NEON
+  if (TestCpuFlag(kCpuHasNEON)) {
+    ScaleRowUp = ScaleUVRowUp2_Linear_16_Any_NEON;
+  }
+#endif
+
+  if (dst_height == 1) {
+    ScaleRowUp(src_uv + ((src_height - 1) / 2) * src_stride, dst_uv, dst_width);
+  } else {
+    dy = FixedDiv(src_height - 1, dst_height - 1);
+    y = (1 << 15) - 1;
+    for (i = 0; i < dst_height; ++i) {
+      ScaleRowUp(src_uv + (y >> 16) * src_stride, dst_uv, dst_width);
+      dst_uv += dst_stride;
+      y += dy;
+    }
+  }
+}
+
+// Scale 16 bit UV, up by 2 times.
+// This is an optimized version for scaling up a plane to 2 times of
+// its original size, using bilinear interpolation.
+// This is used to scale U and V planes of P010 to P410.
+void ScaleUVBilinearUp2_16(int src_width,
+                           int src_height,
+                           int dst_width,
+                           int dst_height,
+                           int src_stride,
+                           int dst_stride,
+                           const uint16_t* src_ptr,
+                           uint16_t* dst_ptr) {
+  void (*Scale2RowUp)(const uint16_t* src_ptr, ptrdiff_t src_stride,
+                      uint16_t* dst_ptr, ptrdiff_t dst_stride, int dst_width) =
+      ScaleUVRowUp2_Bilinear_16_Any_C;
+  int x;
+
+  // This function can only scale up by 2 times.
+  assert(src_width == ((dst_width + 1) / 2));
+  assert(src_height == ((dst_height + 1) / 2));
+
+#ifdef HAS_SCALEUVROWUP2BILINEAR_16_SSE2
+  if (TestCpuFlag(kCpuHasSSE2)) {
+    Scale2RowUp = ScaleUVRowUp2_Bilinear_16_Any_SSE2;
+  }
+#endif
+
+#ifdef HAS_SCALEUVROWUP2BILINEAR_16_AVX2
+  if (TestCpuFlag(kCpuHasAVX2)) {
+    Scale2RowUp = ScaleUVRowUp2_Bilinear_16_Any_AVX2;
+  }
+#endif
+
+#ifdef HAS_SCALEUVROWUP2BILINEAR_16_NEON
+  if (TestCpuFlag(kCpuHasNEON)) {
+    Scale2RowUp = ScaleUVRowUp2_Bilinear_16_Any_NEON;
+  }
+#endif
+
+  Scale2RowUp(src_ptr, 0, dst_ptr, 0, dst_width);
+  dst_ptr += dst_stride;
+  for (x = 0; x < src_height - 1; ++x) {
+    Scale2RowUp(src_ptr, src_stride, dst_ptr, dst_stride, dst_width);
+    src_ptr += src_stride;
+    // TODO(fbarchard): Test performance of writing one row of destination at a
+    // time.
+    dst_ptr += 2 * dst_stride;
+  }
+  if (!(dst_height & 1)) {
+    Scale2RowUp(src_ptr, 0, dst_ptr, 0, dst_width);
+  }
+}
+
 // Scale UV to/from any dimensions, without interpolation.
 // Fixed point math is used for performance: The upper 16 bits
 // of x and dx is the integer part of the source position and
@@ -724,9 +936,9 @@ static void ScaleUVSimple(int src_width,
 // Copy UV with optional flipping
 #if HAS_UVCOPY
 static int UVCopy(const uint8_t* src_UV,
-                  int src_stride_UV,
+                  int src_stride_uv,
                   uint8_t* dst_UV,
-                  int dst_stride_UV,
+                  int dst_stride_uv,
                   int width,
                   int height) {
   if (!src_UV || !dst_UV || width <= 0 || height == 0) {
@@ -735,11 +947,31 @@ static int UVCopy(const uint8_t* src_UV,
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
-    src_UV = src_UV + (height - 1) * src_stride_UV;
-    src_stride_UV = -src_stride_UV;
+    src_UV = src_UV + (height - 1) * src_stride_uv;
+    src_stride_uv = -src_stride_uv;
   }
 
-  CopyPlane(src_UV, src_stride_UV, dst_UV, dst_stride_UV, width * 2, height);
+  CopyPlane(src_UV, src_stride_uv, dst_UV, dst_stride_uv, width * 2, height);
+  return 0;
+}
+
+static int UVCopy_16(const uint16_t* src_UV,
+                     int src_stride_uv,
+                     uint16_t* dst_UV,
+                     int dst_stride_uv,
+                     int width,
+                     int height) {
+  if (!src_UV || !dst_UV || width <= 0 || height == 0) {
+    return -1;
+  }
+  // Negative height means invert the image.
+  if (height < 0) {
+    height = -height;
+    src_UV = src_UV + (height - 1) * src_stride_uv;
+    src_stride_uv = -src_stride_uv;
+  }
+
+  CopyPlane_16(src_UV, src_stride_uv, dst_UV, dst_stride_uv, width * 2, height);
   return 0;
 }
 #endif  // HAS_UVCOPY
@@ -844,6 +1076,18 @@ static void ScaleUV(const uint8_t* src,
                        dst_stride, src, dst, x, y, dy, 4, filtering);
     return;
   }
+  if (filtering && (dst_width + 1) / 2 == src_width) {
+    ScaleUVLinearUp2(src_width, src_height, clip_width, clip_height, src_stride,
+                     dst_stride, src, dst);
+    return;
+  }
+  if ((clip_height + 1) / 2 == src_height &&
+      (clip_width + 1) / 2 == src_width &&
+      (filtering == kFilterBilinear || filtering == kFilterBox)) {
+    ScaleUVBilinearUp2(src_width, src_height, clip_width, clip_height,
+                       src_stride, dst_stride, src, dst);
+    return;
+  }
 #if HAS_SCALEUVBILINEARUP
   if (filtering && dy < 65536) {
     ScaleUVBilinearUp(src_width, src_height, clip_width, clip_height,
@@ -875,13 +1119,76 @@ int UVScale(const uint8_t* src_uv,
             int dst_width,
             int dst_height,
             enum FilterMode filtering) {
-  if (!src_uv || src_width == 0 || src_height == 0 || src_width > 32768 ||
+  if (!src_uv || src_width <= 0 || src_height == 0 || src_width > 32768 ||
       src_height > 32768 || !dst_uv || dst_width <= 0 || dst_height <= 0) {
     return -1;
   }
   ScaleUV(src_uv, src_stride_uv, src_width, src_height, dst_uv, dst_stride_uv,
           dst_width, dst_height, 0, 0, dst_width, dst_height, filtering);
   return 0;
+}
+
+// Scale a 16 bit UV image.
+// This function is currently incomplete, it can't handle all cases.
+LIBYUV_API
+int UVScale_16(const uint16_t* src_uv,
+               int src_stride_uv,
+               int src_width,
+               int src_height,
+               uint16_t* dst_uv,
+               int dst_stride_uv,
+               int dst_width,
+               int dst_height,
+               enum FilterMode filtering) {
+  int dy = 0;
+
+  if (!src_uv || src_width <= 0 || src_height == 0 || src_width > 32768 ||
+      src_height > 32768 || !dst_uv || dst_width <= 0 || dst_height <= 0) {
+    return -1;
+  }
+
+  // UV does not support box filter yet, but allow the user to pass it.
+  // Simplify filtering when possible.
+  filtering = ScaleFilterReduce(src_width, src_height, dst_width, dst_height,
+                                filtering);
+
+  // Negative src_height means invert the image.
+  if (src_height < 0) {
+    src_height = -src_height;
+    src_uv = src_uv + (src_height - 1) * src_stride_uv;
+    src_stride_uv = -src_stride_uv;
+  }
+  src_width = Abs(src_width);
+
+#ifdef HAS_UVCOPY
+  if (!filtering && src_width == dst_width && (src_height % dst_height == 0)) {
+    if (dst_height == 1) {
+      UVCopy_16(src_uv + ((src_height - 1) / 2) * src_stride_uv, src_stride_uv,
+                dst_uv, dst_stride_uv, dst_width, dst_height);
+    } else {
+      dy = src_height / dst_height;
+      UVCopy_16(src_uv + src_stride_uv * ((dy - 1) / 2), src_stride_uv * dy,
+                dst_uv, dst_stride_uv, dst_width, dst_height);
+    }
+
+    return 0;
+  }
+#endif
+
+  if (filtering && (dst_width + 1) / 2 == src_width) {
+    ScaleUVLinearUp2_16(src_width, src_height, dst_width, dst_height,
+                        src_stride_uv, dst_stride_uv, src_uv, dst_uv);
+    return 0;
+  }
+
+  if ((dst_height + 1) / 2 == src_height && (dst_width + 1) / 2 == src_width &&
+      (filtering == kFilterBilinear || filtering == kFilterBox)) {
+    ScaleUVBilinearUp2_16(src_width, src_height, dst_width, dst_height,
+                          src_stride_uv, dst_stride_uv, src_uv, dst_uv);
+    return 0;
+  }
+
+  return -1;
 }
 
 #ifdef __cplusplus

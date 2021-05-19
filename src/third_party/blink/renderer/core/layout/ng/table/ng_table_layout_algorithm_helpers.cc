@@ -329,8 +329,18 @@ Vector<LayoutUnit> SynchronizeAssignableTableInlineSizeAndColumnsFixed(
   unsigned all_columns_count = 0;
   unsigned percent_columns_count = 0;
   unsigned auto_columns_count = 0;
-  unsigned auto_empty_columns_count = 0;
   unsigned fixed_columns_count = 0;
+  unsigned zero_inline_size_constrained_colums_count = 0;
+
+  auto TreatAsFixed = [](const NGTableTypes::Column& column) {
+    // Columns of width 0 are treated as auto by all browsers.
+    return column.IsFixed() && column.max_inline_size != LayoutUnit();
+  };
+
+  auto IsZeroInlineSizeConstrained = [](const NGTableTypes::Column& column) {
+    // Columns of width 0 are treated as auto by all browsers.
+    return column.is_constrained && column.max_inline_size == LayoutUnit();
+  };
 
   float total_percent = 0.0f;
   LayoutUnit total_percent_inline_size;
@@ -346,13 +356,13 @@ Vector<LayoutUnit> SynchronizeAssignableTableInlineSizeAndColumnsFixed(
       total_percent += *column.percent;
       total_percent_inline_size +=
           column.ResolvePercentInlineSize(target_inline_size);
-    } else if (column.is_constrained) {  // Fixed column
+    } else if (TreatAsFixed(column)) {
       fixed_columns_count++;
       total_fixed_inline_size += column.max_inline_size.value_or(LayoutUnit());
+    } else if (IsZeroInlineSizeConstrained(column)) {
+      zero_inline_size_constrained_colums_count++;
     } else {
       auto_columns_count++;
-      if (*column.max_inline_size == LayoutUnit())
-        auto_empty_columns_count++;
       total_auto_max_inline_size +=
           column.max_inline_size.value_or(LayoutUnit());
     }
@@ -380,7 +390,7 @@ Vector<LayoutUnit> SynchronizeAssignableTableInlineSizeAndColumnsFixed(
     LayoutUnit* column_size = column_sizes.begin();
     for (const NGTableTypes::Column* column = column_constraints.data.begin();
          column != column_constraints.data.end(); ++column, ++column_size) {
-      if (!column->IsFixed())
+      if (!TreatAsFixed(*column))
         continue;
       last_column_size = column_size;
       if (scale_available) {
@@ -431,21 +441,32 @@ Vector<LayoutUnit> SynchronizeAssignableTableInlineSizeAndColumnsFixed(
       assigned_inline_size += *column_size;
     }
   }
-  // Distribute to auto columns.
+  // Distribute to auto, and zero inline size columns.
   LayoutUnit distributing_inline_size =
       target_inline_size - assigned_inline_size;
   LayoutUnit* column_size = column_sizes.begin();
 
+  bool distribute_zero_inline_size =
+      zero_inline_size_constrained_colums_count == all_columns_count;
+
   for (const NGTableTypes::Column* column = column_constraints.data.begin();
        column != column_constraints.data.end(); ++column, ++column_size) {
-    if (column->percent || column->is_constrained)
+    if (column->percent || TreatAsFixed(*column))
       continue;
+    // Zero-width columns only grow if all columns are zero-width.
+    if (IsZeroInlineSizeConstrained(*column) && !distribute_zero_inline_size)
+      continue;
+
     last_column_size = column_size;
     *column_size =
-        LayoutUnit(distributing_inline_size / float(auto_columns_count));
+        LayoutUnit(distributing_inline_size /
+                   float(distribute_zero_inline_size
+                             ? zero_inline_size_constrained_colums_count
+                             : auto_columns_count));
     assigned_inline_size += *column_size;
   }
   LayoutUnit delta = target_inline_size - assigned_inline_size;
+  DCHECK(last_column_size);
   *last_column_size += delta;
 
   return column_sizes;
@@ -750,7 +771,7 @@ void DistributeExcessBlockSizeToRows(
   if (distributable_block_size <= LayoutUnit())
     return;
 
-  // Step 1: percentage rows grow to their percentage size.
+  // Step 1: percentage rows grow to no more than their percentage size.
   if (percent_rows_with_deficit_count > 0) {
     float ratio = std::min(
         distributable_block_size.ToFloat() / percentage_block_size_deficit,
@@ -770,7 +791,11 @@ void DistributeExcessBlockSizeToRows(
       remaining_deficit -= delta;
     }
     last_row->block_size += remaining_deficit;
+    last_row->block_size = std::max(last_row->block_size, LayoutUnit());
     distributed_block_size += remaining_deficit;
+    // Rounding errors might cause us to distribute more than available length.
+    distributed_block_size =
+        std::min(distributed_block_size, distributable_block_size);
     distributable_block_size -= distributed_block_size;
   }
   DCHECK_GE(distributable_block_size, LayoutUnit());
@@ -791,6 +816,7 @@ void DistributeExcessBlockSizeToRows(
       remaining_deficit -= delta;
     }
     last_row->block_size += remaining_deficit;
+    last_row->block_size = std::max(last_row->block_size, LayoutUnit());
     return;
   }
   // Step 3: "unconstrained non-empty rows" grow in proportion to current
@@ -809,6 +835,7 @@ void DistributeExcessBlockSizeToRows(
       remaining_deficit -= delta;
     }
     last_row->block_size += remaining_deficit;
+    last_row->block_size = std::max(last_row->block_size, LayoutUnit());
     return;
   }
 
@@ -858,6 +885,7 @@ void DistributeExcessBlockSizeToRows(
       }
       DCHECK(last_row);
       last_row->block_size += remaining_deficit;
+      last_row->block_size = std::max(last_row->block_size, LayoutUnit());
       return;
     }
   }
@@ -875,8 +903,10 @@ void DistributeExcessBlockSizeToRows(
     row->block_size += delta;
     remaining_deficit -= delta;
   }
-  if (last_row)
+  if (last_row) {
     last_row->block_size += remaining_deficit;
+    last_row->block_size = std::max(last_row->block_size, LayoutUnit());
+  }
 }
 
 }  // namespace

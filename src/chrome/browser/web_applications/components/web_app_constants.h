@@ -34,6 +34,8 @@ enum Type {
 };
 }  // namespace Source
 
+std::ostream& operator<<(std::ostream& os, Source::Type type);
+
 // Type of OS hook.
 //
 // This enum should be zero based. It is not strongly typed enum class to
@@ -215,6 +217,9 @@ enum class RunOnOsLoginMode {
   // minimized window.
   kMinimized = 2,
 };
+
+// Command line parameter representing RunOnOsLoginMode::kWindowed.
+extern const char kRunOnOsLoginModeWindowed[];
 
 enum class RunOnOsLoginPolicy {
   // kAllowed: User can configure an app to run on OS Login.

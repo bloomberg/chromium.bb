@@ -234,7 +234,7 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
       return PerformOnSingleElementAction::WithClientId(
           delegate, action, action.scroll_into_view().client_id(),
           base::BindOnce(&WebController::ScrollIntoView,
-                         delegate->GetWebController()->GetWeakPtr()));
+                         delegate->GetWebController()->GetWeakPtr(), true));
     case ActionProto::ActionInfoCase::kWaitForDocumentToBecomeInteractive:
       return PerformOnSingleElementAction::WithOptionalClientIdTimed(
           delegate, action,
@@ -291,10 +291,12 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
       }
       return PerformOnSingleElementAction::WithClientId(
           delegate, action, action.set_element_attribute().client_id(),
-          base::BindOnce(&action_delegate_util::PerformWithTextValue, delegate,
-                         action.set_element_attribute().value(),
-                         base::BindOnce(&ActionDelegate::SetAttribute,
-                                        delegate->GetWeakPtr(), attributes)));
+          base::BindOnce(
+              &action_delegate_util::PerformWithTextValue, delegate,
+              action.set_element_attribute().value(),
+              base::BindOnce(&WebController::SetAttribute,
+                             delegate->GetWebController()->GetWeakPtr(),
+                             attributes)));
     }
     case ActionProto::ActionInfoCase::kSelectFieldValue:
       return PerformOnSingleElementAction::WithClientId(
@@ -310,8 +312,8 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
       return PerformOnSingleElementAction::WithClientIdTimed(
           delegate, action,
           action.wait_for_element_to_become_stable().client_id(),
-          base::BindOnce(&ActionDelegate::WaitUntilElementIsStable,
-                         delegate->GetWeakPtr(),
+          base::BindOnce(&WebController::WaitUntilElementIsStable,
+                         delegate->GetWebController()->GetWeakPtr(),
                          action.wait_for_element_to_become_stable()
                              .stable_check_max_rounds(),
                          base::TimeDelta::FromMilliseconds(
@@ -326,6 +328,13 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
       return std::make_unique<ReleaseElementsAction>(delegate, action);
     case ActionProto::ActionInfoCase::kDispatchJsEvent:
       return std::make_unique<DispatchJsEventAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kSendKeyEvent: {
+      return PerformOnSingleElementAction::WithClientId(
+          delegate, action, action.send_key_event().client_id(),
+          base::BindOnce(&WebController::SendKeyEvent,
+                         delegate->GetWebController()->GetWeakPtr(),
+                         action.send_key_event().key_event()));
+    }
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
       VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
       return std::make_unique<UnsupportedAction>(delegate, action);

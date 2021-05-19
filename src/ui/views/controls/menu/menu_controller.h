@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -101,7 +102,8 @@ class VIEWS_EXPORT MenuController
            const gfx::Rect& bounds,
            MenuAnchorPosition position,
            bool context_menu,
-           bool is_nested_drag);
+           bool is_nested_drag,
+           gfx::NativeView native_view_for_gestures = nullptr);
 
   bool for_drop() const { return for_drop_; }
 
@@ -546,15 +548,15 @@ class VIEWS_EXPORT MenuController
   // |match_function| is used to determine which menus match.
   SelectByCharDetails FindChildForMnemonic(
       MenuItemView* parent,
-      base::char16 key,
-      bool (*match_function)(MenuItemView* menu, base::char16 mnemonic));
+      char16_t key,
+      bool (*match_function)(MenuItemView* menu, char16_t mnemonic));
 
   // Selects or accepts the appropriate menu item based on |details|.
   void AcceptOrSelect(MenuItemView* parent, const SelectByCharDetails& details);
 
   // Selects by mnemonic, and if that doesn't work tries the first character of
   // the title.
-  void SelectByChar(base::char16 key);
+  void SelectByChar(char16_t key);
 
   // For Windows and Aura we repost an event which dismisses the |source| menu.
   // The menu may also be canceled depending on the target of the event. |event|
@@ -691,6 +693,10 @@ class VIEWS_EXPORT MenuController
   // Owner of child windows.
   // WARNING: this may be NULL.
   Widget* owner_ = nullptr;
+
+  // An optional NativeView to which gestures will be forwarded to if
+  // RunType::SEND_GESTURE_EVENTS_TO_OWNER is set.
+  gfx::NativeView native_view_for_gestures_ = nullptr;
 
   // Indicates a possible drag operation.
   bool possible_drag_ = false;

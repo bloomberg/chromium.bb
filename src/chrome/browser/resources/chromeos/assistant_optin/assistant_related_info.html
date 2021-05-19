@@ -2,7 +2,10 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<link rel="import" href="/components/hd_iron_icon.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+
 <link rel="import" href="/components/oobe_i18n_behavior.html">
 <link rel="import" href="/components/oobe_adaptive_dialog.html">
 <link rel="import" href="/components/oobe_dialog_host_behavior.html">
@@ -14,40 +17,38 @@
       padding-bottom: 16px;
     }
 
+    #relatedInfoImg {
+      height: 288px;
+    }
+
     :host-context(html:not([new-layout])) #relatedInfoImg {
-      max-height: 240px;
+      height: 240px;
     }
 
     @media screen and (max-height: 736px) {
       :host-context(html:not([new-layout])) #relatedInfoImg {
-        max-height: 200px;
+        height: 200px;
       }
     }
-    /**
-     * TODO(crbug.com/1101320): remove this when style of gstatic animation is
-     * fixed.
-     */
-    #content-container {
-      z-index: 1;
+
+    :host-context([orientation=vertical]) oobe-adaptive-dialog {
+      --oobe-adaptive-dialog-content-top-padding: 0;
     }
   </style>
   <link rel="stylesheet" href="assistant_shared_styles.css">
   <oobe-adaptive-dialog id="relatedInfoDialog" role="dialog" hide-shadow
       aria-label$="[[i18nDynamic(locale, titleKey_)]]">
-    <hd-iron-icon slot="icon"
-        icon1x="assistant-32:assistant" icon2x="assistant-64:assistant"
+    <iron-icon slot="icon" icon="assistant-32:assistant"
         aria-label$="[[i18nDynamic(locale, 'assistantLogo')]]">
-    </hd-iron-icon>
+    </iron-icon>
     <h1 slot="title">
       [[i18nDynamic(locale, titleKey_)]]
     </h1>
     <div slot="subtitle" hidden$="[[skipActivityControl_]]"
-        inner-h-t-m-l="[[i18nAdvanced('assistantRelatedInfoMessage')]]"></div>
-    <div slot="subtitle" class="animation-outer-container"
-        hidden$="[[!skipActivityControl_]]">
-      <div class="animation-container">
-        <webview id="assistant-animation-webview" tabindex="-1"></webview>
-      </div>
+        inner-h-t-m-l="[[getSubtitleMessage_(locale)]]">
+    </div>
+    <div id="animation-container" hidden$="[[!skipActivityControl_]]">
+      <webview id="assistant-animation-webview" tabindex="-1"></webview>
     </div>
     <div slot="content" class="flex layout vertical center center-justified"
         hidden$="[[skipActivityControl_]]">
@@ -55,8 +56,7 @@
           srcset="assistant_related_info_1x.svg 1x,
           assistant_related_info_2x.svg 2x">
     </div>
-    <div slot="content" id="content-container"
-        class="horizontal-mode-horizontal-centering"
+    <div slot="content" id="content-container" class="landscape-header-aligned"
         hidden$="[[!skipActivityControl_]]">
       <div id="intro-text" class="content">
         [[i18nDynamic(locale, 'assistantRelatedInfoReturnedUserMessage')]]
@@ -73,10 +73,10 @@
     </div>
     <div slot="bottom-buttons" class="layout horizontal end-justified">
       <oobe-text-button id="skip-button" disabled="[[loading]]"
-          text-key="[[skipButtonKey_]]" on-click="onSkipTap_">
+          text-key="assistantOptinNoThanksButton" on-click="onSkipTap_">
       </oobe-text-button>
       <oobe-next-button id="next-button" disabled="[[loading]]"
-          text-key="[[nextButtonKey_]]" on-click="onNextTap_">
+          text-key="assistantOptinAgreeButton" on-click="onNextTap_">
       </oobe-next-button>
     </div>
   </oobe-adaptive-dialog>

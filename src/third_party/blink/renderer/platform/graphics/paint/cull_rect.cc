@@ -40,11 +40,15 @@ static int LocalPixelDistanceToExpand(
 }
 
 bool CullRect::Intersects(const IntRect& rect) const {
+  if (rect.IsEmpty())
+    return false;
   return IsInfinite() || rect.Intersects(rect_);
 }
 
 bool CullRect::IntersectsTransformed(const AffineTransform& transform,
                                      const FloatRect& rect) const {
+  if (rect.IsEmpty())
+    return false;
   return IsInfinite() || transform.MapRect(rect).Intersects(rect_);
 }
 
@@ -286,7 +290,7 @@ void CullRect::ApplyPaintProperties(
     expansion_bounds = &last_transform->ScrollNode()->ContentsSize();
     expanded = true;
   } else if (!IsInfinite() && last_transform != &destination.Transform() &&
-             destination.Transform().HasDirectCompositingReasons()) {
+             destination.Transform().RequiresCullRectExpansion()) {
     // Direct compositing reasons such as will-change transform can cause the
     // content to move arbitrarily, so there is no exact cull rect. Instead of
     // using an infinite rect, we use a heuristic of expanding by

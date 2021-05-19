@@ -45,6 +45,38 @@ class NGColumnLayoutAlgorithmTest
   }
 };
 
+TEST_F(NGColumnLayoutAlgorithmTest, EmptyEditable) {
+  LoadAhem();
+  InsertStyleElement(
+      "body { font: 10px/20px Ahem; }"
+      "#multicol1, #multicol2 { columns: 3; }");
+  SetBodyInnerHTML(
+      "<div contenteditable id=single></div>"
+      "<div contenteditable id=multicol1><br></div>"
+      "<div contenteditable id=multicol2></div>");
+
+  EXPECT_EQ(20, GetElementById("single")->OffsetHeight());
+  EXPECT_EQ(20, GetElementById("multicol1")->OffsetHeight());
+  EXPECT_EQ(20, GetElementById("multicol2")->OffsetHeight());
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, EmptyEditableWithFloat) {
+  LoadAhem();
+  InsertStyleElement(
+      "body { font: 10px/20px Ahem; }"
+      "float { float:right; width: 50px; height: 50px; background:pink; }"
+      "#multicol1, #multicol2 { columns: 3; }");
+  SetBodyInnerHTML(
+      "<div contenteditable id=single><float></float></div>"
+      // Note: <float> spreads into all columns.
+      "<div contenteditable id=multicol1><float></float><br></div>"
+      "<div contenteditable id=multicol2><float></float></div>");
+
+  EXPECT_EQ(20, GetElementById("single")->OffsetHeight());
+  EXPECT_EQ(20, GetElementById("multicol1")->OffsetHeight());
+  EXPECT_EQ(20, GetElementById("multicol2")->OffsetHeight());
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, EmptyMulticol) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -2708,21 +2740,18 @@ TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
       CalculateInitialFragmentGeometry(space, node);
   NGColumnLayoutAlgorithm algorithm({node, fragment_geometry, space});
   base::Optional<MinMaxSizes> sizes;
-  MinMaxSizesInput zero_input(
-      /* percentage_resolution_block_size */ LayoutUnit(),
-      MinMaxSizesType::kContent);
 
   // Both column-count and column-width set.
   style->SetColumnCount(3);
   style->SetColumnWidth(80);
-  sizes = algorithm.ComputeMinMaxSizes(zero_input).sizes;
+  sizes = algorithm.ComputeMinMaxSizes(MinMaxSizesFloatInput()).sizes;
   ASSERT_TRUE(sizes.has_value());
   EXPECT_EQ(LayoutUnit(260), sizes->min_size);
   EXPECT_EQ(LayoutUnit(320), sizes->max_size);
 
   // Only column-count set.
   style->SetHasAutoColumnWidth();
-  sizes = algorithm.ComputeMinMaxSizes(zero_input).sizes;
+  sizes = algorithm.ComputeMinMaxSizes(MinMaxSizesFloatInput()).sizes;
   ASSERT_TRUE(sizes.has_value());
   EXPECT_EQ(LayoutUnit(170), sizes->min_size);
   EXPECT_EQ(LayoutUnit(320), sizes->max_size);
@@ -2730,7 +2759,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
   // Only column-width set.
   style->SetColumnWidth(80);
   style->SetHasAutoColumnCount();
-  sizes = algorithm.ComputeMinMaxSizes(zero_input).sizes;
+  sizes = algorithm.ComputeMinMaxSizes(MinMaxSizesFloatInput()).sizes;
   ASSERT_TRUE(sizes.has_value());
   EXPECT_EQ(LayoutUnit(80), sizes->min_size);
   EXPECT_EQ(LayoutUnit(100), sizes->max_size);

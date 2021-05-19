@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -22,6 +23,7 @@
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigation_request_info.h"
 #include "content/browser/renderer_host/navigator_delegate.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -111,6 +113,42 @@ void RecordWebPlatformSecurityMetrics(RenderFrameHostImpl* rfh,
     client->LogWebFeatureForCurrentPage(
         rfh,
         blink::mojom::WebFeature::kCrossOriginSubframeWithoutEmbeddingControl);
+  }
+
+  // Check if the navigation resulted in having same-origin documents in pages
+  // with different COOP status inside the browsing context group.
+  RenderFrameHostImpl* top_level_document =
+      rfh->frame_tree_node()->frame_tree()->GetMainFrame();
+  network::mojom::CrossOriginOpenerPolicyValue page_coop =
+      top_level_document->cross_origin_opener_policy().value;
+  for (RenderFrameHostImpl* other_tld :
+       rfh->delegate()->GetActiveTopLevelDocumentsInBrowsingContextGroup(rfh)) {
+    network::mojom::CrossOriginOpenerPolicyValue other_page_coop =
+        other_tld->cross_origin_opener_policy().value;
+    if (page_coop == other_page_coop)
+      continue;
+
+    using CoopValue = network::mojom::CrossOriginOpenerPolicyValue;
+    DCHECK((page_coop == CoopValue::kSameOriginAllowPopups &&
+            other_page_coop == CoopValue::kUnsafeNone) ||
+           (page_coop == CoopValue::kUnsafeNone &&
+            other_page_coop == CoopValue::kSameOriginAllowPopups));
+    for (FrameTreeNode* frame_tree_node :
+         other_tld->frame_tree_node()->frame_tree()->Nodes()) {
+      RenderFrameHostImpl* other_rfh = frame_tree_node->current_frame_host();
+      if (other_rfh->lifecycle_state() ==
+              RenderFrameHostImpl::LifecycleStateImpl::kActive &&
+          rfh->GetLastCommittedOrigin().IsSameOriginWith(
+              other_rfh->GetLastCommittedOrigin())) {
+        // Always log the feature on the COOP same-origin-allow-popups page,
+        // since this is the spec we are trying to change.
+        RenderFrameHostImpl* rfh_to_log =
+            page_coop == CoopValue::kSameOriginAllowPopups ? rfh : other_rfh;
+        client->LogWebFeatureForCurrentPage(
+            rfh_to_log, blink::mojom::WebFeature::
+                            kSameOriginDocumentsWithDifferentCOOPStatus);
+      }
+    }
   }
 }
 
@@ -324,8 +362,9 @@ void Navigator::DidNavigate(
     is_same_document_navigation = false;
   }
   // At this point we have already chosen a SiteInstance for this navigation, so
-  // set |origin_requests_isolation| = false in the conversion to UrlInfo below.
-  const UrlInfo url_info(params.url, false /* origin_requests_isolation */);
+  // set |origin_isolation_request| to kNone in the conversion to UrlInfo
+  // below.
+  const UrlInfo url_info(params.url, UrlInfo::OriginIsolationRequest::kNone);
 
   if (auto& old_page_info = navigation_request->commit_params().old_page_info) {
     // This is a same-site main-frame navigation where we did a proactive
@@ -372,13 +411,7 @@ void Navigator::DidNavigate(
 
   if (!is_same_document_navigation) {
     // Navigating to a new location means a new, fresh set of http headers
-    // and/or <meta> elements - we need to reset CSP and Feature Policy.
-    // However, if the navigation is restoring the given |render_frame_host|
-    // from back-forward cache, it does not change the document in the given
-    // RenderFrameHost and the existing Content Security Policy should be kept.
-    if (!navigation_request->IsServedFromBackForwardCache())
-      render_frame_host->ResetContentSecurityPolicies();
-
+    // and/or <meta> elements - we need to reset Permissions Policy.
     frame_tree_node->ResetForNavigation(
         navigation_request->IsServedFromBackForwardCache());
   }
@@ -412,9 +445,17 @@ void Navigator::DidNavigate(
 
   int old_entry_count = controller_.GetEntryCount();
   LoadCommittedDetails details;
+  base::TimeTicks start = base::TimeTicks::Now();
   bool did_navigate = controller_.RendererDidNavigate(
       render_frame_host, params, &details, is_same_document_navigation,
       previous_document_was_activated, navigation_request.get());
+  if (!is_same_document_navigation) {
+    base::UmaHistogramTimes(
+        base::StrCat(
+            {"Navigation.RendererDidNavigateTime.",
+             render_frame_host->GetParent() ? "Subframe" : "MainFrame"}),
+        base::TimeTicks::Now() - start);
+  }
 
   // If the history length and/or offset changed, update other renderers in the
   // FrameTree.
@@ -763,7 +804,6 @@ void Navigator::OnBeginNavigation(
     mojom::BeginNavigationParamsPtr begin_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
-    mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
     std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker) {
@@ -815,7 +855,6 @@ void Navigator::OnBeginNavigation(
           std::move(begin_params), controller_.GetLastCommittedEntryIndex(),
           controller_.GetEntryCount(), override_user_agent,
           std::move(blob_url_loader_factory), std::move(navigation_client),
-          std::move(navigation_initiator),
           std::move(prefetched_signed_exchange_cache),
           std::move(web_bundle_handle_tracker)));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();

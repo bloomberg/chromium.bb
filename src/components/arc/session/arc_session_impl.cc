@@ -99,13 +99,6 @@ bool WaitForSocketReadable(int raw_socket_fd, int raw_cancel_fd) {
 void ApplyDalvikMemoryProfile(
     ArcSessionImpl::SystemMemoryInfoCallback system_memory_info_callback,
     StartParams* params) {
-  // Check if enabled.
-  if (!base::FeatureList::IsEnabled(arc::kUseHighMemoryDalvikProfile)) {
-    VLOG(1) << "High-memory dalvik profile is not enabled, default low-memory "
-               "is used.";
-    return;
-  }
-
   base::SystemMemoryInfoKB mem_info;
   if (!system_memory_info_callback.Run(&mem_info)) {
     LOG(ERROR) << "Failed to get system memory info";
@@ -161,6 +154,12 @@ void ApplyUsapProfile(
   } else {
     params->usap_profile = StartParams::UsapProfile::DEFAULT;
   }
+}
+
+void ApplyDisableDownloadProvider(StartParams* params) {
+  params->disable_download_provider =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kArcDisableDownloadProvider);
 }
 
 // Real Delegate implementation to connect Mojo.
@@ -529,6 +528,7 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
 
   ApplyDalvikMemoryProfile(system_memory_info_callback_, &params);
   ApplyUsapProfile(system_memory_info_callback_, &params);
+  ApplyDisableDownloadProvider(&params);
 
   client_->StartMiniArc(std::move(params),
                         base::BindOnce(&ArcSessionImpl::OnMiniInstanceStarted,

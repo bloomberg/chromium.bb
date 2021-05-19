@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -86,8 +85,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -130,11 +129,19 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
         web_app::OsIntegrationManager::ScopedSuppressOsHooksForTesting();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Tests in this suite make use of documents with no significant
+    // rendered content, and such documents do not accept input for 500ms
+    // unless we allow it.
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
+  }
+
  protected:
   std::unique_ptr<TestRenderViewContextMenu> CreateContextMenuMediaTypeNone(
       const GURL& unfiltered_url,
       const GURL& url) {
-    return CreateContextMenu(unfiltered_url, url, base::string16(),
+    return CreateContextMenu(unfiltered_url, url, std::u16string(),
                              blink::mojom::ContextMenuDataMediaType::kNone,
                              ui::MENU_SOURCE_NONE);
   }
@@ -144,13 +151,13 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
                                               const GURL& unfiltered_url,
                                               const GURL& url) {
     return CreateContextMenuInWebContents(
-        web_contents, unfiltered_url, url, base::string16(),
+        web_contents, unfiltered_url, url, std::u16string(),
         blink::mojom::ContextMenuDataMediaType::kNone, ui::MENU_SOURCE_NONE);
   }
 
   std::unique_ptr<TestRenderViewContextMenu> CreateContextMenuMediaTypeImage(
       const GURL& url) {
-    return CreateContextMenu(GURL(), url, base::string16(),
+    return CreateContextMenu(GURL(), url, std::u16string(),
                              blink::mojom::ContextMenuDataMediaType::kImage,
                              ui::MENU_SOURCE_NONE);
   }
@@ -158,7 +165,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<TestRenderViewContextMenu> CreateContextMenu(
       const GURL& unfiltered_url,
       const GURL& url,
-      const base::string16& link_text,
+      const std::u16string& link_text,
       blink::mojom::ContextMenuDataMediaType media_type,
       ui::MenuSourceType source_type) {
     return CreateContextMenuInWebContents(
@@ -170,7 +177,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
       WebContents* web_contents,
       const GURL& unfiltered_url,
       const GURL& url,
-      const base::string16& link_text,
+      const std::u16string& link_text,
       blink::mojom::ContextMenuDataMediaType media_type,
       ui::MenuSourceType source_type) {
     content::ContextMenuParams params;
@@ -413,9 +420,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   EXPECT_TRUE(menu2->IsCommandIdVisible(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
 
   std::unique_ptr<TestRenderViewContextMenu> menu3 = CreateContextMenu(
-      GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16(""), blink::mojom::ContextMenuDataMediaType::kNone,
-      ui::MENU_SOURCE_TOUCH);
+      GURL("http://www.google.com/"), GURL("http://www.google.com/"), u"",
+      blink::mojom::ContextMenuDataMediaType::kNone, ui::MENU_SOURCE_TOUCH);
 
   EXPECT_TRUE(menu3->IsCommandIdVisible(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
 }
@@ -714,7 +720,20 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   // Emoji context menu item should never be present on a non-editable field.
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_EMOJI));
 }
-
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Executing the emoji panel item with no associated browser should not crash.
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       ContextMenuForEmojiPanel_NullBrowserCrash) {
+  ui::SetShowEmojiKeyboardCallback(
+      base::BindRepeating(ui::ShowTabletModeEmojiPanel));
+  std::unique_ptr<content::WebContents> detached_web_contents =
+      content::WebContents::Create(
+          content::WebContents::CreateParams(browser()->profile()));
+  TestRenderViewContextMenu menu(detached_web_contents->GetMainFrame(), {});
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_EMOJI, 0);
+}
+#else
 // Executing the emoji panel item with no associated browser should not crash.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        ContextMenuForEmojiPanel_NullBrowserCrash) {
@@ -725,6 +744,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_EMOJI, 0);
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Only Chrome OS supports emoji panel callbacks.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -748,8 +768,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextMouse) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
-      GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16("Google"),
+      GURL("http://www.google.com/"), GURL("http://www.google.com/"), u"Google",
       blink::mojom::ContextMenuDataMediaType::kNone, ui::MENU_SOURCE_MOUSE);
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -757,17 +776,15 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextMouse) {
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchNoText) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
-      GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16(""), blink::mojom::ContextMenuDataMediaType::kNone,
-      ui::MENU_SOURCE_TOUCH);
+      GURL("http://www.google.com/"), GURL("http://www.google.com/"), u"",
+      blink::mojom::ContextMenuDataMediaType::kNone, ui::MENU_SOURCE_TOUCH);
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextOnly) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
-      GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16("Google"),
+      GURL("http://www.google.com/"), GURL("http://www.google.com/"), u"Google",
       blink::mojom::ContextMenuDataMediaType::kNone, ui::MENU_SOURCE_TOUCH);
 
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -775,8 +792,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextOnly) {
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextImage) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
-      GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16("Google"),
+      GURL("http://www.google.com/"), GURL("http://www.google.com/"), u"Google",
       blink::mojom::ContextMenuDataMediaType::kImage, ui::MENU_SOURCE_TOUCH);
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -987,7 +1003,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, SuggestedFileName) {
   menu_observer.WaitForMenuOpenAndClose();
 
   // Compare filename.
-  base::string16 suggested_filename = menu_observer.params().suggested_filename;
+  std::u16string suggested_filename = menu_observer.params().suggested_filename;
   ASSERT_EQ(kSuggestedFilename, base::UTF16ToUTF8(suggested_filename).c_str());
 }
 
@@ -1129,6 +1145,55 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                                      IDC_CONTENT_CONTEXT_COPYIMAGELOCATION,
                                      IDC_CONTENT_CONTEXT_SAVEIMAGEAS}));
 }
+
+// Check whether correct non-located context menu shows up for anchor element
+// inside an editable element.
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       NonLocatedContextMenuOnAnchorElement) {
+  const char kDataURIPrefix[] = "data:text/html;charset=utf-8,";
+  const char kAnchorHtml[] =
+      "<div contenteditable='true'>Some text and "
+      "<a href='https://test.com' id='anchor1'>link</a></div> ";
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(std::string(kDataURIPrefix) + kAnchorHtml));
+
+  // Open and close a context menu.
+  ContextMenuWaiter menu_observer;
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  int x;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      tab,
+      "var bounds = document.getElementById('anchor1')"
+      ".getBoundingClientRect();"
+      "domAutomationController.send("
+      "    Math.floor(bounds.left + bounds.width / 2));",
+      &x));
+  int y;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      tab,
+      "var bounds = document.getElementById('anchor1')"
+      ".getBoundingClientRect();"
+      "domAutomationController.send("
+      "    Math.floor(bounds.top + bounds.height / 2));",
+      &y));
+
+  // Focus in the middle of an anchor element.
+  content::SimulateMouseClickAt(tab, /*modifiers=*/0,
+                                blink::WebMouseEvent::Button::kLeft,
+                                gfx::Point(x, y));
+
+  // Simulate non-located context menu on anchor element with Shift + F10.
+  content::SimulateKeyPress(tab, ui::DomKey::F10, ui::DomCode::F10,
+                            ui::VKEY_F10, /*control=*/false, /*shift=*/true,
+                            /*alt=*/false, /*command=*/false);
+  menu_observer.WaitForMenuOpenAndClose();
+
+  // Verify that the expected context menu items are present.
+  EXPECT_THAT(menu_observer.GetCapturedCommandIds(),
+              testing::IsSupersetOf({IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+                                     IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW}));
+}
 #endif
 
 // Check filename on clicking "Save Link As" is ignored for cross origin.
@@ -1162,7 +1227,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, SuggestedFileNameCrossOrigin) {
   menu_observer.WaitForMenuOpenAndClose();
 
   // Compare filename.
-  base::string16 suggested_filename = menu_observer.params().suggested_filename;
+  std::u16string suggested_filename = menu_observer.params().suggested_filename;
   ASSERT_TRUE(suggested_filename.empty());
 }
 
@@ -1536,6 +1601,13 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), page_url);
   }
 
+  // Some platforms are flaky due to slower loading interacting with deferred
+  // commits.
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
+  }
+
   void AttemptLoadImage() {
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -1629,7 +1701,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, BrowserlessWebContentsCrash) {
           content::WebContents::CreateParams(browser()->profile()));
   CreateContextMenuInWebContents(
       web_contents.get(), GURL("http://www.google.com/"),
-      GURL("http://www.google.com/"), base::ASCIIToUTF16("Google"),
+      GURL("http://www.google.com/"), u"Google",
       blink::mojom::ContextMenuDataMediaType::kNone, ui::MENU_SOURCE_MOUSE);
 }
 

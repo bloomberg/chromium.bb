@@ -35,11 +35,12 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.compat.ApiHelperForP;
+import org.chromium.build.BuildConfig;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -372,8 +373,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                 NetworkRequest networkRequest, NetworkCallback networkCallback, Handler handler) {
             // Starting with Oreo specifying a Handler is allowed.  Use this to avoid thread-hops.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                mConnectivityManager.registerNetworkCallback(
-                        networkRequest, networkCallback, handler);
+                ApiHelperForO.registerNetworkCallback(
+                        mConnectivityManager, networkRequest, networkCallback, handler);
             } else {
                 mConnectivityManager.registerNetworkCallback(networkRequest, networkCallback);
             }
@@ -385,7 +386,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          */
         @TargetApi(Build.VERSION_CODES.P)
         void registerDefaultNetworkCallback(NetworkCallback networkCallback, Handler handler) {
-            mConnectivityManager.registerDefaultNetworkCallback(networkCallback, handler);
+            ApiHelperForO.registerDefaultNetworkCallback(
+                    mConnectivityManager, networkCallback, handler);
         }
 
         /**
@@ -968,7 +970,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     }
 
     private void assertOnThread() {
-        if (BuildConfig.DCHECK_IS_ON && !onThread()) {
+        if (BuildConfig.ENABLE_ASSERTS && !onThread()) {
             throw new IllegalStateException(
                     "Must be called on NetworkChangeNotifierAutoDetect thread.");
         }

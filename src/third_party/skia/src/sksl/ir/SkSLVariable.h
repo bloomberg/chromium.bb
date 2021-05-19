@@ -8,9 +8,10 @@
 #ifndef SKSL_VARIABLE
 #define SKSL_VARIABLE
 
+#include "include/private/SkSLModifiers.h"
+#include "include/private/SkSLSymbol.h"
 #include "src/sksl/SkSLPosition.h"
-#include "src/sksl/ir/SkSLModifiers.h"
-#include "src/sksl/ir/SkSLSymbol.h"
+#include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
 
@@ -48,6 +49,8 @@ public:
     , fStorage(storage)
     , fBuiltin(builtin) {}
 
+    ~Variable() override;
+
     const Modifiers& modifiers() const {
         return *fModifiers;
     }
@@ -65,6 +68,12 @@ public:
     void setDeclaration(VarDeclaration* declaration) {
         SkASSERT(!fDeclaration);
         fDeclaration = declaration;
+    }
+
+    void detachDeadVarDeclaration() const {
+        // The VarDeclaration is being deleted, so our reference to it has become stale.
+        // This variable is now dead, so it shouldn't matter that we are modifying its symbol.
+        const_cast<Variable*>(this)->fDeclaration = nullptr;
     }
 
     String description() const override {

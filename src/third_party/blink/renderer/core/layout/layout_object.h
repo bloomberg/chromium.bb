@@ -79,8 +79,8 @@ class LayoutBoxModelObject;
 class LayoutBlock;
 class LayoutBlockFlow;
 class LayoutFlowThread;
-class LayoutGeometryMap;
 class LayoutMultiColumnSpannerPlaceholder;
+class LayoutNGGridInterface;
 class LayoutNGTableInterface;
 class LayoutNGTableRowInterface;
 class LayoutNGTableSectionInterface;
@@ -88,7 +88,7 @@ class LayoutNGTableCellInterface;
 class LayoutView;
 class LocalFrameView;
 class PaintLayer;
-class PseudoElementStyleRequest;
+class StyleRequest;
 struct PaintInfo;
 struct PaintInvalidatorContext;
 
@@ -322,6 +322,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Returns false iff this object or one of its ancestors has opacity:0.
   bool HasNonZeroEffectiveOpacity() const;
+
+  // Returns true if the offset ot the containing block depends on the point
+  // being mapped.
+  bool OffsetForContainerDependsOnPoint(const LayoutObject* container) const;
 
  protected:
   void EnsureIdForTesting() {
@@ -776,10 +780,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectCounter);
   }
-  bool IsDetailsMarker() const {
-    NOT_DESTROYED();
-    return IsOfType(kLayoutObjectDetailsMarker);
-  }
   bool IsEmbeddedObject() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectEmbeddedObject);
@@ -1058,27 +1058,31 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   virtual const LayoutNGTableInterface* ToLayoutNGTableInterface() const {
     NOT_DESTROYED();
-    DCHECK(false);
+    NOTREACHED();
     return nullptr;
   }
   virtual const LayoutNGTableSectionInterface* ToLayoutNGTableSectionInterface()
       const {
     NOT_DESTROYED();
-    DCHECK(false);
+    NOTREACHED();
     return nullptr;
   }
   virtual const LayoutNGTableRowInterface* ToLayoutNGTableRowInterface() const {
     NOT_DESTROYED();
-    DCHECK(false);
+    NOTREACHED();
     return nullptr;
   }
   virtual const LayoutNGTableCellInterface* ToLayoutNGTableCellInterface()
       const {
     NOT_DESTROYED();
-    DCHECK(false);
+    NOTREACHED();
     return nullptr;
   }
-
+  virtual const LayoutNGGridInterface* ToLayoutNGGridInterface() const {
+    NOT_DESTROYED();
+    NOTREACHED();
+    return nullptr;
+  }
   inline bool IsBeforeContent() const;
   inline bool IsAfterContent() const;
   inline bool IsMarkerContent() const;
@@ -1226,6 +1230,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsSVGFilterPrimitive() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectSVGFilterPrimitive);
+  }
+  bool IsNGSVGText() const {
+    NOT_DESTROYED();
+    return IsOfType(kLayoutObjectNGSVGText);
   }
 
   // FIXME: Those belong into a SVG specific base-class for all layoutObjects
@@ -1569,21 +1577,21 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.IntrinsicLogicalWidthsDirty();
   }
 
-  bool IntrinsicLogicalWidthsDependsOnPercentageBlockSize() const {
+  bool IntrinsicLogicalWidthsDependsOnBlockConstraints() const {
     NOT_DESTROYED();
-    return bitfields_.IntrinsicLogicalWidthsDependsOnPercentageBlockSize();
+    return bitfields_.IntrinsicLogicalWidthsDependsOnBlockConstraints();
   }
-  void SetIntrinsicLogicalWidthsDependsOnPercentageBlockSize(bool b) {
+  void SetIntrinsicLogicalWidthsDependsOnBlockConstraints(bool b) {
     NOT_DESTROYED();
-    bitfields_.SetIntrinsicLogicalWidthsDependsOnPercentageBlockSize(b);
+    bitfields_.SetIntrinsicLogicalWidthsDependsOnBlockConstraints(b);
   }
-  bool IntrinsicLogicalWidthsChildDependsOnPercentageBlockSize() const {
+  bool IntrinsicLogicalWidthsChildDependsOnBlockConstraints() const {
     NOT_DESTROYED();
-    return bitfields_.IntrinsicLogicalWidthsChildDependsOnPercentageBlockSize();
+    return bitfields_.IntrinsicLogicalWidthsChildDependsOnBlockConstraints();
   }
-  void SetIntrinsicLogicalWidthsChildDependsOnPercentageBlockSize(bool b) {
+  void SetIntrinsicLogicalWidthsChildDependsOnBlockConstraints(bool b) {
     NOT_DESTROYED();
-    bitfields_.SetIntrinsicLogicalWidthsChildDependsOnPercentageBlockSize(b);
+    bitfields_.SetIntrinsicLogicalWidthsChildDependsOnBlockConstraints(b);
   }
 
   bool NeedsLayoutOverflowRecalc() const {
@@ -1735,8 +1743,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // version), while the uncached pseudo style can inherit from any style.
   const ComputedStyle* GetCachedPseudoElementStyle(PseudoId) const;
   scoped_refptr<ComputedStyle> GetUncachedPseudoElementStyle(
-      const PseudoElementStyleRequest&,
-      const ComputedStyle* parent_style = nullptr) const;
+      const StyleRequest&) const;
 
   LayoutView* View() const {
     NOT_DESTROYED();
@@ -2012,6 +2019,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual void SetFirstInlineFragmentItemIndex(wtf_size_t) { NOT_DESTROYED(); }
   void SetForceLegacyLayout() {
     NOT_DESTROYED();
+    DCHECK(!IsLayoutNGObject());
     bitfields_.SetForceLegacyLayout(true);
   }
 
@@ -2783,14 +2791,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                   TransformState&,
                                   MapCoordinatesFlags) const;
 
-  // Pushes state onto LayoutGeometryMap about how to map coordinates from this
-  // layoutObject to its container, or ancestorToStopAt (whichever is
-  // encountered first). Returns the layoutObject which was mapped to (container
-  // or ancestorToStopAt).
-  virtual const LayoutObject* PushMappingToContainer(
-      const LayoutBoxModelObject* ancestor_to_stop_at,
-      LayoutGeometryMap&) const;
-
   bool ShouldUseTransformFromContainer(const LayoutObject* container) const;
 
   // The optional |size| parameter is used if the size of the object isn't
@@ -2971,6 +2971,32 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   const FragmentData& FirstFragment() const {
     NOT_DESTROYED();
     return fragment_;
+  }
+
+  // Attempt to return the top/left fragment, to be used in block-fragmentation-
+  // unaware code. Do NOT call this method from code that wants to handle block
+  // fragmentation correctly!
+  //
+  // There are cases where we need to pretend that we're not block-fragmented as
+  // far as painting / hit-testing is concerned, even if layout has fragmented
+  // the content correctly. This is the situation in LayoutNG when a paint layer
+  // gets both fragmented and composited (and CompositingAfterPaint isn't
+  // enabled). Then the fragments will be stitched together during pre-paint,
+  // and if we're interested in the "correct" paint offset, we typically need to
+  // look at the topmost and leftmost one, which may not be the same as the
+  // first (layout / document order wise). In such stitched situations, note
+  // that it's expected that paint properties be identical across all
+  // FragmentData objects. The paint offset is the only thing expected to vary.
+  //
+  // Any call to this method is a sign of something not being right in some way,
+  // and it should be possible to get rid of it once CompositeAfterPaint has
+  // shipped and the old code has been deleted.
+  const FragmentData& PrimaryStitchingFragment() const {
+    NOT_DESTROYED();
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+    if (LIKELY(!HasFlippedBlocksWritingMode() || !IsLayoutNGObject()))
+      return fragment_;
+    return fragment_.LastFragment();
   }
 
   enum OverflowRecalcType {
@@ -3385,7 +3411,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectCanvas,
     kLayoutObjectCounter,
     kLayoutObjectCustomScrollbarPart,
-    kLayoutObjectDetailsMarker,
     kLayoutObjectEmbeddedObject,
     kLayoutObjectFieldset,
     kLayoutObjectFileUploadControl,
@@ -3439,6 +3464,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectView,
     kLayoutObjectWidget,
 
+    kLayoutObjectNGSVGText,
     kLayoutObjectSVG, /* Keep by itself? */
     kLayoutObjectSVGContainer,
     kLayoutObjectSVGFilterPrimitive,
@@ -3741,9 +3767,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           self_needs_layout_overflow_recalc_(false),
           child_needs_layout_overflow_recalc_(false),
           intrinsic_logical_widths_dirty_(false),
-          intrinsic_logical_widths_depends_on_percentage_block_size_(true),
-          intrinsic_logical_widths_child_depends_on_percentage_block_size_(
-              true),
+          intrinsic_logical_widths_depends_on_block_constraints_(true),
+          intrinsic_logical_widths_child_depends_on_block_constraints_(true),
           needs_collect_inlines_(false),
           maybe_has_percent_height_descendant_(false),
           should_check_for_paint_invalidation_(true),
@@ -3872,17 +3897,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                          IntrinsicLogicalWidthsDirty);
 
     // This boolean indicates if the cached intrinsic logical widths may depend
-    // on the input %-block-size given by the parent.
-    ADD_BOOLEAN_BITFIELD(
-        intrinsic_logical_widths_depends_on_percentage_block_size_,
-        IntrinsicLogicalWidthsDependsOnPercentageBlockSize);
+    // on the block constraints given by the parent.
+    ADD_BOOLEAN_BITFIELD(intrinsic_logical_widths_depends_on_block_constraints_,
+                         IntrinsicLogicalWidthsDependsOnBlockConstraints);
 
-    // This boolean indicates if a *child* of this node may depend on the input
-    // %-block-size given by the parent. Must always be true for legacy layout
+    // This boolean indicates if a *child* of this node may depend on the block
+    // constraints given by the parent. Must always be true for legacy layout
     // roots.
     ADD_BOOLEAN_BITFIELD(
-        intrinsic_logical_widths_child_depends_on_percentage_block_size_,
-        IntrinsicLogicalWidthsChildDependsOnPercentageBlockSize);
+        intrinsic_logical_widths_child_depends_on_block_constraints_,
+        IntrinsicLogicalWidthsChildDependsOnBlockConstraints);
 
     // This flag is set on inline container boxes that need to run the
     // Pre-layout phase in LayoutNG. See NGInlineNode::CollectInlines().
@@ -4365,10 +4389,10 @@ inline void LayoutObject::SetNeedsLayout(
   SetNeedsOverflowRecalc();
   SetTableColumnConstraintDirty(true);
   if (!already_needed_layout) {
-    TRACE_EVENT_INSTANT1(
+    DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT_WITH_CATEGORIES(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
-        "LayoutInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",
-        inspector_layout_invalidation_tracking_event::Data(this, reason));
+        "LayoutInvalidationTracking",
+        inspector_layout_invalidation_tracking_event::Data, this, reason);
     if (mark_parents == kMarkContainerChain &&
         (!layouter || layouter->Root() != this))
       MarkContainerChainForLayout(!layouter, layouter);
@@ -4504,5 +4528,17 @@ CORE_EXPORT void showLayoutTree(const blink::LayoutObject* object1,
                                 const blink::LayoutObject* object2);
 
 #endif
+
+#if BUILDFLAG(USE_V8_OILPAN)
+namespace cppgc {
+// Assign LayoutObject to be allocated on custom LayoutObjectSpace.
+template <typename T>
+struct SpaceTrait<
+    T,
+    std::enable_if_t<std::is_base_of<blink::LayoutObject, T>::value>> {
+  using Space = blink::LayoutObjectSpace;
+};
+}  // namespace cppgc
+#endif  // USE_V8_OILPAN
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_H_

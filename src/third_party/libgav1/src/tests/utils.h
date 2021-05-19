@@ -25,6 +25,7 @@
 #include "absl/time/time.h"
 #include "src/gav1/decoder_buffer.h"
 #include "src/utils/memory.h"
+#include "tests/third_party/libvpx/acm_random.h"
 
 #ifdef ABSL_HAVE_EXCEPTIONS
 #include <exception>
@@ -32,6 +33,11 @@
 
 namespace libgav1 {
 namespace test_utils {
+
+enum { kAlternateDeterministicSeed = 0x9571 };
+static_assert(kAlternateDeterministicSeed !=
+                  libvpx_test::ACMRandom::DeterministicSeed(),
+              "");
 
 // Similar to libgav1::MaxAlignedAllocable, but retains the throwing versions
 // of new to support googletest allocations.

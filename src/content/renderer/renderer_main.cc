@@ -26,6 +26,7 @@
 #include "build/chromeos_buildflags.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/partition_alloc_support.h"
 #include "content/common/skia_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -76,8 +77,7 @@ namespace {
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
-static void HandleRendererErrorTestParameters(
-    const base::CommandLine& command_line) {
+void HandleRendererErrorTestParameters(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kWaitForDebugger))
     base::debug::WaitForDebugger(60, true);
 
@@ -118,10 +118,10 @@ int RendererMain(const MainFunctionParams& parameters) {
 #endif  // OS_MAC
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // As Zygote process starts up earlier than browser process gets its own
-  // locale (at login time for Chrome OS), we have to set the ICU default
-  // locale for renderer process here.
-  // ICU locale will be used for fallback font selection etc.
+  // As the Zygote process starts up earlier than the browser process, it gets
+  // its own locale (at login time for Chrome OS). So we have to set the ICU
+  // default locale for the renderer process here.
+  // ICU locale will be used for fallback font selection, etc.
   if (command_line.HasSwitch(switches::kLang)) {
     const std::string locale =
         command_line.GetSwitchValueASCII(switches::kLang);
@@ -132,11 +132,10 @@ int RendererMain(const MainFunctionParams& parameters) {
   // available we want to turn it on.
   chromeos::system::EnableCoreSchedulingIfAvailable();
 
-  using chromeos::memory::userspace_swap::
-      UserspaceSwapRendererInitializationImpl;
-  base::Optional<UserspaceSwapRendererInitializationImpl> swap_init;
-  if (UserspaceSwapRendererInitializationImpl::
-          UserspaceSwapSupportedAndEnabled()) {
+  using UserspaceSwapInit =
+      chromeos::memory::userspace_swap::UserspaceSwapRendererInitializationImpl;
+  base::Optional<UserspaceSwapInit> swap_init;
+  if (UserspaceSwapInit::UserspaceSwapSupportedAndEnabled()) {
     swap_init.emplace();
 
     PLOG_IF(ERROR, !swap_init->PreSandboxSetup())
@@ -165,20 +164,10 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::android::RecordLibraryLoaderRendererHistograms();
 #endif
 
-  base::Optional<base::Time> initial_virtual_time;
-  if (command_line.HasSwitch(switches::kInitialVirtualTime)) {
-    double initial_time;
-    if (base::StringToDouble(
-            command_line.GetSwitchValueASCII(switches::kInitialVirtualTime),
-            &initial_time)) {
-      initial_virtual_time = base::Time::FromDoubleT(initial_time);
-    }
-  }
-
   blink::Platform::InitializeBlink();
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler =
       blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
-          CreateMainThreadMessagePump(), initial_virtual_time);
+          CreateMainThreadMessagePump());
 
   platform.PlatformInitialize();
 
@@ -248,6 +237,9 @@ int RendererMain(const MainFunctionParams& parameters) {
 #if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
     mojo::BeginRandomMojoDelays();
 #endif
+
+    internal::PartitionAllocSupport::Get()->ReconfigureAfterTaskRunnerInit(
+        switches::kRendererProcess);
 
     base::HighResolutionTimerManager hi_res_timer_manager;
 

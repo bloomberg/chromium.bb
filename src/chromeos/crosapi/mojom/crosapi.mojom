@@ -5,20 +5,25 @@
 module crosapi.mojom;
 
 import "chromeos/components/sensors/mojom/cros_sensor_service.mojom";
+import "chromeos/crosapi/mojom/automation.mojom";
 import "chromeos/crosapi/mojom/account_manager.mojom";
 import "chromeos/crosapi/mojom/cert_database.mojom";
 import "chromeos/crosapi/mojom/clipboard.mojom";
 import "chromeos/crosapi/mojom/device_attributes.mojom";
 import "chromeos/crosapi/mojom/feedback.mojom";
 import "chromeos/crosapi/mojom/file_manager.mojom";
+import "chromeos/crosapi/mojom/idle_service.mojom";
 import "chromeos/crosapi/mojom/keystore_service.mojom";
 import "chromeos/crosapi/mojom/message_center.mojom";
 import "chromeos/crosapi/mojom/metrics_reporting.mojom";
 import "chromeos/crosapi/mojom/prefs.mojom";
 import "chromeos/crosapi/mojom/screen_manager.mojom";
 import "chromeos/crosapi/mojom/select_file.mojom";
+import "chromeos/crosapi/mojom/task_manager.mojom";
 import "chromeos/crosapi/mojom/test_controller.mojom";
 import "chromeos/crosapi/mojom/url_handler.mojom";
+import "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom";
+import "chromeos/crosapi/mojom/video_capture.mojom";
 import "mojo/public/mojom/base/big_string.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/token.mojom";
@@ -47,11 +52,22 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 16
-// Next method id: 21
+// Next version: 22
+// Next method id: 27
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
+  // Deprecated.
+  // Added in M91.
+  [MinVersion=18]
+  BindAutomationDeprecated@23(pending_receiver<Automation> receiver);
+
+  // Binds the automation factory interface which allows ash to enableautomation
+  // for Lacros and Lacros to send automation data to Ash.
+  // Added in M91.
+  [MinVersion=21]
+  BindAutomationFactory@26(pending_receiver<AutomationFactory> receiver);
+
   // Binds Chrome OS Account Manager for Identity management.
   // Added in M87.
   [MinVersion=4]
@@ -88,9 +104,19 @@ interface Crosapi {
   [MinVersion=5]
   BindFileManager@8(pending_receiver<FileManager> receiver);
 
+  // Binds the IdleService interface for reading idle states.
+  // Added in M90.
+  [MinVersion=16]
+  BindIdleService@21(pending_receiver<IdleService> receiver);
+
   // Binds the KeystoreService interface for challenging keys.
   // Added in M87.
   BindKeystoreService@2(pending_receiver<KeystoreService> receiver);
+
+  // Binds the machine learning service.
+  // Added in M90.
+  [MinVersion=17] BindMachineLearningService@22(
+      pending_receiver<chromeos.machine_learning.mojom.MachineLearningService> receiver);
 
   // Binds the MessageCenter interface for showing notification messages.
   // Added in M86.
@@ -146,6 +172,11 @@ interface Crosapi {
   [MinVersion=6] BindMediaSessionAudioFocusDebug@11(
       pending_receiver<media_session.mojom.AudioFocusManagerDebug> receiver);
 
+  // Binds the Task Manager interface for integrating lacros tasks in ash
+  // task manager.
+  // Added in M91.
+  [MinVersion=19] BindTaskManager@24(pending_receiver<TaskManager> receiver);
+
   // Binds the test controller service, which tests can use to mutate ash. This
   // is not available on production devices.
   [MinVersion=9] BindTestController@14(
@@ -154,6 +185,11 @@ interface Crosapi {
   // Binds the url handler service which allows handling of urls by Ash.
   // Added in M90.
   [MinVersion=13] BindUrlHandler@18(pending_receiver<UrlHandler> receiver);
+
+  // Binds the device factory in video capture service.
+  // Added in M90.
+  [MinVersion=20] BindVideoCaptureDeviceFactory@25(
+      pending_receiver<crosapi.mojom.VideoCaptureDeviceFactory> receiver);
 
   // Passes generic browser information such as version, etc into ash in
   // |browser_info| during startup.
@@ -232,6 +268,28 @@ enum ExoImeSupport {
   [MinVersion=1] kSupported = 2,
 };
 
+
+// Which windows and tabs to show, if any, when first launching lacros.
+// This values overrides the built-in chrome preference, with the exception of
+// kUseStartupPreference.
+[Stable, Extensible]
+enum InitialBrowserAction {
+  // Uses the Lacros preference SessionStartupPref.
+  [Default] kUseStartupPreference = 0,
+
+  // TODO(hidehiko): This should be kOpenNTPIncognitoWindow
+  kOpenIncognitoWindow = 1,
+
+  // TODO(hidehiko): This should be kRestoreLastTab.
+  kRestoreLastSession = 2,
+
+  // Lacros will launch but will not show any windows. It will continue running
+  // in the background until a browser window is shown. At that point it will no
+  // longer run in the background and will close when all windows are closed.
+  [MinVersion=1] kDoNotOpenWindow = 3,
+};
+
+
 // BrowserInitParams is a set of parameters for initialization of browsers
 // (such as lacros-chrome), which is passed from ash-chrome to a browser.
 // Since ash-chrome and browsers may have different versions, the browsers must
@@ -249,7 +307,8 @@ enum ExoImeSupport {
 // If ash-chrome is newer than the browser, then some fields may not be
 // processed by the browser.
 //
-// Next version: 12
+// Next version: 17
+// Next id: 17
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -295,6 +354,8 @@ struct BrowserInitParams {
   // This is null for older versions of ash, for Active Directory sessions,
   // Guest sessions, Managed Guest sessions, Demo mode, and Kiosks.
   // Added in M89.
+  // Deprecated in M91. Use `device_account` (field id 16)  instead.
+  // TODO(crbug.com/1195865): Remove this in M93.
   [MinVersion=7]
   string? device_account_gaia_id@7;
 
@@ -324,19 +385,57 @@ struct BrowserInitParams {
   // details.
   [MinVersion=11]
   array<uint8>? device_account_policy@11;
+
+  // System idle info to initialize SystemIdleCache.
+  [MinVersion=12]
+  IdleInfo? idle_info@12;
+
+  // Launches an incognito window.
+  // Added in M91.
+  // TODO(https://crbug.com/1194304): Remove in M93.
+  [MinVersion=13]
+  bool is_incognito_deprecated@13;
+
+  // Restores tabs from the last session.
+  // Added in M91.
+  // TODO(https://crbug.com/1194304): Remove in M93.
+  [MinVersion=14]
+  bool restore_last_session_deprecated@14;
+
+  // Defines which windows or tabs to restore on launch.
+  [MinVersion=15]
+  InitialBrowserAction initial_browser_action@15;
+
+  // The account used to sign into Chrome OS. This may be a Gaia account or a
+  // Microsoft Active Directory account. This field will be null for
+  // Guest sessions, Managed Guest sessions, Demo mode, and Kiosks.
+  // Note that this is different from the concept of a Primary Account in the
+  // browser. A user may not be signed into a Lacros browser Profile, or may be
+  // signed into a browser Profile with an account which is different from the
+  // account which they used to sign into the device - aka Device Account.
+  // Note: Do NOT use the email id of an account as an identifier. Use
+  // `AccountKey` - which has the necessary and sufficient information to
+  // identify an account.
+  // Added in M91.
+  [MinVersion=16]
+  Account? device_account@16;
 };
 
 // BrowserService defines the APIs that live in a browser (such as
 // lacros-chrome) and are accessed from ash-chrome.
+// IMPORTANT NOTE: If you are exposing a new capability from Lacros to Ash,
+// create a new mojom file. See automation.mojom for an example. This interface
+// has accidentally become a kitchen sink for different features. This was not
+// intentional.
+//
+// Next MinVersion: 11.
+// Next ID: 9
+//
 [Stable, Uuid="4e04dc16-b34c-40fd-9e3f-3c55c2c6cf91",
  RenamedFrom="crosapi.mojom.LacrosChromeService"]
 interface BrowserService {
-  // DEPRECATED: in M89. In new versions, memory backed file based
-  // initialization data passing is used.
-  //
-  // Ash-chrome can pass initialize parameters via this method.
-  // The parameters are available on the browser startup.
-  InitDeprecated@2(BrowserInitParams params);
+  // Removed method. No longer used.
+  REMOVED_2@2(BrowserInitParams params);
 
   // DEPRECATED: in M90. In new versions, Crosapi is the bootstrap interface.
   // BrowserService should be registered via BrowserServiceHost.
@@ -349,7 +448,23 @@ interface BrowserService {
 
   // Opens a new window in the browser with, currently, the last used profile.
   // The callback is called on the command execution.
-  NewWindow@1() => ();
+  NewWindow@1([MinVersion=10] bool incognito) => ();
+
+  // Opens a new tab in the browser with, currently, the last used profile.
+  // This may open a new window, if there's no window. Please see also
+  // the Chrome's NewTab command for details.
+  // The callback is called on the command execution.
+  // Added in M91.
+  [MinVersion=10]
+  NewTab@7() => ();
+
+  // Restores a tab (or a window) recently closed in the browser with,
+  // currently, the last used profile. Please see also RestoreTab command
+  // for details.
+  // The callback is called on the command execution.
+  // Added in M91.
+  [MinVersion=10]
+  RestoreTab@8() => ();
 
   // Returns the browser's feedback data used for generating feedback report in
   // a dictionary object, each entry representing a log entry in the feedback
@@ -367,6 +482,12 @@ interface BrowserService {
   // Returns Url of the active tab from the browser if there is any.
   [MinVersion=8]
   GetActiveTabUrl@5() => (url.mojom.Url? url);
+
+  // Notifies Lacros to update the policy data from the device account with the
+  // new data from input. The data is serialized blob of PolicyFetchResponse
+  // object.
+  [MinVersion=9]
+  UpdateDeviceAccountPolicy@6(array<uint8> policy);
 };
 
 // TODO(crbug.com/1180712): move to its own file. Currently due to circular

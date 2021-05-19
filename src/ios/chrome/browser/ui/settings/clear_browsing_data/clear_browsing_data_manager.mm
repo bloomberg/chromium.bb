@@ -334,7 +334,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
   // Google Account footer.
   signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(self.browserState);
-  if (identityManager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired)) {
+  if (identityManager->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
     [model addSectionWithIdentifier:SectionIdentifierGoogleAccount];
     [model setFooter:[self footerForGoogleAccountSectionItem]
         forSectionWithIdentifier:SectionIdentifierGoogleAccount];
@@ -497,8 +497,8 @@ static NSDictionary* _imageNamesByItemTypes = @{
   TableViewLinkHeaderFooterItem* footerItem =
       [[TableViewLinkHeaderFooterItem alloc] initWithType:itemType];
   footerItem.text = l10n_util::GetNSString(titleMessageID);
-  footerItem.linkURL = google_util::AppendGoogleLocaleParam(
-      GURL(URL), GetApplicationContext()->GetApplicationLocale());
+  footerItem.urls = std::vector<GURL>{google_util::AppendGoogleLocaleParam(
+      GURL(URL), GetApplicationContext()->GetApplicationLocale())};
   return footerItem;
 }
 

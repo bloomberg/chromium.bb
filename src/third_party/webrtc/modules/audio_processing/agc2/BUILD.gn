@@ -25,6 +25,8 @@ rtc_library("adaptive_digital") {
     "adaptive_mode_level_estimator.h",
     "saturation_protector.cc",
     "saturation_protector.h",
+    "saturation_protector_buffer.cc",
+    "saturation_protector_buffer.h",
   ]
 
   configs += [ "..:apm_debug_dump" ]
@@ -177,6 +179,7 @@ rtc_library("adaptive_digital_unittests") {
     "adaptive_digital_gain_applier_unittest.cc",
     "adaptive_mode_level_estimator_unittest.cc",
     "gain_applier_unittest.cc",
+    "saturation_protector_buffer_unittest.cc",
     "saturation_protector_unittest.cc",
   ]
   deps = [
@@ -248,6 +251,7 @@ rtc_library("noise_estimator_unittests") {
     "..:apm_logging",
     "..:audio_frame_view",
     "../../../api:array_view",
+    "../../../api:function_view",
     "../../../rtc_base:checks",
     "../../../rtc_base:gunit_helpers",
     "../../../rtc_base:rtc_base_approved",

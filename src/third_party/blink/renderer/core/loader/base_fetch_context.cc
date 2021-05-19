@@ -8,8 +8,8 @@
 #include "services/network/public/cpp/request_mode.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -61,8 +61,8 @@ base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
                          reporting_disposition, redirect_info);
   if (blocked_reason &&
       reporting_disposition == ReportingDisposition::kReport) {
-    DispatchDidBlockRequest(resource_request, options.initiator_info,
-                            blocked_reason.value(), type);
+    DispatchDidBlockRequest(resource_request, options, blocked_reason.value(),
+                            type);
   }
   return blocked_reason;
 }
@@ -80,7 +80,7 @@ BaseFetchContext::CanRequestBasedOnSubresourceFilterOnly(
       !subresource_filter->AllowLoad(url, resource_request.GetRequestContext(),
                                      reporting_disposition)) {
     if (reporting_disposition == ReportingDisposition::kReport) {
-      DispatchDidBlockRequest(resource_request, options.initiator_info,
+      DispatchDidBlockRequest(resource_request, options,
                               ResourceRequestBlockedReason::kSubresourceFilter,
                               type);
     }
@@ -116,7 +116,7 @@ void BaseFetchContext::AddClientHintsIfNecessary(
     const url::Origin& resource_origin,
     bool is_1p_origin,
     base::Optional<UserAgentMetadata> ua,
-    const FeaturePolicy* policy,
+    const PermissionsPolicy* policy,
     const base::Optional<ClientHintImageInfo>& image_info,
     const base::Optional<WTF::AtomicString>& lang,
     ResourceRequest& request) {
@@ -135,7 +135,7 @@ void BaseFetchContext::AddClientHintsIfNecessary(
   // them.
   if (ClientHintsPreferences::UserAgentClientHintEnabled() && ua) {
     // ShouldSendClientHint is called to make sure UA is controlled by
-    // FeaturePolicy.
+    // Permissions Policy.
     if (ShouldSendClientHint(ClientHintsMode::kStandard, policy,
                              resource_origin, is_1p_origin,
                              network::mojom::blink::WebClientHintsType::kUA,
@@ -151,7 +151,7 @@ void BaseFetchContext::AddClientHintsIfNecessary(
     // Formatted using the "sh-boolean" format from:
     // https://httpwg.org/http-extensions/draft-ietf-httpbis-header-structure.html#boolean
     // ShouldSendClientHint is called to make sure it's controlled by
-    // FeaturePolicy.
+    // PermissionsPolicy.
     if (ShouldSendClientHint(
             ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
             network::mojom::blink::WebClientHintsType::kUAMobile,
@@ -175,7 +175,7 @@ void BaseFetchContext::AddClientHintsIfNecessary(
   }
 
   // The next 4 hints should be enabled if we're allowing legacy hints to third
-  // parties, or if FeaturePolicy delegation says they are allowed.
+  // parties, or if PermissionsPolicy delegation says they are allowed.
   if (ShouldSendClientHint(
           ClientHintsMode::kLegacy, policy, resource_origin, is_1p_origin,
           network::mojom::blink::WebClientHintsType::kDeviceMemory,
@@ -540,7 +540,7 @@ BaseFetchContext::CanRequestInternal(
 
 bool BaseFetchContext::ShouldSendClientHint(
     ClientHintsMode mode,
-    const FeaturePolicy* policy,
+    const PermissionsPolicy* policy,
     const url::Origin& resource_origin,
     bool is_1p_origin,
     network::mojom::blink::WebClientHintsType type,
@@ -552,9 +552,10 @@ bool BaseFetchContext::ShouldSendClientHint(
     origin_ok = true;
   } else if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled()) {
     origin_ok =
-        (policy && policy->IsFeatureEnabledForOrigin(
-                       kClientHintsFeaturePolicyMapping[static_cast<int>(type)],
-                       resource_origin));
+        (policy &&
+         policy->IsFeatureEnabledForOrigin(
+             kClientHintsPermissionsPolicyMapping[static_cast<int>(type)],
+             resource_origin));
   } else {
     origin_ok = is_1p_origin;
   }

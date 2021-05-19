@@ -133,7 +133,7 @@ const int kServerDefaultResponseStreamsToSend = 3;
 
 class TestCliCredentials final : public grpc::testing::CliCredentials {
  public:
-  TestCliCredentials(bool secure = false) : secure_(secure) {}
+  explicit TestCliCredentials(bool secure = false) : secure_(secure) {}
   std::shared_ptr<grpc::ChannelCredentials> GetChannelCredentials()
       const override {
     if (!secure_) {
@@ -184,7 +184,8 @@ class TestServiceImpl : public ::grpc::testing::EchoTestService::Service {
     return Status::OK;
   }
 
-  Status CheckDeadlineSet(ServerContext* context, const SimpleRequest* request,
+  Status CheckDeadlineSet(ServerContext* context,
+                          const SimpleRequest* /*request*/,
                           StringValue* response) override {
     response->set_message(context->deadline() !=
                                   std::chrono::system_clock::time_point::max()
@@ -196,7 +197,7 @@ class TestServiceImpl : public ::grpc::testing::EchoTestService::Service {
   // Check if deadline - current time <= timeout
   // If deadline set, timeout + current time should be an upper bound for it
   Status CheckDeadlineUpperBound(ServerContext* context,
-                                 const SimpleRequest* request,
+                                 const SimpleRequest* /*request*/,
                                  StringValue* response) override {
     auto seconds = std::chrono::duration_cast<std::chrono::seconds>(
         context->deadline() - std::chrono::system_clock::now());
@@ -464,12 +465,12 @@ TEST_F(GrpcToolTest, ListOneMethod) {
 }
 
 TEST_F(GrpcToolTest, TypeNotFound) {
-  // Test input "grpc_cli type localhost:<port> grpc.testing.DummyRequest"
+  // Test input "grpc_cli type localhost:<port> grpc.testing.PhonyRequest"
   std::stringstream output_stream;
 
   const std::string server_address = SetUpServer();
   const char* argv[] = {"grpc_cli", "type", server_address.c_str(),
-                        "grpc.testing.DummyRequest"};
+                        "grpc.testing.PhonyRequest"};
 
   EXPECT_TRUE(1 == GrpcToolMainLib(ArraySize(argv), argv, TestCliCredentials(),
                                    std::bind(PrintStream, &output_stream,

@@ -231,6 +231,7 @@ class CC_EXPORT CompositorFrameReporter {
                           LatencyUkmReporter* latency_ukm_reporter,
                           bool should_report_metrics,
                           SmoothThread smooth_thread,
+                          FrameSequenceMetrics::ThreadType scrolling_thread,
                           int layer_tree_host_id,
                           DroppedFrameCounter* dropped_frame_counter);
   ~CompositorFrameReporter();
@@ -254,9 +255,11 @@ class CC_EXPORT CompositorFrameReporter {
   void SetBlinkBreakdown(std::unique_ptr<BeginMainFrameMetrics> blink_breakdown,
                          base::TimeTicks begin_main_start);
   void SetVizBreakdown(const viz::FrameTimingDetails& viz_breakdown);
-  void SetEventsMetrics(EventMetrics::List events_metrics);
 
-  int StageHistorySizeForTesting() { return stage_history_.size(); }
+  void AddEventsMetrics(EventMetrics::List events_metrics);
+  EventMetrics::List TakeEventsMetrics();
+
+  int stage_history_size_for_testing() const { return stage_history_.size(); }
 
   void OnFinishImplFrame(base::TimeTicks timestamp);
   void OnAbortBeginMainFrame(base::TimeTicks timestamp);
@@ -288,10 +291,19 @@ class CC_EXPORT CompositorFrameReporter {
     tick_clock_ = tick_clock;
   }
 
-  void SetPartialUpdateDecider(base::WeakPtr<CompositorFrameReporter> decider);
+  void set_has_missing_content(bool has_missing_content) {
+    has_missing_content_ = has_missing_content;
+  }
 
-  bool MightHavePartialUpdate() const;
-  size_t GetPartialUpdateDependentsCount() const;
+  void SetPartialUpdateDecider(CompositorFrameReporter* decider);
+
+  size_t partial_update_dependents_size_for_testing() const {
+    return partial_update_dependents_.size();
+  }
+
+  size_t owned_partial_update_dependents_size_for_testing() const {
+    return owned_partial_update_dependents_.size();
+  }
 
   const viz::BeginFrameId& frame_id() const { return args_.frame_id; }
 
@@ -303,11 +315,9 @@ class CC_EXPORT CompositorFrameReporter {
   // If this is a cloned reporter, then this returns a weak-ptr to the original
   // reporter this was cloned from (using |CopyReporterAtBeginImplStage()|).
 
-  base::WeakPtr<CompositorFrameReporter> partial_update_decider() {
-    return partial_update_decider_;
+  CompositorFrameReporter* partial_update_decider() const {
+    return partial_update_decider_.get();
   }
-
-  base::WeakPtr<CompositorFrameReporter> GetWeakPtr();
 
  protected:
   void set_has_partial_update(bool has_partial_update) {
@@ -354,6 +364,8 @@ class CC_EXPORT CompositorFrameReporter {
 
   bool IsDroppedFrameAffectingSmoothness() const;
 
+  base::WeakPtr<CompositorFrameReporter> GetWeakPtr();
+
   const bool should_report_metrics_;
   const viz::BeginFrameArgs args_;
 
@@ -384,6 +396,7 @@ class CC_EXPORT CompositorFrameReporter {
       FrameTerminationStatus::kUnknown;
 
   const ActiveTrackers active_trackers_;
+  const FrameSequenceMetrics::ThreadType scrolling_thread_;
 
   LatencyUkmReporter* latency_ukm_reporter_;
 
@@ -406,6 +419,10 @@ class CC_EXPORT CompositorFrameReporter {
 
   const SmoothThread smooth_thread_;
   const int layer_tree_host_id_;
+
+  // Indicates whether the submitted frame had any missing content (i.e. content
+  // with checkerboarding).
+  bool has_missing_content_ = false;
 
   // For a reporter A, if the main-thread takes a long time to respond
   // to a begin-main-frame, then all reporters created (and terminated) until

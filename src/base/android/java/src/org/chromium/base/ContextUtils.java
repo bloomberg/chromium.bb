@@ -20,6 +20,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.build.BuildConfig;
 
 /**
  * This class provides Android application context related utility methods.
@@ -111,7 +112,7 @@ public class ContextUtils {
     private static void initJavaSideApplicationContext(Context appContext) {
         assert appContext != null;
         // Guard against anyone trying to downcast.
-        if (BuildConfig.DCHECK_IS_ON && appContext instanceof Application) {
+        if (BuildConfig.ENABLE_ASSERTS && appContext instanceof Application) {
             appContext = new ContextWrapper(appContext);
         }
         sApplicationContext = appContext;

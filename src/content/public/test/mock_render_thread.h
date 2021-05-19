@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
+
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/public/common/widget_type.h"
 #include "content/public/renderer/render_thread.h"

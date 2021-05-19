@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/ash/sharesheet/sharesheet_bubble_view.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/i18n/rtl.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/about_flags.h"
@@ -131,6 +131,19 @@ class SharesheetBubbleView::SharesheetParentWidgetObserver
   }
   ~SharesheetParentWidgetObserver() override = default;
 
+  // WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override {
+    DCHECK(observer_.IsObservingSource(widget));
+    observer_.Reset();
+    // |this| may be destroyed here!
+
+    // TODO(crbug.com/1188938) Code clean up.
+    // There should be something here telling SharesheetBubbleView
+    // that its parent widget is closing and therefore it should
+    // also close. Or we should try to inherit the widget changes from
+    // BubbleDialogDelegate and not have this class here at all.
+  }
+
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& bounds) override {
     owner_->UpdateAnchorPosition();
@@ -150,6 +163,7 @@ SharesheetBubbleView::SharesheetBubbleView(
       this, views::Widget::GetWidgetForNativeWindow(native_window));
   parent_view_ =
       views::Widget::GetWidgetForNativeWindow(native_window)->GetRootView();
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   UpdateAnchorPosition();
 
   CreateBubble();
@@ -160,9 +174,9 @@ SharesheetBubbleView::~SharesheetBubbleView() = default;
 void SharesheetBubbleView::ShowBubble(
     std::vector<TargetInfo> targets,
     apps::mojom::IntentPtr intent,
-    sharesheet::CloseCallback close_callback) {
+    sharesheet::DeliveredCallback delivered_callback) {
   intent_ = std::move(intent);
-  close_callback_ = std::move(close_callback);
+  delivered_callback_ = std::move(delivered_callback);
 
   main_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -241,6 +255,18 @@ void SharesheetBubbleView::ShowBubble(
     expand_button_separator_->SetVisible(false);
   }
   UpdateAnchorPosition();
+}
+
+void SharesheetBubbleView::ShowNearbyShareBubble(
+    apps::mojom::IntentPtr intent,
+    sharesheet::DeliveredCallback delivered_callback) {
+  ShowBubble({}, std::move(intent), std::move(delivered_callback));
+  if (delivered_callback_) {
+    std::move(delivered_callback_).Run(sharesheet::SharesheetResult::kSuccess);
+  }
+  delegate_->OnTargetSelected(
+      l10n_util::GetStringUTF16(IDS_NEARBY_SHARE_FEATURE_NAME),
+      sharesheet::TargetType::kAction, std::move(intent_), share_action_view_);
 }
 
 std::unique_ptr<views::View> SharesheetBubbleView::MakeScrollableTargetView(
@@ -330,9 +356,9 @@ void SharesheetBubbleView::PopulateLayoutsWithTargets(
     ++target_counter;
 
     // Make a copy because value is needed after target is std::moved below.
-    base::string16 display_name = target.display_name;
-    base::string16 secondary_display_name =
-        target.secondary_display_name.value_or(base::string16());
+    std::u16string display_name = target.display_name;
+    std::u16string secondary_display_name =
+        target.secondary_display_name.value_or(std::u16string());
     base::Optional<gfx::ImageSkia> icon = target.icon;
 
     auto target_view = std::make_unique<SharesheetTargetButton>(
@@ -419,7 +445,7 @@ void SharesheetBubbleView::ResizeBubble(const int& width, const int& height) {
   layer->SetTransform(gfx::Transform());
 }
 
-// This function is called from a ShareAction or after an app launches.
+// CloseBubble is called from a ShareAction or after an app launches.
 void SharesheetBubbleView::CloseBubble() {
   if (!is_bubble_closing_) {
     CloseWidgetWithAnimateFadeOut(
@@ -427,20 +453,41 @@ void SharesheetBubbleView::CloseBubble() {
   }
 }
 
-void SharesheetBubbleView::OnKeyEvent(ui::KeyEvent* event) {
-  // Ignore key press if bubble is closing.
-  // TODO(crbug.com/1141741) Update to OnKeyPressed.
-  if (!IsKeyboardCodeArrow(event->key_code()) ||
-      event->type() != ui::ET_KEY_RELEASED || default_view_ == nullptr ||
+bool SharesheetBubbleView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  // We override this because when this is handled by the base class,
+  // OnKeyPressed is not invoked when a user presses |VKEY_ESCAPE| if they have
+  // not pressed |VKEY_TAB| first to focus the SharesheetBubbleView.
+  DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
+  if (share_action_view_->GetVisible() &&
+      delegate_->OnAcceleratorPressed(accelerator, active_target_)) {
+    return true;
+  }
+  // If delivered_callback_ is not null at this point, then the sharesheet was
+  // closed before a target was selected.
+  if (delivered_callback_) {
+    std::move(delivered_callback_).Run(sharesheet::SharesheetResult::kCancel);
+  }
+  escape_pressed_ = true;
+  sharesheet::SharesheetMetrics::RecordSharesheetActionMetrics(
+      sharesheet::SharesheetMetrics::UserAction::kCancelledThroughEscPress);
+  CloseWidgetWithAnimateFadeOut(views::Widget::ClosedReason::kEscKeyPressed);
+
+  return true;
+}
+
+bool SharesheetBubbleView::OnKeyPressed(const ui::KeyEvent& event) {
+  // Ignore key press if it's not an arrow or bubble is closing.
+  if (!IsKeyboardCodeArrow(event.key_code()) || default_view_ == nullptr ||
       is_bubble_closing_) {
-    if (event->key_code() == ui::VKEY_ESCAPE && !is_bubble_closing_)
+    if (event.key_code() == ui::VKEY_ESCAPE && !is_bubble_closing_) {
       escape_pressed_ = true;
-    View::OnKeyEvent(event);
-    return;
+    }
+    return false;
   }
 
   int delta = 0;
-  switch (event->key_code()) {
+  switch (event.key_code()) {
     case ui::VKEY_UP:
       delta = -kMaxTargetsPerRow;
       break;
@@ -473,8 +520,7 @@ void SharesheetBubbleView::OnKeyEvent(ui::KeyEvent* event) {
     expanded_view_->children()[keyboard_highlighted_target_ + 1 - default_views]
         ->RequestFocus();
   }
-
-  View::OnKeyEvent(event);
+  return true;
 }
 
 ax::mojom::Role SharesheetBubbleView::GetAccessibleWindowRole() {
@@ -507,15 +553,19 @@ void SharesheetBubbleView::OnWidgetActivationChanged(views::Widget* widget,
   // If |user_selection_made_| we should not close the bubble here as it will be
   // closed in a different code path.
   if (!active && !user_selection_made_ && !is_bubble_closing_) {
-    if (close_callback_) {
-      std::move(close_callback_).Run(sharesheet::SharesheetResult::kCancel);
+    if (delivered_callback_) {
+      std::move(delivered_callback_).Run(sharesheet::SharesheetResult::kCancel);
     }
-    auto action = escape_pressed_ ? sharesheet::SharesheetMetrics::UserAction::
-                                        kCancelledThroughEscPress
-                                  : sharesheet::SharesheetMetrics::UserAction::
-                                        kCancelledThroughClickingOut;
-    sharesheet::SharesheetMetrics::RecordSharesheetActionMetrics(action);
-    CloseWidgetWithAnimateFadeOut(views::Widget::ClosedReason::kLostFocus);
+    auto user_action =
+        sharesheet::SharesheetMetrics::UserAction::kCancelledThroughClickingOut;
+    auto closed_reason = views::Widget::ClosedReason::kLostFocus;
+    if (escape_pressed_) {
+      user_action =
+          sharesheet::SharesheetMetrics::UserAction::kCancelledThroughEscPress;
+      closed_reason = views::Widget::ClosedReason::kEscKeyPressed;
+    }
+    sharesheet::SharesheetMetrics::RecordSharesheetActionMetrics(user_action);
+    CloseWidgetWithAnimateFadeOut(closed_reason);
   }
 }
 
@@ -578,15 +628,17 @@ void SharesheetBubbleView::AnimateToExpandedState() {
 void SharesheetBubbleView::TargetButtonPressed(TargetInfo target) {
   user_selection_made_ = true;
   auto type = target.type;
-  if (type == sharesheet::TargetType::kAction)
+  if (type == sharesheet::TargetType::kAction) {
     active_target_ = target.launch_name;
-  else
+  } else {
     intent_->activity_name = target.activity_name;
+  }
   delegate_->OnTargetSelected(target.launch_name, type, std::move(intent_),
                               share_action_view_);
+  if (delivered_callback_) {
+    std::move(delivered_callback_).Run(sharesheet::SharesheetResult::kSuccess);
+  }
   intent_.reset();
-  if (close_callback_)
-    std::move(close_callback_).Run(sharesheet::SharesheetResult::kSuccess);
 }
 
 void SharesheetBubbleView::UpdateAnchorPosition() {

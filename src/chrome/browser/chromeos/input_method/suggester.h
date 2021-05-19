@@ -31,7 +31,7 @@ class Suggester {
 
   // Check if suggestion should be displayed according to the surrounding text
   // information.
-  virtual bool Suggest(const base::string16& text) = 0;
+  virtual bool Suggest(const std::u16string& text) = 0;
 
   // Accepts the suggestion at a given index, index can be made default if
   // unnecessary. Returns true if suggestion is accepted successfully.
@@ -41,6 +41,12 @@ class Suggester {
 
   // Return the propose assistive action type.
   virtual AssistiveType GetProposeActionType() = 0;
+
+  // Is the suggester currently suggesting a candidate to the user?
+  virtual bool HasSuggestions() = 0;
+
+  // Returns any candidates currently suggested by the suggester.
+  virtual std::vector<std::u16string> GetSuggestions() = 0;
 };
 
 }  // namespace chromeos

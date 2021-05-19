@@ -15,9 +15,6 @@
 #ifndef SRC_READER_WGSL_TOKEN_H_
 #define SRC_READER_WGSL_TOKEN_H_
 
-#include <stddef.h>
-
-#include <ostream>
 #include <string>
 
 #include "src/source.h"
@@ -308,8 +305,6 @@ class Token {
     kU32,
     /// A 'uniform'
     kUniform,
-    /// A 'uniform_constant'
-    kUniformConstant,
     /// A 'var'
     kVar,
     /// A 'vec2'
@@ -667,8 +662,6 @@ class Token {
   bool IsU32() const { return type_ == Type::kU32; }
   /// @returns true if token is a 'uniform'
   bool IsUniform() const { return type_ == Type::kUniform; }
-  /// @returns true if token is a 'uniform_constant'
-  bool IsUniformConstant() const { return type_ == Type::kUniformConstant; }
   /// @returns true if token is a 'var'
   bool IsVar() const { return type_ == Type::kVar; }
   /// @returns true if token is a 'vec2'

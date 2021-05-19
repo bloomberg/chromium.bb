@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/optional.h"
+#include "chrome/browser/web_applications/components/url_handler_launch_params.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
@@ -23,7 +23,7 @@ class FilePath;
 
 namespace web_app {
 
-// This class manages web app URL handler information in local state prefs.
+// Manage web app URL handler information in local state prefs.
 // These prefs aggregate information from web apps installed to all user
 // profiles.
 //
@@ -67,48 +67,39 @@ namespace web_app {
 //     ],
 //     "https://www.en.osotnoc.org": [...]
 // }
-class UrlHandlerPrefs {
- public:
-  struct Match {
-    Match() = default;
-    Match(const AppId& app_id, const base::FilePath& profile_path);
+namespace url_handler_prefs {
 
-    AppId app_id;
-    base::FilePath profile_path;
-  };
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
-  explicit UrlHandlerPrefs(PrefService* pref_service);
-  UrlHandlerPrefs() = delete;
-  UrlHandlerPrefs(const UrlHandlerPrefs&) = delete;
-  UrlHandlerPrefs& operator=(const UrlHandlerPrefs&) = delete;
+void AddWebApp(PrefService* local_state,
+               const AppId& app_id,
+               const base::FilePath& profile_path,
+               const apps::UrlHandlers& url_handlers);
 
-  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+void UpdateWebApp(PrefService* local_state,
+                  const AppId& app_id,
+                  const base::FilePath& profile_path,
+                  const apps::UrlHandlers& url_handlers);
 
-  void AddWebApp(const AppId& app_id,
-                 const base::FilePath& profile_path,
-                 const apps::UrlHandlers& url_handlers);
+void RemoveWebApp(PrefService* local_state,
+                  const AppId& app_id,
+                  const base::FilePath& profile_path);
 
-  void UpdateWebApp(const AppId& app_id,
-                    const base::FilePath& profile_path,
-                    const apps::UrlHandlers& url_handlers);
+void RemoveProfile(PrefService* local_state,
+                   const base::FilePath& profile_path);
 
-  void RemoveWebApp(const AppId& app_id, const base::FilePath& profile_path);
+void Clear(PrefService* local_state);
 
-  void RemoveProfile(const base::FilePath& profile_path);
+// Search for all (app, profile) combinations that have active URL handlers
+// that matches |url|.
+// |url| is a fully specified URL, eg. "https://contoso.com/abc/def".
+// TODO(crbug/1072058): Filter out inactive handlers when user permission is
+// implemented.
+std::vector<UrlHandlerLaunchParams> FindMatchingUrlHandlers(
+    PrefService* local_state,
+    const GURL& url);
 
-  void Clear();
-
-  // Search for all (app, profile) combinations that have active URL handlers
-  // that matches |url|.
-  // |url| is a fully specified URL, eg. "https://contoso.com/abc/def".
-  // TODO(crbug/1072058): Filter out inactive handlers when user permission is
-  // implemented.
-  base::Optional<std::vector<Match>> FindMatchingUrlHandlers(
-      const GURL& url) const;
-
- private:
-  PrefService* pref_service_;
-};
+}  // namespace url_handler_prefs
 
 }  // namespace web_app
 

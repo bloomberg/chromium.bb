@@ -18,8 +18,8 @@
 #include <utility>
 #include <vector>
 
+#include "src/ast/variable.h"
 #include "src/semantic/call_target.h"
-#include "src/type/sampler_type.h"
 
 namespace tint {
 
@@ -30,6 +30,7 @@ class BuiltinDecoration;
 class Function;
 class GroupDecoration;
 class LocationDecoration;
+class ReturnStatement;
 }  // namespace ast
 
 namespace semantic {
@@ -39,26 +40,21 @@ class Variable;
 /// Function holds the semantic information for function nodes.
 class Function : public Castable<Function, CallTarget> {
  public:
-  /// Information about a binding
-  struct BindingInfo {
-    /// The binding decoration
-    ast::BindingDecoration* binding = nullptr;
-    /// The group decoration
-    ast::GroupDecoration* group = nullptr;
-  };
-
-  /// A vector of [Variable*, BindingInfo] pairs
-  using VariableBindings = std::vector<std::pair<const Variable*, BindingInfo>>;
+  /// A vector of [Variable*, ast::Variable::BindingPoint] pairs
+  using VariableBindings =
+      std::vector<std::pair<const Variable*, ast::Variable::BindingPoint>>;
 
   /// Constructor
   /// @param declaration the ast::Function
   /// @param referenced_module_vars the referenced module variables
   /// @param local_referenced_module_vars the locally referenced module
+  /// @param return_statements the function return statements
   /// variables
   /// @param ancestor_entry_points the ancestor entry points
   Function(ast::Function* declaration,
            std::vector<const Variable*> referenced_module_vars,
            std::vector<const Variable*> local_referenced_module_vars,
+           std::vector<const ast::ReturnStatement*> return_statements,
            std::vector<Symbol> ancestor_entry_points);
 
   /// Destructor
@@ -76,6 +72,10 @@ class Function : public Castable<Function, CallTarget> {
   /// @returns the locally referenced module variables
   const std::vector<const Variable*>& LocalReferencedModuleVariables() const {
     return local_referenced_module_vars_;
+  }
+  /// @returns the return statements
+  const std::vector<const ast::ReturnStatement*> ReturnStatements() const {
+    return return_statements_;
   }
   /// @returns the ancestor entry points
   const std::vector<Symbol>& AncestorEntryPoints() const {
@@ -126,6 +126,11 @@ class Function : public Castable<Function, CallTarget> {
   /// @returns the referenced storage textures
   VariableBindings ReferencedStorageTextureVariables() const;
 
+  /// Retrieves any referenced depth texture variables. Note, the variables
+  /// must be decorated with both binding and group decorations.
+  /// @returns the referenced storage textures
+  VariableBindings ReferencedDepthTextureVariables() const;
+
   /// Retrieves any locally referenced builtin variables
   /// @returns the <variable, decoration> pairs.
   std::vector<std::pair<const Variable*, ast::BuiltinDecoration*>>
@@ -144,6 +149,7 @@ class Function : public Castable<Function, CallTarget> {
   ast::Function* const declaration_;
   std::vector<const Variable*> const referenced_module_vars_;
   std::vector<const Variable*> const local_referenced_module_vars_;
+  std::vector<const ast::ReturnStatement*> const return_statements_;
   std::vector<Symbol> const ancestor_entry_points_;
 };
 

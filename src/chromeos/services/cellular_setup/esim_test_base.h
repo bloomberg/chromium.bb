@@ -24,6 +24,7 @@ class NetworkStateHandler;
 class NetworkDeviceHandler;
 class NetworkConfigurationHandler;
 class FakeNetworkConnectionHandler;
+class CellularESimConnectionHandler;
 class CellularESimUninstallHandler;
 class CellularESimProfileHandler;
 
@@ -57,15 +58,27 @@ class ESimTestBase : public testing::Test {
   ESimManager* esim_manager() { return esim_manager_.get(); }
   ESimManagerTestObserver* observer() { return observer_.get(); }
 
+  FakeNetworkConnectionHandler* network_connection_handler() {
+    return network_connection_handler_.get();
+  }
+
+  NetworkStateHandler* network_state_handler() {
+    return network_state_handler_.get();
+  }
+
+  base::test::TaskEnvironment* task_environment() { return &task_environment_; }
+
  private:
-  std::unique_ptr<CellularInhibitor> cellular_inhibitor_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
+  std::unique_ptr<CellularInhibitor> cellular_inhibitor_;
+  std::unique_ptr<CellularESimProfileHandler> cellular_esim_profile_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   std::unique_ptr<FakeNetworkConnectionHandler> network_connection_handler_;
   std::unique_ptr<CellularESimUninstallHandler>
       cellular_esim_uninstall_handler_;
-  std::unique_ptr<CellularESimProfileHandler> cellular_esim_profile_handler_;
+  std::unique_ptr<CellularESimConnectionHandler>
+      cellular_esim_connection_handler_;
 
   base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<ESimManager> esim_manager_;

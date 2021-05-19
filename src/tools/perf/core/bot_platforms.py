@@ -36,6 +36,7 @@ class PerfPlatform(object):
                num_shards,
                platform_os,
                is_fyi=False,
+               is_calibration=False,
                run_reference_build=False,
                executables=None):
     benchmark_configs = benchmark_configs.Frozenset()
@@ -45,6 +46,7 @@ class PerfPlatform(object):
     # For sorting ignore case and "segments" in the bot name.
     self._sort_key = name.lower().replace('-', ' ')
     self._is_fyi = is_fyi
+    self._is_calibration = is_calibration
     self.run_reference_build = run_reference_build
     self.executables = executables or frozenset()
     assert num_shards
@@ -109,6 +111,14 @@ class PerfPlatform(object):
   @property
   def is_fyi(self):
     return self._is_fyi
+
+  @property
+  def is_calibration(self):
+    return self._is_calibration
+
+  @property
+  def is_official(self):
+    return not self._is_fyi and not self.is_calibration
 
   @property
   def builder_url(self):
@@ -323,20 +333,16 @@ _MAC_LOW_END_EXECUTABLE_CONFIGS = frozenset([
     _load_library_perf_tests(),
     _performance_browser_tests(210),
 ])
-_MAC_ARM_DTK_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
-    'blink_perf.display_locking',
-    'v8.runtime_stats.top_25',
-])
-_MAC_ARM_DTK_EXECUTABLE_CONFIGS = frozenset([
+_MAC_M1_MINI_2020_BENCHMARK_CONFIGS = PerfSuite(
+    OFFICIAL_BENCHMARK_CONFIGS).Remove([
+        'blink_perf.display_locking',
+        'v8.runtime_stats.top_25',
+    ])
+_MAC_M1_MINI_2020_EXECUTABLE_CONFIGS = frozenset([
     _base_perftests(300),
     _dawn_perf_tests(330),
     _performance_browser_tests(190),
     _views_perftests(),
-])
-_MAC_M1_MINI_2020_BENCHMARK_CONFIGS = PerfSuite([
-    'loading.desktop',
-]).Abridge([
-    'loading.desktop',
 ])
 
 _WIN_10_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
@@ -356,6 +362,11 @@ _WIN_10_LOW_END_BENCHMARK_CONFIGS = PerfSuite(
 _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('v8.browsing_desktop'),
     _GetBenchmarkConfig('rendering.desktop'),
+])
+_WIN_10_AMD_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('kraken'),
+    _GetBenchmarkConfig('octane'),
+    _GetBenchmarkConfig('system_health.common_desktop'),
 ])
 _WIN_7_BENCHMARK_CONFIGS = PerfSuite([
     'loading.desktop',
@@ -458,8 +469,13 @@ _LINUX_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('rendering.desktop'),
     _GetBenchmarkConfig('system_health.common_desktop')
 ])
-_FUCHSIA_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite(
-    [_GetBenchmarkConfig('system_health.memory_desktop')])
+_FUCHSIA_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('system_health.memory_desktop'),
+    _GetBenchmarkConfig('media.desktop')
+])
+_LINUX_PERF_CALIBRATION_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('speedometer2'),
+])
 
 
 # Linux
@@ -493,14 +509,13 @@ MAC_LOW_END = PerfPlatform(
     26,
     'mac',
     executables=_MAC_LOW_END_EXECUTABLE_CONFIGS)
-MAC_ARM_DTK_ARM = PerfPlatform('mac-arm_dtk_arm-perf',
-                               'Mac ARM DTK (ARM Chrome)',
-                               _MAC_ARM_DTK_BENCHMARK_CONFIGS,
-                               8,
-                               'mac',
-                               executables=_MAC_ARM_DTK_EXECUTABLE_CONFIGS)
-MAC_M1_MINI_2020 = PerfPlatform('mac-m1_mini_2020-perf', 'Mac M1 Mini 2020',
-                                _MAC_M1_MINI_2020_BENCHMARK_CONFIGS, 2, 'mac')
+MAC_M1_MINI_2020 = PerfPlatform(
+    'mac-m1_mini_2020-perf',
+    'Mac M1 Mini 2020',
+    _MAC_M1_MINI_2020_BENCHMARK_CONFIGS,
+    8,
+    'mac',
+    executables=_MAC_M1_MINI_2020_EXECUTABLE_CONFIGS)
 
 # Win
 WIN_10_LOW_END = PerfPlatform(
@@ -518,6 +533,8 @@ WIN_10 = PerfPlatform(
     'Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM,'
     ' Intel Kaby Lake HD Graphics 630', _WIN_10_BENCHMARK_CONFIGS,
     26, 'win', executables=_WIN_10_EXECUTABLE_CONFIGS)
+WIN_10_AMD = PerfPlatform('win-10_amd-perf', 'Windows AMD chipset',
+                          _WIN_10_AMD_BENCHMARK_CONFIGS, 2, 'win')
 WIN_7 = PerfPlatform('Win 7 Perf', 'N/A', _WIN_7_BENCHMARK_CONFIGS, 2, 'win')
 WIN_7_GPU = PerfPlatform('Win 7 Nvidia GPU Perf', 'N/A',
                          _WIN_7_GPU_BENCHMARK_CONFIGS, 3, 'win')
@@ -580,7 +597,7 @@ WIN_10_LOW_END_HP_CANDIDATE = PerfPlatform(
 ANDROID_NEXUS5X_PERF_FYI = PerfPlatform('android-nexus5x-perf-fyi',
                                         'Android MMB29Q',
                                         _ANDROID_NEXUS5X_FYI_BENCHMARK_CONFIGS,
-                                        3,
+                                        2,
                                         'android',
                                         is_fyi=True)
 ANDROID_PIXEL2_PERF_AAB_FYI = PerfPlatform(
@@ -611,9 +628,18 @@ LINUX_PERF_FYI = PerfPlatform('linux-perf-fyi',
 FUCHSIA_PERF_FYI = PerfPlatform('fuchsia-perf-fyi',
                                 '',
                                 _FUCHSIA_PERF_FYI_BENCHMARK_CONFIGS,
-                                1,
+                                7,
                                 'fuchsia',
                                 is_fyi=True)
+
+# Calibration bots
+LINUX_PERF_CALIBRATION = PerfPlatform(
+    'linux-perf-calibration',
+    'Ubuntu-18.04, 8 core, NVIDIA Quadro P400',
+    _LINUX_PERF_CALIBRATION_BENCHMARK_CONFIGS,
+    28,
+    'linux',
+    is_calibration=True)
 
 ALL_PLATFORMS = {
     p for p in locals().values() if isinstance(p, PerfPlatform)
@@ -622,12 +648,16 @@ PLATFORMS_BY_NAME = {p.name: p for p in ALL_PLATFORMS}
 FYI_PLATFORMS = {
     p for p in ALL_PLATFORMS if p.is_fyi
 }
-OFFICIAL_PLATFORMS = {
-    p for p in ALL_PLATFORMS if not p.is_fyi
-}
+OFFICIAL_PLATFORMS = {p for p in ALL_PLATFORMS if p.is_official}
 ALL_PLATFORM_NAMES = {
     p.name for p in ALL_PLATFORMS
 }
 OFFICIAL_PLATFORM_NAMES = {
     p.name for p in OFFICIAL_PLATFORMS
 }
+
+
+def find_bot_platform(builder_name):
+  for bot_platform in ALL_PLATFORMS:
+    if bot_platform.name == builder_name:
+      return bot_platform

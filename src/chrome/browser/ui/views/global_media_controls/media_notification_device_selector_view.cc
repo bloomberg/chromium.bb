@@ -11,7 +11,10 @@
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_device_selector_view_delegate.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/media_message_center/media_notification_item.h"
 #include "media/audio/audio_device_description.h"
+#include "media/base/media_switches.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/layout/box_layout.h"
@@ -79,14 +82,17 @@ void ExpandDeviceSelectorButton::OnColorsChanged() {
 
 MediaNotificationDeviceSelectorView::MediaNotificationDeviceSelectorView(
     MediaNotificationDeviceSelectorViewDelegate* delegate,
-    std::unique_ptr<media_router::CastDialogController> controller,
+    std::unique_ptr<media_router::CastDialogController> cast_controller,
+    bool has_audio_output,
     const std::string& current_device_id,
     const SkColor& foreground_color,
-    const SkColor& background_color)
+    const SkColor& background_color,
+    GlobalMediaControlsEntryPoint entry_point)
     : delegate_(delegate),
       current_device_id_(current_device_id),
       foreground_color_(foreground_color),
-      background_color_(background_color) {
+      background_color_(background_color),
+      entry_point_(entry_point) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
@@ -113,6 +119,9 @@ MediaNotificationDeviceSelectorView::MediaNotificationDeviceSelectorView(
           views::BoxLayout::Orientation::kVertical));
   device_entry_views_container_->SetVisible(false);
 
+  if (entry_point_ == GlobalMediaControlsEntryPoint::kPresentation) {
+    ShowDevices();
+  }
   SetBackground(views::CreateSolidBackground(background_color_));
   // Set the size of this view
   SetPreferredSize(kExpandButtonStripSize);
@@ -121,22 +130,13 @@ MediaNotificationDeviceSelectorView::MediaNotificationDeviceSelectorView(
   // This view will become visible when devices are discovered.
   SetVisible(false);
 
-  // Get a list of the connected audio output devices.
-  audio_device_subscription_ =
-      delegate->RegisterAudioOutputDeviceDescriptionsCallback(
-          base::BindRepeating(
-              &MediaNotificationDeviceSelectorView::UpdateAvailableAudioDevices,
-              weak_ptr_factory_.GetWeakPtr()));
+  if (has_audio_output && base::FeatureList::IsEnabled(
+                              media::kGlobalMediaControlsSeamlessTransfer)) {
+    RegisterAudioDeviceCallbacks();
+  }
 
-  // Get the availability of audio output device switching.
-  is_device_switching_enabled_subscription_ =
-      delegate_->RegisterIsAudioOutputDeviceSwitchingSupportedCallback(
-          base::BindRepeating(&MediaNotificationDeviceSelectorView::
-                                  UpdateIsAudioDeviceSwitchingEnabled,
-                              weak_ptr_factory_.GetWeakPtr()));
-
-  if (controller) {
-    cast_controller_ = std::move(controller);
+  if (cast_controller) {
+    cast_controller_ = std::move(cast_controller);
     cast_controller_->AddObserver(this);
   }
 }
@@ -351,8 +351,13 @@ DeviceEntryUI* MediaNotificationDeviceSelectorView::GetDeviceEntryUI(
 void MediaNotificationDeviceSelectorView::OnModelUpdated(
     const media_router::CastDialogModel& model) {
   RemoveDevicesOfType(DeviceEntryUIType::kCast);
-  has_cast_device_ = !model.media_sinks().empty();
+  has_cast_device_ = false;
   for (auto sink : model.media_sinks()) {
+    if (!base::Contains(sink.cast_modes,
+                        media_router::MediaCastMode::PRESENTATION)) {
+      continue;
+    }
+    has_cast_device_ = true;
     auto device_entry_view = std::make_unique<CastDeviceEntryView>(
         base::BindRepeating(
             &MediaNotificationDeviceSelectorView::StartCastSession,
@@ -360,7 +365,11 @@ void MediaNotificationDeviceSelectorView::OnModelUpdated(
         foreground_color_, background_color_, sink);
     device_entry_view->set_tag(next_tag_++);
     device_entry_ui_map_[device_entry_view->tag()] = device_entry_view.get();
-    device_entry_views_container_->AddChildView(std::move(device_entry_view));
+    auto* entry = device_entry_views_container_->AddChildView(
+        std::move(device_entry_view));
+    // After the |device_entry_view| is added, its icon color will change
+    // according to the system theme. So we need to override the system color.
+    entry->OnColorsChanged(foreground_color_, background_color_);
   }
   device_entry_views_container_->Layout();
 
@@ -390,9 +399,43 @@ void MediaNotificationDeviceSelectorView::StartCastSession(
                           media_router::MediaCastMode::PRESENTATION));
     cast_controller_->StartCasting(sink.id,
                                    media_router::MediaCastMode::PRESENTATION);
-
-    // TODO(muyaoxu):Add metrics to record start casting usage.
+    RecordStartCastingMetrics();
   }
+}
+
+void MediaNotificationDeviceSelectorView::RecordStartCastingMetrics() {
+  GlobalMediaControlsCastActionAndEntryPoint action;
+  switch (entry_point_) {
+    case GlobalMediaControlsEntryPoint::kToolbarIcon:
+      action = GlobalMediaControlsCastActionAndEntryPoint::kStartViaToolbarIcon;
+      break;
+    case GlobalMediaControlsEntryPoint::kPresentation:
+      action =
+          GlobalMediaControlsCastActionAndEntryPoint::kStartViaPresentation;
+      break;
+    case GlobalMediaControlsEntryPoint::kSystemTray:
+      action = GlobalMediaControlsCastActionAndEntryPoint::kStartViaSystemTray;
+      break;
+  }
+  base::UmaHistogramEnumeration(
+      media_message_center::MediaNotificationItem::kCastStartStopHistogramName,
+      action);
+}
+
+void MediaNotificationDeviceSelectorView::RegisterAudioDeviceCallbacks() {
+  // Get a list of the connected audio output devices.
+  audio_device_subscription_ =
+      delegate_->RegisterAudioOutputDeviceDescriptionsCallback(
+          base::BindRepeating(
+              &MediaNotificationDeviceSelectorView::UpdateAvailableAudioDevices,
+              weak_ptr_factory_.GetWeakPtr()));
+
+  // Get the availability of audio output device switching.
+  is_device_switching_enabled_subscription_ =
+      delegate_->RegisterIsAudioOutputDeviceSwitchingSupportedCallback(
+          base::BindRepeating(&MediaNotificationDeviceSelectorView::
+                                  UpdateIsAudioDeviceSwitchingEnabled,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 BEGIN_METADATA(MediaNotificationDeviceSelectorView, views::View)

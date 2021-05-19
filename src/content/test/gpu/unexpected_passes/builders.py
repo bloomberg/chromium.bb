@@ -42,22 +42,10 @@ FAKE_TRY_BUILDERS = {
         'Optional Linux Release (Intel HD 630)',
         'Optional Linux Release (NVIDIA)',
     ],
-    'mac-angle-rel': [
-        'ANGLE GPU Mac Release (Intel)',
-        'ANGLE GPU Mac Retina Release (AMD)',
-        'ANGLE GPU Mac Retina Release (NVIDIA)',
-    ],
     'mac_optional_gpu_tests_rel': [
         'Optional Mac Release (Intel)',
         'Optional Mac Retina Release (AMD)',
         'Optional Mac Retina Release (NVIDIA)',
-    ],
-    'win-angle-rel-32': [
-        'Win7 ANGLE Tryserver (AMD)',
-    ],
-    'win-angle-rel-64': [
-        'ANGLE GPU Win10 x64 Release (Intel HD 630)',
-        'ANGLE GPU Win10 x64 Release (NVIDIA)',
     ],
     'win_optional_gpu_tests_rel': [
         'Optional Win10 x64 Release (Intel HD 630)',

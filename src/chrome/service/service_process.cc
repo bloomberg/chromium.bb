@@ -5,6 +5,8 @@
 #include "chrome/service/service_process.h"
 
 #include <algorithm>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -21,7 +23,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
@@ -113,10 +114,10 @@ void PrepareRestartOnCrashEnviroment(
   // The encoding we use for the info is "title|context|direction" where
   // direction is either env_vars::kRtlLocale or env_vars::kLtrLocale depending
   // on the current locale.
-  base::string16 dlg_strings(
+  std::u16string dlg_strings(
       l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_TITLE));
   dlg_strings.push_back('|');
-  base::string16 adjusted_string(l10n_util::GetStringFUTF16(
+  std::u16string adjusted_string(l10n_util::GetStringFUTF16(
       IDS_SERVICE_CRASH_RECOVERY_CONTENT,
       l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
   base::i18n::AdjustStringForLocaleDirection(&adjusted_string);
@@ -176,7 +177,7 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
   // Initialize the IO and FILE threads.
   base::Thread::Options options;
   options.message_pump_type = base::MessagePumpType::IO;
-  io_thread_.reset(new ServiceIOThread("ServiceProcess_IO"));
+  io_thread_ = std::make_unique<ServiceIOThread>("ServiceProcess_IO");
   if (!io_thread_->StartWithOptions(options)) {
     NOTREACHED();
     Teardown();
@@ -185,9 +186,9 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
 
   // Initialize Mojo early so things can use it.
   mojo::core::Init();
-  mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
+  mojo_ipc_support_ = std::make_unique<mojo::core::ScopedIPCSupport>(
       io_thread_->task_runner(),
-      mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
 
   request_context_getter_ = new ServiceURLRequestContextGetter();
 
@@ -235,8 +236,8 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
 
   VLOG(1) << "Starting Service Process IPC Server";
 
-  ipc_server_.reset(new ServiceIPCServer(this /* client */, io_task_runner(),
-                                         &shutdown_event_));
+  ipc_server_ = std::make_unique<ServiceIPCServer>(
+      this /* client */, io_task_runner(), &shutdown_event_);
   ipc_server_->binder_registry().AddInterface(base::BindRepeating(
       &cloud_print::CloudPrintMessageHandler::Create, this));
   ipc_server_->Init();
@@ -366,7 +367,7 @@ mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
 
 cloud_print::CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {
   if (!cloud_print_proxy_.get()) {
-    cloud_print_proxy_.reset(new cloud_print::CloudPrintProxy());
+    cloud_print_proxy_ = std::make_unique<cloud_print::CloudPrintProxy>();
     cloud_print_proxy_->Initialize(service_prefs_.get(), this,
                                    network_connection_tracker_.get());
   }

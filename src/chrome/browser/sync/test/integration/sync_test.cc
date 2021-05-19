@@ -181,7 +181,7 @@ invalidation::FCMNetworkHandler* GetFCMNetworkHandler(
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   if (!identity_manager ||
-      !identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired))
+      !identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin))
     return nullptr;
 
   auto it = profile_to_fcm_network_handler_map->find(profile);
@@ -513,8 +513,7 @@ Profile* SyncTest::MakeProfileForUISignin(base::FilePath profile_path) {
   base::RunLoop run_loop;
   ProfileManager::CreateCallback create_callback =
       base::BindRepeating(&CreateProfileCallback, run_loop.QuitClosure());
-  profile_manager->CreateProfileAsync(profile_path, create_callback,
-                                      base::string16(), std::string());
+  profile_manager->CreateProfileAsync(profile_path, create_callback);
   run_loop.Run();
   return profile_manager->GetProfileByPath(profile_path);
 }
